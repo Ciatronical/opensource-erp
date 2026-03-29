@@ -209,6 +209,7 @@
             "emailError": "Fehler beim Versenden der E-Mail",
             "whatsappSent": "WhatsApp-Nachricht erfolgreich gesendet",
             "whatsappError": "Fehler beim Senden der WhatsApp-Nachricht",
+            "dhlLabel": "DHL saatmissilt",
             "paymentBooked": "Zahlung erfolgreich gebucht",
             "paymentError": "Fehler beim Buchen der Zahlung",
             "searchArticle": "Artikelnr. oder Beschreibung",
@@ -417,6 +418,22 @@
                 "defaultMessage": "Anbei erhalten Sie {type} Nr. {number}.",
                 "noPhone": "Für diesen Kunden ist keine Telefonnummer hinterlegt."
             }
+        },
+        "dhl": {
+            "title": "Loo DHL saatmissilt",
+            "recipient": "Saaja",
+            "weight": "Kaal",
+            "weightRequired": "Kaal on kohustuslik",
+            "product": "DHL toode",
+            "dimensions": "Paki mõõtmed (valikuline)",
+            "length": "Pikkus",
+            "width": "Laius",
+            "height": "Kõrgus",
+            "create": "Loo silt",
+            "success": "DHL silt loodud — Jälgimisnumber {shipmentNo}",
+            "error": "Viga DHL sildi loomisel",
+            "deleted": "DHL saadetis tühistatud",
+            "existingShipments": "Olemasolevad saadetised"
         },
         "alerts": {
             "warning_no_permission": "Zugriff verweigert: Sie haben nicht die erforderlichen Berechtigungen, um dieses Dokument anzuzeigen. Bitte wenden Sie sich an Ihren Administrator."

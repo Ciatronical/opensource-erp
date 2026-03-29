@@ -173,6 +173,7 @@
             "emailError": "Fout bij het verzenden van de e-mail",
             "whatsappSent": "WhatsApp-bericht succesvol verzonden",
             "whatsappError": "Fout bij het verzenden van het WhatsApp-bericht",
+            "dhlLabel": "DHL verzendlabel",
             "paymentBooked": "Betaling succesvol geboekt",
             "paymentError": "Fout bij het boeken van de betaling",
             "paymentAccount": "Betaalrekening",
@@ -268,6 +269,22 @@
                 "defaultMessage": "Hierbij ontvangt u {type} nr. {number}.",
                 "noPhone": "Geen telefoonnummer geregistreerd voor deze klant."
             }
+        },
+        "dhl": {
+            "title": "DHL verzendlabel aanmaken",
+            "recipient": "Ontvanger",
+            "weight": "Gewicht",
+            "weightRequired": "Gewicht is verplicht",
+            "product": "DHL-product",
+            "dimensions": "Pakketafmetingen (optioneel)",
+            "length": "Lengte",
+            "width": "Breedte",
+            "height": "Hoogte",
+            "create": "Label aanmaken",
+            "success": "DHL-label aangemaakt — Volgnr. {shipmentNo}",
+            "error": "Fout bij het aanmaken van DHL-label",
+            "deleted": "DHL-zending geannuleerd",
+            "existingShipments": "Bestaande zendingen"
         },
         "alerts": {
             "warning_no_permission": "Toegang geweigerd: U heeft niet de vereiste rechten om dit document te bekijken. Neem contact op met uw beheerder."

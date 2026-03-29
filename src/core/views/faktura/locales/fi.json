@@ -209,6 +209,7 @@
             "emailError": "Fehler beim Versenden der E-Mail",
             "whatsappSent": "WhatsApp-Nachricht erfolgreich gesendet",
             "whatsappError": "Fehler beim Senden der WhatsApp-Nachricht",
+            "dhlLabel": "DHL-lähetystarra",
             "paymentBooked": "Zahlung erfolgreich gebucht",
             "paymentError": "Fehler beim Buchen der Zahlung",
             "searchArticle": "Artikelnr. oder Beschreibung",
@@ -417,6 +418,22 @@
                 "defaultMessage": "Anbei erhalten Sie {type} Nr. {number}.",
                 "noPhone": "Für diesen Kunden ist keine Telefonnummer hinterlegt."
             }
+        },
+        "dhl": {
+            "title": "Luo DHL-lähetystarra",
+            "recipient": "Vastaanottaja",
+            "weight": "Paino",
+            "weightRequired": "Paino on pakollinen",
+            "product": "DHL-tuote",
+            "dimensions": "Paketin mitat (valinnainen)",
+            "length": "Pituus",
+            "width": "Leveys",
+            "height": "Korkeus",
+            "create": "Luo tarra",
+            "success": "DHL-tarra luotu — Seurantanro {shipmentNo}",
+            "error": "Virhe DHL-tarran luonnissa",
+            "deleted": "DHL-lähetys peruutettu",
+            "existingShipments": "Olemassa olevat lähetykset"
         },
         "alerts": {
             "warning_no_permission": "Zugriff verweigert: Sie haben nicht die erforderlichen Berechtigungen, um dieses Dokument anzuzeigen. Bitte wenden Sie sich an Ihren Administrator."

@@ -821,6 +821,34 @@ CREATE UNIQUE INDEX ar_invnumber_key ON ar USING btree (lower(invnumber));
 DROP INDEX IF EXISTS ap_invnumber_key;
 CREATE UNIQUE INDEX ap_invnumber_key ON ap USING btree (lower(invnumber));
 
+-- ============================================================================
+-- DHL VERSAND
+-- ============================================================================
+
+CREATE TABLE IF NOT EXISTS dhl_shipments (
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    record_type text NOT NULL,
+    record_id integer NOT NULL,
+    shipment_no text NOT NULL,
+    product text,
+    weight numeric(10,2),
+    label_pdf bytea,
+    created_at timestamp without time zone DEFAULT now(),
+    created_by integer
+);
+
+COMMENT ON TABLE dhl_shipments IS 'DHL Versandetiketten und Sendungsnummern';
+COMMENT ON COLUMN dhl_shipments.record_type IS 'Belegtyp (invoice, order, delivery_order)';
+COMMENT ON COLUMN dhl_shipments.record_id IS 'ID des zugehörigen Belegs';
+COMMENT ON COLUMN dhl_shipments.shipment_no IS 'DHL Sendungsnummer (Tracking)';
+COMMENT ON COLUMN dhl_shipments.product IS 'DHL Produkt (V01PAK, V53WPAK, V62WP)';
+COMMENT ON COLUMN dhl_shipments.weight IS 'Paketgewicht in kg';
+COMMENT ON COLUMN dhl_shipments.label_pdf IS 'Versandetikett als PDF (binär)';
+COMMENT ON COLUMN dhl_shipments.created_at IS 'Erstellungszeitpunkt';
+COMMENT ON COLUMN dhl_shipments.created_by IS 'Erstellt von (employee_id)';
+
+CREATE INDEX IF NOT EXISTS idx_dhl_shipments_record ON dhl_shipments (record_type, record_id);
+
 --- ============================================================================
 --- SSE NOTIFICATIONS (pg_notify)
 --- ============================================================================

@@ -209,6 +209,7 @@
             "emailError": "Fejl ved Versenden der E-mail",
             "whatsappSent": "WhatsApp-Nachricht gennemfoert gesendet",
             "whatsappError": "Fejl ved Send der WhatsApp-Nachricht",
+            "dhlLabel": "DHL forsendelseslabel",
             "paymentBooked": "Betaling gennemfoert gebucht",
             "paymentError": "Fejl ved Buchen der Betaling",
             "searchArticle": "Artikelnr. oder Beskrivelse",
@@ -417,6 +418,22 @@
                 "defaultMessage": "Anbei erhalten Sie {type} Nr. {number}.",
                 "noPhone": "Für diesen Kunder ist ingen Telefonnummer hinterlegt."
             }
+        },
+        "dhl": {
+            "title": "Opret DHL forsendelseslabel",
+            "recipient": "Modtager",
+            "weight": "Vægt",
+            "weightRequired": "Vægt er påkrævet",
+            "product": "DHL-produkt",
+            "dimensions": "Pakkemål (valgfrit)",
+            "length": "Længde",
+            "width": "Bredde",
+            "height": "Højde",
+            "create": "Opret label",
+            "success": "DHL-label oprettet — Sporingsnr. {shipmentNo}",
+            "error": "Fejl ved oprettelse af DHL-label",
+            "deleted": "DHL-forsendelse annulleret",
+            "existingShipments": "Eksisterende forsendelser"
         },
         "alerts": {
             "warning_no_permission": "Zugriff verweigert: Sie haben nicht die erforderlichen Berechtigungen, um dieses Dokument anzuzeigen. Venligst wenden Sie sich an Ihren Administrator."

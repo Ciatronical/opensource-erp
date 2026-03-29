@@ -209,6 +209,7 @@
             "emailError": "Fehler beim Versenden der E-Mail",
             "whatsappSent": "WhatsApp-Nachricht erfolgreich gesendet",
             "whatsappError": "Fehler beim Senden der WhatsApp-Nachricht",
+            "dhlLabel": "Etiqueta de envio DHL",
             "paymentBooked": "Zahlung erfolgreich gebucht",
             "paymentError": "Fehler beim Buchen der Zahlung",
             "searchArticle": "Artikelnr. oder Beschreibung",
@@ -417,6 +418,22 @@
                 "defaultMessage": "Anbei erhalten Sie {type} Nr. {number}.",
                 "noPhone": "Für diesen Kunden ist keine Telefonnummer hinterlegt."
             }
+        },
+        "dhl": {
+            "title": "Criar etiqueta de envio DHL",
+            "recipient": "Destinatário",
+            "weight": "Peso",
+            "weightRequired": "O peso é obrigatório",
+            "product": "Produto DHL",
+            "dimensions": "Dimensões da embalagem (opcional)",
+            "length": "Comprimento",
+            "width": "Largura",
+            "height": "Altura",
+            "create": "Criar etiqueta",
+            "success": "Etiqueta DHL criada — N.º de rastreio {shipmentNo}",
+            "error": "Erro ao criar etiqueta DHL",
+            "deleted": "Envio DHL cancelado",
+            "existingShipments": "Envios existentes"
         },
         "alerts": {
             "warning_no_permission": "Zugriff verweigert: Sie haben nicht die erforderlichen Berechtigungen, um dieses Dokument anzuzeigen. Bitte wenden Sie sich an Ihren Administrator."

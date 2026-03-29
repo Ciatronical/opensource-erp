@@ -209,6 +209,7 @@
             "emailError": "Fel vid Versenden der E-post",
             "whatsappSent": "WhatsApp-Nachricht genomford gesendet",
             "whatsappError": "Fel vid Skicka der WhatsApp-Nachricht",
+            "dhlLabel": "DHL fraktetikett",
             "paymentBooked": "Betalning genomford gebucht",
             "paymentError": "Fel vid Buchen der Betalning",
             "searchArticle": "Artikelnr. oder Beskrivning",
@@ -417,6 +418,22 @@
                 "defaultMessage": "Anbei erhalten Sie {type} Nr. {number}.",
                 "noPhone": "Für diesen Kundn ist inga Telefonnummer hinterlegt."
             }
+        },
+        "dhl": {
+            "title": "Skapa DHL fraktetikett",
+            "recipient": "Mottagare",
+            "weight": "Vikt",
+            "weightRequired": "Vikt är obligatoriskt",
+            "product": "DHL-produkt",
+            "dimensions": "Paketmått (valfritt)",
+            "length": "Längd",
+            "width": "Bredd",
+            "height": "Höjd",
+            "create": "Skapa etikett",
+            "success": "DHL-etikett skapad — Spårningsnr {shipmentNo}",
+            "error": "Fel vid skapande av DHL-etikett",
+            "deleted": "DHL-försändelse avbruten",
+            "existingShipments": "Befintliga försändelser"
         },
         "alerts": {
             "warning_no_permission": "Zugriff verweigert: Sie haben nicht die erforderlichen Berechtigungen, um dieses Dokument anzuzeigen. Vanligen wenden Sie sich an Ihren Administrator."

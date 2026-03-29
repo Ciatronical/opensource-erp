@@ -209,6 +209,7 @@
             "emailError": "Fehler beim Versenden der E-Mail",
             "whatsappSent": "WhatsApp-Nachricht erfolgreich gesendet",
             "whatsappError": "Fehler beim Senden der WhatsApp-Nachricht",
+            "dhlLabel": "DHL sūtījuma etiķete",
             "paymentBooked": "Zahlung erfolgreich gebucht",
             "paymentError": "Fehler beim Buchen der Zahlung",
             "searchArticle": "Artikelnr. oder Beschreibung",
@@ -417,6 +418,22 @@
                 "defaultMessage": "Anbei erhalten Sie {type} Nr. {number}.",
                 "noPhone": "Für diesen Kunden ist keine Telefonnummer hinterlegt."
             }
+        },
+        "dhl": {
+            "title": "Izveidot DHL sūtījuma etiķeti",
+            "recipient": "Saņēmējs",
+            "weight": "Svars",
+            "weightRequired": "Svars ir obligāts",
+            "product": "DHL produkts",
+            "dimensions": "Pakas izmēri (neobligāti)",
+            "length": "Garums",
+            "width": "Platums",
+            "height": "Augstums",
+            "create": "Izveidot etiķeti",
+            "success": "DHL etiķete izveidota — Izsekošanas nr. {shipmentNo}",
+            "error": "Kļūda, veidojot DHL etiķeti",
+            "deleted": "DHL sūtījums atcelts",
+            "existingShipments": "Esošie sūtījumi"
         },
         "alerts": {
             "warning_no_permission": "Zugriff verweigert: Sie haben nicht die erforderlichen Berechtigungen, um dieses Dokument anzuzeigen. Bitte wenden Sie sich an Ihren Administrator."

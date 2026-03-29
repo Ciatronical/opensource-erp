@@ -209,6 +209,7 @@
             "emailError": "发送电子邮件时出错",
             "whatsappSent": "WhatsApp 消息发送成功",
             "whatsappError": "发送 WhatsApp 消息时出错",
+            "dhlLabel": "DHL 物流标签",
             "paymentBooked": "付款记录成功",
             "paymentError": "记录付款时出错",
             "paymentAccount": "付款账户",
@@ -418,6 +419,22 @@
                 "defaultMessage": "随附 {type} 编号 {number}。",
                 "noPhone": "该客户未设置电话号码。"
             }
+        },
+        "dhl": {
+            "title": "创建 DHL 物流标签",
+            "recipient": "收件人",
+            "weight": "重量",
+            "weightRequired": "重量为必填项",
+            "product": "DHL 产品",
+            "dimensions": "包裹尺寸（可选）",
+            "length": "长度",
+            "width": "宽度",
+            "height": "高度",
+            "create": "创建标签",
+            "success": "DHL 标签已创建 - 追踪号 {shipmentNo}",
+            "error": "创建 DHL 标签时出错",
+            "deleted": "DHL 货运已取消",
+            "existingShipments": "现有货运"
         },
         "alerts": {
             "warning_no_permission": "拒绝访问：您没有查看此单据的权限。请联系管理员。"

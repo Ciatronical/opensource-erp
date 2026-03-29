@@ -169,7 +169,52 @@ const crmDefaultsConfig = [
 
     { name: "wall_display", type: "headline", label: "crm_fields.wallDisplay" },
 
-    { name: "wall_display_enabled", type: "checkbox", label: "crm_fields.wallDisplayEnabled", tooltip: "crm_fields.wallDisplayEnabled_help" }
+    { name: "wall_display_enabled", type: "checkbox", label: "crm_fields.wallDisplayEnabled", tooltip: "crm_fields.wallDisplayEnabled_help" },
+
+    { name: "dhl", type: "headline", label: "crm_fields.dhl" },
+
+    { name: "dhl_enabled", type: "checkbox", label: "crm_fields.dhlEnabled", tooltip: "crm_fields.dhlEnabled_help" },
+    { name: "dhl_sandbox", type: "checkbox", label: "crm_fields.dhlSandbox", tooltip: "crm_fields.dhlSandbox_help" },
+    { name: "dhl_api_key", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.dhlApiKey", tooltip: "crm_fields.dhlApiKey_help" },
+    { name: "dhl_user", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.dhlUser", tooltip: "crm_fields.dhlUser_help" },
+    { name: "dhl_password", type: "password", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.dhlPassword", tooltip: "crm_fields.dhlPassword_help" },
+    { name: "dhl_billing_number", type: "input", size: 20, fieldstyle: "max-width: 30ch", label: "crm_fields.dhlBillingNumber", tooltip: "crm_fields.dhlBillingNumber_help" },
+    {
+        name: "dhl_default_product",
+        type: "select",
+        items: [
+            { value: "V01PAK", title: "DHL Paket" },
+            { value: "V53WPAK", title: "DHL Paket International" },
+            { value: "V62WP", title: "DHL Warenpost" },
+            { value: "V66WPI", title: "DHL Warenpost International" }
+        ],
+        label: "crm_fields.dhlDefaultProduct",
+        tooltip: "crm_fields.dhlDefaultProduct_help",
+        fieldstyle: "max-width: 40ch"
+    },
+    {
+        name: "dhl_label_format",
+        type: "select",
+        items: [
+            { value: "910-300-600", title: "103 x 199 mm (Labeldrucker)" },
+            { value: "910-300-700", title: "A4" },
+            { value: "910-300-700-oZ", title: "A4 (ohne Rand)" },
+            { value: "910-300-410", title: "103 x 150 mm" },
+            { value: "100x70mm", title: "100 x 70 mm (Warenpost)" }
+        ],
+        label: "crm_fields.dhlLabelFormat",
+        tooltip: "crm_fields.dhlLabelFormat_help",
+        fieldstyle: "max-width: 40ch"
+    },
+
+    { name: "dhl_shipper", type: "headline", label: "crm_fields.dhlShipper" },
+
+    { name: "dhl_shipper_name", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.dhlShipperName", tooltip: "crm_fields.dhlShipperName_help" },
+    { name: "dhl_shipper_street", type: "input", size: 40, fieldstyle: "max-width: 40ch", label: "crm_fields.dhlShipperStreet", tooltip: "crm_fields.dhlShipperStreet_help" },
+    { name: "dhl_shipper_house", type: "input", size: 10, fieldstyle: "max-width: 15ch", label: "crm_fields.dhlShipperHouse", tooltip: "crm_fields.dhlShipperHouse_help" },
+    { name: "dhl_shipper_zip", type: "input", size: 10, fieldstyle: "max-width: 15ch", label: "crm_fields.dhlShipperZip", tooltip: "crm_fields.dhlShipperZip_help" },
+    { name: "dhl_shipper_city", type: "input", size: 30, fieldstyle: "max-width: 40ch", label: "crm_fields.dhlShipperCity", tooltip: "crm_fields.dhlShipperCity_help" },
+    { name: "dhl_shipper_country", type: "input", size: 5, fieldstyle: "max-width: 10ch", label: "crm_fields.dhlShipperCountry", tooltip: "crm_fields.dhlShipperCountry_help" }
 ];
 
 export default crmDefaultsConfig;

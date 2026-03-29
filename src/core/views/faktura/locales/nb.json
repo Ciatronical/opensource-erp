@@ -209,6 +209,7 @@
             "emailError": "Feil ved Versenden der E-post",
             "whatsappSent": "WhatsApp-Nachricht gjennomfoert gesendet",
             "whatsappError": "Feil ved Send der WhatsApp-Nachricht",
+            "dhlLabel": "DHL fraktetikett",
             "paymentBooked": "Betaling gjennomfoert gebucht",
             "paymentError": "Feil ved Buchen der Betaling",
             "searchArticle": "Artikkelnr. oder Beskrivelse",
@@ -417,6 +418,22 @@
                 "defaultMessage": "Anbei erhalten Sie {type} Nr. {number}.",
                 "noPhone": "Für diesen Kunder ist ingen Telefonnummer hinterlegt."
             }
+        },
+        "dhl": {
+            "title": "Opprett DHL fraktetikett",
+            "recipient": "Mottaker",
+            "weight": "Vekt",
+            "weightRequired": "Vekt er påkrevd",
+            "product": "DHL-produkt",
+            "dimensions": "Pakkemål (valgfritt)",
+            "length": "Lengde",
+            "width": "Bredde",
+            "height": "Høyde",
+            "create": "Opprett etikett",
+            "success": "DHL-etikett opprettet — Sporingsnr. {shipmentNo}",
+            "error": "Feil ved opprettelse av DHL-etikett",
+            "deleted": "DHL-forsendelse kansellert",
+            "existingShipments": "Eksisterende forsendelser"
         },
         "alerts": {
             "warning_no_permission": "Zugriff verweigert: Sie haben nicht die erforderlichen Berechtigungen, um dieses Dokument anzuzeigen. Vennligst wenden Sie sich an Ihren Administrator."

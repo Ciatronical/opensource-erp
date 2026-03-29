@@ -209,6 +209,7 @@
             "emailError": "Fehler beim Versenden der E-Mail",
             "whatsappSent": "WhatsApp-Nachricht erfolgreich gesendet",
             "whatsappError": "Fehler beim Senden der WhatsApp-Nachricht",
+            "dhlLabel": "DHL přepravní štítek",
             "paymentBooked": "Zahlung erfolgreich gebucht",
             "paymentError": "Fehler beim Buchen der Zahlung",
             "searchArticle": "Artikelnr. oder Beschreibung",
@@ -417,6 +418,22 @@
                 "defaultMessage": "Anbei erhalten Sie {type} Nr. {number}.",
                 "noPhone": "Für diesen Kunden ist keine Telefonnummer hinterlegt."
             }
+        },
+        "dhl": {
+            "title": "Vytvořit DHL přepravní štítek",
+            "recipient": "Příjemce",
+            "weight": "Hmotnost",
+            "weightRequired": "Hmotnost je povinná",
+            "product": "DHL produkt",
+            "dimensions": "Rozměry balíku (volitelné)",
+            "length": "Délka",
+            "width": "Šířka",
+            "height": "Výška",
+            "create": "Vytvořit štítek",
+            "success": "DHL štítek vytvořen — Sledovací číslo {shipmentNo}",
+            "error": "Chyba při vytváření DHL štítku",
+            "deleted": "DHL zásilka zrušena",
+            "existingShipments": "Existující zásilky"
         },
         "alerts": {
             "warning_no_permission": "Zugriff verweigert: Sie haben nicht die erforderlichen Berechtigungen, um dieses Dokument anzuzeigen. Bitte wenden Sie sich an Ihren Administrator."

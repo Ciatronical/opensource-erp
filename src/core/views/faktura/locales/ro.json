@@ -209,6 +209,7 @@
             "emailError": "Fehler beim Versenden der E-Mail",
             "whatsappSent": "WhatsApp-Nachricht erfolgreich gesendet",
             "whatsappError": "Fehler beim Senden der WhatsApp-Nachricht",
+            "dhlLabel": "Etichetă de expediere DHL",
             "paymentBooked": "Zahlung erfolgreich gebucht",
             "paymentError": "Fehler beim Buchen der Zahlung",
             "searchArticle": "Artikelnr. oder Beschreibung",
@@ -417,6 +418,22 @@
                 "defaultMessage": "Anbei erhalten Sie {type} Nr. {number}.",
                 "noPhone": "Für diesen Kunden ist keine Telefonnummer hinterlegt."
             }
+        },
+        "dhl": {
+            "title": "Creează etichetă de expediere DHL",
+            "recipient": "Destinatar",
+            "weight": "Greutate",
+            "weightRequired": "Greutatea este obligatorie",
+            "product": "Produs DHL",
+            "dimensions": "Dimensiunile coletului (opțional)",
+            "length": "Lungime",
+            "width": "Lățime",
+            "height": "Înălțime",
+            "create": "Creează etichetă",
+            "success": "Etichetă DHL creată — Nr. de urmărire {shipmentNo}",
+            "error": "Eroare la crearea etichetei DHL",
+            "deleted": "Expediere DHL anulată",
+            "existingShipments": "Expedieri existente"
         },
         "alerts": {
             "warning_no_permission": "Zugriff verweigert: Sie haben nicht die erforderlichen Berechtigungen, um dieses Dokument anzuzeigen. Bitte wenden Sie sich an Ihren Administrator."

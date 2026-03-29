@@ -222,6 +222,7 @@
             "emailError": "Fehler beim Versenden der E-Mail",
             "whatsappSent": "WhatsApp-Nachricht erfolgreich gesendet",
             "whatsappError": "Fehler beim Senden der WhatsApp-Nachricht",
+            "dhlLabel": "DHL Versandetikett",
             "paymentBooked": "Zahlung erfolgreich gebucht",
             "paymentError": "Fehler beim Buchen der Zahlung",
             "paymentAccount": "Zahlungskonto",
@@ -437,6 +438,22 @@
                 "send": "Senden",
                 "defaultMessage": "Anbei erhalten Sie {type} Nr. {number}.",
                 "noPhone": "Für diesen Kunden ist keine Telefonnummer hinterlegt."
+            },
+            "dhl": {
+                "title": "DHL Versandetikett erstellen",
+                "recipient": "Empfänger",
+                "weight": "Gewicht",
+                "weightRequired": "Gewicht ist erforderlich",
+                "product": "DHL-Produkt",
+                "dimensions": "Paketmaße (optional)",
+                "length": "Länge",
+                "width": "Breite",
+                "height": "Höhe",
+                "create": "Etikett erstellen",
+                "success": "DHL-Label erstellt — Sendungsnr. {shipmentNo}",
+                "error": "Fehler beim Erstellen des DHL-Labels",
+                "deleted": "DHL-Sendung storniert",
+                "existingShipments": "Bestehende Sendungen"
             }
         },
         "alerts": {

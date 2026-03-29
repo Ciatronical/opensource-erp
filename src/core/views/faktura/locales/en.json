@@ -221,6 +221,7 @@
             "emailError": "Error sending email",
             "whatsappSent": "WhatsApp message sent successfully",
             "whatsappError": "Error sending WhatsApp message",
+            "dhlLabel": "DHL Shipping Label",
             "paymentBooked": "Payment booked successfully",
             "paymentError": "Error booking payment",
             "paymentAccount": "Payment Account",
@@ -432,6 +433,22 @@
                 "defaultMessage": "Please find attached {type} No. {number}.",
                 "noPhone": "No phone number is stored for this customer."
             }
+        },
+        "dhl": {
+            "title": "Create DHL Shipping Label",
+            "recipient": "Recipient",
+            "weight": "Weight",
+            "weightRequired": "Weight is required",
+            "product": "DHL Product",
+            "dimensions": "Package dimensions (optional)",
+            "length": "Length",
+            "width": "Width",
+            "height": "Height",
+            "create": "Create label",
+            "success": "DHL label created — Tracking No. {shipmentNo}",
+            "error": "Error creating DHL label",
+            "deleted": "DHL shipment cancelled",
+            "existingShipments": "Existing shipments"
         },
         "alerts": {
             "warning_no_permission": "Access denied: You do not have the required permissions to view this document. Please contact your administrator."

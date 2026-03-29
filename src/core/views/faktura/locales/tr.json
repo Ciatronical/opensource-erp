@@ -209,6 +209,7 @@
             "emailError": "Fehler beim Versenden der E-Mail",
             "whatsappSent": "WhatsApp-Nachricht erfolgreich gesendet",
             "whatsappError": "Fehler beim Senden der WhatsApp-Nachricht",
+            "dhlLabel": "DHL gönderi etiketi",
             "paymentBooked": "Zahlung erfolgreich gebucht",
             "paymentError": "Fehler beim Buchen der Zahlung",
             "searchArticle": "Artikelnr. oder Beschreibung",
@@ -417,6 +418,22 @@
                 "defaultMessage": "Anbei erhalten Sie {type} Nr. {number}.",
                 "noPhone": "Für diesen Kunden ist keine Telefonnummer hinterlegt."
             }
+        },
+        "dhl": {
+            "title": "DHL gönderi etiketi oluştur",
+            "recipient": "Alıcı",
+            "weight": "Ağırlık",
+            "weightRequired": "Ağırlık zorunludur",
+            "product": "DHL ürünü",
+            "dimensions": "Paket boyutları (isteğe bağlı)",
+            "length": "Uzunluk",
+            "width": "Genişlik",
+            "height": "Yükseklik",
+            "create": "Etiket oluştur",
+            "success": "DHL etiketi oluşturuldu — Takip No. {shipmentNo}",
+            "error": "DHL etiketi oluşturulurken hata",
+            "deleted": "DHL gönderisi iptal edildi",
+            "existingShipments": "Mevcut gönderiler"
         },
         "alerts": {
             "warning_no_permission": "Zugriff verweigert: Sie haben nicht die erforderlichen Berechtigungen, um dieses Dokument anzuzeigen. Bitte wenden Sie sich an Ihren Administrator."

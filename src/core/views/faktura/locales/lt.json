@@ -209,6 +209,7 @@
             "emailError": "Fehler beim Versenden der E-Mail",
             "whatsappSent": "WhatsApp-Nachricht erfolgreich gesendet",
             "whatsappError": "Fehler beim Senden der WhatsApp-Nachricht",
+            "dhlLabel": "DHL siuntimo etiketė",
             "paymentBooked": "Zahlung erfolgreich gebucht",
             "paymentError": "Fehler beim Buchen der Zahlung",
             "searchArticle": "Artikelnr. oder Beschreibung",
@@ -417,6 +418,22 @@
                 "defaultMessage": "Anbei erhalten Sie {type} Nr. {number}.",
                 "noPhone": "Für diesen Kunden ist keine Telefonnummer hinterlegt."
             }
+        },
+        "dhl": {
+            "title": "Sukurti DHL siuntimo etiketę",
+            "recipient": "Gavėjas",
+            "weight": "Svoris",
+            "weightRequired": "Svoris yra privalomas",
+            "product": "DHL produktas",
+            "dimensions": "Pakuotės matmenys (neprivaloma)",
+            "length": "Ilgis",
+            "width": "Plotis",
+            "height": "Aukštis",
+            "create": "Sukurti etiketę",
+            "success": "DHL etiketė sukurta — Sekimo nr. {shipmentNo}",
+            "error": "Klaida kuriant DHL etiketę",
+            "deleted": "DHL siunta atšaukta",
+            "existingShipments": "Esamos siuntos"
         },
         "alerts": {
             "warning_no_permission": "Zugriff verweigert: Sie haben nicht die erforderlichen Berechtigungen, um dieses Dokument anzuzeigen. Bitte wenden Sie sich an Ihren Administrator."

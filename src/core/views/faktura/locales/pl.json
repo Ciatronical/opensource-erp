@@ -209,6 +209,7 @@
             "emailError": "Błąd podczas wysyłania e-maila",
             "whatsappSent": "Wiadomość WhatsApp wysłana pomyślnie",
             "whatsappError": "Błąd podczas wysyłania wiadomości WhatsApp",
+            "dhlLabel": "Etykieta wysyłkowa DHL",
             "paymentBooked": "Płatność pomyślnie zaksięgowana",
             "paymentError": "Błąd podczas księgowania płatności",
             "paymentAccount": "Konto płatności",
@@ -418,6 +419,22 @@
                 "defaultMessage": "W załączeniu przesyłamy {type} nr {number}.",
                 "noPhone": "Dla tego klienta nie podano numeru telefonu."
             }
+        },
+        "dhl": {
+            "title": "Utwórz etykietę wysyłkową DHL",
+            "recipient": "Odbiorca",
+            "weight": "Waga",
+            "weightRequired": "Waga jest wymagana",
+            "product": "Produkt DHL",
+            "dimensions": "Wymiary paczki (opcjonalnie)",
+            "length": "Długość",
+            "width": "Szerokość",
+            "height": "Wysokość",
+            "create": "Utwórz etykietę",
+            "success": "Etykieta DHL utworzona — Nr śledzenia {shipmentNo}",
+            "error": "Błąd podczas tworzenia etykiety DHL",
+            "deleted": "Przesyłka DHL anulowana",
+            "existingShipments": "Istniejące przesyłki"
         },
         "alerts": {
             "warning_no_permission": "Odmowa dostępu: Nie masz wymaganych uprawnień, aby wyświetlić ten dokument. Proszę skontaktować się z administratorem."

@@ -36,6 +36,8 @@
                     @pdf-preview="showPdfPreview"
                     @send-email="sendEmail"
                     @send-whatsapp="sendWhatsApp"
+                    @create-dhl-label="openDhlDialog"
+                    :show-dhl-button="dhlEnabled"
                     @show-on-display="showOnDisplay"
                     @show-history="showHistory"
                     @set-followup="setFollowUp"
@@ -537,6 +539,138 @@
             </v-card>
         </v-dialog>
 
+        <!-- DHL Versandetikett Dialog -->
+        <v-dialog v-model="dhlDialogVisible" max-width="550" persistent>
+            <v-card>
+                <v-card-title class="d-flex align-center bg-amber-darken-3">
+                    <v-icon class="mr-2">mdi-package-variant-closed</v-icon>
+                    {{ t('FakturaView.dialogs.dhl.title') }}
+                    <v-spacer />
+                    <v-btn
+                        icon="mdi-close"
+                        variant="text"
+                        density="compact"
+                        size="x-small"
+                        @click="dhlDialogVisible = false"
+                    />
+                </v-card-title>
+
+                <v-card-text class="pt-4">
+                    <v-row dense>
+                        <v-col cols="12">
+                            <v-text-field
+                                v-model="dhlRecipientDisplay"
+                                :label="t('FakturaView.dialogs.dhl.recipient')"
+                                variant="outlined"
+                                density="compact"
+                                prepend-inner-icon="mdi-account"
+                                readonly
+                            />
+                        </v-col>
+                        <v-col cols="6">
+                            <v-text-field
+                                v-model="dhlWeight"
+                                :label="t('FakturaView.dialogs.dhl.weight')"
+                                variant="outlined"
+                                density="compact"
+                                type="number"
+                                step="0.1"
+                                min="0.1"
+                                suffix="kg"
+                                prepend-inner-icon="mdi-weight-kilogram"
+                                :rules="[v => !!v && parseFloat(v) > 0 || t('FakturaView.dialogs.dhl.weightRequired')]"
+                            />
+                        </v-col>
+                        <v-col cols="6">
+                            <v-select
+                                v-model="dhlProduct"
+                                :label="t('FakturaView.dialogs.dhl.product')"
+                                variant="outlined"
+                                density="compact"
+                                :items="dhlProducts"
+                                item-title="title"
+                                item-value="value"
+                            />
+                        </v-col>
+                        <v-col cols="12">
+                            <span class="text-caption text-grey">{{ t('FakturaView.dialogs.dhl.dimensions') }}</span>
+                        </v-col>
+                        <v-col cols="4">
+                            <v-text-field
+                                v-model="dhlLength"
+                                :label="t('FakturaView.dialogs.dhl.length')"
+                                variant="outlined"
+                                density="compact"
+                                type="number"
+                                suffix="cm"
+                            />
+                        </v-col>
+                        <v-col cols="4">
+                            <v-text-field
+                                v-model="dhlWidth"
+                                :label="t('FakturaView.dialogs.dhl.width')"
+                                variant="outlined"
+                                density="compact"
+                                type="number"
+                                suffix="cm"
+                            />
+                        </v-col>
+                        <v-col cols="4">
+                            <v-text-field
+                                v-model="dhlHeight"
+                                :label="t('FakturaView.dialogs.dhl.height')"
+                                variant="outlined"
+                                density="compact"
+                                type="number"
+                                suffix="cm"
+                            />
+                        </v-col>
+                    </v-row>
+
+                    <!-- Bestehende Sendungen -->
+                    <v-list v-if="dhlExistingShipments.length > 0" density="compact" class="mt-2">
+                        <v-list-subheader>{{ t('FakturaView.dialogs.dhl.existingShipments') }}</v-list-subheader>
+                        <v-list-item
+                            v-for="s in dhlExistingShipments"
+                            :key="s.id"
+                            prepend-icon="mdi-package-variant-closed-check"
+                        >
+                            <v-list-item-title>
+                                <a :href="'https://www.dhl.de/de/privatkunden/pakete-empfangen/verfolgen.html?piececode=' + s.shipment_no" target="_blank" class="text-decoration-none">
+                                    {{ s.shipment_no }}
+                                </a>
+                            </v-list-item-title>
+                            <v-list-item-subtitle>{{ s.product }} · {{ s.weight }} kg · {{ s.created_at }}</v-list-item-subtitle>
+                            <template #append>
+                                <v-btn icon="mdi-download" size="x-small" variant="text" @click="downloadDhlLabel(s.shipment_no)" />
+                                <v-btn icon="mdi-delete" size="x-small" variant="text" color="error" @click="onDhlDelete(s.shipment_no)" />
+                            </template>
+                        </v-list-item>
+                    </v-list>
+                </v-card-text>
+
+                <v-card-actions class="px-4 pb-4">
+                    <v-spacer />
+                    <v-btn
+                        variant="text"
+                        @click="dhlDialogVisible = false"
+                    >
+                        {{ t('FakturaView.common.cancel') }}
+                    </v-btn>
+                    <v-btn
+                        color="amber-darken-3"
+                        variant="elevated"
+                        prepend-icon="mdi-package-variant-closed"
+                        :disabled="!dhlWeight || parseFloat(dhlWeight) <= 0"
+                        :loading="dhlLoading"
+                        @click="onDhlCreate"
+                    >
+                        {{ t('FakturaView.dialogs.dhl.create') }}
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
         <!-- Instructions Incomplete Dialog -->
         <v-dialog v-model="instructionsIncompleteDialog.show" max-width="500" @keydown.esc="instructionsIncompleteDialog.show = false">
             <v-card>
@@ -954,6 +1088,11 @@ export default defineComponent({
         const specialDialogVisible = ref(false)
         const wallDisplayEnabled = computed(() => {
             const val = oserp.getClientDefaultValue('wall_display_enabled', false)
+            return val === true || val === 'true' || val === 't' || val === '1'
+        })
+
+        const dhlEnabled = computed(() => {
+            const val = oserp.getClientDefaultValue('dhl_enabled', false)
             return val === true || val === 'true' || val === 't' || val === '1'
         })
 
@@ -2047,6 +2186,154 @@ export default defineComponent({
             initTemplateParams(tpl)
         })
 
+        // ===== DHL Versand =====
+        const dhlDialogVisible = ref(false)
+        const dhlWeight = ref('')
+        const dhlProduct = ref('V01PAK')
+        const dhlLength = ref('')
+        const dhlWidth = ref('')
+        const dhlHeight = ref('')
+        const dhlLoading = ref(false)
+        const dhlExistingShipments = ref([])
+        const dhlRecipientDisplay = ref('')
+
+        const dhlProducts = [
+            { value: 'V01PAK', title: 'DHL Paket' },
+            { value: 'V53WPAK', title: 'DHL Paket International' },
+            { value: 'V62WP', title: 'DHL Warenpost' },
+            { value: 'V66WPI', title: 'DHL Warenpost International' }
+        ]
+
+        /**
+         * Oeffnet den DHL-Dialog
+         */
+        function openDhlDialog() {
+            const common = faktura.data?.common || {}
+            const customer = faktura.data?.customer || {}
+
+            // Empfaenger-Anzeige
+            const name = customerName.value || customer.name || ''
+            const street = customer.street || ''
+            const zipCity = [customer.zipcode, customer.city].filter(Boolean).join(' ')
+            dhlRecipientDisplay.value = [name, street, zipCity].filter(Boolean).join(', ')
+
+            // Standard-Produkt aus Config
+            const defaultProduct = oserp.getClientDefaultValue('dhl_default_product', 'V01PAK')
+            dhlProduct.value = defaultProduct || 'V01PAK'
+
+            // Felder zuruecksetzen
+            dhlWeight.value = ''
+            dhlLength.value = ''
+            dhlWidth.value = ''
+            dhlHeight.value = ''
+
+            // Bestehende Sendungen laden
+            loadDhlShipments()
+
+            dhlDialogVisible.value = true
+        }
+
+        /**
+         * Bestehende DHL-Sendungen zum aktuellen Beleg laden
+         */
+        async function loadDhlShipments() {
+            try {
+                const response = await axios.post('/api/dhl/', {
+                    action: 'getDhlShipments',
+                    record_id: fakturaId.value,
+                    record_type: fakturaType.value
+                })
+                if (response.data.success) {
+                    dhlExistingShipments.value = response.data.payload?.shipments || []
+                }
+            } catch (e) {
+                console.error('Fehler beim Laden der DHL-Sendungen:', e)
+            }
+        }
+
+        /**
+         * DHL-Label erstellen
+         */
+        async function onDhlCreate() {
+            try {
+                dhlLoading.value = true
+                const response = await axios.post('/api/dhl/', {
+                    action: 'createDhlLabel',
+                    record_id: fakturaId.value,
+                    record_type: fakturaType.value,
+                    weight: parseFloat(dhlWeight.value),
+                    product: dhlProduct.value,
+                    length: dhlLength.value ? parseInt(dhlLength.value) : null,
+                    width: dhlWidth.value ? parseInt(dhlWidth.value) : null,
+                    height: dhlHeight.value ? parseInt(dhlHeight.value) : null
+                })
+
+                if (response.data.success) {
+                    const payload = response.data.payload
+                    toasts.success(t('FakturaView.dialogs.dhl.success', { shipmentNo: payload.shipment_no }))
+
+                    // Label-PDF zum Download anbieten
+                    if (payload.label_b64) {
+                        const link = document.createElement('a')
+                        link.href = 'data:application/pdf;base64,' + payload.label_b64
+                        link.download = `DHL-Label-${payload.shipment_no}.pdf`
+                        link.click()
+                    }
+
+                    // Liste aktualisieren
+                    loadDhlShipments()
+                } else {
+                    const detail = response.data.text || ''
+                    alerts.error(detail || t('FakturaView.dialogs.dhl.error'))
+                }
+            } catch (e) {
+                console.error('Fehler beim DHL-Label-Erstellen:', e)
+                alerts.error(t('FakturaView.dialogs.dhl.error'))
+            } finally {
+                dhlLoading.value = false
+            }
+        }
+
+        /**
+         * Bestehendes DHL-Label herunterladen
+         */
+        async function downloadDhlLabel(shipmentNo) {
+            try {
+                const response = await axios.post('/api/dhl/', {
+                    action: 'getDhlLabelPdf',
+                    shipment_no: shipmentNo
+                })
+                if (response.data.success && response.data.payload?.label_b64) {
+                    const link = document.createElement('a')
+                    link.href = 'data:application/pdf;base64,' + response.data.payload.label_b64
+                    link.download = `DHL-Label-${shipmentNo}.pdf`
+                    link.click()
+                }
+            } catch (e) {
+                console.error('Fehler beim Label-Download:', e)
+            }
+        }
+
+        /**
+         * DHL-Sendung stornieren
+         */
+        async function onDhlDelete(shipmentNo) {
+            try {
+                const response = await axios.post('/api/dhl/', {
+                    action: 'deleteDhlLabel',
+                    shipment_no: shipmentNo
+                })
+                if (response.data.success) {
+                    toasts.success(t('FakturaView.dialogs.dhl.deleted'))
+                    loadDhlShipments()
+                } else {
+                    alerts.error(response.data.text || t('FakturaView.dialogs.dhl.error'))
+                }
+            } catch (e) {
+                console.error('Fehler beim DHL-Storno:', e)
+            }
+        }
+
         // KI-Positionsvorschläge
         const showAiSuggest = computed(() => fakturaType.value === 'order' && !!vehicle)
         const aiLoading = ref(false)
@@ -2200,6 +2487,22 @@ export default defineComponent({
             onEmailSend,
             // WhatsApp
             sendWhatsApp,
+            // DHL
+            dhlEnabled,
+            dhlDialogVisible,
+            dhlWeight,
+            dhlProduct,
+            dhlProducts,
+            dhlLength,
+            dhlWidth,
+            dhlHeight,
+            dhlLoading,
+            dhlExistingShipments,
+            dhlRecipientDisplay,
+            openDhlDialog,
+            onDhlCreate,
+            downloadDhlLabel,
+            onDhlDelete,
             waDialogVisible,
             waDialogPhone,
             waDialogAttachmentName,

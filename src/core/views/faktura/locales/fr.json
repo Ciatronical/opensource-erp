@@ -205,6 +205,7 @@
             "emailError": "Erreur lors de l'envoi de l'e-mail",
             "whatsappSent": "Message WhatsApp envoye avec succes",
             "whatsappError": "Erreur lors de l'envoi du message WhatsApp",
+            "dhlLabel": "Étiquette d'expédition DHL",
             "paymentBooked": "Paiement enregistre avec succes",
             "paymentError": "Erreur lors de l'enregistrement du paiement",
             "paymentAccount": "Compte de paiement",
@@ -365,6 +366,22 @@
                 "defaultMessage": "Veuillez trouver ci-joint {type} n. {number}.",
                 "noPhone": "Aucun numero de telephone enregistre pour ce client."
             }
+        },
+        "dhl": {
+            "title": "Créer une étiquette d'expédition DHL",
+            "recipient": "Destinataire",
+            "weight": "Poids",
+            "weightRequired": "Le poids est obligatoire",
+            "product": "Produit DHL",
+            "dimensions": "Dimensions du colis (facultatif)",
+            "length": "Longueur",
+            "width": "Largeur",
+            "height": "Hauteur",
+            "create": "Créer l'étiquette",
+            "success": "Étiquette DHL créée — N° de suivi {shipmentNo}",
+            "error": "Erreur lors de la création de l'étiquette DHL",
+            "deleted": "Expédition DHL annulée",
+            "existingShipments": "Expéditions existantes"
         },
         "alerts": {
             "warning_no_permission": "Acces refuse : Vous n'avez pas les permissions requises pour afficher ce document. Veuillez contacter votre administrateur."

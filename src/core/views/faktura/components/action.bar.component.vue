@@ -229,6 +229,20 @@
                     </template>
                 </v-tooltip>
 
+                <!-- DHL Versandetikett -->
+                <v-tooltip v-if="showDhlButton" location="bottom" :text="t('FakturaView.faktura.dhlLabel')">
+                    <template #activator="{ props: tip }">
+                        <v-btn
+                            v-bind="tip"
+                            variant="tonal"
+                            color="amber-darken-3"
+                            icon="mdi-package-variant-closed"
+                            size="small"
+                            @click="$emit('create-dhl-label')"
+                        />
+                    </template>
+                </v-tooltip>
+
                 <!-- Auf Display zeigen -->
                 <v-tooltip v-if="showDisplayButton" location="bottom" :text="t('FakturaView.faktura.showOnDisplay')">
                     <template #activator="{ props: tip }">
@@ -390,6 +404,10 @@ export default defineComponent({
             type: Boolean,
             default: false
         },
+        showDhlButton: {
+            type: Boolean,
+            default: false
+        },
         compactView: {
             type: Boolean,
             default: false
@@ -423,7 +441,9 @@ export default defineComponent({
         'delete',
         'open-vehicle',
         'import-silverdat',
-        'open-special'
+        'open-special',
+        'create-dhl-label',
+        'show-on-display'
     ],
 
     setup(props) {
