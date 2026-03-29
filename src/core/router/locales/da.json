@@ -1,0 +1,75 @@
+{
+    "routes": {
+        "mainmenu": "/hauptmen%C3%BC",
+        "customer": "/kunde",
+        "editCustomer": "/kunde/bearbeiten",
+        "editVendor": "/lieferant/bearbeiten",
+        "viewInvoice": "/rechnung/anzeigen",
+        "editQuotation": "/angebot/bearbeiten",
+        "editOrder": "/auftrag/bearbeiten",
+        "newCustomer": "/kunde/neu",
+        "newVendor": "/lieferant/neu",
+        "newQuotation": "/angebot/neu",
+        "newOrder": "/auftrag/neu",
+        "newInvoice": "/rechnung/neu",
+        "manageCustomers": "/kunde",
+        "manageVendors": "/lieferant",
+        "manageArticles": "/artikel",
+        "manageQuotations": "/angebot",
+        "manageOrders": "/auftrag",
+        "manageInvoices": "/rechnung",
+        "manageCreditNotes": "/gutschrift",
+        "manageDeliveryOrders": "/lieferschein",
+        "orderSearch": "/auftrag/suche",
+        "search": "/suche",
+        "searchCustomers": "/kunde/suche",
+        "followUp": "/wiedervorlage",
+        "clientConfig": "/system/mandantenkonfiguration",
+        "developerTools": "/system/developer-tools",
+        "systemUpdate": "/system/aktualisierung",
+        "currentCustomerEdit": "/kunde/bearbeiten",
+        "callHistory": "/anrufliste",
+        "calendar": "/kalender",
+        "wiki": "/wiki",
+        "wikiNew": "/wiki/neu",
+        "wikiCategories": "/wiki/kategorien",
+        "wikiEdit": "/wiki/bearbeiten",
+        "userConfig": "/benutzer/konfiguration",
+        "huSerienbrief": "/serienbrief/hu",
+        "wallDisplay": "/wandanzeige"
+    },
+    "errors": {
+        "PASSWORD_FILE_NOT_FOUND": "Fejl: Adgangskodefilen api/config/api.passwd.php blev ikke fundet. Omdoeb venligst filen api/config/api.passwd.php.example til api/config/api.passwd.php og tilpas indstillingerne.",
+        "CONFIG_FILE_NOT_FOUND": "Fejl: Konfigurationsfilen blev ikke fundet. Kontroller venligst indstillingerne."
+    },
+    "MasterDataMenu": {
+        "title": "Stamdata",
+        "editCustomer": "Rediger kundedata",
+        "newCustomer": "Opret ny kunde",
+        "manageCustomers": "Administrer kunder",
+        "search": "Soeg",
+        "searchCustomers": "Soeg kunder",
+        "newVendor": "Opret ny leverandoer",
+        "calendar": "Kalender"
+    },
+    "ContactMenu": {
+        "title": "Kontakt",
+        "callHistory": "Opkaldsliste",
+        "emails": "E-mails",
+        "whatsapp": "WhatsApp"
+    },
+    "SalesMenu": {
+        "title": "Salg",
+        "newQuotation": "Opret nyt tilbud",
+        "newOrder": "Opret ny ordre",
+        "newInvoice": "Opret ny faktura",
+        "manageCreditNotes": "Kreditnotaer"
+    },
+    "SystemMenu": {
+        "title": "System",
+        "clientConfig": "Firmakonfiguration",
+        "developerTools": "Developer Tools",
+        "systemUpdate": "Systemopdatering",
+        "about": "Om"
+    }
+}

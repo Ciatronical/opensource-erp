@@ -1,0 +1,68 @@
+{
+    "HuSerienbriefView": {
+        "title": "HU-upozorneni",
+        "subtitle": "Zakaznici s nadchazejici hlavni prohlidkou",
+        "vorlauf": "Predstih: {monate} mesicu",
+        "fields": {
+            "customer_name": "Zakaznik",
+            "kennzeichen": "SPZ",
+            "hu_datum": "Datum HU",
+            "telefon": "Telefon",
+            "email": "E-mail",
+            "fahrzeug": "Vozidlo",
+            "actions": "Akce",
+            "date_from": "HU splatna od",
+            "date_to": "HU splatna do"
+        },
+        "buttons": {
+            "print_all": "Tisknout vybrane",
+            "email_all": "Odeslat e-mail",
+            "reload": "Aktualizovat",
+            "exclude": "Vyloucit",
+            "include": "Znovu zahrnout",
+            "send_pin": "Odeslat s PIN",
+            "whatsapp_all": "Odeslat WhatsApp"
+        },
+        "checkboxes": {
+            "show_excluded": "Zobrazit take vyloucene"
+        },
+        "chips": {
+            "excluded": "Vyloucen",
+            "results_count": "Zakazniku"
+        },
+        "filter": {
+            "title": "Obdobi"
+        },
+        "table": {
+            "no_results": "Zadni zakaznici s nadchazejici HU v konfigurovanem obdobi.",
+            "no_results_hint": "Zkontrolujte cas predstihu v nastaveni LXCars."
+        },
+        "whatsapp": {
+            "message": "Dobry den {name}, HU pro Vase vozidlo ({kennzeichen}) konci {hu_datum}. Prosim domluvte si termin. S pozdravem"
+        },
+        "toasts": {
+            "error_loading": "Chyba pri nacitani seznamu HU.",
+            "excluded_success": "Zakaznik byl vyloucen.",
+            "included_success": "Zakaznik byl znovu zahrnut.",
+            "exclude_error": "Chyba pri ukladani.",
+            "email_sent": "E-mail byl odeslan.",
+            "email_error": "Chyba pri odesilani e-mailu.",
+            "pdf_error": "Chyba pri vytvareni PDF.",
+            "sftp_success": "PDF bylo uspesne odeslano pres eLetter.",
+            "sftp_error": "Chyba pri odesilani pres eLetter.",
+            "whatsapp_sent": "WhatsApp zprava byla odeslana.",
+            "whatsapp_error": "Chyba pri odesilani WhatsApp zpravy.",
+            "whatsapp_bulk_sent": "{sent} WhatsApp zprav odeslano, {failed} selhalo.",
+            "whatsapp_no_phone": "Zadny z vybranych zakazniku nema telefonni cislo."
+        },
+        "tooltips": {
+            "whatsapp_single": "Odeslat HU pripominku pres WhatsApp",
+            "exclude": "Vyloucit zakaznika z HU upozorneni",
+            "include": "Znovu zahrnout zakaznika do HU upozorneni"
+        },
+        "dialogs": {
+            "confirm_exclude_title": "Vyloucit zakaznika",
+            "confirm_exclude_text": "Tento zakaznik bude trvale odebran ze seznamu HU upozorneni. Chcete pokracovat?"
+        }
+    }
+}

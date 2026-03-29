@@ -1,0 +1,41 @@
+{
+    "OrderSearchView": {
+        "title": "Cautare comenzi",
+        "fields": {
+            "ordnumber": "Numar comanda",
+            "customer_name": "Nume client",
+            "transaction_description": "Descriere",
+            "first_instruction": "Descriere",
+            "location": "Locatie",
+            "status": "Status",
+            "transdate_from": "Data de la",
+            "transdate_to": "Data pana la",
+            "bringetermin_from": "Termen predare de la",
+            "bringetermin_to": "Termen predare pana la",
+            "amount_from": "Suma de la",
+            "amount_to": "Suma pana la",
+            "employee": "Responsabil",
+            "transdate": "Data",
+            "bringetermin": "Termen predare",
+            "amount": "Suma",
+            "cusordnumber": "Numar comanda client",
+            "hersteller": "Producator"
+        },
+        "buttons": {
+            "search": "Cauta",
+            "reset": "Reseteaza"
+        },
+        "table": {
+            "title": "Rezultate cautare",
+            "text_no_search_table_shown": "Va rugam introduceti criterii de cautare si apasati ENTER sau \"Cauta\". Rezultatele vor fi afisate aici.",
+            "text_no_results": "Nu s-au gasit comenzi.",
+            "results_count": "Rezultate"
+        },
+        "alerts": {
+            "warning_no_search_criteria": "Nu au fost introduse criterii de cautare. Doriti sa incarcati toate comenzile?"
+        },
+        "toasts": {
+            "error_loading_search_results": "Eroare la incarcarea rezultatelor cautarii."
+        }
+    }
+}

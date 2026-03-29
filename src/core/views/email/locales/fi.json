@@ -1,0 +1,40 @@
+{
+    "EmailView": {
+        "title": "Sahkopostit",
+        "inbox": "Saapuneet",
+        "sent": "Lahetetyt",
+        "drafts": "Luonnokset",
+        "trash": "Roskakori",
+        "folders": "Kansiot",
+        "compose": "Uusi sahkoposti",
+        "refresh": "Paivita",
+        "search": "Hae sahkoposteista...",
+        "noEmails": "Ei sahkoposteja",
+        "noConfig": "Sahkopostiohjelmaa ei ole maaritetty. Maarita sahkopostiasetukset yrityksen asetuksissa CRM-osiossa.",
+        "loading": "Sahkoposteja ladataan...",
+        "from": "Lahettaja",
+        "to": "Vastaanottaja",
+        "cc": "CC",
+        "date": "Paivamaara",
+        "subject": "Aihe",
+        "body": "Viesti",
+        "noSubject": "(Ei aihetta)",
+        "attachments": "Liitteet",
+        "send": "Laheta",
+        "cancel": "Peruuta",
+        "reply": "Vastaa",
+        "forward": "Valita edelleen",
+        "delete": "Poista",
+        "markRead": "Merkitse luetuksi",
+        "markUnread": "Merkitse lukemattomaksi",
+        "of": "/",
+        "emails": "sahkopostia",
+        "page": "Sivu",
+        "customer": "Asiakas / Toimittaja",
+        "searchCustomer": "Hae asiakasta tai toimittajaa...",
+        "openCustomer": "avaa"
+    },
+    "EmailMenu": {
+        "title": "Sahkopostit"
+    }
+}

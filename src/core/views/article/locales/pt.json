@@ -1,0 +1,27 @@
+{
+    "ArticleEditView": {
+        "titleEdit": "Editar artigo",
+        "saving": "A guardar...",
+        "saved": "Guardado",
+        "sections": {
+            "masterData": "Dados mestres"
+        },
+        "fields": {
+            "partnumber": "Número do artigo",
+            "description": "Descrição",
+            "partType": "Tipo de artigo",
+            "typePart": "Mercadoria",
+            "typeService": "Serviço",
+            "unit": "Unidade",
+            "buchungsgruppe": "Grupo contabilístico",
+            "sellprice": "Preço de venda",
+            "notes": "Descrição longa",
+            "obsolete": "Obsoleto / Não utilizar"
+        },
+        "messages": {
+            "loading": "A carregar artigo",
+            "loadError": "Erro ao carregar o artigo",
+            "notFound": "Artigo não encontrado"
+        }
+    }
+}

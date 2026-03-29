@@ -1,0 +1,50 @@
+{
+    "update": {
+        "title": "Systemopdatering",
+        "description": "Her sikkerhedskopieres og opdateres alle firmadatabaser samt godkendelsesdatabasen.",
+        "messages": "Meddelelser",
+        "sqlStatements": "SQL-statements",
+        "errors": "Fejl",
+        "dryRunSuccess": "Forhaandsvisning indlaest.",
+        "updateSuccess": "Alle databaser opdateret.",
+        "gitPull": "Git Pull",
+        "gitPullSuccess": "Git Pull gennemfoert",
+        "gitPullFailed": "Git Pull mislykkedes",
+        "authDatabase": "Godkendelsesdatabase",
+        "authBackup": "Godkendelses-backup",
+        "clientDatabase": "Firma: {name}",
+        "clientDbName": "Database: {dbname}",
+        "backupSuccess": "Backup oprettet: {filename}",
+        "backupFailed": "Backup mislykkedes",
+        "backupSkipped": "Backup oprettes ikke ved dry-run",
+        "features": "Features: {features}",
+        "noClients": "Ingen firmaer fundet.",
+        "overallSuccess": "Alle databaser opdateret",
+        "overallFailed": "Fejl ved opdatering",
+        "buttons": {
+            "dryRun": "Forhaandsvisning",
+            "checking": "Kontrollerer...",
+            "update": "Koer opdatering",
+            "updating": "Opdaterer...",
+            "finish": "Faerdig"
+        },
+        "errorMessages": {
+            "dryRunFailed": "Forhaandsvisning mislykkedes.",
+            "updateFailed": "Opdatering mislykkedes.",
+            "networkError": "Netvaerksfejl ved opdatering."
+        },
+        "schemaMessages": {
+            "dry_run_mode": "Forhaandsvisningstilstand - Ingen aendringer foretages",
+            "columns_added": "Tabel {table}: {count} kolonne(r) ville blive tilf\u00f8jet | Tabel {table}: {count} kolonne(r) tilf\u00f8jet",
+            "column_added": "Kolonne '{column}' ville blive tilf\u00f8jet | Kolonne '{column}' tilf\u00f8jet",
+            "table_up_to_date": "Tabel {table}: Alle kolonner til stede",
+            "table_created": "Tabel {table} ville blive oprettet | Tabel {table} oprettet",
+            "version_updated": "Version {version} registreret i {schema}-database",
+            "object_exists": "{object_type} {name} eksisterer allerede",
+            "statement_executed": "{statement_type} {target} udf\u00f8rt",
+            "csv_skipped": "CSV sprunget over: {table} ({reason})",
+            "csv_imported": "CSV importeret: {table} ({rows_imported} raekker)",
+            "info": "{text}"
+        }
+    }
+}

@@ -1,0 +1,68 @@
+{
+    "HuSerienbriefView": {
+        "title": "Notificaciones ITV",
+        "subtitle": "Clientes con inspección técnica pendiente",
+        "vorlauf": "Anticipación: {monate} meses",
+        "fields": {
+            "customer_name": "Cliente",
+            "kennzeichen": "Matrícula",
+            "hu_datum": "Fecha ITV",
+            "telefon": "Teléfono",
+            "email": "Correo electrónico",
+            "fahrzeug": "Vehículo",
+            "actions": "Acciones",
+            "date_from": "ITV pendiente desde",
+            "date_to": "ITV pendiente hasta"
+        },
+        "buttons": {
+            "print_all": "Imprimir seleccionados",
+            "email_all": "Enviar correo",
+            "reload": "Actualizar",
+            "exclude": "Deseleccionar",
+            "include": "Volver a incluir",
+            "send_pin": "Enviar con PIN",
+            "whatsapp_all": "Enviar WhatsApp"
+        },
+        "checkboxes": {
+            "show_excluded": "Mostrar también los excluidos"
+        },
+        "chips": {
+            "excluded": "Excluido",
+            "results_count": "Clientes"
+        },
+        "filter": {
+            "title": "Período"
+        },
+        "table": {
+            "no_results": "No se encontraron clientes con ITV pendiente en el período configurado.",
+            "no_results_hint": "Verifique el tiempo de anticipación en la configuración de LXCars."
+        },
+        "whatsapp": {
+            "message": "Hola {name}, la ITV de su vehículo ({kennzeichen}) vence el {hu_datum}. Por favor, solicite una cita. Un saludo"
+        },
+        "toasts": {
+            "error_loading": "Error al cargar la lista de ITV.",
+            "excluded_success": "Cliente excluido.",
+            "included_success": "Cliente incluido de nuevo.",
+            "exclude_error": "Error al guardar.",
+            "email_sent": "Correo enviado.",
+            "email_error": "Error en el envío del correo.",
+            "pdf_error": "Error al crear el PDF.",
+            "sftp_success": "PDF enviado con éxito por eLetter.",
+            "sftp_error": "Error al enviar por eLetter.",
+            "whatsapp_sent": "Mensaje de WhatsApp enviado.",
+            "whatsapp_error": "Error al enviar el mensaje de WhatsApp.",
+            "whatsapp_bulk_sent": "{sent} mensajes de WhatsApp enviados, {failed} fallidos.",
+            "whatsapp_no_phone": "Ninguno de los clientes seleccionados tiene número de teléfono."
+        },
+        "tooltips": {
+            "whatsapp_single": "Enviar recordatorio de ITV por WhatsApp",
+            "exclude": "Excluir cliente de las notificaciones de ITV",
+            "include": "Incluir cliente de nuevo en las notificaciones de ITV"
+        },
+        "dialogs": {
+            "confirm_exclude_title": "Excluir cliente",
+            "confirm_exclude_text": "Este cliente será eliminado permanentemente de la lista de notificaciones de ITV. ¿Desea continuar?"
+        }
+    }
+}

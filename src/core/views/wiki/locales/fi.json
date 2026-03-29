@@ -1,0 +1,83 @@
+{
+    "WikiMenu": {
+        "title": "Wiki",
+        "newPage": "Uusi artikkeli",
+        "allPages": "Kaikki artikkelit",
+        "categories": "Kategoriat"
+    },
+    "WikiListView": {
+        "title": "Wiki - Tietopankki",
+        "newPage": "Uusi artikkeli",
+        "search": "Hae artikkeleita...",
+        "allCategories": "Kaikki",
+        "noPages": "Ei viela artikkeleita.",
+        "noPagesHint": "Luo ensimmainen wiki-artikkelisi.",
+        "headers": {
+            "title": "Otsikko",
+            "category": "Kategoria",
+            "author": "Kirjoittaja",
+            "updated": "Viimeisin paivitys",
+            "kba": "KBA"
+        },
+        "confirmDelete": "Poista artikkeli \"{title}\"?",
+        "deleted": "Artikkeli poistettu.",
+        "deleteError": "Virhe poistamisessa."
+    },
+    "WikiReadView": {
+        "title": "Wiki-artikkeli",
+        "edit": "Muokkaa",
+        "back": "Takaisin yleiskatsaukseen",
+        "revisions": "Versiot",
+        "createdBy": "Luonut",
+        "updatedBy": "Viimeksi muokannut",
+        "kbaLabel": "KBA-liitos",
+        "notFound": "Artikkelia ei loytynyt.",
+        "loadError": "Virhe artikkelin lataamisessa."
+    },
+    "WikiEditView": {
+        "titleNew": "Uusi wiki-artikkeli",
+        "titleEdit": "Muokkaa wiki-artikkelia",
+        "fieldTitle": "Otsikko",
+        "fieldCategory": "Kategoria",
+        "fieldContent": "Sisalto",
+        "fieldKbaHsn": "HSN",
+        "fieldKbaTsn": "TSN (ensimmaiset 3 merkkia)",
+        "kbaSection": "KBA-liitos (valinnainen)",
+        "save": "Tallenna",
+        "cancel": "Peruuta",
+        "saved": "Artikkeli tallennettu.",
+        "saveError": "Virhe tallentamisessa.",
+        "missingTitle": "Anna otsikko.",
+        "revisions": "Versiohistoria",
+        "noRevisions": "Ei viela vanhempia versioita.",
+        "restore": "Palauta",
+        "confirmRestore": "Palautetaanko versio paivamaaralta {date}?",
+        "restored": "Versio palautettu.",
+        "restoreError": "Virhe palautuksessa.",
+        "statusSaving": "Tallennetaan...",
+        "statusSaved": "Tallennettu",
+        "statusUnsaved": "Tallentamaton",
+        "statusError": "Tallennusvirhe",
+        "back": "Takaisin",
+        "newCategory": "Uusi kategoria",
+        "createCategory": "Luo"
+    },
+    "WikiCategoriesView": {
+        "title": "Wiki-kategoriat",
+        "newCategory": "Uusi kategoria",
+        "name": "Nimi",
+        "sortkey": "Jarjestys",
+        "pageCount": "Artikkelit",
+        "save": "Tallenna",
+        "cancel": "Peruuta",
+        "edit": "Muokkaa",
+        "delete": "Poista",
+        "noCategories": "Ei viela kategorioita.",
+        "confirmDelete": "Poista kategoria \"{name}\"?",
+        "saved": "Kategoria tallennettu.",
+        "deleted": "Kategoria poistettu.",
+        "saveError": "Virhe tallentamisessa.",
+        "deleteError": "Virhe poistamisessa.",
+        "sortUpdated": "Jarjestys paivitetty."
+    }
+}

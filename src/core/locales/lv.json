@@ -1,0 +1,47 @@
+{
+    "LoginView": {
+        "title": "Pieslēgšanās",
+        "username": "Lietotājvārds",
+        "password": "Parole",
+        "client": "Uzņēmums",
+        "button": "Pieslēgties",
+        "failed": "Pieslēgšanās neizdevās. Lūdzu pārbaudiet savus pieslēgšanās datus.",
+        "EMPTY_FIELDS": "Lūdzu ievadiet vārdu un paroli.",
+        "USER_NOT_FOUND": "Lietotājs nav atrasts.",
+        "WRONG_PASSWORD": "Nepareiza parole.",
+        "ERROR": "Kļūda pieslēdzoties. Lūdzu mēģiniet vēlreiz.",
+        "ERROR_LOADING_CLIENTS": "Kļūda ielādējot uzņēmumus. Lūdzu mēģiniet vēlāk.",
+        "USER_NOT_ASSIGNED_TO_CLIENT": "Lietotājs nav piešķirts uzņēmumam.",
+        "PASSWORD_FILE_NOT_FOUND": "Kļūda: Paroļu fails api/config/api.passwd.php nav atrasts. Lūdzu pārdēvējiet failu api/config/api.passwd.php.example par api/config/api.passwd.php un pielāgojiet iestatījumus.",
+        "CONFIG_FILE_NOT_FOUND": "Kļūda: Konfigurācijas fails nav atrasts. Lūdzu pārbaudiet iestatījumus.",
+        "updateButton": "Izpildīt atjauninājumu",
+        "updateSuccess": "Datu bāzes atjauninājums veiksmīgi izpildīts.",
+        "updateError": "Kļūda datu bāzes atjaunināšanā. Lūdzu mēģiniet vēlreiz.",
+        "privacy": "Privātuma politika",
+        "dataDeletion": "Datu dzēšana"
+    },
+    "NotFoundView": {
+        "title": "Lapa nav atrasta",
+        "message": "Pieprasītā lapa nav atrasta.",
+        "back_home": "Atpakaļ uz sākumlapu"
+    },
+    "NavbarView": {
+        "logoutTooltip": "Atslēgties",
+        "accountTooltip": "Konts",
+        "editCustomerTooltip": "Rediģēt klientu",
+        "editCvTooltip": "Rediģēt klientu/piegādātāju",
+        "currentC": "Klients:",
+        "currentV": "Piegādātājs:",
+        "demoBanner": "Demo režīms — Visi dati tiks automātiski atiestatīti pēc neaktivitātes.",
+        "demoResetWarning": "Demo tiks atiestatīts pēc {seconds} sekundēm — kustiniet peli, lai turpinātu."
+    },
+    "ErrorView": {
+        "title": "Radās kļūda",
+        "message": "Atvainojiet, radās neparedzēta kļūda.",
+        "debugInfo": "Atkļūdošanas informācija:",
+        "clickToShowDetails": "Noklikšķiniet, lai parādītu detaļas"
+    },
+    "App": {
+        "loading": "Lūdzu uzgaidiet..."
+    }
+}

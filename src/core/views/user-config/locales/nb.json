@@ -1,0 +1,21 @@
+{
+    "title": "Brukerkonfigurasjon",
+    "loading": "Laster konfigurasjon...",
+    "configLoadError": "Konfigurasjonsfeil",
+    "user_fields": {
+        "appearance": "Utseende",
+        "darkMode": "Moerkt design (Dark Mode)",
+        "darkMode_help": "Aktiverer det moerke fargetemaet for hele applikasjonen.",
+        "locale": "Visningssprak",
+        "locale_help": "Sprak for brukergrensesnittet. Tas i bruk umiddelbart.",
+        "general": "Generelt",
+        "startupView": "Startvisning",
+        "startupView_help": "Hvilken visning som vises etter innlogging. Overstyrer firmainnstillingen.",
+        "faktura": "Faktura",
+        "fakturaCompactView": "Kompakt visning som standard",
+        "fakturaCompactView_help": "Skjuler detaljkortene (Kunde, Dokumentdetaljer, Tilleggsinformasjon) og viser kun et kompakt sammendrag.",
+        "printer": "Skriver",
+        "defaultPrinter": "Standardskriver",
+        "defaultPrinter_help": "Skriver som brukes som standard for utskrifter"
+    }
+}

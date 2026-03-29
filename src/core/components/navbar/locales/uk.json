@@ -1,0 +1,41 @@
+{
+    "NavbarView": {
+        "logoutTooltip": "Вийти",
+        "accountTooltip": "Обліковий запис",
+        "editCustomerTooltip": "Редагувати клієнта",
+        "editCvTooltip": "Редагувати клієнта/постачальника",
+        "currentC": "Клієнт:",
+        "currentV": "Постачальник:",
+        "openInNewTabTooltip": "Головне меню",
+        "newTabTooltip": "Відкрити в новій вкладці",
+        "calendarTooltip": "Календар",
+        "callHistoryTooltip": "Журнал дзвінків",
+        "userConfig": "Налаштування",
+        "switchClient": "Змінити компанію",
+        "uploadLogo": "Логотип компанії",
+        "selectImage": "Вибрати зображення",
+        "logoHint": "Вибрати зображення, розташувати та обрізати",
+        "saveLogo": "Зберегти",
+        "deleteLogo": "Видалити",
+        "cancel": "Скасувати"
+    },
+    "GlobalSearch": {
+        "placeholder": "Пошук...",
+        "noResults": "Немає результатів",
+        "customers": "Клієнти",
+        "vendors": "Постачальники",
+        "invoices": "Рахунки",
+        "orders": "Замовлення",
+        "quotations": "Пропозиції",
+        "articles": "Товари",
+        "vehicles": "Транспортні засоби",
+        "wiki": "Wiki-статті",
+        "recentlyVisited": "Нещодавно відвідані",
+        "clearHistory": "Очистити історію"
+    },
+    "InfoBar": {
+        "unknownCaller": "Невідомий",
+        "closeAll": "Закрити всі сповіщення",
+        "pendingParts": "Запчастини запитані"
+    }
+}

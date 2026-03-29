@@ -1,0 +1,40 @@
+{
+    "EmailView": {
+        "title": "E-poster",
+        "inbox": "Innboks",
+        "sent": "Sendt",
+        "drafts": "Kladder",
+        "trash": "Papirkurv",
+        "folders": "Mapper",
+        "compose": "Ny e-post",
+        "refresh": "Oppdater",
+        "search": "Soek i e-poster...",
+        "noEmails": "Ingen e-poster tilgjengelig",
+        "noConfig": "E-postklient er ikke konfigurert. Vennligst konfigurer e-postinnstillingene i firmakonfigurasjonen under CRM.",
+        "loading": "E-poster lastes...",
+        "from": "Fra",
+        "to": "Til",
+        "cc": "CC",
+        "date": "Dato",
+        "subject": "Emne",
+        "body": "Melding",
+        "noSubject": "(Uten emne)",
+        "attachments": "Vedlegg",
+        "send": "Send",
+        "cancel": "Avbryt",
+        "reply": "Svar",
+        "forward": "Videresend",
+        "delete": "Slett",
+        "markRead": "Marker som lest",
+        "markUnread": "Marker som ulest",
+        "of": "av",
+        "emails": "e-poster",
+        "page": "Side",
+        "customer": "Kunde / Leverandoer",
+        "searchCustomer": "Soek kunde eller leverandoer...",
+        "openCustomer": "aapne"
+    },
+    "EmailMenu": {
+        "title": "E-poster"
+    }
+}

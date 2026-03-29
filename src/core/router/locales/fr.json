@@ -1,0 +1,75 @@
+{
+    "routes": {
+        "mainmenu": "/hauptmen%C3%BC",
+        "customer": "/kunde",
+        "editCustomer": "/kunde/bearbeiten",
+        "editVendor": "/lieferant/bearbeiten",
+        "viewInvoice": "/rechnung/anzeigen",
+        "editQuotation": "/angebot/bearbeiten",
+        "editOrder": "/auftrag/bearbeiten",
+        "newCustomer": "/kunde/neu",
+        "newVendor": "/lieferant/neu",
+        "newQuotation": "/angebot/neu",
+        "newOrder": "/auftrag/neu",
+        "newInvoice": "/rechnung/neu",
+        "manageCustomers": "/kunde",
+        "manageVendors": "/lieferant",
+        "manageArticles": "/artikel",
+        "manageQuotations": "/angebot",
+        "manageOrders": "/auftrag",
+        "manageInvoices": "/rechnung",
+        "manageCreditNotes": "/gutschrift",
+        "manageDeliveryOrders": "/lieferschein",
+        "orderSearch": "/auftrag/suche",
+        "search": "/suche",
+        "searchCustomers": "/kunde/suche",
+        "followUp": "/wiedervorlage",
+        "clientConfig": "/system/mandantenkonfiguration",
+        "developerTools": "/system/developer-tools",
+        "systemUpdate": "/system/aktualisierung",
+        "currentCustomerEdit": "/kunde/bearbeiten",
+        "callHistory": "/anrufliste",
+        "calendar": "/kalender",
+        "wiki": "/wiki",
+        "wikiNew": "/wiki/neu",
+        "wikiCategories": "/wiki/kategorien",
+        "wikiEdit": "/wiki/bearbeiten",
+        "userConfig": "/benutzer/konfiguration",
+        "huSerienbrief": "/serienbrief/hu",
+        "wallDisplay": "/wandanzeige"
+    },
+    "errors": {
+        "PASSWORD_FILE_NOT_FOUND": "Erreur : Le fichier de mot de passe api/config/api.passwd.php est introuvable. Veuillez renommer le fichier api/config/api.passwd.php.example en api/config/api.passwd.php et ajuster les parametres en consequence.",
+        "CONFIG_FILE_NOT_FOUND": "Erreur : Le fichier de configuration est introuvable. Veuillez verifier les parametres."
+    },
+    "MasterDataMenu": {
+        "title": "Donnees de base",
+        "editCustomer": "Modifier les donnees client",
+        "newCustomer": "Creer un nouveau client",
+        "manageCustomers": "Gerer les clients",
+        "search": "Recherche",
+        "searchCustomers": "Rechercher des clients",
+        "newVendor": "Creer un nouveau fournisseur",
+        "calendar": "Calendrier"
+    },
+    "ContactMenu": {
+        "title": "Contact",
+        "callHistory": "Historique des appels",
+        "emails": "E-mails",
+        "whatsapp": "WhatsApp"
+    },
+    "SalesMenu": {
+        "title": "Ventes",
+        "newQuotation": "Creer un nouveau devis",
+        "newOrder": "Creer une nouvelle commande",
+        "newInvoice": "Creer une nouvelle facture",
+        "manageCreditNotes": "Avoirs"
+    },
+    "SystemMenu": {
+        "title": "Systeme",
+        "clientConfig": "Configuration de la societe",
+        "developerTools": "Developer Tools",
+        "systemUpdate": "Mise a jour du systeme",
+        "about": "À propos"
+    }
+}

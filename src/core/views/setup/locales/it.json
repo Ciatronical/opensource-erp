@@ -1,0 +1,50 @@
+{
+    "setup": {
+        "title": "OpensourceERP Setup",
+        "welcome": "Benvenuto in OpensourceERP! Configurare la connessione al database di autenticazione.",
+        "setupAlreadyDone": "La configurazione è già stata effettuata. Verrai reindirizzato alla pagina di accesso...",
+        "configFound": "kivitendo.conf trovato - La password non era cifrata. Il modulo è stato compilato automaticamente.",
+        "setupCompleteMessage": "Configurazione completata con successo! La password è stata salvata in forma cifrata. Verrai reindirizzato...",
+        "fields": {
+            "host": "Host",
+            "port": "Porta",
+            "database": "Nome database",
+            "login": "Login",
+            "password": "Password"
+        },
+        "placeholders": {
+            "host": "localhost",
+            "port": "5432",
+            "database": "oserp_auth",
+            "login": "postgres"
+        },
+        "validation": {
+            "required": "Campo obbligatorio",
+            "portRange": "La porta deve essere compresa tra 1 e 65535"
+        },
+        "buttons": {
+            "testConnection": "Testa connessione",
+            "testingConnection": "Test connessione...",
+            "saveSetup": "Completa configurazione",
+            "savingSetup": "Salvataggio...",
+            "finish": "Avvia applicazione"
+        },
+        "errors": {
+            "checkStatus": "Errore nella verifica dello stato della configurazione",
+            "testConnection": "Errore nel test della connessione",
+            "testNetworkError": "Errore di rete nel test della connessione",
+            "saveSetup": "Errore nel salvataggio della configurazione",
+            "saveNetworkError": "Errore di rete nel salvataggio della configurazione"
+        },
+        "update": {
+            "title": "Aggiornamento database",
+            "running": "Aggiornamento database in corso...",
+            "success": "Aggiornamento database completato con successo.",
+            "failed": "Aggiornamento database fallito.",
+            "networkError": "Errore di rete nell'aggiornamento del database."
+        },
+        "footer": {
+            "copyright": "OpensourceERP"
+        }
+    }
+}

@@ -1,0 +1,260 @@
+pruefgruppe_nr,pruefgruppe,unterpunkt_nr,unterpunkt,defect_code,defect_description,possible_classes,is_custom
+0,Fahrzeugidentifizierung / Dokumente,0.1,Amtliche Kennzeichen / Zulassungsbescheinigung,0.1a,"Amtliches Kennzeichen fehlt, unleserlich oder nicht vorschriftsmäßig befestigt",GM|EM,false
+0,Fahrzeugidentifizierung / Dokumente,0.1,Amtliche Kennzeichen / Zulassungsbescheinigung,0.1b,Zulassungsbescheinigung Teil I (Fahrzeugschein) nicht vorhanden oder nicht lesbar,GM|EM,false
+0,Fahrzeugidentifizierung / Dokumente,0.1,Amtliche Kennzeichen / Zulassungsbescheinigung,0.1c,"Fahrzeug-Identifizierungsnummer (FIN) fehlt, unlesbar oder offensichtlich manipuliert",EM|VM,false
+0,Fahrzeugidentifizierung / Dokumente,0.1,Amtliche Kennzeichen / Zulassungsbescheinigung,0.1d,Daten in Zulassungsbescheinigung stimmen nicht mit Fahrzeug überein,EM|VM,false
+0,Fahrzeugidentifizierung / Dokumente,0.2,Fahrzeugidentifizierung / Fabrikschild,0.2a,Fabrikschild fehlt oder nicht lesbar,GM|EM,false
+0,Fahrzeugidentifizierung / Dokumente,0.2,Fahrzeugidentifizierung / Fabrikschild,0.2b,FIN am Fahrzeug stimmt nicht mit Dokumenten überein,EM|VU,false
+0,Fahrzeugidentifizierung / Dokumente,0.2,Fahrzeugidentifizierung / Fabrikschild,0.2c,Elektronische Fahrzeugidentifizierung: Daten nicht abrufbar oder manipuliert,EM|VM,false
+1,Bremsanlage,1.1,Mechanischer Zustand und Funktion,1.1.1a,Bremspedal/Handbremshebel: übermäßiger Verschleiß oder Spiel,GM|EM,false
+1,Bremsanlage,1.1,Mechanischer Zustand und Funktion,1.1.1b,Zustand des Pedals oder Pedallagerung beeinträchtigt sichere Betätigung,EM|VM,false
+1,Bremsanlage,1.1,Mechanischer Zustand und Funktion,1.1.2a,Bremsleitungen/-schläuche: leichte Korrosion oder geringfügige Beschädigungen,GM,false
+1,Bremsanlage,1.1,Mechanischer Zustand und Funktion,1.1.2b,"Bremsleitungen/-schläuche: starke Korrosion, Risse, Undichtigkeit",EM|VM,false
+1,Bremsanlage,1.1,Mechanischer Zustand und Funktion,1.1.2c,Bremsleitungen/-schläuche: bruch- oder abreißgefährdet,VM|VU,false
+1,Bremsanlage,1.1,Mechanischer Zustand und Funktion,1.1.3a,Bremsscheiben/-trommeln: Verschleiß über Grenzwert,EM,false
+1,Bremsanlage,1.1,Mechanischer Zustand und Funktion,1.1.3b,"Bremsscheiben/-trommeln: gebrochen oder gerissen, Funktion beeinträchtigt",VM|VU,false
+1,Bremsanlage,1.1,Mechanischer Zustand und Funktion,1.1.4a,Bremsbeläge: Verschleiß über Grenzwert / nahe Verschleißgrenze,GM|EM,false
+1,Bremsanlage,1.1,Mechanischer Zustand und Funktion,1.1.4b,"Bremsbeläge: fehlen, gebrochen, verschmutzt (Öl/Fett)",EM|VM,false
+1,Bremsanlage,1.1,Mechanischer Zustand und Funktion,1.1.5a,"Bremssättel/Radbremszylinder: beschädigt, übermäßig korrodiert",EM,false
+1,Bremsanlage,1.1,Mechanischer Zustand und Funktion,1.1.5b,Bremssättel/Radbremszylinder: undicht,EM|VM,false
+1,Bremsanlage,1.1,Mechanischer Zustand und Funktion,1.1.6a,"Bremsseile/-gestänge: beschädigt, korrodiert, schwergängig",GM|EM,false
+1,Bremsanlage,1.1,Mechanischer Zustand und Funktion,1.1.6b,"Bremsseile/-gestänge: übermäßiger Verschleiß, Funktion erheblich beeinträchtigt",EM|VM,false
+1,Bremsanlage,1.1,Mechanischer Zustand und Funktion,1.1.7a,Bremskraftregler/ALB: Befestigung lose,EM,false
+1,Bremsanlage,1.1,Mechanischer Zustand und Funktion,1.1.7b,"Bremskraftregler/ALB: offensichtlich defekt, nicht wirkend",EM|VM,false
+1,Bremsanlage,1.1,Mechanischer Zustand und Funktion,1.1.8a,Bremsflüssigkeitsbehälter: Flüssigkeitsstand unter Minimum,EM,false
+1,Bremsanlage,1.1,Mechanischer Zustand und Funktion,1.1.8b,Bremsflüssigkeitsbehälter: Warnleuchte aktiv,EM,false
+1,Bremsanlage,1.1,Mechanischer Zustand und Funktion,1.1.9a,Hauptbremszylinder: leichte Undichtigkeit,EM,false
+1,Bremsanlage,1.1,Mechanischer Zustand und Funktion,1.1.9b,"Hauptbremszylinder: unsicher, funktionsbeeinträchtigend defekt",VM|VU,false
+1,Bremsanlage,1.2,Wirkung und Leistung der Betriebsbremsanlage,1.2.1a,Unzureichende Bremswirkung an einem oder mehreren Rädern,EM,false
+1,Bremsanlage,1.2,Wirkung und Leistung der Betriebsbremsanlage,1.2.1b,Abbremsung der Betriebsbremsanlage unterschreitet Mindestabbremsung,EM|VM,false
+1,Bremsanlage,1.2,Wirkung und Leistung der Betriebsbremsanlage,1.2.1c,Betriebsbremsanlage ohne Wirkung an mindestens einem Rad,VM|VU,false
+1,Bremsanlage,1.2,Wirkung und Leistung der Betriebsbremsanlage,1.2.2a,Ungleichmäßige Bremswirkung (Seitendifferenz über Grenzwert),EM,false
+1,Bremsanlage,1.2,Wirkung und Leistung der Betriebsbremsanlage,1.2.2b,"Ungleichmäßige Bremswirkung, Fahrzeug bricht aus, nicht beherrschbar",VM|VU,false
+1,Bremsanlage,1.3,Wirkung und Leistung der Feststellbremsanlage,1.3.1a,Feststellbremse erreicht nicht die vorgeschriebene Bremswirkung,EM,false
+1,Bremsanlage,1.3,Wirkung und Leistung der Feststellbremsanlage,1.3.1b,Feststellbremse ohne Wirkung an einer Seite,EM|VM,false
+1,Bremsanlage,1.3,Wirkung und Leistung der Feststellbremsanlage,1.3.1c,Feststellbremse: Rastung/Verriegelung funktioniert nicht,EM|VM,false
+1,Bremsanlage,1.4,Bremskraftverstärker / Bremsassistent / Hilfskraftbremsanlage,1.4.1a,Bremskraftverstärker: Wirkung unzureichend oder ausgefallen,EM|VM,false
+1,Bremsanlage,1.4,Bremskraftverstärker / Bremsassistent / Hilfskraftbremsanlage,1.4.1b,Unterdruck-/Druckluftvorrat unzureichend,EM|VM,false
+1,Bremsanlage,1.5,Antiblockiersystem (ABS),1.5.1a,ABS-Warnleuchte defekt oder signalisiert Störung,EM,false
+1,Bremsanlage,1.5,Antiblockiersystem (ABS),1.5.1b,ABS offensichtlich defekt,EM|VM,false
+1,Bremsanlage,1.5,Antiblockiersystem (ABS),1.5.2a,ABS-Raddrehzahlsensoren: defekt oder nicht vorhanden,EM,false
+1,Bremsanlage,1.6,Elektronisches Bremssystem (EBS) / ESP,1.6.1a,ESP/ESC-Warnleuchte signalisiert Störung,EM,false
+1,Bremsanlage,1.6,Elektronisches Bremssystem (EBS) / ESP,1.6.1b,ESP/ESC offensichtlich defekt,EM|VM,false
+2,Lenkanlage,2.1,Mechanischer Zustand,2.1.1a,Lenkgetriebe: übermäßiges Spiel,EM,false
+2,Lenkanlage,2.1,Mechanischer Zustand,2.1.1b,Lenkgetriebe: unsichere Befestigung am Rahmen/Aufbau,EM|VM,false
+2,Lenkanlage,2.1,Mechanischer Zustand,2.1.1c,"Lenkgetriebe: Befestigung mangelhaft, Lösen zu erwarten",VM|VU,false
+2,Lenkanlage,2.1,Mechanischer Zustand,2.1.2a,Lenkgestänge: übermäßiges Spiel in Gelenken,EM,false
+2,Lenkanlage,2.1,Mechanischer Zustand,2.1.2b,"Lenkgestänge: übermäßiges Spiel, sichere Lenkbarkeit beeinträchtigt",VM|VU,false
+2,Lenkanlage,2.1,Mechanischer Zustand,2.1.2c,"Lenkgestänge: Bruch oder Verformung, Bruchgefahr",VM|VU,false
+2,Lenkanlage,2.1,Mechanischer Zustand,2.1.3a,Spurstangengelenke: übermäßiges Spiel,EM,false
+2,Lenkanlage,2.1,Mechanischer Zustand,2.1.3b,Spurstangengelenke: Staubkappen gerissen/fehlend,GM|EM,false
+2,Lenkanlage,2.1,Mechanischer Zustand,2.1.3c,Spurstangengelenk: Bruch- oder Lösegefahr,VM|VU,false
+2,Lenkanlage,2.1,Mechanischer Zustand,2.1.4a,"Lenksäule: übermäßiges Spiel, lose",EM|VM,false
+2,Lenkanlage,2.1,Mechanischer Zustand,2.1.4b,Lenkrad: nicht genehmigte Ausführung,EM,false
+2,Lenkanlage,2.1,Mechanischer Zustand,2.1.4c,Lenkrad: nicht genehmigte Ausführung ohne Airbag-Funktion bei vorgesehenem System,EM|VM,false
+2,Lenkanlage,2.1,Mechanischer Zustand,2.1.5a,"Lenkungsdämpfer: defekt, undicht",GM|EM,false
+2,Lenkanlage,2.1,Mechanischer Zustand,2.1.5b,Lenkungsdämpfer: lose Befestigung,EM,false
+2,Lenkanlage,2.2,Lenkung: Funktion und Lenkungsspiel,2.2.1a,Lenkungsspiel übermäßig (am Lenkradumfang gemessen),EM,false
+2,Lenkanlage,2.2,Lenkung: Funktion und Lenkungsspiel,2.2.1b,Lenkungsspiel: sichere Lenkbarkeit beeinträchtigt,VM|VU,false
+2,Lenkanlage,2.2,Lenkung: Funktion und Lenkungsspiel,2.2.2a,Lenkung schwergängig oder hakend,EM,false
+2,Lenkanlage,2.2,Lenkung: Funktion und Lenkungsspiel,2.2.2b,Lenkung: Funktion stark beeinträchtigt,VM|VU,false
+2,Lenkanlage,2.3,Servolenkung / Lenkhilfe,2.3.1a,Servolenkung: Undichtigkeit,GM|EM,false
+2,Lenkanlage,2.3,Servolenkung / Lenkhilfe,2.3.1b,"Servolenkung: erhebliche Undichtigkeit, Flüssigkeitsstand unzureichend",EM,false
+2,Lenkanlage,2.3,Servolenkung / Lenkhilfe,2.3.1c,Servolenkung: ohne Funktion,EM|VM,false
+2,Lenkanlage,2.3,Servolenkung / Lenkhilfe,2.3.2a,Servolenkung: Leitungen/Schläuche beschädigt,EM,false
+2,Lenkanlage,2.3,Servolenkung / Lenkhilfe,2.3.2b,Elektrische Lenkhilfe: Warnleuchte zeigt Störung an,EM,false
+3,Sichtverhältnisse,3.1,Sichtfeld,3.1.1a,"Sichtfeld des Fahrers durch Anbauteile, Aufkleber, Tönungsfolien eingeschränkt",GM|EM,false
+3,Sichtverhältnisse,3.1,Sichtfeld,3.1.1b,Sichtfeld des Fahrers erheblich eingeschränkt,EM|VM,false
+3,Sichtverhältnisse,3.2,Windschutzscheibe / Verglasung,3.2.1a,Windschutzscheibe: Steinschlag/Riss außerhalb Sichtfeld des Fahrers,GM,false
+3,Sichtverhältnisse,3.2,Windschutzscheibe / Verglasung,3.2.1b,Windschutzscheibe: Beschädigung im Sichtfeld des Fahrers,EM,false
+3,Sichtverhältnisse,3.2,Windschutzscheibe / Verglasung,3.2.1c,Windschutzscheibe: Beschädigung beeinträchtigt Sicht erheblich,VM,false
+3,Sichtverhältnisse,3.2,Windschutzscheibe / Verglasung,3.2.2a,"Verglasung: nicht vorschriftsmäßig (falsche Tönungsstufe, nicht genehmigt)",EM,false
+3,Sichtverhältnisse,3.2,Windschutzscheibe / Verglasung,3.2.2b,Seitenscheiben fehlen oder in nicht vorschriftsmäßigem Zustand,EM,false
+3,Sichtverhältnisse,3.3,Rückspiegel / Rückblickeinrichtungen,3.3.1a,Spiegel: Spiegelfläche leicht beschädigt (Kratzer),GM,false
+3,Sichtverhältnisse,3.3,Rückspiegel / Rückblickeinrichtungen,3.3.1b,"Spiegel: fehlt, gebrochen, lose oder Einstellung nicht haltbar",EM,false
+3,Sichtverhältnisse,3.3,Rückspiegel / Rückblickeinrichtungen,3.3.1c,"Spiegel: fehlt, kein rückwärtiger Verkehr erkennbar",VM,false
+3,Sichtverhältnisse,3.3,Rückspiegel / Rückblickeinrichtungen,3.3.2a,Kamera-Monitor-Systeme: leicht verschmutzt oder leicht beschädigt,GM,false
+3,Sichtverhältnisse,3.3,Rückspiegel / Rückblickeinrichtungen,3.3.2b,Kamera-Monitor-Systeme: ohne Funktion oder defekt,EM,false
+3,Sichtverhältnisse,3.4,Scheibenwischer / Scheibenwascher,3.4.1a,"Scheibenwischerblätter: leicht beschädigt, Wischbild geringfügig beeinträchtigt",GM,false
+3,Sichtverhältnisse,3.4,Scheibenwischer / Scheibenwascher,3.4.1b,Scheibenwischer: ohne Funktion oder fehlend,EM,false
+3,Sichtverhältnisse,3.4,Scheibenwischer / Scheibenwascher,3.4.1c,"Scheibenwischer: ohne Funktion, Sicht bei Nässe stark eingeschränkt",EM|VM,false
+3,Sichtverhältnisse,3.4,Scheibenwischer / Scheibenwascher,3.4.2a,Scheibenwascher: ohne Funktion oder Flüssigkeitsbehälter leer,GM|EM,false
+3,Sichtverhältnisse,3.5,Entfrostungs-/Trocknungseinrichtung (Gebläse),3.5.1a,Gebläse/Entfrostung: eingeschränkte Funktion,GM,false
+3,Sichtverhältnisse,3.5,Entfrostungs-/Trocknungseinrichtung (Gebläse),3.5.1b,"Gebläse/Entfrostung: ohne Funktion, Windschutzscheibe nicht frei zu halten",EM,false
+4,Lichttechnische Einrichtungen und elektrische Anlage,4.1,Scheinwerfer (Abblendlicht / Fernlicht),4.1.1a,Abblendlicht: Einstellung nicht korrekt (zu hoch/zu niedrig),GM|EM,false
+4,Lichttechnische Einrichtungen und elektrische Anlage,4.1,Scheinwerfer (Abblendlicht / Fernlicht),4.1.1b,"Abblendlicht: Einstellung stark abweichend, Blendung anderer Verkehrsteilnehmer",EM|VM,false
+4,Lichttechnische Einrichtungen und elektrische Anlage,4.1,Scheinwerfer (Abblendlicht / Fernlicht),4.1.2a,Abblendlicht: fällt aus (eine Seite),EM,false
+4,Lichttechnische Einrichtungen und elektrische Anlage,4.1,Scheinwerfer (Abblendlicht / Fernlicht),4.1.2b,Abblendlicht: fällt aus (beide Seiten),VM|VU,false
+4,Lichttechnische Einrichtungen und elektrische Anlage,4.1,Scheinwerfer (Abblendlicht / Fernlicht),4.1.3a,Fernlicht: fällt aus (eine Seite),GM|EM,false
+4,Lichttechnische Einrichtungen und elektrische Anlage,4.1,Scheinwerfer (Abblendlicht / Fernlicht),4.1.3b,Fernlicht: ohne Funktion (beide Seiten),EM,false
+4,Lichttechnische Einrichtungen und elektrische Anlage,4.1,Scheinwerfer (Abblendlicht / Fernlicht),4.1.4a,Scheinwerfer: Streuscheibe beschädigt (Farbänderung),GM|EM,false
+4,Lichttechnische Einrichtungen und elektrische Anlage,4.1,Scheinwerfer (Abblendlicht / Fernlicht),4.1.4b,"Scheinwerfer: Streuscheibe gebrochen, Lichtbild erheblich verändert",EM|VM,false
+4,Lichttechnische Einrichtungen und elektrische Anlage,4.1,Scheinwerfer (Abblendlicht / Fernlicht),4.1.5a,Scheinwerfer: lose oder unsicher befestigt,EM,false
+4,Lichttechnische Einrichtungen und elektrische Anlage,4.1,Scheinwerfer (Abblendlicht / Fernlicht),4.1.5b,Scheinwerfer: Herabfallen zu erwarten,VM,false
+4,Lichttechnische Einrichtungen und elektrische Anlage,4.1,Scheinwerfer (Abblendlicht / Fernlicht),4.1.6a,Leuchtweitenregulierung: ohne Funktion,EM,false
+4,Lichttechnische Einrichtungen und elektrische Anlage,4.1,Scheinwerfer (Abblendlicht / Fernlicht),4.1.7a,Scheinwerferreinigungsanlage: ohne Funktion (soweit vorgeschrieben),GM|EM,false
+4,Lichttechnische Einrichtungen und elektrische Anlage,4.1,Scheinwerfer (Abblendlicht / Fernlicht),4.1.8a,Kurvenlicht/Abbiegelicht: ohne Funktion,GM,false
+4,Lichttechnische Einrichtungen und elektrische Anlage,4.1,Scheinwerfer (Abblendlicht / Fernlicht),4.1.9a,Nicht genehmigte Leuchtmittel eingebaut (z.B. Xenon in Halogen-Scheinwerfer),EM|VM,false
+4,Lichttechnische Einrichtungen und elektrische Anlage,4.2,"Begrenzungs- und Schlussleuchten, Umrissleuchten, Tagfahrleuchten, Seitenmarkierungsleuchten",4.2.1a,Begrenzungsleuchte: fällt aus oder ohne Funktion,GM|EM,false
+4,Lichttechnische Einrichtungen und elektrische Anlage,4.2,"Begrenzungs- und Schlussleuchten, Umrissleuchten, Tagfahrleuchten, Seitenmarkierungsleuchten",4.2.2a,Schlussleuchte: fällt aus (eine Seite),GM|EM,false
+4,Lichttechnische Einrichtungen und elektrische Anlage,4.2,"Begrenzungs- und Schlussleuchten, Umrissleuchten, Tagfahrleuchten, Seitenmarkierungsleuchten",4.2.2b,Schlussleuchten: beide ohne Funktion,EM|VM,false
+4,Lichttechnische Einrichtungen und elektrische Anlage,4.2,"Begrenzungs- und Schlussleuchten, Umrissleuchten, Tagfahrleuchten, Seitenmarkierungsleuchten",4.2.3a,Tagfahrleuchte: ohne Funktion,GM,false
+4,Lichttechnische Einrichtungen und elektrische Anlage,4.2,"Begrenzungs- und Schlussleuchten, Umrissleuchten, Tagfahrleuchten, Seitenmarkierungsleuchten",4.2.4a,Leuchte: nicht vorschriftsmäßige Farbe oder Anbauort,EM,false
+4,Lichttechnische Einrichtungen und elektrische Anlage,4.2,"Begrenzungs- und Schlussleuchten, Umrissleuchten, Tagfahrleuchten, Seitenmarkierungsleuchten",4.2.5a,Leuchte: Streuscheibe beschädigt/gebrochen,GM|EM,false
+4,Lichttechnische Einrichtungen und elektrische Anlage,4.3,Bremsleuchten,4.3.1a,Bremsleuchte: fällt aus (eine Seite),EM,false
+4,Lichttechnische Einrichtungen und elektrische Anlage,4.3,Bremsleuchten,4.3.1b,Bremsleuchten: beide ohne Funktion,VM|VU,false
+4,Lichttechnische Einrichtungen und elektrische Anlage,4.3,Bremsleuchten,4.3.2a,Dritte Bremsleuchte: ohne Funktion (soweit serienmäßig),GM,false
+4,Lichttechnische Einrichtungen und elektrische Anlage,4.3,Bremsleuchten,4.3.3a,Bremsleuchte: nicht vorschriftsmäßige Farbe,EM,false
+4,Lichttechnische Einrichtungen und elektrische Anlage,4.4,Fahrtrichtungsanzeiger (Blinker) und Warnblinkanlage,4.4.1a,Blinker: fällt aus (eine Leuchte),GM|EM,false
+4,Lichttechnische Einrichtungen und elektrische Anlage,4.4,Fahrtrichtungsanzeiger (Blinker) und Warnblinkanlage,4.4.1b,Blinker: komplette Seite ohne Funktion,EM|VM,false
+4,Lichttechnische Einrichtungen und elektrische Anlage,4.4,Fahrtrichtungsanzeiger (Blinker) und Warnblinkanlage,4.4.2a,Blinkfrequenz außerhalb Toleranz,GM|EM,false
+4,Lichttechnische Einrichtungen und elektrische Anlage,4.4,Fahrtrichtungsanzeiger (Blinker) und Warnblinkanlage,4.4.3a,Warnblinkanlage: ohne Funktion,EM,false
+4,Lichttechnische Einrichtungen und elektrische Anlage,4.4,Fahrtrichtungsanzeiger (Blinker) und Warnblinkanlage,4.4.4a,Kontrollleuchte für Blinker: ohne Funktion,GM,false
+4,Lichttechnische Einrichtungen und elektrische Anlage,4.5,Nebelscheinwerfer und Nebelschlussleuchte,4.5.1a,Nebelscheinwerfer: nicht vorschriftsmäßig eingebaut/eingestellt,GM|EM,false
+4,Lichttechnische Einrichtungen und elektrische Anlage,4.5,Nebelscheinwerfer und Nebelschlussleuchte,4.5.2a,Nebelschlussleuchte: ohne Funktion,GM|EM,false
+4,Lichttechnische Einrichtungen und elektrische Anlage,4.5,Nebelscheinwerfer und Nebelschlussleuchte,4.5.2b,Nebelschlussleuchte: Kontrollleuchte ohne Funktion,GM,false
+4,Lichttechnische Einrichtungen und elektrische Anlage,4.6,Rückstrahler / Rückfahrscheinwerfer,4.6.1a,"Rückstrahler: fehlt, beschädigt oder nicht vorschriftsmäßig",GM|EM,false
+4,Lichttechnische Einrichtungen und elektrische Anlage,4.6,Rückstrahler / Rückfahrscheinwerfer,4.6.2a,Rückfahrscheinwerfer: ohne Funktion,GM,false
+4,Lichttechnische Einrichtungen und elektrische Anlage,4.6,Rückstrahler / Rückfahrscheinwerfer,4.6.2b,Rückfahrscheinwerfer: leuchtet bei Vorwärtsfahrt,EM,false
+4,Lichttechnische Einrichtungen und elektrische Anlage,4.7,Kennzeichenbeleuchtung,4.7.1a,Kennzeichenbeleuchtung: ohne Funktion oder nicht ausreichend,GM|EM,false
+4,Lichttechnische Einrichtungen und elektrische Anlage,4.8,Elektrische Anlage / Verkabelung,4.8.1a,"Kabel/Leitungen: nicht ordnungsgemäß verlegt, leichte Scheuerstellen",GM,false
+4,Lichttechnische Einrichtungen und elektrische Anlage,4.8,Elektrische Anlage / Verkabelung,4.8.1b,"Kabel/Leitungen: mangelhaft, Kurzschlussgefahr",EM|VM,false
+4,Lichttechnische Einrichtungen und elektrische Anlage,4.8,Elektrische Anlage / Verkabelung,4.8.2a,Batterie: Befestigung mangelhaft,GM|EM,false
+4,Lichttechnische Einrichtungen und elektrische Anlage,4.8,Elektrische Anlage / Verkabelung,4.8.2b,Batterie: Kurzschlussgefahr (Polabdeckung fehlt),EM,false
+4,Lichttechnische Einrichtungen und elektrische Anlage,4.8,Elektrische Anlage / Verkabelung,4.8.3a,Elektrische Verbindungseinrichtung (Anhängersteckdose): Kontakte defekt,GM|EM,false
+5,"Achsen, Räder, Reifen, Aufhängungen",5.1,Achsen / Achskörper,5.1.1a,Achse/Achskörper: gerissen oder verformt,EM|VM,false
+5,"Achsen, Räder, Reifen, Aufhängungen",5.1,Achsen / Achskörper,5.1.1b,Achse/Achskörper: Bruchgefahr,VM|VU,false
+5,"Achsen, Räder, Reifen, Aufhängungen",5.1,Achsen / Achskörper,5.1.2a,Achsaufhängung: Buchsen verschlissen,GM|EM,false
+5,"Achsen, Räder, Reifen, Aufhängungen",5.1,Achsen / Achskörper,5.1.2b,"Achsaufhängung: Befestigung lose, Ausfall drohend",VM|VU,false
+5,"Achsen, Räder, Reifen, Aufhängungen",5.1,Achsen / Achskörper,5.1.3a,Achslenker: Lagerspiel übermäßig,EM,false
+5,"Achsen, Räder, Reifen, Aufhängungen",5.1,Achsen / Achskörper,5.1.3b,Achslenker: Bruch- oder Lösegefahr,VM|VU,false
+5,"Achsen, Räder, Reifen, Aufhängungen",5.2,Räder und Reifen,5.2.1a,"Reifen: Profiltiefe an der Verschleißgrenze (1,6 mm)",EM,false
+5,"Achsen, Räder, Reifen, Aufhängungen",5.2,Räder und Reifen,5.2.1b,"Reifen: Profiltiefe unter 1,6 mm",EM|VM,false
+5,"Achsen, Räder, Reifen, Aufhängungen",5.2,Räder und Reifen,5.2.2a,"Reifen: Beschädigung (Schnitte, Beulen, Risse) an Flanke oder Lauffläche",EM,false
+5,"Achsen, Räder, Reifen, Aufhängungen",5.2,Räder und Reifen,5.2.2b,Reifen: Cord-/Gewebelage sichtbar oder Reifenplatzer droht,VM|VU,false
+5,"Achsen, Räder, Reifen, Aufhängungen",5.2,Räder und Reifen,5.2.3a,Reifengröße nicht vorschriftsmäßig (nicht in Papieren eingetragen),EM,false
+5,"Achsen, Räder, Reifen, Aufhängungen",5.2,Räder und Reifen,5.2.4a,Reifen unterschiedlicher Bauart auf einer Achse (Radial/Diagonal),EM,false
+5,"Achsen, Räder, Reifen, Aufhängungen",5.2,Räder und Reifen,5.2.5a,Reifen: Tragfähigkeit oder Geschwindigkeitsindex nicht ausreichend,EM,false
+5,"Achsen, Räder, Reifen, Aufhängungen",5.2,Räder und Reifen,5.2.5b,Reifen: unzulässig nachgeschnitten,EM|VU,false
+5,"Achsen, Räder, Reifen, Aufhängungen",5.2,Räder und Reifen,5.2.6a,"Rad: Felge beschädigt (Risse, Verformung, starke Korrosion)",EM,false
+5,"Achsen, Räder, Reifen, Aufhängungen",5.2,Räder und Reifen,5.2.6b,"Rad: Felge gebrochen, Bruchgefahr",VM|VU,false
+5,"Achsen, Räder, Reifen, Aufhängungen",5.2,Räder und Reifen,5.2.7a,Radschrauben/-muttern: fehlen oder lose,EM|VM,false
+5,"Achsen, Räder, Reifen, Aufhängungen",5.2,Räder und Reifen,5.2.7b,Radschrauben/-muttern: Lösen des Rades zu erwarten,VM|VU,false
+5,"Achsen, Räder, Reifen, Aufhängungen",5.2,Räder und Reifen,5.2.8a,Radlager: übermäßiges Spiel,EM,false
+5,"Achsen, Räder, Reifen, Aufhängungen",5.2,Räder und Reifen,5.2.8b,"Radlager: übermäßiges Spiel, Lösen des Rades zu erwarten",VM|VU,false
+5,"Achsen, Räder, Reifen, Aufhängungen",5.2,Räder und Reifen,5.2.9a,"Rad/Felge: nicht genehmigt, ohne ABE/Eintragung",EM,false
+5,"Achsen, Räder, Reifen, Aufhängungen",5.3,Aufhängung (Federung / Stoßdämpfer),5.3.1a,Feder: gebrochen oder gerissen,EM|VM,false
+5,"Achsen, Räder, Reifen, Aufhängungen",5.3,Aufhängung (Federung / Stoßdämpfer),5.3.1b,Feder: Befestigung lose,EM|VM,false
+5,"Achsen, Räder, Reifen, Aufhängungen",5.3,Aufhängung (Federung / Stoßdämpfer),5.3.2a,Stoßdämpfer: undicht (leichter Ölfilm),GM,false
+5,"Achsen, Räder, Reifen, Aufhängungen",5.3,Aufhängung (Federung / Stoßdämpfer),5.3.2b,Stoßdämpfer: erheblich undicht oder ohne Funktion,EM,false
+5,"Achsen, Räder, Reifen, Aufhängungen",5.3,Aufhängung (Federung / Stoßdämpfer),5.3.2c,Stoßdämpfer: Befestigung lose oder gebrochen,EM|VM,false
+5,"Achsen, Räder, Reifen, Aufhängungen",5.3,Aufhängung (Federung / Stoßdämpfer),5.3.3a,Stabilisator: Befestigung lose oder Koppelstange defekt,GM|EM,false
+5,"Achsen, Räder, Reifen, Aufhängungen",5.3,Aufhängung (Federung / Stoßdämpfer),5.3.3b,Stabilisator: gebrochen,EM|VM,false
+5,"Achsen, Räder, Reifen, Aufhängungen",5.3,Aufhängung (Federung / Stoßdämpfer),5.3.4a,Drehstab/Torsionsfeder: gebrochen,EM|VM,false
+5,"Achsen, Räder, Reifen, Aufhängungen",5.3,Aufhängung (Federung / Stoßdämpfer),5.3.5a,"Luftfederung: ohne Funktion, Fahrzeug steht zu tief",EM,false
+5,"Achsen, Räder, Reifen, Aufhängungen",5.3,Aufhängung (Federung / Stoßdämpfer),5.3.5b,Fahrwerk unzulässig tiefergelegt (ohne Eintragung/ABE),EM,false
+6,Fahrgestell / Rahmen / Aufbau und daran befestigte Teile,6.1,Fahrgestell / Rahmen / tragende Teile,6.1.1a,Rahmen/tragende Teile: leichte Korrosion ohne Beeinträchtigung der Festigkeit,GM,false
+6,Fahrgestell / Rahmen / Aufbau und daran befestigte Teile,6.1,Fahrgestell / Rahmen / tragende Teile,6.1.1b,"Rahmen/tragende Teile: starke Korrosion, Festigkeit beeinträchtigt",EM,false
+6,Fahrgestell / Rahmen / Aufbau und daran befestigte Teile,6.1,Fahrgestell / Rahmen / tragende Teile,6.1.1c,"Rahmen/tragende Teile: durchgerostet, Bruchgefahr",VM|VU,false
+6,Fahrgestell / Rahmen / Aufbau und daran befestigte Teile,6.1,Fahrgestell / Rahmen / tragende Teile,6.1.2a,"Rahmen/tragende Teile: gerissen, verformt, nicht fachgerecht repariert",EM|VM,false
+6,Fahrgestell / Rahmen / Aufbau und daran befestigte Teile,6.1,Fahrgestell / Rahmen / tragende Teile,6.1.3a,Längsträger/Schweller: leichter Rostbefall,GM,false
+6,Fahrgestell / Rahmen / Aufbau und daran befestigte Teile,6.1,Fahrgestell / Rahmen / tragende Teile,6.1.3b,"Längsträger/Schweller: starker Rostbefall, Festigkeit beeinträchtigt",EM|VM,false
+6,Fahrgestell / Rahmen / Aufbau und daran befestigte Teile,6.1,Fahrgestell / Rahmen / tragende Teile,6.1.4a,Hilfsrahmen/Fahrschemel: Befestigung lose,EM,false
+6,Fahrgestell / Rahmen / Aufbau und daran befestigte Teile,6.1,Fahrgestell / Rahmen / tragende Teile,6.1.4b,Hilfsrahmen/Fahrschemel: Lösen zu erwarten,VM|VU,false
+6,Fahrgestell / Rahmen / Aufbau und daran befestigte Teile,6.2,Aufbau / Karosserie / Kabine,6.2.1a,"Karosserieteile: lose oder beschädigt, keine Verletzungsgefahr",GM,false
+6,Fahrgestell / Rahmen / Aufbau und daran befestigte Teile,6.2,Aufbau / Karosserie / Kabine,6.2.1b,"Karosserieteile: lose, Verletzungsgefahr für andere Verkehrsteilnehmer",EM,false
+6,Fahrgestell / Rahmen / Aufbau und daran befestigte Teile,6.2,Aufbau / Karosserie / Kabine,6.2.1c,Karosserieteile: Herabfallen zu erwarten,VM,false
+6,Fahrgestell / Rahmen / Aufbau und daran befestigte Teile,6.2,Aufbau / Karosserie / Kabine,6.2.2a,Motorhaube: Verschluss nicht sicher,EM,false
+6,Fahrgestell / Rahmen / Aufbau und daran befestigte Teile,6.2,Aufbau / Karosserie / Kabine,6.2.2b,Motorhaube: unbeabsichtigtes Öffnen zu erwarten,VM,false
+6,Fahrgestell / Rahmen / Aufbau und daran befestigte Teile,6.2,Aufbau / Karosserie / Kabine,6.2.3a,Tür: Verschluss mangelhaft,EM,false
+6,Fahrgestell / Rahmen / Aufbau und daran befestigte Teile,6.2,Aufbau / Karosserie / Kabine,6.2.3b,Tür: kann sich unbeabsichtigt öffnen,VM,false
+6,Fahrgestell / Rahmen / Aufbau und daran befestigte Teile,6.2,Aufbau / Karosserie / Kabine,6.2.4a,Stoßfänger: beschädigt oder lose,GM|EM,false
+6,Fahrgestell / Rahmen / Aufbau und daran befestigte Teile,6.2,Aufbau / Karosserie / Kabine,6.2.4b,Stoßfänger: Herabfallen zu erwarten,EM|VM,false
+6,Fahrgestell / Rahmen / Aufbau und daran befestigte Teile,6.2,Aufbau / Karosserie / Kabine,6.2.5a,"Kotflügel/Radabdeckung: nicht ausreichend, Reifen nicht abgedeckt",EM,false
+6,Fahrgestell / Rahmen / Aufbau und daran befestigte Teile,6.2,Aufbau / Karosserie / Kabine,6.2.6a,Scharfe Kanten/vorstehende Teile: Verletzungsgefahr,EM,false
+6,Fahrgestell / Rahmen / Aufbau und daran befestigte Teile,6.3,Anhängerkupplung / Verbindungseinrichtung,6.3.1a,"Anhängerkupplung: Verschleiß, Spiel erhöht",GM|EM,false
+6,Fahrgestell / Rahmen / Aufbau und daran befestigte Teile,6.3,Anhängerkupplung / Verbindungseinrichtung,6.3.1b,"Anhängerkupplung: Risse, Bruchgefahr",VM|VU,false
+6,Fahrgestell / Rahmen / Aufbau und daran befestigte Teile,6.3,Anhängerkupplung / Verbindungseinrichtung,6.3.2a,Anhängerkupplung: Befestigung lose oder Schrauben fehlen,EM|VM,false
+6,Fahrgestell / Rahmen / Aufbau und daran befestigte Teile,6.3,Anhängerkupplung / Verbindungseinrichtung,6.3.3a,Anhängerkupplung: Sicherungseinrichtung defekt,EM,false
+6,Fahrgestell / Rahmen / Aufbau und daran befestigte Teile,6.3,Anhängerkupplung / Verbindungseinrichtung,6.3.4a,Abreißseil: fehlt oder nicht ordnungsgemäß,EM,false
+7,Sonstige Ausstattung,7.1,Sicherheitsgurte / Rückhaltesysteme,7.1.1a,Sicherheitsgurt: fehlt (wenn vorgeschrieben),EM|VU,false
+7,Sonstige Ausstattung,7.1,Sicherheitsgurte / Rückhaltesysteme,7.1.1b,"Sicherheitsgurt: Gurtband beschädigt (Einschnitte, Ausfransen)",EM,false
+7,Sonstige Ausstattung,7.1,Sicherheitsgurte / Rückhaltesysteme,7.1.1c,"Sicherheitsgurt: Gurtband stark beschädigt, Reißen zu erwarten",VM|VU,false
+7,Sonstige Ausstattung,7.1,Sicherheitsgurte / Rückhaltesysteme,7.1.2a,"Gurtschloss: Verriegelung defekt, rastet nicht ein",EM|VU,false
+7,Sonstige Ausstattung,7.1,Sicherheitsgurte / Rückhaltesysteme,7.1.3a,"Gurtaufroller: ohne Funktion, rollt nicht auf",EM,false
+7,Sonstige Ausstattung,7.1,Sicherheitsgurte / Rückhaltesysteme,7.1.4a,Gurtstraffer/Airbag: Warnleuchte zeigt Störung an,EM,false
+7,Sonstige Ausstattung,7.1,Sicherheitsgurte / Rückhaltesysteme,7.1.4b,Airbag: offensichtlich fehlt oder offensichtlich nicht funktionsfähig,EM,false
+7,Sonstige Ausstattung,7.1,Sicherheitsgurte / Rückhaltesysteme,7.1.5a,Kindersicherung: Türen lassen sich von innen öffnen (bei vorhandener Kindersicherung),GM,false
+7,Sonstige Ausstattung,7.2,Feuerlöscher / Erste-Hilfe-Material / Warndreieck / Warnweste,7.2.1a,Warndreieck: fehlt,GM,false
+7,Sonstige Ausstattung,7.2,Feuerlöscher / Erste-Hilfe-Material / Warndreieck / Warnweste,7.2.2a,Verbandkasten: fehlt oder verfallen,GM,false
+7,Sonstige Ausstattung,7.2,Feuerlöscher / Erste-Hilfe-Material / Warndreieck / Warnweste,7.2.3a,Warnweste: fehlt,GM,false
+7,Sonstige Ausstattung,7.2,Feuerlöscher / Erste-Hilfe-Material / Warndreieck / Warnweste,7.2.4a,"Feuerlöscher: fehlt (wenn vorgeschrieben, z.B. bei Bussen/Lkw)",EM,false
+7,Sonstige Ausstattung,7.3,Schallzeichen (Hupe),7.3.1a,Schallzeichen: ohne Funktion,EM,false
+7,Sonstige Ausstattung,7.3,Schallzeichen (Hupe),7.3.1b,"Schallzeichen: nicht vorschriftsmäßig (zu laut, Mehrklang)",EM,false
+7,Sonstige Ausstattung,7.4,Geschwindigkeitsmessgerät (Tacho),7.4.1a,Tachometer: ohne Funktion,EM,false
+7,Sonstige Ausstattung,7.4,Geschwindigkeitsmessgerät (Tacho),7.4.1b,Tachometer: Beleuchtung ohne Funktion,GM,false
+7,Sonstige Ausstattung,7.5,Fahrtschreiber / Kontrollgerät (soweit vorgeschrieben),7.5.1a,Fahrtschreiber: nicht vorhanden oder ohne Funktion,EM,false
+7,Sonstige Ausstattung,7.5,Fahrtschreiber / Kontrollgerät (soweit vorgeschrieben),7.5.1b,Fahrtschreiber: Plombe gebrochen oder Manipulation erkennbar,EM|VM,false
+7,Sonstige Ausstattung,7.6,Geschwindigkeitsbegrenzer (soweit vorgeschrieben),7.6.1a,Geschwindigkeitsbegrenzer: nicht vorhanden oder ohne Funktion,EM,false
+7,Sonstige Ausstattung,7.6,Geschwindigkeitsbegrenzer (soweit vorgeschrieben),7.6.1b,"Geschwindigkeitsbegrenzer: falsch eingestellt, höhere Geschwindigkeit möglich",EM,false
+7,Sonstige Ausstattung,7.7,Sitze und Kopfstützen,7.7.1a,Fahrersitz: Einstellung nicht arretierbar,EM,false
+7,Sonstige Ausstattung,7.7,Sitze und Kopfstützen,7.7.1b,Fahrersitz: Befestigung unsicher,EM|VM,false
+7,Sonstige Ausstattung,7.7,Sitze und Kopfstützen,7.7.2a,Kopfstützen: fehlen oder nicht in vorgesehener Position arretierbar,GM|EM,false
+7,Sonstige Ausstattung,7.7,Sitze und Kopfstützen,7.7.3a,Beifahrer-/Rücksitze: Befestigung unsicher,EM,false
+7,Sonstige Ausstattung,7.8,Weitere Fahrassistenzsysteme,7.8.1a,Reifendruckkontrollsystem (RDKS): Warnleuchte aktiv,GM|EM,false
+7,Sonstige Ausstattung,7.8,Weitere Fahrassistenzsysteme,7.8.2a,Spurhalteassistent: Warnleuchte zeigt Störung,GM,false
+7,Sonstige Ausstattung,7.8,Weitere Fahrassistenzsysteme,7.8.3a,Notbremsassistent: Warnleuchte zeigt Störung,EM,false
+7,Sonstige Ausstattung,7.8,Weitere Fahrassistenzsysteme,7.8.4a,eCall-System: Warnleuchte zeigt Störung (ab Erstzulassung 04/2018),GM|EM,false
+8,Umweltbelastung / Motormanagement / Abgasreinigung,8.1,Geräuschentwicklung / Abgasanlage,8.1.1a,Abgasanlage: geringfügig undicht,GM,false
+8,Umweltbelastung / Motormanagement / Abgasreinigung,8.1,Geräuschentwicklung / Abgasanlage,8.1.1b,"Abgasanlage: erheblich undicht, unzulässiger Geräuschpegel",EM,false
+8,Umweltbelastung / Motormanagement / Abgasreinigung,8.1,Geräuschentwicklung / Abgasanlage,8.1.1c,Abgasanlage: Abgase dringen in Fahrgastraum ein,VM|VU,false
+8,Umweltbelastung / Motormanagement / Abgasreinigung,8.1,Geräuschentwicklung / Abgasanlage,8.1.2a,"Auspuffanlage: Befestigung mangelhaft, lose",GM|EM,false
+8,Umweltbelastung / Motormanagement / Abgasreinigung,8.1,Geräuschentwicklung / Abgasanlage,8.1.2b,Auspuffanlage: Herabfallen zu erwarten,EM|VM,false
+8,Umweltbelastung / Motormanagement / Abgasreinigung,8.1,Geräuschentwicklung / Abgasanlage,8.1.3a,"Schalldämpfer: beschädigt, durchgerostet",GM|EM,false
+8,Umweltbelastung / Motormanagement / Abgasreinigung,8.1,Geräuschentwicklung / Abgasanlage,8.1.3b,Schalldämpfer: fehlt oder wesentlich unwirksam,EM,false
+8,Umweltbelastung / Motormanagement / Abgasreinigung,8.2,Abgasverhalten / Motormanagement / Abgasreinigung (AU),8.2.1a,"Abgaswerte: Grenzwerte überschritten (Ottomotor: CO, Lambda)",EM,false
+8,Umweltbelastung / Motormanagement / Abgasreinigung,8.2,Abgasverhalten / Motormanagement / Abgasreinigung (AU),8.2.1b,Abgaswerte: Grenzwerte erheblich überschritten,EM,false
+8,Umweltbelastung / Motormanagement / Abgasreinigung,8.2,Abgasverhalten / Motormanagement / Abgasreinigung (AU),8.2.2a,Abgaswerte: Grenzwerte überschritten (Dieselmotor: Trübung/Opazität),EM,false
+8,Umweltbelastung / Motormanagement / Abgasreinigung,8.2,Abgasverhalten / Motormanagement / Abgasreinigung (AU),8.2.3a,Katalysator: fehlt oder offensichtlich unwirksam,EM,false
+8,Umweltbelastung / Motormanagement / Abgasreinigung,8.2,Abgasverhalten / Motormanagement / Abgasreinigung (AU),8.2.3b,Katalysator: offensichtlich manipuliert oder entfernt,EM|VM,false
+8,Umweltbelastung / Motormanagement / Abgasreinigung,8.2,Abgasverhalten / Motormanagement / Abgasreinigung (AU),8.2.4a,Dieselpartikelfilter (DPF): fehlt (obwohl serienmäßig),EM,false
+8,Umweltbelastung / Motormanagement / Abgasreinigung,8.2,Abgasverhalten / Motormanagement / Abgasreinigung (AU),8.2.4b,DPF: offensichtlich manipuliert oder entfernt,EM,false
+8,Umweltbelastung / Motormanagement / Abgasreinigung,8.2,Abgasverhalten / Motormanagement / Abgasreinigung (AU),8.2.5a,"OBD-Fehlerspeicher: abgasrelevanter Fehler gespeichert, MIL leuchtet",EM,false
+8,Umweltbelastung / Motormanagement / Abgasreinigung,8.2,Abgasverhalten / Motormanagement / Abgasreinigung (AU),8.2.5b,OBD: Kommunikation nicht möglich (Schnittstelle defekt/manipuliert),EM,false
+8,Umweltbelastung / Motormanagement / Abgasreinigung,8.2,Abgasverhalten / Motormanagement / Abgasreinigung (AU),8.2.6a,"SCR-System/AdBlue: Warnleuchte aktiv, Harnstoff fehlt oder System defekt",EM,false
+8,Umweltbelastung / Motormanagement / Abgasreinigung,8.2,Abgasverhalten / Motormanagement / Abgasreinigung (AU),8.2.7a,Abgasrückführung (AGR): offensichtlich manipuliert oder stillgelegt,EM,false
+8,Umweltbelastung / Motormanagement / Abgasreinigung,8.2,Abgasverhalten / Motormanagement / Abgasreinigung (AU),8.2.8a,"Chiptuning/Leistungssteigerung: nicht genehmigt, Abgasverhalten verändert",EM,false
+8,Umweltbelastung / Motormanagement / Abgasreinigung,8.3,Flüssigkeitsverlust / Umweltgefährdung,8.3.1a,Motor: Ölverlust geringfügig,GM,false
+8,Umweltbelastung / Motormanagement / Abgasreinigung,8.3,Flüssigkeitsverlust / Umweltgefährdung,8.3.1b,"Motor: erheblicher Ölverlust, Tropfenbildung",EM,false
+8,Umweltbelastung / Motormanagement / Abgasreinigung,8.3,Flüssigkeitsverlust / Umweltgefährdung,8.3.1c,Ölverlust: Brandgefahr durch Öl auf heißen Teilen,VM,false
+8,Umweltbelastung / Motormanagement / Abgasreinigung,8.3,Flüssigkeitsverlust / Umweltgefährdung,8.3.2a,Kraftstoffanlage: Undichtigkeit,EM,false
+8,Umweltbelastung / Motormanagement / Abgasreinigung,8.3,Flüssigkeitsverlust / Umweltgefährdung,8.3.2b,Kraftstoffanlage: Undichtigkeit mit Brand-/Explosionsgefahr,VM|VU,false
+8,Umweltbelastung / Motormanagement / Abgasreinigung,8.3,Flüssigkeitsverlust / Umweltgefährdung,8.3.3a,Kühlflüssigkeitsverlust: geringfügig,GM,false
+8,Umweltbelastung / Motormanagement / Abgasreinigung,8.3,Flüssigkeitsverlust / Umweltgefährdung,8.3.3b,Kühlflüssigkeitsverlust: erheblich,EM,false
+8,Umweltbelastung / Motormanagement / Abgasreinigung,8.4,Kraftstoffanlage / Gasanlage,8.4.1a,Kraftstofftank: Befestigung lose,EM,false
+8,Umweltbelastung / Motormanagement / Abgasreinigung,8.4,Kraftstoffanlage / Gasanlage,8.4.1b,"Kraftstofftank: beschädigt, Leckgefahr",EM|VM,false
+8,Umweltbelastung / Motormanagement / Abgasreinigung,8.4,Kraftstoffanlage / Gasanlage,8.4.2a,"Kraftstoffleitungen: nicht ordnungsgemäß verlegt, Scheuerstellen",GM|EM,false
+8,Umweltbelastung / Motormanagement / Abgasreinigung,8.4,Kraftstoffanlage / Gasanlage,8.4.2b,Kraftstoffleitungen: Brandgefahr,VM|VU,false
+8,Umweltbelastung / Motormanagement / Abgasreinigung,8.4,Kraftstoffanlage / Gasanlage,8.4.3a,LPG/CNG-Anlage: Prüfung abgelaufen,EM,false
+8,Umweltbelastung / Motormanagement / Abgasreinigung,8.4,Kraftstoffanlage / Gasanlage,8.4.3b,LPG/CNG-Anlage: Undichtigkeit oder Befestigung mangelhaft,EM|VM,false
+8,Umweltbelastung / Motormanagement / Abgasreinigung,8.4,Kraftstoffanlage / Gasanlage,8.4.4a,Elektrofahrzeug: Hochvoltsystem - Warnleuchte aktiv,EM,false
+8,Umweltbelastung / Motormanagement / Abgasreinigung,8.4,Kraftstoffanlage / Gasanlage,8.4.4b,"Elektrofahrzeug: Hochvoltsystem - Isolationsfehler, Beschädigung der Batterieeinheit",EM|VM,false
+9,Zusätzliche Untersuchungen für Fahrzeuge zur Personenbeförderung (KOM),9.1,Türen / Notausstiege,9.1.1a,Fahrgasttüren: Funktion beeinträchtigt,EM,false
+9,Zusätzliche Untersuchungen für Fahrzeuge zur Personenbeförderung (KOM),9.1,Türen / Notausstiege,9.1.1b,"Notausstiege: blockiert, nicht benutzbar oder nicht gekennzeichnet",EM|VM,false
+9,Zusätzliche Untersuchungen für Fahrzeuge zur Personenbeförderung (KOM),9.1,Türen / Notausstiege,9.1.2a,Türsicherung: nicht ordnungsgemäß,EM,false
+9,Zusätzliche Untersuchungen für Fahrzeuge zur Personenbeförderung (KOM),9.2,Heizung / Lüftung / Innenbeleuchtung,9.2.1a,Fahrgastraum-Heizung: ohne Funktion (wenn vorgeschrieben),EM,false
+9,Zusätzliche Untersuchungen für Fahrzeuge zur Personenbeförderung (KOM),9.2,Heizung / Lüftung / Innenbeleuchtung,9.2.2a,Innenbeleuchtung: ohne Funktion,GM|EM,false
+9,Zusätzliche Untersuchungen für Fahrzeuge zur Personenbeförderung (KOM),9.3,Tritte / Stufen / Boden / Gangwege,9.3.1a,"Trittstufen: beschädigt, Stolpergefahr",EM,false
+9,Zusätzliche Untersuchungen für Fahrzeuge zur Personenbeförderung (KOM),9.3,Tritte / Stufen / Boden / Gangwege,9.3.2a,"Boden: Durchrostung, Stolper- oder Einsturzgefahr",EM|VM,false
+9,Zusätzliche Untersuchungen für Fahrzeuge zur Personenbeförderung (KOM),9.4,Haltestangen / Haltegriffe / Haltevorrichtungen,9.4.1a,"Haltestangen/-griffe: beschädigt, lose oder fehlend",EM,false
+9,Zusätzliche Untersuchungen für Fahrzeuge zur Personenbeförderung (KOM),9.5,Fahrgastsitze,9.5.1a,Sitze: Befestigung mangelhaft oder Sitz beschädigt,EM,false
+9,Zusätzliche Untersuchungen für Fahrzeuge zur Personenbeförderung (KOM),9.5,Fahrgastsitze,9.5.1b,Sitze: Lösen aus Verankerung droht,VM,false
+D,Zusätzliche nationale Mängel (Deutschland-spezifisch),D.1,Unzulässige technische Änderungen,D.1.1a,Anbauteil ohne erforderliche ABE/Teilegutachten/Eintragung (allgemein),EM,false
+D,Zusätzliche nationale Mängel (Deutschland-spezifisch),D.1,Unzulässige technische Änderungen,D.1.2a,Fahrwerk: unzulässige Tieferlegung ohne Eintragung,EM,false
+D,Zusätzliche nationale Mängel (Deutschland-spezifisch),D.1,Unzulässige technische Änderungen,D.1.3a,Räder/Reifen: nicht eingetragene Sonderräder,EM,false
+D,Zusätzliche nationale Mängel (Deutschland-spezifisch),D.1,Unzulässige technische Änderungen,D.1.4a,Auspuffanlage: nicht genehmigter Austausch/Modifikation,EM,false
+D,Zusätzliche nationale Mängel (Deutschland-spezifisch),D.1,Unzulässige technische Änderungen,D.1.5a,"Karosserie: nicht genehmigte Anbauteile (Spoiler, Verbreiterungen etc.)",EM,false
+D,Zusätzliche nationale Mängel (Deutschland-spezifisch),D.1,Unzulässige technische Änderungen,D.1.6a,Beleuchtung: nicht genehmigte Änderungen (LED-Nachrüstung etc.),EM,false
+D,Zusätzliche nationale Mängel (Deutschland-spezifisch),D.2,Vorgaben nicht eingehalten,D.2.1a,Gesamtanlage Lichttechnische Einrichtungen/Elektrische Anlage: Vorgaben nicht eingehalten,EM,false
+D,Zusätzliche nationale Mängel (Deutschland-spezifisch),D.2,Vorgaben nicht eingehalten,D.2.2a,Fahrgestell/Rahmen/Aufbau: Vorgaben nicht eingehalten,EM,false
+D,Zusätzliche nationale Mängel (Deutschland-spezifisch),D.2,Vorgaben nicht eingehalten,D.2.3a,Sonstige Ausstattung: Vorgaben nicht eingehalten,EM,false

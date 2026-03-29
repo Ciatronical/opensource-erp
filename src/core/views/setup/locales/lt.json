@@ -1,0 +1,50 @@
+{
+    "setup": {
+        "title": "OpensourceERP Setup",
+        "welcome": "Sveiki atvykę į OpensourceERP! Sukonfigūruokite prisijungimą prie autentifikacijos duomenų bazės.",
+        "setupAlreadyDone": "Sąranka jau atlikta. Būsite nukreipti į prisijungimo puslapį...",
+        "configFound": "kivitendo.conf rastas - Slaptažodis buvo neužšifruotas. Forma užpildyta automatiškai.",
+        "setupCompleteMessage": "Sąranka sėkmingai baigta! Slaptažodis išsaugotas užšifruotai. Būsite nukreipti...",
+        "fields": {
+            "host": "Host",
+            "port": "Prievadas",
+            "database": "Duomenų bazės pavadinimas",
+            "login": "Vartotojo vardas",
+            "password": "Slaptažodis"
+        },
+        "placeholders": {
+            "host": "localhost",
+            "port": "5432",
+            "database": "oserp_auth",
+            "login": "postgres"
+        },
+        "validation": {
+            "required": "Privalomas laukas",
+            "portRange": "Prievadas turi būti nuo 1 iki 65535"
+        },
+        "buttons": {
+            "testConnection": "Testuoti ryšį",
+            "testingConnection": "Tikrinamas ryšys...",
+            "saveSetup": "Užbaigti sąranką",
+            "savingSetup": "Saugoma...",
+            "finish": "Paleisti programą"
+        },
+        "errors": {
+            "checkStatus": "Klaida tikrinant sąrankos būseną",
+            "testConnection": "Klaida testuojant ryšį",
+            "testNetworkError": "Tinklo klaida testuojant ryšį",
+            "saveSetup": "Klaida saugant konfigūraciją",
+            "saveNetworkError": "Tinklo klaida saugant konfigūraciją"
+        },
+        "update": {
+            "title": "Duomenų bazės atnaujinimas",
+            "running": "Duomenų bazė atnaujinama...",
+            "success": "Duomenų bazės atnaujinimas sėkmingai baigtas.",
+            "failed": "Duomenų bazės atnaujinimas nepavyko.",
+            "networkError": "Tinklo klaida atnaujinant duomenų bazę."
+        },
+        "footer": {
+            "copyright": "OpensourceERP"
+        }
+    }
+}

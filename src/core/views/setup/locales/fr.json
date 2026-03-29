@@ -1,0 +1,50 @@
+{
+    "setup": {
+        "title": "OpensourceERP Setup",
+        "welcome": "Bienvenue sur OpensourceERP ! Veuillez configurer la connexion a la base de donnees d'authentification.",
+        "setupAlreadyDone": "La configuration a deja ete effectuee. Vous allez etre redirige vers la page de connexion...",
+        "configFound": "kivitendo.conf trouve - Le mot de passe n'etait pas chiffre. Le formulaire a ete rempli automatiquement.",
+        "setupCompleteMessage": "Configuration terminee avec succes ! Le mot de passe a ete chiffre et enregistre. Redirection en cours...",
+        "fields": {
+            "host": "Hote",
+            "port": "Port",
+            "database": "Nom de la base de donnees",
+            "login": "Identifiant",
+            "password": "Mot de passe"
+        },
+        "placeholders": {
+            "host": "localhost",
+            "port": "5432",
+            "database": "oserp_auth",
+            "login": "postgres"
+        },
+        "validation": {
+            "required": "Champ obligatoire",
+            "portRange": "Le port doit etre compris entre 1 et 65535"
+        },
+        "buttons": {
+            "testConnection": "Tester la connexion",
+            "testingConnection": "Test de la connexion...",
+            "saveSetup": "Terminer la configuration",
+            "savingSetup": "Enregistrement en cours...",
+            "finish": "Lancer l'application"
+        },
+        "errors": {
+            "checkStatus": "Erreur lors de la verification du statut de la configuration",
+            "testConnection": "Erreur lors du test de la connexion",
+            "testNetworkError": "Erreur reseau lors du test de la connexion",
+            "saveSetup": "Erreur lors de l'enregistrement de la configuration",
+            "saveNetworkError": "Erreur reseau lors de l'enregistrement de la configuration"
+        },
+        "update": {
+            "title": "Mise a jour de la base de donnees",
+            "running": "Mise a jour de la base de donnees en cours...",
+            "success": "Mise a jour de la base de donnees terminee avec succes.",
+            "failed": "Echec de la mise a jour de la base de donnees.",
+            "networkError": "Erreur reseau lors de la mise a jour de la base de donnees."
+        },
+        "footer": {
+            "copyright": "OpensourceERP"
+        }
+    }
+}

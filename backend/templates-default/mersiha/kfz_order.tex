@@ -1,0 +1,166 @@
+\input{inheaders.tex}
+
+% Variablen, die in settings verwendet werden
+\newcommand{\lxlangcode} {<%language_code%>}
+\newcommand{\lxmedia} {<%media%>}
+\newcommand{\lxcurrency} {<%currency%>}
+\newcommand{\kivicompany} {<%employee_company%>}
+
+\input{insettings.tex}
+
+% Werkstatt-Formular: kein Briefkopf, kein Firmenfuss, kompakte Raender
+\ClearWallPaper
+\pagestyle{empty}
+\geometry{a4paper, left=12mm, right=12mm, top=8mm, bottom=8mm, headheight=14pt, headsep=0pt}
+
+
+\begin{document}
+\ourfont
+
+% ===== SEITE 1: Auftrags-Kopf + Arbeitsanweisungen =====
+
+% --- Kopie-Stempel ---
+<%if gedruckt%>
+{\color{red}\textbf{Kopie}}\par
+<%end if%>
+
+% --- Titel ---
+{\large\textbf{<%employee_company%> \repauftrag{} <%hersteller%> <%modell%>}}\par
+{\large\textbf{<%kennzeichen%>}}
+
+\vspace{3mm}
+
+% --- Header: Kundendaten (links) + QR-Code (mitte) + Fahrzeugdaten (rechts) ---
+\noindent
+\begin{minipage}[c]{0.40\textwidth}
+  \begin{tabular}{@{}l@{\hspace{2mm}}l@{}}
+    \textbf{Kunde:}  & <%name%> \\[1pt]
+    \textbf{Stra\ss e:} & <%street%> \\[1pt]
+    \textbf{Ort:}    & <%zipcode%> <%city%> \\[1pt]
+    \textbf{Tele.:}  & <%customer_phone%> \\[1pt]
+    \textbf{Tele2:}  & <%customer_fax%> \\[1pt]
+    \textbf{Bearb.:} & <%employee_name%> \\
+  \end{tabular}
+\end{minipage}%
+\hfill
+\begin{minipage}[c]{0.17\textwidth}
+  \centering
+  <%if qr_image%>\includegraphics[height=2.5cm]{<%qr_image NOESCAPE%>}<%end if%>
+\end{minipage}%
+\hfill
+\begin{minipage}[c]{0.38\textwidth}
+  \begin{tabular}{@{}l@{\hspace{2mm}}l@{}}
+    \textbf{KBA:}     & <%kba%> \\[1pt]
+    \textbf{Baujahr:} & <%baujahr%> \\[1pt]
+    \textbf{HU/AU:}   & <%hu_au%> \\[1pt]
+    \textbf{FIN:}     & <%fin%> \\[1pt]
+    \textbf{MK:}      & <%mkb%> \\[1pt]
+    \textbf{KM:}      & <%km_stand%> \\
+  \end{tabular}
+\end{minipage}
+
+\vspace{2mm}
+\noindent\rule{\linewidth}{0.4pt}
+\vspace{2mm}
+
+% --- Wartungs-/Reifeninfos ---
+\noindent
+\begin{minipage}[t]{0.48\textwidth}
+  \begin{tabular}{@{}l@{\hspace{2mm}}l@{}}
+    n\"achst. ZR-Wechsel KM: & <%naechster_zr_km%> \\[1pt]
+    n\"achst. ZR-Wechsel:    & <%naechster_zr_datum%> \\[1pt]
+    n\"achst. Bremsfl.:      & <%naechste_bremsfl%> \\[1pt]
+    n\"achst. WD:            & <%naechster_wd%> \\
+  \end{tabular}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.48\textwidth}
+  \begin{tabular}{@{}l@{\hspace{2mm}}l@{}}
+    Lo Sommerr\"ader.:  & <%sommerraeder_lager%> \\[1pt]
+    Lo Winterr\"ader.:  & <%winterraeder_lager%> \\[1pt]
+    Flexgr.:            & \\[1pt]
+    Color.:             & <%farbe%> \\
+  \end{tabular}
+\end{minipage}
+
+\vspace{2mm}
+\noindent\rule{\linewidth}{0.4pt}
+\vspace{3mm}
+
+% --- Fertigstellung ---
+\noindent\textbf{\fertigstellunglabel:}\hspace{2cm}<%fertigstellung%>
+
+\vspace{4mm}
+
+% --- Arbeitsanweisungen ---
+<%if has_instructions%>
+<%foreach instruction_description%>
+\noindent\textbf{<%instruction_description%>}\par\nobreak
+\noindent\rule{\linewidth}{0.1pt}
+\vspace{2mm}
+<%end instruction_description%>
+<%end if%>
+
+% --- Leerlinien (fuer handschriftliche Notizen, fuellt Restplatz dynamisch) ---
+\leaders\vbox to 8mm{\vfill\noindent\rule{\linewidth}{0.1pt}}\vfill
+
+% --- Fusszeile Seite 1 ---
+\noindent\datum:\hspace{8mm}<%orddate%>\hfill \kundenunterschrift{} \rule{3.5cm}{0.4pt}
+
+\vspace{5mm}
+
+\noindent\endkontrolle{} \rule{5cm}{0.4pt}
+
+\vspace{4mm}
+
+\begin{center}
+  \scriptsize Powered by lxcars.de -- Freie Kfz-Werkstatt Software
+\end{center}
+
+
+% ===== SEITE 2: Ersatzteile + Arbeiten =====
+\newpage
+
+% --- Verbaute Ersatzteile ---
+{\Large\textbf{\verbauteersatzteile}}
+
+\vspace{3mm}
+\noindent\rule{\linewidth}{0.1pt}
+
+<%if has_ersatzteile%>
+<%foreach ersatzteil_qty%>
+\vspace{1mm}
+\noindent\hspace{2mm}\begin{tabular}{@{}p{1.5cm}p{14cm}@{}}
+<%ersatzteil_qty%> & <%ersatzteil_description%>
+\end{tabular}\par\noindent\rule{\linewidth}{0.1pt}
+<%end ersatzteil_qty%>
+<%end if%>
+
+% Leerlinien Ersatzteile (fuellt Restplatz dynamisch)
+\leaders\vbox to 6mm{\vfill\noindent\rule{\linewidth}{0.1pt}}\vfill
+
+\vspace{4mm}
+
+% --- Ausgefuehrte Arbeiten ---
+{\Large\textbf{\ausgefuehrtearbeiten}}
+
+\vspace{3mm}
+\noindent\rule{\linewidth}{0.1pt}
+
+<%if has_arbeiten%>
+<%foreach arbeit_qty%>
+\vspace{1mm}
+\noindent\hspace{2mm}\begin{tabular}{@{}p{1.5cm}p{14cm}@{}}
+<%arbeit_qty%> & <%arbeit_description%>
+\end{tabular}\par\noindent\rule{\linewidth}{0.1pt}
+<%end arbeit_qty%>
+<%end if%>
+
+% Leerlinien Arbeiten (fuellt Restplatz dynamisch)
+\leaders\vbox to 6mm{\vfill\noindent\rule{\linewidth}{0.1pt}}\vfill
+
+% --- Fusszeile Seite 2 ---
+\vspace{8mm}
+\noindent\ersatzteilebestaetigung{} \rule{5cm}{0.4pt}
+
+\end{document}

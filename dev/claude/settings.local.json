@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(*)",
+      "Edit(*)",
+      "Write(*)",
+      "Read(*)",
+      "Glob(*)",
+      "Grep(*)",
+      "WebFetch(*)",
+      "WebSearch(*)",
+      "NotebookEdit(*)",
+      "Bash(grep -nP '<%\\\\s*\\(sellprice|linetotal|subtotal|ordtotal|invtotal|tax|amount|fee|interest|total|paid|due|open|payment|netamount|invamount|dn_amount\\)\\\\s*%>' *.tex)"
+    ]
+  }
+}

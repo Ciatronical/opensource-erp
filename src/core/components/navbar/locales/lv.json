@@ -1,0 +1,41 @@
+{
+    "NavbarView": {
+        "logoutTooltip": "Atslēgties",
+        "accountTooltip": "Konts",
+        "editCustomerTooltip": "Rediģēt klientu",
+        "editCvTooltip": "Rediģēt klientu/piegādātāju",
+        "currentC": "Klients:",
+        "currentV": "Piegādātājs:",
+        "openInNewTabTooltip": "Galvenā izvēlne",
+        "newTabTooltip": "Atvērt jaunā cilnē",
+        "calendarTooltip": "Kalendārs",
+        "callHistoryTooltip": "Zvanu vēsture",
+        "userConfig": "Konfigurācija",
+        "switchClient": "Mainīt uzņēmumu",
+        "uploadLogo": "Uzņēmuma logo",
+        "selectImage": "Izvēlēties attēlu",
+        "logoHint": "Izvēlieties attēlu, novietojiet un apgrieziet",
+        "saveLogo": "Saglabāt",
+        "deleteLogo": "Noņemt",
+        "cancel": "Atcelt"
+    },
+    "GlobalSearch": {
+        "placeholder": "Meklēt...",
+        "noResults": "Nav rezultātu",
+        "customers": "Klienti",
+        "vendors": "Piegādātāji",
+        "invoices": "Rēķini",
+        "orders": "Pasūtījumi",
+        "quotations": "Piedāvājumi",
+        "articles": "Artikuli",
+        "vehicles": "Transportlīdzekļi",
+        "wiki": "Wiki raksti",
+        "recentlyVisited": "Nesen apmeklēts",
+        "clearHistory": "Notīrīt vēsturi"
+    },
+    "InfoBar": {
+        "unknownCaller": "Nezināms",
+        "closeAll": "Aizvērt visus paziņojumus",
+        "pendingParts": "Rezerves daļas pieprasītas"
+    }
+}

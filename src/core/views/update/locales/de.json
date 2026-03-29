@@ -1,0 +1,50 @@
+{
+    "update": {
+        "title": "Systemaktualisierung",
+        "description": "Hier werden alle Mandanten-Datenbanken sowie die Auth-Datenbank gesichert und aktualisiert.",
+        "messages": "Meldungen",
+        "sqlStatements": "SQL-Statements",
+        "errors": "Fehler",
+        "dryRunSuccess": "Vorschau erfolgreich geladen.",
+        "updateSuccess": "Alle Datenbanken erfolgreich aktualisiert.",
+        "gitPull": "Git Pull",
+        "gitPullSuccess": "Git Pull erfolgreich",
+        "gitPullFailed": "Git Pull fehlgeschlagen",
+        "authDatabase": "Auth-Datenbank",
+        "authBackup": "Auth-Backup",
+        "clientDatabase": "Mandant: {name}",
+        "clientDbName": "Datenbank: {dbname}",
+        "backupSuccess": "Backup erstellt: {filename}",
+        "backupFailed": "Backup fehlgeschlagen",
+        "backupSkipped": "Backup wird bei Dry-Run nicht erstellt",
+        "features": "Features: {features}",
+        "noClients": "Keine Mandanten gefunden.",
+        "overallSuccess": "Alle Datenbanken erfolgreich aktualisiert",
+        "overallFailed": "Fehler bei der Aktualisierung",
+        "buttons": {
+            "dryRun": "Vorschau",
+            "checking": "Prüfe...",
+            "update": "Update ausführen",
+            "updating": "Aktualisiere...",
+            "finish": "Fertig"
+        },
+        "errorMessages": {
+            "dryRunFailed": "Vorschau fehlgeschlagen.",
+            "updateFailed": "Update fehlgeschlagen.",
+            "networkError": "Netzwerkfehler beim Update."
+        },
+        "schemaMessages": {
+            "dry_run_mode": "Vorschau-Modus - Keine Änderungen werden vorgenommen",
+            "columns_added": "Tabelle {table}: {count} Spalte(n) würden hinzugefügt | Tabelle {table}: {count} Spalte(n) hinzugefügt",
+            "column_added": "Spalte '{column}' würde hinzugefügt | Spalte '{column}' hinzugefügt",
+            "table_up_to_date": "Tabelle {table}: Alle Spalten vorhanden",
+            "table_created": "Tabelle {table} würde erstellt | Tabelle {table} erstellt",
+            "version_updated": "Version {version} in {schema}-Datenbank eingetragen",
+            "object_exists": "{object_type} {name} existiert bereits",
+            "statement_executed": "{statement_type} {target} ausgeführt",
+            "csv_skipped": "CSV übersprungen: {table} ({reason})",
+            "csv_imported": "CSV importiert: {table} ({rows_imported} Zeilen)",
+            "info": "{text}"
+        }
+    }
+}

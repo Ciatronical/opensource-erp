@@ -1,0 +1,87 @@
+{
+    "CalendarView": {
+        "title": "Kalendorius",
+        "actions": {
+            "create": "Naujas įvykis",
+            "categories": "Kategorijos",
+            "cancel": "Atšaukti",
+            "save": "Išsaugoti",
+            "delete": "Ištrinti",
+            "edit": "Redaguoti",
+            "close": "Uždaryti"
+        },
+        "confirmDelete": {
+            "title": "Ištrinti įvykį?",
+            "message": "Ar tikrai norite ištrinti šį įvykį?"
+        },
+        "messages": {
+            "loadError": "Klaida kraunant įvykius",
+            "saved": "Įvykis išsaugotas",
+            "saveError": "Klaida saugant",
+            "deleted": "Įvykis ištrintas",
+            "error": "Įvyko klaida",
+            "categoryDeleted": "Kategorija ištrinta",
+            "categorySaved": "Kategorija išsaugota"
+        },
+        "search": "Paieška",
+        "searchResults": "Paieškos rezultatai",
+        "noResults": "Rezultatų nerasta"
+    },
+    "CalendarMain": {
+        "today": "Šiandien",
+        "month": "Mėnuo",
+        "week": "Savaitė",
+        "day": "Diena",
+        "list": "Sąrašas",
+        "allDay": "Visa diena",
+        "filterCategories": "Filtruoti kategorijas"
+    },
+    "CalendarEventDialog": {
+        "titleCreate": "Naujas įvykis",
+        "titleEdit": "Redaguoti įvykį",
+        "title": "Pavadinimas",
+        "allDay": "Visa diena",
+        "start": "Pradžia",
+        "end": "Pabaiga",
+        "category": "Kategorija",
+        "noCategory": "Be kategorijos",
+        "priority": "Prioritetas",
+        "priorityLow": "Žemas",
+        "priorityNormal": "Normalus",
+        "priorityHigh": "Aukštas",
+        "location": "Vieta",
+        "description": "Aprašymas",
+        "color": "Spalva",
+        "visibility": "Matomumas",
+        "visibilityAll": "Visi",
+        "visibilityPrivate": "Privatus",
+        "customerVendor": "Klientas/Tiekėjas",
+        "validation": {
+            "titleRequired": "Pavadinimas privalomas",
+            "startRequired": "Pradžios data privaloma"
+        }
+    },
+    "CalendarEventDetail": {
+        "edit": "Redaguoti",
+        "delete": "Ištrinti",
+        "close": "Uždaryti",
+        "location": "Vieta",
+        "category": "Kategorija",
+        "priority": "Prioritetas",
+        "owner": "Sukūrė",
+        "linkedTo": "Susieta su",
+        "priorityLow": "Žemas",
+        "priorityNormal": "Normalus",
+        "priorityHigh": "Aukštas"
+    },
+    "CalendarCategoryManager": {
+        "title": "Kategorijų valdymas",
+        "addCategory": "Nauja kategorija",
+        "label": "Pavadinimas",
+        "color": "Spalva",
+        "save": "Išsaugoti",
+        "delete": "Ištrinti",
+        "confirmDelete": "Ar tikrai ištrinti kategoriją? Įvykiai išsaugos duomenis, bet praras kategorijos priskyrimą.",
+        "noCategories": "Kategorijų nėra"
+    }
+}

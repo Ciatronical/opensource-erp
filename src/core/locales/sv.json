@@ -1,0 +1,47 @@
+{
+    "LoginView": {
+        "title": "Login",
+        "username": "Anvandarnamn",
+        "password": "Losenord",
+        "client": "Foretag",
+        "button": "Logga in",
+        "failed": "Inloggningen misslyckades. Kontrollera dina inloggningsuppgifter.",
+        "EMPTY_FIELDS": "Ange namn och losenord.",
+        "USER_NOT_FOUND": "Anvandaren hittades inte.",
+        "WRONG_PASSWORD": "Ogiltigt losenord.",
+        "ERROR": "Fel vid inloggning. Forsok igen.",
+        "ERROR_LOADING_CLIENTS": "Fel vid laddning av foretag. Forsok igen senare.",
+        "USER_NOT_ASSIGNED_TO_CLIENT": "Anvandaren ar inte tilldelad foretaget.",
+        "PASSWORD_FILE_NOT_FOUND": "Fel: Losenordsfilen api/config/api.passwd.php hittades inte. Byt namn pa filen api/config/api.passwd.php.example till api/config/api.passwd.php och anpassa installningarna.",
+        "CONFIG_FILE_NOT_FOUND": "Fel: Konfigurationsfilen hittades inte. Kontrollera installningarna.",
+        "updateButton": "Kor uppdatering",
+        "updateSuccess": "Databasuppdatering genomford.",
+        "updateError": "Fel vid databasuppdatering. Forsok igen.",
+        "privacy": "Integritetspolicy",
+        "dataDeletion": "Dataradering"
+    },
+    "NotFoundView": {
+        "title": "Sidan hittades inte",
+        "message": "Den begarda sidan hittades inte.",
+        "back_home": "Tillbaka till startsidan"
+    },
+    "NavbarView": {
+        "logoutTooltip": "Logga ut",
+        "accountTooltip": "Konto",
+        "editCustomerTooltip": "Redigera kund",
+        "editCvTooltip": "Redigera kund/leverantor",
+        "currentC": "Kund:",
+        "currentV": "Leverantor:",
+        "demoBanner": "Demolage - All data aterstalls automatiskt efter inaktivitet.",
+        "demoResetWarning": "Demon aterstalls om {seconds} sekunder - ror musen for att fortsatta."
+    },
+    "ErrorView": {
+        "title": "Ett fel uppstod",
+        "message": "Vi beklagar, men ett ovantat fel uppstod.",
+        "debugInfo": "Debug-information:",
+        "clickToShowDetails": "Klicka for att visa detaljer"
+    },
+    "App": {
+        "loading": "Vanligen vanta..."
+    }
+}

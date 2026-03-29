@@ -1,0 +1,135 @@
+{
+    "TasksView": {
+        "title": "Taches",
+        "search": "Rechercher...",
+        "fromDate": "Du",
+        "toDate": "Au",
+        "showDone": "Afficher les terminees",
+        "tabs": {
+            "board": "Tableau",
+            "list": "Liste",
+            "calendar": "Calendrier"
+        },
+        "actions": {
+            "create": "Nouvelle tache",
+            "cancel": "Annuler",
+            "delete": "Supprimer",
+            "save": "Enregistrer",
+            "edit": "Modifier",
+            "markDone": "Termine",
+            "markUndone": "Rouvrir",
+            "close": "Fermer"
+        },
+        "columns": {
+            "overdue": "En retard",
+            "today": "Aujourd'hui",
+            "upcoming": "A venir",
+            "done": "Termine"
+        },
+        "fields": {
+            "subject": "Objet",
+            "body": "Note",
+            "date": "Date"
+        },
+        "calendar": {
+            "today": "Aujourd'hui",
+            "month": "Mois",
+            "week": "Semaine",
+            "day": "Jour",
+            "more": "autres"
+        },
+        "dialog": {
+            "titleNew": "Nouvelle tache",
+            "titleEdit": "Modifier la tache"
+        },
+        "confirmDelete": {
+            "title": "Supprimer la tache ?",
+            "message": "Voulez-vous vraiment supprimer cette tache ? Cette action est irreversible."
+        },
+        "messages": {
+            "loadError": "Erreur lors du chargement des taches",
+            "saved": "Tache enregistree",
+            "saveError": "Erreur lors de l'enregistrement",
+            "deleted": "Tache supprimee",
+            "markedDone": "Marque comme termine",
+            "markedUndone": "Rouvert",
+            "error": "Une erreur est survenue"
+        }
+    },
+    "TasksCard": {
+        "noSubject": "Pas d'objet",
+        "today": "Aujourd'hui",
+        "tomorrow": "Demain",
+        "daysAgo": "il y a {days} jours",
+        "inDays": "dans {days} jours",
+        "markDone": "Marquer comme termine",
+        "markUndone": "Rouvrir",
+        "delete": "Supprimer"
+    },
+    "TasksDialog": {
+        "titleCreate": "Nouvelle tache",
+        "titleEdit": "Modifier la tache",
+        "date": "Date",
+        "subject": "Objet",
+        "body": "Note",
+        "assignedEmployees": "Attribue a",
+        "linkSection": "Lien (optionnel)",
+        "linkType": "Type de lien",
+        "linkId": "ID",
+        "linkInfo": "Designation",
+        "cancel": "Annuler",
+        "save": "Enregistrer",
+        "quickDate": {
+            "today": "Aujourd'hui",
+            "tomorrow": "Demain",
+            "nextWeek": "+1 semaine",
+            "nextMonth": "+1 mois"
+        },
+        "linkTypes": {
+            "customer": "Client",
+            "vendor": "Fournisseur",
+            "salesQuotation": "Devis",
+            "salesOrder": "Commande",
+            "salesDeliveryOrder": "Bon de livraison",
+            "salesInvoice": "Facture",
+            "purchaseQuotation": "Demande",
+            "purchaseOrder": "Commande fournisseur",
+            "purchaseDeliveryOrder": "Reception",
+            "purchaseInvoice": "Facture fournisseur"
+        },
+        "validation": {
+            "required": "Champ obligatoire"
+        }
+    },
+    "TasksList": {
+        "done": "Termine",
+        "open": "Ouvert",
+        "today": "Aujourd'hui",
+        "tomorrow": "Demain",
+        "markDone": "Marquer comme termine",
+        "markUndone": "Rouvrir",
+        "edit": "Modifier",
+        "delete": "Supprimer",
+        "headers": {
+            "date": "Date",
+            "subject": "Objet",
+            "link": "Lien",
+            "assignedTo": "Attribue",
+            "status": "Statut",
+            "actions": "Actions"
+        }
+    },
+    "TasksWidget": {
+        "title": "Taches",
+        "overdue": "En retard",
+        "today": "Aujourd'hui",
+        "tomorrow": "Demain",
+        "upcoming": "A venir",
+        "noItems": "Aucune tache en cours",
+        "showAll": "Afficher les {count}",
+        "markDone": "Marquer comme termine",
+        "quickAdd": "Ajout rapide",
+        "openAll": "Tout ouvrir",
+        "daysAgo": "il y a {days} jours"
+    }
+}

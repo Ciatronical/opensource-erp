@@ -1,0 +1,75 @@
+{
+    "routes": {
+        "mainmenu": "/hauptmen%C3%BC",
+        "customer": "/kunde",
+        "editCustomer": "/kunde/bearbeiten",
+        "editVendor": "/lieferant/bearbeiten",
+        "viewInvoice": "/rechnung/anzeigen",
+        "editQuotation": "/angebot/bearbeiten",
+        "editOrder": "/auftrag/bearbeiten",
+        "newCustomer": "/kunde/neu",
+        "newVendor": "/lieferant/neu",
+        "newQuotation": "/angebot/neu",
+        "newOrder": "/auftrag/neu",
+        "newInvoice": "/rechnung/neu",
+        "manageCustomers": "/kunde",
+        "manageVendors": "/lieferant",
+        "manageArticles": "/artikel",
+        "manageQuotations": "/angebot",
+        "manageOrders": "/auftrag",
+        "manageInvoices": "/rechnung",
+        "manageCreditNotes": "/gutschrift",
+        "manageDeliveryOrders": "/lieferschein",
+        "orderSearch": "/auftrag/suche",
+        "search": "/suche",
+        "searchCustomers": "/kunde/suche",
+        "followUp": "/wiedervorlage",
+        "clientConfig": "/system/mandantenkonfiguration",
+        "developerTools": "/system/developer-tools",
+        "systemUpdate": "/system/aktualisierung",
+        "currentCustomerEdit": "/kunde/bearbeiten",
+        "callHistory": "/anrufliste",
+        "calendar": "/kalender",
+        "wiki": "/wiki",
+        "wikiNew": "/wiki/neu",
+        "wikiCategories": "/wiki/kategorien",
+        "wikiEdit": "/wiki/bearbeiten",
+        "userConfig": "/benutzer/konfiguration",
+        "huSerienbrief": "/serienbrief/hu",
+        "wallDisplay": "/wandanzeige"
+    },
+    "errors": {
+        "PASSWORD_FILE_NOT_FOUND": "Viga: Paroolifaili api/config/api.passwd.php ei leitud. Palun nimetage fail api/config/api.passwd.php.example umber api/config/api.passwd.php ja kohandage seadeid vastavalt.",
+        "CONFIG_FILE_NOT_FOUND": "Viga: Konfiguratsioonifaili ei leitud. Palun kontrollige seadeid."
+    },
+    "MasterDataMenu": {
+        "title": "Põhiandmed",
+        "editCustomer": "Kliendiandmete muutmine",
+        "newCustomer": "Uue kliendi loomine",
+        "manageCustomers": "Klientide haldamine",
+        "search": "Otsing",
+        "searchCustomers": "Klientide otsimine",
+        "newVendor": "Uue tarnija loomine",
+        "calendar": "Kalender"
+    },
+    "ContactMenu": {
+        "title": "Kontakt",
+        "callHistory": "Kõnede ajalugu",
+        "emails": "E-kirjad",
+        "whatsapp": "WhatsApp"
+    },
+    "SalesMenu": {
+        "title": "Müük",
+        "newQuotation": "Uue pakkumise loomine",
+        "newOrder": "Uue tellimuse loomine",
+        "newInvoice": "Uue arve loomine",
+        "manageCreditNotes": "Kreeditarved"
+    },
+    "SystemMenu": {
+        "title": "Süsteem",
+        "clientConfig": "Ettevõtte seadistus",
+        "developerTools": "Developer Tools",
+        "systemUpdate": "Süsteemi uuendamine",
+        "about": "Teave"
+    }
+}

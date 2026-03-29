@@ -1,0 +1,179 @@
+{
+    "FollowUpView": {
+        "title": "Hatirlatmalar",
+        "search": "Ara...",
+        "fromDate": "Baslangic",
+        "toDate": "Bitis",
+        "showDone": "Tamamlananlari goster",
+        "tabs": {
+            "board": "Pano",
+            "list": "Liste",
+            "calendar": "Takvim"
+        },
+        "actions": {
+            "create": "Yeni hatirlatma",
+            "cancel": "Iptal",
+            "delete": "Sil",
+            "save": "Kaydet",
+            "edit": "Duzenle",
+            "markDone": "Tamamlandi",
+            "markUndone": "Yeniden ac",
+            "close": "Kapat"
+        },
+        "columns": {
+            "overdue": "Gecmis",
+            "today": "Bugun",
+            "upcoming": "Yaklasan",
+            "done": "Tamamlandi"
+        },
+        "confirmDelete": {
+            "title": "Hatirlatma silinsin mi?",
+            "message": "Bu hatirlatmayi silmek istiyor musunuz? Bu islem geri alinamaz."
+        },
+        "messages": {
+            "loadError": "Hatirlatmalar yuklenirken hata",
+            "saved": "Hatirlatma kaydedildi",
+            "saveError": "Kaydetme hatasi",
+            "deleted": "Hatirlatma silindi",
+            "deletedMultiple": "{count} hatirlatma silindi",
+            "markedDone": "Tamamlandi olarak isaretlendi",
+            "markedUndone": "Yeniden acildi",
+            "error": "Bir hata olustu"
+        }
+    },
+    "FollowUpCard": {
+        "noSubject": "Konu yok",
+        "today": "Bugun",
+        "tomorrow": "Yarin",
+        "daysAgo": "{days} gun once",
+        "inDays": "{days} gun icinde",
+        "markDone": "Tamamlandi olarak isaretle",
+        "markUndone": "Yeniden ac",
+        "delete": "Sil"
+    },
+    "FollowUpDialog": {
+        "titleCreate": "Yeni hatirlatma",
+        "titleEdit": "Hatirlatmayi duzenle",
+        "date": "Tarih",
+        "subject": "Konu",
+        "body": "Not",
+        "assignedEmployees": "Atanan",
+        "linkSection": "Baglanti (istege bagli)",
+        "linkType": "Baglanti turu",
+        "linkId": "ID",
+        "linkInfo": "Aciklama",
+        "searchCustomer": "Musteri ara",
+        "searchVendor": "Tedarikci ara",
+        "searchQuotation": "Teklif ara",
+        "searchOrder": "Siparis ara",
+        "searchDeliveryOrder": "Irsaliye ara",
+        "searchInvoice": "Fatura ara",
+        "searchRequestQuotation": "Teklif talebi ara",
+        "searchPurchaseOrder": "Satin alma siparisi ara",
+        "searchPurchaseDeliveryOrder": "Mal kabul ara",
+        "searchPurchaseInvoice": "Gelen fatura ara",
+        "search": "Ara",
+        "noResults": "Sonuc yok",
+        "startTyping": "Arama terimi girin...",
+        "cancel": "Iptal",
+        "save": "Kaydet",
+        "quickDate": {
+            "today": "Bugun",
+            "tomorrow": "Yarin",
+            "nextWeek": "+1 hafta",
+            "twoWeeks": "+2 hafta",
+            "nextMonth": "+1 ay"
+        },
+        "linkTypes": {
+            "customer": "Musteri",
+            "vendor": "Tedarikci",
+            "salesQuotation": "Teklif",
+            "salesOrder": "Siparis",
+            "salesDeliveryOrder": "Irsaliye",
+            "salesInvoice": "Fatura",
+            "purchaseQuotation": "Teklif talebi",
+            "purchaseOrder": "Satin alma siparisi",
+            "purchaseDeliveryOrder": "Mal kabul",
+            "purchaseInvoice": "Gelen fatura"
+        },
+        "validation": {
+            "required": "Zorunlu alan"
+        }
+    },
+    "FollowUpList": {
+        "done": "Tamamlandi",
+        "open": "Acik",
+        "today": "Bugun",
+        "tomorrow": "Yarin",
+        "markDone": "Tamamlandi olarak isaretle",
+        "markUndone": "Yeniden ac",
+        "edit": "Duzenle",
+        "delete": "Sil",
+        "entry": "Kayit",
+        "entries": "Kayit",
+        "deleteAll": "Tum gorunenleri sil",
+        "deleteAllConfirmTitle": "Tum hatirlatmalari sil?",
+        "deleteAllConfirmText": "Gosterilen {count} hatirlatmanin tamamini silmek istiyor musunuz?",
+        "deleteAllWarning": "Bu islem geri alinamaz!",
+        "deleteAllConfirm": "Tumunu sil",
+        "cancel": "Iptal",
+        "headers": {
+            "date": "Tarih",
+            "subject": "Konu",
+            "link": "Baglanti",
+            "assignedTo": "Atanan",
+            "status": "Durum",
+            "actions": "Islemler"
+        }
+    },
+    "FollowUpCalendar": {
+        "today": "Bugun",
+        "month": "Ay",
+        "week": "Hafta",
+        "day": "Gun",
+        "allDay": "Tum gun",
+        "noSubject": "Konusuz",
+        "newFollowUp": "Yeni hatirlatma",
+        "subject": "Konu",
+        "subjectPlaceholder": "Ne yapilmali?",
+        "note": "Not",
+        "notePlaceholder": "Ek bilgiler...",
+        "cancel": "Iptal",
+        "create": "Olustur",
+        "done": "Tamamlandi",
+        "reopen": "Ac",
+        "edit": "Duzenle",
+        "links": "Baglantilar",
+        "details": "Detaylar",
+        "assignedTo": "Atanan",
+        "linkedTo": "Baglantili",
+        "close": "Kapat",
+        "markDone": "Tamamlandi olarak isaretle",
+        "markUndone": "Yeniden ac",
+        "editFollowUp": "Duzenle",
+        "deleteFollowUp": "Sil",
+        "more": "daha fazla",
+        "weekDays": {
+            "mon": "Pt",
+            "tue": "Sa",
+            "wed": "Ca",
+            "thu": "Pe",
+            "fri": "Cu",
+            "sat": "Ct",
+            "sun": "Pa"
+        }
+    },
+    "FollowUpWidget": {
+        "title": "Hatirlatmalar",
+        "overdue": "Gecmis",
+        "today": "Bugun",
+        "tomorrow": "Yarin",
+        "upcoming": "Yaklasan",
+        "noItems": "Acik hatirlatma yok",
+        "showAll": "Tumu goster {count}",
+        "markDone": "Tamamlandi olarak isaretle",
+        "quickAdd": "Hizli ekle",
+        "openAll": "Tumunu ac",
+        "daysAgo": "{days} gun once"
+    }
+}

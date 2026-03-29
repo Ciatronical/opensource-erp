@@ -1,0 +1,49 @@
+# Logs
+backend/log/*.log
+!backend/log/.gitkeep
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*~
+
+# OpensourceERP
+# deprected files
+backend/config/api.passwd.php
+backend/config/api.config.php
+
+# Neue Konfiguration
+settings.ini
+settings.ini.backup.*
+
+# Docker
+docker/.env
+
+# Private Features
+special/
+src/core/views/special/
+backend/api/special
+
+# Druckvorlagen (eigenes Git-Repo, kundenspezifisch)
+backend/templates/
+
+backend/tmp/*/

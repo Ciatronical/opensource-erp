@@ -1,0 +1,75 @@
+{
+    "routes": {
+        "mainmenu": "/hauptmen%C3%BC",
+        "customer": "/kunde",
+        "editCustomer": "/kunde/bearbeiten",
+        "editVendor": "/lieferant/bearbeiten",
+        "viewInvoice": "/rechnung/anzeigen",
+        "editQuotation": "/angebot/bearbeiten",
+        "editOrder": "/auftrag/bearbeiten",
+        "newCustomer": "/kunde/neu",
+        "newVendor": "/lieferant/neu",
+        "newQuotation": "/angebot/neu",
+        "newOrder": "/auftrag/neu",
+        "newInvoice": "/rechnung/neu",
+        "manageCustomers": "/kunde",
+        "manageVendors": "/lieferant",
+        "manageArticles": "/artikel",
+        "manageQuotations": "/angebot",
+        "manageOrders": "/auftrag",
+        "manageInvoices": "/rechnung",
+        "manageCreditNotes": "/gutschrift",
+        "manageDeliveryOrders": "/lieferschein",
+        "orderSearch": "/auftrag/suche",
+        "search": "/suche",
+        "searchCustomers": "/kunde/suche",
+        "followUp": "/wiedervorlage",
+        "clientConfig": "/system/mandantenkonfiguration",
+        "developerTools": "/system/developer-tools",
+        "systemUpdate": "/system/aktualisierung",
+        "currentCustomerEdit": "/kunde/bearbeiten",
+        "callHistory": "/anrufliste",
+        "calendar": "/kalender",
+        "wiki": "/wiki",
+        "wikiNew": "/wiki/neu",
+        "wikiCategories": "/wiki/kategorien",
+        "wikiEdit": "/wiki/bearbeiten",
+        "userConfig": "/benutzer/konfiguration",
+        "huSerienbrief": "/serienbrief/hu",
+        "wallDisplay": "/wandanzeige"
+    },
+    "errors": {
+        "PASSWORD_FILE_NOT_FOUND": "Eroare: Fisierul cu parola api/config/api.passwd.php nu a fost gasit. Va rugam redenumiti fisierul api/config/api.passwd.php.example in api/config/api.passwd.php si ajustati setarile corespunzator.",
+        "CONFIG_FILE_NOT_FOUND": "Eroare: Fisierul de configurare nu a fost gasit. Va rugam verificati setarile."
+    },
+    "MasterDataMenu": {
+        "title": "Date de bază",
+        "editCustomer": "Editare date client",
+        "newCustomer": "Creare client nou",
+        "manageCustomers": "Administrare clienți",
+        "search": "Căutare",
+        "searchCustomers": "Căutare clienți",
+        "newVendor": "Creare furnizor nou",
+        "calendar": "Calendar"
+    },
+    "ContactMenu": {
+        "title": "Contact",
+        "callHistory": "Istoric apeluri",
+        "emails": "E-mailuri",
+        "whatsapp": "WhatsApp"
+    },
+    "SalesMenu": {
+        "title": "Vânzări",
+        "newQuotation": "Creare ofertă nouă",
+        "newOrder": "Creare comandă nouă",
+        "newInvoice": "Creare factură nouă",
+        "manageCreditNotes": "Note de credit"
+    },
+    "SystemMenu": {
+        "title": "Sistem",
+        "clientConfig": "Configurare firmă",
+        "developerTools": "Developer Tools",
+        "systemUpdate": "Actualizare sistem",
+        "about": "Despre"
+    }
+}

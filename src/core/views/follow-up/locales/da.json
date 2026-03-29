@@ -1,0 +1,179 @@
+{
+    "FollowUpView": {
+        "title": "Opfoelgning",
+        "search": "Soeg...",
+        "fromDate": "Fra",
+        "toDate": "Til",
+        "showDone": "Vis afsluttede",
+        "tabs": {
+            "board": "Board",
+            "list": "Liste",
+            "calendar": "Kalender"
+        },
+        "actions": {
+            "create": "Ny opfoelgning",
+            "cancel": "Annuller",
+            "delete": "Slet",
+            "save": "Gem",
+            "edit": "Rediger",
+            "markDone": "Afsluttet",
+            "markUndone": "Genaabn",
+            "close": "Luk"
+        },
+        "columns": {
+            "overdue": "Overskredet",
+            "today": "I dag",
+            "upcoming": "Kommende",
+            "done": "Afsluttet"
+        },
+        "confirmDelete": {
+            "title": "Slet opfoelgning?",
+            "message": "Vil du virkelig slette denne opfoelgning? Denne handling kan ikke fortrydes."
+        },
+        "messages": {
+            "loadError": "Fejl ved indlaesning af opfoelgninger",
+            "saved": "Opfoelgning gemt",
+            "saveError": "Fejl ved lagring",
+            "deleted": "Opfoelgning slettet",
+            "deletedMultiple": "{count} opfoelgninger slettet",
+            "markedDone": "Markeret som afsluttet",
+            "markedUndone": "Genaabnet",
+            "error": "Der opstod en fejl"
+        }
+    },
+    "FollowUpCard": {
+        "noSubject": "Intet emne",
+        "today": "I dag",
+        "tomorrow": "I morgen",
+        "daysAgo": "for {days} dage siden",
+        "inDays": "om {days} dage",
+        "markDone": "Marker som afsluttet",
+        "markUndone": "Genaabn",
+        "delete": "Slet"
+    },
+    "FollowUpDialog": {
+        "titleCreate": "Ny opfoelgning",
+        "titleEdit": "Rediger opfoelgning",
+        "date": "Dato",
+        "subject": "Emne",
+        "body": "Note",
+        "assignedEmployees": "Tildelt til",
+        "linkSection": "Tilknytning (valgfri)",
+        "linkType": "Tilknytningstype",
+        "linkId": "ID",
+        "linkInfo": "Betegnelse",
+        "searchCustomer": "Soeg kunde",
+        "searchVendor": "Soeg leverandoer",
+        "searchQuotation": "Soeg tilbud",
+        "searchOrder": "Soeg ordre",
+        "searchDeliveryOrder": "Soeg følgeseddel",
+        "searchInvoice": "Soeg faktura",
+        "searchRequestQuotation": "Soeg forespørgsel",
+        "searchPurchaseOrder": "Soeg bestilling",
+        "searchPurchaseDeliveryOrder": "Soeg varemodtagelse",
+        "searchPurchaseInvoice": "Soeg indgaaende faktura",
+        "search": "Soeg",
+        "noResults": "Ingen resultater fundet",
+        "startTyping": "Indtast soegeord...",
+        "cancel": "Annuller",
+        "save": "Gem",
+        "quickDate": {
+            "today": "I dag",
+            "tomorrow": "I morgen",
+            "nextWeek": "+1 uge",
+            "twoWeeks": "+2 uger",
+            "nextMonth": "+1 maaned"
+        },
+        "linkTypes": {
+            "customer": "Kunde",
+            "vendor": "Leverandoer",
+            "salesQuotation": "Tilbud",
+            "salesOrder": "Ordre",
+            "salesDeliveryOrder": "Følgeseddel",
+            "salesInvoice": "Faktura",
+            "purchaseQuotation": "Forespørgsel",
+            "purchaseOrder": "Bestilling",
+            "purchaseDeliveryOrder": "Varemodtagelse",
+            "purchaseInvoice": "Indgaaende faktura"
+        },
+        "validation": {
+            "required": "Obligatorisk felt"
+        }
+    },
+    "FollowUpList": {
+        "done": "Afsluttet",
+        "open": "Aaben",
+        "today": "I dag",
+        "tomorrow": "I morgen",
+        "markDone": "Marker som afsluttet",
+        "markUndone": "Genaabn",
+        "edit": "Rediger",
+        "delete": "Slet",
+        "entry": "Post",
+        "entries": "Poster",
+        "deleteAll": "Slet alle viste",
+        "deleteAllConfirmTitle": "Slet alle opfoelgninger?",
+        "deleteAllConfirmText": "Vil du virkelig slette alle {count} viste opfoelgninger?",
+        "deleteAllWarning": "Denne handling kan ikke fortrydes!",
+        "deleteAllConfirm": "Slet alle",
+        "cancel": "Annuller",
+        "headers": {
+            "date": "Dato",
+            "subject": "Emne",
+            "link": "Tilknytning",
+            "assignedTo": "Tildelt",
+            "status": "Status",
+            "actions": "Handlinger"
+        }
+    },
+    "FollowUpCalendar": {
+        "today": "I dag",
+        "month": "Maaned",
+        "week": "Uge",
+        "day": "Dag",
+        "allDay": "Hele dagen",
+        "noSubject": "Uden emne",
+        "newFollowUp": "Ny opfoelgning",
+        "subject": "Emne",
+        "subjectPlaceholder": "Hvad skal goeres?",
+        "note": "Note",
+        "notePlaceholder": "Yderligere oplysninger...",
+        "cancel": "Annuller",
+        "create": "Opret",
+        "done": "Afsluttet",
+        "reopen": "Aabn",
+        "edit": "Rediger",
+        "links": "Tilknytninger",
+        "details": "Detaljer",
+        "assignedTo": "Tildelt til",
+        "linkedTo": "Tilknyttet",
+        "close": "Luk",
+        "markDone": "Marker som afsluttet",
+        "markUndone": "Genaabn",
+        "editFollowUp": "Rediger",
+        "deleteFollowUp": "Slet",
+        "more": "flere",
+        "weekDays": {
+            "mon": "Ma",
+            "tue": "Ti",
+            "wed": "On",
+            "thu": "To",
+            "fri": "Fr",
+            "sat": "Loe",
+            "sun": "Soe"
+        }
+    },
+    "FollowUpWidget": {
+        "title": "Opfoelgning",
+        "overdue": "Overskredet",
+        "today": "I dag",
+        "tomorrow": "I morgen",
+        "upcoming": "Kommende",
+        "noItems": "Ingen aabne opfoelgninger",
+        "showAll": "Vis alle {count}",
+        "markDone": "Marker som afsluttet",
+        "quickAdd": "Hurtig tilfoejelse",
+        "openAll": "Aabn alle",
+        "daysAgo": "for {days} dage siden"
+    }
+}

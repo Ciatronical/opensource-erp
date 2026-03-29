@@ -1,0 +1,41 @@
+{
+    "OrderSearchView": {
+        "title": "Pesquisa de encomendas",
+        "fields": {
+            "ordnumber": "Número da encomenda",
+            "customer_name": "Nome do cliente",
+            "transaction_description": "Descrição",
+            "first_instruction": "Descrição",
+            "location": "Localização",
+            "status": "Estado",
+            "transdate_from": "Data de",
+            "transdate_to": "Data até",
+            "bringetermin_from": "Data de entrega de",
+            "bringetermin_to": "Data de entrega até",
+            "amount_from": "Montante de",
+            "amount_to": "Montante até",
+            "employee": "Responsável",
+            "transdate": "Data",
+            "bringetermin": "Data de entrega",
+            "amount": "Montante",
+            "cusordnumber": "Número de encomenda do cliente",
+            "hersteller": "Fabricante"
+        },
+        "buttons": {
+            "search": "Pesquisar",
+            "reset": "Repor"
+        },
+        "table": {
+            "title": "Resultados da pesquisa",
+            "text_no_search_table_shown": "Introduza critérios de pesquisa e prima ENTER ou \"Pesquisar\". Os resultados serão apresentados aqui.",
+            "text_no_results": "Nenhuma encomenda encontrada.",
+            "results_count": "Resultados"
+        },
+        "alerts": {
+            "warning_no_search_criteria": "Não foram introduzidos critérios de pesquisa. Deseja carregar todas as encomendas?"
+        },
+        "toasts": {
+            "error_loading_search_results": "Erro ao carregar os resultados da pesquisa."
+        }
+    }
+}

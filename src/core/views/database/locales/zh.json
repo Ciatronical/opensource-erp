@@ -1,0 +1,12 @@
+{
+    "SaveDatabaseView": {
+        "title": "保存数据库",
+        "description": "将当前数据库保存到您的设备。",
+        "saveButton": "保存数据库"
+    },
+    "LoadDatabaseView": {
+        "title": "加载数据库",
+        "description": "从您的设备加载之前保存的数据库。",
+        "loadButton": "加载数据库"
+    }
+}

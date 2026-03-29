@@ -1,0 +1,328 @@
+{
+    "SearchView": {
+        "title": "搜索",
+        "all": "全部",
+        "tabs": {
+            "customer_vendor": "客户/供应商/联系人",
+            "invoice": "发票",
+            "purchase_invoice": "进项发票",
+            "quotation": "报价单",
+            "order": "订单",
+            "purchase_order": "采购订单",
+            "delivery_order": "发货单",
+            "vehicle": "车辆",
+            "article": "商品"
+        },
+        "vehicle_fields": {
+            "license_plate": "车牌号",
+            "fin": "车辆识别码",
+            "manufacturer": "制造商",
+            "model": "型号",
+            "owner": "车主",
+            "hu": "定期检验",
+            "created_at": "创建日期",
+            "no_results": "未找到车辆"
+        },
+        "article_fields": {
+            "partnumber": "商品编号",
+            "description": "描述",
+            "part_type": "类型",
+            "part_type_part": "商品",
+            "part_type_service": "服务",
+            "unit": "单位",
+            "sellprice": "销售价格",
+            "sellprice_from": "销售价格从",
+            "sellprice_to": "销售价格至",
+            "obsolete": "已淘汰",
+            "obsolete_yes": "是",
+            "obsolete_no": "否",
+            "notes": "备注",
+            "created_at": "创建日期",
+            "no_results": "未找到商品。"
+        },
+        "document_fields": {
+            "document_number": "单据编号",
+            "customer_name": "客户名称",
+            "vendor_name": "供应商名称",
+            "transdate_from": "日期从",
+            "transdate_to": "日期至",
+            "amount_from": "金额从",
+            "amount_to": "金额至",
+            "status": "状态",
+            "status_open": "未完成",
+            "status_closed": "已完成"
+        },
+        "document_table": {
+            "document_number": "单据编号",
+            "cv_name": "客户/供应商",
+            "cv_number": "客户/供应商编号",
+            "transdate": "日期",
+            "amount": "金额",
+            "status": "状态",
+            "status_open": "未完成",
+            "status_closed": "已完成",
+            "created_at": "创建日期",
+            "text_no_results": "未找到单据。"
+        }
+    },
+    "CustomerVendorSearchView": {
+        "title_customer": "搜索客户",
+        "title_vendor": "搜索供应商",
+        "title_contacts": "搜索联系人",
+        "labels": {
+            "customer": "客户",
+            "vendor": "供应商"
+        },
+        "sections": {
+            "invoices": "销售发票",
+            "vendor_invoices": "进项发票",
+            "quotations": "报价单",
+            "requests_for_quotation": "询价单",
+            "orders": "订单",
+            "purchase_orders": "采购订单",
+            "delivery_orders": "发货单",
+            "customer_record": "客户主数据",
+            "vendor_record": "供应商主数据"
+        },
+        "fields": {
+            "iban": "IBAN",
+            "bic": "BIC",
+            "hourly_rate": "时薪",
+            "order_lock": "订单锁定",
+            "invoice_mail": "发票邮箱",
+            "delivery_order_mail": "发货单邮箱",
+            "dunning_mail": "催款邮箱",
+            "postal_invoice": "邮寄发票",
+            "direct_debit": "直接借记",
+            "contact_origin": "个人数据来源",
+            "username": "用户名",
+            "birthday": "出生日期",
+            "birthday_from": "出生日期从",
+            "birthday_to": "出生日期至",
+            "customer_vendor_name": "公司",
+            "gender": "性别",
+            "main_contact": "主要联系人",
+            "business_type": "客户类型",
+            "ustid": "增值税号",
+            "taxnumber": "税号",
+            "discount": "折扣",
+            "currency": "货币",
+            "pricegroup": "价格组",
+            "language": "语言",
+            "delivery_terms": "交货条件",
+            "homepage": "主页",
+            "creditlimit": "信用额度",
+            "taxincluded": "含税价格",
+            "notes": "内部备注",
+            "natural_person": "自然人",
+            "radio_customer": "客户",
+            "radio_vendor": "供应商",
+            "radio_person": "联系人",
+            "switch_sql_query": "SQL 查询",
+            "switch_show_additional_search_fields": "显示更多搜索条件",
+            "customer_number": "客户编号",
+            "vendor_number": "供应商编号",
+            "customer_vendor_number": "客户/供应商编号",
+            "greeting": "称呼",
+            "name": "名称",
+            "mail": "电子邮件",
+            "phone_fax": "电话/传真",
+            "phone": "电话",
+            "gln": "GLN",
+            "street": "街道",
+            "zipcode": "邮编",
+            "city": "城市",
+            "country": "国家",
+            "salesman": "销售员",
+            "contact": "联系人",
+            "department": "部门",
+            "dunning_lock": "催款锁定",
+            "validity": "有效性",
+            "zugferd_settings": "Factur-X/ZUGFeRD 设置",
+            "payment_terms": "付款条件",
+            "tax_rate": "税率",
+            "first_name": "名",
+            "last_name": "姓",
+            "position_title": "职位/头衔",
+            "project": "项目",
+            "created_at_from": "创建日期从",
+            "created_at_to": "创建日期至",
+            "updated_at_from": "修改日期从",
+            "updated_at_to": "修改日期至",
+            "created_at": "创建日期",
+            "updated_at": "修改日期",
+            "status": "状态",
+            "type": "类型",
+            "number": "编号",
+            "sql_query": "SQL 查询",
+            "invoice_created_at_from": "发票创建从",
+            "invoice_created_at_to": "发票创建至",
+            "invoice_updated_at_from": "发票修改从",
+            "invoice_updated_at_to": "发票修改至",
+            "quotation_created_at_from": "报价创建从",
+            "quotation_created_at_to": "报价创建至",
+            "quotation_updated_at_from": "报价修改从",
+            "quotation_updated_at_to": "报价修改至",
+            "rfq_created_at_from": "询价创建从",
+            "rfq_created_at_to": "询价创建至",
+            "rfq_updated_at_from": "询价修改从",
+            "rfq_updated_at_to": "询价修改至",
+            "order_created_at_from": "订单创建从",
+            "order_created_at_to": "订单创建至",
+            "order_updated_at_from": "订单修改从",
+            "order_updated_at_to": "订单修改至",
+            "purchase_order_created_at_from": "采购订单创建从",
+            "purchase_order_created_at_to": "采购订单创建至",
+            "purchase_order_updated_at_from": "采购订单修改从",
+            "purchase_order_updated_at_to": "采购订单修改至",
+            "delivery_order_created_at_from": "发货单创建从",
+            "delivery_order_created_at_to": "发货单创建至",
+            "delivery_order_updated_at_from": "发货单修改从",
+            "delivery_order_updated_at_to": "发货单修改至"
+        },
+        "selects": {
+            "order_lock_options": {
+                "yes": "是",
+                "no": "否"
+            },
+            "postal_invoice_options": {
+                "yes": "是",
+                "no": "否"
+            },
+            "direct_debit_options": {
+                "yes": "是",
+                "no": "否"
+            },
+            "gender_options": {
+                "m": "男",
+                "f": "女"
+            },
+            "main_contact_options": {
+                "yes": "是",
+                "no": "否"
+            },
+            "status_options": {
+                "active": "有效",
+                "inactive": "无效"
+            },
+            "taxincluded_options": {
+                "yes": "是",
+                "no": "否"
+            },
+            "zugferd_options": {
+                "1": "遵循公司配置设置",
+                "2": "不生成 Factur-X/ZUGFeRD 发票",
+                "3": "使用配置文件 Factur-X 1.01.06/ZUGFeRD 2.2 extended",
+                "4": "使用配置文件 Factur-X 1.01.06/ZUGFeRD 2.2 extended（测试模式）",
+                "5": "使用配置文件 XRechnung 2.0.0",
+                "6": "使用配置文件 XRechnung 2.0.0（测试模式）"
+            },
+            "dunning_lock_options": {
+                "yes": "是",
+                "no": "否"
+            },
+            "natural_person_options": {
+                "yes": "是",
+                "no": "否"
+            }
+        },
+        "buttons": {
+            "search": "搜索",
+            "reset": "重置",
+            "edit": "编辑",
+            "bulk_actions": "批量操作",
+            "brevo_marketing_mail": "Brevo 营销邮件",
+            "help": "帮助",
+            "save_query": "保存",
+            "saved_queries": "已保存的查询"
+        },
+        "table": {
+            "title": "搜索结果",
+            "text_no_search_table_shown": "请输入搜索条件或 SQL 查询，然后按 ENTER 或点击\"搜索\"开始。搜索结果将在此显示。",
+            "text_no_results_customer": "未找到客户。",
+            "text_no_results_vendor": "未找到供应商。",
+            "text_no_results_person": "未找到联系人。",
+            "text_no_results_default": "未找到数据。"
+        },
+        "alerts": {
+            "warning_no_search_criteria": "未输入搜索条件或 SQL 查询。确定要加载所有条目吗？"
+        },
+        "toasts": {
+            "error_loading_search_results": "加载搜索结果时出错。",
+            "error_sending_brevo_marketing_mails": "发送 Brevo 营销邮件时出错。",
+            "brevo_marketing_mails_were_prefix": "Brevo 营销邮件已",
+            "brevo_marketing_mail_was_prefix": "Brevo 营销邮件已"
+        },
+        "dialogs": {
+            "brevo_marketing_mail": {
+                "title": "发送 Brevo 营销邮件",
+                "labels": {
+                    "customer": "客户",
+                    "vendor": "供应商",
+                    "person": "联系人"
+                },
+                "fields": {
+                    "select_template": "Brevo 邮件模板"
+                },
+                "texts": {
+                    "select_template_and_click_send": "请选择所需的 Brevo 邮件模板，然后点击\"发送\"。",
+                    "hint_prefix": "提示：点击\"发送\"后，将为每个",
+                    "hint_suffix": "通过 Brevo 发送一封单独的营销邮件。",
+                    "hint_cannot_cancel": "此过程一旦开始就无法取消。"
+                },
+                "buttons": {
+                    "cancel": "取消",
+                    "mails_to": "邮件发送给",
+                    "mail_to": "邮件发送给",
+                    "send": "发送"
+                }
+            },
+            "sql_help": {
+                "title": "SQL 帮助 - 可用列",
+                "loading": "正在加载列...",
+                "example_query": "示例查询",
+                "copy_example": "复制示例",
+                "example_customer_description": "搜索名称中含有 'GmbH' 的公司，位于柏林，信用额度超过 10,000 欧元。",
+                "example_vendor_description": "搜索名称中含有 'Tech' 的德国供应商，未标记为淘汰。",
+                "example_contacts_description": "搜索年龄在 20 至 40 岁之间的柏林女性。",
+                "available_columns": "以下列可用：",
+                "click_to_copy": "点击列名可复制。",
+                "no_columns": "未找到列。",
+                "error_loading": "加载列时出错。",
+                "copied": "{column} 已复制到剪贴板。",
+                "example_copied": "示例查询已复制到剪贴板。",
+                "close": "关闭",
+                "table_customer": "表：customer",
+                "table_vendor": "表：vendor",
+                "table_contacts": "表：contacts"
+            },
+            "save_query": {
+                "title": "保存查询",
+                "name_label": "查询名称",
+                "name_placeholder": "例如：柏林高信用额度客户",
+                "query": "查询",
+                "cancel": "取消",
+                "save": "保存",
+                "saved": "查询保存成功。",
+                "error_saving": "保存查询时出错。"
+            },
+            "saved_queries": {
+                "title": "已保存的查询",
+                "loading": "正在加载查询...",
+                "no_queries": "暂无已保存的查询。",
+                "error_loading": "加载查询时出错。",
+                "delete_confirm_title": "删除查询？",
+                "delete_confirm_text": "确定要删除此查询吗？",
+                "deleted": "查询删除成功。",
+                "error_deleting": "删除查询时出错。",
+                "close": "关闭"
+            }
+        },
+        "errors": {
+            "sql_error_title": "查询中的 SQL 错误",
+            "sql_state": "SQL 状态",
+            "error_message": "错误消息",
+            "your_query": "您的查询"
+        }
+    }
+}

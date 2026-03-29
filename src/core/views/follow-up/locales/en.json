@@ -1,0 +1,179 @@
+{
+    "FollowUpView": {
+        "title": "Follow-Up",
+        "search": "Search...",
+        "fromDate": "From",
+        "toDate": "To",
+        "showDone": "Show completed",
+        "tabs": {
+            "board": "Board",
+            "list": "List",
+            "calendar": "Calendar"
+        },
+        "actions": {
+            "create": "New Follow-Up",
+            "cancel": "Cancel",
+            "delete": "Delete",
+            "save": "Save",
+            "edit": "Edit",
+            "markDone": "Completed",
+            "markUndone": "Reopen",
+            "close": "Close"
+        },
+        "columns": {
+            "overdue": "Overdue",
+            "today": "Today",
+            "upcoming": "Upcoming",
+            "done": "Completed"
+        },
+        "confirmDelete": {
+            "title": "Delete Follow-Up?",
+            "message": "Are you sure you want to delete this follow-up? This action cannot be undone."
+        },
+        "messages": {
+            "loadError": "Error loading follow-ups",
+            "saved": "Follow-up saved",
+            "saveError": "Error saving",
+            "deleted": "Follow-up deleted",
+            "deletedMultiple": "{count} follow-ups deleted",
+            "markedDone": "Marked as completed",
+            "markedUndone": "Reopened",
+            "error": "An error occurred"
+        }
+    },
+    "FollowUpCard": {
+        "noSubject": "No subject",
+        "today": "Today",
+        "tomorrow": "Tomorrow",
+        "daysAgo": "{days} days ago",
+        "inDays": "in {days} days",
+        "markDone": "Mark as completed",
+        "markUndone": "Reopen",
+        "delete": "Delete"
+    },
+    "FollowUpDialog": {
+        "titleCreate": "New Follow-Up",
+        "titleEdit": "Edit Follow-Up",
+        "date": "Date",
+        "subject": "Subject",
+        "body": "Note",
+        "assignedEmployees": "Assigned to",
+        "linkSection": "Link (optional)",
+        "linkType": "Link type",
+        "linkId": "ID",
+        "linkInfo": "Description",
+        "searchCustomer": "Search customer",
+        "searchVendor": "Search vendor",
+        "searchQuotation": "Search quotation",
+        "searchOrder": "Search order",
+        "searchDeliveryOrder": "Search delivery note",
+        "searchInvoice": "Search invoice",
+        "searchRequestQuotation": "Search RFQ",
+        "searchPurchaseOrder": "Search purchase order",
+        "searchPurchaseDeliveryOrder": "Search goods receipt",
+        "searchPurchaseInvoice": "Search vendor invoice",
+        "search": "Search",
+        "noResults": "No results found",
+        "startTyping": "Start typing to search...",
+        "cancel": "Cancel",
+        "save": "Save",
+        "quickDate": {
+            "today": "Today",
+            "tomorrow": "Tomorrow",
+            "nextWeek": "+1 Week",
+            "twoWeeks": "+2 Weeks",
+            "nextMonth": "+1 Month"
+        },
+        "linkTypes": {
+            "customer": "Customer",
+            "vendor": "Vendor",
+            "salesQuotation": "Quotation",
+            "salesOrder": "Order",
+            "salesDeliveryOrder": "Delivery Note",
+            "salesInvoice": "Invoice",
+            "purchaseQuotation": "RFQ",
+            "purchaseOrder": "Purchase Order",
+            "purchaseDeliveryOrder": "Goods Receipt",
+            "purchaseInvoice": "Vendor Invoice"
+        },
+        "validation": {
+            "required": "Required"
+        }
+    },
+    "FollowUpList": {
+        "done": "Completed",
+        "open": "Open",
+        "today": "Today",
+        "tomorrow": "Tomorrow",
+        "markDone": "Mark as completed",
+        "markUndone": "Reopen",
+        "edit": "Edit",
+        "delete": "Delete",
+        "entry": "Entry",
+        "entries": "Entries",
+        "deleteAll": "Delete all displayed",
+        "deleteAllConfirmTitle": "Delete all follow-ups?",
+        "deleteAllConfirmText": "Do you really want to delete all {count} displayed follow-ups?",
+        "deleteAllWarning": "This action cannot be undone!",
+        "deleteAllConfirm": "Delete all",
+        "cancel": "Cancel",
+        "headers": {
+            "date": "Date",
+            "subject": "Subject",
+            "link": "Link",
+            "assignedTo": "Assigned",
+            "status": "Status",
+            "actions": "Actions"
+        }
+    },
+    "FollowUpCalendar": {
+        "today": "Today",
+        "month": "Month",
+        "week": "Week",
+        "day": "Day",
+        "allDay": "All Day",
+        "noSubject": "No Subject",
+        "newFollowUp": "New Follow-Up",
+        "subject": "Subject",
+        "subjectPlaceholder": "What needs to be done?",
+        "note": "Note",
+        "notePlaceholder": "Additional information...",
+        "cancel": "Cancel",
+        "create": "Create",
+        "done": "Completed",
+        "reopen": "Reopen",
+        "edit": "Edit",
+        "links": "Links",
+        "details": "Details",
+        "assignedTo": "Assigned to",
+        "linkedTo": "Linked to",
+        "close": "Close",
+        "markDone": "Mark as completed",
+        "markUndone": "Reopen",
+        "editFollowUp": "Edit",
+        "deleteFollowUp": "Delete",
+        "more": "more",
+        "weekDays": {
+            "mon": "Mon",
+            "tue": "Tue",
+            "wed": "Wed",
+            "thu": "Thu",
+            "fri": "Fri",
+            "sat": "Sat",
+            "sun": "Sun"
+        }
+    },
+    "FollowUpWidget": {
+        "title": "Follow-Up",
+        "overdue": "Overdue",
+        "today": "Today",
+        "tomorrow": "Tomorrow",
+        "upcoming": "Upcoming",
+        "noItems": "No open follow-ups",
+        "showAll": "Show all {count}",
+        "markDone": "Mark as completed",
+        "quickAdd": "Quick add",
+        "openAll": "Open all",
+        "daysAgo": "{days} days ago"
+    }
+}

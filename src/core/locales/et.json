@@ -1,0 +1,47 @@
+{
+    "LoginView": {
+        "title": "Sisselogimine",
+        "username": "Kasutajanimi",
+        "password": "Parool",
+        "client": "Ettevõte",
+        "button": "Logi sisse",
+        "failed": "Sisselogimine ebaõnnestus. Palun kontrollige oma sisselogimisandmeid.",
+        "EMPTY_FIELDS": "Palun sisestage nimi ja parool.",
+        "USER_NOT_FOUND": "Kasutajat ei leitud.",
+        "WRONG_PASSWORD": "Vale parool.",
+        "ERROR": "Sisselogimisel ilmnes viga. Palun proovige uuesti.",
+        "ERROR_LOADING_CLIENTS": "Viga ettevõtete laadimisel. Palun proovige hiljem uuesti.",
+        "USER_NOT_ASSIGNED_TO_CLIENT": "Kasutaja ei ole ettevõttele määratud.",
+        "PASSWORD_FILE_NOT_FOUND": "Viga: Paroolifaili api/config/api.passwd.php ei leitud. Palun nimetage fail api/config/api.passwd.php.example umber api/config/api.passwd.php ja kohandage seadeid vastavalt.",
+        "CONFIG_FILE_NOT_FOUND": "Viga: Konfiguratsioonifaili ei leitud. Palun kontrollige seadeid.",
+        "updateButton": "Uuenda andmebaas",
+        "updateSuccess": "Andmebaasi uuendamine õnnestus.",
+        "updateError": "Viga andmebaasi uuendamisel. Palun proovige uuesti.",
+        "privacy": "Privaatsuspoliitika",
+        "dataDeletion": "Andmete kustutamine"
+    },
+    "NotFoundView": {
+        "title": "Lehte ei leitud",
+        "message": "Soovitud lehte ei leitud.",
+        "back_home": "Tagasi avalehele"
+    },
+    "NavbarView": {
+        "logoutTooltip": "Logi välja",
+        "accountTooltip": "Konto",
+        "editCustomerTooltip": "Muuda klienti",
+        "editCvTooltip": "Muuda klienti/tarnijat",
+        "currentC": "Klient:",
+        "currentV": "Tarnija:",
+        "demoBanner": "Demorežiim — Kõik andmed lähtestatakse automaatselt pärast tegevusetust.",
+        "demoResetWarning": "Demo lähtestatakse {seconds} sekundi pärast — liigutage hiirt jätkamiseks."
+    },
+    "ErrorView": {
+        "title": "Ilmnes viga",
+        "message": "Vabandame, tekkis ootamatu viga.",
+        "debugInfo": "Silumisinfo:",
+        "clickToShowDetails": "Klõpsake detailide kuvamiseks"
+    },
+    "App": {
+        "loading": "Palun oodake..."
+    }
+}

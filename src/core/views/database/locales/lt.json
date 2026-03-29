@@ -1,0 +1,12 @@
+{
+    "SaveDatabaseView": {
+        "title": "Išsaugoti duomenų bazę",
+        "description": "Išsaugokite dabartinę duomenų bazę savo įrenginyje.",
+        "saveButton": "Išsaugoti duomenų bazę"
+    },
+    "LoadDatabaseView": {
+        "title": "Įkelti duomenų bazę",
+        "description": "Įkelkite anksčiau išsaugotą duomenų bazę iš savo įrenginio.",
+        "loadButton": "Įkelti duomenų bazę"
+    }
+}

@@ -1,0 +1,33 @@
+{
+    "CarView": {
+        "routes": {
+            "newCar": "/fahrzeug/neu",
+            "newCarFromScan": "/fahrzeug/neu-vom-scan",
+            "manageCars": "/fahrzeug",
+            "orderSearch": "/fahrzeug-auftrag/suche",
+            "carRegistration": "/fahrzeug/zulassung"
+        },
+        "newCar": "Neu anlegen",
+        "newCarFromScan": "Scanliste",
+        "title": "Fahrzeuge",
+        "manageCars": "Verwalten",
+        "orderSearch": "Auftragsliste",
+        "huSerienbrief": "HU-Benachrichtigungen",
+        "orderSearchTooltip": "Auftragssuche",
+        "scanTooltip": "Fahrzeuge von Scan"
+    },
+    "PartsRequests": {
+        "title": "Ersatzteile",
+        "search": "Artikel suchen...",
+        "freetext": "Oder Freitext",
+        "qty": "Menge",
+        "note": "Notiz",
+        "add": "Anfordern",
+        "empty": "Keine Ersatzteile angefordert",
+        "description": "Beschreibung",
+        "status": "Status",
+        "requestedBy": "Angefordert von",
+        "pending": "Angefordert",
+        "ordered": "Bestellt"
+    }
+}

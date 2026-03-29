@@ -1,0 +1,40 @@
+{
+    "EmailView": {
+        "title": "E-post",
+        "inbox": "Inkorg",
+        "sent": "Skickat",
+        "drafts": "Utkast",
+        "trash": "Papperskorg",
+        "folders": "Mappar",
+        "compose": "Nytt e-postmeddelande",
+        "refresh": "Uppdatera",
+        "search": "Sok i e-post...",
+        "noEmails": "Inga e-postmeddelanden tillgangliga",
+        "noConfig": "E-postklienten ar inte konfigurerad. Konfigurera e-postinstallningarna i foretagskonfigurationen under CRM.",
+        "loading": "E-post laddas...",
+        "from": "Fran",
+        "to": "Till",
+        "cc": "CC",
+        "date": "Datum",
+        "subject": "Amne",
+        "body": "Meddelande",
+        "noSubject": "(Inget amne)",
+        "attachments": "Bilagor",
+        "send": "Skicka",
+        "cancel": "Avbryt",
+        "reply": "Svara",
+        "forward": "Vidarebefordra",
+        "delete": "Radera",
+        "markRead": "Markera som last",
+        "markUnread": "Markera som olast",
+        "of": "av",
+        "emails": "e-postmeddelanden",
+        "page": "Sida",
+        "customer": "Kund / Leverantor",
+        "searchCustomer": "Sok kund eller leverantor...",
+        "openCustomer": "oppna"
+    },
+    "EmailMenu": {
+        "title": "E-post"
+    }
+}

@@ -1,0 +1,75 @@
+{
+    "routes": {
+        "mainmenu": "/hauptmen%C3%BC",
+        "customer": "/kunde",
+        "editCustomer": "/kunde/bearbeiten",
+        "editVendor": "/lieferant/bearbeiten",
+        "viewInvoice": "/rechnung/anzeigen",
+        "editQuotation": "/angebot/bearbeiten",
+        "editOrder": "/auftrag/bearbeiten",
+        "newCustomer": "/kunde/neu",
+        "newVendor": "/lieferant/neu",
+        "newQuotation": "/angebot/neu",
+        "newOrder": "/auftrag/neu",
+        "newInvoice": "/rechnung/neu",
+        "manageCustomers": "/kunde",
+        "manageVendors": "/lieferant",
+        "manageArticles": "/artikel",
+        "manageQuotations": "/angebot",
+        "manageOrders": "/auftrag",
+        "manageInvoices": "/rechnung",
+        "manageCreditNotes": "/gutschrift",
+        "manageDeliveryOrders": "/lieferschein",
+        "orderSearch": "/auftrag/suche",
+        "search": "/suche",
+        "searchCustomers": "/kunde/suche",
+        "followUp": "/wiedervorlage",
+        "clientConfig": "/system/mandantenkonfiguration",
+        "developerTools": "/system/developer-tools",
+        "systemUpdate": "/system/aktualisierung",
+        "currentCustomerEdit": "/kunde/bearbeiten",
+        "callHistory": "/anrufliste",
+        "calendar": "/kalender",
+        "wiki": "/wiki",
+        "wikiNew": "/wiki/neu",
+        "wikiCategories": "/wiki/kategorien",
+        "wikiEdit": "/wiki/bearbeiten",
+        "userConfig": "/benutzer/konfiguration",
+        "huSerienbrief": "/serienbrief/hu",
+        "wallDisplay": "/wandanzeige"
+    },
+    "errors": {
+        "PASSWORD_FILE_NOT_FOUND": "Feil: Passordfilen api/config/api.passwd.php ble ikke funnet. Vennligst gi nytt navn til filen api/config/api.passwd.php.example til api/config/api.passwd.php og tilpass innstillingene.",
+        "CONFIG_FILE_NOT_FOUND": "Feil: Konfigurasjonsfilen ble ikke funnet. Vennligst kontroller innstillingene."
+    },
+    "MasterDataMenu": {
+        "title": "Stamdata",
+        "editCustomer": "Rediger kundedata",
+        "newCustomer": "Opprett ny kunde",
+        "manageCustomers": "Administrer kunder",
+        "search": "Soek",
+        "searchCustomers": "Soek kunder",
+        "newVendor": "Opprett ny leverandoer",
+        "calendar": "Kalender"
+    },
+    "ContactMenu": {
+        "title": "Kontakt",
+        "callHistory": "Anropsliste",
+        "emails": "E-poster",
+        "whatsapp": "WhatsApp"
+    },
+    "SalesMenu": {
+        "title": "Salg",
+        "newQuotation": "Opprett nytt tilbud",
+        "newOrder": "Opprett ny ordre",
+        "newInvoice": "Opprett ny faktura",
+        "manageCreditNotes": "Kreditnotaer"
+    },
+    "SystemMenu": {
+        "title": "System",
+        "clientConfig": "Firmakonfigurasjon",
+        "developerTools": "Developer Tools",
+        "systemUpdate": "Systemoppdatering",
+        "about": "Om"
+    }
+}

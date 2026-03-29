@@ -1,0 +1,75 @@
+{
+    "routes": {
+        "mainmenu": "/hauptmen%C3%BC",
+        "customer": "/kunde",
+        "editCustomer": "/kunde/bearbeiten",
+        "editVendor": "/lieferant/bearbeiten",
+        "viewInvoice": "/rechnung/anzeigen",
+        "editQuotation": "/angebot/bearbeiten",
+        "editOrder": "/auftrag/bearbeiten",
+        "newCustomer": "/kunde/neu",
+        "newVendor": "/lieferant/neu",
+        "newQuotation": "/angebot/neu",
+        "newOrder": "/auftrag/neu",
+        "newInvoice": "/rechnung/neu",
+        "manageCustomers": "/kunde",
+        "manageVendors": "/lieferant",
+        "manageArticles": "/artikel",
+        "manageQuotations": "/angebot",
+        "manageOrders": "/auftrag",
+        "manageInvoices": "/rechnung",
+        "manageCreditNotes": "/gutschrift",
+        "manageDeliveryOrders": "/lieferschein",
+        "orderSearch": "/auftrag/suche",
+        "search": "/suche",
+        "searchCustomers": "/kunde/suche",
+        "followUp": "/wiedervorlage",
+        "clientConfig": "/system/mandantenkonfiguration",
+        "developerTools": "/system/developer-tools",
+        "systemUpdate": "/system/aktualisierung",
+        "currentCustomerEdit": "/kunde/bearbeiten",
+        "callHistory": "/anrufliste",
+        "calendar": "/kalender",
+        "wiki": "/wiki",
+        "wikiNew": "/wiki/neu",
+        "wikiCategories": "/wiki/kategorien",
+        "wikiEdit": "/wiki/bearbeiten",
+        "userConfig": "/benutzer/konfiguration",
+        "huSerienbrief": "/serienbrief/hu",
+        "wallDisplay": "/wandanzeige"
+    },
+    "errors": {
+        "PASSWORD_FILE_NOT_FOUND": "Error: No se encontró el archivo de contraseña api/config/api.passwd.php. Por favor, renombre el archivo api/config/api.passwd.php.example a api/config/api.passwd.php y ajuste la configuración.",
+        "CONFIG_FILE_NOT_FOUND": "Error: No se encontró el archivo de configuración. Por favor, verifique la configuración."
+    },
+    "MasterDataMenu": {
+        "title": "Datos maestros",
+        "editCustomer": "Editar datos del cliente",
+        "newCustomer": "Crear nuevo cliente",
+        "manageCustomers": "Gestionar clientes",
+        "search": "Buscar",
+        "searchCustomers": "Buscar clientes",
+        "newVendor": "Crear nuevo proveedor",
+        "calendar": "Calendario"
+    },
+    "ContactMenu": {
+        "title": "Contacto",
+        "callHistory": "Historial de llamadas",
+        "emails": "Correos electrónicos",
+        "whatsapp": "WhatsApp"
+    },
+    "SalesMenu": {
+        "title": "Ventas",
+        "newQuotation": "Crear nuevo presupuesto",
+        "newOrder": "Crear nuevo pedido",
+        "newInvoice": "Crear nueva factura",
+        "manageCreditNotes": "Notas de crédito"
+    },
+    "SystemMenu": {
+        "title": "Sistema",
+        "clientConfig": "Configuración de empresa",
+        "developerTools": "Herramientas de desarrollo",
+        "systemUpdate": "Actualización del sistema",
+        "about": "Acerca de"
+    }
+}

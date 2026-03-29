@@ -1,0 +1,50 @@
+{
+    "update": {
+        "title": "Aggiornamento del sistema",
+        "description": "Qui vengono salvati e aggiornati tutti i database delle aziende e il database di autenticazione.",
+        "messages": "Messaggi",
+        "sqlStatements": "Istruzioni SQL",
+        "errors": "Errori",
+        "dryRunSuccess": "Anteprima caricata con successo.",
+        "updateSuccess": "Tutti i database aggiornati con successo.",
+        "gitPull": "Git Pull",
+        "gitPullSuccess": "Git Pull riuscito",
+        "gitPullFailed": "Git Pull fallito",
+        "authDatabase": "Database di autenticazione",
+        "authBackup": "Backup autenticazione",
+        "clientDatabase": "Azienda: {name}",
+        "clientDbName": "Database: {dbname}",
+        "backupSuccess": "Backup creato: {filename}",
+        "backupFailed": "Backup fallito",
+        "backupSkipped": "Il backup non viene creato in modalità anteprima",
+        "features": "Funzionalità: {features}",
+        "noClients": "Nessuna azienda trovata.",
+        "overallSuccess": "Tutti i database aggiornati con successo",
+        "overallFailed": "Errore nell'aggiornamento",
+        "buttons": {
+            "dryRun": "Anteprima",
+            "checking": "Verifica...",
+            "update": "Esegui aggiornamento",
+            "updating": "Aggiornamento...",
+            "finish": "Completato"
+        },
+        "errorMessages": {
+            "dryRunFailed": "Anteprima fallita.",
+            "updateFailed": "Aggiornamento fallito.",
+            "networkError": "Errore di rete durante l'aggiornamento."
+        },
+        "schemaMessages": {
+            "dry_run_mode": "Modalità anteprima - Non verranno apportate modifiche",
+            "columns_added": "Tabella {table}: {count} colonna/e verrebbe/ro aggiunta/e | Tabella {table}: {count} colonna/e aggiunta/e",
+            "column_added": "Colonna '{column}' verrebbe aggiunta | Colonna '{column}' aggiunta",
+            "table_up_to_date": "Tabella {table}: Tutte le colonne presenti",
+            "table_created": "Tabella {table} verrebbe creata | Tabella {table} creata",
+            "version_updated": "Versione {version} registrata nel database {schema}",
+            "object_exists": "{object_type} {name} esiste già",
+            "statement_executed": "{statement_type} {target} eseguito",
+            "csv_skipped": "CSV saltato: {table} ({reason})",
+            "csv_imported": "CSV importato: {table} ({rows_imported} righe)",
+            "info": "{text}"
+        }
+    }
+}

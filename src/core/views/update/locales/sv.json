@@ -1,0 +1,50 @@
+{
+    "update": {
+        "title": "Systemuppdatering",
+        "description": "Har sakerhetskopieras och uppdateras alla foretagsdatabaser samt autentiseringsdatabasen.",
+        "messages": "Meddelanden",
+        "sqlStatements": "SQL-statements",
+        "errors": "Fel",
+        "dryRunSuccess": "Forhandsvisning laddad.",
+        "updateSuccess": "Alla databaser uppdaterade.",
+        "gitPull": "Git Pull",
+        "gitPullSuccess": "Git Pull genomford",
+        "gitPullFailed": "Git Pull misslyckades",
+        "authDatabase": "Autentiseringsdatabas",
+        "authBackup": "Autentiserings-sakerhetskopia",
+        "clientDatabase": "Foretag: {name}",
+        "clientDbName": "Databas: {dbname}",
+        "backupSuccess": "Sakerhetskopia skapad: {filename}",
+        "backupFailed": "Sakerhetskopia misslyckades",
+        "backupSkipped": "Sakerhetskopia skapas inte vid dry-run",
+        "features": "Features: {features}",
+        "noClients": "Inga foretag hittades.",
+        "overallSuccess": "Alla databaser uppdaterade",
+        "overallFailed": "Fel vid uppdatering",
+        "buttons": {
+            "dryRun": "Forhandsvisning",
+            "checking": "Kontrollerar...",
+            "update": "Kor uppdatering",
+            "updating": "Uppdaterar...",
+            "finish": "Klar"
+        },
+        "errorMessages": {
+            "dryRunFailed": "Forhandsvisning misslyckades.",
+            "updateFailed": "Uppdatering misslyckades.",
+            "networkError": "Natverksfel vid uppdatering."
+        },
+        "schemaMessages": {
+            "dry_run_mode": "Forhandsvisningslage - Inga andringar gors",
+            "columns_added": "Tabell {table}: {count} kolumn(er) skulle laggas till | Tabell {table}: {count} kolumn(er) tillagda",
+            "column_added": "Kolumn '{column}' skulle laggas till | Kolumn '{column}' tillagd",
+            "table_up_to_date": "Tabell {table}: Alla kolumner finns",
+            "table_created": "Tabell {table} skulle skapas | Tabell {table} skapad",
+            "version_updated": "Version {version} registrerad i {schema}-databas",
+            "object_exists": "{object_type} {name} finns redan",
+            "statement_executed": "{statement_type} {target} utford",
+            "csv_skipped": "CSV hoppades over: {table} ({reason})",
+            "csv_imported": "CSV importerad: {table} ({rows_imported} rader)",
+            "info": "{text}"
+        }
+    }
+}

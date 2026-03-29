@@ -1,0 +1,20 @@
+{
+    "WallDisplay": {
+        "calendar": "Kalendorius",
+        "faktura": "Dokumentas",
+        "noFaktura": "Dokumentas nepasirinktas",
+        "noFakturaHint": "Spustelėkite sąskaitos rodinyje monitoriaus mygtuką",
+        "invoice": "Sąskaita",
+        "order": "Užsakymas",
+        "quotation": "Pasiūlymas",
+        "open": "Atidaryta",
+        "closed": "Uždaryta",
+        "position": "Poz.",
+        "description": "Aprašymas",
+        "qty": "Kiekis",
+        "price": "Kaina",
+        "total": "Iš viso",
+        "grossTotal": "Bendra suma",
+        "allDay": "Visa diena"
+    }
+}

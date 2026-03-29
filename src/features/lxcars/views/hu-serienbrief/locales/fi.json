@@ -1,0 +1,68 @@
+{
+    "HuSerienbriefView": {
+        "title": "Katsastusilmoitukset",
+        "subtitle": "Asiakkaat joiden katsastus eraantyy",
+        "vorlauf": "Ennakkoaika: {monate} kuukautta",
+        "fields": {
+            "customer_name": "Asiakas",
+            "kennzeichen": "Rekisterinumero",
+            "hu_datum": "Katsastuspaiva",
+            "telefon": "Puhelin",
+            "email": "Sahkoposti",
+            "fahrzeug": "Ajoneuvo",
+            "actions": "Toiminnot",
+            "date_from": "Katsastus eraantyy alkaen",
+            "date_to": "Katsastus eraantyy paattyen"
+        },
+        "buttons": {
+            "print_all": "Tulosta valitut",
+            "email_all": "Laheta sahkoposti",
+            "reload": "Paivita",
+            "exclude": "Poista valinta",
+            "include": "Sisallyta uudelleen",
+            "send_pin": "Laheta PIN:lla",
+            "whatsapp_all": "Laheta WhatsApp"
+        },
+        "checkboxes": {
+            "show_excluded": "Nayta myos poisvalitut"
+        },
+        "chips": {
+            "excluded": "Poisvalittu",
+            "results_count": "Asiakasta"
+        },
+        "filter": {
+            "title": "Ajanjakso"
+        },
+        "table": {
+            "no_results": "Maaritetylta ajanjaksolta ei loytynyt asiakkaita eraantyvalla katsastuksella.",
+            "no_results_hint": "Tarkista ennakkoaika LXCars-asetuksissa."
+        },
+        "whatsapp": {
+            "message": "Hei {name}, ajoneuvonne ({kennzeichen}) katsastus eraantyy {hu_datum}. Varatkaa aika. Ystavallisin terveisin"
+        },
+        "toasts": {
+            "error_loading": "Virhe katsastuslistan lataamisessa.",
+            "excluded_success": "Asiakas poisvalittu.",
+            "included_success": "Asiakas sisallytetty uudelleen.",
+            "exclude_error": "Virhe tallentamisessa.",
+            "email_sent": "Sahkoposti lahetetty.",
+            "email_error": "Virhe sahkopostin lahettamisessa.",
+            "pdf_error": "Virhe PDF:n luomisessa.",
+            "sftp_success": "PDF lahetetty onnistuneesti eLetterilla.",
+            "sftp_error": "Virhe eLetter-lahettamisessa.",
+            "whatsapp_sent": "WhatsApp-viesti lahetetty.",
+            "whatsapp_error": "Virhe WhatsApp-viestin lahettamisessa.",
+            "whatsapp_bulk_sent": "{sent} WhatsApp-viestia lahetetty, {failed} epaonnistui.",
+            "whatsapp_no_phone": "Yhdellaakaan valitulla asiakkaalla ei ole puhelinnumeroa."
+        },
+        "tooltips": {
+            "whatsapp_single": "Laheta katsastusmuistutus WhatsAppilla",
+            "exclude": "Poista asiakas katsastusilmoituksista",
+            "include": "Sisallyta asiakas uudelleen katsastusilmoituksiin"
+        },
+        "dialogs": {
+            "confirm_exclude_title": "Poista asiakkaan valinta",
+            "confirm_exclude_text": "Tama asiakas poistetaan pysyvasti katsastusilmoituslistalta. Haluatko jatkaa?"
+        }
+    }
+}

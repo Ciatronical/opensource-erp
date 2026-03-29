@@ -1,0 +1,21 @@
+{
+    "title": "Vartotojo konfigūracija",
+    "loading": "Kraunama konfigūracija...",
+    "configLoadError": "Konfigūracijos klaida",
+    "user_fields": {
+        "appearance": "Išvaizda",
+        "darkMode": "Tamsi tema (Dark Mode)",
+        "darkMode_help": "Aktyvuoja tamsią spalvų schemą visai programai.",
+        "locale": "Rodymo kalba",
+        "locale_help": "Vartotojo sąsajos kalba. Taikoma iš karto.",
+        "general": "Bendra",
+        "startupView": "Pradinis vaizdas",
+        "startupView_help": "Koks vaizdas rodomas po prisijungimo. Perrašo įmonės nustatymą.",
+        "faktura": "Sąskaitos",
+        "fakturaCompactView": "Kompaktiškas vaizdas pagal numatytuosius",
+        "fakturaCompactView_help": "Paslepia detalių korteles (klientas, dokumento detalės, papildoma info) ir rodo tik kompaktišką santrauką.",
+        "printer": "Spausdintuvas",
+        "defaultPrinter": "Numatytasis spausdintuvas",
+        "defaultPrinter_help": "Spausdintuvas, naudojamas pagal numatytuosius spausdinimui"
+    }
+}

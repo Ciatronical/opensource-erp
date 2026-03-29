@@ -1,0 +1,41 @@
+{
+    "OrderSearchView": {
+        "title": "Pasūtījumu meklēšana",
+        "fields": {
+            "ordnumber": "Pasūtījuma numurs",
+            "customer_name": "Klienta vārds",
+            "transaction_description": "Apraksts",
+            "first_instruction": "Apraksts",
+            "location": "Atrašanās vieta",
+            "status": "Statuss",
+            "transdate_from": "Datums no",
+            "transdate_to": "Datums līdz",
+            "bringetermin_from": "Atvešanas termiņš no",
+            "bringetermin_to": "Atvešanas termiņš līdz",
+            "amount_from": "Summa no",
+            "amount_to": "Summa līdz",
+            "employee": "Apstrādātājs",
+            "transdate": "Datums",
+            "bringetermin": "Atvešanas termiņš",
+            "amount": "Summa",
+            "cusordnumber": "Klienta pasūtījuma numurs",
+            "hersteller": "Ražotājs"
+        },
+        "buttons": {
+            "search": "Meklēt",
+            "reset": "Atiestatīt"
+        },
+        "table": {
+            "title": "Meklēšanas rezultāti",
+            "text_no_search_table_shown": "Ievadiet meklēšanas kritērijus un nospiediet ENTER vai \"Meklēt\". Rezultāti tiks parādīti šeit.",
+            "text_no_results": "Pasūtījumi nav atrasti.",
+            "results_count": "Rezultāti"
+        },
+        "alerts": {
+            "warning_no_search_criteria": "Nav ievadīti meklēšanas kritēriji. Vai tiešām vēlaties ielādēt visus pasūtījumus?"
+        },
+        "toasts": {
+            "error_loading_search_results": "Kļūda ielādējot meklēšanas rezultātus."
+        }
+    }
+}

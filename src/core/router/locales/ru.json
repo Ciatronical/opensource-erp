@@ -1,0 +1,75 @@
+{
+    "routes": {
+        "mainmenu": "/hauptmen%C3%BC",
+        "customer": "/kunde",
+        "editCustomer": "/kunde/bearbeiten",
+        "editVendor": "/lieferant/bearbeiten",
+        "viewInvoice": "/rechnung/anzeigen",
+        "editQuotation": "/angebot/bearbeiten",
+        "editOrder": "/auftrag/bearbeiten",
+        "newCustomer": "/kunde/neu",
+        "newVendor": "/lieferant/neu",
+        "newQuotation": "/angebot/neu",
+        "newOrder": "/auftrag/neu",
+        "newInvoice": "/rechnung/neu",
+        "manageCustomers": "/kunde",
+        "manageVendors": "/lieferant",
+        "manageArticles": "/artikel",
+        "manageQuotations": "/angebot",
+        "manageOrders": "/auftrag",
+        "manageInvoices": "/rechnung",
+        "manageCreditNotes": "/gutschrift",
+        "manageDeliveryOrders": "/lieferschein",
+        "orderSearch": "/auftrag/suche",
+        "search": "/suche",
+        "searchCustomers": "/kunde/suche",
+        "followUp": "/wiedervorlage",
+        "clientConfig": "/system/mandantenkonfiguration",
+        "developerTools": "/system/developer-tools",
+        "systemUpdate": "/system/aktualisierung",
+        "currentCustomerEdit": "/kunde/bearbeiten",
+        "callHistory": "/anrufliste",
+        "calendar": "/kalender",
+        "wiki": "/wiki",
+        "wikiNew": "/wiki/neu",
+        "wikiCategories": "/wiki/kategorien",
+        "wikiEdit": "/wiki/bearbeiten",
+        "userConfig": "/benutzer/konfiguration",
+        "huSerienbrief": "/serienbrief/hu",
+        "wallDisplay": "/wandanzeige"
+    },
+    "errors": {
+        "PASSWORD_FILE_NOT_FOUND": "Ошибка: Файл паролей api/config/api.passwd.php не найден. Пожалуйста, переименуйте файл api/config/api.passwd.php.example в api/config/api.passwd.php и настройте параметры соответствующим образом.",
+        "CONFIG_FILE_NOT_FOUND": "Ошибка: Файл конфигурации не найден. Пожалуйста, проверьте настройки."
+    },
+    "MasterDataMenu": {
+        "title": "Справочники",
+        "editCustomer": "Редактировать данные клиента",
+        "newCustomer": "Создать нового клиента",
+        "manageCustomers": "Управление клиентами",
+        "search": "Поиск",
+        "searchCustomers": "Поиск клиентов",
+        "newVendor": "Создать нового поставщика",
+        "calendar": "Календарь"
+    },
+    "ContactMenu": {
+        "title": "Контакт",
+        "callHistory": "Журнал звонков",
+        "emails": "Электронная почта",
+        "whatsapp": "WhatsApp"
+    },
+    "SalesMenu": {
+        "title": "Продажи",
+        "newQuotation": "Создать новое предложение",
+        "newOrder": "Создать новый заказ",
+        "newInvoice": "Создать новый счет",
+        "manageCreditNotes": "Кредитовые авизо"
+    },
+    "SystemMenu": {
+        "title": "Система",
+        "clientConfig": "Конфигурация компании",
+        "developerTools": "Инструменты разработчика",
+        "systemUpdate": "Обновление системы",
+        "about": "О программе"
+    }
+}

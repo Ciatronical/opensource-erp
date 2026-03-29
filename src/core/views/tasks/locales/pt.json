@@ -1,0 +1,135 @@
+{
+    "TasksView": {
+        "title": "Tarefas",
+        "search": "Pesquisar...",
+        "fromDate": "De",
+        "toDate": "Até",
+        "showDone": "Mostrar concluídas",
+        "tabs": {
+            "board": "Quadro",
+            "list": "Lista",
+            "calendar": "Calendário"
+        },
+        "actions": {
+            "create": "Nova tarefa",
+            "cancel": "Cancelar",
+            "delete": "Eliminar",
+            "save": "Guardar",
+            "edit": "Editar",
+            "markDone": "Concluída",
+            "markUndone": "Reabrir",
+            "close": "Fechar"
+        },
+        "columns": {
+            "overdue": "Vencida",
+            "today": "Hoje",
+            "upcoming": "Próxima",
+            "done": "Concluída"
+        },
+        "fields": {
+            "subject": "Assunto",
+            "body": "Nota",
+            "date": "Data"
+        },
+        "calendar": {
+            "today": "Hoje",
+            "month": "Mês",
+            "week": "Semana",
+            "day": "Dia",
+            "more": "mais"
+        },
+        "dialog": {
+            "titleNew": "Nova tarefa",
+            "titleEdit": "Editar tarefa"
+        },
+        "confirmDelete": {
+            "title": "Eliminar tarefa?",
+            "message": "Deseja realmente eliminar esta tarefa? Esta ação não pode ser revertida."
+        },
+        "messages": {
+            "loadError": "Erro ao carregar as tarefas",
+            "saved": "Tarefa guardada",
+            "saveError": "Erro ao guardar",
+            "deleted": "Tarefa eliminada",
+            "markedDone": "Marcada como concluída",
+            "markedUndone": "Reaberta",
+            "error": "Ocorreu um erro"
+        }
+    },
+    "TasksCard": {
+        "noSubject": "Sem assunto",
+        "today": "Hoje",
+        "tomorrow": "Amanhã",
+        "daysAgo": "há {days} dias",
+        "inDays": "em {days} dias",
+        "markDone": "Marcar como concluída",
+        "markUndone": "Reabrir",
+        "delete": "Eliminar"
+    },
+    "TasksDialog": {
+        "titleCreate": "Nova tarefa",
+        "titleEdit": "Editar tarefa",
+        "date": "Data",
+        "subject": "Assunto",
+        "body": "Nota",
+        "assignedEmployees": "Atribuído a",
+        "linkSection": "Vinculação (opcional)",
+        "linkType": "Tipo de vinculação",
+        "linkId": "ID",
+        "linkInfo": "Descrição",
+        "cancel": "Cancelar",
+        "save": "Guardar",
+        "quickDate": {
+            "today": "Hoje",
+            "tomorrow": "Amanhã",
+            "nextWeek": "+1 Semana",
+            "nextMonth": "+1 Mês"
+        },
+        "linkTypes": {
+            "customer": "Cliente",
+            "vendor": "Fornecedor",
+            "salesQuotation": "Orçamento",
+            "salesOrder": "Encomenda",
+            "salesDeliveryOrder": "Guia de remessa",
+            "salesInvoice": "Fatura",
+            "purchaseQuotation": "Pedido",
+            "purchaseOrder": "Encomenda de compra",
+            "purchaseDeliveryOrder": "Receção de mercadoria",
+            "purchaseInvoice": "Fatura de compra"
+        },
+        "validation": {
+            "required": "Campo obrigatório"
+        }
+    },
+    "TasksList": {
+        "done": "Concluída",
+        "open": "Aberta",
+        "today": "Hoje",
+        "tomorrow": "Amanhã",
+        "markDone": "Marcar como concluída",
+        "markUndone": "Reabrir",
+        "edit": "Editar",
+        "delete": "Eliminar",
+        "headers": {
+            "date": "Data",
+            "subject": "Assunto",
+            "link": "Vinculação",
+            "assignedTo": "Atribuído",
+            "status": "Estado",
+            "actions": "Ações"
+        }
+    },
+    "TasksWidget": {
+        "title": "Tarefas",
+        "overdue": "Vencida",
+        "today": "Hoje",
+        "tomorrow": "Amanhã",
+        "upcoming": "Próxima",
+        "noItems": "Sem tarefas pendentes",
+        "showAll": "Mostrar todas ({count})",
+        "markDone": "Marcar como concluída",
+        "quickAdd": "Adicionar rápido",
+        "openAll": "Abrir todas",
+        "daysAgo": "há {days} dias"
+    }
+}

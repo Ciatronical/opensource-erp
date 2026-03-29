@@ -1,0 +1,87 @@
+{
+    "CalendarView": {
+        "title": "Calendario",
+        "actions": {
+            "create": "Nueva cita",
+            "categories": "Categorías",
+            "cancel": "Cancelar",
+            "save": "Guardar",
+            "delete": "Eliminar",
+            "edit": "Editar",
+            "close": "Cerrar"
+        },
+        "confirmDelete": {
+            "title": "¿Eliminar cita?",
+            "message": "¿Desea eliminar realmente esta cita?"
+        },
+        "messages": {
+            "loadError": "Error al cargar las citas",
+            "saved": "Cita guardada",
+            "saveError": "Error al guardar",
+            "deleted": "Cita eliminada",
+            "error": "Se ha producido un error",
+            "categoryDeleted": "Categoría eliminada",
+            "categorySaved": "Categoría guardada"
+        },
+        "search": "Buscar",
+        "searchResults": "Resultados de búsqueda",
+        "noResults": "No se encontraron resultados"
+    },
+    "CalendarMain": {
+        "today": "Hoy",
+        "month": "Mes",
+        "week": "Semana",
+        "day": "Día",
+        "list": "Lista",
+        "allDay": "Todo el día",
+        "filterCategories": "Filtrar categorías"
+    },
+    "CalendarEventDialog": {
+        "titleCreate": "Nueva cita",
+        "titleEdit": "Editar cita",
+        "title": "Título",
+        "allDay": "Todo el día",
+        "start": "Inicio",
+        "end": "Fin",
+        "category": "Categoría",
+        "noCategory": "Sin categoría",
+        "priority": "Prioridad",
+        "priorityLow": "Baja",
+        "priorityNormal": "Normal",
+        "priorityHigh": "Alta",
+        "location": "Lugar",
+        "description": "Descripción",
+        "color": "Color",
+        "visibility": "Visibilidad",
+        "visibilityAll": "Todos",
+        "visibilityPrivate": "Privado",
+        "customerVendor": "Cliente/Proveedor",
+        "validation": {
+            "titleRequired": "El título es obligatorio",
+            "startRequired": "La fecha de inicio es obligatoria"
+        }
+    },
+    "CalendarEventDetail": {
+        "edit": "Editar",
+        "delete": "Eliminar",
+        "close": "Cerrar",
+        "location": "Lugar",
+        "category": "Categoría",
+        "priority": "Prioridad",
+        "owner": "Creado por",
+        "linkedTo": "Vinculado con",
+        "priorityLow": "Baja",
+        "priorityNormal": "Normal",
+        "priorityHigh": "Alta"
+    },
+    "CalendarCategoryManager": {
+        "title": "Gestionar categorías",
+        "addCategory": "Nueva categoría",
+        "label": "Nombre",
+        "color": "Color",
+        "save": "Guardar",
+        "delete": "Eliminar",
+        "confirmDelete": "¿Eliminar realmente la categoría? Las citas conservarán sus datos pero perderán la asignación de categoría.",
+        "noCategories": "No hay categorías disponibles"
+    }
+}

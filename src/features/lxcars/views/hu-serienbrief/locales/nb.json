@@ -1,0 +1,68 @@
+{
+    "HuSerienbriefView": {
+        "title": "EU-kontroll-varsler",
+        "subtitle": "Kunder med forfalt EU-kontroll",
+        "vorlauf": "Foervarsel: {monate} maaneder",
+        "fields": {
+            "customer_name": "Kunde",
+            "kennzeichen": "Registreringsnummer",
+            "hu_datum": "EU-kontroll-dato",
+            "telefon": "Telefon",
+            "email": "E-post",
+            "fahrzeug": "Kjoeretoeyer",
+            "actions": "Handlinger",
+            "date_from": "EU-kontroll forfaller fra",
+            "date_to": "EU-kontroll forfaller til"
+        },
+        "buttons": {
+            "print_all": "Skriv ut valgte",
+            "email_all": "Send e-post",
+            "reload": "Oppdater",
+            "exclude": "Velg bort",
+            "include": "Ta med igjen",
+            "send_pin": "Send med PIN",
+            "whatsapp_all": "Send WhatsApp"
+        },
+        "checkboxes": {
+            "show_excluded": "Vis ogsaa bortvalgte"
+        },
+        "chips": {
+            "excluded": "Bortvalgt",
+            "results_count": "Kunder"
+        },
+        "filter": {
+            "title": "Tidsperiode"
+        },
+        "table": {
+            "no_results": "Ingen kunder med forfalt EU-kontroll i den konfigurerte perioden funnet.",
+            "no_results_hint": "Kontroller foervarseltiden i innstillingene under LXCars."
+        },
+        "whatsapp": {
+            "message": "Hei {name}, EU-kontrollen for kjoeretoeyet ditt ({kennzeichen}) utloeper den {hu_datum}. Vennligst bestill en time. Med vennlig hilsen"
+        },
+        "toasts": {
+            "error_loading": "Feil ved lasting av EU-kontroll-listen.",
+            "excluded_success": "Kunde valgt bort.",
+            "included_success": "Kunde tatt med igjen.",
+            "exclude_error": "Feil ved lagring.",
+            "email_sent": "E-post sendt.",
+            "email_error": "Feil ved e-postsending.",
+            "pdf_error": "Feil ved opprettelse av PDF.",
+            "sftp_success": "PDF sendt via eLetter.",
+            "sftp_error": "Feil ved sending via eLetter.",
+            "whatsapp_sent": "WhatsApp-melding sendt.",
+            "whatsapp_error": "Feil ved sending av WhatsApp-melding.",
+            "whatsapp_bulk_sent": "{sent} WhatsApp-meldinger sendt, {failed} mislyktes.",
+            "whatsapp_no_phone": "Ingen av de valgte kundene har et telefonnummer."
+        },
+        "tooltips": {
+            "whatsapp_single": "Send EU-kontroll-paaminnelse via WhatsApp",
+            "exclude": "Ekskluder kunde fra EU-kontroll-varsler",
+            "include": "Inkluder kunde i EU-kontroll-varsler igjen"
+        },
+        "dialogs": {
+            "confirm_exclude_title": "Velg bort kunde",
+            "confirm_exclude_text": "Denne kunden fjernes permanent fra EU-kontroll-varslerlisten. Vil du fortsette?"
+        }
+    }
+}

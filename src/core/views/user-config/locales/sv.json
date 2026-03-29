@@ -1,0 +1,21 @@
+{
+    "title": "Anvandarkonfiguration",
+    "loading": "Laddar konfiguration...",
+    "configLoadError": "Konfigurationsfel",
+    "user_fields": {
+        "appearance": "Utseende",
+        "darkMode": "Morkt tema (Dark Mode)",
+        "darkMode_help": "Aktiverar det morka fargschemat for hela applikationen.",
+        "locale": "Visningssprak",
+        "locale_help": "Sprak for anvandargranssnittet. Tillampas direkt.",
+        "general": "Allmant",
+        "startupView": "Startvy",
+        "startupView_help": "Vilken vy som visas efter inloggning. Asidosatter foretagsinstallningen.",
+        "faktura": "Faktura",
+        "fakturaCompactView": "Kompakt vy som standard",
+        "fakturaCompactView_help": "Doljer detaljkorten (Kund, Dokumentdetaljer, Tillaggsinformation) och visar bara en kompakt sammanfattning.",
+        "printer": "Skrivare",
+        "defaultPrinter": "Standardskrivare",
+        "defaultPrinter_help": "Skrivare som anvands som standard for utskrifter"
+    }
+}

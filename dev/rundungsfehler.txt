@@ -1,0 +1,38 @@
+3150,52
++ (1389,98 × 0,19)
++ (654,99  × 0,19)
++ (799,99  × 0,19)  ===> 151,9981 ([3] Businnes PC i7 16GB)
++ (5,76    × 0,07)
++ (59,9    × 0,19)
++ (49,9    × 0,19)
++ (70      × 0,19)
++ (120     × 0,19)
+
+
+264,0962 + 124,4481 + 151,9981 + 0,4032 + 11,381 + 9,481 + 13,3 + 22,8 = 
+                        ^
+
+264,10 + 124,45 + 152 + 0,40 + 11,38 + 9,48 + 13,3 + 22,8 = 597,91 ==> Kivitendo: 597,50 (ohne 576 * 0,07 (7% Mwst.))
+                   ^
+
+Kivitendo wahrscheinlich so: 264,10 + 124,45 + 151,99 + 0,40 + 11,38 + 9,48 + 13,3 + 22,8 = 597,9
+                                                 ^
+
+
+
+🔢 [calculateTotals] Item ID: 1 itemTotal: 1389.98 tax: 0.19 taxAmount: 264.0962 rounded: 264.1 invoice.view.vue:406:33
+🔢 [calculateTotals] Item ID: 2 itemTotal: 654.99 tax: 0.19 taxAmount: 124.4481 rounded: 124.45 invoice.view.vue:406:33
+🔢 [calculateTotals] Item ID: 4 itemTotal: 5.76 tax: 0.07 taxAmount: 0.4032 rounded: 0.4 invoice.view.vue:406:33
+🔢 [calculateTotals] Item ID: 5 itemTotal: 59.9 tax: 0.19 taxAmount: 11.381 rounded: 11.38 invoice.view.vue:406:33
+🔢 [calculateTotals] Item ID: 6 itemTotal: 49.9 tax: 0.19 taxAmount: 9.481 rounded: 9.48 invoice.view.vue:406:33
+🔢 [calculateTotals] Item ID: 9 itemTotal: 70 tax: 0.19 taxAmount: 13.3 rounded: 13.3 invoice.view.vue:406:33
+🔢 [calculateTotals] Item ID: 11 itemTotal: 120 tax: 0.19 taxAmount: 22.8 rounded: 22.8 invoice.view.vue:406:33
+🔢 [calculateTotals] Item ID: 12 itemTotal: 0 tax: 0.19 taxAmount: 0 rounded: 0 invoice.view.vue:406:33
+
+===> 🔢 [calculateTotals] Item ID: 17 itemTotal: 799.99 tax: 0.19 taxAmount: 151.9981 rounded: 152 invoice.view.vue:406:33
+                                                                              ^                  ^
+
+🔢 [calculateTotals] Vor Rundung - netAmount: 3150.5200000000004 grossAmount: 3748.4300000000003 invoice.view.vue:414:21
+📊 netamount: 3150.52 invoice.view.vue:426:21
+📊 grossamount: 3748.43
+

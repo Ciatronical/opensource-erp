@@ -1,0 +1,68 @@
+{
+    "HuSerienbriefView": {
+        "title": "Powiadomienia o przeglądzie technicznym",
+        "subtitle": "Klienci z wymagalnym przeglądem technicznym",
+        "vorlauf": "Wyprzedzenie: {monate} miesięcy",
+        "fields": {
+            "customer_name": "Klient",
+            "kennzeichen": "Numer rejestracyjny",
+            "hu_datum": "Data przeglądu",
+            "telefon": "Telefon",
+            "email": "E-mail",
+            "fahrzeug": "Pojazd",
+            "actions": "Akcje",
+            "date_from": "Przegląd wymagalny od",
+            "date_to": "Przegląd wymagalny do"
+        },
+        "buttons": {
+            "print_all": "Drukuj wybrane",
+            "email_all": "Wyślij e-mail",
+            "reload": "Odśwież",
+            "exclude": "Odznacz",
+            "include": "Przywróć",
+            "send_pin": "Wyślij z PIN-em",
+            "whatsapp_all": "Wyślij WhatsApp"
+        },
+        "checkboxes": {
+            "show_excluded": "Pokaż również odznaczone"
+        },
+        "chips": {
+            "excluded": "Odznaczony",
+            "results_count": "Klienci"
+        },
+        "filter": {
+            "title": "Okres"
+        },
+        "table": {
+            "no_results": "Nie znaleziono klientów z wymagalnym przeglądem w skonfigurowanym okresie.",
+            "no_results_hint": "Sprawdź czas wyprzedzenia w ustawieniach LXCars."
+        },
+        "whatsapp": {
+            "message": "Witaj {name}, przegląd techniczny Twojego pojazdu ({kennzeichen}) wygasa {hu_datum}. Prosimy o umówienie terminu. Pozdrawiamy"
+        },
+        "toasts": {
+            "error_loading": "Błąd podczas ładowania listy przeglądów.",
+            "excluded_success": "Klient został odznaczony.",
+            "included_success": "Klient został przywrócony.",
+            "exclude_error": "Błąd podczas zapisywania.",
+            "email_sent": "E-mail został wysłany.",
+            "email_error": "Błąd podczas wysyłania e-maila.",
+            "pdf_error": "Błąd podczas tworzenia PDF.",
+            "sftp_success": "PDF został pomyślnie wysłany przez eLetter.",
+            "sftp_error": "Błąd podczas wysyłania przez eLetter.",
+            "whatsapp_sent": "Wiadomość WhatsApp została wysłana.",
+            "whatsapp_error": "Błąd podczas wysyłania wiadomości WhatsApp.",
+            "whatsapp_bulk_sent": "Wysłano {sent} wiadomości WhatsApp, {failed} nie powiodło się.",
+            "whatsapp_no_phone": "Żaden z wybranych klientów nie ma numeru telefonu."
+        },
+        "tooltips": {
+            "whatsapp_single": "Wyślij przypomnienie o przeglądzie przez WhatsApp",
+            "exclude": "Wyklucz klienta z powiadomień o przeglądzie",
+            "include": "Przywróć klienta do powiadomień o przeglądzie"
+        },
+        "dialogs": {
+            "confirm_exclude_title": "Odznacz klienta",
+            "confirm_exclude_text": "Ten klient zostanie trwale usunięty z listy powiadomień o przeglądzie. Czy chcesz kontynuować?"
+        }
+    }
+}

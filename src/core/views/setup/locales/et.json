@@ -1,0 +1,50 @@
+{
+    "setup": {
+        "title": "OpensourceERP Setup",
+        "welcome": "Tere tulemast OpensourceERP-i! Palun seadistage ühendus autentimisandmebaasiga.",
+        "setupAlreadyDone": "Seadistamine on juba tehtud. Teid suunatakse sisselogimislehele...",
+        "configFound": "kivitendo.conf leitud - Parool oli krüptimata. Vorm täideti automaatselt.",
+        "setupCompleteMessage": "Seadistamine edukalt lõpetatud! Parool salvestati krüptitult. Teid suunatakse edasi...",
+        "fields": {
+            "host": "Host",
+            "port": "Port",
+            "database": "Andmebaasi nimi",
+            "login": "Kasutajanimi",
+            "password": "Parool"
+        },
+        "placeholders": {
+            "host": "localhost",
+            "port": "5432",
+            "database": "oserp_auth",
+            "login": "postgres"
+        },
+        "validation": {
+            "required": "Kohustuslik väli",
+            "portRange": "Port peab olema vahemikus 1 kuni 65535"
+        },
+        "buttons": {
+            "testConnection": "Testi ühendust",
+            "testingConnection": "Ühenduse testimine...",
+            "saveSetup": "Lõpeta seadistamine",
+            "savingSetup": "Salvestamine...",
+            "finish": "Käivita rakendus"
+        },
+        "errors": {
+            "checkStatus": "Viga seadistamise oleku kontrollimisel",
+            "testConnection": "Viga ühenduse testimisel",
+            "testNetworkError": "Võrguviga ühenduse testimisel",
+            "saveSetup": "Viga konfiguratsiooni salvestamisel",
+            "saveNetworkError": "Võrguviga konfiguratsiooni salvestamisel"
+        },
+        "update": {
+            "title": "Andmebaasi uuendamine",
+            "running": "Andmebaasi uuendamine...",
+            "success": "Andmebaasi uuendamine edukalt lõpetatud.",
+            "failed": "Andmebaasi uuendamine ebaõnnestus.",
+            "networkError": "Võrguviga andmebaasi uuendamisel."
+        },
+        "footer": {
+            "copyright": "OpensourceERP"
+        }
+    }
+}

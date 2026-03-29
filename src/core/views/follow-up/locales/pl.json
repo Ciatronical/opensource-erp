@@ -1,0 +1,179 @@
+{
+    "FollowUpView": {
+        "title": "Przypomnienie",
+        "search": "Szukaj...",
+        "fromDate": "Od",
+        "toDate": "Do",
+        "showDone": "Pokaż wykonane",
+        "tabs": {
+            "board": "Tablica",
+            "list": "Lista",
+            "calendar": "Kalendarz"
+        },
+        "actions": {
+            "create": "Nowe przypomnienie",
+            "cancel": "Anuluj",
+            "delete": "Usuń",
+            "save": "Zapisz",
+            "edit": "Edytuj",
+            "markDone": "Wykonane",
+            "markUndone": "Otwórz ponownie",
+            "close": "Zamknij"
+        },
+        "columns": {
+            "overdue": "Zaległe",
+            "today": "Dzisiaj",
+            "upcoming": "Nadchodzące",
+            "done": "Wykonane"
+        },
+        "confirmDelete": {
+            "title": "Usunąć przypomnienie?",
+            "message": "Czy na pewno chcesz usunąć to przypomnienie? Tej czynności nie można cofnąć."
+        },
+        "messages": {
+            "loadError": "Błąd podczas ładowania przypomnień",
+            "saved": "Przypomnienie zapisane",
+            "saveError": "Błąd podczas zapisywania",
+            "deleted": "Przypomnienie usunięte",
+            "deletedMultiple": "Usunięto {count} przypomnień",
+            "markedDone": "Oznaczono jako wykonane",
+            "markedUndone": "Ponownie otwarte",
+            "error": "Wystąpił błąd"
+        }
+    },
+    "FollowUpCard": {
+        "noSubject": "Brak tematu",
+        "today": "Dzisiaj",
+        "tomorrow": "Jutro",
+        "daysAgo": "{days} dni temu",
+        "inDays": "za {days} dni",
+        "markDone": "Oznacz jako wykonane",
+        "markUndone": "Otwórz ponownie",
+        "delete": "Usuń"
+    },
+    "FollowUpDialog": {
+        "titleCreate": "Nowe przypomnienie",
+        "titleEdit": "Edytuj przypomnienie",
+        "date": "Data",
+        "subject": "Temat",
+        "body": "Notatka",
+        "assignedEmployees": "Przypisano do",
+        "linkSection": "Powiązanie (opcjonalnie)",
+        "linkType": "Typ powiązania",
+        "linkId": "ID",
+        "linkInfo": "Oznaczenie",
+        "searchCustomer": "Szukaj klienta",
+        "searchVendor": "Szukaj dostawcy",
+        "searchQuotation": "Szukaj oferty",
+        "searchOrder": "Szukaj zlecenia",
+        "searchDeliveryOrder": "Szukaj listu przewozowego",
+        "searchInvoice": "Szukaj faktury",
+        "searchRequestQuotation": "Szukaj zapytania",
+        "searchPurchaseOrder": "Szukaj zamówienia",
+        "searchPurchaseDeliveryOrder": "Szukaj przyjęcia towaru",
+        "searchPurchaseInvoice": "Szukaj faktury zakupu",
+        "search": "Szukaj",
+        "noResults": "Nie znaleziono wyników",
+        "startTyping": "Wpisz szukaną frazę...",
+        "cancel": "Anuluj",
+        "save": "Zapisz",
+        "quickDate": {
+            "today": "Dzisiaj",
+            "tomorrow": "Jutro",
+            "nextWeek": "+1 tydzień",
+            "twoWeeks": "+2 tygodnie",
+            "nextMonth": "+1 miesiąc"
+        },
+        "linkTypes": {
+            "customer": "Klient",
+            "vendor": "Dostawca",
+            "salesQuotation": "Oferta",
+            "salesOrder": "Zlecenie",
+            "salesDeliveryOrder": "List przewozowy",
+            "salesInvoice": "Faktura",
+            "purchaseQuotation": "Zapytanie",
+            "purchaseOrder": "Zamówienie",
+            "purchaseDeliveryOrder": "Przyjęcie towaru",
+            "purchaseInvoice": "Faktura zakupu"
+        },
+        "validation": {
+            "required": "Pole wymagane"
+        }
+    },
+    "FollowUpList": {
+        "done": "Wykonane",
+        "open": "Otwarte",
+        "today": "Dzisiaj",
+        "tomorrow": "Jutro",
+        "markDone": "Oznacz jako wykonane",
+        "markUndone": "Otwórz ponownie",
+        "edit": "Edytuj",
+        "delete": "Usuń",
+        "entry": "Wpis",
+        "entries": "Wpisy",
+        "deleteAll": "Usuń wszystkie wyświetlone",
+        "deleteAllConfirmTitle": "Usunąć wszystkie przypomnienia?",
+        "deleteAllConfirmText": "Czy na pewno chcesz usunąć wszystkie {count} wyświetlonych przypomnień?",
+        "deleteAllWarning": "Tej czynności nie można cofnąć!",
+        "deleteAllConfirm": "Usuń wszystkie",
+        "cancel": "Anuluj",
+        "headers": {
+            "date": "Data",
+            "subject": "Temat",
+            "link": "Powiązanie",
+            "assignedTo": "Przypisano",
+            "status": "Status",
+            "actions": "Akcje"
+        }
+    },
+    "FollowUpCalendar": {
+        "today": "Dzisiaj",
+        "month": "Miesiąc",
+        "week": "Tydzień",
+        "day": "Dzień",
+        "allDay": "Cały dzień",
+        "noSubject": "Bez tematu",
+        "newFollowUp": "Nowe przypomnienie",
+        "subject": "Temat",
+        "subjectPlaceholder": "Co należy wykonać?",
+        "note": "Notatka",
+        "notePlaceholder": "Dodatkowe informacje...",
+        "cancel": "Anuluj",
+        "create": "Utwórz",
+        "done": "Wykonane",
+        "reopen": "Otwórz",
+        "edit": "Edytuj",
+        "links": "Powiązania",
+        "details": "Szczegóły",
+        "assignedTo": "Przypisano do",
+        "linkedTo": "Powiązano z",
+        "close": "Zamknij",
+        "markDone": "Oznacz jako wykonane",
+        "markUndone": "Otwórz ponownie",
+        "editFollowUp": "Edytuj",
+        "deleteFollowUp": "Usuń",
+        "more": "więcej",
+        "weekDays": {
+            "mon": "Pn",
+            "tue": "Wt",
+            "wed": "Śr",
+            "thu": "Cz",
+            "fri": "Pt",
+            "sat": "So",
+            "sun": "Nd"
+        }
+    },
+    "FollowUpWidget": {
+        "title": "Przypomnienie",
+        "overdue": "Zaległe",
+        "today": "Dzisiaj",
+        "tomorrow": "Jutro",
+        "upcoming": "Nadchodzące",
+        "noItems": "Brak otwartych przypomnień",
+        "showAll": "Pokaż wszystkie {count}",
+        "markDone": "Oznacz jako wykonane",
+        "quickAdd": "Szybkie dodanie",
+        "openAll": "Otwórz wszystkie",
+        "daysAgo": "{days} dni temu"
+    }
+}

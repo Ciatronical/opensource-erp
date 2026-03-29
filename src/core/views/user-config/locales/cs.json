@@ -1,0 +1,21 @@
+{
+    "title": "Konfigurace uzivatele",
+    "loading": "Nacitam konfiguraci...",
+    "configLoadError": "Chyba konfigurace",
+    "user_fields": {
+        "appearance": "Zobrazeni",
+        "darkMode": "Tmavy rezim (Dark Mode)",
+        "darkMode_help": "Aktivuje tmave barevne schema pro celou aplikaci.",
+        "locale": "Jazyk zobrazeni",
+        "locale_help": "Jazyk uzivatelskeho rozhrani. Aplikuje se okamzite.",
+        "general": "Obecne",
+        "startupView": "Startovni zobrazeni",
+        "startupView_help": "Ktere zobrazeni se zobrazi po prihlaseni. Prepise nastaveni firmy.",
+        "faktura": "Fakturace",
+        "fakturaCompactView": "Standardne aktivovat kompaktni zobrazeni",
+        "fakturaCompactView_help": "Skryje detailni karty (zakaznik, udaje dokladu, doplnkove informace) a zobrazi pouze kompaktni souhrn.",
+        "printer": "Tiskarna",
+        "defaultPrinter": "Vychozi tiskarna",
+        "defaultPrinter_help": "Tiskarna, ktera se standardne pouziva pro tisk"
+    }
+}

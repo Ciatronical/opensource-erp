@@ -1,0 +1,50 @@
+{
+    "setup": {
+        "title": "OpensourceERP Setup",
+        "welcome": "Bine ați venit la OpensourceERP! Vă rugăm configurați conexiunea la baza de date de autentificare.",
+        "setupAlreadyDone": "Configurarea a fost deja efectuată. Veți fi redirecționat la pagina de autentificare...",
+        "configFound": "kivitendo.conf găsit - Parola era necriptată. Formularul a fost completat automat.",
+        "setupCompleteMessage": "Configurare finalizată cu succes! Parola a fost salvată criptat. Veți fi redirecționat...",
+        "fields": {
+            "host": "Host",
+            "port": "Port",
+            "database": "Numele bazei de date",
+            "login": "Login",
+            "password": "Parolă"
+        },
+        "placeholders": {
+            "host": "localhost",
+            "port": "5432",
+            "database": "oserp_auth",
+            "login": "postgres"
+        },
+        "validation": {
+            "required": "Câmp obligatoriu",
+            "portRange": "Portul trebuie să fie între 1 și 65535"
+        },
+        "buttons": {
+            "testConnection": "Testare conexiune",
+            "testingConnection": "Se testează conexiunea...",
+            "saveSetup": "Finalizare configurare",
+            "savingSetup": "Se salvează...",
+            "finish": "Rulare aplicație"
+        },
+        "errors": {
+            "checkStatus": "Eroare la verificarea stării configurării",
+            "testConnection": "Eroare la testarea conexiunii",
+            "testNetworkError": "Eroare de rețea la testarea conexiunii",
+            "saveSetup": "Eroare la salvarea configurării",
+            "saveNetworkError": "Eroare de rețea la salvarea configurării"
+        },
+        "update": {
+            "title": "Actualizare bază de date",
+            "running": "Baza de date se actualizează...",
+            "success": "Actualizarea bazei de date s-a finalizat cu succes.",
+            "failed": "Actualizarea bazei de date a eșuat.",
+            "networkError": "Eroare de rețea la actualizarea bazei de date."
+        },
+        "footer": {
+            "copyright": "OpensourceERP"
+        }
+    }
+}

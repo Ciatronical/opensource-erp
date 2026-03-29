@@ -1,0 +1,21 @@
+{
+    "title": "Configuración de usuario",
+    "loading": "Cargando configuración...",
+    "configLoadError": "Error de configuración",
+    "user_fields": {
+        "appearance": "Apariencia",
+        "darkMode": "Modo oscuro (Dark Mode)",
+        "darkMode_help": "Activa el esquema de colores oscuro para toda la aplicación.",
+        "locale": "Idioma de visualización",
+        "locale_help": "Idioma de la interfaz de usuario. Se aplica inmediatamente.",
+        "general": "General",
+        "startupView": "Vista de inicio",
+        "startupView_help": "Qué vista se muestra después del inicio de sesión. Anula la configuración de la empresa.",
+        "faktura": "Facturación",
+        "fakturaCompactView": "Activar vista compacta por defecto",
+        "fakturaCompactView_help": "Oculta las tarjetas de detalle (cliente, detalles del documento, información adicional) y muestra solo un resumen compacto.",
+        "printer": "Impresora",
+        "defaultPrinter": "Impresora predeterminada",
+        "defaultPrinter_help": "Impresora que se utiliza por defecto para las impresiones"
+    }
+}

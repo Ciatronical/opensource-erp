@@ -1,0 +1,135 @@
+{
+    "TasksView": {
+        "title": "Ülesanded",
+        "search": "Otsi...",
+        "fromDate": "Alates",
+        "toDate": "Kuni",
+        "showDone": "Kuva tehtud",
+        "tabs": {
+            "board": "Tahvel",
+            "list": "Nimekiri",
+            "calendar": "Kalender"
+        },
+        "actions": {
+            "create": "Uus ülesanne",
+            "cancel": "Tühista",
+            "delete": "Kustuta",
+            "save": "Salvesta",
+            "edit": "Muuda",
+            "markDone": "Tehtud",
+            "markUndone": "Ava uuesti",
+            "close": "Sulge"
+        },
+        "columns": {
+            "overdue": "Üle tähtaja",
+            "today": "Täna",
+            "upcoming": "Tulemas",
+            "done": "Tehtud"
+        },
+        "fields": {
+            "subject": "Teema",
+            "body": "Märkus",
+            "date": "Kuupäev"
+        },
+        "calendar": {
+            "today": "Täna",
+            "month": "Kuu",
+            "week": "Nädal",
+            "day": "Päev",
+            "more": "veel"
+        },
+        "dialog": {
+            "titleNew": "Uus ülesanne",
+            "titleEdit": "Muuda ülesannet"
+        },
+        "confirmDelete": {
+            "title": "Kustuta ülesanne?",
+            "message": "Kas soovite selle ülesande tõesti kustutada? Seda toimingut ei saa tagasi võtta."
+        },
+        "messages": {
+            "loadError": "Viga ülesannete laadimisel",
+            "saved": "Ülesanne salvestatud",
+            "saveError": "Viga salvestamisel",
+            "deleted": "Ülesanne kustutatud",
+            "markedDone": "Märgitud tehtuks",
+            "markedUndone": "Uuesti avatud",
+            "error": "Ilmnes viga"
+        }
+    },
+    "TasksCard": {
+        "noSubject": "Teema puudub",
+        "today": "Täna",
+        "tomorrow": "Homme",
+        "daysAgo": "{days} päeva tagasi",
+        "inDays": "{days} päeva pärast",
+        "markDone": "Märgi tehtuks",
+        "markUndone": "Ava uuesti",
+        "delete": "Kustuta"
+    },
+    "TasksDialog": {
+        "titleCreate": "Uus ülesanne",
+        "titleEdit": "Muuda ülesannet",
+        "date": "Kuupäev",
+        "subject": "Teema",
+        "body": "Märkus",
+        "assignedEmployees": "Määratud",
+        "linkSection": "Seos (valikuline)",
+        "linkType": "Seose tüüp",
+        "linkId": "ID",
+        "linkInfo": "Nimetus",
+        "cancel": "Tühista",
+        "save": "Salvesta",
+        "quickDate": {
+            "today": "Täna",
+            "tomorrow": "Homme",
+            "nextWeek": "+1 nädal",
+            "nextMonth": "+1 kuu"
+        },
+        "linkTypes": {
+            "customer": "Klient",
+            "vendor": "Tarnija",
+            "salesQuotation": "Pakkumine",
+            "salesOrder": "Tellimus",
+            "salesDeliveryOrder": "Saateleht",
+            "salesInvoice": "Arve",
+            "purchaseQuotation": "Päring",
+            "purchaseOrder": "Ostutellimus",
+            "purchaseDeliveryOrder": "Kauba vastuvõtt",
+            "purchaseInvoice": "Ostuarve"
+        },
+        "validation": {
+            "required": "Kohustuslik väli"
+        }
+    },
+    "TasksList": {
+        "done": "Tehtud",
+        "open": "Avatud",
+        "today": "Täna",
+        "tomorrow": "Homme",
+        "markDone": "Märgi tehtuks",
+        "markUndone": "Ava uuesti",
+        "edit": "Muuda",
+        "delete": "Kustuta",
+        "headers": {
+            "date": "Kuupäev",
+            "subject": "Teema",
+            "link": "Seos",
+            "assignedTo": "Määratud",
+            "status": "Olek",
+            "actions": "Toimingud"
+        }
+    },
+    "TasksWidget": {
+        "title": "Ülesanded",
+        "overdue": "Üle tähtaja",
+        "today": "Täna",
+        "tomorrow": "Homme",
+        "upcoming": "Tulemas",
+        "noItems": "Avatud ülesandeid pole",
+        "showAll": "Kuva kõik {count}",
+        "markDone": "Märgi tehtuks",
+        "quickAdd": "Kiire lisamine",
+        "openAll": "Ava kõik",
+        "daysAgo": "{days} päeva tagasi"
+    }
+}

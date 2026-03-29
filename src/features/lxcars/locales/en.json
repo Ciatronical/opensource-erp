@@ -1,0 +1,33 @@
+{
+    "CarView": {
+        "routes": {
+            "newCar": "/car/new",
+            "newCarFromScan": "/car/new-from-scan",
+            "manageCars": "/car",
+            "orderSearch": "/car-order/search",
+            "carRegistration": "/car/registration"
+        },
+        "newCar": "Create new",
+        "newCarFromScan": "Scan list",
+        "title": "Cars",
+        "manageCars": "Manage",
+        "orderSearch": "Order list",
+        "huSerienbrief": "HU Notifications",
+        "orderSearchTooltip": "Order search",
+        "scanTooltip": "Cars from scan"
+    },
+    "PartsRequests": {
+        "title": "Spare Parts",
+        "search": "Search article...",
+        "freetext": "Or free text",
+        "qty": "Qty",
+        "note": "Note",
+        "add": "Request",
+        "empty": "No spare parts requested",
+        "description": "Description",
+        "status": "Status",
+        "requestedBy": "Requested by",
+        "pending": "Requested",
+        "ordered": "Ordered"
+    }
+}

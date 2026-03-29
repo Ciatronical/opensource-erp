@@ -1,0 +1,41 @@
+{
+    "NavbarView": {
+        "logoutTooltip": "Uitloggen",
+        "accountTooltip": "Account",
+        "editCustomerTooltip": "Klant bewerken",
+        "editCvTooltip": "Klant/leverancier bewerken",
+        "currentC": "Klant:",
+        "currentV": "Leverancier:",
+        "openInNewTabTooltip": "Hoofdmenu",
+        "newTabTooltip": "Openen in nieuw tabblad",
+        "calendarTooltip": "Kalender",
+        "callHistoryTooltip": "Belgeschiedenis",
+        "userConfig": "Configuratie",
+        "switchClient": "Van bedrijf wisselen",
+        "uploadLogo": "Bedrijfslogo",
+        "selectImage": "Afbeelding selecteren",
+        "logoHint": "Afbeelding selecteren, positioneren en bijsnijden",
+        "saveLogo": "Opslaan",
+        "deleteLogo": "Verwijderen",
+        "cancel": "Annuleren"
+    },
+    "GlobalSearch": {
+        "placeholder": "Zoeken...",
+        "noResults": "Geen resultaten",
+        "customers": "Klanten",
+        "vendors": "Leveranciers",
+        "invoices": "Facturen",
+        "orders": "Orders",
+        "quotations": "Offertes",
+        "articles": "Artikelen",
+        "vehicles": "Voertuigen",
+        "wiki": "Wiki-artikelen",
+        "recentlyVisited": "Recent bezocht",
+        "clearHistory": "Geschiedenis wissen"
+    },
+    "InfoBar": {
+        "unknownCaller": "Onbekend",
+        "closeAll": "Alle meldingen sluiten",
+        "pendingParts": "Onderdelen aangevraagd"
+    }
+}

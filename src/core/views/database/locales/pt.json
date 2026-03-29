@@ -1,0 +1,12 @@
+{
+    "SaveDatabaseView": {
+        "title": "Guardar base de dados",
+        "description": "Guarde a base de dados atual no seu dispositivo.",
+        "saveButton": "Guardar base de dados"
+    },
+    "LoadDatabaseView": {
+        "title": "Carregar base de dados",
+        "description": "Carregue uma base de dados guardada anteriormente a partir do seu dispositivo.",
+        "loadButton": "Carregar base de dados"
+    }
+}

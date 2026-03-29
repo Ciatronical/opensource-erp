@@ -1,0 +1,41 @@
+{
+    "OrderSearchView": {
+        "title": "Orders zoeken",
+        "fields": {
+            "ordnumber": "Ordernummer",
+            "customer_name": "Klantnaam",
+            "transaction_description": "Beschrijving",
+            "first_instruction": "Beschrijving",
+            "location": "Locatie",
+            "status": "Status",
+            "transdate_from": "Datum van",
+            "transdate_to": "Datum tot",
+            "bringetermin_from": "Inleverdatum van",
+            "bringetermin_to": "Inleverdatum tot",
+            "amount_from": "Bedrag van",
+            "amount_to": "Bedrag tot",
+            "employee": "Medewerker",
+            "transdate": "Datum",
+            "bringetermin": "Inleverdatum",
+            "amount": "Bedrag",
+            "cusordnumber": "Klantordernummer",
+            "hersteller": "Fabrikant"
+        },
+        "buttons": {
+            "search": "Zoeken",
+            "reset": "Resetten"
+        },
+        "table": {
+            "title": "Zoekresultaten",
+            "text_no_search_table_shown": "Voer zoekcriteria in en start met ENTER of \"Zoeken\". Zoekresultaten worden hier weergegeven.",
+            "text_no_results": "Geen orders gevonden.",
+            "results_count": "Resultaten"
+        },
+        "alerts": {
+            "warning_no_search_criteria": "Er zijn geen zoekcriteria ingevoerd. Wilt u echt alle orders laden?"
+        },
+        "toasts": {
+            "error_loading_search_results": "Fout bij het laden van de zoekresultaten."
+        }
+    }
+}

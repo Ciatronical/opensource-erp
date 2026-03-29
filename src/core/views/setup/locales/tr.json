@@ -1,0 +1,50 @@
+{
+    "setup": {
+        "title": "OpensourceERP Kurulumu",
+        "welcome": "OpensourceERP'ye hoş geldiniz! Lütfen kimlik doğrulama veritabanı bağlantısını yapılandırın.",
+        "setupAlreadyDone": "Kurulum zaten yapılmış. Giriş sayfasına yönlendiriliyorsunuz...",
+        "configFound": "kivitendo.conf bulundu - Şifre şifrelenmemiş. Form otomatik olarak dolduruldu.",
+        "setupCompleteMessage": "Kurulum başarıyla tamamlandı! Şifre şifrelenmiş olarak kaydedildi. Yönlendiriliyorsunuz...",
+        "fields": {
+            "host": "Host",
+            "port": "Port",
+            "database": "Veritabanı adı",
+            "login": "Kullanıcı adı",
+            "password": "Şifre"
+        },
+        "placeholders": {
+            "host": "localhost",
+            "port": "5432",
+            "database": "oserp_auth",
+            "login": "postgres"
+        },
+        "validation": {
+            "required": "Zorunlu alan",
+            "portRange": "Port 1 ile 65535 arasında olmalıdır"
+        },
+        "buttons": {
+            "testConnection": "Bağlantıyı test et",
+            "testingConnection": "Bağlantı test ediliyor...",
+            "saveSetup": "Kurulumu tamamla",
+            "savingSetup": "Kaydediliyor...",
+            "finish": "Uygulamayı çalıştır"
+        },
+        "errors": {
+            "checkStatus": "Kurulum durumu kontrol edilirken hata",
+            "testConnection": "Bağlantı test edilirken hata",
+            "testNetworkError": "Bağlantı testi sırasında ağ hatası",
+            "saveSetup": "Yapılandırma kaydedilirken hata",
+            "saveNetworkError": "Yapılandırma kaydedilirken ağ hatası"
+        },
+        "update": {
+            "title": "Veritabanı güncellemesi",
+            "running": "Veritabanı güncelleniyor...",
+            "success": "Veritabanı güncellemesi başarıyla tamamlandı.",
+            "failed": "Veritabanı güncellemesi başarısız oldu.",
+            "networkError": "Veritabanı güncellemesi sırasında ağ hatası."
+        },
+        "footer": {
+            "copyright": "OpensourceERP"
+        }
+    }
+}

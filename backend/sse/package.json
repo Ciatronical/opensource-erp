@@ -1,0 +1,12 @@
+{
+    "name": "oserp-sse-server",
+    "private": true,
+    "version": "1.0.0",
+    "type": "module",
+    "scripts": {
+        "start": "node sse-server.js"
+    },
+    "dependencies": {
+        "pg": "^8.13.1"
+    }
+}

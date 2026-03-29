@@ -1,0 +1,179 @@
+{
+    "FollowUpView": {
+        "title": "Opvolgingen",
+        "search": "Zoeken...",
+        "fromDate": "Van",
+        "toDate": "Tot",
+        "showDone": "Afgeronde tonen",
+        "tabs": {
+            "board": "Bord",
+            "list": "Lijst",
+            "calendar": "Kalender"
+        },
+        "actions": {
+            "create": "Nieuwe opvolging",
+            "cancel": "Annuleren",
+            "delete": "Verwijderen",
+            "save": "Opslaan",
+            "edit": "Bewerken",
+            "markDone": "Afgerond",
+            "markUndone": "Heropenen",
+            "close": "Sluiten"
+        },
+        "columns": {
+            "overdue": "Verlopen",
+            "today": "Vandaag",
+            "upcoming": "Komend",
+            "done": "Afgerond"
+        },
+        "confirmDelete": {
+            "title": "Opvolging verwijderen?",
+            "message": "Wilt u deze opvolging echt verwijderen? Deze actie kan niet ongedaan worden gemaakt."
+        },
+        "messages": {
+            "loadError": "Fout bij het laden van de opvolgingen",
+            "saved": "Opvolging opgeslagen",
+            "saveError": "Fout bij het opslaan",
+            "deleted": "Opvolging verwijderd",
+            "deletedMultiple": "{count} opvolgingen verwijderd",
+            "markedDone": "Als afgerond gemarkeerd",
+            "markedUndone": "Heropend",
+            "error": "Er is een fout opgetreden"
+        }
+    },
+    "FollowUpCard": {
+        "noSubject": "Geen onderwerp",
+        "today": "Vandaag",
+        "tomorrow": "Morgen",
+        "daysAgo": "{days} dagen geleden",
+        "inDays": "over {days} dagen",
+        "markDone": "Als afgerond markeren",
+        "markUndone": "Heropenen",
+        "delete": "Verwijderen"
+    },
+    "FollowUpDialog": {
+        "titleCreate": "Nieuwe opvolging",
+        "titleEdit": "Opvolging bewerken",
+        "date": "Datum",
+        "subject": "Onderwerp",
+        "body": "Notitie",
+        "assignedEmployees": "Toegewezen aan",
+        "linkSection": "Koppeling (optioneel)",
+        "linkType": "Koppelingstype",
+        "linkId": "ID",
+        "linkInfo": "Aanduiding",
+        "searchCustomer": "Klant zoeken",
+        "searchVendor": "Leverancier zoeken",
+        "searchQuotation": "Offerte zoeken",
+        "searchOrder": "Order zoeken",
+        "searchDeliveryOrder": "Afleverbon zoeken",
+        "searchInvoice": "Factuur zoeken",
+        "searchRequestQuotation": "Aanvraag zoeken",
+        "searchPurchaseOrder": "Bestelling zoeken",
+        "searchPurchaseDeliveryOrder": "Goederenontvangst zoeken",
+        "searchPurchaseInvoice": "Inkoopfactuur zoeken",
+        "search": "Zoeken",
+        "noResults": "Geen resultaten gevonden",
+        "startTyping": "Zoekterm invoeren...",
+        "cancel": "Annuleren",
+        "save": "Opslaan",
+        "quickDate": {
+            "today": "Vandaag",
+            "tomorrow": "Morgen",
+            "nextWeek": "+1 week",
+            "twoWeeks": "+2 weken",
+            "nextMonth": "+1 maand"
+        },
+        "linkTypes": {
+            "customer": "Klant",
+            "vendor": "Leverancier",
+            "salesQuotation": "Offerte",
+            "salesOrder": "Order",
+            "salesDeliveryOrder": "Afleverbon",
+            "salesInvoice": "Factuur",
+            "purchaseQuotation": "Aanvraag",
+            "purchaseOrder": "Bestelling",
+            "purchaseDeliveryOrder": "Goederenontvangst",
+            "purchaseInvoice": "Inkoopfactuur"
+        },
+        "validation": {
+            "required": "Verplicht veld"
+        }
+    },
+    "FollowUpList": {
+        "done": "Afgerond",
+        "open": "Open",
+        "today": "Vandaag",
+        "tomorrow": "Morgen",
+        "markDone": "Als afgerond markeren",
+        "markUndone": "Heropenen",
+        "edit": "Bewerken",
+        "delete": "Verwijderen",
+        "entry": "Vermelding",
+        "entries": "Vermeldingen",
+        "deleteAll": "Alle weergegeven verwijderen",
+        "deleteAllConfirmTitle": "Alle opvolgingen verwijderen?",
+        "deleteAllConfirmText": "Wilt u echt alle {count} weergegeven opvolgingen verwijderen?",
+        "deleteAllWarning": "Deze actie kan niet ongedaan worden gemaakt!",
+        "deleteAllConfirm": "Alles verwijderen",
+        "cancel": "Annuleren",
+        "headers": {
+            "date": "Datum",
+            "subject": "Onderwerp",
+            "link": "Koppeling",
+            "assignedTo": "Toegewezen",
+            "status": "Status",
+            "actions": "Acties"
+        }
+    },
+    "FollowUpCalendar": {
+        "today": "Vandaag",
+        "month": "Maand",
+        "week": "Week",
+        "day": "Dag",
+        "allDay": "Hele dag",
+        "noSubject": "Zonder onderwerp",
+        "newFollowUp": "Nieuwe opvolging",
+        "subject": "Onderwerp",
+        "subjectPlaceholder": "Wat moet er gedaan worden?",
+        "note": "Notitie",
+        "notePlaceholder": "Aanvullende informatie...",
+        "cancel": "Annuleren",
+        "create": "Aanmaken",
+        "done": "Afgerond",
+        "reopen": "Heropenen",
+        "edit": "Bewerken",
+        "links": "Koppelingen",
+        "details": "Details",
+        "assignedTo": "Toegewezen aan",
+        "linkedTo": "Gekoppeld aan",
+        "close": "Sluiten",
+        "markDone": "Als afgerond markeren",
+        "markUndone": "Heropenen",
+        "editFollowUp": "Bewerken",
+        "deleteFollowUp": "Verwijderen",
+        "more": "meer",
+        "weekDays": {
+            "mon": "Ma",
+            "tue": "Di",
+            "wed": "Wo",
+            "thu": "Do",
+            "fri": "Vr",
+            "sat": "Za",
+            "sun": "Zo"
+        }
+    },
+    "FollowUpWidget": {
+        "title": "Opvolgingen",
+        "overdue": "Verlopen",
+        "today": "Vandaag",
+        "tomorrow": "Morgen",
+        "upcoming": "Komend",
+        "noItems": "Geen openstaande opvolgingen",
+        "showAll": "Alle {count} tonen",
+        "markDone": "Als afgerond markeren",
+        "quickAdd": "Snel toevoegen",
+        "openAll": "Alles openen",
+        "daysAgo": "{days} dagen geleden"
+    }
+}

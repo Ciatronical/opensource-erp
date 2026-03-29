@@ -1,0 +1,21 @@
+{
+    "title": "Configurare utilizator",
+    "loading": "Se incarca configurarea...",
+    "configLoadError": "Eroare de configurare",
+    "user_fields": {
+        "appearance": "Aspect",
+        "darkMode": "Mod intunecat (Dark Mode)",
+        "darkMode_help": "Activeaza schema de culori intunecate pentru intreaga aplicatie.",
+        "locale": "Limba de afisare",
+        "locale_help": "Limba interfetei utilizator. Se aplica imediat.",
+        "general": "General",
+        "startupView": "Vizualizare la pornire",
+        "startupView_help": "Ce vizualizare se afiseaza dupa autentificare. Suprascrie setarea firmei.",
+        "faktura": "Facturare",
+        "fakturaCompactView": "Activare vizualizare compacta implicit",
+        "fakturaCompactView_help": "Ascunde cardurile de detaliu (client, detalii document, informatii suplimentare) si afiseaza doar un rezumat compact.",
+        "printer": "Imprimanta",
+        "defaultPrinter": "Imprimanta implicita",
+        "defaultPrinter_help": "Imprimanta utilizata implicit pentru imprimare"
+    }
+}

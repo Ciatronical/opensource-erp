@@ -1,0 +1,135 @@
+{
+    "TasksView": {
+        "title": "Tareas",
+        "search": "Buscar...",
+        "fromDate": "Desde",
+        "toDate": "Hasta",
+        "showDone": "Mostrar completadas",
+        "tabs": {
+            "board": "Tablero",
+            "list": "Lista",
+            "calendar": "Calendario"
+        },
+        "actions": {
+            "create": "Nueva tarea",
+            "cancel": "Cancelar",
+            "delete": "Eliminar",
+            "save": "Guardar",
+            "edit": "Editar",
+            "markDone": "Completada",
+            "markUndone": "Reabrir",
+            "close": "Cerrar"
+        },
+        "columns": {
+            "overdue": "Vencida",
+            "today": "Hoy",
+            "upcoming": "Próxima",
+            "done": "Completada"
+        },
+        "fields": {
+            "subject": "Asunto",
+            "body": "Nota",
+            "date": "Fecha"
+        },
+        "calendar": {
+            "today": "Hoy",
+            "month": "Mes",
+            "week": "Semana",
+            "day": "Día",
+            "more": "más"
+        },
+        "dialog": {
+            "titleNew": "Nueva tarea",
+            "titleEdit": "Editar tarea"
+        },
+        "confirmDelete": {
+            "title": "¿Eliminar tarea?",
+            "message": "¿Desea eliminar realmente esta tarea? Esta acción no se puede deshacer."
+        },
+        "messages": {
+            "loadError": "Error al cargar las tareas",
+            "saved": "Tarea guardada",
+            "saveError": "Error al guardar",
+            "deleted": "Tarea eliminada",
+            "markedDone": "Marcada como completada",
+            "markedUndone": "Reabierta",
+            "error": "Se ha producido un error"
+        }
+    },
+    "TasksCard": {
+        "noSubject": "Sin asunto",
+        "today": "Hoy",
+        "tomorrow": "Mañana",
+        "daysAgo": "hace {days} días",
+        "inDays": "en {days} días",
+        "markDone": "Marcar como completada",
+        "markUndone": "Reabrir",
+        "delete": "Eliminar"
+    },
+    "TasksDialog": {
+        "titleCreate": "Nueva tarea",
+        "titleEdit": "Editar tarea",
+        "date": "Fecha",
+        "subject": "Asunto",
+        "body": "Nota",
+        "assignedEmployees": "Asignado a",
+        "linkSection": "Vinculación (opcional)",
+        "linkType": "Tipo de vinculación",
+        "linkId": "ID",
+        "linkInfo": "Descripción",
+        "cancel": "Cancelar",
+        "save": "Guardar",
+        "quickDate": {
+            "today": "Hoy",
+            "tomorrow": "Mañana",
+            "nextWeek": "+1 Semana",
+            "nextMonth": "+1 Mes"
+        },
+        "linkTypes": {
+            "customer": "Cliente",
+            "vendor": "Proveedor",
+            "salesQuotation": "Presupuesto",
+            "salesOrder": "Pedido",
+            "salesDeliveryOrder": "Albarán",
+            "salesInvoice": "Factura",
+            "purchaseQuotation": "Solicitud",
+            "purchaseOrder": "Pedido de compra",
+            "purchaseDeliveryOrder": "Recepción de mercancía",
+            "purchaseInvoice": "Factura de compra"
+        },
+        "validation": {
+            "required": "Campo obligatorio"
+        }
+    },
+    "TasksList": {
+        "done": "Completada",
+        "open": "Abierta",
+        "today": "Hoy",
+        "tomorrow": "Mañana",
+        "markDone": "Marcar como completada",
+        "markUndone": "Reabrir",
+        "edit": "Editar",
+        "delete": "Eliminar",
+        "headers": {
+            "date": "Fecha",
+            "subject": "Asunto",
+            "link": "Vinculación",
+            "assignedTo": "Asignado",
+            "status": "Estado",
+            "actions": "Acciones"
+        }
+    },
+    "TasksWidget": {
+        "title": "Tareas",
+        "overdue": "Vencida",
+        "today": "Hoy",
+        "tomorrow": "Mañana",
+        "upcoming": "Próxima",
+        "noItems": "Sin tareas pendientes",
+        "showAll": "Mostrar todas ({count})",
+        "markDone": "Marcar como completada",
+        "quickAdd": "Añadir rápido",
+        "openAll": "Abrir todas",
+        "daysAgo": "hace {days} días"
+    }
+}

@@ -1,0 +1,41 @@
+{
+    "NavbarView": {
+        "logoutTooltip": "Logga ut",
+        "accountTooltip": "Konto",
+        "editCustomerTooltip": "Redigera kund",
+        "editCvTooltip": "Redigera kund/leverantor",
+        "currentC": "Kund:",
+        "currentV": "Leverantor:",
+        "openInNewTabTooltip": "Huvudmeny",
+        "newTabTooltip": "Oppna i ny flik",
+        "calendarTooltip": "Kalender",
+        "callHistoryTooltip": "Samtalslista",
+        "userConfig": "Konfiguration",
+        "switchClient": "Byt foretag",
+        "uploadLogo": "Foretagslogotyp",
+        "selectImage": "Valj bild",
+        "logoHint": "Valj bild, positionera och beskar",
+        "saveLogo": "Spara",
+        "deleteLogo": "Ta bort",
+        "cancel": "Avbryt"
+    },
+    "GlobalSearch": {
+        "placeholder": "Sok...",
+        "noResults": "Inga resultat",
+        "customers": "Kunder",
+        "vendors": "Leverantorer",
+        "invoices": "Fakturor",
+        "orders": "Ordrar",
+        "quotations": "Offerter",
+        "articles": "Artiklar",
+        "vehicles": "Fordon",
+        "wiki": "Wiki-artiklar",
+        "recentlyVisited": "Nyligen besokt",
+        "clearHistory": "Rensa historik"
+    },
+    "InfoBar": {
+        "unknownCaller": "Okand",
+        "closeAll": "Stang alla aviseringar",
+        "pendingParts": "Reservdelar begarda"
+    }
+}

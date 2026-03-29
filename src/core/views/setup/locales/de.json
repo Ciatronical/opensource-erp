@@ -1,0 +1,50 @@
+{
+    "setup": {
+        "title": "OpensourceERP Setup",
+        "welcome": "Willkommen bei OpensourceERP! Bitte konfigurieren Sie die Verbindung zur Authentifizierungsdatenbank.",
+        "setupAlreadyDone": "Setup wurde bereits durchgeführt. Sie werden zur Anmeldeseite weitergeleitet...",
+        "configFound": "kivitendo.conf gefunden - Passwort war unverschlüsselt. Formular wurde automatisch befüllt.",
+        "setupCompleteMessage": "Setup erfolgreich abgeschlossen! Passwort wurde verschlüsselt gespeichert. Sie werden weitergeleitet...",
+        "fields": {
+            "host": "Host",
+            "port": "Port",
+            "database": "Datenbankname",
+            "login": "Login",
+            "password": "Passwort"
+        },
+        "placeholders": {
+            "host": "localhost",
+            "port": "5432",
+            "database": "oserp_auth",
+            "login": "postgres"
+        },
+        "validation": {
+            "required": "Pflichtfeld",
+            "portRange": "Port muss zwischen 1 und 65535 liegen"
+        },
+        "buttons": {
+            "testConnection": "Verbindung testen",
+            "testingConnection": "Teste Verbindung...",
+            "saveSetup": "Setup abschließen",
+            "savingSetup": "Wird gespeichert...",
+            "finish": "App ausführen"
+        },
+        "errors": {
+            "checkStatus": "Fehler beim Prüfen des Setup-Status",
+            "testConnection": "Fehler beim Testen der Verbindung",
+            "testNetworkError": "Netzwerkfehler beim Testen der Verbindung",
+            "saveSetup": "Fehler beim Speichern der Konfiguration",
+            "saveNetworkError": "Netzwerkfehler beim Speichern der Konfiguration"
+        },
+        "update": {
+            "title": "Datenbankaktualisierung",
+            "running": "Datenbank wird aktualisiert...",
+            "success": "Datenbankaktualisierung erfolgreich abgeschlossen.",
+            "failed": "Datenbankaktualisierung fehlgeschlagen.",
+            "networkError": "Netzwerkfehler bei der Datenbankaktualisierung."
+        },
+        "footer": {
+            "copyright": "OpensourceERP"
+        }
+    }
+}

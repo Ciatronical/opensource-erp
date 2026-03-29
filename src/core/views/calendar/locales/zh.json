@@ -1,0 +1,87 @@
+{
+    "CalendarView": {
+        "title": "日历",
+        "actions": {
+            "create": "新建日程",
+            "categories": "类别",
+            "cancel": "取消",
+            "save": "保存",
+            "delete": "删除",
+            "edit": "编辑",
+            "close": "关闭"
+        },
+        "confirmDelete": {
+            "title": "删除日程？",
+            "message": "确定要删除此日程吗？"
+        },
+        "messages": {
+            "loadError": "加载日程时出错",
+            "saved": "日程已保存",
+            "saveError": "保存时出错",
+            "deleted": "日程已删除",
+            "error": "发生错误",
+            "categoryDeleted": "类别已删除",
+            "categorySaved": "类别已保存"
+        },
+        "search": "搜索",
+        "searchResults": "搜索结果",
+        "noResults": "未找到结果"
+    },
+    "CalendarMain": {
+        "today": "今天",
+        "month": "月",
+        "week": "周",
+        "day": "日",
+        "list": "列表",
+        "allDay": "全天",
+        "filterCategories": "筛选类别"
+    },
+    "CalendarEventDialog": {
+        "titleCreate": "新建日程",
+        "titleEdit": "编辑日程",
+        "title": "标题",
+        "allDay": "全天",
+        "start": "开始",
+        "end": "结束",
+        "category": "类别",
+        "noCategory": "无类别",
+        "priority": "优先级",
+        "priorityLow": "低",
+        "priorityNormal": "普通",
+        "priorityHigh": "高",
+        "location": "地点",
+        "description": "描述",
+        "color": "颜色",
+        "visibility": "可见性",
+        "visibilityAll": "所有人",
+        "visibilityPrivate": "私人",
+        "customerVendor": "客户/供应商",
+        "validation": {
+            "titleRequired": "标题为必填项",
+            "startRequired": "开始日期为必填项"
+        }
+    },
+    "CalendarEventDetail": {
+        "edit": "编辑",
+        "delete": "删除",
+        "close": "关闭",
+        "location": "地点",
+        "category": "类别",
+        "priority": "优先级",
+        "owner": "创建者",
+        "linkedTo": "关联",
+        "priorityLow": "低",
+        "priorityNormal": "普通",
+        "priorityHigh": "高"
+    },
+    "CalendarCategoryManager": {
+        "title": "管理类别",
+        "addCategory": "新类别",
+        "label": "名称",
+        "color": "颜色",
+        "save": "保存",
+        "delete": "删除",
+        "confirmDelete": "确定要删除此类别吗？日程将保留数据，但会失去类别关联。",
+        "noCategories": "暂无类别"
+    }
+}

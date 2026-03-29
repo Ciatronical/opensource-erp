@@ -1,0 +1,75 @@
+{
+    "routes": {
+        "mainmenu": "/hauptmen%C3%BC",
+        "customer": "/kunde",
+        "editCustomer": "/kunde/bearbeiten",
+        "editVendor": "/lieferant/bearbeiten",
+        "viewInvoice": "/rechnung/anzeigen",
+        "editQuotation": "/angebot/bearbeiten",
+        "editOrder": "/auftrag/bearbeiten",
+        "newCustomer": "/kunde/neu",
+        "newVendor": "/lieferant/neu",
+        "newQuotation": "/angebot/neu",
+        "newOrder": "/auftrag/neu",
+        "newInvoice": "/rechnung/neu",
+        "manageCustomers": "/kunde",
+        "manageVendors": "/lieferant",
+        "manageArticles": "/artikel",
+        "manageQuotations": "/angebot",
+        "manageOrders": "/auftrag",
+        "manageInvoices": "/rechnung",
+        "manageCreditNotes": "/gutschrift",
+        "manageDeliveryOrders": "/lieferschein",
+        "orderSearch": "/auftrag/suche",
+        "search": "/suche",
+        "searchCustomers": "/kunde/suche",
+        "followUp": "/wiedervorlage",
+        "clientConfig": "/system/mandantenkonfiguration",
+        "developerTools": "/system/developer-tools",
+        "systemUpdate": "/system/aktualisierung",
+        "currentCustomerEdit": "/kunde/bearbeiten",
+        "callHistory": "/anrufliste",
+        "calendar": "/kalender",
+        "wiki": "/wiki",
+        "wikiNew": "/wiki/neu",
+        "wikiCategories": "/wiki/kategorien",
+        "wikiEdit": "/wiki/bearbeiten",
+        "userConfig": "/benutzer/konfiguration",
+        "huSerienbrief": "/serienbrief/hu",
+        "wallDisplay": "/wandanzeige"
+    },
+    "errors": {
+        "PASSWORD_FILE_NOT_FOUND": "B\u0142\u0105d: Plik has\u0142a api/config/api.passwd.php nie zosta\u0142 znaleziony. Prosz\u0119 zmieni\u0107 nazw\u0119 pliku api/config/api.passwd.php.example na api/config/api.passwd.php i dostosowa\u0107 ustawienia.",
+        "CONFIG_FILE_NOT_FOUND": "B\u0142\u0105d: Plik konfiguracyjny nie zosta\u0142 znaleziony. Prosz\u0119 sprawdzi\u0107 ustawienia."
+    },
+    "MasterDataMenu": {
+        "title": "Dane podstawowe",
+        "editCustomer": "Edytuj dane klienta",
+        "newCustomer": "Utw\u00f3rz nowego klienta",
+        "manageCustomers": "Zarz\u0105dzaj klientami",
+        "search": "Szukaj",
+        "searchCustomers": "Szukaj klient\u00f3w",
+        "newVendor": "Utw\u00f3rz nowego dostawc\u0119",
+        "calendar": "Kalendarz"
+    },
+    "ContactMenu": {
+        "title": "Kontakt",
+        "callHistory": "Historia po\u0142\u0105cze\u0144",
+        "emails": "E-maile",
+        "whatsapp": "WhatsApp"
+    },
+    "SalesMenu": {
+        "title": "Sprzeda\u017c",
+        "newQuotation": "Utw\u00f3rz now\u0105 ofert\u0119",
+        "newOrder": "Utw\u00f3rz nowe zam\u00f3wienie",
+        "newInvoice": "Utw\u00f3rz now\u0105 faktur\u0119",
+        "manageCreditNotes": "Korekty"
+    },
+    "SystemMenu": {
+        "title": "System",
+        "clientConfig": "Konfiguracja firmy",
+        "developerTools": "Developer Tools",
+        "systemUpdate": "Aktualizacja systemu",
+        "about": "O programie"
+    }
+}

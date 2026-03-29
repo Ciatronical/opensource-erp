@@ -1,0 +1,41 @@
+{
+    "NavbarView": {
+        "logoutTooltip": "Wyloguj si\u0119",
+        "accountTooltip": "Konto",
+        "editCustomerTooltip": "Edytuj klienta",
+        "editCvTooltip": "Edytuj klienta/dostawc\u0119",
+        "currentC": "Klient:",
+        "currentV": "Dostawca:",
+        "openInNewTabTooltip": "Menu g\u0142\u00f3wne",
+        "newTabTooltip": "Otw\u00f3rz w nowej karcie",
+        "calendarTooltip": "Kalendarz",
+        "callHistoryTooltip": "Historia po\u0142\u0105cze\u0144",
+        "userConfig": "Konfiguracja",
+        "switchClient": "Zmie\u0144 firm\u0119",
+        "uploadLogo": "Logo firmy",
+        "selectImage": "Wybierz obraz",
+        "logoHint": "Wybierz obraz, ustaw pozycj\u0119 i przytnij",
+        "saveLogo": "Zapisz",
+        "deleteLogo": "Usu\u0144",
+        "cancel": "Anuluj"
+    },
+    "GlobalSearch": {
+        "placeholder": "Szukaj...",
+        "noResults": "Brak wynik\u00f3w",
+        "customers": "Klienci",
+        "vendors": "Dostawcy",
+        "invoices": "Faktury",
+        "orders": "Zam\u00f3wienia",
+        "quotations": "Oferty",
+        "articles": "Artyku\u0142y",
+        "vehicles": "Pojazdy",
+        "wiki": "Artyku\u0142y wiki",
+        "recentlyVisited": "Ostatnio odwiedzone",
+        "clearHistory": "Wyczy\u015b\u0107 histori\u0119"
+    },
+    "InfoBar": {
+        "unknownCaller": "Nieznany",
+        "closeAll": "Zamknij wszystkie powiadomienia",
+        "pendingParts": "Zam\u00f3wione cz\u0119\u015bci zamienne"
+    }
+}

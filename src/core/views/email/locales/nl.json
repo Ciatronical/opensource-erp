@@ -1,0 +1,40 @@
+{
+    "EmailView": {
+        "title": "E-mails",
+        "inbox": "Postvak IN",
+        "sent": "Verzonden",
+        "drafts": "Concepten",
+        "trash": "Prullenbak",
+        "folders": "Mappen",
+        "compose": "Nieuwe e-mail",
+        "refresh": "Vernieuwen",
+        "search": "E-mails doorzoeken...",
+        "noEmails": "Geen e-mails beschikbaar",
+        "noConfig": "E-mailclient is niet geconfigureerd. Configureer de e-mailinstellingen in de bedrijfsconfiguratie onder CRM.",
+        "loading": "E-mails worden geladen...",
+        "from": "Van",
+        "to": "Aan",
+        "cc": "CC",
+        "date": "Datum",
+        "subject": "Onderwerp",
+        "body": "Bericht",
+        "noSubject": "(Geen onderwerp)",
+        "attachments": "Bijlagen",
+        "send": "Versturen",
+        "cancel": "Annuleren",
+        "reply": "Beantwoorden",
+        "forward": "Doorsturen",
+        "delete": "Verwijderen",
+        "markRead": "Als gelezen markeren",
+        "markUnread": "Als ongelezen markeren",
+        "of": "van",
+        "emails": "e-mails",
+        "page": "Pagina",
+        "customer": "Klant / Leverancier",
+        "searchCustomer": "Klant of leverancier zoeken...",
+        "openCustomer": "openen"
+    },
+    "EmailMenu": {
+        "title": "E-mails"
+    }
+}

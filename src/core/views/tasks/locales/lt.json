@@ -1,0 +1,135 @@
+{
+    "TasksView": {
+        "title": "Užduotys",
+        "search": "Ieškoti...",
+        "fromDate": "Nuo",
+        "toDate": "Iki",
+        "showDone": "Rodyti atliktus",
+        "tabs": {
+            "board": "Lenta",
+            "list": "Sąrašas",
+            "calendar": "Kalendorius"
+        },
+        "actions": {
+            "create": "Nauja užduotis",
+            "cancel": "Atšaukti",
+            "delete": "Ištrinti",
+            "save": "Išsaugoti",
+            "edit": "Redaguoti",
+            "markDone": "Atlikta",
+            "markUndone": "Atidaryti iš naujo",
+            "close": "Uždaryti"
+        },
+        "columns": {
+            "overdue": "Vėluojantis",
+            "today": "Šiandien",
+            "upcoming": "Artėjantis",
+            "done": "Atlikta"
+        },
+        "fields": {
+            "subject": "Tema",
+            "body": "Pastaba",
+            "date": "Data"
+        },
+        "calendar": {
+            "today": "Šiandien",
+            "month": "Mėnuo",
+            "week": "Savaitė",
+            "day": "Diena",
+            "more": "daugiau"
+        },
+        "dialog": {
+            "titleNew": "Nauja užduotis",
+            "titleEdit": "Redaguoti užduotį"
+        },
+        "confirmDelete": {
+            "title": "Ištrinti užduotį?",
+            "message": "Ar tikrai norite ištrinti šią užduotį? Šio veiksmo negalima atšaukti."
+        },
+        "messages": {
+            "loadError": "Klaida kraunant užduotis",
+            "saved": "Užduotis išsaugota",
+            "saveError": "Klaida saugant",
+            "deleted": "Užduotis ištrinta",
+            "markedDone": "Pažymėta kaip atlikta",
+            "markedUndone": "Atidaryta iš naujo",
+            "error": "Įvyko klaida"
+        }
+    },
+    "TasksCard": {
+        "noSubject": "Be temos",
+        "today": "Šiandien",
+        "tomorrow": "Rytoj",
+        "daysAgo": "prieš {days} dienų",
+        "inDays": "po {days} dienų",
+        "markDone": "Pažymėti kaip atliktą",
+        "markUndone": "Atidaryti iš naujo",
+        "delete": "Ištrinti"
+    },
+    "TasksDialog": {
+        "titleCreate": "Nauja užduotis",
+        "titleEdit": "Redaguoti užduotį",
+        "date": "Data",
+        "subject": "Tema",
+        "body": "Pastaba",
+        "assignedEmployees": "Priskirta",
+        "linkSection": "Susiejimas (neprivaloma)",
+        "linkType": "Susiejimo tipas",
+        "linkId": "ID",
+        "linkInfo": "Pavadinimas",
+        "cancel": "Atšaukti",
+        "save": "Išsaugoti",
+        "quickDate": {
+            "today": "Šiandien",
+            "tomorrow": "Rytoj",
+            "nextWeek": "+1 savaitė",
+            "nextMonth": "+1 mėnuo"
+        },
+        "linkTypes": {
+            "customer": "Klientas",
+            "vendor": "Tiekėjas",
+            "salesQuotation": "Pasiūlymas",
+            "salesOrder": "Užsakymas",
+            "salesDeliveryOrder": "Važtaraštis",
+            "salesInvoice": "Sąskaita",
+            "purchaseQuotation": "Užklausa",
+            "purchaseOrder": "Pirkimo užsakymas",
+            "purchaseDeliveryOrder": "Prekių gavimas",
+            "purchaseInvoice": "Gauta sąskaita"
+        },
+        "validation": {
+            "required": "Privalomas laukas"
+        }
+    },
+    "TasksList": {
+        "done": "Atlikta",
+        "open": "Atidaryta",
+        "today": "Šiandien",
+        "tomorrow": "Rytoj",
+        "markDone": "Pažymėti kaip atliktą",
+        "markUndone": "Atidaryti iš naujo",
+        "edit": "Redaguoti",
+        "delete": "Ištrinti",
+        "headers": {
+            "date": "Data",
+            "subject": "Tema",
+            "link": "Susiejimas",
+            "assignedTo": "Priskirta",
+            "status": "Būsena",
+            "actions": "Veiksmai"
+        }
+    },
+    "TasksWidget": {
+        "title": "Užduotys",
+        "overdue": "Vėluojantis",
+        "today": "Šiandien",
+        "tomorrow": "Rytoj",
+        "upcoming": "Artėjantis",
+        "noItems": "Atidarytų užduočių nėra",
+        "showAll": "Rodyti visus {count}",
+        "markDone": "Pažymėti kaip atliktą",
+        "quickAdd": "Greitas pridėjimas",
+        "openAll": "Atidaryti visus",
+        "daysAgo": "prieš {days} dienų"
+    }
+}

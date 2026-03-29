@@ -1,0 +1,47 @@
+{
+    "LoginView": {
+        "title": "Přihlášení",
+        "username": "Uživatelské jméno",
+        "password": "Heslo",
+        "client": "Firma",
+        "button": "Přihlásit se",
+        "failed": "Přihlášení se nezdařilo. Zkontrolujte prosím své přihlašovací údaje.",
+        "EMPTY_FIELDS": "Zadejte prosím jméno a heslo.",
+        "USER_NOT_FOUND": "Uživatel nenalezen.",
+        "WRONG_PASSWORD": "Neplatné heslo.",
+        "ERROR": "Chyba při přihlášení. Zkuste to prosím znovu.",
+        "ERROR_LOADING_CLIENTS": "Chyba při načítání firem. Zkuste to prosím později.",
+        "USER_NOT_ASSIGNED_TO_CLIENT": "Uživatel není přiřazen k firmě.",
+        "PASSWORD_FILE_NOT_FOUND": "Chyba: Soubor s heslem api/config/api.passwd.php nebyl nalezen. Přejmenujte prosím soubor api/config/api.passwd.php.example na api/config/api.passwd.php a upravte nastavení.",
+        "CONFIG_FILE_NOT_FOUND": "Chyba: Konfigurační soubor nebyl nalezen. Zkontrolujte prosím nastavení.",
+        "updateButton": "Provést aktualizaci",
+        "updateSuccess": "Aktualizace databáze byla úspěšně provedena.",
+        "updateError": "Chyba při aktualizaci databáze. Zkuste to prosím znovu.",
+        "privacy": "Zásady ochrany osobních údajů",
+        "dataDeletion": "Smazání dat"
+    },
+    "NotFoundView": {
+        "title": "Stránka nenalezena",
+        "message": "Požadovaná stránka nebyla nalezena.",
+        "back_home": "Zpět na úvodní stránku"
+    },
+    "NavbarView": {
+        "logoutTooltip": "Odhlásit se",
+        "accountTooltip": "Účet",
+        "editCustomerTooltip": "Upravit zákazníka",
+        "editCvTooltip": "Upravit zákazníka/dodavatele",
+        "currentC": "Zákazník:",
+        "currentV": "Dodavatel:",
+        "demoBanner": "Demo režim — Všechna data budou po nečinnosti automaticky resetována.",
+        "demoResetWarning": "Demo bude resetováno za {seconds} sekund — pohybujte myší pro pokračování."
+    },
+    "ErrorView": {
+        "title": "Došlo k chybě",
+        "message": "Omlouváme se, ale došlo k neočekávané chybě.",
+        "debugInfo": "Ladicí informace:",
+        "clickToShowDetails": "Klikněte pro zobrazení podrobností"
+    },
+    "App": {
+        "loading": "Čekejte prosím..."
+    }
+}

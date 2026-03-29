@@ -1,0 +1,27 @@
+{
+    "ArticleEditView": {
+        "titleEdit": "Urunu duzenle",
+        "saving": "Kaydediliyor...",
+        "saved": "Kaydedildi",
+        "sections": {
+            "masterData": "Ana veriler"
+        },
+        "fields": {
+            "partnumber": "Urun numarasi",
+            "description": "Aciklama",
+            "partType": "Urun tipi",
+            "typePart": "Mal",
+            "typeService": "Hizmet",
+            "unit": "Birim",
+            "buchungsgruppe": "Muhasebe grubu",
+            "sellprice": "Satis fiyati",
+            "notes": "Uzun aciklama",
+            "obsolete": "Eski / Kullanilmasin"
+        },
+        "messages": {
+            "loading": "Urun yukleniyor",
+            "loadError": "Urun yuklenirken hata",
+            "notFound": "Urun bulunamadi"
+        }
+    }
+}

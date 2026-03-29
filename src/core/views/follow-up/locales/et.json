@@ -1,0 +1,179 @@
+{
+    "FollowUpView": {
+        "title": "Järeltegevus",
+        "search": "Otsi...",
+        "fromDate": "Alates",
+        "toDate": "Kuni",
+        "showDone": "Kuva tehtud",
+        "tabs": {
+            "board": "Tahvel",
+            "list": "Nimekiri",
+            "calendar": "Kalender"
+        },
+        "actions": {
+            "create": "Uus järeltegevus",
+            "cancel": "Tühista",
+            "delete": "Kustuta",
+            "save": "Salvesta",
+            "edit": "Muuda",
+            "markDone": "Tehtud",
+            "markUndone": "Ava uuesti",
+            "close": "Sulge"
+        },
+        "columns": {
+            "overdue": "Üle tähtaja",
+            "today": "Täna",
+            "upcoming": "Tulemas",
+            "done": "Tehtud"
+        },
+        "confirmDelete": {
+            "title": "Kustuta järeltegevus?",
+            "message": "Kas soovite selle järeltegevuse tõesti kustutada? Seda toimingut ei saa tagasi võtta."
+        },
+        "messages": {
+            "loadError": "Viga järeltegevuste laadimisel",
+            "saved": "Järeltegevus salvestatud",
+            "saveError": "Viga salvestamisel",
+            "deleted": "Järeltegevus kustutatud",
+            "deletedMultiple": "{count} järeltegevust kustutatud",
+            "markedDone": "Märgitud tehtuks",
+            "markedUndone": "Uuesti avatud",
+            "error": "Ilmnes viga"
+        }
+    },
+    "FollowUpCard": {
+        "noSubject": "Teema puudub",
+        "today": "Täna",
+        "tomorrow": "Homme",
+        "daysAgo": "{days} päeva tagasi",
+        "inDays": "{days} päeva pärast",
+        "markDone": "Märgi tehtuks",
+        "markUndone": "Ava uuesti",
+        "delete": "Kustuta"
+    },
+    "FollowUpDialog": {
+        "titleCreate": "Uus järeltegevus",
+        "titleEdit": "Muuda järeltegevust",
+        "date": "Kuupäev",
+        "subject": "Teema",
+        "body": "Märkus",
+        "assignedEmployees": "Määratud",
+        "linkSection": "Seos (valikuline)",
+        "linkType": "Seose tüüp",
+        "linkId": "ID",
+        "linkInfo": "Nimetus",
+        "searchCustomer": "Otsi klienti",
+        "searchVendor": "Otsi tarnijat",
+        "searchQuotation": "Otsi pakkumist",
+        "searchOrder": "Otsi tellimust",
+        "searchDeliveryOrder": "Otsi saatelehte",
+        "searchInvoice": "Otsi arvet",
+        "searchRequestQuotation": "Otsi päringut",
+        "searchPurchaseOrder": "Otsi ostutellimust",
+        "searchPurchaseDeliveryOrder": "Otsi kauba vastuvõttu",
+        "searchPurchaseInvoice": "Otsi ostuarvet",
+        "search": "Otsi",
+        "noResults": "Tulemusi ei leitud",
+        "startTyping": "Sisestage otsingutermin...",
+        "cancel": "Tühista",
+        "save": "Salvesta",
+        "quickDate": {
+            "today": "Täna",
+            "tomorrow": "Homme",
+            "nextWeek": "+1 nädal",
+            "twoWeeks": "+2 nädalat",
+            "nextMonth": "+1 kuu"
+        },
+        "linkTypes": {
+            "customer": "Klient",
+            "vendor": "Tarnija",
+            "salesQuotation": "Pakkumine",
+            "salesOrder": "Tellimus",
+            "salesDeliveryOrder": "Saateleht",
+            "salesInvoice": "Arve",
+            "purchaseQuotation": "Päring",
+            "purchaseOrder": "Ostutellimus",
+            "purchaseDeliveryOrder": "Kauba vastuvõtt",
+            "purchaseInvoice": "Ostuarve"
+        },
+        "validation": {
+            "required": "Kohustuslik väli"
+        }
+    },
+    "FollowUpList": {
+        "done": "Tehtud",
+        "open": "Avatud",
+        "today": "Täna",
+        "tomorrow": "Homme",
+        "markDone": "Märgi tehtuks",
+        "markUndone": "Ava uuesti",
+        "edit": "Muuda",
+        "delete": "Kustuta",
+        "entry": "Kirje",
+        "entries": "Kirjed",
+        "deleteAll": "Kustuta kõik kuvatavad",
+        "deleteAllConfirmTitle": "Kustuta kõik järeltegevused?",
+        "deleteAllConfirmText": "Kas soovite tõesti kustutada kõik {count} kuvatavat järeltegevust?",
+        "deleteAllWarning": "Seda toimingut ei saa tagasi võtta!",
+        "deleteAllConfirm": "Kustuta kõik",
+        "cancel": "Tühista",
+        "headers": {
+            "date": "Kuupäev",
+            "subject": "Teema",
+            "link": "Seos",
+            "assignedTo": "Määratud",
+            "status": "Olek",
+            "actions": "Toimingud"
+        }
+    },
+    "FollowUpCalendar": {
+        "today": "Täna",
+        "month": "Kuu",
+        "week": "Nädal",
+        "day": "Päev",
+        "allDay": "Kogu päev",
+        "noSubject": "Teemata",
+        "newFollowUp": "Uus järeltegevus",
+        "subject": "Teema",
+        "subjectPlaceholder": "Mida tuleb teha?",
+        "note": "Märkus",
+        "notePlaceholder": "Lisateave...",
+        "cancel": "Tühista",
+        "create": "Loo",
+        "done": "Tehtud",
+        "reopen": "Ava",
+        "edit": "Muuda",
+        "links": "Seosed",
+        "details": "Üksikasjad",
+        "assignedTo": "Määratud",
+        "linkedTo": "Seotud",
+        "close": "Sulge",
+        "markDone": "Märgi tehtuks",
+        "markUndone": "Ava uuesti",
+        "editFollowUp": "Muuda",
+        "deleteFollowUp": "Kustuta",
+        "more": "veel",
+        "weekDays": {
+            "mon": "E",
+            "tue": "T",
+            "wed": "K",
+            "thu": "N",
+            "fri": "R",
+            "sat": "L",
+            "sun": "P"
+        }
+    },
+    "FollowUpWidget": {
+        "title": "Järeltegevus",
+        "overdue": "Üle tähtaja",
+        "today": "Täna",
+        "tomorrow": "Homme",
+        "upcoming": "Tulemas",
+        "noItems": "Avatud järeltegevusi pole",
+        "showAll": "Kuva kõik {count}",
+        "markDone": "Märgi tehtuks",
+        "quickAdd": "Kiire lisamine",
+        "openAll": "Ava kõik",
+        "daysAgo": "{days} päeva tagasi"
+    }
+}

@@ -1,0 +1,75 @@
+{
+    "routes": {
+        "mainmenu": "/hauptmen%C3%BC",
+        "customer": "/kunde",
+        "editCustomer": "/kunde/bearbeiten",
+        "editVendor": "/lieferant/bearbeiten",
+        "viewInvoice": "/rechnung/anzeigen",
+        "editQuotation": "/angebot/bearbeiten",
+        "editOrder": "/auftrag/bearbeiten",
+        "newCustomer": "/kunde/neu",
+        "newVendor": "/lieferant/neu",
+        "newQuotation": "/angebot/neu",
+        "newOrder": "/auftrag/neu",
+        "newInvoice": "/rechnung/neu",
+        "manageCustomers": "/kunde",
+        "manageVendors": "/lieferant",
+        "manageArticles": "/artikel",
+        "manageQuotations": "/angebot",
+        "manageOrders": "/auftrag",
+        "manageInvoices": "/rechnung",
+        "manageCreditNotes": "/gutschrift",
+        "manageDeliveryOrders": "/lieferschein",
+        "orderSearch": "/auftrag/suche",
+        "search": "/suche",
+        "searchCustomers": "/kunde/suche",
+        "followUp": "/wiedervorlage",
+        "clientConfig": "/system/mandantenkonfiguration",
+        "developerTools": "/system/developer-tools",
+        "systemUpdate": "/system/aktualisierung",
+        "currentCustomerEdit": "/kunde/bearbeiten",
+        "callHistory": "/anrufliste",
+        "calendar": "/kalender",
+        "wiki": "/wiki",
+        "wikiNew": "/wiki/neu",
+        "wikiCategories": "/wiki/kategorien",
+        "wikiEdit": "/wiki/bearbeiten",
+        "userConfig": "/benutzer/konfiguration",
+        "huSerienbrief": "/serienbrief/hu",
+        "wallDisplay": "/wandanzeige"
+    },
+    "errors": {
+        "PASSWORD_FILE_NOT_FOUND": "Chyba: Soubor s heslem api/config/api.passwd.php nebyl nalezen. Prosim prejmenujte soubor api/config/api.passwd.php.example na api/config/api.passwd.php a upravte nastaveni.",
+        "CONFIG_FILE_NOT_FOUND": "Chyba: Konfiguracni soubor nebyl nalezen. Prosim zkontrolujte nastaveni."
+    },
+    "MasterDataMenu": {
+        "title": "Kmenovà data",
+        "editCustomer": "Upravit data zákazníka",
+        "newCustomer": "Vytvořit nového zákazníka",
+        "manageCustomers": "Spravovat zákazníky",
+        "search": "Hledat",
+        "searchCustomers": "Hledat zákazníky",
+        "newVendor": "Vytvořit nového dodavatele",
+        "calendar": "Kalendář"
+    },
+    "ContactMenu": {
+        "title": "Kontakt",
+        "callHistory": "Historie hovorů",
+        "emails": "E-maily",
+        "whatsapp": "WhatsApp"
+    },
+    "SalesMenu": {
+        "title": "Prodej",
+        "newQuotation": "Vytvořit novou nabídku",
+        "newOrder": "Vytvořit novou objednávku",
+        "newInvoice": "Vytvořit novou fakturu",
+        "manageCreditNotes": "Dobropisy"
+    },
+    "SystemMenu": {
+        "title": "Systém",
+        "clientConfig": "Konfigurace firmy",
+        "developerTools": "Developer Tools",
+        "systemUpdate": "Aktualizace systému",
+        "about": "O aplikaci"
+    }
+}

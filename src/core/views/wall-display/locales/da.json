@@ -1,0 +1,20 @@
+{
+    "WallDisplay": {
+        "calendar": "Kalender",
+        "faktura": "Dokument",
+        "noFaktura": "Intet dokument valgt",
+        "noFakturaHint": "Klik paa monitor-knappen i en faktura",
+        "invoice": "Faktura",
+        "order": "Ordre",
+        "quotation": "Tilbud",
+        "open": "Aaben",
+        "closed": "Afsluttet",
+        "position": "Pos.",
+        "description": "Beskrivelse",
+        "qty": "Antal",
+        "price": "Pris",
+        "total": "Total",
+        "grossTotal": "Totalbeloeb",
+        "allDay": "Hele dagen"
+    }
+}

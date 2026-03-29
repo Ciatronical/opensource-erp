@@ -1,0 +1,41 @@
+{
+    "NavbarView": {
+        "logoutTooltip": "Odhlásit se",
+        "accountTooltip": "Účet",
+        "editCustomerTooltip": "Upravit zákazníka",
+        "editCvTooltip": "Upravit zákazníka/dodavatele",
+        "currentC": "Zákazník:",
+        "currentV": "Dodavatel:",
+        "openInNewTabTooltip": "Hlavní menu",
+        "newTabTooltip": "Otevřít v novém panelu",
+        "calendarTooltip": "Kalendář",
+        "callHistoryTooltip": "Historie hovorů",
+        "userConfig": "Konfigurace",
+        "switchClient": "Přepnout firmu",
+        "uploadLogo": "Logo firmy",
+        "selectImage": "Vybrat obrázek",
+        "logoHint": "Vyberte obrázek, umístěte a ořízněte",
+        "saveLogo": "Uložit",
+        "deleteLogo": "Odstranit",
+        "cancel": "Zrušit"
+    },
+    "GlobalSearch": {
+        "placeholder": "Hledat...",
+        "noResults": "Žádné výsledky",
+        "customers": "Zákazníci",
+        "vendors": "Dodavatelé",
+        "invoices": "Faktury",
+        "orders": "Objednávky",
+        "quotations": "Nabídky",
+        "articles": "Artikly",
+        "vehicles": "Vozidla",
+        "wiki": "Wiki články",
+        "recentlyVisited": "Nedávno navštívené",
+        "clearHistory": "Smazat historii"
+    },
+    "InfoBar": {
+        "unknownCaller": "Neznámý",
+        "closeAll": "Zavřít všechna oznámení",
+        "pendingParts": "Požadované náhradní díly"
+    }
+}

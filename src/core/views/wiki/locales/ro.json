@@ -1,0 +1,83 @@
+{
+    "WikiMenu": {
+        "title": "Wiki",
+        "newPage": "Articol nou",
+        "allPages": "Toate articolele",
+        "categories": "Categorii"
+    },
+    "WikiListView": {
+        "title": "Wiki - Baza de cunostinte",
+        "newPage": "Articol nou",
+        "search": "Cauta articole...",
+        "allCategories": "Toate",
+        "noPages": "Nu exista inca articole.",
+        "noPagesHint": "Creati primul dvs. articol wiki.",
+        "headers": {
+            "title": "Titlu",
+            "category": "Categorie",
+            "author": "Autor",
+            "updated": "Ultima actualizare",
+            "kba": "KBA"
+        },
+        "confirmDelete": "Stergeti articolul \"{title}\"?",
+        "deleted": "Articol sters.",
+        "deleteError": "Eroare la stergere."
+    },
+    "WikiReadView": {
+        "title": "Articol wiki",
+        "edit": "Editare",
+        "back": "Inapoi la prezentare generala",
+        "revisions": "Versiuni",
+        "createdBy": "Creat de",
+        "updatedBy": "Ultima editare de",
+        "kbaLabel": "Asociere KBA",
+        "notFound": "Articol negasit.",
+        "loadError": "Eroare la incarcarea articolului."
+    },
+    "WikiEditView": {
+        "titleNew": "Articol wiki nou",
+        "titleEdit": "Editare articol wiki",
+        "fieldTitle": "Titlu",
+        "fieldCategory": "Categorie",
+        "fieldContent": "Continut",
+        "fieldKbaHsn": "HSN",
+        "fieldKbaTsn": "TSN (primele 3 caractere)",
+        "kbaSection": "Asociere KBA (optional)",
+        "save": "Salvare",
+        "cancel": "Anulare",
+        "saved": "Articol salvat.",
+        "saveError": "Eroare la salvare.",
+        "missingTitle": "Va rugam introduceti un titlu.",
+        "revisions": "Istoric versiuni",
+        "noRevisions": "Nu exista inca versiuni mai vechi.",
+        "restore": "Restaurare",
+        "confirmRestore": "Restaurati versiunea din {date}?",
+        "restored": "Versiune restaurata.",
+        "restoreError": "Eroare la restaurare.",
+        "statusSaving": "Se salveaza...",
+        "statusSaved": "Salvat",
+        "statusUnsaved": "Nesalvat",
+        "statusError": "Eroare la salvare",
+        "back": "Inapoi",
+        "newCategory": "Categorie noua",
+        "createCategory": "Creare"
+    },
+    "WikiCategoriesView": {
+        "title": "Categorii wiki",
+        "newCategory": "Categorie noua",
+        "name": "Nume",
+        "sortkey": "Sortare",
+        "pageCount": "Articole",
+        "save": "Salvare",
+        "cancel": "Anulare",
+        "edit": "Editare",
+        "delete": "Stergere",
+        "noCategories": "Nu exista inca categorii.",
+        "confirmDelete": "Stergeti categoria \"{name}\"?",
+        "saved": "Categorie salvata.",
+        "deleted": "Categorie stearsa.",
+        "saveError": "Eroare la salvare.",
+        "deleteError": "Eroare la stergere.",
+        "sortUpdated": "Ordine actualizata."
+    }
+}

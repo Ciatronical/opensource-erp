@@ -1,0 +1,135 @@
+{
+    "TasksView": {
+        "title": "Taken",
+        "search": "Zoeken...",
+        "fromDate": "Van",
+        "toDate": "Tot",
+        "showDone": "Afgeronde tonen",
+        "tabs": {
+            "board": "Bord",
+            "list": "Lijst",
+            "calendar": "Kalender"
+        },
+        "actions": {
+            "create": "Nieuwe taak",
+            "cancel": "Annuleren",
+            "delete": "Verwijderen",
+            "save": "Opslaan",
+            "edit": "Bewerken",
+            "markDone": "Afgerond",
+            "markUndone": "Heropenen",
+            "close": "Sluiten"
+        },
+        "columns": {
+            "overdue": "Verlopen",
+            "today": "Vandaag",
+            "upcoming": "Komend",
+            "done": "Afgerond"
+        },
+        "fields": {
+            "subject": "Onderwerp",
+            "body": "Notitie",
+            "date": "Datum"
+        },
+        "calendar": {
+            "today": "Vandaag",
+            "month": "Maand",
+            "week": "Week",
+            "day": "Dag",
+            "more": "meer"
+        },
+        "dialog": {
+            "titleNew": "Nieuwe taak",
+            "titleEdit": "Taak bewerken"
+        },
+        "confirmDelete": {
+            "title": "Taak verwijderen?",
+            "message": "Wilt u deze taak echt verwijderen? Deze actie kan niet ongedaan worden gemaakt."
+        },
+        "messages": {
+            "loadError": "Fout bij het laden van de taken",
+            "saved": "Taak opgeslagen",
+            "saveError": "Fout bij het opslaan",
+            "deleted": "Taak verwijderd",
+            "markedDone": "Als afgerond gemarkeerd",
+            "markedUndone": "Heropend",
+            "error": "Er is een fout opgetreden"
+        }
+    },
+    "TasksCard": {
+        "noSubject": "Geen onderwerp",
+        "today": "Vandaag",
+        "tomorrow": "Morgen",
+        "daysAgo": "{days} dagen geleden",
+        "inDays": "over {days} dagen",
+        "markDone": "Als afgerond markeren",
+        "markUndone": "Heropenen",
+        "delete": "Verwijderen"
+    },
+    "TasksDialog": {
+        "titleCreate": "Nieuwe taak",
+        "titleEdit": "Taak bewerken",
+        "date": "Datum",
+        "subject": "Onderwerp",
+        "body": "Notitie",
+        "assignedEmployees": "Toegewezen aan",
+        "linkSection": "Koppeling (optioneel)",
+        "linkType": "Koppelingstype",
+        "linkId": "ID",
+        "linkInfo": "Aanduiding",
+        "cancel": "Annuleren",
+        "save": "Opslaan",
+        "quickDate": {
+            "today": "Vandaag",
+            "tomorrow": "Morgen",
+            "nextWeek": "+1 week",
+            "nextMonth": "+1 maand"
+        },
+        "linkTypes": {
+            "customer": "Klant",
+            "vendor": "Leverancier",
+            "salesQuotation": "Offerte",
+            "salesOrder": "Order",
+            "salesDeliveryOrder": "Afleverbon",
+            "salesInvoice": "Factuur",
+            "purchaseQuotation": "Aanvraag",
+            "purchaseOrder": "Bestelling",
+            "purchaseDeliveryOrder": "Goederenontvangst",
+            "purchaseInvoice": "Inkoopfactuur"
+        },
+        "validation": {
+            "required": "Verplicht veld"
+        }
+    },
+    "TasksList": {
+        "done": "Afgerond",
+        "open": "Open",
+        "today": "Vandaag",
+        "tomorrow": "Morgen",
+        "markDone": "Als afgerond markeren",
+        "markUndone": "Heropenen",
+        "edit": "Bewerken",
+        "delete": "Verwijderen",
+        "headers": {
+            "date": "Datum",
+            "subject": "Onderwerp",
+            "link": "Koppeling",
+            "assignedTo": "Toegewezen",
+            "status": "Status",
+            "actions": "Acties"
+        }
+    },
+    "TasksWidget": {
+        "title": "Taken",
+        "overdue": "Verlopen",
+        "today": "Vandaag",
+        "tomorrow": "Morgen",
+        "upcoming": "Komend",
+        "noItems": "Geen openstaande taken",
+        "showAll": "Alle {count} tonen",
+        "markDone": "Als afgerond markeren",
+        "quickAdd": "Snel toevoegen",
+        "openAll": "Alles openen",
+        "daysAgo": "{days} dagen geleden"
+    }
+}

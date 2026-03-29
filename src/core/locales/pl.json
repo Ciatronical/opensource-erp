@@ -1,0 +1,47 @@
+{
+    "LoginView": {
+        "title": "Logowanie",
+        "username": "Nazwa u\u017cytkownika",
+        "password": "Has\u0142o",
+        "client": "Firma",
+        "button": "Zaloguj si\u0119",
+        "failed": "Logowanie nie powiod\u0142o si\u0119. Prosz\u0119 sprawdzi\u0107 dane logowania.",
+        "EMPTY_FIELDS": "Prosz\u0119 poda\u0107 nazw\u0119 u\u017cytkownika i has\u0142o.",
+        "USER_NOT_FOUND": "U\u017cytkownik nie zosta\u0142 znaleziony.",
+        "WRONG_PASSWORD": "Nieprawid\u0142owe has\u0142o.",
+        "ERROR": "B\u0142\u0105d logowania. Prosz\u0119 spr\u00f3bowa\u0107 ponownie.",
+        "ERROR_LOADING_CLIENTS": "B\u0142\u0105d podczas \u0142adowania firm. Prosz\u0119 spr\u00f3bowa\u0107 p\u00f3\u017aniej.",
+        "USER_NOT_ASSIGNED_TO_CLIENT": "U\u017cytkownik nie jest przypisany do firmy.",
+        "PASSWORD_FILE_NOT_FOUND": "B\u0142\u0105d: Plik has\u0142a api/config/api.passwd.php nie zosta\u0142 znaleziony. Prosz\u0119 zmieni\u0107 nazw\u0119 pliku api/config/api.passwd.php.example na api/config/api.passwd.php i dostosowa\u0107 ustawienia.",
+        "CONFIG_FILE_NOT_FOUND": "B\u0142\u0105d: Plik konfiguracyjny nie zosta\u0142 znaleziony. Prosz\u0119 sprawdzi\u0107 ustawienia.",
+        "updateButton": "Wykonaj aktualizacj\u0119",
+        "updateSuccess": "Aktualizacja bazy danych zako\u0144czona pomy\u015blnie.",
+        "updateError": "B\u0142\u0105d podczas aktualizacji bazy danych. Prosz\u0119 spr\u00f3bowa\u0107 ponownie.",
+        "privacy": "Polityka prywatno\u015bci",
+        "dataDeletion": "Usuwanie danych"
+    },
+    "NotFoundView": {
+        "title": "Strona nie znaleziona",
+        "message": "\u017b\u0105dana strona nie zosta\u0142a znaleziona.",
+        "back_home": "Powr\u00f3t do strony g\u0142\u00f3wnej"
+    },
+    "NavbarView": {
+        "logoutTooltip": "Wyloguj si\u0119",
+        "accountTooltip": "Konto",
+        "editCustomerTooltip": "Edytuj klienta",
+        "editCvTooltip": "Edytuj klienta/dostawc\u0119",
+        "currentC": "Klient:",
+        "currentV": "Dostawca:",
+        "demoBanner": "Tryb demo \u2014 Wszystkie dane zostan\u0105 automatycznie zresetowane po okresie nieaktywno\u015bci.",
+        "demoResetWarning": "Demo zostanie zresetowane za {seconds} sekund \u2014 porusz mysz\u0105, aby kontynuowa\u0107."
+    },
+    "ErrorView": {
+        "title": "Wyst\u0105pi\u0142 b\u0142\u0105d",
+        "message": "Przepraszamy, wyst\u0105pi\u0142 nieoczekiwany b\u0142\u0105d.",
+        "debugInfo": "Informacje debugowania:",
+        "clickToShowDetails": "Kliknij, aby wy\u015bwietli\u0107 szczeg\u00f3\u0142y"
+    },
+    "App": {
+        "loading": "Prosz\u0119 czeka\u0107..."
+    }
+}

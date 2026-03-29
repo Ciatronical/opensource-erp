@@ -1,0 +1,49 @@
+{
+    "NavbarView": {
+        "logoutTooltip": "Abmelden",
+        "accountTooltip": "Konto",
+        "editCvTooltip": "Bearbeiten",
+        "currentCV": "Kunde/Lieferant:",
+        "openInNewTabTooltip": "Main menu",
+        "newTabTooltip": "Open in new tab",
+        "calendarTooltip": "Calendar",
+        "callHistoryTooltip": "Call history",
+        "userConfig": "Configuration",
+        "reports": "Reports",
+        "switchClient": "Switch company",
+        "uploadLogo": "Company logo",
+        "selectImage": "Select image",
+        "logoHint": "Select an image, position and crop it",
+        "saveLogo": "Save",
+        "deleteLogo": "Remove",
+        "cancel": "Cancel",
+        "sseConnected": "Live connection active",
+        "sseDisconnected": "Live connection interrupted"
+    },
+    "GlobalSearch": {
+        "placeholder": "Search...",
+        "noResults": "No results",
+        "customers": "Customers",
+        "vendors": "Vendors",
+        "invoices": "Invoices",
+        "orders": "Orders",
+        "quotations": "Quotations",
+        "articles": "Articles",
+        "vehicles": "Vehicles",
+        "wiki": "Wiki Articles",
+        "recentlyVisited": "Recently visited",
+        "clearHistory": "Clear history"
+    },
+    "InfoBar": {
+        "unknownCaller": "Unknown",
+        "closeAll": "Close all notifications",
+        "pendingParts": "parts requested",
+        "partsDialogTitle": "Pending spare part requests",
+        "partsEmpty": "No pending requests",
+        "order": "Order",
+        "requestedBy": "by",
+        "selectVendor": "Search vendor...",
+        "markOrdered": "Mark {count} as ordered",
+        "yesterday": "Yesterday"
+    }
+}

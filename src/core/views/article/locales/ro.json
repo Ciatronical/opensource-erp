@@ -1,0 +1,27 @@
+{
+    "ArticleEditView": {
+        "titleEdit": "Editare articol",
+        "saving": "Se salveaza...",
+        "saved": "Salvat",
+        "sections": {
+            "masterData": "Date de baza"
+        },
+        "fields": {
+            "partnumber": "Numar articol",
+            "description": "Descriere",
+            "partType": "Tip articol",
+            "typePart": "Marfa",
+            "typeService": "Serviciu",
+            "unit": "Unitate",
+            "buchungsgruppe": "Grup contabil",
+            "sellprice": "Pret de vanzare",
+            "notes": "Descriere lunga",
+            "obsolete": "Expirat / Nu mai utiliza"
+        },
+        "messages": {
+            "loading": "Articolul se incarca",
+            "loadError": "Eroare la incarcarea articolului",
+            "notFound": "Articol negasit"
+        }
+    }
+}

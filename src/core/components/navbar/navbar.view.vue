@@ -1,0 +1,444 @@
+<!-- src/core/components/navbar/navbar.view.vue -->
+<template>
+  <v-app-bar color="grey-lighten-4" elevation="1" density="comfortable">
+    <v-btn
+      icon
+      variant="text"
+      color="primary"
+      @click="openInNewTab"
+      :title="$t('NavbarView.newTabTooltip')"
+      class="ms-2"
+    >
+      <v-icon>mdi-open-in-new</v-icon>
+    </v-btn>
+    <v-btn
+      icon
+      variant="text"
+      color="primary"
+      @click="openMenu"
+      :title="$t('NavbarView.openInNewTabTooltip')"
+      class="ms-2"
+    >
+      <v-icon>mdi-widgets</v-icon>
+    </v-btn>
+    <router-link to="/" class="text-decoration-none text-primary me-1"><v-icon>mdi-home</v-icon></router-link>
+
+    <v-toolbar-title class="text-h6">
+      <router-link to="/" class="text-decoration-none text-primary">{{ appTitle }}</router-link>
+    </v-toolbar-title>
+
+    <!-- LxCars Schnellzugriff -->
+    <v-btn
+      v-if="oserpData.isLxCars()"
+      icon
+      variant="text"
+      color="primary"
+      :to="$t('routes.orderSearch')"
+      :title="$t('CarView.orderSearchTooltip')"
+    >
+      <v-icon>mdi-clipboard-search-outline</v-icon>
+    </v-btn>
+    <v-btn
+      icon
+      variant="text"
+      color="primary"
+      :to="{ name: 'calendar' }"
+      :title="$t('NavbarView.calendarTooltip')"
+    >
+      <v-icon>mdi-calendar-month</v-icon>
+    </v-btn>
+    <v-btn
+      icon
+      variant="text"
+      color="primary"
+      :to="{ name: 'call-history' }"
+      :title="$t('NavbarView.callHistoryTooltip')"
+    >
+      <v-icon>mdi-phone</v-icon>
+    </v-btn>
+    <v-btn
+      v-if="oserpData.isLxCars()"
+      icon
+      variant="text"
+      color="primary"
+      :to="$t('CarView.routes.newCarFromScan')"
+      :title="$t('CarView.scanTooltip')"
+      style="position: relative"
+    >
+      <v-icon size="22">mdi-car-side</v-icon>
+      <v-icon size="11" style="position: absolute; bottom: 6px; right: 6px;" color="primary">mdi-camera</v-icon>
+    </v-btn>
+
+    <!-- Responsive Menüs -->
+    <ResponsiveMenu :menus="cards" @menu-click="handleMenuAction" />
+
+    <!-- Globale Schnellsuche -->
+    <GlobalSearchComponent class="mx-2" style="max-width: 400px; flex: 1" />
+
+    <v-spacer />
+
+    <!-- Firmenlogo oder Firmenname — Klick öffnet Firmenliste -->
+    <v-menu v-model="clientMenuOpen" location="bottom end" :close-on-content-click="true" open-on-hover>
+      <template #activator="{ props: menuProps }">
+        <div v-bind="menuProps" class="d-flex align-center cursor-pointer">
+          <img
+            v-if="companyLogo"
+            :src="companyLogo"
+            class="company-logo me-2"
+            :title="t('NavbarView.switchClient')"
+          >
+          <span v-else class="text-body-2 font-weight-medium text-primary me-1">{{ oserpData.session.client }}</span>
+          <v-icon v-if="clientList.length > 1" size="x-small" class="me-1">mdi-chevron-down</v-icon>
+        </div>
+      </template>
+      <v-list density="compact" min-width="220">
+        <v-list-item
+          v-for="client in clientList"
+          :key="client.code"
+          :disabled="client.name === oserpData.session.client"
+          @click="doSwitchClient(client.code)"
+        >
+          <v-list-item-title class="text-body-2">{{ client.name }}</v-list-item-title>
+          <template #append>
+            <v-icon v-if="client.name === oserpData.session.client" size="small" color="primary">mdi-check</v-icon>
+          </template>
+        </v-list-item>
+        <v-divider class="my-1" />
+        <v-list-item :to="t('routes.clientConfig')" @click="clientMenuOpen = false">
+          <template #prepend><v-icon size="small" class="me-2">mdi-cog</v-icon></template>
+          <v-list-item-title class="text-body-2">{{ t('SystemMenu.clientConfig') }}</v-list-item-title>
+        </v-list-item>
+        <v-list-item :to="t('routes.developerTools')" @click="clientMenuOpen = false">
+          <template #prepend><v-icon size="small" class="me-2">mdi-wrench</v-icon></template>
+          <v-list-item-title class="text-body-2">{{ t('SystemMenu.developerTools') }}</v-list-item-title>
+        </v-list-item>
+        <v-list-item :to="t('routes.systemUpdate')" @click="clientMenuOpen = false">
+          <template #prepend><v-icon size="small" class="me-2">mdi-update</v-icon></template>
+          <v-list-item-title class="text-body-2">{{ t('SystemMenu.systemUpdate') }}</v-list-item-title>
+        </v-list-item>
+        <v-divider class="my-1" />
+        <v-list-item @click="showAboutDialog = true; clientMenuOpen = false">
+          <template #prepend><v-icon size="small" class="me-2">mdi-information-outline</v-icon></template>
+          <v-list-item-title class="text-body-2">{{ t('SystemMenu.about') }}</v-list-item-title>
+        </v-list-item>
+      </v-list>
+    </v-menu>
+
+    <!-- Account-Menü -->
+    <v-menu v-model="accountMenuOpen" location="bottom end" :close-on-content-click="false">
+      <template #activator="{ props }">
+        <v-btn
+          variant="text"
+          color="primary"
+          v-bind="props"
+          :title="$t('NavbarView.accountTooltip')"
+          class="text-none"
+        >
+          <v-icon
+            start
+            :color="sseConnected ? 'primary' : 'orange-darken-2'"
+            :title="sseConnected ? t('NavbarView.sseConnected') : t('NavbarView.sseDisconnected')"
+          >mdi-account-circle</v-icon>
+          <span class="text-body-2">{{ oserpData.session.user }}</span>
+        </v-btn>
+      </template>
+
+      <v-card min-width="280">
+        <v-card-text class="pb-2">
+          <div class="text-subtitle-2 font-weight-bold">{{ oserpData.session.user }}</div>
+          <div class="text-caption text-medium-emphasis">{{ oserpData.session.client }}</div>
+        </v-card-text>
+        <v-divider />
+        <v-list density="compact">
+          <v-list-item @click="logout">
+            <template #prepend>
+              <v-icon size="small" class="me-2">mdi-logout</v-icon>
+            </template>
+            <v-list-item-title>{{ $t('NavbarView.logoutTooltip') }}</v-list-item-title>
+          </v-list-item>
+          <v-list-item :to="{ name: 'user-config' }" @click="accountMenuOpen = false">
+            <template #prepend>
+              <v-icon size="small" class="me-2">mdi-cog</v-icon>
+            </template>
+            <v-list-item-title>{{ $t('NavbarView.userConfig') }}</v-list-item-title>
+          </v-list-item>
+          <template v-if="oserpData.isLxCars()">
+            <v-divider class="my-1" />
+            <v-list-item :to="{ name: 'lxcars-reports' }" @click="accountMenuOpen = false">
+              <template #prepend>
+                <v-icon size="small" class="me-2">mdi-chart-timeline-variant-shimmer</v-icon>
+              </template>
+              <v-list-item-title>{{ $t('NavbarView.reports') }}</v-list-item-title>
+            </v-list-item>
+          </template>
+        </v-list>
+      </v-card>
+    </v-menu>
+  </v-app-bar>
+
+  <!-- Info Bar: Neue Anrufe & E-Mails -->
+  <InfoBarComponent />
+
+  <div v-if="oserpData.customer_vendor !== false" class="text-left pa-2">
+    <v-btn
+      v-if="editRoute"
+      icon
+      size="20"
+      class="me-2"
+      :title="t('NavbarView.editCvTooltip')"
+      @click="goToEdit"
+    >
+      <v-icon size="18">mdi-pencil</v-icon>
+    </v-btn>
+    <span class="px-2" v-if="cvSrc === 'C'">{{ $t('NavbarView.currentC') }}</span>
+    <span class="px-2" v-else>{{ $t('NavbarView.currentV') }}</span>
+    <span class="font-weight-bold">{{ oserpData.customer_vendor?.profile?.name }}</span>
+    <span class="font-weight-semibold ps-2">( {{ cvSrc === 'C' ? oserpData.customer_vendor?.profile?.customernumber : oserpData.customer_vendor?.profile?.vendornumber }} )</span>
+  </div>
+
+  <!-- Demo-Modus Banner -->
+  <v-banner
+    v-if="isDemo"
+    color="warning"
+    density="compact"
+    icon="mdi-flask-outline"
+    class="text-center"
+    stacked
+  >
+    <template #text>
+      <span class="text-body-2 font-weight-medium">{{ t('NavbarView.demoBanner') }}</span>
+    </template>
+  </v-banner>
+
+  <!-- Demo Inaktivitäts-Warnung -->
+  <v-snackbar
+    v-if="isDemo"
+    :model-value="showDemoWarning"
+    color="error"
+    timeout="-1"
+    location="top"
+    multi-line
+  >
+    <div class="d-flex align-center">
+      <v-icon class="me-3">mdi-alert</v-icon>
+      <span>{{ t('NavbarView.demoResetWarning', { seconds: demoRemainingSeconds }) }}</span>
+    </div>
+  </v-snackbar>
+
+  <!-- MessagesView Integration -->
+  <MessagesView :messages="displayMessages" />
+
+  <!-- Über-Dialog -->
+  <AboutDialog v-model="showAboutDialog" :app-title="appTitle" />
+</template>
+
+<script>
+import { oserpStore } from '@/core/stores/oserp.store.js'
+import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
+import { computed, inject, ref } from 'vue'
+import MessagesView from '@/core/components/messages/messages.view.vue'
+import ResponsiveMenu from '@/core/components/menus/responsive.menus.vue'
+import GlobalSearchComponent from '@/core/components/navbar/global-search.component.vue'
+import InfoBarComponent from '@/core/components/navbar/info-bar.component.vue'
+import { sseConnected } from '@/core/composables/useInfoBar'
+import AboutDialog from '@/core/components/about/about.dialog.vue'
+import { useNavigationCards } from '@/core/composables/navigation.cards'
+import { useActivityTracker } from '@/core/composables/useActivityTracker'
+
+export default {
+  name: 'NavbarView',
+  components: {
+    MessagesView,
+    ResponsiveMenu,
+    GlobalSearchComponent,
+    InfoBarComponent,
+    AboutDialog
+  },
+  props: {
+    // alte API (einzelne Nachricht)
+    message: {
+      type: Object,
+      default: () => ({ title: '', description: '', type: 'info' })
+    },
+    // neue API (mehrere Nachrichten)
+    messages: {
+      type: Array,
+      default: () => []
+    }
+  },
+  setup(props) {
+    const oserpData = oserpStore()
+    const router = useRouter()
+    const { t } = useI18n()
+    const cvSrc = computed(() => oserpData.customer_vendor?.profile?.src || 'C')
+    const appReady = inject('appReady')
+
+    const featureDisplayNames = {
+      lxcars: 'LxCars'
+    }
+
+    const appTitle = computed(() => {
+      const active = oserpData.features.find(f => {
+        const key = typeof f === 'object' ? f.value : f
+        return featureDisplayNames[key]
+      })
+      if (!active) return 'OpensourceERP'
+      const key = typeof active === 'object' ? active.value : active
+      return featureDisplayNames[key]
+    })
+
+    // Demo-Modus
+    const isDemo = computed(() => oserpData.session.is_demo)
+
+    const { showWarning: showDemoWarning, remainingSeconds: demoRemainingSeconds } = isDemo.value
+      ? useActivityTracker({
+          inactivityMinutes: oserpData.session.demo_inactivity_minutes,
+          onReset: async () => {
+            appReady.value = false
+            try { await oserpData.logout() } catch {}
+            await router.push('/login')
+            appReady.value = true
+          }
+        })
+      : { showWarning: computed(() => false), remainingSeconds: computed(() => 0) }
+
+    const editRoute = computed(() => {
+      const profile = oserpData.customer_vendor?.profile
+      if (!profile?.id) return null
+      const routeName = profile.src === 'V' ? 'vendor-edit' : 'customer-edit'
+      return { name: routeName, params: { id: profile.id } }
+    })
+
+    function goToEdit() {
+      if (editRoute.value) router.push(editRoute.value)
+    }
+
+    // Navigation Cards aus Composable
+    const { cards } = useNavigationCards(true)
+
+    // Firmenwechsel
+    const accountMenuOpen = ref(false)
+    const clientMenuOpen = ref(false)
+    const showAboutDialog = ref(false)
+    const clientList = ref([])
+
+    // Firmenliste einmalig beim Laden der Navbar holen
+    oserpData.fetchClients()
+      .then(({ clients }) => { clientList.value = clients })
+      .catch(() => {})
+
+    async function doSwitchClient(clientCode) {
+      accountMenuOpen.value = false
+      try {
+        await oserpData.switchClient(clientCode)
+        router.push({ name: 'startup' })
+      } catch (err) {
+        console.error('Firmenwechsel fehlgeschlagen:', err)
+      }
+    }
+
+    // Firmenlogo (nur Anzeige, Upload jetzt in Firmenkonfiguration)
+    const companyLogo = computed(() => oserpData.getClientDefaultValue('company_logo', null))
+
+    const logout = async () => {
+      appReady.value = false
+      try {
+        await oserpData.logout()
+      } catch (err) {
+        console.error('Logout error:', err)
+      }
+      await router.push('/login')
+      appReady.value = true
+    }
+
+    const openMenu = () => {
+      router.push(t('routes.mainmenu'))
+    }
+
+    const openInNewTab = () => {
+      window.open(window.location.href, '_blank')
+    }
+
+    const mapType = (t) => (['info', 'warning', 'error', 'success'].includes(t) ? t : 'info')
+
+    // Handler für Menü-Aktionen ohne Route
+    const handleMenuAction = (item) => {
+      // Hier können Custom-Actions behandelt werden
+      console.log('Menu action:', item)
+    }
+
+    // Anzeige-Messages ableiten: bevorzugt prop.messages, dann prop.message, sonst Fallback
+    const displayMessages = computed(() => {
+      const list = []
+
+      if (Array.isArray(props.messages) && props.messages.length) {
+        props.messages.forEach(m => {
+          if (m && m.title) list.push({
+            title: m.title,
+            description: m.description || '',
+            type: mapType(m.type || 'info')
+          })
+        })
+      }
+
+      if (props.message && props.message.title) {
+        list.push({
+          title: props.message.title,
+          description: props.message.description || '',
+          type: mapType(props.message.type || 'info')
+        })
+      }
+
+      if (!oserpData.customer_vendor) {
+        list.push({
+          title: 'Willkommen zu OpensourceERP!',
+          description:
+            'Es scheint, als hätten Sie noch keine Kunden angelegt. Beginnen Sie damit, Ihren ersten Kunden zu erstellen, um die Funktionen von OpenSourceERP zu erkunden.',
+          type: 'info',
+        })
+      }
+
+      return list
+    })
+
+    return {
+      oserpData,
+      appTitle,
+      isDemo,
+      showDemoWarning,
+      demoRemainingSeconds,
+      logout,
+      openMenu,
+      openInNewTab,
+      t,
+      cvSrc,
+      editRoute,
+      goToEdit,
+      displayMessages,
+      cards,
+      handleMenuAction,
+      accountMenuOpen,
+      clientMenuOpen,
+      clientList,
+      doSwitchClient,
+      companyLogo,
+      showAboutDialog,
+      sseConnected
+    }
+  }
+}
+</script>
+
+<style scoped>
+.cursor-pointer {
+  cursor: pointer;
+}
+.company-logo {
+  height: 36px;
+  width: auto;
+  max-width: 180px;
+  object-fit: contain;
+  border-radius: 4px;
+}
+</style>

@@ -1,0 +1,135 @@
+{
+    "TasksView": {
+        "title": "Attività",
+        "search": "Cerca...",
+        "fromDate": "Da",
+        "toDate": "A",
+        "showDone": "Mostra completate",
+        "tabs": {
+            "board": "Board",
+            "list": "Lista",
+            "calendar": "Calendario"
+        },
+        "actions": {
+            "create": "Nuova attività",
+            "cancel": "Annulla",
+            "delete": "Elimina",
+            "save": "Salva",
+            "edit": "Modifica",
+            "markDone": "Completata",
+            "markUndone": "Riapri",
+            "close": "Chiudi"
+        },
+        "columns": {
+            "overdue": "Scaduta",
+            "today": "Oggi",
+            "upcoming": "Prossima",
+            "done": "Completata"
+        },
+        "fields": {
+            "subject": "Oggetto",
+            "body": "Nota",
+            "date": "Data"
+        },
+        "calendar": {
+            "today": "Oggi",
+            "month": "Mese",
+            "week": "Settimana",
+            "day": "Giorno",
+            "more": "altri"
+        },
+        "dialog": {
+            "titleNew": "Nuova attività",
+            "titleEdit": "Modifica attività"
+        },
+        "confirmDelete": {
+            "title": "Eliminare l'attività?",
+            "message": "Vuoi davvero eliminare questa attività? Questa azione non può essere annullata."
+        },
+        "messages": {
+            "loadError": "Errore nel caricamento delle attività",
+            "saved": "Attività salvata",
+            "saveError": "Errore nel salvataggio",
+            "deleted": "Attività eliminata",
+            "markedDone": "Contrassegnata come completata",
+            "markedUndone": "Riaperta",
+            "error": "Si è verificato un errore"
+        }
+    },
+    "TasksCard": {
+        "noSubject": "Senza oggetto",
+        "today": "Oggi",
+        "tomorrow": "Domani",
+        "daysAgo": "{days} giorni fa",
+        "inDays": "tra {days} giorni",
+        "markDone": "Segna come completata",
+        "markUndone": "Riapri",
+        "delete": "Elimina"
+    },
+    "TasksDialog": {
+        "titleCreate": "Nuova attività",
+        "titleEdit": "Modifica attività",
+        "date": "Data",
+        "subject": "Oggetto",
+        "body": "Nota",
+        "assignedEmployees": "Assegnato a",
+        "linkSection": "Collegamento (opzionale)",
+        "linkType": "Tipo di collegamento",
+        "linkId": "ID",
+        "linkInfo": "Descrizione",
+        "cancel": "Annulla",
+        "save": "Salva",
+        "quickDate": {
+            "today": "Oggi",
+            "tomorrow": "Domani",
+            "nextWeek": "+1 Settimana",
+            "nextMonth": "+1 Mese"
+        },
+        "linkTypes": {
+            "customer": "Cliente",
+            "vendor": "Fornitore",
+            "salesQuotation": "Preventivo",
+            "salesOrder": "Ordine",
+            "salesDeliveryOrder": "Bolla di consegna",
+            "salesInvoice": "Fattura",
+            "purchaseQuotation": "Richiesta",
+            "purchaseOrder": "Ordine d'acquisto",
+            "purchaseDeliveryOrder": "Ricevimento merce",
+            "purchaseInvoice": "Fattura d'acquisto"
+        },
+        "validation": {
+            "required": "Campo obbligatorio"
+        }
+    },
+    "TasksList": {
+        "done": "Completata",
+        "open": "Aperta",
+        "today": "Oggi",
+        "tomorrow": "Domani",
+        "markDone": "Segna come completata",
+        "markUndone": "Riapri",
+        "edit": "Modifica",
+        "delete": "Elimina",
+        "headers": {
+            "date": "Data",
+            "subject": "Oggetto",
+            "link": "Collegamento",
+            "assignedTo": "Assegnato",
+            "status": "Stato",
+            "actions": "Azioni"
+        }
+    },
+    "TasksWidget": {
+        "title": "Attività",
+        "overdue": "Scaduta",
+        "today": "Oggi",
+        "tomorrow": "Domani",
+        "upcoming": "Prossima",
+        "noItems": "Nessuna attività aperta",
+        "showAll": "Mostra tutte ({count})",
+        "markDone": "Segna come completata",
+        "quickAdd": "Aggiungi rapido",
+        "openAll": "Apri tutte",
+        "daysAgo": "{days} giorni fa"
+    }
+}

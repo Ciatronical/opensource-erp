@@ -1,0 +1,83 @@
+{
+    "WikiMenu": {
+        "title": "Wiki",
+        "newPage": "Ny artikkel",
+        "allPages": "Alle artikler",
+        "categories": "Kategorier"
+    },
+    "WikiListView": {
+        "title": "Wiki - Kunnskapsdatabase",
+        "newPage": "Ny artikkel",
+        "search": "Soek artikler...",
+        "allCategories": "Alle",
+        "noPages": "Ingen artikler ennaa.",
+        "noPagesHint": "Opprett din foerste wiki-artikkel.",
+        "headers": {
+            "title": "Tittel",
+            "category": "Kategori",
+            "author": "Forfatter",
+            "updated": "Sist oppdatert",
+            "kba": "KBA"
+        },
+        "confirmDelete": "Skal artikkelen \"{title}\" virkelig slettes?",
+        "deleted": "Artikkel slettet.",
+        "deleteError": "Feil ved sletting."
+    },
+    "WikiReadView": {
+        "title": "Wiki-artikkel",
+        "edit": "Rediger",
+        "back": "Tilbake til oversikten",
+        "revisions": "Versjoner",
+        "createdBy": "Opprettet av",
+        "updatedBy": "Sist redigert av",
+        "kbaLabel": "KBA-tilknytning",
+        "notFound": "Artikkel ikke funnet.",
+        "loadError": "Feil ved lasting av artikkel."
+    },
+    "WikiEditView": {
+        "titleNew": "Ny wiki-artikkel",
+        "titleEdit": "Rediger wiki-artikkel",
+        "fieldTitle": "Tittel",
+        "fieldCategory": "Kategori",
+        "fieldContent": "Innhold",
+        "fieldKbaHsn": "HSN",
+        "fieldKbaTsn": "TSN (foerste 3 tegn)",
+        "kbaSection": "KBA-tilknytning (valgfri)",
+        "save": "Lagre",
+        "cancel": "Avbryt",
+        "saved": "Artikkel lagret.",
+        "saveError": "Feil ved lagring.",
+        "missingTitle": "Vennligst oppgi en tittel.",
+        "revisions": "Versjonshistorikk",
+        "noRevisions": "Ingen eldre versjoner tilgjengelig ennaa.",
+        "restore": "Gjenopprett",
+        "confirmRestore": "Skal versjonen fra {date} gjenopprettes?",
+        "restored": "Versjon gjenopprettet.",
+        "restoreError": "Feil ved gjenoppretting.",
+        "statusSaving": "Lagrer...",
+        "statusSaved": "Lagret",
+        "statusUnsaved": "Ikke lagret",
+        "statusError": "Lagringsfeil",
+        "back": "Tilbake",
+        "newCategory": "Ny kategori",
+        "createCategory": "Opprett"
+    },
+    "WikiCategoriesView": {
+        "title": "Wiki-kategorier",
+        "newCategory": "Ny kategori",
+        "name": "Navn",
+        "sortkey": "Sortering",
+        "pageCount": "Artikler",
+        "save": "Lagre",
+        "cancel": "Avbryt",
+        "edit": "Rediger",
+        "delete": "Slett",
+        "noCategories": "Ingen kategorier ennaa.",
+        "confirmDelete": "Skal kategorien \"{name}\" virkelig slettes?",
+        "saved": "Kategori lagret.",
+        "deleted": "Kategori slettet.",
+        "saveError": "Feil ved lagring.",
+        "deleteError": "Feil ved sletting.",
+        "sortUpdated": "Rekkefoelge oppdatert."
+    }
+}

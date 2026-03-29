@@ -1,0 +1,51 @@
+{
+    "NavbarView": {
+        "logoutTooltip": "Abmelden",
+        "accountTooltip": "Konto",
+        "editCustomerTooltip": "Kunde bearbeiten",
+        "editCvTooltip": "Kunde/Lieferant bearbeiten",
+        "currentC": "Kunde:",
+        "currentV": "Lieferant:",
+        "openInNewTabTooltip": "Hauptmenü",
+        "newTabTooltip": "In neuem Tab öffnen",
+        "calendarTooltip": "Kalender",
+        "callHistoryTooltip": "Anrufliste",
+        "userConfig": "Konfiguration",
+        "reports": "Auswertung",
+        "switchClient": "Firma wechseln",
+        "uploadLogo": "Firmenlogo",
+        "selectImage": "Bild auswählen",
+        "logoHint": "Bild auswählen, positionieren und zuschneiden",
+        "saveLogo": "Speichern",
+        "deleteLogo": "Entfernen",
+        "cancel": "Abbrechen",
+        "sseConnected": "Live-Verbindung aktiv",
+        "sseDisconnected": "Live-Verbindung unterbrochen"
+    },
+    "GlobalSearch": {
+        "placeholder": "Suchen...",
+        "noResults": "Keine Ergebnisse",
+        "customers": "Kunden",
+        "vendors": "Lieferanten",
+        "invoices": "Rechnungen",
+        "orders": "Aufträge",
+        "quotations": "Angebote",
+        "articles": "Artikel",
+        "vehicles": "Fahrzeuge",
+        "wiki": "Wiki-Artikel",
+        "recentlyVisited": "Zuletzt besucht",
+        "clearHistory": "Verlauf löschen"
+    },
+    "InfoBar": {
+        "unknownCaller": "Unbekannt",
+        "closeAll": "Alle Benachrichtigungen schließen",
+        "pendingParts": "Ersatzteile angefordert",
+        "partsDialogTitle": "Offene Ersatzteil-Anfragen",
+        "partsEmpty": "Keine offenen Anfragen",
+        "order": "Auftrag",
+        "requestedBy": "von",
+        "selectVendor": "Lieferant suchen...",
+        "markOrdered": "{count} als bestellt markieren",
+        "yesterday": "Gestern"
+    }
+}

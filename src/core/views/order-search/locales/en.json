@@ -1,0 +1,41 @@
+{
+    "OrderSearchView": {
+        "title": "Order Search",
+        "fields": {
+            "ordnumber": "Order Number",
+            "customer_name": "Customer Name",
+            "transaction_description": "Description",
+            "first_instruction": "Description",
+            "location": "Location",
+            "status": "Status",
+            "transdate_from": "Date from",
+            "transdate_to": "Date to",
+            "bringetermin_from": "Drop-off Date from",
+            "bringetermin_to": "Drop-off Date to",
+            "amount_from": "Amount from",
+            "amount_to": "Amount to",
+            "employee": "Employee",
+            "transdate": "Date",
+            "bringetermin": "Drop-off Date",
+            "amount": "Amount",
+            "cusordnumber": "Customer Order Number",
+            "hersteller": "Manufacturer"
+        },
+        "buttons": {
+            "search": "Search",
+            "reset": "Reset"
+        },
+        "table": {
+            "title": "Search Results",
+            "text_no_search_table_shown": "Please enter search criteria and press ENTER or click \"Search\". Search results will be displayed here.",
+            "text_no_results": "No orders found.",
+            "results_count": "results"
+        },
+        "alerts": {
+            "warning_no_search_criteria": "No search criteria has been entered. Do you really want to load all orders?"
+        },
+        "toasts": {
+            "error_loading_search_results": "Error loading search results."
+        }
+    }
+}

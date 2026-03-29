@@ -1,0 +1,27 @@
+{
+    "ArticleEditView": {
+        "titleEdit": "Redaguoti prekę",
+        "saving": "Saugoma...",
+        "saved": "Išsaugota",
+        "sections": {
+            "masterData": "Pagrindiniai duomenys"
+        },
+        "fields": {
+            "partnumber": "Prekės numeris",
+            "description": "Aprašymas",
+            "partType": "Prekės tipas",
+            "typePart": "Prekė",
+            "typeService": "Paslauga",
+            "unit": "Vienetas",
+            "buchungsgruppe": "Buhalterinė grupė",
+            "sellprice": "Pardavimo kaina",
+            "notes": "Ilgas aprašymas",
+            "obsolete": "Pasenusi / Nebenaudojama"
+        },
+        "messages": {
+            "loading": "Prekė kraunama",
+            "loadError": "Klaida kraunant prekę",
+            "notFound": "Prekė nerasta"
+        }
+    }
+}

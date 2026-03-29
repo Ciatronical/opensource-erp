@@ -1,0 +1,50 @@
+{
+    "update": {
+        "title": "Systemoppdatering",
+        "description": "Her sikkerhetskopieres og oppdateres alle firmadatabaser samt autentiseringsdatabasen.",
+        "messages": "Meldinger",
+        "sqlStatements": "SQL-statements",
+        "errors": "Feil",
+        "dryRunSuccess": "Forhaandsvisning lastet.",
+        "updateSuccess": "Alle databaser oppdatert.",
+        "gitPull": "Git Pull",
+        "gitPullSuccess": "Git Pull gjennomfoert",
+        "gitPullFailed": "Git Pull mislyktes",
+        "authDatabase": "Autentiseringsdatabase",
+        "authBackup": "Autentiserings-sikkerhetskopi",
+        "clientDatabase": "Firma: {name}",
+        "clientDbName": "Database: {dbname}",
+        "backupSuccess": "Sikkerhetskopi opprettet: {filename}",
+        "backupFailed": "Sikkerhetskopi mislyktes",
+        "backupSkipped": "Sikkerhetskopi opprettes ikke ved dry-run",
+        "features": "Features: {features}",
+        "noClients": "Ingen firmaer funnet.",
+        "overallSuccess": "Alle databaser oppdatert",
+        "overallFailed": "Feil ved oppdatering",
+        "buttons": {
+            "dryRun": "Forhaandsvisning",
+            "checking": "Kontrollerer...",
+            "update": "Kjoer oppdatering",
+            "updating": "Oppdaterer...",
+            "finish": "Ferdig"
+        },
+        "errorMessages": {
+            "dryRunFailed": "Forhaandsvisning mislyktes.",
+            "updateFailed": "Oppdatering mislyktes.",
+            "networkError": "Nettverksfeil ved oppdatering."
+        },
+        "schemaMessages": {
+            "dry_run_mode": "Forhaandsvisningsmodus - Ingen endringer utfoeres",
+            "columns_added": "Tabell {table}: {count} kolonne(r) ville bli lagt til | Tabell {table}: {count} kolonne(r) lagt til",
+            "column_added": "Kolonne '{column}' ville bli lagt til | Kolonne '{column}' lagt til",
+            "table_up_to_date": "Tabell {table}: Alle kolonner til stede",
+            "table_created": "Tabell {table} ville bli opprettet | Tabell {table} opprettet",
+            "version_updated": "Versjon {version} registrert i {schema}-database",
+            "object_exists": "{object_type} {name} eksisterer allerede",
+            "statement_executed": "{statement_type} {target} utfoert",
+            "csv_skipped": "CSV hoppet over: {table} ({reason})",
+            "csv_imported": "CSV importert: {table} ({rows_imported} rader)",
+            "info": "{text}"
+        }
+    }
+}

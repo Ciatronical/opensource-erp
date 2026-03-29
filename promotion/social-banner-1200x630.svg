@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bgs" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#01579B"/>
+      <stop offset="100%" stop-color="#0277BD"/>
+    </linearGradient>
+    <linearGradient id="accents" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4FC3F7"/>
+      <stop offset="100%" stop-color="#29B6F6"/>
+    </linearGradient>
+  </defs>
+  <!-- Hintergrund -->
+  <rect width="1200" height="630" fill="url(#bgs)"/>
+  <!-- Dezente Muster-Quadrate im Hintergrund -->
+  <rect x="40" y="40" width="80" height="80" rx="12" fill="#ffffff" opacity="0.04"/>
+  <rect x="160" y="120" width="60" height="60" rx="8" fill="#ffffff" opacity="0.03"/>
+  <rect x="1060" y="40" width="100" height="100" rx="16" fill="#ffffff" opacity="0.04"/>
+  <rect x="980" y="480" width="70" height="70" rx="10" fill="#ffffff" opacity="0.03"/>
+  <rect x="80" y="500" width="90" height="90" rx="14" fill="#ffffff" opacity="0.03"/>
+  <!-- Icon links -->
+  <rect x="160" y="115" width="280" height="280" rx="56" fill="#ffffff" opacity="0.12"/>
+  <rect x="200" y="155" width="90" height="90" rx="14" fill="#ffffff" opacity="0.95"/>
+  <rect x="308" y="155" width="90" height="90" rx="14" fill="url(#accents)" opacity="0.7"/>
+  <rect x="200" y="263" width="90" height="90" rx="14" fill="url(#accents)" opacity="0.7"/>
+  <rect x="308" y="263" width="90" height="90" rx="14" fill="#ffffff" opacity="0.95"/>
+  <rect x="280" y="222" width="38" height="68" rx="6" fill="#ffffff" opacity="0.3"/>
+  <rect x="265" y="237" width="68" height="38" rx="6" fill="#ffffff" opacity="0.3"/>
+  <circle cx="299" cy="256" r="12" fill="#ffffff" opacity="0.9"/>
+  <circle cx="299" cy="256" r="4.5" fill="#4FC3F7"/>
+  <!-- Text rechts -->
+  <text x="520" y="240" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-weight="700" font-size="64" fill="#ffffff" opacity="0.9" letter-spacing="-0.5">OpenSource</text>
+  <text x="520" y="340" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-weight="800" font-size="108" fill="#ffffff" letter-spacing="8">ERP</text>
+  <!-- Tagline -->
+  <text x="522" y="400" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-weight="400" font-size="26" fill="#B3E5FC" letter-spacing="3">MODERN. OPEN. POWERFUL.</text>
+  <!-- URL -->
+  <text x="522" y="480" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-weight="300" font-size="22" fill="#ffffff" opacity="0.5">github.com/opensource-erp</text>
+</svg>

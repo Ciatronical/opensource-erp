@@ -1,0 +1,12 @@
+{
+    "SaveDatabaseView": {
+        "title": "Lagre database",
+        "description": "Lagre den gjeldende databasen paa enheten din.",
+        "saveButton": "Lagre database"
+    },
+    "LoadDatabaseView": {
+        "title": "Last database",
+        "description": "Last en tidligere lagret database fra enheten din.",
+        "loadButton": "Last database"
+    }
+}

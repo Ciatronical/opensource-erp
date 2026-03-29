@@ -1,0 +1,179 @@
+{
+    "FollowUpView": {
+        "title": "Wiedervorlage",
+        "search": "Suchen...",
+        "fromDate": "Von",
+        "toDate": "Bis",
+        "showDone": "Erledigte anzeigen",
+        "tabs": {
+            "board": "Board",
+            "list": "Liste",
+            "calendar": "Kalender"
+        },
+        "actions": {
+            "create": "Neue Wiedervorlage",
+            "cancel": "Abbrechen",
+            "delete": "Löschen",
+            "save": "Speichern",
+            "edit": "Bearbeiten",
+            "markDone": "Erledigt",
+            "markUndone": "Wieder öffnen",
+            "close": "Schließen"
+        },
+        "columns": {
+            "overdue": "Überfällig",
+            "today": "Heute",
+            "upcoming": "Kommend",
+            "done": "Erledigt"
+        },
+        "confirmDelete": {
+            "title": "Wiedervorlage löschen?",
+            "message": "Möchten Sie diese Wiedervorlage wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden."
+        },
+        "messages": {
+            "loadError": "Fehler beim Laden der Wiedervorlagen",
+            "saved": "Wiedervorlage gespeichert",
+            "saveError": "Fehler beim Speichern",
+            "deleted": "Wiedervorlage gelöscht",
+            "deletedMultiple": "{count} Wiedervorlagen gelöscht",
+            "markedDone": "Als erledigt markiert",
+            "markedUndone": "Wieder geöffnet",
+            "error": "Ein Fehler ist aufgetreten"
+        }
+    },
+    "FollowUpCard": {
+        "noSubject": "Kein Betreff",
+        "today": "Heute",
+        "tomorrow": "Morgen",
+        "daysAgo": "vor {days} Tagen",
+        "inDays": "in {days} Tagen",
+        "markDone": "Als erledigt markieren",
+        "markUndone": "Wieder öffnen",
+        "delete": "Löschen"
+    },
+    "FollowUpDialog": {
+        "titleCreate": "Neue Wiedervorlage",
+        "titleEdit": "Wiedervorlage bearbeiten",
+        "date": "Datum",
+        "subject": "Betreff",
+        "body": "Notiz",
+        "assignedEmployees": "Zugewiesen an",
+        "linkSection": "Verknüpfung (optional)",
+        "linkType": "Verknüpfungstyp",
+        "linkId": "ID",
+        "linkInfo": "Bezeichnung",
+        "searchCustomer": "Kunde suchen",
+        "searchVendor": "Lieferant suchen",
+        "searchQuotation": "Angebot suchen",
+        "searchOrder": "Auftrag suchen",
+        "searchDeliveryOrder": "Lieferschein suchen",
+        "searchInvoice": "Rechnung suchen",
+        "searchRequestQuotation": "Anfrage suchen",
+        "searchPurchaseOrder": "Bestellung suchen",
+        "searchPurchaseDeliveryOrder": "Wareneingang suchen",
+        "searchPurchaseInvoice": "Eingangsrechnung suchen",
+        "search": "Suchen",
+        "noResults": "Keine Ergebnisse gefunden",
+        "startTyping": "Suchbegriff eingeben...",
+        "cancel": "Abbrechen",
+        "save": "Speichern",
+        "quickDate": {
+            "today": "Heute",
+            "tomorrow": "Morgen",
+            "nextWeek": "+1 Woche",
+            "twoWeeks": "+2 Wochen",
+            "nextMonth": "+1 Monat"
+        },
+        "linkTypes": {
+            "customer": "Kunde",
+            "vendor": "Lieferant",
+            "salesQuotation": "Angebot",
+            "salesOrder": "Auftrag",
+            "salesDeliveryOrder": "Lieferschein",
+            "salesInvoice": "Rechnung",
+            "purchaseQuotation": "Anfrage",
+            "purchaseOrder": "Bestellung",
+            "purchaseDeliveryOrder": "Wareneingang",
+            "purchaseInvoice": "Eingangsrechnung"
+        },
+        "validation": {
+            "required": "Pflichtfeld"
+        }
+    },
+    "FollowUpList": {
+        "done": "Erledigt",
+        "open": "Offen",
+        "today": "Heute",
+        "tomorrow": "Morgen",
+        "markDone": "Als erledigt markieren",
+        "markUndone": "Wieder öffnen",
+        "edit": "Bearbeiten",
+        "delete": "Löschen",
+        "entry": "Eintrag",
+        "entries": "Einträge",
+        "deleteAll": "Alle angezeigten löschen",
+        "deleteAllConfirmTitle": "Alle Wiedervorlagen löschen?",
+        "deleteAllConfirmText": "Möchten Sie wirklich alle {count} angezeigten Wiedervorlagen löschen?",
+        "deleteAllWarning": "Diese Aktion kann nicht rückgängig gemacht werden!",
+        "deleteAllConfirm": "Alle löschen",
+        "cancel": "Abbrechen",
+        "headers": {
+            "date": "Datum",
+            "subject": "Betreff",
+            "link": "Verknüpfung",
+            "assignedTo": "Zugewiesen",
+            "status": "Status",
+            "actions": "Aktionen"
+        }
+    },
+    "FollowUpCalendar": {
+        "today": "Heute",
+        "month": "Monat",
+        "week": "Woche",
+        "day": "Tag",
+        "allDay": "Ganztägig",
+        "noSubject": "Ohne Betreff",
+        "newFollowUp": "Neue Wiedervorlage",
+        "subject": "Betreff",
+        "subjectPlaceholder": "Was soll erledigt werden?",
+        "note": "Notiz",
+        "notePlaceholder": "Zusätzliche Informationen...",
+        "cancel": "Abbrechen",
+        "create": "Erstellen",
+        "done": "Erledigt",
+        "reopen": "Öffnen",
+        "edit": "Bearbeiten",
+        "links": "Verknüpfungen",
+        "details": "Details",
+        "assignedTo": "Zugewiesen an",
+        "linkedTo": "Verknüpft mit",
+        "close": "Schließen",
+        "markDone": "Als erledigt markieren",
+        "markUndone": "Wieder öffnen",
+        "editFollowUp": "Bearbeiten",
+        "deleteFollowUp": "Löschen",
+        "more": "weitere",
+        "weekDays": {
+            "mon": "Mo",
+            "tue": "Di",
+            "wed": "Mi",
+            "thu": "Do",
+            "fri": "Fr",
+            "sat": "Sa",
+            "sun": "So"
+        }
+    },
+    "FollowUpWidget": {
+        "title": "Wiedervorlage",
+        "overdue": "Überfällig",
+        "today": "Heute",
+        "tomorrow": "Morgen",
+        "upcoming": "Kommend",
+        "noItems": "Keine offenen Wiedervorlagen",
+        "showAll": "Alle {count} anzeigen",
+        "markDone": "Als erledigt markieren",
+        "quickAdd": "Schnell hinzufügen",
+        "openAll": "Alle öffnen",
+        "daysAgo": "vor {days} Tagen"
+    }
+}

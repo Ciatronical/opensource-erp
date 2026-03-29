@@ -1,0 +1,76 @@
+{
+    "routes": {
+        "mainmenu": "/hauptmen%C3%BC",
+        "customer": "/kunde",
+        "editCustomer": "/kunde/bearbeiten",
+        "editVendor": "/lieferant/bearbeiten",
+        "viewInvoice": "/rechnung/anzeigen",
+        "editQuotation": "/angebot/bearbeiten",
+        "editOrder": "/auftrag/bearbeiten",
+        "newCustomer": "/kunde/neu",
+        "newVendor": "/lieferant/neu",
+        "newQuotation": "/angebot/neu",
+        "newOrder": "/auftrag/neu",
+        "newInvoice": "/rechnung/neu",
+        "manageCustomers": "/kunde",
+        "manageVendors": "/lieferant",
+        "manageArticles": "/artikel",
+        "manageQuotations": "/angebot",
+        "manageOrders": "/auftrag",
+        "manageInvoices": "/rechnung",
+        "manageCreditNotes": "/gutschrift",
+        "manageDeliveryOrders": "/lieferschein",
+        "orderSearch": "/auftrag/suche",
+        "search": "/suche",
+        "searchCustomers": "/kunde/suche",
+        "followUp": "/wiedervorlage",
+        "clientConfig": "/system/mandantenkonfiguration",
+        "developerTools": "/system/developer-tools",
+        "systemUpdate": "/system/aktualisierung",
+        "currentCustomerEdit": "/kunde/bearbeiten",
+        "callHistory": "/anrufliste",
+        "calendar": "/kalender",
+        "wiki": "/wiki",
+        "wikiNew": "/wiki/neu",
+        "wikiCategories": "/wiki/kategorien",
+        "wikiEdit": "/wiki/bearbeiten",
+        "userConfig": "/benutzer/konfiguration",
+        "lxcarsReports": "/benutzer/auswertung",
+        "huSerienbrief": "/serienbrief/hu",
+        "wallDisplay": "/wandanzeige"
+    },
+    "errors": {
+        "PASSWORD_FILE_NOT_FOUND": "Fehler: Die Passwort-Datei api/config/api.passwd.php wurde nicht gefunden. Bitte benennen Sie die Datei api/config/api.passwd.php.example in api/config/api.passwd.php um und passen Sie die Einstellungen entsprechend an.",
+        "CONFIG_FILE_NOT_FOUND": "Fehler: Die Konfigurationsdatei wurde nicht gefunden. Bitte überprüfen Sie die Einstellungen."
+    },
+    "MasterDataMenu": {
+        "title": "Stammdaten",
+        "editCustomer": "Kundendaten bearbeiten",
+        "newCustomer": "Neuen Kunden anlegen",
+        "manageCustomers": "Kunden verwalten",
+        "search": "Suche",
+        "searchCustomers": "Kunden suchen",
+        "newVendor": "Neuen Lieferanten anlegen",
+        "calendar": "Kalender"
+    },
+    "ContactMenu": {
+        "title": "Kontakt",
+        "callHistory": "Anrufliste",
+        "emails": "E-Mails",
+        "whatsapp": "WhatsApp"
+    },
+    "SalesMenu": {
+        "title": "Verkauf",
+        "newQuotation": "Neues Angebot anlegen",
+        "newOrder": "Neuen Auftrag anlegen",
+        "newInvoice": "Neue Rechnung anlegen",
+        "manageCreditNotes": "Gutschriften"
+    },
+    "SystemMenu": {
+        "title": "System",
+        "clientConfig": "Firmenkonfiguration",
+        "developerTools": "Developer Tools",
+        "systemUpdate": "Systemaktualisierung",
+        "about": "Über"
+    }
+}

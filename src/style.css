@@ -1,0 +1,56 @@
+/* ═══════════════════════════════════════════════════════════════
+   TABLET-MODUS: Buttons zeigen nur Icons, keine Beschriftung
+   Gilt fuer alle Bildschirme unterhalb Desktop (< 1280px / Vuetify lg)
+   Betrifft nur Buttons innerhalb .v-main (nicht Dialoge/Menus/Navbar)
+   ═══════════════════════════════════════════════════════════════ */
+@media screen and (max-width: 1279px) {
+    .v-main .v-btn:has(.v-btn__prepend) > .v-btn__content {
+        display: none;
+    }
+    .v-main .v-btn:has(.v-btn__prepend) > .v-btn__prepend {
+        margin-inline-end: 0;
+    }
+}
+
+@media screen and (min-width: 1900px) {
+    .v-main {
+        padding-left: 16rem;
+        padding-right: 16rem;
+    }
+}
+
+/* SweetAlert2 Toast Positioning */
+.swal2-toast {
+    margin-top: 55px !important;
+}
+
+.swal2-toast-above-overlay {
+    z-index: 100000 !important;
+}
+
+
+/* Confirm Button - Warmes Rot mit weißer Schrift */
+.swal2-confirm {
+    background-color: #f44336 !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
+    box-shadow: 0 2px 4px rgba(244, 67, 54, 0.3) !important;
+}
+
+/* Cancel Button - Helles Grau mit dunkler Schrift */
+.swal2-cancel {
+    background-color: #f5f5f5 !important;
+    color: #616161 !important;
+    font-weight: 600 !important;
+    border: 1px solid #e0e0e0 !important;
+}
+
+/* Warning Icon - Rot statt Orange */
+.swal2-icon.swal2-warning {
+    border-color: #f44336 !important;
+    color: #f44336 !important;
+}
+
+.swal2-icon.swal2-warning .swal2-icon-content {
+    color: #f44336 !important;
+}

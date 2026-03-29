@@ -1,0 +1,7 @@
+# Ignore everything
+*
+
+# But not the .gitignore itself
+!.gitignore
+
+# hjksdjhfdskfsfhdskfsdkf

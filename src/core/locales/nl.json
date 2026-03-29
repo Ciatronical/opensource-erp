@@ -1,0 +1,47 @@
+{
+    "LoginView": {
+        "title": "Inloggen",
+        "username": "Gebruikersnaam",
+        "password": "Wachtwoord",
+        "client": "Bedrijf",
+        "button": "Inloggen",
+        "failed": "Inloggen mislukt. Controleer uw inloggegevens.",
+        "EMPTY_FIELDS": "Vul naam en wachtwoord in.",
+        "USER_NOT_FOUND": "Gebruiker niet gevonden.",
+        "WRONG_PASSWORD": "Ongeldig wachtwoord.",
+        "ERROR": "Fout bij het inloggen. Probeer het opnieuw.",
+        "ERROR_LOADING_CLIENTS": "Fout bij het laden van de bedrijven. Probeer het later opnieuw.",
+        "USER_NOT_ASSIGNED_TO_CLIENT": "Gebruiker niet toegewezen aan dit bedrijf.",
+        "PASSWORD_FILE_NOT_FOUND": "Fout: Het wachtwoordbestand api/config/api.passwd.php is niet gevonden. Hernoem het bestand api/config/api.passwd.php.example naar api/config/api.passwd.php en pas de instellingen aan.",
+        "CONFIG_FILE_NOT_FOUND": "Fout: Het configuratiebestand is niet gevonden. Controleer de instellingen.",
+        "updateButton": "Update uitvoeren",
+        "updateSuccess": "Database-update succesvol uitgevoerd.",
+        "updateError": "Fout bij de database-update. Probeer het opnieuw.",
+        "privacy": "Privacyverklaring",
+        "dataDeletion": "Gegevensverwijdering"
+    },
+    "NotFoundView": {
+        "title": "Pagina niet gevonden",
+        "message": "De opgevraagde pagina is niet gevonden.",
+        "back_home": "Terug naar de startpagina"
+    },
+    "NavbarView": {
+        "logoutTooltip": "Uitloggen",
+        "accountTooltip": "Account",
+        "editCustomerTooltip": "Klant bewerken",
+        "editCvTooltip": "Klant/leverancier bewerken",
+        "currentC": "Klant:",
+        "currentV": "Leverancier:",
+        "demoBanner": "Demomodus — Alle gegevens worden na inactiviteit automatisch gereset.",
+        "demoResetWarning": "Demo wordt over {seconds} seconden gereset — beweeg de muis om door te gaan."
+    },
+    "ErrorView": {
+        "title": "Er is een fout opgetreden",
+        "message": "Het spijt ons, maar er is een onverwachte fout opgetreden.",
+        "debugInfo": "Debug-informatie:",
+        "clickToShowDetails": "Klik om details te tonen"
+    },
+    "App": {
+        "loading": "Even geduld..."
+    }
+}

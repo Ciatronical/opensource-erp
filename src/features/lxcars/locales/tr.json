@@ -1,0 +1,19 @@
+{
+    "CarView": {
+        "routes": {
+            "newCar": "/fahrzeug/neu",
+            "newCarFromScan": "/fahrzeug/neu-vom-scan",
+            "manageCars": "/fahrzeug",
+            "orderSearch": "/fahrzeug-auftrag/suche",
+            "carRegistration": "/fahrzeug/zulassung"
+        },
+        "newCar": "Yeni olustur",
+        "newCarFromScan": "Tarama listesi",
+        "title": "Araclar",
+        "manageCars": "Yonet",
+        "orderSearch": "Siparis listesi",
+        "huSerienbrief": "Muayene bildirimleri",
+        "orderSearchTooltip": "Siparis arama",
+        "scanTooltip": "Taramadan araclar"
+    }
+}

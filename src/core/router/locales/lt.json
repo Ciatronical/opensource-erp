@@ -1,0 +1,75 @@
+{
+    "routes": {
+        "mainmenu": "/hauptmen%C3%BC",
+        "customer": "/kunde",
+        "editCustomer": "/kunde/bearbeiten",
+        "editVendor": "/lieferant/bearbeiten",
+        "viewInvoice": "/rechnung/anzeigen",
+        "editQuotation": "/angebot/bearbeiten",
+        "editOrder": "/auftrag/bearbeiten",
+        "newCustomer": "/kunde/neu",
+        "newVendor": "/lieferant/neu",
+        "newQuotation": "/angebot/neu",
+        "newOrder": "/auftrag/neu",
+        "newInvoice": "/rechnung/neu",
+        "manageCustomers": "/kunde",
+        "manageVendors": "/lieferant",
+        "manageArticles": "/artikel",
+        "manageQuotations": "/angebot",
+        "manageOrders": "/auftrag",
+        "manageInvoices": "/rechnung",
+        "manageCreditNotes": "/gutschrift",
+        "manageDeliveryOrders": "/lieferschein",
+        "orderSearch": "/auftrag/suche",
+        "search": "/suche",
+        "searchCustomers": "/kunde/suche",
+        "followUp": "/wiedervorlage",
+        "clientConfig": "/system/mandantenkonfiguration",
+        "developerTools": "/system/developer-tools",
+        "systemUpdate": "/system/aktualisierung",
+        "currentCustomerEdit": "/kunde/bearbeiten",
+        "callHistory": "/anrufliste",
+        "calendar": "/kalender",
+        "wiki": "/wiki",
+        "wikiNew": "/wiki/neu",
+        "wikiCategories": "/wiki/kategorien",
+        "wikiEdit": "/wiki/bearbeiten",
+        "userConfig": "/benutzer/konfiguration",
+        "huSerienbrief": "/serienbrief/hu",
+        "wallDisplay": "/wandanzeige"
+    },
+    "errors": {
+        "PASSWORD_FILE_NOT_FOUND": "Klaida: Slaptazodzio failas api/config/api.passwd.php nerastas. Pervadinkite faila api/config/api.passwd.php.example i api/config/api.passwd.php ir pritaikykite nustatymus.",
+        "CONFIG_FILE_NOT_FOUND": "Klaida: Konfiguracijos failas nerastas. Patikrinkite nustatymus."
+    },
+    "MasterDataMenu": {
+        "title": "Pagrindiniai duomenys",
+        "editCustomer": "Redaguoti kliento duomenis",
+        "newCustomer": "Sukurti nauja klienta",
+        "manageCustomers": "Valdyti klientus",
+        "search": "Paieska",
+        "searchCustomers": "Ieskoti klientu",
+        "newVendor": "Sukurti nauja tiekeja",
+        "calendar": "Kalendorius"
+    },
+    "ContactMenu": {
+        "title": "Kontaktas",
+        "callHistory": "Skambuciu istorija",
+        "emails": "El. lariskai",
+        "whatsapp": "WhatsApp"
+    },
+    "SalesMenu": {
+        "title": "Pardavimai",
+        "newQuotation": "Sukurti nauja pasiulyma",
+        "newOrder": "Sukurti nauja uzsakyma",
+        "newInvoice": "Sukurti nauja saskaita",
+        "manageCreditNotes": "Kreditines saskaitos"
+    },
+    "SystemMenu": {
+        "title": "Sistema",
+        "clientConfig": "Imones konfiguracija",
+        "developerTools": "Developer Tools",
+        "systemUpdate": "Sistemos atnaujinimas",
+        "about": "Apie"
+    }
+}

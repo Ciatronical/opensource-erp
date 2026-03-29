@@ -1,0 +1,41 @@
+{
+    "NavbarView": {
+        "logoutTooltip": "Atsijungti",
+        "accountTooltip": "Paskyra",
+        "editCustomerTooltip": "Redaguoti klientą",
+        "editCvTooltip": "Redaguoti klientą/tiekėją",
+        "currentC": "Klientas:",
+        "currentV": "Tiekėjas:",
+        "openInNewTabTooltip": "Pagrindinis meniu",
+        "newTabTooltip": "Atidaryti naujame skirtuke",
+        "calendarTooltip": "Kalendorius",
+        "callHistoryTooltip": "Skambučių istorija",
+        "userConfig": "Konfigūracija",
+        "switchClient": "Keisti įmonę",
+        "uploadLogo": "Įmonės logotipas",
+        "selectImage": "Pasirinkti paveikslą",
+        "logoHint": "Pasirinkite paveikslą, išdėstykite ir apkirpkite",
+        "saveLogo": "Išsaugoti",
+        "deleteLogo": "Pašalinti",
+        "cancel": "Atšaukti"
+    },
+    "GlobalSearch": {
+        "placeholder": "Ieškoti...",
+        "noResults": "Rezultatų nėra",
+        "customers": "Klientai",
+        "vendors": "Tiekėjai",
+        "invoices": "Sąskaitos",
+        "orders": "Užsakymai",
+        "quotations": "Pasiūlymai",
+        "articles": "Prekės",
+        "vehicles": "Transporto priemonės",
+        "wiki": "Wiki straipsniai",
+        "recentlyVisited": "Neseniai lankyti",
+        "clearHistory": "Išvalyti istoriją"
+    },
+    "InfoBar": {
+        "unknownCaller": "Nežinomas",
+        "closeAll": "Uždaryti visus pranešimus",
+        "pendingParts": "Atsarginės dalys užsakytos"
+    }
+}

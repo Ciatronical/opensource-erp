@@ -1,0 +1,38 @@
+-- ============================================================================
+-- GERMAN BANK CODES (BLZ)
+-- ============================================================================
+
+-- Temporäre Tabelle für Import
+DROP TABLE IF EXISTS blz_de_raw;
+CREATE TABLE blz_de_raw (
+    blz char(8),
+    is_main char(1),
+    name text,
+    plz text,
+    ort text,
+    kurzname text,
+    pan text,
+    bic text,
+    pz_verfahren text,
+    datensatz_nr text,
+    aenderung char(1),
+    loeschung_flag char(1),
+    nachfolge_blz char(8)
+);
+
+COMMENT ON TABLE blz_de_raw IS 'Temporäre Import-Tabelle für Bankleitzahlen-Daten';
+
+-- Import der BLZ-Daten
+-- HINWEIS: Pfad muss angepasst werden!
+-- copy blz_de_raw
+-- FROM '/home/work/inter-data/projekte/opensource-erp/backend/data/blz-aktuell-csv-data.csv'
+-- WITH (FORMAT csv, HEADER true, DELIMITER ';', QUOTE '"', ENCODING 'LATIN1');
+
+-- Finale BLZ-Tabelle (nur hauptführende BLZ)
+CREATE TABLE blz_de AS
+SELECT DISTINCT ON (blz) *
+FROM blz_de_raw
+WHERE is_main='1'
+ORDER BY blz;
+
+ALTER TABLE blz_de ADD PRIMARY KEY (blz);

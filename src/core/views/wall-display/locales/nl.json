@@ -1,0 +1,20 @@
+{
+    "WallDisplay": {
+        "calendar": "Kalender",
+        "faktura": "Document",
+        "noFaktura": "Geen document geselecteerd",
+        "noFakturaHint": "Klik op de monitorknop in een factuur",
+        "invoice": "Factuur",
+        "order": "Order",
+        "quotation": "Offerte",
+        "open": "Open",
+        "closed": "Afgesloten",
+        "position": "Pos.",
+        "description": "Beschrijving",
+        "qty": "Aantal",
+        "price": "Prijs",
+        "total": "Totaal",
+        "grossTotal": "Totaalbedrag",
+        "allDay": "Hele dag"
+    }
+}

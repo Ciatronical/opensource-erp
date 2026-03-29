@@ -1,0 +1,50 @@
+{
+    "setup": {
+        "title": "OpensourceERP Setup",
+        "welcome": "Bem-vindo ao OpensourceERP! Por favor, configure a ligação à base de dados de autenticação.",
+        "setupAlreadyDone": "A configuração já foi realizada. Será redirecionado para a página de início de sessão...",
+        "configFound": "kivitendo.conf encontrado - A palavra-passe não estava cifrada. O formulário foi preenchido automaticamente.",
+        "setupCompleteMessage": "Configuração concluída com sucesso! A palavra-passe foi guardada de forma cifrada. Será redirecionado...",
+        "fields": {
+            "host": "Host",
+            "port": "Porta",
+            "database": "Nome da base de dados",
+            "login": "Utilizador",
+            "password": "Palavra-passe"
+        },
+        "placeholders": {
+            "host": "localhost",
+            "port": "5432",
+            "database": "oserp_auth",
+            "login": "postgres"
+        },
+        "validation": {
+            "required": "Campo obrigatório",
+            "portRange": "A porta deve estar entre 1 e 65535"
+        },
+        "buttons": {
+            "testConnection": "Testar ligação",
+            "testingConnection": "A testar ligação...",
+            "saveSetup": "Concluir configuração",
+            "savingSetup": "A guardar...",
+            "finish": "Executar aplicação"
+        },
+        "errors": {
+            "checkStatus": "Erro ao verificar o estado da configuração",
+            "testConnection": "Erro ao testar a ligação",
+            "testNetworkError": "Erro de rede ao testar a ligação",
+            "saveSetup": "Erro ao guardar a configuração",
+            "saveNetworkError": "Erro de rede ao guardar a configuração"
+        },
+        "update": {
+            "title": "Atualização da base de dados",
+            "running": "A atualizar base de dados...",
+            "success": "Atualização da base de dados concluída com sucesso.",
+            "failed": "Atualização da base de dados falhou.",
+            "networkError": "Erro de rede na atualização da base de dados."
+        },
+        "footer": {
+            "copyright": "OpensourceERP"
+        }
+    }
+}

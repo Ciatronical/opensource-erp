@@ -1,0 +1,12 @@
+{
+    "SaveDatabaseView": {
+        "title": "Tallenna tietokanta",
+        "description": "Tallenna nykyinen tietokanta laitteellesi.",
+        "saveButton": "Tallenna tietokanta"
+    },
+    "LoadDatabaseView": {
+        "title": "Lataa tietokanta",
+        "description": "Lataa aiemmin tallennettu tietokanta laitteeltasi.",
+        "loadButton": "Lataa tietokanta"
+    }
+}

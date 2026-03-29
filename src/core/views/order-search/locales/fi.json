@@ -1,0 +1,41 @@
+{
+    "OrderSearchView": {
+        "title": "Tilaushaku",
+        "fields": {
+            "ordnumber": "Tilausnumero",
+            "customer_name": "Asiakkaan nimi",
+            "transaction_description": "Kuvaus",
+            "first_instruction": "Kuvaus",
+            "location": "Sijainti",
+            "status": "Tila",
+            "transdate_from": "Paivamaara alkaen",
+            "transdate_to": "Paivamaara paattyen",
+            "bringetermin_from": "Toimituspaiva alkaen",
+            "bringetermin_to": "Toimituspaiva paattyen",
+            "amount_from": "Summa alkaen",
+            "amount_to": "Summa paattyen",
+            "employee": "Kasittelija",
+            "transdate": "Paivamaara",
+            "bringetermin": "Toimituspaiva",
+            "amount": "Summa",
+            "cusordnumber": "Asiakkaan tilausnumero",
+            "hersteller": "Valmistaja"
+        },
+        "buttons": {
+            "search": "Hae",
+            "reset": "Nollaa"
+        },
+        "table": {
+            "title": "Hakutulokset",
+            "text_no_search_table_shown": "Syota hakuehtoja ja paina ENTER tai \"Hae\". Tulokset naytetaan taalla.",
+            "text_no_results": "Tilauksia ei loytynyt.",
+            "results_count": "Tulokset"
+        },
+        "alerts": {
+            "warning_no_search_criteria": "Hakuehtoja ei annettu. Haluatko todella ladata kaikki tilaukset?"
+        },
+        "toasts": {
+            "error_loading_search_results": "Virhe hakutulosten lataamisessa."
+        }
+    }
+}

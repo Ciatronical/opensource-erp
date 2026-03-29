@@ -1,0 +1,68 @@
+{
+    "HuSerienbriefView": {
+        "title": "TA pranešimai",
+        "subtitle": "Klientai su techninės apžiūros terminu",
+        "vorlauf": "Išankstinis laikas: {monate} mėnesiai",
+        "fields": {
+            "customer_name": "Klientas",
+            "kennzeichen": "Valstybinis numeris",
+            "hu_datum": "TA data",
+            "telefon": "Telefonas",
+            "email": "El. paštas",
+            "fahrzeug": "Transporto priemonė",
+            "actions": "Veiksmai",
+            "date_from": "TA terminas nuo",
+            "date_to": "TA terminas iki"
+        },
+        "buttons": {
+            "print_all": "Spausdinti pasirinktus",
+            "email_all": "Siųsti el. laišką",
+            "reload": "Atnaujinti",
+            "exclude": "Pašalinti",
+            "include": "Grąžinti",
+            "send_pin": "Siųsti su PIN",
+            "whatsapp_all": "Siųsti WhatsApp"
+        },
+        "checkboxes": {
+            "show_excluded": "Rodyti ir pašalintus"
+        },
+        "chips": {
+            "excluded": "Pašalintas",
+            "results_count": "Klientai"
+        },
+        "filter": {
+            "title": "Laikotarpis"
+        },
+        "table": {
+            "no_results": "Konfigūruotame laikotarpyje klientų su TA terminu nerasta.",
+            "no_results_hint": "Patikrinkite išankstinį laiką nustatymuose skiltyje LXCars."
+        },
+        "whatsapp": {
+            "message": "Sveiki {name}, jūsų transporto priemonės ({kennzeichen}) TA baigiasi {hu_datum}. Prašome užsiregistruoti vizitui. Pagarbiai"
+        },
+        "toasts": {
+            "error_loading": "Klaida kraunant TA sąrašą.",
+            "excluded_success": "Klientas pašalintas.",
+            "included_success": "Klientas grąžintas.",
+            "exclude_error": "Klaida saugant.",
+            "email_sent": "El. laiškas išsiųstas.",
+            "email_error": "Klaida siunčiant el. laišką.",
+            "pdf_error": "Klaida kuriant PDF.",
+            "sftp_success": "PDF sėkmingai išsiųstas per eLetter.",
+            "sftp_error": "Klaida siunčiant per eLetter.",
+            "whatsapp_sent": "WhatsApp žinutė išsiųsta.",
+            "whatsapp_error": "Klaida siunčiant WhatsApp žinutę.",
+            "whatsapp_bulk_sent": "{sent} WhatsApp žinučių išsiųsta, {failed} nepavyko.",
+            "whatsapp_no_phone": "Nė vienas pasirinktų klientų neturi telefono numerio."
+        },
+        "tooltips": {
+            "whatsapp_single": "Siųsti TA priminimą per WhatsApp",
+            "exclude": "Pašalinti klientą iš TA pranešimų",
+            "include": "Grąžinti klientą į TA pranešimus"
+        },
+        "dialogs": {
+            "confirm_exclude_title": "Pašalinti klientą",
+            "confirm_exclude_text": "Šis klientas bus visam laikui pašalintas iš TA pranešimų sąrašo. Ar norite tęsti?"
+        }
+    }
+}

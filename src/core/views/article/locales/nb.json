@@ -1,0 +1,27 @@
+{
+    "ArticleEditView": {
+        "titleEdit": "Rediger artikkel",
+        "saving": "Lagrer...",
+        "saved": "Lagret",
+        "sections": {
+            "masterData": "Stamdata"
+        },
+        "fields": {
+            "partnumber": "Artikkelnummer",
+            "description": "Beskrivelse",
+            "partType": "Artikkeltype",
+            "typePart": "Vare",
+            "typeService": "Tjeneste",
+            "unit": "Enhet",
+            "buchungsgruppe": "Bokfoeringsgruppe",
+            "sellprice": "Salgspris",
+            "notes": "Langbeskrivelse",
+            "obsolete": "Utdatert / Ikke bruk lenger"
+        },
+        "messages": {
+            "loading": "Artikkel lastes",
+            "loadError": "Feil ved lasting av artikkel",
+            "notFound": "Artikkel ikke funnet"
+        }
+    }
+}

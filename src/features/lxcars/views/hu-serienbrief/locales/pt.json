@@ -1,0 +1,68 @@
+{
+    "HuSerienbriefView": {
+        "title": "Notificações de inspeção",
+        "subtitle": "Clientes com inspeção técnica pendente",
+        "vorlauf": "Antecedência: {monate} meses",
+        "fields": {
+            "customer_name": "Cliente",
+            "kennzeichen": "Matrícula",
+            "hu_datum": "Data da inspeção",
+            "telefon": "Telefone",
+            "email": "E-mail",
+            "fahrzeug": "Veículo",
+            "actions": "Ações",
+            "date_from": "Inspeção pendente desde",
+            "date_to": "Inspeção pendente até"
+        },
+        "buttons": {
+            "print_all": "Imprimir selecionados",
+            "email_all": "Enviar e-mail",
+            "reload": "Atualizar",
+            "exclude": "Desselecionar",
+            "include": "Voltar a incluir",
+            "send_pin": "Enviar com PIN",
+            "whatsapp_all": "Enviar WhatsApp"
+        },
+        "checkboxes": {
+            "show_excluded": "Mostrar também os excluídos"
+        },
+        "chips": {
+            "excluded": "Excluído",
+            "results_count": "Clientes"
+        },
+        "filter": {
+            "title": "Período"
+        },
+        "table": {
+            "no_results": "Não foram encontrados clientes com inspeção pendente no período configurado.",
+            "no_results_hint": "Verifique o tempo de antecedência nas definições de LXCars."
+        },
+        "whatsapp": {
+            "message": "Olá {name}, a inspeção do seu veículo ({kennzeichen}) expira a {hu_datum}. Por favor, marque uma consulta. Cumprimentos"
+        },
+        "toasts": {
+            "error_loading": "Erro ao carregar a lista de inspeções.",
+            "excluded_success": "Cliente excluído.",
+            "included_success": "Cliente incluído de novo.",
+            "exclude_error": "Erro ao guardar.",
+            "email_sent": "E-mail enviado.",
+            "email_error": "Erro no envio do e-mail.",
+            "pdf_error": "Erro ao criar o PDF.",
+            "sftp_success": "PDF enviado com sucesso por eLetter.",
+            "sftp_error": "Erro ao enviar por eLetter.",
+            "whatsapp_sent": "Mensagem WhatsApp enviada.",
+            "whatsapp_error": "Erro ao enviar a mensagem WhatsApp.",
+            "whatsapp_bulk_sent": "{sent} mensagens WhatsApp enviadas, {failed} falharam.",
+            "whatsapp_no_phone": "Nenhum dos clientes selecionados tem número de telefone."
+        },
+        "tooltips": {
+            "whatsapp_single": "Enviar lembrete de inspeção por WhatsApp",
+            "exclude": "Excluir cliente das notificações de inspeção",
+            "include": "Incluir cliente de novo nas notificações de inspeção"
+        },
+        "dialogs": {
+            "confirm_exclude_title": "Excluir cliente",
+            "confirm_exclude_text": "Este cliente será permanentemente removido da lista de notificações de inspeção. Deseja continuar?"
+        }
+    }
+}

@@ -1,0 +1,19 @@
+{
+    "CarView": {
+        "routes": {
+            "newCar": "/fahrzeug/neu",
+            "newCarFromScan": "/fahrzeug/neu-vom-scan",
+            "manageCars": "/fahrzeug",
+            "orderSearch": "/fahrzeug-auftrag/suche",
+            "carRegistration": "/fahrzeug/zulassung"
+        },
+        "newCar": "Jauns transportlīdzeklis",
+        "newCarFromScan": "Skenēšanas saraksts",
+        "title": "Transportlīdzekļi",
+        "manageCars": "Pārvaldīt",
+        "orderSearch": "Pasūtījumu saraksts",
+        "huSerienbrief": "TA paziņojumi",
+        "orderSearchTooltip": "Pasūtījumu meklēšana",
+        "scanTooltip": "Transportlīdzekļi no skenēšanas"
+    }
+}

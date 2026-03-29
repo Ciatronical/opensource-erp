@@ -1,0 +1,179 @@
+{
+    "FollowUpView": {
+        "title": "Pripominky",
+        "search": "Hledat...",
+        "fromDate": "Od",
+        "toDate": "Do",
+        "showDone": "Zobrazit dokoncene",
+        "tabs": {
+            "board": "Nastenka",
+            "list": "Seznam",
+            "calendar": "Kalendar"
+        },
+        "actions": {
+            "create": "Nova pripominka",
+            "cancel": "Zrusit",
+            "delete": "Smazat",
+            "save": "Ulozit",
+            "edit": "Upravit",
+            "markDone": "Hotovo",
+            "markUndone": "Znovu otevrit",
+            "close": "Zavrit"
+        },
+        "columns": {
+            "overdue": "Po terminu",
+            "today": "Dnes",
+            "upcoming": "Nadchazejici",
+            "done": "Hotovo"
+        },
+        "confirmDelete": {
+            "title": "Smazat pripominku?",
+            "message": "Opravdu chcete tuto pripominku smazat? Tuto akci nelze vratit."
+        },
+        "messages": {
+            "loadError": "Chyba pri nacitani pripominek",
+            "saved": "Pripominka ulozena",
+            "saveError": "Chyba pri ukladani",
+            "deleted": "Pripominka smazana",
+            "deletedMultiple": "{count} pripominek smazano",
+            "markedDone": "Oznaceno jako hotove",
+            "markedUndone": "Znovu otevreno",
+            "error": "Doslo k chybe"
+        }
+    },
+    "FollowUpCard": {
+        "noSubject": "Bez predmetu",
+        "today": "Dnes",
+        "tomorrow": "Zitra",
+        "daysAgo": "pred {days} dny",
+        "inDays": "za {days} dni",
+        "markDone": "Oznacit jako hotove",
+        "markUndone": "Znovu otevrit",
+        "delete": "Smazat"
+    },
+    "FollowUpDialog": {
+        "titleCreate": "Nova pripominka",
+        "titleEdit": "Upravit pripominku",
+        "date": "Datum",
+        "subject": "Predmet",
+        "body": "Poznamka",
+        "assignedEmployees": "Prirazeno",
+        "linkSection": "Propojeni (volitelne)",
+        "linkType": "Typ propojeni",
+        "linkId": "ID",
+        "linkInfo": "Oznaceni",
+        "searchCustomer": "Hledat zakaznika",
+        "searchVendor": "Hledat dodavatele",
+        "searchQuotation": "Hledat nabidku",
+        "searchOrder": "Hledat objednavku",
+        "searchDeliveryOrder": "Hledat dodaci list",
+        "searchInvoice": "Hledat fakturu",
+        "searchRequestQuotation": "Hledat poptavku",
+        "searchPurchaseOrder": "Hledat objednavku",
+        "searchPurchaseDeliveryOrder": "Hledat prijem zbozi",
+        "searchPurchaseInvoice": "Hledat prijatou fakturu",
+        "search": "Hledat",
+        "noResults": "Zadne vysledky",
+        "startTyping": "Zadejte hledany vyraz...",
+        "cancel": "Zrusit",
+        "save": "Ulozit",
+        "quickDate": {
+            "today": "Dnes",
+            "tomorrow": "Zitra",
+            "nextWeek": "+1 tyden",
+            "twoWeeks": "+2 tydny",
+            "nextMonth": "+1 mesic"
+        },
+        "linkTypes": {
+            "customer": "Zakaznik",
+            "vendor": "Dodavatel",
+            "salesQuotation": "Nabidka",
+            "salesOrder": "Objednavka",
+            "salesDeliveryOrder": "Dodaci list",
+            "salesInvoice": "Faktura",
+            "purchaseQuotation": "Poptavka",
+            "purchaseOrder": "Objednavka",
+            "purchaseDeliveryOrder": "Prijem zbozi",
+            "purchaseInvoice": "Prijata faktura"
+        },
+        "validation": {
+            "required": "Povinne pole"
+        }
+    },
+    "FollowUpList": {
+        "done": "Hotovo",
+        "open": "Otevreno",
+        "today": "Dnes",
+        "tomorrow": "Zitra",
+        "markDone": "Oznacit jako hotove",
+        "markUndone": "Znovu otevrit",
+        "edit": "Upravit",
+        "delete": "Smazat",
+        "entry": "Zaznam",
+        "entries": "Zaznamu",
+        "deleteAll": "Smazat vsechny zobrazene",
+        "deleteAllConfirmTitle": "Smazat vsechny pripominky?",
+        "deleteAllConfirmText": "Opravdu chcete smazat vsech {count} zobrazenych pripominek?",
+        "deleteAllWarning": "Tuto akci nelze vratit!",
+        "deleteAllConfirm": "Smazat vse",
+        "cancel": "Zrusit",
+        "headers": {
+            "date": "Datum",
+            "subject": "Predmet",
+            "link": "Propojeni",
+            "assignedTo": "Prirazeno",
+            "status": "Stav",
+            "actions": "Akce"
+        }
+    },
+    "FollowUpCalendar": {
+        "today": "Dnes",
+        "month": "Mesic",
+        "week": "Tyden",
+        "day": "Den",
+        "allDay": "Celodenni",
+        "noSubject": "Bez predmetu",
+        "newFollowUp": "Nova pripominka",
+        "subject": "Predmet",
+        "subjectPlaceholder": "Co se ma udelat?",
+        "note": "Poznamka",
+        "notePlaceholder": "Dalsi informace...",
+        "cancel": "Zrusit",
+        "create": "Vytvorit",
+        "done": "Hotovo",
+        "reopen": "Otevrit",
+        "edit": "Upravit",
+        "links": "Propojeni",
+        "details": "Podrobnosti",
+        "assignedTo": "Prirazeno",
+        "linkedTo": "Propojeno s",
+        "close": "Zavrit",
+        "markDone": "Oznacit jako hotove",
+        "markUndone": "Znovu otevrit",
+        "editFollowUp": "Upravit",
+        "deleteFollowUp": "Smazat",
+        "more": "dalsich",
+        "weekDays": {
+            "mon": "Po",
+            "tue": "Ut",
+            "wed": "St",
+            "thu": "Ct",
+            "fri": "Pa",
+            "sat": "So",
+            "sun": "Ne"
+        }
+    },
+    "FollowUpWidget": {
+        "title": "Pripominky",
+        "overdue": "Po terminu",
+        "today": "Dnes",
+        "tomorrow": "Zitra",
+        "upcoming": "Nadchazejici",
+        "noItems": "Zadne otevrene pripominky",
+        "showAll": "Zobrazit vsech {count}",
+        "markDone": "Oznacit jako hotove",
+        "quickAdd": "Rychle pridat",
+        "openAll": "Otevrit vse",
+        "daysAgo": "pred {days} dny"
+    }
+}

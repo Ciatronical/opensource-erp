@@ -1,0 +1,328 @@
+{
+    "SearchView": {
+        "title": "Search",
+        "all": "All",
+        "tabs": {
+            "customer_vendor": "Customer/Vendor/Contact",
+            "invoice": "Invoices",
+            "purchase_invoice": "Purchase Invoices",
+            "quotation": "Quotations",
+            "order": "Orders",
+            "purchase_order": "Purchase Orders",
+            "delivery_order": "Delivery Orders",
+            "vehicle": "Vehicles",
+            "article": "Articles"
+        },
+        "vehicle_fields": {
+            "license_plate": "License Plate",
+            "fin": "VIN",
+            "manufacturer": "Manufacturer",
+            "model": "Model",
+            "owner": "Owner",
+            "hu": "Inspection",
+            "created_at": "Created at",
+            "no_results": "No vehicles found"
+        },
+        "article_fields": {
+            "partnumber": "Part Number",
+            "description": "Description",
+            "part_type": "Type",
+            "part_type_part": "Part",
+            "part_type_service": "Service",
+            "unit": "Unit",
+            "sellprice": "Sell Price",
+            "sellprice_from": "Price from",
+            "sellprice_to": "Price to",
+            "obsolete": "Obsolete",
+            "obsolete_yes": "Yes",
+            "obsolete_no": "No",
+            "notes": "Notes",
+            "created_at": "Created at",
+            "no_results": "No articles found."
+        },
+        "document_fields": {
+            "document_number": "Document Number",
+            "customer_name": "Customer Name",
+            "vendor_name": "Vendor Name",
+            "transdate_from": "Date from",
+            "transdate_to": "Date to",
+            "amount_from": "Amount from",
+            "amount_to": "Amount to",
+            "status": "Status",
+            "status_open": "Open",
+            "status_closed": "Closed"
+        },
+        "document_table": {
+            "document_number": "Document No.",
+            "cv_name": "Customer/Vendor",
+            "cv_number": "Cust./Vend. No.",
+            "transdate": "Date",
+            "amount": "Amount",
+            "status": "Status",
+            "status_open": "Open",
+            "status_closed": "Closed",
+            "created_at": "Created At",
+            "text_no_results": "No documents found."
+        }
+    },
+    "CustomerVendorSearchView": {
+        "title_customer": "Search Customers",
+        "title_vendor": "Search Vendors",
+        "title_contacts": "Search Contacts",
+        "labels": {
+            "customer": "Customer",
+            "vendor": "Vendor"
+        },
+        "sections": {
+            "invoices": "Customer Invoices",
+            "vendor_invoices": "Vendor Invoices",
+            "quotations": "Quotations",
+            "requests_for_quotation": "Requests for Quotation",
+            "orders": "Sales Orders",
+            "purchase_orders": "Purchase Orders",
+            "delivery_orders": "Delivery Orders",
+            "customer_record": "Customer Master Data",
+            "vendor_record": "Vendor Master Data"
+        },
+        "fields": {
+            "iban": "IBAN",
+            "bic": "BIC",
+            "hourly_rate": "Hourly Rate",
+            "order_lock": "Order Lock",
+            "invoice_mail": "Invoice Email",
+            "delivery_order_mail": "Delivery Note Email",
+            "dunning_mail": "Dunning Email",
+            "postal_invoice": "Postal Invoice",
+            "direct_debit": "Direct Debit",
+            "contact_origin": "Origin of Personal Data",
+            "username": "Username",
+            "birthday": "Birthday",
+            "birthday_from": "Birthday from",
+            "birthday_to": "Birthday to",
+            "customer_vendor_name": "Company Name",
+            "gender": "Gender",
+            "main_contact": "Main Contact",
+            "business_type": "Customer Type",
+            "ustid": "VAT ID",
+            "taxnumber": "Tax Number",
+            "discount": "Discount",
+            "currency": "Currency",
+            "pricegroup": "Price Group",
+            "language": "Language",
+            "delivery_terms": "Delivery Terms",
+            "homepage": "Homepage",
+            "creditlimit": "Credit Limit",
+            "taxincluded": "Tax Included in Price",
+            "notes": "Internal Notes",
+            "natural_person": "Natural Person",
+            "radio_customer": "Customer(s)",
+            "radio_vendor": "Vendor(s)",
+            "radio_person": "Contact(s)",
+            "switch_sql_query": "SQL Query",
+            "switch_show_additional_search_fields": "Show More Search Criteria",
+            "customer_number": "Customer Number",
+            "vendor_number": "Vendor Number",
+            "customer_vendor_number": "Customer/Vendor Number",
+            "greeting": "Salutation",
+            "name": "Name",
+            "mail": "Email",
+            "phone_fax": "Phone/Fax",
+            "phone": "Phone",
+            "gln": "GLN",
+            "street": "Street",
+            "zipcode": "Postal Code",
+            "city": "City/Town",
+            "country": "Country",
+            "salesman": "Salesperson",
+            "contact": "Contact",
+            "department": "Department",
+            "dunning_lock": "Dunning Lock",
+            "validity": "Validity",
+            "zugferd_settings": "Factur-X/ZUGFeRD Settings",
+            "payment_terms": "Payment Terms",
+            "tax_rate": "Tax Rate",
+            "first_name": "First Name",
+            "last_name": "Last Name",
+            "position_title": "Position/Title",
+            "project": "Project",
+            "created_at_from": "Created from",
+            "created_at_to": "Created to",
+            "updated_at_from": "Updated from",
+            "updated_at_to": "Updated to",
+            "created_at": "Created At",
+            "updated_at": "Updated At",
+            "status": "Status",
+            "type": "Type",
+            "number": "Number",
+            "sql_query": "SQL Query",
+            "invoice_created_at_from": "Invoice created from",
+            "invoice_created_at_to": "Invoice created to",
+            "invoice_updated_at_from": "Invoice modified from",
+            "invoice_updated_at_to": "Invoice modified to",
+            "quotation_created_at_from": "Quotation created from",
+            "quotation_created_at_to": "Quotation created to",
+            "quotation_updated_at_from": "Quotation modified from",
+            "quotation_updated_at_to": "Quotation modified to",
+            "rfq_created_at_from": "RFQ created from",
+            "rfq_created_at_to": "RFQ created to",
+            "rfq_updated_at_from": "RFQ modified from",
+            "rfq_updated_at_to": "RFQ modified to",
+            "order_created_at_from": "Order created from",
+            "order_created_at_to": "Order created to",
+            "order_updated_at_from": "Order modified from",
+            "order_updated_at_to": "Order modified to",
+            "purchase_order_created_at_from": "Purchase order created from",
+            "purchase_order_created_at_to": "Purchase order created to",
+            "purchase_order_updated_at_from": "Purchase order modified from",
+            "purchase_order_updated_at_to": "Purchase order modified to",
+            "delivery_order_created_at_from": "Delivery order created from",
+            "delivery_order_created_at_to": "Delivery order created to",
+            "delivery_order_updated_at_from": "Delivery order modified from",
+            "delivery_order_updated_at_to": "Delivery order modified to"
+        },
+        "selects": {
+            "order_lock_options": {
+                "yes": "Yes",
+                "no": "No"
+            },
+            "postal_invoice_options": {
+                "yes": "Yes",
+                "no": "No"
+            },
+            "direct_debit_options": {
+                "yes": "Yes",
+                "no": "No"
+            },
+            "gender_options": {
+                "m": "Male",
+                "f": "Female"
+            },
+            "main_contact_options": {
+                "yes": "Yes",
+                "no": "No"
+            },
+            "status_options": {
+                "active": "Active",
+                "inactive": "Inactive"
+            },
+            "taxincluded_options": {
+                "yes": "Yes",
+                "no": "No"
+            },
+            "zugferd_options": {
+                "1": "Follow settings from client configuration",
+                "2": "Do not generate Factur-X/ZUGFeRD invoices",
+                "3": "With profile »Factur-X 1.01.06/ZUGFeRD 2.2 extended«",
+                "4": "With profile »Factur-X 1.01.06/ZUGFeRD 2.2 extended« (Test mode)",
+                "5": "With profile »XRechnung 2.0.0«",
+                "6": "With profile »XRechnung 2.0.0« (Test mode)"
+            },
+            "dunning_lock_options": {
+                "yes": "Yes",
+                "no": "No"
+            },
+            "natural_person_options": {
+                "yes": "Yes",
+                "no": "No"
+            }
+        },
+        "buttons": {
+            "search": "Search",
+            "reset": "Reset",
+            "edit": "Edit",
+            "bulk_actions": "Bulk Actions",
+            "brevo_marketing_mail": "Brevo Marketing Mail",
+            "help": "Help",
+            "save_query": "Save",
+            "saved_queries": "Saved Queries"
+        },
+        "table": {
+            "title": "Search Results",
+            "text_no_search_table_shown": "Please enter search criteria or SQL query and press ENTER or click \"Search\". Search results will be displayed here.",
+            "text_no_results_customer": "No customers found.",
+            "text_no_results_vendor": "No vendors found.",
+            "text_no_results_person": "No contacts found.",
+            "text_no_results_default": "No data found."
+        },
+        "alerts": {
+            "warning_no_search_criteria": "No search criteria or SQL query has been entered. Do you really want to load all entries?"
+        },
+        "toasts": {
+            "error_loading_search_results": "Error loading search results.",
+            "error_sending_brevo_marketing_mails": "Error sending Brevo Marketing Mail(s).",
+            "brevo_marketing_mails_were_prefix": "Brevo Marketing Mails were",
+            "brevo_marketing_mail_was_prefix": "Brevo Marketing Mail was"
+        },
+        "dialogs": {
+            "brevo_marketing_mail": {
+                "title": "Send Brevo Marketing Mail",
+                "labels": {
+                    "customer": "Customers",
+                    "vendor": "Vendors",
+                    "person": "Contacts"
+                },
+                "fields": {
+                    "select_template": "Brevo Mail Template"
+                },
+                "texts": {
+                    "select_template_and_click_send": "Please select the desired Brevo mail template and then click \"Send\".",
+                    "hint_prefix": "Note: After clicking \"Send\", for each of the",
+                    "hint_suffix": "a separate marketing mail will be sent with the selected template via Brevo.",
+                    "hint_cannot_cancel": "This process cannot be cancelled once it has started."
+                },
+                "buttons": {
+                    "cancel": "Cancel",
+                    "mails_to": "Mails to",
+                    "mail_to": "Mail to",
+                    "send": "send"
+                }
+            },
+            "sql_help": {
+                "title": "SQL Help - Available Columns",
+                "loading": "Loading columns...",
+                "example_query": "Example Query",
+                "copy_example": "Copy Example",
+                "example_customer_description": "I'm looking for companies with 'GmbH' in the name, located in Berlin with a credit limit over €10,000.",
+                "example_vendor_description": "I'm looking for vendors with 'Tech' in the name from Germany that are not marked as obsolete.",
+                "example_contacts_description": "I'm looking for a woman between 20 and 40 years old from Berlin.",
+                "available_columns": "The following columns are available:",
+                "click_to_copy": "Click on a column name to copy it.",
+                "no_columns": "No columns found.",
+                "error_loading": "Error loading columns.",
+                "copied": "{column} has been copied to clipboard.",
+                "example_copied": "Example query has been copied to clipboard.",
+                "close": "Close",
+                "table_customer": "Table: customer",
+                "table_vendor": "Table: vendor",
+                "table_contacts": "Table: contacts"
+            },
+            "save_query": {
+                "title": "Save Query",
+                "name_label": "Query Name",
+                "name_placeholder": "e.g. Berlin customers with high credit limit",
+                "query": "Query",
+                "cancel": "Cancel",
+                "save": "Save",
+                "saved": "Query saved successfully.",
+                "error_saving": "Error saving query."
+            },
+            "saved_queries": {
+                "title": "Saved Queries",
+                "loading": "Loading queries...",
+                "no_queries": "No saved queries available.",
+                "error_loading": "Error loading queries.",
+                "delete_confirm_title": "Delete Query?",
+                "delete_confirm_text": "Do you really want to delete this query?",
+                "deleted": "Query deleted successfully.",
+                "error_deleting": "Error deleting query.",
+                "close": "Close"
+            }
+        },
+        "errors": {
+            "sql_error_title": "SQL Error in Your Query",
+            "sql_state": "SQL State",
+            "error_message": "Error Message",
+            "your_query": "Your Query"
+        }
+    }
+}

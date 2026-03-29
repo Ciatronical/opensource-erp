@@ -1,0 +1,433 @@
+-- company_schema.sql
+-- Tabellen für das public-Schema (Company-Datenbank)
+
+-- ============================================================================
+-- FEATURES
+-- ============================================================================
+
+CREATE TABLE features_oserp (
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
+    feature TEXT,
+    active BOOL,
+    itime TIMESTAMP WITHOUT TIME ZONE DEFAULT now(),
+    mtime TIMESTAMP WITHOUT TIME ZONE
+);
+
+COMMENT ON TABLE features_oserp IS 'Feature-Flags für OpensourceERP Funktionen';
+COMMENT ON COLUMN features_oserp.id IS 'Primärschlüssel (automatisch generiert)';
+COMMENT ON COLUMN features_oserp.feature IS 'Name des Features';
+COMMENT ON COLUMN features_oserp.active IS 'Feature aktiviert (true) oder deaktiviert (false)';
+COMMENT ON COLUMN features_oserp.itime IS 'Zeitstempel der Erstellung';
+COMMENT ON COLUMN features_oserp.mtime IS 'Zeitstempel der letzten Änderung';
+
+-- ============================================================================
+-- EMPLOYEE CONFIGURATION
+-- ============================================================================
+
+CREATE TABLE employee_config_oserp (
+    id integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    employee_id integer NOT NULL,
+    key text NOT NULL, -- sollte besser config_key heißen!!
+    value text,
+    itime timestamp without time zone NOT NULL DEFAULT now(),
+    mtime timestamp without time zone,
+    CONSTRAINT employee_config_employee_key_unique UNIQUE (employee_id, key)
+);
+
+COMMENT ON TABLE employee_config_oserp IS 'Benutzer-spezifische Konfigurationen und Einstellungen';
+COMMENT ON COLUMN employee_config_oserp.id IS 'Primärschlüssel (automatisch generiert)';
+COMMENT ON COLUMN employee_config_oserp.employee_id IS 'Referenz zum Mitarbeiter';
+COMMENT ON COLUMN employee_config_oserp.key IS 'Konfigurations-Schlüssel (z.B. saved_sql_queries)';
+COMMENT ON COLUMN employee_config_oserp.value IS 'Konfigurations-Wert (oft JSON)';
+COMMENT ON COLUMN employee_config_oserp.itime IS 'Zeitstempel der Erstellung';
+COMMENT ON COLUMN employee_config_oserp.mtime IS 'Zeitstempel der letzten Änderung';
+
+-- ============================================================================
+-- DEFAULT SETTINGS
+-- ============================================================================
+
+CREATE TABLE defaults_oserp (
+    "key" text PRIMARY KEY,
+    value text,
+    itime timestamp without time zone DEFAULT now(),
+    mtime timestamp without time zone
+);
+
+COMMENT ON TABLE defaults_oserp IS 'Globale System-Einstellungen und Standardwerte';
+COMMENT ON COLUMN defaults_oserp.key IS 'Einstellungs-Schlüssel';
+COMMENT ON COLUMN defaults_oserp.value IS 'Einstellungs-Wert';
+COMMENT ON COLUMN defaults_oserp.itime IS 'Zeitstempel der Erstellung';
+COMMENT ON COLUMN defaults_oserp.mtime IS 'Zeitstempel der letzten Änderung';
+
+-- ============================================================================
+-- GERMAN BANK CODES (BLZ)
+-- ============================================================================
+
+CREATE TABLE blz_de (
+    blz             char(8) PRIMARY KEY,
+    is_main         char(1)    NOT NULL,
+    name            text,
+    plz             text,
+    ort             text,
+    kurzname        text,
+    pan             text,
+    bic             text,
+    pz_verfahren    text,
+    datensatz_nr    text,
+    aenderung       char(1),
+    loeschung_flag  char(1),
+    nachfolge_blz   char(8)
+);
+
+COMMENT ON TABLE blz_de IS 'Deutsche Bankleitzahlen (nur hauptführende BLZ)';
+COMMENT ON COLUMN blz_de.blz IS 'Bankleitzahl (8-stellig)';
+COMMENT ON COLUMN blz_de.is_main IS '1=bankleitzahlführend, 2=sonst';
+COMMENT ON COLUMN blz_de.name IS 'Name der Bank';
+COMMENT ON COLUMN blz_de.plz IS 'Postleitzahl';
+COMMENT ON COLUMN blz_de.ort IS 'Ort';
+COMMENT ON COLUMN blz_de.kurzname IS 'Kurzname der Bank';
+COMMENT ON COLUMN blz_de.pan IS 'PAN (Primary Account Number)';
+COMMENT ON COLUMN blz_de.bic IS 'BIC (Bank Identifier Code)';
+COMMENT ON COLUMN blz_de.pz_verfahren IS 'Prüfziffer-Verfahren';
+COMMENT ON COLUMN blz_de.datensatz_nr IS 'Datensatznummer';
+COMMENT ON COLUMN blz_de.aenderung IS 'Änderungskennzeichen';
+COMMENT ON COLUMN blz_de.loeschung_flag IS 'Löschungskennzeichen';
+COMMENT ON COLUMN blz_de.nachfolge_blz IS 'Nachfolge-Bankleitzahl';
+
+-- ============================================================================
+-- SQL QUERY HISTORY
+-- ============================================================================
+
+CREATE TABLE IF NOT EXISTS public.sql_query_history (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    query TEXT NOT NULL,
+    execution_time NUMERIC(10,2),
+    row_count INTEGER,
+    itime TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    database_type VARCHAR(20) DEFAULT 'company' NOT NULL
+);
+
+-- Indizes für Performance
+CREATE INDEX IF NOT EXISTS idx_sql_query_history_user_id
+    ON public.sql_query_history(user_id);
+
+CREATE INDEX IF NOT EXISTS idx_sql_query_history_itime
+    ON public.sql_query_history(itime DESC);
+
+CREATE INDEX IF NOT EXISTS idx_sql_query_history_database_type
+    ON public.sql_query_history(database_type);
+
+-- Kommentare
+COMMENT ON TABLE public.sql_query_history IS 'Speichert erfolgreiche SQL-Queries aus dem SQL-Tool';
+COMMENT ON COLUMN public.sql_query_history.id IS 'Primärschlüssel';
+COMMENT ON COLUMN public.sql_query_history.user_id IS 'Referenz zum User der den Query ausgeführt hat';
+COMMENT ON COLUMN public.sql_query_history.query IS 'Der ausgeführte SQL-Query';
+COMMENT ON COLUMN public.sql_query_history.execution_time IS 'Ausführungszeit in Millisekunden';
+COMMENT ON COLUMN public.sql_query_history.row_count IS 'Anzahl betroffener/zurückgegebener Zeilen';
+COMMENT ON COLUMN public.sql_query_history.itime IS 'Zeitstempel der Query-Ausführung';
+COMMENT ON COLUMN public.sql_query_history.database_type IS 'Datenbank-Typ: company oder auth';
+
+-- ============================================================================
+-- FIRSTNAME TO GENDER
+-- ============================================================================
+
+CREATE TABLE firstnametogender (
+    gender character(1) COLLATE pg_catalog."default" NOT NULL,
+    firstname text COLLATE pg_catalog."default" NOT NULL,
+    CONSTRAINT firstnametogender_pkey PRIMARY KEY (firstname)
+);
+
+-- ============================================================================
+-- CUSTOMER EXTENSION
+-- ============================================================================
+
+CREATE TABLE customer_ext (
+    id INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    customer_id INTEGER NOT NULL,
+    phone_numbers JSONB,
+    phone_labels JSONB,
+    emails JSONB,
+    itime TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+    mtime TIMESTAMP WITHOUT TIME ZONE,
+    CONSTRAINT customer_ext_customer_id_unique UNIQUE (customer_id)
+);
+
+COMMENT ON TABLE customer_ext IS 'Erweiterte Kontaktdaten für Kunden (Telefonnummern, Bezeichnungen, E-Mails)';
+COMMENT ON COLUMN customer_ext.id IS 'Primärschlüssel (automatisch generiert)';
+COMMENT ON COLUMN customer_ext.customer_id IS 'Referenz zum Kunden';
+COMMENT ON COLUMN customer_ext.phone_numbers IS 'JSON-Array mit Telefonnummern';
+COMMENT ON COLUMN customer_ext.phone_labels IS 'JSON-Array mit Bezeichnungen für Telefonnummern';
+COMMENT ON COLUMN customer_ext.emails IS 'JSON-Array mit E-Mail-Adressen';
+COMMENT ON COLUMN customer_ext.itime IS 'Zeitstempel der Erstellung';
+COMMENT ON COLUMN customer_ext.mtime IS 'Zeitstempel der letzten Änderung';
+
+-- Index für schnelleren Zugriff
+CREATE INDEX idx_customer_ext_customer_id ON customer_ext(customer_id);
+
+-- ============================================================================
+-- VENDOR EXTENSION
+-- ============================================================================
+
+CREATE TABLE vendor_ext (
+    id INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    vendor_id INTEGER NOT NULL,
+    phone_numbers JSONB,
+    phone_labels JSONB,
+    emails JSONB,
+    itime TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+    mtime TIMESTAMP WITHOUT TIME ZONE,
+    CONSTRAINT vendor_ext_vendor_id_unique UNIQUE (vendor_id)
+);
+
+COMMENT ON TABLE vendor_ext IS 'Erweiterte Kontaktdaten für Lieferanten (Telefonnummern, Bezeichnungen, E-Mails)';
+COMMENT ON COLUMN vendor_ext.id IS 'Primärschlüssel (automatisch generiert)';
+COMMENT ON COLUMN vendor_ext.vendor_id IS 'Referenz zum Lieferanten';
+COMMENT ON COLUMN vendor_ext.phone_numbers IS 'JSON-Array mit Telefonnummern';
+COMMENT ON COLUMN vendor_ext.phone_labels IS 'JSON-Array mit Bezeichnungen für Telefonnummern';
+COMMENT ON COLUMN vendor_ext.emails IS 'JSON-Array mit E-Mail-Adressen';
+COMMENT ON COLUMN vendor_ext.itime IS 'Zeitstempel der Erstellung';
+COMMENT ON COLUMN vendor_ext.mtime IS 'Zeitstempel der letzten Änderung';
+
+-- Index für schnelleren Zugriff
+CREATE INDEX idx_vendor_ext_vendor_id ON vendor_ext(vendor_id);
+
+--- ============================================================================
+--- CRM TELEFONIE HISTORIE
+--- ============================================================================
+
+CREATE TABLE crmti (
+    crmti_id        integer NOT NULL GENERATED ALWAYS AS IDENTITY,
+    crmti_init_time timestamptz DEFAULT now(),
+    crmti_end_time  timestamptz DEFAULT now(),
+    crmti_src       text,
+    crmti_dst       text,
+    crmti_caller_id integer,
+    crmti_caller_typ char(1),
+    crmti_direction text,
+    crmti_status    text,
+    crmti_number    text,
+    unique_call_id  text,
+
+    CONSTRAINT crmti_pkey PRIMARY KEY (crmti_id)
+);
+
+CREATE OR REPLACE FUNCTION callin(
+    text,
+    text,
+    text)
+    RETURNS text
+    LANGUAGE 'plpgsql'
+    COST 100
+    VOLATILE PARALLEL UNSAFE
+AS $BODY$
+DECLARE
+    src ALIAS FOR $1;
+    dst ALIAS FOR $2;
+    unique_call_id ALIAS FOR $3;
+    result record;
+    new_row crmti%rowtype;
+
+BEGIN
+    result := SucheNummer( src );
+    INSERT INTO crmti ( crmti_src, crmti_caller_id, crmti_caller_typ, crmti_dst, crmti_direction, crmti_number, unique_call_id  ) VALUES ( result.name, result.id, result.typ, dst, 'E', src, unique_call_id  ) RETURNING * INTO new_row;
+
+    --DELETE FROM crmti WHERE crmti_id  < new_row.crmti_id - 512;
+    IF result.typ != 'X' THEN
+        insert into telcall ( calldate, bezug, cause, caller_id, kontakt, inout ) values ( CURRENT_TIMESTAMP, 0, 'Eingehender Anruf zu[r|m] '||dst, result.id, 'T','i' );
+    END IF;
+    --PERFORM pg_notify( 'crmti_watcher', to_json( new_row  )::TEXT );
+    IF result.id = 0 THEN --not found in kivi database! Use https://github.com/Superslub/AGI_Reverse_Lookup_DACH/commits/master!!!
+        return NULL;
+    ELSE
+        return result.name;
+    END IF;
+END;
+$BODY$;
+
+CREATE OR REPLACE FUNCTION callout(
+    text,
+    text,
+    text)
+    RETURNS text
+    LANGUAGE 'plpgsql'
+    COST 100
+    VOLATILE PARALLEL UNSAFE
+AS $BODY$
+    -- Für ausgehende Anrufe
+    DECLARE
+        src ALIAS FOR $1;
+        dst ALIAS FOR $2;
+        unique_call_id ALIAS FOR $3;
+        result record;
+        new_row crmti%rowtype;
+    BEGIN
+        result := SucheNummer( dst );
+        INSERT INTO crmti ( crmti_src, crmti_dst, crmti_caller_typ, crmti_caller_id, crmti_direction, crmti_number, unique_call_id ) VALUES ( src, result.name, result.typ, result.id, 'A', dst, unique_call_id ) RETURNING * INTO new_row;
+       -- DELETE FROM crmti WHERE crmti_id  < new_row.crmti_id - 512;
+        IF result.typ != 'X' THEN
+            INSERT INTO telcall ( calldate, bezug, cause, caller_id, kontakt, inout ) values ( CURRENT_TIMESTAMP, 0, 'Ausgehender Anruf vo[n|m] '||src, result.id, 'T', 'o' );
+        END IF;
+        --PERFORM pg_notify( 'crmti_watcher', to_json( new_row )::TEXT );
+        return '1';
+    END;
+$BODY$;
+
+-- ============================================================================
+-- CALENDAR EVENT CATEGORIES
+-- ============================================================================
+
+CREATE TABLE IF NOT EXISTS event_category (
+    id        INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    label     TEXT NOT NULL,
+    color     CHARACTER(7) NOT NULL DEFAULT '#1976D2',
+    cat_order INTEGER NOT NULL DEFAULT 1,
+    itime     TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
+    mtime     TIMESTAMP WITHOUT TIME ZONE
+);
+
+COMMENT ON TABLE event_category IS 'Kategorien für Kalendertermine';
+COMMENT ON COLUMN event_category.id IS 'Primärschlüssel (automatisch generiert)';
+COMMENT ON COLUMN event_category.label IS 'Bezeichnung der Kategorie';
+COMMENT ON COLUMN event_category.color IS 'Farbe der Kategorie (#RRGGBB)';
+COMMENT ON COLUMN event_category.cat_order IS 'Sortierungsreihenfolge';
+
+INSERT INTO event_category (label, color, cat_order) VALUES
+    ('Allgemein', '#1976D2', 1),
+    ('Meeting', '#4CAF50', 2),
+    ('Kundentermin', '#FF9800', 3),
+    ('Intern', '#9C27B0', 4),
+    ('Deadline', '#E53935', 5)
+ON CONFLICT DO NOTHING;
+
+-- ============================================================================
+-- CALENDAR EVENTS
+-- ============================================================================
+
+CREATE TABLE IF NOT EXISTS calendar_events (
+    id          INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    title       TEXT NOT NULL,
+    description TEXT,
+    dtstart     TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+    dtend       TIMESTAMP WITHOUT TIME ZONE,
+    "allDay"    BOOLEAN NOT NULL DEFAULT FALSE,
+    location    TEXT,
+    color       CHARACTER(7),
+    prio        INTEGER NOT NULL DEFAULT 1,
+    category_id INTEGER,
+    visibility  INTEGER NOT NULL DEFAULT -1,
+    uid         INTEGER NOT NULL,
+    cvp_id      INTEGER,
+    cvp_name    TEXT,
+    cvp_type    CHARACTER(1),
+    order_id    INTEGER,
+    itime       TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
+    mtime       TIMESTAMP WITHOUT TIME ZONE
+);
+
+COMMENT ON TABLE calendar_events IS 'Kalendertermine (CRM Kalender)';
+COMMENT ON COLUMN calendar_events.id IS 'Primärschlüssel (automatisch generiert)';
+COMMENT ON COLUMN calendar_events.title IS 'Titel des Termins';
+COMMENT ON COLUMN calendar_events.description IS 'Beschreibung / Notizen';
+COMMENT ON COLUMN calendar_events.dtstart IS 'Startdatum/-zeit';
+COMMENT ON COLUMN calendar_events.dtend IS 'Enddatum/-zeit';
+COMMENT ON COLUMN calendar_events."allDay" IS 'Ganztägiger Termin';
+COMMENT ON COLUMN calendar_events.location IS 'Ort';
+COMMENT ON COLUMN calendar_events.color IS 'Individuelle Farbe (#RRGGBB)';
+COMMENT ON COLUMN calendar_events.prio IS 'Priorität: 0=Niedrig, 1=Normal, 2=Hoch';
+COMMENT ON COLUMN calendar_events.category_id IS 'Referenz zur Kategorie (event_category.id)';
+COMMENT ON COLUMN calendar_events.visibility IS 'Sichtbarkeit: -1=Alle, 0=Privat';
+COMMENT ON COLUMN calendar_events.uid IS 'Eigentümer (employee.id)';
+COMMENT ON COLUMN calendar_events.cvp_id IS 'Verknüpfter Kunde/Lieferant (optional)';
+COMMENT ON COLUMN calendar_events.cvp_name IS 'Denormalisierter Name des Kunden/Lieferanten';
+COMMENT ON COLUMN calendar_events.cvp_type IS 'Typ: C=Kunde, V=Lieferant';
+COMMENT ON COLUMN calendar_events.order_id IS 'Verknüpfter Auftrag (oe.id, optional)';
+COMMENT ON COLUMN calendar_events.itime IS 'Zeitstempel der Erstellung';
+COMMENT ON COLUMN calendar_events.mtime IS 'Zeitstempel der letzten Änderung';
+
+CREATE INDEX IF NOT EXISTS idx_calendar_events_uid ON calendar_events(uid);
+CREATE INDEX IF NOT EXISTS idx_calendar_events_dtstart ON calendar_events(dtstart);
+CREATE INDEX IF NOT EXISTS idx_calendar_events_category ON calendar_events(category_id);
+
+--- ============================================================================
+--- ZIPCODE TO LOCATION
+--- ============================================================================
+
+CREATE TABLE zipcode_location_oserp
+(
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
+    ort text NOT NULL,
+    plz character(5) NOT NULL,
+    landkreis text,
+    bundesland text NOT NULL,
+    CONSTRAINT zipcode_location_oserp_pkey PRIMARY KEY (id)
+);
+
+-- ============================================================================
+-- WIKI / WISSENSDATENBANK
+-- ============================================================================
+
+CREATE TABLE wiki_categories (
+    id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    name TEXT NOT NULL,
+    sortkey INTEGER DEFAULT 0,
+    itime TIMESTAMP WITHOUT TIME ZONE DEFAULT now(),
+    mtime TIMESTAMP WITHOUT TIME ZONE
+);
+
+COMMENT ON TABLE wiki_categories IS 'Kategorien fuer Wiki-Artikel';
+COMMENT ON COLUMN wiki_categories.id IS 'Primaerschluessel (automatisch generiert)';
+COMMENT ON COLUMN wiki_categories.name IS 'Name der Kategorie';
+COMMENT ON COLUMN wiki_categories.sortkey IS 'Sortierreihenfolge';
+COMMENT ON COLUMN wiki_categories.itime IS 'Zeitstempel der Erstellung';
+COMMENT ON COLUMN wiki_categories.mtime IS 'Zeitstempel der letzten Aenderung';
+
+CREATE TABLE wiki_pages (
+    id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    title TEXT NOT NULL,
+    slug TEXT NOT NULL,
+    content TEXT DEFAULT '',
+    category_id INTEGER REFERENCES wiki_categories(id) ON DELETE SET NULL,
+    kba_hsn TEXT,
+    kba_tsn TEXT,
+    created_by INTEGER,
+    updated_by INTEGER,
+    itime TIMESTAMP WITHOUT TIME ZONE DEFAULT now(),
+    mtime TIMESTAMP WITHOUT TIME ZONE
+);
+
+COMMENT ON TABLE wiki_pages IS 'Wiki-Artikel / Wissensartikel';
+COMMENT ON COLUMN wiki_pages.id IS 'Primaerschluessel (automatisch generiert)';
+COMMENT ON COLUMN wiki_pages.title IS 'Titel des Artikels';
+COMMENT ON COLUMN wiki_pages.slug IS 'URL-freundlicher Bezeichner';
+COMMENT ON COLUMN wiki_pages.content IS 'HTML-Inhalt des Artikels';
+COMMENT ON COLUMN wiki_pages.category_id IS 'Referenz zur Kategorie';
+COMMENT ON COLUMN wiki_pages.kba_hsn IS 'KBA Herstellerschluessel (4-stellig, optional)';
+COMMENT ON COLUMN wiki_pages.kba_tsn IS 'KBA Typschluessel erste 3 Zeichen (optional)';
+COMMENT ON COLUMN wiki_pages.created_by IS 'Ersteller (employee.id)';
+COMMENT ON COLUMN wiki_pages.updated_by IS 'Letzter Bearbeiter (employee.id)';
+COMMENT ON COLUMN wiki_pages.itime IS 'Zeitstempel der Erstellung';
+COMMENT ON COLUMN wiki_pages.mtime IS 'Zeitstempel der letzten Aenderung';
+
+CREATE INDEX idx_wiki_pages_slug ON wiki_pages(slug);
+CREATE INDEX idx_wiki_pages_category ON wiki_pages(category_id);
+CREATE INDEX idx_wiki_pages_kba ON wiki_pages(kba_hsn, kba_tsn);
+
+CREATE TABLE wiki_revisions (
+    id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    page_id INTEGER NOT NULL REFERENCES wiki_pages(id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+    content TEXT DEFAULT '',
+    edited_by INTEGER,
+    itime TIMESTAMP WITHOUT TIME ZONE DEFAULT now()
+);
+
+COMMENT ON TABLE wiki_revisions IS 'Versionierung der Wiki-Artikel';
+COMMENT ON COLUMN wiki_revisions.id IS 'Primaerschluessel (automatisch generiert)';
+COMMENT ON COLUMN wiki_revisions.page_id IS 'Referenz zum Wiki-Artikel';
+COMMENT ON COLUMN wiki_revisions.title IS 'Titel zum Zeitpunkt der Revision';
+COMMENT ON COLUMN wiki_revisions.content IS 'Inhalt zum Zeitpunkt der Revision';
+COMMENT ON COLUMN wiki_revisions.edited_by IS 'Bearbeiter (employee.id)';
+COMMENT ON COLUMN wiki_revisions.itime IS 'Zeitstempel der Revision';
+
+CREATE INDEX idx_wiki_revisions_page ON wiki_revisions(page_id);

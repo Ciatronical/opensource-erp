@@ -1,0 +1,179 @@
+{
+    "FollowUpView": {
+        "title": "Priminimas",
+        "search": "Ieškoti...",
+        "fromDate": "Nuo",
+        "toDate": "Iki",
+        "showDone": "Rodyti atliktus",
+        "tabs": {
+            "board": "Lenta",
+            "list": "Sąrašas",
+            "calendar": "Kalendorius"
+        },
+        "actions": {
+            "create": "Naujas priminimas",
+            "cancel": "Atšaukti",
+            "delete": "Ištrinti",
+            "save": "Išsaugoti",
+            "edit": "Redaguoti",
+            "markDone": "Atlikta",
+            "markUndone": "Atidaryti iš naujo",
+            "close": "Uždaryti"
+        },
+        "columns": {
+            "overdue": "Vėluojantis",
+            "today": "Šiandien",
+            "upcoming": "Artėjantis",
+            "done": "Atlikta"
+        },
+        "confirmDelete": {
+            "title": "Ištrinti priminimą?",
+            "message": "Ar tikrai norite ištrinti šį priminimą? Šio veiksmo negalima atšaukti."
+        },
+        "messages": {
+            "loadError": "Klaida kraunant priminimus",
+            "saved": "Priminimas išsaugotas",
+            "saveError": "Klaida saugant",
+            "deleted": "Priminimas ištrintas",
+            "deletedMultiple": "{count} priminimų ištrinta",
+            "markedDone": "Pažymėta kaip atlikta",
+            "markedUndone": "Atidaryta iš naujo",
+            "error": "Įvyko klaida"
+        }
+    },
+    "FollowUpCard": {
+        "noSubject": "Be temos",
+        "today": "Šiandien",
+        "tomorrow": "Rytoj",
+        "daysAgo": "prieš {days} dienų",
+        "inDays": "po {days} dienų",
+        "markDone": "Pažymėti kaip atliktą",
+        "markUndone": "Atidaryti iš naujo",
+        "delete": "Ištrinti"
+    },
+    "FollowUpDialog": {
+        "titleCreate": "Naujas priminimas",
+        "titleEdit": "Redaguoti priminimą",
+        "date": "Data",
+        "subject": "Tema",
+        "body": "Pastaba",
+        "assignedEmployees": "Priskirta",
+        "linkSection": "Susiejimas (neprivaloma)",
+        "linkType": "Susiejimo tipas",
+        "linkId": "ID",
+        "linkInfo": "Pavadinimas",
+        "searchCustomer": "Ieškoti kliento",
+        "searchVendor": "Ieškoti tiekėjo",
+        "searchQuotation": "Ieškoti pasiūlymo",
+        "searchOrder": "Ieškoti užsakymo",
+        "searchDeliveryOrder": "Ieškoti važtaraščio",
+        "searchInvoice": "Ieškoti sąskaitos",
+        "searchRequestQuotation": "Ieškoti užklausos",
+        "searchPurchaseOrder": "Ieškoti pirkimo užsakymo",
+        "searchPurchaseDeliveryOrder": "Ieškoti prekių gavimo",
+        "searchPurchaseInvoice": "Ieškoti gautos sąskaitos",
+        "search": "Ieškoti",
+        "noResults": "Rezultatų nerasta",
+        "startTyping": "Įveskite paieškos terminą...",
+        "cancel": "Atšaukti",
+        "save": "Išsaugoti",
+        "quickDate": {
+            "today": "Šiandien",
+            "tomorrow": "Rytoj",
+            "nextWeek": "+1 savaitė",
+            "twoWeeks": "+2 savaitės",
+            "nextMonth": "+1 mėnuo"
+        },
+        "linkTypes": {
+            "customer": "Klientas",
+            "vendor": "Tiekėjas",
+            "salesQuotation": "Pasiūlymas",
+            "salesOrder": "Užsakymas",
+            "salesDeliveryOrder": "Važtaraštis",
+            "salesInvoice": "Sąskaita",
+            "purchaseQuotation": "Užklausa",
+            "purchaseOrder": "Pirkimo užsakymas",
+            "purchaseDeliveryOrder": "Prekių gavimas",
+            "purchaseInvoice": "Gauta sąskaita"
+        },
+        "validation": {
+            "required": "Privalomas laukas"
+        }
+    },
+    "FollowUpList": {
+        "done": "Atlikta",
+        "open": "Atidaryta",
+        "today": "Šiandien",
+        "tomorrow": "Rytoj",
+        "markDone": "Pažymėti kaip atliktą",
+        "markUndone": "Atidaryti iš naujo",
+        "edit": "Redaguoti",
+        "delete": "Ištrinti",
+        "entry": "Įrašas",
+        "entries": "Įrašai",
+        "deleteAll": "Ištrinti visus rodomus",
+        "deleteAllConfirmTitle": "Ištrinti visus priminimus?",
+        "deleteAllConfirmText": "Ar tikrai norite ištrinti visus {count} rodomų priminimų?",
+        "deleteAllWarning": "Šio veiksmo negalima atšaukti!",
+        "deleteAllConfirm": "Ištrinti visus",
+        "cancel": "Atšaukti",
+        "headers": {
+            "date": "Data",
+            "subject": "Tema",
+            "link": "Susiejimas",
+            "assignedTo": "Priskirta",
+            "status": "Būsena",
+            "actions": "Veiksmai"
+        }
+    },
+    "FollowUpCalendar": {
+        "today": "Šiandien",
+        "month": "Mėnuo",
+        "week": "Savaitė",
+        "day": "Diena",
+        "allDay": "Visa diena",
+        "noSubject": "Be temos",
+        "newFollowUp": "Naujas priminimas",
+        "subject": "Tema",
+        "subjectPlaceholder": "Ką reikia atlikti?",
+        "note": "Pastaba",
+        "notePlaceholder": "Papildoma informacija...",
+        "cancel": "Atšaukti",
+        "create": "Sukurti",
+        "done": "Atlikta",
+        "reopen": "Atidaryti",
+        "edit": "Redaguoti",
+        "links": "Susiejimai",
+        "details": "Detalės",
+        "assignedTo": "Priskirta",
+        "linkedTo": "Susieta su",
+        "close": "Uždaryti",
+        "markDone": "Pažymėti kaip atliktą",
+        "markUndone": "Atidaryti iš naujo",
+        "editFollowUp": "Redaguoti",
+        "deleteFollowUp": "Ištrinti",
+        "more": "daugiau",
+        "weekDays": {
+            "mon": "Pr",
+            "tue": "An",
+            "wed": "Tr",
+            "thu": "Kt",
+            "fri": "Pn",
+            "sat": "Št",
+            "sun": "Sk"
+        }
+    },
+    "FollowUpWidget": {
+        "title": "Priminimas",
+        "overdue": "Vėluojantis",
+        "today": "Šiandien",
+        "tomorrow": "Rytoj",
+        "upcoming": "Artėjantis",
+        "noItems": "Atidarytų priminimų nėra",
+        "showAll": "Rodyti visus {count}",
+        "markDone": "Pažymėti kaip atliktą",
+        "quickAdd": "Greitas pridėjimas",
+        "openAll": "Atidaryti visus",
+        "daysAgo": "prieš {days} dienų"
+    }
+}

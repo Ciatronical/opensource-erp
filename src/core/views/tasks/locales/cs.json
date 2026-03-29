@@ -1,0 +1,135 @@
+{
+    "TasksView": {
+        "title": "Ukoly",
+        "search": "Hledat...",
+        "fromDate": "Od",
+        "toDate": "Do",
+        "showDone": "Zobrazit dokoncene",
+        "tabs": {
+            "board": "Nastenka",
+            "list": "Seznam",
+            "calendar": "Kalendar"
+        },
+        "actions": {
+            "create": "Novy ukol",
+            "cancel": "Zrusit",
+            "delete": "Smazat",
+            "save": "Ulozit",
+            "edit": "Upravit",
+            "markDone": "Hotovo",
+            "markUndone": "Znovu otevrit",
+            "close": "Zavrit"
+        },
+        "columns": {
+            "overdue": "Po terminu",
+            "today": "Dnes",
+            "upcoming": "Nadchazejici",
+            "done": "Hotovo"
+        },
+        "fields": {
+            "subject": "Predmet",
+            "body": "Poznamka",
+            "date": "Datum"
+        },
+        "calendar": {
+            "today": "Dnes",
+            "month": "Mesic",
+            "week": "Tyden",
+            "day": "Den",
+            "more": "dalsich"
+        },
+        "dialog": {
+            "titleNew": "Novy ukol",
+            "titleEdit": "Upravit ukol"
+        },
+        "confirmDelete": {
+            "title": "Smazat ukol?",
+            "message": "Opravdu chcete tento ukol smazat? Tuto akci nelze vratit."
+        },
+        "messages": {
+            "loadError": "Chyba pri nacitani ukolu",
+            "saved": "Ukol ulozen",
+            "saveError": "Chyba pri ukladani",
+            "deleted": "Ukol smazan",
+            "markedDone": "Oznaceno jako hotove",
+            "markedUndone": "Znovu otevreno",
+            "error": "Doslo k chybe"
+        }
+    },
+    "TasksCard": {
+        "noSubject": "Bez predmetu",
+        "today": "Dnes",
+        "tomorrow": "Zitra",
+        "daysAgo": "pred {days} dny",
+        "inDays": "za {days} dni",
+        "markDone": "Oznacit jako hotove",
+        "markUndone": "Znovu otevrit",
+        "delete": "Smazat"
+    },
+    "TasksDialog": {
+        "titleCreate": "Novy ukol",
+        "titleEdit": "Upravit ukol",
+        "date": "Datum",
+        "subject": "Predmet",
+        "body": "Poznamka",
+        "assignedEmployees": "Prirazeno",
+        "linkSection": "Propojeni (volitelne)",
+        "linkType": "Typ propojeni",
+        "linkId": "ID",
+        "linkInfo": "Oznaceni",
+        "cancel": "Zrusit",
+        "save": "Ulozit",
+        "quickDate": {
+            "today": "Dnes",
+            "tomorrow": "Zitra",
+            "nextWeek": "+1 tyden",
+            "nextMonth": "+1 mesic"
+        },
+        "linkTypes": {
+            "customer": "Zakaznik",
+            "vendor": "Dodavatel",
+            "salesQuotation": "Nabidka",
+            "salesOrder": "Objednavka",
+            "salesDeliveryOrder": "Dodaci list",
+            "salesInvoice": "Faktura",
+            "purchaseQuotation": "Poptavka",
+            "purchaseOrder": "Objednavka",
+            "purchaseDeliveryOrder": "Prijem zbozi",
+            "purchaseInvoice": "Prijata faktura"
+        },
+        "validation": {
+            "required": "Povinne pole"
+        }
+    },
+    "TasksList": {
+        "done": "Hotovo",
+        "open": "Otevreno",
+        "today": "Dnes",
+        "tomorrow": "Zitra",
+        "markDone": "Oznacit jako hotove",
+        "markUndone": "Znovu otevrit",
+        "edit": "Upravit",
+        "delete": "Smazat",
+        "headers": {
+            "date": "Datum",
+            "subject": "Predmet",
+            "link": "Propojeni",
+            "assignedTo": "Prirazeno",
+            "status": "Stav",
+            "actions": "Akce"
+        }
+    },
+    "TasksWidget": {
+        "title": "Ukoly",
+        "overdue": "Po terminu",
+        "today": "Dnes",
+        "tomorrow": "Zitra",
+        "upcoming": "Nadchazejici",
+        "noItems": "Zadne otevrene ukoly",
+        "showAll": "Zobrazit vsech {count}",
+        "markDone": "Oznacit jako hotove",
+        "quickAdd": "Rychle pridat",
+        "openAll": "Otevrit vse",
+        "daysAgo": "pred {days} dny"
+    }
+}

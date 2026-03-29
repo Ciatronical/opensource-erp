@@ -1,0 +1,68 @@
+{
+    "HuSerienbriefView": {
+        "title": "Besiktningsaviseringar",
+        "subtitle": "Kunder med forfallobesiktning",
+        "vorlauf": "Forvarning: {monate} manader",
+        "fields": {
+            "customer_name": "Kund",
+            "kennzeichen": "Registreringsnummer",
+            "hu_datum": "Besiktningsdatum",
+            "telefon": "Telefon",
+            "email": "E-post",
+            "fahrzeug": "Fordon",
+            "actions": "Atgarder",
+            "date_from": "Besiktning forfalloer fran",
+            "date_to": "Besiktning forfalloer till"
+        },
+        "buttons": {
+            "print_all": "Skriv ut valda",
+            "email_all": "Skicka e-post",
+            "reload": "Uppdatera",
+            "exclude": "Valj bort",
+            "include": "Ta med igen",
+            "send_pin": "Skicka med PIN",
+            "whatsapp_all": "Skicka WhatsApp"
+        },
+        "checkboxes": {
+            "show_excluded": "Visa aven bortvalda"
+        },
+        "chips": {
+            "excluded": "Bortvald",
+            "results_count": "Kunder"
+        },
+        "filter": {
+            "title": "Tidsperiod"
+        },
+        "table": {
+            "no_results": "Inga kunder med forfallobesiktning i den konfigurerade perioden hittades.",
+            "no_results_hint": "Kontrollera forvarningstiden i installningarna under LXCars."
+        },
+        "whatsapp": {
+            "message": "Hej {name}, besiktningen for ditt fordon ({kennzeichen}) gar ut den {hu_datum}. Boka en tid. Med vanliga halsningar"
+        },
+        "toasts": {
+            "error_loading": "Fel vid laddning av besiktningslistan.",
+            "excluded_success": "Kund bortvald.",
+            "included_success": "Kund medtagen igen.",
+            "exclude_error": "Fel vid sparande.",
+            "email_sent": "E-post skickad.",
+            "email_error": "Fel vid e-postutskick.",
+            "pdf_error": "Fel vid skapande av PDF.",
+            "sftp_success": "PDF skickad via eLetter.",
+            "sftp_error": "Fel vid sandning via eLetter.",
+            "whatsapp_sent": "WhatsApp-meddelande skickat.",
+            "whatsapp_error": "Fel vid sandning av WhatsApp-meddelande.",
+            "whatsapp_bulk_sent": "{sent} WhatsApp-meddelanden skickade, {failed} misslyckades.",
+            "whatsapp_no_phone": "Ingen av de valda kunderna har ett telefonnummer."
+        },
+        "tooltips": {
+            "whatsapp_single": "Skicka besiktningspaminnelse via WhatsApp",
+            "exclude": "Exkludera kund fran besiktningsaviseringar",
+            "include": "Inkludera kund i besiktningsaviseringar igen"
+        },
+        "dialogs": {
+            "confirm_exclude_title": "Valj bort kund",
+            "confirm_exclude_text": "Denna kund tas permanent bort fran besiktningsaviseringslistan. Vill du fortsatta?"
+        }
+    }
+}

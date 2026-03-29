@@ -1,0 +1,12 @@
+{
+    "SaveDatabaseView": {
+        "title": "Gem database",
+        "description": "Gem den aktuelle database paa din enhed.",
+        "saveButton": "Gem database"
+    },
+    "LoadDatabaseView": {
+        "title": "Indlaes database",
+        "description": "Indlaes en tidligere gemt database fra din enhed.",
+        "loadButton": "Indlaes database"
+    }
+}

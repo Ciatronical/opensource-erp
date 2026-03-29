@@ -1,0 +1,87 @@
+{
+    "CalendarView": {
+        "title": "Calendrier",
+        "actions": {
+            "create": "Nouveau rendez-vous",
+            "categories": "Categories",
+            "cancel": "Annuler",
+            "save": "Enregistrer",
+            "delete": "Supprimer",
+            "edit": "Modifier",
+            "close": "Fermer"
+        },
+        "confirmDelete": {
+            "title": "Supprimer le rendez-vous ?",
+            "message": "Voulez-vous vraiment supprimer ce rendez-vous ?"
+        },
+        "messages": {
+            "loadError": "Erreur lors du chargement des rendez-vous",
+            "saved": "Rendez-vous enregistre",
+            "saveError": "Erreur lors de l'enregistrement",
+            "deleted": "Rendez-vous supprime",
+            "error": "Une erreur est survenue",
+            "categoryDeleted": "Categorie supprimee",
+            "categorySaved": "Categorie enregistree"
+        },
+        "search": "Recherche",
+        "searchResults": "Resultats de recherche",
+        "noResults": "Aucun resultat trouve"
+    },
+    "CalendarMain": {
+        "today": "Aujourd'hui",
+        "month": "Mois",
+        "week": "Semaine",
+        "day": "Jour",
+        "list": "Liste",
+        "allDay": "Toute la journee",
+        "filterCategories": "Filtrer les categories"
+    },
+    "CalendarEventDialog": {
+        "titleCreate": "Nouveau rendez-vous",
+        "titleEdit": "Modifier le rendez-vous",
+        "title": "Titre",
+        "allDay": "Toute la journee",
+        "start": "Debut",
+        "end": "Fin",
+        "category": "Categorie",
+        "noCategory": "Aucune categorie",
+        "priority": "Priorite",
+        "priorityLow": "Basse",
+        "priorityNormal": "Normale",
+        "priorityHigh": "Haute",
+        "location": "Lieu",
+        "description": "Description",
+        "color": "Couleur",
+        "visibility": "Visibilite",
+        "visibilityAll": "Tous",
+        "visibilityPrivate": "Prive",
+        "customerVendor": "Client/Fournisseur",
+        "validation": {
+            "titleRequired": "Le titre est obligatoire",
+            "startRequired": "La date de debut est obligatoire"
+        }
+    },
+    "CalendarEventDetail": {
+        "edit": "Modifier",
+        "delete": "Supprimer",
+        "close": "Fermer",
+        "location": "Lieu",
+        "category": "Categorie",
+        "priority": "Priorite",
+        "owner": "Cree par",
+        "linkedTo": "Lie a",
+        "priorityLow": "Basse",
+        "priorityNormal": "Normale",
+        "priorityHigh": "Haute"
+    },
+    "CalendarCategoryManager": {
+        "title": "Gerer les categories",
+        "addCategory": "Nouvelle categorie",
+        "label": "Designation",
+        "color": "Couleur",
+        "save": "Enregistrer",
+        "delete": "Supprimer",
+        "confirmDelete": "Voulez-vous vraiment supprimer cette categorie ? Les rendez-vous conservent leurs donnees mais perdent l'attribution de la categorie.",
+        "noCategories": "Aucune categorie disponible"
+    }
+}

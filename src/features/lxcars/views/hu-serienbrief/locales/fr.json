@@ -1,0 +1,68 @@
+{
+    "HuSerienbriefView": {
+        "title": "Notifications CT",
+        "subtitle": "Clients avec controle technique a effectuer",
+        "vorlauf": "Delai : {monate} mois",
+        "fields": {
+            "customer_name": "Client",
+            "kennzeichen": "Immatriculation",
+            "hu_datum": "Date CT",
+            "telefon": "Telephone",
+            "email": "E-mail",
+            "fahrzeug": "Vehicule",
+            "actions": "Actions",
+            "date_from": "CT du",
+            "date_to": "CT au"
+        },
+        "buttons": {
+            "print_all": "Imprimer la selection",
+            "email_all": "Envoyer par e-mail",
+            "reload": "Actualiser",
+            "exclude": "Exclure",
+            "include": "Inclure a nouveau",
+            "send_pin": "Envoyer avec PIN",
+            "whatsapp_all": "Envoyer par WhatsApp"
+        },
+        "checkboxes": {
+            "show_excluded": "Afficher egalement les exclus"
+        },
+        "chips": {
+            "excluded": "Exclu",
+            "results_count": "Clients"
+        },
+        "filter": {
+            "title": "Periode"
+        },
+        "table": {
+            "no_results": "Aucun client avec CT a effectuer dans la periode configuree.",
+            "no_results_hint": "Verifiez le delai dans les parametres sous LXCars."
+        },
+        "whatsapp": {
+            "message": "Bonjour {name}, le controle technique de votre vehicule ({kennzeichen}) expire le {hu_datum}. Veuillez prendre rendez-vous. Cordialement"
+        },
+        "toasts": {
+            "error_loading": "Erreur lors du chargement de la liste CT.",
+            "excluded_success": "Client exclu.",
+            "included_success": "Client inclus a nouveau.",
+            "exclude_error": "Erreur lors de l'enregistrement.",
+            "email_sent": "E-mail envoye.",
+            "email_error": "Erreur lors de l'envoi de l'e-mail.",
+            "pdf_error": "Erreur lors de la creation du PDF.",
+            "sftp_success": "PDF envoye avec succes par eLetter.",
+            "sftp_error": "Erreur lors de l'envoi par eLetter.",
+            "whatsapp_sent": "Message WhatsApp envoye.",
+            "whatsapp_error": "Erreur lors de l'envoi du message WhatsApp.",
+            "whatsapp_bulk_sent": "{sent} messages WhatsApp envoyes, {failed} echoues.",
+            "whatsapp_no_phone": "Aucun des clients selectionnes n'a de numero de telephone."
+        },
+        "tooltips": {
+            "whatsapp_single": "Envoyer un rappel CT par WhatsApp",
+            "exclude": "Exclure le client des notifications CT",
+            "include": "Inclure le client a nouveau dans les notifications CT"
+        },
+        "dialogs": {
+            "confirm_exclude_title": "Exclure le client",
+            "confirm_exclude_text": "Ce client sera definitivement retire de la liste des notifications CT. Voulez-vous continuer ?"
+        }
+    }
+}

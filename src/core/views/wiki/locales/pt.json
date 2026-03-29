@@ -1,0 +1,83 @@
+{
+    "WikiMenu": {
+        "title": "Wiki",
+        "newPage": "Novo artigo",
+        "allPages": "Todos os artigos",
+        "categories": "Categorias"
+    },
+    "WikiListView": {
+        "title": "Wiki - Base de conhecimento",
+        "newPage": "Novo artigo",
+        "search": "Pesquisar artigo...",
+        "allCategories": "Todas",
+        "noPages": "Ainda sem artigos.",
+        "noPagesHint": "Crie o seu primeiro artigo wiki.",
+        "headers": {
+            "title": "Título",
+            "category": "Categoria",
+            "author": "Autor",
+            "updated": "Última atualização",
+            "kba": "KBA"
+        },
+        "confirmDelete": "Eliminar realmente o artigo \"{title}\"?",
+        "deleted": "Artigo eliminado.",
+        "deleteError": "Erro ao eliminar."
+    },
+    "WikiReadView": {
+        "title": "Artigo wiki",
+        "edit": "Editar",
+        "back": "Voltar à lista",
+        "revisions": "Versões",
+        "createdBy": "Criado por",
+        "updatedBy": "Última edição por",
+        "kbaLabel": "Atribuição KBA",
+        "notFound": "Artigo não encontrado.",
+        "loadError": "Erro ao carregar o artigo."
+    },
+    "WikiEditView": {
+        "titleNew": "Novo artigo wiki",
+        "titleEdit": "Editar artigo wiki",
+        "fieldTitle": "Título",
+        "fieldCategory": "Categoria",
+        "fieldContent": "Conteúdo",
+        "fieldKbaHsn": "HSN",
+        "fieldKbaTsn": "TSN (primeiros 3 caracteres)",
+        "kbaSection": "Atribuição KBA (opcional)",
+        "save": "Guardar",
+        "cancel": "Cancelar",
+        "saved": "Artigo guardado.",
+        "saveError": "Erro ao guardar.",
+        "missingTitle": "Por favor, introduza um título.",
+        "revisions": "Histórico de versões",
+        "noRevisions": "Sem versões anteriores disponíveis.",
+        "restore": "Restaurar",
+        "confirmRestore": "Restaurar a versão de {date}?",
+        "restored": "Versão restaurada.",
+        "restoreError": "Erro ao restaurar.",
+        "statusSaving": "A guardar...",
+        "statusSaved": "Guardado",
+        "statusUnsaved": "Não guardado",
+        "statusError": "Erro ao guardar",
+        "back": "Voltar",
+        "newCategory": "Nova categoria",
+        "createCategory": "Criar"
+    },
+    "WikiCategoriesView": {
+        "title": "Categorias wiki",
+        "newCategory": "Nova categoria",
+        "name": "Nome",
+        "sortkey": "Ordenação",
+        "pageCount": "Artigos",
+        "save": "Guardar",
+        "cancel": "Cancelar",
+        "edit": "Editar",
+        "delete": "Eliminar",
+        "noCategories": "Ainda sem categorias.",
+        "confirmDelete": "Eliminar realmente a categoria \"{name}\"?",
+        "saved": "Categoria guardada.",
+        "deleted": "Categoria eliminada.",
+        "saveError": "Erro ao guardar.",
+        "deleteError": "Erro ao eliminar.",
+        "sortUpdated": "Ordem atualizada."
+    }
+}

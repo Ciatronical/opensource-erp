@@ -1,0 +1,21 @@
+{
+    "title": "Benutzerkonfiguration",
+    "loading": "Lade Konfiguration...",
+    "configLoadError": "Konfigurationsfehler",
+    "user_fields": {
+        "appearance": "Darstellung",
+        "darkMode": "Dunkles Design (Dark Mode)",
+        "darkMode_help": "Aktiviert das dunkle Farbschema für die gesamte Anwendung.",
+        "locale": "Anzeigesprache",
+        "locale_help": "Sprache der Benutzeroberfläche. Wird sofort angewendet.",
+        "general": "Allgemein",
+        "startupView": "Startansicht",
+        "startupView_help": "Welche Ansicht nach dem Login angezeigt wird. Überschreibt die Mandanteneinstellung.",
+        "faktura": "Faktura",
+        "fakturaCompactView": "Kompaktansicht standardmäßig aktivieren",
+        "fakturaCompactView_help": "Blendet die Detailkarten (Kunde, Belegdetails, Zusatzinfos) aus und zeigt nur eine kompakte Zusammenfassung.",
+        "printer": "Drucker",
+        "defaultPrinter": "Standard-Drucker",
+        "defaultPrinter_help": "Drucker, der standardmäßig für Ausdrucke verwendet wird"
+    }
+}

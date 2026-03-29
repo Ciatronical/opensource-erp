@@ -1,0 +1,179 @@
+{
+    "FollowUpView": {
+        "title": "Напоминания",
+        "search": "Поиск...",
+        "fromDate": "От",
+        "toDate": "До",
+        "showDone": "Показать выполненные",
+        "tabs": {
+            "board": "Доска",
+            "list": "Список",
+            "calendar": "Календарь"
+        },
+        "actions": {
+            "create": "Новое напоминание",
+            "cancel": "Отмена",
+            "delete": "Удалить",
+            "save": "Сохранить",
+            "edit": "Редактировать",
+            "markDone": "Выполнено",
+            "markUndone": "Открыть снова",
+            "close": "Закрыть"
+        },
+        "columns": {
+            "overdue": "Просрочено",
+            "today": "Сегодня",
+            "upcoming": "Предстоящие",
+            "done": "Выполнено"
+        },
+        "confirmDelete": {
+            "title": "Удалить напоминание?",
+            "message": "Вы действительно хотите удалить это напоминание? Это действие нельзя отменить."
+        },
+        "messages": {
+            "loadError": "Ошибка загрузки напоминаний",
+            "saved": "Напоминание сохранено",
+            "saveError": "Ошибка сохранения",
+            "deleted": "Напоминание удалено",
+            "deletedMultiple": "{count} напоминаний удалено",
+            "markedDone": "Отмечено как выполненное",
+            "markedUndone": "Снова открыто",
+            "error": "Произошла ошибка"
+        }
+    },
+    "FollowUpCard": {
+        "noSubject": "Без темы",
+        "today": "Сегодня",
+        "tomorrow": "Завтра",
+        "daysAgo": "{days} дней назад",
+        "inDays": "через {days} дней",
+        "markDone": "Отметить как выполненное",
+        "markUndone": "Открыть снова",
+        "delete": "Удалить"
+    },
+    "FollowUpDialog": {
+        "titleCreate": "Новое напоминание",
+        "titleEdit": "Редактировать напоминание",
+        "date": "Дата",
+        "subject": "Тема",
+        "body": "Заметка",
+        "assignedEmployees": "Назначено",
+        "linkSection": "Привязка (необязательно)",
+        "linkType": "Тип привязки",
+        "linkId": "ID",
+        "linkInfo": "Обозначение",
+        "searchCustomer": "Искать клиента",
+        "searchVendor": "Искать поставщика",
+        "searchQuotation": "Искать предложение",
+        "searchOrder": "Искать заказ",
+        "searchDeliveryOrder": "Искать накладную",
+        "searchInvoice": "Искать счет",
+        "searchRequestQuotation": "Искать запрос",
+        "searchPurchaseOrder": "Искать заказ поставщику",
+        "searchPurchaseDeliveryOrder": "Искать поступление товара",
+        "searchPurchaseInvoice": "Искать входящий счет",
+        "search": "Искать",
+        "noResults": "Результаты не найдены",
+        "startTyping": "Введите поисковый запрос...",
+        "cancel": "Отмена",
+        "save": "Сохранить",
+        "quickDate": {
+            "today": "Сегодня",
+            "tomorrow": "Завтра",
+            "nextWeek": "+1 неделя",
+            "twoWeeks": "+2 недели",
+            "nextMonth": "+1 месяц"
+        },
+        "linkTypes": {
+            "customer": "Клиент",
+            "vendor": "Поставщик",
+            "salesQuotation": "Предложение",
+            "salesOrder": "Заказ",
+            "salesDeliveryOrder": "Накладная",
+            "salesInvoice": "Счет",
+            "purchaseQuotation": "Запрос",
+            "purchaseOrder": "Заказ поставщику",
+            "purchaseDeliveryOrder": "Поступление товара",
+            "purchaseInvoice": "Входящий счет"
+        },
+        "validation": {
+            "required": "Обязательное поле"
+        }
+    },
+    "FollowUpList": {
+        "done": "Выполнено",
+        "open": "Открыто",
+        "today": "Сегодня",
+        "tomorrow": "Завтра",
+        "markDone": "Отметить как выполненное",
+        "markUndone": "Открыть снова",
+        "edit": "Редактировать",
+        "delete": "Удалить",
+        "entry": "Запись",
+        "entries": "Записи",
+        "deleteAll": "Удалить все показанные",
+        "deleteAllConfirmTitle": "Удалить все напоминания?",
+        "deleteAllConfirmText": "Вы действительно хотите удалить все {count} показанных напоминаний?",
+        "deleteAllWarning": "Это действие нельзя отменить!",
+        "deleteAllConfirm": "Удалить все",
+        "cancel": "Отмена",
+        "headers": {
+            "date": "Дата",
+            "subject": "Тема",
+            "link": "Привязка",
+            "assignedTo": "Назначено",
+            "status": "Статус",
+            "actions": "Действия"
+        }
+    },
+    "FollowUpCalendar": {
+        "today": "Сегодня",
+        "month": "Месяц",
+        "week": "Неделя",
+        "day": "День",
+        "allDay": "Весь день",
+        "noSubject": "Без темы",
+        "newFollowUp": "Новое напоминание",
+        "subject": "Тема",
+        "subjectPlaceholder": "Что нужно сделать?",
+        "note": "Заметка",
+        "notePlaceholder": "Дополнительная информация...",
+        "cancel": "Отмена",
+        "create": "Создать",
+        "done": "Выполнено",
+        "reopen": "Открыть",
+        "edit": "Редактировать",
+        "links": "Привязки",
+        "details": "Детали",
+        "assignedTo": "Назначено",
+        "linkedTo": "Привязано к",
+        "close": "Закрыть",
+        "markDone": "Отметить как выполненное",
+        "markUndone": "Открыть снова",
+        "editFollowUp": "Редактировать",
+        "deleteFollowUp": "Удалить",
+        "more": "ещё",
+        "weekDays": {
+            "mon": "Пн",
+            "tue": "Вт",
+            "wed": "Ср",
+            "thu": "Чт",
+            "fri": "Пт",
+            "sat": "Сб",
+            "sun": "Вс"
+        }
+    },
+    "FollowUpWidget": {
+        "title": "Напоминания",
+        "overdue": "Просрочено",
+        "today": "Сегодня",
+        "tomorrow": "Завтра",
+        "upcoming": "Предстоящие",
+        "noItems": "Нет открытых напоминаний",
+        "showAll": "Показать все {count}",
+        "markDone": "Отметить как выполненное",
+        "quickAdd": "Быстрое добавление",
+        "openAll": "Открыть все",
+        "daysAgo": "{days} дней назад"
+    }
+}

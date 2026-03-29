@@ -1,0 +1,41 @@
+{
+    "OrderSearchView": {
+        "title": "Ordresoek",
+        "fields": {
+            "ordnumber": "Ordrenummer",
+            "customer_name": "Kundenavn",
+            "transaction_description": "Beskrivelse",
+            "first_instruction": "Beskrivelse",
+            "location": "Lokasjon",
+            "status": "Status",
+            "transdate_from": "Dato fra",
+            "transdate_to": "Dato til",
+            "bringetermin_from": "Innleveringsdato fra",
+            "bringetermin_to": "Innleveringsdato til",
+            "amount_from": "Beloep fra",
+            "amount_to": "Beloep til",
+            "employee": "Behandler",
+            "transdate": "Dato",
+            "bringetermin": "Innleveringsdato",
+            "amount": "Beloep",
+            "cusordnumber": "Kundeordrenummer",
+            "hersteller": "Produsent"
+        },
+        "buttons": {
+            "search": "Soek",
+            "reset": "Tilbakestill"
+        },
+        "table": {
+            "title": "Soekeresultater",
+            "text_no_search_table_shown": "Vennligst skriv inn soekekriterier og start med ENTER eller \"Soek\". Resultater vises her.",
+            "text_no_results": "Ingen ordrer funnet.",
+            "results_count": "Resultater"
+        },
+        "alerts": {
+            "warning_no_search_criteria": "Ingen soekekriterier angitt. Vil du virkelig laste alle ordrer?"
+        },
+        "toasts": {
+            "error_loading_search_results": "Feil ved lasting av soekeresultater."
+        }
+    }
+}

@@ -1,0 +1,135 @@
+{
+    "TasksView": {
+        "title": "任务",
+        "search": "搜索...",
+        "fromDate": "从",
+        "toDate": "至",
+        "showDone": "显示已完成",
+        "tabs": {
+            "board": "看板",
+            "list": "列表",
+            "calendar": "日历"
+        },
+        "actions": {
+            "create": "新建任务",
+            "cancel": "取消",
+            "delete": "删除",
+            "save": "保存",
+            "edit": "编辑",
+            "markDone": "已完成",
+            "markUndone": "重新打开",
+            "close": "关闭"
+        },
+        "columns": {
+            "overdue": "逾期",
+            "today": "今天",
+            "upcoming": "即将到来",
+            "done": "已完成"
+        },
+        "fields": {
+            "subject": "主题",
+            "body": "备注",
+            "date": "日期"
+        },
+        "calendar": {
+            "today": "今天",
+            "month": "月",
+            "week": "周",
+            "day": "日",
+            "more": "更多"
+        },
+        "dialog": {
+            "titleNew": "新建任务",
+            "titleEdit": "编辑任务"
+        },
+        "confirmDelete": {
+            "title": "删除任务？",
+            "message": "确定要删除此任务吗？此操作不可撤销。"
+        },
+        "messages": {
+            "loadError": "加载任务时出错",
+            "saved": "任务已保存",
+            "saveError": "保存时出错",
+            "deleted": "任务已删除",
+            "markedDone": "已标记为完成",
+            "markedUndone": "已重新打开",
+            "error": "发生错误"
+        }
+    },
+    "TasksCard": {
+        "noSubject": "无主题",
+        "today": "今天",
+        "tomorrow": "明天",
+        "daysAgo": "{days} 天前",
+        "inDays": "{days} 天后",
+        "markDone": "标记为已完成",
+        "markUndone": "重新打开",
+        "delete": "删除"
+    },
+    "TasksDialog": {
+        "titleCreate": "新建任务",
+        "titleEdit": "编辑任务",
+        "date": "日期",
+        "subject": "主题",
+        "body": "备注",
+        "assignedEmployees": "分配给",
+        "linkSection": "关联（可选）",
+        "linkType": "关联类型",
+        "linkId": "ID",
+        "linkInfo": "名称",
+        "cancel": "取消",
+        "save": "保存",
+        "quickDate": {
+            "today": "今天",
+            "tomorrow": "明天",
+            "nextWeek": "+1 周",
+            "nextMonth": "+1 月"
+        },
+        "linkTypes": {
+            "customer": "客户",
+            "vendor": "供应商",
+            "salesQuotation": "报价单",
+            "salesOrder": "订单",
+            "salesDeliveryOrder": "发货单",
+            "salesInvoice": "发票",
+            "purchaseQuotation": "询价单",
+            "purchaseOrder": "采购订单",
+            "purchaseDeliveryOrder": "到货单",
+            "purchaseInvoice": "进项发票"
+        },
+        "validation": {
+            "required": "必填字段"
+        }
+    },
+    "TasksList": {
+        "done": "已完成",
+        "open": "待处理",
+        "today": "今天",
+        "tomorrow": "明天",
+        "markDone": "标记为已完成",
+        "markUndone": "重新打开",
+        "edit": "编辑",
+        "delete": "删除",
+        "headers": {
+            "date": "日期",
+            "subject": "主题",
+            "link": "关联",
+            "assignedTo": "分配给",
+            "status": "状态",
+            "actions": "操作"
+        }
+    },
+    "TasksWidget": {
+        "title": "任务",
+        "overdue": "逾期",
+        "today": "今天",
+        "tomorrow": "明天",
+        "upcoming": "即将到来",
+        "noItems": "无待处理任务",
+        "showAll": "显示全部 {count} 条",
+        "markDone": "标记为已完成",
+        "quickAdd": "快速添加",
+        "openAll": "打开全部",
+        "daysAgo": "{days} 天前"
+    }
+}

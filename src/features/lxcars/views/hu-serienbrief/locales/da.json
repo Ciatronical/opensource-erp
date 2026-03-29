@@ -1,0 +1,68 @@
+{
+    "HuSerienbriefView": {
+        "title": "Syn-meddelelser",
+        "subtitle": "Kunder med forfaldent syn",
+        "vorlauf": "Forudmeddelelse: {monate} maaneder",
+        "fields": {
+            "customer_name": "Kunde",
+            "kennzeichen": "Nummerplade",
+            "hu_datum": "Syn-dato",
+            "telefon": "Telefon",
+            "email": "E-mail",
+            "fahrzeug": "Koeretoej",
+            "actions": "Handlinger",
+            "date_from": "Syn forfalder fra",
+            "date_to": "Syn forfalder til"
+        },
+        "buttons": {
+            "print_all": "Udskriv valgte",
+            "email_all": "Send e-mail",
+            "reload": "Opdater",
+            "exclude": "Fravaelg",
+            "include": "Medtag igen",
+            "send_pin": "Send med PIN",
+            "whatsapp_all": "Send WhatsApp"
+        },
+        "checkboxes": {
+            "show_excluded": "Vis ogsaa fravalgte"
+        },
+        "chips": {
+            "excluded": "Fravalgt",
+            "results_count": "Kunder"
+        },
+        "filter": {
+            "title": "Tidsperiode"
+        },
+        "table": {
+            "no_results": "Ingen kunder med forfaldent syn i den konfigurerede periode fundet.",
+            "no_results_hint": "Kontroller forudmeddelelsestiden i indstillingerne under LXCars."
+        },
+        "whatsapp": {
+            "message": "Hej {name}, synet for dit koeretoej ({kennzeichen}) udloeber den {hu_datum}. Book venligst en tid. Venlig hilsen"
+        },
+        "toasts": {
+            "error_loading": "Fejl ved indlaesning af syn-listen.",
+            "excluded_success": "Kunde fravalgt.",
+            "included_success": "Kunde medtaget igen.",
+            "exclude_error": "Fejl ved lagring.",
+            "email_sent": "E-mail sendt.",
+            "email_error": "Fejl ved e-mail-afsendelse.",
+            "pdf_error": "Fejl ved oprettelse af PDF.",
+            "sftp_success": "PDF sendt via eLetter.",
+            "sftp_error": "Fejl ved afsendelse via eLetter.",
+            "whatsapp_sent": "WhatsApp-besked sendt.",
+            "whatsapp_error": "Fejl ved afsendelse af WhatsApp-besked.",
+            "whatsapp_bulk_sent": "{sent} WhatsApp-beskeder sendt, {failed} mislykkedes.",
+            "whatsapp_no_phone": "Ingen af de valgte kunder har et telefonnummer."
+        },
+        "tooltips": {
+            "whatsapp_single": "Send syn-paamindelse via WhatsApp",
+            "exclude": "Ekskluder kunde fra syn-meddelelser",
+            "include": "Medtag kunde i syn-meddelelser igen"
+        },
+        "dialogs": {
+            "confirm_exclude_title": "Fravaelg kunde",
+            "confirm_exclude_text": "Denne kunde fjernes permanent fra syn-meddelelseslisten. Vil du fortsaette?"
+        }
+    }
+}

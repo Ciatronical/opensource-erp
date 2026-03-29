@@ -1,0 +1,87 @@
+{
+    "CalendarView": {
+        "title": "Kalender",
+        "actions": {
+            "create": "Uus sündmus",
+            "categories": "Kategooriad",
+            "cancel": "Tühista",
+            "save": "Salvesta",
+            "delete": "Kustuta",
+            "edit": "Muuda",
+            "close": "Sulge"
+        },
+        "confirmDelete": {
+            "title": "Kustuta sündmus?",
+            "message": "Kas soovite selle sündmuse tõesti kustutada?"
+        },
+        "messages": {
+            "loadError": "Viga sündmuste laadimisel",
+            "saved": "Sündmus salvestatud",
+            "saveError": "Viga salvestamisel",
+            "deleted": "Sündmus kustutatud",
+            "error": "Ilmnes viga",
+            "categoryDeleted": "Kategooria kustutatud",
+            "categorySaved": "Kategooria salvestatud"
+        },
+        "search": "Otsing",
+        "searchResults": "Otsingutulemused",
+        "noResults": "Tulemusi ei leitud"
+    },
+    "CalendarMain": {
+        "today": "Täna",
+        "month": "Kuu",
+        "week": "Nädal",
+        "day": "Päev",
+        "list": "Nimekiri",
+        "allDay": "Kogu päev",
+        "filterCategories": "Filtreeri kategooriaid"
+    },
+    "CalendarEventDialog": {
+        "titleCreate": "Uus sündmus",
+        "titleEdit": "Sündmuse muutmine",
+        "title": "Pealkiri",
+        "allDay": "Kogu päev",
+        "start": "Algus",
+        "end": "Lõpp",
+        "category": "Kategooria",
+        "noCategory": "Kategooriata",
+        "priority": "Prioriteet",
+        "priorityLow": "Madal",
+        "priorityNormal": "Tavaline",
+        "priorityHigh": "Kõrge",
+        "location": "Asukoht",
+        "description": "Kirjeldus",
+        "color": "Värv",
+        "visibility": "Nähtavus",
+        "visibilityAll": "Kõik",
+        "visibilityPrivate": "Privaatne",
+        "customerVendor": "Klient/Tarnija",
+        "validation": {
+            "titleRequired": "Pealkiri on kohustuslik",
+            "startRequired": "Alguskuupäev on kohustuslik"
+        }
+    },
+    "CalendarEventDetail": {
+        "edit": "Muuda",
+        "delete": "Kustuta",
+        "close": "Sulge",
+        "location": "Asukoht",
+        "category": "Kategooria",
+        "priority": "Prioriteet",
+        "owner": "Looja",
+        "linkedTo": "Seotud",
+        "priorityLow": "Madal",
+        "priorityNormal": "Tavaline",
+        "priorityHigh": "Kõrge"
+    },
+    "CalendarCategoryManager": {
+        "title": "Kategooriate haldamine",
+        "addCategory": "Uus kategooria",
+        "label": "Nimetus",
+        "color": "Värv",
+        "save": "Salvesta",
+        "delete": "Kustuta",
+        "confirmDelete": "Kas kustutada kategooria? Sündmused säilitavad andmed, kuid kaotavad kategooria seose.",
+        "noCategories": "Kategooriaid pole"
+    }
+}

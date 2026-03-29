@@ -1,0 +1,135 @@
+{
+    "TasksView": {
+        "title": "Uppgifter",
+        "search": "Sok...",
+        "fromDate": "Fran",
+        "toDate": "Till",
+        "showDone": "Visa slutforda",
+        "tabs": {
+            "board": "Board",
+            "list": "Lista",
+            "calendar": "Kalender"
+        },
+        "actions": {
+            "create": "Ny uppgift",
+            "cancel": "Avbryt",
+            "delete": "Radera",
+            "save": "Spara",
+            "edit": "Redigera",
+            "markDone": "Slutford",
+            "markUndone": "Ateröppna",
+            "close": "Stang"
+        },
+        "columns": {
+            "overdue": "Forsenad",
+            "today": "Idag",
+            "upcoming": "Kommande",
+            "done": "Slutford"
+        },
+        "fields": {
+            "subject": "Amne",
+            "body": "Anteckning",
+            "date": "Datum"
+        },
+        "calendar": {
+            "today": "Idag",
+            "month": "Manad",
+            "week": "Vecka",
+            "day": "Dag",
+            "more": "fler"
+        },
+        "dialog": {
+            "titleNew": "Ny uppgift",
+            "titleEdit": "Redigera uppgift"
+        },
+        "confirmDelete": {
+            "title": "Radera uppgift?",
+            "message": "Vill du verkligen radera denna uppgift? Denna atgard kan inte angras."
+        },
+        "messages": {
+            "loadError": "Fel vid laddning av uppgifter",
+            "saved": "Uppgift sparad",
+            "saveError": "Fel vid sparande",
+            "deleted": "Uppgift raderad",
+            "markedDone": "Markerad som slutford",
+            "markedUndone": "Ateröppnad",
+            "error": "Ett fel uppstod"
+        }
+    },
+    "TasksCard": {
+        "noSubject": "Inget amne",
+        "today": "Idag",
+        "tomorrow": "Imorgon",
+        "daysAgo": "for {days} dagar sedan",
+        "inDays": "om {days} dagar",
+        "markDone": "Markera som slutford",
+        "markUndone": "Ateröppna",
+        "delete": "Radera"
+    },
+    "TasksDialog": {
+        "titleCreate": "Ny uppgift",
+        "titleEdit": "Redigera uppgift",
+        "date": "Datum",
+        "subject": "Amne",
+        "body": "Anteckning",
+        "assignedEmployees": "Tilldelad till",
+        "linkSection": "Koppling (valfritt)",
+        "linkType": "Kopplingstyp",
+        "linkId": "ID",
+        "linkInfo": "Beteckning",
+        "cancel": "Avbryt",
+        "save": "Spara",
+        "quickDate": {
+            "today": "Idag",
+            "tomorrow": "Imorgon",
+            "nextWeek": "+1 vecka",
+            "nextMonth": "+1 manad"
+        },
+        "linkTypes": {
+            "customer": "Kund",
+            "vendor": "Leverantor",
+            "salesQuotation": "Offert",
+            "salesOrder": "Order",
+            "salesDeliveryOrder": "Foljesedel",
+            "salesInvoice": "Faktura",
+            "purchaseQuotation": "Forfragan",
+            "purchaseOrder": "Bestallning",
+            "purchaseDeliveryOrder": "Varumottagning",
+            "purchaseInvoice": "Inkommande faktura"
+        },
+        "validation": {
+            "required": "Obligatoriskt falt"
+        }
+    },
+    "TasksList": {
+        "done": "Slutford",
+        "open": "Oppen",
+        "today": "Idag",
+        "tomorrow": "Imorgon",
+        "markDone": "Markera som slutford",
+        "markUndone": "Ateröppna",
+        "edit": "Redigera",
+        "delete": "Radera",
+        "headers": {
+            "date": "Datum",
+            "subject": "Amne",
+            "link": "Koppling",
+            "assignedTo": "Tilldelad",
+            "status": "Status",
+            "actions": "Atgarder"
+        }
+    },
+    "TasksWidget": {
+        "title": "Uppgifter",
+        "overdue": "Forsenad",
+        "today": "Idag",
+        "tomorrow": "Imorgon",
+        "upcoming": "Kommande",
+        "noItems": "Inga oppna uppgifter",
+        "showAll": "Visa alla {count}",
+        "markDone": "Markera som slutford",
+        "quickAdd": "Snabbt tillagg",
+        "openAll": "Oppna alla",
+        "daysAgo": "for {days} dagar sedan"
+    }
+}

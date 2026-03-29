@@ -1,0 +1,87 @@
+{
+    "CalendarView": {
+        "title": "Kalender",
+        "actions": {
+            "create": "Ny aftale",
+            "categories": "Kategorier",
+            "cancel": "Annuller",
+            "save": "Gem",
+            "delete": "Slet",
+            "edit": "Rediger",
+            "close": "Luk"
+        },
+        "confirmDelete": {
+            "title": "Slet aftale?",
+            "message": "Vil du virkelig slette denne aftale?"
+        },
+        "messages": {
+            "loadError": "Fejl ved indlaesning af aftaler",
+            "saved": "Aftale gemt",
+            "saveError": "Fejl ved lagring",
+            "deleted": "Aftale slettet",
+            "error": "Der opstod en fejl",
+            "categoryDeleted": "Kategori slettet",
+            "categorySaved": "Kategori gemt"
+        },
+        "search": "Soeg",
+        "searchResults": "Soegeresultater",
+        "noResults": "Ingen resultater fundet"
+    },
+    "CalendarMain": {
+        "today": "I dag",
+        "month": "Maaned",
+        "week": "Uge",
+        "day": "Dag",
+        "list": "Liste",
+        "allDay": "Hele dagen",
+        "filterCategories": "Filtrer kategorier"
+    },
+    "CalendarEventDialog": {
+        "titleCreate": "Ny aftale",
+        "titleEdit": "Rediger aftale",
+        "title": "Titel",
+        "allDay": "Hele dagen",
+        "start": "Start",
+        "end": "Slut",
+        "category": "Kategori",
+        "noCategory": "Ingen kategori",
+        "priority": "Prioritet",
+        "priorityLow": "Lav",
+        "priorityNormal": "Normal",
+        "priorityHigh": "Hoej",
+        "location": "Sted",
+        "description": "Beskrivelse",
+        "color": "Farve",
+        "visibility": "Synlighed",
+        "visibilityAll": "Alle",
+        "visibilityPrivate": "Privat",
+        "customerVendor": "Kunde/Leverandoer",
+        "validation": {
+            "titleRequired": "Titel er paakraevet",
+            "startRequired": "Startdato er paakraevet"
+        }
+    },
+    "CalendarEventDetail": {
+        "edit": "Rediger",
+        "delete": "Slet",
+        "close": "Luk",
+        "location": "Sted",
+        "category": "Kategori",
+        "priority": "Prioritet",
+        "owner": "Oprettet af",
+        "linkedTo": "Tilknyttet",
+        "priorityLow": "Lav",
+        "priorityNormal": "Normal",
+        "priorityHigh": "Hoej"
+    },
+    "CalendarCategoryManager": {
+        "title": "Administrer kategorier",
+        "addCategory": "Ny kategori",
+        "label": "Betegnelse",
+        "color": "Farve",
+        "save": "Gem",
+        "delete": "Slet",
+        "confirmDelete": "Vil du virkelig slette denne kategori? Aftaler beholder deres data, men mister kategoritilknytningen.",
+        "noCategories": "Ingen kategorier tilgaengelige"
+    }
+}

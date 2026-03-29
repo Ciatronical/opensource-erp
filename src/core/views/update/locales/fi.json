@@ -1,0 +1,50 @@
+{
+    "update": {
+        "title": "Jarjestelmapaivitys",
+        "description": "Taalla varmuuskopioidaan ja paivitetaan kaikki yritystietokannat seka todennustietokanta.",
+        "messages": "Viestit",
+        "sqlStatements": "SQL-lauseet",
+        "errors": "Virheet",
+        "dryRunSuccess": "Esikatselu ladattu onnistuneesti.",
+        "updateSuccess": "Kaikki tietokannat paivitetty onnistuneesti.",
+        "gitPull": "Git Pull",
+        "gitPullSuccess": "Git Pull onnistui",
+        "gitPullFailed": "Git Pull epaonnistui",
+        "authDatabase": "Todennustietokanta",
+        "authBackup": "Todennuksen varmuuskopio",
+        "clientDatabase": "Yritys: {name}",
+        "clientDbName": "Tietokanta: {dbname}",
+        "backupSuccess": "Varmuuskopio luotu: {filename}",
+        "backupFailed": "Varmuuskopiointi epaonnistui",
+        "backupSkipped": "Varmuuskopiota ei luoda Dry-Run-tilassa",
+        "features": "Ominaisuudet: {features}",
+        "noClients": "Yrityksia ei loytynyt.",
+        "overallSuccess": "Kaikki tietokannat paivitetty onnistuneesti",
+        "overallFailed": "Virhe paivityksessa",
+        "buttons": {
+            "dryRun": "Esikatselu",
+            "checking": "Tarkistetaan...",
+            "update": "Suorita paivitys",
+            "updating": "Paivitetaan...",
+            "finish": "Valmis"
+        },
+        "errorMessages": {
+            "dryRunFailed": "Esikatselu epaonnistui.",
+            "updateFailed": "Paivitys epaonnistui.",
+            "networkError": "Verkkovirhe paivityksessa."
+        },
+        "schemaMessages": {
+            "dry_run_mode": "Esikatselutila - Muutoksia ei tehda",
+            "columns_added": "Taulu {table}: {count} sarake(tta) lisattaisiin | Taulu {table}: {count} sarake(tta) lisatty",
+            "column_added": "Sarake '{column}' lisattaisiin | Sarake '{column}' lisatty",
+            "table_up_to_date": "Taulu {table}: Kaikki sarakkeet olemassa",
+            "table_created": "Taulu {table} luotaisiin | Taulu {table} luotu",
+            "version_updated": "Versio {version} kirjattu {schema}-tietokantaan",
+            "object_exists": "{object_type} {name} on jo olemassa",
+            "statement_executed": "{statement_type} {target} suoritettu",
+            "csv_skipped": "CSV ohitettu: {table} ({reason})",
+            "csv_imported": "CSV tuotu: {table} ({rows_imported} rivia)",
+            "info": "{text}"
+        }
+    }
+}

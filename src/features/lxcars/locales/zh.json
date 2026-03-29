@@ -1,0 +1,19 @@
+{
+    "CarView": {
+        "routes": {
+            "newCar": "/fahrzeug/neu",
+            "newCarFromScan": "/fahrzeug/neu-vom-scan",
+            "manageCars": "/fahrzeug",
+            "orderSearch": "/fahrzeug-auftrag/suche",
+            "carRegistration": "/fahrzeug/zulassung"
+        },
+        "newCar": "新建",
+        "newCarFromScan": "扫描列表",
+        "title": "车辆",
+        "manageCars": "管理",
+        "orderSearch": "订单列表",
+        "huSerienbrief": "车检通知",
+        "orderSearchTooltip": "订单搜索",
+        "scanTooltip": "从扫描创建车辆"
+    }
+}

@@ -1,0 +1,87 @@
+{
+    "CalendarView": {
+        "title": "Kalendārs",
+        "actions": {
+            "create": "Jauns notikums",
+            "categories": "Kategorijas",
+            "cancel": "Atcelt",
+            "save": "Saglabāt",
+            "delete": "Dzēst",
+            "edit": "Rediģēt",
+            "close": "Aizvērt"
+        },
+        "confirmDelete": {
+            "title": "Dzēst notikumu?",
+            "message": "Vai tiešām vēlaties dzēst šo notikumu?"
+        },
+        "messages": {
+            "loadError": "Kļūda ielādējot notikumus",
+            "saved": "Notikums saglabāts",
+            "saveError": "Kļūda saglabājot",
+            "deleted": "Notikums dzēsts",
+            "error": "Radās kļūda",
+            "categoryDeleted": "Kategorija dzēsta",
+            "categorySaved": "Kategorija saglabāta"
+        },
+        "search": "Meklēt",
+        "searchResults": "Meklēšanas rezultāti",
+        "noResults": "Nav rezultātu"
+    },
+    "CalendarMain": {
+        "today": "Šodien",
+        "month": "Mēnesis",
+        "week": "Nedēļa",
+        "day": "Diena",
+        "list": "Saraksts",
+        "allDay": "Visa diena",
+        "filterCategories": "Filtrēt kategorijas"
+    },
+    "CalendarEventDialog": {
+        "titleCreate": "Jauns notikums",
+        "titleEdit": "Rediģēt notikumu",
+        "title": "Virsraksts",
+        "allDay": "Visa diena",
+        "start": "Sākums",
+        "end": "Beigas",
+        "category": "Kategorija",
+        "noCategory": "Bez kategorijas",
+        "priority": "Prioritāte",
+        "priorityLow": "Zema",
+        "priorityNormal": "Normāla",
+        "priorityHigh": "Augsta",
+        "location": "Vieta",
+        "description": "Apraksts",
+        "color": "Krāsa",
+        "visibility": "Redzamība",
+        "visibilityAll": "Visi",
+        "visibilityPrivate": "Privāts",
+        "customerVendor": "Klients/Piegādātājs",
+        "validation": {
+            "titleRequired": "Virsraksts ir obligāts",
+            "startRequired": "Sākuma datums ir obligāts"
+        }
+    },
+    "CalendarEventDetail": {
+        "edit": "Rediģēt",
+        "delete": "Dzēst",
+        "close": "Aizvērt",
+        "location": "Vieta",
+        "category": "Kategorija",
+        "priority": "Prioritāte",
+        "owner": "Izveidoja",
+        "linkedTo": "Saistīts ar",
+        "priorityLow": "Zema",
+        "priorityNormal": "Normāla",
+        "priorityHigh": "Augsta"
+    },
+    "CalendarCategoryManager": {
+        "title": "Kategoriju pārvaldīšana",
+        "addCategory": "Jauna kategorija",
+        "label": "Nosaukums",
+        "color": "Krāsa",
+        "save": "Saglabāt",
+        "delete": "Dzēst",
+        "confirmDelete": "Vai tiešām dzēst kategoriju? Notikumi saglabās datus, bet zaudēs kategorijas piesaisti.",
+        "noCategories": "Nav kategoriju"
+    }
+}

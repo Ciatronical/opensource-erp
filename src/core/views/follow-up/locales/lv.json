@@ -1,0 +1,179 @@
+{
+    "FollowUpView": {
+        "title": "Atgādinājums",
+        "search": "Meklēt...",
+        "fromDate": "No",
+        "toDate": "Līdz",
+        "showDone": "Rādīt izpildītos",
+        "tabs": {
+            "board": "Dēlis",
+            "list": "Saraksts",
+            "calendar": "Kalendārs"
+        },
+        "actions": {
+            "create": "Jauns atgādinājums",
+            "cancel": "Atcelt",
+            "delete": "Dzēst",
+            "save": "Saglabāt",
+            "edit": "Rediģēt",
+            "markDone": "Izpildīts",
+            "markUndone": "Atvērt atkārtoti",
+            "close": "Aizvērt"
+        },
+        "columns": {
+            "overdue": "Nokavēts",
+            "today": "Šodien",
+            "upcoming": "Gaidāms",
+            "done": "Izpildīts"
+        },
+        "confirmDelete": {
+            "title": "Dzēst atgādinājumu?",
+            "message": "Vai tiešām vēlaties dzēst šo atgādinājumu? Šo darbību nevar atsaukt."
+        },
+        "messages": {
+            "loadError": "Kļūda ielādējot atgādinājumus",
+            "saved": "Atgādinājums saglabāts",
+            "saveError": "Kļūda saglabājot",
+            "deleted": "Atgādinājums dzēsts",
+            "deletedMultiple": "{count} atgādinājumi dzēsti",
+            "markedDone": "Atzīmēts kā izpildīts",
+            "markedUndone": "Atvērts atkārtoti",
+            "error": "Radās kļūda"
+        }
+    },
+    "FollowUpCard": {
+        "noSubject": "Nav tēmas",
+        "today": "Šodien",
+        "tomorrow": "Rīt",
+        "daysAgo": "pirms {days} dienām",
+        "inDays": "pēc {days} dienām",
+        "markDone": "Atzīmēt kā izpildītu",
+        "markUndone": "Atvērt atkārtoti",
+        "delete": "Dzēst"
+    },
+    "FollowUpDialog": {
+        "titleCreate": "Jauns atgādinājums",
+        "titleEdit": "Rediģēt atgādinājumu",
+        "date": "Datums",
+        "subject": "Tēma",
+        "body": "Piezīme",
+        "assignedEmployees": "Piešķirts",
+        "linkSection": "Saistījums (neobligāti)",
+        "linkType": "Saistījuma veids",
+        "linkId": "ID",
+        "linkInfo": "Nosaukums",
+        "searchCustomer": "Meklēt klientu",
+        "searchVendor": "Meklēt piegādātāju",
+        "searchQuotation": "Meklēt piedāvājumu",
+        "searchOrder": "Meklēt pasūtījumu",
+        "searchDeliveryOrder": "Meklēt piegādes pavadzīmi",
+        "searchInvoice": "Meklēt rēķinu",
+        "searchRequestQuotation": "Meklēt pieprasījumu",
+        "searchPurchaseOrder": "Meklēt pirkuma pasūtījumu",
+        "searchPurchaseDeliveryOrder": "Meklēt preču saņemšanu",
+        "searchPurchaseInvoice": "Meklēt ienākošo rēķinu",
+        "search": "Meklēt",
+        "noResults": "Nav rezultātu",
+        "startTyping": "Ievadiet meklēšanas terminu...",
+        "cancel": "Atcelt",
+        "save": "Saglabāt",
+        "quickDate": {
+            "today": "Šodien",
+            "tomorrow": "Rīt",
+            "nextWeek": "+1 nedēļa",
+            "twoWeeks": "+2 nedēļas",
+            "nextMonth": "+1 mēnesis"
+        },
+        "linkTypes": {
+            "customer": "Klients",
+            "vendor": "Piegādātājs",
+            "salesQuotation": "Piedāvājums",
+            "salesOrder": "Pasūtījums",
+            "salesDeliveryOrder": "Piegādes pavadzīme",
+            "salesInvoice": "Rēķins",
+            "purchaseQuotation": "Pieprasījums",
+            "purchaseOrder": "Pirkuma pasūtījums",
+            "purchaseDeliveryOrder": "Preču saņemšana",
+            "purchaseInvoice": "Ienākošais rēķins"
+        },
+        "validation": {
+            "required": "Obligāts lauks"
+        }
+    },
+    "FollowUpList": {
+        "done": "Izpildīts",
+        "open": "Atvērts",
+        "today": "Šodien",
+        "tomorrow": "Rīt",
+        "markDone": "Atzīmēt kā izpildītu",
+        "markUndone": "Atvērt atkārtoti",
+        "edit": "Rediģēt",
+        "delete": "Dzēst",
+        "entry": "Ieraksts",
+        "entries": "Ieraksti",
+        "deleteAll": "Dzēst visus rādītos",
+        "deleteAllConfirmTitle": "Dzēst visus atgādinājumus?",
+        "deleteAllConfirmText": "Vai tiešām vēlaties dzēst visus {count} rādītos atgādinājumus?",
+        "deleteAllWarning": "Šo darbību nevar atsaukt!",
+        "deleteAllConfirm": "Dzēst visus",
+        "cancel": "Atcelt",
+        "headers": {
+            "date": "Datums",
+            "subject": "Tēma",
+            "link": "Saistījums",
+            "assignedTo": "Piešķirts",
+            "status": "Statuss",
+            "actions": "Darbības"
+        }
+    },
+    "FollowUpCalendar": {
+        "today": "Šodien",
+        "month": "Mēnesis",
+        "week": "Nedēļa",
+        "day": "Diena",
+        "allDay": "Visa diena",
+        "noSubject": "Bez tēmas",
+        "newFollowUp": "Jauns atgādinājums",
+        "subject": "Tēma",
+        "subjectPlaceholder": "Kas jāizdara?",
+        "note": "Piezīme",
+        "notePlaceholder": "Papildinformācija...",
+        "cancel": "Atcelt",
+        "create": "Izveidot",
+        "done": "Izpildīts",
+        "reopen": "Atvērt",
+        "edit": "Rediģēt",
+        "links": "Saistījumi",
+        "details": "Detaļas",
+        "assignedTo": "Piešķirts",
+        "linkedTo": "Saistīts ar",
+        "close": "Aizvērt",
+        "markDone": "Atzīmēt kā izpildītu",
+        "markUndone": "Atvērt atkārtoti",
+        "editFollowUp": "Rediģēt",
+        "deleteFollowUp": "Dzēst",
+        "more": "vēl",
+        "weekDays": {
+            "mon": "Pr",
+            "tue": "Ot",
+            "wed": "Tr",
+            "thu": "Ce",
+            "fri": "Pk",
+            "sat": "Se",
+            "sun": "Sv"
+        }
+    },
+    "FollowUpWidget": {
+        "title": "Atgādinājums",
+        "overdue": "Nokavēts",
+        "today": "Šodien",
+        "tomorrow": "Rīt",
+        "upcoming": "Gaidāms",
+        "noItems": "Nav atvērtu atgādinājumu",
+        "showAll": "Rādīt visus {count}",
+        "markDone": "Atzīmēt kā izpildītu",
+        "quickAdd": "Ātra pievienošana",
+        "openAll": "Atvērt visus",
+        "daysAgo": "pirms {days} dienām"
+    }
+}

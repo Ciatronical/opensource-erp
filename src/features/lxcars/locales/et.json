@@ -1,0 +1,19 @@
+{
+    "CarView": {
+        "routes": {
+            "newCar": "/fahrzeug/neu",
+            "newCarFromScan": "/fahrzeug/neu-vom-scan",
+            "manageCars": "/fahrzeug",
+            "orderSearch": "/fahrzeug-auftrag/suche",
+            "carRegistration": "/fahrzeug/zulassung"
+        },
+        "newCar": "Uus sõiduk",
+        "newCarFromScan": "Skannimisloend",
+        "title": "Sõidukid",
+        "manageCars": "Halda",
+        "orderSearch": "Tellimuste loend",
+        "huSerienbrief": "TÜ-teavitused",
+        "orderSearchTooltip": "Tellimuse otsing",
+        "scanTooltip": "Sõidukid skannimisest"
+    }
+}

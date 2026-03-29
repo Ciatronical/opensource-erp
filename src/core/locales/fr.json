@@ -1,0 +1,47 @@
+{
+    "LoginView": {
+        "title": "Connexion",
+        "username": "Nom d'utilisateur",
+        "password": "Mot de passe",
+        "client": "Societe",
+        "button": "Se connecter",
+        "failed": "Echec de la connexion. Veuillez verifier vos identifiants.",
+        "EMPTY_FIELDS": "Veuillez saisir le nom et le mot de passe.",
+        "USER_NOT_FOUND": "Utilisateur introuvable.",
+        "WRONG_PASSWORD": "Mot de passe incorrect.",
+        "ERROR": "Erreur lors de la connexion. Veuillez reessayer.",
+        "ERROR_LOADING_CLIENTS": "Erreur lors du chargement des societes. Veuillez reessayer plus tard.",
+        "USER_NOT_ASSIGNED_TO_CLIENT": "Utilisateur non attribue a cette societe.",
+        "PASSWORD_FILE_NOT_FOUND": "Erreur : Le fichier de mot de passe api/config/api.passwd.php est introuvable. Veuillez renommer le fichier api/config/api.passwd.php.example en api/config/api.passwd.php et ajuster les parametres en consequence.",
+        "CONFIG_FILE_NOT_FOUND": "Erreur : Le fichier de configuration est introuvable. Veuillez verifier les parametres.",
+        "updateButton": "Executer la mise a jour",
+        "updateSuccess": "Mise a jour de la base de donnees effectuee avec succes.",
+        "updateError": "Erreur lors de la mise a jour de la base de donnees. Veuillez reessayer.",
+        "privacy": "Politique de confidentialite",
+        "dataDeletion": "Suppression des donnees"
+    },
+    "NotFoundView": {
+        "title": "Page introuvable",
+        "message": "La page demandee est introuvable.",
+        "back_home": "Retour a la page d'accueil"
+    },
+    "NavbarView": {
+        "logoutTooltip": "Deconnexion",
+        "accountTooltip": "Compte",
+        "editCustomerTooltip": "Modifier le client",
+        "editCvTooltip": "Modifier client/fournisseur",
+        "currentC": "Client :",
+        "currentV": "Fournisseur :",
+        "demoBanner": "Mode demo — Toutes les donnees sont reinitialises automatiquement apres inactivite.",
+        "demoResetWarning": "Reinitialisation de la demo dans {seconds} secondes — deplacez la souris pour continuer."
+    },
+    "ErrorView": {
+        "title": "Une erreur est survenue",
+        "message": "Nous sommes desoles, mais une erreur inattendue est survenue.",
+        "debugInfo": "Informations de debogage :",
+        "clickToShowDetails": "Cliquer pour afficher les details"
+    },
+    "App": {
+        "loading": "Veuillez patienter..."
+    }
+}

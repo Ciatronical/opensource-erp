@@ -1,0 +1,68 @@
+{
+    "HuSerienbriefView": {
+        "title": "TÜ-teavitused",
+        "subtitle": "Kliendid, kellel on tehnoülevaatus tähtajaga",
+        "vorlauf": "Ettevaade: {monate} kuud",
+        "fields": {
+            "customer_name": "Klient",
+            "kennzeichen": "Numbrimärk",
+            "hu_datum": "TÜ kuupäev",
+            "telefon": "Telefon",
+            "email": "E-post",
+            "fahrzeug": "Sõiduk",
+            "actions": "Toimingud",
+            "date_from": "TÜ tähtaeg alates",
+            "date_to": "TÜ tähtaeg kuni"
+        },
+        "buttons": {
+            "print_all": "Prindi valitud",
+            "email_all": "Saada e-kiri",
+            "reload": "Värskenda",
+            "exclude": "Eemalda valikust",
+            "include": "Taasta valikust",
+            "send_pin": "Saada PIN-iga",
+            "whatsapp_all": "Saada WhatsApp"
+        },
+        "checkboxes": {
+            "show_excluded": "Kuva ka eemaldatud"
+        },
+        "chips": {
+            "excluded": "Eemaldatud",
+            "results_count": "Kliendid"
+        },
+        "filter": {
+            "title": "Ajavahemik"
+        },
+        "table": {
+            "no_results": "Konfigureeritud ajavahemikus pole kliente tähtaegse TÜ-ga.",
+            "no_results_hint": "Kontrollige ettevaate aega seadetes LXCars all."
+        },
+        "whatsapp": {
+            "message": "Tere {name}, teie sõiduki ({kennzeichen}) TÜ aegub {hu_datum}. Palun broneeri aeg. Lugupidamisega"
+        },
+        "toasts": {
+            "error_loading": "Viga TÜ-loendi laadimisel.",
+            "excluded_success": "Klient eemaldatud.",
+            "included_success": "Klient taastatud.",
+            "exclude_error": "Viga salvestamisel.",
+            "email_sent": "E-kiri saadetud.",
+            "email_error": "Viga e-kirja saatmisel.",
+            "pdf_error": "Viga PDF-i loomisel.",
+            "sftp_success": "PDF edukalt saadetud eLetter kaudu.",
+            "sftp_error": "Viga eLetter kaudu saatmisel.",
+            "whatsapp_sent": "WhatsApp sõnum saadetud.",
+            "whatsapp_error": "Viga WhatsApp sõnumi saatmisel.",
+            "whatsapp_bulk_sent": "{sent} WhatsApp sõnumit saadetud, {failed} ebaõnnestus.",
+            "whatsapp_no_phone": "Ühelgi valitud kliendil pole telefoninumbrit."
+        },
+        "tooltips": {
+            "whatsapp_single": "Saada TÜ meeldetuletus WhatsApp kaudu",
+            "exclude": "Eemalda klient TÜ-teavitustest",
+            "include": "Taasta klient TÜ-teavitustesse"
+        },
+        "dialogs": {
+            "confirm_exclude_title": "Eemalda klient",
+            "confirm_exclude_text": "See klient eemaldatakse püsivalt TÜ-teavituste loendist. Kas soovite jätkata?"
+        }
+    }
+}

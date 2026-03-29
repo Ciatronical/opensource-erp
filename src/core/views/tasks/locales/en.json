@@ -1,0 +1,135 @@
+{
+    "TasksView": {
+        "title": "Tasks",
+        "search": "Search...",
+        "fromDate": "From",
+        "toDate": "To",
+        "showDone": "Show completed",
+        "tabs": {
+            "board": "Board",
+            "list": "List",
+            "calendar": "Calendar"
+        },
+        "actions": {
+            "create": "New Task",
+            "cancel": "Cancel",
+            "delete": "Delete",
+            "save": "Save",
+            "edit": "Edit",
+            "markDone": "Done",
+            "markUndone": "Reopen",
+            "close": "Close"
+        },
+        "columns": {
+            "overdue": "Overdue",
+            "today": "Today",
+            "upcoming": "Upcoming",
+            "done": "Done"
+        },
+        "fields": {
+            "subject": "Subject",
+            "body": "Notes",
+            "date": "Date"
+        },
+        "calendar": {
+            "today": "Today",
+            "month": "Month",
+            "week": "Week",
+            "day": "Day",
+            "more": "more"
+        },
+        "dialog": {
+            "titleNew": "New Task",
+            "titleEdit": "Edit Task"
+        },
+        "confirmDelete": {
+            "title": "Delete task?",
+            "message": "Do you really want to delete this task? This action cannot be undone."
+        },
+        "messages": {
+            "loadError": "Error loading tasks",
+            "saved": "Task saved",
+            "saveError": "Error saving",
+            "deleted": "Task deleted",
+            "markedDone": "Marked as done",
+            "markedUndone": "Reopened",
+            "error": "An error occurred"
+        }
+    },
+    "TasksCard": {
+        "noSubject": "No subject",
+        "today": "Today",
+        "tomorrow": "Tomorrow",
+        "daysAgo": "{days} days ago",
+        "inDays": "in {days} days",
+        "markDone": "Mark as done",
+        "markUndone": "Reopen",
+        "delete": "Delete"
+    },
+    "TasksDialog": {
+        "titleCreate": "New Task",
+        "titleEdit": "Edit Task",
+        "date": "Date",
+        "subject": "Subject",
+        "body": "Notes",
+        "assignedEmployees": "Assigned to",
+        "linkSection": "Link (optional)",
+        "linkType": "Link type",
+        "linkId": "ID",
+        "linkInfo": "Description",
+        "cancel": "Cancel",
+        "save": "Save",
+        "quickDate": {
+            "today": "Today",
+            "tomorrow": "Tomorrow",
+            "nextWeek": "+1 Week",
+            "nextMonth": "+1 Month"
+        },
+        "linkTypes": {
+            "customer": "Customer",
+            "vendor": "Vendor",
+            "salesQuotation": "Quotation",
+            "salesOrder": "Order",
+            "salesDeliveryOrder": "Delivery Order",
+            "salesInvoice": "Invoice",
+            "purchaseQuotation": "Request",
+            "purchaseOrder": "Purchase Order",
+            "purchaseDeliveryOrder": "Goods Receipt",
+            "purchaseInvoice": "Purchase Invoice"
+        },
+        "validation": {
+            "required": "Required"
+        }
+    },
+    "TasksList": {
+        "done": "Done",
+        "open": "Open",
+        "today": "Today",
+        "tomorrow": "Tomorrow",
+        "markDone": "Mark as done",
+        "markUndone": "Reopen",
+        "edit": "Edit",
+        "delete": "Delete",
+        "headers": {
+            "date": "Date",
+            "subject": "Subject",
+            "link": "Link",
+            "assignedTo": "Assigned",
+            "status": "Status",
+            "actions": "Actions"
+        }
+    },
+    "TasksWidget": {
+        "title": "Tasks",
+        "overdue": "Overdue",
+        "today": "Today",
+        "tomorrow": "Tomorrow",
+        "upcoming": "Upcoming",
+        "noItems": "No open tasks",
+        "showAll": "Show all {count}",
+        "markDone": "Mark as done",
+        "quickAdd": "Quick add",
+        "openAll": "Open all",
+        "daysAgo": "{days} days ago"
+    }
+}

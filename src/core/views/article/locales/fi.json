@@ -1,0 +1,27 @@
+{
+    "ArticleEditView": {
+        "titleEdit": "Muokkaa tuotetta",
+        "saving": "Tallennetaan...",
+        "saved": "Tallennettu",
+        "sections": {
+            "masterData": "Perustiedot"
+        },
+        "fields": {
+            "partnumber": "Tuotenumero",
+            "description": "Kuvaus",
+            "partType": "Tuotetyyppi",
+            "typePart": "Tavara",
+            "typeService": "Palvelu",
+            "unit": "Yksikko",
+            "buchungsgruppe": "Kirjanpitoryhma",
+            "sellprice": "Myyntihinta",
+            "notes": "Pitka kuvaus",
+            "obsolete": "Vanhentunut / Ei kaytossa"
+        },
+        "messages": {
+            "loading": "Tuotetta ladataan",
+            "loadError": "Virhe tuotteen lataamisessa",
+            "notFound": "Tuotetta ei loytynyt"
+        }
+    }
+}

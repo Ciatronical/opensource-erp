@@ -1,0 +1,47 @@
+{
+    "LoginView": {
+        "title": "Kirjautuminen",
+        "username": "Käyttäjänimi",
+        "password": "Salasana",
+        "client": "Yritys",
+        "button": "Kirjaudu sisään",
+        "failed": "Kirjautuminen epäonnistui. Tarkista kirjautumistietosi.",
+        "EMPTY_FIELDS": "Anna käyttäjänimi ja salasana.",
+        "USER_NOT_FOUND": "Käyttäjää ei löytynyt.",
+        "WRONG_PASSWORD": "Virheellinen salasana.",
+        "ERROR": "Virhe kirjautumisessa. Yritä uudelleen.",
+        "ERROR_LOADING_CLIENTS": "Virhe yritysten lataamisessa. Yritä myöhemmin uudelleen.",
+        "USER_NOT_ASSIGNED_TO_CLIENT": "Käyttäjä ei ole liitetty yritykseen.",
+        "PASSWORD_FILE_NOT_FOUND": "Virhe: Salasanatiedostoa api/config/api.passwd.php ei löytynyt. Nimeä tiedosto api/config/api.passwd.php.example uudelleen muotoon api/config/api.passwd.php ja muokkaa asetuksia.",
+        "CONFIG_FILE_NOT_FOUND": "Virhe: Asetustiedostoa ei löytynyt. Tarkista asetukset.",
+        "updateButton": "Suorita päivitys",
+        "updateSuccess": "Tietokantapäivitys suoritettu onnistuneesti.",
+        "updateError": "Virhe tietokantapäivityksessä. Yritä uudelleen.",
+        "privacy": "Tietosuojakäytäntö",
+        "dataDeletion": "Tietojen poisto"
+    },
+    "NotFoundView": {
+        "title": "Sivua ei löytynyt",
+        "message": "Pyydettyä sivua ei löytynyt.",
+        "back_home": "Takaisin etusivulle"
+    },
+    "NavbarView": {
+        "logoutTooltip": "Kirjaudu ulos",
+        "accountTooltip": "Tili",
+        "editCustomerTooltip": "Muokkaa asiakasta",
+        "editCvTooltip": "Muokkaa asiakasta/toimittajaa",
+        "currentC": "Asiakas:",
+        "currentV": "Toimittaja:",
+        "demoBanner": "Demo-tila — Kaikki tiedot nollataan automaattisesti käyttämättömyyden jälkeen.",
+        "demoResetWarning": "Demo nollataan {seconds} sekunnin kuluttua — liikuta hiirtä jatkaaksesi."
+    },
+    "ErrorView": {
+        "title": "Tapahtui virhe",
+        "message": "Pahoittelemme, tapahtui odottamaton virhe.",
+        "debugInfo": "Virheenkorjaustiedot:",
+        "clickToShowDetails": "Näytä tiedot napsauttamalla"
+    },
+    "App": {
+        "loading": "Odota..."
+    }
+}

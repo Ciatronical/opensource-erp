@@ -1,0 +1,113 @@
+# OpensourceERP Docker Compose
+
+services:
+
+  # ============================================
+  # Web-Server (Apache + PHP 8.3 FPM)
+  # ============================================
+  web:
+    build:
+      context: ..
+      dockerfile: docker/web/Dockerfile
+    image: ${STACK_NAME:-oserp}-web:latest
+    pull_policy: never
+    container_name: ${STACK_NAME:-oserp}-web
+    restart: unless-stopped
+    ports:
+      - "${WEB_HTTP_PORT:-8080}:80"
+      - "${WEB_HTTPS_PORT:-8443}:443"
+    environment:
+      - DOMAIN=${DOMAIN}
+      - CERTBOT_EMAIL=${CERTBOT_EMAIL}
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_AUTH_NAME=${DB_AUTH_NAME:-oserp_auth}
+      - DB_COMPANY_NAME=${DB_COMPANY_NAME:-oserp_company}
+      - APP_TIMEZONE=${APP_TIMEZONE:-Europe/Berlin}
+      - APP_DEBUG=${APP_DEBUG:-false}
+      - SESSION_COOKIE_NAME=${SESSION_COOKIE_NAME:-opensource_erp}
+      - SESSION_COOKIE_SAMESITE=${SESSION_COOKIE_SAMESITE:-Strict}
+      - DEMO_MODE=${DEMO_MODE:-false}
+      - DEMO_INACTIVITY_MINUTES=${DEMO_INACTIVITY_MINUTES:-20}
+    volumes:
+      # SSL: read-write, da der Web-Container Zertifikate selbst holt
+      - ssl_certs:/etc/letsencrypt
+      - certbot_www:/var/www/certbot
+      - app_data:/var/www/html/backend/data
+      - app_logs:/var/www/html/backend/log
+      - app_backups:/var/www/html/backend/backups
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - oserp-network
+
+  # ============================================
+  # PostgreSQL 16 Datenbank
+  # ============================================
+  db:
+    image: postgres:16-alpine
+    container_name: ${STACK_NAME:-oserp}-db
+    restart: unless-stopped
+    ports:
+      - "${DB_EXTERNAL_PORT:-5433}:5432"
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - oserp-network
+
+  # ============================================
+  # Certbot (Fallback — SSL wird automatisch vom Web-Container verwaltet)
+  # Nur noetig wenn die automatische SSL-Einrichtung nicht genutzt wird.
+  # ============================================
+  certbot:
+    image: certbot/certbot
+    container_name: ${STACK_NAME:-oserp}-certbot
+    profiles:
+      - ssl
+    volumes:
+      - ssl_certs:/etc/letsencrypt
+      - certbot_www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew --quiet; sleep 12h & wait $${!}; done'"
+    networks:
+      - oserp-network
+
+volumes:
+  pg_data:
+    name: ${STACK_NAME:-oserp}-pg-data
+  ssl_certs:
+    name: ${STACK_NAME:-oserp}-ssl-certs
+  certbot_www:
+    name: ${STACK_NAME:-oserp}-certbot-www
+  app_data:
+    name: ${STACK_NAME:-oserp}-app-data
+  app_logs:
+    name: ${STACK_NAME:-oserp}-app-logs
+  app_backups:
+    name: ${STACK_NAME:-oserp}-app-backups
+
+networks:
+  oserp-network:
+    name: ${STACK_NAME:-oserp}-network
+    driver: bridge

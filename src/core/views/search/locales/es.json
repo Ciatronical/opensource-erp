@@ -1,0 +1,328 @@
+{
+    "SearchView": {
+        "title": "Búsqueda",
+        "all": "Todos",
+        "tabs": {
+            "customer_vendor": "Cliente/Proveedor/Persona",
+            "invoice": "Facturas",
+            "purchase_invoice": "Facturas de acreedores",
+            "quotation": "Presupuestos",
+            "order": "Pedidos",
+            "purchase_order": "Pedidos de compra",
+            "delivery_order": "Albaranes",
+            "vehicle": "Vehículos",
+            "article": "Artículos"
+        },
+        "vehicle_fields": {
+            "license_plate": "Matrícula",
+            "fin": "FIN",
+            "manufacturer": "Fabricante",
+            "model": "Modelo",
+            "owner": "Titular",
+            "hu": "ITV",
+            "created_at": "Creado el",
+            "no_results": "No se encontraron vehículos"
+        },
+        "article_fields": {
+            "partnumber": "Número de artículo",
+            "description": "Descripción",
+            "part_type": "Tipo",
+            "part_type_part": "Mercancía",
+            "part_type_service": "Servicio",
+            "unit": "Unidad",
+            "sellprice": "Precio de venta",
+            "sellprice_from": "Precio de venta desde",
+            "sellprice_to": "Precio de venta hasta",
+            "obsolete": "Obsoleto",
+            "obsolete_yes": "Sí",
+            "obsolete_no": "No",
+            "notes": "Observaciones",
+            "created_at": "Creado el",
+            "no_results": "No se encontraron artículos."
+        },
+        "document_fields": {
+            "document_number": "Número de documento",
+            "customer_name": "Nombre del cliente",
+            "vendor_name": "Nombre del proveedor",
+            "transdate_from": "Fecha desde",
+            "transdate_to": "Fecha hasta",
+            "amount_from": "Importe desde",
+            "amount_to": "Importe hasta",
+            "status": "Estado",
+            "status_open": "Abierto",
+            "status_closed": "Cerrado"
+        },
+        "document_table": {
+            "document_number": "Nr. documento",
+            "cv_name": "Cliente/Proveedor",
+            "cv_number": "Nr. Cl./Prov.",
+            "transdate": "Fecha",
+            "amount": "Importe",
+            "status": "Estado",
+            "status_open": "Abierto",
+            "status_closed": "Cerrado",
+            "created_at": "Creado el",
+            "text_no_results": "No se encontraron documentos."
+        }
+    },
+    "CustomerVendorSearchView": {
+        "title_customer": "Buscar clientes",
+        "title_vendor": "Buscar proveedores",
+        "title_contacts": "Buscar personas",
+        "labels": {
+            "customer": "Cliente",
+            "vendor": "Proveedor"
+        },
+        "sections": {
+            "invoices": "Facturas de deudores",
+            "vendor_invoices": "Facturas de acreedores",
+            "quotations": "Presupuestos",
+            "requests_for_quotation": "Solicitudes de presupuesto",
+            "orders": "Pedidos",
+            "purchase_orders": "Pedidos de compra",
+            "delivery_orders": "Albaranes",
+            "customer_record": "Datos maestros del cliente",
+            "vendor_record": "Datos maestros del proveedor"
+        },
+        "fields": {
+            "iban": "IBAN",
+            "bic": "BIC",
+            "hourly_rate": "Tarifa por hora",
+            "order_lock": "Bloqueo de pedido",
+            "invoice_mail": "Correo de facturación",
+            "delivery_order_mail": "Correo de albarán",
+            "dunning_mail": "Correo de aviso",
+            "postal_invoice": "Factura por correo",
+            "direct_debit": "Domiciliación",
+            "contact_origin": "Origen de datos personales",
+            "username": "Nombre de usuario",
+            "birthday": "Fecha de nacimiento",
+            "birthday_from": "Fecha nacimiento desde",
+            "birthday_to": "Fecha nacimiento hasta",
+            "customer_vendor_name": "Empresa",
+            "gender": "Género",
+            "main_contact": "Contacto principal",
+            "business_type": "Tipo de cliente",
+            "ustid": "NIF-IVA",
+            "taxnumber": "Número fiscal",
+            "discount": "Descuento",
+            "currency": "Moneda",
+            "pricegroup": "Grupo de precios",
+            "language": "Idioma",
+            "delivery_terms": "Condiciones de entrega",
+            "homepage": "Página web",
+            "creditlimit": "Límite de crédito",
+            "taxincluded": "Impuesto incluido en el precio",
+            "notes": "Observaciones internas",
+            "natural_person": "Persona física",
+            "radio_customer": "Cliente(s)",
+            "radio_vendor": "Proveedor(es)",
+            "radio_person": "Persona(s)",
+            "switch_sql_query": "Consulta SQL",
+            "switch_show_additional_search_fields": "Mostrar más criterios",
+            "customer_number": "Número de cliente",
+            "vendor_number": "Número de proveedor",
+            "customer_vendor_number": "Nr. cliente/proveedor",
+            "greeting": "Tratamiento",
+            "name": "Nombre",
+            "mail": "Correo electrónico",
+            "phone_fax": "Teléfono/Fax",
+            "phone": "Teléfono",
+            "gln": "GLN",
+            "street": "Calle",
+            "zipcode": "CP",
+            "city": "Localidad/Ciudad",
+            "country": "País",
+            "salesman": "Vendedor",
+            "contact": "Contacto",
+            "department": "Departamento",
+            "dunning_lock": "Bloqueo de aviso",
+            "validity": "Validez",
+            "zugferd_settings": "Factur-X-/ZUGFeRD-Einstellungen",
+            "payment_terms": "Condiciones de pago",
+            "tax_rate": "Tipo impositivo",
+            "first_name": "Nombre",
+            "last_name": "Apellido",
+            "position_title": "Cargo/Título",
+            "project": "Proyecto",
+            "created_at_from": "Erstellt ab",
+            "created_at_to": "Erstellt bis",
+            "updated_at_from": "Geändert ab",
+            "updated_at_to": "Geändert bis",
+            "created_at": "Creado el",
+            "updated_at": "Geändert am",
+            "status": "Estado",
+            "type": "Tipo",
+            "number": "Número",
+            "sql_query": "Consulta SQL",
+            "invoice_created_at_from": "Rechnung erstellt von",
+            "invoice_created_at_to": "Rechnung erstellt bis",
+            "invoice_updated_at_from": "Rechnung modifiziert von",
+            "invoice_updated_at_to": "Rechnung modifiziert bis",
+            "quotation_created_at_from": "Angebot erstellt von",
+            "quotation_created_at_to": "Angebot erstellt bis",
+            "quotation_updated_at_from": "Angebot modifiziert von",
+            "quotation_updated_at_to": "Angebot modifiziert bis",
+            "rfq_created_at_from": "Anfrage erstellt von",
+            "rfq_created_at_to": "Anfrage erstellt bis",
+            "rfq_updated_at_from": "Anfrage modifiziert von",
+            "rfq_updated_at_to": "Anfrage modifiziert bis",
+            "order_created_at_from": "Auftrag erstellt von",
+            "order_created_at_to": "Auftrag erstellt bis",
+            "order_updated_at_from": "Auftrag modifiziert von",
+            "order_updated_at_to": "Auftrag modifiziert bis",
+            "purchase_order_created_at_from": "Bestellung erstellt von",
+            "purchase_order_created_at_to": "Bestellung erstellt bis",
+            "purchase_order_updated_at_from": "Bestellung modifiziert von",
+            "purchase_order_updated_at_to": "Bestellung modifiziert bis",
+            "delivery_order_created_at_from": "Lieferschein erstellt von",
+            "delivery_order_created_at_to": "Lieferschein erstellt bis",
+            "delivery_order_updated_at_from": "Lieferschein modifiziert von",
+            "delivery_order_updated_at_to": "Lieferschein modifiziert bis"
+        },
+        "selects": {
+            "order_lock_options": {
+                "yes": "Sí",
+                "no": "No"
+            },
+            "postal_invoice_options": {
+                "yes": "Sí",
+                "no": "No"
+            },
+            "direct_debit_options": {
+                "yes": "Sí",
+                "no": "No"
+            },
+            "gender_options": {
+                "m": "Masculino",
+                "f": "Femenino"
+            },
+            "main_contact_options": {
+                "yes": "Sí",
+                "no": "No"
+            },
+            "status_options": {
+                "active": "Activo",
+                "inactive": "Inactivo"
+            },
+            "taxincluded_options": {
+                "yes": "Sí",
+                "no": "No"
+            },
+            "zugferd_options": {
+                "1": "Einstellungen aus Firmenkonfiguration folgen",
+                "2": "Keine Factur-X-/ZUGFeRD-Rechnungen erzeugen",
+                "3": "Mit Profil »Factur-X 1.01.06/ZUGFeRD 2.2 extended«",
+                "4": "Mit Profil »Factur-X 1.01.06/ZUGFeRD 2.2 extended« (Test-Modus)",
+                "5": "Mit Profil »XRechnung 2.0.0«",
+                "6": "Mit Profil »XRechnung 2.0.0« (Test-Modus)"
+            },
+            "dunning_lock_options": {
+                "yes": "Sí",
+                "no": "No"
+            },
+            "natural_person_options": {
+                "yes": "Sí",
+                "no": "No"
+            }
+        },
+        "buttons": {
+            "search": "Buscar",
+            "reset": "Restablecer",
+            "edit": "Editar",
+            "bulk_actions": "Acciones masivas",
+            "brevo_marketing_mail": "Brevo Marketing Mail",
+            "help": "Ayuda",
+            "save_query": "Guardar",
+            "saved_queries": "Consultas guardadas"
+        },
+        "table": {
+            "title": "Resultados de búsqueda",
+            "text_no_search_table_shown": "Bitte Suchkriterien oder SQL-Abfrage eingeben und mit ENTER oder \"Suchen\" starten. Suchergebnisse werden hier angezeigt.",
+            "text_no_results_customer": "Keine Kunden gefunden.",
+            "text_no_results_vendor": "Keine Lieferanten gefunden.",
+            "text_no_results_person": "Keine Personen gefunden.",
+            "text_no_results_default": "Keine Daten gefunden."
+        },
+        "alerts": {
+            "warning_no_search_criteria": "Es wurden keine Suchkriterien oder eine SQL-Abfrage eingegeben. Möchten Sie wirklich alle Einträge laden?"
+        },
+        "toasts": {
+            "error_loading_search_results": "Fehler beim Laden der Suchergebnisse.",
+            "error_sending_brevo_marketing_mails": "Fehler beim Versenden der Brevo Marketing Mail(s).",
+            "brevo_marketing_mails_were_prefix": "Brevo Marketing Mails wurden",
+            "brevo_marketing_mail_was_prefix": "Brevo Marketing Mail wurde"
+        },
+        "dialogs": {
+            "brevo_marketing_mail": {
+                "title": "Brevo Marketing Mail senden",
+                "labels": {
+                    "customer": "Kunden",
+                    "vendor": "Lieferanten",
+                    "person": "Personen"
+                },
+                "fields": {
+                    "select_template": "Brevo-Mail-Template"
+                },
+                "texts": {
+                    "select_template_and_click_send": "Bitte wählen Sie das gewünschte Brevo-Mail-Template aus und klicken Sie anschließend auf \"Senden\".",
+                    "hint_prefix": "Hinweis: Nach klicken auf \"Senden\" wird für jeden der",
+                    "hint_suffix": "eine separate Marketing Mail mit dem gewählten Template via Brevo versendet.",
+                    "hint_cannot_cancel": "Dieser Prozess kann nicht abgebrochen werden, sobald er gestartet wurde."
+                },
+                "buttons": {
+                    "cancel": "Abbrechen",
+                    "mails_to": "Mails an",
+                    "mail_to": "Mail an",
+                    "send": "senden"
+                }
+            },
+            "sql_help": {
+                "title": "SQL-Hilfe - Verfügbare Spalten",
+                "loading": "Lade Spalten...",
+                "example_query": "Beispielabfrage",
+                "copy_example": "Beispiel kopieren",
+                "example_customer_description": "Ich suche Firmen mit 'GmbH' im Namen, die in Berlin ansässig sind und ein Kreditlimit über 10.000€ haben.",
+                "example_vendor_description": "Ich suche Lieferanten mit 'Tech' im Namen aus Deutschland, die nicht als obsolet markiert sind.",
+                "example_contacts_description": "Ich suche eine Frau im Alter zwischen 20 und 40 Jahren aus Berlin.",
+                "available_columns": "Folgende Spalten stehen zur Verfügung:",
+                "click_to_copy": "Klicken Sie auf einen Spaltennamen, um ihn zu kopieren.",
+                "no_columns": "Keine Spalten gefunden.",
+                "error_loading": "Fehler beim Laden der Spalten.",
+                "copied": "{column} wurde in die Zwischenablage kopiert.",
+                "example_copied": "Beispielabfrage wurde in die Zwischenablage kopiert.",
+                "close": "Cerrar",
+                "table_customer": "Tabelle: customer",
+                "table_vendor": "Tabelle: vendor",
+                "table_contacts": "Tabelle: contacts"
+            },
+            "save_query": {
+                "title": "Abfrage speichern",
+                "name_label": "Name der Abfrage",
+                "name_placeholder": "z.B. Berliner Kunden mit hohem Kreditlimit",
+                "query": "Abfrage",
+                "cancel": "Abbrechen",
+                "save": "Guardar",
+                "saved": "Abfrage erfolgreich gespeichert.",
+                "error_saving": "Fehler beim Speichern der Abfrage."
+            },
+            "saved_queries": {
+                "title": "Consultas guardadas",
+                "loading": "Lade Abfragen...",
+                "no_queries": "Keine gespeicherten Abfragen vorhanden.",
+                "error_loading": "Fehler beim Laden der Abfragen.",
+                "delete_confirm_title": "Abfrage löschen?",
+                "delete_confirm_text": "Möchten Sie diese Abfrage wirklich löschen?",
+                "deleted": "Abfrage erfolgreich gelöscht.",
+                "error_deleting": "Fehler beim Löschen der Abfrage.",
+                "close": "Cerrar"
+            }
+        },
+        "errors": {
+            "sql_error_title": "SQL-Fehler in Ihrer Abfrage",
+            "sql_state": "SQL-Status",
+            "error_message": "Fehlermeldung",
+            "your_query": "Ihre Abfrage"
+        }
+    }
+}

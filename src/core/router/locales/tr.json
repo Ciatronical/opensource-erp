@@ -1,0 +1,75 @@
+{
+    "routes": {
+        "mainmenu": "/hauptmen%C3%BC",
+        "customer": "/kunde",
+        "editCustomer": "/kunde/bearbeiten",
+        "editVendor": "/lieferant/bearbeiten",
+        "viewInvoice": "/rechnung/anzeigen",
+        "editQuotation": "/angebot/bearbeiten",
+        "editOrder": "/auftrag/bearbeiten",
+        "newCustomer": "/kunde/neu",
+        "newVendor": "/lieferant/neu",
+        "newQuotation": "/angebot/neu",
+        "newOrder": "/auftrag/neu",
+        "newInvoice": "/rechnung/neu",
+        "manageCustomers": "/kunde",
+        "manageVendors": "/lieferant",
+        "manageArticles": "/artikel",
+        "manageQuotations": "/angebot",
+        "manageOrders": "/auftrag",
+        "manageInvoices": "/rechnung",
+        "manageCreditNotes": "/gutschrift",
+        "manageDeliveryOrders": "/lieferschein",
+        "orderSearch": "/auftrag/suche",
+        "search": "/suche",
+        "searchCustomers": "/kunde/suche",
+        "followUp": "/wiedervorlage",
+        "clientConfig": "/system/mandantenkonfiguration",
+        "developerTools": "/system/developer-tools",
+        "systemUpdate": "/system/aktualisierung",
+        "currentCustomerEdit": "/kunde/bearbeiten",
+        "callHistory": "/anrufliste",
+        "calendar": "/kalender",
+        "wiki": "/wiki",
+        "wikiNew": "/wiki/neu",
+        "wikiCategories": "/wiki/kategorien",
+        "wikiEdit": "/wiki/bearbeiten",
+        "userConfig": "/benutzer/konfiguration",
+        "huSerienbrief": "/serienbrief/hu",
+        "wallDisplay": "/wandanzeige"
+    },
+    "errors": {
+        "PASSWORD_FILE_NOT_FOUND": "Hata: api/config/api.passwd.php parola dosyasi bulunamadi. Lutfen api/config/api.passwd.php.example dosyasini api/config/api.passwd.php olarak yeniden adlandirin ve ayarlari uygun sekilde yapin.",
+        "CONFIG_FILE_NOT_FOUND": "Hata: Yapilandirma dosyasi bulunamadi. Lutfen ayarlari kontrol edin."
+    },
+    "MasterDataMenu": {
+        "title": "Ana veriler",
+        "editCustomer": "Müşteri verilerini düzenle",
+        "newCustomer": "Yeni müşteri oluştur",
+        "manageCustomers": "Müşterileri yönet",
+        "search": "Ara",
+        "searchCustomers": "Müşteri ara",
+        "newVendor": "Yeni tedarikçi oluştur",
+        "calendar": "Takvim"
+    },
+    "ContactMenu": {
+        "title": "İletişim",
+        "callHistory": "Arama geçmişi",
+        "emails": "E-postalar",
+        "whatsapp": "WhatsApp"
+    },
+    "SalesMenu": {
+        "title": "Satış",
+        "newQuotation": "Yeni teklif oluştur",
+        "newOrder": "Yeni sipariş oluştur",
+        "newInvoice": "Yeni fatura oluştur",
+        "manageCreditNotes": "Alacak dekontları"
+    },
+    "SystemMenu": {
+        "title": "Sistem",
+        "clientConfig": "Firma yapılandırması",
+        "developerTools": "Developer Tools",
+        "systemUpdate": "Sistem güncellemesi",
+        "about": "Hakkında"
+    }
+}

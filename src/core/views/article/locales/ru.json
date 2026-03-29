@@ -1,0 +1,27 @@
+{
+    "ArticleEditView": {
+        "titleEdit": "Редактировать товар",
+        "saving": "Сохранение...",
+        "saved": "Сохранено",
+        "sections": {
+            "masterData": "Основные данные"
+        },
+        "fields": {
+            "partnumber": "Артикул",
+            "description": "Описание",
+            "partType": "Тип товара",
+            "typePart": "Товар",
+            "typeService": "Услуга",
+            "unit": "Единица",
+            "buchungsgruppe": "Группа проводок",
+            "sellprice": "Цена продажи",
+            "notes": "Расширенное описание",
+            "obsolete": "Устаревший / Больше не используется"
+        },
+        "messages": {
+            "loading": "Товар загружается",
+            "loadError": "Ошибка загрузки товара",
+            "notFound": "Товар не найден"
+        }
+    }
+}

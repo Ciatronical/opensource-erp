@@ -1,0 +1,40 @@
+{
+    "EmailView": {
+        "title": "Correos electrónicos",
+        "inbox": "Bandeja de entrada",
+        "sent": "Enviados",
+        "drafts": "Borradores",
+        "trash": "Papelera",
+        "folders": "Carpetas",
+        "compose": "Nuevo correo",
+        "refresh": "Actualizar",
+        "search": "Buscar correos...",
+        "noEmails": "No hay correos electrónicos",
+        "noConfig": "El cliente de correo no está configurado. Por favor, configure los ajustes de correo en la configuración de empresa en CRM.",
+        "loading": "Cargando correos...",
+        "from": "De",
+        "to": "Para",
+        "cc": "CC",
+        "date": "Fecha",
+        "subject": "Asunto",
+        "body": "Mensaje",
+        "noSubject": "(Sin asunto)",
+        "attachments": "Adjuntos",
+        "send": "Enviar",
+        "cancel": "Cancelar",
+        "reply": "Responder",
+        "forward": "Reenviar",
+        "delete": "Eliminar",
+        "markRead": "Marcar como leído",
+        "markUnread": "Marcar como no leído",
+        "of": "de",
+        "emails": "Correos",
+        "page": "Página",
+        "customer": "Cliente / Proveedor",
+        "searchCustomer": "Buscar cliente o proveedor...",
+        "openCustomer": "abrir"
+    },
+    "EmailMenu": {
+        "title": "Correos electrónicos"
+    }
+}

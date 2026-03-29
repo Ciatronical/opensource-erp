@@ -1,0 +1,21 @@
+{
+    "title": "Lietotāja konfigurācija",
+    "loading": "Ielādē konfigurāciju...",
+    "configLoadError": "Konfigurācijas kļūda",
+    "user_fields": {
+        "appearance": "Izskats",
+        "darkMode": "Tumšais dizains (Dark Mode)",
+        "darkMode_help": "Aktivizē tumšo krāsu shēmu visai lietotnei.",
+        "locale": "Attēlošanas valoda",
+        "locale_help": "Lietotāja saskarnes valoda. Tiek piemērota uzreiz.",
+        "general": "Vispārīgi",
+        "startupView": "Sākuma skats",
+        "startupView_help": "Kurš skats tiek rādīts pēc pieslēgšanās. Pārraksta uzņēmuma iestatījumu.",
+        "faktura": "Rēķini",
+        "fakturaCompactView": "Kompaktais skats pēc noklusējuma",
+        "fakturaCompactView_help": "Slēpj detaļu kartes (klients, dokumenta detaļas, papildinformācija) un rāda tikai kompaktu kopsavilkumu.",
+        "printer": "Printeris",
+        "defaultPrinter": "Noklusējuma printeris",
+        "defaultPrinter_help": "Printeris, kas tiek izmantots pēc noklusējuma drukāšanai"
+    }
+}

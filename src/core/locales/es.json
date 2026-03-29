@@ -1,0 +1,47 @@
+{
+    "LoginView": {
+        "title": "Iniciar sesión",
+        "username": "Nombre de usuario",
+        "password": "Contraseña",
+        "client": "Empresa",
+        "button": "Iniciar sesión",
+        "failed": "Inicio de sesión fallido. Por favor, verifique sus credenciales.",
+        "EMPTY_FIELDS": "Por favor, introduzca nombre y contraseña.",
+        "USER_NOT_FOUND": "Usuario no encontrado.",
+        "WRONG_PASSWORD": "Contraseña incorrecta.",
+        "ERROR": "Error al iniciar sesión. Por favor, inténtelo de nuevo.",
+        "ERROR_LOADING_CLIENTS": "Error al cargar las empresas. Por favor, inténtelo más tarde.",
+        "USER_NOT_ASSIGNED_TO_CLIENT": "Usuario no asignado a la empresa.",
+        "PASSWORD_FILE_NOT_FOUND": "Error: No se encontró el archivo de contraseña api/config/api.passwd.php. Por favor, renombre el archivo api/config/api.passwd.php.example a api/config/api.passwd.php y ajuste la configuración.",
+        "CONFIG_FILE_NOT_FOUND": "Error: No se encontró el archivo de configuración. Por favor, verifique la configuración.",
+        "updateButton": "Ejecutar actualización",
+        "updateSuccess": "Actualización de base de datos realizada con éxito.",
+        "updateError": "Error en la actualización de base de datos. Por favor, inténtelo de nuevo.",
+        "privacy": "Política de privacidad",
+        "dataDeletion": "Eliminación de datos"
+    },
+    "NotFoundView": {
+        "title": "Página no encontrada",
+        "message": "La página solicitada no fue encontrada.",
+        "back_home": "Volver a la página principal"
+    },
+    "NavbarView": {
+        "logoutTooltip": "Cerrar sesión",
+        "accountTooltip": "Cuenta",
+        "editCustomerTooltip": "Editar cliente",
+        "editCvTooltip": "Editar cliente/proveedor",
+        "currentC": "Cliente:",
+        "currentV": "Proveedor:",
+        "demoBanner": "Modo demo — Todos los datos se restablecerán automáticamente tras inactividad.",
+        "demoResetWarning": "La demo se restablecerá en {seconds} segundos — mueva el ratón para continuar."
+    },
+    "ErrorView": {
+        "title": "Se ha producido un error",
+        "message": "Lo sentimos, pero se ha producido un error inesperado.",
+        "debugInfo": "Información de depuración:",
+        "clickToShowDetails": "Haga clic para mostrar los detalles"
+    },
+    "App": {
+        "loading": "Por favor, espere..."
+    }
+}

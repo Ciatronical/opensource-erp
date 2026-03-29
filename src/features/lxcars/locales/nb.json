@@ -1,0 +1,19 @@
+{
+    "CarView": {
+        "routes": {
+            "newCar": "/fahrzeug/neu",
+            "newCarFromScan": "/fahrzeug/neu-vom-scan",
+            "manageCars": "/fahrzeug",
+            "orderSearch": "/fahrzeug-auftrag/suche",
+            "carRegistration": "/fahrzeug/zulassung"
+        },
+        "newCar": "Opprett ny",
+        "newCarFromScan": "Scanliste",
+        "title": "Kjoeretoeyer",
+        "manageCars": "Administrer",
+        "orderSearch": "Ordreliste",
+        "huSerienbrief": "EU-kontroll-varsler",
+        "orderSearchTooltip": "Ordresoek",
+        "scanTooltip": "Kjoeretoeyer fra scan"
+    }
+}

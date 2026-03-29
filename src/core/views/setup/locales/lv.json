@@ -1,0 +1,50 @@
+{
+    "setup": {
+        "title": "OpensourceERP Setup",
+        "welcome": "Laipni lūdzam OpensourceERP! Lūdzu konfigurējiet savienojumu ar autentifikācijas datu bāzi.",
+        "setupAlreadyDone": "Iestatīšana jau ir veikta. Jūs tiksiet novirzīts uz pieslēgšanās lapu...",
+        "configFound": "kivitendo.conf atrasts - Parole bija nešifrēta. Forma tika aizpildīta automātiski.",
+        "setupCompleteMessage": "Iestatīšana veiksmīgi pabeigta! Parole tika saglabāta šifrēti. Jūs tiksiet novirzīts...",
+        "fields": {
+            "host": "Host",
+            "port": "Ports",
+            "database": "Datu bāzes nosaukums",
+            "login": "Lietotājvārds",
+            "password": "Parole"
+        },
+        "placeholders": {
+            "host": "localhost",
+            "port": "5432",
+            "database": "oserp_auth",
+            "login": "postgres"
+        },
+        "validation": {
+            "required": "Obligāts lauks",
+            "portRange": "Portam jābūt starp 1 un 65535"
+        },
+        "buttons": {
+            "testConnection": "Testēt savienojumu",
+            "testingConnection": "Tiek testēts savienojums...",
+            "saveSetup": "Pabeigt iestatīšanu",
+            "savingSetup": "Tiek saglabāts...",
+            "finish": "Palaist lietotni"
+        },
+        "errors": {
+            "checkStatus": "Kļūda pārbaudot iestatīšanas statusu",
+            "testConnection": "Kļūda testējot savienojumu",
+            "testNetworkError": "Tīkla kļūda testējot savienojumu",
+            "saveSetup": "Kļūda saglabājot konfigurāciju",
+            "saveNetworkError": "Tīkla kļūda saglabājot konfigurāciju"
+        },
+        "update": {
+            "title": "Datu bāzes atjaunināšana",
+            "running": "Datu bāze tiek atjaunināta...",
+            "success": "Datu bāzes atjaunināšana veiksmīgi pabeigta.",
+            "failed": "Datu bāzes atjaunināšana neizdevās.",
+            "networkError": "Tīkla kļūda datu bāzes atjaunināšanā."
+        },
+        "footer": {
+            "copyright": "OpensourceERP"
+        }
+    }
+}

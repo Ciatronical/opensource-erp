@@ -1,0 +1,87 @@
+{
+    "CalendarView": {
+        "title": "Kalenteri",
+        "actions": {
+            "create": "Uusi tapahtuma",
+            "categories": "Kategoriat",
+            "cancel": "Peruuta",
+            "save": "Tallenna",
+            "delete": "Poista",
+            "edit": "Muokkaa",
+            "close": "Sulje"
+        },
+        "confirmDelete": {
+            "title": "Poista tapahtuma?",
+            "message": "Haluatko todella poistaa taman tapahtuman?"
+        },
+        "messages": {
+            "loadError": "Virhe tapahtumien lataamisessa",
+            "saved": "Tapahtuma tallennettu",
+            "saveError": "Virhe tallentamisessa",
+            "deleted": "Tapahtuma poistettu",
+            "error": "Tapahtui virhe",
+            "categoryDeleted": "Kategoria poistettu",
+            "categorySaved": "Kategoria tallennettu"
+        },
+        "search": "Haku",
+        "searchResults": "Hakutulokset",
+        "noResults": "Ei tuloksia"
+    },
+    "CalendarMain": {
+        "today": "Tanaan",
+        "month": "Kuukausi",
+        "week": "Viikko",
+        "day": "Paiva",
+        "list": "Lista",
+        "allDay": "Koko paiva",
+        "filterCategories": "Suodata kategorioita"
+    },
+    "CalendarEventDialog": {
+        "titleCreate": "Uusi tapahtuma",
+        "titleEdit": "Muokkaa tapahtumaa",
+        "title": "Otsikko",
+        "allDay": "Koko paiva",
+        "start": "Alkaa",
+        "end": "Paattyy",
+        "category": "Kategoria",
+        "noCategory": "Ei kategoriaa",
+        "priority": "Prioriteetti",
+        "priorityLow": "Matala",
+        "priorityNormal": "Normaali",
+        "priorityHigh": "Korkea",
+        "location": "Sijainti",
+        "description": "Kuvaus",
+        "color": "Vari",
+        "visibility": "Nakyvyys",
+        "visibilityAll": "Kaikki",
+        "visibilityPrivate": "Yksityinen",
+        "customerVendor": "Asiakas/Toimittaja",
+        "validation": {
+            "titleRequired": "Otsikko on pakollinen",
+            "startRequired": "Alkamispaiva on pakollinen"
+        }
+    },
+    "CalendarEventDetail": {
+        "edit": "Muokkaa",
+        "delete": "Poista",
+        "close": "Sulje",
+        "location": "Sijainti",
+        "category": "Kategoria",
+        "priority": "Prioriteetti",
+        "owner": "Luonut",
+        "linkedTo": "Liitetty",
+        "priorityLow": "Matala",
+        "priorityNormal": "Normaali",
+        "priorityHigh": "Korkea"
+    },
+    "CalendarCategoryManager": {
+        "title": "Hallinnoi kategorioita",
+        "addCategory": "Uusi kategoria",
+        "label": "Nimi",
+        "color": "Vari",
+        "save": "Tallenna",
+        "delete": "Poista",
+        "confirmDelete": "Poista kategoria? Tapahtumat sailyttavat tietonsa mutta menettavat kategoriayhteyden.",
+        "noCategories": "Ei kategorioita"
+    }
+}

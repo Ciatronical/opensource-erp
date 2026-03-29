@@ -1,0 +1,19 @@
+{
+    "CarView": {
+        "routes": {
+            "newCar": "/fahrzeug/neu",
+            "newCarFromScan": "/fahrzeug/neu-vom-scan",
+            "manageCars": "/fahrzeug",
+            "orderSearch": "/fahrzeug-auftrag/suche",
+            "carRegistration": "/fahrzeug/zulassung"
+        },
+        "newCar": "Створити новий",
+        "newCarFromScan": "Список сканів",
+        "title": "Транспортні засоби",
+        "manageCars": "Управління",
+        "orderSearch": "Список замовлень",
+        "huSerienbrief": "Повідомлення про ТО",
+        "orderSearchTooltip": "Пошук замовлень",
+        "scanTooltip": "Транспорт зі сканів"
+    }
+}

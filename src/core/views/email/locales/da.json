@@ -1,0 +1,40 @@
+{
+    "EmailView": {
+        "title": "E-mails",
+        "inbox": "Indbakke",
+        "sent": "Sendt",
+        "drafts": "Kladder",
+        "trash": "Papirkurv",
+        "folders": "Mapper",
+        "compose": "Ny e-mail",
+        "refresh": "Opdater",
+        "search": "Soeg i e-mails...",
+        "noEmails": "Ingen e-mails tilgaengelige",
+        "noConfig": "E-mail-klient er ikke konfigureret. Konfigurer venligst e-mail-indstillingerne i firmakonfigurationen under CRM.",
+        "loading": "E-mails indlaeses...",
+        "from": "Fra",
+        "to": "Til",
+        "cc": "CC",
+        "date": "Dato",
+        "subject": "Emne",
+        "body": "Besked",
+        "noSubject": "(Intet emne)",
+        "attachments": "Vedhaeftede filer",
+        "send": "Send",
+        "cancel": "Annuller",
+        "reply": "Svar",
+        "forward": "Videresend",
+        "delete": "Slet",
+        "markRead": "Marker som laest",
+        "markUnread": "Marker som ulaest",
+        "of": "af",
+        "emails": "e-mails",
+        "page": "Side",
+        "customer": "Kunde / Leverandoer",
+        "searchCustomer": "Soeg kunde eller leverandoer...",
+        "openCustomer": "aabn"
+    },
+    "EmailMenu": {
+        "title": "E-mails"
+    }
+}

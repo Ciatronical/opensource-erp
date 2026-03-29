@@ -1,0 +1,135 @@
+{
+    "TasksView": {
+        "title": "Tehtavat",
+        "search": "Hae...",
+        "fromDate": "Alkaen",
+        "toDate": "Paattyen",
+        "showDone": "Nayta valmiit",
+        "tabs": {
+            "board": "Taulu",
+            "list": "Lista",
+            "calendar": "Kalenteri"
+        },
+        "actions": {
+            "create": "Uusi tehtava",
+            "cancel": "Peruuta",
+            "delete": "Poista",
+            "save": "Tallenna",
+            "edit": "Muokkaa",
+            "markDone": "Valmis",
+            "markUndone": "Avaa uudelleen",
+            "close": "Sulje"
+        },
+        "columns": {
+            "overdue": "Myohassa",
+            "today": "Tanaan",
+            "upcoming": "Tuleva",
+            "done": "Valmis"
+        },
+        "fields": {
+            "subject": "Aihe",
+            "body": "Muistiinpano",
+            "date": "Paivamaara"
+        },
+        "calendar": {
+            "today": "Tanaan",
+            "month": "Kuukausi",
+            "week": "Viikko",
+            "day": "Paiva",
+            "more": "lisaa"
+        },
+        "dialog": {
+            "titleNew": "Uusi tehtava",
+            "titleEdit": "Muokkaa tehtavaa"
+        },
+        "confirmDelete": {
+            "title": "Poista tehtava?",
+            "message": "Haluatko todella poistaa taman tehtavan? Toimintoa ei voi perua."
+        },
+        "messages": {
+            "loadError": "Virhe tehtavien lataamisessa",
+            "saved": "Tehtava tallennettu",
+            "saveError": "Virhe tallentamisessa",
+            "deleted": "Tehtava poistettu",
+            "markedDone": "Merkitty valmiiksi",
+            "markedUndone": "Avattu uudelleen",
+            "error": "Tapahtui virhe"
+        }
+    },
+    "TasksCard": {
+        "noSubject": "Ei aihetta",
+        "today": "Tanaan",
+        "tomorrow": "Huomenna",
+        "daysAgo": "{days} paivaa sitten",
+        "inDays": "{days} paivan paasta",
+        "markDone": "Merkitse valmiiksi",
+        "markUndone": "Avaa uudelleen",
+        "delete": "Poista"
+    },
+    "TasksDialog": {
+        "titleCreate": "Uusi tehtava",
+        "titleEdit": "Muokkaa tehtavaa",
+        "date": "Paivamaara",
+        "subject": "Aihe",
+        "body": "Muistiinpano",
+        "assignedEmployees": "Osoitettu",
+        "linkSection": "Linkki (valinnainen)",
+        "linkType": "Linkkityyppi",
+        "linkId": "ID",
+        "linkInfo": "Nimi",
+        "cancel": "Peruuta",
+        "save": "Tallenna",
+        "quickDate": {
+            "today": "Tanaan",
+            "tomorrow": "Huomenna",
+            "nextWeek": "+1 viikko",
+            "nextMonth": "+1 kuukausi"
+        },
+        "linkTypes": {
+            "customer": "Asiakas",
+            "vendor": "Toimittaja",
+            "salesQuotation": "Tarjous",
+            "salesOrder": "Tilaus",
+            "salesDeliveryOrder": "Lahetysluettelo",
+            "salesInvoice": "Lasku",
+            "purchaseQuotation": "Tarjouspyynto",
+            "purchaseOrder": "Ostotilaus",
+            "purchaseDeliveryOrder": "Vastaanotto",
+            "purchaseInvoice": "Ostolasku"
+        },
+        "validation": {
+            "required": "Pakollinen kentta"
+        }
+    },
+    "TasksList": {
+        "done": "Valmis",
+        "open": "Avoin",
+        "today": "Tanaan",
+        "tomorrow": "Huomenna",
+        "markDone": "Merkitse valmiiksi",
+        "markUndone": "Avaa uudelleen",
+        "edit": "Muokkaa",
+        "delete": "Poista",
+        "headers": {
+            "date": "Paivamaara",
+            "subject": "Aihe",
+            "link": "Linkki",
+            "assignedTo": "Osoitettu",
+            "status": "Tila",
+            "actions": "Toiminnot"
+        }
+    },
+    "TasksWidget": {
+        "title": "Tehtavat",
+        "overdue": "Myohassa",
+        "today": "Tanaan",
+        "tomorrow": "Huomenna",
+        "upcoming": "Tuleva",
+        "noItems": "Ei avoimia tehtavia",
+        "showAll": "Nayta kaikki {count}",
+        "markDone": "Merkitse valmiiksi",
+        "quickAdd": "Lisaa nopeasti",
+        "openAll": "Avaa kaikki",
+        "daysAgo": "{days} paivaa sitten"
+    }
+}

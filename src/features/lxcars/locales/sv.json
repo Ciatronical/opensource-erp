@@ -1,0 +1,19 @@
+{
+    "CarView": {
+        "routes": {
+            "newCar": "/fahrzeug/neu",
+            "newCarFromScan": "/fahrzeug/neu-vom-scan",
+            "manageCars": "/fahrzeug",
+            "orderSearch": "/fahrzeug-auftrag/suche",
+            "carRegistration": "/fahrzeug/zulassung"
+        },
+        "newCar": "Skapa ny",
+        "newCarFromScan": "Skanlista",
+        "title": "Fordon",
+        "manageCars": "Hantera",
+        "orderSearch": "Orderlista",
+        "huSerienbrief": "Besiktningsaviseringar",
+        "orderSearchTooltip": "Ordersok",
+        "scanTooltip": "Fordon fran skanning"
+    }
+}

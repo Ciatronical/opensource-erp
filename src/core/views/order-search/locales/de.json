@@ -1,0 +1,41 @@
+{
+    "OrderSearchView": {
+        "title": "Auftragssuche",
+        "fields": {
+            "ordnumber": "Auftragsnummer",
+            "customer_name": "Kundenname",
+            "transaction_description": "Beschreibung",
+            "first_instruction": "Beschreibung",
+            "location": "Lokation",
+            "status": "Status",
+            "transdate_from": "Datum von",
+            "transdate_to": "Datum bis",
+            "bringetermin_from": "Bringetermin von",
+            "bringetermin_to": "Bringetermin bis",
+            "amount_from": "Betrag von",
+            "amount_to": "Betrag bis",
+            "employee": "Bearbeiter",
+            "transdate": "Datum",
+            "bringetermin": "Bringetermin",
+            "amount": "Betrag",
+            "cusordnumber": "Kundenauftragsnummer",
+            "hersteller": "Hersteller"
+        },
+        "buttons": {
+            "search": "Suchen",
+            "reset": "Zurücksetzen"
+        },
+        "table": {
+            "title": "Suchergebnisse",
+            "text_no_search_table_shown": "Bitte Suchkriterien eingeben und mit ENTER oder \"Suchen\" starten. Suchergebnisse werden hier angezeigt.",
+            "text_no_results": "Keine Aufträge gefunden.",
+            "results_count": "Ergebnisse"
+        },
+        "alerts": {
+            "warning_no_search_criteria": "Es wurden keine Suchkriterien eingegeben. Möchten Sie wirklich alle Aufträge laden?"
+        },
+        "toasts": {
+            "error_loading_search_results": "Fehler beim Laden der Suchergebnisse."
+        }
+    }
+}

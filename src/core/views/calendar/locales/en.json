@@ -1,0 +1,87 @@
+{
+    "CalendarView": {
+        "title": "Calendar",
+        "actions": {
+            "create": "New Event",
+            "categories": "Categories",
+            "cancel": "Cancel",
+            "save": "Save",
+            "delete": "Delete",
+            "edit": "Edit",
+            "close": "Close"
+        },
+        "confirmDelete": {
+            "title": "Delete Event?",
+            "message": "Are you sure you want to delete this event?"
+        },
+        "messages": {
+            "loadError": "Error loading events",
+            "saved": "Event saved",
+            "saveError": "Error saving",
+            "deleted": "Event deleted",
+            "error": "An error occurred",
+            "categoryDeleted": "Category deleted",
+            "categorySaved": "Category saved"
+        },
+        "search": "Search",
+        "searchResults": "Search Results",
+        "noResults": "No results found"
+    },
+    "CalendarMain": {
+        "today": "Today",
+        "month": "Month",
+        "week": "Week",
+        "day": "Day",
+        "list": "List",
+        "allDay": "All Day",
+        "filterCategories": "Filter categories"
+    },
+    "CalendarEventDialog": {
+        "titleCreate": "New Event",
+        "titleEdit": "Edit Event",
+        "title": "Title",
+        "allDay": "All Day",
+        "start": "Start",
+        "end": "End",
+        "category": "Category",
+        "noCategory": "No category",
+        "priority": "Priority",
+        "priorityLow": "Low",
+        "priorityNormal": "Normal",
+        "priorityHigh": "High",
+        "location": "Location",
+        "description": "Description",
+        "color": "Color",
+        "visibility": "Visibility",
+        "visibilityAll": "Everyone",
+        "visibilityPrivate": "Private",
+        "customerVendor": "Customer/Vendor",
+        "validation": {
+            "titleRequired": "Title is required",
+            "startRequired": "Start date is required"
+        }
+    },
+    "CalendarEventDetail": {
+        "edit": "Edit",
+        "delete": "Delete",
+        "close": "Close",
+        "location": "Location",
+        "category": "Category",
+        "priority": "Priority",
+        "owner": "Created by",
+        "linkedTo": "Linked to",
+        "priorityLow": "Low",
+        "priorityNormal": "Normal",
+        "priorityHigh": "High"
+    },
+    "CalendarCategoryManager": {
+        "title": "Manage Categories",
+        "addCategory": "New Category",
+        "label": "Label",
+        "color": "Color",
+        "save": "Save",
+        "delete": "Delete",
+        "confirmDelete": "Really delete this category? Events will keep their data but lose the category assignment.",
+        "noCategories": "No categories found"
+    }
+}

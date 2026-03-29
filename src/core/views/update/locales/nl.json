@@ -1,0 +1,50 @@
+{
+    "update": {
+        "title": "Systeemupdate",
+        "description": "Hier worden alle bedrijfsdatabases en de authenticatiedatabase opgeslagen en bijgewerkt.",
+        "messages": "Meldingen",
+        "sqlStatements": "SQL-statements",
+        "errors": "Fouten",
+        "dryRunSuccess": "Voorbeeld succesvol geladen.",
+        "updateSuccess": "Alle databases succesvol bijgewerkt.",
+        "gitPull": "Git Pull",
+        "gitPullSuccess": "Git Pull succesvol",
+        "gitPullFailed": "Git Pull mislukt",
+        "authDatabase": "Authenticatiedatabase",
+        "authBackup": "Auth-backup",
+        "clientDatabase": "Bedrijf: {name}",
+        "clientDbName": "Database: {dbname}",
+        "backupSuccess": "Backup aangemaakt: {filename}",
+        "backupFailed": "Backup mislukt",
+        "backupSkipped": "Backup wordt niet aangemaakt bij voorbeeld",
+        "features": "Features: {features}",
+        "noClients": "Geen bedrijven gevonden.",
+        "overallSuccess": "Alle databases succesvol bijgewerkt",
+        "overallFailed": "Fout bij de update",
+        "buttons": {
+            "dryRun": "Voorbeeld",
+            "checking": "Controleren...",
+            "update": "Update uitvoeren",
+            "updating": "Bijwerken...",
+            "finish": "Gereed"
+        },
+        "errorMessages": {
+            "dryRunFailed": "Voorbeeld mislukt.",
+            "updateFailed": "Update mislukt.",
+            "networkError": "Netwerkfout bij de update."
+        },
+        "schemaMessages": {
+            "dry_run_mode": "Voorbeeldmodus - Er worden geen wijzigingen aangebracht",
+            "columns_added": "Tabel {table}: {count} kolom(men) zouden worden toegevoegd | Tabel {table}: {count} kolom(men) toegevoegd",
+            "column_added": "Kolom '{column}' zou worden toegevoegd | Kolom '{column}' toegevoegd",
+            "table_up_to_date": "Tabel {table}: Alle kolommen aanwezig",
+            "table_created": "Tabel {table} zou worden aangemaakt | Tabel {table} aangemaakt",
+            "version_updated": "Versie {version} opgeslagen in {schema}-database",
+            "object_exists": "{object_type} {name} bestaat al",
+            "statement_executed": "{statement_type} {target} uitgevoerd",
+            "csv_skipped": "CSV overgeslagen: {table} ({reason})",
+            "csv_imported": "CSV geimporteerd: {table} ({rows_imported} rijen)",
+            "info": "{text}"
+        }
+    }
+}

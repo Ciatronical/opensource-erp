@@ -1,0 +1,40 @@
+{
+    "EmailView": {
+        "title": "El. laiškai",
+        "inbox": "Gauti laiškai",
+        "sent": "Išsiųsti",
+        "drafts": "Juodraščiai",
+        "trash": "Šiukšlinė",
+        "folders": "Aplankai",
+        "compose": "Naujas el. laiškas",
+        "refresh": "Atnaujinti",
+        "search": "Ieškoti el. laiškų...",
+        "noEmails": "El. laiškų nėra",
+        "noConfig": "El. pašto klientas nesukonfigūruotas. Sukonfigūruokite el. pašto nustatymus įmonės konfigūracijoje skiltyje CRM.",
+        "loading": "El. laiškai kraunami...",
+        "from": "Nuo",
+        "to": "Kam",
+        "cc": "CC",
+        "date": "Data",
+        "subject": "Tema",
+        "body": "Žinutė",
+        "noSubject": "(Be temos)",
+        "attachments": "Priedai",
+        "send": "Siųsti",
+        "cancel": "Atšaukti",
+        "reply": "Atsakyti",
+        "forward": "Persiųsti",
+        "delete": "Ištrinti",
+        "markRead": "Pažymėti kaip skaitytą",
+        "markUnread": "Pažymėti kaip neskaitytą",
+        "of": "iš",
+        "emails": "el. laiškai",
+        "page": "Puslapis",
+        "customer": "Klientas / Tiekėjas",
+        "searchCustomer": "Ieškoti kliento arba tiekėjo...",
+        "openCustomer": "atidaryti"
+    },
+    "EmailMenu": {
+        "title": "El. laiškai"
+    }
+}

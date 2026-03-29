@@ -1,0 +1,41 @@
+{
+    "OrderSearchView": {
+        "title": "Пошук замовлень",
+        "fields": {
+            "ordnumber": "Номер замовлення",
+            "customer_name": "Ім'я клієнта",
+            "transaction_description": "Опис",
+            "first_instruction": "Опис",
+            "location": "Локація",
+            "status": "Статус",
+            "transdate_from": "Дата від",
+            "transdate_to": "Дата до",
+            "bringetermin_from": "Термін здачі від",
+            "bringetermin_to": "Термін здачі до",
+            "amount_from": "Сума від",
+            "amount_to": "Сума до",
+            "employee": "Виконавець",
+            "transdate": "Дата",
+            "bringetermin": "Термін здачі",
+            "amount": "Сума",
+            "cusordnumber": "Номер замовлення клієнта",
+            "hersteller": "Виробник"
+        },
+        "buttons": {
+            "search": "Шукати",
+            "reset": "Скинути"
+        },
+        "table": {
+            "title": "Результати пошуку",
+            "text_no_search_table_shown": "Будь ласка, введіть критерії пошуку та натисніть ENTER або \"Шукати\". Результати пошуку будуть показані тут.",
+            "text_no_results": "Замовлення не знайдені.",
+            "results_count": "Результати"
+        },
+        "alerts": {
+            "warning_no_search_criteria": "Критерії пошуку не введені. Ви дійсно бажаєте завантажити всі замовлення?"
+        },
+        "toasts": {
+            "error_loading_search_results": "Помилка завантаження результатів пошуку."
+        }
+    }
+}

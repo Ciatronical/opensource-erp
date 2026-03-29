@@ -1,0 +1,20 @@
+{
+    "WallDisplay": {
+        "calendar": "Calendario",
+        "faktura": "Documento",
+        "noFaktura": "Nessun documento selezionato",
+        "noFakturaHint": "Clicca sul pulsante monitor in una fattura",
+        "invoice": "Fattura",
+        "order": "Ordine",
+        "quotation": "Preventivo",
+        "open": "Aperto",
+        "closed": "Chiuso",
+        "position": "Pos.",
+        "description": "Descrizione",
+        "qty": "Quantità",
+        "price": "Prezzo",
+        "total": "Totale",
+        "grossTotal": "Importo totale",
+        "allDay": "Tutto il giorno"
+    }
+}

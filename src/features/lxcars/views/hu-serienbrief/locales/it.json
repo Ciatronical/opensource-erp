@@ -1,0 +1,68 @@
+{
+    "HuSerienbriefView": {
+        "title": "Notifiche revisione",
+        "subtitle": "Clienti con revisione in scadenza",
+        "vorlauf": "Anticipo: {monate} mesi",
+        "fields": {
+            "customer_name": "Cliente",
+            "kennzeichen": "Targa",
+            "hu_datum": "Data revisione",
+            "telefon": "Telefono",
+            "email": "E-mail",
+            "fahrzeug": "Veicolo",
+            "actions": "Azioni",
+            "date_from": "Revisione scadente da",
+            "date_to": "Revisione scadente a"
+        },
+        "buttons": {
+            "print_all": "Stampa selezionati",
+            "email_all": "Invia e-mail",
+            "reload": "Aggiorna",
+            "exclude": "Deseleziona",
+            "include": "Riammetti",
+            "send_pin": "Invia con PIN",
+            "whatsapp_all": "Invia WhatsApp"
+        },
+        "checkboxes": {
+            "show_excluded": "Mostra anche gli esclusi"
+        },
+        "chips": {
+            "excluded": "Escluso",
+            "results_count": "Clienti"
+        },
+        "filter": {
+            "title": "Periodo"
+        },
+        "table": {
+            "no_results": "Nessun cliente con revisione in scadenza nel periodo configurato.",
+            "no_results_hint": "Verificare il tempo di anticipo nelle impostazioni LXCars."
+        },
+        "whatsapp": {
+            "message": "Ciao {name}, la revisione del suo veicolo ({kennzeichen}) scade il {hu_datum}. La preghiamo di fissare un appuntamento. Cordiali saluti"
+        },
+        "toasts": {
+            "error_loading": "Errore nel caricamento della lista revisioni.",
+            "excluded_success": "Cliente escluso.",
+            "included_success": "Cliente riammesso.",
+            "exclude_error": "Errore nel salvataggio.",
+            "email_sent": "E-mail inviata.",
+            "email_error": "Errore nell'invio dell'e-mail.",
+            "pdf_error": "Errore nella creazione del PDF.",
+            "sftp_success": "PDF inviato con successo tramite eLetter.",
+            "sftp_error": "Errore nell'invio tramite eLetter.",
+            "whatsapp_sent": "Messaggio WhatsApp inviato.",
+            "whatsapp_error": "Errore nell'invio del messaggio WhatsApp.",
+            "whatsapp_bulk_sent": "{sent} messaggi WhatsApp inviati, {failed} falliti.",
+            "whatsapp_no_phone": "Nessuno dei clienti selezionati ha un numero di telefono."
+        },
+        "tooltips": {
+            "whatsapp_single": "Invia promemoria revisione tramite WhatsApp",
+            "exclude": "Escludi cliente dalle notifiche di revisione",
+            "include": "Riammetti cliente nelle notifiche di revisione"
+        },
+        "dialogs": {
+            "confirm_exclude_title": "Escludi cliente",
+            "confirm_exclude_text": "Questo cliente verrà rimosso permanentemente dalla lista delle notifiche di revisione. Vuoi continuare?"
+        }
+    }
+}

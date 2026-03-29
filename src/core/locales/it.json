@@ -1,0 +1,47 @@
+{
+    "LoginView": {
+        "title": "Accesso",
+        "username": "Nome utente",
+        "password": "Password",
+        "client": "Azienda",
+        "button": "Accedi",
+        "failed": "Accesso fallito. Verificare le credenziali.",
+        "EMPTY_FIELDS": "Inserire nome e password.",
+        "USER_NOT_FOUND": "Utente non trovato.",
+        "WRONG_PASSWORD": "Password non valida.",
+        "ERROR": "Errore durante l'accesso. Riprovare.",
+        "ERROR_LOADING_CLIENTS": "Errore nel caricamento delle aziende. Riprovare più tardi.",
+        "USER_NOT_ASSIGNED_TO_CLIENT": "Utente non assegnato all'azienda.",
+        "PASSWORD_FILE_NOT_FOUND": "Errore: Il file della password api/config/api.passwd.php non è stato trovato. Rinominare il file api/config/api.passwd.php.example in api/config/api.passwd.php e regolare le impostazioni.",
+        "CONFIG_FILE_NOT_FOUND": "Errore: Il file di configurazione non è stato trovato. Verificare le impostazioni.",
+        "updateButton": "Esegui aggiornamento",
+        "updateSuccess": "Aggiornamento del database eseguito con successo.",
+        "updateError": "Errore nell'aggiornamento del database. Riprovare.",
+        "privacy": "Informativa sulla privacy",
+        "dataDeletion": "Cancellazione dei dati"
+    },
+    "NotFoundView": {
+        "title": "Pagina non trovata",
+        "message": "La pagina richiesta non è stata trovata.",
+        "back_home": "Torna alla pagina principale"
+    },
+    "NavbarView": {
+        "logoutTooltip": "Disconnetti",
+        "accountTooltip": "Account",
+        "editCustomerTooltip": "Modifica cliente",
+        "editCvTooltip": "Modifica cliente/fornitore",
+        "currentC": "Cliente:",
+        "currentV": "Fornitore:",
+        "demoBanner": "Modalità demo — Tutti i dati verranno ripristinati automaticamente dopo l'inattività.",
+        "demoResetWarning": "La demo verrà ripristinata tra {seconds} secondi — muovi il mouse per continuare."
+    },
+    "ErrorView": {
+        "title": "Si è verificato un errore",
+        "message": "Ci scusiamo, ma si è verificato un errore imprevisto.",
+        "debugInfo": "Informazioni di debug:",
+        "clickToShowDetails": "Clicca per mostrare i dettagli"
+    },
+    "App": {
+        "loading": "Attendere prego..."
+    }
+}

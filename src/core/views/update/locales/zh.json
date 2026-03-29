@@ -1,0 +1,50 @@
+{
+    "update": {
+        "title": "系统更新",
+        "description": "在此备份和更新所有公司数据库以及认证数据库。",
+        "messages": "消息",
+        "sqlStatements": "SQL 语句",
+        "errors": "错误",
+        "dryRunSuccess": "预览加载成功。",
+        "updateSuccess": "所有数据库更新成功。",
+        "gitPull": "Git Pull",
+        "gitPullSuccess": "Git Pull 成功",
+        "gitPullFailed": "Git Pull 失败",
+        "authDatabase": "认证数据库",
+        "authBackup": "认证备份",
+        "clientDatabase": "公司：{name}",
+        "clientDbName": "数据库：{dbname}",
+        "backupSuccess": "备份已创建：{filename}",
+        "backupFailed": "备份失败",
+        "backupSkipped": "Dry-Run 模式下不创建备份",
+        "features": "功能：{features}",
+        "noClients": "未找到公司。",
+        "overallSuccess": "所有数据库更新成功",
+        "overallFailed": "更新时出错",
+        "buttons": {
+            "dryRun": "预览",
+            "checking": "正在检查...",
+            "update": "执行更新",
+            "updating": "正在更新...",
+            "finish": "完成"
+        },
+        "errorMessages": {
+            "dryRunFailed": "预览失败。",
+            "updateFailed": "更新失败。",
+            "networkError": "更新时网络错误。"
+        },
+        "schemaMessages": {
+            "dry_run_mode": "预览模式 - 不会进行任何更改",
+            "columns_added": "表 {table}：将添加 {count} 列 | 表 {table}：已添加 {count} 列",
+            "column_added": "列 '{column}' 将被添加 | 列 '{column}' 已添加",
+            "table_up_to_date": "表 {table}：所有列已存在",
+            "table_created": "表 {table} 将被创建 | 表 {table} 已创建",
+            "version_updated": "版本 {version} 已写入 {schema} 数据库",
+            "object_exists": "{object_type} {name} 已存在",
+            "statement_executed": "{statement_type} {target} 已执行",
+            "csv_skipped": "CSV 已跳过：{table}（{reason}）",
+            "csv_imported": "CSV 已导入：{table}（{rows_imported} 行）",
+            "info": "{text}"
+        }
+    }
+}

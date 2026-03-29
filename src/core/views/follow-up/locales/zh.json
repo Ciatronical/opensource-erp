@@ -1,0 +1,179 @@
+{
+    "FollowUpView": {
+        "title": "跟进提醒",
+        "search": "搜索...",
+        "fromDate": "从",
+        "toDate": "至",
+        "showDone": "显示已完成",
+        "tabs": {
+            "board": "看板",
+            "list": "列表",
+            "calendar": "日历"
+        },
+        "actions": {
+            "create": "新建跟进",
+            "cancel": "取消",
+            "delete": "删除",
+            "save": "保存",
+            "edit": "编辑",
+            "markDone": "已完成",
+            "markUndone": "重新打开",
+            "close": "关闭"
+        },
+        "columns": {
+            "overdue": "逾期",
+            "today": "今天",
+            "upcoming": "即将到来",
+            "done": "已完成"
+        },
+        "confirmDelete": {
+            "title": "删除跟进？",
+            "message": "确定要删除此跟进吗？此操作不可撤销。"
+        },
+        "messages": {
+            "loadError": "加载跟进时出错",
+            "saved": "跟进已保存",
+            "saveError": "保存时出错",
+            "deleted": "跟进已删除",
+            "deletedMultiple": "已删除 {count} 个跟进",
+            "markedDone": "已标记为完成",
+            "markedUndone": "已重新打开",
+            "error": "发生错误"
+        }
+    },
+    "FollowUpCard": {
+        "noSubject": "无主题",
+        "today": "今天",
+        "tomorrow": "明天",
+        "daysAgo": "{days} 天前",
+        "inDays": "{days} 天后",
+        "markDone": "标记为已完成",
+        "markUndone": "重新打开",
+        "delete": "删除"
+    },
+    "FollowUpDialog": {
+        "titleCreate": "新建跟进",
+        "titleEdit": "编辑跟进",
+        "date": "日期",
+        "subject": "主题",
+        "body": "备注",
+        "assignedEmployees": "分配给",
+        "linkSection": "关联（可选）",
+        "linkType": "关联类型",
+        "linkId": "ID",
+        "linkInfo": "名称",
+        "searchCustomer": "搜索客户",
+        "searchVendor": "搜索供应商",
+        "searchQuotation": "搜索报价单",
+        "searchOrder": "搜索订单",
+        "searchDeliveryOrder": "搜索发货单",
+        "searchInvoice": "搜索发票",
+        "searchRequestQuotation": "搜索询价单",
+        "searchPurchaseOrder": "搜索采购订单",
+        "searchPurchaseDeliveryOrder": "搜索到货单",
+        "searchPurchaseInvoice": "搜索进项发票",
+        "search": "搜索",
+        "noResults": "未找到结果",
+        "startTyping": "输入搜索词...",
+        "cancel": "取消",
+        "save": "保存",
+        "quickDate": {
+            "today": "今天",
+            "tomorrow": "明天",
+            "nextWeek": "+1 周",
+            "twoWeeks": "+2 周",
+            "nextMonth": "+1 月"
+        },
+        "linkTypes": {
+            "customer": "客户",
+            "vendor": "供应商",
+            "salesQuotation": "报价单",
+            "salesOrder": "订单",
+            "salesDeliveryOrder": "发货单",
+            "salesInvoice": "发票",
+            "purchaseQuotation": "询价单",
+            "purchaseOrder": "采购订单",
+            "purchaseDeliveryOrder": "到货单",
+            "purchaseInvoice": "进项发票"
+        },
+        "validation": {
+            "required": "必填字段"
+        }
+    },
+    "FollowUpList": {
+        "done": "已完成",
+        "open": "待处理",
+        "today": "今天",
+        "tomorrow": "明天",
+        "markDone": "标记为已完成",
+        "markUndone": "重新打开",
+        "edit": "编辑",
+        "delete": "删除",
+        "entry": "条",
+        "entries": "条",
+        "deleteAll": "删除所有显示的",
+        "deleteAllConfirmTitle": "删除所有跟进？",
+        "deleteAllConfirmText": "确定要删除所有 {count} 个显示的跟进吗？",
+        "deleteAllWarning": "此操作不可撤销！",
+        "deleteAllConfirm": "全部删除",
+        "cancel": "取消",
+        "headers": {
+            "date": "日期",
+            "subject": "主题",
+            "link": "关联",
+            "assignedTo": "分配给",
+            "status": "状态",
+            "actions": "操作"
+        }
+    },
+    "FollowUpCalendar": {
+        "today": "今天",
+        "month": "月",
+        "week": "周",
+        "day": "日",
+        "allDay": "全天",
+        "noSubject": "无主题",
+        "newFollowUp": "新建跟进",
+        "subject": "主题",
+        "subjectPlaceholder": "需要完成什么？",
+        "note": "备注",
+        "notePlaceholder": "附加信息...",
+        "cancel": "取消",
+        "create": "创建",
+        "done": "已完成",
+        "reopen": "打开",
+        "edit": "编辑",
+        "links": "关联",
+        "details": "详情",
+        "assignedTo": "分配给",
+        "linkedTo": "关联",
+        "close": "关闭",
+        "markDone": "标记为已完成",
+        "markUndone": "重新打开",
+        "editFollowUp": "编辑",
+        "deleteFollowUp": "删除",
+        "more": "更多",
+        "weekDays": {
+            "mon": "一",
+            "tue": "二",
+            "wed": "三",
+            "thu": "四",
+            "fri": "五",
+            "sat": "六",
+            "sun": "日"
+        }
+    },
+    "FollowUpWidget": {
+        "title": "跟进提醒",
+        "overdue": "逾期",
+        "today": "今天",
+        "tomorrow": "明天",
+        "upcoming": "即将到来",
+        "noItems": "无待处理跟进",
+        "showAll": "显示全部 {count} 条",
+        "markDone": "标记为已完成",
+        "quickAdd": "快速添加",
+        "openAll": "打开全部",
+        "daysAgo": "{days} 天前"
+    }
+}

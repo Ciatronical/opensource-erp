@@ -1,0 +1,21 @@
+{
+    "title": "用户配置",
+    "loading": "正在加载配置...",
+    "configLoadError": "配置错误",
+    "user_fields": {
+        "appearance": "外观",
+        "darkMode": "深色模式",
+        "darkMode_help": "为整个应用启用深色配色方案。",
+        "locale": "显示语言",
+        "locale_help": "用户界面语言。立即生效。",
+        "general": "常规",
+        "startupView": "启动视图",
+        "startupView_help": "登录后显示的视图。覆盖公司设置。",
+        "faktura": "票据",
+        "fakturaCompactView": "默认启用紧凑视图",
+        "fakturaCompactView_help": "隐藏详细卡片（客户、单据详情、附加信息），仅显示紧凑摘要。",
+        "printer": "打印机",
+        "defaultPrinter": "默认打印机",
+        "defaultPrinter_help": "默认用于打印的打印机"
+    }
+}

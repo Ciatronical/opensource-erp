@@ -1,0 +1,83 @@
+{
+    "WikiMenu": {
+        "title": "Wiki",
+        "newPage": "Nowy artykuł",
+        "allPages": "Wszystkie artykuły",
+        "categories": "Kategorie"
+    },
+    "WikiListView": {
+        "title": "Wiki - Baza wiedzy",
+        "newPage": "Nowy artykuł",
+        "search": "Szukaj artykułu...",
+        "allCategories": "Wszystkie",
+        "noPages": "Brak artykułów.",
+        "noPagesHint": "Utwórz swój pierwszy artykuł wiki.",
+        "headers": {
+            "title": "Tytuł",
+            "category": "Kategoria",
+            "author": "Autor",
+            "updated": "Ostatnia aktualizacja",
+            "kba": "KBA"
+        },
+        "confirmDelete": "Czy na pewno chcesz usunąć artykuł \"{title}\"?",
+        "deleted": "Artykuł usunięty.",
+        "deleteError": "Błąd podczas usuwania."
+    },
+    "WikiReadView": {
+        "title": "Artykuł wiki",
+        "edit": "Edytuj",
+        "back": "Powrót do przeglądu",
+        "revisions": "Wersje",
+        "createdBy": "Utworzony przez",
+        "updatedBy": "Ostatnio edytowany przez",
+        "kbaLabel": "Przypisanie KBA",
+        "notFound": "Artykuł nie znaleziony.",
+        "loadError": "Błąd podczas ładowania artykułu."
+    },
+    "WikiEditView": {
+        "titleNew": "Nowy artykuł wiki",
+        "titleEdit": "Edytuj artykuł wiki",
+        "fieldTitle": "Tytuł",
+        "fieldCategory": "Kategoria",
+        "fieldContent": "Treść",
+        "fieldKbaHsn": "HSN",
+        "fieldKbaTsn": "TSN (pierwsze 3 znaki)",
+        "kbaSection": "Przypisanie KBA (opcjonalnie)",
+        "save": "Zapisz",
+        "cancel": "Anuluj",
+        "saved": "Artykuł zapisany.",
+        "saveError": "Błąd podczas zapisywania.",
+        "missingTitle": "Proszę podać tytuł.",
+        "revisions": "Historia wersji",
+        "noRevisions": "Brak starszych wersji.",
+        "restore": "Przywróć",
+        "confirmRestore": "Czy przywrócić wersję z {date}?",
+        "restored": "Wersja przywrócona.",
+        "restoreError": "Błąd podczas przywracania.",
+        "statusSaving": "Zapisywanie...",
+        "statusSaved": "Zapisano",
+        "statusUnsaved": "Niezapisano",
+        "statusError": "Błąd zapisu",
+        "back": "Wstecz",
+        "newCategory": "Nowa kategoria",
+        "createCategory": "Utwórz"
+    },
+    "WikiCategoriesView": {
+        "title": "Kategorie wiki",
+        "newCategory": "Nowa kategoria",
+        "name": "Nazwa",
+        "sortkey": "Sortowanie",
+        "pageCount": "Artykuły",
+        "save": "Zapisz",
+        "cancel": "Anuluj",
+        "edit": "Edytuj",
+        "delete": "Usuń",
+        "noCategories": "Brak kategorii.",
+        "confirmDelete": "Czy na pewno chcesz usunąć kategorię \"{name}\"?",
+        "saved": "Kategoria zapisana.",
+        "deleted": "Kategoria usunięta.",
+        "saveError": "Błąd podczas zapisywania.",
+        "deleteError": "Błąd podczas usuwania.",
+        "sortUpdated": "Kolejność zaktualizowana."
+    }
+}

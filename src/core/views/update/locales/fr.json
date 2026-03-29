@@ -1,0 +1,50 @@
+{
+    "update": {
+        "title": "Mise a jour du systeme",
+        "description": "Ici, toutes les bases de donnees des societes ainsi que la base de donnees d'authentification sont sauvegardees et mises a jour.",
+        "messages": "Messages",
+        "sqlStatements": "Instructions SQL",
+        "errors": "Erreurs",
+        "dryRunSuccess": "Apercu charge avec succes.",
+        "updateSuccess": "Toutes les bases de donnees ont ete mises a jour avec succes.",
+        "gitPull": "Git Pull",
+        "gitPullSuccess": "Git Pull reussi",
+        "gitPullFailed": "Git Pull echoue",
+        "authDatabase": "Base de donnees d'authentification",
+        "authBackup": "Sauvegarde d'authentification",
+        "clientDatabase": "Societe : {name}",
+        "clientDbName": "Base de donnees : {dbname}",
+        "backupSuccess": "Sauvegarde creee : {filename}",
+        "backupFailed": "Echec de la sauvegarde",
+        "backupSkipped": "La sauvegarde n'est pas creee en mode apercu",
+        "features": "Fonctionnalites : {features}",
+        "noClients": "Aucune societe trouvee.",
+        "overallSuccess": "Toutes les bases de donnees ont ete mises a jour avec succes",
+        "overallFailed": "Erreur lors de la mise a jour",
+        "buttons": {
+            "dryRun": "Apercu",
+            "checking": "Verification...",
+            "update": "Executer la mise a jour",
+            "updating": "Mise a jour en cours...",
+            "finish": "Termine"
+        },
+        "errorMessages": {
+            "dryRunFailed": "Echec de l'apercu.",
+            "updateFailed": "Echec de la mise a jour.",
+            "networkError": "Erreur reseau lors de la mise a jour."
+        },
+        "schemaMessages": {
+            "dry_run_mode": "Mode apercu - Aucune modification ne sera effectuee",
+            "columns_added": "Table {table} : {count} colonne(s) serai(en)t ajoutee(s) | Table {table} : {count} colonne(s) ajoutee(s)",
+            "column_added": "Colonne '{column}' serait ajoutee | Colonne '{column}' ajoutee",
+            "table_up_to_date": "Table {table} : Toutes les colonnes sont presentes",
+            "table_created": "Table {table} serait creee | Table {table} creee",
+            "version_updated": "Version {version} enregistree dans la base de donnees {schema}",
+            "object_exists": "{object_type} {name} existe deja",
+            "statement_executed": "{statement_type} {target} execute",
+            "csv_skipped": "CSV ignore : {table} ({reason})",
+            "csv_imported": "CSV importe : {table} ({rows_imported} lignes)",
+            "info": "{text}"
+        }
+    }
+}

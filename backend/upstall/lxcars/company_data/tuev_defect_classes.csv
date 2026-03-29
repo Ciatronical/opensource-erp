@@ -1,0 +1,7 @@
+code,bezeichnung,plakette,nachpruefung,beschreibung
+OM,Ohne Mängel,True,False,Keine Mängel festgestellt
+GM,Geringe Mängel,True,False,"Mängel durch Verschleiß/Gebrauch, keine Verkehrsgefährdung oder unzulässige Umweltbelastung. Unverzügliche Beseitigung erwartet."
+EM,Erhebliche Mängel,False,True,Verkehrsgefährdung oder unzulässige Umweltbelastung. Nachprüfung innerhalb eines Monats erforderlich.
+VM,Gefährliche Mängel (verkehrsgefährdend),False,True,Direkte und unmittelbare Verkehrsgefährdung. Nachprüfung erforderlich. Keine Untersagung des Betriebs.
+VU,Verkehrsunsicher,False,True,Verkehrssicherheit nicht gewährleistet. Meldung an Zulassungsbehörde. Betrieb untersagt.
+HW,Hinweis,n/a,n/a,Hinweis auf sich abzeichnenden Mangel oder absehbare Mangelverschlechterung (seit 2018)

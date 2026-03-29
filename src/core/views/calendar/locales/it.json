@@ -1,0 +1,87 @@
+{
+    "CalendarView": {
+        "title": "Calendario",
+        "actions": {
+            "create": "Nuovo appuntamento",
+            "categories": "Categorie",
+            "cancel": "Annulla",
+            "save": "Salva",
+            "delete": "Elimina",
+            "edit": "Modifica",
+            "close": "Chiudi"
+        },
+        "confirmDelete": {
+            "title": "Eliminare l'appuntamento?",
+            "message": "Vuoi davvero eliminare questo appuntamento?"
+        },
+        "messages": {
+            "loadError": "Errore nel caricamento degli appuntamenti",
+            "saved": "Appuntamento salvato",
+            "saveError": "Errore nel salvataggio",
+            "deleted": "Appuntamento eliminato",
+            "error": "Si è verificato un errore",
+            "categoryDeleted": "Categoria eliminata",
+            "categorySaved": "Categoria salvata"
+        },
+        "search": "Cerca",
+        "searchResults": "Risultati della ricerca",
+        "noResults": "Nessun risultato trovato"
+    },
+    "CalendarMain": {
+        "today": "Oggi",
+        "month": "Mese",
+        "week": "Settimana",
+        "day": "Giorno",
+        "list": "Lista",
+        "allDay": "Tutto il giorno",
+        "filterCategories": "Filtra categorie"
+    },
+    "CalendarEventDialog": {
+        "titleCreate": "Nuovo appuntamento",
+        "titleEdit": "Modifica appuntamento",
+        "title": "Titolo",
+        "allDay": "Tutto il giorno",
+        "start": "Inizio",
+        "end": "Fine",
+        "category": "Categoria",
+        "noCategory": "Nessuna categoria",
+        "priority": "Priorità",
+        "priorityLow": "Bassa",
+        "priorityNormal": "Normale",
+        "priorityHigh": "Alta",
+        "location": "Luogo",
+        "description": "Descrizione",
+        "color": "Colore",
+        "visibility": "Visibilità",
+        "visibilityAll": "Tutti",
+        "visibilityPrivate": "Privato",
+        "customerVendor": "Cliente/Fornitore",
+        "validation": {
+            "titleRequired": "Il titolo è obbligatorio",
+            "startRequired": "La data di inizio è obbligatoria"
+        }
+    },
+    "CalendarEventDetail": {
+        "edit": "Modifica",
+        "delete": "Elimina",
+        "close": "Chiudi",
+        "location": "Luogo",
+        "category": "Categoria",
+        "priority": "Priorità",
+        "owner": "Creato da",
+        "linkedTo": "Collegato con",
+        "priorityLow": "Bassa",
+        "priorityNormal": "Normale",
+        "priorityHigh": "Alta"
+    },
+    "CalendarCategoryManager": {
+        "title": "Gestisci categorie",
+        "addCategory": "Nuova categoria",
+        "label": "Nome",
+        "color": "Colore",
+        "save": "Salva",
+        "delete": "Elimina",
+        "confirmDelete": "Eliminare davvero la categoria? Gli appuntamenti conserveranno i dati ma perderanno l'assegnazione della categoria.",
+        "noCategories": "Nessuna categoria disponibile"
+    }
+}

@@ -1,0 +1,179 @@
+{
+    "FollowUpView": {
+        "title": "Acompanhamento",
+        "search": "Pesquisar...",
+        "fromDate": "De",
+        "toDate": "Até",
+        "showDone": "Mostrar concluídos",
+        "tabs": {
+            "board": "Quadro",
+            "list": "Lista",
+            "calendar": "Calendário"
+        },
+        "actions": {
+            "create": "Novo acompanhamento",
+            "cancel": "Cancelar",
+            "delete": "Eliminar",
+            "save": "Guardar",
+            "edit": "Editar",
+            "markDone": "Concluído",
+            "markUndone": "Reabrir",
+            "close": "Fechar"
+        },
+        "columns": {
+            "overdue": "Vencido",
+            "today": "Hoje",
+            "upcoming": "Próximo",
+            "done": "Concluído"
+        },
+        "confirmDelete": {
+            "title": "Eliminar acompanhamento?",
+            "message": "Deseja realmente eliminar este acompanhamento? Esta ação não pode ser revertida."
+        },
+        "messages": {
+            "loadError": "Erro ao carregar os acompanhamentos",
+            "saved": "Acompanhamento guardado",
+            "saveError": "Erro ao guardar",
+            "deleted": "Acompanhamento eliminado",
+            "deletedMultiple": "{count} acompanhamentos eliminados",
+            "markedDone": "Marcado como concluído",
+            "markedUndone": "Reaberto",
+            "error": "Ocorreu um erro"
+        }
+    },
+    "FollowUpCard": {
+        "noSubject": "Sem assunto",
+        "today": "Hoje",
+        "tomorrow": "Amanhã",
+        "daysAgo": "há {days} dias",
+        "inDays": "em {days} dias",
+        "markDone": "Marcar como concluído",
+        "markUndone": "Reabrir",
+        "delete": "Eliminar"
+    },
+    "FollowUpDialog": {
+        "titleCreate": "Novo acompanhamento",
+        "titleEdit": "Editar acompanhamento",
+        "date": "Data",
+        "subject": "Assunto",
+        "body": "Nota",
+        "assignedEmployees": "Atribuído a",
+        "linkSection": "Vinculação (opcional)",
+        "linkType": "Tipo de vinculação",
+        "linkId": "ID",
+        "linkInfo": "Descrição",
+        "searchCustomer": "Pesquisar cliente",
+        "searchVendor": "Pesquisar fornecedor",
+        "searchQuotation": "Pesquisar orçamento",
+        "searchOrder": "Pesquisar encomenda",
+        "searchDeliveryOrder": "Pesquisar guia de remessa",
+        "searchInvoice": "Pesquisar fatura",
+        "searchRequestQuotation": "Pesquisar pedido",
+        "searchPurchaseOrder": "Pesquisar encomenda de compra",
+        "searchPurchaseDeliveryOrder": "Pesquisar receção de mercadoria",
+        "searchPurchaseInvoice": "Pesquisar fatura de compra",
+        "search": "Pesquisar",
+        "noResults": "Sem resultados",
+        "startTyping": "Introduza termo de pesquisa...",
+        "cancel": "Cancelar",
+        "save": "Guardar",
+        "quickDate": {
+            "today": "Hoje",
+            "tomorrow": "Amanhã",
+            "nextWeek": "+1 Semana",
+            "twoWeeks": "+2 Semanas",
+            "nextMonth": "+1 Mês"
+        },
+        "linkTypes": {
+            "customer": "Cliente",
+            "vendor": "Fornecedor",
+            "salesQuotation": "Orçamento",
+            "salesOrder": "Encomenda",
+            "salesDeliveryOrder": "Guia de remessa",
+            "salesInvoice": "Fatura",
+            "purchaseQuotation": "Pedido",
+            "purchaseOrder": "Encomenda de compra",
+            "purchaseDeliveryOrder": "Receção de mercadoria",
+            "purchaseInvoice": "Fatura de compra"
+        },
+        "validation": {
+            "required": "Campo obrigatório"
+        }
+    },
+    "FollowUpList": {
+        "done": "Concluído",
+        "open": "Aberto",
+        "today": "Hoje",
+        "tomorrow": "Amanhã",
+        "markDone": "Marcar como concluído",
+        "markUndone": "Reabrir",
+        "edit": "Editar",
+        "delete": "Eliminar",
+        "entry": "Entrada",
+        "entries": "Entradas",
+        "deleteAll": "Eliminar todos os apresentados",
+        "deleteAllConfirmTitle": "Eliminar todos os acompanhamentos?",
+        "deleteAllConfirmText": "Deseja realmente eliminar todos os {count} acompanhamentos apresentados?",
+        "deleteAllWarning": "Esta ação não pode ser revertida!",
+        "deleteAllConfirm": "Eliminar todos",
+        "cancel": "Cancelar",
+        "headers": {
+            "date": "Data",
+            "subject": "Assunto",
+            "link": "Vinculação",
+            "assignedTo": "Atribuído",
+            "status": "Estado",
+            "actions": "Ações"
+        }
+    },
+    "FollowUpCalendar": {
+        "today": "Hoje",
+        "month": "Mês",
+        "week": "Semana",
+        "day": "Dia",
+        "allDay": "Dia inteiro",
+        "noSubject": "Sem assunto",
+        "newFollowUp": "Novo acompanhamento",
+        "subject": "Assunto",
+        "subjectPlaceholder": "O que precisa ser feito?",
+        "note": "Nota",
+        "notePlaceholder": "Informações adicionais...",
+        "cancel": "Cancelar",
+        "create": "Criar",
+        "done": "Concluído",
+        "reopen": "Abrir",
+        "edit": "Editar",
+        "links": "Vinculações",
+        "details": "Detalhes",
+        "assignedTo": "Atribuído a",
+        "linkedTo": "Vinculado com",
+        "close": "Fechar",
+        "markDone": "Marcar como concluído",
+        "markUndone": "Reabrir",
+        "editFollowUp": "Editar",
+        "deleteFollowUp": "Eliminar",
+        "more": "mais",
+        "weekDays": {
+            "mon": "Se",
+            "tue": "Te",
+            "wed": "Qu",
+            "thu": "Qu",
+            "fri": "Se",
+            "sat": "Sá",
+            "sun": "Do"
+        }
+    },
+    "FollowUpWidget": {
+        "title": "Acompanhamento",
+        "overdue": "Vencido",
+        "today": "Hoje",
+        "tomorrow": "Amanhã",
+        "upcoming": "Próximo",
+        "noItems": "Sem acompanhamentos pendentes",
+        "showAll": "Mostrar todos ({count})",
+        "markDone": "Marcar como concluído",
+        "quickAdd": "Adicionar rápido",
+        "openAll": "Abrir todos",
+        "daysAgo": "há {days} dias"
+    }
+}

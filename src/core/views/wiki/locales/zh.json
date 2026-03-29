@@ -1,0 +1,83 @@
+{
+    "WikiMenu": {
+        "title": "Wiki",
+        "newPage": "新文章",
+        "allPages": "所有文章",
+        "categories": "分类"
+    },
+    "WikiListView": {
+        "title": "Wiki - 知识库",
+        "newPage": "新文章",
+        "search": "搜索文章...",
+        "allCategories": "全部",
+        "noPages": "暂无文章。",
+        "noPagesHint": "创建您的第一篇 Wiki 文章。",
+        "headers": {
+            "title": "标题",
+            "category": "分类",
+            "author": "作者",
+            "updated": "最后更新",
+            "kba": "KBA"
+        },
+        "confirmDelete": "确定要删除文章 \"{title}\" 吗？",
+        "deleted": "文章已删除。",
+        "deleteError": "删除时出错。"
+    },
+    "WikiReadView": {
+        "title": "Wiki 文章",
+        "edit": "编辑",
+        "back": "返回概览",
+        "revisions": "版本",
+        "createdBy": "创建者",
+        "updatedBy": "最后编辑者",
+        "kbaLabel": "KBA 关联",
+        "notFound": "文章未找到。",
+        "loadError": "加载文章时出错。"
+    },
+    "WikiEditView": {
+        "titleNew": "新 Wiki 文章",
+        "titleEdit": "编辑 Wiki 文章",
+        "fieldTitle": "标题",
+        "fieldCategory": "分类",
+        "fieldContent": "内容",
+        "fieldKbaHsn": "HSN",
+        "fieldKbaTsn": "TSN（前3个字符）",
+        "kbaSection": "KBA 关联（可选）",
+        "save": "保存",
+        "cancel": "取消",
+        "saved": "文章已保存。",
+        "saveError": "保存时出错。",
+        "missingTitle": "请输入标题。",
+        "revisions": "版本历史",
+        "noRevisions": "暂无旧版本。",
+        "restore": "恢复",
+        "confirmRestore": "确定要恢复 {date} 的版本吗？",
+        "restored": "版本已恢复。",
+        "restoreError": "恢复时出错。",
+        "statusSaving": "正在保存...",
+        "statusSaved": "已保存",
+        "statusUnsaved": "未保存",
+        "statusError": "保存错误",
+        "back": "返回",
+        "newCategory": "新分类",
+        "createCategory": "创建"
+    },
+    "WikiCategoriesView": {
+        "title": "Wiki 分类",
+        "newCategory": "新分类",
+        "name": "名称",
+        "sortkey": "排序",
+        "pageCount": "文章",
+        "save": "保存",
+        "cancel": "取消",
+        "edit": "编辑",
+        "delete": "删除",
+        "noCategories": "暂无分类。",
+        "confirmDelete": "确定要删除分类 \"{name}\" 吗？",
+        "saved": "分类已保存。",
+        "deleted": "分类已删除。",
+        "saveError": "保存时出错。",
+        "deleteError": "删除时出错。",
+        "sortUpdated": "排序已更新。"
+    }
+}

@@ -1,0 +1,135 @@
+{
+    "TasksView": {
+        "title": "Zadania",
+        "search": "Szukaj...",
+        "fromDate": "Od",
+        "toDate": "Do",
+        "showDone": "Pokaż wykonane",
+        "tabs": {
+            "board": "Tablica",
+            "list": "Lista",
+            "calendar": "Kalendarz"
+        },
+        "actions": {
+            "create": "Nowe zadanie",
+            "cancel": "Anuluj",
+            "delete": "Usuń",
+            "save": "Zapisz",
+            "edit": "Edytuj",
+            "markDone": "Wykonane",
+            "markUndone": "Otwórz ponownie",
+            "close": "Zamknij"
+        },
+        "columns": {
+            "overdue": "Zaległe",
+            "today": "Dzisiaj",
+            "upcoming": "Nadchodzące",
+            "done": "Wykonane"
+        },
+        "fields": {
+            "subject": "Temat",
+            "body": "Notatka",
+            "date": "Data"
+        },
+        "calendar": {
+            "today": "Dzisiaj",
+            "month": "Miesiąc",
+            "week": "Tydzień",
+            "day": "Dzień",
+            "more": "więcej"
+        },
+        "dialog": {
+            "titleNew": "Nowe zadanie",
+            "titleEdit": "Edytuj zadanie"
+        },
+        "confirmDelete": {
+            "title": "Usunąć zadanie?",
+            "message": "Czy na pewno chcesz usunąć to zadanie? Tej czynności nie można cofnąć."
+        },
+        "messages": {
+            "loadError": "Błąd podczas ładowania zadań",
+            "saved": "Zadanie zapisane",
+            "saveError": "Błąd podczas zapisywania",
+            "deleted": "Zadanie usunięte",
+            "markedDone": "Oznaczono jako wykonane",
+            "markedUndone": "Ponownie otwarte",
+            "error": "Wystąpił błąd"
+        }
+    },
+    "TasksCard": {
+        "noSubject": "Brak tematu",
+        "today": "Dzisiaj",
+        "tomorrow": "Jutro",
+        "daysAgo": "{days} dni temu",
+        "inDays": "za {days} dni",
+        "markDone": "Oznacz jako wykonane",
+        "markUndone": "Otwórz ponownie",
+        "delete": "Usuń"
+    },
+    "TasksDialog": {
+        "titleCreate": "Nowe zadanie",
+        "titleEdit": "Edytuj zadanie",
+        "date": "Data",
+        "subject": "Temat",
+        "body": "Notatka",
+        "assignedEmployees": "Przypisano do",
+        "linkSection": "Powiązanie (opcjonalnie)",
+        "linkType": "Typ powiązania",
+        "linkId": "ID",
+        "linkInfo": "Oznaczenie",
+        "cancel": "Anuluj",
+        "save": "Zapisz",
+        "quickDate": {
+            "today": "Dzisiaj",
+            "tomorrow": "Jutro",
+            "nextWeek": "+1 tydzień",
+            "nextMonth": "+1 miesiąc"
+        },
+        "linkTypes": {
+            "customer": "Klient",
+            "vendor": "Dostawca",
+            "salesQuotation": "Oferta",
+            "salesOrder": "Zlecenie",
+            "salesDeliveryOrder": "List przewozowy",
+            "salesInvoice": "Faktura",
+            "purchaseQuotation": "Zapytanie",
+            "purchaseOrder": "Zamówienie",
+            "purchaseDeliveryOrder": "Przyjęcie towaru",
+            "purchaseInvoice": "Faktura zakupu"
+        },
+        "validation": {
+            "required": "Pole wymagane"
+        }
+    },
+    "TasksList": {
+        "done": "Wykonane",
+        "open": "Otwarte",
+        "today": "Dzisiaj",
+        "tomorrow": "Jutro",
+        "markDone": "Oznacz jako wykonane",
+        "markUndone": "Otwórz ponownie",
+        "edit": "Edytuj",
+        "delete": "Usuń",
+        "headers": {
+            "date": "Data",
+            "subject": "Temat",
+            "link": "Powiązanie",
+            "assignedTo": "Przypisano",
+            "status": "Status",
+            "actions": "Akcje"
+        }
+    },
+    "TasksWidget": {
+        "title": "Zadania",
+        "overdue": "Zaległe",
+        "today": "Dzisiaj",
+        "tomorrow": "Jutro",
+        "upcoming": "Nadchodzące",
+        "noItems": "Brak otwartych zadań",
+        "showAll": "Pokaż wszystkie {count}",
+        "markDone": "Oznacz jako wykonane",
+        "quickAdd": "Szybkie dodanie",
+        "openAll": "Otwórz wszystkie",
+        "daysAgo": "{days} dni temu"
+    }
+}

@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 640">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0277BD"/>
+      <stop offset="100%" stop-color="#01579B"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4FC3F7"/>
+      <stop offset="100%" stop-color="#29B6F6"/>
+    </linearGradient>
+  </defs>
+  <!-- Icon zentriert -->
+  <rect x="96" y="32" width="320" height="320" rx="64" fill="url(#bg)"/>
+  <rect x="148" y="84" width="104" height="104" rx="16" fill="#ffffff" opacity="0.95"/>
+  <rect x="268" y="84" width="104" height="104" rx="16" fill="url(#accent)" opacity="0.85"/>
+  <rect x="148" y="204" width="104" height="104" rx="16" fill="url(#accent)" opacity="0.85"/>
+  <rect x="268" y="204" width="104" height="104" rx="16" fill="#ffffff" opacity="0.95"/>
+  <rect x="240" y="162" width="40" height="80" rx="7" fill="#E1F5FE" opacity="0.95"/>
+  <rect x="220" y="182" width="80" height="40" rx="7" fill="#E1F5FE" opacity="0.95"/>
+  <circle cx="260" cy="202" r="15" fill="url(#bg)"/>
+  <circle cx="260" cy="202" r="5.5" fill="#4FC3F7"/>
+  <!-- Text darunter -->
+  <text x="256" y="440" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-weight="700" font-size="56" fill="#01579B" letter-spacing="-0.5">OpenSource</text>
+  <text x="256" y="520" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-weight="800" font-size="96" fill="#0277BD" letter-spacing="8">ERP</text>
+  <!-- Tagline -->
+  <text x="256" y="580" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-weight="400" font-size="24" fill="#546E7A" letter-spacing="4">BUSINESS MADE SIMPLE</text>
+</svg>

@@ -1,0 +1,75 @@
+{
+    "routes": {
+        "mainmenu": "/hauptmen%C3%BC",
+        "customer": "/kunde",
+        "editCustomer": "/kunde/bearbeiten",
+        "editVendor": "/lieferant/bearbeiten",
+        "viewInvoice": "/rechnung/anzeigen",
+        "editQuotation": "/angebot/bearbeiten",
+        "editOrder": "/auftrag/bearbeiten",
+        "newCustomer": "/kunde/neu",
+        "newVendor": "/lieferant/neu",
+        "newQuotation": "/angebot/neu",
+        "newOrder": "/auftrag/neu",
+        "newInvoice": "/rechnung/neu",
+        "manageCustomers": "/kunde",
+        "manageVendors": "/lieferant",
+        "manageArticles": "/artikel",
+        "manageQuotations": "/angebot",
+        "manageOrders": "/auftrag",
+        "manageInvoices": "/rechnung",
+        "manageCreditNotes": "/gutschrift",
+        "manageDeliveryOrders": "/lieferschein",
+        "orderSearch": "/auftrag/suche",
+        "search": "/suche",
+        "searchCustomers": "/kunde/suche",
+        "followUp": "/wiedervorlage",
+        "clientConfig": "/system/mandantenkonfiguration",
+        "developerTools": "/system/developer-tools",
+        "systemUpdate": "/system/aktualisierung",
+        "currentCustomerEdit": "/kunde/bearbeiten",
+        "callHistory": "/anrufliste",
+        "calendar": "/kalender",
+        "wiki": "/wiki",
+        "wikiNew": "/wiki/neu",
+        "wikiCategories": "/wiki/kategorien",
+        "wikiEdit": "/wiki/bearbeiten",
+        "userConfig": "/benutzer/konfiguration",
+        "huSerienbrief": "/serienbrief/hu",
+        "wallDisplay": "/wandanzeige"
+    },
+    "errors": {
+        "PASSWORD_FILE_NOT_FOUND": "Fout: Het wachtwoordbestand api/config/api.passwd.php is niet gevonden. Hernoem het bestand api/config/api.passwd.php.example naar api/config/api.passwd.php en pas de instellingen aan.",
+        "CONFIG_FILE_NOT_FOUND": "Fout: Het configuratiebestand is niet gevonden. Controleer de instellingen."
+    },
+    "MasterDataMenu": {
+        "title": "Stamgegevens",
+        "editCustomer": "Klantgegevens bewerken",
+        "newCustomer": "Nieuwe klant aanmaken",
+        "manageCustomers": "Klanten beheren",
+        "search": "Zoeken",
+        "searchCustomers": "Klanten zoeken",
+        "newVendor": "Nieuwe leverancier aanmaken",
+        "calendar": "Kalender"
+    },
+    "ContactMenu": {
+        "title": "Contact",
+        "callHistory": "Belgeschiedenis",
+        "emails": "E-mails",
+        "whatsapp": "WhatsApp"
+    },
+    "SalesMenu": {
+        "title": "Verkoop",
+        "newQuotation": "Nieuwe offerte aanmaken",
+        "newOrder": "Nieuwe order aanmaken",
+        "newInvoice": "Nieuwe factuur aanmaken",
+        "manageCreditNotes": "Creditnota's"
+    },
+    "SystemMenu": {
+        "title": "Systeem",
+        "clientConfig": "Bedrijfsconfiguratie",
+        "developerTools": "Developer Tools",
+        "systemUpdate": "Systeemupdate",
+        "about": "Over"
+    }
+}

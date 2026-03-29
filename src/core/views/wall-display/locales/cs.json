@@ -1,0 +1,20 @@
+{
+    "WallDisplay": {
+        "calendar": "Kalendar",
+        "faktura": "Doklad",
+        "noFaktura": "Zadny doklad nevybran",
+        "noFakturaHint": "Kliknete v fakturace na tlacitko monitoru",
+        "invoice": "Faktura",
+        "order": "Objednavka",
+        "quotation": "Nabidka",
+        "open": "Otevreno",
+        "closed": "Uzavreno",
+        "position": "Poz.",
+        "description": "Popis",
+        "qty": "Mnozstvi",
+        "price": "Cena",
+        "total": "Celkem",
+        "grossTotal": "Celkova castka",
+        "allDay": "Celodenni"
+    }
+}

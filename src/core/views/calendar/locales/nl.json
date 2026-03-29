@@ -1,0 +1,87 @@
+{
+    "CalendarView": {
+        "title": "Kalender",
+        "actions": {
+            "create": "Nieuwe afspraak",
+            "categories": "Categorieen",
+            "cancel": "Annuleren",
+            "save": "Opslaan",
+            "delete": "Verwijderen",
+            "edit": "Bewerken",
+            "close": "Sluiten"
+        },
+        "confirmDelete": {
+            "title": "Afspraak verwijderen?",
+            "message": "Wilt u deze afspraak echt verwijderen?"
+        },
+        "messages": {
+            "loadError": "Fout bij het laden van de afspraken",
+            "saved": "Afspraak opgeslagen",
+            "saveError": "Fout bij het opslaan",
+            "deleted": "Afspraak verwijderd",
+            "error": "Er is een fout opgetreden",
+            "categoryDeleted": "Categorie verwijderd",
+            "categorySaved": "Categorie opgeslagen"
+        },
+        "search": "Zoeken",
+        "searchResults": "Zoekresultaten",
+        "noResults": "Geen resultaten gevonden"
+    },
+    "CalendarMain": {
+        "today": "Vandaag",
+        "month": "Maand",
+        "week": "Week",
+        "day": "Dag",
+        "list": "Lijst",
+        "allDay": "Hele dag",
+        "filterCategories": "Categorieen filteren"
+    },
+    "CalendarEventDialog": {
+        "titleCreate": "Nieuwe afspraak",
+        "titleEdit": "Afspraak bewerken",
+        "title": "Titel",
+        "allDay": "Hele dag",
+        "start": "Begin",
+        "end": "Einde",
+        "category": "Categorie",
+        "noCategory": "Geen categorie",
+        "priority": "Prioriteit",
+        "priorityLow": "Laag",
+        "priorityNormal": "Normaal",
+        "priorityHigh": "Hoog",
+        "location": "Locatie",
+        "description": "Beschrijving",
+        "color": "Kleur",
+        "visibility": "Zichtbaarheid",
+        "visibilityAll": "Iedereen",
+        "visibilityPrivate": "Prive",
+        "customerVendor": "Klant/Leverancier",
+        "validation": {
+            "titleRequired": "Titel is verplicht",
+            "startRequired": "Startdatum is verplicht"
+        }
+    },
+    "CalendarEventDetail": {
+        "edit": "Bewerken",
+        "delete": "Verwijderen",
+        "close": "Sluiten",
+        "location": "Locatie",
+        "category": "Categorie",
+        "priority": "Prioriteit",
+        "owner": "Aangemaakt door",
+        "linkedTo": "Gekoppeld aan",
+        "priorityLow": "Laag",
+        "priorityNormal": "Normaal",
+        "priorityHigh": "Hoog"
+    },
+    "CalendarCategoryManager": {
+        "title": "Categorieen beheren",
+        "addCategory": "Nieuwe categorie",
+        "label": "Aanduiding",
+        "color": "Kleur",
+        "save": "Opslaan",
+        "delete": "Verwijderen",
+        "confirmDelete": "Wilt u deze categorie echt verwijderen? Afspraken behouden hun gegevens maar verliezen de categorietoewijzing.",
+        "noCategories": "Geen categorieen beschikbaar"
+    }
+}

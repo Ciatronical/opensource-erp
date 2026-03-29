@@ -1,0 +1,50 @@
+{
+    "setup": {
+        "title": "OpensourceERP 设置",
+        "welcome": "欢迎使用 OpensourceERP！请配置认证数据库连接。",
+        "setupAlreadyDone": "设置已完成。正在跳转到登录页面...",
+        "configFound": "找到 kivitendo.conf — 密码未加密。表单已自动填充。",
+        "setupCompleteMessage": "设置成功完成！密码已加密保存。正在跳转...",
+        "fields": {
+            "host": "主机",
+            "port": "端口",
+            "database": "数据库名称",
+            "login": "登录名",
+            "password": "密码"
+        },
+        "placeholders": {
+            "host": "localhost",
+            "port": "5432",
+            "database": "oserp_auth",
+            "login": "postgres"
+        },
+        "validation": {
+            "required": "必填字段",
+            "portRange": "端口必须在 1 到 65535 之间"
+        },
+        "buttons": {
+            "testConnection": "测试连接",
+            "testingConnection": "正在测试连接...",
+            "saveSetup": "完成设置",
+            "savingSetup": "正在保存...",
+            "finish": "运行应用"
+        },
+        "errors": {
+            "checkStatus": "检查设置状态时出错",
+            "testConnection": "测试连接时出错",
+            "testNetworkError": "测试连接时网络错误",
+            "saveSetup": "保存配置时出错",
+            "saveNetworkError": "保存配置时网络错误"
+        },
+        "update": {
+            "title": "数据库更新",
+            "running": "正在更新数据库...",
+            "success": "数据库更新成功完成。",
+            "failed": "数据库更新失败。",
+            "networkError": "数据库更新时网络错误。"
+        },
+        "footer": {
+            "copyright": "OpensourceERP"
+        }
+    }
+}

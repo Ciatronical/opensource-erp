@@ -1,0 +1,40 @@
+{
+    "EmailView": {
+        "title": "Emails",
+        "inbox": "Inbox",
+        "sent": "Sent",
+        "drafts": "Drafts",
+        "trash": "Trash",
+        "folders": "Folders",
+        "compose": "New Email",
+        "refresh": "Refresh",
+        "search": "Search emails...",
+        "noEmails": "No emails found",
+        "noConfig": "Email client is not configured. Please set up email settings in the client configuration under CRM.",
+        "loading": "Loading emails...",
+        "from": "From",
+        "to": "To",
+        "cc": "CC",
+        "date": "Date",
+        "subject": "Subject",
+        "body": "Message",
+        "noSubject": "(No subject)",
+        "attachments": "Attachments",
+        "send": "Send",
+        "cancel": "Cancel",
+        "reply": "Reply",
+        "forward": "Forward",
+        "delete": "Delete",
+        "markRead": "Mark as read",
+        "markUnread": "Mark as unread",
+        "of": "of",
+        "emails": "emails",
+        "page": "Page",
+        "customer": "Customer / Vendor",
+        "searchCustomer": "Search customer or vendor...",
+        "openCustomer": "open"
+    },
+    "EmailMenu": {
+        "title": "Emails"
+    }
+}

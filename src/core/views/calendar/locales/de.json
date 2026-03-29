@@ -1,0 +1,87 @@
+{
+    "CalendarView": {
+        "title": "Kalender",
+        "actions": {
+            "create": "Neuer Termin",
+            "categories": "Kategorien",
+            "cancel": "Abbrechen",
+            "save": "Speichern",
+            "delete": "Löschen",
+            "edit": "Bearbeiten",
+            "close": "Schließen"
+        },
+        "confirmDelete": {
+            "title": "Termin löschen?",
+            "message": "Möchten Sie diesen Termin wirklich löschen?"
+        },
+        "messages": {
+            "loadError": "Fehler beim Laden der Termine",
+            "saved": "Termin gespeichert",
+            "saveError": "Fehler beim Speichern",
+            "deleted": "Termin gelöscht",
+            "error": "Ein Fehler ist aufgetreten",
+            "categoryDeleted": "Kategorie gelöscht",
+            "categorySaved": "Kategorie gespeichert"
+        },
+        "search": "Suche",
+        "searchResults": "Suchergebnisse",
+        "noResults": "Keine Ergebnisse gefunden"
+    },
+    "CalendarMain": {
+        "today": "Heute",
+        "month": "Monat",
+        "week": "Woche",
+        "day": "Tag",
+        "list": "Liste",
+        "allDay": "Ganztägig",
+        "filterCategories": "Kategorien filtern"
+    },
+    "CalendarEventDialog": {
+        "titleCreate": "Neuer Termin",
+        "titleEdit": "Termin bearbeiten",
+        "title": "Titel",
+        "allDay": "Ganztägig",
+        "start": "Beginn",
+        "end": "Ende",
+        "category": "Kategorie",
+        "noCategory": "Keine Kategorie",
+        "priority": "Priorität",
+        "priorityLow": "Niedrig",
+        "priorityNormal": "Normal",
+        "priorityHigh": "Hoch",
+        "location": "Ort",
+        "description": "Beschreibung",
+        "color": "Farbe",
+        "visibility": "Sichtbarkeit",
+        "visibilityAll": "Alle",
+        "visibilityPrivate": "Privat",
+        "customerVendor": "Kunde/Lieferant",
+        "validation": {
+            "titleRequired": "Titel ist erforderlich",
+            "startRequired": "Startdatum ist erforderlich"
+        }
+    },
+    "CalendarEventDetail": {
+        "edit": "Bearbeiten",
+        "delete": "Löschen",
+        "close": "Schließen",
+        "location": "Ort",
+        "category": "Kategorie",
+        "priority": "Priorität",
+        "owner": "Erstellt von",
+        "linkedTo": "Verknüpft mit",
+        "priorityLow": "Niedrig",
+        "priorityNormal": "Normal",
+        "priorityHigh": "Hoch"
+    },
+    "CalendarCategoryManager": {
+        "title": "Kategorien verwalten",
+        "addCategory": "Neue Kategorie",
+        "label": "Bezeichnung",
+        "color": "Farbe",
+        "save": "Speichern",
+        "delete": "Löschen",
+        "confirmDelete": "Kategorie wirklich löschen? Termine behalten ihre Daten, verlieren aber die Kategorie-Zuordnung.",
+        "noCategories": "Keine Kategorien vorhanden"
+    }
+}

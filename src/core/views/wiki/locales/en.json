@@ -1,0 +1,83 @@
+{
+    "WikiMenu": {
+        "title": "Wiki",
+        "newPage": "New Article",
+        "allPages": "All Articles",
+        "categories": "Categories"
+    },
+    "WikiListView": {
+        "title": "Wiki - Knowledge Base",
+        "newPage": "New Article",
+        "search": "Search articles...",
+        "allCategories": "All",
+        "noPages": "No articles yet.",
+        "noPagesHint": "Create your first wiki article.",
+        "headers": {
+            "title": "Title",
+            "category": "Category",
+            "author": "Author",
+            "updated": "Last Updated",
+            "kba": "KBA"
+        },
+        "confirmDelete": "Do you really want to delete the article \"{title}\"?",
+        "deleted": "Article deleted.",
+        "deleteError": "Error deleting article."
+    },
+    "WikiReadView": {
+        "title": "Wiki Article",
+        "edit": "Edit",
+        "back": "Back to Overview",
+        "revisions": "Versions",
+        "createdBy": "Created by",
+        "updatedBy": "Last edited by",
+        "kbaLabel": "KBA Assignment",
+        "notFound": "Article not found.",
+        "loadError": "Error loading article."
+    },
+    "WikiEditView": {
+        "titleNew": "New Wiki Article",
+        "titleEdit": "Edit Wiki Article",
+        "fieldTitle": "Title",
+        "fieldCategory": "Category",
+        "fieldContent": "Content",
+        "fieldKbaHsn": "HSN",
+        "fieldKbaTsn": "TSN (first 3 characters)",
+        "kbaSection": "KBA Assignment (optional)",
+        "save": "Save",
+        "cancel": "Cancel",
+        "saved": "Article saved.",
+        "saveError": "Error saving article.",
+        "missingTitle": "Please enter a title.",
+        "revisions": "Version History",
+        "noRevisions": "No older versions available.",
+        "restore": "Restore",
+        "confirmRestore": "Restore the version from {date}?",
+        "restored": "Version restored.",
+        "restoreError": "Error restoring version.",
+        "statusSaving": "Saving...",
+        "statusSaved": "Saved",
+        "statusUnsaved": "Unsaved",
+        "statusError": "Save Error",
+        "back": "Back",
+        "newCategory": "New Category",
+        "createCategory": "Create"
+    },
+    "WikiCategoriesView": {
+        "title": "Wiki Categories",
+        "newCategory": "New Category",
+        "name": "Name",
+        "sortkey": "Sort Order",
+        "pageCount": "Articles",
+        "save": "Save",
+        "cancel": "Cancel",
+        "edit": "Edit",
+        "delete": "Delete",
+        "noCategories": "No categories yet.",
+        "confirmDelete": "Do you really want to delete the category \"{name}\"?",
+        "saved": "Category saved.",
+        "deleted": "Category deleted.",
+        "saveError": "Error saving category.",
+        "deleteError": "Error deleting category.",
+        "sortUpdated": "Sort order updated."
+    }
+}

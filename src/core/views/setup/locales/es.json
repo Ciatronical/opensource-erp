@@ -1,0 +1,50 @@
+{
+    "setup": {
+        "title": "OpensourceERP Setup",
+        "welcome": "Bienvenido a OpensourceERP. Por favor, configure la conexión a la base de datos de autenticación.",
+        "setupAlreadyDone": "La configuración ya se ha realizado. Será redirigido a la página de inicio de sesión...",
+        "configFound": "kivitendo.conf encontrado - La contraseña no estaba cifrada. El formulario se ha rellenado automáticamente.",
+        "setupCompleteMessage": "Configuración completada con éxito. La contraseña se ha guardado cifrada. Será redirigido...",
+        "fields": {
+            "host": "Host",
+            "port": "Puerto",
+            "database": "Nombre de la base de datos",
+            "login": "Usuario",
+            "password": "Contraseña"
+        },
+        "placeholders": {
+            "host": "localhost",
+            "port": "5432",
+            "database": "oserp_auth",
+            "login": "postgres"
+        },
+        "validation": {
+            "required": "Campo obligatorio",
+            "portRange": "El puerto debe estar entre 1 y 65535"
+        },
+        "buttons": {
+            "testConnection": "Probar conexión",
+            "testingConnection": "Probando conexión...",
+            "saveSetup": "Finalizar configuración",
+            "savingSetup": "Guardando...",
+            "finish": "Ejecutar aplicación"
+        },
+        "errors": {
+            "checkStatus": "Error al verificar el estado de la configuración",
+            "testConnection": "Error al probar la conexión",
+            "testNetworkError": "Error de red al probar la conexión",
+            "saveSetup": "Error al guardar la configuración",
+            "saveNetworkError": "Error de red al guardar la configuración"
+        },
+        "update": {
+            "title": "Actualización de base de datos",
+            "running": "Actualizando base de datos...",
+            "success": "Actualización de base de datos completada con éxito.",
+            "failed": "Actualización de base de datos fallida.",
+            "networkError": "Error de red en la actualización de base de datos."
+        },
+        "footer": {
+            "copyright": "OpensourceERP"
+        }
+    }
+}

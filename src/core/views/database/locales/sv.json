@@ -1,0 +1,12 @@
+{
+    "SaveDatabaseView": {
+        "title": "Spara databas",
+        "description": "Spara den aktuella databasen pa din enhet.",
+        "saveButton": "Spara databas"
+    },
+    "LoadDatabaseView": {
+        "title": "Ladda databas",
+        "description": "Ladda en tidigare sparad databas fran din enhet.",
+        "loadButton": "Ladda databas"
+    }
+}

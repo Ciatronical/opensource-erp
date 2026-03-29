@@ -1,0 +1,21 @@
+{
+    "WallDisplay": {
+        "calendar": "Kalender",
+        "faktura": "Beleg",
+        "noFaktura": "Kein Beleg ausgewählt",
+        "noFakturaHint": "Klicke in einer Faktura auf den Monitor-Button",
+        "invoice": "Rechnung",
+        "order": "Auftrag",
+        "quotation": "Angebot",
+        "open": "Offen",
+        "closed": "Abgeschlossen",
+        "position": "Pos.",
+        "description": "Beschreibung",
+        "qty": "Menge",
+        "price": "Preis",
+        "total": "Gesamt",
+        "grossTotal": "Gesamtbetrag",
+        "allDay": "Ganztägig",
+        "exit": "Beenden"
+    }
+}

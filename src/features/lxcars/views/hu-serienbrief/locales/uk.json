@@ -1,0 +1,68 @@
+{
+    "HuSerienbriefView": {
+        "title": "Повідомлення про ТО",
+        "subtitle": "Клієнти з терміном проходження технічного огляду",
+        "vorlauf": "Запас: {monate} місяців",
+        "fields": {
+            "customer_name": "Клієнт",
+            "kennzeichen": "Номерний знак",
+            "hu_datum": "Дата ТО",
+            "telefon": "Телефон",
+            "email": "Електронна пошта",
+            "fahrzeug": "Транспортний засіб",
+            "actions": "Дії",
+            "date_from": "ТО від",
+            "date_to": "ТО до"
+        },
+        "buttons": {
+            "print_all": "Друкувати вибрані",
+            "email_all": "Надіслати електронною поштою",
+            "reload": "Оновити",
+            "exclude": "Виключити",
+            "include": "Включити знову",
+            "send_pin": "Надіслати з PIN",
+            "whatsapp_all": "Надіслати WhatsApp"
+        },
+        "checkboxes": {
+            "show_excluded": "Також показувати виключених"
+        },
+        "chips": {
+            "excluded": "Виключено",
+            "results_count": "Клієнти"
+        },
+        "filter": {
+            "title": "Період"
+        },
+        "table": {
+            "no_results": "Клієнтів з терміном ТО у налаштованому періоді не знайдено.",
+            "no_results_hint": "Перевірте час запасу в налаштуваннях LXCars."
+        },
+        "whatsapp": {
+            "message": "Вітаємо, {name}, термін ТО для вашого транспортного засобу ({kennzeichen}) закінчується {hu_datum}. Будь ласка, запишіться на прийом. З повагою"
+        },
+        "toasts": {
+            "error_loading": "Помилка завантаження списку ТО.",
+            "excluded_success": "Клієнта виключено.",
+            "included_success": "Клієнта знову включено.",
+            "exclude_error": "Помилка збереження.",
+            "email_sent": "Електронний лист надіслано.",
+            "email_error": "Помилка надсилання електронного листа.",
+            "pdf_error": "Помилка створення PDF.",
+            "sftp_success": "PDF успішно надіслано через eLetter.",
+            "sftp_error": "Помилка надсилання через eLetter.",
+            "whatsapp_sent": "WhatsApp-повідомлення надіслано.",
+            "whatsapp_error": "Помилка надсилання WhatsApp-повідомлення.",
+            "whatsapp_bulk_sent": "{sent} WhatsApp-повідомлень надіслано, {failed} не вдалося.",
+            "whatsapp_no_phone": "Жоден з вибраних клієнтів не має номера телефону."
+        },
+        "tooltips": {
+            "whatsapp_single": "Надіслати нагадування про ТО через WhatsApp",
+            "exclude": "Виключити клієнта з повідомлень про ТО",
+            "include": "Знову включити клієнта в повідомлення про ТО"
+        },
+        "dialogs": {
+            "confirm_exclude_title": "Виключити клієнта",
+            "confirm_exclude_text": "Цього клієнта буде назавжди видалено зі списку повідомлень про ТО. Бажаєте продовжити?"
+        }
+    }
+}

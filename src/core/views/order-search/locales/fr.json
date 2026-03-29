@@ -1,0 +1,41 @@
+{
+    "OrderSearchView": {
+        "title": "Recherche de commandes",
+        "fields": {
+            "ordnumber": "Numero de commande",
+            "customer_name": "Nom du client",
+            "transaction_description": "Description",
+            "first_instruction": "Description",
+            "location": "Emplacement",
+            "status": "Statut",
+            "transdate_from": "Date du",
+            "transdate_to": "Date au",
+            "bringetermin_from": "Date de depot du",
+            "bringetermin_to": "Date de depot au",
+            "amount_from": "Montant de",
+            "amount_to": "Montant a",
+            "employee": "Responsable",
+            "transdate": "Date",
+            "bringetermin": "Date de depot",
+            "amount": "Montant",
+            "cusordnumber": "Numero de commande client",
+            "hersteller": "Constructeur"
+        },
+        "buttons": {
+            "search": "Rechercher",
+            "reset": "Reinitialiser"
+        },
+        "table": {
+            "title": "Resultats de recherche",
+            "text_no_search_table_shown": "Veuillez saisir des criteres de recherche et lancer avec ENTREE ou \"Rechercher\". Les resultats s'afficheront ici.",
+            "text_no_results": "Aucune commande trouvee.",
+            "results_count": "Resultats"
+        },
+        "alerts": {
+            "warning_no_search_criteria": "Aucun critere de recherche saisi. Voulez-vous vraiment charger toutes les commandes ?"
+        },
+        "toasts": {
+            "error_loading_search_results": "Erreur lors du chargement des resultats de recherche."
+        }
+    }
+}

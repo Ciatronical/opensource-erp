@@ -1,0 +1,87 @@
+{
+    "CalendarView": {
+        "title": "Календарь",
+        "actions": {
+            "create": "Новое событие",
+            "categories": "Категории",
+            "cancel": "Отмена",
+            "save": "Сохранить",
+            "delete": "Удалить",
+            "edit": "Редактировать",
+            "close": "Закрыть"
+        },
+        "confirmDelete": {
+            "title": "Удалить событие?",
+            "message": "Вы действительно хотите удалить это событие?"
+        },
+        "messages": {
+            "loadError": "Ошибка загрузки событий",
+            "saved": "Событие сохранено",
+            "saveError": "Ошибка сохранения",
+            "deleted": "Событие удалено",
+            "error": "Произошла ошибка",
+            "categoryDeleted": "Категория удалена",
+            "categorySaved": "Категория сохранена"
+        },
+        "search": "Поиск",
+        "searchResults": "Результаты поиска",
+        "noResults": "Результаты не найдены"
+    },
+    "CalendarMain": {
+        "today": "Сегодня",
+        "month": "Месяц",
+        "week": "Неделя",
+        "day": "День",
+        "list": "Список",
+        "allDay": "Весь день",
+        "filterCategories": "Фильтровать категории"
+    },
+    "CalendarEventDialog": {
+        "titleCreate": "Новое событие",
+        "titleEdit": "Редактировать событие",
+        "title": "Заголовок",
+        "allDay": "Весь день",
+        "start": "Начало",
+        "end": "Конец",
+        "category": "Категория",
+        "noCategory": "Без категории",
+        "priority": "Приоритет",
+        "priorityLow": "Низкий",
+        "priorityNormal": "Обычный",
+        "priorityHigh": "Высокий",
+        "location": "Место",
+        "description": "Описание",
+        "color": "Цвет",
+        "visibility": "Видимость",
+        "visibilityAll": "Все",
+        "visibilityPrivate": "Частное",
+        "customerVendor": "Клиент/Поставщик",
+        "validation": {
+            "titleRequired": "Заголовок обязателен",
+            "startRequired": "Дата начала обязательна"
+        }
+    },
+    "CalendarEventDetail": {
+        "edit": "Редактировать",
+        "delete": "Удалить",
+        "close": "Закрыть",
+        "location": "Место",
+        "category": "Категория",
+        "priority": "Приоритет",
+        "owner": "Создал",
+        "linkedTo": "Привязано к",
+        "priorityLow": "Низкий",
+        "priorityNormal": "Обычный",
+        "priorityHigh": "Высокий"
+    },
+    "CalendarCategoryManager": {
+        "title": "Управление категориями",
+        "addCategory": "Новая категория",
+        "label": "Название",
+        "color": "Цвет",
+        "save": "Сохранить",
+        "delete": "Удалить",
+        "confirmDelete": "Действительно удалить категорию? События сохраняют свои данные, но теряют привязку к категории.",
+        "noCategories": "Категории отсутствуют"
+    }
+}

@@ -1,0 +1,47 @@
+{
+    "LoginView": {
+        "title": "Giriş",
+        "username": "Kullanıcı adı",
+        "password": "Şifre",
+        "client": "Firma",
+        "button": "Giriş yap",
+        "failed": "Giriş başarısız oldu. Lütfen giriş bilgilerinizi kontrol edin.",
+        "EMPTY_FIELDS": "Lütfen kullanıcı adı ve şifre girin.",
+        "USER_NOT_FOUND": "Kullanıcı bulunamadı.",
+        "WRONG_PASSWORD": "Geçersiz şifre.",
+        "ERROR": "Giriş sırasında hata. Lütfen tekrar deneyin.",
+        "ERROR_LOADING_CLIENTS": "Firmalar yüklenirken hata. Lütfen daha sonra tekrar deneyin.",
+        "USER_NOT_ASSIGNED_TO_CLIENT": "Kullanıcı firmaya atanmamış.",
+        "PASSWORD_FILE_NOT_FOUND": "Hata: api/config/api.passwd.php şifre dosyası bulunamadı. Lütfen api/config/api.passwd.php.example dosyasını api/config/api.passwd.php olarak yeniden adlandırın ve ayarları uygun şekilde yapın.",
+        "CONFIG_FILE_NOT_FOUND": "Hata: Yapılandırma dosyası bulunamadı. Lütfen ayarları kontrol edin.",
+        "updateButton": "Güncellemeyi çalıştır",
+        "updateSuccess": "Veritabanı güncellemesi başarıyla tamamlandı.",
+        "updateError": "Veritabanı güncellemesinde hata. Lütfen tekrar deneyin.",
+        "privacy": "Gizlilik politikası",
+        "dataDeletion": "Veri silme"
+    },
+    "NotFoundView": {
+        "title": "Sayfa bulunamadı",
+        "message": "İstenen sayfa bulunamadı.",
+        "back_home": "Ana sayfaya dön"
+    },
+    "NavbarView": {
+        "logoutTooltip": "Çıkış yap",
+        "accountTooltip": "Hesap",
+        "editCustomerTooltip": "Müşteriyi düzenle",
+        "editCvTooltip": "Müşteri/tedarikçi düzenle",
+        "currentC": "Müşteri:",
+        "currentV": "Tedarikçi:",
+        "demoBanner": "Demo modu — Tüm veriler hareketsizlik sonrası otomatik olarak sıfırlanır.",
+        "demoResetWarning": "Demo {seconds} saniye içinde sıfırlanacak — devam etmek için fareyi hareket ettirin."
+    },
+    "ErrorView": {
+        "title": "Bir hata oluştu",
+        "message": "Üzgünüz, beklenmeyen bir hata oluştu.",
+        "debugInfo": "Hata ayıklama bilgileri:",
+        "clickToShowDetails": "Detayları göstermek için tıklayın"
+    },
+    "App": {
+        "loading": "Lütfen bekleyin..."
+    }
+}

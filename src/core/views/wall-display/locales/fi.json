@@ -1,0 +1,20 @@
+{
+    "WallDisplay": {
+        "calendar": "Kalenteri",
+        "faktura": "Asiakirja",
+        "noFaktura": "Asiakirjaa ei valittu",
+        "noFakturaHint": "Napsauta laskutuksessa nayttonpainiketta",
+        "invoice": "Lasku",
+        "order": "Tilaus",
+        "quotation": "Tarjous",
+        "open": "Avoin",
+        "closed": "Suljettu",
+        "position": "Rivi",
+        "description": "Kuvaus",
+        "qty": "Maara",
+        "price": "Hinta",
+        "total": "Yhteensa",
+        "grossTotal": "Kokonaissumma",
+        "allDay": "Koko paiva"
+    }
+}

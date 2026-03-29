@@ -1,0 +1,50 @@
+{
+    "update": {
+        "title": "Оновлення системи",
+        "description": "Тут виконується резервне копіювання та оновлення всіх баз даних компаній та бази даних автентифікації.",
+        "messages": "Повідомлення",
+        "sqlStatements": "SQL-запити",
+        "errors": "Помилки",
+        "dryRunSuccess": "Попередній перегляд успішно завантажено.",
+        "updateSuccess": "Всі бази даних успішно оновлено.",
+        "gitPull": "Git Pull",
+        "gitPullSuccess": "Git Pull успішно виконано",
+        "gitPullFailed": "Git Pull не вдався",
+        "authDatabase": "База даних автентифікації",
+        "authBackup": "Резервна копія автентифікації",
+        "clientDatabase": "Компанія: {name}",
+        "clientDbName": "База даних: {dbname}",
+        "backupSuccess": "Резервну копію створено: {filename}",
+        "backupFailed": "Створення резервної копії не вдалося",
+        "backupSkipped": "Резервна копія не створюється при попередньому перегляді",
+        "features": "Функції: {features}",
+        "noClients": "Компанії не знайдені.",
+        "overallSuccess": "Всі бази даних успішно оновлено",
+        "overallFailed": "Помилка при оновленні",
+        "buttons": {
+            "dryRun": "Попередній перегляд",
+            "checking": "Перевірка...",
+            "update": "Виконати оновлення",
+            "updating": "Оновлення...",
+            "finish": "Готово"
+        },
+        "errorMessages": {
+            "dryRunFailed": "Попередній перегляд не вдався.",
+            "updateFailed": "Оновлення не вдалося.",
+            "networkError": "Мережева помилка при оновленні."
+        },
+        "schemaMessages": {
+            "dry_run_mode": "Режим попереднього перегляду - Зміни не вносяться",
+            "columns_added": "Таблиця {table}: {count} стовпець(ів) буде додано | Таблиця {table}: {count} стовпець(ів) додано",
+            "column_added": "Стовпець '{column}' буде додано | Стовпець '{column}' додано",
+            "table_up_to_date": "Таблиця {table}: Всі стовпці наявні",
+            "table_created": "Таблицю {table} буде створено | Таблицю {table} створено",
+            "version_updated": "Версію {version} записано в базу даних {schema}",
+            "object_exists": "{object_type} {name} вже існує",
+            "statement_executed": "{statement_type} {target} виконано",
+            "csv_skipped": "CSV пропущено: {table} ({reason})",
+            "csv_imported": "CSV імпортовано: {table} ({rows_imported} рядків)",
+            "info": "{text}"
+        }
+    }
+}

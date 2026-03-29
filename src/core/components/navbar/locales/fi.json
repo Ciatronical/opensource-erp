@@ -1,0 +1,41 @@
+{
+    "NavbarView": {
+        "logoutTooltip": "Kirjaudu ulos",
+        "accountTooltip": "Tili",
+        "editCustomerTooltip": "Muokkaa asiakasta",
+        "editCvTooltip": "Muokkaa asiakasta/toimittajaa",
+        "currentC": "Asiakas:",
+        "currentV": "Toimittaja:",
+        "openInNewTabTooltip": "Päävalikko",
+        "newTabTooltip": "Avaa uudessa välilehdessä",
+        "calendarTooltip": "Kalenteri",
+        "callHistoryTooltip": "Puheluhistoria",
+        "userConfig": "Asetukset",
+        "switchClient": "Vaihda yritystä",
+        "uploadLogo": "Yrityksen logo",
+        "selectImage": "Valitse kuva",
+        "logoHint": "Valitse kuva, asemoi ja rajaa",
+        "saveLogo": "Tallenna",
+        "deleteLogo": "Poista",
+        "cancel": "Peruuta"
+    },
+    "GlobalSearch": {
+        "placeholder": "Hae...",
+        "noResults": "Ei tuloksia",
+        "customers": "Asiakkaat",
+        "vendors": "Toimittajat",
+        "invoices": "Laskut",
+        "orders": "Tilaukset",
+        "quotations": "Tarjoukset",
+        "articles": "Tuotteet",
+        "vehicles": "Ajoneuvot",
+        "wiki": "Wiki-artikkelit",
+        "recentlyVisited": "Viimeksi vieraillut",
+        "clearHistory": "Tyhjennä historia"
+    },
+    "InfoBar": {
+        "unknownCaller": "Tuntematon",
+        "closeAll": "Sulje kaikki ilmoitukset",
+        "pendingParts": "Pyydetyt varaosat"
+    }
+}

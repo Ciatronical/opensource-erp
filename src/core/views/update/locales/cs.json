@@ -1,0 +1,50 @@
+{
+    "update": {
+        "title": "Aktualizace systemu",
+        "description": "Zde budou vsechny databaze firem a autentizacni databaze zalohovany a aktualizovany.",
+        "messages": "Zpravy",
+        "sqlStatements": "SQL prikazy",
+        "errors": "Chyby",
+        "dryRunSuccess": "Nahled uspesne nacten.",
+        "updateSuccess": "Vsechny databaze uspesne aktualizovany.",
+        "gitPull": "Git Pull",
+        "gitPullSuccess": "Git Pull uspesny",
+        "gitPullFailed": "Git Pull selhal",
+        "authDatabase": "Autentizacni databaze",
+        "authBackup": "Zaloha autentizace",
+        "clientDatabase": "Firma: {name}",
+        "clientDbName": "Databaze: {dbname}",
+        "backupSuccess": "Zaloha vytvorena: {filename}",
+        "backupFailed": "Zalohovani selhalo",
+        "backupSkipped": "Zaloha se pri Dry-Run nevytvari",
+        "features": "Funkce: {features}",
+        "noClients": "Zadne firmy nenalezeny.",
+        "overallSuccess": "Vsechny databaze uspesne aktualizovany",
+        "overallFailed": "Chyba pri aktualizaci",
+        "buttons": {
+            "dryRun": "Nahled",
+            "checking": "Kontroluji...",
+            "update": "Provest aktualizaci",
+            "updating": "Aktualizuji...",
+            "finish": "Hotovo"
+        },
+        "errorMessages": {
+            "dryRunFailed": "Nahled selhal.",
+            "updateFailed": "Aktualizace selhala.",
+            "networkError": "Sitova chyba pri aktualizaci."
+        },
+        "schemaMessages": {
+            "dry_run_mode": "Rezim nahledu - Zadne zmeny nebudou provedeny",
+            "columns_added": "Tabulka {table}: {count} sloupec(u) by bylo pridano | Tabulka {table}: {count} sloupec(u) pridano",
+            "column_added": "Sloupec '{column}' by byl pridan | Sloupec '{column}' pridan",
+            "table_up_to_date": "Tabulka {table}: Vsechny sloupce pritomny",
+            "table_created": "Tabulka {table} by byla vytvorena | Tabulka {table} vytvorena",
+            "version_updated": "Verze {version} zapsana do databaze {schema}",
+            "object_exists": "{object_type} {name} jiz existuje",
+            "statement_executed": "{statement_type} {target} provedeno",
+            "csv_skipped": "CSV preskoceno: {table} ({reason})",
+            "csv_imported": "CSV importovano: {table} ({rows_imported} radku)",
+            "info": "{text}"
+        }
+    }
+}

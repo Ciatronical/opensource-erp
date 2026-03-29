@@ -1,0 +1,40 @@
+{
+    "EmailView": {
+        "title": "E-kirjad",
+        "inbox": "Postkast",
+        "sent": "Saadetud",
+        "drafts": "Mustandid",
+        "trash": "Prügikast",
+        "folders": "Kaustad",
+        "compose": "Uus e-kiri",
+        "refresh": "Värskenda",
+        "search": "Otsi e-kirju...",
+        "noEmails": "E-kirju pole",
+        "noConfig": "E-posti klient pole seadistatud. Palun seadistage e-posti seaded ettevõtte seadistuses CRM all.",
+        "loading": "E-kirjade laadimine...",
+        "from": "Kellelt",
+        "to": "Kellele",
+        "cc": "CC",
+        "date": "Kuupäev",
+        "subject": "Teema",
+        "body": "Sõnum",
+        "noSubject": "(Teema puudub)",
+        "attachments": "Manused",
+        "send": "Saada",
+        "cancel": "Tühista",
+        "reply": "Vasta",
+        "forward": "Edasta",
+        "delete": "Kustuta",
+        "markRead": "Märgi loetuks",
+        "markUnread": "Märgi mitteloetuks",
+        "of": "/",
+        "emails": "e-kirja",
+        "page": "Lehekülg",
+        "customer": "Klient / Tarnija",
+        "searchCustomer": "Otsi klienti või tarnijat...",
+        "openCustomer": "ava"
+    },
+    "EmailMenu": {
+        "title": "E-kirjad"
+    }
+}

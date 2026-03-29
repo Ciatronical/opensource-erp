@@ -1,0 +1,27 @@
+{
+    "ArticleEditView": {
+        "titleEdit": "Upravit artikl",
+        "saving": "Ukladam...",
+        "saved": "Ulozeno",
+        "sections": {
+            "masterData": "Kmenova data"
+        },
+        "fields": {
+            "partnumber": "Cislo artiklu",
+            "description": "Popis",
+            "partType": "Typ artiklu",
+            "typePart": "Zbozi",
+            "typeService": "Sluzba",
+            "unit": "Jednotka",
+            "buchungsgruppe": "Uctovaci skupina",
+            "sellprice": "Prodejni cena",
+            "notes": "Dlouhy popis",
+            "obsolete": "Zastarale / Nepouzivat"
+        },
+        "messages": {
+            "loading": "Artikl se nacita",
+            "loadError": "Chyba pri nacitani artiklu",
+            "notFound": "Artikl nenalezen"
+        }
+    }
+}

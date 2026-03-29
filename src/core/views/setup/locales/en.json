@@ -1,0 +1,50 @@
+{
+    "setup": {
+        "title": "OpensourceERP Setup",
+        "welcome": "Welcome to OpensourceERP! Please configure the connection to the authentication database.",
+        "setupAlreadyDone": "Setup has already been completed. You will be redirected to the login page...",
+        "configFound": "kivitendo.conf found - password was unencrypted. Form has been auto-filled.",
+        "setupCompleteMessage": "Setup completed successfully! Password has been encrypted and saved. You will be redirected...",
+        "fields": {
+            "host": "Host",
+            "port": "Port",
+            "database": "Database Name",
+            "login": "Login",
+            "password": "Password"
+        },
+        "placeholders": {
+            "host": "localhost",
+            "port": "5432",
+            "database": "oserp_auth",
+            "login": "postgres"
+        },
+        "validation": {
+            "required": "Required field",
+            "portRange": "Port must be between 1 and 65535"
+        },
+        "buttons": {
+            "testConnection": "Test Connection",
+            "testingConnection": "Testing Connection...",
+            "saveSetup": "Complete Setup",
+            "savingSetup": "Saving...",
+            "finish": "App Launch"
+        },
+        "errors": {
+            "checkStatus": "Error checking setup status",
+            "testConnection": "Error testing connection",
+            "testNetworkError": "Network error testing connection",
+            "saveSetup": "Error saving configuration",
+            "saveNetworkError": "Network error saving configuration"
+        },
+        "update": {
+            "title": "Database Update",
+            "running": "Updating database...",
+            "success": "Database update completed successfully.",
+            "failed": "Database update failed.",
+            "networkError": "Network error during database update."
+        },
+        "footer": {
+            "copyright": "OpensourceERP"
+        }
+    }
+}

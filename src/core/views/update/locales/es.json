@@ -1,0 +1,50 @@
+{
+    "update": {
+        "title": "Actualización del sistema",
+        "description": "Aquí se respaldan y actualizan todas las bases de datos de empresas así como la base de datos de autenticación.",
+        "messages": "Mensajes",
+        "sqlStatements": "Sentencias SQL",
+        "errors": "Errores",
+        "dryRunSuccess": "Vista previa cargada con éxito.",
+        "updateSuccess": "Todas las bases de datos actualizadas con éxito.",
+        "gitPull": "Git Pull",
+        "gitPullSuccess": "Git Pull exitoso",
+        "gitPullFailed": "Git Pull fallido",
+        "authDatabase": "Base de datos de autenticación",
+        "authBackup": "Copia de seguridad de autenticación",
+        "clientDatabase": "Empresa: {name}",
+        "clientDbName": "Base de datos: {dbname}",
+        "backupSuccess": "Copia de seguridad creada: {filename}",
+        "backupFailed": "Error en la copia de seguridad",
+        "backupSkipped": "La copia de seguridad no se crea en modo de vista previa",
+        "features": "Funcionalidades: {features}",
+        "noClients": "No se encontraron empresas.",
+        "overallSuccess": "Todas las bases de datos actualizadas con éxito",
+        "overallFailed": "Error en la actualización",
+        "buttons": {
+            "dryRun": "Vista previa",
+            "checking": "Verificando...",
+            "update": "Ejecutar actualización",
+            "updating": "Actualizando...",
+            "finish": "Finalizado"
+        },
+        "errorMessages": {
+            "dryRunFailed": "Vista previa fallida.",
+            "updateFailed": "Actualización fallida.",
+            "networkError": "Error de red durante la actualización."
+        },
+        "schemaMessages": {
+            "dry_run_mode": "Modo de vista previa - No se realizarán cambios",
+            "columns_added": "Tabla {table}: se añadirían {count} columna(s) | Tabla {table}: {count} columna(s) añadida(s)",
+            "column_added": "Columna '{column}' se añadiría | Columna '{column}' añadida",
+            "table_up_to_date": "Tabla {table}: Todas las columnas presentes",
+            "table_created": "Tabla {table} se crearía | Tabla {table} creada",
+            "version_updated": "Versión {version} registrada en la base de datos {schema}",
+            "object_exists": "{object_type} {name} ya existe",
+            "statement_executed": "{statement_type} {target} ejecutado",
+            "csv_skipped": "CSV omitido: {table} ({reason})",
+            "csv_imported": "CSV importado: {table} ({rows_imported} filas)",
+            "info": "{text}"
+        }
+    }
+}

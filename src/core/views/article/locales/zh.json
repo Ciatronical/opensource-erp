@@ -1,0 +1,27 @@
+{
+    "ArticleEditView": {
+        "titleEdit": "编辑商品",
+        "saving": "正在保存...",
+        "saved": "已保存",
+        "sections": {
+            "masterData": "主数据"
+        },
+        "fields": {
+            "partnumber": "商品编号",
+            "description": "描述",
+            "partType": "商品类型",
+            "typePart": "商品",
+            "typeService": "服务",
+            "unit": "单位",
+            "buchungsgruppe": "记账组",
+            "sellprice": "销售价格",
+            "notes": "详细描述",
+            "obsolete": "已淘汰 / 不再使用"
+        },
+        "messages": {
+            "loading": "正在加载商品",
+            "loadError": "加载商品时出错",
+            "notFound": "未找到商品"
+        }
+    }
+}

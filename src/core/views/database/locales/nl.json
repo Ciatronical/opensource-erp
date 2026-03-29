@@ -1,0 +1,12 @@
+{
+    "SaveDatabaseView": {
+        "title": "Database opslaan",
+        "description": "Sla de huidige database op uw apparaat op.",
+        "saveButton": "Database opslaan"
+    },
+    "LoadDatabaseView": {
+        "title": "Database laden",
+        "description": "Laad een eerder opgeslagen database van uw apparaat.",
+        "loadButton": "Database laden"
+    }
+}

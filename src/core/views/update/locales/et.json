@@ -1,0 +1,50 @@
+{
+    "update": {
+        "title": "Süsteemi uuendamine",
+        "description": "Siin varundatakse ja uuendatakse kõik ettevõtte andmebaasid ning autentimisandmebaas.",
+        "messages": "Teated",
+        "sqlStatements": "SQL-laused",
+        "errors": "Vead",
+        "dryRunSuccess": "Eelvaade edukalt laaditud.",
+        "updateSuccess": "Kõik andmebaasid edukalt uuendatud.",
+        "gitPull": "Git Pull",
+        "gitPullSuccess": "Git Pull edukas",
+        "gitPullFailed": "Git Pull ebaõnnestus",
+        "authDatabase": "Autentimisandmebaas",
+        "authBackup": "Autentimise varukoopia",
+        "clientDatabase": "Ettevõte: {name}",
+        "clientDbName": "Andmebaas: {dbname}",
+        "backupSuccess": "Varukoopia loodud: {filename}",
+        "backupFailed": "Varukoopia ebaõnnestus",
+        "backupSkipped": "Varukoopiat ei looda eelvaates",
+        "features": "Funktsioonid: {features}",
+        "noClients": "Ettevõtteid ei leitud.",
+        "overallSuccess": "Kõik andmebaasid edukalt uuendatud",
+        "overallFailed": "Uuendamisel ilmnes viga",
+        "buttons": {
+            "dryRun": "Eelvaade",
+            "checking": "Kontrollimine...",
+            "update": "Käivita uuendus",
+            "updating": "Uuendamine...",
+            "finish": "Valmis"
+        },
+        "errorMessages": {
+            "dryRunFailed": "Eelvaade ebaõnnestus.",
+            "updateFailed": "Uuendamine ebaõnnestus.",
+            "networkError": "Võrguviga uuendamisel."
+        },
+        "schemaMessages": {
+            "dry_run_mode": "Eelvaate režiim - Muudatusi ei tehta",
+            "columns_added": "Tabel {table}: {count} veerg(u) lisatakse | Tabel {table}: {count} veerg(u) lisatud",
+            "column_added": "Veerg '{column}' lisatakse | Veerg '{column}' lisatud",
+            "table_up_to_date": "Tabel {table}: Kõik veerud olemas",
+            "table_created": "Tabel {table} luuakse | Tabel {table} loodud",
+            "version_updated": "Versioon {version} registreeritud {schema}-andmebaasis",
+            "object_exists": "{object_type} {name} on juba olemas",
+            "statement_executed": "{statement_type} {target} käivitatud",
+            "csv_skipped": "CSV vahele jäetud: {table} ({reason})",
+            "csv_imported": "CSV imporditud: {table} ({rows_imported} rida)",
+            "info": "{text}"
+        }
+    }
+}

@@ -1,0 +1,83 @@
+{
+    "WikiMenu": {
+        "title": "Wiki",
+        "newPage": "Novy clanek",
+        "allPages": "Vsechny clanky",
+        "categories": "Kategorie"
+    },
+    "WikiListView": {
+        "title": "Wiki - Znalostni baze",
+        "newPage": "Novy clanek",
+        "search": "Hledat clanky...",
+        "allCategories": "Vse",
+        "noPages": "Zatim zadne clanky.",
+        "noPagesHint": "Vytvorte svuj prvni wiki clanek.",
+        "headers": {
+            "title": "Nazev",
+            "category": "Kategorie",
+            "author": "Autor",
+            "updated": "Posledni aktualizace",
+            "kba": "KBA"
+        },
+        "confirmDelete": "Opravdu smazat clanek \"{title}\"?",
+        "deleted": "Clanek smazan.",
+        "deleteError": "Chyba pri mazani."
+    },
+    "WikiReadView": {
+        "title": "Wiki clanek",
+        "edit": "Upravit",
+        "back": "Zpet na prehled",
+        "revisions": "Verze",
+        "createdBy": "Vytvoril",
+        "updatedBy": "Naposledy upravil",
+        "kbaLabel": "KBA prirazeni",
+        "notFound": "Clanek nenalezen.",
+        "loadError": "Chyba pri nacitani clanku."
+    },
+    "WikiEditView": {
+        "titleNew": "Novy wiki clanek",
+        "titleEdit": "Upravit wiki clanek",
+        "fieldTitle": "Nazev",
+        "fieldCategory": "Kategorie",
+        "fieldContent": "Obsah",
+        "fieldKbaHsn": "HSN",
+        "fieldKbaTsn": "TSN (prvni 3 znaky)",
+        "kbaSection": "KBA prirazeni (volitelne)",
+        "save": "Ulozit",
+        "cancel": "Zrusit",
+        "saved": "Clanek ulozen.",
+        "saveError": "Chyba pri ukladani.",
+        "missingTitle": "Zadejte prosim nazev.",
+        "revisions": "Historie verzi",
+        "noRevisions": "Zatim zadne starsi verze.",
+        "restore": "Obnovit",
+        "confirmRestore": "Obnovit verzi z {date}?",
+        "restored": "Verze obnovena.",
+        "restoreError": "Chyba pri obnovovani.",
+        "statusSaving": "Ukladam...",
+        "statusSaved": "Ulozeno",
+        "statusUnsaved": "Neulozen",
+        "statusError": "Chyba ukladani",
+        "back": "Zpet",
+        "newCategory": "Nova kategorie",
+        "createCategory": "Vytvorit"
+    },
+    "WikiCategoriesView": {
+        "title": "Wiki kategorie",
+        "newCategory": "Nova kategorie",
+        "name": "Nazev",
+        "sortkey": "Razeni",
+        "pageCount": "Clanky",
+        "save": "Ulozit",
+        "cancel": "Zrusit",
+        "edit": "Upravit",
+        "delete": "Smazat",
+        "noCategories": "Zatim zadne kategorie.",
+        "confirmDelete": "Opravdu smazat kategorii \"{name}\"?",
+        "saved": "Kategorie ulozena.",
+        "deleted": "Kategorie smazana.",
+        "saveError": "Chyba pri ukladani.",
+        "deleteError": "Chyba pri mazani.",
+        "sortUpdated": "Poradi aktualizovano."
+    }
+}

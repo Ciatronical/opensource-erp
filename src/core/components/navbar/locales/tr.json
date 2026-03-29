@@ -1,0 +1,41 @@
+{
+    "NavbarView": {
+        "logoutTooltip": "Çıkış yap",
+        "accountTooltip": "Hesap",
+        "editCustomerTooltip": "Müşteriyi düzenle",
+        "editCvTooltip": "Müşteri/tedarikçi düzenle",
+        "currentC": "Müşteri:",
+        "currentV": "Tedarikçi:",
+        "openInNewTabTooltip": "Ana menü",
+        "newTabTooltip": "Yeni sekmede aç",
+        "calendarTooltip": "Takvim",
+        "callHistoryTooltip": "Arama geçmişi",
+        "userConfig": "Yapılandırma",
+        "switchClient": "Firma değiştir",
+        "uploadLogo": "Firma logosu",
+        "selectImage": "Görsel seç",
+        "logoHint": "Görsel seçin, konumlandırın ve kırpın",
+        "saveLogo": "Kaydet",
+        "deleteLogo": "Kaldır",
+        "cancel": "İptal"
+    },
+    "GlobalSearch": {
+        "placeholder": "Ara...",
+        "noResults": "Sonuç yok",
+        "customers": "Müşteriler",
+        "vendors": "Tedarikçiler",
+        "invoices": "Faturalar",
+        "orders": "Siparişler",
+        "quotations": "Teklifler",
+        "articles": "Ürünler",
+        "vehicles": "Araçlar",
+        "wiki": "Wiki makaleleri",
+        "recentlyVisited": "Son ziyaret edilen",
+        "clearHistory": "Geçmişi temizle"
+    },
+    "InfoBar": {
+        "unknownCaller": "Bilinmeyen",
+        "closeAll": "Tüm bildirimleri kapat",
+        "pendingParts": "Talep edilen yedek parçalar"
+    }
+}

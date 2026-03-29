@@ -1,0 +1,87 @@
+{
+    "CalendarView": {
+        "title": "Kalendarz",
+        "actions": {
+            "create": "Nowe wydarzenie",
+            "categories": "Kategorie",
+            "cancel": "Anuluj",
+            "save": "Zapisz",
+            "delete": "Usuń",
+            "edit": "Edytuj",
+            "close": "Zamknij"
+        },
+        "confirmDelete": {
+            "title": "Usunąć wydarzenie?",
+            "message": "Czy na pewno chcesz usunąć to wydarzenie?"
+        },
+        "messages": {
+            "loadError": "Błąd podczas ładowania wydarzeń",
+            "saved": "Wydarzenie zapisane",
+            "saveError": "Błąd podczas zapisywania",
+            "deleted": "Wydarzenie usunięte",
+            "error": "Wystąpił błąd",
+            "categoryDeleted": "Kategoria usunięta",
+            "categorySaved": "Kategoria zapisana"
+        },
+        "search": "Szukaj",
+        "searchResults": "Wyniki wyszukiwania",
+        "noResults": "Nie znaleziono wyników"
+    },
+    "CalendarMain": {
+        "today": "Dzisiaj",
+        "month": "Miesiąc",
+        "week": "Tydzień",
+        "day": "Dzień",
+        "list": "Lista",
+        "allDay": "Cały dzień",
+        "filterCategories": "Filtruj kategorie"
+    },
+    "CalendarEventDialog": {
+        "titleCreate": "Nowe wydarzenie",
+        "titleEdit": "Edytuj wydarzenie",
+        "title": "Tytuł",
+        "allDay": "Cały dzień",
+        "start": "Początek",
+        "end": "Koniec",
+        "category": "Kategoria",
+        "noCategory": "Brak kategorii",
+        "priority": "Priorytet",
+        "priorityLow": "Niski",
+        "priorityNormal": "Normalny",
+        "priorityHigh": "Wysoki",
+        "location": "Miejsce",
+        "description": "Opis",
+        "color": "Kolor",
+        "visibility": "Widoczność",
+        "visibilityAll": "Wszyscy",
+        "visibilityPrivate": "Prywatne",
+        "customerVendor": "Klient/Dostawca",
+        "validation": {
+            "titleRequired": "Tytuł jest wymagany",
+            "startRequired": "Data rozpoczęcia jest wymagana"
+        }
+    },
+    "CalendarEventDetail": {
+        "edit": "Edytuj",
+        "delete": "Usuń",
+        "close": "Zamknij",
+        "location": "Miejsce",
+        "category": "Kategoria",
+        "priority": "Priorytet",
+        "owner": "Utworzone przez",
+        "linkedTo": "Powiązane z",
+        "priorityLow": "Niski",
+        "priorityNormal": "Normalny",
+        "priorityHigh": "Wysoki"
+    },
+    "CalendarCategoryManager": {
+        "title": "Zarządzaj kategoriami",
+        "addCategory": "Nowa kategoria",
+        "label": "Nazwa",
+        "color": "Kolor",
+        "save": "Zapisz",
+        "delete": "Usuń",
+        "confirmDelete": "Czy na pewno usunąć kategorię? Wydarzenia zachowają swoje dane, ale stracą przypisanie do kategorii.",
+        "noCategories": "Brak kategorii"
+    }
+}

@@ -1,0 +1,50 @@
+{
+    "update": {
+        "title": "Aktualizacja systemu",
+        "description": "Tutaj wykonywane jest tworzenie kopii zapasowych i aktualizacja wszystkich baz danych firm oraz bazy danych uwierzytelniania.",
+        "messages": "Komunikaty",
+        "sqlStatements": "Instrukcje SQL",
+        "errors": "B\u0142\u0119dy",
+        "dryRunSuccess": "Podgl\u0105d za\u0142adowany pomy\u015blnie.",
+        "updateSuccess": "Wszystkie bazy danych zaktualizowane pomy\u015blnie.",
+        "gitPull": "Git Pull",
+        "gitPullSuccess": "Git Pull zako\u0144czony pomy\u015blnie",
+        "gitPullFailed": "Git Pull nie powi\u00f3d\u0142 si\u0119",
+        "authDatabase": "Baza danych uwierzytelniania",
+        "authBackup": "Kopia zapasowa uwierzytelniania",
+        "clientDatabase": "Firma: {name}",
+        "clientDbName": "Baza danych: {dbname}",
+        "backupSuccess": "Kopia zapasowa utworzona: {filename}",
+        "backupFailed": "Tworzenie kopii zapasowej nie powiod\u0142o si\u0119",
+        "backupSkipped": "Kopia zapasowa nie jest tworzona w trybie podgl\u0105du",
+        "features": "Funkcje: {features}",
+        "noClients": "Nie znaleziono firm.",
+        "overallSuccess": "Wszystkie bazy danych zaktualizowane pomy\u015blnie",
+        "overallFailed": "B\u0142\u0105d podczas aktualizacji",
+        "buttons": {
+            "dryRun": "Podgl\u0105d",
+            "checking": "Sprawdzanie...",
+            "update": "Wykonaj aktualizacj\u0119",
+            "updating": "Aktualizowanie...",
+            "finish": "Gotowe"
+        },
+        "errorMessages": {
+            "dryRunFailed": "Podgl\u0105d nie powi\u00f3d\u0142 si\u0119.",
+            "updateFailed": "Aktualizacja nie powiod\u0142a si\u0119.",
+            "networkError": "B\u0142\u0105d sieci podczas aktualizacji."
+        },
+        "schemaMessages": {
+            "dry_run_mode": "Tryb podgl\u0105du \u2014 Zmiany nie b\u0119d\u0105 wprowadzane",
+            "columns_added": "Tabela {table}: {count} kolumn(a/y) zosta\u0142oby dodanych | Tabela {table}: {count} kolumn(a/y) dodano",
+            "column_added": "Kolumna '{column}' zosta\u0142aby dodana | Kolumna '{column}' dodana",
+            "table_up_to_date": "Tabela {table}: Wszystkie kolumny obecne",
+            "table_created": "Tabela {table} zosta\u0142aby utworzona | Tabela {table} utworzona",
+            "version_updated": "Wersja {version} zapisana w bazie danych {schema}",
+            "object_exists": "{object_type} {name} ju\u017c istnieje",
+            "statement_executed": "{statement_type} {target} wykonano",
+            "csv_skipped": "CSV pomini\u0119to: {table} ({reason})",
+            "csv_imported": "CSV zaimportowano: {table} ({rows_imported} wierszy)",
+            "info": "{text}"
+        }
+    }
+}

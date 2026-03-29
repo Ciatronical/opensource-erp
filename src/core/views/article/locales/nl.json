@@ -1,0 +1,27 @@
+{
+    "ArticleEditView": {
+        "titleEdit": "Artikel bewerken",
+        "saving": "Opslaan...",
+        "saved": "Opgeslagen",
+        "sections": {
+            "masterData": "Stamgegevens"
+        },
+        "fields": {
+            "partnumber": "Artikelnummer",
+            "description": "Beschrijving",
+            "partType": "Artikeltype",
+            "typePart": "Goederen",
+            "typeService": "Dienst",
+            "unit": "Eenheid",
+            "buchungsgruppe": "Boekingsgroep",
+            "sellprice": "Verkoopprijs",
+            "notes": "Lange beschrijving",
+            "obsolete": "Verouderd / Niet meer gebruiken"
+        },
+        "messages": {
+            "loading": "Artikel wordt geladen",
+            "loadError": "Fout bij het laden van het artikel",
+            "notFound": "Artikel niet gevonden"
+        }
+    }
+}

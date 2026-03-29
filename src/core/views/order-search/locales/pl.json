@@ -1,0 +1,41 @@
+{
+    "OrderSearchView": {
+        "title": "Wyszukiwanie zamówień",
+        "fields": {
+            "ordnumber": "Numer zamówienia",
+            "customer_name": "Nazwa klienta",
+            "transaction_description": "Opis",
+            "first_instruction": "Opis",
+            "location": "Lokalizacja",
+            "status": "Status",
+            "transdate_from": "Data od",
+            "transdate_to": "Data do",
+            "bringetermin_from": "Termin dostarczenia od",
+            "bringetermin_to": "Termin dostarczenia do",
+            "amount_from": "Kwota od",
+            "amount_to": "Kwota do",
+            "employee": "Pracownik",
+            "transdate": "Data",
+            "bringetermin": "Termin dostarczenia",
+            "amount": "Kwota",
+            "cusordnumber": "Numer zamówienia klienta",
+            "hersteller": "Producent"
+        },
+        "buttons": {
+            "search": "Szukaj",
+            "reset": "Resetuj"
+        },
+        "table": {
+            "title": "Wyniki wyszukiwania",
+            "text_no_search_table_shown": "Proszę podać kryteria wyszukiwania i uruchomić za pomocą ENTER lub \"Szukaj\". Wyniki wyszukiwania pojawią się tutaj.",
+            "text_no_results": "Nie znaleziono zamówień.",
+            "results_count": "Wyniki"
+        },
+        "alerts": {
+            "warning_no_search_criteria": "Nie podano kryteriów wyszukiwania. Czy na pewno chcesz załadować wszystkie zamówienia?"
+        },
+        "toasts": {
+            "error_loading_search_results": "Błąd podczas ładowania wyników wyszukiwania."
+        }
+    }
+}

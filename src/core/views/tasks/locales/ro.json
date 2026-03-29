@@ -1,0 +1,135 @@
+{
+    "TasksView": {
+        "title": "Sarcini",
+        "search": "Cautare...",
+        "fromDate": "De la",
+        "toDate": "Pana la",
+        "showDone": "Afiseaza finalizate",
+        "tabs": {
+            "board": "Panou",
+            "list": "Lista",
+            "calendar": "Calendar"
+        },
+        "actions": {
+            "create": "Sarcina noua",
+            "cancel": "Anulare",
+            "delete": "Stergere",
+            "save": "Salvare",
+            "edit": "Editare",
+            "markDone": "Finalizat",
+            "markUndone": "Redeschide",
+            "close": "Inchide"
+        },
+        "columns": {
+            "overdue": "Intarziat",
+            "today": "Astazi",
+            "upcoming": "Viitoare",
+            "done": "Finalizat"
+        },
+        "fields": {
+            "subject": "Subiect",
+            "body": "Nota",
+            "date": "Data"
+        },
+        "calendar": {
+            "today": "Astazi",
+            "month": "Luna",
+            "week": "Saptamana",
+            "day": "Zi",
+            "more": "mai multe"
+        },
+        "dialog": {
+            "titleNew": "Sarcina noua",
+            "titleEdit": "Editare sarcina"
+        },
+        "confirmDelete": {
+            "title": "Stergeti sarcina?",
+            "message": "Doriti sa stergeti aceasta sarcina? Aceasta actiune nu poate fi anulata."
+        },
+        "messages": {
+            "loadError": "Eroare la incarcarea sarcinilor",
+            "saved": "Sarcina salvata",
+            "saveError": "Eroare la salvare",
+            "deleted": "Sarcina stearsa",
+            "markedDone": "Marcat ca finalizat",
+            "markedUndone": "Redeschis",
+            "error": "A aparut o eroare"
+        }
+    },
+    "TasksCard": {
+        "noSubject": "Fara subiect",
+        "today": "Astazi",
+        "tomorrow": "Maine",
+        "daysAgo": "acum {days} zile",
+        "inDays": "in {days} zile",
+        "markDone": "Marcheaza ca finalizat",
+        "markUndone": "Redeschide",
+        "delete": "Sterge"
+    },
+    "TasksDialog": {
+        "titleCreate": "Sarcina noua",
+        "titleEdit": "Editare sarcina",
+        "date": "Data",
+        "subject": "Subiect",
+        "body": "Nota",
+        "assignedEmployees": "Atribuit la",
+        "linkSection": "Legatura (optional)",
+        "linkType": "Tip legatura",
+        "linkId": "ID",
+        "linkInfo": "Denumire",
+        "cancel": "Anulare",
+        "save": "Salvare",
+        "quickDate": {
+            "today": "Astazi",
+            "tomorrow": "Maine",
+            "nextWeek": "+1 saptamana",
+            "nextMonth": "+1 luna"
+        },
+        "linkTypes": {
+            "customer": "Client",
+            "vendor": "Furnizor",
+            "salesQuotation": "Oferta",
+            "salesOrder": "Comanda",
+            "salesDeliveryOrder": "Aviz de livrare",
+            "salesInvoice": "Factura",
+            "purchaseQuotation": "Cerere oferta",
+            "purchaseOrder": "Comanda",
+            "purchaseDeliveryOrder": "Receptie marfa",
+            "purchaseInvoice": "Factura primita"
+        },
+        "validation": {
+            "required": "Camp obligatoriu"
+        }
+    },
+    "TasksList": {
+        "done": "Finalizat",
+        "open": "Deschis",
+        "today": "Astazi",
+        "tomorrow": "Maine",
+        "markDone": "Marcheaza ca finalizat",
+        "markUndone": "Redeschide",
+        "edit": "Editare",
+        "delete": "Sterge",
+        "headers": {
+            "date": "Data",
+            "subject": "Subiect",
+            "link": "Legatura",
+            "assignedTo": "Atribuit",
+            "status": "Status",
+            "actions": "Actiuni"
+        }
+    },
+    "TasksWidget": {
+        "title": "Sarcini",
+        "overdue": "Intarziate",
+        "today": "Astazi",
+        "tomorrow": "Maine",
+        "upcoming": "Viitoare",
+        "noItems": "Nu exista sarcini deschise",
+        "showAll": "Afiseaza toate {count}",
+        "markDone": "Marcheaza ca finalizat",
+        "quickAdd": "Adaugare rapida",
+        "openAll": "Deschide toate",
+        "daysAgo": "acum {days} zile"
+    }
+}

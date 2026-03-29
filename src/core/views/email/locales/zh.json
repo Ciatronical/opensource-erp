@@ -1,0 +1,40 @@
+{
+    "EmailView": {
+        "title": "电子邮件",
+        "inbox": "收件箱",
+        "sent": "已发送",
+        "drafts": "草稿",
+        "trash": "回收站",
+        "folders": "文件夹",
+        "compose": "新邮件",
+        "refresh": "刷新",
+        "search": "搜索邮件...",
+        "noEmails": "暂无电子邮件",
+        "noConfig": "电子邮件客户端未配置。请在公司配置的 CRM 部分设置电子邮件。",
+        "loading": "正在加载邮件...",
+        "from": "发件人",
+        "to": "收件人",
+        "cc": "抄送",
+        "date": "日期",
+        "subject": "主题",
+        "body": "正文",
+        "noSubject": "（无主题）",
+        "attachments": "附件",
+        "send": "发送",
+        "cancel": "取消",
+        "reply": "回复",
+        "forward": "转发",
+        "delete": "删除",
+        "markRead": "标记为已读",
+        "markUnread": "标记为未读",
+        "of": "/",
+        "emails": "封邮件",
+        "page": "页",
+        "customer": "客户 / 供应商",
+        "searchCustomer": "搜索客户或供应商...",
+        "openCustomer": "打开"
+    },
+    "EmailMenu": {
+        "title": "电子邮件"
+    }
+}

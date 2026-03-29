@@ -1,0 +1,179 @@
+{
+    "FollowUpView": {
+        "title": "Promemoria",
+        "search": "Cerca...",
+        "fromDate": "Da",
+        "toDate": "A",
+        "showDone": "Mostra completati",
+        "tabs": {
+            "board": "Board",
+            "list": "Lista",
+            "calendar": "Calendario"
+        },
+        "actions": {
+            "create": "Nuovo promemoria",
+            "cancel": "Annulla",
+            "delete": "Elimina",
+            "save": "Salva",
+            "edit": "Modifica",
+            "markDone": "Completato",
+            "markUndone": "Riapri",
+            "close": "Chiudi"
+        },
+        "columns": {
+            "overdue": "Scaduto",
+            "today": "Oggi",
+            "upcoming": "Prossimo",
+            "done": "Completato"
+        },
+        "confirmDelete": {
+            "title": "Eliminare il promemoria?",
+            "message": "Vuoi davvero eliminare questo promemoria? Questa azione non può essere annullata."
+        },
+        "messages": {
+            "loadError": "Errore nel caricamento dei promemoria",
+            "saved": "Promemoria salvato",
+            "saveError": "Errore nel salvataggio",
+            "deleted": "Promemoria eliminato",
+            "deletedMultiple": "{count} promemoria eliminati",
+            "markedDone": "Contrassegnato come completato",
+            "markedUndone": "Riaperto",
+            "error": "Si è verificato un errore"
+        }
+    },
+    "FollowUpCard": {
+        "noSubject": "Senza oggetto",
+        "today": "Oggi",
+        "tomorrow": "Domani",
+        "daysAgo": "{days} giorni fa",
+        "inDays": "tra {days} giorni",
+        "markDone": "Segna come completato",
+        "markUndone": "Riapri",
+        "delete": "Elimina"
+    },
+    "FollowUpDialog": {
+        "titleCreate": "Nuovo promemoria",
+        "titleEdit": "Modifica promemoria",
+        "date": "Data",
+        "subject": "Oggetto",
+        "body": "Nota",
+        "assignedEmployees": "Assegnato a",
+        "linkSection": "Collegamento (opzionale)",
+        "linkType": "Tipo di collegamento",
+        "linkId": "ID",
+        "linkInfo": "Descrizione",
+        "searchCustomer": "Cerca cliente",
+        "searchVendor": "Cerca fornitore",
+        "searchQuotation": "Cerca preventivo",
+        "searchOrder": "Cerca ordine",
+        "searchDeliveryOrder": "Cerca bolla di consegna",
+        "searchInvoice": "Cerca fattura",
+        "searchRequestQuotation": "Cerca richiesta",
+        "searchPurchaseOrder": "Cerca ordine d'acquisto",
+        "searchPurchaseDeliveryOrder": "Cerca ricevimento merce",
+        "searchPurchaseInvoice": "Cerca fattura d'acquisto",
+        "search": "Cerca",
+        "noResults": "Nessun risultato",
+        "startTyping": "Inserire termine di ricerca...",
+        "cancel": "Annulla",
+        "save": "Salva",
+        "quickDate": {
+            "today": "Oggi",
+            "tomorrow": "Domani",
+            "nextWeek": "+1 Settimana",
+            "twoWeeks": "+2 Settimane",
+            "nextMonth": "+1 Mese"
+        },
+        "linkTypes": {
+            "customer": "Cliente",
+            "vendor": "Fornitore",
+            "salesQuotation": "Preventivo",
+            "salesOrder": "Ordine",
+            "salesDeliveryOrder": "Bolla di consegna",
+            "salesInvoice": "Fattura",
+            "purchaseQuotation": "Richiesta",
+            "purchaseOrder": "Ordine d'acquisto",
+            "purchaseDeliveryOrder": "Ricevimento merce",
+            "purchaseInvoice": "Fattura d'acquisto"
+        },
+        "validation": {
+            "required": "Campo obbligatorio"
+        }
+    },
+    "FollowUpList": {
+        "done": "Completato",
+        "open": "Aperto",
+        "today": "Oggi",
+        "tomorrow": "Domani",
+        "markDone": "Segna come completato",
+        "markUndone": "Riapri",
+        "edit": "Modifica",
+        "delete": "Elimina",
+        "entry": "Voce",
+        "entries": "Voci",
+        "deleteAll": "Elimina tutti i visualizzati",
+        "deleteAllConfirmTitle": "Eliminare tutti i promemoria?",
+        "deleteAllConfirmText": "Vuoi davvero eliminare tutti i {count} promemoria visualizzati?",
+        "deleteAllWarning": "Questa azione non può essere annullata!",
+        "deleteAllConfirm": "Elimina tutti",
+        "cancel": "Annulla",
+        "headers": {
+            "date": "Data",
+            "subject": "Oggetto",
+            "link": "Collegamento",
+            "assignedTo": "Assegnato",
+            "status": "Stato",
+            "actions": "Azioni"
+        }
+    },
+    "FollowUpCalendar": {
+        "today": "Oggi",
+        "month": "Mese",
+        "week": "Settimana",
+        "day": "Giorno",
+        "allDay": "Tutto il giorno",
+        "noSubject": "Senza oggetto",
+        "newFollowUp": "Nuovo promemoria",
+        "subject": "Oggetto",
+        "subjectPlaceholder": "Cosa bisogna fare?",
+        "note": "Nota",
+        "notePlaceholder": "Informazioni aggiuntive...",
+        "cancel": "Annulla",
+        "create": "Crea",
+        "done": "Completato",
+        "reopen": "Apri",
+        "edit": "Modifica",
+        "links": "Collegamenti",
+        "details": "Dettagli",
+        "assignedTo": "Assegnato a",
+        "linkedTo": "Collegato con",
+        "close": "Chiudi",
+        "markDone": "Segna come completato",
+        "markUndone": "Riapri",
+        "editFollowUp": "Modifica",
+        "deleteFollowUp": "Elimina",
+        "more": "altri",
+        "weekDays": {
+            "mon": "Lu",
+            "tue": "Ma",
+            "wed": "Me",
+            "thu": "Gi",
+            "fri": "Ve",
+            "sat": "Sa",
+            "sun": "Do"
+        }
+    },
+    "FollowUpWidget": {
+        "title": "Promemoria",
+        "overdue": "Scaduto",
+        "today": "Oggi",
+        "tomorrow": "Domani",
+        "upcoming": "Prossimo",
+        "noItems": "Nessun promemoria aperto",
+        "showAll": "Mostra tutti ({count})",
+        "markDone": "Segna come completato",
+        "quickAdd": "Aggiungi rapido",
+        "openAll": "Apri tutti",
+        "daysAgo": "{days} giorni fa"
+    }
+}

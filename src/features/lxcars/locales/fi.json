@@ -1,0 +1,19 @@
+{
+    "CarView": {
+        "routes": {
+            "newCar": "/fahrzeug/neu",
+            "newCarFromScan": "/fahrzeug/neu-vom-scan",
+            "manageCars": "/fahrzeug",
+            "orderSearch": "/fahrzeug-auftrag/suche",
+            "carRegistration": "/fahrzeug/zulassung"
+        },
+        "newCar": "Luo uusi",
+        "newCarFromScan": "Skannauslista",
+        "title": "Ajoneuvot",
+        "manageCars": "Hallitse",
+        "orderSearch": "Tilauslista",
+        "huSerienbrief": "Katsastusilmoitukset",
+        "orderSearchTooltip": "Tilaushaku",
+        "scanTooltip": "Ajoneuvot skannauksesta"
+    }
+}

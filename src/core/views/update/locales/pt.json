@@ -1,0 +1,50 @@
+{
+    "update": {
+        "title": "Atualização do sistema",
+        "description": "Aqui são guardadas e atualizadas todas as bases de dados das empresas e a base de dados de autenticação.",
+        "messages": "Mensagens",
+        "sqlStatements": "Instruções SQL",
+        "errors": "Erros",
+        "dryRunSuccess": "Pré-visualização carregada com sucesso.",
+        "updateSuccess": "Todas as bases de dados atualizadas com sucesso.",
+        "gitPull": "Git Pull",
+        "gitPullSuccess": "Git Pull bem-sucedido",
+        "gitPullFailed": "Git Pull falhou",
+        "authDatabase": "Base de dados de autenticação",
+        "authBackup": "Cópia de segurança de autenticação",
+        "clientDatabase": "Empresa: {name}",
+        "clientDbName": "Base de dados: {dbname}",
+        "backupSuccess": "Cópia de segurança criada: {filename}",
+        "backupFailed": "Cópia de segurança falhou",
+        "backupSkipped": "A cópia de segurança não é criada no modo de pré-visualização",
+        "features": "Funcionalidades: {features}",
+        "noClients": "Nenhuma empresa encontrada.",
+        "overallSuccess": "Todas as bases de dados atualizadas com sucesso",
+        "overallFailed": "Erro na atualização",
+        "buttons": {
+            "dryRun": "Pré-visualização",
+            "checking": "A verificar...",
+            "update": "Executar atualização",
+            "updating": "A atualizar...",
+            "finish": "Concluído"
+        },
+        "errorMessages": {
+            "dryRunFailed": "Pré-visualização falhou.",
+            "updateFailed": "Atualização falhou.",
+            "networkError": "Erro de rede durante a atualização."
+        },
+        "schemaMessages": {
+            "dry_run_mode": "Modo de pré-visualização - Não serão efetuadas alterações",
+            "columns_added": "Tabela {table}: {count} coluna(s) seria(m) adicionada(s) | Tabela {table}: {count} coluna(s) adicionada(s)",
+            "column_added": "Coluna '{column}' seria adicionada | Coluna '{column}' adicionada",
+            "table_up_to_date": "Tabela {table}: Todas as colunas presentes",
+            "table_created": "Tabela {table} seria criada | Tabela {table} criada",
+            "version_updated": "Versão {version} registada na base de dados {schema}",
+            "object_exists": "{object_type} {name} já existe",
+            "statement_executed": "{statement_type} {target} executado",
+            "csv_skipped": "CSV ignorado: {table} ({reason})",
+            "csv_imported": "CSV importado: {table} ({rows_imported} linhas)",
+            "info": "{text}"
+        }
+    }
+}

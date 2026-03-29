@@ -1,0 +1,68 @@
+{
+    "HuSerienbriefView": {
+        "title": "Notificari ITP",
+        "subtitle": "Clienti cu inspectia tehnica periodica scadenta",
+        "vorlauf": "Anticipare: {monate} luni",
+        "fields": {
+            "customer_name": "Client",
+            "kennzeichen": "Nr. inmatriculare",
+            "hu_datum": "Data ITP",
+            "telefon": "Telefon",
+            "email": "E-mail",
+            "fahrzeug": "Vehicul",
+            "actions": "Actiuni",
+            "date_from": "ITP scadent de la",
+            "date_to": "ITP scadent pana la"
+        },
+        "buttons": {
+            "print_all": "Tipareste selectate",
+            "email_all": "Trimite e-mail",
+            "reload": "Actualizare",
+            "exclude": "Deselectare",
+            "include": "Reselectare",
+            "send_pin": "Trimite cu PIN",
+            "whatsapp_all": "Trimite WhatsApp"
+        },
+        "checkboxes": {
+            "show_excluded": "Afiseaza si deselectatii"
+        },
+        "chips": {
+            "excluded": "Deselectat",
+            "results_count": "Clienti"
+        },
+        "filter": {
+            "title": "Perioada"
+        },
+        "table": {
+            "no_results": "Nu s-au gasit clienti cu ITP scadent in perioada configurata.",
+            "no_results_hint": "Verificati timpul de anticipare in setarile LXCars."
+        },
+        "whatsapp": {
+            "message": "Buna ziua {name}, ITP-ul vehiculului dvs. ({kennzeichen}) expira pe {hu_datum}. Va rugam sa faceti o programare. Cu stima"
+        },
+        "toasts": {
+            "error_loading": "Eroare la incarcarea listei ITP.",
+            "excluded_success": "Clientul a fost deselectat.",
+            "included_success": "Clientul a fost reselectat.",
+            "exclude_error": "Eroare la salvare.",
+            "email_sent": "E-mailul a fost trimis.",
+            "email_error": "Eroare la trimiterea e-mailului.",
+            "pdf_error": "Eroare la crearea PDF-ului.",
+            "sftp_success": "PDF-ul a fost trimis cu succes prin eLetter.",
+            "sftp_error": "Eroare la trimiterea prin eLetter.",
+            "whatsapp_sent": "Mesajul WhatsApp a fost trimis.",
+            "whatsapp_error": "Eroare la trimiterea mesajului WhatsApp.",
+            "whatsapp_bulk_sent": "{sent} mesaje WhatsApp trimise, {failed} esuate.",
+            "whatsapp_no_phone": "Niciunul dintre clientii selectati nu are numar de telefon."
+        },
+        "tooltips": {
+            "whatsapp_single": "Trimite memento ITP prin WhatsApp",
+            "exclude": "Exclude clientul din notificarile ITP",
+            "include": "Include din nou clientul in notificarile ITP"
+        },
+        "dialogs": {
+            "confirm_exclude_title": "Deselectare client",
+            "confirm_exclude_text": "Acest client va fi eliminat permanent din lista de notificari ITP. Doriti sa continuati?"
+        }
+    }
+}

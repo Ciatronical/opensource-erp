@@ -1,0 +1,21 @@
+{
+    "title": "Kasutaja seadistamine",
+    "loading": "Seadistuse laadimine...",
+    "configLoadError": "Seadistuse viga",
+    "user_fields": {
+        "appearance": "Välimus",
+        "darkMode": "Tume teema (Dark Mode)",
+        "darkMode_help": "Aktiveerib tumeda värviteema kogu rakendusele.",
+        "locale": "Kuvamiskeel",
+        "locale_help": "Kasutajaliidese keel. Rakendatakse koheselt.",
+        "general": "Üldine",
+        "startupView": "Algvaade",
+        "startupView_help": "Milline vaade kuvatakse pärast sisselogimist. Tühistab ettevõtte seade.",
+        "faktura": "Arved",
+        "fakturaCompactView": "Kompaktvaade vaikimisi aktiivne",
+        "fakturaCompactView_help": "Peidab detailkaardid (klient, dokumendi üksikasjad, lisainfo) ja kuvab ainult kompaktse kokkuvõtte.",
+        "printer": "Printer",
+        "defaultPrinter": "Vaikeprinter",
+        "defaultPrinter_help": "Printer, mida kasutatakse vaikimisi printimiseks"
+    }
+}

@@ -1,0 +1,135 @@
+{
+    "TasksView": {
+        "title": "Aufgaben",
+        "search": "Suchen...",
+        "fromDate": "Von",
+        "toDate": "Bis",
+        "showDone": "Erledigte anzeigen",
+        "tabs": {
+            "board": "Board",
+            "list": "Liste",
+            "calendar": "Kalender"
+        },
+        "actions": {
+            "create": "Neue Aufgabe",
+            "cancel": "Abbrechen",
+            "delete": "Löschen",
+            "save": "Speichern",
+            "edit": "Bearbeiten",
+            "markDone": "Erledigt",
+            "markUndone": "Wieder öffnen",
+            "close": "Schließen"
+        },
+        "columns": {
+            "overdue": "Überfällig",
+            "today": "Heute",
+            "upcoming": "Kommend",
+            "done": "Erledigt"
+        },
+        "fields": {
+            "subject": "Betreff",
+            "body": "Notiz",
+            "date": "Datum"
+        },
+        "calendar": {
+            "today": "Heute",
+            "month": "Monat",
+            "week": "Woche",
+            "day": "Tag",
+            "more": "weitere"
+        },
+        "dialog": {
+            "titleNew": "Neue Aufgabe",
+            "titleEdit": "Aufgabe bearbeiten"
+        },
+        "confirmDelete": {
+            "title": "Aufgabe löschen?",
+            "message": "Möchten Sie diese Aufgabe wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden."
+        },
+        "messages": {
+            "loadError": "Fehler beim Laden der Aufgaben",
+            "saved": "Aufgabe gespeichert",
+            "saveError": "Fehler beim Speichern",
+            "deleted": "Aufgabe gelöscht",
+            "markedDone": "Als erledigt markiert",
+            "markedUndone": "Wieder geöffnet",
+            "error": "Ein Fehler ist aufgetreten"
+        }
+    },
+    "TasksCard": {
+        "noSubject": "Kein Betreff",
+        "today": "Heute",
+        "tomorrow": "Morgen",
+        "daysAgo": "vor {days} Tagen",
+        "inDays": "in {days} Tagen",
+        "markDone": "Als erledigt markieren",
+        "markUndone": "Wieder öffnen",
+        "delete": "Löschen"
+    },
+    "TasksDialog": {
+        "titleCreate": "Neue Aufgabe",
+        "titleEdit": "Aufgabe bearbeiten",
+        "date": "Datum",
+        "subject": "Betreff",
+        "body": "Notiz",
+        "assignedEmployees": "Zugewiesen an",
+        "linkSection": "Verknüpfung (optional)",
+        "linkType": "Verknüpfungstyp",
+        "linkId": "ID",
+        "linkInfo": "Bezeichnung",
+        "cancel": "Abbrechen",
+        "save": "Speichern",
+        "quickDate": {
+            "today": "Heute",
+            "tomorrow": "Morgen",
+            "nextWeek": "+1 Woche",
+            "nextMonth": "+1 Monat"
+        },
+        "linkTypes": {
+            "customer": "Kunde",
+            "vendor": "Lieferant",
+            "salesQuotation": "Angebot",
+            "salesOrder": "Auftrag",
+            "salesDeliveryOrder": "Lieferschein",
+            "salesInvoice": "Rechnung",
+            "purchaseQuotation": "Anfrage",
+            "purchaseOrder": "Bestellung",
+            "purchaseDeliveryOrder": "Wareneingang",
+            "purchaseInvoice": "Eingangsrechnung"
+        },
+        "validation": {
+            "required": "Pflichtfeld"
+        }
+    },
+    "TasksList": {
+        "done": "Erledigt",
+        "open": "Offen",
+        "today": "Heute",
+        "tomorrow": "Morgen",
+        "markDone": "Als erledigt markieren",
+        "markUndone": "Wieder öffnen",
+        "edit": "Bearbeiten",
+        "delete": "Löschen",
+        "headers": {
+            "date": "Datum",
+            "subject": "Betreff",
+            "link": "Verknüpfung",
+            "assignedTo": "Zugewiesen",
+            "status": "Status",
+            "actions": "Aktionen"
+        }
+    },
+    "TasksWidget": {
+        "title": "Aufgaben",
+        "overdue": "Überfällig",
+        "today": "Heute",
+        "tomorrow": "Morgen",
+        "upcoming": "Kommend",
+        "noItems": "Keine offenen Aufgaben",
+        "showAll": "Alle {count} anzeigen",
+        "markDone": "Als erledigt markieren",
+        "quickAdd": "Schnell hinzufügen",
+        "openAll": "Alle öffnen",
+        "daysAgo": "vor {days} Tagen"
+    }
+}

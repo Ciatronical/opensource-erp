@@ -1,0 +1,21 @@
+{
+    "title": "Kullanici yapilandirmasi",
+    "loading": "Yapilandirma yukleniyor...",
+    "configLoadError": "Yapilandirma hatasi",
+    "user_fields": {
+        "appearance": "Gorunum",
+        "darkMode": "Karanlik mod (Dark Mode)",
+        "darkMode_help": "Tum uygulama icin karanlik renk semasini etkinlestirir.",
+        "locale": "Gorunum dili",
+        "locale_help": "Kullanici arayuzu dili. Hemen uygulanir.",
+        "general": "Genel",
+        "startupView": "Baslangic gorunumu",
+        "startupView_help": "Giristen sonra hangi gorunumun gosterilecegi. Firma ayarini gecersiz kilar.",
+        "faktura": "Fatura",
+        "fakturaCompactView": "Kompakt gorunumu varsayilan olarak etkinlestir",
+        "fakturaCompactView_help": "Detay kartlarini (musteri, belge detaylari, ek bilgiler) gizler ve yalnizca kompakt bir ozet gosterir.",
+        "printer": "Yazici",
+        "defaultPrinter": "Varsayilan yazici",
+        "defaultPrinter_help": "Yazdirimalar icin varsayilan olarak kullanilan yazici"
+    }
+}

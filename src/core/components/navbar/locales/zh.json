@@ -1,0 +1,41 @@
+{
+    "NavbarView": {
+        "logoutTooltip": "退出登录",
+        "accountTooltip": "账户",
+        "editCustomerTooltip": "编辑客户",
+        "editCvTooltip": "编辑客户/供应商",
+        "currentC": "客户：",
+        "currentV": "供应商：",
+        "openInNewTabTooltip": "主菜单",
+        "newTabTooltip": "在新标签页中打开",
+        "calendarTooltip": "日历",
+        "callHistoryTooltip": "通话记录",
+        "userConfig": "配置",
+        "switchClient": "切换公司",
+        "uploadLogo": "公司标志",
+        "selectImage": "选择图片",
+        "logoHint": "选择图片，定位并裁剪",
+        "saveLogo": "保存",
+        "deleteLogo": "删除",
+        "cancel": "取消"
+    },
+    "GlobalSearch": {
+        "placeholder": "搜索...",
+        "noResults": "无结果",
+        "customers": "客户",
+        "vendors": "供应商",
+        "invoices": "发票",
+        "orders": "订单",
+        "quotations": "报价单",
+        "articles": "商品",
+        "vehicles": "车辆",
+        "wiki": "Wiki 文章",
+        "recentlyVisited": "最近访问",
+        "clearHistory": "清除历史记录"
+    },
+    "InfoBar": {
+        "unknownCaller": "未知",
+        "closeAll": "关闭所有通知",
+        "pendingParts": "已请求备件"
+    }
+}

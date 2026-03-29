@@ -1,0 +1,27 @@
+{
+    "ArticleEditView": {
+        "titleEdit": "Rediger artikel",
+        "saving": "Gemmer...",
+        "saved": "Gemt",
+        "sections": {
+            "masterData": "Stamdata"
+        },
+        "fields": {
+            "partnumber": "Artikelnummer",
+            "description": "Beskrivelse",
+            "partType": "Artikeltype",
+            "typePart": "Vare",
+            "typeService": "Tjenesteydelse",
+            "unit": "Enhed",
+            "buchungsgruppe": "Bogfoeringsgruppe",
+            "sellprice": "Salgspris",
+            "notes": "Langbeskrivelse",
+            "obsolete": "Forael det / Brug ikke laengere"
+        },
+        "messages": {
+            "loading": "Artikel indlaeses",
+            "loadError": "Fejl ved indlaesning af artikel",
+            "notFound": "Artikel ikke fundet"
+        }
+    }
+}

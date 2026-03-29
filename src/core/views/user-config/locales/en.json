@@ -1,0 +1,21 @@
+{
+    "title": "User Configuration",
+    "loading": "Loading configuration...",
+    "configLoadError": "Configuration Error",
+    "user_fields": {
+        "appearance": "Appearance",
+        "darkMode": "Dark mode",
+        "darkMode_help": "Enables the dark color scheme for the entire application.",
+        "locale": "Display language",
+        "locale_help": "Language of the user interface. Applied immediately.",
+        "general": "General",
+        "startupView": "Startup View",
+        "startupView_help": "Which view is shown after login. Overrides the company default.",
+        "faktura": "Invoice",
+        "fakturaCompactView": "Enable compact view by default",
+        "fakturaCompactView_help": "Hides detail cards (customer, document details, additional info) and shows a compact summary instead.",
+        "printer": "Printer",
+        "defaultPrinter": "Default Printer",
+        "defaultPrinter_help": "Printer used by default for printouts"
+    }
+}

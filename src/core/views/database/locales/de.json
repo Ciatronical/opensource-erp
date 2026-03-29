@@ -1,0 +1,12 @@
+{
+    "SaveDatabaseView": {
+        "title": "Datenbank speichern",
+        "description": "Speichern Sie die aktuelle Datenbank auf Ihrem Gerät.",
+        "saveButton": "Datenbank speichern"
+    },
+    "LoadDatabaseView": {
+        "title": "Datenbank laden",
+        "description": "Laden Sie eine zuvor gespeicherte Datenbank von Ihrem Gerät.",
+        "loadButton": "Datenbank laden"
+    }
+}

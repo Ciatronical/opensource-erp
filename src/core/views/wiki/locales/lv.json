@@ -1,0 +1,83 @@
+{
+    "WikiMenu": {
+        "title": "Wiki",
+        "newPage": "Jauns raksts",
+        "allPages": "Visi raksti",
+        "categories": "Kategorijas"
+    },
+    "WikiListView": {
+        "title": "Wiki - Zināšanu bāze",
+        "newPage": "Jauns raksts",
+        "search": "Meklēt rakstus...",
+        "allCategories": "Visi",
+        "noPages": "Vēl nav rakstu.",
+        "noPagesHint": "Izveidojiet savu pirmo wiki rakstu.",
+        "headers": {
+            "title": "Virsraksts",
+            "category": "Kategorija",
+            "author": "Autors",
+            "updated": "Pēdējais atjauninājums",
+            "kba": "KBA"
+        },
+        "confirmDelete": "Vai tiešām dzēst rakstu \"{title}\"?",
+        "deleted": "Raksts dzēsts.",
+        "deleteError": "Kļūda dzēšot."
+    },
+    "WikiReadView": {
+        "title": "Wiki raksts",
+        "edit": "Rediģēt",
+        "back": "Atpakaļ uz pārskatu",
+        "revisions": "Versijas",
+        "createdBy": "Izveidoja",
+        "updatedBy": "Pēdējo reizi rediģēja",
+        "kbaLabel": "KBA piesaiste",
+        "notFound": "Raksts nav atrasts.",
+        "loadError": "Kļūda ielādējot rakstu."
+    },
+    "WikiEditView": {
+        "titleNew": "Jauns wiki raksts",
+        "titleEdit": "Rediģēt wiki rakstu",
+        "fieldTitle": "Virsraksts",
+        "fieldCategory": "Kategorija",
+        "fieldContent": "Saturs",
+        "fieldKbaHsn": "HSN",
+        "fieldKbaTsn": "TSN (pirmās 3 rakstzīmes)",
+        "kbaSection": "KBA piesaiste (neobligāti)",
+        "save": "Saglabāt",
+        "cancel": "Atcelt",
+        "saved": "Raksts saglabāts.",
+        "saveError": "Kļūda saglabājot.",
+        "missingTitle": "Lūdzu ievadiet virsrakstu.",
+        "revisions": "Versiju vēsture",
+        "noRevisions": "Nav vecāku versiju.",
+        "restore": "Atjaunot",
+        "confirmRestore": "Vai atjaunot versiju no {date}?",
+        "restored": "Versija atjaunota.",
+        "restoreError": "Kļūda atjaunojot.",
+        "statusSaving": "Saglabā...",
+        "statusSaved": "Saglabāts",
+        "statusUnsaved": "Nesaglabāts",
+        "statusError": "Saglabāšanas kļūda",
+        "back": "Atpakaļ",
+        "newCategory": "Jauna kategorija",
+        "createCategory": "Izveidot"
+    },
+    "WikiCategoriesView": {
+        "title": "Wiki kategorijas",
+        "newCategory": "Jauna kategorija",
+        "name": "Nosaukums",
+        "sortkey": "Kārtošana",
+        "pageCount": "Raksti",
+        "save": "Saglabāt",
+        "cancel": "Atcelt",
+        "edit": "Rediģēt",
+        "delete": "Dzēst",
+        "noCategories": "Vēl nav kategoriju.",
+        "confirmDelete": "Vai tiešām dzēst kategoriju \"{name}\"?",
+        "saved": "Kategorija saglabāta.",
+        "deleted": "Kategorija dzēsta.",
+        "saveError": "Kļūda saglabājot.",
+        "deleteError": "Kļūda dzēšot.",
+        "sortUpdated": "Secība atjaunināta."
+    }
+}

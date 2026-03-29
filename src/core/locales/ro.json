@@ -1,0 +1,47 @@
+{
+    "LoginView": {
+        "title": "Autentificare",
+        "username": "Nume utilizator",
+        "password": "Parolă",
+        "client": "Firmă",
+        "button": "Autentificare",
+        "failed": "Autentificarea a eșuat. Vă rugăm verificați datele de autentificare.",
+        "EMPTY_FIELDS": "Vă rugăm introduceți numele și parola.",
+        "USER_NOT_FOUND": "Utilizatorul nu a fost găsit.",
+        "WRONG_PASSWORD": "Parolă incorectă.",
+        "ERROR": "Eroare la autentificare. Vă rugăm încercați din nou.",
+        "ERROR_LOADING_CLIENTS": "Eroare la încărcarea firmelor. Vă rugăm încercați mai târziu.",
+        "USER_NOT_ASSIGNED_TO_CLIENT": "Utilizatorul nu este asociat firmei.",
+        "PASSWORD_FILE_NOT_FOUND": "Eroare: Fișierul cu parola api/config/api.passwd.php nu a fost găsit. Vă rugăm redenumiți fișierul api/config/api.passwd.php.example în api/config/api.passwd.php și ajustați setările corespunzător.",
+        "CONFIG_FILE_NOT_FOUND": "Eroare: Fișierul de configurare nu a fost găsit. Vă rugăm verificați setările.",
+        "updateButton": "Executare actualizare",
+        "updateSuccess": "Actualizarea bazei de date a fost efectuată cu succes.",
+        "updateError": "Eroare la actualizarea bazei de date. Vă rugăm încercați din nou.",
+        "privacy": "Politica de confidențialitate",
+        "dataDeletion": "Ștergere date"
+    },
+    "NotFoundView": {
+        "title": "Pagina nu a fost găsită",
+        "message": "Pagina solicitată nu a fost găsită.",
+        "back_home": "Înapoi la pagina principală"
+    },
+    "NavbarView": {
+        "logoutTooltip": "Deconectare",
+        "accountTooltip": "Cont",
+        "editCustomerTooltip": "Editare client",
+        "editCvTooltip": "Editare client/furnizor",
+        "currentC": "Client:",
+        "currentV": "Furnizor:",
+        "demoBanner": "Mod demo — Toate datele vor fi resetate automat după inactivitate.",
+        "demoResetWarning": "Demo-ul va fi resetat în {seconds} secunde — mișcați mouse-ul pentru a continua."
+    },
+    "ErrorView": {
+        "title": "A apărut o eroare",
+        "message": "Ne pare rău, dar a apărut o eroare neașteptată.",
+        "debugInfo": "Informații de depanare:",
+        "clickToShowDetails": "Click pentru a afișa detaliile"
+    },
+    "App": {
+        "loading": "Vă rugăm așteptați..."
+    }
+}

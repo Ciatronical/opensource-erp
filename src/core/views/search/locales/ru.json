@@ -1,0 +1,218 @@
+{
+    "SearchView": {
+        "title": "Поиск",
+        "all": "Все",
+        "tabs": {
+            "customer_vendor": "Клиент/Поставщик/Лицо",
+            "invoice": "Счета",
+            "purchase_invoice": "Входящие счета",
+            "quotation": "Предложения",
+            "order": "Заказы",
+            "purchase_order": "Заказы поставщику",
+            "delivery_order": "Накладные",
+            "vehicle": "Транспортные средства",
+            "article": "Товары"
+        },
+        "vehicle_fields": {
+            "license_plate": "Номерной знак",
+            "fin": "VIN",
+            "manufacturer": "Производитель",
+            "model": "Модель",
+            "owner": "Владелец",
+            "hu": "ТО",
+            "created_at": "Создано",
+            "no_results": "Транспортные средства не найдены"
+        },
+        "article_fields": {
+            "partnumber": "Артикул",
+            "description": "Описание",
+            "part_type": "Тип",
+            "part_type_part": "Товар",
+            "part_type_service": "Услуга",
+            "unit": "Единица",
+            "sellprice": "Цена продажи",
+            "sellprice_from": "Цена от",
+            "sellprice_to": "Цена до",
+            "obsolete": "Устаревший",
+            "obsolete_yes": "Да",
+            "obsolete_no": "Нет",
+            "notes": "Примечания",
+            "created_at": "Создано",
+            "no_results": "Товары не найдены."
+        },
+        "document_fields": {
+            "document_number": "Номер документа",
+            "customer_name": "Имя клиента",
+            "vendor_name": "Имя поставщика",
+            "transdate_from": "Дата от",
+            "transdate_to": "Дата до",
+            "amount_from": "Сумма от",
+            "amount_to": "Сумма до",
+            "status": "Статус",
+            "status_open": "Открыто",
+            "status_closed": "Закрыто"
+        },
+        "document_table": {
+            "document_number": "Номер докум.",
+            "cv_name": "Клиент/Поставщик",
+            "cv_number": "Номер кл./пост.",
+            "transdate": "Дата",
+            "amount": "Сумма",
+            "status": "Статус",
+            "status_open": "Открыто",
+            "status_closed": "Закрыто",
+            "created_at": "Создано",
+            "text_no_results": "Документы не найдены."
+        }
+    },
+    "CustomerVendorSearchView": {
+        "title_customer": "Поиск клиентов",
+        "title_vendor": "Поиск поставщиков",
+        "title_contacts": "Поиск лиц",
+        "labels": { "customer": "Клиент", "vendor": "Поставщик" },
+        "sections": {
+            "invoices": "Дебиторские счета",
+            "vendor_invoices": "Кредиторские счета",
+            "quotations": "Предложения",
+            "requests_for_quotation": "Запросы предложений",
+            "orders": "Заказы",
+            "purchase_orders": "Заказы поставщику",
+            "delivery_orders": "Накладные",
+            "customer_record": "Основные данные клиента",
+            "vendor_record": "Основные данные поставщика"
+        },
+        "fields": {
+            "iban": "IBAN", "bic": "BIC", "hourly_rate": "Часовая ставка",
+            "order_lock": "Блокировка заказов", "invoice_mail": "Электронная почта для счетов",
+            "delivery_order_mail": "Электронная почта для накладных", "dunning_mail": "Электронная почта для напоминаний",
+            "postal_invoice": "Счет по почте", "direct_debit": "Прямое дебетование",
+            "contact_origin": "Источник персональных данных", "username": "Имя пользователя",
+            "birthday": "Дата рождения", "birthday_from": "Дата рождения от", "birthday_to": "Дата рождения до",
+            "customer_vendor_name": "Компания", "gender": "Пол", "main_contact": "Основное контактное лицо",
+            "business_type": "Тип клиента", "ustid": "ИНН", "taxnumber": "Налоговый номер",
+            "discount": "Скидка", "currency": "Валюта", "pricegroup": "Ценовая группа", "language": "Язык",
+            "delivery_terms": "Условия доставки", "homepage": "Веб-сайт", "creditlimit": "Кредитный лимит",
+            "taxincluded": "Налог включен в цену", "notes": "Внутренние примечания",
+            "natural_person": "Физическое лицо", "radio_customer": "Клиенты", "radio_vendor": "Поставщики",
+            "radio_person": "Лица", "switch_sql_query": "SQL-запрос",
+            "switch_show_additional_search_fields": "Показать дополнительные критерии поиска",
+            "customer_number": "Номер клиента", "vendor_number": "Номер поставщика",
+            "customer_vendor_number": "Номер клиента/поставщика", "greeting": "Обращение", "name": "Имя",
+            "mail": "Электронная почта", "phone_fax": "Телефон/Факс", "phone": "Телефон", "gln": "GLN",
+            "street": "Улица", "zipcode": "Индекс", "city": "Город", "country": "Страна",
+            "salesman": "Менеджер по продажам", "contact": "Контакт", "department": "Отдел",
+            "dunning_lock": "Блокировка напоминаний", "validity": "Действительность",
+            "zugferd_settings": "Настройки Factur-X/ZUGFeRD", "payment_terms": "Условия оплаты",
+            "tax_rate": "Налоговая ставка", "first_name": "Имя", "last_name": "Фамилия",
+            "position_title": "Должность/Титул", "project": "Проект",
+            "created_at_from": "Создано от", "created_at_to": "Создано до",
+            "updated_at_from": "Изменено от", "updated_at_to": "Изменено до",
+            "created_at": "Создано", "updated_at": "Изменено", "status": "Статус", "type": "Тип",
+            "number": "Номер", "sql_query": "SQL-запрос",
+            "invoice_created_at_from": "Счет создан от", "invoice_created_at_to": "Счет создан до",
+            "invoice_updated_at_from": "Счет изменен от", "invoice_updated_at_to": "Счет изменен до",
+            "quotation_created_at_from": "Предложение создано от", "quotation_created_at_to": "Предложение создано до",
+            "quotation_updated_at_from": "Предложение изменено от", "quotation_updated_at_to": "Предложение изменено до",
+            "rfq_created_at_from": "Запрос создан от", "rfq_created_at_to": "Запрос создан до",
+            "rfq_updated_at_from": "Запрос изменен от", "rfq_updated_at_to": "Запрос изменен до",
+            "order_created_at_from": "Заказ создан от", "order_created_at_to": "Заказ создан до",
+            "order_updated_at_from": "Заказ изменен от", "order_updated_at_to": "Заказ изменен до",
+            "purchase_order_created_at_from": "Заказ пост. создан от", "purchase_order_created_at_to": "Заказ пост. создан до",
+            "purchase_order_updated_at_from": "Заказ пост. изменен от", "purchase_order_updated_at_to": "Заказ пост. изменен до",
+            "delivery_order_created_at_from": "Накладная создана от", "delivery_order_created_at_to": "Накладная создана до",
+            "delivery_order_updated_at_from": "Накладная изменена от", "delivery_order_updated_at_to": "Накладная изменена до"
+        },
+        "selects": {
+            "order_lock_options": { "yes": "Да", "no": "Нет" },
+            "postal_invoice_options": { "yes": "Да", "no": "Нет" },
+            "direct_debit_options": { "yes": "Да", "no": "Нет" },
+            "gender_options": { "m": "Мужской", "f": "Женский" },
+            "main_contact_options": { "yes": "Да", "no": "Нет" },
+            "status_options": { "active": "Активный", "inactive": "Неактивный" },
+            "taxincluded_options": { "yes": "Да", "no": "Нет" },
+            "zugferd_options": {
+                "1": "Следовать настройкам конфигурации компании",
+                "2": "Не создавать счета Factur-X/ZUGFeRD",
+                "3": "С профилем Factur-X 1.01.06/ZUGFeRD 2.2 extended",
+                "4": "С профилем Factur-X 1.01.06/ZUGFeRD 2.2 extended (тестовый режим)",
+                "5": "С профилем XRechnung 2.0.0",
+                "6": "С профилем XRechnung 2.0.0 (тестовый режим)"
+            },
+            "dunning_lock_options": { "yes": "Да", "no": "Нет" },
+            "natural_person_options": { "yes": "Да", "no": "Нет" }
+        },
+        "buttons": {
+            "search": "Искать", "reset": "Сбросить", "edit": "Редактировать",
+            "bulk_actions": "Массовые действия", "brevo_marketing_mail": "Brevo Marketing Mail",
+            "help": "Справка", "save_query": "Сохранить", "saved_queries": "Сохраненные запросы"
+        },
+        "table": {
+            "title": "Результаты поиска",
+            "text_no_search_table_shown": "Пожалуйста, введите критерии поиска или SQL-запрос и нажмите ENTER или \"Искать\". Результаты будут показаны здесь.",
+            "text_no_results_customer": "Клиенты не найдены.",
+            "text_no_results_vendor": "Поставщики не найдены.",
+            "text_no_results_person": "Лица не найдены.",
+            "text_no_results_default": "Данные не найдены."
+        },
+        "alerts": {
+            "warning_no_search_criteria": "Критерии поиска или SQL-запрос не введены. Вы действительно хотите загрузить все записи?"
+        },
+        "toasts": {
+            "error_loading_search_results": "Ошибка загрузки результатов поиска.",
+            "error_sending_brevo_marketing_mails": "Ошибка отправки Brevo Marketing Mail.",
+            "brevo_marketing_mails_were_prefix": "Brevo Marketing Mail отправлены",
+            "brevo_marketing_mail_was_prefix": "Brevo Marketing Mail отправлен"
+        },
+        "dialogs": {
+            "brevo_marketing_mail": {
+                "title": "Отправить Brevo Marketing Mail",
+                "labels": { "customer": "Клиенты", "vendor": "Поставщики", "person": "Лица" },
+                "fields": { "select_template": "Шаблон Brevo Mail" },
+                "texts": {
+                    "select_template_and_click_send": "Пожалуйста, выберите нужный шаблон Brevo Mail и нажмите \"Отправить\".",
+                    "hint_prefix": "Примечание: После нажатия \"Отправить\" для каждого из",
+                    "hint_suffix": "будет отправлен отдельный Marketing Mail через Brevo.",
+                    "hint_cannot_cancel": "Этот процесс нельзя отменить после начала."
+                },
+                "buttons": { "cancel": "Отмена", "mails_to": "Писем к", "mail_to": "Письмо к", "send": "отправить" }
+            },
+            "sql_help": {
+                "title": "Справка SQL - Доступные столбцы",
+                "loading": "Загрузка столбцов...",
+                "example_query": "Пример запроса",
+                "copy_example": "Копировать пример",
+                "example_customer_description": "Я ищу компании с 'GmbH' в названии, расположенные в Берлине с кредитным лимитом более 10 000 EUR.",
+                "example_vendor_description": "Я ищу поставщиков с 'Tech' в названии из Германии, не отмеченных как устаревшие.",
+                "example_contacts_description": "Я ищу женщину в возрасте от 20 до 40 лет из Берлина.",
+                "available_columns": "Доступны следующие столбцы:",
+                "click_to_copy": "Нажмите на название столбца, чтобы скопировать.",
+                "no_columns": "Столбцы не найдены.",
+                "error_loading": "Ошибка загрузки столбцов.",
+                "copied": "{column} скопирован в буфер обмена.",
+                "example_copied": "Пример запроса скопирован в буфер обмена.",
+                "close": "Закрыть",
+                "table_customer": "Таблица: customer",
+                "table_vendor": "Таблица: vendor",
+                "table_contacts": "Таблица: contacts"
+            },
+            "save_query": {
+                "title": "Сохранить запрос", "name_label": "Название запроса",
+                "name_placeholder": "напр. Берлинские клиенты с высоким кредитным лимитом",
+                "query": "Запрос", "cancel": "Отмена", "save": "Сохранить",
+                "saved": "Запрос успешно сохранен.", "error_saving": "Ошибка сохранения запроса."
+            },
+            "saved_queries": {
+                "title": "Сохраненные запросы", "loading": "Загрузка запросов...",
+                "no_queries": "Сохраненные запросы отсутствуют.", "error_loading": "Ошибка загрузки запросов.",
+                "delete_confirm_title": "Удалить запрос?", "delete_confirm_text": "Вы действительно хотите удалить этот запрос?",
+                "deleted": "Запрос успешно удален.", "error_deleting": "Ошибка удаления запроса.", "close": "Закрыть"
+            }
+        },
+        "errors": {
+            "sql_error_title": "SQL-ошибка в вашем запросе",
+            "sql_state": "SQL-статус",
+            "error_message": "Сообщение об ошибке",
+            "your_query": "Ваш запрос"
+        }
+    }
+}

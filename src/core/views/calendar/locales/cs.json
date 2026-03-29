@@ -1,0 +1,87 @@
+{
+    "CalendarView": {
+        "title": "Kalendar",
+        "actions": {
+            "create": "Nova udalost",
+            "categories": "Kategorie",
+            "cancel": "Zrusit",
+            "save": "Ulozit",
+            "delete": "Smazat",
+            "edit": "Upravit",
+            "close": "Zavrit"
+        },
+        "confirmDelete": {
+            "title": "Smazat udalost?",
+            "message": "Opravdu chcete tuto udalost smazat?"
+        },
+        "messages": {
+            "loadError": "Chyba pri nacitani udalosti",
+            "saved": "Udalost ulozena",
+            "saveError": "Chyba pri ukladani",
+            "deleted": "Udalost smazana",
+            "error": "Doslo k chybe",
+            "categoryDeleted": "Kategorie smazana",
+            "categorySaved": "Kategorie ulozena"
+        },
+        "search": "Hledani",
+        "searchResults": "Vysledky hledani",
+        "noResults": "Zadne vysledky"
+    },
+    "CalendarMain": {
+        "today": "Dnes",
+        "month": "Mesic",
+        "week": "Tyden",
+        "day": "Den",
+        "list": "Seznam",
+        "allDay": "Celodenni",
+        "filterCategories": "Filtrovat kategorie"
+    },
+    "CalendarEventDialog": {
+        "titleCreate": "Nova udalost",
+        "titleEdit": "Upravit udalost",
+        "title": "Nazev",
+        "allDay": "Celodenni",
+        "start": "Zacatek",
+        "end": "Konec",
+        "category": "Kategorie",
+        "noCategory": "Bez kategorie",
+        "priority": "Priorita",
+        "priorityLow": "Nizka",
+        "priorityNormal": "Normalni",
+        "priorityHigh": "Vysoka",
+        "location": "Misto",
+        "description": "Popis",
+        "color": "Barva",
+        "visibility": "Viditelnost",
+        "visibilityAll": "Vsichni",
+        "visibilityPrivate": "Soukrome",
+        "customerVendor": "Zakaznik/Dodavatel",
+        "validation": {
+            "titleRequired": "Nazev je povinny",
+            "startRequired": "Datum zacatku je povinny"
+        }
+    },
+    "CalendarEventDetail": {
+        "edit": "Upravit",
+        "delete": "Smazat",
+        "close": "Zavrit",
+        "location": "Misto",
+        "category": "Kategorie",
+        "priority": "Priorita",
+        "owner": "Vytvoril",
+        "linkedTo": "Propojeno s",
+        "priorityLow": "Nizka",
+        "priorityNormal": "Normalni",
+        "priorityHigh": "Vysoka"
+    },
+    "CalendarCategoryManager": {
+        "title": "Sprava kategorii",
+        "addCategory": "Nova kategorie",
+        "label": "Nazev",
+        "color": "Barva",
+        "save": "Ulozit",
+        "delete": "Smazat",
+        "confirmDelete": "Opravdu smazat kategorii? Udalosti si ponechaji svá data, ale ztrati prirazeni kategorie.",
+        "noCategories": "Zadne kategorie"
+    }
+}

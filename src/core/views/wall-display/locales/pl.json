@@ -1,0 +1,20 @@
+{
+    "WallDisplay": {
+        "calendar": "Kalendarz",
+        "faktura": "Dokument",
+        "noFaktura": "Nie wybrano dokumentu",
+        "noFakturaHint": "Kliknij przycisk monitora w fakturze",
+        "invoice": "Faktura",
+        "order": "Zam\u00f3wienie",
+        "quotation": "Oferta",
+        "open": "Otwarte",
+        "closed": "Zamkni\u0119te",
+        "position": "Poz.",
+        "description": "Opis",
+        "qty": "Ilo\u015b\u0107",
+        "price": "Cena",
+        "total": "Suma",
+        "grossTotal": "Kwota brutto",
+        "allDay": "Ca\u0142y dzie\u0144"
+    }
+}

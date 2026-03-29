@@ -1,0 +1,50 @@
+{
+    "update": {
+        "title": "System Update",
+        "description": "This will back up and update all client databases and the auth database.",
+        "messages": "Messages",
+        "sqlStatements": "SQL Statements",
+        "errors": "Errors",
+        "dryRunSuccess": "Preview loaded successfully.",
+        "updateSuccess": "All databases updated successfully.",
+        "gitPull": "Git Pull",
+        "gitPullSuccess": "Git pull successful",
+        "gitPullFailed": "Git pull failed",
+        "authDatabase": "Auth Database",
+        "authBackup": "Auth Backup",
+        "clientDatabase": "Client: {name}",
+        "clientDbName": "Database: {dbname}",
+        "backupSuccess": "Backup created: {filename}",
+        "backupFailed": "Backup failed",
+        "backupSkipped": "Backup is skipped during dry-run",
+        "features": "Features: {features}",
+        "noClients": "No clients found.",
+        "overallSuccess": "All databases updated successfully",
+        "overallFailed": "Error during update",
+        "buttons": {
+            "dryRun": "Preview",
+            "checking": "Checking...",
+            "update": "Run Update",
+            "updating": "Updating...",
+            "finish": "Finish"
+        },
+        "errorMessages": {
+            "dryRunFailed": "Preview failed.",
+            "updateFailed": "Update failed.",
+            "networkError": "Network error during update."
+        },
+        "schemaMessages": {
+            "dry_run_mode": "Preview mode - No changes will be made",
+            "columns_added": "Table {table}: {count} column(s) would be added | Table {table}: {count} column(s) added",
+            "column_added": "Column '{column}' would be added | Column '{column}' added",
+            "table_up_to_date": "Table {table}: All columns present",
+            "table_created": "Table {table} would be created | Table {table} created",
+            "version_updated": "Version {version} recorded in {schema} database",
+            "object_exists": "{object_type} {name} already exists",
+            "statement_executed": "{statement_type} {target} executed",
+            "csv_skipped": "CSV skipped: {table} ({reason})",
+            "csv_imported": "CSV imported: {table} ({rows_imported} rows)",
+            "info": "{text}"
+        }
+    }
+}

@@ -1,0 +1,83 @@
+{
+    "WikiMenu": {
+        "title": "Wiki",
+        "newPage": "Новая статья",
+        "allPages": "Все статьи",
+        "categories": "Категории"
+    },
+    "WikiListView": {
+        "title": "Wiki - База знаний",
+        "newPage": "Новая статья",
+        "search": "Искать статьи...",
+        "allCategories": "Все",
+        "noPages": "Статьи еще отсутствуют.",
+        "noPagesHint": "Создайте свою первую Wiki-статью.",
+        "headers": {
+            "title": "Заголовок",
+            "category": "Категория",
+            "author": "Автор",
+            "updated": "Последнее обновление",
+            "kba": "KBA"
+        },
+        "confirmDelete": "Действительно удалить статью \"{title}\"?",
+        "deleted": "Статья удалена.",
+        "deleteError": "Ошибка при удалении."
+    },
+    "WikiReadView": {
+        "title": "Wiki-статья",
+        "edit": "Редактировать",
+        "back": "Вернуться к обзору",
+        "revisions": "Версии",
+        "createdBy": "Создал",
+        "updatedBy": "Последнее редактирование",
+        "kbaLabel": "KBA-привязка",
+        "notFound": "Статья не найдена.",
+        "loadError": "Ошибка загрузки статьи."
+    },
+    "WikiEditView": {
+        "titleNew": "Новая Wiki-статья",
+        "titleEdit": "Редактировать Wiki-статью",
+        "fieldTitle": "Заголовок",
+        "fieldCategory": "Категория",
+        "fieldContent": "Содержание",
+        "fieldKbaHsn": "HSN",
+        "fieldKbaTsn": "TSN (первые 3 символа)",
+        "kbaSection": "KBA-привязка (необязательно)",
+        "save": "Сохранить",
+        "cancel": "Отмена",
+        "saved": "Статья сохранена.",
+        "saveError": "Ошибка сохранения.",
+        "missingTitle": "Пожалуйста, укажите заголовок.",
+        "revisions": "История версий",
+        "noRevisions": "Предыдущие версии еще отсутствуют.",
+        "restore": "Восстановить",
+        "confirmRestore": "Восстановить версию от {date}?",
+        "restored": "Версия восстановлена.",
+        "restoreError": "Ошибка восстановления.",
+        "statusSaving": "Сохранение...",
+        "statusSaved": "Сохранено",
+        "statusUnsaved": "Не сохранено",
+        "statusError": "Ошибка сохранения",
+        "back": "Назад",
+        "newCategory": "Новая категория",
+        "createCategory": "Создать"
+    },
+    "WikiCategoriesView": {
+        "title": "Wiki-категории",
+        "newCategory": "Новая категория",
+        "name": "Название",
+        "sortkey": "Сортировка",
+        "pageCount": "Статьи",
+        "save": "Сохранить",
+        "cancel": "Отмена",
+        "edit": "Редактировать",
+        "delete": "Удалить",
+        "noCategories": "Категории еще отсутствуют.",
+        "confirmDelete": "Действительно удалить категорию \"{name}\"?",
+        "saved": "Категория сохранена.",
+        "deleted": "Категория удалена.",
+        "saveError": "Ошибка сохранения.",
+        "deleteError": "Ошибка удаления.",
+        "sortUpdated": "Порядок обновлен."
+    }
+}

@@ -1,0 +1,135 @@
+{
+    "TasksView": {
+        "title": "Uzdevumi",
+        "search": "Meklēt...",
+        "fromDate": "No",
+        "toDate": "Līdz",
+        "showDone": "Rādīt izpildītos",
+        "tabs": {
+            "board": "Dēlis",
+            "list": "Saraksts",
+            "calendar": "Kalendārs"
+        },
+        "actions": {
+            "create": "Jauns uzdevums",
+            "cancel": "Atcelt",
+            "delete": "Dzēst",
+            "save": "Saglabāt",
+            "edit": "Rediģēt",
+            "markDone": "Izpildīts",
+            "markUndone": "Atvērt atkārtoti",
+            "close": "Aizvērt"
+        },
+        "columns": {
+            "overdue": "Nokavēts",
+            "today": "Šodien",
+            "upcoming": "Gaidāms",
+            "done": "Izpildīts"
+        },
+        "fields": {
+            "subject": "Tēma",
+            "body": "Piezīme",
+            "date": "Datums"
+        },
+        "calendar": {
+            "today": "Šodien",
+            "month": "Mēnesis",
+            "week": "Nedēļa",
+            "day": "Diena",
+            "more": "vēl"
+        },
+        "dialog": {
+            "titleNew": "Jauns uzdevums",
+            "titleEdit": "Rediģēt uzdevumu"
+        },
+        "confirmDelete": {
+            "title": "Dzēst uzdevumu?",
+            "message": "Vai tiešām vēlaties dzēst šo uzdevumu? Šo darbību nevar atsaukt."
+        },
+        "messages": {
+            "loadError": "Kļūda ielādējot uzdevumus",
+            "saved": "Uzdevums saglabāts",
+            "saveError": "Kļūda saglabājot",
+            "deleted": "Uzdevums dzēsts",
+            "markedDone": "Atzīmēts kā izpildīts",
+            "markedUndone": "Atvērts atkārtoti",
+            "error": "Radās kļūda"
+        }
+    },
+    "TasksCard": {
+        "noSubject": "Nav tēmas",
+        "today": "Šodien",
+        "tomorrow": "Rīt",
+        "daysAgo": "pirms {days} dienām",
+        "inDays": "pēc {days} dienām",
+        "markDone": "Atzīmēt kā izpildītu",
+        "markUndone": "Atvērt atkārtoti",
+        "delete": "Dzēst"
+    },
+    "TasksDialog": {
+        "titleCreate": "Jauns uzdevums",
+        "titleEdit": "Rediģēt uzdevumu",
+        "date": "Datums",
+        "subject": "Tēma",
+        "body": "Piezīme",
+        "assignedEmployees": "Piešķirts",
+        "linkSection": "Saistījums (neobligāti)",
+        "linkType": "Saistījuma veids",
+        "linkId": "ID",
+        "linkInfo": "Nosaukums",
+        "cancel": "Atcelt",
+        "save": "Saglabāt",
+        "quickDate": {
+            "today": "Šodien",
+            "tomorrow": "Rīt",
+            "nextWeek": "+1 nedēļa",
+            "nextMonth": "+1 mēnesis"
+        },
+        "linkTypes": {
+            "customer": "Klients",
+            "vendor": "Piegādātājs",
+            "salesQuotation": "Piedāvājums",
+            "salesOrder": "Pasūtījums",
+            "salesDeliveryOrder": "Piegādes pavadzīme",
+            "salesInvoice": "Rēķins",
+            "purchaseQuotation": "Pieprasījums",
+            "purchaseOrder": "Pirkuma pasūtījums",
+            "purchaseDeliveryOrder": "Preču saņemšana",
+            "purchaseInvoice": "Ienākošais rēķins"
+        },
+        "validation": {
+            "required": "Obligāts lauks"
+        }
+    },
+    "TasksList": {
+        "done": "Izpildīts",
+        "open": "Atvērts",
+        "today": "Šodien",
+        "tomorrow": "Rīt",
+        "markDone": "Atzīmēt kā izpildītu",
+        "markUndone": "Atvērt atkārtoti",
+        "edit": "Rediģēt",
+        "delete": "Dzēst",
+        "headers": {
+            "date": "Datums",
+            "subject": "Tēma",
+            "link": "Saistījums",
+            "assignedTo": "Piešķirts",
+            "status": "Statuss",
+            "actions": "Darbības"
+        }
+    },
+    "TasksWidget": {
+        "title": "Uzdevumi",
+        "overdue": "Nokavēts",
+        "today": "Šodien",
+        "tomorrow": "Rīt",
+        "upcoming": "Gaidāms",
+        "noItems": "Nav atvērtu uzdevumu",
+        "showAll": "Rādīt visus {count}",
+        "markDone": "Atzīmēt kā izpildītu",
+        "quickAdd": "Ātra pievienošana",
+        "openAll": "Atvērt visus",
+        "daysAgo": "pirms {days} dienām"
+    }
+}

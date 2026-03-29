@@ -1,0 +1,50 @@
+{
+    "setup": {
+        "title": "OpensourceERP Setup",
+        "welcome": "Welkom bij OpensourceERP! Configureer de verbinding met de authenticatiedatabase.",
+        "setupAlreadyDone": "Setup is al uitgevoerd. U wordt doorgestuurd naar de inlogpagina...",
+        "configFound": "kivitendo.conf gevonden - Wachtwoord was niet versleuteld. Formulier is automatisch ingevuld.",
+        "setupCompleteMessage": "Setup succesvol afgerond! Wachtwoord is versleuteld opgeslagen. U wordt doorgestuurd...",
+        "fields": {
+            "host": "Host",
+            "port": "Poort",
+            "database": "Databasenaam",
+            "login": "Inlognaam",
+            "password": "Wachtwoord"
+        },
+        "placeholders": {
+            "host": "localhost",
+            "port": "5432",
+            "database": "oserp_auth",
+            "login": "postgres"
+        },
+        "validation": {
+            "required": "Verplicht veld",
+            "portRange": "Poort moet tussen 1 en 65535 liggen"
+        },
+        "buttons": {
+            "testConnection": "Verbinding testen",
+            "testingConnection": "Verbinding wordt getest...",
+            "saveSetup": "Setup afronden",
+            "savingSetup": "Wordt opgeslagen...",
+            "finish": "App starten"
+        },
+        "errors": {
+            "checkStatus": "Fout bij het controleren van de setup-status",
+            "testConnection": "Fout bij het testen van de verbinding",
+            "testNetworkError": "Netwerkfout bij het testen van de verbinding",
+            "saveSetup": "Fout bij het opslaan van de configuratie",
+            "saveNetworkError": "Netwerkfout bij het opslaan van de configuratie"
+        },
+        "update": {
+            "title": "Database-update",
+            "running": "Database wordt bijgewerkt...",
+            "success": "Database-update succesvol afgerond.",
+            "failed": "Database-update mislukt.",
+            "networkError": "Netwerkfout bij de database-update."
+        },
+        "footer": {
+            "copyright": "OpensourceERP"
+        }
+    }
+}

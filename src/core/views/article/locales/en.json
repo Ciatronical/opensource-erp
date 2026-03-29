@@ -1,0 +1,27 @@
+{
+    "ArticleEditView": {
+        "titleEdit": "Edit Article",
+        "saving": "Saving...",
+        "saved": "Saved",
+        "sections": {
+            "masterData": "Master Data"
+        },
+        "fields": {
+            "partnumber": "Article Number",
+            "description": "Description",
+            "partType": "Article Type",
+            "typePart": "Goods",
+            "typeService": "Service",
+            "unit": "Unit",
+            "buchungsgruppe": "Posting Group",
+            "sellprice": "Selling Price",
+            "notes": "Long Description",
+            "obsolete": "Obsolete / Do not use"
+        },
+        "messages": {
+            "loading": "Loading article",
+            "loadError": "Error loading article",
+            "notFound": "Article not found"
+        }
+    }
+}

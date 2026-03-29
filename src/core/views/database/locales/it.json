@@ -1,0 +1,12 @@
+{
+    "SaveDatabaseView": {
+        "title": "Salva database",
+        "description": "Salva il database corrente sul tuo dispositivo.",
+        "saveButton": "Salva database"
+    },
+    "LoadDatabaseView": {
+        "title": "Carica database",
+        "description": "Carica un database salvato in precedenza dal tuo dispositivo.",
+        "loadButton": "Carica database"
+    }
+}

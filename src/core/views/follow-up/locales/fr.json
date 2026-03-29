@@ -1,0 +1,179 @@
+{
+    "FollowUpView": {
+        "title": "Relances",
+        "search": "Rechercher...",
+        "fromDate": "Du",
+        "toDate": "Au",
+        "showDone": "Afficher les terminees",
+        "tabs": {
+            "board": "Tableau",
+            "list": "Liste",
+            "calendar": "Calendrier"
+        },
+        "actions": {
+            "create": "Nouvelle relance",
+            "cancel": "Annuler",
+            "delete": "Supprimer",
+            "save": "Enregistrer",
+            "edit": "Modifier",
+            "markDone": "Termine",
+            "markUndone": "Rouvrir",
+            "close": "Fermer"
+        },
+        "columns": {
+            "overdue": "En retard",
+            "today": "Aujourd'hui",
+            "upcoming": "A venir",
+            "done": "Termine"
+        },
+        "confirmDelete": {
+            "title": "Supprimer la relance ?",
+            "message": "Voulez-vous vraiment supprimer cette relance ? Cette action est irreversible."
+        },
+        "messages": {
+            "loadError": "Erreur lors du chargement des relances",
+            "saved": "Relance enregistree",
+            "saveError": "Erreur lors de l'enregistrement",
+            "deleted": "Relance supprimee",
+            "deletedMultiple": "{count} relances supprimees",
+            "markedDone": "Marque comme termine",
+            "markedUndone": "Rouvert",
+            "error": "Une erreur est survenue"
+        }
+    },
+    "FollowUpCard": {
+        "noSubject": "Pas d'objet",
+        "today": "Aujourd'hui",
+        "tomorrow": "Demain",
+        "daysAgo": "il y a {days} jours",
+        "inDays": "dans {days} jours",
+        "markDone": "Marquer comme termine",
+        "markUndone": "Rouvrir",
+        "delete": "Supprimer"
+    },
+    "FollowUpDialog": {
+        "titleCreate": "Nouvelle relance",
+        "titleEdit": "Modifier la relance",
+        "date": "Date",
+        "subject": "Objet",
+        "body": "Note",
+        "assignedEmployees": "Attribue a",
+        "linkSection": "Lien (optionnel)",
+        "linkType": "Type de lien",
+        "linkId": "ID",
+        "linkInfo": "Designation",
+        "searchCustomer": "Rechercher un client",
+        "searchVendor": "Rechercher un fournisseur",
+        "searchQuotation": "Rechercher un devis",
+        "searchOrder": "Rechercher une commande",
+        "searchDeliveryOrder": "Rechercher un bon de livraison",
+        "searchInvoice": "Rechercher une facture",
+        "searchRequestQuotation": "Rechercher une demande",
+        "searchPurchaseOrder": "Rechercher une commande fournisseur",
+        "searchPurchaseDeliveryOrder": "Rechercher une reception",
+        "searchPurchaseInvoice": "Rechercher une facture fournisseur",
+        "search": "Rechercher",
+        "noResults": "Aucun resultat trouve",
+        "startTyping": "Saisir un terme de recherche...",
+        "cancel": "Annuler",
+        "save": "Enregistrer",
+        "quickDate": {
+            "today": "Aujourd'hui",
+            "tomorrow": "Demain",
+            "nextWeek": "+1 semaine",
+            "twoWeeks": "+2 semaines",
+            "nextMonth": "+1 mois"
+        },
+        "linkTypes": {
+            "customer": "Client",
+            "vendor": "Fournisseur",
+            "salesQuotation": "Devis",
+            "salesOrder": "Commande",
+            "salesDeliveryOrder": "Bon de livraison",
+            "salesInvoice": "Facture",
+            "purchaseQuotation": "Demande",
+            "purchaseOrder": "Commande fournisseur",
+            "purchaseDeliveryOrder": "Reception",
+            "purchaseInvoice": "Facture fournisseur"
+        },
+        "validation": {
+            "required": "Champ obligatoire"
+        }
+    },
+    "FollowUpList": {
+        "done": "Termine",
+        "open": "Ouvert",
+        "today": "Aujourd'hui",
+        "tomorrow": "Demain",
+        "markDone": "Marquer comme termine",
+        "markUndone": "Rouvrir",
+        "edit": "Modifier",
+        "delete": "Supprimer",
+        "entry": "Entree",
+        "entries": "Entrees",
+        "deleteAll": "Supprimer toutes les affichees",
+        "deleteAllConfirmTitle": "Supprimer toutes les relances ?",
+        "deleteAllConfirmText": "Voulez-vous vraiment supprimer les {count} relances affichees ?",
+        "deleteAllWarning": "Cette action est irreversible !",
+        "deleteAllConfirm": "Tout supprimer",
+        "cancel": "Annuler",
+        "headers": {
+            "date": "Date",
+            "subject": "Objet",
+            "link": "Lien",
+            "assignedTo": "Attribue",
+            "status": "Statut",
+            "actions": "Actions"
+        }
+    },
+    "FollowUpCalendar": {
+        "today": "Aujourd'hui",
+        "month": "Mois",
+        "week": "Semaine",
+        "day": "Jour",
+        "allDay": "Toute la journee",
+        "noSubject": "Sans objet",
+        "newFollowUp": "Nouvelle relance",
+        "subject": "Objet",
+        "subjectPlaceholder": "Que faut-il faire ?",
+        "note": "Note",
+        "notePlaceholder": "Informations supplementaires...",
+        "cancel": "Annuler",
+        "create": "Creer",
+        "done": "Termine",
+        "reopen": "Rouvrir",
+        "edit": "Modifier",
+        "links": "Liens",
+        "details": "Details",
+        "assignedTo": "Attribue a",
+        "linkedTo": "Lie a",
+        "close": "Fermer",
+        "markDone": "Marquer comme termine",
+        "markUndone": "Rouvrir",
+        "editFollowUp": "Modifier",
+        "deleteFollowUp": "Supprimer",
+        "more": "autres",
+        "weekDays": {
+            "mon": "Lu",
+            "tue": "Ma",
+            "wed": "Me",
+            "thu": "Je",
+            "fri": "Ve",
+            "sat": "Sa",
+            "sun": "Di"
+        }
+    },
+    "FollowUpWidget": {
+        "title": "Relances",
+        "overdue": "En retard",
+        "today": "Aujourd'hui",
+        "tomorrow": "Demain",
+        "upcoming": "A venir",
+        "noItems": "Aucune relance en cours",
+        "showAll": "Afficher les {count}",
+        "markDone": "Marquer comme termine",
+        "quickAdd": "Ajout rapide",
+        "openAll": "Tout ouvrir",
+        "daysAgo": "il y a {days} jours"
+    }
+}

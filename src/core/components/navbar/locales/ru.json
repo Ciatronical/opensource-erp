@@ -1,0 +1,41 @@
+{
+    "NavbarView": {
+        "logoutTooltip": "Выйти",
+        "accountTooltip": "Учетная запись",
+        "editCustomerTooltip": "Редактировать клиента",
+        "editCvTooltip": "Редактировать клиента/поставщика",
+        "currentC": "Клиент:",
+        "currentV": "Поставщик:",
+        "openInNewTabTooltip": "Главное меню",
+        "newTabTooltip": "Открыть в новой вкладке",
+        "calendarTooltip": "Календарь",
+        "callHistoryTooltip": "Журнал звонков",
+        "userConfig": "Настройки",
+        "switchClient": "Сменить компанию",
+        "uploadLogo": "Логотип компании",
+        "selectImage": "Выбрать изображение",
+        "logoHint": "Выбрать изображение, расположить и обрезать",
+        "saveLogo": "Сохранить",
+        "deleteLogo": "Удалить",
+        "cancel": "Отмена"
+    },
+    "GlobalSearch": {
+        "placeholder": "Поиск...",
+        "noResults": "Нет результатов",
+        "customers": "Клиенты",
+        "vendors": "Поставщики",
+        "invoices": "Счета",
+        "orders": "Заказы",
+        "quotations": "Предложения",
+        "articles": "Товары",
+        "vehicles": "Транспортные средства",
+        "wiki": "Wiki-статьи",
+        "recentlyVisited": "Недавно посещенные",
+        "clearHistory": "Очистить историю"
+    },
+    "InfoBar": {
+        "unknownCaller": "Неизвестный",
+        "closeAll": "Закрыть все уведомления",
+        "pendingParts": "Запчасти запрошены"
+    }
+}

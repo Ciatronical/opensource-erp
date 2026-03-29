@@ -1,0 +1,50 @@
+{
+    "setup": {
+        "title": "OpensourceERP Setup",
+        "welcome": "Valkommen till OpensourceERP! Konfigurera anslutningen till autentiseringsdatabasen.",
+        "setupAlreadyDone": "Setup ar redan genomford. Du omdirigeras till inloggningssidan...",
+        "configFound": "kivitendo.conf hittad - Losenordet var okrypterat. Formularet fylldes i automatiskt.",
+        "setupCompleteMessage": "Setup genomford! Losenordet sparades krypterat. Du omdirigeras...",
+        "fields": {
+            "host": "Host",
+            "port": "Port",
+            "database": "Databasnamn",
+            "login": "Login",
+            "password": "Losenord"
+        },
+        "placeholders": {
+            "host": "localhost",
+            "port": "5432",
+            "database": "oserp_auth",
+            "login": "postgres"
+        },
+        "validation": {
+            "required": "Obligatoriskt falt",
+            "portRange": "Port maste vara mellan 1 och 65535"
+        },
+        "buttons": {
+            "testConnection": "Testa anslutning",
+            "testingConnection": "Testar anslutning...",
+            "saveSetup": "Slutfor setup",
+            "savingSetup": "Sparar...",
+            "finish": "Kor app"
+        },
+        "errors": {
+            "checkStatus": "Fel vid kontroll av setup-status",
+            "testConnection": "Fel vid test av anslutning",
+            "testNetworkError": "Natverksfel vid test av anslutning",
+            "saveSetup": "Fel vid lagring av konfiguration",
+            "saveNetworkError": "Natverksfel vid lagring av konfiguration"
+        },
+        "update": {
+            "title": "Databasuppdatering",
+            "running": "Databas uppdateras...",
+            "success": "Databasuppdatering genomford.",
+            "failed": "Databasuppdatering misslyckades.",
+            "networkError": "Natverksfel vid databasuppdatering."
+        },
+        "footer": {
+            "copyright": "OpensourceERP"
+        }
+    }
+}

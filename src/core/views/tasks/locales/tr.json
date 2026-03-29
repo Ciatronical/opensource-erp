@@ -1,0 +1,135 @@
+{
+    "TasksView": {
+        "title": "Gorevler",
+        "search": "Ara...",
+        "fromDate": "Baslangic",
+        "toDate": "Bitis",
+        "showDone": "Tamamlananlari goster",
+        "tabs": {
+            "board": "Pano",
+            "list": "Liste",
+            "calendar": "Takvim"
+        },
+        "actions": {
+            "create": "Yeni gorev",
+            "cancel": "Iptal",
+            "delete": "Sil",
+            "save": "Kaydet",
+            "edit": "Duzenle",
+            "markDone": "Tamamlandi",
+            "markUndone": "Yeniden ac",
+            "close": "Kapat"
+        },
+        "columns": {
+            "overdue": "Gecmis",
+            "today": "Bugun",
+            "upcoming": "Yaklasan",
+            "done": "Tamamlandi"
+        },
+        "fields": {
+            "subject": "Konu",
+            "body": "Not",
+            "date": "Tarih"
+        },
+        "calendar": {
+            "today": "Bugun",
+            "month": "Ay",
+            "week": "Hafta",
+            "day": "Gun",
+            "more": "daha fazla"
+        },
+        "dialog": {
+            "titleNew": "Yeni gorev",
+            "titleEdit": "Gorevi duzenle"
+        },
+        "confirmDelete": {
+            "title": "Gorev silinsin mi?",
+            "message": "Bu gorevi silmek istiyor musunuz? Bu islem geri alinamaz."
+        },
+        "messages": {
+            "loadError": "Gorevler yuklenirken hata",
+            "saved": "Gorev kaydedildi",
+            "saveError": "Kaydetme hatasi",
+            "deleted": "Gorev silindi",
+            "markedDone": "Tamamlandi olarak isaretlendi",
+            "markedUndone": "Yeniden acildi",
+            "error": "Bir hata olustu"
+        }
+    },
+    "TasksCard": {
+        "noSubject": "Konu yok",
+        "today": "Bugun",
+        "tomorrow": "Yarin",
+        "daysAgo": "{days} gun once",
+        "inDays": "{days} gun icinde",
+        "markDone": "Tamamlandi olarak isaretle",
+        "markUndone": "Yeniden ac",
+        "delete": "Sil"
+    },
+    "TasksDialog": {
+        "titleCreate": "Yeni gorev",
+        "titleEdit": "Gorevi duzenle",
+        "date": "Tarih",
+        "subject": "Konu",
+        "body": "Not",
+        "assignedEmployees": "Atanan",
+        "linkSection": "Baglanti (istege bagli)",
+        "linkType": "Baglanti turu",
+        "linkId": "ID",
+        "linkInfo": "Aciklama",
+        "cancel": "Iptal",
+        "save": "Kaydet",
+        "quickDate": {
+            "today": "Bugun",
+            "tomorrow": "Yarin",
+            "nextWeek": "+1 hafta",
+            "nextMonth": "+1 ay"
+        },
+        "linkTypes": {
+            "customer": "Musteri",
+            "vendor": "Tedarikci",
+            "salesQuotation": "Teklif",
+            "salesOrder": "Siparis",
+            "salesDeliveryOrder": "Irsaliye",
+            "salesInvoice": "Fatura",
+            "purchaseQuotation": "Teklif talebi",
+            "purchaseOrder": "Satin alma siparisi",
+            "purchaseDeliveryOrder": "Mal kabul",
+            "purchaseInvoice": "Gelen fatura"
+        },
+        "validation": {
+            "required": "Zorunlu alan"
+        }
+    },
+    "TasksList": {
+        "done": "Tamamlandi",
+        "open": "Acik",
+        "today": "Bugun",
+        "tomorrow": "Yarin",
+        "markDone": "Tamamlandi olarak isaretle",
+        "markUndone": "Yeniden ac",
+        "edit": "Duzenle",
+        "delete": "Sil",
+        "headers": {
+            "date": "Tarih",
+            "subject": "Konu",
+            "link": "Baglanti",
+            "assignedTo": "Atanan",
+            "status": "Durum",
+            "actions": "Islemler"
+        }
+    },
+    "TasksWidget": {
+        "title": "Gorevler",
+        "overdue": "Gecmis",
+        "today": "Bugun",
+        "tomorrow": "Yarin",
+        "upcoming": "Yaklasan",
+        "noItems": "Acik gorev yok",
+        "showAll": "Tumunu goster {count}",
+        "markDone": "Tamamlandi olarak isaretle",
+        "quickAdd": "Hizli ekle",
+        "openAll": "Tumunu ac",
+        "daysAgo": "{days} gun once"
+    }
+}

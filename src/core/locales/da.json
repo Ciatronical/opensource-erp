@@ -1,0 +1,47 @@
+{
+    "LoginView": {
+        "title": "Login",
+        "username": "Brugernavn",
+        "password": "Adgangskode",
+        "client": "Virksomhed",
+        "button": "Log ind",
+        "failed": "Login mislykkedes. Kontroller venligst dine loginoplysninger.",
+        "EMPTY_FIELDS": "Angiv venligst navn og adgangskode.",
+        "USER_NOT_FOUND": "Bruger ikke fundet.",
+        "WRONG_PASSWORD": "Ugyldig adgangskode.",
+        "ERROR": "Fejl ved login. Proev venligst igen.",
+        "ERROR_LOADING_CLIENTS": "Fejl ved indlaesning af virksomheder. Proev venligst igen senere.",
+        "USER_NOT_ASSIGNED_TO_CLIENT": "Bruger er ikke tildelt virksomheden.",
+        "PASSWORD_FILE_NOT_FOUND": "Fejl: Adgangskodefilen api/config/api.passwd.php blev ikke fundet. Omdoeb venligst filen api/config/api.passwd.php.example til api/config/api.passwd.php og tilpas indstillingerne.",
+        "CONFIG_FILE_NOT_FOUND": "Fejl: Konfigurationsfilen blev ikke fundet. Kontroller venligst indstillingerne.",
+        "updateButton": "Koer opdatering",
+        "updateSuccess": "Databaseopdatering gennemfoert.",
+        "updateError": "Fejl ved databaseopdatering. Proev venligst igen.",
+        "privacy": "Privatlivspolitik",
+        "dataDeletion": "Datasletning"
+    },
+    "NotFoundView": {
+        "title": "Side ikke fundet",
+        "message": "Den oenskede side blev ikke fundet.",
+        "back_home": "Tilbage til startsiden"
+    },
+    "NavbarView": {
+        "logoutTooltip": "Log ud",
+        "accountTooltip": "Konto",
+        "editCustomerTooltip": "Rediger kunde",
+        "editCvTooltip": "Rediger kunde/leverandoer",
+        "currentC": "Kunde:",
+        "currentV": "Leverandoer:",
+        "demoBanner": "Demotilstand - Alle data nulstilles automatisk efter inaktivitet.",
+        "demoResetWarning": "Demoen nulstilles om {seconds} sekunder - bevaeg musen for at fortsaette."
+    },
+    "ErrorView": {
+        "title": "Der opstod en fejl",
+        "message": "Vi beklager, men der opstod en uventet fejl.",
+        "debugInfo": "Debug-information:",
+        "clickToShowDetails": "Klik for at vise detaljer"
+    },
+    "App": {
+        "loading": "Vent venligst..."
+    }
+}

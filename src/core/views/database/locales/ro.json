@@ -1,0 +1,12 @@
+{
+    "SaveDatabaseView": {
+        "title": "Salvare baza de date",
+        "description": "Salvati baza de date curenta pe dispozitivul dvs.",
+        "saveButton": "Salveaza baza de date"
+    },
+    "LoadDatabaseView": {
+        "title": "Incarcare baza de date",
+        "description": "Incarcati o baza de date salvata anterior de pe dispozitivul dvs.",
+        "loadButton": "Incarca baza de date"
+    }
+}

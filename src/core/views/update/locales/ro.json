@@ -1,0 +1,50 @@
+{
+    "update": {
+        "title": "Actualizare sistem",
+        "description": "Aici vor fi salvate si actualizate toate bazele de date ale firmelor si baza de date de autentificare.",
+        "messages": "Mesaje",
+        "sqlStatements": "Instrucțiuni SQL",
+        "errors": "Erori",
+        "dryRunSuccess": "Previzualizare incarcata cu succes.",
+        "updateSuccess": "Toate bazele de date au fost actualizate cu succes.",
+        "gitPull": "Git Pull",
+        "gitPullSuccess": "Git Pull reusit",
+        "gitPullFailed": "Git Pull esuat",
+        "authDatabase": "Baza de date de autentificare",
+        "authBackup": "Backup autentificare",
+        "clientDatabase": "Firma: {name}",
+        "clientDbName": "Baza de date: {dbname}",
+        "backupSuccess": "Backup creat: {filename}",
+        "backupFailed": "Backup esuat",
+        "backupSkipped": "Backup-ul nu se creeaza in modul Dry-Run",
+        "features": "Functionalitati: {features}",
+        "noClients": "Nu s-au gasit firme.",
+        "overallSuccess": "Toate bazele de date au fost actualizate cu succes",
+        "overallFailed": "Eroare la actualizare",
+        "buttons": {
+            "dryRun": "Previzualizare",
+            "checking": "Se verifica...",
+            "update": "Executa actualizarea",
+            "updating": "Se actualizeaza...",
+            "finish": "Finalizat"
+        },
+        "errorMessages": {
+            "dryRunFailed": "Previzualizarea a esuat.",
+            "updateFailed": "Actualizarea a esuat.",
+            "networkError": "Eroare de retea la actualizare."
+        },
+        "schemaMessages": {
+            "dry_run_mode": "Mod previzualizare - Nu se efectueaza modificari",
+            "columns_added": "Tabel {table}: {count} coloana(e) ar fi adaugate | Tabel {table}: {count} coloana(e) adaugate",
+            "column_added": "Coloana '{column}' ar fi adaugata | Coloana '{column}' adaugata",
+            "table_up_to_date": "Tabel {table}: Toate coloanele prezente",
+            "table_created": "Tabel {table} ar fi creat | Tabel {table} creat",
+            "version_updated": "Versiunea {version} inregistrata in baza de date {schema}",
+            "object_exists": "{object_type} {name} exista deja",
+            "statement_executed": "{statement_type} {target} executat",
+            "csv_skipped": "CSV omis: {table} ({reason})",
+            "csv_imported": "CSV importat: {table} ({rows_imported} randuri)",
+            "info": "{text}"
+        }
+    }
+}

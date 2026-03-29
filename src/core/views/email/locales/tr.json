@@ -1,0 +1,40 @@
+{
+    "EmailView": {
+        "title": "E-postalar",
+        "inbox": "Gelen kutusu",
+        "sent": "Gonderilenler",
+        "drafts": "Taslaklar",
+        "trash": "Cop kutusu",
+        "folders": "Klasorler",
+        "compose": "Yeni e-posta",
+        "refresh": "Yenile",
+        "search": "E-postalarda ara...",
+        "noEmails": "E-posta yok",
+        "noConfig": "E-posta istemcisi yapilandirilmamis. Lutfen firma yapilandirmasinda CRM bolumunde e-posta ayarlarini yapin.",
+        "loading": "E-postalar yukleniyor...",
+        "from": "Kimden",
+        "to": "Kime",
+        "cc": "CC",
+        "date": "Tarih",
+        "subject": "Konu",
+        "body": "Mesaj",
+        "noSubject": "(Konu yok)",
+        "attachments": "Ekler",
+        "send": "Gonder",
+        "cancel": "Iptal",
+        "reply": "Yanitla",
+        "forward": "Ilet",
+        "delete": "Sil",
+        "markRead": "Okundu olarak isaretle",
+        "markUnread": "Okunmadi olarak isaretle",
+        "of": "/",
+        "emails": "e-posta",
+        "page": "Sayfa",
+        "customer": "Musteri / Tedarikci",
+        "searchCustomer": "Musteri veya tedarikci ara...",
+        "openCustomer": "ac"
+    },
+    "EmailMenu": {
+        "title": "E-postalar"
+    }
+}

@@ -1,0 +1,50 @@
+{
+    "setup": {
+        "title": "OpensourceERP Setup",
+        "welcome": "Witamy w OpensourceERP! Prosz\u0119 skonfigurowa\u0107 po\u0142\u0105czenie z baz\u0105 danych uwierzytelniania.",
+        "setupAlreadyDone": "Konfiguracja zosta\u0142a ju\u017c przeprowadzona. Nast\u0105pi przekierowanie na stron\u0119 logowania...",
+        "configFound": "Znaleziono kivitendo.conf \u2014 has\u0142o by\u0142o niezaszyfrowane. Formularz zosta\u0142 automatycznie wype\u0142niony.",
+        "setupCompleteMessage": "Konfiguracja zako\u0144czona pomy\u015blnie! Has\u0142o zosta\u0142o zaszyfrowane i zapisane. Nast\u0105pi przekierowanie...",
+        "fields": {
+            "host": "Host",
+            "port": "Port",
+            "database": "Nazwa bazy danych",
+            "login": "Login",
+            "password": "Has\u0142o"
+        },
+        "placeholders": {
+            "host": "localhost",
+            "port": "5432",
+            "database": "oserp_auth",
+            "login": "postgres"
+        },
+        "validation": {
+            "required": "Pole wymagane",
+            "portRange": "Port musi by\u0107 z zakresu od 1 do 65535"
+        },
+        "buttons": {
+            "testConnection": "Testuj po\u0142\u0105czenie",
+            "testingConnection": "Testowanie po\u0142\u0105czenia...",
+            "saveSetup": "Zako\u0144cz konfiguracj\u0119",
+            "savingSetup": "Zapisywanie...",
+            "finish": "Uruchom aplikacj\u0119"
+        },
+        "errors": {
+            "checkStatus": "B\u0142\u0105d podczas sprawdzania statusu konfiguracji",
+            "testConnection": "B\u0142\u0105d podczas testowania po\u0142\u0105czenia",
+            "testNetworkError": "B\u0142\u0105d sieci podczas testowania po\u0142\u0105czenia",
+            "saveSetup": "B\u0142\u0105d podczas zapisywania konfiguracji",
+            "saveNetworkError": "B\u0142\u0105d sieci podczas zapisywania konfiguracji"
+        },
+        "update": {
+            "title": "Aktualizacja bazy danych",
+            "running": "Trwa aktualizacja bazy danych...",
+            "success": "Aktualizacja bazy danych zako\u0144czona pomy\u015blnie.",
+            "failed": "Aktualizacja bazy danych nie powiod\u0142a si\u0119.",
+            "networkError": "B\u0142\u0105d sieci podczas aktualizacji bazy danych."
+        },
+        "footer": {
+            "copyright": "OpensourceERP"
+        }
+    }
+}

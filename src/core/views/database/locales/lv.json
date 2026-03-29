@@ -1,0 +1,12 @@
+{
+    "SaveDatabaseView": {
+        "title": "Saglabāt datu bāzi",
+        "description": "Saglabājiet pašreizējo datu bāzi savā ierīcē.",
+        "saveButton": "Saglabāt datu bāzi"
+    },
+    "LoadDatabaseView": {
+        "title": "Ielādēt datu bāzi",
+        "description": "Ielādējiet iepriekš saglabātu datu bāzi no savas ierīces.",
+        "loadButton": "Ielādēt datu bāzi"
+    }
+}

@@ -1,0 +1,179 @@
+{
+    "FollowUpView": {
+        "title": "Uppfoeljning",
+        "search": "Sok...",
+        "fromDate": "Fran",
+        "toDate": "Till",
+        "showDone": "Visa slutforda",
+        "tabs": {
+            "board": "Board",
+            "list": "Lista",
+            "calendar": "Kalender"
+        },
+        "actions": {
+            "create": "Ny uppfoeljning",
+            "cancel": "Avbryt",
+            "delete": "Radera",
+            "save": "Spara",
+            "edit": "Redigera",
+            "markDone": "Slutford",
+            "markUndone": "Ateröppna",
+            "close": "Stang"
+        },
+        "columns": {
+            "overdue": "Forsenad",
+            "today": "Idag",
+            "upcoming": "Kommande",
+            "done": "Slutford"
+        },
+        "confirmDelete": {
+            "title": "Radera uppfoeljning?",
+            "message": "Vill du verkligen radera denna uppfoeljning? Denna atgard kan inte angras."
+        },
+        "messages": {
+            "loadError": "Fel vid laddning av uppfoeljningar",
+            "saved": "Uppfoeljning sparad",
+            "saveError": "Fel vid sparande",
+            "deleted": "Uppfoeljning raderad",
+            "deletedMultiple": "{count} uppfoeljningar raderade",
+            "markedDone": "Markerad som slutford",
+            "markedUndone": "Ateröppnad",
+            "error": "Ett fel uppstod"
+        }
+    },
+    "FollowUpCard": {
+        "noSubject": "Inget amne",
+        "today": "Idag",
+        "tomorrow": "Imorgon",
+        "daysAgo": "for {days} dagar sedan",
+        "inDays": "om {days} dagar",
+        "markDone": "Markera som slutford",
+        "markUndone": "Ateröppna",
+        "delete": "Radera"
+    },
+    "FollowUpDialog": {
+        "titleCreate": "Ny uppfoeljning",
+        "titleEdit": "Redigera uppfoeljning",
+        "date": "Datum",
+        "subject": "Amne",
+        "body": "Anteckning",
+        "assignedEmployees": "Tilldelad till",
+        "linkSection": "Koppling (valfritt)",
+        "linkType": "Kopplingstyp",
+        "linkId": "ID",
+        "linkInfo": "Beteckning",
+        "searchCustomer": "Sok kund",
+        "searchVendor": "Sok leverantor",
+        "searchQuotation": "Sok offert",
+        "searchOrder": "Sok order",
+        "searchDeliveryOrder": "Sok foljesedel",
+        "searchInvoice": "Sok faktura",
+        "searchRequestQuotation": "Sok forfragan",
+        "searchPurchaseOrder": "Sok bestallning",
+        "searchPurchaseDeliveryOrder": "Sok varumottagning",
+        "searchPurchaseInvoice": "Sok inkommande faktura",
+        "search": "Sok",
+        "noResults": "Inga resultat hittades",
+        "startTyping": "Ange sokord...",
+        "cancel": "Avbryt",
+        "save": "Spara",
+        "quickDate": {
+            "today": "Idag",
+            "tomorrow": "Imorgon",
+            "nextWeek": "+1 vecka",
+            "twoWeeks": "+2 veckor",
+            "nextMonth": "+1 manad"
+        },
+        "linkTypes": {
+            "customer": "Kund",
+            "vendor": "Leverantor",
+            "salesQuotation": "Offert",
+            "salesOrder": "Order",
+            "salesDeliveryOrder": "Foljesedel",
+            "salesInvoice": "Faktura",
+            "purchaseQuotation": "Forfragan",
+            "purchaseOrder": "Bestallning",
+            "purchaseDeliveryOrder": "Varumottagning",
+            "purchaseInvoice": "Inkommande faktura"
+        },
+        "validation": {
+            "required": "Obligatoriskt falt"
+        }
+    },
+    "FollowUpList": {
+        "done": "Slutford",
+        "open": "Oppen",
+        "today": "Idag",
+        "tomorrow": "Imorgon",
+        "markDone": "Markera som slutford",
+        "markUndone": "Ateröppna",
+        "edit": "Redigera",
+        "delete": "Radera",
+        "entry": "Post",
+        "entries": "Poster",
+        "deleteAll": "Radera alla visade",
+        "deleteAllConfirmTitle": "Radera alla uppfoeljningar?",
+        "deleteAllConfirmText": "Vill du verkligen radera alla {count} visade uppfoeljningar?",
+        "deleteAllWarning": "Denna atgard kan inte angras!",
+        "deleteAllConfirm": "Radera alla",
+        "cancel": "Avbryt",
+        "headers": {
+            "date": "Datum",
+            "subject": "Amne",
+            "link": "Koppling",
+            "assignedTo": "Tilldelad",
+            "status": "Status",
+            "actions": "Atgarder"
+        }
+    },
+    "FollowUpCalendar": {
+        "today": "Idag",
+        "month": "Manad",
+        "week": "Vecka",
+        "day": "Dag",
+        "allDay": "Heldag",
+        "noSubject": "Utan amne",
+        "newFollowUp": "Ny uppfoeljning",
+        "subject": "Amne",
+        "subjectPlaceholder": "Vad ska goras?",
+        "note": "Anteckning",
+        "notePlaceholder": "Ytterligare information...",
+        "cancel": "Avbryt",
+        "create": "Skapa",
+        "done": "Slutford",
+        "reopen": "Oppna",
+        "edit": "Redigera",
+        "links": "Kopplingar",
+        "details": "Detaljer",
+        "assignedTo": "Tilldelad till",
+        "linkedTo": "Lankat till",
+        "close": "Stang",
+        "markDone": "Markera som slutford",
+        "markUndone": "Ateröppna",
+        "editFollowUp": "Redigera",
+        "deleteFollowUp": "Radera",
+        "more": "fler",
+        "weekDays": {
+            "mon": "Ma",
+            "tue": "Ti",
+            "wed": "On",
+            "thu": "To",
+            "fri": "Fr",
+            "sat": "Lo",
+            "sun": "So"
+        }
+    },
+    "FollowUpWidget": {
+        "title": "Uppfoeljning",
+        "overdue": "Forsenad",
+        "today": "Idag",
+        "tomorrow": "Imorgon",
+        "upcoming": "Kommande",
+        "noItems": "Inga oppna uppfoeljningar",
+        "showAll": "Visa alla {count}",
+        "markDone": "Markera som slutford",
+        "quickAdd": "Snabbt tillagg",
+        "openAll": "Oppna alla",
+        "daysAgo": "for {days} dagar sedan"
+    }
+}

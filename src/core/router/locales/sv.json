@@ -1,0 +1,75 @@
+{
+    "routes": {
+        "mainmenu": "/hauptmen%C3%BC",
+        "customer": "/kunde",
+        "editCustomer": "/kunde/bearbeiten",
+        "editVendor": "/lieferant/bearbeiten",
+        "viewInvoice": "/rechnung/anzeigen",
+        "editQuotation": "/angebot/bearbeiten",
+        "editOrder": "/auftrag/bearbeiten",
+        "newCustomer": "/kunde/neu",
+        "newVendor": "/lieferant/neu",
+        "newQuotation": "/angebot/neu",
+        "newOrder": "/auftrag/neu",
+        "newInvoice": "/rechnung/neu",
+        "manageCustomers": "/kunde",
+        "manageVendors": "/lieferant",
+        "manageArticles": "/artikel",
+        "manageQuotations": "/angebot",
+        "manageOrders": "/auftrag",
+        "manageInvoices": "/rechnung",
+        "manageCreditNotes": "/gutschrift",
+        "manageDeliveryOrders": "/lieferschein",
+        "orderSearch": "/auftrag/suche",
+        "search": "/suche",
+        "searchCustomers": "/kunde/suche",
+        "followUp": "/wiedervorlage",
+        "clientConfig": "/system/mandantenkonfiguration",
+        "developerTools": "/system/developer-tools",
+        "systemUpdate": "/system/aktualisierung",
+        "currentCustomerEdit": "/kunde/bearbeiten",
+        "callHistory": "/anrufliste",
+        "calendar": "/kalender",
+        "wiki": "/wiki",
+        "wikiNew": "/wiki/neu",
+        "wikiCategories": "/wiki/kategorien",
+        "wikiEdit": "/wiki/bearbeiten",
+        "userConfig": "/benutzer/konfiguration",
+        "huSerienbrief": "/serienbrief/hu",
+        "wallDisplay": "/wandanzeige"
+    },
+    "errors": {
+        "PASSWORD_FILE_NOT_FOUND": "Fel: Losenordsfilen api/config/api.passwd.php hittades inte. Byt namn pa filen api/config/api.passwd.php.example till api/config/api.passwd.php och anpassa installningarna.",
+        "CONFIG_FILE_NOT_FOUND": "Fel: Konfigurationsfilen hittades inte. Kontrollera installningarna."
+    },
+    "MasterDataMenu": {
+        "title": "Stamdata",
+        "editCustomer": "Redigera kunddata",
+        "newCustomer": "Skapa ny kund",
+        "manageCustomers": "Hantera kunder",
+        "search": "Sok",
+        "searchCustomers": "Sok kunder",
+        "newVendor": "Skapa ny leverantor",
+        "calendar": "Kalender"
+    },
+    "ContactMenu": {
+        "title": "Kontakt",
+        "callHistory": "Samtalslista",
+        "emails": "E-post",
+        "whatsapp": "WhatsApp"
+    },
+    "SalesMenu": {
+        "title": "Forsaljning",
+        "newQuotation": "Skapa ny offert",
+        "newOrder": "Skapa ny order",
+        "newInvoice": "Skapa ny faktura",
+        "manageCreditNotes": "Kreditnotor"
+    },
+    "SystemMenu": {
+        "title": "System",
+        "clientConfig": "Foretagskonfiguration",
+        "developerTools": "Developer Tools",
+        "systemUpdate": "Systemuppdatering",
+        "about": "Om"
+    }
+}

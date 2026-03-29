@@ -1,0 +1,87 @@
+{
+    "CalendarView": {
+        "title": "Calendar",
+        "actions": {
+            "create": "Eveniment nou",
+            "categories": "Categorii",
+            "cancel": "Anulare",
+            "save": "Salvare",
+            "delete": "Stergere",
+            "edit": "Editare",
+            "close": "Inchide"
+        },
+        "confirmDelete": {
+            "title": "Stergeti evenimentul?",
+            "message": "Doriti sa stergeti acest eveniment?"
+        },
+        "messages": {
+            "loadError": "Eroare la incarcarea evenimentelor",
+            "saved": "Eveniment salvat",
+            "saveError": "Eroare la salvare",
+            "deleted": "Eveniment sters",
+            "error": "A aparut o eroare",
+            "categoryDeleted": "Categorie stearsa",
+            "categorySaved": "Categorie salvata"
+        },
+        "search": "Cautare",
+        "searchResults": "Rezultate cautare",
+        "noResults": "Fara rezultate"
+    },
+    "CalendarMain": {
+        "today": "Astazi",
+        "month": "Luna",
+        "week": "Saptamana",
+        "day": "Zi",
+        "list": "Lista",
+        "allDay": "Toata ziua",
+        "filterCategories": "Filtreaza categorii"
+    },
+    "CalendarEventDialog": {
+        "titleCreate": "Eveniment nou",
+        "titleEdit": "Editare eveniment",
+        "title": "Titlu",
+        "allDay": "Toata ziua",
+        "start": "Inceput",
+        "end": "Sfarsit",
+        "category": "Categorie",
+        "noCategory": "Fara categorie",
+        "priority": "Prioritate",
+        "priorityLow": "Scazuta",
+        "priorityNormal": "Normala",
+        "priorityHigh": "Ridicata",
+        "location": "Locatie",
+        "description": "Descriere",
+        "color": "Culoare",
+        "visibility": "Vizibilitate",
+        "visibilityAll": "Toti",
+        "visibilityPrivate": "Privat",
+        "customerVendor": "Client/Furnizor",
+        "validation": {
+            "titleRequired": "Titlul este obligatoriu",
+            "startRequired": "Data de inceput este obligatorie"
+        }
+    },
+    "CalendarEventDetail": {
+        "edit": "Editare",
+        "delete": "Stergere",
+        "close": "Inchide",
+        "location": "Locatie",
+        "category": "Categorie",
+        "priority": "Prioritate",
+        "owner": "Creat de",
+        "linkedTo": "Legat de",
+        "priorityLow": "Scazuta",
+        "priorityNormal": "Normala",
+        "priorityHigh": "Ridicata"
+    },
+    "CalendarCategoryManager": {
+        "title": "Administrare categorii",
+        "addCategory": "Categorie noua",
+        "label": "Denumire",
+        "color": "Culoare",
+        "save": "Salvare",
+        "delete": "Stergere",
+        "confirmDelete": "Stergeti categoria? Evenimentele isi pastreaza datele dar pierd asocierea cu categoria.",
+        "noCategories": "Nu exista categorii"
+    }
+}

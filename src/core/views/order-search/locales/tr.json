@@ -1,0 +1,41 @@
+{
+    "OrderSearchView": {
+        "title": "Siparis arama",
+        "fields": {
+            "ordnumber": "Siparis numarasi",
+            "customer_name": "Musteri adi",
+            "transaction_description": "Aciklama",
+            "first_instruction": "Aciklama",
+            "location": "Konum",
+            "status": "Durum",
+            "transdate_from": "Tarih baslangic",
+            "transdate_to": "Tarih bitis",
+            "bringetermin_from": "Teslim tarihi baslangic",
+            "bringetermin_to": "Teslim tarihi bitis",
+            "amount_from": "Tutar baslangic",
+            "amount_to": "Tutar bitis",
+            "employee": "Sorumlu",
+            "transdate": "Tarih",
+            "bringetermin": "Teslim tarihi",
+            "amount": "Tutar",
+            "cusordnumber": "Musteri siparis numarasi",
+            "hersteller": "Uretici"
+        },
+        "buttons": {
+            "search": "Ara",
+            "reset": "Sifirla"
+        },
+        "table": {
+            "title": "Arama sonuclari",
+            "text_no_search_table_shown": "Lutfen arama kriterlerini girin ve ENTER veya \"Ara\" ye basin. Sonuclar burada gosterilecektir.",
+            "text_no_results": "Siparis bulunamadi.",
+            "results_count": "Sonuclar"
+        },
+        "alerts": {
+            "warning_no_search_criteria": "Arama kriteri girilmedi. Tum siparisleri yuklemek istiyor musunuz?"
+        },
+        "toasts": {
+            "error_loading_search_results": "Arama sonuclari yuklenirken hata."
+        }
+    }
+}

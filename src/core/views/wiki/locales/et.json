@@ -1,0 +1,83 @@
+{
+    "WikiMenu": {
+        "title": "Wiki",
+        "newPage": "Uus artikkel",
+        "allPages": "Kõik artiklid",
+        "categories": "Kategooriad"
+    },
+    "WikiListView": {
+        "title": "Wiki - Teadmusbaas",
+        "newPage": "Uus artikkel",
+        "search": "Otsi artikleid...",
+        "allCategories": "Kõik",
+        "noPages": "Artikleid pole veel.",
+        "noPagesHint": "Looge oma esimene wiki artikkel.",
+        "headers": {
+            "title": "Pealkiri",
+            "category": "Kategooria",
+            "author": "Autor",
+            "updated": "Viimane uuendus",
+            "kba": "KBA"
+        },
+        "confirmDelete": "Kas kustutada artikkel \"{title}\"?",
+        "deleted": "Artikkel kustutatud.",
+        "deleteError": "Viga kustutamisel."
+    },
+    "WikiReadView": {
+        "title": "Wiki artikkel",
+        "edit": "Muuda",
+        "back": "Tagasi ülevaatesse",
+        "revisions": "Versioonid",
+        "createdBy": "Loonud",
+        "updatedBy": "Viimati muutnud",
+        "kbaLabel": "KBA seostus",
+        "notFound": "Artiklit ei leitud.",
+        "loadError": "Viga artikli laadimisel."
+    },
+    "WikiEditView": {
+        "titleNew": "Uus wiki artikkel",
+        "titleEdit": "Wiki artikli muutmine",
+        "fieldTitle": "Pealkiri",
+        "fieldCategory": "Kategooria",
+        "fieldContent": "Sisu",
+        "fieldKbaHsn": "HSN",
+        "fieldKbaTsn": "TSN (esimesed 3 tähemärki)",
+        "kbaSection": "KBA seostus (valikuline)",
+        "save": "Salvesta",
+        "cancel": "Tühista",
+        "saved": "Artikkel salvestatud.",
+        "saveError": "Viga salvestamisel.",
+        "missingTitle": "Palun sisestage pealkiri.",
+        "revisions": "Versioonide ajalugu",
+        "noRevisions": "Varasemaid versioone pole.",
+        "restore": "Taasta",
+        "confirmRestore": "Kas taastada versioon kuupäevast {date}?",
+        "restored": "Versioon taastatud.",
+        "restoreError": "Viga taastamisel.",
+        "statusSaving": "Salvestamine...",
+        "statusSaved": "Salvestatud",
+        "statusUnsaved": "Salvestamata",
+        "statusError": "Salvestusviga",
+        "back": "Tagasi",
+        "newCategory": "Uus kategooria",
+        "createCategory": "Loo"
+    },
+    "WikiCategoriesView": {
+        "title": "Wiki kategooriad",
+        "newCategory": "Uus kategooria",
+        "name": "Nimi",
+        "sortkey": "Sorteerimine",
+        "pageCount": "Artiklid",
+        "save": "Salvesta",
+        "cancel": "Tühista",
+        "edit": "Muuda",
+        "delete": "Kustuta",
+        "noCategories": "Kategooriaid pole veel.",
+        "confirmDelete": "Kas kustutada kategooria \"{name}\"?",
+        "saved": "Kategooria salvestatud.",
+        "deleted": "Kategooria kustutatud.",
+        "saveError": "Viga salvestamisel.",
+        "deleteError": "Viga kustutamisel.",
+        "sortUpdated": "Järjekord uuendatud."
+    }
+}

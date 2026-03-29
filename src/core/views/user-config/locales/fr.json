@@ -1,0 +1,21 @@
+{
+    "title": "Configuration utilisateur",
+    "loading": "Chargement de la configuration...",
+    "configLoadError": "Erreur de configuration",
+    "user_fields": {
+        "appearance": "Apparence",
+        "darkMode": "Theme sombre (Dark Mode)",
+        "darkMode_help": "Active le theme sombre pour l'ensemble de l'application.",
+        "locale": "Langue d'affichage",
+        "locale_help": "Langue de l'interface utilisateur. Appliquee immediatement.",
+        "general": "General",
+        "startupView": "Vue de demarrage",
+        "startupView_help": "Vue affichee apres la connexion. Remplace le parametre de la societe.",
+        "faktura": "Facturation",
+        "fakturaCompactView": "Activer la vue compacte par defaut",
+        "fakturaCompactView_help": "Masque les cartes de detail (client, details du document, informations supplementaires) et affiche uniquement un resume compact.",
+        "printer": "Imprimante",
+        "defaultPrinter": "Imprimante par defaut",
+        "defaultPrinter_help": "Imprimante utilisee par defaut pour les impressions"
+    }
+}

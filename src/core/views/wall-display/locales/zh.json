@@ -1,0 +1,20 @@
+{
+    "WallDisplay": {
+        "calendar": "日历",
+        "faktura": "单据",
+        "noFaktura": "未选择单据",
+        "noFakturaHint": "在票据中点击显示器按钮",
+        "invoice": "发票",
+        "order": "订单",
+        "quotation": "报价单",
+        "open": "未完成",
+        "closed": "已完成",
+        "position": "序号",
+        "description": "描述",
+        "qty": "数量",
+        "price": "价格",
+        "total": "合计",
+        "grossTotal": "总金额",
+        "allDay": "全天"
+    }
+}

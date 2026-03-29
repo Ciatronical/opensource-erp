@@ -1,0 +1,12 @@
+{
+    "SaveDatabaseView": {
+        "title": "Sauvegarder la base de donnees",
+        "description": "Sauvegardez la base de donnees actuelle sur votre appareil.",
+        "saveButton": "Sauvegarder la base de donnees"
+    },
+    "LoadDatabaseView": {
+        "title": "Charger la base de donnees",
+        "description": "Chargez une base de donnees precedemment sauvegardee depuis votre appareil.",
+        "loadButton": "Charger la base de donnees"
+    }
+}

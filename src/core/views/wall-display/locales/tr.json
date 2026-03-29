@@ -1,0 +1,20 @@
+{
+    "WallDisplay": {
+        "calendar": "Takvim",
+        "faktura": "Belge",
+        "noFaktura": "Belge secilmedi",
+        "noFakturaHint": "Faturada monitor butonuna tiklayin",
+        "invoice": "Fatura",
+        "order": "Siparis",
+        "quotation": "Teklif",
+        "open": "Acik",
+        "closed": "Kapali",
+        "position": "Poz.",
+        "description": "Aciklama",
+        "qty": "Miktar",
+        "price": "Fiyat",
+        "total": "Toplam",
+        "grossTotal": "Genel toplam",
+        "allDay": "Tum gun"
+    }
+}

@@ -1,0 +1,19 @@
+{
+    "CarView": {
+        "routes": {
+            "newCar": "/fahrzeug/neu",
+            "newCarFromScan": "/fahrzeug/neu-vom-scan",
+            "manageCars": "/fahrzeug",
+            "orderSearch": "/fahrzeug-auftrag/suche",
+            "carRegistration": "/fahrzeug/zulassung"
+        },
+        "newCar": "Crear nuevo",
+        "newCarFromScan": "Lista de escaneo",
+        "title": "Vehículos",
+        "manageCars": "Gestionar",
+        "orderSearch": "Lista de pedidos",
+        "huSerienbrief": "Notificaciones ITV",
+        "orderSearchTooltip": "Búsqueda de pedidos",
+        "scanTooltip": "Vehículos desde escaneo"
+    }
+}

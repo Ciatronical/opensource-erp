@@ -1,0 +1,41 @@
+{
+    "NavbarView": {
+        "logoutTooltip": "Logg ut",
+        "accountTooltip": "Konto",
+        "editCustomerTooltip": "Rediger kunde",
+        "editCvTooltip": "Rediger kunde/leverandoer",
+        "currentC": "Kunde:",
+        "currentV": "Leverandoer:",
+        "openInNewTabTooltip": "Hovedmeny",
+        "newTabTooltip": "Apne i ny fane",
+        "calendarTooltip": "Kalender",
+        "callHistoryTooltip": "Anropsliste",
+        "userConfig": "Konfigurasjon",
+        "switchClient": "Bytt firma",
+        "uploadLogo": "Firmalogo",
+        "selectImage": "Velg bilde",
+        "logoHint": "Velg bilde, posisjonere og beskjaere",
+        "saveLogo": "Lagre",
+        "deleteLogo": "Fjern",
+        "cancel": "Avbryt"
+    },
+    "GlobalSearch": {
+        "placeholder": "Soek...",
+        "noResults": "Ingen resultater",
+        "customers": "Kunder",
+        "vendors": "Leverandoerer",
+        "invoices": "Fakturaer",
+        "orders": "Ordrer",
+        "quotations": "Tilbud",
+        "articles": "Artikler",
+        "vehicles": "Kjoeretoeyer",
+        "wiki": "Wiki-artikler",
+        "recentlyVisited": "Nylig besoekt",
+        "clearHistory": "Toem historikk"
+    },
+    "InfoBar": {
+        "unknownCaller": "Ukjent",
+        "closeAll": "Lukk alle varsler",
+        "pendingParts": "Reservedeler forespurt"
+    }
+}

@@ -1,0 +1,68 @@
+{
+    "HuSerienbriefView": {
+        "title": "APK-meldingen",
+        "subtitle": "Klanten met verlopen APK-keuring",
+        "vorlauf": "Voorloop: {monate} maanden",
+        "fields": {
+            "customer_name": "Klant",
+            "kennzeichen": "Kenteken",
+            "hu_datum": "APK-datum",
+            "telefon": "Telefoon",
+            "email": "E-mail",
+            "fahrzeug": "Voertuig",
+            "actions": "Acties",
+            "date_from": "APK van",
+            "date_to": "APK tot"
+        },
+        "buttons": {
+            "print_all": "Geselecteerde afdrukken",
+            "email_all": "E-mail versturen",
+            "reload": "Vernieuwen",
+            "exclude": "Uitsluiten",
+            "include": "Weer opnemen",
+            "send_pin": "Met PIN versturen",
+            "whatsapp_all": "WhatsApp versturen"
+        },
+        "checkboxes": {
+            "show_excluded": "Ook uitgeslotene tonen"
+        },
+        "chips": {
+            "excluded": "Uitgesloten",
+            "results_count": "Klanten"
+        },
+        "filter": {
+            "title": "Periode"
+        },
+        "table": {
+            "no_results": "Geen klanten met verlopen APK in de geconfigureerde periode gevonden.",
+            "no_results_hint": "Controleer de voorlooptijd in de instellingen onder LXCars."
+        },
+        "whatsapp": {
+            "message": "Hallo {name}, de APK van uw voertuig ({kennzeichen}) verloopt op {hu_datum}. Maak een afspraak. Met vriendelijke groet"
+        },
+        "toasts": {
+            "error_loading": "Fout bij het laden van de APK-lijst.",
+            "excluded_success": "Klant uitgesloten.",
+            "included_success": "Klant weer opgenomen.",
+            "exclude_error": "Fout bij het opslaan.",
+            "email_sent": "E-mail verzonden.",
+            "email_error": "Fout bij het verzenden van de e-mail.",
+            "pdf_error": "Fout bij het aanmaken van het PDF.",
+            "sftp_success": "PDF succesvol verzonden per eLetter.",
+            "sftp_error": "Fout bij het verzenden per eLetter.",
+            "whatsapp_sent": "WhatsApp-bericht verzonden.",
+            "whatsapp_error": "Fout bij het verzenden van het WhatsApp-bericht.",
+            "whatsapp_bulk_sent": "{sent} WhatsApp-berichten verzonden, {failed} mislukt.",
+            "whatsapp_no_phone": "Geen van de geselecteerde klanten heeft een telefoonnummer."
+        },
+        "tooltips": {
+            "whatsapp_single": "APK-herinnering per WhatsApp versturen",
+            "exclude": "Klant uitsluiten van APK-meldingen",
+            "include": "Klant weer opnemen in APK-meldingen"
+        },
+        "dialogs": {
+            "confirm_exclude_title": "Klant uitsluiten",
+            "confirm_exclude_text": "Deze klant wordt permanent verwijderd uit de APK-meldingslijst. Wilt u doorgaan?"
+        }
+    }
+}

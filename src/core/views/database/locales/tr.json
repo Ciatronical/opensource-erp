@@ -1,0 +1,12 @@
+{
+    "SaveDatabaseView": {
+        "title": "Veritabanini kaydet",
+        "description": "Mevcut veritabanini cihaziniza kaydedin.",
+        "saveButton": "Veritabanini kaydet"
+    },
+    "LoadDatabaseView": {
+        "title": "Veritabani yukle",
+        "description": "Daha once kaydedilmis bir veritabanini cihazinizdan yukleyin.",
+        "loadButton": "Veritabani yukle"
+    }
+}

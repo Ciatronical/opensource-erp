@@ -1,0 +1,41 @@
+{
+    "NavbarView": {
+        "logoutTooltip": "Deconectare",
+        "accountTooltip": "Cont",
+        "editCustomerTooltip": "Editare client",
+        "editCvTooltip": "Editare client/furnizor",
+        "currentC": "Client:",
+        "currentV": "Furnizor:",
+        "openInNewTabTooltip": "Meniu principal",
+        "newTabTooltip": "Deschide în tab nou",
+        "calendarTooltip": "Calendar",
+        "callHistoryTooltip": "Istoric apeluri",
+        "userConfig": "Configurare",
+        "switchClient": "Schimbă firma",
+        "uploadLogo": "Logo firmă",
+        "selectImage": "Selectare imagine",
+        "logoHint": "Selectați imaginea, poziționați și decupați",
+        "saveLogo": "Salvare",
+        "deleteLogo": "Eliminare",
+        "cancel": "Anulare"
+    },
+    "GlobalSearch": {
+        "placeholder": "Căutare...",
+        "noResults": "Fără rezultate",
+        "customers": "Clienți",
+        "vendors": "Furnizori",
+        "invoices": "Facturi",
+        "orders": "Comenzi",
+        "quotations": "Oferte",
+        "articles": "Articole",
+        "vehicles": "Vehicule",
+        "wiki": "Articole Wiki",
+        "recentlyVisited": "Vizitate recent",
+        "clearHistory": "Șterge istoricul"
+    },
+    "InfoBar": {
+        "unknownCaller": "Necunoscut",
+        "closeAll": "Închide toate notificările",
+        "pendingParts": "Piese de schimb solicitate"
+    }
+}

@@ -1,0 +1,87 @@
+{
+    "CalendarView": {
+        "title": "Calendário",
+        "actions": {
+            "create": "Novo compromisso",
+            "categories": "Categorias",
+            "cancel": "Cancelar",
+            "save": "Guardar",
+            "delete": "Eliminar",
+            "edit": "Editar",
+            "close": "Fechar"
+        },
+        "confirmDelete": {
+            "title": "Eliminar compromisso?",
+            "message": "Deseja realmente eliminar este compromisso?"
+        },
+        "messages": {
+            "loadError": "Erro ao carregar os compromissos",
+            "saved": "Compromisso guardado",
+            "saveError": "Erro ao guardar",
+            "deleted": "Compromisso eliminado",
+            "error": "Ocorreu um erro",
+            "categoryDeleted": "Categoria eliminada",
+            "categorySaved": "Categoria guardada"
+        },
+        "search": "Pesquisar",
+        "searchResults": "Resultados da pesquisa",
+        "noResults": "Nenhum resultado encontrado"
+    },
+    "CalendarMain": {
+        "today": "Hoje",
+        "month": "Mês",
+        "week": "Semana",
+        "day": "Dia",
+        "list": "Lista",
+        "allDay": "Dia inteiro",
+        "filterCategories": "Filtrar categorias"
+    },
+    "CalendarEventDialog": {
+        "titleCreate": "Novo compromisso",
+        "titleEdit": "Editar compromisso",
+        "title": "Título",
+        "allDay": "Dia inteiro",
+        "start": "Início",
+        "end": "Fim",
+        "category": "Categoria",
+        "noCategory": "Sem categoria",
+        "priority": "Prioridade",
+        "priorityLow": "Baixa",
+        "priorityNormal": "Normal",
+        "priorityHigh": "Alta",
+        "location": "Local",
+        "description": "Descrição",
+        "color": "Cor",
+        "visibility": "Visibilidade",
+        "visibilityAll": "Todos",
+        "visibilityPrivate": "Privado",
+        "customerVendor": "Cliente/Fornecedor",
+        "validation": {
+            "titleRequired": "O título é obrigatório",
+            "startRequired": "A data de início é obrigatória"
+        }
+    },
+    "CalendarEventDetail": {
+        "edit": "Editar",
+        "delete": "Eliminar",
+        "close": "Fechar",
+        "location": "Local",
+        "category": "Categoria",
+        "priority": "Prioridade",
+        "owner": "Criado por",
+        "linkedTo": "Vinculado com",
+        "priorityLow": "Baixa",
+        "priorityNormal": "Normal",
+        "priorityHigh": "Alta"
+    },
+    "CalendarCategoryManager": {
+        "title": "Gerir categorias",
+        "addCategory": "Nova categoria",
+        "label": "Nome",
+        "color": "Cor",
+        "save": "Guardar",
+        "delete": "Eliminar",
+        "confirmDelete": "Eliminar realmente a categoria? Os compromissos manterão os dados mas perderão a atribuição de categoria.",
+        "noCategories": "Sem categorias disponíveis"
+    }
+}

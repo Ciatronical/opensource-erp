@@ -1,0 +1,83 @@
+{
+    "WikiMenu": {
+        "title": "Wiki",
+        "newPage": "Ny artikel",
+        "allPages": "Alle artikler",
+        "categories": "Kategorier"
+    },
+    "WikiListView": {
+        "title": "Wiki - Vidensdatabase",
+        "newPage": "Ny artikel",
+        "search": "Soeg artikler...",
+        "allCategories": "Alle",
+        "noPages": "Ingen artikler endnu.",
+        "noPagesHint": "Opret din foerste wiki-artikel.",
+        "headers": {
+            "title": "Titel",
+            "category": "Kategori",
+            "author": "Forfatter",
+            "updated": "Sidst opdateret",
+            "kba": "KBA"
+        },
+        "confirmDelete": "Skal artiklen \"{title}\" virkelig slettes?",
+        "deleted": "Artikel slettet.",
+        "deleteError": "Fejl ved sletning."
+    },
+    "WikiReadView": {
+        "title": "Wiki-artikel",
+        "edit": "Rediger",
+        "back": "Tilbage til oversigten",
+        "revisions": "Versioner",
+        "createdBy": "Oprettet af",
+        "updatedBy": "Sidst redigeret af",
+        "kbaLabel": "KBA-tilknytning",
+        "notFound": "Artikel ikke fundet.",
+        "loadError": "Fejl ved indlaesning af artikel."
+    },
+    "WikiEditView": {
+        "titleNew": "Ny wiki-artikel",
+        "titleEdit": "Rediger wiki-artikel",
+        "fieldTitle": "Titel",
+        "fieldCategory": "Kategori",
+        "fieldContent": "Indhold",
+        "fieldKbaHsn": "HSN",
+        "fieldKbaTsn": "TSN (foerste 3 tegn)",
+        "kbaSection": "KBA-tilknytning (valgfri)",
+        "save": "Gem",
+        "cancel": "Annuller",
+        "saved": "Artikel gemt.",
+        "saveError": "Fejl ved lagring.",
+        "missingTitle": "Angiv venligst en titel.",
+        "revisions": "Versionshistorik",
+        "noRevisions": "Ingen aeldre versioner tilgaengelige endnu.",
+        "restore": "Gendan",
+        "confirmRestore": "Skal versionen fra {date} gendannes?",
+        "restored": "Version gendannet.",
+        "restoreError": "Fejl ved gendannelse.",
+        "statusSaving": "Gemmer...",
+        "statusSaved": "Gemt",
+        "statusUnsaved": "Ikke gemt",
+        "statusError": "Lagringsfejl",
+        "back": "Tilbage",
+        "newCategory": "Ny kategori",
+        "createCategory": "Opret"
+    },
+    "WikiCategoriesView": {
+        "title": "Wiki-kategorier",
+        "newCategory": "Ny kategori",
+        "name": "Navn",
+        "sortkey": "Sortering",
+        "pageCount": "Artikler",
+        "save": "Gem",
+        "cancel": "Annuller",
+        "edit": "Rediger",
+        "delete": "Slet",
+        "noCategories": "Ingen kategorier endnu.",
+        "confirmDelete": "Skal kategorien \"{name}\" virkelig slettes?",
+        "saved": "Kategori gemt.",
+        "deleted": "Kategori slettet.",
+        "saveError": "Fejl ved lagring.",
+        "deleteError": "Fejl ved sletning.",
+        "sortUpdated": "Raekkefoelge opdateret."
+    }
+}

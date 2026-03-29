@@ -1,0 +1,20 @@
+{
+    "WallDisplay": {
+        "calendar": "Календар",
+        "faktura": "Документ",
+        "noFaktura": "Документ не вибрано",
+        "noFakturaHint": "Натисніть кнопку монітора у фактурі",
+        "invoice": "Рахунок",
+        "order": "Замовлення",
+        "quotation": "Пропозиція",
+        "open": "Відкрито",
+        "closed": "Завершено",
+        "position": "Поз.",
+        "description": "Опис",
+        "qty": "Кількість",
+        "price": "Ціна",
+        "total": "Разом",
+        "grossTotal": "Загальна сума",
+        "allDay": "Весь день"
+    }
+}

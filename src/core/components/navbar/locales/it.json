@@ -1,0 +1,41 @@
+{
+    "NavbarView": {
+        "logoutTooltip": "Disconnetti",
+        "accountTooltip": "Account",
+        "editCustomerTooltip": "Modifica cliente",
+        "editCvTooltip": "Modifica cliente/fornitore",
+        "currentC": "Cliente:",
+        "currentV": "Fornitore:",
+        "openInNewTabTooltip": "Menu principale",
+        "newTabTooltip": "Apri in nuova scheda",
+        "calendarTooltip": "Calendario",
+        "callHistoryTooltip": "Cronologia chiamate",
+        "userConfig": "Configurazione",
+        "switchClient": "Cambia azienda",
+        "uploadLogo": "Logo aziendale",
+        "selectImage": "Seleziona immagine",
+        "logoHint": "Seleziona immagine, posiziona e ritaglia",
+        "saveLogo": "Salva",
+        "deleteLogo": "Rimuovi",
+        "cancel": "Annulla"
+    },
+    "GlobalSearch": {
+        "placeholder": "Cerca...",
+        "noResults": "Nessun risultato",
+        "customers": "Clienti",
+        "vendors": "Fornitori",
+        "invoices": "Fatture",
+        "orders": "Ordini",
+        "quotations": "Preventivi",
+        "articles": "Articoli",
+        "vehicles": "Veicoli",
+        "wiki": "Articoli wiki",
+        "recentlyVisited": "Visitati di recente",
+        "clearHistory": "Cancella cronologia"
+    },
+    "InfoBar": {
+        "unknownCaller": "Sconosciuto",
+        "closeAll": "Chiudi tutte le notifiche",
+        "pendingParts": "Ricambi richiesti"
+    }
+}

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Monochrom schwarz (fuer Druck, Stempel, etc.) -->
+  <rect x="16" y="16" width="480" height="480" rx="96" fill="#1a1a1a"/>
+  <rect x="80" y="80" width="160" height="160" rx="24" fill="#ffffff"/>
+  <rect x="272" y="80" width="160" height="160" rx="24" fill="#666666"/>
+  <rect x="80" y="272" width="160" height="160" rx="24" fill="#666666"/>
+  <rect x="272" y="272" width="160" height="160" rx="24" fill="#ffffff"/>
+  <rect x="228" y="196" width="56" height="120" rx="10" fill="#cccccc"/>
+  <rect x="196" y="228" width="120" height="56" rx="10" fill="#cccccc"/>
+  <circle cx="256" cy="256" r="22" fill="#1a1a1a"/>
+  <circle cx="256" cy="256" r="8" fill="#ffffff"/>
+</svg>

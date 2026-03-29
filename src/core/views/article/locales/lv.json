@@ -1,0 +1,27 @@
+{
+    "ArticleEditView": {
+        "titleEdit": "Rediģēt artikulu",
+        "saving": "Saglabā...",
+        "saved": "Saglabāts",
+        "sections": {
+            "masterData": "Pamatdati"
+        },
+        "fields": {
+            "partnumber": "Artikula numurs",
+            "description": "Apraksts",
+            "partType": "Artikula veids",
+            "typePart": "Prece",
+            "typeService": "Pakalpojums",
+            "unit": "Vienība",
+            "buchungsgruppe": "Grāmatvedības grupa",
+            "sellprice": "Pārdošanas cena",
+            "notes": "Garais apraksts",
+            "obsolete": "Novecojis / Vairs neizmantot"
+        },
+        "messages": {
+            "loading": "Artikuls tiek ielādēts",
+            "loadError": "Kļūda ielādējot artikulu",
+            "notFound": "Artikuls nav atrasts"
+        }
+    }
+}

@@ -1,0 +1,41 @@
+{
+    "OrderSearchView": {
+        "title": "订单搜索",
+        "fields": {
+            "ordnumber": "订单编号",
+            "customer_name": "客户名称",
+            "transaction_description": "描述",
+            "first_instruction": "描述",
+            "location": "位置",
+            "status": "状态",
+            "transdate_from": "日期从",
+            "transdate_to": "日期至",
+            "bringetermin_from": "交车日期从",
+            "bringetermin_to": "交车日期至",
+            "amount_from": "金额从",
+            "amount_to": "金额至",
+            "employee": "处理人",
+            "transdate": "日期",
+            "bringetermin": "交车日期",
+            "amount": "金额",
+            "cusordnumber": "客户订单编号",
+            "hersteller": "制造商"
+        },
+        "buttons": {
+            "search": "搜索",
+            "reset": "重置"
+        },
+        "table": {
+            "title": "搜索结果",
+            "text_no_search_table_shown": "请输入搜索条件，然后按 ENTER 或点击\"搜索\"开始。搜索结果将在此显示。",
+            "text_no_results": "未找到订单。",
+            "results_count": "结果"
+        },
+        "alerts": {
+            "warning_no_search_criteria": "未输入搜索条件。确定要加载所有订单吗？"
+        },
+        "toasts": {
+            "error_loading_search_results": "加载搜索结果时出错。"
+        }
+    }
+}

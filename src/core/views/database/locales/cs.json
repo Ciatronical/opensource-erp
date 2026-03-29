@@ -1,0 +1,12 @@
+{
+    "SaveDatabaseView": {
+        "title": "Ulozit databazi",
+        "description": "Ulozte aktualni databazi na sve zarizeni.",
+        "saveButton": "Ulozit databazi"
+    },
+    "LoadDatabaseView": {
+        "title": "Nacist databazi",
+        "description": "Nactete drive ulozenou databazi ze sveho zarizeni.",
+        "loadButton": "Nacist databazi"
+    }
+}

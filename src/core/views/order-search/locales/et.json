@@ -1,0 +1,41 @@
+{
+    "OrderSearchView": {
+        "title": "Tellimuse otsing",
+        "fields": {
+            "ordnumber": "Tellimuse number",
+            "customer_name": "Kliendi nimi",
+            "transaction_description": "Kirjeldus",
+            "first_instruction": "Kirjeldus",
+            "location": "Asukoht",
+            "status": "Olek",
+            "transdate_from": "Kuupäev alates",
+            "transdate_to": "Kuupäev kuni",
+            "bringetermin_from": "Toomise tähtaeg alates",
+            "bringetermin_to": "Toomise tähtaeg kuni",
+            "amount_from": "Summa alates",
+            "amount_to": "Summa kuni",
+            "employee": "Töötleja",
+            "transdate": "Kuupäev",
+            "bringetermin": "Toomise tähtaeg",
+            "amount": "Summa",
+            "cusordnumber": "Kliendi tellimuse number",
+            "hersteller": "Tootja"
+        },
+        "buttons": {
+            "search": "Otsi",
+            "reset": "Lähtesta"
+        },
+        "table": {
+            "title": "Otsingutulemused",
+            "text_no_search_table_shown": "Sisestage otsingukriteeriumid ja vajutage ENTER või \"Otsi\". Otsingutulemused kuvatakse siin.",
+            "text_no_results": "Tellimusi ei leitud.",
+            "results_count": "Tulemused"
+        },
+        "alerts": {
+            "warning_no_search_criteria": "Otsingukriteeriumeid pole sisestatud. Kas soovite tõesti kõik tellimused laadida?"
+        },
+        "toasts": {
+            "error_loading_search_results": "Viga otsingutulemuste laadimisel."
+        }
+    }
+}

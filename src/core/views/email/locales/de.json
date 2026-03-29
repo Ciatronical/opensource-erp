@@ -1,0 +1,40 @@
+{
+    "EmailView": {
+        "title": "E-Mails",
+        "inbox": "Posteingang",
+        "sent": "Gesendet",
+        "drafts": "Entwürfe",
+        "trash": "Papierkorb",
+        "folders": "Ordner",
+        "compose": "Neue E-Mail",
+        "refresh": "Aktualisieren",
+        "search": "E-Mails durchsuchen...",
+        "noEmails": "Keine E-Mails vorhanden",
+        "noConfig": "E-Mail-Client ist nicht konfiguriert. Bitte in der Firmenkonfiguration unter CRM die E-Mail-Einstellungen hinterlegen.",
+        "loading": "E-Mails werden geladen...",
+        "from": "Von",
+        "to": "An",
+        "cc": "CC",
+        "date": "Datum",
+        "subject": "Betreff",
+        "body": "Nachricht",
+        "noSubject": "(Kein Betreff)",
+        "attachments": "Anhänge",
+        "send": "Senden",
+        "cancel": "Abbrechen",
+        "reply": "Antworten",
+        "forward": "Weiterleiten",
+        "delete": "Löschen",
+        "markRead": "Als gelesen markieren",
+        "markUnread": "Als ungelesen markieren",
+        "of": "von",
+        "emails": "E-Mails",
+        "page": "Seite",
+        "customer": "Kunde / Lieferant",
+        "searchCustomer": "Kunde oder Lieferant suchen...",
+        "openCustomer": "öffnen"
+    },
+    "EmailMenu": {
+        "title": "E-Mails"
+    }
+}

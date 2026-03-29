@@ -1,0 +1,83 @@
+{
+    "WikiMenu": {
+        "title": "Wiki",
+        "newPage": "Nieuw artikel",
+        "allPages": "Alle artikelen",
+        "categories": "Categorieen"
+    },
+    "WikiListView": {
+        "title": "Wiki - Kennisbank",
+        "newPage": "Nieuw artikel",
+        "search": "Artikel zoeken...",
+        "allCategories": "Alle",
+        "noPages": "Nog geen artikelen beschikbaar.",
+        "noPagesHint": "Maak uw eerste Wiki-artikel aan.",
+        "headers": {
+            "title": "Titel",
+            "category": "Categorie",
+            "author": "Auteur",
+            "updated": "Laatste update",
+            "kba": "KBA"
+        },
+        "confirmDelete": "Wilt u het artikel \"{title}\" echt verwijderen?",
+        "deleted": "Artikel verwijderd.",
+        "deleteError": "Fout bij het verwijderen."
+    },
+    "WikiReadView": {
+        "title": "Wiki-artikel",
+        "edit": "Bewerken",
+        "back": "Terug naar overzicht",
+        "revisions": "Versies",
+        "createdBy": "Aangemaakt door",
+        "updatedBy": "Laatst bewerkt door",
+        "kbaLabel": "KBA-toewijzing",
+        "notFound": "Artikel niet gevonden.",
+        "loadError": "Fout bij het laden van het artikel."
+    },
+    "WikiEditView": {
+        "titleNew": "Nieuw Wiki-artikel",
+        "titleEdit": "Wiki-artikel bewerken",
+        "fieldTitle": "Titel",
+        "fieldCategory": "Categorie",
+        "fieldContent": "Inhoud",
+        "fieldKbaHsn": "HSN",
+        "fieldKbaTsn": "TSN (eerste 3 tekens)",
+        "kbaSection": "KBA-toewijzing (optioneel)",
+        "save": "Opslaan",
+        "cancel": "Annuleren",
+        "saved": "Artikel opgeslagen.",
+        "saveError": "Fout bij het opslaan.",
+        "missingTitle": "Voer een titel in.",
+        "revisions": "Versiegeschiedenis",
+        "noRevisions": "Nog geen eerdere versies beschikbaar.",
+        "restore": "Herstellen",
+        "confirmRestore": "Wilt u de versie van {date} herstellen?",
+        "restored": "Versie hersteld.",
+        "restoreError": "Fout bij het herstellen.",
+        "statusSaving": "Opslaan...",
+        "statusSaved": "Opgeslagen",
+        "statusUnsaved": "Niet opgeslagen",
+        "statusError": "Opslagfout",
+        "back": "Terug",
+        "newCategory": "Nieuwe categorie",
+        "createCategory": "Aanmaken"
+    },
+    "WikiCategoriesView": {
+        "title": "Wiki-categorieen",
+        "newCategory": "Nieuwe categorie",
+        "name": "Naam",
+        "sortkey": "Sortering",
+        "pageCount": "Artikelen",
+        "save": "Opslaan",
+        "cancel": "Annuleren",
+        "edit": "Bewerken",
+        "delete": "Verwijderen",
+        "noCategories": "Nog geen categorieen beschikbaar.",
+        "confirmDelete": "Wilt u de categorie \"{name}\" echt verwijderen?",
+        "saved": "Categorie opgeslagen.",
+        "deleted": "Categorie verwijderd.",
+        "saveError": "Fout bij het opslaan.",
+        "deleteError": "Fout bij het verwijderen.",
+        "sortUpdated": "Volgorde bijgewerkt."
+    }
+}

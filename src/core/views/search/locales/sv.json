@@ -1,0 +1,328 @@
+{
+    "SearchView": {
+        "title": "Sok",
+        "all": "Alle",
+        "tabs": {
+            "customer_vendor": "Kund/Leverantor/Person",
+            "invoice": "Fakturaen",
+            "purchase_invoice": "Kreditorenrechnungen",
+            "quotation": "Offerte",
+            "order": "Ordrar",
+            "purchase_order": "Bestellungen",
+            "delivery_order": "Foljesedele",
+            "vehicle": "Fordone",
+            "article": "Artikel"
+        },
+        "vehicle_fields": {
+            "license_plate": "Kennzeichen",
+            "fin": "FIN",
+            "manufacturer": "Hersteller",
+            "model": "Modell",
+            "owner": "Halter",
+            "hu": "HU",
+            "created_at": "Angelegt am",
+            "no_results": "inga Fordone gefunden"
+        },
+        "article_fields": {
+            "partnumber": "Artikelnummer",
+            "description": "Beskrivning",
+            "part_type": "Typ",
+            "part_type_part": "Ware",
+            "part_type_service": "Dienstleistung",
+            "unit": "Enhet",
+            "sellprice": "VK-Pris",
+            "sellprice_from": "VK-Pris von",
+            "sellprice_to": "VK-Pris bis",
+            "obsolete": "Obsolet",
+            "obsolete_yes": "Ja",
+            "obsolete_no": "Nein",
+            "notes": "Bemerkungen",
+            "created_at": "Erstellt am",
+            "no_results": "inga Artikel gefunden."
+        },
+        "document_fields": {
+            "document_number": "Dokumentnummer",
+            "customer_name": "Kundnname",
+            "vendor_name": "Leverantorenname",
+            "transdate_from": "Datum von",
+            "transdate_to": "Datum bis",
+            "amount_from": "Belopp von",
+            "amount_to": "Belopp bis",
+            "status": "Status",
+            "status_open": "Oppen",
+            "status_closed": "Stangd"
+        },
+        "document_table": {
+            "document_number": "Dokumentnr.",
+            "cv_name": "Kund/Leverantor",
+            "cv_number": "Kd.-/Lief.-Nr.",
+            "transdate": "Datum",
+            "amount": "Belopp",
+            "status": "Status",
+            "status_open": "Oppen",
+            "status_closed": "Stangd",
+            "created_at": "Erstellt am",
+            "text_no_results": "inga Dokumente gefunden."
+        }
+    },
+    "CustomerVendorSearchView": {
+        "title_customer": "Kundn suchen",
+        "title_vendor": "Leverantoren suchen",
+        "title_contacts": "Personen suchen",
+        "labels": {
+            "customer": "Kund",
+            "vendor": "Leverantor"
+        },
+        "sections": {
+            "invoices": "Debitorenrechnungen",
+            "vendor_invoices": "Kreditorenrechnungen",
+            "quotations": "Offerte",
+            "requests_for_quotation": "Offertsanfragen",
+            "orders": "Ordrar",
+            "purchase_orders": "Bestellungen",
+            "delivery_orders": "Foljesedele",
+            "customer_record": "Kundnstammdaten",
+            "vendor_record": "Leverantorenstammdaten"
+        },
+        "fields": {
+            "iban": "IBAN",
+            "bic": "BIC",
+            "hourly_rate": "Stundensatz",
+            "order_lock": "Orderssperre",
+            "invoice_mail": "Fakturas-E-post",
+            "delivery_order_mail": "Foljesedel-E-post",
+            "dunning_mail": "Mahnungs-E-post",
+            "postal_invoice": "Faktura per Post",
+            "direct_debit": "Lastschrifteinzug",
+            "contact_origin": "Herkunft der personenbezogenen Daten",
+            "username": "Anvandarnamn",
+            "birthday": "Geburtsdatum",
+            "birthday_from": "Geburtsdatum von",
+            "birthday_to": "Geburtsdatum bis",
+            "customer_vendor_name": "Firma",
+            "gender": "Geschlecht",
+            "main_contact": "Hauptansprechpartner",
+            "business_type": "Kundntyp",
+            "ustid": "USt-IdNr.",
+            "taxnumber": "Skattnummer",
+            "discount": "Rabatt",
+            "currency": "Valuta",
+            "pricegroup": "Prisgruppe",
+            "language": "Sprak",
+            "delivery_terms": "Leveransvillkor",
+            "homepage": "Homepage",
+            "creditlimit": "Kreditgrans",
+            "taxincluded": "Skatt im Pris inbegriffen",
+            "notes": "Interne Bemerkungen",
+            "natural_person": "Natürliche Person",
+            "radio_customer": "Kund(n)",
+            "radio_vendor": "Leverantor(en)",
+            "radio_person": "Person(en)",
+            "switch_sql_query": "SQL-Abfrage",
+            "switch_show_additional_search_fields": "Weitere Suchkriterien visa",
+            "customer_number": "Kundnnummer",
+            "vendor_number": "Leverantorennummer",
+            "customer_vendor_number": "Kundn-/Leverantorennummer",
+            "greeting": "Anrede",
+            "name": "Name",
+            "mail": "E-post",
+            "phone_fax": "Telefon/Fax",
+            "phone": "Telefon",
+            "gln": "GLN",
+            "street": "Gata",
+            "zipcode": "PLZ",
+            "city": "Ort/Stad",
+            "country": "Land",
+            "salesman": "Verkäufer",
+            "contact": "Kontakt",
+            "department": "Abteilung",
+            "dunning_lock": "Mahnsperre",
+            "validity": "Giltigkeit",
+            "zugferd_settings": "Factur-X-/ZUGFeRD-Installningar",
+            "payment_terms": "Betalningsvillkor",
+            "tax_rate": "Skattsatz",
+            "first_name": "Vorname",
+            "last_name": "Nachname",
+            "position_title": "Position/Titel",
+            "project": "Projekt",
+            "created_at_from": "Erstellt ab",
+            "created_at_to": "Erstellt bis",
+            "updated_at_from": "Geändert ab",
+            "updated_at_to": "Geändert bis",
+            "created_at": "Erstellt am",
+            "updated_at": "Geändert am",
+            "status": "Status",
+            "type": "Typ",
+            "number": "Nummer",
+            "sql_query": "SQL-Abfrage",
+            "invoice_created_at_from": "Faktura erstellt von",
+            "invoice_created_at_to": "Faktura erstellt bis",
+            "invoice_updated_at_from": "Faktura modifiziert von",
+            "invoice_updated_at_to": "Faktura modifiziert bis",
+            "quotation_created_at_from": "Offert erstellt von",
+            "quotation_created_at_to": "Offert erstellt bis",
+            "quotation_updated_at_from": "Offert modifiziert von",
+            "quotation_updated_at_to": "Offert modifiziert bis",
+            "rfq_created_at_from": "Anfrage erstellt von",
+            "rfq_created_at_to": "Anfrage erstellt bis",
+            "rfq_updated_at_from": "Anfrage modifiziert von",
+            "rfq_updated_at_to": "Anfrage modifiziert bis",
+            "order_created_at_from": "Order erstellt von",
+            "order_created_at_to": "Order erstellt bis",
+            "order_updated_at_from": "Order modifiziert von",
+            "order_updated_at_to": "Order modifiziert bis",
+            "purchase_order_created_at_from": "Bestellung erstellt von",
+            "purchase_order_created_at_to": "Bestellung erstellt bis",
+            "purchase_order_updated_at_from": "Bestellung modifiziert von",
+            "purchase_order_updated_at_to": "Bestellung modifiziert bis",
+            "delivery_order_created_at_from": "Foljesedel erstellt von",
+            "delivery_order_created_at_to": "Foljesedel erstellt bis",
+            "delivery_order_updated_at_from": "Foljesedel modifiziert von",
+            "delivery_order_updated_at_to": "Foljesedel modifiziert bis"
+        },
+        "selects": {
+            "order_lock_options": {
+                "yes": "Ja",
+                "no": "Nein"
+            },
+            "postal_invoice_options": {
+                "yes": "Ja",
+                "no": "Nein"
+            },
+            "direct_debit_options": {
+                "yes": "Ja",
+                "no": "Nein"
+            },
+            "gender_options": {
+                "m": "Männlich",
+                "f": "Weiblich"
+            },
+            "main_contact_options": {
+                "yes": "Ja",
+                "no": "Nein"
+            },
+            "status_options": {
+                "active": "Aktiv",
+                "inactive": "Inaktiv"
+            },
+            "taxincluded_options": {
+                "yes": "Ja",
+                "no": "Nein"
+            },
+            "zugferd_options": {
+                "1": "Installningar aus Firmenkonfiguration folgen",
+                "2": "inga Factur-X-/ZUGFeRD-Fakturaen erzeugen",
+                "3": "Mit Profil »Factur-X 1.01.06/ZUGFeRD 2.2 extended«",
+                "4": "Mit Profil »Factur-X 1.01.06/ZUGFeRD 2.2 extended« (Test-Modus)",
+                "5": "Mit Profil »XRechnung 2.0.0«",
+                "6": "Mit Profil »XRechnung 2.0.0« (Test-Modus)"
+            },
+            "dunning_lock_options": {
+                "yes": "Ja",
+                "no": "Nein"
+            },
+            "natural_person_options": {
+                "yes": "Ja",
+                "no": "Nein"
+            }
+        },
+        "buttons": {
+            "search": "Sok",
+            "reset": "Aterstall",
+            "edit": "Redigera",
+            "bulk_actions": "Massenaktionen",
+            "brevo_marketing_mail": "Brevo Marketing Mail",
+            "help": "Hilfe",
+            "save_query": "Spara",
+            "saved_queries": "Sparade Abfragen"
+        },
+        "table": {
+            "title": "Sokrgebnisse",
+            "text_no_search_table_shown": "Vanligen Suchkriterien oder SQL-Abfrage eingeben und mit ENTER oder \"Sok\" starten. Sokrgebnisse werden hier angezeigt.",
+            "text_no_results_customer": "inga Kundn gefunden.",
+            "text_no_results_vendor": "inga Leverantoren gefunden.",
+            "text_no_results_person": "inga Personen gefunden.",
+            "text_no_results_default": "inga Daten gefunden."
+        },
+        "alerts": {
+            "warning_no_search_criteria": "Es wurden inga Suchkriterien oder eine SQL-Abfrage eingegeben. Vill du verkligen alle Einträge laden?"
+        },
+        "toasts": {
+            "error_loading_search_results": "Fel vid Laden der Sokrgebnisse.",
+            "error_sending_brevo_marketing_mails": "Fel vid Versenden der Brevo Marketing Mail(s).",
+            "brevo_marketing_mails_were_prefix": "Brevo Marketing Mails wurden",
+            "brevo_marketing_mail_was_prefix": "Brevo Marketing Mail wurde"
+        },
+        "dialogs": {
+            "brevo_marketing_mail": {
+                "title": "Brevo Marketing Mail senden",
+                "labels": {
+                    "customer": "Kundn",
+                    "vendor": "Leverantoren",
+                    "person": "Personen"
+                },
+                "fields": {
+                    "select_template": "Brevo-Mail-Template"
+                },
+                "texts": {
+                    "select_template_and_click_send": "Valj das gewünschte Brevo-Mail-Template aus und klicken Sie anschließend auf \"Skicka\".",
+                    "hint_prefix": "Hinweis: Nach klicken auf \"Skicka\" wird für jeden der",
+                    "hint_suffix": "eine separate Marketing Mail mit dem gewählten Template via Brevo versendet.",
+                    "hint_cannot_cancel": "Dieser Prozess kann nicht abgebrochen werden, sobald er gestartet wurde."
+                },
+                "buttons": {
+                    "cancel": "Avbryt",
+                    "mails_to": "Mails an",
+                    "mail_to": "Mail an",
+                    "send": "senden"
+                }
+            },
+            "sql_help": {
+                "title": "SQL-Hilfe - Verfügbare Spalten",
+                "loading": "Lade Spalten...",
+                "example_query": "Beispielabfrage",
+                "copy_example": "Beispiel kopieren",
+                "example_customer_description": "Ich suche Firmen mit 'GmbH' im Namen, die in Berlin ansässig sind und ein Kreditgrans über 10.000€ haben.",
+                "example_vendor_description": "Ich suche Leverantoren mit 'Tech' im Namen aus Deutschland, die nicht als obsolet markiert sind.",
+                "example_contacts_description": "Ich suche eine Frau im Alter zwischen 20 und 40 Aren aus Berlin.",
+                "available_columns": "Folgende Spalten stehen zur Verfügung:",
+                "click_to_copy": "Klicken Sie auf einen Spaltennamen, um ihn zu kopieren.",
+                "no_columns": "inga Spalten gefunden.",
+                "error_loading": "Fel vid Laden der Spalten.",
+                "copied": "{column} wurde in die Zwischenablage kopiert.",
+                "example_copied": "Beispielabfrage wurde in die Zwischenablage kopiert.",
+                "close": "Stang",
+                "table_customer": "Tabelle: customer",
+                "table_vendor": "Tabelle: vendor",
+                "table_contacts": "Tabelle: contacts"
+            },
+            "save_query": {
+                "title": "Abfrage speichern",
+                "name_label": "Name der Abfrage",
+                "name_placeholder": "z.B. Berliner Kundn mit hohem Kreditgrans",
+                "query": "Abfrage",
+                "cancel": "Avbryt",
+                "save": "Spara",
+                "saved": "Abfrage genomford gespeichert.",
+                "error_saving": "Fel vid Spara der Abfrage."
+            },
+            "saved_queries": {
+                "title": "Sparade Abfragen",
+                "loading": "Lade Abfragen...",
+                "no_queries": "inga gespeicherten Abfragen vorhanden.",
+                "error_loading": "Fel vid Laden der Abfragen.",
+                "delete_confirm_title": "Abfrage löschen?",
+                "delete_confirm_text": "Vill du diese Abfrage verkligen radera?",
+                "deleted": "Abfrage genomford raderad.",
+                "error_deleting": "Fel vid Radera der Abfrage.",
+                "close": "Stang"
+            }
+        },
+        "errors": {
+            "sql_error_title": "SQL-Fehler in Ihrer Abfrage",
+            "sql_state": "SQL-Status",
+            "error_message": "Fehlermeldung",
+            "your_query": "Ihre Abfrage"
+        }
+    }
+}

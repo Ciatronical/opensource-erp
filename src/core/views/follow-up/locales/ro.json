@@ -1,0 +1,179 @@
+{
+    "FollowUpView": {
+        "title": "Reamintiri",
+        "search": "Cautare...",
+        "fromDate": "De la",
+        "toDate": "Pana la",
+        "showDone": "Afiseaza finalizate",
+        "tabs": {
+            "board": "Panou",
+            "list": "Lista",
+            "calendar": "Calendar"
+        },
+        "actions": {
+            "create": "Reamintire noua",
+            "cancel": "Anulare",
+            "delete": "Stergere",
+            "save": "Salvare",
+            "edit": "Editare",
+            "markDone": "Finalizat",
+            "markUndone": "Redeschide",
+            "close": "Inchide"
+        },
+        "columns": {
+            "overdue": "Intarziat",
+            "today": "Astazi",
+            "upcoming": "Viitoare",
+            "done": "Finalizat"
+        },
+        "confirmDelete": {
+            "title": "Stergeti reamintirea?",
+            "message": "Doriti sa stergeti aceasta reamintire? Aceasta actiune nu poate fi anulata."
+        },
+        "messages": {
+            "loadError": "Eroare la incarcarea reamintirilor",
+            "saved": "Reamintire salvata",
+            "saveError": "Eroare la salvare",
+            "deleted": "Reamintire stearsa",
+            "deletedMultiple": "{count} reamintiri sterse",
+            "markedDone": "Marcat ca finalizat",
+            "markedUndone": "Redeschis",
+            "error": "A aparut o eroare"
+        }
+    },
+    "FollowUpCard": {
+        "noSubject": "Fara subiect",
+        "today": "Astazi",
+        "tomorrow": "Maine",
+        "daysAgo": "acum {days} zile",
+        "inDays": "in {days} zile",
+        "markDone": "Marcheaza ca finalizat",
+        "markUndone": "Redeschide",
+        "delete": "Sterge"
+    },
+    "FollowUpDialog": {
+        "titleCreate": "Reamintire noua",
+        "titleEdit": "Editare reamintire",
+        "date": "Data",
+        "subject": "Subiect",
+        "body": "Nota",
+        "assignedEmployees": "Atribuit la",
+        "linkSection": "Legatura (optional)",
+        "linkType": "Tip legatura",
+        "linkId": "ID",
+        "linkInfo": "Denumire",
+        "searchCustomer": "Cauta client",
+        "searchVendor": "Cauta furnizor",
+        "searchQuotation": "Cauta oferta",
+        "searchOrder": "Cauta comanda",
+        "searchDeliveryOrder": "Cauta aviz de livrare",
+        "searchInvoice": "Cauta factura",
+        "searchRequestQuotation": "Cauta cerere oferta",
+        "searchPurchaseOrder": "Cauta comanda",
+        "searchPurchaseDeliveryOrder": "Cauta receptie marfa",
+        "searchPurchaseInvoice": "Cauta factura primita",
+        "search": "Cauta",
+        "noResults": "Fara rezultate",
+        "startTyping": "Introduceti termenul de cautare...",
+        "cancel": "Anulare",
+        "save": "Salvare",
+        "quickDate": {
+            "today": "Astazi",
+            "tomorrow": "Maine",
+            "nextWeek": "+1 saptamana",
+            "twoWeeks": "+2 saptamani",
+            "nextMonth": "+1 luna"
+        },
+        "linkTypes": {
+            "customer": "Client",
+            "vendor": "Furnizor",
+            "salesQuotation": "Oferta",
+            "salesOrder": "Comanda",
+            "salesDeliveryOrder": "Aviz de livrare",
+            "salesInvoice": "Factura",
+            "purchaseQuotation": "Cerere oferta",
+            "purchaseOrder": "Comanda",
+            "purchaseDeliveryOrder": "Receptie marfa",
+            "purchaseInvoice": "Factura primita"
+        },
+        "validation": {
+            "required": "Camp obligatoriu"
+        }
+    },
+    "FollowUpList": {
+        "done": "Finalizat",
+        "open": "Deschis",
+        "today": "Astazi",
+        "tomorrow": "Maine",
+        "markDone": "Marcheaza ca finalizat",
+        "markUndone": "Redeschide",
+        "edit": "Editare",
+        "delete": "Sterge",
+        "entry": "Inregistrare",
+        "entries": "Inregistrari",
+        "deleteAll": "Sterge toate afisate",
+        "deleteAllConfirmTitle": "Stergeti toate reamintirile?",
+        "deleteAllConfirmText": "Doriti sa stergeti toate cele {count} reamintiri afisate?",
+        "deleteAllWarning": "Aceasta actiune nu poate fi anulata!",
+        "deleteAllConfirm": "Sterge toate",
+        "cancel": "Anulare",
+        "headers": {
+            "date": "Data",
+            "subject": "Subiect",
+            "link": "Legatura",
+            "assignedTo": "Atribuit",
+            "status": "Status",
+            "actions": "Actiuni"
+        }
+    },
+    "FollowUpCalendar": {
+        "today": "Astazi",
+        "month": "Luna",
+        "week": "Saptamana",
+        "day": "Zi",
+        "allDay": "Toata ziua",
+        "noSubject": "Fara subiect",
+        "newFollowUp": "Reamintire noua",
+        "subject": "Subiect",
+        "subjectPlaceholder": "Ce trebuie facut?",
+        "note": "Nota",
+        "notePlaceholder": "Informatii suplimentare...",
+        "cancel": "Anulare",
+        "create": "Creare",
+        "done": "Finalizat",
+        "reopen": "Deschide",
+        "edit": "Editare",
+        "links": "Legaturi",
+        "details": "Detalii",
+        "assignedTo": "Atribuit la",
+        "linkedTo": "Legat de",
+        "close": "Inchide",
+        "markDone": "Marcheaza ca finalizat",
+        "markUndone": "Redeschide",
+        "editFollowUp": "Editare",
+        "deleteFollowUp": "Stergere",
+        "more": "mai multe",
+        "weekDays": {
+            "mon": "Lu",
+            "tue": "Ma",
+            "wed": "Mi",
+            "thu": "Jo",
+            "fri": "Vi",
+            "sat": "Sa",
+            "sun": "Du"
+        }
+    },
+    "FollowUpWidget": {
+        "title": "Reamintiri",
+        "overdue": "Intarziate",
+        "today": "Astazi",
+        "tomorrow": "Maine",
+        "upcoming": "Viitoare",
+        "noItems": "Nu exista reamintiri deschise",
+        "showAll": "Afiseaza toate {count}",
+        "markDone": "Marcheaza ca finalizat",
+        "quickAdd": "Adaugare rapida",
+        "openAll": "Deschide toate",
+        "daysAgo": "acum {days} zile"
+    }
+}

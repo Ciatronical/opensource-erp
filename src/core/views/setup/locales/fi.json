@@ -1,0 +1,50 @@
+{
+    "setup": {
+        "title": "OpensourceERP-asennus",
+        "welcome": "Tervetuloa OpensourceERP:hen! Määritä yhteys todennustietokantaan.",
+        "setupAlreadyDone": "Asennus on jo tehty. Sinut ohjataan kirjautumissivulle...",
+        "configFound": "kivitendo.conf löytyi - Salasana oli salaamaton. Lomake täytettiin automaattisesti.",
+        "setupCompleteMessage": "Asennus onnistui! Salasana tallennettiin salattuna. Sinut ohjataan eteenpäin...",
+        "fields": {
+            "host": "Palvelin",
+            "port": "Portti",
+            "database": "Tietokannan nimi",
+            "login": "Käyttäjätunnus",
+            "password": "Salasana"
+        },
+        "placeholders": {
+            "host": "localhost",
+            "port": "5432",
+            "database": "oserp_auth",
+            "login": "postgres"
+        },
+        "validation": {
+            "required": "Pakollinen kenttä",
+            "portRange": "Portin on oltava välillä 1 ja 65535"
+        },
+        "buttons": {
+            "testConnection": "Testaa yhteys",
+            "testingConnection": "Testataan yhteyttä...",
+            "saveSetup": "Viimeistele asennus",
+            "savingSetup": "Tallennetaan...",
+            "finish": "Käynnistä sovellus"
+        },
+        "errors": {
+            "checkStatus": "Virhe asennuksen tilan tarkistamisessa",
+            "testConnection": "Virhe yhteyden testaamisessa",
+            "testNetworkError": "Verkkovirhe yhteyden testaamisessa",
+            "saveSetup": "Virhe asetusten tallentamisessa",
+            "saveNetworkError": "Verkkovirhe asetusten tallentamisessa"
+        },
+        "update": {
+            "title": "Tietokantapäivitys",
+            "running": "Tietokantaa päivitetään...",
+            "success": "Tietokantapäivitys onnistui.",
+            "failed": "Tietokantapäivitys epäonnistui.",
+            "networkError": "Verkkovirhe tietokantapäivityksessä."
+        },
+        "footer": {
+            "copyright": "OpensourceERP"
+        }
+    }
+}

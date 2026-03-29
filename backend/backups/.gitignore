@@ -1,0 +1,10 @@
+# backend/backups/.gitignore
+# Ignoriere alle Backup-Dateien
+*.sql
+*.sql.gz
+*.sql.bz2
+*.sql.zip
+*.dump
+
+# Aber behalte dieses Verzeichnis im Git
+!.gitignore

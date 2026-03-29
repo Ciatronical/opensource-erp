@@ -1,0 +1,87 @@
+{
+    "CalendarView": {
+        "title": "Календар",
+        "actions": {
+            "create": "Нова подія",
+            "categories": "Категорії",
+            "cancel": "Скасувати",
+            "save": "Зберегти",
+            "delete": "Видалити",
+            "edit": "Редагувати",
+            "close": "Закрити"
+        },
+        "confirmDelete": {
+            "title": "Видалити подію?",
+            "message": "Ви дійсно бажаєте видалити цю подію?"
+        },
+        "messages": {
+            "loadError": "Помилка завантаження подій",
+            "saved": "Подію збережено",
+            "saveError": "Помилка збереження",
+            "deleted": "Подію видалено",
+            "error": "Виникла помилка",
+            "categoryDeleted": "Категорію видалено",
+            "categorySaved": "Категорію збережено"
+        },
+        "search": "Пошук",
+        "searchResults": "Результати пошуку",
+        "noResults": "Результатів не знайдено"
+    },
+    "CalendarMain": {
+        "today": "Сьогодні",
+        "month": "Місяць",
+        "week": "Тиждень",
+        "day": "День",
+        "list": "Список",
+        "allDay": "Весь день",
+        "filterCategories": "Фільтрувати категорії"
+    },
+    "CalendarEventDialog": {
+        "titleCreate": "Нова подія",
+        "titleEdit": "Редагувати подію",
+        "title": "Заголовок",
+        "allDay": "Весь день",
+        "start": "Початок",
+        "end": "Кінець",
+        "category": "Категорія",
+        "noCategory": "Без категорії",
+        "priority": "Пріоритет",
+        "priorityLow": "Низький",
+        "priorityNormal": "Звичайний",
+        "priorityHigh": "Високий",
+        "location": "Місце",
+        "description": "Опис",
+        "color": "Колір",
+        "visibility": "Видимість",
+        "visibilityAll": "Всі",
+        "visibilityPrivate": "Приватна",
+        "customerVendor": "Клієнт/Постачальник",
+        "validation": {
+            "titleRequired": "Заголовок обов'язковий",
+            "startRequired": "Дата початку обов'язкова"
+        }
+    },
+    "CalendarEventDetail": {
+        "edit": "Редагувати",
+        "delete": "Видалити",
+        "close": "Закрити",
+        "location": "Місце",
+        "category": "Категорія",
+        "priority": "Пріоритет",
+        "owner": "Створив",
+        "linkedTo": "Прив'язано до",
+        "priorityLow": "Низький",
+        "priorityNormal": "Звичайний",
+        "priorityHigh": "Високий"
+    },
+    "CalendarCategoryManager": {
+        "title": "Управління категоріями",
+        "addCategory": "Нова категорія",
+        "label": "Назва",
+        "color": "Колір",
+        "save": "Зберегти",
+        "delete": "Видалити",
+        "confirmDelete": "Дійсно видалити категорію? Події зберігають свої дані, але втрачають прив'язку до категорії.",
+        "noCategories": "Категорії відсутні"
+    }
+}

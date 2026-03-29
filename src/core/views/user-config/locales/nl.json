@@ -1,0 +1,21 @@
+{
+    "title": "Gebruikersconfiguratie",
+    "loading": "Configuratie laden...",
+    "configLoadError": "Configuratiefout",
+    "user_fields": {
+        "appearance": "Weergave",
+        "darkMode": "Donker thema (Dark Mode)",
+        "darkMode_help": "Activeert het donkere kleurenschema voor de gehele applicatie.",
+        "locale": "Weergavetaal",
+        "locale_help": "Taal van de gebruikersinterface. Wordt direct toegepast.",
+        "general": "Algemeen",
+        "startupView": "Startweergave",
+        "startupView_help": "Weergave die na het inloggen wordt getoond. Overschrijft de bedrijfsinstelling.",
+        "faktura": "Facturatie",
+        "fakturaCompactView": "Compacte weergave standaard activeren",
+        "fakturaCompactView_help": "Verbergt de detailkaarten (klant, documentdetails, extra informatie) en toont alleen een compact overzicht.",
+        "printer": "Printer",
+        "defaultPrinter": "Standaardprinter",
+        "defaultPrinter_help": "Printer die standaard wordt gebruikt voor afdrukken"
+    }
+}

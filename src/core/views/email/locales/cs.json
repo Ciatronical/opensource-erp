@@ -1,0 +1,40 @@
+{
+    "EmailView": {
+        "title": "E-maily",
+        "inbox": "Dorucena posta",
+        "sent": "Odeslane",
+        "drafts": "Koncepty",
+        "trash": "Kos",
+        "folders": "Slozky",
+        "compose": "Novy e-mail",
+        "refresh": "Aktualizovat",
+        "search": "Prohledat e-maily...",
+        "noEmails": "Zadne e-maily",
+        "noConfig": "E-mailovy klient neni nakonfigurovan. Prosim nastavte e-mailova nastaveni v konfiguraci firmy v sekci CRM.",
+        "loading": "E-maily se nacitaji...",
+        "from": "Od",
+        "to": "Komu",
+        "cc": "CC",
+        "date": "Datum",
+        "subject": "Predmet",
+        "body": "Zprava",
+        "noSubject": "(Bez predmetu)",
+        "attachments": "Prilohy",
+        "send": "Odeslat",
+        "cancel": "Zrusit",
+        "reply": "Odpovedet",
+        "forward": "Preposlat",
+        "delete": "Smazat",
+        "markRead": "Oznacit jako prectene",
+        "markUnread": "Oznacit jako neprectene",
+        "of": "z",
+        "emails": "e-mailu",
+        "page": "Stranka",
+        "customer": "Zakaznik / Dodavatel",
+        "searchCustomer": "Hledat zakaznika nebo dodavatele...",
+        "openCustomer": "otevrit"
+    },
+    "EmailMenu": {
+        "title": "E-maily"
+    }
+}

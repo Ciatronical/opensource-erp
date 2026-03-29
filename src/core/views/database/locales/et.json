@@ -1,0 +1,12 @@
+{
+    "SaveDatabaseView": {
+        "title": "Salvesta andmebaas",
+        "description": "Salvestage praegune andmebaas oma seadmesse.",
+        "saveButton": "Salvesta andmebaas"
+    },
+    "LoadDatabaseView": {
+        "title": "Laadi andmebaas",
+        "description": "Laadige varem salvestatud andmebaas oma seadmest.",
+        "loadButton": "Laadi andmebaas"
+    }
+}

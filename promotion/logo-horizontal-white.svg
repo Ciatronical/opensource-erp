@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 256">
+  <defs>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4FC3F7"/>
+      <stop offset="100%" stop-color="#29B6F6"/>
+    </linearGradient>
+  </defs>
+  <!-- Icon (fuer dunkle Hintergruende) -->
+  <rect x="8" y="8" width="240" height="240" rx="48" fill="#ffffff" opacity="0.15"/>
+  <rect x="40" y="40" width="80" height="80" rx="12" fill="#ffffff" opacity="0.95"/>
+  <rect x="136" y="40" width="80" height="80" rx="12" fill="url(#accent)" opacity="0.7"/>
+  <rect x="40" y="136" width="80" height="80" rx="12" fill="url(#accent)" opacity="0.7"/>
+  <rect x="136" y="136" width="80" height="80" rx="12" fill="#ffffff" opacity="0.95"/>
+  <rect x="114" y="98" width="28" height="60" rx="5" fill="#ffffff" opacity="0.3"/>
+  <rect x="98" y="114" width="60" height="28" rx="5" fill="#ffffff" opacity="0.3"/>
+  <circle cx="128" cy="128" r="11" fill="#ffffff" opacity="0.9"/>
+  <circle cx="128" cy="128" r="4" fill="#4FC3F7"/>
+  <!-- Text weiss -->
+  <text x="292" y="118" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-weight="700" font-size="72" fill="#ffffff" opacity="0.85" letter-spacing="-1">OpenSource</text>
+  <text x="292" y="196" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-weight="800" font-size="80" fill="#ffffff" letter-spacing="6">ERP</text>
+</svg>

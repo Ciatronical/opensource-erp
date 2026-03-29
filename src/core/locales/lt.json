@@ -1,0 +1,47 @@
+{
+    "LoginView": {
+        "title": "Prisijungimas",
+        "username": "Vartotojo vardas",
+        "password": "Slaptažodis",
+        "client": "Įmonė",
+        "button": "Prisijungti",
+        "failed": "Prisijungimas nepavyko. Patikrinkite savo prisijungimo duomenis.",
+        "EMPTY_FIELDS": "Įveskite vardą ir slaptažodį.",
+        "USER_NOT_FOUND": "Vartotojas nerastas.",
+        "WRONG_PASSWORD": "Neteisingas slaptažodis.",
+        "ERROR": "Prisijungimo klaida. Bandykite dar kartą.",
+        "ERROR_LOADING_CLIENTS": "Klaida kraunant įmones. Bandykite vėliau.",
+        "USER_NOT_ASSIGNED_TO_CLIENT": "Vartotojas nepriskirtas įmonei.",
+        "PASSWORD_FILE_NOT_FOUND": "Klaida: Slaptažodžio failas api/config/api.passwd.php nerastas. Pervadinkite failą api/config/api.passwd.php.example į api/config/api.passwd.php ir pritaikykite nustatymus.",
+        "CONFIG_FILE_NOT_FOUND": "Klaida: Konfigūracijos failas nerastas. Patikrinkite nustatymus.",
+        "updateButton": "Vykdyti atnaujinimą",
+        "updateSuccess": "Duomenų bazės atnaujinimas sėkmingai atliktas.",
+        "updateError": "Klaida atnaujinant duomenų bazę. Bandykite dar kartą.",
+        "privacy": "Privatumo politika",
+        "dataDeletion": "Duomenų trynimas"
+    },
+    "NotFoundView": {
+        "title": "Puslapis nerastas",
+        "message": "Prašomas puslapis nerastas.",
+        "back_home": "Grįžti į pradžią"
+    },
+    "NavbarView": {
+        "logoutTooltip": "Atsijungti",
+        "accountTooltip": "Paskyra",
+        "editCustomerTooltip": "Redaguoti klientą",
+        "editCvTooltip": "Redaguoti klientą/tiekėją",
+        "currentC": "Klientas:",
+        "currentV": "Tiekėjas:",
+        "demoBanner": "Demo režimas — Visi duomenys bus automatiškai atstatyti po neaktyvumo.",
+        "demoResetWarning": "Demo bus atstatytas po {seconds} sekundžių — judinkite pelę, kad tęstumėte."
+    },
+    "ErrorView": {
+        "title": "Įvyko klaida",
+        "message": "Atsiprašome, įvyko netikėta klaida.",
+        "debugInfo": "Derinimo informacija:",
+        "clickToShowDetails": "Spustelėkite, kad pamatytumėte detales"
+    },
+    "App": {
+        "loading": "Palaukite..."
+    }
+}

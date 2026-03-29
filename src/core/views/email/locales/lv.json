@@ -1,0 +1,40 @@
+{
+    "EmailView": {
+        "title": "E-pasti",
+        "inbox": "Iesūtne",
+        "sent": "Nosūtītie",
+        "drafts": "Melnraksti",
+        "trash": "Atkritne",
+        "folders": "Mapes",
+        "compose": "Jauns e-pasts",
+        "refresh": "Atjaunināt",
+        "search": "Meklēt e-pastus...",
+        "noEmails": "Nav e-pastu",
+        "noConfig": "E-pasta klients nav konfigurēts. Lūdzu konfigurējiet e-pasta iestatījumus uzņēmuma konfigurācijā sadaļā CRM.",
+        "loading": "E-pasti tiek ielādēti...",
+        "from": "No",
+        "to": "Kam",
+        "cc": "CC",
+        "date": "Datums",
+        "subject": "Tēma",
+        "body": "Ziņojums",
+        "noSubject": "(Nav tēmas)",
+        "attachments": "Pielikumi",
+        "send": "Nosūtīt",
+        "cancel": "Atcelt",
+        "reply": "Atbildēt",
+        "forward": "Pārsūtīt",
+        "delete": "Dzēst",
+        "markRead": "Atzīmēt kā lasītu",
+        "markUnread": "Atzīmēt kā nelasītu",
+        "of": "no",
+        "emails": "e-pasti",
+        "page": "Lapa",
+        "customer": "Klients / Piegādātājs",
+        "searchCustomer": "Meklēt klientu vai piegādātāju...",
+        "openCustomer": "atvērt"
+    },
+    "EmailMenu": {
+        "title": "E-pasti"
+    }
+}

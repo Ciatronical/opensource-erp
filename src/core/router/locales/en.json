@@ -1,0 +1,74 @@
+{
+    "routes": {
+        "mainmenu": "/mainmenu",
+        "customer": "/customer",
+        "editCustomer": "/customer/edit",
+        "editCv": "/customer-vendor/edit",
+        "editVendor": "/vendor/edit",
+        "viewInvoice": "/invoice/view",
+        "editQuotation": "/quotation/edit",
+        "editOrder": "/order/edit",
+        "newCustomer": "/customer/new",
+        "newVendor": "/vendor/new",
+        "newQuotation": "/quotation/new",
+        "newOrder": "/order/new",
+        "newInvoice": "/invoice/new",
+        "manageCustomers": "/customer",
+        "manageVendors": "/vendor",
+        "manageArticles": "/article",
+        "manageQuotations": "/quotation",
+        "manageCreditNotes": "/credit-note",
+        "manageDeliveryOrders": "/delivery-order",
+        "manageOrders": "/order",
+        "manageInvoices": "/invoice",
+        "orderSearch": "/order/search",
+        "search": "/search",
+        "searchCustomers": "/customer/search",
+        "followUp": "/follow-up",
+        "callHistory": "/call-history",
+        "calendar": "/calendar",
+        "systemUpdate": "/system/update",
+        "wiki": "/wiki",
+        "wikiNew": "/wiki/new",
+        "wikiCategories": "/wiki/categories",
+        "wikiEdit": "/wiki/edit",
+        "userConfig": "/user/configuration",
+        "lxcarsReports": "/user/reports",
+        "huSerienbrief": "/serial-letter/hu",
+        "wallDisplay": "/wall-display"
+    },
+    "errors": {
+        "PASSWORD_FILE_NOT_FOUND": "Error: The password file api/config/api.passwd.php was not found. Please rename the file api/config/api.passwd.php.example to api/config/api.passwd.php and adjust the settings accordingly.",
+        "CONFIG_FILE_NOT_FOUND": "Error: The configuration file was not found. Please check the settings."
+    },
+    "MasterDataMenu": {
+        "title": "Master Data",
+        "editCustomer": "Edit Customer Data",
+        "newCustomer": "New Customer",
+        "manageCustomers": "Manage Customers",
+        "search": "Search",
+        "searchCustomers": "Search Customers",
+        "newVendor": "New Vendor",
+        "calendar": "Calendar"
+    },
+    "ContactMenu": {
+        "title": "Contact",
+        "callHistory": "Call History",
+        "emails": "Emails",
+        "whatsapp": "WhatsApp"
+    },
+    "SalesMenu": {
+        "title": "Sales",
+        "newQuotation": "New Quotation",
+        "newOrder": "New Order",
+        "newInvoice": "New Invoice",
+        "manageCreditNotes": "Credit Notes"
+    },
+    "SystemMenu": {
+        "title": "System",
+        "clientConfig": "Client Configuration",
+        "developerTools": "Developer Tools",
+        "systemUpdate": "System Update",
+        "about": "About"
+    }
+}

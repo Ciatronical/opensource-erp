@@ -1,0 +1,21 @@
+{
+    "WallDisplay": {
+        "calendar": "Calendar",
+        "faktura": "Document",
+        "noFaktura": "No document selected",
+        "noFakturaHint": "Click \"Show on display\" in an invoice to display it",
+        "invoice": "Invoice",
+        "order": "Order",
+        "quotation": "Quotation",
+        "open": "Open",
+        "closed": "Closed",
+        "position": "Pos.",
+        "description": "Description",
+        "qty": "Qty",
+        "price": "Price",
+        "total": "Total",
+        "grossTotal": "Grand total",
+        "allDay": "All day",
+        "exit": "Exit"
+    }
+}

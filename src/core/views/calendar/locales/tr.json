@@ -1,0 +1,87 @@
+{
+    "CalendarView": {
+        "title": "Takvim",
+        "actions": {
+            "create": "Yeni etkinlik",
+            "categories": "Kategoriler",
+            "cancel": "Iptal",
+            "save": "Kaydet",
+            "delete": "Sil",
+            "edit": "Duzenle",
+            "close": "Kapat"
+        },
+        "confirmDelete": {
+            "title": "Etkinligi sil?",
+            "message": "Bu etkinligi silmek istiyor musunuz?"
+        },
+        "messages": {
+            "loadError": "Etkinlikler yuklenirken hata",
+            "saved": "Etkinlik kaydedildi",
+            "saveError": "Kaydetme hatasi",
+            "deleted": "Etkinlik silindi",
+            "error": "Bir hata olustu",
+            "categoryDeleted": "Kategori silindi",
+            "categorySaved": "Kategori kaydedildi"
+        },
+        "search": "Arama",
+        "searchResults": "Arama sonuclari",
+        "noResults": "Sonuc bulunamadi"
+    },
+    "CalendarMain": {
+        "today": "Bugun",
+        "month": "Ay",
+        "week": "Hafta",
+        "day": "Gun",
+        "list": "Liste",
+        "allDay": "Tum gun",
+        "filterCategories": "Kategorileri filtrele"
+    },
+    "CalendarEventDialog": {
+        "titleCreate": "Yeni etkinlik",
+        "titleEdit": "Etkinligi duzenle",
+        "title": "Baslik",
+        "allDay": "Tum gun",
+        "start": "Baslangic",
+        "end": "Bitis",
+        "category": "Kategori",
+        "noCategory": "Kategorisiz",
+        "priority": "Oncelik",
+        "priorityLow": "Dusuk",
+        "priorityNormal": "Normal",
+        "priorityHigh": "Yuksek",
+        "location": "Konum",
+        "description": "Aciklama",
+        "color": "Renk",
+        "visibility": "Gorunurluk",
+        "visibilityAll": "Herkes",
+        "visibilityPrivate": "Ozel",
+        "customerVendor": "Musteri/Tedarikci",
+        "validation": {
+            "titleRequired": "Baslik gereklidir",
+            "startRequired": "Baslangic tarihi gereklidir"
+        }
+    },
+    "CalendarEventDetail": {
+        "edit": "Duzenle",
+        "delete": "Sil",
+        "close": "Kapat",
+        "location": "Konum",
+        "category": "Kategori",
+        "priority": "Oncelik",
+        "owner": "Olusturan",
+        "linkedTo": "Baglanti",
+        "priorityLow": "Dusuk",
+        "priorityNormal": "Normal",
+        "priorityHigh": "Yuksek"
+    },
+    "CalendarCategoryManager": {
+        "title": "Kategorileri yonet",
+        "addCategory": "Yeni kategori",
+        "label": "Etiket",
+        "color": "Renk",
+        "save": "Kaydet",
+        "delete": "Sil",
+        "confirmDelete": "Kategori silinsin mi? Etkinlikler verilerini korur ancak kategori iliskilendirmesini kaybeder.",
+        "noCategories": "Kategori yok"
+    }
+}

@@ -1,0 +1,19 @@
+{
+    "CarView": {
+        "routes": {
+            "newCar": "/fahrzeug/neu",
+            "newCarFromScan": "/fahrzeug/neu-vom-scan",
+            "manageCars": "/fahrzeug",
+            "orderSearch": "/fahrzeug-auftrag/suche",
+            "carRegistration": "/fahrzeug/zulassung"
+        },
+        "newCar": "Opret ny",
+        "newCarFromScan": "Scanliste",
+        "title": "Koeretoejer",
+        "manageCars": "Administrer",
+        "orderSearch": "Ordreliste",
+        "huSerienbrief": "Syn-meddelelser",
+        "orderSearchTooltip": "Ordresoegning",
+        "scanTooltip": "Koeretoejer fra scan"
+    }
+}

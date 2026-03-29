@@ -1,0 +1,83 @@
+{
+    "WikiMenu": {
+        "title": "Wiki",
+        "newPage": "Neuer Artikel",
+        "allPages": "Alle Artikel",
+        "categories": "Kategorien"
+    },
+    "WikiListView": {
+        "title": "Wiki - Wissensdatenbank",
+        "newPage": "Neuer Artikel",
+        "search": "Artikel suchen...",
+        "allCategories": "Alle",
+        "noPages": "Noch keine Artikel vorhanden.",
+        "noPagesHint": "Erstellen Sie Ihren ersten Wiki-Artikel.",
+        "headers": {
+            "title": "Titel",
+            "category": "Kategorie",
+            "author": "Autor",
+            "updated": "Letzte Aktualisierung",
+            "kba": "KBA"
+        },
+        "confirmDelete": "Soll der Artikel \"{title}\" wirklich gel\u00f6scht werden?",
+        "deleted": "Artikel gel\u00f6scht.",
+        "deleteError": "Fehler beim L\u00f6schen."
+    },
+    "WikiReadView": {
+        "title": "Wiki-Artikel",
+        "edit": "Bearbeiten",
+        "back": "Zur\u00fcck zur \u00dcbersicht",
+        "revisions": "Versionen",
+        "createdBy": "Erstellt von",
+        "updatedBy": "Zuletzt bearbeitet von",
+        "kbaLabel": "KBA-Zuordnung",
+        "notFound": "Artikel nicht gefunden.",
+        "loadError": "Fehler beim Laden des Artikels."
+    },
+    "WikiEditView": {
+        "titleNew": "Neuer Wiki-Artikel",
+        "titleEdit": "Wiki-Artikel bearbeiten",
+        "fieldTitle": "Titel",
+        "fieldCategory": "Kategorie",
+        "fieldContent": "Inhalt",
+        "fieldKbaHsn": "HSN",
+        "fieldKbaTsn": "TSN (erste 3 Zeichen)",
+        "kbaSection": "KBA-Zuordnung (optional)",
+        "save": "Speichern",
+        "cancel": "Abbrechen",
+        "saved": "Artikel gespeichert.",
+        "saveError": "Fehler beim Speichern.",
+        "missingTitle": "Bitte einen Titel angeben.",
+        "revisions": "Versionshistorie",
+        "noRevisions": "Noch keine \u00e4lteren Versionen vorhanden.",
+        "restore": "Wiederherstellen",
+        "confirmRestore": "Soll die Version vom {date} wiederhergestellt werden?",
+        "restored": "Version wiederhergestellt.",
+        "restoreError": "Fehler beim Wiederherstellen.",
+        "statusSaving": "Speichern...",
+        "statusSaved": "Gespeichert",
+        "statusUnsaved": "Ungespeichert",
+        "statusError": "Speicherfehler",
+        "back": "Zur\u00fcck",
+        "newCategory": "Neue Kategorie",
+        "createCategory": "Erstellen"
+    },
+    "WikiCategoriesView": {
+        "title": "Wiki-Kategorien",
+        "newCategory": "Neue Kategorie",
+        "name": "Name",
+        "sortkey": "Sortierung",
+        "pageCount": "Artikel",
+        "save": "Speichern",
+        "cancel": "Abbrechen",
+        "edit": "Bearbeiten",
+        "delete": "L\u00f6schen",
+        "noCategories": "Noch keine Kategorien vorhanden.",
+        "confirmDelete": "Soll die Kategorie \"{name}\" wirklich gel\u00f6scht werden?",
+        "saved": "Kategorie gespeichert.",
+        "deleted": "Kategorie gel\u00f6scht.",
+        "saveError": "Fehler beim Speichern.",
+        "deleteError": "Fehler beim L\u00f6schen.",
+        "sortUpdated": "Reihenfolge aktualisiert."
+    }
+}

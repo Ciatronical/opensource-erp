@@ -1,0 +1,50 @@
+{
+    "update": {
+        "title": "Sistemos atnaujinimas",
+        "description": "Čia kuriamos atsarginės kopijos ir atnaujinamos visos įmonės duomenų bazės bei autentifikacijos duomenų bazė.",
+        "messages": "Pranešimai",
+        "sqlStatements": "SQL sakiniai",
+        "errors": "Klaidos",
+        "dryRunSuccess": "Peržiūra sėkmingai įkelta.",
+        "updateSuccess": "Visos duomenų bazės sėkmingai atnaujintos.",
+        "gitPull": "Git Pull",
+        "gitPullSuccess": "Git Pull sėkmingas",
+        "gitPullFailed": "Git Pull nepavyko",
+        "authDatabase": "Autentifikacijos duomenų bazė",
+        "authBackup": "Autentifikacijos atsarginė kopija",
+        "clientDatabase": "Įmonė: {name}",
+        "clientDbName": "Duomenų bazė: {dbname}",
+        "backupSuccess": "Atsarginė kopija sukurta: {filename}",
+        "backupFailed": "Atsarginės kopijos kūrimas nepavyko",
+        "backupSkipped": "Atsarginė kopija nekuriama peržiūros režimu",
+        "features": "Funkcijos: {features}",
+        "noClients": "Įmonių nerasta.",
+        "overallSuccess": "Visos duomenų bazės sėkmingai atnaujintos",
+        "overallFailed": "Atnaujinimo klaida",
+        "buttons": {
+            "dryRun": "Peržiūra",
+            "checking": "Tikrinama...",
+            "update": "Vykdyti atnaujinimą",
+            "updating": "Atnaujinama...",
+            "finish": "Baigta"
+        },
+        "errorMessages": {
+            "dryRunFailed": "Peržiūra nepavyko.",
+            "updateFailed": "Atnaujinimas nepavyko.",
+            "networkError": "Tinklo klaida atnaujinant."
+        },
+        "schemaMessages": {
+            "dry_run_mode": "Peržiūros režimas - Pakeitimai nebus atlikti",
+            "columns_added": "Lentelė {table}: {count} stulpelis(-iai) bus pridėtas(-i) | Lentelė {table}: {count} stulpelis(-iai) pridėtas(-i)",
+            "column_added": "Stulpelis '{column}' bus pridėtas | Stulpelis '{column}' pridėtas",
+            "table_up_to_date": "Lentelė {table}: Visi stulpeliai yra",
+            "table_created": "Lentelė {table} bus sukurta | Lentelė {table} sukurta",
+            "version_updated": "Versija {version} registruota {schema} duomenų bazėje",
+            "object_exists": "{object_type} {name} jau egzistuoja",
+            "statement_executed": "{statement_type} {target} įvykdytas",
+            "csv_skipped": "CSV praleistas: {table} ({reason})",
+            "csv_imported": "CSV importuotas: {table} ({rows_imported} eilučių)",
+            "info": "{text}"
+        }
+    }
+}

@@ -1,0 +1,40 @@
+{
+    "EmailView": {
+        "title": "E-mailuri",
+        "inbox": "Inbox",
+        "sent": "Trimise",
+        "drafts": "Ciorne",
+        "trash": "Cos de gunoi",
+        "folders": "Dosare",
+        "compose": "E-mail nou",
+        "refresh": "Actualizare",
+        "search": "Cautare e-mailuri...",
+        "noEmails": "Nu exista e-mailuri",
+        "noConfig": "Clientul de e-mail nu este configurat. Va rugam configurati setarile de e-mail in configurarea firmei la sectiunea CRM.",
+        "loading": "E-mailurile se incarca...",
+        "from": "De la",
+        "to": "Catre",
+        "cc": "CC",
+        "date": "Data",
+        "subject": "Subiect",
+        "body": "Mesaj",
+        "noSubject": "(Fara subiect)",
+        "attachments": "Atasamente",
+        "send": "Trimite",
+        "cancel": "Anulare",
+        "reply": "Raspunde",
+        "forward": "Redirectioneaza",
+        "delete": "Sterge",
+        "markRead": "Marcheaza ca citit",
+        "markUnread": "Marcheaza ca necitit",
+        "of": "din",
+        "emails": "e-mailuri",
+        "page": "Pagina",
+        "customer": "Client / Furnizor",
+        "searchCustomer": "Cauta client sau furnizor...",
+        "openCustomer": "deschide"
+    },
+    "EmailMenu": {
+        "title": "E-mailuri"
+    }
+}

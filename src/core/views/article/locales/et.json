@@ -1,0 +1,27 @@
+{
+    "ArticleEditView": {
+        "titleEdit": "Artikli muutmine",
+        "saving": "Salvestamine...",
+        "saved": "Salvestatud",
+        "sections": {
+            "masterData": "Põhiandmed"
+        },
+        "fields": {
+            "partnumber": "Artikli number",
+            "description": "Kirjeldus",
+            "partType": "Artikli tüüp",
+            "typePart": "Kaup",
+            "typeService": "Teenus",
+            "unit": "Ühik",
+            "buchungsgruppe": "Konteeringu grupp",
+            "sellprice": "Müügihind",
+            "notes": "Pikk kirjeldus",
+            "obsolete": "Aegunud / Ei kasutata enam"
+        },
+        "messages": {
+            "loading": "Artiklit laaditakse",
+            "loadError": "Viga artikli laadimisel",
+            "notFound": "Artiklit ei leitud"
+        }
+    }
+}

@@ -1,0 +1,83 @@
+{
+    "WikiMenu": {
+        "title": "Wiki",
+        "newPage": "Ny artikel",
+        "allPages": "Alla artiklar",
+        "categories": "Kategorier"
+    },
+    "WikiListView": {
+        "title": "Wiki - Kunskapsdatabas",
+        "newPage": "Ny artikel",
+        "search": "Sok artiklar...",
+        "allCategories": "Alla",
+        "noPages": "Inga artiklar annu.",
+        "noPagesHint": "Skapa din forsta wiki-artikel.",
+        "headers": {
+            "title": "Titel",
+            "category": "Kategori",
+            "author": "Forfattare",
+            "updated": "Senast uppdaterad",
+            "kba": "KBA"
+        },
+        "confirmDelete": "Ska artikeln \"{title}\" verkligen raderas?",
+        "deleted": "Artikel raderad.",
+        "deleteError": "Fel vid radering."
+    },
+    "WikiReadView": {
+        "title": "Wiki-artikel",
+        "edit": "Redigera",
+        "back": "Tillbaka till oversikten",
+        "revisions": "Versioner",
+        "createdBy": "Skapad av",
+        "updatedBy": "Senast redigerad av",
+        "kbaLabel": "KBA-koppling",
+        "notFound": "Artikel hittades inte.",
+        "loadError": "Fel vid laddning av artikel."
+    },
+    "WikiEditView": {
+        "titleNew": "Ny wiki-artikel",
+        "titleEdit": "Redigera wiki-artikel",
+        "fieldTitle": "Titel",
+        "fieldCategory": "Kategori",
+        "fieldContent": "Innehall",
+        "fieldKbaHsn": "HSN",
+        "fieldKbaTsn": "TSN (forsta 3 tecken)",
+        "kbaSection": "KBA-koppling (valfritt)",
+        "save": "Spara",
+        "cancel": "Avbryt",
+        "saved": "Artikel sparad.",
+        "saveError": "Fel vid sparande.",
+        "missingTitle": "Ange en titel.",
+        "revisions": "Versionshistorik",
+        "noRevisions": "Inga aldre versioner tillgangliga annu.",
+        "restore": "Aterstall",
+        "confirmRestore": "Ska versionen fran {date} aterstallas?",
+        "restored": "Version aterstaild.",
+        "restoreError": "Fel vid aterstallning.",
+        "statusSaving": "Sparar...",
+        "statusSaved": "Sparad",
+        "statusUnsaved": "Inte sparad",
+        "statusError": "Sparfel",
+        "back": "Tillbaka",
+        "newCategory": "Ny kategori",
+        "createCategory": "Skapa"
+    },
+    "WikiCategoriesView": {
+        "title": "Wiki-kategorier",
+        "newCategory": "Ny kategori",
+        "name": "Namn",
+        "sortkey": "Sortering",
+        "pageCount": "Artiklar",
+        "save": "Spara",
+        "cancel": "Avbryt",
+        "edit": "Redigera",
+        "delete": "Radera",
+        "noCategories": "Inga kategorier annu.",
+        "confirmDelete": "Ska kategorin \"{name}\" verkligen raderas?",
+        "saved": "Kategori sparad.",
+        "deleted": "Kategori raderad.",
+        "saveError": "Fel vid sparande.",
+        "deleteError": "Fel vid radering.",
+        "sortUpdated": "Ordning uppdaterad."
+    }
+}

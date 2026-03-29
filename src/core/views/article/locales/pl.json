@@ -1,0 +1,27 @@
+{
+    "ArticleEditView": {
+        "titleEdit": "Edytuj artykuł",
+        "saving": "Zapisywanie...",
+        "saved": "Zapisano",
+        "sections": {
+            "masterData": "Dane podstawowe"
+        },
+        "fields": {
+            "partnumber": "Numer artykułu",
+            "description": "Opis",
+            "partType": "Typ artykułu",
+            "typePart": "Towar",
+            "typeService": "Usługa",
+            "unit": "Jednostka",
+            "buchungsgruppe": "Grupa księgowania",
+            "sellprice": "Cena sprzedaży",
+            "notes": "Opis szczegółowy",
+            "obsolete": "Nieaktualny / Nie używać"
+        },
+        "messages": {
+            "loading": "Ładowanie artykułu",
+            "loadError": "Błąd podczas ładowania artykułu",
+            "notFound": "Artykuł nie znaleziony"
+        }
+    }
+}

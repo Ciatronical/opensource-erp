@@ -1,0 +1,83 @@
+{
+    "WikiMenu": {
+        "title": "Wiki",
+        "newPage": "Yeni makale",
+        "allPages": "Tum makaleler",
+        "categories": "Kategoriler"
+    },
+    "WikiListView": {
+        "title": "Wiki - Bilgi bankasi",
+        "newPage": "Yeni makale",
+        "search": "Makale ara...",
+        "allCategories": "Tumu",
+        "noPages": "Henuz makale yok.",
+        "noPagesHint": "Ilk wiki makalenizi olusturun.",
+        "headers": {
+            "title": "Baslik",
+            "category": "Kategori",
+            "author": "Yazar",
+            "updated": "Son guncelleme",
+            "kba": "KBA"
+        },
+        "confirmDelete": "\"{title}\" makalesi silinsin mi?",
+        "deleted": "Makale silindi.",
+        "deleteError": "Silme hatasi."
+    },
+    "WikiReadView": {
+        "title": "Wiki makalesi",
+        "edit": "Duzenle",
+        "back": "Genel bakisa don",
+        "revisions": "Surumleri",
+        "createdBy": "Olusturan",
+        "updatedBy": "Son duzenleyen",
+        "kbaLabel": "KBA iliskilendirme",
+        "notFound": "Makale bulunamadi.",
+        "loadError": "Makale yuklenirken hata."
+    },
+    "WikiEditView": {
+        "titleNew": "Yeni wiki makalesi",
+        "titleEdit": "Wiki makalesini duzenle",
+        "fieldTitle": "Baslik",
+        "fieldCategory": "Kategori",
+        "fieldContent": "Icerik",
+        "fieldKbaHsn": "HSN",
+        "fieldKbaTsn": "TSN (ilk 3 karakter)",
+        "kbaSection": "KBA iliskilendirme (istege bagli)",
+        "save": "Kaydet",
+        "cancel": "Iptal",
+        "saved": "Makale kaydedildi.",
+        "saveError": "Kaydetme hatasi.",
+        "missingTitle": "Lutfen bir baslik girin.",
+        "revisions": "Surum gecmisi",
+        "noRevisions": "Henuz eski surum yok.",
+        "restore": "Geri yukle",
+        "confirmRestore": "{date} tarihli surum geri yuklensin mi?",
+        "restored": "Surum geri yuklendi.",
+        "restoreError": "Geri yukleme hatasi.",
+        "statusSaving": "Kaydediliyor...",
+        "statusSaved": "Kaydedildi",
+        "statusUnsaved": "Kaydedilmemis",
+        "statusError": "Kayit hatasi",
+        "back": "Geri",
+        "newCategory": "Yeni kategori",
+        "createCategory": "Olustur"
+    },
+    "WikiCategoriesView": {
+        "title": "Wiki kategorileri",
+        "newCategory": "Yeni kategori",
+        "name": "Ad",
+        "sortkey": "Siralama",
+        "pageCount": "Makaleler",
+        "save": "Kaydet",
+        "cancel": "Iptal",
+        "edit": "Duzenle",
+        "delete": "Sil",
+        "noCategories": "Henuz kategori yok.",
+        "confirmDelete": "\"{name}\" kategorisi silinsin mi?",
+        "saved": "Kategori kaydedildi.",
+        "deleted": "Kategori silindi.",
+        "saveError": "Kaydetme hatasi.",
+        "deleteError": "Silme hatasi.",
+        "sortUpdated": "Siralama guncellendi."
+    }
+}

@@ -1,0 +1,21 @@
+{
+    "title": "Kayttajaasetukset",
+    "loading": "Ladataan asetuksia...",
+    "configLoadError": "Asetusvirhe",
+    "user_fields": {
+        "appearance": "Ulkoasu",
+        "darkMode": "Tumma tila (Dark Mode)",
+        "darkMode_help": "Ottaa kayttoon tumman variteeman koko sovelluksessa.",
+        "locale": "Nayttokieli",
+        "locale_help": "Kayttoliittyman kieli. Otetaan kayttoon valittomasti.",
+        "general": "Yleinen",
+        "startupView": "Aloitusnakyma",
+        "startupView_help": "Mika nakyma naytetaan kirjautumisen jalkeen. Korvaa yrityksen asetuksen.",
+        "faktura": "Laskutus",
+        "fakturaCompactView": "Ota kompaktinakyma oletuksena kayttoon",
+        "fakturaCompactView_help": "Piilottaa yksityiskohtakortit (asiakas, asiakirjan tiedot, lisatiedot) ja nayttaa vain tiivistetyn yhteenvedon.",
+        "printer": "Tulostin",
+        "defaultPrinter": "Oletustulostin",
+        "defaultPrinter_help": "Tulostin, jota kaytetaan oletuksena tulostamiseen"
+    }
+}

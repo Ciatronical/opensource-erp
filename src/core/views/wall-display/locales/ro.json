@@ -1,0 +1,20 @@
+{
+    "WallDisplay": {
+        "calendar": "Calendar",
+        "faktura": "Document",
+        "noFaktura": "Niciun document selectat",
+        "noFakturaHint": "Faceti click pe butonul de monitor in facturare",
+        "invoice": "Factura",
+        "order": "Comanda",
+        "quotation": "Oferta",
+        "open": "Deschis",
+        "closed": "Inchis",
+        "position": "Poz.",
+        "description": "Descriere",
+        "qty": "Cantitate",
+        "price": "Pret",
+        "total": "Total",
+        "grossTotal": "Suma totala",
+        "allDay": "Toata ziua"
+    }
+}

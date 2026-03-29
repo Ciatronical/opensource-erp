@@ -1,0 +1,50 @@
+{
+    "update": {
+        "title": "Sistēmas atjaunināšana",
+        "description": "Šeit tiek dublētas un atjauninātas visas uzņēmuma datu bāzes un autentifikācijas datu bāze.",
+        "messages": "Paziņojumi",
+        "sqlStatements": "SQL izteikumi",
+        "errors": "Kļūdas",
+        "dryRunSuccess": "Priekšskatījums veiksmīgi ielādēts.",
+        "updateSuccess": "Visas datu bāzes veiksmīgi atjauninātas.",
+        "gitPull": "Git Pull",
+        "gitPullSuccess": "Git Pull veiksmīgs",
+        "gitPullFailed": "Git Pull neizdevās",
+        "authDatabase": "Autentifikācijas datu bāze",
+        "authBackup": "Autentifikācijas dublējums",
+        "clientDatabase": "Uzņēmums: {name}",
+        "clientDbName": "Datu bāze: {dbname}",
+        "backupSuccess": "Dublējums izveidots: {filename}",
+        "backupFailed": "Dublēšana neizdevās",
+        "backupSkipped": "Dublējums netiek izveidots priekšskatījumā",
+        "features": "Funkcijas: {features}",
+        "noClients": "Nav atrasti uzņēmumi.",
+        "overallSuccess": "Visas datu bāzes veiksmīgi atjauninātas",
+        "overallFailed": "Kļūda atjaunināšanā",
+        "buttons": {
+            "dryRun": "Priekšskatījums",
+            "checking": "Pārbauda...",
+            "update": "Izpildīt atjauninājumu",
+            "updating": "Atjaunina...",
+            "finish": "Gatavs"
+        },
+        "errorMessages": {
+            "dryRunFailed": "Priekšskatījums neizdevās.",
+            "updateFailed": "Atjaunināšana neizdevās.",
+            "networkError": "Tīkla kļūda atjaunināšanā."
+        },
+        "schemaMessages": {
+            "dry_run_mode": "Priekšskatījuma režīms - Izmaiņas netiek veiktas",
+            "columns_added": "Tabula {table}: {count} kolonna(s) tiks pievienota(s) | Tabula {table}: {count} kolonna(s) pievienota(s)",
+            "column_added": "Kolonna '{column}' tiks pievienota | Kolonna '{column}' pievienota",
+            "table_up_to_date": "Tabula {table}: Visas kolonnas ir klāt",
+            "table_created": "Tabula {table} tiks izveidota | Tabula {table} izveidota",
+            "version_updated": "Versija {version} reģistrēta {schema} datu bāzē",
+            "object_exists": "{object_type} {name} jau eksistē",
+            "statement_executed": "{statement_type} {target} izpildīts",
+            "csv_skipped": "CSV izlaists: {table} ({reason})",
+            "csv_imported": "CSV importēts: {table} ({rows_imported} rindas)",
+            "info": "{text}"
+        }
+    }
+}

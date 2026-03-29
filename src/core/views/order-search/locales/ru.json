@@ -1,0 +1,41 @@
+{
+    "OrderSearchView": {
+        "title": "Поиск заказов",
+        "fields": {
+            "ordnumber": "Номер заказа",
+            "customer_name": "Имя клиента",
+            "transaction_description": "Описание",
+            "first_instruction": "Описание",
+            "location": "Локация",
+            "status": "Статус",
+            "transdate_from": "Дата от",
+            "transdate_to": "Дата до",
+            "bringetermin_from": "Срок сдачи от",
+            "bringetermin_to": "Срок сдачи до",
+            "amount_from": "Сумма от",
+            "amount_to": "Сумма до",
+            "employee": "Исполнитель",
+            "transdate": "Дата",
+            "bringetermin": "Срок сдачи",
+            "amount": "Сумма",
+            "cusordnumber": "Номер заказа клиента",
+            "hersteller": "Производитель"
+        },
+        "buttons": {
+            "search": "Искать",
+            "reset": "Сбросить"
+        },
+        "table": {
+            "title": "Результаты поиска",
+            "text_no_search_table_shown": "Пожалуйста, введите критерии поиска и нажмите ENTER или \"Искать\". Результаты поиска будут показаны здесь.",
+            "text_no_results": "Заказы не найдены.",
+            "results_count": "Результаты"
+        },
+        "alerts": {
+            "warning_no_search_criteria": "Критерии поиска не введены. Вы действительно хотите загрузить все заказы?"
+        },
+        "toasts": {
+            "error_loading_search_results": "Ошибка загрузки результатов поиска."
+        }
+    }
+}

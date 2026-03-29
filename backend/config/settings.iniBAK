@@ -1,0 +1,27 @@
+; config/settings.ini
+; OpensourceERP Konfigurationsdatei
+;
+; WICHTIG: Diese Datei enthält sensible Zugangsdaten!
+; Niemals in Git einchecken oder öffentlich zugänglich machen.
+;
+; HINWEIS: Das Datenbank-Passwort (auth_pass) wird verschlüsselt gespeichert.
+;          Zum Verschlüsseln eines neuen Passworts: php tools/encrypt_password.php
+
+[database]
+host = "localhost"
+port = "5432"
+auth_db = "oserp_auth"
+auth_user = "postgres"
+auth_pass = "IgoMCiZF"
+
+[session]
+cookie_name = "opensource_erp"
+cookie_same_site = "Strict"
+
+[logging]
+max_log_size = 10485760
+
+[system]
+timezone = "Europe/Berlin"
+debug = true
+update_check = true

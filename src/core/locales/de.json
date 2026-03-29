@@ -1,0 +1,47 @@
+{
+    "LoginView": {
+        "title": "Login",
+        "username": "Benutzername",
+        "password": "Passwort",
+        "client": "Mandant",
+        "button": "Anmelden",
+        "failed": "Anmeldung fehlgeschlagen. Bitte überprüfen Sie Ihre Anmeldedaten.",
+        "EMPTY_FIELDS": "Bitte Name und Passwort angeben.",
+        "USER_NOT_FOUND": "Benutzer nicht gefunden.",
+        "WRONG_PASSWORD": "Ungültiges Passwort.",
+        "ERROR": "Fehler bei der Anmeldung. Bitte versuchen Sie es erneut.",
+        "ERROR_LOADING_CLIENTS": "Fehler beim Laden der Mandanten. Bitte versuchen Sie es später erneut.",
+        "USER_NOT_ASSIGNED_TO_CLIENT": "Benutzer nicht dem Mandanten zugeordnet.",
+        "PASSWORD_FILE_NOT_FOUND": "Fehler: Die Passwortdatei api/config/api.passwd.php wurde nicht gefunden. Bitte benennen Sie die Datei api/config/api.passwd.php.example in api/config/api.passwd.php um und passen Sie die Einstellungen entsprechend an.",
+        "CONFIG_FILE_NOT_FOUND": "Fehler: Die Konfigurationsdatei wurde nicht gefunden. Bitte überprüfen Sie die Einstellungen.",
+        "updateButton": "Update ausführen",
+        "updateSuccess": "Datenbank-Update erfolgreich durchgeführt.",
+        "updateError": "Fehler beim Datenbank-Update. Bitte versuchen Sie es erneut.",
+        "privacy": "Datenschutzerklärung",
+        "dataDeletion": "Datenlöschung"
+    },
+    "NotFoundView": {
+        "title": "Seite nicht gefunden",
+        "message": "Die angeforderte Seite wurde nicht gefunden.",
+        "back_home": "Zurück zur Startseite"
+    },
+    "NavbarView": {
+        "logoutTooltip": "Abmelden",
+        "accountTooltip": "Konto",
+        "editCustomerTooltip": "Kunde bearbeiten",
+        "editCvTooltip": "Kunde/Lieferant bearbeiten",
+        "currentC": "Kunde:",
+        "currentV": "Lieferant:",
+        "demoBanner": "Demo-Modus — Alle Daten werden nach Inaktivität automatisch zurückgesetzt.",
+        "demoResetWarning": "Demo wird in {seconds} Sekunden zurückgesetzt — bewege die Maus um fortzufahren."
+    },
+    "ErrorView": {
+        "title": "Ein Fehler ist aufgetreten",
+        "message": "Es tut uns leid, aber ein unerwarteter Fehler ist aufgetreten.",
+        "debugInfo": "Debug-Informationen:",
+        "clickToShowDetails": "Klicken zum Anzeigen der Details"
+    },
+    "App": {
+        "loading": "Bitte warten..."
+    }
+}

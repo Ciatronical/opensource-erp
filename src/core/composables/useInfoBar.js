@@ -1,0 +1,313 @@
+// src/core/composables/useInfoBar.js
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
+import axios from 'axios'
+import { oserpStore } from '@/core/stores/oserp.store.js'
+import * as toast from '@/core/utils/toasts.js'
+
+/**
+ * SSE-Verbindungsstatus (modul-weit, geteilt zwischen allen Consumern)
+ */
+export const sseConnected = ref(false)
+
+/**
+ * Composable fuer die Info Bar in der Navbar
+ * Zeigt Anrufe, Emails und WhatsApp-Nachrichten der letzten 7 Tage chronologisch an.
+ * Dismissed Items werden dauerhaft in employee_config_oserp gespeichert.
+ */
+export function useInfoBar() {
+    const oserp = oserpStore()
+
+    const newCalls = ref([])
+    const newEmails = ref([])
+    const newWhatsapps = ref([])
+    const pendingPartsRequests = ref([])
+    const dismissed = ref({ calls: [], emails: [], whatsapps: [], parts: [] })
+
+    let eventSource = null
+    let emailPollInterval = null
+    let whatsappPollInterval = null
+
+    // --- Dismissed Items aus employee_config laden/speichern ---
+    function loadDismissed() {
+        try {
+            const stored = oserp.getConfigValue('infobar_dismissed', null)
+            if (stored) {
+                const parsed = typeof stored === 'string' ? JSON.parse(stored) : stored
+                // v2: closeAll wurde entfernt — alte Massen-Dismisses bereinigen (max 20 pro Typ)
+                if (!parsed._v2) {
+                    dismissed.value = { calls: [], emails: [], whatsapps: [], parts: [] }
+                    saveDismissed()
+                    return
+                }
+                dismissed.value = {
+                    calls: (parsed.calls || []).slice(-20),
+                    emails: (parsed.emails || []).slice(-20),
+                    whatsapps: (parsed.whatsapps || []).slice(-20),
+                    parts: (parsed.parts || []).slice(-20)
+                }
+            }
+        } catch { /* ignorieren */ }
+    }
+
+    function saveDismissed() {
+        oserp.setConfigValue('infobar_dismissed', JSON.stringify({
+            _v2: true,
+            calls: dismissed.value.calls,
+            emails: dismissed.value.emails,
+            whatsapps: dismissed.value.whatsapps,
+            parts: dismissed.value.parts
+        }))
+    }
+
+    // --- 7-Tage-Fenster ---
+    function get7DaysAgoString() {
+        const d = new Date()
+        d.setDate(d.getDate() - 7)
+        return d.toISOString().split('T')[0]
+    }
+
+    // --- Anrufe laden (via bestehende API) ---
+    async function fetchNewCalls() {
+        try {
+            const response = await axios.post('/api/customer_vendor/', {
+                action: 'getAllCallHistory',
+                date_from: get7DaysAgoString(),
+                limit: 50,
+                offset: 0
+            })
+            if (response.data.success) {
+                newCalls.value = response.data.payload.main?.call_history || []
+            }
+        } catch { /* still ignorieren */ }
+    }
+
+    // --- Emails laden (via neuer API) ---
+    async function fetchNewEmails() {
+        try {
+            const response = await axios.post('/api/email/', {
+                action: 'getNewEmails',
+                since_date: get7DaysAgoString(),
+                limit: 50
+            })
+            if (response.data.success) {
+                newEmails.value = response.data.payload?.emails || []
+            }
+        } catch { /* Email nicht konfiguriert → still ignorieren */ }
+    }
+
+    // --- WhatsApp-Nachrichten laden ---
+    async function fetchNewWhatsapps() {
+        try {
+            const response = await axios.post('/api/whatsapp/', {
+                action: 'getNewWhatsAppMessages',
+                since_date: get7DaysAgoString(),
+                limit: 50
+            })
+            if (response.data.success) {
+                newWhatsapps.value = response.data.payload?.messages || []
+            }
+        } catch { /* WhatsApp nicht konfiguriert → still ignorieren */ }
+    }
+
+    async function fetchPendingPartsRequests() {
+        if (!oserp.isLxCars()) return
+        try {
+            const response = await axios.post('/api/lxcars/', {
+                action: 'getPendingPartsRequests'
+            })
+            if (response.data.success) {
+                pendingPartsRequests.value = response.data.payload || []
+            }
+        } catch { /* LxCars nicht verfügbar */ }
+    }
+
+    // --- Config: Max. Anzahl ---
+    const maxCalls = computed(() =>
+        parseInt(oserp.getClientDefaultValue('infobar_max_calls', '5'), 10) || 5
+    )
+    const maxEmails = computed(() =>
+        parseInt(oserp.getClientDefaultValue('infobar_max_emails', '5'), 10) || 5
+    )
+    const maxWhatsapps = computed(() =>
+        parseInt(oserp.getClientDefaultValue('infobar_max_whatsapps', '5'), 10) || 5
+    )
+
+    // --- Computed: chronologische Liste aller Events ---
+    const chronologicalItems = computed(() => {
+        const items = []
+
+        // Anrufe
+        newCalls.value
+            .filter(c => !dismissed.value.calls.includes(c.crmti_id))
+            .slice(0, maxCalls.value)
+            .forEach(call => {
+                items.push({
+                    type: 'call',
+                    id: 'call-' + call.crmti_id,
+                    dismissId: call.crmti_id,
+                    timestamp: call.call_date || 0,
+                    name: call.caller_name || call.crmti_number || call.crmti_src || null,
+                    detail: null,
+                    direction: call.crmti_direction,
+                    data: call
+                })
+            })
+
+        // Emails
+        newEmails.value
+            .filter(e => !dismissed.value.emails.includes(e.uid))
+            .slice(0, maxEmails.value)
+            .forEach(email => {
+                items.push({
+                    type: 'email',
+                    id: 'email-' + email.uid,
+                    dismissId: email.uid,
+                    timestamp: email.date ? new Date(email.date).getTime() : 0,
+                    name: email.from || null,
+                    detail: email.subject,
+                    data: email
+                })
+            })
+
+        // WhatsApp
+        newWhatsapps.value
+            .filter(w => !dismissed.value.whatsapps.includes(w.id))
+            .slice(0, maxWhatsapps.value)
+            .forEach(wa => {
+                items.push({
+                    type: 'whatsapp',
+                    id: 'wa-' + wa.id,
+                    dismissId: wa.id,
+                    timestamp: wa.itime ? new Date(wa.itime).getTime() : 0,
+                    name: wa.contact_name || wa.phone_number || null,
+                    detail: wa.message_text,
+                    data: wa
+                })
+            })
+
+        // Neueste zuerst
+        items.sort((a, b) => b.timestamp - a.timestamp)
+
+        return items
+    })
+
+    const filteredPartsRequests = computed(() =>
+        pendingPartsRequests.value.filter(pr => !dismissed.value.parts.includes(pr.oe_id))
+    )
+
+    const hasItems = computed(() =>
+        chronologicalItems.value.length > 0 ||
+        filteredPartsRequests.value.length > 0
+    )
+
+    // --- Actions ---
+    function dismissItem(type, id) {
+        if (type === 'call' && !dismissed.value.calls.includes(id)) {
+            dismissed.value.calls.push(id)
+        } else if (type === 'email' && !dismissed.value.emails.includes(id)) {
+            dismissed.value.emails.push(id)
+        } else if (type === 'whatsapp' && !dismissed.value.whatsapps.includes(id)) {
+            dismissed.value.whatsapps.push(id)
+        } else if (type === 'parts' && !dismissed.value.parts.includes(id)) {
+            dismissed.value.parts.push(id)
+        }
+        saveDismissed()
+    }
+
+    function closeAll() {
+        // Nicht mehr verwendet — Leiste kann nicht komplett geschlossen werden
+    }
+
+    // --- Setup: SSE + Polling starten ---
+    function startListeners() {
+        console.log('[SSE] Verbindung wird aufgebaut: /sse/events')
+        eventSource = new EventSource('/sse/events')
+        eventSource.onopen = () => {
+            console.log('[SSE] Verbindung hergestellt ✓')
+            sseConnected.value = true
+        }
+        eventSource.onmessage = (event) => {
+            console.log('[SSE] Message empfangen:', event.data)
+            try {
+                const data = JSON.parse(event.data)
+                if (data.message_type !== undefined) {
+                    fetchNewWhatsapps()
+                } else if (data.table === 'oe_parts_requests_lxcars') {
+                    fetchPendingPartsRequests()
+                } else {
+                    fetchNewCalls()
+                }
+            } catch {
+                fetchNewCalls()
+                fetchNewWhatsapps()
+            }
+        }
+        // Neuer Build erkannt: Seite automatisch neu laden
+        eventSource.addEventListener('build_changed', (event) => {
+            console.warn('[SSE] build_changed empfangen:', event.data)
+            toast.info('Neues Update verfügbar — Seite wird neu geladen...')
+            setTimeout(() => window.location.reload(), 2000)
+        })
+        eventSource.onerror = (err) => {
+            console.error('[SSE] Verbindungsfehler — readyState:', eventSource.readyState,
+                '(0=CONNECTING, 1=OPEN, 2=CLOSED)', err)
+            sseConnected.value = false
+        }
+
+        emailPollInterval = setInterval(fetchNewEmails, 60000)
+        whatsappPollInterval = setInterval(fetchNewWhatsapps, 120000)
+    }
+
+    function stopListeners() {
+        if (eventSource) { eventSource.close(); eventSource = null }
+        if (emailPollInterval) { clearInterval(emailPollInterval); emailPollInterval = null }
+        if (whatsappPollInterval) { clearInterval(whatsappPollInterval); whatsappPollInterval = null }
+        sseConnected.value = false
+    }
+
+    function loadAndFetchAll() {
+        loadDismissed()
+        fetchNewCalls()
+        fetchNewEmails()
+        fetchNewWhatsapps()
+        fetchPendingPartsRequests()
+    }
+
+    // --- Firmenwechsel: Daten zuruecksetzen und neu laden ---
+    watch(() => oserp.session.client, () => {
+        newCalls.value = []
+        newEmails.value = []
+        newWhatsapps.value = []
+        pendingPartsRequests.value = []
+        dismissed.value = { calls: [], emails: [], whatsapps: [], parts: [] }
+
+        stopListeners()
+        loadAndFetchAll()
+        startListeners()
+    })
+
+    // --- Lifecycle ---
+    function onPartsChanged() {
+        fetchPendingPartsRequests()
+    }
+
+    onMounted(() => {
+        loadAndFetchAll()
+        startListeners()
+        window.addEventListener('parts-requests-changed', onPartsChanged)
+    })
+
+    onUnmounted(() => {
+        stopListeners()
+        window.removeEventListener('parts-requests-changed', onPartsChanged)
+    })
+
+    return {
+        chronologicalItems,
+        pendingPartsRequests: filteredPartsRequests,
+        hasItems,
+        dismissItem,
+        fetchPendingPartsRequests,
+        closeAll
+    }
+}

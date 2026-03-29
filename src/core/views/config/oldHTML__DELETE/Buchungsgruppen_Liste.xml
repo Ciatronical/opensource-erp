@@ -1,0 +1,256 @@
+steuerzohne_Liste.html
+
+<!DOCTYPE html>
+<html>
+ <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>Liste der Steuerzonen - dirk - 3.9.2</title>
+  <link rel="stylesheet" href="css/design40/main.css?rand=3.9.2" type="text/css" title="Stylesheet">
+  <link rel="stylesheet" href="css/design40/dhtmlsuite/menu-item.css?rand=3.9.2" type="text/css" title="Stylesheet">
+  <link rel="stylesheet" href="css/design40/dhtmlsuite/menu-bar.css?rand=3.9.2" type="text/css" title="Stylesheet">
+  <link rel='shortcut icon' href='favicon.ico' type='image/x-icon'>
+  <script type="text/javascript" src="js/jquery.js?rand=3.9.2"></script>
+  <script type="text/javascript" src="js/common.js?rand=3.9.2"></script>
+  <script type="text/javascript" src="js/namespace.js?rand=3.9.2"></script>
+  <script type="text/javascript" src="js/jquery-ui.js?rand=3.9.2"></script>
+  <script type="text/javascript" src="js/kivi.js?rand=3.9.2"></script>
+  <script type="text/javascript" src="js/locale/de.js?rand=3.9.2"></script>
+  <script type="text/javascript" src="js/kivi.QuickSearch.js?rand=3.9.2"></script>
+  <script type="text/javascript" src="js/dhtmlsuite/menu-for-applications.js?rand=3.9.2"></script>
+  <script type="text/javascript" src="js/kivi.ActionBar.js?rand=3.9.2"></script>
+  <script type="text/javascript" src="js/jquery.cookie.js?rand=3.9.2"></script>
+  <script type="text/javascript" src="js/jquery.checkall.js?rand=3.9.2"></script>
+  <script type="text/javascript" src="js/jquery.download.js?rand=3.9.2"></script>
+  <script type="text/javascript" src="js/jquery/jquery.form.js?rand=3.9.2"></script>
+  <script type="text/javascript" src="js/jquery/fixes.js?rand=3.9.2"></script>
+  <script type="text/javascript" src="js/client_js.js?rand=3.9.2"></script>
+  <script type="text/javascript" src="js/jquery/jquery.tooltipster.min.js?rand=3.9.2"></script>
+  <script type="text/javascript" src="js/jquery/ui/i18n/jquery.ui.datepicker-de.js?rand=3.9.2"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+ </head>
+ <body>
+
+
+
+
+
+  <div id="frame-header">
+  
+   <span class="frame-header-element frame-header-left">
+      <span><a href="controller.pl?action=LoginScreen/user_login" title="Startseite"><img alt="Startseite" src="image/header-icon-home.png"></a></span>
+      <span><a href="controller.pl?action=LoginScreen/user_login" target="_blank" title="Weiteres kivitendo-Fenster/-Tab öffnen"><img alt="Neues Fenster/Tab" src="image/header-icon-new-window.png"></a></span>
+      <span><a href="JavaScript:top.print();" title="Seite drucken"><img alt="Drucken" src="image/header-icon-print.png"></a></span>
+   </span>
+  
+   <span class="frame-header-element frame-header-right">
+    <span title="Mandant" class="client">Startup</span>
+    <span><a href="am.pl?action=config" title="Benutzer: dirk / Mandant: Startup"><!--  /  --><img alt="Benutzer/Mandant" src="image/header-icon-user.png"></a></span>
+     <span><a href="controller.pl?action=LoginScreen/logout" target="_top" title="kivitendo jetzt verlassen"><img alt="Abmelden" src="image/header-icon-logout.png"></a></span>
+   </span>
+   <span class="frame-header-element frame-header-right" id="ajax-spinner">
+      <img src="image/spinner-white.gif" alt="Wird geladen...">
+   </span>
+   <div class="frame-header-quicksearch">
+  
+     <span class='frame-header-quicksearch'><input type="text" id="top-quick-search-contact" module="contact" placeholder="Ansprechpersonen" maxlength="20" class="quick-search"></span>
+  
+     <span class='frame-header-quicksearch'><input type="text" id="top-quick-search-gl_transaction" module="gl_transaction" placeholder="FiBu Suche" maxlength="20" class="quick-search"></span>
+  
+   </div>
+</div>
+
+<div id="main_menu_div"></div><ul id="main_menu_model" style="display:none"><li itemIcon="image/icons/16x16/master_data.png" id="10001"><a target="" href="#">Stammdaten</a><ul width="319"><li id="100010001" itemIcon="image/icons/16x16/customer_add.png"><a href="controller.pl?db=customer&amp;action=CustomerVendor%2fadd" target="">Kunde erfassen</a><ul width="11"></ul></li><li itemIcon="image/icons/16x16/vendor_add.png" id="100010002"><a target="" href="controller.pl?action=CustomerVendor%2fadd&amp;db=vendor">Lieferant erfassen</a><ul width="11"></ul></li><li id="100010003" itemIcon="image/icons/16x16/part_add.png"><a target="" href="controller.pl?action=Part%2fadd_part">Ware erfassen</a><ul width="11"></ul></li><li id="100010004" itemIcon="image/icons/16x16/service_add.png"><a href="controller.pl?action=Part%2fadd_service" target="">Dienstleistung erfassen</a><ul width="11"></ul></li><li id="100010005" itemIcon="image/icons/16x16/assembly_add.png"><a target="" href="controller.pl?action=Part%2fadd_assembly">Erzeugnis erfassen</a><ul width="11"></ul></li><li id="100010006"><a href="controller.pl?action=Part%2fadd_assortment" target="">Sortiment erfassen</a><ul width="11"></ul></li><li id="100010007" itemIcon="image/icons/16x16/project_add.png"><a href="controller.pl?action=Project%2fnew" target="">Projekt erfassen</a><ul width="11"></ul></li><li id="100010008"><a target="" href="controller.pl?action=RequirementSpec%2fnew&amp;is_template=1">Pflichtenheftvorlage erfassen</a><ul width="11"></ul></li><li id="100010009" itemIcon="image/icons/16x16/prices_update.png"><a target="" href="controller.pl?action=PartsPriceUpdate%2fsearch_update_prices">Preise aktualisieren</a><ul width="11"></ul></li><li id="100010010"><a href="controller.pl?filter.obsolete=0&amp;action=PriceRule%2flist" target="">Preisregeln</a><ul width="11"></ul></li><li itemIcon="image/icons/16x16/master_data_report.png" id="100010011"><a target="" href="#">Berichte</a><ul width="231"><li itemIcon="image/icons/16x16/customer_report.png" id="1000100110001"><a href="controller.pl?db=customer&amp;action=CustomerVendor%2fsearch" target="">Kunden</a><ul width="11"></ul></li><li itemIcon="image/icons/16x16/vendor_report.png" id="1000100110002"><a href="controller.pl?db=vendor&amp;action=CustomerVendor%2fsearch" target="">Lieferanten</a><ul width="11"></ul></li><li id="1000100110003"><a target="" href="controller.pl?action=CustomerVendor%2fsearch_contact&amp;db=customer">Ansprechpersonen</a><ul width="11"></ul></li><li id="1000100110004" itemIcon="image/icons/16x16/part_report.png"><a href="ic.pl?searchitems=article&amp;action=search" target="">Artikel</a><ul width="11"></ul></li><li id="1000100110005" itemIcon="image/icons/16x16/project_report.png"><a target="" href="controller.pl?filter.valid=valid&amp;action=Project%2flist&amp;filter.active=active">Projekte</a><ul width="11"></ul></li><li id="1000100110006"><a target="" href="controller.pl?action=RequirementSpec%2flist&amp;is_template=1">Pflichtenheftvorlagen</a><ul width="11"></ul></li></ul></li></ul></li><li itemIcon="image/icons/16x16/ar.png" id="10002"><a href="#" target="">Verkauf</a><ul width="308"><li id="100020001"><a href="controller.pl?action=RequirementSpec%2fnew" target="">Pflichtenheft erfassen</a><ul width="11"></ul></li><li itemIcon="image/icons/16x16/quotation_add.png" id="100020002"><a target="" href="controller.pl?action=Order%2fadd&amp;type=sales_quotation">Angebot erfassen</a><ul width="11"></ul></li><li id="100020003" itemIcon="image/icons/16x16/sales_order_add.png"><a href="controller.pl?type=sales_order_intake&amp;action=Order%2fadd" target="">Auftragseingang erfassen</a><ul width="11"></ul></li><li id="100020004" itemIcon="image/icons/16x16/sales_order_add.png"><a target="" href="controller.pl?action=Order%2fadd&amp;type=sales_order">Auftragsbestätigung erfassen</a><ul width="11"></ul></li><li itemIcon="image/icons/16x16/delivery_order_add.png" id="100020005"><a href="controller.pl?type=sales_delivery_order&amp;action=DeliveryOrder%2fadd" target="">Lieferschein erfassen</a><ul width="11"></ul></li><li id="100020006"><a href="controller.pl?type=sales_reclamation&amp;action=Reclamation%2fadd" target="">Verkaufsreklamation erfassen</a><ul width="11"></ul></li><li itemIcon="image/icons/16x16/sales_invoice_add.png" id="100020007"><a target="" href="is.pl?action=add&amp;type=invoice">Rechnung erfassen</a><ul width="11"></ul></li><li itemIcon="image/icons/16x16/sales_invoice_add.png" id="100020008"><a href="is.pl?action=add&amp;type=invoice_for_advance_payment" target="">Anzahlungsrechnung erfassen</a><ul width="11"></ul></li><li itemIcon="image/icons/16x16/credit_note_add.png" id="100020009"><a target="" href="is.pl?action=add&amp;type=credit_note">Gutschrift erfassen</a><ul width="11"></ul></li><li itemIcon="image/icons/16x16/dunning_add.png" id="100020010"><a target="" href="dn.pl?action=add">Mahnung erzeugen</a><ul width="11"></ul></li><li id="100020011"><a target="" href="controller.pl?action=Letter%2fadd&amp;is_sales=1">Brief hinzufügen</a><ul width="11"></ul></li><li id="100020012" itemIcon="image/icons/16x16/sales_invoice_add.png"><a href="#" target="">Rechnungen</a><ul width="682"><li id="1000200120001"><a href="controller.pl?action=MassInvoiceCreatePrint%2flist_sales_delivery_orders&amp;noshow=1" target="">Massenerstellen und Ausdruck von Rechnungen aus Lieferscheinen</a><ul width="11"></ul></li></ul></li><li itemIcon="image/icons/16x16/ar_report.png" id="100020013"><a target="" href="#">Berichte</a><ul width="495"><li id="1000200130001"><a href="controller.pl?action=RequirementSpec%2flist" target="">Pflichtenhefte</a><ul width="11"></ul></li><li itemIcon="image/icons/16x16/report_quotations.png" id="1000200130002"><a target="" href="oe.pl?type=sales_quotation&amp;action=search">Angebote</a><ul width="11"></ul></li><li id="1000200130003" itemIcon="image/icons/16x16/report_sales_orders.png"><a href="oe.pl?type=sales_order_intake&amp;action=search" target="">Auftragseingänge</a><ul width="11"></ul></li><li itemIcon="image/icons/16x16/report_sales_orders.png" id="1000200130004"><a href="oe.pl?type=sales_order&amp;action=search" target="">Auftragsbestätigungen</a><ul width="11"></ul></li><li id="1000200130005" itemIcon="image/icons/16x16/delivery_order_report.png"><a href="do.pl?type=sales_delivery_order&amp;action=search" target="">Lieferscheine</a><ul width="11"></ul></li><li id="1000200130006"><a href="controller.pl?type=sales_reclamation&amp;action=Reclamation%2flist" target="">Verkaufsreklamation</a><ul width="11"></ul></li><li itemIcon="image/icons/16x16/invoices_report.png" id="1000200130007"><a target="" href="ar.pl?action=search&amp;nextsub=ar_transactions">Rechnungen, Gutschriften & Debitorenbuchungen</a><ul width="11"></ul></li><li id="1000200130008"><a href="vk.pl?action=search_invoice&amp;nextsub=invoice_transactions" target="">Verkaufsbericht</a><ul width="11"></ul></li><li itemIcon="image/icons/16x16/dunnings_report.png" id="1000200130009"><a href="dn.pl?action=search" target="">Mahnungen</a><ul width="11"></ul></li><li id="1000200130010"><a href="controller.pl?action=OrderItem%2fsearch" target="">Auftragsartikelsuche</a><ul width="11"></ul></li><li id="1000200130011"><a href="controller.pl?action=DeliveryPlan%2flist&amp;vc=customer" target="">Lieferplan</a><ul width="11"></ul></li><li id="1000200130012"><a target="" href="controller.pl?vc=customer&amp;action=DeliveryValueReport%2flist">Lieferwertbericht</a><ul width="11"></ul></li><li id="1000200130013"><a target="" href="controller.pl?action=FinancialControllingReport%2flist">Finanzcontrolling</a><ul width="11"></ul></li><li id="1000200130014"><a target="" href="controller.pl?action=Letter%2flist&amp;is_sales=1">Briefe</a><ul width="11"></ul></li></ul></li></ul></li><li id="10003"><a href="#" target="">Webshop</a><ul width="165"><li id="100030001"><a target="" href="controller.pl?sort_by=shop_ordernumber&amp;filter.transferred:eq_ignore_empty=0&amp;db=shop_orders&amp;filter.obsolete=0&amp;action=ShopOrder%2flist">Webshop Import</a><ul width="11"></ul></li><li id="100030002"><a target="" href="controller.pl?db=shop_parts&amp;sort_by=part.onhand&amp;action=ShopPart%2flist_articles">Webshop Artikel</a><ul width="11"></ul></li></ul></li><li itemIcon="image/icons/16x16/ap.png" id="10004"><a target="" href="#">Einkauf</a><ul width="429"><li id="100040001" itemIcon="image/icons/16x16/rfq_add.png"><a target="" href="controller.pl?type=request_quotation&amp;action=Order%2fadd">Preisanfrage erfassen</a><ul width="11"></ul></li><li id="100040002" itemIcon="image/icons/16x16/rfq_add.png"><a href="controller.pl?type=purchase_quotation_intake&amp;action=Order%2fadd" target="">Angebotseingang erfassen</a><ul width="11"></ul></li><li id="100040003"><a href="controller.pl?action=DispositionManager%2flist_parts" target="">Meldebestand zeigen</a><ul width="11"></ul></li><li id="100040004"><a href="controller.pl?action=DispositionManager%2fshow_basket" target="">Einkaufswarenkorb zeigen</a><ul width="11"></ul></li><li itemIcon="image/icons/16x16/purchase_order_add.png" id="100040005"><a href="controller.pl?type=purchase_order&amp;action=Order%2fadd" target="">Lieferantenauftrag erfassen</a><ul width="11"></ul></li><li id="100040006" itemIcon="image/icons/16x16/purchase_order_add.png"><a target="" href="controller.pl?action=Order%2fadd&amp;type=purchase_order_confirmation">Lieferantenauftragsbestätigung erfassen</a><ul width="11"></ul></li><li id="100040007"><a href="controller.pl?type=purchase_delivery_order&amp;action=DeliveryOrder%2fadd" target="">Lieferschein erfassen</a><ul width="11"></ul></li><li id="100040008"><a target="" href="controller.pl?action=Reclamation%2fadd&amp;type=purchase_reclamation">Einkaufsreklamation erfassen</a><ul width="11"></ul></li><li id="100040009"><a href="ir.pl?action=add&amp;type=invoice" target="">Einkaufsrechnung erfassen</a><ul width="11"></ul></li><li id="100040010"><a href="controller.pl?is_sales=0&amp;action=Letter%2fadd" target="">Brief hinzufügen</a><ul width="11"></ul></li><li id="100040011" itemIcon="image/icons/16x16/ap_report.png"><a target="" href="#">Berichte</a><ul width="440"><li itemIcon="image/icons/16x16/rfq_report.png" id="1000400110001"><a target="" href="oe.pl?type=request_quotation&amp;action=search">Preisanfragen</a><ul width="11"></ul></li><li id="1000400110002" itemIcon="image/icons/16x16/rfq_report.png"><a target="" href="oe.pl?action=search&amp;type=purchase_quotation_intake">Angebotseingänge</a><ul width="11"></ul></li><li itemIcon="image/icons/16x16/purchase_order_report.png" id="1000400110003"><a href="oe.pl?action=search&amp;type=purchase_order" target="">Lieferantenaufträge</a><ul width="11"></ul></li><li itemIcon="image/icons/16x16/purchase_order_report.png" id="1000400110004"><a target="" href="oe.pl?type=purchase_order_confirmation&amp;action=search">Lieferantenauftragsbestätigungen</a><ul width="11"></ul></li><li id="1000400110005"><a href="do.pl?action=search&amp;type=purchase_delivery_order" target="">Lieferscheine</a><ul width="11"></ul></li><li id="1000400110006"><a target="" href="do.pl?type=supplier_delivery_order&amp;action=search">Beistell-Lieferscheine</a><ul width="11"></ul></li><li id="1000400110007"><a target="" href="controller.pl?action=Reclamation%2flist&amp;type=purchase_reclamation">Einkaufsreklamation</a><ul width="11"></ul></li><li id="1000400110008"><a target="" href="ap.pl?action=search">Einkaufsrechnungen & Kreditorenbuchungen</a><ul width="11"></ul></li><li id="1000400110009"><a href="controller.pl?vc=vendor&amp;action=DeliveryPlan%2flist" target="">Lieferplan</a><ul width="11"></ul></li><li id="1000400110010"><a target="" href="controller.pl?action=DeliveryValueReport%2flist&amp;vc=vendor">Lieferwertbericht</a><ul width="11"></ul></li><li id="1000400110011"><a target="" href="controller.pl?action=Letter%2flist&amp;is_sales=0">Briefe</a><ul width="11"></ul></li></ul></li></ul></li><li itemIcon="image/icons/16x16/warehouse.png" id="10005"><a href="#" target="">Lager</a><ul width="198"><li id="100050001"><a href="controller.pl?action=Inventory%2fstock_in" target="">Einlagern</a><ul width="11"></ul></li><li id="100050002" itemIcon="image/icons/16x16/assembly_produce.png"><a target="" href="wh.pl?trans_type=assembly&amp;action=transfer_warehouse_selection">Erzeugnis fertigen</a><ul width="11"></ul></li><li id="100050003"><a href="wh.pl?action=transfer_warehouse_selection&amp;trans_type=transfer" target="">Umlagern</a><ul width="11"></ul></li><li id="100050004"><a href="wh.pl?action=transfer_warehouse_selection&amp;trans_type=removal" target="">Entnahme</a><ul width="11"></ul></li><li id="100050005"><a target="" href="controller.pl?action=Inventory%2fstocktaking">Inventur</a><ul width="11"></ul></li><li id="100050006"><a target="" href="#">Berichte</a><ul width="187"><li id="1000500060001"><a target="" href="wh.pl?action=report">Lagerbestand</a><ul width="11"></ul></li><li id="1000500060002"><a href="wh.pl?action=journal" target="">Lagerbuchungen</a><ul width="11"></ul></li><li id="1000500060003"><a href="controller.pl?action=Inventory%2fstock_usage" target="">Lagerentnahme</a><ul width="11"></ul></li><li id="1000500060004"><a target="" href="controller.pl?action=Inventory%2fstocktaking_journal">Inventurbuchungen</a><ul width="11"></ul></li></ul></li></ul></li><li id="10006" itemIcon="image/icons/16x16/gl.png"><a href="#" target="">Finanzbuchhaltung</a><ul width="286"><li itemIcon="image/icons/16x16/transaction_add.png" id="100060001"><a target="" href="gl.pl?action=add">Dialogbuchen</a><ul width="11"></ul></li><li itemIcon="image/icons/16x16/ar_transaction_add.png" id="100060002"><a target="" href="ar.pl?action=add">Debitorenbuchung</a><ul width="11"></ul></li><li id="100060003" itemIcon="image/icons/16x16/ap_transaction_add.png"><a target="" href="ap.pl?action=add">Kreditorenbuchung</a><ul width="11"></ul></li><li itemIcon="image/icons/16x16/datev.png" id="100060004"><a target="" href="datev.pl?action=export">DATEV-Exportassistent</a><ul width="11"></ul></li><li id="100060005" itemIcon="image/icons/svg/gobd.svg"><a href="controller.pl?action=GoBD%2ffilter" target="">GoBD Export</a><ul width="11"></ul></li><li id="100060006"><a href="controller.pl?action=YearEndTransactions%2fform" target="">Jahresabschluß</a><ul width="11"></ul></li><li id="100060007"><a target="" href="controller.pl?action=ZUGFeRD%2fupload_zugferd">Factur-X-/ZUGFeRD-Import</a><ul width="11"></ul></li><li itemIcon="image/icons/16x16/datev.png" id="100060008"><a href="controller.pl?action=PayPostingImport%2fupload_pay_postings" target="">DATEV - Lohnbuchungsimport</a><ul width="11"></ul></li><li id="100060009" itemIcon="image/icons/16x16/gl_report.png"><a target="" href="#">Berichte</a><ul width="264"><li itemIcon="image/icons/16x16/ar_aging.png" id="1000600090001"><a target="" href="rp.pl?action=report&amp;report=ar_aging">Offene Forderungen</a><ul width="11"></ul></li><li itemIcon="image/icons/16x16/ap_aging.png" id="1000600090002"><a target="" href="rp.pl?action=report&amp;report=ap_aging">Offene Verbindlichkeiten</a><ul width="11"></ul></li><li id="1000600090003" itemIcon="image/icons/16x16/journal.png"><a href="gl.pl?action=search" target="">Buchungsjournal</a><ul width="11"></ul></li></ul></li></ul></li><li id="10007" itemIcon="image/icons/16x16/cash.png"><a href="#" target="">Zahlungsverkehr</a><ul width="253"><li id="100070001" itemIcon="image/icons/16x16/receipt.png"><a target="" href="cp.pl?type=receipt&amp;action=payment&amp;vc=customer">Zahlungseingang</a><ul width="11"></ul></li><li itemIcon="image/icons/16x16/payment.png" id="100070002"><a href="cp.pl?vc=vendor&amp;action=payment&amp;type=check" target="">Zahlungsausgang</a><ul width="11"></ul></li><li id="100070003"><a href="sepa.pl?action=bank_transfer_add&amp;vc=customer" target="">Bankeinzug via SEPA</a><ul width="11"></ul></li><li id="100070004"><a href="sepa.pl?vc=vendor&amp;action=bank_transfer_add" target="">Überweisung via SEPA</a><ul width="11"></ul></li><li id="100070005"><a href="#" target="">Kontoauszug importieren</a><ul width="198"><li id="1000700050001"><a href="controller.pl?profile.type=bank_transactions&amp;action=CsvImport%2fnew" target="">Eigenes CSV-Format</a><ul width="11"></ul></li><li id="1000700050002"><a href="controller.pl?action=BankImport%2fupload_mt940" target="">SWIFT-MT940-Format</a><ul width="11"></ul></li></ul></li><li id="100070006"><a target="" href="controller.pl?action=BankTransaction%2fsearch">Kontoauszug verbuchen</a><ul width="11"></ul></li><li id="100070007"><a href="controller.pl?action=Reconciliation%2fsearch" target="">Kontenabgleich mit Bank</a><ul width="11"></ul></li><li id="100070008" itemIcon="image/icons/16x16/reconcilliation.png"><a target="" href="rc.pl?action=reconciliation">Kontenabgleich</a><ul width="11"></ul></li><li itemIcon="image/icons/16x16/cash_report.png" id="100070009"><a href="#" target="">Berichte</a><ul width="242"><li itemIcon="image/icons/16x16/receipt_report.png" id="1000700090001"><a href="rp.pl?action=report&amp;report=receipts" target="">Zahlungseingänge</a><ul width="11"></ul></li><li id="1000700090002" itemIcon="image/icons/16x16/payment_report.png"><a href="rp.pl?action=report&amp;report=payments" target="">Zahlungsausgänge</a><ul width="11"></ul></li><li id="1000700090003"><a href="sepa.pl?action=bank_transfer_search&amp;vc=customer" target="">Bankeinzüge via SEPA</a><ul width="11"></ul></li><li id="1000700090004"><a href="sepa.pl?vc=vendor&amp;action=bank_transfer_search" target="">Überweisungen via SEPA</a><ul width="11"></ul></li><li id="1000700090005"><a target="" href="controller.pl?action=BankTransaction%2flist_all">Bankbewegungen</a><ul width="11"></ul></li></ul></li></ul></li><li id="10008" itemIcon="image/icons/16x16/report.png"><a target="" href="#">Berichte</a><ul width="297"><li itemIcon="image/icons/16x16/chart_of_accounts.png" id="100080001"><a target="" href="controller.pl?action=ChartOfAccounts%2flist">Kontenübersicht</a><ul width="11"></ul></li><li id="100080002"><a href="controller.pl?action=ListTransactions%2freport_settings" target="">Buchungsliste</a><ul width="11"></ul></li><li id="100080003"><a target="" href="rp.pl?report=trial_balance&amp;action=report">Summen- und Saldenliste</a><ul width="11"></ul></li><li id="100080005" itemIcon="image/icons/16x16/income_statement.png"><a target="" href="rp.pl?report=income_statement&amp;action=report">GuV</a><ul width="11"></ul></li><li id="100080006"><a target="" href="rp.pl?report=bwa&amp;action=report">BWA</a><ul width="11"></ul></li><li id="100080007" itemIcon="image/icons/16x16/balance_sheet.png"><a target="" href="rp.pl?action=report&amp;report=balance_sheet">Bilanz</a><ul width="11"></ul></li><li id="100080008" itemIcon="image/icons/16x16/ustva.png"><a href="ustva.pl?action=report" target="">UStVa</a><ul width="11"></ul></li><li id="100080009"><a href="rp.pl?action=report&amp;report=projects" target="">Projektbuchungen</a><ul width="11"></ul></li><li id="100080010"><a href="controller.pl?action=FinancialOverview%2flist" target="">Finanzübersicht</a><ul width="11"></ul></li><li id="100080011"><a target="" href="controller.pl?action=LiquidityProjection%2fshow">Liquiditätsübersicht</a><ul width="11"></ul></li><li id="100080012"><a href="controller.pl?action=CustomDataExport%2flist" target="">Benutzerdefinierter Bericht</a><ul width="11"></ul></li></ul></li><li id="10009" itemIcon="image/icons/16x16/printing.png"><a target="" href="#">Druck</a><ul width="209"><li itemIcon="image/icons/16x16/sales_invoice_printing.png" id="100090001"><a href="bp.pl?action=search&amp;type=invoice&amp;vc=customer" target="">Kundenrechnungen</a><ul width="11"></ul></li><li id="100090002" itemIcon="image/icons/16x16/sales_order_printing.png"><a href="bp.pl?action=search&amp;type=sales_order&amp;vc=customer" target="">Aufträge</a><ul width="11"></ul></li><li itemIcon="image/icons/16x16/quotation_printing.png" id="100090003"><a target="" href="bp.pl?vc=customer&amp;type=sales_quotation&amp;action=search">Angebote</a><ul width="11"></ul></li><li id="100090004" itemIcon="image/icons/16x16/package_lists.png"><a target="" href="bp.pl?vc=customer&amp;type=packing_list&amp;action=search">Lieferschein</a><ul width="11"></ul></li><li id="100090005" itemIcon="image/icons/16x16/purchase_order_printing.png"><a href="bp.pl?type=purchase_order&amp;action=search&amp;vc=vendor" target="">Lieferantenaufträge</a><ul width="11"></ul></li><li id="100090006" itemIcon="image/icons/16x16/rfq_printing.png"><a href="bp.pl?type=request_quotation&amp;action=search&amp;vc=vendor" target="">Preisanfragen</a><ul width="11"></ul></li><li id="100090007"><a target="" href="bp.pl?vc=vendor&amp;action=search&amp;type=check">Schecks</a><ul width="11"></ul></li><li id="100090008" itemIcon="image/icons/16x16/receipt_printing.png"><a href="bp.pl?vc=customer&amp;type=receipt&amp;action=search" target="">Zahlungseingänge</a><ul width="11"></ul></li></ul></li><li id="10010"><a href="#" target="">Produktivität</a><ul width="275"><li id="100100001"><a href="todo.pl?action=show_todo_list" target="">Aufgabenliste anzeigen</a><ul width="11"></ul></li><li id="100100002"><a href="fu.pl?action=add" target="">Wiedervorlage erstellen</a><ul width="11"></ul></li><li id="100100003"><a href="fu.pl?action=edit_access_rights" target="">Zugriffsrechte bearbeiten</a><ul width="11"></ul></li><li id="100100004"><a href="controller.pl?action=TimeRecording%2fedit" target="">Zeiterfassung</a><ul width="11"></ul></li><li id="100100005"><a href="#" target="">Berichte</a><ul width="154"><li id="1001000050001"><a target="" href="fu.pl?action=search">Wiedervorlagen</a><ul width="11"></ul></li><li id="1001000050002" itemIcon="image/icons/svg/mail_journal.svg"><a target="" href="controller.pl?action=EmailJournal%2flist">E-Mail-Journal</a><ul width="11"></ul></li><li id="1001000050003"><a target="" href="controller.pl?action=TimeRecording%2flist">Zeiterfassung</a><ul width="11"></ul></li></ul></li></ul></li><li id="10011" itemIcon="image/icons/16x16/system.png"><a href="#" target="">System</a><ul width="352"><li id="100110001"><a target="" href="controller.pl?action=ClientConfig%2fedit">Mandantenkonfiguration</a><ul width="11"></ul></li><li id="100110002"><a target="" href="ustva.pl?action=config_step1">UStVa Einstellungen</a><ul width="11"></ul></li><li id="100110003"><a href="dn.pl?action=edit_config" target="">Mahnungen konfigurieren</a><ul width="11"></ul></li><li id="100110004"><a target="" href="#">Kontenübersicht</a><ul width="341"><li id="1001100040001"><a target="" href="am.pl?action=add_account">Konto erfassen</a><ul width="11"></ul></li><li id="1001100040002"><a href="am.pl?action=list_account" target="">Konten anzeigen</a><ul width="11"></ul></li><li id="1001100040003"><a target="" href="controller.pl?action=Chart%2fshow_report_configuration_overview">Berichtskonfigurationsübersicht</a><ul width="11"></ul></li></ul></li><li id="100110005"><a href="controller.pl?action=Buchungsgruppen%2flist" target="">Buchungsgruppen</a><ul width="11"></ul></li><li id="100110006"><a target="" href="controller.pl?action=Taxzones%2flist">Steuerzonen</a><ul width="11"></ul></li><li id="100110007"><a target="" href="am.pl?action=list_tax">Steuern</a><ul width="11"></ul></li><li id="100110008"><a href="controller.pl?action=SimpleSystemSetting%2flist&amp;type=bank_account" target="">Bankkonten</a><ul width="11"></ul></li><li id="100110009"><a target="" href="controller.pl?action=SimpleSystemSetting%2flist&amp;type=parts_group">Warengruppen</a><ul width="11"></ul></li><li id="100110010"><a href="controller.pl?type=part_classification&amp;action=SimpleSystemSetting%2flist" target="">Artikel-Klassifizierung</a><ul width="11"></ul></li><li id="100110011"><a target="" href="controller.pl?action=SimpleSystemSetting%2flist&amp;type=pricegroup">Preisgruppen</a><ul width="11"></ul></li><li id="100110012"><a target="" href="am.pl?action=edit_units">Einheiten bearbeiten</a><ul width="11"></ul></li><li id="100110013"><a target="" href="controller.pl?type=price_factor&amp;action=SimpleSystemSetting%2flist">Preisfaktoren</a><ul width="11"></ul></li><li id="100110014"><a target="" href="controller.pl?action=ReclamationReason%2flist&amp;type=reclamation_reason">Reklamationsgründe</a><ul width="11"></ul></li><li id="100110015"><a href="controller.pl?action=SimpleSystemSetting%2flist&amp;type=greeting" target="">Anreden</a><ul width="11"></ul></li><li id="100110016"><a href="controller.pl?action=SimpleSystemSetting%2flist&amp;type=department" target="">Abteilungen</a><ul width="11"></ul></li><li id="100110017"><a href="controller.pl?action=SimpleSystemSetting%2flist&amp;type=business" target="">Kunden-/Lieferantentypen</a><ul width="11"></ul></li><li id="100110018"><a target="" href="controller.pl?type=contact_title&amp;action=SimpleSystemSetting%2flist">Titel von Ansprechpersonen</a><ul width="11"></ul></li><li id="100110019"><a href="controller.pl?type=contact_department&amp;action=SimpleSystemSetting%2flist" target="">Abteilungen von Ansprechpersonen</a><ul width="11"></ul></li><li id="100110020"><a href="controller.pl?type=order_status&amp;action=SimpleSystemSetting%2flist" target="">Angebots-/Auftrags-Status</a><ul width="11"></ul></li><li id="100110021"><a target="" href="controller.pl?action=SimpleSystemSetting%2flist&amp;type=project_type">Projekttypen</a><ul width="11"></ul></li><li id="100110022"><a target="" href="controller.pl?type=project_status&amp;action=SimpleSystemSetting%2flist">Projektstatus</a><ul width="11"></ul></li><li id="100110023"><a target="" href="#">Pflichtenhefte</a><ul width="264"><li id="1001100230001"><a href="controller.pl?action=SimpleSystemSetting%2flist&amp;type=requirement_spec_predefined_text" target="">Vordefinierte Textblöcke</a><ul width="11"></ul></li><li id="1001100230002"><a href="controller.pl?type=requirement_spec_type&amp;action=SimpleSystemSetting%2flist" target="">Pflichtenhefttypen</a><ul width="11"></ul></li><li id="1001100230003"><a target="" href="controller.pl?type=requirement_spec_status&amp;action=SimpleSystemSetting%2flist">Pflichtenheftstatus</a><ul width="11"></ul></li><li id="1001100230004"><a href="controller.pl?action=SimpleSystemSetting%2flist&amp;type=requirement_spec_complexity" target="">Komplexitätsgrade</a><ul width="11"></ul></li><li id="1001100230005"><a href="controller.pl?action=SimpleSystemSetting%2flist&amp;type=requirement_spec_risk" target="">Risikograde</a><ul width="11"></ul></li><li id="1001100230006"><a href="controller.pl?type=requirement_spec_acceptance_status&amp;action=SimpleSystemSetting%2flist" target="">Abnahmestatus</a><ul width="11"></ul></li></ul></li><li id="100110024"><a target="" href="#">Sprachen und Übersetzungen</a><ul width="473"><li id="1001100240001"><a target="" href="controller.pl?action=SimpleSystemSetting%2flist&amp;type=language">Sprachen</a><ul width="11"></ul></li><li id="1001100240002"><a target="" href="generictranslations.pl?action=edit_greetings">Anreden</a><ul width="11"></ul></li><li id="1001100240003"><a href="generictranslations.pl?action=edit_sepa_strings" target="">SEPA-Überweisungen</a><ul width="11"></ul></li><li id="1001100240004"><a target="" href="generictranslations.pl?action=edit_zugferd_notes">Factur-X-/ZUGFeRD-Notizen für jede Rechnung</a><ul width="11"></ul></li><li id="1001100240005"><a target="" href="generictranslations.pl?action=edit_email_strings">Vorbelegte E-Mail-Texte</a><ul width="11"></ul></li></ul></li><li id="100110025"><a target="" href="controller.pl?action=PaymentTerm%2flist">Zahlungsbedingungen</a><ul width="11"></ul></li><li id="100110026"><a target="" href="controller.pl?action=DeliveryTerm%2flist">Lieferbedingungen</a><ul width="11"></ul></li><li id="100110027"><a href="controller.pl?action=CustomVariableConfig%2flist" target="">Benutzerdefinierte Variablen</a><ul width="11"></ul></li><li id="100110028"><a href="controller.pl?action=CustomDataExportDesigner%2flist" target="">Benutzerdefinierter Bericht</a><ul width="11"></ul></li><li id="100110029"><a href="am.pl?action=list_warehouses" target="">Lager</a><ul width="11"></ul></li><li id="100110030"><a target="" href="controller.pl?action=Shop%2flist">Webshops</a><ul width="11"></ul></li><li id="100110031"><a href="controller.pl?type=time_recording_article&amp;action=SimpleSystemSetting%2flist" target="">Artikel für Zeiterfassung</a><ul width="11"></ul></li><li id="100110032"><a href="#" target="">CSV-Import</a><ul width="319"><li id="1001100320001"><a target="" href="controller.pl?action=CsvImport%2fnew&amp;profile.type=customers_vendors">Kunden und Lieferanten</a><ul width="11"></ul></li><li id="1001100320002"><a target="" href="controller.pl?profile.type=contacts&amp;action=CsvImport%2fnew">Ansprechpersonen</a><ul width="11"></ul></li><li id="1001100320003"><a href="controller.pl?profile.type=billing_addresses&amp;action=CsvImport%2fnew" target="">Zusätzliche Rechnungsadressen</a><ul width="11"></ul></li><li id="1001100320004"><a target="" href="controller.pl?profile.type=addresses&amp;action=CsvImport%2fnew">Lieferanschriften</a><ul width="11"></ul></li><li id="1001100320005"><a target="" href="controller.pl?profile.type=parts&amp;action=CsvImport%2fnew">Waren</a><ul width="11"></ul></li><li id="1001100320006"><a target="" href="controller.pl?profile.type=inventories&amp;action=CsvImport%2fnew">Lagerbewegungen/-bestände</a><ul width="11"></ul></li><li id="1001100320007"><a target="" href="controller.pl?profile.type=projects&amp;action=CsvImport%2fnew">Projekte</a><ul width="11"></ul></li><li id="1001100320008"><a target="" href="controller.pl?profile.type=orders&amp;action=CsvImport%2fnew">Aufträge</a><ul width="11"></ul></li><li id="1001100320009"><a target="" href="controller.pl?profile.type=delivery_orders&amp;action=CsvImport%2fnew">Lieferscheine</a><ul width="11"></ul></li><li id="1001100320010"><a target="" href="controller.pl?action=CsvImport%2fnew&amp;profile.type=ar_transactions">Debitorenbuchungen</a><ul width="11"></ul></li><li id="1001100320011"><a href="controller.pl?profile.type=ap_transactions&amp;action=CsvImport%2fnew" target="">Kreditorenbuchungen</a><ul width="11"></ul></li></ul></li><li id="100110033"><a href="#" target="">Vorlagen</a><ul width="154"><li id="1001100330001"><a target="" href="amtemplates.pl?format=html&amp;type=templates&amp;action=display_template_form">HTML-Vorlagen</a><ul width="11"></ul></li><li id="1001100330002"><a href="amtemplates.pl?action=display_template_form&amp;type=templates&amp;format=tex" target="">LaTeX-Vorlagen</a><ul width="11"></ul></li></ul></li><li id="100110034"><a target="" href="acctranscorrections.pl?action=analyze_filter">Korrekturen im Hauptbuch</a><ul width="11"></ul></li><li id="100110035"><a href="#" target="">Hintergrund-Jobs und Task-Server</a><ul width="374"><li id="1001100350001"><a href="controller.pl?action=BackgroundJob%2flist" target="">Aktuelle Hintergrund-Jobs anzeigen</a><ul width="11"></ul></li><li id="1001100350002"><a href="controller.pl?action=BackgroundJobHistory%2flist" target="">Verlauf der Hintergrund-Jobs</a><ul width="11"></ul></li><li id="1001100350003"><a href="controller.pl?action=TaskServer%2fshow" target="">Task-Server-Steuerung</a><ul width="11"></ul></li></ul></li><li id="100110036"><a target="" href="am.pl?action=audit_control">Bücherkontrolle</a><ul width="11"></ul></li><li id="100110037"><a href="am.pl?action=show_history_search" target="">Historien Suchmaschine</a><ul width="11"></ul></li><li id="100110038"><a href="controller.pl?action=Employee%2flist" target="">Benutzer</a><ul width="11"></ul></li></ul></li><li id="10012" itemIcon="image/icons/16x16/program.png"><a target="" href="#">Programm</a><ul width="297"><li id="100120001"><a target="" href="am.pl?action=config">Benutzereinstellungen</a><ul width="11"></ul></li><li id="100120002"><a href="controller.pl?action=CTI%2flist_internal_extensions" target="">Interne Telefonliste</a><ul width="11"></ul></li><li itemIcon="image/icons/16x16/version.png" id="100120003"><a href="login.pl?no_todo_list=1&amp;action=company_logo" target="">Version</a><ul width="11"></ul></li><li id="100120004"><a target="" href="controller.pl?action=Admin%2flogin">Administration</a><ul width="11"></ul></li><li id="100120005"><a target="" href="#">Dokumentation</a><ul width="44"><li id="1001200050001"><a href="doc/kivitendo-Dokumentation.pdf" target="_blank">PDF</a><ul width="11"></ul></li><li id="1001200050002"><a target="_blank" href="doc/html/index.html">HTML</a><ul width="11"></ul></li></ul></li><li id="100120006"><a target="_blank" href="http://www.kivitendo.de/">kivitendo Webseite (extern)</a><ul width="11"></ul></li><li id="100120007" itemIcon="image/icons/16x16/logout.png"><a target="" href="controller.pl?action=LoginScreen%2flogout">Abmelden</a><ul width="11"></ul></li></ul></li><li id="10013"><a target="" href="#">Developer Tools</a><ul width="264"><li id="100130001"><a href="controller.pl?action=GenericPresenterTest%2fshow" target="">Generisch-Presenter-Test</a><ul width="11"></ul></li><li id="100130002"><a href="controller.pl?action=Part%2ftest_page" target="">Artikel-Test</a><ul width="11"></ul></li><li id="100130003"><a href="controller.pl?action=Chart%2ftest_page" target="">Konten-Test</a><ul width="11"></ul></li><li id="100130004"><a href="controller.pl?action=CustomerVendor%2ftest_page" target="">Kunden-/Lieferanten-Test</a><ul width="11"></ul></li><li id="100130005"><a href="controller.pl?action=Project%2ftest_page" target="">Projekt-Test</a><ul width="11"></ul></li><li id="100130006"><a target="" href="controller.pl?action=Test%2fckeditor_test_page">CKEditor5-Test</a><ul width="11"></ul></li><li id="100130007"><a href="controller.pl?action=JSTests%2frun" target="">JS-Tests</a><ul width="11"></ul></li><li id="100130008"><a href="css/design40/manual/index.html" target="_blank">CSS-Dokumentation</a><ul width="11"></ul></li></ul></li></ul><div class="layout-actionbar"><div class="layout-actionbar-action layout-actionbar-link" id="action5740594">Erfassen</div></div><div id='content'>
+
+
+
+
+
+
+<div id="flash_error" class="flash_message flash_message_error"  style="display: none" >
+<div class="icon-container">
+  <a href="#" onclick='$("#flash_error_content").empty();$("#flash_error_detail").empty();$("#flash_error").hide()' class="icon-close"> &#10005;</a>
+  <span id="flash_error_disp" class="display" style="display: none">
+    <a href="#" onclick='$("#flash_detail_error").toggle();' class="button"> Details </a>
+  </span>
+</div>
+<div class="message-container">
+  <span class="flash_title">Fehler:</span>
+  <div class="flash_notification">
+    <span id="flash_error_content" class="content">
+      
+    </span>
+    <div id="flash_detail_error" class="detail" style="display: none">
+      <span id="flash_error_detail"></span>
+      <a href="#" style="float:left" onclick='$("#flash_detail_error").hide()' class="icon-close">&#10005;</a>
+    </div>
+  </div><!-- /.flash_notification -->
+</div>
+</div>
+
+
+<div id="flash_warning" class="flash_message flash_message_warning"  style="display: none" >
+<div class="icon-container">
+  <a href="#" onclick='$("#flash_warning_content").empty();$("#flash_warning_detail").empty();$("#flash_warning").hide()' class="icon-close"> &#10005;</a>
+  <span id="flash_warning_disp" class="display" style="display: none">
+    <a href="#" onclick='$("#flash_detail_warning").toggle();' class="button"> Details </a>
+  </span>
+</div>
+<div class="message-container">
+  <span class="flash_title">Warnung:</span>
+  <div class="flash_notification">
+    <span id="flash_warning_content" class="content">
+      
+    </span>
+    <div id="flash_detail_warning" class="detail" style="display: none">
+      <span id="flash_warning_detail"></span>
+      <a href="#" style="float:left" onclick='$("#flash_detail_warning").hide()' class="icon-close">&#10005;</a>
+    </div>
+  </div><!-- /.flash_notification -->
+</div>
+</div>
+
+
+<div id="flash_info" class="flash_message flash_message_info"  style="display: none" >
+<div class="icon-container">
+  <a href="#" onclick='$("#flash_info_content").empty();$("#flash_info_detail").empty();$("#flash_info").hide()' class="icon-close"> &#10005;</a>
+  <span id="flash_info_disp" class="display" style="display: none">
+    <a href="#" onclick='$("#flash_detail_info").toggle();' class="button"> Details </a>
+  </span>
+</div>
+<div class="message-container">
+  <span class="flash_title">Information:</span>
+  <div class="flash_notification">
+    <span id="flash_info_content" class="content">
+      
+    </span>
+    <div id="flash_detail_info" class="detail" style="display: none">
+      <span id="flash_info_detail"></span>
+      <a href="#" style="float:left" onclick='$("#flash_detail_info").hide()' class="icon-close">&#10005;</a>
+    </div>
+  </div><!-- /.flash_notification -->
+</div>
+</div>
+
+
+<div id="flash_ok" class="flash_message flash_message_ok"  style="display: none" >
+<div class="icon-container">
+  <a href="#" onclick='$("#flash_ok_content").empty();$("#flash_ok_detail").empty();$("#flash_ok").hide()' class="icon-close"> &#10005;</a>
+  <span id="flash_ok_disp" class="display" style="display: none">
+    <a href="#" onclick='$("#flash_detail_ok").toggle();' class="button"> Details </a>
+  </span>
+</div>
+<div class="message-container">
+  <span class="flash_title">Ok:</span>
+  <div class="flash_notification">
+    <span id="flash_ok_content" class="content">
+      
+    </span>
+    <div id="flash_detail_ok" class="detail" style="display: none">
+      <span id="flash_ok_detail"></span>
+      <a href="#" style="float:left" onclick='$("#flash_detail_ok").hide()' class="icon-close">&#10005;</a>
+    </div>
+  </div><!-- /.flash_notification -->
+</div>
+</div>
+
+
+
+<h1>Liste der Steuerzonen</h1>
+
+<div class="wrapper">
+<table class="tbl-list" id="taxzone_list">
+  <thead>
+    <tr>
+      <th class="center"><img src="image/updown.png" alt="Eintrag umsortieren"></th>
+      <th>Beschreibung</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr id="tzone_id_4">
+      <td class="center dragdrop"><img src="image/updown.png" alt="Eintrag umsortieren"></td>
+      <td><a href="controller.pl?action=Taxzones%2fedit&id=4">Inland</a></td>
+    </tr>
+    <tr id="tzone_id_1">
+      <td class="center dragdrop"><img src="image/updown.png" alt="Eintrag umsortieren"></td>
+      <td><a href="controller.pl?action=Taxzones%2fedit&id=1">EU mit USt-ID Nummer</a></td>
+    </tr>
+    <tr id="tzone_id_2">
+      <td class="center dragdrop"><img src="image/updown.png" alt="Eintrag umsortieren"></td>
+      <td><a href="controller.pl?action=Taxzones%2fedit&id=2">EU ohne USt-ID Nummer</a></td>
+    </tr>
+    <tr id="tzone_id_3">
+      <td class="center dragdrop"><img src="image/updown.png" alt="Eintrag umsortieren"></td>
+      <td><a href="controller.pl?action=Taxzones%2fedit&id=3">Außerhalb EU</a></td>
+    </tr>
+  </tbody>
+</table>
+
+
+<script type="text/javascript">
+  $(function() {
+    $( "#taxzone_list tbody" ).sortable({ helper:     function(event, ui) {
+      ui.children().each(function() {
+        $(this).width($(this).width());
+      });
+      return ui;
+    }
+, distance: 5, stop:       function(event, ui) {
+                $.post('controller.pl?action=Taxzones%2freorder', { 'tzone_id[]': $($('#taxzone_list tbody').sortable('toArray')).filter(function(idx) { return this.substr(0, 8) == 'tzone_id'; }).map(function(idx, str) { return str.replace('tzone_id_', ''); }).toArray() }, );
+        $('#taxzone_list tbody>*:odd').removeClass('listrow1').removeClass('listrow0').addClass('listrow0');
+        $('#taxzone_list tbody>*:even').removeClass('listrow1').removeClass('listrow0').addClass('listrow1');
+
+        return ui;
+      }
+, handle: '.dragdrop' })
+  });
+</script>
+
+
+</div>
+</div><script type='text/javascript'>
+
+
+kivi.myconfig = {"timeformat":"hh:mm","tel":"","follow_up_notify_by_email":1,"phone_extension":"","stylesheet":"design40.css","numberformat":"1.000,00","login":"dirk","dbname":null,"dateformat":"dd.mm.yy","menustyle":"neu","id":2,"signature":"","fax":"","name":"Dirk","countrycode":"de","css_path":"css","phone_password":"","email":"","mandatory_departments":"0"};
+$(function() {
+  $.datepicker.setDefaults(
+    $.extend({}, $.datepicker.regional[kivi.myconfig.countrycode], {
+      dateFormat: kivi.myconfig.dateformat.replace(/d+/gi, 'dd').replace(/m+/gi, 'mm').replace(/y+/gi, 'yy'),
+      showOn: "button",
+      showButtonPanel: true,
+      changeMonth: true,
+      changeYear: true,
+      buttonImage: "image/calendar.png",
+      buttonImageOnly: true
+  }));
+
+  kivi.setup_formats({
+    numbers: kivi.myconfig.numberformat,
+    dates:   kivi.myconfig.dateformat,
+    times:   kivi.myconfig.timeformat
+  });
+
+  kivi.reinit_widgets();
+
+
+  $(document).ajaxSend(function() {
+    $('#ajax-spinner').show();
+  }).ajaxStop(function() {
+    $('#ajax-spinner').hide();
+  });
+
+});
+
+
+;   DHTMLSuite.createStandardObjects();
+  DHTMLSuite.configObj.setImagePath('image/dhtmlsuite/');
+  var menu_model = new DHTMLSuite.menuModel();
+  menu_model.addItemsFromMarkup('main_menu_model');
+  menu_model.init();
+  var menu_bar = new DHTMLSuite.menuBar();
+  menu_bar.addMenuItems(menu_model);
+  menu_bar.setTarget('main_menu_div');
+  menu_bar.init();
+; $('#action5740594').data('action', {"link":"controller.pl?action=Taxzones%2fnew"});</script>
+ </body>
+</html>

@@ -1,0 +1,68 @@
+{
+    "HuSerienbriefView": {
+        "title": "HU Notifications",
+        "subtitle": "Customers with upcoming vehicle inspection",
+        "vorlauf": "Lead time: {monate} months",
+        "fields": {
+            "customer_name": "Customer",
+            "kennzeichen": "License Plate",
+            "hu_datum": "HU Date",
+            "telefon": "Phone",
+            "email": "Email",
+            "fahrzeug": "Vehicle",
+            "actions": "Actions",
+            "date_from": "HU due from",
+            "date_to": "HU due until"
+        },
+        "buttons": {
+            "print_all": "Print selected",
+            "email_all": "Send Email",
+            "reload": "Reload",
+            "exclude": "Exclude",
+            "include": "Include again",
+            "send_pin": "Send via PIN",
+            "whatsapp_all": "Send WhatsApp"
+        },
+        "checkboxes": {
+            "show_excluded": "Show excluded as well"
+        },
+        "chips": {
+            "excluded": "Excluded",
+            "results_count": "customers"
+        },
+        "filter": {
+            "title": "Period"
+        },
+        "table": {
+            "no_results": "No customers with upcoming HU found in the configured timeframe.",
+            "no_results_hint": "Check the lead time setting under LXCars configuration."
+        },
+        "whatsapp": {
+            "message": "Hello {name}, the HU for your vehicle ({kennzeichen}) expires on {hu_datum}. Please schedule an appointment. Best regards"
+        },
+        "toasts": {
+            "error_loading": "Error loading HU list.",
+            "excluded_success": "Customer has been excluded.",
+            "included_success": "Customer has been included again.",
+            "exclude_error": "Error saving.",
+            "email_sent": "Email has been sent.",
+            "email_error": "Error sending email.",
+            "pdf_error": "Error generating PDF.",
+            "sftp_success": "PDF has been sent via eLetter successfully.",
+            "sftp_error": "Error sending via eLetter.",
+            "whatsapp_sent": "WhatsApp message has been sent.",
+            "whatsapp_error": "Error sending WhatsApp message.",
+            "whatsapp_bulk_sent": "{sent} WhatsApp messages sent, {failed} failed.",
+            "whatsapp_no_phone": "None of the selected customers have a phone number."
+        },
+        "tooltips": {
+            "whatsapp_single": "Send HU reminder via WhatsApp",
+            "exclude": "Exclude customer from HU notifications",
+            "include": "Include customer in HU notifications again"
+        },
+        "dialogs": {
+            "confirm_exclude_title": "Exclude Customer",
+            "confirm_exclude_text": "This customer will be permanently removed from the HU notification list. Do you want to continue?"
+        }
+    }
+}

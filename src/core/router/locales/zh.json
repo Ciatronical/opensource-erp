@@ -1,0 +1,75 @@
+{
+    "routes": {
+        "mainmenu": "/hauptmen%C3%BC",
+        "customer": "/kunde",
+        "editCustomer": "/kunde/bearbeiten",
+        "editVendor": "/lieferant/bearbeiten",
+        "viewInvoice": "/rechnung/anzeigen",
+        "editQuotation": "/angebot/bearbeiten",
+        "editOrder": "/auftrag/bearbeiten",
+        "newCustomer": "/kunde/neu",
+        "newVendor": "/lieferant/neu",
+        "newQuotation": "/angebot/neu",
+        "newOrder": "/auftrag/neu",
+        "newInvoice": "/rechnung/neu",
+        "manageCustomers": "/kunde",
+        "manageVendors": "/lieferant",
+        "manageArticles": "/artikel",
+        "manageQuotations": "/angebot",
+        "manageOrders": "/auftrag",
+        "manageInvoices": "/rechnung",
+        "manageCreditNotes": "/gutschrift",
+        "manageDeliveryOrders": "/lieferschein",
+        "orderSearch": "/auftrag/suche",
+        "search": "/suche",
+        "searchCustomers": "/kunde/suche",
+        "followUp": "/wiedervorlage",
+        "clientConfig": "/system/mandantenkonfiguration",
+        "developerTools": "/system/developer-tools",
+        "systemUpdate": "/system/aktualisierung",
+        "currentCustomerEdit": "/kunde/bearbeiten",
+        "callHistory": "/anrufliste",
+        "calendar": "/kalender",
+        "wiki": "/wiki",
+        "wikiNew": "/wiki/neu",
+        "wikiCategories": "/wiki/kategorien",
+        "wikiEdit": "/wiki/bearbeiten",
+        "userConfig": "/benutzer/konfiguration",
+        "huSerienbrief": "/serienbrief/hu",
+        "wallDisplay": "/wandanzeige"
+    },
+    "errors": {
+        "PASSWORD_FILE_NOT_FOUND": "错误：未找到密码文件 api/config/api.passwd.php。请将文件 api/config/api.passwd.php.example 重命名为 api/config/api.passwd.php 并相应调整设置。",
+        "CONFIG_FILE_NOT_FOUND": "错误：未找到配置文件。请检查设置。"
+    },
+    "MasterDataMenu": {
+        "title": "主数据",
+        "editCustomer": "编辑客户数据",
+        "newCustomer": "新建客户",
+        "manageCustomers": "管理客户",
+        "search": "搜索",
+        "searchCustomers": "搜索客户",
+        "newVendor": "新建供应商",
+        "calendar": "日历"
+    },
+    "ContactMenu": {
+        "title": "联系",
+        "callHistory": "通话记录",
+        "emails": "电子邮件",
+        "whatsapp": "WhatsApp"
+    },
+    "SalesMenu": {
+        "title": "销售",
+        "newQuotation": "新建报价单",
+        "newOrder": "新建订单",
+        "newInvoice": "新建发票",
+        "manageCreditNotes": "贷项通知单"
+    },
+    "SystemMenu": {
+        "title": "系统",
+        "clientConfig": "公司配置",
+        "developerTools": "开发者工具",
+        "systemUpdate": "系统更新",
+        "about": "关于"
+    }
+}

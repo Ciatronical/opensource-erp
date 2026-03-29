@@ -1,0 +1,75 @@
+{
+    "routes": {
+        "mainmenu": "/hauptmen%C3%BC",
+        "customer": "/kunde",
+        "editCustomer": "/kunde/bearbeiten",
+        "editVendor": "/lieferant/bearbeiten",
+        "viewInvoice": "/rechnung/anzeigen",
+        "editQuotation": "/angebot/bearbeiten",
+        "editOrder": "/auftrag/bearbeiten",
+        "newCustomer": "/kunde/neu",
+        "newVendor": "/lieferant/neu",
+        "newQuotation": "/angebot/neu",
+        "newOrder": "/auftrag/neu",
+        "newInvoice": "/rechnung/neu",
+        "manageCustomers": "/kunde",
+        "manageVendors": "/lieferant",
+        "manageArticles": "/artikel",
+        "manageQuotations": "/angebot",
+        "manageOrders": "/auftrag",
+        "manageInvoices": "/rechnung",
+        "manageCreditNotes": "/gutschrift",
+        "manageDeliveryOrders": "/lieferschein",
+        "orderSearch": "/auftrag/suche",
+        "search": "/suche",
+        "searchCustomers": "/kunde/suche",
+        "followUp": "/wiedervorlage",
+        "clientConfig": "/system/mandantenkonfiguration",
+        "developerTools": "/system/developer-tools",
+        "systemUpdate": "/system/aktualisierung",
+        "currentCustomerEdit": "/kunde/bearbeiten",
+        "callHistory": "/anrufliste",
+        "calendar": "/kalender",
+        "wiki": "/wiki",
+        "wikiNew": "/wiki/neu",
+        "wikiCategories": "/wiki/kategorien",
+        "wikiEdit": "/wiki/bearbeiten",
+        "userConfig": "/benutzer/konfiguration",
+        "huSerienbrief": "/serienbrief/hu",
+        "wallDisplay": "/wandanzeige"
+    },
+    "errors": {
+        "PASSWORD_FILE_NOT_FOUND": "Errore: Il file della password api/config/api.passwd.php non è stato trovato. Rinominare il file api/config/api.passwd.php.example in api/config/api.passwd.php e regolare le impostazioni.",
+        "CONFIG_FILE_NOT_FOUND": "Errore: Il file di configurazione non è stato trovato. Verificare le impostazioni."
+    },
+    "MasterDataMenu": {
+        "title": "Dati anagrafici",
+        "editCustomer": "Modifica dati cliente",
+        "newCustomer": "Crea nuovo cliente",
+        "manageCustomers": "Gestisci clienti",
+        "search": "Cerca",
+        "searchCustomers": "Cerca clienti",
+        "newVendor": "Crea nuovo fornitore",
+        "calendar": "Calendario"
+    },
+    "ContactMenu": {
+        "title": "Contatto",
+        "callHistory": "Cronologia chiamate",
+        "emails": "E-mail",
+        "whatsapp": "WhatsApp"
+    },
+    "SalesMenu": {
+        "title": "Vendite",
+        "newQuotation": "Crea nuovo preventivo",
+        "newOrder": "Crea nuovo ordine",
+        "newInvoice": "Crea nuova fattura",
+        "manageCreditNotes": "Note di credito"
+    },
+    "SystemMenu": {
+        "title": "Sistema",
+        "clientConfig": "Configurazione azienda",
+        "developerTools": "Strumenti di sviluppo",
+        "systemUpdate": "Aggiornamento del sistema",
+        "about": "Informazioni"
+    }
+}

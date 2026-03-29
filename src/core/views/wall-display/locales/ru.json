@@ -1,0 +1,20 @@
+{
+    "WallDisplay": {
+        "calendar": "Календарь",
+        "faktura": "Документ",
+        "noFaktura": "Документ не выбран",
+        "noFakturaHint": "Нажмите кнопку монитора в фактуре",
+        "invoice": "Счет",
+        "order": "Заказ",
+        "quotation": "Предложение",
+        "open": "Открыто",
+        "closed": "Завершено",
+        "position": "Поз.",
+        "description": "Описание",
+        "qty": "Количество",
+        "price": "Цена",
+        "total": "Итого",
+        "grossTotal": "Общая сумма",
+        "allDay": "Весь день"
+    }
+}

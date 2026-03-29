@@ -1,0 +1,179 @@
+{
+    "FollowUpView": {
+        "title": "Нагадування",
+        "search": "Пошук...",
+        "fromDate": "Від",
+        "toDate": "До",
+        "showDone": "Показати виконані",
+        "tabs": {
+            "board": "Дошка",
+            "list": "Список",
+            "calendar": "Календар"
+        },
+        "actions": {
+            "create": "Нове нагадування",
+            "cancel": "Скасувати",
+            "delete": "Видалити",
+            "save": "Зберегти",
+            "edit": "Редагувати",
+            "markDone": "Виконано",
+            "markUndone": "Відкрити знову",
+            "close": "Закрити"
+        },
+        "columns": {
+            "overdue": "Прострочено",
+            "today": "Сьогодні",
+            "upcoming": "Майбутні",
+            "done": "Виконано"
+        },
+        "confirmDelete": {
+            "title": "Видалити нагадування?",
+            "message": "Ви дійсно бажаєте видалити це нагадування? Цю дію не можна скасувати."
+        },
+        "messages": {
+            "loadError": "Помилка завантаження нагадувань",
+            "saved": "Нагадування збережено",
+            "saveError": "Помилка збереження",
+            "deleted": "Нагадування видалено",
+            "deletedMultiple": "{count} нагадувань видалено",
+            "markedDone": "Позначено як виконане",
+            "markedUndone": "Знову відкрито",
+            "error": "Виникла помилка"
+        }
+    },
+    "FollowUpCard": {
+        "noSubject": "Без теми",
+        "today": "Сьогодні",
+        "tomorrow": "Завтра",
+        "daysAgo": "{days} днів тому",
+        "inDays": "через {days} днів",
+        "markDone": "Позначити як виконане",
+        "markUndone": "Відкрити знову",
+        "delete": "Видалити"
+    },
+    "FollowUpDialog": {
+        "titleCreate": "Нове нагадування",
+        "titleEdit": "Редагувати нагадування",
+        "date": "Дата",
+        "subject": "Тема",
+        "body": "Нотатка",
+        "assignedEmployees": "Призначено",
+        "linkSection": "Прив'язка (необов'язково)",
+        "linkType": "Тип прив'язки",
+        "linkId": "ID",
+        "linkInfo": "Позначення",
+        "searchCustomer": "Шукати клієнта",
+        "searchVendor": "Шукати постачальника",
+        "searchQuotation": "Шукати пропозицію",
+        "searchOrder": "Шукати замовлення",
+        "searchDeliveryOrder": "Шукати накладну",
+        "searchInvoice": "Шукати рахунок",
+        "searchRequestQuotation": "Шукати запит",
+        "searchPurchaseOrder": "Шукати замовлення постачальнику",
+        "searchPurchaseDeliveryOrder": "Шукати надходження товару",
+        "searchPurchaseInvoice": "Шукати вхідний рахунок",
+        "search": "Шукати",
+        "noResults": "Результатів не знайдено",
+        "startTyping": "Введіть пошуковий запит...",
+        "cancel": "Скасувати",
+        "save": "Зберегти",
+        "quickDate": {
+            "today": "Сьогодні",
+            "tomorrow": "Завтра",
+            "nextWeek": "+1 тиждень",
+            "twoWeeks": "+2 тижні",
+            "nextMonth": "+1 місяць"
+        },
+        "linkTypes": {
+            "customer": "Клієнт",
+            "vendor": "Постачальник",
+            "salesQuotation": "Пропозиція",
+            "salesOrder": "Замовлення",
+            "salesDeliveryOrder": "Накладна",
+            "salesInvoice": "Рахунок",
+            "purchaseQuotation": "Запит",
+            "purchaseOrder": "Замовлення постачальнику",
+            "purchaseDeliveryOrder": "Надходження товару",
+            "purchaseInvoice": "Вхідний рахунок"
+        },
+        "validation": {
+            "required": "Обов'язкове поле"
+        }
+    },
+    "FollowUpList": {
+        "done": "Виконано",
+        "open": "Відкрито",
+        "today": "Сьогодні",
+        "tomorrow": "Завтра",
+        "markDone": "Позначити як виконане",
+        "markUndone": "Відкрити знову",
+        "edit": "Редагувати",
+        "delete": "Видалити",
+        "entry": "Запис",
+        "entries": "Записи",
+        "deleteAll": "Видалити всі показані",
+        "deleteAllConfirmTitle": "Видалити всі нагадування?",
+        "deleteAllConfirmText": "Ви дійсно бажаєте видалити всі {count} показаних нагадувань?",
+        "deleteAllWarning": "Цю дію не можна скасувати!",
+        "deleteAllConfirm": "Видалити всі",
+        "cancel": "Скасувати",
+        "headers": {
+            "date": "Дата",
+            "subject": "Тема",
+            "link": "Прив'язка",
+            "assignedTo": "Призначено",
+            "status": "Статус",
+            "actions": "Дії"
+        }
+    },
+    "FollowUpCalendar": {
+        "today": "Сьогодні",
+        "month": "Місяць",
+        "week": "Тиждень",
+        "day": "День",
+        "allDay": "Весь день",
+        "noSubject": "Без теми",
+        "newFollowUp": "Нове нагадування",
+        "subject": "Тема",
+        "subjectPlaceholder": "Що потрібно зробити?",
+        "note": "Нотатка",
+        "notePlaceholder": "Додаткова інформація...",
+        "cancel": "Скасувати",
+        "create": "Створити",
+        "done": "Виконано",
+        "reopen": "Відкрити",
+        "edit": "Редагувати",
+        "links": "Прив'язки",
+        "details": "Деталі",
+        "assignedTo": "Призначено",
+        "linkedTo": "Прив'язано до",
+        "close": "Закрити",
+        "markDone": "Позначити як виконане",
+        "markUndone": "Відкрити знову",
+        "editFollowUp": "Редагувати",
+        "deleteFollowUp": "Видалити",
+        "more": "ще",
+        "weekDays": {
+            "mon": "Пн",
+            "tue": "Вт",
+            "wed": "Ср",
+            "thu": "Чт",
+            "fri": "Пт",
+            "sat": "Сб",
+            "sun": "Нд"
+        }
+    },
+    "FollowUpWidget": {
+        "title": "Нагадування",
+        "overdue": "Прострочено",
+        "today": "Сьогодні",
+        "tomorrow": "Завтра",
+        "upcoming": "Майбутні",
+        "noItems": "Немає відкритих нагадувань",
+        "showAll": "Показати всі {count}",
+        "markDone": "Позначити як виконане",
+        "quickAdd": "Швидке додавання",
+        "openAll": "Відкрити всі",
+        "daysAgo": "{days} днів тому"
+    }
+}

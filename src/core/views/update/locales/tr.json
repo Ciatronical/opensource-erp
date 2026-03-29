@@ -1,0 +1,50 @@
+{
+    "update": {
+        "title": "Sistem guncellemesi",
+        "description": "Burada tum firma veritabanlari ve kimlik dogrulama veritabani yedeklenip guncellenecektir.",
+        "messages": "Mesajlar",
+        "sqlStatements": "SQL ifadeleri",
+        "errors": "Hatalar",
+        "dryRunSuccess": "Onizleme basariyla yuklendi.",
+        "updateSuccess": "Tum veritabanlari basariyla guncellendi.",
+        "gitPull": "Git Pull",
+        "gitPullSuccess": "Git Pull basarili",
+        "gitPullFailed": "Git Pull basarisiz",
+        "authDatabase": "Kimlik dogrulama veritabani",
+        "authBackup": "Kimlik dogrulama yedegi",
+        "clientDatabase": "Firma: {name}",
+        "clientDbName": "Veritabani: {dbname}",
+        "backupSuccess": "Yedek olusturuldu: {filename}",
+        "backupFailed": "Yedekleme basarisiz",
+        "backupSkipped": "Dry-Run modunda yedek olusturulmaz",
+        "features": "Ozellikler: {features}",
+        "noClients": "Firma bulunamadi.",
+        "overallSuccess": "Tum veritabanlari basariyla guncellendi",
+        "overallFailed": "Guncelleme hatasi",
+        "buttons": {
+            "dryRun": "Onizleme",
+            "checking": "Kontrol ediliyor...",
+            "update": "Guncellemeyi calistir",
+            "updating": "Guncelleniyor...",
+            "finish": "Tamamlandi"
+        },
+        "errorMessages": {
+            "dryRunFailed": "Onizleme basarisiz.",
+            "updateFailed": "Guncelleme basarisiz.",
+            "networkError": "Guncelleme sirasinda ag hatasi."
+        },
+        "schemaMessages": {
+            "dry_run_mode": "Onizleme modu - Degisiklik yapilmayacak",
+            "columns_added": "Tablo {table}: {count} sutun eklenecek | Tablo {table}: {count} sutun eklendi",
+            "column_added": "Sutun '{column}' eklenecek | Sutun '{column}' eklendi",
+            "table_up_to_date": "Tablo {table}: Tum sutunlar mevcut",
+            "table_created": "Tablo {table} olusturulacak | Tablo {table} olusturuldu",
+            "version_updated": "Surum {version}, {schema} veritabanina kaydedildi",
+            "object_exists": "{object_type} {name} zaten mevcut",
+            "statement_executed": "{statement_type} {target} calistirildi",
+            "csv_skipped": "CSV atlandi: {table} ({reason})",
+            "csv_imported": "CSV iceri aktarildi: {table} ({rows_imported} satir)",
+            "info": "{text}"
+        }
+    }
+}

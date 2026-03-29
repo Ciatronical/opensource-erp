@@ -1,0 +1,41 @@
+{
+    "NavbarView": {
+        "logoutTooltip": "Logi välja",
+        "accountTooltip": "Konto",
+        "editCustomerTooltip": "Muuda klienti",
+        "editCvTooltip": "Muuda klienti/tarnijat",
+        "currentC": "Klient:",
+        "currentV": "Tarnija:",
+        "openInNewTabTooltip": "Peamenüü",
+        "newTabTooltip": "Ava uues vahelehes",
+        "calendarTooltip": "Kalender",
+        "callHistoryTooltip": "Kõnede ajalugu",
+        "userConfig": "Seadistamine",
+        "switchClient": "Vaheta ettevõtet",
+        "uploadLogo": "Ettevõtte logo",
+        "selectImage": "Vali pilt",
+        "logoHint": "Valige pilt, paigutage ja lõigake",
+        "saveLogo": "Salvesta",
+        "deleteLogo": "Eemalda",
+        "cancel": "Tühista"
+    },
+    "GlobalSearch": {
+        "placeholder": "Otsi...",
+        "noResults": "Tulemused puuduvad",
+        "customers": "Kliendid",
+        "vendors": "Tarnijad",
+        "invoices": "Arved",
+        "orders": "Tellimused",
+        "quotations": "Pakkumised",
+        "articles": "Artiklid",
+        "vehicles": "Sõidukid",
+        "wiki": "Wiki artiklid",
+        "recentlyVisited": "Hiljuti külastatud",
+        "clearHistory": "Kustuta ajalugu"
+    },
+    "InfoBar": {
+        "unknownCaller": "Tundmatu",
+        "closeAll": "Sulge kõik teavitused",
+        "pendingParts": "Varuosad tellitud"
+    }
+}

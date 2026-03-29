@@ -1,0 +1,83 @@
+{
+    "WikiMenu": {
+        "title": "Wiki",
+        "newPage": "Naujas straipsnis",
+        "allPages": "Visi straipsniai",
+        "categories": "Kategorijos"
+    },
+    "WikiListView": {
+        "title": "Wiki - Žinių bazė",
+        "newPage": "Naujas straipsnis",
+        "search": "Ieškoti straipsnių...",
+        "allCategories": "Visi",
+        "noPages": "Straipsnių dar nėra.",
+        "noPagesHint": "Sukurkite savo pirmą wiki straipsnį.",
+        "headers": {
+            "title": "Pavadinimas",
+            "category": "Kategorija",
+            "author": "Autorius",
+            "updated": "Paskutinis atnaujinimas",
+            "kba": "KBA"
+        },
+        "confirmDelete": "Ar tikrai ištrinti straipsnį \"{title}\"?",
+        "deleted": "Straipsnis ištrintas.",
+        "deleteError": "Klaida trinant."
+    },
+    "WikiReadView": {
+        "title": "Wiki straipsnis",
+        "edit": "Redaguoti",
+        "back": "Grįžti į apžvalgą",
+        "revisions": "Versijos",
+        "createdBy": "Sukūrė",
+        "updatedBy": "Paskutinį kartą redagavo",
+        "kbaLabel": "KBA priskyrimas",
+        "notFound": "Straipsnis nerastas.",
+        "loadError": "Klaida kraunant straipsnį."
+    },
+    "WikiEditView": {
+        "titleNew": "Naujas wiki straipsnis",
+        "titleEdit": "Redaguoti wiki straipsnį",
+        "fieldTitle": "Pavadinimas",
+        "fieldCategory": "Kategorija",
+        "fieldContent": "Turinys",
+        "fieldKbaHsn": "HSN",
+        "fieldKbaTsn": "TSN (pirmi 3 simboliai)",
+        "kbaSection": "KBA priskyrimas (neprivaloma)",
+        "save": "Išsaugoti",
+        "cancel": "Atšaukti",
+        "saved": "Straipsnis išsaugotas.",
+        "saveError": "Klaida saugant.",
+        "missingTitle": "Įveskite pavadinimą.",
+        "revisions": "Versijų istorija",
+        "noRevisions": "Senesnių versijų nėra.",
+        "restore": "Atkurti",
+        "confirmRestore": "Ar atkurti versiją nuo {date}?",
+        "restored": "Versija atkurta.",
+        "restoreError": "Klaida atkuriant.",
+        "statusSaving": "Saugoma...",
+        "statusSaved": "Išsaugota",
+        "statusUnsaved": "Neišsaugota",
+        "statusError": "Saugojimo klaida",
+        "back": "Atgal",
+        "newCategory": "Nauja kategorija",
+        "createCategory": "Sukurti"
+    },
+    "WikiCategoriesView": {
+        "title": "Wiki kategorijos",
+        "newCategory": "Nauja kategorija",
+        "name": "Pavadinimas",
+        "sortkey": "Rikiavimas",
+        "pageCount": "Straipsniai",
+        "save": "Išsaugoti",
+        "cancel": "Atšaukti",
+        "edit": "Redaguoti",
+        "delete": "Ištrinti",
+        "noCategories": "Kategorijų dar nėra.",
+        "confirmDelete": "Ar tikrai ištrinti kategoriją \"{name}\"?",
+        "saved": "Kategorija išsaugota.",
+        "deleted": "Kategorija ištrinta.",
+        "saveError": "Klaida saugant.",
+        "deleteError": "Klaida trinant.",
+        "sortUpdated": "Tvarka atnaujinta."
+    }
+}

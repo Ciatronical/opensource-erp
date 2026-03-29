@@ -1,0 +1,41 @@
+{
+    "OrderSearchView": {
+        "title": "Hledani objednavek",
+        "fields": {
+            "ordnumber": "Cislo objednavky",
+            "customer_name": "Jmeno zakaznika",
+            "transaction_description": "Popis",
+            "first_instruction": "Popis",
+            "location": "Lokace",
+            "status": "Stav",
+            "transdate_from": "Datum od",
+            "transdate_to": "Datum do",
+            "bringetermin_from": "Termin dodani od",
+            "bringetermin_to": "Termin dodani do",
+            "amount_from": "Castka od",
+            "amount_to": "Castka do",
+            "employee": "Zpracovatel",
+            "transdate": "Datum",
+            "bringetermin": "Termin dodani",
+            "amount": "Castka",
+            "cusordnumber": "Cislo zakaznicke objednavky",
+            "hersteller": "Vyrobce"
+        },
+        "buttons": {
+            "search": "Hledat",
+            "reset": "Resetovat"
+        },
+        "table": {
+            "title": "Vysledky hledani",
+            "text_no_search_table_shown": "Zadejte prosim kriteria hledani a stisknete ENTER nebo \"Hledat\". Vysledky se zobrazi zde.",
+            "text_no_results": "Zadne objednavky nenalezeny.",
+            "results_count": "Vysledky"
+        },
+        "alerts": {
+            "warning_no_search_criteria": "Nebyla zadana zadna kriteria hledani. Chcete opravdu nacist vsechny objednavky?"
+        },
+        "toasts": {
+            "error_loading_search_results": "Chyba pri nacitani vysledku hledani."
+        }
+    }
+}

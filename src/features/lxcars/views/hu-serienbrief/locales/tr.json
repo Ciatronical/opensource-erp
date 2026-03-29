@@ -1,0 +1,68 @@
+{
+    "HuSerienbriefView": {
+        "title": "Muayene bildirimleri",
+        "subtitle": "Muayenesi yaklasan musteriler",
+        "vorlauf": "On sure: {monate} ay",
+        "fields": {
+            "customer_name": "Musteri",
+            "kennzeichen": "Plaka",
+            "hu_datum": "Muayene tarihi",
+            "telefon": "Telefon",
+            "email": "E-posta",
+            "fahrzeug": "Arac",
+            "actions": "Islemler",
+            "date_from": "Muayene vadesi baslangic",
+            "date_to": "Muayene vadesi bitis"
+        },
+        "buttons": {
+            "print_all": "Secilenleri yazdir",
+            "email_all": "E-posta gonder",
+            "reload": "Yenile",
+            "exclude": "Cikar",
+            "include": "Tekrar dahil et",
+            "send_pin": "PIN ile gonder",
+            "whatsapp_all": "WhatsApp gonder"
+        },
+        "checkboxes": {
+            "show_excluded": "Cikarilanlari da goster"
+        },
+        "chips": {
+            "excluded": "Cikarildi",
+            "results_count": "Musteri"
+        },
+        "filter": {
+            "title": "Donem"
+        },
+        "table": {
+            "no_results": "Yapilandirilan donemde muayenesi yaklasan musteri bulunamadi.",
+            "no_results_hint": "LXCars ayarlarinda on sure yapilandirmasini kontrol edin."
+        },
+        "whatsapp": {
+            "message": "Merhaba {name}, aracinizin ({kennzeichen}) muayenesi {hu_datum} tarihinde sona eriyor. Lutfen randevu alin. Saygilarimla"
+        },
+        "toasts": {
+            "error_loading": "Muayene listesi yuklenirken hata.",
+            "excluded_success": "Musteri cikarildi.",
+            "included_success": "Musteri tekrar dahil edildi.",
+            "exclude_error": "Kaydetme hatasi.",
+            "email_sent": "E-posta gonderildi.",
+            "email_error": "E-posta gonderme hatasi.",
+            "pdf_error": "PDF olusturma hatasi.",
+            "sftp_success": "PDF basariyla eLetter ile gonderildi.",
+            "sftp_error": "eLetter ile gonderme hatasi.",
+            "whatsapp_sent": "WhatsApp mesaji gonderildi.",
+            "whatsapp_error": "WhatsApp mesaji gonderme hatasi.",
+            "whatsapp_bulk_sent": "{sent} WhatsApp mesaji gonderildi, {failed} basarisiz.",
+            "whatsapp_no_phone": "Secilen musterilerin hicbirinin telefon numarasi yok."
+        },
+        "tooltips": {
+            "whatsapp_single": "WhatsApp ile muayene hatirlatmasi gonder",
+            "exclude": "Musteriyi muayene bildirimlerinden cikar",
+            "include": "Musteriyi tekrar muayene bildirimlerine dahil et"
+        },
+        "dialogs": {
+            "confirm_exclude_title": "Musteriyi cikar",
+            "confirm_exclude_text": "Bu musteri kalici olarak muayene bildirim listesinden cikarilacaktir. Devam etmek istiyor musunuz?"
+        }
+    }
+}

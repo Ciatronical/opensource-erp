@@ -1,0 +1,68 @@
+{
+    "HuSerienbriefView": {
+        "title": "TA paziņojumi",
+        "subtitle": "Klienti ar termiņu tehniskajai apskatei",
+        "vorlauf": "Priekšlaiks: {monate} mēneši",
+        "fields": {
+            "customer_name": "Klients",
+            "kennzeichen": "Numura zīme",
+            "hu_datum": "TA datums",
+            "telefon": "Tālrunis",
+            "email": "E-pasts",
+            "fahrzeug": "Transportlīdzeklis",
+            "actions": "Darbības",
+            "date_from": "TA termiņš no",
+            "date_to": "TA termiņš līdz"
+        },
+        "buttons": {
+            "print_all": "Drukāt izvēlētos",
+            "email_all": "Nosūtīt e-pastu",
+            "reload": "Atjaunināt",
+            "exclude": "Izslēgt",
+            "include": "Iekļaut atpakaļ",
+            "send_pin": "Nosūtīt ar PIN",
+            "whatsapp_all": "Nosūtīt WhatsApp"
+        },
+        "checkboxes": {
+            "show_excluded": "Rādīt arī izslēgtos"
+        },
+        "chips": {
+            "excluded": "Izslēgts",
+            "results_count": "Klienti"
+        },
+        "filter": {
+            "title": "Laika periods"
+        },
+        "table": {
+            "no_results": "Nav klientu ar TA termiņu konfigurētajā laika periodā.",
+            "no_results_hint": "Pārbaudiet priekšlaiku iestatījumos sadaļā LXCars."
+        },
+        "whatsapp": {
+            "message": "Sveiki {name}, jūsu transportlīdzekļa ({kennzeichen}) TA beidzas {hu_datum}. Lūdzu piesakieties vizītei. Ar cieņu"
+        },
+        "toasts": {
+            "error_loading": "Kļūda ielādējot TA sarakstu.",
+            "excluded_success": "Klients izslēgts.",
+            "included_success": "Klients iekļauts atpakaļ.",
+            "exclude_error": "Kļūda saglabājot.",
+            "email_sent": "E-pasts nosūtīts.",
+            "email_error": "Kļūda nosūtot e-pastu.",
+            "pdf_error": "Kļūda veidojot PDF.",
+            "sftp_success": "PDF veiksmīgi nosūtīts ar eLetter.",
+            "sftp_error": "Kļūda nosūtot ar eLetter.",
+            "whatsapp_sent": "WhatsApp ziņojums nosūtīts.",
+            "whatsapp_error": "Kļūda nosūtot WhatsApp ziņojumu.",
+            "whatsapp_bulk_sent": "{sent} WhatsApp ziņojumi nosūtīti, {failed} neizdevās.",
+            "whatsapp_no_phone": "Nevienam no izvēlētajiem klientiem nav tālruņa numura."
+        },
+        "tooltips": {
+            "whatsapp_single": "Nosūtīt TA atgādinājumu pa WhatsApp",
+            "exclude": "Izslēgt klientu no TA paziņojumiem",
+            "include": "Iekļaut klientu atpakaļ TA paziņojumos"
+        },
+        "dialogs": {
+            "confirm_exclude_title": "Izslēgt klientu",
+            "confirm_exclude_text": "Šis klients tiks pastāvīgi izslēgts no TA paziņojumu saraksta. Vai vēlaties turpināt?"
+        }
+    }
+}

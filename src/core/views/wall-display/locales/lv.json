@@ -1,0 +1,20 @@
+{
+    "WallDisplay": {
+        "calendar": "Kalendārs",
+        "faktura": "Dokuments",
+        "noFaktura": "Nav izvēlēts dokuments",
+        "noFakturaHint": "Noklikšķiniet rēķina skatā uz monitora pogu",
+        "invoice": "Rēķins",
+        "order": "Pasūtījums",
+        "quotation": "Piedāvājums",
+        "open": "Atvērts",
+        "closed": "Slēgts",
+        "position": "Poz.",
+        "description": "Apraksts",
+        "qty": "Daudzums",
+        "price": "Cena",
+        "total": "Kopā",
+        "grossTotal": "Kopsumma",
+        "allDay": "Visa diena"
+    }
+}

@@ -1,0 +1,41 @@
+{
+    "NavbarView": {
+        "logoutTooltip": "Log ud",
+        "accountTooltip": "Konto",
+        "editCustomerTooltip": "Rediger kunde",
+        "editCvTooltip": "Rediger kunde/leverandoer",
+        "currentC": "Kunde:",
+        "currentV": "Leverandoer:",
+        "openInNewTabTooltip": "Hovedmenu",
+        "newTabTooltip": "Abn i ny fane",
+        "calendarTooltip": "Kalender",
+        "callHistoryTooltip": "Opkaldsliste",
+        "userConfig": "Konfiguration",
+        "switchClient": "Skift firma",
+        "uploadLogo": "Firmalogo",
+        "selectImage": "Vaelg billede",
+        "logoHint": "Vaelg billede, positioner og beskaer",
+        "saveLogo": "Gem",
+        "deleteLogo": "Fjern",
+        "cancel": "Annuller"
+    },
+    "GlobalSearch": {
+        "placeholder": "Soeg...",
+        "noResults": "Ingen resultater",
+        "customers": "Kunder",
+        "vendors": "Leverandoerer",
+        "invoices": "Fakturaer",
+        "orders": "Ordrer",
+        "quotations": "Tilbud",
+        "articles": "Artikler",
+        "vehicles": "Koeretoejer",
+        "wiki": "Wiki-artikler",
+        "recentlyVisited": "Senest besoegt",
+        "clearHistory": "Ryd historik"
+    },
+    "InfoBar": {
+        "unknownCaller": "Ukendt",
+        "closeAll": "Luk alle notifikationer",
+        "pendingParts": "Reservedele anmodet"
+    }
+}

@@ -1,0 +1,50 @@
+{
+    "setup": {
+        "title": "OpensourceERP Setup",
+        "welcome": "Vítejte v OpensourceERP! Nakonfigurujte prosím připojení k autentizační databázi.",
+        "setupAlreadyDone": "Nastavení již bylo provedeno. Budete přesměrováni na přihlašovací stránku...",
+        "configFound": "kivitendo.conf nalezen - Heslo bylo nezašifrované. Formulář byl automaticky vyplněn.",
+        "setupCompleteMessage": "Nastavení úspěšně dokončeno! Heslo bylo uloženo šifrovaně. Budete přesměrováni...",
+        "fields": {
+            "host": "Host",
+            "port": "Port",
+            "database": "Název databáze",
+            "login": "Přihlášení",
+            "password": "Heslo"
+        },
+        "placeholders": {
+            "host": "localhost",
+            "port": "5432",
+            "database": "oserp_auth",
+            "login": "postgres"
+        },
+        "validation": {
+            "required": "Povinné pole",
+            "portRange": "Port musí být mezi 1 a 65535"
+        },
+        "buttons": {
+            "testConnection": "Otestovat připojení",
+            "testingConnection": "Testuji připojení...",
+            "saveSetup": "Dokončit nastavení",
+            "savingSetup": "Ukládám...",
+            "finish": "Spustit aplikaci"
+        },
+        "errors": {
+            "checkStatus": "Chyba při kontrole stavu nastavení",
+            "testConnection": "Chyba při testování připojení",
+            "testNetworkError": "Síťová chyba při testování připojení",
+            "saveSetup": "Chyba při ukládání konfigurace",
+            "saveNetworkError": "Síťová chyba při ukládání konfigurace"
+        },
+        "update": {
+            "title": "Aktualizace databáze",
+            "running": "Databáze se aktualizuje...",
+            "success": "Aktualizace databáze úspěšně dokončena.",
+            "failed": "Aktualizace databáze se nezdařila.",
+            "networkError": "Síťová chyba při aktualizaci databáze."
+        },
+        "footer": {
+            "copyright": "OpensourceERP"
+        }
+    }
+}

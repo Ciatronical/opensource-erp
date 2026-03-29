@@ -1,0 +1,19 @@
+{
+    "CarView": {
+        "routes": {
+            "newCar": "/fahrzeug/neu",
+            "newCarFromScan": "/fahrzeug/neu-vom-scan",
+            "manageCars": "/fahrzeug",
+            "orderSearch": "/fahrzeug-auftrag/suche",
+            "carRegistration": "/fahrzeug/zulassung"
+        },
+        "newCar": "Creare noua",
+        "newCarFromScan": "Lista scanari",
+        "title": "Vehicule",
+        "manageCars": "Administrare",
+        "orderSearch": "Lista comenzi",
+        "huSerienbrief": "Notificari ITP",
+        "orderSearchTooltip": "Cautare comenzi",
+        "scanTooltip": "Vehicule din scanare"
+    }
+}

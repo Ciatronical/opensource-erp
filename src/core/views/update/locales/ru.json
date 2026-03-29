@@ -1,0 +1,50 @@
+{
+    "update": {
+        "title": "Обновление системы",
+        "description": "Здесь выполняется резервное копирование и обновление всех баз данных компаний и базы данных аутентификации.",
+        "messages": "Сообщения",
+        "sqlStatements": "SQL-запросы",
+        "errors": "Ошибки",
+        "dryRunSuccess": "Предварительный просмотр успешно загружен.",
+        "updateSuccess": "Все базы данных успешно обновлены.",
+        "gitPull": "Git Pull",
+        "gitPullSuccess": "Git Pull выполнен успешно",
+        "gitPullFailed": "Git Pull не удался",
+        "authDatabase": "База данных аутентификации",
+        "authBackup": "Резервная копия аутентификации",
+        "clientDatabase": "Компания: {name}",
+        "clientDbName": "База данных: {dbname}",
+        "backupSuccess": "Резервная копия создана: {filename}",
+        "backupFailed": "Создание резервной копии не удалось",
+        "backupSkipped": "Резервная копия не создается при предварительном просмотре",
+        "features": "Функции: {features}",
+        "noClients": "Компании не найдены.",
+        "overallSuccess": "Все базы данных успешно обновлены",
+        "overallFailed": "Ошибка при обновлении",
+        "buttons": {
+            "dryRun": "Предварительный просмотр",
+            "checking": "Проверка...",
+            "update": "Выполнить обновление",
+            "updating": "Обновление...",
+            "finish": "Готово"
+        },
+        "errorMessages": {
+            "dryRunFailed": "Предварительный просмотр не удался.",
+            "updateFailed": "Обновление не удалось.",
+            "networkError": "Сетевая ошибка при обновлении."
+        },
+        "schemaMessages": {
+            "dry_run_mode": "Режим предварительного просмотра - Изменения не вносятся",
+            "columns_added": "Таблица {table}: {count} столбец(ов) будет добавлено | Таблица {table}: {count} столбец(ов) добавлено",
+            "column_added": "Столбец '{column}' будет добавлен | Столбец '{column}' добавлен",
+            "table_up_to_date": "Таблица {table}: Все столбцы присутствуют",
+            "table_created": "Таблица {table} будет создана | Таблица {table} создана",
+            "version_updated": "Версия {version} записана в базу данных {schema}",
+            "object_exists": "{object_type} {name} уже существует",
+            "statement_executed": "{statement_type} {target} выполнено",
+            "csv_skipped": "CSV пропущено: {table} ({reason})",
+            "csv_imported": "CSV импортировано: {table} ({rows_imported} строк)",
+            "info": "{text}"
+        }
+    }
+}

@@ -1,0 +1,135 @@
+{
+    "TasksView": {
+        "title": "Opgaver",
+        "search": "Soeg...",
+        "fromDate": "Fra",
+        "toDate": "Til",
+        "showDone": "Vis afsluttede",
+        "tabs": {
+            "board": "Board",
+            "list": "Liste",
+            "calendar": "Kalender"
+        },
+        "actions": {
+            "create": "Ny opgave",
+            "cancel": "Annuller",
+            "delete": "Slet",
+            "save": "Gem",
+            "edit": "Rediger",
+            "markDone": "Afsluttet",
+            "markUndone": "Genaabn",
+            "close": "Luk"
+        },
+        "columns": {
+            "overdue": "Overskredet",
+            "today": "I dag",
+            "upcoming": "Kommende",
+            "done": "Afsluttet"
+        },
+        "fields": {
+            "subject": "Emne",
+            "body": "Note",
+            "date": "Dato"
+        },
+        "calendar": {
+            "today": "I dag",
+            "month": "Maaned",
+            "week": "Uge",
+            "day": "Dag",
+            "more": "flere"
+        },
+        "dialog": {
+            "titleNew": "Ny opgave",
+            "titleEdit": "Rediger opgave"
+        },
+        "confirmDelete": {
+            "title": "Slet opgave?",
+            "message": "Vil du virkelig slette denne opgave? Denne handling kan ikke fortrydes."
+        },
+        "messages": {
+            "loadError": "Fejl ved indlaesning af opgaver",
+            "saved": "Opgave gemt",
+            "saveError": "Fejl ved lagring",
+            "deleted": "Opgave slettet",
+            "markedDone": "Markeret som afsluttet",
+            "markedUndone": "Genaabnet",
+            "error": "Der opstod en fejl"
+        }
+    },
+    "TasksCard": {
+        "noSubject": "Intet emne",
+        "today": "I dag",
+        "tomorrow": "I morgen",
+        "daysAgo": "for {days} dage siden",
+        "inDays": "om {days} dage",
+        "markDone": "Marker som afsluttet",
+        "markUndone": "Genaabn",
+        "delete": "Slet"
+    },
+    "TasksDialog": {
+        "titleCreate": "Ny opgave",
+        "titleEdit": "Rediger opgave",
+        "date": "Dato",
+        "subject": "Emne",
+        "body": "Note",
+        "assignedEmployees": "Tildelt til",
+        "linkSection": "Tilknytning (valgfri)",
+        "linkType": "Tilknytningstype",
+        "linkId": "ID",
+        "linkInfo": "Betegnelse",
+        "cancel": "Annuller",
+        "save": "Gem",
+        "quickDate": {
+            "today": "I dag",
+            "tomorrow": "I morgen",
+            "nextWeek": "+1 uge",
+            "nextMonth": "+1 maaned"
+        },
+        "linkTypes": {
+            "customer": "Kunde",
+            "vendor": "Leverandoer",
+            "salesQuotation": "Tilbud",
+            "salesOrder": "Ordre",
+            "salesDeliveryOrder": "Følgeseddel",
+            "salesInvoice": "Faktura",
+            "purchaseQuotation": "Forespørgsel",
+            "purchaseOrder": "Bestilling",
+            "purchaseDeliveryOrder": "Varemodtagelse",
+            "purchaseInvoice": "Indgaaende faktura"
+        },
+        "validation": {
+            "required": "Obligatorisk felt"
+        }
+    },
+    "TasksList": {
+        "done": "Afsluttet",
+        "open": "Aaben",
+        "today": "I dag",
+        "tomorrow": "I morgen",
+        "markDone": "Marker som afsluttet",
+        "markUndone": "Genaabn",
+        "edit": "Rediger",
+        "delete": "Slet",
+        "headers": {
+            "date": "Dato",
+            "subject": "Emne",
+            "link": "Tilknytning",
+            "assignedTo": "Tildelt",
+            "status": "Status",
+            "actions": "Handlinger"
+        }
+    },
+    "TasksWidget": {
+        "title": "Opgaver",
+        "overdue": "Overskredet",
+        "today": "I dag",
+        "tomorrow": "I morgen",
+        "upcoming": "Kommende",
+        "noItems": "Ingen aabne opgaver",
+        "showAll": "Vis alle {count}",
+        "markDone": "Marker som afsluttet",
+        "quickAdd": "Hurtig tilfoejelse",
+        "openAll": "Aabn alle",
+        "daysAgo": "for {days} dage siden"
+    }
+}

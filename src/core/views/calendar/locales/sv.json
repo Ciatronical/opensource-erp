@@ -1,0 +1,87 @@
+{
+    "CalendarView": {
+        "title": "Kalender",
+        "actions": {
+            "create": "Nytt mote",
+            "categories": "Kategorier",
+            "cancel": "Avbryt",
+            "save": "Spara",
+            "delete": "Radera",
+            "edit": "Redigera",
+            "close": "Stang"
+        },
+        "confirmDelete": {
+            "title": "Radera mote?",
+            "message": "Vill du verkligen radera detta mote?"
+        },
+        "messages": {
+            "loadError": "Fel vid laddning av moten",
+            "saved": "Mote sparat",
+            "saveError": "Fel vid sparande",
+            "deleted": "Mote raderat",
+            "error": "Ett fel uppstod",
+            "categoryDeleted": "Kategori raderad",
+            "categorySaved": "Kategori sparad"
+        },
+        "search": "Sok",
+        "searchResults": "Sokresultat",
+        "noResults": "Inga resultat hittades"
+    },
+    "CalendarMain": {
+        "today": "Idag",
+        "month": "Manad",
+        "week": "Vecka",
+        "day": "Dag",
+        "list": "Lista",
+        "allDay": "Heldag",
+        "filterCategories": "Filtrera kategorier"
+    },
+    "CalendarEventDialog": {
+        "titleCreate": "Nytt mote",
+        "titleEdit": "Redigera mote",
+        "title": "Titel",
+        "allDay": "Heldag",
+        "start": "Start",
+        "end": "Slut",
+        "category": "Kategori",
+        "noCategory": "Ingen kategori",
+        "priority": "Prioritet",
+        "priorityLow": "Lag",
+        "priorityNormal": "Normal",
+        "priorityHigh": "Hog",
+        "location": "Plats",
+        "description": "Beskrivning",
+        "color": "Farg",
+        "visibility": "Synlighet",
+        "visibilityAll": "Alla",
+        "visibilityPrivate": "Privat",
+        "customerVendor": "Kund/Leverantor",
+        "validation": {
+            "titleRequired": "Titel ar obligatorisk",
+            "startRequired": "Startdatum ar obligatoriskt"
+        }
+    },
+    "CalendarEventDetail": {
+        "edit": "Redigera",
+        "delete": "Radera",
+        "close": "Stang",
+        "location": "Plats",
+        "category": "Kategori",
+        "priority": "Prioritet",
+        "owner": "Skapad av",
+        "linkedTo": "Lankat till",
+        "priorityLow": "Lag",
+        "priorityNormal": "Normal",
+        "priorityHigh": "Hog"
+    },
+    "CalendarCategoryManager": {
+        "title": "Hantera kategorier",
+        "addCategory": "Ny kategori",
+        "label": "Beteckning",
+        "color": "Farg",
+        "save": "Spara",
+        "delete": "Radera",
+        "confirmDelete": "Vill du verkligen radera denna kategori? Moten behaller sin data, men forlorar kategorikopplingen.",
+        "noCategories": "Inga kategorier tillgangliga"
+    }
+}

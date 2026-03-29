@@ -1,0 +1,27 @@
+{
+    "ArticleEditView": {
+        "titleEdit": "Редагувати товар",
+        "saving": "Збереження...",
+        "saved": "Збережено",
+        "sections": {
+            "masterData": "Основні дані"
+        },
+        "fields": {
+            "partnumber": "Артикул",
+            "description": "Опис",
+            "partType": "Тип товару",
+            "typePart": "Товар",
+            "typeService": "Послуга",
+            "unit": "Одиниця",
+            "buchungsgruppe": "Група проводок",
+            "sellprice": "Ціна продажу",
+            "notes": "Розширений опис",
+            "obsolete": "Застарілий / Більше не використовується"
+        },
+        "messages": {
+            "loading": "Товар завантажується",
+            "loadError": "Помилка завантаження товару",
+            "notFound": "Товар не знайдено"
+        }
+    }
+}

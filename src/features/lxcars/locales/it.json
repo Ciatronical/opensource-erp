@@ -1,0 +1,19 @@
+{
+    "CarView": {
+        "routes": {
+            "newCar": "/fahrzeug/neu",
+            "newCarFromScan": "/fahrzeug/neu-vom-scan",
+            "manageCars": "/fahrzeug",
+            "orderSearch": "/fahrzeug-auftrag/suche",
+            "carRegistration": "/fahrzeug/zulassung"
+        },
+        "newCar": "Crea nuovo",
+        "newCarFromScan": "Lista scansioni",
+        "title": "Veicoli",
+        "manageCars": "Gestisci",
+        "orderSearch": "Lista ordini",
+        "huSerienbrief": "Notifiche revisione",
+        "orderSearchTooltip": "Ricerca ordini",
+        "scanTooltip": "Veicoli da scansione"
+    }
+}

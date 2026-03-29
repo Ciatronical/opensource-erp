@@ -1,0 +1,83 @@
+{
+    "WikiMenu": {
+        "title": "Wiki",
+        "newPage": "Нова стаття",
+        "allPages": "Всі статті",
+        "categories": "Категорії"
+    },
+    "WikiListView": {
+        "title": "Wiki - База знань",
+        "newPage": "Нова стаття",
+        "search": "Шукати статті...",
+        "allCategories": "Всі",
+        "noPages": "Статті ще відсутні.",
+        "noPagesHint": "Створіть свою першу Wiki-статтю.",
+        "headers": {
+            "title": "Заголовок",
+            "category": "Категорія",
+            "author": "Автор",
+            "updated": "Останнє оновлення",
+            "kba": "KBA"
+        },
+        "confirmDelete": "Дійсно видалити статтю \"{title}\"?",
+        "deleted": "Статтю видалено.",
+        "deleteError": "Помилка при видаленні."
+    },
+    "WikiReadView": {
+        "title": "Wiki-стаття",
+        "edit": "Редагувати",
+        "back": "Повернутися до огляду",
+        "revisions": "Версії",
+        "createdBy": "Створив",
+        "updatedBy": "Останнє редагування",
+        "kbaLabel": "KBA-прив'язка",
+        "notFound": "Статтю не знайдено.",
+        "loadError": "Помилка завантаження статті."
+    },
+    "WikiEditView": {
+        "titleNew": "Нова Wiki-стаття",
+        "titleEdit": "Редагувати Wiki-статтю",
+        "fieldTitle": "Заголовок",
+        "fieldCategory": "Категорія",
+        "fieldContent": "Зміст",
+        "fieldKbaHsn": "HSN",
+        "fieldKbaTsn": "TSN (перші 3 символи)",
+        "kbaSection": "KBA-прив'язка (необов'язково)",
+        "save": "Зберегти",
+        "cancel": "Скасувати",
+        "saved": "Статтю збережено.",
+        "saveError": "Помилка збереження.",
+        "missingTitle": "Будь ласка, вкажіть заголовок.",
+        "revisions": "Історія версій",
+        "noRevisions": "Попередні версії ще відсутні.",
+        "restore": "Відновити",
+        "confirmRestore": "Відновити версію від {date}?",
+        "restored": "Версію відновлено.",
+        "restoreError": "Помилка відновлення.",
+        "statusSaving": "Збереження...",
+        "statusSaved": "Збережено",
+        "statusUnsaved": "Не збережено",
+        "statusError": "Помилка збереження",
+        "back": "Назад",
+        "newCategory": "Нова категорія",
+        "createCategory": "Створити"
+    },
+    "WikiCategoriesView": {
+        "title": "Wiki-категорії",
+        "newCategory": "Нова категорія",
+        "name": "Назва",
+        "sortkey": "Сортування",
+        "pageCount": "Статті",
+        "save": "Зберегти",
+        "cancel": "Скасувати",
+        "edit": "Редагувати",
+        "delete": "Видалити",
+        "noCategories": "Категорії ще відсутні.",
+        "confirmDelete": "Дійсно видалити категорію \"{name}\"?",
+        "saved": "Категорію збережено.",
+        "deleted": "Категорію видалено.",
+        "saveError": "Помилка збереження.",
+        "deleteError": "Помилка видалення.",
+        "sortUpdated": "Порядок оновлено."
+    }
+}

@@ -1,0 +1,19 @@
+{
+    "CarView": {
+        "routes": {
+            "newCar": "/fahrzeug/neu",
+            "newCarFromScan": "/fahrzeug/neu-vom-scan",
+            "manageCars": "/fahrzeug",
+            "orderSearch": "/fahrzeug-auftrag/suche",
+            "carRegistration": "/fahrzeug/zulassung"
+        },
+        "newCar": "Novy zaznam",
+        "newCarFromScan": "Seznam skenu",
+        "title": "Vozidla",
+        "manageCars": "Spravovat",
+        "orderSearch": "Seznam objednavek",
+        "huSerienbrief": "HU-upozorneni",
+        "orderSearchTooltip": "Hledani objednavek",
+        "scanTooltip": "Vozidla ze skenu"
+    }
+}

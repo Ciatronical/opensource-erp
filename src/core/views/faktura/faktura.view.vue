@@ -1,0 +1,2303 @@
+
+<!-- src/core/views/faktura/faktura.view.vue -->
+
+<template>
+    <v-container fluid class="pa-0">
+        <NavbarView />
+
+        <v-container fluid class="faktura-container">
+            <!-- Action Bar -->
+            <section class="faktura-section">
+                <action-bar-component
+                    :printer-list="printerList"
+                    :selected-printer="selectedPrinter"
+                    :template-list="templateList"
+                    :selected-template-id="selectedTemplate"
+                    :faktura-type="fakturaType"
+                    :closed="!!faktura.data?.common?.closed"
+                    :show-closed="!!faktura.data && !['invoice', 'purchase_invoice'].includes(fakturaType)"
+                    @toggle-closed="toggleClosed"
+                    @save="saveFaktura"
+                    @close="closeView"
+                    @reuse="reuseFaktura"
+                    @create-quotation="createQuotationFromFaktura"
+                    @create-order="createOrderFromFaktura"
+                    @create-delivery-order="createDeliveryOrderFromFaktura"
+                    @create-invoice="createInvoiceFromFaktura"
+                    @create-credit-note="createCreditNoteFromFaktura"
+                    @cancel="cancelFaktura"
+                    @create-supplier-inquiry="createSupplierInquiryFromFaktura"
+                    @create-supplier-order="createSupplierOrderFromFaktura"
+                    @create-complaint="createComplaintFromFaktura"
+                    @save-as-draft="saveAsDraft"
+                    @select-printer="selectPrinter"
+                    @select-template="selectTemplate"
+                    @print="printFaktura"
+                    @pdf-preview="showPdfPreview"
+                    @send-email="sendEmail"
+                    @send-whatsapp="sendWhatsApp"
+                    @show-on-display="showOnDisplay"
+                    @show-history="showHistory"
+                    @set-followup="setFollowUp"
+                    @export-xinvoice="exportXInvoice"
+                    @delete="items.deleteFaktura"
+                    :show-vehicle-button="!!vehicle && !!vehicle.selectedCarId.value"
+                    :show-special-button="showSpecialButton"
+                    :show-display-button="wallDisplayEnabled"
+                    :compact-view="compactView"
+                    @toggle-compact="compactView = !compactView"
+                    @open-vehicle="openVehicleEdit"
+                    @import-silverdat="onImportSilverdat"
+                    @open-special="openSpecialDialog"
+                />
+            </section>
+
+            <special-dialog
+                v-if="showSpecialButton"
+                v-model="specialDialogVisible"
+                :car-id="vehicle?.selectedCarId?.value"
+                :km-stand="vehicle?.oeExtData?.value?.km_stand"
+            />
+
+            <!-- Stammdaten: Kompakt oder vollständig -->
+            <section class="faktura-section" v-if="faktura.data && faktura.data.common">
+
+                <!-- Kompaktansicht -->
+                <v-card v-if="compactView" variant="outlined" class="faktura-card">
+                    <v-card-text class="py-2 px-4">
+                        <div class="d-flex align-center flex-wrap ga-4">
+                            <!-- Kundenname -->
+                            <div class="d-flex align-center">
+                                <v-icon size="small" color="primary" class="mr-1">mdi-account</v-icon>
+                                <span class="font-weight-bold text-body-1">{{ customerName || '–' }}</span>
+                            </div>
+                            <!-- Belegnummer -->
+                            <div class="d-flex align-center">
+                                <v-icon size="small" color="grey-darken-1" class="mr-1">mdi-pound</v-icon>
+                                <span class="text-body-2">{{ compactDocNumber || '–' }}</span>
+                            </div>
+                            <!-- Datum -->
+                            <div class="d-flex align-center">
+                                <v-icon size="small" color="grey-darken-1" class="mr-1">mdi-calendar</v-icon>
+                                <span class="text-body-2">{{ compactTransdate || '–' }}</span>
+                            </div>
+                            <!-- Mitarbeiter -->
+                            <div class="d-flex align-center">
+                                <v-icon size="small" color="grey-darken-1" class="mr-1">mdi-account-tie</v-icon>
+                                <span class="text-body-2">{{ compactEmployeeName || '–' }}</span>
+                            </div>
+                            <v-divider vertical class="mx-1" />
+                            <!-- Telefonnummern -->
+                            <template v-if="contactPhone1">
+                                <PhoneActionBar :phone="contactPhone1" :name="customerName" whatsapp-tab @whatsapp="switchToWhatsAppTabFromFaktura" :show-number="true" />
+                            </template>
+                            <template v-for="(entry, idx) in phoneNumbers" :key="'cpn-' + idx">
+                                <div class="d-flex align-center">
+                                    <PhoneActionBar :phone="entry.number" :name="customerName" whatsapp-tab @whatsapp="switchToWhatsAppTabFromFaktura" :show-number="true" />
+                                    <span v-if="entry.label" class="text-caption text-grey ml-n1">{{ entry.label }}</span>
+                                </div>
+                            </template>
+                        </div>
+                    </v-card-text>
+                </v-card>
+
+                <!-- Vollständige Ansicht -->
+                <v-row v-else>
+                    <v-col cols="12" md="6" lg="4">
+                        <customer-info-card
+                            v-model="faktura.data.common"
+                            :customer-list="customerList"
+                            :delivery-address-list="deliveryAddressList"
+                            :billing-address-list="billingAddressList"
+                            :contact-phone1="contactPhone1"
+                            :contact-phone2="contactPhone2"
+                            :contact-email="contactEmail"
+                            :contact-label="contactLabel"
+                            :customer-name="customerName"
+                            :phone-numbers="phoneNumbers"
+                            :credit-limit="creditLimit"
+                            :is-vendor="isVendor"
+                            @update:customer-id="onCustomerChange"
+                            @field-change="onFakturaFieldChange"
+                        />
+                    </v-col>
+
+                    <v-col cols="12" md="6" lg="4">
+                        <faktura-details-card
+                            v-model="faktura.data.common"
+                            :faktura-type="fakturaType"
+                            @field-change="onFakturaFieldChange"
+                        />
+                    </v-col>
+
+                    <v-col cols="12" md="6" lg="4">
+                        <additional-info-card
+                            v-model="faktura.data.common"
+                            :ar-amount-list="accounting.arAmountList.value"
+                            :currency-list="currencyList"
+                            :tax-zone-list="taxZoneList"
+                            :language-list="languageList"
+                            :department-list="departmentList"
+                            :employee-list="employeeList"
+                            :payment-term-list="paymentTermList"
+                            :delivery-term-list="deliveryTermList"
+                            @field-change="onFakturaFieldChange"
+                        />
+                    </v-col>
+                </v-row>
+            </section>
+
+            <!-- Fahrzeug / Auftragsdaten (lxcars Feature, bei Auftrag/Angebot/Rechnung) -->
+            <section class="faktura-section" v-if="vehicle && (fakturaType === 'order' || fakturaType === 'quotation' || fakturaType === 'invoice') && faktura.data">
+                <vehicle-section-card
+                    ref="vehicleSectionRef"
+                    :is-invoice="vehicle.isInvoice.value"
+                    :oe-ext-data="vehicle.oeExtData.value"
+                    :selected-car-id="vehicle.selectedCarId.value"
+                    :customer-cars="vehicle.customerCars.value"
+                    :kfz-ort-options="vehicle.kfzOrtOptions.value"
+                    :status-options="vehicle.statusOptions.value"
+                    :display-km-stand="vehicle.displayKmStand.value"
+                    :display-bringetermin="vehicle.displayBringetermin.value"
+                    :display-fertigstellung="vehicle.displayFertigstellung.value"
+                    :picker-date-bringetermin="vehicle.pickerDateBringetermin.value"
+                    :picker-time-bringetermin="vehicle.pickerTimeBringetermin.value"
+                    :picker-date-fertigstellung="vehicle.pickerDateFertigstellung.value"
+                    :picker-time-fertigstellung="vehicle.pickerTimeFertigstellung.value"
+                    :time-slots="vehicle.timeSlots.value"
+                    :show-picker-bringetermin="vehicle.showPickerBringetermin.value"
+                    :show-picker-fertigstellung="vehicle.showPickerFertigstellung.value"
+                    @toggle-intern="vehicle.toggleIntern"
+                    @update:display-km-stand="v => vehicle.displayKmStand.value = v"
+                    @blur-km-stand="vehicle.onBlurKmStand"
+                    @car-change="vehicle.onCarChange"
+                    @oe-ext-field-change="vehicle.onOeExtFieldChange"
+                    @picker-date-select="vehicle.onPickerDateSelect"
+                    @picker-time-select="vehicle.onPickerTimeSelect"
+                    @clear-datetime="vehicle.onClearDatetime"
+                />
+            </section>
+
+            <!-- Arbeitsanweisungen (lxcars Feature, nur bei Auftrag) -->
+            <section class="faktura-section" v-if="vehicle && fakturaType === 'order' && faktura.data">
+                <instructions-section-card ref="instructionsRef" :oe-id="fakturaId" :ensure-oe-id="ensureOrderAndGetId" />
+            </section>
+
+            <!-- Positionen -->
+            <section class="faktura-section" v-if="faktura.data">
+                <faktura-items-table-component
+                    ref="itemsTableRef"
+                    v-model="fakturaItems"
+                    :article-list="articleList"
+                    :article-loading="articleLoading"
+                    :net-amount="accounting.calculatedNetAmount.value"
+                    :gross-amount="accounting.calculatedGrossAmount.value"
+                    :tax-breakdown="accounting.taxBreakdown.value"
+                    :calculate-item-total="accounting.calculateItemTotal"
+                    :calculate-totals="accounting.calculateTotals"
+                    :show-ai-suggest="showAiSuggest"
+                    :ai-loading="aiLoading"
+                    @article-search="items.onArticleSearch"
+                    @article-select="items.onArticleSelect"
+                    @create-article="items.createArticle"
+                    @delete-item="items.deleteItem"
+                    @edit-article="items.editArticle"
+                    @set-item-discount="items.setItemDiscount"
+                    @set-all-discounts="items.setAllDiscounts"
+                    @add-new-row="items.addNewItemRow"
+                    @items-changed="saveAllItems"
+                    @ai-suggest="onAiSuggest"
+                    :show-parts-requests="fakturaType === 'order' && (mechanicModeEnabled || partsRequestsList.length > 0)"
+                    :parts-requests="partsRequestsList"
+                    :recent-vendors="recentVendorsList"
+                    @request-part="onRequestPart"
+                    @order-part="onOrderPart"
+                    @photo-part="onPhotoPart"
+                />
+            </section>
+
+            <!-- Mängel (lxcars Feature, bei Aufträgen, Angeboten und Rechnungen) -->
+            <section class="faktura-section" v-if="vehicle && (fakturaType === 'order' || fakturaType === 'invoice' || fakturaType === 'quotation') && faktura.data">
+                <maengel-section-card ref="maengelRef" :oe-id="fakturaId" :ensure-oe-id="ensureOrderAndGetId" :doc-type="fakturaType === 'invoice' ? 'invoice' : 'order'" />
+            </section>
+
+            <!-- Zahlungen (nur bei Rechnungen) -->
+            <section class="faktura-section" v-if="fakturaType === 'invoice' && faktura.data">
+                <PaymentSectionCard
+                    v-model="paymentList"
+                    :payment-acc-list="paymentAccList"
+                    :gross-amount="accounting.calculatedGrossAmount.value"
+                    :show-exchange-rate="accounting.isForeignCurrency.value"
+                    @save="saveAllItems"
+                />
+            </section>
+
+            <!-- Notizen -->
+            <section class="faktura-section" v-if="faktura.data">
+                <v-card variant="outlined" class="faktura-card">
+                    <v-card-title class="faktura-card__header">
+                        <v-icon class="mr-2" size="small">mdi-note-text</v-icon>
+                        {{ t('FakturaView.faktura.notes') }}
+                    </v-card-title>
+                    <v-divider />
+                    <v-card-text class="faktura-card__body">
+                        <v-row>
+                            <v-col cols="12" md="3">
+                                <v-textarea
+                                    v-model="customerNotes"
+                                    :label="t('FakturaView.faktura.customerNotes')"
+                                    variant="outlined"
+                                    density="compact"
+                                    rows="6"
+                                    hide-details
+                                    autocomplete="off"
+                                    readonly
+                                    bg-color="grey-lighten-4"
+                                />
+                            </v-col>
+                            <v-col cols="12" md="3" v-if="vehicle">
+                                <v-textarea
+                                    v-model="vehicle.vehicleNotes.value"
+                                    :label="t('FakturaView.faktura.vehicleNotes')"
+                                    variant="outlined"
+                                    density="compact"
+                                    rows="6"
+                                    hide-details
+                                    autocomplete="off"
+                                    readonly
+                                    bg-color="grey-lighten-4"
+                                />
+                            </v-col>
+                            <v-col cols="12" md="3">
+                                <v-textarea
+                                    v-model="faktura.data.common.intnotes"
+                                    @blur="onFakturaFieldChange('intnotes', faktura.data.common.intnotes)"
+                                    :label="t('FakturaView.faktura.internalNotes')"
+                                    variant="outlined"
+                                    density="compact"
+                                    rows="6"
+                                    hide-details
+                                    autocomplete="off"
+                                />
+                            </v-col>
+                            <v-col cols="12" md="3">
+                                <html-editor-component
+                                    v-model="faktura.data.common.notes"
+                                    :label="t('FakturaView.faktura.publicNotes')"
+                                    @blur="onFakturaFieldChange('notes', faktura.data.common.notes)"
+                                />
+                            </v-col>
+                        </v-row>
+                    </v-card-text>
+                </v-card>
+            </section>
+        </v-container>
+
+        <!-- Delete Item Confirmation Dialog -->
+        <v-dialog v-model="items.deleteDialog.value.show" max-width="400" @keydown.esc="items.deleteDialog.value.show = false">
+            <v-card>
+                <v-card-title class="d-flex align-center py-3 px-4 bg-error text-white">
+                    <v-icon class="mr-2">mdi-delete-alert</v-icon>
+                    {{ t('FakturaView.dialogs.deleteItem.title') }}
+                    <v-spacer />
+                    <v-btn
+                        icon="mdi-close"
+                        variant="text"
+                        density="compact"
+                        size="small"
+                        @click="items.deleteDialog.value.show = false"
+                    />
+                </v-card-title>
+                <v-card-text class="pt-4 pb-2">
+                    <p>{{ t('FakturaView.dialogs.deleteItem.text') }}</p>
+                    <p v-if="items.deleteDialog.value.item" class="mt-2 font-weight-medium">
+                        {{ items.deleteDialog.value.item.partnumber }} - {{ items.deleteDialog.value.item.description }}
+                    </p>
+                </v-card-text>
+                <v-card-actions class="pa-4 pt-0">
+                    <v-spacer />
+                    <v-btn
+                        variant="text"
+                        @click="items.deleteDialog.value.show = false"
+                    >
+                        {{ t('FakturaView.dialogs.deleteItem.cancel') }}
+                    </v-btn>
+                    <v-btn
+                        color="error"
+                        variant="elevated"
+                        prepend-icon="mdi-delete"
+                        @click="items.confirmDeleteItem"
+                    >
+                        {{ t('FakturaView.dialogs.deleteItem.confirm') }}
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
+        <!-- Delete Faktura Confirmation Dialog -->
+        <v-dialog v-model="items.deleteFakturaDialog.value.show" max-width="500" persistent>
+            <v-card>
+                <v-card-title class="d-flex align-center py-3 px-4 bg-error text-white">
+                    <v-icon class="mr-2">mdi-alert-octagon</v-icon>
+                    {{ t('FakturaView.dialogs.deleteFaktura.title') }}
+                    <v-spacer />
+                    <v-btn
+                        icon="mdi-close"
+                        variant="text"
+                        density="compact"
+                        size="small"
+                        @click="items.deleteFakturaDialog.value.show = false"
+                    />
+                </v-card-title>
+                <v-card-text class="pt-4 pb-2">
+                    <p class="text-h6 mb-3">{{ t('FakturaView.dialogs.deleteFaktura.text') }}</p>
+                    <v-alert
+                        type="warning"
+                        variant="tonal"
+                        density="compact"
+                        class="mb-3"
+                    >
+                        {{ t('FakturaView.dialogs.deleteFaktura.warning') }}
+                    </v-alert>
+                    <p v-if="faktura.data?.common" class="mt-2 font-weight-medium">
+                        {{ t(`FakturaView.dokumentTypes.${fakturaType}`) }} #{{ faktura.data.common.invnumber || faktura.data.common.ordnumber || faktura.data.common.quonumber }}
+                    </p>
+                </v-card-text>
+                <v-card-actions class="pa-4 pt-0">
+                    <v-spacer />
+                    <v-btn
+                        variant="text"
+                        @click="items.deleteFakturaDialog.value.show = false"
+                    >
+                        {{ t('FakturaView.dialogs.deleteFaktura.cancel') }}
+                    </v-btn>
+                    <v-btn
+                        color="error"
+                        variant="elevated"
+                        prepend-icon="mdi-delete-forever"
+                        @click="items.confirmDeleteFaktura"
+                    >
+                        {{ t('FakturaView.dialogs.deleteFaktura.confirm') }}
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
+        <!-- Storno Dialog -->
+        <v-dialog v-model="showStornoDialog" max-width="500" persistent>
+            <v-card>
+                <v-card-title class="d-flex align-center py-3 px-4 bg-warning text-white">
+                    <v-icon class="mr-2">mdi-cancel</v-icon>
+                    {{ t('FakturaView.dialogs.storno.title') }}
+                    <v-spacer />
+                    <v-btn
+                        icon="mdi-close"
+                        variant="text"
+                        density="compact"
+                        size="small"
+                        @click="showStornoDialog = false"
+                    />
+                </v-card-title>
+                <v-card-text class="pt-4 pb-2">
+                    <p class="text-h6 mb-3">{{ t('FakturaView.dialogs.storno.text') }}</p>
+                    <v-alert
+                        type="warning"
+                        variant="tonal"
+                        density="compact"
+                        class="mb-3"
+                    >
+                        {{ t('FakturaView.dialogs.storno.warning') }}
+                    </v-alert>
+                    <p v-if="faktura.data?.common" class="mt-2 font-weight-medium">
+                        {{ t('FakturaView.dokumentTypes.invoice') }} #{{ faktura.data.common.invnumber }}
+                    </p>
+                </v-card-text>
+                <v-card-actions class="pa-4 pt-0">
+                    <v-spacer />
+                    <v-btn
+                        variant="text"
+                        @click="showStornoDialog = false"
+                    >
+                        {{ t('FakturaView.dialogs.storno.cancel') }}
+                    </v-btn>
+                    <v-btn
+                        color="warning"
+                        variant="elevated"
+                        prepend-icon="mdi-cancel"
+                        @click="confirmStorno"
+                    >
+                        {{ t('FakturaView.dialogs.storno.confirm') }}
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
+        <!-- Edit Item Dialog -->
+        <edit-part-dialog
+            v-model="items.editDialog.value.show"
+            :item="items.editDialog.value.item"
+            @save="items.onEditItemSave"
+        />
+
+        <!-- Send Email Dialog -->
+        <send-email-dialog
+            v-model="emailDialogVisible"
+            :initial-to="emailDialogTo"
+            :initial-subject="emailDialogSubject"
+            :initial-body="emailDialogBody"
+            :attachment-name="emailDialogAttachmentName"
+            @send="onEmailSend"
+            @cancel="emailDialogVisible = false"
+        />
+
+        <!-- Send WhatsApp Dialog -->
+        <v-dialog v-model="waDialogVisible" max-width="600" persistent>
+            <v-card>
+                <v-card-title class="d-flex align-center bg-green-darken-1">
+                    <v-icon class="mr-2">mdi-whatsapp</v-icon>
+                    {{ t('FakturaView.dialogs.sendWhatsApp.title') }}
+                    <v-spacer />
+                    <v-btn
+                        icon="mdi-close"
+                        variant="text"
+                        density="compact"
+                        size="x-small"
+                        @click="waDialogVisible = false"
+                    />
+                </v-card-title>
+
+                <v-card-text class="pt-4">
+                    <v-row dense>
+                        <v-col cols="12">
+                            <v-text-field
+                                v-model="waDialogPhone"
+                                :label="t('FakturaView.dialogs.sendWhatsApp.phone')"
+                                variant="outlined"
+                                density="compact"
+                                autocomplete="off"
+                                prepend-inner-icon="mdi-phone"
+                                :rules="[v => !!v || t('FakturaView.dialogs.sendWhatsApp.phoneRequired')]"
+                            />
+                        </v-col>
+
+                        <!-- Template Parameter Fields -->
+                        <v-col v-if="waSelectedTemplate" cols="12">
+                            <v-text-field
+                                v-for="(param, index) in waTemplateParams"
+                                :key="index"
+                                v-model="param.value"
+                                :label="param.label"
+                                variant="outlined"
+                                density="compact"
+                                class="mb-1"
+                            />
+                        </v-col>
+
+                        <!-- Template Preview -->
+                        <v-col v-if="waSelectedTemplate" cols="12">
+                            <v-alert
+                                type="info"
+                                variant="tonal"
+                                density="compact"
+                                :title="t('FakturaView.dialogs.sendWhatsApp.templatePreview')"
+                            >
+                                <div class="text-body-2" style="white-space: pre-wrap;">{{ waRenderedPreview }}</div>
+                            </v-alert>
+                        </v-col>
+
+                        <v-col cols="12">
+                            <v-chip color="green" variant="tonal" prepend-icon="mdi-paperclip">
+                                {{ waDialogAttachmentName }}
+                            </v-chip>
+                        </v-col>
+                    </v-row>
+                </v-card-text>
+
+                <v-divider />
+
+                <v-card-actions class="pa-4">
+                    <v-spacer />
+                    <v-btn
+                        variant="text"
+                        @click="waDialogVisible = false"
+                    >
+                        {{ t('FakturaView.dialogs.sendWhatsApp.cancel') }}
+                    </v-btn>
+                    <v-btn
+                        color="green-darken-1"
+                        variant="elevated"
+                        prepend-icon="mdi-whatsapp"
+                        :disabled="!waDialogPhone || !waSelectedTemplate"
+                        :loading="pdfLoading"
+                        @click="onWhatsAppSend({ phone: waDialogPhone })"
+                    >
+                        {{ t('FakturaView.dialogs.sendWhatsApp.send') }}
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
+        <!-- Instructions Incomplete Dialog -->
+        <v-dialog v-model="instructionsIncompleteDialog.show" max-width="500" @keydown.esc="instructionsIncompleteDialog.show = false">
+            <v-card>
+                <v-card-title class="d-flex align-center py-3 px-4 bg-warning">
+                    <v-icon class="mr-2">mdi-clipboard-alert-outline</v-icon>
+                    {{ t('FakturaView.faktura.instructions.incompleteTitle') }}
+                    <v-spacer />
+                    <v-btn
+                        icon="mdi-close"
+                        variant="text"
+                        density="compact"
+                        size="small"
+                        @click="instructionsIncompleteDialog.show = false"
+                    />
+                </v-card-title>
+                <v-card-text class="pt-4 pb-2">
+                    <p>{{ t('FakturaView.faktura.instructions.incompleteText') }}</p>
+                    <p class="mt-3 font-weight-medium">{{ t('FakturaView.faktura.instructions.incompleteList') }}</p>
+                    <v-list density="compact" class="mt-1">
+                        <v-list-item
+                            v-for="instr in instructionsIncompleteDialog.items"
+                            :key="instr.id"
+                            class="px-2"
+                        >
+                            <template #prepend>
+                                <v-icon size="small" color="warning">mdi-alert-circle</v-icon>
+                            </template>
+                            <v-list-item-title class="text-body-2">
+                                #{{ instr.instruction_number }} — {{ instr.description }}
+                            </v-list-item-title>
+                            <v-list-item-subtitle class="text-caption">
+                                <span v-if="!instr.employee_id" class="text-error mr-3">{{ t('FakturaView.faktura.instructions.completedBy') }}</span>
+                                <span v-if="!instr.actual_minutes" class="text-error">{{ t('FakturaView.faktura.instructions.actualTime') }}</span>
+                            </v-list-item-subtitle>
+                        </v-list-item>
+                    </v-list>
+                </v-card-text>
+                <v-card-actions class="pa-4 pt-0">
+                    <v-spacer />
+                    <v-btn
+                        color="primary"
+                        variant="elevated"
+                        @click="instructionsIncompleteDialog.show = false"
+                    >
+                        {{ t('FakturaView.common.ok') }}
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
+        <!-- Create Item Dialog -->
+        <create-part-dialog
+            v-model="items.createDialog.value.show"
+            :search-text="items.createDialog.value.searchText"
+            :item-index="items.createDialog.value.itemIndex"
+            @save="items.onCreateArticleSave"
+        />
+
+        <!-- SilverDAT Import Dialog -->
+        <silverdat-import-dialog
+            v-if="silverdatImport"
+            v-model="silverdatImport.showDialog.value"
+            :import-items="silverdatImport.importItems.value"
+            :vehicle-info="silverdatImport.vehicleInfo.value"
+            :importing="silverdatImport.importing.value"
+            :import-error="silverdatImport.importError.value"
+            :file-name="silverdatImport.fileName.value"
+            :summary="silverdatImport.summary.value"
+            @file-select="silverdatImport.onFileSelect"
+            @drop="silverdatImport.onDrop"
+            @do-import="onSilverdatImport"
+            @close="onSilverdatClose"
+            @change-file="silverdatImport.reset()"
+            @clear-error="silverdatImport.importError.value = ''"
+        />
+
+        <!-- KI-Positionsvorschläge Dialog -->
+        <suggest-positions-dialog
+            v-model="aiDialogVisible"
+            :items="aiSuggestedItems"
+            @confirmed="onAiConfirmed"
+            @skipped="aiDialogVisible = false"
+        />
+        <!-- Foto-Dialog für Ersatzteil (Multi-Foto-Galerie) -->
+        <v-dialog v-model="photoDialog.show" max-width="600">
+            <v-card>
+                <v-card-title class="d-flex align-center">
+                    {{ t('FakturaView.faktura.partPhoto') }}
+                    <v-chip v-if="photoDialog.photos.length" size="x-small" class="ml-2" color="primary" variant="tonal">
+                        {{ photoDialog.photos.length }}
+                    </v-chip>
+                </v-card-title>
+                <v-divider />
+                <v-card-text class="pa-4">
+                    <!-- Foto-Galerie -->
+                    <div v-if="photoDialog.photos.length" class="d-flex flex-wrap ga-2 mb-4">
+                        <div
+                            v-for="(photo, idx) in photoDialog.photos"
+                            :key="photo.path"
+                            class="position-relative"
+                            style="width: 130px; height: 130px"
+                        >
+                            <v-img
+                                :src="'data:image/jpeg;base64,' + photo.image"
+                                width="130"
+                                height="130"
+                                cover
+                                class="rounded border"
+                                style="cursor: zoom-in"
+                                @click="openFullscreen(idx)"
+                            />
+                            <v-btn
+                                icon="mdi-close-circle"
+                                size="x-small"
+                                color="red"
+                                variant="flat"
+                                class="position-absolute"
+                                style="top: -6px; right: -6px; z-index: 1"
+                                @click.stop="deletePhoto(photo.path)"
+                            />
+                        </div>
+                    </div>
+                    <div v-else class="text-center text-medium-emphasis py-4 mb-3">
+                        <v-icon size="48" color="grey-lighten-1">mdi-camera-off</v-icon>
+                        <div class="text-body-2 mt-2">{{ t('FakturaView.faktura.noPhotos') }}</div>
+                    </div>
+                    <!-- Upload-Bereich -->
+                    <v-file-input
+                        :key="photoDialog.uploadKey"
+                        :label="t('FakturaView.faktura.selectPhoto')"
+                        accept="image/*"
+                        capture="environment"
+                        prepend-icon="mdi-camera"
+                        variant="outlined"
+                        density="compact"
+                        hide-details
+                        show-size
+                        @update:model-value="onPhotoFileSelected"
+                    />
+                    <div v-if="photoDialog.uploading" class="text-center mt-3">
+                        <v-progress-circular indeterminate size="24" color="primary" />
+                    </div>
+                </v-card-text>
+                <v-divider />
+                <v-card-actions class="justify-end pa-3">
+                    <v-btn
+                        color="primary"
+                        variant="flat"
+                        prepend-icon="mdi-check"
+                        @click="closePhotoDialog"
+                    >
+                        {{ t('FakturaView.faktura.photoDone') }}
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
+        <!-- Fullscreen Foto-Viewer mit Navigation -->
+        <v-dialog v-model="photoDialog.fullscreen" max-width="90vw">
+            <v-card class="pa-0 position-relative" style="background: #000">
+                <v-btn
+                    icon="mdi-close"
+                    size="small"
+                    variant="text"
+                    color="white"
+                    class="position-absolute"
+                    style="top: 8px; right: 8px; z-index: 2"
+                    @click="photoDialog.fullscreen = false"
+                />
+                <v-btn
+                    v-if="photoDialog.photos.length > 1"
+                    icon="mdi-chevron-left"
+                    size="large"
+                    variant="text"
+                    color="white"
+                    class="position-absolute"
+                    style="top: 50%; left: 4px; transform: translateY(-50%); z-index: 2"
+                    @click.stop="photoDialog.fullscreenIdx = (photoDialog.fullscreenIdx - 1 + photoDialog.photos.length) % photoDialog.photos.length"
+                />
+                <v-btn
+                    v-if="photoDialog.photos.length > 1"
+                    icon="mdi-chevron-right"
+                    size="large"
+                    variant="text"
+                    color="white"
+                    class="position-absolute"
+                    style="top: 50%; right: 4px; transform: translateY(-50%); z-index: 2"
+                    @click.stop="photoDialog.fullscreenIdx = (photoDialog.fullscreenIdx + 1) % photoDialog.photos.length"
+                />
+                <v-img
+                    v-if="photoDialog.photos[photoDialog.fullscreenIdx]"
+                    :src="'data:image/jpeg;base64,' + photoDialog.photos[photoDialog.fullscreenIdx].image"
+                    max-height="85vh"
+                    contain
+                />
+                <div v-if="photoDialog.photos.length > 1" class="text-center pa-2" style="color: white; font-size: 0.8rem">
+                    {{ photoDialog.fullscreenIdx + 1 }} / {{ photoDialog.photos.length }}
+                </div>
+            </v-card>
+        </v-dialog>
+    </v-container>
+</template>
+
+<script>
+import { defineComponent } from 'vue'
+import NavbarView from '@/core/components/navbar/navbar.view.vue'
+import CustomerInfoCard from './cards/customer.info.card.vue'
+import FakturaDetailsCard from './cards/faktura.details.card.vue'
+import AdditionalInfoCard from './cards/additional.info.card.vue'
+import VehicleSectionCard from './cards/vehicle.section.card.vue'
+import ActionBarComponent from './components/action.bar.component.vue'
+import FakturaItemsTableComponent from './components/faktura.items.table.component.vue'
+import EditPartDialog from './dialogs/edit.part.dialog.vue'
+import CreatePartDialog from './dialogs/create.part.dialog.vue'
+import SendEmailDialog from './dialogs/send.email.dialog.vue'
+import SilverdatImportDialog from './dialogs/silverdat.import.dialog.vue'
+import PaymentSectionCard from './cards/payment.section.card.vue'
+import HtmlEditorComponent from '@/core/components/html.editor.component.vue'
+import InstructionsSectionCard from '@/features/lxcars/components/instructions.section.card.vue'
+import MaengelSectionCard from '@/features/lxcars/components/maengel.section.card.vue'
+import SuggestPositionsDialog from '@/features/lxcars/components/suggest-positions-dialog.vue'
+import PhoneActionBar from '@/core/components/phone-action-bar.vue'
+import axios from 'axios'
+import { useI18n } from 'vue-i18n'
+import { oserpStore } from '@/core/stores/oserp.store.js'
+import { fakturaStore } from '@/core/stores/faktura.store.js'
+import { lxcarsStore } from '@/features/lxcars/stores/lxcars.store.js'
+import { useAccounting } from './composables/useAccounting.js'
+import { useItemManagement } from './composables/useItemManagement.js'
+import { useVehicleSection } from './composables/useVehicleSection.js'
+import { useSilverDATImport } from './composables/useSilverDATImport.js'
+import { onMounted, onBeforeUnmount, ref, computed, nextTick, defineAsyncComponent, shallowRef, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import * as alerts from '@/core/utils/alerts.js'
+import * as toasts from '@/core/utils/toasts.js'
+
+const specialDialogModules = import.meta.glob('../special/special.dialog.vue')
+const SpecialDialog = specialDialogModules['../special/special.dialog.vue']
+    ? defineAsyncComponent(specialDialogModules['../special/special.dialog.vue'])
+    : { render: () => null }
+
+export default defineComponent({
+    name: 'FakturaView',
+    components: {
+        NavbarView,
+        CustomerInfoCard,
+        FakturaDetailsCard,
+        AdditionalInfoCard,
+        VehicleSectionCard,
+        ActionBarComponent,
+        FakturaItemsTableComponent,
+        EditPartDialog,
+        CreatePartDialog,
+        SendEmailDialog,
+        SilverdatImportDialog,
+        PaymentSectionCard,
+        HtmlEditorComponent,
+        InstructionsSectionCard,
+        MaengelSectionCard,
+        SuggestPositionsDialog,
+        SpecialDialog,
+        PhoneActionBar
+    },
+    props: {
+        fakturaID: {
+            type: [Number, String],
+            required: false,
+            default: null,
+        },
+    },
+    setup(props) {
+        const route = useRoute()
+        const router = useRouter()
+        const { t, locale } = useI18n()
+        const oserp = oserpStore()
+        const faktura = fakturaStore()
+        const carsStore = oserp.isLxCars() ? lxcarsStore() : null
+
+        // Dokumenttyp aus der Route ermitteln (kann durch Backend-Antwort überschrieben werden)
+        const fakturaTypeOverride = ref(null)
+        const fakturaType = computed(() => {
+            if (fakturaTypeOverride.value) return fakturaTypeOverride.value
+            if (route.meta && route.meta.documentType) {
+                return route.meta.documentType
+            }
+            const pathSegments = route.path.split('/')
+            const typeIndex = pathSegments.indexOf('faktura') + 1
+            if (typeIndex > 0 && pathSegments[typeIndex]) {
+                return pathSegments[typeIndex]
+            }
+            return 'invoice'
+        })
+
+        const fakturaId = ref(props.fakturaID || Number(route.params.id) || null)
+
+        const isVendor = computed(() => {
+            return ['purchase_order', 'purchase_invoice', 'request_quotation'].includes(fakturaType.value)
+        })
+
+        // Storno-Dialog
+        const showStornoDialog = ref(false)
+
+        // Basis-Refs
+        const itemsTableRef = ref(null)
+        const instructionsRef = ref(null)
+        const maengelRef = ref(null)
+        const fakturaItems = ref([])
+        const paymentList = ref([])
+        const customerList = ref([])
+        const articleList = ref([])
+        const articleLoading = ref(false)
+
+        // Dropdown-Listen
+        const deliveryAddressList = ref([])
+        const billingAddressList = ref([])
+        const currencyList = ref([])
+        const taxZoneList = ref([])
+        const languageList = ref([])
+        const departmentList = ref([])
+        const employeeList = ref([])
+        const printerList = ref([])
+        const templateList = ref([])
+        const selectedTemplate = ref(null)
+        const selectedPrinter = ref(null)
+        const pdfLoading = ref(false)
+        const paymentTermList = ref([])
+        const deliveryTermList = ref([])
+        const paymentAccList = ref([])
+        const pendingRouteReplace = ref(null)
+
+        // Kontaktdaten
+        const contactPhone1 = ref('')
+        const contactPhone2 = ref('')
+        const contactEmail = ref('')
+        const contactLabel = ref('')
+        const customerName = ref('')
+        const phoneNumbers = ref([])
+        const creditLimit = ref(0)
+        const customerNotes = ref('')
+
+        // Kompaktansicht (gespeichert in employee_config_oserp)
+        const rawCompact = oserp.getConfigValue('faktura_compact_view', false)
+        const compactView = ref(rawCompact === true || rawCompact === 'true' || rawCompact === 't' || rawCompact === '1')
+
+        watch(compactView, (val) => {
+            oserp.setConfigValue('faktura_compact_view', val)
+        })
+
+        const compactDocNumber = computed(() => {
+            const c = faktura.data?.common
+            if (!c) return ''
+            switch (fakturaType.value) {
+                case 'invoice': case 'purchase_invoice': return c.invnumber
+                case 'order': case 'purchase_order': return c.ordnumber
+                case 'quotation': case 'request_quotation': return c.quonumber
+                case 'delivery_order': return c.donumber
+                default: return c.invnumber
+            }
+        })
+
+        const compactTransdate = computed(() => {
+            const d = faktura.data?.common?.transdate
+            if (!d) return ''
+            const parts = d.split('-')
+            if (parts.length === 3) return `${parts[2]}.${parts[1]}.${parts[0]}`
+            return d
+        })
+
+        const compactEmployeeName = computed(() => {
+            const empId = faktura.data?.common?.employee_id
+            if (!empId) return ''
+            const emp = employeeList.value.find(e => e.id === empId)
+            return emp?.name || ''
+        })
+
+        function switchToWhatsAppTabFromFaktura(phone) {
+            const cvId = isVendor.value
+                ? faktura.data?.common?.vendor_id
+                : faktura.data?.common?.customer_id
+            if (!cvId) return
+            const routeName = isVendor.value ? 'change-vendor' : 'change-customer'
+            router.push({
+                name: routeName,
+                params: { id: cvId },
+                query: { tab: 'whatsapp', whatsappPhone: phone }
+            })
+        }
+
+        // ===== Composables =====
+
+        const accounting = useAccounting({
+            fakturaItems, faktura, fakturaType, paymentList, oserp, currencyList
+        })
+
+        const vehicle = carsStore ? useVehicleSection({
+            carsStore, fakturaId, fakturaType, t
+        }) : null
+
+        // Fahrzeug-Dropdown fokussieren bei mehreren Fahrzeugen nach Kundenwechsel
+        const vehicleSectionRef = ref(null)
+        if (vehicle) {
+            watch(() => vehicle.shouldFocusCar.value, (shouldFocus) => {
+                if (shouldFocus) {
+                    vehicle.shouldFocusCar.value = false
+                    nextTick(() => {
+                        vehicleSectionRef.value?.focusCarSelect()
+                    })
+                }
+            })
+        }
+
+        // SilverDAT Import (nur bei aktivem LxCars)
+        const silverdatImport = carsStore ? useSilverDATImport({ t }) : null
+
+        const specialDialogVisible = ref(false)
+        const wallDisplayEnabled = computed(() => {
+            const val = oserp.getClientDefaultValue('wall_display_enabled', false)
+            return val === true || val === 'true' || val === 't' || val === '1'
+        })
+
+        const mechanicModeEnabled = computed(() => {
+            if (!oserp.isLxCars()) return false
+            const val = oserp.getClientDefaultValue('lxcars_mechanic_mode', false)
+            return val === true || val === 'true' || val === 't' || val === '1'
+        })
+
+        // Ersatzteil-Bestellstatus pro Position
+        const partsRequestsList = ref([])
+
+        async function loadPartsRequests() {
+            if (!carsStore || !fakturaId.value || fakturaType.value !== 'order') return
+            try {
+                partsRequestsList.value = await carsStore.getPartsRequestsByOrder(fakturaId.value)
+            } catch { partsRequestsList.value = [] }
+        }
+
+        async function onRequestPart(item) {
+            if (!fakturaId.value || !item.id) return
+            try {
+                await carsStore.requestPartsForItem(fakturaId.value, item.id)
+                loadPartsRequests()
+                window.dispatchEvent(new CustomEvent('parts-requests-changed'))
+            } catch (e) {
+                console.error('Error requesting part:', e)
+            }
+        }
+
+        async function onOrderPart(item, vendor) {
+            const req = partsRequestsList.value.find(r => r.orderitem_id === item.id)
+            if (!req) return
+            try {
+                await carsStore.markPartsRequestOrdered(req.id, vendor.id)
+                loadPartsRequests()
+                window.dispatchEvent(new CustomEvent('parts-requests-changed'))
+            } catch (e) {
+                console.error('Error ordering part:', e)
+            }
+        }
+
+        // Foto-Dialog (Multi-Foto)
+        const photoDialog = ref({
+            show: false,
+            fullscreen: false,
+            fullscreenIdx: 0,
+            requestId: null,
+            photos: [],
+            uploading: false,
+            uploadKey: 0
+        })
+
+        async function onPhotoPart(item) {
+            const req = partsRequestsList.value.find(r => r.orderitem_id === item.id)
+            if (!req) return
+            photoDialog.value = { show: true, fullscreen: false, fullscreenIdx: 0, requestId: req.id, photos: [], uploading: false, uploadKey: 0 }
+            // Vorhandene Fotos laden
+            if (req.photo) {
+                try {
+                    const result = await carsStore.getPartsRequestPhoto(req.id)
+                    photoDialog.value.photos = result.photos || []
+                } catch { /* keine Fotos vorhanden */ }
+            }
+        }
+
+        function closePhotoDialog() {
+            photoDialog.value.show = false
+            photoDialog.value.fullscreen = false
+        }
+
+        function openFullscreen(idx) {
+            photoDialog.value.fullscreenIdx = idx
+            photoDialog.value.fullscreen = true
+        }
+
+        async function onPhotoFileSelected(files) {
+            const file = Array.isArray(files) ? files[0] : files
+            if (!file || !photoDialog.value.requestId) return
+            photoDialog.value.uploading = true
+            try {
+                const base64 = await fileToBase64(file)
+                const result = await carsStore.savePartsRequestPhoto(photoDialog.value.requestId, base64)
+                // Fotos neu laden um aktuelle Base64-Daten zu bekommen
+                const loaded = await carsStore.getPartsRequestPhoto(photoDialog.value.requestId)
+                photoDialog.value.photos = loaded.photos || []
+                photoDialog.value.uploadKey++ // v-file-input zurücksetzen
+                loadPartsRequests()
+            } catch (e) {
+                console.error('Error uploading photo:', e)
+            } finally {
+                photoDialog.value.uploading = false
+            }
+        }
+
+        async function deletePhoto(path) {
+            if (!photoDialog.value.requestId) return
+            try {
+                await carsStore.deletePartsRequestPhoto(photoDialog.value.requestId, path)
+                photoDialog.value.photos = photoDialog.value.photos.filter(p => p.path !== path)
+                loadPartsRequests()
+            } catch (e) {
+                console.error('Error deleting photo:', e)
+            }
+        }
+
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader()
+                reader.onload = () => resolve(reader.result)
+                reader.onerror = reject
+                reader.readAsDataURL(file)
+            })
+        }
+
+        const recentVendorsList = ref([])
+
+        async function loadRecentVendors() {
+            if (!mechanicModeEnabled.value) return
+            try {
+                recentVendorsList.value = await carsStore.getRecentVendors()
+            } catch { recentVendorsList.value = [] }
+        }
+
+        const showSpecialButton = computed(() => {
+            if (fakturaType.value !== 'order') return false
+            if (!oserp.isLxCars()) return false
+            if (!vehicle?.selectedCarId?.value) return false
+            return (oserp.session.auth_groups || []).some(g => g.name === 'Special')
+        })
+
+        function openSpecialDialog() {
+            specialDialogVisible.value = true
+        }
+
+        // saveAllItems braucht accounting — wird als Funktion definiert bevor useItemManagement aufgerufen wird
+        async function saveAllItems() {
+            try {
+                accounting.flushCalculation()
+                const accTransEntries = accounting.calculateAccTransEntries()
+                const paymentEntries = accounting.calculatePaymentEntries()
+                await faktura.updateFakturaItems(
+                    fakturaId.value,
+                    fakturaItems.value,
+                    fakturaType.value,
+                    accTransEntries,
+                    paymentEntries,
+                    faktura.data.common?.netamount || 0,
+                    faktura.data.common?.amount || 0
+                )
+            } catch (e) {
+                console.error('Fehler beim Speichern der Positionen:', e)
+                alerts.error(t('FakturaView.faktura.itemUpdateError'))
+            }
+        }
+
+        const items = useItemManagement({
+            fakturaItems, fakturaId, fakturaType, faktura, itemsTableRef,
+            calculateItemTotal: accounting.calculateItemTotal,
+            calculateTotals: accounting.calculateTotals,
+            saveAllItems, ensureFakturaExists, flushRouteReplace,
+            oserp, t, router
+        })
+
+        // ===== Lifecycle =====
+
+        const routeNameMap = {
+            order: 'faktura-order-view',
+            purchase_order: 'faktura-order-view',
+            quotation: 'faktura-quotation-view',
+            request_quotation: 'faktura-quotation-view',
+            invoice: 'faktura-invoice-view',
+            purchase_invoice: 'faktura-invoice-view',
+            delivery_order: 'faktura-delivery-order-view',
+            credit_note: 'faktura-credit-note-view',
+            invoice_storno: 'faktura-invoice-view'
+        }
+
+        /**
+         * Stellt sicher, dass ein Faktura-Dokument in der DB existiert.
+         * Wird beim Erstellen der ersten Position aufgerufen.
+         * Das Backend bestimmt den effektiven Dokumenttyp anhand von cvSrc
+         * (z.B. order + Vendor → purchase_order, invoice + Vendor → purchase_invoice).
+         */
+        async function ensureFakturaExists() {
+            if (fakturaId.value) return
+
+            const cvProfile = oserp.customer_vendor?.profile || {}
+            const cvId = cvProfile.id || null
+            const cvSrc = cvProfile.src || null
+            const result = await faktura.createFaktura(fakturaType.value, cvId, cvSrc)
+            fakturaId.value = result.id
+            faktura.data.common.id = result.id
+
+            // Dokumentnummer in den lokalen Daten setzen
+            if (result.docNumber) {
+                const effectiveType = result.fakturaType || fakturaType.value
+                const numberField = { invoice: 'invnumber', purchase_invoice: 'invnumber', quotation: 'quonumber', request_quotation: 'quonumber' }[effectiveType] || 'ordnumber'
+                faktura.data.common[numberField] = result.docNumber
+            }
+
+            // lxcars: Fahrzeug verknüpfen wenn c_id als Query-Parameter übergeben wurde
+            const queryCId = route.query.c_id ? parseInt(route.query.c_id) : null
+            if (queryCId && carsStore) {
+                const linkFn = fakturaType.value === 'invoice'
+                    ? carsStore.linkCarToInvoice
+                    : carsStore.linkCarToFaktura
+                await linkFn(result.id, queryCId).catch(() => {})
+                // Fahrzeugdaten nachladen damit oe_ext-Felder befüllt werden
+                if (vehicle) {
+                    const customerId = faktura.data?.common?.customer_id || faktura.data?.common?.vendor_id
+                    vehicle.loadVehicleData(customerId)
+                }
+            }
+
+            // Effektiven Dokumenttyp vom Backend übernehmen (z.B. 'purchase_order')
+            if (result.fakturaType && result.fakturaType !== fakturaType.value) {
+                fakturaTypeOverride.value = result.fakturaType
+            }
+
+            // URL-Aktualisierung zurückstellen: erst nach dem ersten Item-Speichern durchführen,
+            // damit die neue Position sichtbar ist wenn die Komponente neu mountet.
+            const targetRoute = routeNameMap[fakturaType.value]
+            if (targetRoute) {
+                pendingRouteReplace.value = { name: targetRoute, params: { id: result.id } }
+            }
+        }
+
+        async function flushRouteReplace() {
+            if (!pendingRouteReplace.value) return
+            const pending = pendingRouteReplace.value
+            pendingRouteReplace.value = null
+            // URL per history.replaceState aktualisieren statt router.replace(),
+            // damit kein Remount der Komponente ausgelöst wird (der den Fokus stiehlt).
+            const resolved = router.resolve(pending)
+            window.history.replaceState(history.state, '', resolved.href)
+        }
+
+        async function ensureOrderAndGetId() {
+            await ensureFakturaExists()
+            flushRouteReplace()
+            return fakturaId.value
+        }
+
+        // ===== SSE: Echtzeit-Aktualisierung =====
+
+        let sseSource = null
+        let sseReloadPending = false
+
+        async function reloadFakturaData() {
+            if (!fakturaId.value || sseReloadPending) return
+            sseReloadPending = true
+            try {
+                await faktura.fetchFakturaData(fakturaId.value, fakturaType.value)
+                if (!faktura.data) return
+
+                fakturaItems.value = (faktura.data.positions || []).map(item => {
+                    let buchungsziel = item.buchungsziel
+                    if (typeof buchungsziel === 'string') {
+                        try { buchungsziel = JSON.parse(buchungsziel) }
+                        catch { buchungsziel = null }
+                    }
+                    return { ...item, buchungsziel, localArticleList: [], localArticleLoading: false }
+                })
+
+                // Leere Zeile am Ende sicherstellen
+                const lastItem = fakturaItems.value[fakturaItems.value.length - 1]
+                if (!lastItem || lastItem.parts_id) {
+                    fakturaItems.value.push(items.createEmptyItem())
+                }
+
+                contactEmail.value = faktura.data.customer.email || ''
+                contactPhone1.value = faktura.data.customer.phone || ''
+                contactPhone2.value = faktura.data.customer.fax || ''
+                contactLabel.value = faktura.data.customer.contact || ''
+                customerName.value = faktura.data.customer.name || ''
+                const pn = faktura.data.customer.phone_numbers
+                phoneNumbers.value = typeof pn === 'string' ? JSON.parse(pn) : (pn || [])
+                customerNotes.value = faktura.data.customer.notes || ''
+
+                if (fakturaType.value === 'invoice') {
+                    const defaultChartId = paymentAccList.value.length > 0 ? paymentAccList.value[0].id : null
+                    paymentList.value = faktura.data.payment ? faktura.data.payment.map(p => ({
+                        ...p, chart_id: p.chart_id || defaultChartId
+                    })) : []
+                }
+
+                accounting.calculateTotals()
+            } catch (e) {
+                console.error('SSE reload error:', e)
+            } finally {
+                sseReloadPending = false
+            }
+        }
+
+        function connectSSE() {
+            sseSource = new EventSource('/sse/events')
+            sseSource.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data)
+                    const fakturaTables = ['oe', 'ar', 'orderitems', 'invoice', 'oe_instructions_lxcars', 'oe_defects', 'ar_defects', 'oe_parts_requests_lxcars']
+                    if (!fakturaTables.includes(data.table)) return
+                    if (Number(data.id) !== Number(fakturaId.value)) return
+                    if (data.table === 'oe_instructions_lxcars') {
+                        instructionsRef.value?.loadInstructions()
+                    } else if (data.table === 'oe_defects' || data.table === 'ar_defects') {
+                        maengelRef.value?.loadMaengel()
+                    } else if (data.table === 'oe_parts_requests_lxcars') {
+                        loadPartsRequests()
+                    } else {
+                        reloadFakturaData()
+                    }
+                } catch { /* kein Faktura-Event */ }
+            }
+            sseSource.onerror = () => { /* reconnect ist automatisch */ }
+        }
+
+        onBeforeUnmount(() => {
+            if (sseSource) {
+                sseSource.close()
+                sseSource = null
+            }
+        })
+
+        onMounted(async () => {
+            try {
+                if (!fakturaId.value) {
+                    // Neu-Modus: Leeren Zustand initialisieren
+                    const defaults = oserp.session.company_config?.defaults || {}
+                    const cvProfile = oserp.customer_vendor?.profile || {}
+                    const isCustomer = cvProfile.src === 'C' || !cvProfile.src
+                    faktura.data = {
+                        common: {
+                            id: null,
+                            transdate: new Date().toISOString().split('T')[0],
+                            taxzone_id: cvProfile.taxzone_id || defaults.taxzone_id || 4,
+                            currency_id: cvProfile.currency_id || defaults.currency_id || 1,
+                            customer_id: isCustomer ? (cvProfile.id || null) : null,
+                            vendor_id: !isCustomer ? (cvProfile.id || null) : null,
+                            closed: false
+                        },
+                        customer: cvProfile.id ? cvProfile : {},
+                        positions: [],
+                        shiptos: [],
+                        billing_addresses: [],
+                        payment: [],
+                        customers: cvProfile.id && cvProfile.name
+                            ? [{ id: cvProfile.id, name: cvProfile.name }]
+                            : []
+                    }
+                    customerList.value = faktura.data.customers || []
+                    loadDropdownLists()
+                    fakturaItems.value.push(items.createEmptyItem())
+
+                    // lxcars: Fahrzeug vorauswählen wenn c_id als Query-Parameter übergeben wurde
+                    const queryCId = route.query.c_id ? parseInt(route.query.c_id) : null
+                    const customerId = faktura.data.common.customer_id || faktura.data.common.vendor_id
+                    if (vehicle && queryCId && customerId && (fakturaType.value === 'order' || fakturaType.value === 'quotation' || fakturaType.value === 'invoice')) {
+                        vehicle.preselectCar(customerId, queryCId)
+                    }
+
+                    // Fokus: Bei LxCars-Aufträgen ins Instruction-Feld, sonst ins Artikel-Feld
+                    nextTick(() => {
+                        setTimeout(() => {
+                            if (vehicle && fakturaType.value === 'order' && instructionsRef.value) {
+                                instructionsRef.value.focusInput()
+                            } else if (itemsTableRef.value) {
+                                itemsTableRef.value.focusArticleField(0)
+                            }
+                        }, 300)
+                    })
+
+                    return
+                }
+
+                await faktura.fetchFakturaData(fakturaId.value, fakturaType.value)
+
+                if (faktura.data) {
+                    fakturaItems.value = (faktura.data.positions || []).map(item => {
+                        let buchungsziel = item.buchungsziel
+                        if (typeof buchungsziel === 'string') {
+                            try { buchungsziel = JSON.parse(buchungsziel) }
+                            catch (e) { buchungsziel = null }
+                        }
+                        return {
+                            ...item,
+                            buchungsziel,
+                            localArticleList: [],
+                            localArticleLoading: false
+                        }
+                    })
+
+                    customerList.value = faktura.data.customers || []
+                    await loadDropdownLists()
+
+                    // Hintergrund-Kunde/-Lieferant auf das Dokument synchronisieren
+                    const cvId = isVendor.value
+                        ? faktura.data.common?.vendor_id
+                        : faktura.data.common?.customer_id
+                    if (cvId) {
+                        oserp.fetchCustomerOrVendor(cvId, isVendor.value ? 'V' : 'C').catch(() => {})
+                    }
+
+                    if (fakturaItems.value.length > 0) {
+                        const lastItem = fakturaItems.value[fakturaItems.value.length - 1]
+                        if (lastItem.parts_id) {
+                            fakturaItems.value.push(items.createEmptyItem())
+                        }
+                    } else {
+                        fakturaItems.value.push(items.createEmptyItem())
+                    }
+
+                    nextTick(() => {
+                        setTimeout(() => {
+                            if (itemsTableRef.value) {
+                                itemsTableRef.value.focusArticleField(fakturaItems.value.length - 1)
+                            }
+                        }, 300)
+                    })
+
+                    if (fakturaType.value === 'invoice') {
+                        const defaultChartId = paymentAccList.value.length > 0 ? paymentAccList.value[0].id : null
+                        paymentList.value = faktura.data.payment ? faktura.data.payment.map(payment => ({
+                            ...payment,
+                            chart_id: payment.chart_id || defaultChartId
+                        })) : []
+                    }
+
+                    contactEmail.value = faktura.data.customer.email || ''
+                    contactPhone1.value = faktura.data.customer.phone || ''
+                    contactPhone2.value = faktura.data.customer.fax || ''
+                    contactLabel.value = faktura.data.customer.contact || ''
+                    customerName.value = faktura.data.customer.name || ''
+                    const pn = faktura.data.customer.phone_numbers
+                    phoneNumbers.value = typeof pn === 'string' ? JSON.parse(pn) : (pn || [])
+                    customerNotes.value = faktura.data.customer.notes || ''
+
+                    // lxcars: Fahrzeuge laden
+                    if (vehicle && (fakturaType.value === 'order' || fakturaType.value === 'quotation' || fakturaType.value === 'invoice')) {
+                        vehicle.loadVehicleData(faktura.data.common?.customer_id)
+                    }
+
+                    accounting.calculateTotals()
+                    loadPartsRequests()
+                    loadRecentVendors()
+
+                    // Druckvorlagen-Sets laden
+                    try {
+                        const templateData = await faktura.getTemplateList()
+                        templateList.value = (templateData.templateSets || []).map(set => ({
+                            id: set.name,
+                            name: set.label
+                        }))
+                        // Aktives Set vorauswählen
+                        if (templateData.activeSet) {
+                            selectedTemplate.value = templateData.activeSet
+                        }
+                    } catch (e) {
+                        console.error('Fehler beim Laden der Druckvorlagen:', e)
+                    }
+                }
+            } catch (e) {
+                alerts.error(t('FakturaView.faktura.loadError'))
+            }
+
+            // SSE starten fuer Echtzeit-Updates
+            if (fakturaId.value) {
+                connectSSE()
+            }
+        })
+
+        // ===== Anweisungen-Validierung (lxcars) =====
+
+        const instructionsIncompleteDialog = ref({ show: false, items: [] })
+
+        async function validateInstructionsComplete() {
+            if (!vehicle || !carsStore || !fakturaId.value) return true
+            try {
+                const instructions = await carsStore.loadInstructions(fakturaId.value)
+                const incomplete = instructions.filter(i => !i.employee_id || !i.actual_minutes)
+                if (incomplete.length > 0) {
+                    instructionsIncompleteDialog.value = { show: true, items: incomplete }
+                    return false
+                }
+                return true
+            } catch (e) {
+                console.error('Fehler beim Laden der Anweisungen:', e)
+                return true
+            }
+        }
+
+        // ===== Feld-Persistenz =====
+
+        async function onFakturaFieldChange(field, value) {
+            const fakturaID = faktura.data.common?.id
+            if (!fakturaID) return
+            try {
+                await faktura.updateFakturaField(fakturaID, fakturaType.value, field, value)
+            } catch (e) {
+                console.error('Fehler beim Speichern des Feldes:', e)
+                alerts.error(t('FakturaView.faktura.fieldUpdateError'))
+            }
+        }
+
+        async function toggleClosed() {
+            if (!faktura.data?.common) return
+            const newVal = !faktura.data.common.closed
+            // Beim Schließen: Anweisungen validieren (nur lxcars)
+            if (newVal && vehicle) {
+                const valid = await validateInstructionsComplete()
+                if (!valid) return
+            }
+            faktura.data.common.closed = newVal
+            onFakturaFieldChange('closed', newVal)
+        }
+
+        // ===== Kundenwechsel =====
+
+        async function onCustomerChange(newCvId) {
+            // Datenmodell aktualisieren
+            const field = isVendor.value ? 'vendor_id' : 'customer_id'
+            faktura.data.common[field] = newCvId
+
+            // In DB speichern
+            await onFakturaFieldChange(field, newCvId)
+
+            // Vehicle-Daten aktualisieren (lxcars)
+            if (vehicle && (fakturaType.value === 'order' || fakturaType.value === 'quotation' || fakturaType.value === 'invoice')) {
+                vehicle.onCustomerChangeVehicle(newCvId)
+            }
+        }
+
+        // ===== Dropdown-Listen laden =====
+
+        async function loadDropdownLists() {
+            try {
+                deliveryAddressList.value = faktura.data.shiptos || []
+                billingAddressList.value = faktura.data.billing_addresses || []
+                currencyList.value = oserp.session.company_config.currencies || []
+                taxZoneList.value = oserp.session.company_config.tax_zones || []
+                languageList.value = oserp.session.company_config.languages || []
+                departmentList.value = oserp.session.company_config.department || []
+                creditLimit.value = faktura.data.customer?.creditlimit || 0
+                employeeList.value = oserp.session.company_config.employees || []
+                printerList.value = oserp.session.company_config.printers || []
+
+                // Gespeicherten Drucker aus Employee-Config laden
+                const savedPrinterId = oserp.getConfigValue('default_printer_id')
+                if (savedPrinterId) {
+                    selectedPrinter.value = printerList.value.find(p => String(p.id) === String(savedPrinterId)) || null
+                }
+                paymentTermList.value = oserp.session.company_config.payment_terms || []
+                deliveryTermList.value = oserp.session.company_config.delivery_terms || []
+
+                paymentAccList.value = (oserp.session.company_config.payment_acc || []).map(acc => ({
+                    ...acc,
+                    label: `${acc.accno} - ${acc.description}`
+                }))
+            } catch (e) {
+                // Error loading dropdown lists
+            }
+        }
+
+        // ===== Action-Stubs =====
+
+        function saveFaktura() {
+            // TODO: Implement save
+        }
+
+        function closeView() {
+            router.back()
+        }
+
+        function openVehicleEdit() {
+            if (vehicle?.selectedCarId.value) {
+                router.push({ name: 'car', params: { id: vehicle.selectedCarId.value } })
+            }
+        }
+
+        function showOnDisplay() {
+            if (!fakturaId.value) return
+            const displayRoute = router.resolve({
+                name: 'wall-display',
+                query: { faktura: `${fakturaType.value}:${fakturaId.value}` }
+            })
+            window.open(displayRoute.href, 'wall-display')
+        }
+
+        // ===== SilverDAT Import =====
+
+        function onImportSilverdat() {
+            if (silverdatImport) {
+                silverdatImport.reset()
+                silverdatImport.showDialog.value = true
+            }
+        }
+
+        async function onSilverdatImport() {
+            if (!silverdatImport || !fakturaId.value) return
+
+            try {
+                const result = await silverdatImport.doImport(
+                    fakturaId.value, fakturaType.value
+                )
+
+                if (!result) return // doImport zeigt Fehler im Dialog
+
+                // Dialog sofort schließen
+                silverdatImport.showDialog.value = false
+                silverdatImport.reset()
+                toasts.success(t('FakturaView.faktura.silverdat.success', { count: result.count || 0 }))
+
+                // Faktura-Daten komplett neu laden (Items mit allen Properties)
+                await faktura.fetchFakturaData(fakturaId.value, fakturaType.value)
+                if (faktura.data) {
+                    fakturaItems.value = (faktura.data.positions || []).map(item => {
+                        let buchungsziel = item.buchungsziel
+                        if (typeof buchungsziel === 'string') {
+                            try { buchungsziel = JSON.parse(buchungsziel) }
+                            catch (e) { buchungsziel = null }
+                        }
+                        return { ...item, buchungsziel, localArticleList: [], localArticleLoading: false }
+                    })
+                    accounting.calculateTotals()
+                }
+            } catch (e) {
+                console.error('SilverDAT import handler error:', e)
+                if (silverdatImport) {
+                    silverdatImport.importError.value = String(e?.message || e)
+                    silverdatImport.importing.value = false
+                }
+            }
+        }
+
+        function onSilverdatClose() {
+            if (silverdatImport) {
+                silverdatImport.showDialog.value = false
+                silverdatImport.reset()
+            }
+        }
+
+        // ===== Dokument-Konvertierung (generisch) =====
+
+        async function convertAndNavigate(targetType) {
+            if (!fakturaId.value) return
+            try {
+                const result = await faktura.convertFaktura(fakturaId.value, fakturaType.value, targetType)
+                toasts.success(t('FakturaView.workflow.created'))
+                const targetRoute = routeNameMap[result.fakturaType]
+                if (targetRoute) {
+                    router.push({ name: targetRoute, params: { id: result.id } })
+                }
+            } catch (e) {
+                console.error('Fehler bei Dokumentkonvertierung:', e)
+                // API-Fehlermeldung anzeigen (z.B. Duplikat-Hinweis), sonst generischer Text
+                const msg = e?.code || t('FakturaView.workflow.error')
+                toasts.error(msg)
+            }
+        }
+
+        function reuseFaktura() {
+            convertAndNavigate(fakturaType.value)
+        }
+
+        function createQuotationFromFaktura() {
+            convertAndNavigate('quotation')
+        }
+
+        function createOrderFromFaktura() {
+            convertAndNavigate('order')
+        }
+
+        function createDeliveryOrderFromFaktura() {
+            convertAndNavigate('delivery_order')
+        }
+
+        async function createInvoiceFromFaktura() {
+            // Anweisungen validieren (nur lxcars)
+            if (vehicle) {
+                const valid = await validateInstructionsComplete()
+                if (!valid) return
+            }
+            convertAndNavigate('invoice')
+        }
+
+        function createCreditNoteFromFaktura() {
+            convertAndNavigate('credit_note')
+        }
+
+        function cancelFaktura() {
+            showStornoDialog.value = true
+        }
+
+        async function confirmStorno() {
+            showStornoDialog.value = false
+            convertAndNavigate('invoice_storno')
+        }
+
+        function createSupplierInquiryFromFaktura() {
+            convertAndNavigate('request_quotation')
+        }
+
+        function createSupplierOrderFromFaktura() {
+            convertAndNavigate('purchase_order')
+        }
+
+        function createComplaintFromFaktura() {
+            // TODO: Reklamation (späterer Schritt)
+        }
+
+        function saveAsDraft() {
+            // TODO: Implement save as draft
+        }
+
+        function showHistory() {
+            // TODO: Implement history
+        }
+
+        function setFollowUp() {
+            // TODO: Implement follow-up
+        }
+
+        function exportXInvoice() {
+            // TODO: Implement X-Invoice export
+        }
+
+        function selectPrinter(printer) {
+            selectedPrinter.value = printer
+            oserp.setConfigValue('default_printer_id', String(printer.id))
+            alerts.success(t('FakturaView.faktura.printerSelected', { name: printer.printer_description }))
+        }
+
+        function selectTemplate(template) {
+            selectedTemplate.value = template.id
+        }
+
+        async function printFaktura() {
+            if (!selectedPrinter.value) {
+                alerts.warning(t('FakturaView.faktura.selectPrinterFirst'))
+                return
+            }
+            try {
+                pdfLoading.value = true
+                await faktura.printToPrinter(
+                    fakturaId.value,
+                    fakturaType.value,
+                    selectedTemplate.value,
+                    selectedPrinter.value.id
+                )
+                alerts.success(t('FakturaView.faktura.printSuccess', { name: selectedPrinter.value.printer_description }))
+            } catch (e) {
+                console.error('Fehler beim Drucken:', e)
+                alerts.error(t('FakturaView.faktura.printError'))
+            } finally {
+                pdfLoading.value = false
+            }
+        }
+
+        async function showPdfPreview() {
+            try {
+                pdfLoading.value = true
+                const blobUrl = await faktura.generatePDFPreview(
+                    fakturaId.value,
+                    fakturaType.value,
+                    selectedTemplate.value
+                )
+                window.open(blobUrl, '_blank')
+            } catch (e) {
+                console.error('Fehler bei PDF-Vorschau:', e)
+                const detail = e.code || ''
+                alerts.error(detail || t('FakturaView.faktura.pdfError'))
+                if (e.message) console.error('LaTeX Debug:', e.message)
+            } finally {
+                pdfLoading.value = false
+            }
+        }
+
+        // ===== E-Mail Dialog =====
+        const emailDialogVisible = ref(false)
+        const emailDialogTo = ref('')
+        const emailDialogSubject = ref('')
+        const emailDialogBody = ref('')
+        const emailDialogAttachmentName = ref('')
+
+        /**
+         * Mapping: fakturaType → email_sender_* Feld in defaults
+         */
+        const emailSenderFieldMap = {
+            invoice: 'email_sender_invoice',
+            quotation: 'email_sender_sales_quotation',
+            order: 'email_sender_sales_order',
+            delivery_order: 'email_sender_sales_delivery_order',
+            purchase_invoice: 'email_sender_purchase_invoice',
+            purchase_order: 'email_sender_purchase_order',
+            request_quotation: 'email_sender_request_quotation'
+        }
+
+        // Mapping fakturaType -> email_journal_record_type enum
+        const emailRecordTypeMap = {
+            invoice: 'invoice',
+            quotation: 'sales_quotation',
+            order: 'sales_order',
+            delivery_order: 'sales_delivery_order',
+            purchase_invoice: 'purchase_invoice',
+            purchase_order: 'purchase_order',
+            request_quotation: 'request_quotation'
+        }
+
+        /**
+         * Oeffnet den E-Mail-Dialog mit vorausgefuellten Werten aus der Config
+         */
+        function sendEmail() {
+            const defaults = oserp.session.company_config?.defaults || {}
+            const common = faktura.data?.common || {}
+            const docTypeLabel = t(`FakturaView.dokumentTypes.${fakturaType.value}`)
+            const docNumber = common.invnumber || common.ordnumber || common.quonumber || common.donumber || ''
+
+            // Empfaenger: Kunden-E-Mail
+            emailDialogTo.value = contactEmail.value || ''
+
+            // Betreff: Dokumenttyp + Nummer, optional mit Vorgangsbeschreibung
+            let subject = `${docTypeLabel} ${docNumber}`.trim()
+            if (defaults.email_subject_transaction_description && common.transaction_description) {
+                subject += ` - ${common.transaction_description}`
+            }
+            emailDialogSubject.value = subject
+
+            // Nachrichtentext
+            const customerName = common.customer_name || common.vendor_name || ''
+            emailDialogBody.value = t('FakturaView.dialogs.sendEmail.defaultBody', {
+                type: docTypeLabel,
+                number: docNumber,
+                customer: customerName
+            })
+
+            // Anhang-Name
+            emailDialogAttachmentName.value = `${docTypeLabel}_${docNumber}.pdf`.replace(/\s+/g, '_')
+
+            emailDialogVisible.value = true
+        }
+
+        /**
+         * Sendet die E-Mail mit PDF-Anhang
+         */
+        async function onEmailSend(emailData) {
+            try {
+                pdfLoading.value = true
+
+                // PDF als Base64 generieren
+                const pdfBase64 = await faktura.generatePDFBase64(
+                    fakturaId.value,
+                    fakturaType.value,
+                    selectedTemplate.value
+                )
+
+                const defaults = oserp.session.company_config?.defaults || {}
+                const senderField = emailSenderFieldMap[fakturaType.value] || ''
+                const fromName = defaults[senderField] || ''
+
+                // Empfaenger aufbereiten
+                const toList = emailData.to.split(/[,;]/).map(e => ({
+                    email: e.trim(),
+                    name: ''
+                })).filter(e => e.email)
+
+                const ccList = emailData.cc
+                    ? emailData.cc.split(/[,;]/).map(e => ({
+                        email: e.trim(),
+                        name: ''
+                    })).filter(e => e.email)
+                    : []
+
+                // E-Mail via Backend senden
+                const response = await axios.post('/api/email/', {
+                    action: 'sendEmail',
+                    from_name: fromName,
+                    to: toList,
+                    cc: ccList,
+                    subject: emailData.subject,
+                    body_text: emailData.body,
+                    body_html: '',
+                    record_type: emailRecordTypeMap[fakturaType.value] || null,
+                    attachments: [{
+                        filename: emailDialogAttachmentName.value,
+                        content_base64: pdfBase64,
+                        content_type: 'application/pdf'
+                    }]
+                })
+
+                if (response.data.success) {
+                    toasts.success(t('FakturaView.faktura.emailSent'))
+                    emailDialogVisible.value = false
+                } else {
+                    const detail = response.data.text || ''
+                    alerts.error(detail || t('FakturaView.faktura.emailError'))
+                }
+            } catch (e) {
+                console.error('Fehler beim E-Mail-Versand:', e)
+                alerts.error(t('FakturaView.faktura.emailError'))
+            } finally {
+                pdfLoading.value = false
+                emailDialogVisible.value = false
+            }
+        }
+
+        // ===== WhatsApp Dialog =====
+        const waDialogVisible = ref(false)
+        const waDialogPhone = ref('')
+        const waDialogMessage = ref('')
+        const waDialogAttachmentName = ref('')
+        const waTemplates = ref([])
+        const waSelectedTemplate = ref(null)
+        const waTemplateParams = ref([])
+        const waTemplatesLoading = ref(false)
+
+        /**
+         * Berechnet die gerenderte Template-Vorschau
+         */
+        const waRenderedPreview = computed(() => {
+            if (!waSelectedTemplate.value?.body_text) return ''
+            let body = waSelectedTemplate.value.body_text
+            for (const param of waTemplateParams.value) {
+                body = body.replace(param.placeholder, param.value || param.placeholder)
+            }
+            return body
+        })
+
+        /**
+         * Laedt genehmigte WhatsApp-Templates vom Backend
+         */
+        async function loadWaTemplates() {
+            try {
+                waTemplatesLoading.value = true
+                const response = await axios.post('/api/whatsapp/', {
+                    action: 'getWhatsAppTemplates'
+                })
+                if (response.data.success) {
+                    const templates = response.data.payload?.templates || []
+                    waTemplates.value = templates
+
+                    // Zugeordnetes Faktura-Template aus Config waehlen
+                    const configTplId = Number(oserp.session?.company_config?.defaults_oserp?.whatsapp_tpl_faktura || 0)
+                    const matched = configTplId > 0 ? templates.find(t => t.id === configTplId) : null
+                    waSelectedTemplate.value = matched || templates.find(t => t.template_type === 'document') || null
+                } else {
+                    waTemplates.value = []
+                }
+            } catch (e) {
+                console.error('Fehler beim Laden der WhatsApp-Templates:', e)
+                waTemplates.value = []
+            } finally {
+                waTemplatesLoading.value = false
+            }
+        }
+
+        /**
+         * Extrahiert Platzhalter aus Template-Body und befuellt bekannte Parameter
+         */
+        function initTemplateParams(template) {
+            if (!template?.body_text) {
+                waTemplateParams.value = []
+                return
+            }
+            const common = faktura.data?.common || {}
+            const customer = faktura.data?.customer || {}
+            const docNumber = common.invnumber || common.ordnumber || common.quonumber || common.donumber || ''
+            const grossAmount = accounting.calculatedGrossAmount.value || common.amount || 0
+
+            // Anrede + Nachname (z.B. "Herr Müller")
+            const greeting = customer.greeting || ''
+            const name = customerName.value || ''
+            const salutation = greeting ? `${greeting} ${name}`.trim() : name
+
+            // Dokumenttyp mit Artikel + Nummer (z.B. "Ihre Rechnung Nr. 12345")
+            const docTypeArticleMap = {
+                invoice: 'Ihre Rechnung',
+                quotation: 'Ihr Angebot',
+                order: 'Ihr Auftrag',
+                delivery_order: 'Ihr Lieferschein'
+            }
+            const docTypeWithArticle = docTypeArticleMap[fakturaType.value] || t(`FakturaView.dokumentTypes.${fakturaType.value}`)
+            const docRef = docNumber ? `${docTypeWithArticle} Nr. ${docNumber}` : docTypeWithArticle
+
+            // Platzhalter {{1}}, {{2}}, ... extrahieren
+            const placeholders = template.body_text.match(/\{\{\d+\}\}/g) || []
+            const unique = [...new Set(placeholders)]
+
+            // Bekannte Parameter auto-befuellen
+            const autoFill = {
+                '{{1}}': salutation,
+                '{{2}}': docRef,
+                '{{3}}': typeof grossAmount === 'number'
+                    ? grossAmount.toLocaleString(locale.value === 'de' ? 'de-DE' : 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                    : String(grossAmount)
+            }
+
+            const paramLabels = {
+                '{{1}}': t('FakturaView.dialogs.sendWhatsApp.paramSalutation'),
+                '{{2}}': t('FakturaView.dialogs.sendWhatsApp.paramDocRef'),
+                '{{3}}': t('FakturaView.dialogs.sendWhatsApp.paramAmount')
+            }
+
+            waTemplateParams.value = unique.map(ph => ({
+                placeholder: ph,
+                label: paramLabels[ph] || `${t('FakturaView.dialogs.sendWhatsApp.paramGeneric')} ${ph}`,
+                value: autoFill[ph] || ''
+            }))
+        }
+
+        /**
+         * Oeffnet den WhatsApp-Dialog mit vorausgefuellten Werten
+         */
+        function sendWhatsApp() {
+            const common = faktura.data?.common || {}
+            const docTypeLabel = t(`FakturaView.dokumentTypes.${fakturaType.value}`)
+            const docNumber = common.invnumber || common.ordnumber || common.quonumber || common.donumber || ''
+
+            // Telefonnummer: Haupttelefon des Kunden
+            waDialogPhone.value = contactPhone1.value || ''
+
+            // Nachricht
+            waDialogMessage.value = t('FakturaView.dialogs.sendWhatsApp.defaultMessage', {
+                type: docTypeLabel,
+                number: docNumber
+            })
+
+            // Anhang-Name: Firmenname-Dokumenttyp-Nummer
+            const companyName = oserp.session.company_config?.defaults?.company || 'Dokument'
+            waDialogAttachmentName.value = `${companyName}-${docTypeLabel}-${docNumber}.pdf`.replace(/\s+/g, '_')
+
+            // Template laden und automatisch waehlen
+            waSelectedTemplate.value = null
+            waTemplateParams.value = []
+            loadWaTemplates()
+
+            waDialogVisible.value = true
+        }
+
+        /**
+         * Sendet das Dokument per WhatsApp mit PDF-Anhang
+         */
+        async function onWhatsAppSend(waData) {
+            try {
+                pdfLoading.value = true
+
+                if (!waSelectedTemplate.value) {
+                    alerts.error(t('FakturaView.faktura.whatsappError'))
+                    return
+                }
+
+                // PDF als Base64 generieren
+                const pdfBase64 = await faktura.generatePDFBase64(
+                    fakturaId.value,
+                    fakturaType.value,
+                    selectedTemplate.value
+                )
+
+                const common = faktura.data?.common || {}
+                const customerId = common.customer_id || common.vendor_id || 0
+                const paramValues = waTemplateParams.value.map(p => p.value)
+
+                // Template + Dokument in einem Call senden
+                const response = await axios.post('/api/whatsapp/', {
+                    action: 'sendWhatsAppDocument',
+                    to: waData.phone,
+                    customer_id: customerId,
+                    document_base64: pdfBase64,
+                    filename: waDialogAttachmentName.value,
+                    template_id: waSelectedTemplate.value.id,
+                    parameters: paramValues
+                })
+
+                if (response.data.success) {
+                    toasts.success(t('FakturaView.faktura.whatsappSent'))
+                    waDialogVisible.value = false
+                } else {
+                    const detail = response.data.text || ''
+                    alerts.error(detail || t('FakturaView.faktura.whatsappError'))
+                }
+            } catch (e) {
+                console.error('Fehler beim WhatsApp-Versand:', e)
+                alerts.error(t('FakturaView.faktura.whatsappError'))
+            } finally {
+                pdfLoading.value = false
+                waDialogVisible.value = false
+            }
+        }
+
+        // Template-Parameter initialisieren bei Auswahl
+        watch(waSelectedTemplate, (tpl) => {
+            initTemplateParams(tpl)
+        })
+
+        // KI-Positionsvorschläge
+        const showAiSuggest = computed(() => fakturaType.value === 'order' && !!vehicle)
+        const aiLoading = ref(false)
+        const aiDialogVisible = ref(false)
+        const aiSuggestedItems = ref([])
+
+        async function onAiSuggest() {
+            const oeId = await ensureOrderAndGetId()
+            if (!oeId) return
+            aiLoading.value = true
+            try {
+                const response = await axios.post('/api/lxcars/', {
+                    action: 'suggestPositions',
+                    oe_id: oeId
+                }, { timeout: 60000 })
+                const data = response.data
+                if (!data.success) {
+                    const detail = typeof data.payload === 'string' ? data.payload : ''
+                    toasts.error(t('FakturaView.faktura.aiError') + (detail ? '\n' + detail : ''))
+                    return
+                }
+                const suggestions = data.payload.suggested_items || []
+                if (suggestions.length > 0) {
+                    aiSuggestedItems.value = suggestions
+                    aiDialogVisible.value = true
+                } else {
+                    toasts.info(t('FakturaView.faktura.aiNoSuggestions'))
+                }
+            } catch {
+                toasts.error(t('FakturaView.faktura.aiError'))
+            } finally {
+                aiLoading.value = false
+            }
+        }
+
+        async function onAiConfirmed(selectedItems) {
+            try {
+                const response = await axios.post('/api/lxcars/', {
+                    action: 'addSuggestedItems',
+                    oe_id: fakturaId.value,
+                    items: selectedItems
+                })
+                if (response.data.success) {
+                    toasts.success(t('FakturaView.faktura.aiPositionsAdded', { count: selectedItems.length }))
+                    await faktura.fetchFakturaData(fakturaId.value, fakturaType.value)
+                    if (faktura.data) {
+                        fakturaItems.value = (faktura.data.positions || []).map(item => {
+                            let buchungsziel = item.buchungsziel
+                            if (typeof buchungsziel === 'string') {
+                                try { buchungsziel = JSON.parse(buchungsziel) }
+                                catch (e) { buchungsziel = null }
+                            }
+                            return { ...item, buchungsziel, localArticleList: [], localArticleLoading: false }
+                        })
+                        fakturaItems.value.push(items.createEmptyItem())
+                    }
+                } else {
+                    toasts.error(t('FakturaView.faktura.aiPositionsError'))
+                }
+            } catch {
+                toasts.error(t('FakturaView.faktura.aiPositionsError'))
+            } finally {
+                aiDialogVisible.value = false
+            }
+        }
+
+        return {
+            t,
+            oserp,
+            faktura,
+            fakturaType,
+            fakturaId,
+            isVendor,
+            fakturaItems,
+            itemsTableRef,
+            instructionsRef,
+            maengelRef,
+            vehicleSectionRef,
+            customerList,
+            articleList,
+            articleLoading,
+            deliveryAddressList,
+            billingAddressList,
+            currencyList,
+            taxZoneList,
+            languageList,
+            departmentList,
+            employeeList,
+            printerList,
+            templateList,
+            selectedTemplate,
+            selectedPrinter,
+            pdfLoading,
+            paymentTermList,
+            deliveryTermList,
+            paymentAccList,
+            contactPhone1,
+            contactPhone2,
+            contactEmail,
+            contactLabel,
+            customerName,
+            phoneNumbers,
+            creditLimit,
+            customerNotes,
+            compactView,
+            compactDocNumber,
+            compactTransdate,
+            compactEmployeeName,
+            switchToWhatsAppTabFromFaktura,
+            paymentList,
+            // Composables
+            accounting,
+            vehicle,
+            items,
+            // Orchestrierung
+            ensureOrderAndGetId,
+            saveAllItems,
+            toggleClosed,
+            onFakturaFieldChange,
+            onCustomerChange,
+            instructionsIncompleteDialog,
+            // Actions
+            saveFaktura,
+            closeView,
+            reuseFaktura,
+            createQuotationFromFaktura,
+            createOrderFromFaktura,
+            createDeliveryOrderFromFaktura,
+            createInvoiceFromFaktura,
+            createCreditNoteFromFaktura,
+            cancelFaktura,
+            confirmStorno,
+            showStornoDialog,
+            createSupplierInquiryFromFaktura,
+            createSupplierOrderFromFaktura,
+            createComplaintFromFaktura,
+            saveAsDraft,
+            showHistory,
+            setFollowUp,
+            exportXInvoice,
+            selectPrinter,
+            selectTemplate,
+            printFaktura,
+            showPdfPreview,
+            sendEmail,
+            emailDialogVisible,
+            emailDialogTo,
+            emailDialogSubject,
+            emailDialogBody,
+            emailDialogAttachmentName,
+            onEmailSend,
+            // WhatsApp
+            sendWhatsApp,
+            waDialogVisible,
+            waDialogPhone,
+            waDialogAttachmentName,
+            waSelectedTemplate,
+            waTemplateParams,
+            waRenderedPreview,
+            onWhatsAppSend,
+            openVehicleEdit,
+            showOnDisplay,
+            silverdatImport,
+            onImportSilverdat,
+            onSilverdatImport,
+            onSilverdatClose,
+            // KI-Positionsvorschläge
+            showAiSuggest,
+            aiLoading,
+            aiDialogVisible,
+            aiSuggestedItems,
+            onAiSuggest,
+            onAiConfirmed,
+            specialDialogVisible,
+            showSpecialButton,
+            wallDisplayEnabled,
+            mechanicModeEnabled,
+            partsRequestsList,
+            recentVendorsList,
+            onRequestPart,
+            onOrderPart,
+            onPhotoPart,
+            photoDialog,
+            closePhotoDialog,
+            openFullscreen,
+            onPhotoFileSelected,
+            deletePhoto,
+            openSpecialDialog
+        }
+    }
+})
+</script>
+
+<style scoped>
+/* ============================================
+   FAKTURA VIEW - PROFESSIONELLES LAYOUT
+   ============================================ */
+
+/* Container */
+.faktura-container {
+    padding: 24px;
+    max-width: 1800px;
+}
+
+/* Sektionen mit einheitlichem Abstand */
+.faktura-section {
+    margin-bottom: 24px;
+}
+
+.faktura-section:last-child {
+    margin-bottom: 0;
+}
+
+/* ============================================
+   CARD STYLING - EINHEITLICH
+   ============================================ */
+
+.faktura-card {
+    height: 100%;
+    border-radius: 8px;
+}
+
+.faktura-card__header {
+    padding: 14px 16px !important;
+    background-color: #f5f5f5;
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    display: flex;
+    align-items: center;
+}
+
+.faktura-card__body {
+    padding: 16px !important;
+}
+
+/* ============================================
+   INPUT FELDER
+   ============================================ */
+
+.faktura-card__body :deep(.v-input) {
+    flex: unset;
+    grid-template-rows: auto !important;
+}
+
+.faktura-card__body :deep(.v-input__details) {
+    display: none !important;
+}
+
+.faktura-card__body :deep(.v-field--variant-outlined) {
+    --v-field-padding-start: 12px;
+    --v-field-padding-end: 12px;
+}
+</style>

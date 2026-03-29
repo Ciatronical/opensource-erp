@@ -1,0 +1,68 @@
+{
+    "HuSerienbriefView": {
+        "title": "车检通知",
+        "subtitle": "车检到期的客户",
+        "vorlauf": "提前量：{monate} 个月",
+        "fields": {
+            "customer_name": "客户",
+            "kennzeichen": "车牌号",
+            "hu_datum": "车检日期",
+            "telefon": "电话",
+            "email": "电子邮件",
+            "fahrzeug": "车辆",
+            "actions": "操作",
+            "date_from": "车检到期从",
+            "date_to": "车检到期至"
+        },
+        "buttons": {
+            "print_all": "打印所选",
+            "email_all": "发送电子邮件",
+            "reload": "刷新",
+            "exclude": "取消选择",
+            "include": "重新纳入",
+            "send_pin": "使用 PIN 发送",
+            "whatsapp_all": "发送 WhatsApp"
+        },
+        "checkboxes": {
+            "show_excluded": "也显示已取消选择的"
+        },
+        "chips": {
+            "excluded": "已取消选择",
+            "results_count": "客户"
+        },
+        "filter": {
+            "title": "时间范围"
+        },
+        "table": {
+            "no_results": "在配置的时间范围内未找到车检到期的客户。",
+            "no_results_hint": "请检查 LXCars 设置中的提前时间。"
+        },
+        "whatsapp": {
+            "message": "您好 {name}，您的车辆（{kennzeichen}）的车检将于 {hu_datum} 到期。请预约检测时间。祝好"
+        },
+        "toasts": {
+            "error_loading": "加载车检列表时出错。",
+            "excluded_success": "客户已取消选择。",
+            "included_success": "客户已重新纳入。",
+            "exclude_error": "保存时出错。",
+            "email_sent": "电子邮件已发送。",
+            "email_error": "发送邮件时出错。",
+            "pdf_error": "创建 PDF 时出错。",
+            "sftp_success": "PDF 已通过 eLetter 成功发送。",
+            "sftp_error": "通过 eLetter 发送时出错。",
+            "whatsapp_sent": "WhatsApp 消息已发送。",
+            "whatsapp_error": "发送 WhatsApp 消息时出错。",
+            "whatsapp_bulk_sent": "已发送 {sent} 条 WhatsApp 消息，{failed} 条失败。",
+            "whatsapp_no_phone": "所选客户均无电话号码。"
+        },
+        "tooltips": {
+            "whatsapp_single": "通过 WhatsApp 发送车检提醒",
+            "exclude": "将客户从车检通知中排除",
+            "include": "将客户重新纳入车检通知"
+        },
+        "dialogs": {
+            "confirm_exclude_title": "取消选择客户",
+            "confirm_exclude_text": "此客户将被永久从车检通知列表中移除。确定要继续吗？"
+        }
+    }
+}

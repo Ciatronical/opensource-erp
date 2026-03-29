@@ -1,0 +1,19 @@
+{
+    "CarView": {
+        "routes": {
+            "newCar": "/fahrzeug/neu",
+            "newCarFromScan": "/fahrzeug/neu-vom-scan",
+            "manageCars": "/fahrzeug",
+            "orderSearch": "/fahrzeug-auftrag/suche",
+            "carRegistration": "/fahrzeug/zulassung"
+        },
+        "newCar": "Criar novo",
+        "newCarFromScan": "Lista de digitalização",
+        "title": "Veículos",
+        "manageCars": "Gerir",
+        "orderSearch": "Lista de encomendas",
+        "huSerienbrief": "Notificações de inspeção",
+        "orderSearchTooltip": "Pesquisa de encomendas",
+        "scanTooltip": "Veículos de digitalização"
+    }
+}

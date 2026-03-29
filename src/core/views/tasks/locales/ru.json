@@ -1,0 +1,135 @@
+{
+    "TasksView": {
+        "title": "Задачи",
+        "search": "Поиск...",
+        "fromDate": "От",
+        "toDate": "До",
+        "showDone": "Показать выполненные",
+        "tabs": {
+            "board": "Доска",
+            "list": "Список",
+            "calendar": "Календарь"
+        },
+        "actions": {
+            "create": "Новая задача",
+            "cancel": "Отмена",
+            "delete": "Удалить",
+            "save": "Сохранить",
+            "edit": "Редактировать",
+            "markDone": "Выполнено",
+            "markUndone": "Открыть снова",
+            "close": "Закрыть"
+        },
+        "columns": {
+            "overdue": "Просрочено",
+            "today": "Сегодня",
+            "upcoming": "Предстоящие",
+            "done": "Выполнено"
+        },
+        "fields": {
+            "subject": "Тема",
+            "body": "Заметка",
+            "date": "Дата"
+        },
+        "calendar": {
+            "today": "Сегодня",
+            "month": "Месяц",
+            "week": "Неделя",
+            "day": "День",
+            "more": "ещё"
+        },
+        "dialog": {
+            "titleNew": "Новая задача",
+            "titleEdit": "Редактировать задачу"
+        },
+        "confirmDelete": {
+            "title": "Удалить задачу?",
+            "message": "Вы действительно хотите удалить эту задачу? Это действие нельзя отменить."
+        },
+        "messages": {
+            "loadError": "Ошибка загрузки задач",
+            "saved": "Задача сохранена",
+            "saveError": "Ошибка сохранения",
+            "deleted": "Задача удалена",
+            "markedDone": "Отмечено как выполненное",
+            "markedUndone": "Снова открыто",
+            "error": "Произошла ошибка"
+        }
+    },
+    "TasksCard": {
+        "noSubject": "Без темы",
+        "today": "Сегодня",
+        "tomorrow": "Завтра",
+        "daysAgo": "{days} дней назад",
+        "inDays": "через {days} дней",
+        "markDone": "Отметить как выполненное",
+        "markUndone": "Открыть снова",
+        "delete": "Удалить"
+    },
+    "TasksDialog": {
+        "titleCreate": "Новая задача",
+        "titleEdit": "Редактировать задачу",
+        "date": "Дата",
+        "subject": "Тема",
+        "body": "Заметка",
+        "assignedEmployees": "Назначено",
+        "linkSection": "Привязка (необязательно)",
+        "linkType": "Тип привязки",
+        "linkId": "ID",
+        "linkInfo": "Обозначение",
+        "cancel": "Отмена",
+        "save": "Сохранить",
+        "quickDate": {
+            "today": "Сегодня",
+            "tomorrow": "Завтра",
+            "nextWeek": "+1 неделя",
+            "nextMonth": "+1 месяц"
+        },
+        "linkTypes": {
+            "customer": "Клиент",
+            "vendor": "Поставщик",
+            "salesQuotation": "Предложение",
+            "salesOrder": "Заказ",
+            "salesDeliveryOrder": "Накладная",
+            "salesInvoice": "Счет",
+            "purchaseQuotation": "Запрос",
+            "purchaseOrder": "Заказ поставщику",
+            "purchaseDeliveryOrder": "Поступление товара",
+            "purchaseInvoice": "Входящий счет"
+        },
+        "validation": {
+            "required": "Обязательное поле"
+        }
+    },
+    "TasksList": {
+        "done": "Выполнено",
+        "open": "Открыто",
+        "today": "Сегодня",
+        "tomorrow": "Завтра",
+        "markDone": "Отметить как выполненное",
+        "markUndone": "Открыть снова",
+        "edit": "Редактировать",
+        "delete": "Удалить",
+        "headers": {
+            "date": "Дата",
+            "subject": "Тема",
+            "link": "Привязка",
+            "assignedTo": "Назначено",
+            "status": "Статус",
+            "actions": "Действия"
+        }
+    },
+    "TasksWidget": {
+        "title": "Задачи",
+        "overdue": "Просрочено",
+        "today": "Сегодня",
+        "tomorrow": "Завтра",
+        "upcoming": "Предстоящие",
+        "noItems": "Нет открытых задач",
+        "showAll": "Показать все {count}",
+        "markDone": "Отметить как выполненное",
+        "quickAdd": "Быстрое добавление",
+        "openAll": "Открыть все",
+        "daysAgo": "{days} дней назад"
+    }
+}

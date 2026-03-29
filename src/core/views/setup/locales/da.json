@@ -1,0 +1,50 @@
+{
+    "setup": {
+        "title": "OpensourceERP Setup",
+        "welcome": "Velkommen til OpensourceERP! Konfigurer venligst forbindelsen til godkendelsesdatabasen.",
+        "setupAlreadyDone": "Setup er allerede gennemfoert. Du omdirigeres til loginsiden...",
+        "configFound": "kivitendo.conf fundet - Adgangskoden var ukrypteret. Formularen er udfyldt automatisk.",
+        "setupCompleteMessage": "Setup gennemfoert! Adgangskoden er gemt krypteret. Du omdirigeres...",
+        "fields": {
+            "host": "Host",
+            "port": "Port",
+            "database": "Databasenavn",
+            "login": "Login",
+            "password": "Adgangskode"
+        },
+        "placeholders": {
+            "host": "localhost",
+            "port": "5432",
+            "database": "oserp_auth",
+            "login": "postgres"
+        },
+        "validation": {
+            "required": "Obligatorisk felt",
+            "portRange": "Port skal vaere mellem 1 og 65535"
+        },
+        "buttons": {
+            "testConnection": "Test forbindelse",
+            "testingConnection": "Tester forbindelse...",
+            "saveSetup": "Afslut setup",
+            "savingSetup": "Gemmer...",
+            "finish": "Koer app"
+        },
+        "errors": {
+            "checkStatus": "Fejl ved kontrol af setup-status",
+            "testConnection": "Fejl ved test af forbindelse",
+            "testNetworkError": "Netvaerksfejl ved test af forbindelse",
+            "saveSetup": "Fejl ved lagring af konfiguration",
+            "saveNetworkError": "Netvaerksfejl ved lagring af konfiguration"
+        },
+        "update": {
+            "title": "Databaseopdatering",
+            "running": "Database opdateres...",
+            "success": "Databaseopdatering gennemfoert.",
+            "failed": "Databaseopdatering mislykkedes.",
+            "networkError": "Netvaerksfejl ved databaseopdatering."
+        },
+        "footer": {
+            "copyright": "OpensourceERP"
+        }
+    }
+}

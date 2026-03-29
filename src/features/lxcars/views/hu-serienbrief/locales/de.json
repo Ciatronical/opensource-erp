@@ -1,0 +1,68 @@
+{
+    "HuSerienbriefView": {
+        "title": "HU-Benachrichtigungen",
+        "subtitle": "Kunden mit fälliger Hauptuntersuchung",
+        "vorlauf": "Vorlauf: {monate} Monate",
+        "fields": {
+            "customer_name": "Kunde",
+            "kennzeichen": "Kennzeichen",
+            "hu_datum": "HU-Datum",
+            "telefon": "Telefon",
+            "email": "E-Mail",
+            "fahrzeug": "Fahrzeug",
+            "actions": "Aktionen",
+            "date_from": "HU fällig von",
+            "date_to": "HU fällig bis"
+        },
+        "buttons": {
+            "print_all": "Ausgewählte drucken",
+            "email_all": "E-Mail senden",
+            "reload": "Aktualisieren",
+            "exclude": "Abwählen",
+            "include": "Wieder aufnehmen",
+            "send_pin": "Mit PIN versenden",
+            "whatsapp_all": "WhatsApp senden"
+        },
+        "checkboxes": {
+            "show_excluded": "Auch abgewählte anzeigen"
+        },
+        "chips": {
+            "excluded": "Abgewählt",
+            "results_count": "Kunden"
+        },
+        "filter": {
+            "title": "Zeitraum"
+        },
+        "table": {
+            "no_results": "Keine Kunden mit fälliger HU im konfigurierten Zeitraum gefunden.",
+            "no_results_hint": "Prüfen Sie die Vorlaufzeit in den Einstellungen unter LXCars."
+        },
+        "whatsapp": {
+            "message": "Hallo {name}, die HU für Ihr Fahrzeug ({kennzeichen}) läuft am {hu_datum} ab. Bitte vereinbaren Sie einen Termin. Viele Grüße"
+        },
+        "toasts": {
+            "error_loading": "Fehler beim Laden der HU-Liste.",
+            "excluded_success": "Kunde wurde abgewählt.",
+            "included_success": "Kunde wurde wieder aufgenommen.",
+            "exclude_error": "Fehler beim Speichern.",
+            "email_sent": "E-Mail wurde versendet.",
+            "email_error": "Fehler beim E-Mail-Versand.",
+            "pdf_error": "Fehler beim Erstellen des PDF.",
+            "sftp_success": "PDF wurde erfolgreich per eLetter versendet.",
+            "sftp_error": "Fehler beim Versenden per eLetter.",
+            "whatsapp_sent": "WhatsApp-Nachricht wurde gesendet.",
+            "whatsapp_error": "Fehler beim Senden der WhatsApp-Nachricht.",
+            "whatsapp_bulk_sent": "{sent} WhatsApp-Nachrichten gesendet, {failed} fehlgeschlagen.",
+            "whatsapp_no_phone": "Keiner der ausgewählten Kunden hat eine Telefonnummer."
+        },
+        "tooltips": {
+            "whatsapp_single": "HU-Erinnerung per WhatsApp senden",
+            "exclude": "Kunde von HU-Benachrichtigungen ausschließen",
+            "include": "Kunde wieder in HU-Benachrichtigungen aufnehmen"
+        },
+        "dialogs": {
+            "confirm_exclude_title": "Kunde abwählen",
+            "confirm_exclude_text": "Dieser Kunde wird dauerhaft aus der HU-Benachrichtigungsliste entfernt. Möchten Sie fortfahren?"
+        }
+    }
+}

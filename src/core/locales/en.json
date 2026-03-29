@@ -1,0 +1,45 @@
+{
+    "LoginView": {
+        "title": "Login",
+        "username": "Benutzername",
+        "password": "Passwort",
+        "client": "Mandant",
+        "button": "Anmelden",
+        "failed": "Anmeldung fehlgeschlagen. Bitte überprüfen Sie Ihre Anmeldedaten.",
+        "EMPTY_FIELDS": "Bitte Name und Passwort angeben.",
+        "USER_NOT_FOUND": "Benutzer nicht gefunden.",
+        "WRONG_PASSWORD": "Ungültiges Passwort.",
+        "ERROR": "Fehler bei der Anmeldung. Bitte versuchen Sie es erneut.",
+        "ERROR_LOADING_CLIENTS": "Fehler beim Laden der Mandanten. Bitte versuchen Sie es später erneut.",
+        "USER_NOT_ASSIGNED_TO_CLIENT": "Benutzer nicht dem Mandanten zugeordnet.",
+        "updateButton": "Run update",
+        "updateSuccess": "Database update completed successfully.",
+        "updateError": "Database update failed. Please try again.",
+        "privacy": "Privacy Policy",
+        "dataDeletion": "Data Deletion"
+    },
+    "NotFoundView": {
+        "title": "Seite nicht gefunden",
+        "message": "Die angeforderte Seite wurde nicht gefunden.",
+        "back_home": "Zurück zur Startseite"
+    },
+        "NavbarView": {
+        "logoutTooltip": "Logout",
+        "accountTooltip": "Account",
+        "editCustomerTooltip": "Edit Customer",
+        "editCvTooltip": "Edit Customer/Vendor",
+        "currentC": "Customer:",
+        "currentV": "Vendor:",
+        "demoBanner": "Demo mode — All data will be reset automatically after inactivity.",
+        "demoResetWarning": "Demo will reset in {seconds} seconds — move the mouse to continue."
+    },
+    "ErrorView": {
+        "title": "An error has occurred",
+        "message": "We are sorry, but an unexpected error has occurred.",
+        "debugInfo": "Debug information:",
+        "clickToShowDetails": "Click to show details"
+    },
+    "App": {
+        "loading": "Please wait..."
+    }
+}
