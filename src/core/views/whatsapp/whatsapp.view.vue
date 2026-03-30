@@ -17,6 +17,11 @@
             <v-row>
                 <!-- Linke Spalte: Konversationen -->
                 <v-col cols="12" md="4">
+                    <v-btn color="green-darken-2" block class="mb-3" @click="showCompose = true">
+                        <v-icon start size="small">mdi-message-plus</v-icon>
+                        {{ t('WhatsAppView.compose') }}
+                    </v-btn>
+
                     <v-card variant="outlined" elevation="0">
                         <v-card-title class="py-2 px-3 bg-grey-lighten-4 d-flex align-center ga-2">
                             <v-text-field
@@ -84,11 +89,6 @@
                             </v-list-item>
                         </v-list>
                     </v-card>
-
-                    <v-btn color="green-darken-2" block class="mt-3" @click="showCompose = true">
-                        <v-icon start size="small">mdi-message-plus</v-icon>
-                        {{ t('WhatsAppView.compose') }}
-                    </v-btn>
                 </v-col>
 
                 <!-- Rechte Spalte: Chat -->
