@@ -1008,6 +1008,7 @@ export default {
 </script>
 
 <style scoped>
+.chat-msg-card { padding-right: 28px !important; }
 .chat-msg-card .chat-msg-delete { position: absolute; top: 2px; right: 2px; opacity: 0; transition: opacity 0.15s; z-index: 1; }
 .chat-msg-card:hover .chat-msg-delete { opacity: 1; }
 </style>

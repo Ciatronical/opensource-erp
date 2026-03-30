@@ -1832,6 +1832,7 @@ export default {
 }
 .chat-contact-card + .chat-contact-card { margin-top: 6px; }
 .chat-contact-card a { color: #1565c0; }
+.chat-msg-card { padding-right: 28px !important; }
 .chat-msg-card .chat-msg-delete { position: absolute; top: 2px; right: 2px; opacity: 0; transition: opacity 0.15s; z-index: 1; }
 .chat-msg-card:hover .chat-msg-delete { opacity: 1; }
 </style>
