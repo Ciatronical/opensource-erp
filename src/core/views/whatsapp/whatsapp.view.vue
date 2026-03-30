@@ -215,15 +215,55 @@
                                             </div>
 
                                             <!-- Video -->
-                                            <div v-else-if="msg.message_type === 'video'" class="chat-audio">
-                                                <v-icon size="20" class="mr-1">mdi-video</v-icon>
-                                                <span class="text-caption">Video</span>
+                                            <div v-else-if="msg.message_type === 'video'" class="chat-image">
+                                                <template v-if="mediaCache[msg.id]">
+                                                    <div class="chat-image__wrapper">
+                                                        <video
+                                                            :src="mediaCache[msg.id]"
+                                                            controls
+                                                            preload="metadata"
+                                                            style="max-width: 260px; max-height: 260px; border-radius: 6px; display: block;"
+                                                        />
+                                                        <v-btn
+                                                            class="chat-image__download"
+                                                            size="x-small"
+                                                            variant="tonal"
+                                                            icon
+                                                            @click.stop="downloadMedia(msg)"
+                                                        >
+                                                            <v-icon size="16">mdi-download</v-icon>
+                                                        </v-btn>
+                                                        <v-btn
+                                                            v-if="selectedConv?.customer_id"
+                                                            class="chat-image__save"
+                                                            size="x-small"
+                                                            variant="tonal"
+                                                            icon
+                                                            :loading="savingMedia[msg.id]"
+                                                            :title="t('WhatsAppView.saveToFolder')"
+                                                            @click.stop="saveMediaToFolder(msg)"
+                                                        >
+                                                            <v-icon size="16">mdi-folder-download</v-icon>
+                                                        </v-btn>
+                                                    </div>
+                                                </template>
+                                                <div v-else-if="msg.media_url" class="chat-image__placeholder">
+                                                    <v-progress-circular v-if="mediaLoading[msg.id]" indeterminate size="28" width="2" color="grey" />
+                                                    <v-icon v-else size="40" color="grey-lighten-1">mdi-video-outline</v-icon>
+                                                </div>
+                                                <div v-if="msg.media_caption" class="chat-image__caption">{{ msg.media_caption }}</div>
                                             </div>
 
                                             <!-- Sticker -->
-                                            <div v-else-if="msg.message_type === 'sticker'" class="chat-audio">
-                                                <v-icon size="20" class="mr-1">mdi-sticker-emoji</v-icon>
-                                                <span class="text-caption">Sticker</span>
+                                            <div v-else-if="msg.message_type === 'sticker'" class="chat-image">
+                                                <template v-if="mediaCache[msg.id]">
+                                                    <img :src="mediaCache[msg.id]" style="max-width: 150px; max-height: 150px;" />
+                                                </template>
+                                                <div v-else-if="msg.media_url" class="d-flex align-center">
+                                                    <v-progress-circular v-if="mediaLoading[msg.id]" indeterminate size="20" width="2" class="mr-1" />
+                                                    <v-icon v-else size="20" class="mr-1">mdi-sticker-emoji</v-icon>
+                                                    <span class="text-caption">Sticker</span>
+                                                </div>
                                             </div>
 
                                             <!-- Standort -->
@@ -1039,7 +1079,7 @@ export default {
         // Alle Bilder im Chat laden
         function loadAllMedia() {
             chatMessages.value
-                .filter(msg => (msg.message_type === 'image' || msg.message_type === 'audio' || msg.message_type === 'voice') && msg.media_url && !mediaCache[msg.id])
+                .filter(msg => ['image', 'audio', 'voice', 'video', 'sticker'].includes(msg.message_type) && msg.media_url && !mediaCache[msg.id])
                 .forEach(msg => loadMedia(msg))
         }
 

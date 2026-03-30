@@ -123,6 +123,37 @@
                       </div>
                     </div>
                   </div>
+                  <!-- Video -->
+                  <div v-if="msg.message_type === 'video'" class="my-1">
+                    <div v-if="imageCache[msg.id]" style="position: relative; display: inline-block;">
+                      <video :src="imageCache[msg.id]" controls preload="metadata" style="max-width: 260px; max-height: 260px; border-radius: 6px; display: block;" />
+                      <div class="d-flex ga-1" style="position: absolute; top: 4px; right: 4px;">
+                        <v-btn v-if="cvId" size="x-small" variant="tonal" icon :title="t('CustomerVendorEditView.whatsapp.saveToFolder')" :loading="savingMedia[msg.id]" style="background: rgba(255,255,255,0.85);" @click.stop="saveMediaToFolder(msg)">
+                          <v-icon size="16" color="primary">mdi-folder-download</v-icon>
+                        </v-btn>
+                        <v-btn size="x-small" variant="tonal" icon style="background: rgba(255,255,255,0.85);" @click.stop="downloadImage(msg)">
+                          <v-icon size="16">mdi-download</v-icon>
+                        </v-btn>
+                      </div>
+                    </div>
+                    <div v-else class="d-flex align-center justify-center" style="width: 200px; height: 140px; background: rgba(0,0,0,0.04); border-radius: 6px;">
+                      <v-progress-circular v-if="msg.media_url && imageLoading[msg.id]" indeterminate size="28" width="2" color="grey" />
+                      <div v-else class="text-center">
+                        <v-icon size="40" color="grey-lighten-1">mdi-video-outline</v-icon>
+                        <div class="text-caption text-medium-emphasis">{{ msg.media_caption || '' }}</div>
+                      </div>
+                    </div>
+                    <div v-if="msg.media_caption" class="text-body-2 mt-1" style="white-space: pre-wrap;">{{ msg.media_caption }}</div>
+                  </div>
+                  <!-- Sticker -->
+                  <div v-if="msg.message_type === 'sticker'" class="my-1">
+                    <img v-if="imageCache[msg.id]" :src="imageCache[msg.id]" style="max-width: 150px; max-height: 150px;" />
+                    <div v-else class="d-flex align-center">
+                      <v-progress-circular v-if="msg.media_url && imageLoading[msg.id]" indeterminate size="20" width="2" class="mr-1" />
+                      <v-icon v-else size="20" class="mr-1">mdi-sticker-emoji</v-icon>
+                      <span class="text-caption">Sticker</span>
+                    </div>
+                  </div>
                   <!-- Dokument -->
                   <div v-if="msg.message_type === 'document'" class="my-1">
                     <div class="d-flex align-center pa-2 rounded" style="background: rgba(0,0,0,0.06); cursor: pointer;" @click="downloadDocument(msg)">
@@ -147,7 +178,7 @@
                     </div>
                   </div>
                   <!-- Text (Fallback) -->
-                  <div v-if="!['audio','voice','contacts','image','document','location'].includes(msg.message_type)" class="text-body-2" style="white-space: pre-wrap;" v-html="linkifyText(msg.message_text)"></div>
+                  <div v-if="!['audio','voice','contacts','image','video','sticker','document','location'].includes(msg.message_type)" class="text-body-2" style="white-space: pre-wrap;" v-html="linkifyText(msg.message_text)"></div>
                   <!-- PDF-Anhang bei Text-/Template-Nachrichten -->
                   <div v-if="!['document','image'].includes(msg.message_type) && msg.media_url && msg.media_mime_type === 'application/pdf'" class="d-flex align-center mt-2 pa-2 rounded" style="background: rgba(0,0,0,0.06); cursor: pointer;" @click="downloadDocument(msg)">
                     <v-icon size="24" color="red-darken-1" class="mr-2">mdi-file-pdf-box</v-icon>
@@ -561,7 +592,7 @@ export default {
 
     function loadImageMessages() {
       messages.value
-        .filter(msg => msg.message_type === 'image' && msg.media_url && !imageCache[msg.id])
+        .filter(msg => ['image', 'video', 'sticker'].includes(msg.message_type) && msg.media_url && !imageCache[msg.id])
         .forEach(msg => loadImage(msg))
     }
 
