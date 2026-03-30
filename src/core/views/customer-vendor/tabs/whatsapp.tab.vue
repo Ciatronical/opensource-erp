@@ -48,10 +48,21 @@
               >
                 <v-card
                   :color="msg.direction === 'O' ? 'green-lighten-4' : 'grey-lighten-3'"
-                  class="pa-2 rounded-lg"
-                  style="max-width: 70%; min-width: 120px;"
+                  class="pa-2 rounded-lg chat-msg-card"
+                  style="max-width: 70%; min-width: 120px; position: relative;"
                   flat
                 >
+                  <!-- Löschen-Button (per Hover sichtbar) -->
+                  <v-btn
+                    class="chat-msg-delete"
+                    icon
+                    size="x-small"
+                    variant="text"
+                    :title="t('CustomerVendorEditView.whatsapp.deleteMessage')"
+                    @click.stop="confirmDeleteMessage(msg)"
+                  >
+                    <v-icon size="14" color="grey">mdi-delete-outline</v-icon>
+                  </v-btn>
                   <!-- Kontaktname bei eingehend -->
                   <div v-if="msg.direction === 'I' && msg.contact_name" class="text-caption font-weight-bold text-green-darken-3 mb-1">
                     {{ msg.contact_name }}
@@ -386,6 +397,23 @@
           </v-card-text>
         </v-card>
       </v-dialog>
+
+      <!-- Löschen-Bestätigungsdialog -->
+      <v-dialog v-model="showDeleteConfirm" max-width="400">
+        <v-card>
+          <v-card-title class="d-flex align-center">
+            {{ t('CustomerVendorEditView.whatsapp.deleteMessage') }}
+            <v-spacer />
+            <v-btn icon="mdi-close" size="x-small" variant="text" @click="showDeleteConfirm = false" />
+          </v-card-title>
+          <v-card-text>{{ t('CustomerVendorEditView.whatsapp.deleteConfirm') }}</v-card-text>
+          <v-card-actions>
+            <v-spacer />
+            <v-btn variant="text" @click="showDeleteConfirm = false">{{ t('CustomerVendorEditView.whatsapp.cancel') }}</v-btn>
+            <v-btn color="red" variant="flat" :loading="deleting" @click="doDeleteMessage">{{ t('CustomerVendorEditView.whatsapp.deleteMessage') }}</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
     </v-col>
   </v-row>
 </template>
@@ -439,6 +467,39 @@ export default {
 
     // Emoji-Picker
     const showEmojiPicker = ref(false)
+
+    // Nachricht löschen
+    const showDeleteConfirm = ref(false)
+    const deleting = ref(false)
+    const deleteTarget = ref(null)
+
+    function confirmDeleteMessage(msg) {
+      deleteTarget.value = msg
+      showDeleteConfirm.value = true
+    }
+
+    async function doDeleteMessage() {
+      if (!deleteTarget.value) return
+      deleting.value = true
+      try {
+        const resp = await axios.post('/api/whatsapp/', {
+          action: 'deleteWhatsAppMessage',
+          message_id: deleteTarget.value.id
+        })
+        if (resp.data.success) {
+          messages.value = messages.value.filter(m => m.id !== deleteTarget.value.id)
+          toast.success(t('CustomerVendorEditView.whatsapp.deleteSuccess'))
+        } else {
+          toast.error(resp.data.text || t('CustomerVendorEditView.whatsapp.deleteError'))
+        }
+      } catch {
+        toast.error(t('CustomerVendorEditView.whatsapp.deleteError'))
+      } finally {
+        deleting.value = false
+        showDeleteConfirm.value = false
+        deleteTarget.value = null
+      }
+    }
 
     // Speichern-Dialog
     const savingMedia = reactive({})
@@ -937,6 +998,7 @@ export default {
       showImageViewer, viewerImageSrc, viewerCaption,
       showSaveDialog, saveCurrentPath, saveFolders, saveFilename, saveFolderLoading, savingToFolder,
       showEmojiPicker, onEmojiSelect,
+      showDeleteConfirm, deleting, confirmDeleteMessage, doDeleteMessage,
       doSend, fetchMessages, formatDate, statusIcon, linkifyText, parseLocationCoords, buildMapEmbedUrl, parseContacts, createFromContact,
       triggerFileUpload, onFileSelected, openDocumentPicker, selectCustomerFile,
       downloadDocument, downloadImage, saveMediaToFolder, navigateSaveFolder, doSaveToFolder, openImageViewer
@@ -944,3 +1006,8 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.chat-msg-card .chat-msg-delete { position: absolute; top: 2px; right: 2px; opacity: 0; transition: opacity 0.15s; z-index: 1; }
+.chat-msg-card:hover .chat-msg-delete { opacity: 1; }
+</style>

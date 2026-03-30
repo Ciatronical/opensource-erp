@@ -199,7 +199,11 @@
             "saveLocation": "Speicherort",
             "rootFolder": "Kundenordner",
             "changeFolder": "In Unterordner wechseln",
-            "noFolders": "Keine Unterordner vorhanden"
+            "noFolders": "Keine Unterordner vorhanden",
+            "deleteMessage": "Nachricht löschen",
+            "deleteConfirm": "Soll diese Nachricht wirklich gelöscht werden?",
+            "deleteSuccess": "Nachricht gelöscht",
+            "deleteError": "Fehler beim Löschen der Nachricht"
         },
         "actions": {
             "save": "Speichern",

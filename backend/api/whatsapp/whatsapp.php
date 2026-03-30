@@ -193,7 +193,7 @@ function getWhatsAppMessages($data) {
         $conditions[] = 'phone_number IN (' . implode(',', $phonePlaceholders) . ')';
     }
 
-    $where = '(' . implode(' OR ', $conditions) . ')';
+    $where = '(' . implode(' OR ', $conditions) . ') AND hidden = FALSE';
 
     // Total count
     $countRow = $db->getOne("SELECT COUNT(*) AS cnt FROM whatsapp_messages WHERE $where", $params);
@@ -252,7 +252,7 @@ function getNewWhatsAppMessages($data) {
          FROM whatsapp_messages wm
          LEFT JOIN customer c ON c.id = wm.customer_id
          LEFT JOIN vendor v ON v.id = wm.customer_id AND c.id IS NULL
-         WHERE wm.direction = 'I' AND wm.itime >= :since_date::date
+         WHERE wm.direction = 'I' AND wm.itime >= :since_date::date AND wm.hidden = FALSE
          ORDER BY wm.itime DESC
          LIMIT :limit",
         [':since_date' => $sinceDate, ':limit' => $limit]
@@ -290,15 +290,15 @@ function getWhatsAppConversations($data) {
             COALESCE(MAX(c.name), MAX(v.name)) AS customer_name,
             CASE WHEN MAX(c.id) IS NOT NULL THEN 'C' WHEN MAX(v.id) IS NOT NULL THEN 'V' ELSE NULL END AS src,
             MAX(wm.itime) AS last_message_time,
-            (SELECT message_text FROM whatsapp_messages wm2 WHERE wm2.phone_number = wm.phone_number ORDER BY wm2.itime DESC LIMIT 1) AS last_message,
-            (SELECT direction FROM whatsapp_messages wm2 WHERE wm2.phone_number = wm.phone_number ORDER BY wm2.itime DESC LIMIT 1) AS last_direction,
+            (SELECT message_text FROM whatsapp_messages wm2 WHERE wm2.phone_number = wm.phone_number AND wm2.hidden = FALSE ORDER BY wm2.itime DESC LIMIT 1) AS last_message,
+            (SELECT direction FROM whatsapp_messages wm2 WHERE wm2.phone_number = wm.phone_number AND wm2.hidden = FALSE ORDER BY wm2.itime DESC LIMIT 1) AS last_direction,
             COUNT(*) AS message_count,
             COUNT(*) FILTER (WHERE wm.direction = 'I' AND wm.status = 'received') AS unread_count,
             MAX(wm.itime) FILTER (WHERE wm.direction = 'I') AS last_inbound_time
          FROM whatsapp_messages wm
          LEFT JOIN customer c ON c.id = wm.customer_id
          LEFT JOIN vendor v ON v.id = wm.customer_id AND c.id IS NULL
-         WHERE 1=1 $searchCondition
+         WHERE wm.hidden = FALSE $searchCondition
          GROUP BY wm.phone_number
          ORDER BY MAX(wm.itime) DESC
          LIMIT :limit",
@@ -338,7 +338,7 @@ function getWhatsAppChat($data) {
                     message_type, message_text, media_url, media_mime_type, media_caption,
                     status, status_timestamp, error_code, error_message, itime, mtime
              FROM whatsapp_messages
-             WHERE phone_number = :phone
+             WHERE phone_number = :phone AND hidden = FALSE
              ORDER BY itime DESC
              LIMIT :limit
          ) sub ORDER BY itime ASC",
@@ -380,6 +380,32 @@ function markWhatsAppRead($data) {
          SET status = 'read', mtime = NOW()
          WHERE phone_number = :phone AND direction = 'I' AND status = 'received'",
         [':phone' => $phoneNumber]
+    );
+
+    resultInfo(true, '');
+}
+
+/**
+ * WhatsApp-Nachricht ausblenden (Soft-Delete)
+ *
+ * Setzt hidden=true, damit die Nachricht nicht mehr angezeigt wird.
+ * Wiederherstellung nur per Datenbank: UPDATE whatsapp_messages SET hidden=false WHERE id=...
+ *
+ * @param int $data['message_id'] Nachrichten-ID
+ * @testdata {"message_id": 1}
+ */
+function deleteWhatsAppMessage($data) {
+    $db = DbhCompany::begin();
+    $messageId = (int)($data['message_id'] ?? 0);
+
+    if ($messageId <= 0) {
+        resultInfo(false, 'INVALID_INPUT', 'Nachrichten-ID ist erforderlich');
+        return;
+    }
+
+    $db->execute(
+        "UPDATE whatsapp_messages SET hidden = TRUE, mtime = NOW() WHERE id = :id",
+        [':id' => $messageId]
     );
 
     resultInfo(true, '');

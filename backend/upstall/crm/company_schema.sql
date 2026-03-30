@@ -463,6 +463,7 @@ CREATE TABLE IF NOT EXISTS whatsapp_messages (
     error_message TEXT,
     itime TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     mtime TIMESTAMPTZ,
+    hidden BOOLEAN NOT NULL DEFAULT FALSE,
     CONSTRAINT whatsapp_messages_wa_id_unique UNIQUE (wa_message_id)
 );
 

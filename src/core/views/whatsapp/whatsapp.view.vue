@@ -139,7 +139,18 @@
                                         class="chat-row"
                                         :class="msg.direction === 'O' ? 'chat-row--out' : 'chat-row--in'"
                                     >
-                                        <div class="chat-bubble" :class="msg.direction === 'O' ? 'chat-bubble--out' : 'chat-bubble--in'">
+                                        <div class="chat-bubble chat-msg-card" :class="msg.direction === 'O' ? 'chat-bubble--out' : 'chat-bubble--in'" style="position: relative;">
+                                            <!-- Löschen-Button (per Hover sichtbar) -->
+                                            <v-btn
+                                                class="chat-msg-delete"
+                                                icon
+                                                size="x-small"
+                                                variant="text"
+                                                :title="t('WhatsAppView.deleteMessage')"
+                                                @click.stop="confirmDeleteMessage(msg)"
+                                            >
+                                                <v-icon size="14" color="grey">mdi-delete-outline</v-icon>
+                                            </v-btn>
                                             <!-- Kontaktname bei eingehend -->
                                             <div v-if="msg.direction === 'I' && msg.contact_name" class="chat-bubble__sender">
                                                 {{ msg.contact_name }}
@@ -732,6 +743,23 @@
                 </v-card-text>
             </v-card>
         </v-dialog>
+
+        <!-- Löschen-Bestätigungsdialog -->
+        <v-dialog v-model="showDeleteConfirm" max-width="400">
+            <v-card>
+                <v-card-title class="d-flex align-center">
+                    {{ t('WhatsAppView.deleteMessage') }}
+                    <v-spacer />
+                    <v-btn icon="mdi-close" size="x-small" variant="text" @click="showDeleteConfirm = false" />
+                </v-card-title>
+                <v-card-text>{{ t('WhatsAppView.deleteConfirm') }}</v-card-text>
+                <v-card-actions>
+                    <v-spacer />
+                    <v-btn variant="text" @click="showDeleteConfirm = false">{{ t('WhatsAppView.cancel') }}</v-btn>
+                    <v-btn color="red" variant="flat" :loading="deleting" @click="doDeleteMessage">{{ t('WhatsAppView.deleteMessage') }}</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
     </v-container>
 </template>
 
@@ -777,6 +805,39 @@ export default {
         const docPickerLoading = ref(false)
 
         const showEmojiPicker = ref(false)
+
+        // Nachricht löschen
+        const showDeleteConfirm = ref(false)
+        const deleting = ref(false)
+        const deleteTarget = ref(null)
+
+        function confirmDeleteMessage(msg) {
+            deleteTarget.value = msg
+            showDeleteConfirm.value = true
+        }
+
+        async function doDeleteMessage() {
+            if (!deleteTarget.value) return
+            deleting.value = true
+            try {
+                const resp = await axios.post('/api/whatsapp/', {
+                    action: 'deleteWhatsAppMessage',
+                    message_id: deleteTarget.value.id
+                })
+                if (resp.data.success) {
+                    chatMessages.value = chatMessages.value.filter(m => m.id !== deleteTarget.value.id)
+                    toast.success(t('WhatsAppView.deleteSuccess'))
+                } else {
+                    toast.error(resp.data.text || t('WhatsAppView.deleteError'))
+                }
+            } catch {
+                toast.error(t('WhatsAppView.deleteError'))
+            } finally {
+                deleting.value = false
+                showDeleteConfirm.value = false
+                deleteTarget.value = null
+            }
+        }
 
         const showForwardDialog = ref(false)
         const forwardMessage = ref(null)
@@ -1506,6 +1567,7 @@ export default {
             showSaveDialog, saveCurrentPath, saveFolders, saveFilename, saveFolderLoading, savingToFolder,
             showImageViewer, viewerImageSrc, viewerCaption,
             showEmojiPicker, onEmojiSelect,
+            showDeleteConfirm, deleting, confirmDeleteMessage, doDeleteMessage,
             showForwardDialog, forwardMessage, forwardSearch, forwardSending,
             openForwardDialog, filteredForwardConversations, doForward,
             loadConversations, selectConversation,
@@ -1770,4 +1832,6 @@ export default {
 }
 .chat-contact-card + .chat-contact-card { margin-top: 6px; }
 .chat-contact-card a { color: #1565c0; }
+.chat-msg-card .chat-msg-delete { position: absolute; top: 2px; right: 2px; opacity: 0; transition: opacity 0.15s; z-index: 1; }
+.chat-msg-card:hover .chat-msg-delete { opacity: 1; }
 </style>

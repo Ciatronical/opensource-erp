@@ -51,7 +51,11 @@
         "saveLocation": "Save location",
         "rootFolder": "Customer folder",
         "changeFolder": "Change to subfolder",
-        "noFolders": "No subfolders available"
+        "noFolders": "No subfolders available",
+        "deleteMessage": "Delete message",
+        "deleteConfirm": "Are you sure you want to delete this message?",
+        "deleteSuccess": "Message deleted",
+        "deleteError": "Failed to delete message"
     },
     "WhatsAppMenu": {
         "title": "WhatsApp"
