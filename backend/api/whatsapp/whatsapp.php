@@ -1507,7 +1507,7 @@ function loadDefaultTemplates($data) {
         ['name' => 'hu_erinnerung', 'display_name' => 'HU-Erinnerung', 'header_type' => null, 'body_text' => 'Hallo {{1}}, die HU fuer Ihr Fahrzeug ({{2}}) laeuft am {{3}} ab. Bitte vereinbaren Sie einen Termin.', 'template_type' => 'hu', 'category' => 'UTILITY'],
         ['name' => 'termin_erinnerung', 'display_name' => 'Terminerinnerung', 'header_type' => null, 'body_text' => 'Hallo {{1}}, wir moechten Sie an Ihren Termin am {{2}} um {{3}} Uhr erinnern.', 'template_type' => 'reminder', 'category' => 'UTILITY'],
         ['name' => 'termin_bestaetigung', 'display_name' => 'Terminbestaetigung', 'header_type' => null, 'body_text' => 'Hallo {{1}}, Ihr Termin am {{2}} um {{3}} Uhr ist bestaetigt. Wir freuen uns auf Ihren Besuch.', 'template_type' => 'appointment_confirm', 'category' => 'UTILITY'],
-        ['name' => 'adresse_senden', 'display_name' => 'Adresse senden', 'header_type' => null, 'body_text' => "Hallo {{1}},\n\nhier finden Sie unsere Adresse:\n\n{{2}}\n\nMit freundlichen Gruessen\n{{3}}", 'template_type' => 'address', 'category' => 'UTILITY'],
+        ['name' => 'adresse_senden', 'display_name' => 'Adresse senden', 'header_type' => null, 'body_text' => "Hallo {{1}},\n\nhier finden Sie unsere Adresse:\n\n{{2}}\n\n{{3}}\n\nMit freundlichen Gruessen\n{{4}}", 'template_type' => 'address', 'category' => 'UTILITY'],
     ];
 
     $loaded = 0;
@@ -1675,8 +1675,9 @@ function sendWhatsAppTemplateMessage($data) {
  * @param int    $data['customer_id'] Kunden-ID
  * @param string $data['customer_name'] Name des Kunden
  * @param string $data['maps_url'] Google-Maps-URL der Adresse
+ * @param string $data['phone_list'] Telefonnummern mit tel:-Prefix (z.B. "tel:+49123 (Note) | tel:+49456 (Werkstatt)")
  * @param string $data['employee_name'] Name des Mitarbeiters
- * @testdata {"to": "+491234567890", "customer_id": 1, "customer_name": "Max Mustermann", "maps_url": "https://www.google.com/maps/search/?api=1&query=Musterstr+1,+12345+Musterstadt", "employee_name": "Hans Meier"}
+ * @testdata {"to": "+491234567890", "customer_id": 1, "customer_name": "Max Mustermann", "maps_url": "https://www.google.com/maps/search/?api=1&query=Musterstr+1,+12345+Musterstadt", "phone_list": "tel:+491234567890 (Herr Müller) | tel:+491719876543 (Werkstatt)", "employee_name": "Hans Meier"}
  */
 function sendWhatsAppAddressMessage($data) {
     $db = DbhCompany::begin();
@@ -1726,10 +1727,11 @@ function sendWhatsAppAddressMessage($data) {
     preg_match_all('/\{\{(\d+)\}\}/', $tplBody, $matches);
     $paramCount = !empty($matches[1]) ? max(array_map('intval', $matches[1])) : 0;
 
-    // Verfuegbare Werte: {{1}} = Kundenname, {{2}} = Maps-URL, {{3}} = Mitarbeitername
+    // Verfuegbare Werte: {{1}} = Kundenname, {{2}} = Maps-URL, {{3}} = Telefonnummern, {{4}} = Mitarbeitername
     $allParams = [
         $data['customer_name'] ?? '',
         $data['maps_url'] ?? '',
+        $data['phone_list'] ?? '',
         $data['employee_name'] ?? ''
     ];
 

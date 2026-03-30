@@ -288,25 +288,20 @@ watch(recipientType, () => {
     selectedRecipient.value = null
 })
 
-function buildAddressBlock() {
+function buildPhoneList() {
     const p = cvProfile.value
-    const lines = []
+    const parts = []
 
-    // Adresse
-    const mapsUrl = buildGoogleMapsUrl()
-    lines.push(mapsUrl)
-
-    // Telefonnummern
     if (p?.phone) {
         const note = p?.contact ? ` (${p.contact})` : ''
-        lines.push(`Tel: ${formatPhone(p.phone)}${note}`)
+        parts.push(`tel:${p.phone}${note}`)
     }
     for (const entry of (phoneNumbers.value || [])) {
         const label = entry.label ? ` (${entry.label})` : ''
-        lines.push(`Tel: ${formatPhone(entry.number)}${label}`)
+        parts.push(`tel:${entry.number}${label}`)
     }
 
-    return lines.join('\n')
+    return parts.join(' | ')
 }
 
 async function sendAddressWhatsApp() {
@@ -314,7 +309,8 @@ async function sendAddressWhatsApp() {
 
     const phone = selectedRecipient.value.phone
     const recipientName = selectedRecipient.value.name || ''
-    const addressBlock = buildAddressBlock()
+    const mapsUrl = buildGoogleMapsUrl()
+    const phoneList = buildPhoneList()
     const employeeName = oserpData.session?.logged_in_employee?.name || ''
 
     sendingAddress.value = true
@@ -324,7 +320,8 @@ async function sendAddressWhatsApp() {
             to: phone,
             customer_id: selectedRecipient.value.id || 0,
             customer_name: recipientName,
-            maps_url: addressBlock,
+            maps_url: mapsUrl,
+            phone_list: phoneList,
             employee_name: employeeName
         })
         if (resp.data?.success) {
@@ -338,7 +335,7 @@ async function sendAddressWhatsApp() {
         const formatted = formatPhoneForWhatsApp(phone)
         if (!formatted) return
         const greeting = recipientName ? t('PhoneActions.whatsappGreeting', { name: recipientName }) + '\n\n' : ''
-        const text = greeting + addressBlock
+        const text = greeting + mapsUrl + (phoneList ? '\n\n' + phoneList : '')
         const url = 'https://web.whatsapp.com/send?phone=' + formatted
             + '&text=' + encodeURIComponent(text)
             + '&type=custom_url&app_absent=0'
