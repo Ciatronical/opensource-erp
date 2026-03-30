@@ -826,7 +826,10 @@ function sendWhatsAppDocument($data) {
     if (!empty($parameters)) {
         $bodyParams = [];
         foreach ($parameters as $val) {
-            $bodyParams[] = ['type' => 'text', 'text' => (string)$val];
+            // Meta verbietet Zeilenumbrüche, Tabs und >4 aufeinanderfolgende Leerzeichen in Template-Parametern
+            $sanitized = str_replace(["\r\n", "\r", "\n", "\t"], ' ', (string)$val);
+            $sanitized = preg_replace('/\s{5,}/', '    ', $sanitized);
+            $bodyParams[] = ['type' => 'text', 'text' => $sanitized];
         }
         $components[] = ['type' => 'body', 'parameters' => $bodyParams];
     }
@@ -1551,7 +1554,10 @@ function sendWhatsAppTemplateMessage($data) {
     if (!empty($parameters)) {
         $bodyParams = [];
         foreach ($parameters as $val) {
-            $bodyParams[] = ['type' => 'text', 'text' => (string)$val];
+            // Meta verbietet Zeilenumbrüche, Tabs und >4 aufeinanderfolgende Leerzeichen in Template-Parametern
+            $sanitized = str_replace(["\r\n", "\r", "\n", "\t"], ' ', (string)$val);
+            $sanitized = preg_replace('/\s{5,}/', '    ', $sanitized);
+            $bodyParams[] = ['type' => 'text', 'text' => $sanitized];
         }
         $components[] = ['type' => 'body', 'parameters' => $bodyParams];
     }
@@ -2160,7 +2166,10 @@ function _sendTemplateMessageInternal(string $phone, array $template, array $par
     if (!empty($parameters)) {
         $bodyParams = [];
         foreach ($parameters as $val) {
-            $bodyParams[] = ['type' => 'text', 'text' => (string)$val];
+            // Meta verbietet Zeilenumbrüche, Tabs und >4 aufeinanderfolgende Leerzeichen in Template-Parametern
+            $sanitized = str_replace(["\r\n", "\r", "\n", "\t"], ' ', (string)$val);
+            $sanitized = preg_replace('/\s{5,}/', '    ', $sanitized);
+            $bodyParams[] = ['type' => 'text', 'text' => $sanitized];
         }
         $components[] = ['type' => 'body', 'parameters' => $bodyParams];
     }
