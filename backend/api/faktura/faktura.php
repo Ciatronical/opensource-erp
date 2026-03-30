@@ -319,15 +319,17 @@ function createFaktura($data) {
     $defaults = $company->getOne("SELECT currency_id FROM defaults LIMIT 1");
     $currencyId = intval($defaults['currency_id']);
 
-    // Steuerzone: aus Kunden-/Lieferantenstamm oder erste verfügbare
+    // Steuerzone + taxincluded: aus Kunden-/Lieferantenstamm oder erste verfügbare
     $taxzoneId = null;
+    $taxincluded = false;
     if ($cvId) {
         $cvTable = $isVendor ? 'vendor' : 'customer';
         $cvData = $company->getOne(
-            "SELECT taxzone_id FROM {$cvTable} WHERE id = :id",
+            "SELECT taxzone_id, taxincluded_checked FROM {$cvTable} WHERE id = :id",
             ['id' => $cvId]
         );
         $taxzoneId = $cvData ? intval($cvData['taxzone_id']) : null;
+        $taxincluded = !empty($cvData['taxincluded_checked']);
     }
     if (!$taxzoneId) {
         $taxzone = $company->getOne("SELECT id FROM tax_zones ORDER BY id LIMIT 1");
@@ -369,50 +371,32 @@ function createFaktura($data) {
         // Eingangsrechnung → ap-Tabelle
         $query = <<<SQL
             WITH tmp AS (UPDATE defaults SET invnumber = COALESCE(invnumber::INT, 0) + 1 RETURNING invnumber)
-            INSERT INTO ap (invnumber, transdate, gldate, employee_id, vendor_id, taxzone_id, currency_id, invoice)
-            SELECT (SELECT invnumber FROM tmp), CURRENT_DATE, CURRENT_DATE, :employee_id, :vendor_id, :taxzone_id, :currency_id, true
+            INSERT INTO ap (invnumber, transdate, gldate, employee_id, vendor_id, taxzone_id, currency_id, invoice, taxincluded)
+            SELECT (SELECT invnumber FROM tmp), CURRENT_DATE, CURRENT_DATE, :employee_id, :vendor_id, :taxzone_id, :currency_id, true, :taxincluded
             RETURNING id, invnumber
 SQL;
-        // Lösungsvorschlag: GREATEST() heilt defaults.invnumber falls out-of-sync mit MAX(ap.invnumber) → verhindert UNIQUE VIOLATION
-        // $query = <<<SQL
-        //     WITH tmp AS (
-        //         UPDATE defaults SET invnumber = GREATEST(COALESCE(invnumber::INT, 0) + 1, COALESCE((SELECT MAX(invnumber::INT) FROM ap), 0) + 1)
-        //         RETURNING invnumber
-        //     )
-        //     INSERT INTO ap (invnumber, transdate, gldate, employee_id, vendor_id, taxzone_id, currency_id, invoice)
-        //     SELECT (SELECT invnumber FROM tmp), CURRENT_DATE, CURRENT_DATE, :employee_id, :vendor_id, :taxzone_id, :currency_id, true
-        //     RETURNING id, invnumber
-        // SQL;
         $result = $company->getOne($query, [
-            ':employee_id' => $employeeId,
-            ':vendor_id'   => $vendorId,
-            ':taxzone_id'  => $taxzoneId,
-            ':currency_id' => $currencyId
+            ':employee_id'  => $employeeId,
+            ':vendor_id'    => $vendorId,
+            ':taxzone_id'   => $taxzoneId,
+            ':currency_id'  => $currencyId,
+            ':taxincluded'  => $taxincluded ? 'true' : 'false'
         ]);
 
     } elseif ($effectiveType === 'invoice') {
         // Ausgangsrechnung → ar-Tabelle
         $query = <<<SQL
             WITH tmp AS (UPDATE defaults SET invnumber = COALESCE(invnumber::INT, 0) + 1 RETURNING invnumber)
-            INSERT INTO ar (invnumber, transdate, gldate, employee_id, customer_id, taxzone_id, currency_id, invoice)
-            SELECT (SELECT invnumber FROM tmp), CURRENT_DATE, CURRENT_DATE, :employee_id, :customer_id, :taxzone_id, :currency_id, true
+            INSERT INTO ar (invnumber, transdate, gldate, employee_id, customer_id, taxzone_id, currency_id, invoice, taxincluded)
+            SELECT (SELECT invnumber FROM tmp), CURRENT_DATE, CURRENT_DATE, :employee_id, :customer_id, :taxzone_id, :currency_id, true, :taxincluded
             RETURNING id, invnumber
 SQL;
-        // Lösungsvorschlag: GREATEST() heilt defaults.invnumber falls out-of-sync mit MAX(ar.invnumber) → verhindert UNIQUE VIOLATION
-        // $query = <<<SQL
-        //     WITH tmp AS (
-        //         UPDATE defaults SET invnumber = GREATEST(COALESCE(invnumber::INT, 0) + 1, COALESCE((SELECT MAX(invnumber::INT) FROM ar), 0) + 1)
-        //         RETURNING invnumber
-        //     )
-        //     INSERT INTO ar (invnumber, transdate, gldate, employee_id, customer_id, taxzone_id, currency_id, invoice)
-        //     SELECT (SELECT invnumber FROM tmp), CURRENT_DATE, CURRENT_DATE, :employee_id, :customer_id, :taxzone_id, :currency_id, true
-        //     RETURNING id, invnumber
-        // SQL;
         $result = $company->getOne($query, [
             ':employee_id'  => $employeeId,
             ':customer_id'  => $customerId,
             ':taxzone_id'   => $taxzoneId,
-            ':currency_id'  => $currencyId
+            ':currency_id'  => $currencyId,
+            ':taxincluded'  => $taxincluded ? 'true' : 'false'
         ]);
 
     } elseif ($effectiveType === 'quotation' || $effectiveType === 'request_quotation') {
@@ -422,17 +406,18 @@ SQL;
 
         $query = <<<SQL
             WITH tmp AS (UPDATE defaults SET {$defaultsCol} = COALESCE({$defaultsCol}::INT, 0) + 1 RETURNING {$defaultsCol})
-            INSERT INTO oe (ordnumber, quonumber, transdate, employee_id, customer_id, vendor_id, taxzone_id, currency_id, record_type)
-            SELECT '', (SELECT {$defaultsCol} FROM tmp), CURRENT_DATE, :employee_id, :customer_id, :vendor_id, :taxzone_id, :currency_id, :record_type
+            INSERT INTO oe (ordnumber, quonumber, transdate, employee_id, customer_id, vendor_id, taxzone_id, currency_id, record_type, taxincluded)
+            SELECT '', (SELECT {$defaultsCol} FROM tmp), CURRENT_DATE, :employee_id, :customer_id, :vendor_id, :taxzone_id, :currency_id, :record_type, :taxincluded
             RETURNING id, quonumber
 SQL;
         $result = $company->getOne($query, [
-            ':employee_id' => $employeeId,
-            ':customer_id' => $customerId,
-            ':vendor_id'   => $vendorId,
-            ':taxzone_id'  => $taxzoneId,
-            ':currency_id' => $currencyId,
-            ':record_type' => $recordType
+            ':employee_id'  => $employeeId,
+            ':customer_id'  => $customerId,
+            ':vendor_id'    => $vendorId,
+            ':taxzone_id'   => $taxzoneId,
+            ':currency_id'  => $currencyId,
+            ':record_type'  => $recordType,
+            ':taxincluded'  => $taxincluded ? 'true' : 'false'
         ]);
 
     } else {
@@ -442,17 +427,18 @@ SQL;
 
         $query = <<<SQL
             WITH tmp AS (UPDATE defaults SET {$defaultsCol} = COALESCE({$defaultsCol}::INT, 0) + 1 RETURNING {$defaultsCol})
-            INSERT INTO oe (ordnumber, transdate, employee_id, customer_id, vendor_id, taxzone_id, currency_id, record_type)
-            SELECT (SELECT {$defaultsCol} FROM tmp), CURRENT_DATE, :employee_id, :customer_id, :vendor_id, :taxzone_id, :currency_id, :record_type
+            INSERT INTO oe (ordnumber, transdate, employee_id, customer_id, vendor_id, taxzone_id, currency_id, record_type, taxincluded)
+            SELECT (SELECT {$defaultsCol} FROM tmp), CURRENT_DATE, :employee_id, :customer_id, :vendor_id, :taxzone_id, :currency_id, :record_type, :taxincluded
             RETURNING id, ordnumber
 SQL;
         $result = $company->getOne($query, [
-            ':employee_id' => $employeeId,
-            ':customer_id' => $customerId,
-            ':vendor_id'   => $vendorId,
-            ':taxzone_id'  => $taxzoneId,
-            ':currency_id' => $currencyId,
-            ':record_type' => $recordType
+            ':employee_id'  => $employeeId,
+            ':customer_id'  => $customerId,
+            ':vendor_id'    => $vendorId,
+            ':taxzone_id'   => $taxzoneId,
+            ':currency_id'  => $currencyId,
+            ':record_type'  => $recordType,
+            ':taxincluded'  => $taxincluded ? 'true' : 'false'
         ]);
     }
 
@@ -1001,6 +987,7 @@ function updateFakturaField($data) {
         'employee_id',      // Mitarbeiter
         'payment_id',       // Zahlungsbedingungen
         'delivery_term_id', // Lieferbedingungen
+        'taxincluded',      // Steuer im Preis inbegriffen
         'closed'            // Status offen/erledigt
     ];
 

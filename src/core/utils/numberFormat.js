@@ -19,10 +19,20 @@ export function parseNumber(text, locale) {
   const group = example.match(/1(.?)111/)?.[1]
 
   let normalized = String(text).trim()
-  if (group) normalized = normalized.split(group).join('')
-  normalized = normalized.replace(decimal, '.')
 
-  // Rechenausdruck erkennen (z.B. "55+44", "119/1.19", "100*1.19-5")
+  // Tausendertrennzeichen nur entfernen wenn danach exakt 3 Ziffern folgen (z.B. 1.000, 10.500)
+  // Damit wird 1.19 nicht fälschlich zu 119
+  if (group) {
+    const groupEscaped = group.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    normalized = normalized.replace(new RegExp(groupEscaped + '(?=\\d{3}(?!\\d))', 'g'), '')
+  }
+
+  // Alle Dezimaltrennzeichen ersetzen (wichtig für Ausdrücke wie 1,5+2,3)
+  if (decimal !== '.') {
+    normalized = normalized.split(decimal).join('.')
+  }
+
+  // Rechenausdruck erkennen (z.B. "55+44", "100/1.19", "100*1.19-5")
   if (/^[\d.]+\s*[+\-*/]\s*[\d.+\-*/\s]+$/.test(normalized)) {
     try {
       const result = Function('"use strict"; return (' + normalized + ')')()

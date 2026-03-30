@@ -75,6 +75,7 @@
             "additionalInfo": "Zusätzliche Informationen",
             "currency": "Währung",
             "taxZone": "Steuerzone",
+            "taxIncluded": "Steuer im Preis inbegriffen",
             "shippingPoint": "Versandort",
             "shipVia": "Versandart",
             "transactionDescription": "Vorgangsbeschreibung",

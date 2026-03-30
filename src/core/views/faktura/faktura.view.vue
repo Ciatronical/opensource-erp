@@ -1432,6 +1432,7 @@ export default defineComponent({
                             currency_id: cvProfile.currency_id || defaults.currency_id || 1,
                             customer_id: isCustomer ? (cvProfile.id || null) : null,
                             vendor_id: !isCustomer ? (cvProfile.id || null) : null,
+                            taxincluded: !!cvProfile.taxincluded_checked,
                             closed: false
                         },
                         customer: cvProfile.id ? cvProfile : {},
@@ -1591,6 +1592,9 @@ export default defineComponent({
             if (!fakturaID) return
             try {
                 await faktura.updateFakturaField(fakturaID, fakturaType.value, field, value)
+                if (field === 'taxincluded') {
+                    accounting.flushCalculation()
+                }
             } catch (e) {
                 console.error('Fehler beim Speichern des Feldes:', e)
                 alerts.error(t('FakturaView.faktura.fieldUpdateError'))

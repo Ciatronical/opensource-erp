@@ -61,18 +61,28 @@ export function useAccounting({ fakturaItems, faktura, fakturaType, paymentList,
     }
 
     function calculateTotalsImmediate() {
+        const taxIncluded = !!faktura.data?.common?.taxincluded
+
         let netAmount = 0
+        let grossAmount = 0
         const baseByRate = new Map()
 
         fakturaItems.value.forEach(item => {
             if (item.id !== null && item.parts_id) {
                 const itemTotal = item.qty * item.sellprice * (1 - item.discount / 100)
                 const roundedItemTotal = roundMoney(itemTotal, 2)
-                netAmount += roundedItemTotal
-
                 const rate = item.buchungsziel?.rate ?? 0
                 const key = String(rate)
-                baseByRate.set(key, (baseByRate.get(key) ?? 0) + roundedItemTotal)
+
+                if (taxIncluded) {
+                    // Preise sind brutto → Netto rausrechnen
+                    const netFromGross = rate ? roundMoney(roundedItemTotal / (1 + rate), 2) : roundedItemTotal
+                    baseByRate.set(key, (baseByRate.get(key) ?? 0) + netFromGross)
+                    grossAmount += roundedItemTotal
+                } else {
+                    baseByRate.set(key, (baseByRate.get(key) ?? 0) + roundedItemTotal)
+                    netAmount += roundedItemTotal
+                }
             }
         })
 
@@ -90,13 +100,17 @@ export function useAccounting({ fakturaItems, faktura, fakturaType, paymentList,
         breakdown.sort((a, b) => b.rate - a.rate)
         taxBreakdown.value = breakdown
 
-        const roundedNetAmount = roundMoney(netAmount, 2)
-        const roundedGrossAmount = roundMoney(roundedNetAmount + totalTax, 2)
+        if (taxIncluded) {
+            netAmount = roundMoney(grossAmount - totalTax, 2)
+        } else {
+            grossAmount = roundMoney(netAmount + totalTax, 2)
+            netAmount = roundMoney(netAmount, 2)
+        }
 
-        faktura.data.common.netamount = roundedNetAmount
-        faktura.data.common.amount = roundedGrossAmount
-        calculatedNetAmount.value = roundedNetAmount
-        calculatedGrossAmount.value = roundedGrossAmount
+        faktura.data.common.netamount = netAmount
+        faktura.data.common.amount = grossAmount
+        calculatedNetAmount.value = netAmount
+        calculatedGrossAmount.value = grossAmount
     }
 
     /**
@@ -107,6 +121,7 @@ export function useAccounting({ fakturaItems, faktura, fakturaType, paymentList,
             return []
         }
 
+        const taxIncluded = !!faktura.data?.common?.taxincluded
         const transdate = faktura.data.common?.transdate || new Date().toISOString().split('T')[0]
         const groups = new Map()
 
@@ -128,8 +143,15 @@ export function useAccounting({ fakturaItems, faktura, fakturaType, paymentList,
                 })
             }
 
-            const netAmount = item.qty * item.sellprice * (1 - item.discount / 100)
-            groups.get(key).netAmount += roundMoney(netAmount, 2)
+            const itemTotal = item.qty * item.sellprice * (1 - item.discount / 100)
+            const rounded = roundMoney(itemTotal, 2)
+            const rate = bz.rate ?? 0
+
+            if (taxIncluded && rate) {
+                groups.get(key).netAmount += roundMoney(rounded / (1 + rate), 2)
+            } else {
+                groups.get(key).netAmount += rounded
+            }
         })
 
         const entries = []
