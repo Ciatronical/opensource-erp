@@ -702,12 +702,13 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { oserpStore } from '@/core/stores/oserp.store.js'
 import * as toast from '@/core/utils/toasts.js'
+import { waMediaCache } from '@/core/utils/whatsappMediaCache.js'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
 import EmojiPicker from 'vue3-emoji-picker'
 import 'vue3-emoji-picker/css'
 
-// Globaler Media-Cache — ueberlebt Komponenten-Remount innerhalb der SPA-Session
-const mediaCache = reactive({})
+// Gemeinsamer Cache fuer beide WhatsApp-Views (Standalone + Kunden-Tab)
+const mediaCache = waMediaCache
 
 export default {
     name: 'WhatsAppView',

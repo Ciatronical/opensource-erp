@@ -366,12 +366,13 @@ import { useRouter, useRoute } from 'vue-router'
 import axios from 'axios'
 import { oserpStore } from '@/core/stores/oserp.store.js'
 import * as toast from '@/core/utils/toasts.js'
+import { waMediaCache } from '@/core/utils/whatsappMediaCache.js'
 import EmojiPicker from 'vue3-emoji-picker'
 import 'vue3-emoji-picker/css'
 
-// Globaler Media-Cache — ueberlebt Komponenten-Remount innerhalb der SPA-Session
-const audioCache = reactive({})
-const imageCache = reactive({})
+// Gemeinsamer Cache fuer beide WhatsApp-Views (Standalone + Kunden-Tab)
+const audioCache = waMediaCache
+const imageCache = waMediaCache
 
 export default {
   name: 'WhatsappTab',
