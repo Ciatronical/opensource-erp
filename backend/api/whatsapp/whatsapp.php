@@ -2273,6 +2273,28 @@ function getWhatsAppMedia($data) {
         return;
     }
 
+    // Bereits gecacht? Prüfen ob die Meta-ID schon lokal vorliegt
+    $dataDir = realpath(__DIR__ . '/../../data');
+    if ($dataDir) {
+        $cached = glob($dataDir . '/whatsapp_cache/' . $mediaId . '.*');
+        if (!empty($cached)) {
+            $resolved = realpath($cached[0]);
+            if ($resolved && strpos($resolved, $dataDir) === 0) {
+                $fileData = file_get_contents($resolved);
+                if ($fileData !== false) {
+                    $ext = strtolower(pathinfo($resolved, PATHINFO_EXTENSION));
+                    $mimeMap = [
+                        'ogg' => 'audio/ogg', 'mp3' => 'audio/mpeg', 'mp4' => 'video/mp4',
+                        'jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg', 'png' => 'image/png', 'webp' => 'image/webp',
+                        'pdf' => 'application/pdf', '3gp' => 'video/3gpp',
+                    ];
+                    resultInfo(true, '', ['data' => base64_encode($fileData), 'mime_type' => $mimeMap[$ext] ?? 'application/octet-stream']);
+                    return;
+                }
+            }
+        }
+    }
+
     // Meta-Media-ID — von Meta herunterladen und lokal cachen
     $config = _getWhatsAppConfig();
     $accessToken = $config['whatsapp_access_token'] ?? '';
@@ -2377,6 +2399,27 @@ function _fetchWhatsAppMediaData($mediaId) {
             'pdf' => 'application/pdf', '3gp' => 'video/3gpp',
         ];
         return ['data' => $fileData, 'mime_type' => $mimeMap[$ext] ?? 'application/octet-stream'];
+    }
+
+    // Bereits gecacht? Prüfen ob die Meta-ID schon lokal vorliegt
+    $dataDir = realpath(__DIR__ . '/../../data');
+    if ($dataDir) {
+        $cached = glob($dataDir . '/whatsapp_cache/' . $mediaId . '.*');
+        if (!empty($cached)) {
+            $resolved = realpath($cached[0]);
+            if ($resolved && strpos($resolved, $dataDir) === 0) {
+                $fileData = file_get_contents($resolved);
+                if ($fileData !== false) {
+                    $ext = strtolower(pathinfo($resolved, PATHINFO_EXTENSION));
+                    $mimeMap = [
+                        'ogg' => 'audio/ogg', 'mp3' => 'audio/mpeg', 'mp4' => 'video/mp4',
+                        'jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg', 'png' => 'image/png', 'webp' => 'image/webp',
+                        'pdf' => 'application/pdf', '3gp' => 'video/3gpp',
+                    ];
+                    return ['data' => $fileData, 'mime_type' => $mimeMap[$ext] ?? 'application/octet-stream'];
+                }
+            }
+        }
     }
 
     // Von Meta herunterladen
