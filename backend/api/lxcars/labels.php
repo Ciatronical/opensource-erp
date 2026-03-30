@@ -41,9 +41,8 @@ function printYellowLabel($data) {
     $zpl = "^XA\n";
     $zpl .= "^PON\n";
     $zpl .= "^MD25\n";
-    $zpl .= "^CI28\n";
     $zpl .= "^FO340,75^A0N,115,115^FD" . $cLn . "^FS\n";
-    $zpl .= "^FO340,190^A0N,35,60^FD" . "www.autoprofis24.de" . "^FS\n";
+    $zpl .= "^FO340,190^A0N,35,60^FDwww.autoprofis24.de^FS\n";
     $zpl .= "^XZ";
 
     $dir = __DIR__ . '/../../tmp/labels';
@@ -54,7 +53,9 @@ function printYellowLabel($data) {
     $filepath = $dir . '/yellow_label.zpl';
     file_put_contents($filepath, $zpl);
 
-    $cmd = sprintf('%s %s 2>&1', $printer['printer_command'], escapeshellarg($filepath));
+    sleep(2);
+    $cmd = $printer['printer_command'] . ' -o raw ' . escapeshellarg($filepath) . ' 2>&1';
+    writeLog($cmd);
     exec($cmd, $output, $returnCode);
 
     if ($returnCode !== 0) {

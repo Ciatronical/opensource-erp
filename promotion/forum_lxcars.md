@@ -123,7 +123,7 @@ Automatische Befüllung mit Personen-, Fahrzeug- und Versicherungsdaten (eVB-Num
 
 Direkter Druck auf Zebra-kompatible Etikettendrucker:
 
-- **Gelbe Prüfetiketten**: Großes Kennzeichen, Branding, eins pro Fahrzeug
+- **Grüne Plakette**: Großes Kennzeichen, Branding des Kfz-Betriebs (autoprofis24.de)
 - **Reifenetiketten**: 4er-Set (VR, VL, HR, HL) mit Kennzeichen, Halter, Reifengröße, Lagerort, Hersteller, Fahrzeugtyp und Positionsmarkierung
 
 ---
