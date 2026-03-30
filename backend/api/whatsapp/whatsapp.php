@@ -1728,10 +1728,11 @@ function sendWhatsAppAddressMessage($data) {
     $paramCount = !empty($matches[1]) ? max(array_map('intval', $matches[1])) : 0;
 
     // Verfuegbare Werte: {{1}} = Kundenname, {{2}} = Maps-URL, {{3}} = Telefonnummern, {{4}} = Mitarbeitername
+    $phoneList = trim($data['phone_list'] ?? '');
     $allParams = [
         $data['customer_name'] ?? '',
         $data['maps_url'] ?? '',
-        $data['phone_list'] ?? '',
+        !empty($phoneList) ? $phoneList : '-',
         $data['employee_name'] ?? ''
     ];
 
