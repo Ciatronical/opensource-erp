@@ -288,12 +288,33 @@ watch(recipientType, () => {
     selectedRecipient.value = null
 })
 
+function buildAddressBlock() {
+    const p = cvProfile.value
+    const lines = []
+
+    // Adresse
+    const mapsUrl = buildGoogleMapsUrl()
+    lines.push(mapsUrl)
+
+    // Telefonnummern
+    if (p?.phone) {
+        const note = p?.contact ? ` (${p.contact})` : ''
+        lines.push(`Tel: ${formatPhone(p.phone)}${note}`)
+    }
+    for (const entry of (phoneNumbers.value || [])) {
+        const label = entry.label ? ` (${entry.label})` : ''
+        lines.push(`Tel: ${formatPhone(entry.number)}${label}`)
+    }
+
+    return lines.join('\n')
+}
+
 async function sendAddressWhatsApp() {
     if (!selectedRecipient.value?.phone) return
 
     const phone = selectedRecipient.value.phone
     const recipientName = selectedRecipient.value.name || ''
-    const mapsUrl = buildGoogleMapsUrl()
+    const addressBlock = buildAddressBlock()
     const employeeName = oserpData.session?.logged_in_employee?.name || ''
 
     sendingAddress.value = true
@@ -303,7 +324,7 @@ async function sendAddressWhatsApp() {
             to: phone,
             customer_id: selectedRecipient.value.id || 0,
             customer_name: recipientName,
-            maps_url: mapsUrl,
+            maps_url: addressBlock,
             employee_name: employeeName
         })
         if (resp.data?.success) {
@@ -317,7 +338,7 @@ async function sendAddressWhatsApp() {
         const formatted = formatPhoneForWhatsApp(phone)
         if (!formatted) return
         const greeting = recipientName ? t('PhoneActions.whatsappGreeting', { name: recipientName }) + '\n\n' : ''
-        const text = greeting + mapsUrl
+        const text = greeting + addressBlock
         const url = 'https://web.whatsapp.com/send?phone=' + formatted
             + '&text=' + encodeURIComponent(text)
             + '&type=custom_url&app_absent=0'
