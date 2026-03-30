@@ -55,7 +55,11 @@
         "saveLocation": "Lokalizacja zapisu",
         "rootFolder": "Folder klienta",
         "changeFolder": "Przejdź do podfolderu",
-        "noFolders": "Brak podfolderów"
+        "noFolders": "Brak podfolderów",
+        "deleteMessage": "Usuń wiadomość",
+        "deleteConfirm": "Czy na pewno chcesz usunąć tę wiadomość?",
+        "deleteSuccess": "Wiadomość usunięta lokalnie",
+        "deleteError": "Błąd podczas usuwania wiadomości"
     },
     "WhatsAppMenu": {
         "title": "WhatsApp"

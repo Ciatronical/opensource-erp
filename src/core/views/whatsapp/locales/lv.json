@@ -55,7 +55,11 @@
         "saveLocation": "Saglabāšanas vieta",
         "rootFolder": "Klienta mape",
         "changeFolder": "Pāriet uz apakšmapi",
-        "noFolders": "Nav apakšmapju"
+        "noFolders": "Nav apakšmapju",
+        "deleteMessage": "Dzēst ziņojumu",
+        "deleteConfirm": "Vai tiešām vēlaties dzēst šo ziņojumu?",
+        "deleteSuccess": "Ziņojums dzēsts lokāli",
+        "deleteError": "Kļūda dzēšot ziņojumu"
     },
     "WhatsAppMenu": {
         "title": "WhatsApp"

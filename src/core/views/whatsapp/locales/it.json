@@ -55,7 +55,11 @@
         "saveLocation": "Posizione",
         "rootFolder": "Cartella cliente",
         "changeFolder": "Cambia sottocartella",
-        "noFolders": "Nessuna sottocartella disponibile"
+        "noFolders": "Nessuna sottocartella disponibile",
+        "deleteMessage": "Elimina messaggio",
+        "deleteConfirm": "Vuoi davvero eliminare questo messaggio?",
+        "deleteSuccess": "Messaggio eliminato localmente",
+        "deleteError": "Errore durante l'eliminazione del messaggio"
     },
     "WhatsAppMenu": {
         "title": "WhatsApp"

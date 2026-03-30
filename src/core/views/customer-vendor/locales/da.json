@@ -199,7 +199,11 @@
             "saveLocation": "Speicherort",
             "rootFolder": "Kunderordner",
             "changeFolder": "In Unterordner wechseln",
-            "noFolders": "Ingen Unterordner tilgaengelig"
+            "noFolders": "Ingen Unterordner tilgaengelig",
+            "deleteMessage": "Slet besked",
+            "deleteConfirm": "Vil du virkelig slette denne besked?",
+            "deleteSuccess": "Besked slettet lokalt",
+            "deleteError": "Fejl ved sletning af besked"
         },
         "actions": {
             "save": "Gem",

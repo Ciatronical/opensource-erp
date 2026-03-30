@@ -55,7 +55,11 @@
         "saveLocation": "Tallennuspaikka",
         "rootFolder": "Asiakaskansio",
         "changeFolder": "Vaihda alikansioon",
-        "noFolders": "Ei alikansioita"
+        "noFolders": "Ei alikansioita",
+        "deleteMessage": "Poista viesti",
+        "deleteConfirm": "Haluatko varmasti poistaa tämän viestin?",
+        "deleteSuccess": "Viesti poistettu paikallisesti",
+        "deleteError": "Viestin poistaminen epäonnistui"
     },
     "WhatsAppMenu": {
         "title": "WhatsApp"

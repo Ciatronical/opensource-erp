@@ -55,7 +55,11 @@
         "saveLocation": "Saugojimo vieta",
         "rootFolder": "Kliento aplankas",
         "changeFolder": "Pereiti į poaplankį",
-        "noFolders": "Poaplankių nėra"
+        "noFolders": "Poaplankių nėra",
+        "deleteMessage": "Ištrinti žinutę",
+        "deleteConfirm": "Ar tikrai norite ištrinti šią žinutę?",
+        "deleteSuccess": "Žinutė ištrinta lokaliai",
+        "deleteError": "Klaida trinant žinutę"
     },
     "WhatsAppMenu": {
         "title": "WhatsApp"

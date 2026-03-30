@@ -202,7 +202,7 @@
             "noFolders": "Keine Unterordner vorhanden",
             "deleteMessage": "Nachricht löschen",
             "deleteConfirm": "Soll diese Nachricht wirklich gelöscht werden?",
-            "deleteSuccess": "Nachricht gelöscht",
+            "deleteSuccess": "Nachricht lokal gelöscht",
             "deleteError": "Fehler beim Löschen der Nachricht"
         },
         "actions": {

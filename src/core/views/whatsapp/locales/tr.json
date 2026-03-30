@@ -55,7 +55,11 @@
         "saveLocation": "Kayit yeri",
         "rootFolder": "Musteri klasoru",
         "changeFolder": "Alt klasore gec",
-        "noFolders": "Alt klasor yok"
+        "noFolders": "Alt klasor yok",
+        "deleteMessage": "Mesajı sil",
+        "deleteConfirm": "Bu mesajı gerçekten silmek istiyor musunuz?",
+        "deleteSuccess": "Mesaj yerel olarak silindi",
+        "deleteError": "Mesaj silinirken hata oluştu"
     },
     "WhatsAppMenu": {
         "title": "WhatsApp"

@@ -55,7 +55,11 @@
         "saveLocation": "Opslaglocatie",
         "rootFolder": "Klantmap",
         "changeFolder": "Naar submap wisselen",
-        "noFolders": "Geen submappen beschikbaar"
+        "noFolders": "Geen submappen beschikbaar",
+        "deleteMessage": "Bericht verwijderen",
+        "deleteConfirm": "Wilt u dit bericht echt verwijderen?",
+        "deleteSuccess": "Bericht lokaal verwijderd",
+        "deleteError": "Fout bij het verwijderen van het bericht"
     },
     "WhatsAppMenu": {
         "title": "WhatsApp"

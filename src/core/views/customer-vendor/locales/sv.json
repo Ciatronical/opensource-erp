@@ -199,7 +199,11 @@
             "saveLocation": "Speicherort",
             "rootFolder": "Kundnordner",
             "changeFolder": "In Unterordner wechseln",
-            "noFolders": "inga Unterordner vorhanden"
+            "noFolders": "inga Unterordner vorhanden",
+            "deleteMessage": "Radera meddelande",
+            "deleteConfirm": "Vill du verkligen radera detta meddelande?",
+            "deleteSuccess": "Meddelande raderat lokalt",
+            "deleteError": "Fel vid radering av meddelande"
         },
         "actions": {
             "save": "Spara",

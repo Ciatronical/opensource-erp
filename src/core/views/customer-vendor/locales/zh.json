@@ -199,7 +199,11 @@
             "saveLocation": "保存位置",
             "rootFolder": "客户文件夹",
             "changeFolder": "切换到子文件夹",
-            "noFolders": "暂无子文件夹"
+            "noFolders": "暂无子文件夹",
+            "deleteMessage": "删除消息",
+            "deleteConfirm": "确定要删除这条消息吗？",
+            "deleteSuccess": "消息已在本地删除",
+            "deleteError": "删除消息时出错"
         },
         "actions": {
             "save": "保存",

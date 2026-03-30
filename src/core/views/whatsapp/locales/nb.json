@@ -55,7 +55,11 @@
         "saveLocation": "Lagringssted",
         "rootFolder": "Kundemappe",
         "changeFolder": "Bytt til undermappe",
-        "noFolders": "Ingen undermapper tilgjengelig"
+        "noFolders": "Ingen undermapper tilgjengelig",
+        "deleteMessage": "Slett melding",
+        "deleteConfirm": "Vil du virkelig slette denne meldingen?",
+        "deleteSuccess": "Melding slettet lokalt",
+        "deleteError": "Feil ved sletting av melding"
     },
     "WhatsAppMenu": {
         "title": "WhatsApp"

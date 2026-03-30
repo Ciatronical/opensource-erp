@@ -55,7 +55,11 @@
         "saveLocation": "Misto ulozeni",
         "rootFolder": "Slozka zakaznika",
         "changeFolder": "Prejit do podslozky",
-        "noFolders": "Zadne podslozky"
+        "noFolders": "Zadne podslozky",
+        "deleteMessage": "Smazat zprávu",
+        "deleteConfirm": "Opravdu chcete tuto zprávu smazat?",
+        "deleteSuccess": "Zpráva lokálně smazána",
+        "deleteError": "Chyba při mazání zprávy"
     },
     "WhatsAppMenu": {
         "title": "WhatsApp"

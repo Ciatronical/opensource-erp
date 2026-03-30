@@ -199,7 +199,11 @@
             "saveLocation": "Speicherort",
             "rootFolder": "Kunderordner",
             "changeFolder": "In Unterordner wechseln",
-            "noFolders": "ingen Unterordner vorhanden"
+            "noFolders": "ingen Unterordner vorhanden",
+            "deleteMessage": "Slett melding",
+            "deleteConfirm": "Vil du virkelig slette denne meldingen?",
+            "deleteSuccess": "Melding slettet lokalt",
+            "deleteError": "Feil ved sletting av melding"
         },
         "actions": {
             "save": "Lagre",

@@ -55,7 +55,11 @@
         "saveLocation": "Emplacement",
         "rootFolder": "Dossier client",
         "changeFolder": "Changer de sous-dossier",
-        "noFolders": "Aucun sous-dossier disponible"
+        "noFolders": "Aucun sous-dossier disponible",
+        "deleteMessage": "Supprimer le message",
+        "deleteConfirm": "Voulez-vous vraiment supprimer ce message ?",
+        "deleteSuccess": "Message supprimé localement",
+        "deleteError": "Erreur lors de la suppression du message"
     },
     "WhatsAppMenu": {
         "title": "WhatsApp"

@@ -169,7 +169,7 @@
             "noFolders": "No subfolders available",
             "deleteMessage": "Delete message",
             "deleteConfirm": "Are you sure you want to delete this message?",
-            "deleteSuccess": "Message deleted",
+            "deleteSuccess": "Message deleted locally",
             "deleteError": "Failed to delete message"
         },
         "actions": {

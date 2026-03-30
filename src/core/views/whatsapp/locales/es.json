@@ -55,7 +55,11 @@
         "saveLocation": "Ubicación",
         "rootFolder": "Carpeta del cliente",
         "changeFolder": "Cambiar a subcarpeta",
-        "noFolders": "No hay subcarpetas disponibles"
+        "noFolders": "No hay subcarpetas disponibles",
+        "deleteMessage": "Eliminar mensaje",
+        "deleteConfirm": "¿Realmente desea eliminar este mensaje?",
+        "deleteSuccess": "Mensaje eliminado localmente",
+        "deleteError": "Error al eliminar el mensaje"
     },
     "WhatsAppMenu": {
         "title": "WhatsApp"

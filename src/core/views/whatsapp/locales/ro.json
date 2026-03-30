@@ -55,7 +55,11 @@
         "saveLocation": "Locatie de salvare",
         "rootFolder": "Dosar client",
         "changeFolder": "Schimba in subdosar",
-        "noFolders": "Nu exista subdosare"
+        "noFolders": "Nu exista subdosare",
+        "deleteMessage": "Șterge mesajul",
+        "deleteConfirm": "Sigur doriți să ștergeți acest mesaj?",
+        "deleteSuccess": "Mesaj șters local",
+        "deleteError": "Eroare la ștergerea mesajului"
     },
     "WhatsAppMenu": {
         "title": "WhatsApp"

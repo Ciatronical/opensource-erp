@@ -55,7 +55,11 @@
         "saveLocation": "Salvestuskoht",
         "rootFolder": "Kliendi kaust",
         "changeFolder": "Liigu alamkausta",
-        "noFolders": "Alamkaustu pole"
+        "noFolders": "Alamkaustu pole",
+        "deleteMessage": "Kustuta sõnum",
+        "deleteConfirm": "Kas soovite selle sõnumi tõesti kustutada?",
+        "deleteSuccess": "Sõnum kustutatud lokaalselt",
+        "deleteError": "Sõnumi kustutamine ebaõnnestus"
     },
     "WhatsAppMenu": {
         "title": "WhatsApp"
