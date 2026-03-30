@@ -706,6 +706,9 @@ import NavbarView from '@/core/components/navbar/navbar.view.vue'
 import EmojiPicker from 'vue3-emoji-picker'
 import 'vue3-emoji-picker/css'
 
+// Globaler Media-Cache — ueberlebt Komponenten-Remount innerhalb der SPA-Session
+const mediaCache = reactive({})
+
 export default {
     name: 'WhatsAppView',
     components: { NavbarView, EmojiPicker },
@@ -750,8 +753,7 @@ export default {
         let customerSearchTimeout = null
         let eventSource = null
 
-        // Media-Cache fuer geladene Bilder (media_id -> data URL)
-        const mediaCache = reactive({})
+        // Loading-Status (lokal pro Instanz), Cache ist global
         const mediaLoading = reactive({})
 
         // Speichern-Dialog

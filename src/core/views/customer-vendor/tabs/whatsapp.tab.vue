@@ -369,6 +369,10 @@ import * as toast from '@/core/utils/toasts.js'
 import EmojiPicker from 'vue3-emoji-picker'
 import 'vue3-emoji-picker/css'
 
+// Globaler Media-Cache — ueberlebt Komponenten-Remount innerhalb der SPA-Session
+const audioCache = reactive({})
+const imageCache = reactive({})
+
 export default {
   name: 'WhatsappTab',
   components: { EmojiPicker },
@@ -392,12 +396,8 @@ export default {
     const selectedPhone = ref('')
     const configError = ref(false)
 
-    // Audio-Cache
-    const audioCache = reactive({})
+    // Audio-/Bild-Loading-Status (lokal pro Instanz)
     const audioLoading = reactive({})
-
-    // Bild-Cache
-    const imageCache = reactive({})
     const imageLoading = reactive({})
 
     // Bild-Betrachter
