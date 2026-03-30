@@ -104,10 +104,10 @@
                   </div>
                   <!-- Bild -->
                   <div v-if="msg.message_type === 'image'" class="my-1">
-                    <div v-if="imageCache[msg.media_url]" style="position: relative; display: inline-block;">
-                      <img :src="imageCache[msg.media_url]" style="max-width: 260px; max-height: 260px; border-radius: 6px; cursor: pointer; display: block;" @click="openImageViewer(imageCache[msg.media_url], msg.media_caption)" />
+                    <div v-if="imageCache[msg.id]" style="position: relative; display: inline-block;">
+                      <img :src="imageCache[msg.id]" style="max-width: 260px; max-height: 260px; border-radius: 6px; cursor: pointer; display: block;" @click="openImageViewer(imageCache[msg.id], msg.media_caption)" />
                       <div class="d-flex ga-1" style="position: absolute; top: 4px; right: 4px;">
-                        <v-btn v-if="cvId" size="x-small" variant="tonal" icon :title="t('CustomerVendorEditView.whatsapp.saveToFolder')" :loading="savingMedia[msg.media_url]" style="background: rgba(255,255,255,0.85);" @click.stop="saveMediaToFolder(msg)">
+                        <v-btn v-if="cvId" size="x-small" variant="tonal" icon :title="t('CustomerVendorEditView.whatsapp.saveToFolder')" :loading="savingMedia[msg.id]" style="background: rgba(255,255,255,0.85);" @click.stop="saveMediaToFolder(msg)">
                           <v-icon size="16" color="primary">mdi-folder-download</v-icon>
                         </v-btn>
                         <v-btn size="x-small" variant="tonal" icon style="background: rgba(255,255,255,0.85);" @click.stop="downloadImage(msg)">
@@ -116,7 +116,7 @@
                       </div>
                     </div>
                     <div v-else class="d-flex align-center justify-center" style="width: 200px; height: 140px; background: rgba(0,0,0,0.04); border-radius: 6px;">
-                      <v-progress-circular v-if="msg.media_url && imageLoading[msg.media_url]" indeterminate size="28" width="2" color="grey" />
+                      <v-progress-circular v-if="msg.media_url && imageLoading[msg.id]" indeterminate size="28" width="2" color="grey" />
                       <div v-else class="text-center">
                         <v-icon size="40" color="grey-lighten-1">mdi-image</v-icon>
                         <div class="text-caption text-medium-emphasis">{{ msg.media_caption || msg.message_text || '' }}</div>
@@ -128,7 +128,7 @@
                     <div class="d-flex align-center pa-2 rounded" style="background: rgba(0,0,0,0.06); cursor: pointer;" @click="downloadDocument(msg)">
                       <v-icon size="24" color="red-darken-1" class="mr-2">mdi-file-pdf-box</v-icon>
                       <span class="text-caption flex-grow-1">{{ msg.message_text || 'Dokument' }}</span>
-                      <v-btn v-if="cvId" icon size="x-small" variant="text" :title="t('CustomerVendorEditView.whatsapp.saveToFolder')" :loading="savingMedia[msg.media_url]" @click.stop="saveMediaToFolder(msg)">
+                      <v-btn v-if="cvId" icon size="x-small" variant="text" :title="t('CustomerVendorEditView.whatsapp.saveToFolder')" :loading="savingMedia[msg.id]" @click.stop="saveMediaToFolder(msg)">
                         <v-icon size="16" color="primary">mdi-folder-download</v-icon>
                       </v-btn>
                       <v-icon size="18" color="grey">mdi-download</v-icon>
@@ -152,7 +152,7 @@
                   <div v-if="!['document','image'].includes(msg.message_type) && msg.media_url && msg.media_mime_type === 'application/pdf'" class="d-flex align-center mt-2 pa-2 rounded" style="background: rgba(0,0,0,0.06); cursor: pointer;" @click="downloadDocument(msg)">
                     <v-icon size="24" color="red-darken-1" class="mr-2">mdi-file-pdf-box</v-icon>
                     <span class="text-caption flex-grow-1">PDF</span>
-                    <v-btn v-if="cvId" icon size="x-small" variant="text" :title="t('CustomerVendorEditView.whatsapp.saveToFolder')" :loading="savingMedia[msg.media_url]" @click.stop="saveMediaToFolder(msg)">
+                    <v-btn v-if="cvId" icon size="x-small" variant="text" :title="t('CustomerVendorEditView.whatsapp.saveToFolder')" :loading="savingMedia[msg.id]" @click.stop="saveMediaToFolder(msg)">
                       <v-icon size="16" color="primary">mdi-folder-download</v-icon>
                     </v-btn>
                     <v-icon size="18" color="grey">mdi-download</v-icon>
@@ -560,13 +560,13 @@ export default {
 
     function loadImageMessages() {
       messages.value
-        .filter(msg => msg.message_type === 'image' && msg.media_url && !imageCache[msg.media_url])
+        .filter(msg => msg.message_type === 'image' && msg.media_url && !imageCache[msg.id])
         .forEach(msg => loadImage(msg))
     }
 
     async function loadImage(msg) {
-      if (!msg.media_url || imageCache[msg.media_url] || imageLoading[msg.media_url]) return
-      imageLoading[msg.media_url] = true
+      if (!msg.media_url || imageCache[msg.id] || imageLoading[msg.id]) return
+      imageLoading[msg.id] = true
       try {
         const resp = await axios.post('/api/whatsapp/', {
           action: 'getWhatsAppMedia',
@@ -574,12 +574,12 @@ export default {
         })
         if (resp.data.success && resp.data.payload?.data) {
           const mimeType = resp.data.payload.mime_type || 'image/jpeg'
-          imageCache[msg.media_url] = `data:${mimeType};base64,${resp.data.payload.data}`
+          imageCache[msg.id] = `data:${mimeType};base64,${resp.data.payload.data}`
         }
       } catch {
         // Bild-Abruf fehlgeschlagen
       } finally {
-        delete imageLoading[msg.media_url]
+        delete imageLoading[msg.id]
       }
     }
 
@@ -590,7 +590,7 @@ export default {
     }
 
     function downloadImage(msg) {
-      const dataUrl = imageCache[msg.media_url]
+      const dataUrl = imageCache[msg.id]
       if (!dataUrl) return
       const link = document.createElement('a')
       link.href = dataUrl
@@ -626,11 +626,7 @@ export default {
           if (!success) {
             toast.error(resp.data.text || t('CustomerVendorEditView.whatsapp.sendError'))
           }
-          // Bild direkt in Cache legen, damit es sofort angezeigt wird
-          if (success && resp.data.payload?.media_url) {
-            const mimeType = resp.data.payload.mime_type || file.mimeType || 'application/octet-stream'
-            imageCache[resp.data.payload.media_url] = `data:${mimeType};base64,${file.base64}`
-          }
+          // Nach fetchMessages() wird das Bild per loadImageMessages() geladen und im globalen Cache gespeichert
         } else {
           // Nur Text
           const resp = await axios.post('/api/whatsapp/', {

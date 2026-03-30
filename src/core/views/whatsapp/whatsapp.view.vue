@@ -154,22 +154,22 @@
                                                     <div class="chat-document__name">{{ msg.message_text || 'Dokument' }}</div>
                                                     <div class="chat-document__type">PDF</div>
                                                 </div>
-                                                <v-btn v-if="msg.media_url && selectedConv?.customer_id" icon size="x-small" variant="text" :title="t('WhatsAppView.saveToFolder')" :loading="savingMedia[msg.media_url]" @click.stop="saveMediaToFolder(msg)">
+                                                <v-btn v-if="msg.media_url && selectedConv?.customer_id" icon size="x-small" variant="text" :title="t('WhatsAppView.saveToFolder')" :loading="savingMedia[msg.id]" @click.stop="saveMediaToFolder(msg)">
                                                     <v-icon size="18" color="primary">mdi-folder-download</v-icon>
                                                 </v-btn>
                                                 <v-icon v-if="msg.media_url" size="20" color="grey" class="ms-auto">mdi-download</v-icon>
-                                                <v-progress-circular v-if="mediaLoading[msg.media_url]" indeterminate size="18" width="2" class="ms-auto" />
+                                                <v-progress-circular v-if="mediaLoading[msg.id]" indeterminate size="18" width="2" class="ms-auto" />
                                             </div>
                                             <div v-if="msg.message_type === 'document' && msg.media_caption" class="text-body-2 mt-1" style="white-space: pre-wrap;">{{ msg.media_caption }}</div>
 
                                             <!-- Bild -->
                                             <div v-else-if="msg.message_type === 'image'" class="chat-image">
-                                                <template v-if="mediaCache[msg.media_url]">
+                                                <template v-if="mediaCache[msg.id]">
                                                     <div class="chat-image__wrapper">
                                                         <img
-                                                            :src="mediaCache[msg.media_url]"
+                                                            :src="mediaCache[msg.id]"
                                                             class="chat-image__img"
-                                                            @click="openImageViewer(mediaCache[msg.media_url], msg.media_caption)"
+                                                            @click="openImageViewer(mediaCache[msg.id], msg.media_caption)"
                                                         />
                                                         <v-btn
                                                             class="chat-image__download"
@@ -186,7 +186,7 @@
                                                             size="x-small"
                                                             variant="tonal"
                                                             icon
-                                                            :loading="savingMedia[msg.media_url]"
+                                                            :loading="savingMedia[msg.id]"
                                                             :title="t('WhatsAppView.saveToFolder')"
                                                             @click.stop="saveMediaToFolder(msg)"
                                                         >
@@ -195,7 +195,7 @@
                                                     </div>
                                                 </template>
                                                 <div v-else-if="msg.media_url" class="chat-image__placeholder">
-                                                    <v-progress-circular v-if="mediaLoading[msg.media_url]" indeterminate size="28" width="2" color="grey" />
+                                                    <v-progress-circular v-if="mediaLoading[msg.id]" indeterminate size="28" width="2" color="grey" />
                                                     <v-icon v-else size="40" color="grey-lighten-1">mdi-image-broken-variant</v-icon>
                                                 </div>
                                                 <div v-else class="chat-image__placeholder">
@@ -206,9 +206,9 @@
 
                                             <!-- Audio / Sprachnachricht -->
                                             <div v-else-if="msg.message_type === 'audio' || msg.message_type === 'voice'" class="chat-audio">
-                                                <audio v-if="mediaCache[msg.media_url]" :src="mediaCache[msg.media_url]" controls preload="none" style="max-width: 260px; height: 36px;" />
+                                                <audio v-if="mediaCache[msg.id]" :src="mediaCache[msg.id]" controls preload="none" style="max-width: 260px; height: 36px;" />
                                                 <template v-else>
-                                                    <v-progress-circular v-if="mediaLoading[msg.media_url]" indeterminate size="20" width="2" class="mr-1" />
+                                                    <v-progress-circular v-if="mediaLoading[msg.id]" indeterminate size="20" width="2" class="mr-1" />
                                                     <v-icon v-else size="20" class="mr-1">mdi-microphone</v-icon>
                                                     <span class="text-caption">{{ t('WhatsAppView.voiceMessage') }}</span>
                                                 </template>
@@ -286,11 +286,11 @@
                                                     <div class="chat-document__info">
                                                         <div class="chat-document__name">PDF</div>
                                                     </div>
-                                                    <v-btn v-if="selectedConv?.customer_id" icon size="x-small" variant="text" :title="t('WhatsAppView.saveToFolder')" :loading="savingMedia[msg.media_url]" @click.stop="saveMediaToFolder(msg)">
+                                                    <v-btn v-if="selectedConv?.customer_id" icon size="x-small" variant="text" :title="t('WhatsAppView.saveToFolder')" :loading="savingMedia[msg.id]" @click.stop="saveMediaToFolder(msg)">
                                                         <v-icon size="18" color="primary">mdi-folder-download</v-icon>
                                                     </v-btn>
                                                     <v-icon size="20" color="grey" class="ms-auto">mdi-download</v-icon>
-                                                    <v-progress-circular v-if="mediaLoading[msg.media_url]" indeterminate size="18" width="2" class="ms-auto" />
+                                                    <v-progress-circular v-if="mediaLoading[msg.id]" indeterminate size="18" width="2" class="ms-auto" />
                                                 </div>
                                             </div>
 
@@ -855,11 +855,7 @@ export default {
                         const detail = resp.data.text || ''
                         toast.error(detail || t('WhatsAppView.sendError'))
                     }
-                    // Bild direkt in Cache legen, damit es sofort angezeigt wird
-                    if (success && resp.data.payload?.media_url) {
-                        const mimeType = resp.data.payload.mime_type || file.mimeType || 'application/octet-stream'
-                        mediaCache[resp.data.payload.media_url] = `data:${mimeType};base64,${file.base64}`
-                    }
+                    // Nach loadChat() wird das Medium per loadAllMedia() geladen und im globalen Cache gespeichert
                 } else {
                     // Nur Text
                     const resp = await axios.post('/api/whatsapp/', {
@@ -1042,28 +1038,28 @@ export default {
         // Alle Bilder im Chat laden
         function loadAllMedia() {
             chatMessages.value
-                .filter(msg => (msg.message_type === 'image' || msg.message_type === 'audio' || msg.message_type === 'voice') && msg.media_url && !mediaCache[msg.media_url])
+                .filter(msg => (msg.message_type === 'image' || msg.message_type === 'audio' || msg.message_type === 'voice') && msg.media_url && !mediaCache[msg.id])
                 .forEach(msg => loadMedia(msg))
         }
 
         async function loadMedia(msg) {
-            const mediaId = msg.media_url
-            if (!mediaId || mediaCache[mediaId] || mediaLoading[mediaId]) return
+            const msgId = msg.id
+            if (!msg.media_url || mediaCache[msgId] || mediaLoading[msgId]) return
 
-            mediaLoading[mediaId] = true
+            mediaLoading[msgId] = true
             try {
                 const resp = await axios.post('/api/whatsapp/', {
                     action: 'getWhatsAppMedia',
-                    media_id: mediaId
+                    media_id: msg.media_url
                 })
                 if (resp.data.success && resp.data.payload?.data) {
                     const mimeType = resp.data.payload.mime_type || 'image/jpeg'
-                    mediaCache[mediaId] = `data:${mimeType};base64,${resp.data.payload.data}`
+                    mediaCache[msgId] = `data:${mimeType};base64,${resp.data.payload.data}`
                 }
             } catch {
                 // Fehler beim Laden des Mediums
             } finally {
-                delete mediaLoading[mediaId]
+                delete mediaLoading[msgId]
             }
         }
 
@@ -1074,26 +1070,26 @@ export default {
         }
 
         async function downloadDocument(msg) {
-            const mediaId = msg.media_url
-            if (!mediaId) return
-            if (mediaLoading[mediaId]) return
+            const msgId = msg.id
+            if (!msg.media_url) return
+            if (mediaLoading[msgId]) return
 
             // Bereits im Cache?
-            if (mediaCache[mediaId]) {
-                triggerDownload(mediaCache[mediaId], msg.message_text || 'Dokument.pdf')
+            if (mediaCache[msgId]) {
+                triggerDownload(mediaCache[msgId], msg.message_text || 'Dokument.pdf')
                 return
             }
 
-            mediaLoading[mediaId] = true
+            mediaLoading[msgId] = true
             try {
                 const resp = await axios.post('/api/whatsapp/', {
                     action: 'getWhatsAppMedia',
-                    media_id: mediaId
+                    media_id: msg.media_url
                 })
                 if (resp.data.success && resp.data.payload?.data) {
                     const mimeType = resp.data.payload.mime_type || 'application/pdf'
                     const dataUrl = `data:${mimeType};base64,${resp.data.payload.data}`
-                    mediaCache[mediaId] = dataUrl
+                    mediaCache[msgId] = dataUrl
                     triggerDownload(dataUrl, msg.message_text || 'Dokument.pdf')
                 } else {
                     toast.error(t('WhatsAppView.downloadError'))
@@ -1101,7 +1097,7 @@ export default {
             } catch {
                 toast.error(t('WhatsAppView.downloadError'))
             } finally {
-                delete mediaLoading[mediaId]
+                delete mediaLoading[msgId]
             }
         }
 
@@ -1115,7 +1111,7 @@ export default {
         }
 
         function downloadMedia(msg) {
-            const dataUrl = mediaCache[msg.media_url]
+            const dataUrl = mediaCache[msg.id]
             if (!dataUrl) return
 
             const link = document.createElement('a')
