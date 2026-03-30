@@ -2571,3 +2571,260 @@ function saveWhatsAppMediaToFolder($data) {
         'src' => $cv['src'],
     ]);
 }
+
+/**
+ * Aktuelles WhatsApp-Profilbild abrufen
+ *
+ * @testdata {}
+ */
+function getWhatsAppProfilePicture($data) {
+    $config = _getWhatsAppConfig();
+    $accessToken = $config['whatsapp_access_token'] ?? '';
+    $phoneNumberId = $config['whatsapp_phone_number_id'] ?? '';
+
+    if (empty($accessToken) || empty($phoneNumberId)) {
+        resultInfo(false, 'WHATSAPP_NOT_CONFIGURED', 'WhatsApp Business API ist nicht konfiguriert');
+        return;
+    }
+
+    $url = "https://graph.facebook.com/v21.0/{$phoneNumberId}/whatsapp_business_profile?fields=profile_picture_url";
+
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [
+        CURLOPT_HTTPHEADER => ['Authorization: Bearer ' . $accessToken],
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT => 15,
+    ]);
+    $resp = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlError = curl_error($ch);
+    curl_close($ch);
+
+    if ($curlError) {
+        resultInfo(false, 'CURL_ERROR', $curlError);
+        return;
+    }
+
+    $respData = json_decode($resp, true);
+
+    if ($httpCode !== 200) {
+        $errorMsg = $respData['error']['message'] ?? 'Fehler beim Abrufen des Profilbilds';
+        resultInfo(false, 'API_ERROR', "HTTP {$httpCode}: {$errorMsg}");
+        return;
+    }
+
+    $profileData = $respData['data'][0] ?? [];
+    $pictureUrl = $profileData['profile_picture_url'] ?? '';
+
+    resultInfo(true, '', ['profile_picture_url' => $pictureUrl]);
+}
+
+/**
+ * WhatsApp-Profilbild hochladen und bei Meta einreichen
+ *
+ * Validiert Bildformat (JPEG/PNG), Groesse (max 5MB) und Abmessungen (640x640).
+ * Laedt das Bild ueber die Resumable Upload API hoch und aktualisiert das Business-Profil.
+ *
+ * @param string $data['image_base64'] Base64-kodiertes Bild (JPEG oder PNG)
+ * @param string $data['filename'] Dateiname mit Endung
+ * @testdata {"image_base64": "", "filename": "profilbild.jpg"}
+ */
+function updateWhatsAppProfilePicture($data) {
+    $config = _getWhatsAppConfig();
+    $accessToken = $config['whatsapp_access_token'] ?? '';
+    $phoneNumberId = $config['whatsapp_phone_number_id'] ?? '';
+
+    if (empty($accessToken) || empty($phoneNumberId)) {
+        resultInfo(false, 'WHATSAPP_NOT_CONFIGURED', 'WhatsApp Business API ist nicht konfiguriert');
+        return;
+    }
+
+    $imageBase64 = $data['image_base64'] ?? '';
+    $filename = trim($data['filename'] ?? 'profile.jpg');
+
+    if (empty($imageBase64)) {
+        resultInfo(false, 'INVALID_INPUT', 'Kein Bild angegeben');
+        return;
+    }
+
+    // Base64 dekodieren
+    $binaryData = base64_decode($imageBase64);
+    if ($binaryData === false) {
+        resultInfo(false, 'INVALID_INPUT', 'Ungültige Base64-Daten');
+        return;
+    }
+
+    // Dateigröße prüfen (max 5MB)
+    $fileSize = strlen($binaryData);
+    if ($fileSize > 5 * 1024 * 1024) {
+        resultInfo(false, 'FILE_TOO_LARGE', 'Das Bild darf maximal 5 MB groß sein');
+        return;
+    }
+
+    // MIME-Type bestimmen und prüfen (nur JPEG/PNG)
+    $extLower = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+    $allowedMimes = [
+        'jpg' => 'image/jpeg',
+        'jpeg' => 'image/jpeg',
+        'png' => 'image/png',
+    ];
+    if (!isset($allowedMimes[$extLower])) {
+        resultInfo(false, 'INVALID_FORMAT', 'Nur JPEG und PNG sind erlaubt');
+        return;
+    }
+    $mime = $allowedMimes[$extLower];
+
+    // Abmessungen prüfen
+    $tmpFile = tempnam(sys_get_temp_dir(), 'wa_pp_');
+    file_put_contents($tmpFile, $binaryData);
+    $imageInfo = getimagesize($tmpFile);
+
+    if ($imageInfo === false) {
+        unlink($tmpFile);
+        resultInfo(false, 'INVALID_IMAGE', 'Die Datei ist kein gültiges Bild');
+        return;
+    }
+
+    $width = $imageInfo[0];
+    $height = $imageInfo[1];
+
+    if ($width < 192 || $height < 192) {
+        unlink($tmpFile);
+        resultInfo(false, 'IMAGE_TOO_SMALL', "Das Bild muss mindestens 192x192 Pixel groß sein (aktuell: {$width}x{$height})");
+        return;
+    }
+
+    if ($width > 640 || $height > 640) {
+        unlink($tmpFile);
+        resultInfo(false, 'IMAGE_TOO_LARGE', "Das Bild darf maximal 640x640 Pixel groß sein (aktuell: {$width}x{$height})");
+        return;
+    }
+
+    if ($width !== $height) {
+        unlink($tmpFile);
+        resultInfo(false, 'IMAGE_NOT_SQUARE', "Das Bild muss quadratisch sein (aktuell: {$width}x{$height})");
+        return;
+    }
+
+    unlink($tmpFile);
+
+    writeLog("=== updateWhatsAppProfilePicture ===");
+    writeLog("filename: {$filename}, size: {$fileSize}, dimensions: {$width}x{$height}");
+
+    // 1. App-ID ermitteln via debug_token
+    $ch = curl_init("https://graph.facebook.com/v21.0/debug_token?input_token={$accessToken}");
+    curl_setopt_array($ch, [
+        CURLOPT_HTTPHEADER => ['Authorization: Bearer ' . $accessToken],
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT => 15,
+    ]);
+    $resp = curl_exec($ch);
+    curl_close($ch);
+    $debugData = json_decode($resp, true);
+    $appId = $debugData['data']['app_id'] ?? null;
+
+    if (!$appId) {
+        resultInfo(false, 'APP_ID_ERROR', 'App-ID konnte nicht ermittelt werden. Bitte Access Token prüfen.');
+        return;
+    }
+
+    // 2. Upload-Session erstellen (Resumable Upload API)
+    $sessionUrl = "https://graph.facebook.com/v21.0/{$appId}/uploads?file_length={$fileSize}&file_type=" . urlencode($mime) . "&access_token=" . urlencode($accessToken);
+
+    $ch = curl_init($sessionUrl);
+    curl_setopt_array($ch, [
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => '',
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT => 15,
+    ]);
+    $resp = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    $sessionData = json_decode($resp, true);
+    $uploadSessionId = $sessionData['id'] ?? null;
+
+    if (!$uploadSessionId) {
+        $errorMsg = $sessionData['error']['message'] ?? 'Upload-Session konnte nicht erstellt werden';
+        resultInfo(false, 'UPLOAD_SESSION_ERROR', "HTTP {$httpCode}: {$errorMsg}");
+        return;
+    }
+
+    writeLog("Upload Session erstellt: {$uploadSessionId}");
+
+    // 3. Bild hochladen
+    $uploadUrl = "https://graph.facebook.com/v21.0/{$uploadSessionId}";
+
+    $ch = curl_init($uploadUrl);
+    curl_setopt_array($ch, [
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => $binaryData,
+        CURLOPT_HTTPHEADER => [
+            'Authorization: OAuth ' . $accessToken,
+            'file_offset: 0',
+            'Content-Type: ' . $mime
+        ],
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT => 60,
+    ]);
+    $resp = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlError = curl_error($ch);
+    curl_close($ch);
+
+    if ($curlError) {
+        resultInfo(false, 'UPLOAD_ERROR', $curlError);
+        return;
+    }
+
+    $uploadData = json_decode($resp, true);
+    $handle = $uploadData['h'] ?? null;
+
+    if (!$handle) {
+        $errorMsg = $uploadData['error']['message'] ?? 'Upload-Handle konnte nicht ermittelt werden';
+        resultInfo(false, 'UPLOAD_ERROR', "HTTP {$httpCode}: {$errorMsg}");
+        return;
+    }
+
+    writeLog("Upload Handle erhalten: {$handle}");
+
+    // 4. Business-Profil mit neuem Profilbild aktualisieren
+    $profileUrl = "https://graph.facebook.com/v21.0/{$phoneNumberId}/whatsapp_business_profile";
+
+    $ch = curl_init($profileUrl);
+    curl_setopt_array($ch, [
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => json_encode([
+            'messaging_product' => 'whatsapp',
+            'profile_picture_handle' => $handle
+        ]),
+        CURLOPT_HTTPHEADER => [
+            'Authorization: Bearer ' . $accessToken,
+            'Content-Type: application/json'
+        ],
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT => 30,
+    ]);
+    $resp = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlError = curl_error($ch);
+    curl_close($ch);
+
+    if ($curlError) {
+        resultInfo(false, 'PROFILE_UPDATE_ERROR', $curlError);
+        return;
+    }
+
+    $profileData = json_decode($resp, true);
+
+    if ($httpCode !== 200 || empty($profileData['success'])) {
+        $errorMsg = $profileData['error']['message'] ?? 'Profilbild konnte nicht aktualisiert werden';
+        resultInfo(false, 'PROFILE_UPDATE_ERROR', "HTTP {$httpCode}: {$errorMsg}");
+        return;
+    }
+
+    writeLog("Profilbild erfolgreich aktualisiert");
+
+    resultInfo(true, '', ['message' => 'Profilbild erfolgreich aktualisiert']);
+}

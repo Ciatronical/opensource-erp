@@ -60,6 +60,8 @@ const crmDefaultsConfig = [
 
     { name: "whatsapp_business_api", type: "headline", label: "crm_fields.whatsappBusinessApi" },
 
+    { name: "whatsapp_profile_picture", type: "component", component: "whatsapp-profile-picture" },
+
     { name: "whatsapp_access_token", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.whatsappAccessToken", tooltip: "crm_fields.whatsappAccessToken_help" },
     { name: "whatsapp_phone_number_id", type: "input", size: 30, fieldstyle: "max-width: 40ch", label: "crm_fields.whatsappPhoneNumberId", tooltip: "crm_fields.whatsappPhoneNumberId_help" },
     { name: "whatsapp_business_account_id", type: "input", size: 30, fieldstyle: "max-width: 40ch", label: "crm_fields.whatsappBusinessAccountId", tooltip: "crm_fields.whatsappBusinessAccountId_help" },

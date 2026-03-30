@@ -159,6 +159,13 @@
                 </v-col>
             </v-row>
 
+            <!-- WhatsApp Profilbild -->
+            <v-row v-else-if="field.type === 'component' && field.component === 'whatsapp-profile-picture'" class="my-1">
+                <v-col cols="12">
+                    <WhatsAppProfilePictureConfig />
+                </v-col>
+            </v-row>
+
             <!-- Dynamic Select (Items aus company_config) -->
             <v-row v-else-if="field.type === 'dynamic-select'" class="my-1">
                 <v-col cols="12" md="6">
@@ -196,6 +203,7 @@ import { ref, reactive, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import axios from 'axios';
 import WhatsAppTemplatesConfig from './whatsapp-templates.config.vue';
+import WhatsAppProfilePictureConfig from './whatsapp-profile-picture.config.vue';
 
 const { t } = useI18n();
 

@@ -456,6 +456,20 @@
         "whatsappBusinessAccountId_help": "WhatsApp Business Account ID aus dem Meta Dashboard",
         "whatsappVerifyToken": "Webhook Verify Token",
         "whatsappVerifyToken_help": "Selbstgewähltes Token zur Verifizierung des Meta-Webhooks. Muss im Meta Dashboard identisch hinterlegt werden.",
+        "whatsappProfilePicture": {
+            "title": "Profilbild",
+            "requirements": "JPEG oder PNG, quadratisch, 192x192 bis 640x640 Pixel, max. 5 MB",
+            "selectFile": "Bild auswählen",
+            "upload": "Hochladen",
+            "refresh": "Aktualisieren",
+            "uploadSuccess": "Profilbild wurde erfolgreich bei WhatsApp aktualisiert",
+            "uploadError": "Profilbild konnte nicht hochgeladen werden",
+            "errFormat": "Nur JPEG und PNG sind erlaubt",
+            "errMaxSize": "Das Bild darf maximal 5 MB groß sein",
+            "errTooSmall": "Das Bild muss mindestens 192x192 Pixel groß sein (aktuell: {w}x{h})",
+            "errTooBig": "Das Bild darf maximal 640x640 Pixel groß sein (aktuell: {w}x{h})",
+            "errNotSquare": "Das Bild muss quadratisch sein (aktuell: {w}x{h})"
+        },
         "whatsappTemplates": "WhatsApp Nachrichtenvorlagen",
         "whatsappTpl": {
             "search": "Vorlagen durchsuchen",
