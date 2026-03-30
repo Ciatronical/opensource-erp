@@ -2243,8 +2243,8 @@ function getWhatsAppMedia($data) {
         return;
     }
 
-    // Lokale Datei? (Pfad beginnt mit customers/, vendors/ oder whatsapp_unmatched/)
-    if (preg_match('#^(customers|vendors|whatsapp_unmatched)/#', $mediaId)) {
+    // Lokale Datei? (Pfad beginnt mit customers/, vendors/, whatsapp_unmatched/ oder whatsapp_cache/)
+    if (preg_match('#^(customers|vendors|whatsapp_unmatched|whatsapp_cache)/#', $mediaId)) {
         $dataDir = realpath(__DIR__ . '/../../data');
         $localPath = $dataDir . '/' . $mediaId;
 
@@ -2273,7 +2273,7 @@ function getWhatsAppMedia($data) {
         return;
     }
 
-    // Meta-Media-ID — von Meta herunterladen
+    // Meta-Media-ID — von Meta herunterladen und lokal cachen
     $config = _getWhatsAppConfig();
     $accessToken = $config['whatsapp_access_token'] ?? '';
 
@@ -2324,6 +2324,9 @@ function getWhatsAppMedia($data) {
         return;
     }
 
+    // Schritt 3: Lokal cachen — beim naechsten Aufruf direkt von Platte lesen
+    _cacheWhatsAppMedia($mediaId, $fileData, $mimeType);
+
     resultInfo(true, '', [
         'data' => base64_encode($fileData),
         'mime_type' => $mimeType
@@ -2359,7 +2362,7 @@ function _resolveCustomerSrc($customerId) {
  * @return array|null ['data' => binary, 'mime_type' => string]
  */
 function _fetchWhatsAppMediaData($mediaId) {
-    if (preg_match('#^(customers|vendors|whatsapp_unmatched)/#', $mediaId)) {
+    if (preg_match('#^(customers|vendors|whatsapp_unmatched|whatsapp_cache)/#', $mediaId)) {
         $dataDir = realpath(__DIR__ . '/../../data');
         $localPath = $dataDir . '/' . $mediaId;
         $resolved = realpath($localPath);
@@ -2409,7 +2412,58 @@ function _fetchWhatsAppMediaData($mediaId) {
     curl_close($ch);
     if ($httpCode !== 200 || empty($fileData)) return null;
 
+    // Lokal cachen fuer zukuenftige Aufrufe
+    _cacheWhatsAppMedia($mediaId, $fileData, $mimeType);
+
     return ['data' => $fileData, 'mime_type' => $mimeType];
+}
+
+/**
+ * Heruntergeladene Meta-Medien lokal cachen und media_url in der DB aktualisieren
+ *
+ * Speichert die Datei unter data/whatsapp_cache/{mediaId}.{ext} und aktualisiert
+ * alle whatsapp_messages-Eintraege mit dieser Media-ID auf den lokalen Pfad.
+ * Beim naechsten Aufruf wird die Datei direkt von Platte gelesen.
+ *
+ * @param string $metaMediaId Meta Media-ID
+ * @param string $fileData Binaerdaten der Datei
+ * @param string $mimeType MIME-Type der Datei
+ */
+function _cacheWhatsAppMedia(string $metaMediaId, string $fileData, string $mimeType): void {
+    $dataDir = realpath(__DIR__ . '/../../data');
+    if (!$dataDir) return;
+
+    $cacheDir = $dataDir . '/whatsapp_cache';
+    if (!is_dir($cacheDir)) {
+        mkdir($cacheDir, 0755, true);
+    }
+
+    // Dateiendung aus MIME-Type
+    $extMap = [
+        'audio/ogg' => 'ogg', 'audio/mpeg' => 'mp3', 'audio/mp4' => 'mp4',
+        'image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp',
+        'video/mp4' => 'mp4', 'video/3gpp' => '3gp',
+        'application/pdf' => 'pdf',
+    ];
+    $mimeBase = strtolower(trim(explode(';', $mimeType)[0]));
+    $ext = $extMap[$mimeBase] ?? 'bin';
+
+    $filename = $metaMediaId . '.' . $ext;
+    $fullPath = $cacheDir . '/' . $filename;
+
+    if (file_put_contents($fullPath, $fileData) === false) return;
+
+    // DB aktualisieren: media_url auf lokalen Cache-Pfad setzen
+    $localPath = 'whatsapp_cache/' . $filename;
+    try {
+        $db = DbhCompany::begin();
+        $db->execute(
+            "UPDATE whatsapp_messages SET media_url = :local WHERE media_url = :meta",
+            [':local' => $localPath, ':meta' => $metaMediaId]
+        );
+    } catch (\Exception $e) {
+        // Cache-Update ist nicht kritisch
+    }
 }
 
 /**
