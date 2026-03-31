@@ -182,7 +182,7 @@
 
             <!-- Arbeitsanweisungen (lxcars Feature, nur bei Auftrag) -->
             <section class="faktura-section" v-if="vehicle && fakturaType === 'order' && faktura.data">
-                <instructions-section-card ref="instructionsRef" :oe-id="fakturaId" :ensure-oe-id="ensureOrderAndGetId" />
+                <instructions-section-card ref="instructionsRef" :oe-id="fakturaId" :ensure-oe-id="ensureOrderAndGetId" @jump-to-positions="focusNewPosition" />
             </section>
 
             <!-- Positionen -->
@@ -1337,6 +1337,16 @@ export default defineComponent({
             return fakturaId.value
         }
 
+        // ===== Focus: Von Anweisungen zur neuen Position springen =====
+
+        function focusNewPosition() {
+            nextTick(() => {
+                if (itemsTableRef.value) {
+                    itemsTableRef.value.focusArticleField(fakturaItems.value.length - 1)
+                }
+            })
+        }
+
         // ===== SSE: Echtzeit-Aktualisierung =====
 
         let sseSource = null
@@ -2454,6 +2464,7 @@ export default defineComponent({
             items,
             // Orchestrierung
             ensureOrderAndGetId,
+            focusNewPosition,
             saveAllItems,
             toggleClosed,
             onFakturaFieldChange,

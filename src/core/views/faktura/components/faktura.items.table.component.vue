@@ -5,7 +5,7 @@
         <v-card-title class="faktura-card__header">
             <v-icon class="mr-2" size="small">mdi-format-list-bulleted</v-icon>
             <span class="text-subtitle-1 font-weight-medium">{{ t('FakturaView.faktura.items') }}</span>
-            <v-chip v-if="modelValue.length" size="x-small" variant="tonal" color="primary" class="ml-2">{{ modelValue.length }}</v-chip>
+            <v-chip v-if="modelValue.length > 1" size="x-small" variant="tonal" color="primary" class="ml-2">{{ modelValue.length - 1 }}</v-chip>
             <v-spacer />
             <v-tooltip v-if="showAiSuggest" location="bottom" :text="t('FakturaView.faktura.aiSuggestPositions')">
                 <template #activator="{ props: tip }">

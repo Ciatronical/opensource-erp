@@ -149,6 +149,8 @@
                                         placeholder="0:00"
                                         class="time-input"
                                         @blur="onPlannedBlur(instruction)"
+                                        @keydown.enter.prevent="onPlannedNext(instruction, index)"
+                                        @keydown.tab.prevent="onPlannedNext(instruction, index)"
                                     />
                                 </td>
                                 <!-- Benötigte Zeit -->
@@ -163,6 +165,8 @@
                                         placeholder="0:00"
                                         class="time-input"
                                         @blur="onActualBlur(instruction)"
+                                        @keydown.enter.prevent="onActualNext(instruction, index)"
+                                        @keydown.tab.prevent="onActualNext(instruction, index)"
                                     />
                                 </td>
                                 <!-- Timer -->
@@ -685,7 +689,9 @@ export default defineComponent({
         }
     },
 
-    setup(props) {
+    emits: ['jump-to-positions'],
+
+    setup(props, { emit }) {
         const { t } = useI18n()
         const carsStore = lxcarsStore()
         const oserp = oserpStore()
@@ -743,6 +749,9 @@ export default defineComponent({
         const plannedTimeRefs = {}
         const actualTimeRefs = {}
         const employeeRefs = {}
+
+        // SSE-Reload unterdrücken wenn eigener Save gerade läuft
+        let suppressSSEReloadUntil = 0
 
         // Master-Dialog
         const showMasterDialog = ref(false)
@@ -842,6 +851,10 @@ export default defineComponent({
 
         async function loadInstructions() {
             if (!props.oeId) return
+            if (Date.now() < suppressSSEReloadUntil) {
+                console.log('[INSTRUCTIONS] SSE-Reload unterdrückt (eigener Save)')
+                return
+            }
             loading.value = true
             try {
                 const rows = await carsStore.loadInstructions(props.oeId)
@@ -952,7 +965,17 @@ export default defineComponent({
                 suggestions.value = []
                 newInstructionSelected.value = null
                 newInstructionSearch.value = ''
+                // Focus auf geplante Zeit der neuen Anweisung
                 nextTick(() => {
+                    const newIndex = instructions.value.length - 1
+                    const plannedRef = plannedTimeRefs[newIndex]
+                    if (plannedRef) {
+                        const input = plannedRef.$el?.querySelector('input')
+                        if (input) {
+                            input.focus()
+                            return
+                        }
+                    }
                     addInputRef.value?.focus()
                 })
             } catch (e) {
@@ -1052,10 +1075,11 @@ export default defineComponent({
             const minutes = parseDuration(instruction._plannedDisplay)
             instruction._plannedDisplay = formatDuration(minutes)
             if (minutes === instruction._prevPlanned) return
+            instruction.planned_minutes = minutes
+            instruction._prevPlanned = minutes
+            suppressSSEReloadUntil = Date.now() + 2000
             try {
                 await carsStore.updateInstruction(instruction.id, { planned_minutes: minutes })
-                instruction.planned_minutes = minutes
-                instruction._prevPlanned = minutes
             } catch (e) {
                 console.error('Error updating planned time:', e)
             }
@@ -1065,13 +1089,54 @@ export default defineComponent({
             const minutes = parseDuration(instruction._actualDisplay)
             instruction._actualDisplay = formatDuration(minutes)
             if (minutes === instruction._prevActual) return
+            instruction.actual_minutes = minutes
+            instruction._prevActual = minutes
+            suppressSSEReloadUntil = Date.now() + 2000
             try {
                 await carsStore.updateInstruction(instruction.id, { actual_minutes: minutes })
-                instruction.actual_minutes = minutes
-                instruction._prevActual = minutes
             } catch (e) {
                 console.error('Error updating actual time:', e)
             }
+        }
+
+        function focusPlannedTime(index) {
+            const plannedRef = plannedTimeRefs[index]
+            if (plannedRef) {
+                const input = plannedRef.$el?.querySelector('input')
+                if (input) {
+                    input.focus()
+                    input.select()
+                    return true
+                }
+            }
+            return false
+        }
+
+        function focusActualTime(index) {
+            const actualRef = actualTimeRefs[index]
+            if (actualRef) {
+                const input = actualRef.$el?.querySelector('input')
+                if (input) {
+                    input.focus()
+                    input.select()
+                    return true
+                }
+            }
+            return false
+        }
+
+        function onPlannedNext(instruction, index) {
+            // Focus direkt setzen — blur-Handler feuert automatisch und speichert
+            focusActualTime(index)
+        }
+
+        function onActualNext(instruction, index) {
+            // Nächste Zeile: Geplante Zeit
+            for (let i = index + 1; i < instructions.value.length; i++) {
+                if (focusPlannedTime(i)) return
+            }
+            // Keine weitere Anweisung → zur neuen Position springen
+            emit('jump-to-positions')
         }
 
         async function onFieldUpdate(instruction, field, value) {
@@ -1476,6 +1541,7 @@ export default defineComponent({
             const employee = oserp.session?.logged_in_employee
             if (!employee?.id) return
 
+            suppressSSEReloadUntil = Date.now() + 2000
             try {
                 // Backend: startet Timer, stoppt automatisch den vorherigen
                 const result = await carsStore.startInstructionTimer(
@@ -1512,6 +1578,7 @@ export default defineComponent({
         }
 
         async function onTimerStop(instruction, index) {
+            suppressSSEReloadUntil = Date.now() + 2000
             try {
                 const result = await carsStore.stopInstructionTimer(
                     instruction.id,
@@ -1565,7 +1632,9 @@ export default defineComponent({
             closeActualRequiredDialog,
             onDescriptionBlur,
             onPlannedBlur,
+            onPlannedNext,
             onActualBlur,
+            onActualNext,
             onFieldUpdate,
             globalEmployeeId,
             onGlobalEmployeeChange,
