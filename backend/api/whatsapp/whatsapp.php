@@ -1507,7 +1507,8 @@ function loadDefaultTemplates($data) {
         ['name' => 'hu_erinnerung', 'display_name' => 'HU-Erinnerung', 'header_type' => null, 'body_text' => 'Hallo {{1}}, die HU fuer Ihr Fahrzeug ({{2}}) laeuft am {{3}} ab. Bitte vereinbaren Sie einen Termin.', 'template_type' => 'hu', 'category' => 'UTILITY'],
         ['name' => 'termin_erinnerung', 'display_name' => 'Terminerinnerung', 'header_type' => null, 'body_text' => 'Hallo {{1}}, wir moechten Sie an Ihren Termin am {{2}} um {{3}} Uhr erinnern.', 'template_type' => 'reminder', 'category' => 'UTILITY'],
         ['name' => 'termin_bestaetigung', 'display_name' => 'Terminbestaetigung', 'header_type' => null, 'body_text' => 'Hallo {{1}}, Ihr Termin am {{2}} um {{3}} Uhr ist bestaetigt. Wir freuen uns auf Ihren Besuch.', 'template_type' => 'appointment_confirm', 'category' => 'UTILITY'],
-        ['name' => 'adresse_senden', 'display_name' => 'Adresse senden', 'header_type' => null, 'body_text' => "Hallo {{1}},\n\nhier finden Sie unsere Adresse:\n\n{{2}}\n\n{{3}}\n\nMit freundlichen Gruessen\n{{4}}", 'template_type' => 'address', 'category' => 'UTILITY'],
+        ['name' => 'adresse_senden', 'display_name' => 'Adresse senden (alt)', 'header_type' => null, 'body_text' => "Hallo {{1}},\n\nhier finden Sie unsere Adresse:\n\n{{2}}\n\nMit freundlichen Gruessen\n{{3}}", 'template_type' => 'general', 'category' => 'UTILITY'],
+        ['name' => 'adresse_senden_v2', 'display_name' => 'Adresse senden', 'header_type' => null, 'body_text' => "Hallo {{1}},\n\nhier finden Sie unsere Adresse:\n\n{{2}}\n\n{{3}}\n\nMit freundlichen Gruessen\n{{4}}", 'template_type' => 'address', 'category' => 'UTILITY'],
     ];
 
     $loaded = 0;
