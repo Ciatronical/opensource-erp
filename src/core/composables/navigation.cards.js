@@ -28,13 +28,14 @@ export function useNavigationCards() {
                 lxcarsItems.push('-')
                 lxcarsItems.push({ title: t('MechanicView.title'), to: '/mechaniker' })
             }
-            result.push({ title: t('CarView.title'), items: lxcarsItems })
+            result.push({ title: t('CarView.title'), icon: 'mdi-car', items: lxcarsItems })
         }
 
         // Stammdaten-Menü
         result.push(
             {
                 title: t('MasterDataMenu.title'),
+                icon: 'mdi-database',
                 items: [
                     { title: t('MasterDataMenu.editCustomer'), to: t('routes.editCustomer') },
                     { title: t('MasterDataMenu.newCustomer'), to: t('routes.newCustomer') },
@@ -63,6 +64,7 @@ export function useNavigationCards() {
         result.push(
             {
                 title: t('ContactMenu.title'),
+                icon: 'mdi-message-text',
                 items: contactItems
             }
         )
@@ -71,6 +73,7 @@ export function useNavigationCards() {
         result.push(
             {
                 title: t('SalesMenu.title'),
+                icon: 'mdi-cash-register',
                 items: [
                     { title: t('SalesMenu.newQuotation'), to: t('routes.newQuotation') },
                     '-',
@@ -87,6 +90,7 @@ export function useNavigationCards() {
         result.push(
             {
                 title: t('WikiMenu.title'),
+                icon: 'mdi-book-open-variant',
                 items: [
                     { title: t('WikiMenu.newPage'), to: '/wiki/neu' },
                     { title: t('WikiMenu.allPages'), to: '/wiki' },

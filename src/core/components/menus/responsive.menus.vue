@@ -1,7 +1,7 @@
 <template>
   <div class="responsive-menu">
-    <!-- Desktop: Normale Buttons mit Dropdown-Menüs -->
-    <div class="d-none d-md-flex align-center">
+    <!-- Desktop (>=lg): Buttons mit Text -->
+    <div class="d-none d-lg-flex align-center">
       <v-menu
         v-for="(menu, index) in menus"
         :key="index"
@@ -23,10 +23,7 @@
         <v-card min-width="220">
           <v-list density="compact">
             <template v-for="(item, itemIndex) in menu.items" :key="itemIndex">
-              <!-- Trennlinie -->
               <v-divider v-if="item === '-'" class="my-1" />
-              
-              <!-- Menü-Eintrag -->
               <v-list-item
                 v-else
                 :to="item.to"
@@ -41,7 +38,49 @@
       </v-menu>
     </div>
 
-    <!-- Mobile: Hamburger-Menü -->
+    <!-- Tablet (md bis lg): Nur Icons mit Tooltip -->
+    <div class="d-none d-md-flex d-lg-none align-center">
+      <v-menu
+        v-for="(menu, index) in menus"
+        :key="index"
+        location="bottom start"
+        offset="8"
+      >
+        <template #activator="{ props: menuProps }">
+          <v-tooltip :text="menu.title" location="bottom">
+            <template #activator="{ props: tooltipProps }">
+              <v-btn
+                icon
+                variant="text"
+                color="primary"
+                v-bind="{ ...menuProps, ...tooltipProps }"
+                size="small"
+              >
+                <v-icon>{{ menu.icon || 'mdi-menu' }}</v-icon>
+              </v-btn>
+            </template>
+          </v-tooltip>
+        </template>
+
+        <v-card min-width="220">
+          <v-list density="compact">
+            <template v-for="(item, itemIndex) in menu.items" :key="itemIndex">
+              <v-divider v-if="item === '-'" class="my-1" />
+              <v-list-item
+                v-else
+                :to="item.to"
+                @click="item.to ? null : handleMenuClick(item)"
+                :disabled="!item.to && !item.action"
+              >
+                <v-list-item-title>{{ item.title }}</v-list-item-title>
+              </v-list-item>
+            </template>
+          </v-list>
+        </v-card>
+      </v-menu>
+    </div>
+
+    <!-- Mobile (<md): Hamburger-Menü -->
     <div class="d-flex d-md-none">
       <v-menu location="bottom end" :close-on-content-click="false">
         <template #activator="{ props }">
@@ -63,6 +102,9 @@
             >
               <template #activator="{ props }">
                 <v-list-item v-bind="props">
+                  <template #prepend>
+                    <v-icon v-if="menu.icon" size="small" class="me-2">{{ menu.icon }}</v-icon>
+                  </template>
                   <v-list-item-title class="font-weight-medium">
                     {{ menu.title }}
                   </v-list-item-title>
@@ -70,10 +112,7 @@
               </template>
 
               <template v-for="(item, itemIndex) in menu.items" :key="itemIndex">
-                <!-- Trennlinie -->
                 <v-divider v-if="item === '-'" class="my-1" />
-                
-                <!-- Menü-Eintrag -->
                 <v-list-item
                   v-else
                   :to="item.to"
@@ -93,32 +132,17 @@
 </template>
 
 <script>
-import { ref } from 'vue'
-
 export default {
   name: 'ResponsiveMenu',
   props: {
     menus: {
       type: Array,
-      required: true,
-      // Beispiel-Format:
-      // [
-      //   {
-      //     title: 'Fahrzeuge',
-      //     items: [
-      //       { title: 'Neues Fahrzeug', to: '/cars/new' },
-      //       { title: 'Fahrzeug scannen', action: 'scan' },
-      //       '-',
-      //       { title: 'Fahrzeuge verwalten', to: '/cars' }
-      //     ]
-      //   }
-      // ]
+      required: true
     }
   },
   emits: ['menu-click'],
   setup(props, { emit }) {
     const handleMenuClick = (item) => {
-      // Wenn kein 'to' vorhanden ist, Event an Parent weitergeben
       if (!item.to) {
         emit('menu-click', item)
       }
