@@ -851,10 +851,7 @@ export default defineComponent({
 
         async function loadInstructions() {
             if (!props.oeId) return
-            if (Date.now() < suppressSSEReloadUntil) {
-                console.log('[INSTRUCTIONS] SSE-Reload unterdrückt (eigener Save)')
-                return
-            }
+            if (Date.now() < suppressSSEReloadUntil) return
             loading.value = true
             try {
                 const rows = await carsStore.loadInstructions(props.oeId)
