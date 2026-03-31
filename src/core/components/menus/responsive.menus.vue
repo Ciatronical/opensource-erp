@@ -1,7 +1,7 @@
 <template>
   <div class="responsive-menu">
-    <!-- Desktop (>=lg): Buttons mit Text -->
-    <div class="d-none d-lg-flex align-center">
+    <!-- Desktop (>=xl / 1920px): Buttons mit Text -->
+    <div class="d-none d-xl-flex align-center">
       <v-menu
         v-for="(menu, index) in menus"
         :key="index"
@@ -38,8 +38,8 @@
       </v-menu>
     </div>
 
-    <!-- Tablet (md bis lg): Nur Icons mit Tooltip -->
-    <div class="d-none d-md-flex d-lg-none align-center">
+    <!-- Tablet (md bis xl): Nur Icons mit Tooltip -->
+    <div class="d-none d-md-flex d-xl-none align-center">
       <v-menu
         v-for="(menu, index) in menus"
         :key="index"
