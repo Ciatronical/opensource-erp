@@ -3,28 +3,33 @@
   <v-slide-y-transition>
     <v-sheet
       v-if="hasItems"
-      class="info-bar d-flex align-center px-3 py-1 ga-2"
+      class="info-bar"
       elevation="2"
     >
-      <!-- Ersatzteil-Anfragen zuerst (haben Priorität, immer sichtbar) -->
-      <v-chip
+      <!-- Ersatzteil-Anfragen: kompaktes Icon mit Badge, kein Text -->
+      <v-badge
         v-for="pr in visiblePartsRequests"
         :key="'pr-' + pr.oe_id"
-        color="red"
-        variant="elevated"
-        size="small"
-        closable
-        label
-        class="info-chip cursor-pointer"
-        @click="openOrderWithParts(pr)"
-        @click:close="dismissItem('parts', pr.oe_id)"
+        :content="pr.pending_count"
+        color="white"
+        text-color="red"
+        offset-x="-2"
+        offset-y="-2"
       >
-        <v-icon start size="14">mdi-cart-arrow-down</v-icon>
-        <span class="info-chip-text font-weight-medium">
-          {{ truncate(pr.customer_name || pr.ordnumber || '#' + pr.oe_id, 15) }}
-        </span>
-        <v-badge :content="pr.pending_count" color="white" text-color="red" inline class="info-chip-badge" />
-      </v-chip>
+        <v-chip
+          color="red"
+          variant="elevated"
+          size="small"
+          closable
+          label
+          class="info-chip-parts cursor-pointer"
+          :title="(pr.customer_name || pr.ordnumber || '#' + pr.oe_id) + ' (' + pr.pending_count + ')'"
+          @click="openOrderWithParts(pr)"
+          @click:close="dismissItem('parts', pr.oe_id)"
+        >
+          <v-icon size="16">mdi-cart-arrow-down</v-icon>
+        </v-chip>
+      </v-badge>
 
       <!-- Chronologische Ereignisse (füllen restliche Slots) -->
       <v-chip
@@ -36,17 +41,15 @@
         closable
         label
         class="info-chip cursor-pointer"
+        :title="(item.name || t('InfoBar.unknownCaller')) + ' — ' + formatDateTime(item.timestamp)"
         @click="openItem(item)"
         @click:close="dismissItem(item.type, item.dismissId)"
       >
         <v-icon start size="14">{{ chipIcon(item) }}</v-icon>
         <span class="info-chip-text font-weight-medium">
-          {{ truncate(item.name || t('InfoBar.unknownCaller'), 12) }}
+          {{ truncate(item.name || t('InfoBar.unknownCaller'), 10) }}
         </span>
-        <span class="info-chip-time">({{ formatDateTime(item.timestamp) }})</span>
       </v-chip>
-
-      <v-spacer />
     </v-sheet>
   </v-slide-y-transition>
 </template>
@@ -177,23 +180,32 @@ export default {
 
 <style scoped>
 .info-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
   background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
   border-left: 3px solid #1976d2;
-  overflow: hidden;
-  white-space: nowrap;
-  flex-wrap: nowrap;
   min-height: 40px;
   position: sticky;
   top: 48px;
   z-index: 1004;
 }
 
-/* Alle Chips exakt gleich groß */
+/* Ersatzteil-Chips: kompakt, nur Icon + Badge, feste kleine Breite */
+.info-chip-parts {
+  flex: 0 0 auto !important;
+}
+.info-chip-parts :deep(.v-chip__close) {
+  color: white !important;
+  opacity: 0.9;
+}
+
+/* Chronologische Chips: gleich groß, teilen sich den restlichen Platz */
 .info-chip {
-  width: 220px;
-  min-width: 220px;
-  max-width: 220px;
-  flex-shrink: 0;
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
+  max-width: 180px;
 }
 
 /* Chip-Inhalt: Flex-Layout damit Close-Button garantiert sichtbar bleibt */
@@ -213,25 +225,11 @@ export default {
   margin-left: 4px;
 }
 
-/* Text: nimmt verfügbaren Platz, kürzt mit Ellipsis als Backup */
+/* Text kürzt mit Ellipsis */
 .info-chip-text {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-/* Zeitstempel: feste Größe, schrumpft nicht */
-.info-chip-time {
-  flex-shrink: 0;
-  font-size: 0.75rem;
-  margin-left: 4px;
-  opacity: 0.8;
-}
-
-/* Badge: feste Größe, schrumpft nicht */
-.info-chip-badge {
-  flex-shrink: 0;
-  margin-left: 4px;
 }
 
 .cursor-pointer {
