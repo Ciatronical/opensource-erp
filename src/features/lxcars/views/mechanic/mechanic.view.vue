@@ -16,7 +16,7 @@
                     {{ t('MechanicView.allOrders') }}
                 </v-btn>
             </v-btn-toggle>
-            <v-btn icon variant="text" color="primary" @click="loadOrders" :title="t('MechanicView.refresh')">
+            <v-btn v-if="!sseConnected" icon variant="text" color="primary" @click="loadOrders" :title="t('MechanicView.refresh')">
                 <v-icon>mdi-refresh</v-icon>
             </v-btn>
             <v-btn icon variant="text" color="primary" @click="router.push(t('routes.mainmenu'))" :title="t('MechanicView.exitMechanic')">
@@ -90,6 +90,7 @@ const carsStore = lxcarsStore()
 const orders = ref([])
 const loading = ref(false)
 const viewMode = ref('mine')
+const sseConnected = ref(false)
 
 async function loadOrders() {
     loading.value = true
@@ -123,6 +124,7 @@ let sseSource = null
 
 function connectSSE() {
     sseSource = new EventSource('/sse/events')
+    sseSource.onopen = () => { sseConnected.value = true }
     sseSource.onmessage = (event) => {
         try {
             const data = JSON.parse(event.data)
@@ -131,7 +133,7 @@ function connectSSE() {
             }
         } catch { /* ignorieren */ }
     }
-    sseSource.onerror = () => {}
+    sseSource.onerror = () => { sseConnected.value = false }
 }
 
 onMounted(() => {

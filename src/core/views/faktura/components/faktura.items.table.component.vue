@@ -270,8 +270,8 @@
                                             v-model="vendorMenuOpen[item.id]"
                                             location="bottom start"
                                             :close-on-content-click="false"
-                                            offset="2"
-                                            @update:model-value="val => { if (val) vendorSearch[item.id] = '' }"
+                                            offset="4"
+                                            @update:model-value="val => { if (val) openVendorMenu(item) }"
                                         >
                                             <template #activator="{ props: menuProps }">
                                                 <v-chip
@@ -285,34 +285,53 @@
                                                     {{ getItemVendorName(item) || t('FakturaView.faktura.selectVendor') }}
                                                 </v-chip>
                                             </template>
-                                            <v-card width="280" class="pa-0">
+                                            <v-card min-width="300" max-width="380" class="vendor-picker-card">
+                                                <v-card-title class="d-flex align-center text-body-1 py-2 px-3">
+                                                    <v-icon class="mr-2" size="small">mdi-truck-delivery</v-icon>
+                                                    {{ t('FakturaView.faktura.selectVendor') }}
+                                                    <v-spacer />
+                                                    <v-btn icon="mdi-close" size="x-small" variant="text" @click="vendorMenuOpen[item.id] = false" />
+                                                </v-card-title>
+                                                <v-divider />
                                                 <v-text-field
-                                                    v-model="vendorSearch[item.id]"
+                                                    v-model="vendorSearch"
                                                     :placeholder="t('FakturaView.faktura.searchVendor')"
                                                     prepend-inner-icon="mdi-magnify"
                                                     density="compact"
-                                                    variant="solo-filled"
-                                                    flat
+                                                    variant="outlined"
                                                     hide-details
                                                     single-line
                                                     autofocus
-                                                    class="parts-vendor-search-field"
+                                                    class="mx-3 my-2"
+                                                    @keydown.down.prevent="vendorHighlightMove(1)"
+                                                    @keydown.up.prevent="vendorHighlightMove(-1)"
+                                                    @keydown.enter.prevent="vendorHighlightSelect(item)"
+                                                    @keydown.esc="vendorMenuOpen[item.id] = false"
                                                 />
                                                 <v-divider />
-                                                <v-list density="compact" max-height="220" class="overflow-y-auto pa-0">
+                                                <v-list density="comfortable" max-height="280" class="overflow-y-auto pa-0">
                                                     <v-list-item
-                                                        v-for="vendor in filteredVendors(item.id)"
+                                                        v-for="(vendor, vi) in vendorFiltered"
                                                         :key="vendor.id"
+                                                        :active="vi === vendorHighlightIdx || vendor.id === vendorCurrentId"
+                                                        :color="vi === vendorHighlightIdx ? 'primary' : undefined"
+                                                        :variant="vendor.id === vendorCurrentId && vi !== vendorHighlightIdx ? 'tonal' : undefined"
                                                         @click="onVendorSelect(item, vendor)"
+                                                        @mouseenter="vendorHighlightIdx = vi"
                                                     >
-                                                        <v-list-item-title class="text-body-2">{{ vendor.name }}</v-list-item-title>
+                                                        <template #prepend>
+                                                            <v-icon size="small" :color="vendor.id === vendorCurrentId ? 'primary' : 'grey-lighten-1'">
+                                                                {{ vendor.id === vendorCurrentId ? 'mdi-check-circle' : 'mdi-domain' }}
+                                                            </v-icon>
+                                                        </template>
+                                                        <v-list-item-title>{{ vendor.name }}</v-list-item-title>
                                                         <template #append>
                                                             <v-chip v-if="vendor.order_count > 0" size="x-small" color="primary" variant="tonal">
                                                                 {{ vendor.order_count }}
                                                             </v-chip>
                                                         </template>
                                                     </v-list-item>
-                                                    <v-list-item v-if="!filteredVendors(item.id).length" disabled>
+                                                    <v-list-item v-if="!vendorFiltered.length" disabled>
                                                         <v-list-item-title class="text-caption text-medium-emphasis">{{ t('FakturaView.faktura.noVendors') }}</v-list-item-title>
                                                     </v-list-item>
                                                 </v-list>
@@ -469,6 +488,8 @@
             </v-card-actions>
         </v-card>
     </v-dialog>
+
+
 </template>
 
 <script>
@@ -1179,14 +1200,35 @@ export default defineComponent({
             return photo.split(',').filter(Boolean).length
         }
 
-        // Lieferant-Popup: Suchtext und offener Zustand pro Item
+        // Lieferant-Menu
         const vendorMenuOpen = reactive({})
-        const vendorSearch = reactive({})
+        const vendorSearch = ref('')
+        const vendorCurrentId = ref(null)
+        const vendorHighlightIdx = ref(-1)
 
-        function filteredVendors(itemId) {
-            const search = (vendorSearch[itemId] || '').toLowerCase().trim()
+        const vendorFiltered = computed(() => {
+            const search = vendorSearch.value.toLowerCase().trim()
             if (!search) return props.recentVendors
             return props.recentVendors.filter(v => v.name.toLowerCase().includes(search))
+        })
+
+        function openVendorMenu(item) {
+            vendorCurrentId.value = getItemVendorId(item)
+            vendorSearch.value = ''
+            vendorHighlightIdx.value = -1
+        }
+
+        function vendorHighlightMove(dir) {
+            const len = vendorFiltered.value.length
+            if (!len) return
+            vendorHighlightIdx.value = Math.max(0, Math.min(len - 1, vendorHighlightIdx.value + dir))
+        }
+
+        function vendorHighlightSelect(item) {
+            const list = vendorFiltered.value
+            if (vendorHighlightIdx.value >= 0 && vendorHighlightIdx.value < list.length) {
+                onVendorSelect(item, list[vendorHighlightIdx.value])
+            }
         }
 
         function onVendorSelect(item, vendor) {
@@ -1204,7 +1246,12 @@ export default defineComponent({
             getItemPhotoCount,
             vendorMenuOpen,
             vendorSearch,
-            filteredVendors,
+            vendorCurrentId,
+            vendorHighlightIdx,
+            vendorFiltered,
+            openVendorMenu,
+            vendorHighlightMove,
+            vendorHighlightSelect,
             onVendorSelect,
             qtyRefs,
             autocompleteRefs,
