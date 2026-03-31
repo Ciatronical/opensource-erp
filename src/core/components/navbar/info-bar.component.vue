@@ -6,29 +6,9 @@
       class="info-bar d-flex align-center px-3 py-1 ga-2"
       elevation="2"
     >
-      <!-- Chronologische Ereignisse -->
+      <!-- Ersatzteil-Anfragen zuerst (haben Priorität, immer sichtbar) -->
       <v-chip
-        v-for="item in chronologicalItems"
-        :key="item.id"
-        :color="chipColor(item)"
-        variant="elevated"
-        size="small"
-        closable
-        label
-        class="info-chip cursor-pointer"
-        @click="openItem(item)"
-        @click:close="dismissItem(item.type, item.dismissId)"
-      >
-        <v-icon start size="14">{{ chipIcon(item) }}</v-icon>
-        <span class="info-chip-name font-weight-medium text-truncate">
-          {{ item.name || t('InfoBar.unknownCaller') }}
-        </span>
-        <span class="text-caption ms-1 opacity-80 flex-shrink-0">({{ formatDateTime(item.timestamp) }})</span>
-      </v-chip>
-
-      <!-- Ersatzteil-Anfragen: Pro Auftrag ein Chip -->
-      <v-chip
-        v-for="pr in pendingPartsRequests"
+        v-for="pr in visiblePartsRequests"
         :key="'pr-' + pr.oe_id"
         color="red"
         variant="elevated"
@@ -40,10 +20,30 @@
         @click:close="dismissItem('parts', pr.oe_id)"
       >
         <v-icon start size="14">mdi-cart-arrow-down</v-icon>
-        <span class="info-chip-name font-weight-medium text-truncate">
-          {{ pr.customer_name || pr.ordnumber || '#' + pr.oe_id }}
+        <span class="info-chip-text font-weight-medium">
+          {{ truncate(pr.customer_name || pr.ordnumber || '#' + pr.oe_id, 15) }}
         </span>
-        <v-badge :content="pr.pending_count" color="white" text-color="red" inline class="ml-1" />
+        <v-badge :content="pr.pending_count" color="white" text-color="red" inline class="info-chip-badge" />
+      </v-chip>
+
+      <!-- Chronologische Ereignisse (füllen restliche Slots) -->
+      <v-chip
+        v-for="item in visibleChronologicalItems"
+        :key="item.id"
+        :color="chipColor(item)"
+        variant="elevated"
+        size="small"
+        closable
+        label
+        class="info-chip cursor-pointer"
+        @click="openItem(item)"
+        @click:close="dismissItem(item.type, item.dismissId)"
+      >
+        <v-icon start size="14">{{ chipIcon(item) }}</v-icon>
+        <span class="info-chip-text font-weight-medium">
+          {{ truncate(item.name || t('InfoBar.unknownCaller'), 12) }}
+        </span>
+        <span class="info-chip-time">({{ formatDateTime(item.timestamp) }})</span>
       </v-chip>
 
       <v-spacer />
@@ -52,6 +52,7 @@
 </template>
 
 <script>
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { useInfoBar } from '@/core/composables/useInfoBar'
@@ -68,6 +69,25 @@ export default {
       chronologicalItems, pendingPartsRequests, hasItems,
       dismissItem
     } = useInfoBar()
+
+    const MAX_TOTAL = 9
+
+    // Ersatzteilanforderungen haben Priorität — werden zuerst angezeigt
+    const visiblePartsRequests = computed(() =>
+      pendingPartsRequests.value.slice(0, MAX_TOTAL)
+    )
+
+    // Chronologische Items füllen die restlichen Plätze
+    const visibleChronologicalItems = computed(() => {
+      const remaining = Math.max(0, MAX_TOTAL - visiblePartsRequests.value.length)
+      return chronologicalItems.value.slice(0, remaining)
+    })
+
+    // Anzeigetext sicher kürzen, damit Close-Button immer Platz hat
+    function truncate(str, max) {
+      if (!str) return ''
+      return str.length > max ? str.substring(0, max) + '…' : str
+    }
 
     function formatDateTime(epochMs) {
       if (!epochMs) return ''
@@ -140,10 +160,11 @@ export default {
 
     return {
       t,
-      chronologicalItems,
-      pendingPartsRequests,
+      visiblePartsRequests,
+      visibleChronologicalItems,
       hasItems,
       dismissItem,
+      truncate,
       formatDateTime,
       chipColor,
       chipIcon,
@@ -166,20 +187,53 @@ export default {
   top: 48px;
   z-index: 1004;
 }
+
+/* Alle Chips exakt gleich groß */
 .info-chip {
   width: 220px;
   min-width: 220px;
   max-width: 220px;
+  flex-shrink: 0;
 }
-.info-chip-name {
-  max-width: 140px;
-  display: inline-block;
-  vertical-align: middle;
+
+/* Chip-Inhalt: Flex-Layout damit Close-Button garantiert sichtbar bleibt */
+.info-chip :deep(.v-chip__content) {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  flex: 1;
+  min-width: 0;
 }
+
+/* Close-Button darf NIEMALS verschwinden oder schrumpfen */
 .info-chip :deep(.v-chip__close) {
   color: white !important;
   opacity: 0.9;
+  flex-shrink: 0 !important;
+  margin-left: 4px;
 }
+
+/* Text: nimmt verfügbaren Platz, kürzt mit Ellipsis als Backup */
+.info-chip-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Zeitstempel: feste Größe, schrumpft nicht */
+.info-chip-time {
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  margin-left: 4px;
+  opacity: 0.8;
+}
+
+/* Badge: feste Größe, schrumpft nicht */
+.info-chip-badge {
+  flex-shrink: 0;
+  margin-left: 4px;
+}
+
 .cursor-pointer {
   cursor: pointer;
 }
