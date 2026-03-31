@@ -92,8 +92,9 @@ function getAllMechanicOrders() {
          LEFT JOIN cars_lxcars car ON ext.c_id = car.c_id
          LEFT JOIN kba_lxcars kba ON car.kba_id = kba.id
          WHERE oe.closed IS NOT TRUE
-           AND oe.quotation IS NOT TRUE
+           AND oe.record_type NOT IN ('sales_quotation', 'request_quotation')
            AND oe.customer_id IS NOT NULL
+           AND (ext.status IS NULL OR ext.status != COALESCE((SELECT value FROM defaults_oserp WHERE key = 'lxcars_order_hide_status'), ''))
          ORDER BY oe.transdate DESC, oe.id DESC",
         []
     );
