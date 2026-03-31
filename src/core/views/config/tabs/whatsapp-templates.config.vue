@@ -111,7 +111,7 @@
                     color="primary"
                     :title="t('crm_fields.whatsappTpl.submitToMeta')"
                     :loading="submittingId === item.id"
-                    :disabled="item.status === 'approved' || item.status === 'pending'"
+                    :disabled="item.status === 'approved'"
                     @click="submitToMeta(item)"
                 />
                 <v-btn
