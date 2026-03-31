@@ -1,6 +1,8 @@
 {
     "MechanicView": {
         "title": "My Orders",
+        "myOrders": "Mine",
+        "allOrders": "All",
         "noOrders": "No orders assigned",
         "noOrdersHint": "You have not been assigned to any work instructions yet.",
         "order": "Order",
@@ -39,6 +41,8 @@
         "pendingParts": "Parts requested",
         "cancel": "Cancel",
         "delete": "Delete",
-        "save": "Save"
+        "save": "Save",
+        "refresh": "Refresh",
+        "exitMechanic": "Exit mechanic mode"
     }
 }

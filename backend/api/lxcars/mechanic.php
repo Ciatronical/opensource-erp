@@ -65,6 +65,43 @@ function getMechanicOrders() {
 }
 
 /**
+ * Lädt alle offenen Aufträge (unabhängig vom zugewiesenen Mechaniker)
+ *
+ * @testdata {}
+ */
+function getAllMechanicOrders() {
+    $db = DbhCompany::begin();
+
+    $rows = $db->getAll(
+        "SELECT
+            oe.id,
+            oe.ordnumber,
+            oe.transdate,
+            oe.closed,
+            c.name AS customer_name,
+            car.c_ln AS vehicle_plate,
+            car.c_id AS vehicle_id,
+            kba.hersteller AS vehicle_manufacturer,
+            kba.d2 AS vehicle_model,
+            (SELECT COUNT(*) FROM oe_instructions_lxcars WHERE oe_id = oe.id) AS instruction_count,
+            (SELECT COUNT(*) FROM oe_instructions_lxcars WHERE oe_id = oe.id AND done = true) AS instruction_done,
+            (SELECT COUNT(*) FROM oe_parts_requests_lxcars WHERE oe_id = oe.id AND status = 'pending') AS pending_parts
+         FROM oe
+         LEFT JOIN customer c ON oe.customer_id = c.id
+         LEFT JOIN oe_ext ext ON ext.oe_id = oe.id
+         LEFT JOIN cars_lxcars car ON ext.c_id = car.c_id
+         LEFT JOIN kba_lxcars kba ON car.kba_id = kba.id
+         WHERE oe.closed IS NOT TRUE
+           AND oe.quotation IS NOT TRUE
+           AND oe.customer_id IS NOT NULL
+         ORDER BY oe.transdate DESC, oe.id DESC",
+        []
+    );
+
+    resultInfo(true, 'OK', $rows ?: []);
+}
+
+/**
  * Lädt die Detaildaten eines Auftrags für den Mechaniker-Modus
  *
  * @param int $data['oe_id'] Auftrags-ID

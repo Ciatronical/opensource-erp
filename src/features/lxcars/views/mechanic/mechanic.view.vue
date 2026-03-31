@@ -6,8 +6,21 @@
         <div class="mechanic-header pa-4 d-flex align-center">
             <v-icon size="large" color="primary" class="mr-3">mdi-wrench</v-icon>
             <h1 class="text-h5 font-weight-bold flex-grow-1">{{ t('MechanicView.title') }}</h1>
-            <v-btn icon variant="text" @click="loadOrders">
+            <v-btn-toggle v-model="viewMode" mandatory density="compact" color="primary" class="mr-2">
+                <v-btn value="mine" size="small">
+                    <v-icon start size="small">mdi-account</v-icon>
+                    {{ t('MechanicView.myOrders') }}
+                </v-btn>
+                <v-btn value="all" size="small">
+                    <v-icon start size="small">mdi-account-group</v-icon>
+                    {{ t('MechanicView.allOrders') }}
+                </v-btn>
+            </v-btn-toggle>
+            <v-btn icon variant="text" color="primary" @click="loadOrders" :title="t('MechanicView.refresh')">
                 <v-icon>mdi-refresh</v-icon>
+            </v-btn>
+            <v-btn icon variant="text" color="primary" @click="router.push(t('routes.mainmenu'))" :title="t('MechanicView.exitMechanic')">
+                <v-icon>mdi-exit-to-app</v-icon>
             </v-btn>
         </div>
 
@@ -65,7 +78,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { lxcarsStore } from '@/features/lxcars/stores/lxcars.store.js'
@@ -76,11 +89,14 @@ const carsStore = lxcarsStore()
 
 const orders = ref([])
 const loading = ref(false)
+const viewMode = ref('mine')
 
 async function loadOrders() {
     loading.value = true
     try {
-        orders.value = await carsStore.loadMechanicOrders()
+        orders.value = viewMode.value === 'all'
+            ? await carsStore.loadAllMechanicOrders()
+            : await carsStore.loadMechanicOrders()
     } catch (e) {
         console.error('Error loading mechanic orders:', e)
         orders.value = []
@@ -88,6 +104,8 @@ async function loadOrders() {
         loading.value = false
     }
 }
+
+watch(viewMode, () => loadOrders())
 
 function openOrder(order) {
     router.push({ name: 'mechanic-order', params: { id: order.id } })
@@ -108,7 +126,7 @@ function connectSSE() {
     sseSource.onmessage = (event) => {
         try {
             const data = JSON.parse(event.data)
-            if (data.table === 'oe_instructions_lxcars' || data.table === 'oe_parts_requests_lxcars') {
+            if (['oe_instructions_lxcars', 'oe_parts_requests_lxcars', 'oe'].includes(data.table)) {
                 loadOrders()
             }
         } catch { /* ignorieren */ }

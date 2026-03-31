@@ -1,6 +1,8 @@
 {
     "MechanicView": {
         "title": "Meine Aufträge",
+        "myOrders": "Meine",
+        "allOrders": "Alle",
         "noOrders": "Keine Aufträge zugewiesen",
         "noOrdersHint": "Dir wurden noch keine Arbeitsanweisungen zugeordnet.",
         "order": "Auftrag",
@@ -39,6 +41,8 @@
         "pendingParts": "Ersatzteile angefordert",
         "cancel": "Abbrechen",
         "delete": "Löschen",
-        "save": "Speichern"
+        "save": "Speichern",
+        "refresh": "Aktualisieren",
+        "exitMechanic": "Mechaniker-Modus verlassen"
     }
 }

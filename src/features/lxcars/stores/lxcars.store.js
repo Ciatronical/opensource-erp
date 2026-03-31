@@ -989,6 +989,12 @@ export const lxcarsStore = defineStore('lxcarsStore', () => {
         return response.data.payload
     }
 
+    async function loadAllMechanicOrders() {
+        const response = await axios.post('/api/lxcars/', { action: 'getAllMechanicOrders' })
+        if (!response.data.success) throw new ApiError('ApiError', response.data.text, 'Error loading all mechanic orders')
+        return response.data.payload
+    }
+
     async function loadMechanicOrderDetail(oeId) {
         const response = await axios.post('/api/lxcars/', { action: 'getMechanicOrderDetail', oe_id: oeId })
         if (!response.data.success) throw new ApiError('ApiError', response.data.text, 'Error loading mechanic order detail')
@@ -1135,6 +1141,7 @@ export const lxcarsStore = defineStore('lxcarsStore', () => {
         printTyreLabel,
         // Mechaniker-Modus
         loadMechanicOrders,
+        loadAllMechanicOrders,
         loadMechanicOrderDetail,
         addPartsRequest,
         updatePartsRequest,
