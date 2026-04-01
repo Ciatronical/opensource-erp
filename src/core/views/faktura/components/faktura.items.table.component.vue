@@ -251,7 +251,7 @@
                                 />
                             </td>
                             <td v-if="showPartsRequests" class="pa-0 px-1">
-                                <div v-if="item.parts_id" class="d-flex align-center ga-1">
+                                <div v-if="item.parts_id && item.part_type !== 'service'" class="d-flex align-center ga-1">
                                     <!-- Kein Status: Anfordern-Button -->
                                     <v-btn
                                         v-if="!getItemOrderStatus(item)"
