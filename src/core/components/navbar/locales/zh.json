@@ -17,7 +17,17 @@
         "logoHint": "选择图片，定位并裁剪",
         "saveLogo": "保存",
         "deleteLogo": "删除",
-        "cancel": "取消"
+        "cancel": "取消",
+        "sseConnected": "Live-Verbindung aktiv",
+        "sseDisconnected": "Live-Verbindung unterbrochen",
+        "newCompanySkr03": "Neue Firma mit SKR03 Kontenrahmen",
+        "newCompanySkr04": "Neue Firma mit SKR04 Kontenrahmen",
+        "createCompanyTitle": "Neue Firma anlegen",
+        "createCompanyHint": "Es wird eine neue Firmendatenbank mit dem {skr} Kontenrahmen erstellt.",
+        "companyName": "Firmenname",
+        "dbName": "Datenbankname",
+        "dbNameHint": "Nur Kleinbuchstaben, Ziffern und Unterstriche",
+        "createCompany": "Firma anlegen"
     },
     "GlobalSearch": {
         "placeholder": "搜索...",

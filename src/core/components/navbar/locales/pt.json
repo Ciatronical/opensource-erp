@@ -17,7 +17,17 @@
         "logoHint": "Selecionar imagem, posicionar e recortar",
         "saveLogo": "Guardar",
         "deleteLogo": "Remover",
-        "cancel": "Cancelar"
+        "cancel": "Cancelar",
+        "sseConnected": "Live-Verbindung aktiv",
+        "sseDisconnected": "Live-Verbindung unterbrochen",
+        "newCompanySkr03": "Neue Firma mit SKR03 Kontenrahmen",
+        "newCompanySkr04": "Neue Firma mit SKR04 Kontenrahmen",
+        "createCompanyTitle": "Neue Firma anlegen",
+        "createCompanyHint": "Es wird eine neue Firmendatenbank mit dem {skr} Kontenrahmen erstellt.",
+        "companyName": "Firmenname",
+        "dbName": "Datenbankname",
+        "dbNameHint": "Nur Kleinbuchstaben, Ziffern und Unterstriche",
+        "createCompany": "Firma anlegen"
     },
     "GlobalSearch": {
         "placeholder": "Pesquisar...",

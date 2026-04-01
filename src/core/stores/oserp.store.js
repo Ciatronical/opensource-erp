@@ -56,7 +56,8 @@ export const oserpStore = defineStore('oserpStore', () => {
         logged_in_employee: null,
         company_config: null,
         is_demo: false,
-        demo_inactivity_minutes: 20
+        demo_inactivity_minutes: 20,
+        can_create_company: false
     });
 
     /**
@@ -174,6 +175,7 @@ export const oserpStore = defineStore('oserpStore', () => {
         session.company_config = responseData.payload.main.company_config;
         session.is_demo = responseData.payload.is_demo || false;
         session.demo_inactivity_minutes = responseData.payload.demo_inactivity_minutes || 20;
+        session.can_create_company = responseData.payload.can_create_company || false;
         features.splice(0, features.length, ...(responseData.payload.main.company_config?.features || []));
         customer_vendor.value = responseData.payload.main.customer_vendor;
 
@@ -263,6 +265,24 @@ export const oserpStore = defineStore('oserpStore', () => {
         }
 
         throw new ApiError('ApiError', response.data.text);
+    }
+
+    /**
+     * Neue Firma anlegen
+     */
+    async function createCompany(companyName, dbName, skr) {
+        const response = await axios.post('/api/company/', {
+            action: 'createCompany',
+            companyName,
+            dbName,
+            skr
+        });
+
+        if (response.data.success) {
+            return response.data;
+        }
+
+        throw new ApiError('ApiError', response.data.text || response.data.payload);
     }
 
     /**
@@ -707,6 +727,7 @@ export const oserpStore = defineStore('oserpStore', () => {
         login,
         logout,
         switchClient,
+        createCompany,
         getLoginTimestamp,
         restoreSession,
         isAuthenticated,

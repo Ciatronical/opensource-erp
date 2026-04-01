@@ -145,6 +145,9 @@ class OserpConfig {
         define('DEMO_INACTIVITY_MINUTES', intval($settings['demo']['inactivity_minutes'] ?? 20));
         define('DEMO_COMPANY_DB', $settings['demo']['company_db'] ?? '');
 
+        // Firmen-Administration
+        define('COMPANY_ADMIN_USERS', $settings['company']['admin_users'] ?? '');
+
         // Globale Debug-Variable
         global $DEBUG;
         $DEBUG = $settings['system']['debug'] ?? false;
