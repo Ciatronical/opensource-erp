@@ -45,7 +45,8 @@ class ApiDatabase {
 
     public function prepareQuery($sql, $params = []) {
         $stmt = $this->prepare($sql);
-        $stmt->execute($params);
+        $this->bindTypedParams($stmt, $params);
+        $stmt->execute();
         return $stmt;
     }
 
@@ -83,9 +84,34 @@ class ApiDatabase {
         return $this->pdo->rollBack();
     }
 
+    /**
+     * Bindet Parameter mit expliziten PDO-Typen an ein Statement
+     *
+     * Verhindert, dass PDO alle Werte als Strings bindet.
+     * Ohne explizite Typen wird z.B. PHP false zu "" (leerer String),
+     * was PostgreSQL für Boolean-Spalten ablehnt.
+     *
+     * @param PDOStatement $stmt Prepared Statement
+     * @param array $params Key-value Array der Parameter
+     */
+    private function bindTypedParams($stmt, $params) {
+        foreach ($params as $param => $value) {
+            if ($value === null) {
+                $stmt->bindValue($param, null, PDO::PARAM_NULL);
+            } elseif (is_bool($value)) {
+                $stmt->bindValue($param, $value, PDO::PARAM_BOOL);
+            } elseif (is_int($value)) {
+                $stmt->bindValue($param, $value, PDO::PARAM_INT);
+            } else {
+                $stmt->bindValue($param, $value, PDO::PARAM_STR);
+            }
+        }
+    }
+
     public function execute($sql, $params = []) {
         $stmt = $this->pdo->prepare($sql);
-        return $stmt->execute($params);
+        $this->bindTypedParams($stmt, $params);
+        return $stmt->execute();
     }
 
     /**
@@ -242,7 +268,8 @@ class ApiDatabase {
      */
     public function getOne($sql, $params = []) {
         $stmt = $this->prepare($sql);
-        $stmt->execute($params);
+        $this->bindTypedParams($stmt, $params);
+        $stmt->execute();
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
@@ -256,7 +283,8 @@ class ApiDatabase {
      */
     public function getAll($sql, $params = []) {
         $stmt = $this->prepare($sql);
-        $stmt->execute($params);
+        $this->bindTypedParams($stmt, $params);
+        $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
