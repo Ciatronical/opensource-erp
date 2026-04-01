@@ -6,30 +6,25 @@
       class="info-bar"
       elevation="2"
     >
-      <!-- Ersatzteil-Anfragen: kompaktes Icon mit Badge, kein Text -->
-      <v-badge
+      <!-- Ersatzteil-Anfragen: Warenkorb + Kundenname (Dismiss gilt nur für heute) -->
+      <v-chip
         v-for="pr in visiblePartsRequests"
         :key="'pr-' + pr.oe_id"
-        :content="pr.pending_count"
-        color="white"
-        text-color="red"
-        offset-x="-2"
-        offset-y="-2"
+        color="red"
+        variant="elevated"
+        size="small"
+        closable
+        label
+        class="info-chip cursor-pointer"
+        :title="(pr.customer_name || pr.ordnumber || '#' + pr.oe_id) + ' (' + pr.pending_count + ')'"
+        @click="openOrderWithParts(pr)"
+        @click:close="dismissItem('parts', pr.oe_id)"
       >
-        <v-chip
-          color="red"
-          variant="elevated"
-          size="small"
-          closable
-          label
-          class="info-chip-parts cursor-pointer"
-          :title="(pr.customer_name || pr.ordnumber || '#' + pr.oe_id) + ' (' + pr.pending_count + ')'"
-          @click="openOrderWithParts(pr)"
-          @click:close="dismissItem('parts', pr.oe_id)"
-        >
-          <v-icon size="16">mdi-cart-arrow-down</v-icon>
-        </v-chip>
-      </v-badge>
+        <v-icon start size="14">mdi-cart-arrow-down</v-icon>
+        <span class="info-chip-text font-weight-medium">
+          {{ truncate(pr.customer_name || pr.ordnumber || '#' + pr.oe_id, 10) }}
+        </span>
+      </v-chip>
 
       <!-- Chronologische Ereignisse (füllen restliche Slots) -->
       <v-chip
@@ -192,16 +187,7 @@ export default {
   z-index: 1004;
 }
 
-/* Ersatzteil-Chips: kompakt, nur Icon + Badge, feste kleine Breite */
-.info-chip-parts {
-  flex: 0 0 auto !important;
-}
-.info-chip-parts :deep(.v-chip__close) {
-  color: white !important;
-  opacity: 0.9;
-}
-
-/* Chronologische Chips: gleich groß, teilen sich den restlichen Platz */
+/* Alle Chips gleich groß — teilen sich den verfügbaren Platz gleichmäßig */
 .info-chip {
   flex: 1 1 0 !important;
   min-width: 0 !important;

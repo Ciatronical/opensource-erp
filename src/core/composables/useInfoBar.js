@@ -21,7 +21,7 @@ export function useInfoBar() {
     const newEmails = ref([])
     const newWhatsapps = ref([])
     const pendingPartsRequests = ref([])
-    const dismissed = ref({ calls: [], emails: [], whatsapps: [], parts: [] })
+    const dismissed = ref({ calls: [], emails: [], whatsapps: [], parts: [], parts_date: null })
 
     let eventSource = null
     let emailPollInterval = null
@@ -39,11 +39,15 @@ export function useInfoBar() {
                     saveDismissed()
                     return
                 }
+                const today = new Date().toISOString().split('T')[0]
+                // Parts-Dismiss nur für den aktuellen Tag gültig
+                const partsStillValid = (parsed.parts_date === today) ? (parsed.parts || []).slice(-20) : []
                 dismissed.value = {
                     calls: (parsed.calls || []).slice(-20),
                     emails: (parsed.emails || []).slice(-20),
                     whatsapps: (parsed.whatsapps || []).slice(-20),
-                    parts: (parsed.parts || []).slice(-20)
+                    parts: partsStillValid,
+                    parts_date: partsStillValid.length ? today : null
                 }
             }
         } catch { /* ignorieren */ }
@@ -55,7 +59,8 @@ export function useInfoBar() {
             calls: dismissed.value.calls,
             emails: dismissed.value.emails,
             whatsapps: dismissed.value.whatsapps,
-            parts: dismissed.value.parts
+            parts: dismissed.value.parts,
+            parts_date: dismissed.value.parts_date
         }))
     }
 
@@ -210,6 +215,7 @@ export function useInfoBar() {
             dismissed.value.whatsapps.push(id)
         } else if (type === 'parts' && !dismissed.value.parts.includes(id)) {
             dismissed.value.parts.push(id)
+            dismissed.value.parts_date = new Date().toISOString().split('T')[0]
         }
         saveDismissed()
     }
@@ -279,7 +285,7 @@ export function useInfoBar() {
         newEmails.value = []
         newWhatsapps.value = []
         pendingPartsRequests.value = []
-        dismissed.value = { calls: [], emails: [], whatsapps: [], parts: [] }
+        dismissed.value = { calls: [], emails: [], whatsapps: [], parts: [], parts_date: null }
 
         stopListeners()
         loadAndFetchAll()
