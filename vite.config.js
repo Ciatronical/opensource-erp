@@ -41,12 +41,14 @@ export default defineConfig({
         manualChunks(id) {
           // Vuetify — alle Module (Components, Directives, Styles-Logik)
           if (id.includes('node_modules/vuetify')) return 'vendor-vuetify'
-          // Vue-Kern + Router + State
+          // Vue-Kern + Router + State + Draggable (UMD, braucht Vue-Referenz im selben Chunk)
           if (id.includes('node_modules/vue/') ||
               id.includes('node_modules/@vue/') ||
               id.includes('node_modules/vue-router') ||
               id.includes('node_modules/pinia') ||
-              id.includes('node_modules/vue-i18n')) return 'vendor-vue'
+              id.includes('node_modules/vue-i18n') ||
+              id.includes('node_modules/vuedraggable') ||
+              id.includes('node_modules/sortablejs')) return 'vendor-vue'
           // FullCalendar
           if (id.includes('node_modules/@fullcalendar')) return 'vendor-calendar'
           // Tiptap Rich-Text-Editor
@@ -65,9 +67,7 @@ export default defineConfig({
           // vuefinder + uppy (nur in files.tab)
           if (id.includes('node_modules/vuefinder') ||
               id.includes('node_modules/@uppy')) return 'vendor-vuefinder'
-          // vuedraggable + sortablejs
-          if (id.includes('node_modules/vuedraggable') ||
-              id.includes('node_modules/sortablejs')) return 'vendor-draggable'
+          // vuedraggable + sortablejs → in vendor-vue (siehe oben)
         }
       }
     }
