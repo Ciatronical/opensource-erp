@@ -1,28 +1,32 @@
 // src/router/index.js
 import { createRouter, createWebHistory } from 'vue-router'
+
+// Statisch: Nur Login, Setup, Startup, NotFound (werden sofort gebraucht)
 import LoginView from '@/core/views/login/login.view.vue'
 import SetupView from '@/core/views/setup/setup.view.vue'
-import UpdateView from '@/core/views/update/update.view.vue'
 import StartupView from '@/core/views/startup/startup.view.vue'
 import NotFoundView from '@/core/views/notfound/notfound.view.vue'
-import CustomerEditView from '@/core/views/customer-vendor/cv.edit.view.vue'
-import CurrentCVeditView from '@/core/views/customer-vendor/edit_current.view.vue'
-import ClientDefaultsView from '@/core/views/config/client-defaults.view.vue'
-import CustomerVendorSearchView from '@/core/views/search/search.view.vue'
-import DeveloperToolsView from '@/core/views/developer-tools/developer-tools.view.vue'
-import FakturaView from '@/core/views/faktura/faktura.view.vue'
-import FollowUpView from '@/core/views/follow-up/follow-up.view.vue'
-import CallHistoryView from '@/core/views/call-history/call-history.view.vue'
-import CalendarView from '@/core/views/calendar/calendar.view.vue'
-import EmailView from '@/core/views/email/email.view.vue'
-import WhatsAppView from '@/core/views/whatsapp/whatsapp.view.vue'
-import DatenschutzView from '@/core/views/datenschutz/datenschutz.view.vue'
-import DatenloeschungView from '@/core/views/datenschutz/datenloeschung.view.vue'
-import ArticleEditView from '@/core/views/article/article.edit.view.vue'
-import WikiListView from '@/core/views/wiki/wiki.list.view.vue'
-import WikiEditView from '@/core/views/wiki/wiki.edit.view.vue'
-import WikiReadView from '@/core/views/wiki/wiki.read.view.vue'
-import WikiCategoriesView from '@/core/views/wiki/wiki.categories.view.vue'
+
+// Lazy-Loaded: Alles andere wird erst bei Navigation geladen
+const UpdateView = () => import('@/core/views/update/update.view.vue')
+const CustomerEditView = () => import('@/core/views/customer-vendor/cv.edit.view.vue')
+const CurrentCVeditView = () => import('@/core/views/customer-vendor/edit_current.view.vue')
+const ClientDefaultsView = () => import('@/core/views/config/client-defaults.view.vue')
+const CustomerVendorSearchView = () => import('@/core/views/search/search.view.vue')
+const DeveloperToolsView = () => import('@/core/views/developer-tools/developer-tools.view.vue')
+const FakturaView = () => import('@/core/views/faktura/faktura.view.vue')
+const FollowUpView = () => import('@/core/views/follow-up/follow-up.view.vue')
+const CallHistoryView = () => import('@/core/views/call-history/call-history.view.vue')
+const CalendarView = () => import('@/core/views/calendar/calendar.view.vue')
+const EmailView = () => import('@/core/views/email/email.view.vue')
+const WhatsAppView = () => import('@/core/views/whatsapp/whatsapp.view.vue')
+const DatenschutzView = () => import('@/core/views/datenschutz/datenschutz.view.vue')
+const DatenloeschungView = () => import('@/core/views/datenschutz/datenloeschung.view.vue')
+const ArticleEditView = () => import('@/core/views/article/article.edit.view.vue')
+const WikiListView = () => import('@/core/views/wiki/wiki.list.view.vue')
+const WikiEditView = () => import('@/core/views/wiki/wiki.edit.view.vue')
+const WikiReadView = () => import('@/core/views/wiki/wiki.read.view.vue')
+const WikiCategoriesView = () => import('@/core/views/wiki/wiki.categories.view.vue')
 const OrderSearchView = () => import('@/core/views/order-search/order-search.view.vue')
 const UserConfigView = () => import('@/core/views/user-config/user-config.view.vue')
 const WallDisplayView = () => import('@/core/views/wall-display/wall-display.view.vue')

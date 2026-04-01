@@ -23,7 +23,7 @@ git pull
 echo "=== Projekt-Statistiken ==="
 FILE_COUNT=$(find src -name '*.vue' -o -name '*.js' | wc -l)
 LINE_COUNT=$(find src -name '*.vue' -o -name '*.js' | xargs wc -l 2>/dev/null | tail -1 | awk '{print $1}')
-SRC_SIZE=$(du -sh src/ | awk '{print $1}')
+SRC_SIZE=$(du -sh --exclude='.git' src/ | awk '{print $1}')
 echo "  Dateien (Vue/JS): $FILE_COUNT"
 echo "  Codezeilen:       $LINE_COUNT"
 echo "  src/ Größe:       $SRC_SIZE"

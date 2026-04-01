@@ -4,6 +4,7 @@ import { writeFileSync, mkdirSync } from 'node:fs'
 import { resolve, dirname } from 'node:path'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import vuetify from 'vite-plugin-vuetify'
 // vue-devtools bei Ärger, erst mal weglassen
 import vueDevTools from 'vite-plugin-vue-devtools'
 
@@ -23,6 +24,8 @@ function buildIdPlugin() {
 export default defineConfig({
   plugins: [
     vue(),
+    // Vuetify Tree-Shaking: importiert nur tatsächlich verwendete Komponenten
+    vuetify({ autoImport: true }),
     vueDevTools(),
     buildIdPlugin(),
   ],
@@ -30,6 +33,43 @@ export default defineConfig({
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
       '@special': fileURLToPath(new URL('./special/frontend', import.meta.url))
+    }
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          // Vuetify — alle Module (Components, Directives, Styles-Logik)
+          if (id.includes('node_modules/vuetify')) return 'vendor-vuetify'
+          // Vue-Kern + Router + State
+          if (id.includes('node_modules/vue/') ||
+              id.includes('node_modules/@vue/') ||
+              id.includes('node_modules/vue-router') ||
+              id.includes('node_modules/pinia') ||
+              id.includes('node_modules/vue-i18n')) return 'vendor-vue'
+          // FullCalendar
+          if (id.includes('node_modules/@fullcalendar')) return 'vendor-calendar'
+          // Tiptap Rich-Text-Editor
+          if (id.includes('node_modules/@tiptap') ||
+              id.includes('node_modules/prosemirror') ||
+              id.includes('node_modules/@prosemirror')) return 'vendor-tiptap'
+          // Chart.js
+          if (id.includes('node_modules/chart.js') ||
+              id.includes('node_modules/vue-chartjs')) return 'vendor-charts'
+          // libphonenumber
+          if (id.includes('node_modules/libphonenumber-js')) return 'vendor-phone'
+          // axios
+          if (id.includes('node_modules/axios')) return 'vendor-axios'
+          // sweetalert2
+          if (id.includes('node_modules/sweetalert2')) return 'vendor-sweetalert'
+          // vuefinder + uppy (nur in files.tab)
+          if (id.includes('node_modules/vuefinder') ||
+              id.includes('node_modules/@uppy')) return 'vendor-vuefinder'
+          // vuedraggable + sortablejs
+          if (id.includes('node_modules/vuedraggable') ||
+              id.includes('node_modules/sortablejs')) return 'vendor-draggable'
+        }
+      }
     }
   },
   server: {

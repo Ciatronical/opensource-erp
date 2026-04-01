@@ -6,13 +6,11 @@ import { oserpStore } from '@/core/stores/oserp.store'
 
 // i18n
 import i18n from './i18n'
-import { de, en, pl, uk, ru, fr, nl, da, no, sv, et, lv, lt, es, it, pt, cs, ro, tr, fi, zhHans } from 'vuetify/locale'
+import { de, en } from 'vuetify/locale'
 
-// Vuetify
+// Vuetify (Tree-Shaking via vite-plugin-vuetify — kein manueller Import nötig)
 import 'vuetify/styles'
 import { createVuetify } from 'vuetify'
-import * as components from 'vuetify/components'
-import * as directives from 'vuetify/directives'
 import '@mdi/font/css/materialdesignicons.css'
 import './style.css'
 import preserveCursor from '@/core/directives/preserveCursor'
@@ -22,12 +20,10 @@ const pinia = createPinia()
 const app = createApp(App)
 
 const vuetify = createVuetify({
-  components,
-  directives,
   locale: {
     locale: 'de',
     fallback: 'en',
-    messages: { de, en, pl, uk, ru, fr, nl, da, nb: no, sv, et, lv, lt, es, it, pt, cs, ro, tr, fi, zh: zhHans },
+    messages: { de, en },
   },
   theme: {
     defaultTheme: 'light',
