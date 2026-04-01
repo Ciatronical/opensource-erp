@@ -19,6 +19,16 @@ cd "$PROJECT_DIR" || exit 1
 echo "0. Aktuelles Repository aktualisieren..."
 git pull
 
+# === Projekt-Statistiken ===
+echo "=== Projekt-Statistiken ==="
+FILE_COUNT=$(find src -name '*.vue' -o -name '*.js' | wc -l)
+LINE_COUNT=$(find src -name '*.vue' -o -name '*.js' | xargs wc -l 2>/dev/null | tail -1 | awk '{print $1}')
+SRC_SIZE=$(du -sh src/ | awk '{print $1}')
+echo "  Dateien (Vue/JS): $FILE_COUNT"
+echo "  Codezeilen:       $LINE_COUNT"
+echo "  src/ Größe:       $SRC_SIZE"
+echo ""
+
 echo "1. Dependencies installieren..."
 npm install
 

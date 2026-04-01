@@ -44,6 +44,17 @@ echo "Using PHP: $($PHP_BIN -v | head -n 1)"
 echo "PHP logs to: backend/log/php_error.log"
 echo "API logs to: backend/log/opensource_erp.api.debug.log"
 
+# === Projekt-Statistiken ===
+echo ""
+echo "=== Projekt-Statistiken ==="
+FILE_COUNT=$(find src -name '*.vue' -o -name '*.js' | wc -l)
+LINE_COUNT=$(find src -name '*.vue' -o -name '*.js' | xargs wc -l 2>/dev/null | tail -1 | awk '{print $1}')
+SRC_SIZE=$(du -sh src/ | awk '{print $1}')
+echo "  Dateien (Vue/JS): $FILE_COUNT"
+echo "  Codezeilen:       $LINE_COUNT"
+echo "  src/ Größe:       $SRC_SIZE"
+echo ""
+
 # Installiere npm-Abhängigkeiten
 npm install
 
