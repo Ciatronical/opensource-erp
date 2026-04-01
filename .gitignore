@@ -47,3 +47,6 @@ backend/api/special
 backend/templates/
 
 backend/tmp/*/
+
+# Demo-Daten (lokal generiert, nicht im Repo)
+backend/api/demo/data/

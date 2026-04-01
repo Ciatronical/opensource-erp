@@ -877,27 +877,35 @@ function updateArExt($data) {
 function getScans($data) {
     $db = DbhCompany::begin();
 
-    $row = $db->getOne(
-        "SELECT value FROM defaults_oserp WHERE key = 'lxcarsapi'",
-        []
-    );
+    if (defined('DEMO_MODE') && DEMO_MODE) {
+        // Demo: Scan aus CSV in DB seeden (idempotent)
+        if (($data['page'] ?? 1) == 1) {
+            _seedDemoScan($db);
+        }
+    } else {
+        $row = $db->getOne(
+            "SELECT value FROM defaults_oserp WHERE key = 'lxcarsapi'",
+            []
+        );
 
-    if (!$row || empty($row['value'])) {
-        resultInfo(false, 'NO_API_KEY', 'Kein API-Key konfiguriert (lxcarsapi)');
-        return;
+        if (!$row || empty($row['value'])) {
+            resultInfo(false, 'NO_API_KEY', 'Kein API-Key konfiguriert (lxcarsapi)');
+            return;
+        }
+
+        $apiKey = $row['value'];
+
+        // Neue Scans von der API holen und in DB cachen (nur auf Seite 1)
+        if (($data['page'] ?? 1) == 1) {
+            syncScansFromApi($db, $apiKey, intval($data['per_page'] ?? 20));
+        }
     }
 
-    $apiKey = $row['value'];
     $perPage = intval($data['per_page'] ?? 20);
     if ($perPage < 1 || $perPage > 50) $perPage = 20;
     $page = max(1, intval($data['page'] ?? 1));
 
-    // 1. Neue Scans von der API holen und in DB cachen (nur auf Seite 1)
-    if ($page === 1) {
-        syncScansFromApi($db, $apiKey, $perPage);
-    }
-
-    // 2. Scans paginiert aus der DB lesen (mit optionaler Volltextsuche)
+    // Scans paginiert aus der DB lesen (mit optionaler Volltextsuche)
     $offset = ($page - 1) * $perPage;
     $search = trim($data['search'] ?? '');
 
@@ -1595,6 +1603,12 @@ function prepareKba($kbaData) {
 function scanFahrzeugschein($data) {
     $db = DbhCompany::begin();
 
+    // Demo-Modus: Scan aus CSV simulieren
+    if (defined('DEMO_MODE') && DEMO_MODE) {
+        _scanFahrzeugscheinDemo($db, $data);
+        return;
+    }
+
     // API-Key aus defaults_oserp lesen
     $row = $db->getOne(
         "SELECT value FROM defaults_oserp WHERE key = 'lxcarsapi'",
@@ -1770,6 +1784,187 @@ function _persistScanData($db, $scanData, $fullResult) {
 }
 
 /**
+ * Lädt den Demo-Scan aus der CSV-Datei.
+ * Gibt ein assoziatives Array zurück (CSV-Spaltenname => Wert) oder null bei Fehler.
+ */
+function _loadDemoScanFromCsv() {
+    $csvPath = __DIR__ . '/../demo/data/demo_fs_scan.csv';
+    if (!is_file($csvPath)) return null;
+
+    $handle = fopen($csvPath, 'r');
+    if (!$handle) return null;
+
+    $headers = fgetcsv($handle);
+    $row = fgetcsv($handle);
+    fclose($handle);
+
+    if (!$headers || !$row) return null;
+
+    return array_combine($headers, $row);
+}
+
+/**
+ * Seeded den Demo-Scan aus der CSV in fs_scans_lxcars (idempotent via ON CONFLICT).
+ */
+function _seedDemoScan($db) {
+    $csvData = _loadDemoScanFromCsv();
+    if (!$csvData) return;
+
+    $dbCols = [
+        'itime', 'scan_detail_id', 'scan_id', 'ez', 'ez_string', 'hsn', 'tsn',
+        'vsn', 'field_2_2', 'vin', 'd3', 'registrationnumber', 'name1', 'name2',
+        'firstname', 'address1', 'address2', 'j', 'field_4', 'field_3',
+        'd1', 'd2_1', 'd2_2', 'd2_3', 'd2_4', 'field_2', 'field_5_1', 'field_5_2',
+        'v9', 'field_14', 'p3', 'field_10', 'field_14_1', 'p1', 'l', 'field_9',
+        'p2_p4', 't', 'field_18', 'field_19', 'field_20', 'g', 'field_12', 'field_13',
+        'q', 'v7', 'f1', 'f2', 'field_7_1', 'field_7_2', 'field_7_3',
+        'field_8_1', 'field_8_2', 'field_8_3', 'u1', 'u2', 'u3', 'o1', 'o2',
+        's1', 's2', 'field_15_1', 'field_15_2', 'field_15_3', 'r', 'field_11',
+        'k', 'field_6', 'field_17', 'field_16', 'field_21', 'field_22', 'hu',
+        'creation_date', 'creation_city', 'document_id',
+        'maker', 'model', 'powerkw', 'powerhpkw', 'ccm', 'fuel', 'fuelcode', 'filename',
+    ];
+
+    $placeholders = array_map(fn($c) => ':' . $c, $dbCols);
+    $insertSql = "INSERT INTO fs_scans_lxcars (" . implode(', ', $dbCols) . ") "
+               . "VALUES (" . implode(', ', $placeholders) . ") "
+               . "ON CONFLICT (scan_id) DO NOTHING";
+
+    $params = [];
+    foreach ($dbCols as $col) {
+        $val = $csvData[$col] ?? null;
+        $params[':' . $col] = ($val !== '' ? $val : null);
+    }
+
+    try {
+        $db->execute($insertSql, $params);
+    } catch (\Exception $e) {
+        error_log('_seedDemoScan: ' . $e->getMessage());
+    }
+}
+
+/**
+ * Demo-Modus: Simuliert einen Fahrzeugschein-Scan mit den Demo-Daten.
+ * Gibt das gleiche Ergebnis-Format wie der echte Scan zurück.
+ */
+function _scanFahrzeugscheinDemo($db, $data) {
+    $csvData = _loadDemoScanFromCsv();
+    if (!$csvData) {
+        resultInfo(false, 'DEMO_ERROR', 'Demo-Daten nicht gefunden');
+        return;
+    }
+
+    $image = $data['image'] ?? '';
+    $isPdf = !empty($data['is_pdf']);
+
+    // Original-Bild als Temp-Datei speichern (normaler Flow)
+    $tempId = null;
+    if (!empty($image)) {
+        $tempDir = __DIR__ . '/../../data/fahrzeugschein/temp';
+        if (!is_dir($tempDir)) {
+            mkdir($tempDir, 0755, true);
+        }
+        $decoded = base64_decode($image);
+        if ($decoded !== false) {
+            $tempId = bin2hex(random_bytes(16));
+            $ext = $isPdf ? 'pdf' : 'jpg';
+            file_put_contents($tempDir . '/' . $tempId . '.' . $ext, $decoded);
+        }
+    }
+
+    // CSV-Daten als scanData aufbereiten (Spalten-Mapping für mapScanToCarFields)
+    $scanData = $csvData;
+    $scanData['registrationNumber'] = $csvData['registrationnumber'] ?? '';
+    $scanData['Maker'] = $csvData['maker'] ?? '';
+    $scanData['Model'] = $csvData['model'] ?? '';
+    $scanData['PowerKw'] = $csvData['powerkw'] ?? '';
+    $scanData['PowerHpKw'] = $csvData['powerhpkw'] ?? '';
+    $scanData['Ccm'] = $csvData['ccm'] ?? '';
+    $scanData['Fuel'] = $csvData['fuel'] ?? '';
+    $scanData['FuelCode'] = $csvData['fuelcode'] ?? '';
+    $scanData['Filename'] = $csvData['filename'] ?? '';
+
+    // Crop-Bilder aus Demo-Daten laden
+    $demoScanId = $csvData['scan_id'];
+    $demoDir = __DIR__ . '/../demo/data/' . $demoScanId;
+    $imageFields = [];
+
+    $cropDir = $demoDir . '/.crops';
+    if (is_dir($cropDir)) {
+        foreach (glob($cropDir . '/crop_*.jpg') as $cropFile) {
+            // crop_hsn.jpg → hsn_img
+            $fieldName = preg_replace('/^crop_(.+)\.jpg$/', '$1', basename($cropFile));
+            $imageFields[$fieldName . '_img'] = base64_encode(file_get_contents($cropFile));
+        }
+    }
+
+    // Original-Dokument-Bild
+    $originalPath = $demoDir . '/original.jpg';
+    if (is_file($originalPath)) {
+        $imageFields['document_img'] = base64_encode(file_get_contents($originalPath));
+    }
+
+    // Mapping auf Car-Felder
+    $mapped = mapScanToCarFields($scanData);
+
+    // In DB persistieren (neue scan_id für jeden Upload, damit mehrfach scannen möglich ist)
+    $scanData['scan_id'] = 'demo_' . bin2hex(random_bytes(8));
+    $scanData['scan_detail_id'] = 'demo_' . bin2hex(random_bytes(8));
+    _persistScanData($db, $scanData, ['data' => $scanData]);
+
+    // Bilder in tmp cachen (für späteres Lazy-Loading via getScanTempCrop)
+    cacheScanToTmp($scanData['scan_id'], $imageFields);
+
+    resultInfo(true, 'OK', [
+        'car'   => $mapped['car'],
+        'kba'   => $mapped['kba'],
+        'owner' => $mapped['owner'],
+        'raw'   => $scanData,
+        'images' => $imageFields,
+        'country_code' => 'de',
+        'temp_image_id' => $tempId
+    ]);
+}
+
+/**
+ * Demo-Modus: Kopiert Demo-Bilder in den tmp-Cache für eine Scan-ID.
+ * Sucht immer im originalen Demo-Scan-Ordner.
+ */
+function _cacheDemoScanImages($scanId) {
+    $safeScanId = preg_replace('/[^a-zA-Z0-9\-_]/', '', $scanId);
+    if (empty($safeScanId)) return;
+
+    $tmpDir = __DIR__ . '/../../tmp/' . $safeScanId;
+    $tmpCropDir = $tmpDir . '/.crops';
+
+    // Bereits gecacht?
+    if (is_dir($tmpCropDir) && count(glob($tmpCropDir . '/crop_*.jpg')) > 0) return;
+
+    // Demo-Quelldaten: immer aus dem originalen Demo-Scan-Ordner
+    $csvData = _loadDemoScanFromCsv();
+    $demoScanId = $csvData['scan_id'] ?? '';
+    $demoDir = __DIR__ . '/../demo/data/' . $demoScanId;
+    if (!is_dir($demoDir)) return;
+
+    if (!is_dir($tmpDir)) mkdir($tmpDir, 0775, true);
+    if (!is_dir($tmpCropDir)) mkdir($tmpCropDir, 0775, true);
+
+    // Original kopieren
+    $srcOriginal = $demoDir . '/original.jpg';
+    if (is_file($srcOriginal)) {
+        copy($srcOriginal, $tmpDir . '/original.jpg');
+    }
+
+    // Crops kopieren
+    $srcCropDir = $demoDir . '/.crops';
+    if (is_dir($srcCropDir)) {
+        foreach (glob($srcCropDir . '/crop_*.jpg') as $cropFile) {
+            copy($cropFile, $tmpCropDir . '/' . basename($cropFile));
+        }
+    }
+}
+
+/**
  * Holt Detail-Daten eines Scans (nur Textdaten).
  * Bilder werden in backend/tmp/{scan_id}/ gecacht und über getScanTempCrop geladen.
  *
@@ -1806,6 +2001,25 @@ function getScanDetail($data) {
             'owner' => $mapped['owner'],
             'raw'   => $row
         ]);
+        return;
+    }
+
+    // Demo-Modus: Bilder aus Demo-Daten cachen statt API
+    if (defined('DEMO_MODE') && DEMO_MODE) {
+        _cacheDemoScanImages($scanId);
+
+        $source = $row ?: _loadDemoScanFromCsv();
+        if ($source) {
+            $mapped = mapScanToCarFields($source);
+            resultInfo(true, 'OK', [
+                'car'   => $mapped['car'],
+                'kba'   => $mapped['kba'],
+                'owner' => $mapped['owner'],
+                'raw'   => $source
+            ]);
+            return;
+        }
+        resultInfo(false, 'NOT_FOUND', 'Demo-Scan nicht gefunden');
         return;
     }
 

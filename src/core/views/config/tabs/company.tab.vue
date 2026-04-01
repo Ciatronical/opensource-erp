@@ -348,6 +348,99 @@
                     </template>
                 </v-select>
             </v-col>
+
+            <!-- Drucker -->
+            <v-col cols="12">
+                <v-divider class="my-4" />
+                <h3 class="text-h6 mb-4">{{ $t('printers') }}</h3>
+            </v-col>
+
+            <v-col cols="12">
+                <v-data-table
+                    :headers="printerHeaders"
+                    :items="printers"
+                    :no-data-text="$t('noPrintersConfigured')"
+                    density="compact"
+                    hide-default-footer
+                    :items-per-page="-1"
+                >
+                    <!-- Beschreibung -->
+                    <template #item.printer_description="{ item }">
+                        <v-text-field
+                            v-model="item.printer_description"
+                            variant="plain"
+                            density="compact"
+                            hide-details
+                            @blur="onPrinterBlur(item)"
+                        />
+                    </template>
+
+                    <!-- Druckbefehl -->
+                    <template #item.printer_command="{ item }">
+                        <v-text-field
+                            v-model="item.printer_command"
+                            variant="plain"
+                            density="compact"
+                            hide-details
+                            @blur="onPrinterBlur(item)"
+                        />
+                    </template>
+
+                    <!-- Template-Code -->
+                    <template #item.template_code="{ item }">
+                        <v-text-field
+                            v-model="item.template_code"
+                            variant="plain"
+                            density="compact"
+                            hide-details
+                            @blur="onPrinterBlur(item)"
+                        />
+                    </template>
+
+                    <!-- Aktionen -->
+                    <template #item.actions="{ item }">
+                        <v-btn
+                            icon="mdi-delete"
+                            variant="text"
+                            size="small"
+                            color="error"
+                            @click="confirmDeletePrinter(item)"
+                        />
+                    </template>
+                </v-data-table>
+
+                <v-btn
+                    color="primary"
+                    variant="tonal"
+                    size="small"
+                    prepend-icon="mdi-plus"
+                    class="mt-2"
+                    @click="addPrinter"
+                >
+                    {{ $t('addPrinter') }}
+                </v-btn>
+
+                <!-- Lösch-Bestätigungsdialog -->
+                <v-dialog v-model="showDeletePrinterDialog" max-width="400" persistent>
+                    <v-card>
+                        <v-card-title class="bg-error text-white">
+                            <v-icon start>mdi-delete-alert</v-icon>
+                            {{ $t('printers') }}
+                        </v-card-title>
+                        <v-card-text class="pa-4">
+                            {{ $t('deletePrinterConfirm') }}
+                        </v-card-text>
+                        <v-card-actions>
+                            <v-btn @click="showDeletePrinterDialog = false">{{ $t('cancel') }}</v-btn>
+                            <v-spacer />
+                            <v-btn color="error" variant="flat" @click="deletePrinter">
+                                <v-icon start>mdi-delete</v-icon>
+                                {{ $t('delete') }}
+                            </v-btn>
+                        </v-card-actions>
+                    </v-card>
+                </v-dialog>
+            </v-col>
         </v-row>
     </div>
 </template>
@@ -359,6 +452,7 @@ import axios from 'axios';
 import { oserpStore } from '@/core/stores/oserp.store.js';
 import { fakturaStore } from '@/core/stores/faktura.store.js';
 import { getWeightUnits } from '../composables/useUnits.js';
+import * as toasts from '@/core/utils/toasts.js';
 
 const { t } = useI18n();
 const store = oserpStore();
@@ -378,6 +472,18 @@ const newMasterTemplate = ref('');
 const newTemplateSetName = ref('');
 const creatingTemplateSet = ref(false);
 
+// === Drucker ===
+const printers = ref([]);
+const showDeletePrinterDialog = ref(false);
+let printerToDelete = null;
+
+const printerHeaders = computed(() => [
+    { title: t('printerDescription'), key: 'printer_description', sortable: false },
+    { title: t('printerCommand'), key: 'printer_command', sortable: false },
+    { title: t('templateCode'), key: 'template_code', sortable: false },
+    { title: '', key: 'actions', sortable: false, width: '50px' }
+]);
+
 // Dynamisch geladene Template-Sets
 const availableTemplateSets = ref([]);
 const masterTemplateSets = ref([]);
@@ -385,6 +491,7 @@ const masterTemplateSets = ref([]);
 // Template-Sets beim Mounten laden
 onMounted(async () => {
     await loadTemplateSets();
+    await loadPrinters();
 });
 
 async function loadTemplateSets() {
@@ -534,6 +641,95 @@ function deleteLogo() {
         delete store.session.company_config.defaults_oserp['company_logo'];
     }
     axios.post('/api/oserp_config/', { action: 'saveClientDefault', key: 'company_logo', value: '' });
+}
+
+// === Drucker-Verwaltung ===
+
+const printerApi = axios.create({
+    baseURL: '/api',
+    withCredentials: true,
+    headers: { 'Content-Type': 'application/json' }
+});
+
+async function loadPrinters() {
+    try {
+        const response = await printerApi.post('/oserp_config/', { action: 'getPrinters' });
+        if (response.data.success) {
+            printers.value = response.data.payload?.results || [];
+        }
+    } catch (error) {
+        console.error('loadPrinters Fehler:', error);
+    }
+}
+
+function addPrinter() {
+    printers.value.push({
+        id: null,
+        printer_description: '',
+        printer_command: '',
+        template_code: '',
+        _isNew: true
+    });
+}
+
+async function onPrinterBlur(item) {
+    // Nicht speichern wenn Beschreibung leer
+    if (!item.printer_description?.trim()) return;
+
+    try {
+        const response = await printerApi.post('/oserp_config/', {
+            action: 'savePrinter',
+            id: item.id,
+            printer_description: item.printer_description,
+            printer_command: item.printer_command || '',
+            template_code: item.template_code || ''
+        });
+
+        if (response.data.success) {
+            // Bei neuem Drucker: ID zuweisen
+            if (!item.id && response.data.payload?.results?.id) {
+                item.id = response.data.payload.results.id;
+                item._isNew = false;
+            }
+            toasts.success(t('printerSaved'));
+        }
+    } catch (error) {
+        console.error('savePrinter Fehler:', error);
+    }
+}
+
+function confirmDeletePrinter(item) {
+    printerToDelete = item;
+    showDeletePrinterDialog.value = true;
+}
+
+async function deletePrinter() {
+    if (!printerToDelete) return;
+
+    // Neuer, noch nicht gespeicherter Drucker: einfach aus Liste entfernen
+    if (!printerToDelete.id) {
+        printers.value = printers.value.filter(p => p !== printerToDelete);
+        showDeletePrinterDialog.value = false;
+        printerToDelete = null;
+        return;
+    }
+
+    try {
+        const response = await printerApi.post('/oserp_config/', {
+            action: 'deletePrinter',
+            id: printerToDelete.id
+        });
+
+        if (response.data.success) {
+            printers.value = printers.value.filter(p => p.id !== printerToDelete.id);
+            toasts.success(t('printerDeleted'));
+        }
+    } catch (error) {
+        console.error('deletePrinter Fehler:', error);
+    } finally {
+        showDeletePrinterDialog.value = false;
+        printerToDelete = null;
+    }
 }
 </script>
 

@@ -1047,6 +1047,7 @@ export default {
 
         // API-Key Check
         const hasApiKey = computed(() => {
+            if (oserpData.session?.is_demo) return true
             const config = oserpData.session?.company_config?.defaults_oserp
             return config && config.lxcarsapi && config.lxcarsapi.trim() !== ''
         })
