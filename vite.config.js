@@ -65,9 +65,6 @@ export default defineConfig({
           // vuefinder + uppy (nur in files.tab)
           if (id.includes('node_modules/vuefinder') ||
               id.includes('node_modules/@uppy')) return 'vendor-vuefinder'
-          // vuedraggable + sortablejs
-          if (id.includes('node_modules/vuedraggable') ||
-              id.includes('node_modules/sortablejs')) return 'vendor-draggable'
         }
       }
     }

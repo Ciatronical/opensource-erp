@@ -6,7 +6,8 @@ import * as toasts from '@/core/utils/toasts.js'
 
 export function useItemManagement({
     fakturaItems, fakturaId, fakturaType, faktura,
-    itemsTableRef, calculateItemTotal, calculateTotals, saveAllItems, ensureFakturaExists, flushRouteReplace, oserp, t, router
+    itemsTableRef, calculateItemTotal, calculateTotals, saveAllItems, ensureFakturaExists, flushRouteReplace, oserp, t, router,
+    suppressSSEReload
 }) {
 
     // Dialog Refs
@@ -307,6 +308,10 @@ export function useItemManagement({
 
         item.description = selectedArticle.description
         fillArticleData(item, selectedArticle)
+
+        // SSE-Reload VOR den async Saves unterdrücken — sonst überschreibt
+        // reloadFakturaData() die Items-Liste bevor der Fokus gesetzt wird
+        suppressSSEReload?.()
 
         try {
             await ensureFakturaExists()

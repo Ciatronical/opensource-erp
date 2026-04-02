@@ -852,7 +852,9 @@ export default defineComponent({
         async function loadInstructions() {
             if (!props.oeId) return
             if (Date.now() < suppressSSEReloadUntil) return
-            loading.value = true
+            // Spinner nur beim initialen Laden — SSE-Reloads sollen die Tabelle nicht zerstören
+            const isInitialLoad = instructions.value.length === 0
+            if (isInitialLoad) loading.value = true
             try {
                 const rows = await carsStore.loadInstructions(props.oeId)
                 instructions.value = (rows || []).map(r => ({
@@ -872,7 +874,7 @@ export default defineComponent({
             } catch (e) {
                 console.error('Error loading instructions:', e)
             } finally {
-                loading.value = false
+                if (isInitialLoad) loading.value = false
                 if (instructions.value.length === 0) {
                     nextTick(() => {
                         addInputRef.value?.focus()
@@ -957,23 +959,18 @@ export default defineComponent({
                     _prevPlanned: plannedMin,
                     _prevActual: 0
                 })
+                // SSE-Reload unterdrücken — sonst zerstört der Reload die Refs
+                suppressSSEReloadUntil = Date.now() + 2000
                 // Pending Search abbrechen, dann alles leeren
                 if (searchTimeout) clearTimeout(searchTimeout)
                 suggestions.value = []
                 newInstructionSelected.value = null
                 newInstructionSearch.value = ''
-                // Focus auf geplante Zeit der neuen Anweisung
+                // Focus zurück ins Eingabefeld für die nächste Anweisung
                 nextTick(() => {
-                    const newIndex = instructions.value.length - 1
-                    const plannedRef = plannedTimeRefs[newIndex]
-                    if (plannedRef) {
-                        const input = plannedRef.$el?.querySelector('input')
-                        if (input) {
-                            input.focus()
-                            return
-                        }
-                    }
-                    addInputRef.value?.focus()
+                    setTimeout(() => {
+                        addInputRef.value?.focus()
+                    }, 50)
                 })
             } catch (e) {
                 console.error('Error adding instruction:', e)

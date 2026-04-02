@@ -1254,7 +1254,8 @@ export default defineComponent({
             calculateItemTotal: accounting.calculateItemTotal,
             calculateTotals: accounting.calculateTotals,
             saveAllItems, ensureFakturaExists, flushRouteReplace,
-            oserp, t, router
+            oserp, t, router,
+            suppressSSEReload() { suppressSSEReloadUntil = Date.now() + 2000 }
         })
 
         // ===== Lifecycle =====
@@ -1351,9 +1352,11 @@ export default defineComponent({
 
         let sseSource = null
         let sseReloadPending = false
+        let suppressSSEReloadUntil = 0
 
         async function reloadFakturaData() {
             if (!fakturaId.value || sseReloadPending) return
+            if (Date.now() < suppressSSEReloadUntil) return
             sseReloadPending = true
             try {
                 await faktura.fetchFakturaData(fakturaId.value, fakturaType.value)
