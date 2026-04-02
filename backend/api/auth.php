@@ -2,6 +2,17 @@
 // backend/api/auth.php
 
 /**
+ * Prüft ob der aktuelle Benutzer neue Firmen anlegen darf
+ *
+ * @param string $login Login-Name des Benutzers
+ * @return bool
+ */
+function canUserCreateCompany($login) {
+    $adminUsers = array_map('trim', explode(',', COMPANY_ADMIN_USERS));
+    return in_array($login, $adminUsers, true);
+}
+
+/**
  * Lädt die Liste aller verfügbaren Mandanten
  *
  * @param array $data Eingabedaten (wird nicht verwendet)
@@ -156,7 +167,8 @@ function login($data) {
             "permissions" => $auth->fetchAllPermissions(),
             "auth_groups" => $auth->fetchClientGroups(),
             "is_demo" => defined('DEMO_MODE') && DEMO_MODE,
-            "demo_inactivity_minutes" => defined('DEMO_INACTIVITY_MINUTES') ? DEMO_INACTIVITY_MINUTES : 20
+            "demo_inactivity_minutes" => defined('DEMO_INACTIVITY_MINUTES') ? DEMO_INACTIVITY_MINUTES : 20,
+            "can_create_company" => canUserCreateCompany($context['login'])
         );
     } else {
         throw new ApiError("WRONG_PASSWORD", "Falsches Passwort");
@@ -327,7 +339,8 @@ function switchClient($data) {
         'permissions' => $auth->fetchAllPermissions(),
         'auth_groups' => $auth->fetchClientGroups(),
         'is_demo' => defined('DEMO_MODE') && DEMO_MODE,
-        'demo_inactivity_minutes' => defined('DEMO_INACTIVITY_MINUTES') ? DEMO_INACTIVITY_MINUTES : 20
+        'demo_inactivity_minutes' => defined('DEMO_INACTIVITY_MINUTES') ? DEMO_INACTIVITY_MINUTES : 20,
+        'can_create_company' => canUserCreateCompany($context['login'])
     );
 
     require __DIR__ . '/customer_vendor/customer_vendor.php';

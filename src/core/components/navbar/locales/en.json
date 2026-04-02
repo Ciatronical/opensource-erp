@@ -18,7 +18,15 @@
         "deleteLogo": "Remove",
         "cancel": "Cancel",
         "sseConnected": "Live connection active",
-        "sseDisconnected": "Live connection interrupted"
+        "sseDisconnected": "Live connection interrupted",
+        "newCompanySkr03": "New Company with SKR03 Chart of Accounts",
+        "newCompanySkr04": "New Company with SKR04 Chart of Accounts",
+        "createCompanyTitle": "Create New Company",
+        "createCompanyHint": "A new company database with the {skr} chart of accounts will be created.",
+        "companyName": "Company Name",
+        "dbName": "Database Name",
+        "dbNameHint": "Only lowercase letters, digits and underscores",
+        "createCompany": "Create Company"
     },
     "GlobalSearch": {
         "placeholder": "Search...",

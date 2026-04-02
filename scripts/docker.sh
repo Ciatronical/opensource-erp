@@ -118,7 +118,8 @@ cmd_help() {
     echo "    destroy-all         Alles loeschen (Container, Volumes, Images)"
     echo ""
     echo -e "  ${BOLD}Komplett-Reset:${NC}"
-    echo "    reset <auth> <company>  Stack neu aufsetzen aus zwei Dump-Dateien (.sql oder .sql.gz)"
+    echo "    reset <auth> <company> [demo-daten]  Stack neu aufsetzen aus zwei Dump-Dateien (.sql oder .sql.gz)"
+    echo "                                          Optional: Demo-Daten als Verzeichnis oder .tar.gz"
     echo ""
     echo -e "  ${BOLD}Datenbank:${NC}"
     echo "    dbdump <file> <db>  SQL-Datei in DB laden (z.B. dbdump schema.sql oserp_company)"
@@ -253,17 +254,22 @@ cmd_destroy_all() {
 cmd_reset() {
     local auth_dump="${1:-}"
     local company_dump="${2:-}"
+    local demo_data="${3:-}"
 
     if [[ -z "$auth_dump" ]] || [[ -z "$company_dump" ]]; then
         error "Zwei Dump-Dateien erforderlich!"
         echo ""
-        echo "  Aufruf: ./scripts/docker.sh reset <auth-dump> <company-dump>"
+        echo "  Aufruf: ./scripts/docker.sh reset <auth-dump> <company-dump> [demo-daten]"
         echo ""
         echo "  Dumps von lokaler DB erzeugen:"
         echo "    pg_dump -U postgres --clean --if-exists oserp_auth    > auth.sql"
         echo "    pg_dump -U postgres --clean --if-exists oserp_company > company.sql"
         echo ""
         echo "  Dann: ./scripts/docker.sh reset auth.sql company.sql"
+        echo ""
+        echo "  Optional Demo-Daten (Verzeichnis oder .tar.gz):"
+        echo "    ./scripts/docker.sh reset auth.sql company.sql /mytmp/demo-data/"
+        echo "    ./scripts/docker.sh reset auth.sql company.sql /mytmp/demo-data.tar.gz"
         echo ""
         exit 1
     fi
@@ -334,7 +340,27 @@ cmd_reset() {
 
     success "Datenbanken geladen."
 
-    # ── 6. Web-Container starten ──
+    # ── 6. Demo-Daten ins Projektverzeichnis kopieren (optional, vor dem Build) ──
+    local dest_dir="$PROJECT_ROOT/backend/api/demo/data"
+    if [[ -n "$demo_data" ]]; then
+        if [[ -d "$demo_data" ]]; then
+            info "Kopiere Demo-Daten ins Projektverzeichnis..."
+            mkdir -p "$dest_dir"
+            cp -r "$demo_data/." "$dest_dir/"
+            success "Demo-Daten kopiert nach $dest_dir"
+
+        elif [[ -f "$demo_data" ]] && [[ "$demo_data" == *.tar.gz ]]; then
+            info "Entpacke Demo-Daten ins Projektverzeichnis..."
+            mkdir -p "$dest_dir"
+            tar -xzf "$demo_data" -C "$dest_dir"
+            success "Demo-Daten entpackt nach $dest_dir"
+
+        else
+            warn "Demo-Daten nicht gefunden oder unbekanntes Format: $demo_data"
+        fi
+    fi
+
+    # ── 7. Web-Container starten ──
     info "Starte Web-Container..."
     dc up -d --build web
 
