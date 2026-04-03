@@ -48,7 +48,7 @@
                         density="compact"
                         variant="outlined"
                         style="min-width: 170px"
-                        @change="loadData"
+                        @update:model-value="loadData"
                     />
                 </v-col>
                 <v-col cols="auto" class="text-body-2 text-medium-emphasis px-1">
@@ -63,7 +63,7 @@
                         density="compact"
                         variant="outlined"
                         style="min-width: 170px"
-                        @change="loadData"
+                        @update:model-value="loadData"
                     />
                 </v-col>
                 <v-col cols="auto">

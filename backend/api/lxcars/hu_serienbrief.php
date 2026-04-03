@@ -414,6 +414,12 @@ function sendHuPdfViaSftp($data) {
 
     // Per SFTP hochladen
     try {
+        if (!function_exists('ssh2_connect')) {
+            $result['engine']->cleanup($result['pdfPath']);
+            resultInfo(false, 'SSH2_MISSING', 'PHP-Extension ssh2 ist nicht installiert');
+            return;
+        }
+
         $connection = @ssh2_connect($eletterConfig['eletter_hostname'], 22);
         if (!$connection) {
             throw new Exception('Verbindung zu ' . $eletterConfig['eletter_hostname'] . ' fehlgeschlagen');
