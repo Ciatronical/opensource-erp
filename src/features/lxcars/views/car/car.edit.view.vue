@@ -391,6 +391,7 @@
                         </v-card-text>
                     </v-card>
 
+
                 </v-col>
 
                 <!-- ========== RECHTE SPALTE ========== -->
@@ -737,83 +738,93 @@
 
             </v-row>
 
-            <!-- Neuste Aufträge (volle Breite, nur im Edit-Modus) -->
-            <v-card v-if="isEditMode" class="mt-3" variant="outlined" elevation="1">
-                <v-card-title class="py-2 px-3 bg-grey-lighten-4 d-flex align-center">
-                    <v-icon class="mr-2" size="small">mdi-file-document-multiple-outline</v-icon>
-                    <span class="text-subtitle-1 font-weight-medium">{{ t('CarEditView.sections.orders') }}</span>
-                    <v-chip v-if="orders.length" size="x-small" variant="tonal" color="primary" class="ml-2">{{ orders.length }}</v-chip>
-                    <v-btn
-                        size="small"
-                        variant="outlined"
-                        ref="newOrderBtn"
-                        color="primary"
-                        prepend-icon="mdi-plus"
-                        class="ml-3"
-                        @click.stop="createNewOrder"
-                    >
-                        {{ t('CarEditView.orderTable.newOrder') }}
-                    </v-btn>
-                    <v-spacer />
-                    <v-text-field
-                        v-if="orders.length > 2"
-                        v-model="orderFilter"
-                        prepend-inner-icon="mdi-magnify"
-                        variant="outlined"
-                        density="compact"
-                        hide-details
-                        single-line
-                        clearable
-                        class="orders-table__filter"
-                        tabindex="-1"
-                    />
-                </v-card-title>
-                <v-divider />
-                <v-card-text class="pa-0">
-                    <v-table density="compact" class="orders-table">
-                        <thead>
-                            <tr>
-                                <th class="orders-table__th" @click="toggleOrderSort('ordnumber')">
-                                    {{ t('CarEditView.orderTable.number') }}
-                                    <v-icon size="14" class="ml-1 orders-table__sort" :class="{ 'orders-table__sort--active': orderSortField === 'ordnumber' }">{{ sortIcon('ordnumber') }}</v-icon>
-                                </th>
-                                <th class="orders-table__th" @click="toggleOrderSort('transdate')">
-                                    {{ t('CarEditView.orderTable.date') }}
-                                    <v-icon size="14" class="ml-1 orders-table__sort" :class="{ 'orders-table__sort--active': orderSortField === 'transdate' }">{{ sortIcon('transdate') }}</v-icon>
-                                </th>
-                                <th class="orders-table__th" @click="toggleOrderSort('first_position')">
-                                    {{ t('CarEditView.orderTable.firstPosition') }}
-                                    <v-icon size="14" class="ml-1 orders-table__sort" :class="{ 'orders-table__sort--active': orderSortField === 'first_position' }">{{ sortIcon('first_position') }}</v-icon>
-                                </th>
-                                <th class="text-right orders-table__th" @click="toggleOrderSort('amount')">
-                                    {{ t('CarEditView.orderTable.amount') }}
-                                    <v-icon size="14" class="ml-1 orders-table__sort" :class="{ 'orders-table__sort--active': orderSortField === 'amount' }">{{ sortIcon('amount') }}</v-icon>
-                                </th>
-                                <th style="width: 36px"></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <template v-if="sortedOrders.length">
-                                <tr v-for="order in sortedOrders" :key="order.id" class="orders-table__row" @click="openOrder(order.id)">
-                                    <td class="font-weight-medium text-no-wrap">{{ order.ordnumber }}</td>
-                                    <td class="text-medium-emphasis text-no-wrap">{{ order.transdate }}</td>
-                                    <td class="orders-table__desc">{{ order.first_position }}</td>
-                                    <td class="text-right font-weight-medium text-no-wrap">{{ formatAmount(order.amount) }}</td>
-                                    <td class="text-center pa-0">
-                                        <v-icon size="14" color="grey-lighten-1" class="orders-table__icon">mdi-open-in-new</v-icon>
-                                    </td>
-                                </tr>
-                            </template>
-                            <tr v-else>
-                                <td colspan="5" class="text-center py-6">
-                                    <v-icon size="40" color="grey-lighten-1" class="d-block mx-auto mb-2">mdi-file-document-remove-outline</v-icon>
-                                    <span class="text-body-2 text-medium-emphasis">{{ t('CarEditView.orderTable.noOrders') }}</span>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </v-table>
-                </v-card-text>
-            </v-card>
+            <!-- Aufträge + KI-Chat nebeneinander -->
+            <v-row v-if="isEditMode" class="mt-3">
+                <v-col cols="12" :lg="oserpData.isLxCars() ? 7 : 12">
+                    <!-- Neuste Aufträge -->
+                    <v-card variant="outlined" elevation="1">
+                        <v-card-title class="py-2 px-3 bg-grey-lighten-4 d-flex align-center">
+                            <v-icon class="mr-2" size="small">mdi-file-document-multiple-outline</v-icon>
+                            <span class="text-subtitle-1 font-weight-medium">{{ t('CarEditView.sections.orders') }}</span>
+                            <v-chip v-if="orders.length" size="x-small" variant="tonal" color="primary" class="ml-2">{{ orders.length }}</v-chip>
+                            <v-btn
+                                size="small"
+                                variant="outlined"
+                                ref="newOrderBtn"
+                                color="primary"
+                                prepend-icon="mdi-plus"
+                                class="ml-3"
+                                @click.stop="createNewOrder"
+                            >
+                                {{ t('CarEditView.orderTable.newOrder') }}
+                            </v-btn>
+                            <v-spacer />
+                            <v-text-field
+                                v-if="orders.length > 2"
+                                v-model="orderFilter"
+                                prepend-inner-icon="mdi-magnify"
+                                variant="outlined"
+                                density="compact"
+                                hide-details
+                                single-line
+                                clearable
+                                class="orders-table__filter"
+                                tabindex="-1"
+                            />
+                        </v-card-title>
+                        <v-divider />
+                        <v-card-text class="pa-0">
+                            <v-table density="compact" class="orders-table">
+                                <thead>
+                                    <tr>
+                                        <th class="orders-table__th" @click="toggleOrderSort('ordnumber')">
+                                            {{ t('CarEditView.orderTable.number') }}
+                                            <v-icon size="14" class="ml-1 orders-table__sort" :class="{ 'orders-table__sort--active': orderSortField === 'ordnumber' }">{{ sortIcon('ordnumber') }}</v-icon>
+                                        </th>
+                                        <th class="orders-table__th" @click="toggleOrderSort('transdate')">
+                                            {{ t('CarEditView.orderTable.date') }}
+                                            <v-icon size="14" class="ml-1 orders-table__sort" :class="{ 'orders-table__sort--active': orderSortField === 'transdate' }">{{ sortIcon('transdate') }}</v-icon>
+                                        </th>
+                                        <th class="orders-table__th" @click="toggleOrderSort('first_position')">
+                                            {{ t('CarEditView.orderTable.firstPosition') }}
+                                            <v-icon size="14" class="ml-1 orders-table__sort" :class="{ 'orders-table__sort--active': orderSortField === 'first_position' }">{{ sortIcon('first_position') }}</v-icon>
+                                        </th>
+                                        <th class="text-right orders-table__th" @click="toggleOrderSort('amount')">
+                                            {{ t('CarEditView.orderTable.amount') }}
+                                            <v-icon size="14" class="ml-1 orders-table__sort" :class="{ 'orders-table__sort--active': orderSortField === 'amount' }">{{ sortIcon('amount') }}</v-icon>
+                                        </th>
+                                        <th style="width: 36px"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template v-if="sortedOrders.length">
+                                        <tr v-for="order in sortedOrders" :key="order.id" class="orders-table__row" @click="openOrder(order.id)">
+                                            <td class="font-weight-medium text-no-wrap">{{ order.ordnumber }}</td>
+                                            <td class="text-medium-emphasis text-no-wrap">{{ order.transdate }}</td>
+                                            <td class="orders-table__desc">{{ order.first_position }}</td>
+                                            <td class="text-right font-weight-medium text-no-wrap">{{ formatAmount(order.amount) }}</td>
+                                            <td class="text-center pa-0">
+                                                <v-icon size="14" color="grey-lighten-1" class="orders-table__icon">mdi-open-in-new</v-icon>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                    <tr v-else>
+                                        <td colspan="5" class="text-center py-6">
+                                            <v-icon size="40" color="grey-lighten-1" class="d-block mx-auto mb-2">mdi-file-document-remove-outline</v-icon>
+                                            <span class="text-body-2 text-medium-emphasis">{{ t('CarEditView.orderTable.noOrders') }}</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </v-table>
+                        </v-card-text>
+                    </v-card>
+                </v-col>
+
+                <!-- KI-Werkstattmeister-Chat -->
+                <v-col v-if="oserpData.isLxCars()" cols="12" lg="5">
+                    <CarChatCard :car-id="Number(carId)" />
+                </v-col>
+            </v-row>
 
             <!-- Wiki-Wissensartikel fuer diesen Fahrzeugtyp -->
             <v-card v-if="isEditMode && car.c_2 && car.c_3 && car.c_3.length >= 3" class="mt-3" variant="outlined" elevation="1">
@@ -1056,12 +1067,13 @@ import { useCarOrders } from './composables/useCarOrders.js'
 import { useCarAutoSave } from './composables/useCarAutoSave.js'
 import Swal from 'sweetalert2'
 import RotesHeftDialog from './components/rotes-heft.dialog.vue'
+import CarChatCard from './components/car-chat.card.vue'
 
 // const SpecialDialog = defineAsyncComponent(() => import('@special/special.dialog.vue'))
 
 export default {
     name: 'CarEditView',
-    components: { NavbarView, RotesHeftDialog /*, SpecialDialog */ },
+    components: { NavbarView, RotesHeftDialog, CarChatCard /*, SpecialDialog */ },
 
     props: {
         id: {
@@ -1851,7 +1863,8 @@ export default {
             hasScanImages, hasCropsAvailable, scanImagesDialog, scanImagesLoading, scanOriginalSrc,
             openScanImagesDialog,
             fieldCrops, fieldCropLabels,
-            wikiArticles, createKbaArticle
+            wikiArticles, createKbaArticle,
+            carId
         }
     }
 }

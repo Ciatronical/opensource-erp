@@ -246,6 +246,18 @@
             "newArticle": "Neuer Artikel",
             "edit": "Bearbeiten",
             "noArticles": "Keine Wissensartikel für diesen Fahrzeugtyp vorhanden."
+        },
+        "chat": {
+            "title": "KI-Werkstattmeister",
+            "empty": "Stelle eine Frage zum Fahrzeug — z.B. zu Diagnosen, durchgeführten Arbeiten oder Service-Intervallen.",
+            "placeholder": "Frage stellen...",
+            "clear": "Chat-Verlauf löschen",
+            "clearConfirmTitle": "Chat-Verlauf löschen?",
+            "clearConfirmText": "Der gesamte Chat-Verlauf für dieses Fahrzeug wird unwiderruflich gelöscht.",
+            "clearConfirm": "Löschen",
+            "clearCancel": "Abbrechen",
+            "errorTitle": "Fehler",
+            "errorText": "Die Anfrage konnte nicht verarbeitet werden. Bitte versuche es erneut."
         }
     },
     "CarScanView": {

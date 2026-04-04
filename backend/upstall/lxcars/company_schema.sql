@@ -422,6 +422,19 @@ DO $$ BEGIN
     END IF;
 END $$;
 
+-- KI-Chat-Verlauf pro Fahrzeug
+CREATE TABLE IF NOT EXISTS car_chat_lxcars (
+    id          INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    c_id        INTEGER NOT NULL REFERENCES cars_lxcars(c_id) ON DELETE CASCADE,
+    role        TEXT NOT NULL CHECK (role IN ('user', 'assistant')),
+    content     TEXT NOT NULL,
+    created_at  TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_car_chat_lxcars_c_id ON car_chat_lxcars (c_id);
+
+INSERT INTO defaults_oserp (key, value) VALUES ('lxcars_chat_system_prompt', 'Du bist ein erfahrener KFZ-Werkstattmeister und technischer Berater. Du hilfst Mechanikern bei Diagnosen, Reparaturentscheidungen und technischen Fragen. Antworte praxisnah, konkret und auf Deutsch.') ON CONFLICT (key) DO NOTHING;
+
 -- ============================================================================
 -- HU-SERIENBRIEF: Opt-out pro Kunde
 -- ============================================================================

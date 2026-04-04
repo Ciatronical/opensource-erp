@@ -15,6 +15,7 @@ require_once __DIR__.'/scan_images.php';
 require_once __DIR__.'/carreg.php';
 require_once __DIR__.'/hu_serienbrief.php';
 require_once __DIR__.'/ai_positions.php';
+require_once __DIR__.'/car_chat.php';
 require_once __DIR__.'/labels.php';
 require_once __DIR__.'/mechanic.php';
 require_once __DIR__.'/reports.php';

@@ -872,3 +872,115 @@ CREATE TRIGGER trg_crmti_notify
     AFTER INSERT ON crmti
     FOR EACH ROW
     EXECUTE FUNCTION notify_crmti_insert();
+
+-- =============================================================================
+-- Weroni — KI-Bürokauffrau (Autonomer Agent)
+-- =============================================================================
+
+CREATE TABLE IF NOT EXISTS weroni_memory (
+    id              INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    category        TEXT NOT NULL CHECK (category IN ('person', 'preference', 'process', 'lesson', 'fact', 'contact')),
+    subject         TEXT NOT NULL,
+    content         TEXT NOT NULL,
+    importance      INTEGER DEFAULT 5 CHECK (importance BETWEEN 1 AND 10),
+    source          TEXT,
+    related_id      INTEGER,
+    related_type    TEXT,
+    created_at      TIMESTAMP DEFAULT NOW(),
+    updated_at      TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_weroni_memory_category ON weroni_memory (category);
+CREATE INDEX IF NOT EXISTS idx_weroni_memory_subject ON weroni_memory USING gin (to_tsvector('german', subject || ' ' || content));
+
+CREATE TABLE IF NOT EXISTS weroni_tasks (
+    id              INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    parent_id       INTEGER REFERENCES weroni_tasks(id) ON DELETE CASCADE,
+    title           TEXT NOT NULL,
+    description     TEXT,
+    status          TEXT DEFAULT 'open' CHECK (status IN ('open', 'in_progress', 'waiting', 'done', 'cancelled')),
+    priority        INTEGER DEFAULT 5 CHECK (priority BETWEEN 1 AND 10),
+    due_date        TIMESTAMP,
+    due_reminder    TIMESTAMP,
+    assigned_by     TEXT,
+    assigned_to     TEXT,
+    recurrence      TEXT,
+    recurrence_time TIME,
+    tags            TEXT[],
+    created_at      TIMESTAMP DEFAULT NOW(),
+    updated_at      TIMESTAMP DEFAULT NOW(),
+    completed_at    TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_weroni_tasks_status ON weroni_tasks (status);
+CREATE INDEX IF NOT EXISTS idx_weroni_tasks_parent ON weroni_tasks (parent_id);
+CREATE INDEX IF NOT EXISTS idx_weroni_tasks_due ON weroni_tasks (due_date) WHERE status NOT IN ('done', 'cancelled');
+
+CREATE TABLE IF NOT EXISTS weroni_actions (
+    id              INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    action_type     TEXT NOT NULL,
+    description     TEXT NOT NULL,
+    input_data      JSONB,
+    output_data     JSONB,
+    status          TEXT DEFAULT 'success' CHECK (status IN ('success', 'failed', 'pending', 'cancelled')),
+    error_message   TEXT,
+    lesson_learned  TEXT,
+    employee_id     INTEGER,
+    created_at      TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_weroni_actions_type ON weroni_actions (action_type);
+CREATE INDEX IF NOT EXISTS idx_weroni_actions_created ON weroni_actions (created_at DESC);
+
+CREATE TABLE IF NOT EXISTS weroni_conversations (
+    id              INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    session_id      TEXT NOT NULL,
+    role            TEXT NOT NULL CHECK (role IN ('user', 'assistant', 'system', 'tool_result')),
+    content         TEXT NOT NULL,
+    tool_calls      JSONB,
+    employee_id     INTEGER,
+    created_at      TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_weroni_conv_session ON weroni_conversations (session_id, id);
+
+CREATE TABLE IF NOT EXISTS weroni_questions (
+    id              INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    question        TEXT NOT NULL,
+    context         TEXT,
+    context_data    JSONB,
+    urgency         INTEGER DEFAULT 5 CHECK (urgency BETWEEN 1 AND 10),
+    status          TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'answered', 'dismissed', 'auto_resolved')),
+    answer          TEXT,
+    answered_by     INTEGER,
+    created_at      TIMESTAMP DEFAULT NOW(),
+    answered_at     TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_weroni_questions_status ON weroni_questions (status) WHERE status = 'pending';
+
+INSERT INTO defaults_oserp (key, value) VALUES ('weroni_enabled', 'false') ON CONFLICT (key) DO NOTHING;
+INSERT INTO defaults_oserp (key, value) VALUES ('weroni_mode', 'assistant') ON CONFLICT (key) DO NOTHING;
+INSERT INTO defaults_oserp (key, value) VALUES ('weroni_system_prompt', 'Du bist Weroni, die KI-Bürokauffrau. Du bist freundlich, effizient und denkst mit. Du kümmerst dich um Emails, WhatsApp-Nachrichten, Anrufe, Termine, Aufgaben und Bestellungen. Du lernst aus Fehlern und merkst dir wichtige Informationen. Du sprichst Deutsch und bist Teil des Teams.') ON CONFLICT (key) DO NOTHING;
+INSERT INTO defaults_oserp (key, value) VALUES ('weroni_phone_number', '') ON CONFLICT (key) DO NOTHING;
+
+CREATE OR REPLACE FUNCTION notify_weroni_question() RETURNS trigger AS $$
+BEGIN
+    PERFORM pg_notify('weroni_question', json_build_object(
+        'action', TG_OP,
+        'id', NEW.id,
+        'urgency', NEW.urgency
+    )::TEXT);
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'weroni_question_notify') THEN
+        CREATE TRIGGER weroni_question_notify
+            AFTER INSERT ON weroni_questions
+            FOR EACH ROW
+            WHEN (NEW.status = 'pending')
+            EXECUTE FUNCTION notify_weroni_question();
+    END IF;
+END $$;

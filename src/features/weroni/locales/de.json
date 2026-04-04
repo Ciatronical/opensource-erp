@@ -1,0 +1,25 @@
+{
+    "weroni": {
+        "subtitle": "KI-Bürokauffrau",
+        "tooltip": "Weroni — KI-Bürokauffrau",
+        "tabs": {
+            "chat": "Chat",
+            "tasks": "Aufgaben",
+            "questions": "Rückfragen"
+        },
+        "chat": {
+            "welcome": "Hallo! Ich bin Weroni, deine KI-Bürokauffrau. Wie kann ich dir helfen?",
+            "examples": "\"Hast du neue Emails?\" · \"Suche Kundin aus Garzau mit Opel\" · \"Erstelle Aufgabe: GmbH gründen\"",
+            "placeholder": "Nachricht an Weroni...",
+            "thinking": "Weroni denkt nach...",
+            "newSession": "Neues Gespräch"
+        },
+        "tasks": {
+            "empty": "Keine offenen Aufgaben"
+        },
+        "questions": {
+            "empty": "Keine offenen Rückfragen",
+            "answerPlaceholder": "Antwort eingeben..."
+        }
+    }
+}

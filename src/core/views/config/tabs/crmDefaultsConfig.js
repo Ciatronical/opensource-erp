@@ -216,7 +216,13 @@ const crmDefaultsConfig = [
     { name: "dhl_shipper_house", type: "input", size: 10, fieldstyle: "max-width: 15ch", label: "crm_fields.dhlShipperHouse", tooltip: "crm_fields.dhlShipperHouse_help" },
     { name: "dhl_shipper_zip", type: "input", size: 10, fieldstyle: "max-width: 15ch", label: "crm_fields.dhlShipperZip", tooltip: "crm_fields.dhlShipperZip_help" },
     { name: "dhl_shipper_city", type: "input", size: 30, fieldstyle: "max-width: 40ch", label: "crm_fields.dhlShipperCity", tooltip: "crm_fields.dhlShipperCity_help" },
-    { name: "dhl_shipper_country", type: "input", size: 5, fieldstyle: "max-width: 10ch", label: "crm_fields.dhlShipperCountry", tooltip: "crm_fields.dhlShipperCountry_help" }
+    { name: "dhl_shipper_country", type: "input", size: 5, fieldstyle: "max-width: 10ch", label: "crm_fields.dhlShipperCountry", tooltip: "crm_fields.dhlShipperCountry_help" },
+
+    { name: "weroni", type: "headline", label: "crm_fields.weroniHeadline" },
+    { name: "weroni_enabled", type: "checkbox", label: "crm_fields.weroniEnabled", tooltip: "crm_fields.weroniEnabled_help" },
+    { name: "weroni_mode", type: "select", items: [{ value: "assistant", title: "Assistent" }, { value: "autonomous", title: "Autonom" }], fieldstyle: "max-width: 30ch", label: "crm_fields.weroniMode", tooltip: "crm_fields.weroniMode_help" },
+    { name: "weroni_system_prompt", type: "textarea", rows: 6, fieldstyle: "max-width: 80ch", label: "crm_fields.weroniSystemPrompt", tooltip: "crm_fields.weroniSystemPrompt_help" },
+    { name: "weroni_phone_number", type: "input", size: 20, fieldstyle: "max-width: 30ch", label: "crm_fields.weroniPhoneNumber", tooltip: "crm_fields.weroniPhoneNumber_help" }
 ];
 
 export default crmDefaultsConfig;

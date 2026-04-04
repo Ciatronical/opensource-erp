@@ -1079,6 +1079,26 @@ export const lxcarsStore = defineStore('lxcarsStore', () => {
         return response.data.payload
     }
 
+    // ===== Fahrzeug-Chat (KI-Werkstattmeister) =====
+
+    async function loadCarChat(cId) {
+        const response = await axios.post('/api/lxcars/', { action: 'getCarChat', c_id: cId })
+        if (!response.data.success) throw new ApiError('ApiError', response.data.text, 'Error loading car chat')
+        return response.data.payload
+    }
+
+    async function sendCarChatMessage(cId, message) {
+        const response = await axios.post('/api/lxcars/', { action: 'sendCarChatMessage', c_id: cId, message })
+        if (!response.data.success) throw new ApiError('ApiError', response.data.text, 'Error sending chat message')
+        return response.data.payload
+    }
+
+    async function clearCarChat(cId) {
+        const response = await axios.post('/api/lxcars/', { action: 'clearCarChat', c_id: cId })
+        if (!response.data.success) throw new ApiError('ApiError', response.data.text, 'Error clearing car chat')
+        return response.data
+    }
+
     return {
         pendingScanData,
         getScans,
@@ -1156,6 +1176,10 @@ export const lxcarsStore = defineStore('lxcarsStore', () => {
         cancelPartsRequest,
         markPartsRequestReceived,
         getPartsRequestsByOrder,
+        // Fahrzeug-Chat
+        loadCarChat,
+        sendCarChatMessage,
+        clearCarChat,
         data
     };
 });

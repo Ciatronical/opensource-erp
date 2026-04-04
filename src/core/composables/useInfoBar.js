@@ -2,6 +2,7 @@
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import axios from 'axios'
 import { oserpStore } from '@/core/stores/oserp.store.js'
+import { weroniStore } from '@/features/weroni/stores/weroni.store.js'
 import * as toast from '@/core/utils/toasts.js'
 
 /**
@@ -240,6 +241,9 @@ export function useInfoBar() {
                     fetchNewWhatsapps()
                 } else if (data.table === 'oe_parts_requests_lxcars') {
                     fetchPendingPartsRequests()
+                } else if (data.urgency !== undefined) {
+                    // Weroni-Rückfrage
+                    try { weroniStore().fetchPendingCount() } catch { /* store evtl. noch nicht bereit */ }
                 } else {
                     fetchNewCalls()
                 }

@@ -206,6 +206,18 @@
             "newArticle": "New Article",
             "edit": "Edit",
             "noArticles": "No knowledge articles available for this vehicle type."
+        },
+        "chat": {
+            "title": "AI Workshop Master",
+            "empty": "Ask a question about this vehicle — e.g. diagnostics, completed work, or service intervals.",
+            "placeholder": "Ask a question...",
+            "clear": "Clear chat history",
+            "clearConfirmTitle": "Clear chat history?",
+            "clearConfirmText": "The entire chat history for this vehicle will be permanently deleted.",
+            "clearConfirm": "Delete",
+            "clearCancel": "Cancel",
+            "errorTitle": "Error",
+            "errorText": "The request could not be processed. Please try again."
         }
     },
     "CarScanView": {

@@ -1,6 +1,19 @@
 <!-- src/core/components/navbar/navbar.view.vue -->
 <template>
   <v-app-bar color="grey-lighten-4" elevation="1" density="comfortable">
+    <!-- Weroni — KI-Bürokauffrau (ganz links) -->
+    <v-btn
+      v-if="weroniEnabled"
+      icon
+      variant="text"
+      :title="$t('weroni.tooltip')"
+      :class="['ms-2', { 'weroni-blink': weroniPending }]"
+      @click="weroni.togglePanel()"
+    >
+      <img :src="weroniIcon" width="24" height="24" alt="Weroni" style="border-radius: 50%;">
+      <v-badge v-if="weroniPending" :content="weroni.pendingQuestionCount" color="error" floating offset-x="-4" offset-y="-4" />
+    </v-btn>
+
     <v-btn
       icon
       variant="text"
@@ -194,6 +207,9 @@
   <!-- Info Bar: Neue Anrufe & E-Mails -->
   <InfoBarComponent />
 
+  <!-- Weroni Panel (rechtes Drawer) -->
+  <WeroniPanel v-if="weroniEnabled" />
+
   <div v-if="oserpData.customer_vendor !== false" class="text-left pa-2">
     <v-btn
       v-if="editRoute"
@@ -304,6 +320,9 @@ import GlobalSearchComponent from '@/core/components/navbar/global-search.compon
 import InfoBarComponent from '@/core/components/navbar/info-bar.component.vue'
 import { sseConnected } from '@/core/composables/useInfoBar'
 import AboutDialog from '@/core/components/about/about.dialog.vue'
+import weroniIcon from '@/assets/weroni/weroni-24.png'
+import WeroniPanel from '@/features/weroni/components/weroni-panel.vue'
+import { weroniStore } from '@/features/weroni/stores/weroni.store.js'
 import { useNavigationCards } from '@/core/composables/navigation.cards'
 import { useActivityTracker } from '@/core/composables/useActivityTracker'
 
@@ -314,7 +333,8 @@ export default {
     ResponsiveMenu,
     GlobalSearchComponent,
     InfoBarComponent,
-    AboutDialog
+    AboutDialog,
+    WeroniPanel
   },
   props: {
     // alte API (einzelne Nachricht)
@@ -330,6 +350,7 @@ export default {
   },
   setup(props) {
     const oserpData = oserpStore()
+    const weroni = weroniStore()
     const router = useRouter()
     const { t } = useI18n()
     const cvSrc = computed(() => oserpData.customer_vendor?.profile?.src || 'C')
@@ -373,6 +394,18 @@ export default {
 
     function goToEdit() {
       if (editRoute.value) router.push(editRoute.value)
+    }
+
+    // Weroni
+    const weroniEnabled = computed(() => {
+        const v = oserpData.getClientDefaultValue('weroni_enabled', false)
+        return v === true || v === 'true' || v === 't' || v === '1'
+    })
+    const weroniPending = computed(() => weroni.pendingQuestionCount > 0)
+
+    // Weroni: Einmalig offene Rückfragen laden (Updates kommen via SSE)
+    if (weroniEnabled.value) {
+        weroni.fetchPendingCount()
     }
 
     // Navigation Cards aus Composable
@@ -531,6 +564,10 @@ export default {
       companyLogo,
       showAboutDialog,
       sseConnected,
+      weroni,
+      weroniIcon,
+      weroniEnabled,
+      weroniPending,
       showCreateCompanyDialog,
       createCompanySkr,
       createCompanyName,
@@ -548,6 +585,13 @@ export default {
 <style scoped>
 .cursor-pointer {
   cursor: pointer;
+}
+.weroni-blink {
+  animation: weroni-pulse 1.5s ease-in-out infinite;
+}
+@keyframes weroni-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
 }
 .company-logo {
   height: 36px;
