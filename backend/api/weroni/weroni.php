@@ -122,10 +122,10 @@ WICHTIGE REGELN:
 - Bei wiederkehrenden Aufgaben: erstelle eine Aufgabe mit recurrence
 PROMPT;
 
-    // Konversationsverlauf laden (letzte 20 Nachrichten dieser Session)
+    // Konversationsverlauf laden (nur user/assistant Textnachrichten, keine Tool-Calls)
     $history = $db->getAll(
-        "SELECT role, content, tool_calls FROM weroni_conversations
-         WHERE session_id = :sid
+        "SELECT role, content FROM weroni_conversations
+         WHERE session_id = :sid AND role IN ('user', 'assistant')
          ORDER BY id DESC LIMIT 20",
         [':sid' => $sessionId]
     );
@@ -134,17 +134,7 @@ PROMPT;
     // Claude-Nachrichten aufbauen
     $messages = [];
     foreach ($history as $msg) {
-        $entry = ['role' => $msg['role'], 'content' => $msg['content']];
-        if ($msg['role'] === 'assistant' && !empty($msg['tool_calls'])) {
-            // Tool calls wiederherstellen
-            $tc = json_decode($msg['tool_calls'], true);
-            if ($tc) $entry['content'] = $tc;
-        }
-        if ($msg['role'] === 'tool_result') {
-            // Tool results als user message mit tool_result content blocks
-            $entry = ['role' => 'user', 'content' => json_decode($msg['content'], true) ?: $msg['content']];
-        }
-        $messages[] = $entry;
+        $messages[] = ['role' => $msg['role'], 'content' => $msg['content']];
     }
     $messages[] = ['role' => 'user', 'content' => $message];
 

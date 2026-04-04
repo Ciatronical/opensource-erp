@@ -37,8 +37,13 @@ echo ""
 
 # Erstelle Log-Verzeichnis falls nicht vorhanden
 mkdir -p backend/log
-touch backend/log/php_error.log 2>/dev/null
-touch backend/log/opensource_erp.api.debug.log 2>/dev/null
+touch backend/log/php_error.log 2>/dev/null || true
+touch backend/log/opensource_erp.api.debug.log 2>/dev/null || true
+# Log-Dateien muessen dem aktuellen User gehoeren
+if [ -f backend/log/opensource_erp.api.debug.log ] && [ ! -w backend/log/opensource_erp.api.debug.log ]; then
+    echo "WARNUNG: backend/log/opensource_erp.api.debug.log ist nicht beschreibbar."
+    echo "  Fix: sudo chown $(whoami):apache2 backend/log/opensource_erp.api.debug.log"
+fi
 
 echo "Using PHP: $($PHP_BIN -v | head -n 1)"
 echo "PHP logs to: backend/log/php_error.log"
