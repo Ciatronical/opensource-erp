@@ -37,8 +37,8 @@ echo ""
 
 # Erstelle Log-Verzeichnis falls nicht vorhanden
 mkdir -p backend/log
-touch backend/log/php_error.log
-touch backend/log/opensource_erp.api.debug.log
+touch backend/log/php_error.log 2>/dev/null
+touch backend/log/opensource_erp.api.debug.log 2>/dev/null
 
 echo "Using PHP: $($PHP_BIN -v | head -n 1)"
 echo "PHP logs to: backend/log/php_error.log"
@@ -69,8 +69,8 @@ pkill -f "vite" 2>/dev/null
 pkill -f "sse-server.js" 2>/dev/null
 sleep 1
 
-# Starte beide Server in einem Terminal mit kombinierter Ausgabe
-gnome-terminal --title="OpensourceERP" --geometry=${TERMINAL_WIDTH}x${TERMINAL_HEIGHT} -- bash -c '
+# === Server-Start-Funktion ===
+run_servers() {
     echo "=== OpensourceERP Development Environment ==="
     echo ""
 
@@ -150,7 +150,7 @@ gnome-terminal --title="OpensourceERP" --geometry=${TERMINAL_WIDTH}x${TERMINAL_H
         exit 0
     }
 
-    # Trap für sauberes Beenden (OHNE EXIT!)
+    # Trap für sauberes Beenden
     trap cleanup SIGINT SIGTERM
 
     echo ""
@@ -159,5 +159,13 @@ gnome-terminal --title="OpensourceERP" --geometry=${TERMINAL_WIDTH}x${TERMINAL_H
 
     # Warte auf Beendigung
     wait
-    exec bash
-'
+}
+
+# Starte Server — in gnome-terminal falls GUI vorhanden, sonst direkt im Terminal
+if command -v gnome-terminal &>/dev/null && [ -n "$DISPLAY" ]; then
+    gnome-terminal --title="OpensourceERP" --geometry=${TERMINAL_WIDTH}x${TERMINAL_HEIGHT} -- bash -c "cd $(pwd) && source scripts/dev.sh --run-servers; exec bash"
+elif [ "$1" = "--run-servers" ]; then
+    run_servers
+else
+    run_servers
+fi
