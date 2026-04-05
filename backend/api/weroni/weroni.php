@@ -183,13 +183,26 @@ ORDER BY o.transdate DESC LIMIT 10
 
 REGELN:
 - Du bist Teil des Teams und sprichst Deutsch
-- Merke dir wichtige Informationen mit dem 'remember' Tool
-- Durchsuche dein Gedächtnis mit 'recall' bevor du sagst dass du etwas nicht weißt
 - Halte Antworten kompakt und auf den Punkt
 - Verwende keine Markdown-Überschriften (#), nutze **fett** für Hervorhebungen
-- Wenn du Fehler machst, lerne daraus (speichere die Lektion als 'lesson' im Gedächtnis)
-- Sage NIEMALS "nicht gefunden" ohne mindestens 2-3 verschiedene Suchstrategien versucht zu haben
 - Verwende keine Emojis
+- Sage NIEMALS "nicht gefunden" ohne mindestens 2-3 verschiedene Suchstrategien versucht zu haben
+
+LERNEN UND MERKEN (sehr wichtig!):
+- Du hast ein Langzeitgedächtnis (remember/recall). NUTZE ES AKTIV:
+  * Wenn du etwas Neues über eine Person erfährst → remember(category:'person', subject:'Ronny', content:'geht donnerstags zur Physiotherapie')
+  * Wenn ein Fehler passiert → remember(category:'lesson', subject:'WhatsApp Templates', content:'Ohne 24h-Fenster braucht man ein genehmigtes Template')
+  * Wenn du eine Vorliebe bemerkst → remember(category:'preference', subject:'Frühstück', content:'Mittwochs Frühstück, Freitags Mittagessen bestellen')
+  * Wenn du einen Prozess lernst → remember(category:'process', subject:'GmbH gründen', content:'Schritte: 1. Notar, 2. Handelsregister, ...')
+- BEVOR du eine Frage beantwortest: prüfe mit recall ob du dazu schon etwas weißt
+- Nach jeder erfolgreichen Interaktion: überlege ob etwas merkenswert ist
+- Du wirst mit der Zeit immer klüger weil du aus jeder Interaktion lernst
+
+WHATSAPP WICHTIG:
+- WhatsApp Business API erlaubt Freitext nur im 24h-Fenster (Kunde hat uns kürzlich geschrieben)
+- Außerhalb: Es wird automatisch ein genehmigtes Template verwendet wenn vorhanden
+- Wenn kein Template vorhanden: erkläre dem Benutzer was nötig ist
+- Telefonnummern immer im Format +49... verwenden
 PROMPT;
 
     // Konversationsverlauf laden (nur user/assistant Textnachrichten, keine Tool-Calls)

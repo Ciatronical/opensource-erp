@@ -643,6 +643,19 @@ ALTER TABLE whatsapp_templates ADD COLUMN IF NOT EXISTS header_type TEXT DEFAULT
 UPDATE whatsapp_templates SET header_type = 'DOCUMENT' WHERE name = 'dokument_senden' AND header_type IS NULL;
 CREATE INDEX IF NOT EXISTS idx_whatsapp_templates_type ON whatsapp_templates(template_type);
 
+-- Weroni Chat-Template (muss bei Meta eingereicht und genehmigt werden)
+INSERT INTO whatsapp_templates (name, display_name, category, language, body_text, status, template_type, example_values)
+VALUES (
+    'weroni_nachricht',
+    'Weroni — Allgemeine Nachricht',
+    'UTILITY',
+    'de',
+    'Hallo! Hier ist eine Nachricht von uns: {{1}}',
+    'draft',
+    'chat',
+    '{"1": "Ihr Termin am Montag um 10 Uhr ist bestätigt."}'
+) ON CONFLICT (name, language) DO NOTHING;
+
 -- ============================================================================
 -- WHATSAPP REMINDERS LOG
 -- ============================================================================

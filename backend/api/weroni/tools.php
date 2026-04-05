@@ -234,7 +234,7 @@ function _toolSendWhatsapp($input, $db) {
     $countryCode = $config['whatsapp_country_code'] ?? '49';
 
     if (empty($accessToken) || empty($phoneNumberId)) {
-        return ['error' => 'WhatsApp Business API ist nicht konfiguriert'];
+        return ['error' => 'WhatsApp Business API ist nicht konfiguriert. Bitte in den CRM-Einstellungen konfigurieren.'];
     }
 
     // Telefonnummer normalisieren
@@ -247,12 +247,57 @@ function _toolSendWhatsapp($input, $db) {
     }
     $phonePlain = ltrim($phone, '+');
 
-    $payload = json_encode([
-        'messaging_product' => 'whatsapp',
-        'to' => $phonePlain,
-        'type' => 'text',
-        'text' => ['body' => $message]
-    ], JSON_UNESCAPED_UNICODE);
+    // Prüfen ob 24h-Fenster offen ist (Kunde hat uns in den letzten 24h geschrieben)
+    $recentIncoming = $db->getOne(
+        "SELECT id FROM whatsapp_messages
+         WHERE phone_number LIKE :phone AND direction = 'I' AND itime > NOW() - INTERVAL '24 hours'
+         LIMIT 1",
+        [':phone' => '%' . substr($phonePlain, -8) . '%']
+    );
+
+    if ($recentIncoming) {
+        // 24h-Fenster offen → Freitext senden
+        $payload = json_encode([
+            'messaging_product' => 'whatsapp',
+            'to' => $phonePlain,
+            'type' => 'text',
+            'text' => ['body' => $message]
+        ], JSON_UNESCAPED_UNICODE);
+    } else {
+        // Kein 24h-Fenster → Template nötig. Versuche ein allgemeines "chat" Template zu finden
+        $template = $db->getOne(
+            "SELECT name, language FROM whatsapp_templates WHERE status = 'approved' AND template_type = 'chat' LIMIT 1",
+            []
+        );
+        if (!$template) {
+            // Fallback: irgendein allgemeines Template
+            $template = $db->getOne(
+                "SELECT name, language FROM whatsapp_templates WHERE status = 'approved' AND template_type = 'general' LIMIT 1",
+                []
+            );
+        }
+        if (!$template) {
+            return [
+                'error' => 'Kein 24h-Fenster offen (Kunde hat uns nicht kürzlich geschrieben) und kein genehmigtes WhatsApp-Template vorhanden.',
+                'hint' => 'WhatsApp Business API erlaubt Freitext-Nachrichten nur innerhalb von 24 Stunden nachdem der Kunde uns geschrieben hat. Außerhalb dieses Fensters muss ein von Meta genehmigtes Template verwendet werden. Bitte ein Template vom Typ "chat" in den WhatsApp-Einstellungen anlegen und bei Meta genehmigen lassen.',
+                'phone' => $phone,
+                'message_not_sent' => $message
+            ];
+        }
+
+        $payload = json_encode([
+            'messaging_product' => 'whatsapp',
+            'to' => $phonePlain,
+            'type' => 'template',
+            'template' => [
+                'name' => $template['name'],
+                'language' => ['code' => $template['language'] ?? 'de'],
+                'components' => [
+                    ['type' => 'body', 'parameters' => [['type' => 'text', 'text' => $message]]]
+                ]
+            ]
+        ], JSON_UNESCAPED_UNICODE);
+    }
 
     $ch = curl_init("https://graph.facebook.com/v21.0/{$phoneNumberId}/messages");
     curl_setopt_array($ch, [
@@ -267,7 +312,13 @@ function _toolSendWhatsapp($input, $db) {
     ]);
     $response = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlError = curl_error($ch);
     curl_close($ch);
+
+    if ($curlError) {
+        _logWeroniAction($db, 'whatsapp_sent', 'WhatsApp cURL-Fehler', $input, null, 'failed', $curlError);
+        return ['error' => 'Verbindungsfehler: ' . $curlError];
+    }
 
     if ($httpCode >= 200 && $httpCode < 300) {
         $responseData = json_decode($response, true);
@@ -283,9 +334,25 @@ function _toolSendWhatsapp($input, $db) {
         return ['success' => true, 'message' => 'WhatsApp gesendet an: ' . $phone];
     }
 
-    $error = 'HTTP ' . $httpCode . ': ' . $response;
-    _logWeroniAction($db, 'whatsapp_sent', 'WhatsApp-Fehler', $input, null, 'failed', $error);
-    return ['error' => 'WhatsApp konnte nicht gesendet werden: ' . $error];
+    // Fehler mit Details zurückgeben
+    $responseData = json_decode($response, true);
+    $metaError = $responseData['error']['message'] ?? $response;
+    $metaCode = $responseData['error']['code'] ?? $httpCode;
+
+    $errorDetail = "HTTP {$httpCode}, Meta-Code: {$metaCode}: {$metaError}";
+    _logWeroniAction($db, 'whatsapp_sent', 'WhatsApp-Fehler an ' . $phone, $input, $responseData, 'failed', $errorDetail);
+
+    // Hilfreiche Fehlermeldung je nach Fehlercode
+    $hint = '';
+    if ($metaCode == 131030) {
+        $hint = 'Die Telefonnummer ist nicht bei WhatsApp registriert.';
+    } elseif ($metaCode == 131047 || $metaCode == 131026) {
+        $hint = '24h-Fenster abgelaufen. Ein genehmigtes Template wird benötigt.';
+    } elseif ($metaCode == 190) {
+        $hint = 'WhatsApp Access Token ist ungültig oder abgelaufen. Bitte in den CRM-Einstellungen erneuern.';
+    }
+
+    return ['error' => $errorDetail, 'hint' => $hint, 'phone_used' => $phone];
 }
 
 function _toolCreateCalendarEvent($input, $db) {
