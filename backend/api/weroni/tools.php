@@ -12,28 +12,15 @@
 function getWeroniToolDefinitions() {
     return [
         [
-            'name' => 'search',
-            'description' => 'Universelle Suche über das gesamte ERP-System. Durchsucht gleichzeitig Kunden, Lieferanten, Fahrzeuge, Aufträge, Rechnungen, WhatsApp-Nachrichten und Anrufe. Verwendet Fuzzy-Matching: Jenny findet Jennifer, Müler findet Müller, Waldi findet Waldsieversdorf. Gib einfach alles an was du weißt — die Suche kombiniert intelligent.',
+            'name' => 'query_database',
+            'description' => 'Führt eine SELECT-Abfrage auf der PostgreSQL-Datenbank aus. Du hast vollen Lesezugriff. Die Erweiterung pg_trgm ist aktiv — nutze word_similarity() für Fuzzy-Suche (z.B. word_similarity(\'Jenny\', name) findet auch Jennifer). Verwende ILIKE für einfache Teilsuchen. Kombiniere mehrere Abfragen wenn nötig. Wenn du nichts findest, versuche es mit lockereren Bedingungen, anderen Schreibweisen oder word_similarity(). LIMIT immer angeben.',
             'input_schema' => [
                 'type' => 'object',
                 'properties' => [
-                    'q' => [
-                        'type' => 'string',
-                        'description' => 'Suchbegriffe, durch Leerzeichen getrennt. Alles was du weißt: Name, Ort, Marke, Kennzeichen, Telefon etc. Beispiel: "Jenny Waldsieversdorf Ford"'
-                    ]
+                    'sql' => ['type' => 'string', 'description' => 'SELECT-Abfrage'],
+                    'purpose' => ['type' => 'string', 'description' => 'Kurz: Was willst du damit herausfinden?']
                 ],
-                'required' => ['q']
-            ]
-        ],
-        [
-            'name' => 'get_customer_details',
-            'description' => 'Lädt ALLE Details zu einem Kunden: Fahrzeuge, Aufträge, Rechnungen, letzte WhatsApp-Nachrichten, letzte Anrufe. Verwende dies nachdem du mit search einen Kunden gefunden hast.',
-            'input_schema' => [
-                'type' => 'object',
-                'properties' => [
-                    'customer_id' => ['type' => 'integer', 'description' => 'Kunden-ID aus der Suche']
-                ],
-                'required' => ['customer_id']
+                'required' => ['sql']
             ]
         ],
         [
@@ -158,8 +145,7 @@ function getWeroniToolDefinitions() {
  */
 function executeWeroniTool($toolName, $toolInput, $db) {
     switch ($toolName) {
-        case 'search':                return _toolSearch($toolInput, $db);
-        case 'get_customer_details':  return _toolGetCustomerDetails($toolInput, $db);
+        case 'query_database':        return _toolQueryDatabase($toolInput, $db);
         case 'send_email':            return _toolSendEmail($toolInput, $db);
         case 'send_whatsapp':         return _toolSendWhatsapp($toolInput, $db);
         case 'create_calendar_event': return _toolCreateCalendarEvent($toolInput, $db);
@@ -175,242 +161,35 @@ function executeWeroniTool($toolName, $toolInput, $db) {
 // ===== Tool-Implementierungen =====
 
 /**
- * Universelle Fuzzy-Suche über das gesamte ERP.
- * Nutzt pg_trgm similarity() für fehlertolerante Suche.
- * Sucht parallel in Kunden, Lieferanten, Fahrzeugen — und kombiniert die Ergebnisse.
+ * Führt eine sichere SQL SELECT-Abfrage aus.
+ * Weroni hat vollen Lesezugriff und schreibt ihre eigenen Queries.
  */
-function _toolSearch($input, $db) {
-    $q = trim($input['q'] ?? '');
-    if (empty($q)) {
-        return ['error' => 'Suchbegriff erforderlich'];
+function _toolQueryDatabase($input, $db) {
+    $sql = trim($input['sql'] ?? '');
+
+    // Sicherheitscheck: NUR SELECT erlaubt
+    $sqlUpper = strtoupper(ltrim($sql));
+    if (!str_starts_with($sqlUpper, 'SELECT') && !str_starts_with($sqlUpper, 'WITH')) {
+        return ['error' => 'Nur SELECT/WITH-Abfragen sind erlaubt'];
     }
-
-    $keywords = preg_split('/\s+/', $q);
-    $results = ['kunden' => [], 'lieferanten' => [], 'fahrzeuge' => [], 'auftraege' => []];
-
-    // ── KUNDEN: Fuzzy über Name, Stadt, Straße, Email, Telefon ──
-    // Jedes Keyword muss irgendwo matchen (AND-Logik)
-    $customerWhere = [];
-    $customerParams = [];
-    foreach ($keywords as $i => $kw) {
-        $p = ':kw' . $i;
-        $pLike = ':kwl' . $i;
-        $customerParams[$p] = $kw;
-        $customerParams[$pLike] = '%' . $kw . '%';
-        $customerWhere[] = "(
-            c.name ILIKE {$pLike}
-            OR c.city ILIKE {$pLike}
-            OR c.street ILIKE {$pLike}
-            OR c.email ILIKE {$pLike}
-            OR c.zipcode LIKE {$pLike}
-            OR REPLACE(REPLACE(c.phone, ' ', ''), '-', '') LIKE REPLACE(REPLACE({$pLike}::text, ' ', ''), '-', '')
-            OR similarity(c.name, {$p}) > 0.25
-            OR similarity(c.city, {$p}) > 0.3
-        )";
-    }
-
-    $customers = $db->getAll(
-        "SELECT c.id, c.name, c.street, c.zipcode, c.city, c.phone, c.email,
-                COALESCE(c.greeting, '') AS anrede,
-                GREATEST(" . implode(', ', array_map(fn($i) => "similarity(c.name, :kw{$i})", array_keys($keywords))) . ") AS relevanz
-         FROM customer c
-         WHERE " . implode(' AND ', $customerWhere) . "
-         ORDER BY relevanz DESC, c.name
-         LIMIT 10",
-        $customerParams
-    );
-
-    // Für jeden Kunden-Treffer: Fahrzeuge direkt mitladen
-    if (!empty($customers)) {
-        foreach ($customers as &$cust) {
-            $cars = $db->getAll(
-                "SELECT car.c_id, car.c_ln AS kennzeichen, car.c_mt AS modell,
-                        COALESCE(k.hersteller, '') AS marke, COALESCE(k.name, car.c_mt) AS typ,
-                        k.kraftstoff, k.leistung, k.hubraum,
-                        TO_CHAR(car.c_d, 'DD.MM.YYYY') AS erstzulassung,
-                        TO_CHAR(car.c_hu, 'MM/YYYY') AS tuev
-                 FROM cars_lxcars car
-                 LEFT JOIN kba_lxcars k ON k.id = car.kba_id
-                 WHERE car.c_ow = :cid
-                 ORDER BY car.c_ln",
-                [':cid' => $cust['id']]
-            );
-            $cust['fahrzeuge'] = $cars ?: [];
+    $forbidden = ['INSERT', 'UPDATE', 'DELETE', 'DROP', 'ALTER', 'TRUNCATE', 'CREATE', 'GRANT', 'EXECUTE', 'COPY'];
+    foreach ($forbidden as $kw) {
+        if (preg_match('/\b' . $kw . '\b/i', $sql)) {
+            return ['error' => $kw . ' ist nicht erlaubt'];
         }
-        unset($cust);
-        $results['kunden'] = $customers;
     }
 
-    // ── FAHRZEUGE: Fuzzy über Kennzeichen, Marke, Modell, Besitzername ──
-    $vehicleWhere = [];
-    $vehicleParams = [];
-    foreach ($keywords as $i => $kw) {
-        $p = ':vkw' . $i;
-        $pLike = ':vkwl' . $i;
-        $vehicleParams[$p] = $kw;
-        $vehicleParams[$pLike] = '%' . $kw . '%';
-        $vehicleWhere[] = "(
-            car.c_ln ILIKE {$pLike}
-            OR cu.name ILIKE {$pLike}
-            OR cu.city ILIKE {$pLike}
-            OR COALESCE(k.hersteller, '') ILIKE {$pLike}
-            OR COALESCE(k.marke, '') ILIKE {$pLike}
-            OR COALESCE(k.name, '') ILIKE {$pLike}
-            OR similarity(cu.name, {$p}) > 0.25
-            OR similarity(COALESCE(k.hersteller, ''), {$p}) > 0.3
-        )";
+    // LIMIT erzwingen
+    if (!preg_match('/\bLIMIT\b/i', $sql)) {
+        $sql = rtrim($sql, '; ') . ' LIMIT 25';
     }
 
-    $vehicles = $db->getAll(
-        "SELECT car.c_id, car.c_ln AS kennzeichen, car.c_mt AS modell,
-                cu.id AS kunden_id, cu.name AS besitzer, cu.city AS ort,
-                COALESCE(k.hersteller, '') AS marke, COALESCE(k.name, '') AS typ,
-                k.kraftstoff, k.leistung,
-                TO_CHAR(car.c_d, 'DD.MM.YYYY') AS erstzulassung
-         FROM cars_lxcars car
-         LEFT JOIN customer cu ON cu.id = car.c_ow
-         LEFT JOIN kba_lxcars k ON k.id = car.kba_id
-         WHERE " . implode(' AND ', $vehicleWhere) . "
-         ORDER BY cu.name
-         LIMIT 10",
-        $vehicleParams
-    );
-    $results['fahrzeuge'] = $vehicles ?: [];
-
-    // ── LIEFERANTEN ──
-    $vendorWhere = [];
-    $vendorParams = [];
-    foreach ($keywords as $i => $kw) {
-        $p = ':lkw' . $i;
-        $pLike = ':lkwl' . $i;
-        $vendorParams[$p] = $kw;
-        $vendorParams[$pLike] = '%' . $kw . '%';
-        $vendorWhere[] = "(
-            v.name ILIKE {$pLike}
-            OR v.city ILIKE {$pLike}
-            OR similarity(v.name, {$p}) > 0.25
-        )";
+    try {
+        $results = $db->getAll($sql, []);
+        return ['count' => count($results ?: []), 'results' => $results ?: []];
+    } catch (Exception $e) {
+        return ['error' => 'SQL-Fehler: ' . $e->getMessage(), 'hint' => 'Prüfe Tabellenname und Spalten. Versuche es mit einer einfacheren Query.'];
     }
-
-    $vendors = $db->getAll(
-        "SELECT v.id, v.name, v.street, v.zipcode, v.city, v.phone, v.email
-         FROM vendor v
-         WHERE " . implode(' AND ', $vendorWhere) . "
-         ORDER BY v.name LIMIT 5",
-        $vendorParams
-    );
-    $results['lieferanten'] = $vendors ?: [];
-
-    // ── AUFTRÄGE: Nummer oder Kundenname ──
-    $orderWhere = [];
-    $orderParams = [];
-    foreach ($keywords as $i => $kw) {
-        $pLike = ':okwl' . $i;
-        $orderParams[$pLike] = '%' . $kw . '%';
-        $orderWhere[] = "(o.ordnumber ILIKE {$pLike} OR cu.name ILIKE {$pLike})";
-    }
-
-    $orders = $db->getAll(
-        "SELECT o.id, o.ordnumber, TO_CHAR(o.transdate, 'DD.MM.YYYY') AS datum,
-                o.amount, cu.name AS kunde
-         FROM oe o
-         JOIN customer cu ON cu.id = o.customer_id
-         WHERE o.record_type = 'sales_order' AND " . implode(' AND ', $orderWhere) . "
-         ORDER BY o.transdate DESC LIMIT 5",
-        $orderParams
-    );
-    $results['auftraege'] = $orders ?: [];
-
-    // Zusammenfassung
-    $total = count($results['kunden']) + count($results['lieferanten'])
-           + count($results['fahrzeuge']) + count($results['auftraege']);
-
-    return ['treffer_gesamt' => $total, 'ergebnisse' => $results];
-}
-
-/**
- * Lädt ALLE Details zu einem Kunden: Fahrzeuge, Aufträge, Rechnungen, WhatsApp, Anrufe.
- */
-function _toolGetCustomerDetails($input, $db) {
-    $cid = intval($input['customer_id'] ?? 0);
-    if (!$cid) return ['error' => 'customer_id erforderlich'];
-
-    // Kundendaten
-    $customer = $db->getOne(
-        "SELECT id, name, greeting, street, zipcode, city, phone, email
-         FROM customer WHERE id = :id",
-        [':id' => $cid]
-    );
-    if (!$customer) return ['error' => 'Kunde nicht gefunden'];
-
-    // Zusätzliche Telefonnummern
-    $ext = $db->getOne(
-        "SELECT phone_numbers FROM customer_ext WHERE customer_id = :id",
-        [':id' => $cid]
-    );
-    if ($ext && !empty($ext['phone_numbers'])) {
-        $customer['weitere_telefonnummern'] = json_decode($ext['phone_numbers'], true);
-    }
-
-    // Fahrzeuge
-    $customer['fahrzeuge'] = $db->getAll(
-        "SELECT car.c_id, car.c_ln AS kennzeichen, car.c_mt AS modell,
-                car.c_mkb AS motorkennbuchstabe, car.c_color AS farbe,
-                COALESCE(k.hersteller, '') AS marke, COALESCE(k.name, '') AS typ,
-                k.kraftstoff, k.leistung, k.hubraum,
-                TO_CHAR(car.c_d, 'DD.MM.YYYY') AS erstzulassung,
-                TO_CHAR(car.c_hu, 'MM/YYYY') AS tuev,
-                car.c_text AS notizen
-         FROM cars_lxcars car
-         LEFT JOIN kba_lxcars k ON k.id = car.kba_id
-         WHERE car.c_ow = :cid ORDER BY car.c_ln",
-        [':cid' => $cid]
-    ) ?: [];
-
-    // Letzte 10 Aufträge mit Positionen
-    $orders = $db->getAll(
-        "SELECT o.id, o.ordnumber, TO_CHAR(o.transdate, 'DD.MM.YYYY') AS datum, o.amount,
-                e.km_stand, e.status,
-                (SELECT string_agg(oi.description, ', ' ORDER BY oi.position)
-                 FROM orderitems oi WHERE oi.trans_id = o.id LIMIT 5) AS positionen,
-                (SELECT string_agg(i.description, ', ' ORDER BY i.sort_order)
-                 FROM oe_instructions_lxcars i WHERE i.oe_id = o.id) AS anweisungen
-         FROM oe o
-         LEFT JOIN oe_ext e ON e.oe_id = o.id
-         WHERE o.customer_id = :cid AND o.record_type = 'sales_order'
-         ORDER BY o.transdate DESC LIMIT 10",
-        [':cid' => $cid]
-    ) ?: [];
-    $customer['auftraege'] = $orders;
-
-    // Letzte 10 Rechnungen
-    $customer['rechnungen'] = $db->getAll(
-        "SELECT ar.invnumber, TO_CHAR(ar.transdate, 'DD.MM.YYYY') AS datum, ar.amount
-         FROM ar WHERE ar.customer_id = :cid
-         ORDER BY ar.transdate DESC LIMIT 10",
-        [':cid' => $cid]
-    ) ?: [];
-
-    // Letzte 10 WhatsApp-Nachrichten
-    $customer['whatsapp'] = $db->getAll(
-        "SELECT direction, message_text, TO_CHAR(itime, 'DD.MM.YYYY HH24:MI') AS zeit
-         FROM whatsapp_messages
-         WHERE customer_id = :cid AND hidden = false
-         ORDER BY itime DESC LIMIT 10",
-        [':cid' => $cid]
-    ) ?: [];
-
-    // Letzte 5 Anrufe
-    $customer['anrufe'] = $db->getAll(
-        "SELECT crmti_direction AS richtung, crmti_number AS nummer,
-                TO_CHAR(crmti_init_time, 'DD.MM.YYYY HH24:MI') AS zeit
-         FROM crmti
-         WHERE crmti_caller_id = :cid AND crmti_caller_typ = 'C'
-         ORDER BY crmti_init_time DESC LIMIT 5",
-        [':cid' => $cid]
-    ) ?: [];
-
-    return $customer;
 }
 
 function _toolSendEmail($input, $db) {
