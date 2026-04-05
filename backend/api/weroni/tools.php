@@ -12,38 +12,37 @@
 function getWeroniToolDefinitions() {
     return [
         [
-            'name' => 'search_database',
-            'description' => 'Durchsucht die ERP-Datenbank nach Kunden, Lieferanten, Fahrzeugen, Aufträgen oder Artikeln. Verwende natürlichsprachliche Beschreibungen, die in SQL-Suchen umgewandelt werden.',
+            'name' => 'find_person',
+            'description' => 'Sucht Kunden oder Lieferanten mit allen verknüpften Daten (Fahrzeuge, Aufträge, Rechnungen). Alle Parameter werden mit UND verknüpft — je mehr du angibst, desto genauer das Ergebnis. Verwende dieses Tool wenn nach Personen, Firmen oder deren Fahrzeugen gefragt wird.',
             'input_schema' => [
                 'type' => 'object',
                 'properties' => [
-                    'entity' => [
-                        'type' => 'string',
-                        'enum' => ['customer', 'vendor', 'vehicle', 'order', 'invoice', 'part', 'employee'],
-                        'description' => 'Was gesucht wird'
-                    ],
-                    'query' => [
-                        'type' => 'string',
-                        'description' => 'Suchbegriff (Name, Ort, Kennzeichen, Auftragsnummer, etc.)'
-                    ],
-                    'filters' => [
-                        'type' => 'object',
-                        'description' => 'Optionale Filter (city, vehicle_brand, date_from, date_to)',
-                        'properties' => [
-                            'city' => ['type' => 'string'],
-                            'zipcode' => ['type' => 'string'],
-                            'vehicle_brand' => ['type' => 'string'],
-                            'date_from' => ['type' => 'string'],
-                            'date_to' => ['type' => 'string']
-                        ]
-                    ]
+                    'name' => ['type' => 'string', 'description' => 'Name oder Teilname (Vor- oder Nachname)'],
+                    'city' => ['type' => 'string', 'description' => 'Stadt/Ort'],
+                    'zipcode' => ['type' => 'string', 'description' => 'PLZ oder PLZ-Anfang'],
+                    'phone' => ['type' => 'string', 'description' => 'Telefonnummer (auch teilweise)'],
+                    'email' => ['type' => 'string', 'description' => 'E-Mail-Adresse (auch teilweise)'],
+                    'vehicle_brand' => ['type' => 'string', 'description' => 'Fahrzeugmarke (z.B. Ford, VW, BMW)'],
+                    'vehicle_license' => ['type' => 'string', 'description' => 'Kennzeichen (auch teilweise)'],
+                    'type' => ['type' => 'string', 'enum' => ['customer', 'vendor', 'both'], 'description' => 'Nur Kunden, nur Lieferanten oder beides (Standard: customer)']
                 ],
-                'required' => ['entity', 'query']
+                'required' => []
+            ]
+        ],
+        [
+            'name' => 'query_database',
+            'description' => 'Führt eine SQL SELECT-Abfrage auf der ERP-Datenbank aus. NUR SELECT erlaubt. Wichtige Tabellen: customer (Kunden: id,name,street,zipcode,city,phone,email,greeting), vendor (Lieferanten: gleiche Struktur), cars_lxcars (Fahrzeuge: c_id,c_ow=Kunden-ID,c_ln=Kennzeichen,c_m=Marke,c_mt=Modell,c_d=Erstzulassung,c_hu=TÜV,c_fin=FIN,c_mkb=Motorkennbuchstabe), kba_lxcars (KBA: id,hersteller,marke,name=Modellname,kraftstoff,leistung,hubraum — JOIN via cars_lxcars.kba_id), oe (Aufträge: id,ordnumber,customer_id,transdate,amount,record_type), oe_ext (Auftrag-Fahrzeug: oe_id,c_id,km_stand,status,bringetermin,fertigstellung), orderitems (Positionen: trans_id,description,qty,sellprice), ar (Rechnungen: id,invnumber,customer_id,transdate,amount), invoice (Rechnungspositionen: trans_id,description,qty,sellprice,parts_id), parts (Artikel: id,partnumber,description,sellprice), employee (Mitarbeiter: id,name,login,email), calendar_events (Termine: id,title,dtstart,dtend,location,uid), whatsapp_messages (WhatsApp: id,direction,phone_number,contact_name,message_text,customer_id,itime), crmti (Anrufe: crmti_id,crmti_number,crmti_caller_id,crmti_caller_typ,crmti_direction,crmti_init_time), customer_ext (Zusatztelefon: customer_id,phone_numbers JSONB), oe_instructions_lxcars (Arbeitsanweisungen: oe_id,description,done,actual_minutes).',
+            'input_schema' => [
+                'type' => 'object',
+                'properties' => [
+                    'sql' => ['type' => 'string', 'description' => 'SQL SELECT-Abfrage. Verwende ILIKE für Textsuche. LIMIT 20 verwenden.']
+                ],
+                'required' => ['sql']
             ]
         ],
         [
             'name' => 'send_email',
-            'description' => 'Sendet eine E-Mail an eine oder mehrere Adressen.',
+            'description' => 'Sendet eine E-Mail.',
             'input_schema' => [
                 'type' => 'object',
                 'properties' => [
@@ -57,7 +56,7 @@ function getWeroniToolDefinitions() {
         ],
         [
             'name' => 'send_whatsapp',
-            'description' => 'Sendet eine WhatsApp-Nachricht an eine Telefonnummer.',
+            'description' => 'Sendet eine WhatsApp-Nachricht. Die Telefonnummer muss im internationalen Format sein (+49...). Suche vorher die Nummer des Kunden mit find_person oder query_database.',
             'input_schema' => [
                 'type' => 'object',
                 'properties' => [
@@ -89,18 +88,14 @@ function getWeroniToolDefinitions() {
             'input_schema' => [
                 'type' => 'object',
                 'properties' => [
-                    'action' => [
-                        'type' => 'string',
-                        'enum' => ['create', 'update', 'complete', 'list'],
-                        'description' => 'Was soll passieren'
-                    ],
+                    'action' => ['type' => 'string', 'enum' => ['create', 'update', 'complete', 'list']],
                     'task_id' => ['type' => 'integer', 'description' => 'Task-ID (für update/complete)'],
                     'title' => ['type' => 'string'],
                     'description' => ['type' => 'string'],
                     'parent_id' => ['type' => 'integer', 'description' => 'Übergeordnete Aufgabe (für Teilaufgaben)'],
                     'due_date' => ['type' => 'string', 'description' => 'Fälligkeitsdatum (YYYY-MM-DD HH:MM)'],
                     'priority' => ['type' => 'integer', 'description' => '1-10 (10=höchste)'],
-                    'assigned_to' => ['type' => 'string', 'description' => 'Name des Zuständigen'],
+                    'assigned_to' => ['type' => 'string'],
                     'recurrence' => ['type' => 'string', 'description' => 'z.B. weekly:3 für jeden Mittwoch'],
                     'tags' => ['type' => 'array', 'items' => ['type' => 'string']]
                 ],
@@ -109,84 +104,39 @@ function getWeroniToolDefinitions() {
         ],
         [
             'name' => 'remember',
-            'description' => 'Speichert eine Information im Langzeitgedächtnis. Verwende dies für wichtige Fakten, Vorlieben, Lektionen aus Fehlern oder Prozesswissen.',
+            'description' => 'Speichert wichtige Informationen im Langzeitgedächtnis.',
             'input_schema' => [
                 'type' => 'object',
                 'properties' => [
-                    'category' => [
-                        'type' => 'string',
-                        'enum' => ['person', 'preference', 'process', 'lesson', 'fact', 'contact'],
-                        'description' => 'Art der Information'
-                    ],
+                    'category' => ['type' => 'string', 'enum' => ['person', 'preference', 'process', 'lesson', 'fact', 'contact']],
                     'subject' => ['type' => 'string', 'description' => 'Kurze Zusammenfassung'],
                     'content' => ['type' => 'string', 'description' => 'Detaillierte Information'],
-                    'importance' => ['type' => 'integer', 'description' => '1-10 (10=sehr wichtig)']
+                    'importance' => ['type' => 'integer', 'description' => '1-10']
                 ],
                 'required' => ['category', 'subject', 'content']
             ]
         ],
         [
             'name' => 'recall',
-            'description' => 'Durchsucht das Langzeitgedächtnis nach gespeicherten Informationen.',
+            'description' => 'Durchsucht das Langzeitgedächtnis.',
             'input_schema' => [
                 'type' => 'object',
                 'properties' => [
                     'query' => ['type' => 'string', 'description' => 'Wonach suchen?'],
-                    'category' => [
-                        'type' => 'string',
-                        'enum' => ['person', 'preference', 'process', 'lesson', 'fact', 'contact'],
-                        'description' => 'Optional: Nur in dieser Kategorie suchen'
-                    ]
+                    'category' => ['type' => 'string', 'enum' => ['person', 'preference', 'process', 'lesson', 'fact', 'contact']]
                 ],
                 'required' => ['query']
             ]
         ],
         [
-            'name' => 'get_recent_emails',
-            'description' => 'Ruft die neuesten E-Mails ab.',
-            'input_schema' => [
-                'type' => 'object',
-                'properties' => [
-                    'folder' => ['type' => 'string', 'description' => 'IMAP-Ordner (Standard: INBOX)'],
-                    'limit' => ['type' => 'integer', 'description' => 'Anzahl (Standard: 10)'],
-                    'search' => ['type' => 'string', 'description' => 'Suchbegriff in Betreff/Absender']
-                ],
-                'required' => []
-            ]
-        ],
-        [
-            'name' => 'get_recent_whatsapp',
-            'description' => 'Ruft die neuesten WhatsApp-Nachrichten ab.',
-            'input_schema' => [
-                'type' => 'object',
-                'properties' => [
-                    'limit' => ['type' => 'integer', 'description' => 'Anzahl (Standard: 10)'],
-                    'unread_only' => ['type' => 'boolean', 'description' => 'Nur ungelesene']
-                ],
-                'required' => []
-            ]
-        ],
-        [
-            'name' => 'get_recent_calls',
-            'description' => 'Ruft die neuesten Anrufe ab.',
-            'input_schema' => [
-                'type' => 'object',
-                'properties' => [
-                    'limit' => ['type' => 'integer', 'description' => 'Anzahl (Standard: 10)'],
-                    'direction' => ['type' => 'string', 'enum' => ['inbound', 'outbound', 'all']]
-                ],
-                'required' => []
-            ]
-        ],
-        [
             'name' => 'ask_user',
-            'description' => 'Stellt dem Benutzer eine Rückfrage. Verwende dies wenn du eine Entscheidung nicht selbst treffen kannst. Die Frage erscheint als blinkende Benachrichtigung.',
+            'description' => 'Stellt dem Benutzer eine Rückfrage. Die Frage erscheint als blinkende Benachrichtigung.',
             'input_schema' => [
                 'type' => 'object',
                 'properties' => [
-                    'question' => ['type' => 'string', 'description' => 'Die Frage an den Benutzer'],
-                    'context' => ['type' => 'string', 'description' => 'Hintergrund zur Frage'],
-                    'urgency' => ['type' => 'integer', 'description' => '1-10 (10=sehr dringend)']
+                    'question' => ['type' => 'string'],
+                    'context' => ['type' => 'string'],
+                    'urgency' => ['type' => 'integer', 'description' => '1-10']
                 ],
                 'required' => ['question']
             ]
@@ -197,9 +147,9 @@ function getWeroniToolDefinitions() {
             'input_schema' => [
                 'type' => 'object',
                 'properties' => [
-                    'customer_id' => ['type' => 'integer', 'description' => 'Kunden-ID'],
-                    'notes' => ['type' => 'string', 'description' => 'Bemerkungen zum Auftrag'],
-                    'vehicle_license' => ['type' => 'string', 'description' => 'Kennzeichen (bei KFZ-Aufträgen)']
+                    'customer_id' => ['type' => 'integer'],
+                    'notes' => ['type' => 'string'],
+                    'vehicle_license' => ['type' => 'string']
                 ],
                 'required' => ['customer_id']
             ]
@@ -212,141 +162,200 @@ function getWeroniToolDefinitions() {
  */
 function executeWeroniTool($toolName, $toolInput, $db) {
     switch ($toolName) {
-        case 'search_database':
-            return _toolSearchDatabase($toolInput, $db);
-        case 'send_email':
-            return _toolSendEmail($toolInput, $db);
-        case 'send_whatsapp':
-            return _toolSendWhatsapp($toolInput, $db);
-        case 'create_calendar_event':
-            return _toolCreateCalendarEvent($toolInput, $db);
-        case 'manage_task':
-            return _toolManageTask($toolInput, $db);
-        case 'remember':
-            return _toolRemember($toolInput, $db);
-        case 'recall':
-            return _toolRecall($toolInput, $db);
-        case 'get_recent_emails':
-            return _toolGetRecentEmails($toolInput, $db);
-        case 'get_recent_whatsapp':
-            return _toolGetRecentWhatsapp($toolInput, $db);
-        case 'get_recent_calls':
-            return _toolGetRecentCalls($toolInput, $db);
-        case 'ask_user':
-            return _toolAskUser($toolInput, $db);
-        case 'create_order':
-            return _toolCreateOrder($toolInput, $db);
-        default:
-            return ['error' => 'Unbekanntes Tool: ' . $toolName];
+        case 'find_person':       return _toolFindPerson($toolInput, $db);
+        case 'query_database':    return _toolQueryDatabase($toolInput, $db);
+        case 'send_email':        return _toolSendEmail($toolInput, $db);
+        case 'send_whatsapp':     return _toolSendWhatsapp($toolInput, $db);
+        case 'create_calendar_event': return _toolCreateCalendarEvent($toolInput, $db);
+        case 'manage_task':       return _toolManageTask($toolInput, $db);
+        case 'remember':          return _toolRemember($toolInput, $db);
+        case 'recall':            return _toolRecall($toolInput, $db);
+        case 'ask_user':          return _toolAskUser($toolInput, $db);
+        case 'create_order':      return _toolCreateOrder($toolInput, $db);
+        default:                  return ['error' => 'Unbekanntes Tool: ' . $toolName];
     }
 }
 
 // ===== Tool-Implementierungen =====
 
-function _toolSearchDatabase($input, $db) {
-    $entity = $input['entity'];
-    $query = trim($input['query']);
-    $filters = $input['filters'] ?? [];
+/**
+ * Kombinierte Personen-/Kundensuche mit Fahrzeug-Verknüpfung.
+ * Alle Parameter werden mit AND verknüpft.
+ */
+function _toolFindPerson($input, $db) {
+    $type = $input['type'] ?? 'customer';
     $results = [];
 
-    switch ($entity) {
-        case 'customer':
-            $sql = "SELECT c.id, c.name, c.street, c.zipcode, c.city, c.phone, c.email,
-                           COALESCE(c.greeting, '') AS greeting
-                    FROM customer c
-                    WHERE (c.name ILIKE :q OR c.city ILIKE :q OR c.zipcode LIKE :qstart
-                           OR c.email ILIKE :q OR c.phone LIKE :qphone)";
-            $params = [
-                ':q' => '%' . $query . '%',
-                ':qstart' => $query . '%',
-                ':qphone' => '%' . preg_replace('/[^0-9]/', '', $query) . '%'
-            ];
-            if (!empty($filters['city'])) {
-                $sql .= " AND c.city ILIKE :city";
-                $params[':city'] = '%' . $filters['city'] . '%';
+    // Kunden suchen
+    if ($type === 'customer' || $type === 'both') {
+        $where = ["1=1"];
+        $params = [];
+        $joinCar = false;
+        $joinKba = false;
+
+        if (!empty($input['name'])) {
+            $where[] = "c.name ILIKE :name";
+            $params[':name'] = '%' . $input['name'] . '%';
+        }
+        if (!empty($input['city'])) {
+            $where[] = "c.city ILIKE :city";
+            $params[':city'] = '%' . $input['city'] . '%';
+        }
+        if (!empty($input['zipcode'])) {
+            $where[] = "c.zipcode LIKE :zip";
+            $params[':zip'] = $input['zipcode'] . '%';
+        }
+        if (!empty($input['phone'])) {
+            $phoneClean = preg_replace('/[^0-9]/', '', $input['phone']);
+            $where[] = "(c.phone LIKE :phone OR c.phone LIKE :phone2)";
+            $params[':phone'] = '%' . $phoneClean . '%';
+            $params[':phone2'] = '%' . $input['phone'] . '%';
+        }
+        if (!empty($input['email'])) {
+            $where[] = "c.email ILIKE :email";
+            $params[':email'] = '%' . $input['email'] . '%';
+        }
+        if (!empty($input['vehicle_brand'])) {
+            $joinCar = true;
+            $joinKba = true;
+            $where[] = "(k.hersteller ILIKE :brand OR k.marke ILIKE :brand)";
+            $params[':brand'] = '%' . $input['vehicle_brand'] . '%';
+        }
+        if (!empty($input['vehicle_license'])) {
+            $joinCar = true;
+            $where[] = "car.c_ln ILIKE :license";
+            $params[':license'] = '%' . $input['vehicle_license'] . '%';
+        }
+
+        // Mindestens ein Suchkriterium
+        if (count($where) <= 1) {
+            return ['error' => 'Mindestens ein Suchkriterium angeben (name, city, phone, email, vehicle_brand, vehicle_license)'];
+        }
+
+        $carJoin = $joinCar ? "LEFT JOIN cars_lxcars car ON car.c_ow = c.id" : "";
+        $kbaJoin = $joinKba ? "LEFT JOIN kba_lxcars k ON k.id = car.kba_id" : "";
+        $carSelect = $joinCar
+            ? ", car.c_ln AS kennzeichen, car.c_mt AS fahrzeug_modell"
+              . ($joinKba ? ", k.hersteller AS fahrzeug_marke, k.name AS fahrzeug_typ, k.kraftstoff" : "")
+            : "";
+
+        $sql = "SELECT DISTINCT c.id, c.name, c.street, c.zipcode, c.city, c.phone, c.email,
+                       COALESCE(c.greeting, '') AS anrede{$carSelect}
+                FROM customer c
+                {$carJoin}
+                {$kbaJoin}
+                WHERE " . implode(' AND ', $where) . "
+                ORDER BY c.name LIMIT 20";
+
+        $customers = $db->getAll($sql, $params);
+
+        // Für jeden Treffer: Fahrzeuge nachladen wenn nicht schon gejoined
+        if (!empty($customers)) {
+            foreach ($customers as &$cust) {
+                $cust['typ'] = 'Kunde';
+                // Fahrzeuge laden
+                $cars = $db->getAll(
+                    "SELECT car.c_ln AS kennzeichen, car.c_mt AS modell,
+                            k.hersteller, k.name AS typ, k.kraftstoff, k.leistung,
+                            TO_CHAR(car.c_d, 'DD.MM.YYYY') AS erstzulassung,
+                            TO_CHAR(car.c_hu, 'MM/YYYY') AS tuev
+                     FROM cars_lxcars car
+                     LEFT JOIN kba_lxcars k ON k.id = car.kba_id
+                     WHERE car.c_ow = :cid
+                     ORDER BY car.c_ln",
+                    [':cid' => $cust['id']]
+                );
+                $cust['fahrzeuge'] = $cars ?: [];
+
+                // Letzte 5 Aufträge
+                $orders = $db->getAll(
+                    "SELECT o.ordnumber, TO_CHAR(o.transdate, 'DD.MM.YYYY') AS datum, o.amount
+                     FROM oe o WHERE o.customer_id = :cid AND o.record_type = 'sales_order'
+                     ORDER BY o.transdate DESC LIMIT 5",
+                    [':cid' => $cust['id']]
+                );
+                $cust['letzte_auftraege'] = $orders ?: [];
             }
-            $sql .= " ORDER BY c.name LIMIT 15";
-            $results = $db->getAll($sql, $params);
-            break;
-
-        case 'vendor':
-            $results = $db->getAll(
-                "SELECT id, name, street, zipcode, city, phone, email
-                 FROM vendor WHERE name ILIKE :q OR city ILIKE :q ORDER BY name LIMIT 15",
-                [':q' => '%' . $query . '%']
-            );
-            break;
-
-        case 'vehicle':
-            $results = $db->getAll(
-                "SELECT c.c_id, c.c_ln AS kennzeichen, c.c_m AS marke, c.c_mt AS modell,
-                        c.c_mkb AS motorkennbuchstabe, c.c_d AS erstzulassung,
-                        cu.name AS besitzer,
-                        k.hersteller, k.name AS typ, k.kraftstoff
-                 FROM cars_lxcars c
-                 LEFT JOIN customer cu ON cu.id = c.c_ow
-                 LEFT JOIN kba_lxcars k ON k.id = c.kba_id
-                 WHERE c.c_ln ILIKE :q OR cu.name ILIKE :q
-                    OR k.hersteller ILIKE :q OR k.marke ILIKE :q OR k.name ILIKE :q
-                    OR cu.city ILIKE :q
-                 ORDER BY c.c_ln LIMIT 15",
-                [':q' => '%' . $query . '%']
-            );
-            break;
-
-        case 'order':
-            $results = $db->getAll(
-                "SELECT o.id, o.ordnumber, TO_CHAR(o.transdate, 'DD.MM.YYYY') AS datum,
-                        o.amount, cu.name AS kunde,
-                        (SELECT oi.description FROM orderitems oi WHERE oi.trans_id = o.id ORDER BY oi.position LIMIT 1) AS erste_position
-                 FROM oe o
-                 JOIN customer cu ON cu.id = o.customer_id
-                 WHERE o.record_type = 'sales_order'
-                   AND (o.ordnumber ILIKE :q OR cu.name ILIKE :q)
-                 ORDER BY o.transdate DESC LIMIT 15",
-                [':q' => '%' . $query . '%']
-            );
-            break;
-
-        case 'invoice':
-            $results = $db->getAll(
-                "SELECT ar.id, ar.invnumber, TO_CHAR(ar.transdate, 'DD.MM.YYYY') AS datum,
-                        ar.amount, cu.name AS kunde
-                 FROM ar
-                 JOIN customer cu ON cu.id = ar.customer_id
-                 WHERE ar.invnumber ILIKE :q OR cu.name ILIKE :q
-                 ORDER BY ar.transdate DESC LIMIT 15",
-                [':q' => '%' . $query . '%']
-            );
-            break;
-
-        case 'part':
-            $results = $db->getAll(
-                "SELECT id, partnumber, description, sellprice, unit, part_type
-                 FROM parts
-                 WHERE partnumber ILIKE :q OR description ILIKE :q
-                 ORDER BY description LIMIT 15",
-                [':q' => '%' . $query . '%']
-            );
-            break;
-
-        case 'employee':
-            $results = $db->getAll(
-                "SELECT id, name, login, email FROM employee WHERE name ILIKE :q OR login ILIKE :q ORDER BY name LIMIT 15",
-                [':q' => '%' . $query . '%']
-            );
-            break;
+            unset($cust);
+            $results = array_merge($results, $customers);
+        }
     }
 
-    return ['entity' => $entity, 'count' => count($results ?: []), 'results' => $results ?: []];
+    // Lieferanten suchen
+    if ($type === 'vendor' || $type === 'both') {
+        $where = ["1=1"];
+        $params = [];
+
+        if (!empty($input['name'])) {
+            $where[] = "v.name ILIKE :name";
+            $params[':name'] = '%' . $input['name'] . '%';
+        }
+        if (!empty($input['city'])) {
+            $where[] = "v.city ILIKE :city";
+            $params[':city'] = '%' . $input['city'] . '%';
+        }
+        if (!empty($input['phone'])) {
+            $where[] = "v.phone LIKE :phone";
+            $params[':phone'] = '%' . $input['phone'] . '%';
+        }
+        if (!empty($input['email'])) {
+            $where[] = "v.email ILIKE :email";
+            $params[':email'] = '%' . $input['email'] . '%';
+        }
+
+        if (count($where) > 1) {
+            $vendors = $db->getAll(
+                "SELECT v.id, v.name, v.street, v.zipcode, v.city, v.phone, v.email
+                 FROM vendor v WHERE " . implode(' AND ', $where) . " ORDER BY v.name LIMIT 10",
+                $params
+            );
+            if (!empty($vendors)) {
+                foreach ($vendors as &$v) { $v['typ'] = 'Lieferant'; }
+                unset($v);
+                $results = array_merge($results, $vendors);
+            }
+        }
+    }
+
+    return ['count' => count($results), 'results' => $results];
+}
+
+/**
+ * Führt eine sichere SQL SELECT-Abfrage aus.
+ */
+function _toolQueryDatabase($input, $db) {
+    $sql = trim($input['sql'] ?? '');
+
+    // Sicherheitscheck: NUR SELECT erlaubt
+    $sqlUpper = strtoupper(ltrim($sql));
+    if (!str_starts_with($sqlUpper, 'SELECT')) {
+        return ['error' => 'Nur SELECT-Abfragen sind erlaubt'];
+    }
+    // Gefährliche Keywords blockieren
+    $forbidden = ['INSERT', 'UPDATE', 'DELETE', 'DROP', 'ALTER', 'TRUNCATE', 'CREATE', 'GRANT', 'EXECUTE', 'COPY'];
+    foreach ($forbidden as $kw) {
+        if (preg_match('/\b' . $kw . '\b/i', $sql)) {
+            return ['error' => $kw . ' ist nicht erlaubt — nur SELECT'];
+        }
+    }
+
+    // LIMIT erzwingen wenn nicht vorhanden
+    if (!preg_match('/\bLIMIT\b/i', $sql)) {
+        $sql = rtrim($sql, '; ') . ' LIMIT 20';
+    }
+
+    try {
+        $results = $db->getAll($sql, []);
+        return ['count' => count($results ?: []), 'results' => $results ?: []];
+    } catch (Exception $e) {
+        return ['error' => 'SQL-Fehler: ' . $e->getMessage(), 'sql' => $sql];
+    }
 }
 
 function _toolSendEmail($input, $db) {
-    // Email-Konfiguration laden
     require_once __DIR__.'/../email/email.php';
 
     try {
-        // sendEmail erwartet $data direkt
         ob_start();
         sendEmail([
             'to' => $input['to'],
@@ -357,36 +366,88 @@ function _toolSendEmail($input, $db) {
             'bcc' => [],
             'attachments' => []
         ]);
-        $output = ob_get_clean();
-        $result = json_decode($output, true);
+        ob_get_clean();
 
-        // Aktion protokollieren
-        _logWeroniAction($db, 'email_sent', 'E-Mail an ' . implode(', ', $input['to']) . ': ' . $input['subject'], $input, $result);
-
+        _logWeroniAction($db, 'email_sent', 'E-Mail an ' . implode(', ', $input['to']) . ': ' . $input['subject'], $input, null);
         return ['success' => true, 'message' => 'E-Mail gesendet an: ' . implode(', ', $input['to'])];
     } catch (Exception $e) {
+        ob_end_clean();
         _logWeroniAction($db, 'email_sent', 'E-Mail-Fehler: ' . $e->getMessage(), $input, null, 'failed', $e->getMessage());
         return ['error' => 'E-Mail konnte nicht gesendet werden: ' . $e->getMessage()];
     }
 }
 
 function _toolSendWhatsapp($input, $db) {
-    require_once __DIR__.'/../whatsapp/whatsapp.php';
+    $phone = trim($input['phone_number'] ?? '');
+    $message = trim($input['message'] ?? '');
 
-    try {
-        ob_start();
-        sendWhatsAppMessage([
-            'phone_number' => $input['phone_number'],
-            'message' => $input['message']
-        ]);
-        $output = ob_get_clean();
-
-        _logWeroniAction($db, 'whatsapp_sent', 'WhatsApp an ' . $input['phone_number'], $input, null);
-        return ['success' => true, 'message' => 'WhatsApp gesendet an: ' . $input['phone_number']];
-    } catch (Exception $e) {
-        _logWeroniAction($db, 'whatsapp_sent', 'WhatsApp-Fehler: ' . $e->getMessage(), $input, null, 'failed', $e->getMessage());
-        return ['error' => 'WhatsApp konnte nicht gesendet werden: ' . $e->getMessage()];
+    if (empty($phone) || empty($message)) {
+        return ['error' => 'phone_number und message erforderlich'];
     }
+
+    // WhatsApp-Config direkt laden statt die API-Funktion aufzurufen
+    $config = $db->fetchKeyValue(
+        "SELECT key, value FROM defaults_oserp WHERE key IN ('whatsapp_access_token', 'whatsapp_phone_number_id', 'whatsapp_country_code')"
+    );
+
+    $accessToken = $config['whatsapp_access_token'] ?? '';
+    $phoneNumberId = $config['whatsapp_phone_number_id'] ?? '';
+    $countryCode = $config['whatsapp_country_code'] ?? '49';
+
+    if (empty($accessToken) || empty($phoneNumberId)) {
+        return ['error' => 'WhatsApp Business API ist nicht konfiguriert'];
+    }
+
+    // Telefonnummer normalisieren
+    $phone = preg_replace('/[^0-9+]/', '', $phone);
+    if (str_starts_with($phone, '0')) {
+        $phone = '+' . $countryCode . substr($phone, 1);
+    }
+    if (!str_starts_with($phone, '+')) {
+        $phone = '+' . $phone;
+    }
+    $phonePlain = ltrim($phone, '+');
+
+    $payload = json_encode([
+        'messaging_product' => 'whatsapp',
+        'to' => $phonePlain,
+        'type' => 'text',
+        'text' => ['body' => $message]
+    ], JSON_UNESCAPED_UNICODE);
+
+    $ch = curl_init("https://graph.facebook.com/v21.0/{$phoneNumberId}/messages");
+    curl_setopt_array($ch, [
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => $payload,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT => 15,
+        CURLOPT_HTTPHEADER => [
+            'Content-Type: application/json',
+            'Authorization: Bearer ' . $accessToken
+        ]
+    ]);
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($httpCode >= 200 && $httpCode < 300) {
+        // In DB speichern
+        $responseData = json_decode($response, true);
+        $waMessageId = $responseData['messages'][0]['id'] ?? null;
+        if ($waMessageId) {
+            $db->execute(
+                "INSERT INTO whatsapp_messages (wa_message_id, direction, phone_number, message_type, message_text, status)
+                 VALUES (:wid, 'O', :phone, 'text', :msg, 'sent') ON CONFLICT (wa_message_id) DO NOTHING",
+                [':wid' => $waMessageId, ':phone' => $phone, ':msg' => $message]
+            );
+        }
+        _logWeroniAction($db, 'whatsapp_sent', 'WhatsApp an ' . $phone . ': ' . mb_substr($message, 0, 50), $input, null);
+        return ['success' => true, 'message' => 'WhatsApp gesendet an: ' . $phone];
+    }
+
+    $error = 'HTTP ' . $httpCode . ': ' . $response;
+    _logWeroniAction($db, 'whatsapp_sent', 'WhatsApp-Fehler', $input, null, 'failed', $error);
+    return ['error' => 'WhatsApp konnte nicht gesendet werden: ' . $error];
 }
 
 function _toolCreateCalendarEvent($input, $db) {
@@ -467,7 +528,6 @@ function _toolManageTask($input, $db) {
 }
 
 function _toolRemember($input, $db) {
-    // Prüfen ob ähnlicher Eintrag existiert
     $existing = $db->getOne(
         "SELECT id FROM weroni_memory WHERE category = :cat AND subject ILIKE :subj LIMIT 1",
         [':cat' => $input['category'], ':subj' => '%' . $input['subject'] . '%']
@@ -512,69 +572,6 @@ function _toolRecall($input, $db) {
     return ['count' => count($results ?: []), 'memories' => $results ?: []];
 }
 
-function _toolGetRecentEmails($input, $db) {
-    // Email-Konfiguration laden und Mails abrufen
-    try {
-        require_once __DIR__.'/../email/email.php';
-        ob_start();
-        getAllEmails([
-            'folder' => $input['folder'] ?? 'INBOX',
-            'limit' => $input['limit'] ?? 10,
-            'page' => 1,
-            'search' => $input['search'] ?? ''
-        ]);
-        $output = ob_get_clean();
-        $result = json_decode($output, true);
-        return $result['payload'] ?? ['error' => 'Keine Emails verfügbar'];
-    } catch (Exception $e) {
-        return ['error' => 'Email-Abruf fehlgeschlagen: ' . $e->getMessage()];
-    }
-}
-
-function _toolGetRecentWhatsapp($input, $db) {
-    $limit = intval($input['limit'] ?? 10);
-    $sql = "SELECT wm.id, wm.direction, wm.phone_number, wm.contact_name,
-                   wm.message_text, wm.message_type, wm.status,
-                   TO_CHAR(wm.itime, 'DD.MM.YYYY HH24:MI') AS zeit,
-                   cu.name AS kunde
-            FROM whatsapp_messages wm
-            LEFT JOIN customer cu ON cu.id = wm.customer_id
-            WHERE wm.hidden = false";
-
-    if (!empty($input['unread_only'])) {
-        $sql .= " AND wm.direction = 'I' AND wm.status = 'received'";
-    }
-
-    $sql .= " ORDER BY wm.itime DESC LIMIT :limit";
-    $results = $db->getAll($sql, [':limit' => $limit]);
-    return ['count' => count($results ?: []), 'messages' => $results ?: []];
-}
-
-function _toolGetRecentCalls($input, $db) {
-    $limit = intval($input['limit'] ?? 10);
-    $params = [':limit' => $limit];
-    $sql = "SELECT c.crmti_id, c.crmti_direction AS richtung,
-                   c.crmti_number AS nummer,
-                   TO_CHAR(c.crmti_init_time, 'DD.MM.YYYY HH24:MI') AS zeit,
-                   CASE WHEN c.crmti_caller_typ = 'C' THEN cu.name
-                        WHEN c.crmti_caller_typ = 'V' THEN ve.name
-                        ELSE 'Unbekannt' END AS kontakt
-            FROM crmti c
-            LEFT JOIN customer cu ON cu.id = c.crmti_caller_id AND c.crmti_caller_typ = 'C'
-            LEFT JOIN vendor ve ON ve.id = c.crmti_caller_id AND c.crmti_caller_typ = 'V'
-            WHERE 1=1";
-
-    if (!empty($input['direction']) && $input['direction'] !== 'all') {
-        $dir = $input['direction'] === 'inbound' ? 'E' : 'A';
-        $sql .= " AND c.crmti_direction = :dir";
-        $params[':dir'] = $dir;
-    }
-
-    $sql .= " ORDER BY c.crmti_init_time DESC LIMIT :limit";
-    $results = $db->getAll($sql, $params);
-    return ['count' => count($results ?: []), 'calls' => $results ?: []];
-}
-
 function _toolAskUser($input, $db) {
     $db->execute(
         "INSERT INTO weroni_questions (question, context, urgency, context_data)
@@ -592,7 +589,6 @@ function _toolAskUser($input, $db) {
 function _toolCreateOrder($input, $db) {
     $customerId = intval($input['customer_id']);
 
-    // Nächste Auftragsnummer holen
     $last = $db->getOne("SELECT MAX(CAST(ordnumber AS INTEGER)) AS maxnum FROM oe WHERE ordnumber ~ '^[0-9]+$'", []);
     $nextNum = intval($last['maxnum'] ?? 0) + 1;
 
