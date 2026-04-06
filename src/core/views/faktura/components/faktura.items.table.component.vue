@@ -311,8 +311,9 @@
                                                 />
                                                 <v-divider />
                                                 <v-list density="comfortable" max-height="280" class="overflow-y-auto pa-0">
+                                                    <v-progress-linear v-if="vendorSearching" indeterminate color="primary" height="2" />
                                                     <v-list-item
-                                                        v-for="(vendor, vi) in vendorFiltered"
+                                                        v-for="(vendor, vi) in vendorDisplayList"
                                                         :key="vendor.id"
                                                         :active="vi === vendorHighlightIdx || vendor.id === vendorCurrentId"
                                                         :color="vi === vendorHighlightIdx ? 'primary' : undefined"
@@ -332,7 +333,7 @@
                                                             </v-chip>
                                                         </template>
                                                     </v-list-item>
-                                                    <v-list-item v-if="!vendorFiltered.length" disabled>
+                                                    <v-list-item v-if="!vendorDisplayList.length && !vendorSearching" disabled>
                                                         <v-list-item-title class="text-caption text-medium-emphasis">{{ t('FakturaView.faktura.noVendors') }}</v-list-item-title>
                                                     </v-list-item>
                                                 </v-list>
@@ -528,10 +529,11 @@
 <script>
 // src/core/views/faktura/components/faktura.items.table.component.vue
 
-import { defineComponent, ref, reactive, nextTick, computed } from 'vue'
+import { defineComponent, ref, reactive, nextTick, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { formatNumber, parseNumber } from '@/core/utils/numberFormat.js'
 import { oserpStore } from '@/core/stores/oserp.store.js'
+import { lxcarsStore } from '@/features/lxcars/stores/lxcars.store.js'
 import draggable from 'vuedraggable'
 
 export default defineComponent({
@@ -1238,27 +1240,47 @@ export default defineComponent({
         const vendorSearch = ref('')
         const vendorCurrentId = ref(null)
         const vendorHighlightIdx = ref(-1)
+        const vendorSearchResults = ref([])
+        const vendorSearching = ref(false)
+        let vendorSearchTimer = null
+        let carsStore = null
+        try { carsStore = lxcarsStore() } catch { /* LxCars nicht aktiv */ }
 
-        const vendorFiltered = computed(() => {
-            const search = vendorSearch.value.toLowerCase().trim()
-            if (!search) return props.recentVendors
-            return props.recentVendors.filter(v => v.name.toLowerCase().includes(search))
+        // Ohne Suchbegriff: Top-5 (recentVendors), mit Suchbegriff: API-Ergebnisse
+        const vendorDisplayList = computed(() => {
+            if (!vendorSearch.value.trim()) return props.recentVendors
+            return vendorSearchResults.value
+        })
+
+        watch(vendorSearch, (val) => {
+            if (vendorSearchTimer) clearTimeout(vendorSearchTimer)
+            vendorHighlightIdx.value = -1
+            const q = (val || '').trim()
+            if (q.length < 2) { vendorSearchResults.value = []; return }
+            vendorSearching.value = true
+            vendorSearchTimer = setTimeout(async () => {
+                try {
+                    vendorSearchResults.value = carsStore ? await carsStore.searchVendors(q) : []
+                } catch { vendorSearchResults.value = [] }
+                vendorSearching.value = false
+            }, 250)
         })
 
         function openVendorMenu(item) {
             vendorCurrentId.value = getItemVendorId(item)
             vendorSearch.value = ''
+            vendorSearchResults.value = []
             vendorHighlightIdx.value = -1
         }
 
         function vendorHighlightMove(dir) {
-            const len = vendorFiltered.value.length
+            const len = vendorDisplayList.value.length
             if (!len) return
             vendorHighlightIdx.value = Math.max(0, Math.min(len - 1, vendorHighlightIdx.value + dir))
         }
 
         function vendorHighlightSelect(item) {
-            const list = vendorFiltered.value
+            const list = vendorDisplayList.value
             if (vendorHighlightIdx.value >= 0 && vendorHighlightIdx.value < list.length) {
                 onVendorSelect(item, list[vendorHighlightIdx.value])
             }
@@ -1281,7 +1303,8 @@ export default defineComponent({
             vendorSearch,
             vendorCurrentId,
             vendorHighlightIdx,
-            vendorFiltered,
+            vendorDisplayList,
+            vendorSearching,
             openVendorMenu,
             vendorHighlightMove,
             vendorHighlightSelect,

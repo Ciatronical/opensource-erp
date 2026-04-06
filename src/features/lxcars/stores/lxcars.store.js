@@ -1085,6 +1085,12 @@ export const lxcarsStore = defineStore('lxcarsStore', () => {
         return response.data.payload
     }
 
+    async function searchVendors(q) {
+        const response = await axios.post('/api/lxcars/', { action: 'searchVendors', q })
+        if (!response.data.success) throw new ApiError('ApiError', response.data.text, 'Error searching vendors')
+        return response.data.payload
+    }
+
     // ===== Fahrzeug-Chat (KI-Werkstattmeister) =====
 
     async function loadCarChat(cId) {
@@ -1179,6 +1185,7 @@ export const lxcarsStore = defineStore('lxcarsStore', () => {
         revertPartsRequestToPending,
         loadPendingPartsRequests,
         getRecentVendors,
+        searchVendors,
         requestPartsForItem,
         cancelPartsRequest,
         markPartsRequestReceived,

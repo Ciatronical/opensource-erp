@@ -782,22 +782,50 @@ function getPendingPartsRequests() {
  *
  * @testdata {}
  */
+/**
+ * Lädt die Top-5 meistverwendeten Lieferanten für Ersatzteil-Bestellungen
+ *
+ * @testdata {}
+ */
 function getRecentVendors() {
     $db = DbhCompany::begin();
 
     $rows = $db->getAll(
-        "WITH counts AS (
-             SELECT vendor_id, COUNT(*) AS order_count
-             FROM oe_parts_requests_lxcars
-             WHERE status = 'ordered' AND vendor_id IS NOT NULL
-             GROUP BY vendor_id
-         )
-         SELECT v.id, v.name, COALESCE(c.order_count, 0) AS order_count
-         FROM vendor v
-         LEFT JOIN counts c ON c.vendor_id = v.id
-         WHERE NOT v.obsolete
-         ORDER BY c.order_count DESC NULLS LAST, v.name ASC",
+        "SELECT v.id, v.name, COUNT(pr.id) AS order_count
+         FROM oe_parts_requests_lxcars pr
+         JOIN vendor v ON v.id = pr.vendor_id
+         WHERE pr.status = 'ordered' AND NOT v.obsolete
+         GROUP BY v.id, v.name
+         ORDER BY COUNT(pr.id) DESC, v.name ASC
+         LIMIT 5",
         []
+    );
+
+    resultInfo(true, 'OK', $rows ?: []);
+}
+
+/**
+ * Sucht Lieferanten nach Name (für Lieferant-Picker im Warenkorb)
+ *
+ * @param string $data['q'] Suchbegriff (min. 2 Zeichen)
+ * @testdata {"q": "Auto"}
+ */
+function searchVendors($data) {
+    $db = DbhCompany::begin();
+    $q = trim($data['q'] ?? '');
+
+    if (strlen($q) < 2) {
+        resultInfo(true, 'OK', []);
+        return;
+    }
+
+    $rows = $db->getAll(
+        "SELECT id, name
+         FROM vendor
+         WHERE NOT obsolete AND name ILIKE :q
+         ORDER BY name ASC
+         LIMIT 15",
+        [':q' => '%' . $q . '%']
     );
 
     resultInfo(true, 'OK', $rows ?: []);
