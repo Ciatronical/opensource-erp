@@ -786,12 +786,17 @@ function getRecentVendors() {
     $db = DbhCompany::begin();
 
     $rows = $db->getAll(
-        "SELECT v.id, v.name, COUNT(pr.id) AS order_count
+        "WITH counts AS (
+             SELECT vendor_id, COUNT(*) AS order_count
+             FROM oe_parts_requests_lxcars
+             WHERE status = 'ordered' AND vendor_id IS NOT NULL
+             GROUP BY vendor_id
+         )
+         SELECT v.id, v.name, COALESCE(c.order_count, 0) AS order_count
          FROM vendor v
-         LEFT JOIN oe_parts_requests_lxcars pr ON pr.vendor_id = v.id AND pr.status = 'ordered'
+         LEFT JOIN counts c ON c.vendor_id = v.id
          WHERE NOT v.obsolete
-         GROUP BY v.id, v.name
-         ORDER BY COUNT(pr.id) DESC, v.name ASC",
+         ORDER BY c.order_count DESC NULLS LAST, v.name ASC",
         []
     );
 
