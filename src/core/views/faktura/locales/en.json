@@ -58,6 +58,8 @@
             "reorderVendor": "Re-order from",
             "noVendors": "No vendors available",
             "searchVendor": "Search vendor...",
+            "revertToPending": "Revert to pending",
+            "deletePart": "Delete order",
             "partPhoto": "Part photo",
             "addPhoto": "Add photo",
             "viewPhoto": "View photo",

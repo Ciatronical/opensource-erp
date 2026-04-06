@@ -28,6 +28,8 @@
         "status": "Durum",
         "requestedBy": "Talep eden",
         "pending": "Talep edildi",
-        "ordered": "Sipariş edildi"
+        "ordered": "Sipariş edildi",
+        "revertToPending": "Beklemede olana geri al",
+        "delete": "Sil"
     }
 }

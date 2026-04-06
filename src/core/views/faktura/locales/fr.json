@@ -331,6 +331,8 @@
             "reorderVendor": "Commander à nouveau chez",
             "noVendors": "Aucun fournisseur disponible",
             "searchVendor": "Rechercher un fournisseur...",
+            "revertToPending": "Remettre en attente",
+            "deletePart": "Supprimer la commande",
             "partPhoto": "Photo de la pièce",
             "addPhoto": "Ajouter une photo",
             "viewPhoto": "Voir la photo",

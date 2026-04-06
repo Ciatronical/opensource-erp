@@ -28,6 +28,8 @@
         "status": "Stav",
         "requestedBy": "Požadoval",
         "pending": "Požadováno",
-        "ordered": "Objednáno"
+        "ordered": "Objednáno",
+        "revertToPending": "Vrátit na čekající",
+        "delete": "Smazat"
     }
 }

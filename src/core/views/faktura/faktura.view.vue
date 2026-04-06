@@ -214,6 +214,8 @@
                     :recent-vendors="recentVendorsList"
                     @request-part="onRequestPart"
                     @order-part="onOrderPart"
+                    @revert-part="onRevertPart"
+                    @delete-part="onDeletePart"
                     @photo-part="onPhotoPart"
                 />
             </section>
@@ -1135,6 +1137,30 @@ export default defineComponent({
             }
         }
 
+        async function onRevertPart(item) {
+            const req = partsRequestsList.value.find(r => r.orderitem_id === item.id)
+            if (!req) return
+            try {
+                await carsStore.revertPartsRequestToPending(req.id)
+                loadPartsRequests()
+                window.dispatchEvent(new CustomEvent('parts-requests-changed'))
+            } catch (e) {
+                console.error('Error reverting part:', e)
+            }
+        }
+
+        async function onDeletePart(item) {
+            const req = partsRequestsList.value.find(r => r.orderitem_id === item.id)
+            if (!req) return
+            try {
+                await carsStore.deletePartsRequest(req.id)
+                loadPartsRequests()
+                window.dispatchEvent(new CustomEvent('parts-requests-changed'))
+            } catch (e) {
+                console.error('Error deleting part:', e)
+            }
+        }
+
         // Foto-Dialog (Multi-Foto)
         const photoDialog = ref({
             show: false,
@@ -1211,7 +1237,7 @@ export default defineComponent({
         const recentVendorsList = ref([])
 
         async function loadRecentVendors() {
-            if (!mechanicModeEnabled.value) return
+            if (!carsStore || fakturaType.value !== 'order') return
             try {
                 recentVendorsList.value = await carsStore.getRecentVendors()
             } catch { recentVendorsList.value = [] }
@@ -2549,6 +2575,8 @@ export default defineComponent({
             recentVendorsList,
             onRequestPart,
             onOrderPart,
+            onRevertPart,
+            onDeletePart,
             onPhotoPart,
             photoDialog,
             closePhotoDialog,

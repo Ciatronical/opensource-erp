@@ -331,6 +331,8 @@
             "reorderVendor": "Telli uuesti asukohast",
             "noVendors": "Tarnijaid pole saadaval",
             "searchVendor": "Otsi tarnijat...",
+            "revertToPending": "Tagasi ootele",
+            "deletePart": "Kustuta tellimus",
             "partPhoto": "Varuosa foto",
             "addPhoto": "Lisa foto",
             "viewPhoto": "Vaata fotot",

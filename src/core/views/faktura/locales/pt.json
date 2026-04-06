@@ -331,6 +331,8 @@
             "reorderVendor": "Encomendar novamente de",
             "noVendors": "Nenhum fornecedor disponível",
             "searchVendor": "Pesquisar fornecedor...",
+            "revertToPending": "Voltar a pendente",
+            "deletePart": "Eliminar encomenda",
             "partPhoto": "Foto da peça",
             "addPhoto": "Adicionar foto",
             "viewPhoto": "Ver foto",

@@ -28,6 +28,8 @@
         "status": "Statut",
         "requestedBy": "Demandé par",
         "pending": "Demandé",
-        "ordered": "Commandé"
+        "ordered": "Commandé",
+        "revertToPending": "Remettre en attente",
+        "delete": "Supprimer"
     }
 }

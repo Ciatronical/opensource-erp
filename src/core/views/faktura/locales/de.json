@@ -58,6 +58,8 @@
             "reorderVendor": "Neu bestellen bei",
             "noVendors": "Keine Lieferanten vorhanden",
             "searchVendor": "Lieferant suchen...",
+            "revertToPending": "Zurück auf Angefordert",
+            "deletePart": "Bestellung löschen",
             "partPhoto": "Ersatzteil-Foto",
             "addPhoto": "Foto hinzufügen",
             "viewPhoto": "Foto ansehen",

@@ -331,6 +331,8 @@
             "reorderVendor": "Yeniden sipariş ver",
             "noVendors": "Tedarikçi bulunamadı",
             "searchVendor": "Tedarikçi ara...",
+            "revertToPending": "Beklemede olana geri al",
+            "deletePart": "Siparişi sil",
             "partPhoto": "Parça fotoğrafı",
             "addPhoto": "Fotoğraf ekle",
             "viewPhoto": "Fotoğrafı görüntüle",

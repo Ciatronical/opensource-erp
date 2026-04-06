@@ -28,6 +28,8 @@
         "status": "Tila",
         "requestedBy": "Tilaaja",
         "pending": "Tilattu",
-        "ordered": "Tilattu"
+        "ordered": "Tilattu",
+        "revertToPending": "Palauta odottavaksi",
+        "delete": "Poista"
     }
 }

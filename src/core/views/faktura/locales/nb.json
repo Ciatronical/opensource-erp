@@ -331,6 +331,8 @@
             "reorderVendor": "Bestill på nytt fra",
             "noVendors": "Ingen leverandører tilgjengelige",
             "searchVendor": "Søk leverandør...",
+            "revertToPending": "Tilbake til ventende",
+            "deletePart": "Slett bestilling",
             "partPhoto": "Delfoto",
             "addPhoto": "Legg til foto",
             "viewPhoto": "Vis foto",

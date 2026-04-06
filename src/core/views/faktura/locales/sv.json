@@ -331,6 +331,8 @@
             "reorderVendor": "Beställ igen från",
             "noVendors": "Inga leverantörer tillgängliga",
             "searchVendor": "Sök leverantör...",
+            "revertToPending": "Återställ till väntande",
+            "deletePart": "Radera beställning",
             "partPhoto": "Delfoto",
             "addPhoto": "Lägg till foto",
             "viewPhoto": "Visa foto",

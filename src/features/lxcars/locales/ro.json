@@ -28,6 +28,8 @@
         "status": "Stare",
         "requestedBy": "Solicitat de",
         "pending": "Solicitat",
-        "ordered": "Comandat"
+        "ordered": "Comandat",
+        "revertToPending": "Revenire la în așteptare",
+        "delete": "Șterge"
     }
 }

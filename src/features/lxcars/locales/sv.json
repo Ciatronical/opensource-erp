@@ -28,6 +28,8 @@
         "status": "Status",
         "requestedBy": "Beställd av",
         "pending": "Beställd",
-        "ordered": "Beställd"
+        "ordered": "Beställd",
+        "revertToPending": "Återställ till väntande",
+        "delete": "Radera"
     }
 }

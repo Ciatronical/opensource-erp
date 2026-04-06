@@ -1067,6 +1067,12 @@ export const lxcarsStore = defineStore('lxcarsStore', () => {
         return response.data
     }
 
+    async function revertPartsRequestToPending(id) {
+        const response = await axios.post('/api/lxcars/', { action: 'revertPartsRequestToPending', id })
+        if (!response.data.success) throw new ApiError('ApiError', response.data.text, 'Error reverting to pending')
+        return response.data
+    }
+
     async function loadPendingPartsRequests() {
         const response = await axios.post('/api/lxcars/', { action: 'getPendingPartsRequests' })
         if (!response.data.success) throw new ApiError('ApiError', response.data.text, 'Error loading pending requests')
@@ -1170,6 +1176,7 @@ export const lxcarsStore = defineStore('lxcarsStore', () => {
         getPartsRequestPhoto,
         deletePartsRequestPhoto,
         markPartsRequestOrdered,
+        revertPartsRequestToPending,
         loadPendingPartsRequests,
         getRecentVendors,
         requestPartsForItem,

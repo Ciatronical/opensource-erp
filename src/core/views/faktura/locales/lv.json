@@ -331,6 +331,8 @@
             "reorderVendor": "Atkārtoti pasūtīt no",
             "noVendors": "Nav pieejamu piegādātāju",
             "searchVendor": "Meklēt piegādātāju...",
+            "revertToPending": "Atgriezt gaidīšanā",
+            "deletePart": "Dzēst pasūtījumu",
             "partPhoto": "Detaļas foto",
             "addPhoto": "Pievienot foto",
             "viewPhoto": "Skatīt foto",

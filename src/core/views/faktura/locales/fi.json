@@ -331,6 +331,8 @@
             "reorderVendor": "Tilaa uudelleen",
             "noVendors": "Ei toimittajia saatavilla",
             "searchVendor": "Etsi toimittajaa...",
+            "revertToPending": "Palauta odottavaksi",
+            "deletePart": "Poista tilaus",
             "partPhoto": "Osan kuva",
             "addPhoto": "Lisää kuva",
             "viewPhoto": "Näytä kuva",

@@ -28,6 +28,8 @@
         "status": "Statuss",
         "requestedBy": "Pasūtīja",
         "pending": "Pasūtīts",
-        "ordered": "Pasūtīts"
+        "ordered": "Pasūtīts",
+        "revertToPending": "Atgriezt gaidīšanā",
+        "delete": "Dzēst"
     }
 }

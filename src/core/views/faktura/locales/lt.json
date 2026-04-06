@@ -331,6 +331,8 @@
             "reorderVendor": "Pakartotinai užsakyti iš",
             "noVendors": "Nėra galimų tiekėjų",
             "searchVendor": "Ieškoti tiekėjo...",
+            "revertToPending": "Grąžinti laukimą",
+            "deletePart": "Ištrinti užsakymą",
             "partPhoto": "Dalies nuotrauka",
             "addPhoto": "Pridėti nuotrauką",
             "viewPhoto": "Peržiūrėti nuotrauką",

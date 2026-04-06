@@ -331,6 +331,8 @@
             "reorderVendor": "Opnieuw bestellen bij",
             "noVendors": "Geen leveranciers beschikbaar",
             "searchVendor": "Leverancier zoeken...",
+            "revertToPending": "Terug naar in afwachting",
+            "deletePart": "Bestelling verwijderen",
             "partPhoto": "Onderdeelfoto",
             "addPhoto": "Foto toevoegen",
             "viewPhoto": "Foto bekijken",

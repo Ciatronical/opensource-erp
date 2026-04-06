@@ -331,6 +331,8 @@
             "reorderVendor": "Genbestil fra",
             "noVendors": "Ingen leverandører tilgængelige",
             "searchVendor": "Søg leverandør...",
+            "revertToPending": "Sæt tilbage til afventende",
+            "deletePart": "Slet bestilling",
             "partPhoto": "Delfoto",
             "addPhoto": "Tilføj foto",
             "viewPhoto": "Vis foto",

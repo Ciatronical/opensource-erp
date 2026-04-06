@@ -331,6 +331,8 @@
             "reorderVendor": "重新订购自",
             "noVendors": "没有可用的供应商",
             "searchVendor": "搜索供应商...",
+            "revertToPending": "恢复为待处理",
+            "deletePart": "删除订单",
             "partPhoto": "零件照片",
             "addPhoto": "添加照片",
             "viewPhoto": "查看照片",

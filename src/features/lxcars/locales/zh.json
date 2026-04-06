@@ -28,6 +28,8 @@
         "status": "状态",
         "requestedBy": "请求者",
         "pending": "已请求",
-        "ordered": "已订购"
+        "ordered": "已订购",
+        "revertToPending": "恢复为待处理",
+        "delete": "删除"
     }
 }

@@ -28,6 +28,8 @@
         "status": "Статус",
         "requestedBy": "Заказал",
         "pending": "Заказано",
-        "ordered": "Заказано"
+        "ordered": "Заказано",
+        "revertToPending": "Вернуть в ожидание",
+        "delete": "Удалить"
     }
 }

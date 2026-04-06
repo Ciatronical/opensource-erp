@@ -28,6 +28,8 @@
         "status": "Status",
         "requestedBy": "Bestilt af",
         "pending": "Bestilt",
-        "ordered": "Bestilt"
+        "ordered": "Bestilt",
+        "revertToPending": "Sæt tilbage til afventende",
+        "delete": "Slet"
     }
 }

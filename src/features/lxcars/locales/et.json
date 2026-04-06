@@ -28,6 +28,8 @@
         "status": "Olek",
         "requestedBy": "Tellis",
         "pending": "Tellitud",
-        "ordered": "Tellitud"
+        "ordered": "Tellitud",
+        "revertToPending": "Tagasi ootele",
+        "delete": "Kustuta"
     }
 }

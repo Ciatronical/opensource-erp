@@ -331,6 +331,8 @@
             "reorderVendor": "Повторный заказ от",
             "noVendors": "Нет доступных поставщиков",
             "searchVendor": "Поиск поставщика...",
+            "revertToPending": "Вернуть в ожидание",
+            "deletePart": "Удалить заказ",
             "partPhoto": "Фото детали",
             "addPhoto": "Добавить фото",
             "viewPhoto": "Показать фото",

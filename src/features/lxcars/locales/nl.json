@@ -28,6 +28,8 @@
         "status": "Status",
         "requestedBy": "Besteld door",
         "pending": "Aangevraagd",
-        "ordered": "Besteld"
+        "ordered": "Besteld",
+        "revertToPending": "Terug naar in afwachting",
+        "delete": "Verwijderen"
     }
 }

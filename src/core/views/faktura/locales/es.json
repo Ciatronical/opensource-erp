@@ -331,6 +331,8 @@
             "reorderVendor": "Volver a pedir de",
             "noVendors": "No hay proveedores disponibles",
             "searchVendor": "Buscar proveedor...",
+            "revertToPending": "Volver a pendiente",
+            "deletePart": "Eliminar pedido",
             "partPhoto": "Foto del repuesto",
             "addPhoto": "Añadir foto",
             "viewPhoto": "Ver foto",

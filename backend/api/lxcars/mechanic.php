@@ -477,8 +477,9 @@ function deletePartsRequest($data) {
         return;
     }
 
+    // Auch bestellte Teile dürfen gelöscht werden (z.B. nicht mehr benötigt)
     $db->execute(
-        "DELETE FROM oe_parts_requests_lxcars WHERE id = :id AND status = 'pending'",
+        "DELETE FROM oe_parts_requests_lxcars WHERE id = :id AND status IN ('pending', 'ordered')",
         [':id' => $id]
     );
 
@@ -706,6 +707,32 @@ function markPartsRequestOrdered($data) {
     );
 
     resultInfo(true, 'ORDERED');
+}
+
+/**
+ * Setzt eine bestellte Ersatzteil-Anfrage zurück auf "zu bestellen"
+ * (z.B. wenn Lieferant nicht liefern kann)
+ *
+ * @param int $data['id'] Request-ID
+ * @testdata {"id": 1}
+ */
+function revertPartsRequestToPending($data) {
+    $db = DbhCompany::begin();
+    $id = intval($data['id'] ?? 0);
+
+    if (!$id) {
+        resultInfo(false, 'VALIDATION_ERROR: id required');
+        return;
+    }
+
+    $db->execute(
+        "UPDATE oe_parts_requests_lxcars
+         SET status = 'pending', ordered_by = NULL, vendor_id = NULL, ordered_at = NULL
+         WHERE id = :id AND status = 'ordered'",
+        [':id' => $id]
+    );
+
+    resultInfo(true, 'REVERTED');
 }
 
 /**

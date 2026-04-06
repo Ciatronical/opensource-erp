@@ -331,6 +331,8 @@
             "reorderVendor": "Znovu objednat od",
             "noVendors": "Žádní dodavatelé k dispozici",
             "searchVendor": "Hledat dodavatele...",
+            "revertToPending": "Vrátit na čekající",
+            "deletePart": "Smazat objednávku",
             "partPhoto": "Foto dílu",
             "addPhoto": "Přidat foto",
             "viewPhoto": "Zobrazit foto",

@@ -267,6 +267,7 @@
                                     <!-- Pending/Ordered: Lieferant-Auswahl -->
                                     <template v-if="getItemOrderStatus(item)">
                                         <v-menu
+                                            v-if="getItemOrderStatus(item) === 'pending'"
                                             v-model="vendorMenuOpen[item.id]"
                                             location="bottom start"
                                             :close-on-content-click="false"
@@ -277,12 +278,12 @@
                                                 <v-chip
                                                     v-bind="menuProps"
                                                     size="small"
-                                                    :color="getItemOrderStatus(item) === 'ordered' ? 'green' : 'red'"
+                                                    color="red"
                                                     variant="tonal"
-                                                    :prepend-icon="getItemOrderStatus(item) === 'ordered' ? 'mdi-truck-check' : 'mdi-truck-delivery'"
+                                                    prepend-icon="mdi-truck-delivery"
                                                     class="parts-vendor-chip"
                                                 >
-                                                    {{ getItemVendorName(item) || t('FakturaView.faktura.selectVendor') }}
+                                                    {{ t('FakturaView.faktura.selectVendor') }}
                                                 </v-chip>
                                             </template>
                                             <v-card min-width="300" max-width="380" class="vendor-picker-card">
@@ -337,6 +338,38 @@
                                                 </v-list>
                                             </v-card>
                                         </v-menu>
+                                        <!-- Bestellt: Lieferant + Zurücksetzen/Löschen -->
+                                        <template v-if="getItemOrderStatus(item) === 'ordered'">
+                                            <v-chip
+                                                size="small"
+                                                color="green"
+                                                variant="tonal"
+                                                prepend-icon="mdi-truck-check"
+                                                class="parts-vendor-chip"
+                                            >
+                                                {{ getItemVendorName(item) }}
+                                            </v-chip>
+                                            <v-btn
+                                                icon
+                                                size="x-small"
+                                                variant="text"
+                                                color="warning"
+                                                :title="t('FakturaView.faktura.revertToPending')"
+                                                @click="$emit('revert-part', item)"
+                                            >
+                                                <v-icon size="small">mdi-undo</v-icon>
+                                            </v-btn>
+                                        </template>
+                                        <v-btn
+                                            icon
+                                            size="x-small"
+                                            variant="text"
+                                            color="error"
+                                            :title="t('FakturaView.faktura.deletePart')"
+                                            @click="$emit('delete-part', item)"
+                                        >
+                                            <v-icon size="small">mdi-delete</v-icon>
+                                        </v-btn>
                                         <!-- Foto-Button mit Anzahl-Badge -->
                                         <v-tooltip :text="getItemPhotoCount(item) ? t('FakturaView.faktura.viewPhoto') + ' (' + getItemPhotoCount(item) + ')' : t('FakturaView.faktura.addPhoto')" location="bottom">
                                             <template #activator="{ props: tip }">

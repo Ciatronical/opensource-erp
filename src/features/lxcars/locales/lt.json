@@ -28,6 +28,8 @@
         "status": "Būsena",
         "requestedBy": "Užsakė",
         "pending": "Užsakyta",
-        "ordered": "Užsakyta"
+        "ordered": "Užsakyta",
+        "revertToPending": "Grąžinti laukimą",
+        "delete": "Ištrinti"
     }
 }

@@ -96,13 +96,24 @@
                             <div v-if="pr.vendor_name" class="text-caption text-medium-emphasis">{{ pr.vendor_name }}</div>
                         </td>
                         <td class="text-caption">{{ pr.requested_by_name }}</td>
-                        <td>
+                        <td class="text-no-wrap">
                             <v-btn
-                                v-if="pr.status === 'pending'"
+                                v-if="pr.status === 'ordered'"
+                                icon
+                                size="x-small"
+                                variant="text"
+                                color="warning"
+                                :title="t('PartsRequests.revertToPending')"
+                                @click="revertRequest(pr)"
+                            >
+                                <v-icon size="small">mdi-undo</v-icon>
+                            </v-btn>
+                            <v-btn
                                 icon
                                 size="x-small"
                                 variant="text"
                                 color="error"
+                                :title="t('PartsRequests.delete')"
                                 @click="deleteRequest(pr)"
                             >
                                 <v-icon size="small">mdi-delete</v-icon>
@@ -201,6 +212,15 @@ export default defineComponent({
             if (freetext.value.trim()) addRequest()
         }
 
+        async function revertRequest(pr) {
+            try {
+                await carsStore.revertPartsRequestToPending(pr.id)
+                loadRequests()
+            } catch (e) {
+                console.error('Error reverting parts request:', e)
+            }
+        }
+
         async function deleteRequest(pr) {
             try {
                 await carsStore.deletePartsRequest(pr.id)
@@ -216,7 +236,7 @@ export default defineComponent({
         return {
             t, requests, pendingCount,
             partSearch, selectedPart, freetext, qty, note, partSearchResults, canAdd,
-            addRequest, addFromFreetext, deleteRequest, loadRequests
+            addRequest, addFromFreetext, revertRequest, deleteRequest, loadRequests
         }
     }
 })
