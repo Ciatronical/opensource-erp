@@ -797,7 +797,7 @@ function getRecentVendors() {
          WHERE pr.status = 'ordered' AND NOT v.obsolete
          GROUP BY v.id, v.name
          ORDER BY COUNT(pr.id) DESC, v.name ASC
-         LIMIT 5",
+         LIMIT 10",
         []
     );
 
