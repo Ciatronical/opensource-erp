@@ -1,0 +1,30 @@
+{
+    "weroni": {
+        "subtitle": "AI办公助手",
+        "tooltip": "Weroni — AI办公助手",
+        "tabs": {
+            "chat": "聊天",
+            "tasks": "任务",
+            "questions": "问题"
+        },
+        "chat": {
+            "welcome": "你好！我是Weroni，你的AI办公助手。我能帮你什么？",
+            "examples": "\"有新邮件吗？\" · \"查找来自Garzau的Opel客户\" · \"创建任务：成立GmbH\"",
+            "placeholder": "给Weroni发消息...",
+            "thinking": "Weroni正在思考...",
+            "newSession": "新对话",
+            "uploadDoc": "上传文档",
+            "dropHere": "将文档拖放到此处"
+        },
+        "tasks": {
+            "empty": "没有待办任务",
+            "needsConfirm": "需要确认",
+            "confirm": "确认",
+            "reject": "拒绝"
+        },
+        "questions": {
+            "empty": "没有待回答的问题",
+            "answerPlaceholder": "输入回答..."
+        }
+    }
+}

@@ -246,6 +246,18 @@
             "newArticle": "Neuer Artikel",
             "edit": "Redaguoti",
             "noArticles": "Keine Wissensartikel für diesen Fahrzeugtyp vorhanden."
+        },
+        "chat": {
+            "title": "AI Dirbtuvių meistras",
+            "empty": "Užduokite klausimą apie šią transporto priemonę — pvz. diagnostika, atlikti darbai ar aptarnavimo intervalai.",
+            "placeholder": "Užduokite klausimą...",
+            "clear": "Išvalyti pokalbių istoriją",
+            "clearConfirmTitle": "Išvalyti pokalbių istoriją?",
+            "clearConfirmText": "Visa šios transporto priemonės pokalbių istorija bus negrįžtamai ištrinta.",
+            "clearConfirm": "Ištrinti",
+            "clearCancel": "Atšaukti",
+            "errorTitle": "Klaida",
+            "errorText": "Užklausos nepavyko apdoroti. Bandykite dar kartą."
         }
     },
     "CarScanView": {
@@ -263,7 +275,8 @@
             "model": "Modelis",
             "prevPage": "Atgal",
             "nextPage": "Toliau",
-            "pageInfo": "Seite {page} von {totalPages} ({total} Scans)"
+            "pageInfo": "Seite {page} von {totalPages} ({total} Scans)",
+            "searchPlaceholder": "Ieškoti..."
         },
         "upload": {
             "title": "Fahrzeugschein hochladen",

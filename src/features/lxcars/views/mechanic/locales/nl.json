@@ -39,6 +39,10 @@
         "pendingParts": "Onderdelen aangevraagd",
         "cancel": "Annuleren",
         "delete": "Verwijderen",
-        "save": "Opslaan"
+        "save": "Opslaan",
+        "myOrders": "Mijn",
+        "allOrders": "Alle",
+        "refresh": "Vernieuwen",
+        "exitMechanic": "Monteursmodus verlaten"
     }
 }

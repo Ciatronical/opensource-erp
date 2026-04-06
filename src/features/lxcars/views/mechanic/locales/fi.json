@@ -39,6 +39,10 @@
         "pendingParts": "Pyydetyt varaosat",
         "cancel": "Peruuta",
         "delete": "Poista",
-        "save": "Tallenna"
+        "save": "Tallenna",
+        "myOrders": "Omat",
+        "allOrders": "Kaikki",
+        "refresh": "Päivitä",
+        "exitMechanic": "Poistu mekaanikkotilasta"
     }
 }

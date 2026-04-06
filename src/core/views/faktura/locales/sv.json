@@ -287,7 +287,14 @@
                 "deleteAllTooltip": "Alle Anweisungen löschen",
                 "deleteAllConfirm": "Alle Anweisungen löschen?",
                 "deleteAllConfirmText": "Sollen verkligen alle {count} Anweisungen dieses Orders raderad werden?",
-                "deleteAll": "Alle löschen"
+                "deleteAll": "Alle löschen",
+                "timerTooltip": "Tidsregistrering",
+                "timerStart": "Starta timer",
+                "timerStop": "Stoppa timer",
+                "timerPaused": "Rast",
+                "timerRunning": "Timer igång",
+                "timerOutsideWorkHours": "Timern kan inte startas utanför arbetstid. Arbetstiden kan justeras i LxCars-konfigurationen.",
+                "timerError": "Fel vid tidsregistrering"
             },
             "maengel": {
                 "title": "Brister",
@@ -316,7 +323,21 @@
                 "createCustomDescription": "Beskrivning",
                 "createCustomKlassen": "Mögliche Bristerklassen",
                 "createCustomSave": "Anlegen"
-            }
+            },
+            "requestPart": "Beställ reservdel",
+            "partsOrdered": "Beställd från leverantör",
+            "partsOnTheWay": "Beställd — på väg",
+            "selectVendor": "Välj leverantör",
+            "reorderVendor": "Beställ igen från",
+            "noVendors": "Inga leverantörer tillgängliga",
+            "searchVendor": "Sök leverantör...",
+            "partPhoto": "Delfoto",
+            "addPhoto": "Lägg till foto",
+            "viewPhoto": "Visa foto",
+            "selectPhoto": "Ta eller välj foto",
+            "noPhotos": "Inga foton ännu",
+            "photoDone": "Klar",
+            "taxIncluded": "Moms inkluderad i priset"
         },
         "workflow": {
             "created": "Dokument genomford erstellt",
@@ -417,6 +438,22 @@
                 "send": "Skicka",
                 "defaultMessage": "Anbei erhalten Sie {type} Nr. {number}.",
                 "noPhone": "Für diesen Kundn ist inga Telefonnummer hinterlegt."
+            },
+            "dhl": {
+                "title": "Skapa DHL fraktetikett",
+                "recipient": "Mottagare",
+                "weight": "Vikt",
+                "weightRequired": "Vikt är obligatoriskt",
+                "product": "DHL-produkt",
+                "dimensions": "Paketmått (valfritt)",
+                "length": "Längd",
+                "width": "Bredd",
+                "height": "Höjd",
+                "create": "Skapa etikett",
+                "success": "DHL-etikett skapad — Spårningsnr {shipmentNo}",
+                "error": "Fel vid skapande av DHL-etikett",
+                "deleted": "DHL-försändelse avbruten",
+                "existingShipments": "Befintliga försändelser"
             }
         },
         "dhl": {

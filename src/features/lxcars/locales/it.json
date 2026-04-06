@@ -15,5 +15,19 @@
         "huSerienbrief": "Notifiche revisione",
         "orderSearchTooltip": "Ricerca ordini",
         "scanTooltip": "Veicoli da scansione"
+    },
+    "PartsRequests": {
+        "title": "Ricambi",
+        "search": "Cerca articolo...",
+        "freetext": "Oppure testo libero",
+        "qty": "Qtà",
+        "note": "Nota",
+        "add": "Richiedi",
+        "empty": "Nessun ricambio richiesto",
+        "description": "Descrizione",
+        "status": "Stato",
+        "requestedBy": "Richiesto da",
+        "pending": "Richiesto",
+        "ordered": "Ordinato"
     }
 }

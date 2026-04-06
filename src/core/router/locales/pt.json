@@ -36,7 +36,9 @@
         "wikiEdit": "/wiki/bearbeiten",
         "userConfig": "/benutzer/konfiguration",
         "huSerienbrief": "/serienbrief/hu",
-        "wallDisplay": "/wandanzeige"
+        "wallDisplay": "/wandanzeige",
+        "editCv": "/cliente-fornecedor/editar",
+        "lxcarsReports": "/utilizador/relatorios"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Erro: O ficheiro de senha api/config/api.passwd.php não foi encontrado. Por favor, renomeie o ficheiro api/config/api.passwd.php.example para api/config/api.passwd.php e ajuste as configurações.",

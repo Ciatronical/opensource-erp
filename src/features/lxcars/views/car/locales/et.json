@@ -246,6 +246,18 @@
             "newArticle": "Neuer Artikel",
             "edit": "Muuda",
             "noArticles": "Keine Wissensartikel für diesen Fahrzeugtyp vorhanden."
+        },
+        "chat": {
+            "title": "AI Töökojaülem",
+            "empty": "Küsige selle sõiduki kohta — nt diagnostika, tehtud tööd või hooldusintervallid.",
+            "placeholder": "Esitage küsimus...",
+            "clear": "Kustuta vestlusajalugu",
+            "clearConfirmTitle": "Kustutada vestlusajalugu?",
+            "clearConfirmText": "Kogu selle sõiduki vestlusajalugu kustutatakse jäädavalt.",
+            "clearConfirm": "Kustuta",
+            "clearCancel": "Tühista",
+            "errorTitle": "Viga",
+            "errorText": "Päringut ei saanud töödelda. Palun proovige uuesti."
         }
     },
     "CarScanView": {
@@ -263,7 +275,8 @@
             "model": "Mudel",
             "prevPage": "Tagasi",
             "nextPage": "Edasi",
-            "pageInfo": "Seite {page} von {totalPages} ({total} Scans)"
+            "pageInfo": "Seite {page} von {totalPages} ({total} Scans)",
+            "searchPlaceholder": "Otsi..."
         },
         "upload": {
             "title": "Fahrzeugschein hochladen",

@@ -246,6 +246,18 @@
             "newArticle": "Neuer Artikel",
             "edit": "Upravit",
             "noArticles": "Keine Wissensartikel für diesen Fahrzeugtyp vorhanden."
+        },
+        "chat": {
+            "title": "AI dílenský mistr",
+            "empty": "Zeptejte se na tento vůz — např. diagnostika, provedené práce nebo servisní intervaly.",
+            "placeholder": "Položte otázku...",
+            "clear": "Vymazat historii chatu",
+            "clearConfirmTitle": "Vymazat historii chatu?",
+            "clearConfirmText": "Celá historie chatu pro tento vůz bude trvale smazána.",
+            "clearConfirm": "Smazat",
+            "clearCancel": "Zrušit",
+            "errorTitle": "Chyba",
+            "errorText": "Požadavek nemohl být zpracován. Zkuste to prosím znovu."
         }
     },
     "CarScanView": {
@@ -263,7 +275,8 @@
             "model": "Modell",
             "prevPage": "Zurück",
             "nextPage": "Weiter",
-            "pageInfo": "Seite {page} von {totalPages} ({total} Scans)"
+            "pageInfo": "Seite {page} von {totalPages} ({total} Scans)",
+            "searchPlaceholder": "Hledat..."
         },
         "upload": {
             "title": "Fahrzeugschein hochladen",

@@ -39,6 +39,10 @@
         "pendingParts": "Atsarginės dalys užsakytos",
         "cancel": "Atšaukti",
         "delete": "Ištrinti",
-        "save": "Išsaugoti"
+        "save": "Išsaugoti",
+        "myOrders": "Mano",
+        "allOrders": "Visi",
+        "refresh": "Atnaujinti",
+        "exitMechanic": "Išeiti iš mechaniko režimo"
     }
 }

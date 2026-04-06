@@ -1,0 +1,30 @@
+{
+    "weroni": {
+        "subtitle": "MI biroja asistente",
+        "tooltip": "Weroni — MI biroja asistente",
+        "tabs": {
+            "chat": "Čats",
+            "tasks": "Uzdevumi",
+            "questions": "Jautājumi"
+        },
+        "chat": {
+            "welcome": "Sveiki! Es esmu Weroni, jūsu MI biroja asistente. Kā varu palīdzēt?",
+            "examples": "\"Vai ir jauni e-pasti?\" · \"Atrodi klientu no Garzau ar Opel\" · \"Izveido uzdevumu: dibināt GmbH\"",
+            "placeholder": "Ziņa Weroni...",
+            "thinking": "Weroni domā...",
+            "newSession": "Jauna saruna",
+            "uploadDoc": "Augšupielādēt dokumentu",
+            "dropHere": "Ievelciet dokumentu šeit"
+        },
+        "tasks": {
+            "empty": "Nav atvērtu uzdevumu",
+            "needsConfirm": "Nepieciešams apstiprinājums",
+            "confirm": "Apstiprināt",
+            "reject": "Noraidīt"
+        },
+        "questions": {
+            "empty": "Nav atvērtu jautājumu",
+            "answerPlaceholder": "Ievadiet atbildi..."
+        }
+    }
+}

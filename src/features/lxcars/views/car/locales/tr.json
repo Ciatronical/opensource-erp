@@ -246,6 +246,18 @@
             "newArticle": "Neuer Artikel",
             "edit": "Düzenle",
             "noArticles": "Keine Wissensartikel für diesen Fahrzeugtyp vorhanden."
+        },
+        "chat": {
+            "title": "AI Atölye Ustası",
+            "empty": "Bu araç hakkında bir soru sorun — ör. teşhis, yapılan işler veya servis aralıkları.",
+            "placeholder": "Bir soru sorun...",
+            "clear": "Sohbet geçmişini temizle",
+            "clearConfirmTitle": "Sohbet geçmişini temizle?",
+            "clearConfirmText": "Bu aracın tüm sohbet geçmişi kalıcı olarak silinecektir.",
+            "clearConfirm": "Sil",
+            "clearCancel": "İptal",
+            "errorTitle": "Hata",
+            "errorText": "İstek işlenemedi. Lütfen tekrar deneyin."
         }
     },
     "CarScanView": {
@@ -263,7 +275,8 @@
             "model": "Modell",
             "prevPage": "Zurück",
             "nextPage": "Weiter",
-            "pageInfo": "Seite {page} von {totalPages} ({total} Scans)"
+            "pageInfo": "Seite {page} von {totalPages} ({total} Scans)",
+            "searchPlaceholder": "Ara..."
         },
         "upload": {
             "title": "Fahrzeugschein hochladen",

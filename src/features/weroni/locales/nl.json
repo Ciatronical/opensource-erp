@@ -1,0 +1,30 @@
+{
+    "weroni": {
+        "subtitle": "AI-kantoorassistent",
+        "tooltip": "Weroni — AI-kantoorassistent",
+        "tabs": {
+            "chat": "Chat",
+            "tasks": "Taken",
+            "questions": "Vragen"
+        },
+        "chat": {
+            "welcome": "Hallo! Ik ben Weroni, je AI-kantoorassistent. Hoe kan ik je helpen?",
+            "examples": "\"Heb je nieuwe e-mails?\" · \"Zoek klant uit Garzau met Opel\" · \"Maak taak: GmbH oprichten\"",
+            "placeholder": "Bericht aan Weroni...",
+            "thinking": "Weroni denkt na...",
+            "newSession": "Nieuw gesprek",
+            "uploadDoc": "Document uploaden",
+            "dropHere": "Sleep document hierheen"
+        },
+        "tasks": {
+            "empty": "Geen openstaande taken",
+            "needsConfirm": "Bevestiging nodig",
+            "confirm": "Bevestigen",
+            "reject": "Afwijzen"
+        },
+        "questions": {
+            "empty": "Geen openstaande vragen",
+            "answerPlaceholder": "Antwoord invoeren..."
+        }
+    }
+}

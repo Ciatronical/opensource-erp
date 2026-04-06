@@ -15,5 +15,19 @@
         "huSerienbrief": "Notifications CT",
         "orderSearchTooltip": "Recherche de commandes",
         "scanTooltip": "Vehicules depuis scan"
+    },
+    "PartsRequests": {
+        "title": "Pièces de rechange",
+        "search": "Rechercher un article...",
+        "freetext": "Ou texte libre",
+        "qty": "Qté",
+        "note": "Note",
+        "add": "Demander",
+        "empty": "Aucune pièce de rechange demandée",
+        "description": "Description",
+        "status": "Statut",
+        "requestedBy": "Demandé par",
+        "pending": "Demandé",
+        "ordered": "Commandé"
     }
 }

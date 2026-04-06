@@ -39,6 +39,10 @@
         "pendingParts": "Rezerves daļas pieprasītas",
         "cancel": "Atcelt",
         "delete": "Dzēst",
-        "save": "Saglabāt"
+        "save": "Saglabāt",
+        "myOrders": "Mani",
+        "allOrders": "Visi",
+        "refresh": "Atjaunināt",
+        "exitMechanic": "Iziet no mehāniķa režīma"
     }
 }

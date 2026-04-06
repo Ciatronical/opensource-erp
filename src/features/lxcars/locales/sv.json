@@ -15,5 +15,19 @@
         "huSerienbrief": "Besiktningsaviseringar",
         "orderSearchTooltip": "Ordersok",
         "scanTooltip": "Fordon fran skanning"
+    },
+    "PartsRequests": {
+        "title": "Reservdelar",
+        "search": "Sök artikel...",
+        "freetext": "Eller fritext",
+        "qty": "Antal",
+        "note": "Anteckning",
+        "add": "Beställ",
+        "empty": "Inga reservdelar beställda",
+        "description": "Beskrivning",
+        "status": "Status",
+        "requestedBy": "Beställd av",
+        "pending": "Beställd",
+        "ordered": "Beställd"
     }
 }

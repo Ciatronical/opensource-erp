@@ -36,7 +36,9 @@
         "wikiEdit": "/wiki/bearbeiten",
         "userConfig": "/benutzer/konfiguration",
         "huSerienbrief": "/serienbrief/hu",
-        "wallDisplay": "/wandanzeige"
+        "wallDisplay": "/wandanzeige",
+        "editCv": "/klientas-tiekejas/redaguoti",
+        "lxcarsReports": "/vartotojas/ataskaitos"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Klaida: Slaptazodzio failas api/config/api.passwd.php nerastas. Pervadinkite faila api/config/api.passwd.php.example i api/config/api.passwd.php ir pritaikykite nustatymus.",

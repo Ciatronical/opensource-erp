@@ -15,5 +15,19 @@
         "huSerienbrief": "Syn-meddelelser",
         "orderSearchTooltip": "Ordresoegning",
         "scanTooltip": "Koeretoejer fra scan"
+    },
+    "PartsRequests": {
+        "title": "Reservedele",
+        "search": "Søg artikel...",
+        "freetext": "Eller fritekst",
+        "qty": "Antal",
+        "note": "Note",
+        "add": "Bestil",
+        "empty": "Ingen reservedele bestilt",
+        "description": "Beskrivelse",
+        "status": "Status",
+        "requestedBy": "Bestilt af",
+        "pending": "Bestilt",
+        "ordered": "Bestilt"
     }
 }

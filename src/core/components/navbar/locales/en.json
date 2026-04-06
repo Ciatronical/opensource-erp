@@ -2,7 +2,10 @@
     "NavbarView": {
         "logoutTooltip": "Abmelden",
         "accountTooltip": "Konto",
+        "editCustomerTooltip": "Edit Customer",
         "editCvTooltip": "Bearbeiten",
+        "currentC": "Customer:",
+        "currentV": "Vendor:",
         "currentCV": "Kunde/Lieferant:",
         "openInNewTabTooltip": "Main menu",
         "newTabTooltip": "Open in new tab",

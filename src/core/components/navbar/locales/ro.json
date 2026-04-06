@@ -27,7 +27,9 @@
         "companyName": "Firmenname",
         "dbName": "Datenbankname",
         "dbNameHint": "Nur Kleinbuchstaben, Ziffern und Unterstriche",
-        "createCompany": "Firma anlegen"
+        "createCompany": "Firma anlegen",
+        "currentCV": "Client/Furnizor:",
+        "reports": "Rapoarte"
     },
     "GlobalSearch": {
         "placeholder": "Căutare...",
@@ -46,6 +48,13 @@
     "InfoBar": {
         "unknownCaller": "Necunoscut",
         "closeAll": "Închide toate notificările",
-        "pendingParts": "Piese de schimb solicitate"
+        "pendingParts": "Piese de schimb solicitate",
+        "partsDialogTitle": "Cereri de piese de schimb în așteptare",
+        "partsEmpty": "Nicio cerere în așteptare",
+        "order": "Comandă",
+        "requestedBy": "de",
+        "selectVendor": "Caută furnizor...",
+        "markOrdered": "Marchează {count} ca comandate",
+        "yesterday": "Ieri"
     }
 }

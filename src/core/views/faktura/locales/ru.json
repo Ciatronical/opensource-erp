@@ -287,7 +287,14 @@
                 "deleteAllTooltip": "Удалить все инструкции",
                 "deleteAllConfirm": "Удалить все инструкции?",
                 "deleteAllConfirmText": "Действительно удалить все {count} инструкций этого заказа?",
-                "deleteAll": "Удалить все"
+                "deleteAll": "Удалить все",
+                "timerTooltip": "Учет рабочего времени",
+                "timerStart": "Запустить таймер",
+                "timerStop": "Остановить таймер",
+                "timerPaused": "Перерыв",
+                "timerRunning": "Таймер работает",
+                "timerOutsideWorkHours": "Таймер нельзя запустить вне рабочего времени. Рабочее время можно настроить в конфигурации LxCars.",
+                "timerError": "Ошибка учета рабочего времени"
             },
             "maengel": {
                 "title": "Дефекты",
@@ -316,7 +323,21 @@
                 "createCustomDescription": "Описание",
                 "createCustomKlassen": "Возможные классы дефектов",
                 "createCustomSave": "Создать"
-            }
+            },
+            "requestPart": "Заказать запчасть",
+            "partsOrdered": "Заказано у поставщика",
+            "partsOnTheWay": "Заказано — в пути",
+            "selectVendor": "Выбрать поставщика",
+            "reorderVendor": "Повторный заказ от",
+            "noVendors": "Нет доступных поставщиков",
+            "searchVendor": "Поиск поставщика...",
+            "partPhoto": "Фото детали",
+            "addPhoto": "Добавить фото",
+            "viewPhoto": "Показать фото",
+            "selectPhoto": "Сфотографировать или выбрать фото",
+            "noPhotos": "Фотографий пока нет",
+            "photoDone": "Готово",
+            "taxIncluded": "Налог включен в цену"
         },
         "workflow": {
             "created": "Документ успешно создан",
@@ -417,6 +438,22 @@
                 "send": "Отправить",
                 "defaultMessage": "В приложении вы получите {type} № {number}.",
                 "noPhone": "Для этого клиента не указан номер телефона."
+            },
+            "dhl": {
+                "title": "Создать транспортную этикетку DHL",
+                "recipient": "Получатель",
+                "weight": "Вес",
+                "weightRequired": "Вес обязателен",
+                "product": "Продукт DHL",
+                "dimensions": "Размеры посылки (необязательно)",
+                "length": "Длина",
+                "width": "Ширина",
+                "height": "Высота",
+                "create": "Создать этикетку",
+                "success": "Этикетка DHL создана — Номер отслеживания {shipmentNo}",
+                "error": "Ошибка при создании этикетки DHL",
+                "deleted": "Отправка DHL отменена",
+                "existingShipments": "Существующие отправления"
             }
         },
         "dhl": {

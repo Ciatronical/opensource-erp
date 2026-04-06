@@ -287,7 +287,14 @@
                 "deleteAllTooltip": "Alle Anweisungen löschen",
                 "deleteAllConfirm": "Alle Anweisungen löschen?",
                 "deleteAllConfirmText": "Sollen wirklich alle {count} Anweisungen dieses Auftrags gelöscht werden?",
-                "deleteAll": "Ištrinti visus"
+                "deleteAll": "Ištrinti visus",
+                "timerTooltip": "Darbo laiko apskaita",
+                "timerStart": "Paleisti laikmatį",
+                "timerStop": "Sustabdyti laikmatį",
+                "timerPaused": "Pertrauka",
+                "timerRunning": "Laikmatis veikia",
+                "timerOutsideWorkHours": "Laikmačio negalima paleisti ne darbo metu. Darbo laikas gali būti pakeistas LxCars konfigūracijoje.",
+                "timerError": "Darbo laiko apskaitos klaida"
             },
             "maengel": {
                 "title": "Mängel",
@@ -316,7 +323,21 @@
                 "createCustomDescription": "Aprašymas",
                 "createCustomKlassen": "Mögliche Mängelklassen",
                 "createCustomSave": "Anlegen"
-            }
+            },
+            "requestPart": "Užsakyti atsarginę dalį",
+            "partsOrdered": "Užsakyta iš tiekėjo",
+            "partsOnTheWay": "Užsakyta — pakeliui",
+            "selectVendor": "Pasirinkti tiekėją",
+            "reorderVendor": "Pakartotinai užsakyti iš",
+            "noVendors": "Nėra galimų tiekėjų",
+            "searchVendor": "Ieškoti tiekėjo...",
+            "partPhoto": "Dalies nuotrauka",
+            "addPhoto": "Pridėti nuotrauką",
+            "viewPhoto": "Peržiūrėti nuotrauką",
+            "selectPhoto": "Fotografuoti arba pasirinkti nuotrauką",
+            "noPhotos": "Kol kas nėra nuotraukų",
+            "photoDone": "Baigta",
+            "taxIncluded": "Mokestis įtrauktas į kainą"
         },
         "workflow": {
             "created": "Dokument erfolgreich erstellt",
@@ -417,6 +438,22 @@
                 "send": "Siųsti",
                 "defaultMessage": "Anbei erhalten Sie {type} Nr. {number}.",
                 "noPhone": "Für diesen Kunden ist keine Telefonnummer hinterlegt."
+            },
+            "dhl": {
+                "title": "Sukurti DHL siuntimo etiketę",
+                "recipient": "Gavėjas",
+                "weight": "Svoris",
+                "weightRequired": "Svoris yra privalomas",
+                "product": "DHL produktas",
+                "dimensions": "Pakuotės matmenys (neprivaloma)",
+                "length": "Ilgis",
+                "width": "Plotis",
+                "height": "Aukštis",
+                "create": "Sukurti etiketę",
+                "success": "DHL etiketė sukurta — Sekimo nr. {shipmentNo}",
+                "error": "Klaida kuriant DHL etiketę",
+                "deleted": "DHL siunta atšaukta",
+                "existingShipments": "Esamos siuntos"
             }
         },
         "dhl": {

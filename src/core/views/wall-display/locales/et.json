@@ -15,6 +15,7 @@
         "price": "Hind",
         "total": "Kokku",
         "grossTotal": "Kogusumma",
-        "allDay": "Kogu päev"
+        "allDay": "Kogu päev",
+        "exit": "Välju"
     }
 }

@@ -36,7 +36,9 @@
         "wikiEdit": "/wiki/bearbeiten",
         "userConfig": "/benutzer/konfiguration",
         "huSerienbrief": "/serienbrief/hu",
-        "wallDisplay": "/wandanzeige"
+        "wallDisplay": "/wandanzeige",
+        "editCv": "/asiakas-toimittaja/muokkaa",
+        "lxcarsReports": "/kayttaja/raportit"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Virhe: Salasanatiedostoa api/config/api.passwd.php ei löytynyt. Nimeä tiedosto api/config/api.passwd.php.example uudelleen muotoon api/config/api.passwd.php ja muokkaa asetuksia vastaavasti.",

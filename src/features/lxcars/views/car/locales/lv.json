@@ -246,6 +246,18 @@
             "newArticle": "Neuer Artikel",
             "edit": "Rediģēt",
             "noArticles": "Keine Wissensartikel für diesen Fahrzeugtyp vorhanden."
+        },
+        "chat": {
+            "title": "AI Darbnīcas meistars",
+            "empty": "Uzdodiet jautājumu par šo transportlīdzekli — piem. diagnostika, veiktie darbi vai apkopes intervāli.",
+            "placeholder": "Uzdodiet jautājumu...",
+            "clear": "Notīrīt sarunu vēsturi",
+            "clearConfirmTitle": "Notīrīt sarunu vēsturi?",
+            "clearConfirmText": "Visa šī transportlīdzekļa sarunu vēsture tiks neatgriezeniski dzēsta.",
+            "clearConfirm": "Dzēst",
+            "clearCancel": "Atcelt",
+            "errorTitle": "Kļūda",
+            "errorText": "Pieprasījumu nevarēja apstrādāt. Lūdzu mēģiniet vēlreiz."
         }
     },
     "CarScanView": {
@@ -263,7 +275,8 @@
             "model": "Modelis",
             "prevPage": "Atpakaļ",
             "nextPage": "Tālāk",
-            "pageInfo": "Seite {page} von {totalPages} ({total} Scans)"
+            "pageInfo": "Seite {page} von {totalPages} ({total} Scans)",
+            "searchPlaceholder": "Meklēt..."
         },
         "upload": {
             "title": "Fahrzeugschein hochladen",

@@ -15,6 +15,7 @@
         "price": "Pris",
         "total": "Totalt",
         "grossTotal": "Totalbelopp",
-        "allDay": "Heldag"
+        "allDay": "Heldag",
+        "exit": "Avsluta"
     }
 }

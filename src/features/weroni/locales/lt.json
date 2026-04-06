@@ -1,0 +1,30 @@
+{
+    "weroni": {
+        "subtitle": "DI biuro asistentė",
+        "tooltip": "Weroni — DI biuro asistentė",
+        "tabs": {
+            "chat": "Pokalbis",
+            "tasks": "Užduotys",
+            "questions": "Klausimai"
+        },
+        "chat": {
+            "welcome": "Sveiki! Aš esu Weroni, jūsų DI biuro asistentė. Kuo galiu padėti?",
+            "examples": "\"Ar yra naujų el. laiškų?\" · \"Surask klientą iš Garzau su Opel\" · \"Sukurk užduotį: įsteigti GmbH\"",
+            "placeholder": "Žinutė Weroni...",
+            "thinking": "Weroni galvoja...",
+            "newSession": "Naujas pokalbis",
+            "uploadDoc": "Įkelti dokumentą",
+            "dropHere": "Nuvilkite dokumentą čia"
+        },
+        "tasks": {
+            "empty": "Nėra atvirų užduočių",
+            "needsConfirm": "Reikia patvirtinimo",
+            "confirm": "Patvirtinti",
+            "reject": "Atmesti"
+        },
+        "questions": {
+            "empty": "Nėra atvirų klausimų",
+            "answerPlaceholder": "Įveskite atsakymą..."
+        }
+    }
+}

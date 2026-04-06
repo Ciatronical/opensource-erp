@@ -15,5 +15,19 @@
         "huSerienbrief": "TÜ-teavitused",
         "orderSearchTooltip": "Tellimuse otsing",
         "scanTooltip": "Sõidukid skannimisest"
+    },
+    "PartsRequests": {
+        "title": "Varuosad",
+        "search": "Otsi artiklit...",
+        "freetext": "Või vaba tekst",
+        "qty": "Kogus",
+        "note": "Märkus",
+        "add": "Telli",
+        "empty": "Varuosi pole tellitud",
+        "description": "Kirjeldus",
+        "status": "Olek",
+        "requestedBy": "Tellis",
+        "pending": "Tellitud",
+        "ordered": "Tellitud"
     }
 }

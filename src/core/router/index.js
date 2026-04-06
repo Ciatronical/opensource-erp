@@ -101,6 +101,12 @@ const LxCarsReportsView = () => {
     }
 }
 
+// Banking
+const BankingOverviewView = () => import('@/features/banking/views/banking.overview.vue')
+const BankingTransactionsView = () => import('@/features/banking/views/banking.transactions.vue')
+const BankingReconciliationView = () => import('@/features/banking/views/banking.reconciliation.vue')
+const BankingTransfersView = () => import('@/features/banking/views/banking.transfers.vue')
+
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
     routes: [
@@ -427,6 +433,28 @@ const router = createRouter({
             path: i18n.global.t('CarView.routes.orderSearch'),
             name: 'car-order-search',
             component: NotFoundView,
+        },
+        // ── Banking ──
+        {
+            path: i18n.global.t('BankingView.routes.bankingOverview'),
+            name: 'banking-overview',
+            component: BankingOverviewView,
+        },
+        {
+            path: i18n.global.t('BankingView.routes.bankingAccount') + '/:id(\\d+)',
+            name: 'banking-transactions',
+            component: BankingTransactionsView,
+            props: true,
+        },
+        {
+            path: i18n.global.t('BankingView.routes.bankingReconciliation'),
+            name: 'banking-reconciliation',
+            component: BankingReconciliationView,
+        },
+        {
+            path: i18n.global.t('BankingView.routes.bankingTransfers'),
+            name: 'banking-transfers',
+            component: BankingTransfersView,
         },
         // ── Wiki ──
         {

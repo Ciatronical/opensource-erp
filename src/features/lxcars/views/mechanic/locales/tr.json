@@ -39,6 +39,10 @@
         "pendingParts": "Talep edilen yedek parcalar",
         "cancel": "Iptal",
         "delete": "Sil",
-        "save": "Kaydet"
+        "save": "Kaydet",
+        "myOrders": "Benim",
+        "allOrders": "Tümü",
+        "refresh": "Yenile",
+        "exitMechanic": "Tamirci modundan çık"
     }
 }

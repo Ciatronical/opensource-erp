@@ -81,7 +81,8 @@
         "recipientNoPhone": "Questo destinatario non ha un numero di telefono registrato.",
         "cancel": "Annulla",
         "send": "Invia",
-        "noCustomerVendor": "Nessun cliente o fornitore trovato. Creare prima un cliente o un fornitore."
+        "noCustomerVendor": "Nessun cliente o fornitore trovato. Creare prima un cliente o un fornitore.",
+        "newVehicle": "Nuovo veicolo"
     },
     "PhoneActions": {
         "clickToCall": "Chiama",

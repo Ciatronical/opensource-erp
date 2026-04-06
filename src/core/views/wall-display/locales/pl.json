@@ -5,16 +5,17 @@
         "noFaktura": "Nie wybrano dokumentu",
         "noFakturaHint": "Kliknij przycisk monitora w fakturze",
         "invoice": "Faktura",
-        "order": "Zam\u00f3wienie",
+        "order": "Zamówienie",
         "quotation": "Oferta",
         "open": "Otwarte",
-        "closed": "Zamkni\u0119te",
+        "closed": "Zamknięte",
         "position": "Poz.",
         "description": "Opis",
-        "qty": "Ilo\u015b\u0107",
+        "qty": "Ilość",
         "price": "Cena",
         "total": "Suma",
         "grossTotal": "Kwota brutto",
-        "allDay": "Ca\u0142y dzie\u0144"
+        "allDay": "Cały dzień",
+        "exit": "Wyjdź"
     }
 }

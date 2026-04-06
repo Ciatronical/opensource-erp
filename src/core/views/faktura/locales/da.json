@@ -287,7 +287,14 @@
                 "deleteAllTooltip": "Alle Anweisungen löschen",
                 "deleteAllConfirm": "Alle Anweisungen löschen?",
                 "deleteAllConfirmText": "Sollen virkelig alle {count} Anweisungen dieses Ordres slettet werden?",
-                "deleteAll": "Alle löschen"
+                "deleteAll": "Alle löschen",
+                "timerTooltip": "Tidsregistrering",
+                "timerStart": "Start timer",
+                "timerStop": "Stop timer",
+                "timerPaused": "Pause",
+                "timerRunning": "Timer kører",
+                "timerOutsideWorkHours": "Timeren kan ikke startes uden for arbejdstiden. Arbejdstiden kan justeres i LxCars-konfigurationen.",
+                "timerError": "Fejl i tidsregistrering"
             },
             "maengel": {
                 "title": "Mangler",
@@ -316,7 +323,21 @@
                 "createCustomDescription": "Beskrivelse",
                 "createCustomKlassen": "Mögliche Manglerklassen",
                 "createCustomSave": "Anlegen"
-            }
+            },
+            "requestPart": "Bestil reservedel",
+            "partsOrdered": "Bestilt hos leverandør",
+            "partsOnTheWay": "Bestilt — undervejs",
+            "selectVendor": "Vælg leverandør",
+            "reorderVendor": "Genbestil fra",
+            "noVendors": "Ingen leverandører tilgængelige",
+            "searchVendor": "Søg leverandør...",
+            "partPhoto": "Delfoto",
+            "addPhoto": "Tilføj foto",
+            "viewPhoto": "Vis foto",
+            "selectPhoto": "Tag eller vælg foto",
+            "noPhotos": "Ingen fotos endnu",
+            "photoDone": "Færdig",
+            "taxIncluded": "Moms inkluderet i prisen"
         },
         "workflow": {
             "created": "Dokument gennemfoert erstellt",
@@ -417,6 +438,22 @@
                 "send": "Send",
                 "defaultMessage": "Anbei erhalten Sie {type} Nr. {number}.",
                 "noPhone": "Für diesen Kunder ist ingen Telefonnummer hinterlegt."
+            },
+            "dhl": {
+                "title": "Opret DHL forsendelseslabel",
+                "recipient": "Modtager",
+                "weight": "Vægt",
+                "weightRequired": "Vægt er påkrævet",
+                "product": "DHL-produkt",
+                "dimensions": "Pakkemål (valgfrit)",
+                "length": "Længde",
+                "width": "Bredde",
+                "height": "Højde",
+                "create": "Opret label",
+                "success": "DHL-label oprettet — Sporingsnr. {shipmentNo}",
+                "error": "Fejl ved oprettelse af DHL-label",
+                "deleted": "DHL-forsendelse annulleret",
+                "existingShipments": "Eksisterende forsendelser"
             }
         },
         "dhl": {

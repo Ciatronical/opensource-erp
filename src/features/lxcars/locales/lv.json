@@ -15,5 +15,19 @@
         "huSerienbrief": "TA paziņojumi",
         "orderSearchTooltip": "Pasūtījumu meklēšana",
         "scanTooltip": "Transportlīdzekļi no skenēšanas"
+    },
+    "PartsRequests": {
+        "title": "Rezerves daļas",
+        "search": "Meklēt preci...",
+        "freetext": "Vai brīvs teksts",
+        "qty": "Daudz.",
+        "note": "Piezīme",
+        "add": "Pasūtīt",
+        "empty": "Nav pasūtītu rezerves daļu",
+        "description": "Apraksts",
+        "status": "Statuss",
+        "requestedBy": "Pasūtīja",
+        "pending": "Pasūtīts",
+        "ordered": "Pasūtīts"
     }
 }

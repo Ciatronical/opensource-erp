@@ -39,6 +39,10 @@
         "pendingParts": "Reservdelar begarda",
         "cancel": "Avbryt",
         "delete": "Radera",
-        "save": "Spara"
+        "save": "Spara",
+        "myOrders": "Mina",
+        "allOrders": "Alla",
+        "refresh": "Uppdatera",
+        "exitMechanic": "Avsluta mekanikerläge"
     }
 }

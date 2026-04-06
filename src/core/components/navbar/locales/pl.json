@@ -1,22 +1,22 @@
 {
     "NavbarView": {
-        "logoutTooltip": "Wyloguj si\u0119",
+        "logoutTooltip": "Wyloguj się",
         "accountTooltip": "Konto",
         "editCustomerTooltip": "Edytuj klienta",
-        "editCvTooltip": "Edytuj klienta/dostawc\u0119",
+        "editCvTooltip": "Edytuj klienta/dostawcę",
         "currentC": "Klient:",
         "currentV": "Dostawca:",
-        "openInNewTabTooltip": "Menu g\u0142\u00f3wne",
-        "newTabTooltip": "Otw\u00f3rz w nowej karcie",
+        "openInNewTabTooltip": "Menu główne",
+        "newTabTooltip": "Otwórz w nowej karcie",
         "calendarTooltip": "Kalendarz",
-        "callHistoryTooltip": "Historia po\u0142\u0105cze\u0144",
+        "callHistoryTooltip": "Historia połączeń",
         "userConfig": "Konfiguracja",
-        "switchClient": "Zmie\u0144 firm\u0119",
+        "switchClient": "Zmień firmę",
         "uploadLogo": "Logo firmy",
         "selectImage": "Wybierz obraz",
-        "logoHint": "Wybierz obraz, ustaw pozycj\u0119 i przytnij",
+        "logoHint": "Wybierz obraz, ustaw pozycję i przytnij",
         "saveLogo": "Zapisz",
-        "deleteLogo": "Usu\u0144",
+        "deleteLogo": "Usuń",
         "cancel": "Anuluj",
         "sseConnected": "Live-Verbindung aktiv",
         "sseDisconnected": "Live-Verbindung unterbrochen",
@@ -27,25 +27,34 @@
         "companyName": "Firmenname",
         "dbName": "Datenbankname",
         "dbNameHint": "Nur Kleinbuchstaben, Ziffern und Unterstriche",
-        "createCompany": "Firma anlegen"
+        "createCompany": "Firma anlegen",
+        "currentCV": "Klient/Dostawca:",
+        "reports": "Raporty"
     },
     "GlobalSearch": {
         "placeholder": "Szukaj...",
-        "noResults": "Brak wynik\u00f3w",
+        "noResults": "Brak wyników",
         "customers": "Klienci",
         "vendors": "Dostawcy",
         "invoices": "Faktury",
-        "orders": "Zam\u00f3wienia",
+        "orders": "Zamówienia",
         "quotations": "Oferty",
-        "articles": "Artyku\u0142y",
+        "articles": "Artykuły",
         "vehicles": "Pojazdy",
-        "wiki": "Artyku\u0142y wiki",
+        "wiki": "Artykuły wiki",
         "recentlyVisited": "Ostatnio odwiedzone",
-        "clearHistory": "Wyczy\u015b\u0107 histori\u0119"
+        "clearHistory": "Wyczyść historię"
     },
     "InfoBar": {
         "unknownCaller": "Nieznany",
         "closeAll": "Zamknij wszystkie powiadomienia",
-        "pendingParts": "Zam\u00f3wione cz\u0119\u015bci zamienne"
+        "pendingParts": "Zamówione części zamienne",
+        "partsDialogTitle": "Oczekujące zapotrzebowania na części zamienne",
+        "partsEmpty": "Brak oczekujących zapotrzebowań",
+        "order": "Zamówienie",
+        "requestedBy": "przez",
+        "selectVendor": "Szukaj dostawcy...",
+        "markOrdered": "Oznacz {count} jako zamówione",
+        "yesterday": "Wczoraj"
     }
 }

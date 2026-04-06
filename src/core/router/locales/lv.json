@@ -36,7 +36,9 @@
         "wikiEdit": "/wiki/bearbeiten",
         "userConfig": "/benutzer/konfiguration",
         "huSerienbrief": "/serienbrief/hu",
-        "wallDisplay": "/wandanzeige"
+        "wallDisplay": "/wandanzeige",
+        "editCv": "/klients-piegadatajs/rediget",
+        "lxcarsReports": "/lietotajs/atskaites"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Kluda: Paroles fails api/config/api.passwd.php nav atrasts. Ludzu pardevejiet failu api/config/api.passwd.php.example par api/config/api.passwd.php un pielagojiet iestatijumus.",

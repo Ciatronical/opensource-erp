@@ -15,6 +15,7 @@
         "price": "Pret",
         "total": "Total",
         "grossTotal": "Suma totala",
-        "allDay": "Toata ziua"
+        "allDay": "Toata ziua",
+        "exit": "Ieșire"
     }
 }

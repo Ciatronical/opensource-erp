@@ -15,5 +15,19 @@
         "huSerienbrief": "Powiadomienia o przeglądzie",
         "orderSearchTooltip": "Wyszukiwanie zleceń",
         "scanTooltip": "Pojazdy ze skanu"
+    },
+    "PartsRequests": {
+        "title": "Części zamienne",
+        "search": "Szukaj artykułu...",
+        "freetext": "Lub wolny tekst",
+        "qty": "Ilość",
+        "note": "Uwaga",
+        "add": "Zamów",
+        "empty": "Nie zamówiono części zamiennych",
+        "description": "Opis",
+        "status": "Status",
+        "requestedBy": "Zamówione przez",
+        "pending": "Zamówione",
+        "ordered": "Zamówione"
     }
 }

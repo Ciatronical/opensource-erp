@@ -287,7 +287,14 @@
                 "deleteAllTooltip": "Alle Anweisungen löschen",
                 "deleteAllConfirm": "Alle Anweisungen löschen?",
                 "deleteAllConfirmText": "Sollen wirklich alle {count} Anweisungen dieses Auftrags gelöscht werden?",
-                "deleteAll": "Alle löschen"
+                "deleteAll": "Alle löschen",
+                "timerTooltip": "Registro de tiempo",
+                "timerStart": "Iniciar temporizador",
+                "timerStop": "Detener temporizador",
+                "timerPaused": "Pausa",
+                "timerRunning": "Temporizador en marcha",
+                "timerOutsideWorkHours": "El temporizador no se puede iniciar fuera del horario laboral. El horario laboral se puede ajustar en la configuración de LxCars.",
+                "timerError": "Error en el registro de tiempo"
             },
             "maengel": {
                 "title": "Mängel",
@@ -316,7 +323,21 @@
                 "createCustomDescription": "Descripción",
                 "createCustomKlassen": "Mögliche Mängelklassen",
                 "createCustomSave": "Anlegen"
-            }
+            },
+            "requestPart": "Solicitar repuesto",
+            "partsOrdered": "Pedido al proveedor",
+            "partsOnTheWay": "Pedido — en camino",
+            "selectVendor": "Seleccionar proveedor",
+            "reorderVendor": "Volver a pedir de",
+            "noVendors": "No hay proveedores disponibles",
+            "searchVendor": "Buscar proveedor...",
+            "partPhoto": "Foto del repuesto",
+            "addPhoto": "Añadir foto",
+            "viewPhoto": "Ver foto",
+            "selectPhoto": "Tomar o seleccionar foto",
+            "noPhotos": "Aún no hay fotos",
+            "photoDone": "Listo",
+            "taxIncluded": "Impuesto incluido en el precio"
         },
         "workflow": {
             "created": "Dokument erfolgreich erstellt",
@@ -417,6 +438,22 @@
                 "send": "Enviar",
                 "defaultMessage": "Anbei erhalten Sie {type} Nr. {number}.",
                 "noPhone": "Für diesen Kunden ist keine Telefonnummer hinterlegt."
+            },
+            "dhl": {
+                "title": "Crear etiqueta de envío DHL",
+                "recipient": "Destinatario",
+                "weight": "Peso",
+                "weightRequired": "El peso es obligatorio",
+                "product": "Producto DHL",
+                "dimensions": "Dimensiones del paquete (opcional)",
+                "length": "Largo",
+                "width": "Ancho",
+                "height": "Alto",
+                "create": "Crear etiqueta",
+                "success": "Etiqueta DHL creada — N.º de seguimiento {shipmentNo}",
+                "error": "Error al crear la etiqueta DHL",
+                "deleted": "Envío DHL cancelado",
+                "existingShipments": "Envíos existentes"
             }
         },
         "dhl": {

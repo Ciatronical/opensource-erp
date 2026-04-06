@@ -1,0 +1,30 @@
+{
+    "weroni": {
+        "subtitle": "Asystent biurowy AI",
+        "tooltip": "Weroni — Asystent biurowy AI",
+        "tabs": {
+            "chat": "Czat",
+            "tasks": "Zadania",
+            "questions": "Pytania"
+        },
+        "chat": {
+            "welcome": "Cześć! Jestem Weroni, twój asystent biurowy AI. Jak mogę ci pomóc?",
+            "examples": "\"Masz nowe e-maile?\" · \"Znajdź klienta z Garzau z Oplem\" · \"Utwórz zadanie: założyć GmbH\"",
+            "placeholder": "Wiadomość do Weroni...",
+            "thinking": "Weroni myśli...",
+            "newSession": "Nowa rozmowa",
+            "uploadDoc": "Prześlij dokument",
+            "dropHere": "Upuść dokument tutaj"
+        },
+        "tasks": {
+            "empty": "Brak otwartych zadań",
+            "needsConfirm": "Wymaga potwierdzenia",
+            "confirm": "Potwierdź",
+            "reject": "Odrzuć"
+        },
+        "questions": {
+            "empty": "Brak otwartych pytań",
+            "answerPlaceholder": "Wpisz odpowiedź..."
+        }
+    }
+}

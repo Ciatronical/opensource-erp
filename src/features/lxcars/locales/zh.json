@@ -15,5 +15,19 @@
         "huSerienbrief": "车检通知",
         "orderSearchTooltip": "订单搜索",
         "scanTooltip": "从扫描创建车辆"
+    },
+    "PartsRequests": {
+        "title": "备件",
+        "search": "搜索商品...",
+        "freetext": "或自由文本",
+        "qty": "数量",
+        "note": "备注",
+        "add": "请求",
+        "empty": "未请求备件",
+        "description": "描述",
+        "status": "状态",
+        "requestedBy": "请求者",
+        "pending": "已请求",
+        "ordered": "已订购"
     }
 }

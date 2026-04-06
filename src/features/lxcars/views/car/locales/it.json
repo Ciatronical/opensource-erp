@@ -246,6 +246,18 @@
             "newArticle": "Nuovo articolo",
             "edit": "Bearbeiten",
             "noArticles": "Keine Wissensartikel für diesen Fahrzeugtyp vorhanden."
+        },
+        "chat": {
+            "title": "AI Capo Officina",
+            "empty": "Fai una domanda su questo veicolo — es. diagnostica, lavori eseguiti o intervalli di manutenzione.",
+            "placeholder": "Fai una domanda...",
+            "clear": "Cancella cronologia chat",
+            "clearConfirmTitle": "Cancellare la cronologia chat?",
+            "clearConfirmText": "L'intera cronologia chat per questo veicolo verrà eliminata permanentemente.",
+            "clearConfirm": "Elimina",
+            "clearCancel": "Annulla",
+            "errorTitle": "Errore",
+            "errorText": "La richiesta non ha potuto essere elaborata. Riprova."
         }
     },
     "CarScanView": {
@@ -263,7 +275,8 @@
             "model": "Modello",
             "prevPage": "Indietro",
             "nextPage": "Avanti",
-            "pageInfo": "Seite {page} von {totalPages} ({total} Scans)"
+            "pageInfo": "Seite {page} von {totalPages} ({total} Scans)",
+            "searchPlaceholder": "Cerca..."
         },
         "upload": {
             "title": "Carica carta di circolazione",

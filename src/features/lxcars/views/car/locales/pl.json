@@ -168,7 +168,7 @@
         "rotesHeft": {
             "button": "Czerwona książeczka",
             "title": "Książeczka dowodu rejestracyjnego - Opis pojazdu",
-            "subtitle": "zgodnie z załącznikiem 13 (do \u00a7 41 ust. 2 zd. 1) FZV",
+            "subtitle": "zgodnie z załącznikiem 13 (do § 41 ust. 2 zd. 1) FZV",
             "field1": "Klasa pojazdu i typ nadwozia",
             "field2": "Oznaczenie producenta / Marka",
             "field3": "Numer identyfikacyjny pojazdu",
@@ -246,6 +246,18 @@
             "newArticle": "Nowy artykuł",
             "edit": "Edytuj",
             "noArticles": "Brak artykułów wiedzy dla tego typu pojazdu."
+        },
+        "chat": {
+            "title": "AI Mistrz Warsztatowy",
+            "empty": "Zadaj pytanie o ten pojazd — np. diagnostyka, wykonane prace lub interwały serwisowe.",
+            "placeholder": "Zadaj pytanie...",
+            "clear": "Wyczyść historię czatu",
+            "clearConfirmTitle": "Wyczyścić historię czatu?",
+            "clearConfirmText": "Cała historia czatu tego pojazdu zostanie trwale usunięta.",
+            "clearConfirm": "Usuń",
+            "clearCancel": "Anuluj",
+            "errorTitle": "Błąd",
+            "errorText": "Nie udało się przetworzyć żądania. Spróbuj ponownie."
         }
     },
     "CarScanView": {
@@ -263,7 +275,8 @@
             "model": "Model",
             "prevPage": "Wstecz",
             "nextPage": "Dalej",
-            "pageInfo": "Strona {page} z {totalPages} ({total} skanów)"
+            "pageInfo": "Strona {page} z {totalPages} ({total} skanów)",
+            "searchPlaceholder": "Szukaj..."
         },
         "upload": {
             "title": "Prześlij dowód rejestracyjny",

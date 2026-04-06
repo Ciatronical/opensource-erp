@@ -15,6 +15,7 @@
         "price": "Prijs",
         "total": "Totaal",
         "grossTotal": "Totaalbedrag",
-        "allDay": "Hele dag"
+        "allDay": "Hele dag",
+        "exit": "Afsluiten"
     }
 }

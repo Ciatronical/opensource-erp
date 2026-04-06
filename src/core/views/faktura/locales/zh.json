@@ -212,7 +212,6 @@
             "dhlLabel": "DHL 物流标签",
             "paymentBooked": "付款记录成功",
             "paymentError": "记录付款时出错",
-            "paymentAccount": "付款账户",
             "searchArticle": "商品编号或描述",
             "itemCreateError": "创建项目时出错",
             "itemDeleteError": "删除项目时出错",
@@ -288,7 +287,14 @@
                 "deleteAllTooltip": "删除所有指令",
                 "deleteAllConfirm": "删除所有指令？",
                 "deleteAllConfirmText": "确定要删除此订单的所有 {count} 条指令吗？",
-                "deleteAll": "全部删除"
+                "deleteAll": "全部删除",
+                "timerTooltip": "工时记录",
+                "timerStart": "启动计时器",
+                "timerStop": "停止计时器",
+                "timerPaused": "休息",
+                "timerRunning": "计时器运行中",
+                "timerOutsideWorkHours": "不能在工作时间外启动计时器。工作时间可在 LxCars 配置中调整。",
+                "timerError": "工时记录错误"
             },
             "maengel": {
                 "title": "缺陷",
@@ -317,7 +323,21 @@
                 "createCustomDescription": "描述",
                 "createCustomKlassen": "可用缺陷等级",
                 "createCustomSave": "创建"
-            }
+            },
+            "requestPart": "请求备件",
+            "partsOrdered": "已从供应商订购",
+            "partsOnTheWay": "已订购 — 运输中",
+            "selectVendor": "选择供应商",
+            "reorderVendor": "重新订购自",
+            "noVendors": "没有可用的供应商",
+            "searchVendor": "搜索供应商...",
+            "partPhoto": "零件照片",
+            "addPhoto": "添加照片",
+            "viewPhoto": "查看照片",
+            "selectPhoto": "拍摄或选择照片",
+            "noPhotos": "暂无照片",
+            "photoDone": "完成",
+            "taxIncluded": "价格含税"
         },
         "workflow": {
             "created": "单据创建成功",
@@ -418,6 +438,22 @@
                 "send": "发送",
                 "defaultMessage": "随附 {type} 编号 {number}。",
                 "noPhone": "该客户未设置电话号码。"
+            },
+            "dhl": {
+                "title": "创建 DHL 物流标签",
+                "recipient": "收件人",
+                "weight": "重量",
+                "weightRequired": "重量为必填项",
+                "product": "DHL 产品",
+                "dimensions": "包裹尺寸（可选）",
+                "length": "长度",
+                "width": "宽度",
+                "height": "高度",
+                "create": "创建标签",
+                "success": "DHL 标签已创建 - 追踪号 {shipmentNo}",
+                "error": "创建 DHL 标签时出错",
+                "deleted": "DHL 货运已取消",
+                "existingShipments": "现有货运"
             }
         },
         "dhl": {

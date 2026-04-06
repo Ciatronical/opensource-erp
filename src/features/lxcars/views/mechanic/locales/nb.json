@@ -39,6 +39,10 @@
         "pendingParts": "Reservedeler forespoert",
         "cancel": "Avbryt",
         "delete": "Slett",
-        "save": "Lagre"
+        "save": "Lagre",
+        "myOrders": "Mine",
+        "allOrders": "Alle",
+        "refresh": "Oppdater",
+        "exitMechanic": "Avslutt mekanikermodus"
     }
 }

@@ -246,6 +246,18 @@
             "newArticle": "Neuer Artikel",
             "edit": "Muokkaa",
             "noArticles": "Keine Wissensartikel für diesen Fahrzeugtyp vorhanden."
+        },
+        "chat": {
+            "title": "AI Korjaamomestari",
+            "empty": "Kysy tästä ajoneuvosta — esim. diagnostiikka, tehdyt työt tai huoltovälit.",
+            "placeholder": "Esitä kysymys...",
+            "clear": "Tyhjennä keskusteluhistoria",
+            "clearConfirmTitle": "Tyhjennä keskusteluhistoria?",
+            "clearConfirmText": "Tämän ajoneuvon koko keskusteluhistoria poistetaan pysyvästi.",
+            "clearConfirm": "Poista",
+            "clearCancel": "Peruuta",
+            "errorTitle": "Virhe",
+            "errorText": "Pyyntöä ei voitu käsitellä. Yritä uudelleen."
         }
     },
     "CarScanView": {
@@ -263,7 +275,8 @@
             "model": "Modell",
             "prevPage": "Zurück",
             "nextPage": "Weiter",
-            "pageInfo": "Seite {page} von {totalPages} ({total} Scans)"
+            "pageInfo": "Seite {page} von {totalPages} ({total} Scans)",
+            "searchPlaceholder": "Etsi..."
         },
         "upload": {
             "title": "Fahrzeugschein hochladen",

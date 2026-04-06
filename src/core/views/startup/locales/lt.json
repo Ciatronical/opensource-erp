@@ -81,7 +81,8 @@
         "recipientNoPhone": "Šis gavėjas neturi telefono numerio.",
         "cancel": "Atšaukti",
         "send": "Siųsti",
-        "noCustomerVendor": "Klientas ar tiekejas nerastas. Pirmiausia sukurkite klienta arba tikeja."
+        "noCustomerVendor": "Klientas ar tiekejas nerastas. Pirmiausia sukurkite klienta arba tikeja.",
+        "newVehicle": "Nauja transporto priemonė"
     },
     "PhoneActions": {
         "clickToCall": "Skambinti",

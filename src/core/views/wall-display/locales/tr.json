@@ -15,6 +15,7 @@
         "price": "Fiyat",
         "total": "Toplam",
         "grossTotal": "Genel toplam",
-        "allDay": "Tum gun"
+        "allDay": "Tum gun",
+        "exit": "Çıkış"
     }
 }

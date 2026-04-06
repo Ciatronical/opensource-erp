@@ -64,10 +64,10 @@
         "model": "Model",
         "noVehicles": "Ingen koeretoejer tilgaengelige",
         "edit": "Rediger",
-        "vendorOffers": "Prisforesp\u00f8rgsler",
+        "vendorOffers": "Prisforespørgsler",
         "vendorOrders": "Bestillinger",
         "vendorInvoices": "Indgaaende fakturaer",
-        "noVendorOffers": "Ingen prisforesp\u00f8rgsler tilgaengelige",
+        "noVendorOffers": "Ingen prisforespørgsler tilgaengelige",
         "noVendorOrders": "Ingen bestillinger tilgaengelige",
         "noVendorInvoices": "Ingen indgaaende fakturaer tilgaengelige",
         "sendAddressWhatsApp": "Send adresse via WhatsApp",
@@ -81,7 +81,8 @@
         "recipientNoPhone": "Denne modtager har ikke et registreret telefonnummer.",
         "cancel": "Annuller",
         "send": "Send",
-        "noCustomerVendor": "Ingen kunde eller leverandoer fundet. Opret venligst en kunde eller leverandoer foerst."
+        "noCustomerVendor": "Ingen kunde eller leverandoer fundet. Opret venligst en kunde eller leverandoer foerst.",
+        "newVehicle": "Nyt køretøj"
     },
     "PhoneActions": {
         "clickToCall": "Ring op",

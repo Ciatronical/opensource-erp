@@ -1,0 +1,30 @@
+{
+    "weroni": {
+        "subtitle": "Asistent de birou IA",
+        "tooltip": "Weroni — Asistent de birou IA",
+        "tabs": {
+            "chat": "Chat",
+            "tasks": "Sarcini",
+            "questions": "Întrebări"
+        },
+        "chat": {
+            "welcome": "Bună! Sunt Weroni, asistentul tău de birou IA. Cum te pot ajuta?",
+            "examples": "\"Ai e-mailuri noi?\" · \"Caută client din Garzau cu Opel\" · \"Creează sarcină: înființare GmbH\"",
+            "placeholder": "Mesaj către Weroni...",
+            "thinking": "Weroni se gândește...",
+            "newSession": "Conversație nouă",
+            "uploadDoc": "Încarcă document",
+            "dropHere": "Plasați documentul aici"
+        },
+        "tasks": {
+            "empty": "Nicio sarcină deschisă",
+            "needsConfirm": "Necesită confirmare",
+            "confirm": "Confirmă",
+            "reject": "Respinge"
+        },
+        "questions": {
+            "empty": "Nicio întrebare deschisă",
+            "answerPlaceholder": "Introduceți răspunsul..."
+        }
+    }
+}

@@ -246,6 +246,18 @@
             "newArticle": "新文章",
             "edit": "编辑",
             "noArticles": "该车型暂无知识文章。"
+        },
+        "chat": {
+            "title": "AI 车间主管",
+            "empty": "提出关于此车辆的问题 — 例如诊断、已完成的工作或保养间隔。",
+            "placeholder": "提出问题...",
+            "clear": "清除聊天记录",
+            "clearConfirmTitle": "清除聊天记录？",
+            "clearConfirmText": "此车辆的所有聊天记录将被永久删除。",
+            "clearConfirm": "删除",
+            "clearCancel": "取消",
+            "errorTitle": "错误",
+            "errorText": "无法处理请求。请重试。"
         }
     },
     "CarScanView": {
@@ -263,7 +275,8 @@
             "model": "型号",
             "prevPage": "上一页",
             "nextPage": "下一页",
-            "pageInfo": "第 {page} 页，共 {totalPages} 页（{total} 条扫描）"
+            "pageInfo": "第 {page} 页，共 {totalPages} 页（{total} 条扫描）",
+            "searchPlaceholder": "搜索..."
         },
         "upload": {
             "title": "上传行驶证",

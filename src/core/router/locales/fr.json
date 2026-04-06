@@ -36,7 +36,9 @@
         "wikiEdit": "/wiki/bearbeiten",
         "userConfig": "/benutzer/konfiguration",
         "huSerienbrief": "/serienbrief/hu",
-        "wallDisplay": "/wandanzeige"
+        "wallDisplay": "/wandanzeige",
+        "editCv": "/client-fournisseur/modifier",
+        "lxcarsReports": "/utilisateur/rapports"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Erreur : Le fichier de mot de passe api/config/api.passwd.php est introuvable. Veuillez renommer le fichier api/config/api.passwd.php.example en api/config/api.passwd.php et ajuster les parametres en consequence.",

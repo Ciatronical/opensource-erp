@@ -15,5 +15,19 @@
         "huSerienbrief": "Notificações de inspeção",
         "orderSearchTooltip": "Pesquisa de encomendas",
         "scanTooltip": "Veículos de digitalização"
+    },
+    "PartsRequests": {
+        "title": "Peças de reposição",
+        "search": "Pesquisar artigo...",
+        "freetext": "Ou texto livre",
+        "qty": "Qtd.",
+        "note": "Nota",
+        "add": "Solicitar",
+        "empty": "Nenhuma peça de reposição solicitada",
+        "description": "Descrição",
+        "status": "Estado",
+        "requestedBy": "Solicitado por",
+        "pending": "Solicitado",
+        "ordered": "Encomendado"
     }
 }

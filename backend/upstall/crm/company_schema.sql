@@ -911,7 +911,7 @@ CREATE TABLE IF NOT EXISTS weroni_tasks (
     parent_id       INTEGER REFERENCES weroni_tasks(id) ON DELETE CASCADE,
     title           TEXT NOT NULL,
     description     TEXT,
-    status          TEXT DEFAULT 'open' CHECK (status IN ('open', 'in_progress', 'waiting', 'done', 'cancelled')),
+    status          TEXT DEFAULT 'open' CHECK (status IN ('open', 'pending_confirm', 'in_progress', 'waiting', 'done', 'cancelled')),
     priority        INTEGER DEFAULT 5 CHECK (priority BETWEEN 1 AND 10),
     due_date        TIMESTAMP,
     due_reminder    TIMESTAMP,
@@ -920,10 +920,30 @@ CREATE TABLE IF NOT EXISTS weroni_tasks (
     recurrence      TEXT,
     recurrence_time TIME,
     tags            TEXT[],
+    source          TEXT,               -- 'email', 'whatsapp', 'call', 'manual', 'monitor'
+    source_ref      TEXT,               -- Referenz (email_subject, phone_number, wa_message_id)
+    auto_action     JSONB,              -- Geplante Aktion die bei Bestätigung ausgeführt wird
     created_at      TIMESTAMP DEFAULT NOW(),
     updated_at      TIMESTAMP DEFAULT NOW(),
     completed_at    TIMESTAMP
 );
+
+-- Migration: Neue Spalten für bestehende Installationen
+ALTER TABLE weroni_tasks ADD COLUMN IF NOT EXISTS source TEXT;
+ALTER TABLE weroni_tasks ADD COLUMN IF NOT EXISTS source_ref TEXT;
+ALTER TABLE weroni_tasks ADD COLUMN IF NOT EXISTS auto_action JSONB;
+-- Status 'pending_confirm' erlauben
+ALTER TABLE weroni_tasks DROP CONSTRAINT IF EXISTS weroni_tasks_status_check;
+ALTER TABLE weroni_tasks ADD CONSTRAINT weroni_tasks_status_check CHECK (status IN ('open', 'pending_confirm', 'in_progress', 'waiting', 'done', 'cancelled'));
+
+-- Weroni Verarbeitungsstatus: Was wurde schon gelesen/verarbeitet
+CREATE TABLE IF NOT EXISTS weroni_monitor_state (
+    key             TEXT PRIMARY KEY,
+    value           TEXT NOT NULL,
+    updated_at      TIMESTAMP DEFAULT NOW()
+);
+
+INSERT INTO defaults_oserp (key, value) VALUES ('weroni_monitor_interval', '5') ON CONFLICT (key) DO NOTHING;
 
 CREATE INDEX IF NOT EXISTS idx_weroni_tasks_status ON weroni_tasks (status);
 CREATE INDEX IF NOT EXISTS idx_weroni_tasks_parent ON weroni_tasks (parent_id);
@@ -977,6 +997,25 @@ INSERT INTO defaults_oserp (key, value) VALUES ('weroni_mode', 'assistant') ON C
 INSERT INTO defaults_oserp (key, value) VALUES ('weroni_system_prompt', 'Du bist Weroni, die KI-Bürokauffrau. Du bist freundlich, effizient und denkst mit. Du kümmerst dich um Emails, WhatsApp-Nachrichten, Anrufe, Termine, Aufgaben und Bestellungen. Du lernst aus Fehlern und merkst dir wichtige Informationen. Du sprichst Deutsch und bist Teil des Teams.') ON CONFLICT (key) DO NOTHING;
 INSERT INTO defaults_oserp (key, value) VALUES ('weroni_phone_number', '') ON CONFLICT (key) DO NOTHING;
 
+-- Weroni Dokumenten-Eingang (gescannte/fotografierte Dokumente)
+CREATE TABLE IF NOT EXISTS weroni_documents (
+    id              INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    original_name   TEXT NOT NULL,
+    mime_type       TEXT NOT NULL,
+    file_path       TEXT,                   -- Pfad im Kunden-/Lieferantenordner nach Zuordnung
+    doc_type        TEXT,                   -- 'invoice', 'delivery_note', 'letter', 'receipt', 'contract', 'other'
+    summary         TEXT,                   -- KI-Zusammenfassung des Inhalts
+    extracted_data  JSONB,                  -- Extrahierte Felder (Betrag, Datum, Rechnungsnr, etc.)
+    customer_id     INTEGER,
+    vendor_id       INTEGER,
+    order_id        INTEGER,
+    status          TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'analyzed', 'filed', 'rejected')),
+    created_at      TIMESTAMP DEFAULT NOW(),
+    filed_at        TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_weroni_documents_status ON weroni_documents (status);
+
 CREATE OR REPLACE FUNCTION notify_weroni_question() RETURNS trigger AS $$
 BEGIN
     PERFORM pg_notify('weroni_question', json_build_object(
@@ -997,3 +1036,159 @@ DO $$ BEGIN
             EXECUTE FUNCTION notify_weroni_question();
     END IF;
 END $$;
+
+-- ============================================================================
+-- BANKING
+-- ============================================================================
+
+CREATE TABLE bank_account_fints (
+    id              integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    bank_account_id integer NOT NULL,
+    fints_url       text NOT NULL,
+    fints_bank_code varchar(20) NOT NULL,
+    fints_username  text NOT NULL,
+    fints_tan_mode  varchar(50),
+    last_sync       timestamp,
+    sync_from_date  date,
+    itime           timestamp DEFAULT now(),
+    mtime           timestamp
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_bank_account_fints_account ON bank_account_fints(bank_account_id);
+
+CREATE TABLE bank_import_log (
+    id              integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    bank_account_id integer NOT NULL,
+    import_date     timestamp DEFAULT now(),
+    from_date       date,
+    to_date         date,
+    transaction_count integer DEFAULT 0,
+    employee_id     integer,
+    import_source   varchar(20) DEFAULT 'fints'
+);
+
+CREATE TABLE bank_transfer_orders (
+    id              integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    bank_account_id integer NOT NULL,
+    remote_iban     varchar(40) NOT NULL,
+    remote_bic      varchar(20),
+    remote_name     text NOT NULL,
+    amount          numeric(15,5) NOT NULL,
+    currency        varchar(5) DEFAULT 'EUR',
+    purpose         text NOT NULL,
+    execution_date  date,
+    status          varchar(20) DEFAULT 'draft',
+    source_type     varchar(20),
+    source_id       integer,
+    employee_id     integer,
+    error_message   text,
+    submitted_at    timestamp,
+    itime           timestamp DEFAULT now(),
+    mtime           timestamp
+);
+
+CREATE INDEX IF NOT EXISTS idx_bank_transfer_orders_status ON bank_transfer_orders(status);
+CREATE INDEX IF NOT EXISTS idx_bank_transfer_orders_account ON bank_transfer_orders(bank_account_id);
+
+CREATE TABLE bank_matching_rules (
+    id                  integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    bank_account_id     integer,
+    rule_name           text NOT NULL,
+    priority            integer DEFAULT 100,
+    match_remote_iban   varchar(40),
+    match_remote_name   text,
+    match_purpose       text,
+    match_amount_min    numeric(15,5),
+    match_amount_max    numeric(15,5),
+    match_booking_key   varchar(10),
+    action_type         varchar(20) NOT NULL,
+    action_customer_id  integer,
+    action_vendor_id    integer,
+    action_chart_id     integer,
+    active              boolean DEFAULT true,
+    itime               timestamp DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_bank_transactions_match_status ON bank_transactions(match_status);
+CREATE INDEX IF NOT EXISTS idx_bank_transactions_remote_iban ON bank_transactions(remote_iban);
+CREATE INDEX IF NOT EXISTS idx_bank_transactions_transdate ON bank_transactions(transdate);
+
+CREATE OR REPLACE FUNCTION bank_auto_match(p_bank_account_id INTEGER)
+RETURNS TABLE(
+    bank_transaction_id INTEGER,
+    match_type TEXT,
+    target_type TEXT,
+    target_id INTEGER,
+    confidence NUMERIC
+) AS $$
+BEGIN
+    RETURN QUERY
+
+    -- 1. Rechnungsnummer im Verwendungszweck (hoechste Konfidenz)
+    SELECT bt.id, 'invnumber_in_purpose'::TEXT,
+           'ar'::TEXT, ar.id, 0.95::NUMERIC
+    FROM bank_transactions bt
+    CROSS JOIN LATERAL (
+        SELECT regexp_matches(bt.purpose, '(RE[\-\s]?\d{4}[\-\s]?\d+)', 'gi') AS m
+    ) matches
+    JOIN ar ON UPPER(ar.invnumber) = UPPER(REPLACE(REPLACE((matches.m)[1], ' ', ''), '-', ''))
+    WHERE bt.local_bank_account_id = p_bank_account_id
+      AND bt.match_status = 'unmatched'
+      AND bt.amount > 0
+      AND (ar.amount - ar.paid) > 0
+
+    UNION ALL
+
+    -- 2. IBAN + exakter Betrag = offene Ausgangsrechnung
+    SELECT bt.id, 'iban_amount_match'::TEXT,
+           'ar'::TEXT, ar.id, 0.85::NUMERIC
+    FROM bank_transactions bt
+    JOIN customer c ON c.iban = bt.remote_iban AND bt.remote_iban IS NOT NULL
+    JOIN ar ON ar.customer_id = c.id
+              AND (ar.amount - ar.paid) = bt.amount
+              AND ar.paid < ar.amount
+    WHERE bt.local_bank_account_id = p_bank_account_id
+      AND bt.match_status = 'unmatched'
+      AND bt.amount > 0
+
+    UNION ALL
+
+    -- 3. IBAN + exakter Betrag = offene Eingangsrechnung (Ausgaenge)
+    SELECT bt.id, 'iban_amount_match'::TEXT,
+           'ap'::TEXT, ap.id, 0.85::NUMERIC
+    FROM bank_transactions bt
+    JOIN vendor v ON v.iban = bt.remote_iban AND bt.remote_iban IS NOT NULL
+    JOIN ap ON ap.vendor_id = v.id
+             AND (ap.amount - ap.paid) = ABS(bt.amount)
+             AND ap.paid < ap.amount
+    WHERE bt.local_bank_account_id = p_bank_account_id
+      AND bt.match_status = 'unmatched'
+      AND bt.amount < 0
+
+    UNION ALL
+
+    -- 4. Benutzer-Regeln anwenden
+    SELECT bt.id, 'user_rule'::TEXT,
+           CASE bmr.action_type
+               WHEN 'assign_customer' THEN 'customer'
+               WHEN 'assign_vendor' THEN 'vendor'
+               WHEN 'assign_chart' THEN 'chart'
+               WHEN 'ignore' THEN 'ignore'
+           END::TEXT,
+           COALESCE(bmr.action_customer_id, bmr.action_vendor_id, bmr.action_chart_id, 0),
+           0.70::NUMERIC
+    FROM bank_transactions bt
+    JOIN bank_matching_rules bmr ON bmr.active
+        AND (bmr.bank_account_id IS NULL OR bmr.bank_account_id = bt.local_bank_account_id)
+        AND (bmr.match_remote_iban IS NULL OR bt.remote_iban = bmr.match_remote_iban)
+        AND (bmr.match_remote_name IS NULL OR bt.remote_name ILIKE '%' || bmr.match_remote_name || '%')
+        AND (bmr.match_purpose IS NULL OR bt.purpose ILIKE '%' || bmr.match_purpose || '%')
+        AND (bmr.match_amount_min IS NULL OR ABS(bt.amount) >= bmr.match_amount_min)
+        AND (bmr.match_amount_max IS NULL OR ABS(bt.amount) <= bmr.match_amount_max)
+        AND (bmr.match_booking_key IS NULL OR bt.booking_key = bmr.match_booking_key)
+    WHERE bt.local_bank_account_id = p_bank_account_id
+      AND bt.match_status = 'unmatched'
+
+    ORDER BY confidence DESC;
+END;
+$$ LANGUAGE plpgsql;

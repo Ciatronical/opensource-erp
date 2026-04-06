@@ -1,0 +1,30 @@
+{
+    "weroni": {
+        "subtitle": "AI-kontorassistent",
+        "tooltip": "Weroni — AI-kontorassistent",
+        "tabs": {
+            "chat": "Chat",
+            "tasks": "Opgaver",
+            "questions": "Spørgsmål"
+        },
+        "chat": {
+            "welcome": "Hej! Jeg er Weroni, din AI-kontorassistent. Hvordan kan jeg hjælpe dig?",
+            "examples": "\"Har du nye e-mails?\" · \"Find kunde fra Garzau med Opel\" · \"Opret opgave: stifte GmbH\"",
+            "placeholder": "Besked til Weroni...",
+            "thinking": "Weroni tænker...",
+            "newSession": "Ny samtale",
+            "uploadDoc": "Upload dokument",
+            "dropHere": "Slip dokument her"
+        },
+        "tasks": {
+            "empty": "Ingen åbne opgaver",
+            "needsConfirm": "Bekræftelse nødvendig",
+            "confirm": "Bekræft",
+            "reject": "Afvis"
+        },
+        "questions": {
+            "empty": "Ingen åbne spørgsmål",
+            "answerPlaceholder": "Indtast svar..."
+        }
+    }
+}

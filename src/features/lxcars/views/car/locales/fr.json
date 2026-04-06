@@ -246,6 +246,18 @@
             "newArticle": "Nouvel article",
             "edit": "Modifier",
             "noArticles": "Aucun article de connaissances pour ce type de vehicule."
+        },
+        "chat": {
+            "title": "AI Chef d'atelier",
+            "empty": "Posez une question sur ce véhicule — par ex. diagnostics, travaux effectués ou intervalles d'entretien.",
+            "placeholder": "Poser une question...",
+            "clear": "Effacer l'historique du chat",
+            "clearConfirmTitle": "Effacer l'historique du chat ?",
+            "clearConfirmText": "L'intégralité de l'historique du chat pour ce véhicule sera définitivement supprimée.",
+            "clearConfirm": "Supprimer",
+            "clearCancel": "Annuler",
+            "errorTitle": "Erreur",
+            "errorText": "La demande n'a pas pu être traitée. Veuillez réessayer."
         }
     },
     "CarScanView": {
@@ -263,7 +275,8 @@
             "model": "Modele",
             "prevPage": "Precedent",
             "nextPage": "Suivant",
-            "pageInfo": "Page {page} sur {totalPages} ({total} scans)"
+            "pageInfo": "Page {page} sur {totalPages} ({total} scans)",
+            "searchPlaceholder": "Rechercher..."
         },
         "upload": {
             "title": "Telecharger une carte grise",

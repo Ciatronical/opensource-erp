@@ -287,7 +287,14 @@
                 "deleteAllTooltip": "Alle Anweisungen löschen",
                 "deleteAllConfirm": "Alle Anweisungen löschen?",
                 "deleteAllConfirmText": "Sollen wirklich alle {count} Anweisungen dieses Auftrags gelöscht werden?",
-                "deleteAll": "Poista kaikki"
+                "deleteAll": "Poista kaikki",
+                "timerTooltip": "Työajan seuranta",
+                "timerStart": "Käynnistä ajastin",
+                "timerStop": "Pysäytä ajastin",
+                "timerPaused": "Tauko",
+                "timerRunning": "Ajastin käynnissä",
+                "timerOutsideWorkHours": "Ajastinta ei voi käynnistää työajan ulkopuolella. Työajan voi säätää LxCars-asetuksissa.",
+                "timerError": "Työajan seurannan virhe"
             },
             "maengel": {
                 "title": "Mängel",
@@ -316,7 +323,21 @@
                 "createCustomDescription": "Kuvaus",
                 "createCustomKlassen": "Mögliche Mängelklassen",
                 "createCustomSave": "Anlegen"
-            }
+            },
+            "requestPart": "Tilaa varaosa",
+            "partsOrdered": "Tilattu toimittajalta",
+            "partsOnTheWay": "Tilattu — matkalla",
+            "selectVendor": "Valitse toimittaja",
+            "reorderVendor": "Tilaa uudelleen",
+            "noVendors": "Ei toimittajia saatavilla",
+            "searchVendor": "Etsi toimittajaa...",
+            "partPhoto": "Osan kuva",
+            "addPhoto": "Lisää kuva",
+            "viewPhoto": "Näytä kuva",
+            "selectPhoto": "Ota tai valitse kuva",
+            "noPhotos": "Ei vielä kuvia",
+            "photoDone": "Valmis",
+            "taxIncluded": "Vero sisältyy hintaan"
         },
         "workflow": {
             "created": "Dokument erfolgreich erstellt",
@@ -417,6 +438,22 @@
                 "send": "Lähetä",
                 "defaultMessage": "Anbei erhalten Sie {type} Nr. {number}.",
                 "noPhone": "Für diesen Kunden ist keine Telefonnummer hinterlegt."
+            },
+            "dhl": {
+                "title": "Luo DHL-lähetystarra",
+                "recipient": "Vastaanottaja",
+                "weight": "Paino",
+                "weightRequired": "Paino on pakollinen",
+                "product": "DHL-tuote",
+                "dimensions": "Paketin mitat (valinnainen)",
+                "length": "Pituus",
+                "width": "Leveys",
+                "height": "Korkeus",
+                "create": "Luo tarra",
+                "success": "DHL-tarra luotu — Seurantanro {shipmentNo}",
+                "error": "Virhe DHL-tarran luonnissa",
+                "deleted": "DHL-lähetys peruutettu",
+                "existingShipments": "Olemassa olevat lähetykset"
             }
         },
         "dhl": {

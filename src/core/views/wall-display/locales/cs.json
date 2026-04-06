@@ -15,6 +15,7 @@
         "price": "Cena",
         "total": "Celkem",
         "grossTotal": "Celkova castka",
-        "allDay": "Celodenni"
+        "allDay": "Celodenni",
+        "exit": "Ukončit"
     }
 }

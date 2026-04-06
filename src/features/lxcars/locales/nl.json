@@ -15,5 +15,19 @@
         "huSerienbrief": "APK-meldingen",
         "orderSearchTooltip": "Orders zoeken",
         "scanTooltip": "Voertuigen van scan"
+    },
+    "PartsRequests": {
+        "title": "Reserveonderdelen",
+        "search": "Artikel zoeken...",
+        "freetext": "Of vrije tekst",
+        "qty": "Aantal",
+        "note": "Opmerking",
+        "add": "Bestellen",
+        "empty": "Geen reserveonderdelen besteld",
+        "description": "Beschrijving",
+        "status": "Status",
+        "requestedBy": "Besteld door",
+        "pending": "Aangevraagd",
+        "ordered": "Besteld"
     }
 }

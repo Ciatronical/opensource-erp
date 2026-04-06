@@ -28,6 +28,7 @@
         "developerTools": "/system/developer-tools",
         "systemUpdate": "/system/aktualisierung",
         "currentCustomerEdit": "/kunde/bearbeiten",
+        "editCv": "/kunde-lieferant/bearbeiten",
         "callHistory": "/anrufliste",
         "calendar": "/kalender",
         "wiki": "/wiki",

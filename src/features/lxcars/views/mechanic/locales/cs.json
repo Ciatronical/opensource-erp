@@ -39,6 +39,10 @@
         "pendingParts": "Pozadovane nahradni dily",
         "cancel": "Zrusit",
         "delete": "Smazat",
-        "save": "Ulozit"
+        "save": "Ulozit",
+        "myOrders": "Moje",
+        "allOrders": "Všechny",
+        "refresh": "Obnovit",
+        "exitMechanic": "Ukončit režim mechanika"
     }
 }

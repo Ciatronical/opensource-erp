@@ -36,7 +36,9 @@
         "wikiEdit": "/wiki/bearbeiten",
         "userConfig": "/benutzer/konfiguration",
         "huSerienbrief": "/serienbrief/hu",
-        "wallDisplay": "/wandanzeige"
+        "wallDisplay": "/wandanzeige",
+        "editCv": "/klient-tarnija/muuda",
+        "lxcarsReports": "/kasutaja/aruanded"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Viga: Paroolifaili api/config/api.passwd.php ei leitud. Palun nimetage fail api/config/api.passwd.php.example umber api/config/api.passwd.php ja kohandage seadeid vastavalt.",

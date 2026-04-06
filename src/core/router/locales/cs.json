@@ -36,7 +36,9 @@
         "wikiEdit": "/wiki/bearbeiten",
         "userConfig": "/benutzer/konfiguration",
         "huSerienbrief": "/serienbrief/hu",
-        "wallDisplay": "/wandanzeige"
+        "wallDisplay": "/wandanzeige",
+        "editCv": "/zakaznik-dodavatel/upravit",
+        "lxcarsReports": "/uzivatel/vyhodnoceni"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Chyba: Soubor s heslem api/config/api.passwd.php nebyl nalezen. Prosim prejmenujte soubor api/config/api.passwd.php.example na api/config/api.passwd.php a upravte nastaveni.",

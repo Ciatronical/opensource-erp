@@ -1,0 +1,30 @@
+{
+    "weroni": {
+        "subtitle": "Assistante de bureau IA",
+        "tooltip": "Weroni — Assistante de bureau IA",
+        "tabs": {
+            "chat": "Chat",
+            "tasks": "Tâches",
+            "questions": "Questions"
+        },
+        "chat": {
+            "welcome": "Bonjour ! Je suis Weroni, votre assistante de bureau IA. Comment puis-je vous aider ?",
+            "examples": "\"As-tu de nouveaux e-mails ?\" · \"Cherche un client de Garzau avec Opel\" · \"Crée une tâche : fonder une GmbH\"",
+            "placeholder": "Message à Weroni...",
+            "thinking": "Weroni réfléchit...",
+            "newSession": "Nouvelle conversation",
+            "uploadDoc": "Télécharger un document",
+            "dropHere": "Déposez le document ici"
+        },
+        "tasks": {
+            "empty": "Aucune tâche en cours",
+            "needsConfirm": "Confirmation nécessaire",
+            "confirm": "Confirmer",
+            "reject": "Rejeter"
+        },
+        "questions": {
+            "empty": "Aucune question en attente",
+            "answerPlaceholder": "Saisir la réponse..."
+        }
+    }
+}

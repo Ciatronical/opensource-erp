@@ -146,6 +146,46 @@
         "registration": {
             "button": "Registration"
         },
+        "yellowLabel": {
+            "button": "Badge",
+            "tooltip": "Print green badge",
+            "noPrinter": "No label printer configured",
+            "noPrinterHint": "Please set up a label printer in the company configuration.",
+            "goToConfig": "Go to configuration",
+            "success": "Badge has been printed",
+            "error": "Error printing badge"
+        },
+        "tyreLabel": {
+            "buttonSummer": "Label",
+            "buttonWinter": "Label",
+            "tooltip": "Print tire labels (4 pieces)",
+            "success": "4 tire labels have been printed",
+            "error": "Error printing tire labels",
+            "fieldDim": "Tire size",
+            "fieldLocation": "Storage location",
+            "missingFields": "Please fill in first: {fields}"
+        },
+        "rotesHeft": {
+            "button": "Red booklet",
+            "title": "Vehicle registration booklet — Vehicle description",
+            "subtitle": "according to Annex 13 (to § 41 para. 2 sentence 1) FZV",
+            "field1": "Vehicle class and body type",
+            "field2": "Manufacturer designation / Brand",
+            "field3": "Vehicle identification number",
+            "field4a": "Displacement (cm³)",
+            "field4b": "Power (kW)",
+            "field4c": "Unladen mass for motorcycles (kg)",
+            "field5": "Date of first registration",
+            "field6": "Permissible gross mass (kg)",
+            "field7": "Maximum permissible axle loads (kg)",
+            "field7Axle": "Axle",
+            "field8": "Design-related maximum speed (km/h)",
+            "fieldHu": "Next inspection due (calculated)",
+            "fieldHuUncertain": "Uncertain — inspection may have been brought forward or overdue",
+            "field9": "Signature of the holder and confirmation of the vehicle's roadworthiness",
+            "field9Hint": "Only to be signed by authorized persons!",
+            "noData": "MISSING"
+        },
         "scanImages": {
             "button": "Registration doc",
             "dialogTitle": "Registration document scan",
@@ -253,6 +293,8 @@
             "searchPlaceholder": "Enter customer name...",
             "noResults": "No customers found",
             "selectedCustomer": "Selected customer",
+            "nextHu": "Next inspection due",
+            "huExtrapolated": "extrapolated",
             "ownerGreeting": "Greeting",
             "ownerName": "Name",
             "ownerStreet": "Street",
@@ -288,12 +330,15 @@
             "street": "Street",
             "zipcode": "Zip",
             "city": "City",
+            "phone": "Phone",
             "email": "Email",
             "businessType": "Customer type",
             "save": "Create customer + vehicle",
             "saving": "Creating...",
             "saveError": "Error creating",
-            "nameRequired": "Customer name is required"
+            "nameRequired": "Customer name is required",
+            "businessTypeRequired": "No customer type selected.",
+            "emailInvalid": "Invalid email address"
         },
         "duplicate": {
             "title": "Vehicle already exists!",

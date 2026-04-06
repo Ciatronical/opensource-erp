@@ -15,6 +15,7 @@
         "price": "Cena",
         "total": "Kopā",
         "grossTotal": "Kopsumma",
-        "allDay": "Visa diena"
+        "allDay": "Visa diena",
+        "exit": "Iziet"
     }
 }

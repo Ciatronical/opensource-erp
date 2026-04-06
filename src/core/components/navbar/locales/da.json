@@ -27,7 +27,9 @@
         "companyName": "Firmenname",
         "dbName": "Datenbankname",
         "dbNameHint": "Nur Kleinbuchstaben, Ziffern und Unterstriche",
-        "createCompany": "Firma anlegen"
+        "createCompany": "Firma anlegen",
+        "currentCV": "Kunde/Leverandør:",
+        "reports": "Rapporter"
     },
     "GlobalSearch": {
         "placeholder": "Soeg...",
@@ -46,6 +48,13 @@
     "InfoBar": {
         "unknownCaller": "Ukendt",
         "closeAll": "Luk alle notifikationer",
-        "pendingParts": "Reservedele anmodet"
+        "pendingParts": "Reservedele anmodet",
+        "partsDialogTitle": "Afventende reservedelsanmodninger",
+        "partsEmpty": "Ingen afventende anmodninger",
+        "order": "Ordre",
+        "requestedBy": "af",
+        "selectVendor": "Søg leverandør...",
+        "markOrdered": "Markér {count} som bestilt",
+        "yesterday": "I går"
     }
 }

@@ -172,6 +172,7 @@
             "datePlaceholder": "e.g. 1/2/26",
             "dateInvalid": "Invalid date",
             "dateMustBeFuture": "Date must be in the future",
+            "openVehicle": "Vehicle",
             "importSilverDAT": "SilverDAT Import",
             "silverdat": {
                 "title": "SilverDAT Import",
@@ -339,6 +340,11 @@
                 "createCustomSave": "Create"
             }
         },
+        "workflow": {
+            "created": "Document created successfully",
+            "error": "Error creating document",
+            "duplicateInvoice": "An invoice already exists for this document: {number}"
+        },
         "creating": "is being created …",
         "dokumentTypes": {
             "invoice": "Invoice",
@@ -416,6 +422,22 @@
                 "send": "Send",
                 "defaultBody": "Dear Sir or Madam,\n\nplease find attached {type} No. {number}.\n\nKind regards",
                 "noEmail": "No email address is stored for this customer."
+            },
+            "dhl": {
+                "title": "Create DHL Shipping Label",
+                "recipient": "Recipient",
+                "weight": "Weight",
+                "weightRequired": "Weight is required",
+                "product": "DHL Product",
+                "dimensions": "Package dimensions (optional)",
+                "length": "Length",
+                "width": "Width",
+                "height": "Height",
+                "create": "Create label",
+                "success": "DHL label created — Tracking No. {shipmentNo}",
+                "error": "Error creating DHL label",
+                "deleted": "DHL shipment cancelled",
+                "existingShipments": "Existing shipments"
             },
             "sendWhatsApp": {
                 "title": "Send Document via WhatsApp",

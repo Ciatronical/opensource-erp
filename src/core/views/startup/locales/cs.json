@@ -81,7 +81,8 @@
         "recipientNoPhone": "Tento příjemce nemá uložené telefonní číslo.",
         "cancel": "Zrušit",
         "send": "Odeslat",
-        "noCustomerVendor": "Žádný zákazník ani dodavatel nenalezen. Nejprve vytvořte zákazníka nebo dodavatele."
+        "noCustomerVendor": "Žádný zákazník ani dodavatel nenalezen. Nejprve vytvořte zákazníka nebo dodavatele.",
+        "newVehicle": "Nové vozidlo"
     },
     "PhoneActions": {
         "clickToCall": "Zavolat",

@@ -15,5 +15,19 @@
         "huSerienbrief": "Уведомления о ТО",
         "orderSearchTooltip": "Поиск заказов",
         "scanTooltip": "Транспорт из сканов"
+    },
+    "PartsRequests": {
+        "title": "Запчасти",
+        "search": "Поиск товара...",
+        "freetext": "Или свободный текст",
+        "qty": "Кол-во",
+        "note": "Примечание",
+        "add": "Заказать",
+        "empty": "Запчасти не заказаны",
+        "description": "Описание",
+        "status": "Статус",
+        "requestedBy": "Заказал",
+        "pending": "Заказано",
+        "ordered": "Заказано"
     }
 }

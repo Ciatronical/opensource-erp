@@ -212,7 +212,6 @@
             "dhlLabel": "Etykieta wysyłkowa DHL",
             "paymentBooked": "Płatność pomyślnie zaksięgowana",
             "paymentError": "Błąd podczas księgowania płatności",
-            "paymentAccount": "Konto płatności",
             "searchArticle": "Nr artykułu lub opis",
             "itemCreateError": "Błąd podczas tworzenia pozycji",
             "itemDeleteError": "Błąd podczas usuwania pozycji",
@@ -288,7 +287,14 @@
                 "deleteAllTooltip": "Usuń wszystkie instrukcje",
                 "deleteAllConfirm": "Usunąć wszystkie instrukcje?",
                 "deleteAllConfirmText": "Czy na pewno usunąć wszystkie {count} instrukcji tego zamówienia?",
-                "deleteAll": "Usuń wszystkie"
+                "deleteAll": "Usuń wszystkie",
+                "timerTooltip": "Rejestracja czasu",
+                "timerStart": "Uruchom timer",
+                "timerStop": "Zatrzymaj timer",
+                "timerPaused": "Przerwa",
+                "timerRunning": "Timer działa",
+                "timerOutsideWorkHours": "Timer nie może być uruchomiony poza godzinami pracy. Godziny pracy można dostosować w konfiguracji LxCars.",
+                "timerError": "Błąd rejestracji czasu"
             },
             "maengel": {
                 "title": "Usterki",
@@ -317,7 +323,21 @@
                 "createCustomDescription": "Opis",
                 "createCustomKlassen": "Możliwe klasy usterek",
                 "createCustomSave": "Utwórz"
-            }
+            },
+            "requestPart": "Zamów część zamienną",
+            "partsOrdered": "Zamówiono u dostawcy",
+            "partsOnTheWay": "Zamówiono — w drodze",
+            "selectVendor": "Wybierz dostawcę",
+            "reorderVendor": "Zamów ponownie od",
+            "noVendors": "Brak dostępnych dostawców",
+            "searchVendor": "Szukaj dostawcy...",
+            "partPhoto": "Zdjęcie części",
+            "addPhoto": "Dodaj zdjęcie",
+            "viewPhoto": "Pokaż zdjęcie",
+            "selectPhoto": "Zrób lub wybierz zdjęcie",
+            "noPhotos": "Brak zdjęć",
+            "photoDone": "Gotowe",
+            "taxIncluded": "Podatek zawarty w cenie"
         },
         "workflow": {
             "created": "Dokument pomyślnie utworzony",
@@ -418,6 +438,22 @@
                 "send": "Wyślij",
                 "defaultMessage": "W załączeniu przesyłamy {type} nr {number}.",
                 "noPhone": "Dla tego klienta nie podano numeru telefonu."
+            },
+            "dhl": {
+                "title": "Utwórz etykietę wysyłkową DHL",
+                "recipient": "Odbiorca",
+                "weight": "Waga",
+                "weightRequired": "Waga jest wymagana",
+                "product": "Produkt DHL",
+                "dimensions": "Wymiary paczki (opcjonalnie)",
+                "length": "Długość",
+                "width": "Szerokość",
+                "height": "Wysokość",
+                "create": "Utwórz etykietę",
+                "success": "Etykieta DHL utworzona — Nr śledzenia {shipmentNo}",
+                "error": "Błąd podczas tworzenia etykiety DHL",
+                "deleted": "Przesyłka DHL anulowana",
+                "existingShipments": "Istniejące przesyłki"
             }
         },
         "dhl": {

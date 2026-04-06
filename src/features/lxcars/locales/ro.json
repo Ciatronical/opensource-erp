@@ -15,5 +15,19 @@
         "huSerienbrief": "Notificari ITP",
         "orderSearchTooltip": "Cautare comenzi",
         "scanTooltip": "Vehicule din scanare"
+    },
+    "PartsRequests": {
+        "title": "Piese de schimb",
+        "search": "Caută articol...",
+        "freetext": "Sau text liber",
+        "qty": "Cant.",
+        "note": "Notă",
+        "add": "Solicită",
+        "empty": "Nu au fost solicitate piese de schimb",
+        "description": "Descriere",
+        "status": "Stare",
+        "requestedBy": "Solicitat de",
+        "pending": "Solicitat",
+        "ordered": "Comandat"
     }
 }

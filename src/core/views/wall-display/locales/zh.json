@@ -15,6 +15,7 @@
         "price": "价格",
         "total": "合计",
         "grossTotal": "总金额",
-        "allDay": "全天"
+        "allDay": "全天",
+        "exit": "退出"
     }
 }

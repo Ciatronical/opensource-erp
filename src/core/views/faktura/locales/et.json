@@ -287,7 +287,14 @@
                 "deleteAllTooltip": "Alle Anweisungen löschen",
                 "deleteAllConfirm": "Alle Anweisungen löschen?",
                 "deleteAllConfirmText": "Sollen wirklich alle {count} Anweisungen dieses Auftrags gelöscht werden?",
-                "deleteAll": "Kustuta kõik"
+                "deleteAll": "Kustuta kõik",
+                "timerTooltip": "Tööaja arvestus",
+                "timerStart": "Käivita taimer",
+                "timerStop": "Peata taimer",
+                "timerPaused": "Paus",
+                "timerRunning": "Taimer töötab",
+                "timerOutsideWorkHours": "Taimerit ei saa käivitada väljaspool tööaega. Tööaega saab muuta LxCarsi seadetes.",
+                "timerError": "Tööaja arvestuse viga"
             },
             "maengel": {
                 "title": "Mängel",
@@ -316,7 +323,21 @@
                 "createCustomDescription": "Kirjeldus",
                 "createCustomKlassen": "Mögliche Mängelklassen",
                 "createCustomSave": "Anlegen"
-            }
+            },
+            "requestPart": "Telli varuosa",
+            "partsOrdered": "Tellitud tarnijalt",
+            "partsOnTheWay": "Tellitud — teel",
+            "selectVendor": "Vali tarnija",
+            "reorderVendor": "Telli uuesti asukohast",
+            "noVendors": "Tarnijaid pole saadaval",
+            "searchVendor": "Otsi tarnijat...",
+            "partPhoto": "Varuosa foto",
+            "addPhoto": "Lisa foto",
+            "viewPhoto": "Vaata fotot",
+            "selectPhoto": "Pildista või vali foto",
+            "noPhotos": "Fotosid pole veel",
+            "photoDone": "Valmis",
+            "taxIncluded": "Maks sisaldub hinnas"
         },
         "workflow": {
             "created": "Dokument erfolgreich erstellt",
@@ -417,6 +438,22 @@
                 "send": "Saada",
                 "defaultMessage": "Anbei erhalten Sie {type} Nr. {number}.",
                 "noPhone": "Für diesen Kunden ist keine Telefonnummer hinterlegt."
+            },
+            "dhl": {
+                "title": "Loo DHL saatmissilt",
+                "recipient": "Saaja",
+                "weight": "Kaal",
+                "weightRequired": "Kaal on kohustuslik",
+                "product": "DHL toode",
+                "dimensions": "Paki mõõtmed (valikuline)",
+                "length": "Pikkus",
+                "width": "Laius",
+                "height": "Kõrgus",
+                "create": "Loo silt",
+                "success": "DHL silt loodud — Jälgimisnumber {shipmentNo}",
+                "error": "Viga DHL sildi loomisel",
+                "deleted": "DHL saadetis tühistatud",
+                "existingShipments": "Olemasolevad saadetised"
             }
         },
         "dhl": {

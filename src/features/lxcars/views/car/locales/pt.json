@@ -246,6 +246,18 @@
             "newArticle": "Novo artigo",
             "edit": "Bearbeiten",
             "noArticles": "Keine Wissensartikel für diesen Fahrzeugtyp vorhanden."
+        },
+        "chat": {
+            "title": "AI Mestre de Oficina",
+            "empty": "Faça uma pergunta sobre este veículo — ex. diagnósticos, trabalhos realizados ou intervalos de manutenção.",
+            "placeholder": "Faça uma pergunta...",
+            "clear": "Limpar histórico do chat",
+            "clearConfirmTitle": "Limpar histórico do chat?",
+            "clearConfirmText": "Todo o histórico de chat deste veículo será permanentemente eliminado.",
+            "clearConfirm": "Eliminar",
+            "clearCancel": "Cancelar",
+            "errorTitle": "Erro",
+            "errorText": "Não foi possível processar o pedido. Tente novamente."
         }
     },
     "CarScanView": {
@@ -263,7 +275,8 @@
             "model": "Modelo",
             "prevPage": "Voltar",
             "nextPage": "Seguinte",
-            "pageInfo": "Seite {page} von {totalPages} ({total} Scans)"
+            "pageInfo": "Seite {page} von {totalPages} ({total} Scans)",
+            "searchPlaceholder": "Pesquisar..."
         },
         "upload": {
             "title": "Carregar documento de circulação",

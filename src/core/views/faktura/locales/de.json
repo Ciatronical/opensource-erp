@@ -457,6 +457,22 @@
                 "existingShipments": "Bestehende Sendungen"
             }
         },
+        "dhl": {
+            "title": "DHL Versandetikett erstellen",
+            "recipient": "Empfänger",
+            "weight": "Gewicht",
+            "weightRequired": "Gewicht ist erforderlich",
+            "product": "DHL-Produkt",
+            "dimensions": "Paketmaße (optional)",
+            "length": "Länge",
+            "width": "Breite",
+            "height": "Höhe",
+            "create": "Etikett erstellen",
+            "success": "DHL-Label erstellt — Sendungsnr. {shipmentNo}",
+            "error": "Fehler beim Erstellen des DHL-Labels",
+            "deleted": "DHL-Sendung storniert",
+            "existingShipments": "Bestehende Sendungen"
+        },
         "alerts": {
             "warning_no_permission": "Zugriff verweigert: Sie haben nicht die erforderlichen Berechtigungen, um dieses Dokument anzuzeigen. Bitte wenden Sie sich an Ihren Administrator."
         }

@@ -1335,6 +1335,14 @@ CREATE TABLE public.bank_transactions (
     qr_reference text,
     exchangerate numeric(15,5),
     end_to_end_id text,
+    remote_iban varchar(40),
+    remote_bic varchar(20),
+    primanota varchar(20),
+    booking_key varchar(10),
+    mandate_reference varchar(64),
+    creditor_id varchar(64),
+    fints_import_id integer,
+    match_status varchar(20) DEFAULT 'unmatched',
     CONSTRAINT bank_transactions_check CHECK ((abs(invoice_amount) <= abs(amount)))
 );
 

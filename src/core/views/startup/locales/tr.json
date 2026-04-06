@@ -81,7 +81,8 @@
         "recipientNoPhone": "Bu alıcının kayıtlı telefon numarası yok.",
         "cancel": "İptal",
         "send": "Gönder",
-        "noCustomerVendor": "Musteri veya tedarikci bulunamadi. Lutfen once bir musteri veya tedarikci olusturun."
+        "noCustomerVendor": "Musteri veya tedarikci bulunamadi. Lutfen once bir musteri veya tedarikci olusturun.",
+        "newVehicle": "Yeni araç"
     },
     "PhoneActions": {
         "clickToCall": "Ara",

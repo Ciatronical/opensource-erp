@@ -15,6 +15,7 @@
         "price": "Hinta",
         "total": "Yhteensa",
         "grossTotal": "Kokonaissumma",
-        "allDay": "Koko paiva"
+        "allDay": "Koko paiva",
+        "exit": "Poistu"
     }
 }

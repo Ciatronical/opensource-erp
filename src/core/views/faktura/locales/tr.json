@@ -287,7 +287,14 @@
                 "deleteAllTooltip": "Alle Anweisungen löschen",
                 "deleteAllConfirm": "Alle Anweisungen löschen?",
                 "deleteAllConfirmText": "Sollen wirklich alle {count} Anweisungen dieses Auftrags gelöscht werden?",
-                "deleteAll": "Tümünü sil"
+                "deleteAll": "Tümünü sil",
+                "timerTooltip": "Zaman Takibi",
+                "timerStart": "Zamanlayıcıyı başlat",
+                "timerStop": "Zamanlayıcıyı durdur",
+                "timerPaused": "Mola",
+                "timerRunning": "Zamanlayıcı çalışıyor",
+                "timerOutsideWorkHours": "Zamanlayıcı çalışma saatleri dışında başlatılamaz. Çalışma saatleri LxCars yapılandırmasından ayarlanabilir.",
+                "timerError": "Zaman takibi hatası"
             },
             "maengel": {
                 "title": "Mängel",
@@ -316,7 +323,21 @@
                 "createCustomDescription": "Açıklama",
                 "createCustomKlassen": "Mögliche Mängelklassen",
                 "createCustomSave": "Anlegen"
-            }
+            },
+            "requestPart": "Yedek parça talep et",
+            "partsOrdered": "Tedarikçiden sipariş edildi",
+            "partsOnTheWay": "Sipariş edildi — yolda",
+            "selectVendor": "Tedarikçi seç",
+            "reorderVendor": "Yeniden sipariş ver",
+            "noVendors": "Tedarikçi bulunamadı",
+            "searchVendor": "Tedarikçi ara...",
+            "partPhoto": "Parça fotoğrafı",
+            "addPhoto": "Fotoğraf ekle",
+            "viewPhoto": "Fotoğrafı görüntüle",
+            "selectPhoto": "Fotoğraf çek veya seç",
+            "noPhotos": "Henüz fotoğraf yok",
+            "photoDone": "Tamam",
+            "taxIncluded": "Vergi fiyata dahil"
         },
         "workflow": {
             "created": "Dokument erfolgreich erstellt",
@@ -417,6 +438,22 @@
                 "send": "Gönder",
                 "defaultMessage": "Anbei erhalten Sie {type} Nr. {number}.",
                 "noPhone": "Für diesen Kunden ist keine Telefonnummer hinterlegt."
+            },
+            "dhl": {
+                "title": "DHL gönderi etiketi oluştur",
+                "recipient": "Alıcı",
+                "weight": "Ağırlık",
+                "weightRequired": "Ağırlık zorunludur",
+                "product": "DHL ürünü",
+                "dimensions": "Paket boyutları (isteğe bağlı)",
+                "length": "Uzunluk",
+                "width": "Genişlik",
+                "height": "Yükseklik",
+                "create": "Etiket oluştur",
+                "success": "DHL etiketi oluşturuldu — Takip No. {shipmentNo}",
+                "error": "DHL etiketi oluşturulurken hata",
+                "deleted": "DHL gönderisi iptal edildi",
+                "existingShipments": "Mevcut gönderiler"
             }
         },
         "dhl": {

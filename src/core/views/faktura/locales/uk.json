@@ -287,7 +287,14 @@
                 "deleteAllTooltip": "Видалити всі інструкції",
                 "deleteAllConfirm": "Видалити всі інструкції?",
                 "deleteAllConfirmText": "Дійсно видалити всі {count} інструкцій цього замовлення?",
-                "deleteAll": "Видалити всі"
+                "deleteAll": "Видалити всі",
+                "timerTooltip": "Облік робочого часу",
+                "timerStart": "Запустити таймер",
+                "timerStop": "Зупинити таймер",
+                "timerPaused": "Перерва",
+                "timerRunning": "Таймер працює",
+                "timerOutsideWorkHours": "Таймер не можна запустити поза робочим часом. Робочий час можна налаштувати в конфігурації LxCars.",
+                "timerError": "Помилка обліку робочого часу"
             },
             "maengel": {
                 "title": "Дефекти",
@@ -316,7 +323,21 @@
                 "createCustomDescription": "Опис",
                 "createCustomKlassen": "Можливі класи дефектів",
                 "createCustomSave": "Створити"
-            }
+            },
+            "requestPart": "Замовити запчастину",
+            "partsOrdered": "Замовлено у постачальника",
+            "partsOnTheWay": "Замовлено — в дорозі",
+            "selectVendor": "Обрати постачальника",
+            "reorderVendor": "Повторне замовлення від",
+            "noVendors": "Немає доступних постачальників",
+            "searchVendor": "Шукати постачальника...",
+            "partPhoto": "Фото деталі",
+            "addPhoto": "Додати фото",
+            "viewPhoto": "Переглянути фото",
+            "selectPhoto": "Сфотографувати або обрати фото",
+            "noPhotos": "Фотографій ще немає",
+            "photoDone": "Готово",
+            "taxIncluded": "Податок включено в ціну"
         },
         "workflow": {
             "created": "Документ успішно створено",
@@ -417,6 +438,22 @@
                 "send": "Надіслати",
                 "defaultMessage": "У додатку ви отримаєте {type} № {number}.",
                 "noPhone": "Для цього клієнта не вказано номер телефону."
+            },
+            "dhl": {
+                "title": "Створити транспортну етикетку DHL",
+                "recipient": "Одержувач",
+                "weight": "Вага",
+                "weightRequired": "Вага є обов'язковою",
+                "product": "Продукт DHL",
+                "dimensions": "Розміри посилки (необов'язково)",
+                "length": "Довжина",
+                "width": "Ширина",
+                "height": "Висота",
+                "create": "Створити етикетку",
+                "success": "Етикетку DHL створено — Номер відстеження {shipmentNo}",
+                "error": "Помилка при створенні етикетки DHL",
+                "deleted": "Відправлення DHL скасовано",
+                "existingShipments": "Наявні відправлення"
             }
         },
         "dhl": {

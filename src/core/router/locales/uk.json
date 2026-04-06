@@ -36,7 +36,9 @@
         "wikiEdit": "/wiki/bearbeiten",
         "userConfig": "/benutzer/konfiguration",
         "huSerienbrief": "/serienbrief/hu",
-        "wallDisplay": "/wandanzeige"
+        "wallDisplay": "/wandanzeige",
+        "editCv": "/klient-postachalnyk/redahuvaty",
+        "lxcarsReports": "/korystuvach/zvity"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Помилка: Файл паролів api/config/api.passwd.php не знайдено. Будь ласка, перейменуйте файл api/config/api.passwd.php.example на api/config/api.passwd.php та налаштуйте параметри відповідно.",

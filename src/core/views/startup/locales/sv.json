@@ -81,7 +81,8 @@
         "recipientNoPhone": "Denna mottagare har inget registrerat telefonnummer.",
         "cancel": "Avbryt",
         "send": "Skicka",
-        "noCustomerVendor": "Ingen kund eller leverantoer hittades. Skapa en kund eller leverantoer foerst."
+        "noCustomerVendor": "Ingen kund eller leverantoer hittades. Skapa en kund eller leverantoer foerst.",
+        "newVehicle": "Nytt fordon"
     },
     "PhoneActions": {
         "clickToCall": "Ring",

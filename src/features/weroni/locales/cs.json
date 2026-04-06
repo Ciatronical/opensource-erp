@@ -1,0 +1,30 @@
+{
+    "weroni": {
+        "subtitle": "AI kancelářská asistentka",
+        "tooltip": "Weroni — AI kancelářská asistentka",
+        "tabs": {
+            "chat": "Chat",
+            "tasks": "Úkoly",
+            "questions": "Dotazy"
+        },
+        "chat": {
+            "welcome": "Ahoj! Jsem Weroni, tvoje AI kancelářská asistentka. Jak ti mohu pomoci?",
+            "examples": "\"Máš nové e-maily?\" · \"Najdi zákazníka z Garzau s Opelem\" · \"Vytvoř úkol: založit GmbH\"",
+            "placeholder": "Zpráva pro Weroni...",
+            "thinking": "Weroni přemýšlí...",
+            "newSession": "Nová konverzace",
+            "uploadDoc": "Nahrát dokument",
+            "dropHere": "Přetáhněte dokument sem"
+        },
+        "tasks": {
+            "empty": "Žádné otevřené úkoly",
+            "needsConfirm": "Vyžaduje potvrzení",
+            "confirm": "Potvrdit",
+            "reject": "Odmítnout"
+        },
+        "questions": {
+            "empty": "Žádné otevřené dotazy",
+            "answerPlaceholder": "Zadejte odpověď..."
+        }
+    }
+}

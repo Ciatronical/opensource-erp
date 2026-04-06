@@ -81,7 +81,8 @@
         "recipientNoPhone": "该收件人没有存储电话号码。",
         "cancel": "取消",
         "send": "发送",
-        "noCustomerVendor": "未找到客户或供应商。请先创建客户或供应商。"
+        "noCustomerVendor": "未找到客户或供应商。请先创建客户或供应商。",
+        "newVehicle": "新车辆"
     },
     "PhoneActions": {
         "clickToCall": "拨打电话",

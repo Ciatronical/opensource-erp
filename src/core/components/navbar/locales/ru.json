@@ -27,7 +27,9 @@
         "companyName": "Firmenname",
         "dbName": "Datenbankname",
         "dbNameHint": "Nur Kleinbuchstaben, Ziffern und Unterstriche",
-        "createCompany": "Firma anlegen"
+        "createCompany": "Firma anlegen",
+        "currentCV": "Клиент/Поставщик:",
+        "reports": "Отчеты"
     },
     "GlobalSearch": {
         "placeholder": "Поиск...",
@@ -46,6 +48,13 @@
     "InfoBar": {
         "unknownCaller": "Неизвестный",
         "closeAll": "Закрыть все уведомления",
-        "pendingParts": "Запчасти запрошены"
+        "pendingParts": "Запчасти запрошены",
+        "partsDialogTitle": "Ожидающие запросы на запчасти",
+        "partsEmpty": "Нет ожидающих запросов",
+        "order": "Заказ",
+        "requestedBy": "от",
+        "selectVendor": "Поиск поставщика...",
+        "markOrdered": "Отметить {count} как заказанные",
+        "yesterday": "Вчера"
     }
 }

@@ -287,7 +287,14 @@
                 "deleteAllTooltip": "Alle Anweisungen löschen",
                 "deleteAllConfirm": "Alle Anweisungen löschen?",
                 "deleteAllConfirmText": "Sollen wirklich alle {count} Anweisungen dieses Auftrags gelöscht werden?",
-                "deleteAll": "Dzēst visus"
+                "deleteAll": "Dzēst visus",
+                "timerTooltip": "Laika uzskaite",
+                "timerStart": "Sākt taimeri",
+                "timerStop": "Apturēt taimeri",
+                "timerPaused": "Pauze",
+                "timerRunning": "Taimeris darbojas",
+                "timerOutsideWorkHours": "Taimeri nevar palaist ārpus darba laika. Darba laiku var pielāgot LxCars konfigurācijā.",
+                "timerError": "Laika uzskaites kļūda"
             },
             "maengel": {
                 "title": "Mängel",
@@ -316,7 +323,21 @@
                 "createCustomDescription": "Apraksts",
                 "createCustomKlassen": "Mögliche Mängelklassen",
                 "createCustomSave": "Anlegen"
-            }
+            },
+            "requestPart": "Pasūtīt rezerves daļu",
+            "partsOrdered": "Pasūtīts no piegādātāja",
+            "partsOnTheWay": "Pasūtīts — ceļā",
+            "selectVendor": "Izvēlēties piegādātāju",
+            "reorderVendor": "Atkārtoti pasūtīt no",
+            "noVendors": "Nav pieejamu piegādātāju",
+            "searchVendor": "Meklēt piegādātāju...",
+            "partPhoto": "Detaļas foto",
+            "addPhoto": "Pievienot foto",
+            "viewPhoto": "Skatīt foto",
+            "selectPhoto": "Fotografēt vai izvēlēties foto",
+            "noPhotos": "Pagaidām nav fotoattēlu",
+            "photoDone": "Gatavs",
+            "taxIncluded": "Nodoklis iekļauts cenā"
         },
         "workflow": {
             "created": "Dokument erfolgreich erstellt",
@@ -417,6 +438,22 @@
                 "send": "Nosūtīt",
                 "defaultMessage": "Anbei erhalten Sie {type} Nr. {number}.",
                 "noPhone": "Für diesen Kunden ist keine Telefonnummer hinterlegt."
+            },
+            "dhl": {
+                "title": "Izveidot DHL sūtījuma etiķeti",
+                "recipient": "Saņēmējs",
+                "weight": "Svars",
+                "weightRequired": "Svars ir obligāts",
+                "product": "DHL produkts",
+                "dimensions": "Pakas izmēri (neobligāti)",
+                "length": "Garums",
+                "width": "Platums",
+                "height": "Augstums",
+                "create": "Izveidot etiķeti",
+                "success": "DHL etiķete izveidota — Izsekošanas nr. {shipmentNo}",
+                "error": "Kļūda, veidojot DHL etiķeti",
+                "deleted": "DHL sūtījums atcelts",
+                "existingShipments": "Esošie sūtījumi"
             }
         },
         "dhl": {

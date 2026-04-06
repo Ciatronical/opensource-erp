@@ -620,6 +620,26 @@ export const oserpStore = defineStore('oserpStore', () => {
     }
 
     // =========================================================================
+    // BANKING - BANKKONTEN
+    // =========================================================================
+
+    const banking_accounts = ref([]);
+    const banking_unmatched_total = ref(0);
+
+    /**
+     * Laedt Banking-Uebersicht (Konten mit Salden)
+     */
+    async function fetchBankingOverview() {
+        const response = await axios.post('/api/banking/', { action: 'getBankingOverview' });
+        if (response.data.success) {
+            banking_accounts.value = response.data.payload.accounts || [];
+            banking_unmatched_total.value = banking_accounts.value.reduce(
+                (sum, a) => sum + (a.unmatched_count || 0), 0
+            );
+        }
+    }
+
+    // =========================================================================
     // CUSTOMER/VENDOR - KUNDEN/LIEFERANTEN
     // =========================================================================
 
@@ -757,6 +777,11 @@ export const oserpStore = defineStore('oserpStore', () => {
         deleteBankAccount,
         reorderBankAccounts,
         getBankDataFromIban,
+
+        // Banking
+        banking_accounts,
+        banking_unmatched_total,
+        fetchBankingOverview,
 
         // Customer/Vendor
         checkDuplicateCV,

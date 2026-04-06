@@ -81,7 +81,8 @@
         "recipientNoPhone": "Acest destinatar nu are un număr de telefon salvat.",
         "cancel": "Anulare",
         "send": "Trimite",
-        "noCustomerVendor": "Nu a fost găsit niciun client sau furnizor. Vă rugăm să creați mai întâi un client sau furnizor."
+        "noCustomerVendor": "Nu a fost găsit niciun client sau furnizor. Vă rugăm să creați mai întâi un client sau furnizor.",
+        "newVehicle": "Vehicul nou"
     },
     "PhoneActions": {
         "clickToCall": "Apelare",

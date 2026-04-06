@@ -287,7 +287,14 @@
                 "deleteAllTooltip": "Alle Anweisungen löschen",
                 "deleteAllConfirm": "Alle Anweisungen löschen?",
                 "deleteAllConfirmText": "Sollen wirklich alle {count} Anweisungen dieses Auftrags gelöscht werden?",
-                "deleteAll": "Smazat vše"
+                "deleteAll": "Smazat vše",
+                "timerTooltip": "Evidence pracovní doby",
+                "timerStart": "Spustit časovač",
+                "timerStop": "Zastavit časovač",
+                "timerPaused": "Přestávka",
+                "timerRunning": "Časovač běží",
+                "timerOutsideWorkHours": "Časovač nelze spustit mimo pracovní dobu. Pracovní dobu lze upravit v konfiguraci LxCars.",
+                "timerError": "Chyba evidence pracovní doby"
             },
             "maengel": {
                 "title": "Mängel",
@@ -316,7 +323,21 @@
                 "createCustomDescription": "Popis",
                 "createCustomKlassen": "Mögliche Mängelklassen",
                 "createCustomSave": "Anlegen"
-            }
+            },
+            "requestPart": "Objednat náhradní díl",
+            "partsOrdered": "Objednáno u dodavatele",
+            "partsOnTheWay": "Objednáno — na cestě",
+            "selectVendor": "Vybrat dodavatele",
+            "reorderVendor": "Znovu objednat od",
+            "noVendors": "Žádní dodavatelé k dispozici",
+            "searchVendor": "Hledat dodavatele...",
+            "partPhoto": "Foto dílu",
+            "addPhoto": "Přidat foto",
+            "viewPhoto": "Zobrazit foto",
+            "selectPhoto": "Vyfotit nebo vybrat foto",
+            "noPhotos": "Zatím žádné fotografie",
+            "photoDone": "Hotovo",
+            "taxIncluded": "Cena včetně daně"
         },
         "workflow": {
             "created": "Dokument erfolgreich erstellt",
@@ -417,6 +438,22 @@
                 "send": "Odeslat",
                 "defaultMessage": "Anbei erhalten Sie {type} Nr. {number}.",
                 "noPhone": "Für diesen Kunden ist keine Telefonnummer hinterlegt."
+            },
+            "dhl": {
+                "title": "Vytvořit DHL přepravní štítek",
+                "recipient": "Příjemce",
+                "weight": "Hmotnost",
+                "weightRequired": "Hmotnost je povinná",
+                "product": "DHL produkt",
+                "dimensions": "Rozměry balíku (volitelné)",
+                "length": "Délka",
+                "width": "Šířka",
+                "height": "Výška",
+                "create": "Vytvořit štítek",
+                "success": "DHL štítek vytvořen — Sledovací číslo {shipmentNo}",
+                "error": "Chyba při vytváření DHL štítku",
+                "deleted": "DHL zásilka zrušena",
+                "existingShipments": "Existující zásilky"
             }
         },
         "dhl": {

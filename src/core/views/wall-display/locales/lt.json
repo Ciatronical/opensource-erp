@@ -15,6 +15,7 @@
         "price": "Kaina",
         "total": "Iš viso",
         "grossTotal": "Bendra suma",
-        "allDay": "Visa diena"
+        "allDay": "Visa diena",
+        "exit": "Išeiti"
     }
 }

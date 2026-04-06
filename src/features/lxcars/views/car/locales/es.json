@@ -246,6 +246,18 @@
             "newArticle": "Nuevo artículo",
             "edit": "Bearbeiten",
             "noArticles": "Keine Wissensartikel für diesen Fahrzeugtyp vorhanden."
+        },
+        "chat": {
+            "title": "AI Maestro de Taller",
+            "empty": "Haga una pregunta sobre este vehículo — p. ej. diagnósticos, trabajos realizados o intervalos de servicio.",
+            "placeholder": "Haga una pregunta...",
+            "clear": "Borrar historial de chat",
+            "clearConfirmTitle": "¿Borrar historial de chat?",
+            "clearConfirmText": "Todo el historial de chat de este vehículo se eliminará permanentemente.",
+            "clearConfirm": "Eliminar",
+            "clearCancel": "Cancelar",
+            "errorTitle": "Error",
+            "errorText": "No se pudo procesar la solicitud. Inténtelo de nuevo."
         }
     },
     "CarScanView": {
@@ -263,7 +275,8 @@
             "model": "Modelo",
             "prevPage": "Atrás",
             "nextPage": "Siguiente",
-            "pageInfo": "Seite {page} von {totalPages} ({total} Scans)"
+            "pageInfo": "Seite {page} von {totalPages} ({total} Scans)",
+            "searchPlaceholder": "Buscar..."
         },
         "upload": {
             "title": "Subir permiso de circulación",

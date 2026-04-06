@@ -36,7 +36,9 @@
         "wikiEdit": "/wiki/bearbeiten",
         "userConfig": "/benutzer/konfiguration",
         "huSerienbrief": "/serienbrief/hu",
-        "wallDisplay": "/wandanzeige"
+        "wallDisplay": "/wandanzeige",
+        "editCv": "/cliente-fornitore/modifica",
+        "lxcarsReports": "/utente/report"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Errore: Il file della password api/config/api.passwd.php non è stato trovato. Rinominare il file api/config/api.passwd.php.example in api/config/api.passwd.php e regolare le impostazioni.",

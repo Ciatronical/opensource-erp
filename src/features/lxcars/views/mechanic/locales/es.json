@@ -39,6 +39,10 @@
         "pendingParts": "Repuestos solicitados",
         "cancel": "Cancelar",
         "delete": "Eliminar",
-        "save": "Guardar"
+        "save": "Guardar",
+        "myOrders": "Mías",
+        "allOrders": "Todas",
+        "refresh": "Actualizar",
+        "exitMechanic": "Salir del modo mecánico"
     }
 }

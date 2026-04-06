@@ -143,7 +143,9 @@
             "cancel": "Annuleren",
             "error": "Fout bij het verwijderen van het voertuig"
         },
-        "registration": { "button": "Registratie" },
+        "registration": {
+            "button": "Registratie"
+        },
         "yellowLabel": {
             "button": "Vignet",
             "tooltip": "Groene vignet afdrukken",
@@ -194,7 +196,13 @@
             "noImages": "Geen scanafbeeldingen beschikbaar",
             "loading": "Afbeeldingen worden geladen..."
         },
-        "tireTable": { "type": "Type", "storage": "Opslag", "condition": "Conditie", "summer": "Zo", "winter": "Wi" },
+        "tireTable": {
+            "type": "Type",
+            "storage": "Opslag",
+            "condition": "Conditie",
+            "summer": "Zo",
+            "winter": "Wi"
+        },
         "orderTable": {
             "date": "Datum",
             "firstPosition": "Beschrijving",
@@ -233,7 +241,24 @@
             "maintenanceTooOld": "Datum ligt te ver in het verleden",
             "maintenanceTooFar": "Max. 3 jaar in de toekomst"
         },
-        "wiki": { "title": "Kennisartikelen", "newArticle": "Nieuw artikel", "edit": "Bewerken", "noArticles": "Geen kennisartikelen voor dit voertuigtype beschikbaar." }
+        "wiki": {
+            "title": "Kennisartikelen",
+            "newArticle": "Nieuw artikel",
+            "edit": "Bewerken",
+            "noArticles": "Geen kennisartikelen voor dit voertuigtype beschikbaar."
+        },
+        "chat": {
+            "title": "AI Werkplaatsmeester",
+            "empty": "Stel een vraag over dit voertuig — bijv. diagnose, uitgevoerd werk of onderhoudsintervallen.",
+            "placeholder": "Stel een vraag...",
+            "clear": "Chatgeschiedenis wissen",
+            "clearConfirmTitle": "Chatgeschiedenis wissen?",
+            "clearConfirmText": "De volledige chatgeschiedenis van dit voertuig wordt permanent verwijderd.",
+            "clearConfirm": "Verwijderen",
+            "clearCancel": "Annuleren",
+            "errorTitle": "Fout",
+            "errorText": "Het verzoek kon niet worden verwerkt. Probeer het opnieuw."
+        }
     },
     "CarScanView": {
         "title": "Voertuig aanmaken van scan",
@@ -250,9 +275,15 @@
             "model": "Model",
             "prevPage": "Vorige",
             "nextPage": "Volgende",
-            "pageInfo": "Pagina {page} van {totalPages} ({total} scans)"
+            "pageInfo": "Pagina {page} van {totalPages} ({total} scans)",
+            "searchPlaceholder": "Zoeken..."
         },
-        "upload": { "title": "Kentekenbewijs uploaden", "hint": "Afbeelding of PDF hier neerzetten of klikken om te selecteren", "button": "Scan starten", "formats": "JPG, PNG, PDF" },
+        "upload": {
+            "title": "Kentekenbewijs uploaden",
+            "hint": "Afbeelding of PDF hier neerzetten of klikken om te selecteren",
+            "button": "Scan starten",
+            "formats": "JPG, PNG, PDF"
+        },
         "scanning": "Kentekenbewijs wordt gescand...",
         "result": {
             "title": "Scanresultaat",
@@ -277,8 +308,21 @@
             "technicalData": "Technische gegevens (KBA)",
             "customerSelected": "Klant geselecteerd: {name} (ID: {id})"
         },
-        "buttons": { "createCar": "Voertuig aanmaken", "newCustomer": "Nieuwe klant + voertuig", "saveVehicle": "Voertuig opslaan", "back": "Terug", "rescan": "Nieuwe scan", "upload": "Kentekenbewijs uploaden", "backToList": "Terug naar lijst" },
-        "customerTable": { "name": "Naam", "street": "Straat", "zipcode": "Postcode", "city": "Plaats" },
+        "buttons": {
+            "createCar": "Voertuig aanmaken",
+            "newCustomer": "Nieuwe klant + voertuig",
+            "saveVehicle": "Voertuig opslaan",
+            "back": "Terug",
+            "rescan": "Nieuwe scan",
+            "upload": "Kentekenbewijs uploaden",
+            "backToList": "Terug naar lijst"
+        },
+        "customerTable": {
+            "name": "Naam",
+            "street": "Straat",
+            "zipcode": "Postcode",
+            "city": "Plaats"
+        },
         "newCustomerForm": {
             "carTitle": "Voertuiggegevens",
             "customerTitle": "Klantgegevens",
@@ -296,7 +340,12 @@
             "businessTypeRequired": "Geen klanttype geselecteerd.",
             "emailInvalid": "Ongeldig e-mailadres"
         },
-        "errors": { "noApiKey": "Geen API-sleutel geconfigureerd voor de kentekenbewijsscanner. Configureer deze in de bedrijfsconfiguratie.", "scanFailed": "Scan mislukt", "noImage": "Upload een afbeelding", "loadScans": "Fout bij het laden van de scans" },
+        "errors": {
+            "noApiKey": "Geen API-sleutel geconfigureerd voor de kentekenbewijsscanner. Configureer deze in de bedrijfsconfiguratie.",
+            "scanFailed": "Scan mislukt",
+            "noImage": "Upload een afbeelding",
+            "loadScans": "Fout bij het laden van de scans"
+        },
         "duplicate": {
             "title": "Voertuig bestaat al!",
             "licensePlate": "Kenteken {plate} is al toegewezen (eigenaar: {owner}).",
@@ -314,16 +363,34 @@
         "kbaSelect": {
             "title": "TSN onvolledig - KBA-toewijzing",
             "description": "De TSN bevat wildcards ({tsn}). Selecteer het juiste voertuig uit de KBA-database of ga zonder KBA-toewijzing verder.",
-            "hsn": "HSN", "tsn": "TSN",
+            "hsn": "HSN",
+            "tsn": "TSN",
             "noResults": "Geen KBA-vermeldingen voor HSN {hsn} gevonden.",
             "loading": "KBA-gegevens worden geladen...",
             "selectButton": "Selecteren",
             "skipButton": "Zonder KBA-toewijzing doorgaan",
             "backButton": "Terug",
-            "manufacturer": "Fabrikant", "model": "Model", "displacement": "Cilinderinhoud", "power": "Vermogen", "fuel": "Brandstof", "vehicleType": "Voertuigtype", "search": "Model of TSN zoeken",
-            "confirmDialog": { "title": "In Special-KBA opslaan?", "text": "Kunt u het voertuig echt niet in de KBA-database vinden? U kunt het in de Special-KBA-database opslaan of terugkeren. Dit kan niet ongedaan worden gemaakt. Kijk nog een keer of u het voertuigtype toch kunt vinden en toewijzen!", "confirmButton": "In Special-KBA opslaan", "backButton": "Terug naar KBA-selectie", "required": "Verplicht veld" }
+            "manufacturer": "Fabrikant",
+            "model": "Model",
+            "displacement": "Cilinderinhoud",
+            "power": "Vermogen",
+            "fuel": "Brandstof",
+            "vehicleType": "Voertuigtype",
+            "search": "Model of TSN zoeken",
+            "confirmDialog": {
+                "title": "In Special-KBA opslaan?",
+                "text": "Kunt u het voertuig echt niet in de KBA-database vinden? U kunt het in de Special-KBA-database opslaan of terugkeren. Dit kan niet ongedaan worden gemaakt. Kijk nog een keer of u het voertuigtype toch kunt vinden en toewijzen!",
+                "confirmButton": "In Special-KBA opslaan",
+                "backButton": "Terug naar KBA-selectie",
+                "required": "Verplicht veld"
+            }
         },
-        "wiki": { "title": "Kennisartikelen", "newArticle": "Nieuw artikel", "edit": "Bewerken", "noArticles": "Geen kennisartikelen voor dit voertuigtype beschikbaar." }
+        "wiki": {
+            "title": "Kennisartikelen",
+            "newArticle": "Nieuw artikel",
+            "edit": "Bewerken",
+            "noArticles": "Geen kennisartikelen voor dit voertuigtype beschikbaar."
+        }
     },
     "CarRegView": {
         "title": "Voertuigregistratie",
@@ -332,12 +399,67 @@
         "loadError": "Fout bij het laden van de gegevens",
         "generatePdf": "PDF genereren",
         "pdfError": "Fout bij het genereren van het PDF",
-        "sections": { "auftragsart": "Ordertype", "fahrzeug": "Voertuiggegevens", "halter": "Eigenaargegevens", "gewerbe": "Bedrijfsadres", "eid": "Verklaring op erewoord", "sepa": "SEPA-incassomandaat" },
-        "auftragsarten": { "zulassung": "Registratie", "umschreibung": "Overschrijving", "abmeldung": "Afmelding", "aenderung": "Wijziging", "ersatz": "Vervanging" },
-        "fields": { "kennzeichen": "Kenteken", "fin": "Voertuigidentificatienummer (VIN)", "vorname": "Voornaam", "name": "Naam", "gebdatum": "Geboortedatum", "gebort": "Geboorteplaats", "gebname": "Geboortenaam", "strasse": "Straat", "hsnr": "Huisnummer", "plz": "Postcode", "ort": "Plaats", "geschlecht": "Geslacht", "evb_nummer": "eVB-nummer", "beruf": "Beroep", "firma": "Bedrijf" },
-        "geschlecht": { "weiblich": "vrouwelijk", "maennlich": "mannelijk", "divers": "divers", "firma": "Bedrijf" },
-        "eid": { "fahrzeugschein": "Kentekenbewijs (Deel I)", "fahrzeugbrief": "Kentekencard (Deel II)", "amtlicheskenn": "Officieel kenteken", "roterschein": "Rode kentekens / Tijdelijk kenteken", "fuehrerschein": "Rijbewijs", "betriebserlaubnis": "Bedrijfsvergunning / COC", "sonstiges": "Overig", "sonstigesText": "Overig (tekst)", "erklaerung": "Verklaring (max. 200 tekens)" },
-        "sepa": { "identisch": "Eigenaar = Rekeninghouder", "name": "Naam rekeninghouder", "iban": "IBAN", "bic": "BIC", "bank": "Bank", "land": "Land" },
-        "validation": { "required": "Verplicht veld", "dateFormat": "Ongeldige datum (bijv. 1.3.5 of 15.06.2020)", "ibanFormat": "Ongeldig IBAN-formaat" }
+        "sections": {
+            "auftragsart": "Ordertype",
+            "fahrzeug": "Voertuiggegevens",
+            "halter": "Eigenaargegevens",
+            "gewerbe": "Bedrijfsadres",
+            "eid": "Verklaring op erewoord",
+            "sepa": "SEPA-incassomandaat"
+        },
+        "auftragsarten": {
+            "zulassung": "Registratie",
+            "umschreibung": "Overschrijving",
+            "abmeldung": "Afmelding",
+            "aenderung": "Wijziging",
+            "ersatz": "Vervanging"
+        },
+        "fields": {
+            "kennzeichen": "Kenteken",
+            "fin": "Voertuigidentificatienummer (VIN)",
+            "vorname": "Voornaam",
+            "name": "Naam",
+            "gebdatum": "Geboortedatum",
+            "gebort": "Geboorteplaats",
+            "gebname": "Geboortenaam",
+            "strasse": "Straat",
+            "hsnr": "Huisnummer",
+            "plz": "Postcode",
+            "ort": "Plaats",
+            "geschlecht": "Geslacht",
+            "evb_nummer": "eVB-nummer",
+            "beruf": "Beroep",
+            "firma": "Bedrijf"
+        },
+        "geschlecht": {
+            "weiblich": "vrouwelijk",
+            "maennlich": "mannelijk",
+            "divers": "divers",
+            "firma": "Bedrijf"
+        },
+        "eid": {
+            "fahrzeugschein": "Kentekenbewijs (Deel I)",
+            "fahrzeugbrief": "Kentekencard (Deel II)",
+            "amtlicheskenn": "Officieel kenteken",
+            "roterschein": "Rode kentekens / Tijdelijk kenteken",
+            "fuehrerschein": "Rijbewijs",
+            "betriebserlaubnis": "Bedrijfsvergunning / COC",
+            "sonstiges": "Overig",
+            "sonstigesText": "Overig (tekst)",
+            "erklaerung": "Verklaring (max. 200 tekens)"
+        },
+        "sepa": {
+            "identisch": "Eigenaar = Rekeninghouder",
+            "name": "Naam rekeninghouder",
+            "iban": "IBAN",
+            "bic": "BIC",
+            "bank": "Bank",
+            "land": "Land"
+        },
+        "validation": {
+            "required": "Verplicht veld",
+            "dateFormat": "Ongeldige datum (bijv. 1.3.5 of 15.06.2020)",
+            "ibanFormat": "Ongeldig IBAN-formaat"
+        }
     }
 }

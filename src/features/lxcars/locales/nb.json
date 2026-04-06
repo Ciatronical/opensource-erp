@@ -15,5 +15,19 @@
         "huSerienbrief": "EU-kontroll-varsler",
         "orderSearchTooltip": "Ordresoek",
         "scanTooltip": "Kjoeretoeyer fra scan"
+    },
+    "PartsRequests": {
+        "title": "Reservedeler",
+        "search": "Søk artikkel...",
+        "freetext": "Eller fritekst",
+        "qty": "Antall",
+        "note": "Merknad",
+        "add": "Bestill",
+        "empty": "Ingen reservedeler bestilt",
+        "description": "Beskrivelse",
+        "status": "Status",
+        "requestedBy": "Bestilt av",
+        "pending": "Bestilt",
+        "ordered": "Bestilt"
     }
 }

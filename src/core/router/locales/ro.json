@@ -36,7 +36,9 @@
         "wikiEdit": "/wiki/bearbeiten",
         "userConfig": "/benutzer/konfiguration",
         "huSerienbrief": "/serienbrief/hu",
-        "wallDisplay": "/wandanzeige"
+        "wallDisplay": "/wandanzeige",
+        "editCv": "/client-furnizor/editare",
+        "lxcarsReports": "/utilizator/rapoarte"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Eroare: Fisierul cu parola api/config/api.passwd.php nu a fost gasit. Va rugam redenumiti fisierul api/config/api.passwd.php.example in api/config/api.passwd.php si ajustati setarile corespunzator.",

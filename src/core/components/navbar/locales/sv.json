@@ -27,7 +27,9 @@
         "companyName": "Firmenname",
         "dbName": "Datenbankname",
         "dbNameHint": "Nur Kleinbuchstaben, Ziffern und Unterstriche",
-        "createCompany": "Firma anlegen"
+        "createCompany": "Firma anlegen",
+        "currentCV": "Kund/Leverantör:",
+        "reports": "Rapporter"
     },
     "GlobalSearch": {
         "placeholder": "Sok...",
@@ -46,6 +48,13 @@
     "InfoBar": {
         "unknownCaller": "Okand",
         "closeAll": "Stang alla aviseringar",
-        "pendingParts": "Reservdelar begarda"
+        "pendingParts": "Reservdelar begarda",
+        "partsDialogTitle": "Väntande reservdelsförfrågningar",
+        "partsEmpty": "Inga väntande förfrågningar",
+        "order": "Order",
+        "requestedBy": "av",
+        "selectVendor": "Sök leverantör...",
+        "markOrdered": "Markera {count} som beställda",
+        "yesterday": "Igår"
     }
 }

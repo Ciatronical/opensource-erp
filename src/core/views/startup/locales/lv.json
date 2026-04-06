@@ -81,7 +81,8 @@
         "recipientNoPhone": "Šim saņēmējam nav norādīts tālruņa numurs.",
         "cancel": "Atcelt",
         "send": "Nosūtīt",
-        "noCustomerVendor": "Nav atrasts neviens klients vai piegādātājs. Lūdzu, vispirms izveidojiet klientu vai piegādātāju."
+        "noCustomerVendor": "Nav atrasts neviens klients vai piegādātājs. Lūdzu, vispirms izveidojiet klientu vai piegādātāju.",
+        "newVehicle": "Jauns transportlīdzeklis"
     },
     "PhoneActions": {
         "clickToCall": "Zvanīt",

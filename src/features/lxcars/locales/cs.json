@@ -15,5 +15,19 @@
         "huSerienbrief": "HU-upozorneni",
         "orderSearchTooltip": "Hledani objednavek",
         "scanTooltip": "Vozidla ze skenu"
+    },
+    "PartsRequests": {
+        "title": "Náhradní díly",
+        "search": "Hledat článek...",
+        "freetext": "Nebo volný text",
+        "qty": "Množství",
+        "note": "Poznámka",
+        "add": "Objednat",
+        "empty": "Žádné náhradní díly nebyly požadovány",
+        "description": "Popis",
+        "status": "Stav",
+        "requestedBy": "Požadoval",
+        "pending": "Požadováno",
+        "ordered": "Objednáno"
     }
 }

@@ -39,6 +39,10 @@
         "pendingParts": "Varuosad tellitud",
         "cancel": "Tühista",
         "delete": "Kustuta",
-        "save": "Salvesta"
+        "save": "Salvesta",
+        "myOrders": "Minu",
+        "allOrders": "Kõik",
+        "refresh": "Värskenda",
+        "exitMechanic": "Väljuge mehaanikurežiimist"
     }
 }

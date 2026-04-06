@@ -246,6 +246,18 @@
             "newArticle": "Nyr Artikel",
             "edit": "Redigera",
             "noArticles": "inga Wissensartikel für diesen Fordontyp vorhanden."
+        },
+        "chat": {
+            "title": "AI Verkstadsmästare",
+            "empty": "Ställ en fråga om detta fordon — t.ex. diagnostik, utfört arbete eller serviceintervall.",
+            "placeholder": "Ställ en fråga...",
+            "clear": "Rensa chatthistorik",
+            "clearConfirmTitle": "Rensa chatthistorik?",
+            "clearConfirmText": "Hela chatthistoriken för detta fordon kommer att raderas permanent.",
+            "clearConfirm": "Radera",
+            "clearCancel": "Avbryt",
+            "errorTitle": "Fel",
+            "errorText": "Begäran kunde inte behandlas. Försök igen."
         }
     },
     "CarScanView": {
@@ -263,7 +275,8 @@
             "model": "Modell",
             "prevPage": "Zurück",
             "nextPage": "Weiter",
-            "pageInfo": "Seite {page} von {totalPages} ({total} Scans)"
+            "pageInfo": "Seite {page} von {totalPages} ({total} Scans)",
+            "searchPlaceholder": "Sök..."
         },
         "upload": {
             "title": "Fordonschein hochladen",

@@ -36,7 +36,9 @@
         "wikiEdit": "/wiki/bearbeiten",
         "userConfig": "/benutzer/konfiguration",
         "huSerienbrief": "/serienbrief/hu",
-        "wallDisplay": "/wandanzeige"
+        "wallDisplay": "/wandanzeige",
+        "editCv": "/musteri-tedarikci/duzenle",
+        "lxcarsReports": "/kullanici/raporlar"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Hata: api/config/api.passwd.php parola dosyasi bulunamadi. Lutfen api/config/api.passwd.php.example dosyasini api/config/api.passwd.php olarak yeniden adlandirin ve ayarlari uygun sekilde yapin.",

@@ -1,0 +1,30 @@
+{
+    "weroni": {
+        "subtitle": "YZ ofis asistanı",
+        "tooltip": "Weroni — YZ ofis asistanı",
+        "tabs": {
+            "chat": "Sohbet",
+            "tasks": "Görevler",
+            "questions": "Sorular"
+        },
+        "chat": {
+            "welcome": "Merhaba! Ben Weroni, YZ ofis asistanınız. Size nasıl yardımcı olabilirim?",
+            "examples": "\"Yeni e-posta var mı?\" · \"Garzau'dan Opel'li müşteri bul\" · \"Görev oluştur: GmbH kur\"",
+            "placeholder": "Weroni'ye mesaj...",
+            "thinking": "Weroni düşünüyor...",
+            "newSession": "Yeni sohbet",
+            "uploadDoc": "Belge yükle",
+            "dropHere": "Belgeyi buraya bırakın"
+        },
+        "tasks": {
+            "empty": "Açık görev yok",
+            "needsConfirm": "Onay gerekli",
+            "confirm": "Onayla",
+            "reject": "Reddet"
+        },
+        "questions": {
+            "empty": "Açık soru yok",
+            "answerPlaceholder": "Cevabı girin..."
+        }
+    }
+}

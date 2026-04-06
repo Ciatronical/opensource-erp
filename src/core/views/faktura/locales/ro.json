@@ -287,7 +287,14 @@
                 "deleteAllTooltip": "Alle Anweisungen löschen",
                 "deleteAllConfirm": "Alle Anweisungen löschen?",
                 "deleteAllConfirmText": "Sollen wirklich alle {count} Anweisungen dieses Auftrags gelöscht werden?",
-                "deleteAll": "Șterge toate"
+                "deleteAll": "Șterge toate",
+                "timerTooltip": "Pontaj",
+                "timerStart": "Pornește cronometrul",
+                "timerStop": "Oprește cronometrul",
+                "timerPaused": "Pauză",
+                "timerRunning": "Cronometrul funcționează",
+                "timerOutsideWorkHours": "Cronometrul nu poate fi pornit în afara programului de lucru. Programul de lucru poate fi ajustat în configurația LxCars.",
+                "timerError": "Eroare de pontaj"
             },
             "maengel": {
                 "title": "Mängel",
@@ -316,7 +323,21 @@
                 "createCustomDescription": "Descriere",
                 "createCustomKlassen": "Mögliche Mängelklassen",
                 "createCustomSave": "Anlegen"
-            }
+            },
+            "requestPart": "Solicită piesă de schimb",
+            "partsOrdered": "Comandat de la furnizor",
+            "partsOnTheWay": "Comandat — pe drum",
+            "selectVendor": "Selectare furnizor",
+            "reorderVendor": "Recomandă de la",
+            "noVendors": "Niciun furnizor disponibil",
+            "searchVendor": "Caută furnizor...",
+            "partPhoto": "Foto piesă",
+            "addPhoto": "Adaugă foto",
+            "viewPhoto": "Vezi foto",
+            "selectPhoto": "Fotografiază sau selectează foto",
+            "noPhotos": "Nu există fotografii încă",
+            "photoDone": "Gata",
+            "taxIncluded": "Taxă inclusă în preț"
         },
         "workflow": {
             "created": "Dokument erfolgreich erstellt",
@@ -417,6 +438,22 @@
                 "send": "Trimite",
                 "defaultMessage": "Anbei erhalten Sie {type} Nr. {number}.",
                 "noPhone": "Für diesen Kunden ist keine Telefonnummer hinterlegt."
+            },
+            "dhl": {
+                "title": "Creează etichetă de expediere DHL",
+                "recipient": "Destinatar",
+                "weight": "Greutate",
+                "weightRequired": "Greutatea este obligatorie",
+                "product": "Produs DHL",
+                "dimensions": "Dimensiunile coletului (opțional)",
+                "length": "Lungime",
+                "width": "Lățime",
+                "height": "Înălțime",
+                "create": "Creează etichetă",
+                "success": "Etichetă DHL creată — Nr. de urmărire {shipmentNo}",
+                "error": "Eroare la crearea etichetei DHL",
+                "deleted": "Expediere DHL anulată",
+                "existingShipments": "Expedieri existente"
             }
         },
         "dhl": {

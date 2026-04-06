@@ -15,5 +15,19 @@
         "huSerienbrief": "Muayene bildirimleri",
         "orderSearchTooltip": "Siparis arama",
         "scanTooltip": "Taramadan araclar"
+    },
+    "PartsRequests": {
+        "title": "Yedek Parçalar",
+        "search": "Ürün ara...",
+        "freetext": "Veya serbest metin",
+        "qty": "Adet",
+        "note": "Not",
+        "add": "Talep Et",
+        "empty": "Yedek parça talep edilmedi",
+        "description": "Açıklama",
+        "status": "Durum",
+        "requestedBy": "Talep eden",
+        "pending": "Talep edildi",
+        "ordered": "Sipariş edildi"
     }
 }

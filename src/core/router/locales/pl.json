@@ -36,33 +36,35 @@
         "wikiEdit": "/wiki/bearbeiten",
         "userConfig": "/benutzer/konfiguration",
         "huSerienbrief": "/serienbrief/hu",
-        "wallDisplay": "/wandanzeige"
+        "wallDisplay": "/wandanzeige",
+        "editCv": "/klient-dostawca/edytuj",
+        "lxcarsReports": "/uzytkownik/raporty"
     },
     "errors": {
-        "PASSWORD_FILE_NOT_FOUND": "B\u0142\u0105d: Plik has\u0142a api/config/api.passwd.php nie zosta\u0142 znaleziony. Prosz\u0119 zmieni\u0107 nazw\u0119 pliku api/config/api.passwd.php.example na api/config/api.passwd.php i dostosowa\u0107 ustawienia.",
-        "CONFIG_FILE_NOT_FOUND": "B\u0142\u0105d: Plik konfiguracyjny nie zosta\u0142 znaleziony. Prosz\u0119 sprawdzi\u0107 ustawienia."
+        "PASSWORD_FILE_NOT_FOUND": "Błąd: Plik hasła api/config/api.passwd.php nie został znaleziony. Proszę zmienić nazwę pliku api/config/api.passwd.php.example na api/config/api.passwd.php i dostosować ustawienia.",
+        "CONFIG_FILE_NOT_FOUND": "Błąd: Plik konfiguracyjny nie został znaleziony. Proszę sprawdzić ustawienia."
     },
     "MasterDataMenu": {
         "title": "Dane podstawowe",
         "editCustomer": "Edytuj dane klienta",
-        "newCustomer": "Utw\u00f3rz nowego klienta",
-        "manageCustomers": "Zarz\u0105dzaj klientami",
+        "newCustomer": "Utwórz nowego klienta",
+        "manageCustomers": "Zarządzaj klientami",
         "search": "Szukaj",
-        "searchCustomers": "Szukaj klient\u00f3w",
-        "newVendor": "Utw\u00f3rz nowego dostawc\u0119",
+        "searchCustomers": "Szukaj klientów",
+        "newVendor": "Utwórz nowego dostawcę",
         "calendar": "Kalendarz"
     },
     "ContactMenu": {
         "title": "Kontakt",
-        "callHistory": "Historia po\u0142\u0105cze\u0144",
+        "callHistory": "Historia połączeń",
         "emails": "E-maile",
         "whatsapp": "WhatsApp"
     },
     "SalesMenu": {
-        "title": "Sprzeda\u017c",
-        "newQuotation": "Utw\u00f3rz now\u0105 ofert\u0119",
-        "newOrder": "Utw\u00f3rz nowe zam\u00f3wienie",
-        "newInvoice": "Utw\u00f3rz now\u0105 faktur\u0119",
+        "title": "Sprzedaż",
+        "newQuotation": "Utwórz nową ofertę",
+        "newOrder": "Utwórz nowe zamówienie",
+        "newInvoice": "Utwórz nową fakturę",
         "manageCreditNotes": "Korekty"
     },
     "SystemMenu": {

@@ -27,7 +27,9 @@
         "companyName": "Firmenname",
         "dbName": "Datenbankname",
         "dbNameHint": "Nur Kleinbuchstaben, Ziffern und Unterstriche",
-        "createCompany": "Firma anlegen"
+        "createCompany": "Firma anlegen",
+        "currentCV": "Klient/Tarnija:",
+        "reports": "Aruanded"
     },
     "GlobalSearch": {
         "placeholder": "Otsi...",
@@ -46,6 +48,13 @@
     "InfoBar": {
         "unknownCaller": "Tundmatu",
         "closeAll": "Sulge kõik teavitused",
-        "pendingParts": "Varuosad tellitud"
+        "pendingParts": "Varuosad tellitud",
+        "partsDialogTitle": "Ootel olevad varuosade päringud",
+        "partsEmpty": "Ootel olevaid päringuid pole",
+        "order": "Tellimus",
+        "requestedBy": "poolt",
+        "selectVendor": "Otsi tarnijat...",
+        "markOrdered": "Märgi {count} telllituks",
+        "yesterday": "Eile"
     }
 }

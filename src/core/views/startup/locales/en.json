@@ -71,6 +71,17 @@
         "noVendorOffers": "No request quotations available",
         "noVendorOrders": "No purchase orders available",
         "noVendorInvoices": "No purchase invoices available",
+        "sendAddressWhatsApp": "Send address via WhatsApp",
+        "selectRecipient": "Select recipient",
+        "addressToSend": "Address to be sent",
+        "customer": "Customer",
+        "vendor": "Vendor",
+        "searchRecipient": "Search recipient",
+        "searchRecipientHint": "Enter at least 3 characters...",
+        "noPhone": "No phone number",
+        "recipientNoPhone": "This recipient has no phone number stored.",
+        "cancel": "Cancel",
+        "send": "Send",
         "noCustomerVendor": "No customer or vendor found. Please create a customer or vendor first."
     },
     "PhoneActions": {

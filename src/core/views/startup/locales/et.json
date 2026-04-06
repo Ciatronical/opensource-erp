@@ -81,7 +81,8 @@
         "recipientNoPhone": "Sellel saajal puudub telefoninumber.",
         "cancel": "Tühista",
         "send": "Saada",
-        "noCustomerVendor": "Klienti ega tarnijat ei leitud. Palun looge esmalt klient voi tarnija."
+        "noCustomerVendor": "Klienti ega tarnijat ei leitud. Palun looge esmalt klient voi tarnija.",
+        "newVehicle": "Uus sõiduk"
     },
     "PhoneActions": {
         "clickToCall": "Helista",

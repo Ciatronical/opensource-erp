@@ -36,7 +36,9 @@
         "wikiEdit": "/wiki/bearbeiten",
         "userConfig": "/benutzer/konfiguration",
         "huSerienbrief": "/serienbrief/hu",
-        "wallDisplay": "/wandanzeige"
+        "wallDisplay": "/wandanzeige",
+        "editCv": "/customer-vendor/edit",
+        "lxcarsReports": "/user/reports"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "错误：未找到密码文件 api/config/api.passwd.php。请将文件 api/config/api.passwd.php.example 重命名为 api/config/api.passwd.php 并相应调整设置。",

@@ -1,0 +1,30 @@
+{
+    "weroni": {
+        "subtitle": "AI-toimistoavustaja",
+        "tooltip": "Weroni — AI-toimistoavustaja",
+        "tabs": {
+            "chat": "Chat",
+            "tasks": "Tehtävät",
+            "questions": "Kysymykset"
+        },
+        "chat": {
+            "welcome": "Hei! Olen Weroni, AI-toimistoavustajasi. Miten voin auttaa?",
+            "examples": "\"Onko uusia sähköposteja?\" · \"Etsi asiakas Garzausta Opelilla\" · \"Luo tehtävä: perustaa GmbH\"",
+            "placeholder": "Viesti Weronille...",
+            "thinking": "Weroni miettii...",
+            "newSession": "Uusi keskustelu",
+            "uploadDoc": "Lataa asiakirja",
+            "dropHere": "Pudota asiakirja tähän"
+        },
+        "tasks": {
+            "empty": "Ei avoimia tehtäviä",
+            "needsConfirm": "Vahvistus tarvitaan",
+            "confirm": "Vahvista",
+            "reject": "Hylkää"
+        },
+        "questions": {
+            "empty": "Ei avoimia kysymyksiä",
+            "answerPlaceholder": "Kirjoita vastaus..."
+        }
+    }
+}

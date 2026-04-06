@@ -27,7 +27,9 @@
         "companyName": "Firmenname",
         "dbName": "Datenbankname",
         "dbNameHint": "Nur Kleinbuchstaben, Ziffern und Unterstriche",
-        "createCompany": "Firma anlegen"
+        "createCompany": "Firma anlegen",
+        "currentCV": "Müşteri/Tedarikçi:",
+        "reports": "Raporlar"
     },
     "GlobalSearch": {
         "placeholder": "Ara...",
@@ -46,6 +48,13 @@
     "InfoBar": {
         "unknownCaller": "Bilinmeyen",
         "closeAll": "Tüm bildirimleri kapat",
-        "pendingParts": "Talep edilen yedek parçalar"
+        "pendingParts": "Talep edilen yedek parçalar",
+        "partsDialogTitle": "Bekleyen yedek parça talepleri",
+        "partsEmpty": "Bekleyen talep yok",
+        "order": "Sipariş",
+        "requestedBy": "tarafından",
+        "selectVendor": "Tedarikçi ara...",
+        "markOrdered": "{count} adet sipariş edildi olarak işaretle",
+        "yesterday": "Dün"
     }
 }

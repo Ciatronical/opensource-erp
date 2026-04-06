@@ -246,6 +246,18 @@
             "newArticle": "Neuer Artikel",
             "edit": "Editare",
             "noArticles": "Keine Wissensartikel für diesen Fahrzeugtyp vorhanden."
+        },
+        "chat": {
+            "title": "AI Maistru Atelier",
+            "empty": "Puneți o întrebare despre acest vehicul — de ex. diagnosticare, lucrări efectuate sau intervale de service.",
+            "placeholder": "Puneți o întrebare...",
+            "clear": "Șterge istoricul conversației",
+            "clearConfirmTitle": "Ștergeți istoricul conversației?",
+            "clearConfirmText": "Întregul istoric de conversație al acestui vehicul va fi șters permanent.",
+            "clearConfirm": "Șterge",
+            "clearCancel": "Anulează",
+            "errorTitle": "Eroare",
+            "errorText": "Cererea nu a putut fi procesată. Vă rugăm încercați din nou."
         }
     },
     "CarScanView": {
@@ -263,7 +275,8 @@
             "model": "Modell",
             "prevPage": "Zurück",
             "nextPage": "Weiter",
-            "pageInfo": "Seite {page} von {totalPages} ({total} Scans)"
+            "pageInfo": "Seite {page} von {totalPages} ({total} Scans)",
+            "searchPlaceholder": "Caută..."
         },
         "upload": {
             "title": "Fahrzeugschein hochladen",

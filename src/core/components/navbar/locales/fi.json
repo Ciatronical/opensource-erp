@@ -27,7 +27,9 @@
         "companyName": "Firmenname",
         "dbName": "Datenbankname",
         "dbNameHint": "Nur Kleinbuchstaben, Ziffern und Unterstriche",
-        "createCompany": "Firma anlegen"
+        "createCompany": "Firma anlegen",
+        "currentCV": "Asiakas/Toimittaja:",
+        "reports": "Raportit"
     },
     "GlobalSearch": {
         "placeholder": "Hae...",
@@ -46,6 +48,13 @@
     "InfoBar": {
         "unknownCaller": "Tuntematon",
         "closeAll": "Sulje kaikki ilmoitukset",
-        "pendingParts": "Pyydetyt varaosat"
+        "pendingParts": "Pyydetyt varaosat",
+        "partsDialogTitle": "Avoimet varaosapyynnöt",
+        "partsEmpty": "Ei avoimia pyyntöjä",
+        "order": "Tilaus",
+        "requestedBy": "tekijä",
+        "selectVendor": "Hae toimittajaa...",
+        "markOrdered": "Merkitse {count} tilatuksi",
+        "yesterday": "Eilen"
     }
 }

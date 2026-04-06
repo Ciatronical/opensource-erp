@@ -86,6 +86,21 @@ export function useNavigationCards() {
             }
         )
 
+        // Banking-Menü
+        result.push(
+            {
+                title: t('BankingView.menu.title'),
+                icon: 'mdi-bank',
+                items: [
+                    { title: t('BankingView.menu.overview'), to: t('BankingView.routes.bankingOverview') },
+                    '-',
+                    { title: t('BankingView.menu.reconciliation'), to: t('BankingView.routes.bankingReconciliation') },
+                    '-',
+                    { title: t('BankingView.menu.transfers'), to: t('BankingView.routes.bankingTransfers') }
+                ]
+            }
+        )
+
         // Wiki-Menü
         result.push(
             {

@@ -81,7 +81,8 @@
         "recipientNoPhone": "Deze ontvanger heeft geen telefoonnummer geregistreerd.",
         "cancel": "Annuleren",
         "send": "Versturen",
-        "noCustomerVendor": "Geen klant of leverancier gevonden. Maak eerst een klant of leverancier aan."
+        "noCustomerVendor": "Geen klant of leverancier gevonden. Maak eerst een klant of leverancier aan.",
+        "newVehicle": "Nieuw voertuig"
     },
     "PhoneActions": {
         "clickToCall": "Bellen",

@@ -12,6 +12,8 @@
         "ERROR": "Fehler bei der Anmeldung. Bitte versuchen Sie es erneut.",
         "ERROR_LOADING_CLIENTS": "Fehler beim Laden der Mandanten. Bitte versuchen Sie es später erneut.",
         "USER_NOT_ASSIGNED_TO_CLIENT": "Benutzer nicht dem Mandanten zugeordnet.",
+        "PASSWORD_FILE_NOT_FOUND": "Error: The password file api/config/api.passwd.php was not found. Please rename the file api/config/api.passwd.php.example to api/config/api.passwd.php and adjust the settings accordingly.",
+        "CONFIG_FILE_NOT_FOUND": "Error: The configuration file was not found. Please check the settings.",
         "updateButton": "Run update",
         "updateSuccess": "Database update completed successfully.",
         "updateError": "Database update failed. Please try again.",

@@ -15,5 +15,19 @@
         "huSerienbrief": "Katsastusilmoitukset",
         "orderSearchTooltip": "Tilaushaku",
         "scanTooltip": "Ajoneuvot skannauksesta"
+    },
+    "PartsRequests": {
+        "title": "Varaosat",
+        "search": "Etsi artikkelia...",
+        "freetext": "Tai vapaa teksti",
+        "qty": "Määrä",
+        "note": "Huomautus",
+        "add": "Tilaa",
+        "empty": "Ei tilattuja varaosia",
+        "description": "Kuvaus",
+        "status": "Tila",
+        "requestedBy": "Tilaaja",
+        "pending": "Tilattu",
+        "ordered": "Tilattu"
     }
 }

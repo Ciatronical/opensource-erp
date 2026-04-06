@@ -27,7 +27,9 @@
         "companyName": "Firmenname",
         "dbName": "Datenbankname",
         "dbNameHint": "Nur Kleinbuchstaben, Ziffern und Unterstriche",
-        "createCompany": "Firma anlegen"
+        "createCompany": "Firma anlegen",
+        "currentCV": "Klientas/Tiekėjas:",
+        "reports": "Ataskaitos"
     },
     "GlobalSearch": {
         "placeholder": "Ieškoti...",
@@ -46,6 +48,13 @@
     "InfoBar": {
         "unknownCaller": "Nežinomas",
         "closeAll": "Uždaryti visus pranešimus",
-        "pendingParts": "Atsarginės dalys užsakytos"
+        "pendingParts": "Atsarginės dalys užsakytos",
+        "partsDialogTitle": "Laukiančios atsarginių dalių užklausos",
+        "partsEmpty": "Nėra laukiančių užklausų",
+        "order": "Užsakymas",
+        "requestedBy": "nuo",
+        "selectVendor": "Ieškoti tiekėjo...",
+        "markOrdered": "Pažymėti {count} kaip užsakytus",
+        "yesterday": "Vakar"
     }
 }

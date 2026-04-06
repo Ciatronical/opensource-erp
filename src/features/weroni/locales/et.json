@@ -1,0 +1,30 @@
+{
+    "weroni": {
+        "subtitle": "AI kontoriassistent",
+        "tooltip": "Weroni — AI kontoriassistent",
+        "tabs": {
+            "chat": "Vestlus",
+            "tasks": "Ülesanded",
+            "questions": "Küsimused"
+        },
+        "chat": {
+            "welcome": "Tere! Olen Weroni, sinu AI kontoriassistent. Kuidas saan sind aidata?",
+            "examples": "\"Kas on uusi e-kirju?\" · \"Otsi klient Garzaust Opeliga\" · \"Loo ülesanne: asutada GmbH\"",
+            "placeholder": "Sõnum Weronile...",
+            "thinking": "Weroni mõtleb...",
+            "newSession": "Uus vestlus",
+            "uploadDoc": "Laadi dokument üles",
+            "dropHere": "Lohista dokument siia"
+        },
+        "tasks": {
+            "empty": "Avatud ülesanded puuduvad",
+            "needsConfirm": "Vajab kinnitust",
+            "confirm": "Kinnita",
+            "reject": "Keeldu"
+        },
+        "questions": {
+            "empty": "Avatud küsimused puuduvad",
+            "answerPlaceholder": "Sisesta vastus..."
+        }
+    }
+}

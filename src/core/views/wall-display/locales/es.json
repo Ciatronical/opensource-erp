@@ -15,6 +15,7 @@
         "price": "Precio",
         "total": "Total",
         "grossTotal": "Importe total",
-        "allDay": "Todo el día"
+        "allDay": "Todo el día",
+        "exit": "Salir"
     }
 }

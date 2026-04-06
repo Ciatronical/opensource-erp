@@ -15,5 +15,19 @@
         "huSerienbrief": "Notificaciones ITV",
         "orderSearchTooltip": "Búsqueda de pedidos",
         "scanTooltip": "Vehículos desde escaneo"
+    },
+    "PartsRequests": {
+        "title": "Repuestos",
+        "search": "Buscar artículo...",
+        "freetext": "O texto libre",
+        "qty": "Cant.",
+        "note": "Nota",
+        "add": "Solicitar",
+        "empty": "No se han solicitado repuestos",
+        "description": "Descripción",
+        "status": "Estado",
+        "requestedBy": "Solicitado por",
+        "pending": "Solicitado",
+        "ordered": "Pedido"
     }
 }

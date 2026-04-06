@@ -81,7 +81,8 @@
         "recipientNoPhone": "Tällä vastaanottajalla ei ole tallennettua puhelinnumeroa.",
         "cancel": "Peruuta",
         "send": "Lähetä",
-        "noCustomerVendor": "Asiakasta tai toimittajaa ei loytynyt. Luo ensin asiakas tai toimittaja."
+        "noCustomerVendor": "Asiakasta tai toimittajaa ei loytynyt. Luo ensin asiakas tai toimittaja.",
+        "newVehicle": "Uusi ajoneuvo"
     },
     "PhoneActions": {
         "clickToCall": "Soita",
