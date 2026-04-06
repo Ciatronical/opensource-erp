@@ -12,10 +12,15 @@
             "examples": "\"Hast du neue Emails?\" · \"Suche Kundin aus Garzau mit Opel\" · \"Erstelle Aufgabe: GmbH gründen\"",
             "placeholder": "Nachricht an Weroni...",
             "thinking": "Weroni denkt nach...",
-            "newSession": "Neues Gespräch"
+            "newSession": "Neues Gespräch",
+            "uploadDoc": "Dokument hochladen",
+            "dropHere": "Dokument hier ablegen"
         },
         "tasks": {
-            "empty": "Keine offenen Aufgaben"
+            "empty": "Keine offenen Aufgaben",
+            "needsConfirm": "Bestätigung nötig",
+            "confirm": "Bestätigen",
+            "reject": "Ablehnen"
         },
         "questions": {
             "empty": "Keine offenen Rückfragen",

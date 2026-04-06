@@ -24,6 +24,24 @@ function getWeroniToolDefinitions() {
             ]
         ],
         [
+            'name' => 'store_document',
+            'description' => 'Speichert ein analysiertes Dokument im Kunden- oder Lieferantenordner und aktualisiert den Dokumenten-Datensatz.',
+            'input_schema' => [
+                'type' => 'object',
+                'properties' => [
+                    'document_id' => ['type' => 'integer', 'description' => 'ID aus weroni_documents'],
+                    'customer_id' => ['type' => 'integer', 'description' => 'Kunden-ID (oder vendor_id)'],
+                    'vendor_id' => ['type' => 'integer', 'description' => 'Lieferanten-ID'],
+                    'order_id' => ['type' => 'integer', 'description' => 'Auftrags-ID (optional)'],
+                    'folder' => ['type' => 'string', 'description' => 'Unterordner (z.B. "rechnungen", "lieferscheine"). Leer = Hauptordner'],
+                    'filename' => ['type' => 'string', 'description' => 'Dateiname für die Ablage (z.B. "2026-04-05_Rechnung_ATU_234.50.pdf")'],
+                    'doc_type' => ['type' => 'string', 'enum' => ['invoice', 'delivery_note', 'letter', 'receipt', 'contract', 'other']],
+                    'summary' => ['type' => 'string', 'description' => 'Kurze Zusammenfassung des Dokuments']
+                ],
+                'required' => ['document_id']
+            ]
+        ],
+        [
             'name' => 'send_email',
             'description' => 'Sendet eine E-Mail.',
             'input_schema' => [
@@ -146,6 +164,7 @@ function getWeroniToolDefinitions() {
 function executeWeroniTool($toolName, $toolInput, $db) {
     switch ($toolName) {
         case 'query_database':        return _toolQueryDatabase($toolInput, $db);
+        case 'store_document':        return _toolStoreDocument($toolInput, $db);
         case 'send_email':            return _toolSendEmail($toolInput, $db);
         case 'send_whatsapp':         return _toolSendWhatsapp($toolInput, $db);
         case 'create_calendar_event': return _toolCreateCalendarEvent($toolInput, $db);
@@ -500,6 +519,91 @@ function _toolCreateOrder($input, $db) {
 /**
  * Protokolliert eine Weroni-Aktion.
  */
+/**
+ * Speichert ein analysiertes Dokument im Kunden-/Lieferantenordner.
+ */
+function _toolStoreDocument($input, $db) {
+    $docId = intval($input['document_id'] ?? 0);
+    if (!$docId) return ['error' => 'document_id erforderlich'];
+
+    // Dokument laden
+    $doc = $db->getOne(
+        "SELECT id, original_name, mime_type, file_path FROM weroni_documents WHERE id = :id",
+        [':id' => $docId]
+    );
+    if (!$doc) return ['error' => 'Dokument nicht gefunden'];
+
+    // Temporäre Datei prüfen
+    $tmpPath = realpath(__DIR__ . '/../../data') . '/weroni_inbox/' . $docId . '_' . $doc['original_name'];
+    if (!file_exists($tmpPath)) {
+        return ['error' => 'Temporäre Datei nicht gefunden: ' . $tmpPath];
+    }
+
+    // Zielordner bestimmen
+    $customerId = intval($input['customer_id'] ?? 0);
+    $vendorId = intval($input['vendor_id'] ?? 0);
+    $dataDir = realpath(__DIR__ . '/../../data');
+
+    if ($customerId) {
+        $targetDir = $dataDir . '/customers/' . $customerId;
+    } elseif ($vendorId) {
+        $targetDir = $dataDir . '/vendors/' . $vendorId;
+    } else {
+        return ['error' => 'customer_id oder vendor_id erforderlich'];
+    }
+
+    // Unterordner
+    $folder = trim($input['folder'] ?? '');
+    if (!empty($folder)) {
+        $folder = preg_replace('/[\/\\\\:*?"<>|\x00]/', '_', $folder);
+        $targetDir .= '/' . $folder;
+    }
+
+    // Ordner erstellen
+    if (!is_dir($targetDir)) {
+        mkdir($targetDir, 0755, true);
+    }
+
+    // Dateiname
+    $filename = $input['filename'] ?? $doc['original_name'];
+    $filename = preg_replace('/[\/\\\\:*?"<>|\x00]/', '_', $filename);
+    $targetPath = $targetDir . '/' . $filename;
+
+    // Datei-Kollision vermeiden
+    if (file_exists($targetPath)) {
+        $pathInfo = pathinfo($filename);
+        $filename = $pathInfo['filename'] . '_' . date('His') . '.' . ($pathInfo['extension'] ?? 'pdf');
+        $targetPath = $targetDir . '/' . $filename;
+    }
+
+    // Verschieben
+    if (!rename($tmpPath, $targetPath)) {
+        return ['error' => 'Datei konnte nicht verschoben werden'];
+    }
+
+    // DB aktualisieren
+    $relPath = str_replace($dataDir . '/', '', $targetPath);
+    $db->execute(
+        "UPDATE weroni_documents SET
+            file_path = :path, status = 'filed', filed_at = NOW(),
+            customer_id = :cid, vendor_id = :vid, order_id = :oid,
+            doc_type = :dtype, summary = :summary
+         WHERE id = :id",
+        [
+            ':path' => $relPath,
+            ':cid' => $customerId ?: null,
+            ':vid' => $vendorId ?: null,
+            ':oid' => intval($input['order_id'] ?? 0) ?: null,
+            ':dtype' => $input['doc_type'] ?? 'other',
+            ':summary' => $input['summary'] ?? null,
+            ':id' => $docId
+        ]
+    );
+
+    _logWeroniAction($db, 'document_filed', 'Dokument abgelegt: ' . $filename . ' → ' . $relPath, $input, null);
+    return ['success' => true, 'message' => 'Dokument abgelegt als: ' . $relPath, 'filename' => $filename];
+}
+
 function _logWeroniAction($db, $type, $description, $inputData, $outputData, $status = 'success', $error = null) {
     $db->execute(
         "INSERT INTO weroni_actions (action_type, description, input_data, output_data, status, error_message, employee_id)

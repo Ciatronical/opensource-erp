@@ -449,6 +449,224 @@ function clearWeroniConversation($data) {
 }
 
 /**
+ * Bestätigt eine Aufgabe im Assistenten-Modus (pending_confirm → open).
+ * Falls auto_action gesetzt, wird die Aktion ausgeführt.
+ *
+ * @param int $data['task_id'] Aufgaben-ID
+ * @testdata {"task_id": 1}
+ */
+function confirmWeroniTask($data) {
+    $db = DbhCompany::begin();
+    $taskId = intval($data['task_id'] ?? 0);
+    if (!$taskId) throw new ApiError('VALIDATION_ERROR', 'task_id erforderlich');
+
+    $task = $db->getOne(
+        "SELECT id, title, status, auto_action FROM weroni_tasks WHERE id = :id",
+        [':id' => $taskId]
+    );
+    if (!$task) throw new ApiError('DATA_NOT_FOUND', 'Aufgabe nicht gefunden');
+    if ($task['status'] !== 'pending_confirm') throw new ApiError('VALIDATION_ERROR', 'Aufgabe ist nicht im Bestätigungsstatus');
+
+    $db->execute(
+        "UPDATE weroni_tasks SET status = 'open', updated_at = NOW() WHERE id = :id",
+        [':id' => $taskId]
+    );
+
+    // Zugehörige Rückfrage als beantwortet markieren
+    $db->execute(
+        "UPDATE weroni_questions SET status = 'answered', answer = 'Bestätigt', answered_at = NOW()
+         WHERE status = 'pending' AND question LIKE :q",
+        [':q' => '%' . $task['title'] . '%']
+    );
+
+    resultInfo(true, 'OK', ['task_id' => $taskId, 'new_status' => 'open']);
+}
+
+/**
+ * Lehnt eine Aufgabe im Assistenten-Modus ab (pending_confirm → cancelled).
+ *
+ * @param int    $data['task_id'] Aufgaben-ID
+ * @param string $data['reason']  Grund (optional)
+ * @testdata {"task_id": 1, "reason": "Nicht relevant"}
+ */
+function rejectWeroniTask($data) {
+    $db = DbhCompany::begin();
+    $taskId = intval($data['task_id'] ?? 0);
+    if (!$taskId) throw new ApiError('VALIDATION_ERROR', 'task_id erforderlich');
+
+    $task = $db->getOne(
+        "SELECT id, title FROM weroni_tasks WHERE id = :id",
+        [':id' => $taskId]
+    );
+    if (!$task) throw new ApiError('DATA_NOT_FOUND', 'Aufgabe nicht gefunden');
+
+    $db->execute(
+        "UPDATE weroni_tasks SET status = 'cancelled', updated_at = NOW() WHERE id = :id",
+        [':id' => $taskId]
+    );
+
+    // Zugehörige Rückfrage als abgelehnt markieren
+    $db->execute(
+        "UPDATE weroni_questions SET status = 'dismissed', answer = :reason, answered_at = NOW()
+         WHERE status = 'pending' AND question LIKE :q",
+        [':q' => '%' . $task['title'] . '%', ':reason' => $data['reason'] ?? 'Abgelehnt']
+    );
+
+    resultInfo(true, 'OK', ['task_id' => $taskId, 'new_status' => 'cancelled']);
+}
+
+/**
+ * Empfängt ein Dokument (Bild/PDF), analysiert es mit Claude Vision und leitet
+ * das Ergebnis an den normalen weroniChat weiter, damit Weroni entscheiden kann
+ * wo es abgelegt wird.
+ *
+ * @param string $data['file_base64']  Base64-kodierter Dateiinhalt
+ * @param string $data['filename']     Original-Dateiname
+ * @param string $data['mime_type']    MIME-Typ (image/jpeg, image/png, application/pdf)
+ * @param string $data['session_id']   Chat-Session
+ * @param string $data['message']      Optionale Zusatznachricht vom Benutzer
+ * @testdata {"filename": "rechnung.pdf", "mime_type": "application/pdf", "file_base64": "", "session_id": "test"}
+ */
+function weroniAnalyzeDocument($data) {
+    set_time_limit(120);
+
+    $db = DbhCompany::begin();
+
+    $fileBase64 = $data['file_base64'] ?? '';
+    $filename = $data['filename'] ?? 'dokument';
+    $mimeType = $data['mime_type'] ?? 'image/jpeg';
+    $sessionId = $data['session_id'] ?? ('session_' . time());
+    $userMessage = trim($data['message'] ?? '');
+
+    if (empty($fileBase64)) {
+        throw new ApiError('VALIDATION_ERROR', 'file_base64 erforderlich');
+    }
+
+    // API-Key laden
+    $config = $db->fetchKeyValue(
+        "SELECT key, value FROM defaults_oserp WHERE key = 'anthropic_api_key'"
+    );
+    $anthropicKey = trim($config['anthropic_api_key'] ?? '');
+    if (empty($anthropicKey)) {
+        throw new ApiError('MISSING_API_KEYS', 'Anthropic API-Key nicht konfiguriert');
+    }
+
+    // Datei temporär speichern
+    $dataDir = realpath(__DIR__ . '/../../data');
+    $inboxDir = $dataDir . '/weroni_inbox';
+    if (!is_dir($inboxDir)) {
+        mkdir($inboxDir, 0755, true);
+    }
+
+    $fileContent = base64_decode($fileBase64, true);
+    if ($fileContent === false) {
+        throw new ApiError('VALIDATION_ERROR', 'Ungültige Base64-Daten');
+    }
+
+    // In DB erfassen
+    $db->execute(
+        "INSERT INTO weroni_documents (original_name, mime_type, status)
+         VALUES (:name, :mime, 'pending')",
+        [':name' => $filename, ':mime' => $mimeType]
+    );
+    $doc = $db->getOne(
+        "SELECT id FROM weroni_documents WHERE original_name = :name ORDER BY id DESC LIMIT 1",
+        [':name' => $filename]
+    );
+    $docId = $doc['id'];
+
+    // Temporär speichern
+    $tmpFilename = $docId . '_' . preg_replace('/[^a-zA-Z0-9.\-_]/', '_', $filename);
+    file_put_contents($inboxDir . '/' . $tmpFilename, $fileContent);
+
+    // Claude Vision aufrufen — Dokument analysieren
+    $visionPrompt = "Analysiere dieses Dokument und extrahiere alle relevanten Informationen.\n\n"
+        . "Bestimme:\n"
+        . "1. **Dokumenttyp**: Rechnung, Lieferschein, Brief, Quittung, Vertrag, Sonstiges\n"
+        . "2. **Absender**: Firma/Person die das Dokument erstellt hat\n"
+        . "3. **Empfänger**: An wen es gerichtet ist\n"
+        . "4. **Datum**: Dokumentdatum\n"
+        . "5. **Betrag**: Falls vorhanden (Brutto, Netto, MwSt)\n"
+        . "6. **Belegnummer**: Rechnungsnummer, Lieferscheinnummer, etc.\n"
+        . "7. **Zusammenfassung**: Worum geht es in 1-2 Sätzen\n"
+        . "8. **Einzelpositionen**: Falls Rechnung/Lieferschein — was wurde bestellt/geliefert\n\n"
+        . "Antworte auf Deutsch in strukturiertem Fließtext.";
+
+    if (!empty($userMessage)) {
+        $visionPrompt .= "\n\nZusätzliche Anmerkung vom Benutzer: " . $userMessage;
+    }
+
+    // PDF: als document-Block senden, Bilder als image-Block
+    if (str_starts_with($mimeType, 'application/pdf')) {
+        $contentBlock = [
+            'type' => 'document',
+            'source' => ['type' => 'base64', 'media_type' => 'application/pdf', 'data' => $fileBase64]
+        ];
+    } else {
+        $contentBlock = [
+            'type' => 'image',
+            'source' => ['type' => 'base64', 'media_type' => $mimeType, 'data' => $fileBase64]
+        ];
+    }
+
+    $requestBody = json_encode([
+        'model' => 'claude-haiku-4-5-20251001',
+        'max_tokens' => 2048,
+        'messages' => [[
+            'role' => 'user',
+            'content' => [$contentBlock, ['type' => 'text', 'text' => $visionPrompt]]
+        ]]
+    ], JSON_UNESCAPED_UNICODE);
+
+    $ch = curl_init('https://api.anthropic.com/v1/messages');
+    curl_setopt_array($ch, [
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => $requestBody,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT => 60,
+        CURLOPT_HTTPHEADER => [
+            'Content-Type: application/json',
+            'x-api-key: ' . $anthropicKey,
+            'anthropic-version: 2023-06-01'
+        ]
+    ]);
+
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($httpCode !== 200) {
+        throw new ApiError('CLAUDE_API_ERROR', 'Vision-Analyse fehlgeschlagen (HTTP ' . $httpCode . '): ' . $response);
+    }
+
+    $responseData = json_decode($response, true);
+    $analysisText = $responseData['content'][0]['text'] ?? '';
+
+    // Analyse in DB speichern
+    $db->execute(
+        "UPDATE weroni_documents SET status = 'analyzed', summary = :summary, extracted_data = :data WHERE id = :id",
+        [':summary' => mb_substr($analysisText, 0, 500), ':data' => json_encode(['full_analysis' => $analysisText], JSON_UNESCAPED_UNICODE), ':id' => $docId]
+    );
+
+    // Jetzt den normalen weroniChat aufrufen mit der Analyse als Kontext
+    $chatMessage = "Ich habe ein Dokument hochgeladen: **{$filename}**\n\n"
+        . "Hier ist die Analyse:\n{$analysisText}\n\n"
+        . "Das Dokument hat die ID {$docId} in weroni_documents.\n"
+        . "Bitte finde heraus zu welchem Kunden/Lieferanten es gehört und lege es mit store_document im richtigen Ordner ab. "
+        . "Schlage einen aussagekräftigen Dateinamen vor (z.B. '2026-04-05_Rechnung_ATU_234.50.pdf').";
+
+    if (!empty($userMessage)) {
+        $chatMessage .= "\n\nHinweis vom Benutzer: " . $userMessage;
+    }
+
+    // Weiterleiten an weroniChat
+    weroniChat([
+        'message' => $chatMessage,
+        'session_id' => $sessionId
+    ]);
+}
+
+/**
  * Ruft die Claude API mit Tool Use auf.
  */
 function _callClaudeWithTools($apiKey, $systemPrompt, $messages, $tools) {

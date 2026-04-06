@@ -12,10 +12,15 @@
             "examples": "\"Any new emails?\" · \"Find customer from Garzau with Opel\" · \"Create task: found GmbH\"",
             "placeholder": "Message to Weroni...",
             "thinking": "Weroni is thinking...",
-            "newSession": "New conversation"
+            "newSession": "New conversation",
+            "uploadDoc": "Upload document",
+            "dropHere": "Drop document here"
         },
         "tasks": {
-            "empty": "No open tasks"
+            "empty": "No open tasks",
+            "needsConfirm": "Needs confirmation",
+            "confirm": "Confirm",
+            "reject": "Reject"
         },
         "questions": {
             "empty": "No pending questions",
