@@ -113,6 +113,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { wikiStore } from '@/core/stores/wiki.store.js'
+import { useViewHistory } from '@/core/composables/useViewHistory.js'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
 import * as alerts from '@/core/utils/alerts.js'
 import * as toasts from '@/core/utils/toasts.js'
@@ -124,6 +125,7 @@ export default {
         const { t } = useI18n()
         const router = useRouter()
         const wiki = wikiStore()
+        const { saveToHistory } = useViewHistory()
 
         const pages = ref([])
         const categories = ref([])
@@ -178,6 +180,13 @@ export default {
         }
 
         function openPage(item) {
+            saveToHistory({
+                type: 'wiki',
+                id: item.id,
+                title: item.title,
+                subtitle: item.category_name || '',
+                route: { name: 'wiki-read', params: { id: item.id } }
+            })
             router.push({ name: 'wiki-read', params: { id: item.id } })
         }
 

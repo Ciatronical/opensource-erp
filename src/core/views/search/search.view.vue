@@ -426,10 +426,12 @@ import SearchResultsTable from './components/search-results-table.component.vue'
 import DocumentSearchForm from './components/document-search-form.component.vue';
 import router from '@/core/router/index.js';
 import { oserpStore } from '@/core/stores/oserp.store.js';
+import { useViewHistory } from '@/core/composables/useViewHistory.js';
 
 const { t } = useI18n();
 const oserp = oserpStore();
 const { fetchCustomerOrVendor } = oserp;
+const { saveToHistory } = useViewHistory();
 
 // Props
 const props = defineProps({
@@ -743,12 +745,26 @@ const onCVRowClick = async (event, row) => {
     if (loadedDataType.value === 'contacts') {
         const cvId = item.cp_cv_id;
         const src = item.cv_type === 'V' ? 'V' : 'C';
+        saveToHistory({
+            type: src === 'V' ? 'vendor' : 'customer',
+            id: cvId,
+            title: item.cv_name || item.name || '',
+            subtitle: item.cv_number || '',
+            route: { name: 'customer-vendor', query: { tab: 'contacts', cpId: item.id } }
+        });
         await fetchCustomerOrVendor(cvId, src);
         router.push({
             name: 'customer-vendor',
             query: { tab: 'contacts', cpId: item.id }
         });
     } else {
+        saveToHistory({
+            type: item.src === 'V' ? 'vendor' : 'customer',
+            id: item.id,
+            title: item.name || '',
+            subtitle: item.cv_number || item.customernumber || item.vendornumber || '',
+            route: { name: 'customer-vendor', params: { id: item.id } }
+        });
         await fetchCustomerOrVendor(item.id, item.src);
         router.push({
             name: 'customer-vendor',
@@ -959,16 +975,35 @@ function formatAmount(value) {
  * @param {Event} event - Das Klick-Event
  * @param {Object} row - Die angeklickte Zeile
  */
+const docTypeMap = {
+    invoice: 'invoice',
+    purchase_invoice: 'invoice',
+    quotation: 'quotation',
+    order: 'order',
+    purchase_order: 'order',
+    delivery_order: 'order',
+};
+
 const onDocRowClick = async (event, row) => {
     const item = row.item;
+
+    // Zur Faktura-Ansicht navigieren
+    const routeName = fakturaRouteMap[activeTab.value];
+    if (routeName) {
+        saveToHistory({
+            type: docTypeMap[activeTab.value] || activeTab.value,
+            id: item.id,
+            title: item.document_number || '',
+            subtitle: item.cv_name || '',
+            route: { name: routeName, params: { id: item.id } }
+        });
+    }
 
     // Kunden/Lieferanten im Store laden
     if (item.cv_id) {
         await fetchCustomerOrVendor(item.cv_id, item.cv_src);
     }
 
-    // Zur Faktura-Ansicht navigieren
-    const routeName = fakturaRouteMap[activeTab.value];
     if (routeName) {
         router.push({
             name: routeName,
@@ -1075,7 +1110,15 @@ const resetVehicle = () => {
 };
 
 const onVehicleRowClick = (event, row) => {
-    router.push({ name: 'car', params: { id: row.item.c_id } });
+    const item = row.item;
+    saveToHistory({
+        type: 'vehicle',
+        id: item.c_id,
+        title: item.c_ln || '',
+        subtitle: [item.hersteller, item.modell, item.owner_name].filter(Boolean).join(' · '),
+        route: { name: 'car', params: { id: item.c_id } }
+    });
+    router.push({ name: 'car', params: { id: item.c_id } });
 };
 
 // ──────────────────────────────────────────
@@ -1201,6 +1244,14 @@ const resetArticle = () => {
 };
 
 const onArticleRowClick = (event, row) => {
-    router.push({ name: 'article-edit', params: { id: row.item.id } });
+    const item = row.item;
+    saveToHistory({
+        type: 'article',
+        id: item.id,
+        title: [item.partnumber, item.description].filter(Boolean).join(' — '),
+        subtitle: '',
+        route: { name: 'article-edit', params: { id: item.id } }
+    });
+    router.push({ name: 'article-edit', params: { id: item.id } });
 };
 </script>

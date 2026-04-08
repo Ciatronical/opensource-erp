@@ -155,9 +155,11 @@
 import { ref, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
+import { useViewHistory } from '@/core/composables/useViewHistory.js';
 
 const { t, d } = useI18n();
 const router = useRouter();
+const { saveToHistory } = useViewHistory();
 
 const props = defineProps({
     followUp: {
@@ -279,6 +281,14 @@ function getLinkIcon(transType) {
     return icons[transType] || 'mdi-link';
 }
 
+const historyTypeMap = {
+    customer: 'customer',
+    vendor: 'vendor',
+    sales_quotation: 'quotation',
+    sales_order: 'order',
+    sales_invoice: 'invoice',
+};
+
 function navigateToLink(link) {
     // Navigation basierend auf trans_type mit named routes
     const routeMap = {
@@ -290,6 +300,13 @@ function navigateToLink(link) {
     };
 
     if (routeMap[link.trans_type]) {
+        saveToHistory({
+            type: historyTypeMap[link.trans_type] || link.trans_type,
+            id: link.trans_id,
+            title: link.trans_info || '',
+            subtitle: '',
+            route: routeMap[link.trans_type]
+        });
         router.push(routeMap[link.trans_type]);
     } else {
         console.warn('Unknown link type:', link.trans_type);

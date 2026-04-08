@@ -205,11 +205,13 @@ import * as toasts from '@/core/utils/toasts.js';
 import { formatDate } from '@/core/utils/dateFormatter.js';
 import { getValues, getColorMap } from '@/core/utils/configColors.js';
 import { oserpStore } from '@/core/stores/oserp.store.js';
+import { useViewHistory } from '@/core/composables/useViewHistory.js';
 import NavbarView from '@/core/components/navbar/navbar.view.vue';
 import router from '@/core/router/index.js';
 
 const { t } = useI18n();
 const store = oserpStore();
+const { saveToHistory } = useViewHistory();
 
 const props = defineProps({
     message: {
@@ -382,9 +384,17 @@ const getRowProps = ({ item }) => {
 };
 
 const onRowClick = (event, row) => {
+    const item = row.item;
+    saveToHistory({
+        type: 'order',
+        id: item.id,
+        title: item.ordnumber,
+        subtitle: item.customer_name || '',
+        route: { name: 'faktura-order-view', params: { id: item.id } }
+    });
     router.push({
         name: 'faktura-order-view',
-        params: { id: row.item.id }
+        params: { id: item.id }
     });
 };
 </script>

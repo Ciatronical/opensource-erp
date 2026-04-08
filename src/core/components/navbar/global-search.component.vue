@@ -81,10 +81,8 @@ import { defineComponent, ref, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { oserpStore } from '@/core/stores/oserp.store.js'
+import { useViewHistory } from '@/core/composables/useViewHistory.js'
 import axios from 'axios'
-
-const HISTORY_CONFIG_KEY = 'view-history'
-const MAX_HISTORY = 10
 
 export default defineComponent({
     name: 'GlobalSearchComponent',
@@ -93,6 +91,7 @@ export default defineComponent({
         const { t } = useI18n()
         const router = useRouter()
         const oserp = oserpStore()
+        const { saveToHistory, clearHistory: clearHistoryData, getHistoryItems } = useViewHistory()
 
         const searchRef = ref(null)
         const selected = ref(null)
@@ -124,65 +123,14 @@ export default defineComponent({
             wiki: 'GlobalSearch.wiki'
         }
 
-        // === History (employee_config_oserp) ===
-
-        function loadHistory() {
-            try {
-                const raw = oserp.getConfigValue(HISTORY_CONFIG_KEY, '[]')
-                return JSON.parse(raw) || []
-            } catch {
-                return []
-            }
-        }
-
-        function saveToHistory(item) {
-            const entry = {
-                type: item.type,
-                id: item.id,
-                title: item.title,
-                subtitle: item.subtitle,
-                route: item.route
-            }
-            let history = loadHistory()
-            history = history.filter(h => !(h.type === entry.type && h.id === entry.id))
-            history.unshift(entry)
-            if (history.length > MAX_HISTORY) history.length = MAX_HISTORY
-            oserp.setConfigValue(HISTORY_CONFIG_KEY, JSON.stringify(history))
-        }
-
         function clearHistory() {
-            oserp.deleteConfigValue(HISTORY_CONFIG_KEY)
+            clearHistoryData()
             searchResults.value = []
             selected.value = null
         }
 
         function showHistory() {
-            let history = loadHistory()
-            // Fahrzeuge nur anzeigen wenn LxCars aktiv ist
-            if (!oserp.isLxCars()) {
-                history = history.filter(h => h.type !== 'vehicle')
-            }
-            if (!history.length) {
-                searchResults.value = []
-                return
-            }
-            const items = [
-                {
-                    _groupHeader: true,
-                    _groupLabel: t('GlobalSearch.recentlyVisited'),
-                    _key: '_header_history',
-                    id: '_header_history',
-                    type: 'history'
-                },
-                ...history.map(h => ({ ...h, _fromHistory: true, _key: h.type + '_' + h.id })),
-                {
-                    _clearHistory: true,
-                    _key: '_clear_history',
-                    id: '_clear_history',
-                    type: 'action'
-                }
-            ]
-            searchResults.value = items
+            searchResults.value = getHistoryItems(t)
         }
 
         // === Suche ===
