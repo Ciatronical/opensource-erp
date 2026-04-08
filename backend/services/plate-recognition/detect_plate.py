@@ -490,12 +490,20 @@ def process_json(image_path, is_video=False):
                 'is_plate': d['is_plate'],
             })
 
-    # Deduplizieren: Nur das beste Ergebnis pro Kennzeichen
+    # Deduplizieren: Pro Kennzeichen das beste Ergebnis,
+    # dabei Richtung aus dem letzten Eintrag übernehmen (Richtung steht erst nach 3+ Frames fest)
     seen = {}
     for p in all_plates:
         key = re.sub(r'[\s\-]', '', p['plate'])
-        if key not in seen or p['confidence'] > seen[key]['confidence']:
+        if key not in seen:
             seen[key] = p
+        else:
+            if p['confidence'] > seen[key]['confidence']:
+                direction = seen[key]['direction'] or p['direction']
+                seen[key] = p
+                seen[key]['direction'] = direction
+            if p['direction'] and not seen[key]['direction']:
+                seen[key]['direction'] = p['direction']
 
     print(json.dumps(list(seen.values())))
 
