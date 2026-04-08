@@ -55,6 +55,7 @@ echo ""
 echo "4. Berechtigungen setzen..."
 find dist -type d -exec chmod 775 {} \; 2>/dev/null
 find dist -type f -exec chmod 664 {} \; 2>/dev/null
+chmod 777 backup 2>/dev/null
 
 # echo ""
 # echo "3. Apache neuladen..."
