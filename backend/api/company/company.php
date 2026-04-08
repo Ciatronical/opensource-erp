@@ -2,6 +2,16 @@
 // backend/api/company/company.php
 
 /**
+ * Quoted einen PostgreSQL-Bezeichner (Tabelle, DB, User)
+ *
+ * @param string $name Bezeichner
+ * @return string Gequoteter Bezeichner
+ */
+function quoteIdentifier($name) {
+    return '"' . str_replace('"', '""', $name) . '"';
+}
+
+/**
  * Legt eine neue Firmendatenbank an
  *
  * 1. Prüft Berechtigung (admin_users aus settings.ini)
@@ -18,6 +28,7 @@
 function createCompany($data) {
     // ── 1. Berechtigung prüfen ──
     $auth = DbhAuth::begin();
+    $auth->fetchSessionData();
     $login = $auth->getLogin();
 
     $adminUsers = array_map('trim', explode(',', COMPANY_ADMIN_USERS));
@@ -53,7 +64,7 @@ function createCompany($data) {
         [':name' => $companyName]
     );
     if ($existing) {
-        resultInfo(false, 'ALREADY_EXISTS', 'Eine Firma mit diesem Namen existiert bereits');
+        resultInfo(false, 'COMPANY_NAME_EXISTS', "Firmenname '$companyName' bereits vergeben");
         return;
     }
 
@@ -76,36 +87,35 @@ function createCompany($data) {
     $dbUser = $credentials['dbuser'];
     $dbPass = $credentials['dbpasswd'];
 
-    // ── 4. Prüfe ob Datenbank schon existiert ──
+    // ── 4. Prüfe ob Firmenname oder Datenbank schon existiert ──
     $authPdo = $auth->getPDO();
     try {
         $checkStmt = $authPdo->prepare("SELECT 1 FROM pg_database WHERE datname = :dbname");
         $checkStmt->execute([':dbname' => $dbName]);
         if ($checkStmt->fetch()) {
-            resultInfo(false, 'ALREADY_EXISTS', 'Eine Datenbank mit diesem Namen existiert bereits');
+            resultInfo(false, 'DATABASE_EXISTS', "Datenbank '$dbName' existiert bereits");
             return;
         }
     } catch (PDOException $e) {
-        resultInfo(false, 'DATABASE_ERROR', 'Fehler beim Prüfen der Datenbank: ' . $e->getMessage());
+        resultInfo(false, 'DATABASE_ERROR', $e->getMessage());
         return;
     }
 
     // ── 5. Datenbank erstellen ──
     // CREATE DATABASE kann nicht in einer Transaktion ausgeführt werden
-    $quotedDbName = pg_escape_identifier($dbName);
-    $quotedDbUser = pg_escape_identifier($dbUser);
+    $quotedDbName = quoteIdentifier($dbName);
+    $quotedDbUser = quoteIdentifier($dbUser);
     try {
         $authPdo->exec("CREATE DATABASE {$quotedDbName} OWNER {$quotedDbUser}");
         writeLog("Datenbank '$dbName' erstellt", true, DLOG_INF);
     } catch (PDOException $e) {
-        resultInfo(false, 'DATABASE_ERROR', 'Fehler beim Erstellen der Datenbank: ' . $e->getMessage());
+        resultInfo(false, 'DATABASE_ERROR', $e->getMessage());
         return;
     }
 
-    // ── 6. Schema einspielen via Upstall-Parser ──
+    // ── 6. Schema direkt einspielen (leere DB, korrekte Reihenfolge aus pg_dump) ──
     try {
         $newDbPdo = connectPDO($dbHost, $dbPort, $dbName, $dbUser, $dbPass);
-        $newDb = new ApiDatabase($newDbPdo);
 
         // SKR-Schema einspielen
         $skrSchemaFile = __DIR__ . '/../../upstall/' . $skr . '/company_schema.sql';
@@ -113,15 +123,14 @@ function createCompany($data) {
             throw new Exception("Schema-Datei nicht gefunden: $skrSchemaFile");
         }
 
-        require_once __DIR__.'/../update/update.php';
-
-        $schemaResult = updateDatabaseSchema([$skrSchemaFile], [], false, $newDb);
-        if (!$schemaResult['success']) {
-            throw new Exception('Schema-Import fehlgeschlagen: ' . implode(', ', $schemaResult['errors']));
-        }
+        $schemaSql = file_get_contents($skrSchemaFile);
+        $newDbPdo->exec($schemaSql);
         writeLog("SKR-Schema '$skr' in '$dbName' eingespielt", true, DLOG_INF);
 
-        // ── 7. CRM-Upstall auf neuer DB ausführen ──
+        // ── 7. CRM-Upstall auf neuer DB ausführen (inkrementell) ──
+        $newDb = new ApiDatabase($newDbPdo);
+        require_once __DIR__.'/../update/update.php';
+
         $crmSchemaFile = __DIR__ . '/../../upstall/crm/company_schema.sql';
         $csvFiles = ['auth' => [], 'company' => []];
 
@@ -150,11 +159,12 @@ function createCompany($data) {
         return;
     }
 
-    // ── 8. Firma in auth.clients registrieren ──
+    // ── 8. Firma in auth.clients registrieren + Benutzer zuordnen ──
     try {
-        $auth->execute(
+        $newClientId = $auth->getOne(
             "INSERT INTO auth.clients (name, dbhost, dbport, dbname, dbuser, dbpasswd)
-             VALUES (:name, :dbhost, :dbport, :dbname, :dbuser, :dbpasswd)",
+             VALUES (:name, :dbhost, :dbport, :dbname, :dbuser, :dbpasswd)
+             RETURNING id",
             [
                 ':name' => $companyName,
                 ':dbhost' => $dbHost,
@@ -165,8 +175,30 @@ function createCompany($data) {
             ]
         );
         writeLog("Firma '$companyName' in auth.clients registriert (DB: $dbName)", true, DLOG_INF);
+
+        // Aktuellen Benutzer der neuen Firma zuordnen
+        $userId = $auth->getUserId();
+        $clientId = $auth->getClientId();
+        $newCid = $newClientId['id'];
+        $auth->execute(
+            "INSERT INTO auth.clients_users (client_id, user_id) VALUES (:client_id, :user_id)",
+            [':client_id' => $newCid, ':user_id' => $userId]
+        );
+        writeLog("Benutzer '$login' (ID: $userId) der Firma '$companyName' zugeordnet", true, DLOG_INF);
+
+        // Gruppen des Benutzers aus aktueller Firma für neue Firma übernehmen
+        $auth->execute(
+            "INSERT INTO auth.clients_groups (client_id, group_id)
+             SELECT :new_client_id, cg.group_id
+             FROM auth.clients_groups cg
+             JOIN auth.user_group ug ON cg.group_id = ug.group_id
+             WHERE cg.client_id = :current_client_id
+             AND ug.user_id = :user_id",
+            [':new_client_id' => $newCid, ':current_client_id' => $clientId, ':user_id' => $userId]
+        );
+        writeLog("Berechtigungsgruppen für Firma '$companyName' übernommen", true, DLOG_INF);
     } catch (PDOException $e) {
-        resultInfo(false, 'AUTH_ERROR', 'Fehler beim Registrieren der Firma: ' . $e->getMessage());
+        resultInfo(false, 'AUTH_ERROR', $e->getMessage());
         return;
     }
 

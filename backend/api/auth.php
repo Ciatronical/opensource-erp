@@ -259,7 +259,8 @@ function restoreSession($data) {
         "permissions" => $session->fetchAllPermissions(),
         "auth_groups" => $session->fetchClientGroups(),
         "is_demo" => defined('DEMO_MODE') && DEMO_MODE,
-        "demo_inactivity_minutes" => defined('DEMO_INACTIVITY_MINUTES') ? DEMO_INACTIVITY_MINUTES : 20
+        "demo_inactivity_minutes" => defined('DEMO_INACTIVITY_MINUTES') ? DEMO_INACTIVITY_MINUTES : 20,
+        "can_create_company" => canUserCreateCompany($context['login'])
     );
 
     require __DIR__ . '/customer_vendor/customer_vendor.php';

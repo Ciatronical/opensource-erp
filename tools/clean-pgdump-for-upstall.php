@@ -6,6 +6,9 @@
  * Entfernt: \restrict/\unrestrict, SET-Statements, ALTER OWNER,
  * pg_catalog.set_config, COMMENT ON EXTENSION, Dump-Header/Footer
  *
+ * Konvertiert: COPY ... FROM stdin → INSERT INTO Statements
+ * (COPY/stdin ist psql-spezifisch und funktioniert nicht mit PDO)
+ *
  * Usage: php clean-pgdump-for-upstall.php <input.sql> <output.sql>
  */
 if ($argc < 3) {
@@ -21,9 +24,55 @@ if ($input === false) {
 
 $lines = explode("\n", $input);
 $output = [];
+$inCopy = false;
+$copyTable = '';
+$copyColumns = [];
+$copyRowCount = 0;
 
-foreach ($lines as $line) {
+for ($i = 0; $i < count($lines); $i++) {
+    $line = $lines[$i];
     $trimmed = trim($line);
+
+    // ── COPY-Block verarbeiten ──
+    if ($inCopy) {
+        // Ende des COPY-Blocks
+        if ($trimmed === '\\.') {
+            $inCopy = false;
+            continue;
+        }
+
+        // Datenzeile → INSERT umwandeln
+        $values = explode("\t", $line);
+        $sqlValues = [];
+        foreach ($values as $val) {
+            if ($val === '\\N') {
+                $sqlValues[] = 'NULL';
+            } else {
+                // Einfache Anführungszeichen escapen
+                $escaped = str_replace("'", "''", $val);
+                // Backslash-Escapes aus COPY-Format behandeln
+                $escaped = str_replace('\\\\', '\\', $escaped);
+                $sqlValues[] = "'" . $escaped . "'";
+            }
+        }
+
+        $colList = implode(', ', $copyColumns);
+        $valList = implode(', ', $sqlValues);
+        $output[] = "INSERT INTO {$copyTable} ({$colList}) VALUES ({$valList});";
+        $copyRowCount++;
+        continue;
+    }
+
+    // ── COPY-Statement erkennen ──
+    if (preg_match('/^COPY\s+([\w."]+)\s*\((.+?)\)\s*FROM\s+stdin/i', $trimmed, $m)) {
+        $copyTable = $m[1];
+        $copyColumns = array_map('trim', explode(',', $m[2]));
+        $inCopy = true;
+        $copyRowCount = 0;
+        continue;
+    }
+
+    // ── Zeilen filtern ──
 
     // Überspringe \restrict und \unrestrict
     if (preg_match('/^\\\\(un)?restrict\b/', $trimmed)) continue;

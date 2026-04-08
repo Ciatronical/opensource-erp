@@ -282,7 +282,7 @@ export const oserpStore = defineStore('oserpStore', () => {
             return response.data;
         }
 
-        throw new ApiError('ApiError', response.data.text || response.data.payload);
+        throw new ApiError('ApiError', response.data.text || 'UNKNOWN_ERROR');
     }
 
     /**

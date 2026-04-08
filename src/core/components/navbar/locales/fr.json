@@ -20,16 +20,27 @@
         "cancel": "Annuler",
         "sseConnected": "Live-Verbindung aktiv",
         "sseDisconnected": "Live-Verbindung unterbrochen",
-        "newCompanySkr03": "Neue Firma mit SKR03 Kontenrahmen",
-        "newCompanySkr04": "Neue Firma mit SKR04 Kontenrahmen",
         "createCompanyTitle": "Neue Firma anlegen",
-        "createCompanyHint": "Es wird eine neue Firmendatenbank mit dem {skr} Kontenrahmen erstellt.",
+        "createCompanyHint": "Es wird eine neue Firmendatenbank mit dem gewählten Kontenrahmen erstellt.",
         "companyName": "Firmenname",
         "dbName": "Datenbankname",
         "dbNameHint": "Nur Kleinbuchstaben, Ziffern und Unterstriche",
         "createCompany": "Firma anlegen",
         "currentCV": "Client/Fournisseur :",
-        "reports": "Rapports"
+        "reports": "Rapports",
+        "newCompany": "Neue Firma anlegen",
+        "chartOfAccounts": "Kontenrahmen",
+        "createCompanyError": {
+            "COMPANY_NAME_EXISTS": "Dieser Firmenname ist bereits vergeben. Bitte einen anderen Namen wählen.",
+            "DATABASE_EXISTS": "Eine Datenbank mit diesem Namen existiert bereits. Bitte einen anderen Datenbanknamen wählen.",
+            "DATABASE_ERROR": "Die Datenbank konnte nicht erstellt werden. Bitte den Datenbanknamen prüfen.",
+            "SCHEMA_ERROR": "Die Datenbankstruktur konnte nicht eingerichtet werden. Bitte den Administrator kontaktieren.",
+            "AUTH_ERROR": "Die Firma konnte nicht registriert werden. Bitte den Administrator kontaktieren.",
+            "PERMISSION_DENIED": "Keine Berechtigung zum Anlegen von Firmen.",
+            "VALIDATION_ERROR": "Bitte alle Pflichtfelder korrekt ausfüllen.",
+            "SESSION_ERROR": "Sitzungsfehler. Bitte erneut anmelden.",
+            "UNKNOWN_ERROR": "Ein unbekannter Fehler ist aufgetreten."
+        }
     },
     "GlobalSearch": {
         "placeholder": "Rechercher...",

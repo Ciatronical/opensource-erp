@@ -22,14 +22,25 @@
         "cancel": "Cancel",
         "sseConnected": "Live connection active",
         "sseDisconnected": "Live connection interrupted",
-        "newCompanySkr03": "New Company with SKR03 Chart of Accounts",
-        "newCompanySkr04": "New Company with SKR04 Chart of Accounts",
         "createCompanyTitle": "Create New Company",
-        "createCompanyHint": "A new company database with the {skr} chart of accounts will be created.",
+        "createCompanyHint": "A new company database with the selected chart of accounts will be created.",
         "companyName": "Company Name",
         "dbName": "Database Name",
         "dbNameHint": "Only lowercase letters, digits and underscores",
-        "createCompany": "Create Company"
+        "createCompany": "Create Company",
+        "newCompany": "Create New Company",
+        "chartOfAccounts": "Chart of Accounts",
+        "createCompanyError": {
+            "COMPANY_NAME_EXISTS": "This company name is already taken. Please choose a different name.",
+            "DATABASE_EXISTS": "A database with this name already exists. Please choose a different database name.",
+            "DATABASE_ERROR": "The database could not be created. Please check the database name.",
+            "SCHEMA_ERROR": "The database structure could not be set up. Please contact the administrator.",
+            "AUTH_ERROR": "The company could not be registered. Please contact the administrator.",
+            "PERMISSION_DENIED": "No permission to create companies.",
+            "VALIDATION_ERROR": "Please fill in all required fields correctly.",
+            "SESSION_ERROR": "Session error. Please log in again.",
+            "UNKNOWN_ERROR": "An unknown error occurred."
+        }
     },
     "GlobalSearch": {
         "placeholder": "Search...",

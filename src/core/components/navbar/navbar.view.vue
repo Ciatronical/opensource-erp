@@ -119,17 +119,10 @@
         <v-divider class="my-1" />
         <v-list-item
           :disabled="!oserpData.session.can_create_company"
-          @click="openCreateCompanyDialog('skr03')"
+          @click="openCreateCompanyDialog"
         >
           <template #prepend><v-icon size="small" class="me-2">mdi-plus-circle-outline</v-icon></template>
-          <v-list-item-title class="text-body-2">{{ t('NavbarView.newCompanySkr03') }}</v-list-item-title>
-        </v-list-item>
-        <v-list-item
-          :disabled="!oserpData.session.can_create_company"
-          @click="openCreateCompanyDialog('skr04')"
-        >
-          <template #prepend><v-icon size="small" class="me-2">mdi-plus-circle-outline</v-icon></template>
-          <v-list-item-title class="text-body-2">{{ t('NavbarView.newCompanySkr04') }}</v-list-item-title>
+          <v-list-item-title class="text-body-2">{{ t('NavbarView.newCompany') }}</v-list-item-title>
         </v-list-item>
         <v-divider class="my-1" />
         <v-list-item :to="t('routes.clientConfig')" @click="clientMenuOpen = false">
@@ -270,10 +263,8 @@
         {{ t('NavbarView.createCompanyTitle') }}
       </v-card-title>
       <v-card-text class="pa-4">
-        <p class="mb-4 text-body-2">
-          {{ t('NavbarView.createCompanyHint', { skr: createCompanySkr.toUpperCase() }) }}
-        </p>
         <v-text-field
+          ref="createCompanyNameRef"
           v-model="createCompanyName"
           :label="t('NavbarView.companyName')"
           variant="outlined"
@@ -281,14 +272,24 @@
           class="mb-3"
           :error-messages="createCompanyError"
           @update:model-value="createCompanyError = ''"
+          @keydown.enter="canSubmitCompany && doCreateCompany()"
         />
         <v-text-field
           v-model="createCompanyDbName"
           :label="t('NavbarView.dbName')"
           variant="outlined"
           density="compact"
+          class="mb-3"
           :hint="t('NavbarView.dbNameHint')"
           persistent-hint
+          @keydown.enter="canSubmitCompany && doCreateCompany()"
+        />
+        <v-select
+          v-model="createCompanySkr"
+          :items="skrOptions"
+          :label="t('NavbarView.chartOfAccounts')"
+          variant="outlined"
+          density="compact"
         />
       </v-card-text>
       <v-card-actions>
@@ -298,7 +299,7 @@
           color="primary"
           variant="flat"
           :loading="createCompanyLoading"
-          :disabled="!createCompanyName.trim() || !createCompanyDbName.trim()"
+          :disabled="!canSubmitCompany"
           @click="doCreateCompany"
         >
           <v-icon start>mdi-check</v-icon>
@@ -313,7 +314,7 @@
 import { oserpStore } from '@/core/stores/oserp.store.js'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { computed, inject, ref } from 'vue'
+import { computed, inject, nextTick, ref } from 'vue'
 import MessagesView from '@/core/components/messages/messages.view.vue'
 import ResponsiveMenu from '@/core/components/menus/responsive.menus.vue'
 import GlobalSearchComponent from '@/core/components/navbar/global-search.component.vue'
@@ -439,14 +440,22 @@ export default {
     const createCompanyDbName = ref('')
     const createCompanyLoading = ref(false)
     const createCompanyError = ref('')
+    const createCompanyNameRef = ref(null)
+    const canSubmitCompany = computed(() => createCompanyName.value.trim() !== '' && createCompanyDbName.value.trim() !== '')
 
-    function openCreateCompanyDialog(skr) {
+    const skrOptions = [
+      { title: 'SKR03', value: 'skr03' },
+      { title: 'SKR04', value: 'skr04' }
+    ]
+
+    function openCreateCompanyDialog() {
       clientMenuOpen.value = false
-      createCompanySkr.value = skr
+      createCompanySkr.value = 'skr03'
       createCompanyName.value = ''
       createCompanyDbName.value = ''
       createCompanyError.value = ''
       showCreateCompanyDialog.value = true
+      nextTick(() => createCompanyNameRef.value?.focus())
     }
 
     function closeCreateCompanyDialog() {
@@ -471,7 +480,9 @@ export default {
         const { clients } = await oserpData.fetchClients()
         clientList.value = clients
       } catch (err) {
-        createCompanyError.value = err.message || 'Fehler beim Anlegen der Firma'
+        const errorCode = err.code || err.message || 'UNKNOWN_ERROR'
+        const key = 'NavbarView.createCompanyError.' + errorCode
+        createCompanyError.value = t(key) !== key ? t(key) : t('NavbarView.createCompanyError.UNKNOWN_ERROR')
       } finally {
         createCompanyLoading.value = false
       }
@@ -570,10 +581,13 @@ export default {
       weroniPending,
       showCreateCompanyDialog,
       createCompanySkr,
+      createCompanyNameRef,
+      canSubmitCompany,
       createCompanyName,
       createCompanyDbName,
       createCompanyLoading,
       createCompanyError,
+      skrOptions,
       openCreateCompanyDialog,
       closeCreateCompanyDialog,
       doCreateCompany
