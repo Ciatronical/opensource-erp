@@ -534,8 +534,14 @@ function testAnprFile() {
     $isVideo = in_array($ext, ['mp4', 'avi', 'mov', 'mkv']);
     $flag = $isVideo ? '--video' : '--image';
 
-    // JSON-Ausgabe anfordern (wir fuegen einen --json Flag hinzu)
-    $cmd = escapeshellcmd($python) . ' ' . escapeshellarg($script)
+    // HOME auf den Besitzer des Projektverzeichnisses setzen,
+    // damit PaddleOCR die gecachten Modelle findet (~/.paddleocr/)
+    $projectDir = realpath(__DIR__ . '/../../../');
+    $ownerUid = fileowner($projectDir);
+    $ownerInfo = posix_getpwuid($ownerUid);
+    $homeDir = $ownerInfo['dir'] ?? '/home/work';
+    $cmd = 'HOME=' . escapeshellarg($homeDir) . ' '
+         . escapeshellcmd($python) . ' ' . escapeshellarg($script)
          . ' ' . $flag . ' ' . escapeshellarg($testFile)
          . ' --json 2>&1';
 
