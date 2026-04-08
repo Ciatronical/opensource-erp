@@ -167,10 +167,10 @@ run_servers() {
 }
 
 # Starte Server — in gnome-terminal falls GUI vorhanden, sonst direkt im Terminal
-if command -v gnome-terminal &>/dev/null && [ -n "$DISPLAY" ]; then
-    gnome-terminal --title="OpensourceERP" --geometry=${TERMINAL_WIDTH}x${TERMINAL_HEIGHT} -- bash -c "cd $(pwd) && source scripts/dev.sh --run-servers; exec bash"
-elif [ "$1" = "--run-servers" ]; then
+if [ "$1" = "--run-servers" ]; then
     run_servers
+elif command -v gnome-terminal &>/dev/null && [ -n "$DISPLAY" ]; then
+    gnome-terminal --title="OpensourceERP" --geometry=${TERMINAL_WIDTH}x${TERMINAL_HEIGHT} -- bash -c "cd $(pwd) && bash scripts/dev.sh --run-servers; exec bash"
 else
     run_servers
 fi
