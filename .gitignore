@@ -50,3 +50,8 @@ backend/tmp/*/
 
 # Demo-Daten (lokal generiert, nicht im Repo)
 backend/api/demo/data/
+
+# Python Virtual Environments
+venv/
+__pycache__/
+*.pyc

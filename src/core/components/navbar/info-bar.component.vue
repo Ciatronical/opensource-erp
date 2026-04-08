@@ -26,6 +26,26 @@
         </span>
       </v-chip>
 
+      <!-- ANPR: Erkannte Fahrzeuge an der Zufahrt -->
+      <v-chip
+        v-for="det in visibleAnprDetections"
+        :key="'anpr-' + det.id"
+        color="blue-darken-2"
+        variant="elevated"
+        size="small"
+        closable
+        label
+        class="info-chip cursor-pointer"
+        :title="det.c_ln + (det.customer_name ? ' — ' + det.customer_name : '') + ' (' + formatAnprTime(det.detected_at) + ')'"
+        @click="openAnprDetection(det)"
+        @click:close="dismissItem('anpr', det.id)"
+      >
+        <v-icon start size="14">mdi-car-side</v-icon>
+        <span class="info-chip-text font-weight-medium">
+          {{ det.c_ln }}
+        </span>
+      </v-chip>
+
       <!-- Chronologische Ereignisse (füllen restliche Slots) -->
       <v-chip
         v-for="item in visibleChronologicalItems"
@@ -64,20 +84,26 @@ export default {
     const { t, locale } = useI18n()
     const router = useRouter()
     const {
-      chronologicalItems, pendingPartsRequests, hasItems,
+      chronologicalItems, pendingPartsRequests, anprDetections, hasItems,
       dismissItem
     } = useInfoBar()
 
     const MAX_TOTAL = 9
 
-    // Ersatzteilanforderungen haben Priorität — werden zuerst angezeigt
+    // Ersatzteilanforderungen haben Prioritaet — werden zuerst angezeigt
     const visiblePartsRequests = computed(() =>
       pendingPartsRequests.value.slice(0, MAX_TOTAL)
     )
 
-    // Chronologische Items füllen die restlichen Plätze
-    const visibleChronologicalItems = computed(() => {
+    // ANPR-Erkennungen haben zweite Prioritaet
+    const visibleAnprDetections = computed(() => {
       const remaining = Math.max(0, MAX_TOTAL - visiblePartsRequests.value.length)
+      return anprDetections.value.slice(0, remaining)
+    })
+
+    // Chronologische Items fuellen die restlichen Plaetze
+    const visibleChronologicalItems = computed(() => {
+      const remaining = Math.max(0, MAX_TOTAL - visiblePartsRequests.value.length - visibleAnprDetections.value.length)
       return chronologicalItems.value.slice(0, remaining)
     })
 
@@ -156,18 +182,35 @@ export default {
       router.push({ name: 'faktura-order-view', params: { id: pr.oe_id }, query: { focusParts: '1' } })
     }
 
+    function openAnprDetection(det) {
+      if (det.vehicle_id) {
+        router.push({ name: 'car-edit', params: { id: det.vehicle_id } })
+      } else if (det.customer_id) {
+        router.push({ name: 'change-customer', params: { id: det.customer_id } })
+      }
+    }
+
+    function formatAnprTime(dateStr) {
+      if (!dateStr) return ''
+      const d = new Date(dateStr)
+      return d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })
+    }
+
     return {
       t,
       visiblePartsRequests,
+      visibleAnprDetections,
       visibleChronologicalItems,
       hasItems,
       dismissItem,
       truncate,
       formatDateTime,
+      formatAnprTime,
       chipColor,
       chipIcon,
       openItem,
-      openOrderWithParts
+      openOrderWithParts,
+      openAnprDetection
     }
   }
 }

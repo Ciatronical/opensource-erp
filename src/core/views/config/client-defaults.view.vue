@@ -56,8 +56,8 @@
                         <!-- LAZY LOADED TABS - Nur der aktive Tab wird geladen! -->
                         <component
                             :is="currentTabComponent"
-                            :defaults="activeTab === 'crm' || activeTab === 'lxcars' ? undefined : defaults"
-                            :crm-defaults="activeTab === 'crm' || activeTab === 'lxcars' ? crmDefaults : undefined"
+                            :defaults="['crm','lxcars','anpr'].includes(activeTab) ? undefined : defaults"
+                            :crm-defaults="['crm','lxcars','anpr'].includes(activeTab) ? crmDefaults : undefined"
                             :search-query="searchQuery"
                         />
                     </v-card-text>
@@ -118,6 +118,7 @@ const RecordLinksTab = defineAsyncComponent(() => import('./tabs/record.links.ta
 const BankTab = defineAsyncComponent(() => import('./tabs/bank.tab.vue'));
 const CrmTab = defineAsyncComponent(() => import('./tabs/crm-defaults.tab.vue'));
 const LxCarsTab = defineAsyncComponent(() => import('./tabs/lxcars-defaults.tab.vue'));
+const AnprTab = defineAsyncComponent(() => import('./tabs/anpr-defaults.tab.vue'));
 const AddTab = defineAsyncComponent(() => import('./tabs/add.tab.vue'));
 
 const { t } = useI18n();
@@ -278,6 +279,10 @@ const tabs = computed(() => [
         value: 'lxcars',
         title: 'LxCars',
         icon: 'mdi-car'
+    }, {
+        value: 'anpr',
+        title: 'ANPR',
+        icon: 'mdi-cctv'
     }] : []),
     {
         value: 'add',
@@ -306,6 +311,7 @@ const currentTabComponent = computed(() => {
         'bank': BankTab,
         'crm': CrmTab,
         'lxcars': LxCarsTab,
+        'anpr': AnprTab,
         'add': AddTab
     };
 

@@ -576,3 +576,8 @@ INSERT INTO defaults_oserp (key, value) VALUES ('lxcars_pausen', '09:00-09:30, 1
 
 -- Feature-Toggle
 INSERT INTO defaults_oserp (key, value) VALUES ('lxcars_mechanic_mode', '0') ON CONFLICT (key) DO NOTHING;
+
+-- ============================================================================
+-- ANPR: Automatische Kennzeichenerkennung
+-- ============================================================================
+\i anpr_schema.sql

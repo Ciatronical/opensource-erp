@@ -22,7 +22,8 @@ export function useInfoBar() {
     const newEmails = ref([])
     const newWhatsapps = ref([])
     const pendingPartsRequests = ref([])
-    const dismissed = ref({ calls: [], emails: [], whatsapps: [], parts: [], parts_date: null })
+    const anprDetections = ref([])
+    const dismissed = ref({ calls: [], emails: [], whatsapps: [], parts: [], anpr: [], parts_date: null })
 
     let eventSource = null
     let emailPollInterval = null
@@ -48,6 +49,7 @@ export function useInfoBar() {
                     emails: (parsed.emails || []).slice(-20),
                     whatsapps: (parsed.whatsapps || []).slice(-20),
                     parts: partsStillValid,
+                    anpr: (parsed.anpr || []).slice(-20),
                     parts_date: partsStillValid.length ? today : null
                 }
             }
@@ -61,6 +63,7 @@ export function useInfoBar() {
             emails: dismissed.value.emails,
             whatsapps: dismissed.value.whatsapps,
             parts: dismissed.value.parts,
+            anpr: dismissed.value.anpr,
             parts_date: dismissed.value.parts_date
         }))
     }
@@ -125,6 +128,20 @@ export function useInfoBar() {
                 pendingPartsRequests.value = response.data.payload || []
             }
         } catch { /* LxCars nicht verfügbar */ }
+    }
+
+    async function fetchAnprDetections() {
+        if (!oserp.isLxCars()) return
+        const enabled = oserp.getClientDefaultValue('anpr_enabled', '0')
+        if (enabled !== '1' && enabled !== 't' && enabled !== true) return
+        try {
+            const response = await axios.post('/api/lxcars/', {
+                action: 'getPendingAnprDetections'
+            })
+            if (response.data.success) {
+                anprDetections.value = response.data.payload?.detections || []
+            }
+        } catch { /* ANPR nicht verfuegbar */ }
     }
 
     // --- Config: Max. Anzahl ---
@@ -201,9 +218,17 @@ export function useInfoBar() {
         pendingPartsRequests.value.filter(pr => !dismissed.value.parts.includes(pr.oe_id))
     )
 
+    const filteredAnprDetections = computed(() => {
+        const maxAnpr = parseInt(oserp.getClientDefaultValue('anpr_infobar_max', '3'), 10) || 3
+        return anprDetections.value
+            .filter(d => !dismissed.value.anpr.includes(d.id))
+            .slice(0, maxAnpr)
+    })
+
     const hasItems = computed(() =>
         chronologicalItems.value.length > 0 ||
-        filteredPartsRequests.value.length > 0
+        filteredPartsRequests.value.length > 0 ||
+        filteredAnprDetections.value.length > 0
     )
 
     // --- Actions ---
@@ -217,6 +242,10 @@ export function useInfoBar() {
         } else if (type === 'parts' && !dismissed.value.parts.includes(id)) {
             dismissed.value.parts.push(id)
             dismissed.value.parts_date = new Date().toISOString().split('T')[0]
+        } else if (type === 'anpr' && !dismissed.value.anpr.includes(id)) {
+            dismissed.value.anpr.push(id)
+            // Auch serverseitig als dismissed markieren
+            axios.post('/api/lxcars/', { action: 'dismissAnprDetection', id }).catch(() => {})
         }
         saveDismissed()
     }
@@ -239,6 +268,8 @@ export function useInfoBar() {
                 const data = JSON.parse(event.data)
                 if (data.message_type !== undefined) {
                     fetchNewWhatsapps()
+                } else if (data.table === 'anpr_detections_lxcars') {
+                    fetchAnprDetections()
                 } else if (data.table === 'oe_parts_requests_lxcars') {
                     fetchPendingPartsRequests()
                 } else if (data.urgency !== undefined) {
@@ -281,6 +312,7 @@ export function useInfoBar() {
         fetchNewEmails()
         fetchNewWhatsapps()
         fetchPendingPartsRequests()
+        fetchAnprDetections()
     }
 
     // --- Firmenwechsel: Daten zuruecksetzen und neu laden ---
@@ -289,7 +321,8 @@ export function useInfoBar() {
         newEmails.value = []
         newWhatsapps.value = []
         pendingPartsRequests.value = []
-        dismissed.value = { calls: [], emails: [], whatsapps: [], parts: [], parts_date: null }
+        anprDetections.value = []
+        dismissed.value = { calls: [], emails: [], whatsapps: [], parts: [], anpr: [], parts_date: null }
 
         stopListeners()
         loadAndFetchAll()
@@ -315,9 +348,11 @@ export function useInfoBar() {
     return {
         chronologicalItems,
         pendingPartsRequests: filteredPartsRequests,
+        anprDetections: filteredAnprDetections,
         hasItems,
         dismissItem,
         fetchPendingPartsRequests,
+        fetchAnprDetections,
         closeAll
     }
 }
