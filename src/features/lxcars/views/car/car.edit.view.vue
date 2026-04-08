@@ -1201,6 +1201,7 @@ export default {
             const kbaFields = scanData.kba || null
 
             // Feld-Watchers (HSN→TSN leeren) während des Imports deaktivieren
+            // nextTick nötig, weil Vue 3 Watchers erst nach dem synchronen Code flusht
             importingScanData = true
 
             // Fahrzeugdaten aus dem Scan übernehmen
@@ -1211,7 +1212,7 @@ export default {
                 }
             }
 
-            importingScanData = false
+            nextTick(() => { importingScanData = false })
 
             // Special-KBA-Flag aus Scan übernehmen
             if (scanData.useSpecialKba) {
