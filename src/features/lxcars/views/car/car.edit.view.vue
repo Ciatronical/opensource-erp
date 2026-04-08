@@ -1139,6 +1139,9 @@ export default {
         const showSpecialKbaConfirm = ref(false)
         const specialKbaForm = ref({ hersteller: '', marke: '', d2: '' })
 
+        // Flag: Scan-Daten werden gerade importiert → Feld-Watchers (HSN/TSN) nicht auslösen
+        let importingScanData = false
+
         // Scan-Bilder: werden nach dem ersten Save persistent gespeichert
         const pendingScanImages = ref(null)
         // Backup: Bilder im Speicher behalten auch nachdem pendingScanImages geleert wird
@@ -1197,6 +1200,9 @@ export default {
             const carFields = scanData.car || scanData
             const kbaFields = scanData.kba || null
 
+            // Feld-Watchers (HSN→TSN leeren) während des Imports deaktivieren
+            importingScanData = true
+
             // Fahrzeugdaten aus dem Scan übernehmen
             const scanFieldNames = ['c_ln', 'c_2', 'c_3', 'c_fin', 'c_finchk', 'c_d', 'c_hu', 'c_em']
             for (const field of scanFieldNames) {
@@ -1204,6 +1210,8 @@ export default {
                     car.value[field] = carFields[field]
                 }
             }
+
+            importingScanData = false
 
             // Special-KBA-Flag aus Scan übernehmen
             if (scanData.useSpecialKba) {
@@ -1414,7 +1422,7 @@ export default {
 
         // HSN-Änderung: TSN + D2 leeren, KBA-Zuordnung zurücksetzen
         watch(() => car.value.c_2, (newVal, oldVal) => {
-            if (!initialLoaded.value) return
+            if (!initialLoaded.value || importingScanData) return
             if ((newVal || '').trim() === (oldVal || '').trim()) return
             car.value.c_3 = ''
             car.value.c_d2 = ''
@@ -1425,7 +1433,7 @@ export default {
 
         // TSN-Änderung: KBA-Zuordnung zurücksetzen und neu suchen
         watch(() => car.value.c_3, (newVal, oldVal) => {
-            if (!initialLoaded.value) return
+            if (!initialLoaded.value || importingScanData) return
             if ((newVal || '').trim() === (oldVal || '').trim()) return
             car.value.kba_id = null
             kbaData.value = null
@@ -1435,7 +1443,7 @@ export default {
 
         // D2-Änderung: KBA-Zuordnung zurücksetzen und neu suchen
         watch(() => car.value.c_d2, (newVal, oldVal) => {
-            if (!initialLoaded.value) return
+            if (!initialLoaded.value || importingScanData) return
             if ((newVal || '').trim() === (oldVal || '').trim()) return
             if (car.value.kba_id || kbaData.value) {
                 car.value.kba_id = null
