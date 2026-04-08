@@ -15,6 +15,7 @@ Nutzung:
 """
 
 import argparse
+import json
 import sys
 import time
 import re
@@ -432,6 +433,73 @@ def process_video(source):
 
 # --- Main ---------------------------------------------------------------------
 
+def process_json(image_path, is_video=False):
+    """Erkennung durchführen und Ergebnis als JSON ausgeben (für PHP-API)."""
+    recognizer = PlateRecognizer()
+    all_plates = []
+
+    if is_video:
+        cap = cv2.VideoCapture(image_path)
+        if not cap.isOpened():
+            print(json.dumps([]))
+            return
+
+        fps = cap.get(cv2.CAP_PROP_FPS) or 30
+        frame_skip = max(1, int(fps * 0.5))
+        frame_count = 0
+
+        while True:
+            ret, frame = cap.read()
+            if not ret:
+                break
+            frame_count += 1
+            if frame_count % frame_skip != 0:
+                continue
+
+            enhanced = preprocess_frame(frame)
+            detections = recognizer.recognize(enhanced)
+            if not any(d['is_plate'] for d in detections):
+                detections = recognizer.recognize(frame)
+
+            for d in detections:
+                if d['is_plate']:
+                    all_plates.append({
+                        'plate': d['plate'],
+                        'confidence': round(d['confidence'], 4),
+                        'direction': d['direction'],
+                        'is_plate': True,
+                    })
+        cap.release()
+    else:
+        try:
+            frame = load_image_with_exif(image_path)
+        except Exception:
+            print(json.dumps([]))
+            return
+
+        enhanced = preprocess_frame(frame)
+        detections = recognizer.recognize(enhanced)
+        if not any(d['is_plate'] for d in detections):
+            detections = recognizer.recognize(frame)
+
+        for d in detections:
+            all_plates.append({
+                'plate': d['plate'],
+                'confidence': round(d['confidence'], 4),
+                'direction': d['direction'],
+                'is_plate': d['is_plate'],
+            })
+
+    # Deduplizieren: Nur das beste Ergebnis pro Kennzeichen
+    seen = {}
+    for p in all_plates:
+        key = re.sub(r'[\s\-]', '', p['plate'])
+        if key not in seen or p['confidence'] > seen[key]['confidence']:
+            seen[key] = p
+
+    print(json.dumps(list(seen.values())))
+
+
 def main():
     parser = argparse.ArgumentParser(
         description='Kennzeichenerkennung Prototyp mit PaddleOCR'
@@ -440,10 +508,16 @@ def main():
     group.add_argument('--image', '-i', help='Pfad zu einem Testbild')
     group.add_argument('--video', '-v',
                        help='Pfad zu Video, RTSP-URL, oder Webcam-Index (0)')
+    parser.add_argument('--json', action='store_true',
+                        help='Ergebnis als JSON ausgeben (für API)')
 
     args = parser.parse_args()
 
-    if args.image:
+    if args.json:
+        source = args.image or args.video
+        is_video = args.video is not None
+        process_json(source, is_video)
+    elif args.image:
         process_image(args.image)
     else:
         process_video(args.video)

@@ -486,3 +486,77 @@ function getAnprServiceConfig() {
 
     resultInfo(true, '', ['cameras' => $cameras ?: []]);
 }
+
+// ============================================================================
+// TEST
+// ============================================================================
+
+/**
+ * Bild oder Video mit dem Erkennungsskript testen
+ *
+ * Empfängt eine hochgeladene Datei per multipart/form-data,
+ * führt detect_plate.py darauf aus und liefert die Ergebnisse.
+ *
+ * @testdata {}
+ */
+function testAnprFile() {
+    if (empty($_FILES['file']) || $_FILES['file']['error'] !== UPLOAD_ERR_OK) {
+        resultInfo(false, 'NO_FILE', 'Keine Datei hochgeladen');
+        return;
+    }
+
+    $tmpFile = $_FILES['file']['tmp_name'];
+    $originalName = $_FILES['file']['name'];
+    $ext = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+
+    // Nur Bilder und Videos erlauben
+    $allowedExt = ['jpg', 'jpeg', 'png', 'bmp', 'webp', 'mp4', 'avi', 'mov', 'mkv'];
+    if (!in_array($ext, $allowedExt)) {
+        resultInfo(false, 'INVALID_FORMAT', 'Nur Bild- und Videodateien erlaubt');
+        return;
+    }
+
+    // Datei in tmp-Verzeichnis kopieren (mit Endung, damit OpenCV sie erkennt)
+    $testFile = sys_get_temp_dir() . '/anpr_test_' . uniqid() . '.' . $ext;
+    move_uploaded_file($tmpFile, $testFile);
+
+    // Python-Skript aufrufen
+    $scriptDir = __DIR__ . '/../../services/plate-recognition';
+    $python = $scriptDir . '/venv/bin/python';
+    $script = $scriptDir . '/detect_plate.py';
+
+    if (!file_exists($python)) {
+        @unlink($testFile);
+        resultInfo(false, 'PYTHON_NOT_FOUND', 'Python venv nicht gefunden. Bitte erst installieren: cd backend/services/plate-recognition && python3 -m venv venv && ./venv/bin/pip install -r requirements.txt');
+        return;
+    }
+
+    $isVideo = in_array($ext, ['mp4', 'avi', 'mov', 'mkv']);
+    $flag = $isVideo ? '--video' : '--image';
+
+    // JSON-Ausgabe anfordern (wir fuegen einen --json Flag hinzu)
+    $cmd = escapeshellcmd($python) . ' ' . escapeshellarg($script)
+         . ' ' . $flag . ' ' . escapeshellarg($testFile)
+         . ' --json 2>&1';
+
+    $output = shell_exec($cmd);
+    @unlink($testFile);
+
+    // JSON aus der Ausgabe extrahieren
+    $results = [];
+    if ($output) {
+        // Suche nach JSON-Zeile im Output
+        foreach (explode("\n", $output) as $line) {
+            $line = trim($line);
+            if (str_starts_with($line, '[') || str_starts_with($line, '{')) {
+                $decoded = json_decode($line, true);
+                if ($decoded !== null) {
+                    $results = is_array($decoded) && isset($decoded[0]) ? $decoded : [$decoded];
+                    break;
+                }
+            }
+        }
+    }
+
+    resultInfo(true, '', ['results' => $results]);
+}
