@@ -56,7 +56,7 @@ Wenn die Kamera-Aktion auf "Aktor" oder "Beides" steht und ein Aktor verknüpft 
 - **Toröffnung = "Komplett öffnen"**: Tor geht immer ganz auf
 - **Toröffnung = "Fahrzeughöhe + Puffer"**: Tor öffnet nur auf die geschätzte Fahrzeughöhe plus Sicherheitspuffer (z.B. PKW ~150cm + 30cm = 180cm statt volle 300cm)
 
-Dies funktioniert auch mit seitlich montierten Kameras.
+Dies funktioniert auch mit seitlich montierten Kameras (siehe Kalibrierung weiter unten).
 
 ### 4. Kamera mit Aktor verknüpfen
 
@@ -156,10 +156,65 @@ Erkannte Fahrzeuge erscheinen als **blaue Chips** mit Auto-Icon in der Infoleist
 
 ### Kamera-Montage
 
+#### Variante A: Frontal (z.B. an der Gebäudewand gegenüber der Einfahrt)
+
 - **Schräg von oben** (~30 Grad) montieren — vermeidet Blendung durch Scheinwerfer
 - Kennzeichen muss im Bild **mindestens 100px breit** sein
 - Fester Bildausschnitt auf die Einfahrtsspur
 - Infrarot/Nachtsicht für Betrieb bei Dunkelheit
+- In der Config: **Position = "Frontal"**
+
+#### Variante B: Seitlich neben dem Tor (empfohlen bei Segmenttoren)
+
+Bei Segmenttoren darf die Kamera **nicht am Tor** montiert werden — sie würde sich beim Öffnen mitbewegen. Stattdessen seitlich daneben:
+
+```
+    ┌────────────────────┐
+    │                    │
+    │       Tor          │📷 ← Kamera seitlich, ~1.0-1.2m Höhe
+    │                    │     schräg auf die Einfahrt gerichtet
+    └────────────────────┘
+
+         🚗 → Fahrzeug fährt ein
+```
+
+- **Höhe**: ~1,0-1,2m (Kennzeichenhöhe)
+- **Direkt neben dem Tor** an der Wand oder auf einem Pfosten
+- **Schräg auf die Einfahrt** gerichtet, damit das Kennzeichen rechtzeitig erkannt wird
+- In der Config: **Position = "Seitlich links"** oder **"Seitlich rechts"**
+
+### Kalibrierung für Fahrzeughöhen-Erkennung
+
+Wenn das Tor nur so weit öffnen soll wie das Fahrzeug hoch ist, muss die Kamera einmalig kalibriert werden. Das Tor dient dabei als Referenz — seine Höhe ist bekannt, und aus dem Verhältnis der Pixel im Bild zur realen Höhe kann die Fahrzeughöhe berechnet werden.
+
+#### Einrichtung (einmalig)
+
+1. In den Kamera-Einstellungen **Toröffnung = "Fahrzeughöhe + Puffer"** wählen
+2. Es erscheinen drei Kalibrierungsfelder:
+
+| Feld | Beschreibung | Beispiel |
+|------|-------------|---------|
+| **Torhöhe real** | Die echte Höhe des Tors in cm | 300 |
+| **Oberkante Tor (Y)** | Y-Pixel der Toroberkante im Kamerabild | 50 |
+| **Unterkante Tor (Y)** | Y-Pixel der Torunterkante im Kamerabild | 450 |
+
+3. Die Y-Pixel ermitteln: Screenshot vom Kamerabild machen und in einem Bildbearbeitungsprogramm die Pixelposition der Toroberkante und -unterkante ablesen
+
+#### Rechenbeispiel
+
+```
+Tor im Bild:  Oberkante bei Y=50, Unterkante bei Y=450 → 400px
+Tor real:     300cm
+→ 1 Pixel =   0,75cm
+
+Fahrzeug:     Oberkante geschätzt bei Y=110, Unterkante bei Y=350
+→ Höhe =      (350 - 110) × 0,75 = 180cm
+→ Toröffnung: 180cm + 30cm Puffer = 210cm (statt volle 300cm)
+```
+
+Ergebnis: Ein PKW (~150cm) bekommt 180cm Öffnung, ein Transporter (~200cm) bekommt 230cm — statt jedes Mal die vollen 300cm. Das spart Energie und Verschleiß am Torantrieb.
+
+**Tipp**: Die Fahrzeughöhe wird automatisch aus der Kennzeichenposition geschätzt (ein deutsches Kennzeichen sitzt auf ~50cm Höhe und ist genormt 11cm hoch). Wenn die Kalibrierungswerte stimmen, ist die Berechnung auf ±10cm genau.
 
 ## Testen
 

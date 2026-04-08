@@ -246,23 +246,73 @@ class ActuatorController:
         return resp.status_code == 200
 
     @staticmethod
-    def open_gate(cam_config, vehicle_height_px=None, frame_height=None):
+    def calculate_vehicle_height_cm(cam_config, vehicle_top_y, vehicle_bottom_y):
+        """Berechnet die reale Fahrzeughöhe in cm anhand der Tor-Kalibrierung.
+
+        Die Kamera sieht das Tor (bekannte Höhe in cm) und das Fahrzeug.
+        Aus dem Verhältnis der Pixel-Höhen ergibt sich die reale Fahrzeughöhe.
+
+        Kalibrierungswerte:
+        - calibration_gate_height_cm: Reale Torhöhe (z.B. 300cm)
+        - calibration_gate_top_y: Y-Pixel der Toroberkante
+        - calibration_gate_bottom_y: Y-Pixel der Torunterkante
+        """
+        gate_height_cm = int(cam_config.get('calibration_gate_height_cm') or 0)
+        gate_top_y = cam_config.get('calibration_gate_top_y')
+        gate_bottom_y = cam_config.get('calibration_gate_bottom_y')
+
+        if not gate_height_cm or gate_top_y is None or gate_bottom_y is None:
+            return None
+
+        gate_top_y = int(gate_top_y)
+        gate_bottom_y = int(gate_bottom_y)
+        gate_height_px = abs(gate_bottom_y - gate_top_y)
+
+        if gate_height_px == 0:
+            return None
+
+        # cm pro Pixel
+        cm_per_px = gate_height_cm / gate_height_px
+
+        # Fahrzeughöhe in Pixeln
+        vehicle_height_px = abs(vehicle_bottom_y - vehicle_top_y)
+
+        return int(vehicle_height_px * cm_per_px)
+
+    @staticmethod
+    def open_gate(cam_config, vehicle_top_y=None, vehicle_bottom_y=None,
+                  vehicle_height_px=None, frame_height=None):
         gate_mode = cam_config.get('gate_height_mode', 'full')
         max_h = int(cam_config.get('actuator_max_height_cm') or 300)
         buffer = int(cam_config.get('actuator_height_buffer_cm') or 30)
 
-        if gate_mode == 'vehicle_height' and vehicle_height_px and frame_height:
-            ratio = vehicle_height_px / frame_height
-            vehicle_cm = int(ratio * max_h)
-            open_height = min(vehicle_cm + buffer, max_h)
-            cmd = cam_config.get('actuator_command_partial', '')
-            if cmd:
-                print(f"[AKTOR] Teiloeffnung: {open_height}cm (Fahrzeug: ~{vehicle_cm}cm + {buffer}cm Puffer)")
-                return ActuatorController.send_command(cam_config, cmd, height_cm=open_height)
+        if gate_mode == 'vehicle_height':
+            vehicle_cm = None
 
+            # Methode 1: Kalibrierte Berechnung über Tor-Referenz (genau)
+            if vehicle_top_y is not None and vehicle_bottom_y is not None:
+                vehicle_cm = ActuatorController.calculate_vehicle_height_cm(
+                    cam_config, vehicle_top_y, vehicle_bottom_y)
+                if vehicle_cm:
+                    print(f"[AKTOR] Kalibrierte Höhe: ~{vehicle_cm}cm")
+
+            # Methode 2: Fallback auf Frame-Verhältnis (grob)
+            if vehicle_cm is None and vehicle_height_px and frame_height:
+                ratio = vehicle_height_px / frame_height
+                vehicle_cm = int(ratio * max_h)
+                print(f"[AKTOR] Geschätzte Höhe (Fallback): ~{vehicle_cm}cm")
+
+            if vehicle_cm:
+                open_height = min(vehicle_cm + buffer, max_h)
+                cmd = cam_config.get('actuator_command_partial', '')
+                if cmd:
+                    print(f"[AKTOR] Teilöffnung: {open_height}cm ({vehicle_cm}cm + {buffer}cm Puffer)")
+                    return ActuatorController.send_command(cam_config, cmd, height_cm=open_height)
+
+        # Fallback: Voll öffnen
         cmd = cam_config.get('actuator_command_open', '')
         if cmd:
-            print(f"[AKTOR] Volle Oeffnung")
+            print(f"[AKTOR] Volle Öffnung")
             return ActuatorController.send_command(cam_config, cmd)
         return False
 
@@ -366,12 +416,32 @@ class CameraWorker(threading.Thread):
 
             direction = self._detect_direction(self.size_history[track_key])
 
+            # Fahrzeughöhe schätzen: Kennzeichen ist auf ~50cm Höhe montiert.
+            # Fahrzeugoberkante ≈ Kennzeichen-Oberkante minus geschätzte Höhe darüber.
+            # Bei seitlicher Kamera: Kennzeichen-Bounding-Box-Höhe ≈ 11cm real.
+            # Daraus den cm/px-Faktor ableiten, dann Fahrzeughöhe = Kennzeichen-Y + ~100cm darüber.
+            plate_top_y = min(p[1] for p in box)
+            plate_bottom_y = max(p[1] for p in box)
+            plate_height_px = plate_bottom_y - plate_top_y
+
+            # Deutsches Kennzeichen ist genormt 11cm hoch
+            if plate_height_px > 0:
+                local_cm_per_px = 11.0 / plate_height_px
+                # Typischer PKW: ~140cm, Kennzeichen auf ~50cm → ~90cm über Kennzeichen
+                estimated_top_y = int(plate_top_y - (90.0 / local_cm_per_px))
+                estimated_vehicle_height_px = plate_bottom_y - estimated_top_y
+            else:
+                estimated_top_y = plate_top_y
+                estimated_vehicle_height_px = int(box_height(box) * 5)
+
             detections.append({
                 'plate': normalized,
                 'confidence': conf,
                 'box': box,
                 'direction': direction,
-                'vehicle_height_px': int(box_height(box) * 5),
+                'vehicle_height_px': estimated_vehicle_height_px,
+                'vehicle_top_y': max(0, estimated_top_y),
+                'vehicle_bottom_y': plate_bottom_y,
             })
 
         return detections
@@ -459,6 +529,8 @@ class CameraWorker(threading.Thread):
                 if action_taken in ('gate_open', 'both'):
                     ActuatorController.open_gate(
                         self.config,
+                        vehicle_top_y=plate_info.get('vehicle_top_y'),
+                        vehicle_bottom_y=plate_info.get('vehicle_bottom_y'),
                         vehicle_height_px=plate_info.get('vehicle_height_px'),
                         frame_height=frame_shape[0]
                     )

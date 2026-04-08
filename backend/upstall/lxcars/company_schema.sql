@@ -597,6 +597,9 @@ CREATE TABLE IF NOT EXISTS anpr_cameras_lxcars (
     action_type     TEXT DEFAULT 'infobar',
     actuator_id     INTEGER,
     gate_height_mode TEXT DEFAULT 'full',
+    calibration_gate_height_cm INTEGER DEFAULT 300,
+    calibration_gate_top_y     INTEGER,
+    calibration_gate_bottom_y  INTEGER,
     note            TEXT,
     itime           TIMESTAMP DEFAULT now(),
     mtime           TIMESTAMP
@@ -611,7 +614,10 @@ COMMENT ON COLUMN anpr_cameras_lxcars.min_detections IS 'Mindestanzahl Erkennung
 COMMENT ON COLUMN anpr_cameras_lxcars.cooldown_minutes IS 'Minuten Cooldown nach letzter Meldung desselben Kennzeichens';
 COMMENT ON COLUMN anpr_cameras_lxcars.action_type IS 'Aktion bei Erkennung: infobar, actuator, both';
 COMMENT ON COLUMN anpr_cameras_lxcars.actuator_id IS 'Verknuepfter Aktor (z.B. Torantrieb)';
-COMMENT ON COLUMN anpr_cameras_lxcars.gate_height_mode IS 'Toroeffnung: full (komplett), vehicle_height (Fahrzeughoehe + Puffer)';
+COMMENT ON COLUMN anpr_cameras_lxcars.gate_height_mode IS 'Toröffnung: full (komplett), vehicle_height (Fahrzeughöhe + Puffer)';
+COMMENT ON COLUMN anpr_cameras_lxcars.calibration_gate_height_cm IS 'Reale Torhöhe in cm (Referenz für Fahrzeughöhen-Berechnung)';
+COMMENT ON COLUMN anpr_cameras_lxcars.calibration_gate_top_y IS 'Y-Pixel der Toroberkante im Kamerabild';
+COMMENT ON COLUMN anpr_cameras_lxcars.calibration_gate_bottom_y IS 'Y-Pixel der Torunterkante im Kamerabild';
 
 -- Aktoren (Tore, Schranken, etc.)
 CREATE TABLE IF NOT EXISTS anpr_actuators_lxcars (

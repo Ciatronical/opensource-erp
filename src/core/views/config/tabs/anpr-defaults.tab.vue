@@ -137,6 +137,35 @@
                                         :items="gateHeightModes" variant="outlined" density="compact" hide-details="auto" />
                                 </v-col>
 
+                                <!-- Kalibrierung: nur bei Fahrzeughöhe-Modus -->
+                                <template v-if="cam.gate_height_mode === 'vehicle_height' && cam.actuator_id">
+                                    <v-col cols="12" class="pb-0 pt-4">
+                                        <div class="text-subtitle-2 text-grey-darken-1">
+                                            <v-icon start size="small">mdi-ruler</v-icon>
+                                            {{ t('anpr.calibration') }}
+                                        </div>
+                                        <div class="text-caption text-grey">{{ t('anpr.calibrationHelp') }}</div>
+                                    </v-col>
+                                    <v-col cols="4" md="2">
+                                        <v-text-field v-model.number="cam.calibration_gate_height_cm"
+                                            :label="t('anpr.calibrationGateHeight')"
+                                            type="number" min="100" max="600"
+                                            variant="outlined" density="compact" hide-details="auto" suffix="cm" />
+                                    </v-col>
+                                    <v-col cols="4" md="2">
+                                        <v-text-field v-model.number="cam.calibration_gate_top_y"
+                                            :label="t('anpr.calibrationGateTopY')"
+                                            type="number" min="0"
+                                            variant="outlined" density="compact" hide-details="auto" suffix="px" />
+                                    </v-col>
+                                    <v-col cols="4" md="2">
+                                        <v-text-field v-model.number="cam.calibration_gate_bottom_y"
+                                            :label="t('anpr.calibrationGateBottomY')"
+                                            type="number" min="0"
+                                            variant="outlined" density="compact" hide-details="auto" suffix="px" />
+                                    </v-col>
+                                </template>
+
                                 <v-col cols="12" md="6">
                                     <v-textarea v-model="cam.note" :label="t('anpr.note')"
                                         rows="2" variant="outlined" density="compact" hide-details="auto" />

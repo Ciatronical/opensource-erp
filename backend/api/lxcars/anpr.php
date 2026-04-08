@@ -56,6 +56,9 @@ function saveAnprCamera($data) {
         ':actuator_id'      => !empty($cam['actuator_id']) ? intval($cam['actuator_id']) : null,
         ':gate_height_mode' => $cam['gate_height_mode'] ?? 'full',
         ':note'             => $cam['note'] ?? null,
+        ':calibration_gate_height_cm' => !empty($cam['calibration_gate_height_cm']) ? intval($cam['calibration_gate_height_cm']) : 300,
+        ':calibration_gate_top_y'     => !empty($cam['calibration_gate_top_y']) ? intval($cam['calibration_gate_top_y']) : null,
+        ':calibration_gate_bottom_y'  => !empty($cam['calibration_gate_bottom_y']) ? intval($cam['calibration_gate_bottom_y']) : null,
     ];
 
     if ($id > 0) {
@@ -68,6 +71,9 @@ function saveAnprCamera($data) {
                 min_detections = :min_detections, cooldown_minutes = :cooldown_minutes,
                 action_type = :action_type, actuator_id = :actuator_id,
                 gate_height_mode = :gate_height_mode, note = :note,
+                calibration_gate_height_cm = :calibration_gate_height_cm,
+                calibration_gate_top_y = :calibration_gate_top_y,
+                calibration_gate_bottom_y = :calibration_gate_bottom_y,
                 mtime = now()
              WHERE id = :id",
             $params
@@ -77,11 +83,13 @@ function saveAnprCamera($data) {
             "INSERT INTO anpr_cameras_lxcars
                 (name, rtsp_url, enabled, direction_mode, position,
                  frame_interval, min_confidence, min_detections, cooldown_minutes,
-                 action_type, actuator_id, gate_height_mode, note)
+                 action_type, actuator_id, gate_height_mode, note,
+                 calibration_gate_height_cm, calibration_gate_top_y, calibration_gate_bottom_y)
              VALUES
                 (:name, :rtsp_url, :enabled, :direction_mode, :position,
                  :frame_interval, :min_confidence, :min_detections, :cooldown_minutes,
-                 :action_type, :actuator_id, :gate_height_mode, :note)",
+                 :action_type, :actuator_id, :gate_height_mode, :note,
+                 :calibration_gate_height_cm, :calibration_gate_top_y, :calibration_gate_bottom_y)",
             $params
         );
         $id = $db->getOne("SELECT currval(pg_get_serial_sequence('anpr_cameras_lxcars', 'id'))")['currval'];
