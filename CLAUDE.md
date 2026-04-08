@@ -59,9 +59,10 @@ require_once __DIR__.'/inc.php';  // ohne Klammern
 
 ### Umgebung
 - **Entwicklung ist LOKAL** (lokale PostgreSQL auf Port 5432, lokaler PHP/Node)
-- **Docker ist NUR fuer Test/Demo** — vom Entwicklungsrechner gibt es KEINE direkte Verbindung zum Docker-Stack
+- **Docker ist NUR fuer Test/Demo** und laeuft auf einem **separaten Server**, nicht auf dem Entwicklungsrechner
+- Vom Entwicklungsrechner gibt es KEINE direkte Verbindung zum Docker-Stack — keine `docker`-Kommandos moeglich
 
-### Docker
+### Docker (auf dem Server)
 - DB-Container ist leeres PostgreSQL — Schemas und Daten werden manuell per `dbdump` geladen
 - Lokale Node-Version: 22 — Dockerfile muss `node:22-alpine` nutzen (Vite 7 braucht crypto.hash, ab Node 20.19+)
 - `php:fpm-bookworm` ist KEIN Apache-Image — Runtime-Dirs muessen im Entrypoint erstellt werden
