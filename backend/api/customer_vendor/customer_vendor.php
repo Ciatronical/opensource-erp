@@ -45,9 +45,64 @@ function getCV($data, $withConfig = []) {
     }
     if (!$cv_id) {
         if (!empty($withConfig)) {
-            // Login-Kontext: loginData trotzdem zurückgeben, nur ohne CV-Daten
-            $withConfig['main'] = ['customer_vendor' => null];
-            echo json_encode(['success' => true, 'payload' => $withConfig]);
+            // Login-Kontext: company_config trotzdem laden (Steuerzonen, Währungen etc.)
+            $auth = DbhAuth::begin();
+            $auth->fetchSessionData();
+            $configQuery = <<<SQL
+                SELECT json_build_object(
+                    'logged_in_employee', (
+                        SELECT row_to_json(emp)
+                        FROM (SELECT * FROM employee WHERE login = '{$auth->getLogin()}') AS emp
+                    ),
+                    'company_config', (
+                        SELECT json_build_object(
+                            'features', (
+                                SELECT json_agg(feature) FROM (
+                                    SELECT value FROM defaults_oserp WHERE key = 'features'
+                                ) AS feature
+                            ),
+                            'defaults', (
+                                SELECT row_to_json(config) FROM (SELECT * FROM defaults) AS config
+                            ),
+                            'defaults_oserp', (
+                                SELECT json_object_agg(key, value) FROM defaults_oserp
+                            ),
+                            'currencies', (
+                                SELECT json_agg(currency) FROM (SELECT * FROM currencies) AS currency
+                            ),
+                            'tax_zones', (
+                                SELECT json_agg(tz) FROM (
+                                    SELECT id, description, obsolete, sortkey
+                                    FROM tax_zones WHERE obsolete = false ORDER BY sortkey
+                                ) AS tz
+                            ),
+                            'payment_terms', (
+                                SELECT json_agg(pt) FROM (
+                                    SELECT * FROM payment_terms ORDER BY sortkey
+                                ) AS pt
+                            ),
+                            'languages', (
+                                SELECT json_agg(lang) FROM (
+                                    SELECT * FROM language WHERE obsolete = false ORDER BY id ASC
+                                ) AS lang
+                            ),
+                            'employees', (
+                                SELECT json_agg(emp) FROM (
+                                    SELECT * FROM employee WHERE deleted = false ORDER BY name ASC
+                                ) AS emp
+                            ),
+                            'business_types', (
+                                SELECT json_agg(b) FROM (SELECT * FROM business) AS b
+                            ),
+                            'delivery_terms', (
+                                SELECT json_agg(dt) FROM (SELECT * FROM delivery_terms) AS dt
+                            )
+                        )
+                    ),
+                    'customer_vendor', null
+                ) AS main
+            SQL;
+            echo $mandant->get($configQuery, $withConfig);
         } else {
             resultInfo(false, 'NO_CV', 'Kein Kunde/Lieferant vorhanden');
         }
