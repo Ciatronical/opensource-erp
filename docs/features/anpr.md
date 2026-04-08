@@ -65,7 +65,21 @@ In den Kamera-Einstellungen:
 - **Verknüpfter Aktor** aus der Dropdown-Liste wählen
 - **Toröffnung** wählen (komplett oder fahrzeughöhe-basiert)
 
-### 5. Erkennungsdienst starten
+### 5. Erkennungsdienst installieren
+
+```bash
+cd backend/services/plate-recognition
+python3 -m venv venv
+./venv/bin/pip install -r requirements.txt
+```
+
+Beim ersten Start werden die OCR-Modelle heruntergeladen (~15 MB). Einmal manuell starten damit die Modelle gecacht werden:
+
+```bash
+./venv/bin/python -c "from paddleocr import PaddleOCR; PaddleOCR(use_angle_cls=True, lang='en', show_log=False, use_gpu=False); print('OK')"
+```
+
+### 6. Erkennungsdienst starten
 
 ```bash
 cd backend/services/plate-recognition
@@ -79,23 +93,24 @@ Der Dienst:
 - Aktualisiert die Konfiguration alle 60 Sekunden (neue Kameras werden automatisch gestartet)
 - Schreibt Erkennungen direkt in die Datenbank (SSE-Benachrichtigung feuert automatisch)
 
-Für Dauerbetrieb als Systemd-Service einrichten:
+### 7. Dauerbetrieb als Systemd-Service
 
-```ini
-[Unit]
-Description=ANPR Kennzeichenerkennung fuer LxCars
-After=postgresql.service
+Eine fertige Unit-Datei liegt unter `install/anpr.service`. Pfade und User vor dem Kopieren anpassen!
 
-[Service]
-Type=simple
-User=www-data
-WorkingDirectory=/pfad/zu/opensource-erp/backend/services/plate-recognition
-ExecStart=/pfad/zu/opensource-erp/backend/services/plate-recognition/venv/bin/python anpr_service.py
-Restart=always
-RestartSec=10
+```bash
+sudo cp install/anpr.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable anpr
+sudo systemctl start anpr
+```
 
-[Install]
-WantedBy=multi-user.target
+**Wichtig**: Die Unit-Datei braucht `Environment=HOME=/home/<user>` damit PaddleOCR seine Modelle findet. Ohne diese Zeile versucht Systemd nach `/var/www/.paddleocr` zu schreiben und scheitert.
+
+Status prüfen:
+
+```bash
+sudo systemctl status anpr
+sudo journalctl -u anpr -f    # Live-Log
 ```
 
 ## Funktionsweise

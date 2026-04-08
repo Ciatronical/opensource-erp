@@ -1,0 +1,18 @@
+[Unit]
+Description=ANPR Kennzeichenerkennung für LxCars
+After=postgresql.service network.target
+
+[Service]
+Type=simple
+# User anpassen! Gleicher User der OpensourceERP betreibt
+User=work
+Environment=HOME=/home/work
+WorkingDirectory=/home/work/opensource-erp/backend/services/plate-recognition
+ExecStart=/home/work/opensource-erp/backend/services/plate-recognition/venv/bin/python anpr_service.py
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

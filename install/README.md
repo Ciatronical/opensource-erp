@@ -27,6 +27,9 @@ sudo apt install -y apache2
 
 # Git und Perl
 sudo apt install -y git perl
+
+# Python (für ANPR-Kennzeichenerkennung)
+sudo apt install -y python3 python3-venv python3-full
 ```
 
 ---
@@ -130,7 +133,37 @@ php backend/cli/whatsapp-reminders.php
 
 ---
 
-## 4. Programmier-Stilrichtlinien
+## 4. ANPR-Kennzeichenerkennung (optional)
+
+Nur nötig wenn die automatische Kennzeichenerkennung an der Werkstattzufahrt genutzt werden soll.
+
+```bash
+cd backend/services/plate-recognition
+python3 -m venv venv
+./venv/bin/pip install -r requirements.txt
+
+# OCR-Modelle einmalig herunterladen
+./venv/bin/python -c "from paddleocr import PaddleOCR; PaddleOCR(use_angle_cls=True, lang='en', show_log=False, use_gpu=False); print('OK')"
+```
+
+Konfiguration und Kameras werden im Browser unter **Einstellungen > ANPR** eingerichtet.
+
+Für Dauerbetrieb als Systemd-Service (Pfade und User in der Datei anpassen!):
+
+```bash
+sudo cp install/anpr.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable anpr
+sudo systemctl start anpr
+```
+
+**Wichtig**: Die Unit-Datei braucht `Environment=HOME=/home/<user>` damit PaddleOCR seine Modelle findet.
+
+Ausführliche Dokumentation: `docs/features/anpr.md`
+
+---
+
+## 5. Programmier-Stilrichtlinien
 
 Vor der Entwicklung bitte lesen:
 ```
