@@ -470,15 +470,21 @@ export default {
       createCompanyLoading.value = true
       createCompanyError.value = ''
       try {
+        const companyName = createCompanyName.value.trim()
         await oserpData.createCompany(
-          createCompanyName.value.trim(),
+          companyName,
           createCompanyDbName.value.trim(),
           createCompanySkr.value
         )
         closeCreateCompanyDialog()
-        // Firmenliste neu laden
+        // Firmenliste neu laden und zur neuen Firma wechseln
         const { clients } = await oserpData.fetchClients()
         clientList.value = clients
+        const newClient = clients.find(c => c.name === companyName)
+        if (newClient) {
+          await oserpData.switchClient(newClient.code)
+          router.push({ name: 'startup' })
+        }
       } catch (err) {
         const errorCode = err.code || err.message || 'UNKNOWN_ERROR'
         const key = 'NavbarView.createCompanyError.' + errorCode

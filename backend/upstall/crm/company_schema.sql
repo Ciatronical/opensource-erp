@@ -1109,6 +1109,8 @@ CREATE TABLE bank_matching_rules (
     itime               timestamp DEFAULT now()
 );
 
+ALTER TABLE bank_transactions ADD COLUMN IF NOT EXISTS match_status text DEFAULT 'unmatched';
+ALTER TABLE bank_transactions ADD COLUMN IF NOT EXISTS remote_iban varchar(40);
 CREATE INDEX IF NOT EXISTS idx_bank_transactions_match_status ON bank_transactions(match_status);
 CREATE INDEX IF NOT EXISTS idx_bank_transactions_remote_iban ON bank_transactions(remote_iban);
 CREATE INDEX IF NOT EXISTS idx_bank_transactions_transdate ON bank_transactions(transdate);
