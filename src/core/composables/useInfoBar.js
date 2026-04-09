@@ -13,7 +13,8 @@ export const sseConnected = ref(false)
 /**
  * Composable fuer die Info Bar in der Navbar
  * Zeigt Anrufe, Emails und WhatsApp-Nachrichten der letzten 7 Tage chronologisch an.
- * Dismissed Items werden dauerhaft in employee_config_oserp gespeichert.
+ * Dismissed Items werden in localStorage (primaer) und employee_config_oserp (Backup) gespeichert.
+ * Warenkorb-Items (parts) werden nur fuer 24h ausgeblendet, alle anderen dauerhaft.
  */
 export function useInfoBar() {
     const oserp = oserpStore()
@@ -23,49 +24,77 @@ export function useInfoBar() {
     const newWhatsapps = ref([])
     const pendingPartsRequests = ref([])
     const anprDetections = ref([])
-    const dismissed = ref({ calls: [], emails: [], whatsapps: [], parts: [], anpr: [], parts_date: null })
+    const dismissed = ref({ calls: [], emails: [], whatsapps: [], parts: [], anpr: [], parts_ts: null })
 
     let eventSource = null
     let emailPollInterval = null
     let whatsappPollInterval = null
 
-    // --- Dismissed Items aus employee_config laden/speichern ---
+    // --- localStorage-Key pro User+Client ---
+    function lsKey() {
+        return `oserp_infobar_dismissed_${oserp.session.user}_${oserp.session.client}`
+    }
+
+    // --- Dismissed Items laden (localStorage primaer, employee_config Fallback) ---
     function loadDismissed() {
         try {
-            const stored = oserp.getConfigValue('infobar_dismissed', null)
-            if (stored) {
-                const parsed = typeof stored === 'string' ? JSON.parse(stored) : stored
-                // v2: closeAll wurde entfernt — alte Massen-Dismisses bereinigen (max 20 pro Typ)
-                if (!parsed._v2) {
-                    dismissed.value = { calls: [], emails: [], whatsapps: [], parts: [] }
-                    saveDismissed()
-                    return
+            let parsed = null
+
+            // 1. localStorage (primaer, sofort verfuegbar)
+            const ls = localStorage.getItem(lsKey())
+            if (ls) {
+                parsed = JSON.parse(ls)
+            }
+
+            // 2. Fallback: employee_config (fuer erstmaligen Login / neues Geraet)
+            if (!parsed) {
+                const stored = oserp.getConfigValue('infobar_dismissed', null)
+                if (stored) {
+                    parsed = typeof stored === 'string' ? JSON.parse(stored) : stored
                 }
-                const today = new Date().toISOString().split('T')[0]
-                // Parts-Dismiss nur für den aktuellen Tag gültig
-                const partsStillValid = (parsed.parts_date === today) ? (parsed.parts || []).slice(-20) : []
-                dismissed.value = {
-                    calls: (parsed.calls || []).slice(-20),
-                    emails: (parsed.emails || []).slice(-20),
-                    whatsapps: (parsed.whatsapps || []).slice(-20),
-                    parts: partsStillValid,
-                    anpr: (parsed.anpr || []).slice(-20),
-                    parts_date: partsStillValid.length ? today : null
-                }
+            }
+
+            if (!parsed || !parsed._v3) {
+                // Alte Daten (v2 oder aelter) verwerfen, sauber starten
+                dismissed.value = { calls: [], emails: [], whatsapps: [], parts: [], anpr: [], parts_ts: null }
+                saveDismissed()
+                return
+            }
+
+            // Parts-Dismiss: nur 24h gueltig (Timestamp-basiert)
+            const now = Date.now()
+            const partsStillValid = (parsed.parts_ts && (now - parsed.parts_ts) < 86400000)
+                ? (parsed.parts || [])
+                : []
+
+            dismissed.value = {
+                calls: parsed.calls || [],
+                emails: parsed.emails || [],
+                whatsapps: parsed.whatsapps || [],
+                parts: partsStillValid,
+                anpr: parsed.anpr || [],
+                parts_ts: partsStillValid.length ? parsed.parts_ts : null
             }
         } catch { /* ignorieren */ }
     }
 
     function saveDismissed() {
-        oserp.setConfigValue('infobar_dismissed', JSON.stringify({
-            _v2: true,
+        const data = {
+            _v3: true,
             calls: dismissed.value.calls,
             emails: dismissed.value.emails,
             whatsapps: dismissed.value.whatsapps,
             parts: dismissed.value.parts,
             anpr: dismissed.value.anpr,
-            parts_date: dismissed.value.parts_date
-        }))
+            parts_ts: dismissed.value.parts_ts
+        }
+        const json = JSON.stringify(data)
+
+        // localStorage: sofort persistent, ueberlebt Navigation und Page-Reload
+        try { localStorage.setItem(lsKey(), json) } catch { /* quota */ }
+
+        // Backend-Sync: fuer Cross-Device und Backup
+        oserp.setConfigValue('infobar_dismissed', json)
     }
 
     // --- 7-Tage-Fenster ---
@@ -241,7 +270,7 @@ export function useInfoBar() {
             dismissed.value.whatsapps.push(id)
         } else if (type === 'parts' && !dismissed.value.parts.includes(id)) {
             dismissed.value.parts.push(id)
-            dismissed.value.parts_date = new Date().toISOString().split('T')[0]
+            dismissed.value.parts_ts = Date.now()
         } else if (type === 'anpr' && !dismissed.value.anpr.includes(id)) {
             dismissed.value.anpr.push(id)
             // Auch serverseitig als dismissed markieren
@@ -322,7 +351,7 @@ export function useInfoBar() {
         newWhatsapps.value = []
         pendingPartsRequests.value = []
         anprDetections.value = []
-        dismissed.value = { calls: [], emails: [], whatsapps: [], parts: [], anpr: [], parts_date: null }
+        dismissed.value = { calls: [], emails: [], whatsapps: [], parts: [], anpr: [], parts_ts: null }
 
         stopListeners()
         loadAndFetchAll()
