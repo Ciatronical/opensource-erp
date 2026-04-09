@@ -84,6 +84,13 @@ const crmDefaultsConfig = [
     { name: "whatsapp_reminder_enabled", type: "checkbox", label: "crm_fields.whatsappReminderEnabled", tooltip: "crm_fields.whatsappReminderEnabled_help" },
     { name: "whatsapp_reminder_hours", type: "input", inputType: "number", size: 10, fieldstyle: "max-width: 20ch", label: "crm_fields.whatsappReminderHours", tooltip: "crm_fields.whatsappReminderHours_help" },
 
+    { name: "telegram", type: "headline", label: "crm_fields.telegram" },
+
+    { name: "telegram_enabled", type: "checkbox", label: "crm_fields.telegramEnabled", tooltip: "crm_fields.telegramEnabled_help" },
+    { name: "telegram_bot_token", type: "password", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.telegramBotToken", tooltip: "crm_fields.telegramBotToken_help" },
+    { name: "telegram_bot_username", type: "input", size: 30, fieldstyle: "max-width: 40ch", label: "crm_fields.telegramBotUsername", tooltip: "crm_fields.telegramBotUsername_help" },
+    { name: "telegram_webhook_secret", type: "input", size: 30, fieldstyle: "max-width: 40ch", label: "crm_fields.telegramWebhookSecret", tooltip: "crm_fields.telegramWebhookSecret_help" },
+
     { name: "payment", type: "headline", label: "crm_fields.payment" },
 
     { name: "ec_terminal_ip_address", type: "input", size: 20, fieldstyle: "max-width: 60ch", label: "crm_fields.ecTerminalIp", tooltip: "crm_fields.ecTerminalIp_help" },

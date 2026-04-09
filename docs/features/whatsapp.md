@@ -22,7 +22,7 @@ Die komplette Einrichtung ist in [WhatsApp-Setup](../whatsapp-setup.md) beschrie
 ### Nachrichten empfangen
 
 Eingehende Nachrichten werden automatisch per Webhook empfangen und erscheinen:
-- Im **Kunden-Tab "WhatsApp"** (wenn der Absender einem Kunden zugeordnet ist)
+- Im **Kunden-Tab "Nachrichten"** (wenn der Absender einem Kunden zugeordnet ist) — gemeinsam mit Telegram-Nachrichten, jeweils mit Kanal-Icon gekennzeichnet
 - Als **grüner Chip** in der Infoleiste
 
 ### Vorlagen verwalten
@@ -43,3 +43,7 @@ Unter **Einstellungen > CRM**:
 ## LxCars-Integration
 
 Wenn LxCars aktiv ist, können HU-Erinnerungen auch per WhatsApp statt per Brief versendet werden (siehe [LxCars > HU-Serienbrief](lxcars.md#hu-serienbrief)).
+
+## Siehe auch
+
+- [Telegram-Integration](telegram.md) — kostenlose Alternative über Telegram-Bot

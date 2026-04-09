@@ -1,6 +1,6 @@
 # LxCars — Das Autohaus- & Werkstattmodul für OpensourceERP
 
-LxCars verwandelt OpensourceERP in eine vollständige Autohaus- und Werkstattverwaltung. Vom Fahrzeugscheinscanner über KI-gestützte Arbeitsplanung bis hin zur TÜV-Erinnerung per WhatsApp — alles in einem System, ohne Medienbrüche.
+LxCars verwandelt OpensourceERP in eine vollständige Autohaus- und Werkstattverwaltung. Vom Fahrzeugscheinscanner über KI-gestützte Arbeitsplanung bis hin zur TÜV-Erinnerung per WhatsApp oder Telegram — alles in einem System, ohne Medienbrüche.
 
 **Live-Demo:** [https://demo.lxcars.de/](https://demo.lxcars.de/)
 **GitHub:** [https://github.com/Ciatronical/opensource-erp](https://github.com/Ciatronical/opensource-erp)
@@ -49,6 +49,7 @@ Automatisierte Hauptuntersuchungs-Benachrichtigungen über drei Kanäle:
 - **PDF-Serienbriefe** mit SEPA-Mandaten — direkt druckfertig
 - **SFTP-Übertragung** an eLetter-Dienstleister
 - **WhatsApp** über die Meta Business API mit freigegebenen Vorlagen
+- **Telegram** über die kostenlose Bot-API — ohne Gebühren und ohne Template-Genehmigung
 
 Konfigurierbarer Vorlaufzeitraum, Kunden-Opt-out, personalisierte Anrede und Fahrzeugauflistung. Eine Kampagne, alle Kanäle.
 
@@ -150,7 +151,7 @@ Direkter Druck auf Zebra-kompatible Etikettendrucker:
 ## Weitere Integrationen
 
 - **SilverDAT-Import**: VXS-Format für Teile-Import aus dem SilverDAT-Katalog mit automatischer Buchungsgruppen-Zuordnung
-- **WhatsApp-Terminbestätigungen**: Kunden automatisch an Werkstatttermine erinnern
+- **WhatsApp/Telegram-Terminbestätigungen**: Kunden automatisch an Werkstatttermine erinnern — über WhatsApp oder Telegram, je nach Kundenpräferenz
 - **Kalender-Synchronisation**: Werkstatttermine direkt im ERP-Kalender
 
 ---

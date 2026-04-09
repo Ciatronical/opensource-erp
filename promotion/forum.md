@@ -58,8 +58,11 @@ Alle Belegarten in einer einheitlichen, modernen Oberfläche:
 - Anhänge und Mehrfach-Konten-Unterstützung
 - Brevo (Sendinblue)-Integration für E-Mail-Templates
 
-### WhatsApp Business API
+### Messaging (WhatsApp + Telegram)
 
+Beide Messenger in einer gemeinsamen Oberfläche — der Mitarbeiter sieht alle Nachrichten eines Kunden an einem Ort, unabhängig vom Kanal.
+
+**WhatsApp Business API:**
 - Vollständige Integration der Meta WhatsApp Business API
 - Nachrichten senden und empfangen — direkt aus der Kundenansicht
 - Chat-Verlauf und Konversationsübersicht
@@ -68,6 +71,14 @@ Alle Belegarten in einer einheitlichen, modernen Oberfläche:
 - Automatische Erinnerungen (z.B. Terminbenachrichtigungen)
 - Echtzeit-Updates über SSE (gesendet, zugestellt, gelesen)
 - Webhook-Integration für eingehende Nachrichten
+
+**Telegram Bot:**
+- Komplett kostenlos — keine API-Gebühren, kein Drittanbieter
+- Bot in 2 Minuten über @BotFather erstellt
+- Kein 24-Stunden-Fenster — Kunden jederzeit erreichbar
+- Keine Template-Genehmigung nötig
+- Medien, Dokumente und Standorte teilen
+- Echtzeit-Updates über SSE
 
 ### Wiedervorlage-System
 
@@ -232,6 +243,7 @@ Zwei Typen, sauber getrennt:
 ## Integrationen
 
 - **Meta WhatsApp Business API** — Messaging direkt im ERP
+- **Telegram Bot API** — kostenloser Messenger-Kanal, gemeinsame Oberfläche mit WhatsApp
 - **Brevo (Sendinblue)** — E-Mail-Marketing und Templates
 - **OpenAI Whisper** — Anruftranskription (Speech-to-Text)
 - **Anthropic Claude** — KI-Zusammenfassungen und Vorschläge

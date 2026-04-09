@@ -13,7 +13,7 @@ export const sseConnected = ref(false)
 /**
  * Composable fuer die Info Bar in der Navbar
  * Zeigt Anrufe, Emails und WhatsApp-Nachrichten der letzten 7 Tage chronologisch an.
- * Dismissed Items werden in localStorage (primaer) und employee_config_oserp (Backup) gespeichert.
+ * Dismissed Items werden in employee_config (Backend, primaer) gespeichert und mit localStorage gemergt.
  * Warenkorb-Items (parts) werden nur fuer 24h ausgeblendet, alle anderen dauerhaft.
  */
 export function useInfoBar() {
@@ -35,46 +35,57 @@ export function useInfoBar() {
         return `oserp_infobar_dismissed_${oserp.session.user}_${oserp.session.client}`
     }
 
-    // --- Dismissed Items laden (localStorage primaer, employee_config Fallback) ---
+    // --- Dismissed Items laden (Backend ist primaer, localStorage wird gemergt) ---
     function loadDismissed() {
         try {
-            let parsed = null
+            let fromBackend = null
+            let fromLocal = null
 
-            // 1. localStorage (primaer, sofort verfuegbar)
-            const ls = localStorage.getItem(lsKey())
-            if (ls) {
-                parsed = JSON.parse(ls)
+            // 1. Backend (employee_config) — Single Source of Truth
+            const stored = oserp.getConfigValue('infobar_dismissed', null)
+            if (stored) {
+                const p = typeof stored === 'string' ? JSON.parse(stored) : stored
+                if (p && p._v3) fromBackend = p
             }
 
-            // 2. Fallback: employee_config (fuer erstmaligen Login / neues Geraet)
-            if (!parsed) {
-                const stored = oserp.getConfigValue('infobar_dismissed', null)
-                if (stored) {
-                    parsed = typeof stored === 'string' ? JSON.parse(stored) : stored
+            // 2. localStorage — nur als Merge-Quelle (fuer noch nicht synchronisierte Aenderungen)
+            try {
+                const ls = localStorage.getItem(lsKey())
+                if (ls) {
+                    const p = JSON.parse(ls)
+                    if (p && p._v3) fromLocal = p
                 }
-            }
+            } catch { /* ignorieren */ }
 
-            if (!parsed || !parsed._v3) {
-                // Alte Daten (v2 oder aelter) verwerfen, sauber starten
+            // Beide Quellen mergen (Vereinigungsmenge der dismissed IDs)
+            if (!fromBackend && !fromLocal) {
                 dismissed.value = { calls: [], emails: [], whatsapps: [], parts: [], anpr: [], parts_ts: null }
                 saveDismissed()
                 return
             }
 
-            // Parts-Dismiss: nur 24h gueltig (Timestamp-basiert)
+            const a = fromBackend || { calls: [], emails: [], whatsapps: [], parts: [], anpr: [], parts_ts: null }
+            const b = fromLocal || { calls: [], emails: [], whatsapps: [], parts: [], anpr: [], parts_ts: null }
+            const mergeUnique = (arr1, arr2) => [...new Set([...(arr1 || []), ...(arr2 || [])])]
+
+            // Parts-Dismiss: nur 24h gueltig (neuester Timestamp zaehlt)
             const now = Date.now()
-            const partsStillValid = (parsed.parts_ts && (now - parsed.parts_ts) < 86400000)
-                ? (parsed.parts || [])
+            const partsTs = Math.max(a.parts_ts || 0, b.parts_ts || 0) || null
+            const partsStillValid = (partsTs && (now - partsTs) < 86400000)
+                ? mergeUnique(a.parts, b.parts)
                 : []
 
             dismissed.value = {
-                calls: parsed.calls || [],
-                emails: parsed.emails || [],
-                whatsapps: parsed.whatsapps || [],
+                calls: mergeUnique(a.calls, b.calls),
+                emails: mergeUnique(a.emails, b.emails),
+                whatsapps: mergeUnique(a.whatsapps, b.whatsapps),
                 parts: partsStillValid,
-                anpr: parsed.anpr || [],
-                parts_ts: partsStillValid.length ? parsed.parts_ts : null
+                anpr: mergeUnique(a.anpr, b.anpr),
+                parts_ts: partsStillValid.length ? partsTs : null
             }
+
+            // Nach dem Merge: beide Quellen aktualisieren
+            saveDismissed()
         } catch { /* ignorieren */ }
     }
 

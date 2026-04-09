@@ -108,56 +108,155 @@
                             <v-row dense>
                                 <v-col cols="12" md="6">
                                     <v-text-field v-model="cam.name" :label="t('anpr.cameraName')"
-                                        variant="outlined" density="compact" hide-details="auto" />
+                                        variant="outlined" density="compact" hide-details="auto">
+                                        <template #append-inner>
+                                            <v-tooltip location="top">
+                                                <template #activator="{ props }">
+                                                    <v-icon v-bind="props" size="small" color="grey">mdi-information-outline</v-icon>
+                                                </template>
+                                                {{ t('anpr.cameraName_help') }}
+                                            </v-tooltip>
+                                        </template>
+                                    </v-text-field>
                                 </v-col>
                                 <v-col cols="12" md="6">
                                     <v-text-field v-model="cam.rtsp_url" :label="t('anpr.rtspUrl')"
                                         variant="outlined" density="compact" hide-details="auto"
-                                        placeholder="rtsp://user:pass@192.168.1.100:554/stream" />
+                                        placeholder="rtsp://user:pass@192.168.1.100:554/stream">
+                                        <template #append-inner>
+                                            <v-tooltip location="top">
+                                                <template #activator="{ props }">
+                                                    <v-icon v-bind="props" size="small" color="grey">mdi-information-outline</v-icon>
+                                                </template>
+                                                {{ t('anpr.rtspUrl_help') }}
+                                            </v-tooltip>
+                                        </template>
+                                    </v-text-field>
                                 </v-col>
 
                                 <v-col cols="6" md="3">
                                     <v-select v-model="cam.position" :label="t('anpr.cameraPosition')"
-                                        :items="cameraPositions" variant="outlined" density="compact" hide-details="auto" />
+                                        :items="cameraPositions" variant="outlined" density="compact" hide-details="auto">
+                                        <template #append-inner>
+                                            <v-tooltip location="top">
+                                                <template #activator="{ props }">
+                                                    <v-icon v-bind="props" size="small" color="grey">mdi-information-outline</v-icon>
+                                                </template>
+                                                {{ t('anpr.cameraPosition_help') }}
+                                            </v-tooltip>
+                                        </template>
+                                    </v-select>
                                 </v-col>
                                 <v-col cols="6" md="3">
                                     <v-select v-model="cam.direction_mode" :label="t('anpr.directionMode')"
-                                        :items="directionModes" variant="outlined" density="compact" hide-details="auto" />
+                                        :items="directionModes" variant="outlined" density="compact" hide-details="auto">
+                                        <template #append-inner>
+                                            <v-tooltip location="top">
+                                                <template #activator="{ props }">
+                                                    <v-icon v-bind="props" size="small" color="grey">mdi-information-outline</v-icon>
+                                                </template>
+                                                {{ t('anpr.directionMode_help') }}
+                                            </v-tooltip>
+                                        </template>
+                                    </v-select>
                                 </v-col>
                                 <v-col cols="6" md="3">
                                     <v-text-field v-model.number="cam.frame_interval" :label="t('anpr.frameInterval')"
                                         type="number" step="0.1" min="0.1" max="5"
-                                        variant="outlined" density="compact" hide-details="auto" suffix="s" />
+                                        variant="outlined" density="compact" hide-details="auto" suffix="s">
+                                        <template #append-inner>
+                                            <v-tooltip location="top">
+                                                <template #activator="{ props }">
+                                                    <v-icon v-bind="props" size="small" color="grey">mdi-information-outline</v-icon>
+                                                </template>
+                                                {{ t('anpr.frameInterval_help') }}
+                                            </v-tooltip>
+                                        </template>
+                                    </v-text-field>
                                 </v-col>
                                 <v-col cols="6" md="3">
                                     <v-text-field v-model.number="cam.min_confidence" :label="t('anpr.minConfidence')"
                                         type="number" step="0.05" min="0.3" max="0.99"
-                                        variant="outlined" density="compact" hide-details="auto" />
+                                        variant="outlined" density="compact" hide-details="auto">
+                                        <template #append-inner>
+                                            <v-tooltip location="top">
+                                                <template #activator="{ props }">
+                                                    <v-icon v-bind="props" size="small" color="grey">mdi-information-outline</v-icon>
+                                                </template>
+                                                {{ t('anpr.minConfidence_help') }}
+                                            </v-tooltip>
+                                        </template>
+                                    </v-text-field>
                                 </v-col>
 
                                 <v-col cols="6" md="3">
                                     <v-text-field v-model.number="cam.min_detections" :label="t('anpr.minDetections')"
                                         type="number" min="1" max="10"
-                                        variant="outlined" density="compact" hide-details="auto" />
+                                        variant="outlined" density="compact" hide-details="auto">
+                                        <template #append-inner>
+                                            <v-tooltip location="top">
+                                                <template #activator="{ props }">
+                                                    <v-icon v-bind="props" size="small" color="grey">mdi-information-outline</v-icon>
+                                                </template>
+                                                {{ t('anpr.minDetections_help') }}
+                                            </v-tooltip>
+                                        </template>
+                                    </v-text-field>
                                 </v-col>
                                 <v-col cols="6" md="3">
                                     <v-text-field v-model.number="cam.cooldown_minutes" :label="t('anpr.cooldownMinutes')"
                                         type="number" min="1" max="60"
-                                        variant="outlined" density="compact" hide-details="auto" suffix="min" />
+                                        variant="outlined" density="compact" hide-details="auto" suffix="min">
+                                        <template #append-inner>
+                                            <v-tooltip location="top">
+                                                <template #activator="{ props }">
+                                                    <v-icon v-bind="props" size="small" color="grey">mdi-information-outline</v-icon>
+                                                </template>
+                                                {{ t('anpr.cooldownMinutes_help') }}
+                                            </v-tooltip>
+                                        </template>
+                                    </v-text-field>
                                 </v-col>
                                 <v-col cols="6" md="3">
                                     <v-select v-model="cam.action_type" :label="t('anpr.actionType')"
-                                        :items="actionTypes" variant="outlined" density="compact" hide-details="auto" />
+                                        :items="actionTypes" variant="outlined" density="compact" hide-details="auto">
+                                        <template #append-inner>
+                                            <v-tooltip location="top">
+                                                <template #activator="{ props }">
+                                                    <v-icon v-bind="props" size="small" color="grey">mdi-information-outline</v-icon>
+                                                </template>
+                                                {{ t('anpr.actionType_help') }}
+                                            </v-tooltip>
+                                        </template>
+                                    </v-select>
                                 </v-col>
                                 <v-col cols="6" md="3">
                                     <v-select v-model="cam.actuator_id" :label="t('anpr.linkedActuator')"
                                         :items="actuatorItems" item-title="name" item-value="id"
-                                        variant="outlined" density="compact" hide-details="auto" clearable />
+                                        variant="outlined" density="compact" hide-details="auto" clearable>
+                                        <template #append-inner>
+                                            <v-tooltip location="top">
+                                                <template #activator="{ props }">
+                                                    <v-icon v-bind="props" size="small" color="grey">mdi-information-outline</v-icon>
+                                                </template>
+                                                {{ t('anpr.linkedActuator_help') }}
+                                            </v-tooltip>
+                                        </template>
+                                    </v-select>
                                 </v-col>
 
                                 <v-col v-if="cam.actuator_id" cols="6" md="3">
                                     <v-select v-model="cam.gate_height_mode" :label="t('anpr.gateHeightMode')"
-                                        :items="gateHeightModes" variant="outlined" density="compact" hide-details="auto" />
+                                        :items="gateHeightModes" variant="outlined" density="compact" hide-details="auto">
+                                        <template #append-inner>
+                                            <v-tooltip location="top">
+                                                <template #activator="{ props }">
+                                                    <v-icon v-bind="props" size="small" color="grey">mdi-information-outline</v-icon>
+                                                </template>
+                                                {{ t('anpr.gateHeightMode_help') }}
+                                            </v-tooltip>
+                                        </template>
+                                    </v-select>
                                 </v-col>
 
                                 <!-- Kalibrierung: nur bei Fahrzeughöhe-Modus -->
