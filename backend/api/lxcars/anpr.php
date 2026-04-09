@@ -254,6 +254,22 @@ function reportAnprDetection($data) {
 
     $db = DbhCompany::begin();
 
+    // Kennzeichen ohne Leerzeichen (so wie in der DB)
+    $kennzeichen = str_replace(' ', '', $kennzeichen);
+
+    // Blacklist prüfen (ohne Leerzeichen vergleichen)
+    $blacklistRow = $db->getOne(
+        "SELECT value FROM defaults_oserp WHERE key = 'anpr_blacklist'"
+    );
+    if ($blacklistRow && !empty($blacklistRow['value'])) {
+        $blacklist = array_map(function($p) { return strtoupper(str_replace(' ', '', trim($p))); },
+                               explode(',', $blacklistRow['value']));
+        if (in_array($kennzeichen, $blacklist)) {
+            resultInfo(true, 'BLACKLISTED', 'Kennzeichen ist auf der Blacklist');
+            return;
+        }
+    }
+
     // Cooldown pruefen: Wurde dieses Kennzeichen kuerzlich schon gemeldet?
     $cooldown = 5; // Default
     if ($camera_id > 0) {
@@ -493,6 +509,62 @@ function getAnprServiceConfig() {
     );
 
     resultInfo(true, '', ['cameras' => $cameras ?: []]);
+}
+
+// ============================================================================
+// SERVICE-STATUS & STEUERUNG
+// ============================================================================
+
+/**
+ * ANPR-Service-Status prüfen
+ *
+ * @testdata {}
+ */
+function getAnprServiceStatus() {
+    $output = shell_exec('systemctl is-active anpr 2>&1');
+    $status = trim($output ?? 'unknown');
+
+    // Zusätzlich: PID und Uptime wenn aktiv
+    $details = null;
+    if ($status === 'active') {
+        $raw = shell_exec('systemctl show anpr --property=MainPID,ActiveEnterTimestamp 2>&1');
+        if ($raw) {
+            foreach (explode("\n", $raw) as $line) {
+                if (str_starts_with($line, 'MainPID=')) {
+                    $details['pid'] = intval(substr($line, 8));
+                }
+                if (str_starts_with($line, 'ActiveEnterTimestamp=')) {
+                    $details['started_at'] = substr($line, 21);
+                }
+            }
+        }
+    }
+
+    resultInfo(true, '', [
+        'status' => $status,
+        'details' => $details,
+    ]);
+}
+
+/**
+ * ANPR-Service neu starten
+ *
+ * Benötigt: www-data darf 'sudo systemctl restart anpr' ohne Passwort ausführen.
+ * Einrichten: sudo visudo -f /etc/sudoers.d/anpr
+ *             www-data ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart anpr
+ *
+ * @testdata {}
+ */
+function restartAnprService() {
+    $output = shell_exec('sudo systemctl restart anpr 2>&1');
+    // Kurz warten und Status prüfen
+    usleep(500000);
+    $status = trim(shell_exec('systemctl is-active anpr 2>&1') ?? 'unknown');
+
+    resultInfo($status === 'active', '', [
+        'status' => $status,
+        'output' => trim($output ?? ''),
+    ]);
 }
 
 // ============================================================================

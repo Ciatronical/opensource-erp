@@ -470,13 +470,29 @@ class CameraWorker(threading.Thread):
             conn = psycopg2.connect(**self.db_params)
             conn.autocommit = True
             with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
-                # Fahrzeug suchen
+                # Kennzeichen ohne Leerzeichen (so wie in der DB)
+                kennzeichen_nospace = kennzeichen.replace(' ', '')
+
+                # Blacklist prüfen (ohne Leerzeichen vergleichen)
+                cur.execute(
+                    "SELECT value FROM defaults_oserp WHERE key = 'anpr_blacklist'"
+                )
+                bl_row = cur.fetchone()
+                if bl_row and bl_row['value']:
+                    blacklist = [p.strip().replace(' ', '').upper()
+                                 for p in bl_row['value'].split(',') if p.strip()]
+                    if kennzeichen_nospace.upper() in blacklist:
+                        print(f"[{self.name_str}]     Blacklist → ignoriert")
+                        conn.close()
+                        return
+
+                # Fahrzeug suchen (ohne Leerzeichen, wie in der DB)
                 cur.execute(
                     "SELECT c.c_id, c.c_ow AS customer_id, cv.name AS customer_name "
                     "FROM cars_lxcars c "
                     "LEFT JOIN customer cv ON c.c_ow = cv.id "
-                    "WHERE c.c_ln = %s",
-                    (kennzeichen,)
+                    "WHERE REPLACE(c.c_ln, ' ', '') = %s",
+                    (kennzeichen_nospace,)
                 )
                 car = cur.fetchone()
                 c_id = car['c_id'] if car else None
@@ -510,7 +526,7 @@ class CameraWorker(threading.Thread):
                     " vehicle_height_px, frame_width, frame_height, action_taken, dismissed) "
                     "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
                     (
-                        self.cam_id, kennzeichen, c_id, customer_id,
+                        self.cam_id, kennzeichen_nospace, c_id, customer_id,
                         plate_info['direction'] or 'in',
                         plate_info['confidence'],
                         plate_info.get('vehicle_height_px'),

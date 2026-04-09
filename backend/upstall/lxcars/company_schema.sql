@@ -720,3 +720,4 @@ INSERT INTO defaults_oserp (key, value) VALUES ('anpr_service_host', '127.0.0.1'
 INSERT INTO defaults_oserp (key, value) VALUES ('anpr_show_unknown_vehicles', '1') ON CONFLICT (key) DO NOTHING;
 INSERT INTO defaults_oserp (key, value) VALUES ('anpr_detection_ttl_hours', '8') ON CONFLICT (key) DO NOTHING;
 INSERT INTO defaults_oserp (key, value) VALUES ('anpr_infobar_max', '3') ON CONFLICT (key) DO NOTHING;
+INSERT INTO defaults_oserp (key, value) VALUES ('anpr_blacklist', '') ON CONFLICT (key) DO NOTHING;

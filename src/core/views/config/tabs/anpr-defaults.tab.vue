@@ -2,6 +2,29 @@
 
 <template>
     <v-container fluid class="pa-0">
+        <!-- Service-Status -->
+        <v-row class="mb-4">
+            <v-col cols="12">
+                <v-card variant="outlined" class="pa-3">
+                    <div class="d-flex align-center ga-3">
+                        <v-icon :color="serviceStatusColor" size="20">{{ serviceStatusIcon }}</v-icon>
+                        <span class="font-weight-medium">ANPR-Service: {{ serviceStatusText }}</span>
+                        <span v-if="serviceDetails?.started_at" class="text-caption text-grey">
+                            (seit {{ serviceDetails.started_at }})
+                        </span>
+                        <v-spacer />
+                        <v-btn color="primary" variant="tonal" size="small"
+                            @click="restartService" :loading="restarting"
+                            :prepend-icon="serviceStatus === 'active' ? 'mdi-restart' : 'mdi-play'">
+                            {{ serviceStatus === 'active' ? t('anpr.restart') : t('anpr.start') }}
+                        </v-btn>
+                        <v-btn variant="text" size="small" icon="mdi-refresh"
+                            @click="checkServiceStatus" :loading="statusLoading" />
+                    </div>
+                </v-card>
+            </v-col>
+        </v-row>
+
         <!-- Allgemeine Einstellungen (aus Config-Datei) -->
         <template v-for="field in anprConfig" :key="field.name">
             <v-row v-if="field.type === 'headline'" class="mt-6 mb-2">
@@ -464,9 +487,64 @@ onMounted(async () => {
         }
     })
 
+    checkServiceStatus()
+
     loadCameras()
     loadActuators()
 })
+
+// --- Service-Status ---
+const serviceStatus = ref('unknown')
+const serviceDetails = ref(null)
+const statusLoading = ref(false)
+const restarting = ref(false)
+
+const serviceStatusColor = computed(() => {
+    if (serviceStatus.value === 'active') return 'green'
+    if (serviceStatus.value === 'inactive' || serviceStatus.value === 'failed') return 'red'
+    return 'grey'
+})
+const serviceStatusIcon = computed(() => {
+    if (serviceStatus.value === 'active') return 'mdi-check-circle'
+    if (serviceStatus.value === 'failed') return 'mdi-alert-circle'
+    if (serviceStatus.value === 'inactive') return 'mdi-stop-circle'
+    return 'mdi-help-circle'
+})
+const serviceStatusText = computed(() => {
+    if (serviceStatus.value === 'active') return t('anpr.statusActive')
+    if (serviceStatus.value === 'inactive') return t('anpr.statusInactive')
+    if (serviceStatus.value === 'failed') return t('anpr.statusFailed')
+    return t('anpr.statusUnknown')
+})
+
+async function checkServiceStatus() {
+    statusLoading.value = true
+    try {
+        const res = await axios.post('/api/lxcars/', { action: 'getAnprServiceStatus' })
+        if (res.data.success) {
+            serviceStatus.value = res.data.payload?.status || 'unknown'
+            serviceDetails.value = res.data.payload?.details || null
+        }
+    } catch { /* ignore */ }
+    statusLoading.value = false
+}
+
+async function restartService() {
+    restarting.value = true
+    try {
+        const res = await axios.post('/api/lxcars/', { action: 'restartAnprService' })
+        if (res.data.success) {
+            serviceStatus.value = res.data.payload?.status || 'unknown'
+            toasts.success(t('anpr.restartSuccess'))
+        } else {
+            toasts.error(t('anpr.restartFailed') + (res.data.payload?.output ? ': ' + res.data.payload.output : ''))
+        }
+    } catch (e) {
+        toasts.error(e.message)
+    }
+    restarting.value = false
+    setTimeout(checkServiceStatus, 2000)
+}
 
 // --- Kameras ---
 const cameras = ref([])
