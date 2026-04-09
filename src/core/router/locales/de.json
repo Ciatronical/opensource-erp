@@ -72,6 +72,11 @@
         "clientConfig": "Firmenkonfiguration",
         "developerTools": "Developer Tools",
         "systemUpdate": "Systemaktualisierung",
+        "docs": "Dokumentation",
         "about": "Über"
+    },
+    "DocsView": {
+        "title": "Dokumentation",
+        "selectDoc": "Dokument aus der Liste auswaehlen"
     }
 }

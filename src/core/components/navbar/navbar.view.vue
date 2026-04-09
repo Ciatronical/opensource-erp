@@ -138,6 +138,10 @@
           <v-list-item-title class="text-body-2">{{ t('SystemMenu.systemUpdate') }}</v-list-item-title>
         </v-list-item>
         <v-divider class="my-1" />
+        <v-list-item :to="{ name: 'docs' }" @click="clientMenuOpen = false">
+          <template #prepend><v-icon size="small" class="me-2">mdi-book-open-variant</v-icon></template>
+          <v-list-item-title class="text-body-2">{{ t('SystemMenu.docs') }}</v-list-item-title>
+        </v-list-item>
         <v-list-item @click="showAboutDialog = true; clientMenuOpen = false">
           <template #prepend><v-icon size="small" class="me-2">mdi-information-outline</v-icon></template>
           <v-list-item-title class="text-body-2">{{ t('SystemMenu.about') }}</v-list-item-title>

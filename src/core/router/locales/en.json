@@ -72,6 +72,11 @@
         "clientConfig": "Client Configuration",
         "developerTools": "Developer Tools",
         "systemUpdate": "System Update",
+        "docs": "Documentation",
         "about": "About"
+    },
+    "DocsView": {
+        "title": "Documentation",
+        "selectDoc": "Select a document from the list"
     }
 }

@@ -531,15 +531,21 @@ async function checkServiceStatus() {
 
 async function restartService() {
     restarting.value = true
+    console.log('[ANPR DEBUG] restartService() aufgerufen')
     try {
         const res = await axios.post('/api/lxcars/', { action: 'restartAnprService' })
+        console.log('[ANPR DEBUG] Response:', JSON.stringify(res.data))
         if (res.data.success) {
             serviceStatus.value = res.data.payload?.status || 'unknown'
+            serviceDetails.value = res.data.payload?.details || null
+            console.log('[ANPR DEBUG] Status:', serviceStatus.value, 'Details:', JSON.stringify(serviceDetails.value))
             toasts.success(t('anpr.restartSuccess'))
         } else {
+            console.warn('[ANPR DEBUG] Restart fehlgeschlagen:', res.data)
             toasts.error(t('anpr.restartFailed') + (res.data.payload?.output ? ': ' + res.data.payload.output : ''))
         }
     } catch (e) {
+        console.error('[ANPR DEBUG] Exception:', e)
         toasts.error(e.message)
     }
     restarting.value = false

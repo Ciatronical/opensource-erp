@@ -22,7 +22,7 @@
       >
         <v-icon start size="14">mdi-cart-arrow-down</v-icon>
         <span class="info-chip-text font-weight-medium">
-          {{ truncate(pr.customer_name || pr.ordnumber || '#' + pr.oe_id, 10) }}
+          {{ truncate(pr.customer_name || pr.ordnumber || '#' + pr.oe_id, 18) }}
         </span>
       </v-chip>
 
@@ -62,7 +62,7 @@
       >
         <v-icon start size="14">{{ chipIcon(item) }}</v-icon>
         <span class="info-chip-text font-weight-medium">
-          {{ truncate(item.name || t('InfoBar.unknownCaller'), 10) }}
+          {{ truncate(item.name || t('InfoBar.unknownCaller'), 18) }}
         </span>
       </v-chip>
     </v-sheet>
@@ -241,9 +241,14 @@ export default {
 .info-chip :deep(.v-chip__content) {
   display: flex;
   align-items: center;
-  overflow: hidden;
   flex: 1;
   min-width: 0;
+  overflow: visible;
+}
+
+/* Icons duerfen nicht schrumpfen oder abgeschnitten werden */
+.info-chip :deep(.v-icon) {
+  flex-shrink: 0 !important;
 }
 
 /* Close-Button darf NIEMALS verschwinden oder schrumpfen */

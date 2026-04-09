@@ -24,6 +24,7 @@
         "bootstrap": "^5.3.8",
         "chart.js": "^4.4.1",
         "libphonenumber-js": "^1.12.37",
+        "marked": "^15.0.12",
         "pinia": "^3.0.3",
         "sweetalert2": "^11.26.3",
         "vite-plugin-vue-devtools": "^8.0.2",

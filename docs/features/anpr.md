@@ -113,6 +113,29 @@ sudo systemctl status anpr
 sudo journalctl -u anpr -f    # Live-Log
 ```
 
+### 8. Neustart über die Web-Oberfläche ermöglichen
+
+Der ANPR-Service kann unter **Einstellungen > ANPR** per Klick neu gestartet werden. Dafür muss der Webserver-User (und ggf. der Entwickler-User) `systemctl restart anpr` ohne Passwort ausführen dürfen:
+
+```bash
+sudo visudo -f /etc/sudoers.d/anpr
+```
+
+Inhalt:
+
+```
+Defaults:www-data !requiretty
+Defaults:work !requiretty
+www-data ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart anpr
+www-data ALL=(ALL) NOPASSWD: /usr/bin/systemctl is-active anpr
+work ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart anpr
+work ALL=(ALL) NOPASSWD: /usr/bin/systemctl is-active anpr
+```
+
+- `www-data` = Apache/PHP-FPM (Produktivsystem)
+- `work` = PHP-Dev-Server (Entwicklung) — User ggf. anpassen
+- `!requiretty` ist nötig weil PHP's `shell_exec()` kein Terminal hat
+
 ## Funktionsweise
 
 ### Erkennungsablauf

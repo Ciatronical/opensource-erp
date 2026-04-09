@@ -9,6 +9,7 @@ import NotFoundView from '@/core/views/notfound/notfound.view.vue'
 
 // Lazy-Loaded: Alles andere wird erst bei Navigation geladen
 const UpdateView = () => import('@/core/views/update/update.view.vue')
+const DocsView = () => import('@/core/views/docs/docs.view.vue')
 const CustomerEditView = () => import('@/core/views/customer-vendor/cv.edit.view.vue')
 const CurrentCVeditView = () => import('@/core/views/customer-vendor/edit_current.view.vue')
 const ClientDefaultsView = () => import('@/core/views/config/client-defaults.view.vue')
@@ -494,6 +495,13 @@ const router = createRouter({
             path: i18n.global.t('routes.lxcarsReports'),
             name: 'lxcars-reports',
             component: LxCarsReportsView,
+        },
+        // ── Dokumentation ──
+        {
+            path: '/docs/:slug?',
+            name: 'docs',
+            component: DocsView,
+            props: true,
         },
         // ── Öffentliche Seiten ──
         {

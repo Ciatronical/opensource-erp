@@ -557,12 +557,33 @@ function getAnprServiceStatus() {
  */
 function restartAnprService() {
     $output = shell_exec('sudo systemctl restart anpr 2>&1');
-    // Kurz warten und Status prüfen
-    usleep(500000);
-    $status = trim(shell_exec('systemctl is-active anpr 2>&1') ?? 'unknown');
+    // Warten bis Service wieder aktiv ist (max 5s)
+    $status = 'unknown';
+    for ($i = 0; $i < 10; $i++) {
+        usleep(500000);
+        $status = trim(shell_exec('systemctl is-active anpr 2>&1') ?? 'unknown');
+        if ($status === 'active') break;
+    }
+
+    // Details (PID, Startzeit) gleich mitliefern
+    $details = null;
+    if ($status === 'active') {
+        $raw = shell_exec('systemctl show anpr --property=MainPID,ActiveEnterTimestamp 2>&1');
+        if ($raw) {
+            foreach (explode("\n", $raw) as $line) {
+                if (str_starts_with($line, 'MainPID=')) {
+                    $details['pid'] = intval(substr($line, 8));
+                }
+                if (str_starts_with($line, 'ActiveEnterTimestamp=')) {
+                    $details['started_at'] = substr($line, 21);
+                }
+            }
+        }
+    }
 
     resultInfo($status === 'active', '', [
         'status' => $status,
+        'details' => $details,
         'output' => trim($output ?? ''),
     ]);
 }
