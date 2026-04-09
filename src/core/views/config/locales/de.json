@@ -884,6 +884,7 @@
         "rtspUrl": "RTSP-URL",
         "cameraPosition": "Position",
         "positionFront": "Frontal",
+        "positionAbove": "Oberhalb",
         "positionSideLeft": "Seitlich links",
         "positionSideRight": "Seitlich rechts",
         "directionMode": "Richtungserkennung",
@@ -946,6 +947,17 @@
         "customer": "Kunde",
         "camera": "Kamera",
         "action": "Aktion",
-        "noDetections": "Noch keine Erkennungen vorhanden"
+        "noDetections": "Noch keine Erkennungen vorhanden",
+        "cameraName_help": "Frei wählbarer Name zur Identifikation (z.B. Zufahrt, Werkstatttor)",
+        "rtspUrl_help": "RTSP-Adresse der Kamera. Format: rtsp://benutzer:passwort@IP:Port/Pfad. Den Pfad entnehmen Sie dem Kamera-Handbuch (häufig /av0_0 oder /stream1)",
+        "cameraPosition_help": "Montageposition der Kamera relativ zur Fahrbahn. Beeinflusst die Kennzeichenerkennung und Höhenschätzung",
+        "directionMode_help": "Größe: Einfahrt wird erkannt wenn das Kennzeichen im Bild größer wird. Position: Erkennung anhand der Y-Bewegung im Bild",
+        "frameInterval_help": "Zeitabstand zwischen zwei Analysen. Kleiner = genauer aber mehr CPU-Last. Empfohlen: 0.5s",
+        "minConfidence_help": "Minimale Erkennungssicherheit (0-1). Werte unter diesem Schwellenwert werden ignoriert. Empfohlen: 0.60",
+        "minDetections_help": "Wie oft ein Kennzeichen erkannt werden muss, bevor es gemeldet wird. Verhindert Fehlerkennungen. Empfohlen: 3",
+        "cooldownMinutes_help": "Wartezeit nach einer Meldung, bevor dasselbe Kennzeichen erneut gemeldet wird",
+        "actionType_help": "Infoleiste: Erkennung wird in der Infoleiste angezeigt. Aktor: Verknüpftes Tor/Schranke wird angesteuert. Beides: Infoleiste + Aktor",
+        "livePreview": "Live-Vorschau",
+        "streamError": "Stream konnte nicht geladen werden. Prüfen Sie ob der ANPR-Service läuft und der MJPEG-Port (Service-Port + 1) erreichbar ist."
     }
 }

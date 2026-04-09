@@ -201,6 +201,10 @@
                             </v-row>
 
                             <div class="d-flex justify-end mt-3 ga-2">
+                                <v-btn v-if="cam.id && cam.rtsp_url" color="info" variant="text" size="small"
+                                    @click="openStreamPreview(cam)">
+                                    <v-icon start>mdi-eye</v-icon>{{ t('anpr.livePreview') }}
+                                </v-btn>
                                 <v-btn color="error" variant="text" size="small" @click="deleteCamera(cam, idx)">
                                     <v-icon start>mdi-delete</v-icon>{{ t('delete') }}
                                 </v-btn>
@@ -458,6 +462,7 @@
                 </v-alert>
             </v-col>
         </v-row>
+
     </v-container>
 </template>
 
@@ -558,6 +563,7 @@ const openCameraPanel = ref(null)
 
 const cameraPositions = [
     { value: 'front', title: t('anpr.positionFront') },
+    { value: 'above', title: t('anpr.positionAbove') },
     { value: 'side_left', title: t('anpr.positionSideLeft') },
     { value: 'side_right', title: t('anpr.positionSideRight') },
 ]
@@ -786,5 +792,13 @@ function formatServiceTime(timeStr) {
     const d = new Date(timeStr)
     if (isNaN(d.getTime())) return timeStr
     return d.toLocaleString('de-DE', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })
+}
+
+// --- Live-Stream-Vorschau ---
+function openStreamPreview(cam) {
+    const host = props.crmDefaults.anpr_service_host || '127.0.0.1'
+    const port = parseInt(props.crmDefaults.anpr_service_port || 8765) + 1
+    window.open(`http://${host}:${port}/stream/${cam.id}`, '_blank',
+        'width=900,height=540,toolbar=no,menubar=no')
 }
 </script>

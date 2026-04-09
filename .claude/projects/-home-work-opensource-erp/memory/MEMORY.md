@@ -1,0 +1,1 @@
+- [Umlaute statt Ersatzschreibweise](feedback_umlaute.md) — Immer ä/ö/ü/ß verwenden, nie ae/oe/ue/ss

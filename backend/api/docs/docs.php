@@ -8,7 +8,7 @@
  * @testdata {}
  */
 function getDocsList() {
-    $docsDir = __DIR__ . '/../../docs/features';
+    $docsDir = __DIR__ . '/../../../docs/features';
 
     if (!is_dir($docsDir)) {
         resultInfo(false, 'DOCS_DIR_NOT_FOUND', 'Dokumentationsverzeichnis nicht gefunden');
@@ -54,7 +54,7 @@ function getDoc($data) {
         return;
     }
 
-    $file = __DIR__ . '/../../docs/features/' . $slug . '.md';
+    $file = __DIR__ . '/../../../docs/features/' . $slug . '.md';
 
     if (!file_exists($file)) {
         resultInfo(false, 'NOT_FOUND', 'Dokument nicht gefunden');

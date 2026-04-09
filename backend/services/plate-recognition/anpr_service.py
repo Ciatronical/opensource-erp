@@ -15,11 +15,13 @@ import configparser
 import json
 import os
 import socket
+import subprocess
 import sys
 import threading
 import time
 import re
 import signal
+from http.server import HTTPServer, BaseHTTPRequestHandler
 import cv2
 import numpy as np
 import psycopg2
@@ -33,6 +35,9 @@ from paddleocr import PaddleOCR
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 BACKEND_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, '..', '..'))
 SETTINGS_INI = os.path.join(BACKEND_DIR, 'config', 'settings.ini')
+
+# RTSP ueber TCP erzwingen (zuverlaessiger als UDP, weniger Artefakte)
+os.environ['OPENCV_FFMPEG_CAPTURE_OPTIONS'] = 'rtsp_transport;tcp'
 
 # --- Konfiguration -----------------------------------------------------------
 
@@ -339,6 +344,10 @@ class CameraWorker(threading.Thread):
 
         self.reported = {}  # track_key -> timestamp
 
+        # Erkannte Boxen fuer MJPEG-Overlay (vom Erkennungs-Thread geschrieben)
+        self._detected_boxes = []  # [(box, plate_text, confidence), ...]
+        self._source_size = (0, 0)  # (width, height) des Kamera-Frames
+
     def run(self):
         print(f"[{self.name_str}] Starte Stream: {self.rtsp_url}")
         while self.running:
@@ -354,7 +363,8 @@ class CameraWorker(threading.Thread):
         self.running = False
 
     def _process_stream(self):
-        cap = cv2.VideoCapture(self.rtsp_url)
+        cap = cv2.VideoCapture(self.rtsp_url, cv2.CAP_FFMPEG)
+        cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
         if not cap.isOpened():
             print(f"[{self.name_str}] Stream konnte nicht geoeffnet werden")
             return
@@ -365,6 +375,11 @@ class CameraWorker(threading.Thread):
             if not ret:
                 break
 
+            # Kamera-Aufloesung merken (fuer MJPEG-Overlay-Skalierung)
+            if self._source_size == (0, 0):
+                self._source_size = (frame.shape[1], frame.shape[0])
+                print(f"[{self.name_str}] Aufloesung: {frame.shape[1]}x{frame.shape[0]}")
+
             now = time.time()
             if now - last_process < self.interval:
                 continue
@@ -374,6 +389,11 @@ class CameraWorker(threading.Thread):
             plates = self._recognize(enhanced)
             if not plates:
                 plates = self._recognize(frame)
+
+            # Erkannte Boxen fuer MJPEG-Overlay aktualisieren
+            self._detected_boxes = [
+                (p['box'], p['plate'], p['confidence']) for p in plates
+            ]
 
             for p in plates:
                 track_key = re.sub(r'[\s\-]', '', p['plate'])
@@ -557,6 +577,173 @@ class CameraWorker(threading.Thread):
             print(f"[{self.name_str}]     DB-Fehler: {e}")
 
 
+# --- MJPEG-Server -------------------------------------------------------------
+
+PREVIEW_W = 854
+PREVIEW_H = 480
+PREVIEW_FPS = 10
+PREVIEW_FRAME_SIZE = PREVIEW_W * PREVIEW_H * 3
+
+
+class MjpegHandler(BaseHTTPRequestHandler):
+    """HTTP-Handler fuer MJPEG-Streams der Kameras.
+
+    Nutzt FFmpeg als Subprocess fuer zuverlaessiges RTSP-Decoding
+    (korrekte Keyframe-Behandlung, kein Buffer-Stau, TCP-Transport).
+    """
+
+    def log_message(self, format, *args):
+        # Keine Access-Logs
+        pass
+
+    def do_GET(self):
+        # /stream/<camera_id>
+        if self.path.startswith('/stream/'):
+            try:
+                cam_id = int(self.path.split('/')[2])
+            except (IndexError, ValueError):
+                self.send_error(400, 'Kamera-ID fehlt')
+                return
+            self._stream_camera(cam_id)
+        elif self.path == '/cameras':
+            self._list_cameras()
+        else:
+            self.send_error(404)
+
+    def _find_worker(self, cam_id):
+        for w in self.server.anpr_workers.values():
+            if w.cam_id == cam_id:
+                return w
+        return None
+
+    def _list_cameras(self):
+        """Liefert JSON-Liste aller aktiven Kameras mit ID und Name."""
+        cams = []
+        for worker in self.server.anpr_workers.values():
+            cams.append({
+                'id': worker.cam_id,
+                'name': worker.name_str,
+            })
+        data = json.dumps(cams).encode('utf-8')
+        self.send_response(200)
+        self.send_header('Content-Type', 'application/json')
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Content-Length', str(len(data)))
+        self.end_headers()
+        self.wfile.write(data)
+
+    @staticmethod
+    def _draw_overlay(frame, boxes, source_size):
+        """Zeichnet erkannte Kennzeichen-Boxen auf den Vorschau-Frame.
+        Skaliert die Box-Koordinaten von Kamera-Aufloesung auf Vorschau-Groesse."""
+        if not boxes or source_size == (0, 0):
+            return frame
+
+        sx = PREVIEW_W / source_size[0]
+        sy = PREVIEW_H / source_size[1]
+
+        for box, plate_text, conf in boxes:
+            pts = np.array([[int(p[0] * sx), int(p[1] * sy)] for p in box], dtype=np.int32)
+            cv2.polylines(frame, [pts], True, (0, 255, 0), 2)
+            label = f"{plate_text} ({conf:.0%})"
+            x, y = pts[0][0], pts[0][1] - 8
+            (tw, th), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.6, 2)
+            cv2.rectangle(frame, (x, y - th - 4), (x + tw + 4, y + 4), (0, 0, 0), -1)
+            cv2.putText(frame, label, (x + 2, y),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+        return frame
+
+    def _stream_camera(self, cam_id):
+        """MJPEG-Stream via FFmpeg-Subprocess (zuverlaessiges RTSP-Decoding)."""
+        worker = self._find_worker(cam_id)
+        if not worker:
+            self.send_error(404, f'Kamera {cam_id} nicht gefunden')
+            return
+
+        # FFmpeg: RTSP -> rawvideo (BGR24) auf feste Vorschau-Groesse skaliert
+        cmd = [
+            'ffmpeg',
+            '-rtsp_transport', 'tcp',
+            '-fflags', '+discardcorrupt+nobuffer',
+            '-flags', 'low_delay',
+            '-i', worker.rtsp_url,
+            '-f', 'rawvideo',
+            '-pix_fmt', 'bgr24',
+            '-s', f'{PREVIEW_W}x{PREVIEW_H}',
+            '-r', str(PREVIEW_FPS),
+            '-an',
+            'pipe:1',
+        ]
+
+        proc = None
+        try:
+            proc = subprocess.Popen(
+                cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+
+            self.send_response(200)
+            self.send_header('Content-Type',
+                             'multipart/x-mixed-replace; boundary=frame')
+            self.send_header('Cache-Control', 'no-cache, no-store')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+
+            while worker.running:
+                raw = proc.stdout.read(PREVIEW_FRAME_SIZE)
+                if len(raw) != PREVIEW_FRAME_SIZE:
+                    break
+
+                frame = np.frombuffer(raw, dtype=np.uint8).reshape(
+                    (PREVIEW_H, PREVIEW_W, 3))
+
+                # Erkennungs-Overlay vom Worker zeichnen
+                frame = self._draw_overlay(
+                    frame, worker._detected_boxes, worker._source_size)
+
+                _, jpeg = cv2.imencode(
+                    '.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 85])
+                jpeg_bytes = jpeg.tobytes()
+
+                self.wfile.write(b'--frame\r\n')
+                self.wfile.write(b'Content-Type: image/jpeg\r\n')
+                self.wfile.write(
+                    f'Content-Length: {len(jpeg_bytes)}\r\n'.encode())
+                self.wfile.write(b'\r\n')
+                self.wfile.write(jpeg_bytes)
+                self.wfile.write(b'\r\n')
+
+        except (BrokenPipeError, ConnectionResetError):
+            pass
+        finally:
+            if proc:
+                proc.kill()
+                proc.wait()
+
+
+class MjpegServer(threading.Thread):
+    """HTTP-Server fuer MJPEG-Kamera-Streams."""
+
+    def __init__(self, port, workers):
+        super().__init__(daemon=True)
+        self.port = port
+        self.workers = workers
+        self.httpd = None
+
+    def run(self):
+        self.httpd = HTTPServer(('0.0.0.0', self.port), MjpegHandler)
+        self.httpd.anpr_workers = self.workers
+        print(f"[MJPEG] Server gestartet auf Port {self.port}")
+        self.httpd.serve_forever()
+
+    def stop(self):
+        if self.httpd:
+            self.httpd.shutdown()
+
+    def update_workers(self, workers):
+        """Worker-Referenz aktualisieren (bei Config-Reload)."""
+        if self.httpd:
+            self.httpd.anpr_workers = workers
+
+
 # --- Hauptservice ------------------------------------------------------------
 
 class AnprService:
@@ -565,6 +752,7 @@ class AnprService:
     def __init__(self):
         self.workers = {}
         self.running = True
+        self.mjpeg_server = None
 
         # settings.ini lesen
         print(f"Lese {SETTINGS_INI}...")
@@ -578,20 +766,63 @@ class AnprService:
         )
         print("PaddleOCR bereit.\n")
 
+    def _get_mjpeg_port(self):
+        """MJPEG-Port aus der DB lesen (anpr_service_port + 1, default 8766)."""
+        try:
+            auth_conn = psycopg2.connect(**self.auth_params)
+            companies = get_company_databases(auth_conn)
+            auth_conn.close()
+            for client in companies:
+                try:
+                    conn = connect_company_db(client)
+                    with conn.cursor() as cur:
+                        cur.execute(
+                            "SELECT value FROM defaults_oserp "
+                            "WHERE key = 'anpr_mjpeg_port'"
+                        )
+                        row = cur.fetchone()
+                        if row and row[0]:
+                            conn.close()
+                            return int(row[0])
+                        # Fallback: service_port + 1
+                        cur.execute(
+                            "SELECT value FROM defaults_oserp "
+                            "WHERE key = 'anpr_service_port'"
+                        )
+                        row = cur.fetchone()
+                        conn.close()
+                        if row and row[0]:
+                            return int(row[0]) + 1
+                except Exception:
+                    pass
+        except Exception:
+            pass
+        return 8766
+
     def start(self):
         signal.signal(signal.SIGINT, self._shutdown)
         signal.signal(signal.SIGTERM, self._shutdown)
+
+        # MJPEG-Server starten
+        mjpeg_port = self._get_mjpeg_port()
+        self.mjpeg_server = MjpegServer(mjpeg_port, self.workers)
+        self.mjpeg_server.start()
 
         print("ANPR-Service gestartet.")
 
         while self.running:
             self._update_config()
+            # Worker-Referenz im MJPEG-Server aktualisieren
+            if self.mjpeg_server:
+                self.mjpeg_server.update_workers(self.workers)
             for _ in range(DEFAULT_POLL_INTERVAL):
                 if not self.running:
                     break
                 time.sleep(1)
 
         self._stop_all_workers()
+        if self.mjpeg_server:
+            self.mjpeg_server.stop()
         print("ANPR-Service beendet.")
 
     def _shutdown(self, signum, frame):
