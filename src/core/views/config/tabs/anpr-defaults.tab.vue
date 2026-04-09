@@ -10,7 +10,7 @@
                         <v-icon :color="serviceStatusColor" size="20">{{ serviceStatusIcon }}</v-icon>
                         <span class="font-weight-medium">ANPR-Service: {{ serviceStatusText }}</span>
                         <span v-if="serviceDetails?.started_at" class="text-caption text-grey">
-                            (seit {{ serviceDetails.started_at }})
+                            (seit {{ formatServiceTime(serviceDetails.started_at) }})
                         </span>
                         <v-spacer />
                         <v-btn color="primary" variant="tonal" size="small"
@@ -771,6 +771,14 @@ async function loadHistory() {
 function formatDate(dateStr) {
     if (!dateStr) return '-'
     const d = new Date(dateStr)
+    return d.toLocaleString('de-DE', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })
+}
+
+function formatServiceTime(timeStr) {
+    if (!timeStr) return ''
+    // systemctl liefert z.B. "Thu 2026-04-09 07:03:44 CEST"
+    const d = new Date(timeStr)
+    if (isNaN(d.getTime())) return timeStr
     return d.toLocaleString('de-DE', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })
 }
 </script>
