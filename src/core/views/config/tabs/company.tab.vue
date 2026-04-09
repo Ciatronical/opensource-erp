@@ -397,6 +397,16 @@
                         />
                     </template>
 
+                    <!-- In Faktura ausblenden -->
+                    <template #item.hide_factura="{ item }">
+                        <v-checkbox
+                            v-model="item.hide_factura"
+                            hide-details
+                            density="compact"
+                            @update:model-value="onPrinterBlur(item)"
+                        />
+                    </template>
+
                     <!-- Aktionen -->
                     <template #item.actions="{ item }">
                         <v-btn
@@ -481,6 +491,7 @@ const printerHeaders = computed(() => [
     { title: t('printerDescription'), key: 'printer_description', sortable: false },
     { title: t('printerCommand'), key: 'printer_command', sortable: false },
     { title: t('templateCode'), key: 'template_code', sortable: false },
+    { title: t('hideFaktura'), key: 'hide_factura', sortable: false, width: '120px' },
     { title: '', key: 'actions', sortable: false, width: '50px' }
 ]);
 
@@ -651,6 +662,14 @@ const printerApi = axios.create({
     headers: { 'Content-Type': 'application/json' }
 });
 
+function syncPrintersToStore() {
+    if (store.session.company_config) {
+        store.session.company_config.printers = printers.value
+            .filter(p => p.id)
+            .map(({ _isNew, ...rest }) => rest);
+    }
+}
+
 async function loadPrinters() {
     try {
         const response = await printerApi.post('/oserp_config/', { action: 'getPrinters' });
@@ -668,6 +687,7 @@ function addPrinter() {
         printer_description: '',
         printer_command: '',
         template_code: '',
+        hide_factura: false,
         _isNew: true
     });
 }
@@ -682,7 +702,8 @@ async function onPrinterBlur(item) {
             id: item.id,
             printer_description: item.printer_description,
             printer_command: item.printer_command || '',
-            template_code: item.template_code || ''
+            template_code: item.template_code || '',
+            hide_factura: !!item.hide_factura
         });
 
         if (response.data.success) {
@@ -691,6 +712,7 @@ async function onPrinterBlur(item) {
                 item.id = response.data.payload.results.id;
                 item._isNew = false;
             }
+            syncPrintersToStore();
             toasts.success(t('printerSaved'));
         }
     } catch (error) {
@@ -722,6 +744,7 @@ async function deletePrinter() {
 
         if (response.data.success) {
             printers.value = printers.value.filter(p => p.id !== printerToDelete.id);
+            syncPrintersToStore();
             toasts.success(t('printerDeleted'));
         }
     } catch (error) {

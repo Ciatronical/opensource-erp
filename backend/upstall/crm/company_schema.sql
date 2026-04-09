@@ -1194,3 +1194,6 @@ BEGIN
     ORDER BY confidence DESC;
 END;
 $$ LANGUAGE plpgsql;
+
+-- Drucker: Spalte zum Ausblenden in Faktura
+ALTER TABLE printers ADD COLUMN IF NOT EXISTS hide_factura boolean DEFAULT false;

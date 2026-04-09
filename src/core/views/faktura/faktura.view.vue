@@ -1680,7 +1680,7 @@ export default defineComponent({
                 departmentList.value = oserp.session.company_config.department || []
                 creditLimit.value = faktura.data.customer?.creditlimit || 0
                 employeeList.value = oserp.session.company_config.employees || []
-                printerList.value = oserp.session.company_config.printers || []
+                printerList.value = (oserp.session.company_config.printers || []).filter(p => !p.hide_factura)
 
                 // Gespeicherten Drucker aus Employee-Config laden
                 const savedPrinterId = oserp.getConfigValue('default_printer_id')

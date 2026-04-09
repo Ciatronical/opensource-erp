@@ -10,7 +10,7 @@
 function getPrinters($data) {
     $db = DbhCompany::begin();
     $printers = $db->getAll(
-        "SELECT id, printer_description, printer_command, template_code
+        "SELECT id, printer_description, printer_command, template_code, hide_factura
          FROM printers
          ORDER BY printer_description"
     );
@@ -24,7 +24,8 @@ function getPrinters($data) {
  * @param string $data['printer_description'] Beschreibung
  * @param string $data['printer_command'] Druckbefehl
  * @param string $data['template_code'] Template-Code
- * @testdata {"printer_description": "Testdrucker", "printer_command": "lp -d test", "template_code": ""}
+ * @param bool $data['hide_factura'] In Faktura ausblenden
+ * @testdata {"printer_description": "Testdrucker", "printer_command": "lp -d test", "template_code": "", "hide_factura": false}
  */
 function savePrinter($data) {
     $db = DbhCompany::begin();
@@ -32,6 +33,7 @@ function savePrinter($data) {
     $description = trim($data['printer_description'] ?? '');
     $command = trim($data['printer_command'] ?? '');
     $template_code = trim($data['template_code'] ?? '');
+    $hide_factura = !empty($data['hide_factura']);
 
     if ($description === '') {
         resultInfo(false, 'VALIDATION_ERROR', 'Beschreibung ist erforderlich');
@@ -44,26 +46,29 @@ function savePrinter($data) {
             "UPDATE printers
              SET printer_description = :printer_description,
                  printer_command = :printer_command,
-                 template_code = :template_code
+                 template_code = :template_code,
+                 hide_factura = :hide_factura
              WHERE id = :id
              RETURNING id",
             [
                 ':id' => $data['id'],
                 ':printer_description' => $description,
                 ':printer_command' => $command,
-                ':template_code' => $template_code
+                ':template_code' => $template_code,
+                ':hide_factura' => $hide_factura
             ]
         );
     } else {
         // INSERT
         $result = $db->getOne(
-            "INSERT INTO printers (printer_description, printer_command, template_code)
-             VALUES (:printer_description, :printer_command, :template_code)
+            "INSERT INTO printers (printer_description, printer_command, template_code, hide_factura)
+             VALUES (:printer_description, :printer_command, :template_code, :hide_factura)
              RETURNING id",
             [
                 ':printer_description' => $description,
                 ':printer_command' => $command,
-                ':template_code' => $template_code
+                ':template_code' => $template_code,
+                ':hide_factura' => $hide_factura
             ]
         );
     }

@@ -64,6 +64,7 @@
     "printerDescription": "Beschreibung",
     "printerCommand": "Druckbefehl",
     "templateCode": "Template-Code",
+    "hideFaktura": "Masquer dans facturation",
     "addPrinter": "Drucker hinzufügen",
     "deletePrinterConfirm": "Soll der Drucker wirklich gelöscht werden?",
     "printerSaved": "Drucker gespeichert",

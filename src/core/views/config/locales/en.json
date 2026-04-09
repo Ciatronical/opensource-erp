@@ -64,6 +64,7 @@
     "printerDescription": "Description",
     "printerCommand": "Print Command",
     "templateCode": "Template Code",
+    "hideFaktura": "Hide in Invoicing",
     "addPrinter": "Add Printer",
     "deletePrinterConfirm": "Do you really want to delete this printer?",
     "printerSaved": "Printer saved",
