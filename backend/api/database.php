@@ -676,7 +676,7 @@ class ApiDatabase {
             WHERE d.{$where} = {$table}.{$where}
         ";
 
-        debugQuery($sql, [], 'Bulk Update ' . $table);
+        //debugQuery($sql, [], 'Bulk Update ' . $table);
 
         try {
             $stmt = $this->pdo->prepare($sql);
