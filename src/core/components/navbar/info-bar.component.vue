@@ -176,6 +176,12 @@ export default {
 </script>
 
 <style scoped>
+/*
+ * Reihenfolge: neueste Items zuerst im Array (siehe unifiedItems im Composable).
+ * Render-Richtung kommt aus dem dir-Attribut der App: in LTR-Sprachen (de/en/...)
+ * landet das neueste Item links, in RTL-Sprachen (ar/he/...) automatisch rechts.
+ * NIEMALS row-reverse setzen — das wuerde die Auto-RTL-Logik brechen.
+ */
 .info-bar {
   display: flex;
   align-items: center;
