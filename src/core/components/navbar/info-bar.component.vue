@@ -10,7 +10,7 @@
       <v-chip
         v-for="pr in visiblePartsRequests"
         :key="'pr-' + pr.oe_id"
-        color="red"
+        color="deep-orange-darken-2"
         variant="elevated"
         size="small"
         closable
@@ -30,7 +30,7 @@
       <v-chip
         v-for="det in visibleAnprDetections"
         :key="'anpr-' + det.id"
-        color="blue-darken-2"
+        color="indigo-darken-2"
         variant="elevated"
         size="small"
         closable
@@ -135,9 +135,9 @@ export default {
     }
 
     function chipColor(item) {
-      if (item.type === 'call') return item.direction === 'E' ? 'green-darken-1' : 'blue-darken-1'
-      if (item.type === 'email') return 'deep-purple-darken-1'
-      return 'green-darken-2'
+      if (item.type === 'call') return item.direction === 'E' ? 'teal-darken-2' : 'blue-grey-darken-3'
+      if (item.type === 'email') return 'deep-purple-darken-2'
+      return 'green-darken-3'
     }
 
     function chipIcon(item) {
