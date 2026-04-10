@@ -6,49 +6,9 @@
       class="info-bar"
       elevation="2"
     >
-      <!-- Ersatzteil-Anfragen: Warenkorb + Kundenname (Dismiss gilt nur für heute) -->
+      <!-- Alle Items in einer einzigen, chronologisch sortierten Liste -->
       <v-chip
-        v-for="pr in visiblePartsRequests"
-        :key="'pr-' + pr.oe_id"
-        color="deep-orange"
-        variant="tonal"
-        size="small"
-        closable
-        label
-        class="info-chip cursor-pointer"
-        :title="(pr.customer_name || pr.ordnumber || '#' + pr.oe_id) + ' (' + pr.pending_count + ')'"
-        @click="openOrderWithParts(pr)"
-        @click:close="dismissItem('parts', pr.oe_id)"
-      >
-        <v-icon start size="14">mdi-cart-arrow-down</v-icon>
-        <span class="info-chip-text font-weight-medium">
-          {{ truncate(pr.customer_name || pr.ordnumber || '#' + pr.oe_id, 18) }}
-        </span>
-      </v-chip>
-
-      <!-- ANPR: Erkannte Fahrzeuge an der Zufahrt -->
-      <v-chip
-        v-for="det in visibleAnprDetections"
-        :key="'anpr-' + det.id"
-        color="light-blue"
-        variant="tonal"
-        size="small"
-        closable
-        label
-        class="info-chip cursor-pointer"
-        :title="det.c_ln + (det.customer_name ? ' — ' + det.customer_name : '') + ' (' + formatAnprTime(det.detected_at) + ')'"
-        @click="openAnprDetection(det)"
-        @click:close="dismissItem('anpr', det.id)"
-      >
-        <v-icon start size="14">mdi-car-side</v-icon>
-        <span class="info-chip-text font-weight-medium">
-          {{ det.c_ln }}
-        </span>
-      </v-chip>
-
-      <!-- Chronologische Ereignisse (füllen restliche Slots) -->
-      <v-chip
-        v-for="item in visibleChronologicalItems"
+        v-for="item in visibleItems"
         :key="item.id"
         :color="chipColor(item)"
         variant="tonal"
@@ -56,13 +16,13 @@
         closable
         label
         class="info-chip cursor-pointer"
-        :title="(item.name || t('InfoBar.unknownCaller')) + ' — ' + formatDateTime(item.timestamp)"
+        :title="chipTitle(item)"
         @click="openItem(item)"
         @click:close="dismissItem(item.type, item.dismissId)"
       >
         <v-icon start size="14">{{ chipIcon(item) }}</v-icon>
         <span class="info-chip-text font-weight-medium">
-          {{ truncate(item.name || t('InfoBar.unknownCaller'), 18) }}
+          {{ truncate(chipLabel(item), 18) }}
         </span>
       </v-chip>
     </v-sheet>
@@ -83,29 +43,12 @@ export default {
   setup() {
     const { t, locale } = useI18n()
     const router = useRouter()
-    const {
-      chronologicalItems, pendingPartsRequests, anprDetections, hasItems,
-      dismissItem
-    } = useInfoBar()
+    const { unifiedItems, hasItems, dismissItem } = useInfoBar()
 
     const MAX_TOTAL = 9
 
-    // Ersatzteilanforderungen haben Prioritaet — werden zuerst angezeigt
-    const visiblePartsRequests = computed(() =>
-      pendingPartsRequests.value.slice(0, MAX_TOTAL)
-    )
-
-    // ANPR-Erkennungen haben zweite Prioritaet
-    const visibleAnprDetections = computed(() => {
-      const remaining = Math.max(0, MAX_TOTAL - visiblePartsRequests.value.length)
-      return anprDetections.value.slice(0, remaining)
-    })
-
-    // Chronologische Items fuellen die restlichen Plaetze
-    const visibleChronologicalItems = computed(() => {
-      const remaining = Math.max(0, MAX_TOTAL - visiblePartsRequests.value.length - visibleAnprDetections.value.length)
-      return chronologicalItems.value.slice(0, remaining)
-    })
+    // Alle Items zusammen, chronologisch sortiert (neueste zuerst), max. MAX_TOTAL
+    const visibleItems = computed(() => unifiedItems.value.slice(0, MAX_TOTAL))
 
     // Anzeigetext sicher kürzen, damit Close-Button immer Platz hat
     function truncate(str, max) {
@@ -135,19 +78,45 @@ export default {
     }
 
     function chipColor(item) {
+      if (item.type === 'parts') return 'deep-orange'
+      if (item.type === 'anpr') return 'light-blue'
       if (item.type === 'call') return item.direction === 'E' ? 'teal' : 'blue-grey'
       if (item.type === 'email') return 'deep-purple'
-      return 'green'
+      if (item.type === 'whatsapp') return 'green'
+      return 'grey'
     }
 
     function chipIcon(item) {
+      if (item.type === 'parts') return 'mdi-cart-arrow-down'
+      if (item.type === 'anpr') return 'mdi-car-side'
       if (item.type === 'call') return item.direction === 'E' ? 'mdi-phone-incoming' : 'mdi-phone-outgoing'
       if (item.type === 'email') return 'mdi-email-outline'
-      return 'mdi-whatsapp'
+      if (item.type === 'whatsapp') return 'mdi-whatsapp'
+      return 'mdi-bell-outline'
+    }
+
+    function chipLabel(item) {
+      if (item.type === 'parts') return item.name || ('#' + item.data.oe_id)
+      if (item.type === 'anpr') return item.name || ''
+      return item.name || t('InfoBar.unknownCaller')
+    }
+
+    function chipTitle(item) {
+      if (item.type === 'parts') {
+        const base = item.data.customer_name || item.data.ordnumber || ('#' + item.data.oe_id)
+        return base + ' (' + item.data.pending_count + ') — ' + formatDateTime(item.timestamp)
+      }
+      if (item.type === 'anpr') {
+        const cust = item.data.customer_name ? ' — ' + item.data.customer_name : ''
+        return item.data.c_ln + cust + ' (' + formatDateTime(item.timestamp) + ')'
+      }
+      return (item.name || t('InfoBar.unknownCaller')) + ' — ' + formatDateTime(item.timestamp)
     }
 
     function openItem(item) {
-      if (item.type === 'call') openCall(item.data)
+      if (item.type === 'parts') openOrderWithParts(item.data)
+      else if (item.type === 'anpr') openAnprDetection(item.data)
+      else if (item.type === 'call') openCall(item.data)
       else if (item.type === 'email') openEmail(item.data)
       else if (item.type === 'whatsapp') openWhatsapp(item.data)
     }
@@ -190,27 +159,17 @@ export default {
       }
     }
 
-    function formatAnprTime(dateStr) {
-      if (!dateStr) return ''
-      const d = new Date(dateStr)
-      return d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })
-    }
-
     return {
       t,
-      visiblePartsRequests,
-      visibleAnprDetections,
-      visibleChronologicalItems,
+      visibleItems,
       hasItems,
       dismissItem,
       truncate,
-      formatDateTime,
-      formatAnprTime,
       chipColor,
       chipIcon,
-      openItem,
-      openOrderWithParts,
-      openAnprDetection
+      chipLabel,
+      chipTitle,
+      openItem
     }
   }
 }

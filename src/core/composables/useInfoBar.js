@@ -195,9 +195,39 @@ export function useInfoBar() {
         parseInt(oserp.getClientDefaultValue('infobar_max_whatsapps', '5'), 10) || 5
     )
 
-    // --- Computed: chronologische Liste aller Events ---
-    const chronologicalItems = computed(() => {
+    // --- Computed: alle Events in einer einzigen, chronologisch sortierten Liste ---
+    const unifiedItems = computed(() => {
         const items = []
+
+        // Ersatzteil-Anfragen
+        pendingPartsRequests.value
+            .filter(pr => !dismissed.value.parts.includes(pr.oe_id))
+            .forEach(pr => {
+                items.push({
+                    type: 'parts',
+                    id: 'parts-' + pr.oe_id,
+                    dismissId: pr.oe_id,
+                    timestamp: pr.requested_at ? new Date(pr.requested_at).getTime() : 0,
+                    name: pr.customer_name || pr.ordnumber || ('#' + pr.oe_id),
+                    data: pr
+                })
+            })
+
+        // ANPR-Erkennungen
+        const maxAnpr = parseInt(oserp.getClientDefaultValue('anpr_infobar_max', '3'), 10) || 3
+        anprDetections.value
+            .filter(d => !dismissed.value.anpr.includes(d.id))
+            .slice(0, maxAnpr)
+            .forEach(det => {
+                items.push({
+                    type: 'anpr',
+                    id: 'anpr-' + det.id,
+                    dismissId: det.id,
+                    timestamp: det.detected_at ? new Date(det.detected_at).getTime() : 0,
+                    name: det.c_ln,
+                    data: det
+                })
+            })
 
         // Anrufe
         newCalls.value
@@ -210,7 +240,6 @@ export function useInfoBar() {
                     dismissId: call.crmti_id,
                     timestamp: call.call_date || 0,
                     name: call.caller_name || call.crmti_number || call.crmti_src || null,
-                    detail: null,
                     direction: call.crmti_direction,
                     data: call
                 })
@@ -227,7 +256,6 @@ export function useInfoBar() {
                     dismissId: email.uid,
                     timestamp: email.date ? new Date(email.date).getTime() : 0,
                     name: email.from || null,
-                    detail: email.subject,
                     data: email
                 })
             })
@@ -243,7 +271,6 @@ export function useInfoBar() {
                     dismissId: wa.id,
                     timestamp: wa.itime ? new Date(wa.itime).getTime() : 0,
                     name: wa.contact_name || wa.phone_number || null,
-                    detail: wa.message_text,
                     data: wa
                 })
             })
@@ -254,22 +281,7 @@ export function useInfoBar() {
         return items
     })
 
-    const filteredPartsRequests = computed(() =>
-        pendingPartsRequests.value.filter(pr => !dismissed.value.parts.includes(pr.oe_id))
-    )
-
-    const filteredAnprDetections = computed(() => {
-        const maxAnpr = parseInt(oserp.getClientDefaultValue('anpr_infobar_max', '3'), 10) || 3
-        return anprDetections.value
-            .filter(d => !dismissed.value.anpr.includes(d.id))
-            .slice(0, maxAnpr)
-    })
-
-    const hasItems = computed(() =>
-        chronologicalItems.value.length > 0 ||
-        filteredPartsRequests.value.length > 0 ||
-        filteredAnprDetections.value.length > 0
-    )
+    const hasItems = computed(() => unifiedItems.value.length > 0)
 
     // --- Actions ---
     function dismissItem(type, id) {
@@ -386,9 +398,7 @@ export function useInfoBar() {
     })
 
     return {
-        chronologicalItems,
-        pendingPartsRequests: filteredPartsRequests,
-        anprDetections: filteredAnprDetections,
+        unifiedItems,
         hasItems,
         dismissItem,
         fetchPendingPartsRequests,

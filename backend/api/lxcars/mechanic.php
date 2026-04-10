@@ -750,6 +750,7 @@ function getPendingPartsRequests() {
                 c.name AS customer_name,
                 car.c_ln AS vehicle_plate,
                 COUNT(*) AS pending_count,
+                MAX(pr.requested_at) AS requested_at,
                 json_agg(json_build_object(
                     'id', pr.id,
                     'orderitem_id', pr.orderitem_id,
