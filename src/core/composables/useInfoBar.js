@@ -275,8 +275,16 @@ export function useInfoBar() {
                 })
             })
 
-        // Neueste zuerst
-        items.sort((a, b) => b.timestamp - a.timestamp)
+        // Sortierung: Warenkoerbe (parts) IMMER zuerst (= leseanfang-seitig),
+        // alles andere dahinter chronologisch (neueste zuerst).
+        // Innerhalb der Warenkoerbe ebenfalls neueste zuerst.
+        items.sort((a, b) => {
+            const aIsParts = a.type === 'parts'
+            const bIsParts = b.type === 'parts'
+            if (aIsParts && !bIsParts) return -1
+            if (!aIsParts && bIsParts) return 1
+            return b.timestamp - a.timestamp
+        })
 
         return items
     })
