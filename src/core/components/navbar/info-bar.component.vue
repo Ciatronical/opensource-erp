@@ -10,8 +10,8 @@
       <v-chip
         v-for="pr in visiblePartsRequests"
         :key="'pr-' + pr.oe_id"
-        color="deep-orange-darken-2"
-        variant="elevated"
+        color="deep-orange"
+        variant="tonal"
         size="small"
         closable
         label
@@ -30,8 +30,8 @@
       <v-chip
         v-for="det in visibleAnprDetections"
         :key="'anpr-' + det.id"
-        color="indigo-darken-2"
-        variant="elevated"
+        color="light-blue"
+        variant="tonal"
         size="small"
         closable
         label
@@ -51,7 +51,7 @@
         v-for="item in visibleChronologicalItems"
         :key="item.id"
         :color="chipColor(item)"
-        variant="elevated"
+        variant="tonal"
         size="small"
         closable
         label
@@ -135,9 +135,9 @@ export default {
     }
 
     function chipColor(item) {
-      if (item.type === 'call') return item.direction === 'E' ? 'teal-darken-2' : 'blue-grey-darken-3'
-      if (item.type === 'email') return 'deep-purple-darken-2'
-      return 'green-darken-3'
+      if (item.type === 'call') return item.direction === 'E' ? 'teal' : 'blue-grey'
+      if (item.type === 'email') return 'deep-purple'
+      return 'green'
     }
 
     function chipIcon(item) {
@@ -253,10 +253,12 @@ export default {
 
 /* Close-Button darf NIEMALS verschwinden oder schrumpfen */
 .info-chip :deep(.v-chip__close) {
-  color: white !important;
-  opacity: 0.9;
+  opacity: 0.7;
   flex-shrink: 0 !important;
   margin-left: 4px;
+}
+.info-chip :deep(.v-chip__close:hover) {
+  opacity: 1;
 }
 
 /* Text kürzt mit Ellipsis */
