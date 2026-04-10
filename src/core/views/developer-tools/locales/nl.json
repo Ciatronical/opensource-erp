@@ -296,7 +296,7 @@
         },
         "autoTest": {
             "title": "Automatische tests",
-            "description": "Test automatisch alle API-functies met hun @testdata-annotaties",
+            "description": "Test automatisch alle API-functies met hun testdata-annotaties",
             "description_route": "Test API-routes via HTTP-request vanuit de browser. Controleert of endpoints bereikbaar zijn en correct antwoorden.",
             "description_workflow": "Test meerstaps-bedrijfsprocessen (bijv. order -> factuur). Maakt testgegevens aan, controleert resultaten en ruimt op.",
             "mode_function": "Functies",

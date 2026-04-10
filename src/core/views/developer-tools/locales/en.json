@@ -213,7 +213,7 @@
         },
         "autoTest": {
             "title": "Automatic Tests",
-            "description": "Automatically tests all API functions using their @testdata annotations",
+            "description": "Automatically tests all API functions using their testdata annotations",
             "description_route": "Tests API routes via HTTP requests from the browser. Checks if endpoints are reachable and respond correctly.",
             "description_workflow": "Tests multi-step business processes (e.g. order → invoice). Creates test data, validates results and cleans up.",
             "mode_function": "Functions",

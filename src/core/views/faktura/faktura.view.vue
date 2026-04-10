@@ -237,7 +237,7 @@
             </section>
 
             <!-- Notizen -->
-            <section class="faktura-section" v-if="faktura.data">
+            <section class="faktura-section" v-if="faktura.data && faktura.data.common">
                 <v-card variant="outlined" class="faktura-card">
                     <v-card-title class="faktura-card__header">
                         <v-icon class="mr-2" size="small">mdi-note-text</v-icon>

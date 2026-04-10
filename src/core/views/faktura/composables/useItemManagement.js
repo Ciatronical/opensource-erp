@@ -281,20 +281,34 @@ export function useItemManagement({
 
     // ── Artikel-Suche ──
 
+    // Race-Condition-Schutz: pro Zeile den zuletzt abgesetzten Suchbegriff merken,
+    // damit verspaetete Responses aelterer Requests nicht die Liste ueberschreiben.
+    const latestSearchTerm = new Map()
+
     async function onArticleSearch(searchTerm, index, item) {
         if (!searchTerm || searchTerm.length < 2) {
+            latestSearchTerm.set(index, searchTerm || '')
             if (itemsTableRef.value) {
                 itemsTableRef.value.updateLocalArticleList(index, [])
             }
             return
         }
 
+        latestSearchTerm.set(index, searchTerm)
+
         try {
             const parts = await faktura.fetchParts(searchTerm, faktura.data.common.taxzone_id)
+            // Nur anwenden, wenn inzwischen kein neuerer Request gestartet wurde
+            if (latestSearchTerm.get(index) !== searchTerm) {
+                return
+            }
             if (itemsTableRef.value) {
                 itemsTableRef.value.updateLocalArticleList(index, parts || [])
             }
         } catch (e) {
+            if (latestSearchTerm.get(index) !== searchTerm) {
+                return
+            }
             if (itemsTableRef.value) {
                 itemsTableRef.value.updateLocalArticleList(index, [])
             }

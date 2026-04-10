@@ -296,7 +296,7 @@
         },
         "autoTest": {
             "title": "Tests automatiques",
-            "description": "Teste automatiquement toutes les fonctions API avec leurs annotations @testdata",
+            "description": "Teste automatiquement toutes les fonctions API avec leurs annotations testdata",
             "description_route": "Teste les routes API par requete HTTP depuis le navigateur. Verifie si les endpoints sont accessibles et repondent correctement.",
             "description_workflow": "Teste les processus metier multi-etapes (ex. commande -> facture). Cree des donnees de test, verifie les resultats et nettoie.",
             "mode_function": "Fonctions",

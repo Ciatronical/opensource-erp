@@ -126,9 +126,11 @@
                                     :placeholder="t('FakturaView.faktura.searchArticle')"
                                     :no-data-text="null"
                                     :hide-no-data="true"
+                                    :no-filter="true"
+                                    :custom-filter="() => true"
                                     class="new-item-input"
                                     item-title="label"
-                                    item-value="description"
+                                    item-value="id"
                                     return-object
                                     variant="outlined"
                                     density="compact"
@@ -762,7 +764,7 @@ export default defineComponent({
 
                 // Emitte Search Event an Parent
                 emit('article-search', searchTerm, index, item)
-            }, 150)
+            }, 50)
         }
 
         /**

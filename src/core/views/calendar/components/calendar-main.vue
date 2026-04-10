@@ -14,16 +14,38 @@ import timeGridPlugin from '@fullcalendar/timegrid'
 import listPlugin from '@fullcalendar/list'
 import interactionPlugin from '@fullcalendar/interaction'
 import deLocale from '@fullcalendar/core/locales/de'
+import { oserpStore } from '@/core/stores/oserp.store.js'
 
 const props = defineProps({
     events: { type: Array, default: () => [] },
-    initialView: { type: String, default: 'timeGridCustomWeek' }
+    initialView: { type: String, default: 'timeGridCustomWeek' },
+    customButtons: { type: Object, default: () => ({}) },
+    headerToolbar: { type: Object, default: null },
+    height: { type: [String, Number], default: 'auto' },
+    // null = nicht an FullCalendar durchreichen (contentHeight wird dann aus height berechnet)
+    contentHeight: { type: [String, Number], default: 700 },
+    expandRows: { type: Boolean, default: false }
 })
 
 const emit = defineEmits(['event-click', 'date-click', 'event-drop', 'event-resize', 'dates-set'])
 
 const { t, locale } = useI18n()
 const calendarRef = ref(null)
+const oserp = oserpStore()
+
+// Arbeitszeiten aus Company-Config — sichtbarer Tagesbereich im TimeGrid.
+// Werte aus HH:MM in HH:MM:SS normalisieren (FullCalendar-Format).
+function normalizeTime(value, fallback) {
+    const v = (value || '').trim()
+    if (/^\d{1,2}:\d{2}$/.test(v)) return v + ':00'
+    if (/^\d{1,2}:\d{2}:\d{2}$/.test(v)) return v
+    return fallback
+}
+const slotMinTime = normalizeTime(oserp.getClientDefaultValue('calendar_day_start'), '07:00:00')
+const slotMaxTime = normalizeTime(oserp.getClientDefaultValue('calendar_day_end'),   '19:00:00')
+// Business-Hours-Grenzen (ohne Sekunden)
+const businessStart = slotMinTime.substring(0, 5)
+const businessEnd   = slotMaxTime.substring(0, 5)
 
 const calendarEvents = computed(() => {
     return props.events.map(event => ({
@@ -59,16 +81,18 @@ function getStartDate() {
     return new Date().toISOString().split('T')[0]
 }
 
-const calendarOptions = computed(() => ({
+const calendarOptions = computed(() => {
+    const opts = {
     plugins: [dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin],
     initialView: props.initialView,
     initialDate: getStartDate(),
     locale: locale.value === 'de' ? deLocale : undefined,
-    headerToolbar: {
+    headerToolbar: props.headerToolbar || {
         left: 'prev,next today',
         center: 'title',
         right: 'listCustomWeek,timeGridCustomWeek,timeGridDay,dayGridMonth'
     },
+    customButtons: props.customButtons,
     events: calendarEvents.value,
     eventClick: handleEventClick,
     dateClick: handleDateClick,
@@ -79,20 +103,20 @@ const calendarOptions = computed(() => ({
     selectable: true,
     dayMaxEvents: 3,
     moreLinkClick: 'popover',
-    height: 'auto',
-    contentHeight: 700,
+    height: props.height,
+    expandRows: props.expandRows,
     handleWindowResize: true,
     fixedWeekCount: false,
     showNonCurrentDates: true,
     nowIndicator: true,
     allDaySlot: true,
     allDayText: t('CalendarMain.allDay'),
-    slotMinTime: '07:00:00',
-    slotMaxTime: '19:00:00',
+    slotMinTime,
+    slotMaxTime,
     businessHours: {
         daysOfWeek: [1, 2, 3, 4, 5],
-        startTime: '07:00',
-        endTime: '19:00'
+        startTime: businessStart,
+        endTime: businessEnd
     },
     buttonText: {
         today: t('CalendarMain.today'),
@@ -125,7 +149,15 @@ const calendarOptions = computed(() => ({
             titleFormat: { year: 'numeric', month: 'long', day: 'numeric' }
         }
     }
-}))
+    }
+    // contentHeight nur setzen wenn explizit ein Wert uebergeben wurde. null
+    // bedeutet: FullCalendar soll ihn aus height ableiten — sonst verhindert ein
+    // gesetzter Wert dass expandRows die Slots auf den verfuegbaren Platz dehnt.
+    if (props.contentHeight !== null && props.contentHeight !== undefined) {
+        opts.contentHeight = props.contentHeight
+    }
+    return opts
+})
 
 function handleEventClick(info) {
     info.jsEvent.preventDefault()

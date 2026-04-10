@@ -296,7 +296,7 @@
         },
         "autoTest": {
             "title": "Test automatici",
-            "description": "Testa tutte le funzioni API automaticamente con le loro annotazioni @testdata",
+            "description": "Testa tutte le funzioni API automaticamente con le loro annotazioni testdata",
             "description_route": "Testa le rotte API tramite richieste HTTP dal browser. Verifica se gli endpoint sono raggiungibili e rispondono correttamente.",
             "description_workflow": "Testa processi aziendali a più fasi (es. Ordine -> Fattura). Crea dati di test, verifica risultati e pulisce.",
             "mode_function": "Funzioni",

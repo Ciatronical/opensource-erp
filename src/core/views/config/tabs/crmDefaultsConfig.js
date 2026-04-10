@@ -176,9 +176,27 @@ const crmDefaultsConfig = [
     { name: "aag_online_passwd", type: "password", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.aagOnlinePassword", tooltip: "crm_fields.aagOnlinePassword_help" },
     { name: "aag_online_passwd2", type: "password", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.aagOnlinePassword2", tooltip: "crm_fields.aagOnlinePassword2_help" },
 
+    { name: "calendar", type: "headline", label: "crm_fields.calendar" },
+
+    { name: "calendar_day_start", type: "input", inputType: "time", size: 10, fieldstyle: "max-width: 15ch", label: "crm_fields.calendarDayStart", tooltip: "crm_fields.calendarDayStart_help" },
+    { name: "calendar_day_end",   type: "input", inputType: "time", size: 10, fieldstyle: "max-width: 15ch", label: "crm_fields.calendarDayEnd",   tooltip: "crm_fields.calendarDayEnd_help" },
+
     { name: "wall_display", type: "headline", label: "crm_fields.wallDisplay" },
 
     { name: "wall_display_enabled", type: "checkbox", label: "crm_fields.wallDisplayEnabled", tooltip: "crm_fields.wallDisplayEnabled_help" },
+    {
+        name: "wall_display_size",
+        type: "select",
+        items: [
+            { value: "auto",    title: "Automatisch (an Auflösung anpassen)" },
+            { value: "compact", title: "Kompakt (TV / Querformat)" },
+            { value: "normal",  title: "Normal" },
+            { value: "large",   title: "Groß (Hochformat / Wandtablet)" }
+        ],
+        fieldstyle: "max-width: 40ch",
+        label: "crm_fields.wallDisplaySize",
+        tooltip: "crm_fields.wallDisplaySize_help"
+    },
 
     { name: "dhl", type: "headline", label: "crm_fields.dhl" },
 

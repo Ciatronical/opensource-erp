@@ -296,7 +296,7 @@
         },
         "autoTest": {
             "title": "自动化测试",
-            "description": "使用 @testdata 注解自动测试所有 API 功能",
+            "description": "使用 testdata 注解自动测试所有 API 功能",
             "description_route": "通过浏览器 HTTP 请求测试 API 路由。检查端点是否可访问且响应正确。",
             "description_workflow": "测试多步业务流程（如订单 -> 发票）。创建测试数据，检查结果并清理。",
             "mode_function": "功能",

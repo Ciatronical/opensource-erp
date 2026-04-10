@@ -1,13 +1,22 @@
 <!-- src/core/views/wall-display/wall-display.view.vue -->
 
 <template>
-    <div class="wall-display" :class="{ 'wall-display--faktura': mode === 'faktura' }">
+    <div class="wall-display" :class="[
+        { 'wall-display--faktura': mode === 'faktura' },
+        `wall-display--size-${effectiveSize}`
+    ]">
 
-        <!-- Beenden-Button (immer sichtbar, oben links) -->
-        <v-btn class="wall-display__exit" size="small" variant="tonal" color="error" @click="exitWallDisplay">
-            <v-icon start size="small">mdi-exit-to-app</v-icon>
-            {{ t('WallDisplay.exit') }}
-        </v-btn>
+        <!-- Debug: Aktiver Groessen-Modus, oben rechts. Temporaer fuer Verifikation. -->
+        <div class="wall-display__size-debug">size: {{ effectiveSize }} (cfg: {{ configuredSize || 'auto' }})</div>
+
+        <!-- Topbar nur in Faktura-Modus — im Kalender-Modus sitzen Exit/Uhr in der FullCalendar-Toolbar -->
+        <div v-if="mode !== 'calendar'" class="wall-display__topbar">
+            <v-btn class="wall-display__exit" size="small" variant="tonal" color="error" @click="exitWallDisplay">
+                <v-icon start size="small">mdi-exit-to-app</v-icon>
+                {{ t('WallDisplay.exit') }}
+            </v-btn>
+            <div class="wall-display__clock">{{ currentTime }}</div>
+        </div>
 
 
         <!-- Kalender-Modus -->
@@ -15,6 +24,8 @@
             <calendar-main
                 :events="events"
                 :initial-view="calendarInitialView"
+                :custom-buttons="calendarCustomButtons"
+                :header-toolbar="calendarHeaderToolbar"
                 @dates-set="onDatesSet"
                 @event-click="onEventClick"
             />
@@ -155,6 +166,55 @@ export default defineComponent({
         const fakturaData = ref(null)
         const fakturaVehicle = ref(null)
 
+        // Uhr
+        const currentTime = ref('')
+        let clockTimer = null
+        function updateClock() {
+            currentTime.value = new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })
+        }
+
+        // Display-Groesse: aus Employee-Config (Override) oder Client-Default,
+        // 'auto' = anhand Viewport bestimmen (Landscape -> compact, Portrait -> large).
+        const viewportWidth = ref(window.innerWidth)
+        const viewportHeight = ref(window.innerHeight)
+        function onViewportResize() {
+            viewportWidth.value = window.innerWidth
+            viewportHeight.value = window.innerHeight
+        }
+
+        const configuredSize = computed(() => {
+            return oserp.getConfigValue('wall_display_size', null)
+                || oserp.getClientDefaultValue('wall_display_size', 'auto')
+        })
+
+        const effectiveSize = computed(() => {
+            const cfg = configuredSize.value
+            if (cfg !== 'auto') return cfg
+            return viewportWidth.value >= viewportHeight.value ? 'compact' : 'large'
+        })
+
+        // FullCalendar-Toolbar fuer den Wand-Display-Kalender:
+        // Exit-Button rechts vom Heute-Button, Uhr direkt hinter dem Titel.
+        function exitWallDisplay() {
+            router.push({ name: 'customer-vendor' })
+        }
+
+        const calendarCustomButtons = computed(() => ({
+            exit: {
+                text: '\u2715',
+                click: exitWallDisplay
+            },
+            clock: {
+                text: currentTime.value || '--:--'
+            }
+        }))
+
+        const calendarHeaderToolbar = {
+            left: 'prev,next today exit',
+            center: 'title clock',
+            right: 'listCustomWeek,timeGridCustomWeek,timeGridDay,dayGridMonth'
+        }
+
         const fakturaDocNumber = computed(() => {
             const c = fakturaData.value?.common
             if (!c) return ''
@@ -292,20 +352,36 @@ export default defineComponent({
 
         onMounted(() => {
             connectSSE()
+            updateClock()
+            // An volle Minute synchronisieren, danach minuetlich
+            const msToNextMinute = (60 - new Date().getSeconds()) * 1000
+            setTimeout(() => {
+                updateClock()
+                clockTimer = setInterval(updateClock, 60000)
+            }, msToNextMinute)
+
+            window.addEventListener('resize', onViewportResize)
+
+            // FullCalendar misst beim Initial-Render gelegentlich falsch, wenn
+            // der Container noch nicht seine endgueltige Groesse hat (Topbar
+            // schiebt nach, Fonts laden nach). Resize ausloesen, sobald Fonts
+            // bereit sind, sowie als Fallback nach kurzer Verzoegerung.
+            const triggerResize = () => window.dispatchEvent(new Event('resize'))
+            if (document.fonts?.ready) document.fonts.ready.then(triggerResize)
+            setTimeout(triggerResize, 150)
         })
 
         onBeforeUnmount(() => {
             if (sseSource) { sseSource.close(); sseSource = null }
+            if (clockTimer) { clearInterval(clockTimer); clockTimer = null }
+            window.removeEventListener('resize', onViewportResize)
         })
-
-        function exitWallDisplay() {
-            router.push({ name: 'customer-vendor' })
-        }
 
         return {
             t, mode, events, calendarInitialView,
             eventDetailOpen, selectedEvent,
             fakturaData, fakturaVehicle, fakturaDocNumber, fakturaDocLabel, fakturaPositions,
+            currentTime, calendarCustomButtons, calendarHeaderToolbar, effectiveSize, configuredSize,
             onDatesSet, onEventClick, exitWallDisplay,
             formatDate, formatCurrency, formatQty, formatEventTime
         }
@@ -315,56 +391,103 @@ export default defineComponent({
 
 <style scoped>
 .wall-display {
-    width: 100vw;
-    height: 100vh;
+    position: fixed;
+    inset: 0;
     overflow: hidden;
     background: #f5f5f5;
     display: flex;
     flex-direction: column;
+    z-index: 1000;
 }
 
-.wall-display__exit {
-    position: fixed;
-    top: 12px;
-    left: 12px;
-    z-index: 10;
+.wall-display__topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 16px;
+    background: white;
+    border-bottom: 1px solid #e0e0e0;
+    flex-shrink: 0;
+}
+
+.wall-display__clock {
+    font-size: 1.6rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: #424242;
 }
 
 
 .wall-display__calendar {
     flex: 1;
+    min-height: 0;
     overflow: auto;
 }
 
 .wall-display__calendar :deep(.calendar-wrapper) {
-    padding: 8px;
-    min-height: 100vh;
+    padding: 4px;
 }
 
-/* Kalender fuer Hochformat-Display optimieren */
-.wall-display__calendar :deep(.fc) {
-    font-size: 1.1rem;
+/* Toolbar-Chunks als Flex layouten, damit Title und Uhr nebeneinander stehen */
+.wall-display__calendar :deep(.fc .fc-toolbar-chunk) {
+    display: flex;
+    align-items: center;
 }
 
-.wall-display__calendar :deep(.fc .fc-toolbar-title) {
-    font-size: 2rem;
+.wall-display__calendar :deep(.fc .fc-toolbar-chunk > :not(:first-child)) {
+    margin-left: 0 !important;
 }
 
-.wall-display__calendar :deep(.fc .fc-timegrid-slot) {
-    height: 50px;
+/* Uhr in der FullCalendar-Toolbar — als Text statt Button darstellen */
+.wall-display__calendar :deep(.fc-clock-button),
+.wall-display__calendar :deep(.fc-clock-button:hover),
+.wall-display__calendar :deep(.fc-clock-button:focus),
+.wall-display__calendar :deep(.fc-clock-button:active) {
+    background: transparent !important;
+    color: #424242 !important;
+    box-shadow: none !important;
+    transform: none !important;
+    cursor: default;
+    pointer-events: none;
+    font-size: 1.3rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    padding: 0 0 0 16px !important;
+    border: none !important;
 }
 
-.wall-display__calendar :deep(.fc .fc-col-header-cell) {
-    font-size: 1rem;
-    padding: 16px 4px;
+/* Exit-Button rechts vom Heute-Button — kompakt, rot, nur Icon */
+.wall-display__calendar :deep(.fc-exit-button),
+.wall-display__calendar :deep(.fc-exit-button:hover) {
+    background: #ef5350 !important;
+    color: white !important;
+    margin-left: 8px !important;
+    padding: 8px 14px !important;
+    font-size: 1.1rem !important;
+    line-height: 1 !important;
+    box-shadow: 0 2px 6px rgba(239, 83, 80, 0.3) !important;
 }
 
-.wall-display__calendar :deep(.fc .fc-event-title) {
-    font-size: 1rem;
+.wall-display__calendar :deep(.fc-exit-button:hover) {
+    background: #e53935 !important;
+    transform: translateY(-1px) !important;
 }
 
-.wall-display__calendar :deep(.fc .fc-timegrid-slot-label) {
-    font-size: 0.9rem;
+/* Groessen-Modi sind im zweiten, globalen <style>-Block am Dateiende — siehe unten. */
+
+/* Debug: aktiver Modus oben rechts. Temporaer. */
+.wall-display__size-debug {
+    position: fixed;
+    top: 4px;
+    right: 4px;
+    z-index: 2000;
+    background: rgba(255, 235, 59, 0.9);
+    color: #424242;
+    font-size: 10px;
+    font-family: monospace;
+    padding: 2px 6px;
+    border-radius: 3px;
+    pointer-events: none;
 }
 
 /* Faktura-Modus */
@@ -407,5 +530,110 @@ export default defineComponent({
 .wall-faktura__total td {
     border-top: 2px solid #1976d2;
     padding-top: 20px !important;
+}
+</style>
+
+<!-- Globale Groessen-Regeln: NICHT scoped, damit sie ueber Vue-Component-Grenzen
+     hinweg auf die FullCalendar-DOM zugreifen koennen, die im calendar-main
+     gerendert wird. !important schlaegt die Default-Regeln aus calendar-main.vue. -->
+<style>
+/* compact: TV / Querformat — minimaler Platzbedarf */
+.wall-display--size-compact .calendar-wrapper {
+    padding: 4px !important;
+}
+.wall-display--size-compact .fc .fc-toolbar {
+    margin-bottom: 4px !important;
+    padding: 4px 10px !important;
+    border-radius: 6px !important;
+    gap: 4px !important;
+}
+.wall-display--size-compact .fc .fc-toolbar-title {
+    font-size: 0.95rem !important;
+}
+.wall-display--size-compact .fc .fc-button {
+    padding: 3px 8px !important;
+    font-size: 0.7rem !important;
+    border-radius: 5px !important;
+}
+.wall-display--size-compact .fc .fc-col-header-cell {
+    padding: 3px 4px !important;
+    font-size: 0.7rem !important;
+}
+.wall-display--size-compact .fc .fc-timegrid-slot-label {
+    font-size: 0.65rem !important;
+}
+/* Slot-Hoehe fest klein, damit alle Stunden ins Bild passen. Default sind
+   ~40-50px pro halbstuendigem Slot, das fuehrt bei 9 Stunden zu Scrollen. */
+.wall-display--size-compact .fc .fc-timegrid-slot {
+    height: 16px !important;
+}
+.wall-display--size-compact .fc .fc-event-title,
+.wall-display--size-compact .fc .fc-event-time {
+    font-size: 0.7rem !important;
+}
+.wall-display--size-compact .fc-clock-button,
+.wall-display--size-compact .fc-clock-button:hover,
+.wall-display--size-compact .fc-clock-button:focus,
+.wall-display--size-compact .fc-clock-button:active {
+    font-size: 0.95rem !important;
+    padding: 0 0 0 12px !important;
+}
+.wall-display--size-compact .fc-exit-button,
+.wall-display--size-compact .fc-exit-button:hover {
+    padding: 3px 8px !important;
+    font-size: 0.85rem !important;
+    margin-left: 6px !important;
+}
+
+/* normal: nahe an FullCalendar-Defaults */
+.wall-display--size-normal .fc .fc-toolbar {
+    padding: 10px 14px !important;
+    margin-bottom: 12px !important;
+}
+.wall-display--size-normal .fc .fc-toolbar-title {
+    font-size: 1.25rem !important;
+}
+.wall-display--size-normal .fc .fc-button {
+    padding: 8px 14px !important;
+    font-size: 0.85rem !important;
+}
+
+/* large: Hochformat-Wandtablet — bewusst gross */
+.wall-display--size-large .fc {
+    font-size: 1.15rem !important;
+}
+.wall-display--size-large .fc .fc-toolbar {
+    padding: 18px 22px !important;
+    margin-bottom: 20px !important;
+}
+.wall-display--size-large .fc .fc-toolbar-title {
+    font-size: 2rem !important;
+}
+.wall-display--size-large .fc .fc-button {
+    padding: 14px 22px !important;
+    font-size: 1.1rem !important;
+}
+.wall-display--size-large .fc .fc-col-header-cell {
+    padding: 16px 4px !important;
+    font-size: 1.05rem !important;
+}
+.wall-display--size-large .fc .fc-timegrid-slot-label {
+    font-size: 1rem !important;
+}
+.wall-display--size-large .fc .fc-event-title,
+.wall-display--size-large .fc .fc-event-time {
+    font-size: 1.05rem !important;
+}
+.wall-display--size-large .fc-clock-button,
+.wall-display--size-large .fc-clock-button:hover,
+.wall-display--size-large .fc-clock-button:focus,
+.wall-display--size-large .fc-clock-button:active {
+    font-size: 1.7rem !important;
+    padding: 0 0 0 24px !important;
+}
+.wall-display--size-large .fc-exit-button,
+.wall-display--size-large .fc-exit-button:hover {
+    padding: 12px 20px !important;
+    font-size: 1.4rem !important;
 }
 </style>
