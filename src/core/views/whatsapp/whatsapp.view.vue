@@ -767,7 +767,7 @@
 import { ref, reactive, onMounted, onUnmounted, nextTick } from 'vue'
 import axios from 'axios'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { oserpStore } from '@/core/stores/oserp.store.js'
 import * as toast from '@/core/utils/toasts.js'
 import { waMediaCache } from '@/core/utils/whatsappMediaCache.js'
@@ -785,6 +785,7 @@ export default {
     setup() {
         const { t } = useI18n()
         const router = useRouter()
+        const route = useRoute()
         const oserp = oserpStore()
 
         const conversations = ref([])
@@ -1519,11 +1520,29 @@ export default {
             return name.substring(0, 2).toUpperCase()
         }
 
+        // Telefonnummer normalisieren (nur Ziffern, fuer den Vergleich mit gespeicherten Nummern)
+        function normalizePhoneDigits(phone) {
+            return (phone || '').replace(/\D/g, '')
+        }
+
         onMounted(async () => {
             if (checkConfig()) {
                 await loadConversations()
-                // Automatisch neueste Konversation auswaehlen
-                if (conversations.value.length && !selectedConv.value) {
+
+                // Auto-Select per Query-Parameter (z.B. aus phone-action-bar oder Anrufliste)
+                const phoneFromQuery = route.query.phone
+                if (phoneFromQuery) {
+                    const wanted = normalizePhoneDigits(phoneFromQuery)
+                    const match = conversations.value.find(c => normalizePhoneDigits(c.phone_number) === wanted)
+                    if (match) {
+                        selectConversation(match)
+                    } else {
+                        // Keine bestehende Konversation -> Compose-Dialog mit vorbelegter Nummer
+                        composeData.value = { to: phoneFromQuery, message: '' }
+                        showCompose.value = true
+                    }
+                } else if (conversations.value.length && !selectedConv.value) {
+                    // Default: neueste Konversation auswaehlen
                     selectConversation(conversations.value[0])
                 }
 

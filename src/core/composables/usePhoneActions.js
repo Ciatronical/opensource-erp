@@ -1,4 +1,5 @@
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 import axios from 'axios'
 import * as toast from '@/core/utils/toasts.js'
 import { oserpStore } from '@/core/stores/oserp.store.js'
@@ -9,7 +10,18 @@ import { oserpStore } from '@/core/stores/oserp.store.js'
  */
 export function usePhoneActions() {
     const { t } = useI18n()
+    const router = useRouter()
     const store = oserpStore()
+
+    /**
+     * Prueft ob WhatsApp Business API in der Config aktiv ist.
+     * Beide Felder muessen gesetzt sein, sonst Fallback auf web.whatsapp.com.
+     */
+    function isWhatsappConfigured() {
+        const token = store.getClientDefaultValue('whatsapp_access_token', '')
+        const phoneId = store.getClientDefaultValue('whatsapp_phone_number_id', '')
+        return !!(token && phoneId)
+    }
 
     /**
      * Formatiert eine Telefonnummer fuer WhatsApp (internationales Format).
@@ -47,11 +59,21 @@ export function usePhoneActions() {
     }
 
     /**
-     * Oeffnet WhatsApp Web mit der angegebenen Telefonnummer und optionaler Nachricht.
+     * Oeffnet WhatsApp fuer die angegebene Telefonnummer.
+     * Default: interne WhatsApp-Ansicht (wenn Business API in der Config aktiv).
+     * Fallback: web.whatsapp.com (wenn nicht konfiguriert).
      */
     function openWhatsApp(phoneNumber, contactName = '') {
         const formatted = formatPhoneForWhatsApp(phoneNumber)
         if (!formatted) return
+
+        if (isWhatsappConfigured()) {
+            // Intern: Route auf die WhatsApp-Ansicht, mit phone als Hint zum Auto-Auswaehlen
+            router.push({ name: 'whatsapp', query: { phone: formatted } })
+            return
+        }
+
+        // Fallback: WhatsApp Web
         const message = contactName
             ? t('PhoneActions.whatsappGreeting', { name: contactName })
             : ''
@@ -107,6 +129,7 @@ export function usePhoneActions() {
     return {
         clickToCall,
         openWhatsApp,
+        isWhatsappConfigured,
         copyToClipboard,
         formatPhoneForWhatsApp,
         loadPhoneConfig,

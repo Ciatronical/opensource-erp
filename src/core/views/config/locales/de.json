@@ -976,6 +976,22 @@
         "linkedActuator_help": "Tor oder Schranke, die bei Erkennung eines bekannten Kennzeichens automatisch angesteuert wird",
         "gateHeightMode_help": "Komplett öffnen: Tor fährt immer voll auf. Fahrzeughöhe + Puffer: Tor öffnet nur so weit wie für das Fahrzeug nötig (spart Energie, erfordert Kalibrierung)",
         "livePreview": "Live-Vorschau",
-        "streamError": "Stream konnte nicht geladen werden. Prüfen Sie ob der ANPR-Service läuft und der MJPEG-Port (Service-Port + 1) erreichbar ist."
+        "streamError": "Stream konnte nicht geladen werden. Prüfen Sie ob der ANPR-Service läuft und der MJPEG-Port (Service-Port + 1) erreichbar ist.",
+        "hardwareTitle": "KI-Hardware-Beschleunigung",
+        "hwCpuTooltip": "Prozessor des Servers. Intel-Chips haben eine eingebaute GPU (iGPU) die für KI-Beschleunigung genutzt werden kann.",
+        "hwIgpuTooltip": "Intel-Prozessoren haben eine eingebaute Grafikkarte (UHD/Iris). Diese kann Kennzeichenerkennung ~3x beschleunigen — kostenlos, ohne zusätzliche Hardware. Aktivierung: OpenVINO installieren.",
+        "hwOpenvinoTooltip": "Intel OpenVINO verlagert KI-Berechnungen von der CPU auf die eingebaute Intel-GPU. PaddleOCR (Kennzeichenerkennung) und YOLO (Objekterkennung) werden dadurch ~3x schneller. Installation: ein Klick auf 'Installieren'.",
+        "hwCoralTooltip": "Google Coral USB Accelerator (~35€) ist ein USB-Stick mit KI-Chip. Steckt man ihn ein, übernimmt er die Objekterkennung (~100 Inferenzen/s). Die CPU wird dadurch fast komplett entlastet. Coral beschleunigt die Objekterkennung (NVR), NICHT die Kennzeichenerkennung (ANPR). Für ANPR → OpenVINO verwenden.",
+        "hwNotDetected": "Nicht erkannt",
+        "hwNotInstalled": "Nicht installiert",
+        "hwInstall": "Installieren",
+        "hwInstallSuccess": "{pkg} wurde erfolgreich installiert. Service neu starten um die Beschleunigung zu aktivieren.",
+        "hwInstallFailed": "{pkg} konnte nicht installiert werden",
+        "hwCoralReady": "Verbunden und bereit",
+        "hwCoralNoDriver": "USB erkannt, aber Treiber fehlt",
+        "hwCoralNotConnected": "Nicht angeschlossen",
+        "hwRecommendOpenvino": "Empfehlung: Dein Intel-Prozessor hat eine eingebaute GPU. Installiere OpenVINO um die Kennzeichenerkennung ~3x zu beschleunigen — kostenlos, ein Klick.",
+        "hwRecommendCoralDriver": "Google Coral USB ist eingesteckt, aber der Treiber fehlt. Klicke auf 'Installieren' um ihn zu aktivieren.",
+        "hwRecommendOk": "OpenVINO ist aktiv — PaddleOCR nutzt die Intel iGPU für beschleunigte Kennzeichenerkennung."
     }
 }

@@ -1197,3 +1197,118 @@ $$ LANGUAGE plpgsql;
 
 -- Drucker: Spalte zum Ausblenden in Faktura
 ALTER TABLE printers ADD COLUMN IF NOT EXISTS hide_factura boolean DEFAULT false;
+
+-- ============================================================================
+-- KAMERA / VIDEOÜBERWACHUNG (Frigate NVR Integration)
+-- ============================================================================
+
+CREATE TABLE camera (
+    id INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    name TEXT NOT NULL,
+    frigate_name TEXT NOT NULL,
+    stream_url TEXT,
+    location TEXT,
+    active BOOLEAN NOT NULL DEFAULT true,
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    itime TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+    mtime TIMESTAMP WITHOUT TIME ZONE,
+    CONSTRAINT camera_frigate_name_unique UNIQUE (frigate_name)
+);
+
+COMMENT ON TABLE camera IS 'Kamera-Stammdaten (verknüpft mit Frigate-Kameranamen)';
+COMMENT ON COLUMN camera.name IS 'Anzeigename der Kamera (z.B. Lager Eingang)';
+COMMENT ON COLUMN camera.frigate_name IS 'Name der Kamera in Frigate-Konfiguration';
+COMMENT ON COLUMN camera.stream_url IS 'WebRTC/RTSP Stream-URL (go2rtc oder Frigate)';
+COMMENT ON COLUMN camera.location IS 'Standortbeschreibung';
+COMMENT ON COLUMN camera.active IS 'Kamera aktiv/inaktiv';
+COMMENT ON COLUMN camera.sort_order IS 'Sortierreihenfolge in der Übersicht';
+
+CREATE TABLE camera_zone (
+    id INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    camera_id INTEGER NOT NULL REFERENCES camera(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    frigate_zone TEXT NOT NULL,
+    color TEXT DEFAULT '#FF5722',
+    itime TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+    mtime TIMESTAMP WITHOUT TIME ZONE,
+    CONSTRAINT camera_zone_unique UNIQUE (camera_id, frigate_zone)
+);
+
+COMMENT ON TABLE camera_zone IS 'Überwachungszonen pro Kamera (Frigate Zonen)';
+COMMENT ON COLUMN camera_zone.name IS 'Anzeigename der Zone (z.B. Wareneingang)';
+COMMENT ON COLUMN camera_zone.frigate_zone IS 'Zonenname in Frigate-Konfiguration';
+COMMENT ON COLUMN camera_zone.color IS 'Farbe für UI-Anzeige (Hex)';
+
+CREATE INDEX idx_camera_zone_camera_id ON camera_zone(camera_id);
+
+CREATE TABLE camera_event (
+    id INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    frigate_event_id TEXT,
+    camera_id INTEGER REFERENCES camera(id) ON DELETE SET NULL,
+    camera_name TEXT NOT NULL,
+    label TEXT NOT NULL,
+    zones TEXT[],
+    score NUMERIC(4,3),
+    snapshot_url TEXT,
+    clip_url TEXT,
+    started_at TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+    ended_at TIMESTAMP WITHOUT TIME ZONE,
+    acknowledged BOOLEAN NOT NULL DEFAULT false,
+    acknowledged_by INTEGER,
+    notes TEXT,
+    itime TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+    CONSTRAINT camera_event_frigate_id_unique UNIQUE (frigate_event_id)
+);
+
+COMMENT ON TABLE camera_event IS 'Erkannte Ereignisse von Frigate (Personen, Fahrzeuge etc.)';
+COMMENT ON COLUMN camera_event.frigate_event_id IS 'Eindeutige Event-ID von Frigate';
+COMMENT ON COLUMN camera_event.camera_name IS 'Frigate-Kameraname (auch ohne Stammdaten nutzbar)';
+COMMENT ON COLUMN camera_event.label IS 'Erkanntes Objekt (person, car, dog, cat etc.)';
+COMMENT ON COLUMN camera_event.zones IS 'Betroffene Zonen als Array';
+COMMENT ON COLUMN camera_event.score IS 'Erkennungsgenauigkeit (0.000 - 1.000)';
+COMMENT ON COLUMN camera_event.snapshot_url IS 'URL zum Snapshot-Bild';
+COMMENT ON COLUMN camera_event.clip_url IS 'URL zum Video-Clip';
+COMMENT ON COLUMN camera_event.started_at IS 'Zeitpunkt des Eventbeginns';
+COMMENT ON COLUMN camera_event.ended_at IS 'Zeitpunkt des Eventendes';
+COMMENT ON COLUMN camera_event.acknowledged IS 'Event wurde vom Benutzer gesehen/bestätigt';
+COMMENT ON COLUMN camera_event.acknowledged_by IS 'Employee-ID der Person die bestätigt hat';
+COMMENT ON COLUMN camera_event.notes IS 'Optionale Notizen zum Event';
+
+CREATE INDEX idx_camera_event_camera_id ON camera_event(camera_id);
+CREATE INDEX idx_camera_event_started_at ON camera_event(started_at DESC);
+CREATE INDEX idx_camera_event_label ON camera_event(label);
+CREATE INDEX idx_camera_event_acknowledged ON camera_event(acknowledged) WHERE NOT acknowledged;
+
+CREATE TABLE camera_rule (
+    id INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    name TEXT NOT NULL,
+    camera_id INTEGER REFERENCES camera(id) ON DELETE CASCADE,
+    zone_id INTEGER REFERENCES camera_zone(id) ON DELETE CASCADE,
+    labels TEXT[] NOT NULL DEFAULT '{person}',
+    time_from TIME,
+    time_to TIME,
+    days_of_week INTEGER[] DEFAULT '{0,1,2,3,4,5,6}',
+    min_score NUMERIC(4,3) DEFAULT 0.700,
+    action TEXT NOT NULL DEFAULT 'notify',
+    action_config JSONB DEFAULT '{}',
+    active BOOLEAN NOT NULL DEFAULT true,
+    cooldown_seconds INTEGER NOT NULL DEFAULT 300,
+    last_triggered_at TIMESTAMP WITHOUT TIME ZONE,
+    itime TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+    mtime TIMESTAMP WITHOUT TIME ZONE
+);
+
+COMMENT ON TABLE camera_rule IS 'Alarmregeln: wann und wie bei Kamera-Events reagiert wird';
+COMMENT ON COLUMN camera_rule.name IS 'Regelname (z.B. Lager nachts - Person)';
+COMMENT ON COLUMN camera_rule.camera_id IS 'Kamera (NULL = alle Kameras)';
+COMMENT ON COLUMN camera_rule.zone_id IS 'Zone (NULL = alle Zonen der Kamera)';
+COMMENT ON COLUMN camera_rule.labels IS 'Erkannte Objekte die triggern (z.B. {person,car})';
+COMMENT ON COLUMN camera_rule.time_from IS 'Zeitfenster Beginn (NULL = immer)';
+COMMENT ON COLUMN camera_rule.time_to IS 'Zeitfenster Ende';
+COMMENT ON COLUMN camera_rule.days_of_week IS 'Wochentage (0=So, 1=Mo, ..., 6=Sa)';
+COMMENT ON COLUMN camera_rule.min_score IS 'Mindest-Erkennungsgenauigkeit';
+COMMENT ON COLUMN camera_rule.action IS 'Aktion: notify, whatsapp, email, log';
+COMMENT ON COLUMN camera_rule.action_config IS 'JSON-Konfiguration für die Aktion (z.B. {"phone": "+49...", "message": "..."})';
+COMMENT ON COLUMN camera_rule.active IS 'Regel aktiv/inaktiv';
+COMMENT ON COLUMN camera_rule.cooldown_seconds IS 'Mindestabstand zwischen zwei Auslösungen (Sekunden)';
+COMMENT ON COLUMN camera_rule.last_triggered_at IS 'Letzter Auslösezeitpunkt (für Cooldown)';

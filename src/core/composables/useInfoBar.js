@@ -326,7 +326,10 @@ export function useInfoBar() {
             console.log('[SSE] Message empfangen:', event.data)
             try {
                 const data = JSON.parse(event.data)
-                if (data.message_type !== undefined) {
+                if (data.type === 'camera_event' || data.type === 'camera_alert') {
+                    // Camera-Events an die Camera-View weiterleiten
+                    window.dispatchEvent(new MessageEvent('camera-sse', { data: event.data }))
+                } else if (data.message_type !== undefined) {
                     fetchNewWhatsapps()
                 } else if (data.table === 'anpr_detections_lxcars') {
                     fetchAnprDetections()

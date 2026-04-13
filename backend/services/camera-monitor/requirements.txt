@@ -1,0 +1,22 @@
+# Basis (immer noetig)
+opencv-python-headless>=4.8
+numpy>=1.24
+psycopg2-binary>=2.9
+
+# Objekterkennung — mindestens eins davon:
+ultralytics>=8.1
+
+# Kamera-Erkennung im Netzwerk (ONVIF)
+wsdiscovery>=2.0
+onvif-zeep>=0.2.12
+
+# --- Optional: Hardware-Beschleunigung ---
+# Automatisch erkannt, nur installieren was vorhanden ist.
+
+# Google Coral USB TPU (~100 Inf./s, ~30€):
+#   pip install pycoral tflite-runtime
+# Modell wird beim ersten Start automatisch heruntergeladen.
+
+# Intel iGPU / OpenVINO (~40 Inf./s, kostenlos):
+#   pip install openvino
+# YOLO wird automatisch ins OpenVINO-Format exportiert.

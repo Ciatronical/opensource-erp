@@ -1,0 +1,1122 @@
+<?php
+// backend/api/camera/camera.php
+
+// ── Frigate-Konfiguration aus defaults_oserp laden ──
+
+function _getCameraConfig(): array {
+    $db = DbhCompany::begin();
+    $rows = $db->getAll("SELECT key, value FROM defaults_oserp WHERE key LIKE 'camera_%'");
+    $config = [];
+    foreach ($rows as $row) {
+        $config[$row['key']] = $row['value'];
+    }
+    return $config;
+}
+
+// ============================================================================
+// KAMERAS (CRUD)
+// ============================================================================
+
+/**
+ * Alle Kameras mit Zonen laden
+ *
+ * @param array $data (keine Parameter nötig)
+ * @testdata {}
+ */
+function getCameras($data) {
+    $db = DbhCompany::begin();
+    $cameras = $db->getAll("
+        SELECT c.*,
+            COALESCE(
+                (SELECT json_agg(json_build_object(
+                    'id', z.id,
+                    'name', z.name,
+                    'frigate_zone', z.frigate_zone,
+                    'color', z.color
+                ) ORDER BY z.name)
+                FROM camera_zone z WHERE z.camera_id = c.id),
+                '[]'
+            ) AS zones,
+            COALESCE(
+                (SELECT COUNT(*) FROM camera_event e
+                 WHERE e.camera_id = c.id AND NOT e.acknowledged),
+                0
+            ) AS unread_events
+        FROM camera c
+        WHERE c.active
+        ORDER BY c.sort_order, c.name
+    ");
+    foreach ($cameras as &$cam) {
+        $cam['zones'] = json_decode($cam['zones'], true);
+        $cam['unread_events'] = (int)$cam['unread_events'];
+    }
+    resultInfo(true, '', ['cameras' => $cameras]);
+}
+
+/**
+ * Einzelne Kamera speichern (Upsert)
+ *
+ * @param array $data['id'] Kamera-ID (leer = neu anlegen)
+ * @param array $data['name'] Anzeigename
+ * @param array $data['frigate_name'] Frigate-Kameraname
+ * @param array $data['stream_url'] WebRTC Stream-URL
+ * @param array $data['location'] Standort
+ * @param array $data['sort_order'] Sortierreihenfolge
+ * @testdata {"name": "Lager Eingang", "frigate_name": "lager_eingang", "stream_url": "", "location": "Halle 1", "sort_order": 0}
+ */
+function saveCamera($data) {
+    $db = DbhCompany::begin();
+
+    if (!empty($data['id'])) {
+        $db->execute("
+            UPDATE camera SET
+                name = :name,
+                frigate_name = :frigate_name,
+                stream_url = :stream_url,
+                location = :location,
+                sort_order = :sort_order,
+                mtime = NOW()
+            WHERE id = :id
+        ", [
+            ':id' => $data['id'],
+            ':name' => $data['name'],
+            ':frigate_name' => $data['frigate_name'],
+            ':stream_url' => $data['stream_url'] ?? '',
+            ':location' => $data['location'] ?? '',
+            ':sort_order' => $data['sort_order'] ?? 0,
+        ]);
+        resultInfo(true, '', ['id' => $data['id']]);
+    } else {
+        $row = $db->getOne("
+            INSERT INTO camera (name, frigate_name, stream_url, location, sort_order)
+            VALUES (:name, :frigate_name, :stream_url, :location, :sort_order)
+            RETURNING id
+        ", [
+            ':name' => $data['name'],
+            ':frigate_name' => $data['frigate_name'],
+            ':stream_url' => $data['stream_url'] ?? '',
+            ':location' => $data['location'] ?? '',
+            ':sort_order' => $data['sort_order'] ?? 0,
+        ]);
+        resultInfo(true, '', ['id' => $row['id']]);
+    }
+}
+
+/**
+ * Kamera deaktivieren (Soft-Delete)
+ *
+ * @param array $data['id'] Kamera-ID
+ * @testdata {"id": 1}
+ */
+function deleteCamera($data) {
+    $db = DbhCompany::begin();
+    $db->execute("UPDATE camera SET active = false, mtime = NOW() WHERE id = :id", [':id' => $data['id']]);
+    resultInfo(true);
+}
+
+// ============================================================================
+// ZONEN (CRUD)
+// ============================================================================
+
+/**
+ * Zone speichern (Upsert)
+ *
+ * @param array $data['id'] Zone-ID (leer = neu)
+ * @param array $data['camera_id'] Kamera-ID
+ * @param array $data['name'] Anzeigename
+ * @param array $data['frigate_zone'] Frigate-Zonenname
+ * @param array $data['color'] Farbe (Hex)
+ * @testdata {"camera_id": 1, "name": "Wareneingang", "frigate_zone": "wareneingang", "color": "#FF5722"}
+ */
+function saveZone($data) {
+    $db = DbhCompany::begin();
+
+    if (!empty($data['id'])) {
+        $db->execute("
+            UPDATE camera_zone SET
+                name = :name,
+                frigate_zone = :frigate_zone,
+                color = :color,
+                mtime = NOW()
+            WHERE id = :id
+        ", [
+            ':id' => $data['id'],
+            ':name' => $data['name'],
+            ':frigate_zone' => $data['frigate_zone'],
+            ':color' => $data['color'] ?? '#FF5722',
+        ]);
+    } else {
+        $db->execute("
+            INSERT INTO camera_zone (camera_id, name, frigate_zone, color)
+            VALUES (:camera_id, :name, :frigate_zone, :color)
+        ", [
+            ':camera_id' => $data['camera_id'],
+            ':name' => $data['name'],
+            ':frigate_zone' => $data['frigate_zone'],
+            ':color' => $data['color'] ?? '#FF5722',
+        ]);
+    }
+    resultInfo(true);
+}
+
+/**
+ * Zone löschen
+ *
+ * @param array $data['id'] Zone-ID
+ * @testdata {"id": 1}
+ */
+function deleteZone($data) {
+    $db = DbhCompany::begin();
+    $db->execute("DELETE FROM camera_zone WHERE id = :id", [':id' => $data['id']]);
+    resultInfo(true);
+}
+
+// ============================================================================
+// EVENTS
+// ============================================================================
+
+/**
+ * Events laden (mit Filter)
+ *
+ * @param array $data['camera_id'] Filter nach Kamera (optional)
+ * @param array $data['label'] Filter nach Objekttyp (optional)
+ * @param array $data['zone'] Filter nach Zone (optional)
+ * @param array $data['acknowledged'] Filter: true/false/all (optional, Standard: all)
+ * @param array $data['date_from'] Datum von (optional)
+ * @param array $data['date_to'] Datum bis (optional)
+ * @param array $data['limit'] Anzahl (optional, Standard: 50)
+ * @param array $data['offset'] Offset (optional, Standard: 0)
+ * @testdata {"limit": 50}
+ */
+function getEvents($data) {
+    $db = DbhCompany::begin();
+
+    $where = ['1=1'];
+    $params = [];
+
+    if (!empty($data['camera_id'])) {
+        $where[] = 'e.camera_id = :camera_id';
+        $params[':camera_id'] = $data['camera_id'];
+    }
+    if (!empty($data['label'])) {
+        $where[] = 'e.label = :label';
+        $params[':label'] = $data['label'];
+    }
+    if (!empty($data['zone'])) {
+        $where[] = ':zone = ANY(e.zones)';
+        $params[':zone'] = $data['zone'];
+    }
+    if (isset($data['acknowledged']) && $data['acknowledged'] !== 'all') {
+        $where[] = 'e.acknowledged = :ack';
+        $params[':ack'] = $data['acknowledged'] === 'true' || $data['acknowledged'] === true ? 't' : 'f';
+    }
+    if (!empty($data['date_from'])) {
+        $where[] = 'e.started_at >= :date_from';
+        $params[':date_from'] = $data['date_from'];
+    }
+    if (!empty($data['date_to'])) {
+        $where[] = 'e.started_at <= :date_to';
+        $params[':date_to'] = $data['date_to'];
+    }
+
+    $limit = (int)($data['limit'] ?? 50);
+    $offset = (int)($data['offset'] ?? 0);
+    $whereClause = implode(' AND ', $where);
+
+    $events = $db->getAll("
+        SELECT e.*,
+            c.name AS camera_display_name,
+            c.location AS camera_location
+        FROM camera_event e
+        LEFT JOIN camera c ON c.id = e.camera_id
+        WHERE $whereClause
+        ORDER BY e.started_at DESC
+        LIMIT $limit OFFSET $offset
+    ", $params);
+
+    $countRow = $db->getOne("
+        SELECT COUNT(*) AS total FROM camera_event e WHERE $whereClause
+    ", $params);
+
+    resultInfo(true, '', [
+        'events' => $events,
+        'total' => (int)$countRow['total'],
+    ]);
+}
+
+/**
+ * Event bestätigen (acknowledged)
+ *
+ * @param array $data['id'] Event-ID
+ * @param array $data['notes'] Optionale Notiz
+ * @testdata {"id": 1}
+ */
+function acknowledgeEvent($data) {
+    $db = DbhCompany::begin();
+    $auth = DbhAuth::begin();
+    $auth->fetchSessionData();
+
+    $employee = $db->getOne(
+        "SELECT id FROM employee WHERE login = :login",
+        [':login' => $auth->getLogin()]
+    );
+
+    $db->execute("
+        UPDATE camera_event SET
+            acknowledged = true,
+            acknowledged_by = :emp_id,
+            notes = COALESCE(:notes, notes)
+        WHERE id = :id
+    ", [
+        ':id' => $data['id'],
+        ':emp_id' => $employee['id'] ?? null,
+        ':notes' => $data['notes'] ?? null,
+    ]);
+    resultInfo(true);
+}
+
+/**
+ * Alle Events einer Kamera als gelesen markieren
+ *
+ * @param array $data['camera_id'] Kamera-ID
+ * @testdata {"camera_id": 1}
+ */
+function acknowledgeAllEvents($data) {
+    $db = DbhCompany::begin();
+    $auth = DbhAuth::begin();
+    $auth->fetchSessionData();
+
+    $employee = $db->getOne(
+        "SELECT id FROM employee WHERE login = :login",
+        [':login' => $auth->getLogin()]
+    );
+
+    $db->execute("
+        UPDATE camera_event SET
+            acknowledged = true,
+            acknowledged_by = :emp_id
+        WHERE camera_id = :camera_id AND NOT acknowledged
+    ", [
+        ':camera_id' => $data['camera_id'],
+        ':emp_id' => $employee['id'] ?? null,
+    ]);
+    resultInfo(true);
+}
+
+// ============================================================================
+// REGELN (CRUD)
+// ============================================================================
+
+/**
+ * Alle Regeln laden
+ *
+ * @param array $data (keine Parameter nötig)
+ * @testdata {}
+ */
+function getRules($data) {
+    $db = DbhCompany::begin();
+    $rules = $db->getAll("
+        SELECT r.*,
+            c.name AS camera_name,
+            z.name AS zone_name
+        FROM camera_rule r
+        LEFT JOIN camera c ON c.id = r.camera_id
+        LEFT JOIN camera_zone z ON z.id = r.zone_id
+        ORDER BY r.name
+    ");
+    foreach ($rules as &$rule) {
+        $rule['action_config'] = json_decode($rule['action_config'], true) ?: [];
+        // PostgreSQL-Array zu PHP-Array
+        $rule['labels'] = _pgArrayToPhp($rule['labels']);
+        $rule['days_of_week'] = _pgArrayToPhp($rule['days_of_week']);
+    }
+    resultInfo(true, '', ['rules' => $rules]);
+}
+
+/**
+ * Regel speichern (Upsert)
+ *
+ * @param array $data['id'] Regel-ID (leer = neu)
+ * @param array $data['name'] Regelname
+ * @param array $data['camera_id'] Kamera-ID (optional)
+ * @param array $data['zone_id'] Zone-ID (optional)
+ * @param array $data['labels'] Objekttypen als Array
+ * @param array $data['time_from'] Zeitfenster von (optional)
+ * @param array $data['time_to'] Zeitfenster bis (optional)
+ * @param array $data['days_of_week'] Wochentage als Array
+ * @param array $data['min_score'] Mindest-Score
+ * @param array $data['action'] Aktionstyp (notify, whatsapp, email, log)
+ * @param array $data['action_config'] JSON-Konfiguration
+ * @param array $data['active'] Aktiv
+ * @param array $data['cooldown_seconds'] Cooldown in Sekunden
+ * @testdata {"name": "Lager nachts", "labels": ["person"], "time_from": "22:00", "time_to": "06:00", "action": "notify", "active": true, "cooldown_seconds": 300}
+ */
+function saveRule($data) {
+    $db = DbhCompany::begin();
+
+    $labels = _phpArrayToPg($data['labels'] ?? ['person']);
+    $daysOfWeek = _phpArrayToPg($data['days_of_week'] ?? [0,1,2,3,4,5,6]);
+    $actionConfig = json_encode($data['action_config'] ?? []);
+
+    $params = [
+        ':name' => $data['name'],
+        ':camera_id' => !empty($data['camera_id']) ? $data['camera_id'] : null,
+        ':zone_id' => !empty($data['zone_id']) ? $data['zone_id'] : null,
+        ':labels' => $labels,
+        ':time_from' => !empty($data['time_from']) ? $data['time_from'] : null,
+        ':time_to' => !empty($data['time_to']) ? $data['time_to'] : null,
+        ':days_of_week' => $daysOfWeek,
+        ':min_score' => $data['min_score'] ?? 0.7,
+        ':action' => $data['action'] ?? 'notify',
+        ':action_config' => $actionConfig,
+        ':active' => ($data['active'] ?? true) ? 't' : 'f',
+        ':cooldown_seconds' => $data['cooldown_seconds'] ?? 300,
+    ];
+
+    if (!empty($data['id'])) {
+        $params[':id'] = $data['id'];
+        $db->execute("
+            UPDATE camera_rule SET
+                name = :name, camera_id = :camera_id, zone_id = :zone_id,
+                labels = :labels, time_from = :time_from, time_to = :time_to,
+                days_of_week = :days_of_week, min_score = :min_score,
+                action = :action, action_config = :action_config,
+                active = :active, cooldown_seconds = :cooldown_seconds,
+                mtime = NOW()
+            WHERE id = :id
+        ", $params);
+    } else {
+        $db->execute("
+            INSERT INTO camera_rule (name, camera_id, zone_id, labels,
+                time_from, time_to, days_of_week, min_score,
+                action, action_config, active, cooldown_seconds)
+            VALUES (:name, :camera_id, :zone_id, :labels,
+                :time_from, :time_to, :days_of_week, :min_score,
+                :action, :action_config, :active, :cooldown_seconds)
+        ", $params);
+    }
+    resultInfo(true);
+}
+
+/**
+ * Regel löschen
+ *
+ * @param array $data['id'] Regel-ID
+ * @testdata {"id": 1}
+ */
+function deleteRule($data) {
+    $db = DbhCompany::begin();
+    $db->execute("DELETE FROM camera_rule WHERE id = :id", [':id' => $data['id']]);
+    resultInfo(true);
+}
+
+// ============================================================================
+// FRIGATE WEBHOOK
+// ============================================================================
+
+/**
+ * Webhook-Empfänger für Frigate-Events
+ *
+ * Frigate sendet bei jedem Event (new, update, end) einen HTTP-POST.
+ * Konfiguration in Frigate:
+ *   mqtt:
+ *     enabled: true
+ *   # ODER per HTTP-Webhook:
+ *   # notifications:
+ *   #   webhook: http://erp-server/api/camera/?action=frigateWebhook
+ *
+ * @param array $data Frigate Event-Payload
+ * @testdata {"type": "new", "after": {"id": "abc123", "camera": "lager", "label": "person", "zones": ["eingang"], "score": 0.85, "start_time": 1713000000, "has_snapshot": true, "has_clip": false}}
+ */
+function frigateWebhook($data) {
+    $db = DbhCompany::begin();
+    $config = _getCameraConfig();
+    $frigateUrl = $config['camera_frigate_url'] ?? '';
+
+    $type = $data['type'] ?? '';
+    $eventData = $data['after'] ?? $data['before'] ?? [];
+
+    if (empty($eventData) || empty($eventData['id'])) {
+        resultInfo(false, 'INVALID_EVENT', 'Kein gültiges Frigate-Event');
+        return;
+    }
+
+    $frigateEventId = $eventData['id'];
+    $cameraName = $eventData['camera'] ?? '';
+    $label = $eventData['label'] ?? 'unknown';
+    $zones = $eventData['zones'] ?? [];
+    $score = $eventData['score'] ?? 0;
+    $startTime = isset($eventData['start_time'])
+        ? date('Y-m-d H:i:s', (int)$eventData['start_time'])
+        : date('Y-m-d H:i:s');
+    $endTime = isset($eventData['end_time']) && $eventData['end_time']
+        ? date('Y-m-d H:i:s', (int)$eventData['end_time'])
+        : null;
+
+    $snapshotUrl = '';
+    $clipUrl = '';
+    if ($frigateUrl) {
+        if (!empty($eventData['has_snapshot'])) {
+            $snapshotUrl = rtrim($frigateUrl, '/') . '/api/events/' . $frigateEventId . '/snapshot.jpg';
+        }
+        if (!empty($eventData['has_clip'])) {
+            $clipUrl = rtrim($frigateUrl, '/') . '/api/events/' . $frigateEventId . '/clip.mp4';
+        }
+    }
+
+    // Kamera-ID aus Stammdaten ermitteln
+    $camera = $db->getOne(
+        "SELECT id FROM camera WHERE frigate_name = :fname AND active",
+        [':fname' => $cameraName]
+    );
+    $cameraId = $camera ? $camera['id'] : null;
+
+    $pgZones = _phpArrayToPg($zones);
+
+    if ($type === 'new') {
+        $db->execute("
+            INSERT INTO camera_event (frigate_event_id, camera_id, camera_name, label, zones, score, snapshot_url, clip_url, started_at)
+            VALUES (:fid, :cam_id, :cam_name, :label, :zones, :score, :snap, :clip, :started)
+            ON CONFLICT (frigate_event_id) DO NOTHING
+        ", [
+            ':fid' => $frigateEventId,
+            ':cam_id' => $cameraId,
+            ':cam_name' => $cameraName,
+            ':label' => $label,
+            ':zones' => $pgZones,
+            ':score' => $score,
+            ':snap' => $snapshotUrl,
+            ':clip' => $clipUrl,
+            ':started' => $startTime,
+        ]);
+
+        // pg_notify für Echtzeit-Push an Frontend
+        $notifyPayload = json_encode([
+            'type' => 'camera_event',
+            'event' => 'new',
+            'camera' => $cameraName,
+            'label' => $label,
+            'zones' => $zones,
+            'score' => $score,
+            'frigate_event_id' => $frigateEventId,
+        ]);
+        $db->execute("SELECT pg_notify('camera_event', :payload)", [':payload' => $notifyPayload]);
+
+        // Regeln prüfen und ggf. Aktionen auslösen
+        _checkRules($db, $cameraId, $cameraName, $label, $zones, $score, $frigateEventId, $snapshotUrl);
+
+    } elseif ($type === 'end') {
+        $db->execute("
+            UPDATE camera_event SET
+                ended_at = :ended,
+                score = GREATEST(score, :score),
+                clip_url = CASE WHEN :clip != '' THEN :clip ELSE clip_url END
+            WHERE frigate_event_id = :fid
+        ", [
+            ':fid' => $frigateEventId,
+            ':ended' => $endTime,
+            ':score' => $score,
+            ':clip' => $clipUrl,
+        ]);
+
+    } elseif ($type === 'update') {
+        $db->execute("
+            UPDATE camera_event SET
+                score = GREATEST(score, :score),
+                zones = :zones,
+                snapshot_url = CASE WHEN :snap != '' THEN :snap ELSE snapshot_url END
+            WHERE frigate_event_id = :fid
+        ", [
+            ':fid' => $frigateEventId,
+            ':score' => $score,
+            ':zones' => $pgZones,
+            ':snap' => $snapshotUrl,
+        ]);
+    }
+
+    resultInfo(true);
+}
+
+/**
+ * Kamera-Konfiguration laden (Frigate-URL etc.)
+ *
+ * @param array $data (keine Parameter nötig)
+ * @testdata {}
+ */
+function getCameraConfig($data) {
+    $config = _getCameraConfig();
+    resultInfo(true, '', ['config' => $config]);
+}
+
+/**
+ * Dashboard-Statistiken
+ *
+ * @param array $data (keine Parameter nötig)
+ * @testdata {}
+ */
+function getCameraStats($data) {
+    $db = DbhCompany::begin();
+
+    $stats = $db->getOne("
+        SELECT
+            (SELECT COUNT(*) FROM camera WHERE active) AS camera_count,
+            (SELECT COUNT(*) FROM camera_event WHERE NOT acknowledged) AS unread_events,
+            (SELECT COUNT(*) FROM camera_event WHERE started_at >= CURRENT_DATE) AS events_today,
+            (SELECT COUNT(*) FROM camera_rule WHERE active) AS active_rules
+    ");
+
+    $recentByCamera = $db->getAll("
+        SELECT c.name, c.id AS camera_id, COUNT(e.id) AS event_count
+        FROM camera c
+        LEFT JOIN camera_event e ON e.camera_id = c.id AND e.started_at >= CURRENT_DATE
+        WHERE c.active
+        GROUP BY c.id, c.name
+        ORDER BY event_count DESC
+    ");
+
+    $labelStats = $db->getAll("
+        SELECT label, COUNT(*) AS count
+        FROM camera_event
+        WHERE started_at >= CURRENT_DATE
+        GROUP BY label
+        ORDER BY count DESC
+    ");
+
+    resultInfo(true, '', [
+        'stats' => $stats,
+        'by_camera' => $recentByCamera,
+        'by_label' => $labelStats,
+    ]);
+}
+
+// ============================================================================
+// HARDWARE-ERKENNUNG (CPU, GPU, Coral, OpenVINO, Python-Pakete)
+// ============================================================================
+
+/**
+ * Erkennt die verfuegbare KI-Hardware und installierte Python-Pakete.
+ * Wird sowohl vom NVR (Kamera-Monitor) als auch vom ANPR-Service genutzt.
+ *
+ * @param array $data (keine Parameter noetig)
+ * @testdata {}
+ */
+function getHardwareInfo($data) {
+    $info = [
+        'cpu' => _detectCpu(),
+        'coral' => _detectCoral(),
+        'openvino' => _detectOpenVino(),
+        'python_packages' => _detectPythonPackages(),
+        'ram' => _detectRam(),
+        'gpu' => _detectGpu(),
+    ];
+    resultInfo(true, '', ['hardware' => $info]);
+}
+
+/**
+ * Python-Paket installieren (openvino, pycoral, tflite-runtime, ultralytics)
+ *
+ * Nur vordefinierte Pakete erlaubt (kein beliebiges exec).
+ *
+ * @param array $data['package'] Paketname
+ * @param array $data['service'] Fuer welchen Service: 'camera' oder 'anpr'
+ * @testdata {"package": "openvino", "service": "camera"}
+ */
+function installPythonPackage($data) {
+    // Whitelist: nur diese Pakete duerfen installiert werden
+    $allowed = [
+        'openvino',
+        'pycoral',
+        'tflite-runtime',
+        'ultralytics',
+    ];
+
+    $package = $data['package'] ?? '';
+    $service = $data['service'] ?? 'camera';
+
+    if (!in_array($package, $allowed, true)) {
+        resultInfo(false, 'PACKAGE_NOT_ALLOWED', "Paket '$package' ist nicht erlaubt.");
+        return;
+    }
+
+    // venv-Pfad je nach Service
+    if ($service === 'anpr') {
+        $venvPath = __DIR__ . '/../../services/plate-recognition/venv/bin/pip';
+    } else {
+        $venvPath = __DIR__ . '/../../services/camera-monitor/venv/bin/pip';
+    }
+
+    // Fallback auf System-pip
+    if (!file_exists($venvPath)) {
+        $venvPath = 'pip3';
+    }
+
+    $cmd = escapeshellarg($venvPath) . ' install ' . escapeshellarg($package) . ' 2>&1';
+    $output = shell_exec($cmd);
+    $exitCode = 0;
+
+    // Pruefen ob es geklappt hat
+    $checkCmd = escapeshellarg(str_replace('/pip', '/python', $venvPath))
+        . ' -c "import ' . ($package === 'tflite-runtime' ? 'tflite_runtime' : str_replace('-', '_', $package)) . '" 2>&1';
+    $checkOutput = shell_exec($checkCmd);
+    $success = (strpos($checkOutput ?? '', 'Error') === false && strpos($checkOutput ?? '', 'No module') === false);
+
+    resultInfo($success, '', [
+        'package' => $package,
+        'output' => trim($output ?? ''),
+    ]);
+}
+
+// --- Hardware-Erkennung Hilfsfunktionen ---
+
+function _detectCpu(): array {
+    $info = ['model' => 'Unbekannt', 'cores' => 0, 'threads' => 0, 'has_intel_gpu' => false];
+
+    // /proc/cpuinfo lesen
+    $cpuinfo = @file_get_contents('/proc/cpuinfo');
+    if ($cpuinfo) {
+        // Modellname
+        if (preg_match('/model name\s*:\s*(.+)/i', $cpuinfo, $m)) {
+            $info['model'] = trim($m[1]);
+        }
+        // Kerne zaehlen (physische)
+        preg_match_all('/^processor\s*:/m', $cpuinfo, $m);
+        $info['threads'] = count($m[0]);
+        // Physische Kerne
+        if (preg_match('/cpu cores\s*:\s*(\d+)/i', $cpuinfo, $m)) {
+            $info['cores'] = (int)$m[1];
+        }
+        // Intel-Check (fuer iGPU/OpenVINO-Empfehlung)
+        $info['has_intel_gpu'] = (bool)preg_match('/Intel/i', $info['model']);
+    }
+
+    return $info;
+}
+
+function _detectCoral(): array {
+    $info = ['connected' => false, 'driver_installed' => false, 'python_package' => false, 'device_name' => ''];
+
+    // lsusb pruefen (Coral USB: 1a6e:089a oder 18d1:9302)
+    $lsusb = shell_exec('lsusb 2>/dev/null') ?? '';
+    if (preg_match('/1a6e:089a|18d1:9302|Global Unichip|Google.*Coral/i', $lsusb, $m)) {
+        $info['connected'] = true;
+        // Geraetename extrahieren
+        if (preg_match('/.*(?:1a6e:089a|18d1:9302)\s+(.*)/i', $lsusb, $dm)) {
+            $info['device_name'] = trim($dm[1]);
+        }
+    }
+
+    // pycoral Python-Paket pruefen (in beiden venvs)
+    foreach (['camera-monitor', 'plate-recognition'] as $service) {
+        $python = __DIR__ . "/../../services/$service/venv/bin/python";
+        if (file_exists($python)) {
+            $check = shell_exec(escapeshellarg($python) . ' -c "from pycoral.utils.edgetpu import list_edge_tpus; print(len(list_edge_tpus()))" 2>/dev/null');
+            if ($check !== null && trim($check) !== '' && trim($check) !== '0') {
+                $info['python_package'] = true;
+                $info['driver_installed'] = true;
+                break;
+            }
+            // Paket vorhanden aber kein Geraet?
+            $check2 = shell_exec(escapeshellarg($python) . ' -c "import pycoral; print(1)" 2>/dev/null');
+            if (trim($check2 ?? '') === '1') {
+                $info['python_package'] = true;
+            }
+        }
+    }
+
+    return $info;
+}
+
+function _detectOpenVino(): array {
+    $info = ['installed' => false, 'version' => '', 'in_camera_venv' => false, 'in_anpr_venv' => false];
+
+    $venvs = [
+        'camera' => __DIR__ . '/../../services/camera-monitor/venv/bin/python',
+        'anpr' => __DIR__ . '/../../services/plate-recognition/venv/bin/python',
+    ];
+
+    foreach ($venvs as $name => $python) {
+        if (!file_exists($python)) continue;
+        $version = trim(shell_exec(escapeshellarg($python) . ' -c "import openvino; print(openvino.__version__)" 2>/dev/null') ?? '');
+        if ($version && strpos($version, 'Error') === false) {
+            $info['installed'] = true;
+            $info['version'] = $version;
+            $info["in_{$name}_venv"] = true;
+        }
+    }
+
+    // Fallback: System-Python
+    if (!$info['installed']) {
+        $version = trim(shell_exec('python3 -c "import openvino; print(openvino.__version__)" 2>/dev/null') ?? '');
+        if ($version && strpos($version, 'Error') === false) {
+            $info['installed'] = true;
+            $info['version'] = $version;
+        }
+    }
+
+    return $info;
+}
+
+function _detectPythonPackages(): array {
+    $packages = ['ultralytics', 'pycoral', 'openvino', 'paddleocr', 'cv2'];
+    $result = [];
+
+    $venvs = [
+        'camera' => __DIR__ . '/../../services/camera-monitor/venv/bin/python',
+        'anpr' => __DIR__ . '/../../services/plate-recognition/venv/bin/python',
+    ];
+
+    foreach ($venvs as $service => $python) {
+        $result[$service] = [];
+        if (!file_exists($python)) {
+            $result[$service]['_venv_exists'] = false;
+            continue;
+        }
+        $result[$service]['_venv_exists'] = true;
+
+        foreach ($packages as $pkg) {
+            $importName = $pkg === 'cv2' ? 'cv2' : str_replace('-', '_', $pkg);
+            $check = trim(shell_exec(
+                escapeshellarg($python) . " -c \"import $importName; print(getattr($importName, '__version__', 'ok'))\" 2>/dev/null"
+            ) ?? '');
+            $result[$service][$pkg] = ($check && strpos($check, 'Error') === false) ? $check : false;
+        }
+    }
+
+    return $result;
+}
+
+function _detectRam(): array {
+    $info = ['total_gb' => 0, 'available_gb' => 0];
+    $meminfo = @file_get_contents('/proc/meminfo');
+    if ($meminfo) {
+        if (preg_match('/MemTotal:\s+(\d+)\s+kB/i', $meminfo, $m)) {
+            $info['total_gb'] = round((int)$m[1] / 1048576, 1);
+        }
+        if (preg_match('/MemAvailable:\s+(\d+)\s+kB/i', $meminfo, $m)) {
+            $info['available_gb'] = round((int)$m[1] / 1048576, 1);
+        }
+    }
+    return $info;
+}
+
+function _detectGpu(): array {
+    $info = ['intel_igpu' => false, 'nvidia' => false, 'device' => ''];
+
+    // Intel iGPU
+    $lspci = shell_exec('lspci 2>/dev/null') ?? '';
+    if (preg_match('/VGA.*Intel.*?(UHD|Iris|HD Graphics)[^\n]*/i', $lspci, $m)) {
+        $info['intel_igpu'] = true;
+        $info['device'] = trim($m[0]);
+    }
+
+    // NVIDIA
+    if (preg_match('/VGA.*NVIDIA[^\n]*/i', $lspci, $m)) {
+        $info['nvidia'] = true;
+        $info['device'] = trim($m[0]);
+    }
+
+    return $info;
+}
+
+// ============================================================================
+// KAMERA-ERKENNUNG
+// ============================================================================
+
+/**
+ * ONVIF-Kameras im Netzwerk suchen (ruft Python-Skript auf)
+ *
+ * @param array $data['test_streams'] Ob RTSP-URLs getestet werden sollen (langsamer)
+ * @testdata {}
+ */
+function discoverCameras($data) {
+    $scriptPath = __DIR__ . '/../../services/camera-monitor/discover_cameras.py';
+    $pythonBin = __DIR__ . '/../../services/camera-monitor/venv/bin/python';
+
+    // Fallback auf System-Python
+    if (!file_exists($pythonBin)) {
+        $pythonBin = 'python3';
+    }
+
+    if (!file_exists($scriptPath)) {
+        resultInfo(false, 'SCRIPT_NOT_FOUND', 'discover_cameras.py nicht gefunden');
+        return;
+    }
+
+    $args = escapeshellarg($scriptPath);
+    if (!empty($data['test_streams'])) {
+        $args .= ' --test';
+    }
+
+    // Python-Skript ausfuehren und JSON-Output parsen
+    $cmd = "$pythonBin $args --json 2>&1";
+    $output = shell_exec($cmd);
+
+    // Da das Skript normalerweise Text ausgibt, parsen wir als JSON
+    // Fuer die API-Variante: eigenes JSON-Output-Format
+    // Wir nutzen stattdessen den eingebauten Discovery direkt
+    resultInfo(true, '', ['note' => 'Bitte discover_cameras.py direkt ausfuehren oder die native Discovery-API verwenden']);
+}
+
+/**
+ * Automatisch alle Kameras im Netzwerk finden und in die DB eintragen
+ * Nutzt ONVIF WS-Discovery via exec()
+ *
+ * @param array $data['username'] ONVIF-Username (Standard: admin)
+ * @param array $data['password'] ONVIF-Passwort (Standard: admin)
+ * @testdata {"username": "admin", "password": "admin"}
+ */
+function autoDiscoverCameras($data) {
+    $scriptPath = __DIR__ . '/../../services/camera-monitor/discover_cameras.py';
+    $pythonBin = __DIR__ . '/../../services/camera-monitor/venv/bin/python';
+
+    if (!file_exists($pythonBin)) {
+        $pythonBin = 'python3';
+    }
+
+    // Python-One-Liner der die discover-Funktion aufruft und JSON zurueckgibt
+    $username = escapeshellarg($data['username'] ?? 'admin');
+    $password = escapeshellarg($data['password'] ?? 'admin');
+
+    $pythonCode = <<<PYEOF
+import sys, json
+sys.path.insert(0, '{$_SERVER['DOCUMENT_ROOT']}/../backend/services/camera-monitor')
+try:
+    from discover_cameras import discover_cameras
+    cams = discover_cameras(timeout=5, username={$username}, password={$password}, test_streams=True)
+    print(json.dumps(cams))
+except Exception as e:
+    print(json.dumps({'error': str(e)}))
+PYEOF;
+
+    $cmd = "$pythonBin -c " . escapeshellarg($pythonCode) . " 2>/dev/null";
+    $output = shell_exec($cmd);
+
+    if (!$output) {
+        resultInfo(false, 'DISCOVERY_FAILED', 'Kamera-Erkennung fehlgeschlagen. Python-Umgebung prüfen.');
+        return;
+    }
+
+    $discovered = json_decode(trim($output), true);
+    if (isset($discovered['error'])) {
+        resultInfo(false, 'DISCOVERY_ERROR', $discovered['error']);
+        return;
+    }
+
+    if (!is_array($discovered) || empty($discovered)) {
+        resultInfo(true, '', ['cameras' => [], 'added' => 0]);
+        return;
+    }
+
+    // Bestehende Kameras laden
+    $db = DbhCompany::begin();
+    $existing = $db->getAll("SELECT frigate_name FROM camera");
+    $existingNames = array_column($existing, 'frigate_name');
+
+    $added = 0;
+    foreach ($discovered as $cam) {
+        // Frigate-Name aus IP generieren (z.B. "cam_192_168_1_100")
+        $frigateName = 'cam_' . str_replace('.', '_', $cam['ip']);
+
+        if (in_array($frigateName, $existingNames)) {
+            continue; // Bereits vorhanden
+        }
+
+        $streamUrl = $cam['rtsp_url'] ?? '';
+        $name = $cam['name'] ?: ('Kamera ' . $cam['ip']);
+        $location = $cam['location'] ?? '';
+        $hardware = $cam['hardware'] ?? '';
+        if ($hardware) {
+            $location = $location ? "$location ($hardware)" : $hardware;
+        }
+
+        $db->execute("
+            INSERT INTO camera (name, frigate_name, stream_url, location, sort_order)
+            VALUES (:name, :frigate_name, :stream_url, :location, :sort)
+        ", [
+            ':name' => $name,
+            ':frigate_name' => $frigateName,
+            ':stream_url' => $streamUrl,
+            ':location' => $location,
+            ':sort' => $added,
+        ]);
+        $added++;
+    }
+
+    resultInfo(true, '', [
+        'cameras' => $discovered,
+        'added' => $added,
+    ]);
+}
+
+// ============================================================================
+// HILFSFUNKTIONEN
+// ============================================================================
+
+/**
+ * PostgreSQL-Array-String zu PHP-Array
+ */
+function _pgArrayToPhp($pgArray): array {
+    if (is_array($pgArray)) return $pgArray;
+    if (empty($pgArray) || $pgArray === '{}') return [];
+    $inner = trim($pgArray, '{}');
+    return array_map('trim', explode(',', $inner));
+}
+
+/**
+ * PHP-Array zu PostgreSQL-Array-String
+ */
+function _phpArrayToPg(array $arr): string {
+    if (empty($arr)) return '{}';
+    $escaped = array_map(function($v) {
+        return '"' . str_replace('"', '\\"', $v) . '"';
+    }, $arr);
+    return '{' . implode(',', $escaped) . '}';
+}
+
+/**
+ * Regeln prüfen und Aktionen auslösen
+ */
+function _checkRules($db, $cameraId, $cameraName, $label, $zones, $score, $frigateEventId, $snapshotUrl) {
+    $now = new DateTime();
+    $currentTime = $now->format('H:i:s');
+    $currentDow = (int)$now->format('w'); // 0=So, 6=Sa
+
+    // Alle aktiven Regeln laden die passen könnten
+    $rules = $db->getAll("
+        SELECT * FROM camera_rule
+        WHERE active
+        AND (camera_id IS NULL OR camera_id = :cam_id)
+        AND min_score <= :score
+        AND (last_triggered_at IS NULL
+             OR last_triggered_at + (cooldown_seconds || ' seconds')::INTERVAL <= NOW())
+    ", [
+        ':cam_id' => $cameraId,
+        ':score' => $score,
+    ]);
+
+    foreach ($rules as $rule) {
+        // Label prüfen
+        $ruleLabels = _pgArrayToPhp($rule['labels']);
+        if (!empty($ruleLabels) && !in_array($label, $ruleLabels)) continue;
+
+        // Zone prüfen (wenn Regel eine Zone hat)
+        if (!empty($rule['zone_id'])) {
+            $zone = $db->getOne(
+                "SELECT frigate_zone FROM camera_zone WHERE id = :id",
+                [':id' => $rule['zone_id']]
+            );
+            if ($zone && !in_array($zone['frigate_zone'], $zones)) continue;
+        }
+
+        // Zeitfenster prüfen
+        if (!empty($rule['time_from']) && !empty($rule['time_to'])) {
+            $from = $rule['time_from'];
+            $to = $rule['time_to'];
+            if ($from <= $to) {
+                // Normales Fenster (z.B. 08:00-18:00)
+                if ($currentTime < $from || $currentTime > $to) continue;
+            } else {
+                // Über Mitternacht (z.B. 22:00-06:00)
+                if ($currentTime < $from && $currentTime > $to) continue;
+            }
+        }
+
+        // Wochentag prüfen
+        $ruleDays = _pgArrayToPhp($rule['days_of_week']);
+        if (!empty($ruleDays) && !in_array((string)$currentDow, $ruleDays)) continue;
+
+        // Regel matched! Aktion ausführen
+        _executeRuleAction($db, $rule, $cameraName, $label, $zones, $frigateEventId, $snapshotUrl);
+
+        // Cooldown aktualisieren
+        $db->execute(
+            "UPDATE camera_rule SET last_triggered_at = NOW() WHERE id = :id",
+            [':id' => $rule['id']]
+        );
+    }
+}
+
+/**
+ * Regelaktion ausführen (Benachrichtigung, WhatsApp, E-Mail, Log)
+ */
+function _executeRuleAction($db, $rule, $cameraName, $label, $zones, $frigateEventId, $snapshotUrl) {
+    $action = $rule['action'];
+    $config = json_decode($rule['action_config'], true) ?: [];
+    $zonesStr = implode(', ', $zones);
+
+    $message = $config['message'] ?? "Kamera $cameraName: $label erkannt in Zone $zonesStr";
+
+    switch ($action) {
+        case 'notify':
+            // pg_notify für Frontend-Push
+            $notifyPayload = json_encode([
+                'type' => 'camera_alert',
+                'rule' => $rule['name'],
+                'camera' => $cameraName,
+                'label' => $label,
+                'zones' => $zones,
+                'message' => $message,
+                'snapshot_url' => $snapshotUrl,
+            ]);
+            $db->execute("SELECT pg_notify('camera_event', :payload)", [':payload' => $notifyPayload]);
+            break;
+
+        case 'whatsapp':
+            // WhatsApp über bestehende API senden
+            if (!empty($config['phone'])) {
+                _sendWhatsAppAlert($config['phone'], $message, $snapshotUrl);
+            }
+            break;
+
+        case 'email':
+            // E-Mail-Benachrichtigung (placeholder für spätere Implementierung)
+            writeLog("Camera Rule '{$rule['name']}': E-Mail an {$config['email']} — $message", true, DLOG_INF);
+            break;
+
+        case 'log':
+            writeLog("Camera Rule '{$rule['name']}': $message", true, DLOG_INF);
+            break;
+    }
+}
+
+/**
+ * WhatsApp-Nachricht senden (nutzt bestehende WhatsApp-Business-API)
+ */
+function _sendWhatsAppAlert($phone, $message, $snapshotUrl = '') {
+    $db = DbhCompany::begin();
+    $waConfig = $db->getAll("SELECT key, value FROM defaults_oserp WHERE key IN ('whatsapp_access_token', 'whatsapp_phone_number_id')");
+    $wa = [];
+    foreach ($waConfig as $row) $wa[$row['key']] = $row['value'];
+
+    if (empty($wa['whatsapp_access_token']) || empty($wa['whatsapp_phone_number_id'])) {
+        writeLog("Camera WhatsApp-Alert: Keine WhatsApp-Konfiguration vorhanden", true, DLOG_WRN);
+        return;
+    }
+
+    $url = "https://graph.facebook.com/v21.0/{$wa['whatsapp_phone_number_id']}/messages";
+    $payload = [
+        'messaging_product' => 'whatsapp',
+        'to' => preg_replace('/[^0-9]/', '', $phone),
+        'type' => 'text',
+        'text' => ['body' => $message],
+    ];
+
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [
+        CURLOPT_POST => true,
+        CURLOPT_HTTPHEADER => [
+            'Authorization: Bearer ' . $wa['whatsapp_access_token'],
+            'Content-Type: application/json',
+        ],
+        CURLOPT_POSTFIELDS => json_encode($payload),
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT => 10,
+    ]);
+    $result = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($httpCode !== 200) {
+        writeLog("Camera WhatsApp-Alert Fehler ($httpCode): $result", true, DLOG_ERR);
+    }
+}

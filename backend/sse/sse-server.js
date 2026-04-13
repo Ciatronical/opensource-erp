@@ -127,8 +127,9 @@ async function connectListener(dbInfo, entry) {
         await client.query('LISTEN calendar_change');
         await client.query('LISTEN faktura_change');
         await client.query('LISTEN weroni_question');
+        await client.query('LISTEN camera_event');
         entry.pgClient = client;
-        console.log(`LISTEN crmti_change + whatsapp_message + calendar_change + faktura_change + weroni_question auf ${dbInfo.dbname}@${dbInfo.dbhost}:${dbInfo.dbport}`);
+        console.log(`LISTEN crmti_change + whatsapp_message + calendar_change + faktura_change + weroni_question + camera_event auf ${dbInfo.dbname}@${dbInfo.dbhost}:${dbInfo.dbport}`);
 
         client.on('notification', (msg) => {
             const data = `data: ${msg.payload}\n\n`;

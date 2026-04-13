@@ -57,3 +57,7 @@ __pycache__/
 *.pyc
 
 docs/superpowers
+
+# Kamera-Aufnahmen (lokal generiert)
+public/camera-snapshots/
+public/camera-clips/

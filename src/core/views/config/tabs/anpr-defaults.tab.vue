@@ -25,6 +25,125 @@
             </v-col>
         </v-row>
 
+        <!-- Hardware-Beschleunigung -->
+        <v-row class="mb-4">
+            <v-col cols="12">
+                <v-card variant="outlined">
+                    <v-card-title class="text-body-1 font-weight-medium d-flex align-center">
+                        <v-icon class="mr-2" size="20">mdi-chip</v-icon>
+                        {{ t('anpr.hardwareTitle') }}
+                        <v-spacer />
+                        <v-btn variant="text" size="small" icon="mdi-refresh"
+                            @click="loadHardwareInfo" :loading="hwLoading" />
+                    </v-card-title>
+                    <v-card-text v-if="hw">
+                        <v-table density="compact">
+                            <tbody>
+                                <!-- CPU -->
+                                <tr>
+                                    <td class="font-weight-medium" style="width:160px">
+                                        <v-tooltip location="top">
+                                            <template #activator="{ props }">
+                                                <span v-bind="props">CPU</span>
+                                            </template>
+                                            {{ t('anpr.hwCpuTooltip') }}
+                                        </v-tooltip>
+                                    </td>
+                                    <td>{{ hw.cpu?.model }} ({{ hw.cpu?.cores }}C/{{ hw.cpu?.threads }}T)</td>
+                                </tr>
+                                <!-- RAM -->
+                                <tr>
+                                    <td class="font-weight-medium">RAM</td>
+                                    <td>{{ hw.ram?.total_gb }} GB ({{ hw.ram?.available_gb }} GB frei)</td>
+                                </tr>
+                                <!-- Intel iGPU -->
+                                <tr>
+                                    <td class="font-weight-medium">
+                                        <v-tooltip location="top" max-width="400">
+                                            <template #activator="{ props }">
+                                                <span v-bind="props">Intel iGPU</span>
+                                            </template>
+                                            {{ t('anpr.hwIgpuTooltip') }}
+                                        </v-tooltip>
+                                    </td>
+                                    <td>
+                                        <template v-if="hw.gpu?.intel_igpu">
+                                            <v-icon color="success" size="16" class="mr-1">mdi-check-circle</v-icon>
+                                            {{ hw.gpu.device }}
+                                        </template>
+                                        <template v-else>
+                                            <v-icon color="grey" size="16" class="mr-1">mdi-minus-circle-outline</v-icon>
+                                            {{ t('anpr.hwNotDetected') }}
+                                        </template>
+                                    </td>
+                                </tr>
+                                <!-- OpenVINO -->
+                                <tr>
+                                    <td class="font-weight-medium">
+                                        <v-tooltip location="top" max-width="400">
+                                            <template #activator="{ props }">
+                                                <span v-bind="props">OpenVINO</span>
+                                            </template>
+                                            {{ t('anpr.hwOpenvinoTooltip') }}
+                                        </v-tooltip>
+                                    </td>
+                                    <td>
+                                        <template v-if="hw.openvino?.installed">
+                                            <v-icon color="success" size="16" class="mr-1">mdi-check-circle</v-icon>
+                                            v{{ hw.openvino.version }}
+                                            <v-chip v-if="hw.openvino.in_anpr_venv" size="x-small" color="success" variant="tonal" class="ml-1">ANPR</v-chip>
+                                        </template>
+                                        <template v-else>
+                                            <v-icon color="warning" size="16" class="mr-1">mdi-alert-circle-outline</v-icon>
+                                            {{ t('anpr.hwNotInstalled') }}
+                                            <v-btn size="x-small" variant="tonal" color="primary" class="ml-2"
+                                                @click="installPackage('openvino', 'anpr')" :loading="installingPkg === 'openvino'">
+                                                {{ t('anpr.hwInstall') }}
+                                            </v-btn>
+                                        </template>
+                                    </td>
+                                </tr>
+                                <!-- Coral USB -->
+                                <tr>
+                                    <td class="font-weight-medium">
+                                        <v-tooltip location="top" max-width="400">
+                                            <template #activator="{ props }">
+                                                <span v-bind="props">Google Coral USB</span>
+                                            </template>
+                                            {{ t('anpr.hwCoralTooltip') }}
+                                        </v-tooltip>
+                                    </td>
+                                    <td>
+                                        <template v-if="hw.coral?.connected && hw.coral?.python_package">
+                                            <v-icon color="success" size="16" class="mr-1">mdi-check-circle</v-icon>
+                                            {{ t('anpr.hwCoralReady') }}
+                                        </template>
+                                        <template v-else-if="hw.coral?.connected && !hw.coral?.python_package">
+                                            <v-icon color="warning" size="16" class="mr-1">mdi-alert-circle-outline</v-icon>
+                                            {{ t('anpr.hwCoralNoDriver') }}
+                                            <v-btn size="x-small" variant="tonal" color="primary" class="ml-2"
+                                                @click="installPackage('pycoral', 'anpr')" :loading="installingPkg === 'pycoral'">
+                                                {{ t('anpr.hwInstall') }}
+                                            </v-btn>
+                                        </template>
+                                        <template v-else>
+                                            <v-icon color="grey" size="16" class="mr-1">mdi-minus-circle-outline</v-icon>
+                                            {{ t('anpr.hwCoralNotConnected') }}
+                                        </template>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </v-table>
+
+                        <!-- Empfehlung -->
+                        <v-alert v-if="hwRecommendation" type="info" variant="tonal" density="compact" class="mt-3">
+                            {{ hwRecommendation }}
+                        </v-alert>
+                    </v-card-text>
+                </v-card>
+            </v-col>
+        </v-row>
+
         <!-- Allgemeine Einstellungen (aus Config-Datei) -->
         <template v-for="field in anprConfig" :key="field.name">
             <v-row v-if="field.type === 'headline'" class="mt-6 mb-2">
@@ -592,6 +711,7 @@ onMounted(async () => {
     })
 
     checkServiceStatus()
+    loadHardwareInfo()
 
     loadCameras()
     loadActuators()
@@ -655,6 +775,52 @@ async function restartService() {
     restarting.value = false
     setTimeout(checkServiceStatus, 2000)
 }
+
+// --- Hardware-Info ---
+const hw = ref(null)
+const hwLoading = ref(false)
+const installingPkg = ref('')
+
+async function loadHardwareInfo() {
+    hwLoading.value = true
+    try {
+        const res = await axios.post('/api/camera/', { action: 'getHardwareInfo' })
+        if (res.data.success) hw.value = res.data.payload.hardware
+    } catch { /* ignore */ }
+    hwLoading.value = false
+}
+
+async function installPackage(pkg, service) {
+    installingPkg.value = pkg
+    try {
+        const res = await axios.post('/api/camera/', { action: 'installPythonPackage', package: pkg, service })
+        if (res.data.success) {
+            toasts.success(t('anpr.hwInstallSuccess', { pkg }))
+            loadHardwareInfo()
+        } else {
+            toasts.error(t('anpr.hwInstallFailed', { pkg }) + '\n' + (res.data.payload?.output || ''))
+        }
+    } catch (e) { toasts.error(e.message) }
+    installingPkg.value = ''
+}
+
+const hwRecommendation = computed(() => {
+    if (!hw.value) return ''
+    const hasIntel = hw.value.cpu?.has_intel_gpu || hw.value.gpu?.intel_igpu
+    const hasOpenvino = hw.value.openvino?.installed
+    const hasCoral = hw.value.coral?.connected
+
+    if (hasIntel && !hasOpenvino && !hasCoral) {
+        return t('anpr.hwRecommendOpenvino')
+    }
+    if (hasCoral && !hw.value.coral?.python_package) {
+        return t('anpr.hwRecommendCoralDriver')
+    }
+    if (hasOpenvino && hasIntel) {
+        return t('anpr.hwRecommendOk')
+    }
+    return ''
+})
 
 // --- Kameras ---
 const cameras = ref([])

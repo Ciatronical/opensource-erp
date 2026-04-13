@@ -38,7 +38,8 @@
         "userConfig": "/user/configuration",
         "lxcarsReports": "/user/reports",
         "huSerienbrief": "/serial-letter/hu",
-        "wallDisplay": "/wall-display"
+        "wallDisplay": "/wall-display",
+        "camera": "/cameras"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Error: The password file api/config/api.passwd.php was not found. Please rename the file api/config/api.passwd.php.example to api/config/api.passwd.php and adjust the settings accordingly.",
