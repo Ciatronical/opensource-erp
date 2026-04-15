@@ -15,7 +15,7 @@
           <v-card-text>
             <v-form @submit.prevent="login">
               <v-text-field
-                id="login-name" v-model="username" :label="t('LoginView.username')" autocomplete="username"
+                id="login-name" v-model="username" :label="t('LoginView.username')" autocomplete="username" autofocus
                 variant="outlined" density="comfortable" class="mb-3"
                 @focus="clearError" @keydown="clearError" @keyup.enter="login"
               />

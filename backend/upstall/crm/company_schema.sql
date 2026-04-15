@@ -1312,3 +1312,250 @@ COMMENT ON COLUMN camera_rule.action_config IS 'JSON-Konfiguration für die Akti
 COMMENT ON COLUMN camera_rule.active IS 'Regel aktiv/inaktiv';
 COMMENT ON COLUMN camera_rule.cooldown_seconds IS 'Mindestabstand zwischen zwei Auslösungen (Sekunden)';
 COMMENT ON COLUMN camera_rule.last_triggered_at IS 'Letzter Auslösezeitpunkt (für Cooldown)';
+
+-- =============================================================================
+-- BUCHHALTUNG (Weroni Accounting)
+-- DATEV-kompatible Buchungsverwaltung mit KI-basierter Belegerfassung
+-- =============================================================================
+
+-- pg_trgm fuer Fuzzy-Matching (falls noch nicht vorhanden)
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
+-- Hochgeladene Belege (Eingangsrechnungen als PDF)
+CREATE TABLE IF NOT EXISTS accounting_documents (
+    id              SERIAL PRIMARY KEY,
+    original_name   TEXT NOT NULL,
+    stored_path     TEXT,
+    mime_type       VARCHAR(100) DEFAULT 'application/pdf',
+    file_size       INTEGER,
+    file_hash       VARCHAR(64),                -- SHA-256 zur Duplikaterkennung
+
+    -- KI-Extraktion
+    status          VARCHAR(20) DEFAULT 'pending'
+                    CHECK (status IN ('pending', 'processing', 'extracted', 'booked', 'error', 'duplicate')),
+    extracted_data  JSONB,                       -- Komplette KI-Extraktion
+    extraction_confidence NUMERIC(3,2),          -- 0.00 - 1.00
+
+    -- Verknuepfungen
+    vendor_id       INTEGER REFERENCES vendor(id),
+    booking_id      INTEGER,                     -- FK wird spaeter gesetzt
+    ap_id           INTEGER REFERENCES ap(id),   -- Verknuepfung zur Eingangsrechnung
+
+    -- Meta
+    employee_id     INTEGER,
+    notes           TEXT,
+    itime           TIMESTAMP DEFAULT NOW(),
+    mtime           TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_accounting_documents_status ON accounting_documents(status);
+CREATE INDEX IF NOT EXISTS idx_accounting_documents_vendor ON accounting_documents(vendor_id);
+CREATE INDEX IF NOT EXISTS idx_accounting_documents_hash ON accounting_documents(file_hash);
+
+-- Buchungen (DATEV-kompatibel, mit Freigabe-Workflow)
+CREATE TABLE IF NOT EXISTS accounting_bookings (
+    id              SERIAL PRIMARY KEY,
+    booking_date    DATE NOT NULL,               -- Buchungsdatum
+    invoice_date    DATE,                        -- Belegdatum
+    due_date        DATE,                        -- Faelligkeitsdatum
+
+    -- DATEV-Pflichtfelder
+    amount          NUMERIC(15,5) NOT NULL,      -- Bruttobetrag (immer positiv, Richtung durch type)
+    net_amount      NUMERIC(15,5),               -- Nettobetrag
+    tax_amount      NUMERIC(15,5),               -- Steuerbetrag
+    tax_rate        NUMERIC(5,2),                -- Steuersatz (19, 7, 0)
+    tax_key         INTEGER,                     -- DATEV-Steuerschluessel
+    debit_account   VARCHAR(10) NOT NULL,        -- Sollkonto (SKR03/04 Kontonummer)
+    credit_account  VARCHAR(10) NOT NULL,        -- Habenkonto (SKR03/04 Kontonummer)
+
+    -- Belegdaten
+    invoice_number  TEXT,                        -- Rechnungsnummer
+    description     TEXT,                        -- Buchungstext
+    reference       TEXT,                        -- Belegnummer (BU-Schluessel)
+
+    -- Typ und Status
+    type            VARCHAR(20) DEFAULT 'incoming'
+                    CHECK (type IN ('incoming', 'outgoing', 'manual', 'bank')),
+    status          VARCHAR(20) DEFAULT 'pending'
+                    CHECK (status IN ('pending', 'approved', 'booked', 'rejected', 'storno')),
+    approved_by     INTEGER,                     -- Employee-ID der Freigabe
+    approved_at     TIMESTAMP,
+
+    -- Verknuepfungen
+    vendor_id       INTEGER REFERENCES vendor(id),
+    customer_id     INTEGER REFERENCES customer(id),
+    document_id     INTEGER,                     -- FK zu accounting_documents
+    ap_id           INTEGER REFERENCES ap(id),
+    ar_id           INTEGER REFERENCES ar(id),
+    bank_transaction_id INTEGER,                 -- FK zu bank_transactions
+    gl_id           INTEGER REFERENCES gl(id),   -- Verknuepfung zum Hauptbuch
+
+    -- KI-Metadaten
+    ai_generated    BOOLEAN DEFAULT FALSE,
+    ai_confidence   NUMERIC(3,2),
+    ai_notes        TEXT,                        -- KI-Erklaerung der Buchung
+
+    -- Meta
+    employee_id     INTEGER,
+    cost_center     TEXT,                        -- Kostenstelle
+    itime           TIMESTAMP DEFAULT NOW(),
+    mtime           TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_accounting_bookings_status ON accounting_bookings(status);
+CREATE INDEX IF NOT EXISTS idx_accounting_bookings_date ON accounting_bookings(booking_date);
+CREATE INDEX IF NOT EXISTS idx_accounting_bookings_vendor ON accounting_bookings(vendor_id);
+CREATE INDEX IF NOT EXISTS idx_accounting_bookings_type ON accounting_bookings(type);
+CREATE INDEX IF NOT EXISTS idx_accounting_bookings_document ON accounting_bookings(document_id);
+
+-- FK von documents zu bookings
+ALTER TABLE accounting_documents
+    ADD CONSTRAINT fk_accounting_documents_booking
+    FOREIGN KEY (booking_id) REFERENCES accounting_bookings(id);
+
+-- Buchungspositionen (bei Rechnungen mit mehreren Zeilen)
+CREATE TABLE IF NOT EXISTS accounting_booking_lines (
+    id              SERIAL PRIMARY KEY,
+    booking_id      INTEGER NOT NULL REFERENCES accounting_bookings(id) ON DELETE CASCADE,
+    position        INTEGER DEFAULT 1,
+    description     TEXT,
+    quantity        NUMERIC(15,5) DEFAULT 1,
+    unit_price      NUMERIC(15,5),
+    net_amount      NUMERIC(15,5),
+    tax_rate        NUMERIC(5,2),
+    tax_amount      NUMERIC(15,5),
+    gross_amount    NUMERIC(15,5),
+    account_number  VARCHAR(10),                 -- Sachkonto fuer diese Position
+    cost_center     TEXT,
+    itime           TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_accounting_booking_lines_booking ON accounting_booking_lines(booking_id);
+
+-- Lieferanten-Alias (fuer KI-Erkennung bei abweichenden Schreibweisen)
+CREATE TABLE IF NOT EXISTS vendor_aliases (
+    id              SERIAL PRIMARY KEY,
+    vendor_id       INTEGER NOT NULL REFERENCES vendor(id) ON DELETE CASCADE,
+    alias_name      TEXT NOT NULL,               -- Alternative Schreibweise
+    alias_iban      VARCHAR(40),                 -- Alternative IBAN
+    alias_taxnumber TEXT,                        -- Alternative Steuernummer
+    default_account VARCHAR(10),                 -- Standardkonto fuer diesen Lieferanten
+    itime           TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_vendor_aliases_vendor ON vendor_aliases(vendor_id);
+CREATE INDEX IF NOT EXISTS idx_vendor_aliases_name_trgm ON vendor_aliases USING gin (alias_name gin_trgm_ops);
+CREATE INDEX IF NOT EXISTS idx_vendor_aliases_iban ON vendor_aliases(alias_iban);
+
+-- Trigram-Index auf vendor.name fuer Fuzzy-Suche
+CREATE INDEX IF NOT EXISTS idx_vendor_name_trgm ON vendor USING gin (name gin_trgm_ops);
+
+-- Konten-Zuordnungsregeln (lernt aus bisherigen Buchungen)
+CREATE TABLE IF NOT EXISTS accounting_account_rules (
+    id              SERIAL PRIMARY KEY,
+    vendor_id       INTEGER REFERENCES vendor(id),
+    match_pattern   TEXT,                        -- Regex oder Keywords im Buchungstext
+    debit_account   VARCHAR(10) NOT NULL,
+    credit_account  VARCHAR(10) NOT NULL,
+    tax_key         INTEGER,
+    priority        INTEGER DEFAULT 100,
+    active          BOOLEAN DEFAULT TRUE,
+    hit_count       INTEGER DEFAULT 0,           -- Wie oft wurde die Regel angewendet
+    itime           TIMESTAMP DEFAULT NOW(),
+    mtime           TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_accounting_rules_vendor ON accounting_account_rules(vendor_id);
+
+-- PostgreSQL-Funktion: Fuzzy-Lieferantensuche
+CREATE OR REPLACE FUNCTION find_vendor_fuzzy(
+    p_name TEXT,
+    p_iban TEXT DEFAULT NULL,
+    p_taxnumber TEXT DEFAULT NULL,
+    p_threshold NUMERIC DEFAULT 0.3
+)
+RETURNS TABLE (
+    vendor_id INTEGER,
+    vendor_name TEXT,
+    match_score NUMERIC,
+    match_type TEXT
+) AS $$
+BEGIN
+    -- 1. Exakter IBAN-Match (hoechste Prioritaet)
+    IF p_iban IS NOT NULL AND p_iban != '' THEN
+        RETURN QUERY
+        SELECT v.id, v.name, 1.0::NUMERIC, 'iban_exact'::TEXT
+        FROM vendor v
+        WHERE REPLACE(v.iban, ' ', '') = REPLACE(p_iban, ' ', '')
+        AND v.obsolete IS NOT TRUE
+        LIMIT 1;
+        IF FOUND THEN RETURN; END IF;
+
+        -- IBAN in Aliases pruefen
+        RETURN QUERY
+        SELECT va.vendor_id, v.name, 0.99::NUMERIC, 'iban_alias'::TEXT
+        FROM vendor_aliases va
+        JOIN vendor v ON v.id = va.vendor_id
+        WHERE REPLACE(va.alias_iban, ' ', '') = REPLACE(p_iban, ' ', '')
+        AND v.obsolete IS NOT TRUE
+        LIMIT 1;
+        IF FOUND THEN RETURN; END IF;
+    END IF;
+
+    -- 2. Exakter Steuernummer-Match
+    IF p_taxnumber IS NOT NULL AND p_taxnumber != '' THEN
+        RETURN QUERY
+        SELECT v.id, v.name, 0.98::NUMERIC, 'taxnumber'::TEXT
+        FROM vendor v
+        WHERE (v.taxnumber = p_taxnumber OR v.ustid = p_taxnumber)
+        AND v.obsolete IS NOT TRUE
+        LIMIT 1;
+        IF FOUND THEN RETURN; END IF;
+    END IF;
+
+    -- 3. Fuzzy-Name-Match (mit pg_trgm)
+    IF p_name IS NOT NULL AND p_name != '' THEN
+        RETURN QUERY
+        SELECT v.id, v.name,
+               GREATEST(
+                   similarity(LOWER(p_name), LOWER(v.name)),
+                   COALESCE((
+                       SELECT MAX(similarity(LOWER(p_name), LOWER(va.alias_name)))
+                       FROM vendor_aliases va WHERE va.vendor_id = v.id
+                   ), 0)
+               )::NUMERIC AS score,
+               'fuzzy_name'::TEXT
+        FROM vendor v
+        WHERE v.obsolete IS NOT TRUE
+        AND (
+            similarity(LOWER(p_name), LOWER(v.name)) > p_threshold
+            OR EXISTS (
+                SELECT 1 FROM vendor_aliases va
+                WHERE va.vendor_id = v.id
+                AND similarity(LOWER(p_name), LOWER(va.alias_name)) > p_threshold
+            )
+        )
+        ORDER BY score DESC
+        LIMIT 5;
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+-- PostgreSQL-Funktion: Naechste Buchungsnummer
+CREATE OR REPLACE FUNCTION next_booking_number()
+RETURNS TEXT AS $$
+DECLARE
+    v_year TEXT;
+    v_next INTEGER;
+BEGIN
+    v_year := TO_CHAR(NOW(), 'YYYY');
+    SELECT COALESCE(MAX(
+        CAST(SUBSTRING(reference FROM '\d+$') AS INTEGER)
+    ), 0) + 1
+    INTO v_next
+    FROM accounting_bookings
+    WHERE reference LIKE 'BU-' || v_year || '-%';
+
+    RETURN 'BU-' || v_year || '-' || LPAD(v_next::TEXT, 5, '0');
+END;
+$$ LANGUAGE plpgsql;

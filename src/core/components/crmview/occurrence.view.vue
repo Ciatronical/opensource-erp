@@ -5,12 +5,21 @@
         <v-tabs v-model="occurrenceTab" color="primary" density="compact" show-arrows>
             <v-tab value="offers">
                 <span class="d-none d-sm-inline">{{ labelOffers }}</span>
+                <v-btn icon size="x-small" variant="text" class="ms-1" @click.stop="createNew('routes.newQuotation')">
+                    <v-icon size="small">mdi-plus</v-icon>
+                </v-btn>
             </v-tab>
             <v-tab value="orders">
                 <span class="d-none d-sm-inline">{{ labelOrders }}</span>
+                <v-btn icon size="x-small" variant="text" class="ms-1" @click.stop="createNew('routes.newOrder')">
+                    <v-icon size="small">mdi-plus</v-icon>
+                </v-btn>
             </v-tab>
             <v-tab value="invoices">
                 <span class="d-none d-sm-inline">{{ labelInvoices }}</span>
+                <v-btn icon size="x-small" variant="text" class="ms-1" @click.stop="createNew('routes.newInvoice')">
+                    <v-icon size="small">mdi-plus</v-icon>
+                </v-btn>
             </v-tab>
         </v-tabs>
         <v-divider></v-divider>
@@ -123,6 +132,10 @@ const ordersHeaders = [
 
 const navigateTo = (routeKey, id) => {
     router.push(`${t(routeKey)}/${id}`);
+};
+
+const createNew = (routeKey) => {
+    router.push(t(routeKey));
 };
 </script>
 

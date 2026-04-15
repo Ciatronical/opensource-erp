@@ -86,17 +86,23 @@ export function useNavigationCards() {
             }
         )
 
-        // Banking-Menü
+        // Buchhaltung-Menü (ehemals Banking)
         result.push(
             {
-                title: t('BankingView.menu.title'),
-                icon: 'mdi-bank',
+                title: t('AccountingView.menu.title'),
+                icon: 'mdi-calculator-variant',
                 items: [
-                    { title: t('BankingView.menu.overview'), to: t('BankingView.routes.bankingOverview') },
+                    { title: t('AccountingView.menu.overview'), to: t('AccountingView.routes.accountingOverview') },
                     '-',
-                    { title: t('BankingView.menu.reconciliation'), to: t('BankingView.routes.bankingReconciliation') },
+                    { title: t('AccountingView.menu.invoiceUpload'), to: t('AccountingView.routes.accountingInvoiceUpload') },
+                    { title: t('AccountingView.menu.bookings'), to: t('AccountingView.routes.accountingBookings') },
+                    { title: t('AccountingView.menu.outgoingMatching'), to: t('AccountingView.routes.accountingOutgoing') },
                     '-',
-                    { title: t('BankingView.menu.transfers'), to: t('BankingView.routes.bankingTransfers') }
+                    { title: t('AccountingView.menu.vendors'), to: t('AccountingView.routes.accountingVendors') },
+                    '-',
+                    { title: t('AccountingView.menu.banking'), to: t('BankingView.routes.bankingOverview') },
+                    '-',
+                    { title: t('AccountingView.menu.datevExport'), to: t('AccountingView.routes.accountingDatevExport') }
                 ]
             }
         )

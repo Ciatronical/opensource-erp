@@ -247,7 +247,14 @@ const crmDefaultsConfig = [
     { name: "weroni_enabled", type: "checkbox", label: "crm_fields.weroniEnabled", tooltip: "crm_fields.weroniEnabled_help" },
     { name: "weroni_mode", type: "select", items: [{ value: "assistant", title: "Assistent" }, { value: "autonomous", title: "Autonom" }], fieldstyle: "max-width: 30ch", label: "crm_fields.weroniMode", tooltip: "crm_fields.weroniMode_help" },
     { name: "weroni_system_prompt", type: "textarea", rows: 6, fieldstyle: "max-width: 80ch", label: "crm_fields.weroniSystemPrompt", tooltip: "crm_fields.weroniSystemPrompt_help" },
-    { name: "weroni_phone_number", type: "input", size: 20, fieldstyle: "max-width: 30ch", label: "crm_fields.weroniPhoneNumber", tooltip: "crm_fields.weroniPhoneNumber_help" }
+    { name: "weroni_phone_number", type: "input", size: 20, fieldstyle: "max-width: 30ch", label: "crm_fields.weroniPhoneNumber", tooltip: "crm_fields.weroniPhoneNumber_help" },
+
+    { name: "accounting", type: "headline", label: "crm_fields.accountingHeadline" },
+    { name: "accounting_ai_model", type: "select", items: [{ value: "claude-sonnet-4-6-20250514", title: "Claude Sonnet 4.6 (Standard)" }, { value: "claude-haiku-4-5-20251001", title: "Claude Haiku 4.5 (Schneller)" }, { value: "claude-opus-4-6-20250514", title: "Claude Opus 4.6 (Genauer)" }], fieldstyle: "max-width: 40ch", label: "crm_fields.accountingAiModel", tooltip: "crm_fields.accountingAiModel_help" },
+    { name: "accounting_default_tax_rate", type: "select", items: [{ value: "19", title: "19% (Standard)" }, { value: "7", title: "7% (Ermaessigt)" }, { value: "0", title: "0% (Steuerfrei)" }], fieldstyle: "max-width: 20ch", label: "crm_fields.accountingDefaultTaxRate", tooltip: "crm_fields.accountingDefaultTaxRate_help" },
+    { name: "accounting_default_debit_account", type: "input", size: 10, fieldstyle: "max-width: 15ch", label: "crm_fields.accountingDefaultDebitAccount", tooltip: "crm_fields.accountingDefaultDebitAccount_help" },
+    { name: "accounting_default_credit_account", type: "input", size: 10, fieldstyle: "max-width: 15ch", label: "crm_fields.accountingDefaultCreditAccount", tooltip: "crm_fields.accountingDefaultCreditAccount_help" },
+    { name: "accounting_auto_create_vendor", type: "checkbox", label: "crm_fields.accountingAutoCreateVendor", tooltip: "crm_fields.accountingAutoCreateVendor_help" }
 ];
 
 export default crmDefaultsConfig;

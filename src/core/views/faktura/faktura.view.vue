@@ -1487,11 +1487,15 @@ export default defineComponent({
                     loadDropdownLists()
                     fakturaItems.value.push(items.createEmptyItem())
 
-                    // lxcars: Fahrzeug vorauswählen wenn c_id als Query-Parameter übergeben wurde
+                    // lxcars: Fahrzeuge des Kunden laden bzw. vorauswählen
                     const queryCId = route.query.c_id ? parseInt(route.query.c_id) : null
                     const customerId = faktura.data.common.customer_id || faktura.data.common.vendor_id
-                    if (vehicle && queryCId && customerId && (fakturaType.value === 'order' || fakturaType.value === 'quotation' || fakturaType.value === 'invoice')) {
-                        vehicle.preselectCar(customerId, queryCId)
+                    if (vehicle && customerId && (fakturaType.value === 'order' || fakturaType.value === 'quotation' || fakturaType.value === 'invoice')) {
+                        if (queryCId) {
+                            vehicle.preselectCar(customerId, queryCId)
+                        } else {
+                            vehicle.loadVehicleData(customerId)
+                        }
                     }
 
                     // Fokus: Bei LxCars-Aufträgen ins Instruction-Feld, sonst ins Artikel-Feld

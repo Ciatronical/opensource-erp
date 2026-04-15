@@ -109,6 +109,14 @@ const BankingTransactionsView = () => import('@/features/banking/views/banking.t
 const BankingReconciliationView = () => import('@/features/banking/views/banking.reconciliation.vue')
 const BankingTransfersView = () => import('@/features/banking/views/banking.transfers.vue')
 
+// Buchhaltung
+const AccountingOverviewView = () => import('@/features/accounting/views/accounting.overview.vue')
+const AccountingBookingsView = () => import('@/features/accounting/views/accounting.bookings.vue')
+const AccountingInvoiceUploadView = () => import('@/features/accounting/views/accounting.invoice-upload.vue')
+const AccountingVendorsView = () => import('@/features/accounting/views/accounting.vendors.vue')
+const AccountingDatevExportView = () => import('@/features/accounting/views/accounting.datev-export.vue')
+const AccountingOutgoingView = () => import('@/features/accounting/views/accounting.outgoing.vue')
+
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
     routes: [
@@ -435,6 +443,37 @@ const router = createRouter({
             path: i18n.global.t('CarView.routes.orderSearch'),
             name: 'car-order-search',
             component: NotFoundView,
+        },
+        // ── Buchhaltung ──
+        {
+            path: i18n.global.t('AccountingView.routes.accountingOverview'),
+            name: 'accounting-overview',
+            component: AccountingOverviewView,
+        },
+        {
+            path: i18n.global.t('AccountingView.routes.accountingBookings'),
+            name: 'accounting-bookings',
+            component: AccountingBookingsView,
+        },
+        {
+            path: i18n.global.t('AccountingView.routes.accountingInvoiceUpload'),
+            name: 'accounting-invoice-upload',
+            component: AccountingInvoiceUploadView,
+        },
+        {
+            path: i18n.global.t('AccountingView.routes.accountingVendors'),
+            name: 'accounting-vendors',
+            component: AccountingVendorsView,
+        },
+        {
+            path: i18n.global.t('AccountingView.routes.accountingDatevExport'),
+            name: 'accounting-datev-export',
+            component: AccountingDatevExportView,
+        },
+        {
+            path: i18n.global.t('AccountingView.routes.accountingOutgoing'),
+            name: 'accounting-outgoing',
+            component: AccountingOutgoingView,
         },
         // ── Banking ──
         {

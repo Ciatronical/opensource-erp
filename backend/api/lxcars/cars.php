@@ -414,11 +414,16 @@ function getCarOrders($data) {
     $orders = $db->getAll(
         "SELECT o.id, o.ordnumber, TO_CHAR(o.transdate, 'DD.MM.YYYY') AS transdate,
                 o.amount,
-                (SELECT oi.description FROM orderitems oi
-                 WHERE oi.trans_id = o.id ORDER BY oi.position LIMIT 1) AS first_position
+                COALESCE(
+                    (SELECT il.description FROM oe_instructions_lxcars il
+                     WHERE il.oe_id = o.id ORDER BY il.sort_order, il.id LIMIT 1),
+                    (SELECT oi.description FROM orderitems oi
+                     WHERE oi.trans_id = o.id ORDER BY oi.position LIMIT 1)
+                ) AS description
          FROM oe_ext e
          JOIN oe o ON o.id = e.oe_id
          WHERE e.c_id = :c_id
+           AND o.record_type = 'sales_order'
          ORDER BY o.transdate DESC
          LIMIT 20",
         [':c_id' => $carId]
@@ -467,6 +472,19 @@ function getCarForOrder($data) {
          WHERE e.oe_id = :oe_id",
         [':oe_id' => $oeId]
     );
+
+    // Timestamps mit 00:00:00 korrigieren: Default-Zeiten aus Config einsetzen
+    if ($row) {
+        $timeDefaults = ['bringetermin' => 'lxcars_default_abgabezeit', 'fertigstellung' => 'lxcars_default_fertigstellungszeit'];
+        $fallbacks = ['bringetermin' => '08:00', 'fertigstellung' => '17:00'];
+        foreach ($timeDefaults as $field => $configKey) {
+            if (!empty($row[$field]) && preg_match('/00:00:00$/', $row[$field])) {
+                $defRow = $db->getOne("SELECT value FROM defaults_oserp WHERE key = :key", [':key' => $configKey]);
+                $defTime = $defRow ? trim($defRow['value']) : $fallbacks[$field];
+                $row[$field] = substr($row[$field], 0, 10) . ' ' . $defTime . ':00';
+            }
+        }
+    }
 
     resultInfo(true, 'OK', $row ?: ['c_id' => null, 'c_ln' => '', 'km_stand' => null, 'kfz_ort' => null, 'status' => null, 'gedruckt' => false, 'intern' => false, 'bringetermin' => null, 'fertigstellung' => null, 'no_whatsapp' => false]);
 }
@@ -542,7 +560,17 @@ function updateOeExt($data) {
         } elseif ($key === 'gedruckt' || $key === 'intern' || $key === 'no_whatsapp') {
             $value = $value ? 't' : 'f';
         } elseif ($key === 'bringetermin' || $key === 'fertigstellung') {
-            $value = !empty($value) ? $value : null;
+            if (!empty($value)) {
+                // Wenn nur Datum ohne Zeit (oder 00:00:00), Default-Zeit aus Config einsetzen
+                if (preg_match('/00:00:00$/', $value) || !preg_match('/\d{2}:\d{2}:\d{2}$/', $value)) {
+                    $defKey = $key === 'bringetermin' ? 'lxcars_default_abgabezeit' : 'lxcars_default_fertigstellungszeit';
+                    $defRow = $db->getOne("SELECT value FROM defaults_oserp WHERE key = :key", [':key' => $defKey]);
+                    $defTime = $defRow ? trim($defRow['value']) : ($key === 'bringetermin' ? '08:00' : '17:00');
+                    $value = substr($value, 0, 10) . ' ' . $defTime . ':00';
+                }
+            } else {
+                $value = null;
+            }
         }
 
         $setClauses[] = "$key = $paramName";
@@ -718,8 +746,13 @@ function syncOrderToCalendar($db, $oeId) {
         );
 
         if ($timestamp) {
-            // Prüfen ob Uhrzeit enthalten (nicht nur 00:00:00)
-            $hasTime = !preg_match('/00:00:00$/', $timestamp);
+            // Wenn keine Uhrzeit gesetzt (00:00:00), Default-Zeit aus Config verwenden
+            if (preg_match('/00:00:00$/', $timestamp)) {
+                $defKey = $field === 'bringetermin' ? 'lxcars_default_abgabezeit' : 'lxcars_default_fertigstellungszeit';
+                $defRow = $db->getOne("SELECT value FROM defaults_oserp WHERE key = :key", [':key' => $defKey]);
+                $defTime = $defRow ? trim($defRow['value']) : ($field === 'bringetermin' ? '08:00' : '17:00');
+                $timestamp = substr($timestamp, 0, 11) . $defTime . ':00';
+            }
 
             $title = $prefix . ': ' . $order['customer_name'];
             if ($kennz) $title .= ' [' . $kennz . ']';
@@ -730,7 +763,7 @@ function syncOrderToCalendar($db, $oeId) {
             // Ende = Start + 1 Stunde
             $dtend = date('Y-m-d H:i:s', strtotime($timestamp) + 3600);
             $qDtend = $pdo->quote($dtend);
-            $allDay = $hasTime ? 'FALSE' : 'TRUE';
+            $allDay = 'FALSE';
 
             if ($existing) {
                 // Aktualisieren

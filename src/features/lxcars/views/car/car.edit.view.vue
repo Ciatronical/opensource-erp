@@ -801,7 +801,7 @@
                                         <tr v-for="order in sortedOrders" :key="order.id" class="orders-table__row" @click="openOrder(order.id)">
                                             <td class="font-weight-medium text-no-wrap">{{ order.ordnumber }}</td>
                                             <td class="text-medium-emphasis text-no-wrap">{{ order.transdate }}</td>
-                                            <td class="orders-table__desc">{{ order.first_position }}</td>
+                                            <td class="orders-table__desc">{{ order.description }}</td>
                                             <td class="text-right font-weight-medium text-no-wrap">{{ formatAmount(order.amount) }}</td>
                                             <td class="text-center pa-0">
                                                 <v-icon size="14" color="grey-lighten-1" class="orders-table__icon">mdi-open-in-new</v-icon>
