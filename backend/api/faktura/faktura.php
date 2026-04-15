@@ -1119,6 +1119,17 @@ function convertFaktura($data) {
     $customerId = $source['customer_id'] ?? null;
     $vendorId   = $source['vendor_id'] ?? null;
 
+    // Falls customer_id NULL ist und das Quelldokument ein Fahrzeug hat → Halter übernehmen
+    if (!$customerId && !$vendorId && $sourceTable === 'oe') {
+        $owner = $company->getOne(
+            "SELECT cl.c_ow FROM oe_ext e JOIN cars_lxcars cl ON cl.c_id = e.c_id WHERE e.oe_id = :id AND cl.c_ow IS NOT NULL",
+            [':id' => $sourceId]
+        );
+        if ($owner) {
+            $customerId = intval($owner['c_ow']);
+        }
+    }
+
     // Für Einkaufs-Workflows (Lieferantenanfrage/-auftrag) aus Verkaufsdokumenten:
     // customer_id nicht übernehmen, vendor_id bleibt leer (manuell zuordnen)
     $isTargetPurchase = in_array($targetType, ['purchase_order', 'request_quotation']);

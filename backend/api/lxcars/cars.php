@@ -500,6 +500,14 @@ function linkCarToFaktura($data) {
         [':oe_id' => $oeId, ':c_id' => $cId]
     );
 
+    // Falls customer_id in oe noch NULL ist, den Fahrzeughalter (c_ow) übernehmen
+    $db->execute(
+        "UPDATE oe SET customer_id = (SELECT c_ow FROM cars_lxcars WHERE c_id = :c_id)
+         WHERE id = :oe_id AND customer_id IS NULL
+           AND (SELECT c_ow FROM cars_lxcars WHERE c_id = :c_id) IS NOT NULL",
+        [':oe_id' => $oeId, ':c_id' => $cId]
+    );
+
     resultInfo(true, 'LINKED');
 }
 
