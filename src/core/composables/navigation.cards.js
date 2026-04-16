@@ -107,17 +107,6 @@ export function useNavigationCards() {
             }
         )
 
-        // Kamera / Videoüberwachung (immer sichtbar)
-        result.push(
-            {
-                title: t('CameraView.title'),
-                icon: 'mdi-cctv',
-                items: [
-                    { title: t('CameraView.live'), to: t('routes.camera') }
-                ]
-            }
-        )
-
         // Wiki-Menü
         result.push(
             {

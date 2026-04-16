@@ -473,17 +473,20 @@ function getCarForOrder($data) {
         [':oe_id' => $oeId]
     );
 
-    // Timestamps mit 00:00:00 korrigieren: Default-Zeiten aus Config einsetzen
+    // Fehlende Uhrzeiten ergänzen: Wenn nur Datum (ohne Zeit) oder 00:00:00
     if ($row) {
+        writeLog("[getCarForOrder] oe_id=$oeId DB-RAW bringetermin='" . ($row['bringetermin'] ?? 'NULL') . "' fertigstellung='" . ($row['fertigstellung'] ?? 'NULL') . "'");
         $timeDefaults = ['bringetermin' => 'lxcars_default_abgabezeit', 'fertigstellung' => 'lxcars_default_fertigstellungszeit'];
         $fallbacks = ['bringetermin' => '08:00', 'fertigstellung' => '17:00'];
         foreach ($timeDefaults as $field => $configKey) {
-            if (!empty($row[$field]) && preg_match('/00:00:00$/', $row[$field])) {
+            if (!empty($row[$field]) && !preg_match('/\d{2}:\d{2}(:\d{2})?$/', $row[$field])) {
                 $defRow = $db->getOne("SELECT value FROM defaults_oserp WHERE key = :key", [':key' => $configKey]);
                 $defTime = $defRow ? trim($defRow['value']) : $fallbacks[$field];
-                $row[$field] = substr($row[$field], 0, 10) . ' ' . $defTime . ':00';
+                $row[$field] = $row[$field] . ' ' . $defTime . ':00';
+                writeLog("[getCarForOrder] oe_id=$oeId $field CORRECTED: '" . $row[$field] . "'");
             }
         }
+        writeLog("[getCarForOrder] oe_id=$oeId RESPONSE bringetermin='" . ($row['bringetermin'] ?? 'NULL') . "' fertigstellung='" . ($row['fertigstellung'] ?? 'NULL') . "'");
     }
 
     resultInfo(true, 'OK', $row ?: ['c_id' => null, 'c_ln' => '', 'km_stand' => null, 'kfz_ort' => null, 'status' => null, 'gedruckt' => false, 'intern' => false, 'bringetermin' => null, 'fertigstellung' => null, 'no_whatsapp' => false]);
@@ -560,17 +563,19 @@ function updateOeExt($data) {
         } elseif ($key === 'gedruckt' || $key === 'intern' || $key === 'no_whatsapp') {
             $value = $value ? 't' : 'f';
         } elseif ($key === 'bringetermin' || $key === 'fertigstellung') {
+            writeLog("[updateOeExt] oe_id=$oeId $key INPUT: '$value'");
             if (!empty($value)) {
-                // Wenn nur Datum ohne Zeit (oder 00:00:00), Default-Zeit aus Config einsetzen
                 if (preg_match('/00:00:00$/', $value) || !preg_match('/\d{2}:\d{2}:\d{2}$/', $value)) {
                     $defKey = $key === 'bringetermin' ? 'lxcars_default_abgabezeit' : 'lxcars_default_fertigstellungszeit';
                     $defRow = $db->getOne("SELECT value FROM defaults_oserp WHERE key = :key", [':key' => $defKey]);
                     $defTime = $defRow ? trim($defRow['value']) : ($key === 'bringetermin' ? '08:00' : '17:00');
                     $value = substr($value, 0, 10) . ' ' . $defTime . ':00';
+                    writeLog("[updateOeExt] oe_id=$oeId $key CORRECTED: '$value'");
                 }
             } else {
                 $value = null;
             }
+            writeLog("[updateOeExt] oe_id=$oeId $key SAVE: '$value'");
         }
 
         $setClauses[] = "$key = $paramName";
@@ -622,21 +627,28 @@ function sendBringeterminWa($data) {
     $db = DbhCompany::begin();
     $oeId = intval($data['oe_id']);
 
+    writeLog("[sendBringeterminWa] oe_id=$oeId START");
+
     $ext = $db->getOne(
         "SELECT bringetermin, no_whatsapp FROM oe_ext WHERE oe_id = :oe_id",
         [':oe_id' => $oeId]
     );
 
+    writeLog("[sendBringeterminWa] oe_id=$oeId bringetermin='" . ($ext['bringetermin'] ?? 'NULL') . "' no_whatsapp='" . ($ext['no_whatsapp'] ?? 'NULL') . "'");
+
     if (!$ext || empty($ext['bringetermin'])) {
+        writeLog("[sendBringeterminWa] oe_id=$oeId ABORT: no bringetermin");
         resultInfo(true, 'NO_BRINGETERMIN');
         return;
     }
 
     if (!empty($ext['no_whatsapp']) && $ext['no_whatsapp'] !== 'f') {
+        writeLog("[sendBringeterminWa] oe_id=$oeId ABORT: whatsapp disabled");
         resultInfo(true, 'WA_DISABLED');
         return;
     }
 
+    writeLog("[sendBringeterminWa] oe_id=$oeId -> calling _sendAppointmentConfirmation");
     _sendAppointmentConfirmation($db, $oeId, $ext['bringetermin']);
     resultInfo(true, 'WA_SENT');
 }
@@ -702,12 +714,13 @@ function _sendAppointmentConfirmation($db, $oeId, $bringetermin) {
  * Kalendereinträge werden über order_id + title-Prefix identifiziert.
  */
 function syncOrderToCalendar($db, $oeId) {
+    writeLog("[syncOrderToCalendar] oe_id=$oeId START");
     $auth = DbhAuth::begin();
     $auth->fetchSessionData();
     $login = $db->getPDO()->quote($auth->getLogin());
     $emp = $db->getOne("SELECT id FROM employee WHERE login = $login", []);
     $employeeId = $emp ? intval($emp['id']) : 0;
-    if ($employeeId === 0) return;
+    if ($employeeId === 0) { writeLog("[syncOrderToCalendar] oe_id=$oeId ABORT: employeeId=0"); return; }
 
     // Auftrags- und Kundendaten laden
     $order = $db->getOne(
@@ -722,7 +735,9 @@ function syncOrderToCalendar($db, $oeId) {
          WHERE o.id = :oe_id",
         [':oe_id' => $oeId]
     );
-    if (!$order) return;
+    if (!$order) { writeLog("[syncOrderToCalendar] oe_id=$oeId ABORT: order not found"); return; }
+
+    writeLog("[syncOrderToCalendar] oe_id=$oeId DB bringetermin='" . ($order['bringetermin'] ?? 'NULL') . "' fertigstellung='" . ($order['fertigstellung'] ?? 'NULL') . "'");
 
     $pdo = $db->getPDO();
     $kennz = $order['kennz'] ?: '';
@@ -745,13 +760,15 @@ function syncOrderToCalendar($db, $oeId) {
             [':oe_id' => $oeId]
         );
 
+        writeLog("[syncOrderToCalendar] oe_id=$oeId $field timestamp='$timestamp' existing=" . ($existing ? $existing['id'] : 'NONE'));
+
         if ($timestamp) {
-            // Wenn keine Uhrzeit gesetzt (00:00:00), Default-Zeit aus Config verwenden
-            if (preg_match('/00:00:00$/', $timestamp)) {
+            // Fehlende Uhrzeit ergänzen (nur Datum oder 00:00:00)
+            if (!preg_match('/\d{2}:\d{2}(:\d{2})?$/', $timestamp)) {
                 $defKey = $field === 'bringetermin' ? 'lxcars_default_abgabezeit' : 'lxcars_default_fertigstellungszeit';
                 $defRow = $db->getOne("SELECT value FROM defaults_oserp WHERE key = :key", [':key' => $defKey]);
                 $defTime = $defRow ? trim($defRow['value']) : ($field === 'bringetermin' ? '08:00' : '17:00');
-                $timestamp = substr($timestamp, 0, 11) . $defTime . ':00';
+                $timestamp = substr($timestamp, 0, 10) . ' ' . $defTime . ':00';
             }
 
             $title = $prefix . ': ' . $order['customer_name'];

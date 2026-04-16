@@ -438,6 +438,30 @@ function moveCalendarEvent($data) {
 
     try {
         $mandant->query("UPDATE calendar_events SET $updateSql WHERE id = $id");
+
+        // Rücksync: Wenn der Kalendereintrag zu einem Auftrag gehört, oe_ext aktualisieren
+        if (isset($data['dtstart'])) {
+            $event = $mandant->getOne(
+                "SELECT order_id, title FROM calendar_events WHERE id = :id",
+                [':id' => $id]
+            );
+            if ($event && !empty($event['order_id'])) {
+                $title = $event['title'];
+                $field = null;
+                if (strpos($title, '🔑 Abgabe:') === 0) {
+                    $field = 'bringetermin';
+                } elseif (strpos($title, '✅ Fertig:') === 0) {
+                    $field = 'fertigstellung';
+                }
+                if ($field) {
+                    $mandant->execute(
+                        "UPDATE oe_ext SET $field = :ts WHERE oe_id = :oe_id",
+                        [':ts' => $data['dtstart'], ':oe_id' => intval($event['order_id'])]
+                    );
+                }
+            }
+        }
+
         resultInfo(true, 'MOVED', 'Termin verschoben');
     } catch (Exception $e) {
         resultInfo(false, 'DATABASE_ERROR', $e->getMessage());

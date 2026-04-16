@@ -149,6 +149,16 @@
       </v-list>
     </v-menu>
 
+    <!-- Kamera / Videoüberwachung -->
+    <v-btn
+      icon
+      variant="text"
+      :to="{ name: 'camera' }"
+      :title="t('CameraView.title')"
+    >
+      <v-icon>mdi-cctv</v-icon>
+    </v-btn>
+
     <!-- Account-Menü -->
     <v-menu v-model="accountMenuOpen" location="bottom end" :close-on-content-click="false">
       <template #activator="{ props }">

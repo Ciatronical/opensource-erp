@@ -346,7 +346,7 @@ const sortedResults = computed(() => {
     const future = []
     const rest = []
     for (const item of searchResults.value) {
-        if (item.bringetermin && item.bringetermin > today) {
+        if (item.bringetermin && item.bringetermin.slice(0, 10) > today) {
             future.push(item)
         } else {
             rest.push(item)
@@ -377,7 +377,7 @@ const displayResults = computed(() => {
 watch(tableSortBy, () => { page.value = 1 });
 
 const getRowProps = ({ item }) => {
-    if (item.bringetermin && item.bringetermin > today) {
+    if (item.bringetermin && item.bringetermin.slice(0, 10) > today) {
         return { class: 'future-order' }
     }
     return {}

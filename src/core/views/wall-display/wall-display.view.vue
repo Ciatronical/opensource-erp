@@ -6,8 +6,7 @@
         `wall-display--size-${effectiveSize}`
     ]">
 
-        <!-- Debug: Aktiver Groessen-Modus, oben rechts. Temporaer fuer Verifikation. -->
-        <div class="wall-display__size-debug">size: {{ effectiveSize }} (cfg: {{ configuredSize || 'auto' }})</div>
+        <div v-if="!sseConnected" class="wall-display__no-sse" />
 
         <!-- Topbar nur in Faktura-Modus — im Kalender-Modus sitzen Exit/Uhr in der FullCalendar-Toolbar -->
         <div v-if="mode !== 'calendar'" class="wall-display__topbar">
@@ -295,13 +294,21 @@ export default defineComponent({
             }
         }, { immediate: true })
 
-        // ── SSE ──
+        // ── SSE mit Polling-Fallback ──
 
         let sseSource = null
+        let pollInterval = null
+        const sseConnected = ref(false)
 
         function connectSSE() {
+            if (typeof EventSource === 'undefined') {
+                startPolling()
+                return
+            }
             sseSource = new EventSource('/sse/events')
+            sseSource.onopen = () => { sseConnected.value = true; stopPolling() }
             sseSource.onmessage = (event) => {
+                sseConnected.value = true
                 try {
                     const data = JSON.parse(event.data)
                     // Kalender-Events
@@ -318,7 +325,21 @@ export default defineComponent({
                     }
                 } catch { /* ignorieren */ }
             }
-            sseSource.onerror = () => { /* reconnect ist automatisch */ }
+            sseSource.onerror = () => {
+                sseConnected.value = false
+                startPolling()
+            }
+        }
+
+        function startPolling() {
+            if (pollInterval) return
+            pollInterval = setInterval(() => {
+                loadEvents()
+            }, 60000)
+        }
+
+        function stopPolling() {
+            if (pollInterval) { clearInterval(pollInterval); pollInterval = null }
         }
 
         // ── Formatierung ──
@@ -373,6 +394,7 @@ export default defineComponent({
 
         onBeforeUnmount(() => {
             if (sseSource) { sseSource.close(); sseSource = null }
+            stopPolling()
             if (clockTimer) { clearInterval(clockTimer); clockTimer = null }
             window.removeEventListener('resize', onViewportResize)
         })
@@ -381,7 +403,8 @@ export default defineComponent({
             t, mode, events, calendarInitialView,
             eventDetailOpen, selectedEvent,
             fakturaData, fakturaVehicle, fakturaDocNumber, fakturaDocLabel, fakturaPositions,
-            currentTime, calendarCustomButtons, calendarHeaderToolbar, effectiveSize, configuredSize,
+            currentTime, calendarCustomButtons, calendarHeaderToolbar, effectiveSize,
+            sseConnected,
             onDatesSet, onEventClick, exitWallDisplay,
             formatDate, formatCurrency, formatQty, formatEventTime
         }
@@ -475,18 +498,16 @@ export default defineComponent({
 
 /* Groessen-Modi sind im zweiten, globalen <style>-Block am Dateiende — siehe unten. */
 
-/* Debug: aktiver Modus oben rechts. Temporaer. */
-.wall-display__size-debug {
+/* Roter Punkt: kein SSE */
+.wall-display__no-sse {
     position: fixed;
-    top: 4px;
-    right: 4px;
+    top: 6px;
+    right: 6px;
     z-index: 2000;
-    background: rgba(255, 235, 59, 0.9);
-    color: #424242;
-    font-size: 10px;
-    font-family: monospace;
-    padding: 2px 6px;
-    border-radius: 3px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #f44336;
     pointer-events: none;
 }
 
