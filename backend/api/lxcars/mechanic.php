@@ -778,6 +778,34 @@ function getPendingPartsRequests() {
 }
 
 /**
+ * Aufträge bei denen alle Instructions erledigt sind (letzte 24h)
+ *
+ * @testdata {}
+ */
+function getCompletedOrders() {
+    $db = DbhCompany::begin();
+
+    $rows = $db->getAll(
+        "SELECT o.id AS oe_id, o.ordnumber,
+                COALESCE(c.name, '') AS customer_name,
+                MAX(i.done_at) AS completed_at
+         FROM oe o
+         JOIN oe_instructions_lxcars i ON i.oe_id = o.id
+         LEFT JOIN customer c ON c.id = o.customer_id
+         WHERE NOT EXISTS (
+             SELECT 1 FROM oe_instructions_lxcars i2
+             WHERE i2.oe_id = o.id AND i2.done = false
+         )
+         AND i.done_at >= NOW() - INTERVAL '24 hours'
+         GROUP BY o.id, o.ordnumber, c.name
+         ORDER BY MAX(i.done_at) DESC",
+        []
+    );
+
+    resultInfo(true, 'OK', $rows ?: []);
+}
+
+/**
  * Lädt alle aktiven Lieferanten sortiert nach Bestellhäufigkeit (meistverwendete zuerst)
  * Lieferanten ohne Bestellhistorie werden alphabetisch danach aufgefüllt
  *

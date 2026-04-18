@@ -78,6 +78,7 @@ export default {
     }
 
     function chipColor(item) {
+      if (item.type === 'completed') return 'success'
       if (item.type === 'parts') return 'deep-orange'
       if (item.type === 'anpr') return 'light-blue'
       if (item.type === 'call') return item.direction === 'E' ? 'teal' : 'blue-grey'
@@ -87,6 +88,7 @@ export default {
     }
 
     function chipIcon(item) {
+      if (item.type === 'completed') return 'mdi-check-circle'
       if (item.type === 'parts') return 'mdi-cart-arrow-down'
       if (item.type === 'anpr') return 'mdi-car-side'
       if (item.type === 'call') return item.direction === 'E' ? 'mdi-phone-incoming' : 'mdi-phone-outgoing'
@@ -96,12 +98,16 @@ export default {
     }
 
     function chipLabel(item) {
+      if (item.type === 'completed') return (item.name || ('#' + item.data.oe_id)) + ' ✔'
       if (item.type === 'parts') return item.name || ('#' + item.data.oe_id)
       if (item.type === 'anpr') return item.name || ''
       return item.name || t('InfoBar.unknownCaller')
     }
 
     function chipTitle(item) {
+      if (item.type === 'completed') {
+        return (item.data.customer_name || item.data.ordnumber) + ' — alle Arbeiten erledigt'
+      }
       if (item.type === 'parts') {
         const base = item.data.customer_name || item.data.ordnumber || ('#' + item.data.oe_id)
         return base + ' (' + item.data.pending_count + ') — ' + formatDateTime(item.timestamp)
@@ -114,7 +120,8 @@ export default {
     }
 
     function openItem(item) {
-      if (item.type === 'parts') openOrderWithParts(item.data)
+      if (item.type === 'completed') router.push({ name: 'faktura-order-view', params: { id: item.data.oe_id } })
+      else if (item.type === 'parts') openOrderWithParts(item.data)
       else if (item.type === 'anpr') openAnprDetection(item.data)
       else if (item.type === 'call') openCall(item.data)
       else if (item.type === 'email') openEmail(item.data)

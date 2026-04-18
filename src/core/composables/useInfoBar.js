@@ -24,7 +24,8 @@ export function useInfoBar() {
     const newWhatsapps = ref([])
     const pendingPartsRequests = ref([])
     const anprDetections = ref([])
-    const dismissed = ref({ calls: [], emails: [], whatsapps: [], parts: [], anpr: [], parts_ts: null })
+    const completedOrders = ref([])
+    const dismissed = ref({ calls: [], emails: [], whatsapps: [], parts: [], anpr: [], completed: [], parts_ts: null })
 
     let eventSource = null
     let emailPollInterval = null
@@ -59,13 +60,13 @@ export function useInfoBar() {
 
             // Beide Quellen mergen (Vereinigungsmenge der dismissed IDs)
             if (!fromBackend && !fromLocal) {
-                dismissed.value = { calls: [], emails: [], whatsapps: [], parts: [], anpr: [], parts_ts: null }
+                dismissed.value = { calls: [], emails: [], whatsapps: [], parts: [], anpr: [], completed: [], parts_ts: null }
                 saveDismissed()
                 return
             }
 
-            const a = fromBackend || { calls: [], emails: [], whatsapps: [], parts: [], anpr: [], parts_ts: null }
-            const b = fromLocal || { calls: [], emails: [], whatsapps: [], parts: [], anpr: [], parts_ts: null }
+            const a = fromBackend || { calls: [], emails: [], whatsapps: [], parts: [], anpr: [], completed: [], parts_ts: null }
+            const b = fromLocal || { calls: [], emails: [], whatsapps: [], parts: [], anpr: [], completed: [], parts_ts: null }
             const mergeUnique = (arr1, arr2) => [...new Set([...(arr1 || []), ...(arr2 || [])])]
 
             // Parts-Dismiss: nur 24h gueltig (neuester Timestamp zaehlt)
@@ -81,6 +82,7 @@ export function useInfoBar() {
                 whatsapps: mergeUnique(a.whatsapps, b.whatsapps),
                 parts: partsStillValid,
                 anpr: mergeUnique(a.anpr, b.anpr),
+                completed: mergeUnique(a.completed, b.completed),
                 parts_ts: partsStillValid.length ? partsTs : null
             }
 
@@ -97,6 +99,7 @@ export function useInfoBar() {
             whatsapps: dismissed.value.whatsapps,
             parts: dismissed.value.parts,
             anpr: dismissed.value.anpr,
+            completed: dismissed.value.completed,
             parts_ts: dismissed.value.parts_ts
         }
         const json = JSON.stringify(data)
@@ -170,6 +173,18 @@ export function useInfoBar() {
         } catch { /* LxCars nicht verfügbar */ }
     }
 
+    async function fetchCompletedOrders() {
+        if (!oserp.isLxCars()) return
+        try {
+            const response = await axios.post('/api/lxcars/', {
+                action: 'getCompletedOrders'
+            })
+            if (response.data.success) {
+                completedOrders.value = response.data.payload || []
+            }
+        } catch { /* LxCars nicht verfügbar */ }
+    }
+
     async function fetchAnprDetections() {
         if (!oserp.isLxCars()) return
         const enabled = oserp.getClientDefaultValue('anpr_enabled', '0')
@@ -198,6 +213,20 @@ export function useInfoBar() {
     // --- Computed: alle Events in einer einzigen, chronologisch sortierten Liste ---
     const unifiedItems = computed(() => {
         const items = []
+
+        // Fertiggestellte Aufträge
+        completedOrders.value
+            .filter(co => !dismissed.value.completed.includes(co.oe_id))
+            .forEach(co => {
+                items.push({
+                    type: 'completed',
+                    id: 'completed-' + co.oe_id,
+                    dismissId: co.oe_id,
+                    timestamp: co.completed_at ? new Date(co.completed_at).getTime() : 0,
+                    name: co.customer_name || co.ordnumber || ('#' + co.oe_id),
+                    data: co
+                })
+            })
 
         // Ersatzteil-Anfragen
         pendingPartsRequests.value
@@ -302,6 +331,8 @@ export function useInfoBar() {
         } else if (type === 'parts' && !dismissed.value.parts.includes(id)) {
             dismissed.value.parts.push(id)
             dismissed.value.parts_ts = Date.now()
+        } else if (type === 'completed' && !dismissed.value.completed.includes(id)) {
+            dismissed.value.completed.push(id)
         } else if (type === 'anpr' && !dismissed.value.anpr.includes(id)) {
             dismissed.value.anpr.push(id)
             // Auch serverseitig als dismissed markieren
@@ -333,6 +364,8 @@ export function useInfoBar() {
                     fetchNewWhatsapps()
                 } else if (data.table === 'anpr_detections_lxcars') {
                     fetchAnprDetections()
+                } else if (data.table === 'oe_instructions_lxcars') {
+                    fetchCompletedOrders()
                 } else if (data.table === 'oe_parts_requests_lxcars') {
                     fetchPendingPartsRequests()
                 } else if (data.urgency !== undefined) {
@@ -375,6 +408,7 @@ export function useInfoBar() {
         fetchNewEmails()
         fetchNewWhatsapps()
         fetchPendingPartsRequests()
+        fetchCompletedOrders()
         fetchAnprDetections()
     }
 
@@ -384,8 +418,9 @@ export function useInfoBar() {
         newEmails.value = []
         newWhatsapps.value = []
         pendingPartsRequests.value = []
+        completedOrders.value = []
         anprDetections.value = []
-        dismissed.value = { calls: [], emails: [], whatsapps: [], parts: [], anpr: [], parts_ts: null }
+        dismissed.value = { calls: [], emails: [], whatsapps: [], parts: [], anpr: [], completed: [], parts_ts: null }
 
         stopListeners()
         loadAndFetchAll()

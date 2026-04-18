@@ -252,6 +252,29 @@ function updateInstruction($data) {
         }
     }
 
+    // Prüfen ob alle Instructions des Auftrags erledigt sind → Benachrichtigung
+    if (isset($fields['done']) && $fields['done']) {
+        $instr = $db->getOne(
+            "SELECT oe_id FROM oe_instructions_lxcars WHERE id = :id",
+            [':id' => $id]
+        );
+        if ($instr) {
+            $pending = $db->getOne(
+                "SELECT COUNT(*) AS cnt FROM oe_instructions_lxcars
+                 WHERE oe_id = :oe_id AND done = false",
+                [':oe_id' => $instr['oe_id']]
+            );
+            if (intval($pending['cnt']) === 0) {
+                $payload = json_encode([
+                    'action' => 'ALL_DONE',
+                    'table' => 'oe_instructions_lxcars',
+                    'oe_id' => intval($instr['oe_id'])
+                ]);
+                $db->execute("SELECT pg_notify('faktura_change', :payload)", [':payload' => $payload]);
+            }
+        }
+    }
+
     resultInfo(true, 'UPDATED');
 }
 
