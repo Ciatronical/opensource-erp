@@ -724,14 +724,14 @@ function syncOrderToCalendar($db, $oeId) {
 
     // Auftrags- und Kundendaten laden
     $order = $db->getOne(
-        "SELECT o.id, o.ordnumber, o.customer_id,
+        "SELECT o.id, o.customer_id,
                 COALESCE(c.name, '') AS customer_name,
-                e.bringetermin, e.fertigstellung, e.kennzeichen,
-                COALESCE(cl.c_ln, e.kennzeichen, '') AS kennz
+                e.bringetermin, e.fertigstellung,
+                (SELECT il.description FROM oe_instructions_lxcars il
+                 WHERE il.oe_id = o.id ORDER BY il.sort_order, il.id LIMIT 1) AS first_instruction
          FROM oe o
          LEFT JOIN customer c ON c.id = o.customer_id
          LEFT JOIN oe_ext e ON e.oe_id = o.id
-         LEFT JOIN cars_lxcars cl ON cl.c_id = e.c_id
          WHERE o.id = :oe_id",
         [':oe_id' => $oeId]
     );
@@ -740,24 +740,21 @@ function syncOrderToCalendar($db, $oeId) {
     writeLog("[syncOrderToCalendar] oe_id=$oeId DB bringetermin='" . ($order['bringetermin'] ?? 'NULL') . "' fertigstellung='" . ($order['fertigstellung'] ?? 'NULL') . "'");
 
     $pdo = $db->getPDO();
-    $kennz = $order['kennz'] ?: '';
 
     // Für beide Terminarten synchronisieren
     $termTypes = [
-        'bringetermin'   => ['prefix' => '🔑 Abgabe', 'color' => '#FF9800'],
-        'fertigstellung' => ['prefix' => '✅ Fertig',  'color' => '#4CAF50']
+        'bringetermin'   => ['color' => '#FF9800'],
+        'fertigstellung' => ['color' => '#4CAF50']
     ];
 
     foreach ($termTypes as $field => $config) {
         $timestamp = $order[$field];
-        $prefix = $config['prefix'];
-        $titleLike = $pdo->quote($prefix . ':%');
 
-        // Bestehenden Kalendereintrag für diesen Auftrag + Typ suchen
+        // Bestehenden Kalendereintrag für diesen Auftrag + Typ suchen (via Farbe)
         $existing = $db->getOne(
             "SELECT id FROM calendar_events
-             WHERE order_id = :oe_id AND title LIKE $titleLike",
-            [':oe_id' => $oeId]
+             WHERE order_id = :oe_id AND color = :color",
+            [':oe_id' => $oeId, ':color' => $config['color']]
         );
 
         writeLog("[syncOrderToCalendar] oe_id=$oeId $field timestamp='$timestamp' existing=" . ($existing ? $existing['id'] : 'NONE'));
@@ -771,11 +768,10 @@ function syncOrderToCalendar($db, $oeId) {
                 $timestamp = substr($timestamp, 0, 10) . ' ' . $defTime . ':00';
             }
 
-            $title = $prefix . ': ' . $order['customer_name'];
-            if ($kennz) $title .= ' [' . $kennz . ']';
-            $title .= ' #' . $order['ordnumber'];
+            $title = $order['customer_name'];
             $qTitle = $pdo->quote($title);
             $qTs = $pdo->quote($timestamp);
+            $qDesc = $order['first_instruction'] ? $pdo->quote($order['first_instruction']) : 'NULL';
 
             // Ende = Start + 1 Stunde
             $dtend = date('Y-m-d H:i:s', strtotime($timestamp) + 3600);
@@ -785,8 +781,8 @@ function syncOrderToCalendar($db, $oeId) {
             if ($existing) {
                 // Aktualisieren
                 $db->execute(
-                    "UPDATE calendar_events SET title = $qTitle, dtstart = $qTs,
-                            dtend = $qDtend, \"allDay\" = $allDay,
+                    "UPDATE calendar_events SET title = $qTitle, description = $qDesc,
+                            dtstart = $qTs, dtend = $qDtend, \"allDay\" = $allDay,
                             color = :color, mtime = NOW()
                      WHERE id = :id",
                     [':color' => $config['color'], ':id' => intval($existing['id'])]
@@ -798,9 +794,9 @@ function syncOrderToCalendar($db, $oeId) {
 
                 $db->execute(
                     "INSERT INTO calendar_events
-                        (title, dtstart, dtend, \"allDay\", color, prio, visibility,
+                        (title, description, dtstart, dtend, \"allDay\", color, prio, visibility,
                          uid, cvp_id, cvp_name, cvp_type, order_id)
-                     VALUES ($qTitle, $qTs, $qDtend, $allDay, :color, 1, -1,
+                     VALUES ($qTitle, $qDesc, $qTs, $qDtend, $allDay, :color, 1, -1,
                              :uid, $cvpId, $cvpName, 'C', :oe_id)",
                     [':color' => $config['color'], ':uid' => $employeeId, ':oe_id' => $oeId]
                 );

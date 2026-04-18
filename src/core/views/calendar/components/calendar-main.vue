@@ -126,6 +126,7 @@ const calendarOptions = computed(() => {
         list: t('CalendarMain.list')
     },
     titleFormat: { year: 'numeric', month: 'long' },
+    eventContent: renderEventContent,
     eventResizableFromStart: true,
     views: {
         listCustomWeek: {
@@ -198,6 +199,17 @@ function handleDatesSet(info) {
         end: info.endStr.split('T')[0],
         view: info.view.type
     })
+}
+
+function renderEventContent(arg) {
+    const desc = arg.event.extendedProps?.description
+    const title = arg.event.title || ''
+    const time = arg.timeText || ''
+    let html = ''
+    if (time) html += `<div class="fc-event-time">${time}</div>`
+    html += `<div class="fc-event-title">${title}</div>`
+    if (desc) html += `<div class="fc-event-desc">${desc}</div>`
+    return { html }
 }
 
 function formatDateTime(date, allDay) {
@@ -375,6 +387,15 @@ defineExpose({
 
 .fc .fc-event-title {
     font-weight: 600;
+}
+
+.fc .fc-event-desc {
+    font-weight: 500;
+    font-size: 0.95em;
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 /* TimeGrid Events */

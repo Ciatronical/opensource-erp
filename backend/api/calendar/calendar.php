@@ -442,15 +442,14 @@ function moveCalendarEvent($data) {
         // Rücksync: Wenn der Kalendereintrag zu einem Auftrag gehört, oe_ext aktualisieren
         if (isset($data['dtstart'])) {
             $event = $mandant->getOne(
-                "SELECT order_id, title FROM calendar_events WHERE id = :id",
+                "SELECT order_id, color FROM calendar_events WHERE id = :id",
                 [':id' => $id]
             );
             if ($event && !empty($event['order_id'])) {
-                $title = $event['title'];
                 $field = null;
-                if (strpos($title, '🔑 Abgabe:') === 0) {
+                if ($event['color'] === '#FF9800') {
                     $field = 'bringetermin';
-                } elseif (strpos($title, '✅ Fertig:') === 0) {
+                } elseif ($event['color'] === '#4CAF50') {
                     $field = 'fertigstellung';
                 }
                 if ($field) {
