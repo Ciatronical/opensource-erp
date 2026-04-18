@@ -930,6 +930,13 @@ function deleteFaktura($data) {
         );
     }
 
+    if ($mainTable === 'oe') {
+        $company->execute(
+            "DELETE FROM calendar_events WHERE order_id = :fakturaID",
+            ['fakturaID' => $fakturaID]
+        );
+    }
+
     $company->execute(
         "DELETE FROM {$mainTable} WHERE id = :fakturaID",
         ['fakturaID' => $fakturaID]

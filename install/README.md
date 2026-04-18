@@ -13,7 +13,7 @@ OpensourceERP ist eine Vue.js-basierte ERP-Anwendung mit PHP/PostgreSQL-Backend.
 sudo apt update && sudo apt upgrade -y
 
 # Node.js und npm
-curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+curl -fsSL https://deb.nodesource.com/setup_25.x | sudo -E bash -
 sudo apt install -y nodejs
 
 # PostgreSQL

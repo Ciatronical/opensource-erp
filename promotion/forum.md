@@ -229,7 +229,7 @@ Zwei Typen, sauber getrennt:
 |---|---|
 | Frontend | Vue 3, Vuetify 3, Vite 7, Pinia, Vue Router 4 |
 | Backend | PHP 8, PostgreSQL 16 |
-| Echtzeit | Node.js 22 SSE-Server |
+| Echtzeit | Node.js 25 SSE-Server |
 | Kalender | FullCalendar v6 |
 | Editor | Tiptap (Rich Text) |
 | Charts | Chart.js |

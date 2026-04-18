@@ -153,7 +153,7 @@ Backend-Entwicklung mit Hot-Reload.
 ### Voraussetzungen
 
 - PHP >= 8.0 mit Extensions: `pgsql`, `mbstring`, `xml`, `curl`
-- Node.js 22
+- Node.js 25
 - Lokale PostgreSQL auf Port 5432
 - `backend/config/settings.ini` muss konfiguriert sein
 - `gnome-terminal` (GNOME-Desktop)
@@ -180,7 +180,7 @@ Apache-Deployment. Gedacht für die Bereitstellung auf einem Nicht-Docker-Server
 
 ### Voraussetzungen
 
-- Node.js 22
+- Node.js 25
 
 ### Aufruf
 

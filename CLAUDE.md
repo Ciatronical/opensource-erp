@@ -64,7 +64,7 @@ require_once __DIR__.'/inc.php';  // ohne Klammern
 
 ### Docker (auf dem Server)
 - DB-Container ist leeres PostgreSQL — Schemas und Daten werden manuell per `dbdump` geladen
-- Lokale Node-Version: 22 — Dockerfile muss `node:22-alpine` nutzen (Vite 7 braucht crypto.hash, ab Node 20.19+)
+- Lokale Node-Version: 25 — Dockerfile muss `node:25-alpine` nutzen (Vite 7 braucht crypto.hash, ab Node 20.19+)
 - `php:fpm-bookworm` ist KEIN Apache-Image — Runtime-Dirs muessen im Entrypoint erstellt werden
 - DB-Schema-Dumps (`backend/db/*.sql`) enthalten bereits CRM-Tabellen — kein `ON_ERROR_STOP=1` bei CRM-Erweiterungsskripten
 - Lokale PostgreSQL laeuft auf Port 5432 — Docker nutzt 5433 (siehe `docker/.env.example`)
