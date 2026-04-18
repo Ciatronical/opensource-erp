@@ -74,3 +74,7 @@ require_once __DIR__.'/inc.php';  // ohne Klammern
 ### Git
 - Kleine, saubere Commits mit aussagekraeftigen Messages
 - `fix-ws` vor Commits ausfuehren (tools/fix-ws.sh)
+
+### Gendern und Umlaute
+- keine oe, ae, etc verwenden
+- Niemals gendern!
