@@ -189,6 +189,11 @@ export default {
     async function onNameBlur() {
       const name = (localData.value.name || '').trim()
       if (!name) return
+
+      // Wenn bereits "Firma" gesetzt, nicht überschreiben
+      const currentGreeting = (localData.value.greeting || '').trim()
+      if (currentGreeting === 'Firma') return
+
       // Erstes Wort als Vorname extrahieren
       const firstname = name.split(/\s+/)[0]
       try {
@@ -207,6 +212,7 @@ export default {
 
     const cityChoices = ref([])
     const showCityMenu = ref(false)
+    const extractedCity = ref('')  // Speichert den Ort aus der Visitenkarte für Vergleich
 
     // ── Visitenkarten-Scan per KI ──
     const fileInput = ref(null)
@@ -258,10 +264,13 @@ export default {
           mime_type: file.type || 'image/jpeg',
           src: localData.value.src || 'C'
         })
+        console.log('[DEBUG] API Response:', response.data)
         if (!response.data?.success) {
           throw new Error(response.data?.text || 'Scan fehlgeschlagen')
         }
         const extracted = response.data.payload?.extracted || {}
+        console.log('[DEBUG] extracted:', extracted)
+        console.log('[DEBUG] extracted.greeting:', extracted.greeting)
         const confidence = Number(extracted.confidence ?? 0)
         if (confidence <= 0) {
           snackbar.value = {
@@ -272,9 +281,12 @@ export default {
         }
 
         // Stammdaten nur in leere Felder uebernehmen — bestehende Eingaben nicht ueberschreiben
-        // greeting wird bewusst nicht uebernommen — lookupGreeting beim Namens-Blur erzeugt die Anrede
+        // greeting kommt direkt von der Visitenkarten-KI (Firma/Herr/Frau)
+        console.log('[DEBUG] BEFORE applyIfEmpty greeting:', localData.value.greeting)
         applyIfEmpty('name', extracted.name)
         applyIfEmpty('contact', extracted.contact)
+        applyIfEmpty('greeting', extracted.greeting)
+        console.log('[DEBUG] AFTER applyIfEmpty greeting:', localData.value.greeting)
         // Abteilungen werden bewusst NICHT uebernommen — zu haeufige Falsch-Erkennung
         applyIfEmpty('street', extracted.street)
         applyIfEmpty('phone', extracted.phone)
@@ -289,7 +301,9 @@ export default {
 
         // PLZ ZULETZT setzen — der bestehende lookupZipcode-Watcher fuellt den Ort
         // aus der DB (bzw. zeigt Auswahl), das ist zuverlaessiger als die OCR der KI.
-        // Stadt aus der Extraktion wird bewusst verworfen.
+        // Stadt aus der Extraktion wird verworfen, aber für Ähnlichkeits-Vergleich gespeichert.
+        extractedCity.value = (extracted.city || '').trim()
+        console.log('[DEBUG] extractedCity stored:', extractedCity.value)
         applyIfEmpty('zipcode', extracted.zipcode)
 
         if (typeof extracted.natural_person === 'boolean' && localData.value.natural_person == null) {
@@ -343,11 +357,52 @@ export default {
         if (cities.length === 1) {
           localData.value.city = cities[0]
         } else if (cities.length > 1) {
-          cityChoices.value = cities
-          showCityMenu.value = true
+          // Mehrere Orte: Automatisch den ähnlichsten zu extractedCity auswählen
+          const refCity = (extractedCity.value || '').trim().toLowerCase()
+          console.log('[DEBUG] Multiple cities found:', cities, 'comparing to:', refCity)
+
+          if (refCity) {
+            // Similarity-Score berechnen für jeden Ort
+            let bestCity = cities[0]
+            let bestScore = 0
+            for (const city of cities) {
+              const cityLower = city.toLowerCase()
+              // Exakter Match
+              if (cityLower === refCity) {
+                bestCity = city
+                bestScore = 100
+                break
+              }
+              // Teilstring-Match
+              if (cityLower.includes(refCity) || refCity.includes(cityLower)) {
+                bestScore = Math.max(bestScore, 80)
+                bestCity = city
+              } else {
+                // Ähnlichkeit mit PHP-ähnlicher Logik (einfach: gleiche Zeichen am Anfang)
+                let matchLen = 0
+                for (let i = 0; i < Math.min(cityLower.length, refCity.length); i++) {
+                  if (cityLower[i] === refCity[i]) matchLen++
+                  else break
+                }
+                const score = (matchLen / Math.max(cityLower.length, refCity.length)) * 100
+                if (score > bestScore) {
+                  bestScore = score
+                  bestCity = city
+                }
+              }
+            }
+            localData.value.city = bestCity
+            console.log('[DEBUG] Auto-selected city:', bestCity, 'score:', bestScore)
+          } else {
+            // Kein Ort vorhanden: Menu zeigen
+            cityChoices.value = cities
+            showCityMenu.value = true
+            console.log('[DEBUG] No reference city, showing menu')
+          }
         }
       } catch (e) {
         // Stille Fehlerbehandlung — Ort bleibt unverändert
+        console.log('[DEBUG] lookupZipcode error:', e.message)
       }
     })
 

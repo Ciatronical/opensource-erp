@@ -161,6 +161,41 @@ function validateAddressWithNominatim($street, $zip, $city, $name = '') {
 }
 
 /**
+ * Bestimmt die Anrede basierend auf Kundendaten
+ * - Vertraue auf KI: natural_person=false → "Firma"
+ * - Sonst: Vornamen in firstnametogender suchen → "Herr"/"Frau"
+ *
+ * @param array $extracted Aus der KI extrahierte Daten
+ * @param PDOConnection $db Datenbankverbindung
+ * @return string "Firma", "Herr", "Frau" oder ""
+ */
+function determineGreeting($extracted, $db) {
+    // Vertraue auf KI: natural_person=false bedeutet Firma
+    if (isset($extracted['natural_person']) && $extracted['natural_person'] === false) {
+        return 'Firma';
+    }
+
+    // Person: Vornamen in firstnametogender suchen
+    $firstname = trim($extracted['contact_firstname'] ?? '');
+    if ($firstname !== '') {
+        try {
+            $genderRow = $db->getOne(
+                "SELECT gender FROM firstnametogender WHERE LOWER(firstname) = LOWER(:firstname)",
+                [':firstname' => $firstname]
+            );
+            if ($genderRow) {
+                if ($genderRow['gender'] === 'F') return 'Frau';
+                if ($genderRow['gender'] === 'M') return 'Herr';
+            }
+        } catch (\Throwable $e) {
+            writeLog('Gender-Lookup Fehler: ' . $e->getMessage());
+        }
+    }
+
+    return '';
+}
+
+/**
  * Visitenkarte per KI analysieren und Stammdaten extrahieren.
  * Nutzt Claude Vision (Anthropic) um aus einem Foto/Scan einer Visitenkarte
  * strukturierte Daten fuer Kunden-/Lieferantenanlage zu gewinnen.
@@ -256,7 +291,8 @@ STRIKTE REGELN:
   * city = nur der Ortsname (OHNE PLZ davor, OHNE Strasse, OHNE Land)
   Wenn Ort und PLZ in derselben Zeile stehen ('12345 Musterstadt'): PLZ extrahieren und separat ablegen, der Ort enthaelt KEINE Ziffern der PLZ.
 - Telefonnummern IMMER ins internationale Format umwandeln (+49 statt 0049 oder fuehrender 0). Die Haupt-Festnetznummer in "phone"; Mobil, Fax, Durchwahl, Zentrale etc. gehoeren in "phone_numbers" mit sprechendem deutschen Label.
-- natural_person = true nur, wenn KEINE Firma/Organisation abgedruckt ist (reine Privatvisitenkarte).
+- natural_person = true NUR, wenn es sich um eine REINE PRIVATVISITENKARTE handelt (z.B. "Max Mustermann, Freiberufler" ohne Firma).
+  * IMMER natural_person = false, wenn im Namen oder anderen Feldern ein Organisations-/Firmen-Indikator steht (z.B. "Firma XYZ", "EFS-Schmidt", "Musterkanzlei", Unternehmensname erkennbar, etc.)
 - Bei mehrsprachigen Karten: deutsche/europaeische Daten bevorzugen.
 - PLAUSIBILITAETSPRUEFUNG: Bei deutschen Adressen (zipcode 4-5 Ziffern, country='DE'):
   * Geprueft werden muss, ob PLZ und Ortsname zueinander passen (z.B. PLZ 15370 passt zu Petershagen, PLZ 75370 NICHT)
@@ -508,8 +544,13 @@ PROMPT;
     }
     writeLog('Validierung abgeschlossen');
 
-    // Greeting entfernen — wird vom bestehenden lookupGreeting-Flow erzeugt
-    unset($extracted['greeting']);
+    // Anrede bestimmen: Firma oder Person (mit Geschlechts-Lookup)
+    $greeting = determineGreeting($extracted, $db);
+    $extracted['greeting'] = $greeting;
+    writeLog('Anrede bestimmt: ' . ($greeting ?: '(nicht bestimmbar)'));
+    writeLog('DEBUG: extracted keys = ' . json_encode(array_keys($extracted)));
+    writeLog('DEBUG: greeting value = ' . json_encode($greeting));
+    writeLog('DEBUG: extracted[greeting] = ' . json_encode($extracted['greeting'] ?? 'NOT SET'));
 
     // phone_numbers als saubere Struktur zurueckgeben
     if (!isset($extracted['phone_numbers']) || !is_array($extracted['phone_numbers'])) {
@@ -517,5 +558,6 @@ PROMPT;
     }
 
     writeLog('=== scanBusinessCard ENDE — resultInfo wird gesendet ===');
+    writeLog('DEBUG: final extracted[greeting] = ' . json_encode($extracted['greeting'] ?? 'NOT SET'));
     resultInfo(true, 'OK', ['extracted' => $extracted]);
 }
