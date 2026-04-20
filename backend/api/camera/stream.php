@@ -46,23 +46,35 @@ $snapshotDir = __DIR__ . '/../../../public/camera-snapshots';
 if (!is_dir($snapshotDir)) mkdir($snapshotDir, 0755, true);
 $snapshotPath = "$snapshotDir/live_cam_{$cameraId}.jpg";
 
-// ffmpeg: ein einzelnes Frame aus dem RTSP-Stream holen
+// ffmpeg: ein Frame aus dem RTSP-Stream holen.
+// -stimeout 8000000   => max. 8s auf RTSP-Verbindung warten (Mikrosekunden)
+// -analyzeduration    => Streamanalyse beschleunigen
+// -probesize          => Streamanalyse beschleunigen
+// Systemtimeout 15s   => haengender Prozess wird abgebrochen
 $cmd = sprintf(
-    'ffmpeg -rtsp_transport tcp -i %s -frames:v 1 -q:v 2 -y %s 2>/dev/null',
+    'timeout 15 ffmpeg -rtsp_transport tcp -stimeout 8000000'
+    . ' -analyzeduration 1000000 -probesize 500000'
+    . ' -i %s -frames:v 1 -q:v 3 -y %s 2>/dev/null',
     escapeshellarg($streamUrl),
     escapeshellarg($snapshotPath)
 );
 
-// Timeout: max 5 Sekunden
-$cmd = "timeout 5 $cmd";
 exec($cmd, $output, $exitCode);
 
 if ($exitCode !== 0 || !file_exists($snapshotPath)) {
+    // Gecachtes Bild vom letzten Erfolg ausliefern (statt schwarzem Monitor)
+    if (file_exists($snapshotPath)) {
+        header('Content-Type: image/jpeg');
+        header('Cache-Control: no-cache, no-store, must-revalidate');
+        header('X-Snapshot-Stale: 1');
+        readfile($snapshotPath);
+        exit;
+    }
     http_response_code(502);
     exit('Stream nicht erreichbar');
 }
 
-// JPEG ausliefern
+// Aktuelles JPEG ausliefern
 header('Content-Type: image/jpeg');
 header('Cache-Control: no-cache, no-store, must-revalidate');
 header('Pragma: no-cache');

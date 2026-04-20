@@ -638,31 +638,222 @@ function installPythonPackage($data) {
         return;
     }
 
-    // venv-Pfad je nach Service
-    if ($service === 'anpr') {
-        $venvPath = __DIR__ . '/../../services/plate-recognition/venv/bin/pip';
-    } else {
-        $venvPath = __DIR__ . '/../../services/camera-monitor/venv/bin/pip';
+    // Service-Verzeichnis und venv-Pfade
+    $serviceDir = ($service === 'anpr')
+        ? realpath(__DIR__ . '/../../services/plate-recognition')
+        : realpath(__DIR__ . '/../../services/camera-monitor');
+    $venvPip    = "$serviceDir/venv/bin/pip";
+    $venvPython = "$serviceDir/venv/bin/python";
+
+    // Venv anlegen falls nicht vorhanden (klappt wenn Verzeichnis beschreibbar ist)
+    if (!file_exists($venvPip)) {
+        exec("python3 -m venv " . escapeshellarg("$serviceDir/venv") . " 2>&1", $venvOut, $venvExit);
+        if ($venvExit === 0 && file_exists($venvPip)) {
+            // Venv frisch angelegt — www-data muss schreiben koennen
+            exec("chmod -R a+w " . escapeshellarg("$serviceDir/venv/lib") . " "
+                . escapeshellarg("$serviceDir/venv/bin") . " 2>/dev/null");
+        } else {
+            // Kein Schreibrecht auf Verzeichnis — Setup-Befehl anzeigen
+            resultInfo(false, 'VENV_MISSING', '', [
+                'output' => "Kann Python-Umgebung nicht anlegen:\n$serviceDir/venv\n\nEinmalig als Benutzer ausführen, dann erneut versuchen:",
+                'setup_cmd' => "chmod 777 $serviceDir",
+            ]);
+            return;
+        }
     }
 
-    // Fallback auf System-pip
-    if (!file_exists($venvPath)) {
-        $venvPath = 'pip3';
-    }
+    // pip install kann mehrere Minuten dauern (openvino ~500 MB)
+    set_time_limit(0);
 
-    $cmd = escapeshellarg($venvPath) . ' install ' . escapeshellarg($package) . ' 2>&1';
-    $output = shell_exec($cmd);
-    $exitCode = 0;
+    exec(escapeshellarg($venvPip) . ' install ' . escapeshellarg($package) . ' 2>&1', $outputLines, $exitCode);
+    $output = implode("\n", $outputLines);
 
-    // Pruefen ob es geklappt hat
-    $checkCmd = escapeshellarg(str_replace('/pip', '/python', $venvPath))
-        . ' -c "import ' . ($package === 'tflite-runtime' ? 'tflite_runtime' : str_replace('-', '_', $package)) . '" 2>&1';
-    $checkOutput = shell_exec($checkCmd);
-    $success = (strpos($checkOutput ?? '', 'Error') === false && strpos($checkOutput ?? '', 'No module') === false);
+    // Import pruefen
+    $importName = $package === 'tflite-runtime' ? 'tflite_runtime' : str_replace('-', '_', $package);
+    exec(escapeshellarg($venvPython) . ' -c "import ' . $importName . '; print(\'ok\')" 2>&1', $checkLines, $checkExit);
+    $success = ($checkExit === 0 && trim(implode('', $checkLines)) === 'ok');
 
-    resultInfo($success, '', [
+    resultInfo($success, $success ? '' : 'INSTALL_FAILED', [
         'package' => $package,
-        'output' => trim($output ?? ''),
+        'output' => trim($output),
+        'cmd' => "$venvPip install $package",
+    ]);
+}
+
+/**
+ * Frigate- oder go2rtc-Installationsbefehle generieren.
+ * Erstellt/liest Webhook-Token, gibt fertige Copy-Paste-Befehle zurueck.
+ *
+ * @param array $data['client'] Mandant-Code (fuer Webhook-URL)
+ * @param array $data['type']   'docker' (Standard) oder 'native' (go2rtc)
+ * @testdata {"client": "demo", "type": "native"}
+ */
+function getFrigateSetupCmds($data) {
+    $db = DbhCompany::begin();
+
+    // Token: bestehenden nehmen oder neuen erzeugen und speichern
+    $row = $db->getOne("SELECT value FROM defaults_oserp WHERE key = 'camera_webhook_token'");
+    $token = $row ? $row['value'] : bin2hex(random_bytes(16));
+    if (!$row) {
+        $db->execute(
+            "INSERT INTO defaults_oserp (key, value) VALUES ('camera_webhook_token', :token)",
+            [':token' => $token]
+        );
+    }
+
+    $proto  = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    $host   = $_SERVER['HTTP_HOST'] ?? 'localhost';
+    $client = preg_replace('/[^a-zA-Z0-9_-]/', '', $data['client'] ?? 'MANDANT');
+    $webhookUrl = "{$proto}://{$host}/api/camera/webhook.php?token={$token}&client={$client}";
+
+    $type = $data['type'] ?? 'docker';
+
+    if ($type === 'native') {
+        // go2rtc: einzelne Binary, kein Docker
+        // Webhook-Benachrichtigungen übernimmt der eingebaute camera-monitor (YOLO)
+        $serviceDir = realpath(__DIR__ . '/../../services/camera-monitor');
+        $cmd = <<<CMD
+# go2rtc herunterladen (einmalige Binary, kein Docker)
+wget https://github.com/AlexxIT/go2rtc/releases/latest/download/go2rtc_linux_amd64 \\
+  -O /usr/local/bin/go2rtc
+chmod +x /usr/local/bin/go2rtc
+
+# go2rtc Konfiguration anlegen
+mkdir -p /opt/go2rtc
+cat > /opt/go2rtc/go2rtc.yaml << 'EOF'
+api:
+  listen: ":1984"
+
+streams: {}
+  # Kameras werden automatisch beim ERP-Scan hinzugefügt
+  # lager_eingang: rtsp://admin:admin@192.168.1.100/av0_0
+EOF
+
+# Als systemd-Dienst einrichten
+cat > /etc/systemd/system/go2rtc.service << 'EOF'
+[Unit]
+Description=go2rtc stream server
+After=network.target
+
+[Service]
+ExecStart=/usr/local/bin/go2rtc -config /opt/go2rtc/go2rtc.yaml
+Restart=always
+User=www-data
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+systemctl daemon-reload
+systemctl enable --now go2rtc
+
+# ERP camera-monitor-Service aktivieren (übernimmt YOLO-Erkennung + Webhook)
+chmod 777 $serviceDir
+# → Dann im ERP unter Einstellungen > KI-Hardware auf "Installieren" klicken
+CMD;
+        $info = "go2rtc läuft nach der Installation unter http://localhost:1984\n"
+            . "Stream-URLs für Kameras: http://localhost:1984/api/ws?src=KAMERANAME\n"
+            . "Webhook-URL für camera-monitor: $webhookUrl";
+
+    } else {
+        // Docker-Variante (Frigate)
+        $configYaml = <<<YAML
+mqtt:
+  enabled: false
+
+detectors:
+  default:
+    type: cpu
+
+cameras: {}
+
+notifications:
+  webhook:
+    enabled: true
+    url: "$webhookUrl"
+YAML;
+        $cmd = <<<CMD
+mkdir -p /opt/frigate/config /opt/frigate/storage
+
+cat > /opt/frigate/config/config.yml << 'EOF'
+$configYaml
+EOF
+
+docker run -d \\
+  --name frigate \\
+  --restart=unless-stopped \\
+  -p 5000:5000 -p 8554:8554 -p 8555:8555 \\
+  --shm-size=128m \\
+  -v /opt/frigate/config:/config \\
+  -v /opt/frigate/storage:/media/frigate \\
+  ghcr.io/blakeblackshear/frigate:stable
+
+docker logs -f frigate
+CMD;
+        $info = "Frigate läuft nach der Installation unter http://localhost:5000\nWebhook: $webhookUrl";
+    }
+
+    resultInfo(true, '', [
+        'cmd'         => $cmd,
+        'info'        => $info,
+        'token'       => $token,
+        'webhook_url' => $webhookUrl,
+        'type'        => $type,
+    ]);
+}
+
+/**
+ * Laufende Frigate-Instanz erkennen und URL + Token in der DB speichern.
+ * Prueft gaengige Ports (5000, 5001, 8971).
+ *
+ * @param array $data (keine Parameter noetig)
+ * @testdata {}
+ */
+function detectFrigate($data) {
+    $candidates = [
+        'http://localhost:5000',
+        'http://localhost:5001',
+        'http://localhost:8971',
+    ];
+
+    $found    = null;
+    $version  = '';
+    $output   = [];
+
+    foreach ($candidates as $base) {
+        $ctx = stream_context_create(['http' => ['timeout' => 3, 'ignore_errors' => true]]);
+        $body = @file_get_contents("$base/api/version", false, $ctx);
+        if ($body !== false) {
+            $json = json_decode($body, true);
+            if (isset($json['version'])) {
+                $found   = $base;
+                $version = $json['version'];
+                $output[] = "Frigate v{$version} gefunden unter $base";
+                break;
+            }
+        }
+        $output[] = "$base — nicht erreichbar";
+    }
+
+    if (!$found) {
+        resultInfo(false, 'FRIGATE_NOT_FOUND', '', [
+            'output' => implode("\n", $output) . "\n\nFrigate läuft nicht oder ist noch nicht gestartet.",
+        ]);
+        return;
+    }
+
+    // URL in DB speichern
+    $db = DbhCompany::begin();
+    $db->execute(
+        "INSERT INTO defaults_oserp (key, value) VALUES ('camera_frigate_url', :url)
+         ON CONFLICT (key) DO UPDATE SET value = :url",
+        [':url' => $found]
+    );
+
+    resultInfo(true, '', [
+        'frigate_url' => $found,
+        'version'     => $version,
+        'output'      => implode("\n", $output),
     ]);
 }
 
@@ -858,12 +1049,12 @@ function discoverCameras($data) {
 }
 
 /**
- * Automatisch alle Kameras im Netzwerk finden und in die DB eintragen
- * Nutzt ONVIF WS-Discovery via exec()
+ * Automatisch alle Kameras im Netzwerk finden und in die DB eintragen.
+ * Nutzt ONVIF WS-Discovery; Credentials werden automatisch ermittelt
+ * (Hersteller-Datenbank, kein manueller Input noetig).
  *
- * @param array $data['username'] ONVIF-Username (Standard: admin)
- * @param array $data['password'] ONVIF-Passwort (Standard: admin)
- * @testdata {"username": "admin", "password": "admin"}
+ * @param array $data (keine Parameter noetig)
+ * @testdata {}
  */
 function autoDiscoverCameras($data) {
     $scriptPath = __DIR__ . '/../../services/camera-monitor/discover_cameras.py';
@@ -873,16 +1064,15 @@ function autoDiscoverCameras($data) {
         $pythonBin = 'python3';
     }
 
-    // Python-One-Liner der die discover-Funktion aufruft und JSON zurueckgibt
-    $username = escapeshellarg($data['username'] ?? 'admin');
-    $password = escapeshellarg($data['password'] ?? 'admin');
+    // Pfad zum Service-Verzeichnis (fuer sys.path.insert)
+    $serviceDir = realpath(__DIR__ . '/../../services/camera-monitor');
 
     $pythonCode = <<<PYEOF
 import sys, json
-sys.path.insert(0, '{$_SERVER['DOCUMENT_ROOT']}/../backend/services/camera-monitor')
+sys.path.insert(0, '$serviceDir')
 try:
     from discover_cameras import discover_cameras
-    cams = discover_cameras(timeout=5, username={$username}, password={$password}, test_streams=True)
+    cams = discover_cameras(timeout=5, test_streams=False)
     print(json.dumps(cams))
 except Exception as e:
     print(json.dumps({'error': str(e)}))
@@ -907,26 +1097,45 @@ PYEOF;
         return;
     }
 
-    // Bestehende Kameras laden
+    // Bestehende Kameras laden (inkl. inaktiver, um Reaktivierung zu ermoeglichen)
     $db = DbhCompany::begin();
-    $existing = $db->getAll("SELECT frigate_name FROM camera");
-    $existingNames = array_column($existing, 'frigate_name');
+    $existing = $db->getAll("SELECT id, frigate_name, stream_url, active FROM camera");
+    $existingByName = [];
+    foreach ($existing as $row) {
+        $existingByName[$row['frigate_name']] = $row;
+    }
 
     $added = 0;
+    $updated = 0;
     foreach ($discovered as $cam) {
         // Frigate-Name aus IP generieren (z.B. "cam_192_168_1_100")
         $frigateName = 'cam_' . str_replace('.', '_', $cam['ip']);
-
-        if (in_array($frigateName, $existingNames)) {
-            continue; // Bereits vorhanden
-        }
-
         $streamUrl = $cam['rtsp_url'] ?? '';
         $name = $cam['name'] ?: ('Kamera ' . $cam['ip']);
         $location = $cam['location'] ?? '';
         $hardware = $cam['hardware'] ?? '';
         if ($hardware) {
             $location = $location ? "$location ($hardware)" : $hardware;
+        }
+
+        if (array_key_exists($frigateName, $existingByName)) {
+            $existingCam = $existingByName[$frigateName];
+            // Inaktive Kamera wiedergefunden: reaktivieren
+            if (!$existingCam['active']) {
+                $db->execute(
+                    "UPDATE camera SET active = true, name = :name, location = :location, stream_url = COALESCE(NULLIF(:stream_url, ''), stream_url), mtime = NOW() WHERE id = :id",
+                    [':id' => $existingCam['id'], ':name' => $name, ':location' => $location, ':stream_url' => $streamUrl]
+                );
+                $updated++;
+            } elseif (empty($existingCam['stream_url']) && $streamUrl !== '') {
+                // Aktive Kamera ohne stream_url: URL nachtragen
+                $db->execute(
+                    "UPDATE camera SET stream_url = :stream_url WHERE id = :id",
+                    [':stream_url' => $streamUrl, ':id' => $existingCam['id']]
+                );
+                $updated++;
+            }
+            continue;
         }
 
         $db->execute("
@@ -945,6 +1154,7 @@ PYEOF;
     resultInfo(true, '', [
         'cameras' => $discovered,
         'added' => $added,
+        'updated' => $updated,
     ]);
 }
 

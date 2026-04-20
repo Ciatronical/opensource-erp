@@ -28,6 +28,13 @@
             "currencyPricesTaxTitle": "Currency, Prices & Tax",
             "conditionsTitle": "Conditions"
         },
+        "businessCard": {
+            "button": "Business Card AI",
+            "success": "Business card recognized ({confidence}% confidence) — please review data",
+            "lowConfidence": "No data could be recognized in the image. Please use a different photo.",
+            "tooLarge": "File is too large (max. 10 MB).",
+            "error": "Business card could not be analyzed."
+        },
         "billAddresses": {
             "title": "Additional Billing Addresses",
             "addButton": "Add",

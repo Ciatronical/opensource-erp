@@ -398,6 +398,7 @@
         "loading": "Daten werden geladen...",
         "loadError": "Fehler beim Laden der Daten",
         "generatePdf": "PDF erzeugen",
+        "generateDraftPdf": "Unfertiges PDF erzeugen",
         "pdfError": "Fehler beim Erzeugen des PDFs",
         "sections": {
             "auftragsart": "Auftragsart",

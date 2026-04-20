@@ -398,6 +398,7 @@
         "loading": "Loading data...",
         "loadError": "Error loading data",
         "generatePdf": "Generate PDF",
+        "generateDraftPdf": "Generate draft PDF",
         "pdfError": "Error generating PDF",
         "sections": {
             "auftragsart": "Order type",

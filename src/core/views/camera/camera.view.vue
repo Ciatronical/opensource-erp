@@ -303,7 +303,16 @@
                 <!-- Frigate-Konfiguration -->
                 <v-col cols="12" md="6">
                     <v-card>
-                        <v-card-title>{{ t('CameraView.frigateConfig') }}</v-card-title>
+                        <v-card-title>
+                            <v-tooltip location="top" max-width="420">
+                                <template #activator="{ props }">
+                                    <span v-bind="props" class="text-decoration-underline-dotted cursor-help">
+                                        {{ t('CameraView.frigateConfig') }}
+                                    </span>
+                                </template>
+                                {{ t('CameraView.frigateTooltip') }}
+                            </v-tooltip>
+                        </v-card-title>
                         <v-card-text>
                             <v-text-field
                                 v-model="frigateUrl"
@@ -323,9 +332,32 @@
                                     <v-btn icon="mdi-refresh" size="x-small" variant="text" @click="generateToken" :title="t('CameraView.generateToken')" />
                                 </template>
                             </v-text-field>
-                            <v-btn color="primary" @click="saveFrigateConfig" :loading="savingConfig">
+                            <v-btn color="primary" @click="saveFrigateConfig" :loading="savingConfig" class="mb-3">
                                 {{ t('CameraView.save') }}
                             </v-btn>
+                            <div class="d-flex gap-2 align-center flex-wrap">
+                                <v-btn-toggle
+                                    v-model="frigateInstallType"
+                                    mandatory density="compact" variant="outlined"
+                                    class="mr-2"
+                                >
+                                    <v-btn value="native" size="small">{{ t('CameraView.frigateNative') }}</v-btn>
+                                    <v-btn value="docker" size="small">Docker</v-btn>
+                                </v-btn-toggle>
+                                <v-btn
+                                    variant="tonal" prepend-icon="mdi-console-line"
+                                    @click="showFrigateInstallCmds"
+                                >
+                                    {{ t('CameraView.frigateInstallBtn') }}
+                                </v-btn>
+                                <v-btn
+                                    variant="tonal" prepend-icon="mdi-radar"
+                                    :loading="detectingFrigate"
+                                    @click="detectFrigate"
+                                >
+                                    {{ t('CameraView.frigateDetectBtn') }}
+                                </v-btn>
+                            </div>
                         </v-card-text>
                     </v-card>
 
@@ -606,6 +638,63 @@
                 </v-card-actions>
             </v-card>
         </v-dialog>
+
+        <!-- Install-Dialog (Terminal-Output) -->
+        <v-dialog v-model="installDialog.show" max-width="680" persistent>
+            <v-card>
+                <v-card-title class="d-flex align-center">
+                    <v-icon class="mr-2" size="20">mdi-console</v-icon>
+                    {{ t('CameraView.hwInstallTitle', { pkg: installDialog.pkg }) }}
+                </v-card-title>
+                <v-card-text class="pa-0">
+                    <!-- Laufend -->
+                    <div v-if="installDialog.running" class="d-flex align-center pa-4 gap-3">
+                        <v-progress-circular indeterminate size="20" width="2" color="primary" class="mr-3" />
+                        <span class="text-body-2">{{ t('CameraView.hwInstallRunning') }}</span>
+                    </div>
+                    <!-- Status-Banner -->
+                    <v-alert
+                        v-else-if="installDialog.success !== null"
+                        :type="installDialog.success ? 'success' : 'error'"
+                        variant="tonal" rounded="0" class="mb-0"
+                        :text="installDialog.success
+                            ? t('CameraView.hwInstallSuccess', { pkg: installDialog.pkg })
+                            : t('CameraView.hwInstallFailed', { pkg: installDialog.pkg })"
+                    />
+                    <!-- Neutral-Banner (Frigate-Befehle / nur Info) -->
+                    <v-alert
+                        v-else-if="!installDialog.running && installDialog.output"
+                        type="info" variant="tonal" rounded="0" class="mb-0"
+                        :text="installDialog.output"
+                    />
+                    <!-- Terminal-Output -->
+                    <pre
+                        v-if="installDialog.cmd"
+                        class="install-terminal"
+                    >{{ installDialog.cmd }}</pre>
+                    <!-- Info-Text (z.B. URLs nach Installation) -->
+                    <div v-if="installDialog.info" class="pa-3 text-caption text-medium-emphasis" style="white-space: pre-line">
+                        {{ installDialog.info }}
+                    </div>
+                    <!-- Manuelle Anleitung bei Fehler -->
+                    <div v-if="installDialog.success === false" class="pa-4">
+                        <div class="text-caption text-medium-emphasis mb-1">
+                            {{ t('CameraView.hwInstallManualHint') }}
+                        </div>
+                        <pre class="install-terminal install-terminal--small">cd backend/services/camera-monitor
+source venv/bin/activate
+pip install {{ installDialog.pkg }}</pre>
+                    </div>
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer />
+                    <v-btn
+                        :disabled="installDialog.running"
+                        @click="installDialog.show = false"
+                    >{{ t('CameraView.hwInstallClose') }}</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
     </v-container>
 </template>
 
@@ -636,6 +725,17 @@ const discovering = ref(false)
 const hw = ref(null)
 const hwLoading = ref(false)
 const installingPkg = ref('')
+const installDialog = reactive({
+    show: false,
+    pkg: '',
+    cmd: '',
+    output: '',
+    info: '',
+    running: false,
+    success: null,
+})
+const detectingFrigate = ref(false)
+const frigateInstallType = ref('native')  // 'native' | 'docker'
 
 // Kamera-Dialog
 const showCameraDialog = ref(false)
@@ -928,16 +1028,70 @@ async function loadHardwareInfo() {
 
 async function installHwPackage(pkg, service) {
     installingPkg.value = pkg
+    Object.assign(installDialog, {
+        show: true, pkg, cmd: '', output: '', running: true, success: null,
+    })
     try {
         const res = await axios.post('/api/camera/', { action: 'installPythonPackage', package: pkg, service })
-        if (res.data.success) {
-            toast.success(t('CameraView.hwInstallSuccess', { pkg }))
-            loadHardwareInfo()
+        installDialog.running = false
+        installDialog.cmd = res.data.payload?.cmd || ''
+        installDialog.output = res.data.payload?.output || ''
+        // VENV_MISSING: Setup-Befehle als cmd anzeigen
+        if (res.data.error === 'VENV_MISSING') {
+            installDialog.cmd = res.data.payload?.setup_cmd || ''
+            installDialog.success = false
         } else {
-            toast.error(t('CameraView.hwInstallFailed', { pkg }))
+            installDialog.success = res.data.success
+        }
+        if (res.data.success) loadHardwareInfo()
+    } catch (e) {
+        installDialog.running = false
+        installDialog.success = false
+        installDialog.output = e.message
+    }
+    installingPkg.value = ''
+}
+
+async function showFrigateInstallCmds() {
+    Object.assign(installDialog, {
+        show: true,
+        pkg: 'Frigate / go2rtc',
+        cmd: '',
+        output: '',
+        info: '',
+        running: true,
+        success: null,
+    })
+    try {
+        const res = await axios.post('/api/camera/', {
+            action: 'getFrigateSetupCmds',
+            client: oserp.session.client,
+            type: frigateInstallType.value,
+        })
+        installDialog.running = false
+        installDialog.cmd = res.data.payload?.cmd || ''
+        installDialog.info = res.data.payload?.info || ''
+        installDialog.output = t('CameraView.frigateInstallHint')
+        installDialog.success = null
+    } catch (e) {
+        installDialog.running = false
+        installDialog.output = e.message
+        installDialog.success = false
+    }
+}
+
+async function detectFrigate() {
+    detectingFrigate.value = true
+    try {
+        const res = await axios.post('/api/camera/', { action: 'detectFrigate' })
+        if (res.data.success) {
+            frigateUrl.value = res.data.payload.frigate_url
+            toast.success(t('CameraView.frigateDetected'))
+        } else {
+            toast.warning(t('CameraView.frigateNotFound'))
         }
     } catch (e) { toast.error(e.message) }
-    installingPkg.value = ''
+    detectingFrigate.value = false
 }
 
 const hwActiveBackend = computed(() => {
@@ -975,8 +1129,9 @@ async function autoDiscover() {
         const res = await axios.post('/api/camera/', { action: 'autoDiscoverCameras' })
         if (res.data.success) {
             const count = res.data.payload.added || 0
+            const updated = res.data.payload.updated || 0
             const found = res.data.payload.cameras?.length || 0
-            if (count > 0) {
+            if (count > 0 || updated > 0) {
                 toast.success(t('CameraView.discovered', { found, added: count }))
                 loadCameras()
             } else if (found > 0) {
@@ -1108,5 +1263,22 @@ onMounted(async () => {
 }
 .stream-refresh-btn:hover {
     opacity: 1;
+}
+.install-terminal {
+    background: #1e1e1e;
+    color: #d4d4d4;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    line-height: 1.5;
+    padding: 16px;
+    margin: 0;
+    max-height: 360px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+.install-terminal--small {
+    max-height: 80px;
+    font-size: 11px;
 }
 </style>

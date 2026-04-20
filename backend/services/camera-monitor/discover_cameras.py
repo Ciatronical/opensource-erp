@@ -3,8 +3,8 @@
 ONVIF-Kamera-Erkennung im Netzwerk.
 
 Findet automatisch alle ONVIF-kompatiblen IP-Kameras und gibt deren
-RTSP-Stream-URLs zurueck. Kann als Standalone-Skript oder als Modul
-verwendet werden.
+RTSP-Stream-URLs zurueck. Credentials werden automatisch ermittelt —
+keine manuelle Eingabe noetig (wie Xeoma).
 
 Nutzung:
     # Standalone: zeigt alle gefundenen Kameras
@@ -50,6 +50,55 @@ PROBE_TEMPLATE = """<?xml version="1.0" encoding="utf-8"?>
 </soap:Envelope>"""
 
 
+# --- Credential-Datenbank ---------------------------------------------------
+# Generische Zugangsdaten, der Reihe nach versucht (haeufigste zuerst)
+DEFAULT_CREDENTIALS = [
+    ('admin', 'admin'),
+    ('admin', ''),
+    ('admin', '12345'),
+    ('admin', '123456'),
+    ('admin', 'password'),
+    ('root', 'root'),
+    ('root', ''),
+    ('user', 'user'),
+    ('guest', 'guest'),
+]
+
+# Hersteller-spezifische Zugangsdaten (Schluesselbegriff in Hardware/Name)
+BRAND_CREDENTIALS = {
+    'hikvision': [('admin', '12345'), ('admin', 'admin'), ('admin', '')],
+    'ds-':       [('admin', '12345'), ('admin', 'admin')],          # Hikvision DS-Serie
+    'dahua':     [('admin', 'admin'), ('admin', ''), ('admin', '12345')],
+    'reolink':   [('admin', 'admin'), ('admin', '')],
+    'axis':      [('root', 'pass'), ('root', 'root'), ('admin', 'admin')],
+    'amcrest':   [('admin', 'admin'), ('admin', 'amcrest')],
+    'foscam':    [('admin', ''), ('admin', 'admin')],
+    'hanwha':    [('admin', 'no1done'), ('admin', 'admin')],
+    'samsung':   [('admin', '4321'), ('admin', 'admin')],
+    'vivotek':   [('root', 'root'), ('admin', 'admin')],
+    'uniview':   [('admin', '123456'), ('admin', 'admin')],
+    'tiandy':    [('admin', 'admin'), ('admin', '123456')],
+    'tp-link':   [('admin', 'admin'), ('admin', '123456')],
+    'tapo':      [('admin', 'admin')],
+    'bosch':     [('admin', ''), ('service', 'service')],
+    'pelco':     [('admin', 'admin'), ('admin', '')],
+}
+
+
+def _get_credentials_for_camera(hardware='', name=''):
+    """
+    Erstellt eine priorisierte Credential-Liste basierend auf dem Kameramodell.
+    Hersteller-spezifische Zugangsdaten kommen zuerst.
+    """
+    combined = (hardware + ' ' + name).lower()
+    for brand, creds in BRAND_CREDENTIALS.items():
+        if brand in combined:
+            # Hersteller-spezifische zuerst, dann generische als Fallback
+            extra = [c for c in DEFAULT_CREDENTIALS if c not in creds]
+            return creds + extra
+    return DEFAULT_CREDENTIALS
+
+
 def _send_probe(timeout=WS_DISCOVERY_TIMEOUT):
     """WS-Discovery Multicast-Probe senden und Antworten sammeln."""
     msg_id = str(uuid.uuid4())
@@ -80,7 +129,6 @@ def _send_probe(timeout=WS_DISCOVERY_TIMEOUT):
 
 def _parse_xaddrs(xml_response):
     """XAddrs (Service-URLs) aus WS-Discovery Antwort extrahieren."""
-    # Einfacher Regex-Parser (kein lxml noetig)
     match = re.search(r'<[^>]*XAddrs[^>]*>([^<]+)<', xml_response)
     if match:
         return match.group(1).strip().split()
@@ -104,54 +152,106 @@ def _parse_scopes(xml_response):
     return {}
 
 
-def _get_rtsp_url_via_onvif(device_url, username='admin', password='admin'):
+def _get_rtsp_url_via_onvif(device_url, credentials):
     """
     RTSP Stream-URL ueber ONVIF GetStreamUri abfragen.
-    Versucht es mit onvif-zeep (wenn installiert), sonst Fallback auf Standard-URLs.
+    Probiert alle uebergebenen Credential-Paare der Reihe nach.
+    Benoetigt onvif-zeep; ohne Fallback auf URL-Guessing.
     """
-    try:
-        from onvif import ONVIFCamera
-        parsed = urlparse(device_url)
-        host = parsed.hostname
-        port = parsed.port or 80
+    for username, password in credentials:
+        try:
+            from onvif import ONVIFCamera
+            parsed = urlparse(device_url)
+            host = parsed.hostname
+            port = parsed.port or 80
 
-        cam = ONVIFCamera(host, port, username, password)
-        media_service = cam.create_media_service()
-        profiles = media_service.GetProfiles()
+            cam = ONVIFCamera(host, port, username, password)
+            media_service = cam.create_media_service()
+            profiles = media_service.GetProfiles()
 
-        if profiles:
-            stream_setup = {
-                'Stream': 'RTP-Unicast',
-                'Transport': {'Protocol': 'RTSP'}
-            }
-            uri_response = media_service.GetStreamUri({
-                'StreamSetup': stream_setup,
-                'ProfileToken': profiles[0].token
-            })
-            return uri_response.Uri
-    except ImportError:
-        pass
-    except Exception:
-        pass
+            if profiles:
+                stream_setup = {
+                    'Stream': 'RTP-Unicast',
+                    'Transport': {'Protocol': 'RTSP'}
+                }
+                uri_response = media_service.GetStreamUri({
+                    'StreamSetup': stream_setup,
+                    'ProfileToken': profiles[0].token
+                })
+                return uri_response.Uri
+        except ImportError:
+            break  # onvif-zeep nicht installiert, kein weiterer Versuch
+        except Exception:
+            continue  # Falsche Credentials oder anderer Fehler, naechstes Paar
 
     return None
 
 
-def _guess_rtsp_urls(ip):
+def _guess_rtsp_urls(ip, credentials=None, hardware=''):
     """
-    Typische RTSP-URLs fuer gaengige Kameramarken generieren.
-    Werden der Reihe nach getestet.
+    Typische RTSP-URLs generieren — hersteller-spezifisch und mit Credentials.
+    Die wahrscheinlichste URL steht zuerst.
     """
-    return [
-        f"rtsp://{ip}:554/stream1",
-        f"rtsp://{ip}:554/Streaming/Channels/101",      # Hikvision
-        f"rtsp://{ip}:554/cam/realmonitor?channel=1&subtype=0",  # Dahua
-        f"rtsp://{ip}:554/live/ch00_0",                  # Reolink
-        f"rtsp://{ip}:554/h264Preview_01_main",          # Amcrest
-        f"rtsp://{ip}:554/onvif1",                       # ONVIF generic
-        f"rtsp://{ip}:554/videoMain",
-        f"rtsp://{ip}:554/1",
+    if credentials is None:
+        credentials = DEFAULT_CREDENTIALS
+
+    user, pw = credentials[0]
+    # Credentials in URL einbetten (rtsp://user:pass@host:port/path)
+    if user and pw:
+        auth = f'{user}:{pw}@'
+    elif user:
+        auth = f'{user}:@'
+    else:
+        auth = ''
+
+    hw = hardware.lower()
+    urls = []
+
+    # Hersteller-spezifische URLs zuerst
+    if 'hikvision' in hw or 'ds-' in hw:
+        urls += [
+            f"rtsp://{auth}{ip}:554/Streaming/Channels/101",
+            f"rtsp://{auth}{ip}:554/Streaming/Channels/1",
+        ]
+    elif 'dahua' in hw:
+        urls += [
+            f"rtsp://{auth}{ip}:554/cam/realmonitor?channel=1&subtype=0",
+        ]
+    elif 'reolink' in hw:
+        urls += [
+            f"rtsp://{auth}{ip}:554/h264Preview_01_main",
+            f"rtsp://{auth}{ip}:554/live/ch00_0",
+        ]
+    elif 'axis' in hw:
+        urls += [
+            f"rtsp://{auth}{ip}:554/axis-media/media.amp",
+        ]
+    elif 'amcrest' in hw:
+        urls += [
+            f"rtsp://{auth}{ip}:554/cam/realmonitor?channel=1&subtype=0",
+            f"rtsp://{auth}{ip}:554/h264Preview_01_main",
+        ]
+
+    # Generische Fallback-URLs
+    urls += [
+        f"rtsp://{auth}{ip}:554/stream1",
+        f"rtsp://{auth}{ip}:554/Streaming/Channels/101",
+        f"rtsp://{auth}{ip}:554/cam/realmonitor?channel=1&subtype=0",
+        f"rtsp://{auth}{ip}:554/live/ch00_0",
+        f"rtsp://{auth}{ip}:554/h264Preview_01_main",
+        f"rtsp://{auth}{ip}:554/onvif1",
+        f"rtsp://{auth}{ip}:554/videoMain",
+        f"rtsp://{auth}{ip}:554/1",
     ]
+
+    # Duplikate entfernen, Reihenfolge beibehalten
+    seen = set()
+    result = []
+    for u in urls:
+        if u not in seen:
+            seen.add(u)
+            result.append(u)
+    return result
 
 
 def _test_rtsp_url(url, timeout=5):
@@ -170,9 +270,10 @@ def _test_rtsp_url(url, timeout=5):
     return False
 
 
-def discover_cameras(timeout=5, username='admin', password='admin', test_streams=False):
+def discover_cameras(timeout=5, test_streams=False):
     """
     Alle ONVIF-Kameras im Netzwerk finden.
+    Credentials werden automatisch ermittelt (Hersteller-DB + Defaults).
 
     Returns:
         Liste von dicts:
@@ -181,13 +282,13 @@ def discover_cameras(timeout=5, username='admin', password='admin', test_streams
             'name': 'Kamera Lager',
             'hardware': 'DS-2CD2346G2',
             'onvif_url': 'http://192.168.1.100/onvif/device_service',
-            'rtsp_url': 'rtsp://192.168.1.100:554/stream1',
+            'rtsp_url': 'rtsp://admin:12345@192.168.1.100:554/Streaming/Channels/101',
             'rtsp_candidates': [...],
         }, ...]
     """
-    print(f"Suche ONVIF-Kameras im Netzwerk (Timeout: {timeout}s)...")
+    print(f"Suche ONVIF-Kameras im Netzwerk (Timeout: {timeout}s)...", file=sys.stderr)
     responses = _send_probe(timeout=timeout)
-    print(f"{len(responses)} Antwort(en) empfangen.")
+    print(f"{len(responses)} Antwort(en) empfangen.", file=sys.stderr)
 
     seen_ips = set()
     cameras = []
@@ -200,28 +301,36 @@ def discover_cameras(timeout=5, username='admin', password='admin', test_streams
         xaddrs = _parse_xaddrs(xml)
         scopes = _parse_scopes(xml)
 
+        hardware = scopes.get('hardware', '')
+        name = scopes.get('name', '')
+        credentials = _get_credentials_for_camera(hardware, name)
+
         cam = {
             'ip': ip,
-            'name': scopes.get('name', f'Kamera {ip}'),
-            'hardware': scopes.get('hardware', ''),
+            'name': name or f'Kamera {ip}',
+            'hardware': hardware,
             'location': scopes.get('location', ''),
             'onvif_url': xaddrs[0] if xaddrs else f'http://{ip}/onvif/device_service',
             'rtsp_url': None,
-            'rtsp_candidates': _guess_rtsp_urls(ip),
+            'rtsp_candidates': _guess_rtsp_urls(ip, credentials, hardware),
         }
 
-        # RTSP-URL ueber ONVIF abfragen
+        # RTSP-URL ueber ONVIF abfragen (probiert automatisch passende Credentials)
         if xaddrs:
-            rtsp = _get_rtsp_url_via_onvif(xaddrs[0], username, password)
+            rtsp = _get_rtsp_url_via_onvif(xaddrs[0], credentials)
             if rtsp:
                 cam['rtsp_url'] = rtsp
 
-        # Wenn kein ONVIF-RTSP: Standard-URLs testen (optional)
+        # Wenn kein ONVIF-RTSP: Standard-URLs testen (optional, langsamer)
         if not cam['rtsp_url'] and test_streams:
-            for url in cam['rtsp_candidates'][:3]:  # Max. 3 testen
+            for url in cam['rtsp_candidates'][:4]:
                 if _test_rtsp_url(url, timeout=3):
                     cam['rtsp_url'] = url
                     break
+
+        # Fallback: wahrscheinlichste URL nehmen (Hersteller-spezifisch, mit Credentials)
+        if not cam['rtsp_url'] and cam['rtsp_candidates']:
+            cam['rtsp_url'] = cam['rtsp_candidates'][0]
 
         cameras.append(cam)
 

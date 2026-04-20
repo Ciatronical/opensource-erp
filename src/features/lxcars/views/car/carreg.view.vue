@@ -211,10 +211,19 @@
             </v-card>
 
             <!-- 7. Actions -->
-            <div class="d-flex ga-2 mt-4">
+            <div class="d-flex ga-2 mt-4 flex-wrap">
                 <v-btn color="success" type="submit" :loading="generating" :disabled="!formValid">
                     <v-icon start>mdi-file-pdf-box</v-icon>
                     {{ t('CarRegView.generatePdf') }}
+                </v-btn>
+                <v-btn
+                    color="warning"
+                    variant="tonal"
+                    :loading="generating"
+                    @click="onGenerateDraftPdf"
+                >
+                    <v-icon start>mdi-file-document-alert-outline</v-icon>
+                    {{ t('CarRegView.generateDraftPdf') }}
                 </v-btn>
                 <v-btn variant="text" @click="router.back()">
                     {{ t('CarRegView.back') }}
@@ -347,9 +356,11 @@ export default {
             }
         })
 
-        async function onGeneratePdf() {
-            const { valid } = await formRef.value.validate()
-            if (!valid) return
+        async function generatePdf(skipValidation) {
+            if (!skipValidation) {
+                const { valid } = await formRef.value.validate()
+                if (!valid) return
+            }
 
             generating.value = true
             error.value = null
@@ -375,9 +386,13 @@ export default {
             }
         }
 
+        const onGeneratePdf = () => generatePdf(false)
+        const onGenerateDraftPdf = () => generatePdf(true)
+
         return {
             t, router, loading, error, generating, formRef, formValid,
-            form, displayGebdatum, onBlurGebdatum, geschlechtItems, rules, onGeneratePdf
+            form, displayGebdatum, onBlurGebdatum, geschlechtItems, rules,
+            onGeneratePdf, onGenerateDraftPdf
         }
     }
 }
