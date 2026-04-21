@@ -2,15 +2,26 @@
 
 <template>
   <v-card variant="outlined" elevation="1">
-    <v-card-title class="py-2 px-3 bg-grey-lighten-4 d-flex align-center">
+    <v-card-title class="py-2 px-3 bg-grey-lighten-4 d-flex align-center flex-wrap ga-2">
       <h4 class="text-subtitle-1 mb-0">{{ t('CustomerVendorEditView.billing.nameAddressTitle') }}</h4>
       <v-spacer />
       <v-btn
         size="small"
         color="primary"
         variant="tonal"
+        :loading="phoneSearching"
+        :disabled="scanning || phoneSearching"
+        prepend-icon="mdi-phone-search-outline"
+        @click="openPhoneSearchDialog"
+      >
+        {{ t('CustomerVendorEditView.phoneSearch.button') }}
+      </v-btn>
+      <v-btn
+        size="small"
+        color="primary"
+        variant="tonal"
         :loading="scanning"
-        :disabled="scanning"
+        :disabled="scanning || phoneSearching"
         prepend-icon="mdi-creation"
         @click="openBusinessCardPicker"
       >
@@ -152,6 +163,43 @@
     </v-card-text>
   </v-card>
 
+  <v-dialog v-model="phoneDialog.show" max-width="460" persistent>
+    <v-card>
+      <v-card-title class="d-flex align-center">
+        <v-icon color="primary" class="mr-2">mdi-phone-search-outline</v-icon>
+        {{ t('CustomerVendorEditView.phoneSearch.title') }}
+      </v-card-title>
+      <v-card-text>
+        <p class="text-caption mb-3">{{ t('CustomerVendorEditView.phoneSearch.hint') }}</p>
+        <v-text-field
+          v-model="phoneDialog.phone"
+          :label="t('CustomerVendorEditView.fields.phone')"
+          variant="outlined"
+          density="compact"
+          autofocus
+          :disabled="phoneSearching"
+          @keyup.enter="runPhoneSearch"
+        />
+      </v-card-text>
+      <v-card-actions>
+        <v-btn variant="outlined" :disabled="phoneSearching" @click="phoneDialog.show = false">
+          {{ t('CustomerVendorEditView.phoneSearch.cancel') }}
+        </v-btn>
+        <v-spacer />
+        <v-btn
+          color="primary"
+          variant="flat"
+          :loading="phoneSearching"
+          :disabled="!phoneDialog.phone || phoneDialog.phone.length < 5"
+          prepend-icon="mdi-magnify"
+          @click="runPhoneSearch"
+        >
+          {{ t('CustomerVendorEditView.phoneSearch.search') }}
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
+
   <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="4000" location="top">
     {{ snackbar.text }}
     <template #actions>
@@ -218,6 +266,74 @@ export default {
     const fileInput = ref(null)
     const scanning = ref(false)
     const snackbar = ref({ show: false, color: 'success', text: '' })
+
+    // ── Telefonnummer-Websuche per KI ──
+    const phoneSearching = ref(false)
+    const phoneDialog = ref({ show: false, phone: '' })
+
+    function openPhoneSearchDialog() {
+      if (scanning.value || phoneSearching.value) return
+      phoneDialog.value = {
+        show: true,
+        phone: (localData.value.phone || '').trim()
+      }
+    }
+
+    async function runPhoneSearch() {
+      const phone = (phoneDialog.value.phone || '').trim()
+      if (phone.length < 5) return
+
+      phoneSearching.value = true
+      try {
+        const response = await axios.post('/api/customer_vendor/', {
+          action: 'searchByPhone',
+          phone,
+          src: localData.value.src || 'C'
+        })
+        if (!response.data?.success) {
+          throw new Error(response.data?.text || 'Suche fehlgeschlagen')
+        }
+        const extracted = response.data.payload?.extracted || {}
+        const confidence = Number(extracted.confidence ?? 0)
+
+        if (confidence <= 0) {
+          snackbar.value = {
+            show: true, color: 'warning',
+            text: t('CustomerVendorEditView.phoneSearch.notFound')
+          }
+          return
+        }
+
+        applyIfEmpty('name', extracted.name)
+        applyIfEmpty('contact', extracted.contact)
+        applyIfEmpty('street', extracted.street)
+        applyIfEmpty('phone', extracted.phone || phone)
+        applyIfEmpty('email', extracted.email)
+        applyIfEmpty('homepage', extracted.homepage)
+        applyIfEmpty('commercial_court', extracted.commercial_court)
+        applyIfEmpty('taxnumber', extracted.taxnumber)
+        applyIfEmpty('ustid', extracted.ustid)
+        localData.value.country = 'D'
+        if (typeof extracted.natural_person === 'boolean' && localData.value.natural_person == null) {
+          localData.value.natural_person = extracted.natural_person
+        }
+        // PLZ zuletzt — löst lookupZipcode-Watcher aus der den Ort aus der DB füllt
+        applyIfEmpty('zipcode', extracted.zipcode)
+
+        phoneDialog.value.show = false
+        snackbar.value = {
+          show: true, color: 'success',
+          text: t('CustomerVendorEditView.phoneSearch.success', { confidence: Math.round(confidence * 100) })
+        }
+      } catch (e) {
+        snackbar.value = {
+          show: true, color: 'error',
+          text: (e?.response?.data?.text || e?.message || t('CustomerVendorEditView.phoneSearch.error'))
+        }
+      } finally {
+        phoneSearching.value = false
+      }
+    }
 
     function openBusinessCardPicker() {
       if (scanning.value) return
@@ -410,6 +526,8 @@ export default {
       localData, onNameBlur, cityChoices, showCityMenu,
       fileInput, scanning, snackbar,
       openBusinessCardPicker, onBusinessCardSelected,
+      phoneSearching, phoneDialog,
+      openPhoneSearchDialog, runPhoneSearch,
       t,
     }
   }

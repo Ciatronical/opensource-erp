@@ -35,6 +35,16 @@
             "tooLarge": "Datei ist zu groß (max. 10 MB).",
             "error": "Visitenkarte konnte nicht analysiert werden."
         },
+        "phoneSearch": {
+            "button": "Telefon KI",
+            "title": "Kunde anhand Telefonnummer suchen",
+            "hint": "Die KI sucht im Web (Impressum, Branchenverzeichnisse) nach der Nummer und füllt die Stammdaten aus.",
+            "search": "Suchen",
+            "cancel": "Abbrechen",
+            "success": "Treffer gefunden ({confidence}% Konfidenz) — bitte Daten prüfen",
+            "notFound": "Keine belastbaren Treffer zu dieser Nummer gefunden.",
+            "error": "Websuche fehlgeschlagen."
+        },
         "billAddresses": {
             "title": "Zusätzliche Rechnungsadressen",
             "addButton": "Hinzufügen",

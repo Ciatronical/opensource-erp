@@ -35,6 +35,16 @@
             "tooLarge": "File is too large (max. 10 MB).",
             "error": "Business card could not be analyzed."
         },
+        "phoneSearch": {
+            "button": "Phone AI",
+            "title": "Find customer by phone number",
+            "hint": "The AI searches the web (imprint, directories) for the number and fills in the master data.",
+            "search": "Search",
+            "cancel": "Cancel",
+            "success": "Match found ({confidence}% confidence) — please review data",
+            "notFound": "No reliable matches found for this phone number.",
+            "error": "Web search failed."
+        },
         "billAddresses": {
             "title": "Additional Billing Addresses",
             "addButton": "Add",
