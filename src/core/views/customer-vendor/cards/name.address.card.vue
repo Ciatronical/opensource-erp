@@ -247,7 +247,7 @@ export default {
     async function onBusinessCardSelected(event) {
       const file = event.target.files?.[0]
       if (!file) return
-      // Reset input damit dieselbe Datei erneut waehlbar ist
+      // Reset input damit dieselbe Datei erneut wählbar ist
       event.target.value = ''
 
       if (file.size > 10 * 1024 * 1024) {
@@ -280,14 +280,14 @@ export default {
           return
         }
 
-        // Stammdaten nur in leere Felder uebernehmen — bestehende Eingaben nicht ueberschreiben
+        // Stammdaten nur in leere Felder übernehmen — bestehende Eingaben nicht überschreiben
         // greeting kommt direkt von der Visitenkarten-KI (Firma/Herr/Frau)
         console.log('[DEBUG] BEFORE applyIfEmpty greeting:', localData.value.greeting)
         applyIfEmpty('name', extracted.name)
         applyIfEmpty('contact', extracted.contact)
         applyIfEmpty('greeting', extracted.greeting)
         console.log('[DEBUG] AFTER applyIfEmpty greeting:', localData.value.greeting)
-        // Abteilungen werden bewusst NICHT uebernommen — zu haeufige Falsch-Erkennung
+        // Abteilungen werden bewusst NICHT übernommen — zu häufige Falsch-Erkennung
         applyIfEmpty('street', extracted.street)
         applyIfEmpty('phone', extracted.phone)
         applyIfEmpty('email', extracted.email)
@@ -299,8 +299,8 @@ export default {
         // Land IMMER 'D' (interner Code, nicht ISO 'DE')
         localData.value.country = 'D'
 
-        // PLZ ZULETZT setzen — der bestehende lookupZipcode-Watcher fuellt den Ort
-        // aus der DB (bzw. zeigt Auswahl), das ist zuverlaessiger als die OCR der KI.
+        // PLZ ZULETZT setzen — der bestehende lookupZipcode-Watcher füllt den Ort
+        // aus der DB (bzw. zeigt Auswahl), das ist zuverlässiger als die OCR der KI.
         // Stadt aus der Extraktion wird verworfen, aber für Ähnlichkeits-Vergleich gespeichert.
         extractedCity.value = (extracted.city || '').trim()
         console.log('[DEBUG] extractedCity stored:', extractedCity.value)
@@ -310,7 +310,7 @@ export default {
           localData.value.natural_person = extracted.natural_person
         }
 
-        // Weitere Telefonnummern anhaengen (ohne Duplikate)
+        // Weitere Telefonnummern anhängen (ohne Duplikate)
         if (Array.isArray(extracted.phone_numbers) && extracted.phone_numbers.length) {
           const existing = Array.isArray(localData.value.phone_numbers)
             ? [...localData.value.phone_numbers]

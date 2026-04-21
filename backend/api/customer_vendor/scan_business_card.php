@@ -223,17 +223,17 @@ function scanBusinessCard($data) {
 
     $allowedMimes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif', 'application/pdf'];
     if (!in_array($mimeType, $allowedMimes, true)) {
-        throw new ApiError('VALIDATION_ERROR', 'Ungueltiger MIME-Typ. Erlaubt: ' . implode(', ', $allowedMimes));
+        throw new ApiError('VALIDATION_ERROR', 'Ungültiger MIME-Typ. Erlaubt: ' . implode(', ', $allowedMimes));
     }
 
     $decoded = base64_decode($fileBase64, true);
     if ($decoded === false) {
-        throw new ApiError('VALIDATION_ERROR', 'Ungueltige Base64-Daten');
+        throw new ApiError('VALIDATION_ERROR', 'Ungültige Base64-Daten');
     }
     if (strlen($decoded) > 10 * 1024 * 1024) {
-        throw new ApiError('VALIDATION_ERROR', 'Datei zu gross (max. 10 MB)');
+        throw new ApiError('VALIDATION_ERROR', 'Datei zu groß (max. 10 MB)');
     }
-    writeLog('Validierung OK, Dateigroesse=' . strlen($decoded));
+    writeLog('Validierung OK, Dateigröße=' . strlen($decoded));
 
     // API-Key und Modell aus DB laden
     $config = $db->fetchKeyValue(

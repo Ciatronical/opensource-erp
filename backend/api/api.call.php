@@ -26,6 +26,10 @@ if(isset($data['action'])) {
         writeLog($e->getMessage());
         if(!is_null($e->getQuery())) writeLog($e->getQuery());
     }
+    catch (\Throwable $e) {
+        resultInfo(false, 'API_INTERNAL_ERROR: ' . $e->getMessage() . ' in ' . basename($e->getFile()) . ':' . $e->getLine());
+        writeLog($e->getMessage() . "\n" . $e->getTraceAsString());
+    }
 }
 else {
     resultInfo(false, 'API_ACTION_NOT_SPECIFIED', 'No action specified');

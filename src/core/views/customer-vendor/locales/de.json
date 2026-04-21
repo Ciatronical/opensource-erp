@@ -30,9 +30,9 @@
         },
         "businessCard": {
             "button": "Visitenkarte KI",
-            "success": "Visitenkarte erkannt ({confidence}% Konfidenz) — bitte Daten pruefen",
+            "success": "Visitenkarte erkannt ({confidence}% Konfidenz) — bitte Daten prüfen",
             "lowConfidence": "Keine Daten auf dem Bild erkannt. Bitte anderes Foto verwenden.",
-            "tooLarge": "Datei ist zu gross (max. 10 MB).",
+            "tooLarge": "Datei ist zu groß (max. 10 MB).",
             "error": "Visitenkarte konnte nicht analysiert werden."
         },
         "billAddresses": {
