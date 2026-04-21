@@ -202,15 +202,13 @@ export default defineComponent({
             exit: {
                 text: '\u2715',
                 click: exitWallDisplay
-            },
-            clock: {
-                text: currentTime.value || '--:--'
             }
+            // clock wird von calendar-main intern verwaltet
         }))
 
         const calendarHeaderToolbar = {
             left: 'prev,next today exit',
-            center: 'title clock',
+            center: 'calendarWeek title clock',
             right: 'listCustomWeek,timeGridCustomWeek,timeGridDay,dayGridMonth'
         }
 
@@ -592,15 +590,19 @@ export default defineComponent({
 .wall-display--size-compact .fc .fc-event-time {
     font-size: 0.7rem !important;
 }
-.wall-display--size-compact .fc-clock-button,
-.wall-display--size-compact .fc-clock-button:hover,
-.wall-display--size-compact .fc-clock-button:focus,
-.wall-display--size-compact .fc-clock-button:active {
+.wall-display--size-compact .fc .fc-clock-button,
+.wall-display--size-compact .fc .fc-clock-button:hover,
+.wall-display--size-compact .fc .fc-clock-button:focus,
+.wall-display--size-compact .fc .fc-clock-button:active {
     font-size: 0.95rem !important;
     padding: 0 0 0 12px !important;
 }
-.wall-display--size-compact .fc-exit-button,
-.wall-display--size-compact .fc-exit-button:hover {
+.wall-display--size-compact .fc .fc-calendarWeek-button {
+    font-size: 0.95rem !important;
+    padding: 4px 8px !important;
+}
+.wall-display--size-compact .fc .fc-exit-button,
+.wall-display--size-compact .fc .fc-exit-button:hover {
     padding: 3px 8px !important;
     font-size: 0.85rem !important;
     margin-left: 6px !important;
@@ -617,6 +619,10 @@ export default defineComponent({
 .wall-display--size-normal .fc .fc-button {
     padding: 8px 14px !important;
     font-size: 0.85rem !important;
+}
+.wall-display--size-normal .fc .fc-calendarWeek-button {
+    font-size: 1.25rem !important;
+    padding: 4px 10px !important;
 }
 
 /* large: Hochformat-Wandtablet — bewusst gross */
@@ -645,15 +651,19 @@ export default defineComponent({
 .wall-display--size-large .fc .fc-event-time {
     font-size: 1.05rem !important;
 }
-.wall-display--size-large .fc-clock-button,
-.wall-display--size-large .fc-clock-button:hover,
-.wall-display--size-large .fc-clock-button:focus,
-.wall-display--size-large .fc-clock-button:active {
-    font-size: 1.7rem !important;
+.wall-display--size-large .fc .fc-clock-button,
+.wall-display--size-large .fc .fc-clock-button:hover,
+.wall-display--size-large .fc .fc-clock-button:focus,
+.wall-display--size-large .fc .fc-clock-button:active {
+    font-size: 3rem !important;
     padding: 0 0 0 24px !important;
 }
-.wall-display--size-large .fc-exit-button,
-.wall-display--size-large .fc-exit-button:hover {
+.wall-display--size-large .fc .fc-calendarWeek-button {
+    font-size: 2.5rem !important;
+    padding: 6px 14px !important;
+}
+.wall-display--size-large .fc .fc-exit-button,
+.wall-display--size-large .fc .fc-exit-button:hover {
     padding: 12px 20px !important;
     font-size: 1.4rem !important;
 }

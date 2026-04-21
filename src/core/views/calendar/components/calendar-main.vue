@@ -6,7 +6,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import FullCalendar from '@fullcalendar/vue3'
 import dayGridPlugin from '@fullcalendar/daygrid'
@@ -32,6 +32,44 @@ const emit = defineEmits(['event-click', 'date-click', 'event-drop', 'event-resi
 const { t, locale } = useI18n()
 const calendarRef = ref(null)
 const oserp = oserpStore()
+
+// ── Uhr ──
+const currentTime = ref(new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }))
+let clockTimer = null
+function updateClock() {
+    currentTime.value = new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })
+}
+
+// ── Kalenderwoche ──
+const currentKW = ref(getISOWeek(new Date()))
+
+function getISOWeek(date) {
+    const d = new Date(date)
+    d.setHours(0, 0, 0, 0)
+    d.setDate(d.getDate() + 4 - (d.getDay() || 7))
+    const yearStart = new Date(d.getFullYear(), 0, 1)
+    return Math.ceil((((d - yearStart) / 86400000) + 1) / 7)
+}
+
+function applyKWColor(kw) {
+    if (!kw) return
+    const btn = calendarRef.value?.getApi()?.el?.querySelector('.fc-calendarWeek-button')
+    if (!btn) return
+    const isEven = kw % 2 === 0
+    btn.style.color = isEven ? '#1565c0' : '#2e7d32'
+    btn.style.backgroundColor = isEven ? '#e3f2fd' : '#e8f5e9'
+}
+
+const mergedCustomButtons = computed(() => ({
+    calendarWeek: {
+        text: `${currentKW.value}.KW`,
+        hint: 'Kalenderwoche'
+    },
+    clock: {
+        text: currentTime.value || '--:--'
+    },
+    ...props.customButtons
+}))
 
 // Arbeitszeiten aus Company-Config — sichtbarer Tagesbereich im TimeGrid.
 // Werte aus HH:MM in HH:MM:SS normalisieren (FullCalendar-Format).
@@ -89,10 +127,10 @@ const calendarOptions = computed(() => {
     locale: locale.value === 'de' ? deLocale : undefined,
     headerToolbar: props.headerToolbar || {
         left: 'prev,next today',
-        center: 'title',
+        center: 'calendarWeek title clock',
         right: 'listCustomWeek,timeGridCustomWeek,timeGridDay,dayGridMonth'
     },
-    customButtons: props.customButtons,
+    customButtons: mergedCustomButtons.value,
     events: calendarEvents.value,
     eventClick: handleEventClick,
     dateClick: handleDateClick,
@@ -194,6 +232,9 @@ function handleEventResize(info) {
 }
 
 function handleDatesSet(info) {
+    const kw = getISOWeek(new Date(info.start))
+    currentKW.value = kw
+    nextTick(() => applyKWColor(kw))
     emit('dates-set', {
         start: info.startStr.split('T')[0],
         end: info.endStr.split('T')[0],
@@ -224,6 +265,19 @@ function formatDateTime(date, allDay) {
 watch(() => props.events, () => {
     calendarRef.value?.getApi()?.refetchEvents()
 }, { deep: true })
+
+onMounted(() => {
+    updateClock()
+    const msToNextMinute = (60 - new Date().getSeconds()) * 1000
+    setTimeout(() => {
+        updateClock()
+        clockTimer = setInterval(updateClock, 60000)
+    }, msToNextMinute)
+})
+
+onBeforeUnmount(() => {
+    if (clockTimer) { clearInterval(clockTimer); clockTimer = null }
+})
 
 defineExpose({
     goToDate: (date) => calendarRef.value?.getApi()?.gotoDate(date),
@@ -258,6 +312,15 @@ defineExpose({
     box-shadow: 0 2px 12px rgba(0,0,0,0.06);
     flex-wrap: wrap;
     gap: 12px;
+}
+
+/* Toolbar-Chunks: Items horizontal nebeneinander. Ohne dieses Flex
+   bricht der H2-Titel (display:block) um und stapelt KW/Title/Clock. */
+.fc .fc-toolbar-chunk {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
 }
 
 .fc .fc-toolbar-title {
@@ -562,5 +625,39 @@ defineExpose({
         padding: 8px 12px;
         font-size: 0.75rem;
     }
+}
+
+/* Uhr-Button: gleiche Schriftgröße wie Titel, kein Button-Look */
+.fc .fc-clock-button {
+    font-size: 1.5rem !important;
+    font-weight: 600 !important;
+    font-variant-numeric: tabular-nums;
+    background: transparent !important;
+    color: #424242 !important;
+    cursor: default !important;
+    pointer-events: none;
+    box-shadow: none !important;
+    border-radius: 8px;
+    padding: 4px 10px !important;
+}
+
+.fc .fc-clock-button:hover {
+    background: transparent !important;
+    transform: none !important;
+}
+
+/* Kalenderwoche-Button: kein Button-Look, Farbe per JS gesetzt */
+.fc .fc-calendarWeek-button {
+    font-size: 1.1rem !important;
+    font-weight: 700 !important;
+    cursor: default !important;
+    pointer-events: none;
+    border-radius: 8px;
+    padding: 4px 10px !important;
+    box-shadow: none !important;
+}
+
+.fc .fc-calendarWeek-button:hover {
+    transform: none !important;
 }
 </style>
