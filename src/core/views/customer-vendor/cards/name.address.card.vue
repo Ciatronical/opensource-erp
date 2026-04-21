@@ -317,7 +317,30 @@ export default {
         if (typeof extracted.natural_person === 'boolean' && localData.value.natural_person == null) {
           localData.value.natural_person = extracted.natural_person
         }
+
+        // Anrede bestimmen (wie bei Visitenkarte KI)
+        if (!localData.value.greeting) {
+          if (extracted.natural_person === false) {
+            localData.value.greeting = 'Firma'
+          } else {
+            const nameForGreeting = (extracted.contact || extracted.name || '').trim()
+            const firstname = nameForGreeting.split(/\s+/)[0]
+            if (firstname) {
+              try {
+                const grResp = await axios.post('/api/customer_vendor/', {
+                  action: 'lookupGreeting',
+                  firstname
+                })
+                const g = grResp.data?.payload?.greeting
+                if (g) localData.value.greeting = g
+              } catch (e) { /* silent */ }
+            }
+          }
+        }
+
+        // extracted.city für Ähnlichkeits-Vergleich bei mehreren PLZ-Orten speichern
         // PLZ zuletzt — löst lookupZipcode-Watcher aus der den Ort aus der DB füllt
+        extractedCity.value = (extracted.city || '').trim()
         applyIfEmpty('zipcode', extracted.zipcode)
 
         phoneDialog.value.show = false
