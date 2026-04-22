@@ -8,7 +8,6 @@
             "apiTester": "API tester",
             "storeViewer": "Prohlížeč úložiště",
             "schemaUpdate": "Aktualizace schématu",
-            "schemaSync": "Synchronizace schématu",
             "autoTest": "Automatické testy",
             "requirementSpecs": "Specifikace požadavků",
             "tickets": "Tikety"
@@ -138,20 +137,6 @@
             "invalid_json": "Ungültiges JSON-Format",
             "error_folders": "Fehler beim Laden der API-Ordner",
             "error_functions": "Fehler beim Laden der Funktionen"
-        },
-        "schemaSync": {
-            "title": "Synchronizace schématu",
-            "description": "Exportiere und importiere Datenbankschemas",
-            "exportTitle": "Exportovat schéma",
-            "exportDescription": "Exportiert das aktuelle Datenbankschema in eine SQL-Datei",
-            "exportButton": "Exportovat schéma",
-            "importTitle": "Importovat schéma",
-            "importDescription": "Importiert ein Schema aus einer SQL-Datei in die Datenbank",
-            "importButton": "Importovat schéma",
-            "exportSuccess": "Schéma úspěšně exportováno",
-            "importSuccess": "Schéma úspěšně importováno",
-            "exportError": "Chyba při exportu",
-            "importError": "Chyba při importu"
         },
         "schemaUpdate": {
             "title": "Schema-Update (Test)",

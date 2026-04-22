@@ -8,7 +8,6 @@
             "apiTester": "API-Tester",
             "storeViewer": "Store-Viewer",
             "schemaUpdate": "Schema-Update",
-            "schemaSync": "Schema-Sync",
             "autoTest": "Automatische Tests",
             "requirementSpecs": "Pflichtenheft",
             "tickets": "Tickets"
@@ -138,20 +137,6 @@
             "invalid_json": "Ungültiges JSON-Format",
             "error_folders": "Fehler beim Laden der API-Ordner",
             "error_functions": "Fehler beim Laden der Funktionen"
-        },
-        "schemaSync": {
-            "title": "Schema-Synchronisation",
-            "description": "Exportiere und importiere Datenbankschemas",
-            "exportTitle": "Schema exportieren",
-            "exportDescription": "Exportiert das aktuelle Datenbankschema in eine SQL-Datei",
-            "exportButton": "Schema exportieren",
-            "importTitle": "Schema importieren",
-            "importDescription": "Importiert ein Schema aus einer SQL-Datei in die Datenbank",
-            "importButton": "Schema importieren",
-            "exportSuccess": "Schema erfolgreich exportiert",
-            "importSuccess": "Schema erfolgreich importiert",
-            "exportError": "Fehler beim Exportieren",
-            "importError": "Fehler beim Importieren"
         },
         "schemaUpdate": {
             "title": "Schema-Update (Test)",

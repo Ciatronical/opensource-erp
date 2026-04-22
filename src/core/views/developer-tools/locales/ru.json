@@ -8,7 +8,6 @@
             "apiTester": "API-тестер",
             "storeViewer": "Просмотр хранилища",
             "schemaUpdate": "Обновление схемы",
-            "schemaSync": "Синхронизация схемы",
             "autoTest": "Автоматические тесты",
             "requirementSpecs": "Техническое задание",
             "tickets": "Тикеты"
@@ -138,20 +137,6 @@
             "invalid_json": "Неверный формат JSON",
             "error_folders": "Ошибка загрузки API-папок",
             "error_functions": "Ошибка загрузки функций"
-        },
-        "schemaSync": {
-            "title": "Синхронизация схемы",
-            "description": "Экспорт и импорт схем базы данных",
-            "exportTitle": "Экспорт схемы",
-            "exportDescription": "Экспортирует текущую схему базы данных в SQL-файл",
-            "exportButton": "Экспортировать схему",
-            "importTitle": "Импорт схемы",
-            "importDescription": "Импортирует схему из SQL-файла в базу данных",
-            "importButton": "Импортировать схему",
-            "exportSuccess": "Схема успешно экспортирована",
-            "importSuccess": "Схема успешно импортирована",
-            "exportError": "Ошибка при экспорте",
-            "importError": "Ошибка при импорте"
         },
         "schemaUpdate": {
             "title": "Обновление схемы (Тест)",

@@ -8,7 +8,6 @@
             "apiTester": "API 测试器",
             "storeViewer": "Store 查看器",
             "schemaUpdate": "Schema 更新",
-            "schemaSync": "Schema 同步",
             "autoTest": "自动化测试",
             "requirementSpecs": "需求规格",
             "tickets": "工单"
@@ -138,20 +137,6 @@
             "invalid_json": "无效的 JSON 格式",
             "error_folders": "加载 API 文件夹时出错",
             "error_functions": "加载功能列表时出错"
-        },
-        "schemaSync": {
-            "title": "Schema 同步",
-            "description": "导出和导入数据库 Schema",
-            "exportTitle": "导出 Schema",
-            "exportDescription": "将当前数据库 Schema 导出为 SQL 文件",
-            "exportButton": "导出 Schema",
-            "importTitle": "导入 Schema",
-            "importDescription": "从 SQL 文件导入 Schema 到数据库",
-            "importButton": "导入 Schema",
-            "exportSuccess": "Schema 导出成功",
-            "importSuccess": "Schema 导入成功",
-            "exportError": "导出时出错",
-            "importError": "导入时出错"
         },
         "schemaUpdate": {
             "title": "Schema 更新（测试）",

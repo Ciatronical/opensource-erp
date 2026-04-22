@@ -8,7 +8,6 @@
             "apiTester": "Testador de API",
             "storeViewer": "Visualizador de Store",
             "schemaUpdate": "Atualização de esquema",
-            "schemaSync": "Sincronização de esquema",
             "autoTest": "Testes automáticos",
             "requirementSpecs": "Caderno de encargos",
             "tickets": "Tickets"
@@ -138,20 +137,6 @@
             "invalid_json": "Formato JSON inválido",
             "error_folders": "Erro ao carregar as pastas de API",
             "error_functions": "Erro ao carregar as funções"
-        },
-        "schemaSync": {
-            "title": "Sincronização de esquema",
-            "description": "Exportar e importar esquemas de base de dados",
-            "exportTitle": "Exportar esquema",
-            "exportDescription": "Exporta o esquema atual da base de dados para um ficheiro SQL",
-            "exportButton": "Exportar esquema",
-            "importTitle": "Importar esquema",
-            "importDescription": "Importa um esquema de um ficheiro SQL para a base de dados",
-            "importButton": "Importar esquema",
-            "exportSuccess": "Esquema exportado com sucesso",
-            "importSuccess": "Esquema importado com sucesso",
-            "exportError": "Erro ao exportar",
-            "importError": "Erro ao importar"
         },
         "schemaUpdate": {
             "title": "Atualização de esquema (Teste)",

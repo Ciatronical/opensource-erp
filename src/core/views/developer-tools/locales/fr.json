@@ -8,7 +8,6 @@
             "apiTester": "Testeur API",
             "storeViewer": "Visualiseur de store",
             "schemaUpdate": "Mise a jour du schema",
-            "schemaSync": "Synchronisation du schema",
             "autoTest": "Tests automatiques",
             "requirementSpecs": "Cahier des charges",
             "tickets": "Tickets"
@@ -138,20 +137,6 @@
             "invalid_json": "Format JSON invalide",
             "error_folders": "Erreur lors du chargement des dossiers API",
             "error_functions": "Erreur lors du chargement des fonctions"
-        },
-        "schemaSync": {
-            "title": "Synchronisation du schema",
-            "description": "Exportez et importez des schemas de base de donnees",
-            "exportTitle": "Exporter le schema",
-            "exportDescription": "Exporte le schema actuel de la base de donnees dans un fichier SQL",
-            "exportButton": "Exporter le schema",
-            "importTitle": "Importer le schema",
-            "importDescription": "Importe un schema depuis un fichier SQL dans la base de donnees",
-            "importButton": "Importer le schema",
-            "exportSuccess": "Schema exporte avec succes",
-            "importSuccess": "Schema importe avec succes",
-            "exportError": "Erreur lors de l'exportation",
-            "importError": "Erreur lors de l'importation"
         },
         "schemaUpdate": {
             "title": "Mise a jour du schema (Test)",

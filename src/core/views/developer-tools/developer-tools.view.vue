@@ -93,10 +93,6 @@
                                             <schema-update-component />
                                         </v-window-item>
 
-                                        <v-window-item value="schema-sync">
-                                            <schema-sync-component />
-                                        </v-window-item>
-
                                         <v-window-item value="auto-test">
                                             <auto-test-component />
                                         </v-window-item>
@@ -129,7 +125,6 @@ import SqlToolComponent from './components/sql-tool.component.vue';
 import ApiTesterComponent from './components/api-tester.component.vue';
 import StoreViewerComponent from './components/store-viewer.component.vue';
 import SchemaUpdateComponent from './components/schema-update.component.vue';
-import SchemaSyncComponent from './components/schema-sync.component.vue';
 import AutoTestComponent from './components/auto-test.component.vue';
 import RequirementSpecsComponent from './components/requirement-specs.component.vue';
 import TicketsComponent from './components/tickets.component.vue';
@@ -143,7 +138,6 @@ const tabItems = [
     { value: 'api-tester', icon: 'mdi-api', labelKey: 'DeveloperTools.tabs.apiTester' },
     { value: 'store-viewer', icon: 'mdi-database-eye', labelKey: 'DeveloperTools.tabs.storeViewer' },
     { value: 'schema-update', icon: 'mdi-update', labelKey: 'DeveloperTools.tabs.schemaUpdate' },
-    { value: 'schema-sync', icon: 'mdi-database-sync', labelKey: 'DeveloperTools.tabs.schemaSync' },
     { value: 'auto-test', icon: 'mdi-test-tube', labelKey: 'DeveloperTools.tabs.autoTest' },
     { value: 'requirement-specs', icon: 'mdi-file-document-check', labelKey: 'DeveloperTools.tabs.requirementSpecs' },
     { value: 'tickets', icon: 'mdi-ticket-outline', labelKey: 'DeveloperTools.tabs.tickets' },

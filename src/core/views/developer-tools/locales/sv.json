@@ -8,7 +8,6 @@
             "apiTester": "API-Tester",
             "storeViewer": "Store-Viewer",
             "schemaUpdate": "Schema-Update",
-            "schemaSync": "Schema-Sync",
             "autoTest": "Automatische Tests",
             "requirementSpecs": "Pflichtenheft",
             "tickets": "Tickets"
@@ -138,20 +137,6 @@
             "invalid_json": "Ogiltiges JSON-Format",
             "error_folders": "Fel vid Laden der API-Mapp",
             "error_functions": "Fel vid Laden der Funktionen"
-        },
-        "schemaSync": {
-            "title": "Schema-Synchronisation",
-            "description": "Exportiere und importiere Databasschemas",
-            "exportTitle": "Schema exportieren",
-            "exportDescription": "Exportiert das aktuelle Databasschema in eine SQL-Fil",
-            "exportButton": "Schema exportieren",
-            "importTitle": "Schema importieren",
-            "importDescription": "Importiert ein Schema aus einer SQL-Fil in die Databas",
-            "importButton": "Schema importieren",
-            "exportSuccess": "Schema genomford exportiert",
-            "importSuccess": "Schema genomford importiert",
-            "exportError": "Fel vid Exportieren",
-            "importError": "Fel vid Importieren"
         },
         "schemaUpdate": {
             "title": "Schema-Update (Test)",

@@ -8,7 +8,6 @@
             "apiTester": "API test aracı",
             "storeViewer": "Depo görüntüleyici",
             "schemaUpdate": "Şema güncelleme",
-            "schemaSync": "Şema senkronizasyon",
             "autoTest": "Otomatik testler",
             "requirementSpecs": "Gereksinim belirtimi",
             "tickets": "Biletler"
@@ -138,20 +137,6 @@
             "invalid_json": "Ungültiges JSON-Format",
             "error_folders": "Fehler beim Laden der API-Ordner",
             "error_functions": "Fehler beim Laden der Funktionen"
-        },
-        "schemaSync": {
-            "title": "Schema-Synchronisation",
-            "description": "Exportiere und importiere Datenbankschemas",
-            "exportTitle": "Şemayı dışa aktar",
-            "exportDescription": "Exportiert das aktuelle Datenbankschema in eine SQL-Datei",
-            "exportButton": "Şemayı dışa aktar",
-            "importTitle": "Şemayı içe aktar",
-            "importDescription": "Importiert ein Schema aus einer SQL-Datei in die Datenbank",
-            "importButton": "Şemayı içe aktar",
-            "exportSuccess": "Schema erfolgreich exportiert",
-            "importSuccess": "Schema erfolgreich importiert",
-            "exportError": "Fehler beim Exportieren",
-            "importError": "Fehler beim Importieren"
         },
         "schemaUpdate": {
             "title": "Schema-Update (Test)",

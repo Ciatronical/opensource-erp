@@ -8,7 +8,6 @@
             "apiTester": "Tester API",
             "storeViewer": "Visualizzatore Store",
             "schemaUpdate": "Aggiornamento schema",
-            "schemaSync": "Sincronizzazione schema",
             "autoTest": "Test automatici",
             "requirementSpecs": "Capitolato",
             "tickets": "Ticket"
@@ -138,20 +137,6 @@
             "invalid_json": "Formato JSON non valido",
             "error_folders": "Errore nel caricamento delle cartelle API",
             "error_functions": "Errore nel caricamento delle funzioni"
-        },
-        "schemaSync": {
-            "title": "Sincronizzazione schema",
-            "description": "Esporta e importa schemi di database",
-            "exportTitle": "Esporta schema",
-            "exportDescription": "Esporta lo schema corrente del database in un file SQL",
-            "exportButton": "Esporta schema",
-            "importTitle": "Importa schema",
-            "importDescription": "Importa uno schema da un file SQL nel database",
-            "importButton": "Importa schema",
-            "exportSuccess": "Schema esportato con successo",
-            "importSuccess": "Schema importato con successo",
-            "exportError": "Errore nell'esportazione",
-            "importError": "Errore nell'importazione"
         },
         "schemaUpdate": {
             "title": "Aggiornamento schema (Test)",

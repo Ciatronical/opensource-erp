@@ -8,7 +8,6 @@
             "apiTester": "API-tester",
             "storeViewer": "Store-viewer",
             "schemaUpdate": "Schema-update",
-            "schemaSync": "Schema-synchronisatie",
             "autoTest": "Automatische tests",
             "requirementSpecs": "Programma van eisen",
             "tickets": "Tickets"
@@ -138,20 +137,6 @@
             "invalid_json": "Ongeldig JSON-formaat",
             "error_folders": "Fout bij het laden van de API-mappen",
             "error_functions": "Fout bij het laden van de functies"
-        },
-        "schemaSync": {
-            "title": "Schema-synchronisatie",
-            "description": "Exporteer en importeer databaseschema's",
-            "exportTitle": "Schema exporteren",
-            "exportDescription": "Exporteert het huidige databaseschema naar een SQL-bestand",
-            "exportButton": "Schema exporteren",
-            "importTitle": "Schema importeren",
-            "importDescription": "Importeert een schema uit een SQL-bestand in de database",
-            "importButton": "Schema importeren",
-            "exportSuccess": "Schema succesvol geexporteerd",
-            "importSuccess": "Schema succesvol geimporteerd",
-            "exportError": "Fout bij het exporteren",
-            "importError": "Fout bij het importeren"
         },
         "schemaUpdate": {
             "title": "Schema-update (Test)",

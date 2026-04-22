@@ -8,7 +8,6 @@
             "apiTester": "API Tester",
             "storeViewer": "Store Viewer",
             "schemaUpdate": "Schema Update",
-            "schemaSync": "Schema Sync",
             "autoTest": "Automatic Tests",
             "requirementSpecs": "Requirements",
             "tickets": "Tickets"
@@ -138,20 +137,6 @@
             "invalid_json": "Invalid JSON format",
             "error_folders": "Error loading API folders",
             "error_functions": "Error loading functions"
-        },
-        "schemaSync": {
-            "title": "Schema Synchronization",
-            "description": "Export and import database schemas",
-            "exportTitle": "Export Schema",
-            "exportDescription": "Exports the current database schema to a SQL file",
-            "exportButton": "Export Schema",
-            "importTitle": "Import Schema",
-            "importDescription": "Imports a schema from a SQL file into the database",
-            "importButton": "Import Schema",
-            "exportSuccess": "Schema exported successfully",
-            "importSuccess": "Schema imported successfully",
-            "exportError": "Export error",
-            "importError": "Import error"
         },
         "schemaUpdate": {
             "title": "Schema Update (Test)",

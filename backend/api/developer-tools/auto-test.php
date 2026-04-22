@@ -11,8 +11,7 @@ function _getDangerousFunctions() {
         'createDatabaseBackup', 'restoreDatabaseBackup', 'deleteDatabaseBackup',
         'downloadDatabaseBackup',
         // SQL & Schema
-        'executeSql', 'executeMigration', 'uploadSchema', 'schemaToFile',
-        'importSchemaFromFile', 'exportSchemaToFile',
+        'executeSql',
         // CRM
         'saveCV', 'deleteCV',
         'createPart', 'updatePart', 'deletePart',
@@ -51,8 +50,7 @@ function _getHelperFunctions() {
     return [
         'resultInfo', 'writeLog', 'ensureBackupDir', 'getDatabaseContext',
         'generateExampleValue', 'parseSchemaContent',
-        'parseCreateTableStatements', 'getCurrentDatabaseTables',
-        'generateMigrationStatements', 'createAutoBackup',
+        'parseCreateTableStatements', 'createAutoBackup',
         'connectPDO', 'setupExists', 'permit', 'checkPermissions',
         'getTemplateSet', 'resolveTemplateDir', 'getFakturaTableConfig',
         'getPermissionForFakturaType', 'prepareKba',

@@ -8,7 +8,6 @@
             "apiTester": "API-testaus",
             "storeViewer": "Tietovarastonäkymä",
             "schemaUpdate": "Skeemapäivitys",
-            "schemaSync": "Skeemasykronointi",
             "autoTest": "Automaattiset testit",
             "requirementSpecs": "Vaatimusmäärittely",
             "tickets": "Tiketit"
@@ -138,20 +137,6 @@
             "invalid_json": "Ungültiges JSON-Format",
             "error_folders": "Fehler beim Laden der API-Ordner",
             "error_functions": "Fehler beim Laden der Funktionen"
-        },
-        "schemaSync": {
-            "title": "Schema-Synchronisation",
-            "description": "Exportiere und importiere Datenbankschemas",
-            "exportTitle": "Vie skeema",
-            "exportDescription": "Exportiert das aktuelle Datenbankschema in eine SQL-Datei",
-            "exportButton": "Vie skeema",
-            "importTitle": "Tuo skeema",
-            "importDescription": "Importiert ein Schema aus einer SQL-Datei in die Datenbank",
-            "importButton": "Tuo skeema",
-            "exportSuccess": "Schema erfolgreich exportiert",
-            "importSuccess": "Schema erfolgreich importiert",
-            "exportError": "Fehler beim Exportieren",
-            "importError": "Fehler beim Importieren"
         },
         "schemaUpdate": {
             "title": "Schema-Update (Test)",

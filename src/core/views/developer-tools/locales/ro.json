@@ -8,7 +8,6 @@
             "apiTester": "Tester API",
             "storeViewer": "Vizualizator magazin",
             "schemaUpdate": "Actualizare schema",
-            "schemaSync": "Sincronizare schema",
             "autoTest": "Teste automate",
             "requirementSpecs": "Caiet de sarcini",
             "tickets": "Tichete"
@@ -138,20 +137,6 @@
             "invalid_json": "Ungültiges JSON-Format",
             "error_folders": "Fehler beim Laden der API-Ordner",
             "error_functions": "Fehler beim Laden der Funktionen"
-        },
-        "schemaSync": {
-            "title": "Sincronizare schema",
-            "description": "Exportiere und importiere Datenbankschemas",
-            "exportTitle": "Exportă schema",
-            "exportDescription": "Exportiert das aktuelle Datenbankschema in eine SQL-Datei",
-            "exportButton": "Exportă schema",
-            "importTitle": "Importă schema",
-            "importDescription": "Importiert ein Schema aus einer SQL-Datei in die Datenbank",
-            "importButton": "Importă schema",
-            "exportSuccess": "Schema exportată cu succes",
-            "importSuccess": "Schema importată cu succes",
-            "exportError": "Eroare la export",
-            "importError": "Eroare la import"
         },
         "schemaUpdate": {
             "title": "Schema-Update (Test)",
