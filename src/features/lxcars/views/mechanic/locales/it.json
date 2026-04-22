@@ -43,6 +43,7 @@
         "myOrders": "Miei",
         "allOrders": "Tutti",
         "refresh": "Aggiorna",
-        "exitMechanic": "Esci dalla modalità meccanico"
+        "exitMechanic": "Esci dalla modalità meccanico",
+        "filter": "License plate, customer, order, vehicle ..."
     }
 }

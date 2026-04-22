@@ -43,6 +43,7 @@
         "myOrders": "Mine",
         "allOrders": "Alle",
         "refresh": "Oppdater",
-        "exitMechanic": "Avslutt mekanikermodus"
+        "exitMechanic": "Avslutt mekanikermodus",
+        "filter": "License plate, customer, order, vehicle ..."
     }
 }

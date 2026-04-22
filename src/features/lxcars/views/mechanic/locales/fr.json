@@ -43,6 +43,7 @@
         "myOrders": "Les miennes",
         "allOrders": "Toutes",
         "refresh": "Actualiser",
-        "exitMechanic": "Quitter le mode mécanicien"
+        "exitMechanic": "Quitter le mode mécanicien",
+        "filter": "License plate, customer, order, vehicle ..."
     }
 }

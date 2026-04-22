@@ -57,7 +57,8 @@ function getMechanicOrders() {
          WHERE oe.closed IS NOT TRUE
          GROUP BY oe.id, oe.ordnumber, oe.transdate, oe.closed,
                   c.name, car.c_ln, car.c_id, kba.hersteller, kba.d2
-         ORDER BY oe.transdate DESC, oe.id DESC",
+         HAVING COUNT(*) FILTER (WHERE i.done = false) > 0
+         ORDER BY oe.transdate ASC, oe.id ASC",
         [':emp_id' => $employeeId]
     );
 
@@ -95,7 +96,11 @@ function getAllMechanicOrders() {
            AND oe.record_type NOT IN ('sales_quotation', 'request_quotation')
            AND oe.customer_id IS NOT NULL
            AND (ext.status IS NULL OR ext.status != COALESCE((SELECT value FROM defaults_oserp WHERE key = 'lxcars_order_hide_status'), ''))
-         ORDER BY oe.transdate DESC, oe.id DESC",
+           AND EXISTS (
+               SELECT 1 FROM oe_instructions_lxcars i
+               WHERE i.oe_id = oe.id AND i.done = false
+           )
+         ORDER BY oe.transdate ASC, oe.id ASC",
         []
     );
 

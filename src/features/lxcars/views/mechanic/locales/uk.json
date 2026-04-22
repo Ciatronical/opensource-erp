@@ -43,6 +43,7 @@
         "myOrders": "Мої",
         "allOrders": "Усі",
         "refresh": "Оновити",
-        "exitMechanic": "Вийти з режиму механіка"
+        "exitMechanic": "Вийти з режиму механіка",
+        "filter": "License plate, customer, order, vehicle ..."
     }
 }

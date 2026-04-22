@@ -43,6 +43,7 @@
         "myOrders": "Moje",
         "allOrders": "Všechny",
         "refresh": "Obnovit",
-        "exitMechanic": "Ukončit režim mechanika"
+        "exitMechanic": "Ukončit režim mechanika",
+        "filter": "License plate, customer, order, vehicle ..."
     }
 }

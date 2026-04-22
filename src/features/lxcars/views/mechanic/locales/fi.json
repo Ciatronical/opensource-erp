@@ -43,6 +43,7 @@
         "myOrders": "Omat",
         "allOrders": "Kaikki",
         "refresh": "Päivitä",
-        "exitMechanic": "Poistu mekaanikkotilasta"
+        "exitMechanic": "Poistu mekaanikkotilasta",
+        "filter": "License plate, customer, order, vehicle ..."
     }
 }

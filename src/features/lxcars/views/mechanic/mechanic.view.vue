@@ -3,25 +3,37 @@
 <template>
     <div class="mechanic-view">
         <!-- Header -->
-        <div class="mechanic-header pa-4 d-flex align-center">
-            <v-icon size="large" color="primary" class="mr-3">mdi-wrench</v-icon>
-            <h1 class="text-h5 font-weight-bold flex-grow-1">{{ t('MechanicView.title') }}</h1>
-            <v-btn-toggle v-model="viewMode" mandatory density="compact" color="primary" class="mr-2">
-                <v-btn value="mine" size="small">
-                    <v-icon start size="small">mdi-account</v-icon>
-                    {{ t('MechanicView.myOrders') }}
+        <div class="mechanic-header pa-4">
+            <div class="d-flex align-center">
+                <v-icon size="large" color="primary" class="mr-3">mdi-wrench</v-icon>
+                <h1 class="text-h5 font-weight-bold flex-grow-1">{{ t('MechanicView.title') }}</h1>
+                <v-btn-toggle v-model="viewMode" mandatory density="compact" color="primary" class="mr-2">
+                    <v-btn value="mine" size="small">
+                        <v-icon start size="small">mdi-account</v-icon>
+                        {{ t('MechanicView.myOrders') }}
+                    </v-btn>
+                    <v-btn value="all" size="small">
+                        <v-icon start size="small">mdi-account-group</v-icon>
+                        {{ t('MechanicView.allOrders') }}
+                    </v-btn>
+                </v-btn-toggle>
+                <v-btn v-if="!sseConnected" icon variant="text" color="primary" @click="loadOrders" :title="t('MechanicView.refresh')">
+                    <v-icon>mdi-refresh</v-icon>
                 </v-btn>
-                <v-btn value="all" size="small">
-                    <v-icon start size="small">mdi-account-group</v-icon>
-                    {{ t('MechanicView.allOrders') }}
+                <v-btn icon variant="text" color="primary" @click="router.push(t('routes.mainmenu'))" :title="t('MechanicView.exitMechanic')">
+                    <v-icon>mdi-exit-to-app</v-icon>
                 </v-btn>
-            </v-btn-toggle>
-            <v-btn v-if="!sseConnected" icon variant="text" color="primary" @click="loadOrders" :title="t('MechanicView.refresh')">
-                <v-icon>mdi-refresh</v-icon>
-            </v-btn>
-            <v-btn icon variant="text" color="primary" @click="router.push(t('routes.mainmenu'))" :title="t('MechanicView.exitMechanic')">
-                <v-icon>mdi-exit-to-app</v-icon>
-            </v-btn>
+            </div>
+            <v-text-field
+                v-model="filterText"
+                :placeholder="t('MechanicView.filter')"
+                prepend-inner-icon="mdi-magnify"
+                variant="outlined"
+                density="compact"
+                hide-details
+                clearable
+                class="mt-3"
+            />
         </div>
 
         <!-- Loading -->
@@ -30,7 +42,7 @@
         </div>
 
         <!-- Keine Aufträge -->
-        <div v-else-if="!orders.length" class="text-center pa-8">
+        <div v-else-if="!filteredOrders.length" class="text-center pa-8">
             <v-icon size="80" color="grey-lighten-1" class="mb-4">mdi-clipboard-text-off</v-icon>
             <div class="text-h6 text-medium-emphasis">{{ t('MechanicView.noOrders') }}</div>
             <div class="text-body-2 text-medium-emphasis mt-1">{{ t('MechanicView.noOrdersHint') }}</div>
@@ -39,7 +51,7 @@
         <!-- Auftragsliste -->
         <div v-else class="mechanic-orders pa-4">
             <v-card
-                v-for="order in orders"
+                v-for="order in filteredOrders"
                 :key="order.id"
                 class="mechanic-order-card mb-3"
                 variant="elevated"
@@ -78,7 +90,7 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { lxcarsStore } from '@/features/lxcars/stores/lxcars.store.js'
@@ -91,6 +103,23 @@ const orders = ref([])
 const loading = ref(false)
 const viewMode = ref('mine')
 const sseConnected = ref(false)
+const filterText = ref('')
+
+const filteredOrders = computed(() => {
+    const q = (filterText.value || '').trim().toLowerCase()
+    if (!q) return orders.value
+    return orders.value.filter(o => {
+        const haystack = [
+            o.ordnumber,
+            o.customer_name,
+            o.vehicle_plate,
+            o.vehicle_manufacturer,
+            o.vehicle_model,
+            o.transdate
+        ].filter(Boolean).join(' ').toLowerCase()
+        return haystack.includes(q)
+    })
+})
 
 async function loadOrders() {
     loading.value = true

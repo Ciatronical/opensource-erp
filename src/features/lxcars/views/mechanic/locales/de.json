@@ -43,6 +43,7 @@
         "delete": "Löschen",
         "save": "Speichern",
         "refresh": "Aktualisieren",
-        "exitMechanic": "Mechaniker-Modus verlassen"
+        "exitMechanic": "Mechaniker-Modus verlassen",
+        "filter": "Kennzeichen, Kunde, Auftrag, Fahrzeug ..."
     }
 }

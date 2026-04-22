@@ -43,6 +43,7 @@
         "myOrders": "Mina",
         "allOrders": "Alla",
         "refresh": "Uppdatera",
-        "exitMechanic": "Avsluta mekanikerläge"
+        "exitMechanic": "Avsluta mekanikerläge",
+        "filter": "License plate, customer, order, vehicle ..."
     }
 }

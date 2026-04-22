@@ -43,6 +43,7 @@
         "myOrders": "Minu",
         "allOrders": "Kõik",
         "refresh": "Värskenda",
-        "exitMechanic": "Väljuge mehaanikurežiimist"
+        "exitMechanic": "Väljuge mehaanikurežiimist",
+        "filter": "License plate, customer, order, vehicle ..."
     }
 }

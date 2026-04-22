@@ -43,6 +43,7 @@
         "myOrders": "我的",
         "allOrders": "全部",
         "refresh": "刷新",
-        "exitMechanic": "退出技工模式"
+        "exitMechanic": "退出技工模式",
+        "filter": "License plate, customer, order, vehicle ..."
     }
 }

@@ -43,6 +43,7 @@
         "myOrders": "Benim",
         "allOrders": "Tümü",
         "refresh": "Yenile",
-        "exitMechanic": "Tamirci modundan çık"
+        "exitMechanic": "Tamirci modundan çık",
+        "filter": "License plate, customer, order, vehicle ..."
     }
 }

@@ -43,6 +43,7 @@
         "myOrders": "Ale mele",
         "allOrders": "Toate",
         "refresh": "Reîmprospătare",
-        "exitMechanic": "Ieșire din modul mecanic"
+        "exitMechanic": "Ieșire din modul mecanic",
+        "filter": "License plate, customer, order, vehicle ..."
     }
 }

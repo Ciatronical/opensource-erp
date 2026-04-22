@@ -43,6 +43,7 @@
         "delete": "Delete",
         "save": "Save",
         "refresh": "Refresh",
-        "exitMechanic": "Exit mechanic mode"
+        "exitMechanic": "Exit mechanic mode",
+        "filter": "License plate, customer, order, vehicle ..."
     }
 }

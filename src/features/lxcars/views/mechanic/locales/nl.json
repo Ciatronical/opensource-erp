@@ -43,6 +43,7 @@
         "myOrders": "Mijn",
         "allOrders": "Alle",
         "refresh": "Vernieuwen",
-        "exitMechanic": "Monteursmodus verlaten"
+        "exitMechanic": "Monteursmodus verlaten",
+        "filter": "License plate, customer, order, vehicle ..."
     }
 }

@@ -43,6 +43,7 @@
         "myOrders": "Mani",
         "allOrders": "Visi",
         "refresh": "Atjaunināt",
-        "exitMechanic": "Iziet no mehāniķa režīma"
+        "exitMechanic": "Iziet no mehāniķa režīma",
+        "filter": "License plate, customer, order, vehicle ..."
     }
 }

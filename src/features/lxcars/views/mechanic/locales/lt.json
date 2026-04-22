@@ -43,6 +43,7 @@
         "myOrders": "Mano",
         "allOrders": "Visi",
         "refresh": "Atnaujinti",
-        "exitMechanic": "Išeiti iš mechaniko režimo"
+        "exitMechanic": "Išeiti iš mechaniko režimo",
+        "filter": "License plate, customer, order, vehicle ..."
     }
 }
