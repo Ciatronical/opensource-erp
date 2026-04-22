@@ -5,6 +5,7 @@
         "password": "Parole",
         "client": "Uzņēmums",
         "button": "Pieslēgties",
+        "rememberMe": "Palikt pieslēgtam",
         "failed": "Pieslēgšanās neizdevās. Lūdzu pārbaudiet savus pieslēgšanās datus.",
         "EMPTY_FIELDS": "Lūdzu ievadiet vārdu un paroli.",
         "USER_NOT_FOUND": "Lietotājs nav atrasts.",

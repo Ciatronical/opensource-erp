@@ -5,6 +5,7 @@
         "password": "Salasana",
         "client": "Yritys",
         "button": "Kirjaudu sisään",
+        "rememberMe": "Pysy kirjautuneena",
         "failed": "Kirjautuminen epäonnistui. Tarkista kirjautumistietosi.",
         "EMPTY_FIELDS": "Anna käyttäjänimi ja salasana.",
         "USER_NOT_FOUND": "Käyttäjää ei löytynyt.",

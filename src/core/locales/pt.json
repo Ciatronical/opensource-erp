@@ -5,6 +5,7 @@
         "password": "Palavra-passe",
         "client": "Empresa",
         "button": "Entrar",
+        "rememberMe": "Manter sessão iniciada",
         "failed": "Início de sessão falhado. Por favor, verifique as suas credenciais.",
         "EMPTY_FIELDS": "Por favor, introduza o nome e a palavra-passe.",
         "USER_NOT_FOUND": "Utilizador não encontrado.",

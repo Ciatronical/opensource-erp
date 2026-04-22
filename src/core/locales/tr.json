@@ -5,6 +5,7 @@
         "password": "Şifre",
         "client": "Firma",
         "button": "Giriş yap",
+        "rememberMe": "Oturumu açık tut",
         "failed": "Giriş başarısız oldu. Lütfen giriş bilgilerinizi kontrol edin.",
         "EMPTY_FIELDS": "Lütfen kullanıcı adı ve şifre girin.",
         "USER_NOT_FOUND": "Kullanıcı bulunamadı.",

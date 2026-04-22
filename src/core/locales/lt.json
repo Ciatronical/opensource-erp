@@ -5,6 +5,7 @@
         "password": "Slaptažodis",
         "client": "Įmonė",
         "button": "Prisijungti",
+        "rememberMe": "Likti prisijungus",
         "failed": "Prisijungimas nepavyko. Patikrinkite savo prisijungimo duomenis.",
         "EMPTY_FIELDS": "Įveskite vardą ir slaptažodį.",
         "USER_NOT_FOUND": "Vartotojas nerastas.",

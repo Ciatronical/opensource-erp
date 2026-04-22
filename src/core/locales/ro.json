@@ -5,6 +5,7 @@
         "password": "Parolă",
         "client": "Firmă",
         "button": "Autentificare",
+        "rememberMe": "Rămâi autentificat",
         "failed": "Autentificarea a eșuat. Vă rugăm verificați datele de autentificare.",
         "EMPTY_FIELDS": "Vă rugăm introduceți numele și parola.",
         "USER_NOT_FOUND": "Utilizatorul nu a fost găsit.",

@@ -5,6 +5,7 @@
         "password": "Mot de passe",
         "client": "Societe",
         "button": "Se connecter",
+        "rememberMe": "Rester connecté",
         "failed": "Echec de la connexion. Veuillez verifier vos identifiants.",
         "EMPTY_FIELDS": "Veuillez saisir le nom et le mot de passe.",
         "USER_NOT_FOUND": "Utilisateur introuvable.",

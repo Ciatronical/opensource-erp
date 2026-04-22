@@ -5,6 +5,7 @@
         "password": "Heslo",
         "client": "Firma",
         "button": "Přihlásit se",
+        "rememberMe": "Zůstat přihlášen",
         "failed": "Přihlášení se nezdařilo. Zkontrolujte prosím své přihlašovací údaje.",
         "EMPTY_FIELDS": "Zadejte prosím jméno a heslo.",
         "USER_NOT_FOUND": "Uživatel nenalezen.",

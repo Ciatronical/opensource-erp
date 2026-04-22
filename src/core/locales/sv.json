@@ -5,6 +5,7 @@
         "password": "Losenord",
         "client": "Foretag",
         "button": "Logga in",
+        "rememberMe": "Förbli inloggad",
         "failed": "Inloggningen misslyckades. Kontrollera dina inloggningsuppgifter.",
         "EMPTY_FIELDS": "Ange namn och losenord.",
         "USER_NOT_FOUND": "Anvandaren hittades inte.",

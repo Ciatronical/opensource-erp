@@ -5,6 +5,7 @@
         "password": "Parool",
         "client": "Ettevõte",
         "button": "Logi sisse",
+        "rememberMe": "Jää sisselogituks",
         "failed": "Sisselogimine ebaõnnestus. Palun kontrollige oma sisselogimisandmeid.",
         "EMPTY_FIELDS": "Palun sisestage nimi ja parool.",
         "USER_NOT_FOUND": "Kasutajat ei leitud.",

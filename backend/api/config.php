@@ -115,7 +115,6 @@ class OserpConfig {
         // Session-Konstanten
         define('SESSION_COOKIE', $settings['session']['cookie_name'] ?? 'opensource_erp');
         define('COOKIE_SAME_SITE', $settings['session']['cookie_same_site'] ?? 'Strict');
-        define('SESSION_LIFETIME_HOURS', intval($settings['session']['session_lifetime_hours'] ?? 0));
 
         // Logging-Konstanten
         define('OSERP_DEBUG_LOG_DIR', __DIR__.'/../log/');

@@ -5,6 +5,7 @@
         "password": "Adgangskode",
         "client": "Virksomhed",
         "button": "Log ind",
+        "rememberMe": "Forbliv logget ind",
         "failed": "Login mislykkedes. Kontroller venligst dine loginoplysninger.",
         "EMPTY_FIELDS": "Angiv venligst navn og adgangskode.",
         "USER_NOT_FOUND": "Bruger ikke fundet.",

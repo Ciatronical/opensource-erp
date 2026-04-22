@@ -5,6 +5,7 @@
         "password": "Passwort",
         "client": "Mandant",
         "button": "Anmelden",
+        "rememberMe": "Angemeldet bleiben",
         "failed": "Anmeldung fehlgeschlagen. Bitte überprüfen Sie Ihre Anmeldedaten.",
         "EMPTY_FIELDS": "Bitte Name und Passwort angeben.",
         "USER_NOT_FOUND": "Benutzer nicht gefunden.",

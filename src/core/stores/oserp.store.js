@@ -226,12 +226,13 @@ export const oserpStore = defineStore('oserpStore', () => {
     /**
      * Login
      */
-    async function login(username, password, client) {
+    async function login(username, password, client, rememberMe = false) {
         const payload = {
             action: 'login',
             username: username,
             password: password,
             client: client,
+            remember_me: rememberMe,
             ...getLastCvParams()
         };
 

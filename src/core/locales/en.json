@@ -5,6 +5,7 @@
         "password": "Passwort",
         "client": "Mandant",
         "button": "Anmelden",
+        "rememberMe": "Stay signed in",
         "failed": "Anmeldung fehlgeschlagen. Bitte überprüfen Sie Ihre Anmeldedaten.",
         "EMPTY_FIELDS": "Bitte Name und Passwort angeben.",
         "USER_NOT_FOUND": "Benutzer nicht gefunden.",
@@ -25,7 +26,7 @@
         "message": "Die angeforderte Seite wurde nicht gefunden.",
         "back_home": "Zurück zur Startseite"
     },
-        "NavbarView": {
+    "NavbarView": {
         "logoutTooltip": "Logout",
         "accountTooltip": "Account",
         "editCustomerTooltip": "Edit Customer",

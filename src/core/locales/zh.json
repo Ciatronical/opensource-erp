@@ -5,6 +5,7 @@
         "password": "密码",
         "client": "公司",
         "button": "登录",
+        "rememberMe": "保持登录",
         "failed": "登录失败。请检查您的登录信息。",
         "EMPTY_FIELDS": "请输入用户名和密码。",
         "USER_NOT_FOUND": "未找到用户。",

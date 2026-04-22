@@ -5,6 +5,7 @@
         "password": "Passord",
         "client": "Firma",
         "button": "Logg inn",
+        "rememberMe": "Forbli innlogget",
         "failed": "Innlogging mislyktes. Vennligst kontroller innloggingsdataene dine.",
         "EMPTY_FIELDS": "Vennligst oppgi navn og passord.",
         "USER_NOT_FOUND": "Bruker ikke funnet.",

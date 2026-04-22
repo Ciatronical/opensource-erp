@@ -76,9 +76,10 @@ function getAuthUserData($json = false) {
 /**
  * Authentifiziert einen Benutzer und erstellt eine Session
  *
- * @param array $data Array mit 'username', 'password' und 'client'
+ * @param array $data Array mit 'username', 'password', 'client' und optional 'remember_me'
  * @return void Gibt JSON mit Login-Daten und CV-Daten aus
  * @throws ApiError Bei fehlenden Argumenten, ungültigem Benutzer oder falschem Passwort
+ * @testdata {"username": "demo", "password": "demo", "client": 1, "remember_me": false}
  */
 function login($data) {
     if (!isset($data['username']) || !isset($data['password']) || !isset($data['client'])) {
@@ -104,6 +105,7 @@ function login($data) {
     $userId = $context['id'];
     $clientId = (int)$data['client'];
     $cleartextPassword = $data['password'];
+    $rememberMe = !empty($data['remember_me']);
 
     $auth->setUserId($userId);
     $auth->setClientId($clientId);
@@ -130,23 +132,32 @@ function login($data) {
         if (!$auth->hasSession()) {
             $sessionId = bin2hex(random_bytes(16));
             $auth->setCookie($sessionId);
-            setcookie(SESSION_COOKIE, $sessionId, array('path' => '/', 'sameSite' => COOKIE_SAME_SITE));
+        } else {
+            $sessionId = $auth->getCookie();
         }
 
-        $sessionId = $auth->getCookie();
+        // Ohne remember_me: reiner Session-Cookie (stirbt mit dem Browser)
+        // Mit remember_me: persistenter Cookie, der in restoreSession() bei Aktivitaet mit-gesliden wird
+        $cookieOptions = ['path' => '/', 'samesite' => COOKIE_SAME_SITE, 'httponly' => true];
+        if ($rememberMe) {
+            $cookieOptions['expires'] = time() + 120 * 3600;
+        }
+        setcookie(SESSION_COOKIE, $sessionId, $cookieOptions);
+
         $query = <<<SQL
-            INSERT INTO auth.session_oserp (session_id, user_id, client_id)
-            VALUES (:session_id, :user_id, :client_id)
-            ON CONFLICT (session_id)
-            DO UPDATE SET
+            INSERT INTO auth.session_oserp (session_id, user_id, client_id, remember_me)
+            VALUES (:session_id, :user_id, :client_id, :remember_me)
+            ON CONFLICT (session_id) DO UPDATE SET
                 user_id = :user_id,
                 client_id = :client_id,
-                active = NOW()
+                active = NOW(),
+                remember_me = :remember_me
         SQL;
-        $auth->prepare($query)->execute([
+        $auth->execute($query, [
             ':session_id' => $sessionId,
             ':user_id' => $userId,
-            ':client_id' => $clientId
+            ':client_id' => $clientId,
+            ':remember_me' => $rememberMe,
         ]);
 
         $dbhCompany = DbhCompany::begin();
@@ -209,20 +220,12 @@ function restoreSession($data) {
     $session = DbhAuth::begin();
     $sessionId = $session->getCookie();
 
-    // Abgelaufene Sessions aufräumen (serverseitiges Timeout)
-    $lifetimeHours = defined('SESSION_LIFETIME_HOURS') ? SESSION_LIFETIME_HOURS : 8;
-    if ($lifetimeHours > 0) {
-        $session->execute(
-            "DELETE FROM auth.session_oserp WHERE active < NOW() - MAKE_INTERVAL(hours => :hours)",
-            [':hours' => $lifetimeHours]
-        );
-    }
-
-    // Prüfe ob eine gültige Session existiert
+    // Abgelaufene Sessions werden vom DB-Trigger cleanup_session_oserp geputzt (120h Inaktivitaet).
     $query = <<<SQL
         SELECT
             user_id,
             client_id,
+            remember_me,
             u.login,
             c.name AS client_name
         FROM auth.session_oserp s
@@ -231,18 +234,26 @@ function restoreSession($data) {
         WHERE s.session_id = :session_id
     SQL;
     $context = $session->getOne($query, [':session_id' => $sessionId]);
-    $hasValidSession = ($context !== false && $context !== null);
 
-    // Keine gültige Session -> Login erforderlich
-    if (!$hasValidSession) {
+    if (!$context) {
         throw new ApiError("INVALID_SESSION", 'Ungültige Sitzung');
     }
 
-    // Session-Aktivität aktualisieren
+    // Session-Aktivitaet aktualisieren (Sliding Window)
     $session->execute(
         "UPDATE auth.session_oserp SET active = NOW() WHERE session_id = :session_id",
         [':session_id' => $sessionId]
     );
+
+    // Cookie-Lifetime fuer "Angemeldet bleiben"-Sessions mit-sliden
+    if (!empty($context['remember_me'])) {
+        setcookie(SESSION_COOKIE, $sessionId, [
+            'expires'  => time() + 120 * 3600,
+            'path'     => '/',
+            'samesite' => COOKIE_SAME_SITE,
+            'httponly' => true,
+        ]);
+    }
 
     // Session-Daten setzen (falls noch nicht geschehen)
     if (!$session->getUserId()) {
@@ -353,23 +364,25 @@ function switchClient($data) {
  *
  * @param array $data Eingabedaten (wird nicht verwendet)
  * @return void Gibt JSON mit Erfolgs-Status aus
+ * @testdata {}
  */
 function logout($data) {
     $session = DbhAuth::begin();
     $sessionId = $session->getCookie();
 
-    $query = <<<SQL
-        DELETE FROM auth.session_oserp
-        WHERE session_id = :session_id
-    SQL;
-    $session->prepareQuery($query, [':session_id' => $sessionId]);
+    $session->execute(
+        "DELETE FROM auth.session_oserp WHERE session_id = :session_id",
+        [':session_id' => $sessionId]
+    );
 
-    setcookie(SESSION_COOKIE, bin2hex(random_bytes(16)), array('path' => '/', 'sameSite' => COOKIE_SAME_SITE));
+    setcookie(SESSION_COOKIE, '', [
+        'expires'  => time() - 3600,
+        'path'     => '/',
+        'samesite' => COOKIE_SAME_SITE,
+        'httponly' => true,
+    ]);
 
     $session->setUserId(null);
 
-    $result = array(
-        "success" => true,
-    );
-    echo json_encode($result);
+    resultInfo(true);
 }

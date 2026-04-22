@@ -5,6 +5,7 @@
         "password": "Password",
         "client": "Azienda",
         "button": "Accedi",
+        "rememberMe": "Resta connesso",
         "failed": "Accesso fallito. Verificare le credenziali.",
         "EMPTY_FIELDS": "Inserire nome e password.",
         "USER_NOT_FOUND": "Utente non trovato.",

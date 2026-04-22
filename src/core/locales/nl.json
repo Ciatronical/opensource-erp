@@ -5,6 +5,7 @@
         "password": "Wachtwoord",
         "client": "Bedrijf",
         "button": "Inloggen",
+        "rememberMe": "Ingelogd blijven",
         "failed": "Inloggen mislukt. Controleer uw inloggegevens.",
         "EMPTY_FIELDS": "Vul naam en wachtwoord in.",
         "USER_NOT_FOUND": "Gebruiker niet gevonden.",

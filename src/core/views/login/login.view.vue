@@ -29,6 +29,10 @@
                 :label="t('LoginView.client')" variant="outlined" density="comfortable" class="pt-3"
                 @update:modelValue="clearError"
               />
+              <v-checkbox
+                id="remember-me" v-model="rememberMe" :label="t('LoginView.rememberMe')"
+                density="compact" hide-details class="mt-0"
+              />
               <ErrorView :message="errorMessage" :type="errorType" @clear="clearError" />
               <v-btn type="submit" color="primary" class="mt-3" :loading="loading">
                 {{ t('LoginView.button') }}
@@ -87,6 +91,7 @@ export default {
     const password    = ref('')
     const clientCode  = ref(null)
     const clientItems = ref([])
+    const rememberMe  = ref(false)
 
     // UI-State
     const loading      = ref(false)
@@ -146,7 +151,7 @@ export default {
 
       loading.value = true
       try {
-        const result = await oserp.login(username.value, password.value, clientCode.value)
+        const result = await oserp.login(username.value, password.value, clientCode.value, rememberMe.value)
 
         if (result === AuthStatus.UPDATE_REQUIRED) {
           router.replace({ name: 'update' })
@@ -192,7 +197,7 @@ export default {
     }
 
     return {
-      t, username, password, clientCode, clientItems,
+      t, username, password, clientCode, clientItems, rememberMe,
       loading, errorMessage, errorType, clearError, login,
       updateLoading, updateSuccess, updateError, runUpdate
     }
