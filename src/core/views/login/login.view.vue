@@ -141,7 +141,15 @@ export default {
       }
     })
 
-    const login = async () => {
+    // Schema-Mismatch: Tabelle/Spalte fehlt in DB -> Update-Skript kann das beheben.
+    // PG-SQLSTATE: 42703 = undefined column, 42P01 = undefined table.
+    const isSchemaMismatchError = (err) => {
+      if (err?.code !== 'API_DATABASE_ERROR') return false
+      const msg = err?.message || ''
+      return msg.includes('SQLSTATE[42703]') || msg.includes('SQLSTATE[42P01]')
+    }
+
+    const login = async (isRetry = false) => {
       clearError()
       if (!username.value || !password.value) {
         errorMessage.value = t('LoginView.EMPTY_FIELDS')
@@ -161,7 +169,17 @@ export default {
         const redirectPath = route.query.redirect || '/'
         router.replace(redirectPath)
       } catch (err) {
-        // Fallback-Key, falls err.message nicht gemappt ist
+        if (!isRetry && isSchemaMismatchError(err)) {
+          loading.value = false
+          const ok = await runUpdate()
+          if (ok) {
+            await login(true)
+            return
+          }
+          errorMessage.value = t('LoginView.updateError')
+          errorType.value    = 'error'
+          return
+        }
         const i18nKey = `LoginView.${err?.code || 'ERROR'}`
         errorMessage.value = t(i18nKey)
         errorType.value    = 'error'
@@ -185,12 +203,14 @@ export default {
 
         if (data.success) {
           updateSuccess.value = true
-        } else {
-          updateError.value = data.text || t('LoginView.updateError')
+          return true
         }
+        updateError.value = data.text || t('LoginView.updateError')
+        return false
       } catch (error) {
         console.error('Fehler beim Update:', error)
         updateError.value = t('LoginView.updateError')
+        return false
       } finally {
         updateLoading.value = false
       }

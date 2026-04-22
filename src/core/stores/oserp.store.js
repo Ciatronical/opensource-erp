@@ -245,7 +245,7 @@ export const oserpStore = defineStore('oserpStore', () => {
             return AuthStatus.AUTHENTICATED;
         }
 
-        throw new ApiError('ApiError', response.data.text);
+        throw new ApiError('ApiError', response.data.text, response.data.payload);
     }
 
     /**
