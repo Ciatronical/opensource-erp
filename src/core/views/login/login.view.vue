@@ -169,7 +169,8 @@ export default {
         const redirectPath = route.query.redirect || '/'
         router.replace(redirectPath)
       } catch (err) {
-        if (!isRetry && isSchemaMismatchError(err)) {
+        // Template-Handler uebergeben Event-Objekte; deshalb strikter Vergleich auf true
+        if (isRetry !== true && isSchemaMismatchError(err)) {
           loading.value = false
           const ok = await runUpdate()
           if (ok) {
