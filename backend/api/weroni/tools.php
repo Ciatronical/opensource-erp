@@ -534,7 +534,8 @@ function _toolStoreDocument($input, $db) {
     if (!$doc) return ['error' => 'Dokument nicht gefunden'];
 
     // Temporäre Datei prüfen
-    $tmpPath = realpath(__DIR__ . '/../../data') . '/weroni_inbox/' . $docId . '_' . $doc['original_name'];
+    $dataDir = fmDataDir();
+    $tmpPath = $dataDir . '/weroni_inbox/' . $docId . '_' . $doc['original_name'];
     if (!file_exists($tmpPath)) {
         return ['error' => 'Temporäre Datei nicht gefunden: ' . $tmpPath];
     }
@@ -542,7 +543,6 @@ function _toolStoreDocument($input, $db) {
     // Zielordner bestimmen
     $customerId = intval($input['customer_id'] ?? 0);
     $vendorId = intval($input['vendor_id'] ?? 0);
-    $dataDir = realpath(__DIR__ . '/../../data');
 
     if ($customerId) {
         $targetDir = $dataDir . '/customers/' . $customerId;
@@ -561,7 +561,7 @@ function _toolStoreDocument($input, $db) {
 
     // Ordner erstellen
     if (!is_dir($targetDir)) {
-        mkdir($targetDir, 0755, true);
+        fmMkdir($targetDir);
     }
 
     // Dateiname

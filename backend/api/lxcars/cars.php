@@ -226,7 +226,7 @@ function deleteCar($data) {
     );
 
     // Fahrzeugschein-Ordner aufräumen
-    $carDir = FM_DATA_DIR . '/fahrzeugschein/' . $id;
+    $carDir = fmDataDir() . '/fahrzeugschein/' . $id;
     if (is_dir($carDir)) {
         deleteDirectoryRecursive($carDir);
     }

@@ -39,10 +39,9 @@ function uploadInvoiceDocument($data) {
     }
 
     // Datei speichern
-    $dataDir = realpath(__DIR__ . '/../../data');
-    $accountingDir = $dataDir . '/accounting';
+    $accountingDir = fmDataDir() . '/accounting';
     if (!is_dir($accountingDir)) {
-        mkdir($accountingDir, 0755, true);
+        fmMkdir($accountingDir);
     }
 
     // Dokument in DB anlegen
@@ -497,8 +496,7 @@ function getDocumentPdf($data) {
     );
     if (!$doc || !$doc['stored_path']) throw new ApiError('DATA_NOT_FOUND', 'Dokument nicht gefunden');
 
-    $dataDir = realpath(__DIR__ . '/../../data');
-    $filePath = $dataDir . '/' . $doc['stored_path'];
+    $filePath = fmDataDir() . '/' . $doc['stored_path'];
 
     if (!file_exists($filePath)) {
         throw new ApiError('DATA_NOT_FOUND', 'Datei nicht gefunden');

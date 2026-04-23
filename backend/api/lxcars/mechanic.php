@@ -534,11 +534,11 @@ function _getPartsPhotoDir($db, $oeId, $requestId) {
     $customerId = intval($order['customer_id'] ?? 0);
 
     if ($cId > 0) {
-        $dir = FM_DATA_DIR . '/fahrzeugschein/' . $cId . '/' . $folderName;
+        $dir = fmDataDir() . '/fahrzeugschein/' . $cId . '/' . $folderName;
     } elseif ($customerId > 0) {
-        $dir = FM_DATA_DIR . '/customers/' . $customerId . '/' . $folderName;
+        $dir = fmDataDir() . '/customers/' . $customerId . '/' . $folderName;
     } else {
-        $dir = FM_DATA_DIR . '/parts_requests/' . intval($oeId);
+        $dir = fmDataDir() . '/parts_requests/' . intval($oeId);
     }
 
     if (!is_dir($dir)) {
@@ -589,8 +589,8 @@ function savePartsRequestPhoto($data) {
     $filename = $id . '_' . $nextNum . '.jpg';
     file_put_contents($dir . '/' . $filename, $binary);
 
-    // Relativen Pfad ab FM_DATA_DIR speichern (kommaseparierte Liste)
-    $relPath = str_replace(FM_DATA_DIR . '/', '', $dir . '/' . $filename);
+    // Relativen Pfad ab fmDataDir() speichern (kommaseparierte Liste)
+    $relPath = str_replace(fmDataDir() . '/', '', $dir . '/' . $filename);
     $existing[] = $relPath;
     $photoList = implode(',', $existing);
 
@@ -626,7 +626,7 @@ function getPartsRequestPhoto($data) {
     $photos = [];
 
     foreach ($paths as $relPath) {
-        $fullPath = FM_DATA_DIR . '/' . $relPath;
+        $fullPath = fmDataDir() . '/' . $relPath;
         if (file_exists($fullPath)) {
             $photos[] = [
                 'path' => $relPath,
@@ -671,7 +671,7 @@ function deletePartsRequestPhoto($data) {
     });
 
     // Datei vom Dateisystem löschen
-    $fullPath = FM_DATA_DIR . '/' . $pathToDelete;
+    $fullPath = fmDataDir() . '/' . $pathToDelete;
     if (file_exists($fullPath)) {
         unlink($fullPath);
     }

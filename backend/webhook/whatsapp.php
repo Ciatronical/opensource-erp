@@ -61,9 +61,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             // Richtige Company-DB anhand phone_number_id finden
             $pdo = null;
+            $dbname = '';
             foreach ($companyDbs as $dbInfo) {
                 if ($dbInfo['phone_number_id'] === $phoneNumberId) {
                     $pdo = _connectCompanyDb($dbInfo);
+                    $dbname = $dbInfo['dbname'];
                     $countryCode = $dbInfo['country_code'] ?? '49';
                     break;
                 }
@@ -73,7 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             // Eingehende Nachrichten verarbeiten
             foreach ($value['messages'] ?? [] as $msg) {
-                _processIncomingMessage($pdo, $msg, $value['contacts'] ?? [], $countryCode);
+                _processIncomingMessage($pdo, $dbname, $msg, $value['contacts'] ?? [], $countryCode);
             }
 
             // Status-Updates verarbeiten
@@ -187,7 +189,7 @@ function _getAllWhatsAppCompanyDbs(): array {
 /**
  * Eingehende WhatsApp-Nachricht verarbeiten
  */
-function _processIncomingMessage(PDO $pdo, array $msg, array $contacts, string $countryCode): void {
+function _processIncomingMessage(PDO $pdo, string $dbname, array $msg, array $contacts, string $countryCode): void {
     $waMessageId = $msg['id'] ?? '';
     $from = $msg['from'] ?? '';
     $type = $msg['type'] ?? 'text';
@@ -322,7 +324,7 @@ function _processIncomingMessage(PDO $pdo, array $msg, array $contacts, string $
     // Auch ohne customer_id speichern, damit keine Medien verloren gehen
     $localMediaPath = null;
     if (!empty($mediaUrl)) {
-        $localMediaPath = _downloadAndSaveMedia($pdo, $mediaUrl, $mediaMime, $type, $customerId, $cvSrc, $timestamp);
+        $localMediaPath = _downloadAndSaveMedia($pdo, $dbname, $mediaUrl, $mediaMime, $type, $customerId, $cvSrc, $timestamp);
     }
 
     // Nachricht in DB speichern (ON CONFLICT für Idempotenz)
@@ -394,7 +396,7 @@ function _processStatusUpdate(PDO $pdo, array $status): void {
  *
  * @return string|null Lokaler Dateipfad relativ zu data/ oder null bei Fehler
  */
-function _downloadAndSaveMedia(PDO $pdo, string $metaMediaId, string $mimeType, string $msgType, ?int $cvId, ?string $cvSrc, string $timestamp): ?string {
+function _downloadAndSaveMedia(PDO $pdo, string $dbname, string $metaMediaId, string $mimeType, string $msgType, ?int $cvId, ?string $cvSrc, string $timestamp): ?string {
     // Access-Token aus DB lesen
     try {
         $stmt = $pdo->prepare("SELECT value FROM defaults_oserp WHERE key = 'whatsapp_access_token'");
@@ -454,8 +456,16 @@ function _downloadAndSaveMedia(PDO $pdo, string $metaMediaId, string $mimeType, 
     $mimeBase = strtolower(trim(explode(';', $mimeType)[0]));
     $ext = $extMap[$mimeBase] ?? ($extMap[strtolower($mimeType)] ?? 'bin');
 
-    // Zielverzeichnis: data/customers|vendors/{id}/whatsapp/ oder data/whatsapp_unmatched/
-    $dataDir = realpath(__DIR__ . '/../../data') ?: (__DIR__ . '/../../data');
+    // Zielverzeichnis: data/<dbname>/customers|vendors/{id}/whatsapp/ oder data/<dbname>/whatsapp_unmatched/
+    if (!preg_match('/^[a-zA-Z0-9_]+$/', $dbname)) {
+        error_log("[WHATSAPP WEBHOOK] Ungueltiger dbname: {$dbname}");
+        return null;
+    }
+    $baseDir = realpath(__DIR__ . '/../../data') ?: (__DIR__ . '/../../data');
+    $dataDir = $baseDir . '/' . $dbname;
+    if (!is_dir($dataDir)) {
+        mkdir($dataDir, 0755, true);
+    }
     if ($cvId) {
         $basePath = ($cvSrc === 'V') ? 'vendors' : 'customers';
         $whatsappDir = $dataDir . '/' . $basePath . '/' . $cvId . '/whatsapp';

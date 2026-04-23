@@ -9,13 +9,47 @@
 //   2. Vuefinder-Funktionen (vfIndex, vfUpload, etc.) — Vuefinder-kompatible Antworten via resultInfo()
 //      Ausnahme: vfPreview/vfDownload streamen binaer.
 
-define('FM_DATA_DIR', realpath(__DIR__ . '/../../data') ?: __DIR__ . '/../../data');
+define('FM_DATA_BASE_DIR', realpath(__DIR__ . '/../../data') ?: __DIR__ . '/../../data');
 define('FM_MAX_FILESIZE', 20 * 1024 * 1024); // 20 MB
 define('FM_STORAGE_NAME', 'local');
 
 // =========================================================================
 // Hilfsfunktionen (keine API-Endpoints)
 // =========================================================================
+
+/**
+ * Mandantenspezifisches Daten-Verzeichnis fuer einen expliziten dbname.
+ *
+ * Wird fuer Kontexte ohne Session gebraucht (z.B. WhatsApp-Webhook,
+ * der den Mandanten anhand der phone_number_id ermittelt).
+ */
+function fmDataDirForDb($dbname) {
+    if (!is_string($dbname) || $dbname === '' || !preg_match('/^[a-zA-Z0-9_]+$/', $dbname)) {
+        throw new ApiError('FM_INVALID_DATABASE', 'Datenbankname konnte nicht ermittelt werden');
+    }
+    $dir = FM_DATA_BASE_DIR . '/' . $dbname;
+    if (!is_dir($dir)) {
+        fmMkdir($dir);
+    }
+    return $dir;
+}
+
+/**
+ * Mandantenspezifisches Daten-Verzeichnis fuer die aktuelle Session.
+ *
+ * Liefert FM_DATA_BASE_DIR/<dbname>/ und legt es bei Bedarf an.
+ * dbname wird per current_database() aus der Company-DB-Verbindung ermittelt
+ * und pro Request gecacht. So liegen Dateien verschiedener Mandanten getrennt.
+ */
+function fmDataDir() {
+    static $dir = null;
+    if ($dir !== null) return $dir;
+
+    $db = DbhCompany::begin();
+    $row = $db->getOne("SELECT current_database() AS dbname");
+    $dir = fmDataDirForDb($row['dbname'] ?? '');
+    return $dir;
+}
 
 /**
  * Verzeichnis-Konfiguration aus defaults_oserp (dir_group, dir_mode).
@@ -140,7 +174,7 @@ function fmFormatSize($bytes) {
  */
 function vfGetRootDir($cvId, $src) {
     $basePath = fmGetBasePath($src);
-    $rootDir = FM_DATA_DIR . '/' . $basePath . '/' . $cvId;
+    $rootDir = fmDataDir() . '/' . $basePath . '/' . $cvId;
     if (!is_dir($rootDir)) {
         fmMkdir($rootDir);
     }
@@ -180,7 +214,7 @@ function vfValidateAccess($rootDir, $absPath) {
     $resolvedPath = realpath($absPath);
     if ($resolvedPath === false) return true; // existiert noch nicht
     if ($resolvedRoot === false) return false;
-    $resolvedData = realpath(FM_DATA_DIR);
+    $resolvedData = realpath(fmDataDir());
     return strpos($resolvedPath, $resolvedRoot) === 0 || strpos($resolvedPath, $resolvedData) === 0;
 }
 
@@ -894,7 +928,7 @@ function getFiles($data) {
     }
 
     $basePath = fmGetBasePath($src);
-    $cvDir = FM_DATA_DIR . '/' . $basePath . '/' . $cvId;
+    $cvDir = fmDataDir() . '/' . $basePath . '/' . $cvId;
 
     if (!is_dir($cvDir)) {
         fmMkdir($cvDir);
@@ -1021,7 +1055,7 @@ function uploadFile($data) {
     }
 
     $basePath = fmGetBasePath($src);
-    $cvDir = FM_DATA_DIR . '/' . $basePath . '/' . $cvId;
+    $cvDir = fmDataDir() . '/' . $basePath . '/' . $cvId;
 
     if (!is_dir($cvDir)) {
         fmMkdir($cvDir);
@@ -1074,7 +1108,7 @@ function deleteFile($data) {
     }
 
     $basePath = fmGetBasePath($src);
-    $cvDir = FM_DATA_DIR . '/' . $basePath . '/' . $cvId;
+    $cvDir = fmDataDir() . '/' . $basePath . '/' . $cvId;
 
     $targetDir = $cvDir;
     if ($subPath !== '') {
@@ -1133,7 +1167,7 @@ function createFolder($data) {
     }
 
     $basePath = fmGetBasePath($src);
-    $cvDir = FM_DATA_DIR . '/' . $basePath . '/' . $cvId;
+    $cvDir = fmDataDir() . '/' . $basePath . '/' . $cvId;
 
     if (!is_dir($cvDir)) {
         fmMkdir($cvDir);
@@ -1183,7 +1217,7 @@ function downloadFile($data) {
     }
 
     $basePath = fmGetBasePath($src);
-    $cvDir = FM_DATA_DIR . '/' . $basePath . '/' . $cvId;
+    $cvDir = fmDataDir() . '/' . $basePath . '/' . $cvId;
 
     $targetDir = $cvDir;
     if ($subPath !== '') {
@@ -1206,7 +1240,7 @@ function downloadFile($data) {
         return;
     }
 
-    $resolvedData = realpath(FM_DATA_DIR);
+    $resolvedData = realpath(fmDataDir());
     if (strpos(realpath($filePath), $resolvedData) !== 0) {
         resultInfo(false, 'VALIDATION_ERROR: Access denied');
         return;
@@ -1250,7 +1284,7 @@ function deleteFolder($data) {
     }
 
     $basePath = fmGetBasePath($src);
-    $cvDir = FM_DATA_DIR . '/' . $basePath . '/' . $cvId;
+    $cvDir = fmDataDir() . '/' . $basePath . '/' . $cvId;
     $fullSubPath = $subPath ? $subPath . '/' . $foldername : $foldername;
 
     $validated = fmValidatePath($cvDir, $fullSubPath);
@@ -1278,13 +1312,13 @@ function deleteFolder($data) {
  * Erstellt automatisch konfigurierte Unterordner im Fahrzeug-Verzeichnis.
  *
  * Liest die Konfiguration 'lxcars_auto_folders' aus defaults_oserp (kommagetrennte Ordnernamen).
- * Erstellt die Ordner unter FM_DATA_DIR/fahrzeugschein/{c_id}/.
+ * Erstellt die Ordner unter fmDataDir()/fahrzeugschein/{c_id}/.
  * Bereits vorhandene Ordner werden nicht ueberschrieben.
  *
  * @param int $carId Fahrzeug-ID (c_id)
  */
 function ensureVehicleFolders($carId) {
-    $carDir = FM_DATA_DIR . '/fahrzeugschein/' . intval($carId);
+    $carDir = fmDataDir() . '/fahrzeugschein/' . intval($carId);
     if (!is_dir($carDir)) {
         fmMkdir($carDir);
     }
@@ -1322,14 +1356,14 @@ function ensureVehicleFolders($carId) {
  */
 function ensureCustomerFolder($cvId, $src, $name) {
     $basePath = fmGetBasePath($src);
-    $baseDir = FM_DATA_DIR . '/' . $basePath;
+    $baseDir = fmDataDir() . '/' . $basePath;
     $cvDir = $baseDir . '/' . $cvId;
 
     if (!is_dir($cvDir)) {
         fmMkdir($cvDir);
     }
 
-    $nameDir = $baseDir . '/by-name';
+    $nameDir = $baseDir . '/0_by-name';
     if (!is_dir($nameDir)) {
         fmMkdir($nameDir);
     }

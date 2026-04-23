@@ -1,6 +1,7 @@
 <?php
 // backend/api/accounting/index.php
 
+require_once __DIR__.'/../customer_vendor/filemanager.php';
 require_once __DIR__.'/bookings.php';
 require_once __DIR__.'/invoice_upload.php';
 require_once __DIR__.'/vendor_matching.php';

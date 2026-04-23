@@ -552,10 +552,9 @@ function weroniAnalyzeDocument($data) {
     }
 
     // Datei temporär speichern
-    $dataDir = realpath(__DIR__ . '/../../data');
-    $inboxDir = $dataDir . '/weroni_inbox';
+    $inboxDir = fmDataDir() . '/weroni_inbox';
     if (!is_dir($inboxDir)) {
-        mkdir($inboxDir, 0755, true);
+        fmMkdir($inboxDir);
     }
 
     $fileContent = base64_decode($fileBase64, true);

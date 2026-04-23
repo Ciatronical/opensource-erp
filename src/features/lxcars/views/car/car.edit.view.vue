@@ -1,11 +1,14 @@
 <!-- src/features/lxcars/views/car/car.edit.view.vue -->
 
 <template>
-    <NavbarView />
+    <NavbarView v-if="!readonly" />
     <v-container class="pt-2 pb-6" fluid>
 
         <!-- Titel-Zeile -->
         <div class="d-flex align-center mb-3 flex-wrap ga-2">
+            <v-btn v-if="readonly" icon variant="text" color="primary" size="small" :title="t('CarEditView.backToOrder')" @click="goBack">
+                <v-icon>mdi-arrow-left</v-icon>
+            </v-btn>
             <v-icon color="primary" class="mr-1">mdi-car</v-icon>
             <h1 class="text-h6 mb-0">
                 {{ readonly ? t('CarEditView.titleView') : (isEditMode ? t('CarEditView.titleEdit') : t('CarEditView.titleNew')) }}
@@ -1125,6 +1128,13 @@ export default {
                 router.push({ name: 'mechanic-order', params: { id: backOrderId.value } })
             }
         }
+        function goBack() {
+            if (backOrderId.value) {
+                router.push({ name: 'mechanic-order', params: { id: backOrderId.value } })
+            } else {
+                router.back()
+            }
+        }
         const oserpData = oserpStore()
         const carsStore = lxcarsStore()
         const wikiStoreInstance = wikiStore()
@@ -1895,7 +1905,7 @@ export default {
         })
 
         return {
-            t, oserpData, car, orders, loading, error, saving, isEditMode, readonly, backOrderId, backToOrder, district,
+            t, oserpData, car, orders, loading, error, saving, isEditMode, readonly, backOrderId, backToOrder, goBack, district,
             ownerItems, ownerLoading, currentOwnerId, onOwnerSearch, onOwnerChange,
             rulesLn, rulesHsn, rulesTsn, rulesEm, rulesD, rulesHu, rulesFin, rulesMonthYear,
             finFieldRef, tsnFieldRef, newOrderBtn, copyToClipboard, copyToClipboardNow,

@@ -916,7 +916,7 @@ function sendWhatsAppDocument($data) {
     // Ausgehende Datei lokal speichern fuer Chat-Anzeige
     $localMediaUrl = $mediaId;
     if ($customerId > 0) {
-        $dataDir = realpath(__DIR__ . '/../../data');
+        $dataDir = fmDataDir();
         $waDir = $dataDir . '/customers/' . $customerId . '/whatsapp';
         if (!is_dir($waDir)) mkdir($waDir, 0755, true);
         $localFile = $waDir . '/' . $filename;
@@ -1170,7 +1170,7 @@ function sendWhatsAppChatDocument($data) {
     // Ausgehende Datei lokal speichern fuer Chat-Anzeige
     $localMediaUrl = $mediaId;
     if ($customerId > 0) {
-        $dataDir = realpath(__DIR__ . '/../../data');
+        $dataDir = fmDataDir();
         $waDir = $dataDir . '/customers/' . $customerId . '/whatsapp';
         if (!is_dir($waDir)) mkdir($waDir, 0755, true);
         $localFile = $waDir . '/' . $filename;
@@ -2275,7 +2275,7 @@ function getWhatsAppMedia($data) {
 
     // Lokale Datei? (Pfad beginnt mit customers/, vendors/, whatsapp_unmatched/ oder whatsapp_cache/)
     if (preg_match('#^(customers|vendors|whatsapp_unmatched|whatsapp_cache)/#', $mediaId)) {
-        $dataDir = realpath(__DIR__ . '/../../data');
+        $dataDir = fmDataDir();
         $localPath = $dataDir . '/' . $mediaId;
 
         // Path-Traversal verhindern
@@ -2304,7 +2304,7 @@ function getWhatsAppMedia($data) {
     }
 
     // Bereits gecacht? Prüfen ob die Meta-ID schon lokal vorliegt
-    $dataDir = realpath(__DIR__ . '/../../data');
+    $dataDir = fmDataDir();
     if ($dataDir) {
         $cached = glob($dataDir . '/whatsapp_cache/' . $mediaId . '.*');
         if (!empty($cached)) {
@@ -2415,7 +2415,7 @@ function _resolveCustomerSrc($customerId) {
  */
 function _fetchWhatsAppMediaData($mediaId) {
     if (preg_match('#^(customers|vendors|whatsapp_unmatched|whatsapp_cache)/#', $mediaId)) {
-        $dataDir = realpath(__DIR__ . '/../../data');
+        $dataDir = fmDataDir();
         $localPath = $dataDir . '/' . $mediaId;
         $resolved = realpath($localPath);
         if ($resolved === false || strpos($resolved, $dataDir) !== 0) return null;
@@ -2432,7 +2432,7 @@ function _fetchWhatsAppMediaData($mediaId) {
     }
 
     // Bereits gecacht? Prüfen ob die Meta-ID schon lokal vorliegt
-    $dataDir = realpath(__DIR__ . '/../../data');
+    $dataDir = fmDataDir();
     if ($dataDir) {
         $cached = glob($dataDir . '/whatsapp_cache/' . $mediaId . '.*');
         if (!empty($cached)) {
@@ -2503,7 +2503,7 @@ function _fetchWhatsAppMediaData($mediaId) {
  * @param string $mimeType MIME-Type der Datei
  */
 function _cacheWhatsAppMedia(string $metaMediaId, string $fileData, string $mimeType): void {
-    $dataDir = realpath(__DIR__ . '/../../data');
+    $dataDir = fmDataDir();
     if (!$dataDir) return;
 
     $cacheDir = $dataDir . '/whatsapp_cache';
@@ -2569,7 +2569,7 @@ function getWhatsAppMediaSaveFolders($data) {
     $row = $db->getOne("SELECT name FROM $table WHERE id = :id", [':id' => $customerId]);
     ensureCustomerFolder($customerId, $cv['src'], trim($row['name'] ?? ''));
 
-    $dataDir = realpath(__DIR__ . '/../../data') ?: (__DIR__ . '/../../data');
+    $dataDir = fmDataDir();
     $cvDir = $dataDir . '/' . $cv['basePath'] . '/' . $customerId;
 
     if (!is_dir($cvDir)) {
@@ -2667,7 +2667,7 @@ function saveWhatsAppMediaToFolder($data) {
     $filename = preg_replace('/[^\w.\-]/', '_', $filename);
 
     // Zielverzeichnis bestimmen
-    $dataDir = realpath(__DIR__ . '/../../data') ?: (__DIR__ . '/../../data');
+    $dataDir = fmDataDir();
     $cvDir = $dataDir . '/' . $cv['basePath'] . '/' . $customerId;
     if (!is_dir($cvDir)) {
         mkdir($cvDir, 0755, true);
