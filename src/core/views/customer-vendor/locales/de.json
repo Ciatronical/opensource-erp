@@ -258,7 +258,7 @@
         "fields": {
             "greeting": "Anrede",
             "name": "Kundenname",
-            "keywords": "Kürzel",
+            "keywords": "Suchworte",
             "natural_person": "Natürliche Person",
             "department_1": "Abteilung 1",
             "department_2": "Abteilung 2",

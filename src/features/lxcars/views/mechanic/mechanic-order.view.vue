@@ -11,7 +11,15 @@
                 <div class="d-flex align-center ga-2 flex-wrap">
                     <span class="text-subtitle-1 font-weight-bold">{{ docNumber }}</span>
                     <span class="text-body-2 text-medium-emphasis">{{ customerName }}</span>
-                    <v-chip v-if="vehiclePlate" size="small" variant="tonal" color="primary" prepend-icon="mdi-car">
+                    <v-chip
+                        v-if="vehiclePlate"
+                        size="small"
+                        variant="tonal"
+                        color="primary"
+                        prepend-icon="mdi-car"
+                        :class="selectedCarId ? 'cursor-pointer' : ''"
+                        @click="openCarDetails"
+                    >
                         {{ vehiclePlate }}
                     </v-chip>
                     <v-chip v-if="vehicleInfo" size="x-small" variant="text">{{ vehicleInfo }}</v-chip>
@@ -390,6 +398,12 @@ const vehiclePlate = computed(() => {
     const car = cars.find(c => c.c_id === carId)
     return car?.c_ln || ''
 })
+const selectedCarId = computed(() => vehicle?.selectedCarId?.value || null)
+
+function openCarDetails() {
+    const carId = selectedCarId.value
+    if (carId) router.push({ name: 'mechanic-car', params: { id: carId }, query: { order: fakturaId.value } })
+}
 const vehicleInfo = computed(() => {
     const cars = vehicle?.customerCars?.value || []
     const carId = vehicle?.selectedCarId?.value

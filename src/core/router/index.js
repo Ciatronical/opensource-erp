@@ -246,6 +246,12 @@ const router = createRouter({
             props: true,
         },
         {
+            path: '/mechaniker/fahrzeug/:id(\\d+)',
+            name: 'mechanic-car',
+            component: CarEditView,
+            props: route => ({ id: route.params.id, readonly: true }),
+        },
+        {
             path: '/emails',
             name: 'emails',
             component: EmailView,

@@ -8,52 +8,66 @@
         <div class="d-flex align-center mb-3 flex-wrap ga-2">
             <v-icon color="primary" class="mr-1">mdi-car</v-icon>
             <h1 class="text-h6 mb-0">
-                {{ isEditMode ? t('CarEditView.titleEdit') : t('CarEditView.titleNew') }}
+                {{ readonly ? t('CarEditView.titleView') : (isEditMode ? t('CarEditView.titleEdit') : t('CarEditView.titleNew')) }}
             </h1>
             <v-chip v-if="isEditMode && car.c_ln" size="small" variant="tonal" color="primary" class="font-weight-bold">
                 {{ car.c_ln }}
             </v-chip>
-            <v-btn v-if="hasScanImages" variant="text" size="small" color="blue-darken-2" @click="openScanImagesDialog">
-                <v-icon start size="small">mdi-file-image-outline</v-icon>
-                {{ t('CarEditView.scanImages.button') }}
-            </v-btn>
-            <v-btn v-if="isEditMode" variant="tonal" size="small" color="success" @click="openCarRegistration">
-                <v-icon start size="small">mdi-card-account-details</v-icon>
-                {{ t('CarEditView.registration.button') }}
-            </v-btn>
-            <v-btn v-if="isEditMode" variant="tonal" size="small" color="red" :disabled="!kbaData" @click="rotesHeftDialog = true">
-                <v-icon start size="small">mdi-book-open-variant</v-icon>
-                {{ t('CarEditView.rotesHeft.button') }}
-            </v-btn>
-            <v-btn v-if="isEditMode && oserpData.customer_vendor?.profile?.id" variant="tonal" size="small" color="primary" @click="navigateToCustomer">
-                <v-icon start size="small">mdi-account-box</v-icon>
-                {{ t('CarEditView.navigateToCustomer') }}
-            </v-btn>
-            <v-btn v-if="isEditMode && car.c_ln" variant="tonal" size="small" color="green" :title="t('CarEditView.yellowLabel.tooltip')" :loading="yellowLabelPrinting" @click="onPrintYellowLabel">
-                <v-icon start size="small">mdi-label</v-icon>
-                {{ t('CarEditView.yellowLabel.button') }}
-            </v-btn>
-            <v-btn v-if="isEditMode && oserpData.checkPermission('special_access')" variant="tonal" size="small" color="deep-purple" @click="specialDialog = true">
-                <v-icon start size="small">mdi-star-circle</v-icon>
-                Special
-            </v-btn>
-            <v-btn v-if="isEditMode" variant="tonal" size="small" color="error" @click="deleteConfirmDialog = true">
-                <v-icon start size="small">mdi-delete</v-icon>
-                {{ t('CarEditView.delete.button') }}
-            </v-btn>
+            <template v-if="readonly">
+                <v-chip size="x-small" color="info" variant="tonal">
+                    <v-icon start size="x-small">mdi-eye</v-icon>
+                    {{ t('CarEditView.readonly') }}
+                </v-chip>
+                <v-btn v-if="backOrderId" variant="tonal" size="small" color="primary" @click="backToOrder">
+                    <v-icon start size="small">mdi-clipboard-text</v-icon>
+                    {{ t('CarEditView.backToOrder') }}
+                </v-btn>
+            </template>
+            <template v-if="!readonly">
+                <v-btn v-if="hasScanImages" variant="text" size="small" color="blue-darken-2" @click="openScanImagesDialog">
+                    <v-icon start size="small">mdi-file-image-outline</v-icon>
+                    {{ t('CarEditView.scanImages.button') }}
+                </v-btn>
+                <v-btn v-if="isEditMode" variant="tonal" size="small" color="success" @click="openCarRegistration">
+                    <v-icon start size="small">mdi-card-account-details</v-icon>
+                    {{ t('CarEditView.registration.button') }}
+                </v-btn>
+                <v-btn v-if="isEditMode" variant="tonal" size="small" color="red" :disabled="!kbaData" @click="rotesHeftDialog = true">
+                    <v-icon start size="small">mdi-book-open-variant</v-icon>
+                    {{ t('CarEditView.rotesHeft.button') }}
+                </v-btn>
+                <v-btn v-if="isEditMode && oserpData.customer_vendor?.profile?.id" variant="tonal" size="small" color="primary" @click="navigateToCustomer">
+                    <v-icon start size="small">mdi-account-box</v-icon>
+                    {{ t('CarEditView.navigateToCustomer') }}
+                </v-btn>
+                <v-btn v-if="isEditMode && car.c_ln" variant="tonal" size="small" color="green" :title="t('CarEditView.yellowLabel.tooltip')" :loading="yellowLabelPrinting" @click="onPrintYellowLabel">
+                    <v-icon start size="small">mdi-label</v-icon>
+                    {{ t('CarEditView.yellowLabel.button') }}
+                </v-btn>
+                <v-btn v-if="isEditMode && oserpData.checkPermission('special_access')" variant="tonal" size="small" color="deep-purple" @click="specialDialog = true">
+                    <v-icon start size="small">mdi-star-circle</v-icon>
+                    Special
+                </v-btn>
+                <v-btn v-if="isEditMode" variant="tonal" size="small" color="error" @click="deleteConfirmDialog = true">
+                    <v-icon start size="small">mdi-delete</v-icon>
+                    {{ t('CarEditView.delete.button') }}
+                </v-btn>
+            </template>
             <v-spacer />
-            <v-chip v-if="saving" size="x-small" color="warning" variant="tonal">
-                <v-progress-circular indeterminate size="12" width="2" class="mr-1" />
-                {{ t('CarEditView.saving') }}
-            </v-chip>
-            <v-chip v-else-if="isEditMode && !error" size="x-small" color="success" variant="tonal">
-                <v-icon start size="x-small">mdi-check</v-icon>
-                {{ t('CarEditView.saved') }}
-            </v-chip>
+            <template v-if="!readonly">
+                <v-chip v-if="saving" size="x-small" color="warning" variant="tonal">
+                    <v-progress-circular indeterminate size="12" width="2" class="mr-1" />
+                    {{ t('CarEditView.saving') }}
+                </v-chip>
+                <v-chip v-else-if="isEditMode && !error" size="x-small" color="success" variant="tonal">
+                    <v-icon start size="x-small">mdi-check</v-icon>
+                    {{ t('CarEditView.saved') }}
+                </v-chip>
+            </template>
         </div>
 
         <!-- Alerts -->
-        <v-alert v-if="!oserpData.customer_vendor" type="warning" variant="tonal" density="compact" class="mb-3">
+        <v-alert v-if="!readonly && !oserpData.customer_vendor" type="warning" variant="tonal" density="compact" class="mb-3">
             {{ t('CarEditView.messages.noCustomer') }}
             <template #append>
                 <v-btn size="small" variant="tonal" color="warning" @click="focusSearch">
@@ -61,7 +75,7 @@
                 </v-btn>
             </template>
         </v-alert>
-        <v-alert v-else-if="oserpData.customer_vendor.profile?.src === 'V'" type="warning" variant="tonal" density="compact" class="mb-3">
+        <v-alert v-else-if="!readonly && oserpData.customer_vendor.profile?.src === 'V'" type="warning" variant="tonal" density="compact" class="mb-3">
             {{ t('CarEditView.messages.vendorNotAllowed') }}
             <template #append>
                 <v-btn size="small" variant="tonal" color="warning" @click="focusSearch">
@@ -76,9 +90,10 @@
             {{ error }}
         </v-alert>
 
-        <form
-            v-if="oserpData.customer_vendor && oserpData.customer_vendor.profile?.src !== 'V' && !loading"
+        <v-form
+            v-if="(oserpData.customer_vendor && oserpData.customer_vendor.profile?.src !== 'V' && !loading) || (readonly && !loading)"
             autocomplete="off"
+            :readonly="readonly"
             @submit.prevent
             @focusin.capture="onFocusIn"
             @focusout.capture="onFocusOut"
@@ -132,7 +147,7 @@
                                                     <v-icon v-bind="tip" size="small" color="info" class="mr-1" tabindex="-1">mdi-map-marker-outline</v-icon>
                                                 </template>
                                             </v-tooltip>
-                                            <v-icon size="small" :color="car.chk_c_ln ? 'success' : 'grey-lighten-1'" class="cursor-pointer" tabindex="-1" @click.stop="toggleShield('chk_c_ln')">
+                                            <v-icon v-if="!readonly" size="small" :color="car.chk_c_ln ? 'success' : 'grey-lighten-1'" class="cursor-pointer" tabindex="-1" @click.stop="toggleShield('chk_c_ln')">
                                                 {{ car.chk_c_ln ? 'mdi-shield-check' : 'mdi-shield-outline' }}
                                             </v-icon>
                                         </template>
@@ -149,7 +164,7 @@
                                                 </template>
                                                 <img :src="fieldCrops.c_2" class="crop-tooltip-img" />
                                             </v-tooltip>
-                                            <v-icon size="small" :color="car.chk_c_2 ? 'success' : 'grey-lighten-1'" class="cursor-pointer" tabindex="-1" @click.stop="toggleShield('chk_c_2')">
+                                            <v-icon v-if="!readonly" size="small" :color="car.chk_c_2 ? 'success' : 'grey-lighten-1'" class="cursor-pointer" tabindex="-1" @click.stop="toggleShield('chk_c_2')">
                                                 {{ car.chk_c_2 ? 'mdi-shield-check' : 'mdi-shield-outline' }}
                                             </v-icon>
                                         </template>
@@ -166,7 +181,7 @@
                                                 </template>
                                                 <img :src="fieldCrops.c_3" class="crop-tooltip-img" />
                                             </v-tooltip>
-                                            <v-icon size="small" :color="car.chk_c_3 ? 'success' : 'grey-lighten-1'" class="cursor-pointer" tabindex="-1" @click.stop="toggleShield('chk_c_3')">
+                                            <v-icon v-if="!readonly" size="small" :color="car.chk_c_3 ? 'success' : 'grey-lighten-1'" class="cursor-pointer" tabindex="-1" @click.stop="toggleShield('chk_c_3')">
                                                 {{ car.chk_c_3 ? 'mdi-shield-check' : 'mdi-shield-outline' }}
                                             </v-icon>
                                         </template>
@@ -188,7 +203,7 @@
                                                 </template>
                                                 <img :src="fieldCrops.c_em" class="crop-tooltip-img" />
                                             </v-tooltip>
-                                            <v-icon size="small" :color="car.chk_c_em ? 'success' : 'grey-lighten-1'" class="cursor-pointer" tabindex="-1" @click.stop="toggleShield('chk_c_em')">
+                                            <v-icon v-if="!readonly" size="small" :color="car.chk_c_em ? 'success' : 'grey-lighten-1'" class="cursor-pointer" tabindex="-1" @click.stop="toggleShield('chk_c_em')">
                                                 {{ car.chk_c_em ? 'mdi-shield-check' : 'mdi-shield-outline' }}
                                             </v-icon>
                                         </template>
@@ -208,7 +223,7 @@
                                                 </template>
                                                 <img :src="fieldCrops.c_d" class="crop-tooltip-img" />
                                             </v-tooltip>
-                                            <v-icon size="small" :color="car.chk_c_d ? 'success' : 'grey-lighten-1'" class="cursor-pointer" tabindex="-1" @click.stop="toggleShield('chk_c_d')">
+                                            <v-icon v-if="!readonly" size="small" :color="car.chk_c_d ? 'success' : 'grey-lighten-1'" class="cursor-pointer" tabindex="-1" @click.stop="toggleShield('chk_c_d')">
                                                 {{ car.chk_c_d ? 'mdi-shield-check' : 'mdi-shield-outline' }}
                                             </v-icon>
                                         </template>
@@ -225,7 +240,7 @@
                                                 </template>
                                                 <img :src="fieldCrops.c_hu" class="crop-tooltip-img" />
                                             </v-tooltip>
-                                            <v-icon size="small" :color="car.chk_c_hu ? 'success' : 'grey-lighten-1'" class="cursor-pointer" tabindex="-1" @click.stop="toggleShield('chk_c_hu')">
+                                            <v-icon v-if="!readonly" size="small" :color="car.chk_c_hu ? 'success' : 'grey-lighten-1'" class="cursor-pointer" tabindex="-1" @click.stop="toggleShield('chk_c_hu')">
                                                 {{ car.chk_c_hu ? 'mdi-shield-check' : 'mdi-shield-outline' }}
                                             </v-icon>
                                         </template>
@@ -245,7 +260,7 @@
                                                 </template>
                                                 <img :src="fieldCrops.c_fin" class="crop-tooltip-img" />
                                             </v-tooltip>
-                                            <v-icon size="small" :color="car.chk_fin ? 'success' : 'grey-lighten-1'" class="cursor-pointer" tabindex="-1" @click.stop="toggleShield('chk_fin')">
+                                            <v-icon v-if="!readonly" size="small" :color="car.chk_fin ? 'success' : 'grey-lighten-1'" class="cursor-pointer" tabindex="-1" @click.stop="toggleShield('chk_fin')">
                                                 {{ car.chk_fin ? 'mdi-shield-check' : 'mdi-shield-outline' }}
                                             </v-icon>
                                         </template>
@@ -310,7 +325,7 @@
                                     <v-text-field v-model="car.c_st_z" variant="outlined" density="compact" hide-details maxlength="30" tabindex="15" />
                                 </v-col>
                                 <v-col cols="auto" class="py-1" style="width: 80px">
-                                    <v-btn v-if="isEditMode" size="small" variant="tonal" color="orange" :title="t('CarEditView.tyreLabel.tooltip')" :loading="tyreLabelPrinting" @click="onPrintTyreLabel('summer')">
+                                    <v-btn v-if="isEditMode && !readonly" size="small" variant="tonal" color="orange" :title="t('CarEditView.tyreLabel.tooltip')" :loading="tyreLabelPrinting" @click="onPrintTyreLabel('summer')">
                                         <v-icon size="small">mdi-printer</v-icon>
                                     </v-btn>
                                 </v-col>
@@ -328,7 +343,7 @@
                                     <v-text-field v-model="car.c_wt_z" variant="outlined" density="compact" hide-details maxlength="30" tabindex="18" />
                                 </v-col>
                                 <v-col cols="auto" class="py-1" style="width: 80px">
-                                    <v-btn v-if="isEditMode" size="small" variant="tonal" color="blue" :title="t('CarEditView.tyreLabel.tooltip')" :loading="tyreLabelPrinting" @click="onPrintTyreLabel('winter')">
+                                    <v-btn v-if="isEditMode && !readonly" size="small" variant="tonal" color="blue" :title="t('CarEditView.tyreLabel.tooltip')" :loading="tyreLabelPrinting" @click="onPrintTyreLabel('winter')">
                                         <v-icon size="small">mdi-printer</v-icon>
                                     </v-btn>
                                 </v-col>
@@ -346,9 +361,9 @@
                                 :variant="car.c_sk ? 'flat' : 'outlined'"
                                 :color="car.c_sk ? 'primary' : undefined"
                                 size="small"
-                                class="cursor-pointer"
+                                :class="readonly ? '' : 'cursor-pointer'"
                                 tabindex="-1"
-                                @click="car.c_sk = !car.c_sk"
+                                @click="readonly ? null : (car.c_sk = !car.c_sk)"
                             >
                                 <v-icon start size="x-small">{{ car.c_sk ? 'mdi-link-variant' : 'mdi-link-variant-off' }}</v-icon>
                                 {{ t('CarEditView.fields.c_sk') }}
@@ -696,7 +711,7 @@
                     </v-card>
 
                     <!-- Debug-Infos (ausklappbar) -->
-                    <div class="text-center mt-2">
+                    <div v-if="!readonly" class="text-center mt-2">
                         <v-btn variant="text" size="x-small" color="grey" @click="showDebug = !showDebug">
                             <v-icon start size="small">{{ showDebug ? 'mdi-chevron-up' : 'mdi-bug-outline' }}</v-icon>
                             {{ t('CarEditView.sections.debug') }}
@@ -753,6 +768,7 @@
                             <span class="text-subtitle-1 font-weight-medium">{{ t('CarEditView.sections.orders') }}</span>
                             <v-chip v-if="orders.length" size="x-small" variant="tonal" color="primary" class="ml-2">{{ orders.length }}</v-chip>
                             <v-btn
+                                v-if="!readonly"
                                 size="small"
                                 variant="outlined"
                                 ref="newOrderBtn"
@@ -803,7 +819,7 @@
                                 </thead>
                                 <tbody>
                                     <template v-if="sortedOrders.length">
-                                        <tr v-for="order in sortedOrders" :key="order.id" class="orders-table__row" @click="openOrder(order.id)">
+                                        <tr v-for="order in sortedOrders" :key="order.id" :class="['orders-table__row', { 'orders-table__row--readonly': readonly }]" @click="readonly ? null : openOrder(order.id)">
                                             <td class="font-weight-medium text-no-wrap">{{ order.ordnumber }}</td>
                                             <td class="text-medium-emphasis text-no-wrap">{{ order.transdate }}</td>
                                             <td class="orders-table__desc">{{ order.description }}</td>
@@ -825,9 +841,11 @@
                     </v-card>
                 </v-col>
 
-                <!-- KI-Werkstattmeister-Chat -->
+                <!-- KI-Werkstattmeister-Chat: auch in Readonly bedienbar (eigener v-form-Kontext) -->
                 <v-col v-if="oserpData.isLxCars()" cols="12" lg="5">
-                    <CarChatCard :car-id="Number(carId)" />
+                    <v-form :readonly="false" autocomplete="off" @submit.prevent>
+                        <CarChatCard :car-id="Number(carId)" />
+                    </v-form>
                 </v-col>
             </v-row>
 
@@ -837,7 +855,7 @@
                     <v-icon class="mr-2" size="small" color="amber-darken-2">mdi-book-open-variant</v-icon>
                     <span class="text-subtitle-1 font-weight-medium">{{ t('CarEditView.wiki.title') }} ({{ car.c_2 }}/{{ car.c_3.substring(0, 3) }})</span>
                     <v-chip v-if="wikiArticles.length" size="x-small" variant="tonal" color="amber" class="ml-2">{{ wikiArticles.length }}</v-chip>
-                    <v-btn size="small" variant="outlined" color="amber-darken-2" prepend-icon="mdi-plus" class="ml-3" tabindex="-1" @click="createKbaArticle">
+                    <v-btn v-if="!readonly" size="small" variant="outlined" color="amber-darken-2" prepend-icon="mdi-plus" class="ml-3" tabindex="-1" @click="createKbaArticle">
                         {{ t('CarEditView.wiki.newArticle') }}
                     </v-btn>
                     <v-spacer />
@@ -854,7 +872,7 @@
                             </v-expansion-panel-title>
                             <v-expansion-panel-text>
                                 <div v-html="article.content" class="wiki-article-content"></div>
-                                <div class="mt-2">
+                                <div v-if="!readonly" class="mt-2">
                                     <v-btn size="small" variant="text" color="primary" :to="{ name: 'wiki-edit', params: { id: article.id } }" tabindex="-1">
                                         <v-icon start size="small">mdi-pencil</v-icon>
                                         {{ t('CarEditView.wiki.edit') }}
@@ -869,7 +887,7 @@
                 </v-card-text>
             </v-card>
 
-        </form>
+        </v-form>
 
         <!-- KBA-Auswahldialog (bei mehreren Treffern oder TSN-Platzhalter) -->
         <v-dialog v-model="kbaSelectDialog" max-width="800" persistent @keydown.esc="kbaSelectDialog = false">
@@ -1059,7 +1077,7 @@
 <script>
 import { ref, computed, watch, nextTick, defineAsyncComponent } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRouter, onBeforeRouteLeave } from 'vue-router'
+import { useRouter, useRoute, onBeforeRouteLeave } from 'vue-router'
 import axios from 'axios'
 import { oserpStore } from '@/core/stores/oserp.store.js'
 import { lxcarsStore } from '@/features/lxcars/stores/lxcars.store.js'
@@ -1084,12 +1102,29 @@ export default {
         id: {
             type: String,
             default: null
+        },
+        readonly: {
+            type: Boolean,
+            default: false
         }
     },
 
     setup(props) {
+        const readonly = computed(() => !!props.readonly)
         const { t, locale } = useI18n()
         const router = useRouter()
+        const route = useRoute()
+        const backOrderId = computed(() => {
+            const q = route.query.order
+            const n = Array.isArray(q) ? q[0] : q
+            const id = Number(n)
+            return Number.isFinite(id) && id > 0 ? id : null
+        })
+        function backToOrder() {
+            if (backOrderId.value) {
+                router.push({ name: 'mechanic-order', params: { id: backOrderId.value } })
+            }
+        }
         const oserpData = oserpStore()
         const carsStore = lxcarsStore()
         const wikiStoreInstance = wikiStore()
@@ -1192,7 +1227,7 @@ export default {
         const {
             saving, loading, error, savedCarId,
             toggleShield, onFocusIn, onFocusOut, triggerSave, markDeleted
-        } = useCarAutoSave({ car, isEditMode, hasValidationErrors, oserpData, carsStore, router, props, t, orders, validationCleanup, initialLoaded, pendingKbaData, kbaData, pendingScanImages, useSpecialKba, kbaSelectDialog })
+        } = useCarAutoSave({ car, isEditMode, hasValidationErrors, oserpData, carsStore, router, props, t, orders, validationCleanup, initialLoaded, pendingKbaData, kbaData, pendingScanImages, useSpecialKba, kbaSelectDialog, readonly })
 
         // Scan-Daten übernehmen (von car.scan.view.vue via Store)
         watch(initialLoaded, (loaded) => {
@@ -1860,7 +1895,7 @@ export default {
         })
 
         return {
-            t, oserpData, car, orders, loading, error, saving, isEditMode, district,
+            t, oserpData, car, orders, loading, error, saving, isEditMode, readonly, backOrderId, backToOrder, district,
             ownerItems, ownerLoading, currentOwnerId, onOwnerSearch, onOwnerChange,
             rulesLn, rulesHsn, rulesTsn, rulesEm, rulesD, rulesHu, rulesFin, rulesMonthYear,
             finFieldRef, tsnFieldRef, newOrderBtn, copyToClipboard, copyToClipboardNow,
@@ -1929,6 +1964,14 @@ export default {
 .orders-table__row {
     cursor: pointer;
     transition: background-color 0.15s ease;
+}
+
+.orders-table__row--readonly {
+    cursor: default;
+}
+
+.orders-table__row--readonly:hover {
+    background-color: transparent !important;
 }
 
 .orders-table__row:nth-child(even) {

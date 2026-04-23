@@ -2,11 +2,13 @@
 
 import { ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 
-export function useCarAutoSave({ car, isEditMode, hasValidationErrors, oserpData, carsStore, router, props, t, orders, validationCleanup, initialLoaded, pendingKbaData, kbaData, pendingScanImages, useSpecialKba, kbaSelectDialog }) {
+export function useCarAutoSave({ car, isEditMode, hasValidationErrors, oserpData, carsStore, router, props, t, orders, validationCleanup, initialLoaded, pendingKbaData, kbaData, pendingScanImages, useSpecialKba, kbaSelectDialog, readonly }) {
     const saving = ref(false)
     const loading = ref(false)
     const error = ref('')
     const savedCarId = ref(null)
+
+    const isReadonly = () => !!(readonly && readonly.value)
 
     let textInputFocused = false
     let hasPendingChanges = false
@@ -27,12 +29,14 @@ export function useCarAutoSave({ car, isEditMode, hasValidationErrors, oserpData
     }
 
     function onFocusIn(event) {
+        if (isReadonly()) return
         if (isTextInput(event.target)) {
             textInputFocused = true
         }
     }
 
     function onFocusOut(event) {
+        if (isReadonly()) return
         if (isTextInput(event.target)) {
             textInputFocused = false
             if (hasPendingChanges) {
@@ -50,6 +54,7 @@ export function useCarAutoSave({ car, isEditMode, hasValidationErrors, oserpData
     }
 
     function onDataChange() {
+        if (isReadonly()) return
         if (!initialLoaded.value || deleted) return
         if (textInputFocused) {
             hasPendingChanges = true
@@ -59,6 +64,7 @@ export function useCarAutoSave({ car, isEditMode, hasValidationErrors, oserpData
     }
 
     function triggerSave() {
+        if (isReadonly()) return
         if (saveTimeout) clearTimeout(saveTimeout)
         saveTimeout = setTimeout(() => {
             saveCarData()
@@ -66,6 +72,7 @@ export function useCarAutoSave({ car, isEditMode, hasValidationErrors, oserpData
     }
 
     function toggleShield(field) {
+        if (isReadonly()) return
         car.value[field] = !car.value[field]
         forceNextSave = true
         triggerSave()
@@ -202,6 +209,7 @@ export function useCarAutoSave({ car, isEditMode, hasValidationErrors, oserpData
 
     // ── sendBeacon bei Seitennavigation ──
     function flushPendingChanges() {
+        if (isReadonly()) return
         const carId = props.id || savedCarId.value
         if (!carId || !initialLoaded.value || deleted) return
         if (!hasPendingChanges && !saveTimeout) return

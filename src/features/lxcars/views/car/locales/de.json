@@ -2,8 +2,11 @@
     "CarEditView": {
         "titleNew": "Neues Fahrzeug anlegen",
         "titleEdit": "Fahrzeug bearbeiten",
+        "titleView": "Fahrzeugdaten",
         "saving": "Speichern...",
         "saved": "Gespeichert",
+        "readonly": "Nur Ansicht",
+        "backToOrder": "Auftrag",
         "navigateToCustomer": "Zum Kunden",
         "sections": {
             "identification": "Identifikation",
