@@ -438,6 +438,7 @@
         "dirGroup_help": "Właściciel grupy dla utworzonych katalogów (np. www-data). Jeśli puste, grupa nie jest zmieniana.",
         "dirMode": "Uprawnienia katalogów",
         "dirMode_help": "Uprawnienia systemu plików dla utworzonych katalogów (np. 0775). Domyślnie: 0755",
+        "ai": "Sztuczna inteligencja",
         "misc": "Różne",
         "listLimit": "Limit listy",
         "listLimit_help": "Maksymalna liczba wpisów na listach",

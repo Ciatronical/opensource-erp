@@ -146,6 +146,16 @@
         "registration": {
             "button": "Zulassung"
         },
+        "export": {
+            "button": "Eksportuoti",
+            "tooltip": "Eksportuoti visus transporto priemonės duomenis kaip tekstinį failą",
+            "header": "Transporto priemonės duomenų eksportas",
+            "exportedAt": "Eksportuota",
+            "sectionCar": "Transporto priemonės duomenys",
+            "sectionKba": "Registracijos duomenys (KBA)",
+            "slogan": "Pažangi dirbtuvės programinė įranga su DI",
+            "tagline": "Pakanka popierinio chaoso. Šis failas sukurtas naudojant LxCars."
+        },
         "yellowLabel": {
             "button": "Plakette",
             "tooltip": "Grüne Plakette drucken",

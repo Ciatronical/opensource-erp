@@ -146,6 +146,16 @@
         "registration": {
             "button": "Registratie"
         },
+        "export": {
+            "button": "Exporteren",
+            "tooltip": "Alle voertuiggegevens als tekstbestand exporteren",
+            "header": "Export voertuiggegevens",
+            "exportedAt": "Geëxporteerd op",
+            "sectionCar": "Voertuiggegevens",
+            "sectionKba": "Registratiegegevens (KBA)",
+            "slogan": "Intelligente werkplaatssoftware met AI",
+            "tagline": "Einde aan de papierchaos. Dit bestand is gemaakt met LxCars."
+        },
         "yellowLabel": {
             "button": "Vignet",
             "tooltip": "Groene vignet afdrukken",

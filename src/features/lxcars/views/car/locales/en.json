@@ -146,6 +146,16 @@
         "registration": {
             "button": "Registration"
         },
+        "export": {
+            "button": "Export",
+            "tooltip": "Export all vehicle data as text file",
+            "header": "Vehicle Data Export",
+            "exportedAt": "Exported at",
+            "sectionCar": "Vehicle Data",
+            "sectionKba": "Registration Data (KBA)",
+            "slogan": "Smart AI-powered Workshop Software",
+            "tagline": "End the paper chaos. This file was created with LxCars."
+        },
         "yellowLabel": {
             "button": "Badge",
             "tooltip": "Print green badge",

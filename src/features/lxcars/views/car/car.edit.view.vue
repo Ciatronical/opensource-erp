@@ -47,6 +47,10 @@
                     <v-icon start size="small">mdi-label</v-icon>
                     {{ t('CarEditView.yellowLabel.button') }}
                 </v-btn>
+                <v-btn v-if="isEditMode" variant="tonal" size="small" color="grey-darken-2" :title="t('CarEditView.export.tooltip')" @click="exportCarData">
+                    <v-icon start size="small">mdi-file-download-outline</v-icon>
+                    {{ t('CarEditView.export.button') }}
+                </v-btn>
                 <v-btn v-if="isEditMode && oserpData.checkPermission('special_access')" variant="tonal" size="small" color="deep-purple" @click="specialDialog = true">
                     <v-icon start size="small">mdi-star-circle</v-icon>
                     Special
@@ -1887,6 +1891,86 @@ export default {
 
         // Crop-Bilder werden als Tooltip direkt am Icon angezeigt
 
+        function exportCarData() {
+            // Technische / interne Felder, die nicht im Export erscheinen sollen
+            const skipFields = new Set([
+                'c_id', 'c_ow', 'kba_id', 'scan_id', 'scan_detail_id', 'filename'
+            ])
+            // Felder die ueber die Display-Refs vorformatiert kommen (lokalisiertes Datum/Zahl)
+            const displayMap = {
+                c_d: displayD.value,
+                c_hu: displayHu.value,
+                c_zrd: displayZrd.value,
+                c_bf: displayBf.value,
+                c_wd: displayWd.value,
+                c_zrk: displayZrk.value,
+                c_km: displayKm.value,
+            }
+            // Eigene Label-Overrides (wo der Feld-Key nicht in den i18n-fields steht)
+            const labelOverrides = {
+                c_d2: 'D2',
+            }
+
+            const lines = []
+            lines.push('╔══════════════════════════════════════════════════════════╗')
+            lines.push('║              ' + t('CarEditView.export.header').padEnd(44) + '║')
+            lines.push('╚══════════════════════════════════════════════════════════╝')
+            lines.push(`${t('CarEditView.export.exportedAt')}: ${new Date().toLocaleString(locale.value)}`)
+            lines.push('')
+            lines.push('━━━ ' + t('CarEditView.export.sectionCar') + ' ━━━')
+
+            // Besitzer vorne ausgeben — als Name statt ID
+            const ownerName = oserpData.customer_vendor?.profile?.name
+            if (ownerName) {
+                lines.push(`${t('CarEditView.fields.c_ow')}: ${ownerName}`)
+            }
+
+            for (const [key, rawValue] of Object.entries(car.value)) {
+                if (skipFields.has(key)) continue
+                if (key.startsWith('chk_')) continue
+                const value = Object.prototype.hasOwnProperty.call(displayMap, key) ? displayMap[key] : rawValue
+                if (value === null || value === undefined || value === '' || value === false) continue
+                const label = labelOverrides[key] ?? t(`CarEditView.fields.${key}`, key)
+                lines.push(`${label}: ${value}`)
+            }
+            if (kbaData.value && Object.keys(kbaData.value).length) {
+                lines.push('')
+                lines.push('━━━ ' + t('CarEditView.export.sectionKba') + ' ━━━')
+                for (const [key, value] of Object.entries(kbaData.value)) {
+                    if (value === null || value === undefined || value === '') continue
+                    const label = t(`CarEditView.kba.${key}`, key)
+                    lines.push(`${label}: ${value}`)
+                }
+            }
+
+            // Footer mit Eigenwerbung
+            lines.push('')
+            lines.push('')
+            lines.push('   ____________')
+            lines.push('  /|  _____   |   ┌─────────────────────────────────────┐')
+            lines.push(' / |_/_____\\__|   │  L x C a r s                        │')
+            lines.push('|__|__O____O_|    │  ' + t('CarEditView.export.slogan').padEnd(35) + '│')
+            lines.push('   `----------    │  https://lxcars.de                  │')
+            lines.push('                  └─────────────────────────────────────┘')
+            lines.push('')
+            lines.push('   ' + t('CarEditView.export.tagline'))
+
+            const content = lines.join('\n')
+            const plate = (car.value.c_ln || 'Fahrzeug').replace(/[^a-zA-Z0-9\-]/g, '_')
+            const dateStr = new Date().toISOString().slice(0, 10)
+            const filename = `Fahrzeug_${plate}_${dateStr}.txt`
+
+            const blob = new Blob([content], { type: 'text/plain;charset=utf-8' })
+            const url = URL.createObjectURL(blob)
+            const a = document.createElement('a')
+            a.href = url
+            a.download = filename
+            document.body.appendChild(a)
+            a.click()
+            document.body.removeChild(a)
+            URL.revokeObjectURL(url)
+        }
+
         onBeforeRouteLeave(async (to) => {
             if (!awaitingCustomer.value) return
             awaitingCustomer.value = false
@@ -1925,7 +2009,8 @@ export default {
             openScanImagesDialog,
             fieldCrops, fieldCropLabels,
             wikiArticles, createKbaArticle,
-            carId
+            carId,
+            exportCarData
         }
     }
 }

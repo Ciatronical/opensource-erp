@@ -150,6 +150,16 @@
         "registration": {
             "button": "Zulassung"
         },
+        "export": {
+            "button": "Export",
+            "tooltip": "Alle Fahrzeugdaten als Textdatei exportieren",
+            "header": "Fahrzeugdaten-Export",
+            "exportedAt": "Exportiert am",
+            "sectionCar": "Fahrzeugdaten",
+            "sectionKba": "KBA-Daten (Zulassung)",
+            "slogan": "Intelligente Werkstattsoftware durch KI",
+            "tagline": "Schluss mit Zettelchaos. Diese Datei wurde mit LxCars erstellt."
+        },
         "yellowLabel": {
             "button": "Plakette",
             "tooltip": "Grüne Plakette drucken",

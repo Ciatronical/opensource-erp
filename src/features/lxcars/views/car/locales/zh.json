@@ -146,6 +146,16 @@
         "registration": {
             "button": "注册"
         },
+        "export": {
+            "button": "导出",
+            "tooltip": "将所有车辆数据导出为文本文件",
+            "header": "车辆数据导出",
+            "exportedAt": "导出时间",
+            "sectionCar": "车辆数据",
+            "sectionKba": "登记数据 (KBA)",
+            "slogan": "AI 驱动的智能维修厂软件",
+            "tagline": "告别纸质混乱。此文件由 LxCars 创建。"
+        },
         "yellowLabel": {
             "button": "标牌",
             "tooltip": "打印绿色标牌",

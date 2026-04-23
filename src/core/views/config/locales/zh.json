@@ -438,6 +438,7 @@
         "dirGroup_help": "创建目录的组所有者（如 www-data）。留空则不更改组。",
         "dirMode": "目录权限",
         "dirMode_help": "创建目录的文件系统权限（如 0775）。默认：0755",
+        "ai": "人工智能",
         "misc": "其他",
         "listLimit": "列表限制",
         "listLimit_help": "列表中的最大条目数",

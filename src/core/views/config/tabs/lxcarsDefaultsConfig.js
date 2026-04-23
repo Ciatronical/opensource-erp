@@ -4,8 +4,6 @@ const lxcarsDefaultsConfig = [
     { name: "lxcars", type: "headline", label: "crm_fields.lxcars" },
 
     { name: "lxcarsapi", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.lxcarsApi", tooltip: "crm_fields.lxcarsApi_help" },
-    { name: "openai_api_key", type: "password", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.openaiApiKey", tooltip: "crm_fields.openaiApiKey_help" },
-    { name: "anthropic_api_key", type: "password", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.anthropicApiKey", tooltip: "crm_fields.anthropicApiKey_help" },
     { name: "ai_gewicht_rechnungen", type: "input", inputType: "number", size: 5, fieldstyle: "max-width: 15ch", label: "crm_fields.aiGewichtRechnungen", tooltip: "crm_fields.aiGewichtRechnungen_help" },
     { name: "ai_gewicht_auftraege", type: "input", inputType: "number", size: 5, fieldstyle: "max-width: 15ch", label: "crm_fields.aiGewichtAuftraege", tooltip: "crm_fields.aiGewichtAuftraege_help" },
     { name: "ai_gewicht_angebote", type: "input", inputType: "number", size: 5, fieldstyle: "max-width: 15ch", label: "crm_fields.aiGewichtAngebote", tooltip: "crm_fields.aiGewichtAngebote_help" },

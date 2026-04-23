@@ -438,6 +438,7 @@
         "dirGroup_help": "Group owner for created directories (e.g. www-data). If empty, group is not changed.",
         "dirMode": "Directory Permissions",
         "dirMode_help": "Filesystem permissions for created directories (e.g. 0775). Default: 0755",
+        "ai": "Artificial Intelligence",
         "misc": "Miscellaneous",
         "listLimit": "List Limit",
         "listLimit_help": "Maximum number of entries in lists",

@@ -146,6 +146,16 @@
         "registration": {
             "button": "Rejestracja"
         },
+        "export": {
+            "button": "Eksportuj",
+            "tooltip": "Eksportuj wszystkie dane pojazdu jako plik tekstowy",
+            "header": "Eksport danych pojazdu",
+            "exportedAt": "Wyeksportowano",
+            "sectionCar": "Dane pojazdu",
+            "sectionKba": "Dane rejestracyjne (KBA)",
+            "slogan": "Inteligentne oprogramowanie warsztatowe z AI",
+            "tagline": "Koniec z papierowym chaosem. Ten plik został utworzony za pomocą LxCars."
+        },
         "yellowLabel": {
             "button": "Plakietka",
             "tooltip": "Drukuj zieloną plakietkę",

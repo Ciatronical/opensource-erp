@@ -146,6 +146,16 @@
         "registration": {
             "button": "Matriculación"
         },
+        "export": {
+            "button": "Exportar",
+            "tooltip": "Exportar todos los datos del vehículo como archivo de texto",
+            "header": "Exportación de datos del vehículo",
+            "exportedAt": "Exportado el",
+            "sectionCar": "Datos del vehículo",
+            "sectionKba": "Datos de matriculación (KBA)",
+            "slogan": "Software inteligente de taller con IA",
+            "tagline": "Fin al caos del papel. Este archivo se creó con LxCars."
+        },
         "yellowLabel": {
             "button": "Etiqueta",
             "tooltip": "Grüne Plakette drucken",

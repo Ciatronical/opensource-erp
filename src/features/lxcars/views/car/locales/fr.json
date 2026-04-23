@@ -146,6 +146,16 @@
         "registration": {
             "button": "Immatriculation"
         },
+        "export": {
+            "button": "Exporter",
+            "tooltip": "Exporter toutes les données du véhicule dans un fichier texte",
+            "header": "Export des données du véhicule",
+            "exportedAt": "Exporté le",
+            "sectionCar": "Données du véhicule",
+            "sectionKba": "Données d'immatriculation (KBA)",
+            "slogan": "Logiciel intelligent d'atelier avec IA",
+            "tagline": "Finis les papiers. Ce fichier a été créé avec LxCars."
+        },
         "yellowLabel": {
             "button": "Vignette",
             "tooltip": "Imprimer la vignette verte",

@@ -146,6 +146,16 @@
         "registration": {
             "button": "Zulassung"
         },
+        "export": {
+            "button": "Dışa Aktar",
+            "tooltip": "Tüm araç verilerini metin dosyası olarak dışa aktar",
+            "header": "Araç Veri Dışa Aktarımı",
+            "exportedAt": "Dışa aktarıldı",
+            "sectionCar": "Araç Verileri",
+            "sectionKba": "Tescil Verileri (KBA)",
+            "slogan": "Yapay zeka destekli akıllı atölye yazılımı",
+            "tagline": "Kağıt kaosu bitti. Bu dosya LxCars ile oluşturuldu."
+        },
         "yellowLabel": {
             "button": "Plakette",
             "tooltip": "Grüne Plakette drucken",

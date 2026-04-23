@@ -146,6 +146,16 @@
         "registration": {
             "button": "Zulassung"
         },
+        "export": {
+            "button": "Export",
+            "tooltip": "Exportovat všechna data vozidla jako textový soubor",
+            "header": "Export dat vozidla",
+            "exportedAt": "Exportováno dne",
+            "sectionCar": "Data vozidla",
+            "sectionKba": "Registrační údaje (KBA)",
+            "slogan": "Inteligentní dílenský software s umělou inteligencí",
+            "tagline": "Konec papírovému chaosu. Tento soubor byl vytvořen pomocí LxCars."
+        },
         "yellowLabel": {
             "button": "Plakette",
             "tooltip": "Grüne Plakette drucken",

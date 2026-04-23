@@ -146,6 +146,16 @@
         "registration": {
             "button": "Zulassung"
         },
+        "export": {
+            "button": "Exportera",
+            "tooltip": "Exportera alla fordonsdata som textfil",
+            "header": "Export av fordonsdata",
+            "exportedAt": "Exporterad",
+            "sectionCar": "Fordonsdata",
+            "sectionKba": "Registreringsdata (KBA)",
+            "slogan": "Smart AI-driven verkstadsprogramvara",
+            "tagline": "Slut på papperskaoset. Denna fil skapades med LxCars."
+        },
         "yellowLabel": {
             "button": "Plakette",
             "tooltip": "Grüne Plakette drucken",

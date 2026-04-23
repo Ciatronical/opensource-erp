@@ -146,6 +146,16 @@
         "registration": {
             "button": "Zulassung"
         },
+        "export": {
+            "button": "Export",
+            "tooltip": "Exportați toate datele vehiculului ca fișier text",
+            "header": "Export date vehicul",
+            "exportedAt": "Exportat la",
+            "sectionCar": "Date vehicul",
+            "sectionKba": "Date de înmatriculare (KBA)",
+            "slogan": "Software inteligent de service cu IA",
+            "tagline": "Gata cu haosul hârtiilor. Acest fișier a fost creat cu LxCars."
+        },
         "yellowLabel": {
             "button": "Plakette",
             "tooltip": "Grüne Plakette drucken",

@@ -438,6 +438,7 @@
         "dirGroup_help": "Gruppenbesitzer für erzeugte Verzeichnisse (z.B. www-data). Wenn leer, wird die Gruppe nicht geändert.",
         "dirMode": "Droits de repertoire",
         "dirMode_help": "Dateisystem-Rechte für erzeugte Verzeichnisse (z.B. 0775). Standard: 0755",
+        "ai": "Intelligence artificielle",
         "misc": "Divers",
         "listLimit": "Limite de liste",
         "listLimit_help": "Maximale Anzahl von Einträgen in Listen",

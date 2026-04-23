@@ -146,6 +146,16 @@
         "registration": {
             "button": "Immatricolazione"
         },
+        "export": {
+            "button": "Esporta",
+            "tooltip": "Esporta tutti i dati del veicolo come file di testo",
+            "header": "Esportazione dati veicolo",
+            "exportedAt": "Esportato il",
+            "sectionCar": "Dati del veicolo",
+            "sectionKba": "Dati di immatricolazione (KBA)",
+            "slogan": "Software intelligente per officine con IA",
+            "tagline": "Basta caos cartaceo. Questo file è stato creato con LxCars."
+        },
         "yellowLabel": {
             "button": "Bollino",
             "tooltip": "Grüne Plakette drucken",

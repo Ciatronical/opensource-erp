@@ -146,6 +146,16 @@
         "registration": {
             "button": "Zulassung"
         },
+        "export": {
+            "button": "Eksporter",
+            "tooltip": "Eksporter alle køretøjsdata som tekstfil",
+            "header": "Eksport af køretøjsdata",
+            "exportedAt": "Eksporteret den",
+            "sectionCar": "Køretøjsdata",
+            "sectionKba": "Registreringsdata (KBA)",
+            "slogan": "Intelligent værkstedssoftware med AI",
+            "tagline": "Slut med papirkaos. Denne fil blev oprettet med LxCars."
+        },
         "yellowLabel": {
             "button": "Plakette",
             "tooltip": "Grüne Plakette drucken",

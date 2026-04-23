@@ -146,6 +146,16 @@
         "registration": {
             "button": "Zulassung"
         },
+        "export": {
+            "button": "Eksport",
+            "tooltip": "Ekspordi kõik sõiduki andmed tekstifailina",
+            "header": "Sõiduki andmete eksport",
+            "exportedAt": "Eksporditud",
+            "sectionCar": "Sõiduki andmed",
+            "sectionKba": "Registreerimisandmed (KBA)",
+            "slogan": "Intelligentne AI-põhine töökojatarkvara",
+            "tagline": "Lõpp paberikaosele. See fail loodi LxCarsiga."
+        },
         "yellowLabel": {
             "button": "Plakette",
             "tooltip": "Grüne Plakette drucken",

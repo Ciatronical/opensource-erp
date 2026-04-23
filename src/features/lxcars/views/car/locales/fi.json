@@ -146,6 +146,16 @@
         "registration": {
             "button": "Zulassung"
         },
+        "export": {
+            "button": "Vie",
+            "tooltip": "Vie kaikki ajoneuvotiedot tekstitiedostona",
+            "header": "Ajoneuvotietojen vienti",
+            "exportedAt": "Viety",
+            "sectionCar": "Ajoneuvotiedot",
+            "sectionKba": "Rekisteröintitiedot (KBA)",
+            "slogan": "Älykäs tekoälypohjainen korjaamo-ohjelmisto",
+            "tagline": "Paperikaaos loppuu tähän. Tämä tiedosto on luotu LxCarsilla."
+        },
         "yellowLabel": {
             "button": "Plakette",
             "tooltip": "Grüne Plakette drucken",
