@@ -10,7 +10,7 @@
  */
 function executeSql($data) {
     if (!isset($data['query']) || empty(trim($data['query']))) {
-        writeLog("ERROR: Keine SQL-Abfrage angegeben");
+        // writeLog("ERROR: Keine SQL-Abfrage angegeben");
         resultInfo(false, 'Keine SQL-Abfrage angegeben');
         return;
     }
@@ -29,7 +29,7 @@ function executeSql($data) {
     $context = $auth->getOne($sessionQuery, [':session_id' => $auth->getCookie()]);
 
     if (!$context) {
-        writeLog("ERROR: Keine Session bei executeSql");
+        // writeLog("ERROR: Keine Session bei executeSql");
         resultInfo(false, 'Keine gültige Session');
         return;
     }
@@ -164,8 +164,8 @@ function executeSql($data) {
         }
     } catch (PDOException $e) {
         $executionTime = isset($startTime) ? round((microtime(true) - $startTime) * 1000, 2) : 0;
-        writeLog("ERROR: SQL-Abfrage fehlgeschlagen: " . $e->getMessage());
-        writeLog("Query: " . $queryInput);
+        // writeLog("ERROR: SQL-Abfrage fehlgeschlagen: " . $e->getMessage());
+        // writeLog("Query: " . $queryInput);
         resultInfo(false, 'SQL-Fehler: ' . $e->getMessage());
     }
 }
@@ -402,7 +402,7 @@ function updateTableRow($data) {
             'updated_row' => $updatedRow
         ]);
     } catch (PDOException $e) {
-        writeLog("ERROR: Update fehlgeschlagen: " . $e->getMessage());
+        // writeLog("ERROR: Update fehlgeschlagen: " . $e->getMessage());
         resultInfo(false, 'Update fehlgeschlagen: ' . $e->getMessage());
     }
 }
@@ -485,7 +485,7 @@ function deleteTableRow($data) {
             'deleted_row' => $deletedRow
         ]);
     } catch (PDOException $e) {
-        writeLog("ERROR: Delete fehlgeschlagen: " . $e->getMessage());
+        // writeLog("ERROR: Delete fehlgeschlagen: " . $e->getMessage());
 
         // Prüfe auf Foreign Key Constraint
         if (strpos($e->getMessage(), 'foreign key constraint') !== false ||
@@ -514,7 +514,7 @@ function saveQueryToHistory($db, $userId, $query, $executionTime, $rowCount, $da
             ':database_type' => $databaseType
         ]);
     } catch (Exception $e) {
-        writeLog("WARNING: Query-History konnte nicht gespeichert werden: " . $e->getMessage());
+        // writeLog("WARNING: Query-History konnte nicht gespeichert werden: " . $e->getMessage());
     }
 }
 
@@ -534,7 +534,7 @@ function getQueryHistory($data) {
     $context = $auth->getOne($sessionQuery, [':session_id' => $auth->getCookie()]);
 
     if (!$context) {
-        writeLog("ERROR: Keine Session bei getQueryHistory");
+        // writeLog("ERROR: Keine Session bei getQueryHistory");
         resultInfo(false, 'Keine gültige Session');
         return;
     }
@@ -586,7 +586,7 @@ function deleteQueryFromHistory($data) {
     $context = $auth->getOne($sessionQuery, [':session_id' => $auth->getCookie()]);
 
     if (!$context) {
-        writeLog("ERROR: Keine Session bei deleteQueryFromHistory");
+        // writeLog("ERROR: Keine Session bei deleteQueryFromHistory");
         resultInfo(false, 'Keine gültige Session');
         return;
     }
@@ -620,7 +620,7 @@ function clearQueryHistory($data) {
     $context = $auth->getOne($sessionQuery, [':session_id' => $auth->getCookie()]);
 
     if (!$context) {
-        writeLog("ERROR: Keine Session bei clearQueryHistory");
+        // writeLog("ERROR: Keine Session bei clearQueryHistory");
         resultInfo(false, 'Keine gültige Session');
         return;
     }
@@ -767,7 +767,7 @@ function getDatabaseNames($data) {
     $context = $auth->getOne($sessionQuery, [':session_id' => $auth->getCookie()]);
 
     if (!$context) {
-        writeLog("ERROR: Keine Session bei getDatabaseNames");
+        // writeLog("ERROR: Keine Session bei getDatabaseNames");
         resultInfo(false, 'Keine gültige Session');
         return;
     }

@@ -176,6 +176,7 @@ CREATE TABLE vendor_ext (
     phone_numbers JSONB,
     phone_labels JSONB,
     emails JSONB,
+    keywords TEXT,
     itime TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
     mtime TIMESTAMP WITHOUT TIME ZONE,
     CONSTRAINT vendor_ext_vendor_id_unique UNIQUE (vendor_id)
@@ -1408,10 +1409,12 @@ CREATE INDEX IF NOT EXISTS idx_accounting_bookings_vendor ON accounting_bookings
 CREATE INDEX IF NOT EXISTS idx_accounting_bookings_type ON accounting_bookings(type);
 CREATE INDEX IF NOT EXISTS idx_accounting_bookings_document ON accounting_bookings(document_id);
 
+
+-- ALTER TABLE ist streng verboten in diesem Skript - wird automatisch erzeugt
 -- FK von documents zu bookings
-ALTER TABLE accounting_documents
-    ADD CONSTRAINT fk_accounting_documents_booking
-    FOREIGN KEY (booking_id) REFERENCES accounting_bookings(id);
+--ALTER TABLE accounting_documents
+--    ADD CONSTRAINT fk_accounting_documents_booking
+--    FOREIGN KEY (booking_id) REFERENCES accounting_bookings(id);
 
 -- Buchungspositionen (bei Rechnungen mit mehreren Zeilen)
 CREATE TABLE IF NOT EXISTS accounting_booking_lines (

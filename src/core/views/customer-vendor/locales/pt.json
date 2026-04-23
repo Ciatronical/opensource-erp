@@ -241,6 +241,7 @@
         "fields": {
             "greeting": "Saudação",
             "name": "Nome do cliente",
+            "keywords": "Short code",
             "natural_person": "Pessoa singular",
             "department_1": "Departamento 1",
             "department_2": "Departamento 2",

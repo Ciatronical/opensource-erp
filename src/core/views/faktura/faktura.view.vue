@@ -180,9 +180,24 @@
                 />
             </section>
 
+            <!-- Wartung & Service (lxcars Feature, nur bei Auftrag) -->
+            <section class="faktura-section" v-if="vehicle && fakturaType === 'order' && faktura.data">
+                <maintenance-section-card
+                    :oe-ext-data="vehicle.oeExtData.value"
+                    :has-car="!!vehicle.selectedCarId.value"
+                    @oe-ext-field-change="vehicle.onOeExtFieldChange"
+                />
+            </section>
+
             <!-- Arbeitsanweisungen (lxcars Feature, nur bei Auftrag) -->
             <section class="faktura-section" v-if="vehicle && fakturaType === 'order' && faktura.data">
-                <instructions-section-card ref="instructionsRef" :oe-id="fakturaId" :ensure-oe-id="ensureOrderAndGetId" @jump-to-positions="focusNewPosition" />
+                <instructions-section-card
+                    ref="instructionsRef"
+                    :oe-id="fakturaId"
+                    :ensure-oe-id="ensureOrderAndGetId"
+                    :completion-validator="validateMaintenanceBeforeComplete"
+                    @jump-to-positions="focusNewPosition"
+                />
             </section>
 
             <!-- Positionen -->
@@ -723,6 +738,51 @@
             </v-card>
         </v-dialog>
 
+        <!-- Maintenance Incomplete Dialog -->
+        <v-dialog v-model="maintenanceIncompleteDialog.show" max-width="500" @keydown.esc="maintenanceIncompleteDialog.show = false">
+            <v-card>
+                <v-card-title class="d-flex align-center py-3 px-4 bg-warning">
+                    <v-icon class="mr-2">mdi-wrench-outline</v-icon>
+                    {{ t('MaintenanceSectionCard.incompleteTitle') }}
+                    <v-spacer />
+                    <v-btn
+                        icon="mdi-close"
+                        variant="text"
+                        density="compact"
+                        size="small"
+                        @click="maintenanceIncompleteDialog.show = false"
+                    />
+                </v-card-title>
+                <v-card-text class="pt-4 pb-2">
+                    <p>{{ t('MaintenanceSectionCard.incompleteText') }}</p>
+                    <v-list density="compact" class="mt-2">
+                        <v-list-item
+                            v-for="field in maintenanceIncompleteDialog.fields"
+                            :key="field"
+                            class="px-2"
+                        >
+                            <template #prepend>
+                                <v-icon size="small" color="warning">mdi-alert-circle</v-icon>
+                            </template>
+                            <v-list-item-title class="text-body-2">
+                                {{ field === 'km_stand' ? t('FakturaView.faktura.kmStand') : t('MaintenanceSectionCard.fields.' + field) }}
+                            </v-list-item-title>
+                        </v-list-item>
+                    </v-list>
+                </v-card-text>
+                <v-card-actions class="pa-4 pt-0">
+                    <v-spacer />
+                    <v-btn
+                        color="primary"
+                        variant="elevated"
+                        @click="maintenanceIncompleteDialog.show = false"
+                    >
+                        {{ t('MaintenanceSectionCard.close') }}
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
         <!-- Create Item Dialog -->
         <create-part-dialog
             v-model="items.createDialog.value.show"
@@ -893,6 +953,7 @@ import PaymentSectionCard from './cards/payment.section.card.vue'
 import HtmlEditorComponent from '@/core/components/html.editor.component.vue'
 import InstructionsSectionCard from '@/features/lxcars/components/instructions.section.card.vue'
 import MaengelSectionCard from '@/features/lxcars/components/maengel.section.card.vue'
+import MaintenanceSectionCard from '@/features/lxcars/components/maintenance.section.card.vue'
 import SuggestPositionsDialog from '@/features/lxcars/components/suggest-positions-dialog.vue'
 import PhoneActionBar from '@/core/components/phone-action-bar.vue'
 import axios from 'axios'
@@ -932,6 +993,7 @@ export default defineComponent({
         HtmlEditorComponent,
         InstructionsSectionCard,
         MaengelSectionCard,
+        MaintenanceSectionCard,
         SuggestPositionsDialog,
         SpecialDialog,
         PhoneActionBar
@@ -1626,6 +1688,26 @@ export default defineComponent({
                 console.error('Fehler beim Laden der Anweisungen:', e)
                 return true
             }
+        }
+
+        // ===== Wartung-Validierung beim Abschluss der letzten Anweisung =====
+
+        const maintenanceIncompleteDialog = ref({ show: false, fields: [] })
+
+        function validateMaintenanceBeforeComplete() {
+            if (!vehicle || !vehicle.selectedCarId.value) return true
+            const e = vehicle.oeExtData.value || {}
+            const missing = []
+            if (!e.km_stand) missing.push('km_stand')
+            if (!e.c_bf) missing.push('c_bf')
+            if (!e.c_wd) missing.push('c_wd')
+            if (!e.c_sk) {
+                if (!e.c_zrd) missing.push('c_zrd')
+                if (!e.c_zrk) missing.push('c_zrk')
+            }
+            if (missing.length === 0) return true
+            maintenanceIncompleteDialog.value = { show: true, fields: missing }
+            return false
         }
 
         // ===== Feld-Persistenz =====
@@ -2503,6 +2585,8 @@ export default defineComponent({
             onFakturaFieldChange,
             onCustomerChange,
             instructionsIncompleteDialog,
+            maintenanceIncompleteDialog,
+            validateMaintenanceBeforeComplete,
             // Actions
             saveFaktura,
             closeView,

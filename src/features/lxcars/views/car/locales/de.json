@@ -50,6 +50,7 @@
             "c_zrd": "Zahnriemenwechsel",
             "c_bf": "Nächster Bremsfl.-Wechsel",
             "c_wd": "Nächster Wartungsdienst",
+            "c_km": "Letzter km-Stand",
             "c_finchk": "FIN-Check",
             "kba_id": "KBA-Referenz",
             "scan_id": "Scan-ID",

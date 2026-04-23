@@ -55,6 +55,7 @@ export function useCarDates(car) {
 
     // ── km-Feld: Kurzeingabe (180 → 180.000) ──
     const displayZrk = ref('')
+    const displayKm = ref('')
 
     function formatKm(value) {
         const num = Number(value)
@@ -63,6 +64,7 @@ export function useCarDates(car) {
     }
 
     watch(() => car.value.c_zrk, (val) => { displayZrk.value = formatKm(val) })
+    watch(() => car.value.c_km, (val) => { displayKm.value = formatKm(val) })
 
     function onBlurKm() {
         const raw = String(displayZrk.value).replace(/[.\s]/g, '').trim()
@@ -74,9 +76,19 @@ export function useCarDates(car) {
         displayZrk.value = formatKm(km)
     }
 
+    function onBlurKmStand() {
+        const raw = String(displayKm.value).replace(/[.\s]/g, '').trim()
+        if (!raw) { car.value.c_km = null; displayKm.value = ''; return }
+        const num = parseInt(raw, 10)
+        if (isNaN(num) || num <= 0) { car.value.c_km = null; displayKm.value = ''; return }
+        car.value.c_km = num
+        displayKm.value = formatKm(num)
+    }
+
     return {
         displayD, displayHu, onBlurDate,
         displayZrd, displayBf, displayWd, onBlurMonthYear,
-        displayZrk, onBlurKm
+        displayZrk, onBlurKm,
+        displayKm, onBlurKmStand
     }
 }

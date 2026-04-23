@@ -365,7 +365,7 @@ function createFaktura($data) {
     ];
     $nkCol = $defaultsColMap[$effectiveType] ?? 'sonumber';
     $nkBefore = $company->getOne("SELECT {$nkCol} FROM defaults LIMIT 1");
-    writeLog("createFaktura VORHER: defaults.{$nkCol} = " . ($nkBefore[$nkCol] ?? 'NULL') . " (effectiveType={$effectiveType})");
+    // writeLog("createFaktura VORHER: defaults.{$nkCol} = " . ($nkBefore[$nkCol] ?? 'NULL') . " (effectiveType={$effectiveType})");
 
     if ($effectiveType === 'purchase_invoice') {
         // Eingangsrechnung → ap-Tabelle
@@ -443,7 +443,7 @@ SQL;
     }
 
     $nkAfter = $company->getOne("SELECT {$nkCol} FROM defaults LIMIT 1");
-    writeLog("createFaktura NACHHER: defaults.{$nkCol} = " . ($nkAfter[$nkCol] ?? 'NULL') . " (effectiveType={$effectiveType})");
+    // writeLog("createFaktura NACHHER: defaults.{$nkCol} = " . ($nkAfter[$nkCol] ?? 'NULL') . " (effectiveType={$effectiveType})");
 
     // Dokumentnummer aus dem RETURNING-Ergebnis extrahieren
     $docNumber = $result['invnumber'] ?? $result['ordnumber'] ?? $result['quonumber'] ?? null;
@@ -527,7 +527,7 @@ function createFakturaItem($data) {
     // Insert mit RETURNING für die generierte ID
     $query = "INSERT INTO {$itemsTable} ({$columnList}) VALUES ({$valueList}) RETURNING id";
 
-    debugQuery($query, $params, 'Faktura Position einfügen');
+    // debugQuery($query, $params, 'Faktura Position einfügen');
 
     $result = $company->getOne($query, $params);
     $newId = $result['id'];
@@ -1221,7 +1221,7 @@ function convertFaktura($data) {
     ];
     $nkCol = $defaultsColMap[$effectiveTarget] ?? 'sonumber';
     $nkBefore = $company->getOne("SELECT {$nkCol} FROM defaults LIMIT 1");
-    writeLog("convertFaktura VORHER: defaults.{$nkCol} = " . ($nkBefore[$nkCol] ?? 'NULL') . " (sourceType={$sourceType}, targetType={$targetType}, effectiveTarget={$effectiveTarget})");
+    // writeLog("convertFaktura VORHER: defaults.{$nkCol} = " . ($nkBefore[$nkCol] ?? 'NULL') . " (sourceType={$sourceType}, targetType={$targetType}, effectiveTarget={$effectiveTarget})");
 
     if ($effectiveTarget === 'invoice') {
         /* Für Ronny (alter Code):
@@ -1410,7 +1410,7 @@ SQL;
     }
 
     $nkAfter = $company->getOne("SELECT {$nkCol} FROM defaults LIMIT 1");
-    writeLog("convertFaktura NACHHER: defaults.{$nkCol} = " . ($nkAfter[$nkCol] ?? 'NULL') . " (effectiveTarget={$effectiveTarget}, newId={$newId})");
+    // writeLog("convertFaktura NACHHER: defaults.{$nkCol} = " . ($nkAfter[$nkCol] ?? 'NULL') . " (effectiveTarget={$effectiveTarget}, newId={$newId})");
 
     // ── 3. Header-Felder vom Quell-Dokument kopieren ──
 
@@ -1570,6 +1570,28 @@ SQL;
                         "INSERT INTO oe_ext (oe_id, c_id, km_stand) VALUES (:newId, :c_id, :km_stand)
                          ON CONFLICT (oe_id) DO UPDATE SET c_id = EXCLUDED.c_id, km_stand = EXCLUDED.km_stand",
                         [':newId' => $newId, ':c_id' => $cId, ':km_stand' => $kmStand]
+                    );
+                }
+
+                // Nur bei Auftrag -> Rechnung: HU-Termin im Fahrzeug automatisch setzen,
+                // wenn eine Auftragsposition einen der konfigurierten Trigger-Begriffe enthaelt.
+                // Neuer HU-Termin = heute + 2 Jahre, jeweils 1. des Monats.
+                if ($sourceTable === 'oe' && $targetTable === 'ar') {
+                    $company->execute(
+                        "UPDATE cars_lxcars
+                         SET c_hu = (date_trunc('month', CURRENT_DATE + INTERVAL '2 years'))::date
+                         WHERE c_id = :c_id
+                           AND EXISTS (
+                               SELECT 1
+                               FROM orderitems oi,
+                                    defaults_oserp d,
+                                    unnest(string_to_array(d.value, ',')) AS trigger_raw
+                               WHERE oi.trans_id = :source_id
+                                 AND d.key = 'lxcars_hu_trigger_descriptions'
+                                 AND trim(trigger_raw) <> ''
+                                 AND oi.description ILIKE '%' || trim(trigger_raw) || '%'
+                           )",
+                        [':c_id' => $cId, ':source_id' => $sourceId]
                     );
                 }
             }

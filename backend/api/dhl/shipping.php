@@ -76,7 +76,7 @@ function createDhlLabel($data) {
             ]
         );
 
-        writeLog('DHL: Label erstellt - Sendungsnr. ' . $result['shipment_no'] . ' für ' . $data['record_type'] . ' #' . $data['record_id']);
+        // writeLog('DHL: Label erstellt - Sendungsnr. ' . $result['shipment_no'] . ' für ' . $data['record_type'] . ' #' . $data['record_id']);
 
         resultInfo(true, '', [
             'shipment_no' => $result['shipment_no'],
@@ -85,10 +85,10 @@ function createDhlLabel($data) {
 
     } catch (ApiError $e) {
         resultInfo(false, $e->getId(), $e->getMessage());
-        writeLog('DHL Fehler: ' . $e->getMessage());
+        // writeLog('DHL Fehler: ' . $e->getMessage());
     } catch (Exception $e) {
         resultInfo(false, 'DHL_ERROR', $e->getMessage());
-        writeLog('DHL Fehler: ' . $e->getMessage());
+        // writeLog('DHL Fehler: ' . $e->getMessage());
     }
 }
 
@@ -113,15 +113,15 @@ function deleteDhlLabel($data) {
             [':shipment_no' => $data['shipment_no']]
         );
 
-        writeLog('DHL: Sendung storniert - ' . $data['shipment_no']);
+        // writeLog('DHL: Sendung storniert - ' . $data['shipment_no']);
         resultInfo(true);
 
     } catch (ApiError $e) {
         resultInfo(false, $e->getId(), $e->getMessage());
-        writeLog('DHL Fehler: ' . $e->getMessage());
+        // writeLog('DHL Fehler: ' . $e->getMessage());
     } catch (Exception $e) {
         resultInfo(false, 'DHL_ERROR', $e->getMessage());
-        writeLog('DHL Fehler: ' . $e->getMessage());
+        // writeLog('DHL Fehler: ' . $e->getMessage());
     }
 }
 

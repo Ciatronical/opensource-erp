@@ -142,7 +142,7 @@ function fintsSyncTransactions($data) {
         ]);
 
     } catch (\Exception $e) {
-        writeLog('FinTS Error: ' . $e->getMessage());
+        // writeLog('FinTS Error: ' . $e->getMessage());
         resultInfo(false, 'FINTS_ERROR', 'FinTS-Fehler: ' . $e->getMessage());
     }
 }
@@ -227,7 +227,7 @@ function fintsSubmitTan($data) {
     } catch (\Exception $e) {
         // Session bei Fehler aufraeumen
         unset($_SESSION['fints_action'], $_SESSION['fints_persist'], $_SESSION['fints_bank_account_id']);
-        writeLog('FinTS TAN Error: ' . $e->getMessage());
+        // writeLog('FinTS TAN Error: ' . $e->getMessage());
         resultInfo(false, 'FINTS_ERROR', 'FinTS-Fehler: ' . $e->getMessage());
     }
 }
@@ -349,7 +349,7 @@ function fintsSubmitTransfer($data) {
             WHERE id = :id
         SQL, ['id' => $transferId, 'error' => $e->getMessage()]);
 
-        writeLog('FinTS Transfer Error: ' . $e->getMessage());
+        // writeLog('FinTS Transfer Error: ' . $e->getMessage());
         resultInfo(false, 'FINTS_ERROR', 'FinTS-Fehler: ' . $e->getMessage());
     }
 }
@@ -430,7 +430,7 @@ function fintsSubmitTransferTan($data) {
             WHERE id = :id
         SQL, ['id' => $transferId, 'error' => $e->getMessage()]);
 
-        writeLog('FinTS Transfer TAN Error: ' . $e->getMessage());
+        // writeLog('FinTS Transfer TAN Error: ' . $e->getMessage());
         resultInfo(false, 'FINTS_ERROR', 'FinTS-Fehler: ' . $e->getMessage());
     }
 }
@@ -508,7 +508,7 @@ function fintsGetBalance($data) {
         ]);
 
     } catch (\Exception $e) {
-        writeLog('FinTS Balance Error: ' . $e->getMessage());
+        // writeLog('FinTS Balance Error: ' . $e->getMessage());
         resultInfo(false, 'FINTS_ERROR', 'FinTS-Fehler: ' . $e->getMessage());
     }
 }

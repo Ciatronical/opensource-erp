@@ -45,7 +45,7 @@ function resetDemo($data) {
     exec($cmd, $output, $returnCode);
 
     if ($returnCode !== 0) {
-        writeLog('Demo-Reset fehlgeschlagen: ' . implode("\n", $output));
+        // writeLog('Demo-Reset fehlgeschlagen: ' . implode("\n", $output));
         resultInfo(false, 'RESET_FAILED', 'Datenbank-Reset fehlgeschlagen');
         return;
     }
@@ -54,6 +54,6 @@ function resetDemo($data) {
     $auth = DbhAuth::begin();
     $auth->execute("DELETE FROM auth.session_oserp", []);
 
-    writeLog('Demo-Datenbank erfolgreich zurückgesetzt');
+    // writeLog('Demo-Datenbank erfolgreich zurückgesetzt');
     resultInfo(true, 'DEMO_RESET_SUCCESS');
 }

@@ -241,6 +241,7 @@
         "fields": {
             "greeting": "Forma grzecznościowa",
             "name": "Nazwa klienta",
+            "keywords": "Short code",
             "natural_person": "Osoba fizyczna",
             "department_1": "Dział 1",
             "department_2": "Dział 2",

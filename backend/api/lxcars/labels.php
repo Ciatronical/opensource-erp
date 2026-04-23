@@ -55,7 +55,7 @@ function printYellowLabel($data) {
 
     sleep(2);
     $cmd = $printer['printer_command'] . ' -o raw ' . escapeshellarg($filepath) . ' 2>&1';
-    writeLog($cmd);
+    // writeLog($cmd);
     exec($cmd, $output, $returnCode);
 
     if ($returnCode !== 0) {

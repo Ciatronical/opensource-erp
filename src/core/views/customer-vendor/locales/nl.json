@@ -241,6 +241,7 @@
         "fields": {
             "greeting": "Aanhef",
             "name": "Klantnaam",
+            "keywords": "Short code",
             "natural_person": "Natuurlijk persoon",
             "department_1": "Afdeling 1",
             "department_2": "Afdeling 2",

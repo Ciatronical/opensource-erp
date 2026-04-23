@@ -24,7 +24,7 @@ function getDefaults($data) {
         ]]);
     } catch (Exception $e) {
         resultInfo(false, 'DATABASE_ERROR', $e->getMessage());
-        writeLog("getDefaults Error: " . $e->getMessage());
+        // writeLog("getDefaults Error: " . $e->getMessage());
     }
 }
 
@@ -148,10 +148,10 @@ function saveDefaults($data) {
 
     } catch (PDOException $e) {
         resultInfo(false, 'DATABASE_ERROR', $e->getMessage());
-        writeLog("saveDefaults PDO Error: " . $e->getMessage());
+        // writeLog("saveDefaults PDO Error: " . $e->getMessage());
     } catch (Exception $e) {
         resultInfo(false, 'INTERNAL_ERROR', $e->getMessage());
-        writeLog("saveDefaults Error: " . $e->getMessage());
+        // writeLog("saveDefaults Error: " . $e->getMessage());
     }
 }
 

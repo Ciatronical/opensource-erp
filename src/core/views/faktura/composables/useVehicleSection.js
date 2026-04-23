@@ -28,7 +28,12 @@ export function useVehicleSection({ carsStore, fakturaId, fakturaType, t }) {
         intern: false,
         bringetermin: null,
         fertigstellung: null,
-        no_whatsapp: false
+        no_whatsapp: false,
+        c_sk: false,
+        c_zrd: null,
+        c_zrk: null,
+        c_bf: null,
+        c_wd: null
     })
 
     // Dropdown-Optionen für kfz_ort (aus Firmeneinstellungen, Fallback auf i18n)
@@ -301,6 +306,11 @@ export function useVehicleSection({ carsStore, fakturaId, fakturaType, t }) {
             oeExtData.value.bringetermin = car?.bringetermin || null
             oeExtData.value.fertigstellung = car?.fertigstellung || null
             oeExtData.value.no_whatsapp = car?.no_whatsapp === true || car?.no_whatsapp === 't'
+            oeExtData.value.c_sk = car?.c_sk === true || car?.c_sk === 't'
+            oeExtData.value.c_zrd = car?.c_zrd || null
+            oeExtData.value.c_zrk = car?.c_zrk ?? null
+            oeExtData.value.c_bf = car?.c_bf || null
+            oeExtData.value.c_wd = car?.c_wd || null
         } catch {}
     }
 

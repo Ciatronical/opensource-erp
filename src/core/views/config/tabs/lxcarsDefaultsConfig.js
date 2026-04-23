@@ -18,6 +18,7 @@ const lxcarsDefaultsConfig = [
     { name: "lxcars_order_hide_status", type: "input", size: 30, fieldstyle: "max-width: 30ch", label: "crm_fields.lxcarsOrderHideStatus", tooltip: "crm_fields.lxcarsOrderHideStatus_help" },
     { name: "lxcars_order_future_days", type: "input", inputType: "number", size: 5, fieldstyle: "max-width: 15ch", label: "crm_fields.lxcarsOrderFutureDays", tooltip: "crm_fields.lxcarsOrderFutureDays_help" },
     { name: "lxcars_hu_vorlauf_monate", type: "input", inputType: "number", size: 5, fieldstyle: "max-width: 15ch", label: "crm_fields.lxcarsHuVorlaufMonate", tooltip: "crm_fields.lxcarsHuVorlaufMonate_help" },
+    { name: "lxcars_hu_trigger_descriptions", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.lxcarsHuTriggerDescriptions", tooltip: "crm_fields.lxcarsHuTriggerDescriptions_help" },
     { name: "lxcars_hu_brief_text", type: "textarea", rows: 12, fieldstyle: "max-width: 80ch", label: "crm_fields.lxcarsHuBriefText", tooltip: "crm_fields.lxcarsHuBriefText_help" },
     { name: "lxcars_hu_whatsapp_enabled", type: "checkbox", label: "crm_fields.lxcarsHuWhatsappEnabled", tooltip: "crm_fields.lxcarsHuWhatsappEnabled_help" },
 

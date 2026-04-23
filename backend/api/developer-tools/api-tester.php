@@ -68,7 +68,7 @@ function getApiFunctions($data) {
             // Baue vollständigen Pfad
             $fullIncludePath = $apiDir . $includeFile;
 
-            writeLog("DEBUG: Prüfe Datei: $fullIncludePath");
+            // writeLog("DEBUG: Prüfe Datei: $fullIncludePath");
 
             if (file_exists($fullIncludePath)) {
                 // Überspringe inc.php
@@ -82,7 +82,7 @@ function getApiFunctions($data) {
                 // Extrahiere alle Funktionsnamen
                 preg_match_all('/function\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*\(/i', $fileContent, $functionMatches);
 
-                writeLog("DEBUG: Gefundene Funktionen in $includeFile: " . implode(', ', $functionMatches[1]));
+                // writeLog("DEBUG: Gefundene Funktionen in $includeFile: " . implode(', ', $functionMatches[1]));
 
                 if (!empty($functionMatches[1])) {
                     foreach ($functionMatches[1] as $functionName) {
@@ -93,7 +93,7 @@ function getApiFunctions($data) {
                     }
                 }
             } else {
-                writeLog("WARNING: Datei nicht gefunden: $fullIncludePath");
+                // writeLog("WARNING: Datei nicht gefunden: $fullIncludePath");
             }
         }
     }
@@ -102,7 +102,7 @@ function getApiFunctions($data) {
     $functions = array_unique($functions);
     sort($functions);
 
-    writeLog("DEBUG: Finale Funktionsliste für $folder: " . implode(', ', $functions));
+    // writeLog("DEBUG: Finale Funktionsliste für $folder: " . implode(', ', $functions));
 
     resultInfo(true, '', ['functions' => $functions]);
 }
@@ -210,19 +210,19 @@ function getFunctionParameters($data) {
                         $exampleJson = preg_replace('/^\s*\*\s*/m', '', $exampleJson);
                         $exampleJson = trim($exampleJson);
 
-                        writeLog("DEBUG: @testdata gefunden für $functionName: $exampleJson");
+                        // writeLog("DEBUG: @testdata gefunden für $functionName: $exampleJson");
 
                         // Versuche JSON zu dekodieren
                         $decoded = json_decode($exampleJson, true);
 
                         if ($decoded !== null) {
                             $exampleData = $decoded;
-                            writeLog("DEBUG: @testdata erfolgreich dekodiert für $functionName");
+                            // writeLog("DEBUG: @testdata erfolgreich dekodiert für $functionName");
                         } else {
-                            writeLog("WARNING: Ungültiges JSON in @testdata für $functionName: $exampleJson (Error: " . json_last_error_msg() . ")");
+                            // writeLog("WARNING: Ungültiges JSON in @testdata für $functionName: $exampleJson (Error: " . json_last_error_msg() . ")");
                         }
                     } else {
-                        writeLog("DEBUG: Keine @testdata gefunden für $functionName");
+                        // writeLog("DEBUG: Keine @testdata gefunden für $functionName");
                     }
 
                     break;

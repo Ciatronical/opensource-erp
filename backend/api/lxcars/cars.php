@@ -466,7 +466,9 @@ function getCarForOrder($data) {
     $row = $db->getOne(
         "SELECT c.c_id, c.c_ln, COALESCE(c.c_text, '') AS c_text,
                 e.km_stand, e.kfz_ort, e.status, e.gedruckt, e.intern,
-                e.bringetermin, e.fertigstellung, e.no_whatsapp
+                e.bringetermin, e.fertigstellung, e.no_whatsapp,
+                e.c_sk, to_char(e.c_zrd, 'YYYY-MM-DD') AS c_zrd, e.c_zrk,
+                to_char(e.c_bf, 'YYYY-MM-DD') AS c_bf, to_char(e.c_wd, 'YYYY-MM-DD') AS c_wd
          FROM oe_ext e
          LEFT JOIN cars_lxcars c ON c.c_id = e.c_id
          WHERE e.oe_id = :oe_id",
@@ -475,7 +477,6 @@ function getCarForOrder($data) {
 
     // Fehlende Uhrzeiten ergänzen: Wenn nur Datum (ohne Zeit) oder 00:00:00
     if ($row) {
-        writeLog("[getCarForOrder] oe_id=$oeId DB-RAW bringetermin='" . ($row['bringetermin'] ?? 'NULL') . "' fertigstellung='" . ($row['fertigstellung'] ?? 'NULL') . "'");
         $timeDefaults = ['bringetermin' => 'lxcars_default_abgabezeit', 'fertigstellung' => 'lxcars_default_fertigstellungszeit'];
         $fallbacks = ['bringetermin' => '08:00', 'fertigstellung' => '17:00'];
         foreach ($timeDefaults as $field => $configKey) {
@@ -483,13 +484,11 @@ function getCarForOrder($data) {
                 $defRow = $db->getOne("SELECT value FROM defaults_oserp WHERE key = :key", [':key' => $configKey]);
                 $defTime = $defRow ? trim($defRow['value']) : $fallbacks[$field];
                 $row[$field] = $row[$field] . ' ' . $defTime . ':00';
-                writeLog("[getCarForOrder] oe_id=$oeId $field CORRECTED: '" . $row[$field] . "'");
             }
         }
-        writeLog("[getCarForOrder] oe_id=$oeId RESPONSE bringetermin='" . ($row['bringetermin'] ?? 'NULL') . "' fertigstellung='" . ($row['fertigstellung'] ?? 'NULL') . "'");
     }
 
-    resultInfo(true, 'OK', $row ?: ['c_id' => null, 'c_ln' => '', 'km_stand' => null, 'kfz_ort' => null, 'status' => null, 'gedruckt' => false, 'intern' => false, 'bringetermin' => null, 'fertigstellung' => null, 'no_whatsapp' => false]);
+    resultInfo(true, 'OK', $row ?: ['c_id' => null, 'c_ln' => '', 'km_stand' => null, 'kfz_ort' => null, 'status' => null, 'gedruckt' => false, 'intern' => false, 'bringetermin' => null, 'fertigstellung' => null, 'no_whatsapp' => false, 'c_sk' => false, 'c_zrd' => null, 'c_zrk' => null, 'c_bf' => null, 'c_wd' => null]);
 }
 
 /**
@@ -545,7 +544,8 @@ function updateOeExt($data) {
     $fields = $data['data'];
 
     // Whitelist: nur erlaubte Felder
-    $allowed = ['km_stand', 'kfz_ort', 'status', 'gedruckt', 'intern', 'bringetermin', 'fertigstellung', 'no_whatsapp'];
+    $allowed = ['km_stand', 'kfz_ort', 'status', 'gedruckt', 'intern', 'bringetermin', 'fertigstellung', 'no_whatsapp',
+                'c_sk', 'c_zrd', 'c_zrk', 'c_bf', 'c_wd'];
 
     $setClauses = [];
     $params = [':oe_id' => $oeId];
@@ -558,24 +558,26 @@ function updateOeExt($data) {
         $paramName = ':' . $key;
 
         // Typkonvertierung
-        if ($key === 'km_stand') {
+        if ($key === 'km_stand' || $key === 'c_zrk') {
             $value = $value !== null && $value !== '' ? intval($value) : null;
-        } elseif ($key === 'gedruckt' || $key === 'intern' || $key === 'no_whatsapp') {
+        } elseif ($key === 'gedruckt' || $key === 'intern' || $key === 'no_whatsapp' || $key === 'c_sk') {
             $value = $value ? 't' : 'f';
+        } elseif ($key === 'c_zrd' || $key === 'c_bf' || $key === 'c_wd') {
+            $value = !empty($value) ? $value : null;
         } elseif ($key === 'bringetermin' || $key === 'fertigstellung') {
-            writeLog("[updateOeExt] oe_id=$oeId $key INPUT: '$value'");
+            // writeLog("[updateOeExt] oe_id=$oeId $key INPUT: '$value'");
             if (!empty($value)) {
                 if (preg_match('/00:00:00$/', $value) || !preg_match('/\d{2}:\d{2}:\d{2}$/', $value)) {
                     $defKey = $key === 'bringetermin' ? 'lxcars_default_abgabezeit' : 'lxcars_default_fertigstellungszeit';
                     $defRow = $db->getOne("SELECT value FROM defaults_oserp WHERE key = :key", [':key' => $defKey]);
                     $defTime = $defRow ? trim($defRow['value']) : ($key === 'bringetermin' ? '08:00' : '17:00');
                     $value = substr($value, 0, 10) . ' ' . $defTime . ':00';
-                    writeLog("[updateOeExt] oe_id=$oeId $key CORRECTED: '$value'");
+                    // writeLog("[updateOeExt] oe_id=$oeId $key CORRECTED: '$value'");
                 }
             } else {
                 $value = null;
             }
-            writeLog("[updateOeExt] oe_id=$oeId $key SAVE: '$value'");
+            // writeLog("[updateOeExt] oe_id=$oeId $key SAVE: '$value'");
         }
 
         $setClauses[] = "$key = $paramName";
@@ -604,6 +606,39 @@ function updateOeExt($data) {
         $params
     );
 
+    // Fahrzeug-Sync: Wenn ein wartungsrelevantes Feld geaendert wurde und der Auftrag
+    // der neueste zum verknuepften Fahrzeug ist, die Wartungsdaten ins Fahrzeug spiegeln.
+    $maintenanceFields = ['c_sk', 'c_zrd', 'c_zrk', 'c_bf', 'c_wd', 'km_stand'];
+    $maintenanceChanged = false;
+    foreach ($maintenanceFields as $mf) {
+        if (array_key_exists($mf, $fields)) { $maintenanceChanged = true; break; }
+    }
+    if ($maintenanceChanged) {
+        // c_sk ist boolean und wird immer gespiegelt (auch false), die anderen Felder
+        // nur wenn im Auftrag nicht NULL — sonst wuerde ein noch leeres Feld die alten
+        // Fahrzeugdaten ueberschreiben.
+        $db->execute(
+            "UPDATE cars_lxcars c
+             SET c_sk  = e.c_sk,
+                 c_zrd = COALESCE(e.c_zrd, c.c_zrd),
+                 c_zrk = COALESCE(e.c_zrk, c.c_zrk),
+                 c_bf  = COALESCE(e.c_bf,  c.c_bf),
+                 c_wd  = COALESCE(e.c_wd,  c.c_wd),
+                 c_km  = COALESCE(e.km_stand, c.c_km)
+             FROM oe_ext e
+             JOIN oe o ON o.id = e.oe_id
+             WHERE e.oe_id = :oe_id
+               AND e.c_id IS NOT NULL
+               AND c.c_id = e.c_id
+               AND NOT EXISTS (
+                   SELECT 1 FROM oe_ext e2
+                   JOIN oe o2 ON o2.id = e2.oe_id
+                   WHERE e2.c_id = e.c_id AND o2.itime > o.itime
+               )",
+            [':oe_id' => $oeId]
+        );
+    }
+
     // Kalender-Sync: Wenn bringetermin oder fertigstellung eine Uhrzeit enthalten,
     // automatisch Kalendereintrag erstellen/aktualisieren
     if (isset($fields['bringetermin']) || isset($fields['fertigstellung'])) {
@@ -627,28 +662,28 @@ function sendBringeterminWa($data) {
     $db = DbhCompany::begin();
     $oeId = intval($data['oe_id']);
 
-    writeLog("[sendBringeterminWa] oe_id=$oeId START");
+    // writeLog("[sendBringeterminWa] oe_id=$oeId START");
 
     $ext = $db->getOne(
         "SELECT bringetermin, no_whatsapp FROM oe_ext WHERE oe_id = :oe_id",
         [':oe_id' => $oeId]
     );
 
-    writeLog("[sendBringeterminWa] oe_id=$oeId bringetermin='" . ($ext['bringetermin'] ?? 'NULL') . "' no_whatsapp='" . ($ext['no_whatsapp'] ?? 'NULL') . "'");
+    // writeLog("[sendBringeterminWa] oe_id=$oeId bringetermin='" . ($ext['bringetermin'] ?? 'NULL') . "' no_whatsapp='" . ($ext['no_whatsapp'] ?? 'NULL') . "'");
 
     if (!$ext || empty($ext['bringetermin'])) {
-        writeLog("[sendBringeterminWa] oe_id=$oeId ABORT: no bringetermin");
+        // writeLog("[sendBringeterminWa] oe_id=$oeId ABORT: no bringetermin");
         resultInfo(true, 'NO_BRINGETERMIN');
         return;
     }
 
     if (!empty($ext['no_whatsapp']) && $ext['no_whatsapp'] !== 'f') {
-        writeLog("[sendBringeterminWa] oe_id=$oeId ABORT: whatsapp disabled");
+        // writeLog("[sendBringeterminWa] oe_id=$oeId ABORT: whatsapp disabled");
         resultInfo(true, 'WA_DISABLED');
         return;
     }
 
-    writeLog("[sendBringeterminWa] oe_id=$oeId -> calling _sendAppointmentConfirmation");
+    // writeLog("[sendBringeterminWa] oe_id=$oeId -> calling _sendAppointmentConfirmation");
     _sendAppointmentConfirmation($db, $oeId, $ext['bringetermin']);
     resultInfo(true, 'WA_SENT');
 }
@@ -714,7 +749,7 @@ function _sendAppointmentConfirmation($db, $oeId, $bringetermin) {
  * Kalendereinträge werden über order_id + title-Prefix identifiziert.
  */
 function syncOrderToCalendar($db, $oeId) {
-    writeLog("[syncOrderToCalendar] oe_id=$oeId START");
+    // writeLog("[syncOrderToCalendar] oe_id=$oeId START");
     $auth = DbhAuth::begin();
     $auth->fetchSessionData();
     $login = $db->getPDO()->quote($auth->getLogin());
@@ -737,7 +772,7 @@ function syncOrderToCalendar($db, $oeId) {
     );
     if (!$order) { writeLog("[syncOrderToCalendar] oe_id=$oeId ABORT: order not found"); return; }
 
-    writeLog("[syncOrderToCalendar] oe_id=$oeId DB bringetermin='" . ($order['bringetermin'] ?? 'NULL') . "' fertigstellung='" . ($order['fertigstellung'] ?? 'NULL') . "'");
+    // writeLog("[syncOrderToCalendar] oe_id=$oeId DB bringetermin='" . ($order['bringetermin'] ?? 'NULL') . "' fertigstellung='" . ($order['fertigstellung'] ?? 'NULL') . "'");
 
     $pdo = $db->getPDO();
 
@@ -757,7 +792,7 @@ function syncOrderToCalendar($db, $oeId) {
             [':oe_id' => $oeId, ':color' => $config['color']]
         );
 
-        writeLog("[syncOrderToCalendar] oe_id=$oeId $field timestamp='$timestamp' existing=" . ($existing ? $existing['id'] : 'NONE'));
+        // writeLog("[syncOrderToCalendar] oe_id=$oeId $field timestamp='$timestamp' existing=" . ($existing ? $existing['id'] : 'NONE'));
 
         if ($timestamp) {
             // Fehlende Uhrzeit ergänzen (nur Datum oder 00:00:00)

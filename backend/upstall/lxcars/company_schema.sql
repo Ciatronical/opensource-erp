@@ -23,6 +23,7 @@ CREATE TABLE cars_lxcars (
     c_gart    varchar(30),
     c_st_z    varchar(30),
     c_wt_z    varchar(30),
+    c_km      integer,
     chk_c_ln  boolean DEFAULT true,
     chk_c_2   boolean DEFAULT true,
     chk_c_3   boolean DEFAULT true,
@@ -63,6 +64,11 @@ CREATE TABLE IF NOT EXISTS oe_ext (
     status         text,
     kennzeichen      text,
     no_whatsapp    boolean DEFAULT false,
+    c_sk           boolean DEFAULT false,
+    c_zrd          date,
+    c_zrk          integer,
+    c_bf           date,
+    c_wd           date,
     CONSTRAINT oe_ext_pkey PRIMARY KEY (oe_id)
 );
 
@@ -358,6 +364,7 @@ INSERT INTO defaults_oserp (key, value) VALUES ('instructionprefix', '') ON CONF
 INSERT INTO defaults_oserp (key, value) VALUES ('lxcars_order_statuses', 'Angenommen, In Arbeit, Warte auf Teile, Fertig, Abgeholt') ON CONFLICT (key) DO NOTHING;
 INSERT INTO defaults_oserp (key, value) VALUES ('lxcars_kfz_ort_options', 'Fahrzeug hier, nicht hier, Bestellung, Sonstiges zur Rep gebracht') ON CONFLICT (key) DO NOTHING;
 INSERT INTO defaults_oserp (key, value) VALUES ('lxcars_hu_vorlauf_monate', '2') ON CONFLICT (key) DO NOTHING;
+INSERT INTO defaults_oserp (key, value) VALUES ('lxcars_hu_trigger_descriptions', 'Hauptuntersuchung, Nachkontrolle') ON CONFLICT (key) DO NOTHING;
 INSERT INTO defaults_oserp (key, value) VALUES ('lxcars_default_abgabezeit', '08:00') ON CONFLICT (key) DO NOTHING;
 INSERT INTO defaults_oserp (key, value) VALUES ('lxcars_default_fertigstellungszeit', '17:00') ON CONFLICT (key) DO NOTHING;
 INSERT INTO defaults_oserp (key, value) VALUES ('lxcars_time_range', '07:00-18:00') ON CONFLICT (key) DO NOTHING;

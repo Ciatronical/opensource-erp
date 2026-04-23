@@ -241,6 +241,7 @@
         "fields": {
             "greeting": "Звертання",
             "name": "Ім'я клієнта",
+            "keywords": "Short code",
             "natural_person": "Фізична особа",
             "department_1": "Відділ 1",
             "department_2": "Відділ 2",

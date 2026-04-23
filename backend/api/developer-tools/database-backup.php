@@ -138,10 +138,10 @@ function ensureBackupDir($dbName) {
     $backupDir = BACKUP_BASE_DIR . $dbName . '/';
     if (!file_exists($backupDir)) {
         if (!mkdir($backupDir, 0755, true)) {
-            writeLog("ERROR: Backup-Verzeichnis konnte nicht erstellt werden: $backupDir");
+            // writeLog("ERROR: Backup-Verzeichnis konnte nicht erstellt werden: $backupDir");
             return false;
         }
-        writeLog("INFO: Backup-Verzeichnis erstellt: $backupDir");
+        // writeLog("INFO: Backup-Verzeichnis erstellt: $backupDir");
     }
     return $backupDir;
 }
@@ -191,7 +191,7 @@ function getBackupList($data) {
     $context = getDatabaseContext($database);
 
     if (!$context) {
-        writeLog("ERROR: Keine gültige Session gefunden bei getBackupList");
+        // writeLog("ERROR: Keine gültige Session gefunden bei getBackupList");
         resultInfo(false, 'Keine gültige Session gefunden');
         return;
     }
@@ -254,7 +254,7 @@ function createDatabaseBackup($data) {
     $context = getDatabaseContext($database);
 
     if (!$context) {
-        writeLog("ERROR: Keine gültige Session gefunden bei createDatabaseBackup");
+        // writeLog("ERROR: Keine gültige Session gefunden bei createDatabaseBackup");
         resultInfo(false, 'Keine gültige Session gefunden');
         return;
     }
@@ -296,14 +296,14 @@ function createDatabaseBackup($data) {
 
     if ($returnCode !== 0) {
         $errorDetails = implode("\n", $output);
-        writeLog("ERROR: pg_dump fehlgeschlagen (Code: $returnCode)");
-        writeLog("Output: " . $errorDetails);
+        // writeLog("ERROR: pg_dump fehlgeschlagen (Code: $returnCode)");
+        // writeLog("Output: " . $errorDetails);
         resultInfo(false, 'Backup-Erstellung fehlgeschlagen', null, $errorDetails);
         return;
     }
 
     if (!file_exists($filepath) || filesize($filepath) == 0) {
-        writeLog("ERROR: Backup-Datei nicht erstellt oder leer: $filepath");
+        // writeLog("ERROR: Backup-Datei nicht erstellt oder leer: $filepath");
         resultInfo(false, 'Backup-Datei wurde nicht erstellt oder ist leer');
         return;
     }
@@ -321,7 +321,7 @@ function createDatabaseBackup($data) {
  */
 function restoreDatabaseBackup($data) {
     if (!isset($data['filename'])) {
-        writeLog("ERROR: Kein Dateiname für Wiederherstellung angegeben");
+        // writeLog("ERROR: Kein Dateiname für Wiederherstellung angegeben");
         resultInfo(false, 'Kein Dateiname angegeben');
         return;
     }
@@ -330,7 +330,7 @@ function restoreDatabaseBackup($data) {
     $context = getDatabaseContext($database);
 
     if (!$context) {
-        writeLog("ERROR: Keine gültige Session gefunden bei restoreDatabaseBackup");
+        // writeLog("ERROR: Keine gültige Session gefunden bei restoreDatabaseBackup");
         resultInfo(false, 'Keine gültige Session gefunden');
         return;
     }
@@ -347,13 +347,13 @@ function restoreDatabaseBackup($data) {
 
     // Validiere Dateiname
     if (!preg_match('/^[a-zA-Z0-9._-]+\.(sql|sql\.gz)$/', $filename)) {
-        writeLog("ERROR: Ungültiger Dateiname: $filename");
+        // writeLog("ERROR: Ungültiger Dateiname: $filename");
         resultInfo(false, 'Ungültiger Dateiname');
         return;
     }
 
     if (!file_exists($filepath)) {
-        writeLog("ERROR: Backup-Datei nicht gefunden: $filepath");
+        // writeLog("ERROR: Backup-Datei nicht gefunden: $filepath");
         resultInfo(false, 'Backup-Datei nicht gefunden');
         return;
     }
@@ -451,7 +451,7 @@ function restoreDatabaseBackup($data) {
     putenv("PGPASSWORD");
 
     if ($returnCode !== 0) {
-        writeLog("ERROR: Restore fehlgeschlagen (Code: $returnCode)");
+        // writeLog("ERROR: Restore fehlgeschlagen (Code: $returnCode)");
         resultInfo(false, 'Wiederherstellung fehlgeschlagen');
         return;
     }
@@ -467,7 +467,7 @@ function restoreDatabaseBackup($data) {
  */
 function deleteDatabaseBackup($data) {
     if (!isset($data['filename'])) {
-        writeLog("ERROR: Kein Dateiname zum Löschen angegeben");
+        // writeLog("ERROR: Kein Dateiname zum Löschen angegeben");
         resultInfo(false, 'Kein Dateiname angegeben');
         return;
     }
@@ -476,7 +476,7 @@ function deleteDatabaseBackup($data) {
     $context = getDatabaseContext($database);
 
     if (!$context) {
-        writeLog("ERROR: Keine gültige Session gefunden bei deleteDatabaseBackup");
+        // writeLog("ERROR: Keine gültige Session gefunden bei deleteDatabaseBackup");
         resultInfo(false, 'Keine gültige Session gefunden');
         return;
     }
@@ -488,19 +488,19 @@ function deleteDatabaseBackup($data) {
 
     // Validiere Dateiname
     if (!preg_match('/^[a-zA-Z0-9._-]+\.(sql|sql\.gz)$/', $filename)) {
-        writeLog("ERROR: Ungültiger Dateiname: $filename");
+        // writeLog("ERROR: Ungültiger Dateiname: $filename");
         resultInfo(false, 'Ungültiger Dateiname');
         return;
     }
 
     if (!file_exists($filepath)) {
-        writeLog("ERROR: Backup-Datei nicht gefunden: $filepath");
+        // writeLog("ERROR: Backup-Datei nicht gefunden: $filepath");
         resultInfo(false, 'Backup-Datei nicht gefunden');
         return;
     }
 
     if (!unlink($filepath)) {
-        writeLog("ERROR: Backup-Datei konnte nicht gelöscht werden: $filepath");
+        // writeLog("ERROR: Backup-Datei konnte nicht gelöscht werden: $filepath");
         resultInfo(false, 'Backup-Datei konnte nicht gelöscht werden');
         return;
     }
@@ -516,7 +516,7 @@ function deleteAllBackups($data) {
     $context = getDatabaseContext($database);
 
     if (!$context) {
-        writeLog("ERROR: Keine gültige Session gefunden bei deleteAllBackups");
+        // writeLog("ERROR: Keine gültige Session gefunden bei deleteAllBackups");
         resultInfo(false, 'Keine gültige Session gefunden');
         return;
     }
@@ -545,7 +545,7 @@ function deleteAllBackups($data) {
     }
 
     if (!empty($failedFiles)) {
-        writeLog("WARNING: Einige Backups konnten nicht gelöscht werden: " . implode(', ', $failedFiles));
+        // writeLog("WARNING: Einige Backups konnten nicht gelöscht werden: " . implode(', ', $failedFiles));
         resultInfo(false, "Nur $deletedCount von " . count($files) . " Backups gelöscht");
         return;
     }

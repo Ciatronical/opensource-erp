@@ -67,7 +67,7 @@ function sendMail($data) {
     if ($remainingCredits < $recipientsCount) {
         throw new ApiError('API_BREVO_INSUFFICIENT_CREDITS', 'Insufficient Brevo account credits to send all emails. Remaining: '.$remainingCredits.', required: '.$recipientsCount);
     }
-    
+
     $failures = 0;
     foreach ($recipients as $recipient) {
         try {
@@ -94,10 +94,10 @@ function sendMail($data) {
             }
 
             $result = $api->sendTransactional($email);
-            writeLog('BREVO: Sent email with template id '.$data['template']['id'].' to '.$recipient['email'].' successfully (message ID: '.$result['messageId'].')');
+            // writeLog('BREVO: Sent email with template id '.$data['template']['id'].' to '.$recipient['email'].' successfully (message ID: '.$result['messageId'].')');
         } catch (Exception $e) {
             $failures++;
-            writeLog('BREVO: Failed to send email with template id '.$data['template']['id'].' to '.$recipient['email'].'. Error: '.$e->getMessage());
+            // writeLog('BREVO: Failed to send email with template id '.$data['template']['id'].' to '.$recipient['email'].'. Error: '.$e->getMessage());
             continue;
         }
     }
@@ -109,6 +109,6 @@ function sendMail($data) {
             'failed_count' => $failures,
         ],
     ];
-    
+
     echo json_encode($response);
 }

@@ -188,7 +188,7 @@ function determineGreeting($extracted, $db) {
                 if ($genderRow['gender'] === 'M') return 'Herr';
             }
         } catch (\Throwable $e) {
-            writeLog('Gender-Lookup Fehler: ' . $e->getMessage());
+            // writeLog('Gender-Lookup Fehler: ' . $e->getMessage());
         }
     }
 
@@ -207,15 +207,15 @@ function determineGreeting($extracted, $db) {
  */
 function scanBusinessCard($data) {
     set_time_limit(120);
-    writeLog('=== scanBusinessCard START ===');
+    // writeLog('=== scanBusinessCard START ===');
 
     $db = DbhCompany::begin();
-    writeLog('DB-Verbindung OK');
+    // writeLog('DB-Verbindung OK');
 
     $fileBase64 = $data['file_base64'] ?? '';
     $mimeType   = $data['mime_type']   ?? '';
     $cvSrc      = ($data['src'] ?? 'C') === 'V' ? 'Lieferanten' : 'Kunden';
-    writeLog("mimeType=$mimeType, src=$cvSrc, base64-len=" . strlen($fileBase64));
+    // writeLog("mimeType=$mimeType, src=$cvSrc, base64-len=" . strlen($fileBase64));
 
     if (empty($fileBase64)) {
         throw new ApiError('VALIDATION_ERROR', 'file_base64 erforderlich');
@@ -233,19 +233,19 @@ function scanBusinessCard($data) {
     if (strlen($decoded) > 10 * 1024 * 1024) {
         throw new ApiError('VALIDATION_ERROR', 'Datei zu groß (max. 10 MB)');
     }
-    writeLog('Validierung OK, Dateigröße=' . strlen($decoded));
+    // writeLog('Validierung OK, Dateigröße=' . strlen($decoded));
 
     // API-Key und Modell aus DB laden
     $config = $db->fetchKeyValue(
         "SELECT key, value FROM defaults_oserp WHERE key IN ('anthropic_api_key', 'business_card_ai_model')"
     );
-    writeLog('Config geladen: ' . json_encode(array_keys($config)));
+    // writeLog('Config geladen: ' . json_encode(array_keys($config)));
     $anthropicKey = trim($config['anthropic_api_key'] ?? '');
     if (empty($anthropicKey)) {
         throw new ApiError('MISSING_API_KEYS', 'Anthropic API-Key nicht konfiguriert');
     }
     $aiModel = $config['business_card_ai_model'] ?? 'claude-haiku-4-5-20251001';
-    writeLog("AI-Modell=$aiModel");
+    // writeLog("AI-Modell=$aiModel");
 
     $prompt = <<<PROMPT
 Du analysierst das Foto/den Scan einer Visitenkarte, um daraus Stammdaten fuer die Anlage eines $cvSrc in einem ERP-System zu extrahieren.
@@ -339,7 +339,7 @@ PROMPT;
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     $curlErr  = curl_error($ch);
     curl_close($ch);
-    writeLog("Claude API httpCode=$httpCode, curlErr=$curlErr, response-len=" . strlen($response));
+    // writeLog("Claude API httpCode=$httpCode, curlErr=$curlErr, response-len=" . strlen($response));
 
     if ($httpCode !== 200) {
         $detail = '';
@@ -362,12 +362,12 @@ PROMPT;
 
     $extracted = json_decode($aiText, true);
     if (!is_array($extracted)) {
-        writeLog('FEHLER: KI-Antwort kein JSON: ' . substr($aiText, 0, 500));
+        // writeLog('FEHLER: KI-Antwort kein JSON: ' . substr($aiText, 0, 500));
         throw new ApiError('EXTRACTION_ERROR', 'KI-Antwort konnte nicht als JSON gelesen werden');
     }
-    writeLog('KI-Extraktion OK: ' . json_encode(array_keys($extracted)));
+    // writeLog('KI-Extraktion OK: ' . json_encode(array_keys($extracted)));
 
-    writeLog('Nachbearbeitung START');
+    // writeLog('Nachbearbeitung START');
 
     // Nachbearbeitung: Homepage normalisieren
     if (!empty($extracted['homepage']) && !preg_match('~^https?://~i', $extracted['homepage'])) {
@@ -379,7 +379,7 @@ PROMPT;
     $city = trim($extracted['city'] ?? '');
     $street = trim($extracted['street'] ?? '');
     $country = trim($extracted['country'] ?? 'DE');
-    writeLog("Adresse roh: street=$street, zip=$zip, city=$city, country=$country");
+    // writeLog("Adresse roh: street=$street, zip=$zip, city=$city, country=$country");
 
     // Wenn city mit PLZ beginnt (z.B. '12345 Musterstadt'), PLZ abtrennen
     if (preg_match('/^(\d{4,5})\s+(.+)$/u', $city, $m)) {
@@ -399,18 +399,18 @@ PROMPT;
     $extracted['zipcode'] = $zip;
     $extracted['city']    = $city;
     $extracted['street']  = $street;
-    writeLog("Adresse bereinigt: street=$street, zip=$zip, city=$city");
+    // writeLog("Adresse bereinigt: street=$street, zip=$zip, city=$city");
 
     // Einfache Adress-Validierung gegen Datenbank (nur für DE-Adressen)
     if ($country === 'DE' && !empty($zip)) {
-        writeLog('PLZ-Validierung gestartet');
+        // writeLog('PLZ-Validierung gestartet');
         try {
             // Alle Orte zu dieser PLZ laden
             $plzOrte = $db->getAll(
                 'SELECT ort FROM zipcode_location_oserp WHERE plz = :plz',
                 [':plz' => $zip]
             );
-            writeLog('PLZ-Orte gefunden: ' . json_encode($plzOrte));
+            // writeLog('PLZ-Orte gefunden: ' . json_encode($plzOrte));
 
             if (!empty($plzOrte)) {
                 $ortsNamen = array_column($plzOrte, 'ort');
@@ -446,7 +446,7 @@ PROMPT;
                     }
 
                     if ($bestMatch && $bestMatch !== $city) {
-                        writeLog("Ort korrigiert: $city -> $bestMatch (Score: $bestScore)");
+                        // writeLog("Ort korrigiert: $city -> $bestMatch (Score: $bestScore)");
                         $existing = trim($extracted['notes'] ?? '');
                         $extracted['notes'] = $existing
                             ? "$existing\nOrt korrigiert: $city → $bestMatch"
@@ -458,13 +458,13 @@ PROMPT;
                     // Kein Ort von der KI — aus DB nehmen
                     $city = count($ortsNamen) === 1 ? $ortsNamen[0] : $ortsNamen[0];
                     $extracted['city'] = $city;
-                    writeLog("Ort aus PLZ-DB gesetzt: $city");
+                    // writeLog("Ort aus PLZ-DB gesetzt: $city");
                 }
             } else if (!empty($city)) {
-                writeLog('PLZ nicht in DB, Nominatim wird versucht');
+                // writeLog('PLZ nicht in DB, Nominatim wird versucht');
                 // PLZ nicht in DB — Nominatim versuchen
                 $nomResult = validateAddressWithNominatim($street, $zip, $city, $extracted['name'] ?? '');
-                writeLog('Nominatim Ergebnis: ' . json_encode($nomResult));
+                // writeLog('Nominatim Ergebnis: ' . json_encode($nomResult));
 
                 if ($nomResult !== null && $nomResult['corrected']) {
                     $extracted['zipcode'] = $nomResult['zipcode'];
@@ -479,7 +479,7 @@ PROMPT;
                 }
             }
         } catch (\Throwable $e) {
-            writeLog('PLZ-Validierung Fehler: ' . get_class($e) . ': ' . $e->getMessage());
+            // writeLog('PLZ-Validierung Fehler: ' . get_class($e) . ': ' . $e->getMessage());
         }
     }
 
@@ -489,7 +489,7 @@ PROMPT;
 
     if (!empty($homepage)) {
         try {
-            writeLog("Homepage-Validierung: $homepage");
+            // writeLog("Homepage-Validierung: $homepage");
             $reachable = checkUrlReachable($homepage);
 
             if (!$reachable) {
@@ -509,9 +509,9 @@ PROMPT;
                         $altUrl = $scheme . '://' . $altHost;
                         if (isset($parsedUrl['path'])) $altUrl .= $parsedUrl['path'];
 
-                        writeLog("Homepage-Alternative testen: $altUrl");
+                        // writeLog("Homepage-Alternative testen: $altUrl");
                         if (checkUrlReachable($altUrl)) {
-                            writeLog("Homepage korrigiert: $homepage -> $altUrl");
+                            // writeLog("Homepage korrigiert: $homepage -> $altUrl");
                             $oldDomain = $host;
                             $newDomain = $altHost;
                             $extracted['homepage'] = $altUrl;
@@ -528,7 +528,7 @@ PROMPT;
                                 if ($emailDomain === $wwwlessDomain) {
                                     $newEmailDomain = preg_replace('/^www\./', '', $newDomain);
                                     $newEmail = substr($email, 0, strpos($email, '@') + 1) . $newEmailDomain;
-                                    writeLog("E-Mail korrigiert: $email -> $newEmail");
+                                    // writeLog("E-Mail korrigiert: $email -> $newEmail");
                                     $extracted['email'] = $newEmail;
                                     $extracted['notes'] .= "\nE-Mail korrigiert: $email → $newEmail";
                                 }
@@ -539,25 +539,25 @@ PROMPT;
                 }
             }
         } catch (\Throwable $e) {
-            writeLog('Homepage-Validierung Fehler: ' . $e->getMessage());
+            // writeLog('Homepage-Validierung Fehler: ' . $e->getMessage());
         }
     }
-    writeLog('Validierung abgeschlossen');
+    // writeLog('Validierung abgeschlossen');
 
     // Anrede bestimmen: Firma oder Person (mit Geschlechts-Lookup)
     $greeting = determineGreeting($extracted, $db);
     $extracted['greeting'] = $greeting;
-    writeLog('Anrede bestimmt: ' . ($greeting ?: '(nicht bestimmbar)'));
-    writeLog('DEBUG: extracted keys = ' . json_encode(array_keys($extracted)));
-    writeLog('DEBUG: greeting value = ' . json_encode($greeting));
-    writeLog('DEBUG: extracted[greeting] = ' . json_encode($extracted['greeting'] ?? 'NOT SET'));
+    // writeLog('Anrede bestimmt: ' . ($greeting ?: '(nicht bestimmbar)'));
+    // writeLog('DEBUG: extracted keys = ' . json_encode(array_keys($extracted)));
+    // writeLog('DEBUG: greeting value = ' . json_encode($greeting));
+    // writeLog('DEBUG: extracted[greeting] = ' . json_encode($extracted['greeting'] ?? 'NOT SET'));
 
     // phone_numbers als saubere Struktur zurueckgeben
     if (!isset($extracted['phone_numbers']) || !is_array($extracted['phone_numbers'])) {
         $extracted['phone_numbers'] = [];
     }
 
-    writeLog('=== scanBusinessCard ENDE — resultInfo wird gesendet ===');
-    writeLog('DEBUG: final extracted[greeting] = ' . json_encode($extracted['greeting'] ?? 'NOT SET'));
+    // writeLog('=== scanBusinessCard ENDE — resultInfo wird gesendet ===');
+    // writeLog('DEBUG: final extracted[greeting] = ' . json_encode($extracted['greeting'] ?? 'NOT SET'));
     resultInfo(true, 'OK', ['extracted' => $extracted]);
 }

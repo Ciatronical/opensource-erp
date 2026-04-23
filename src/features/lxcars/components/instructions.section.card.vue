@@ -686,6 +686,10 @@ export default defineComponent({
         ensureOeId: {
             type: Function,
             default: null
+        },
+        completionValidator: {
+            type: Function,
+            default: null
         }
     },
 
@@ -1030,6 +1034,14 @@ export default defineComponent({
                 actualRequiredDialog.missingEmployee = missingEmployee
                 actualRequiredDialog.index = index
                 return
+            }
+            // Beim Abhaken der LETZTEN offenen Anweisung: externe Validierung (z.B. Wartungsdaten)
+            if (newValue && props.completionValidator) {
+                const openCount = instructions.value.filter(i => !i.done).length
+                if (openCount === 1 && !instruction.done) {
+                    const ok = await props.completionValidator()
+                    if (!ok) return
+                }
             }
             instruction.done = newValue
             try {

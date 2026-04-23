@@ -372,6 +372,11 @@
                                     <v-text-field v-model="displayWd" :label="t('CarEditView.fields.c_wd')" variant="outlined" density="compact" hide-details="auto" placeholder="MM/JJ" tabindex="22" :rules="rulesMonthYear" @blur="onBlurMonthYear('c_wd')" />
                                 </v-col>
                             </v-row>
+                            <v-row dense>
+                                <v-col cols="12" sm="6" class="py-1">
+                                    <v-text-field v-model="displayKm" :label="t('CarEditView.fields.c_km')" variant="outlined" density="compact" hide-details="auto" suffix="km" tabindex="22" @blur="onBlurKmStand" />
+                                </v-col>
+                            </v-row>
                         </v-card-text>
                     </v-card>
 
@@ -1100,7 +1105,7 @@ export default {
             c_st_z: '', c_wt_z: '',
             chk_c_ln: true, chk_c_2: true, chk_c_3: true, chk_c_em: true,
             chk_c_d: true, chk_fin: true, chk_c_hu: true,
-            c_sk: false, c_zrk: null, c_zrd: '', c_bf: '', c_wd: '',
+            c_sk: false, c_zrk: null, c_zrd: '', c_bf: '', c_wd: '', c_km: null,
             c_finchk: '', kba_id: null,
             scan_detail_id: '', scan_id: '', filename: ''
         })
@@ -1112,7 +1117,8 @@ export default {
         const {
             displayD, displayHu, onBlurDate,
             displayZrd, displayBf, displayWd, onBlurMonthYear,
-            displayZrk, onBlurKm
+            displayZrk, onBlurKm,
+            displayKm, onBlurKmStand
         } = useCarDates(car)
 
         const {
@@ -1861,6 +1867,7 @@ export default {
             displayD, displayHu, onBlurDate,
             displayZrd, displayBf, displayWd, onBlurMonthYear,
             displayZrk, onBlurKm,
+            displayKm, onBlurKmStand,
             toggleShield, sortedOrders, orderSortField, orderFilter,
             toggleOrderSort, sortIcon, formatAmount, openOrder, createNewOrder, navigateToCustomer, openCarRegistration, focusSearch,
             yellowLabelPrinting, tyreLabelPrinting, onPrintYellowLabel, onPrintTyreLabel,

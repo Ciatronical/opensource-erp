@@ -16,6 +16,19 @@
         "orderSearchTooltip": "Auftragssuche",
         "scanTooltip": "Fahrzeuge von Scan"
     },
+    "MaintenanceSectionCard": {
+        "title": "Wartung & Service",
+        "fields": {
+            "c_sk": "Steuerkette",
+            "c_zrd": "Zahnriemen Datum",
+            "c_zrk": "Zahnriemen km-Stand",
+            "c_bf": "Bremsflüssigkeit",
+            "c_wd": "Nächster Wartungsdienst"
+        },
+        "incompleteTitle": "Wartungsdaten unvollständig",
+        "incompleteText": "Bevor der Auftrag abgeschlossen werden kann, müssen folgende Felder ausgefüllt sein:",
+        "close": "Schließen"
+    },
     "PartsRequests": {
         "title": "Ersatzteile",
         "search": "Artikel suchen...",

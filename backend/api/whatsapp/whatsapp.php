@@ -487,11 +487,11 @@ function sendWhatsAppMessage($data) {
     $message = trim($data['message'] ?? '');
     $customerId = (int)($data['customer_id'] ?? 0);
 
-    writeLog("=== sendWhatsAppMessage ===");
-    writeLog("to: {$to}, customerId: {$customerId}, messageLen: " . strlen($message));
+    // writeLog("=== sendWhatsAppMessage ===");
+    // writeLog("to: {$to}, customerId: {$customerId}, messageLen: " . strlen($message));
 
     if (empty($to) || empty($message)) {
-        writeLog("ABORT: Leere Telefonnummer oder Nachricht");
+        // writeLog("ABORT: Leere Telefonnummer oder Nachricht");
         resultInfo(false, 'INVALID_INPUT', 'Telefonnummer und Nachrichtentext sind erforderlich');
         return;
     }
@@ -508,18 +508,18 @@ function sendWhatsAppMessage($data) {
         [':phone' => $to]
     );
     $windowOpen = $lastInbound && strtotime($lastInbound['itime']) >= strtotime('-24 hours');
-    writeLog("24h-Fenster: " . ($windowOpen ? 'OFFEN' : 'GESCHLOSSEN') . " | lastInbound: " . ($lastInbound['itime'] ?? 'keine'));
+    // writeLog("24h-Fenster: " . ($windowOpen ? 'OFFEN' : 'GESCHLOSSEN') . " | lastInbound: " . ($lastInbound['itime'] ?? 'keine'));
 
     // Wenn Fenster abgelaufen: automatisch Chat-Template verwenden
     if (!$windowOpen) {
         $infoTplId = (int)($config['whatsapp_tpl_chat'] ?? 0);
-        writeLog("Template-Fallback: chatTplId={$infoTplId}");
+        // writeLog("Template-Fallback: chatTplId={$infoTplId}");
         if ($infoTplId > 0) {
             $infoTpl = $db->getOne(
                 "SELECT name, body_text FROM whatsapp_templates WHERE id = :id AND status = 'approved'",
                 [':id' => $infoTplId]
             );
-            writeLog("Template geladen: " . ($infoTpl ? "name={$infoTpl['name']}" : 'NICHT GEFUNDEN'));
+            // writeLog("Template geladen: " . ($infoTpl ? "name={$infoTpl['name']}" : 'NICHT GEFUNDEN'));
             if ($infoTpl) {
                 $customerName = trim($data['customer_name'] ?? '');
 
@@ -531,9 +531,9 @@ function sendWhatsAppMessage($data) {
                 for ($i = 0; $i < $paramCount; $i++) {
                     $tplParams[] = ($i === 0 && $customerName) ? $customerName : $message;
                 }
-                writeLog("Template '{$infoTpl['name']}': {$paramCount} Params => " . json_encode($tplParams, JSON_UNESCAPED_UNICODE));
+                // writeLog("Template '{$infoTpl['name']}': {$paramCount} Params => " . json_encode($tplParams, JSON_UNESCAPED_UNICODE));
                 $result = _sendTemplateMessageInternal($to, $infoTpl, $tplParams, $customerId);
-                writeLog("Template-Ergebnis: " . json_encode($result, JSON_UNESCAPED_UNICODE));
+                // writeLog("Template-Ergebnis: " . json_encode($result, JSON_UNESCAPED_UNICODE));
                 if ($result['success']) {
                     resultInfo(true, '', ['wa_message_id' => $result['wa_message_id'], 'status' => 'sent']);
                 } else {
@@ -542,12 +542,12 @@ function sendWhatsAppMessage($data) {
                 return;
             }
         }
-        writeLog("Kein Info-Template konfiguriert — versuche Direktversand");
+        // writeLog("Kein Info-Template konfiguriert — versuche Direktversand");
         // Kein Info-Template konfiguriert — trotzdem versuchen (Meta gibt dann Fehler)
     }
 
     // Meta Cloud API aufrufen (24h-Fenster offen)
-    writeLog("Sende Freitext-Nachricht via Meta API");
+    // writeLog("Sende Freitext-Nachricht via Meta API");
     $url = "https://graph.facebook.com/v21.0/{$phoneNumberId}/messages";
     $payload = json_encode([
         'messaging_product' => 'whatsapp',
@@ -555,7 +555,7 @@ function sendWhatsAppMessage($data) {
         'type' => 'text',
         'text' => ['body' => $message]
     ]);
-    writeLog("Payload: " . $payload);
+    // writeLog("Payload: " . $payload);
 
     $ch = curl_init($url);
     curl_setopt_array($ch, [
@@ -574,10 +574,10 @@ function sendWhatsAppMessage($data) {
     $curlError = curl_error($ch);
     curl_close($ch);
 
-    writeLog("Response HTTP {$httpCode}: " . $response);
+    // writeLog("Response HTTP {$httpCode}: " . $response);
 
     if ($curlError) {
-        writeLog("CURL-Fehler: " . $curlError);
+        // writeLog("CURL-Fehler: " . $curlError);
         resultInfo(false, 'WHATSAPP_CURL_ERROR', $curlError);
         return;
     }
@@ -590,14 +590,14 @@ function sendWhatsAppMessage($data) {
         if (!empty($responseData['error']['error_data']['details'])) {
             $errorDetail .= ' — ' . $responseData['error']['error_data']['details'];
         }
-        writeLog("API-Fehler: " . $errorDetail);
+        // writeLog("API-Fehler: " . $errorDetail);
         error_log("WhatsApp API Error: " . json_encode($responseData));
         resultInfo(false, 'WHATSAPP_API_ERROR', $errorDetail);
         return;
     }
 
     $waMessageId = $responseData['messages'][0]['id'];
-    writeLog("Erfolg: waMessageId={$waMessageId}");
+    // writeLog("Erfolg: waMessageId={$waMessageId}");
 
     // In DB speichern
     $db->prepareQuery(
@@ -611,7 +611,7 @@ function sendWhatsAppMessage($data) {
         ]
     );
 
-    writeLog("DB-Insert erfolgreich");
+    // writeLog("DB-Insert erfolgreich");
     resultInfo(true, '', [
         'wa_message_id' => $waMessageId,
         'status' => 'sent'
@@ -726,8 +726,8 @@ function sendWhatsAppDocument($data) {
     $templateId = (int)($data['template_id'] ?? 0);
     $parameters = $data['parameters'] ?? [];
 
-    writeLog("=== sendWhatsAppDocument ===");
-    writeLog("to: {$to}, filename: {$filename}, customerId: {$customerId}, templateId: {$templateId}, base64len: " . strlen($documentBase64));
+    // writeLog("=== sendWhatsAppDocument ===");
+    // writeLog("to: {$to}, filename: {$filename}, customerId: {$customerId}, templateId: {$templateId}, base64len: " . strlen($documentBase64));
 
     if (empty($to)) {
         resultInfo(false, 'INVALID_INPUT', 'Telefonnummer ist erforderlich');
@@ -735,7 +735,7 @@ function sendWhatsAppDocument($data) {
     }
 
     if (empty($documentBase64)) {
-        writeLog("ABORT: Kein Dokument (base64 leer)");
+        // writeLog("ABORT: Kein Dokument (base64 leer)");
         resultInfo(false, 'INVALID_INPUT', 'Kein Dokument angegeben');
         return;
     }
@@ -820,7 +820,7 @@ function sendWhatsAppDocument($data) {
     }
 
     $mediaId = $uploadData['id'];
-    writeLog("Upload OK: mediaId={$mediaId}");
+    // writeLog("Upload OK: mediaId={$mediaId}");
 
     // 2. Template-Nachricht mit Dokument-Header senden
     $langCode = ($template['language'] ?? 'de') === 'de' ? 'de' : 'en';
@@ -871,7 +871,7 @@ function sendWhatsAppDocument($data) {
         ]
     ]);
 
-    writeLog("Template+Dokument Payload: " . $payload);
+    // writeLog("Template+Dokument Payload: " . $payload);
 
     $messageUrl = "https://graph.facebook.com/v21.0/{$phoneNumberId}/messages";
     $ch = curl_init($messageUrl);
@@ -897,7 +897,7 @@ function sendWhatsAppDocument($data) {
     }
 
     $responseData = json_decode($response, true);
-    writeLog("Template+Dokument Response HTTP {$httpCode}: " . mb_substr($response, 0, 300));
+    // writeLog("Template+Dokument Response HTTP {$httpCode}: " . mb_substr($response, 0, 300));
 
     if ($httpCode !== 200 || !isset($responseData['messages'][0]['id'])) {
         $errorMsg = $responseData['error']['message'] ?? 'Unbekannter Fehler';
@@ -905,13 +905,13 @@ function sendWhatsAppDocument($data) {
         if (!empty($responseData['error']['error_data']['details'])) {
             $errorDetail .= ' — ' . $responseData['error']['error_data']['details'];
         }
-        writeLog("Template+Dokument FEHLER: {$errorDetail}");
+        // writeLog("Template+Dokument FEHLER: {$errorDetail}");
         resultInfo(false, 'WHATSAPP_API_ERROR', $errorDetail);
         return;
     }
 
     $waMessageId = $responseData['messages'][0]['id'];
-    writeLog("Template+Dokument gesendet: waMessageId={$waMessageId}");
+    // writeLog("Template+Dokument gesendet: waMessageId={$waMessageId}");
 
     // Ausgehende Datei lokal speichern fuer Chat-Anzeige
     $localMediaUrl = $mediaId;
@@ -1837,9 +1837,9 @@ function _submitTemplateToMeta(int $templateId): array {
     $url = "https://graph.facebook.com/v21.0/{$wabaId}/message_templates";
 
     error_log("WhatsApp Meta Submit Payload: " . $payload);
-    writeLog("=== WhatsApp Meta Submit ===");
-    writeLog("URL: " . $url);
-    writeLog("Payload: " . json_encode(json_decode($payload), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+    // writeLog("=== WhatsApp Meta Submit ===");
+    // writeLog("URL: " . $url);
+    // writeLog("Payload: " . json_encode(json_decode($payload), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 
     $ch = curl_init($url);
     curl_setopt_array($ch, [
@@ -1859,7 +1859,7 @@ function _submitTemplateToMeta(int $templateId): array {
 
     $responseData = json_decode($response, true);
 
-    writeLog("Response HTTP {$httpCode}: " . json_encode($responseData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+    // writeLog("Response HTTP {$httpCode}: " . json_encode($responseData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 
     if ($httpCode !== 200 || (empty($metaTemplateId) && empty($responseData['id']))) {
         $errorMsg = $responseData['error']['message'] ?? 'Fehler beim Einreichen';
@@ -1930,7 +1930,7 @@ function _uploadSampleMediaForTemplate(string $accessToken, string $mimeType): ?
     curl_close($ch);
     $debugData = json_decode($resp, true);
     $appId = $debugData['data']['app_id'] ?? null;
-    writeLog("Resumable Upload: app_id=" . ($appId ?: 'NICHT GEFUNDEN'));
+    // writeLog("Resumable Upload: app_id=" . ($appId ?: 'NICHT GEFUNDEN'));
     if (!$appId) return null;
 
     // 2. Minimale Beispieldatei erzeugen
@@ -1946,7 +1946,7 @@ function _uploadSampleMediaForTemplate(string $accessToken, string $mimeType): ?
 
     // 3. Upload-Session erstellen
     $sessionUrl = "https://graph.facebook.com/v21.0/{$appId}/uploads?file_length={$fileLength}&file_type=" . urlencode($mimeType) . "&access_token=" . urlencode($accessToken);
-    writeLog("Resumable Upload: Session URL: {$sessionUrl}");
+    // writeLog("Resumable Upload: Session URL: {$sessionUrl}");
 
     $ch = curl_init($sessionUrl);
     curl_setopt_array($ch, [
@@ -1961,12 +1961,12 @@ function _uploadSampleMediaForTemplate(string $accessToken, string $mimeType): ?
 
     $sessionData = json_decode($resp, true);
     $uploadSessionId = $sessionData['id'] ?? null;
-    writeLog("Resumable Upload: Session Response HTTP {$httpCode}: " . $resp);
+    // writeLog("Resumable Upload: Session Response HTTP {$httpCode}: " . $resp);
     if (!$uploadSessionId) return null;
 
     // 4. Datei hochladen
     $uploadUrl = "https://graph.facebook.com/v21.0/{$uploadSessionId}";
-    writeLog("Resumable Upload: Upload URL: {$uploadUrl}, fileLength: {$fileLength}");
+    // writeLog("Resumable Upload: Upload URL: {$uploadUrl}, fileLength: {$fileLength}");
 
     $ch = curl_init($uploadUrl);
     curl_setopt_array($ch, [
@@ -1986,8 +1986,8 @@ function _uploadSampleMediaForTemplate(string $accessToken, string $mimeType): ?
 
     $uploadData = json_decode($resp, true);
     $handle = $uploadData['h'] ?? null;
-    writeLog("Resumable Upload: Upload Response HTTP {$httpCode}: " . $resp);
-    writeLog("Resumable Upload: Handle=" . ($handle ?: 'NICHT ERHALTEN'));
+    // writeLog("Resumable Upload: Upload Response HTTP {$httpCode}: " . $resp);
+    // writeLog("Resumable Upload: Handle=" . ($handle ?: 'NICHT ERHALTEN'));
 
     return $handle;
 }
@@ -2179,15 +2179,15 @@ function processHuWhatsAppReminders($data) {
  * Template-Nachricht intern senden (Hilfsfunktion fuer Reminder)
  */
 function _sendTemplateMessageInternal(string $phone, array $template, array $parameters, int $customerId = 0): array {
-    writeLog("=== _sendTemplateMessageInternal ===");
-    writeLog("phone: {$phone}, template: {$template['name']}, params: " . json_encode($parameters, JSON_UNESCAPED_UNICODE));
+    // writeLog("=== _sendTemplateMessageInternal ===");
+    // writeLog("phone: {$phone}, template: {$template['name']}, params: " . json_encode($parameters, JSON_UNESCAPED_UNICODE));
 
     $config = _getWhatsAppConfig();
     $accessToken = $config['whatsapp_access_token'] ?? '';
     $phoneNumberId = $config['whatsapp_phone_number_id'] ?? '';
 
     if (empty($accessToken) || empty($phoneNumberId)) {
-        writeLog("ABORT: Nicht konfiguriert");
+        // writeLog("ABORT: Nicht konfiguriert");
         return ['success' => false, 'error' => 'Nicht konfiguriert'];
     }
 
@@ -2215,7 +2215,7 @@ function _sendTemplateMessageInternal(string $phone, array $template, array $par
         ]
     ]);
 
-    writeLog("Payload: " . $payload);
+    // writeLog("Payload: " . $payload);
 
     $url = "https://graph.facebook.com/v21.0/{$phoneNumberId}/messages";
     $ch = curl_init($url);
@@ -2231,13 +2231,13 @@ function _sendTemplateMessageInternal(string $phone, array $template, array $par
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
 
-    writeLog("Response HTTP {$httpCode}: " . $response);
+    // writeLog("Response HTTP {$httpCode}: " . $response);
 
     $responseData = json_decode($response, true);
 
     if ($httpCode !== 200 || !isset($responseData['messages'][0]['id'])) {
         $err = $responseData['error']['message'] ?? 'Fehler';
-        writeLog("Template-Fehler: " . $err);
+        // writeLog("Template-Fehler: " . $err);
         return ['success' => false, 'error' => $err];
     }
 
@@ -2844,8 +2844,8 @@ function updateWhatsAppProfilePicture($data) {
 
     unlink($tmpFile);
 
-    writeLog("=== updateWhatsAppProfilePicture ===");
-    writeLog("filename: {$filename}, size: {$fileSize}, dimensions: {$width}x{$height}");
+    // writeLog("=== updateWhatsAppProfilePicture ===");
+    // writeLog("filename: {$filename}, size: {$fileSize}, dimensions: {$width}x{$height}");
 
     // 1. App-ID ermitteln via debug_token
     $ch = curl_init("https://graph.facebook.com/v21.0/debug_token?input_token={$accessToken}");
@@ -2887,7 +2887,7 @@ function updateWhatsAppProfilePicture($data) {
         return;
     }
 
-    writeLog("Upload Session erstellt: {$uploadSessionId}");
+    // writeLog("Upload Session erstellt: {$uploadSessionId}");
 
     // 3. Bild hochladen
     $uploadUrl = "https://graph.facebook.com/v21.0/{$uploadSessionId}";
@@ -2923,7 +2923,7 @@ function updateWhatsAppProfilePicture($data) {
         return;
     }
 
-    writeLog("Upload Handle erhalten: {$handle}");
+    // writeLog("Upload Handle erhalten: {$handle}");
 
     // 4. Business-Profil mit neuem Profilbild aktualisieren
     $profileUrl = "https://graph.facebook.com/v21.0/{$phoneNumberId}/whatsapp_business_profile";
@@ -2960,7 +2960,7 @@ function updateWhatsAppProfilePicture($data) {
         return;
     }
 
-    writeLog("Profilbild erfolgreich aktualisiert");
+    // writeLog("Profilbild erfolgreich aktualisiert");
 
     resultInfo(true, '', ['message' => 'Profilbild erfolgreich aktualisiert']);
 }

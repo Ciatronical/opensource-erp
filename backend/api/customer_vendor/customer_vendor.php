@@ -123,6 +123,7 @@ function getCV($data, $withConfig = []) {
     $extTable = $isVendor ? 'vendor_ext' : 'customer_ext';
     $extFk    = $isVendor ? 'vendor_id'  : 'customer_id';
     $phoneNumbersSelect = "(SELECT phone_numbers FROM $extTable WHERE $extFk = $cv_id)";
+    $keywordsSelect     = "(SELECT keywords FROM $extTable WHERE $extFk = $cv_id)";
 
     $orderFirstDescription = $lxCars
         ? "SELECT il.description FROM oe_instructions_lxcars il WHERE il.oe_id = oe.id ORDER BY il.sort_order, il.id LIMIT 1"
@@ -398,7 +399,8 @@ function getCV($data, $withConfig = []) {
                                     SELECT row_to_json(cv)
                                     FROM (
                                         SELECT '$cvSrcLiteral' AS src, t.*,
-                                            $phoneNumbersSelect AS phone_numbers
+                                            $phoneNumbersSelect AS phone_numbers,
+                                            $keywordsSelect AS keywords
                                         FROM $cvTable t WHERE t.id = $cv_id
                                     ) AS cv
                                 ),
@@ -854,6 +856,15 @@ function saveCV($data) {
         unset($data['profile']['phone_numbers']);
     }
 
+    // keywords vor dem Loop extrahieren und aus profile entfernen
+    $keywords = null;
+    $hasKeywords = false;
+    if (array_key_exists('keywords', $data['profile'])) {
+        $hasKeywords = true;
+        $keywords = $data['profile']['keywords'];
+        unset($data['profile']['keywords']);
+    }
+
     $apiCompanySpace->beginTransaction();
     $newId = null;
     foreach($data as $tableName => $tableData) {
@@ -1027,6 +1038,19 @@ function saveCV($data) {
             "INSERT INTO $extTable ($extFk, phone_numbers) VALUES (:cid, :pn)
              ON CONFLICT ($extFk) DO UPDATE SET phone_numbers = :pn, mtime = now()",
             [':cid' => $cv_id, ':pn' => $jsonValue]
+        );
+    }
+
+    // keywords in customer_ext/vendor_ext speichern
+    if ($hasKeywords && $cv_id) {
+        $kwValue = is_string($keywords) ? trim($keywords) : '';
+        $kwValue = $kwValue !== '' ? $kwValue : null;
+        $extTable = ($src === 'V') ? 'vendor_ext' : 'customer_ext';
+        $extFk    = ($src === 'V') ? 'vendor_id'  : 'customer_id';
+        $apiCompanySpace->execute(
+            "INSERT INTO $extTable ($extFk, keywords) VALUES (:cid, :kw)
+             ON CONFLICT ($extFk) DO UPDATE SET keywords = :kw, mtime = now()",
+            [':cid' => $cv_id, ':kw' => $kwValue]
         );
     }
 
@@ -1490,7 +1514,7 @@ function clickToCall($data) {
         throw new ApiError('AMI_ORIGINATE_FAILED', 'Anruf konnte nicht gestartet werden');
     }
 
-    debugLog("Click-to-Call: $internalPhone -> $phoneNumber ($contactName) via $externalContext");
+    // debugLog("Click-to-Call: $internalPhone -> $phoneNumber ($contactName) via $externalContext");
     resultInfo(true, '', ['message' => 'Anruf wird aufgebaut']);
 }
 

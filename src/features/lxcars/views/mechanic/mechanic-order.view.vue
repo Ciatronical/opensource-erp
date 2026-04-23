@@ -63,12 +63,22 @@
                     />
                 </section>
 
+                <!-- Wartung & Service -->
+                <section v-if="vehicle" class="mb-4">
+                    <maintenance-section-card
+                        :oe-ext-data="vehicle.oeExtData.value"
+                        :has-car="!!vehicle.selectedCarId.value"
+                        @oe-ext-field-change="vehicle.onOeExtFieldChange"
+                    />
+                </section>
+
                 <!-- Arbeitsanweisungen -->
                 <section v-if="vehicle" class="mb-4">
                     <instructions-section-card
                         ref="instructionsRef"
                         :oe-id="fakturaId"
                         :ensure-oe-id="ensureOrderAndGetId"
+                        :completion-validator="validateMaintenanceBeforeComplete"
                         @jump-to-positions="focusNewPosition"
                     />
                 </section>
@@ -166,6 +176,47 @@
                 </section>
             </v-container>
         </template>
+
+        <!-- Maintenance Incomplete Dialog -->
+        <v-dialog v-model="maintenanceIncompleteDialog.show" max-width="500" @keydown.esc="maintenanceIncompleteDialog.show = false">
+            <v-card>
+                <v-card-title class="d-flex align-center py-3 px-4 bg-warning">
+                    <v-icon class="mr-2">mdi-wrench-outline</v-icon>
+                    {{ t('MaintenanceSectionCard.incompleteTitle') }}
+                    <v-spacer />
+                    <v-btn
+                        icon="mdi-close"
+                        variant="text"
+                        density="compact"
+                        size="small"
+                        @click="maintenanceIncompleteDialog.show = false"
+                    />
+                </v-card-title>
+                <v-card-text class="pt-4 pb-2">
+                    <p>{{ t('MaintenanceSectionCard.incompleteText') }}</p>
+                    <v-list density="compact" class="mt-2">
+                        <v-list-item
+                            v-for="field in maintenanceIncompleteDialog.fields"
+                            :key="field"
+                            class="px-2"
+                        >
+                            <template #prepend>
+                                <v-icon size="small" color="warning">mdi-alert-circle</v-icon>
+                            </template>
+                            <v-list-item-title class="text-body-2">
+                                {{ field === 'km_stand' ? t('FakturaView.faktura.kmStand') : t('MaintenanceSectionCard.fields.' + field) }}
+                            </v-list-item-title>
+                        </v-list-item>
+                    </v-list>
+                </v-card-text>
+                <v-card-actions class="pa-4 pt-0">
+                    <v-spacer />
+                    <v-btn color="primary" variant="elevated" @click="maintenanceIncompleteDialog.show = false">
+                        {{ t('MaintenanceSectionCard.close') }}
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
 
         <!-- Delete Item Confirmation Dialog -->
         <v-dialog v-model="items.deleteDialog.value.show" max-width="400">
@@ -300,6 +351,7 @@ import EditPartDialog from '@/core/views/faktura/dialogs/edit.part.dialog.vue'
 import CreatePartDialog from '@/core/views/faktura/dialogs/create.part.dialog.vue'
 import InstructionsSectionCard from '@/features/lxcars/components/instructions.section.card.vue'
 import MaengelSectionCard from '@/features/lxcars/components/maengel.section.card.vue'
+import MaintenanceSectionCard from '@/features/lxcars/components/maintenance.section.card.vue'
 import * as alerts from '@/core/utils/alerts.js'
 
 const props = defineProps({
@@ -355,6 +407,25 @@ const accounting = useAccounting({
 const vehicle = useVehicleSection({
     carsStore, fakturaId, fakturaType, t
 })
+
+// Wartung-Validierung beim Abschluss der letzten Anweisung
+const maintenanceIncompleteDialog = ref({ show: false, fields: [] })
+
+function validateMaintenanceBeforeComplete() {
+    if (!vehicle || !vehicle.selectedCarId.value) return true
+    const e = vehicle.oeExtData.value || {}
+    const missing = []
+    if (!e.km_stand) missing.push('km_stand')
+    if (!e.c_bf) missing.push('c_bf')
+    if (!e.c_wd) missing.push('c_wd')
+    if (!e.c_sk) {
+        if (!e.c_zrd) missing.push('c_zrd')
+        if (!e.c_zrk) missing.push('c_zrk')
+    }
+    if (missing.length === 0) return true
+    maintenanceIncompleteDialog.value = { show: true, fields: missing }
+    return false
+}
 
 async function saveAllItems() {
     try {

@@ -38,7 +38,7 @@
     <v-divider />
     <v-card-text class="py-2 px-2 px-sm-3">
       <v-row dense>
-        <v-col cols="12" class="py-1">
+        <v-col cols="12" sm="8" class="py-1">
           <v-text-field
             :label="t('CustomerVendorEditView.fields.name')"
             v-model="localData.name"
@@ -46,6 +46,15 @@
             density="compact"
             hide-details="auto"
             @blur="onNameBlur"
+          />
+        </v-col>
+        <v-col cols="12" sm="4" class="py-1">
+          <v-text-field
+            :label="t('CustomerVendorEditView.fields.keywords')"
+            v-model="localData.keywords"
+            variant="outlined"
+            density="compact"
+            hide-details="auto"
           />
         </v-col>
 
@@ -150,7 +159,7 @@
           />
         </v-col>
 
-        <v-col cols="12" sm="6" class="py-1">
+        <v-col v-if="localData.src !== 'V'" cols="12" sm="6" class="py-1">
           <v-text-field
             :label="t('CustomerVendorEditView.fields.commercial_court')"
             v-model="localData.commercial_court"
@@ -310,7 +319,9 @@ export default {
         applyIfEmpty('phone', extracted.phone || phone)
         applyIfEmpty('email', extracted.email)
         applyIfEmpty('homepage', extracted.homepage)
-        applyIfEmpty('commercial_court', extracted.commercial_court)
+        if (localData.value.src !== 'V') {
+          applyIfEmpty('commercial_court', extracted.commercial_court)
+        }
         applyIfEmpty('taxnumber', extracted.taxnumber)
         applyIfEmpty('ustid', extracted.ustid)
         localData.value.country = 'D'
@@ -431,7 +442,9 @@ export default {
         applyIfEmpty('phone', extracted.phone)
         applyIfEmpty('email', extracted.email)
         applyIfEmpty('homepage', extracted.homepage)
-        applyIfEmpty('commercial_court', extracted.commercial_court)
+        if (localData.value.src !== 'V') {
+          applyIfEmpty('commercial_court', extracted.commercial_court)
+        }
         applyIfEmpty('taxnumber', extracted.taxnumber)
         applyIfEmpty('ustid', extracted.ustid)
 

@@ -241,6 +241,7 @@
         "fields": {
             "greeting": "Kreipinys",
             "name": "Kundenname",
+            "keywords": "Short code",
             "natural_person": "Natürliche Person",
             "department_1": "Abteilung 1",
             "department_2": "Abteilung 2",
