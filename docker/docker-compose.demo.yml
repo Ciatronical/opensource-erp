@@ -1,0 +1,47 @@
+# OpensourceERP Docker Compose — Demo-Overlay
+#
+# Dieses Overlay schaltet den Stack in den Demo-Modus:
+#   - Postgres-Datenverzeichnis liegt in einer tmpfs (im RAM)
+#   - Beim Start werden die Dateien aus docker/db/init/ automatisch
+#     ueber /docker-entrypoint-initdb.d/ eingespielt
+#
+# Das heisst: 'docker compose restart db' = DB wird vollstaendig neu geseeded.
+#
+# Aufruf:
+#   docker compose -f docker/docker-compose.yml -f docker/docker-compose.demo.yml up -d
+# oder bequem:
+#   ./scripts/docker.sh demo-up
+#
+# Seed-Dateien:
+#   Lege einen oder mehrere pg_dump-Files in docker/db/init/ ab.
+#   Postgres verarbeitet alle *.sql, *.sql.gz und *.sh alphabetisch.
+#   Benennung z.B. 01-auth.sql.gz, 02-company.sql.gz.
+#
+# WICHTIG beim Umstieg von persistentem Volume:
+# Falls schon ein pg_data-Volume (z.B. von frueherem nicht-demo-Betrieb) existiert,
+# muss es einmalig entfernt werden, damit die neue tmpfs-Deklaration greift:
+#   docker volume rm ${STACK_NAME:-oserp}-pg-data
+
+services:
+  db:
+    environment:
+      # Damit die Init-Scripts die Ziel-DBs kennen
+      - DB_AUTH_NAME=${DB_AUTH_NAME:-oserp_auth}
+      - DB_COMPANY_NAME=${DB_COMPANY_NAME:-oserp_company}
+    volumes:
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+      - ${DEMO_AUTH_DUMP:?DEMO_AUTH_DUMP fehlt in docker/.env}:/dumps/auth.sql:ro
+      - ${DEMO_COMPANY_DUMP:?DEMO_COMPANY_DUMP fehlt in docker/.env}:/dumps/company.sql:ro
+
+  web:
+    environment:
+      - DEMO_MODE=true
+
+volumes:
+  pg_data:
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
+      # uid/gid 70 = postgres-User im Alpine-Image
+      # size = max. RAM-Nutzung fuer das Daten-Dir (1 GB reicht fuer die Demo)
+      o: "uid=70,gid=70,mode=700,size=1073741824"

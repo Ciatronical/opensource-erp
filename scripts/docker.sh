@@ -22,6 +22,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 COMPOSE_DIR="$PROJECT_ROOT/docker"
 COMPOSE_FILE="$COMPOSE_DIR/docker-compose.yml"
+DEMO_COMPOSE_FILE="$COMPOSE_DIR/docker-compose.demo.yml"
 ENV_FILE="$COMPOSE_DIR/.env"
 
 # Container-Namen aus STACK_NAME in .env ableiten
@@ -60,6 +61,13 @@ error()   { echo -e "${RED}[FEHLER]${NC} $*" >&2; }
 # docker compose mit korrektem Compose-File, Env-File und Projektname ausführen
 dc() {
     docker compose -p "$(get_stack_name)" -f "$COMPOSE_FILE" --env-file "$ENV_FILE" "$@"
+}
+
+# docker compose mit Demo-Overlay (tmpfs + Auto-Seed)
+dc_demo() {
+    docker compose -p "$(get_stack_name)" \
+        -f "$COMPOSE_FILE" -f "$DEMO_COMPOSE_FILE" \
+        --env-file "$ENV_FILE" "$@"
 }
 
 # Prüfen ob docker/.env existiert
@@ -126,6 +134,11 @@ cmd_help() {
     echo "    upstall             Alle Erweiterungen aus backend/upstall/ installieren"
     echo "    psql <db>           PostgreSQL-Shell oeffnen (z.B. psql oserp_auth)"
     echo "    backup              Datenbank-Backup erstellen (beide DBs)"
+    echo ""
+    echo -e "  ${BOLD}Demo-Modus (tmpfs + Auto-Seed):${NC}"
+    echo "                        Seed-Dateien in docker/db/init/ werden beim DB-Start eingespielt"
+    echo "    demo-up             Stack mit Demo-Overlay starten (DB laeuft im tmpfs)"
+    echo "    demo-restart-db     DB-Container neu starten (spielt Seed neu ein)"
     echo ""
     echo -e "  ${BOLD}Sonstiges:${NC}"
     echo "    status              Status aller Container anzeigen"
@@ -571,6 +584,33 @@ cmd_upstall() {
     success "Upstall abgeschlossen."
 }
 
+# ------ demo-up -----------------------------------------------------------
+cmd_demo_up() {
+    check_env
+    if [[ ! -f "$DEMO_COMPOSE_FILE" ]]; then
+        error "Demo-Overlay fehlt: $DEMO_COMPOSE_FILE"
+        exit 1
+    fi
+    if ! ls "$COMPOSE_DIR/db/init/"*.sql* >/dev/null 2>&1; then
+        warn "Keine Seed-Dateien in docker/db/init/ gefunden."
+        echo "  Zuerst ausfuehren: ./scripts/docker.sh generate-demo-seed"
+        echo ""
+        read -rp "Trotzdem starten (DB wird leer sein)? (ja/nein): " confirm
+        [[ "$confirm" == "ja" ]] || { info "Abgebrochen."; exit 0; }
+    fi
+    info "Starte Stack im Demo-Modus (tmpfs + Auto-Seed)..."
+    dc_demo up -d --build
+    success "Demo-Stack laeuft. DB wird bei jedem Restart neu geseeded."
+}
+
+# ------ demo-restart-db ---------------------------------------------------
+cmd_demo_restart_db() {
+    check_env
+    info "Restart DB-Container -> Seed wird neu eingespielt..."
+    dc_demo restart db
+    success "DB zurueckgesetzt."
+}
+
 # ------ shell -------------------------------------------------------------
 cmd_shell() {
     local service="${1:-web}"
@@ -601,23 +641,25 @@ command="${1:-help}"
 shift 2>/dev/null || true
 
 case "$command" in
-    up-db)        cmd_up_db "$@" ;;
-    up-web)       cmd_up_web "$@" ;;
-    up-all)       cmd_up_all "$@" ;;
-    down-db)      cmd_down_db "$@" ;;
-    down-web)     cmd_down_web "$@" ;;
-    down-all)     cmd_down_all "$@" ;;
-    destroy-db)   cmd_destroy_db "$@" ;;
-    destroy-web)  cmd_destroy_web "$@" ;;
-    destroy-all)  cmd_destroy_all "$@" ;;
-    reset)        cmd_reset "$@" ;;
-    dbdump)       cmd_dbdump "$@" ;;
-    upstall)      cmd_upstall "$@" ;;
-    psql)         cmd_psql "$@" ;;
-    backup)       cmd_backup "$@" ;;
-    status)       cmd_status "$@" ;;
-    logs)         cmd_logs "$@" ;;
-    shell)        cmd_shell "$@" ;;
+    up-db)               cmd_up_db "$@" ;;
+    up-web)              cmd_up_web "$@" ;;
+    up-all)              cmd_up_all "$@" ;;
+    down-db)             cmd_down_db "$@" ;;
+    down-web)            cmd_down_web "$@" ;;
+    down-all)            cmd_down_all "$@" ;;
+    destroy-db)          cmd_destroy_db "$@" ;;
+    destroy-web)         cmd_destroy_web "$@" ;;
+    destroy-all)         cmd_destroy_all "$@" ;;
+    reset)               cmd_reset "$@" ;;
+    dbdump)              cmd_dbdump "$@" ;;
+    upstall)             cmd_upstall "$@" ;;
+    psql)                cmd_psql "$@" ;;
+    backup)              cmd_backup "$@" ;;
+    status)              cmd_status "$@" ;;
+    logs)                cmd_logs "$@" ;;
+    shell)               cmd_shell "$@" ;;
+    demo-up)             cmd_demo_up "$@" ;;
+    demo-restart-db)     cmd_demo_restart_db "$@" ;;
     help|--help|-h) cmd_help ;;
     *)
         error "Unbekannter Befehl: $command"

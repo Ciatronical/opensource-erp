@@ -76,5 +76,5 @@ require_once __DIR__.'/inc.php';  // ohne Klammern
 - `fix-ws` vor Commits ausfuehren (tools/fix-ws.sh)
 
 ### Gendern und Umlaute
-- keine oe, ae, etc verwenden
+- keine z.B. oe, ae, etc verwenden, sondern die echten deutschen Umlaute ä ü ö usw. beim schreiben von Dateien wie i18n-Übesetzungen und bei Antworten im Prompt
 - Niemals gendern!
