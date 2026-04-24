@@ -614,15 +614,16 @@ cmd_demo_restart_db() {
 }
 
 # ------ demo-idle-watch ---------------------------------------------------
-# Setzt die Demo-DB zurueck, wenn seit DEMO_INACTIVITY_MINUTES keine
-# HTTP-Anfrage mehr bei Apache eingetroffen ist. One-Shot, gedacht fuer
+# Setzt die Demo-DB zurueck, wenn seit DEMO_INACTIVITY_MINUTES kein echter
+# Benutzer-Request mehr bei Apache eingetroffen ist. One-Shot, gedacht fuer
 # einen Host-Cron-Job alle 2-5 Minuten.
 #
 # Logik:
-#   - mtime des Apache-Access-Logs = Zeitpunkt der letzten Anfrage
+#   - Jüngste Zeile im Access-Log, die NICHT vom Healthcheck (curl/*) stammt,
+#     liefert den Zeitpunkt der letzten echten Benutzeraktivitaet.
 #   - Reset passiert genau einmal pro Idle-Phase: nach dem Reset wird eine
 #     Marker-Datei angelegt; der naechste Reset setzt neue Aktivitaet
-#     (access_mtime > marker_mtime) voraus.
+#     (last_user_ts > marker_mtime) voraus.
 #
 # Nutzung im Cron (Host, root oder User in docker-Gruppe):
 #   */3 * * * * /pfad/zu/opensource-erp/scripts/docker.sh demo-idle-watch >>/var/log/oserp-demo-watch.log 2>&1
@@ -642,23 +643,45 @@ cmd_demo_idle_watch() {
         exit 0
     fi
 
-    # mtime der aktuelleren Log-Datei (HTTP oder HTTPS) ermitteln.
-    # Fallback auf 0, falls Datei fehlt (noch kein Request seit Start).
-    local http_mtime ssl_mtime access_mtime
-    http_mtime=$(docker exec "$WEB_CONTAINER" \
-        stat -c %Y /var/log/apache2/oserp_access.log 2>/dev/null || echo 0)
-    ssl_mtime=$(docker exec "$WEB_CONTAINER" \
-        stat -c %Y /var/log/apache2/oserp_ssl_access.log 2>/dev/null || echo 0)
-    access_mtime=$(( http_mtime > ssl_mtime ? http_mtime : ssl_mtime ))
+    # Letzte Zeile aus HTTP- und HTTPS-Log holen, die kein curl-Healthcheck ist.
+    # Existierende Logs werden per sh -c im Container ausgewertet; fehlende Dateien
+    # werden via '|| true' toleriert.
+    local last_line
+    last_line=$(docker exec "$WEB_CONTAINER" sh -c '
+        for f in /var/log/apache2/oserp_access.log /var/log/apache2/oserp_ssl_access.log; do
+            [ -r "$f" ] && grep -v "\"curl/" "$f" 2>/dev/null | tail -1
+        done | tail -1
+    ' 2>/dev/null || true)
 
-    if [[ "$access_mtime" -eq 0 ]]; then
-        info "Keine Access-Logs vorhanden - noch keine Aktivitaet. Kein Reset."
+    if [[ -z "$last_line" ]]; then
+        info "Noch keine echte Benutzeraktivitaet im Access-Log - kein Reset."
         exit 0
     fi
 
-    local now
+    # Apache-Timestamp aus Zeile extrahieren: [24/Apr/2026:13:59:27 +0200]
+    local day mon year hh mm ss tz last_ts
+    if [[ "$last_line" =~ \[([0-9]{2})/([A-Za-z]{3})/([0-9]{4}):([0-9]{2}):([0-9]{2}):([0-9]{2})[[:space:]]([+-][0-9]{4})\] ]]; then
+        day="${BASH_REMATCH[1]}"
+        mon="${BASH_REMATCH[2]}"
+        year="${BASH_REMATCH[3]}"
+        hh="${BASH_REMATCH[4]}"
+        mm="${BASH_REMATCH[5]}"
+        ss="${BASH_REMATCH[6]}"
+        tz="${BASH_REMATCH[7]}"
+        last_ts=$(date -d "$day $mon $year $hh:$mm:$ss $tz" +%s 2>/dev/null || echo 0)
+    else
+        warn "Konnte Timestamp aus Access-Log nicht parsen - kein Reset."
+        exit 0
+    fi
+
+    if [[ "$last_ts" -eq 0 ]]; then
+        warn "Timestamp-Umwandlung fehlgeschlagen - kein Reset."
+        exit 0
+    fi
+
+    local now idle
     now=$(date +%s)
-    local idle=$(( now - access_mtime ))
+    idle=$(( now - last_ts ))
 
     # Marker-Datei verhindert wiederholte Resets waehrend durchgehender Idle-Phase
     local marker="$PROJECT_ROOT/docker/.demo-last-reset"
@@ -670,7 +693,7 @@ cmd_demo_idle_watch() {
         exit 0
     fi
 
-    if (( access_mtime <= marker_mtime )); then
+    if (( last_ts <= marker_mtime )); then
         info "Bereits zurueckgesetzt (keine neue Aktivitaet seit letztem Reset)."
         exit 0
     fi
