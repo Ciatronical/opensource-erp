@@ -280,13 +280,13 @@ function generatePDF($data) {
         return;
     }
 
-    // Template automatisch erkennen wenn nicht angegeben
-    if (!$templateName) {
-        $templateName = detectTemplate($fakturaType, $vars, $lxCars);
-    }
-
     // Template Engine konfigurieren -- Set-spezifisches Verzeichnis
     $templateDir = getTemplateDir($templateSet);
+
+    // Template automatisch erkennen wenn nicht angegeben
+    if (!$templateName) {
+        $templateName = detectTemplate($fakturaType, $vars, $lxCars, $templateDir);
+    }
     $engine = new LaTeXTemplateEngine($templateDir);
     $engine->setVariables($vars['variables']);
     $engine->setArrays($vars['arrays']);
@@ -365,12 +365,11 @@ function printToPrinter($data) {
         return;
     }
 
-    if (!$templateName) {
-        $templateName = detectTemplate($fakturaType, $vars, $lxCars);
-    }
-
     // PDF generieren -- Set-spezifisches Verzeichnis
     $templateDir = getTemplateDir($templateSet);
+    if (!$templateName) {
+        $templateName = detectTemplate($fakturaType, $vars, $lxCars, $templateDir);
+    }
     $engine = new LaTeXTemplateEngine($templateDir);
     $engine->setVariables($vars['variables']);
     $engine->setArrays($vars['arrays']);
@@ -445,9 +444,15 @@ function isLxCarsEnabled($db): bool {
  *
  * Mappt interne fakturaType-Bezeichnungen auf Kivitendo-kompatible Dateinamen.
  */
-function detectTemplate(string $fakturaType, array $vars, bool $lxCarsEnabled = false): string {
+function detectTemplate(string $fakturaType, array $vars, bool $lxCarsEnabled = false, ?string $templateDir = null): string {
+    $isStorno = !empty($vars['variables']['is_storno']);
+
     switch ($fakturaType) {
         case 'invoice':
+            // Storno: bevorzugt storno_invoice.tex (kivitendo-kompatibel), Fallback invoice.tex
+            if ($isStorno && $templateDir && is_file($templateDir.'/storno_invoice.tex')) {
+                return 'storno_invoice.tex';
+            }
             return 'invoice.tex';
 
         case 'order':
@@ -483,6 +488,7 @@ function detectTemplate(string $fakturaType, array $vars, bool $lxCarsEnabled = 
 function mapFormname(string $fakturaType): string {
     $map = [
         'invoice'                   => 'invoice',
+        'invoice_storno'            => 'storno_invoice',
         'order'                     => 'sales_order',
         'quotation'                 => 'sales_quotation',
         'delivery_order'            => 'sales_delivery_order',
@@ -515,7 +521,7 @@ function loadPrintData($db, int $fakturaID, string $fakturaType, bool $lxCarsEna
     $headQuery = "
         SELECT
             m.id,
-            " . (($isInvoice || $isCreditNote) ? "m.invnumber," : "") . "
+            " . (($isInvoice || $isCreditNote) ? "m.invnumber, m.storno, m.storno_id, m.invnumber_for_credit_note, m.type AS ar_type," : "") . "
             m.ordnumber,
             m.quonumber,
             m.transdate,
@@ -716,7 +722,12 @@ function loadPrintData($db, int $fakturaID, string $fakturaType, bool $lxCarsEna
         return number_format(floatval($value), 2, ',', '.');
     };
 
-    $formname = mapFormname($fakturaType);
+    $isStorno = ($isInvoice || $isCreditNote)
+        && (($head['storno'] ?? false) === true
+            || ($head['storno'] ?? false) === 't'
+            || ($head['ar_type'] ?? '') === 'invoice_storno');
+
+    $formname = mapFormname($isStorno ? 'invoice_storno' : $fakturaType);
 
     $variables = [
         // Sprache/Waehrung
@@ -731,6 +742,13 @@ function loadPrintData($db, int $fakturaID, string $fakturaType, bool $lxCarsEna
             'formname' => $formname,
         ],
         'formname'        => $formname,
+
+        // Dokument-Typ-Flags (kivitendo-kompatibel)
+        'storno'          => $isStorno ? '1' : '',
+        'is_storno'       => $isStorno ? '1' : '',
+        'is_credit_note'  => $isCreditNote ? '1' : '',
+        'is_invoice'      => ($isInvoice && !$isStorno) ? '1' : '',
+        'invnumber_for_credit_note' => $head['invnumber_for_credit_note'] ?? '',
 
         // Belegnummern und Daten
         'invnumber'       => $head['invnumber'] ?? '',
@@ -916,8 +934,12 @@ function buildFilename(array $head, string $fakturaType): string {
         'credit_note'   => 'Gutschrift',
         'purchase_order' => 'Bestellung',
     ];
+    $isStorno = $fakturaType === 'invoice'
+        && (($head['storno'] ?? false) === true
+            || ($head['storno'] ?? false) === 't'
+            || ($head['ar_type'] ?? '') === 'invoice_storno');
     $parts = [];
-    $parts[] = $typeNames[$fakturaType] ?? 'Dokument';
+    $parts[] = $isStorno ? 'Storno' : ($typeNames[$fakturaType] ?? 'Dokument');
     if ($fakturaType === 'invoice' || $fakturaType === 'credit_note') {
         $parts[] = $head['invnumber'] ?? '';
     } elseif ($fakturaType === 'quotation') {

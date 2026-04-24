@@ -97,8 +97,22 @@ export function useBanking() {
     const tanChallenge = reactive({
         challenge: '',
         tanMedium: '',
-        challengeHhduc: null
+        challengeHhduc: null,
+        decoupled: false,
+        message: ''
     })
+
+    async function fetchFintsUrlByBlz(bankCode) {
+        if (!bankCode) return null
+        const response = await axios.post(API_URL, {
+            action: 'getFintsUrlByBlz',
+            bank_code: bankCode
+        })
+        if (response.data.success) {
+            return response.data.payload
+        }
+        return null
+    }
 
     async function fetchFintsConfig(bankAccountId) {
         const response = await axios.post(API_URL, {
@@ -154,6 +168,8 @@ export function useBanking() {
                     tanChallenge.challenge = payload.challenge
                     tanChallenge.tanMedium = payload.tan_medium
                     tanChallenge.challengeHhduc = payload.challenge_hhduc
+                    tanChallenge.decoupled = !!payload.decoupled
+                    tanChallenge.message = payload.message || ''
                     return { tanRequired: true }
                 }
                 return {
@@ -180,9 +196,18 @@ export function useBanking() {
                 pin: pin
             })
 
-            tanRequired.value = false
-
             if (response.data.success) {
+                // Decoupled: Bank meldet "noch nicht bestaetigt" — Dialog offen lassen
+                if (response.data.text === 'TAN_REQUIRED') {
+                    const payload = response.data.payload
+                    tanChallenge.challenge = payload.challenge
+                    tanChallenge.tanMedium = payload.tan_medium
+                    tanChallenge.challengeHhduc = payload.challenge_hhduc
+                    tanChallenge.decoupled = !!payload.decoupled
+                    tanChallenge.message = payload.message || ''
+                    return { tanRequired: true }
+                }
+                tanRequired.value = false
                 return {
                     importedCount: response.data.payload?.imported_count || 0
                 }
@@ -228,6 +253,7 @@ export function useBanking() {
         setTransactionStatus,
 
         // FinTS
+        fetchFintsUrlByBlz,
         fetchFintsConfig,
         saveFintsConfig,
         deleteFintsConfig,

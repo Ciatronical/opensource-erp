@@ -102,7 +102,7 @@ function generateEInvoice($data) {
 
     $templateSet = getTemplateSet($db);
     $templateDir = getTemplateDir($templateSet);
-    $templateName = detectTemplate('invoice', $vars, $lxCars);
+    $templateName = detectTemplate('invoice', $vars, $lxCars, $templateDir);
 
     $engine = new LaTeXTemplateEngine($templateDir);
     $engine->setVariables($vars['variables']);
@@ -117,13 +117,29 @@ function generateEInvoice($data) {
         return;
     }
 
+    $flatPdfPath = $pdfPath . '.flat.pdf';
+    $gsCmd = sprintf(
+        'gs -dBATCH -dNOPAUSE -dQUIET -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/prepress -sOutputFile=%s %s 2>&1',
+        escapeshellarg($flatPdfPath),
+        escapeshellarg($pdfPath)
+    );
+    exec($gsCmd, $gsOut, $gsRc);
+    if ($gsRc !== 0 || !is_file($flatPdfPath)) {
+        $engine->cleanup($pdfPath);
+        resultInfo(false, 'EINVOICE_MERGE_ERROR', [
+            'message' => 'Ghostscript-Konvertierung fehlgeschlagen: ' . implode("\n", $gsOut),
+        ]);
+        return;
+    }
+
     try {
-        $pdfBuilder = ZugferdDocumentPdfBuilder::fromPdfFile($doc, $pdfPath);
+        $pdfBuilder = ZugferdDocumentPdfBuilder::fromPdfFile($doc, $flatPdfPath);
         $pdfBuilder->setAdditionalCreatorTool('opensource-erp');
         $pdfBuilder->generateDocument();
         $mergedPdf = $pdfBuilder->downloadString();
     } catch (\Throwable $e) {
         $engine->cleanup($pdfPath);
+        @unlink($flatPdfPath);
         resultInfo(false, 'EINVOICE_MERGE_ERROR', [
             'message' => $e->getMessage(),
         ]);
@@ -131,6 +147,7 @@ function generateEInvoice($data) {
     }
 
     $engine->cleanup($pdfPath);
+    @unlink($flatPdfPath);
 
     resultInfo(true, 'OK', [
         'format'   => 'factur-x',
@@ -251,7 +268,7 @@ function loadEInvoiceData($db, int $fakturaID): ?array {
             ),
             'bank', (
                 SELECT row_to_json(b) FROM (
-                    SELECT iban, bic, depositor, name
+                    SELECT iban, bic, name, bank
                     FROM bank_accounts
                     WHERE use_for_zugferd = true
                     ORDER BY id ASC

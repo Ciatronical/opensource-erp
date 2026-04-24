@@ -300,6 +300,8 @@
     "fintsProductIdHelp": "Die ID wird im HKVVB-Segment gegenüber den Banksystemen übertragen. Ohne Eintrag lässt sich FinTS nur im Entwicklungs-/Testmodus nutzen. Nach Antragstellung dauert es mehrere Werktage, bis die ID in den Banksystemen aktiv ist.",
     "fintsProductIdForm": "Formular",
     "fintsProductIdRegister": "Registrierung",
+    "fintsDebugLabel": "FinTS-Debug-Logging aktivieren",
+    "fintsDebugHelp": "Protokolliert die komplette FinTS-Kommunikation mit der Bank (gesendete/empfangene Segmente) in backend/log/opensource_erp.api.debug.log. Hilfreich zur Fehlersuche bei FinTS-Problemen — aber PIN/TAN werden dabei ebenfalls im Klartext ins Log geschrieben. Nur temporär zum Debuggen einschalten.",
     "crm": "CRM",
     "lxcars": "LxCars",
     "crm.externDatabase": "Externe Datenbanken",

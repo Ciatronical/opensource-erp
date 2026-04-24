@@ -129,6 +129,36 @@ function getCV($data, $withConfig = []) {
         ? "SELECT il.description FROM oe_instructions_lxcars il WHERE il.oe_id = oe.id ORDER BY il.sort_order, il.id LIMIT 1"
         : "SELECT oi.description FROM orderitems oi WHERE oi.trans_id = oe.id ORDER BY oi.position LIMIT 1";
 
+    $deliveryOrderType  = $isVendor ? 'purchase_delivery_order' : 'sales_delivery_order';
+    $reclamationType    = $isVendor ? 'purchase_reclamation'    : 'sales_reclamation';
+
+    // LxCars: Kennzeichen des Fahrzeugs ueber record_links auf den referenzierten
+    // Auftrag/Rechnung aufloesen. Ohne LxCars leeren String liefern (Spalte wird
+    // dann im Frontend ausgeblendet).
+    $kennzeichenForReclamation = $lxCars
+        ? "COALESCE(
+              (SELECT oe_ext.kennzeichen FROM oe_ext
+               JOIN record_links rl ON rl.from_table = 'oe' AND rl.from_id = oe_ext.oe_id
+               WHERE rl.to_table = 'reclamations' AND rl.to_id = rec.id
+               LIMIT 1),
+              (SELECT car.c_ln FROM cars_lxcars car
+               JOIN ar_ext ON ar_ext.c_id = car.c_id
+               JOIN record_links rl ON rl.from_table = 'ar' AND rl.from_id = ar_ext.ar_id
+               WHERE rl.to_table = 'reclamations' AND rl.to_id = rec.id
+               LIMIT 1),
+              ''
+          )"
+        : "''";
+    $kennzeichenForDeliveryOrder = $lxCars
+        ? "COALESCE(
+              (SELECT oe_ext.kennzeichen FROM oe_ext
+               JOIN record_links rl ON rl.from_table = 'oe' AND rl.from_id = oe_ext.oe_id
+               WHERE rl.to_table = 'delivery_orders' AND rl.to_id = dlo.id
+               LIMIT 1),
+              ''
+          )"
+        : "''";
+
     $auth = DbhAuth::begin();
     $auth->fetchSessionData();
     $query = <<<SQL
@@ -483,7 +513,9 @@ function getCV($data, $withConfig = []) {
                                                 'amount', inv.amount,
                                                 'currency', c.name,
                                                 'number', inv.invnumber,
-                                                'id', inv.id
+                                                'id', inv.id,
+                                                'type', inv.type,
+                                                'storno', inv.storno
                                             ) AS obj
                                         FROM {$invoiceTable} inv
                                         LEFT JOIN currencies c ON c.id = inv.currency_id
@@ -495,6 +527,64 @@ function getCV($data, $withConfig = []) {
                                             LIMIT 1
                                         ) AS firstpos ON TRUE
                                         WHERE {$invoiceForeignKey} = $cv_id
+                                    ) AS t
+                                ),
+                            'delivery_orders',
+                                (
+                                    SELECT json_agg(obj ORDER BY hdr_id DESC)
+                                    FROM (
+                                        SELECT
+                                            dlo.id AS hdr_id,
+                                            json_build_object(
+                                                'date', to_char(dlo.transdate, 'DD.MM.YYYY'),
+                                                'description', COALESCE(firstpos.description, '---------'),
+                                                'number', dlo.donumber,
+                                                'ordnumber', dlo.ordnumber,
+                                                'closed', dlo.closed,
+                                                'delivered', dlo.delivered,
+                                                'id', dlo.id,
+                                                'license_plate', {$kennzeichenForDeliveryOrder}
+                                            ) AS obj
+                                        FROM delivery_orders dlo
+                                        LEFT JOIN LATERAL (
+                                            SELECT doi.description, doi.position
+                                            FROM delivery_order_items doi
+                                            WHERE doi.delivery_order_id = dlo.id
+                                            ORDER BY doi.position
+                                            LIMIT 1
+                                        ) AS firstpos ON TRUE
+                                        WHERE dlo.{$cvForeignKey} = $cv_id
+                                          AND dlo.record_type = '{$deliveryOrderType}'
+                                    ) AS t
+                                ),
+                            'reclamations',
+                                (
+                                    SELECT json_agg(obj ORDER BY hdr_id DESC)
+                                    FROM (
+                                        SELECT
+                                            rec.id AS hdr_id,
+                                            json_build_object(
+                                                'date', to_char(rec.transdate, 'DD.MM.YYYY'),
+                                                'description', COALESCE(firstpos.description, '---------'),
+                                                'amount', rec.amount,
+                                                'currency', c.name,
+                                                'number', rec.record_number,
+                                                'closed', rec.closed,
+                                                'delivered', rec.delivered,
+                                                'id', rec.id,
+                                                'license_plate', {$kennzeichenForReclamation}
+                                            ) AS obj
+                                        FROM reclamations rec
+                                        LEFT JOIN currencies c ON c.id = rec.currency_id
+                                        LEFT JOIN LATERAL (
+                                            SELECT ri.description, ri.position
+                                            FROM reclamation_items ri
+                                            WHERE ri.reclamation_id = rec.id
+                                            ORDER BY ri.position
+                                            LIMIT 1
+                                        ) AS firstpos ON TRUE
+                                        WHERE rec.{$cvForeignKey} = $cv_id
+                                          AND rec.record_type = '{$reclamationType}'
                                     ) AS t
                                 ),
                             'contacts',

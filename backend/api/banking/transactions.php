@@ -50,8 +50,8 @@ function getBankTransactions($data) {
         $params['to_date'] = $toDate;
     }
 
-    // Umsaetze laden
-    $result = $db->getAll(<<<SQL
+    // Umsaetze laden (getOne, weil json_agg nur eine Zeile liefert)
+    $result = $db->getOne(<<<SQL
         SELECT json_agg(row_to_json(t)) as transactions
         FROM (
             SELECT
@@ -61,15 +61,10 @@ function getBankTransactions($data) {
                 bt.amount,
                 bt.remote_name,
                 bt.remote_iban,
-                bt.remote_bic,
                 bt.remote_bank_code,
                 bt.remote_account_number,
                 bt.purpose,
-                bt.primanota,
-                bt.booking_key,
                 bt.end_to_end_id,
-                bt.mandate_reference,
-                bt.creditor_id,
                 bt.match_status,
                 bt.cleared,
                 bt.transaction_code,

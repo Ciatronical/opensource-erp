@@ -99,16 +99,37 @@
                     </template>
                 </v-text-field>
             </v-col>
+
+            <v-col cols="12">
+                <v-checkbox
+                    v-if="crmDefaults"
+                    v-model="fintsDebugEnabled"
+                    :label="$t('fintsDebugLabel')"
+                    density="compact"
+                    hide-details
+                    data-field-name="fints_debug"
+                >
+                    <template #append>
+                        <v-tooltip location="top" max-width="420">
+                            <template #activator="{ props }">
+                                <v-icon v-bind="props" size="small">mdi-help-circle-outline</v-icon>
+                            </template>
+                            {{ $t('fintsDebugHelp') }}
+                        </v-tooltip>
+                    </template>
+                </v-checkbox>
+            </v-col>
         </v-row>
     </div>
 </template>
 
 <script setup>
+import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
 
-defineProps({
+const props = defineProps({
     defaults: {
         type: Object,
         required: true
@@ -123,4 +144,19 @@ const yesNoOptions = [
     { title: t('yes'), value: true },
     { title: t('no'), value: false }
 ];
+
+// Checkbox-Binding mit DB-Format-Normalisierung (analog zu
+// normalizeCrmDefaults() in crm-defaults.tab.vue). PostgreSQL speichert
+// Booleans als 't'/'f' — daher robust gegen alle bekannten Repraesentationen.
+// Setter schreibt direkt auf crmDefaults, der deep watcher in
+// client-defaults.view.vue triggert dann den automatischen Save nach defaults_oserp.
+const fintsDebugEnabled = computed({
+    get() {
+        const v = props.crmDefaults?.fints_debug;
+        return v === true || v === 'true' || v === 't' || v === '1' || v === 1;
+    },
+    set(val) {
+        if (props.crmDefaults) props.crmDefaults.fints_debug = val;
+    }
+});
 </script>

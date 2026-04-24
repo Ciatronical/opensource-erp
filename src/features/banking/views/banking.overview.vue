@@ -96,6 +96,16 @@
                         <v-spacer />
 
                         <v-btn
+                            variant="tonal"
+                            color="secondary"
+                            size="small"
+                            @click="openFintsSetup(account)"
+                        >
+                            <v-icon start>mdi-cog</v-icon>
+                            {{ account.fints_id ? t('BankingView.overview.editFints') : t('BankingView.overview.setupFints') }}
+                        </v-btn>
+
+                        <v-btn
                             v-if="account.fints_id"
                             variant="tonal"
                             color="primary"
@@ -104,17 +114,6 @@
                         >
                             <v-icon start>mdi-sync</v-icon>
                             {{ t('BankingView.overview.syncButton') }}
-                        </v-btn>
-
-                        <v-btn
-                            v-else
-                            variant="tonal"
-                            color="secondary"
-                            size="small"
-                            @click="openFintsSetup(account)"
-                        >
-                            <v-icon start>mdi-cog</v-icon>
-                            {{ t('BankingView.overview.setupFints') }}
                         </v-btn>
                     </v-card-actions>
                 </v-card>
@@ -127,15 +126,16 @@
                 <v-card-title>{{ t('BankingView.fints.title') }}</v-card-title>
                 <v-card-text>
                     <v-text-field
-                        v-model="fintsForm.fints_url"
-                        :label="t('BankingView.fints.url')"
-                        :hint="t('BankingView.fints.urlHint')"
-                        persistent-hint
-                        class="mb-3"
-                    />
-                    <v-text-field
                         v-model="fintsForm.fints_bank_code"
                         :label="t('BankingView.fints.bankCode')"
+                        class="mb-3"
+                        @update:model-value="onBankCodeChange"
+                    />
+                    <v-text-field
+                        v-model="fintsForm.fints_url"
+                        :label="t('BankingView.fints.url')"
+                        :hint="fintsBankName ? t('BankingView.fints.urlAutodetected', { bank: fintsBankName }) : t('BankingView.fints.urlHint')"
+                        persistent-hint
                         class="mb-3"
                     />
                     <v-text-field
@@ -143,9 +143,13 @@
                         :label="t('BankingView.fints.username')"
                         class="mb-3"
                     />
-                    <v-text-field
+                    <v-select
                         v-model="fintsForm.fints_tan_mode"
                         :label="t('BankingView.fints.tanMode')"
+                        :items="tanModeOptions"
+                        :hint="t('BankingView.fints.tanModeHint')"
+                        persistent-hint
+                        clearable
                         class="mb-3"
                     />
                     <v-text-field
@@ -192,24 +196,14 @@
                         class="mb-3"
                         @keyup.enter="startSync"
                     />
-                    <v-row dense>
-                        <v-col cols="6">
-                            <v-text-field
-                                v-model="syncFromDate"
-                                :label="t('BankingView.sync.fromDate')"
-                                type="date"
-                                density="compact"
-                            />
-                        </v-col>
-                        <v-col cols="6">
-                            <v-text-field
-                                v-model="syncToDate"
-                                :label="t('BankingView.sync.toDate')"
-                                type="date"
-                                density="compact"
-                            />
-                        </v-col>
-                    </v-row>
+                    <v-checkbox
+                        v-model="rememberPin"
+                        :label="t('BankingView.sync.rememberPin')"
+                        :hint="t('BankingView.sync.rememberPinHint')"
+                        persistent-hint
+                        density="compact"
+                        hide-details="auto"
+                    />
                 </v-card-text>
                 <v-card-actions>
                     <v-spacer />
@@ -241,7 +235,12 @@
                         <div class="text-caption text-medium-emphasis">{{ t('BankingView.tan.challenge') }}</div>
                         <div class="text-body-1">{{ banking.tanChallenge.challenge }}</div>
                     </div>
+                    <!-- Decoupled (pushTAN 2.0 etc.): Bank sendet Freigabe-Request in die App, keine TAN einzugeben -->
+                    <v-alert v-if="banking.tanChallenge.decoupled" type="info" variant="tonal" density="compact" class="mb-0">
+                        {{ banking.tanChallenge.message || t('BankingView.tan.decoupledHint') }}
+                    </v-alert>
                     <v-text-field
+                        v-else
                         v-model="tanInput"
                         :label="t('BankingView.tan.tanInput')"
                         type="text"
@@ -261,7 +260,7 @@
                         :loading="banking.loading.value"
                         @click="submitTanAction"
                     >
-                        {{ t('BankingView.tan.submit') }}
+                        {{ banking.tanChallenge.decoupled ? t('BankingView.tan.continue') : t('BankingView.tan.submit') }}
                     </v-btn>
                 </v-card-actions>
             </v-card>
@@ -275,7 +274,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, reactive } from 'vue'
+import { ref, onMounted, reactive, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { useBanking } from '../composables/useBanking.js'
@@ -299,13 +298,42 @@ const fintsForm = reactive({
     sync_from_date: '',
     existing: false
 })
+const fintsBankName = ref('')
+
+// Standard-FinTS-TAN-Verfahren (siehe HITANS-Segment in der FinTS-Spezifikation)
+const tanModeOptions = [
+    { value: '900', title: '900 — iTAN' },
+    { value: '910', title: '910 — chipTAN manuell' },
+    { value: '911', title: '911 — chipTAN optisch (Flicker)' },
+    { value: '912', title: '912 — chipTAN USB' },
+    { value: '913', title: '913 — chipTAN QR' },
+    { value: '920', title: '920 — smsTAN' },
+    { value: '921', title: '921 — pushTAN' },
+    { value: '942', title: '942 — mobileTAN / smartTAN' }
+]
 
 // Sync
 const showSyncDialog = ref(false)
 const syncAccount = ref(null)
 const syncPin = ref('')
-const syncFromDate = ref('')
-const syncToDate = ref('')
+const rememberPin = ref(true)
+
+// PIN-Cache im sessionStorage: lebt solange der Browser offen ist, wird beim
+// Browser-Neustart geleert. Kein Server-Speicher — jeder Browser/Benutzer hat
+// seinen eigenen Cache.
+const PIN_CACHE_PREFIX = 'fints_pin_'
+function getStoredPin(accountId) {
+    try { return sessionStorage.getItem(PIN_CACHE_PREFIX + accountId) || '' }
+    catch { return '' }
+}
+function storePin(accountId, pin) {
+    try { sessionStorage.setItem(PIN_CACHE_PREFIX + accountId, pin) }
+    catch { /* sessionStorage nicht verfuegbar */ }
+}
+function clearStoredPin(accountId) {
+    try { sessionStorage.removeItem(PIN_CACHE_PREFIX + accountId) }
+    catch { /* ignore */ }
+}
 
 // TAN
 const showTanDialog = ref(false)
@@ -346,6 +374,7 @@ async function openFintsSetup(account) {
     fintsForm.fints_tan_mode = ''
     fintsForm.sync_from_date = ''
     fintsForm.existing = false
+    fintsBankName.value = ''
 
     // Versuche bestehende Config zu laden
     const config = await banking.fetchFintsConfig(account.id)
@@ -358,7 +387,29 @@ async function openFintsSetup(account) {
         fintsForm.existing = true
     }
 
+    // URL automatisch aus BLZ vorbefuellen, wenn noch nicht gesetzt
+    if (!fintsForm.fints_url && fintsForm.fints_bank_code) {
+        await autofillFintsUrl(fintsForm.fints_bank_code)
+    }
+
     showFintsDialog.value = true
+}
+
+async function autofillFintsUrl(bankCode) {
+    const info = await banking.fetchFintsUrlByBlz(bankCode)
+    if (info?.url) {
+        fintsForm.fints_url = info.url
+        fintsBankName.value = info.name || ''
+    } else {
+        fintsBankName.value = ''
+    }
+}
+
+function onBankCodeChange(newBlz) {
+    // Nur befuellen wenn URL-Feld leer ist — User-Eingaben nicht ueberschreiben
+    if (!fintsForm.fints_url && newBlz) {
+        autofillFintsUrl(newBlz)
+    }
 }
 
 async function saveFintsSetup() {
@@ -385,9 +436,16 @@ async function removeFintsConfig() {
 
 function openSyncDialog(account) {
     syncAccount.value = account
+    const cached = getStoredPin(account.id)
+    if (cached) {
+        // PIN aus Session-Cache — direkt starten, kein Dialog
+        syncPin.value = cached
+        rememberPin.value = true
+        runSync()
+        return
+    }
     syncPin.value = ''
-    syncFromDate.value = ''
-    syncToDate.value = ''
+    rememberPin.value = true
     showSyncDialog.value = true
 }
 
@@ -396,22 +454,29 @@ function closeSyncDialog() {
     showSyncDialog.value = false
 }
 
-async function startSync() {
+// Eigentliche Sync-Logik — nutzt den aktuellen syncPin.value
+async function runSync() {
     if (!syncPin.value) return
-
     try {
         const result = await banking.syncTransactions(
             syncAccount.value.id,
             syncPin.value,
-            syncFromDate.value || null,
-            syncToDate.value || null
+            null, // from_date: Backend nutzt letzter Sync / -30 Tage
+            null  // to_date:   Backend nutzt heute
         )
 
         if (result.tanRequired) {
             showSyncDialog.value = false
             tanInput.value = ''
             showTanDialog.value = true
+            if (banking.tanChallenge.decoupled) {
+                startDecoupledPolling()
+            }
         } else {
+            // PIN war korrekt — falls gewuenscht, in Session-Cache legen
+            if (rememberPin.value) {
+                storePin(syncAccount.value.id, syncPin.value)
+            }
             syncPin.value = ''
             showSyncDialog.value = false
             if (result.importedCount > 0) {
@@ -422,15 +487,86 @@ async function startSync() {
             await banking.fetchAccounts()
         }
     } catch (e) {
+        // Bei Fehler gespeicherten PIN loeschen (moeglicherweise falsch/veraltet)
+        clearStoredPin(syncAccount.value.id)
         alerts.error(e.message)
     }
 }
 
+function startSync() {
+    return runSync()
+}
+
+let decoupledPollTimer = null
+
+function stopDecoupledPolling() {
+    if (decoupledPollTimer) {
+        clearTimeout(decoupledPollTimer)
+        decoupledPollTimer = null
+    }
+}
+
+// Pollt alle 2 Sekunden ob die Bank-App die Freigabe schon bestaetigt hat.
+// Stoppt bei Erfolg, Fehler oder wenn der Dialog geschlossen wird.
+function startDecoupledPolling() {
+    stopDecoupledPolling()
+    const tick = async () => {
+        if (!showTanDialog.value) { stopDecoupledPolling(); return }
+        try {
+            const result = await banking.submitTan(syncAccount.value.id, '', syncPin.value)
+            if (result.tanRequired) {
+                // Noch nicht bestaetigt — in 2s erneut probieren
+                decoupledPollTimer = setTimeout(tick, 2000)
+                return
+            }
+            // Fertig — PIN bei Erfolg cachen, Dialog schliessen
+            stopDecoupledPolling()
+            if (rememberPin.value) {
+                storePin(syncAccount.value.id, syncPin.value)
+            }
+            showTanDialog.value = false
+            syncPin.value = ''
+            tanInput.value = ''
+            if (result.importedCount > 0) {
+                alerts.success(t('BankingView.alerts.syncSuccess', { count: result.importedCount }))
+            } else {
+                alerts.info(t('BankingView.alerts.syncNoNew'))
+            }
+            await banking.fetchAccounts()
+        } catch (e) {
+            stopDecoupledPolling()
+            alerts.error(e.message)
+        }
+    }
+    decoupledPollTimer = setTimeout(tick, 2000)
+}
+
+// Dialog-Close stoppt das Polling
+watch(showTanDialog, (v) => { if (!v) stopDecoupledPolling() })
+
 async function submitTanAction() {
-    if (!tanInput.value) return
+    // Bei decoupled (pushTAN 2.0) wird kein TAN eingegeben, sondern die
+    // Freigabe in der Banking-App gemacht — hier nur "Fortfahren"
+    const isDecoupled = banking.tanChallenge.decoupled
+    if (!isDecoupled && !tanInput.value) return
+    stopDecoupledPolling()
 
     try {
-        const result = await banking.submitTan(syncAccount.value.id, tanInput.value, syncPin.value)
+        const result = await banking.submitTan(
+            syncAccount.value.id,
+            isDecoupled ? '' : tanInput.value,
+            syncPin.value
+        )
+
+        // Decoupled: wenn Bank "noch nicht bestaetigt" meldet, Polling neu starten
+        if (result.tanRequired) {
+            if (isDecoupled) startDecoupledPolling()
+            return
+        }
+
+        if (rememberPin.value) {
+            storePin(syncAccount.value.id, syncPin.value)
+        }
         showTanDialog.value = false
         syncPin.value = ''
         tanInput.value = ''

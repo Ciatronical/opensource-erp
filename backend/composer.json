@@ -4,7 +4,8 @@
     "type": "project",
     "require": {
         "php": ">=8.1",
-        "horstoeko/zugferd": "^1.0"
+        "horstoeko/zugferd": "^1.0",
+        "nemiah/php-fints": "^3.1"
     },
     "config": {
         "vendor-dir": "vendor",

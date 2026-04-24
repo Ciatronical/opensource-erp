@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "441ab5a7a52f1f5538df008cc6dcfa29",
+    "content-hash": "df9111433fd59ffd7af734d401788297",
     "packages": [
         {
             "name": "doctrine/instantiator",
@@ -565,6 +565,55 @@
             "time": "2026-03-11T20:11:17+00:00"
         },
         {
+            "name": "nemiah/php-fints",
+            "version": "3.7.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/nemiah/phpFinTS.git",
+                "reference": "08257e10229db2d4ca8c54ed7fec0f390b332519"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/nemiah/phpFinTS/zipball/08257e10229db2d4ca8c54ed7fec0f390b332519",
+                "reference": "08257e10229db2d4ca8c54ed7fec0f390b332519",
+                "shasum": ""
+            },
+            "require": {
+                "ext-curl": "*",
+                "ext-mbstring": "*",
+                "php": ">=8.0",
+                "psr/log": "^1|^2|^3"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "^3.0",
+                "php-mock/php-mock-phpunit": "^2.6",
+                "phpunit/phpunit": "^9.5"
+            },
+            "suggest": {
+                "abcaeffchen/sephpa": "1.*",
+                "monolog/monolog": "Allow sending log messages to a variety of different handlers",
+                "nemiah/php-sepa-xml": "dev-master"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Fhp": "lib/",
+                    "Tests\\Fhp": "lib/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "PHP Library for the protocols fints and hbci",
+            "homepage": "https://github.com/nemiah/phpFinTS",
+            "support": {
+                "issues": "https://github.com/nemiah/phpFinTS/issues",
+                "source": "https://github.com/nemiah/phpFinTS/tree/3.7"
+            },
+            "time": "2025-10-14T15:05:56+00:00"
+        },
+        {
             "name": "phpstan/phpdoc-parser",
             "version": "2.3.2",
             "source": {
@@ -610,6 +659,56 @@
                 "source": "https://github.com/phpstan/phpdoc-parser/tree/2.3.2"
             },
             "time": "2026-01-25T14:56:51+00:00"
+        },
+        {
+            "name": "psr/log",
+            "version": "3.0.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-fig/log.git",
+                "reference": "f16e1d5863e37f8d8c2a01719f5b34baa2b714d3"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-fig/log/zipball/f16e1d5863e37f8d8c2a01719f5b34baa2b714d3",
+                "reference": "f16e1d5863e37f8d8c2a01719f5b34baa2b714d3",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.0.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "3.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Psr\\Log\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "PHP-FIG",
+                    "homepage": "https://www.php-fig.org/"
+                }
+            ],
+            "description": "Common interface for logging libraries",
+            "homepage": "https://github.com/php-fig/log",
+            "keywords": [
+                "log",
+                "psr",
+                "psr-3"
+            ],
+            "support": {
+                "source": "https://github.com/php-fig/log/tree/3.0.2"
+            },
+            "time": "2024-09-11T13:17:53+00:00"
         },
         {
             "name": "setasign/fpdf",
@@ -1487,12 +1586,12 @@
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
         "php": ">=8.1"
     },
-    "platform-dev": {},
-    "plugin-api-version": "2.9.0"
+    "platform-dev": [],
+    "plugin-api-version": "2.2.0"
 }

@@ -9,7 +9,7 @@
 function getBankingOverview($data) {
     $db = DbhCompany::begin();
 
-    $result = $db->getAll(<<<SQL
+    $result = $db->getOne(<<<SQL
         SELECT json_agg(row_to_json(t)) as accounts
         FROM (
             SELECT
@@ -55,6 +55,38 @@ function getBankingOverview($data) {
 
     $accounts = json_decode($result['accounts'] ?? '[]', true) ?: [];
     resultInfo(true, '', ['accounts' => $accounts]);
+}
+
+/**
+ * FinTS-Server-URL fuer eine deutsche Bankleitzahl ermitteln.
+ *
+ * Liest aus backend/api/banking/fints-banks.json (aus hbci4j/blz.properties
+ * generiert, siehe tools/refresh-fints-banks.sh).
+ *
+ * @param string $data['bank_code'] Bankleitzahl (Leerzeichen werden ignoriert)
+ * @testdata {"bank_code": "17054040"}
+ */
+function getFintsUrlByBlz($data) {
+    $blz = preg_replace('/\s+/', '', $data['bank_code'] ?? '');
+    if ($blz === '') {
+        resultInfo(true, '', ['url' => null, 'name' => null]);
+        return;
+    }
+
+    $banksFile = __DIR__ . '/fints-banks.json';
+    $banks = json_decode(@file_get_contents($banksFile), true) ?: [];
+
+    if (isset($banks['exact'][$blz])) {
+        $e = $banks['exact'][$blz];
+        resultInfo(true, '', [
+            'url'  => $e['url'],
+            'name' => $e['name'],
+            'bic'  => $e['bic'] ?? null,
+        ]);
+        return;
+    }
+
+    resultInfo(true, '', ['url' => null, 'name' => null]);
 }
 
 /**

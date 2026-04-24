@@ -69,7 +69,7 @@ class EInvoiceBuilder {
 
         $builder->setDocumentInformation(
             $ar['invnumber'],
-            ZugferdInvoiceType::INVOICE,
+            $this->invoiceTypeCode($ar['type'] ?? 'invoice'),
             $this->toDate($ar['transdate']),
             $ar['currency_code'] ?? ZugferdCurrencyCodes::EURO
         );
@@ -91,7 +91,7 @@ class EInvoiceBuilder {
         if ($bank && !empty($bank['iban'])) {
             $builder->addDocumentPaymentMeanToCreditTransfer(
                 $bank['iban'],
-                $bank['depositor'] ?? $company['company'] ?? null,
+                $bank['name'] ?? $company['company'] ?? null,
                 null,
                 $bank['bic'] ?? null,
                 $ar['invnumber']
@@ -103,9 +103,13 @@ class EInvoiceBuilder {
         $this->buildPositions($builder, $positions);
         $this->buildTaxBreakdown($builder, $taxes);
 
-        $net   = floatval($ar['netamount'] ?? 0);
-        $gross = floatval($ar['amount'] ?? 0);
-        $tax   = $gross - $net;
+        $net = 0.0;
+        $tax = 0.0;
+        foreach ($taxes as $t) {
+            $net += abs(round(floatval($t['basis'] ?? 0), 2));
+            $tax += abs(round(floatval($t['tax_amount'] ?? 0), 2));
+        }
+        $gross = round($net + $tax, 2);
 
         $builder->setDocumentSummation(
             $gross,
@@ -198,8 +202,8 @@ class EInvoiceBuilder {
                 $pos['partnumber'] ?? null
             );
 
-            $qty       = floatval($pos['qty'] ?? 0);
-            $sellprice = floatval($pos['sellprice'] ?? 0);
+            $qty       = abs(floatval($pos['qty'] ?? 0));
+            $sellprice = abs(floatval($pos['sellprice'] ?? 0));
             $discount  = floatval($pos['discount'] ?? 0);
             $unitPrice = $sellprice * (1 - $discount);
             $lineTotal = $qty * $unitPrice;
@@ -212,28 +216,42 @@ class EInvoiceBuilder {
 
             $rate = floatval($pos['tax_rate'] ?? 0) * 100;
             $builder->addDocumentPositionTax(
-                ZugferdVatCategoryCodes::STAN_RATE,
+                $this->vatCategoryForRate($rate),
                 ZugferdVatTypeCodes::VALUE_ADDED_TAX,
                 $rate
             );
 
-            $builder->setDocumentPositionLineSummation($lineTotal);
+            $builder->setDocumentPositionLineSummation(round($lineTotal, 2));
         }
     }
 
     private function buildTaxBreakdown(ZugferdDocumentBuilder $builder, array $taxes): void {
         foreach ($taxes as $t) {
-            $basis     = floatval($t['basis'] ?? 0);
-            $taxAmount = floatval($t['tax_amount'] ?? 0);
+            $basis     = abs(round(floatval($t['basis'] ?? 0), 2));
+            $taxAmount = abs(round(floatval($t['tax_amount'] ?? 0), 2));
             $ratePct   = floatval($t['rate'] ?? 0) * 100;
 
             $builder->addDocumentTax(
-                ZugferdVatCategoryCodes::STAN_RATE,
+                $this->vatCategoryForRate($ratePct),
                 ZugferdVatTypeCodes::VALUE_ADDED_TAX,
                 $basis,
                 $taxAmount,
                 $ratePct
             );
+        }
+    }
+
+    private function vatCategoryForRate(float $ratePct): string {
+        return $ratePct > 0
+            ? ZugferdVatCategoryCodes::STAN_RATE
+            : ZugferdVatCategoryCodes::ZERO_RATE_GOOD;
+    }
+
+    private function invoiceTypeCode(string $arType): string {
+        switch ($arType) {
+            case 'credit_note':    return ZugferdInvoiceType::CREDITNOTE;   // 381
+            case 'invoice_storno': return ZugferdInvoiceType::CORRECTION;   // 384
+            default:               return ZugferdInvoiceType::INVOICE;      // 380
         }
     }
 

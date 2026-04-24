@@ -20,6 +20,7 @@
             "noAccounts": "No bank accounts found. Please set up bank accounts in the company configuration.",
             "syncButton": "Fetch Transactions",
             "setupFints": "Set up FinTS",
+            "editFints": "Edit FinTS",
             "fintsConfigured": "FinTS configured",
             "incomeThisMonth": "Income this month",
             "expensesThisMonth": "Expenses this month",
@@ -101,10 +102,12 @@
         "fints": {
             "title": "FinTS Configuration",
             "url": "FinTS Server URL",
-            "urlHint": "e.g. https://banking-by1.s-fints-pt-by.de/fints30",
+            "urlHint": "e.g. https://banking-by1.s-fints-pt-by.de/fints30 — auto-detected from BLZ if known",
+            "urlAutodetected": "Detected: {bank}",
             "bankCode": "Bank Code (BLZ)",
             "username": "Online Banking Username",
             "tanMode": "TAN Method",
+            "tanModeHint": "Which TAN method this bank uses (shown in your online banking documents)",
             "productId": "FinTS Product ID (required)",
             "productIdHint": "Free registration at fints.org — banks reject connections without a registered ID",
             "syncFromDate": "Fetch transactions from",
@@ -115,9 +118,9 @@
         "sync": {
             "title": "Fetch Transactions",
             "pin": "Online Banking PIN",
-            "pinHint": "Your PIN will not be stored",
-            "fromDate": "From",
-            "toDate": "To",
+            "pinHint": "PIN is not sent to the server except for this fetch",
+            "rememberPin": "Remember PIN in this browser session",
+            "rememberPinHint": "Stored in the browser and cleared on browser close. Not stored on the server.",
             "start": "Fetch",
             "cancel": "Cancel"
         },
@@ -127,6 +130,8 @@
             "tanMedium": "TAN Medium",
             "tanInput": "Enter TAN",
             "submit": "Submit TAN",
+            "continue": "Continue",
+            "decoupledHint": "Please approve the request in your banking app, then click \"Continue\".",
             "cancel": "Cancel"
         },
         "alerts": {
