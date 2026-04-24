@@ -698,10 +698,23 @@ cmd_demo_idle_watch() {
         exit 0
     fi
 
+    # Pruefen, ob das Demo-Overlay ueberhaupt geladen werden kann.
+    # Sonst laeuft der Stack vermutlich im Normalmodus (ohne tmpfs) und
+    # ein 'restart db' wuerde die Daten gar nicht zuruecksetzen.
+    if ! dc_demo config >/dev/null 2>&1; then
+        error "Demo-Overlay nicht geladen (DEMO_AUTH_DUMP/DEMO_COMPANY_DUMP fehlt?)."
+        echo "  demo-idle-watch setzt den Demo-Stack voraus (./scripts/docker.sh demo-up)."
+        exit 1
+    fi
+
     info "Idle ${idle}s >= ${idle_seconds}s - starte DB-Reset..."
-    dc_demo restart db
-    touch "$marker"
-    success "Demo-DB zurueckgesetzt."
+    if dc_demo restart db; then
+        touch "$marker"
+        success "Demo-DB zurueckgesetzt."
+    else
+        error "DB-Reset fehlgeschlagen - Marker nicht gesetzt."
+        exit 1
+    fi
 }
 
 # ------ shell -------------------------------------------------------------
