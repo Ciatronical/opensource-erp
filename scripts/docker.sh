@@ -139,6 +139,8 @@ cmd_help() {
     echo "                        Seed-Dateien in docker/db/init/ werden beim DB-Start eingespielt"
     echo "    demo-up             Stack mit Demo-Overlay starten (DB laeuft im tmpfs)"
     echo "    demo-restart-db     DB-Container neu starten (spielt Seed neu ein)"
+    echo "    demo-idle-watch     DB nur zuruecksetzen, wenn seit DEMO_INACTIVITY_MINUTES"
+    echo "                        keine HTTP-Anfrage mehr kam (fuer Host-Cron alle 2-5 min)"
     echo ""
     echo -e "  ${BOLD}Sonstiges:${NC}"
     echo "    status              Status aller Container anzeigen"
@@ -611,6 +613,74 @@ cmd_demo_restart_db() {
     success "DB zurueckgesetzt."
 }
 
+# ------ demo-idle-watch ---------------------------------------------------
+# Setzt die Demo-DB zurueck, wenn seit DEMO_INACTIVITY_MINUTES keine
+# HTTP-Anfrage mehr bei Apache eingetroffen ist. One-Shot, gedacht fuer
+# einen Host-Cron-Job alle 2-5 Minuten.
+#
+# Logik:
+#   - mtime des Apache-Access-Logs = Zeitpunkt der letzten Anfrage
+#   - Reset passiert genau einmal pro Idle-Phase: nach dem Reset wird eine
+#     Marker-Datei angelegt; der naechste Reset setzt neue Aktivitaet
+#     (access_mtime > marker_mtime) voraus.
+#
+# Nutzung im Cron (Host, root oder User in docker-Gruppe):
+#   */3 * * * * /pfad/zu/opensource-erp/scripts/docker.sh demo-idle-watch >>/var/log/oserp-demo-watch.log 2>&1
+cmd_demo_idle_watch() {
+    check_env
+    # Schwellwert aus .env laden (Default: 20 Minuten)
+    load_db_vars
+    local idle_minutes="${DEMO_INACTIVITY_MINUTES:-20}"
+    local idle_seconds=$(( idle_minutes * 60 ))
+
+    if ! is_running "$WEB_CONTAINER"; then
+        info "Web-Container laeuft nicht - kein Reset faellig."
+        exit 0
+    fi
+    if ! is_running "$DB_CONTAINER"; then
+        info "DB-Container laeuft nicht - kein Reset faellig."
+        exit 0
+    fi
+
+    # mtime der aktuelleren Log-Datei (HTTP oder HTTPS) ermitteln.
+    # Fallback auf 0, falls Datei fehlt (noch kein Request seit Start).
+    local http_mtime ssl_mtime access_mtime
+    http_mtime=$(docker exec "$WEB_CONTAINER" \
+        stat -c %Y /var/log/apache2/oserp_access.log 2>/dev/null || echo 0)
+    ssl_mtime=$(docker exec "$WEB_CONTAINER" \
+        stat -c %Y /var/log/apache2/oserp_ssl_access.log 2>/dev/null || echo 0)
+    access_mtime=$(( http_mtime > ssl_mtime ? http_mtime : ssl_mtime ))
+
+    if [[ "$access_mtime" -eq 0 ]]; then
+        info "Keine Access-Logs vorhanden - noch keine Aktivitaet. Kein Reset."
+        exit 0
+    fi
+
+    local now
+    now=$(date +%s)
+    local idle=$(( now - access_mtime ))
+
+    # Marker-Datei verhindert wiederholte Resets waehrend durchgehender Idle-Phase
+    local marker="$PROJECT_ROOT/docker/.demo-last-reset"
+    local marker_mtime=0
+    [[ -f "$marker" ]] && marker_mtime=$(stat -c %Y "$marker")
+
+    if (( idle < idle_seconds )); then
+        info "Aktiv (idle ${idle}s < ${idle_seconds}s) - kein Reset."
+        exit 0
+    fi
+
+    if (( access_mtime <= marker_mtime )); then
+        info "Bereits zurueckgesetzt (keine neue Aktivitaet seit letztem Reset)."
+        exit 0
+    fi
+
+    info "Idle ${idle}s >= ${idle_seconds}s - starte DB-Reset..."
+    dc_demo restart db
+    touch "$marker"
+    success "Demo-DB zurueckgesetzt."
+}
+
 # ------ shell -------------------------------------------------------------
 cmd_shell() {
     local service="${1:-web}"
@@ -660,6 +730,7 @@ case "$command" in
     shell)               cmd_shell "$@" ;;
     demo-up)             cmd_demo_up "$@" ;;
     demo-restart-db)     cmd_demo_restart_db "$@" ;;
+    demo-idle-watch)     cmd_demo_idle_watch "$@" ;;
     help|--help|-h) cmd_help ;;
     *)
         error "Unbekannter Befehl: $command"

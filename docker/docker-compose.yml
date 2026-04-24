@@ -36,6 +36,7 @@ services:
       - app_data:/var/www/html/backend/data
       - app_logs:/var/www/html/backend/log
       - app_backups:/var/www/html/backend/backups
+      - apache_logs:/var/log/apache2
     healthcheck:
       test: ["CMD-SHELL", "curl -sf http://localhost/ || exit 1"]
       interval: 30s
@@ -106,6 +107,8 @@ volumes:
     name: ${STACK_NAME:-oserp}-app-logs
   app_backups:
     name: ${STACK_NAME:-oserp}-app-backups
+  apache_logs:
+    name: ${STACK_NAME:-oserp}-apache-logs
 
 networks:
   oserp-network:
