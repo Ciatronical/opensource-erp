@@ -47,7 +47,16 @@
             "saveAsDraft": "Als Entwurf speichern",
             "history": "Verlauf",
             "followUp": "Wiedervorlage",
-            "exportXInvoice": "Faktur-X / ZUGFeRD",
+            "exportXInvoice": "E-Rechnung erzeugen (Factur-X / XRechnung)",
+            "einvoice": {
+                "saveFirst": "Bitte Rechnung erst speichern, bevor eine E-Rechnung erzeugt werden kann.",
+                "onlyInvoice": "E-Rechnungen können nur aus Ausgangsrechnungen erzeugt werden.",
+                "disabled": "Für diesen Kunden ist keine E-Rechnung aktiviert. In den Kundenstammdaten oder in der Mandantenkonfiguration unter »E-Rechnung« einstellen.",
+                "invalid": "Die erzeugte E-Rechnung erfüllt die EN-16931-Validierung nicht. Typische Ursache: fehlende Stammdaten (USt-IdNr, Leitweg-ID, Kundenadresse).",
+                "failed": "E-Rechnung konnte nicht erzeugt werden. Details in der Browser-Konsole.",
+                "done": "E-Rechnung erzeugt ({format}) — Download gestartet.",
+                "doneTest": "Test-E-Rechnung erzeugt ({format}) — Download gestartet. Achtung: Testmodus!"
+            },
             "delete": "Löschen",
             "pdfPreview": "PDF-Vorschau",
             "showOnDisplay": "Auf Display zeigen",

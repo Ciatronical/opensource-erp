@@ -10,11 +10,36 @@
 // - Alle Verbindungen laufen über HTTPS (TLS)
 
 /**
- * FinTS Produkt-ID (Registrierung auf fints.org)
- * Identifiziert OpensourceERP als zugelassene Banking-Software.
- * HIER die ID eintragen sobald sie von der Deutschen Kreditwirtschaft zugeteilt wurde.
+ * FinTS Produkt-ID aus der Firmenkonfiguration lesen.
+ *
+ * Jeder Betreiber von OpensourceERP muss eine eigene 25-stellige FinTS-Produkt-ID
+ * bei der Deutschen Kreditwirtschaft beantragen. Die ID identifiziert die
+ * Banking-Software im HKVVB-Segment gegenueber den Banksystemen.
+ *
+ * Registrierung: https://www.fints.org/de/hersteller/produktregistrierung
+ * Formular:      docs/features/FinTS-Produktregistrierung_V1.0.4.pdf
+ *
+ * Gespeichert wird die ID in defaults_oserp unter dem Key 'fints_product_id'.
+ * Eingetragen wird sie ueber die Firmenkonfiguration (Tab SEPA/Bank).
+ *
+ * @return string|null 25-stellige Produkt-ID oder null falls nicht konfiguriert
  */
-const FINTS_PRODUCT_ID = '';  // z.B. 'aaaaaaaaaXXXXXXXXXXX'
+function getFintsProductId() {
+    static $cached = false;
+    static $value = null;
+    if ($cached) {
+        return $value;
+    }
+    $db = DbhCompany::begin();
+    $row = $db->getOne(
+        "SELECT value FROM defaults_oserp WHERE key = 'fints_product_id'",
+        []
+    );
+    $raw = $row ? trim((string)($row['value'] ?? '')) : '';
+    $value = $raw !== '' ? $raw : null;
+    $cached = true;
+    return $value;
+}
 
 /**
  * FinTS: Umsaetze von der Bank abrufen
@@ -72,7 +97,7 @@ function fintsSyncTransactions($data) {
             $config['fints_bank_code'],
             $config['fints_username'],
             $pin,
-            FINTS_PRODUCT_ID ?: null
+            getFintsProductId()
         );
 
         // Zeitraum bestimmen
@@ -199,7 +224,7 @@ function fintsSubmitTan($data) {
             $config['fints_bank_code'],
             $config['fints_username'],
             $pin,
-            FINTS_PRODUCT_ID ?: null
+            getFintsProductId()
         );
 
         $fints->loadPersistedInstance($_SESSION['fints_persist']);
@@ -294,7 +319,7 @@ function fintsSubmitTransfer($data) {
             $config['fints_bank_code'],
             $config['fints_username'],
             $pin,
-            FINTS_PRODUCT_ID ?: null
+            getFintsProductId()
         );
 
         // SEPA-Ueberweisung zusammenstellen
@@ -400,7 +425,7 @@ function fintsSubmitTransferTan($data) {
             $config['fints_bank_code'],
             $config['fints_username'],
             $pin,
-            FINTS_PRODUCT_ID ?: null
+            getFintsProductId()
         );
 
         $fints->loadPersistedInstance($_SESSION['fints_persist']);
@@ -473,7 +498,7 @@ function fintsGetBalance($data) {
             $config['fints_bank_code'],
             $config['fints_username'],
             $pin,
-            FINTS_PRODUCT_ID ?: null
+            getFintsProductId()
         );
 
         $accounts = $fints->getAccounts();

@@ -1944,8 +1944,59 @@ export default defineComponent({
             // TODO: Implement follow-up
         }
 
-        function exportXInvoice() {
-            // TODO: Implement X-Invoice export
+        async function exportXInvoice() {
+            if (!fakturaId.value) {
+                alerts.warning(t('FakturaView.faktura.einvoice.saveFirst'))
+                return
+            }
+            if (fakturaType.value !== 'invoice') {
+                alerts.warning(t('FakturaView.faktura.einvoice.onlyInvoice'))
+                return
+            }
+
+            try {
+                const response = await axios.post('/api/faktura/', {
+                    action: 'generateEInvoice',
+                    fakturaID: fakturaId.value,
+                    fakturaType: fakturaType.value,
+                })
+
+                if (!response.data?.success) {
+                    const code = response.data?.text || 'EINVOICE_ERROR'
+                    const violations = response.data?.payload?.violations
+                    if (Array.isArray(violations) && violations.length) {
+                        alerts.error(t('FakturaView.faktura.einvoice.invalid') + '\n' + violations.slice(0, 5).join('\n'))
+                    } else if (code === 'EINVOICE_DISABLED') {
+                        alerts.warning(t('FakturaView.faktura.einvoice.disabled'))
+                    } else {
+                        alerts.error(t('FakturaView.faktura.einvoice.failed'))
+                    }
+                    return
+                }
+
+                const payload = response.data.payload
+                const bin = atob(payload.content)
+                const bytes = new Uint8Array(bin.length)
+                for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i)
+                const blob = new Blob([bytes], { type: payload.mimetype })
+
+                const url = URL.createObjectURL(blob)
+                const a = document.createElement('a')
+                a.href = url
+                a.download = payload.filename
+                document.body.appendChild(a)
+                a.click()
+                document.body.removeChild(a)
+                URL.revokeObjectURL(url)
+
+                const key = payload.testMode
+                    ? 'FakturaView.faktura.einvoice.doneTest'
+                    : 'FakturaView.faktura.einvoice.done'
+                alerts.success(t(key, { format: payload.format }))
+            } catch (e) {
+                console.error('exportXInvoice error', e)
+                alerts.error(t('FakturaView.faktura.einvoice.failed'))
+            }
         }
 
         function selectPrinter(printer) {

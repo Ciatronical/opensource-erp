@@ -77,8 +77,8 @@ function saveFintsConfig($data) {
         return;
     }
 
-    if (empty(FINTS_PRODUCT_ID)) {
-        resultInfo(false, 'FINTS_NOT_CONFIGURED', 'FinTS Produkt-ID ist nicht konfiguriert. Bitte in backend/api/banking/fints.php eintragen.');
+    if (empty(getFintsProductId())) {
+        resultInfo(false, 'FINTS_NOT_CONFIGURED', 'FinTS Produkt-ID ist nicht konfiguriert. Bitte in der Firmenkonfiguration unter SEPA/Bank eintragen (Registrierung: https://www.fints.org/de/hersteller/produktregistrierung).');
         return;
     }
 

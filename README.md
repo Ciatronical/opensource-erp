@@ -238,7 +238,8 @@ sudo apt update && sudo apt upgrade -y
 
 sudo apt install -y \
   git curl \
-  php php-cli php-pgsql php-mbstring php-xml php-curl php-ssh2 \
+  php php-cli php-pgsql php-mbstring php-xml php-curl php-ssh2 php-zip \
+  composer \
   postgresql postgresql-contrib qrencode \
   gnome-terminal
 

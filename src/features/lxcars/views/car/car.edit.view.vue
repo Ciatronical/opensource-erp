@@ -51,6 +51,10 @@
                     <v-icon start size="small">mdi-file-download-outline</v-icon>
                     {{ t('CarEditView.export.button') }}
                 </v-btn>
+                <v-btn v-if="isEditMode" variant="tonal" size="small" color="info" :title="t('CarEditView.email.tooltip')" @click="openEmailDialog">
+                    <v-icon start size="small">mdi-email-send-outline</v-icon>
+                    {{ t('CarEditView.email.button') }}
+                </v-btn>
                 <v-btn v-if="isEditMode && oserpData.checkPermission('special_access')" variant="tonal" size="small" color="deep-purple" @click="specialDialog = true">
                     <v-icon start size="small">mdi-star-circle</v-icon>
                     Special
@@ -1049,6 +1053,19 @@
         <!-- Rotes Heft Dialog -->
         <RotesHeftDialog v-model="rotesHeftDialog" :car="car" :kba-data="kbaData" />
 
+        <!-- E-Mail versenden Dialog -->
+        <SendEmailDialog
+            v-model="emailDialog"
+            :initial-email="emailDialogInitialEmail"
+            :initial-subject="emailDialogInitialSubject"
+            :initial-body="emailDialogInitialBody"
+            :attachment-filename="emailDialogAttachmentFilename"
+            :attachment-content="emailDialogAttachmentContent"
+            :attach-full-default="emailDialogAttachFullDefault"
+            :from-name="emailDialogFromName"
+            record-type="car"
+        />
+
         <!-- Special Dialog -->
         <!-- <SpecialDialog v-if="oserpData.checkPermission('special_access')" v-model="specialDialog" :car-id="car.c_id" /> -->
 
@@ -1098,12 +1115,13 @@ import { useCarAutoSave } from './composables/useCarAutoSave.js'
 import Swal from 'sweetalert2'
 import RotesHeftDialog from './components/rotes-heft.dialog.vue'
 import CarChatCard from './components/car-chat.card.vue'
+import SendEmailDialog from './components/send-email.dialog.vue'
 
 // const SpecialDialog = defineAsyncComponent(() => import('@special/special.dialog.vue'))
 
 export default {
     name: 'CarEditView',
-    components: { NavbarView, RotesHeftDialog, CarChatCard /*, SpecialDialog */ },
+    components: { NavbarView, RotesHeftDialog, CarChatCard, SendEmailDialog /*, SpecialDialog */ },
 
     props: {
         id: {
@@ -1208,6 +1226,16 @@ export default {
         // Rotes Heft Dialog
         const rotesHeftDialog = ref(false)
         const specialDialog = ref(false)
+
+        // E-Mail Dialog
+        const emailDialog = ref(false)
+        const emailDialogInitialEmail = ref('')
+        const emailDialogInitialSubject = ref('')
+        const emailDialogInitialBody = ref('')
+        const emailDialogAttachmentFilename = ref('')
+        const emailDialogAttachmentContent = ref('')
+        const emailDialogAttachFullDefault = ref(true)
+        const emailDialogFromName = ref('')
 
         // Fahrzeug löschen
         const deleteConfirmDialog = ref(false)
@@ -1891,12 +1919,11 @@ export default {
 
         // Crop-Bilder werden als Tooltip direkt am Icon angezeigt
 
-        function exportCarData() {
+        function buildCarExport() {
             // Technische / interne Felder, die nicht im Export erscheinen sollen
             const skipFields = new Set([
                 'c_id', 'c_ow', 'kba_id', 'scan_id', 'scan_detail_id', 'filename'
             ])
-            // Felder die ueber die Display-Refs vorformatiert kommen (lokalisiertes Datum/Zahl)
             const displayMap = {
                 c_d: displayD.value,
                 c_hu: displayHu.value,
@@ -1906,10 +1933,7 @@ export default {
                 c_zrk: displayZrk.value,
                 c_km: displayKm.value,
             }
-            // Eigene Label-Overrides (wo der Feld-Key nicht in den i18n-fields steht)
-            const labelOverrides = {
-                c_d2: 'D2',
-            }
+            const labelOverrides = { c_d2: 'D2' }
 
             const lines = []
             lines.push('╔══════════════════════════════════════════════════════════╗')
@@ -1919,7 +1943,6 @@ export default {
             lines.push('')
             lines.push('━━━ ' + t('CarEditView.export.sectionCar') + ' ━━━')
 
-            // Besitzer vorne ausgeben — als Name statt ID
             const ownerName = oserpData.customer_vendor?.profile?.name
             if (ownerName) {
                 lines.push(`${t('CarEditView.fields.c_ow')}: ${ownerName}`)
@@ -1943,7 +1966,6 @@ export default {
                 }
             }
 
-            // Footer mit Eigenwerbung
             lines.push('')
             lines.push('')
             lines.push('   ____________')
@@ -1958,8 +1980,11 @@ export default {
             const content = lines.join('\n')
             const plate = (car.value.c_ln || 'Fahrzeug').replace(/[^a-zA-Z0-9\-]/g, '_')
             const dateStr = new Date().toISOString().slice(0, 10)
-            const filename = `Fahrzeug_${plate}_${dateStr}.txt`
+            return { content, filename: `Fahrzeug_${plate}_${dateStr}.txt` }
+        }
 
+        function exportCarData() {
+            const { content, filename } = buildCarExport()
             const blob = new Blob([content], { type: 'text/plain;charset=utf-8' })
             const url = URL.createObjectURL(blob)
             const a = document.createElement('a')
@@ -1969,6 +1994,90 @@ export default {
             a.click()
             document.body.removeChild(a)
             URL.revokeObjectURL(url)
+        }
+
+        function getEmailPlaceholders() {
+            const marke = car.value.c_m || kbaData.value?.hersteller || kbaData.value?.d1 || kbaData.value?.marke || ''
+            const modell = kbaData.value?.d2 || kbaData.value?.name || kbaData.value?.d3 || ''
+            return {
+                kennzeichen: car.value.c_ln || '',
+                fin: car.value.c_fin || '',
+                marke,
+                modell,
+                ez: displayD.value || '',
+                km: displayKm.value || '',
+                hu: displayHu.value || '',
+                kunde: oserpData.customer_vendor?.profile?.name || '',
+                mitarbeiter: oserpData.session?.logged_in_employee?.name || ''
+            }
+        }
+
+        function applyPlaceholders(template, values) {
+            if (!template) return ''
+            return String(template).replace(/\{(\w+)\}/g, (m, key) => (values[key] !== undefined ? values[key] : m))
+        }
+
+        function escapeHtml(s) {
+            return String(s ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;')
+        }
+
+        function buildDefaultEmailBody(values) {
+            const line = (label, val) => val ? `${escapeHtml(label)}: <strong>${escapeHtml(val)}</strong>` : ''
+            const lines = [
+                line(t('CarEditView.email.bodyFieldPlate'), values.kennzeichen),
+                line(t('CarEditView.email.bodyFieldFin'), values.fin),
+                line(t('CarEditView.email.bodyFieldMake'), values.marke),
+                line(t('CarEditView.email.bodyFieldModel'), values.modell),
+                line(t('CarEditView.email.bodyFieldFirstReg'), values.ez),
+                line(t('CarEditView.email.bodyFieldKm'), values.km),
+                line(t('CarEditView.email.bodyFieldHu'), values.hu)
+            ].filter(Boolean).join('<br>')
+            return [
+                `<p>${escapeHtml(t('CarEditView.email.bodyGreeting'))}</p>`,
+                `<p>${escapeHtml(t('CarEditView.email.bodyIntro'))}</p>`,
+                `<p>${lines}</p>`,
+                `<p>${escapeHtml(t('CarEditView.email.bodyOutro'))}<br>${escapeHtml(values.mitarbeiter)}</p>`
+            ].join('')
+        }
+
+        function textToHtml(text) {
+            if (!text) return ''
+            // Zeilenumbrüche in <p>/<br> umwandeln
+            const paragraphs = String(text).split(/\n{2,}/).map(p =>
+                `<p>${escapeHtml(p).replace(/\n/g, '<br>')}</p>`
+            )
+            return paragraphs.join('')
+        }
+
+        function openEmailDialog() {
+            const defaults = oserpData.session?.company_config?.defaults_oserp || {}
+            const subjectTpl = defaults.lxcars_email_subject || `${t('CarEditView.email.bodyHeader')} {kennzeichen} — {marke} {modell}`
+            const bodyTpl = defaults.lxcars_email_body || ''
+
+            const values = getEmailPlaceholders()
+
+            emailDialogInitialSubject.value = applyPlaceholders(subjectTpl, values).trim()
+            emailDialogInitialBody.value = bodyTpl
+                ? textToHtml(applyPlaceholders(bodyTpl, values))
+                : buildDefaultEmailBody(values)
+            emailDialogInitialEmail.value = ''
+            emailDialogAttachFullDefault.value = defaults.lxcars_email_attach_full !== false
+
+            // Anhang: gesamter Export als base64
+            const { content, filename } = buildCarExport()
+            emailDialogAttachmentFilename.value = filename
+            // UTF-8-sichere base64-Konvertierung
+            emailDialogAttachmentContent.value = btoa(unescape(encodeURIComponent(content)))
+
+            // Absendername: Mitarbeitername oder Company-Name
+            emailDialogFromName.value = values.mitarbeiter || oserpData.session?.company_config?.defaults?.company || ''
+
+            emailDialog.value = true
         }
 
         onBeforeRouteLeave(async (to) => {
@@ -2010,7 +2119,11 @@ export default {
             fieldCrops, fieldCropLabels,
             wikiArticles, createKbaArticle,
             carId,
-            exportCarData
+            exportCarData,
+            emailDialog, emailDialogInitialEmail, emailDialogInitialSubject, emailDialogInitialBody,
+            emailDialogAttachmentFilename, emailDialogAttachmentContent,
+            emailDialogAttachFullDefault, emailDialogFromName,
+            openEmailDialog
         }
     }
 }

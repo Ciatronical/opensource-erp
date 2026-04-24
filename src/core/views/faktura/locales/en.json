@@ -47,7 +47,16 @@
             "saveAsDraft": "Save as Draft",
             "history": "History",
             "followUp": "Follow-up",
-            "exportXInvoice": "Factur-X / ZUGFeRD",
+            "exportXInvoice": "Generate E-Invoice (Factur-X / XRechnung)",
+            "einvoice": {
+                "saveFirst": "Please save the invoice before generating an e-invoice.",
+                "onlyInvoice": "E-invoices can only be generated from outgoing invoices.",
+                "disabled": "E-invoice is not enabled for this customer. Configure it in the customer master data or in the client configuration under \"E-Invoice\".",
+                "invalid": "The generated e-invoice fails EN 16931 validation. Typical cause: missing master data (VAT ID, routing ID, customer address).",
+                "failed": "E-invoice could not be generated. Details in the browser console.",
+                "done": "E-invoice generated ({format}) — download started.",
+                "doneTest": "Test e-invoice generated ({format}) — download started. Note: Test mode!"
+            },
             "delete": "Delete",
             "pdfPreview": "PDF Preview",
             "showOnDisplay": "Show on display",

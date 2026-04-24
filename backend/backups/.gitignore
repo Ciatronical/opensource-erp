@@ -1,10 +1,5 @@
-# backend/backups/.gitignore
-# Ignoriere alle Backup-Dateien
-*.sql
-*.sql.gz
-*.sql.bz2
-*.sql.zip
-*.dump
+# Ignoriere alles in backend/backups/ (Datenbank-Dumps, Backup-Dateien, Unterverzeichnisse)
+*
 
-# Aber behalte dieses Verzeichnis im Git
+# Nur diese .gitignore selbst im Repo halten
 !.gitignore

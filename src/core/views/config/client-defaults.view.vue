@@ -57,7 +57,7 @@
                         <component
                             :is="currentTabComponent"
                             :defaults="['crm','lxcars','anpr'].includes(activeTab) ? undefined : defaults"
-                            :crm-defaults="['crm','lxcars','anpr'].includes(activeTab) ? crmDefaults : undefined"
+                            :crm-defaults="['crm','lxcars','anpr','bank'].includes(activeTab) ? crmDefaults : undefined"
                             :search-query="searchQuery"
                         />
                     </v-card-text>
@@ -116,6 +116,7 @@ const FeaturesTab = defineAsyncComponent(() => import('./tabs/features.tab.vue')
 const StocktakingTab = defineAsyncComponent(() => import('./tabs/stocktaking.tab.vue'));
 const RecordLinksTab = defineAsyncComponent(() => import('./tabs/record.links.tab.vue'));
 const BankTab = defineAsyncComponent(() => import('./tabs/bank.tab.vue'));
+const EinvoiceTab = defineAsyncComponent(() => import('./tabs/einvoice.tab.vue'));
 const CrmTab = defineAsyncComponent(() => import('./tabs/crm-defaults.tab.vue'));
 const LxCarsTab = defineAsyncComponent(() => import('./tabs/lxcars-defaults.tab.vue'));
 const AnprTab = defineAsyncComponent(() => import('./tabs/anpr-defaults.tab.vue'));
@@ -271,6 +272,11 @@ const tabs = computed(() => [
         icon: 'mdi-bank-transfer'
     },
     {
+        value: 'einvoice',
+        title: t('einvoice.tab_title'),
+        icon: 'mdi-file-document-check'
+    },
+    {
         value: 'crm',
         title: t('crm'),
         icon: 'mdi-account-multiple'
@@ -309,6 +315,7 @@ const currentTabComponent = computed(() => {
         'stocktaking': StocktakingTab,
         'record_links': RecordLinksTab,
         'bank': BankTab,
+        'einvoice': EinvoiceTab,
         'crm': CrmTab,
         'lxcars': LxCarsTab,
         'anpr': AnprTab,

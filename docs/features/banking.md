@@ -7,6 +7,31 @@ Das Banking-Modul verbindet OpensourceERP direkt mit Bankkonten über den FinTS-
 - Bankkonto mit **FinTS/HBCI-Zugang** (die meisten deutschen Banken unterstützen dies)
 - FinTS-URL der Bank (z.B. `https://banking-dkb.s-fints-pt-dkb.de/fints30`)
 - Online-Banking Zugangsdaten (Benutzerkennung + PIN)
+- **Eigene FinTS-Produktregistrierung** (siehe nächster Abschnitt)
+
+## FinTS-Produktregistrierung (pro Betreiber Pflicht)
+
+Die FinTS-Spezifikation schreibt vor, dass jede Banking-Software eine 25-stellige Produkt-Registrierungs-ID bei der Deutschen Kreditwirtschaft führen muss. Diese ID wird bei jedem FinTS-Dialog im Segment `HKVVB` mitgeschickt und identifiziert die Software gegenüber den Banksystemen.
+
+**Wichtig:** Die Registrierung ist **pro Betreiber** vorzunehmen — jeder Kunde, der OpensourceERP mit FinTS produktiv nutzen möchte, muss eine eigene ID beantragen. Eine zentrale, mit der Software ausgelieferte ID ist nach den Bedingungen der Deutschen Kreditwirtschaft nicht zulässig.
+
+### Antrag stellen
+
+1. Registrierungsformular ausfüllen:
+   [docs/features/FinTS-Produktregistrierung_V1.0.4.pdf](FinTS-Produktregistrierung_V1.0.4.pdf)
+2. Einreichen per Mail an `registrierung@hbci-zka.de`
+3. Informationen und aktuelle Formulare:
+   <https://www.fints.org/de/hersteller/produktregistrierung>
+
+Die Zuteilung erfolgt per E-Mail. Nach Erhalt dauert es laut SIZ GmbH in der Regel mehrere Werktage, bis die ID in den produktiven Banksystemen aktiv ist.
+
+### ID in OpensourceERP hinterlegen
+
+Die zugeteilte 25-stellige ID wird in der **Firmenkonfiguration** eingetragen:
+
+**Einstellungen → Firmenkonfiguration → SEPA/Bank → FinTS-Produktregistrierung**
+
+Die ID wird in der Datenbank unter `defaults_oserp.fints_product_id` abgelegt und gilt für die gesamte Installation. Ohne eingetragene ID weist der FinTS-Abruf mit dem Fehler `FINTS_NOT_CONFIGURED` ab.
 
 ## Einrichtung
 

@@ -67,6 +67,21 @@ npm install
 echo "Installing SSE server dependencies..."
 (cd backend/sse && npm install)
 
+# Installiere PHP-Abhängigkeiten (Composer) — für E-Rechnung, FinTS etc.
+if [ -f backend/composer.json ]; then
+    echo ""
+    echo "Installing PHP dependencies (composer)..."
+    if command -v composer &>/dev/null; then
+        (cd backend && composer install --no-interaction)
+    elif [ -f backend/composer.phar ]; then
+        (cd backend && php composer.phar install --no-interaction)
+    else
+        echo "WARNUNG: composer nicht gefunden und backend/composer.phar fehlt."
+        echo "  Installation: sudo apt install composer"
+        echo "  oder: cd backend && php -r \"copy('https://getcomposer.org/installer', 'composer-setup.php');\" && php composer-setup.php && rm composer-setup.php"
+    fi
+fi
+
 # Stoppe eventuell laufende Server
 echo "Stopping old servers..."
 pkill -f "php -S localhost:8000" 2>/dev/null

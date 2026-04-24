@@ -46,12 +46,64 @@
                     </template>
                 </v-select>
             </v-col>
+
+            <v-col cols="12">
+                <v-divider class="my-4" />
+                <h3 class="text-h6 mb-2">{{ $t('fintsProductIdHeadline') }}</h3>
+                <v-alert
+                    type="info"
+                    variant="tonal"
+                    density="compact"
+                    class="mb-4"
+                    icon="mdi-information-outline"
+                >
+                    <span>{{ $t('fintsProductIdIntro') }}</span>
+                    <br>
+                    <a
+                        href="https://www.fints.org/de/hersteller/produktregistrierung"
+                        target="_blank"
+                        rel="noopener"
+                    >https://www.fints.org/de/hersteller/produktregistrierung</a>
+                </v-alert>
+            </v-col>
+
+            <v-col cols="12" md="8">
+                <v-text-field
+                    v-if="crmDefaults"
+                    v-model="crmDefaults.fints_product_id"
+                    :label="$t('fintsProductIdLabel')"
+                    :placeholder="$t('fintsProductIdPlaceholder')"
+                    :counter="25"
+                    :maxlength="25"
+                    variant="outlined"
+                    density="compact"
+                    data-field-name="fints_product_id"
+                >
+                    <template #append-inner>
+                        <v-tooltip location="top" max-width="420">
+                            <template #activator="{ props }">
+                                <v-icon v-bind="props" size="small">mdi-help-circle-outline</v-icon>
+                            </template>
+                            <div>
+                                <div>{{ $t('fintsProductIdHelp') }}</div>
+                                <div class="mt-2">
+                                    {{ $t('fintsProductIdForm') }}:
+                                    <code>docs/features/FinTS-Produktregistrierung_V1.0.4.pdf</code>
+                                </div>
+                                <div class="mt-1">
+                                    {{ $t('fintsProductIdRegister') }}:
+                                    https://www.fints.org/de/hersteller/produktregistrierung
+                                </div>
+                            </div>
+                        </v-tooltip>
+                    </template>
+                </v-text-field>
+            </v-col>
         </v-row>
     </div>
 </template>
 
 <script setup>
-import { defineProps } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
@@ -60,6 +112,10 @@ defineProps({
     defaults: {
         type: Object,
         required: true
+    },
+    crmDefaults: {
+        type: Object,
+        default: null
     }
 });
 

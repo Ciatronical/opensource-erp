@@ -77,7 +77,30 @@
             variant="outlined"
             density="compact"
             hide-details="auto"
-          />
+          >
+            <template #append-inner>
+              <v-tooltip location="top" max-width="400">
+                <template #activator="{ props }">
+                  <v-icon v-bind="props" size="small">mdi-help-circle-outline</v-icon>
+                </template>
+                <span style="white-space: pre-line;">{{ t('CustomerVendorEditView.zugferd.help_current', { option: currentZugferdHelp }) }}</span>
+              </v-tooltip>
+            </template>
+          </v-select>
+        </v-col>
+        <v-col
+          v-if="isXRechnungSelected"
+          cols="12"
+          class="py-1"
+        >
+          <v-alert
+            type="info"
+            variant="tonal"
+            density="compact"
+            icon="mdi-identifier"
+          >
+            {{ t('CustomerVendorEditView.zugferd.leitweg_hint') }}
+          </v-alert>
         </v-col>
       </v-row>
     </v-card-text>
@@ -105,7 +128,20 @@ export default {
       get: () => props.modelValue,
       set: (value) => emit('update:modelValue', value)
     })
-    return { localData, t }
+    const currentZugferdHelp = computed(() => {
+      const value = Number(localData.value.create_zugferd_invoices ?? -1)
+      const map = {
+        '-1': t('CustomerVendorEditView.zugferd.help_default'),
+        '0':  t('CustomerVendorEditView.zugferd.help_off'),
+        '1':  t('CustomerVendorEditView.zugferd.help_zugferd'),
+        '2':  t('CustomerVendorEditView.zugferd.help_zugferd_test'),
+        '3':  t('CustomerVendorEditView.zugferd.help_xrechnung'),
+        '4':  t('CustomerVendorEditView.zugferd.help_xrechnung_test'),
+      }
+      return map[String(value)] || map['-1']
+    })
+    const isXRechnungSelected = computed(() => [3, 4].includes(Number(localData.value.create_zugferd_invoices)))
+    return { localData, t, currentZugferdHelp, isXRechnungSelected }
   }
 }
 </script>

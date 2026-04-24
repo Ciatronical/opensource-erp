@@ -61,3 +61,8 @@ docs/superpowers
 # Kamera-Aufnahmen (lokal generiert)
 public/camera-snapshots/
 public/camera-clips/
+
+# Composer (PHP) — Cache, Dependencies und Tool-Binary nicht ins Repo
+backend/.composer/
+backend/vendor/
+backend/composer.phar

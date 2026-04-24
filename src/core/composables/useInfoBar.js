@@ -315,30 +315,103 @@ export function useInfoBar() {
             return b.timestamp - a.timestamp
         })
 
-        return items
+        // Dubletten entfernen: pro Typ + Inhaltsschluessel nur das neueste behalten.
+        // Da bereits nach Timestamp absteigend sortiert ist, ist das erste Vorkommen das neueste.
+        const seen = new Set()
+        return items.filter(item => {
+            const key = dedupKey(item)
+            if (!key) return true
+            const full = item.type + ':' + key
+            if (seen.has(full)) return false
+            seen.add(full)
+            return true
+        })
     })
+
+    function dedupKey(item) {
+        const d = item.data || {}
+        switch (item.type) {
+            case 'whatsapp': return d.customer_id || d.phone_number || null
+            case 'anpr':     return d.c_ln || null
+            case 'call':     return d.crmti_caller_id || d.crmti_src || null
+            case 'email':    return d.from || null
+            default:         return null
+        }
+    }
 
     const hasItems = computed(() => unifiedItems.value.length > 0)
 
     // --- Actions ---
     function dismissItem(type, id) {
-        if (type === 'call' && !dismissed.value.calls.includes(id)) {
-            dismissed.value.calls.push(id)
-        } else if (type === 'email' && !dismissed.value.emails.includes(id)) {
-            dismissed.value.emails.push(id)
-        } else if (type === 'whatsapp' && !dismissed.value.whatsapps.includes(id)) {
-            dismissed.value.whatsapps.push(id)
-        } else if (type === 'parts' && !dismissed.value.parts.includes(id)) {
-            dismissed.value.parts.push(id)
+        console.log('[InfoBar] dismissItem aufgerufen:', { type, id, idType: typeof id })
+
+        // Alle IDs sammeln, die zur selben Dublettengruppe gehoeren
+        const ids = collectDuplicateIds(type, id)
+        console.log('[InfoBar] collectDuplicateIds liefert:', ids)
+
+        if (type === 'call') {
+            ids.forEach(i => { if (!dismissed.value.calls.includes(i)) dismissed.value.calls.push(i) })
+        } else if (type === 'email') {
+            ids.forEach(i => { if (!dismissed.value.emails.includes(i)) dismissed.value.emails.push(i) })
+        } else if (type === 'whatsapp') {
+            ids.forEach(i => { if (!dismissed.value.whatsapps.includes(i)) dismissed.value.whatsapps.push(i) })
+        } else if (type === 'parts') {
+            ids.forEach(i => { if (!dismissed.value.parts.includes(i)) dismissed.value.parts.push(i) })
             dismissed.value.parts_ts = Date.now()
-        } else if (type === 'completed' && !dismissed.value.completed.includes(id)) {
-            dismissed.value.completed.push(id)
-        } else if (type === 'anpr' && !dismissed.value.anpr.includes(id)) {
-            dismissed.value.anpr.push(id)
-            // Auch serverseitig als dismissed markieren
-            axios.post('/api/lxcars/', { action: 'dismissAnprDetection', id }).catch(() => {})
+        } else if (type === 'completed') {
+            ids.forEach(i => { if (!dismissed.value.completed.includes(i)) dismissed.value.completed.push(i) })
+        } else if (type === 'anpr') {
+            ids.forEach(i => {
+                if (!dismissed.value.anpr.includes(i)) dismissed.value.anpr.push(i)
+                // Auch serverseitig als dismissed markieren
+                axios.post('/api/lxcars/', { action: 'dismissAnprDetection', id: i }).catch(() => {})
+            })
         }
+        console.log('[InfoBar] dismissed nach Update:', JSON.parse(JSON.stringify(dismissed.value)))
         saveDismissed()
+    }
+
+    // Findet alle IDs in der Quell-Liste, die denselben Inhaltsschluessel haben
+    // wie das per id uebergebene Item — fuer Dubletten-Sammelloeschung mit einem Klick.
+    function collectDuplicateIds(type, id) {
+        const sourceMap = {
+            call:      { list: newCalls.value,             idField: 'crmti_id' },
+            email:     { list: newEmails.value,            idField: 'uid' },
+            whatsapp:  { list: newWhatsapps.value,         idField: 'id' },
+            parts:     { list: pendingPartsRequests.value, idField: 'oe_id' },
+            anpr:      { list: anprDetections.value,       idField: 'id' },
+            completed: { list: completedOrders.value,      idField: 'oe_id' }
+        }
+        const src = sourceMap[type]
+        if (!src) {
+            console.warn('[InfoBar] kein sourceMap fuer type:', type)
+            return [id]
+        }
+
+        console.log('[InfoBar] Quell-Liste laenge:', src.list.length, 'idField:', src.idField)
+        console.log('[InfoBar] Quell-Liste IDs+Keys:', src.list.map(x => ({
+            id: x[src.idField],
+            idType: typeof x[src.idField],
+            key: dedupKey({ type, data: x })
+        })))
+
+        // Loose comparison damit String/Number-Mismatch nicht stoert
+        const target = src.list.find(x => x[src.idField] == id)
+        if (!target) {
+            console.warn('[InfoBar] Ziel nicht in Quell-Liste gefunden! id:', id)
+            return [id]
+        }
+
+        const key = dedupKey({ type, data: target })
+        console.log('[InfoBar] Ziel gefunden, dedupKey:', key, 'Ziel-Daten:', target)
+        if (!key) {
+            console.warn('[InfoBar] kein dedupKey ableitbar — nur Einzel-Item dismissen')
+            return [id]
+        }
+
+        const matches = src.list.filter(x => dedupKey({ type, data: x }) === key)
+        console.log('[InfoBar] Dubletten gefunden:', matches.length, matches.map(x => x[src.idField]))
+        return matches.map(x => x[src.idField])
     }
 
     function closeAll() {

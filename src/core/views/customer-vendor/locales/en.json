@@ -296,7 +296,7 @@
             "taxincluded_checked": "Pre-select \"Tax Included in Price\"",
             "discount": "Discount",
             "hourly_rate": "Hourly Rate",
-            "create_zugferd_invoices": "Generate Sales Invoices with Factur-X/ZUGFeRD Data",
+            "create_zugferd_invoices": "E-Invoice format for this customer",
             "creditlimit": "Credit Limit",
             "dunning_lock": "Dunning Lock",
             "order_lock": "Shop Order Lock",
@@ -361,6 +361,22 @@
             "contains_non_digits": "Tax number may only contain digits",
             "invalid_length": "Invalid length ({length} digits). Expected: 10-13 digits",
             "valid": "Valid tax number"
+        },
+        "zugferd": {
+            "option_default": "Use client default",
+            "option_off": "No e-invoice",
+            "option_zugferd": "Factur-X / ZUGFeRD 2.2 extended",
+            "option_zugferd_test": "Factur-X / ZUGFeRD extended (Test mode)",
+            "option_xrechnung": "XRechnung 3.0",
+            "option_xrechnung_test": "XRechnung 3.0 (Test mode)",
+            "help_current": "{option}",
+            "help_default": "This customer uses the format configured in the client configuration under \"E-Invoice\". Recommended when all customers are treated uniformly.",
+            "help_off": "No e-invoice is generated for this customer, even if the client default would produce one. Only useful for pure B2C invoices.",
+            "help_zugferd": "Hybrid invoice: PDF/A-3 with embedded factur-x.xml in the EN 16931 Extended profile. Recommended B2B standard in Germany. Understood by kivitendo and all common accounting systems.",
+            "help_zugferd_test": "Same hybrid invoice as production, but flagged as a test invoice in the XML. For initial acceptance tests with this customer — not booked by the receiving system.",
+            "help_xrechnung": "Pure XML (XRechnung 3.0, CIUS of EN 16931). Mandatory for public authorities. The field \"Our routing ID at customer\" must be filled — without it the receiving portal will reject the invoice.",
+            "help_xrechnung_test": "XRechnung 3.0 in test mode. For initial acceptance tests with administrative portals such as ZRE or OZG-RE. Not booked.",
+            "leitweg_hint": "For XRechnung the field \"Our routing ID at customer\" (card \"Numbers & IDs\") must be filled."
         }
     }
 }

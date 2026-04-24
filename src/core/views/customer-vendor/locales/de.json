@@ -296,7 +296,7 @@
             "taxincluded_checked": "\"Steuer im Preis inbegriffen\" vorwählen",
             "discount": "Rabatt",
             "hourly_rate": "Stundensatz",
-            "create_zugferd_invoices": "Verkaufsrechnungen mit Factur-X-/ZUGFeRD-Daten erzeugen",
+            "create_zugferd_invoices": "E-Rechnungsformat für diesen Kunden",
             "creditlimit": "Kreditlimit",
             "dunning_lock": "Mahnsperre",
             "order_lock": "Shopauftragssperre",
@@ -361,6 +361,22 @@
             "bccSameAsCc": "CC und BCC dürfen nicht identisch sein",
             "homepageInvalid": "Ungültige URL (z.B. beispiel.de)",
             "homepageUnreachable": "Seite ist nicht erreichbar"
+        },
+        "zugferd": {
+            "option_default": "Mandantenvorgabe verwenden",
+            "option_off": "Keine E-Rechnung",
+            "option_zugferd": "Factur-X / ZUGFeRD 2.2 extended",
+            "option_zugferd_test": "Factur-X / ZUGFeRD extended (Testmodus)",
+            "option_xrechnung": "XRechnung 3.0",
+            "option_xrechnung_test": "XRechnung 3.0 (Testmodus)",
+            "help_current": "{option}",
+            "help_default": "Für diesen Kunden wird das Format verwendet, das in der Firmenkonfiguration unter »E-Rechnung« eingestellt ist. Dies ist die empfohlene Einstellung, wenn alle Kunden einheitlich behandelt werden.",
+            "help_off": "Für diesen Kunden wird keine E-Rechnung erzeugt, auch wenn die Mandantenvorgabe sie vorsieht. Nur für reine B2C-Rechnungen an Endverbraucher sinnvoll.",
+            "help_zugferd": "Hybride Rechnung: PDF/A-3 mit eingebettetem factur-x.xml im Profil EN 16931 Extended. Empfohlener B2B-Standard in Deutschland. Wird von kivitendo und allen gängigen Buchhaltungssystemen verstanden.",
+            "help_zugferd_test": "Gleiche Hybrid-Rechnung wie produktiv, aber im XML als Testrechnung markiert. Für Erstabnahmen mit diesem Kunden – wird vom Empfangssystem nicht gebucht.",
+            "help_xrechnung": "Reines XML (XRechnung 3.0, CIUS der EN 16931). Pflicht bei öffentlichen Auftraggebern (Behörden). Das Feld »Unsere Leitweg-ID beim Kunden« muss gepflegt sein – ohne Leitweg-ID lehnt das Empfangsportal die Rechnung ab.",
+            "help_xrechnung_test": "XRechnung 3.0 im Testmodus. Für die Erstabnahme mit Verwaltungsportalen wie ZRE oder OZG-RE. Wird nicht gebucht.",
+            "leitweg_hint": "Für XRechnung muss das Feld »Unsere Leitweg-ID beim Kunden« (Karte »Nummern & IDs«) ausgefüllt sein."
         }
     }
 }

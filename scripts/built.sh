@@ -40,6 +40,19 @@ echo ""
 echo "2b. SSE-Server Dependencies..."
 (cd backend/sse && npm install --omit=dev)
 
+echo ""
+echo "2c. PHP-Dependencies (Composer) für E-Rechnung/FinTS..."
+if [ -f backend/composer.json ]; then
+    if command -v composer &>/dev/null; then
+        (cd backend && composer install --no-interaction --no-dev --optimize-autoloader)
+    elif [ -f backend/composer.phar ]; then
+        (cd backend && php composer.phar install --no-interaction --no-dev --optimize-autoloader)
+    else
+        echo "  WARNUNG: composer nicht gefunden und backend/composer.phar fehlt."
+        echo "  Bitte einmalig: sudo apt install composer"
+    fi
+fi
+
 if [ $? -ne 0 ]; then
     echo ""
     echo "❌ Build fehlgeschlagen!"

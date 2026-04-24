@@ -44,6 +44,37 @@ ensure_claude_settings
 
 git pull # Holen der neuesten Änderungen
 
+# --- Optional: unversionierte Dateien/Verzeichnisse einzeln bestaetigen und adden ---
+ADD_UNTRACKED=0
+while [ $# -gt 0 ] && [ "${1:0:1}" = "-" ]; do
+    case "$1" in
+        -a|--add-untracked) ADD_UNTRACKED=1; shift;;
+        -h|--help)
+            echo "Usage: fix-ws.sh [-a|--add-untracked] [datei ...]"
+            echo "  -a  Unversionierte Dateien/Verzeichnisse einzeln anzeigen und per [Y/n] adden (Default: y)"
+            exit 0
+            ;;
+        *) echo "Unbekannte Option: $1" >&2; exit 1;;
+    esac
+done
+
+if [ $ADD_UNTRACKED -eq 1 ]; then
+    untracked=$(git ls-files --others --exclude-standard --directory)
+    if [ -z "$untracked" ]; then
+        echo "Keine unversionierten Dateien oder Verzeichnisse."
+    else
+        echo "Unversionierte Dateien/Verzeichnisse:"
+        while IFS= read -r entry; do
+            [ -z "$entry" ] && continue
+            read -r -p "  $entry  — hinzufuegen? [Y/n] " yn < /dev/tty
+            case "$yn" in
+                n|N) echo "    uebersprungen";;
+                *)   git add -- "$entry" && echo "    hinzugefuegt";;
+            esac
+        done <<< "$untracked"
+    fi
+fi
+
 # Wenn keine Parameter übergeben wurden, hole alle geänderten Dateien aus git status
 if [ $# -eq 0 ]; then
     # Hole alle modified und new files aus git status
@@ -64,6 +95,12 @@ do
     # Überspringe Dateien die nicht existieren
     if [ ! -f "$var" ]; then
         echo "Skipping $var (not a file)"
+        continue
+    fi
+
+    # Überspringe Binärdateien (PDF, Bilder, ZIP, ...) — sed wuerde sie zerstoeren
+    if file --mime-encoding -b "$var" | grep -q "binary"; then
+        echo "Skipping $var (binary file)"
         continue
     fi
 

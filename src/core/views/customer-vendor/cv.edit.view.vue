@@ -459,10 +459,13 @@ export default {
             { title: 'Nein', value: 0 },
         ])
 
-        const zugferdOptions = ref([
-            { title: 'Einstellungen aus Firmenkonfiguration folgen', value: -1 },
-            { title: 'Keine Factur-X-/ZUGFeRD-Rechnungen erzeugen', value: 0 },
-            { title: 'Mit Profil »Factur-X 1.01.06/ZUGFeRD 2.2 extended«', value: 1 },
+        const zugferdOptions = computed(() => [
+            { title: t('CustomerVendorEditView.zugferd.option_default'),       value: -1 },
+            { title: t('CustomerVendorEditView.zugferd.option_off'),           value: 0 },
+            { title: t('CustomerVendorEditView.zugferd.option_zugferd'),       value: 1 },
+            { title: t('CustomerVendorEditView.zugferd.option_zugferd_test'),  value: 2 },
+            { title: t('CustomerVendorEditView.zugferd.option_xrechnung'),     value: 3 },
+            { title: t('CustomerVendorEditView.zugferd.option_xrechnung_test'),value: 4 },
         ])
 
         const paymentTerms = computed(() => {

@@ -72,6 +72,23 @@ function uploadInvoiceDocument($data) {
         [':path' => 'accounting/' . $safeFilename, ':id' => $docId]
     );
 
+    // E-Rechnung-Fast-Path: wenn das Dokument ZUGFeRD/XRechnung-XML enthält,
+    // strukturierte Daten direkt extrahieren und den KI-Call überspringen.
+    require_once __DIR__.'/../faktura/einvoice_reader.php';
+    $einvoiceData = extractEInvoiceData($fileContent, $mimeType);
+
+    if ($einvoiceData !== null) {
+        $extracted  = $einvoiceData;
+        $confidence = 1.0;
+        $db->execute(
+            "UPDATE accounting_documents SET status = 'extracted', extracted_data = :data, extraction_confidence = :conf WHERE id = :id",
+            [
+                ':data' => json_encode($extracted, JSON_UNESCAPED_UNICODE),
+                ':conf' => $confidence,
+                ':id'   => $docId
+            ]
+        );
+    } else {
     // API-Key laden
     $config = $db->fetchKeyValue(
         "SELECT key, value FROM defaults_oserp WHERE key IN ('anthropic_api_key', 'accounting_ai_model', 'accounting_default_tax_rate')"
@@ -275,6 +292,7 @@ PROMPT;
             ':id'   => $docId
         ]
     );
+    } // Ende else (KI-Extraktion)
 
     // Lieferanten-Matching
     $vendorData = $extracted['vendor'] ?? [];

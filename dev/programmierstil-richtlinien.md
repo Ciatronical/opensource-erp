@@ -280,8 +280,14 @@ Warum?
 
 ### 6.1 Git nutzen
 fix-ws ist Pflicht! Es liegt unter tools, beseitigt Whitespace-Errors und nimmt einem viel Arbeit ab.
-(sudo cp tools/fix-ws.sh /usr/local/sbin/)
--!- Actung: fix-ws.sh fühgt keine neuen Dateien hinzu (erst mit git add einzeln hinzufügen dan fix-ws.sh aufrufen)
+Einmalig einen Symlink unter /usr/local/sbin/ anlegen, damit Änderungen an tools/fix-ws.sh automatisch übernommen werden:
+```
+sudo ln -sf "$(pwd)/tools/fix-ws.sh" /usr/local/sbin/fix-ws.sh
+```
+Danach ist `fix-ws.sh` systemweit aufrufbar.
+
+-!- Achtung: fix-ws.sh fügt standardmäßig keine neuen Dateien hinzu (erst mit `git add` einzeln hinzufügen, dann fix-ws.sh aufrufen).
+Mit `fix-ws.sh -a` wird für jede unversionierte Datei/jedes Verzeichnis einzeln per `[Y/n]` nachgefragt (Default: `y` → wird geaddet).
 
 ### 6.2 Viele kleine Commits
 Kleine, saubere, nachvollziehbare Schritte.

@@ -165,7 +165,8 @@ function searchFakturaCustomers($data) {
                     SELECT json_agg(row_to_json(t))
                     FROM (
                         SELECT c.id, c.name,
-                               COALESCE(NULLIF(c.phone, ''), ext.phone_numbers->>0) AS phone
+                               COALESCE(NULLIF(c.phone, ''), ext.phone_numbers->>0) AS phone,
+                               ext.emails->>0 AS email
                         FROM {$table} c
                         LEFT JOIN {$table}_ext ext ON ext.{$table}_id = c.id
                         WHERE c.name ILIKE '%' || :search || '%'

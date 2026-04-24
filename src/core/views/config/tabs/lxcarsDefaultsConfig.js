@@ -35,6 +35,11 @@ const lxcarsDefaultsConfig = [
     { name: "lxcars_arbeitsende", type: "input", inputType: "time", size: 10, fieldstyle: "max-width: 15ch", label: "crm_fields.lxcarsArbeitsende", tooltip: "crm_fields.lxcarsArbeitsende_help" },
     { name: "lxcars_pausen", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.lxcarsPausen", tooltip: "crm_fields.lxcarsPausen_help" },
 
+    { name: "lxcars_email", type: "headline", label: "crm_fields.lxcarsEmail" },
+    { name: "lxcars_email_subject", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.lxcarsEmailSubject", tooltip: "crm_fields.lxcarsEmailSubject_help" },
+    { name: "lxcars_email_body", type: "textarea", rows: 10, fieldstyle: "max-width: 80ch", label: "crm_fields.lxcarsEmailBody", tooltip: "crm_fields.lxcarsEmailBody_help" },
+    { name: "lxcars_email_attach_full", type: "checkbox", label: "crm_fields.lxcarsEmailAttachFull", tooltip: "crm_fields.lxcarsEmailAttachFull_help" },
+
     { name: "lxcars_mechanic_mode", type: "headline", label: "crm_fields.lxcarsMechanicMode" },
     { name: "lxcars_mechanic_mode", type: "checkbox", label: "crm_fields.lxcarsMechanicModeEnabled", tooltip: "crm_fields.lxcarsMechanicModeEnabled_help" },
     { name: "lxcars_employee_group", type: "dynamic-select", source: "auth_groups", itemTitle: "name", itemValue: "id", fieldstyle: "max-width: 60ch", label: "crm_fields.lxcarsEmployeeGroup", tooltip: "crm_fields.lxcarsEmployeeGroup_help" },
