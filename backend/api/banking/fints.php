@@ -303,11 +303,18 @@ function fintsSyncTransactions($data) {
     }
 
     try {
-        $fints = fintsCreate($config, $pin);
+        // Wenn ein persist-Token aus fruehrem erfolgreichen Sync vorhanden ist,
+        // wiederverwenden — die Bank erkennt das Geraet und verzichtet auf
+        // die Login-SCA (nur die Action selbst wird noch per TAN bestaetigt).
+        $savedState = !empty($config['persisted_state']) ? $config['persisted_state'] : null;
+        $fints = fintsCreate($config, $pin, $savedState);
 
-        // PSD2: TAN-Verfahren auswaehlen + login (erforderlich ab phpFinTS 3.x)
-        $tanMode = !empty($config['fints_tan_mode']) ? (int)$config['fints_tan_mode'] : null;
-        fintsSelectTanModeWithMedium($fints, $tanMode);
+        // PSD2: TAN-Verfahren auswaehlen + login (erforderlich ab phpFinTS 3.x).
+        // Bei geladenem State ist der TAN-Mode bereits gespeichert.
+        if (!$savedState) {
+            $tanMode = !empty($config['fints_tan_mode']) ? (int)$config['fints_tan_mode'] : null;
+            fintsSelectTanModeWithMedium($fints, $tanMode);
+        }
         $login = $fints->login();
         if ($login->needsTan()) {
             session_start();
@@ -371,11 +378,8 @@ function fintsSyncTransactions($data) {
         $statements = $getStatement->getStatement()->getStatements();
         $importedCount = importFintsStatements($db, $bankAccountId, $statements, $fromDate, $toDate);
 
-        // Sync-Zeitpunkt aktualisieren
-        $db->execute(
-            "UPDATE bank_account_fints SET last_sync = now() WHERE bank_account_id = :id",
-            ['id' => $bankAccountId]
-        );
+        // Sync-Zeitpunkt + Device-Trust-State aktualisieren
+        fintsPersistTrustState($fints, $db, $bankAccountId);
 
         resultInfo(true, 'Synchronisiert', [
             'imported_count' => $importedCount,
@@ -500,7 +504,7 @@ function fintsSubmitTan($data) {
             }
             $statements = $getStatement->getStatement()->getStatements();
             $importedCount = importFintsStatements($db, $bankAccountId, $statements, $fromDate, $toDate);
-            $db->execute("UPDATE bank_account_fints SET last_sync = now() WHERE bank_account_id = :id", ['id' => $bankAccountId]);
+            fintsPersistTrustState($fints, $db, $bankAccountId);
             resultInfo(true, 'Synchronisiert', ['imported_count' => $importedCount]);
             return;
         }
@@ -512,10 +516,7 @@ function fintsSubmitTan($data) {
             $statements = $action->getStatement()->getStatements();
             $importedCount = importFintsStatements($db, $bankAccountId, $statements, null, null);
 
-            $db->execute(
-                "UPDATE bank_account_fints SET last_sync = now() WHERE bank_account_id = :id",
-                ['id' => $bankAccountId]
-            );
+            fintsPersistTrustState($fints, $db, $bankAccountId);
 
             resultInfo(true, 'Synchronisiert', ['imported_count' => $importedCount]);
         } else {
@@ -940,6 +941,23 @@ function fintsSelectTanModeWithMedium($fints, $tanMode) {
  */
 function fintsNormalizeIban($iban) {
     return strtoupper(preg_replace('/\s+/', '', (string)$iban));
+}
+
+/**
+ * Speichert den Device-Trust-State (Kundensystem-ID) in bank_account_fints,
+ * damit die Bank das Geraet beim naechsten Login ohne SCA wiedererkennt.
+ *
+ * Wichtig: VOR persist() wird forgetDialog() gerufen, sodass die aktuelle
+ * (und bei der naechsten Session laengst abgelaufene) dialogId nicht mit
+ * gespeichert wird — sonst bekommt man Fehler 9010/9120 "Dialog-ID nicht
+ * gueltig" beim naechsten Sync.
+ */
+function fintsPersistTrustState($fints, $db, $bankAccountId) {
+    $fints->forgetDialog();
+    $db->execute(
+        "UPDATE bank_account_fints SET last_sync = now(), persisted_state = :state WHERE bank_account_id = :id",
+        ['id' => $bankAccountId, 'state' => $fints->persist(true)]
+    );
 }
 
 /**

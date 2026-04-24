@@ -17,6 +17,9 @@
             </v-tab>
             <v-tab value="delivery_orders">
                 <span class="d-none d-sm-inline">{{ labelDeliveryOrders }}</span>
+                <v-btn icon size="x-small" variant="text" class="ms-1" @click.stop="createNew('routes.newDeliveryOrder')">
+                    <v-icon size="small">mdi-plus</v-icon>
+                </v-btn>
             </v-tab>
             <v-tab value="invoices">
                 <span class="d-none d-sm-inline">{{ labelInvoices }}</span>

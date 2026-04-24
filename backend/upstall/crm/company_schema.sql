@@ -1051,6 +1051,7 @@ CREATE TABLE bank_account_fints (
     fints_tan_mode  varchar(50),
     last_sync       timestamp,
     sync_from_date  date,
+    persisted_state text,
     itime           timestamp DEFAULT now(),
     mtime           timestamp
 );

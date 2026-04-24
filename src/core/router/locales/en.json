@@ -12,6 +12,7 @@
         "newVendor": "/vendor/new",
         "newQuotation": "/quotation/new",
         "newOrder": "/order/new",
+        "newDeliveryOrder": "/delivery-order/new",
         "newInvoice": "/invoice/new",
         "manageCustomers": "/customer",
         "manageVendors": "/vendor",

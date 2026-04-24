@@ -11,6 +11,7 @@
         "newVendor": "/lieferant/neu",
         "newQuotation": "/angebot/neu",
         "newOrder": "/auftrag/neu",
+        "newDeliveryOrder": "/lieferschein/neu",
         "newInvoice": "/rechnung/neu",
         "manageCustomers": "/kunde",
         "manageVendors": "/lieferant",

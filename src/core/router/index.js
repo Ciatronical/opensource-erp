@@ -418,6 +418,15 @@ const router = createRouter({
             }
         },
         {
+            path: i18n.global.t('routes.newDeliveryOrder'),
+            name: 'delivery-order-new',
+            component: FakturaView,
+            meta: {
+                permission: 'sales_delivery_order_edit',
+                documentType: 'delivery_order'
+            }
+        },
+        {
             path: i18n.global.t('routes.viewInvoice') + '/:id(\\d+)',
             name: 'invoice-view',
             component: NotFoundView,
