@@ -148,6 +148,59 @@ export function useTransfers() {
         }
     }
 
+    async function submitTransferBatch(transferOrderIds, pin) {
+        loading.value = true
+        tanRequired.value = false
+        try {
+            const response = await axios.post(API_URL, {
+                action: 'fintsSubmitTransferBatch',
+                transfer_order_ids: transferOrderIds,
+                pin
+            })
+            if (response.data.success) {
+                if (response.data.text === 'TAN_REQUIRED') {
+                    tanRequired.value = true
+                    const payload = response.data.payload
+                    tanChallenge.challenge = payload.challenge
+                    tanChallenge.tanMedium = payload.tan_medium
+                    tanChallenge.challengeHhduc = payload.challenge_hhduc
+                    return { tanRequired: true, batchId: payload.batch_id }
+                }
+                return { tanRequired: false, count: response.data.payload?.count || 0 }
+            }
+            throw new Error(response.data.payload || response.data.text)
+        } finally {
+            loading.value = false
+        }
+    }
+
+    async function submitTransferBatchTan(batchId, tan, pin) {
+        loading.value = true
+        try {
+            const response = await axios.post(API_URL, {
+                action: 'fintsSubmitTransferBatchTan',
+                batch_id: batchId,
+                tan, pin
+            })
+            if (!response.data.success) {
+                throw new Error(response.data.payload || response.data.text)
+            }
+            // Nach Login-TAN folgt eine zweite TAN fuer die eigentliche
+            // Sammelueberweisung — Composable reicht das durch.
+            if (response.data.text === 'TAN_REQUIRED') {
+                const payload = response.data.payload
+                tanChallenge.challenge = payload.challenge
+                tanChallenge.tanMedium = payload.tan_medium
+                tanChallenge.challengeHhduc = payload.challenge_hhduc
+                return { tanRequired: true, batchId: payload.batch_id || batchId }
+            }
+            tanRequired.value = false
+            return { tanRequired: false, ...(response.data.payload || {}) }
+        } finally {
+            loading.value = false
+        }
+    }
+
     async function submitTransferTan(transferOrderId, tan, pin) {
         loading.value = true
         try {
@@ -182,6 +235,8 @@ export function useTransfers() {
         searchRecipient,
         createRecipient,
         updateRecipientBank,
-        reconcileTransfers
+        reconcileTransfers,
+        submitTransferBatch,
+        submitTransferBatchTan
     }
 }

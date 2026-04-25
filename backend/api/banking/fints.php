@@ -138,13 +138,32 @@ function fintsCreate($config, $pin, $persistedInstance = null) {
  * Der Ausfuehrungstag '1999-01-01' ist das in der SEPA-Spec vorgesehene Flag
  * fuer "sofort ausfuehren".
  */
-function buildSepaCreditTransferPainXml($senderName, $senderIban, $senderBic,
-                                        $recipientName, $recipientIban, $recipientBic,
-                                        $amount, $purpose) {
+/**
+ * Erzeugt PAIN.001.001.03-XML fuer SEPA-Ueberweisungen.
+ *
+ * Unterstuetzt Einzel-, Sammel-, Sofort- und Termin-Ueberweisungen — phpFinTS
+ * waehlt anhand von NbOfTxs und ReqdExctnDt automatisch das passende FinTS-
+ * Segment (HKCCS / HKCSE / HKCCM / HKCME). Fuer Sofort-Ueberweisung wird
+ * das Magic-Datum '1999-01-01' verwendet (Konvention von phpFinTS).
+ *
+ * @param string $senderName    Kontoinhaber des Absenders
+ * @param string $senderIban
+ * @param string $senderBic     optional
+ * @param array  $transactions  Liste mit ['name','iban','bic','amount','purpose']
+ * @param ?string $executionDate 'YYYY-MM-DD' fuer Termin-Ueberweisung,
+ *                                null fuer Sofort
+ * @return string PAIN-XML
+ */
+function buildSepaCreditTransferPainXml($senderName, $senderIban, $senderBic, array $transactions, ?string $executionDate = null) {
+    if (empty($transactions)) {
+        throw new \InvalidArgumentException('Mindestens eine Transaktion erforderlich');
+    }
+
     $msgId    = 'MSG' . date('YmdHis') . substr(bin2hex(random_bytes(4)), 0, 6);
-    $pmtInfId = 'PMT' . date('YmdHis');
-    $e2eId    = 'ETE' . substr(bin2hex(random_bytes(6)), 0, 10);
-    $amountStr = number_format((float)$amount, 2, '.', '');
+    $pmtInfId = 'PMT' . date('YmdHis') . substr(bin2hex(random_bytes(2)), 0, 4);
+    $reqdDt   = $executionDate ?: '1999-01-01'; // Magic-Datum = sofort
+    $nbOfTx   = count($transactions);
+    $ctrlSum  = number_format(array_sum(array_map(fn($t) => (float)$t['amount'], $transactions)), 2, '.', '');
 
     $doc = new DOMDocument('1.0', 'UTF-8');
     $doc->formatOutput = false;
@@ -169,19 +188,19 @@ function buildSepaCreditTransferPainXml($senderName, $senderIban, $senderBic,
     $cstmr->appendChild($grpHdr);
     $grpHdr->appendChild($el('MsgId', $msgId));
     $grpHdr->appendChild($el('CreDtTm', date('c')));
-    $grpHdr->appendChild($el('NbOfTxs', '1'));
-    $grpHdr->appendChild($el('CtrlSum', $amountStr));
+    $grpHdr->appendChild($el('NbOfTxs', (string)$nbOfTx));
+    $grpHdr->appendChild($el('CtrlSum', $ctrlSum));
     $initgPty = $el('InitgPty');
     $initgPty->appendChild($el('Nm', $senderName));
     $grpHdr->appendChild($initgPty);
 
-    // PmtInf
+    // PmtInf — ein Block fuer alle Tx (Sammel = mehrere CdtTrfTxInf)
     $pmtInf = $el('PmtInf');
     $cstmr->appendChild($pmtInf);
     $pmtInf->appendChild($el('PmtInfId', $pmtInfId));
     $pmtInf->appendChild($el('PmtMtd', 'TRF'));
-    $pmtInf->appendChild($el('NbOfTxs', '1'));
-    $pmtInf->appendChild($el('CtrlSum', $amountStr));
+    $pmtInf->appendChild($el('NbOfTxs', (string)$nbOfTx));
+    $pmtInf->appendChild($el('CtrlSum', $ctrlSum));
 
     $pmtTpInf = $el('PmtTpInf');
     $svcLvl = $el('SvcLvl');
@@ -189,7 +208,7 @@ function buildSepaCreditTransferPainXml($senderName, $senderIban, $senderBic,
     $pmtTpInf->appendChild($svcLvl);
     $pmtInf->appendChild($pmtTpInf);
 
-    $pmtInf->appendChild($el('ReqdExctnDt', '1999-01-01'));
+    $pmtInf->appendChild($el('ReqdExctnDt', $reqdDt));
 
     $dbtr = $el('Dbtr');
     $dbtr->appendChild($el('Nm', $senderName));
@@ -211,42 +230,46 @@ function buildSepaCreditTransferPainXml($senderName, $senderIban, $senderBic,
 
     $pmtInf->appendChild($el('ChrgBr', 'SLEV'));
 
-    // Einzeltransaktion
-    $cdtTrfTxInf = $el('CdtTrfTxInf');
-    $pmtInf->appendChild($cdtTrfTxInf);
+    foreach ($transactions as $tx) {
+        $amountStr = number_format((float)$tx['amount'], 2, '.', '');
+        $e2eId = 'ETE' . substr(bin2hex(random_bytes(8)), 0, 14);
 
-    $pmtId = $el('PmtId');
-    $pmtId->appendChild($el('EndToEndId', $e2eId));
-    $cdtTrfTxInf->appendChild($pmtId);
+        $cdtTrfTxInf = $el('CdtTrfTxInf');
+        $pmtInf->appendChild($cdtTrfTxInf);
 
-    $amt = $el('Amt');
-    $instdAmt = $el('InstdAmt', $amountStr);
-    $instdAmt->setAttribute('Ccy', 'EUR');
-    $amt->appendChild($instdAmt);
-    $cdtTrfTxInf->appendChild($amt);
+        $pmtId = $el('PmtId');
+        $pmtId->appendChild($el('EndToEndId', $e2eId));
+        $cdtTrfTxInf->appendChild($pmtId);
 
-    if (!empty($recipientBic)) {
-        $cdtrAgt = $el('CdtrAgt');
-        $finInstnId = $el('FinInstnId');
-        $finInstnId->appendChild($el('BIC', $recipientBic));
-        $cdtrAgt->appendChild($finInstnId);
-        $cdtTrfTxInf->appendChild($cdtrAgt);
-    }
+        $amt = $el('Amt');
+        $instdAmt = $el('InstdAmt', $amountStr);
+        $instdAmt->setAttribute('Ccy', 'EUR');
+        $amt->appendChild($instdAmt);
+        $cdtTrfTxInf->appendChild($amt);
 
-    $cdtr = $el('Cdtr');
-    $cdtr->appendChild($el('Nm', $recipientName));
-    $cdtTrfTxInf->appendChild($cdtr);
+        if (!empty($tx['bic'])) {
+            $cdtrAgt = $el('CdtrAgt');
+            $finInstnId = $el('FinInstnId');
+            $finInstnId->appendChild($el('BIC', $tx['bic']));
+            $cdtrAgt->appendChild($finInstnId);
+            $cdtTrfTxInf->appendChild($cdtrAgt);
+        }
 
-    $cdtrAcct = $el('CdtrAcct');
-    $cdtrAcctId = $el('Id');
-    $cdtrAcctId->appendChild($el('IBAN', $recipientIban));
-    $cdtrAcct->appendChild($cdtrAcctId);
-    $cdtTrfTxInf->appendChild($cdtrAcct);
+        $cdtr = $el('Cdtr');
+        $cdtr->appendChild($el('Nm', $tx['name']));
+        $cdtTrfTxInf->appendChild($cdtr);
 
-    if (!empty($purpose)) {
-        $rmtInf = $el('RmtInf');
-        $rmtInf->appendChild($el('Ustrd', $purpose));
-        $cdtTrfTxInf->appendChild($rmtInf);
+        $cdtrAcct = $el('CdtrAcct');
+        $cdtrAcctId = $el('Id');
+        $cdtrAcctId->appendChild($el('IBAN', $tx['iban']));
+        $cdtrAcct->appendChild($cdtrAcctId);
+        $cdtTrfTxInf->appendChild($cdtrAcct);
+
+        if (!empty($tx['purpose'])) {
+            $rmtInf = $el('RmtInf');
+            $rmtInf->appendChild($el('Ustrd', $tx['purpose']));
+            $cdtTrfTxInf->appendChild($rmtInf);
+        }
     }
 
     return $doc->saveXML();
@@ -609,19 +632,31 @@ function fintsSubmitTransfer($data) {
             ->setIban($order['sender_iban'])
             ->setBic($order['sender_bic'] ?? '');
 
-        // PAIN.001.001.03 XML fuer Einzelueberweisung
+        // PAIN.001.001.03 XML fuer Einzelueberweisung — bei vorhandenem
+        // execution_date wird das Datum durchgereicht und phpFinTS waehlt
+        // automatisch HKCSE (terminiert) statt HKCCS (sofort).
         $painXml = buildSepaCreditTransferPainXml(
             $senderName,
             $order['sender_iban'],
             $order['sender_bic'] ?? '',
-            $order['remote_name'],
-            $order['remote_iban'],
-            $order['remote_bic'] ?? '',
-            floatval($order['amount']),
-            $order['purpose']
+            [[
+                'name'    => $order['remote_name'],
+                'iban'    => $order['remote_iban'],
+                'bic'     => $order['remote_bic'] ?? '',
+                'amount'  => floatval($order['amount']),
+                'purpose' => $order['purpose'],
+            ]],
+            !empty($order['execution_date']) ? $order['execution_date'] : null
         );
 
-        $sepaTransfer = \Fhp\Action\SendSEPATransfer::create($senderAccount, $painXml);
+        // Instant-SEPA: separater FinTS-Geschaeftsvorfall HKIPZ. Faellt bei
+        // Nicht-Unterstuetzung der Bank automatisch auf normale Ueberweisung
+        // zurueck (allowConversionToSEPATransfer=true).
+        if (!empty($order['instant'])) {
+            $sepaTransfer = \Fhp\Action\SendSEPARealtimeTransfer::create($senderAccount, $painXml, true);
+        } else {
+            $sepaTransfer = \Fhp\Action\SendSEPATransfer::create($senderAccount, $painXml);
+        }
         $fints->execute($sepaTransfer);
 
         if ($sepaTransfer->needsTan()) {
@@ -745,10 +780,20 @@ function fintsSubmitTransferTan($data) {
                 ->setBic($order['sender_bic'] ?? '');
             $painXml = buildSepaCreditTransferPainXml(
                 $senderName, $order['sender_iban'], $order['sender_bic'] ?? '',
-                $order['remote_name'], $order['remote_iban'], $order['remote_bic'] ?? '',
-                floatval($order['amount']), $order['purpose']
+                [[
+                    'name'    => $order['remote_name'],
+                    'iban'    => $order['remote_iban'],
+                    'bic'     => $order['remote_bic'] ?? '',
+                    'amount'  => floatval($order['amount']),
+                    'purpose' => $order['purpose'],
+                ]],
+                !empty($order['execution_date']) ? $order['execution_date'] : null
             );
-            $sepaTransfer = \Fhp\Action\SendSEPATransfer::create($senderAccount, $painXml);
+            if (!empty($order['instant'])) {
+                $sepaTransfer = \Fhp\Action\SendSEPARealtimeTransfer::create($senderAccount, $painXml, true);
+            } else {
+                $sepaTransfer = \Fhp\Action\SendSEPATransfer::create($senderAccount, $painXml);
+            }
             $fints->execute($sepaTransfer);
 
             if ($sepaTransfer->needsTan()) {
@@ -790,6 +835,329 @@ function fintsSubmitTransferTan($data) {
         SQL, ['id' => $transferId, 'error' => $e->getMessage()]);
 
         fintsLogException('SubmitTransferTan', $e, ['transfer_id' => $transferId]);
+        resultInfo(false, 'FINTS_ERROR', 'FinTS-Fehler: ' . $e->getMessage());
+    }
+}
+
+/**
+ * FinTS: Sammelueberweisung — mehrere Auftraege in einem PAIN-Batch absenden.
+ * Alle Auftraege muessen zum gleichen Bankkonto gehoeren, im 'draft' sein, und
+ * entweder alle ein execution_date haben (HKCME) oder keiner (HKCCM). Instant
+ * ist im Batch nicht erlaubt — Sofort-Ueberweisungen sind per Definition
+ * Einzeltransaktionen.
+ *
+ * @param array  $data['transfer_order_ids']  Liste von Auftrags-IDs
+ * @param string $data['pin']                 Online-Banking PIN
+ * @testdata {"transfer_order_ids": [1, 2, 3], "pin": "12345"}
+ */
+function fintsSubmitTransferBatch($data) {
+    $db = DbhCompany::begin();
+
+    $ids = $data['transfer_order_ids'] ?? [];
+    $pin = $data['pin'] ?? '';
+
+    if (!is_array($ids) || count($ids) < 2 || empty($pin)) {
+        resultInfo(false, 'VALIDATION_ERROR', 'Mindestens 2 Auftrags-IDs und PIN sind Pflicht');
+        return;
+    }
+
+    $ids = array_values(array_filter(array_map('intval', $ids), fn($i) => $i > 0));
+    if (count($ids) < 2) {
+        resultInfo(false, 'VALIDATION_ERROR', 'Mindestens 2 gueltige Auftrags-IDs erforderlich');
+        return;
+    }
+
+    // Auftraege laden + auf gleiche bank_account_id und draft pruefen.
+    $placeholders = implode(',', array_fill(0, count($ids), '?'));
+    $orders = $db->getAll(<<<SQL
+        SELECT bto.*, ba.iban as sender_iban, ba.bic as sender_bic
+        FROM bank_transfer_orders bto
+        JOIN bank_accounts ba ON ba.id = bto.bank_account_id
+        WHERE bto.id IN ($placeholders)
+        ORDER BY bto.id ASC
+    SQL, $ids);
+
+    if (count($orders) !== count($ids)) {
+        resultInfo(false, 'NOT_FOUND', 'Ein oder mehrere Auftraege nicht gefunden');
+        return;
+    }
+
+    $accountId = $orders[0]['bank_account_id'];
+    foreach ($orders as $o) {
+        if ($o['status'] !== 'draft') {
+            resultInfo(false, 'NOT_SUBMITTABLE', 'Nur Entwuerfe koennen gesendet werden');
+            return;
+        }
+        if ($o['bank_account_id'] != $accountId) {
+            resultInfo(false, 'VALIDATION_ERROR', 'Alle Auftraege muessen vom selben Konto sein');
+            return;
+        }
+        if (!empty($o['instant'])) {
+            resultInfo(false, 'VALIDATION_ERROR', 'Sofort-Ueberweisungen koennen nicht im Batch gesendet werden');
+            return;
+        }
+    }
+
+    // Termin/Sofort einheitlich pro Batch — entweder alle terminiert (gleiches
+    // Datum) oder alle sofort. Mischbatches lehnt phpFinTS ab.
+    $execDates = array_unique(array_filter(array_map(fn($o) => $o['execution_date'], $orders)));
+    if (count($execDates) > 1) {
+        resultInfo(false, 'VALIDATION_ERROR', 'Auftraege im Batch muessen das gleiche Ausfuehrungsdatum haben');
+        return;
+    }
+    $batchExecDate = $execDates ? reset($execDates) : null;
+    // Wenn manche Auftraege ein Datum haben und andere nicht, ist das
+    // ebenfalls ein Mix — nicht erlaubt.
+    if ($batchExecDate !== null) {
+        foreach ($orders as $o) {
+            if (empty($o['execution_date'])) {
+                resultInfo(false, 'VALIDATION_ERROR', 'Auftraege im Batch muessen entweder alle terminiert oder alle sofort sein');
+                return;
+            }
+        }
+    }
+
+    $config = $db->getOne(
+        "SELECT baf.* FROM bank_account_fints baf WHERE baf.bank_account_id = :id",
+        ['id' => $accountId]
+    );
+    if (!$config) {
+        resultInfo(false, 'NO_FINTS_CONFIG', 'Keine FinTS-Konfiguration vorhanden');
+        return;
+    }
+
+    require_once __DIR__.'/../../vendor/autoload.php';
+
+    $batchId = 'B' . date('YmdHis') . substr(bin2hex(random_bytes(4)), 0, 8);
+
+    try {
+        $fints = fintsCreate($config, $pin);
+        $tanMode = !empty($config['fints_tan_mode']) ? (int)$config['fints_tan_mode'] : null;
+        fintsSelectTanModeWithMedium($fints, $tanMode);
+        $login = $fints->login();
+        if ($login->needsTan()) {
+            session_start();
+            $_SESSION['fints_action'] = serialize($login);
+            $_SESSION['fints_persist'] = $fints->persist();
+            $_SESSION['fints_bank_account_id'] = $accountId;
+            $_SESSION['fints_batch_id'] = $batchId;
+            $_SESSION['fints_batch_ids'] = $ids;
+            $_SESSION['fints_stage'] = 'login-batch';
+            $db->execute(
+                "UPDATE bank_transfer_orders SET status = 'pending_tan', batch_id = :batch, mtime = now() WHERE id IN ($placeholders)",
+                array_merge(['batch' => $batchId], $ids)
+            );
+            $payload = fintsBuildTanResponse($fints, $login);
+            $payload['batch_id'] = $batchId;
+            resultInfo(true, 'TAN_REQUIRED', $payload);
+            return;
+        }
+
+        $companyRow = $db->getOne("SELECT company FROM defaults");
+        $senderName = trim($companyRow['company'] ?? '') ?: 'Absender';
+
+        $senderAccount = (new \Fhp\Model\SEPAAccount())
+            ->setIban($orders[0]['sender_iban'])
+            ->setBic($orders[0]['sender_bic'] ?? '');
+
+        $txList = array_map(fn($o) => [
+            'name'    => $o['remote_name'],
+            'iban'    => $o['remote_iban'],
+            'bic'     => $o['remote_bic'] ?? '',
+            'amount'  => floatval($o['amount']),
+            'purpose' => $o['purpose'],
+        ], $orders);
+
+        $painXml = buildSepaCreditTransferPainXml(
+            $senderName,
+            $orders[0]['sender_iban'],
+            $orders[0]['sender_bic'] ?? '',
+            $txList,
+            $batchExecDate
+        );
+
+        $sepaTransfer = \Fhp\Action\SendSEPATransfer::create($senderAccount, $painXml);
+        $fints->execute($sepaTransfer);
+
+        if ($sepaTransfer->needsTan()) {
+            session_start();
+            $_SESSION['fints_action'] = serialize($sepaTransfer);
+            $_SESSION['fints_persist'] = $fints->persist();
+            $_SESSION['fints_bank_account_id'] = $accountId;
+            $_SESSION['fints_batch_id'] = $batchId;
+            $_SESSION['fints_batch_ids'] = $ids;
+            $_SESSION['fints_stage'] = 'batch';
+
+            $db->execute(
+                "UPDATE bank_transfer_orders SET status = 'pending_tan', batch_id = :batch, mtime = now() WHERE id IN ($placeholders)",
+                array_merge(['batch' => $batchId], $ids)
+            );
+            $payload = fintsBuildTanResponse($fints, $sepaTransfer);
+            $payload['batch_id'] = $batchId;
+            resultInfo(true, 'TAN_REQUIRED', $payload);
+            return;
+        }
+
+        // Kein TAN noetig — alle als submitted markieren
+        $db->execute(
+            "UPDATE bank_transfer_orders SET status = 'submitted', submitted_at = now(), batch_id = :batch, mtime = now() WHERE id IN ($placeholders)",
+            array_merge(['batch' => $batchId], $ids)
+        );
+        resultInfo(true, 'Sammelueberweisung gesendet', ['batch_id' => $batchId, 'count' => count($ids)]);
+
+    } catch (\Exception $e) {
+        $db->execute(
+            "UPDATE bank_transfer_orders SET status = 'rejected', error_message = :error, mtime = now() WHERE id IN ($placeholders)",
+            array_merge(['error' => $e->getMessage()], $ids)
+        );
+        fintsLogException('SubmitTransferBatch', $e, ['batch_id' => $batchId, 'ids' => $ids]);
+        resultInfo(false, 'FINTS_ERROR', 'FinTS-Fehler: ' . $e->getMessage());
+    }
+}
+
+/**
+ * FinTS: TAN fuer Sammelueberweisung einreichen. Spiegelt fintsSubmitTransferTan
+ * fuer Batch-Sessions — die TAN gilt fuer alle Auftraege gemeinsam.
+ *
+ * @param string $data['tan']      TAN-Eingabe (leer bei Decoupled)
+ * @param string $data['pin']      Online-Banking PIN
+ * @param string $data['batch_id'] Batch-ID aus der TAN_REQUIRED-Antwort
+ * @testdata {"tan": "123456", "pin": "12345", "batch_id": "B20260101120000abcd"}
+ */
+function fintsSubmitTransferBatchTan($data) {
+    $db = DbhCompany::begin();
+
+    $tan = trim($data['tan'] ?? '');
+    $pin = $data['pin'] ?? '';
+    $batchId = trim($data['batch_id'] ?? '');
+
+    if (empty($pin) || $batchId === '') {
+        resultInfo(false, 'VALIDATION_ERROR', 'PIN und Batch-ID sind Pflicht');
+        return;
+    }
+
+    session_start();
+
+    if (empty($_SESSION['fints_action']) || empty($_SESSION['fints_persist'])) {
+        resultInfo(false, 'NO_PENDING_ACTION', 'Keine ausstehende FinTS-Aktion');
+        return;
+    }
+    if (($_SESSION['fints_batch_id'] ?? '') !== $batchId) {
+        resultInfo(false, 'SESSION_MISMATCH', 'Batch-ID stimmt nicht');
+        return;
+    }
+
+    $ids = $_SESSION['fints_batch_ids'] ?? [];
+    if (!is_array($ids) || empty($ids)) {
+        resultInfo(false, 'NO_PENDING_ACTION', 'Batch-Session ungueltig');
+        return;
+    }
+    $placeholders = implode(',', array_fill(0, count($ids), '?'));
+
+    $config = $db->getOne(
+        "SELECT baf.* FROM bank_account_fints baf WHERE baf.bank_account_id = :id",
+        ['id' => $_SESSION['fints_bank_account_id']]
+    );
+
+    require_once __DIR__.'/../../vendor/autoload.php';
+
+    try {
+        $fints = fintsCreate($config, $pin, $_SESSION['fints_persist']);
+        $action = unserialize($_SESSION['fints_action']);
+
+        if ($tan !== '') {
+            $fints->submitTan($action, $tan);
+        } else {
+            $tm = $fints->getSelectedTanMode();
+            if (!$tm || !$tm->isDecoupled()) {
+                resultInfo(false, 'VALIDATION_ERROR', 'TAN ist erforderlich');
+                return;
+            }
+            if (!$fints->checkDecoupledSubmission($action)) {
+                $_SESSION['fints_persist'] = $fints->persist();
+                $_SESSION['fints_action']  = serialize($action);
+                $payload = fintsBuildTanResponse($fints, $action);
+                $payload['message'] = 'Freigabe in der Banking-App noch nicht eingegangen — bitte in der App bestaetigen und erneut "Fortfahren" klicken.';
+                resultInfo(true, 'TAN_REQUIRED', $payload);
+                return;
+            }
+        }
+
+        $stage = $_SESSION['fints_stage'] ?? 'batch';
+        if ($stage === 'login-batch') {
+            // Login-TAN war erfolgreich, jetzt die eigentliche Sammelueberweisung
+            unset($_SESSION['fints_action'], $_SESSION['fints_persist'], $_SESSION['fints_stage']);
+
+            $orders = $db->getAll(<<<SQL
+                SELECT bto.*, ba.iban as sender_iban, ba.bic as sender_bic
+                FROM bank_transfer_orders bto
+                JOIN bank_accounts ba ON ba.id = bto.bank_account_id
+                WHERE bto.id IN ($placeholders)
+                ORDER BY bto.id ASC
+            SQL, $ids);
+
+            $companyRow = $db->getOne("SELECT company FROM defaults");
+            $senderName = trim($companyRow['company'] ?? '') ?: 'Absender';
+            $senderAccount = (new \Fhp\Model\SEPAAccount())
+                ->setIban($orders[0]['sender_iban'])
+                ->setBic($orders[0]['sender_bic'] ?? '');
+            $txList = array_map(fn($o) => [
+                'name'    => $o['remote_name'],
+                'iban'    => $o['remote_iban'],
+                'bic'     => $o['remote_bic'] ?? '',
+                'amount'  => floatval($o['amount']),
+                'purpose' => $o['purpose'],
+            ], $orders);
+            $execDates = array_unique(array_filter(array_map(fn($o) => $o['execution_date'], $orders)));
+            $batchExecDate = $execDates ? reset($execDates) : null;
+            $painXml = buildSepaCreditTransferPainXml(
+                $senderName, $orders[0]['sender_iban'], $orders[0]['sender_bic'] ?? '',
+                $txList, $batchExecDate
+            );
+            $sepaTransfer = \Fhp\Action\SendSEPATransfer::create($senderAccount, $painXml);
+            $fints->execute($sepaTransfer);
+            if ($sepaTransfer->needsTan()) {
+                session_start();
+                $_SESSION['fints_action'] = serialize($sepaTransfer);
+                $_SESSION['fints_persist'] = $fints->persist();
+                $_SESSION['fints_bank_account_id'] = $orders[0]['bank_account_id'];
+                $_SESSION['fints_batch_id'] = $batchId;
+                $_SESSION['fints_batch_ids'] = $ids;
+                $_SESSION['fints_stage'] = 'batch';
+                $payload = fintsBuildTanResponse($fints, $sepaTransfer);
+                $payload['batch_id'] = $batchId;
+                resultInfo(true, 'TAN_REQUIRED', $payload);
+                return;
+            }
+            $db->execute(
+                "UPDATE bank_transfer_orders SET status = 'submitted', submitted_at = now(), mtime = now() WHERE id IN ($placeholders)",
+                $ids
+            );
+            resultInfo(true, 'Sammelueberweisung gesendet', ['count' => count($ids)]);
+            return;
+        }
+
+        // stage = batch — Action-TAN, Sammelueberweisung war direkt in der Action
+        unset($_SESSION['fints_action'], $_SESSION['fints_persist'],
+              $_SESSION['fints_bank_account_id'], $_SESSION['fints_batch_id'],
+              $_SESSION['fints_batch_ids'], $_SESSION['fints_stage']);
+
+        $db->execute(
+            "UPDATE bank_transfer_orders SET status = 'submitted', submitted_at = now(), mtime = now() WHERE id IN ($placeholders)",
+            $ids
+        );
+        resultInfo(true, 'Sammelueberweisung gesendet', ['count' => count($ids)]);
+
+    } catch (\Exception $e) {
+        unset($_SESSION['fints_action'], $_SESSION['fints_persist'],
+              $_SESSION['fints_bank_account_id'], $_SESSION['fints_batch_id'],
+              $_SESSION['fints_batch_ids'], $_SESSION['fints_stage']);
+
+        $db->execute(
+            "UPDATE bank_transfer_orders SET status = 'rejected', error_message = :error, mtime = now() WHERE id IN ($placeholders)",
+            array_merge(['error' => $e->getMessage()], $ids)
+        );
+        fintsLogException('SubmitTransferBatchTan', $e, ['batch_id' => $batchId, 'ids' => $ids]);
         resultInfo(false, 'FINTS_ERROR', 'FinTS-Fehler: ' . $e->getMessage());
     }
 }

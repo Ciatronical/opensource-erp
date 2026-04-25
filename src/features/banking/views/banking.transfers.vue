@@ -22,15 +22,43 @@
             </v-col>
         </v-row>
 
+        <!-- Bulk-Aktionen wenn mind. 2 Drafts ausgewaehlt sind -->
+        <v-alert
+            v-if="batchSelectableCount >= 2"
+            type="info"
+            variant="tonal"
+            density="compact"
+            class="mb-3 d-flex align-center"
+        >
+            <div class="d-flex align-center w-100">
+                <span class="flex-grow-1">
+                    {{ t('BankingView.transfers.batchSelected', { count: batchSelectableCount, total: formatCurrency(batchSelectableTotal) }) }}
+                </span>
+                <v-btn
+                    color="primary"
+                    variant="elevated"
+                    size="small"
+                    @click="confirmSubmitBatch"
+                >
+                    <v-icon start>mdi-bank-transfer</v-icon>
+                    {{ t('BankingView.transfers.submitBatch') }}
+                </v-btn>
+            </div>
+        </v-alert>
+
         <!-- Ueberweisungsliste -->
         <v-card>
             <v-data-table
+                v-model="selectedIds"
                 :headers="headers"
                 :items="transfers.transferOrders.value"
                 :loading="transfers.loading.value"
                 :items-per-page="50"
                 density="compact"
                 hover
+                show-select
+                return-object
+                item-value="id"
             >
                 <template #item.amount="{ item }">
                     <span class="font-weight-medium">{{ formatCurrency(item.amount) }}</span>
@@ -207,7 +235,24 @@
                     <v-text-field
                         v-model="transferForm.execution_date"
                         :label="t('BankingView.transfers.executionDate')"
+                        :hint="t('BankingView.transfers.executionDateHint')"
+                        :persistent-hint="!!transferForm.execution_date"
+                        :error-messages="executionDateError ? [executionDateError] : []"
+                        :disabled="!!transferForm.instant"
+                        :min="todayIso"
+                        :max="maxExecutionDateIso"
                         type="date"
+                        clearable
+                        class="mb-2"
+                    />
+
+                    <v-checkbox
+                        v-model="transferForm.instant"
+                        :label="t('BankingView.transfers.instantLabel')"
+                        :hint="t('BankingView.transfers.instantHint')"
+                        :disabled="!!transferForm.execution_date"
+                        density="compact"
+                        hide-details
                     />
                 </v-card-text>
                 <v-card-actions>
@@ -227,12 +272,17 @@
             </v-card>
         </v-dialog>
 
-        <!-- PIN-Eingabe fuer Ueberweisung -->
+        <!-- PIN-Eingabe fuer Ueberweisung (Single oder Batch) -->
         <v-dialog v-model="showPinDialog" max-width="450" persistent>
             <v-card>
-                <v-card-title>{{ t('BankingView.transfers.submit') }}</v-card-title>
+                <v-card-title>
+                    {{ isBatchSubmit ? t('BankingView.transfers.submitBatch') : t('BankingView.transfers.submit') }}
+                </v-card-title>
                 <v-card-text>
-                    <div class="mb-3 text-body-2">
+                    <div v-if="isBatchSubmit" class="mb-3 text-body-2">
+                        {{ t('BankingView.transfers.batchSummary', { count: batchSubmitIds.length, total: formatCurrency(batchSubmitTotal) }) }}
+                    </div>
+                    <div v-else class="mb-3 text-body-2">
                         <strong>{{ submitTarget?.remote_name }}</strong> — {{ formatCurrency(submitTarget?.amount) }}
                     </div>
                     <v-text-field
@@ -331,7 +381,23 @@ const transferForm = reactive({
     remote_bic: '',
     amount: null,
     purpose: '',
-    execution_date: ''
+    execution_date: '',
+    instant: false
+})
+
+const todayIso = new Date().toISOString().slice(0, 10)
+const maxExecutionDateIso = (() => {
+    const d = new Date()
+    d.setFullYear(d.getFullYear() + 1)
+    return d.toISOString().slice(0, 10)
+})()
+
+const executionDateError = computed(() => {
+    if (!transferForm.execution_date) return ''
+    if (transferForm.instant) return t('BankingView.transfers.executionDateInstantConflict')
+    if (transferForm.execution_date < todayIso) return t('BankingView.transfers.executionDatePast')
+    if (transferForm.execution_date > maxExecutionDateIso) return t('BankingView.transfers.executionDateTooFar')
+    return ''
 })
 
 // IBAN/BIC live-validation. Leeres Feld zeigt keinen Fehler — wir sperren den
@@ -372,6 +438,7 @@ const canSave = computed(() => {
         && !!transferForm.remote_name
         && ibanValid.value
         && !bicError.value
+        && !executionDateError.value
         && transferForm.amount > 0
         && !!transferForm.purpose
 })
@@ -396,10 +463,31 @@ function clearRecipient() {
     transferForm.remote_bic = ''
 }
 
-// Submit
+// Submit (Single oder Batch — selectedIds bestimmt den Modus)
 const showPinDialog = ref(false)
-const submitTarget = ref(null)
+const submitTarget = ref(null)        // Single: das item, Batch: null
 const submitPin = ref('')
+const selectedIds = ref([])
+const batchSubmitIds = ref([])         // gefroren beim Klick auf "Auswahl senden"
+const batchId = ref(null)              // gesetzt sobald Backend einen Batch eroeffnet hat
+const isBatchSubmit = computed(() => batchSubmitIds.value.length > 0)
+
+// Welche Drafts sind als Batch sendbar? Alle gleicher bank_account_id, gleiche
+// execution_date, kein Instant. Berechnet aus selectedIds.
+const batchSelectable = computed(() => {
+    const all = transfers.transferOrders.value || []
+    const drafts = selectedIds.value
+        .map(item => all.find(o => o.id === (item.id || item)))
+        .filter(o => o && o.status === 'draft' && !o.instant)
+    if (drafts.length < 2) return []
+    const accountId = drafts[0].bank_account_id
+    const execDate = drafts[0].execution_date || null
+    return drafts.filter(o => o.bank_account_id === accountId && (o.execution_date || null) === execDate)
+})
+const batchSelectableCount = computed(() => batchSelectable.value.length)
+const batchSelectableTotal = computed(() =>
+    batchSelectable.value.reduce((sum, o) => sum + parseFloat(o.amount || 0), 0)
+)
 
 // TAN
 const showTanDialog = ref(false)
@@ -441,6 +529,7 @@ function openNewTransfer(preselectAccountId = null) {
     transferForm.amount = null
     transferForm.purpose = ''
     transferForm.execution_date = ''
+    transferForm.instant = false
     showTransferDialog.value = true
 }
 
@@ -454,6 +543,7 @@ function editTransfer(item) {
     transferForm.amount = parseFloat(item.amount)
     transferForm.purpose = item.purpose
     transferForm.execution_date = item.execution_date || ''
+    transferForm.instant = !!item.instant
     showTransferDialog.value = true
 }
 
@@ -532,29 +622,58 @@ async function confirmDeleteTransfer(item) {
 
 function confirmSubmitTransfer(item) {
     submitTarget.value = item
+    batchSubmitIds.value = []
+    batchId.value = null
     submitPin.value = ''
     showPinDialog.value = true
 }
 
+function confirmSubmitBatch() {
+    const drafts = batchSelectable.value
+    if (drafts.length < 2) return
+    submitTarget.value = null
+    batchSubmitIds.value = drafts.map(d => d.id)
+    batchSubmitTotalCache = drafts.reduce((s, d) => s + parseFloat(d.amount || 0), 0)
+    batchId.value = null
+    submitPin.value = ''
+    showPinDialog.value = true
+}
+
+let batchSubmitTotalCache = 0
+const batchSubmitTotal = computed(() => batchSubmitTotalCache)
+
 function closePinDialog() {
     submitPin.value = ''
+    submitTarget.value = null
+    batchSubmitIds.value = []
+    batchId.value = null
     showPinDialog.value = false
 }
 
 async function executeSubmitTransfer() {
     if (!submitPin.value) return
-
     try {
-        const result = await transfers.submitTransfer(submitTarget.value.id, submitPin.value)
+        const result = isBatchSubmit.value
+            ? await transfers.submitTransferBatch(batchSubmitIds.value, submitPin.value)
+            : await transfers.submitTransfer(submitTarget.value.id, submitPin.value)
 
         if (result.tanRequired) {
+            if (isBatchSubmit.value && result.batchId) {
+                batchId.value = result.batchId
+            }
             showPinDialog.value = false
             tanInput.value = ''
             showTanDialog.value = true
         } else {
+            const successKey = isBatchSubmit.value
+                ? 'BankingView.alerts.batchSubmitted'
+                : 'BankingView.alerts.transferSubmitted'
+            const params = isBatchSubmit.value ? { count: result.count } : {}
             submitPin.value = ''
             showPinDialog.value = false
-            alerts.success(t('BankingView.alerts.transferSubmitted'))
+            selectedIds.value = []
+            batchSubmitIds.value = []
+            alerts.success(t(successKey, params))
             await transfers.fetchTransferOrders()
         }
     } catch (e) {
@@ -564,13 +683,34 @@ async function executeSubmitTransfer() {
 
 async function submitTanForTransfer() {
     if (!tanInput.value) return
-
     try {
-        await transfers.submitTransferTan(submitTarget.value.id, tanInput.value, submitPin.value)
-        showTanDialog.value = false
-        submitPin.value = ''
-        tanInput.value = ''
-        alerts.success(t('BankingView.alerts.transferSubmitted'))
+        if (isBatchSubmit.value) {
+            const result = await transfers.submitTransferBatchTan(
+                batchId.value,
+                tanInput.value,
+                submitPin.value
+            )
+            if (result.tanRequired) {
+                // Nach Login-TAN braucht die SEPA-Action selbst noch eine TAN —
+                // Dialog offen halten, neue Challenge anzeigen.
+                if (result.batchId) batchId.value = result.batchId
+                tanInput.value = ''
+                return
+            }
+            const count = result.count || batchSubmitIds.value.length
+            showTanDialog.value = false
+            submitPin.value = ''
+            tanInput.value = ''
+            selectedIds.value = []
+            batchSubmitIds.value = []
+            alerts.success(t('BankingView.alerts.batchSubmitted', { count }))
+        } else {
+            await transfers.submitTransferTan(submitTarget.value.id, tanInput.value, submitPin.value)
+            showTanDialog.value = false
+            submitPin.value = ''
+            tanInput.value = ''
+            alerts.success(t('BankingView.alerts.transferSubmitted'))
+        }
         await transfers.fetchTransferOrders()
     } catch (e) {
         alerts.error(e.message)

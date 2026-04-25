@@ -1081,6 +1081,8 @@ CREATE TABLE bank_transfer_orders (
     currency               varchar(5) DEFAULT 'EUR',
     purpose                text NOT NULL,
     execution_date         date,
+    instant                boolean DEFAULT false,
+    batch_id               varchar(40),
     status                 varchar(20) DEFAULT 'draft',
     source_type            varchar(20),
     source_id              integer,
@@ -1096,9 +1098,6 @@ CREATE TABLE bank_transfer_orders (
 
 CREATE INDEX IF NOT EXISTS idx_bank_transfer_orders_status ON bank_transfer_orders(status);
 CREATE INDEX IF NOT EXISTS idx_bank_transfer_orders_account ON bank_transfer_orders(bank_account_id);
--- Beschleunigt das Match-Polling: alle "submitted" eines Kontos schnell finden.
-CREATE INDEX IF NOT EXISTS idx_bank_transfer_orders_submitted_match
-    ON bank_transfer_orders(bank_account_id, status) WHERE status = 'submitted';
 
 CREATE TABLE bank_matching_rules (
     id                  integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -1133,75 +1132,176 @@ RETURNS TABLE(
     target_id INTEGER,
     confidence NUMERIC
 ) AS $$
+#variable_conflict use_column
 BEGIN
+    -- Liefert pro Bankumsatz **maximal einen** Match — den mit hoechster
+    -- Konfidenz aus mehreren Strategien. So entstehen keine doppelten
+    -- Zuordnungen wenn z. B. Rechnungsnummer im Purpose UND IBAN+Betrag
+    -- gleichzeitig passen.
+    --
+    -- Konfidenz-Stufen:
+    --   0.98  Rechnungsnummer im Purpose + Empfaenger-IBAN bestaetigt
+    --   0.92  IBAN passt + exakter offener Betrag (Toleranz 0,01 EUR)
+    --   0.88  Rechnungsnummer im Purpose ohne IBAN-Bestaetigung
+    --   0.80  IBAN passt + Kontakt hat genau eine offene Rechnung
+    --   0.70  Benutzer-Regel
     RETURN QUERY
+    SELECT bank_transaction_id, match_type, target_type, target_id, confidence
+    FROM (
+        SELECT DISTINCT ON (bank_transaction_id)
+            bank_transaction_id, match_type, target_type, target_id, confidence
+        FROM (
+            -- ── EINGAENGE (Kunden zahlen Ausgangsrechnungen) ──────────────────
 
-    -- 1. Rechnungsnummer im Verwendungszweck (hoechste Konfidenz)
-    SELECT bt.id, 'invnumber_in_purpose'::TEXT,
-           'ar'::TEXT, ar.id, 0.95::NUMERIC
-    FROM bank_transactions bt
-    CROSS JOIN LATERAL (
-        SELECT regexp_matches(bt.purpose, '(RE[\-\s]?\d{4}[\-\s]?\d+)', 'gi') AS m
-    ) matches
-    JOIN ar ON UPPER(ar.invnumber) = UPPER(REPLACE(REPLACE((matches.m)[1], ' ', ''), '-', ''))
-    WHERE bt.local_bank_account_id = p_bank_account_id
-      AND bt.match_status = 'unmatched'
-      AND bt.amount > 0
-      AND (ar.amount - ar.paid) > 0
+            -- 1a. AR-Nummer im Purpose UND Kunden-IBAN passt (zwei Signale)
+            SELECT bt.id AS bank_transaction_id,
+                   'invnumber_and_iban'::TEXT AS match_type,
+                   'ar'::TEXT AS target_type,
+                   ar.id AS target_id,
+                   0.98::NUMERIC AS confidence
+            FROM bank_transactions bt
+            JOIN customer c ON c.iban = bt.remote_iban AND bt.remote_iban IS NOT NULL
+            JOIN ar ON ar.customer_id = c.id
+                    AND (ar.amount - ar.paid) > 0.01
+                    AND length(ar.invnumber) >= 4
+                    AND bt.purpose ~ ('(^|[^[:alnum:]])' || ar.invnumber || '($|[^[:alnum:]])')
+            WHERE bt.local_bank_account_id = p_bank_account_id
+              AND bt.match_status = 'unmatched'
+              AND bt.amount > 0
 
-    UNION ALL
+            UNION ALL
 
-    -- 2. IBAN + exakter Betrag = offene Ausgangsrechnung
-    SELECT bt.id, 'iban_amount_match'::TEXT,
-           'ar'::TEXT, ar.id, 0.85::NUMERIC
-    FROM bank_transactions bt
-    JOIN customer c ON c.iban = bt.remote_iban AND bt.remote_iban IS NOT NULL
-    JOIN ar ON ar.customer_id = c.id
-              AND (ar.amount - ar.paid) = bt.amount
-              AND ar.paid < ar.amount
-    WHERE bt.local_bank_account_id = p_bank_account_id
-      AND bt.match_status = 'unmatched'
-      AND bt.amount > 0
+            -- 1b. AR-Nummer im Purpose ohne IBAN — nur eindeutige Treffer.
+            --     Wenn die gleiche Nummer bei mehreren offenen ARs vorkommt
+            --     (sehr selten), lassen wir den Match weg.
+            SELECT bt.id, 'invnumber_in_purpose', 'ar'::TEXT, ar.id, 0.88
+            FROM bank_transactions bt
+            JOIN ar ON (ar.amount - ar.paid) > 0.01
+                    AND length(ar.invnumber) >= 4
+                    AND bt.purpose ~ ('(^|[^[:alnum:]])' || ar.invnumber || '($|[^[:alnum:]])')
+            WHERE bt.local_bank_account_id = p_bank_account_id
+              AND bt.match_status = 'unmatched'
+              AND bt.amount > 0
 
-    UNION ALL
+            UNION ALL
 
-    -- 3. IBAN + exakter Betrag = offene Eingangsrechnung (Ausgaenge)
-    SELECT bt.id, 'iban_amount_match'::TEXT,
-           'ap'::TEXT, ap.id, 0.85::NUMERIC
-    FROM bank_transactions bt
-    JOIN vendor v ON v.iban = bt.remote_iban AND bt.remote_iban IS NOT NULL
-    JOIN ap ON ap.vendor_id = v.id
-             AND (ap.amount - ap.paid) = ABS(bt.amount)
-             AND ap.paid < ap.amount
-    WHERE bt.local_bank_account_id = p_bank_account_id
-      AND bt.match_status = 'unmatched'
-      AND bt.amount < 0
+            -- 2. Kunden-IBAN + exakter offener Betrag (Toleranz 0,01)
+            SELECT bt.id, 'iban_amount_match', 'ar'::TEXT, ar.id, 0.92
+            FROM bank_transactions bt
+            JOIN customer c ON c.iban = bt.remote_iban AND bt.remote_iban IS NOT NULL
+            JOIN ar ON ar.customer_id = c.id
+                    AND ABS((ar.amount - ar.paid) - bt.amount) < 0.01
+                    AND ar.paid < ar.amount
+            WHERE bt.local_bank_account_id = p_bank_account_id
+              AND bt.match_status = 'unmatched'
+              AND bt.amount > 0
 
-    UNION ALL
+            UNION ALL
 
-    -- 4. Benutzer-Regeln anwenden
-    SELECT bt.id, 'user_rule'::TEXT,
-           CASE bmr.action_type
-               WHEN 'assign_customer' THEN 'customer'
-               WHEN 'assign_vendor' THEN 'vendor'
-               WHEN 'assign_chart' THEN 'chart'
-               WHEN 'ignore' THEN 'ignore'
-           END::TEXT,
-           COALESCE(bmr.action_customer_id, bmr.action_vendor_id, bmr.action_chart_id, 0),
-           0.70::NUMERIC
-    FROM bank_transactions bt
-    JOIN bank_matching_rules bmr ON bmr.active
-        AND (bmr.bank_account_id IS NULL OR bmr.bank_account_id = bt.local_bank_account_id)
-        AND (bmr.match_remote_iban IS NULL OR bt.remote_iban = bmr.match_remote_iban)
-        AND (bmr.match_remote_name IS NULL OR bt.remote_name ILIKE '%' || bmr.match_remote_name || '%')
-        AND (bmr.match_purpose IS NULL OR bt.purpose ILIKE '%' || bmr.match_purpose || '%')
-        AND (bmr.match_amount_min IS NULL OR ABS(bt.amount) >= bmr.match_amount_min)
-        AND (bmr.match_amount_max IS NULL OR ABS(bt.amount) <= bmr.match_amount_max)
-        AND (bmr.match_booking_key IS NULL OR bt.booking_key = bmr.match_booking_key)
-    WHERE bt.local_bank_account_id = p_bank_account_id
-      AND bt.match_status = 'unmatched'
+            -- 3. Kunden-IBAN + Kunde hat genau eine offene Rechnung
+            SELECT bt.id, 'iban_single_open', 'ar'::TEXT, ar.id, 0.80
+            FROM bank_transactions bt
+            JOIN customer c ON c.iban = bt.remote_iban AND bt.remote_iban IS NOT NULL
+            JOIN LATERAL (
+                SELECT id, amount, paid
+                FROM ar
+                WHERE customer_id = c.id AND (amount - paid) > 0.01
+                LIMIT 2
+            ) ar_count ON true
+            JOIN ar ON ar.id = ar_count.id
+            WHERE bt.local_bank_account_id = p_bank_account_id
+              AND bt.match_status = 'unmatched'
+              AND bt.amount > 0
+            GROUP BY bt.id, ar.id
+            HAVING count(*) = 1
 
-    ORDER BY confidence DESC;
+            UNION ALL
+
+            -- ── AUSGAENGE (eigene Zahlungen an Lieferanten) ──────────────────
+
+            -- 4a. AP-Nummer im Purpose UND Lieferanten-IBAN
+            SELECT bt.id, 'invnumber_and_iban', 'ap'::TEXT, ap.id, 0.98
+            FROM bank_transactions bt
+            JOIN vendor v ON v.iban = bt.remote_iban AND bt.remote_iban IS NOT NULL
+            JOIN ap ON ap.vendor_id = v.id
+                    AND (ap.amount - ap.paid) > 0.01
+                    AND length(ap.invnumber) >= 4
+                    AND bt.purpose ~ ('(^|[^[:alnum:]])' || ap.invnumber || '($|[^[:alnum:]])')
+            WHERE bt.local_bank_account_id = p_bank_account_id
+              AND bt.match_status = 'unmatched'
+              AND bt.amount < 0
+
+            UNION ALL
+
+            -- 4b. AP-Nummer im Purpose ohne IBAN
+            SELECT bt.id, 'invnumber_in_purpose', 'ap'::TEXT, ap.id, 0.88
+            FROM bank_transactions bt
+            JOIN ap ON (ap.amount - ap.paid) > 0.01
+                    AND length(ap.invnumber) >= 4
+                    AND bt.purpose ~ ('(^|[^[:alnum:]])' || ap.invnumber || '($|[^[:alnum:]])')
+            WHERE bt.local_bank_account_id = p_bank_account_id
+              AND bt.match_status = 'unmatched'
+              AND bt.amount < 0
+
+            UNION ALL
+
+            -- 5. Lieferanten-IBAN + exakter offener Betrag (Toleranz 0,01)
+            SELECT bt.id, 'iban_amount_match', 'ap'::TEXT, ap.id, 0.92
+            FROM bank_transactions bt
+            JOIN vendor v ON v.iban = bt.remote_iban AND bt.remote_iban IS NOT NULL
+            JOIN ap ON ap.vendor_id = v.id
+                    AND ABS((ap.amount - ap.paid) - ABS(bt.amount)) < 0.01
+                    AND ap.paid < ap.amount
+            WHERE bt.local_bank_account_id = p_bank_account_id
+              AND bt.match_status = 'unmatched'
+              AND bt.amount < 0
+
+            UNION ALL
+
+            -- 6. Lieferanten-IBAN + Lieferant hat genau eine offene Rechnung
+            SELECT bt.id, 'iban_single_open', 'ap'::TEXT, ap.id, 0.80
+            FROM bank_transactions bt
+            JOIN vendor v ON v.iban = bt.remote_iban AND bt.remote_iban IS NOT NULL
+            JOIN LATERAL (
+                SELECT id
+                FROM ap
+                WHERE vendor_id = v.id AND (amount - paid) > 0.01
+                LIMIT 2
+            ) ap_count ON true
+            JOIN ap ON ap.id = ap_count.id
+            WHERE bt.local_bank_account_id = p_bank_account_id
+              AND bt.match_status = 'unmatched'
+              AND bt.amount < 0
+            GROUP BY bt.id, ap.id
+            HAVING count(*) = 1
+
+            UNION ALL
+
+            -- 7. Benutzer-Regeln
+            SELECT bt.id, 'user_rule',
+                   CASE bmr.action_type
+                       WHEN 'assign_customer' THEN 'customer'
+                       WHEN 'assign_vendor'   THEN 'vendor'
+                       WHEN 'assign_chart'    THEN 'chart'
+                       WHEN 'ignore'          THEN 'ignore'
+                   END::TEXT,
+                   COALESCE(bmr.action_customer_id, bmr.action_vendor_id, bmr.action_chart_id, 0),
+                   0.70
+            FROM bank_transactions bt
+            JOIN bank_matching_rules bmr ON bmr.active
+                AND (bmr.bank_account_id IS NULL OR bmr.bank_account_id = bt.local_bank_account_id)
+                AND (bmr.match_remote_iban IS NULL OR bt.remote_iban = bmr.match_remote_iban)
+                AND (bmr.match_remote_name IS NULL OR bt.remote_name ILIKE '%' || bmr.match_remote_name || '%')
+                AND (bmr.match_purpose IS NULL OR bt.purpose ILIKE '%' || bmr.match_purpose || '%')
+                AND (bmr.match_amount_min IS NULL OR ABS(bt.amount) >= bmr.match_amount_min)
+                AND (bmr.match_amount_max IS NULL OR ABS(bt.amount) <= bmr.match_amount_max)
+                AND (bmr.match_booking_key IS NULL OR bt.transaction_code = bmr.match_booking_key)
+            WHERE bt.local_bank_account_id = p_bank_account_id
+              AND bt.match_status = 'unmatched'
+        ) AS all_matches
+        ORDER BY bank_transaction_id, confidence DESC
+    ) AS best_per_tx
+    ORDER BY confidence DESC, bank_transaction_id;
 END;
 $$ LANGUAGE plpgsql;
 

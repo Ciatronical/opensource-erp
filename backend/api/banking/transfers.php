@@ -2,6 +2,26 @@
 // backend/api/banking/transfers.php
 
 /**
+ * Validiert das execution_date — Sofort-Ueberweisungen duerfen keinen
+ * Termin haben, terminierte muessen >= heute und <= +1 Jahr liegen.
+ *
+ * @return true|string  true bei OK, sonst Fehlermeldung
+ */
+function validateExecutionDate($executionDate, $instant) {
+    if ($executionDate === '' || $executionDate === null) return true;
+    if ($instant) {
+        return 'Sofort-Ueberweisung erlaubt kein Ausfuehrungsdatum';
+    }
+    $ts = strtotime($executionDate);
+    if ($ts === false) return 'Ungueltiges Ausfuehrungsdatum';
+    $today = strtotime('today');
+    $maxDate = strtotime('+1 year', $today);
+    if ($ts < $today) return 'Ausfuehrungsdatum darf nicht in der Vergangenheit liegen';
+    if ($ts > $maxDate) return 'Ausfuehrungsdatum darf maximal 1 Jahr in der Zukunft liegen';
+    return true;
+}
+
+/**
  * Ueberweisungsauftraege laden
  *
  * @param int    $data['bank_account_id'] Bankkonto-ID (optional, alle wenn leer)
@@ -42,6 +62,8 @@ function getTransferOrders($data) {
                 bto.currency,
                 bto.purpose,
                 bto.execution_date,
+                bto.instant,
+                bto.batch_id,
                 bto.status,
                 bto.source_type,
                 bto.source_id,
@@ -147,19 +169,26 @@ function createTransferOrder($data) {
         $recipientType = null;
     }
 
+    $instant = !empty($data['instant']);
     $remoteBic = trim($data['remote_bic'] ?? '');
     $executionDate = trim($data['execution_date'] ?? '');
+
+    $execValidation = validateExecutionDate($executionDate, $instant);
+    if ($execValidation !== true) {
+        resultInfo(false, 'VALIDATION_ERROR', $execValidation);
+        return;
+    }
 
     $result = $db->getOne(<<<SQL
         INSERT INTO bank_transfer_orders (
             bank_account_id, recipient_type, recipient_id,
             remote_iban, remote_bic, remote_name,
-            amount, purpose, execution_date, source_type, source_id,
+            amount, purpose, execution_date, instant, source_type, source_id,
             employee_id, status
         ) VALUES (
             :bank_account_id, :recipient_type, :recipient_id,
             :remote_iban, :remote_bic, :remote_name,
-            :amount, :purpose, :execution_date, :source_type, :source_id,
+            :amount, :purpose, :execution_date, :instant, :source_type, :source_id,
             :employee_id, 'draft'
         )
         RETURNING id
@@ -173,6 +202,7 @@ function createTransferOrder($data) {
         'amount' => $amount,
         'purpose' => $purpose,
         'execution_date' => $executionDate !== '' ? $executionDate : null,
+        'instant' => $instant ? 't' : 'f',
         'source_type' => $sourceType,
         'source_id' => $data['source_id'] ?? null,
         'employee_id' => $data['employee_id'] ?? null
@@ -239,6 +269,13 @@ function updateTransferOrder($data) {
 
     $remoteBic = trim($data['remote_bic'] ?? '');
     $executionDate = trim($data['execution_date'] ?? '');
+    $instant = !empty($data['instant']);
+
+    $execValidation = validateExecutionDate($executionDate, $instant);
+    if ($execValidation !== true) {
+        resultInfo(false, 'VALIDATION_ERROR', $execValidation);
+        return;
+    }
 
     $db->execute(<<<SQL
         UPDATE bank_transfer_orders
@@ -248,6 +285,7 @@ function updateTransferOrder($data) {
             amount = :amount,
             purpose = :purpose,
             execution_date = :execution_date,
+            instant = :instant,
             mtime = now()
         WHERE id = :id
     SQL, [
@@ -257,7 +295,8 @@ function updateTransferOrder($data) {
         'remote_name' => trim($data['remote_name']),
         'amount' => $amount,
         'purpose' => $purpose,
-        'execution_date' => $executionDate !== '' ? $executionDate : null
+        'execution_date' => $executionDate !== '' ? $executionDate : null,
+        'instant' => $instant ? 't' : 'f'
     ]);
 
     resultInfo(true, 'Aktualisiert');

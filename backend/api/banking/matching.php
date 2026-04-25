@@ -110,7 +110,7 @@ function runAutoMatch($data) {
         return;
     }
 
-    $result = $db->getAll(<<<SQL
+    $result = $db->getOne(<<<SQL
         SELECT json_agg(row_to_json(t)) as matches
         FROM (
             SELECT * FROM bank_auto_match(:bank_account_id)
