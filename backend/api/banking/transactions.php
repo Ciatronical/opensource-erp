@@ -69,7 +69,18 @@ function getBankTransactions($data) {
                 bt.cleared,
                 bt.transaction_code,
                 bt.transaction_text,
-                -- Zuordnungsinformationen
+                -- Pre-Booking-Mapping (matched aber noch nicht gebucht)
+                btm.target_type   AS pending_target_type,
+                btm.target_id     AS pending_target_id,
+                CASE btm.target_type
+                    WHEN 'ar' THEN ar_pending.invnumber
+                    WHEN 'ap' THEN ap_pending.invnumber
+                END AS pending_invnumber,
+                CASE btm.target_type
+                    WHEN 'ar' THEN c_pending.name
+                    WHEN 'ap' THEN v_pending.name
+                END AS pending_target_name,
+                -- Booking-Zuordnungen (kivitendo bank_transaction_acc_trans)
                 (
                     SELECT json_agg(json_build_object(
                         'ar_id', bta.ar_id,
@@ -87,6 +98,11 @@ function getBankTransactions($data) {
                     WHERE bta.bank_transaction_id = bt.id
                 ) as assignments
             FROM bank_transactions bt
+            LEFT JOIN bank_transaction_matches btm ON btm.bank_transaction_id = bt.id
+            LEFT JOIN ar       ar_pending ON btm.target_type = 'ar' AND ar_pending.id = btm.target_id
+            LEFT JOIN ap       ap_pending ON btm.target_type = 'ap' AND ap_pending.id = btm.target_id
+            LEFT JOIN customer c_pending  ON c_pending.id = ar_pending.customer_id
+            LEFT JOIN vendor   v_pending  ON v_pending.id = ap_pending.vendor_id
             WHERE bt.local_bank_account_id = :bank_account_id
                 {$whereExtra}
             ORDER BY bt.transdate DESC, bt.id DESC

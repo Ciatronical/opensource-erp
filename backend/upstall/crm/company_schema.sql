@@ -1099,6 +1099,19 @@ CREATE TABLE bank_transfer_orders (
 CREATE INDEX IF NOT EXISTS idx_bank_transfer_orders_status ON bank_transfer_orders(status);
 CREATE INDEX IF NOT EXISTS idx_bank_transfer_orders_account ON bank_transfer_orders(bank_account_id);
 
+-- Pre-Booking-Mapping fuer Bankabstimmung. Die kivitendo-Tabelle
+-- bank_transaction_acc_trans verlangt acc_trans_id NOT NULL — sie eignet sich
+-- nur fuer bereits gebuchte Zuordnungen. Diese Tabelle haelt die Zuordnung
+-- zwischen Match-Klick und Buchung-Klick. Beim Buchen wird der Eintrag
+-- konsumiert und in bank_transaction_acc_trans uebersetzt.
+CREATE TABLE bank_transaction_matches (
+    bank_transaction_id integer PRIMARY KEY,
+    target_type         varchar(10) NOT NULL CHECK (target_type IN ('ar', 'ap')),
+    target_id           integer NOT NULL,
+    matched_at          timestamp DEFAULT now(),
+    matched_by          integer
+);
+
 CREATE TABLE bank_matching_rules (
     id                  integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     bank_account_id     integer,
@@ -1140,10 +1153,13 @@ BEGIN
     -- gleichzeitig passen.
     --
     -- Konfidenz-Stufen:
+    --   0.99  Rechnungsnummer in End-to-End-ID (strukturierter SEPA-Wert)
     --   0.98  Rechnungsnummer im Purpose + Empfaenger-IBAN bestaetigt
     --   0.92  IBAN passt + exakter offener Betrag (Toleranz 0,01 EUR)
     --   0.88  Rechnungsnummer im Purpose ohne IBAN-Bestaetigung
+    --   0.85  Zahlenwert aus Purpose endet auf ap.invnumber (z. B. RE9016 -> 9016)
     --   0.80  IBAN passt + Kontakt hat genau eine offene Rechnung
+    --   0.78  Name passt + exakter offener Betrag (Fallback ohne IBAN)
     --   0.70  Benutzer-Regel
     RETURN QUERY
     SELECT bank_transaction_id, match_type, target_type, target_id, confidence
@@ -1152,6 +1168,24 @@ BEGIN
             bank_transaction_id, match_type, target_type, target_id, confidence
         FROM (
             -- ── EINGAENGE (Kunden zahlen Ausgangsrechnungen) ──────────────────
+
+            -- 0a. End-to-End-ID enthaelt AR-Nummer (hoechste Konfidenz —
+            --     strukturierter Wert, kommt direkt aus dem SEPA-Beleg)
+            SELECT bt.id AS bank_transaction_id,
+                   'end_to_end_id'::TEXT AS match_type,
+                   'ar'::TEXT AS target_type,
+                   ar.id AS target_id,
+                   0.99::NUMERIC AS confidence
+            FROM bank_transactions bt
+            JOIN ar ON (ar.amount - ar.paid) > 0.01
+                    AND length(ar.invnumber) >= 4
+                    AND bt.end_to_end_id IS NOT NULL
+                    AND bt.end_to_end_id ~ ('(^|[^[:alnum:]])' || ar.invnumber || '($|[^[:alnum:]])')
+            WHERE bt.local_bank_account_id = p_bank_account_id
+              AND bt.match_status = 'unmatched'
+              AND bt.amount > 0
+
+            UNION ALL
 
             -- 1a. AR-Nummer im Purpose UND Kunden-IBAN passt (zwei Signale)
             SELECT bt.id AS bank_transaction_id,
@@ -1217,7 +1251,37 @@ BEGIN
 
             UNION ALL
 
+            -- 3b. Name aus remote_name passt zu customer.name + exakter Betrag
+            --     Fallback wenn IBAN fehlt (z. B. Sammelauftrag der Bank).
+            SELECT bt.id, 'name_amount_match', 'ar'::TEXT, ar.id, 0.78
+            FROM bank_transactions bt
+            JOIN customer c ON c.name ILIKE '%' || bt.remote_name || '%'
+                            OR bt.remote_name ILIKE '%' || c.name || '%'
+            JOIN ar ON ar.customer_id = c.id
+                    AND ABS((ar.amount - ar.paid) - bt.amount) < 0.01
+                    AND ar.paid < ar.amount
+            WHERE bt.local_bank_account_id = p_bank_account_id
+              AND bt.match_status = 'unmatched'
+              AND bt.amount > 0
+              AND bt.remote_iban IS NULL
+              AND length(bt.remote_name) >= 4
+
+            UNION ALL
+
             -- ── AUSGAENGE (eigene Zahlungen an Lieferanten) ──────────────────
+
+            -- 0b. End-to-End-ID enthaelt AP-Nummer
+            SELECT bt.id, 'end_to_end_id', 'ap'::TEXT, ap.id, 0.99
+            FROM bank_transactions bt
+            JOIN ap ON (ap.amount - ap.paid) > 0.01
+                    AND length(ap.invnumber) >= 4
+                    AND bt.end_to_end_id IS NOT NULL
+                    AND bt.end_to_end_id ~ ('(^|[^[:alnum:]])' || ap.invnumber || '($|[^[:alnum:]])')
+            WHERE bt.local_bank_account_id = p_bank_account_id
+              AND bt.match_status = 'unmatched'
+              AND bt.amount < 0
+
+            UNION ALL
 
             -- 4a. AP-Nummer im Purpose UND Lieferanten-IBAN
             SELECT bt.id, 'invnumber_and_iban', 'ap'::TEXT, ap.id, 0.98
@@ -1227,6 +1291,23 @@ BEGIN
                     AND (ap.amount - ap.paid) > 0.01
                     AND length(ap.invnumber) >= 4
                     AND bt.purpose ~ ('(^|[^[:alnum:]])' || ap.invnumber || '($|[^[:alnum:]])')
+            WHERE bt.local_bank_account_id = p_bank_account_id
+              AND bt.match_status = 'unmatched'
+              AND bt.amount < 0
+
+            UNION ALL
+
+            -- 4c. Suffix-Match: AP-Nummer ist Suffix einer Zahl im Purpose.
+            --     Beispiel: Purpose "Rechnung RE9016", ap.invnumber "9016".
+            --     Wir extrahieren alle 4+stelligen Zahlen aus dem Purpose und
+            --     pruefen ob eine davon mit der invnumber endet.
+            SELECT bt.id, 'invnumber_suffix', 'ap'::TEXT, ap.id, 0.85
+            FROM bank_transactions bt
+            CROSS JOIN LATERAL regexp_matches(bt.purpose, '\d{4,}', 'g') AS m(token)
+            JOIN ap ON (ap.amount - ap.paid) > 0.01
+                    AND length(ap.invnumber) >= 4
+                    AND m.token[1] LIKE '%' || ap.invnumber
+                    AND length(m.token[1]) - length(ap.invnumber) <= 3  -- max 3 Praefix-Zeichen
             WHERE bt.local_bank_account_id = p_bank_account_id
               AND bt.match_status = 'unmatched'
               AND bt.amount < 0

@@ -184,6 +184,22 @@ function matchTransaction($data) {
         return;
     }
 
+    // Mapping persistieren (UPSERT — User darf Zuordnung aendern bevor gebucht wird)
+    $db->execute(<<<SQL
+        INSERT INTO bank_transaction_matches (bank_transaction_id, target_type, target_id, matched_by, matched_at)
+        VALUES (:bt_id, :target_type, :target_id, :employee_id, now())
+        ON CONFLICT (bank_transaction_id) DO UPDATE
+        SET target_type = EXCLUDED.target_type,
+            target_id   = EXCLUDED.target_id,
+            matched_by  = EXCLUDED.matched_by,
+            matched_at  = now()
+    SQL, [
+        'bt_id'       => $btId,
+        'target_type' => $targetType,
+        'target_id'   => $targetId,
+        'employee_id' => $data['employee_id'] ?? null,
+    ]);
+
     // Status auf matched setzen
     $db->execute(
         "UPDATE bank_transactions SET match_status = 'matched' WHERE id = :id",
@@ -315,6 +331,12 @@ function unmatchTransaction($data) {
         return;
     }
 
+    // Mapping entfernen + Status zuruecksetzen — beides in einer Aktion,
+    // damit die Tabelle nie matched-Status ohne Mapping enthaelt.
+    $db->execute(
+        "DELETE FROM bank_transaction_matches WHERE bank_transaction_id = :id",
+        ['id' => $btId]
+    );
     $db->execute(
         "UPDATE bank_transactions SET match_status = 'unmatched' WHERE id = :id",
         ['id' => $btId]
