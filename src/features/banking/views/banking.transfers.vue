@@ -92,9 +92,11 @@
         </v-card>
 
         <!-- Neue/Bearbeiten Ueberweisung Dialog -->
-        <v-dialog v-model="showTransferDialog" max-width="600" persistent>
+        <v-dialog v-model="showTransferDialog" max-width="640" persistent>
             <v-card>
-                <v-card-title>{{ t('BankingView.transfers.newTransfer') }}</v-card-title>
+                <v-card-title>
+                    {{ editingId ? t('BankingView.transfers.editTransfer') : t('BankingView.transfers.newTransfer') }}
+                </v-card-title>
                 <v-card-text>
                     <v-select
                         v-model="transferForm.bank_account_id"
@@ -104,21 +106,66 @@
                         :label="t('BankingView.transfers.fromAccount')"
                         class="mb-3"
                     />
+
+                    <!-- Empfaenger-Autocomplete (Kunden + Lieferanten + Neu anlegen) -->
+                    <RecipientAutocomplete
+                        v-if="!editingId"
+                        v-model="recipient"
+                        class="mb-2"
+                    />
+
+                    <!-- Empfaenger-Card sobald jemand gewaehlt ist -->
+                    <div v-if="recipient" class="mb-3 d-flex align-center pa-3 bg-grey-lighten-4 rounded-lg">
+                        <v-chip
+                            size="x-small"
+                            :color="recipient.recipient_type === 'customer' ? 'primary' : 'secondary'"
+                            variant="tonal"
+                            class="mr-3"
+                        >
+                            {{ recipient.recipient_type === 'customer' ? t('BankingView.transfers.customerShort') : t('BankingView.transfers.vendorShort') }}
+                        </v-chip>
+                        <div class="flex-grow-1">
+                            <div class="text-body-2 font-weight-medium">{{ recipient.name }}</div>
+                            <div class="text-caption text-medium-emphasis">{{ recipient.number }}</div>
+                        </div>
+                        <v-btn
+                            icon="mdi-close-circle"
+                            size="small"
+                            variant="text"
+                            :title="t('BankingView.transfers.changeRecipient')"
+                            @click="clearRecipient"
+                        />
+                    </div>
+
+                    <!-- Manueller Empfaengername (Edit-Modus oder kein Recipient gewaehlt) -->
                     <v-text-field
+                        v-if="!recipient"
                         v-model="transferForm.remote_name"
                         :label="t('BankingView.transfers.recipientName')"
                         class="mb-3"
                     />
+
+                    <!-- IBAN mit Live-Validierung -->
                     <v-text-field
                         v-model="transferForm.remote_iban"
                         :label="t('BankingView.transfers.recipientIban')"
+                        :error-messages="ibanError ? [ibanError] : []"
+                        :hint="ibanHint"
+                        :persistent-hint="!!ibanHint"
                         class="mb-3"
-                    />
+                    >
+                        <template v-if="ibanValid" #append-inner>
+                            <v-icon color="success">mdi-check-circle</v-icon>
+                        </template>
+                    </v-text-field>
+
                     <v-text-field
                         v-model="transferForm.remote_bic"
                         :label="t('BankingView.transfers.recipientBic')"
+                        :error-messages="bicError ? [bicError] : []"
                         class="mb-3"
                     />
+
                     <v-text-field
                         v-model.number="transferForm.amount"
                         :label="t('BankingView.transfers.amount')"
@@ -148,7 +195,12 @@
                     <v-btn variant="text" @click="showTransferDialog = false">
                         {{ t('BankingView.sync.cancel') }}
                     </v-btn>
-                    <v-btn color="primary" variant="tonal" @click="saveTransfer">
+                    <v-btn
+                        color="primary"
+                        variant="tonal"
+                        :disabled="!canSave"
+                        @click="saveTransfer"
+                    >
                         {{ t('BankingView.transfers.save') }}
                     </v-btn>
                 </v-card-actions>
@@ -232,21 +284,26 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRoute } from 'vue-router'
 import { useBanking } from '../composables/useBanking.js'
 import { useTransfers } from '../composables/useTransfers.js'
+import RecipientAutocomplete from '../components/recipient-autocomplete.component.vue'
+import { validateIban, validateBic, normalizeIban } from '@/core/utils/iban.js'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
 import * as alerts from '@/core/utils/alerts.js'
 import Swal from 'sweetalert2'
 
 const { t } = useI18n()
+const route = useRoute()
 const bankingComposable = useBanking()
 const transfers = useTransfers()
 
 // Transfer form
 const showTransferDialog = ref(false)
 const editingId = ref(null)
+const recipient = ref(null)
 const transferForm = reactive({
     bank_account_id: null,
     remote_name: '',
@@ -256,6 +313,68 @@ const transferForm = reactive({
     purpose: '',
     execution_date: ''
 })
+
+// IBAN/BIC live-validation. Leeres Feld zeigt keinen Fehler — wir sperren den
+// Save-Button stattdessen ueber canSave.
+const ibanCheck = computed(() => validateIban(transferForm.remote_iban))
+const ibanValid = computed(() => ibanCheck.value.valid)
+const ibanError = computed(() => {
+    if (!transferForm.remote_iban) return ''
+    if (ibanCheck.value.valid) return ''
+    const c = ibanCheck.value
+    if (c.code === 'format') return t('BankingView.transfers.ibanFormatError')
+    if (c.code === 'length') return t('BankingView.transfers.ibanLengthError', { country: c.country, expected: c.expectedLength })
+    if (c.code === 'checksum') return t('BankingView.transfers.ibanChecksumError')
+    return t('BankingView.transfers.ibanInvalid')
+})
+
+// Hinweistext: zeigt, was beim Speichern mit der Bankverbindung passiert.
+const ibanHint = computed(() => {
+    if (!recipient.value || !ibanValid.value) return ''
+    const enteredIban = normalizeIban(transferForm.remote_iban)
+    const storedIban = normalizeIban(recipient.value.iban || '')
+    if (!storedIban && enteredIban) {
+        return t('BankingView.transfers.ibanWillBeSaved')
+    }
+    if (storedIban && enteredIban && storedIban !== enteredIban) {
+        return t('BankingView.transfers.ibanWillBeUpdated')
+    }
+    return ''
+})
+
+const bicError = computed(() => {
+    if (!transferForm.remote_bic) return ''
+    return validateBic(transferForm.remote_bic).valid ? '' : t('BankingView.transfers.bicFormatError')
+})
+
+const canSave = computed(() => {
+    return !!transferForm.bank_account_id
+        && !!transferForm.remote_name
+        && ibanValid.value
+        && !bicError.value
+        && transferForm.amount > 0
+        && !!transferForm.purpose
+})
+
+// Bei Empfaenger-Auswahl: Name/IBAN/BIC aus Stammdaten vorbefuellen — aber nur,
+// wenn die Felder noch leer sind (User-Eingabe nicht ueberschreiben).
+watch(recipient, (r) => {
+    if (!r) return
+    transferForm.remote_name = r.name
+    if (!transferForm.remote_iban && r.iban) {
+        transferForm.remote_iban = r.iban
+    }
+    if (!transferForm.remote_bic && r.bic) {
+        transferForm.remote_bic = r.bic
+    }
+})
+
+function clearRecipient() {
+    recipient.value = null
+    transferForm.remote_name = ''
+    transferForm.remote_iban = ''
+    transferForm.remote_bic = ''
+}
 
 // Submit
 const showPinDialog = ref(false)
@@ -282,11 +401,20 @@ onMounted(async () => {
         transfers.fetchTransferOrders(),
         bankingComposable.fetchAccounts()
     ])
+    // Aufruf via "Neue Überweisung"-Button auf der Kontenübersicht — Dialog
+    // direkt mit dem gewünschten Konto öffnen.
+    const newFor = parseInt(route.query.new_for, 10)
+    if (newFor > 0) {
+        openNewTransfer(newFor)
+    }
 })
 
-function openNewTransfer() {
+function openNewTransfer(preselectAccountId = null) {
     editingId.value = null
-    transferForm.bank_account_id = bankingComposable.accounts.value[0]?.id || null
+    recipient.value = null
+    transferForm.bank_account_id = preselectAccountId
+        || bankingComposable.accounts.value[0]?.id
+        || null
     transferForm.remote_name = ''
     transferForm.remote_iban = ''
     transferForm.remote_bic = ''
@@ -298,6 +426,7 @@ function openNewTransfer() {
 
 function editTransfer(item) {
     editingId.value = item.id
+    recipient.value = null  // Bei Edit kein Recipient-Lookup — Name direkt editieren
     transferForm.bank_account_id = item.bank_account_id
     transferForm.remote_name = item.remote_name
     transferForm.remote_iban = item.remote_iban
@@ -308,12 +437,52 @@ function editTransfer(item) {
     showTransferDialog.value = true
 }
 
+// Speichert IBAN/BIC am Empfaenger zurueck wenn dort nichts hinterlegt war,
+// oder die abweichende eingegebene IBAN bestaetigt wurde.
+async function maybePersistRecipientBank() {
+    if (!recipient.value) return
+    const enteredIban = normalizeIban(transferForm.remote_iban)
+    const storedIban  = normalizeIban(recipient.value.iban || '')
+    if (!enteredIban) return
+    if (storedIban === enteredIban && (recipient.value.bic || '') === (transferForm.remote_bic || '')) {
+        return  // nichts geaendert
+    }
+    if (storedIban && storedIban !== enteredIban) {
+        const confirm = await Swal.fire({
+            title: t('BankingView.transfers.confirmIbanUpdateTitle'),
+            text: t('BankingView.transfers.confirmIbanUpdateText', { name: recipient.value.name }),
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: t('BankingView.transfers.confirmUpdate'),
+            cancelButtonText: t('BankingView.transfers.confirmKeep')
+        })
+        if (!confirm.isConfirmed) return
+    }
+    try {
+        await transfers.updateRecipientBank({
+            type: recipient.value.recipient_type,
+            id:   recipient.value.id,
+            iban: enteredIban,
+            bic:  transferForm.remote_bic || ''
+        })
+    } catch (e) {
+        // Speichern am Kontakt fehlschlagen lassen wir nicht den Transfer scheitern —
+        // nur warnen.
+        alerts.warning(t('BankingView.transfers.recipientSaveFailed') + ': ' + e.message)
+    }
+}
+
 async function saveTransfer() {
     try {
         if (editingId.value) {
             await transfers.updateTransfer({ id: editingId.value, ...transferForm })
         } else {
-            await transfers.createTransfer(transferForm)
+            await transfers.createTransfer({
+                ...transferForm,
+                recipient_type: recipient.value?.recipient_type || null,
+                recipient_id:   recipient.value?.id || null
+            })
+            await maybePersistRecipientBank()
         }
         showTransferDialog.value = false
         alerts.success(t('BankingView.alerts.transferCreated'))

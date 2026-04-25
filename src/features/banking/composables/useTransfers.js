@@ -105,6 +105,38 @@ export function useTransfers() {
         }
     }
 
+    async function searchRecipient(query, limit = 20) {
+        const response = await axios.post(API_URL, {
+            action: 'searchTransferRecipient',
+            query, limit
+        })
+        if (response.data.success) {
+            return response.data.payload.results || []
+        }
+        throw new Error(response.data.payload || response.data.text)
+    }
+
+    async function createRecipient(payload) {
+        const response = await axios.post(API_URL, {
+            action: 'createTransferRecipient',
+            ...payload
+        })
+        if (response.data.success) {
+            return response.data.payload
+        }
+        throw new Error(response.data.payload || response.data.text)
+    }
+
+    async function updateRecipientBank({ type, id, iban, bic }) {
+        const response = await axios.post(API_URL, {
+            action: 'updateRecipientBankDetails',
+            type, id, iban, bic
+        })
+        if (!response.data.success) {
+            throw new Error(response.data.payload || response.data.text)
+        }
+    }
+
     async function submitTransferTan(transferOrderId, tan, pin) {
         loading.value = true
         try {
@@ -135,6 +167,9 @@ export function useTransfers() {
         deleteTransfer,
         createTransferFromInvoice,
         submitTransfer,
-        submitTransferTan
+        submitTransferTan,
+        searchRecipient,
+        createRecipient,
+        updateRecipientBank
     }
 }

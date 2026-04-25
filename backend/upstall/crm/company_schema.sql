@@ -1072,6 +1072,8 @@ CREATE TABLE bank_import_log (
 CREATE TABLE bank_transfer_orders (
     id              integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     bank_account_id integer NOT NULL,
+    recipient_type  varchar(10),
+    recipient_id    integer,
     remote_iban     varchar(40) NOT NULL,
     remote_bic      varchar(20),
     remote_name     text NOT NULL,

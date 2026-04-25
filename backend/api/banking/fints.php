@@ -322,8 +322,7 @@ function fintsSyncTransactions($data) {
             $_SESSION['fints_persist'] = $fints->persist();
             $_SESSION['fints_bank_account_id'] = $bankAccountId;
             $_SESSION['fints_stage'] = 'login';
-            $tanRequest = $login->getTanRequest();
-            resultInfo(true, 'TAN_REQUIRED', fintsBuildTanResponse($fints, $login ?? $getStatement ?? $sepaTransfer ?? $action));
+            resultInfo(true, 'TAN_REQUIRED', fintsBuildTanResponse($fints, $login));
             return;
         }
 
@@ -368,9 +367,7 @@ function fintsSyncTransactions($data) {
             $_SESSION['fints_bank_account_id'] = $bankAccountId;
             $_SESSION['fints_pin'] = ''; // PIN wird NICHT in Session gespeichert
 
-            $tanRequest = $getStatement->getTanRequest();
-
-            resultInfo(true, 'TAN_REQUIRED', fintsBuildTanResponse($fints, $login ?? $getStatement ?? $sepaTransfer ?? $action));
+            resultInfo(true, 'TAN_REQUIRED', fintsBuildTanResponse($fints, $getStatement));
             return;
         }
 
@@ -498,8 +495,7 @@ function fintsSubmitTan($data) {
                 $_SESSION['fints_persist'] = $fints->persist();
                 $_SESSION['fints_bank_account_id'] = $bankAccountId;
                 $_SESSION['fints_stage'] = 'action';
-                $tanRequest = $getStatement->getTanRequest();
-                resultInfo(true, 'TAN_REQUIRED', fintsBuildTanResponse($fints, $login ?? $getStatement ?? $sepaTransfer ?? $action));
+                resultInfo(true, 'TAN_REQUIRED', fintsBuildTanResponse($fints, $getStatement));
                 return;
             }
             $statements = $getStatement->getStatement()->getStatements();
@@ -600,8 +596,7 @@ function fintsSubmitTransfer($data) {
             $_SESSION['fints_transfer_id'] = $transferId;
             $_SESSION['fints_stage'] = 'login-transfer';
             $db->execute("UPDATE bank_transfer_orders SET status = 'pending_tan', mtime = now() WHERE id = :id", ['id' => $transferId]);
-            $tanRequest = $login->getTanRequest();
-            resultInfo(true, 'TAN_REQUIRED', fintsBuildTanResponse($fints, $login ?? $getStatement ?? $sepaTransfer ?? $action));
+            resultInfo(true, 'TAN_REQUIRED', fintsBuildTanResponse($fints, $login));
             return;
         }
 
@@ -643,9 +638,7 @@ function fintsSubmitTransfer($data) {
                 ['id' => $transferId]
             );
 
-            $tanRequest = $sepaTransfer->getTanRequest();
-
-            resultInfo(true, 'TAN_REQUIRED', fintsBuildTanResponse($fints, $login ?? $getStatement ?? $sepaTransfer ?? $action));
+            resultInfo(true, 'TAN_REQUIRED', fintsBuildTanResponse($fints, $sepaTransfer));
             return;
         }
 
@@ -765,8 +758,7 @@ function fintsSubmitTransferTan($data) {
                 $_SESSION['fints_bank_account_id'] = $order['bank_account_id'];
                 $_SESSION['fints_transfer_id'] = $transferId;
                 $_SESSION['fints_stage'] = 'transfer';
-                $tanRequest = $sepaTransfer->getTanRequest();
-                resultInfo(true, 'TAN_REQUIRED', fintsBuildTanResponse($fints, $login ?? $getStatement ?? $sepaTransfer ?? $action));
+                resultInfo(true, 'TAN_REQUIRED', fintsBuildTanResponse($fints, $sepaTransfer));
                 return;
             }
             $db->execute("UPDATE bank_transfer_orders SET status = 'submitted', submitted_at = now(), mtime = now() WHERE id = :id", ['id' => $transferId]);

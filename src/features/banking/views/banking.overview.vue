@@ -93,6 +93,16 @@
                             {{ t('BankingView.overview.viewTransactions') }}
                         </v-btn>
 
+                        <v-btn
+                            variant="text"
+                            color="primary"
+                            size="small"
+                            @click="newTransferFor(account.id)"
+                        >
+                            <v-icon start>mdi-bank-transfer-out</v-icon>
+                            {{ t('BankingView.transfers.newTransfer') }}
+                        </v-btn>
+
                         <v-spacer />
 
                         <v-btn
@@ -364,6 +374,10 @@ function balanceColor(balance) {
 
 function viewTransactions(accountId) {
     router.push({ name: 'banking-transactions', params: { id: accountId } })
+}
+
+function newTransferFor(accountId) {
+    router.push({ name: 'banking-transfers', query: { new_for: accountId } })
 }
 
 async function openFintsSetup(account) {

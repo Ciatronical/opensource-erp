@@ -103,8 +103,8 @@ function createTransferOrder($data) {
     }
 
     // IBAN-Format pruefen (minimale Validierung)
-    if (!preg_match('/^[A-Z]{2}\d{2}[A-Z0-9]{4,30}$/', $remoteIban)) {
-        resultInfo(false, 'VALIDATION_ERROR', 'Ungueltiges IBAN-Format');
+    if (!validateIbanMod97($remoteIban)) {
+        resultInfo(false, 'VALIDATION_ERROR', 'Ungueltige IBAN (Format oder Pruefsumme falsch)');
         return;
     }
 
@@ -134,25 +134,42 @@ function createTransferOrder($data) {
         $sourceType = null;
     }
 
+    $recipientType = $data['recipient_type'] ?? null;
+    if ($recipientType && !in_array($recipientType, ['customer', 'vendor'])) {
+        $recipientType = null;
+    }
+    $recipientId = $recipientType ? intval($data['recipient_id'] ?? 0) : null;
+    if ($recipientId !== null && $recipientId <= 0) {
+        $recipientId = null;
+        $recipientType = null;
+    }
+
+    $remoteBic = trim($data['remote_bic'] ?? '');
+    $executionDate = trim($data['execution_date'] ?? '');
+
     $result = $db->getOne(<<<SQL
         INSERT INTO bank_transfer_orders (
-            bank_account_id, remote_iban, remote_bic, remote_name,
+            bank_account_id, recipient_type, recipient_id,
+            remote_iban, remote_bic, remote_name,
             amount, purpose, execution_date, source_type, source_id,
             employee_id, status
         ) VALUES (
-            :bank_account_id, :remote_iban, :remote_bic, :remote_name,
+            :bank_account_id, :recipient_type, :recipient_id,
+            :remote_iban, :remote_bic, :remote_name,
             :amount, :purpose, :execution_date, :source_type, :source_id,
             :employee_id, 'draft'
         )
         RETURNING id
     SQL, [
         'bank_account_id' => $bankAccountId,
+        'recipient_type' => $recipientType,
+        'recipient_id' => $recipientId,
         'remote_iban' => $remoteIban,
-        'remote_bic' => $data['remote_bic'] ?? null,
+        'remote_bic' => $remoteBic !== '' ? $remoteBic : null,
         'remote_name' => $remoteName,
         'amount' => $amount,
         'purpose' => $purpose,
-        'execution_date' => $data['execution_date'] ?? null,
+        'execution_date' => $executionDate !== '' ? $executionDate : null,
         'source_type' => $sourceType,
         'source_id' => $data['source_id'] ?? null,
         'employee_id' => $data['employee_id'] ?? null
@@ -207,12 +224,20 @@ function updateTransferOrder($data) {
         return;
     }
 
+    if (!validateIbanMod97($remoteIban)) {
+        resultInfo(false, 'VALIDATION_ERROR', 'Ungueltige IBAN (Format oder Pruefsumme falsch)');
+        return;
+    }
+
     if (mb_strlen($purpose) > 140) {
         resultInfo(false, 'VALIDATION_ERROR', 'Verwendungszweck darf max. 140 Zeichen lang sein');
         return;
     }
 
-    $db->getOne(<<<SQL
+    $remoteBic = trim($data['remote_bic'] ?? '');
+    $executionDate = trim($data['execution_date'] ?? '');
+
+    $db->execute(<<<SQL
         UPDATE bank_transfer_orders
         SET remote_iban = :remote_iban,
             remote_bic = :remote_bic,
@@ -222,15 +247,14 @@ function updateTransferOrder($data) {
             execution_date = :execution_date,
             mtime = now()
         WHERE id = :id
-        RETURNING id
     SQL, [
         'id' => $id,
         'remote_iban' => $remoteIban,
-        'remote_bic' => $data['remote_bic'] ?? null,
+        'remote_bic' => $remoteBic !== '' ? $remoteBic : null,
         'remote_name' => trim($data['remote_name']),
         'amount' => $amount,
         'purpose' => $purpose,
-        'execution_date' => $data['execution_date'] ?? null
+        'execution_date' => $executionDate !== '' ? $executionDate : null
     ]);
 
     resultInfo(true, 'Aktualisiert');
@@ -300,6 +324,7 @@ function createTransferFromInvoice($data) {
             ap.amount,
             ap.paid,
             (ap.amount - ap.paid) as open_amount,
+            v.id as vendor_id,
             v.name as vendor_name,
             v.iban as vendor_iban,
             v.bic as vendor_bic
@@ -326,15 +351,18 @@ function createTransferFromInvoice($data) {
     // Ueberweisungsauftrag erstellen
     $result = $db->getOne(<<<SQL
         INSERT INTO bank_transfer_orders (
-            bank_account_id, remote_iban, remote_bic, remote_name,
+            bank_account_id, recipient_type, recipient_id,
+            remote_iban, remote_bic, remote_name,
             amount, purpose, source_type, source_id, status
         ) VALUES (
-            :bank_account_id, :remote_iban, :remote_bic, :remote_name,
+            :bank_account_id, 'vendor', :recipient_id,
+            :remote_iban, :remote_bic, :remote_name,
             :amount, :purpose, 'ap', :source_id, 'draft'
         )
         RETURNING id
     SQL, [
         'bank_account_id' => $bankAccountId,
+        'recipient_id' => $invoice['vendor_id'],
         'remote_iban' => $invoice['vendor_iban'],
         'remote_bic' => $invoice['vendor_bic'],
         'remote_name' => $invoice['vendor_name'],
@@ -344,4 +372,210 @@ function createTransferFromInvoice($data) {
     ]);
 
     resultInfo(true, 'Erstellt', ['id' => $result['id']]);
+}
+
+/**
+ * Validiert eine IBAN nach Format, Laenderlaenge und MOD-97-Pruefsumme.
+ * Spiegelt die Logik aus src/core/utils/iban.js — wenn das Frontend ueberbrueckt
+ * wird (z.B. via API-Tester), schlaegt die Pruefung trotzdem.
+ *
+ * @param string $iban IBAN ohne Leerzeichen, gross
+ * @return bool true wenn gueltig
+ */
+function validateIbanMod97($iban) {
+    static $countryLengths = [
+        'AT'=>20,'BE'=>16,'BG'=>22,'CH'=>21,'CY'=>28,'CZ'=>24,'DE'=>22,'DK'=>18,
+        'EE'=>20,'ES'=>24,'FI'=>18,'FR'=>27,'GB'=>22,'GR'=>27,'HR'=>21,'HU'=>28,
+        'IE'=>22,'IS'=>26,'IT'=>27,'LI'=>21,'LT'=>20,'LU'=>20,'LV'=>21,'MC'=>27,
+        'MT'=>31,'NL'=>18,'NO'=>15,'PL'=>28,'PT'=>25,'RO'=>24,'SE'=>24,'SI'=>19,
+        'SK'=>24,'SM'=>27,
+    ];
+    $iban = strtoupper(preg_replace('/\s+/', '', (string)$iban));
+    if (!preg_match('/^[A-Z]{2}\d{2}[A-Z0-9]+$/', $iban)) return false;
+    $len = strlen($iban);
+    if ($len < 15 || $len > 34) return false;
+    $country = substr($iban, 0, 2);
+    if (isset($countryLengths[$country]) && $len !== $countryLengths[$country]) return false;
+
+    // MOD-97: ersten 4 ans Ende, Buchstaben durch Zahlen ersetzen (A=10..Z=35), Modulo 97
+    $rearranged = substr($iban, 4) . substr($iban, 0, 4);
+    $numeric = '';
+    for ($i = 0; $i < strlen($rearranged); $i++) {
+        $c = $rearranged[$i];
+        $numeric .= ctype_alpha($c) ? (string)(ord($c) - 55) : $c;
+    }
+    $remainder = '';
+    for ($i = 0; $i < strlen($numeric); $i++) {
+        $remainder .= $numeric[$i];
+        if (strlen($remainder) >= 9) {
+            $remainder = (string)((int)$remainder % 97);
+        }
+    }
+    return ((int)$remainder % 97) === 1;
+}
+
+/**
+ * Suche fuer das Empfaenger-Autocomplete im Ueberweisungs-Dialog.
+ * Liefert Kunden UND Lieferanten gemischt — gefiltert nach Name oder Kunden-/
+ * Lieferantennummer. Sortiert: exakte Name-Treffer zuerst, dann ILIKE.
+ * Gibt IBAN/BIC/Bank/Bank-Code zurueck damit das Frontend Felder vorbefuellen
+ * kann ohne zweiten Roundtrip.
+ *
+ * @param string $data['query']  Suchbegriff (Name oder Nummer), min 2 Zeichen
+ * @param int    $data['limit']  optional, default 20, max 50
+ * @testdata {"query": "Mus"}
+ */
+function searchTransferRecipient($data) {
+    $db = DbhCompany::begin();
+
+    $q = trim($data['query'] ?? '');
+    if (mb_strlen($q) < 2) {
+        resultInfo(true, '', ['results' => []]);
+        return;
+    }
+    $limit = min(max(intval($data['limit'] ?? 20), 1), 50);
+
+    $rows = $db->getAll(<<<SQL
+        SELECT * FROM (
+            SELECT 'customer' AS recipient_type, id, name, customernumber AS number,
+                   iban, bic, bank, bank_code,
+                   CASE WHEN lower(name) = lower(:exact) THEN 0 ELSE 1 END AS rank
+            FROM customer
+            WHERE obsolete IS NOT TRUE
+              AND (name ILIKE :pattern OR customernumber ILIKE :pattern)
+            UNION ALL
+            SELECT 'vendor' AS recipient_type, id, name, vendornumber AS number,
+                   iban, bic, bank, bank_code,
+                   CASE WHEN lower(name) = lower(:exact) THEN 0 ELSE 1 END AS rank
+            FROM vendor
+            WHERE obsolete IS NOT TRUE
+              AND (name ILIKE :pattern OR vendornumber ILIKE :pattern)
+        ) combined
+        ORDER BY rank ASC, name ASC
+        LIMIT $limit
+    SQL, ['pattern' => '%' . $q . '%', 'exact' => $q]);
+
+    resultInfo(true, '', ['results' => $rows]);
+}
+
+/**
+ * Legt einen neuen Kunden oder Lieferanten mit minimalen Pflichtfeldern an.
+ * Aufgerufen vom Ueberweisungs-Dialog wenn der Empfaenger noch nicht existiert.
+ * Nummer wird automatisch generiert (analog zu vendor_matching.php).
+ *
+ * @param string $data['type'] 'customer' oder 'vendor'
+ * @param string $data['name'] Pflicht
+ * @param string $data['street']  optional
+ * @param string $data['zipcode'] optional
+ * @param string $data['city']    optional
+ * @param string $data['country'] optional, default 'DE'
+ * @param string $data['email']   optional
+ * @param string $data['iban']    optional, wird MOD-97-validiert
+ * @param string $data['bic']     optional
+ * @testdata {"type": "vendor", "name": "Neuer Lieferant", "iban": "DE89370400440532013000"}
+ */
+function createTransferRecipient($data) {
+    $db = DbhCompany::begin();
+
+    $type = $data['type'] ?? '';
+    if (!in_array($type, ['customer', 'vendor'])) {
+        resultInfo(false, 'VALIDATION_ERROR', 'Typ muss customer oder vendor sein');
+        return;
+    }
+    $name = trim($data['name'] ?? '');
+    if ($name === '') {
+        resultInfo(false, 'VALIDATION_ERROR', 'Name ist Pflicht');
+        return;
+    }
+
+    $iban = strtoupper(str_replace(' ', '', trim($data['iban'] ?? '')));
+    if ($iban !== '' && !validateIbanMod97($iban)) {
+        resultInfo(false, 'VALIDATION_ERROR', 'Ungueltige IBAN (Format oder Pruefsumme falsch)');
+        return;
+    }
+
+    $bic = trim($data['bic'] ?? '');
+
+    // Naechste Nummer im jeweiligen Bereich (Default-Startwerte wie vendor_matching.php)
+    $numberField = $type === 'customer' ? 'customernumber' : 'vendornumber';
+    $startValue  = $type === 'customer' ? 10000 : 70000;
+    $next = $db->getOne(<<<SQL
+        SELECT COALESCE(MAX(CAST($numberField AS INTEGER)), :start) + 1 AS next_nr
+        FROM $type WHERE $numberField ~ '^\d+$'
+    SQL, ['start' => $startValue]);
+    $newNumber = (string)$next['next_nr'];
+
+    $row = $db->getOne(<<<SQL
+        INSERT INTO $type (
+            name, $numberField, street, zipcode, city, country,
+            email, iban, bic, taxzone_id, currency_id
+        ) VALUES (
+            :name, :number, :street, :zipcode, :city, :country,
+            :email, :iban, :bic, 1, 1
+        )
+        RETURNING id, name, $numberField AS number, iban, bic
+    SQL, [
+        'name'    => $name,
+        'number'  => $newNumber,
+        'street'  => trim($data['street'] ?? '') ?: null,
+        'zipcode' => trim($data['zipcode'] ?? '') ?: null,
+        'city'    => trim($data['city'] ?? '') ?: null,
+        'country' => trim($data['country'] ?? '') ?: 'DE',
+        'email'   => trim($data['email'] ?? '') ?: null,
+        'iban'    => $iban !== '' ? $iban : null,
+        'bic'     => $bic !== '' ? $bic : null,
+    ]);
+
+    resultInfo(true, 'Empfaenger angelegt', [
+        'recipient_type' => $type,
+        'id'             => intval($row['id']),
+        'name'           => $row['name'],
+        'number'         => $row['number'],
+        'iban'           => $row['iban'],
+        'bic'            => $row['bic'],
+    ]);
+}
+
+/**
+ * Speichert IBAN/BIC dauerhaft am Kunden bzw. Lieferanten.
+ * Aufgerufen vom Ueberweisungs-Dialog nach Absenden, wenn die IBAN am Kontakt
+ * fehlt oder vom Nutzer geaendert wurde.
+ *
+ * @param string $data['type'] 'customer' oder 'vendor'
+ * @param int    $data['id']   Kontakt-ID
+ * @param string $data['iban'] Pflicht, wird MOD-97-validiert
+ * @param string $data['bic']  optional
+ * @testdata {"type": "vendor", "id": 1, "iban": "DE89370400440532013000", "bic": "COBADEFFXXX"}
+ */
+function updateRecipientBankDetails($data) {
+    $db = DbhCompany::begin();
+
+    $type = $data['type'] ?? '';
+    if (!in_array($type, ['customer', 'vendor'])) {
+        resultInfo(false, 'VALIDATION_ERROR', 'Typ muss customer oder vendor sein');
+        return;
+    }
+    $id = intval($data['id'] ?? 0);
+    if ($id <= 0) {
+        resultInfo(false, 'VALIDATION_ERROR', 'ID fehlt');
+        return;
+    }
+    $iban = strtoupper(str_replace(' ', '', trim($data['iban'] ?? '')));
+    if (!validateIbanMod97($iban)) {
+        resultInfo(false, 'VALIDATION_ERROR', 'Ungueltige IBAN (Format oder Pruefsumme falsch)');
+        return;
+    }
+    $bic = trim($data['bic'] ?? '');
+
+    $db->execute(<<<SQL
+        UPDATE $type
+        SET iban = :iban, bic = :bic, mtime = now()
+        WHERE id = :id
+    SQL, [
+        'id'   => $id,
+        'iban' => $iban,
+        'bic'  => $bic !== '' ? $bic : null,
+    ]);
+
+    resultInfo(true, 'Bankverbindung gespeichert');
 }
