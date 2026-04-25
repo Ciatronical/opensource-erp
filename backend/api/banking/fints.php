@@ -967,15 +967,17 @@ function fintsPersistTrustState($fints, $db, $bankAccountId) {
  * Frontend ruft spaeter `fintsConfirmDecoupled` auf.
  */
 function fintsBuildTanResponse($fints, $action) {
+    // Beim Decoupled-Polling ist getTanRequest() nach dem ersten
+    // checkDecoupledSubmission() oft null — daher durchgaengig null-safe.
     $tanRequest = $action->getTanRequest();
     $tanMode    = $fints->getSelectedTanMode();
     $decoupled  = $tanMode && $tanMode->isDecoupled();
     return [
         'tan_required'     => true,
         'decoupled'        => $decoupled,
-        'tan_medium'       => $tanRequest->getTanMediumName() ?? 'Unbekannt',
-        'challenge'        => $tanRequest->getChallenge(),
-        'challenge_hhduc'  => $tanRequest->getChallengeHhdUc()?->getData() ?? null,
+        'tan_medium'       => $tanRequest?->getTanMediumName() ?? 'Unbekannt',
+        'challenge'        => $tanRequest?->getChallenge() ?? '',
+        'challenge_hhduc'  => $tanRequest?->getChallengeHhdUc()?->getData() ?? null,
     ];
 }
 
