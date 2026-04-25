@@ -1110,5 +1110,10 @@ function importFintsStatements($db, $bankAccountId, $statements, $fromDate, $toD
         ['count' => $importedCount, 'id' => $importId]
     );
 
+    // Status-Polling fuer offene Ueberweisungen: gerade importierte Buchungen
+    // gegen 'submitted'-Auftraege matchen, danach abgelaufene Auftraege markieren.
+    matchTransfersToTransactions($db, $bankAccountId);
+    expireOldSubmittedTransfers($db, $bankAccountId);
+
     return $importedCount;
 }

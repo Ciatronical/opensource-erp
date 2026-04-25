@@ -22,7 +22,7 @@ function getTransferOrders($data) {
         $params['bank_account_id'] = intval($bankAccountId);
     }
 
-    if ($status !== 'all' && in_array($status, ['draft', 'pending_tan', 'submitted', 'executed', 'rejected', 'cancelled'])) {
+    if ($status !== 'all' && in_array($status, ['draft', 'pending_tan', 'submitted', 'executed', 'rejected', 'cancelled', 'expired'])) {
         $where .= " AND bto.status = :status";
         $params['status'] = $status;
     }
@@ -49,6 +49,9 @@ function getTransferOrders($data) {
                 e.name as employee_name,
                 bto.error_message,
                 bto.submitted_at,
+                bto.executed_at,
+                bto.expired_at,
+                bto.matched_transaction_id,
                 bto.itime,
                 CASE bto.source_type
                     WHEN 'ap' THEN (SELECT ap.invnumber FROM ap WHERE ap.id = bto.source_id)
@@ -578,4 +581,148 @@ function updateRecipientBankDetails($data) {
     ]);
 
     resultInfo(true, 'Bankverbindung gespeichert');
+}
+
+/**
+ * Maximale Tage zwischen submitted_at und Buchung — nach dieser Zeit ohne
+ * Match wird der Auftrag auf 'expired' gesetzt. Faustregel: 14 Tage deckt
+ * SEPA-Standardlauf (1-2 BT) plus Pufferzeit fuer manuelle Pruefung der Bank.
+ */
+const TRANSFER_EXPIRY_DAYS = 14;
+
+/**
+ * Matcht 'submitted'-Auftraege gegen importierte Kontoauszuge des Kontos.
+ * Eindeutige Matches (genau eine passende Buchung) werden auf 'executed'
+ * gesetzt; mehrdeutige bleiben unveraendert und landen ggf. spaeter in der
+ * Reconciliation-View.
+ *
+ * Aufgerufen aus importFintsStatements() nach jedem erfolgreichen Sync und
+ * via reconcileTransferOrders() als API.
+ *
+ * @param Dbh   $db
+ * @param int   $bankAccountId
+ * @return int Anzahl der gematchten Auftraege
+ */
+function matchTransfersToTransactions($db, $bankAccountId) {
+    $bankAccountId = intval($bankAccountId);
+    if ($bankAccountId <= 0) return 0;
+
+    // Offene Auftraege des Kontos. submitted_at wird zur Suchunter-Schranke
+    // (kleine Toleranz von 1 Tag falls die Bank rueckdatiert bucht).
+    $open = $db->getAll(<<<SQL
+        SELECT id, amount, remote_iban, remote_name, submitted_at
+        FROM bank_transfer_orders
+        WHERE bank_account_id = :acct
+          AND status = 'submitted'
+    SQL, ['acct' => $bankAccountId]);
+
+    $matched = 0;
+    foreach ($open as $order) {
+        // Pro Auftrag bis zu 2 Kandidaten — bei mehr als 1 ist das Match
+        // mehrdeutig und wir fassen es nicht an.
+        $candidates = $db->getAll(<<<SQL
+            SELECT bt.id, bt.transdate
+            FROM bank_transactions bt
+            WHERE bt.local_bank_account_id = :acct
+              AND ABS(bt.amount + :amount) < 0.005
+              AND bt.transdate >= (:submitted_at)::date - 1
+              AND bt.id NOT IN (
+                  SELECT matched_transaction_id
+                  FROM bank_transfer_orders
+                  WHERE matched_transaction_id IS NOT NULL
+              )
+              AND (
+                  UPPER(REPLACE(COALESCE(bt.remote_iban, bt.remote_account_number, ''), ' ', ''))
+                      = UPPER(REPLACE(:iban, ' ', ''))
+                  OR (:remote_name <> '' AND bt.remote_name ILIKE :name_pattern)
+              )
+            ORDER BY bt.transdate ASC, bt.id ASC
+            LIMIT 2
+        SQL, [
+            'acct'         => $bankAccountId,
+            'amount'       => $order['amount'],
+            'submitted_at' => $order['submitted_at'] ?: date('Y-m-d'),
+            'iban'         => $order['remote_iban'] ?? '',
+            'remote_name'  => $order['remote_name'] ?? '',
+            'name_pattern' => '%' . ($order['remote_name'] ?? '') . '%',
+        ]);
+
+        if (count($candidates) !== 1) continue;
+
+        $db->execute(<<<SQL
+            UPDATE bank_transfer_orders
+            SET status = 'executed',
+                executed_at = (:transdate)::timestamp,
+                matched_transaction_id = :tx_id,
+                mtime = now()
+            WHERE id = :id
+        SQL, [
+            'transdate' => $candidates[0]['transdate'],
+            'tx_id'     => $candidates[0]['id'],
+            'id'        => $order['id'],
+        ]);
+        $matched++;
+    }
+
+    return $matched;
+}
+
+/**
+ * Setzt 'submitted'-Auftraege auf 'expired', die seit > TRANSFER_EXPIRY_DAYS
+ * unbestaetigt sind. Diese Auftraege wurden von der Bank zwar entgegengenommen,
+ * sind aber nicht im Kontoauszug aufgetaucht — entweder abgelehnt ohne
+ * Rueckmeldung oder das Match war zu unscharf.
+ *
+ * @param Dbh   $db
+ * @param ?int  $bankAccountId Optional auf ein Konto begrenzen
+ * @return int  Anzahl expirierter Auftraege
+ */
+function expireOldSubmittedTransfers($db, $bankAccountId = null) {
+    $params = ['days' => TRANSFER_EXPIRY_DAYS];
+    $accountFilter = '';
+    if ($bankAccountId !== null) {
+        $accountFilter = ' AND bank_account_id = :acct';
+        $params['acct'] = intval($bankAccountId);
+    }
+    $rows = $db->getAll(<<<SQL
+        UPDATE bank_transfer_orders
+        SET status = 'expired',
+            expired_at = now(),
+            mtime = now()
+        WHERE status = 'submitted'
+          AND submitted_at IS NOT NULL
+          AND submitted_at < now() - (:days || ' days')::interval
+          $accountFilter
+        RETURNING id
+    SQL, $params);
+    return count($rows);
+}
+
+/**
+ * Manueller Trigger fuers Match+Expire — fuer den Fall dass der User in der
+ * Liste auf "Status aktualisieren" klicken will, ohne neuen Sync zu starten.
+ *
+ * @param int $data['bank_account_id']  optional, sonst alle Konten
+ * @testdata {"bank_account_id": 1}
+ */
+function reconcileTransferOrders($data) {
+    $db = DbhCompany::begin();
+    $bankAccountId = intval($data['bank_account_id'] ?? 0) ?: null;
+
+    $matched = 0;
+    if ($bankAccountId) {
+        $matched = matchTransfersToTransactions($db, $bankAccountId);
+    } else {
+        // Alle Konten mit offenen Auftraegen
+        $accounts = $db->getAll(
+            "SELECT DISTINCT bank_account_id FROM bank_transfer_orders WHERE status = 'submitted'",
+            []
+        );
+        foreach ($accounts as $a) {
+            $matched += matchTransfersToTransactions($db, $a['bank_account_id']);
+        }
+    }
+    $expired = expireOldSubmittedTransfers($db, $bankAccountId);
+
+    resultInfo(true, '', ['matched_count' => $matched, 'expired_count' => $expired]);
 }

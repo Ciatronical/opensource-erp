@@ -6,7 +6,16 @@
                 <h1 class="text-h5">{{ t('BankingView.transfers.title') }}</h1>
             </v-col>
             <v-col cols="auto">
-                <v-btn color="primary" variant="tonal" @click="openNewTransfer">
+                <v-btn
+                    variant="text"
+                    :loading="reconciling"
+                    :title="t('BankingView.transfers.reconcileHint')"
+                    @click="runReconcile"
+                >
+                    <v-icon start>mdi-refresh</v-icon>
+                    {{ t('BankingView.transfers.reconcile') }}
+                </v-btn>
+                <v-btn color="primary" variant="tonal" class="ml-2" @click="openNewTransfer">
                     <v-icon start>mdi-plus</v-icon>
                     {{ t('BankingView.transfers.newTransfer') }}
                 </v-btn>
@@ -39,9 +48,20 @@
                 </template>
 
                 <template #item.status="{ item }">
-                    <v-chip :color="transferStatusColor(item.status)" size="small" variant="tonal">
-                        {{ t('BankingView.transfers.status' + capitalize(item.status)) }}
-                    </v-chip>
+                    <div>
+                        <v-chip :color="transferStatusColor(item.status)" size="small" variant="tonal">
+                            {{ t('BankingView.transfers.status' + capitalize(item.status)) }}
+                        </v-chip>
+                        <div v-if="item.status === 'executed' && item.executed_at" class="text-caption text-success mt-1">
+                            {{ formatDateShort(item.executed_at) }}
+                        </div>
+                        <div v-else-if="item.status === 'expired' && item.expired_at" class="text-caption text-warning mt-1">
+                            {{ formatDateShort(item.expired_at) }}
+                        </div>
+                        <div v-else-if="item.status === 'submitted' && item.submitted_at" class="text-caption text-medium-emphasis mt-1">
+                            {{ formatDateShort(item.submitted_at) }}
+                        </div>
+                    </div>
                 </template>
 
                 <template #item.source_invnumber="{ item }">
@@ -580,8 +600,29 @@ function capitalize(str) {
 function transferStatusColor(status) {
     const colors = {
         draft: 'default', pending_tan: 'warning', submitted: 'info',
-        executed: 'success', rejected: 'error', cancelled: 'default'
+        executed: 'success', rejected: 'error', cancelled: 'default',
+        expired: 'warning'
     }
     return colors[status] || 'default'
+}
+
+const reconciling = ref(false)
+async function runReconcile() {
+    reconciling.value = true
+    try {
+        const result = await transfers.reconcileTransfers(null)
+        await transfers.fetchTransferOrders()
+        const matched = result.matched_count || 0
+        const expired = result.expired_count || 0
+        if (matched === 0 && expired === 0) {
+            alerts.info(t('BankingView.alerts.reconcileNoChanges'))
+        } else {
+            alerts.success(t('BankingView.alerts.reconcileResult', { matched, expired }))
+        }
+    } catch (e) {
+        alerts.error(e.message)
+    } finally {
+        reconciling.value = false
+    }
 }
 </script>

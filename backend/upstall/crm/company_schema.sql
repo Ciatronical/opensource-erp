@@ -1070,29 +1070,35 @@ CREATE TABLE bank_import_log (
 );
 
 CREATE TABLE bank_transfer_orders (
-    id              integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    bank_account_id integer NOT NULL,
-    recipient_type  varchar(10),
-    recipient_id    integer,
-    remote_iban     varchar(40) NOT NULL,
-    remote_bic      varchar(20),
-    remote_name     text NOT NULL,
-    amount          numeric(15,5) NOT NULL,
-    currency        varchar(5) DEFAULT 'EUR',
-    purpose         text NOT NULL,
-    execution_date  date,
-    status          varchar(20) DEFAULT 'draft',
-    source_type     varchar(20),
-    source_id       integer,
-    employee_id     integer,
-    error_message   text,
-    submitted_at    timestamp,
-    itime           timestamp DEFAULT now(),
-    mtime           timestamp
+    id                     integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    bank_account_id        integer NOT NULL,
+    recipient_type         varchar(10),
+    recipient_id           integer,
+    remote_iban            varchar(40) NOT NULL,
+    remote_bic             varchar(20),
+    remote_name            text NOT NULL,
+    amount                 numeric(15,5) NOT NULL,
+    currency               varchar(5) DEFAULT 'EUR',
+    purpose                text NOT NULL,
+    execution_date         date,
+    status                 varchar(20) DEFAULT 'draft',
+    source_type            varchar(20),
+    source_id              integer,
+    employee_id            integer,
+    error_message          text,
+    submitted_at           timestamp,
+    executed_at            timestamp,
+    matched_transaction_id integer,
+    expired_at             timestamp,
+    itime                  timestamp DEFAULT now(),
+    mtime                  timestamp
 );
 
 CREATE INDEX IF NOT EXISTS idx_bank_transfer_orders_status ON bank_transfer_orders(status);
 CREATE INDEX IF NOT EXISTS idx_bank_transfer_orders_account ON bank_transfer_orders(bank_account_id);
+-- Beschleunigt das Match-Polling: alle "submitted" eines Kontos schnell finden.
+CREATE INDEX IF NOT EXISTS idx_bank_transfer_orders_submitted_match
+    ON bank_transfer_orders(bank_account_id, status) WHERE status = 'submitted';
 
 CREATE TABLE bank_matching_rules (
     id                  integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,

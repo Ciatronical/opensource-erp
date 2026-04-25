@@ -105,6 +105,17 @@ export function useTransfers() {
         }
     }
 
+    async function reconcileTransfers(bankAccountId = null) {
+        const response = await axios.post(API_URL, {
+            action: 'reconcileTransferOrders',
+            bank_account_id: bankAccountId
+        })
+        if (response.data.success) {
+            return response.data.payload
+        }
+        throw new Error(response.data.payload || response.data.text)
+    }
+
     async function searchRecipient(query, limit = 20) {
         const response = await axios.post(API_URL, {
             action: 'searchTransferRecipient',
@@ -170,6 +181,7 @@ export function useTransfers() {
         submitTransferTan,
         searchRecipient,
         createRecipient,
-        updateRecipientBank
+        updateRecipientBank,
+        reconcileTransfers
     }
 }
