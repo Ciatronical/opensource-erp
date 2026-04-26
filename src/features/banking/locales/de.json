@@ -162,8 +162,9 @@
             "title": "Umsätze abrufen",
             "pin": "Online-Banking PIN",
             "pinHint": "PIN wird nicht an den Server gesendet außer für diesen Abruf",
-            "rememberPin": "PIN in dieser Browser-Session merken",
-            "rememberPinHint": "Wird im Browser gespeichert und beim Schließen des Browsers gelöscht. Kein Server-Speicher.",
+            "rememberPin": "PIN verschlüsselt speichern",
+            "deletePin": "PIN löschen",
+            "pinDeleted": "Gespeicherte PIN gelöscht",
             "start": "Abrufen",
             "cancel": "Abbrechen"
         },

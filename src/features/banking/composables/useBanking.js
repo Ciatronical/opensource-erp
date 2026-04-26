@@ -218,6 +218,32 @@ export function useBanking() {
         }
     }
 
+    async function saveBankingPin(bankAccountId, pin) {
+        const response = await axios.post(API_URL, {
+            action: 'fintsSavePin',
+            bank_account_id: bankAccountId,
+            pin
+        })
+        if (!response.data.success) throw new Error(response.data.payload || response.data.text)
+    }
+
+    async function deleteBankingPin(bankAccountId) {
+        const response = await axios.post(API_URL, {
+            action: 'fintsDeletePin',
+            bank_account_id: bankAccountId
+        })
+        if (!response.data.success) throw new Error(response.data.payload || response.data.text)
+    }
+
+    async function loadBankingPin(bankAccountId) {
+        const response = await axios.post(API_URL, {
+            action: 'fintsLoadPin',
+            bank_account_id: bankAccountId
+        })
+        if (response.data.success) return response.data.payload?.pin || ''
+        throw new Error(response.data.payload || response.data.text)
+    }
+
     async function getBalance(bankAccountId, pin) {
         const response = await axios.post(API_URL, {
             action: 'fintsGetBalance',
@@ -259,6 +285,9 @@ export function useBanking() {
         deleteFintsConfig,
         syncTransactions,
         submitTan,
-        getBalance
+        getBalance,
+        saveBankingPin,
+        deleteBankingPin,
+        loadBankingPin
     }
 }

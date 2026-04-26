@@ -296,12 +296,27 @@
                     <v-text-field
                         v-model="submitPin"
                         :label="t('BankingView.sync.pin')"
-                        :hint="t('BankingView.sync.pinHint')"
-                        persistent-hint
                         type="password"
                         autocomplete="off"
+                        class="mb-2"
                         @keyup.enter="executeSubmitTransfer"
                     />
+                    <div class="d-flex align-center">
+                        <v-checkbox
+                            v-model="rememberPin"
+                            :label="t('BankingView.sync.rememberPin')"
+                            density="compact"
+                            hide-details
+                        />
+                        <v-btn
+                            v-if="submitAccountHasSavedPin"
+                            size="x-small"
+                            variant="text"
+                            color="error"
+                            class="ml-2"
+                            @click="bankingComposable.deleteBankingPin(submitBankAccountId).then(() => { bankingComposable.fetchAccounts(); alerts.info(t('BankingView.sync.pinDeleted')) }).catch(e => alerts.error(e.message))"
+                        >{{ t('BankingView.sync.deletePin') }}</v-btn>
+                    </div>
                 </v-card-text>
                 <v-card-actions>
                     <v-spacer />
@@ -544,6 +559,14 @@ function clearRecipient() {
 const showPinDialog = ref(false)
 const submitTarget = ref(null)        // Single: das item, Batch: null
 const submitPin = ref('')
+const rememberPin = ref(true)
+
+const submitBankAccountId = computed(() =>
+    submitTarget.value?.bank_account_id ?? batchSelectable.value[0]?.bank_account_id ?? null
+)
+const submitAccountHasSavedPin = computed(() =>
+    !!bankingComposable.accounts.value.find(a => a.id === submitBankAccountId.value)?.has_saved_pin
+)
 const selectedIds = ref([])
 const batchSubmitIds = ref([])         // gefroren beim Klick auf "Auswahl senden"
 const batchId = ref(null)              // gesetzt sobald Backend einen Batch eroeffnet hat
@@ -572,6 +595,58 @@ const showVopDialog = ref(false)
 // TAN
 const showTanDialog = ref(false)
 const tanInput = ref('')
+
+let decoupledPollTimer = null
+
+function stopDecoupledPolling() {
+    if (decoupledPollTimer) {
+        clearTimeout(decoupledPollTimer)
+        decoupledPollTimer = null
+    }
+}
+
+function startDecoupledPolling() {
+    stopDecoupledPolling()
+    const tick = async () => {
+        if (!showTanDialog.value) { stopDecoupledPolling(); return }
+        try {
+            let result
+            if (isBatchSubmit.value) {
+                result = await transfers.submitTransferBatchTan(batchId.value, '', submitPin.value)
+                if (result.batchId) batchId.value = result.batchId
+            } else {
+                result = await transfers.submitTransferTan(submitTarget.value?.id, '', submitPin.value)
+            }
+            if (result.tanRequired) {
+                decoupledPollTimer = setTimeout(tick, 2000)
+                return
+            }
+            stopDecoupledPolling()
+            if (rememberPin.value && submitBankAccountId.value) {
+                bankingComposable.saveBankingPin(submitBankAccountId.value, submitPin.value).catch(() => {})
+            }
+            showTanDialog.value = false
+            submitPin.value = ''
+            tanInput.value = ''
+            if (isBatchSubmit.value) {
+                const count = result.count || batchSubmitIds.value.length
+                selectedIds.value = []
+                batchSubmitIds.value = []
+                alerts.success(t('BankingView.alerts.batchSubmitted', { count }))
+            } else {
+                alerts.success(t('BankingView.alerts.transferSubmitted'))
+            }
+            await transfers.fetchTransferOrders()
+            bankingComposable.fetchAccounts()
+        } catch (e) {
+            stopDecoupledPolling()
+            alerts.error(e.message)
+        }
+    }
+    decoupledPollTimer = setTimeout(tick, 2000)
+}
+
+watch(showTanDialog, (v) => { if (!v) stopDecoupledPolling() })
 
 const headers = computed(() => [
     { title: t('BankingView.transfers.status'), key: 'status', width: '120px' },
@@ -702,15 +777,22 @@ async function confirmDeleteTransfer(item) {
     }
 }
 
-function confirmSubmitTransfer(item) {
+async function confirmSubmitTransfer(item) {
     submitTarget.value = item
     batchSubmitIds.value = []
     batchId.value = null
     submitPin.value = ''
+    const account = bankingComposable.accounts.value.find(a => a.id === item.bank_account_id)
+    if (account?.has_saved_pin) {
+        try {
+            submitPin.value = await bankingComposable.loadBankingPin(item.bank_account_id)
+            if (submitPin.value) { executeSubmitTransfer(); return }
+        } catch { /* Fallback auf Dialog */ }
+    }
     showPinDialog.value = true
 }
 
-function confirmSubmitBatch() {
+async function confirmSubmitBatch() {
     const drafts = batchSelectable.value
     if (drafts.length < 2) return
     submitTarget.value = null
@@ -718,6 +800,14 @@ function confirmSubmitBatch() {
     batchSubmitTotalCache = drafts.reduce((s, d) => s + parseFloat(d.amount || 0), 0)
     batchId.value = null
     submitPin.value = ''
+    const accountId = drafts[0].bank_account_id
+    const account = bankingComposable.accounts.value.find(a => a.id === accountId)
+    if (account?.has_saved_pin) {
+        try {
+            submitPin.value = await bankingComposable.loadBankingPin(accountId)
+            if (submitPin.value) { executeSubmitTransfer(); return }
+        } catch { /* Fallback auf Dialog */ }
+    }
     showPinDialog.value = true
 }
 
@@ -753,6 +843,7 @@ async function executeSubmitTransfer() {
             showPinDialog.value = false
             tanInput.value = ''
             showTanDialog.value = true
+            if (transfers.tanChallenge.decoupled) startDecoupledPolling()
         } else {
             const successKey = isBatchSubmit.value
                 ? 'BankingView.alerts.batchSubmitted'
@@ -777,6 +868,7 @@ async function confirmVopApproval() {
             showVopDialog.value = false
             tanInput.value = ''
             showTanDialog.value = true
+            if (transfers.tanChallenge.decoupled) startDecoupledPolling()
         } else {
             showVopDialog.value = false
             submitPin.value = ''
@@ -798,6 +890,7 @@ function cancelVopApproval() {
 async function submitTanForTransfer() {
     // Bei pushTAN/decoupled wird kein TAN-Code eingegeben — leerer String
     // signalisiert dem Backend "in App bestaetigt, bitte pollen".
+    stopDecoupledPolling()
     const tanValue = transfers.tanChallenge.decoupled ? '' : tanInput.value
     if (!transfers.tanChallenge.decoupled && !tanInput.value) return
     try {
@@ -815,6 +908,9 @@ async function submitTanForTransfer() {
                 return
             }
             const count = result.count || batchSubmitIds.value.length
+            if (rememberPin.value && submitBankAccountId.value) {
+                bankingComposable.saveBankingPin(submitBankAccountId.value, submitPin.value).catch(() => {})
+            }
             showTanDialog.value = false
             submitPin.value = ''
             tanInput.value = ''
@@ -827,12 +923,16 @@ async function submitTanForTransfer() {
                 tanInput.value = ''
                 return
             }
+            if (rememberPin.value && submitBankAccountId.value) {
+                bankingComposable.saveBankingPin(submitBankAccountId.value, submitPin.value).catch(() => {})
+            }
             showTanDialog.value = false
             submitPin.value = ''
             tanInput.value = ''
             alerts.success(t('BankingView.alerts.transferSubmitted'))
         }
         await transfers.fetchTransferOrders()
+        bankingComposable.fetchAccounts()
     } catch (e) {
         alerts.error(e.message)
     }

@@ -4,10 +4,100 @@
 // FinTS/HBCI-Integration für Kontoabrufe und Überweisungen
 //
 // SICHERHEIT:
-// - PIN wird NIEMALS gespeichert, nur für die aktuelle FinTS-Session verwendet
+// - PIN kann optional AES-256-GCM-verschlüsselt in bank_account_fints gespeichert werden
+// - Schlüssel wird aus DB_AUTH_PASS abgeleitet — nie in der DB gespeichert
 // - TAN wird NIEMALS gespeichert, nur für die aktuelle Aktion verwendet
 // - FinTS-Session-Daten werden in PHP-Session gehalten (serverseitig, kurzlebig)
 // - Alle Verbindungen laufen über HTTPS (TLS)
+
+// ════════════════════════════════════════════════════════════
+// PIN-Verschlüsselung (AES-256-GCM)
+// ════════════════════════════════════════════════════════════
+
+function fintsPinKey(): string {
+    return hash('sha256', DB_AUTH_PASS . ':fints_pin_v1', true);
+}
+
+function fintsPinEncrypt(string $pin): string {
+    $key = fintsPinKey();
+    $iv  = random_bytes(12);
+    $tag = '';
+    $ct  = openssl_encrypt($pin, 'aes-256-gcm', $key, OPENSSL_RAW_DATA, $iv, $tag, '', 16);
+    return base64_encode($iv . $tag . $ct);
+}
+
+function fintsPinDecrypt(string $encrypted): string {
+    $key = fintsPinKey();
+    $raw = base64_decode($encrypted);
+    if (strlen($raw) < 29) return '';
+    $iv  = substr($raw, 0, 12);
+    $tag = substr($raw, 12, 16);
+    $ct  = substr($raw, 28);
+    $pin = openssl_decrypt($ct, 'aes-256-gcm', $key, OPENSSL_RAW_DATA, $iv, $tag);
+    return $pin === false ? '' : $pin;
+}
+
+/**
+ * FinTS: Online-Banking-PIN verschlüsselt in defaults_oserp speichern.
+ *
+ * @param int    $data['bank_account_id']
+ * @param string $data['pin']
+ * @testdata {"bank_account_id": 1, "pin": "12345"}
+ */
+function fintsSavePin($data) {
+    $db  = DbhCompany::begin();
+    $id  = intval($data['bank_account_id'] ?? 0);
+    $pin = $data['pin'] ?? '';
+    if ($id <= 0 || $pin === '') {
+        resultInfo(false, 'VALIDATION_ERROR', 'Bankkonto-ID und PIN sind Pflicht');
+        return;
+    }
+    $key = 'fints_pin_' . $id;
+    $db->execute(
+        "INSERT INTO defaults_oserp (key, value, mtime) VALUES (:key, :val, now())
+         ON CONFLICT (key) DO UPDATE SET value = :val, mtime = now()",
+        ['key' => $key, 'val' => fintsPinEncrypt($pin)]
+    );
+    resultInfo(true, 'PIN gespeichert');
+}
+
+/**
+ * FinTS: Gespeicherte PIN laden (entschlüsselt).
+ *
+ * @param int $data['bank_account_id']
+ * @testdata {"bank_account_id": 1}
+ */
+function fintsLoadPin($data) {
+    $db  = DbhCompany::begin();
+    $id  = intval($data['bank_account_id'] ?? 0);
+    if ($id <= 0) { resultInfo(false, 'VALIDATION_ERROR', 'Bankkonto-ID ist Pflicht'); return; }
+    $row = $db->getOne(
+        "SELECT value FROM defaults_oserp WHERE key = :key",
+        ['key' => 'fints_pin_' . $id]
+    );
+    if (!$row) {
+        resultInfo(true, '', ['pin' => '', 'saved' => false]);
+        return;
+    }
+    resultInfo(true, '', ['pin' => fintsPinDecrypt($row['value']), 'saved' => true]);
+}
+
+/**
+ * FinTS: Gespeicherte PIN löschen.
+ *
+ * @param int $data['bank_account_id']
+ * @testdata {"bank_account_id": 1}
+ */
+function fintsDeletePin($data) {
+    $db = DbhCompany::begin();
+    $id = intval($data['bank_account_id'] ?? 0);
+    if ($id <= 0) { resultInfo(false, 'VALIDATION_ERROR', 'Bankkonto-ID ist Pflicht'); return; }
+    $db->execute(
+        "DELETE FROM defaults_oserp WHERE key = :key",
+        ['key' => 'fints_pin_' . $id]
+    );
+    resultInfo(true, 'PIN gelöscht');
+}
 
 /**
  * FinTS Produkt-ID aus der Firmenkonfiguration lesen.
@@ -644,6 +734,7 @@ function fintsHandleVopActionResult(
     }
 
     // Kein TAN, kein VoP-Einwand: sofort ausgeführt
+    fintsPersistTrustState($fints, $db, $bankAccountId);
     $db->execute(<<<SQL
         UPDATE bank_transfer_orders
         SET status = 'submitted', submitted_at = now(), mtime = now()
@@ -699,9 +790,12 @@ function fintsSubmitTransferVopCheck($data) {
     require_once __DIR__.'/lib/SendSEPATransferWithVoP.php';
 
     try {
-        $fints = fintsCreate($config, $pin);
-        $tanMode = !empty($config['fints_tan_mode']) ? (int)$config['fints_tan_mode'] : null;
-        fintsSelectTanModeWithMedium($fints, $tanMode);
+        $savedState = !empty($config['persisted_state']) ? $config['persisted_state'] : null;
+        $fints = fintsCreate($config, $pin, $savedState);
+        if (!$savedState) {
+            $tanMode = !empty($config['fints_tan_mode']) ? (int)$config['fints_tan_mode'] : null;
+            fintsSelectTanModeWithMedium($fints, $tanMode);
+        }
         $login = $fints->login();
         if ($login->needsTan()) {
             session_start();
@@ -838,6 +932,7 @@ function fintsSubmitTransferVopTan($data) {
         unset($_SESSION['fints_action'], $_SESSION['fints_persist'],
               $_SESSION['fints_bank_account_id'], $_SESSION['fints_transfer_id'], $_SESSION['fints_stage']);
 
+        fintsPersistTrustState($fints, $db, $bankAccountId);
         $db->execute(<<<SQL
             UPDATE bank_transfer_orders
             SET status = 'submitted', submitted_at = now(), mtime = now()
@@ -909,9 +1004,12 @@ function fintsVopApproveAndSend($data) {
     require_once __DIR__.'/lib/SendSEPATransferWithVoP.php';
 
     try {
-        $fints = fintsCreate($config, $pin);
-        $tanMode = !empty($config['fints_tan_mode']) ? (int)$config['fints_tan_mode'] : null;
-        fintsSelectTanModeWithMedium($fints, $tanMode);
+        $savedState = !empty($config['persisted_state']) ? $config['persisted_state'] : null;
+        $fints = fintsCreate($config, $pin, $savedState);
+        if (!$savedState) {
+            $tanMode = !empty($config['fints_tan_mode']) ? (int)$config['fints_tan_mode'] : null;
+            fintsSelectTanModeWithMedium($fints, $tanMode);
+        }
         $login = $fints->login();
         if ($login->needsTan()) {
             // Login braucht TAN — nach Login dann HKVPA + HKCSS absenden
@@ -1004,9 +1102,12 @@ function fintsSubmitTransferPhp($data) {
     require_once $autoloadPath;
 
     try {
-        $fints = fintsCreate($config, $pin);
-        $tanMode = !empty($config['fints_tan_mode']) ? (int)$config['fints_tan_mode'] : null;
-        fintsSelectTanModeWithMedium($fints, $tanMode);
+        $savedState = !empty($config['persisted_state']) ? $config['persisted_state'] : null;
+        $fints = fintsCreate($config, $pin, $savedState);
+        if (!$savedState) {
+            $tanMode = !empty($config['fints_tan_mode']) ? (int)$config['fints_tan_mode'] : null;
+            fintsSelectTanModeWithMedium($fints, $tanMode);
+        }
         $login = $fints->login();
         if ($login->needsTan()) {
             session_start();
@@ -1136,11 +1237,12 @@ function fintsSubmitTransferTanPhp($data) {
         return;
     }
 
+    $bankAccountId = (int)$_SESSION['fints_bank_account_id'];
     $config = $db->getOne(<<<SQL
         SELECT baf.*
         FROM bank_account_fints baf
         WHERE baf.bank_account_id = :bank_account_id
-    SQL, ['bank_account_id' => $_SESSION['fints_bank_account_id']]);
+    SQL, ['bank_account_id' => $bankAccountId]);
 
     require_once __DIR__.'/../../vendor/autoload.php';
 
@@ -1221,6 +1323,7 @@ function fintsSubmitTransferTanPhp($data) {
                 resultInfo(true, 'TAN_REQUIRED', fintsBuildTanResponse($fints, $sepaTransfer));
                 return;
             }
+            fintsPersistTrustState($fints, $db, $order['bank_account_id']);
             $db->execute("UPDATE bank_transfer_orders SET status = 'submitted', submitted_at = now(), mtime = now() WHERE id = :id", ['id' => $transferId]);
             resultInfo(true, 'Ueberweisung gesendet');
             return;
@@ -1231,6 +1334,7 @@ function fintsSubmitTransferTanPhp($data) {
               $_SESSION['fints_bank_account_id'], $_SESSION['fints_transfer_id'], $_SESSION['fints_stage']);
 
         // Auftrag als gesendet markieren
+        fintsPersistTrustState($fints, $db, $bankAccountId);
         $db->execute(<<<SQL
             UPDATE bank_transfer_orders
             SET status = 'submitted', submitted_at = now(), mtime = now()
@@ -1350,9 +1454,12 @@ function fintsSubmitTransferBatch($data) {
     $batchId = 'B' . date('YmdHis') . substr(bin2hex(random_bytes(4)), 0, 8);
 
     try {
-        $fints = fintsCreate($config, $pin);
-        $tanMode = !empty($config['fints_tan_mode']) ? (int)$config['fints_tan_mode'] : null;
-        fintsSelectTanModeWithMedium($fints, $tanMode);
+        $savedState = !empty($config['persisted_state']) ? $config['persisted_state'] : null;
+        $fints = fintsCreate($config, $pin, $savedState);
+        if (!$savedState) {
+            $tanMode = !empty($config['fints_tan_mode']) ? (int)$config['fints_tan_mode'] : null;
+            fintsSelectTanModeWithMedium($fints, $tanMode);
+        }
         $login = $fints->login();
         if ($login->needsTan()) {
             session_start();
@@ -1475,9 +1582,10 @@ function fintsSubmitTransferBatchTan($data) {
     }
     $placeholders = implode(',', array_fill(0, count($ids), '?'));
 
+    $bankAccountId = (int)$_SESSION['fints_bank_account_id'];
     $config = $db->getOne(
         "SELECT baf.* FROM bank_account_fints baf WHERE baf.bank_account_id = :id",
-        ['id' => $_SESSION['fints_bank_account_id']]
+        ['id' => $bankAccountId]
     );
 
     require_once __DIR__.'/../../vendor/autoload.php';
@@ -1556,6 +1664,7 @@ function fintsSubmitTransferBatchTan($data) {
                 resultInfo(true, 'TAN_REQUIRED', $payload);
                 return;
             }
+            fintsPersistTrustState($fints, $db, $orders[0]['bank_account_id']);
             $db->execute(
                 "UPDATE bank_transfer_orders SET status = 'submitted', submitted_at = now(), mtime = now() WHERE id IN ($placeholders)",
                 $ids
@@ -1569,6 +1678,7 @@ function fintsSubmitTransferBatchTan($data) {
               $_SESSION['fints_bank_account_id'], $_SESSION['fints_batch_id'],
               $_SESSION['fints_batch_ids'], $_SESSION['fints_stage']);
 
+        fintsPersistTrustState($fints, $db, $bankAccountId);
         $db->execute(
             "UPDATE bank_transfer_orders SET status = 'submitted', submitted_at = now(), mtime = now() WHERE id IN ($placeholders)",
             $ids

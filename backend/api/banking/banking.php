@@ -25,6 +25,7 @@ function getBankingOverview($data) {
                 baf.fints_url,
                 baf.last_sync,
                 baf.fints_username,
+                EXISTS(SELECT 1 FROM defaults_oserp WHERE key = 'fints_pin_' || ba.id) AS has_saved_pin,
                 (
                     SELECT COALESCE(
                         ba.reconciliation_starting_balance, 0

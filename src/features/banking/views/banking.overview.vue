@@ -206,14 +206,22 @@
                         class="mb-3"
                         @keyup.enter="startSync"
                     />
-                    <v-checkbox
-                        v-model="rememberPin"
-                        :label="t('BankingView.sync.rememberPin')"
-                        :hint="t('BankingView.sync.rememberPinHint')"
-                        persistent-hint
-                        density="compact"
-                        hide-details="auto"
-                    />
+                    <div class="d-flex align-center">
+                        <v-checkbox
+                            v-model="rememberPin"
+                            :label="t('BankingView.sync.rememberPin')"
+                            density="compact"
+                            hide-details
+                        />
+                        <v-btn
+                            v-if="syncAccount?.has_saved_pin"
+                            size="x-small"
+                            variant="text"
+                            color="error"
+                            class="ml-2"
+                            @click="banking.deleteBankingPin(syncAccount.id).then(() => { banking.fetchAccounts(); alerts.info(t('BankingView.sync.pinDeleted')) }).catch(e => alerts.error(e.message))"
+                        >{{ t('BankingView.sync.deletePin') }}</v-btn>
+                    </div>
                 </v-card-text>
                 <v-card-actions>
                     <v-spacer />
@@ -328,22 +336,6 @@ const syncAccount = ref(null)
 const syncPin = ref('')
 const rememberPin = ref(true)
 
-// PIN-Cache im sessionStorage: lebt solange der Browser offen ist, wird beim
-// Browser-Neustart geleert. Kein Server-Speicher — jeder Browser/Benutzer hat
-// seinen eigenen Cache.
-const PIN_CACHE_PREFIX = 'fints_pin_'
-function getStoredPin(accountId) {
-    try { return sessionStorage.getItem(PIN_CACHE_PREFIX + accountId) || '' }
-    catch { return '' }
-}
-function storePin(accountId, pin) {
-    try { sessionStorage.setItem(PIN_CACHE_PREFIX + accountId, pin) }
-    catch { /* sessionStorage nicht verfuegbar */ }
-}
-function clearStoredPin(accountId) {
-    try { sessionStorage.removeItem(PIN_CACHE_PREFIX + accountId) }
-    catch { /* ignore */ }
-}
 
 // TAN
 const showTanDialog = ref(false)
@@ -448,15 +440,18 @@ async function removeFintsConfig() {
     }
 }
 
-function openSyncDialog(account) {
+async function openSyncDialog(account) {
     syncAccount.value = account
-    const cached = getStoredPin(account.id)
-    if (cached) {
-        // PIN aus Session-Cache — direkt starten, kein Dialog
-        syncPin.value = cached
-        rememberPin.value = true
-        runSync()
-        return
+    if (account.has_saved_pin) {
+        try {
+            const pin = await banking.loadBankingPin(account.id)
+            if (pin) {
+                syncPin.value = pin
+                rememberPin.value = true
+                runSync()
+                return
+            }
+        } catch { /* Fallback auf Dialog */ }
     }
     syncPin.value = ''
     rememberPin.value = true
@@ -487,9 +482,8 @@ async function runSync() {
                 startDecoupledPolling()
             }
         } else {
-            // PIN war korrekt — falls gewuenscht, in Session-Cache legen
             if (rememberPin.value) {
-                storePin(syncAccount.value.id, syncPin.value)
+                banking.saveBankingPin(syncAccount.value.id, syncPin.value).catch(() => {})
             }
             syncPin.value = ''
             showSyncDialog.value = false
@@ -501,8 +495,6 @@ async function runSync() {
             await banking.fetchAccounts()
         }
     } catch (e) {
-        // Bei Fehler gespeicherten PIN loeschen (moeglicherweise falsch/veraltet)
-        clearStoredPin(syncAccount.value.id)
         alerts.error(e.message)
     }
 }
@@ -533,10 +525,9 @@ function startDecoupledPolling() {
                 decoupledPollTimer = setTimeout(tick, 2000)
                 return
             }
-            // Fertig — PIN bei Erfolg cachen, Dialog schliessen
             stopDecoupledPolling()
             if (rememberPin.value) {
-                storePin(syncAccount.value.id, syncPin.value)
+                banking.saveBankingPin(syncAccount.value.id, syncPin.value).catch(() => {})
             }
             showTanDialog.value = false
             syncPin.value = ''
@@ -579,7 +570,7 @@ async function submitTanAction() {
         }
 
         if (rememberPin.value) {
-            storePin(syncAccount.value.id, syncPin.value)
+            banking.saveBankingPin(syncAccount.value.id, syncPin.value).catch(() => {})
         }
         showTanDialog.value = false
         syncPin.value = ''

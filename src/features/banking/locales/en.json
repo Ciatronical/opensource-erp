@@ -162,8 +162,9 @@
             "title": "Fetch Transactions",
             "pin": "Online Banking PIN",
             "pinHint": "PIN is not sent to the server except for this fetch",
-            "rememberPin": "Remember PIN in this browser session",
-            "rememberPinHint": "Stored in the browser and cleared on browser close. Not stored on the server.",
+            "rememberPin": "Save PIN encrypted",
+            "deletePin": "Delete PIN",
+            "pinDeleted": "Saved PIN deleted",
             "start": "Fetch",
             "cancel": "Cancel"
         },
