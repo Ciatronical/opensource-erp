@@ -62,6 +62,16 @@ function isFintsDebugEnabled() {
 }
 
 /**
+ * Konvertiert Bank-Antworten (oft Latin-1) zu UTF-8, damit Postgres beim
+ * Schreiben in error_message-Spalten nicht crashed (SQLSTATE 22021).
+ */
+function fintsToUtf8(?string $s): string {
+    if ($s === null || $s === '') return '';
+    if (mb_check_encoding($s, 'UTF-8')) return $s;
+    return mb_convert_encoding($s, 'UTF-8', ['UTF-8', 'Windows-1252', 'ISO-8859-1']);
+}
+
+/**
  * Schreibt einen FinTS-Log-Eintrag mit Kontext in OSERP_DEBUG_LOG_FILE.
  */
 function fintsLog($message, array $context = [], $level = DLOG_INF) {
@@ -409,7 +419,7 @@ function fintsSyncTransactions($data) {
 
     } catch (\Exception $e) {
         fintsLogException('Sync', $e, ['bank_account_id' => $bankAccountId, 'url' => $config['fints_url'] ?? null]);
-        resultInfo(false, 'FINTS_ERROR', 'FinTS-Fehler: ' . $e->getMessage());
+        resultInfo(false, 'FINTS_ERROR', 'FinTS-Fehler: ' . fintsToUtf8($e->getMessage()));
     }
 }
 
@@ -546,18 +556,401 @@ function fintsSubmitTan($data) {
         // Session bei Fehler aufraeumen
         unset($_SESSION['fints_action'], $_SESSION['fints_persist'], $_SESSION['fints_bank_account_id'], $_SESSION['fints_stage']);
         fintsLogException('SubmitTan', $e, ['bank_account_id' => $bankAccountId]);
-        resultInfo(false, 'FINTS_ERROR', 'FinTS-Fehler: ' . $e->getMessage());
+        resultInfo(false, 'FINTS_ERROR', 'FinTS-Fehler: ' . fintsToUtf8($e->getMessage()));
+    }
+}
+
+// ════════════════════════════════════════════════════════════
+// HKVPP + HKVPA — VoP-konformer Überweisungsweg (engine=vop_check)
+// ════════════════════════════════════════════════════════════
+
+/**
+ * Hilfsfunktion: Baut SEPAAccount + PAIN-XML aus einem geladenen Auftrag.
+ * Wird von fintsSubmitTransferVopCheck und fintsVopApproveAndSend verwendet.
+ */
+function fintsBuildVopTransferData($db, array $order): array {
+    $companyRow  = $db->getOne("SELECT company FROM defaults");
+    $senderName  = trim($companyRow['company'] ?? '') ?: 'Absender';
+    $senderAccount = (new \Fhp\Model\SEPAAccount())
+        ->setIban($order['sender_iban'])
+        ->setBic($order['sender_bic'] ?? '')
+        ->setBlz($order['sender_blz'] ?? '')
+        ->setAccountNumber($order['sender_account_number'] ?? '');
+    $painXml = buildSepaCreditTransferPainXml(
+        $senderName,
+        $order['sender_iban'],
+        $order['sender_bic'] ?? '',
+        [[
+            'name'    => $order['remote_name'],
+            'iban'    => $order['remote_iban'],
+            'bic'     => $order['remote_bic'] ?? '',
+            'amount'  => floatval($order['amount']),
+            'purpose' => $order['purpose'],
+        ]],
+        !empty($order['execution_date']) ? $order['execution_date'] : null
+    );
+    return [$senderAccount, $painXml];
+}
+
+/**
+ * Hilfsfunktion: Mappt VoP-Response nach resultInfo — nutzt vorhandene PHP-Session.
+ * Gibt true zurück wenn TAN_REQUIRED, false wenn VOP_APPROVAL_REQUIRED.
+ */
+function fintsHandleVopActionResult(
+    \OserpBanking\SendSEPATransferWithVoP $action,
+    \Fhp\FinTs $fints,
+    int $transferId,
+    int $bankAccountId,
+    $db
+): void {
+    if (!session_id()) session_start();
+
+    if ($action->vopResponse !== null) {
+        // VoP-Abweichung: User muss bestätigen
+        $_SESSION['fints_vop_transfer_id'] = $transferId;
+        $hivpp  = $action->vopResponse;
+        $single = $hivpp->vopSingleResult;
+        // VOP-ID als binary serialisiert aufbewahren (für HKVPA in Schritt 2)
+        $_SESSION['fints_vop_id_raw'] = $hivpp->vopId ? base64_encode($hivpp->vopId->getData()) : '';
+        $db->execute(
+            "UPDATE bank_transfer_orders SET status = 'pending_tan', mtime = now() WHERE id = :id",
+            ['id' => $transferId]
+        );
+        resultInfo(true, 'VOP_APPROVAL_REQUIRED', [
+            'vop' => [
+                'result'          => $single?->result ?? null,
+                'close_match_name'=> $single?->closeMatchName ?? null,
+                'recipient_iban'  => $single?->recipientIban ?? null,
+                'info_iban'       => $single?->infoIban ?? null,
+                'na_reason'       => $single?->naReason ?? null,
+            ],
+            'notice' => $hivpp->manualAuthorizationNotice ?? null,
+        ]);
+        return;
+    }
+
+    if ($action->needsTan()) {
+        // RCVC — exakter Treffer, TAN angefordert
+        $_SESSION['fints_action']           = serialize($action);
+        $_SESSION['fints_persist']          = $fints->persist();
+        $_SESSION['fints_bank_account_id']  = $bankAccountId;
+        $_SESSION['fints_transfer_id']      = $transferId;
+        $db->execute(
+            "UPDATE bank_transfer_orders SET status = 'pending_tan', mtime = now() WHERE id = :id",
+            ['id' => $transferId]
+        );
+        resultInfo(true, 'TAN_REQUIRED', fintsBuildTanResponse($fints, $action));
+        return;
+    }
+
+    // Kein TAN, kein VoP-Einwand: sofort ausgeführt
+    $db->execute(<<<SQL
+        UPDATE bank_transfer_orders
+        SET status = 'submitted', submitted_at = now(), mtime = now()
+        WHERE id = :id
+    SQL, ['id' => $transferId]);
+    resultInfo(true, 'Ueberweisung gesendet');
+}
+
+/**
+ * FinTS: Überweisung mit VoP-Prüfung senden (HKVPP + HKCCS/HKCSE).
+ *
+ * Wenn der Namensabgleich positiv ist (RCVC), erhält der User eine TAN-Anfrage.
+ * Bei Abweichung (RVMC/RVNM/RVNA) wird VOP_APPROVAL_REQUIRED zurückgegeben —
+ * der User bestätigt und ruft dann fintsVopApproveAndSend auf.
+ *
+ * @param int    $data['transfer_order_id']
+ * @param string $data['pin']
+ * @testdata {"transfer_order_id": 1, "pin": "12345"}
+ */
+function fintsSubmitTransferVopCheck($data) {
+    $db         = DbhCompany::begin();
+    $transferId = intval($data['transfer_order_id'] ?? 0);
+    $pin        = $data['pin'] ?? '';
+
+    if ($transferId <= 0 || empty($pin)) {
+        resultInfo(false, 'VALIDATION_ERROR', 'Auftrags-ID und PIN sind Pflicht');
+        return;
+    }
+
+    $order = $db->getOne(<<<SQL
+        SELECT bto.*,
+               REGEXP_REPLACE(ba.iban, '\s+', '', 'g')           as sender_iban,
+               REGEXP_REPLACE(ba.bic, '\s+', '', 'g')            as sender_bic,
+               REGEXP_REPLACE(ba.bank_code, '\s+', '', 'g')      as sender_blz,
+               REGEXP_REPLACE(ba.account_number, '\s+', '', 'g') as sender_account_number
+        FROM bank_transfer_orders bto
+        JOIN bank_accounts ba ON ba.id = bto.bank_account_id
+        WHERE bto.id = :id
+    SQL, ['id' => $transferId]);
+
+    if (!$order) { resultInfo(false, 'NOT_FOUND', 'Auftrag nicht gefunden'); return; }
+    if (!in_array($order['status'], ['draft', 'rejected'], true)) {
+        resultInfo(false, 'NOT_SUBMITTABLE', 'Nur Entwürfe können gesendet werden'); return;
+    }
+
+    $config = $db->getOne(
+        "SELECT baf.* FROM bank_account_fints baf WHERE baf.bank_account_id = :id",
+        ['id' => $order['bank_account_id']]
+    );
+    if (!$config) { resultInfo(false, 'NO_FINTS_CONFIG', 'Keine FinTS-Konfiguration'); return; }
+
+    require_once __DIR__.'/../../vendor/autoload.php';
+    require_once __DIR__.'/lib/SendSEPATransferWithVoP.php';
+
+    try {
+        $fints = fintsCreate($config, $pin);
+        $tanMode = !empty($config['fints_tan_mode']) ? (int)$config['fints_tan_mode'] : null;
+        fintsSelectTanModeWithMedium($fints, $tanMode);
+        $login = $fints->login();
+        if ($login->needsTan()) {
+            session_start();
+            $_SESSION['fints_action']          = serialize($login);
+            $_SESSION['fints_persist']         = $fints->persist();
+            $_SESSION['fints_bank_account_id'] = $order['bank_account_id'];
+            $_SESSION['fints_transfer_id']     = $transferId;
+            $_SESSION['fints_stage']           = 'login-vop';
+            $db->execute("UPDATE bank_transfer_orders SET status = 'pending_tan', mtime = now() WHERE id = :id", ['id' => $transferId]);
+            resultInfo(true, 'TAN_REQUIRED', fintsBuildTanResponse($fints, $login));
+            return;
+        }
+
+        [$senderAccount, $painXml] = fintsBuildVopTransferData($db, $order);
+        $action = \OserpBanking\SendSEPATransferWithVoP::createWithCheck($senderAccount, $painXml);
+        $fints->execute($action);
+        fintsHandleVopActionResult($action, $fints, $transferId, $order['bank_account_id'], $db);
+
+    } catch (\Exception $e) {
+        $db->execute(
+            "UPDATE bank_transfer_orders SET status = 'rejected', error_message = :err, mtime = now() WHERE id = :id",
+            ['id' => $transferId, 'err' => fintsToUtf8($e->getMessage())]
+        );
+        fintsLogException('SubmitTransferVopCheck', $e, ['transfer_id' => $transferId]);
+        resultInfo(false, 'FINTS_ERROR', 'FinTS-Fehler: ' . fintsToUtf8($e->getMessage()));
     }
 }
 
 /**
- * FinTS: Ueberweisung an Bank senden
+ * FinTS: TAN für Überweisung mit VoP-Prüfung einreichen.
+ * Handhabt auch: Login-TAN (login-vop) → danach VoP-Prüfung.
  *
- * @param int    $data['transfer_order_id'] Ueberweisungsauftrags-ID
- * @param string $data['pin']               Online-Banking PIN
- * @testdata {"transfer_order_id": 1, "pin": "12345"}
+ * @param string $data['tan']
+ * @param string $data['pin']
+ * @param int    $data['transfer_order_id']
+ * @testdata {"tan": "123456", "pin": "12345", "transfer_order_id": 1}
  */
-function fintsSubmitTransfer($data) {
+function fintsSubmitTransferVopTan($data) {
+    $db         = DbhCompany::begin();
+    $tan        = trim($data['tan'] ?? '');
+    $pin        = $data['pin'] ?? '';
+    $transferId = intval($data['transfer_order_id'] ?? 0);
+
+    if (empty($pin) || $transferId <= 0) {
+        resultInfo(false, 'VALIDATION_ERROR', 'PIN und Auftrags-ID sind Pflicht');
+        return;
+    }
+
+    if (!session_id()) session_start();
+    if (empty($_SESSION['fints_action']) || empty($_SESSION['fints_persist'])) {
+        resultInfo(false, 'NO_PENDING_ACTION', 'Keine ausstehende FinTS-Aktion');
+        return;
+    }
+    if (($_SESSION['fints_transfer_id'] ?? 0) !== $transferId) {
+        resultInfo(false, 'SESSION_MISMATCH', 'Auftrags-ID stimmt nicht überein');
+        return;
+    }
+
+    $bankAccountId = $_SESSION['fints_bank_account_id'];
+    $config = $db->getOne(
+        "SELECT baf.* FROM bank_account_fints baf WHERE baf.bank_account_id = :id",
+        ['id' => $bankAccountId]
+    );
+    require_once __DIR__.'/../../vendor/autoload.php';
+    require_once __DIR__.'/lib/SendSEPATransferWithVoP.php';
+
+    try {
+        $fints  = fintsCreate($config, $pin, $_SESSION['fints_persist']);
+        $action = unserialize($_SESSION['fints_action']);
+        $stage  = $_SESSION['fints_stage'] ?? 'vop';
+
+        if ($tan !== '') {
+            $fints->submitTan($action, $tan);
+        } else {
+            $tm = $fints->getSelectedTanMode();
+            if (!$tm || !$tm->isDecoupled()) {
+                resultInfo(false, 'VALIDATION_ERROR', 'TAN ist erforderlich');
+                return;
+            }
+            if (!$fints->checkDecoupledSubmission($action)) {
+                $_SESSION['fints_persist'] = $fints->persist();
+                $_SESSION['fints_action']  = serialize($action);
+                $payload = fintsBuildTanResponse($fints, $action);
+                $payload['message'] = 'Freigabe noch nicht eingegangen — bitte in der App bestätigen und erneut auf "Fortfahren" klicken.';
+                resultInfo(true, 'TAN_REQUIRED', $payload);
+                return;
+            }
+        }
+
+        // Nach Login-TAN für VoP-Approve: HKVPA + Transfer absenden
+        if ($stage === 'login-vop-approve') {
+            unset($_SESSION['fints_action'], $_SESSION['fints_persist'], $_SESSION['fints_stage']);
+            $vopIdRaw = $_SESSION['fints_vop_id_raw'] ?? '';
+            $vopId    = $vopIdRaw !== '' ? base64_decode($vopIdRaw) : '';
+            $order = $db->getOne(<<<SQL
+                SELECT bto.*,
+                       REGEXP_REPLACE(ba.iban, '\s+', '', 'g')           as sender_iban,
+                       REGEXP_REPLACE(ba.bic, '\s+', '', 'g')            as sender_bic,
+                       REGEXP_REPLACE(ba.bank_code, '\s+', '', 'g')      as sender_blz,
+                       REGEXP_REPLACE(ba.account_number, '\s+', '', 'g') as sender_account_number
+                FROM bank_transfer_orders bto
+                JOIN bank_accounts ba ON ba.id = bto.bank_account_id
+                WHERE bto.id = :id
+            SQL, ['id' => $transferId]);
+            [$senderAccount, $painXml] = fintsBuildVopTransferData($db, $order);
+            $vopAction = \OserpBanking\SendSEPATransferWithVoP::createWithApproval($senderAccount, $painXml, $vopId);
+            $fints->execute($vopAction);
+            unset($_SESSION['fints_vop_transfer_id'], $_SESSION['fints_vop_id_raw']);
+            fintsHandleVopActionResult($vopAction, $fints, $transferId, $bankAccountId, $db);
+            return;
+        }
+
+        // Nach Login-TAN: VoP-Prüfung nachholen
+        if ($stage === 'login-vop') {
+            unset($_SESSION['fints_action'], $_SESSION['fints_persist'], $_SESSION['fints_stage']);
+            $order = $db->getOne(<<<SQL
+                SELECT bto.*,
+                       REGEXP_REPLACE(ba.iban, '\s+', '', 'g')           as sender_iban,
+                       REGEXP_REPLACE(ba.bic, '\s+', '', 'g')            as sender_bic,
+                       REGEXP_REPLACE(ba.bank_code, '\s+', '', 'g')      as sender_blz,
+                       REGEXP_REPLACE(ba.account_number, '\s+', '', 'g') as sender_account_number
+                FROM bank_transfer_orders bto
+                JOIN bank_accounts ba ON ba.id = bto.bank_account_id
+                WHERE bto.id = :id
+            SQL, ['id' => $transferId]);
+            [$senderAccount, $painXml] = fintsBuildVopTransferData($db, $order);
+            $vopAction = \OserpBanking\SendSEPATransferWithVoP::createWithCheck($senderAccount, $painXml);
+            $fints->execute($vopAction);
+            fintsHandleVopActionResult($vopAction, $fints, $transferId, $bankAccountId, $db);
+            return;
+        }
+
+        // Normaler TAN-Schritt: Transfer abschließen
+        unset($_SESSION['fints_action'], $_SESSION['fints_persist'],
+              $_SESSION['fints_bank_account_id'], $_SESSION['fints_transfer_id'], $_SESSION['fints_stage']);
+
+        $db->execute(<<<SQL
+            UPDATE bank_transfer_orders
+            SET status = 'submitted', submitted_at = now(), mtime = now()
+            WHERE id = :id
+        SQL, ['id' => $transferId]);
+        resultInfo(true, 'Ueberweisung gesendet');
+
+    } catch (\Exception $e) {
+        unset($_SESSION['fints_action'], $_SESSION['fints_persist'],
+              $_SESSION['fints_bank_account_id'], $_SESSION['fints_transfer_id'], $_SESSION['fints_stage']);
+        $db->execute(
+            "UPDATE bank_transfer_orders SET status = 'rejected', error_message = :err, mtime = now() WHERE id = :id",
+            ['id' => $transferId, 'err' => fintsToUtf8($e->getMessage())]
+        );
+        fintsLogException('SubmitTransferVopTan', $e, ['transfer_id' => $transferId]);
+        resultInfo(false, 'FINTS_ERROR', 'FinTS-Fehler: ' . fintsToUtf8($e->getMessage()));
+    }
+}
+
+/**
+ * FinTS: VoP-Abweichung bestätigen und Überweisung absenden (HKVPA + HKCCS/HKCSE).
+ *
+ * Wird aufgerufen nachdem der User eine RVMC/RVNM/RVNA-Abweichung im VoP-Dialog
+ * bestätigt hat. Sendet HKVPA mit der VOP-ID aus dem vorherigen HIVPP.
+ *
+ * @param string $data['pin']
+ * @param int    $data['transfer_order_id']
+ * @testdata {"pin": "12345", "transfer_order_id": 1}
+ */
+function fintsVopApproveAndSend($data) {
+    $db         = DbhCompany::begin();
+    $pin        = $data['pin'] ?? '';
+    $transferId = intval($data['transfer_order_id'] ?? 0);
+
+    if (empty($pin) || $transferId <= 0) {
+        resultInfo(false, 'VALIDATION_ERROR', 'PIN und Auftrags-ID sind Pflicht');
+        return;
+    }
+
+    if (!session_id()) session_start();
+    if (($_SESSION['fints_vop_transfer_id'] ?? 0) !== $transferId) {
+        resultInfo(false, 'SESSION_MISMATCH', 'Auftrags-ID stimmt nicht mit VoP-Session überein');
+        return;
+    }
+
+    $vopIdRaw = $_SESSION['fints_vop_id_raw'] ?? '';
+    $vopId    = $vopIdRaw !== '' ? base64_decode($vopIdRaw) : '';
+
+    $order = $db->getOne(<<<SQL
+        SELECT bto.*,
+               REGEXP_REPLACE(ba.iban, '\s+', '', 'g')           as sender_iban,
+               REGEXP_REPLACE(ba.bic, '\s+', '', 'g')            as sender_bic,
+               REGEXP_REPLACE(ba.bank_code, '\s+', '', 'g')      as sender_blz,
+               REGEXP_REPLACE(ba.account_number, '\s+', '', 'g') as sender_account_number
+        FROM bank_transfer_orders bto
+        JOIN bank_accounts ba ON ba.id = bto.bank_account_id
+        WHERE bto.id = :id
+    SQL, ['id' => $transferId]);
+
+    if (!$order) { resultInfo(false, 'NOT_FOUND', 'Auftrag nicht gefunden'); return; }
+
+    $config = $db->getOne(
+        "SELECT baf.* FROM bank_account_fints baf WHERE baf.bank_account_id = :id",
+        ['id' => $order['bank_account_id']]
+    );
+    if (!$config) { resultInfo(false, 'NO_FINTS_CONFIG', 'Keine FinTS-Konfiguration'); return; }
+
+    require_once __DIR__.'/../../vendor/autoload.php';
+    require_once __DIR__.'/lib/SendSEPATransferWithVoP.php';
+
+    try {
+        $fints = fintsCreate($config, $pin);
+        $tanMode = !empty($config['fints_tan_mode']) ? (int)$config['fints_tan_mode'] : null;
+        fintsSelectTanModeWithMedium($fints, $tanMode);
+        $login = $fints->login();
+        if ($login->needsTan()) {
+            // Login braucht TAN — nach Login dann HKVPA + HKCSS absenden
+            session_start();
+            $_SESSION['fints_action']          = serialize($login);
+            $_SESSION['fints_persist']         = $fints->persist();
+            $_SESSION['fints_bank_account_id'] = $order['bank_account_id'];
+            $_SESSION['fints_transfer_id']     = $transferId;
+            $_SESSION['fints_stage']           = 'login-vop-approve';
+            resultInfo(true, 'TAN_REQUIRED', fintsBuildTanResponse($fints, $login));
+            return;
+        }
+
+        [$senderAccount, $painXml] = fintsBuildVopTransferData($db, $order);
+        $action = \OserpBanking\SendSEPATransferWithVoP::createWithApproval($senderAccount, $painXml, $vopId);
+        $fints->execute($action);
+
+        unset($_SESSION['fints_vop_transfer_id'], $_SESSION['fints_vop_id_raw']);
+        fintsHandleVopActionResult($action, $fints, $transferId, $order['bank_account_id'], $db);
+
+    } catch (\Exception $e) {
+        unset($_SESSION['fints_vop_transfer_id'], $_SESSION['fints_vop_id_raw']);
+        $db->execute(
+            "UPDATE bank_transfer_orders SET status = 'rejected', error_message = :err, mtime = now() WHERE id = :id",
+            ['id' => $transferId, 'err' => fintsToUtf8($e->getMessage())]
+        );
+        fintsLogException('VopApproveAndSend', $e, ['transfer_id' => $transferId]);
+        resultInfo(false, 'FINTS_ERROR', 'FinTS-Fehler: ' . fintsToUtf8($e->getMessage()));
+    }
+}
+
+/**
+ * FinTS: Ueberweisung an Bank senden (phpFinTS-Variante, ohne VoP-Support).
+ * Bei Banken die VoP erzwingen kommt 9076 — kein Auth-Fehler, keine PIN-Zaehler.
+ *
+ * Wird ueber den Dispatcher fintsSubmitTransfer (in fints_py.php) aufgerufen,
+ * wenn `bank_transfer_orders.engine = 'php'`.
+ */
+function fintsSubmitTransferPhp($data) {
     $db = DbhCompany::begin();
 
     $transferId = intval($data['transfer_order_id'] ?? 0);
@@ -570,7 +963,11 @@ function fintsSubmitTransfer($data) {
 
     // Auftrag laden
     $order = $db->getOne(<<<SQL
-        SELECT bto.*, ba.iban as sender_iban, ba.bic as sender_bic
+        SELECT bto.*,
+                       REGEXP_REPLACE(ba.iban, '\s+', '', 'g')           as sender_iban,
+                       REGEXP_REPLACE(ba.bic, '\s+', '', 'g')            as sender_bic,
+                       REGEXP_REPLACE(ba.bank_code, '\s+', '', 'g')      as sender_blz,
+                       REGEXP_REPLACE(ba.account_number, '\s+', '', 'g') as sender_account_number
         FROM bank_transfer_orders bto
         JOIN bank_accounts ba ON ba.id = bto.bank_account_id
         WHERE bto.id = :id
@@ -627,10 +1024,14 @@ function fintsSubmitTransfer($data) {
         $companyRow = $db->getOne("SELECT company FROM defaults");
         $senderName = trim($companyRow['company'] ?? '') ?: 'Absender';
 
-        // SEPAAccount des Absenders
+        // SEPAAccount des Absenders. BLZ + Kontonummer sind fuer phpFinTS Pflicht
+        // (Kti::fromAccount baut daraus die Kreditinstitutskennung) — IBAN/BIC
+        // alleine reichen nicht, sonst Crash in Kik::create().
         $senderAccount = (new \Fhp\Model\SEPAAccount())
             ->setIban($order['sender_iban'])
-            ->setBic($order['sender_bic'] ?? '');
+            ->setBic($order['sender_bic'] ?? '')
+            ->setBlz($order['sender_blz'] ?? '')
+            ->setAccountNumber($order['sender_account_number'] ?? '');
 
         // PAIN.001.001.03 XML fuer Einzelueberweisung — bei vorhandenem
         // execution_date wird das Datum durchgereicht und phpFinTS waehlt
@@ -652,8 +1053,13 @@ function fintsSubmitTransfer($data) {
         // Instant-SEPA: separater FinTS-Geschaeftsvorfall HKIPZ. Faellt bei
         // Nicht-Unterstuetzung der Bank automatisch auf normale Ueberweisung
         // zurueck (allowConversionToSEPATransfer=true).
+        // vop_optout: HKVOO + HKCCS in einer Nachricht — überspringt VoP-Prüfung
+        // (9076) sofern das Konto für HKVOO freigeschaltet ist.
         if (!empty($order['instant'])) {
             $sepaTransfer = \Fhp\Action\SendSEPARealtimeTransfer::create($senderAccount, $painXml, true);
+        } elseif (($order['engine'] ?? '') === 'vop_optout') {
+            require_once __DIR__.'/lib/SendSEPATransferWithVopOptOut.php';
+            $sepaTransfer = \OserpBanking\SendSEPATransferWithVopOptOut::create($senderAccount, $painXml);
         } else {
             $sepaTransfer = \Fhp\Action\SendSEPATransfer::create($senderAccount, $painXml);
         }
@@ -691,10 +1097,10 @@ function fintsSubmitTransfer($data) {
             UPDATE bank_transfer_orders
             SET status = 'rejected', error_message = :error, mtime = now()
             WHERE id = :id
-        SQL, ['id' => $transferId, 'error' => $e->getMessage()]);
+        SQL, ['id' => $transferId, 'error' => fintsToUtf8($e->getMessage())]);
 
         fintsLogException('SubmitTransfer', $e, ['transfer_id' => $transferId, 'url' => $config['fints_url'] ?? null]);
-        resultInfo(false, 'FINTS_ERROR', 'FinTS-Fehler: ' . $e->getMessage());
+        resultInfo(false, 'FINTS_ERROR', 'FinTS-Fehler: ' . fintsToUtf8($e->getMessage()));
     }
 }
 
@@ -706,7 +1112,7 @@ function fintsSubmitTransfer($data) {
  * @param int    $data['transfer_order_id'] Ueberweisungsauftrags-ID
  * @testdata {"tan": "123456", "pin": "12345", "transfer_order_id": 1}
  */
-function fintsSubmitTransferTan($data) {
+function fintsSubmitTransferTanPhp($data) {
     $db = DbhCompany::begin();
 
     $tan = trim($data['tan'] ?? '');
@@ -767,7 +1173,11 @@ function fintsSubmitTransferTan($data) {
             unset($_SESSION['fints_action'], $_SESSION['fints_persist'], $_SESSION['fints_stage']);
 
             $order = $db->getOne(<<<SQL
-                SELECT bto.*, ba.iban as sender_iban, ba.bic as sender_bic
+                SELECT bto.*,
+                       REGEXP_REPLACE(ba.iban, '\s+', '', 'g')           as sender_iban,
+                       REGEXP_REPLACE(ba.bic, '\s+', '', 'g')            as sender_bic,
+                       REGEXP_REPLACE(ba.bank_code, '\s+', '', 'g')      as sender_blz,
+                       REGEXP_REPLACE(ba.account_number, '\s+', '', 'g') as sender_account_number
                 FROM bank_transfer_orders bto
                 JOIN bank_accounts ba ON ba.id = bto.bank_account_id
                 WHERE bto.id = :id
@@ -777,7 +1187,9 @@ function fintsSubmitTransferTan($data) {
             $senderName = trim($companyRow['company'] ?? '') ?: 'Absender';
             $senderAccount = (new \Fhp\Model\SEPAAccount())
                 ->setIban($order['sender_iban'])
-                ->setBic($order['sender_bic'] ?? '');
+                ->setBic($order['sender_bic'] ?? '')
+                ->setBlz($order['sender_blz'] ?? '')
+                ->setAccountNumber($order['sender_account_number'] ?? '');
             $painXml = buildSepaCreditTransferPainXml(
                 $senderName, $order['sender_iban'], $order['sender_bic'] ?? '',
                 [[
@@ -791,6 +1203,9 @@ function fintsSubmitTransferTan($data) {
             );
             if (!empty($order['instant'])) {
                 $sepaTransfer = \Fhp\Action\SendSEPARealtimeTransfer::create($senderAccount, $painXml, true);
+            } elseif (($order['engine'] ?? '') === 'vop_optout') {
+                require_once __DIR__.'/lib/SendSEPATransferWithVopOptOut.php';
+                $sepaTransfer = \OserpBanking\SendSEPATransferWithVopOptOut::create($senderAccount, $painXml);
             } else {
                 $sepaTransfer = \Fhp\Action\SendSEPATransfer::create($senderAccount, $painXml);
             }
@@ -832,10 +1247,10 @@ function fintsSubmitTransferTan($data) {
             UPDATE bank_transfer_orders
             SET status = 'rejected', error_message = :error, mtime = now()
             WHERE id = :id
-        SQL, ['id' => $transferId, 'error' => $e->getMessage()]);
+        SQL, ['id' => $transferId, 'error' => fintsToUtf8($e->getMessage())]);
 
         fintsLogException('SubmitTransferTan', $e, ['transfer_id' => $transferId]);
-        resultInfo(false, 'FINTS_ERROR', 'FinTS-Fehler: ' . $e->getMessage());
+        resultInfo(false, 'FINTS_ERROR', 'FinTS-Fehler: ' . fintsToUtf8($e->getMessage()));
     }
 }
 
@@ -870,7 +1285,11 @@ function fintsSubmitTransferBatch($data) {
     // Auftraege laden + auf gleiche bank_account_id und draft pruefen.
     $placeholders = implode(',', array_fill(0, count($ids), '?'));
     $orders = $db->getAll(<<<SQL
-        SELECT bto.*, ba.iban as sender_iban, ba.bic as sender_bic
+        SELECT bto.*,
+                       REGEXP_REPLACE(ba.iban, '\s+', '', 'g')           as sender_iban,
+                       REGEXP_REPLACE(ba.bic, '\s+', '', 'g')            as sender_bic,
+                       REGEXP_REPLACE(ba.bank_code, '\s+', '', 'g')      as sender_blz,
+                       REGEXP_REPLACE(ba.account_number, '\s+', '', 'g') as sender_account_number
         FROM bank_transfer_orders bto
         JOIN bank_accounts ba ON ba.id = bto.bank_account_id
         WHERE bto.id IN ($placeholders)
@@ -958,7 +1377,9 @@ function fintsSubmitTransferBatch($data) {
 
         $senderAccount = (new \Fhp\Model\SEPAAccount())
             ->setIban($orders[0]['sender_iban'])
-            ->setBic($orders[0]['sender_bic'] ?? '');
+            ->setBic($orders[0]['sender_bic'] ?? '')
+            ->setBlz($orders[0]['sender_blz'] ?? '')
+            ->setAccountNumber($orders[0]['sender_account_number'] ?? '');
 
         $txList = array_map(fn($o) => [
             'name'    => $o['remote_name'],
@@ -1008,10 +1429,10 @@ function fintsSubmitTransferBatch($data) {
     } catch (\Exception $e) {
         $db->execute(
             "UPDATE bank_transfer_orders SET status = 'rejected', error_message = :error, mtime = now() WHERE id IN ($placeholders)",
-            array_merge(['error' => $e->getMessage()], $ids)
+            array_merge(['error' => fintsToUtf8($e->getMessage())], $ids)
         );
         fintsLogException('SubmitTransferBatch', $e, ['batch_id' => $batchId, 'ids' => $ids]);
-        resultInfo(false, 'FINTS_ERROR', 'FinTS-Fehler: ' . $e->getMessage());
+        resultInfo(false, 'FINTS_ERROR', 'FinTS-Fehler: ' . fintsToUtf8($e->getMessage()));
     }
 }
 
@@ -1089,7 +1510,11 @@ function fintsSubmitTransferBatchTan($data) {
             unset($_SESSION['fints_action'], $_SESSION['fints_persist'], $_SESSION['fints_stage']);
 
             $orders = $db->getAll(<<<SQL
-                SELECT bto.*, ba.iban as sender_iban, ba.bic as sender_bic
+                SELECT bto.*,
+                       REGEXP_REPLACE(ba.iban, '\s+', '', 'g')           as sender_iban,
+                       REGEXP_REPLACE(ba.bic, '\s+', '', 'g')            as sender_bic,
+                       REGEXP_REPLACE(ba.bank_code, '\s+', '', 'g')      as sender_blz,
+                       REGEXP_REPLACE(ba.account_number, '\s+', '', 'g') as sender_account_number
                 FROM bank_transfer_orders bto
                 JOIN bank_accounts ba ON ba.id = bto.bank_account_id
                 WHERE bto.id IN ($placeholders)
@@ -1100,7 +1525,9 @@ function fintsSubmitTransferBatchTan($data) {
             $senderName = trim($companyRow['company'] ?? '') ?: 'Absender';
             $senderAccount = (new \Fhp\Model\SEPAAccount())
                 ->setIban($orders[0]['sender_iban'])
-                ->setBic($orders[0]['sender_bic'] ?? '');
+                ->setBic($orders[0]['sender_bic'] ?? '')
+                ->setBlz($orders[0]['sender_blz'] ?? '')
+                ->setAccountNumber($orders[0]['sender_account_number'] ?? '');
             $txList = array_map(fn($o) => [
                 'name'    => $o['remote_name'],
                 'iban'    => $o['remote_iban'],
@@ -1155,10 +1582,10 @@ function fintsSubmitTransferBatchTan($data) {
 
         $db->execute(
             "UPDATE bank_transfer_orders SET status = 'rejected', error_message = :error, mtime = now() WHERE id IN ($placeholders)",
-            array_merge(['error' => $e->getMessage()], $ids)
+            array_merge(['error' => fintsToUtf8($e->getMessage())], $ids)
         );
         fintsLogException('SubmitTransferBatchTan', $e, ['batch_id' => $batchId, 'ids' => $ids]);
-        resultInfo(false, 'FINTS_ERROR', 'FinTS-Fehler: ' . $e->getMessage());
+        resultInfo(false, 'FINTS_ERROR', 'FinTS-Fehler: ' . fintsToUtf8($e->getMessage()));
     }
 }
 
@@ -1240,7 +1667,7 @@ function fintsGetBalance($data) {
 
     } catch (\Exception $e) {
         fintsLogException('GetBalance', $e, ['bank_account_id' => $bankAccountId, 'url' => $config['fints_url'] ?? null]);
-        resultInfo(false, 'FINTS_ERROR', 'FinTS-Fehler: ' . $e->getMessage());
+        resultInfo(false, 'FINTS_ERROR', 'FinTS-Fehler: ' . fintsToUtf8($e->getMessage()));
     }
 }
 

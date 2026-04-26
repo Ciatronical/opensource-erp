@@ -99,6 +99,7 @@
             "executionDateInstantConflict": "Sofort-Überweisung erlaubt kein Ausführungsdatum",
             "instantLabel": "Sofort-Überweisung (Echtzeit, höhere Gebühren)",
             "instantHint": "Geld in Sekunden statt Werktagen — wenn die Bank es unterstützt, sonst Fallback auf normale Überweisung",
+            "enginePythonHint": "WARNUNG: bei Login-pushTAN instabil, kann Auth-Fehler 9340 auslösen und Konto sperren.",
             "submitBatch": "Auswahl als Sammelauftrag senden",
             "batchSelected": "{count} Aufträge ausgewählt · Gesamt {total}",
             "batchSummary": "{count} Aufträge · Gesamt {total}",
@@ -166,12 +167,22 @@
             "start": "Abrufen",
             "cancel": "Abbrechen"
         },
+        "vop": {
+            "title": "Namensabgleich — Empfänger prüfen",
+            "mismatchHint": "Die Bank konnte den Empfängernamen nicht eindeutig zur IBAN bestätigen. Bitte prüfen Sie die Daten und bestätigen Sie nur, wenn Sie sicher sind, dass die IBAN korrekt ist.",
+            "closeMatch": "Möglicher Empfängername laut Bank:",
+            "codeLabel": "Antwortcode",
+            "confirm": "Trotzdem überweisen",
+            "cancel": "Abbrechen"
+        },
         "tan": {
             "title": "TAN-Eingabe",
+            "titleDecoupled": "Freigabe in Banking-App",
             "challenge": "Aufgabe",
             "tanMedium": "TAN-Medium",
             "tanInput": "TAN eingeben",
             "submit": "TAN senden",
+            "submitDecoupled": "Fortfahren",
             "continue": "Fortfahren",
             "decoupledHint": "Bitte Auftrag in Ihrer Banking-App freigeben und dann auf \"Fortfahren\" klicken.",
             "cancel": "Abbrechen"
@@ -184,6 +195,7 @@
             "transferCreated": "Überweisung erstellt",
             "transferSubmitted": "Überweisung an Bank gesendet",
             "transferDeleted": "Überweisung gelöscht",
+            "transferCancelled": "Überweisung abgebrochen",
             "reconcileNoChanges": "Keine Statusänderungen — alles aktuell",
             "reconcileResult": "{matched} bestätigt · {expired} als nicht ausgeführt markiert",
             "batchSubmitted": "{count} Überweisungen als Sammelauftrag gesendet",

@@ -15,7 +15,7 @@
                     <v-icon start>mdi-refresh</v-icon>
                     {{ t('BankingView.transfers.reconcile') }}
                 </v-btn>
-                <v-btn color="primary" variant="tonal" class="ml-2" @click="openNewTransfer">
+                <v-btn color="primary" variant="tonal" class="ml-2" @click="openNewTransfer()">
                     <v-icon start>mdi-plus</v-icon>
                     {{ t('BankingView.transfers.newTransfer') }}
                 </v-btn>
@@ -80,6 +80,14 @@
                         <v-chip :color="transferStatusColor(item.status)" size="small" variant="tonal">
                             {{ t('BankingView.transfers.status' + capitalize(item.status)) }}
                         </v-chip>
+                        <v-chip
+                            v-if="item.engine === 'python'"
+                            color="warning"
+                            size="x-small"
+                            variant="tonal"
+                            class="ml-1"
+                            :title="t('BankingView.transfers.enginePythonHint')"
+                        >PY</v-chip>
                         <div v-if="item.status === 'executed' && item.executed_at" class="text-caption text-success mt-1">
                             {{ formatDateShort(item.executed_at) }}
                         </div>
@@ -312,20 +320,88 @@
             </v-card>
         </v-dialog>
 
+        <!-- VoP-Approval Dialog (Namensabgleich-Mismatch) -->
+        <v-dialog v-model="showVopDialog" max-width="500" persistent>
+            <v-card>
+                <v-card-title class="text-warning">
+                    <v-icon class="mr-2">mdi-account-question</v-icon>
+                    {{ t('BankingView.vop.title') }}
+                </v-card-title>
+                <v-card-text>
+                    <v-alert type="warning" variant="tonal" density="compact" class="mb-3">
+                        {{ t('BankingView.vop.mismatchHint') }}
+                    </v-alert>
+
+                    <div class="mb-3">
+                        <div class="text-caption text-medium-emphasis">{{ t('BankingView.transfers.recipient') }}</div>
+                        <div class="font-weight-medium">{{ submitTarget?.remote_name }}</div>
+                        <div class="text-caption">{{ formatIban(submitTarget?.remote_iban) }}</div>
+                    </div>
+
+                    <div v-if="transfers.vopApproval.closeMatchName" class="mb-3 pa-2 bg-grey-lighten-4 rounded">
+                        <div class="text-caption text-medium-emphasis">{{ t('BankingView.vop.closeMatch') }}</div>
+                        <div class="font-weight-medium">{{ transfers.vopApproval.closeMatchName }}</div>
+                    </div>
+
+                    <div v-if="transfers.vopApproval.naReason" class="text-caption text-warning mb-2">
+                        {{ transfers.vopApproval.naReason }}
+                    </div>
+
+                    <div v-if="transfers.vopApproval.notice" class="text-body-2 mb-2">
+                        {{ transfers.vopApproval.notice }}
+                    </div>
+
+                    <div class="text-caption text-medium-emphasis mt-3">
+                        {{ t('BankingView.vop.codeLabel') }}: <strong>{{ transfers.vopApproval.result }}</strong>
+                    </div>
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer />
+                    <v-btn variant="text" @click="cancelVopApproval">
+                        {{ t('BankingView.vop.cancel') }}
+                    </v-btn>
+                    <v-btn
+                        color="warning"
+                        variant="elevated"
+                        :loading="transfers.loading.value"
+                        @click="confirmVopApproval"
+                    >
+                        {{ t('BankingView.vop.confirm') }}
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
         <!-- TAN Dialog -->
         <v-dialog v-model="showTanDialog" max-width="450" persistent>
             <v-card>
-                <v-card-title>{{ t('BankingView.tan.title') }}</v-card-title>
+                <v-card-title>
+                    {{ transfers.tanChallenge.decoupled ? t('BankingView.tan.titleDecoupled') : t('BankingView.tan.title') }}
+                </v-card-title>
                 <v-card-text>
                     <div class="mb-3">
                         <div class="text-caption text-medium-emphasis">{{ t('BankingView.tan.tanMedium') }}</div>
                         <div>{{ transfers.tanChallenge.tanMedium }}</div>
                     </div>
-                    <div class="mb-3">
+                    <div v-if="transfers.tanChallenge.challenge" class="mb-3">
                         <div class="text-caption text-medium-emphasis">{{ t('BankingView.tan.challenge') }}</div>
                         <div>{{ transfers.tanChallenge.challenge }}</div>
                     </div>
+
+                    <!-- pushTAN / decoupled: User bestaetigt in der App -->
+                    <v-alert
+                        v-if="transfers.tanChallenge.decoupled"
+                        type="info"
+                        variant="tonal"
+                        density="compact"
+                        class="mt-2"
+                    >
+                        {{ transfers.tanChallenge.message || t('BankingView.tan.decoupledHint') }}
+                    </v-alert>
+
+                    <!-- Klassische TAN-Eingabe -->
                     <v-text-field
+                        v-else
                         v-model="tanInput"
                         :label="t('BankingView.tan.tanInput')"
                         type="text"
@@ -345,7 +421,7 @@
                         :loading="transfers.loading.value"
                         @click="submitTanForTransfer"
                     >
-                        {{ t('BankingView.tan.submit') }}
+                        {{ transfers.tanChallenge.decoupled ? t('BankingView.tan.submitDecoupled') : t('BankingView.tan.submit') }}
                     </v-btn>
                 </v-card-actions>
             </v-card>
@@ -382,7 +458,8 @@ const transferForm = reactive({
     amount: null,
     purpose: '',
     execution_date: '',
-    instant: false
+    instant: false,
+    engine: 'php'
 })
 
 const todayIso = new Date().toISOString().slice(0, 10)
@@ -489,6 +566,9 @@ const batchSelectableTotal = computed(() =>
     batchSelectable.value.reduce((sum, o) => sum + parseFloat(o.amount || 0), 0)
 )
 
+// VoP-Approval (Namensabgleich-Mismatch)
+const showVopDialog = ref(false)
+
 // TAN
 const showTanDialog = ref(false)
 const tanInput = ref('')
@@ -530,6 +610,7 @@ function openNewTransfer(preselectAccountId = null) {
     transferForm.purpose = ''
     transferForm.execution_date = ''
     transferForm.instant = false
+    transferForm.engine = 'vop_check'
     showTransferDialog.value = true
 }
 
@@ -544,6 +625,7 @@ function editTransfer(item) {
     transferForm.purpose = item.purpose
     transferForm.execution_date = item.execution_date || ''
     transferForm.instant = !!item.instant
+    transferForm.engine = 'vop_check'
     showTransferDialog.value = true
 }
 
@@ -657,6 +739,13 @@ async function executeSubmitTransfer() {
             ? await transfers.submitTransferBatch(batchSubmitIds.value, submitPin.value)
             : await transfers.submitTransfer(submitTarget.value.id, submitPin.value)
 
+        if (result.vopApprovalRequired) {
+            // Bank meldet Namensabgleich-Mismatch — User muss explizit bestaetigen.
+            showPinDialog.value = false
+            showVopDialog.value = true
+            return
+        }
+
         if (result.tanRequired) {
             if (isBatchSubmit.value && result.batchId) {
                 batchId.value = result.batchId
@@ -681,18 +770,46 @@ async function executeSubmitTransfer() {
     }
 }
 
+async function confirmVopApproval() {
+    try {
+        const result = await transfers.approveVopTransfer(submitTarget.value.id, submitPin.value)
+        if (result.tanRequired) {
+            showVopDialog.value = false
+            tanInput.value = ''
+            showTanDialog.value = true
+        } else {
+            showVopDialog.value = false
+            submitPin.value = ''
+            alerts.success(t('BankingView.alerts.transferSubmitted'))
+            await transfers.fetchTransferOrders()
+        }
+    } catch (e) {
+        alerts.error(e.message)
+    }
+}
+
+function cancelVopApproval() {
+    showVopDialog.value = false
+    submitPin.value = ''
+    submitTarget.value = null
+    alerts.info(t('BankingView.alerts.transferCancelled'))
+}
+
 async function submitTanForTransfer() {
-    if (!tanInput.value) return
+    // Bei pushTAN/decoupled wird kein TAN-Code eingegeben — leerer String
+    // signalisiert dem Backend "in App bestaetigt, bitte pollen".
+    const tanValue = transfers.tanChallenge.decoupled ? '' : tanInput.value
+    if (!transfers.tanChallenge.decoupled && !tanInput.value) return
     try {
         if (isBatchSubmit.value) {
             const result = await transfers.submitTransferBatchTan(
                 batchId.value,
-                tanInput.value,
+                tanValue,
                 submitPin.value
             )
             if (result.tanRequired) {
-                // Nach Login-TAN braucht die SEPA-Action selbst noch eine TAN —
-                // Dialog offen halten, neue Challenge anzeigen.
+                // Nach Login-TAN braucht die SEPA-Action selbst noch eine TAN,
+                // bei pushTAN-Polling kommt "noch nicht bestaetigt" — Dialog offen halten.
                 if (result.batchId) batchId.value = result.batchId
                 tanInput.value = ''
                 return
@@ -705,7 +822,11 @@ async function submitTanForTransfer() {
             batchSubmitIds.value = []
             alerts.success(t('BankingView.alerts.batchSubmitted', { count }))
         } else {
-            await transfers.submitTransferTan(submitTarget.value.id, tanInput.value, submitPin.value)
+            const result = await transfers.submitTransferTan(submitTarget.value.id, tanValue, submitPin.value)
+            if (result.tanRequired) {
+                tanInput.value = ''
+                return
+            }
             showTanDialog.value = false
             submitPin.value = ''
             tanInput.value = ''

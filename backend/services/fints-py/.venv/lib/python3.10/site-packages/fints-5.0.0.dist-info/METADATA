@@ -1,0 +1,68 @@
+Metadata-Version: 2.4
+Name: fints
+Version: 5.0.0
+Summary: Pure-python FinTS 3.0 (formerly known as HBCI) implementation
+Author-email: Raphael Michel <mail@raphaelmichel.de>
+License-Expression: LGPL-3.0-or-later
+Project-URL: Homepage, https://github.com/raphaelm/python-fints
+Keywords: hbci,banking,fints
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: Other Audience
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+License-File: LICENSE.txt
+Requires-Dist: bleach
+Requires-Dist: mt-940
+Requires-Dist: requests
+Requires-Dist: sepaxml~=2.7
+Requires-Dist: enum-tools~=0.12.0
+Requires-Dist: lxml~=6.0.2
+Dynamic: license-file
+
+PyFinTS
+=======
+
+This is a pure-python implementation of FinTS (formerly known as HBCI), a
+online-banking protocol commonly supported by German banks.
+
+[Read our documentation for more info](https://python-fints.readthedocs.io)
+
+Maintenance Status 
+------------------
+
+This project is maintained, but with limited capacity. Working on this is takes a lot of time and testing since all banks do things differently and once you move a part here, you break an unexpected one over there. Therefore: Bugs will only be fixed by me if they occur with a bank where I have an account. New features will only be developed if I need them. PRs will be merged if they either have a very low risk of breaking things elsewhere (e.g. purely adding new commands) or if I can test them. In any case, things might take a little time until I have the bandwidth to focus on them. Sorry about that :(
+
+Limitations
+-----------
+
+* Only FinTS 3.0 is supported
+* Only PIN/TAN authentication is supported, no signature cards
+* Only the following operations are supported:
+  * Fetching bank statements
+  * Fetching balances
+  * Fetching holdings
+  * SEPA transfers and debits (only with required TAN and with specific TAN methods)
+* Supports Python 3.9+
+
+
+Security
+--------
+
+If you discover a security issue, please contact us at security@pretix.eu and see our [Responsible Disclosure Policy](https://docs.pretix.eu/trust/security/disclosure/) further information.
+
+
+Credits and License
+-------------------
+
+This library is maintained by Raphael Michel <mail@raphaelmichel.de>
+and features major contributions by Henryk Plötz.
+
+Further thanks for improving this library go out to:
+Daniel Nowak, Patrick Braune, Mathias Dalheimer, Christopher Grebs, Markus Schindler, and many more.
+
+License: LGPL-3.0.-or-later

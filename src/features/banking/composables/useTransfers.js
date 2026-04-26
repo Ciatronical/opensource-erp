@@ -16,7 +16,22 @@ export function useTransfers() {
     const tanChallenge = reactive({
         challenge: '',
         tanMedium: '',
-        challengeHhduc: null
+        challengeHhduc: null,
+        decoupled: false,
+        message: '',
+        vopMatchStatus: null     // RVMA | RVMC | RVNM | RVNA — Hinweis fuer den User
+    })
+
+    // Wenn die Bank VoP-Pruefung negativ war, fragt der Server explizite
+    // Bestaetigung an. Felder kommen aus Python-Runner (EVPE-Datenelemente).
+    const vopApproval = reactive({
+        required: false,
+        result: null,            // RVNM/RVMC/RVNA Code
+        recipientIban: null,
+        infoIban: null,
+        closeMatchName: null,    // Bank-Vorschlag bei "close match"
+        naReason: null,          // Begruendung wenn Service nicht verfuegbar
+        notice: null             // Aufklaerungstext der Bank
     })
 
     async function fetchTransferOrders(bankAccountId = null, status = 'all') {
@@ -92,14 +107,59 @@ export function useTransfers() {
                 if (response.data.text === 'TAN_REQUIRED') {
                     tanRequired.value = true
                     const payload = response.data.payload
-                    tanChallenge.challenge = payload.challenge
-                    tanChallenge.tanMedium = payload.tan_medium
+                    tanChallenge.challenge = payload.challenge || payload.challenge_html || ''
+                    tanChallenge.tanMedium = payload.tan_medium || ''
                     tanChallenge.challengeHhduc = payload.challenge_hhduc
+                    tanChallenge.decoupled = !!payload.decoupled
+                    tanChallenge.message = payload.message || ''
+                    tanChallenge.vopMatchStatus = payload.vop_match_status || null
                     return { tanRequired: true }
+                }
+                if (response.data.text === 'VOP_APPROVAL_REQUIRED') {
+                    const payload = response.data.payload
+                    const v = payload.vop || {}
+                    vopApproval.required = true
+                    vopApproval.result = v.result || null
+                    vopApproval.recipientIban = v.recipient_iban || null
+                    vopApproval.infoIban = v.info_iban || null
+                    vopApproval.closeMatchName = v.close_match_name || null
+                    vopApproval.naReason = v.na_reason || null
+                    vopApproval.notice = payload.notice || null
+                    return { vopApprovalRequired: true }
                 }
                 return { tanRequired: false }
             }
             throw new Error(response.data.payload || response.data.text)
+        } finally {
+            loading.value = false
+        }
+    }
+
+    async function approveVopTransfer(transferOrderId, pin) {
+        loading.value = true
+        try {
+            const response = await axios.post(API_URL, {
+                action: 'fintsApproveVopTransfer',
+                transfer_order_id: transferOrderId,
+                pin
+            })
+            if (!response.data.success) {
+                throw new Error(response.data.payload || response.data.text)
+            }
+            // Bank antwortet jetzt typischerweise mit TAN-Anforderung
+            if (response.data.text === 'TAN_REQUIRED') {
+                tanRequired.value = true
+                const payload = response.data.payload
+                tanChallenge.challenge = payload.challenge || payload.challenge_html || ''
+                tanChallenge.tanMedium = payload.tan_medium || ''
+                tanChallenge.challengeHhduc = payload.challenge_hhduc
+                tanChallenge.decoupled = !!payload.decoupled
+                tanChallenge.message = payload.message || ''
+                vopApproval.required = false
+                return { tanRequired: true }
+            }
+            vopApproval.required = false
+            return { tanRequired: false }
         } finally {
             loading.value = false
         }
@@ -164,6 +224,8 @@ export function useTransfers() {
                     tanChallenge.challenge = payload.challenge
                     tanChallenge.tanMedium = payload.tan_medium
                     tanChallenge.challengeHhduc = payload.challenge_hhduc
+                    tanChallenge.decoupled = !!payload.decoupled
+                    tanChallenge.message = payload.message || ''
                     return { tanRequired: true, batchId: payload.batch_id }
                 }
                 return { tanRequired: false, count: response.data.payload?.count || 0 }
@@ -192,6 +254,8 @@ export function useTransfers() {
                 tanChallenge.challenge = payload.challenge
                 tanChallenge.tanMedium = payload.tan_medium
                 tanChallenge.challengeHhduc = payload.challenge_hhduc
+                tanChallenge.decoupled = !!payload.decoupled
+                tanChallenge.message = payload.message || ''
                 return { tanRequired: true, batchId: payload.batch_id || batchId }
             }
             tanRequired.value = false
@@ -210,10 +274,22 @@ export function useTransfers() {
                 tan: tan,
                 pin: pin
             })
-            tanRequired.value = false
             if (!response.data.success) {
                 throw new Error(response.data.payload || response.data.text)
             }
+            // Folge-TAN moeglich: nach Login-TAN kommt die eigentliche SEPA-TAN,
+            // bei pushTAN-Polling kommt der gleiche Schritt mit "noch nicht bestaetigt".
+            if (response.data.text === 'TAN_REQUIRED') {
+                const payload = response.data.payload
+                tanChallenge.challenge = payload.challenge
+                tanChallenge.tanMedium = payload.tan_medium
+                tanChallenge.challengeHhduc = payload.challenge_hhduc
+                tanChallenge.decoupled = !!payload.decoupled
+                tanChallenge.message = payload.message || ''
+                return { tanRequired: true }
+            }
+            tanRequired.value = false
+            return { tanRequired: false }
         } finally {
             loading.value = false
         }
@@ -224,6 +300,8 @@ export function useTransfers() {
         transferOrders,
         tanRequired,
         tanChallenge,
+        vopApproval,
+        approveVopTransfer,
 
         fetchTransferOrders,
         createTransfer,

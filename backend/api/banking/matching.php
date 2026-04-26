@@ -231,11 +231,15 @@ function bookMatchedTransactions($data) {
         return;
     }
 
-    // Bankkonto-Chart laden (Gegenkonto)
-    $bankAccount = $db->getOne(
-        "SELECT chart_id FROM bank_accounts WHERE id = :id",
-        ['id' => $bankAccountId]
-    );
+    // Bankkonto-Chart + chart.link laden (chart_link wird in acc_trans gespiegelt,
+    // damit kivitendo's Erkennung von Zahlungs-Buchungen via 'AR_paid' / 'AP_paid'
+    // funktioniert).
+    $bankAccount = $db->getOne(<<<SQL
+        SELECT ba.chart_id, ch.link AS chart_link
+        FROM bank_accounts ba
+        JOIN chart ch ON ch.id = ba.chart_id
+        WHERE ba.id = :id
+    SQL, ['id' => $bankAccountId]);
 
     if (!$bankAccount) {
         resultInfo(false, 'NOT_FOUND', 'Bankkonto nicht gefunden');
@@ -258,41 +262,127 @@ function bookMatchedTransactions($data) {
             continue;
         }
 
-        // Buchung in acc_trans erstellen
-        $accTransResult = $db->getOne(<<<SQL
-            INSERT INTO acc_trans (
-                trans_id, chart_id, amount, transdate, gldate, source, memo
-            )
-            VALUES (
-                0, :chart_id, :amount, :transdate, CURRENT_DATE,
-                'BANK', 'Banking-Modul'
-            )
-            RETURNING acc_trans_id
+        // Pre-Booking-Mapping holen — sagt uns welche AR/AP zugeordnet wurde.
+        $mapping = $db->getOne(<<<SQL
+            SELECT target_type, target_id
+            FROM bank_transaction_matches
+            WHERE bank_transaction_id = :id
+        SQL, ['id' => $btId]);
+
+        if (!$mapping) {
+            $errors[] = "Umsatz {$btId}: keine Zuordnung gefunden";
+            continue;
+        }
+
+        $targetType = $mapping['target_type'];   // 'ar' oder 'ap'
+        $targetId   = intval($mapping['target_id']);
+        $isAr       = $targetType === 'ar';
+        $invTable   = $isAr ? 'ar' : 'ap';
+        $linkPrefix = $isAr ? 'AR' : 'AP';
+        $paidLink   = $linkPrefix . '_paid';
+
+        // Rechnungs-Stammbuchung lesen — daraus ergibt sich das Forderungs-/
+        // Verbindlichkeits-Konto (chart_id), gegen das die Erstbuchung lief.
+        // Wir buchen die Zahlung gegen genau dieses Konto, kompatibel mit dem
+        // jeweiligen Kontenrahmen des Kunden/Lieferanten.
+        $counterChart = $db->getOne(<<<SQL
+            SELECT chart_id
+            FROM acc_trans
+            WHERE trans_id = :tid
+              AND chart_link LIKE :base_link
+              AND chart_link NOT LIKE :paid_link
+            ORDER BY acc_trans_id ASC
+            LIMIT 1
         SQL, [
-            'chart_id' => $bankAccount['chart_id'],
-            'amount' => $bt['amount'],
-            'transdate' => $bt['transdate']
+            'tid'       => $targetId,
+            'base_link' => '%' . $linkPrefix . '%',
+            'paid_link' => '%' . $paidLink . '%',
         ]);
 
-        if ($accTransResult) {
-            // Link in bank_transaction_acc_trans erstellen
-            $db->execute(<<<SQL
-                INSERT INTO bank_transaction_acc_trans (
-                    bank_transaction_id, acc_trans_id
-                ) VALUES (:bt_id, :acc_trans_id)
-            SQL, [
-                'bt_id' => $btId,
-                'acc_trans_id' => $accTransResult['acc_trans_id']
-            ]);
-
-            // Status aktualisieren
-            $db->execute(
-                "UPDATE bank_transactions SET match_status = 'booked', cleared = true WHERE id = :id",
-                ['id' => $btId]
-            );
-
-            $bookedCount++;
+        if (!$counterChart) {
+            $errors[] = "Umsatz {$btId}: Forderungs-/Verbindlichkeitskonto der Rechnung nicht ermittelbar";
+            continue;
         }
+
+        $invoice = $db->getOne(
+            "SELECT id, amount, paid FROM {$invTable} WHERE id = :id",
+            ['id' => $targetId]
+        );
+        if (!$invoice) {
+            $errors[] = "Umsatz {$btId}: {$invTable} #{$targetId} nicht gefunden";
+            continue;
+        }
+
+        // Vorzeichen: AR-Zahlung → bt.amount > 0 (Geld kommt rein),
+        //             AP-Zahlung → bt.amount < 0 (Geld geht raus).
+        // Bank-Eintrag erhaelt das bt-Vorzeichen, Gegenbuchung das inverse.
+        $bankAmount    = floatval($bt['amount']);
+        $counterAmount = -$bankAmount;
+        // ar.paid / ap.paid sind in kivitendo immer positiv.
+        $paidIncrement = abs($bankAmount);
+
+        // Bank-Eintrag (positiv bei AR, negativ bei AP)
+        $bankEntry = $db->getOne(<<<SQL
+            INSERT INTO acc_trans (trans_id, chart_id, amount, transdate, gldate, source, memo, chart_link)
+            VALUES (:trans_id, :chart_id, :amount, :transdate, :transdate, :source, :memo, :chart_link)
+            RETURNING acc_trans_id
+        SQL, [
+            'trans_id'   => $targetId,
+            'chart_id'   => $bankAccount['chart_id'],
+            'amount'     => $bankAmount,
+            'transdate'  => $bt['transdate'],
+            'source'     => 'BANK',
+            'memo'       => 'Bankabstimmung Umsatz #' . $btId,
+            'chart_link' => $bankAccount['chart_link'],
+        ]);
+
+        // Gegenbuchung gegen Forderung/Verbindlichkeit — chart_link='AR_paid' /
+        // 'AP_paid' damit kivitendo das als Zahlung erkennt.
+        $db->execute(<<<SQL
+            INSERT INTO acc_trans (trans_id, chart_id, amount, transdate, gldate, source, memo, chart_link)
+            VALUES (:trans_id, :chart_id, :amount, :transdate, :transdate, :source, :memo, :chart_link)
+        SQL, [
+            'trans_id'   => $targetId,
+            'chart_id'   => $counterChart['chart_id'],
+            'amount'     => $counterAmount,
+            'transdate'  => $bt['transdate'],
+            'source'     => 'BANK',
+            'memo'       => 'Bankabstimmung Umsatz #' . $btId,
+            'chart_link' => $paidLink,
+        ]);
+
+        // ar.paid bzw. ap.paid inkrementell erhoehen — Teilzahlungen bleiben
+        // damit korrekt offen.
+        $db->execute(
+            "UPDATE {$invTable} SET paid = COALESCE(paid, 0) + :inc WHERE id = :id",
+            ['inc' => $paidIncrement, 'id' => $targetId]
+        );
+
+        // kivitendo-Mapping fuellen — ar_id oder ap_id setzen, damit
+        // bank_transaction_acc_trans semantisch korrekt ist.
+        $db->execute(<<<SQL
+            INSERT INTO bank_transaction_acc_trans (bank_transaction_id, acc_trans_id, ar_id, ap_id)
+            VALUES (:bt_id, :acc_trans_id, :ar_id, :ap_id)
+        SQL, [
+            'bt_id'         => $btId,
+            'acc_trans_id'  => $bankEntry['acc_trans_id'],
+            'ar_id'         => $isAr ? $targetId : null,
+            'ap_id'         => $isAr ? null : $targetId,
+        ]);
+
+        // Pre-Booking-Mapping konsumiert — Information ist jetzt in
+        // bank_transaction_acc_trans und acc_trans persistent.
+        $db->execute(
+            "DELETE FROM bank_transaction_matches WHERE bank_transaction_id = :id",
+            ['id' => $btId]
+        );
+
+        $db->execute(
+            "UPDATE bank_transactions SET match_status = 'booked', cleared = true WHERE id = :id",
+            ['id' => $btId]
+        );
+
+        $bookedCount++;
     }
 
     resultInfo(true, "Gebucht", [

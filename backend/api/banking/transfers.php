@@ -47,7 +47,7 @@ function getTransferOrders($data) {
         $params['status'] = $status;
     }
 
-    $result = $db->getAll(<<<SQL
+    $result = $db->getOne(<<<SQL
         SELECT json_agg(row_to_json(t)) as orders
         FROM (
             SELECT
@@ -64,6 +64,7 @@ function getTransferOrders($data) {
                 bto.execution_date,
                 bto.instant,
                 bto.batch_id,
+                COALESCE(bto.engine, 'php') as engine,
                 bto.status,
                 bto.source_type,
                 bto.source_id,
@@ -81,7 +82,7 @@ function getTransferOrders($data) {
                     ELSE NULL
                 END as source_invnumber
             FROM bank_transfer_orders bto
-            JOIN bank_accounts ba ON ba.id = bto.bank_account_id
+            LEFT JOIN bank_accounts ba ON ba.id = bto.bank_account_id
             LEFT JOIN employee e ON e.id = bto.employee_id
             {$where}
             ORDER BY bto.itime DESC
@@ -172,6 +173,7 @@ function createTransferOrder($data) {
     $instant = !empty($data['instant']);
     $remoteBic = trim($data['remote_bic'] ?? '');
     $executionDate = trim($data['execution_date'] ?? '');
+    $engine = in_array($data['engine'] ?? 'vop_check', ['php', 'python', 'vop_optout', 'vop_check'], true) ? $data['engine'] : 'vop_check';
 
     $execValidation = validateExecutionDate($executionDate, $instant);
     if ($execValidation !== true) {
@@ -183,12 +185,12 @@ function createTransferOrder($data) {
         INSERT INTO bank_transfer_orders (
             bank_account_id, recipient_type, recipient_id,
             remote_iban, remote_bic, remote_name,
-            amount, purpose, execution_date, instant, source_type, source_id,
+            amount, purpose, execution_date, instant, engine, source_type, source_id,
             employee_id, status
         ) VALUES (
             :bank_account_id, :recipient_type, :recipient_id,
             :remote_iban, :remote_bic, :remote_name,
-            :amount, :purpose, :execution_date, :instant, :source_type, :source_id,
+            :amount, :purpose, :execution_date, :instant, :engine, :source_type, :source_id,
             :employee_id, 'draft'
         )
         RETURNING id
@@ -203,6 +205,7 @@ function createTransferOrder($data) {
         'purpose' => $purpose,
         'execution_date' => $executionDate !== '' ? $executionDate : null,
         'instant' => $instant ? 't' : 'f',
+        'engine' => $engine,
         'source_type' => $sourceType,
         'source_id' => $data['source_id'] ?? null,
         'employee_id' => $data['employee_id'] ?? null
@@ -270,6 +273,7 @@ function updateTransferOrder($data) {
     $remoteBic = trim($data['remote_bic'] ?? '');
     $executionDate = trim($data['execution_date'] ?? '');
     $instant = !empty($data['instant']);
+    $engine = in_array($data['engine'] ?? 'vop_check', ['php', 'python', 'vop_optout', 'vop_check'], true) ? $data['engine'] : 'vop_check';
 
     $execValidation = validateExecutionDate($executionDate, $instant);
     if ($execValidation !== true) {
@@ -286,6 +290,7 @@ function updateTransferOrder($data) {
             purpose = :purpose,
             execution_date = :execution_date,
             instant = :instant,
+            engine = :engine,
             mtime = now()
         WHERE id = :id
     SQL, [
@@ -296,7 +301,8 @@ function updateTransferOrder($data) {
         'amount' => $amount,
         'purpose' => $purpose,
         'execution_date' => $executionDate !== '' ? $executionDate : null,
-        'instant' => $instant ? 't' : 'f'
+        'instant' => $instant ? 't' : 'f',
+        'engine' => $engine
     ]);
 
     resultInfo(true, 'Aktualisiert');

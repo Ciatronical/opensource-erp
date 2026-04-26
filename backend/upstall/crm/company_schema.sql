@@ -1083,6 +1083,7 @@ CREATE TABLE bank_transfer_orders (
     execution_date         date,
     instant                boolean DEFAULT false,
     batch_id               varchar(40),
+    engine                 varchar(10) DEFAULT 'php',
     status                 varchar(20) DEFAULT 'draft',
     source_type            varchar(20),
     source_id              integer,

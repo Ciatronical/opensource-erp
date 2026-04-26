@@ -99,6 +99,7 @@
             "executionDateInstantConflict": "Instant transfer cannot have an execution date",
             "instantLabel": "Instant transfer (real-time, higher fees)",
             "instantHint": "Money arrives in seconds instead of business days — if the bank supports it, otherwise falls back to a regular transfer",
+            "enginePythonHint": "WARNING: unstable for login-pushTAN, may trigger auth error 9340 and lock the account.",
             "submitBatch": "Send selection as batch",
             "batchSelected": "{count} orders selected · Total {total}",
             "batchSummary": "{count} orders · Total {total}",
@@ -166,12 +167,22 @@
             "start": "Fetch",
             "cancel": "Cancel"
         },
+        "vop": {
+            "title": "Verification of Payee — review recipient",
+            "mismatchHint": "The bank could not unambiguously confirm the recipient name against the IBAN. Please check the data and confirm only if you are sure the IBAN is correct.",
+            "closeMatch": "Possible recipient name per bank:",
+            "codeLabel": "Response code",
+            "confirm": "Send anyway",
+            "cancel": "Cancel"
+        },
         "tan": {
             "title": "TAN Entry",
+            "titleDecoupled": "Approve in Banking App",
             "challenge": "Challenge",
             "tanMedium": "TAN Medium",
             "tanInput": "Enter TAN",
             "submit": "Submit TAN",
+            "submitDecoupled": "Continue",
             "continue": "Continue",
             "decoupledHint": "Please approve the request in your banking app, then click \"Continue\".",
             "cancel": "Cancel"
@@ -184,6 +195,7 @@
             "transferCreated": "Transfer created",
             "transferSubmitted": "Transfer sent to bank",
             "transferDeleted": "Transfer deleted",
+            "transferCancelled": "Transfer cancelled",
             "reconcileNoChanges": "No status changes — everything up to date",
             "reconcileResult": "{matched} confirmed · {expired} marked as not executed",
             "batchSubmitted": "{count} transfers sent as batch",
