@@ -99,7 +99,6 @@
             "executionDateInstantConflict": "Instant transfer cannot have an execution date",
             "instantLabel": "Instant transfer (real-time, higher fees)",
             "instantHint": "Money arrives in seconds instead of business days — if the bank supports it, otherwise falls back to a regular transfer",
-            "enginePythonHint": "WARNING: unstable for login-pushTAN, may trigger auth error 9340 and lock the account.",
             "submitBatch": "Send selection as batch",
             "batchSelected": "{count} orders selected · Total {total}",
             "batchSummary": "{count} orders · Total {total}",

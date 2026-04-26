@@ -656,7 +656,7 @@ function fintsSubmitTan($data) {
 
 /**
  * Hilfsfunktion: Baut SEPAAccount + PAIN-XML aus einem geladenen Auftrag.
- * Wird von fintsSubmitTransferVopCheck und fintsVopApproveAndSend verwendet.
+ * Wird von fintsSubmitTransferVopCheck und fintsApproveVopTransfer verwendet.
  */
 function fintsBuildVopTransferData($db, array $order): array {
     $companyRow  = $db->getOne("SELECT company FROM defaults");
@@ -748,7 +748,7 @@ function fintsHandleVopActionResult(
  *
  * Wenn der Namensabgleich positiv ist (RCVC), erhält der User eine TAN-Anfrage.
  * Bei Abweichung (RVMC/RVNM/RVNA) wird VOP_APPROVAL_REQUIRED zurückgegeben —
- * der User bestätigt und ruft dann fintsVopApproveAndSend auf.
+ * der User bestätigt und ruft dann fintsApproveVopTransfer auf.
  *
  * @param int    $data['transfer_order_id']
  * @param string $data['pin']
@@ -962,7 +962,7 @@ function fintsSubmitTransferVopTan($data) {
  * @param int    $data['transfer_order_id']
  * @testdata {"pin": "12345", "transfer_order_id": 1}
  */
-function fintsVopApproveAndSend($data) {
+function fintsApproveVopTransfer($data) {
     $db         = DbhCompany::begin();
     $pin        = $data['pin'] ?? '';
     $transferId = intval($data['transfer_order_id'] ?? 0);
@@ -1045,8 +1045,7 @@ function fintsVopApproveAndSend($data) {
  * FinTS: Ueberweisung an Bank senden (phpFinTS-Variante, ohne VoP-Support).
  * Bei Banken die VoP erzwingen kommt 9076 — kein Auth-Fehler, keine PIN-Zaehler.
  *
- * Wird ueber den Dispatcher fintsSubmitTransfer (in fints_py.php) aufgerufen,
- * wenn `bank_transfer_orders.engine = 'php'`.
+ * Wird fuer Auftraege mit engine='php' oder 'vop_optout' aufgerufen.
  */
 function fintsSubmitTransferPhp($data) {
     $db = DbhCompany::begin();
@@ -2021,4 +2020,49 @@ function importFintsStatements($db, $bankAccountId, $statements, $fromDate, $toD
     expireOldSubmittedTransfers($db, $bankAccountId);
 
     return $importedCount;
+}
+
+// ════════════════════════════════════════════════════════════
+// Engine-Dispatcher
+// ════════════════════════════════════════════════════════════
+
+/**
+ * Dispatcher: leitet je nach engine-Spalte des Auftrags weiter.
+ * Alle neuen Aufträge nutzen 'vop_check'; Altaufträge mit 'python' in der DB
+ * werden ebenfalls auf vop_check umgeleitet.
+ *
+ * @param int    $data['transfer_order_id']
+ * @param string $data['pin']
+ * @testdata {"transfer_order_id": 1, "pin": "12345"}
+ */
+function fintsSubmitTransfer($data) {
+    $db  = DbhCompany::begin();
+    $id  = intval($data['transfer_order_id'] ?? 0);
+    $row = $id > 0 ? $db->getOne("SELECT COALESCE(engine,'vop_check') AS engine FROM bank_transfer_orders WHERE id = :id", ['id' => $id]) : null;
+    $engine = strtolower(trim($row['engine'] ?? 'vop_check'));
+    if ($engine === 'vop_check' || $engine === 'python') {
+        fintsSubmitTransferVopCheck($data);
+    } else {
+        fintsSubmitTransferPhp($data);
+    }
+}
+
+/**
+ * Dispatcher für TAN-Submission.
+ *
+ * @param string $data['tan']
+ * @param string $data['pin']
+ * @param int    $data['transfer_order_id']
+ * @testdata {"tan": "123456", "pin": "12345", "transfer_order_id": 1}
+ */
+function fintsSubmitTransferTan($data) {
+    $db  = DbhCompany::begin();
+    $id  = intval($data['transfer_order_id'] ?? 0);
+    $row = $id > 0 ? $db->getOne("SELECT COALESCE(engine,'vop_check') AS engine FROM bank_transfer_orders WHERE id = :id", ['id' => $id]) : null;
+    $engine = strtolower(trim($row['engine'] ?? 'vop_check'));
+    if ($engine === 'vop_check' || $engine === 'python') {
+        fintsSubmitTransferVopTan($data);
+    } else {
+        fintsSubmitTransferTanPhp($data);
+    }
 }

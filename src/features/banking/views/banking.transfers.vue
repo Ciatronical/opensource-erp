@@ -80,14 +80,7 @@
                         <v-chip :color="transferStatusColor(item.status)" size="small" variant="tonal">
                             {{ t('BankingView.transfers.status' + capitalize(item.status)) }}
                         </v-chip>
-                        <v-chip
-                            v-if="item.engine === 'python'"
-                            color="warning"
-                            size="x-small"
-                            variant="tonal"
-                            class="ml-1"
-                            :title="t('BankingView.transfers.enginePythonHint')"
-                        >PY</v-chip>
+
                         <div v-if="item.status === 'executed' && item.executed_at" class="text-caption text-success mt-1">
                             {{ formatDateShort(item.executed_at) }}
                         </div>

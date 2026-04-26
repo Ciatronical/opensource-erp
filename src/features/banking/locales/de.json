@@ -99,7 +99,6 @@
             "executionDateInstantConflict": "Sofort-Überweisung erlaubt kein Ausführungsdatum",
             "instantLabel": "Sofort-Überweisung (Echtzeit, höhere Gebühren)",
             "instantHint": "Geld in Sekunden statt Werktagen — wenn die Bank es unterstützt, sonst Fallback auf normale Überweisung",
-            "enginePythonHint": "WARNUNG: bei Login-pushTAN instabil, kann Auth-Fehler 9340 auslösen und Konto sperren.",
             "submitBatch": "Auswahl als Sammelauftrag senden",
             "batchSelected": "{count} Aufträge ausgewählt · Gesamt {total}",
             "batchSummary": "{count} Aufträge · Gesamt {total}",

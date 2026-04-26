@@ -173,7 +173,7 @@ function createTransferOrder($data) {
     $instant = !empty($data['instant']);
     $remoteBic = trim($data['remote_bic'] ?? '');
     $executionDate = trim($data['execution_date'] ?? '');
-    $engine = in_array($data['engine'] ?? 'vop_check', ['php', 'python', 'vop_optout', 'vop_check'], true) ? $data['engine'] : 'vop_check';
+    $engine = in_array($data['engine'] ?? 'vop_check', ['php', 'vop_optout', 'vop_check'], true) ? $data['engine'] : 'vop_check';
 
     $execValidation = validateExecutionDate($executionDate, $instant);
     if ($execValidation !== true) {
@@ -273,7 +273,7 @@ function updateTransferOrder($data) {
     $remoteBic = trim($data['remote_bic'] ?? '');
     $executionDate = trim($data['execution_date'] ?? '');
     $instant = !empty($data['instant']);
-    $engine = in_array($data['engine'] ?? 'vop_check', ['php', 'python', 'vop_optout', 'vop_check'], true) ? $data['engine'] : 'vop_check';
+    $engine = in_array($data['engine'] ?? 'vop_check', ['php', 'vop_optout', 'vop_check'], true) ? $data['engine'] : 'vop_check';
 
     $execValidation = validateExecutionDate($executionDate, $instant);
     if ($execValidation !== true) {
