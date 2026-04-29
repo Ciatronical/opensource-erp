@@ -20,7 +20,10 @@ sudo apt install -y nodejs
 sudo apt install -y postgresql postgresql-contrib
 
 # PHP und Extensions
-sudo apt install -y php php-fpm php-pgsql php-mbstring php-xml php-curl
+sudo apt install -y php php-fpm php-pgsql php-mbstring php-xml php-curl php-intl php-zip
+
+# Composer (PHP-Abhängigkeiten)
+sudo apt install -y composer
 
 # Apache2 (nur für Production)
 sudo apt install -y apache2
@@ -43,6 +46,20 @@ OpensourceErp wird als normler Benutzer betrieben
 git clone git@gitlab.com:inter-data.de/opensource-erp.git
 cd opensource-erp
 ```
+
+---
+
+## 1b. PHP-Abhängigkeiten installieren
+
+Erzeugt `backend/vendor/` inklusive `autoload.php`. Notwendig für Development und Production.
+
+```bash
+cd backend
+composer install
+cd ..
+```
+
+Hinweis: Schlägt der Aufruf mit `Class "Normalizer" not found` fehl, fehlt die `intl`-Extension für die aktive PHP-Version. Bei mehreren parallel installierten PHP-Versionen (z. B. via `ondrej/sury`) zeigt das Metapaket `php-intl` nur auf die Default-Version — dann gezielt `php<version>-intl` installieren (z. B. `sudo apt install php8.3-intl`).
 
 ---
 
