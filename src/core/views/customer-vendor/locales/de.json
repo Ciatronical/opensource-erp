@@ -113,7 +113,14 @@
             "emptyFolder": "Dieser Ordner ist leer",
             "vehicles": "Fahrzeuge",
             "openFolder": "Ordner öffnen",
-            "backToRoot": "Zurück"
+            "backToRoot": "Zurück",
+            "docChat": {
+                "title": "KI-Dokumentenanalyse",
+                "empty": "Stelle eine Frage zu diesem Dokument — z.B. zum Inhalt, zu Fristen oder zu wichtigen Punkten.",
+                "placeholder": "Frage zum Dokument stellen...",
+                "errorTitle": "Fehler",
+                "errorText": "Die Anfrage konnte nicht verarbeitet werden. Bitte versuche es erneut."
+            }
         },
         "priceRules": {
             "title": "Preisregeln",

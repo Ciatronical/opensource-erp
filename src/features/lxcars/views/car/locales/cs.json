@@ -267,7 +267,10 @@
             "clearConfirm": "Smazat",
             "clearCancel": "Zrušit",
             "errorTitle": "Chyba",
-            "errorText": "Požadavek nemohl být zpracován. Zkuste to prosím znovu."
+            "errorText": "Požadavek nemohl být zpracován. Zkuste to prosím znovu.",
+            "uploadDoc": "Nahrát dokument",
+            "uploadError": "Neplatný typ souboru",
+            "uploadUnsupported": "Nahrajte soubor PDF nebo textový soubor."
         }
     },
     "CarScanView": {

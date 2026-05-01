@@ -96,7 +96,14 @@
             "emptyFolder": "Dieser Ordner ist leer",
             "vehicles": "Fahrzeuge",
             "openFolder": "Ordner öffnen",
-            "backToRoot": "Zurück"
+            "backToRoot": "Zurück",
+            "docChat": {
+                "title": "Yapay Zeka Belge Analizi",
+                "empty": "Bu belge hakkında bir soru sorun — örn. içerik, son tarihler veya önemli noktalar hakkında.",
+                "placeholder": "Belge hakkında soru sor...",
+                "errorTitle": "Hata",
+                "errorText": "İstek işlenemedi. Lütfen tekrar deneyin."
+            }
         },
         "priceRules": {
             "title": "Preisregeln",

@@ -34,8 +34,9 @@ function getCarChat($data) {
 /**
  * Sendet eine Chat-Nachricht und liefert die KI-Antwort
  *
- * @param int    $data['c_id']    Fahrzeug-ID
- * @param string $data['message'] Benutzernachricht
+ * @param int    $data['c_id']      Fahrzeug-ID
+ * @param string $data['message']   Benutzernachricht
+ * @param array  $data['document']  Optional: {data: base64, media_type: string, name: string}
  * @testdata {"c_id": 1, "message": "Haben wir schon mal die Bremsen gewechselt?"}
  */
 function sendCarChatMessage($data) {
@@ -152,7 +153,31 @@ PROMPT;
     foreach ($chatHistory as $msg) {
         $messages[] = ['role' => $msg['role'], 'content' => $msg['content']];
     }
-    $messages[] = ['role' => 'user', 'content' => $message];
+
+    // Optionales Dokument (PDF oder Text) als Content-Block einbinden
+    $doc = $data['document'] ?? null;
+    if (!empty($doc['data']) && !empty($doc['media_type'])) {
+        $allowedTypes = ['application/pdf', 'text/plain'];
+        $mediaType = in_array($doc['media_type'], $allowedTypes, true) ? $doc['media_type'] : 'text/plain';
+        $docName = preg_replace('/[^a-zA-Z0-9._\- ]/', '', $doc['name'] ?? 'Dokument');
+
+        $userContent = [
+            [
+                'type'   => 'document',
+                'source' => [
+                    'type'       => 'base64',
+                    'media_type' => $mediaType,
+                    'data'       => $doc['data'],
+                ],
+                'title'  => $docName,
+            ],
+            ['type' => 'text', 'text' => $message],
+        ];
+    } else {
+        $userContent = $message;
+    }
+
+    $messages[] = ['role' => 'user', 'content' => $userContent];
 
     $requestBody = json_encode([
         'model' => 'claude-haiku-4-5-20251001',

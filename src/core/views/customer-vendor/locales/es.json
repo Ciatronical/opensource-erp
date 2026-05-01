@@ -96,7 +96,14 @@
             "emptyFolder": "Esta carpeta está vacía",
             "vehicles": "Vehículos",
             "openFolder": "Abrir carpeta",
-            "backToRoot": "Atrás"
+            "backToRoot": "Atrás",
+            "docChat": {
+                "title": "Análisis IA del documento",
+                "empty": "Haz una pregunta sobre este documento — p. ej. sobre el contenido, plazos o puntos clave.",
+                "placeholder": "Hacer una pregunta sobre el documento...",
+                "errorTitle": "Error",
+                "errorText": "La solicitud no pudo ser procesada. Por favor, inténtalo de nuevo."
+            }
         },
         "priceRules": {
             "title": "Reglas de precios",

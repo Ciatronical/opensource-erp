@@ -46,7 +46,23 @@ function getBankingOverview($data) {
                     SELECT MAX(bt.transdate)
                     FROM bank_transactions bt
                     WHERE bt.local_bank_account_id = ba.id
-                ) as last_transaction_date
+                ) as last_transaction_date,
+                (
+                    SELECT COALESCE(SUM(bt.amount), 0)
+                    FROM bank_transactions bt
+                    WHERE bt.local_bank_account_id = ba.id
+                      AND bt.amount > 0
+                      AND bt.transdate >= DATE_TRUNC('month', CURRENT_DATE)
+                      AND bt.transdate <  DATE_TRUNC('month', CURRENT_DATE) + INTERVAL '1 month'
+                ) as income_this_month,
+                (
+                    SELECT COALESCE(ABS(SUM(bt.amount)), 0)
+                    FROM bank_transactions bt
+                    WHERE bt.local_bank_account_id = ba.id
+                      AND bt.amount < 0
+                      AND bt.transdate >= DATE_TRUNC('month', CURRENT_DATE)
+                      AND bt.transdate <  DATE_TRUNC('month', CURRENT_DATE) + INTERVAL '1 month'
+                ) as expenses_this_month
             FROM bank_accounts ba
             LEFT JOIN bank_account_fints baf ON baf.bank_account_id = ba.id
             WHERE ba.obsolete IS NOT TRUE

@@ -96,7 +96,14 @@
             "emptyFolder": "Dieser Ordner ist leer",
             "vehicles": "Fahrzeuge",
             "openFolder": "Ordner öffnen",
-            "backToRoot": "Zurück"
+            "backToRoot": "Zurück",
+            "docChat": {
+                "title": "Analýza dokumentu pomocí KI",
+                "empty": "Položte otázku k tomuto dokumentu — např. o obsahu, lhůtách nebo klíčových bodech.",
+                "placeholder": "Položit otázku k dokumentu...",
+                "errorTitle": "Chyba",
+                "errorText": "Požadavek se nepodařilo zpracovat. Zkuste to prosím znovu."
+            }
         },
         "priceRules": {
             "title": "Preisregeln",

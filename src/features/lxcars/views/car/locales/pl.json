@@ -267,7 +267,10 @@
             "clearConfirm": "Usuń",
             "clearCancel": "Anuluj",
             "errorTitle": "Błąd",
-            "errorText": "Nie udało się przetworzyć żądania. Spróbuj ponownie."
+            "errorText": "Nie udało się przetworzyć żądania. Spróbuj ponownie.",
+            "uploadDoc": "Prześlij dokument",
+            "uploadError": "Nieprawidłowy typ pliku",
+            "uploadUnsupported": "Prześlij plik PDF lub tekstowy."
         }
     },
     "CarScanView": {

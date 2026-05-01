@@ -267,7 +267,10 @@
             "clearConfirm": "删除",
             "clearCancel": "取消",
             "errorTitle": "错误",
-            "errorText": "无法处理请求。请重试。"
+            "errorText": "无法处理请求。请重试。",
+            "uploadDoc": "上传文件",
+            "uploadError": "文件类型无效",
+            "uploadUnsupported": "请上传 PDF 或文本文件。"
         }
     },
     "CarScanView": {

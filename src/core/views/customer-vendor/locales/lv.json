@@ -96,7 +96,14 @@
             "emptyFolder": "Dieser Ordner ist leer",
             "vehicles": "Fahrzeuge",
             "openFolder": "Ordner öffnen",
-            "backToRoot": "Atpakaļ"
+            "backToRoot": "Atpakaļ",
+            "docChat": {
+                "title": "MI dokumentu analīze",
+                "empty": "Uzdodiet jautājumu par šo dokumentu — piem., par saturu, termiņiem vai galvenajiem punktiem.",
+                "placeholder": "Uzdot jautājumu par dokumentu...",
+                "errorTitle": "Kļūda",
+                "errorText": "Pieprasījumu nevarēja apstrādāt. Lūdzu, mēģiniet vēlreiz."
+            }
         },
         "priceRules": {
             "title": "Cenu noteikumi",

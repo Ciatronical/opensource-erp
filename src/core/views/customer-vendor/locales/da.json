@@ -96,7 +96,14 @@
             "emptyFolder": "Dieser Mappe ist leer",
             "vehicles": "Koeretoeje",
             "openFolder": "Mappe öffnen",
-            "backToRoot": "Zurück"
+            "backToRoot": "Zurück",
+            "docChat": {
+                "title": "KI-dokumentanalyse",
+                "empty": "Stil et spørgsmål om dette dokument — f.eks. om indholdet, frister eller vigtige punkter.",
+                "placeholder": "Stil et spørgsmål om dokumentet...",
+                "errorTitle": "Fejl",
+                "errorText": "Anmodningen kunne ikke behandles. Prøv venligst igen."
+            }
         },
         "priceRules": {
             "title": "Prisregeln",

@@ -96,7 +96,14 @@
             "emptyFolder": "Dieser Ordner ist leer",
             "vehicles": "Fahrzeuge",
             "openFolder": "Ordner öffnen",
-            "backToRoot": "Atgal"
+            "backToRoot": "Atgal",
+            "docChat": {
+                "title": "DI dokumentų analizė",
+                "empty": "Užduokite klausimą apie šį dokumentą — pvz., apie turinį, terminus ar pagrindinius punktus.",
+                "placeholder": "Užduoti klausimą apie dokumentą...",
+                "errorTitle": "Klaida",
+                "errorText": "Užklausa negalėjo būti apdorota. Bandykite dar kartą."
+            }
         },
         "priceRules": {
             "title": "Kainų taisyklės",

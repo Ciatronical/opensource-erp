@@ -267,7 +267,10 @@
             "clearConfirm": "Eliminar",
             "clearCancel": "Cancelar",
             "errorTitle": "Error",
-            "errorText": "No se pudo procesar la solicitud. Inténtelo de nuevo."
+            "errorText": "No se pudo procesar la solicitud. Inténtelo de nuevo.",
+            "uploadDoc": "Subir documento",
+            "uploadError": "Tipo de archivo no válido",
+            "uploadUnsupported": "Por favor, sube un archivo PDF o de texto."
         }
     },
     "CarScanView": {

@@ -146,6 +146,75 @@ SQL;
  * @param string $data['type'] 'customer' oder 'vendor'
  * @testdata {"search": "Test", "type": "customer"}
  */
+/**
+ * Sucht Kunden und Lieferanten mit E-Mail für den E-Mail-Dialog.
+ * Gibt primäre E-Mail (customer.email) + weitere Adressen aus customer_ext.emails zurück.
+ * Mehrere Adressen können im Frontend automatisch als CC gesetzt werden.
+ *
+ * @param type $data['search'] Suchbegriff (mind. 3 Zeichen)
+ * @testdata {"search": "Muster"}
+ */
+function searchCvEmails($data) {
+    $search = trim($data['search'] ?? '');
+    if (strlen($search) < 3) {
+        echo resultInfo(true, '', ['results' => []]);
+        return;
+    }
+    $db = DbhCompany::begin();
+
+    $query = <<<SQL
+        SELECT json_build_object('results', COALESCE(
+            (
+                SELECT json_agg(t ORDER BY t.name)
+                FROM (
+                    (
+                        SELECT c.id, c.name, 'customer' AS cv_type,
+                               NULLIF(TRIM(c.email), '') AS email,
+                               COALESCE(
+                                   (SELECT json_agg(e)
+                                    FROM jsonb_array_elements_text(ce.emails) AS e
+                                    WHERE NULLIF(TRIM(e), '') IS NOT NULL
+                                      AND e IS DISTINCT FROM NULLIF(TRIM(c.email), '')),
+                                   '[]'::json
+                               ) AS extra_emails
+                        FROM customer c
+                        LEFT JOIN customer_ext ce ON ce.customer_id = c.id
+                        WHERE (c.name ILIKE '%' || :s1 || '%' OR c.email ILIKE '%' || :s2 || '%')
+                          AND (NULLIF(TRIM(c.email), '') IS NOT NULL
+                               OR (ce.emails IS NOT NULL AND jsonb_array_length(ce.emails) > 0))
+                        ORDER BY c.name LIMIT 10
+                    )
+                    UNION ALL
+                    (
+                        SELECT v.id, v.name, 'vendor' AS cv_type,
+                               NULLIF(TRIM(v.email), '') AS email,
+                               COALESCE(
+                                   (SELECT json_agg(e)
+                                    FROM jsonb_array_elements_text(ve.emails) AS e
+                                    WHERE NULLIF(TRIM(e), '') IS NOT NULL
+                                      AND e IS DISTINCT FROM NULLIF(TRIM(v.email), '')),
+                                   '[]'::json
+                               ) AS extra_emails
+                        FROM vendor v
+                        LEFT JOIN vendor_ext ve ON ve.vendor_id = v.id
+                        WHERE (v.name ILIKE '%' || :s3 || '%' OR v.email ILIKE '%' || :s4 || '%')
+                          AND (NULLIF(TRIM(v.email), '') IS NOT NULL
+                               OR (ve.emails IS NOT NULL AND jsonb_array_length(ve.emails) > 0))
+                        ORDER BY v.name LIMIT 10
+                    )
+                ) t
+                LIMIT 15
+            ),
+            '[]'::json
+        )) AS result
+    SQL;
+
+    echo $db->getOne($query, [
+        's1' => $search, 's2' => $search,
+        's3' => $search, 's4' => $search,
+    ])['result'];
+}
+
 function searchFakturaCustomers($data) {
     $search = trim($data['search'] ?? '');
     $type = $data['type'] ?? 'customer';

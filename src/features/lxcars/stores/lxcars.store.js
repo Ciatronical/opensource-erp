@@ -1099,8 +1099,10 @@ export const lxcarsStore = defineStore('lxcarsStore', () => {
         return response.data.payload
     }
 
-    async function sendCarChatMessage(cId, message) {
-        const response = await axios.post('/api/lxcars/', { action: 'sendCarChatMessage', c_id: cId, message })
+    async function sendCarChatMessage(cId, message, document = null) {
+        const payload = { action: 'sendCarChatMessage', c_id: cId, message }
+        if (document) payload.document = document
+        const response = await axios.post('/api/lxcars/', payload)
         if (!response.data.success) throw new ApiError('ApiError', response.data.text, 'Error sending chat message')
         return response.data.payload
     }

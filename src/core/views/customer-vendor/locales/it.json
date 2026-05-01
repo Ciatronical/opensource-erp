@@ -96,7 +96,14 @@
             "emptyFolder": "Questa cartella è vuota",
             "vehicles": "Veicoli",
             "openFolder": "Apri cartella",
-            "backToRoot": "Indietro"
+            "backToRoot": "Indietro",
+            "docChat": {
+                "title": "Analisi IA del documento",
+                "empty": "Fai una domanda su questo documento — ad es. sul contenuto, le scadenze o i punti chiave.",
+                "placeholder": "Fai una domanda sul documento...",
+                "errorTitle": "Errore",
+                "errorText": "La richiesta non ha potuto essere elaborata. Per favore riprova."
+            }
         },
         "priceRules": {
             "title": "Regole di prezzo",

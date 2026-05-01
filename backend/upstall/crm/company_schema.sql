@@ -1100,6 +1100,116 @@ CREATE TABLE bank_transfer_orders (
 CREATE INDEX IF NOT EXISTS idx_bank_transfer_orders_status ON bank_transfer_orders(status);
 CREATE INDEX IF NOT EXISTS idx_bank_transfer_orders_account ON bank_transfer_orders(bank_account_id);
 
+-- Ueberweisungsvorlagen-Gruppen (z.B. "Lohn Autoprofis", "Lieferanten April")
+CREATE TABLE IF NOT EXISTS transfer_template_groups (
+    id          serial PRIMARY KEY,
+    name        varchar(100) NOT NULL,
+    description text,
+    color       varchar(30)  DEFAULT 'primary',
+    sort_order  integer      DEFAULT 0,
+    itime       timestamp    DEFAULT now()
+);
+
+-- Ueberweisungsvorlagen mit Platzhalter-Unterstuetzung im Verwendungszweck.
+-- Platzhalter: {MM/JJJJ}, {MM}, {JJJJ}, {DATUM}, {MONAT}
+-- Werden beim Anlegen der Ueberweisung client-seitig aufgeloest.
+CREATE TABLE IF NOT EXISTS transfer_templates (
+    id               serial PRIMARY KEY,
+    group_id         integer      REFERENCES transfer_template_groups(id) ON DELETE SET NULL,
+    bank_account_id  integer      REFERENCES bank_accounts(id),
+    recipient_type   varchar(20),
+    recipient_id     integer,
+    remote_name      varchar(140) NOT NULL,
+    remote_iban      varchar(34)  NOT NULL,
+    remote_bic       varchar(11),
+    amount           numeric(12,2) NOT NULL,
+    purpose_template varchar(140) NOT NULL,
+    name             varchar(100),
+    sort_order       integer      DEFAULT 0,
+    active           boolean      DEFAULT true,
+    itime            timestamp    DEFAULT now(),
+    mtime            timestamp
+);
+CREATE INDEX IF NOT EXISTS idx_transfer_templates_group   ON transfer_templates(group_id);
+CREATE INDEX IF NOT EXISTS idx_transfer_templates_account ON transfer_templates(bank_account_id);
+
+-- Dauerauftraege: wiederkehrende Zahlungsvorlagen. Beim Ausfuehren wird ein
+-- normaler bank_transfer_order erzeugt und via FinTS gesendet.
+CREATE TABLE IF NOT EXISTS standing_orders (
+    id                  serial PRIMARY KEY,
+    bank_account_id     integer NOT NULL REFERENCES bank_accounts(id),
+    recipient_type      varchar(20),              -- customer | vendor | other
+    recipient_id        integer,
+    remote_name         varchar(140) NOT NULL,
+    remote_iban         varchar(34)  NOT NULL,
+    remote_bic          varchar(11),
+    amount              numeric(12,2) NOT NULL,
+    purpose             varchar(140) NOT NULL,
+    frequency           varchar(20)  NOT NULL,    -- monthly | quarterly | yearly | weekly
+    execution_day       integer,                  -- Tag im Monat (1-31) oder Wochentag (1-7)
+    start_date          date         NOT NULL,
+    end_date            date,
+    status              varchar(20)  DEFAULT 'active',  -- active | paused | ended
+    last_executed_date  date,
+    next_execution_date date,
+    employee_id         integer,
+    note                text,
+    itime               timestamp    DEFAULT now(),
+    mtime               timestamp
+);
+CREATE INDEX IF NOT EXISTS idx_standing_orders_account ON standing_orders(bank_account_id);
+CREATE INDEX IF NOT EXISTS idx_standing_orders_next    ON standing_orders(next_execution_date) WHERE status = 'active';
+
+-- Einzugsermächtigungen: SEPA-Lastschrift-Mandate, die Dritte (Gläubiger)
+-- berechtigen, vom eigenen Konto einzuziehen. Reines Register, kein FinTS.
+CREATE TABLE IF NOT EXISTS sepa_mandates (
+    id                  serial PRIMARY KEY,
+    bank_account_id     integer REFERENCES bank_accounts(id),
+    mandate_reference   varchar(35)  NOT NULL,    -- Mandatsreferenz des Gläubigers
+    creditor_name       varchar(140) NOT NULL,
+    creditor_id         varchar(35),              -- Gläubiger-ID (AT-02)
+    creditor_iban       varchar(34),
+    creditor_bic        varchar(11),
+    max_amount          numeric(12,2),            -- optionaler Höchstbetrag
+    purpose             varchar(140),
+    mandate_type        varchar(10)  DEFAULT 'RCUR',  -- RCUR | FRST | FNAL | OOFF
+    issued_date         date         NOT NULL,
+    first_collection    date,
+    last_collection     date,
+    revoked_date        date,
+    status              varchar(20)  DEFAULT 'active',  -- active | revoked
+    note                text,
+    employee_id         integer,
+    itime               timestamp    DEFAULT now(),
+    mtime               timestamp
+);
+CREATE INDEX IF NOT EXISTS idx_sepa_mandates_account ON sepa_mandates(bank_account_id);
+
+-- SEPA-Lastschrift-Auftraege (Einzuege vom Kundenkonto)
+CREATE TABLE IF NOT EXISTS sepa_direct_debit_orders (
+    id                  serial PRIMARY KEY,
+    bank_account_id     integer NOT NULL REFERENCES bank_accounts(id),
+    mandate_id          integer REFERENCES sepa_mandates(id) ON DELETE SET NULL,
+    debtor_name         varchar(140) NOT NULL,
+    debtor_iban         varchar(34)  NOT NULL,
+    debtor_bic          varchar(11),
+    mandate_reference   varchar(35)  NOT NULL,
+    creditor_id         varchar(35),
+    collection_date     date         NOT NULL,
+    amount              numeric(12,2) NOT NULL,
+    purpose             varchar(140) NOT NULL,
+    sequence_type       varchar(10)  DEFAULT 'RCUR',  -- FRST|RCUR|FNAL|OOFF
+    status              varchar(20)  DEFAULT 'draft', -- draft|pending_tan|submitted|executed|rejected
+    batch_id            varchar(50),
+    error_message       text,
+    submitted_at        timestamp,
+    employee_id         integer,
+    itime               timestamp    DEFAULT now(),
+    mtime               timestamp
+);
+CREATE INDEX IF NOT EXISTS idx_sdd_account ON sepa_direct_debit_orders(bank_account_id);
+CREATE INDEX IF NOT EXISTS idx_sdd_status  ON sepa_direct_debit_orders(status);
+
 -- Pre-Booking-Mapping fuer Bankabstimmung. Die kivitendo-Tabelle
 -- bank_transaction_acc_trans verlangt acc_trans_id NOT NULL — sie eignet sich
 -- nur fuer bereits gebuchte Zuordnungen. Diese Tabelle haelt die Zuordnung
@@ -1753,3 +1863,154 @@ BEGIN
     RETURN 'BU-' || v_year || '-' || LPAD(v_next::TEXT, 5, '0');
 END;
 $$ LANGUAGE plpgsql;
+
+-- ============================================================================
+-- HR-MODUL: Lohnabrechnung & Urlaubsplanung
+-- ============================================================================
+
+CREATE TABLE IF NOT EXISTS hr_salary_settings (
+    id                  INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    employee_id         INTEGER NOT NULL REFERENCES employee(id) ON DELETE CASCADE,
+    brutto              NUMERIC(12,2) NOT NULL DEFAULT 0,
+    steuerklasse        SMALLINT NOT NULL DEFAULT 1 CHECK (steuerklasse BETWEEN 1 AND 6),
+    kv_prozent          NUMERIC(5,3) NOT NULL DEFAULT 8.150,
+    pv_prozent          NUMERIC(5,3) NOT NULL DEFAULT 1.700,
+    rv_prozent          NUMERIC(5,3) NOT NULL DEFAULT 9.300,
+    av_prozent          NUMERIC(5,3) NOT NULL DEFAULT 1.300,
+    kv_prozent_ag       NUMERIC(5,3) NOT NULL DEFAULT 7.300,
+    pv_prozent_ag       NUMERIC(5,3) NOT NULL DEFAULT 1.700,
+    rv_prozent_ag       NUMERIC(5,3) NOT NULL DEFAULT 9.300,
+    av_prozent_ag       NUMERIC(5,3) NOT NULL DEFAULT 1.300,
+    notes               TEXT,
+    itime               TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+    mtime               TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+    UNIQUE(employee_id)
+);
+
+COMMENT ON TABLE hr_salary_settings IS 'Gehaltseinstellungen pro Mitarbeiter (AN- und AG-Anteile)';
+COMMENT ON COLUMN hr_salary_settings.kv_prozent IS 'Krankenversicherung Arbeitnehmer-Anteil in Prozent';
+COMMENT ON COLUMN hr_salary_settings.pv_prozent IS 'Pflegeversicherung Arbeitnehmer-Anteil in Prozent';
+COMMENT ON COLUMN hr_salary_settings.rv_prozent IS 'Rentenversicherung Arbeitnehmer-Anteil in Prozent';
+COMMENT ON COLUMN hr_salary_settings.av_prozent IS 'Arbeitslosenversicherung Arbeitnehmer-Anteil in Prozent';
+
+CREATE TABLE IF NOT EXISTS hr_payroll_runs (
+    id                  INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    year                SMALLINT NOT NULL,
+    month               SMALLINT NOT NULL CHECK (month BETWEEN 1 AND 12),
+    status              TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'final')),
+    notes               TEXT,
+    created_by          INTEGER REFERENCES employee(id),
+    finalized_by        INTEGER REFERENCES employee(id),
+    finalized_at        TIMESTAMP WITHOUT TIME ZONE,
+    itime               TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+    mtime               TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+    UNIQUE(year, month)
+);
+
+COMMENT ON TABLE hr_payroll_runs IS 'Lohnabrechnungslaeufe (pro Monat)';
+COMMENT ON COLUMN hr_payroll_runs.status IS 'Status: draft=Entwurf, final=Abgeschlossen';
+
+CREATE TABLE IF NOT EXISTS hr_payroll_items (
+    id                      INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    run_id                  INTEGER NOT NULL REFERENCES hr_payroll_runs(id) ON DELETE CASCADE,
+    employee_id             INTEGER NOT NULL REFERENCES employee(id),
+    brutto                  NUMERIC(12,2) NOT NULL DEFAULT 0,
+    kv_an                   NUMERIC(12,2) NOT NULL DEFAULT 0,
+    pv_an                   NUMERIC(12,2) NOT NULL DEFAULT 0,
+    rv_an                   NUMERIC(12,2) NOT NULL DEFAULT 0,
+    av_an                   NUMERIC(12,2) NOT NULL DEFAULT 0,
+    kv_ag                   NUMERIC(12,2) NOT NULL DEFAULT 0,
+    pv_ag                   NUMERIC(12,2) NOT NULL DEFAULT 0,
+    rv_ag                   NUMERIC(12,2) NOT NULL DEFAULT 0,
+    av_ag                   NUMERIC(12,2) NOT NULL DEFAULT 0,
+    lohnsteuer              NUMERIC(12,2) NOT NULL DEFAULT 0,
+    kirchensteuer           NUMERIC(12,2) NOT NULL DEFAULT 0,
+    solidaritaetszuschlag   NUMERIC(12,2) NOT NULL DEFAULT 0,
+    sonstige_abzuege        NUMERIC(12,2) NOT NULL DEFAULT 0,
+    sonstige_zulagen        NUMERIC(12,2) NOT NULL DEFAULT 0,
+    netto                   NUMERIC(12,2) GENERATED ALWAYS AS (
+        brutto
+        - kv_an - pv_an - rv_an - av_an
+        - lohnsteuer - kirchensteuer - solidaritaetszuschlag
+        - sonstige_abzuege
+        + sonstige_zulagen
+    ) STORED,
+    notes                   TEXT,
+    itime                   TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+    mtime                   TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+    UNIQUE(run_id, employee_id)
+);
+
+COMMENT ON TABLE hr_payroll_items IS 'Lohnabrechnungspositionen pro Mitarbeiter und Laufdatum';
+COMMENT ON COLUMN hr_payroll_items.netto IS 'Nettolohn (wird automatisch berechnet)';
+
+CREATE INDEX IF NOT EXISTS idx_hr_payroll_items_run ON hr_payroll_items(run_id);
+CREATE INDEX IF NOT EXISTS idx_hr_payroll_items_employee ON hr_payroll_items(employee_id);
+
+CREATE TABLE IF NOT EXISTS hr_vacation_entitlements (
+    id                  INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    employee_id         INTEGER NOT NULL REFERENCES employee(id) ON DELETE CASCADE,
+    year                SMALLINT NOT NULL,
+    days_total          NUMERIC(4,1) NOT NULL DEFAULT 30,
+    itime               TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+    mtime               TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+    UNIQUE(employee_id, year)
+);
+
+COMMENT ON TABLE hr_vacation_entitlements IS 'Jahresurlaubsanspruch pro Mitarbeiter';
+
+CREATE TABLE IF NOT EXISTS hr_vacation_requests (
+    id                  INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    employee_id         INTEGER NOT NULL REFERENCES employee(id) ON DELETE CASCADE,
+    date_from           DATE NOT NULL,
+    date_to             DATE NOT NULL,
+    days                NUMERIC(4,1) NOT NULL DEFAULT 1,
+    status              TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+    notes               TEXT,
+    approved_by         INTEGER REFERENCES employee(id),
+    approved_at         TIMESTAMP WITHOUT TIME ZONE,
+    rejection_reason    TEXT,
+    itime               TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+    mtime               TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW()
+);
+
+COMMENT ON TABLE hr_vacation_requests IS 'Urlaubsantraege mit Genehmigungsworkflow';
+COMMENT ON COLUMN hr_vacation_requests.days IS 'Anzahl Urlaubstage (halbe Tage moeglich)';
+COMMENT ON COLUMN hr_vacation_requests.status IS 'Status: pending=Ausstehend, approved=Genehmigt, rejected=Abgelehnt';
+
+CREATE INDEX IF NOT EXISTS idx_hr_vacation_requests_employee ON hr_vacation_requests(employee_id);
+CREATE INDEX IF NOT EXISTS idx_hr_vacation_requests_dates ON hr_vacation_requests(date_from, date_to);
+
+-- Vorberechnete Lohnsteuertabelle (befuellt via PAP-Algorithmus)
+CREATE TABLE IF NOT EXISTS hr_lohnsteuer_table (
+    id              INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    tax_year        SMALLINT NOT NULL,
+    steuerklasse    SMALLINT NOT NULL CHECK (steuerklasse BETWEEN 1 AND 6),
+    brutto_monat    NUMERIC(10,2) NOT NULL,
+    lohnsteuer      NUMERIC(10,2) NOT NULL DEFAULT 0,
+    soli            NUMERIC(10,2) NOT NULL DEFAULT 0,
+    kirchensteuer   NUMERIC(10,2) NOT NULL DEFAULT 0,
+    zve_jahr        INTEGER NOT NULL DEFAULT 0,
+    updated_at      TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+    UNIQUE(tax_year, steuerklasse, brutto_monat)
+);
+
+COMMENT ON TABLE hr_lohnsteuer_table IS 'Vorberechnete monatliche Lohnsteuerwerte nach PAP (lokale Berechnung)';
+COMMENT ON COLUMN hr_lohnsteuer_table.brutto_monat IS 'Monatliches Bruttogehalt in EUR';
+COMMENT ON COLUMN hr_lohnsteuer_table.lohnsteuer IS 'Monatliche Lohnsteuer in EUR';
+COMMENT ON COLUMN hr_lohnsteuer_table.soli IS 'Monatlicher Solidaritaetszuschlag in EUR';
+COMMENT ON COLUMN hr_lohnsteuer_table.kirchensteuer IS 'Monatliche Kirchensteuer in EUR (9%)';
+
+CREATE INDEX IF NOT EXISTS idx_hr_lohnsteuer_year_stkl ON hr_lohnsteuer_table(tax_year, steuerklasse);
+
+-- Metadaten zur Steuertabelle
+CREATE TABLE IF NOT EXISTS hr_lohnsteuer_meta (
+    id          INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    tax_year    SMALLINT NOT NULL UNIQUE,
+    row_count   INTEGER NOT NULL DEFAULT 0,
+    built_at    TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+    built_by    INTEGER REFERENCES employee(id),
+    notes       TEXT
+);
+
+COMMENT ON TABLE hr_lohnsteuer_meta IS 'Metadaten der Lohnsteuertabelle (Erstellungszeitpunkt, Zeilenanzahl)';

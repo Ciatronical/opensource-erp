@@ -267,7 +267,10 @@
             "clearConfirm": "Elimina",
             "clearCancel": "Annulla",
             "errorTitle": "Errore",
-            "errorText": "La richiesta non ha potuto essere elaborata. Riprova."
+            "errorText": "La richiesta non ha potuto essere elaborata. Riprova.",
+            "uploadDoc": "Carica documento",
+            "uploadError": "Tipo di file non valido",
+            "uploadUnsupported": "Carica un file PDF o di testo."
         }
     },
     "CarScanView": {

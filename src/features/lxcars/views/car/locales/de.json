@@ -169,6 +169,10 @@
             "body": "Nachricht",
             "attachFull": "Komplette Fahrzeugdaten als Textdatei anhängen",
             "attachmentName": "Anhang",
+            "addFiles": "Weitere Dateien anhängen",
+            "cc": "CC",
+            "bcc": "BCC",
+            "addCcBcc": "CC / BCC",
             "send": "Senden",
             "cancel": "Abbrechen",
             "sending": "Wird gesendet...",
@@ -297,7 +301,10 @@
             "clearConfirm": "Löschen",
             "clearCancel": "Abbrechen",
             "errorTitle": "Fehler",
-            "errorText": "Die Anfrage konnte nicht verarbeitet werden. Bitte versuche es erneut."
+            "errorText": "Die Anfrage konnte nicht verarbeitet werden. Bitte versuche es erneut.",
+            "uploadDoc": "Dokument hochladen",
+            "uploadError": "Ungültiger Dateityp",
+            "uploadUnsupported": "Bitte lade eine PDF- oder Textdatei hoch."
         }
     },
     "CarScanView": {
@@ -429,7 +436,7 @@
             "title": "Wissensartikel",
             "newArticle": "Neuer Artikel",
             "edit": "Bearbeiten",
-            "noArticles": "Keine Wissensartikel f\u00fcr diesen Fahrzeugtyp vorhanden."
+            "noArticles": "Keine Wissensartikel für diesen Fahrzeugtyp vorhanden."
         }
     },
     "CarRegView": {

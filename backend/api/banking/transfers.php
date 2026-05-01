@@ -309,7 +309,7 @@ function updateTransferOrder($data) {
 }
 
 /**
- * Ueberweisungsauftrag loeschen (nur Entwuerfe)
+ * Ueberweisungsauftrag loeschen (alle ausser ausgefuehrte)
  *
  * @param int $data['id'] Auftrags-ID
  * @testdata {"id": 1}
@@ -333,8 +333,8 @@ function deleteTransferOrder($data) {
         return;
     }
 
-    if ($existing['status'] !== 'draft') {
-        resultInfo(false, 'NOT_DELETABLE', 'Nur Entwuerfe koennen geloescht werden');
+    if ($existing['status'] === 'executed') {
+        resultInfo(false, 'NOT_DELETABLE', 'Ausgefuehrte Ueberweisungen koennen nicht geloescht werden');
         return;
     }
 

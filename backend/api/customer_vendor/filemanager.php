@@ -105,10 +105,7 @@ function fmGetBasePath($src) {
  * Sonderzeichen entfernen fuer Dateisystem
  */
 function fmSanitizeName($name) {
-    $replacements = ['ä' => 'ae', 'ö' => 'oe', 'ü' => 'ue', 'ß' => 'ss',
-                     'Ä' => 'Ae', 'Ö' => 'Oe', 'Ü' => 'Ue'];
-    $name = strtr($name, $replacements);
-    return preg_replace('/[^a-zA-Z0-9\-]/', '_', $name);
+    return preg_replace('/[^a-zA-Z0-9äöüÄÖÜß\-]/u', '_', $name);
 }
 
 /**
@@ -1419,4 +1416,157 @@ function ensureCustomerFolder($cvId, $src, $name) {
             }
         }
     }
+}
+
+// =========================================================================
+// KI-Dokument-Chat
+// =========================================================================
+
+/**
+ * Stellt eine KI-Frage zu einem Dokument aus dem CRM-Dateimanager.
+ * Das Dokument wird vom Server gelesen und per Anthropic-API an Claude übergeben.
+ *
+ * @param string $data['path']    Relativer Dateipfad (fmValidatePath wird angewendet)
+ * @param int    $data['cv_id']   Kunden-/Lieferanten-ID
+ * @param string $data['src']     'C' = Kunde, 'V' = Lieferant
+ * @param string $data['message'] Benutzerfrage
+ * @testdata {"cv_id": 1, "src": "C", "path": "example.pdf", "message": "Worum geht es in diesem Dokument?"}
+ */
+function docChatMessage($data) {
+    set_time_limit(60);
+
+    $db = DbhCompany::begin();
+    $cvId  = intval($data['cv_id'] ?? 0);
+    $src   = ($data['src'] ?? 'C') === 'V' ? 'V' : 'C';
+    $path  = trim($data['path'] ?? '');
+    $message = trim($data['message'] ?? '');
+
+    if (!$cvId || empty($path) || empty($message)) {
+        throw new ApiError('VALIDATION_ERROR', 'cv_id, path und message sind erforderlich');
+    }
+
+    // Anthropic API-Key laden
+    $config = $db->fetchKeyValue(
+        "SELECT key, value FROM defaults_oserp WHERE key = 'anthropic_api_key'"
+    );
+    $anthropicKey = trim($config['anthropic_api_key'] ?? '');
+    if (empty($anthropicKey)) {
+        throw new ApiError('MISSING_API_KEYS', 'Anthropic API-Key ist nicht konfiguriert (CRM-Einstellungen)');
+    }
+
+    // Dateipfad validieren — gleiche Logik wie vfPreview/vfDownload
+    $rootDir = vfGetRootDir($cvId, $src);
+    $safePath = vfSanitizePath($path);
+    $absPath  = vfGetAbsPath($rootDir, $safePath);
+
+    if (is_link($absPath)) {
+        $absPath = realpath($absPath);
+    }
+
+    if (!$absPath || !is_file($absPath) || !vfValidateAccess($rootDir, $absPath)) {
+        throw new ApiError('FILE_NOT_FOUND', 'Datei nicht gefunden');
+    }
+
+    $ext      = strtolower(pathinfo($absPath, PATHINFO_EXTENSION));
+    $pdfExts  = ['pdf'];
+    $textExts = ['txt', 'md', 'csv', 'json', 'xml', 'html', 'htm'];
+    $isPdf    = in_array($ext, $pdfExts, true);
+    $isText   = in_array($ext, $textExts, true);
+
+    if (!$isPdf && !$isText) {
+        throw new ApiError('UNSUPPORTED_FILE_TYPE', 'Dieser Dateityp wird für die KI-Analyse nicht unterstützt (PDF, TXT, CSV, JSON, XML, HTML, MD)');
+    }
+
+    $fileName = basename($absPath);
+
+    $systemPrompt = 'Du bist ein hilfreicher Assistent, der Dokumente analysiert und Fragen dazu beantwortet. Beziehe dich in deinen Antworten immer konkret auf den Inhalt des bereitgestellten Dokuments. Antworte auf Deutsch, präzise und klar.';
+
+    if ($isText) {
+        // Textdateien direkt einbetten
+        $rawContent  = file_get_contents($absPath);
+        $textContent = mb_convert_encoding($rawContent, 'UTF-8', 'UTF-8, ISO-8859-1');
+        $userContent = [
+            ['type' => 'text', 'text' => "Datei: {$fileName}\n\nInhalt:\n{$textContent}"],
+            ['type' => 'text', 'text' => $message],
+        ];
+    } else {
+        // PDF: Text per pdftotext extrahieren — funktioniert für beliebige Dateigrößen
+        $escapedPath = escapeshellarg($absPath);
+        $extracted   = shell_exec("pdftotext -enc UTF-8 {$escapedPath} - 2>/dev/null");
+
+        if (!empty(trim($extracted ?? ''))) {
+            // Textextraktion erfolgreich — auf ~400K Zeichen kappen (≈ 100K Tokens)
+            $maxChars = 400000;
+            $truncated = mb_strlen($extracted) > $maxChars;
+            if ($truncated) {
+                $extracted = mb_substr($extracted, 0, $maxChars);
+            }
+            $docText = "Datei: {$fileName}" . ($truncated ? " [nur erste ~400.000 Zeichen]" : "") . "\n\nInhalt:\n{$extracted}";
+            $userContent = [
+                ['type' => 'text', 'text' => $docText],
+                ['type' => 'text', 'text' => $message],
+            ];
+        } else {
+            // Kein extrahierbarer Text (gescanntes PDF) — Base64 mit Größenlimit als Fallback
+            if (filesize($absPath) > FM_MAX_FILESIZE) {
+                throw new ApiError('FILE_TOO_LARGE', 'Dieses PDF enthält keinen extrahierbaren Text (gescannt?) und ist zu groß für die Bildanalyse (max. 20 MB).');
+            }
+            $rawContent  = file_get_contents($absPath);
+            $userContent = [
+                [
+                    'type'   => 'document',
+                    'source' => [
+                        'type'       => 'base64',
+                        'media_type' => 'application/pdf',
+                        'data'       => base64_encode($rawContent),
+                    ],
+                    'title'  => $fileName,
+                ],
+                ['type' => 'text', 'text' => $message],
+            ];
+        }
+    }
+
+    $requestBody = json_encode([
+        'model'      => 'claude-haiku-4-5-20251001',
+        'max_tokens' => 2048,
+        'system'     => $systemPrompt,
+        'messages'   => [['role' => 'user', 'content' => $userContent]],
+    ], JSON_UNESCAPED_UNICODE);
+
+    $ch = curl_init('https://api.anthropic.com/v1/messages');
+    curl_setopt_array($ch, [
+        CURLOPT_POST          => true,
+        CURLOPT_POSTFIELDS    => $requestBody,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT       => 60,
+        CURLOPT_HTTPHEADER    => [
+            'Content-Type: application/json',
+            'x-api-key: ' . $anthropicKey,
+            'anthropic-version: 2023-06-01',
+        ],
+    ]);
+
+    $response  = curl_exec($ch);
+    $httpCode  = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlError = curl_error($ch);
+    curl_close($ch);
+
+    if ($curlError) {
+        throw new ApiError('CLAUDE_API_ERROR', 'cURL-Fehler: ' . $curlError);
+    }
+    if ($httpCode !== 200) {
+        $apiErr = json_decode($response, true);
+        $detail = $apiErr['error']['message'] ?? $response;
+        throw new ApiError('CLAUDE_API_ERROR', 'Claude API Fehler (HTTP ' . $httpCode . '): ' . $detail);
+    }
+
+    $responseData = json_decode($response, true);
+    $answer = $responseData['content'][0]['text'] ?? '';
+
+    if (empty($answer)) {
+        throw new ApiError('CLAUDE_API_ERROR', 'Leere Antwort von Claude');
+    }
+
+    resultInfo(true, 'OK', ['answer' => $answer]);
 }

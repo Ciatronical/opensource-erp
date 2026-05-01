@@ -267,7 +267,10 @@
             "clearConfirm": "Supprimer",
             "clearCancel": "Annuler",
             "errorTitle": "Erreur",
-            "errorText": "La demande n'a pas pu être traitée. Veuillez réessayer."
+            "errorText": "La demande n'a pas pu être traitée. Veuillez réessayer.",
+            "uploadDoc": "Téléverser un document",
+            "uploadError": "Type de fichier invalide",
+            "uploadUnsupported": "Veuillez téléverser un fichier PDF ou texte."
         }
     },
     "CarScanView": {

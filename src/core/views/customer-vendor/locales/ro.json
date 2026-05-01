@@ -96,7 +96,14 @@
             "emptyFolder": "Dieser Ordner ist leer",
             "vehicles": "Fahrzeuge",
             "openFolder": "Ordner öffnen",
-            "backToRoot": "Zurück"
+            "backToRoot": "Zurück",
+            "docChat": {
+                "title": "Analiza IA a documentului",
+                "empty": "Puneți o întrebare despre acest document — de ex. despre conținut, termene sau puncte cheie.",
+                "placeholder": "Puneți o întrebare despre document...",
+                "errorTitle": "Eroare",
+                "errorText": "Solicitarea nu a putut fi procesată. Vă rugăm să încercați din nou."
+            }
         },
         "priceRules": {
             "title": "Preisregeln",

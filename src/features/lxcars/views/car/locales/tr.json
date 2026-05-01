@@ -267,7 +267,10 @@
             "clearConfirm": "Sil",
             "clearCancel": "İptal",
             "errorTitle": "Hata",
-            "errorText": "İstek işlenemedi. Lütfen tekrar deneyin."
+            "errorText": "İstek işlenemedi. Lütfen tekrar deneyin.",
+            "uploadDoc": "Belge yükle",
+            "uploadError": "Geçersiz dosya türü",
+            "uploadUnsupported": "Lütfen bir PDF veya metin dosyası yükleyin."
         }
     },
     "CarScanView": {

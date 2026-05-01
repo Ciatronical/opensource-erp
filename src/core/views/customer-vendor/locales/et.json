@@ -96,7 +96,14 @@
             "emptyFolder": "Dieser Ordner ist leer",
             "vehicles": "Fahrzeuge",
             "openFolder": "Ordner öffnen",
-            "backToRoot": "Tagasi"
+            "backToRoot": "Tagasi",
+            "docChat": {
+                "title": "Tehisintellekti dokumendianalüüs",
+                "empty": "Esitage küsimus selle dokumendi kohta — nt sisu, tähtaegade või põhipunktide kohta.",
+                "placeholder": "Esita küsimus dokumendi kohta...",
+                "errorTitle": "Viga",
+                "errorText": "Päringut ei saanud töödelda. Palun proovige uuesti."
+            }
         },
         "priceRules": {
             "title": "Hinnareeglid",

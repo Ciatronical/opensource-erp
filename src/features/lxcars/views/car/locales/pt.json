@@ -267,7 +267,10 @@
             "clearConfirm": "Eliminar",
             "clearCancel": "Cancelar",
             "errorTitle": "Erro",
-            "errorText": "Não foi possível processar o pedido. Tente novamente."
+            "errorText": "Não foi possível processar o pedido. Tente novamente.",
+            "uploadDoc": "Carregar documento",
+            "uploadError": "Tipo de ficheiro inválido",
+            "uploadUnsupported": "Por favor, carregue um ficheiro PDF ou de texto."
         }
     },
     "CarScanView": {

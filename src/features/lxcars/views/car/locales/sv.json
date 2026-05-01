@@ -267,7 +267,10 @@
             "clearConfirm": "Radera",
             "clearCancel": "Avbryt",
             "errorTitle": "Fel",
-            "errorText": "Begäran kunde inte behandlas. Försök igen."
+            "errorText": "Begäran kunde inte behandlas. Försök igen.",
+            "uploadDoc": "Ladda upp dokument",
+            "uploadError": "Ogiltig filtyp",
+            "uploadUnsupported": "Ladda upp en PDF- eller textfil."
         }
     },
     "CarScanView": {

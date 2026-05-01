@@ -267,7 +267,10 @@
             "clearConfirm": "Dzēst",
             "clearCancel": "Atcelt",
             "errorTitle": "Kļūda",
-            "errorText": "Pieprasījumu nevarēja apstrādāt. Lūdzu mēģiniet vēlreiz."
+            "errorText": "Pieprasījumu nevarēja apstrādāt. Lūdzu mēģiniet vēlreiz.",
+            "uploadDoc": "Augšupielādēt dokumentu",
+            "uploadError": "Nederīgs faila tips",
+            "uploadUnsupported": "Lūdzu, augšupielādējiet PDF vai teksta failu."
         }
     },
     "CarScanView": {

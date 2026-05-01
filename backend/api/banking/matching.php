@@ -227,7 +227,8 @@ function bookMatchedTransactions($data) {
     $bankAccountId = intval($data['bank_account_id'] ?? 0);
 
     if (empty($transactionIds) || $bankAccountId <= 0) {
-        resultInfo(false, 'VALIDATION_ERROR', 'Umsatz-IDs und Bankkonto-ID sind Pflicht');
+        writeLog('bookMatchedTransactions: fehlende Parameter transaction_ids=' . json_encode($transactionIds) . ' bank_account_id=' . $bankAccountId, true, DLOG_ERR);
+        resultInfo(false, 'VALIDATION_ERROR', 'Keine Umsätze zum Buchen ausgewählt');
         return;
     }
 

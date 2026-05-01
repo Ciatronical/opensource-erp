@@ -267,7 +267,10 @@
             "clearConfirm": "Kustuta",
             "clearCancel": "Tühista",
             "errorTitle": "Viga",
-            "errorText": "Päringut ei saanud töödelda. Palun proovige uuesti."
+            "errorText": "Päringut ei saanud töödelda. Palun proovige uuesti.",
+            "uploadDoc": "Laadi dokument üles",
+            "uploadError": "Vigane faili tüüp",
+            "uploadUnsupported": "Laadige üles PDF- või tekstifail."
         }
     },
     "CarScanView": {

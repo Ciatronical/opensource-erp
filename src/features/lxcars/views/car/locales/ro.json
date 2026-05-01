@@ -267,7 +267,10 @@
             "clearConfirm": "Șterge",
             "clearCancel": "Anulează",
             "errorTitle": "Eroare",
-            "errorText": "Cererea nu a putut fi procesată. Vă rugăm încercați din nou."
+            "errorText": "Cererea nu a putut fi procesată. Vă rugăm încercați din nou.",
+            "uploadDoc": "Încarcă document",
+            "uploadError": "Tip de fișier invalid",
+            "uploadUnsupported": "Vă rugăm să încărcați un fișier PDF sau text."
         }
     },
     "CarScanView": {

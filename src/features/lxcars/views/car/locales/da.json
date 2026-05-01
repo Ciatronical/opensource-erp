@@ -267,7 +267,10 @@
             "clearConfirm": "Slet",
             "clearCancel": "Annuller",
             "errorTitle": "Fejl",
-            "errorText": "Anmodningen kunne ikke behandles. Prøv venligst igen."
+            "errorText": "Anmodningen kunne ikke behandles. Prøv venligst igen.",
+            "uploadDoc": "Upload dokument",
+            "uploadError": "Ugyldig filtype",
+            "uploadUnsupported": "Upload en PDF- eller tekstfil."
         }
     },
     "CarScanView": {

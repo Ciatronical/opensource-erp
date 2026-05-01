@@ -168,8 +168,9 @@ export function parseShortDate(input) {
     if (isNaN(day) || isNaN(month) || isNaN(year)) return null
 
     if (year < 100) {
+        const pivotYear = new Date().getFullYear() + 5
         year += 2000
-        if (year > new Date().getFullYear()) year -= 100
+        if (year > pivotYear) year -= 100
     }
 
     return buildDate(day, month, year)
@@ -198,8 +199,12 @@ export function formatDateDE(isoDate) {
  */
 function buildMonthYear(month, year) {
     if (month < 1 || month > 12) return null
-    if (year < 100) year += 2000
-    if (year < 2000 || year > 2099) return null
+    if (year < 100) {
+        const pivotYear = new Date().getFullYear() + 5
+        year += 2000
+        if (year > pivotYear) year -= 100
+    }
+    if (year < 1886 || year > 2200) return null
     return `${String(year)}-${String(month).padStart(2, '0')}-01`
 }
 

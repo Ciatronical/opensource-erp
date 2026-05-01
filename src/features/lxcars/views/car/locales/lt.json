@@ -267,7 +267,10 @@
             "clearConfirm": "Ištrinti",
             "clearCancel": "Atšaukti",
             "errorTitle": "Klaida",
-            "errorText": "Užklausos nepavyko apdoroti. Bandykite dar kartą."
+            "errorText": "Užklausos nepavyko apdoroti. Bandykite dar kartą.",
+            "uploadDoc": "Įkelti dokumentą",
+            "uploadError": "Netinkamas failo tipas",
+            "uploadUnsupported": "Įkelkite PDF arba teksto failą."
         }
     },
     "CarScanView": {

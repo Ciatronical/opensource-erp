@@ -122,7 +122,7 @@
                             @click="confirmSubmitTransfer(item)"
                         />
                         <v-btn
-                            v-if="item.status === 'draft'"
+                            v-if="isTransferDeletable(item.status)"
                             icon="mdi-delete"
                             size="x-small"
                             variant="text"
@@ -958,6 +958,10 @@ function transferStatusColor(status) {
         expired: 'warning'
     }
     return colors[status] || 'default'
+}
+
+function isTransferDeletable(status) {
+    return status !== 'executed'
 }
 
 const reconciling = ref(false)

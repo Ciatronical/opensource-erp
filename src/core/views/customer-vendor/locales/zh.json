@@ -96,7 +96,14 @@
             "emptyFolder": "此文件夹为空",
             "vehicles": "车辆",
             "openFolder": "打开文件夹",
-            "backToRoot": "返回"
+            "backToRoot": "返回",
+            "docChat": {
+                "title": "AI文档分析",
+                "empty": "请就此文档提问 — 例如关于内容、截止日期或重要事项。",
+                "placeholder": "就文档提问...",
+                "errorTitle": "错误",
+                "errorText": "请求无法处理。请重试。"
+            }
         },
         "priceRules": {
             "title": "价格规则",

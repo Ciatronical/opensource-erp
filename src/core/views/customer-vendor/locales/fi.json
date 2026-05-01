@@ -96,7 +96,14 @@
             "emptyFolder": "Dieser Ordner ist leer",
             "vehicles": "Fahrzeuge",
             "openFolder": "Ordner öffnen",
-            "backToRoot": "Zurück"
+            "backToRoot": "Zurück",
+            "docChat": {
+                "title": "Tekoälyn asiakirja-analyysi",
+                "empty": "Esitä kysymys tästä asiakirjasta — esim. sisällöstä, määräajoista tai tärkeistä kohdista.",
+                "placeholder": "Esitä kysymys asiakirjasta...",
+                "errorTitle": "Virhe",
+                "errorText": "Pyyntöä ei voitu käsitellä. Yritä uudelleen."
+            }
         },
         "priceRules": {
             "title": "Preisregeln",

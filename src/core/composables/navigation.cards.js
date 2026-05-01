@@ -100,9 +100,7 @@ export function useNavigationCards() {
                     '-',
                     { title: t('AccountingView.menu.vendors'), to: t('AccountingView.routes.accountingVendors') },
                     '-',
-                    { title: t('AccountingView.menu.banking'), to: t('BankingView.routes.bankingOverview') },
-                    { title: t('BankingView.menu.transfers'), to: t('BankingView.routes.bankingTransfers') },
-                    { title: t('BankingView.menu.reconciliation'), to: t('BankingView.routes.bankingReconciliation') },
+                    { title: t('BankingView.menu.title'), to: t('BankingView.routes.bankingOverview') },
                     '-',
                     { title: t('AccountingView.menu.datevExport'), to: t('AccountingView.routes.accountingDatevExport') }
                 ]
@@ -119,6 +117,20 @@ export function useNavigationCards() {
                     { title: t('WikiMenu.allPages'), to: '/wiki' },
                     '-',
                     { title: t('WikiMenu.categories'), to: '/wiki/kategorien' }
+                ]
+            }
+        )
+
+        // Personal-Menü
+        result.push(
+            {
+                title: t('HrMenu.title'),
+                icon: 'mdi-account-group',
+                items: [
+                    { title: t('HrMenu.hub'), to: t('routes.hr') },
+                    '-',
+                    { title: t('HrMenu.payroll'), to: t('routes.hrPayroll') },
+                    { title: t('HrMenu.vacation'), to: t('routes.hrVacation') }
                 ]
             }
         )

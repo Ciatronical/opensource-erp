@@ -96,7 +96,14 @@
             "emptyFolder": "Dieser Mapp ist leer",
             "vehicles": "Fordone",
             "openFolder": "Mapp öffnen",
-            "backToRoot": "Zurück"
+            "backToRoot": "Zurück",
+            "docChat": {
+                "title": "AI-dokumentanalys",
+                "empty": "Ställ en fråga om detta dokument — t.ex. om innehållet, deadlines eller viktiga punkter.",
+                "placeholder": "Ställ en fråga om dokumentet...",
+                "errorTitle": "Fel",
+                "errorText": "Begäran kunde inte behandlas. Försök igen."
+            }
         },
         "priceRules": {
             "title": "Prisregeln",

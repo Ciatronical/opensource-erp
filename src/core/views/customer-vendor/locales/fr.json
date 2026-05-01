@@ -96,7 +96,14 @@
             "emptyFolder": "Ce dossier est vide",
             "vehicles": "Vehicules",
             "openFolder": "Ouvrir le dossier",
-            "backToRoot": "Retour"
+            "backToRoot": "Retour",
+            "docChat": {
+                "title": "Analyse IA du document",
+                "empty": "Posez une question sur ce document — par ex. sur le contenu, les délais ou les points importants.",
+                "placeholder": "Poser une question sur le document...",
+                "errorTitle": "Erreur",
+                "errorText": "La demande n'a pas pu être traitée. Veuillez réessayer."
+            }
         },
         "priceRules": {
             "title": "Regles de prix",

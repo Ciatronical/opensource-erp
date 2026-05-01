@@ -467,8 +467,8 @@ function getCarForOrder($data) {
         "SELECT c.c_id, c.c_ln, COALESCE(c.c_text, '') AS c_text,
                 e.km_stand, e.kfz_ort, e.status, e.gedruckt, e.intern,
                 e.bringetermin, e.fertigstellung, e.no_whatsapp,
-                e.c_sk, to_char(e.c_zrd, 'YYYY-MM-DD') AS c_zrd, e.c_zrk,
-                to_char(e.c_bf, 'YYYY-MM-DD') AS c_bf, to_char(e.c_wd, 'YYYY-MM-DD') AS c_wd
+                c.c_sk, to_char(c.c_zrd, 'YYYY-MM-DD') AS c_zrd, c.c_zrk,
+                to_char(c.c_bf, 'YYYY-MM-DD') AS c_bf, to_char(c.c_wd, 'YYYY-MM-DD') AS c_wd
          FROM oe_ext e
          LEFT JOIN cars_lxcars c ON c.c_id = e.c_id
          WHERE e.oe_id = :oe_id",
@@ -543,88 +543,87 @@ function updateOeExt($data) {
     $oeId = intval($data['oe_id']);
     $fields = $data['data'];
 
-    // Whitelist: nur erlaubte Felder
-    $allowed = ['km_stand', 'kfz_ort', 'status', 'gedruckt', 'intern', 'bringetermin', 'fertigstellung', 'no_whatsapp',
-                'c_sk', 'c_zrd', 'c_zrk', 'c_bf', 'c_wd'];
+    // Whitelist: nur erlaubte oe_ext-Felder (Wartungsfelder gehen direkt ins Fahrzeug)
+    $allowedOeExt = ['km_stand', 'kfz_ort', 'status', 'gedruckt', 'intern', 'bringetermin', 'fertigstellung', 'no_whatsapp'];
 
     $setClauses = [];
     $params = [':oe_id' => $oeId];
 
     foreach ($fields as $key => $value) {
-        if (!in_array($key, $allowed)) {
+        if (!in_array($key, $allowedOeExt)) {
             continue;
         }
 
         $paramName = ':' . $key;
 
-        // Typkonvertierung
-        if ($key === 'km_stand' || $key === 'c_zrk') {
+        if ($key === 'km_stand') {
             $value = $value !== null && $value !== '' ? intval($value) : null;
-        } elseif ($key === 'gedruckt' || $key === 'intern' || $key === 'no_whatsapp' || $key === 'c_sk') {
+        } elseif ($key === 'gedruckt' || $key === 'intern' || $key === 'no_whatsapp') {
             $value = $value ? 't' : 'f';
-        } elseif ($key === 'c_zrd' || $key === 'c_bf' || $key === 'c_wd') {
-            $value = !empty($value) ? $value : null;
         } elseif ($key === 'bringetermin' || $key === 'fertigstellung') {
-            // writeLog("[updateOeExt] oe_id=$oeId $key INPUT: '$value'");
             if (!empty($value)) {
                 if (preg_match('/00:00:00$/', $value) || !preg_match('/\d{2}:\d{2}:\d{2}$/', $value)) {
                     $defKey = $key === 'bringetermin' ? 'lxcars_default_abgabezeit' : 'lxcars_default_fertigstellungszeit';
                     $defRow = $db->getOne("SELECT value FROM defaults_oserp WHERE key = :key", [':key' => $defKey]);
                     $defTime = $defRow ? trim($defRow['value']) : ($key === 'bringetermin' ? '08:00' : '17:00');
                     $value = substr($value, 0, 10) . ' ' . $defTime . ':00';
-                    // writeLog("[updateOeExt] oe_id=$oeId $key CORRECTED: '$value'");
                 }
             } else {
                 $value = null;
             }
-            // writeLog("[updateOeExt] oe_id=$oeId $key SAVE: '$value'");
         }
 
         $setClauses[] = "$key = $paramName";
         $params[$paramName] = $value;
     }
 
-    if (empty($setClauses)) {
-        resultInfo(true, 'NO_CHANGES');
-        return;
+    if (!empty($setClauses)) {
+        $setString = implode(', ', $setClauses);
+        $db->execute(
+            "INSERT INTO oe_ext (oe_id) VALUES (:oe_id)
+             ON CONFLICT (oe_id) DO NOTHING",
+            [':oe_id' => $oeId]
+        );
+        $db->execute(
+            "UPDATE oe_ext SET $setString WHERE oe_id = :oe_id",
+            $params
+        );
     }
 
-    $setString = implode(', ', $setClauses);
+    // Wartungsfelder direkt ins Fahrzeug schreiben (immer, unabhängig vom Auftragsdatum)
+    $maintenanceMap = ['c_sk' => 'boolean', 'c_zrd' => 'date', 'c_zrk' => 'int', 'c_bf' => 'date', 'c_wd' => 'date'];
+    $carSetClauses = [];
+    $carParams = [':oe_id' => $oeId];
 
-    // UPSERT: Falls oe_ext-Zeile noch nicht existiert, anlegen
-    $insertFields = array_keys($fields);
-    $insertFields = array_filter($insertFields, function($k) use ($allowed) { return in_array($k, $allowed); });
-
-    $db->execute(
-        "INSERT INTO oe_ext (oe_id) VALUES (:oe_id)
-         ON CONFLICT (oe_id) DO NOTHING",
-        [':oe_id' => $oeId]
-    );
-
-    $db->execute(
-        "UPDATE oe_ext SET $setString WHERE oe_id = :oe_id",
-        $params
-    );
-
-    // Fahrzeug-Sync: Wenn ein wartungsrelevantes Feld geaendert wurde und der Auftrag
-    // der neueste zum verknuepften Fahrzeug ist, die Wartungsdaten ins Fahrzeug spiegeln.
-    $maintenanceFields = ['c_sk', 'c_zrd', 'c_zrk', 'c_bf', 'c_wd', 'km_stand'];
-    $maintenanceChanged = false;
-    foreach ($maintenanceFields as $mf) {
-        if (array_key_exists($mf, $fields)) { $maintenanceChanged = true; break; }
+    foreach ($maintenanceMap as $mf => $type) {
+        if (!array_key_exists($mf, $fields)) continue;
+        $value = $fields[$mf];
+        if ($type === 'int') {
+            $value = $value !== null && $value !== '' ? intval($value) : null;
+        } elseif ($type === 'boolean') {
+            $value = $value ? 't' : 'f';
+        } else {
+            $value = !empty($value) ? $value : null;
+        }
+        $carSetClauses[] = "$mf = :$mf";
+        $carParams[":$mf"] = $value;
     }
-    if ($maintenanceChanged) {
-        // c_sk ist boolean und wird immer gespiegelt (auch false), die anderen Felder
-        // nur wenn im Auftrag nicht NULL — sonst wuerde ein noch leeres Feld die alten
-        // Fahrzeugdaten ueberschreiben.
+
+    if (!empty($carSetClauses)) {
+        $carSetString = implode(', ', $carSetClauses);
+        $db->execute(
+            "UPDATE cars_lxcars SET $carSetString
+             FROM oe_ext e
+             WHERE cars_lxcars.c_id = e.c_id AND e.oe_id = :oe_id AND e.c_id IS NOT NULL",
+            $carParams
+        );
+    }
+
+    // km_stand in c_km spiegeln — nur wenn dies der neueste Auftrag zum Fahrzeug ist
+    if (array_key_exists('km_stand', $fields)) {
         $db->execute(
             "UPDATE cars_lxcars c
-             SET c_sk  = e.c_sk,
-                 c_zrd = COALESCE(e.c_zrd, c.c_zrd),
-                 c_zrk = COALESCE(e.c_zrk, c.c_zrk),
-                 c_bf  = COALESCE(e.c_bf,  c.c_bf),
-                 c_wd  = COALESCE(e.c_wd,  c.c_wd),
-                 c_km  = COALESCE(e.km_stand, c.c_km)
+             SET c_km = COALESCE(e.km_stand, c.c_km)
              FROM oe_ext e
              JOIN oe o ON o.id = e.oe_id
              WHERE e.oe_id = :oe_id
@@ -637,6 +636,11 @@ function updateOeExt($data) {
                )",
             [':oe_id' => $oeId]
         );
+    }
+
+    if (empty($setClauses) && empty($carSetClauses) && !array_key_exists('km_stand', $fields)) {
+        resultInfo(true, 'NO_CHANGES');
+        return;
     }
 
     // Kalender-Sync: Wenn bringetermin oder fertigstellung eine Uhrzeit enthalten,

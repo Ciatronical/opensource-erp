@@ -14,8 +14,8 @@ Vollstaendige Projektrichtlinien: `dev/programmierstil-richtlinien.md` — IMMER
 ### Datenbankzugriff (PHP)
 
 ```php
-$db = DbhCompany::begin();  // Company-Daten (99% der Faelle)
-$auth = DbhAuth::begin();   // Nur fuer Auth/Sessions
+$db = DbhCompany::begin();  // Company-Daten (99% der Fälle)
+$auth = DbhAuth::begin();   // Nur für Auth/Sessions
 ```
 
 **Query-Methoden mit Prepared Statements:**

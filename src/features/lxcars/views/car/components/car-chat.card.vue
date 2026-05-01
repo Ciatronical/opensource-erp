@@ -8,6 +8,14 @@
             <v-chip v-if="messages.length" size="x-small" variant="tonal" color="deep-purple" class="ml-2">{{ messages.length }}</v-chip>
             <v-spacer />
             <v-btn
+                size="x-small"
+                variant="text"
+                color="deep-purple"
+                icon="mdi-file-upload-outline"
+                :title="t('CarEditView.chat.uploadDoc')"
+                @click="triggerFileUpload"
+            />
+            <v-btn
                 v-if="messages.length"
                 size="x-small"
                 variant="text"
@@ -15,6 +23,13 @@
                 icon="mdi-delete-outline"
                 :title="t('CarEditView.chat.clear')"
                 @click="confirmClear"
+            />
+            <input
+                ref="fileInput"
+                type="file"
+                accept=".pdf,.txt,.md"
+                class="d-none"
+                @change="onFileSelected"
             />
         </v-card-title>
         <v-divider />
@@ -43,6 +58,20 @@
                         <div class="car-chat__bubble-time">{{ msg.created_at }}</div>
                     </div>
                 </template>
+            </div>
+
+            <!-- Angehängtes Dokument -->
+            <div v-if="attachedDoc" class="car-chat__doc-chip px-3 pb-2">
+                <v-chip
+                    size="small"
+                    color="deep-purple"
+                    variant="tonal"
+                    closable
+                    prepend-icon="mdi-file-document-outline"
+                    @click:close="removeDoc"
+                >
+                    {{ attachedDoc.name }}
+                </v-chip>
             </div>
 
             <!-- Eingabe -->
@@ -103,6 +132,8 @@ export default {
         const sending = ref(false)
         const loading = ref(false)
         const chatContainer = ref(null)
+        const fileInput = ref(null)
+        const attachedDoc = ref(null)
 
         async function loadChat() {
             if (!props.carId) return
@@ -115,20 +146,55 @@ export default {
             loading.value = false
         }
 
+        function triggerFileUpload() {
+            fileInput.value?.click()
+        }
+
+        function removeDoc() {
+            attachedDoc.value = null
+            if (fileInput.value) fileInput.value.value = ''
+        }
+
+        function onFileSelected(event) {
+            const file = event.target.files?.[0]
+            if (!file) return
+
+            const ALLOWED = ['application/pdf', 'text/plain', 'text/markdown']
+            const mediaType = file.type || (file.name.endsWith('.md') ? 'text/plain' : '')
+            if (!ALLOWED.includes(mediaType)) {
+                Swal.fire({ icon: 'error', title: t('CarEditView.chat.uploadError'), text: t('CarEditView.chat.uploadUnsupported'), timer: 4000 })
+                if (fileInput.value) fileInput.value.value = ''
+                return
+            }
+
+            const reader = new FileReader()
+            reader.onload = (e) => {
+                const base64 = e.target.result.split(',')[1]
+                attachedDoc.value = { name: file.name, data: base64, media_type: mediaType === 'text/markdown' ? 'text/plain' : mediaType }
+            }
+            reader.readAsDataURL(file)
+        }
+
         async function sendMessage() {
             const text = inputMessage.value.trim()
             if (!text || sending.value) return
 
             // Optimistisch Nachricht anzeigen
-            const tempMsg = { id: 'temp-' + Date.now(), role: 'user', content: text, created_at: '' }
+            const displayText = attachedDoc.value
+                ? `[${attachedDoc.value.name}] ${text}`
+                : text
+            const tempMsg = { id: 'temp-' + Date.now(), role: 'user', content: displayText, created_at: '' }
             messages.value.push(tempMsg)
+            const docToSend = attachedDoc.value
             inputMessage.value = ''
+            attachedDoc.value = null
+            if (fileInput.value) fileInput.value.value = ''
             await nextTick()
             scrollToBottom()
 
             sending.value = true
             try {
-                const newMessages = await carsStore.sendCarChatMessage(props.carId, text)
+                const newMessages = await carsStore.sendCarChatMessage(props.carId, text, docToSend)
                 // Temp-Nachricht durch echte ersetzen
                 const tempIdx = messages.value.findIndex(m => m.id === tempMsg.id)
                 if (tempIdx >= 0) messages.value.splice(tempIdx, 1)
@@ -140,6 +206,7 @@ export default {
                 const tempIdx = messages.value.findIndex(m => m.id === tempMsg.id)
                 if (tempIdx >= 0) messages.value.splice(tempIdx, 1)
                 inputMessage.value = text
+                attachedDoc.value = docToSend
                 Swal.fire({ icon: 'error', title: t('CarEditView.chat.errorTitle'), text: err.message || t('CarEditView.chat.errorText'), timer: 5000 })
             }
             sending.value = false
@@ -185,7 +252,9 @@ export default {
 
         return {
             t, messages, inputMessage, sending, loading, chatContainer,
-            sendMessage, confirmClear, renderMessage
+            fileInput, attachedDoc,
+            sendMessage, confirmClear, renderMessage,
+            triggerFileUpload, removeDoc, onFileSelected
         }
     }
 }
@@ -244,6 +313,11 @@ export default {
 
 .car-chat__bubble--user .car-chat__bubble-time {
     text-align: right;
+}
+
+.car-chat__doc-chip {
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    padding-top: 8px;
 }
 
 .car-chat__input {

@@ -113,7 +113,14 @@
             "emptyFolder": "This folder is empty",
             "vehicles": "Vehicles",
             "openFolder": "Open folder",
-            "backToRoot": "Back"
+            "backToRoot": "Back",
+            "docChat": {
+                "title": "AI Document Analysis",
+                "empty": "Ask a question about this document — e.g. about the content, deadlines, or key points.",
+                "placeholder": "Ask a question about the document...",
+                "errorTitle": "Error",
+                "errorText": "The request could not be processed. Please try again."
+            }
         },
         "priceRules": {
             "title": "Price Rules",

@@ -96,7 +96,14 @@
             "emptyFolder": "Ten folder jest pusty",
             "vehicles": "Pojazdy",
             "openFolder": "Otwórz folder",
-            "backToRoot": "Wróć"
+            "backToRoot": "Wróć",
+            "docChat": {
+                "title": "Analiza dokumentu przez KI",
+                "empty": "Zadaj pytanie dotyczące tego dokumentu — np. o treść, terminy lub ważne punkty.",
+                "placeholder": "Zadaj pytanie o dokument...",
+                "errorTitle": "Błąd",
+                "errorText": "Żądanie nie mogło zostać przetworzone. Spróbuj ponownie."
+            }
         },
         "priceRules": {
             "title": "Reguły cenowe",

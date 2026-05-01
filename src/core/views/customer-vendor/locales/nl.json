@@ -96,7 +96,14 @@
             "emptyFolder": "Deze map is leeg",
             "vehicles": "Voertuigen",
             "openFolder": "Map openen",
-            "backToRoot": "Terug"
+            "backToRoot": "Terug",
+            "docChat": {
+                "title": "KI-documentanalyse",
+                "empty": "Stel een vraag over dit document — bijv. over de inhoud, deadlines of belangrijke punten.",
+                "placeholder": "Stel een vraag over het document...",
+                "errorTitle": "Fout",
+                "errorText": "Het verzoek kon niet worden verwerkt. Probeer het opnieuw."
+            }
         },
         "priceRules": {
             "title": "Prijsregels",

@@ -64,11 +64,6 @@ CREATE TABLE IF NOT EXISTS oe_ext (
     status         text,
     kennzeichen      text,
     no_whatsapp    boolean DEFAULT false,
-    c_sk           boolean DEFAULT false,
-    c_zrd          date,
-    c_zrk          integer,
-    c_bf           date,
-    c_wd           date,
     CONSTRAINT oe_ext_pkey PRIMARY KEY (oe_id)
 );
 

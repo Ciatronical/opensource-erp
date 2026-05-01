@@ -11,16 +11,23 @@
             :custom-uploader="customUploader"
             @notify="onNotify"
         />
+        <DocChatDialog
+            v-model="docChatOpen"
+            :file-path="docChatPath"
+            :cv-id="cvId"
+            :src="src"
+        />
     </div>
 </template>
 
 <script>
-import { provide } from 'vue'
+import { provide, ref } from 'vue'
 import { VueFinder, contextMenuItems as defaultMenuItems } from 'vuefinder'
 import 'vuefinder/dist/vuefinder.css'
 import * as toast from '@/core/utils/toasts.js'
 import deLocale from 'vuefinder/dist/locales/de.js'
 import { oserpStore } from '@/core/stores/oserp.store.js'
+import DocChatDialog from './doc-chat.dialog.vue'
 
 const API_URL = '/api/customer_vendor/'
 
@@ -138,7 +145,7 @@ class CrmFileDriver {
 
 export default {
     name: 'FilesTab',
-    components: { VueFinder },
+    components: { VueFinder, DocChatDialog },
     props: {
         cvId: { type: [String, Number], required: true },
         src: { type: String, default: 'C' },
@@ -146,6 +153,8 @@ export default {
     },
     setup(props) {
         const store = oserpStore()
+        const docChatOpen = ref(false)
+        const docChatPath = ref('')
         const fmDefaultView = store.getClientDefaultValue('fm_default_view', 'list')
         const fmMaxUploadSize = parseInt(store.getClientDefaultValue('fm_max_upload_size', '0'), 10) || 0
         const fmAllowedExtensions = store.getClientDefaultValue('fm_allowed_extensions', '')
@@ -244,8 +253,28 @@ export default {
             order: 95,
         }
 
+        // KI-Analyse: öffnet den Dokument-Chat-Dialog
+        const kiItem = {
+            id: 'docChat',
+            title: () => 'KI',
+            icon: () => 'mdi-robot-outline',
+            action: (vfStore, items) => {
+                const item = items[0]
+                if (!item) return
+                docChatPath.value = item.path
+                docChatOpen.value = true
+            },
+            show: (vfStore, { target }) => {
+                if (target?.type !== 'file') return false
+                const ext = (target.extension || target.basename || '').split('.').pop().toLowerCase()
+                const supported = ['pdf', 'txt', 'md', 'csv', 'json', 'xml', 'html', 'htm']
+                return supported.includes(ext)
+            },
+            order: 6,
+        }
+
         // "Oeffnen" VOR den Default-Items, damit Doppelklick die Datei im neuen Tab oeffnet
-        const contextMenuItems = [openItem, ...defaultMenuItems, duplicateItem]
+        const contextMenuItems = [openItem, kiItem, ...defaultMenuItems, duplicateItem]
 
         /**
          * Custom Uploader fuer VueFinder/Uppy.
@@ -319,7 +348,7 @@ export default {
             })
         }
 
-        return { driver, features, vfConfig, contextMenuItems, customUploader, onNotify }
+        return { driver, features, vfConfig, contextMenuItems, customUploader, onNotify, docChatOpen, docChatPath }
     },
 }
 </script>

@@ -165,6 +165,10 @@
             "body": "Message",
             "attachFull": "Attach complete vehicle data as text file",
             "attachmentName": "Attachment",
+            "addFiles": "Attach additional files",
+            "cc": "CC",
+            "bcc": "BCC",
+            "addCcBcc": "CC / BCC",
             "send": "Send",
             "cancel": "Cancel",
             "sending": "Sending...",
@@ -293,7 +297,10 @@
             "clearConfirm": "Delete",
             "clearCancel": "Cancel",
             "errorTitle": "Error",
-            "errorText": "The request could not be processed. Please try again."
+            "errorText": "The request could not be processed. Please try again.",
+            "uploadDoc": "Upload document",
+            "uploadError": "Invalid file type",
+            "uploadUnsupported": "Please upload a PDF or text file."
         }
     },
     "CarScanView": {

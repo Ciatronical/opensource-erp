@@ -96,7 +96,14 @@
             "emptyFolder": "Esta pasta está vazia",
             "vehicles": "Veículos",
             "openFolder": "Abrir pasta",
-            "backToRoot": "Voltar"
+            "backToRoot": "Voltar",
+            "docChat": {
+                "title": "Análise IA do documento",
+                "empty": "Faça uma pergunta sobre este documento — p. ex. sobre o conteúdo, prazos ou pontos-chave.",
+                "placeholder": "Fazer uma pergunta sobre o documento...",
+                "errorTitle": "Erro",
+                "errorText": "O pedido não pôde ser processado. Por favor, tente novamente."
+            }
         },
         "priceRules": {
             "title": "Regras de preços",

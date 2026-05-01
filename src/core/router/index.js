@@ -104,10 +104,10 @@ const LxCarsReportsView = () => {
 }
 
 // Banking
-const BankingOverviewView = () => import('@/features/banking/views/banking.overview.vue')
-const BankingTransactionsView = () => import('@/features/banking/views/banking.transactions.vue')
-const BankingReconciliationView = () => import('@/features/banking/views/banking.reconciliation.vue')
-const BankingTransfersView = () => import('@/features/banking/views/banking.transfers.vue')
+const BankingHubView = () => import('@/features/banking/views/banking.hub.vue')
+
+// HR-Modul
+const HrHubView = () => import('@/core/views/hr/hr.hub.vue')
 
 // Buchhaltung
 const AccountingOverviewView = () => import('@/features/accounting/views/accounting.overview.vue')
@@ -490,27 +490,21 @@ const router = createRouter({
             name: 'accounting-outgoing',
             component: AccountingOutgoingView,
         },
-        // ── Banking ──
+        // ── Banking ── (alle Funktionen in einem Hub zusammengefasst)
         {
             path: i18n.global.t('BankingView.routes.bankingOverview'),
             name: 'banking-overview',
-            component: BankingOverviewView,
-        },
-        {
-            path: i18n.global.t('BankingView.routes.bankingAccount') + '/:id(\\d+)',
-            name: 'banking-transactions',
-            component: BankingTransactionsView,
-            props: true,
-        },
-        {
-            path: i18n.global.t('BankingView.routes.bankingReconciliation'),
-            name: 'banking-reconciliation',
-            component: BankingReconciliationView,
+            component: BankingHubView,
         },
         {
             path: i18n.global.t('BankingView.routes.bankingTransfers'),
             name: 'banking-transfers',
-            component: BankingTransfersView,
+            redirect: to => ({ name: 'banking-overview', query: { tab: 'transfers', ...to.query } }),
+        },
+        {
+            path: i18n.global.t('BankingView.routes.bankingReconciliation'),
+            name: 'banking-reconciliation',
+            redirect: { name: 'banking-overview', query: { tab: 'reconciliation' } },
         },
         // ── Kamera / Videoüberwachung ──
         {
@@ -576,6 +570,22 @@ const router = createRouter({
             name: 'datenloeschung',
             component: DatenloeschungView,
             meta: { public: true },
+        },
+        // ── HR-Modul ──
+        {
+            path: i18n.global.t('routes.hr'),
+            name: 'hr',
+            component: HrHubView,
+        },
+        {
+            path: i18n.global.t('routes.hrPayroll'),
+            name: 'hr-payroll',
+            redirect: { name: 'hr', query: { tab: 'payroll' } },
+        },
+        {
+            path: i18n.global.t('routes.hrVacation'),
+            name: 'hr-vacation',
+            redirect: { name: 'hr', query: { tab: 'vacation' } },
         },
         // ── Catch-All ──
         {

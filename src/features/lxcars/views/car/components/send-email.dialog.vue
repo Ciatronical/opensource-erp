@@ -19,24 +19,25 @@
             <v-divider />
 
             <v-card-text class="pt-4">
-                <!-- Empfaenger: Kombi aus Freitext + CV-Suche -->
+                <!-- AN -->
                 <v-combobox
                     ref="emailFieldRef"
-                    v-model="email"
-                    :items="cvItems"
-                    :loading="cvLoading"
+                    v-model="to.state.model"
+                    v-model:search="to.state.searchText"
+                    :items="to.state.items"
+                    :loading="to.state.loading"
                     :label="t('CarEditView.email.to')"
                     variant="outlined"
                     density="compact"
                     prepend-inner-icon="mdi-email"
                     item-title="email"
-                    item-value="email"
+                    return-object
                     no-filter
                     hide-no-data
                     autocomplete="off"
                     type="email"
                     :rules="[v => !!(typeof v === 'string' ? v.trim() : v?.email?.trim()) || t('CarEditView.email.to')]"
-                    @update:search="onSearch"
+                    @update:model-value="onToSelect"
                 >
                     <template #item="{ props: itemProps, item }">
                         <v-list-item v-bind="itemProps" :title="undefined">
@@ -45,12 +46,79 @@
                                     {{ item.raw.cvType === 'vendor' ? 'mdi-truck-delivery' : 'mdi-account' }}
                                 </v-icon>
                             </template>
-                            <v-list-item-title>
-                                {{ item.raw.name }}
-                            </v-list-item-title>
-                            <v-list-item-subtitle>
-                                {{ item.raw.email }}
-                            </v-list-item-subtitle>
+                            <v-list-item-title>{{ item.raw.name }}</v-list-item-title>
+                            <v-list-item-subtitle>{{ item.raw.email }}</v-list-item-subtitle>
+                        </v-list-item>
+                    </template>
+                </v-combobox>
+
+                <!-- CC/BCC-Toggle -->
+                <div v-if="!showCcBcc" class="d-flex justify-end mt-n3 mb-3">
+                    <v-btn variant="plain" size="x-small" density="compact" class="text-medium-emphasis" @click="showCcBcc = true">
+                        {{ t('CarEditView.email.addCcBcc') }}
+                    </v-btn>
+                </div>
+
+                <!-- CC -->
+                <v-combobox
+                    v-if="showCcBcc"
+                    v-model="cc.state.model"
+                    v-model:search="cc.state.searchText"
+                    :items="cc.state.items"
+                    :loading="cc.state.loading"
+                    :label="t('CarEditView.email.cc')"
+                    variant="outlined"
+                    density="compact"
+                    prepend-inner-icon="mdi-email-plus-outline"
+                    item-title="email"
+                    return-object
+                    no-filter
+                    hide-no-data
+                    autocomplete="off"
+                    type="email"
+                    clearable
+                >
+                    <template #item="{ props: itemProps, item }">
+                        <v-list-item v-bind="itemProps" :title="undefined">
+                            <template #prepend>
+                                <v-icon size="small" :color="item.raw.cvType === 'vendor' ? 'orange-darken-2' : 'primary'">
+                                    {{ item.raw.cvType === 'vendor' ? 'mdi-truck-delivery' : 'mdi-account' }}
+                                </v-icon>
+                            </template>
+                            <v-list-item-title>{{ item.raw.name }}</v-list-item-title>
+                            <v-list-item-subtitle>{{ item.raw.email }}</v-list-item-subtitle>
+                        </v-list-item>
+                    </template>
+                </v-combobox>
+
+                <!-- BCC -->
+                <v-combobox
+                    v-if="showCcBcc"
+                    v-model="bcc.state.model"
+                    v-model:search="bcc.state.searchText"
+                    :items="bcc.state.items"
+                    :loading="bcc.state.loading"
+                    :label="t('CarEditView.email.bcc')"
+                    variant="outlined"
+                    density="compact"
+                    prepend-inner-icon="mdi-email-lock-outline"
+                    item-title="email"
+                    return-object
+                    no-filter
+                    hide-no-data
+                    autocomplete="off"
+                    type="email"
+                    clearable
+                >
+                    <template #item="{ props: itemProps, item }">
+                        <v-list-item v-bind="itemProps" :title="undefined">
+                            <template #prepend>
+                                <v-icon size="small" :color="item.raw.cvType === 'vendor' ? 'orange-darken-2' : 'primary'">
+                                    {{ item.raw.cvType === 'vendor' ? 'mdi-truck-delivery' : 'mdi-account' }}
+                                </v-icon>
+                            </template>
+                            <v-list-item-title>{{ item.raw.name }}</v-list-item-title>
+                            <v-list-item-subtitle>{{ item.raw.email }}</v-list-item-subtitle>
                         </v-list-item>
                     </template>
                 </v-combobox>
@@ -83,6 +151,27 @@
                         {{ attachmentFilename }}
                     </v-chip>
                 </div>
+
+                <!-- Weitere Dateien -->
+                <div class="mt-2">
+                    <input ref="fileInputRef" type="file" multiple class="d-none" @change="onFileChange" />
+                    <v-btn size="small" variant="tonal" prepend-icon="mdi-paperclip-plus" @click="triggerFileInput">
+                        {{ t('CarEditView.email.addFiles') }}
+                    </v-btn>
+                    <v-chip
+                        v-for="(file, i) in additionalFiles"
+                        :key="i"
+                        size="small"
+                        color="secondary"
+                        variant="tonal"
+                        prepend-icon="mdi-paperclip"
+                        closable
+                        class="ml-2 mt-1"
+                        @click:close="removeAdditionalFile(i)"
+                    >
+                        {{ file.name }}
+                    </v-chip>
+                </div>
             </v-card-text>
 
             <v-divider />
@@ -108,7 +197,7 @@
 </template>
 
 <script>
-import { defineComponent, ref, computed, watch, nextTick } from 'vue'
+import { defineComponent, ref, reactive, computed, watch, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import axios from 'axios'
 import Swal from 'sweetalert2'
@@ -133,15 +222,47 @@ export default defineComponent({
         const { t } = useI18n()
 
         const emailFieldRef = ref(null)
-        const cvItems = ref([])
-        const cvLoading = ref(false)
-        let cvDebounceTimer = null
+        const fileInputRef = ref(null)
 
-        const email = ref('')
         const subject = ref('')
         const body = ref('')
         const attachFull = ref(true)
+        const additionalFiles = ref([])
         const sending = ref(false)
+        const showCcBcc = ref(false)
+
+        function makeEmailField() {
+            let timer = null
+            const state = reactive({ model: '', searchText: '', items: [], loading: false })
+
+            watch(() => state.searchText, (val) => {
+                clearTimeout(timer)
+                const q = (val || '').trim()
+                if (q.length < 3) { state.items = []; return }
+                state.loading = true
+                timer = setTimeout(async () => {
+                    try {
+                        const { data } = await axios.post('/api/faktura/', { action: 'searchCvEmails', search: q })
+                        state.items = data?.results || []
+                    } catch { state.items = [] }
+                    finally { state.loading = false }
+                }, 300)
+            })
+
+            function reset(value = '') {
+                clearTimeout(timer)
+                state.model = value
+                state.searchText = ''
+                state.items = []
+                state.loading = false
+            }
+
+            return { state, reset }
+        }
+
+        const to = makeEmailField()
+        const cc = makeEmailField()
+        const bcc = makeEmailField()
 
         function extractEmail(v) {
             if (!v) return ''
@@ -150,56 +271,61 @@ export default defineComponent({
             return ''
         }
 
+        function onToSelect(item) {
+            if (!item || typeof item !== 'object') return
+            const extras = Array.isArray(item.extra_emails) ? item.extra_emails.filter(Boolean) : []
+            if (extras.length > 0) {
+                cc.state.model = extras[0]
+                showCcBcc.value = true
+            }
+        }
+
         const isValid = computed(() => {
-            return !!extractEmail(email.value) && !!subject.value && subject.value.trim() !== ''
+            return !!extractEmail(to.state.model) && !!subject.value && subject.value.trim() !== ''
         })
 
-        // Beim Oeffnen: Felder initialisieren und Fokus setzen
         watch(() => props.modelValue, (visible) => {
             if (!visible) return
-            cvItems.value = []
-            email.value = props.initialEmail || ''
+            to.reset(props.initialEmail || '')
+            cc.reset()
+            bcc.reset()
             subject.value = props.initialSubject || ''
             body.value = props.initialBody || ''
             attachFull.value = props.attachFullDefault
+            additionalFiles.value = []
             sending.value = false
+            showCcBcc.value = false
             nextTick(() => {
                 const input = emailFieldRef.value?.$el?.querySelector('input')
                 input?.focus()
             })
         })
 
-        function onSearch(val) {
-            clearTimeout(cvDebounceTimer)
-            const search = (val || '').trim()
-            if (search.length < 3) {
-                cvItems.value = []
-                return
-            }
-            // Parallel Kunden + Lieferanten durchsuchen, nur mit Email
-            cvLoading.value = true
-            cvDebounceTimer = setTimeout(async () => {
-                try {
-                    const [cust, vend] = await Promise.all([
-                        axios.post('/api/faktura/', { action: 'searchFakturaCustomers', search, type: 'customer' }),
-                        axios.post('/api/faktura/', { action: 'searchFakturaCustomers', search, type: 'vendor' })
-                    ])
-                    const customers = (cust.data?.results || []).map(r => ({ ...r, cvType: 'customer' }))
-                    const vendors = (vend.data?.results || []).map(r => ({ ...r, cvType: 'vendor' }))
-                    cvItems.value = [...customers, ...vendors]
-                        .filter(r => r.email)
-                        .sort((a, b) => a.name.localeCompare(b.name))
-                } catch {
-                    cvItems.value = []
-                } finally {
-                    cvLoading.value = false
-                }
-            }, 300)
+        function triggerFileInput() {
+            fileInputRef.value?.click()
+        }
+
+        function onFileChange(e) {
+            additionalFiles.value = [...additionalFiles.value, ...Array.from(e.target.files)]
+            e.target.value = ''
+        }
+
+        function removeAdditionalFile(i) {
+            additionalFiles.value = additionalFiles.value.filter((_, idx) => idx !== i)
+        }
+
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader()
+                reader.onload = () => resolve(reader.result.split(',')[1])
+                reader.onerror = reject
+                reader.readAsDataURL(file)
+            })
         }
 
         async function onSend() {
             if (!isValid.value || sending.value) return
-            const addr = extractEmail(email.value)
+            const addr = extractEmail(to.state.model)
             if (!addr) return
             sending.value = true
 
@@ -212,12 +338,29 @@ export default defineComponent({
                 record_type: props.recordType
             }
 
+            const ccAddr = extractEmail(cc.state.model)
+            if (ccAddr) payload.cc = [{ email: ccAddr, name: '' }]
+
+            const bccAddr = extractEmail(bcc.state.model)
+            if (bccAddr) payload.bcc = [{ email: bccAddr, name: '' }]
+
+            const attachments = []
             if (attachFull.value && props.attachmentContent) {
-                payload.attachments = [{
+                attachments.push({
                     filename: props.attachmentFilename,
                     content_base64: props.attachmentContent,
                     content_type: 'text/plain; charset=utf-8'
-                }]
+                })
+            }
+            for (const file of additionalFiles.value) {
+                attachments.push({
+                    filename: file.name,
+                    content_base64: await fileToBase64(file),
+                    content_type: file.type || 'application/octet-stream'
+                })
+            }
+            if (attachments.length) {
+                payload.attachments = attachments
             }
 
             try {
@@ -249,11 +392,12 @@ export default defineComponent({
 
         return {
             t,
-            emailFieldRef,
-            cvItems, cvLoading,
-            email, subject, body, attachFull, sending,
+            emailFieldRef, fileInputRef,
+            subject, body, attachFull, additionalFiles, sending, showCcBcc,
+            to, cc, bcc,
             isValid,
-            onSearch,
+            onToSelect,
+            triggerFileInput, onFileChange, removeAdditionalFile,
             onSend, onCancel
         }
     }
