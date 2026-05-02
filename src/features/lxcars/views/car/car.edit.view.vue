@@ -167,7 +167,7 @@
                             </v-row>
                             <v-row dense>
                                 <v-col cols="12" sm="6" class="py-1">
-                                    <v-text-field v-model="car.c_2" :label="t('CarEditView.fields.c_2')" variant="outlined" density="compact" hide-details="auto" maxlength="4" tabindex="2" :rules="rulesHsn" @click="copyToClipboard('HSN', car.c_2)" @dblclick="copyToClipboardNow('KBA', (car.c_2 || '') + ' ' + (car.c_3 || ''))">
+                                    <v-text-field v-model="car.c_2" :label="t('CarEditView.fields.c_2')" variant="outlined" density="compact" hide-details="auto" maxlength="4" tabindex="2" :rules="rulesHsn" @click="copyToClipboard('HSN', car.c_2)" @dblclick="copyToClipboardNow('KBA', (car.c_2 || '').replace(/\s/g, '') + (car.c_3 || '').substring(0, 3))">
                                         <template #append-inner>
                                             <v-tooltip v-if="fieldCrops.c_2" location="end" content-class="crop-tooltip">
                                                 <template #activator="{ props: tipProps }">
