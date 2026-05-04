@@ -65,6 +65,9 @@
                 </v-btn>
             </template>
             <v-spacer />
+            <v-btn v-if="isMechanicMode" icon variant="text" color="primary" :title="t('MechanicView.exitMechanic')" @click="router.push(t('routes.mainmenu'))">
+                <v-icon>mdi-exit-to-app</v-icon>
+            </v-btn>
             <template v-if="!readonly">
                 <v-chip v-if="saving" size="x-small" color="warning" variant="tonal">
                     <v-progress-circular indeterminate size="12" width="2" class="mr-1" />
@@ -167,7 +170,7 @@
                             </v-row>
                             <v-row dense>
                                 <v-col cols="12" sm="6" class="py-1">
-                                    <v-text-field v-model="car.c_2" :label="t('CarEditView.fields.c_2')" variant="outlined" density="compact" hide-details="auto" maxlength="4" tabindex="2" :rules="rulesHsn" @click="copyToClipboard('HSN', car.c_2)" @dblclick="copyToClipboardNow('KBA', (car.c_2 || '').replace(/\s/g, '') + (car.c_3 || '').substring(0, 3))">
+                                    <v-text-field v-model="car.c_2" :label="t('CarEditView.fields.c_2')" variant="outlined" density="compact" hide-details="auto" maxlength="4" tabindex="2" :rules="rulesHsn" @click="copyToClipboard('HSN', car.c_2)" @dblclick="copyToClipboardNow('KBA', kbaClipboardText())">
                                         <template #append-inner>
                                             <v-tooltip v-if="fieldCrops.c_2" location="end" content-class="crop-tooltip">
                                                 <template #activator="{ props: tipProps }">
@@ -184,7 +187,7 @@
                             </v-row>
                             <v-row dense>
                                 <v-col cols="12" sm="6" class="py-1">
-                                    <v-text-field ref="tsnFieldRef" v-model="car.c_3" :label="t('CarEditView.fields.c_3')" variant="outlined" density="compact" hide-details="auto" maxlength="10" tabindex="3" :rules="rulesTsn" @click="copyToClipboard('TSN', car.c_3)" @dblclick="copyToClipboardNow('KBA', (car.c_2 || '') + ' ' + (car.c_3 || ''))">
+                                    <v-text-field ref="tsnFieldRef" v-model="car.c_3" :label="t('CarEditView.fields.c_3')" variant="outlined" density="compact" hide-details="auto" maxlength="10" tabindex="3" :rules="rulesTsn" @click="copyToClipboard('TSN', car.c_3)" @dblclick="copyToClipboardNow('KBA', kbaClipboardText())">
                                         <template #append-inner>
                                             <v-tooltip v-if="fieldCrops.c_3" location="end" content-class="crop-tooltip">
                                                 <template #activator="{ props: tipProps }">
@@ -1139,6 +1142,7 @@ export default {
         const { t, locale } = useI18n()
         const router = useRouter()
         const route = useRoute()
+        const isMechanicMode = computed(() => route.name === 'mechanic-car')
         const backOrderId = computed(() => {
             const q = route.query.order
             const n = Array.isArray(q) ? q[0] : q
@@ -1367,6 +1371,10 @@ export default {
             if (copyClickTimer) { clearTimeout(copyClickTimer); copyClickTimer = null }
             navigator.clipboard.writeText(text.trim())
             showCopyToast(label, text.trim())
+        }
+
+        function kbaClipboardText() {
+            return (car.value.c_2 || '').replace(/\s/g, '') + (car.value.c_3 || '').substring(0, 3)
         }
 
         // Auto-Advance: HSN (4 Zeichen) → TSN
@@ -2098,10 +2106,10 @@ export default {
         })
 
         return {
-            t, oserpData, car, orders, loading, error, saving, isEditMode, readonly, backOrderId, backToOrder, goBack, district,
+            t, oserpData, car, orders, loading, error, saving, isEditMode, readonly, isMechanicMode, backOrderId, backToOrder, goBack, district,
             ownerItems, ownerLoading, currentOwnerId, onOwnerSearch, onOwnerChange,
             rulesLn, rulesHsn, rulesTsn, rulesEm, rulesD, rulesHu, rulesFin, rulesMonthYear,
-            finFieldRef, tsnFieldRef, newOrderBtn, copyToClipboard, copyToClipboardNow,
+            finFieldRef, tsnFieldRef, newOrderBtn, copyToClipboard, copyToClipboardNow, kbaClipboardText,
             displayD, displayHu, onBlurDate,
             displayZrd, displayBf, displayWd, onBlurMonthYear,
             displayZrk, onBlurKm,
