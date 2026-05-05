@@ -196,6 +196,7 @@ const crmDefaultsConfig = [
             { value: "auto",    title: "Automatisch (an Auflösung anpassen)" },
             { value: "compact", title: "Kompakt (TV / Querformat)" },
             { value: "normal",  title: "Normal" },
+            { value: "qm50c",   title: "QM50C (Samsung, 50″ 4K)" },
             { value: "large",   title: "Groß (Hochformat / Wandtablet)" }
         ],
         fieldstyle: "max-width: 40ch",

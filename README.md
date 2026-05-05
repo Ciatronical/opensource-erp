@@ -282,6 +282,26 @@ sudo systemctl restart apache2
 
 Läuft auf **http://localhost**
 
+**SSE-Server (Echtzeit-Benachrichtigungen):**
+
+Der SSE-Server muss einmalig mit pm2 eingerichtet werden, damit er beim Systemstart automatisch startet:
+
+```bash
+# pm2 installieren (falls noch nicht vorhanden)
+npm install -g pm2
+
+# SSE-Server registrieren und starten
+pm2 start backend/sse/sse-server.js --name oserp-sse --cwd backend/sse
+
+# Konfiguration speichern (überlebt Reboots)
+pm2 save
+
+# pm2 als systemd-Dienst einrichten (einmalig, mit sudo)
+sudo env PATH=$PATH:/usr/bin $(which pm2) startup systemd -u $USER --hp $HOME
+```
+
+Danach startet der SSE-Server automatisch beim Systemstart. Status prüfen: `pm2 status`
+
 ### 4. Setup
 
 Beim ersten Aufruf im Browser wird automatisch der Setup-Wizard gestartet.

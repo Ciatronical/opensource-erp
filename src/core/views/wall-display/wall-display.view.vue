@@ -624,6 +624,55 @@ export default defineComponent({
     font-size: 1.25rem !important;
     padding: 4px 10px !important;
 }
+/* Slot-Höhe bestimmt wie viele Stunden sichtbar sind (ohne Scrollen) */
+.wall-display--size-normal .fc .fc-timegrid-slot {
+    height: 36px !important;
+}
+
+/* qm50c: Samsung QM50C — 50 Zoll 4K, Querformat, Abstand ~3–5 m */
+.wall-display--size-qm50c .fc .fc-toolbar {
+    padding: 12px 18px !important;
+    margin-bottom: 14px !important;
+}
+.wall-display--size-qm50c .fc .fc-toolbar-title {
+    font-size: 1.6rem !important;
+}
+.wall-display--size-qm50c .fc .fc-button {
+    padding: 10px 18px !important;
+    font-size: 1rem !important;
+}
+.wall-display--size-qm50c .fc .fc-col-header-cell {
+    padding: 6px 4px !important;
+    font-size: 0.95rem !important;
+}
+.wall-display--size-qm50c .fc .fc-timegrid-slot-label {
+    font-size: 0.9rem !important;
+}
+/* Slot-Höhe: Legt die sichtbare Höhe des Kalenders fest (ohne Scrollen) */
+.wall-display--size-qm50c .fc .fc-timegrid-slot {
+    height: 36.2px !important;
+}
+.wall-display--size-qm50c .fc .fc-event-title,
+.wall-display--size-qm50c .fc .fc-event-time {
+    font-size: 0.95rem !important;
+}
+.wall-display--size-qm50c .fc .fc-clock-button,
+.wall-display--size-qm50c .fc .fc-clock-button:hover,
+.wall-display--size-qm50c .fc .fc-clock-button:focus,
+.wall-display--size-qm50c .fc .fc-clock-button:active {
+    font-size: 1.6rem !important;
+    padding: 0 0 0 20px !important;
+}
+.wall-display--size-qm50c .fc .fc-calendarWeek-button {
+    font-size: 1.6rem !important;
+    padding: 5px 12px !important;
+}
+.wall-display--size-qm50c .fc .fc-exit-button,
+.wall-display--size-qm50c .fc .fc-exit-button:hover {
+    padding: 10px 18px !important;
+    font-size: 1.1rem !important;
+    margin-left: 8px !important;
+}
 
 /* large: Hochformat-Wandtablet — bewusst gross */
 .wall-display--size-large .fc {

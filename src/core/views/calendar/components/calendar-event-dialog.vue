@@ -6,14 +6,14 @@
                 <v-icon class="me-2" color="primary">mdi-calendar-edit</v-icon>
                 {{ isEdit ? t('CalendarEventDialog.titleEdit') : t('CalendarEventDialog.titleCreate') }}
                 <v-spacer />
-                <v-btn icon variant="text" size="small" @click="close">
+                <v-btn icon variant="text" size="small" @click="closeAndSave">
                     <v-icon>mdi-close</v-icon>
                 </v-btn>
             </v-card-title>
 
             <v-divider />
 
-            <v-card-text class="pa-4">
+            <v-card-text class="pa-4" style="max-height: 65vh; overflow-y: auto;">
                 <v-form ref="formRef" v-model="formValid">
                     <!-- Title -->
                     <v-text-field
@@ -132,27 +132,47 @@
                     />
 
                     <!-- Customer/Vendor -->
-                    <v-text-field
-                        v-model="form.cvp_name"
+                    <v-autocomplete
+                        v-model="selectedCvp"
+                        v-model:search="cvpSearch"
+                        :items="cvpResults"
+                        :loading="cvpLoading"
                         :label="t('CalendarEventDialog.customerVendor')"
+                        item-title="name"
+                        item-value="id"
+                        return-object
+                        no-filter
                         variant="outlined"
                         density="compact"
                         prepend-inner-icon="mdi-account-tie"
                         clearable
-                        @click:clear="clearCvp"
+                        hide-no-data
+                        @update:search="onCvpSearch"
                     >
+                        <template #item="{ props: itemProps, item }">
+                            <v-list-item v-bind="itemProps">
+                                <template #append>
+                                    <v-icon
+                                        size="small"
+                                        :color="item.raw.typ === 'C' ? 'primary' : 'warning'"
+                                    >
+                                        {{ item.raw.typ === 'C' ? 'mdi-account' : 'mdi-domain' }}
+                                    </v-icon>
+                                </template>
+                            </v-list-item>
+                        </template>
                         <template #append-inner>
                             <v-btn
                                 v-if="currentCustomer && !form.cvp_id"
                                 size="x-small"
                                 variant="tonal"
                                 color="primary"
-                                @click="applyCurrent"
+                                @click.stop="applyCurrent"
                             >
                                 {{ currentCustomer.name }}
                             </v-btn>
                         </template>
-                    </v-text-field>
+                    </v-autocomplete>
                 </v-form>
             </v-card-text>
 
@@ -162,16 +182,6 @@
                 <v-btn variant="text" @click="close">
                     {{ t('CalendarView.actions.cancel') }}
                 </v-btn>
-                <v-spacer />
-                <v-btn
-                    color="primary"
-                    variant="flat"
-                    :disabled="!formValid"
-                    @click="save"
-                >
-                    <v-icon class="mr-2">mdi-content-save</v-icon>
-                    {{ t('CalendarView.actions.save') }}
-                </v-btn>
             </v-card-actions>
         </v-card>
     </v-dialog>
@@ -180,6 +190,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import axios from 'axios'
 
 const props = defineProps({
     modelValue: { type: Boolean, default: false },
@@ -215,6 +226,14 @@ const defaultForm = () => ({
 
 const form = ref(defaultForm())
 
+// CVP-Suche
+const selectedCvp = ref(null)
+const cvpSearch = ref('')
+const cvpResults = ref([])
+const cvpLoading = ref(false)
+let cvpDebounce = null
+let cvpAbort = null
+
 const colorOptions = [
     '#1976D2', '#4CAF50', '#FF9800', '#E53935', '#9C27B0',
     '#00BCD4', '#FF7043', '#8BC34A', '#F44336', '#3F51B5',
@@ -236,6 +255,18 @@ const visibilityItems = computed(() => [
     { title: t('CalendarEventDialog.visibilityPrivate'), value: 0 }
 ])
 
+watch(selectedCvp, (val) => {
+    if (val) {
+        form.value.cvp_id = val.id
+        form.value.cvp_name = val.name
+        form.value.cvp_type = val.typ
+    } else {
+        form.value.cvp_id = null
+        form.value.cvp_name = ''
+        form.value.cvp_type = null
+    }
+})
+
 watch(() => props.modelValue, (open) => {
     if (open) {
         if (props.event) {
@@ -256,16 +287,63 @@ watch(() => props.modelValue, (open) => {
                 cvp_name: e.cvp_name || '',
                 cvp_type: e.cvp_type || null
             }
+            if (e.cvp_id && e.cvp_name) {
+                const item = { id: e.cvp_id, name: e.cvp_name, typ: e.cvp_type }
+                selectedCvp.value = item
+                cvpResults.value = [item]
+            } else {
+                selectedCvp.value = null
+                cvpResults.value = []
+            }
         } else {
             form.value = defaultForm()
+            selectedCvp.value = null
+            cvpResults.value = []
         }
+        cvpSearch.value = ''
     }
 })
+
+function onCvpSearch(val) {
+    clearTimeout(cvpDebounce)
+    if (!val || val.length < 2) return
+    cvpDebounce = setTimeout(() => searchCvp(val), 300)
+}
+
+async function searchCvp(query) {
+    if (cvpAbort) cvpAbort.abort()
+    cvpAbort = new AbortController()
+    cvpLoading.value = true
+    try {
+        const [custRes, vendRes] = await Promise.all([
+            axios.post('/api/customer_vendor/', {
+                action: 'searchCV',
+                type: 'customer',
+                where: { name: query }
+            }, { signal: cvpAbort.signal }),
+            axios.post('/api/customer_vendor/', {
+                action: 'searchCV',
+                type: 'vendor',
+                where: { name: query }
+            }, { signal: cvpAbort.signal })
+        ])
+        const customers = (custRes.data?.payload?.search?.results ?? []).map(c => ({
+            id: c.id, name: c.name, typ: 'C'
+        }))
+        const vendors = (vendRes.data?.payload?.search?.results ?? []).map(v => ({
+            id: v.id, name: v.name, typ: 'V'
+        }))
+        cvpResults.value = [...customers, ...vendors].slice(0, 15)
+    } catch {
+        // aborted or network error
+    } finally {
+        cvpLoading.value = false
+    }
+}
 
 function formatForInput(dateStr, allDay) {
     if (!dateStr) return ''
     if (allDay) {
-        // Nur das Datum nehmen, NICHT über new Date() — vermeidet UTC-Verschiebung
         return dateStr.split('T')[0].split(' ')[0]
     }
     const d = new Date(dateStr)
@@ -284,20 +362,26 @@ function formatForSave(dateStr, allDay) {
 
 function applyCurrent() {
     if (props.currentCustomer) {
-        form.value.cvp_id = props.currentCustomer.id
-        form.value.cvp_name = props.currentCustomer.name
-        form.value.cvp_type = props.currentCustomer.type
+        const item = {
+            id: props.currentCustomer.id,
+            name: props.currentCustomer.name,
+            typ: props.currentCustomer.type || 'C'
+        }
+        selectedCvp.value = item
+        cvpResults.value = [item]
     }
-}
-
-function clearCvp() {
-    form.value.cvp_id = null
-    form.value.cvp_name = ''
-    form.value.cvp_type = null
 }
 
 function close() {
     emit('update:modelValue', false)
+}
+
+function closeAndSave() {
+    if (formValid.value) {
+        save()
+    } else {
+        close()
+    }
 }
 
 function save() {
