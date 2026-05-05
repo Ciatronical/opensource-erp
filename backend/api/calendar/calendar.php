@@ -105,7 +105,104 @@ function deleteEventCategory($data) {
 // ============================================================================
 
 /**
- * Lädt Kalendertermine für einen Datumsbereich
+ * Baut ein einheitliches Event-Objekt für die API-Antwort.
+ * $dtstart/$dtend können von der Originaleintragung abweichen (Wiederholungs-Vorkommen).
+ */
+function buildCalendarEventObject($row, $dtstart, $dtend) {
+    return [
+        'id'             => intval($row['id']),
+        'title'          => $row['title'],
+        'description'    => $row['description'],
+        'dtstart'        => $dtstart,
+        'dtend'          => $dtend,
+        'allDay'         => (bool)($row['allDay'] ?? false),
+        'location'       => $row['location'],
+        'color'          => $row['color'] ?? $row['category_color'] ?? '#1976D2',
+        'prio'           => intval($row['prio'] ?? 1),
+        'category_id'    => isset($row['category_id']) ? intval($row['category_id']) : null,
+        'category_label' => $row['category_label'] ?? null,
+        'category_color' => $row['category_color'] ?? null,
+        'visibility'     => intval($row['visibility'] ?? -1),
+        'uid'            => intval($row['uid']),
+        'owner_name'     => $row['owner_name'] ?? null,
+        'cvp_id'         => !empty($row['cvp_id']) ? intval($row['cvp_id']) : null,
+        'cvp_name'       => $row['cvp_name'] ?? null,
+        'cvp_type'       => $row['cvp_type'] ?? null,
+        'order_id'       => !empty($row['order_id']) ? intval($row['order_id']) : null,
+        'freq'           => $row['freq'] ?? null,
+        'recur_interval' => !empty($row['interval']) ? intval($row['interval']) : null,
+        'count'          => !empty($row['count']) ? intval($row['count']) : null,
+        'repeat_end'     => $row['repeat_end'] ?? null,
+    ];
+}
+
+/**
+ * Expandiert ein wiederkehrendes Ereignis für den angegebenen Datumsbereich.
+ * Gibt ein Array von ['start' => ..., 'end' => ...] zurück.
+ */
+function expandCalendarRecurring($event, DateTime $rangeStart, DateTime $rangeEnd) {
+    $freq      = $event['freq'];
+    $interval  = max(1, intval($event['interval'] ?? 1));
+    $maxCount  = !empty($event['count']) ? intval($event['count']) : null;
+    $repeatEnd = !empty($event['repeat_end']) ? new DateTime($event['repeat_end']) : null;
+
+    $duration = null;
+    if (!empty($event['dtend']) && !empty($event['dtstart'])) {
+        $duration = (new DateTime($event['dtstart']))->diff(new DateTime($event['dtend']));
+    }
+
+    $current    = new DateTime($event['dtstart']);
+    $occurrences = [];
+    $totalCount  = 0;
+
+    while ($totalCount < 3000) {
+        if ($maxCount !== null && $totalCount >= $maxCount) break;
+        if ($repeatEnd !== null && $current > $repeatEnd) break;
+        if ($current > $rangeEnd) break;
+
+        if ($current >= $rangeStart) {
+            $occEnd = null;
+            if ($duration !== null) {
+                $endDt = clone $current;
+                $endDt->add($duration);
+                $occEnd = $endDt->format('Y-m-d H:i:s');
+            }
+            $occurrences[] = [
+                'start' => $current->format('Y-m-d H:i:s'),
+                'end'   => $occEnd,
+            ];
+        }
+
+        switch ($freq) {
+            case 'daily':   $current->modify("+{$interval} days");   break;
+            case 'weekly':  $current->modify("+{$interval} weeks");  break;
+            case 'monthly': $current->modify("+{$interval} months"); break;
+            case 'yearly':  $current->modify("+{$interval} years");  break;
+            default: break 2;
+        }
+        $totalCount++;
+    }
+
+    return $occurrences;
+}
+
+/**
+ * Berechnet repeat_end aus dtstart + count * interval.
+ * Format: 'YYYY-MM-DD 23:59:00' (kompatibel mit altem System).
+ */
+function calcRepeatEnd($dtstart, $freq, $interval, $count) {
+    $dt = new DateTime($dtstart);
+    switch ($freq) {
+        case 'daily':   $dt->modify("+{$count} days");   break;
+        case 'weekly':  $dt->modify("+{$count} weeks");  break;
+        case 'monthly': $dt->modify("+{$count} months"); break;
+        case 'yearly':  $dt->modify("+{$count} years");  break;
+    }
+    return $dt->format('Y-m-d') . ' 23:59:00';
+}
+
+/**
+ * Lädt Kalendertermine für einen Datumsbereich, expandiert Wiederholungen.
  *
  * @param array $data Mit startDate, endDate
  * @testdata {"action": "getCalendarEvents", "startDate": "2026-01-01", "endDate": "2026-02-01"}
@@ -121,52 +218,57 @@ function getCalendarEvents($data) {
         return;
     }
 
-    $pdo = $mandant->getPDO();
-    $startDate = $pdo->quote($data['startDate'] ?? date('Y-m-01'));
-    $endDate = $pdo->quote($data['endDate'] ?? date('Y-m-t'));
+    $startDate = $data['startDate'] ?? date('Y-m-01');
+    $endDate   = $data['endDate']   ?? date('Y-m-t');
 
-    $query = <<<SQL
-        SELECT json_build_object(
-            'events', COALESCE((
-                SELECT json_agg(json_build_object(
-                    'id', ce.id,
-                    'title', ce.title,
-                    'description', ce.description,
-                    'dtstart', ce.dtstart,
-                    'dtend', ce.dtend,
-                    'allDay', ce."allDay",
-                    'location', ce.location,
-                    'color', COALESCE(ce.color, ec.color, '#1976D2'),
-                    'prio', ce.prio,
-                    'category_id', ce.category_id,
-                    'category_label', ec.label,
-                    'category_color', ec.color,
-                    'visibility', ce.visibility,
-                    'uid', ce.uid,
-                    'owner_name', e.name,
-                    'cvp_id', ce.cvp_id,
-                    'cvp_name', ce.cvp_name,
-                    'cvp_type', ce.cvp_type,
-                    'order_id', ce.order_id
-                ) ORDER BY ce.dtstart)
-                FROM calendar_events ce
-                LEFT JOIN event_category ec ON ec.id = ce.category_id
-                LEFT JOIN employee e ON e.id = ce.uid
-                WHERE (
-                    (ce.dtstart >= $startDate::timestamp AND ce.dtstart < $endDate::timestamp)
-                    OR (ce.dtend > $startDate::timestamp AND ce.dtend <= $endDate::timestamp)
-                    OR (ce.dtstart <= $startDate::timestamp AND COALESCE(ce.dtend, ce.dtstart) >= $endDate::timestamp)
-                )
-                AND (ce.uid = $employeeId OR ce.visibility = -1)
-            ), '[]'::json)
-        ) AS result
-    SQL;
+    $rows = $mandant->getAll(
+        "WITH p AS (SELECT :start::timestamp AS s, :end::timestamp AS e)
+         SELECT ce.id, ce.title, ce.description,
+                ce.dtstart, ce.dtend, ce.\"allDay\",
+                ce.location, ce.color, ce.prio,
+                ce.category_id, ec.label AS category_label, ec.color AS category_color,
+                ce.visibility, ce.uid, e.name AS owner_name,
+                ce.cvp_id, ce.cvp_name, ce.cvp_type, ce.order_id,
+                ce.freq, ce.interval, ce.count, ce.repeat_end
+         FROM calendar_events ce
+         CROSS JOIN p
+         LEFT JOIN event_category ec ON ec.id = ce.category_id
+         LEFT JOIN employee e ON e.id = ce.uid
+         WHERE (ce.uid = :uid OR ce.visibility = -1)
+         AND (
+             (ce.freq IS NULL AND (
+                 (ce.dtstart >= p.s AND ce.dtstart < p.e)
+                 OR (ce.dtend > p.s AND ce.dtend <= p.e)
+                 OR (ce.dtstart <= p.s AND COALESCE(ce.dtend, ce.dtstart) >= p.e)
+             ))
+             OR (ce.freq IS NOT NULL
+                 AND ce.dtstart <= p.e
+                 AND (ce.repeat_end >= p.s OR ce.repeat_end IS NULL))
+         )
+         ORDER BY ce.dtstart",
+        [':start' => $startDate, ':end' => $endDate, ':uid' => $employeeId]
+    );
 
-    echo $mandant->get($query);
+    $rangeStart = new DateTime($startDate);
+    $rangeEnd   = new DateTime($endDate);
+    $events     = [];
+
+    foreach ($rows as $row) {
+        if (empty($row['freq'])) {
+            $events[] = buildCalendarEventObject($row, $row['dtstart'], $row['dtend']);
+        } else {
+            foreach (expandCalendarRecurring($row, $rangeStart, $rangeEnd) as $occ) {
+                $events[] = buildCalendarEventObject($row, $occ['start'], $occ['end']);
+            }
+        }
+    }
+
+    usort($events, fn($a, $b) => strcmp($a['dtstart'] ?? '', $b['dtstart'] ?? ''));
+    resultInfo(true, '', ['events' => $events]);
 }
 
 /**
- * Sucht Kalender-Events über alle Zeiträume
+ * Sucht Kalender-Events über alle Zeiträume (gibt Basis-Events zurück, keine Expansion)
  *
  * @param string $data['query'] Suchbegriff (min. 2 Zeichen)
  * @testdata {"action": "searchCalendarEvents", "query": "Geburtstag"}
@@ -213,7 +315,8 @@ function searchCalendarEvents($data) {
                     'cvp_id', ce.cvp_id,
                     'cvp_name', ce.cvp_name,
                     'cvp_type', ce.cvp_type,
-                    'order_id', ce.order_id
+                    'order_id', ce.order_id,
+                    'freq', ce.freq
                 ) ORDER BY ce.dtstart DESC)
                 FROM calendar_events ce
                 LEFT JOIN event_category ec ON ec.id = ce.category_id
@@ -233,7 +336,7 @@ function searchCalendarEvents($data) {
 }
 
 /**
- * Lädt ein einzelnes Kalender-Event
+ * Lädt ein einzelnes Kalender-Event inkl. Wiederholungsfelder
  *
  * @param array $data Mit id
  * @testdata {"action": "getCalendarEvent", "id": 1}
@@ -247,39 +350,27 @@ function getCalendarEvent($data) {
         return;
     }
 
-    $query = <<<SQL
-        SELECT json_build_object(
-            'event', (
-                SELECT json_build_object(
-                    'id', ce.id,
-                    'title', ce.title,
-                    'description', ce.description,
-                    'dtstart', ce.dtstart,
-                    'dtend', ce.dtend,
-                    'allDay', ce."allDay",
-                    'location', ce.location,
-                    'color', COALESCE(ce.color, ec.color, '#1976D2'),
-                    'prio', ce.prio,
-                    'category_id', ce.category_id,
-                    'category_label', ec.label,
-                    'category_color', ec.color,
-                    'visibility', ce.visibility,
-                    'uid', ce.uid,
-                    'owner_name', e.name,
-                    'cvp_id', ce.cvp_id,
-                    'cvp_name', ce.cvp_name,
-                    'cvp_type', ce.cvp_type,
-                    'order_id', ce.order_id
-                )
-                FROM calendar_events ce
-                LEFT JOIN event_category ec ON ec.id = ce.category_id
-                LEFT JOIN employee e ON e.id = ce.uid
-                WHERE ce.id = $id
-            )
-        ) AS result
-    SQL;
+    $row = $mandant->getOne(
+        "SELECT ce.id, ce.title, ce.description,
+                ce.dtstart, ce.dtend, ce.\"allDay\",
+                ce.location, ce.color, ce.prio,
+                ce.category_id, ec.label AS category_label, ec.color AS category_color,
+                ce.visibility, ce.uid, e.name AS owner_name,
+                ce.cvp_id, ce.cvp_name, ce.cvp_type, ce.order_id,
+                ce.freq, ce.interval, ce.count, ce.repeat_end
+         FROM calendar_events ce
+         LEFT JOIN event_category ec ON ec.id = ce.category_id
+         LEFT JOIN employee e ON e.id = ce.uid
+         WHERE ce.id = :id",
+        [':id' => $id]
+    );
 
-    echo $mandant->get($query);
+    if (!$row) {
+        resultInfo(false, 'NOT_FOUND', 'Termin nicht gefunden');
+        return;
+    }
+
+    resultInfo(true, '', ['event' => buildCalendarEventObject($row, $row['dtstart'], $row['dtend'])]);
 }
 
 /**
@@ -309,28 +400,33 @@ function createCalendarEvent($data) {
     }
 
     $pdo = $mandant->getPDO();
-    $title = $pdo->quote($data['title']);
+    $title       = $pdo->quote($data['title']);
     $description = $pdo->quote($data['description'] ?? '');
-    $dtstart = $pdo->quote($data['dtstart']);
-    $dtend = !empty($data['dtend']) ? $pdo->quote($data['dtend']) : 'NULL';
-    $allDay = !empty($data['allDay']) ? 'TRUE' : 'FALSE';
-    $location = $pdo->quote($data['location'] ?? '');
-    $color = !empty($data['color']) ? $pdo->quote($data['color']) : 'NULL';
-    $prio = intval($data['prio'] ?? 1);
-    $categoryId = !empty($data['category_id']) ? intval($data['category_id']) : 'NULL';
-    $visibility = intval($data['visibility'] ?? -1);
-    $cvpId = !empty($data['cvp_id']) ? intval($data['cvp_id']) : 'NULL';
-    $cvpName = !empty($data['cvp_name']) ? $pdo->quote($data['cvp_name']) : 'NULL';
-    $cvpType = !empty($data['cvp_type']) ? $pdo->quote($data['cvp_type']) : 'NULL';
-    $orderId = !empty($data['order_id']) ? intval($data['order_id']) : 'NULL';
+    $dtstart     = $pdo->quote($data['dtstart']);
+    $dtend       = !empty($data['dtend']) ? $pdo->quote($data['dtend']) : 'NULL';
+    $allDay      = !empty($data['allDay']) ? 'TRUE' : 'FALSE';
+    $location    = $pdo->quote($data['location'] ?? '');
+    $color       = !empty($data['color']) ? $pdo->quote($data['color']) : 'NULL';
+    $prio        = intval($data['prio'] ?? 1);
+    $categoryId  = !empty($data['category_id']) ? intval($data['category_id']) : 'NULL';
+    $visibility  = intval($data['visibility'] ?? -1);
+    $cvpId       = !empty($data['cvp_id']) ? intval($data['cvp_id']) : 'NULL';
+    $cvpName     = !empty($data['cvp_name']) ? $pdo->quote($data['cvp_name']) : 'NULL';
+    $cvpType     = !empty($data['cvp_type']) ? $pdo->quote($data['cvp_type']) : 'NULL';
+    $orderId     = !empty($data['order_id']) ? intval($data['order_id']) : 'NULL';
+
+    // Wiederholung
+    [$freq, $interval, $count, $repeatEnd] = resolveRecurrence($data, $pdo);
 
     $query = <<<SQL
         INSERT INTO calendar_events
             (title, description, dtstart, dtend, "allDay", location, color, prio,
-             category_id, visibility, uid, cvp_id, cvp_name, cvp_type, order_id)
+             category_id, visibility, uid, cvp_id, cvp_name, cvp_type, order_id,
+             freq, interval, count, repeat_end)
         VALUES
             ($title, $description, $dtstart, $dtend, $allDay, $location, $color, $prio,
-             $categoryId, $visibility, $employeeId, $cvpId, $cvpName, $cvpType, $orderId)
+             $categoryId, $visibility, $employeeId, $cvpId, $cvpName, $cvpType, $orderId,
+             $freq, $interval, $count, $repeatEnd)
         RETURNING id
     SQL;
 
@@ -361,20 +457,29 @@ function updateCalendarEvent($data) {
 
     $updates = [];
 
-    if (isset($data['title'])) $updates[] = "title = " . $pdo->quote($data['title']);
+    if (isset($data['title']))       $updates[] = "title = "       . $pdo->quote($data['title']);
     if (isset($data['description'])) $updates[] = "description = " . $pdo->quote($data['description']);
-    if (isset($data['dtstart'])) $updates[] = "dtstart = " . $pdo->quote($data['dtstart']);
-    if (isset($data['dtend'])) $updates[] = "dtend = " . ($data['dtend'] ? $pdo->quote($data['dtend']) : 'NULL');
-    if (isset($data['allDay'])) $updates[] = '"allDay" = ' . ($data['allDay'] ? 'TRUE' : 'FALSE');
-    if (isset($data['location'])) $updates[] = "location = " . $pdo->quote($data['location']);
-    if (isset($data['color'])) $updates[] = "color = " . ($data['color'] ? $pdo->quote($data['color']) : 'NULL');
-    if (isset($data['prio'])) $updates[] = "prio = " . intval($data['prio']);
+    if (isset($data['dtstart']))     $updates[] = "dtstart = "     . $pdo->quote($data['dtstart']);
+    if (isset($data['dtend']))       $updates[] = "dtend = "       . ($data['dtend'] ? $pdo->quote($data['dtend']) : 'NULL');
+    if (isset($data['allDay']))      $updates[] = '"allDay" = '    . ($data['allDay'] ? 'TRUE' : 'FALSE');
+    if (isset($data['location']))    $updates[] = "location = "    . $pdo->quote($data['location']);
+    if (isset($data['color']))       $updates[] = "color = "       . ($data['color'] ? $pdo->quote($data['color']) : 'NULL');
+    if (isset($data['prio']))        $updates[] = "prio = "        . intval($data['prio']);
     if (isset($data['category_id'])) $updates[] = "category_id = " . ($data['category_id'] ? intval($data['category_id']) : 'NULL');
-    if (isset($data['visibility'])) $updates[] = "visibility = " . intval($data['visibility']);
-    if (isset($data['cvp_id'])) $updates[] = "cvp_id = " . ($data['cvp_id'] ? intval($data['cvp_id']) : 'NULL');
-    if (isset($data['cvp_name'])) $updates[] = "cvp_name = " . ($data['cvp_name'] ? $pdo->quote($data['cvp_name']) : 'NULL');
-    if (isset($data['cvp_type'])) $updates[] = "cvp_type = " . ($data['cvp_type'] ? $pdo->quote($data['cvp_type']) : 'NULL');
-    if (isset($data['order_id'])) $updates[] = "order_id = " . ($data['order_id'] ? intval($data['order_id']) : 'NULL');
+    if (isset($data['visibility']))  $updates[] = "visibility = "  . intval($data['visibility']);
+    if (isset($data['cvp_id']))      $updates[] = "cvp_id = "      . ($data['cvp_id'] ? intval($data['cvp_id']) : 'NULL');
+    if (isset($data['cvp_name']))    $updates[] = "cvp_name = "    . ($data['cvp_name'] ? $pdo->quote($data['cvp_name']) : 'NULL');
+    if (isset($data['cvp_type']))    $updates[] = "cvp_type = "    . ($data['cvp_type'] ? $pdo->quote($data['cvp_type']) : 'NULL');
+    if (isset($data['order_id']))    $updates[] = "order_id = "    . ($data['order_id'] ? intval($data['order_id']) : 'NULL');
+
+    // Wiederholung immer mitschreiben wenn freq-Schlüssel vorhanden
+    if (array_key_exists('freq', $data)) {
+        [$freq, $interval, $count, $repeatEnd] = resolveRecurrence($data, $pdo);
+        $updates[] = "freq = $freq";
+        $updates[] = "interval = $interval";
+        $updates[] = "count = $count";
+        $updates[] = "repeat_end = $repeatEnd";
+    }
 
     if (empty($updates)) {
         getCalendarEvent($data);
@@ -390,6 +495,44 @@ function updateCalendarEvent($data) {
     } catch (Exception $e) {
         resultInfo(false, 'DATABASE_ERROR', $e->getMessage());
     }
+}
+
+/**
+ * Löst Wiederholungsfelder aus $data auf und gibt SQL-Fragmente zurück.
+ * Kompatibel mit dem alten Kalender: repeat_end = dtstart + count * interval (23:59:00).
+ *
+ * @return array [$freq, $interval, $count, $repeatEnd] — jeweils SQL-Fragments (NULL oder quoted)
+ */
+function resolveRecurrence($data, $pdo) {
+    $freqVal = $data['freq'] ?? null;
+    if (empty($freqVal) || !in_array($freqVal, ['daily', 'weekly', 'monthly', 'yearly'])) {
+        return ['NULL', 'NULL', 'NULL', 'NULL'];
+    }
+
+    $freq     = $pdo->quote($freqVal);
+    $interval = max(1, intval($data['interval'] ?? $data['recur_interval'] ?? 1));
+    $count    = !empty($data['count']) ? intval($data['count']) : null;
+
+    // repeat_end: entweder direkt übergeben oder aus count berechnen
+    $repeatEndVal = null;
+    if (!empty($data['repeat_end'])) {
+        // Nur Datum übergeben → 23:59:00 anhängen
+        $d = $data['repeat_end'];
+        if (strlen($d) <= 10) {
+            $repeatEndVal = $d . ' 23:59:00';
+        } else {
+            $repeatEndVal = $d;
+        }
+    } elseif ($count !== null && !empty($data['dtstart'])) {
+        $repeatEndVal = calcRepeatEnd($data['dtstart'], $freqVal, $interval, $count);
+    }
+
+    return [
+        $freq,
+        intval($interval),
+        $count !== null ? intval($count) : 'NULL',
+        $repeatEndVal ? $pdo->quote($repeatEndVal) : 'NULL',
+    ];
 }
 
 /**
@@ -430,8 +573,8 @@ function moveCalendarEvent($data) {
     $updates = [];
 
     if (isset($data['dtstart'])) $updates[] = "dtstart = " . $pdo->quote($data['dtstart']);
-    if (isset($data['dtend'])) $updates[] = "dtend = " . ($data['dtend'] ? $pdo->quote($data['dtend']) : 'NULL');
-    if (isset($data['allDay'])) $updates[] = '"allDay" = ' . ($data['allDay'] ? 'TRUE' : 'FALSE');
+    if (isset($data['dtend']))   $updates[] = "dtend = "   . ($data['dtend'] ? $pdo->quote($data['dtend']) : 'NULL');
+    if (isset($data['allDay']))  $updates[] = '"allDay" = ' . ($data['allDay'] ? 'TRUE' : 'FALSE');
     $updates[] = "mtime = NOW()";
 
     $updateSql = implode(', ', $updates);

@@ -59,7 +59,16 @@
         "validation": {
             "titleRequired": "Titlul este obligatoriu",
             "startRequired": "Data de inceput este obligatorie"
-        }
+        },
+        "repeat": "Repeat",
+        "repeatEvery": "Every",
+        "repeatDays": "days",
+        "repeatWeeks": "weeks",
+        "repeatMonths": "months",
+        "repeatYears": "years",
+        "repeatEndAfter": "After",
+        "repeatEndOccurrences": "occurrences",
+        "repeatEndOnDate": "On date"
     },
     "CalendarEventDetail": {
         "edit": "Editare",

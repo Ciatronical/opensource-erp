@@ -68,7 +68,7 @@
                         @update:model-value="$emit('car-change', $event)"
                     />
                 </v-col>
-                <v-col :cols="isInvoice ? 6 : 6" :sm="isInvoice ? 3 : 4" :md="isInvoice ? 4 : 2" :lg="isInvoice ? 4 : 2" class="py-1">
+                <v-col v-if="!isTrailer" :cols="isInvoice ? 6 : 6" :sm="isInvoice ? 3 : 4" :md="isInvoice ? 4 : 2" :lg="isInvoice ? 4 : 2" class="py-1">
                     <v-text-field
                         :model-value="displayKmStand"
                         :label="t('FakturaView.faktura.kmStand')"
@@ -243,7 +243,8 @@ export default defineComponent({
         timeSlots: { type: Array, default: () => [] },
         showPickerBringetermin: { type: Boolean, default: false },
         showPickerFertigstellung: { type: Boolean, default: false },
-        isInvoice: { type: Boolean, default: false }
+        isInvoice: { type: Boolean, default: false },
+        isTrailer: { type: Boolean, default: false }
     },
     emits: [
         'toggle-intern', 'blur-km-stand', 'car-change',

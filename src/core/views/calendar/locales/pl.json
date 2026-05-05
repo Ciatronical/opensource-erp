@@ -59,7 +59,16 @@
         "validation": {
             "titleRequired": "Tytuł jest wymagany",
             "startRequired": "Data rozpoczęcia jest wymagana"
-        }
+        },
+        "repeat": "Powtarzaj",
+        "repeatEvery": "Co",
+        "repeatDays": "dni",
+        "repeatWeeks": "tygodni",
+        "repeatMonths": "miesięcy",
+        "repeatYears": "lat",
+        "repeatEndAfter": "Po",
+        "repeatEndOccurrences": "powtórzeń",
+        "repeatEndOnDate": "Do dnia"
     },
     "CalendarEventDetail": {
         "edit": "Edytuj",

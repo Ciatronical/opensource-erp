@@ -59,7 +59,16 @@
         "validation": {
             "titleRequired": "Titel is verplicht",
             "startRequired": "Startdatum is verplicht"
-        }
+        },
+        "repeat": "Herhalen",
+        "repeatEvery": "Elke",
+        "repeatDays": "dagen",
+        "repeatWeeks": "weken",
+        "repeatMonths": "maanden",
+        "repeatYears": "jaar",
+        "repeatEndAfter": "Na",
+        "repeatEndOccurrences": "keer",
+        "repeatEndOnDate": "Op datum"
     },
     "CalendarEventDetail": {
         "edit": "Bewerken",

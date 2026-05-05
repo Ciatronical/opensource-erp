@@ -59,7 +59,16 @@
         "validation": {
             "titleRequired": "Заголовок обязателен",
             "startRequired": "Дата начала обязательна"
-        }
+        },
+        "repeat": "Повторять",
+        "repeatEvery": "Каждые",
+        "repeatDays": "дней",
+        "repeatWeeks": "недель",
+        "repeatMonths": "месяцев",
+        "repeatYears": "лет",
+        "repeatEndAfter": "После",
+        "repeatEndOccurrences": "повторений",
+        "repeatEndOnDate": "До"
     },
     "CalendarEventDetail": {
         "edit": "Редактировать",

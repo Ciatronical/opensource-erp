@@ -165,6 +165,7 @@
             "noVehicle": "No vehicle",
             "vehicleSection": "Vehicle / Order Data",
             "kmStand": "Mileage",
+            "kmStandRequired": "Mileage is required – please enter it before creating the invoice.",
             "status": "Status",
             "kfzOrt": "Vehicle location",
             "kfzOrtOptions": {

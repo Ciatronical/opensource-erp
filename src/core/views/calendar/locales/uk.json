@@ -59,7 +59,16 @@
         "validation": {
             "titleRequired": "Заголовок обов'язковий",
             "startRequired": "Дата початку обов'язкова"
-        }
+        },
+        "repeat": "Повторити",
+        "repeatEvery": "Кожні",
+        "repeatDays": "днів",
+        "repeatWeeks": "тижнів",
+        "repeatMonths": "місяців",
+        "repeatYears": "років",
+        "repeatEndAfter": "Після",
+        "repeatEndOccurrences": "повторень",
+        "repeatEndOnDate": "До дати"
     },
     "CalendarEventDetail": {
         "edit": "Редагувати",

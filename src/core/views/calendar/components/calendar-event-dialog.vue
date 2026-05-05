@@ -13,7 +13,7 @@
 
             <v-divider />
 
-            <v-card-text class="pa-4" style="max-height: 65vh; overflow-y: auto;">
+            <v-card-text class="pa-4">
                 <v-form ref="formRef" v-model="formValid">
                     <!-- Title -->
                     <v-text-field
@@ -53,6 +53,7 @@
                                 v-model="form.dtend"
                                 :label="t('CalendarEventDialog.end')"
                                 :type="form.allDay ? 'date' : 'datetime-local'"
+                                :min="form.dtstart"
                                 variant="outlined"
                                 density="compact"
                             />
@@ -131,6 +132,74 @@
                         class="mb-3"
                     />
 
+                    <!-- Wiederholen -->
+                    <v-switch
+                        v-model="form.repeat"
+                        :label="t('CalendarEventDialog.repeat')"
+                        color="primary"
+                        density="compact"
+                        hide-details
+                        class="mb-3"
+                    />
+
+                    <template v-if="form.repeat">
+                        <!-- Alle N [Einheit] -->
+                        <div class="d-flex align-center gap-2 mb-3">
+                            <span class="text-body-2 text-no-wrap flex-shrink-0">{{ t('CalendarEventDialog.repeatEvery') }}</span>
+                            <v-text-field
+                                v-model.number="form.recur_interval"
+                                type="number"
+                                min="1"
+                                max="999"
+                                variant="outlined"
+                                density="compact"
+                                hide-details
+                                style="max-width: 80px;"
+                            />
+                            <v-select
+                                v-model="form.freq"
+                                :items="freqItems"
+                                variant="outlined"
+                                density="compact"
+                                hide-details
+                            />
+                        </div>
+
+                        <!-- Ende: nach N oder bis Datum -->
+                        <v-btn-toggle
+                            v-model="form.repeatEndType"
+                            mandatory
+                            density="compact"
+                            rounded="lg"
+                            class="mb-2"
+                        >
+                            <v-btn value="count" size="small">{{ t('CalendarEventDialog.repeatEndAfter') }}</v-btn>
+                            <v-btn value="date" size="small">{{ t('CalendarEventDialog.repeatEndOnDate') }}</v-btn>
+                        </v-btn-toggle>
+
+                        <div v-if="form.repeatEndType === 'count'" class="d-flex align-center gap-2 mb-3">
+                            <v-text-field
+                                v-model.number="form.recur_count"
+                                type="number"
+                                min="1"
+                                max="9999"
+                                variant="outlined"
+                                density="compact"
+                                hide-details
+                                style="max-width: 100px;"
+                            />
+                            <span class="text-body-2">{{ t('CalendarEventDialog.repeatEndOccurrences') }}</span>
+                        </div>
+                        <v-text-field
+                            v-else
+                            v-model="form.recur_repeat_end"
+                            type="date"
+                            variant="outlined"
+                            density="compact"
+                            class="mb-3"
+                        />
+                    </template>
+
                     <!-- Customer/Vendor -->
                     <v-autocomplete
                         v-model="selectedCvp"
@@ -176,13 +245,6 @@
                 </v-form>
             </v-card-text>
 
-            <v-divider />
-
-            <v-card-actions class="pa-4">
-                <v-btn variant="text" @click="close">
-                    {{ t('CalendarView.actions.cancel') }}
-                </v-btn>
-            </v-card-actions>
         </v-card>
     </v-dialog>
 </template>
@@ -191,6 +253,7 @@
 import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import axios from 'axios'
+import { oserpStore } from '@/core/stores/oserp.store.js'
 
 const props = defineProps({
     modelValue: { type: Boolean, default: false },
@@ -202,8 +265,15 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue', 'save'])
 
 const { t } = useI18n()
+const oserp = oserpStore()
 const formRef = ref(null)
 const formValid = ref(false)
+
+function defaultStartTime() {
+    const raw = (oserp.getClientDefaultValue('calendar_day_start') || '07:00').trim()
+    // HH:MM:SS → HH:MM
+    return raw.substring(0, 5)
+}
 
 const isEdit = computed(() => !!props.event?.id)
 
@@ -221,7 +291,14 @@ const defaultForm = () => ({
     visibility: -1,
     cvp_id: null,
     cvp_name: '',
-    cvp_type: null
+    cvp_type: null,
+    // Wiederholung (UI-Felder)
+    repeat: false,
+    freq: 'yearly',
+    recur_interval: 1,
+    recur_count: 10,
+    recur_repeat_end: '',
+    repeatEndType: 'count',
 })
 
 const form = ref(defaultForm())
@@ -255,6 +332,13 @@ const visibilityItems = computed(() => [
     { title: t('CalendarEventDialog.visibilityPrivate'), value: 0 }
 ])
 
+const freqItems = computed(() => [
+    { title: t('CalendarEventDialog.repeatDays'),   value: 'daily' },
+    { title: t('CalendarEventDialog.repeatWeeks'),  value: 'weekly' },
+    { title: t('CalendarEventDialog.repeatMonths'), value: 'monthly' },
+    { title: t('CalendarEventDialog.repeatYears'),  value: 'yearly' },
+])
+
 watch(selectedCvp, (val) => {
     if (val) {
         form.value.cvp_id = val.id
@@ -264,6 +348,29 @@ watch(selectedCvp, (val) => {
         form.value.cvp_id = null
         form.value.cvp_name = ''
         form.value.cvp_type = null
+    }
+})
+
+watch(() => form.value.dtstart, (newStart) => {
+    if (!newStart) return
+    if (!form.value.dtend || form.value.dtend < newStart) {
+        form.value.dtend = newStart
+    }
+})
+
+watch(() => form.value.allDay, (isAllDay) => {
+    for (const field of ['dtstart', 'dtend']) {
+        const val = form.value[field]
+        if (!val) continue
+        if (isAllDay) {
+            // datetime-local → date: Zeitanteil entfernen
+            form.value[field] = val.split('T')[0].split(' ')[0]
+        } else {
+            // date → datetime-local: Kalender-Startzeit aus Config ergänzen
+            if (!val.includes('T')) {
+                form.value[field] = val + 'T' + defaultStartTime()
+            }
+        }
     }
 })
 
@@ -285,7 +392,16 @@ watch(() => props.modelValue, (open) => {
                 visibility: e.visibility ?? -1,
                 cvp_id: e.cvp_id || null,
                 cvp_name: e.cvp_name || '',
-                cvp_type: e.cvp_type || null
+                cvp_type: e.cvp_type || null,
+                // Wiederholung
+                repeat:         !!e.freq,
+                freq:           e.freq || 'yearly',
+                recur_interval: e.recur_interval || 1,
+                repeatEndType:  e.count ? 'count' : (e.repeat_end ? 'date' : 'count'),
+                recur_count:    e.count || 10,
+                recur_repeat_end: e.repeat_end
+                    ? (e.repeat_end.split('T')[0].split(' ')[0])
+                    : '',
             }
             if (e.cvp_id && e.cvp_name) {
                 const item = { id: e.cvp_id, name: e.cvp_name, typ: e.cvp_type }
@@ -355,7 +471,11 @@ function formatForInput(dateStr, allDay) {
 function formatForSave(dateStr, allDay) {
     if (!dateStr) return null
     if (allDay) {
-        return dateStr.split('T')[0]
+        return dateStr.split('T')[0].split(' ')[0]
+    }
+    // Nur Datum ohne Uhrzeit (z.B. nach allDay-Toggle) → Mitternacht anhängen
+    if (!dateStr.includes('T') && !dateStr.includes(' ')) {
+        return dateStr + ' 00:00:00'
     }
     return dateStr.replace('T', ' ') + ':00'
 }
@@ -386,10 +506,27 @@ function closeAndSave() {
 
 function save() {
     if (!formValid.value) return
+    const f = form.value
     const payload = {
-        ...form.value,
-        dtstart: formatForSave(form.value.dtstart, form.value.allDay),
-        dtend: formatForSave(form.value.dtend, form.value.allDay)
+        id:          f.id,
+        title:       f.title,
+        description: f.description,
+        dtstart:     formatForSave(f.dtstart, f.allDay),
+        dtend:       formatForSave(f.dtend, f.allDay),
+        allDay:      f.allDay,
+        location:    f.location,
+        color:       f.color,
+        prio:        f.prio,
+        category_id: f.category_id,
+        visibility:  f.visibility,
+        cvp_id:      f.cvp_id,
+        cvp_name:    f.cvp_name,
+        cvp_type:    f.cvp_type,
+        // Wiederholung: immer mitschicken damit Backend alte Werte überschreibt
+        freq:        f.repeat ? f.freq : null,
+        interval:    f.repeat ? f.recur_interval : null,
+        count:       f.repeat && f.repeatEndType === 'count' ? f.recur_count : null,
+        repeat_end:  f.repeat && f.repeatEndType === 'date'  ? f.recur_repeat_end : null,
     }
     emit('save', payload)
 }

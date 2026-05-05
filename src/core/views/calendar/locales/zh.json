@@ -59,7 +59,16 @@
         "validation": {
             "titleRequired": "标题为必填项",
             "startRequired": "开始日期为必填项"
-        }
+        },
+        "repeat": "重复",
+        "repeatEvery": "每",
+        "repeatDays": "天",
+        "repeatWeeks": "周",
+        "repeatMonths": "月",
+        "repeatYears": "年",
+        "repeatEndAfter": "之后",
+        "repeatEndOccurrences": "次",
+        "repeatEndOnDate": "到日期"
     },
     "CalendarEventDetail": {
         "edit": "编辑",

@@ -15,6 +15,9 @@ export function useVehicleSection({ carsStore, fakturaId, fakturaType, t }) {
     // Fahrzeug-Verknüpfung
     const selectedCarId = ref(null)
     const customerCars = ref([])
+    const fhzart = ref('')
+
+    const isTrailer = computed(() => fhzart.value === 'trailer')
 
     // Notizen
     const vehicleNotes = ref('')
@@ -274,6 +277,7 @@ export function useVehicleSection({ carsStore, fakturaId, fakturaType, t }) {
             .then(() => {
                 const car = customerCars.value.find(c => c.c_id === carId)
                 vehicleNotes.value = car?.c_text || ''
+                fhzart.value = car?.fhzart || ''
             })
             .catch(e => { console.error('Error linking car:', e) })
     }
@@ -298,6 +302,7 @@ export function useVehicleSection({ carsStore, fakturaId, fakturaType, t }) {
                 : await carsStore.loadCarForOrder(fakturaId.value)
             selectedCarId.value = car?.c_id || null
             vehicleNotes.value = car?.c_text || ''
+            fhzart.value = car?.fhzart || ''
             oeExtData.value.km_stand = car?.km_stand || null
             oeExtData.value.kfz_ort = car?.kfz_ort || null
             oeExtData.value.status = car?.status || null
@@ -360,6 +365,7 @@ export function useVehicleSection({ carsStore, fakturaId, fakturaType, t }) {
         selectedCarId,
         customerCars,
         vehicleNotes,
+        isTrailer,
         oeExtData,
         kfzOrtOptions,
         statusOptions,

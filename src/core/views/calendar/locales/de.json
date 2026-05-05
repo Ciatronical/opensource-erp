@@ -59,7 +59,16 @@
         "validation": {
             "titleRequired": "Titel ist erforderlich",
             "startRequired": "Startdatum ist erforderlich"
-        }
+        },
+        "repeat": "Wiederholen",
+        "repeatEvery": "Alle",
+        "repeatDays": "Tage",
+        "repeatWeeks": "Wochen",
+        "repeatMonths": "Monate",
+        "repeatYears": "Jahre",
+        "repeatEndAfter": "Nach",
+        "repeatEndOccurrences": "Wiederholungen",
+        "repeatEndOnDate": "Am Datum"
     },
     "CalendarEventDetail": {
         "edit": "Bearbeiten",

@@ -59,7 +59,16 @@
         "validation": {
             "titleRequired": "Pealkiri on kohustuslik",
             "startRequired": "Alguskuupäev on kohustuslik"
-        }
+        },
+        "repeat": "Repeat",
+        "repeatEvery": "Every",
+        "repeatDays": "days",
+        "repeatWeeks": "weeks",
+        "repeatMonths": "months",
+        "repeatYears": "years",
+        "repeatEndAfter": "After",
+        "repeatEndOccurrences": "occurrences",
+        "repeatEndOnDate": "On date"
     },
     "CalendarEventDetail": {
         "edit": "Muuda",

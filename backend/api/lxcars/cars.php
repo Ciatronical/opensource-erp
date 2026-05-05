@@ -443,10 +443,12 @@ function getCustomerCars($data) {
     $customerId = intval($data['customer_id']);
 
     $cars = $db->getAll(
-        "SELECT c_id, c_ln, c_m, c_mt, COALESCE(c_text, '') AS c_text
-         FROM cars_lxcars
-         WHERE c_ow = :customer_id
-         ORDER BY c_ln",
+        "SELECT c.c_id, c.c_ln, c.c_m, c.c_mt, COALESCE(c.c_text, '') AS c_text,
+                COALESCE(k.fhzart, '') AS fhzart
+         FROM cars_lxcars c
+         LEFT JOIN kba_lxcars k ON k.id = c.kba_id
+         WHERE c.c_ow = :customer_id
+         ORDER BY c.c_ln",
         [':customer_id' => $customerId]
     );
 
@@ -468,9 +470,11 @@ function getCarForOrder($data) {
                 e.km_stand, e.kfz_ort, e.status, e.gedruckt, e.intern,
                 e.bringetermin, e.fertigstellung, e.no_whatsapp,
                 c.c_sk, to_char(c.c_zrd, 'YYYY-MM-DD') AS c_zrd, c.c_zrk,
-                to_char(c.c_bf, 'YYYY-MM-DD') AS c_bf, to_char(c.c_wd, 'YYYY-MM-DD') AS c_wd
+                to_char(c.c_bf, 'YYYY-MM-DD') AS c_bf, to_char(c.c_wd, 'YYYY-MM-DD') AS c_wd,
+                COALESCE(k.fhzart, '') AS fhzart
          FROM oe_ext e
          LEFT JOIN cars_lxcars c ON c.c_id = e.c_id
+         LEFT JOIN kba_lxcars k ON k.id = c.kba_id
          WHERE e.oe_id = :oe_id",
         [':oe_id' => $oeId]
     );
@@ -488,7 +492,7 @@ function getCarForOrder($data) {
         }
     }
 
-    resultInfo(true, 'OK', $row ?: ['c_id' => null, 'c_ln' => '', 'km_stand' => null, 'kfz_ort' => null, 'status' => null, 'gedruckt' => false, 'intern' => false, 'bringetermin' => null, 'fertigstellung' => null, 'no_whatsapp' => false, 'c_sk' => false, 'c_zrd' => null, 'c_zrk' => null, 'c_bf' => null, 'c_wd' => null]);
+    resultInfo(true, 'OK', $row ?: ['c_id' => null, 'c_ln' => '', 'km_stand' => null, 'kfz_ort' => null, 'status' => null, 'gedruckt' => false, 'intern' => false, 'bringetermin' => null, 'fertigstellung' => null, 'no_whatsapp' => false, 'c_sk' => false, 'c_zrd' => null, 'c_zrk' => null, 'c_bf' => null, 'c_wd' => null, 'fhzart' => '']);
 }
 
 /**
@@ -862,14 +866,16 @@ function getCarForInvoice($data) {
 
     $row = $db->getOne(
         "SELECT c.c_id, c.c_ln, COALESCE(c.c_text, '') AS c_text,
-                e.km_stand, e.fertigstellung
+                e.km_stand, e.fertigstellung,
+                COALESCE(k.fhzart, '') AS fhzart
          FROM ar_ext e
          LEFT JOIN cars_lxcars c ON c.c_id = e.c_id
+         LEFT JOIN kba_lxcars k ON k.id = c.kba_id
          WHERE e.ar_id = :ar_id",
         [':ar_id' => $arId]
     );
 
-    resultInfo(true, 'OK', $row ?: ['c_id' => null, 'c_ln' => '', 'km_stand' => null, 'fertigstellung' => null]);
+    resultInfo(true, 'OK', $row ?: ['c_id' => null, 'c_ln' => '', 'km_stand' => null, 'fertigstellung' => null, 'fhzart' => '']);
 }
 
 /**

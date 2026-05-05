@@ -169,6 +169,7 @@
                     :time-slots="vehicle.timeSlots.value"
                     :show-picker-bringetermin="vehicle.showPickerBringetermin.value"
                     :show-picker-fertigstellung="vehicle.showPickerFertigstellung.value"
+                    :is-trailer="vehicle.isTrailer.value"
                     @toggle-intern="vehicle.toggleIntern"
                     @update:display-km-stand="v => vehicle.displayKmStand.value = v"
                     @blur-km-stand="vehicle.onBlurKmStand"
@@ -1698,7 +1699,7 @@ export default defineComponent({
             if (!vehicle || !vehicle.selectedCarId.value) return true
             const e = vehicle.oeExtData.value || {}
             const missing = []
-            if (!e.km_stand) missing.push('km_stand')
+            if (!vehicle.isTrailer.value && !e.km_stand) missing.push('km_stand')
             if (!e.c_bf) missing.push('c_bf')
             if (!e.c_wd) missing.push('c_wd')
             if (!e.c_sk) {
@@ -1903,6 +1904,11 @@ export default defineComponent({
             if (vehicle) {
                 const valid = await validateInstructionsComplete()
                 if (!valid) return
+                // km_stand ist Pflicht für Autos und Motorräder (nicht Anhänger)
+                if (vehicle.selectedCarId.value && !vehicle.isTrailer.value && !vehicle.oeExtData.value?.km_stand) {
+                    toasts.error(t('FakturaView.faktura.kmStandRequired'))
+                    return
+                }
             }
             convertAndNavigate('invoice')
         }

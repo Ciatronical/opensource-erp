@@ -59,7 +59,16 @@
         "validation": {
             "titleRequired": "O título é obrigatório",
             "startRequired": "A data de início é obrigatória"
-        }
+        },
+        "repeat": "Repeat",
+        "repeatEvery": "Every",
+        "repeatDays": "days",
+        "repeatWeeks": "weeks",
+        "repeatMonths": "months",
+        "repeatYears": "years",
+        "repeatEndAfter": "After",
+        "repeatEndOccurrences": "occurrences",
+        "repeatEndOnDate": "On date"
     },
     "CalendarEventDetail": {
         "edit": "Editar",

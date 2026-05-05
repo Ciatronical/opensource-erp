@@ -165,6 +165,7 @@
             "noVehicle": "Kein Fahrzeug",
             "vehicleSection": "Fahrzeug / Auftragsdaten",
             "kmStand": "km-Stand",
+            "kmStandRequired": "km-Stand ist Pflichtfeld – bitte vor der Rechnungserstellung eintragen.",
             "status": "Status",
             "kfzOrt": "Fahrzeugstandort",
             "kfzOrtOptions": {

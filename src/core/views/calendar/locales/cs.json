@@ -59,7 +59,16 @@
         "validation": {
             "titleRequired": "Nazev je povinny",
             "startRequired": "Datum zacatku je povinny"
-        }
+        },
+        "repeat": "Opakovat",
+        "repeatEvery": "Každých",
+        "repeatDays": "dní",
+        "repeatWeeks": "týdnů",
+        "repeatMonths": "měsíců",
+        "repeatYears": "let",
+        "repeatEndAfter": "Po",
+        "repeatEndOccurrences": "opakování",
+        "repeatEndOnDate": "Do"
     },
     "CalendarEventDetail": {
         "edit": "Upravit",

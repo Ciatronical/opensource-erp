@@ -331,6 +331,12 @@ CREATE TABLE IF NOT EXISTS calendar_events (
     cvp_name    TEXT,
     cvp_type    CHARACTER(1),
     order_id    INTEGER,
+    freq        TEXT,
+    interval    INTEGER DEFAULT 1,
+    count       INTEGER,
+    repeat_end  TIMESTAMP WITHOUT TIME ZONE,
+    byweekday   TEXT,
+    duration    TEXT,
     itime       TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
     mtime       TIMESTAMP WITHOUT TIME ZONE
 );
@@ -352,6 +358,12 @@ COMMENT ON COLUMN calendar_events.cvp_id IS 'Verknüpfter Kunde/Lieferant (optio
 COMMENT ON COLUMN calendar_events.cvp_name IS 'Denormalisierter Name des Kunden/Lieferanten';
 COMMENT ON COLUMN calendar_events.cvp_type IS 'Typ: C=Kunde, V=Lieferant';
 COMMENT ON COLUMN calendar_events.order_id IS 'Verknüpfter Auftrag (oe.id, optional)';
+COMMENT ON COLUMN calendar_events.freq IS 'Wiederholungsfrequenz: daily, weekly, monthly, yearly';
+COMMENT ON COLUMN calendar_events.interval IS 'Intervall-Multiplikator (z.B. 58 für alle 58 Tage)';
+COMMENT ON COLUMN calendar_events.count IS 'Gesamtanzahl Wiederholungen';
+COMMENT ON COLUMN calendar_events.repeat_end IS 'Endzeitpunkt der Terminserie (dtstart + count * interval)';
+COMMENT ON COLUMN calendar_events.byweekday IS 'Wochentage für wöchentliche Wiederholung (RRule-Format)';
+COMMENT ON COLUMN calendar_events.duration IS 'Termindauer im Format HH:MM';
 COMMENT ON COLUMN calendar_events.itime IS 'Zeitstempel der Erstellung';
 COMMENT ON COLUMN calendar_events.mtime IS 'Zeitstempel der letzten Änderung';
 

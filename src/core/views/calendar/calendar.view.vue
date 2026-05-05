@@ -265,7 +265,7 @@ async function loadEvents() {
             endDate: currentDateRange.value.end
         })
         if (response.data.success) {
-            events.value = response.data.payload?.result?.events || []
+            events.value = response.data.payload?.events || []
         }
     } catch (error) {
         console.error('Error loading events:', error)
