@@ -506,6 +506,10 @@ export default {
           zipcode: plz
         })
         const cities = response.data?.payload?.cities || []
+        // PLZ ist in zipcode_location_oserp -> deutsche PLZ -> Land 'D'
+        if (cities.length > 0 && !(localData.value.country || '').trim()) {
+          localData.value.country = 'D'
+        }
         if (cities.length === 1) {
           localData.value.city = cities[0]
         } else if (cities.length > 1) {
