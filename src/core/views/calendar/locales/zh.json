@@ -68,7 +68,7 @@
         "repeatYears": "年",
         "repeatEndAfter": "之后",
         "repeatEndOccurrences": "次",
-        "repeatEndOnDate": "到日期"
+        "repeatEndOnDate": "截止日期"
     },
     "CalendarEventDetail": {
         "edit": "编辑",

@@ -529,6 +529,26 @@ function applyCurrent() {
     }
 }
 
+function calcCountFromDate(dtstart, freq, interval, repeatEndDate) {
+    if (!dtstart || !repeatEndDate) return 1
+    const start = new Date((dtstart.split('T')[0].split(' ')[0]))
+    const end   = new Date(repeatEndDate)
+    let cur = new Date(start)
+    let count = 0
+    const max = 10000
+    while (cur <= end && count < max) {
+        count++
+        switch (freq) {
+            case 'daily':   cur.setDate(cur.getDate() + interval); break
+            case 'weekly':  cur.setDate(cur.getDate() + interval * 7); break
+            case 'monthly': cur.setMonth(cur.getMonth() + interval); break
+            case 'yearly':  cur.setFullYear(cur.getFullYear() + interval); break
+            default: return count
+        }
+    }
+    return Math.max(1, count)
+}
+
 function close() {
     emit('update:modelValue', false)
 }
@@ -561,8 +581,13 @@ function save() {
         cvp_type:    f.cvp_type,
         freq:        f.repeat ? f.freq : null,
         interval:    f.repeat ? f.recur_interval : null,
-        count:       f.repeat && f.repeatEndType === 'count' ? f.recur_count : null,
-        repeat_end:  f.repeat && f.repeatEndType === 'date'  ? f.recur_repeat_end : null,
+        // Bis-Datum: count aus Datumsbereich berechnen, beide Felder befüllen
+        count:       f.repeat
+            ? (f.repeatEndType === 'count'
+                ? f.recur_count
+                : calcCountFromDate(f.dtstart, f.freq, f.recur_interval, f.recur_repeat_end))
+            : null,
+        repeat_end:  f.repeat && f.repeatEndType === 'date' ? f.recur_repeat_end : null,
     })
 }
 </script>

@@ -68,7 +68,7 @@
         "repeatYears": "anni",
         "repeatEndAfter": "Dopo",
         "repeatEndOccurrences": "occorrenze",
-        "repeatEndOnDate": "Il"
+        "repeatEndOnDate": "Fino al"
     },
     "CalendarEventDetail": {
         "edit": "Modifica",

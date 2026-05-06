@@ -68,7 +68,7 @@
         "repeatYears": "years",
         "repeatEndAfter": "After",
         "repeatEndOccurrences": "occurrences",
-        "repeatEndOnDate": "On date"
+        "repeatEndOnDate": "Päivämäärään asti"
     },
     "CalendarEventDetail": {
         "edit": "Muokkaa",

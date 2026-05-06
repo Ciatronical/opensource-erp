@@ -68,7 +68,7 @@
         "repeatYears": "let",
         "repeatEndAfter": "Po",
         "repeatEndOccurrences": "opakování",
-        "repeatEndOnDate": "Do"
+        "repeatEndOnDate": "Do data"
     },
     "CalendarEventDetail": {
         "edit": "Upravit",

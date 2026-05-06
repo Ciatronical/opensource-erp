@@ -68,7 +68,7 @@
         "repeatYears": "jaar",
         "repeatEndAfter": "Na",
         "repeatEndOccurrences": "keer",
-        "repeatEndOnDate": "Op datum"
+        "repeatEndOnDate": "Tot datum"
     },
     "CalendarEventDetail": {
         "edit": "Bewerken",

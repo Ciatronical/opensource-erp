@@ -68,7 +68,7 @@
         "repeatYears": "Jahre",
         "repeatEndAfter": "Nach",
         "repeatEndOccurrences": "Wiederholungen",
-        "repeatEndOnDate": "Am Datum"
+        "repeatEndOnDate": "Bis Datum"
     },
     "CalendarEventDetail": {
         "edit": "Bearbeiten",

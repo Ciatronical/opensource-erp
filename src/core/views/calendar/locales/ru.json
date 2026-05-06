@@ -68,7 +68,7 @@
         "repeatYears": "лет",
         "repeatEndAfter": "После",
         "repeatEndOccurrences": "повторений",
-        "repeatEndOnDate": "До"
+        "repeatEndOnDate": "До даты"
     },
     "CalendarEventDetail": {
         "edit": "Редактировать",
