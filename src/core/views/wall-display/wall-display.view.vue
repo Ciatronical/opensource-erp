@@ -242,7 +242,7 @@ export default defineComponent({
                     endDate: currentDateRange.value.end
                 })
                 if (response.data.success) {
-                    events.value = response.data.payload?.result?.events || []
+                    events.value = response.data.payload?.events || []
                 }
             } catch (e) {
                 console.error('Wall display: calendar load error', e)

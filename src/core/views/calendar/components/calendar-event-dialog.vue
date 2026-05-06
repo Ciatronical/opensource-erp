@@ -533,6 +533,14 @@ function close() {
     emit('update:modelValue', false)
 }
 
+function closeAndSave() {
+    if (formValid.value) {
+        save()
+    } else {
+        close()
+    }
+}
+
 function save() {
     if (!formValid.value) return
     const f = form.value
