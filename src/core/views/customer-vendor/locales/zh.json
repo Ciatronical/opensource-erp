@@ -237,7 +237,7 @@
         },
         "duplicate": {
             "title": "可能的重复",
-            "exactMatch": "已存在名称和地址完全相同的记录：",
+            "exactMatch": "同一地址可能已存在的记录:",
             "partialMatch": "在相同地址找到类似记录：",
             "customer": "客户",
             "vendor": "供应商",

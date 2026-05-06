@@ -237,7 +237,7 @@
         },
         "duplicate": {
             "title": "Mögliches Duplikat",
-            "exactMatch": "Datensatz mit identischem Namen und Adresse bereits vorhanden:",
+            "exactMatch": "Mulig eksisterende post på samme adresse:",
             "partialMatch": "Ähnlicher Datensatz an gleicher Adresse gefunden:",
             "customer": "Kunde",
             "vendor": "Leverandoer",

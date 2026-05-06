@@ -237,7 +237,7 @@
         },
         "duplicate": {
             "title": "Posible duplicado",
-            "exactMatch": "Datensatz mit identischem Namen und Adresse bereits vorhanden:",
+            "exactMatch": "Posible registro ya existente en la misma dirección:",
             "partialMatch": "Ähnlicher Datensatz an gleicher Adresse gefunden:",
             "customer": "Cliente",
             "vendor": "Proveedor",

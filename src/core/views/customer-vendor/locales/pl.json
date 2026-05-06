@@ -237,7 +237,7 @@
         },
         "duplicate": {
             "title": "Możliwy duplikat",
-            "exactMatch": "Rekord o identycznej nazwie i adresie już istnieje:",
+            "exactMatch": "Możliwy istniejący rekord pod tym samym adresem:",
             "partialMatch": "Podobny rekord pod tym samym adresem znaleziony:",
             "customer": "Klient",
             "vendor": "Dostawca",

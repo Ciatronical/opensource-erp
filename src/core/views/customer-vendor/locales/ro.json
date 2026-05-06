@@ -237,7 +237,7 @@
         },
         "duplicate": {
             "title": "Mögliches Duplikat",
-            "exactMatch": "Datensatz mit identischem Namen und Adresse bereits vorhanden:",
+            "exactMatch": "Posibil înregistrare existentă la aceeași adresă:",
             "partialMatch": "Ähnlicher Datensatz an gleicher Adresse gefunden:",
             "customer": "Client",
             "vendor": "Furnizor",

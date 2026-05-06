@@ -254,7 +254,7 @@
         },
         "duplicate": {
             "title": "Mögliches Duplikat",
-            "exactMatch": "Datensatz mit identischem Namen und Adresse bereits vorhanden:",
+            "exactMatch": "Möglicher bereits vorhandener Datensatz an gleicher Adresse:",
             "partialMatch": "Ähnlicher Datensatz an gleicher Adresse gefunden:",
             "customer": "Kunde",
             "vendor": "Lieferant",

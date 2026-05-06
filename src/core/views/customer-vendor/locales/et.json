@@ -237,7 +237,7 @@
         },
         "duplicate": {
             "title": "Mögliches Duplikat",
-            "exactMatch": "Datensatz mit identischem Namen und Adresse bereits vorhanden:",
+            "exactMatch": "Võimalik olemasolev kirje samal aadressil:",
             "partialMatch": "Ähnlicher Datensatz an gleicher Adresse gefunden:",
             "customer": "Klient",
             "vendor": "Tarnija",

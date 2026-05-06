@@ -237,7 +237,7 @@
         },
         "duplicate": {
             "title": "Doublon possible",
-            "exactMatch": "Un enregistrement avec le meme nom et la meme adresse existe deja :",
+            "exactMatch": "Enregistrement potentiellement déjà existant à la même adresse :",
             "partialMatch": "Un enregistrement similaire a la meme adresse a ete trouve :",
             "customer": "Client",
             "vendor": "Fournisseur",

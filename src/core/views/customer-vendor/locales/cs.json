@@ -237,7 +237,7 @@
         },
         "duplicate": {
             "title": "Mögliches Duplikat",
-            "exactMatch": "Datensatz mit identischem Namen und Adresse bereits vorhanden:",
+            "exactMatch": "Možný existující záznam na stejné adrese:",
             "partialMatch": "Ähnlicher Datensatz an gleicher Adresse gefunden:",
             "customer": "Zákazník",
             "vendor": "Dodavatel",

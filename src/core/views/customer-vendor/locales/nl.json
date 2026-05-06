@@ -237,7 +237,7 @@
         },
         "duplicate": {
             "title": "Mogelijk duplicaat",
-            "exactMatch": "Record met identieke naam en adres bestaat al:",
+            "exactMatch": "Mogelijk bestaand record op hetzelfde adres:",
             "partialMatch": "Vergelijkbaar record op hetzelfde adres gevonden:",
             "customer": "Klant",
             "vendor": "Leverancier",

@@ -298,11 +298,11 @@
                 </template>
             </v-card-text>
             <v-card-actions>
-                <v-btn variant="outlined" @click="showDuplicateDialog = false">
+                <v-btn variant="outlined" @click="cancelDuplicateDialog">
                     {{ t('CustomerVendorEditView.duplicate.cancel') }}
                 </v-btn>
                 <v-spacer />
-                <v-btn v-if="!duplicateExact.length" color="warning" variant="flat" @click="proceedSaveCV">
+                <v-btn color="warning" variant="flat" @click="proceedSaveCV">
                     {{ t('CustomerVendorEditView.duplicate.createAnyway') }}
                 </v-btn>
             </v-card-actions>
@@ -564,6 +564,10 @@ export default {
         function triggerAutoSave() {
             if (!(cvData.value.name || '').trim()) return
             if (!(cvData.value.zipcode || '').trim()) return
+            // Bei Neuanlage zusaetzlich street verlangen, damit der
+            // Duplikat-Check (name + street + zipcode) greifen kann
+            const isNew = !(id.value || savedCvId.value)
+            if (isNew && !(cvData.value.street || '').trim()) return
             if (entitySrc.value === 'C' && businessTypes.value.length > 1 && !cvData.value.business_id) return
             if (saveTimeout) clearTimeout(saveTimeout)
             saveTimeout = setTimeout(() => {
@@ -687,7 +691,45 @@ export default {
             router.push({ name: routeName, params: { id: dup.id } })
         }
 
-        const closeView = () => {
+        // Duplikat-Dialog: Abbrechen — bei genau einem Treffer
+        // direkt zum vorhandenen Datensatz navigieren
+        const cancelDuplicateDialog = () => {
+            const all = [...duplicateExact.value, ...duplicatePartial.value]
+            if (all.length === 1) {
+                navigateToDuplicate(all[0])
+            } else {
+                showDuplicateDialog.value = false
+            }
+        }
+
+        const closeView = async () => {
+            // Duplikat-Dialog offen? Nicht ueberspringen, Dialog bleibt vorne.
+            if (showDuplicateDialog.value) return
+
+            // Bei Neuanlage mit ausreichend Daten den Duplikat-Check
+            // synchron nachholen, falls der Auto-Save noch nicht gelaufen ist.
+            const cvId = id.value || savedCvId.value
+            if (!cvId && !duplicateCheckDone) {
+                const name = (cvData.value.name || '').trim()
+                const street = (cvData.value.street || '').trim()
+                const zipcode = (cvData.value.zipcode || '').trim()
+                if (name && street && zipcode) {
+                    try {
+                        const result = await oserpData.checkDuplicateCV(
+                            name, street, zipcode, 0, entitySrc.value
+                        )
+                        if (result.exact?.length || result.partial?.length) {
+                            duplicateExact.value = result.exact || []
+                            duplicatePartial.value = result.partial || []
+                            showDuplicateDialog.value = true
+                            return
+                        }
+                    } catch (e) {
+                        // Bei Check-Fehler regulaer schliessen
+                    }
+                }
+            }
+
             router.back()
         }
 
@@ -876,6 +918,7 @@ export default {
             duplicatePartial,
             proceedSaveCV,
             navigateToDuplicate,
+            cancelDuplicateDialog,
             t,
         }
     },

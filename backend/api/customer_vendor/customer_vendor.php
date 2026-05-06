@@ -1673,13 +1673,22 @@ function savePhoneConfig($data) {
 }
 
 /**
- * Duplikat-Pruefung fuer Kunden/Lieferanten: Exakt + Teilname
+ * Duplikat-Pruefung fuer Kunden/Lieferanten via pg_trgm-Aehnlichkeit
+ *
+ * Treffer-Bedingungen (alle muessen erfuellt sein):
+ *   - similarity(name)   > 0.7
+ *   - zipcode            exakt gleich
+ *   - similarity(street) > 0.9
+ *
+ * Geprueft wird in der Tabelle, die zu src passt (customer/vendor).
+ * Treffer landen in `exact`; `partial` bleibt aus Kompatibilitaet leer.
  *
  * @param string $data['name']     Name
  * @param string $data['street']   Strasse
  * @param string $data['zipcode']  PLZ
  * @param int    $data['exclude_id'] Eigene ID (zum Ausschliessen)
  * @param string $data['src']      'C' oder 'V'
+ * @testdata {"action": "checkDuplicateCV", "name": "Mustermann GmbH", "street": "Hauptstr. 1", "zipcode": "10115", "src": "C"}
  */
 function checkDuplicateCV($data) {
     $db = DbhCompany::begin();
@@ -1689,84 +1698,35 @@ function checkDuplicateCV($data) {
     $excludeId = intval($data['exclude_id'] ?? 0);
     $src = ($data['src'] ?? 'C') === 'V' ? 'V' : 'C';
 
-    $exact = [];
-    $partial = [];
-
-    if ($name === '') {
+    if ($name === '' || $street === '' || $zipcode === '') {
         resultInfo(true, 'OK', ['exact' => [], 'partial' => []]);
         return;
     }
 
-    // Gegentabelle: Kunde→Lieferant, Lieferant→Kunde
-    $otherSrc = ($src === 'V') ? 'C' : 'V';
-    $sameTable = ($src === 'V') ? 'vendor' : 'customer';
-    $otherTable = ($src === 'V') ? 'customer' : 'vendor';
+    $table = ($src === 'V') ? 'vendor' : 'customer';
 
-    // 1) Exakt-Treffer: Name + Strasse + PLZ identisch
-    //    - Gleiche Tabelle → exact (Blocker)
-    //    - Andere Tabelle → partial (nur Warnung, da Kunde=Lieferant erlaubt)
-    if ($street !== '' && $zipcode !== '') {
-        $sameExact = $db->getAll(
-            "SELECT id, name, street, zipcode, city, '$src' AS src FROM $sameTable
-             WHERE LOWER(name) = LOWER(:name) AND LOWER(street) = LOWER(:street) AND LOWER(zipcode) = LOWER(:zipcode)
-             LIMIT 5",
-            [':name' => $name, ':street' => $street, ':zipcode' => $zipcode]
-        ) ?: [];
+    $rows = $db->getAll(
+        "SELECT id, name, street, zipcode, city, '$src' AS src,
+                similarity(LOWER(name), LOWER(:name))     AS name_sim,
+                similarity(LOWER(street), LOWER(:street)) AS street_sim
+         FROM $table
+         WHERE LOWER(zipcode) = LOWER(:zipcode)
+           AND similarity(LOWER(name), LOWER(:name2))     > 0.7
+           AND similarity(LOWER(street), LOWER(:street2)) > 0.9
+           AND id != :exclude
+         ORDER BY name_sim DESC, street_sim DESC
+         LIMIT 5",
+        [
+            ':name'     => $name,
+            ':street'   => $street,
+            ':zipcode'  => $zipcode,
+            ':name2'    => $name,
+            ':street2'  => $street,
+            ':exclude'  => $excludeId,
+        ]
+    ) ?: [];
 
-        $crossExact = $db->getAll(
-            "SELECT id, name, street, zipcode, city, '$otherSrc' AS src FROM $otherTable
-             WHERE LOWER(name) = LOWER(:name) AND LOWER(street) = LOWER(:street) AND LOWER(zipcode) = LOWER(:zipcode)
-             LIMIT 5",
-            [':name' => $name, ':street' => $street, ':zipcode' => $zipcode]
-        ) ?: [];
-
-        // Eigenen Datensatz ausschliessen (nur in gleicher Tabelle relevant)
-        if ($excludeId > 0) {
-            $sameExact = array_values(array_filter($sameExact, function($d) use ($excludeId) {
-                return $d['id'] != $excludeId;
-            }));
-        }
-
-        $exact = $sameExact;
-        // Cross-Table exakte Treffer als Warnung (partial) einstufen
-        $partial = $crossExact;
-    }
-
-    // 2) Teilname-Treffer: Letztes Wort (Nachname) + Adresse identisch, anderer Gesamtname
-    $nameParts = preg_split('/\s+/', $name);
-    if (count($nameParts) >= 2 && $street !== '' && $zipcode !== '') {
-        $lastName = end($nameParts);
-        $partialQuery = <<<SQL
-            SELECT id, name, street, zipcode, city, '$src' AS src FROM $sameTable
-            WHERE LOWER(name) LIKE '%' || LOWER(:lastname) AND LOWER(name) != LOWER(:fullname)
-              AND LOWER(street) = LOWER(:street) AND LOWER(zipcode) = LOWER(:zipcode)
-            UNION ALL
-            SELECT id, name, street, zipcode, city, '$otherSrc' AS src FROM $otherTable
-            WHERE LOWER(name) LIKE '%' || LOWER(:lastname2) AND LOWER(name) != LOWER(:fullname2)
-              AND LOWER(street) = LOWER(:street2) AND LOWER(zipcode) = LOWER(:zipcode2)
-        SQL;
-        $namePartial = $db->getAll($partialQuery, [
-            ':lastname' => $lastName, ':fullname' => $name, ':street' => $street, ':zipcode' => $zipcode,
-            ':lastname2' => $lastName, ':fullname2' => $name, ':street2' => $street, ':zipcode2' => $zipcode
-        ]) ?: [];
-
-        // Eigenen Datensatz ausschliessen
-        if ($excludeId > 0) {
-            $namePartial = array_values(array_filter($namePartial, function($d) use ($excludeId, $src) {
-                return !($d['id'] == $excludeId && $d['src'] === $src);
-            }));
-        }
-
-        // Bereits in exact oder partial (crossExact) enthaltene entfernen
-        $alreadyIds = array_map(fn($e) => $e['src'] . '_' . $e['id'], array_merge($exact, $partial));
-        $namePartial = array_values(array_filter($namePartial, function($d) use ($alreadyIds) {
-            return !in_array($d['src'] . '_' . $d['id'], $alreadyIds);
-        }));
-
-        $partial = array_merge($partial, $namePartial);
-    }
-
-    resultInfo(true, 'OK', ['exact' => array_values($exact), 'partial' => array_values($partial)]);
+    resultInfo(true, 'OK', ['exact' => $rows, 'partial' => []]);
 }
 
 /**

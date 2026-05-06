@@ -254,7 +254,7 @@
         },
         "duplicate": {
             "title": "Possible duplicate",
-            "exactMatch": "Record with identical name and address already exists:",
+            "exactMatch": "Possible existing record at the same address:",
             "partialMatch": "Similar record at the same address found:",
             "customer": "Customer",
             "vendor": "Vendor",
