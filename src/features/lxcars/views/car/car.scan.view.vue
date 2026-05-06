@@ -1144,17 +1144,26 @@ export default {
             const scanId = scanResult.value.raw?.scan_id
             if (!scanId) return
 
-            const cropNames = cropFieldMap[field]
-            if (!cropNames?.length) return
+            // Alle moeglichen Crop-Dateinamen fuer dieses Feld (z.B. c_3 -> ['tsn', 'field_2_2'])
+            // Duplikate entfernen, da scanCropKeys oft Cmel-/Snake-Varianten hat, die zum gleichen
+            // Backend-Dateinamen kollabieren.
+            const cropNames = [...new Set(cropFieldMap[field] || [])]
+            if (!cropNames.length) return
 
             loadingCrops.value[field] = true
             try {
-                const data = await carsStore.getScanTempCrop(scanId, cropNames[0])
-                if (data?.image) {
-                    loadedCrops.value[field] = `data:${data.mime || 'image/jpeg'};base64,${data.image}`
+                // Alle Varianten durchprobieren, bis eine den Crop liefert
+                for (const name of cropNames) {
+                    try {
+                        const data = await carsStore.getScanTempCrop(scanId, name)
+                        if (data?.image) {
+                            loadedCrops.value[field] = `data:${data.mime || 'image/jpeg'};base64,${data.image}`
+                            return
+                        }
+                    } catch {
+                        // Naechsten Alias probieren
+                    }
                 }
-            } catch {
-                // Stille Fehlerbehandlung
             } finally {
                 loadingCrops.value[field] = false
             }
@@ -1426,7 +1435,13 @@ export default {
             // Sofort alle verfügbaren Daten aus dem Listeneintrag mappen
             // (Scan-Liste liefert bereits die Detail-Rohdaten, nur ohne Bilder)
             const mapped = mapScanListItemToFields(scan)
-            scanResult.value = { ...mapped, images: null }
+            scanResult.value = {
+                ...mapped,
+                images: null,
+                // raw.scan_id wird von loadCropImage benoetigt, um die Crops
+                // aus backend/tmp/{scan_id}/ via getScanTempCrop zu laden
+                raw: { scan_id: scan.scan_id, scan_detail_id: scan.scan_detail_id }
+            }
 
             // Duplikat-Info aus bereits geladenem scanCarStatus nutzen
             const status = getScanStatus(scan)
@@ -1760,6 +1775,8 @@ export default {
             if (detail.temp_image_id) current.temp_image_id = detail.temp_image_id
             if (detail.originalImage) current.originalImage = detail.originalImage
             if (detail.isPdf !== undefined) current.isPdf = detail.isPdf
+            // raw mergen, damit scan_id/scan_detail_id fuer loadCropImage erhalten bleiben
+            if (detail.raw) current.raw = { ...(current.raw || {}), ...detail.raw }
 
             // car/kba/owner: nur leere Felder aus Detail ergänzen
             for (const section of ['car', 'kba', 'owner']) {
@@ -2038,19 +2055,23 @@ export default {
                     const kbaForUpdate = Object.keys(kba).length ? kba : null
                     await carsStore.updateCar(carUpdate, kbaForUpdate)
 
-                    // Scan-Bilder speichern
+                    // Scan-Bilder speichern (await — sonst Race mit Edit-View-Load)
                     const imgObj = scanResult.value.images
                     const hasFieldImages = imgObj && typeof imgObj === 'object' && Object.keys(imgObj).length > 0
                     const scanIdForSave = scanResult.value.raw?.scan_id || null
                     if (hasFieldImages || scanResult.value.temp_image_id || scanIdForSave) {
                         const cLn = carFields.c_ln || ''
-                        carsStore.saveScanImages(
-                            existingCarId.value, cLn, null,
-                            hasFieldImages ? imgObj : {},
-                            false,
-                            scanResult.value.temp_image_id || null,
-                            scanIdForSave
-                        ).catch(err => console.error('Error saving scan images:', err))
+                        try {
+                            await carsStore.saveScanImages(
+                                existingCarId.value, cLn, null,
+                                hasFieldImages ? imgObj : {},
+                                false,
+                                scanResult.value.temp_image_id || null,
+                                scanIdForSave
+                            )
+                        } catch (err) {
+                            console.error('Error saving scan images:', err)
+                        }
                     }
 
                     router.push({ name: 'car', params: { id: existingCarId.value } })
@@ -2179,19 +2200,23 @@ export default {
                     const kbaForUpdate = Object.keys(kba).length ? kba : null
                     await carsStore.updateCar(carUpdate, kbaForUpdate)
 
-                    // Scan-Bilder speichern
+                    // Scan-Bilder speichern (await — sonst Race mit Edit-View-Load)
                     const imgObj = scanResult.value.images
                     const hasFieldImages = imgObj && typeof imgObj === 'object' && Object.keys(imgObj).length > 0
                     const scanIdForSave2 = scanResult.value.raw?.scan_id || null
                     if (hasFieldImages || scanResult.value.temp_image_id || scanIdForSave2) {
                         const cLn = carFields.c_ln || ''
-                        carsStore.saveScanImages(
-                            existingCarId.value, cLn, null,
-                            hasFieldImages ? imgObj : {},
-                            false,
-                            scanResult.value.temp_image_id || null,
-                            scanIdForSave2
-                        ).catch(err => console.error('Error saving scan images:', err))
+                        try {
+                            await carsStore.saveScanImages(
+                                existingCarId.value, cLn, null,
+                                hasFieldImages ? imgObj : {},
+                                false,
+                                scanResult.value.temp_image_id || null,
+                                scanIdForSave2
+                            )
+                        } catch (err) {
+                            console.error('Error saving scan images:', err)
+                        }
                     }
 
                     await oserpData.fetchCustomerOrVendor(customerId, 'C')
@@ -2213,14 +2238,17 @@ export default {
                             .catch(err => console.error('Error saving special KBA:', err))
                     }
 
-                    // 4. Scan-Bilder speichern (asynchron, nicht blockierend)
+                    // 4. Scan-Bilder speichern (await — sonst Race mit Edit-View-Load)
                     const imgObj = scanResult.value.images
                     const hasFieldImages = imgObj && typeof imgObj === 'object' && Object.keys(imgObj).length > 0
                     const cLn = scanResult.value.car.c_ln || ''
                     const tempImageId = scanResult.value.temp_image_id || null
                     const scanIdForSave3 = scanResult.value.raw?.scan_id || null
-                    carsStore.saveScanImages(carId, cLn, null, hasFieldImages ? imgObj : {}, false, tempImageId, scanIdForSave3)
-                        .catch(err => console.error('Error saving scan images:', err))
+                    try {
+                        await carsStore.saveScanImages(carId, cLn, null, hasFieldImages ? imgObj : {}, false, tempImageId, scanIdForSave3)
+                    } catch (err) {
+                        console.error('Error saving scan images:', err)
+                    }
 
                     // 5. Kunde laden + zum Fahrzeug-Edit navigieren
                     await oserpData.fetchCustomerOrVendor(customerId, 'C')

@@ -154,7 +154,7 @@
                                                 <template #activator="{ props: tipProps }">
                                                     <v-icon v-bind="tipProps" size="small" color="blue-lighten-2" class="cursor-pointer mr-1" tabindex="-1">mdi-image-outline</v-icon>
                                                 </template>
-                                                <img :src="fieldCrops.c_ln" class="crop-tooltip-img" />
+                                                <img :src="fieldCrops.c_ln" class="crop-tooltip-img" loading="eager" />
                                             </v-tooltip>
                                             <v-tooltip v-if="district" location="top" :text="district">
                                                 <template #activator="{ props: tip }">
@@ -176,7 +176,7 @@
                                                 <template #activator="{ props: tipProps }">
                                                     <v-icon v-bind="tipProps" size="small" color="blue-lighten-2" class="cursor-pointer mr-1" tabindex="-1">mdi-image-outline</v-icon>
                                                 </template>
-                                                <img :src="fieldCrops.c_2" class="crop-tooltip-img" />
+                                                <img :src="fieldCrops.c_2" class="crop-tooltip-img" loading="eager" />
                                             </v-tooltip>
                                             <v-icon v-if="!readonly" size="small" :color="car.chk_c_2 ? 'success' : 'grey-lighten-1'" class="cursor-pointer" tabindex="-1" @click.stop="toggleShield('chk_c_2')">
                                                 {{ car.chk_c_2 ? 'mdi-shield-check' : 'mdi-shield-outline' }}
@@ -193,7 +193,7 @@
                                                 <template #activator="{ props: tipProps }">
                                                     <v-icon v-bind="tipProps" size="small" color="blue-lighten-2" class="cursor-pointer mr-1" tabindex="-1">mdi-image-outline</v-icon>
                                                 </template>
-                                                <img :src="fieldCrops.c_3" class="crop-tooltip-img" />
+                                                <img :src="fieldCrops.c_3" class="crop-tooltip-img" loading="eager" />
                                             </v-tooltip>
                                             <v-icon v-if="!readonly" size="small" :color="car.chk_c_3 ? 'success' : 'grey-lighten-1'" class="cursor-pointer" tabindex="-1" @click.stop="toggleShield('chk_c_3')">
                                                 {{ car.chk_c_3 ? 'mdi-shield-check' : 'mdi-shield-outline' }}
@@ -215,7 +215,7 @@
                                                 <template #activator="{ props: tipProps }">
                                                     <v-icon v-bind="tipProps" size="small" color="blue-lighten-2" class="cursor-pointer mr-1" tabindex="-1">mdi-image-outline</v-icon>
                                                 </template>
-                                                <img :src="fieldCrops.c_em" class="crop-tooltip-img" />
+                                                <img :src="fieldCrops.c_em" class="crop-tooltip-img" loading="eager" />
                                             </v-tooltip>
                                             <v-icon v-if="!readonly" size="small" :color="car.chk_c_em ? 'success' : 'grey-lighten-1'" class="cursor-pointer" tabindex="-1" @click.stop="toggleShield('chk_c_em')">
                                                 {{ car.chk_c_em ? 'mdi-shield-check' : 'mdi-shield-outline' }}
@@ -235,7 +235,7 @@
                                                 <template #activator="{ props: tipProps }">
                                                     <v-icon v-bind="tipProps" size="small" color="blue-lighten-2" class="cursor-pointer mr-1" tabindex="-1">mdi-image-outline</v-icon>
                                                 </template>
-                                                <img :src="fieldCrops.c_d" class="crop-tooltip-img" />
+                                                <img :src="fieldCrops.c_d" class="crop-tooltip-img" loading="eager" />
                                             </v-tooltip>
                                             <v-icon v-if="!readonly" size="small" :color="car.chk_c_d ? 'success' : 'grey-lighten-1'" class="cursor-pointer" tabindex="-1" @click.stop="toggleShield('chk_c_d')">
                                                 {{ car.chk_c_d ? 'mdi-shield-check' : 'mdi-shield-outline' }}
@@ -252,7 +252,7 @@
                                                 <template #activator="{ props: tipProps }">
                                                     <v-icon v-bind="tipProps" size="small" color="blue-lighten-2" class="cursor-pointer mr-1" tabindex="-1">mdi-image-outline</v-icon>
                                                 </template>
-                                                <img :src="fieldCrops.c_hu" class="crop-tooltip-img" />
+                                                <img :src="fieldCrops.c_hu" class="crop-tooltip-img" loading="eager" />
                                             </v-tooltip>
                                             <v-icon v-if="!readonly" size="small" :color="car.chk_c_hu ? 'success' : 'grey-lighten-1'" class="cursor-pointer" tabindex="-1" @click.stop="toggleShield('chk_c_hu')">
                                                 {{ car.chk_c_hu ? 'mdi-shield-check' : 'mdi-shield-outline' }}
@@ -272,7 +272,7 @@
                                                 <template #activator="{ props: tipProps }">
                                                     <v-icon v-bind="tipProps" size="small" color="blue-lighten-2" class="cursor-pointer mr-1" tabindex="-1">mdi-image-outline</v-icon>
                                                 </template>
-                                                <img :src="fieldCrops.c_fin" class="crop-tooltip-img" />
+                                                <img :src="fieldCrops.c_fin" class="crop-tooltip-img" loading="eager" />
                                             </v-tooltip>
                                             <v-icon v-if="!readonly" size="small" :color="car.chk_fin ? 'success' : 'grey-lighten-1'" class="cursor-pointer" tabindex="-1" @click.stop="toggleShield('chk_fin')">
                                                 {{ car.chk_fin ? 'mdi-shield-check' : 'mdi-shield-outline' }}
@@ -287,7 +287,7 @@
                                                 <template #activator="{ props: tipProps }">
                                                     <v-icon v-bind="tipProps" size="small" color="blue-lighten-2" class="cursor-pointer" tabindex="-1">mdi-image-outline</v-icon>
                                                 </template>
-                                                <img :src="fieldCrops.c_finchk" class="crop-tooltip-img" />
+                                                <img :src="fieldCrops.c_finchk" class="crop-tooltip-img" loading="eager" />
                                             </v-tooltip>
                                         </template>
                                     </v-text-field>
@@ -1029,24 +1029,29 @@
                         <v-progress-circular indeterminate size="32" width="3" />
                         <div class="text-body-2 text-medium-emphasis mt-2">{{ t('CarEditView.scanImages.loading') }}</div>
                     </div>
-                    <div v-else-if="scanOriginalSrc" class="text-center scan-original-container">
-                        <v-img :src="scanOriginalSrc" class="rounded border" width="100%" />
-                    </div>
-                    <div v-else-if="hasCropsAvailable" class="text-center">
-                        <div class="text-body-2 text-medium-emphasis mb-3">{{ t('CarEditView.scanImages.noCropsOnly') }}</div>
-                        <v-row dense>
-                            <v-col v-for="(src, field) in fieldCrops" :key="field" cols="6" sm="4" md="3">
-                                <v-card variant="outlined" class="pa-1">
-                                    <v-img :src="src" height="60" class="rounded" />
-                                    <div class="text-caption text-center mt-1">{{ fieldCropLabels[field] || field }}</div>
-                                </v-card>
-                            </v-col>
-                        </v-row>
-                    </div>
-                    <div v-else class="text-center text-medium-emphasis py-8">
-                        <v-icon size="48" color="grey-lighten-1" class="mb-2">mdi-image-off-outline</v-icon>
-                        <div>{{ t('CarEditView.scanImages.noImages') }}</div>
-                    </div>
+                    <template v-else>
+                        <div v-if="scanOriginalSrc" class="text-center scan-original-container mb-4">
+                            <div class="text-body-2 text-medium-emphasis mb-2">{{ t('CarEditView.scanImages.original') }}</div>
+                            <img :src="scanOriginalSrc" class="rounded border" style="width:100%; display:block;" />
+                        </div>
+                        <div v-if="hasCropsAvailable">
+                            <div class="text-body-2 text-medium-emphasis mb-2">
+                                {{ scanOriginalSrc ? t('CarEditView.scanImages.crops') : t('CarEditView.scanImages.noCropsOnly') }}
+                            </div>
+                            <v-row dense>
+                                <v-col v-for="(src, field) in fieldCrops" :key="field" cols="6" sm="4" md="3">
+                                    <v-card variant="outlined" class="pa-1">
+                                        <img :src="src" class="rounded" style="height:60px; width:100%; object-fit:contain; display:block;" />
+                                        <div class="text-caption text-center mt-1">{{ fieldCropLabels[field] || field }}</div>
+                                    </v-card>
+                                </v-col>
+                            </v-row>
+                        </div>
+                        <div v-if="!scanOriginalSrc && !hasCropsAvailable" class="text-center text-medium-emphasis py-8">
+                            <v-icon size="48" color="grey-lighten-1" class="mb-2">mdi-image-off-outline</v-icon>
+                            <div>{{ t('CarEditView.scanImages.noImages') }}</div>
+                        </div>
+                    </template>
                 </v-card-text>
             </v-card>
         </v-dialog>
