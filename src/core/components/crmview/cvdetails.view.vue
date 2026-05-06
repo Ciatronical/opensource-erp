@@ -348,13 +348,13 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, defineAsyncComponent } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { oserpStore } from '@/core/stores/oserp.store.js'
 import CrmContactView from '@/core/components/crmview/contact.view.vue'
 import PhoneActionBar from '@/core/components/phone-action-bar.vue'
-import FilesTab from '@/core/views/customer-vendor/tabs/files.tab.vue'
+const FilesTab = defineAsyncComponent(() => import('@/core/views/customer-vendor/tabs/files.tab.vue'))
 import EmailsTab from '@/core/views/customer-vendor/tabs/emails.tab.vue'
 import WhatsappTab from '@/core/views/customer-vendor/tabs/whatsapp.tab.vue'
 import { formatPhone } from '@/core/utils/phoneFormat.js'

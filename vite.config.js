@@ -41,12 +41,13 @@ export default defineConfig({
         manualChunks(id) {
           // Vuetify — alle Module (Components, Directives, Styles-Logik)
           if (id.includes('node_modules/vuetify')) return 'vendor-vuetify'
-          // Vue-Kern + Router + State + Draggable (UMD, braucht Vue-Referenz im selben Chunk)
+          // Vue-Kern + Router + State + Draggable + vue-i18n-Internals (@intlify)
           if (id.includes('node_modules/vue/') ||
               id.includes('node_modules/@vue/') ||
               id.includes('node_modules/vue-router') ||
               id.includes('node_modules/pinia') ||
               id.includes('node_modules/vue-i18n') ||
+              id.includes('node_modules/@intlify/') ||
               id.includes('node_modules/vuedraggable') ||
               id.includes('node_modules/sortablejs')) return 'vendor-vue'
           // FullCalendar
@@ -64,9 +65,8 @@ export default defineConfig({
           if (id.includes('node_modules/axios')) return 'vendor-axios'
           // sweetalert2
           if (id.includes('node_modules/sweetalert2')) return 'vendor-sweetalert'
-          // vuefinder + uppy (nur in files.tab)
-          if (id.includes('node_modules/vuefinder') ||
-              id.includes('node_modules/@uppy')) return 'vendor-vuefinder'
+          // vuefinder + uppy: kein manualChunk mehr — FilesTab ist async (defineAsyncComponent),
+          // daher landen vuefinder-Deps in einem lazy-chunk ohne zirkuläre Abhängigkeit zu vendor-vue
         }
       }
     }

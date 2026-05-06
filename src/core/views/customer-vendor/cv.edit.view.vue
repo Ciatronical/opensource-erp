@@ -311,7 +311,7 @@
 </template>
 
 <script>
-import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick, defineAsyncComponent } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { oserpStore } from '@/core/stores/oserp.store.js'
@@ -324,7 +324,7 @@ import ShiptoTab from './tabs/shipto.tab.vue'
 import ContactsTab from './tabs/contacts.tab.vue'
 import DeliveriesTab from './tabs/deliveries.tab.vue'
 import NotesTab from './tabs/notes.tab.vue'
-import FilesTab from './tabs/files.tab.vue'
+const FilesTab = defineAsyncComponent(() => import('./tabs/files.tab.vue'))
 import PriceRulesTab from './tabs/price-rules.tab.vue'
 import TurnoverTab from './tabs/turnover.tab.vue'
 import WhatsappTab from './tabs/whatsapp.tab.vue'
