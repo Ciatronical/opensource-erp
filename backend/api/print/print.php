@@ -874,7 +874,7 @@ function loadPrintData($db, int $fakturaID, string $fakturaType, bool $lxCarsEna
     $arrays['sellprice']     = array_map(function($i) use ($fmt) { return $fmt($i['sellprice']); }, $items);
     $arrays['p_discount']    = array_map(function($i) {
         $d = floatval($i['discount']) * 100;
-        return $d > 0 ? number_format($d, 0) : '0';
+        return $d > 0 ? number_format($d, 2, ',', '.') : '0';
     }, $items);
     $arrays['linetotal']     = array_map(function($i) use ($fmt) { return $fmt($i['linetotal']); }, $items);
 

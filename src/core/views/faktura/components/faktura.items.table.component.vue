@@ -1114,7 +1114,8 @@ export default defineComponent({
             if (editingDiscount.value[itemId] !== undefined) {
                 return editingDiscount.value[itemId]
             }
-            return formatNumberDisplay((item.discount || 0) * 100, 2)
+            const percent = Math.round((item.discount || 0) * 10000) / 100
+            return formatNumberDisplay(percent, Number.isInteger(percent) ? 0 : 2)
         }
 
         /**
