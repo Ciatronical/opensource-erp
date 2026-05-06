@@ -674,4 +674,5 @@ defineExpose({
 .fc .fc-calendarWeek-button:hover {
     transform: none !important;
 }
+
 </style>

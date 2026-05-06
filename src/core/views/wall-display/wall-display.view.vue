@@ -557,6 +557,44 @@ export default defineComponent({
      hinweg auf die FullCalendar-DOM zugreifen koennen, die im calendar-main
      gerendert wird. !important schlaegt die Default-Regeln aus calendar-main.vue. -->
 <style>
+/* Ganztags-Zeile: maximal 4em hoch */
+.wall-display .fc-timegrid .fc-daygrid-body {
+    max-height: 4em;
+    overflow: hidden;
+}
+
+/* 1–2 Termine: normales vertikales Stacking, kompakter */
+.wall-display .fc-timegrid .fc-daygrid-event {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    margin-bottom: 1px !important;
+    font-size: 0.82em;
+    line-height: 1.4;
+}
+
+/* Ab 3 Terminen: Flex-Layout → nebeneinander statt übereinander */
+.wall-display .fc-timegrid .fc-daygrid-day-events:has(.fc-daygrid-event-harness:nth-child(3)) {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: stretch !important;
+    gap: 2px !important;
+    padding: 1px !important;
+    height: 3.6em !important;
+}
+.wall-display .fc-timegrid .fc-daygrid-day-events:has(.fc-daygrid-event-harness:nth-child(3)) .fc-daygrid-event-harness {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+}
+.wall-display .fc-timegrid .fc-daygrid-day-events:has(.fc-daygrid-event-harness:nth-child(3)) .fc-h-event {
+    height: 100% !important;
+}
+
 /* compact: TV / Querformat — minimaler Platzbedarf */
 .wall-display--size-compact .calendar-wrapper {
     padding: 4px !important;
