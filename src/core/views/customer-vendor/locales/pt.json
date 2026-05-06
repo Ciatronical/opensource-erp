@@ -351,6 +351,39 @@
             "bccSameAsCc": "CC und BCC dürfen nicht identisch sein",
             "homepageInvalid": "Ungültige URL (z.B. beispiel.de)",
             "homepageUnreachable": "Seite ist nicht erreichbar"
+        },
+        "businessCard": {
+            "button": "Cartão de visita IA",
+            "error": "Não foi possível analisar o cartão de visita.",
+            "lowConfidence": "Nenhum dado foi reconhecido na imagem. Utilize outra foto.",
+            "success": "Cartão de visita reconhecido ({confidence}% confiança) — verifique os dados",
+            "tooLarge": "O ficheiro é demasiado grande (máx. 10 MB)."
+        },
+        "phoneSearch": {
+            "button": "Telefone IA",
+            "cancel": "Cancelar",
+            "error": "A pesquisa web falhou.",
+            "hint": "A IA pesquisa o número na web (aviso legal, diretórios) e preenche os dados mestre.",
+            "notFound": "Nenhum resultado fiável encontrado para este número de telefone.",
+            "search": "Pesquisar",
+            "success": "Correspondência encontrada ({confidence}% confiança) — verifique os dados",
+            "title": "Pesquisar cliente por número de telefone"
+        },
+        "zugferd": {
+            "help_current": "{option}",
+            "help_default": "Este cliente utiliza o formato configurado na configuração do mandante em »Fatura eletrónica«. Definição recomendada quando todos os clientes são tratados uniformemente.",
+            "help_off": "Nenhuma fatura eletrónica é gerada para este cliente, mesmo que o padrão do mandante o preveja. Apenas para faturas B2C.",
+            "help_xrechnung": "XML puro (XRechnung 3.0, CIUS da EN 16931). Obrigatório para autoridades públicas. O campo »O nosso ID de encaminhamento no cliente« deve ser preenchido — sem ele o portal de receção rejeitará a fatura.",
+            "help_xrechnung_test": "XRechnung 3.0 em modo de teste. Para testes de aceitação iniciais com portais administrativos como ZRE ou OZG-RE. Não contabilizado.",
+            "help_zugferd": "Fatura híbrida: PDF/A-3 com factur-x.xml incorporado no perfil EN 16931 Extended. Padrão B2B recomendado na Alemanha. Compatível com kivitendo e todos os sistemas contabilísticos habituais.",
+            "help_zugferd_test": "A mesma fatura híbrida que em produção, mas marcada como fatura de teste no XML. Para testes de aceitação iniciais com este cliente — o sistema de receção não a contabiliza.",
+            "leitweg_hint": "Para XRechnung o campo »O nosso ID de encaminhamento no cliente« (cartão »Números e IDs«) deve ser preenchido.",
+            "option_default": "Usar padrão do mandante",
+            "option_off": "Sem fatura eletrónica",
+            "option_xrechnung": "XRechnung 3.0",
+            "option_xrechnung_test": "XRechnung 3.0 (Modo de teste)",
+            "option_zugferd": "Factur-X / ZUGFeRD 2.2 extended",
+            "option_zugferd_test": "Factur-X / ZUGFeRD extended (Modo de teste)"
         }
     }
 }

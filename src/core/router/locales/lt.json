@@ -38,7 +38,12 @@
         "huSerienbrief": "/serienbrief/hu",
         "wallDisplay": "/wandanzeige",
         "editCv": "/klientas-tiekejas/redaguoti",
-        "lxcarsReports": "/vartotojas/ataskaitos"
+        "lxcarsReports": "/vartotojas/ataskaitos",
+        "camera": "/cameras",
+        "hr": "/hr",
+        "hrPayroll": "/hr/payroll",
+        "hrVacation": "/hr/vacation",
+        "newDeliveryOrder": "/delivery-order/new"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Klaida: Slaptazodzio failas api/config/api.passwd.php nerastas. Pervadinkite faila api/config/api.passwd.php.example i api/config/api.passwd.php ir pritaikykite nustatymus.",
@@ -72,6 +77,11 @@
         "clientConfig": "Imones konfiguracija",
         "developerTools": "Developer Tools",
         "systemUpdate": "Sistemos atnaujinimas",
-        "about": "Apie"
+        "about": "Apie",
+        "docs": "Dokumentacija"
+    },
+    "DocsView": {
+        "title": "Dokumentacija",
+        "selectDoc": "Pasirinkite dokumentą iš sąrašo"
     }
 }

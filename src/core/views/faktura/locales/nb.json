@@ -339,7 +339,17 @@
             "selectPhoto": "Ta eller velg foto",
             "noPhotos": "Ingen bilder ennå",
             "photoDone": "Ferdig",
-            "taxIncluded": "Mva inkludert i prisen"
+            "taxIncluded": "Mva inkludert i prisen",
+            "einvoice": {
+                "disabled": "E-faktura er ikke aktivert for denne kunden. Konfigurer det i kundens stamdata eller i mandantkonfigurasjonen under »E-faktura«.",
+                "done": "E-faktura generert ({format}) — nedlasting startet.",
+                "doneTest": "Test-e-faktura generert ({format}) — nedlasting startet. OBS: Testmodus!",
+                "failed": "E-faktura kunne ikke genereres. Detaljer i nettleserkonsollen.",
+                "invalid": "Den genererte e-fakturaen består ikke EN 16931-validering. Typisk årsak: manglende stamdata (MVA-nr., Leitweg-ID, kundeadresse).",
+                "onlyInvoice": "E-fakturaer kan bare genereres fra utgående fakturaer.",
+                "saveFirst": "Lagre fakturaen før du genererer en e-faktura."
+            },
+            "kmStandRequired": "Kilometerstand er påkrevd — skriv inn før fakturering."
         },
         "workflow": {
             "created": "Dokument gjennomfoert erstellt",

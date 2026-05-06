@@ -82,7 +82,21 @@
         "cancel": "İptal",
         "send": "Gönder",
         "noCustomerVendor": "Musteri veya tedarikci bulunamadi. Lutfen once bir musteri veya tedarikci olusturun.",
-        "newVehicle": "Yeni araç"
+        "newVehicle": "Yeni araç",
+        "creditNote": "Kredi notu",
+        "deliveryOrders": "İrsaliyeler",
+        "noDeliveryOrders": "Mevcut irsaliye yok",
+        "noReclamations": "Mevcut şikayet yok",
+        "noVendorDeliveryOrders": "Mevcut mal girişi yok",
+        "noVendorReclamations": "Mevcut satın alma şikayeti yok",
+        "reclamations": "Şikayetler",
+        "status": "Durum",
+        "statusClosed": "kapalı",
+        "statusDelivered": "teslim edildi",
+        "statusOpen": "açık",
+        "storno": "İptal edildi",
+        "vendorDeliveryOrders": "Mal girişleri",
+        "vendorReclamations": "Satın alma şikayetleri"
     },
     "PhoneActions": {
         "clickToCall": "Ara",

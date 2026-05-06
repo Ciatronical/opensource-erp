@@ -82,7 +82,21 @@
         "cancel": "Tühista",
         "send": "Saada",
         "noCustomerVendor": "Klienti ega tarnijat ei leitud. Palun looge esmalt klient voi tarnija.",
-        "newVehicle": "Uus sõiduk"
+        "newVehicle": "Uus sõiduk",
+        "creditNote": "Kreeditarve",
+        "deliveryOrders": "Saatelehed",
+        "noDeliveryOrders": "Saatelehti pole",
+        "noReclamations": "Reklamatsioone pole",
+        "noVendorDeliveryOrders": "Kaubavastuvõttude pole",
+        "noVendorReclamations": "Ostureklamatsioone pole",
+        "reclamations": "Reklamatsioonid",
+        "status": "Olek",
+        "statusClosed": "suletud",
+        "statusDelivered": "tarnitud",
+        "statusOpen": "avatud",
+        "storno": "Tühistatud",
+        "vendorDeliveryOrders": "Kaubavastuvõtud",
+        "vendorReclamations": "Ostureklamatsioonid"
     },
     "PhoneActions": {
         "clickToCall": "Helista",

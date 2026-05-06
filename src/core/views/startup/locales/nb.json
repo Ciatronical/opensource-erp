@@ -82,7 +82,21 @@
         "cancel": "Avbryt",
         "send": "Send",
         "noCustomerVendor": "Ingen kunde eller leverandoer funnet. Opprett en kunde eller leverandoer foerst.",
-        "newVehicle": "Nytt kjøretøy"
+        "newVehicle": "Nytt kjøretøy",
+        "creditNote": "Kreditnota",
+        "deliveryOrders": "Følgesedler",
+        "noDeliveryOrders": "Ingen følgesedler tilgjengelig",
+        "noReclamations": "Ingen reklamasjoner",
+        "noVendorDeliveryOrders": "Ingen varemottak tilgjengelig",
+        "noVendorReclamations": "Ingen innkjøpsreklamasjoner",
+        "reclamations": "Reklamasjoner",
+        "status": "Status",
+        "statusClosed": "lukket",
+        "statusDelivered": "levert",
+        "statusOpen": "åpen",
+        "storno": "Kansellert",
+        "vendorDeliveryOrders": "Varemottak",
+        "vendorReclamations": "Innkjøpsreklamasjoner"
     },
     "PhoneActions": {
         "clickToCall": "Ring",

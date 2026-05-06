@@ -339,7 +339,17 @@
             "selectPhoto": "Fotografiază sau selectează foto",
             "noPhotos": "Nu există fotografii încă",
             "photoDone": "Gata",
-            "taxIncluded": "Taxă inclusă în preț"
+            "taxIncluded": "Taxă inclusă în preț",
+            "einvoice": {
+                "disabled": "Factura electronică nu este activată pentru acest client. Configurați-o în datele de bază ale clientului sau în configurația mandantului la »Factură electronică«.",
+                "done": "Factură electronică generată ({format}) — descărcare pornită.",
+                "doneTest": "Factură electronică test generată ({format}) — descărcare pornită. Atenție: Mod test!",
+                "failed": "Factura electronică nu a putut fi generată. Detalii în consola browserului.",
+                "invalid": "Factura electronică generată nu trece validarea EN 16931. Cauză tipică: date de bază lipsă (cod TVA, Leitweg-ID, adresa clientului).",
+                "onlyInvoice": "Facturile electronice pot fi generate numai din facturi de ieșire.",
+                "saveFirst": "Salvați factura înainte de a genera o factură electronică."
+            },
+            "kmStandRequired": "Kilometrajul este obligatoriu — introduceți-l înainte de a crea factura."
         },
         "workflow": {
             "created": "Dokument erfolgreich erstellt",

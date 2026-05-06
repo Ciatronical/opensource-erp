@@ -31,5 +31,18 @@
         "ordered": "Bestilt",
         "revertToPending": "Tilbake til ventende",
         "delete": "Slett"
+    },
+    "MaintenanceSectionCard": {
+        "close": "Lukk",
+        "fields": {
+            "c_bf": "Bremsevæske",
+            "c_sk": "Distribusjonskjede",
+            "c_wd": "Neste service",
+            "c_zrd": "Dato for tannrem",
+            "c_zrk": "Km for tannrem"
+        },
+        "incompleteText": "Før ordren kan fullføres, må følgende felter fylles ut:",
+        "incompleteTitle": "Servicedata ufullstendige",
+        "title": "Vedlikehold og service"
     }
 }

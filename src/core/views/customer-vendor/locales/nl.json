@@ -351,6 +351,39 @@
             "bccSameAsCc": "CC en BCC mogen niet gelijk zijn",
             "homepageInvalid": "Ongeldige URL (bijv. voorbeeld.nl)",
             "homepageUnreachable": "Site is niet bereikbaar"
+        },
+        "businessCard": {
+            "button": "Visitekaartje KI",
+            "error": "Visitekaartje kon niet worden geanalyseerd.",
+            "lowConfidence": "Geen gegevens herkend op de afbeelding. Gebruik een andere foto.",
+            "success": "Visitekaartje herkend ({confidence}% betrouwbaarheid) — controleer de gegevens",
+            "tooLarge": "Bestand is te groot (max. 10 MB)."
+        },
+        "phoneSearch": {
+            "button": "Telefoon KI",
+            "cancel": "Annuleren",
+            "error": "Webzoekopdracht mislukt.",
+            "hint": "KI zoekt het nummer op het web (colofon, branchegidsen) en vult de stamgegevens in.",
+            "notFound": "Geen betrouwbare resultaten gevonden voor dit telefoonnummer.",
+            "search": "Zoeken",
+            "success": "Overeenkomst gevonden ({confidence}% betrouwbaarheid) — controleer de gegevens",
+            "title": "Klant zoeken op telefoonnummer"
+        },
+        "zugferd": {
+            "help_current": "{option}",
+            "help_default": "Deze klant gebruikt het formaat dat is geconfigureerd in de opdrachtgeverconfiguratie onder »E-factuur«. Aanbevolen instelling als alle klanten uniform worden behandeld.",
+            "help_off": "Er wordt geen e-factuur gegenereerd voor deze klant, ook niet als de opdrachtgeversstandaard dat zou vereisen. Alleen voor zuivere B2C-facturen.",
+            "help_xrechnung": "Puur XML (XRechnung 3.0, CIUS van EN 16931). Verplicht voor overheidsopdrachtgevers. Het veld »Onze Leitweg-ID bij de klant« moet worden ingevuld — zonder het zal het ontvangstportaal de factuur weigeren.",
+            "help_xrechnung_test": "XRechnung 3.0 in testmodus. Voor eerste acceptatietests met administratieve portalen zoals ZRE of OZG-RE. Niet geboekt.",
+            "help_zugferd": "Hybridefactuur: PDF/A-3 met ingebedde factur-x.xml in het profiel EN 16931 Extended. Aanbevolen B2B-standaard in Duitsland. Compatibel met kivitendo en alle gangbare boekhoudprogramma's.",
+            "help_zugferd_test": "Dezelfde hybridefactuur als in productie, maar gemarkeerd als testfactuur in het XML. Voor eerste acceptatietests met deze klant — het ontvangstsysteem boekt het niet.",
+            "leitweg_hint": "Voor XRechnung moet het veld »Onze Leitweg-ID bij de klant« (kaart »Nummers & IDs«) worden ingevuld.",
+            "option_default": "Gebruik opdrachtgeversstandaard",
+            "option_off": "Geen e-factuur",
+            "option_xrechnung": "XRechnung 3.0",
+            "option_xrechnung_test": "XRechnung 3.0 (Testmodus)",
+            "option_zugferd": "Factur-X / ZUGFeRD 2.2 extended",
+            "option_zugferd_test": "Factur-X / ZUGFeRD extended (Testmodus)"
         }
     }
 }

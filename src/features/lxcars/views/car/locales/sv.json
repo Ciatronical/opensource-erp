@@ -55,7 +55,8 @@
             "scan_id": "Scan-ID",
             "scan_detail_id": "Scan-Detail-ID",
             "filename": "Filname",
-            "c_ow": "Besitzer"
+            "c_ow": "Besitzer",
+            "c_km": "Senaste mätarställning"
         },
         "kba": {
             "hersteller": "Hersteller",
@@ -271,7 +272,40 @@
             "uploadDoc": "Ladda upp dokument",
             "uploadError": "Ogiltig filtyp",
             "uploadUnsupported": "Ladda upp en PDF- eller textfil."
-        }
+        },
+        "backToOrder": "Order",
+        "email": {
+            "addCcBcc": "CC / BCC",
+            "addFiles": "Bifoga ytterligare filer",
+            "attachFull": "Bifoga fullständiga fordonsdata som textfil",
+            "attachmentName": "Bilaga",
+            "bcc": "BCC",
+            "body": "Meddelande",
+            "bodyFieldFin": "VIN",
+            "bodyFieldFirstReg": "Första registrering",
+            "bodyFieldHu": "Besiktning förfaller",
+            "bodyFieldKm": "Mätarställning",
+            "bodyFieldMake": "Märke",
+            "bodyFieldModel": "Modell / Typ",
+            "bodyFieldPlate": "Registreringsskylt",
+            "bodyGreeting": "Hej,",
+            "bodyHeader": "Fordonsdata",
+            "bodyIntro": "nedan finner ni fordonsuppgifterna:",
+            "bodyOutro": "Med vänliga hälsningar",
+            "button": "E-Mail",
+            "cancel": "Avbryt",
+            "cc": "CC",
+            "dialogTitle": "Skicka fordonsdata via e-post",
+            "error": "Fel vid skickande av e-post",
+            "send": "Skicka",
+            "sending": "Skickar...",
+            "subject": "Ämne",
+            "success": "E-post har skickats",
+            "to": "Till (kund, leverantör eller e-postadress)",
+            "tooltip": "Skicka fordonsdata via e-post till en kund, leverantör eller anpassad adress"
+        },
+        "readonly": "Endast visning",
+        "titleView": "Fordonsdata"
     },
     "CarScanView": {
         "title": "Fordon vom Scan anlegen",
@@ -473,6 +507,7 @@
             "required": "Obligatoriskt falt",
             "dateFormat": "Ogiltiges Datum (z.B. 1.3.5 oder 15.06.2020)",
             "ibanFormat": "Ogiltiges IBAN-Format"
-        }
+        },
+        "generateDraftPdf": "Generera utkast-PDF"
     }
 }

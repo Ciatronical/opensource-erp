@@ -1,206 +1,264 @@
 <!-- src/core/views/calendar/components/calendar-event-dialog.vue -->
 <template>
-    <v-dialog :model-value="modelValue" @update:model-value="$emit('update:modelValue', $event)" max-width="600" persistent>
-        <v-card rounded="xl">
-            <v-card-title class="d-flex align-center pa-4">
-                <v-icon class="me-2" color="primary">mdi-calendar-edit</v-icon>
-                {{ isEdit ? t('CalendarEventDialog.titleEdit') : t('CalendarEventDialog.titleCreate') }}
-                <v-spacer />
-                <v-btn icon variant="text" size="small" @click="closeAndSave">
-                    <v-icon>mdi-close</v-icon>
+    <v-dialog :model-value="modelValue" @update:model-value="$emit('update:modelValue', $event)" max-width="600" persistent scrollable>
+        <v-card>
+
+            <!-- Gradient Header -->
+            <div class="ced-header pa-5" :style="{ background: headerGradient }">
+                <div class="d-flex align-center" style="padding-right: 48px;">
+                    <v-avatar size="46" color="white" class="mr-3 flex-shrink-0">
+                        <v-icon :color="form.color || '#1976D2'" size="22">mdi-calendar-edit</v-icon>
+                    </v-avatar>
+                    <div style="flex: 1; min-width: 0;">
+                        <div class="text-white text-h6 font-weight-medium" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                            {{ form.title || (isEdit ? t('CalendarEventDialog.titleEdit') : t('CalendarEventDialog.titleCreate')) }}
+                        </div>
+                        <div class="text-white text-caption" style="opacity: 0.8;">
+                            {{ isEdit ? t('CalendarEventDialog.titleEdit') : t('CalendarEventDialog.titleCreate') }}
+                        </div>
+                    </div>
+                </div>
+                <v-btn icon variant="text" size="small" class="ced-close-btn" @click="closeAndSave">
+                    <v-icon color="white">mdi-close</v-icon>
                 </v-btn>
-            </v-card-title>
+            </div>
 
-            <v-divider />
-
-            <v-card-text class="pa-4">
+            <!-- Scrollable Form -->
+            <v-card-text class="pa-4" style="max-height: 65vh; overflow-y: auto;">
                 <v-form ref="formRef" v-model="formValid">
-                    <!-- Title -->
+
+                    <!-- Titel -->
                     <v-text-field
                         v-model="form.title"
                         :label="t('CalendarEventDialog.title')"
                         :rules="[v => !!v || t('CalendarEventDialog.validation.titleRequired')]"
                         variant="outlined"
                         density="compact"
-                        class="mb-3"
+                        prepend-inner-icon="mdi-format-title"
+                        class="mb-4"
                         autofocus
                     />
 
-                    <!-- All Day Toggle -->
-                    <v-switch
-                        v-model="form.allDay"
-                        :label="t('CalendarEventDialog.allDay')"
-                        color="primary"
-                        density="compact"
-                        hide-details
-                        class="mb-3"
-                    />
+                    <!-- Datum & Zeit -->
+                    <div class="ced-section rounded-lg mb-4">
+                        <div class="ced-section-label mb-2">
+                            <v-icon size="15" class="mr-1">mdi-clock-outline</v-icon>
+                            {{ t('CalendarEventDialog.start') }} / {{ t('CalendarEventDialog.end') }}
+                        </div>
+                        <v-switch
+                            v-model="form.allDay"
+                            :label="t('CalendarEventDialog.allDay')"
+                            color="primary"
+                            density="compact"
+                            hide-details
+                            class="mb-3"
+                        />
+                        <v-row dense>
+                            <v-col cols="6">
+                                <v-text-field
+                                    v-model="form.dtstart"
+                                    :label="t('CalendarEventDialog.start')"
+                                    :type="form.allDay ? 'date' : 'datetime-local'"
+                                    :rules="[v => !!v || t('CalendarEventDialog.validation.startRequired')]"
+                                    variant="outlined"
+                                    density="compact"
+                                    prepend-inner-icon="mdi-calendar-arrow-right"
+                                    hide-details="auto"
+                                />
+                            </v-col>
+                            <v-col cols="6">
+                                <v-text-field
+                                    v-model="form.dtend"
+                                    :label="t('CalendarEventDialog.end')"
+                                    :type="form.allDay ? 'date' : 'datetime-local'"
+                                    :min="form.dtstart"
+                                    variant="outlined"
+                                    density="compact"
+                                    prepend-inner-icon="mdi-calendar-arrow-left"
+                                    hide-details
+                                />
+                            </v-col>
+                        </v-row>
+                    </div>
 
-                    <!-- Start / End -->
-                    <v-row>
-                        <v-col cols="6">
-                            <v-text-field
-                                v-model="form.dtstart"
-                                :label="t('CalendarEventDialog.start')"
-                                :type="form.allDay ? 'date' : 'datetime-local'"
-                                :rules="[v => !!v || t('CalendarEventDialog.validation.startRequired')]"
-                                variant="outlined"
-                                density="compact"
-                            />
-                        </v-col>
-                        <v-col cols="6">
-                            <v-text-field
-                                v-model="form.dtend"
-                                :label="t('CalendarEventDialog.end')"
-                                :type="form.allDay ? 'date' : 'datetime-local'"
-                                :min="form.dtstart"
-                                variant="outlined"
-                                density="compact"
-                            />
-                        </v-col>
-                    </v-row>
-
-                    <!-- Category & Priority -->
-                    <v-row>
-                        <v-col cols="6">
+                    <!-- Kategorie / Priorität / Sichtbarkeit -->
+                    <v-row dense class="mb-2">
+                        <v-col cols="12" sm="6">
                             <v-select
                                 v-model="form.category_id"
                                 :items="categoryItems"
                                 :label="t('CalendarEventDialog.category')"
                                 variant="outlined"
                                 density="compact"
+                                prepend-inner-icon="mdi-tag-outline"
                                 clearable
-                            />
+                                hide-details
+                            >
+                                <template #selection="{ item }">
+                                    <v-chip
+                                        size="x-small"
+                                        :color="categories.find(c => c.id === item.value)?.color"
+                                        variant="tonal"
+                                        class="mr-1"
+                                    >
+                                        {{ item.title }}
+                                    </v-chip>
+                                </template>
+                            </v-select>
                         </v-col>
-                        <v-col cols="6">
+                        <v-col cols="6" sm="3">
                             <v-select
                                 v-model="form.prio"
                                 :items="priorityItems"
                                 :label="t('CalendarEventDialog.priority')"
                                 variant="outlined"
                                 density="compact"
+                                prepend-inner-icon="mdi-flag-outline"
+                                hide-details
+                            >
+                                <template #selection="{ item }">
+                                    <v-icon size="16" :color="priorityColor(item.value)" class="mr-1">mdi-flag</v-icon>
+                                    <span class="text-caption">{{ item.title }}</span>
+                                </template>
+                            </v-select>
+                        </v-col>
+                        <v-col cols="6" sm="3">
+                            <v-select
+                                v-model="form.visibility"
+                                :items="visibilityItems"
+                                :label="t('CalendarEventDialog.visibility')"
+                                variant="outlined"
+                                density="compact"
+                                prepend-inner-icon="mdi-eye-outline"
+                                hide-details
                             />
                         </v-col>
                     </v-row>
 
-                    <!-- Location -->
+                    <!-- Ort -->
                     <v-text-field
                         v-model="form.location"
                         :label="t('CalendarEventDialog.location')"
                         variant="outlined"
                         density="compact"
-                        prepend-inner-icon="mdi-map-marker"
+                        prepend-inner-icon="mdi-map-marker-outline"
                         class="mb-3"
+                        hide-details
                     />
 
-                    <!-- Description -->
+                    <!-- Beschreibung -->
                     <v-textarea
                         v-model="form.description"
                         :label="t('CalendarEventDialog.description')"
                         variant="outlined"
                         density="compact"
-                        rows="3"
+                        rows="2"
                         auto-grow
-                        class="mb-3"
+                        prepend-inner-icon="mdi-text"
+                        class="mb-4"
+                        hide-details
                     />
 
-                    <!-- Color -->
-                    <div class="mb-3">
-                        <div class="text-caption text-grey mb-1">{{ t('CalendarEventDialog.color') }}</div>
-                        <div class="d-flex flex-wrap gap-1">
-                            <v-btn
+                    <!-- Farbe -->
+                    <div class="ced-section rounded-lg mb-4">
+                        <div class="ced-section-label mb-3">
+                            <v-icon size="15" class="mr-1">mdi-palette-outline</v-icon>
+                            {{ t('CalendarEventDialog.color') }}
+                        </div>
+                        <div class="d-flex flex-wrap gap-2">
+                            <div
                                 v-for="c in colorOptions"
                                 :key="c"
-                                icon
-                                size="x-small"
-                                :color="c"
-                                :variant="form.color === c ? 'flat' : 'tonal'"
+                                class="ced-color-dot"
+                                :class="{ 'ced-color-dot--active': form.color === c }"
+                                :style="{ backgroundColor: c }"
                                 @click="form.color = form.color === c ? null : c"
                             >
-                                <v-icon v-if="form.color === c" size="14" color="white">mdi-check</v-icon>
-                            </v-btn>
+                                <v-icon v-if="form.color === c" size="13" color="white">mdi-check</v-icon>
+                            </div>
+                            <!-- Kein Farbfilter -->
+                            <div
+                                class="ced-color-dot ced-color-dot--none"
+                                :class="{ 'ced-color-dot--active': !form.color }"
+                                @click="form.color = null"
+                            >
+                                <v-icon v-if="!form.color" size="13" color="grey-darken-1">mdi-check</v-icon>
+                                <v-icon v-else size="13" color="grey">mdi-cancel</v-icon>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Visibility -->
-                    <v-select
-                        v-model="form.visibility"
-                        :items="visibilityItems"
-                        :label="t('CalendarEventDialog.visibility')"
-                        variant="outlined"
-                        density="compact"
-                        class="mb-3"
-                    />
-
                     <!-- Wiederholen -->
-                    <v-switch
-                        v-model="form.repeat"
-                        :label="t('CalendarEventDialog.repeat')"
-                        color="primary"
-                        density="compact"
-                        hide-details
-                        class="mb-3"
-                    />
-
-                    <template v-if="form.repeat">
-                        <!-- Alle N [Einheit] -->
-                        <div class="d-flex align-center gap-2 mb-3">
-                            <span class="text-body-2 text-no-wrap flex-shrink-0">{{ t('CalendarEventDialog.repeatEvery') }}</span>
-                            <v-text-field
-                                v-model.number="form.recur_interval"
-                                type="number"
-                                min="1"
-                                max="999"
-                                variant="outlined"
-                                density="compact"
-                                hide-details
-                                style="max-width: 80px;"
-                            />
-                            <v-select
-                                v-model="form.freq"
-                                :items="freqItems"
-                                variant="outlined"
-                                density="compact"
-                                hide-details
-                            />
-                        </div>
-
-                        <!-- Ende: nach N oder bis Datum -->
-                        <v-btn-toggle
-                            v-model="form.repeatEndType"
-                            mandatory
+                    <div class="ced-section rounded-lg mb-4">
+                        <v-switch
+                            v-model="form.repeat"
+                            :label="t('CalendarEventDialog.repeat')"
+                            color="primary"
                             density="compact"
-                            rounded="lg"
-                            class="mb-2"
-                        >
-                            <v-btn value="count" size="small">{{ t('CalendarEventDialog.repeatEndAfter') }}</v-btn>
-                            <v-btn value="date" size="small">{{ t('CalendarEventDialog.repeatEndOnDate') }}</v-btn>
-                        </v-btn-toggle>
-
-                        <div v-if="form.repeatEndType === 'count'" class="d-flex align-center gap-2 mb-3">
-                            <v-text-field
-                                v-model.number="form.recur_count"
-                                type="number"
-                                min="1"
-                                max="9999"
-                                variant="outlined"
-                                density="compact"
-                                hide-details
-                                style="max-width: 100px;"
-                            />
-                            <span class="text-body-2">{{ t('CalendarEventDialog.repeatEndOccurrences') }}</span>
-                        </div>
-                        <v-text-field
-                            v-else
-                            v-model="form.recur_repeat_end"
-                            type="date"
-                            variant="outlined"
-                            density="compact"
-                            class="mb-3"
+                            hide-details
+                            :class="form.repeat ? 'mb-4' : ''"
                         />
-                    </template>
+                        <template v-if="form.repeat">
+                            <div class="d-flex align-center gap-2 mb-3">
+                                <span class="text-body-2 text-medium-emphasis text-no-wrap flex-shrink-0">
+                                    {{ t('CalendarEventDialog.repeatEvery') }}
+                                </span>
+                                <v-text-field
+                                    v-model.number="form.recur_interval"
+                                    type="number"
+                                    min="1"
+                                    max="999"
+                                    variant="outlined"
+                                    density="compact"
+                                    hide-details
+                                    style="max-width: 80px;"
+                                />
+                                <v-select
+                                    v-model="form.freq"
+                                    :items="freqItems"
+                                    variant="outlined"
+                                    density="compact"
+                                    hide-details
+                                />
+                            </div>
+                            <v-btn-toggle
+                                v-model="form.repeatEndType"
+                                mandatory
+                                density="compact"
+                                rounded="lg"
+                                color="primary"
+                                class="mb-3"
+                            >
+                                <v-btn value="count" size="small">{{ t('CalendarEventDialog.repeatEndAfter') }}</v-btn>
+                                <v-btn value="date" size="small">{{ t('CalendarEventDialog.repeatEndOnDate') }}</v-btn>
+                            </v-btn-toggle>
+                            <div v-if="form.repeatEndType === 'count'" class="d-flex align-center gap-2">
+                                <v-text-field
+                                    v-model.number="form.recur_count"
+                                    type="number"
+                                    min="1"
+                                    max="9999"
+                                    variant="outlined"
+                                    density="compact"
+                                    hide-details
+                                    style="max-width: 100px;"
+                                />
+                                <span class="text-body-2 text-medium-emphasis">{{ t('CalendarEventDialog.repeatEndOccurrences') }}</span>
+                            </div>
+                            <v-text-field
+                                v-else
+                                v-model="form.recur_repeat_end"
+                                type="date"
+                                :label="t('CalendarEventDialog.repeatEndOnDate')"
+                                variant="outlined"
+                                density="compact"
+                                prepend-inner-icon="mdi-calendar-end"
+                                hide-details
+                            />
+                        </template>
+                    </div>
 
-                    <!-- Customer/Vendor -->
+                    <!-- Kunde / Lieferant -->
                     <v-autocomplete
                         v-model="selectedCvp"
                         v-model:search="cvpSearch"
@@ -213,18 +271,16 @@
                         no-filter
                         variant="outlined"
                         density="compact"
-                        prepend-inner-icon="mdi-account-tie"
+                        prepend-inner-icon="mdi-account-tie-outline"
                         clearable
                         hide-no-data
+                        hide-details
                         @update:search="onCvpSearch"
                     >
                         <template #item="{ props: itemProps, item }">
                             <v-list-item v-bind="itemProps">
                                 <template #append>
-                                    <v-icon
-                                        size="small"
-                                        :color="item.raw.typ === 'C' ? 'primary' : 'warning'"
-                                    >
+                                    <v-icon size="small" :color="item.raw.typ === 'C' ? 'primary' : 'warning'">
                                         {{ item.raw.typ === 'C' ? 'mdi-account' : 'mdi-domain' }}
                                     </v-icon>
                                 </template>
@@ -242,6 +298,7 @@
                             </v-btn>
                         </template>
                     </v-autocomplete>
+
                 </v-form>
             </v-card-text>
 
@@ -271,11 +328,15 @@ const formValid = ref(false)
 
 function defaultStartTime() {
     const raw = (oserp.getClientDefaultValue('calendar_day_start') || '07:00').trim()
-    // HH:MM:SS → HH:MM
     return raw.substring(0, 5)
 }
 
 const isEdit = computed(() => !!props.event?.id)
+
+const headerGradient = computed(() => {
+    const c = form.value.color || '#1976D2'
+    return `linear-gradient(135deg, ${c} 0%, ${c}bb 100%)`
+})
 
 const defaultForm = () => ({
     id: null,
@@ -292,7 +353,6 @@ const defaultForm = () => ({
     cvp_id: null,
     cvp_name: '',
     cvp_type: null,
-    // Wiederholung (UI-Felder)
     repeat: false,
     freq: 'yearly',
     recur_interval: 1,
@@ -303,7 +363,6 @@ const defaultForm = () => ({
 
 const form = ref(defaultForm())
 
-// CVP-Suche
 const selectedCvp = ref(null)
 const cvpSearch = ref('')
 const cvpResults = ref([])
@@ -322,13 +381,13 @@ const categoryItems = computed(() =>
 )
 
 const priorityItems = computed(() => [
-    { title: t('CalendarEventDialog.priorityLow'), value: 0 },
+    { title: t('CalendarEventDialog.priorityLow'),    value: 0 },
     { title: t('CalendarEventDialog.priorityNormal'), value: 1 },
-    { title: t('CalendarEventDialog.priorityHigh'), value: 2 }
+    { title: t('CalendarEventDialog.priorityHigh'),   value: 2 }
 ])
 
 const visibilityItems = computed(() => [
-    { title: t('CalendarEventDialog.visibilityAll'), value: -1 },
+    { title: t('CalendarEventDialog.visibilityAll'),     value: -1 },
     { title: t('CalendarEventDialog.visibilityPrivate'), value: 0 }
 ])
 
@@ -339,13 +398,17 @@ const freqItems = computed(() => [
     { title: t('CalendarEventDialog.repeatYears'),  value: 'yearly' },
 ])
 
+function priorityColor(val) {
+    return val === 2 ? 'error' : val === 1 ? 'warning' : 'success'
+}
+
 watch(selectedCvp, (val) => {
     if (val) {
-        form.value.cvp_id = val.id
+        form.value.cvp_id   = val.id
         form.value.cvp_name = val.name
         form.value.cvp_type = val.typ
     } else {
-        form.value.cvp_id = null
+        form.value.cvp_id   = null
         form.value.cvp_name = ''
         form.value.cvp_type = null
     }
@@ -363,10 +426,8 @@ watch(() => form.value.allDay, (isAllDay) => {
         const val = form.value[field]
         if (!val) continue
         if (isAllDay) {
-            // datetime-local → date: Zeitanteil entfernen
             form.value[field] = val.split('T')[0].split(' ')[0]
         } else {
-            // date → datetime-local: Kalender-Startzeit aus Config ergänzen
             if (!val.includes('T')) {
                 form.value[field] = val + 'T' + defaultStartTime()
             }
@@ -379,26 +440,25 @@ watch(() => props.modelValue, (open) => {
         if (props.event) {
             const e = props.event
             form.value = {
-                id: e.id || null,
-                title: e.title || '',
+                id:          e.id || null,
+                title:       e.title || '',
                 description: e.description || '',
-                dtstart: formatForInput(e.dtstart, e.allDay),
-                dtend: formatForInput(e.dtend, e.allDay),
-                allDay: e.allDay || false,
-                location: e.location || '',
-                color: e.color || null,
-                prio: e.prio ?? 1,
+                dtstart:     formatForInput(e.dtstart, e.allDay),
+                dtend:       formatForInput(e.dtend, e.allDay),
+                allDay:      e.allDay || false,
+                location:    e.location || '',
+                color:       e.color || null,
+                prio:        e.prio ?? 1,
                 category_id: e.category_id || null,
-                visibility: e.visibility ?? -1,
-                cvp_id: e.cvp_id || null,
-                cvp_name: e.cvp_name || '',
-                cvp_type: e.cvp_type || null,
-                // Wiederholung
-                repeat:         !!e.freq,
-                freq:           e.freq || 'yearly',
-                recur_interval: e.recur_interval || 1,
-                repeatEndType:  e.count ? 'count' : (e.repeat_end ? 'date' : 'count'),
-                recur_count:    e.count || 10,
+                visibility:  e.visibility ?? -1,
+                cvp_id:      e.cvp_id || null,
+                cvp_name:    e.cvp_name || '',
+                cvp_type:    e.cvp_type || null,
+                repeat:          !!e.freq,
+                freq:            e.freq || 'yearly',
+                recur_interval:  e.recur_interval || 1,
+                repeatEndType:   e.count ? 'count' : (e.repeat_end ? 'date' : 'count'),
+                recur_count:     e.count || 10,
                 recur_repeat_end: e.repeat_end
                     ? (e.repeat_end.split('T')[0].split(' ')[0])
                     : '',
@@ -406,15 +466,15 @@ watch(() => props.modelValue, (open) => {
             if (e.cvp_id && e.cvp_name) {
                 const item = { id: e.cvp_id, name: e.cvp_name, typ: e.cvp_type }
                 selectedCvp.value = item
-                cvpResults.value = [item]
+                cvpResults.value  = [item]
             } else {
                 selectedCvp.value = null
-                cvpResults.value = []
+                cvpResults.value  = []
             }
         } else {
-            form.value = defaultForm()
+            form.value    = defaultForm()
             selectedCvp.value = null
-            cvpResults.value = []
+            cvpResults.value  = []
         }
         cvpSearch.value = ''
     }
@@ -432,23 +492,11 @@ async function searchCvp(query) {
     cvpLoading.value = true
     try {
         const [custRes, vendRes] = await Promise.all([
-            axios.post('/api/customer_vendor/', {
-                action: 'searchCV',
-                type: 'customer',
-                where: { name: query }
-            }, { signal: cvpAbort.signal }),
-            axios.post('/api/customer_vendor/', {
-                action: 'searchCV',
-                type: 'vendor',
-                where: { name: query }
-            }, { signal: cvpAbort.signal })
+            axios.post('/api/customer_vendor/', { action: 'searchCV', type: 'customer', where: { name: query } }, { signal: cvpAbort.signal }),
+            axios.post('/api/customer_vendor/', { action: 'searchCV', type: 'vendor',   where: { name: query } }, { signal: cvpAbort.signal })
         ])
-        const customers = (custRes.data?.payload?.search?.results ?? []).map(c => ({
-            id: c.id, name: c.name, typ: 'C'
-        }))
-        const vendors = (vendRes.data?.payload?.search?.results ?? []).map(v => ({
-            id: v.id, name: v.name, typ: 'V'
-        }))
+        const customers = (custRes.data?.payload?.search?.results ?? []).map(c => ({ id: c.id, name: c.name, typ: 'C' }))
+        const vendors   = (vendRes.data?.payload?.search?.results ?? []).map(v => ({ id: v.id, name: v.name, typ: 'V' }))
         cvpResults.value = [...customers, ...vendors].slice(0, 15)
     } catch {
         // aborted or network error
@@ -459,9 +507,7 @@ async function searchCvp(query) {
 
 function formatForInput(dateStr, allDay) {
     if (!dateStr) return ''
-    if (allDay) {
-        return dateStr.split('T')[0].split(' ')[0]
-    }
+    if (allDay) return dateStr.split('T')[0].split(' ')[0]
     const d = new Date(dateStr)
     if (isNaN(d.getTime())) return dateStr
     const pad = n => String(n).padStart(2, '0')
@@ -470,25 +516,16 @@ function formatForInput(dateStr, allDay) {
 
 function formatForSave(dateStr, allDay) {
     if (!dateStr) return null
-    if (allDay) {
-        return dateStr.split('T')[0].split(' ')[0]
-    }
-    // Nur Datum ohne Uhrzeit (z.B. nach allDay-Toggle) → Mitternacht anhängen
-    if (!dateStr.includes('T') && !dateStr.includes(' ')) {
-        return dateStr + ' 00:00:00'
-    }
+    if (allDay) return dateStr.split('T')[0].split(' ')[0]
+    if (!dateStr.includes('T') && !dateStr.includes(' ')) return dateStr + ' 00:00:00'
     return dateStr.replace('T', ' ') + ':00'
 }
 
 function applyCurrent() {
     if (props.currentCustomer) {
-        const item = {
-            id: props.currentCustomer.id,
-            name: props.currentCustomer.name,
-            typ: props.currentCustomer.type || 'C'
-        }
+        const item = { id: props.currentCustomer.id, name: props.currentCustomer.name, typ: props.currentCustomer.type || 'C' }
         selectedCvp.value = item
-        cvpResults.value = [item]
+        cvpResults.value  = [item]
     }
 }
 
@@ -496,18 +533,10 @@ function close() {
     emit('update:modelValue', false)
 }
 
-function closeAndSave() {
-    if (formValid.value) {
-        save()
-    } else {
-        close()
-    }
-}
-
 function save() {
     if (!formValid.value) return
     const f = form.value
-    const payload = {
+    emit('save', {
         id:          f.id,
         title:       f.title,
         description: f.description,
@@ -522,12 +551,64 @@ function save() {
         cvp_id:      f.cvp_id,
         cvp_name:    f.cvp_name,
         cvp_type:    f.cvp_type,
-        // Wiederholung: immer mitschicken damit Backend alte Werte überschreibt
         freq:        f.repeat ? f.freq : null,
         interval:    f.repeat ? f.recur_interval : null,
         count:       f.repeat && f.repeatEndType === 'count' ? f.recur_count : null,
         repeat_end:  f.repeat && f.repeatEndType === 'date'  ? f.recur_repeat_end : null,
-    }
-    emit('save', payload)
+    })
 }
 </script>
+
+<style scoped>
+.ced-header {
+    position: relative;
+}
+
+.ced-close-btn {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+}
+
+.ced-section {
+    background: #f8f9fa;
+    padding: 12px 14px;
+}
+
+.ced-section-label {
+    display: flex;
+    align-items: center;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #757575;
+}
+
+.ced-color-dot {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    flex-shrink: 0;
+}
+
+.ced-color-dot:hover {
+    transform: scale(1.18);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.ced-color-dot--active {
+    box-shadow: 0 0 0 2px #fff, 0 0 0 4px rgba(0, 0, 0, 0.3);
+    transform: scale(1.1);
+}
+
+.ced-color-dot--none {
+    background: #f0f0f0 !important;
+    border: 1px solid #ddd;
+}
+</style>

@@ -339,7 +339,17 @@
             "selectPhoto": "Fotografuoti arba pasirinkti nuotrauką",
             "noPhotos": "Kol kas nėra nuotraukų",
             "photoDone": "Baigta",
-            "taxIncluded": "Mokestis įtrauktas į kainą"
+            "taxIncluded": "Mokestis įtrauktas į kainą",
+            "einvoice": {
+                "disabled": "Šiam klientui e. sąskaita faktūra neaktyvuota. Nustatykite ją kliento pagrindiniuose duomenyse arba mandato konfigūracijoje »E. sąskaita faktūra«.",
+                "done": "E. sąskaita faktūra sugeneruota ({format}) — atsisiuntimas pradėtas.",
+                "doneTest": "Bandomoji e. sąskaita faktūra sugeneruota ({format}) — atsisiuntimas pradėtas. Dėmesio: Bandymo režimas!",
+                "failed": "E. sąskaitos faktūros nepavyko sugeneruoti. Išsamiau žiūrėkite naršyklės konsolėje.",
+                "invalid": "Sugeneruota e. sąskaita faktūra neatitinka EN 16931 patvirtinimo. Tipinė priežastis: trūksta pagrindinių duomenų (PVM kodas, maršruto ID, kliento adresas).",
+                "onlyInvoice": "E. sąskaitas faktūras galima generuoti tik iš siunčiamų sąskaitų.",
+                "saveFirst": "Prieš generuojant e. sąskaitą faktūrą, išsaugokite sąskaitą."
+            },
+            "kmStandRequired": "Rida yra privaloma — įveskite ją prieš kurdami sąskaitą."
         },
         "workflow": {
             "created": "Dokument erfolgreich erstellt",

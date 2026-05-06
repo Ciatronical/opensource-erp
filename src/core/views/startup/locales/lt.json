@@ -82,7 +82,21 @@
         "cancel": "Atšaukti",
         "send": "Siųsti",
         "noCustomerVendor": "Klientas ar tiekejas nerastas. Pirmiausia sukurkite klienta arba tikeja.",
-        "newVehicle": "Nauja transporto priemonė"
+        "newVehicle": "Nauja transporto priemonė",
+        "creditNote": "Kreditinė pažyma",
+        "deliveryOrders": "Pristatymo lapai",
+        "noDeliveryOrders": "Nėra pristatymo lapų",
+        "noReclamations": "Reklamacijų nėra",
+        "noVendorDeliveryOrders": "Nėra prekių priėmimų",
+        "noVendorReclamations": "Nėra pirkimo reklamacijų",
+        "reclamations": "Reklamacijos",
+        "status": "Būsena",
+        "statusClosed": "uždarytas",
+        "statusDelivered": "pristatyta",
+        "statusOpen": "atidarytas",
+        "storno": "Atšaukta",
+        "vendorDeliveryOrders": "Prekių priėmimai",
+        "vendorReclamations": "Pirkimo reklamacijos"
     },
     "PhoneActions": {
         "clickToCall": "Skambinti",

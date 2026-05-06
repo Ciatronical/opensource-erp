@@ -351,6 +351,39 @@
             "bccSameAsCc": "CC und BCC dürfen nicht identisch sein",
             "homepageInvalid": "Ogiltige URL (z.B. beispiel.de)",
             "homepageUnreachable": "Seite ist nicht erreichbar"
+        },
+        "businessCard": {
+            "button": "Visitkort KI",
+            "error": "Visitkortet kunde inte analyseras.",
+            "lowConfidence": "Inga data kunde kännas igen i bilden. Använd ett annat foto.",
+            "success": "Visitkort igenkänt ({confidence}% konfidens) — kontrollera uppgifterna",
+            "tooLarge": "Filen är för stor (max 10 MB)."
+        },
+        "phoneSearch": {
+            "button": "Telefon KI",
+            "cancel": "Avbryt",
+            "error": "Webbsökning misslyckades.",
+            "hint": "KI söker numret på webben (impressum, branschkataloger) och fyller i stamdata.",
+            "notFound": "Inga tillförlitliga träffar hittades för detta telefonnummer.",
+            "search": "Sök",
+            "success": "Träff hittad ({confidence}% konfidens) — kontrollera uppgifterna",
+            "title": "Sök kund via telefonnummer"
+        },
+        "zugferd": {
+            "help_current": "{option}",
+            "help_default": "Den här kunden använder det format som konfigurerats i mandantkonfigurationen under »E-faktura«. Rekommenderad inställning när alla kunder behandlas likadant.",
+            "help_off": "Ingen e-faktura genereras för den här kunden, även om mandantstandarden skulle kräva det. Endast för rena B2C-fakturor.",
+            "help_xrechnung": "Rent XML (XRechnung 3.0, CIUS för EN 16931). Obligatoriskt för offentliga upphandlande myndigheter. Fältet »Vårt Leitweg-ID hos kunden« måste fyllas i — utan det avvisar mottagningsportalen fakturan.",
+            "help_xrechnung_test": "XRechnung 3.0 i testläge. För inledande godkännandetester med administrativa portaler som ZRE eller OZG-RE. Bokförs inte.",
+            "help_zugferd": "Hybridfaktura: PDF/A-3 med inbäddat factur-x.xml i profilen EN 16931 Extended. Rekommenderad B2B-standard i Tyskland. Kompatibel med kivitendo och alla vanliga bokföringssystem.",
+            "help_zugferd_test": "Samma hybridfaktura som i produktion, men märkt som testfaktura i XML. För inledande godkännandetester med den här kunden — mottagarsystemet bokför den inte.",
+            "leitweg_hint": "För XRechnung måste fältet »Vårt Leitweg-ID hos kunden« (kort »Nummer och ID:n«) fyllas i.",
+            "option_default": "Använd mandantstandard",
+            "option_off": "Ingen e-faktura",
+            "option_xrechnung": "XRechnung 3.0",
+            "option_xrechnung_test": "XRechnung 3.0 (Testläge)",
+            "option_zugferd": "Factur-X / ZUGFeRD 2.2 extended",
+            "option_zugferd_test": "Factur-X / ZUGFeRD extended (Testläge)"
         }
     }
 }

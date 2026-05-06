@@ -31,5 +31,18 @@
         "ordered": "Beställd",
         "revertToPending": "Återställ till väntande",
         "delete": "Radera"
+    },
+    "MaintenanceSectionCard": {
+        "close": "Stäng",
+        "fields": {
+            "c_bf": "Bromsvätska",
+            "c_sk": "Kamkedja",
+            "c_wd": "Nästa service",
+            "c_zrd": "Datum kamrem",
+            "c_zrk": "Km kamrem"
+        },
+        "incompleteText": "Innan ordern kan avslutas måste följande fält fyllas i:",
+        "incompleteTitle": "Servicedata ofullständiga",
+        "title": "Underhåll och service"
     }
 }

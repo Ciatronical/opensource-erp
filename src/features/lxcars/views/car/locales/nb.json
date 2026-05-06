@@ -55,7 +55,8 @@
             "scan_id": "Scan-ID",
             "scan_detail_id": "Scan-Detail-ID",
             "filename": "Filname",
-            "c_ow": "Besitzer"
+            "c_ow": "Besitzer",
+            "c_km": "Siste kilometerstand"
         },
         "kba": {
             "hersteller": "Hersteller",
@@ -271,7 +272,40 @@
             "uploadDoc": "Last opp dokument",
             "uploadError": "Ugyldig filtype",
             "uploadUnsupported": "Last opp en PDF- eller tekstfil."
-        }
+        },
+        "backToOrder": "Ordre",
+        "email": {
+            "addCcBcc": "CC / BCC",
+            "addFiles": "Legg ved ekstra filer",
+            "attachFull": "Legg ved komplette kjøretøydata som tekstfil",
+            "attachmentName": "Vedlegg",
+            "bcc": "BCC",
+            "body": "Melding",
+            "bodyFieldFin": "VIN",
+            "bodyFieldFirstReg": "Første registrering",
+            "bodyFieldHu": "EU-kontroll forfaller",
+            "bodyFieldKm": "Kilometerstand",
+            "bodyFieldMake": "Merke",
+            "bodyFieldModel": "Modell / Type",
+            "bodyFieldPlate": "Registreringsskilt",
+            "bodyGreeting": "Hei,",
+            "bodyHeader": "Kjøretøydata",
+            "bodyIntro": "her følger de ønskede kjøretøydataene:",
+            "bodyOutro": "Med vennlig hilsen",
+            "button": "E-Mail",
+            "cancel": "Avbryt",
+            "cc": "CC",
+            "dialogTitle": "Send kjøretøydata via e-post",
+            "error": "Feil ved sending av e-post",
+            "send": "Send",
+            "sending": "Sender...",
+            "subject": "Emne",
+            "success": "E-post er sendt",
+            "to": "Til (kunde, leverandør eller e-postadresse)",
+            "tooltip": "Send kjøretøydata via e-post til en kunde, leverandør eller egendefinert adresse"
+        },
+        "readonly": "Kun visning",
+        "titleView": "Kjøretøydata"
     },
     "CarScanView": {
         "title": "Kjoeretoeyer vom Scan anlegen",
@@ -473,6 +507,7 @@
             "required": "Obligatorisk felt",
             "dateFormat": "Ugyldiges Dato (z.B. 1.3.5 oder 15.06.2020)",
             "ibanFormat": "Ugyldiges IBAN-Format"
-        }
+        },
+        "generateDraftPdf": "Generer utkast-PDF"
     }
 }

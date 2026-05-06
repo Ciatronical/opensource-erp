@@ -82,7 +82,21 @@
         "cancel": "Anulare",
         "send": "Trimite",
         "noCustomerVendor": "Nu a fost găsit niciun client sau furnizor. Vă rugăm să creați mai întâi un client sau furnizor.",
-        "newVehicle": "Vehicul nou"
+        "newVehicle": "Vehicul nou",
+        "creditNote": "Notă de credit",
+        "deliveryOrders": "Avize de livrare",
+        "noDeliveryOrders": "Nu există avize de livrare",
+        "noReclamations": "Nu există reclamații",
+        "noVendorDeliveryOrders": "Nu există recepții de marfă",
+        "noVendorReclamations": "Nu există reclamații de achiziție",
+        "reclamations": "Reclamații",
+        "status": "Stare",
+        "statusClosed": "închis",
+        "statusDelivered": "livrat",
+        "statusOpen": "deschis",
+        "storno": "Anulat",
+        "vendorDeliveryOrders": "Recepții de marfă",
+        "vendorReclamations": "Reclamații de achiziție"
     },
     "PhoneActions": {
         "clickToCall": "Apelare",

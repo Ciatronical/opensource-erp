@@ -38,7 +38,12 @@
         "huSerienbrief": "/serienbrief/hu",
         "wallDisplay": "/wandanzeige",
         "editCv": "/zakaznik-dodavatel/upravit",
-        "lxcarsReports": "/uzivatel/vyhodnoceni"
+        "lxcarsReports": "/uzivatel/vyhodnoceni",
+        "camera": "/cameras",
+        "hr": "/hr",
+        "hrPayroll": "/hr/payroll",
+        "hrVacation": "/hr/vacation",
+        "newDeliveryOrder": "/delivery-order/new"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Chyba: Soubor s heslem api/config/api.passwd.php nebyl nalezen. Prosim prejmenujte soubor api/config/api.passwd.php.example na api/config/api.passwd.php a upravte nastaveni.",
@@ -72,6 +77,11 @@
         "clientConfig": "Konfigurace firmy",
         "developerTools": "Developer Tools",
         "systemUpdate": "Aktualizace systému",
-        "about": "O aplikaci"
+        "about": "O aplikaci",
+        "docs": "Dokumentace"
+    },
+    "DocsView": {
+        "title": "Dokumentace",
+        "selectDoc": "Vyberte dokument ze seznamu"
     }
 }

@@ -82,7 +82,21 @@
         "cancel": "取消",
         "send": "发送",
         "noCustomerVendor": "未找到客户或供应商。请先创建客户或供应商。",
-        "newVehicle": "新车辆"
+        "newVehicle": "新车辆",
+        "creditNote": "信用票据",
+        "deliveryOrders": "送货单",
+        "noDeliveryOrders": "没有送货单",
+        "noReclamations": "没有投诉",
+        "noVendorDeliveryOrders": "没有收货记录",
+        "noVendorReclamations": "没有采购投诉",
+        "reclamations": "投诉",
+        "status": "状态",
+        "statusClosed": "已关闭",
+        "statusDelivered": "已交付",
+        "statusOpen": "开放",
+        "storno": "已取消",
+        "vendorDeliveryOrders": "收货记录",
+        "vendorReclamations": "采购投诉"
     },
     "PhoneActions": {
         "clickToCall": "拨打电话",

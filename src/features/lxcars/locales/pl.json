@@ -31,5 +31,18 @@
         "ordered": "Zamówione",
         "revertToPending": "Przywróć do oczekujących",
         "delete": "Usuń"
+    },
+    "MaintenanceSectionCard": {
+        "close": "Zamknij",
+        "fields": {
+            "c_bf": "Płyn hamulcowy",
+            "c_sk": "Łańcuch rozrządu",
+            "c_wd": "Następny przegląd",
+            "c_zrd": "Data paska rozrządu",
+            "c_zrk": "Km paska rozrządu"
+        },
+        "incompleteText": "Przed zamknięciem zlecenia należy wypełnić następujące pola:",
+        "incompleteTitle": "Dane serwisowe niekompletne",
+        "title": "Konserwacja i serwis"
     }
 }

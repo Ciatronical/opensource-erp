@@ -351,6 +351,39 @@
             "bccSameAsCc": "CC und BCC dürfen nicht identisch sein",
             "homepageInvalid": "Ungültige URL (z.B. beispiel.de)",
             "homepageUnreachable": "Seite ist nicht erreichbar"
+        },
+        "businessCard": {
+            "button": "Carte de vizită AI",
+            "error": "Cartea de vizită nu a putut fi analizată.",
+            "lowConfidence": "Nicio dată recunoscută în imagine. Folosiți altă fotografie.",
+            "success": "Carte de vizită recunoscută ({confidence}% încredere) — verificați datele",
+            "tooLarge": "Fișierul este prea mare (max. 10 MB)."
+        },
+        "phoneSearch": {
+            "button": "Telefon AI",
+            "cancel": "Anulare",
+            "error": "Căutarea web a eșuat.",
+            "hint": "AI caută numărul pe web (imprint, cataloage) și completează datele de bază.",
+            "notFound": "Niciun rezultat de încredere găsit pentru acest număr de telefon.",
+            "search": "Căutare",
+            "success": "Potrivire găsită ({confidence}% încredere) — verificați datele",
+            "title": "Căutare client după numărul de telefon"
+        },
+        "zugferd": {
+            "help_current": "{option}",
+            "help_default": "Acest client folosește formatul configurat în configurația mandantului la »Factură electronică«. Setare recomandată când toți clienții sunt tratați uniform.",
+            "help_off": "Nu se generează factură electronică pentru acest client chiar dacă configurația implicită a mandantului o prevede. Numai pentru facturi B2C.",
+            "help_xrechnung": "XML pur (XRechnung 3.0, CIUS al EN 16931). Obligatoriu pentru autorități contractante publice. Câmpul »ID-ul nostru Leitweg la client« trebuie completat — fără acesta portalul va respinge factura.",
+            "help_xrechnung_test": "XRechnung 3.0 în mod test. Pentru testele de acceptanță inițiale cu portaluri administrative precum ZRE sau OZG-RE. Necontabilizat.",
+            "help_zugferd": "Factură hibridă: PDF/A-3 cu factur-x.xml incorporat în profilul EN 16931 Extended. Standard B2B recomandat în Germania. Compatibil cu kivitendo și toate sistemele contabile obișnuite.",
+            "help_zugferd_test": "Aceeași factură hibridă ca în producție, dar marcată ca factură test în XML. Pentru testele de acceptanță inițiale cu acest client — sistemul receptor nu o contabilizează.",
+            "leitweg_hint": "Pentru XRechnung câmpul »ID-ul nostru Leitweg la client« (cardul »Numere și ID-uri«) trebuie completat.",
+            "option_default": "Utilizare implicit mandant",
+            "option_off": "Fără factură electronică",
+            "option_xrechnung": "XRechnung 3.0",
+            "option_xrechnung_test": "XRechnung 3.0 (Mod test)",
+            "option_zugferd": "Factur-X / ZUGFeRD 2.2 extended",
+            "option_zugferd_test": "Factur-X / ZUGFeRD extended (Mod test)"
         }
     }
 }

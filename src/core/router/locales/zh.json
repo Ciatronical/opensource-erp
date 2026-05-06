@@ -38,7 +38,12 @@
         "huSerienbrief": "/serienbrief/hu",
         "wallDisplay": "/wandanzeige",
         "editCv": "/customer-vendor/edit",
-        "lxcarsReports": "/user/reports"
+        "lxcarsReports": "/user/reports",
+        "camera": "/cameras",
+        "hr": "/hr",
+        "hrPayroll": "/hr/payroll",
+        "hrVacation": "/hr/vacation",
+        "newDeliveryOrder": "/delivery-order/new"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "错误：未找到密码文件 api/config/api.passwd.php。请将文件 api/config/api.passwd.php.example 重命名为 api/config/api.passwd.php 并相应调整设置。",
@@ -72,6 +77,11 @@
         "clientConfig": "公司配置",
         "developerTools": "开发者工具",
         "systemUpdate": "系统更新",
-        "about": "关于"
+        "about": "关于",
+        "docs": "文档"
+    },
+    "DocsView": {
+        "title": "文档",
+        "selectDoc": "从列表中选择文档"
     }
 }

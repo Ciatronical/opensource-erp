@@ -38,7 +38,12 @@
         "huSerienbrief": "/serienbrief/hu",
         "wallDisplay": "/wandanzeige",
         "editCv": "/kunde-leverandor/rediger",
-        "lxcarsReports": "/bruker/rapporter"
+        "lxcarsReports": "/bruker/rapporter",
+        "camera": "/cameras",
+        "hr": "/hr",
+        "hrPayroll": "/hr/payroll",
+        "hrVacation": "/hr/vacation",
+        "newDeliveryOrder": "/delivery-order/new"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Feil: Passordfilen api/config/api.passwd.php ble ikke funnet. Vennligst gi nytt navn til filen api/config/api.passwd.php.example til api/config/api.passwd.php og tilpass innstillingene.",
@@ -72,6 +77,11 @@
         "clientConfig": "Firmakonfigurasjon",
         "developerTools": "Developer Tools",
         "systemUpdate": "Systemoppdatering",
-        "about": "Om"
+        "about": "Om",
+        "docs": "Dokumentasjon"
+    },
+    "DocsView": {
+        "title": "Dokumentasjon",
+        "selectDoc": "Velg et dokument fra listen"
     }
 }

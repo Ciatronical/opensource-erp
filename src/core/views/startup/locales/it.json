@@ -82,7 +82,21 @@
         "cancel": "Annulla",
         "send": "Invia",
         "noCustomerVendor": "Nessun cliente o fornitore trovato. Creare prima un cliente o un fornitore.",
-        "newVehicle": "Nuovo veicolo"
+        "newVehicle": "Nuovo veicolo",
+        "creditNote": "Nota di credito",
+        "deliveryOrders": "Bolle di consegna",
+        "noDeliveryOrders": "Nessuna bolla di consegna",
+        "noReclamations": "Nessun reclamo",
+        "noVendorDeliveryOrders": "Nessuna ricevuta merci",
+        "noVendorReclamations": "Nessun reclamo di acquisto",
+        "reclamations": "Reclami",
+        "status": "Stato",
+        "statusClosed": "chiuso",
+        "statusDelivered": "consegnato",
+        "statusOpen": "aperto",
+        "storno": "Annullato",
+        "vendorDeliveryOrders": "Ricezioni merci",
+        "vendorReclamations": "Reclami di acquisto"
     },
     "PhoneActions": {
         "clickToCall": "Chiama",

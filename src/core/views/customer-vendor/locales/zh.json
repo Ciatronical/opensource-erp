@@ -351,6 +351,39 @@
             "bccSameAsCc": "抄送和密送不能相同",
             "homepageInvalid": "无效的 URL（例如 example.com）",
             "homepageUnreachable": "网页无法访问"
+        },
+        "businessCard": {
+            "button": "名片AI",
+            "error": "无法分析名片。",
+            "lowConfidence": "图像中未识别到数据。请使用其他照片。",
+            "success": "名片已识别（{confidence}% 置信度）— 请检查数据",
+            "tooLarge": "文件过大（最大10 MB）。"
+        },
+        "phoneSearch": {
+            "button": "电话AI",
+            "cancel": "取消",
+            "error": "网络搜索失败。",
+            "hint": "AI在网络上（法律声明、目录）搜索该号码并填写主数据。",
+            "notFound": "未找到该电话号码的可靠匹配结果。",
+            "search": "搜索",
+            "success": "找到匹配（{confidence}% 置信度）— 请检查数据",
+            "title": "按电话号码查找客户"
+        },
+        "zugferd": {
+            "help_current": "{option}",
+            "help_default": "此客户使用在委托人配置»电子发票«中设置的格式。当所有客户统一处理时推荐此设置。",
+            "help_off": "即使委托人的默认设置规定需要，此客户也不会生成电子发票。仅适用于纯B2C发票。",
+            "help_xrechnung": "纯XML（XRechnung 3.0，EN 16931 CIUS）。对公共采购机构强制要求。必须填写»我们在客户处的路由ID«字段 — 否则接收门户将拒绝发票。",
+            "help_xrechnung_test": "测试模式下的XRechnung 3.0。用于与ZRE或OZG-RE等行政门户的初始验收测试。不计入账务。",
+            "help_zugferd": "混合发票：带嵌入factur-x.xml的PDF/A-3，符合EN 16931 Extended配置文件。德国推荐的B2B标准。与kivitendo及所有常用会计系统兼容。",
+            "help_zugferd_test": "与生产版本相同的混合发票，但在XML中标记为测试发票。用于与此客户的初始验收测试 — 接收系统不会将其计入账务。",
+            "leitweg_hint": "对于XRechnung，必须填写»我们在客户处的路由ID«字段（卡片»编号和ID«）。",
+            "option_default": "使用委托人默认值",
+            "option_off": "无电子发票",
+            "option_xrechnung": "XRechnung 3.0",
+            "option_xrechnung_test": "XRechnung 3.0（测试模式）",
+            "option_zugferd": "Factur-X / ZUGFeRD 2.2 extended",
+            "option_zugferd_test": "Factur-X / ZUGFeRD extended（测试模式）"
         }
     }
 }

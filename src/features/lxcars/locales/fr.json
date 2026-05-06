@@ -31,5 +31,18 @@
         "ordered": "Commandé",
         "revertToPending": "Remettre en attente",
         "delete": "Supprimer"
+    },
+    "MaintenanceSectionCard": {
+        "close": "Fermer",
+        "fields": {
+            "c_bf": "Liquide de frein",
+            "c_sk": "Chaîne de distribution",
+            "c_wd": "Prochain entretien",
+            "c_zrd": "Date courroie de distribution",
+            "c_zrk": "Km courroie de distribution"
+        },
+        "incompleteText": "Avant de clôturer la commande, les champs suivants doivent être remplis :",
+        "incompleteTitle": "Données d'entretien incomplètes",
+        "title": "Maintenance et entretien"
     }
 }

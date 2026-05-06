@@ -339,7 +339,17 @@
             "selectPhoto": "Fotoğraf çek veya seç",
             "noPhotos": "Henüz fotoğraf yok",
             "photoDone": "Tamam",
-            "taxIncluded": "Vergi fiyata dahil"
+            "taxIncluded": "Vergi fiyata dahil",
+            "einvoice": {
+                "disabled": "Bu müşteri için e-fatura etkinleştirilmemiş. Müşteri ana verilerinde veya müvekkil yapılandırmasında »E-fatura« altında ayarlayın.",
+                "done": "E-fatura oluşturuldu ({format}) — indirme başlatıldı.",
+                "doneTest": "Test e-faturası oluşturuldu ({format}) — indirme başlatıldı. Dikkat: Test modu!",
+                "failed": "E-fatura oluşturulamadı. Ayrıntılar tarayıcı konsolunda.",
+                "invalid": "Oluşturulan e-fatura EN 16931 doğrulamasını geçemiyor. Tipik neden: eksik ana veriler (KDV no., yönlendirme ID, müşteri adresi).",
+                "onlyInvoice": "E-faturalar yalnızca giden faturalardan oluşturulabilir.",
+                "saveFirst": "E-fatura oluşturmadan önce lütfen faturayı kaydedin."
+            },
+            "kmStandRequired": "Kilometre sayacı zorunludur — lütfen fatura oluşturmadan önce girin."
         },
         "workflow": {
             "created": "Dokument erfolgreich erstellt",

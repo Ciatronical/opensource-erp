@@ -55,7 +55,8 @@
             "scan_id": "Scan-ID",
             "scan_detail_id": "Scan-Detail-ID",
             "filename": "Dateiname",
-            "c_ow": "Besitzer"
+            "c_ow": "Besitzer",
+            "c_km": "Ultimul kilometraj"
         },
         "kba": {
             "hersteller": "Hersteller",
@@ -271,7 +272,40 @@
             "uploadDoc": "Încarcă document",
             "uploadError": "Tip de fișier invalid",
             "uploadUnsupported": "Vă rugăm să încărcați un fișier PDF sau text."
-        }
+        },
+        "backToOrder": "Comandă",
+        "email": {
+            "addCcBcc": "CC / BCC",
+            "addFiles": "Atașați fișiere suplimentare",
+            "attachFull": "Atașați datele complete ale vehiculului ca fișier text",
+            "attachmentName": "Atașament",
+            "bcc": "BCC",
+            "body": "Mesaj",
+            "bodyFieldFin": "VIN",
+            "bodyFieldFirstReg": "Prima înregistrare",
+            "bodyFieldHu": "Inspecție scadentă",
+            "bodyFieldKm": "Kilometraj",
+            "bodyFieldMake": "Marcă",
+            "bodyFieldModel": "Model / Tip",
+            "bodyFieldPlate": "Număr de înmatriculare",
+            "bodyGreeting": "Bună ziua,",
+            "bodyHeader": "Date vehicul",
+            "bodyIntro": "mai jos găsiți datele vehiculului:",
+            "bodyOutro": "Cu stimă",
+            "button": "E-Mail",
+            "cancel": "Anulare",
+            "cc": "CC",
+            "dialogTitle": "Trimiteți datele vehiculului prin e-mail",
+            "error": "Eroare la trimiterea e-mailului",
+            "send": "Trimite",
+            "sending": "Se trimite...",
+            "subject": "Subiect",
+            "success": "E-mailul a fost trimis",
+            "to": "Către (client, furnizor sau adresă de e-mail)",
+            "tooltip": "Trimiteți datele vehiculului prin e-mail unui client, furnizor sau adresă personalizată"
+        },
+        "readonly": "Doar vizualizare",
+        "titleView": "Date vehicul"
     },
     "CarScanView": {
         "title": "Fahrzeug vom Scan anlegen",
@@ -473,6 +507,7 @@
             "required": "Pflichtfeld",
             "dateFormat": "Ungültiges Datum (z.B. 1.3.5 oder 15.06.2020)",
             "ibanFormat": "Ungültiges IBAN-Format"
-        }
+        },
+        "generateDraftPdf": "Generați PDF ciornă"
     }
 }

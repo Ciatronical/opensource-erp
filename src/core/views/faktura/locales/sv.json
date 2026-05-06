@@ -339,7 +339,17 @@
             "selectPhoto": "Ta eller välj foto",
             "noPhotos": "Inga foton ännu",
             "photoDone": "Klar",
-            "taxIncluded": "Moms inkluderad i priset"
+            "taxIncluded": "Moms inkluderad i priset",
+            "einvoice": {
+                "disabled": "E-faktura är inte aktiverat för den här kunden. Konfigurera det i kundens stamdata eller i mandantkonfigurationen under »E-faktura«.",
+                "done": "E-faktura genererad ({format}) — nedladdning startad.",
+                "doneTest": "Test-e-faktura genererad ({format}) — nedladdning startad. OBS: Testläge!",
+                "failed": "E-faktura kunde inte genereras. Detaljer i webbläsarkonsolen.",
+                "invalid": "Den genererade e-fakturan klarar inte EN 16931-validering. Typisk orsak: saknade stamdata (moms-nr., Leitweg-ID, kundadress).",
+                "onlyInvoice": "E-fakturor kan bara genereras från utgående fakturor.",
+                "saveFirst": "Spara fakturan innan du genererar en e-faktura."
+            },
+            "kmStandRequired": "Mätarställning krävs — ange den innan fakturan skapas."
         },
         "workflow": {
             "created": "Dokument genomford erstellt",

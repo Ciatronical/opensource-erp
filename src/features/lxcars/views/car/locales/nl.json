@@ -55,7 +55,8 @@
             "scan_id": "Scan-ID",
             "scan_detail_id": "Scan-detail-ID",
             "filename": "Bestandsnaam",
-            "c_ow": "Eigenaar"
+            "c_ow": "Eigenaar",
+            "c_km": "Laatste kilometerstand"
         },
         "kba": {
             "hersteller": "Fabrikant",
@@ -271,7 +272,40 @@
             "uploadDoc": "Document uploaden",
             "uploadError": "Ongeldig bestandstype",
             "uploadUnsupported": "Upload een PDF- of tekstbestand."
-        }
+        },
+        "backToOrder": "Order",
+        "email": {
+            "addCcBcc": "CC / BCC",
+            "addFiles": "Extra bestanden bijvoegen",
+            "attachFull": "Volledige voertuiggegevens als tekstbestand bijvoegen",
+            "attachmentName": "Bijlage",
+            "bcc": "BCC",
+            "body": "Bericht",
+            "bodyFieldFin": "VIN",
+            "bodyFieldFirstReg": "Eerste registratie",
+            "bodyFieldHu": "APK vervalt",
+            "bodyFieldKm": "Kilometerstand",
+            "bodyFieldMake": "Merk",
+            "bodyFieldModel": "Model / Type",
+            "bodyFieldPlate": "Kenteken",
+            "bodyGreeting": "Hallo,",
+            "bodyHeader": "Voertuiggegevens",
+            "bodyIntro": "hieronder vindt u de voertuiggegevens:",
+            "bodyOutro": "Met vriendelijke groet",
+            "button": "E-Mail",
+            "cancel": "Annuleren",
+            "cc": "CC",
+            "dialogTitle": "Voertuiggegevens per e-mail versturen",
+            "error": "Fout bij verzenden van e-mail",
+            "send": "Versturen",
+            "sending": "Verzenden...",
+            "subject": "Onderwerp",
+            "success": "E-mail is verzonden",
+            "to": "Aan (klant, leverancier of e-mailadres)",
+            "tooltip": "Voertuiggegevens per e-mail sturen naar een klant, leverancier of aangepast adres"
+        },
+        "readonly": "Alleen weergave",
+        "titleView": "Voertuiggegevens"
     },
     "CarScanView": {
         "title": "Voertuig aanmaken van scan",
@@ -473,6 +507,7 @@
             "required": "Verplicht veld",
             "dateFormat": "Ongeldige datum (bijv. 1.3.5 of 15.06.2020)",
             "ibanFormat": "Ongeldig IBAN-formaat"
-        }
+        },
+        "generateDraftPdf": "Concept-PDF genereren"
     }
 }

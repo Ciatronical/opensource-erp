@@ -55,7 +55,8 @@
             "scan_id": "Scan-ID",
             "scan_detail_id": "Scan-Detail-ID",
             "filename": "Dateiname",
-            "c_ow": "Besitzer"
+            "c_ow": "Besitzer",
+            "c_km": "Poslední stav km"
         },
         "kba": {
             "hersteller": "Hersteller",
@@ -271,7 +272,40 @@
             "uploadDoc": "Nahrát dokument",
             "uploadError": "Neplatný typ souboru",
             "uploadUnsupported": "Nahrajte soubor PDF nebo textový soubor."
-        }
+        },
+        "backToOrder": "Zakázka",
+        "email": {
+            "addCcBcc": "CC / BCC",
+            "addFiles": "Přiložit další soubory",
+            "attachFull": "Přiložit kompletní data vozidla jako textový soubor",
+            "attachmentName": "Příloha",
+            "bcc": "BCC",
+            "body": "Zpráva",
+            "bodyFieldFin": "VIN",
+            "bodyFieldFirstReg": "První registrace",
+            "bodyFieldHu": "Technická prohlídka",
+            "bodyFieldKm": "Stav km",
+            "bodyFieldMake": "Značka",
+            "bodyFieldModel": "Model / Typ",
+            "bodyFieldPlate": "SPZ",
+            "bodyGreeting": "Dobrý den,",
+            "bodyHeader": "Data vozidla",
+            "bodyIntro": "v příloze zasílám data k vozidlu:",
+            "bodyOutro": "S pozdravem",
+            "button": "E-Mail",
+            "cancel": "Zrušit",
+            "cc": "CC",
+            "dialogTitle": "Odeslat data vozidla e-mailem",
+            "error": "Chyba při odesílání e-mailu",
+            "send": "Odeslat",
+            "sending": "Odesílám...",
+            "subject": "Předmět",
+            "success": "E-mail byl odeslán",
+            "to": "Komu (zákazník, dodavatel nebo e-mailová adresa)",
+            "tooltip": "Odeslat data vozidla e-mailem zákazníkovi, dodavateli nebo na vlastní adresu"
+        },
+        "readonly": "Pouze zobrazení",
+        "titleView": "Data vozidla"
     },
     "CarScanView": {
         "title": "Fahrzeug vom Scan anlegen",
@@ -473,6 +507,7 @@
             "required": "Pflichtfeld",
             "dateFormat": "Ungültiges Datum (z.B. 1.3.5 oder 15.06.2020)",
             "ibanFormat": "Ungültiges IBAN-Format"
-        }
+        },
+        "generateDraftPdf": "Vytvořit návrh PDF"
     }
 }

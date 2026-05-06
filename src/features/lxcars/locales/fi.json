@@ -31,5 +31,18 @@
         "ordered": "Tilattu",
         "revertToPending": "Palauta odottavaksi",
         "delete": "Poista"
+    },
+    "MaintenanceSectionCard": {
+        "close": "Sulje",
+        "fields": {
+            "c_bf": "Jarruneste",
+            "c_sk": "Ajoitusketju",
+            "c_wd": "Seuraava huolto",
+            "c_zrd": "Ajoitushihnan päivämäärä",
+            "c_zrk": "Ajoitushihnan kilometrit"
+        },
+        "incompleteText": "Ennen kuin tilaus voidaan päättää, seuraavat kentät täytyy täyttää:",
+        "incompleteTitle": "Huoltotiedot puutteelliset",
+        "title": "Huolto ja ylläpito"
     }
 }

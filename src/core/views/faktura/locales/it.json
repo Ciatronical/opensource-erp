@@ -339,7 +339,17 @@
             "selectPhoto": "Scatta o seleziona foto",
             "noPhotos": "Nessuna foto ancora",
             "photoDone": "Fatto",
-            "taxIncluded": "Imposta inclusa nel prezzo"
+            "taxIncluded": "Imposta inclusa nel prezzo",
+            "einvoice": {
+                "disabled": "La fattura elettronica non è abilitata per questo cliente. Configurarla nei dati anagrafici del cliente o nella configurazione del mandante sotto »Fattura elettronica«.",
+                "done": "Fattura elettronica generata ({format}) — download avviato.",
+                "doneTest": "Fattura elettronica di test generata ({format}) — download avviato. Attenzione: Modalità test!",
+                "failed": "Impossibile generare la fattura elettronica. Dettagli nella console del browser.",
+                "invalid": "La fattura elettronica generata non supera la validazione EN 16931. Causa tipica: dati anagrafici mancanti (P.IVA, ID routing, indirizzo cliente).",
+                "onlyInvoice": "Le fatture elettroniche possono essere generate solo dalle fatture in uscita.",
+                "saveFirst": "Salvare la fattura prima di generare la fattura elettronica."
+            },
+            "kmStandRequired": "Il chilometraggio è obbligatorio — inserirlo prima di creare la fattura."
         },
         "workflow": {
             "created": "Dokument erfolgreich erstellt",

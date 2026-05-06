@@ -82,7 +82,21 @@
         "cancel": "Zrušit",
         "send": "Odeslat",
         "noCustomerVendor": "Žádný zákazník ani dodavatel nenalezen. Nejprve vytvořte zákazníka nebo dodavatele.",
-        "newVehicle": "Nové vozidlo"
+        "newVehicle": "Nové vozidlo",
+        "creditNote": "Dobropis",
+        "deliveryOrders": "Dodací listy",
+        "noDeliveryOrders": "Žádné dodací listy",
+        "noReclamations": "Žádné reklamace",
+        "noVendorDeliveryOrders": "Žádné příjemky zboží",
+        "noVendorReclamations": "Žádné nákupní reklamace",
+        "reclamations": "Reklamace",
+        "status": "Stav",
+        "statusClosed": "uzavřeno",
+        "statusDelivered": "doručeno",
+        "statusOpen": "otevřeno",
+        "storno": "Stornováno",
+        "vendorDeliveryOrders": "Příjemky zboží",
+        "vendorReclamations": "Nákupní reklamace"
     },
     "PhoneActions": {
         "clickToCall": "Zavolat",

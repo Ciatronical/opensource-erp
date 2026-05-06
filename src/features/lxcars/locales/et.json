@@ -31,5 +31,18 @@
         "ordered": "Tellitud",
         "revertToPending": "Tagasi ootele",
         "delete": "Kustuta"
+    },
+    "MaintenanceSectionCard": {
+        "close": "Sulge",
+        "fields": {
+            "c_bf": "Pidurivedelik",
+            "c_sk": "Ajastuskett",
+            "c_wd": "Järgmine hooldus",
+            "c_zrd": "Hammasrihma kuupäev",
+            "c_zrk": "Hammasrihma läbisõit"
+        },
+        "incompleteText": "Enne tellimuse lõpetamist peavad olema täidetud järgmised väljad:",
+        "incompleteTitle": "Hooldusandmed on puudulikud",
+        "title": "Hooldus ja teenindus"
     }
 }

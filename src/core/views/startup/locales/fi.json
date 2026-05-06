@@ -82,7 +82,21 @@
         "cancel": "Peruuta",
         "send": "Lähetä",
         "noCustomerVendor": "Asiakasta tai toimittajaa ei loytynyt. Luo ensin asiakas tai toimittaja.",
-        "newVehicle": "Uusi ajoneuvo"
+        "newVehicle": "Uusi ajoneuvo",
+        "creditNote": "Hyvityslasku",
+        "deliveryOrders": "Lähetysluettelot",
+        "noDeliveryOrders": "Ei lähetysluetteloita",
+        "noReclamations": "Ei reklamaatioita",
+        "noVendorDeliveryOrders": "Ei tavaravastaanottokirjauksia",
+        "noVendorReclamations": "Ei ostoreklamaatioita",
+        "reclamations": "Reklamaatiot",
+        "status": "Tila",
+        "statusClosed": "suljettu",
+        "statusDelivered": "toimitettu",
+        "statusOpen": "avoin",
+        "storno": "Peruutettu",
+        "vendorDeliveryOrders": "Tavaravastaanotot",
+        "vendorReclamations": "Ostoreklamaatiot"
     },
     "PhoneActions": {
         "clickToCall": "Soita",

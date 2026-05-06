@@ -351,6 +351,39 @@
             "bccSameAsCc": "CC und BCC dürfen nicht identisch sein",
             "homepageInvalid": "Ungültige URL (z.B. beispiel.de)",
             "homepageUnreachable": "Seite ist nicht erreichbar"
+        },
+        "businessCard": {
+            "button": "Vizitinė kortelė DI",
+            "error": "Vizitinės kortelės nepavyko išanalizuoti.",
+            "lowConfidence": "Paveiksle duomenų neaptikta. Naudokite kitą nuotrauką.",
+            "success": "Vizitinė kortelė atpažinta ({confidence}% tikimybė) — patikrinkite duomenis",
+            "tooLarge": "Failas per didelis (maks. 10 MB)."
+        },
+        "phoneSearch": {
+            "button": "Telefonas DI",
+            "cancel": "Atšaukti",
+            "error": "Žiniatinklio paieška nepavyko.",
+            "hint": "DI ieško numerio internete (impresumo, katalogai) ir užpildo pagrindinius duomenis.",
+            "notFound": "Šiam telefono numeriui patikimų rezultatų nerasta.",
+            "search": "Ieškoti",
+            "success": "Rasta atitiktis ({confidence}% tikimybė) — patikrinkite duomenis",
+            "title": "Ieškoti kliento pagal telefono numerį"
+        },
+        "zugferd": {
+            "help_current": "{option}",
+            "help_default": "Šis klientas naudoja formatą, sukonfigūruotą mandato konfigūracijoje »E. sąskaita faktūra«. Rekomenduojamas nustatymas, kai visi klientai tvarkomi vienodai.",
+            "help_off": "Šiam klientui e. sąskaita faktūra negeneruojama net jei tai numato mandato numatytasis nustatymas. Tinka tik grynoms B2C sąskaitoms.",
+            "help_xrechnung": "Grynasis XML (XRechnung 3.0, EN 16931 CIUS). Privaloma viešiesiems pirkėjams. Laukas »Mūsų Leitweg-ID pas klientą« turi būti užpildytas — be jo portaas atmes sąskaitą.",
+            "help_xrechnung_test": "XRechnung 3.0 bandymo režimu. Pirminiam priėmimui su administraciniais portalais kaip ZRE arba OZG-RE. Neregistruojama.",
+            "help_zugferd": "Hibridinė sąskaita faktūra: PDF/A-3 su įterptuo factur-x.xml EN 16931 Extended profilyje. Rekomenduojamas B2B standartas Vokietijoje. Suderinamas su kivitendo ir visomis įprastomis apskaitos sistemomis.",
+            "help_zugferd_test": "Ta pati hibridinė sąskaita faktūra kaip gamyboje, bet XML pažymėta kaip bandomoji. Pirminiam priėmimui su šiuo klientu — gavimo sistema jos neregistruoja.",
+            "leitweg_hint": "XRechnung laukas »Mūsų Leitweg-ID pas klientą« (kortelė »Numeriai ir ID«) turi būti užpildytas.",
+            "option_default": "Naudoti mandato numatytąjį",
+            "option_off": "Be e. sąskaitos",
+            "option_xrechnung": "XRechnung 3.0",
+            "option_xrechnung_test": "XRechnung 3.0 (Bandymo režimas)",
+            "option_zugferd": "Factur-X / ZUGFeRD 2.2 extended",
+            "option_zugferd_test": "Factur-X / ZUGFeRD extended (Bandymo režimas)"
         }
     }
 }

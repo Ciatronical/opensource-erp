@@ -38,7 +38,12 @@
         "huSerienbrief": "/serienbrief/hu",
         "wallDisplay": "/wandanzeige",
         "editCv": "/klients-piegadatajs/rediget",
-        "lxcarsReports": "/lietotajs/atskaites"
+        "lxcarsReports": "/lietotajs/atskaites",
+        "camera": "/cameras",
+        "hr": "/hr",
+        "hrPayroll": "/hr/payroll",
+        "hrVacation": "/hr/vacation",
+        "newDeliveryOrder": "/delivery-order/new"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Kluda: Paroles fails api/config/api.passwd.php nav atrasts. Ludzu pardevejiet failu api/config/api.passwd.php.example par api/config/api.passwd.php un pielagojiet iestatijumus.",
@@ -72,6 +77,11 @@
         "clientConfig": "Uznemuma konfiguracija",
         "developerTools": "Developer Tools",
         "systemUpdate": "Sistemas atjauninasana",
-        "about": "Par"
+        "about": "Par",
+        "docs": "Dokumentācija"
+    },
+    "DocsView": {
+        "title": "Dokumentācija",
+        "selectDoc": "Atlasiet dokumentu no saraksta"
     }
 }

@@ -31,5 +31,18 @@
         "ordered": "Sipariş edildi",
         "revertToPending": "Beklemede olana geri al",
         "delete": "Sil"
+    },
+    "MaintenanceSectionCard": {
+        "close": "Kapat",
+        "fields": {
+            "c_bf": "Fren hidroliği",
+            "c_sk": "Zamanlama zinciri",
+            "c_wd": "Sonraki bakım tarihi",
+            "c_zrd": "Triger kayışı tarihi",
+            "c_zrk": "Triger kayışı km"
+        },
+        "incompleteText": "Sipariş tamamlanmadan önce aşağıdaki alanlar doldurulmalıdır:",
+        "incompleteTitle": "Bakım verileri eksik",
+        "title": "Bakım ve servis"
     }
 }

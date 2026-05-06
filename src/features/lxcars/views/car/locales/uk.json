@@ -55,7 +55,8 @@
             "scan_id": "ID скану",
             "scan_detail_id": "ID деталі скану",
             "filename": "Назва файлу",
-            "c_ow": "Власник"
+            "c_ow": "Власник",
+            "c_km": "Останній пробіг"
         },
         "kba": {
             "hersteller": "Виробник",
@@ -271,7 +272,40 @@
             "uploadDoc": "Завантажити документ",
             "uploadError": "Недійсний тип файлу",
             "uploadUnsupported": "Завантажте PDF або текстовий файл."
-        }
+        },
+        "backToOrder": "Замовлення",
+        "email": {
+            "addCcBcc": "CC / BCC",
+            "addFiles": "Додати додаткові файли",
+            "attachFull": "Прикріпити повні дані транспортного засобу як текстовий файл",
+            "attachmentName": "Вкладення",
+            "bcc": "BCC",
+            "body": "Повідомлення",
+            "bodyFieldFin": "VIN",
+            "bodyFieldFirstReg": "Перша реєстрація",
+            "bodyFieldHu": "Техогляд закінчується",
+            "bodyFieldKm": "Пробіг",
+            "bodyFieldMake": "Марка",
+            "bodyFieldModel": "Модель / Тип",
+            "bodyFieldPlate": "Номерний знак",
+            "bodyGreeting": "Добрий день,",
+            "bodyHeader": "Дані транспортного засобу",
+            "bodyIntro": "нижче наведено дані транспортного засобу:",
+            "bodyOutro": "З повагою",
+            "button": "E-Mail",
+            "cancel": "Скасувати",
+            "cc": "CC",
+            "dialogTitle": "Надіслати дані ТЗ електронною поштою",
+            "error": "Помилка при відправленні e-mail",
+            "send": "Надіслати",
+            "sending": "Надсилання...",
+            "subject": "Тема",
+            "success": "E-mail надіслано",
+            "to": "Кому (клієнт, постачальник або e-mail адреса)",
+            "tooltip": "Надіслати дані ТЗ електронною поштою клієнту, постачальнику або на довільну адресу"
+        },
+        "readonly": "Лише перегляд",
+        "titleView": "Дані ТЗ"
     },
     "CarScanView": {
         "title": "Створити ТЗ зі скану",
@@ -473,6 +507,7 @@
             "required": "Обов'язкове поле",
             "dateFormat": "Невірна дата (напр. 1.3.5 або 15.06.2020)",
             "ibanFormat": "Невірний формат IBAN"
-        }
+        },
+        "generateDraftPdf": "Створити чернетку PDF"
     }
 }

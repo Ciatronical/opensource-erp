@@ -351,6 +351,39 @@
             "bccSameAsCc": "CC und BCC dürfen nicht identisch sein",
             "homepageInvalid": "Ungültige URL (z.B. beispiel.de)",
             "homepageUnreachable": "Seite ist nicht erreichbar"
+        },
+        "businessCard": {
+            "button": "Tarjeta de visita IA",
+            "error": "No se pudo analizar la tarjeta de visita.",
+            "lowConfidence": "No se reconocieron datos en la imagen. Utilice otra foto.",
+            "success": "Tarjeta de visita reconocida ({confidence}% confianza) — revise los datos",
+            "tooLarge": "El archivo es demasiado grande (máx. 10 MB)."
+        },
+        "phoneSearch": {
+            "button": "Teléfono IA",
+            "cancel": "Cancelar",
+            "error": "La búsqueda web falló.",
+            "hint": "La IA busca el número en la web (aviso legal, directorios) y rellena los datos maestros.",
+            "notFound": "No se encontraron resultados fiables para este número de teléfono.",
+            "search": "Buscar",
+            "success": "Coincidencia encontrada ({confidence}% confianza) — revise los datos",
+            "title": "Buscar cliente por número de teléfono"
+        },
+        "zugferd": {
+            "help_current": "{option}",
+            "help_default": "Este cliente utiliza el formato configurado en la configuración del mandante en »Factura electrónica«. Recomendado cuando todos los clientes se tratan de forma uniforme.",
+            "help_off": "No se genera factura electrónica para este cliente aunque la configuración del mandante lo establezca. Solo válido para facturas B2C.",
+            "help_xrechnung": "XML puro (XRechnung 3.0, CIUS de EN 16931). Obligatorio para organismos públicos. El campo »Nuestro ID de enrutamiento en el cliente« debe completarse — sin él el portal rechazará la factura.",
+            "help_xrechnung_test": "XRechnung 3.0 en modo de prueba. Para pruebas iniciales con portales administrativos como ZRE o OZG-RE. No contabilizado.",
+            "help_zugferd": "Factura híbrida: PDF/A-3 con factur-x.xml incrustado en el perfil EN 16931 Extended. Estándar B2B recomendado en Alemania. Compatible con kivitendo y todos los sistemas contables habituales.",
+            "help_zugferd_test": "La misma factura híbrida que en producción, pero marcada como factura de prueba en el XML. Para pruebas iniciales con este cliente — el sistema receptor no la contabiliza.",
+            "leitweg_hint": "Para XRechnung el campo »Nuestro ID de enrutamiento en el cliente« (tarjeta »Números & IDs«) debe completarse.",
+            "option_default": "Usar configuración del mandante",
+            "option_off": "Sin factura electrónica",
+            "option_xrechnung": "XRechnung 3.0",
+            "option_xrechnung_test": "XRechnung 3.0 (Modo de prueba)",
+            "option_zugferd": "Factur-X / ZUGFeRD 2.2 extended",
+            "option_zugferd_test": "Factur-X / ZUGFeRD extended (Modo de prueba)"
         }
     }
 }

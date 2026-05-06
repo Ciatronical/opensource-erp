@@ -38,7 +38,12 @@
         "huSerienbrief": "/serienbrief/hu",
         "wallDisplay": "/wandanzeige",
         "editCv": "/cliente-fornecedor/editar",
-        "lxcarsReports": "/utilizador/relatorios"
+        "lxcarsReports": "/utilizador/relatorios",
+        "camera": "/cameras",
+        "hr": "/hr",
+        "hrPayroll": "/hr/payroll",
+        "hrVacation": "/hr/vacation",
+        "newDeliveryOrder": "/delivery-order/new"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Erro: O ficheiro de senha api/config/api.passwd.php não foi encontrado. Por favor, renomeie o ficheiro api/config/api.passwd.php.example para api/config/api.passwd.php e ajuste as configurações.",
@@ -72,6 +77,11 @@
         "clientConfig": "Configuração da empresa",
         "developerTools": "Ferramentas de desenvolvimento",
         "systemUpdate": "Atualização do sistema",
-        "about": "Sobre"
+        "about": "Sobre",
+        "docs": "Documentação"
+    },
+    "DocsView": {
+        "title": "Documentação",
+        "selectDoc": "Selecione um documento da lista"
     }
 }

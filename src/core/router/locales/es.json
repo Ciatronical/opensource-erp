@@ -38,7 +38,12 @@
         "huSerienbrief": "/serienbrief/hu",
         "wallDisplay": "/wandanzeige",
         "editCv": "/cliente-proveedor/editar",
-        "lxcarsReports": "/usuario/informes"
+        "lxcarsReports": "/usuario/informes",
+        "camera": "/cameras",
+        "hr": "/hr",
+        "hrPayroll": "/hr/payroll",
+        "hrVacation": "/hr/vacation",
+        "newDeliveryOrder": "/delivery-order/new"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Error: No se encontró el archivo de contraseña api/config/api.passwd.php. Por favor, renombre el archivo api/config/api.passwd.php.example a api/config/api.passwd.php y ajuste la configuración.",
@@ -72,6 +77,11 @@
         "clientConfig": "Configuración de empresa",
         "developerTools": "Herramientas de desarrollo",
         "systemUpdate": "Actualización del sistema",
-        "about": "Acerca de"
+        "about": "Acerca de",
+        "docs": "Documentación"
+    },
+    "DocsView": {
+        "title": "Documentación",
+        "selectDoc": "Seleccionar un documento de la lista"
     }
 }

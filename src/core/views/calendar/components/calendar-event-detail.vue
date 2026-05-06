@@ -1,7 +1,7 @@
 <!-- src/core/views/calendar/components/calendar-event-detail.vue -->
 <template>
     <v-dialog :model-value="modelValue" @update:model-value="$emit('update:modelValue', $event)" max-width="420">
-        <v-card v-if="event" rounded="xl" elevation="8">
+        <v-card v-if="event">
             <!-- Header -->
             <div
                 class="event-detail-header pa-4"

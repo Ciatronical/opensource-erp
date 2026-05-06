@@ -55,7 +55,8 @@
             "scan_id": "Scan-ID",
             "scan_detail_id": "Scan-Detail-ID",
             "filename": "Dateiname",
-            "c_ow": "Besitzer"
+            "c_ow": "Besitzer",
+            "c_km": "Viimeisin lähtölukema"
         },
         "kba": {
             "hersteller": "Hersteller",
@@ -271,7 +272,40 @@
             "uploadDoc": "Lataa asiakirja",
             "uploadError": "Virheellinen tiedostotyyppi",
             "uploadUnsupported": "Lataa PDF- tai tekstitiedosto."
-        }
+        },
+        "backToOrder": "Tilaus",
+        "email": {
+            "addCcBcc": "CC / BCC",
+            "addFiles": "Liitä lisätiedostoja",
+            "attachFull": "Liitä täydelliset ajoneuvotiedot tekstitiedostona",
+            "attachmentName": "Liite",
+            "bcc": "BCC",
+            "body": "Viesti",
+            "bodyFieldFin": "VIN",
+            "bodyFieldFirstReg": "Ensirekisteröinti",
+            "bodyFieldHu": "Katsastus erääntyy",
+            "bodyFieldKm": "Kilometrilukema",
+            "bodyFieldMake": "Merkki",
+            "bodyFieldModel": "Malli / Tyyppi",
+            "bodyFieldPlate": "Rekisterikilpi",
+            "bodyGreeting": "Hei,",
+            "bodyHeader": "Ajoneuvotiedot",
+            "bodyIntro": "alta löydätte ajoneuvotiedot:",
+            "bodyOutro": "Ystävällisin terveisin",
+            "button": "E-Mail",
+            "cancel": "Peruuta",
+            "cc": "CC",
+            "dialogTitle": "Lähetä ajoneuvotiedot sähköpostilla",
+            "error": "Sähköpostin lähetys epäonnistui",
+            "send": "Lähetä",
+            "sending": "Lähettää...",
+            "subject": "Aihe",
+            "success": "Sähköposti on lähetetty",
+            "to": "Vastaanottaja (asiakas, toimittaja tai sähköpostiosoite)",
+            "tooltip": "Lähetä ajoneuvotiedot sähköpostilla asiakkaalle, toimittajalle tai mukautetulle osoitteelle"
+        },
+        "readonly": "Vain luku",
+        "titleView": "Ajoneuvotiedot"
     },
     "CarScanView": {
         "title": "Fahrzeug vom Scan anlegen",
@@ -473,6 +507,7 @@
             "required": "Pflichtfeld",
             "dateFormat": "Ungültiges Datum (z.B. 1.3.5 oder 15.06.2020)",
             "ibanFormat": "Ungültiges IBAN-Format"
-        }
+        },
+        "generateDraftPdf": "Luo luonnos-PDF"
     }
 }

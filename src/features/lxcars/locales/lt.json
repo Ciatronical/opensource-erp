@@ -31,5 +31,18 @@
         "ordered": "Užsakyta",
         "revertToPending": "Grąžinti laukimą",
         "delete": "Ištrinti"
+    },
+    "MaintenanceSectionCard": {
+        "close": "Uždaryti",
+        "fields": {
+            "c_bf": "Stabdžių skystis",
+            "c_sk": "Paskirstymo grandinė",
+            "c_wd": "Kitas techninis aptarnavimas",
+            "c_zrd": "Paskirstymo diržo data",
+            "c_zrk": "Paskirstymo diržo rida"
+        },
+        "incompleteText": "Prieš uždarant užsakymą turi būti užpildyti šie laukai:",
+        "incompleteTitle": "Techninės priežiūros duomenys neišsamūs",
+        "title": "Techninė priežiūra ir aptarnavimas"
     }
 }

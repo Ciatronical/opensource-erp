@@ -339,7 +339,17 @@
             "selectPhoto": "Vyfotit nebo vybrat foto",
             "noPhotos": "Zatím žádné fotografie",
             "photoDone": "Hotovo",
-            "taxIncluded": "Cena včetně daně"
+            "taxIncluded": "Cena včetně daně",
+            "einvoice": {
+                "disabled": "Pro tohoto zákazníka není aktivována e-faktura. Nastavte ji v kmenových datech zákazníka nebo v konfiguraci mandanta pod »E-faktura«.",
+                "done": "E-faktura vygenerována ({format}) — stahování zahájeno.",
+                "doneTest": "Testovací e-faktura vygenerována ({format}) — stahování zahájeno. Pozor: Testovací režim!",
+                "failed": "E-fakturu se nepodařilo vygenerovat. Podrobnosti v konzoli prohlížeče.",
+                "invalid": "Vygenerovaná e-faktura nesplňuje validaci EN 16931. Typická příčina: chybějící kmenová data (DIČ, Leitweg-ID, adresa zákazníka).",
+                "onlyInvoice": "E-faktury lze generovat pouze z vydaných faktur.",
+                "saveFirst": "Před vygenerováním e-faktury prosím nejprve uložte fakturu."
+            },
+            "kmStandRequired": "Stav km je povinný — prosím vyplňte před vystavením faktury."
         },
         "workflow": {
             "created": "Dokument erfolgreich erstellt",

@@ -55,7 +55,8 @@
             "scan_id": "Scan-ID",
             "scan_detail_id": "Scan-Detail-ID",
             "filename": "Dateiname",
-            "c_ow": "Besitzer"
+            "c_ow": "Besitzer",
+            "c_km": "Pēdējais nobraukums"
         },
         "kba": {
             "hersteller": "Ražotājs",
@@ -271,7 +272,40 @@
             "uploadDoc": "Augšupielādēt dokumentu",
             "uploadError": "Nederīgs faila tips",
             "uploadUnsupported": "Lūdzu, augšupielādējiet PDF vai teksta failu."
-        }
+        },
+        "backToOrder": "Pasūtījums",
+        "email": {
+            "addCcBcc": "CC / BCC",
+            "addFiles": "Pievienot papildu failus",
+            "attachFull": "Pievienot pilnus transportlīdzekļa datus kā teksta failu",
+            "attachmentName": "Pielikums",
+            "bcc": "BCC",
+            "body": "Ziņojums",
+            "bodyFieldFin": "VIN",
+            "bodyFieldFirstReg": "Pirmā reģistrācija",
+            "bodyFieldHu": "Tehniskā apskate",
+            "bodyFieldKm": "Nobraukums",
+            "bodyFieldMake": "Marka",
+            "bodyFieldModel": "Modelis / Tips",
+            "bodyFieldPlate": "Numura zīme",
+            "bodyGreeting": "Labdien,",
+            "bodyHeader": "Transportlīdzekļa dati",
+            "bodyIntro": "zemāk atradīsiet transportlīdzekļa datus:",
+            "bodyOutro": "Ar cieņu",
+            "button": "E-Mail",
+            "cancel": "Atcelt",
+            "cc": "CC",
+            "dialogTitle": "Nosūtīt transportlīdzekļa datus pa e-pastu",
+            "error": "E-pasta sūtīšana neizdevās",
+            "send": "Sūtīt",
+            "sending": "Sūta...",
+            "subject": "Temats",
+            "success": "E-pasts nosūtīts",
+            "to": "Kam (klients, piegādātājs vai e-pasta adrese)",
+            "tooltip": "Nosūtīt transportlīdzekļa datus pa e-pastu klientam, piegādātājam vai pielāgotai adresei"
+        },
+        "readonly": "Tikai skatīšanai",
+        "titleView": "Transportlīdzekļa dati"
     },
     "CarScanView": {
         "title": "Fahrzeug vom Scan anlegen",
@@ -473,6 +507,7 @@
             "required": "Pflichtfeld",
             "dateFormat": "Ungültiges Datum (z.B. 1.3.5 oder 15.06.2020)",
             "ibanFormat": "Ungültiges IBAN-Format"
-        }
+        },
+        "generateDraftPdf": "Ģenerēt melnraksta PDF"
     }
 }

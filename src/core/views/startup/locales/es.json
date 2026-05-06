@@ -82,7 +82,21 @@
         "cancel": "Cancelar",
         "send": "Enviar",
         "noCustomerVendor": "No se encontró ningún cliente o proveedor. Por favor, cree primero un cliente o proveedor.",
-        "newVehicle": "Nuevo vehículo"
+        "newVehicle": "Nuevo vehículo",
+        "creditNote": "Nota de crédito",
+        "deliveryOrders": "Albaranes",
+        "noDeliveryOrders": "No hay albaranes disponibles",
+        "noReclamations": "No hay reclamaciones",
+        "noVendorDeliveryOrders": "No hay entradas de mercancía",
+        "noVendorReclamations": "No hay reclamaciones de compra",
+        "reclamations": "Reclamaciones",
+        "status": "Estado",
+        "statusClosed": "cerrado",
+        "statusDelivered": "entregado",
+        "statusOpen": "abierto",
+        "storno": "Cancelado",
+        "vendorDeliveryOrders": "Entradas de mercancía",
+        "vendorReclamations": "Reclamaciones de compra"
     },
     "PhoneActions": {
         "clickToCall": "Llamar",

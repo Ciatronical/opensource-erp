@@ -38,7 +38,12 @@
         "huSerienbrief": "/serienbrief/hu",
         "wallDisplay": "/wandanzeige",
         "editCv": "/kund-leverantor/redigera",
-        "lxcarsReports": "/anvandare/rapporter"
+        "lxcarsReports": "/anvandare/rapporter",
+        "camera": "/cameras",
+        "hr": "/hr",
+        "hrPayroll": "/hr/payroll",
+        "hrVacation": "/hr/vacation",
+        "newDeliveryOrder": "/delivery-order/new"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Fel: Losenordsfilen api/config/api.passwd.php hittades inte. Byt namn pa filen api/config/api.passwd.php.example till api/config/api.passwd.php och anpassa installningarna.",
@@ -72,6 +77,11 @@
         "clientConfig": "Foretagskonfiguration",
         "developerTools": "Developer Tools",
         "systemUpdate": "Systemuppdatering",
-        "about": "Om"
+        "about": "Om",
+        "docs": "Dokumentation"
+    },
+    "DocsView": {
+        "title": "Dokumentation",
+        "selectDoc": "Välj ett dokument från listan"
     }
 }

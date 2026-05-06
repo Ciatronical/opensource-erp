@@ -55,7 +55,8 @@
             "scan_id": "Scan-ID",
             "scan_detail_id": "Scan-Detail-ID",
             "filename": "Dateiname",
-            "c_ow": "Besitzer"
+            "c_ow": "Besitzer",
+            "c_km": "Paskutinė rida"
         },
         "kba": {
             "hersteller": "Gamintojas",
@@ -271,7 +272,40 @@
             "uploadDoc": "Įkelti dokumentą",
             "uploadError": "Netinkamas failo tipas",
             "uploadUnsupported": "Įkelkite PDF arba teksto failą."
-        }
+        },
+        "backToOrder": "Užsakymas",
+        "email": {
+            "addCcBcc": "CC / BCC",
+            "addFiles": "Pridėti papildomus failus",
+            "attachFull": "Pridėti išsamius transporto priemonės duomenis kaip tekstinį failą",
+            "attachmentName": "Priedas",
+            "bcc": "BCC",
+            "body": "Žinutė",
+            "bodyFieldFin": "VIN",
+            "bodyFieldFirstReg": "Pirmoji registracija",
+            "bodyFieldHu": "Techninis patikrinimas",
+            "bodyFieldKm": "Rida",
+            "bodyFieldMake": "Markė",
+            "bodyFieldModel": "Modelis / Tipas",
+            "bodyFieldPlate": "Valstybinis numeris",
+            "bodyGreeting": "Sveiki,",
+            "bodyHeader": "Transporto priemonės duomenys",
+            "bodyIntro": "žemiau rasite transporto priemonės duomenis:",
+            "bodyOutro": "Pagarbiai",
+            "button": "E-Mail",
+            "cancel": "Atšaukti",
+            "cc": "CC",
+            "dialogTitle": "Siųsti transporto priemonės duomenis el. paštu",
+            "error": "E. pašto siuntimas nepavyko",
+            "send": "Siųsti",
+            "sending": "Siunčiama...",
+            "subject": "Tema",
+            "success": "El. paštas išsiųstas",
+            "to": "Kam (klientas, tiekėjas arba el. pašto adresas)",
+            "tooltip": "Siųsti transporto priemonės duomenis el. paštu klientui, tiekėjui arba pasirinktam adresui"
+        },
+        "readonly": "Tik peržiūra",
+        "titleView": "Transporto priemonės duomenys"
     },
     "CarScanView": {
         "title": "Fahrzeug vom Scan anlegen",
@@ -473,6 +507,7 @@
             "required": "Pflichtfeld",
             "dateFormat": "Ungültiges Datum (z.B. 1.3.5 oder 15.06.2020)",
             "ibanFormat": "Ungültiges IBAN-Format"
-        }
+        },
+        "generateDraftPdf": "Generuoti bandomąjį PDF"
     }
 }

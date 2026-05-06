@@ -82,7 +82,21 @@
         "cancel": "Avbryt",
         "send": "Skicka",
         "noCustomerVendor": "Ingen kund eller leverantoer hittades. Skapa en kund eller leverantoer foerst.",
-        "newVehicle": "Nytt fordon"
+        "newVehicle": "Nytt fordon",
+        "creditNote": "Kreditnota",
+        "deliveryOrders": "Följesedlar",
+        "noDeliveryOrders": "Inga följesedlar tillgängliga",
+        "noReclamations": "Inga reklamationer tillgängliga",
+        "noVendorDeliveryOrders": "Inga varuinleveranser tillgängliga",
+        "noVendorReclamations": "Inga inköpsreklamationer tillgängliga",
+        "reclamations": "Reklamationer",
+        "status": "Status",
+        "statusClosed": "stängd",
+        "statusDelivered": "levererat",
+        "statusOpen": "öppen",
+        "storno": "Avbrutet",
+        "vendorDeliveryOrders": "Varuinleveranser",
+        "vendorReclamations": "Inköpsreklamationer"
     },
     "PhoneActions": {
         "clickToCall": "Ring",

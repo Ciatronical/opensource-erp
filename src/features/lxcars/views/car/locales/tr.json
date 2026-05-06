@@ -55,7 +55,8 @@
             "scan_id": "Scan-ID",
             "scan_detail_id": "Scan-Detail-ID",
             "filename": "Dateiname",
-            "c_ow": "Besitzer"
+            "c_ow": "Besitzer",
+            "c_km": "Son kilometre"
         },
         "kba": {
             "hersteller": "Hersteller",
@@ -271,7 +272,40 @@
             "uploadDoc": "Belge yükle",
             "uploadError": "Geçersiz dosya türü",
             "uploadUnsupported": "Lütfen bir PDF veya metin dosyası yükleyin."
-        }
+        },
+        "backToOrder": "Sipariş",
+        "email": {
+            "addCcBcc": "CC / BCC",
+            "addFiles": "Ek dosyalar ekle",
+            "attachFull": "Tam araç verilerini metin dosyası olarak ekle",
+            "attachmentName": "Ek",
+            "bcc": "BCC",
+            "body": "Mesaj",
+            "bodyFieldFin": "VIN",
+            "bodyFieldFirstReg": "İlk tescil",
+            "bodyFieldHu": "Muayene vadesi",
+            "bodyFieldKm": "Kilometre",
+            "bodyFieldMake": "Marka",
+            "bodyFieldModel": "Model / Tip",
+            "bodyFieldPlate": "Plaka",
+            "bodyGreeting": "Merhaba,",
+            "bodyHeader": "Araç verileri",
+            "bodyIntro": "aşağıda araç verilerini bulabilirsiniz:",
+            "bodyOutro": "Saygılarımla",
+            "button": "E-Mail",
+            "cancel": "İptal",
+            "cc": "CC",
+            "dialogTitle": "Araç verilerini e-posta ile gönder",
+            "error": "E-posta gönderilirken hata oluştu",
+            "send": "Gönder",
+            "sending": "Gönderiliyor...",
+            "subject": "Konu",
+            "success": "E-posta gönderildi",
+            "to": "Kime (müşteri, tedarikçi veya e-posta adresi)",
+            "tooltip": "Araç verilerini e-posta ile müşteriye, tedarikçiye veya özel adrese gönder"
+        },
+        "readonly": "Yalnızca görüntüleme",
+        "titleView": "Araç verileri"
     },
     "CarScanView": {
         "title": "Fahrzeug vom Scan anlegen",
@@ -473,6 +507,7 @@
             "required": "Pflichtfeld",
             "dateFormat": "Ungültiges Datum (z.B. 1.3.5 oder 15.06.2020)",
             "ibanFormat": "Ungültiges IBAN-Format"
-        }
+        },
+        "generateDraftPdf": "Taslak PDF oluştur"
     }
 }

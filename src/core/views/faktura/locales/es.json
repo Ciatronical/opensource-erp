@@ -339,7 +339,17 @@
             "selectPhoto": "Tomar o seleccionar foto",
             "noPhotos": "Aún no hay fotos",
             "photoDone": "Listo",
-            "taxIncluded": "Impuesto incluido en el precio"
+            "taxIncluded": "Impuesto incluido en el precio",
+            "einvoice": {
+                "disabled": "La factura electrónica no está habilitada para este cliente. Configúrela en los datos maestros del cliente o en la configuración del mandante en »Factura electrónica«.",
+                "done": "Factura electrónica generada ({format}) — descarga iniciada.",
+                "doneTest": "Factura electrónica de prueba generada ({format}) — descarga iniciada. ¡Aviso: Modo de prueba!",
+                "failed": "No se pudo generar la factura electrónica. Detalles en la consola del navegador.",
+                "invalid": "La factura electrónica generada no supera la validación EN 16931. Causa típica: datos maestros faltantes (NIF-IVA, ID de enrutamiento, dirección del cliente).",
+                "onlyInvoice": "Las facturas electrónicas solo se pueden generar a partir de facturas de venta.",
+                "saveFirst": "Por favor guarde la factura antes de generar una factura electrónica."
+            },
+            "kmStandRequired": "El kilometraje es obligatorio — ingréselo antes de crear la factura."
         },
         "workflow": {
             "created": "Dokument erfolgreich erstellt",

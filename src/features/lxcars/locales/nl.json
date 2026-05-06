@@ -31,5 +31,18 @@
         "ordered": "Besteld",
         "revertToPending": "Terug naar in afwachting",
         "delete": "Verwijderen"
+    },
+    "MaintenanceSectionCard": {
+        "close": "Sluiten",
+        "fields": {
+            "c_bf": "Remvloeistof",
+            "c_sk": "Distributieketting",
+            "c_wd": "Volgende servicebeurt",
+            "c_zrd": "Datum distributieriem",
+            "c_zrk": "Km distributieriem"
+        },
+        "incompleteText": "Voordat de order kan worden afgesloten, moeten de volgende velden worden ingevuld:",
+        "incompleteTitle": "Onderhoudsgegevens onvolledig",
+        "title": "Onderhoud en service"
     }
 }

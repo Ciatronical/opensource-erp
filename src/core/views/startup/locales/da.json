@@ -82,7 +82,21 @@
         "cancel": "Annuller",
         "send": "Send",
         "noCustomerVendor": "Ingen kunde eller leverandoer fundet. Opret venligst en kunde eller leverandoer foerst.",
-        "newVehicle": "Nyt køretøj"
+        "newVehicle": "Nyt køretøj",
+        "creditNote": "Kreditnota",
+        "deliveryOrders": "Følgesedler",
+        "noDeliveryOrders": "Ingen følgesedler",
+        "noReclamations": "Ingen reklamationer",
+        "noVendorDeliveryOrders": "Ingen varenota",
+        "noVendorReclamations": "Ingen indkøbsreklamationer",
+        "reclamations": "Reklamationer",
+        "status": "Status",
+        "statusClosed": "lukket",
+        "statusDelivered": "leveret",
+        "statusOpen": "åben",
+        "storno": "Annulleret",
+        "vendorDeliveryOrders": "Varenota",
+        "vendorReclamations": "Indkøbsreklamationer"
     },
     "PhoneActions": {
         "clickToCall": "Ring op",

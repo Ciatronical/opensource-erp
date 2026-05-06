@@ -55,7 +55,8 @@
             "scan_id": "ID скана",
             "scan_detail_id": "ID детали скана",
             "filename": "Имя файла",
-            "c_ow": "Владелец"
+            "c_ow": "Владелец",
+            "c_km": "Последний пробег"
         },
         "kba": {
             "hersteller": "Производитель",
@@ -271,7 +272,40 @@
             "uploadDoc": "Загрузить документ",
             "uploadError": "Неверный тип файла",
             "uploadUnsupported": "Пожалуйста, загрузите PDF или текстовый файл."
-        }
+        },
+        "backToOrder": "Заказ",
+        "email": {
+            "addCcBcc": "CC / BCC",
+            "addFiles": "Прикрепить дополнительные файлы",
+            "attachFull": "Прикрепить полные данные транспортного средства как текстовый файл",
+            "attachmentName": "Вложение",
+            "bcc": "BCC",
+            "body": "Сообщение",
+            "bodyFieldFin": "VIN",
+            "bodyFieldFirstReg": "Первая регистрация",
+            "bodyFieldHu": "Техосмотр истекает",
+            "bodyFieldKm": "Пробег",
+            "bodyFieldMake": "Марка",
+            "bodyFieldModel": "Модель / Тип",
+            "bodyFieldPlate": "Номерной знак",
+            "bodyGreeting": "Здравствуйте,",
+            "bodyHeader": "Данные транспортного средства",
+            "bodyIntro": "ниже приведены данные транспортного средства:",
+            "bodyOutro": "С уважением",
+            "button": "E-Mail",
+            "cancel": "Отмена",
+            "cc": "CC",
+            "dialogTitle": "Отправить данные ТС по e-mail",
+            "error": "Ошибка при отправке e-mail",
+            "send": "Отправить",
+            "sending": "Отправка...",
+            "subject": "Тема",
+            "success": "E-mail отправлен",
+            "to": "Кому (клиент, поставщик или e-mail адрес)",
+            "tooltip": "Отправить данные ТС по e-mail клиенту, поставщику или на произвольный адрес"
+        },
+        "readonly": "Только просмотр",
+        "titleView": "Данные ТС"
     },
     "CarScanView": {
         "title": "Создать ТС из скана",
@@ -473,6 +507,7 @@
             "required": "Обязательное поле",
             "dateFormat": "Неверная дата (напр. 1.3.5 или 15.06.2020)",
             "ibanFormat": "Неверный формат IBAN"
-        }
+        },
+        "generateDraftPdf": "Создать черновик PDF"
     }
 }

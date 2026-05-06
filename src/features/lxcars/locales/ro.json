@@ -31,5 +31,18 @@
         "ordered": "Comandat",
         "revertToPending": "Revenire la în așteptare",
         "delete": "Șterge"
+    },
+    "MaintenanceSectionCard": {
+        "close": "Închide",
+        "fields": {
+            "c_bf": "Lichid de frână",
+            "c_sk": "Lanț de distribuție",
+            "c_wd": "Următoarea revizie",
+            "c_zrd": "Data curelei de distribuție",
+            "c_zrk": "Km curelei de distribuție"
+        },
+        "incompleteText": "Înainte de finalizarea comenzii, trebuie completate următoarele câmpuri:",
+        "incompleteTitle": "Date de întreținere incomplete",
+        "title": "Întreținere și service"
     }
 }

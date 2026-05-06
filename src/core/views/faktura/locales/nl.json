@@ -339,7 +339,17 @@
             "selectPhoto": "Foto maken of selecteren",
             "noPhotos": "Nog geen foto's",
             "photoDone": "Klaar",
-            "taxIncluded": "Btw inbegrepen in prijs"
+            "taxIncluded": "Btw inbegrepen in prijs",
+            "einvoice": {
+                "disabled": "E-factuur is niet ingeschakeld voor deze klant. Configureer het in de stamgegevens van de klant of in de opdrachtgeverconfiguratie onder »E-factuur«.",
+                "done": "E-factuur gegenereerd ({format}) — download gestart.",
+                "doneTest": "Test-e-factuur gegenereerd ({format}) — download gestart. Let op: Testmodus!",
+                "failed": "E-factuur kon niet worden gegenereerd. Details in de browserconsole.",
+                "invalid": "De gegenereerde e-factuur voldoet niet aan EN 16931-validatie. Typische oorzaak: ontbrekende stamgegevens (btw-nr., Leitweg-ID, klantadres).",
+                "onlyInvoice": "E-facturen kunnen alleen worden gegenereerd vanuit uitgaande facturen.",
+                "saveFirst": "Sla de factuur op voordat u een e-factuur genereert."
+            },
+            "kmStandRequired": "Kilometerstand is verplicht — vul dit in voor het aanmaken van de factuur."
         },
         "workflow": {
             "created": "Document succesvol aangemaakt",

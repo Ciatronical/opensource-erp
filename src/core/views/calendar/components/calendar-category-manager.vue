@@ -1,7 +1,7 @@
 <!-- src/core/views/calendar/components/calendar-category-manager.vue -->
 <template>
     <v-dialog :model-value="modelValue" @update:model-value="$emit('update:modelValue', $event)" max-width="500">
-        <v-card rounded="xl">
+        <v-card>
             <v-card-title class="d-flex align-center pa-4">
                 <v-icon class="me-2" color="primary">mdi-tag-multiple</v-icon>
                 {{ t('CalendarCategoryManager.title') }}

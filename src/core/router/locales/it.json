@@ -38,7 +38,12 @@
         "huSerienbrief": "/serienbrief/hu",
         "wallDisplay": "/wandanzeige",
         "editCv": "/cliente-fornitore/modifica",
-        "lxcarsReports": "/utente/report"
+        "lxcarsReports": "/utente/report",
+        "camera": "/cameras",
+        "hr": "/hr",
+        "hrPayroll": "/hr/payroll",
+        "hrVacation": "/hr/vacation",
+        "newDeliveryOrder": "/delivery-order/new"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Errore: Il file della password api/config/api.passwd.php non è stato trovato. Rinominare il file api/config/api.passwd.php.example in api/config/api.passwd.php e regolare le impostazioni.",
@@ -72,6 +77,11 @@
         "clientConfig": "Configurazione azienda",
         "developerTools": "Strumenti di sviluppo",
         "systemUpdate": "Aggiornamento del sistema",
-        "about": "Informazioni"
+        "about": "Informazioni",
+        "docs": "Documentazione"
+    },
+    "DocsView": {
+        "title": "Documentazione",
+        "selectDoc": "Seleziona un documento dall'elenco"
     }
 }

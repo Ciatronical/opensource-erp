@@ -38,7 +38,12 @@
         "huSerienbrief": "/serienbrief/hu",
         "wallDisplay": "/wandanzeige",
         "editCv": "/asiakas-toimittaja/muokkaa",
-        "lxcarsReports": "/kayttaja/raportit"
+        "lxcarsReports": "/kayttaja/raportit",
+        "camera": "/cameras",
+        "hr": "/hr",
+        "hrPayroll": "/hr/payroll",
+        "hrVacation": "/hr/vacation",
+        "newDeliveryOrder": "/delivery-order/new"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Virhe: Salasanatiedostoa api/config/api.passwd.php ei löytynyt. Nimeä tiedosto api/config/api.passwd.php.example uudelleen muotoon api/config/api.passwd.php ja muokkaa asetuksia vastaavasti.",
@@ -72,6 +77,11 @@
         "clientConfig": "Yrityksen asetukset",
         "developerTools": "Developer Tools",
         "systemUpdate": "Järjestelmäpäivitys",
-        "about": "Tietoja"
+        "about": "Tietoja",
+        "docs": "Dokumentaatio"
+    },
+    "DocsView": {
+        "title": "Dokumentaatio",
+        "selectDoc": "Valitse asiakirja luettelosta"
     }
 }

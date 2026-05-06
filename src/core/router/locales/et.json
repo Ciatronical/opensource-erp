@@ -38,7 +38,12 @@
         "huSerienbrief": "/serienbrief/hu",
         "wallDisplay": "/wandanzeige",
         "editCv": "/klient-tarnija/muuda",
-        "lxcarsReports": "/kasutaja/aruanded"
+        "lxcarsReports": "/kasutaja/aruanded",
+        "camera": "/cameras",
+        "hr": "/hr",
+        "hrPayroll": "/hr/payroll",
+        "hrVacation": "/hr/vacation",
+        "newDeliveryOrder": "/delivery-order/new"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Viga: Paroolifaili api/config/api.passwd.php ei leitud. Palun nimetage fail api/config/api.passwd.php.example umber api/config/api.passwd.php ja kohandage seadeid vastavalt.",
@@ -72,6 +77,11 @@
         "clientConfig": "Ettevõtte seadistus",
         "developerTools": "Developer Tools",
         "systemUpdate": "Süsteemi uuendamine",
-        "about": "Teave"
+        "about": "Teave",
+        "docs": "Dokumentatsioon"
+    },
+    "DocsView": {
+        "title": "Dokumentatsioon",
+        "selectDoc": "Vali loendist dokument"
     }
 }

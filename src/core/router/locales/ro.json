@@ -38,7 +38,12 @@
         "huSerienbrief": "/serienbrief/hu",
         "wallDisplay": "/wandanzeige",
         "editCv": "/client-furnizor/editare",
-        "lxcarsReports": "/utilizator/rapoarte"
+        "lxcarsReports": "/utilizator/rapoarte",
+        "camera": "/cameras",
+        "hr": "/hr",
+        "hrPayroll": "/hr/payroll",
+        "hrVacation": "/hr/vacation",
+        "newDeliveryOrder": "/delivery-order/new"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Eroare: Fisierul cu parola api/config/api.passwd.php nu a fost gasit. Va rugam redenumiti fisierul api/config/api.passwd.php.example in api/config/api.passwd.php si ajustati setarile corespunzator.",
@@ -72,6 +77,11 @@
         "clientConfig": "Configurare firmă",
         "developerTools": "Developer Tools",
         "systemUpdate": "Actualizare sistem",
-        "about": "Despre"
+        "about": "Despre",
+        "docs": "Documentație"
+    },
+    "DocsView": {
+        "title": "Documentație",
+        "selectDoc": "Selectați un document din listă"
     }
 }

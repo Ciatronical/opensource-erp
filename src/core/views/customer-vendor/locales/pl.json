@@ -351,6 +351,39 @@
             "bccSameAsCc": "CC i BCC nie mogą być identyczne",
             "homepageInvalid": "Nieprawidłowy URL (np. przyklad.pl)",
             "homepageUnreachable": "Strona jest nieosiągalna"
+        },
+        "businessCard": {
+            "button": "Wizytówka AI",
+            "error": "Nie udało się przeanalizować wizytówki.",
+            "lowConfidence": "Na zdjęciu nie rozpoznano danych. Użyj innego zdjęcia.",
+            "success": "Wizytówka rozpoznana ({confidence}% pewność) — sprawdź dane",
+            "tooLarge": "Plik jest za duży (maks. 10 MB)."
+        },
+        "phoneSearch": {
+            "button": "Telefon AI",
+            "cancel": "Anuluj",
+            "error": "Wyszukiwanie w sieci nie powiodło się.",
+            "hint": "AI wyszukuje numer w sieci (stopka, katalogi) i wypełnia dane podstawowe.",
+            "notFound": "Nie znaleziono wiarygodnych wyników dla tego numeru telefonu.",
+            "search": "Szukaj",
+            "success": "Znaleziono dopasowanie ({confidence}% pewność) — sprawdź dane",
+            "title": "Szukaj klienta po numerze telefonu"
+        },
+        "zugferd": {
+            "help_current": "{option}",
+            "help_default": "Ten klient korzysta z formatu skonfigurowanego w konfiguracji mandanta pod »Faktura elektroniczna«. Zalecane ustawienie, gdy wszyscy klienci są traktowani jednakowo.",
+            "help_off": "Dla tego klienta nie jest generowana e-faktura nawet jeśli domyślna konfiguracja mandanta by tego wymagała. Tylko dla faktur B2C.",
+            "help_xrechnung": "Czysty XML (XRechnung 3.0, CIUS EN 16931). Obowiązkowy dla zamawiających publicznych. Pole »Nasz Leitweg-ID u klienta« musi być wypełnione — bez niego portal odrzuci fakturę.",
+            "help_xrechnung_test": "XRechnung 3.0 w trybie testowym. Do wstępnego odbioru z portalami administracyjnymi takimi jak ZRE lub OZG-RE. Niezaksięgowane.",
+            "help_zugferd": "Faktura hybrydowa: PDF/A-3 z osadzonym factur-x.xml w profilu EN 16931 Extended. Zalecany standard B2B w Niemczech. Zgodny z kivitendo i wszystkimi popularnymi systemami księgowymi.",
+            "help_zugferd_test": "Ta sama faktura hybrydowa co w produkcji, ale oznaczona w XML jako faktura testowa. Do wstępnego odbioru z tym klientem — system odbioru nie zaksięguje jej.",
+            "leitweg_hint": "Dla XRechnung pole »Nasz Leitweg-ID u klienta« (karta »Numery i IDs«) musi być wypełnione.",
+            "option_default": "Użyj domyślnego mandanta",
+            "option_off": "Bez e-faktury",
+            "option_xrechnung": "XRechnung 3.0",
+            "option_xrechnung_test": "XRechnung 3.0 (Tryb testowy)",
+            "option_zugferd": "Factur-X / ZUGFeRD 2.2 extended",
+            "option_zugferd_test": "Factur-X / ZUGFeRD extended (Tryb testowy)"
         }
     }
 }

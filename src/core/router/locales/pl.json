@@ -38,7 +38,12 @@
         "huSerienbrief": "/serienbrief/hu",
         "wallDisplay": "/wandanzeige",
         "editCv": "/klient-dostawca/edytuj",
-        "lxcarsReports": "/uzytkownik/raporty"
+        "lxcarsReports": "/uzytkownik/raporty",
+        "camera": "/cameras",
+        "hr": "/hr",
+        "hrPayroll": "/hr/payroll",
+        "hrVacation": "/hr/vacation",
+        "newDeliveryOrder": "/delivery-order/new"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Błąd: Plik hasła api/config/api.passwd.php nie został znaleziony. Proszę zmienić nazwę pliku api/config/api.passwd.php.example na api/config/api.passwd.php i dostosować ustawienia.",
@@ -72,6 +77,11 @@
         "clientConfig": "Konfiguracja firmy",
         "developerTools": "Developer Tools",
         "systemUpdate": "Aktualizacja systemu",
-        "about": "O programie"
+        "about": "O programie",
+        "docs": "Dokumentacja"
+    },
+    "DocsView": {
+        "title": "Dokumentacja",
+        "selectDoc": "Wybierz dokument z listy"
     }
 }

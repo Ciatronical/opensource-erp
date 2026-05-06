@@ -55,7 +55,8 @@
             "scan_id": "Scan-ID",
             "scan_detail_id": "Scan-Detail-ID",
             "filename": "Dateiname",
-            "c_ow": "Besitzer"
+            "c_ow": "Besitzer",
+            "c_km": "Viimane läbisõit"
         },
         "kba": {
             "hersteller": "Tootja",
@@ -271,7 +272,40 @@
             "uploadDoc": "Laadi dokument üles",
             "uploadError": "Vigane faili tüüp",
             "uploadUnsupported": "Laadige üles PDF- või tekstifail."
-        }
+        },
+        "backToOrder": "Tellimus",
+        "email": {
+            "addCcBcc": "CC / BCC",
+            "addFiles": "Lisa täiendavaid faile",
+            "attachFull": "Lisa täielikud sõiduki andmed tekstifailina",
+            "attachmentName": "Manus",
+            "bcc": "BCC",
+            "body": "Sõnum",
+            "bodyFieldFin": "VIN",
+            "bodyFieldFirstReg": "Esmane registreerimine",
+            "bodyFieldHu": "Ülevaatus tähtaeg",
+            "bodyFieldKm": "Läbisõit",
+            "bodyFieldMake": "Mark",
+            "bodyFieldModel": "Mudel / Tüüp",
+            "bodyFieldPlate": "Numbrimärk",
+            "bodyGreeting": "Tere,",
+            "bodyHeader": "Sõiduki andmed",
+            "bodyIntro": "leiate allpool sõiduki andmed:",
+            "bodyOutro": "Lugupidamisega",
+            "button": "E-Mail",
+            "cancel": "Tühista",
+            "cc": "CC",
+            "dialogTitle": "Saada sõiduki andmed e-posti teel",
+            "error": "E-posti saatmine ebaõnnestus",
+            "send": "Saada",
+            "sending": "Saadan...",
+            "subject": "Teema",
+            "success": "E-post on saadetud",
+            "to": "Kellele (klient, tarnija või e-posti aadress)",
+            "tooltip": "Saada sõiduki andmed e-posti teel kliendile, tarnijale või kohandatud aadressile"
+        },
+        "readonly": "Ainult vaatamiseks",
+        "titleView": "Sõiduki andmed"
     },
     "CarScanView": {
         "title": "Fahrzeug vom Scan anlegen",
@@ -473,6 +507,7 @@
             "required": "Pflichtfeld",
             "dateFormat": "Ungültiges Datum (z.B. 1.3.5 oder 15.06.2020)",
             "ibanFormat": "Ungültiges IBAN-Format"
-        }
+        },
+        "generateDraftPdf": "Loo mustandpdf"
     }
 }

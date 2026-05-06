@@ -339,7 +339,17 @@
             "selectPhoto": "Prendre ou sélectionner une photo",
             "noPhotos": "Pas encore de photos",
             "photoDone": "Terminé",
-            "taxIncluded": "Taxe incluse dans le prix"
+            "taxIncluded": "Taxe incluse dans le prix",
+            "einvoice": {
+                "disabled": "La facture électronique n'est pas activée pour ce client. Configurez-la dans les données de base du client ou dans la configuration du mandant sous »Facture électronique«.",
+                "done": "Facture électronique générée ({format}) — téléchargement démarré.",
+                "doneTest": "Facture électronique test générée ({format}) — téléchargement démarré. Attention : Mode test !",
+                "failed": "La facture électronique n'a pas pu être générée. Détails dans la console du navigateur.",
+                "invalid": "La facture électronique générée ne valide pas EN 16931. Cause typique : données de base manquantes (N° TVA, Leitweg-ID, adresse client).",
+                "onlyInvoice": "Les factures électroniques ne peuvent être générées qu'à partir de factures de vente.",
+                "saveFirst": "Veuillez enregistrer la facture avant de générer une facture électronique."
+            },
+            "kmStandRequired": "Le kilométrage est obligatoire — veuillez le saisir avant de créer la facture."
         },
         "workflow": {
             "created": "Document cree avec succes",

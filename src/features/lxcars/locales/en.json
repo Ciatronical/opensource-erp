@@ -31,5 +31,18 @@
         "ordered": "Ordered",
         "revertToPending": "Revert to pending",
         "delete": "Delete"
+    },
+    "MaintenanceSectionCard": {
+        "close": "Close",
+        "fields": {
+            "c_bf": "Brake fluid",
+            "c_sk": "Timing chain",
+            "c_wd": "Next service date",
+            "c_zrd": "Timing belt date",
+            "c_zrk": "Timing belt mileage"
+        },
+        "incompleteText": "Before the order can be completed, the following fields must be filled in:",
+        "incompleteTitle": "Maintenance data incomplete",
+        "title": "Maintenance & Service"
     }
 }

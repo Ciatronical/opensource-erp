@@ -339,7 +339,17 @@
             "selectPhoto": "Zrób lub wybierz zdjęcie",
             "noPhotos": "Brak zdjęć",
             "photoDone": "Gotowe",
-            "taxIncluded": "Podatek zawarty w cenie"
+            "taxIncluded": "Podatek zawarty w cenie",
+            "einvoice": {
+                "disabled": "Faktura elektroniczna nie jest aktywna dla tego klienta. Skonfiguruj ją w danych podstawowych klienta lub w konfiguracji mandanta pod »Faktura elektroniczna«.",
+                "done": "Faktura elektroniczna wygenerowana ({format}) — pobieranie rozpoczęte.",
+                "doneTest": "Testowa faktura elektroniczna wygenerowana ({format}) — pobieranie rozpoczęte. Uwaga: Tryb testowy!",
+                "failed": "Nie udało się wygenerować faktury elektronicznej. Szczegóły w konsoli przeglądarki.",
+                "invalid": "Wygenerowana faktura elektroniczna nie przechodzi walidacji EN 16931. Typowa przyczyna: brakujące dane podstawowe (NIP VAT, ID ścieżki, adres klienta).",
+                "onlyInvoice": "Faktury elektroniczne można generować tylko z faktur sprzedaży.",
+                "saveFirst": "Zapisz fakturę przed wygenerowaniem e-faktury."
+            },
+            "kmStandRequired": "Stan licznika km jest wymagany — proszę wpisać przed wystawieniem faktury."
         },
         "workflow": {
             "created": "Dokument pomyślnie utworzony",

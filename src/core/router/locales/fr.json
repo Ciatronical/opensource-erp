@@ -38,7 +38,12 @@
         "huSerienbrief": "/serienbrief/hu",
         "wallDisplay": "/wandanzeige",
         "editCv": "/client-fournisseur/modifier",
-        "lxcarsReports": "/utilisateur/rapports"
+        "lxcarsReports": "/utilisateur/rapports",
+        "camera": "/cameras",
+        "hr": "/hr",
+        "hrPayroll": "/hr/payroll",
+        "hrVacation": "/hr/vacation",
+        "newDeliveryOrder": "/delivery-order/new"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Erreur : Le fichier de mot de passe api/config/api.passwd.php est introuvable. Veuillez renommer le fichier api/config/api.passwd.php.example en api/config/api.passwd.php et ajuster les parametres en consequence.",
@@ -72,6 +77,11 @@
         "clientConfig": "Configuration de la societe",
         "developerTools": "Developer Tools",
         "systemUpdate": "Mise a jour du systeme",
-        "about": "À propos"
+        "about": "À propos",
+        "docs": "Documentation"
+    },
+    "DocsView": {
+        "title": "Documentation",
+        "selectDoc": "Sélectionner un document dans la liste"
     }
 }

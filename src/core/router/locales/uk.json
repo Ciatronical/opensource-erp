@@ -38,7 +38,12 @@
         "huSerienbrief": "/serienbrief/hu",
         "wallDisplay": "/wandanzeige",
         "editCv": "/klient-postachalnyk/redahuvaty",
-        "lxcarsReports": "/korystuvach/zvity"
+        "lxcarsReports": "/korystuvach/zvity",
+        "camera": "/cameras",
+        "hr": "/hr",
+        "hrPayroll": "/hr/payroll",
+        "hrVacation": "/hr/vacation",
+        "newDeliveryOrder": "/delivery-order/new"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Помилка: Файл паролів api/config/api.passwd.php не знайдено. Будь ласка, перейменуйте файл api/config/api.passwd.php.example на api/config/api.passwd.php та налаштуйте параметри відповідно.",
@@ -72,6 +77,11 @@
         "clientConfig": "Конфігурація компанії",
         "developerTools": "Інструменти розробника",
         "systemUpdate": "Оновлення системи",
-        "about": "Про програму"
+        "about": "Про програму",
+        "docs": "Документація"
+    },
+    "DocsView": {
+        "title": "Документація",
+        "selectDoc": "Виберіть документ зі списку"
     }
 }

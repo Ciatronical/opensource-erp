@@ -31,5 +31,18 @@
         "ordered": "Encomendado",
         "revertToPending": "Voltar a pendente",
         "delete": "Eliminar"
+    },
+    "MaintenanceSectionCard": {
+        "close": "Fechar",
+        "fields": {
+            "c_bf": "Líquido de travões",
+            "c_sk": "Corrente de distribuição",
+            "c_wd": "Próxima revisão",
+            "c_zrd": "Data da correia de distribuição",
+            "c_zrk": "Km da correia de distribuição"
+        },
+        "incompleteText": "Antes de concluir a encomenda, os seguintes campos devem ser preenchidos:",
+        "incompleteTitle": "Dados de manutenção incompletos",
+        "title": "Manutenção e serviço"
     }
 }

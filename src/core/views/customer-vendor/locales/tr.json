@@ -351,6 +351,39 @@
             "bccSameAsCc": "CC und BCC dürfen nicht identisch sein",
             "homepageInvalid": "Ungültige URL (z.B. beispiel.de)",
             "homepageUnreachable": "Seite ist nicht erreichbar"
+        },
+        "businessCard": {
+            "button": "Kartvizit YZ",
+            "error": "Kartvizit analiz edilemedi.",
+            "lowConfidence": "Görüntüde veri tanınamadı. Lütfen farklı bir fotoğraf kullanın.",
+            "success": "Kartvizit tanındı ({confidence}% güven) — lütfen verileri kontrol edin",
+            "tooLarge": "Dosya çok büyük (maks. 10 MB)."
+        },
+        "phoneSearch": {
+            "button": "Telefon YZ",
+            "cancel": "İptal",
+            "error": "Web araması başarısız oldu.",
+            "hint": "YZ numarayı web'de (imprint, dizinler) arar ve ana verileri doldurur.",
+            "notFound": "Bu telefon numarası için güvenilir sonuç bulunamadı.",
+            "search": "Ara",
+            "success": "Eşleşme bulundu ({confidence}% güven) — lütfen verileri kontrol edin",
+            "title": "Telefon numarasına göre müşteri ara"
+        },
+        "zugferd": {
+            "help_current": "{option}",
+            "help_default": "Bu müşteri, müvekkil yapılandırmasında »E-fatura« altında yapılandırılan formatı kullanır. Tüm müşteriler aynı şekilde işlendiğinde önerilen ayar.",
+            "help_off": "Bu müşteri için, müvekkil varsayılanı bunu öngörse bile e-fatura oluşturulmaz. Yalnızca saf B2C faturaları için uygundur.",
+            "help_xrechnung": "Saf XML (XRechnung 3.0, EN 16931 CIUS). Kamu ihale makamları için zorunlu. »Müşterideki Leitweg-ID'miz« alanı doldurulmalıdır — aksi takdirde alım portalı faturayı reddeder.",
+            "help_xrechnung_test": "Test modunda XRechnung 3.0. ZRE veya OZG-RE gibi idari portallarla ilk kabul testleri için. Deftere işlenmez.",
+            "help_zugferd": "Hibrit fatura: EN 16931 Extended profilinde gömülü factur-x.xml ile PDF/A-3. Almanya'da önerilen B2B standardı. kivitendo ve tüm yaygın muhasebe sistemleriyle uyumlu.",
+            "help_zugferd_test": "Üretimdekiyle aynı hibrit fatura, ancak XML'de test faturası olarak işaretlenmiş. Bu müşteriyle ilk kabul testleri için — alım sistemi bunu deftere işlemez.",
+            "leitweg_hint": "XRechnung için »Müşterideki Leitweg-ID'miz« alanı (kart »Numaralar ve ID'ler«) doldurulmalıdır.",
+            "option_default": "Müvekkil varsayılanını kullan",
+            "option_off": "E-fatura yok",
+            "option_xrechnung": "XRechnung 3.0",
+            "option_xrechnung_test": "XRechnung 3.0 (Test modu)",
+            "option_zugferd": "Factur-X / ZUGFeRD 2.2 extended",
+            "option_zugferd_test": "Factur-X / ZUGFeRD extended (Test modu)"
         }
     }
 }

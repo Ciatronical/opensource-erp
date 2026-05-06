@@ -31,5 +31,18 @@
         "ordered": "Pedido",
         "revertToPending": "Volver a pendiente",
         "delete": "Eliminar"
+    },
+    "MaintenanceSectionCard": {
+        "close": "Cerrar",
+        "fields": {
+            "c_bf": "Líquido de frenos",
+            "c_sk": "Cadena de distribución",
+            "c_wd": "Próxima revisión",
+            "c_zrd": "Fecha correa de distribución",
+            "c_zrk": "Km correa de distribución"
+        },
+        "incompleteText": "Antes de completar el pedido deben rellenarse los siguientes campos:",
+        "incompleteTitle": "Datos de mantenimiento incompletos",
+        "title": "Mantenimiento y servicio"
     }
 }

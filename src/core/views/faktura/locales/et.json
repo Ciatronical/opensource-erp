@@ -339,7 +339,17 @@
             "selectPhoto": "Pildista või vali foto",
             "noPhotos": "Fotosid pole veel",
             "photoDone": "Valmis",
-            "taxIncluded": "Maks sisaldub hinnas"
+            "taxIncluded": "Maks sisaldub hinnas",
+            "einvoice": {
+                "disabled": "Selle kliendi jaoks pole e-arve aktiveeritud. Seadistage see kliendi põhiandmetes või mandandi konfiguratsioonis »E-arve« all.",
+                "done": "E-arve loodud ({format}) — allalaadimine algas.",
+                "doneTest": "Test-e-arve loodud ({format}) — allalaadimine algas. Tähelepanu: Testirežiim!",
+                "failed": "E-arvet ei õnnestunud luoda. Üksikasjad brauseri konsoolis.",
+                "invalid": "Loodud e-arve ei vasta EN 16931 valideerimisele. Tüüpiline põhjus: puuduvad põhiandmed (KM-number, marsruudi ID, kliendi aadress).",
+                "onlyInvoice": "E-arveid saab luua ainult väljaminevatest arvetest.",
+                "saveFirst": "Palun salvesta arve enne e-arve genereerimist."
+            },
+            "kmStandRequired": "Läbisõit on kohustuslik — palun sisestage see enne arve koostamist."
         },
         "workflow": {
             "created": "Dokument erfolgreich erstellt",

@@ -82,7 +82,21 @@
         "cancel": "Annuleren",
         "send": "Versturen",
         "noCustomerVendor": "Geen klant of leverancier gevonden. Maak eerst een klant of leverancier aan.",
-        "newVehicle": "Nieuw voertuig"
+        "newVehicle": "Nieuw voertuig",
+        "creditNote": "Creditnota",
+        "deliveryOrders": "Pakbonnen",
+        "noDeliveryOrders": "Geen pakbonnen beschikbaar",
+        "noReclamations": "Geen klachten beschikbaar",
+        "noVendorDeliveryOrders": "Geen goederenontvangsten beschikbaar",
+        "noVendorReclamations": "Geen inkoopklachten",
+        "reclamations": "Klachten",
+        "status": "Status",
+        "statusClosed": "gesloten",
+        "statusDelivered": "geleverd",
+        "statusOpen": "open",
+        "storno": "Geannuleerd",
+        "vendorDeliveryOrders": "Goederenontvangsten",
+        "vendorReclamations": "Inkoopklachten"
     },
     "PhoneActions": {
         "clickToCall": "Bellen",

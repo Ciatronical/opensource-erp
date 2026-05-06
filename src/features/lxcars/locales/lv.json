@@ -31,5 +31,18 @@
         "ordered": "Pasūtīts",
         "revertToPending": "Atgriezt gaidīšanā",
         "delete": "Dzēst"
+    },
+    "MaintenanceSectionCard": {
+        "close": "Aizvērt",
+        "fields": {
+            "c_bf": "Bremžu šķidrums",
+            "c_sk": "Sadales ķēde",
+            "c_wd": "Nākamais apkopes datums",
+            "c_zrd": "Sadales siksnas datums",
+            "c_zrk": "Sadales siksnas nobraukums"
+        },
+        "incompleteText": "Pirms pasūtījuma pabeigšanas jābūt aizpildītiem šādiem laukiem:",
+        "incompleteTitle": "Apkopes dati nav pilnīgi",
+        "title": "Apkope un serviss"
     }
 }

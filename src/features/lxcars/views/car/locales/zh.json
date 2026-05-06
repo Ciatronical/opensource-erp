@@ -55,7 +55,8 @@
             "scan_id": "扫描 ID",
             "scan_detail_id": "扫描详情 ID",
             "filename": "文件名",
-            "c_ow": "车主"
+            "c_ow": "车主",
+            "c_km": "最近里程"
         },
         "kba": {
             "hersteller": "制造商",
@@ -271,7 +272,40 @@
             "uploadDoc": "上传文件",
             "uploadError": "文件类型无效",
             "uploadUnsupported": "请上传 PDF 或文本文件。"
-        }
+        },
+        "backToOrder": "订单",
+        "email": {
+            "addCcBcc": "CC / BCC",
+            "addFiles": "附加其他文件",
+            "attachFull": "将完整车辆数据作为文本文件附加",
+            "attachmentName": "附件",
+            "bcc": "BCC",
+            "body": "消息",
+            "bodyFieldFin": "VIN",
+            "bodyFieldFirstReg": "首次登记",
+            "bodyFieldHu": "年检到期",
+            "bodyFieldKm": "里程",
+            "bodyFieldMake": "品牌",
+            "bodyFieldModel": "型号/类型",
+            "bodyFieldPlate": "车牌",
+            "bodyGreeting": "您好，",
+            "bodyHeader": "车辆数据",
+            "bodyIntro": "以下是车辆数据：",
+            "bodyOutro": "此致",
+            "button": "E-Mail",
+            "cancel": "取消",
+            "cc": "CC",
+            "dialogTitle": "通过电子邮件发送车辆数据",
+            "error": "发送电子邮件失败",
+            "send": "发送",
+            "sending": "发送中...",
+            "subject": "主题",
+            "success": "电子邮件已发送",
+            "to": "收件人（客户、供应商或电子邮件地址）",
+            "tooltip": "通过电子邮件将车辆数据发送给客户、供应商或自定义地址"
+        },
+        "readonly": "仅查看",
+        "titleView": "车辆数据"
     },
     "CarScanView": {
         "title": "从扫描创建车辆",
@@ -473,6 +507,7 @@
             "required": "必填字段",
             "dateFormat": "无效日期（如 1.3.5 或 15.06.2020）",
             "ibanFormat": "无效的 IBAN 格式"
-        }
+        },
+        "generateDraftPdf": "生成草稿PDF"
     }
 }

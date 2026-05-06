@@ -351,6 +351,39 @@
             "bccSameAsCc": "CC und BCC dürfen nicht identisch sein",
             "homepageInvalid": "Ungültige URL (z.B. beispiel.de)",
             "homepageUnreachable": "Seite ist nicht erreichbar"
+        },
+        "businessCard": {
+            "button": "Visiitkaart AI",
+            "error": "Visiiitkaarti ei õnnestunud analüüsida.",
+            "lowConfidence": "Pildilt andmeid ei tuvastatud. Palun kasutage teist fotot.",
+            "success": "Visiitkaart tuvastatud ({confidence}% kindlus) — palun kontrollige andmeid",
+            "tooLarge": "Fail on liiga suur (maks. 10 MB)."
+        },
+        "phoneSearch": {
+            "button": "Telefon AI",
+            "cancel": "Tühista",
+            "error": "Veebiotsing ebaõnnestus.",
+            "hint": "AI otsib numbri veebist (impressum, kataloogid) ja täidab põhiandmed.",
+            "notFound": "Selle telefoninumbri jaoks ei leitud usaldusväärseid tulemusi.",
+            "search": "Otsi",
+            "success": "Vaste leitud ({confidence}% kindlus) — palun kontrollige andmeid",
+            "title": "Otsi klienti telefoninumbri järgi"
+        },
+        "zugferd": {
+            "help_current": "{option}",
+            "help_default": "See klient kasutab mandandi konfiguratsioonis »E-arve« all seadistatud vormingut. Soovitatav seadistus, kui kõiki kliente töödeldakse ühtlaselt.",
+            "help_off": "Sellele kliendile ei genereerita e-arvet isegi siis, kui mandandi vaikeväärtus seda ette näeb. Sobib ainult puhtalt B2C arvetele.",
+            "help_xrechnung": "Puhas XML (XRechnung 3.0, EN 16931 CIUS). Kohustuslik riigihangeteks. Väli »Meie Leitweg-ID kliendi juures« peab olema täidetud — ilma selleta lükkab vastuvõtuportaal arve tagasi.",
+            "help_xrechnung_test": "XRechnung 3.0 testirežiimis. Esialgseks heakskiitmiseks administratiivsete portaalidega nagu ZRE või OZG-RE. Ei raamatupidamisarvestusse.",
+            "help_zugferd": "Hübriidarvez: PDF/A-3 manustatud factur-x.xml-iga EN 16931 Extended profiilis. Soovitatav B2B standard Saksamaal. Ühilduv kivitendo ja kõigi tavapäraste raamatupidamissüsteemidega.",
+            "help_zugferd_test": "Sama hübriidarvez nagu tootmises, kuid XML-is testarvena märgitud. Esialgseks heakskiitmiseks selle kliendiga — vastuvõtusüsteem seda ei raamatupidamisarvestusse.",
+            "leitweg_hint": "XRechnung jaoks tuleb täita väli »Meie Leitweg-ID kliendi juures« (kaart »Numbrid ja ID-d«).",
+            "option_default": "Kasuta mandandi vaikeväärtust",
+            "option_off": "Ilma e-arveta",
+            "option_xrechnung": "XRechnung 3.0",
+            "option_xrechnung_test": "XRechnung 3.0 (Testirežiim)",
+            "option_zugferd": "Factur-X / ZUGFeRD 2.2 extended",
+            "option_zugferd_test": "Factur-X / ZUGFeRD extended (Testirežiim)"
         }
     }
 }

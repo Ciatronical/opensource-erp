@@ -339,7 +339,17 @@
             "selectPhoto": "Ota tai valitse kuva",
             "noPhotos": "Ei vielä kuvia",
             "photoDone": "Valmis",
-            "taxIncluded": "Vero sisältyy hintaan"
+            "taxIncluded": "Vero sisältyy hintaan",
+            "einvoice": {
+                "disabled": "E-lasku ei ole käytössä tälle asiakkaalle. Määritä se asiakkaan perustiedoissa tai toimeksiantajan konfiguraatiossa »E-lasku« kohdassa.",
+                "done": "E-lasku luotu ({format}) — lataus aloitettu.",
+                "doneTest": "Testi-e-lasku luotu ({format}) — lataus aloitettu. Huom: Testitila!",
+                "failed": "E-laskua ei voitu luoda. Tiedot selaimen konsolissa.",
+                "invalid": "Luotu e-lasku ei läpäise EN 16931 -validointia. Tyypillinen syy: puuttuvat perustiedot (ALV-tunnus, reititystunnus, asiakkaan osoite).",
+                "onlyInvoice": "E-laskuja voidaan luoda vain lähtevistä laskuista.",
+                "saveFirst": "Tallenna lasku ennen e-laskun luomista."
+            },
+            "kmStandRequired": "Kilometrilukema on pakollinen — syötä se ennen laskun luomista."
         },
         "workflow": {
             "created": "Dokument erfolgreich erstellt",

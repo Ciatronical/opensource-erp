@@ -55,7 +55,8 @@
             "scan_id": "ID de scan",
             "scan_detail_id": "ID de detail de scan",
             "filename": "Nom du fichier",
-            "c_ow": "Proprietaire"
+            "c_ow": "Proprietaire",
+            "c_km": "Dernier kilométrage"
         },
         "kba": {
             "hersteller": "Constructeur",
@@ -271,7 +272,40 @@
             "uploadDoc": "Téléverser un document",
             "uploadError": "Type de fichier invalide",
             "uploadUnsupported": "Veuillez téléverser un fichier PDF ou texte."
-        }
+        },
+        "backToOrder": "Commande",
+        "email": {
+            "addCcBcc": "CC / BCC",
+            "addFiles": "Joindre des fichiers supplémentaires",
+            "attachFull": "Joindre les données complètes du véhicule en fichier texte",
+            "attachmentName": "Pièce jointe",
+            "bcc": "BCC",
+            "body": "Message",
+            "bodyFieldFin": "VIN",
+            "bodyFieldFirstReg": "Première immatriculation",
+            "bodyFieldHu": "Contrôle technique",
+            "bodyFieldKm": "Kilométrage",
+            "bodyFieldMake": "Marque",
+            "bodyFieldModel": "Modèle / Type",
+            "bodyFieldPlate": "Plaque d'immatriculation",
+            "bodyGreeting": "Bonjour,",
+            "bodyHeader": "Données du véhicule",
+            "bodyIntro": "veuillez trouver ci-dessous les données du véhicule :",
+            "bodyOutro": "Cordialement",
+            "button": "E-Mail",
+            "cancel": "Annuler",
+            "cc": "CC",
+            "dialogTitle": "Envoyer les données du véhicule par e-mail",
+            "error": "Erreur lors de l'envoi de l'e-mail",
+            "send": "Envoyer",
+            "sending": "Envoi en cours...",
+            "subject": "Objet",
+            "success": "L'e-mail a été envoyé",
+            "to": "À (client, fournisseur ou adresse e-mail)",
+            "tooltip": "Envoyer les données du véhicule par e-mail à un client, un fournisseur ou une adresse personnalisée"
+        },
+        "readonly": "Lecture seule",
+        "titleView": "Données du véhicule"
     },
     "CarScanView": {
         "title": "Creer un vehicule a partir du scan",
@@ -473,6 +507,7 @@
             "required": "Champ obligatoire",
             "dateFormat": "Date invalide (ex. 1.3.5 ou 15.06.2020)",
             "ibanFormat": "Format IBAN invalide"
-        }
+        },
+        "generateDraftPdf": "Générer PDF brouillon"
     }
 }

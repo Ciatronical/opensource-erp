@@ -31,5 +31,18 @@
         "ordered": "Ordinato",
         "revertToPending": "Riporta in attesa",
         "delete": "Elimina"
+    },
+    "MaintenanceSectionCard": {
+        "close": "Chiudi",
+        "fields": {
+            "c_bf": "Liquido freni",
+            "c_sk": "Catena di distribuzione",
+            "c_wd": "Prossimo tagliando",
+            "c_zrd": "Data cinghia di distribuzione",
+            "c_zrk": "Km cinghia di distribuzione"
+        },
+        "incompleteText": "Prima di completare l'ordine è necessario compilare i seguenti campi:",
+        "incompleteTitle": "Dati manutenzione incompleti",
+        "title": "Manutenzione e assistenza"
     }
 }

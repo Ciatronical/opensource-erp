@@ -38,7 +38,12 @@
         "huSerienbrief": "/serienbrief/hu",
         "wallDisplay": "/wandanzeige",
         "editCv": "/musteri-tedarikci/duzenle",
-        "lxcarsReports": "/kullanici/raporlar"
+        "lxcarsReports": "/kullanici/raporlar",
+        "camera": "/cameras",
+        "hr": "/hr",
+        "hrPayroll": "/hr/payroll",
+        "hrVacation": "/hr/vacation",
+        "newDeliveryOrder": "/delivery-order/new"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Hata: api/config/api.passwd.php parola dosyasi bulunamadi. Lutfen api/config/api.passwd.php.example dosyasini api/config/api.passwd.php olarak yeniden adlandirin ve ayarlari uygun sekilde yapin.",
@@ -72,6 +77,11 @@
         "clientConfig": "Firma yapılandırması",
         "developerTools": "Developer Tools",
         "systemUpdate": "Sistem güncellemesi",
-        "about": "Hakkında"
+        "about": "Hakkında",
+        "docs": "Belgeler"
+    },
+    "DocsView": {
+        "title": "Belgeler",
+        "selectDoc": "Listeden bir belge seçin"
     }
 }

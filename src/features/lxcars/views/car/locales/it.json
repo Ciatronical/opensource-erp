@@ -55,7 +55,8 @@
             "scan_id": "Scan-ID",
             "scan_detail_id": "Scan-Detail-ID",
             "filename": "Dateiname",
-            "c_ow": "Proprietario"
+            "c_ow": "Proprietario",
+            "c_km": "Ultimo chilometraggio"
         },
         "kba": {
             "hersteller": "Produttore",
@@ -271,7 +272,40 @@
             "uploadDoc": "Carica documento",
             "uploadError": "Tipo di file non valido",
             "uploadUnsupported": "Carica un file PDF o di testo."
-        }
+        },
+        "backToOrder": "Ordine",
+        "email": {
+            "addCcBcc": "CC / BCC",
+            "addFiles": "Allega file aggiuntivi",
+            "attachFull": "Allega i dati completi del veicolo come file di testo",
+            "attachmentName": "Allegato",
+            "bcc": "BCC",
+            "body": "Messaggio",
+            "bodyFieldFin": "VIN",
+            "bodyFieldFirstReg": "Prima immatricolazione",
+            "bodyFieldHu": "Revisione scade",
+            "bodyFieldKm": "Chilometraggio",
+            "bodyFieldMake": "Marca",
+            "bodyFieldModel": "Modello / Tipo",
+            "bodyFieldPlate": "Targa",
+            "bodyGreeting": "Salve,",
+            "bodyHeader": "Dati veicolo",
+            "bodyIntro": "in allegato i dati del veicolo:",
+            "bodyOutro": "Cordiali saluti",
+            "button": "E-Mail",
+            "cancel": "Annulla",
+            "cc": "CC",
+            "dialogTitle": "Invia dati veicolo per e-mail",
+            "error": "Errore nell'invio dell'e-mail",
+            "send": "Invia",
+            "sending": "Invio in corso...",
+            "subject": "Oggetto",
+            "success": "L'e-mail è stata inviata",
+            "to": "A (cliente, fornitore o indirizzo e-mail)",
+            "tooltip": "Invia dati veicolo via e-mail a cliente, fornitore o indirizzo personalizzato"
+        },
+        "readonly": "Solo visualizzazione",
+        "titleView": "Dati veicolo"
     },
     "CarScanView": {
         "title": "Crea veicolo da scansione",
@@ -473,6 +507,7 @@
             "required": "Campo obbligatorio",
             "dateFormat": "Ungültiges Datum (z.B. 1.3.5 oder 15.06.2020)",
             "ibanFormat": "Ungültiges IBAN-Format"
-        }
+        },
+        "generateDraftPdf": "Genera PDF bozza"
     }
 }

@@ -55,7 +55,8 @@
             "scan_id": "ID skanu",
             "scan_detail_id": "ID szczegółów skanu",
             "filename": "Nazwa pliku",
-            "c_ow": "Właściciel"
+            "c_ow": "Właściciel",
+            "c_km": "Ostatni przebieg"
         },
         "kba": {
             "hersteller": "Producent",
@@ -271,7 +272,40 @@
             "uploadDoc": "Prześlij dokument",
             "uploadError": "Nieprawidłowy typ pliku",
             "uploadUnsupported": "Prześlij plik PDF lub tekstowy."
-        }
+        },
+        "backToOrder": "Zlecenie",
+        "email": {
+            "addCcBcc": "CC / BCC",
+            "addFiles": "Załącz dodatkowe pliki",
+            "attachFull": "Załącz kompletne dane pojazdu jako plik tekstowy",
+            "attachmentName": "Załącznik",
+            "bcc": "BCC",
+            "body": "Wiadomość",
+            "bodyFieldFin": "VIN",
+            "bodyFieldFirstReg": "Pierwsza rejestracja",
+            "bodyFieldHu": "Przegląd techniczny",
+            "bodyFieldKm": "Przebieg",
+            "bodyFieldMake": "Marka",
+            "bodyFieldModel": "Model / Typ",
+            "bodyFieldPlate": "Tablica rejestracyjna",
+            "bodyGreeting": "Dzień dobry,",
+            "bodyHeader": "Dane pojazdu",
+            "bodyIntro": "poniżej znajdą Państwo dane pojazdu:",
+            "bodyOutro": "Z poważaniem",
+            "button": "E-Mail",
+            "cancel": "Anuluj",
+            "cc": "CC",
+            "dialogTitle": "Wyślij dane pojazdu e-mailem",
+            "error": "Błąd podczas wysyłania e-maila",
+            "send": "Wyślij",
+            "sending": "Wysyłanie...",
+            "subject": "Temat",
+            "success": "E-mail został wysłany",
+            "to": "Do (klient, dostawca lub adres e-mail)",
+            "tooltip": "Wyślij dane pojazdu e-mailem do klienta, dostawcy lub na własny adres"
+        },
+        "readonly": "Tylko podgląd",
+        "titleView": "Dane pojazdu"
     },
     "CarScanView": {
         "title": "Utwórz pojazd ze skanu",
@@ -473,6 +507,7 @@
             "required": "Pole wymagane",
             "dateFormat": "Nieprawidłowa data (np. 1.3.5 lub 15.06.2020)",
             "ibanFormat": "Nieprawidłowy format IBAN"
-        }
+        },
+        "generateDraftPdf": "Wygeneruj PDF robocze"
     }
 }

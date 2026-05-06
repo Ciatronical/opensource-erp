@@ -351,6 +351,39 @@
             "bccSameAsCc": "Le CC et le CCI ne peuvent pas etre identiques",
             "homepageInvalid": "URL invalide (ex. exemple.fr)",
             "homepageUnreachable": "Le site n'est pas accessible"
+        },
+        "businessCard": {
+            "button": "Carte de visite IA",
+            "error": "La carte de visite n'a pas pu être analysée.",
+            "lowConfidence": "Aucune donnée n'a pu être reconnue sur l'image. Veuillez utiliser une autre photo.",
+            "success": "Carte de visite reconnue ({confidence}% confiance) — vérifiez les données",
+            "tooLarge": "Le fichier est trop volumineux (max. 10 Mo)."
+        },
+        "phoneSearch": {
+            "button": "Téléphone IA",
+            "cancel": "Annuler",
+            "error": "La recherche web a échoué.",
+            "hint": "L'IA recherche le numéro sur le web (mentions légales, annuaires) et remplit les données de base.",
+            "notFound": "Aucun résultat fiable trouvé pour ce numéro de téléphone.",
+            "search": "Rechercher",
+            "success": "Correspondance trouvée ({confidence}% confiance) — vérifiez les données",
+            "title": "Rechercher un client par numéro de téléphone"
+        },
+        "zugferd": {
+            "help_current": "{option}",
+            "help_default": "Ce client utilise le format configuré dans la configuration du mandant sous »Facture électronique«. Paramètre recommandé lorsque tous les clients sont traités uniformément.",
+            "help_off": "Aucune facture électronique n'est générée pour ce client, même si le défaut du mandant le prévoit. Uniquement pour les factures B2C.",
+            "help_xrechnung": "XML pur (XRechnung 3.0, CIUS de la EN 16931). Obligatoire pour les pouvoirs adjudicateurs. Le champ »Notre Leitweg-ID chez le client« doit être renseigné — sans lui le portail refusera la facture.",
+            "help_xrechnung_test": "XRechnung 3.0 en mode test. Pour les premières acceptations avec des portails administratifs tels que ZRE ou OZG-RE. Non comptabilisé.",
+            "help_zugferd": "Facture hybride : PDF/A-3 avec factur-x.xml intégré dans le profil EN 16931 Extended. Standard B2B recommandé en Allemagne. Compatible avec kivitendo et tous les systèmes comptables courants.",
+            "help_zugferd_test": "Même facture hybride qu'en production, mais marquée comme facture test dans le XML. Pour les premières acceptances avec ce client — le système récepteur ne la comptabilise pas.",
+            "leitweg_hint": "Pour XRechnung le champ »Notre Leitweg-ID chez le client« (carte »Numéros & IDs«) doit être renseigné.",
+            "option_default": "Utiliser le défaut du mandant",
+            "option_off": "Pas de facture électronique",
+            "option_xrechnung": "XRechnung 3.0",
+            "option_xrechnung_test": "XRechnung 3.0 (Mode test)",
+            "option_zugferd": "Factur-X / ZUGFeRD 2.2 extended",
+            "option_zugferd_test": "Factur-X / ZUGFeRD extended (Mode test)"
         }
     }
 }

@@ -82,7 +82,21 @@
         "cancel": "Atcelt",
         "send": "Nosūtīt",
         "noCustomerVendor": "Nav atrasts neviens klients vai piegādātājs. Lūdzu, vispirms izveidojiet klientu vai piegādātāju.",
-        "newVehicle": "Jauns transportlīdzeklis"
+        "newVehicle": "Jauns transportlīdzeklis",
+        "creditNote": "Kredītrēķins",
+        "deliveryOrders": "Pavadzīmes",
+        "noDeliveryOrders": "Nav pavadzīmju",
+        "noReclamations": "Nav reklamāciju",
+        "noVendorDeliveryOrders": "Nav preču saņemšanas",
+        "noVendorReclamations": "Nav pirkuma reklamāciju",
+        "reclamations": "Reklamācijas",
+        "status": "Statuss",
+        "statusClosed": "slēgts",
+        "statusDelivered": "piegādāts",
+        "statusOpen": "atvērts",
+        "storno": "Atcelts",
+        "vendorDeliveryOrders": "Preču saņemšana",
+        "vendorReclamations": "Pirkuma reklamācijas"
     },
     "PhoneActions": {
         "clickToCall": "Zvanīt",

@@ -31,5 +31,18 @@
         "ordered": "Objednáno",
         "revertToPending": "Vrátit na čekající",
         "delete": "Smazat"
+    },
+    "MaintenanceSectionCard": {
+        "close": "Zavřít",
+        "fields": {
+            "c_bf": "Brzdová kapalina",
+            "c_sk": "Rozvodový řetěz",
+            "c_wd": "Příští servisní prohlídka",
+            "c_zrd": "Datum rozvodového řemene",
+            "c_zrk": "Km rozvodového řemene"
+        },
+        "incompleteText": "Před dokončením zakázky musí být vyplněna následující pole:",
+        "incompleteTitle": "Servisní data neúplná",
+        "title": "Údržba a servis"
     }
 }

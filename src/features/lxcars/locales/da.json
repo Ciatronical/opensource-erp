@@ -31,5 +31,18 @@
         "ordered": "Bestilt",
         "revertToPending": "Sæt tilbage til afventende",
         "delete": "Slet"
+    },
+    "MaintenanceSectionCard": {
+        "close": "Luk",
+        "fields": {
+            "c_bf": "Bremseväske",
+            "c_sk": "Kædeudveksling",
+            "c_wd": "Næste servicebesøg",
+            "c_zrd": "Dato for tandrem",
+            "c_zrk": "Km for tandrem"
+        },
+        "incompleteText": "Inden ordren kan afsluttes, skal følgende felter udfyldes:",
+        "incompleteTitle": "Servicedata ufuldstændige",
+        "title": "Vedligeholdelse og service"
     }
 }

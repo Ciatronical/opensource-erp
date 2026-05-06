@@ -339,7 +339,17 @@
             "selectPhoto": "Fotografēt vai izvēlēties foto",
             "noPhotos": "Pagaidām nav fotoattēlu",
             "photoDone": "Gatavs",
-            "taxIncluded": "Nodoklis iekļauts cenā"
+            "taxIncluded": "Nodoklis iekļauts cenā",
+            "einvoice": {
+                "disabled": "Šim klientam e-rēķins nav aktivizēts. Konfigurējiet to klienta pamata datos vai mandanta konfigurācijā sadaļā »E-rēķins«.",
+                "done": "E-rēķins ģenerēts ({format}) — lejupielāde sākta.",
+                "doneTest": "Testa e-rēķins ģenerēts ({format}) — lejupielāde sākta. Uzmanību: Testa režīms!",
+                "failed": "E-rēķinu neizdevās ģenerēt. Sīkāka informācija pārlūka konsolē.",
+                "invalid": "Ģenerētais e-rēķins neatbilst EN 16931 validācijai. Tipiskais iemesls: trūkst pamata datu (PVN nr., maršruta ID, klienta adrese).",
+                "onlyInvoice": "E-rēķinus var ģenerēt tikai no izejošiem rēķiniem.",
+                "saveFirst": "Lūdzu saglabājiet rēķinu pirms e-rēķina ģenerēšanas."
+            },
+            "kmStandRequired": "Nobraukums ir obligāts — ievadiet to pirms rēķina izrakstīšanas."
         },
         "workflow": {
             "created": "Dokument erfolgreich erstellt",

@@ -351,6 +351,39 @@
             "bccSameAsCc": "CC und BCC dürfen nicht identisch sein",
             "homepageInvalid": "Ungültige URL (z.B. beispiel.de)",
             "homepageUnreachable": "Seite ist nicht erreichbar"
+        },
+        "businessCard": {
+            "button": "Käyntikortti tekoäly",
+            "error": "Käyntikorttia ei voitu analysoida.",
+            "lowConfidence": "Kuvasta ei tunnistettu tietoja. Käytä toista valokuvaa.",
+            "success": "Käyntikortti tunnistettu ({confidence}% varmuus) — tarkista tiedot",
+            "tooLarge": "Tiedosto on liian suuri (maks. 10 MB)."
+        },
+        "phoneSearch": {
+            "button": "Puhelin tekoäly",
+            "cancel": "Peruuta",
+            "error": "Verkkohaku epäonnistui.",
+            "hint": "Tekoäly etsii numeron verkosta (imprint, hakemistot) ja täyttää perustiedot.",
+            "notFound": "Tälle puhelinnumerolle ei löytynyt luotettavia tuloksia.",
+            "search": "Hae",
+            "success": "Osuma löytyi ({confidence}% varmuus) — tarkista tiedot",
+            "title": "Etsi asiakas puhelinnumeron perusteella"
+        },
+        "zugferd": {
+            "help_current": "{option}",
+            "help_default": "Tämä asiakas käyttää toimeksiantajan konfiguraatiossa »E-lasku« kohdassa määritettyä muotoa. Suositeltava asetus, kun kaikkia asiakkaita käsitellään yhtenäisesti.",
+            "help_off": "Tälle asiakkaalle ei luoda e-laskua, vaikka toimeksiantajan oletusasetus niin vaatisi. Sopii vain puhtaisiin B2C-laskuihin.",
+            "help_xrechnung": "Puhdas XML (XRechnung 3.0, EN 16931:n CIUS). Pakollinen julkisille hankintaviranomaisille. Kenttä »Leitweg-ID asiakkaalla« täytyy täyttää — ilman sitä vastaanottoportaali hylkää laskun.",
+            "help_xrechnung_test": "XRechnung 3.0 testitilassa. Alustavia hyväksyntätestejä varten hallinnollisten portaalien kuten ZRE tai OZG-RE kanssa. Ei kirjanpitoon.",
+            "help_zugferd": "Hybridilaskul: PDF/A-3 upotetulla factur-x.xml-tiedostolla EN 16931 Extended -profiilissa. Suositeltava B2B-standardi Saksassa. Yhteensopiva kivitendo:n ja kaikkien yleisten kirjanpitojärjestelmien kanssa.",
+            "help_zugferd_test": "Sama hybridilaskul kuin tuotannossa, mutta XML:ssä merkitty testilasku. Alustavia hyväksyntätestejä varten tämän asiakkaan kanssa — vastaanottojärjestelmä ei kirjaa sitä.",
+            "leitweg_hint": "XRechnung-laskua varten kenttä »Leitweg-ID asiakkaalla« (kortti »Numerot ja tunnukset«) täytyy täyttää.",
+            "option_default": "Käytä toimeksiantajan oletusta",
+            "option_off": "Ei e-laskua",
+            "option_xrechnung": "XRechnung 3.0",
+            "option_xrechnung_test": "XRechnung 3.0 (Testitila)",
+            "option_zugferd": "Factur-X / ZUGFeRD 2.2 extended",
+            "option_zugferd_test": "Factur-X / ZUGFeRD extended (Testitila)"
         }
     }
 }

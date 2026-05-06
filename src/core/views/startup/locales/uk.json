@@ -82,7 +82,21 @@
         "cancel": "Скасувати",
         "send": "Надіслати",
         "noCustomerVendor": "Клієнта або постачальника не знайдено. Спочатку створіть клієнта або постачальника.",
-        "newVehicle": "Новий транспортний засіб"
+        "newVehicle": "Новий транспортний засіб",
+        "creditNote": "Кредитна нота",
+        "deliveryOrders": "Накладні",
+        "noDeliveryOrders": "Немає накладних",
+        "noReclamations": "Немає рекламацій",
+        "noVendorDeliveryOrders": "Немає надходжень товару",
+        "noVendorReclamations": "Немає рекламацій по закупівлях",
+        "reclamations": "Рекламації",
+        "status": "Статус",
+        "statusClosed": "закрито",
+        "statusDelivered": "доставлено",
+        "statusOpen": "відкрито",
+        "storno": "Скасовано",
+        "vendorDeliveryOrders": "Надходження товарів",
+        "vendorReclamations": "Рекламації по закупівлях"
     },
     "PhoneActions": {
         "clickToCall": "Зателефонувати",

@@ -31,5 +31,18 @@
         "ordered": "已订购",
         "revertToPending": "恢复为待处理",
         "delete": "删除"
+    },
+    "MaintenanceSectionCard": {
+        "close": "关闭",
+        "fields": {
+            "c_bf": "制动液",
+            "c_sk": "正时链",
+            "c_wd": "下次保养日期",
+            "c_zrd": "正时皮带日期",
+            "c_zrk": "正时皮带里程"
+        },
+        "incompleteText": "在完成订单之前，必须填写以下字段：",
+        "incompleteTitle": "维护数据不完整",
+        "title": "维护与服务"
     }
 }

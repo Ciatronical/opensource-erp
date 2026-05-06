@@ -38,7 +38,12 @@
         "huSerienbrief": "/serienbrief/hu",
         "wallDisplay": "/wandanzeige",
         "editCv": "/klant-leverancier/bewerken",
-        "lxcarsReports": "/gebruiker/rapporten"
+        "lxcarsReports": "/gebruiker/rapporten",
+        "camera": "/cameras",
+        "hr": "/hr",
+        "hrPayroll": "/hr/payroll",
+        "hrVacation": "/hr/vacation",
+        "newDeliveryOrder": "/delivery-order/new"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Fout: Het wachtwoordbestand api/config/api.passwd.php is niet gevonden. Hernoem het bestand api/config/api.passwd.php.example naar api/config/api.passwd.php en pas de instellingen aan.",
@@ -72,6 +77,11 @@
         "clientConfig": "Bedrijfsconfiguratie",
         "developerTools": "Developer Tools",
         "systemUpdate": "Systeemupdate",
-        "about": "Over"
+        "about": "Over",
+        "docs": "Documentatie"
+    },
+    "DocsView": {
+        "title": "Documentatie",
+        "selectDoc": "Selecteer een document uit de lijst"
     }
 }

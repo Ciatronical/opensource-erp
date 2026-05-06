@@ -351,6 +351,39 @@
             "bccSameAsCc": "CC und BCC dürfen nicht identisch sein",
             "homepageInvalid": "Ungültige URL (z.B. beispiel.de)",
             "homepageUnreachable": "Seite ist nicht erreichbar"
+        },
+        "businessCard": {
+            "button": "Vizitka KI",
+            "error": "Vizitku se nepodařilo analyzovat.",
+            "lowConfidence": "Na obrázku nebyla rozpoznána žádná data. Použijte prosím jiné foto.",
+            "success": "Vizitka rozpoznána ({confidence}% spolehlivost) — zkontrolujte prosím data",
+            "tooLarge": "Soubor je příliš velký (max. 10 MB)."
+        },
+        "phoneSearch": {
+            "button": "Telefon KI",
+            "cancel": "Zrušit",
+            "error": "Webové vyhledávání selhalo.",
+            "hint": "KI vyhledá číslo na webu (impresum, katalogy) a vyplní kmenová data.",
+            "notFound": "Pro toto telefonní číslo nebyly nalezeny žádné spolehlivé výsledky.",
+            "search": "Hledat",
+            "success": "Výsledek nalezen ({confidence}% spolehlivost) — zkontrolujte prosím data",
+            "title": "Hledat zákazníka podle telefonního čísla"
+        },
+        "zugferd": {
+            "help_current": "{option}",
+            "help_default": "Tento zákazník používá formát nastavený v konfiguraci mandanta pod »E-faktura«. Doporučené nastavení, pokud jsou všichni zákazníci zpracováváni jednotně.",
+            "help_off": "Pro tohoto zákazníka nebude generována e-faktura, ani když to mandant vyžaduje. Vhodné pouze pro čistě B2C faktury.",
+            "help_xrechnung": "Čisté XML (XRechnung 3.0, CIUS EN 16931). Povinné pro veřejné zadavatele. Pole »Naše Leitweg-ID u zákazníka« musí být vyplněno — bez něj portál odmítne fakturu.",
+            "help_xrechnung_test": "XRechnung 3.0 v testovacím režimu. Pro první přejímky s administrativními portály (ZRE nebo OZG-RE). Nezaúčtováno.",
+            "help_zugferd": "Hybridní faktura: PDF/A-3 s vloženým factur-x.xml v profilu EN 16931 Extended. Doporučený B2B standard v Německu. Kompatibilní s kivitendo a všemi běžnými účetními systémy.",
+            "help_zugferd_test": "Stejná hybridní faktura jako produkční, ale v XML označena jako testovací. Pro první přejímky s tímto zákazníkem — přijímací systém ji nezaúčtuje.",
+            "leitweg_hint": "Pro XRechnung musí být vyplněno pole »Naše Leitweg-ID u zákazníka« (karta »Čísla & IDs«).",
+            "option_default": "Použít nastavení mandanta",
+            "option_off": "Bez e-faktury",
+            "option_xrechnung": "XRechnung 3.0",
+            "option_xrechnung_test": "XRechnung 3.0 (Testovací režim)",
+            "option_zugferd": "Factur-X / ZUGFeRD 2.2 extended",
+            "option_zugferd_test": "Factur-X / ZUGFeRD extended (Testovací režim)"
         }
     }
 }

@@ -351,6 +351,39 @@
             "bccSameAsCc": "CC und BCC dürfen nicht identisch sein",
             "homepageInvalid": "Ungültige URL (z.B. beispiel.de)",
             "homepageUnreachable": "Seite ist nicht erreichbar"
+        },
+        "businessCard": {
+            "button": "Vizītkarte MI",
+            "error": "Vizītkarti neizdevās analizēt.",
+            "lowConfidence": "Attēlā dati netika atpazīti. Lūdzu izmantojiet citu fotogrāfiju.",
+            "success": "Vizītkarte atpazīta ({confidence}% ticamība) — lūdzu pārbaudiet datus",
+            "tooLarge": "Fails ir pārāk liels (maks. 10 MB)."
+        },
+        "phoneSearch": {
+            "button": "Telefons MI",
+            "cancel": "Atcelt",
+            "error": "Tīmekļa meklēšana neizdevās.",
+            "hint": "MI meklē numuru tīmeklī (imprints, katalogi) un aizpilda pamata datus.",
+            "notFound": "Šim tālruņa numuram nav atrasti uzticami rezultāti.",
+            "search": "Meklēt",
+            "success": "Atrasta atbilstība ({confidence}% ticamība) — lūdzu pārbaudiet datus",
+            "title": "Meklēt klientu pēc tālruņa numura"
+        },
+        "zugferd": {
+            "help_current": "{option}",
+            "help_default": "Šis klients izmanto formātu, kas konfigurēts mandanta konfigurācijā sadaļā »E-rēķins«. Ieteicamais iestatījums, ja visi klienti tiek apstrādāti vienādi.",
+            "help_off": "Šim klientam e-rēķins netiek ģenerēts pat tad, ja mandanta noklusējums to paredz. Piemērots tikai tīriem B2C rēķiniem.",
+            "help_xrechnung": "Tīrs XML (XRechnung 3.0, EN 16931 CIUS). Obligāts publiskiem pasūtītājiem. Lauks »Mūsu Leitweg-ID pie klienta« jābūt aizpildītam — bez tā portāls noraidīs rēķinu.",
+            "help_xrechnung_test": "XRechnung 3.0 testa režīmā. Sākotnējai akceptēšanai ar administratīvajiem portāliem kā ZRE vai OZG-RE. Nav reģistrēts grāmatvedībā.",
+            "help_zugferd": "Hibrīda rēķins: PDF/A-3 ar iegultu factur-x.xml EN 16931 Extended profilā. Ieteicamais B2B standarts Vācijā. Saderīgs ar kivitendo un visām parastajām grāmatvedības sistēmām.",
+            "help_zugferd_test": "Tāds pats hibrīda rēķins kā ražošanā, bet XML atzīmēts kā testa rēķins. Sākotnējai akceptēšanai ar šo klientu — saņemšanas sistēma to nereģistrē.",
+            "leitweg_hint": "XRechnung lauks »Mūsu Leitweg-ID pie klienta« (karte »Numuri un ID«) jābūt aizpildītam.",
+            "option_default": "Izmantot mandanta noklusējumu",
+            "option_off": "Bez e-rēķina",
+            "option_xrechnung": "XRechnung 3.0",
+            "option_xrechnung_test": "XRechnung 3.0 (Testa režīms)",
+            "option_zugferd": "Factur-X / ZUGFeRD 2.2 extended",
+            "option_zugferd_test": "Factur-X / ZUGFeRD extended (Testa režīms)"
         }
     }
 }

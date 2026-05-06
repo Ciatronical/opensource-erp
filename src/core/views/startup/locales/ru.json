@@ -82,7 +82,21 @@
         "cancel": "Отмена",
         "send": "Отправить",
         "noCustomerVendor": "Клиент или поставщик не найден. Сначала создайте клиента или поставщика.",
-        "newVehicle": "Новое транспортное средство"
+        "newVehicle": "Новое транспортное средство",
+        "creditNote": "Кредит-нота",
+        "deliveryOrders": "Накладные",
+        "noDeliveryOrders": "Нет накладных",
+        "noReclamations": "Нет рекламаций",
+        "noVendorDeliveryOrders": "Нет поступлений товаров",
+        "noVendorReclamations": "Нет рекламаций по закупкам",
+        "reclamations": "Рекламации",
+        "status": "Статус",
+        "statusClosed": "закрыт",
+        "statusDelivered": "доставлено",
+        "statusOpen": "открыт",
+        "storno": "Отменено",
+        "vendorDeliveryOrders": "Поступления товаров",
+        "vendorReclamations": "Рекламации по закупкам"
     },
     "PhoneActions": {
         "clickToCall": "Позвонить",

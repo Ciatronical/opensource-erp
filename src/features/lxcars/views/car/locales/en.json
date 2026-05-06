@@ -55,7 +55,8 @@
             "scan_id": "Scan ID",
             "scan_detail_id": "Scan detail ID",
             "filename": "Filename",
-            "c_ow": "Owner"
+            "c_ow": "Owner",
+            "c_km": "Last mileage"
         },
         "kba": {
             "hersteller": "Manufacturer",
@@ -301,7 +302,10 @@
             "uploadDoc": "Upload document",
             "uploadError": "Invalid file type",
             "uploadUnsupported": "Please upload a PDF or text file."
-        }
+        },
+        "backToOrder": "Order",
+        "readonly": "View only",
+        "titleView": "Vehicle data"
     },
     "CarScanView": {
         "title": "Create vehicle from scan",

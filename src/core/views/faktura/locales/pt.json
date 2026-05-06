@@ -339,7 +339,17 @@
             "selectPhoto": "Tirar ou selecionar foto",
             "noPhotos": "Sem fotos ainda",
             "photoDone": "Concluído",
-            "taxIncluded": "Imposto incluído no preço"
+            "taxIncluded": "Imposto incluído no preço",
+            "einvoice": {
+                "disabled": "A fatura eletrónica não está ativada para este cliente. Configure-a nos dados mestre do cliente ou na configuração do mandante em »Fatura eletrónica«.",
+                "done": "Fatura eletrónica gerada ({format}) — download iniciado.",
+                "doneTest": "Fatura eletrónica de teste gerada ({format}) — download iniciado. Atenção: Modo de teste!",
+                "failed": "Não foi possível gerar a fatura eletrónica. Detalhes na consola do browser.",
+                "invalid": "A fatura eletrónica gerada não passa a validação EN 16931. Causa típica: dados mestre em falta (NIF, ID de encaminhamento, morada do cliente).",
+                "onlyInvoice": "As faturas eletrónicas só podem ser geradas a partir de faturas de saída.",
+                "saveFirst": "Guarde a fatura antes de gerar uma fatura eletrónica."
+            },
+            "kmStandRequired": "A quilometragem é obrigatória — insira-a antes de criar a fatura."
         },
         "workflow": {
             "created": "Dokument erfolgreich erstellt",

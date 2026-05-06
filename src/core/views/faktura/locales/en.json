@@ -238,7 +238,6 @@
             "dhlLabel": "DHL Shipping Label",
             "paymentBooked": "Payment booked successfully",
             "paymentError": "Error booking payment",
-            "paymentAccount": "Payment Account",
             "searchArticle": "Part no. or description",
             "itemCreateError": "Error creating item",
             "itemDeleteError": "Error deleting item",

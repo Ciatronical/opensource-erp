@@ -339,7 +339,17 @@
             "selectPhoto": "拍摄或选择照片",
             "noPhotos": "暂无照片",
             "photoDone": "完成",
-            "taxIncluded": "价格含税"
+            "taxIncluded": "价格含税",
+            "einvoice": {
+                "disabled": "此客户未启用电子发票。请在客户主数据或委托人配置的»电子发票«中设置。",
+                "done": "电子发票已生成（{format}）— 下载已开始。",
+                "doneTest": "测试电子发票已生成（{format}）— 下载已开始。注意：测试模式！",
+                "failed": "无法生成电子发票。详情请查看浏览器控制台。",
+                "invalid": "生成的电子发票未通过EN 16931验证。典型原因：缺少主数据（增值税号、路由ID、客户地址）。",
+                "onlyInvoice": "电子发票只能从销售发票生成。",
+                "saveFirst": "请先保存发票，然后再生成电子发票。"
+            },
+            "kmStandRequired": "里程数为必填项 — 请在创建发票前输入。"
         },
         "workflow": {
             "created": "单据创建成功",
