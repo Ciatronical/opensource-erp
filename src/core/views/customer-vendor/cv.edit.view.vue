@@ -396,6 +396,7 @@ export default {
             const missing = []
             if (!(cvData.value.name || '').trim()) missing.push(t('CustomerVendorEditView.fields.name'))
             if (!(cvData.value.zipcode || '').trim()) missing.push(t('CustomerVendorEditView.fields.zipcode'))
+            if (!(cvData.value.street || '').trim()) missing.push(t('CustomerVendorEditView.fields.street'))
             if (entitySrc.value === 'C' && businessTypes.value.length > 1 && !cvData.value.business_id) missing.push(t('CustomerVendorEditView.fields.business_type'))
             if (missing.length === 0) return null
             return t('CustomerVendorEditView.messages.autoSaveWarning', { fields: missing.join(', ') })
@@ -554,6 +555,14 @@ export default {
 
         function onDataChange() {
             if (!initialLoaded) return
+            // Bei Neuanlage sofort triggern — der Pending-Mechanismus ist
+            // nur fuer Bestandsdatensaetze gedacht. Sonst blockiert das interne
+            // Input des v-select (Kundentyp) den Save bis zum Blur.
+            const cvIdNow = id.value || savedCvId.value
+            if (!cvIdNow) {
+                triggerAutoSave()
+                return
+            }
             if (textInputFocused) {
                 hasPendingChanges = true
                 return
