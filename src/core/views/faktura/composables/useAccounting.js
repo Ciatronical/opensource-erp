@@ -46,7 +46,7 @@ export function useAccounting({ fakturaItems, faktura, fakturaType, paymentList,
             return
         }
         const subtotal = item.qty * item.sellprice
-        const discountAmount = subtotal * (item.discount / 100)
+        const discountAmount = subtotal * item.discount
         item.marge_total = Math.round((subtotal - discountAmount) * 100) / 100
     }
 
@@ -69,7 +69,7 @@ export function useAccounting({ fakturaItems, faktura, fakturaType, paymentList,
 
         fakturaItems.value.forEach(item => {
             if (item.id !== null && item.parts_id) {
-                const itemTotal = item.qty * item.sellprice * (1 - item.discount / 100)
+                const itemTotal = item.qty * item.sellprice * (1 - item.discount)
                 const roundedItemTotal = roundMoney(itemTotal, 2)
                 const rate = item.buchungsziel?.rate ?? 0
                 const key = String(rate)
@@ -143,7 +143,7 @@ export function useAccounting({ fakturaItems, faktura, fakturaType, paymentList,
                 })
             }
 
-            const itemTotal = item.qty * item.sellprice * (1 - item.discount / 100)
+            const itemTotal = item.qty * item.sellprice * (1 - item.discount)
             const rounded = roundMoney(itemTotal, 2)
             const rate = bz.rate ?? 0
 

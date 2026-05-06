@@ -585,7 +585,7 @@ function loadPrintData($db, int $fakturaID, string $fakturaType, bool $lxCarsEna
             i.unit,
             i.sellprice,
             i.discount,
-            ROUND((i.qty * i.sellprice * (1.0 - COALESCE(i.discount, 0) / 100.0))::numeric, 2) AS linetotal
+            ROUND((i.qty * i.sellprice * (1.0 - COALESCE(i.discount, 0)))::numeric, 2) AS linetotal
         FROM {$itemsTable} i
         LEFT JOIN parts p ON p.id = i.parts_id
         WHERE i.trans_id = :id
@@ -602,7 +602,7 @@ function loadPrintData($db, int $fakturaID, string $fakturaType, bool $lxCarsEna
         FROM (
             SELECT
                 i.parts_id,
-                ROUND((i.qty * i.sellprice * (1.0 - COALESCE(i.discount, 0) / 100.0))::numeric, 2) AS linetotal,
+                ROUND((i.qty * i.sellprice * (1.0 - COALESCE(i.discount, 0)))::numeric, 2) AS linetotal,
                 (
                     SELECT tk.tax_id
                     FROM parts p2
@@ -873,7 +873,7 @@ function loadPrintData($db, int $fakturaID, string $fakturaType, bool $lxCarsEna
     $arrays['unit']          = array_column($items, 'unit');
     $arrays['sellprice']     = array_map(function($i) use ($fmt) { return $fmt($i['sellprice']); }, $items);
     $arrays['p_discount']    = array_map(function($i) {
-        $d = floatval($i['discount']);
+        $d = floatval($i['discount']) * 100;
         return $d > 0 ? number_format($d, 0) : '0';
     }, $items);
     $arrays['linetotal']     = array_map(function($i) use ($fmt) { return $fmt($i['linetotal']); }, $items);

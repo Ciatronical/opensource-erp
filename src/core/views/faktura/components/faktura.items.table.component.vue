@@ -693,7 +693,7 @@ export default defineComponent({
             const itemsWithId = props.modelValue.filter(item => item.id !== null)
             if (itemsWithId.length === 0) return '100%'
 
-            const allHave100Percent = itemsWithId.every(item => item.discount === 100)
+            const allHave100Percent = itemsWithId.every(item => item.discount === 1)
             return allHave100Percent ? '0%' : '100%'
         })
 
@@ -704,8 +704,8 @@ export default defineComponent({
             const itemsWithId = props.modelValue.filter(item => item.id !== null)
             if (itemsWithId.length === 0) return
 
-            const allHave100Percent = itemsWithId.every(item => item.discount === 100)
-            const newDiscount = allHave100Percent ? 0 : 100
+            const allHave100Percent = itemsWithId.every(item => item.discount === 1)
+            const newDiscount = allHave100Percent ? 0 : 1
 
             emit('set-all-discounts', newDiscount)
         }
@@ -717,7 +717,7 @@ export default defineComponent({
          * @returns {string} Label für den Button
          */
         function getItemDiscountButtonLabel(item) {
-            return item.discount === 100 ? '0%' : '100%'
+            return item.discount === 1 ? '0%' : '100%'
         }
 
         /**
@@ -726,7 +726,7 @@ export default defineComponent({
          * @param {Object} item - Das Item
          */
         function toggleItemDiscount(item) {
-            const newDiscount = item.discount === 100 ? 0 : 100
+            const newDiscount = item.discount === 1 ? 0 : 1
             emit('set-item-discount', item, newDiscount)
         }
 
@@ -906,11 +906,11 @@ export default defineComponent({
                     delete editingPrice.value[itemId]
                 }
 
-                // Pending Discount
+                // Pending Discount (Eingabe in Prozent, gespeichert als Faktor)
                 if (editingDiscount.value[itemId] !== undefined) {
                     const parsed = parseNumberInput(editingDiscount.value[itemId])
                     if (parsed !== null && Number.isFinite(parsed)) {
-                        item.discount = parsed
+                        item.discount = parsed / 100
                     }
                     delete editingDiscount.value[itemId]
                 }
@@ -972,7 +972,7 @@ export default defineComponent({
             }
 
             const subtotal = item.qty * item.sellprice
-            const discountAmount = subtotal * (item.discount / 100)
+            const discountAmount = subtotal * item.discount
             return subtotal - discountAmount
         }
 
@@ -1114,7 +1114,7 @@ export default defineComponent({
             if (editingDiscount.value[itemId] !== undefined) {
                 return editingDiscount.value[itemId]
             }
-            return formatNumberDisplay(item.discount || 0, 2)
+            return formatNumberDisplay((item.discount || 0) * 100, 2)
         }
 
         /**
@@ -1140,7 +1140,7 @@ export default defineComponent({
             if (rawValue !== undefined) {
                 const parsed = parseNumberInput(rawValue)
                 if (parsed !== null && Number.isFinite(parsed)) {
-                    item.discount = parsed
+                    item.discount = parsed / 100
                     props.calculateItemTotal(item)
                     props.calculateTotals()
                     // Auto-Save wenn Item bereits gespeichert

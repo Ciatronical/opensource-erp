@@ -91,10 +91,10 @@
                         />
                     </v-col>
 
-                    <!-- Rabatt -->
+                    <!-- Rabatt (Eingabe in Prozent, gespeichert als Faktor 0-1) -->
                     <v-col cols="6" sm="4">
                         <v-text-field
-                            v-model.number="localItem.discount"
+                            v-model.number="discountPercent"
                             :label="t('FakturaView.faktura.discount')"
                             variant="outlined"
                             density="compact"
@@ -228,13 +228,26 @@ function onPriceBlur() {
     priceRaw.value = null
 }
 
+// Rabatt-Anzeige (Prozent) <-> Speicherung (Faktor 0-1)
+const discountPercent = computed({
+    get: () => {
+        if (!localItem.value) return 0
+        return (localItem.value.discount || 0) * 100
+    },
+    set: (value) => {
+        if (!localItem.value) return
+        const num = Number(value)
+        localItem.value.discount = Number.isFinite(num) ? num / 100 : 0
+    }
+})
+
 // Berechneter Gesamtpreis
 const calculatedTotal = computed(() => {
     if (!localItem.value || !localItem.value.qty || !localItem.value.sellprice) {
         return '0,00'
     }
     const subtotal = localItem.value.qty * localItem.value.sellprice
-    const discountAmount = subtotal * ((localItem.value.discount || 0) / 100)
+    const discountAmount = subtotal * (localItem.value.discount || 0)
     const total = subtotal - discountAmount
     return total.toLocaleString('de-DE', {
         minimumFractionDigits: 2,
