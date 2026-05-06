@@ -66,7 +66,7 @@
         "repeatWeeks": "semanas",
         "repeatMonths": "meses",
         "repeatYears": "años",
-        "repeatEndAfter": "Después de",
+        "repeatEndAfter": "Cantidad",
         "repeatEndOccurrences": "repeticiones",
         "repeatEndOnDate": "Hasta"
     },

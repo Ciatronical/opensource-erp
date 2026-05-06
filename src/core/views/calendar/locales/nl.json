@@ -66,7 +66,7 @@
         "repeatWeeks": "weken",
         "repeatMonths": "maanden",
         "repeatYears": "jaar",
-        "repeatEndAfter": "Na",
+        "repeatEndAfter": "Aantal",
         "repeatEndOccurrences": "keer",
         "repeatEndOnDate": "Tot datum"
     },

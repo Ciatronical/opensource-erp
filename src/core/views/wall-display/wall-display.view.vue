@@ -442,7 +442,8 @@ export default defineComponent({
 .wall-display__calendar {
     flex: 1;
     min-height: 0;
-    overflow: auto;
+    height: 100%;
+    overflow: hidden;
 }
 
 .wall-display__calendar :deep(.calendar-wrapper) {
@@ -581,8 +582,6 @@ export default defineComponent({
 .wall-display--size-compact .fc .fc-timegrid-slot-label {
     font-size: 0.65rem !important;
 }
-/* Slot-Hoehe fest klein, damit alle Stunden ins Bild passen. Default sind
-   ~40-50px pro halbstuendigem Slot, das fuehrt bei 9 Stunden zu Scrollen. */
 .wall-display--size-compact .fc .fc-timegrid-slot {
     height: 16px !important;
 }
@@ -624,6 +623,7 @@ export default defineComponent({
     font-size: 1.25rem !important;
     padding: 4px 10px !important;
 }
+
 /* Slot-Höhe bestimmt wie viele Stunden sichtbar sind (ohne Scrollen) */
 .wall-display--size-normal .fc .fc-timegrid-slot {
     height: 36px !important;
@@ -650,7 +650,7 @@ export default defineComponent({
 }
 /* Slot-Höhe: Legt die sichtbare Höhe des Kalenders fest (ohne Scrollen) */
 .wall-display--size-qm50c .fc .fc-timegrid-slot {
-    height: 36.2px !important;
+    height: 35.8px !important;
 }
 .wall-display--size-qm50c .fc .fc-event-title,
 .wall-display--size-qm50c .fc .fc-event-time {

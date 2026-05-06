@@ -13,6 +13,7 @@ import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import listPlugin from '@fullcalendar/list'
 import interactionPlugin from '@fullcalendar/interaction'
+import rrulePlugin from '@fullcalendar/rrule'
 import deLocale from '@fullcalendar/core/locales/de'
 import { oserpStore } from '@/core/stores/oserp.store.js'
 
@@ -86,32 +87,45 @@ const businessStart = slotMinTime.substring(0, 5)
 const businessEnd   = slotMaxTime.substring(0, 5)
 
 const calendarEvents = computed(() => {
-    return props.events.map(event => ({
-        id: String(event.id),
-        title: event.title,
-        start: event.dtstart,
-        end: event.dtend,
-        allDay: event.allDay,
-        backgroundColor: event.color || '#1976D2',
-        borderColor: 'transparent',
-        textColor: '#fff',
-        extendedProps: {
-            description: event.description,
-            location: event.location,
-            prio: event.prio,
-            category_id: event.category_id,
-            category_label: event.category_label,
-            category_color: event.category_color,
-            cvp_id: event.cvp_id,
-            cvp_name: event.cvp_name,
-            cvp_type: event.cvp_type,
-            order_id: event.order_id,
-            owner_name: event.owner_name,
-            visibility: event.visibility,
-            uid: event.uid,
-            original: event
+    return props.events.map(event => {
+        const isRecurring = !!event.rrule
+        const base = {
+            id: String(event.id),
+            title: event.title,
+            allDay: event.allDay,
+            backgroundColor: event.color || '#1976D2',
+            borderColor: 'transparent',
+            textColor: '#fff',
+            extendedProps: {
+                description: event.description,
+                location: event.location,
+                prio: event.prio,
+                category_id: event.category_id,
+                category_label: event.category_label,
+                category_color: event.category_color,
+                cvp_id: event.cvp_id,
+                cvp_name: event.cvp_name,
+                cvp_type: event.cvp_type,
+                order_id: event.order_id,
+                owner_name: event.owner_name,
+                visibility: event.visibility,
+                uid: event.uid,
+                original: event
+            }
         }
-    }))
+        if (isRecurring) {
+            // FullCalendar RRule-Plugin: rrule steuert alle Vorkommen
+            base.rrule = event.rrule
+            // duration nur bei Uhrzeitterminen – ganztägig braucht keine duration
+            if (!event.allDay && event.duration) {
+                base.duration = event.duration
+            }
+        } else {
+            base.start = event.dtstart
+            base.end   = event.dtend
+        }
+        return base
+    })
 })
 
 // Startdatum: heute
@@ -121,7 +135,7 @@ function getStartDate() {
 
 const calendarOptions = computed(() => {
     const opts = {
-    plugins: [dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin],
+    plugins: [dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin, rrulePlugin],
     initialView: props.initialView,
     initialDate: getStartDate(),
     locale: locale.value === 'de' ? deLocale : undefined,

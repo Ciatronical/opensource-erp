@@ -66,7 +66,7 @@
         "repeatWeeks": "周",
         "repeatMonths": "月",
         "repeatYears": "年",
-        "repeatEndAfter": "之后",
+        "repeatEndAfter": "次数",
         "repeatEndOccurrences": "次",
         "repeatEndOnDate": "截止日期"
     },

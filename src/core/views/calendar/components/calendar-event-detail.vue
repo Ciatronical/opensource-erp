@@ -182,7 +182,6 @@ function darken(hex) {
 <style scoped>
 .event-detail-header {
     position: relative;
-    border-radius: 24px 24px 0 0;
 }
 
 .event-detail-header .close-btn {

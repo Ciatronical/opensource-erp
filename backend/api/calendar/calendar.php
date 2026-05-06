@@ -109,12 +109,27 @@ function deleteEventCategory($data) {
  * $dtstart/$dtend können von der Originaleintragung abweichen (Wiederholungs-Vorkommen).
  */
 function buildCalendarEventObject($row, $dtstart, $dtend) {
-    return [
+    $isRecurring = !empty($row['freq']);
+
+    // Dauer berechnen (für FullCalendar RRule-Plugin, nur bei Uhrzeitterminen)
+    $isAllDayRow = (bool)($row['allDay'] ?? false);
+    $duration = null;
+    if ($isRecurring && !$isAllDayRow && !empty($dtstart) && !empty($dtend)) {
+        $s = new DateTime($dtstart);
+        $e = new DateTime($dtend);
+        $diff = $s->diff($e);
+        $h = $diff->h + $diff->days * 24;
+        $m = $diff->i;
+        $duration = sprintf('%02d:%02d', $h, $m);
+    }
+
+    $obj = [
         'id'             => intval($row['id']),
         'title'          => $row['title'],
         'description'    => $row['description'],
         'dtstart'        => $dtstart,
-        'dtend'          => $dtend,
+        'dtend'          => $isRecurring ? null : $dtend,  // bei Wiederholung steuert 'duration'
+        'duration'       => $duration,
         'allDay'         => (bool)($row['allDay'] ?? false),
         'location'       => $row['location'],
         'color'          => $row['color'] ?? $row['category_color'] ?? '#1976D2',
@@ -134,6 +149,26 @@ function buildCalendarEventObject($row, $dtstart, $dtend) {
         'count'          => !empty($row['count']) ? intval($row['count']) : null,
         'repeat_end'     => $row['repeat_end'] ?? null,
     ];
+
+    // rrule-Objekt für FullCalendar RRule-Plugin (nur bei Wiederholungen)
+    if ($isRecurring) {
+        $isAllDay = (bool)($row['allDay'] ?? false);
+        // Ganztägig: dtstart ohne Uhrzeit, sonst erkennt FullCalendar es nicht als allDay
+        $rruleStart = $isAllDay ? substr($dtstart, 0, 10) : $dtstart;
+        $rrule = [
+            'freq'     => $row['freq'],
+            'interval' => !empty($row['interval']) ? intval($row['interval']) : 1,
+            'dtstart'  => $rruleStart,
+        ];
+        if (!empty($row['count'])) {
+            $rrule['count'] = intval($row['count']);
+        } elseif (!empty($row['repeat_end'])) {
+            $rrule['until'] = substr($row['repeat_end'], 0, 10); // nur Datum
+        }
+        $obj['rrule'] = $rrule;
+    }
+
+    return $obj;
 }
 
 /**
@@ -253,14 +288,9 @@ function getCalendarEvents($data) {
     $rangeEnd   = new DateTime($endDate);
     $events     = [];
 
+    $events = [];
     foreach ($rows as $row) {
-        if (empty($row['freq'])) {
-            $events[] = buildCalendarEventObject($row, $row['dtstart'], $row['dtend']);
-        } else {
-            foreach (expandCalendarRecurring($row, $rangeStart, $rangeEnd) as $occ) {
-                $events[] = buildCalendarEventObject($row, $occ['start'], $occ['end']);
-            }
-        }
+        $events[] = buildCalendarEventObject($row, $row['dtstart'], $row['dtend']);
     }
 
     usort($events, fn($a, $b) => strcmp($a['dtstart'] ?? '', $b['dtstart'] ?? ''));

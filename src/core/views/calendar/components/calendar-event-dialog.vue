@@ -356,7 +356,7 @@ const defaultForm = () => ({
     repeat: false,
     freq: 'yearly',
     recur_interval: 1,
-    recur_count: 10,
+    recur_count: 1,
     recur_repeat_end: '',
     repeatEndType: 'count',
 })
@@ -429,7 +429,12 @@ watch(() => form.value.allDay, (isAllDay) => {
             form.value[field] = val.split('T')[0].split(' ')[0]
         } else {
             if (!val.includes('T')) {
-                form.value[field] = val + 'T' + defaultStartTime()
+                let time = defaultStartTime()
+                if (field === 'dtend') {
+                    const [h, m] = time.split(':').map(Number)
+                    time = String(h + 1).padStart(2, '0') + ':' + String(m).padStart(2, '0')
+                }
+                form.value[field] = val + 'T' + time
             }
         }
     }
@@ -443,8 +448,8 @@ watch(() => props.modelValue, (open) => {
                 id:          e.id || null,
                 title:       e.title || '',
                 description: e.description || '',
-                dtstart:     formatForInput(e.dtstart, e.allDay),
-                dtend:       formatForInput(e.dtend, e.allDay),
+                dtstart:     formatForInput(e.edit_dtstart ?? e.dtstart, e.allDay),
+                dtend:       formatForInput(e.edit_dtend   ?? e.dtend,   e.allDay),
                 allDay:      e.allDay || false,
                 location:    e.location || '',
                 color:       e.color || null,
@@ -458,7 +463,7 @@ watch(() => props.modelValue, (open) => {
                 freq:            e.freq || 'yearly',
                 recur_interval:  e.recur_interval || 1,
                 repeatEndType:   e.count ? 'count' : (e.repeat_end ? 'date' : 'count'),
-                recur_count:     e.count || 10,
+                recur_count:     e.count ? Math.max(1, e.count - 1) : 1,  // count - 1: Gesamtanzahl → Wiederholungen
                 recur_repeat_end: e.repeat_end
                     ? (e.repeat_end.split('T')[0].split(' ')[0])
                     : '',
@@ -553,12 +558,16 @@ function close() {
     emit('update:modelValue', false)
 }
 
-function closeAndSave() {
-    if (formValid.value) {
-        save()
-    } else {
+async function closeAndSave() {
+    if (!form.value.title || !form.value.dtstart) {
         close()
+        return
     }
+    if (formRef.value) {
+        const { valid } = await formRef.value.validate()
+        if (!valid) { close(); return }
+    }
+    save()
 }
 
 function save() {
@@ -584,7 +593,7 @@ function save() {
         // Bis-Datum: count aus Datumsbereich berechnen, beide Felder befüllen
         count:       f.repeat
             ? (f.repeatEndType === 'count'
-                ? f.recur_count
+                ? (parseInt(f.recur_count, 10) || 0) + 1          // +1: Wiederholungen → Gesamtanzahl
                 : calcCountFromDate(f.dtstart, f.freq, f.recur_interval, f.recur_repeat_end))
             : null,
         repeat_end:  f.repeat && f.repeatEndType === 'date' ? f.recur_repeat_end : null,
