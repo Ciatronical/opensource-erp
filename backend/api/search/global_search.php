@@ -52,15 +52,17 @@ function globalSearch($data) {
 
     // ===== Lieferanten =====
     $vendors = $db->getAll(
-        "SELECT id, name, vendornumber, email, city
+        "SELECT vendor.id, vendor.name, vendor.vendornumber, vendor.email, vendor.city
          FROM vendor
-         WHERE NOT COALESCE(obsolete, false)
-           AND (LOWER(name) LIKE LOWER(:contains)
-                OR LOWER(vendornumber) LIKE LOWER(:prefix)
-                OR LOWER(email) LIKE LOWER(:contains2))
-         ORDER BY name
+         LEFT JOIN vendor_ext ON vendor_ext.vendor_id = vendor.id
+         WHERE NOT COALESCE(vendor.obsolete, false)
+           AND (LOWER(vendor.name) LIKE LOWER(:contains)
+                OR LOWER(vendor.vendornumber) LIKE LOWER(:prefix)
+                OR LOWER(vendor.email) LIKE LOWER(:contains2)
+                OR LOWER(vendor_ext.keywords) LIKE LOWER(:contains3))
+         ORDER BY vendor.name
          LIMIT 5",
-        [':contains' => $containsQ, ':prefix' => $prefixQ, ':contains2' => $containsQ]
+        [':contains' => $containsQ, ':prefix' => $prefixQ, ':contains2' => $containsQ, ':contains3' => $containsQ]
     );
 
     foreach ($vendors ?: [] as $row) {

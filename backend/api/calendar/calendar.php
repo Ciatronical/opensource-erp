@@ -639,3 +639,135 @@ function moveCalendarEvent($data) {
         resultInfo(false, 'DATABASE_ERROR', $e->getMessage());
     }
 }
+
+// ============================================================================
+// PUBLIC HOLIDAYS
+// ============================================================================
+
+function mapCountryToISO($raw) {
+    $map = [
+        'de' => 'DE', 'd' => 'DE', 'deutschland' => 'DE', 'germany' => 'DE',
+        'at' => 'AT', 'a' => 'AT', 'österreich' => 'AT', 'oesterreich' => 'AT', 'austria' => 'AT',
+        'ch' => 'CH', 'schweiz' => 'CH', 'switzerland' => 'CH',
+        'fr' => 'FR', 'frankreich' => 'FR', 'france' => 'FR',
+        'nl' => 'NL', 'niederlande' => 'NL', 'netherlands' => 'NL',
+        'be' => 'BE', 'belgien' => 'BE', 'belgium' => 'BE',
+        'pl' => 'PL', 'polen' => 'PL', 'poland' => 'PL',
+        'it' => 'IT', 'italien' => 'IT', 'italy' => 'IT',
+        'es' => 'ES', 'spanien' => 'ES', 'spain' => 'ES',
+        'gb' => 'GB', 'uk' => 'GB', 'grossbritannien' => 'GB', 'united kingdom' => 'GB',
+        'lu' => 'LU', 'luxemburg' => 'LU', 'luxembourg' => 'LU',
+        'dk' => 'DK', 'daenemark' => 'DK', 'dänemark' => 'DK', 'denmark' => 'DK',
+        'se' => 'SE', 'schweden' => 'SE', 'sweden' => 'SE',
+        'no' => 'NO', 'norwegen' => 'NO', 'norway' => 'NO',
+        'fi' => 'FI', 'finnland' => 'FI', 'finland' => 'FI',
+        'cz' => 'CZ', 'tschechien' => 'CZ', 'czech republic' => 'CZ',
+        'hu' => 'HU', 'ungarn' => 'HU', 'hungary' => 'HU',
+    ];
+    return $map[strtolower(trim($raw))] ?? null;
+}
+
+function mapBundeslandToCode($bundesland) {
+    $map = [
+        'Baden-Württemberg'      => 'DE-BW',
+        'Bayern'                 => 'DE-BY',
+        'Berlin'                 => 'DE-BE',
+        'Brandenburg'            => 'DE-BB',
+        'Bremen'                 => 'DE-HB',
+        'Hamburg'                => 'DE-HH',
+        'Hessen'                 => 'DE-HE',
+        'Mecklenburg-Vorpommern' => 'DE-MV',
+        'Niedersachsen'          => 'DE-NI',
+        'Nordrhein-Westfalen'    => 'DE-NW',
+        'Rheinland-Pfalz'        => 'DE-RP',
+        'Saarland'               => 'DE-SL',
+        'Sachsen'                => 'DE-SN',
+        'Sachsen-Anhalt'         => 'DE-ST',
+        'Schleswig-Holstein'     => 'DE-SH',
+        'Thüringen'              => 'DE-TH',
+    ];
+    return $map[trim($bundesland)] ?? '';
+}
+
+/**
+ * Öffentliche Feiertage für den Firmenstandort laden.
+ * Nutzt nager.date API, gecacht in defaults_oserp pro Jahr und Region.
+ * Für Deutschland wird das Bundesland anhand der Firmen-PLZ ermittelt.
+ *
+ * @param int $data['year'] Kalenderjahr (optional, default: aktuelles Jahr)
+ * @testdata {"year": 2026}
+ */
+function getPublicHolidays($data) {
+    $db = DbhCompany::begin();
+    $year = max(2000, min(2100, intval($data['year'] ?? date('Y'))));
+
+    $loc = $db->getOne(<<<SQL
+        SELECT
+            d.address_country,
+            TRIM(d.address_zipcode) AS plz,
+            TRIM(z.bundesland)      AS bundesland
+        FROM defaults d
+        LEFT JOIN zipcode_location_oserp z ON TRIM(z.plz) = TRIM(d.address_zipcode)
+        LIMIT 1
+    SQL);
+
+    $countryCode = mapCountryToISO($loc['address_country'] ?? '');
+    if (!$countryCode) {
+        resultInfo(true, '', ['holidays' => []]);
+        return;
+    }
+
+    $stateCode = ($countryCode === 'DE' && !empty($loc['bundesland']))
+        ? mapBundeslandToCode($loc['bundesland'])
+        : '';
+
+    $cacheKey = 'holidays_' . $year . '_' . $countryCode . ($stateCode ? '_' . str_replace('-', '', $stateCode) : '');
+
+    $cached = $db->getOne(
+        "SELECT value, mtime FROM defaults_oserp WHERE key = :key",
+        [':key' => $cacheKey]
+    );
+
+    if ($cached) {
+        $maxAge = ($year < (int)date('Y')) ? PHP_INT_MAX : 86400 * 7;
+        if (time() - strtotime($cached['mtime']) < $maxAge) {
+            resultInfo(true, '', ['holidays' => json_decode($cached['value'], true)]);
+            return;
+        }
+    }
+
+    $url = "https://date.nager.at/api/v3/PublicHolidays/{$year}/{$countryCode}";
+    $ctx = stream_context_create(['http' => [
+        'timeout' => 5,
+        'header'  => "User-Agent: oserp/1.0\r\n",
+    ]]);
+    $json = @file_get_contents($url, false, $ctx);
+
+    if ($json === false) {
+        $holidays = $cached ? json_decode($cached['value'], true) : [];
+        resultInfo(true, '', ['holidays' => $holidays]);
+        return;
+    }
+
+    $all = json_decode($json, true) ?? [];
+
+    if ($stateCode) {
+        $all = array_values(array_filter($all, fn($h) =>
+            !isset($h['counties']) || $h['counties'] === null || in_array($stateCode, $h['counties'])
+        ));
+    }
+
+    $result = array_map(fn($h) => [
+        'date' => $h['date'],
+        'name' => $h['localName'],
+    ], $all);
+
+    $db->execute(
+        "INSERT INTO defaults_oserp (key, value)
+         VALUES (:key, :value)
+         ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, mtime = now()",
+        [':key' => $cacheKey, ':value' => json_encode($result)]
+    );
+
+    resultInfo(true, '', ['holidays' => $result]);
+}

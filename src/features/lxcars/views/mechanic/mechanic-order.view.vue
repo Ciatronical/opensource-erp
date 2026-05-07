@@ -72,8 +72,8 @@
                     />
                 </section>
 
-                <!-- Wartung & Service -->
-                <section v-if="vehicle" class="mb-4">
+                <!-- Wartung & Service (nicht bei Anhängern) -->
+                <section v-if="vehicle && !vehicle.isTrailer.value" class="mb-4">
                     <maintenance-section-card
                         :oe-ext-data="vehicle.oeExtData.value"
                         :has-car="!!vehicle.selectedCarId.value"
@@ -428,9 +428,10 @@ const maintenanceIncompleteDialog = ref({ show: false, fields: [] })
 
 function validateMaintenanceBeforeComplete() {
     if (!vehicle || !vehicle.selectedCarId.value) return true
+    if (vehicle.isTrailer.value) return true
     const e = vehicle.oeExtData.value || {}
     const missing = []
-    if (!vehicle.isTrailer.value && !e.km_stand) missing.push('km_stand')
+    if (!e.km_stand) missing.push('km_stand')
     if (!e.c_bf) missing.push('c_bf')
     if (!e.c_wd) missing.push('c_wd')
     if (!e.c_sk) {

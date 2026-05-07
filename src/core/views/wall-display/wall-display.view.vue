@@ -14,7 +14,10 @@
                 <v-icon start size="small">mdi-exit-to-app</v-icon>
                 {{ t('WallDisplay.exit') }}
             </v-btn>
-            <div class="wall-display__clock">{{ currentTime }}</div>
+            <div class="wall-display__clock-area">
+                <span class="wall-display__clock">{{ currentTime }}</span>
+                <span class="wall-display__progress" v-html="dayProgressSVG"></span>
+            </div>
         </div>
 
 
@@ -140,6 +143,7 @@ import axios from 'axios'
 import CalendarMain from '@/core/views/calendar/components/calendar-main.vue'
 import { oserpStore } from '@/core/stores/oserp.store.js'
 import { fakturaStore } from '@/core/stores/faktura.store.js'
+import { buildWorkdayProgressSVG, parseWorkdayConfig } from '@/core/utils/workdayProgress.js'
 
 export default defineComponent({
     name: 'WallDisplayView',
@@ -165,11 +169,14 @@ export default defineComponent({
         const fakturaData = ref(null)
         const fakturaVehicle = ref(null)
 
-        // Uhr
+        // Uhr & Tagesfortschritt
         const currentTime = ref('')
+        const dayProgressSVG = ref('')
         let clockTimer = null
+        const workdayConfig = parseWorkdayConfig(k => oserp.getClientDefaultValue(k))
         function updateClock() {
-            currentTime.value = new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })
+            currentTime.value = new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }) + ' Uhr'
+            dayProgressSVG.value = buildWorkdayProgressSVG(workdayConfig, 200, 10)
         }
 
         // Display-Groesse: aus Employee-Config (Override) oder Client-Default,
@@ -207,8 +214,8 @@ export default defineComponent({
         }))
 
         const calendarHeaderToolbar = {
-            left: 'prev,next today exit',
-            center: 'calendarWeek title clock',
+            left: 'customPrev,customNext customToday exit',
+            center: 'calendarWeek title clock dayProgress',
             right: 'listCustomWeek,timeGridCustomWeek,timeGridDay,dayGridMonth'
         }
 
@@ -323,6 +330,9 @@ export default defineComponent({
                     }
                 } catch { /* ignorieren */ }
             }
+            sseSource.addEventListener('build_changed', () => {
+                window.location.reload()
+            })
             sseSource.onerror = () => {
                 sseConnected.value = false
                 startPolling()
@@ -431,11 +441,22 @@ export default defineComponent({
     flex-shrink: 0;
 }
 
+.wall-display__clock-area {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
 .wall-display__clock {
     font-size: 1.6rem;
     font-weight: 600;
     font-variant-numeric: tabular-nums;
     color: #424242;
+}
+
+.wall-display__progress {
+    display: flex;
+    align-items: center;
 }
 
 

@@ -205,6 +205,8 @@ const store = oserpStore()
 
 // State
 const events = ref([])
+const holidays = ref([])
+const loadedHolidayYears = new Set()
 const categories = ref([])
 const selectedCategoryIds = ref([])
 const searchQuery = ref('')
@@ -237,10 +239,12 @@ const currentCustomer = computed(() => {
     return null
 })
 
-// Filtered events by selected categories
+// Filtered events by selected categories, merged with holidays
 const filteredEvents = computed(() => {
-    if (selectedCategoryIds.value.length === 0) return events.value
-    return events.value.filter(e => selectedCategoryIds.value.includes(e.category_id) || !e.category_id)
+    const base = selectedCategoryIds.value.length === 0
+        ? events.value
+        : events.value.filter(e => selectedCategoryIds.value.includes(e.category_id) || !e.category_id)
+    return [...base, ...holidays.value]
 })
 
 // ── API Calls ──
@@ -270,6 +274,30 @@ async function loadEvents() {
     } catch (error) {
         console.error('Error loading events:', error)
         showSnackbar(t('CalendarView.messages.loadError'), 'error')
+    }
+}
+
+async function loadHolidays(year) {
+    if (loadedHolidayYears.has(year)) return
+    loadedHolidayYears.add(year)
+    try {
+        const response = await axios.post('/api/calendar/', {
+            action: 'getPublicHolidays',
+            year
+        })
+        if (response.data.success) {
+            const fetched = (response.data.payload?.holidays || []).map(h => ({
+                id: `holiday_${h.date}`,
+                title: h.name,
+                dtstart: h.date,
+                dtend: null,
+                allDay: true,
+                isHoliday: true
+            }))
+            holidays.value = [...holidays.value, ...fetched]
+        }
+    } catch {
+        loadedHolidayYears.delete(year)
     }
 }
 
@@ -418,6 +446,9 @@ async function searchEvents(query) {
 function handleDatesSet({ start, end }) {
     currentDateRange.value = { start, end }
     loadEvents()
+    const startYear = parseInt(start.substring(0, 4))
+    const endYear = parseInt(end.substring(0, 4))
+    for (let y = startYear; y <= endYear; y++) loadHolidays(y)
 }
 
 function openCreateDialog() {

@@ -181,8 +181,8 @@
                 />
             </section>
 
-            <!-- Wartung & Service (lxcars Feature, nur bei Auftrag) -->
-            <section class="faktura-section" v-if="vehicle && fakturaType === 'order' && faktura.data">
+            <!-- Wartung & Service (lxcars Feature, nur bei Auftrag, nicht bei Anhängern) -->
+            <section class="faktura-section" v-if="vehicle && fakturaType === 'order' && faktura.data && !vehicle.isTrailer.value">
                 <maintenance-section-card
                     :oe-ext-data="vehicle.oeExtData.value"
                     :has-car="!!vehicle.selectedCarId.value"
@@ -1697,9 +1697,10 @@ export default defineComponent({
 
         function validateMaintenanceBeforeComplete() {
             if (!vehicle || !vehicle.selectedCarId.value) return true
+            if (vehicle.isTrailer.value) return true
             const e = vehicle.oeExtData.value || {}
             const missing = []
-            if (!vehicle.isTrailer.value && !e.km_stand) missing.push('km_stand')
+            if (!e.km_stand) missing.push('km_stand')
             if (!e.c_bf) missing.push('c_bf')
             if (!e.c_wd) missing.push('c_wd')
             if (!e.c_sk) {

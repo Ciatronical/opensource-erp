@@ -183,8 +183,10 @@ const crmDefaultsConfig = [
 
     { name: "calendar", type: "headline", label: "crm_fields.calendar" },
 
-    { name: "calendar_day_start", type: "input", inputType: "time", size: 10, fieldstyle: "max-width: 15ch", label: "crm_fields.calendarDayStart", tooltip: "crm_fields.calendarDayStart_help" },
-    { name: "calendar_day_end",   type: "input", inputType: "time", size: 10, fieldstyle: "max-width: 15ch", label: "crm_fields.calendarDayEnd",   tooltip: "crm_fields.calendarDayEnd_help" },
+    { name: "calendar_day_start",   type: "input", inputType: "time", size: 10, fieldstyle: "max-width: 15ch", label: "crm_fields.calendarDayStart",   tooltip: "crm_fields.calendarDayStart_help" },
+    { name: "calendar_day_end",     type: "input", inputType: "time", size: 10, fieldstyle: "max-width: 15ch", label: "crm_fields.calendarDayEnd",     tooltip: "crm_fields.calendarDayEnd_help" },
+    { name: "calendar_break_start", type: "input", inputType: "time", size: 10, fieldstyle: "max-width: 15ch", label: "crm_fields.calendarBreakStart", tooltip: "crm_fields.calendarBreakStart_help" },
+    { name: "calendar_break_end",   type: "input", inputType: "time", size: 10, fieldstyle: "max-width: 15ch", label: "crm_fields.calendarBreakEnd",   tooltip: "crm_fields.calendarBreakEnd_help" },
 
     { name: "wall_display", type: "headline", label: "crm_fields.wallDisplay" },
 

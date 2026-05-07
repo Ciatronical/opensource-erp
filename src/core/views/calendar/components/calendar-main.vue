@@ -16,6 +16,7 @@ import interactionPlugin from '@fullcalendar/interaction'
 import rrulePlugin from '@fullcalendar/rrule'
 import deLocale from '@fullcalendar/core/locales/de'
 import { oserpStore } from '@/core/stores/oserp.store.js'
+import { buildWorkdayProgressSVG, parseWorkdayConfig } from '@/core/utils/workdayProgress.js'
 
 const props = defineProps({
     events: { type: Array, default: () => [] },
@@ -34,11 +35,20 @@ const { t, locale } = useI18n()
 const calendarRef = ref(null)
 const oserp = oserpStore()
 
-// ── Uhr ──
-const currentTime = ref(new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }))
+// ── Uhr & Tagesfortschritt ──
+const currentTime = ref('')
 let clockTimer = null
+const workdayConfig = parseWorkdayConfig(k => oserp.getClientDefaultValue(k))
+
 function updateClock() {
-    currentTime.value = new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })
+    currentTime.value = new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }) + ' Uhr'
+    nextTick(applyDayProgress)
+}
+
+function applyDayProgress() {
+    const btn = calendarRef.value?.getApi()?.el?.querySelector('.fc-dayProgress-button')
+    if (!btn) return
+    btn.innerHTML = buildWorkdayProgressSVG(workdayConfig)
 }
 
 // ── Kalenderwoche ──
@@ -69,6 +79,21 @@ const mergedCustomButtons = computed(() => ({
     clock: {
         text: currentTime.value || '--:--'
     },
+    customPrev: {
+        icon: 'chevron-left',
+        click: navigatePrev
+    },
+    customNext: {
+        icon: 'chevron-right',
+        click: navigateNext
+    },
+    customToday: {
+        text: t('CalendarMain.today'),
+        click: navigateToday
+    },
+    dayProgress: {
+        text: ' '
+    },
     ...props.customButtons
 }))
 
@@ -87,7 +112,31 @@ const businessStart = slotMinTime.substring(0, 5)
 const businessEnd   = slotMaxTime.substring(0, 5)
 
 const calendarEvents = computed(() => {
-    return props.events.map(event => {
+    const result = []
+    for (const event of props.events) {
+        if (event.isHoliday) {
+            result.push({
+                id: `${event.id}_bg`,
+                start: event.dtstart,
+                allDay: true,
+                display: 'background',
+                backgroundColor: 'rgba(229, 57, 53, 0.10)',
+                extendedProps: { isHoliday: true }
+            })
+            result.push({
+                id: event.id,
+                title: event.title,
+                start: event.dtstart,
+                allDay: true,
+                backgroundColor: '#FFEBEE',
+                borderColor: '#E53935',
+                textColor: '#B71C1C',
+                editable: false,
+                classNames: ['fc-event-holiday'],
+                extendedProps: { isHoliday: true }
+            })
+            continue
+        }
         const isRecurring = !!event.rrule
         const base = {
             id: String(event.id),
@@ -124,13 +173,60 @@ const calendarEvents = computed(() => {
             base.start = event.dtstart
             base.end   = event.dtend
         }
-        return base
-    })
+        result.push(base)
+    }
+    return result
 })
 
-// Startdatum: heute
+// Startdatum: gestern — damit heute an Stelle 2 steht
 function getStartDate() {
-    return new Date().toISOString().split('T')[0]
+    const d = new Date()
+    d.setDate(d.getDate() - 0)
+    const pad = n => String(n).padStart(2, '0')
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+}
+
+// Liefert den Montag der ISO-Woche, in der `date` liegt
+function getMondayOfWeek(date) {
+    const d = new Date(date)
+    d.setHours(0, 0, 0, 0)
+    const day = d.getDay()
+    d.setDate(d.getDate() + (day === 0 ? -6 : 1 - day))
+    return d
+}
+
+function navigatePrev() {
+    const api = calendarRef.value?.getApi()
+    if (!api) return
+    if (api.view.type === 'timeGridCustomWeek') {
+        const monday = getMondayOfWeek(api.view.currentStart)
+        monday.setDate(monday.getDate() - 7)
+        api.gotoDate(monday)
+    } else {
+        api.prev()
+    }
+}
+
+function navigateNext() {
+    const api = calendarRef.value?.getApi()
+    if (!api) return
+    if (api.view.type === 'timeGridCustomWeek') {
+        const monday = getMondayOfWeek(api.view.currentStart)
+        monday.setDate(monday.getDate() + 7)
+        api.gotoDate(monday)
+    } else {
+        api.next()
+    }
+}
+
+function navigateToday() {
+    const api = calendarRef.value?.getApi()
+    if (!api) return
+    if (api.view.type === 'timeGridCustomWeek') {
+        api.gotoDate(getStartDate())
+    } else {
+        api.today()
+    }
 }
 
 const calendarOptions = computed(() => {
@@ -140,8 +236,8 @@ const calendarOptions = computed(() => {
     initialDate: getStartDate(),
     locale: locale.value === 'de' ? deLocale : undefined,
     headerToolbar: props.headerToolbar || {
-        left: 'prev,next today',
-        center: 'calendarWeek title clock',
+        left: 'customPrev,customNext customToday',
+        center: 'calendarWeek title clock dayProgress',
         right: 'listCustomWeek,timeGridCustomWeek,timeGridDay,dayGridMonth'
     },
     customButtons: mergedCustomButtons.value,
@@ -158,6 +254,7 @@ const calendarOptions = computed(() => {
     height: props.height,
     expandRows: props.expandRows,
     handleWindowResize: true,
+    firstDay: 1,
     fixedWeekCount: false,
     showNonCurrentDates: true,
     nowIndicator: true,
@@ -214,6 +311,7 @@ const calendarOptions = computed(() => {
 
 function handleEventClick(info) {
     info.jsEvent.preventDefault()
+    if (info.event.extendedProps.isHoliday) return
     emit('event-click', info.event.extendedProps.original)
 }
 
@@ -246,9 +344,15 @@ function handleEventResize(info) {
 }
 
 function handleDatesSet(info) {
-    const kw = getISOWeek(new Date(info.start))
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const viewStart = new Date(info.start)
+    const viewEnd = new Date(info.end)
+    // KW immer nach heutigem Tag — wechselt Montag/Sonntag-Grenze (ISO)
+    const kwDate = (today >= viewStart && today < viewEnd) ? today : viewStart
+    const kw = getISOWeek(kwDate)
     currentKW.value = kw
-    nextTick(() => applyKWColor(kw))
+    nextTick(() => { applyKWColor(kw); applyDayProgress() })
     emit('dates-set', {
         start: info.startStr.split('T')[0],
         end: info.endStr.split('T')[0],
@@ -282,6 +386,7 @@ watch(() => props.events, () => {
 
 onMounted(() => {
     updateClock()
+    nextTick(applyDayProgress)
     const msToNextMinute = (60 - new Date().getSeconds()) * 1000
     setTimeout(() => {
         updateClock()
@@ -295,9 +400,9 @@ onBeforeUnmount(() => {
 
 defineExpose({
     goToDate: (date) => calendarRef.value?.getApi()?.gotoDate(date),
-    next: () => calendarRef.value?.getApi()?.next(),
-    prev: () => calendarRef.value?.getApi()?.prev(),
-    today: () => calendarRef.value?.getApi()?.today()
+    next: navigateNext,
+    prev: navigatePrev,
+    today: navigateToday
 })
 </script>
 
@@ -612,6 +717,19 @@ defineExpose({
     padding: 0;
 }
 
+/* Feiertage */
+.fc .fc-event-holiday {
+    cursor: default !important;
+    font-style: italic;
+    font-size: 0.75rem !important;
+    padding: 2px 6px !important;
+}
+
+.fc .fc-event-holiday:hover {
+    transform: none !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .calendar-wrapper {
@@ -658,6 +776,19 @@ defineExpose({
 .fc .fc-clock-button:hover {
     background: transparent !important;
     transform: none !important;
+}
+
+.fc .fc-dayProgress-button,
+.fc .fc-dayProgress-button:hover,
+.fc .fc-dayProgress-button:focus,
+.fc .fc-dayProgress-button:active {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 4px 6px !important;
+    cursor: default !important;
+    pointer-events: none;
+    line-height: 0;
 }
 
 /* Kalenderwoche-Button: kein Button-Look, Farbe per JS gesetzt */
