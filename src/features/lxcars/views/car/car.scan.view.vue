@@ -434,7 +434,7 @@
                     <v-row dense>
                         <v-col cols="12">
                             <v-text-field v-model="scanResult.owner.address1" :label="t('CarScanView.result.ownerStreet')" variant="outlined" density="compact" hide-details>
-                                <template v-if="scanCrops.owner_address1" #append-inner>
+                                <template v-if="scanCrops.owner_address1" #prepend-inner>
                                     <v-tooltip location="end" content-class="crop-tooltip">
                                         <template #activator="{ props: tipProps }">
                                             <v-icon v-bind="tipProps" size="small" color="blue-lighten-2" class="cursor-pointer" tabindex="-1" @mouseenter="loadCropImage('owner_address1')">mdi-image-outline</v-icon>
@@ -450,7 +450,7 @@
                     <v-row dense>
                         <v-col cols="12">
                             <v-text-field v-model="scanResult.owner.address2" :label="t('CarScanView.result.ownerAddress')" variant="outlined" density="compact" hide-details>
-                                <template v-if="scanCrops.owner_address2" #append-inner>
+                                <template v-if="scanCrops.owner_address2" #prepend-inner>
                                     <v-tooltip location="end" content-class="crop-tooltip">
                                         <template #activator="{ props: tipProps }">
                                             <v-icon v-bind="tipProps" size="small" color="blue-lighten-2" class="cursor-pointer" tabindex="-1" @mouseenter="loadCropImage('owner_address2')">mdi-image-outline</v-icon>
@@ -608,7 +608,7 @@
                     <v-row dense>
                         <v-col cols="4" sm="2">
                             <v-text-field v-model="scanResult.car.c_2" :label="t('CarEditView.fields.c_2')" variant="outlined" density="compact" hide-details maxlength="4">
-                                <template v-if="scanCrops.c_2" #append-inner>
+                                <template v-if="scanCrops.c_2" #prepend-inner>
                                     <v-tooltip location="end" content-class="crop-tooltip">
                                         <template #activator="{ props: tipProps }">
                                             <v-icon v-bind="tipProps" size="small" color="blue-lighten-2" class="cursor-pointer" tabindex="-1" @mouseenter="loadCropImage('c_2')">mdi-image-outline</v-icon>
@@ -621,7 +621,7 @@
                         </v-col>
                         <v-col cols="4" sm="3">
                             <v-text-field v-model="scanResult.car.c_3" :label="t('CarEditView.fields.c_3')" variant="outlined" density="compact" hide-details maxlength="10">
-                                <template v-if="scanCrops.c_3" #append-inner>
+                                <template v-if="scanCrops.c_3" #prepend-inner>
                                     <v-tooltip location="end" content-class="crop-tooltip">
                                         <template #activator="{ props: tipProps }">
                                             <v-icon v-bind="tipProps" size="small" color="blue-lighten-2" class="cursor-pointer" tabindex="-1" @mouseenter="loadCropImage('c_3')">mdi-image-outline</v-icon>
@@ -634,7 +634,7 @@
                         </v-col>
                         <v-col cols="4" sm="4">
                             <v-text-field v-model="scanResult.kba.d2" :label="t('CarEditView.fields.d2')" variant="outlined" density="compact" hide-details>
-                                <template v-if="scanCrops.d2" #append-inner>
+                                <template v-if="scanCrops.d2" #prepend-inner>
                                     <v-tooltip location="end" content-class="crop-tooltip">
                                         <template #activator="{ props: tipProps }">
                                             <v-icon v-bind="tipProps" size="small" color="blue-lighten-2" class="cursor-pointer" tabindex="-1" @mouseenter="loadCropImage('d2')">mdi-image-outline</v-icon>
@@ -647,7 +647,7 @@
                         </v-col>
                         <v-col cols="4" sm="3">
                             <v-text-field v-model="scanResult.car.c_em" :label="t('CarEditView.fields.c_em')" variant="outlined" density="compact" hide-details maxlength="6">
-                                <template v-if="scanCrops.c_em" #append-inner>
+                                <template v-if="scanCrops.c_em" #prepend-inner>
                                     <v-tooltip location="end" content-class="crop-tooltip">
                                         <template #activator="{ props: tipProps }">
                                             <v-icon v-bind="tipProps" size="small" color="blue-lighten-2" class="cursor-pointer" tabindex="-1" @mouseenter="loadCropImage('c_em')">mdi-image-outline</v-icon>
@@ -666,7 +666,7 @@
                     <v-row dense>
                         <v-col cols="6" sm="4">
                             <v-text-field v-model="scanResult.car.c_d" :label="t('CarEditView.fields.c_d')" variant="outlined" density="compact" hide-details>
-                                <template v-if="scanCrops.c_d" #append-inner>
+                                <template v-if="scanCrops.c_d" #prepend-inner>
                                     <v-tooltip location="end" content-class="crop-tooltip">
                                         <template #activator="{ props: tipProps }">
                                             <v-icon v-bind="tipProps" size="small" color="blue-lighten-2" class="cursor-pointer" tabindex="-1" @mouseenter="loadCropImage('c_d')">mdi-image-outline</v-icon>
@@ -685,7 +685,7 @@
                                 density="compact"
                                 hide-details
                             >
-                                <template v-if="scanCrops.c_hu" #append-inner>
+                                <template v-if="scanCrops.c_hu" #prepend-inner>
                                     <v-tooltip location="end" content-class="crop-tooltip">
                                         <template #activator="{ props: tipProps }">
                                             <v-icon v-bind="tipProps" size="small" color="blue-lighten-2" class="cursor-pointer" tabindex="-1" @mouseenter="loadCropImage('c_hu')">mdi-image-outline</v-icon>
@@ -704,7 +704,7 @@
                     <v-row dense>
                         <v-col cols="9">
                             <v-text-field v-model="scanResult.car.c_fin" :label="t('CarEditView.fields.c_fin')" variant="outlined" density="compact" hide-details maxlength="30">
-                                <template v-if="scanCrops.c_fin" #append-inner>
+                                <template v-if="scanCrops.c_fin" #prepend-inner>
                                     <v-tooltip location="end" content-class="crop-tooltip">
                                         <template #activator="{ props: tipProps }">
                                             <v-icon v-bind="tipProps" size="small" color="blue-lighten-2" class="cursor-pointer" tabindex="-1" @mouseenter="loadCropImage('c_fin')">mdi-image-outline</v-icon>
@@ -717,7 +717,7 @@
                         </v-col>
                         <v-col cols="3">
                             <v-text-field v-model="scanResult.car.c_finchk" :label="t('CarEditView.fields.c_finchk')" variant="outlined" density="compact" hide-details maxlength="1">
-                                <template v-if="scanCrops.c_finchk" #append-inner>
+                                <template v-if="scanCrops.c_finchk" #prepend-inner>
                                     <v-tooltip location="end" content-class="crop-tooltip">
                                         <template #activator="{ props: tipProps }">
                                             <v-icon v-bind="tipProps" size="small" color="blue-lighten-2" class="cursor-pointer" tabindex="-1" @mouseenter="loadCropImage('c_finchk')">mdi-image-outline</v-icon>
@@ -1488,9 +1488,13 @@ export default {
                 ownerNameMenuOpen.value = true
             }
 
-            // Reset lazy-loaded crops
+            // Reset lazy-loaded crops und sofort die verfügbare Crop-Liste laden.
+            // Die Crops liegen unabhängig vom Detail-API-Aufruf bereits im tmp-Cache,
+            // damit die Crop-Icons (auch für Strasse, PLZ+Ort) erscheinen, ohne
+            // auf getScanDetail warten oder dessen Erfolg vorausetzen zu müssen.
             loadedCrops.value = {}
             availableCropFields.value = []
+            loadCropFieldList(scan.scan_id)
 
             // Detail im Hintergrund laden (volle Fahrzeugdaten, FIN etc.)
             pendingDetailPromise = carsStore.getScanDetail(scan.scan_id)
@@ -1513,9 +1517,6 @@ export default {
                     }
                     // Volle Duplikat-Prüfung mit FIN (nur wenn noch nicht als Duplikat erkannt)
                     await checkDuplicates(scanResult.value.car || {})
-
-                    // Crop-Liste laden (welche Felder sind im tmp-Cache verfügbar?)
-                    loadCropFieldList(scan.scan_id)
                 })
                 .catch(err => console.error('Error loading scan detail:', err))
         }
