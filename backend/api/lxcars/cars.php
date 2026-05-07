@@ -209,9 +209,10 @@ function deleteCar($data) {
         return;
     }
 
-    // Prüfen ob Fahrzeug existiert
+    // Kennzeichen + Eigentuemer vor dem DELETE holen — wird unten zum Aufraeumen
+    // der Symlinks (0_by-plate und customers/{c_ow}/fahrzeuge/{plate}) gebraucht.
     $row = $db->getOne(
-        "SELECT c_id FROM cars_lxcars WHERE c_id = :id",
+        "SELECT c_ln, c_ow FROM cars_lxcars WHERE c_id = :id",
         [':id' => $id]
     );
 
@@ -225,10 +226,31 @@ function deleteCar($data) {
         [':id' => $id]
     );
 
+    $baseDir = fmDataDir() . '/fahrzeuge';
+
     // Fahrzeug-Ordner (inkl. Fahrzeugschein und ggf. Anbauteile-Fotos) aufräumen
-    $carDir = fmDataDir() . '/fahrzeuge/' . $id;
+    $carDir = $baseDir . '/' . $id;
     if (is_dir($carDir)) {
         deleteDirectoryRecursive($carDir);
+    }
+
+    // By-plate-Symlink entfernen
+    $cLn = trim($row['c_ln'] ?? '');
+    if ($cLn !== '') {
+        $safePlate = preg_replace('/[^a-zA-Z0-9\-]/', '_', $cLn);
+        $plateLink = $baseDir . '/0_by-plate/' . $safePlate;
+        if (is_link($plateLink)) {
+            unlink($plateLink);
+        }
+
+        // Reverse-Symlink im Kunden-Ordner entfernen
+        $ownerId = intval($row['c_ow'] ?? 0);
+        if ($ownerId > 0) {
+            $customerLink = fmDataDir() . '/customers/' . $ownerId . '/fahrzeuge/' . $safePlate;
+            if (is_link($customerLink)) {
+                unlink($customerLink);
+            }
+        }
     }
 
     resultInfo(true, 'DELETED');
