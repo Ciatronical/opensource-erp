@@ -418,7 +418,11 @@ function getCar($data) {
 
     $car['kba'] = $kba;
 
-    ensureVehicleFolders($carId);
+    // Pfade & Symlinks fuer das Fahrzeug sicherstellen (idempotent):
+    //   - fahrzeuge/{c_id}/ inkl. fahrzeugschein/ + Auto-Folder
+    //   - fahrzeuge/0_by-plate/{c_ln} → ../{c_id}/fahrzeugschein
+    //   - customers/{c_ow}/fahrzeuge/{c_ln} → ../../../fahrzeuge/{c_id}
+    ensureVehiclePaths($car);
 
     resultInfo(true, 'OK', $car);
 }

@@ -1304,6 +1304,8 @@ function deleteFolder($data) {
  *
  * Liest die Konfiguration 'lxcars_auto_folders' aus defaults_oserp (kommagetrennte Ordnernamen).
  * Erstellt die Ordner unter fmDataDir()/fahrzeuge/{c_id}/.
+ * Legt zusaetzlich den fahrzeugschein/-Unterordner an, damit der By-plate-Symlink
+ * (zeigt auf {c_id}/fahrzeugschein) immer auf ein existierendes Ziel laeuft.
  * Bereits vorhandene Ordner werden nicht ueberschrieben.
  *
  * @param int $carId Fahrzeug-ID (c_id)
@@ -1312,6 +1314,12 @@ function ensureVehicleFolders($carId) {
     $carDir = fmDataDir() . '/fahrzeuge/' . intval($carId);
     if (!is_dir($carDir)) {
         fmMkdir($carDir);
+    }
+
+    // fahrzeugschein/ als Standard-Unterordner sicherstellen
+    $scheinDir = $carDir . '/fahrzeugschein';
+    if (!is_dir($scheinDir)) {
+        fmMkdir($scheinDir);
     }
 
     $db = DbhCompany::begin();
@@ -1332,6 +1340,57 @@ function ensureVehicleFolders($carId) {
         if (!is_dir($folderPath)) {
             fmMkdir($folderPath);
         }
+    }
+}
+
+/**
+ * Stellt alle Fahrzeug-Pfade sicher (idempotent).
+ *
+ * Wird beim Oeffnen eines Fahrzeugs zum Bearbeiten (getCar) aufgerufen,
+ * damit fehlende Pfade nachtraeglich angelegt werden.
+ *
+ * Erzeugt, falls fehlend:
+ *   1. fmDataDir/fahrzeuge/{c_id}/ inkl. Auto-Folder + fahrzeugschein/
+ *   2. fmDataDir/fahrzeuge/0_by-plate/{plate} → ../{c_id}/fahrzeugschein
+ *   3. fmDataDir/customers/{c_ow}/fahrzeuge/{plate} → ../../../fahrzeuge/{c_id}
+ *
+ * @param array $car Datensatz mit mind. c_id, optional c_ln, c_ow
+ */
+function ensureVehiclePaths($car) {
+    $cId = intval($car['c_id'] ?? 0);
+    if ($cId <= 0) return;
+
+    // 1. Fahrzeug-Verzeichnis (inkl. fahrzeugschein/ + Auto-Folder)
+    ensureVehicleFolders($cId);
+
+    $cLn = trim($car['c_ln'] ?? '');
+    if ($cLn === '') return;
+
+    $safePlate = preg_replace('/[^a-zA-Z0-9\-]/', '_', $cLn);
+    if ($safePlate === '') return;
+
+    // 2. By-plate-Symlink
+    $baseDir = fmDataDir() . '/fahrzeuge';
+    $plateDir = $baseDir . '/0_by-plate';
+    if (!is_dir($plateDir)) {
+        fmMkdir($plateDir);
+    }
+    $plateLink = $plateDir . '/' . $safePlate;
+    if (!is_link($plateLink) && !file_exists($plateLink)) {
+        @symlink('../' . $cId . '/fahrzeugschein', $plateLink);
+    }
+
+    // 3. Reverse-Symlink im Kunden-Ordner
+    $cOw = intval($car['c_ow'] ?? 0);
+    if ($cOw <= 0) return;
+
+    $vehicleDir = fmDataDir() . '/customers/' . $cOw . '/fahrzeuge';
+    if (!is_dir($vehicleDir)) {
+        fmMkdir($vehicleDir);
+    }
+    $customerLink = $vehicleDir . '/' . $safePlate;
+    if (!is_link($customerLink) && !file_exists($customerLink)) {
+        @symlink('../../../fahrzeuge/' . $cId, $customerLink);
     }
 }
 
