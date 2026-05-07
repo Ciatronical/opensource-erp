@@ -1309,13 +1309,13 @@ function deleteFolder($data) {
  * Erstellt automatisch konfigurierte Unterordner im Fahrzeug-Verzeichnis.
  *
  * Liest die Konfiguration 'lxcars_auto_folders' aus defaults_oserp (kommagetrennte Ordnernamen).
- * Erstellt die Ordner unter fmDataDir()/fahrzeugschein/{c_id}/.
+ * Erstellt die Ordner unter fmDataDir()/fahrzeuge/{c_id}/.
  * Bereits vorhandene Ordner werden nicht ueberschrieben.
  *
  * @param int $carId Fahrzeug-ID (c_id)
  */
 function ensureVehicleFolders($carId) {
-    $carDir = fmDataDir() . '/fahrzeugschein/' . intval($carId);
+    $carDir = fmDataDir() . '/fahrzeuge/' . intval($carId);
     if (!is_dir($carDir)) {
         fmMkdir($carDir);
     }
@@ -1410,7 +1410,7 @@ function ensureCustomerFolder($cvId, $src, $name) {
 
                     $safePlate = preg_replace('/[^a-zA-Z0-9\-]/', '_', $v['c_ln']);
                     $linkPath = $vehicleDir . '/' . $safePlate;
-                    $targetPath = '../../../fahrzeugschein/' . $v['c_id'];
+                    $targetPath = '../../../fahrzeuge/' . $v['c_id'];
                     symlink($targetPath, $linkPath);
                 }
             }

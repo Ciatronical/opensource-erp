@@ -68,7 +68,7 @@ function saveCar($data) {
         $newCarId = intval($result['c_id']);
         ensureVehicleFolders($newCarId);
 
-        // Kunden-Symlinks aktualisieren (fahrzeuge/Kennzeichen → fahrzeugschein/id)
+        // Kunden-Symlinks aktualisieren (fahrzeuge/Kennzeichen → fahrzeuge/id)
         $ownerId = intval($car['c_ow']);
         $ownerRow = $db->getOne("SELECT name FROM customer WHERE id = :id", [':id' => $ownerId]);
         if ($ownerRow) {
@@ -225,8 +225,8 @@ function deleteCar($data) {
         [':id' => $id]
     );
 
-    // Fahrzeugschein-Ordner aufräumen
-    $carDir = fmDataDir() . '/fahrzeugschein/' . $id;
+    // Fahrzeug-Ordner (inkl. Fahrzeugschein und ggf. Anbauteile-Fotos) aufräumen
+    $carDir = fmDataDir() . '/fahrzeuge/' . $id;
     if (is_dir($carDir)) {
         deleteDirectoryRecursive($carDir);
     }
@@ -1815,7 +1815,7 @@ function scanFahrzeugschein($data) {
 
     // Original-Bild als Temp-Datei speichern (für späteres Verknüpfen mit c_id)
     $tempId = null;
-    $tempDir = __DIR__ . '/../../data/fahrzeugschein/temp';
+    $tempDir = fmDataDir() . '/fahrzeuge/0_temp';
     if (!is_dir($tempDir)) {
         mkdir($tempDir, 0755, true);
     }
@@ -1989,7 +1989,7 @@ function _scanFahrzeugscheinDemo($db, $data) {
     // Original-Bild als Temp-Datei speichern (normaler Flow)
     $tempId = null;
     if (!empty($image)) {
-        $tempDir = __DIR__ . '/../../data/fahrzeugschein/temp';
+        $tempDir = fmDataDir() . '/fahrzeuge/0_temp';
         if (!is_dir($tempDir)) {
             mkdir($tempDir, 0755, true);
         }

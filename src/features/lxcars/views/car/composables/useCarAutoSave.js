@@ -155,14 +155,17 @@ export function useCarAutoSave({ car, isEditMode, hasValidationErrors, oserpData
                         const cLn = car.value.c_ln || ''
                         const hasFieldImages = imgs.images && typeof imgs.images === 'object' && Object.keys(imgs.images).length > 0
 
-                        // Crops + Original (via temp_image_id) in einem Call
+                        // Crops + Original in einem Call. scanId weiterreichen,
+                        // damit Backend die Crops aus tmp/{scanId} kopieren kann
+                        // (Listen-Flow liefert keine field_images / temp_image_id).
                         carsStore.saveScanImages(
                             cId, cLn, null,
                             hasFieldImages ? imgs.images : {},
                             false,
-                            imgs.tempImageId || null
+                            imgs.tempImageId || null,
+                            imgs.scanId || null
                         ).then(() => {
-                            car.value.filename = 'fahrzeugschein/' + cId
+                            car.value.filename = 'fahrzeuge/' + cId + '/fahrzeugschein'
                         }).catch(err => console.error('Error saving scan images:', err))
                     }
                 }

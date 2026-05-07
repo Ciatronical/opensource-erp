@@ -534,7 +534,7 @@ function _getPartsPhotoDir($db, $oeId, $requestId) {
     $customerId = intval($order['customer_id'] ?? 0);
 
     if ($cId > 0) {
-        $dir = fmDataDir() . '/fahrzeugschein/' . $cId . '/' . $folderName;
+        $dir = fmDataDir() . '/fahrzeuge/' . $cId . '/' . $folderName;
     } elseif ($customerId > 0) {
         $dir = fmDataDir() . '/customers/' . $customerId . '/' . $folderName;
     } else {
@@ -643,7 +643,7 @@ function getPartsRequestPhoto($data) {
  *
  * @param int    $data['id']   Request-ID
  * @param string $data['path'] Relativer Pfad des zu löschenden Fotos
- * @testdata {"id": 1, "path": "fahrzeugschein/123/Bremsen/1_1.jpg"}
+ * @testdata {"id": 1, "path": "fahrzeuge/123/Bremsen/1_1.jpg"}
  */
 function deletePartsRequestPhoto($data) {
     $db = DbhCompany::begin();

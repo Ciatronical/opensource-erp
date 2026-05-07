@@ -1321,14 +1321,17 @@ export default {
                 }
             }
 
-            // Scan-Bilder für späteres Speichern merken + Backup für Anzeige
+            // Scan-Bilder für späteres Speichern merken + Backup für Anzeige.
+            // Im Listen-Flow liegen die Crops im tmp/{scanId}-Cache; saveScanImages
+            // kopiert sie anhand der scanId — daher reicht scanId als Trigger.
             const hasImages = (scanData.images && typeof scanData.images === 'object' && Object.keys(scanData.images).length > 0)
-            if (hasImages || scanData.originalImage || scanData.tempImageId) {
+            if (hasImages || scanData.originalImage || scanData.tempImageId || scanData.scanId) {
                 const imgData = {
                     images: hasImages ? scanData.images : null,
                     originalImage: scanData.originalImage || null,
                     isPdf: scanData.isPdf || false,
-                    tempImageId: scanData.tempImageId || null
+                    tempImageId: scanData.tempImageId || null,
+                    scanId: scanData.scanId || null
                 }
                 pendingScanImages.value = imgData
                 lastScanImages.value = imgData

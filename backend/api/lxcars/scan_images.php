@@ -13,8 +13,8 @@
  *   field_images: { hsnImg: '<base64>', vinImg: '<base64>', ... }
  * }
  *
- * Speichert in: backend/data/fahrzeugschein/{c_id}/
- * Erstellt Symlink: backend/data/fahrzeugschein/by-plate/{c_ln} → ../{c_id}/
+ * Speichert in: {fmDataDir}/fahrzeuge/{c_id}/fahrzeugschein/
+ * Erstellt Symlink: {fmDataDir}/fahrzeuge/0_by-plate/{c_ln} → ../{c_id}/fahrzeugschein
  */
 function saveScanImages($data) {
     $cId = intval($data['c_id'] ?? 0);
@@ -26,10 +26,10 @@ function saveScanImages($data) {
         return;
     }
 
-    $baseDir = __DIR__ . '/../../data/fahrzeugschein';
-    $carDir = $baseDir . '/' . $cId;
+    $baseDir = fmDataDir() . '/fahrzeuge';
+    $carDir = $baseDir . '/' . $cId . '/fahrzeugschein';
     $cropDir = $carDir . '/.crops';
-    $plateDir = $baseDir . '/by-plate';
+    $plateDir = $baseDir . '/0_by-plate';
 
     // Verzeichnisse erstellen
     if (!is_dir($carDir)) {
@@ -48,7 +48,7 @@ function saveScanImages($data) {
     if (!empty($data['temp_image_id'])) {
         // Temp-Datei vom scanFahrzeugschein verschieben
         $tempId = preg_replace('/[^a-f0-9]/', '', $data['temp_image_id']);
-        $tempDir = $baseDir . '/temp';
+        $tempDir = $baseDir . '/0_temp';
         foreach (['jpg', 'pdf'] as $tryExt) {
             $tempPath = $tempDir . '/' . $tempId . '.' . $tryExt;
             if (is_file($tempPath)) {
@@ -141,21 +141,21 @@ function saveScanImages($data) {
             unlink($symlinkPath);
         }
 
-        // Relativen Symlink erstellen
-        symlink('../' . $cId, $symlinkPath);
+        // Relativen Symlink erstellen → Fahrzeugschein-Unterordner
+        symlink('../' . $cId . '/fahrzeugschein', $symlinkPath);
     }
 
-    // DB-Update: filename-Feld setzen
+    // DB-Update: filename-Feld setzen (relativ zu fmDataDir)
     $db = DbhCompany::begin();
     $db->update(
         'cars_lxcars',
         ['filename'],
-        ['fahrzeugschein/' . $cId],
+        ['fahrzeuge/' . $cId . '/fahrzeugschein'],
         "c_id = " . intval($cId)
     );
 
     resultInfo(true, 'OK', [
-        'path' => 'fahrzeugschein/' . $cId,
+        'path' => 'fahrzeuge/' . $cId . '/fahrzeugschein',
         'files' => $savedFiles
     ]);
 }
@@ -187,7 +187,7 @@ function getScanImages($data) {
         return;
     }
 
-    $carDir = __DIR__ . '/../../data/fahrzeugschein/' . $cId;
+    $carDir = fmDataDir() . '/fahrzeuge/' . $cId . '/fahrzeugschein';
     $cropDir = $carDir . '/.crops';
 
     if (!is_dir($carDir)) {
@@ -248,7 +248,7 @@ function getScanCrops($data) {
         return;
     }
 
-    $carDir = __DIR__ . '/../../data/fahrzeugschein/' . $cId;
+    $carDir = fmDataDir() . '/fahrzeuge/' . $cId . '/fahrzeugschein';
     $cropDir = $carDir . '/.crops';
     if (!is_dir($carDir)) {
         resultInfo(true, 'OK', ['original' => null, 'crops' => new \stdClass()]);
@@ -317,7 +317,7 @@ function getScanImage($data) {
         return;
     }
 
-    $filePath = __DIR__ . '/../../data/fahrzeugschein/' . $cId . '/' . $filename;
+    $filePath = fmDataDir() . '/fahrzeuge/' . $cId . '/fahrzeugschein/' . $filename;
 
     if (!is_file($filePath)) {
         resultInfo(false, 'FILE_NOT_FOUND', 'Datei nicht gefunden');

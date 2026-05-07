@@ -1489,9 +1489,9 @@ export default {
             }
 
             // Reset lazy-loaded crops und sofort die verfügbare Crop-Liste laden.
-            // Die Crops liegen unabhängig vom Detail-API-Aufruf bereits im tmp-Cache,
-            // damit die Crop-Icons (auch für Strasse, PLZ+Ort) erscheinen, ohne
-            // auf getScanDetail warten oder dessen Erfolg vorausetzen zu müssen.
+            // Beim ersten Aufruf existiert der tmp-Cache noch nicht — er wird erst
+            // von getScanDetail/cacheScanToTmp angelegt; daher unten nach erfolgreichem
+            // Detail-Load nochmal aufrufen.
             loadedCrops.value = {}
             availableCropFields.value = []
             loadCropFieldList(scan.scan_id)
@@ -1517,6 +1517,12 @@ export default {
                     }
                     // Volle Duplikat-Prüfung mit FIN (nur wenn noch nicht als Duplikat erkannt)
                     await checkDuplicates(scanResult.value.car || {})
+
+                    // Crop-Liste erneut laden — getScanDetail hat den tmp-Cache
+                    // möglicherweise gerade erst angelegt (cacheScanToTmp).
+                    if (!availableCropFields.value.length) {
+                        await loadCropFieldList(scan.scan_id)
+                    }
                 })
                 .catch(err => console.error('Error loading scan detail:', err))
         }
