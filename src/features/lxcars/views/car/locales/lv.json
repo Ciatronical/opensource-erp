@@ -305,7 +305,13 @@
             "tooltip": "Nosūtīt transportlīdzekļa datus pa e-pastu klientam, piegādātājam vai pielāgotai adresei"
         },
         "readonly": "Tikai skatīšanai",
-        "titleView": "Transportlīdzekļa dati"
+        "titleView": "Transportlīdzekļa dati",
+        "files": {
+            "button": "Faili",
+            "openButton": "Atvērt transportlīdzekļa failus",
+            "dialogTitle": "Transportlīdzekļa faili",
+            "openInTab": "Atvērt"
+        }
     },
     "CarScanView": {
         "title": "Fahrzeug vom Scan anlegen",

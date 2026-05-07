@@ -305,7 +305,13 @@
             "tooltip": "Saada sõiduki andmed e-posti teel kliendile, tarnijale või kohandatud aadressile"
         },
         "readonly": "Ainult vaatamiseks",
-        "titleView": "Sõiduki andmed"
+        "titleView": "Sõiduki andmed",
+        "files": {
+            "button": "Failid",
+            "openButton": "Ava sõiduki failid",
+            "dialogTitle": "Sõiduki failid",
+            "openInTab": "Ava"
+        }
     },
     "CarScanView": {
         "title": "Fahrzeug vom Scan anlegen",

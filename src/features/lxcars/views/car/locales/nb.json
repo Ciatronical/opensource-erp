@@ -305,7 +305,13 @@
             "tooltip": "Send kjøretøydata via e-post til en kunde, leverandør eller egendefinert adresse"
         },
         "readonly": "Kun visning",
-        "titleView": "Kjøretøydata"
+        "titleView": "Kjøretøydata",
+        "files": {
+            "button": "Filer",
+            "openButton": "Åpne kjøretøyets filer",
+            "dialogTitle": "Kjøretøyfiler",
+            "openInTab": "Åpne"
+        }
     },
     "CarScanView": {
         "title": "Kjoeretoeyer vom Scan anlegen",

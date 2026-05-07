@@ -31,6 +31,10 @@
                     <v-icon start size="small">mdi-file-image-outline</v-icon>
                     {{ t('CarEditView.scanImages.button') }}
                 </v-btn>
+                <v-btn v-if="isEditMode" variant="tonal" size="small" color="primary" :title="t('CarEditView.files.openButton')" @click="filesDialogOpen = true">
+                    <v-icon start size="small">mdi-folder-open-outline</v-icon>
+                    {{ t('CarEditView.files.button') }}
+                </v-btn>
                 <v-btn v-if="isEditMode" variant="tonal" size="small" color="success" @click="openCarRegistration">
                     <v-icon start size="small">mdi-card-account-details</v-icon>
                     {{ t('CarEditView.registration.button') }}
@@ -1061,6 +1065,9 @@
         <!-- Rotes Heft Dialog -->
         <RotesHeftDialog v-model="rotesHeftDialog" :car="car" :kba-data="kbaData" />
 
+        <!-- Fahrzeug-Dateimanager Dialog -->
+        <CarFilesDialog v-model="filesDialogOpen" :c-id="car.c_id" :plate="car.c_ln || ''" />
+
         <!-- E-Mail versenden Dialog -->
         <SendEmailDialog
             v-model="emailDialog"
@@ -1124,12 +1131,13 @@ import Swal from 'sweetalert2'
 import RotesHeftDialog from './components/rotes-heft.dialog.vue'
 import CarChatCard from './components/car-chat.card.vue'
 import SendEmailDialog from './components/send-email.dialog.vue'
+import CarFilesDialog from './components/car-files.dialog.vue'
 
 // const SpecialDialog = defineAsyncComponent(() => import('@special/special.dialog.vue'))
 
 export default {
     name: 'CarEditView',
-    components: { NavbarView, RotesHeftDialog, CarChatCard, SendEmailDialog /*, SpecialDialog */ },
+    components: { NavbarView, RotesHeftDialog, CarChatCard, SendEmailDialog, CarFilesDialog /*, SpecialDialog */ },
 
     props: {
         id: {
@@ -1235,6 +1243,8 @@ export default {
         // Rotes Heft Dialog
         const rotesHeftDialog = ref(false)
         const specialDialog = ref(false)
+        // Fahrzeug-Dateimanager Dialog
+        const filesDialogOpen = ref(false)
 
         // E-Mail Dialog
         const emailDialog = ref(false)
@@ -2126,7 +2136,7 @@ export default {
             toggleOrderSort, sortIcon, formatAmount, openOrder, createNewOrder, navigateToCustomer, openCarRegistration, focusSearch,
             yellowLabelPrinting, tyreLabelPrinting, onPrintYellowLabel, onPrintTyreLabel,
             onFocusIn, onFocusOut,
-            kbaData, showDebug, rotesHeftDialog, specialDialog,
+            kbaData, showDebug, rotesHeftDialog, specialDialog, filesDialogOpen,
             deleteConfirmDialog, deleting, executeDeleteCar,
             kbaSelectDialog, kbaSelectOptions, kbaSelectFiltered, kbaSelectFilter, selectKba,
             skipKbaSelect, showSpecialKbaConfirm, confirmSpecialKba, useSpecialKba, specialKbaForm, specialKbaFormValid,

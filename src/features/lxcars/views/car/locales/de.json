@@ -19,6 +19,12 @@
             "kbaExtra": "Weitere KBA-Felder",
             "debug": "Debug-Infos"
         },
+        "files": {
+            "button": "Dateien",
+            "openButton": "Dateien zum Fahrzeug öffnen",
+            "dialogTitle": "Fahrzeug-Dateien",
+            "openInTab": "Öffnen"
+        },
         "fields": {
             "c_ln": "Kennzeichen",
             "c_2": "HSN (2.1)",

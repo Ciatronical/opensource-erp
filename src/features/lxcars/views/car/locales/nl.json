@@ -305,7 +305,13 @@
             "tooltip": "Voertuiggegevens per e-mail sturen naar een klant, leverancier of aangepast adres"
         },
         "readonly": "Alleen weergave",
-        "titleView": "Voertuiggegevens"
+        "titleView": "Voertuiggegevens",
+        "files": {
+            "button": "Bestanden",
+            "openButton": "Voertuigbestanden openen",
+            "dialogTitle": "Voertuigbestanden",
+            "openInTab": "Openen"
+        }
     },
     "CarScanView": {
         "title": "Voertuig aanmaken van scan",

@@ -305,7 +305,13 @@
         },
         "backToOrder": "Order",
         "readonly": "View only",
-        "titleView": "Vehicle data"
+        "titleView": "Vehicle data",
+        "files": {
+            "button": "Files",
+            "openButton": "Open vehicle files",
+            "dialogTitle": "Vehicle files",
+            "openInTab": "Open"
+        }
     },
     "CarScanView": {
         "title": "Create vehicle from scan",

@@ -179,6 +179,32 @@ function vfGetRootDir($cvId, $src) {
 }
 
 /**
+ * Resolver fuer das Root-Verzeichnis aus den Request-Daten.
+ *
+ * Unterstuetzt zwei Modi:
+ *   - c_id  → Fahrzeug-Modus: fmDataDir/fahrzeuge/{c_id}
+ *   - cv_id + src → Kunden-/Lieferanten-Modus (Bestand)
+ *
+ * Liefert den absoluten Root-Pfad oder null, wenn kein gueltiger Identifier
+ * uebergeben wurde. Erzeugt das Verzeichnis bei Bedarf.
+ */
+function vfResolveRootDir($data) {
+    if (!empty($data['c_id'])) {
+        $cId = intval($data['c_id']);
+        if ($cId <= 0) return null;
+        $rootDir = fmDataDir() . '/fahrzeuge/' . $cId;
+        if (!is_dir($rootDir)) {
+            fmMkdir($rootDir);
+        }
+        return $rootDir;
+    }
+    $cvId = intval($data['cv_id'] ?? 0);
+    if ($cvId <= 0) return null;
+    $src = $data['src'] ?? 'C';
+    return vfGetRootDir($cvId, $src);
+}
+
+/**
  * Vuefinder-Pfad bereinigen (Storage-Prefix entfernen, Traversal verhindern)
  */
 function vfSanitizePath($path) {
@@ -302,17 +328,21 @@ function vfIndex($data) {
     $auth = DbhAuth::begin();
     $auth->fetchSessionData();
 
-    $cvId = intval($data['cv_id'] ?? 0);
-    $src = $data['src'] ?? 'C';
-    if (!$cvId) { resultInfo(false, 'cv_id required'); return; }
+    $rootDir = vfResolveRootDir($data);
+    if ($rootDir === null) { resultInfo(false, 'cv_id or c_id required'); return; }
 
-    // Ordner, Symlinks und ggf. Fahrzeuge sicherstellen (idempotent)
-    $db = DbhCompany::begin();
-    $table = ($src === 'V') ? 'vendor' : 'customer';
-    $row = $db->getOne("SELECT name FROM $table WHERE id = :id", [':id' => $cvId]);
-    ensureCustomerFolder($cvId, $src, trim($row['name'] ?? ''));
+    // Ordner, Symlinks und Auto-Folders sicherstellen (idempotent), je nach Modus.
+    if (!empty($data['c_id'])) {
+        ensureVehicleFolders(intval($data['c_id']));
+    } else {
+        $cvId = intval($data['cv_id']);
+        $src = $data['src'] ?? 'C';
+        $db = DbhCompany::begin();
+        $table = ($src === 'V') ? 'vendor' : 'customer';
+        $row = $db->getOne("SELECT name FROM $table WHERE id = :id", [':id' => $cvId]);
+        ensureCustomerFolder($cvId, $src, trim($row['name'] ?? ''));
+    }
 
-    $rootDir = vfGetRootDir($cvId, $src);
     $path = vfSanitizePath($data['path'] ?? '');
     $absDir = vfGetAbsPath($rootDir, $path);
 
@@ -342,11 +372,8 @@ function vfUpload($data) {
     $auth = DbhAuth::begin();
     $auth->fetchSessionData();
 
-    $cvId = intval($data['cv_id'] ?? 0);
-    $src = $data['src'] ?? 'C';
-    if (!$cvId) { resultInfo(false, 'cv_id required'); return; }
-
-    $rootDir = vfGetRootDir($cvId, $src);
+    $rootDir = vfResolveRootDir($data);
+    if ($rootDir === null) { resultInfo(false, 'cv_id or c_id required'); return; }
     $uploadPath = vfSanitizePath($data['path'] ?? '');
     $targetDir = vfGetAbsPath($rootDir, $uploadPath);
 
@@ -386,11 +413,8 @@ function vfDelete($data) {
     $auth = DbhAuth::begin();
     $auth->fetchSessionData();
 
-    $cvId = intval($data['cv_id'] ?? 0);
-    $src = $data['src'] ?? 'C';
-    if (!$cvId) { resultInfo(false, 'cv_id required'); return; }
-
-    $rootDir = vfGetRootDir($cvId, $src);
+    $rootDir = vfResolveRootDir($data);
+    if ($rootDir === null) { resultInfo(false, 'cv_id or c_id required'); return; }
     $path = vfSanitizePath($data['path'] ?? '');
     $items = $data['items'] ?? [];
 
@@ -433,11 +457,8 @@ function vfRename($data) {
     $auth = DbhAuth::begin();
     $auth->fetchSessionData();
 
-    $cvId = intval($data['cv_id'] ?? 0);
-    $src = $data['src'] ?? 'C';
-    if (!$cvId) { resultInfo(false, 'cv_id required'); return; }
-
-    $rootDir = vfGetRootDir($cvId, $src);
+    $rootDir = vfResolveRootDir($data);
+    if ($rootDir === null) { resultInfo(false, 'cv_id or c_id required'); return; }
     $path = vfSanitizePath($data['path'] ?? '');
     $item = vfSanitizePath($data['item'] ?? '');
     $newName = basename($data['name'] ?? '');
@@ -484,11 +505,8 @@ function vfCreateFolder($data) {
     $auth = DbhAuth::begin();
     $auth->fetchSessionData();
 
-    $cvId = intval($data['cv_id'] ?? 0);
-    $src = $data['src'] ?? 'C';
-    if (!$cvId) { resultInfo(false, 'cv_id required'); return; }
-
-    $rootDir = vfGetRootDir($cvId, $src);
+    $rootDir = vfResolveRootDir($data);
+    if ($rootDir === null) { resultInfo(false, 'cv_id or c_id required'); return; }
     $path = vfSanitizePath($data['path'] ?? '');
     $name = $data['name'] ?? '';
     // Nur Dateisystem-kritische Zeichen entfernen (/ \ : * ? " < > | und Null-Byte)
@@ -531,11 +549,8 @@ function vfCreateFile($data) {
     $auth = DbhAuth::begin();
     $auth->fetchSessionData();
 
-    $cvId = intval($data['cv_id'] ?? 0);
-    $src = $data['src'] ?? 'C';
-    if (!$cvId) { resultInfo(false, 'cv_id required'); return; }
-
-    $rootDir = vfGetRootDir($cvId, $src);
+    $rootDir = vfResolveRootDir($data);
+    if ($rootDir === null) { resultInfo(false, 'cv_id or c_id required'); return; }
     $path = vfSanitizePath($data['path'] ?? '');
     $name = $data['name'] ?? '';
     $safeName = preg_replace('/[^\w.\-\s]/', '_', $name);
@@ -577,15 +592,12 @@ function vfPreview($data) {
     $auth = DbhAuth::begin();
     $auth->fetchSessionData();
 
-    $cvId = intval($data['cv_id'] ?? 0);
-    $src = $data['src'] ?? 'C';
-    if (!$cvId) {
+    $rootDir = vfResolveRootDir($data);
+    if ($rootDir === null) {
         http_response_code(400);
-        echo 'cv_id required';
+        echo 'cv_id or c_id required';
         exit;
     }
-
-    $rootDir = vfGetRootDir($cvId, $src);
     $path = vfSanitizePath($data['path'] ?? '');
     $absPath = vfGetAbsPath($rootDir, $path);
 
@@ -618,15 +630,12 @@ function vfDownload($data) {
     $auth = DbhAuth::begin();
     $auth->fetchSessionData();
 
-    $cvId = intval($data['cv_id'] ?? 0);
-    $src = $data['src'] ?? 'C';
-    if (!$cvId) {
+    $rootDir = vfResolveRootDir($data);
+    if ($rootDir === null) {
         http_response_code(400);
-        echo 'cv_id required';
+        echo 'cv_id or c_id required';
         exit;
     }
-
-    $rootDir = vfGetRootDir($cvId, $src);
     $path = vfSanitizePath($data['path'] ?? '');
     $absPath = vfGetAbsPath($rootDir, $path);
 
@@ -661,11 +670,8 @@ function vfSearch($data) {
     $auth = DbhAuth::begin();
     $auth->fetchSessionData();
 
-    $cvId = intval($data['cv_id'] ?? 0);
-    $src = $data['src'] ?? 'C';
-    if (!$cvId) { resultInfo(false, 'cv_id required'); return; }
-
-    $rootDir = vfGetRootDir($cvId, $src);
+    $rootDir = vfResolveRootDir($data);
+    if ($rootDir === null) { resultInfo(false, 'cv_id or c_id required'); return; }
     $path = vfSanitizePath($data['path'] ?? '');
     $filter = $data['filter'] ?? '';
 
@@ -719,11 +725,8 @@ function vfMove($data) {
     $auth = DbhAuth::begin();
     $auth->fetchSessionData();
 
-    $cvId = intval($data['cv_id'] ?? 0);
-    $src = $data['src'] ?? 'C';
-    if (!$cvId) { resultInfo(false, 'cv_id required'); return; }
-
-    $rootDir = vfGetRootDir($cvId, $src);
+    $rootDir = vfResolveRootDir($data);
+    if ($rootDir === null) { resultInfo(false, 'cv_id or c_id required'); return; }
     $sources = $data['sources'] ?? [];
     $destination = vfSanitizePath($data['destination'] ?? '');
     $path = vfSanitizePath($data['path'] ?? '');
@@ -767,11 +770,8 @@ function vfCopy($data) {
     $auth = DbhAuth::begin();
     $auth->fetchSessionData();
 
-    $cvId = intval($data['cv_id'] ?? 0);
-    $src = $data['src'] ?? 'C';
-    if (!$cvId) { resultInfo(false, 'cv_id required'); return; }
-
-    $rootDir = vfGetRootDir($cvId, $src);
+    $rootDir = vfResolveRootDir($data);
+    if ($rootDir === null) { resultInfo(false, 'cv_id or c_id required'); return; }
     $sources = $data['sources'] ?? [];
     $destination = vfSanitizePath($data['destination'] ?? '');
     $path = vfSanitizePath($data['path'] ?? '');
@@ -813,11 +813,8 @@ function vfSave($data) {
     $auth = DbhAuth::begin();
     $auth->fetchSessionData();
 
-    $cvId = intval($data['cv_id'] ?? 0);
-    $src = $data['src'] ?? 'C';
-    if (!$cvId) { resultInfo(false, 'cv_id required'); return; }
-
-    $rootDir = vfGetRootDir($cvId, $src);
+    $rootDir = vfResolveRootDir($data);
+    if ($rootDir === null) { resultInfo(false, 'cv_id or c_id required'); return; }
     $path = vfSanitizePath($data['path'] ?? '');
     $content = $data['content'] ?? '';
     $absPath = vfGetAbsPath($rootDir, $path);
@@ -845,11 +842,8 @@ function vfDuplicate($data) {
     $auth = DbhAuth::begin();
     $auth->fetchSessionData();
 
-    $cvId = intval($data['cv_id'] ?? 0);
-    $src = $data['src'] ?? 'C';
-    if (!$cvId) { resultInfo(false, 'cv_id required'); return; }
-
-    $rootDir = vfGetRootDir($cvId, $src);
+    $rootDir = vfResolveRootDir($data);
+    if ($rootDir === null) { resultInfo(false, 'cv_id or c_id required'); return; }
     $path = vfSanitizePath($data['path'] ?? '');
 
     if (empty($path)) {

@@ -305,7 +305,13 @@
             "tooltip": "通过电子邮件将车辆数据发送给客户、供应商或自定义地址"
         },
         "readonly": "仅查看",
-        "titleView": "车辆数据"
+        "titleView": "车辆数据",
+        "files": {
+            "button": "文件",
+            "openButton": "打开车辆文件",
+            "dialogTitle": "车辆文件",
+            "openInTab": "打开"
+        }
     },
     "CarScanView": {
         "title": "从扫描创建车辆",

@@ -305,7 +305,13 @@
             "tooltip": "Lähetä ajoneuvotiedot sähköpostilla asiakkaalle, toimittajalle tai mukautetulle osoitteelle"
         },
         "readonly": "Vain luku",
-        "titleView": "Ajoneuvotiedot"
+        "titleView": "Ajoneuvotiedot",
+        "files": {
+            "button": "Tiedostot",
+            "openButton": "Avaa ajoneuvon tiedostot",
+            "dialogTitle": "Ajoneuvon tiedostot",
+            "openInTab": "Avaa"
+        }
     },
     "CarScanView": {
         "title": "Fahrzeug vom Scan anlegen",

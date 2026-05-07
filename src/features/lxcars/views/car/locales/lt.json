@@ -305,7 +305,13 @@
             "tooltip": "Siųsti transporto priemonės duomenis el. paštu klientui, tiekėjui arba pasirinktam adresui"
         },
         "readonly": "Tik peržiūra",
-        "titleView": "Transporto priemonės duomenys"
+        "titleView": "Transporto priemonės duomenys",
+        "files": {
+            "button": "Failai",
+            "openButton": "Atidaryti transporto priemonės failus",
+            "dialogTitle": "Transporto priemonės failai",
+            "openInTab": "Atidaryti"
+        }
     },
     "CarScanView": {
         "title": "Fahrzeug vom Scan anlegen",

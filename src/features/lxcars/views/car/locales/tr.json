@@ -305,7 +305,13 @@
             "tooltip": "Araç verilerini e-posta ile müşteriye, tedarikçiye veya özel adrese gönder"
         },
         "readonly": "Yalnızca görüntüleme",
-        "titleView": "Araç verileri"
+        "titleView": "Araç verileri",
+        "files": {
+            "button": "Dosyalar",
+            "openButton": "Araç dosyalarını aç",
+            "dialogTitle": "Araç dosyaları",
+            "openInTab": "Aç"
+        }
     },
     "CarScanView": {
         "title": "Fahrzeug vom Scan anlegen",

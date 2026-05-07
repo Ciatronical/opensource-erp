@@ -305,7 +305,13 @@
             "tooltip": "Skicka fordonsdata via e-post till en kund, leverantör eller anpassad adress"
         },
         "readonly": "Endast visning",
-        "titleView": "Fordonsdata"
+        "titleView": "Fordonsdata",
+        "files": {
+            "button": "Filer",
+            "openButton": "Öppna fordonsfiler",
+            "dialogTitle": "Fordonsfiler",
+            "openInTab": "Öppna"
+        }
     },
     "CarScanView": {
         "title": "Fordon vom Scan anlegen",

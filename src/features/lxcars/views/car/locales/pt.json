@@ -305,7 +305,13 @@
             "tooltip": "Enviar dados do veículo por e-mail a um cliente, fornecedor ou endereço personalizado"
         },
         "readonly": "Apenas visualização",
-        "titleView": "Dados do veículo"
+        "titleView": "Dados do veículo",
+        "files": {
+            "button": "Ficheiros",
+            "openButton": "Abrir ficheiros do veículo",
+            "dialogTitle": "Ficheiros do veículo",
+            "openInTab": "Abrir"
+        }
     },
     "CarScanView": {
         "title": "Criar veículo a partir de digitalização",

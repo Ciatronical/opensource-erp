@@ -305,7 +305,13 @@
             "tooltip": "Wyślij dane pojazdu e-mailem do klienta, dostawcy lub na własny adres"
         },
         "readonly": "Tylko podgląd",
-        "titleView": "Dane pojazdu"
+        "titleView": "Dane pojazdu",
+        "files": {
+            "button": "Pliki",
+            "openButton": "Otwórz pliki pojazdu",
+            "dialogTitle": "Pliki pojazdu",
+            "openInTab": "Otwórz"
+        }
     },
     "CarScanView": {
         "title": "Utwórz pojazd ze skanu",

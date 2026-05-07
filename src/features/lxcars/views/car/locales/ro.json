@@ -305,7 +305,13 @@
             "tooltip": "Trimiteți datele vehiculului prin e-mail unui client, furnizor sau adresă personalizată"
         },
         "readonly": "Doar vizualizare",
-        "titleView": "Date vehicul"
+        "titleView": "Date vehicul",
+        "files": {
+            "button": "Fișiere",
+            "openButton": "Deschide fișierele vehiculului",
+            "dialogTitle": "Fișiere vehicul",
+            "openInTab": "Deschide"
+        }
     },
     "CarScanView": {
         "title": "Fahrzeug vom Scan anlegen",

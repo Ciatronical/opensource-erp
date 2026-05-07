@@ -305,7 +305,13 @@
             "tooltip": "Envoyer les données du véhicule par e-mail à un client, un fournisseur ou une adresse personnalisée"
         },
         "readonly": "Lecture seule",
-        "titleView": "Données du véhicule"
+        "titleView": "Données du véhicule",
+        "files": {
+            "button": "Fichiers",
+            "openButton": "Ouvrir les fichiers du véhicule",
+            "dialogTitle": "Fichiers du véhicule",
+            "openInTab": "Ouvrir"
+        }
     },
     "CarScanView": {
         "title": "Creer un vehicule a partir du scan",

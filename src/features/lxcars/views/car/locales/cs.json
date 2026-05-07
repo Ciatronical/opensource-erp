@@ -305,7 +305,13 @@
             "tooltip": "Odeslat data vozidla e-mailem zákazníkovi, dodavateli nebo na vlastní adresu"
         },
         "readonly": "Pouze zobrazení",
-        "titleView": "Data vozidla"
+        "titleView": "Data vozidla",
+        "files": {
+            "button": "Soubory",
+            "openButton": "Otevřít soubory vozidla",
+            "dialogTitle": "Soubory vozidla",
+            "openInTab": "Otevřít"
+        }
     },
     "CarScanView": {
         "title": "Fahrzeug vom Scan anlegen",
