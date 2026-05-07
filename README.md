@@ -262,7 +262,7 @@ cd opensource-erp
 **Development:**
 
 ```bash
-./scripts/run-dev.sh
+./scripts/dev.sh
 ```
 
 Läuft auf **http://localhost:5173**
@@ -277,7 +277,7 @@ sudo a2ensite apacheOpensourceErp
 sudo systemctl restart apache2
 
 # Build & Deploy
-./scripts/run-build.sh
+./scripts/build.sh
 ```
 
 Läuft auf **http://localhost**
