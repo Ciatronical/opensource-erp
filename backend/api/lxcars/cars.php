@@ -66,9 +66,16 @@ function saveCar($data) {
         $db->commit();
 
         $newCarId = intval($result['c_id']);
-        ensureVehicleFolders($newCarId);
 
-        // Kunden-Symlinks aktualisieren (fahrzeuge/Kennzeichen → fahrzeuge/id)
+        // Pfade & Symlinks fuer das neue Fahrzeug sicherstellen:
+        //   - fahrzeuge/{c_id}/ inkl. fahrzeugschein/ + Auto-Folder
+        //   - fahrzeuge/0_by-plate/{c_ln} → ../{c_id}/fahrzeugschein
+        //   - customers/{c_ow}/fahrzeuge/{c_ln} → ../../../fahrzeuge/{c_id}
+        $car['c_id'] = $newCarId;
+        ensureVehiclePaths($car);
+
+        // Kunden-Ordner + Name-Symlink sicherstellen (legt zusaetzlich
+        // customers/0_by-name/{Name}_{cv_id} an und resynct alle Fahrzeug-Symlinks).
         $ownerId = intval($car['c_ow']);
         $ownerRow = $db->getOne("SELECT name FROM customer WHERE id = :id", [':id' => $ownerId]);
         if ($ownerRow) {
