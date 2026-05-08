@@ -2289,6 +2289,30 @@ export default {
                 // Fahrzeug + KBA in einem Call updaten
                 await carsStore.updateCar(carData, kbaData)
 
+                // Detail-Daten (inkl. Bilder im tmp-Cache) abwarten, dann
+                // Fahrzeugschein-Bild und Crops auf das bestehende Fahrzeug übertragen.
+                if (pendingDetailPromise) {
+                    await pendingDetailPromise.catch(() => {})
+                    pendingDetailPromise = null
+                }
+                const imgObj = scanResult.value.images
+                const hasFieldImages = imgObj && typeof imgObj === 'object' && Object.keys(imgObj).length > 0
+                const scanIdForSave = scanResult.value.raw?.scan_id || null
+                if (hasFieldImages || scanResult.value.temp_image_id || scanIdForSave) {
+                    const cLn = carData.c_ln || ''
+                    try {
+                        await carsStore.saveScanImages(
+                            existingCarId.value, cLn, null,
+                            hasFieldImages ? imgObj : {},
+                            false,
+                            scanResult.value.temp_image_id || null,
+                            scanIdForSave
+                        )
+                    } catch (err) {
+                        console.error('Error saving scan images:', err)
+                    }
+                }
+
                 // Zur Fahrzeug-Ansicht navigieren
                 router.push({ name: 'car', params: { id: existingCarId.value } })
             } catch (err) {
