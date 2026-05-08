@@ -22,6 +22,7 @@ mkdir -p "$SETTINGS_DIR"
 mkdir -p /var/www/html/backend/log
 mkdir -p /var/www/html/backend/data
 mkdir -p /var/www/html/backend/backups
+mkdir -p /var/www/html/backend/tmp
 
 cat > "$SETTINGS_FILE" <<EOF
 ; config/settings.ini
@@ -68,6 +69,7 @@ echo "settings.ini generiert."
 chown -R www-data:www-data /var/www/html/backend/log
 chown -R www-data:www-data /var/www/html/backend/data
 chown -R www-data:www-data /var/www/html/backend/backups
+chown -R www-data:www-data /var/www/html/backend/tmp
 chown www-data:www-data "$SETTINGS_FILE"
 chmod 640 "$SETTINGS_FILE"
 
