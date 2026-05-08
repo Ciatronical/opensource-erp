@@ -36,6 +36,11 @@ services:
   web:
     environment:
       - DEMO_MODE=true
+    volumes:
+      # Demo-Fahrzeugschein-Scans (CSV + Original-Bild + .crops/) read-only einblenden.
+      # Liegt ausserhalb des Repos, damit die Bilder nicht ins Image wandern und
+      # jeden Rebuild ueberleben.
+      - ${DEMO_SCAN_DATA:?DEMO_SCAN_DATA fehlt in docker/.env}:/var/www/html/backend/api/demo/data:ro
 
 volumes:
   pg_data:
