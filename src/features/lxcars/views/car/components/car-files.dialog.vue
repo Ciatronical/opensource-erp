@@ -295,4 +295,9 @@ export default {
 .vuefinder-wrapper .vuefinder__menubar__item:last-child .vuefinder__menubar__dropdown__item:last-child {
     display: none !important;
 }
+/* VueFinder benutzt <Teleport to="body"> für seine Modale (Neuer Ordner, Umbenennen, Verschieben, ...).
+   Vuetifys v-dialog liegt auf z-index 2400 und würde die VF-Modale sonst verdecken. */
+body > .vuefinder__modal-layout {
+    z-index: 2500;
+}
 </style>
