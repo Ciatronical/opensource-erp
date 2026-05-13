@@ -489,7 +489,18 @@
                 <v-card-text class="pt-4">
                     <v-row dense>
                         <v-col cols="12">
+                            <v-select
+                                v-if="waPhoneOptions.length > 1"
+                                v-model="waDialogPhone"
+                                :items="waPhoneOptions"
+                                :label="t('FakturaView.dialogs.sendWhatsApp.phone')"
+                                variant="outlined"
+                                density="compact"
+                                prepend-inner-icon="mdi-phone"
+                                :rules="[v => !!v || t('FakturaView.dialogs.sendWhatsApp.phoneRequired')]"
+                            />
                             <v-text-field
+                                v-else
                                 v-model="waDialogPhone"
                                 :label="t('FakturaView.dialogs.sendWhatsApp.phone')"
                                 variant="outlined"
@@ -2195,6 +2206,26 @@ export default defineComponent({
         const waTemplateParams = ref([])
         const waTemplatesLoading = ref(false)
 
+        const waPhoneOptions = computed(() => {
+            const isMobile = (num) => {
+                const n = (num || '').replace(/[\s\-\(\)\.]/g, '')
+                return /^(\+4915|\+4916|\+4917|\+436|\+417|015|016|017|06[^4]|07[^2])/.test(n)
+            }
+            const all = []
+            if (contactPhone1.value) {
+                all.push({ title: contactPhone1.value, value: contactPhone1.value, mobile: isMobile(contactPhone1.value) })
+            }
+            for (const entry of phoneNumbers.value) {
+                const num = entry.number || ''
+                if (num && !all.find(a => a.value === num)) {
+                    const label = entry.label ? `${num} (${entry.label})` : num
+                    all.push({ title: label, value: num, mobile: isMobile(num) })
+                }
+            }
+            all.sort((a, b) => (b.mobile ? 1 : 0) - (a.mobile ? 1 : 0))
+            return all
+        })
+
         /**
          * Berechnet die gerenderte Template-Vorschau
          */
@@ -2297,8 +2328,9 @@ export default defineComponent({
             const docTypeLabel = t(`FakturaView.dokumentTypes.${fakturaType.value}`)
             const docNumber = common.invnumber || common.ordnumber || common.quonumber || common.donumber || ''
 
-            // Telefonnummer: Haupttelefon des Kunden
-            waDialogPhone.value = contactPhone1.value || ''
+            // Telefonnummer: Handynummer bevorzugen (kein WhatsApp auf Festnetz)
+            const firstMobile = waPhoneOptions.value.find(p => p.mobile)
+            waDialogPhone.value = firstMobile?.value || waPhoneOptions.value[0]?.value || contactPhone1.value || ''
 
             // Nachricht
             waDialogMessage.value = t('FakturaView.dialogs.sendWhatsApp.defaultMessage', {
@@ -2696,6 +2728,7 @@ export default defineComponent({
             waDialogVisible,
             waDialogPhone,
             waDialogAttachmentName,
+            waPhoneOptions,
             waSelectedTemplate,
             waTemplateParams,
             waRenderedPreview,
