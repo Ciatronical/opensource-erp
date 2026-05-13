@@ -66,9 +66,9 @@
     </v-row>
 
     <v-row>
-      <v-col cols="12" md="9">
+      <v-col cols="12">
         <v-card variant="outlined" rounded="lg">
-          <v-card-text class="pa-0">
+          <v-card-text class="pa-0" style="overflow-x: auto;">
             <v-data-table-server
               :headers="headers"
               :items="callHistory"

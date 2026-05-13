@@ -17,6 +17,13 @@ CREATE TABLE IF NOT EXISTS anpr_cameras_lxcars (
     action_type     TEXT DEFAULT 'infobar',
     actuator_id     INTEGER,
     gate_height_mode TEXT DEFAULT 'full',
+    ignore_right_pct SMALLINT DEFAULT 0,
+    ignore_left_pct  SMALLINT DEFAULT 0,
+    direction_required BOOLEAN DEFAULT TRUE,
+    grid_size        SMALLINT DEFAULT 10,
+    save_snapshots   BOOLEAN DEFAULT TRUE,
+    excluded_cells   TEXT DEFAULT '[]',
+    min_plate_height_px SMALLINT DEFAULT 0,
     note            TEXT,
     itime           TIMESTAMP DEFAULT now(),
     mtime           TIMESTAMP

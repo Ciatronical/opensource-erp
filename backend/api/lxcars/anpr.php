@@ -59,6 +59,13 @@ function saveAnprCamera($data) {
         ':calibration_gate_height_cm' => !empty($cam['calibration_gate_height_cm']) ? intval($cam['calibration_gate_height_cm']) : 300,
         ':calibration_gate_top_y'     => !empty($cam['calibration_gate_top_y']) ? intval($cam['calibration_gate_top_y']) : null,
         ':calibration_gate_bottom_y'  => !empty($cam['calibration_gate_bottom_y']) ? intval($cam['calibration_gate_bottom_y']) : null,
+        ':ignore_right_pct'           => intval($cam['ignore_right_pct'] ?? 0),
+        ':ignore_left_pct'            => intval($cam['ignore_left_pct'] ?? 0),
+        ':direction_required'         => isset($cam['direction_required']) ? ($cam['direction_required'] ? 't' : 'f') : 't',
+        ':grid_size'                  => intval($cam['grid_size'] ?? 10) ?: 10,
+        ':save_snapshots'             => isset($cam['save_snapshots']) ? ($cam['save_snapshots'] ? 't' : 'f') : 't',
+        ':excluded_cells'             => json_encode($cam['excluded_cells'] ?? []),
+        ':min_plate_height_px'        => max(0, intval($cam['min_plate_height_px'] ?? 0)),
     ];
 
     if ($id > 0) {
@@ -74,6 +81,13 @@ function saveAnprCamera($data) {
                 calibration_gate_height_cm = :calibration_gate_height_cm,
                 calibration_gate_top_y = :calibration_gate_top_y,
                 calibration_gate_bottom_y = :calibration_gate_bottom_y,
+                ignore_right_pct = :ignore_right_pct,
+                ignore_left_pct = :ignore_left_pct,
+                direction_required = :direction_required,
+                grid_size = :grid_size,
+                save_snapshots = :save_snapshots,
+                excluded_cells = :excluded_cells,
+                min_plate_height_px = :min_plate_height_px,
                 mtime = now()
              WHERE id = :id",
             $params
@@ -84,12 +98,16 @@ function saveAnprCamera($data) {
                 (name, rtsp_url, enabled, direction_mode, position,
                  frame_interval, min_confidence, min_detections, cooldown_minutes,
                  action_type, actuator_id, gate_height_mode, note,
-                 calibration_gate_height_cm, calibration_gate_top_y, calibration_gate_bottom_y)
+                 calibration_gate_height_cm, calibration_gate_top_y, calibration_gate_bottom_y,
+                 ignore_right_pct, ignore_left_pct, direction_required, grid_size,
+                 save_snapshots, excluded_cells, min_plate_height_px)
              VALUES
                 (:name, :rtsp_url, :enabled, :direction_mode, :position,
                  :frame_interval, :min_confidence, :min_detections, :cooldown_minutes,
                  :action_type, :actuator_id, :gate_height_mode, :note,
-                 :calibration_gate_height_cm, :calibration_gate_top_y, :calibration_gate_bottom_y)",
+                 :calibration_gate_height_cm, :calibration_gate_top_y, :calibration_gate_bottom_y,
+                 :ignore_right_pct, :ignore_left_pct, :direction_required, :grid_size,
+                 :save_snapshots, :excluded_cells, :min_plate_height_px)",
             $params
         );
         $id = $db->getOne("SELECT currval(pg_get_serial_sequence('anpr_cameras_lxcars', 'id'))")['currval'];
@@ -395,7 +413,8 @@ function reportAnprDetection($data) {
 function getPendingAnprDetections() {
     $db = DbhCompany::begin();
 
-    $ttl = 8; // Default: 8 Stunden
+    $ttl_row = $db->getOne("SELECT value FROM defaults_oserp WHERE key = 'anpr_detection_ttl_hours'");
+    $ttl = intval($ttl_row['value'] ?? 8) ?: 8;
     $rows = $db->getAll(
         "SELECT d.id, d.c_ln, d.c_id, d.customer_id, d.confidence,
                 d.detected_at, d.action_taken, d.camera_id,
@@ -479,7 +498,37 @@ function getAnprDetectionHistory($data) {
         $params
     );
 
+    if ($rows) {
+        $dbnameRow = $db->getOne("SELECT current_database() AS dbname");
+        $snapshotBase = __DIR__ . '/../../../backend/data/' . $dbnameRow['dbname'] . '/anpr-snapshots/';
+        foreach ($rows as &$row) {
+            $id = $row['id'];
+            // Nummerierte Dateien zählen ({id}_1.jpg, {id}_2.jpg, ...)
+            $count = 0;
+            for ($n = 1; $n <= 10; $n++) {
+                if (file_exists($snapshotBase . $id . '_' . $n . '.jpg')) $count++;
+                else break;
+            }
+            // Fallback: altes Format ohne Nummer
+            if ($count === 0 && file_exists($snapshotBase . $id . '.jpg')) $count = 1;
+            $row['has_snapshot'] = $count > 0;
+            $row['snapshot_count'] = $count;
+        }
+        unset($row);
+    }
+
     resultInfo(true, '', ['detections' => $rows ?: []]);
+}
+
+/**
+ * Gesamte ANPR-Erkennungs-Historie löschen
+ *
+ * @testdata {}
+ */
+function clearAnprDetectionHistory() {
+    $db = DbhCompany::begin();
+    $db->execute("DELETE FROM anpr_detections_lxcars");
+    resultInfo(true);
 }
 
 /**

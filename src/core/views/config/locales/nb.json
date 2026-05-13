@@ -768,7 +768,9 @@
         "calendarDayEnd": "Dagslutt",
         "calendarDayEnd_help": "Seneste tid vist i kalenderens dagvisning. Hendelser etter dette tidspunktet er ikke synlige. Format: HH:MM (f.eks. 17:00). Tom = 19:00.",
         "wallDisplaySize": "Skjermstørrelse",
-        "wallDisplaySize_help": "Styrer størrelsen på UI-elementer og skrifttyper på veggskjermen.\n\n• Auto: liggende skjermer (TV) får kompakt visning, stående skjermer (veggbrett) den store.\n• Kompakt: liten verktøylinje og skrifttyper slik at kalenderen fyller så mye plass som mulig — best for TV-er.\n• Normal: FullCalendars standardstørrelser.\n• Stor: bevisst store skrifttyper og knapper, lesbare fra noen meters avstand — ideelt for stående veggbrett."
+        "wallDisplaySize_help": "Styrer størrelsen på UI-elementer og skrifttyper på veggskjermen.\n\n• Auto: liggende skjermer (TV) får kompakt visning, stående skjermer (veggbrett) den store.\n• Kompakt: liten verktøylinje og skrifttyper slik at kalenderen fyller så mye plass som mulig — best for TV-er.\n• Normal: FullCalendars standardstørrelser.\n• Stor: bevisst store skrifttyper og knapper, lesbare fra noen meters avstand — ideelt for stående veggbrett.",
+        "wallDisplayControllers": "Wall display controllers (logins, comma-separated)",
+        "wallDisplayControllers_help": "Logins of users who can control the wall display from the regular calendar (comma-separated, e.g. ronny,admin)."
     },
     "add": "Legg til",
     "add_fields": {

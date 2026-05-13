@@ -768,7 +768,9 @@
         "calendarDayEnd": "Dienas beigas",
         "calendarDayEnd_help": "Vēlākais laiks, kas redzams kalendāra dienas režģī. Notikumi pēc šā laika nav redzami. Formāts: HH:MM (piem. 17:00). Tukšs = 19:00.",
         "wallDisplaySize": "Displeja izmērs",
-        "wallDisplaySize_help": "Kontrolē UI elementu un fontu izmērus sienas displejā.\n\n• Automātiski: ainavorientācijas ekrāni (TV) saņem kompakto renderēšanu, portreta ekrāni (sienas planšete) — lielo.\n• Kompakts: maza rīkjosla un fonti, lai kalendārs aizņemtu pēc iespējas vairāk vietas — vislabāk TV.\n• Normāls: FullCalendar noklusējuma izmēri.\n• Liels: apzināti lieli fonti un pogas, lasāmi no dažiem metriem — ideāli portreta sienas planšetēm."
+        "wallDisplaySize_help": "Kontrolē UI elementu un fontu izmērus sienas displejā.\n\n• Automātiski: ainavorientācijas ekrāni (TV) saņem kompakto renderēšanu, portreta ekrāni (sienas planšete) — lielo.\n• Kompakts: maza rīkjosla un fonti, lai kalendārs aizņemtu pēc iespējas vairāk vietas — vislabāk TV.\n• Normāls: FullCalendar noklusējuma izmēri.\n• Liels: apzināti lieli fonti un pogas, lasāmi no dažiem metriem — ideāli portreta sienas planšetēm.",
+        "wallDisplayControllers": "Wall display controllers (logins, comma-separated)",
+        "wallDisplayControllers_help": "Logins of users who can control the wall display from the regular calendar (comma-separated, e.g. ronny,admin)."
     },
     "add": "Pievienot",
     "add_fields": {

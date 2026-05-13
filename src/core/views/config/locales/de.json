@@ -807,7 +807,9 @@
         "dhlShipperCity": "Ort",
         "dhlShipperCity_help": "Ort des Absenders",
         "dhlShipperCountry": "Land (ISO-3)",
-        "dhlShipperCountry_help": "Ländercode im ISO-3166-1 Alpha-3 Format (z.B. DEU, AUT, CHE)"
+        "dhlShipperCountry_help": "Ländercode im ISO-3166-1 Alpha-3 Format (z.B. DEU, AUT, CHE)",
+        "wallDisplayControllers": "Wandanzeige-Steuerung (Logins, kommagetrennt)",
+        "wallDisplayControllers_help": "Logins der Benutzer die im normalen Kalender die Wandanzeige steuern können (kommagetrennt, z.B. ronny,admin). Wechselt der Benutzer die Ansicht, folgt die Wandanzeige automatisch."
     },
     "add": "Hinzufügen",
     "add_fields": {
@@ -848,6 +850,7 @@
         "create_title": "Neue Buchungsgruppe"
     },
     "delete": "Löschen",
+    "close": "Schließen",
     "taxzone": {
         "description": "Beschreibung",
         "description_required": "Beschreibung ist erforderlich",
@@ -1051,6 +1054,38 @@
         "hwCoralNotConnected": "Nicht angeschlossen",
         "hwRecommendOpenvino": "Empfehlung: Dein Intel-Prozessor hat eine eingebaute GPU. Installiere OpenVINO um die Kennzeichenerkennung ~3x zu beschleunigen — kostenlos, ein Klick.",
         "hwRecommendCoralDriver": "Google Coral USB ist eingesteckt, aber der Treiber fehlt. Klicke auf 'Installieren' um ihn zu aktivieren.",
-        "hwRecommendOk": "OpenVINO ist aktiv — PaddleOCR nutzt die Intel iGPU für beschleunigte Kennzeichenerkennung."
+        "hwRecommendOk": "OpenVINO ist aktiv — PaddleOCR nutzt die Intel iGPU für beschleunigte Kennzeichenerkennung.",
+        "streamNotReachable": "Kamera nicht erreichbar. Prüfe ob ffmpeg installiert ist und die RTSP-URL korrekt ist.",
+        "snapshotRefreshHint": "Aktualisiert alle 3 Sekunden",
+        "snapshot": "Bild",
+        "frames": "Bilder",
+        "openFull": "Vollbild",
+        "ignoreMargin": "Bildrand ausblenden",
+        "ignoreMarginHelp": "Prozent des Bildrandes links/rechts der OCR-Erkennung entziehen — für permanent sichtbare Schilder oder Objekte",
+        "ignoreLeft": "Links",
+        "ignoreRight": "Rechts",
+        "directionRequired": "Nur Einfahrten",
+        "gridSize": "Rastergröße",
+        "saveSnapshots": "Debug (Bilder speichern)",
+        "minPlateHeightPx": "Mindestgröße Kennzeichen",
+        "minPlateHeightPx_help": "Kennzeichen kleiner als dieser Wert werden ignoriert (zu weit weg). 0 = deaktiviert. Typisch: 15–30px.",
+        "gridHint": "Klicken = Bereich ausblenden",
+        "gridMarginHint": "Randausblendung (% Einstellung)",
+        "clickToHide": "Klicken zum Ausblenden",
+        "clickToShow": "Klicken zum Einblenden",
+        "cellsHidden": "Bereiche ausgeblendet",
+        "resetCells": "Alle einblenden",
+        "saveAfterGrid": "Kamera speichern, um Änderungen zu übernehmen",
+        "clearHistory": "Alles löschen",
+        "clearConfirm": "Wirklich alle Erkennungen löschen?",
+        "clearYes": "Ja, löschen",
+        "clearNo": "Abbrechen",
+        "clearSuccess": "Historie wurde geleert",
+        "uptime": "Läuft seit",
+        "phaseStop": "Service stoppen",
+        "phaseStart": "Service starten",
+        "phaseWait": "Bereit",
+        "blacklist": "Blacklist",
+        "blacklist_help": "Kommagetrennte Liste von Kennzeichen die ignoriert werden (z.B. RGELH0, ABC123)"
     }
 }

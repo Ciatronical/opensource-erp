@@ -768,7 +768,9 @@
         "calendarDayEnd": "Dag slut",
         "calendarDayEnd_help": "Senaste tid i kalenderdag-rutnätet. Format: HH:MM. Tom = 19:00.",
         "wallDisplaySize": "Visningsstorlek",
-        "wallDisplaySize_help": "Styr UI-storleken på väggdisplayen.\n\n• Auto: liggande=kompakt, stående=stor.\n• Kompakt: litet verktygsfält för TV-apparater.\n• Normal: standardstorlekar.\n• Stor: stora teckensnitt för väggplattor."
+        "wallDisplaySize_help": "Styr UI-storleken på väggdisplayen.\n\n• Auto: liggande=kompakt, stående=stor.\n• Kompakt: litet verktygsfält för TV-apparater.\n• Normal: standardstorlekar.\n• Stor: stora teckensnitt för väggplattor.",
+        "wallDisplayControllers": "Wall display controllers (logins, comma-separated)",
+        "wallDisplayControllers_help": "Logins of users who can control the wall display from the regular calendar (comma-separated, e.g. ronny,admin)."
     },
     "add": "Lagg till",
     "add_fields": {

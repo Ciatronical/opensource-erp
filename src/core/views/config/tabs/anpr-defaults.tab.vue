@@ -5,22 +5,59 @@
         <!-- Service-Status -->
         <v-row class="mb-4">
             <v-col cols="12">
-                <v-card variant="outlined" class="pa-3">
-                    <div class="d-flex align-center ga-3">
-                        <v-icon :color="serviceStatusColor" size="20">{{ serviceStatusIcon }}</v-icon>
-                        <span class="font-weight-medium">ANPR-Service: {{ serviceStatusText }}</span>
-                        <span v-if="serviceDetails?.started_at" class="text-caption text-grey">
-                            (seit {{ formatServiceTime(serviceDetails.started_at) }})
-                        </span>
-                        <v-spacer />
-                        <v-btn color="primary" variant="tonal" size="small"
-                            @click="restartService" :loading="restarting"
-                            :prepend-icon="serviceStatus === 'active' ? 'mdi-restart' : 'mdi-play'">
-                            {{ serviceStatus === 'active' ? t('anpr.restart') : t('anpr.start') }}
-                        </v-btn>
-                        <v-btn variant="text" size="small" icon="mdi-refresh"
-                            @click="checkServiceStatus" :loading="statusLoading" />
-                    </div>
+                <v-card variant="outlined">
+                    <v-card-text class="pa-4">
+                        <div class="d-flex align-center ga-4 flex-wrap">
+
+                            <!-- Pulsierender Status-Punkt -->
+                            <div class="anpr-status-dot-wrap">
+                                <div class="anpr-status-dot" :class="serviceStatus" />
+                            </div>
+
+                            <!-- Label + Status-Text -->
+                            <div>
+                                <div class="text-subtitle-2 font-weight-bold">ANPR-Service</div>
+                                <div class="text-caption" :class="`text-${serviceStatusColor}`">
+                                    {{ restarting ? restartPhaseLabel : serviceStatusText }}
+                                </div>
+                            </div>
+
+                            <!-- Uptime + PID -->
+                            <div v-if="serviceStatus === 'active' && serviceDetails && !restarting"
+                                class="text-caption text-medium-emphasis d-flex flex-column ga-0">
+                                <span v-if="serviceDetails.pid">PID {{ serviceDetails.pid }}</span>
+                                <span v-if="serviceUptime">{{ t('anpr.uptime') }}: {{ serviceUptime }}</span>
+                            </div>
+
+                            <v-spacer />
+
+                            <v-btn variant="text" size="small" icon="mdi-refresh"
+                                :loading="statusLoading && !restarting"
+                                @click="checkServiceStatus" />
+
+                            <v-btn
+                                :color="serviceStatus === 'active' ? 'primary' : 'success'"
+                                :variant="serviceStatus === 'active' ? 'tonal' : 'flat'"
+                                size="small" :loading="restarting"
+                                :prepend-icon="serviceStatus === 'active' ? 'mdi-restart' : 'mdi-play'"
+                                @click="restartService">
+                                {{ serviceStatus === 'active' ? t('anpr.restart') : t('anpr.start') }}
+                            </v-btn>
+                        </div>
+
+                        <!-- Neustart-Phasen -->
+                        <div v-if="restarting" class="mt-3">
+                            <v-progress-linear indeterminate color="primary" rounded height="3" class="mb-3" />
+                            <div class="d-flex ga-2 flex-wrap">
+                                <v-chip v-for="(phase, i) in restartPhases" :key="i" size="x-small"
+                                    :color="restartPhaseIndex > i ? 'success' : restartPhaseIndex === i ? 'primary' : 'default'"
+                                    :variant="restartPhaseIndex >= i ? 'flat' : 'tonal'">
+                                    <v-icon v-if="restartPhaseIndex > i" start size="10">mdi-check</v-icon>
+                                    {{ phase }}
+                                </v-chip>
+                            </div>
+                        </div>
+                    </v-card-text>
                 </v-card>
             </v-col>
         </v-row>
@@ -188,6 +225,20 @@
                     </v-text-field>
                 </v-col>
             </v-row>
+
+            <v-row v-else-if="field.type === 'textarea'" class="my-1" :data-field-name="field.name">
+                <v-col cols="12" md="6">
+                    <v-textarea
+                        v-model="crmDefaults[field.name]"
+                        :label="t(field.label)"
+                        :rows="field.rows || 3"
+                        :style="field.fieldstyle"
+                        hide-details="auto" density="compact" variant="outlined"
+                        :hint="field.tooltip ? t(field.tooltip) : undefined"
+                        persistent-hint
+                    />
+                </v-col>
+            </v-row>
         </template>
 
         <!-- ================================================================ -->
@@ -323,6 +374,20 @@
                                     </v-text-field>
                                 </v-col>
                                 <v-col cols="6" md="3">
+                                    <v-text-field v-model.number="cam.min_plate_height_px" :label="t('anpr.minPlateHeightPx')"
+                                        type="number" min="0" max="200" suffix="px"
+                                        variant="outlined" density="compact" hide-details="auto">
+                                        <template #append-inner>
+                                            <v-tooltip location="top">
+                                                <template #activator="{ props }">
+                                                    <v-icon v-bind="props" size="small" color="grey">mdi-information-outline</v-icon>
+                                                </template>
+                                                {{ t('anpr.minPlateHeightPx_help') }}
+                                            </v-tooltip>
+                                        </template>
+                                    </v-text-field>
+                                </v-col>
+                                <v-col cols="6" md="3">
                                     <v-text-field v-model.number="cam.cooldown_minutes" :label="t('anpr.cooldownMinutes')"
                                         type="number" min="1" max="60"
                                         variant="outlined" density="compact" hide-details="auto" suffix="min">
@@ -407,14 +472,43 @@
                                     </v-col>
                                 </template>
 
+                                <!-- Randausblendung -->
+                                <v-col cols="12" class="pb-0 pt-4">
+                                    <div class="text-subtitle-2 text-grey-darken-1">
+                                        <v-icon start size="small">mdi-crop</v-icon>
+                                        {{ t('anpr.ignoreMargin') }}
+                                    </div>
+                                    <div class="text-caption text-grey">{{ t('anpr.ignoreMarginHelp') }}</div>
+                                </v-col>
+                                <v-col cols="4" md="2">
+                                    <v-text-field v-model.number="cam.ignore_left_pct"
+                                        :label="t('anpr.ignoreLeft')" type="number" min="0" max="50"
+                                        variant="outlined" density="compact" hide-details="auto" suffix="%" />
+                                </v-col>
+                                <v-col cols="4" md="2">
+                                    <v-text-field v-model.number="cam.ignore_right_pct"
+                                        :label="t('anpr.ignoreRight')" type="number" min="0" max="50"
+                                        variant="outlined" density="compact" hide-details="auto" suffix="%" />
+                                </v-col>
+                                <v-col cols="4" md="2">
+                                    <v-select v-model.number="cam.grid_size"
+                                        :label="t('anpr.gridSize')"
+                                        :items="[{title:'5%',value:5},{title:'10%',value:10},{title:'20%',value:20},{title:'25%',value:25}]"
+                                        variant="outlined" density="compact" hide-details="auto" />
+                                </v-col>
+
                                 <v-col cols="12" md="6">
                                     <v-textarea v-model="cam.note" :label="t('anpr.note')"
                                         rows="2" variant="outlined" density="compact" hide-details="auto" />
                                 </v-col>
 
-                                <v-col cols="12" md="6" class="d-flex align-center">
+                                <v-col cols="12" class="d-flex align-center flex-wrap ga-4">
                                     <v-checkbox v-model="cam.enabled" :label="t('anpr.cameraEnabled')"
-                                        hide-details density="compact" class="me-4" />
+                                        hide-details density="compact" />
+                                    <v-checkbox v-model="cam.direction_required" :label="t('anpr.directionRequired')"
+                                        hide-details density="compact" />
+                                    <v-checkbox v-model="cam.save_snapshots" :label="t('anpr.saveSnapshots')"
+                                        hide-details density="compact" color="orange" />
                                 </v-col>
                             </v-row>
 
@@ -638,10 +732,28 @@
 
         <v-row>
             <v-col cols="12">
-                <v-btn color="primary" variant="tonal" size="small" @click="loadHistory" :loading="historyLoading" class="mb-3">
-                    <v-icon start>mdi-refresh</v-icon>
-                    {{ t('anpr.loadHistory') }}
-                </v-btn>
+                <div class="d-flex align-center ga-2 mb-3">
+                    <v-btn color="primary" variant="tonal" size="small" @click="loadHistory" :loading="historyLoading">
+                        <v-icon start>mdi-refresh</v-icon>
+                        {{ t('anpr.loadHistory') }}
+                    </v-btn>
+                    <v-btn v-if="!clearConfirm" color="error" variant="text" size="small"
+                        :disabled="historyItems.length === 0"
+                        @click="clearConfirm = true">
+                        <v-icon start>mdi-delete-sweep</v-icon>
+                        {{ t('anpr.clearHistory') }}
+                    </v-btn>
+                    <template v-if="clearConfirm">
+                        <span class="text-caption text-error">{{ t('anpr.clearConfirm') }}</span>
+                        <v-btn color="error" variant="flat" size="small" :loading="historyClearing"
+                            @click="clearHistory">
+                            {{ t('anpr.clearYes') }}
+                        </v-btn>
+                        <v-btn variant="text" size="small" @click="clearConfirm = false">
+                            {{ t('anpr.clearNo') }}
+                        </v-btn>
+                    </template>
+                </div>
 
                 <v-table v-if="historyItems.length > 0" density="compact">
                     <thead>
@@ -653,6 +765,7 @@
                             <th>{{ t('anpr.confidence') }}</th>
                             <th>{{ t('anpr.direction') }}</th>
                             <th>{{ t('anpr.action') }}</th>
+                            <th>{{ t('anpr.snapshot') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -671,6 +784,13 @@
                             <td>
                                 <v-chip size="x-small" variant="tonal">{{ d.action_taken || '-' }}</v-chip>
                             </td>
+                            <td>
+                                <v-btn v-if="d.has_snapshot" icon size="x-small" variant="text" color="primary"
+                                    @click="openSnapshot(d.id, d.c_ln, d.snapshot_count)">
+                                    <v-icon>mdi-camera</v-icon>
+                                </v-btn>
+                                <span v-else class="text-grey text-caption">-</span>
+                            </td>
                         </tr>
                     </tbody>
                 </v-table>
@@ -682,10 +802,139 @@
         </v-row>
 
     </v-container>
+
+    <!-- Snapshot-Dialog -->
+    <v-dialog v-model="snapshotDialog" max-width="960">
+        <v-card>
+            <v-card-title class="d-flex align-center">
+                <v-icon start>mdi-camera</v-icon>
+                {{ snapshotPlate }}
+                <v-chip v-if="snapshotCount > 1" size="x-small" variant="tonal" class="ml-2">
+                    {{ snapshotCount }} {{ t('anpr.frames') }}
+                </v-chip>
+            </v-card-title>
+            <v-card-text class="pa-0">
+                <div v-for="n in snapshotCount" :key="n" style="position:relative;line-height:0">
+                    <img :src="`/api/lxcars/anpr-snapshot.php?id=${snapshotId}&n=${n}`"
+                        style="width:100%;display:block;background:#111"
+                        :alt="`${snapshotPlate} ${n}/${snapshotCount}`" />
+                    <span v-if="snapshotCount > 1"
+                        style="position:absolute;bottom:6px;right:8px;background:rgba(0,0,0,0.55);color:#fff;font-size:11px;padding:2px 6px;border-radius:3px">
+                        {{ n }} / {{ snapshotCount }}
+                    </span>
+                </div>
+            </v-card-text>
+            <v-card-actions>
+                <v-btn :href="`/api/lxcars/anpr-snapshot.php?id=${snapshotId}&n=1`"
+                    target="_blank" variant="text" size="small">
+                    <v-icon start>mdi-open-in-new</v-icon>{{ t('anpr.openFull') }}
+                </v-btn>
+                <v-spacer />
+                <v-btn @click="snapshotDialog = false">{{ t('close') }}</v-btn>
+            </v-card-actions>
+        </v-card>
+    </v-dialog>
+
+    <!-- Live-Stream-Dialog -->
+    <v-dialog v-model="streamDialog" max-width="960" @update:model-value="onStreamDialogChange">
+        <v-card>
+            <v-card-title class="d-flex align-center pa-3">
+                <v-icon start>mdi-eye</v-icon>
+                {{ streamCam?.name }}
+                <v-chip size="x-small" color="green" variant="flat" class="ml-2">
+                    <v-icon start size="10">mdi-circle</v-icon>Live
+                </v-chip>
+                <v-spacer />
+                <!-- Ausgeblendete Zellen Anzeige -->
+                <v-chip v-if="excludedCellCount > 0" size="small" color="error" variant="tonal" class="mr-2">
+                    <v-icon start size="14">mdi-eye-off</v-icon>
+                    {{ excludedCellCount }} {{ t('anpr.cellsHidden') }}
+                </v-chip>
+            </v-card-title>
+
+            <!-- Legende -->
+            <div class="d-flex align-center ga-3 px-3 pb-2 flex-wrap">
+                <span class="text-caption text-medium-emphasis">
+                    <v-icon size="12" color="error">mdi-square</v-icon>
+                    {{ t('anpr.gridHint') }}
+                </span>
+                <span class="text-caption text-medium-emphasis">
+                    <v-icon size="12" color="orange">mdi-square</v-icon>
+                    {{ t('anpr.gridMarginHint') }}
+                </span>
+                <v-btn v-if="excludedCellCount > 0" size="x-small" variant="text" color="error"
+                    prepend-icon="mdi-restore" @click="resetExcludedCells">
+                    {{ t('anpr.resetCells') }}
+                </v-btn>
+            </div>
+            <v-divider />
+
+            <v-card-text class="pa-0">
+                <div style="position:relative;line-height:0">
+                    <img v-if="streamDialog" :src="streamUrl"
+                        style="width:100%;display:block;background:#111;min-height:300px"
+                        :alt="t('anpr.livePreview')"
+                        @error="streamError = true"
+                        @load="streamError = false" />
+
+                    <!-- Grid-Overlay -->
+                    <svg v-if="streamDialog && streamCam"
+                        style="position:absolute;top:0;left:0;width:100%;height:100%"
+                        xmlns="http://www.w3.org/2000/svg">
+
+                        <!-- Klickbare Rasterzellen -->
+                        <rect v-for="cell in gridCells" :key="cell.key"
+                            :x="cell.x + '%'" :y="cell.y + '%'"
+                            :width="(streamCam.grid_size || 10) + '%'"
+                            :height="(streamCam.grid_size || 10) + '%'"
+                            :fill="cell.excluded ? 'rgba(220,50,50,0.45)' : 'rgba(255,255,255,0.03)'"
+                            stroke="rgba(255,255,255,0.25)" stroke-width="0.5"
+                            style="cursor:pointer"
+                            @click="toggleCell(cell)">
+                            <title>{{ cell.excluded ? t('anpr.clickToShow') : t('anpr.clickToHide') }} ({{ cell.x }}%/{{ cell.y }}%)</title>
+                        </rect>
+
+                        <!-- Randausblendung (orange, nicht klickbar) -->
+                        <rect v-if="streamCam.ignore_left_pct" x="0" y="0"
+                            :width="streamCam.ignore_left_pct + '%'" height="100%"
+                            fill="rgba(255,165,0,0.2)" style="pointer-events:none" />
+                        <rect v-if="streamCam.ignore_right_pct"
+                            :x="(100 - streamCam.ignore_right_pct) + '%'" y="0"
+                            :width="streamCam.ignore_right_pct + '%'" height="100%"
+                            fill="rgba(255,165,0,0.2)" style="pointer-events:none" />
+
+                        <!-- Prozentzahlen -->
+                        <template v-for="x in gridLines" :key="'lx'+x">
+                            <text :x="x+'%'" y="13" fill="white" font-size="10" text-anchor="middle"
+                                style="pointer-events:none;paint-order:stroke;stroke:rgba(0,0,0,0.7);stroke-width:2px">{{ x }}%</text>
+                        </template>
+                        <template v-for="y in gridLines" :key="'ly'+y">
+                            <text x="3" :y="y+'%'" fill="white" font-size="10" dominant-baseline="middle"
+                                style="pointer-events:none;paint-order:stroke;stroke:rgba(0,0,0,0.7);stroke-width:2px">{{ y }}%</text>
+                        </template>
+                    </svg>
+                </div>
+                <v-alert v-if="streamError" type="warning" variant="tonal" density="compact" class="ma-3">
+                    {{ t('anpr.streamNotReachable') }}
+                </v-alert>
+            </v-card-text>
+
+            <v-divider />
+            <v-card-actions class="pa-3">
+                <span class="text-caption text-grey">{{ t('anpr.snapshotRefreshHint') }}</span>
+                <v-spacer />
+                <v-alert v-if="gridModified" type="warning" variant="tonal" density="compact"
+                    class="text-caption py-1 px-2 mr-2" style="max-width:260px">
+                    {{ t('anpr.saveAfterGrid') }}
+                </v-alert>
+                <v-btn @click="streamDialog = false">{{ t('close') }}</v-btn>
+            </v-card-actions>
+        </v-card>
+    </v-dialog>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, reactive } from 'vue'
+import { ref, computed, onMounted, onUnmounted, reactive } from 'vue'
 import { useI18n } from 'vue-i18n'
 import axios from 'axios'
 import * as toasts from '@/core/utils/toasts.js'
@@ -712,9 +961,14 @@ onMounted(async () => {
 
     checkServiceStatus()
     loadHardwareInfo()
-
     loadCameras()
     loadActuators()
+
+    statusAutoRefresh = setInterval(checkServiceStatus, 30000)
+})
+
+onUnmounted(() => {
+    clearInterval(statusAutoRefresh)
 })
 
 // --- Service-Status ---
@@ -722,23 +976,38 @@ const serviceStatus = ref('unknown')
 const serviceDetails = ref(null)
 const statusLoading = ref(false)
 const restarting = ref(false)
+const restartPhaseIndex = ref(0)
+let statusAutoRefresh = null
+
+const restartPhases = computed(() => [
+    t('anpr.phaseStop'),
+    t('anpr.phaseStart'),
+    t('anpr.phaseWait'),
+])
+const restartPhaseLabel = computed(() => restartPhases.value[restartPhaseIndex.value] ?? '')
 
 const serviceStatusColor = computed(() => {
     if (serviceStatus.value === 'active') return 'green'
     if (serviceStatus.value === 'inactive' || serviceStatus.value === 'failed') return 'red'
     return 'grey'
 })
-const serviceStatusIcon = computed(() => {
-    if (serviceStatus.value === 'active') return 'mdi-check-circle'
-    if (serviceStatus.value === 'failed') return 'mdi-alert-circle'
-    if (serviceStatus.value === 'inactive') return 'mdi-stop-circle'
-    return 'mdi-help-circle'
-})
 const serviceStatusText = computed(() => {
     if (serviceStatus.value === 'active') return t('anpr.statusActive')
     if (serviceStatus.value === 'inactive') return t('anpr.statusInactive')
     if (serviceStatus.value === 'failed') return t('anpr.statusFailed')
     return t('anpr.statusUnknown')
+})
+const serviceUptime = computed(() => {
+    const raw = serviceDetails.value?.started_at
+    if (!raw) return ''
+    const start = new Date(raw)
+    if (isNaN(start.getTime())) return ''
+    const diff = Date.now() - start.getTime()
+    const h = Math.floor(diff / 3600000)
+    const m = Math.floor((diff % 3600000) / 60000)
+    if (h >= 24) return `${Math.floor(h / 24)}d ${h % 24}h`
+    if (h > 0) return `${h}h ${m}m`
+    return `${m}m`
 })
 
 async function checkServiceStatus() {
@@ -755,25 +1024,33 @@ async function checkServiceStatus() {
 
 async function restartService() {
     restarting.value = true
-    console.log('[ANPR DEBUG] restartService() aufgerufen')
+    restartPhaseIndex.value = 0
+    serviceStatus.value = 'unknown'
+
+    const advance = (i) => { restartPhaseIndex.value = i }
+
     try {
+        advance(0)
+        await new Promise(r => setTimeout(r, 400))
+        advance(1)
         const res = await axios.post('/api/lxcars/', { action: 'restartAnprService' })
-        console.log('[ANPR DEBUG] Response:', JSON.stringify(res.data))
+        advance(2)
+        await new Promise(r => setTimeout(r, 600))
+
         if (res.data.success) {
             serviceStatus.value = res.data.payload?.status || 'unknown'
             serviceDetails.value = res.data.payload?.details || null
-            console.log('[ANPR DEBUG] Status:', serviceStatus.value, 'Details:', JSON.stringify(serviceDetails.value))
             toasts.success(t('anpr.restartSuccess'))
         } else {
-            console.warn('[ANPR DEBUG] Restart fehlgeschlagen:', res.data)
             toasts.error(t('anpr.restartFailed') + (res.data.payload?.output ? ': ' + res.data.payload.output : ''))
         }
     } catch (e) {
-        console.error('[ANPR DEBUG] Exception:', e)
         toasts.error(e.message)
     }
+
     restarting.value = false
-    setTimeout(checkServiceStatus, 2000)
+    restartPhaseIndex.value = 0
+    setTimeout(checkServiceStatus, 1500)
 }
 
 // --- Hardware-Info ---
@@ -853,6 +1130,13 @@ async function loadCameras() {
             cameras.value = (res.data.payload?.cameras || []).map(c => ({
                 ...c,
                 enabled: c.enabled === 't' || c.enabled === true,
+                direction_required: c.direction_required === 't' || c.direction_required === true,
+                ignore_right_pct: parseInt(c.ignore_right_pct) || 0,
+                ignore_left_pct: parseInt(c.ignore_left_pct) || 0,
+                grid_size: parseInt(c.grid_size) || 10,
+                save_snapshots: c.save_snapshots === 't' || c.save_snapshots === true,
+                excluded_cells: (() => { try { return JSON.parse(c.excluded_cells || '[]') } catch { return [] } })(),
+                min_plate_height_px: parseInt(c.min_plate_height_px) || 0,
                 _saving: false,
             }))
         }
@@ -863,8 +1147,10 @@ function addCamera() {
     cameras.value.push({
         id: 0, name: '', rtsp_url: '', enabled: true,
         direction_mode: 'size', position: 'front', frame_interval: 0.5,
-        min_confidence: 0.60, min_detections: 3, cooldown_minutes: 5,
+        min_confidence: 0.60, min_detections: 2, cooldown_minutes: 5,
         action_type: 'infobar', actuator_id: null, gate_height_mode: 'full',
+        ignore_right_pct: 0, ignore_left_pct: 0, direction_required: true,
+        grid_size: 10, save_snapshots: true, excluded_cells: [], min_plate_height_px: 0,
         note: '', _saving: false,
     })
     openCameraPanel.value = cameras.value.length - 1
@@ -1032,6 +1318,8 @@ async function runTest() {
 const historyItems = ref([])
 const historyLoading = ref(false)
 const historyLoaded = ref(false)
+const historyClearing = ref(false)
+const clearConfirm = ref(false)
 
 async function loadHistory() {
     historyLoading.value = true
@@ -1043,6 +1331,20 @@ async function loadHistory() {
     } catch { /* ignore */ }
     historyLoading.value = false
     historyLoaded.value = true
+}
+
+async function clearHistory() {
+    historyClearing.value = true
+    try {
+        await axios.post('/api/lxcars/', { action: 'clearAnprDetectionHistory' })
+        historyItems.value = []
+        historyLoaded.value = true
+        toasts.success(t('anpr.clearSuccess'))
+    } catch (e) {
+        toasts.error(e.message)
+    }
+    historyClearing.value = false
+    clearConfirm.value = false
 }
 
 function formatDate(dateStr) {
@@ -1059,11 +1361,119 @@ function formatServiceTime(timeStr) {
     return d.toLocaleString('de-DE', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })
 }
 
+// --- Snapshot-Viewer ---
+const snapshotDialog = ref(false)
+const snapshotPlate = ref('')
+const snapshotCount = ref(1)
+const snapshotId = ref(0)
+
+function openSnapshot(id, plate, count) {
+    snapshotId.value = id
+    snapshotPlate.value = plate
+    snapshotCount.value = parseInt(count) || 1
+    snapshotDialog.value = true
+}
+
 // --- Live-Stream-Vorschau ---
+const streamDialog = ref(false)
+const streamCam = ref(null)
+const streamUrl = ref('')
+const streamError = ref(false)
+let streamRefreshTimer = null
+
+const excludedCellCount = computed(() => streamCam.value?.excluded_cells?.length || 0)
+const gridModified = ref(false)
+
+function resetExcludedCells() {
+    if (streamCam.value) {
+        streamCam.value.excluded_cells = []
+        gridModified.value = true
+    }
+}
+
+const gridLines = computed(() => {
+    const size = streamCam.value?.grid_size || 10
+    const lines = []
+    for (let i = size; i < 100; i += size) lines.push(i)
+    return lines
+})
+
+const gridCells = computed(() => {
+    if (!streamCam.value) return []
+    const size = streamCam.value.grid_size || 10
+    const excluded = streamCam.value.excluded_cells || []
+    const cells = []
+    for (let row = 0; row * size < 100; row++) {
+        for (let col = 0; col * size < 100; col++) {
+            cells.push({
+                key: `${row}-${col}`,
+                x: col * size,
+                y: row * size,
+                row, col,
+                excluded: excluded.some(c => c[0] === row && c[1] === col),
+            })
+        }
+    }
+    return cells
+})
+
+function toggleCell(cell) {
+    if (!streamCam.value) return
+    if (!streamCam.value.excluded_cells) streamCam.value.excluded_cells = []
+    const idx = streamCam.value.excluded_cells.findIndex(c => c[0] === cell.row && c[1] === cell.col)
+    if (idx >= 0) streamCam.value.excluded_cells.splice(idx, 1)
+    else streamCam.value.excluded_cells.push([cell.row, cell.col])
+    gridModified.value = true
+}
+
+function buildSnapshotUrl(cam) {
+    return `/api/lxcars/anpr-stream.php?id=${cam.id}&t=${Date.now()}`
+}
+
 function openStreamPreview(cam) {
-    const host = props.crmDefaults.anpr_service_host || '127.0.0.1'
-    const port = parseInt(props.crmDefaults.anpr_service_port || 8765) + 1
-    window.open(`http://${host}:${port}/stream/${cam.id}`, '_blank',
-        'width=900,height=540,toolbar=no,menubar=no')
+    streamCam.value = cam
+    streamError.value = false
+    gridModified.value = false
+    streamUrl.value = buildSnapshotUrl(cam)
+    streamDialog.value = true
+    streamRefreshTimer = setInterval(() => {
+        streamUrl.value = buildSnapshotUrl(cam)
+    }, 3000)
+}
+
+function onStreamDialogChange(open) {
+    if (!open) {
+        clearInterval(streamRefreshTimer)
+        streamRefreshTimer = null
+    }
 }
 </script>
+
+<style scoped>
+.anpr-status-dot-wrap {
+    position: relative;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+.anpr-status-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #9e9e9e;
+    margin: 2px;
+    transition: background 0.4s;
+}
+.anpr-status-dot.active {
+    background: #4caf50;
+    animation: anpr-pulse 2.4s ease-in-out infinite;
+}
+.anpr-status-dot.inactive,
+.anpr-status-dot.failed {
+    background: #f44336;
+}
+@keyframes anpr-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.5); }
+    50%       { box-shadow: 0 0 0 7px rgba(76, 175, 80, 0); }
+}
+</style>

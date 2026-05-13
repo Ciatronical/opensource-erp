@@ -768,7 +768,9 @@
         "calendarDayEnd": "Dagslut",
         "calendarDayEnd_help": "Seneste tidspunkt i kalenderens daggitter. Format: HH:MM. Tom = 19:00.",
         "wallDisplaySize": "Visningsstørrelse",
-        "wallDisplaySize_help": "Styrer UI-størrelse på vægdisplay. Auto/Kompakt/Normal/Stor."
+        "wallDisplaySize_help": "Styrer UI-størrelse på vægdisplay. Auto/Kompakt/Normal/Stor.",
+        "wallDisplayControllers": "Wall display controllers (logins, comma-separated)",
+        "wallDisplayControllers_help": "Logins of users who can control the wall display from the regular calendar (comma-separated, e.g. ronny,admin)."
     },
     "add": "Tilfoej",
     "add_fields": {

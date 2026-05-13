@@ -443,12 +443,19 @@ async function searchEvents(query) {
 
 // ── Event Handlers ──
 
-function handleDatesSet({ start, end }) {
+function handleDatesSet({ start, end, view, viewStart }) {
     currentDateRange.value = { start, end }
     loadEvents()
     const startYear = parseInt(start.substring(0, 4))
     const endYear = parseInt(end.substring(0, 4))
     for (let y = startYear; y <= endYear; y++) loadHolidays(y)
+
+    // Wandanzeige steuern — viewStart = tatsächlicher Monatserster (nicht Raster-Padding)
+    axios.post('/api/calendar/', {
+        action: 'setWallDisplayView',
+        view:      view || 'timeGridCustomWeek',
+        startDate: viewStart || start
+    }).catch(() => {})
 }
 
 function openCreateDialog() {
@@ -456,8 +463,8 @@ function openCreateDialog() {
     eventDialogOpen.value = true
 }
 
-function openCreateDialogWithDate(dateStr) {
-    editingEvent.value = { dtstart: dateStr }
+function openCreateDialogWithDate({ dateStr, allDay }) {
+    editingEvent.value = { dtstart: dateStr, allDay: !!allDay }
     eventDialogOpen.value = true
 }
 

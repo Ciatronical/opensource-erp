@@ -602,6 +602,13 @@ CREATE TABLE IF NOT EXISTS anpr_cameras_lxcars (
     calibration_gate_height_cm INTEGER DEFAULT 300,
     calibration_gate_top_y     INTEGER,
     calibration_gate_bottom_y  INTEGER,
+    ignore_right_pct SMALLINT DEFAULT 0,
+    ignore_left_pct  SMALLINT DEFAULT 0,
+    direction_required BOOLEAN DEFAULT TRUE,
+    grid_size        SMALLINT DEFAULT 10,
+    save_snapshots   BOOLEAN DEFAULT TRUE,
+    excluded_cells   TEXT DEFAULT '[]',
+    min_plate_height_px SMALLINT DEFAULT 0,
     note            TEXT,
     itime           TIMESTAMP DEFAULT now(),
     mtime           TIMESTAMP

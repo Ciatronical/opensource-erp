@@ -24,10 +24,14 @@
         <!-- Kalender-Modus -->
         <div v-if="mode === 'calendar'" class="wall-display__calendar">
             <calendar-main
+                ref="calendarMainRef"
                 :events="events"
                 :initial-view="calendarInitialView"
                 :custom-buttons="calendarCustomButtons"
                 :header-toolbar="calendarHeaderToolbar"
+                :day-max-event-rows="false"
+                :hidden-days="[0]"
+                :week-duration="8"
                 @dates-set="onDatesSet"
                 @event-click="onEventClick"
             />
@@ -136,7 +140,7 @@
 </template>
 
 <script>
-import { defineComponent, ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
+import { defineComponent, ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
@@ -160,6 +164,8 @@ export default defineComponent({
         const currentDateRange = ref({ start: '', end: '' })
         const savedCalendarView = oserp.getConfigValue('wall_display_calendar_view', 'timeGridDay')
         const calendarInitialView = ref(savedCalendarView || 'timeGridDay')
+        const calendarMainRef = ref(null)
+        const wallCalendarView = ref(calendarInitialView.value)  // aktuell angezeigte Ansicht
 
         // Kalender: Event-Detail
         const eventDetailOpen = ref(false)
@@ -240,8 +246,125 @@ export default defineComponent({
 
         // ── Kalender ──
 
+        // Mehrtägige Ganztags-Events in Einzeltage aufteilen (für Flex-Layout in der Wandanzeige)
+        function expandMultiDayAllDay(rawEvents) {
+            const result = []
+            for (const event of rawEvents) {
+                if (event.extendedProps?.isWorkload || !event.allDay || !event.dtend || event.rrule) {
+                    result.push(event)
+                    continue
+                }
+                const start = event.dtstart.slice(0, 10)
+                const end   = event.dtend.slice(0, 10)
+                if (end <= start) {
+                    result.push(event)
+                    continue
+                }
+                // Expand: ein Event-Objekt pro Tag
+                const cur = new Date(start + 'T00:00:00')
+                const endDt = new Date(end   + 'T00:00:00')
+                let i = 0
+                while (cur < endDt) {
+                    const dateStr = cur.toISOString().slice(0, 10)
+                    result.push({ ...event, id: `${event.id}_${i}`, dtstart: dateStr, dtend: null })
+                    cur.setDate(cur.getDate() + 1)
+                    i++
+                }
+            }
+            return result
+        }
+
+        // Feiertage für die Wandanzeige laden (Monatsansicht)
+        const wallHolidays = ref([])
+        const loadedWallHolidayYears = new Set()
+        async function loadWallHolidays(start, end) {
+            const startYear = parseInt(start.substring(0, 4))
+            const endYear   = parseInt(end.substring(0, 4))
+            for (let y = startYear; y <= endYear; y++) {
+                if (loadedWallHolidayYears.has(y)) continue
+                loadedWallHolidayYears.add(y)
+                try {
+                    const res = await axios.post('/api/calendar/', { action: 'getPublicHolidays', year: y })
+                    if (res.data.success) {
+                        const fetched = (res.data.payload?.holidays || []).map(h => ({
+                            id: `wh_${h.date}`, title: h.name, dtstart: h.date,
+                            dtend: null, allDay: true, isHoliday: true
+                        }))
+                        wallHolidays.value = [...wallHolidays.value, ...fetched]
+                    }
+                } catch { loadedWallHolidayYears.delete(y) }
+            }
+        }
+
+        // LxCars-Auslastung als FullCalendar-Events aufbereiten
+        function buildWorkloadEvents(workload, capacityMinutes) {
+            if (!workload.length) return []
+            const maxMin = Math.max(...workload.map(d => d.total_minutes), 1)
+            return workload.map(day => {
+                const min  = day.total_minutes
+                const hrs  = (min / 60).toFixed(1)
+                const pct  = Math.round((min / maxMin) * 100)
+                const cap  = capacityMinutes > 0 ? Math.round((min / capacityMinutes) * 100) : null
+                // Farbe nach absoluter Stundenzahl
+                const color = min > 480 ? '#e53935'
+                            : min > 300 ? '#ff9800'
+                            : min > 120 ? '#66bb6a'
+                            :             '#90a4ae'
+                return {
+                    id:    `wl_${day.work_date}`,
+                    start: day.work_date,
+                    allDay: true,
+                    display: 'block',
+                    classNames: ['fc-workload-event'],
+                    backgroundColor: 'transparent',
+                    borderColor:     'transparent',
+                    textColor:       '#333',
+                    editable: false,
+                    extendedProps: {
+                        isWorkload:   true,
+                        minutes:      min,
+                        hours:        hrs,
+                        pct,
+                        capPct:       cap,
+                        orderCount:   day.order_count,
+                        color
+                    }
+                }
+            })
+        }
+
+        async function loadMonthWorkload() {
+            if (!oserp.isFeatureEnabled('lxcars')) return []
+            try {
+                const res = await axios.post('/api/calendar/', {
+                    action:    'getMonthWorkload',
+                    startDate: currentDateRange.value.start,
+                    endDate:   currentDateRange.value.end
+                })
+                if (res.data.success) {
+                    return buildWorkloadEvents(
+                        res.data.payload?.workload || [],
+                        res.data.payload?.capacity_minutes || 0
+                    )
+                }
+            } catch { /* LxCars nicht verfügbar */ }
+            return []
+        }
+
         async function loadEvents() {
             if (!currentDateRange.value.start) return
+
+            // Feiertage immer laden (alle Ansichten)
+            await loadWallHolidays(currentDateRange.value.start, currentDateRange.value.end)
+
+            // Monatsansicht: nur Feiertage + LxCars-Auslastung, keine persönlichen Termine
+            if (wallCalendarView.value === 'dayGridMonth') {
+                const workloadEvents = await loadMonthWorkload()
+                events.value = [...wallHolidays.value, ...workloadEvents]
+                return
+            }
+
+            // Alle anderen Ansichten: persönliche Termine + Feiertage
             try {
                 const response = await axios.post('/api/calendar/', {
                     action: 'getCalendarEvents',
@@ -249,7 +372,8 @@ export default defineComponent({
                     endDate: currentDateRange.value.end
                 })
                 if (response.data.success) {
-                    events.value = response.data.payload?.events || []
+                    const calEvents = expandMultiDayAllDay(response.data.payload?.events || [])
+                    events.value = [...wallHolidays.value, ...calEvents]
                 }
             } catch (e) {
                 console.error('Wall display: calendar load error', e)
@@ -258,6 +382,7 @@ export default defineComponent({
 
         function onDatesSet(range) {
             currentDateRange.value = range
+            if (range.view) wallCalendarView.value = range.view   // immer aktuell halten
             loadEvents()
             if (range.view && range.view !== calendarInitialView.value) {
                 calendarInitialView.value = range.view
@@ -332,6 +457,14 @@ export default defineComponent({
             }
             sseSource.addEventListener('build_changed', () => {
                 window.location.reload()
+            })
+            sseSource.addEventListener('wall_display_command', (e) => {
+                try {
+                    const { view, startDate } = JSON.parse(e.data)
+                    wallCalendarView.value = view
+                    nextTick(() => calendarMainRef.value?.setView(view, startDate))
+                    loadEvents()
+                } catch { /* ignorieren */ }
             })
             sseSource.onerror = () => {
                 sseConnected.value = false
@@ -408,7 +541,7 @@ export default defineComponent({
         })
 
         return {
-            t, mode, events, calendarInitialView,
+            t, mode, events, calendarInitialView, calendarMainRef,
             eventDetailOpen, selectedEvent,
             fakturaData, fakturaVehicle, fakturaDocNumber, fakturaDocLabel, fakturaPositions,
             currentTime, calendarCustomButtons, calendarHeaderToolbar, effectiveSize,
@@ -492,7 +625,7 @@ export default defineComponent({
     transform: none !important;
     cursor: default;
     pointer-events: none;
-    font-size: 1.3rem;
+    font-size: 1.8rem !important;
     font-weight: 600;
     font-variant-numeric: tabular-nums;
     padding: 0 0 0 16px !important;
@@ -501,19 +634,17 @@ export default defineComponent({
 
 /* Exit-Button rechts vom Heute-Button — kompakt, rot, nur Icon */
 .wall-display__calendar :deep(.fc-exit-button),
-.wall-display__calendar :deep(.fc-exit-button:hover) {
-    background: #ef5350 !important;
-    color: white !important;
+.wall-display__calendar :deep(.fc-exit-button:hover),
+.wall-display__calendar :deep(.fc-exit-button:focus),
+.wall-display__calendar :deep(.fc-exit-button:active) {
+    background: rgba(240,240,240,0.18) !important;
+    color: rgba(66,66,66,0.35) !important;
     margin-left: 8px !important;
     padding: 8px 14px !important;
     font-size: 1.1rem !important;
     line-height: 1 !important;
-    box-shadow: 0 2px 6px rgba(239, 83, 80, 0.3) !important;
-}
-
-.wall-display__calendar :deep(.fc-exit-button:hover) {
-    background: #e53935 !important;
-    transform: translateY(-1px) !important;
+    box-shadow: none !important;
+    transform: none !important;
 }
 
 /* Groessen-Modi sind im zweiten, globalen <style>-Block am Dateiende — siehe unten. */
@@ -593,17 +724,16 @@ export default defineComponent({
     line-height: 1.4;
 }
 
-/* Ab 3 Terminen: Flex-Layout → nebeneinander statt übereinander */
-.wall-display .fc-timegrid .fc-daygrid-day-events:has(.fc-daygrid-event-harness:nth-child(3)) {
+/* Alle Ganztagstermine nebeneinander mit gleicher Breite */
+.wall-display .fc-timegrid .fc-daygrid-day-events {
     display: flex !important;
     flex-direction: row !important;
     flex-wrap: nowrap !important;
     align-items: stretch !important;
     gap: 2px !important;
     padding: 1px !important;
-    height: 3.6em !important;
 }
-.wall-display .fc-timegrid .fc-daygrid-day-events:has(.fc-daygrid-event-harness:nth-child(3)) .fc-daygrid-event-harness {
+.wall-display .fc-timegrid .fc-daygrid-event-harness {
     position: relative !important;
     top: auto !important;
     left: auto !important;
@@ -612,8 +742,15 @@ export default defineComponent({
     min-width: 0 !important;
     margin: 0 !important;
 }
-.wall-display .fc-timegrid .fc-daygrid-day-events:has(.fc-daygrid-event-harness:nth-child(3)) .fc-h-event {
+.wall-display .fc-timegrid .fc-h-event {
     height: 100% !important;
+}
+
+/* Schmaler Separator nach Samstag (Wochenende-/Wochenanfang-Trenner) */
+.wall-display .fc .fc-col-header-cell.fc-day-sat,
+.wall-display .fc .fc-timegrid-col.fc-day-sat,
+.wall-display .fc .fc-daygrid-day.fc-day-sat {
+    border-right: 3px solid #90a4ae !important;
 }
 
 /* compact: TV / Querformat — minimaler Platzbedarf */
@@ -652,7 +789,7 @@ export default defineComponent({
 .wall-display--size-compact .fc .fc-clock-button:hover,
 .wall-display--size-compact .fc .fc-clock-button:focus,
 .wall-display--size-compact .fc .fc-clock-button:active {
-    font-size: 0.95rem !important;
+    font-size: 1.1rem !important;
     padding: 0 0 0 12px !important;
 }
 .wall-display--size-compact .fc .fc-calendarWeek-button {
@@ -719,7 +856,7 @@ export default defineComponent({
 .wall-display--size-qm50c .fc .fc-clock-button:hover,
 .wall-display--size-qm50c .fc .fc-clock-button:focus,
 .wall-display--size-qm50c .fc .fc-clock-button:active {
-    font-size: 1.6rem !important;
+    font-size: 1.8rem !important;
     padding: 0 0 0 20px !important;
 }
 .wall-display--size-qm50c .fc .fc-calendarWeek-button {
@@ -763,7 +900,7 @@ export default defineComponent({
 .wall-display--size-large .fc .fc-clock-button:hover,
 .wall-display--size-large .fc .fc-clock-button:focus,
 .wall-display--size-large .fc .fc-clock-button:active {
-    font-size: 3rem !important;
+    font-size: 2.9rem !important;
     padding: 0 0 0 24px !important;
 }
 .wall-display--size-large .fc .fc-calendarWeek-button {
@@ -773,6 +910,6 @@ export default defineComponent({
 .wall-display--size-large .fc .fc-exit-button,
 .wall-display--size-large .fc .fc-exit-button:hover {
     padding: 12px 20px !important;
-    font-size: 1.4rem !important;
+    font-size: 1.1rem !important;
 }
 </style>

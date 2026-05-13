@@ -768,7 +768,9 @@
         "calendarDayEnd": "Fin del día",
         "calendarDayEnd_help": "Hora más tardía en la cuadrícula de días del calendario. Formato: HH:MM. Vacío = 19:00.",
         "wallDisplaySize": "Tamaño de visualización",
-        "wallDisplaySize_help": "Controla el tamaño de la interfaz en la pantalla de pared. Auto/Compacto/Normal/Grande."
+        "wallDisplaySize_help": "Controla el tamaño de la interfaz en la pantalla de pared. Auto/Compacto/Normal/Grande.",
+        "wallDisplayControllers": "Wall display controllers (logins, comma-separated)",
+        "wallDisplayControllers_help": "Logins of users who can control the wall display from the regular calendar (comma-separated, e.g. ronny,admin)."
     },
     "add": "Añadir",
     "add_fields": {

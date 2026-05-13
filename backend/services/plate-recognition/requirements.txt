@@ -4,3 +4,4 @@ opencv-python-headless
 numpy
 Pillow
 psycopg2-binary
+requests>=2.31.0

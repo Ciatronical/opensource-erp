@@ -768,7 +768,9 @@
         "calendarDayEnd": "Päeva lõpp",
         "calendarDayEnd_help": "Hiliseim kellaaeg kalendri päevaruudustikus. Formaat: HH:MM. Tühi = 19:00.",
         "wallDisplaySize": "Kuvamise suurus",
-        "wallDisplaySize_help": "Juhib kasutajaliidese suurust seinalekuvari puhul. Auto/Kompaktne/Tavaline/Suur."
+        "wallDisplaySize_help": "Juhib kasutajaliidese suurust seinalekuvari puhul. Auto/Kompaktne/Tavaline/Suur.",
+        "wallDisplayControllers": "Wall display controllers (logins, comma-separated)",
+        "wallDisplayControllers_help": "Logins of users who can control the wall display from the regular calendar (comma-separated, e.g. ronny,admin)."
     },
     "add": "Lisa",
     "add_fields": {

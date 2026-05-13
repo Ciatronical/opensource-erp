@@ -768,7 +768,9 @@
         "calendarDayEnd": "日结束时间",
         "calendarDayEnd_help": "日历日网格中最晚的时间。格式：HH:MM。空 = 19:00。",
         "wallDisplaySize": "显示尺寸",
-        "wallDisplaySize_help": "控制墙面显示器上的UI尺寸。\n\n• 自动：横屏=紧凑，竖屏=大。\n• 紧凑：适合电视的小工具栏。\n• 正常：默认尺寸。\n• 大：适合墙面平板的大字体。"
+        "wallDisplaySize_help": "控制墙面显示器上的UI尺寸。\n\n• 自动：横屏=紧凑，竖屏=大。\n• 紧凑：适合电视的小工具栏。\n• 正常：默认尺寸。\n• 大：适合墙面平板的大字体。",
+        "wallDisplayControllers": "Wall display controllers (logins, comma-separated)",
+        "wallDisplayControllers_help": "Logins of users who can control the wall display from the regular calendar (comma-separated, e.g. ronny,admin)."
     },
     "add": "添加",
     "add_fields": {

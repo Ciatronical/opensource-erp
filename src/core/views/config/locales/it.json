@@ -768,7 +768,9 @@
         "calendarDayEnd": "Fine giornata",
         "calendarDayEnd_help": "Ora più tarda mostrata nella griglia giornaliera del calendario. Gli eventi successivi a questa ora non sono visibili. Formato: HH:MM (es. 17:00). Vuoto = 19:00.",
         "wallDisplaySize": "Dimensione schermo",
-        "wallDisplaySize_help": "Controlla le dimensioni degli elementi dell'interfaccia e dei caratteri sul display a parete.\n\n• Auto: gli schermi in orizzontale (TV) utilizzano il rendering compatto, quelli in verticale (tablet a parete) quello grande.\n• Compatto: barra degli strumenti e caratteri piccoli per massimizzare lo spazio del calendario — ideale per TV.\n• Normale: dimensioni predefinite di FullCalendar.\n• Grande: caratteri e pulsanti volutamente grandi, leggibili da qualche metro — ideale per tablet a parete in verticale."
+        "wallDisplaySize_help": "Controlla le dimensioni degli elementi dell'interfaccia e dei caratteri sul display a parete.\n\n• Auto: gli schermi in orizzontale (TV) utilizzano il rendering compatto, quelli in verticale (tablet a parete) quello grande.\n• Compatto: barra degli strumenti e caratteri piccoli per massimizzare lo spazio del calendario — ideale per TV.\n• Normale: dimensioni predefinite di FullCalendar.\n• Grande: caratteri e pulsanti volutamente grandi, leggibili da qualche metro — ideale per tablet a parete in verticale.",
+        "wallDisplayControllers": "Wall display controllers (logins, comma-separated)",
+        "wallDisplayControllers_help": "Logins of users who can control the wall display from the regular calendar (comma-separated, e.g. ronny,admin)."
     },
     "add": "Aggiungi",
     "add_fields": {

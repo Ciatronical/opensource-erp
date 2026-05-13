@@ -768,7 +768,9 @@
         "calendarDayEnd": "Konec dne",
         "calendarDayEnd_help": "Nejpozdější čas v denní mřížce kalendáře. Formát: HH:MM. Prázdné = 19:00.",
         "wallDisplaySize": "Velikost zobrazení",
-        "wallDisplaySize_help": "Ovládá velikost UI na nástěnném displeji. Auto/Kompaktní/Normální/Velké."
+        "wallDisplaySize_help": "Ovládá velikost UI na nástěnném displeji. Auto/Kompaktní/Normální/Velké.",
+        "wallDisplayControllers": "Wall display controllers (logins, comma-separated)",
+        "wallDisplayControllers_help": "Logins of users who can control the wall display from the regular calendar (comma-separated, e.g. ronny,admin)."
     },
     "add": "Přidat",
     "add_fields": {

@@ -768,7 +768,9 @@
         "calendarDayEnd": "Päivän loppu",
         "calendarDayEnd_help": "Myöhäisin aika kalenterin päiväruudukossa. Muoto: HH:MM. Tyhjä = 19:00.",
         "wallDisplaySize": "Näyttökoko",
-        "wallDisplaySize_help": "Ohjaa käyttöliittymän kokoa seinänäytöllä. Auto/Kompakti/Normaali/Suuri."
+        "wallDisplaySize_help": "Ohjaa käyttöliittymän kokoa seinänäytöllä. Auto/Kompakti/Normaali/Suuri.",
+        "wallDisplayControllers": "Wall display controllers (logins, comma-separated)",
+        "wallDisplayControllers_help": "Logins of users who can control the wall display from the regular calendar (comma-separated, e.g. ronny,admin)."
     },
     "add": "Lisää",
     "add_fields": {

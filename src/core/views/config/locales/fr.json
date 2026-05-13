@@ -768,7 +768,9 @@
         "calendarDayEnd": "Fin de journée",
         "calendarDayEnd_help": "Heure la plus tardive affichée dans la grille journalière du calendrier. Les événements après cette heure ne sont pas visibles. Format : HH:MM (ex. 17:00). Vide = 19:00.",
         "wallDisplaySize": "Taille d'affichage",
-        "wallDisplaySize_help": "Contrôle la taille des éléments d'interface et des polices sur l'écran mural.\n\n• Auto : les écrans en mode paysage (TV) utilisent le rendu compact, les écrans en portrait (tablette murale) le rendu large.\n• Compact : petite barre d'outils et polices réduites pour que le calendrier occupe un maximum d'espace — idéal pour les TV.\n• Normal : tailles par défaut de FullCalendar.\n• Large : polices et boutons délibérément grands, lisibles à quelques mètres — idéal pour les tablettes murales en portrait."
+        "wallDisplaySize_help": "Contrôle la taille des éléments d'interface et des polices sur l'écran mural.\n\n• Auto : les écrans en mode paysage (TV) utilisent le rendu compact, les écrans en portrait (tablette murale) le rendu large.\n• Compact : petite barre d'outils et polices réduites pour que le calendrier occupe un maximum d'espace — idéal pour les TV.\n• Normal : tailles par défaut de FullCalendar.\n• Large : polices et boutons délibérément grands, lisibles à quelques mètres — idéal pour les tablettes murales en portrait.",
+        "wallDisplayControllers": "Wall display controllers (logins, comma-separated)",
+        "wallDisplayControllers_help": "Logins of users who can control the wall display from the regular calendar (comma-separated, e.g. ronny,admin)."
     },
     "add": "Ajouter",
     "add_fields": {

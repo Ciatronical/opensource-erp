@@ -206,6 +206,15 @@ const crmDefaultsConfig = [
         tooltip: "crm_fields.wallDisplaySize_help"
     },
 
+    {
+        name: "wall_display_controllers",
+        type: "input",
+        size: 60,
+        fieldstyle: "max-width: 60ch",
+        label: "crm_fields.wallDisplayControllers",
+        tooltip: "crm_fields.wallDisplayControllers_help"
+    },
+
     { name: "dhl", type: "headline", label: "crm_fields.dhl" },
 
     { name: "dhl_enabled", type: "checkbox", label: "crm_fields.dhlEnabled", tooltip: "crm_fields.dhlEnabled_help" },

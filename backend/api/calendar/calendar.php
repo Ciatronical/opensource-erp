@@ -111,8 +111,18 @@ function deleteEventCategory($data) {
 function buildCalendarEventObject($row, $dtstart, $dtend) {
     $isRecurring = !empty($row['freq']);
 
-    // Dauer berechnen (für FullCalendar RRule-Plugin, nur bei Uhrzeitterminen)
+    // Alte Feiertag-Einträge: allDay=false aber Dauer >= 8h → ausblenden
+    // (der Feiertag erscheint bereits über getPublicHolidays oben in der Ganztags-Zeile)
     $isAllDayRow = (bool)($row['allDay'] ?? false);
+    if (!$isAllDayRow && !empty($dtstart) && !empty($dtend)) {
+        $s = new DateTime($dtstart);
+        $e = new DateTime($dtend);
+        if (($e->getTimestamp() - $s->getTimestamp()) >= 28800) {  // >= 8 Stunden
+            return null;
+        }
+    }
+
+    // Dauer berechnen (für FullCalendar RRule-Plugin, nur bei Uhrzeitterminen)
     $duration = null;
     if ($isRecurring && !$isAllDayRow && !empty($dtstart) && !empty($dtend)) {
         $s = new DateTime($dtstart);
@@ -152,9 +162,8 @@ function buildCalendarEventObject($row, $dtstart, $dtend) {
 
     // rrule-Objekt für FullCalendar RRule-Plugin (nur bei Wiederholungen)
     if ($isRecurring) {
-        $isAllDay = (bool)($row['allDay'] ?? false);
         // Ganztägig: dtstart ohne Uhrzeit, sonst erkennt FullCalendar es nicht als allDay
-        $rruleStart = $isAllDay ? substr($dtstart, 0, 10) : $dtstart;
+        $rruleStart = (bool)($row['allDay'] ?? false) ? substr($dtstart, 0, 10) : $dtstart;
         $rrule = [
             'freq'     => $row['freq'],
             'interval' => !empty($row['interval']) ? intval($row['interval']) : 1,
@@ -290,7 +299,8 @@ function getCalendarEvents($data) {
 
     $events = [];
     foreach ($rows as $row) {
-        $events[] = buildCalendarEventObject($row, $row['dtstart'], $row['dtend']);
+        $obj = buildCalendarEventObject($row, $row['dtstart'], $row['dtend']);
+        if ($obj !== null) $events[] = $obj;
     }
 
     usort($events, fn($a, $b) => strcmp($a['dtstart'] ?? '', $b['dtstart'] ?? ''));
@@ -770,4 +780,97 @@ function getPublicHolidays($data) {
     );
 
     resultInfo(true, '', ['holidays' => $result]);
+}
+
+/**
+ * Sendet einen Steuerbefehl an die Wandanzeige via pg_notify.
+ * Nur für User erlaubt die in der Config "wall_display_controllers" stehen.
+ *
+ * @param string $data['view']      FullCalendar-View-Name (z.B. dayGridMonth)
+ * @param string $data['startDate'] ISO-Datum des Bereichsanfangs
+ * @testdata {"action": "setWallDisplayView", "view": "dayGridMonth", "startDate": "2026-05-01"}
+ */
+function setWallDisplayView($data) {
+    $mandant = DbhCompany::begin();
+    $auth    = DbhAuth::begin();
+    $auth->fetchSessionData();
+
+    $login = $auth->getLogin();
+
+    // Berechtigungsprüfung: ist der User in wall_display_controllers?
+    $cfg     = $mandant->getOne(
+        "SELECT value FROM defaults_oserp WHERE key = 'wall_display_controllers'",
+        []
+    );
+    $allowed = array_filter(array_map('trim', explode(',', $cfg['value'] ?? '')));
+
+    if (empty($allowed) || !in_array($login, $allowed, true)) {
+        resultInfo(false, 'NOT_AUTHORIZED', 'Nicht berechtigt');
+        return;
+    }
+
+    $view      = $data['view']      ?? 'timeGridCustomWeek';
+    $startDate = $data['startDate'] ?? date('Y-m-d');
+
+    $pdo     = $mandant->getPDO();
+    $payload = $pdo->quote(json_encode(['view' => $view, 'startDate' => $startDate]));
+    $mandant->execute("SELECT pg_notify('wall_display_command', $payload)", []);
+
+    resultInfo(true, '', []);
+}
+
+/**
+ * Liefert die LxCars-Auslastung (geplante Minuten je Bringetermin-Tag) für einen Monat.
+ * Nur sinnvoll wenn LxCars aktiviert ist.
+ *
+ * @param string $data['startDate'] Beginn des Bereichs (YYYY-MM-DD)
+ * @param string $data['endDate']   Ende des Bereichs (YYYY-MM-DD)
+ * @testdata {"action": "getMonthWorkload", "startDate": "2026-05-01", "endDate": "2026-05-31"}
+ */
+function getMonthWorkload($data) {
+    $mandant = DbhCompany::begin();
+
+    $startDate = $data['startDate'] ?? date('Y-m-01');
+    $endDate   = $data['endDate']   ?? date('Y-m-t');
+
+    try {
+        $rows = $mandant->getAll(
+            "SELECT
+                 oe_ext.bringetermin::date                    AS work_date,
+                 COALESCE(SUM(i.planned_minutes), 0)::int    AS total_minutes,
+                 COUNT(DISTINCT oe.id)::int                  AS order_count,
+                 COUNT(i.id)::int                            AS instruction_count
+             FROM oe_ext
+             JOIN oe ON oe.id = oe_ext.oe_id AND oe.closed = false
+             LEFT JOIN oe_instructions_lxcars i ON i.oe_id = oe.id
+             WHERE oe_ext.bringetermin IS NOT NULL
+               AND oe_ext.bringetermin::date BETWEEN :start AND :end
+             GROUP BY oe_ext.bringetermin::date
+             ORDER BY work_date",
+            [':start' => $startDate, ':end' => $endDate]
+        );
+    } catch (Exception $e) {
+        // Tabelle existiert nicht (LxCars nicht installiert)
+        resultInfo(true, '', ['workload' => [], 'capacity_minutes' => 0]);
+        return;
+    }
+
+    // Tageskapazität: Arbeitszeit minus Pausen
+    $getVal = fn($key, $default) =>
+        $mandant->getOne("SELECT value FROM defaults_oserp WHERE key = :k", [':k' => $key])['value'] ?? $default;
+
+    $toMin = fn($t) => (int)explode(':', $t)[0] * 60 + (int)(explode(':', $t)[1] ?? 0);
+
+    $startMin = $toMin($getVal('lxcars_arbeitsbeginn', '08:00'));
+    $endMin   = $toMin($getVal('lxcars_arbeitsende',   '17:00'));
+    $pausenStr = $getVal('lxcars_pausen', '');
+    $pauseMin  = 0;
+    foreach (explode(',', $pausenStr) as $p) {
+        if (preg_match('/(\d{1,2}):(\d{2})-(\d{1,2}):(\d{2})/', trim($p), $m)) {
+            $pauseMin += ($m[3] * 60 + $m[4]) - ($m[1] * 60 + $m[2]);
+        }
+    }
+    $capacityMinutes = max(0, ($endMin - $startMin) - $pauseMin);
+
+    resultInfo(true, '', ['workload' => $rows, 'capacity_minutes' => $capacityMinutes]);
 }

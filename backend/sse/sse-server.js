@@ -128,11 +128,15 @@ async function connectListener(dbInfo, entry) {
         await client.query('LISTEN faktura_change');
         await client.query('LISTEN weroni_question');
         await client.query('LISTEN camera_event');
+        await client.query('LISTEN wall_display_command');
         entry.pgClient = client;
-        console.log(`LISTEN crmti_change + whatsapp_message + calendar_change + faktura_change + weroni_question + camera_event auf ${dbInfo.dbname}@${dbInfo.dbhost}:${dbInfo.dbport}`);
+        console.log(`LISTEN ... + wall_display_command auf ${dbInfo.dbname}@${dbInfo.dbhost}:${dbInfo.dbport}`);
 
         client.on('notification', (msg) => {
-            const data = `data: ${msg.payload}\n\n`;
+            // wall_display_command als Named Event senden (addEventListener im Frontend)
+            const data = msg.channel === 'wall_display_command'
+                ? `event: wall_display_command\ndata: ${msg.payload}\n\n`
+                : `data: ${msg.payload}\n\n`;
             for (const res of entry.sseClients) {
                 res.write(data);
             }

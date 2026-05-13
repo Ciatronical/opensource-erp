@@ -768,7 +768,9 @@
         "calendarDayEnd": "Dageinde",
         "calendarDayEnd_help": "Laatste tijd weergegeven in het kalender-dagraster. Evenementen na deze tijd zijn niet zichtbaar. Formaat: HH:MM (bijv. 17:00). Leeg = 19:00.",
         "wallDisplaySize": "Weergavegrootte",
-        "wallDisplaySize_help": "Bepaalt de grootte van UI-elementen en lettertypen op het wanddisplay.\n\n• Auto: liggende schermen (tv) krijgen de compacte weergave, staande schermen (wandtablet) de grote.\n• Compact: kleine werkbalk en lettertypen zodat de kalender zoveel mogelijk ruimte inneemt — best voor tv's.\n• Normaal: standaardformaten van FullCalendar.\n• Groot: bewust grote lettertypen en knoppen, leesbaar vanaf enkele meters — ideaal voor staande wandtablets."
+        "wallDisplaySize_help": "Bepaalt de grootte van UI-elementen en lettertypen op het wanddisplay.\n\n• Auto: liggende schermen (tv) krijgen de compacte weergave, staande schermen (wandtablet) de grote.\n• Compact: kleine werkbalk en lettertypen zodat de kalender zoveel mogelijk ruimte inneemt — best voor tv's.\n• Normaal: standaardformaten van FullCalendar.\n• Groot: bewust grote lettertypen en knoppen, leesbaar vanaf enkele meters — ideaal voor staande wandtablets.",
+        "wallDisplayControllers": "Wall display controllers (logins, comma-separated)",
+        "wallDisplayControllers_help": "Logins of users who can control the wall display from the regular calendar (comma-separated, e.g. ronny,admin)."
     },
     "add": "Toevoegen",
     "add_fields": {

@@ -50,6 +50,53 @@ DEFAULT_POLL_INTERVAL = 60  # Config alle 60s neu laden
 MERGE_X_THRESHOLD = 50
 MERGE_Y_THRESHOLD = 15
 
+MAX_SNAPSHOTS = 3            # Snapshots pro Erkennung: weit, mittel, nah
+MIN_MOVEMENT_PX = 20         # Mindest-Pixelbewegung des Box-Mittelpunkts
+DIRECTION_SIZE_RATIO = 1.20  # 20% Größenwachstum = Annäherung (war 1.15)
+
+# Felder, bei deren Änderung ein Worker-Neustart ausgelöst wird
+_CONFIG_WATCH_KEYS = [
+    'rtsp_url', 'frame_interval', 'min_confidence', 'min_detections',
+    'cooldown_minutes', 'action_type', 'actuator_id',
+    'actuator_protocol', 'actuator_host', 'actuator_port',
+    'actuator_command_open', 'actuator_command_partial',
+    'gate_height_mode', 'calibration_gate_height_cm',
+    'calibration_gate_top_y', 'calibration_gate_bottom_y',
+    # Bildbereich-Filter: Änderung erfordert ebenfalls Worker-Neustart
+    'excluded_cells', 'grid_size', 'ignore_right_pct', 'ignore_left_pct',
+    'direction_required', 'save_snapshots', 'min_plate_height_px',
+]
+
+
+def _config_changed(old, new):
+    """True wenn sich ein beobachtetes Konfigurationsfeld geändert hat."""
+    return any(str(old.get(k)) != str(new.get(k)) for k in _CONFIG_WATCH_KEYS)
+
+
+def _edit_distance(a, b):
+    """Levenshtein-Distanz zwischen zwei Strings."""
+    if len(a) < len(b):
+        a, b = b, a
+    row = list(range(len(b) + 1))
+    for ca in a:
+        new_row = [row[0] + 1]
+        for j, cb in enumerate(b):
+            new_row.append(min(new_row[-1] + 1, row[j + 1] + 1, row[j] + (ca != cb)))
+        row = new_row
+    return row[-1]
+
+
+def _recently_reported_similar(track_key, reported, cooldown, now, max_dist=2):
+    """True wenn ein aehnliches Kennzeichen (Edit-Distanz <= max_dist) im Cooldown ist."""
+    for key, ts in reported.items():
+        if key == track_key:
+            continue
+        if now - ts >= cooldown:
+            continue
+        if _edit_distance(track_key, key) <= max_dist:
+            return True
+    return False
+
 
 # --- DB-Verbindung aus settings.ini -------------------------------------------
 
@@ -334,6 +381,7 @@ class CameraWorker(threading.Thread):
         self.db_params = db_params
         self.running = True
         self.size_history = {}
+        self.detection_frames = {}  # track_key -> [(area, frame), ...]
 
         self.cam_id = int(config.get('id', 0))
         self.name_str = config.get('name', f'Kamera #{self.cam_id}')
@@ -397,16 +445,76 @@ class CameraWorker(threading.Thread):
 
             for p in plates:
                 track_key = re.sub(r'[\s\-]', '', p['plate'])
-                detection_count = len(self.size_history.get(track_key, []))
+                hist = self.size_history.get(track_key, [])
+                detection_count = len(hist)
 
-                if detection_count >= self.min_det and p.get('direction') == 'in':
+                # Frame sammeln (max. MAX_SNAPSHOTS*3; _save_snapshots wählt 3 repräsentative aus)
+                current_area = box_area(p['box'])
+                if track_key not in self.detection_frames:
+                    self.detection_frames[track_key] = []
+                self.detection_frames[track_key].append((current_area, frame.copy()))
+                if len(self.detection_frames[track_key]) > MAX_SNAPSHOTS * 3:
+                    self.detection_frames[track_key].pop(0)
+
+                dir_required = self.config.get('direction_required', True)
+                direction = p.get('direction')
+                movement_ok = self._is_moving(hist) if dir_required else True
+                dir_ok = (not dir_required) or direction == 'in'
+
+                # Debug-Ausgabe pro Erkennung
+                if hist:
+                    xs_d = [h[2] for h in hist]
+                    ys_d = [h[3] for h in hist]
+                    pos_delta = max(max(xs_d) - min(xs_d), max(ys_d) - min(ys_d)) if len(xs_d) > 1 else 0
+                    areas_d = [h[1] for h in hist]
+                    size_ratio = (max(areas_d) / min(areas_d)) if len(areas_d) >= 2 and min(areas_d) > 0 else 1.0
+                    status = 'MELDEN' if (detection_count >= self.min_det and dir_ok and movement_ok) else \
+                             'Standfahrzeug' if not movement_ok else \
+                             f'warte(dir={direction})'
+                    print(f"[{self.name_str}] DBG {track_key}: "
+                          f"n={detection_count} h={p.get('plate_height_px', 0)}px "
+                          f"area={int(current_area)} dir={direction} "
+                          f"moving={movement_ok} pos_Δ={int(pos_delta)}px "
+                          f"size_ratio={size_ratio:.2f} → {status}")
+
+                if detection_count >= self.min_det and dir_ok and movement_ok:
                     cooldown = int(self.config.get('cooldown_minutes') or 5) * 60
                     last_report = self.reported.get(track_key, 0)
                     if now - last_report < cooldown:
                         continue
+                    # Fuzzy-Check: aehnliches Kennzeichen (Edit-Distanz <= 2) kuezer zurueck
+                    if _recently_reported_similar(track_key, self.reported, cooldown, now):
+                        print(f"[{self.name_str}]     Ähnliches Kennzeichen kürzlich gemeldet → ignoriert")
+                        continue
 
                     self.reported[track_key] = now
-                    self._report_detection(p, frame.shape)
+                    saved_frames = self.detection_frames.pop(track_key, [])
+                    self.size_history[track_key] = []
+                    self._report_detection(p, saved_frames)
+
+                elif detection_count >= self.min_det:
+                    if not movement_ok:
+                        # Standfahrzeug: Frames nicht weiter ansammeln
+                        if detection_count == self.min_det:
+                            areas_log = [int(h[1]) for h in hist]
+                            print(f"[{self.name_str}] {track_key}: Standfahrzeug erkannt "
+                                  f"(n={detection_count}, Größen: {areas_log}) → ignoriert")
+                        self.detection_frames.pop(track_key, None)
+                    elif direction == 'out':
+                        # Fahrzeug fährt weg → History aufräumen damit späteres Einfahren
+                        # nicht durch alte 'out'-Messungen blockiert wird
+                        print(f"[{self.name_str}] {track_key}: fährt weg → History zurückgesetzt")
+                        self.size_history[track_key] = []
+                        self.detection_frames.pop(track_key, None)
+                    elif direction is None and detection_count == self.min_det:
+                        areas_log = [int(h[1]) for h in hist]
+                        print(f"[{self.name_str}] {track_key}: {detection_count} Erkennungen, "
+                              f"noch kein Bewegungstrend (Größen: {areas_log})")
+
+            # Speicher aufraemen: detection_frames fuer inaktive Kennzeichen entfernen
+            for key in list(self.detection_frames):
+                if not self.size_history.get(key):
+                    del self.detection_frames[key]
 
         cap.release()
 
@@ -419,18 +527,53 @@ class CameraWorker(threading.Thread):
         lines = [(line[0], line[1]) for line in result[0]]
         merged = merge_nearby_texts(lines)
 
+        frame_h, frame_w = frame.shape[:2]
+        ignore_right = int(self.config.get('ignore_right_pct') or 0) / 100
+        ignore_left  = int(self.config.get('ignore_left_pct')  or 0) / 100
+        grid_size_pct = max(1, int(self.config.get('grid_size') or 10))
+        try:
+            excluded_cells = json.loads(self.config.get('excluded_cells') or '[]')
+        except Exception:
+            excluded_cells = []
+
         for box, (text, conf) in merged:
             if conf < self.min_conf:
                 continue
+            cx = np.mean([p[0] for p in box])
+            cy = np.mean([p[1] for p in box])
+            # Randausblendung (Prozent)
+            if ignore_right and cx > frame_w * (1 - ignore_right):
+                continue
+            if ignore_left and cx < frame_w * ignore_left:
+                continue
+            # Raster-Ausblendung (geklickte Zellen)
+            if excluded_cells:
+                cell_col = int((cx / frame_w) * (100 / grid_size_pct))
+                cell_row = int((cy / frame_h) * (100 / grid_size_pct))
+                if [cell_row, cell_col] in excluded_cells:
+                    continue
             normalized = normalize_plate(text)
             if not is_german_plate(normalized):
                 continue
 
+            # Kennzeichen-Mindestgröße prüfen (zu weit weg = zu klein = ignorieren)
+            plate_h_px = int(box_height(box))
+            min_plate_h = int(self.config.get('min_plate_height_px') or 0)
+            if min_plate_h and plate_h_px < min_plate_h:
+                continue
+
             track_key = re.sub(r'[\s\-]', '', normalized)
             area = box_area(box)
+            now_ts = time.time()
             if track_key not in self.size_history:
                 self.size_history[track_key] = []
-            self.size_history[track_key].append(area)
+            # Eintraege aelter als 20s verwerfen (verhindert Fehlmeldungen durch statische Elemente)
+            # Format: (timestamp, area, center_x, center_y)
+            self.size_history[track_key] = [
+                h for h in self.size_history[track_key]
+                if now_ts - h[0] < 20
+            ]
+            self.size_history[track_key].append((now_ts, area, float(cx), float(cy)))
             if len(self.size_history[track_key]) > 10:
                 self.size_history[track_key].pop(0)
 
@@ -459,6 +602,9 @@ class CameraWorker(threading.Thread):
                 'confidence': conf,
                 'box': box,
                 'direction': direction,
+                'cx': float(cx),
+                'cy': float(cy),
+                'plate_height_px': plate_h_px,
                 'vehicle_height_px': estimated_vehicle_height_px,
                 'vehicle_top_y': max(0, estimated_top_y),
                 'vehicle_bottom_y': plate_bottom_y,
@@ -467,22 +613,97 @@ class CameraWorker(threading.Thread):
         return detections
 
     def _detect_direction(self, history):
-        if len(history) < 3:
+        # Mindestens 4 Messpunkte für Richtungsentscheidung.
+        # History-Format: [(ts, area, cx, cy), ...]
+        # DIRECTION_SIZE_RATIO=1.20 (20%) filtert OCR-Box-Jitter von Standfahrzeugen
+        # zuverlässiger als der alte 15%-Wert.
+        if len(history) < 4:
             return None
-        first_avg = np.mean(history[:2])
-        last_avg = np.mean(history[-2:])
+        areas = [h[1] for h in history]
+        first_avg = np.mean(areas[:2])
+        last_avg = np.mean(areas[-2:])
         if first_avg == 0:
             return None
         ratio = last_avg / first_avg
-        if ratio >= 1.15:
+        if ratio >= DIRECTION_SIZE_RATIO:
             return 'in'
-        elif ratio <= 1 / 1.15:
+        elif ratio <= 1 / DIRECTION_SIZE_RATIO:
             return 'out'
         return None
 
-    def _report_detection(self, plate_info, frame_shape):
-        """Erkennung direkt in die DB schreiben."""
+    def _is_moving(self, history):
+        """True wenn das Fahrzeug sich erkennbar bewegt (kein Standfahrzeug).
+
+        Prüft Positionsänderung des Box-Mittelpunkts UND Größenwachstum.
+        Ein gerades Auffahren auf die Kamera hat kaum Positionsänderung,
+        aber deutliches Größenwachstum — beides wird akzeptiert.
+        """
+        if len(history) < 2:
+            return False
+        xs = [h[2] for h in history]
+        ys = [h[3] for h in history]
+        pos_delta = max(max(xs) - min(xs), max(ys) - min(ys))
+        if pos_delta >= MIN_MOVEMENT_PX:
+            return True
+        # Frontalansatz: Größe nimmt signifikant zu (≥ DIRECTION_SIZE_RATIO)
+        if len(history) >= 4:
+            areas = [h[1] for h in history]
+            first_avg = np.mean(areas[:2])
+            last_avg = np.mean(areas[-2:])
+            if first_avg > 0 and last_avg / first_avg >= DIRECTION_SIZE_RATIO:
+                return True
+        return False
+
+    def _save_snapshots(self, frames, plate_info, detection_id):
+        """MAX_SNAPSHOTS repräsentative Frames als nummerierte JPEGs speichern.
+
+        Aus den gesammelten Frames werden MAX_SNAPSHOTS gleichmäßig verteilte
+        ausgewählt (weit → mittel → nah), sortiert nach Bounding-Box-Fläche.
+        """
+        snapshot_dir = os.path.join(
+            BACKEND_DIR, 'data', self.db_params['database'], 'anpr-snapshots'
+        )
+        os.makedirs(snapshot_dir, exist_ok=True)
+
+        # Aufsteigend sortieren: kleinstes Fahrzeug (weit) → groesstes (nah)
+        sorted_frames = sorted(frames, key=lambda x: x[0])
+
+        # MAX_SNAPSHOTS gleichmäßig verteilt auswählen
+        n = len(sorted_frames)
+        if n > MAX_SNAPSHOTS:
+            indices = [int(round(i * (n - 1) / (MAX_SNAPSHOTS - 1))) for i in range(MAX_SNAPSHOTS)]
+            sorted_frames = [sorted_frames[i] for i in indices]
+
+        box = plate_info.get('box')
+        for i, (_, frame) in enumerate(sorted_frames, start=1):
+            annotated = frame.copy()
+            if box:
+                pts = np.array(box, dtype=np.int32)
+                cv2.polylines(annotated, [pts], True, (0, 220, 0), 3)
+                label = f"{plate_info['plate']}  {plate_info['confidence']:.0%}"
+                x = int(pts[:, 0].min())
+                y = max(int(pts[:, 1].min()) - 12, 24)
+                (tw, th), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 1.2, 2)
+                cv2.rectangle(annotated, (x, y - th - 6), (x + tw + 6, y + 6), (0, 0, 0), -1)
+                cv2.putText(annotated, label, (x + 3, y),
+                            cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 220, 0), 2)
+
+            h, w = annotated.shape[:2]
+            if w > 1280:
+                scale = 1280 / w
+                annotated = cv2.resize(annotated, (int(w * scale), int(h * scale)))
+
+            path = os.path.join(snapshot_dir, f"{detection_id}_{i}.jpg")
+            cv2.imwrite(path, annotated, [cv2.IMWRITE_JPEG_QUALITY, 85])
+
+        print(f"[{self.name_str}]     {len(sorted_frames)} Snapshot(s) gespeichert (ID {detection_id})")
+
+    def _report_detection(self, plate_info, frames):
+        """Erkennung direkt in die DB schreiben und Snapshots speichern."""
         kennzeichen = plate_info['plate']
+        # Fuer frame_shape: groesstes Frame (naehestes Auto) verwenden
+        best_frame = max(frames, key=lambda x: x[0])[1] if frames else None
+        frame_shape = best_frame.shape if best_frame is not None else (0, 0, 0)
         print(f"[{self.name_str}] >>> MELDUNG: {kennzeichen} "
               f"(conf: {plate_info['confidence']:.1%}, dir: {plate_info['direction']})")
 
@@ -490,29 +711,33 @@ class CameraWorker(threading.Thread):
             conn = psycopg2.connect(**self.db_params)
             conn.autocommit = True
             with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
-                # Kennzeichen ohne Leerzeichen (so wie in der DB)
+                # Kennzeichen normieren: ohne Leerzeichen (für c_ln in DB)
                 kennzeichen_nospace = kennzeichen.replace(' ', '')
+                # Kennzeichen normieren: ohne Leerzeichen UND Bindestriche (für Vergleiche)
+                kennzeichen_normalized = re.sub(r'[\s\-]', '', kennzeichen).upper()
 
-                # Blacklist prüfen (ohne Leerzeichen vergleichen)
+                # Blacklist prüfen (normiert: ohne Leerzeichen und Bindestriche)
                 cur.execute(
                     "SELECT value FROM defaults_oserp WHERE key = 'anpr_blacklist'"
                 )
                 bl_row = cur.fetchone()
                 if bl_row and bl_row['value']:
-                    blacklist = [p.strip().replace(' ', '').upper()
+                    blacklist = [re.sub(r'[\s\-]', '', p).upper()
                                  for p in bl_row['value'].split(',') if p.strip()]
-                    if kennzeichen_nospace.upper() in blacklist:
+                    if kennzeichen_normalized in blacklist:
                         print(f"[{self.name_str}]     Blacklist → ignoriert")
                         conn.close()
                         return
 
-                # Fahrzeug suchen (ohne Leerzeichen, wie in der DB)
+                # Fahrzeug suchen: Leerzeichen UND Bindestriche auf beiden Seiten
+                # normieren, damit "MOL-CM 50E", "MOLCM50E" und "MOL-CM50E"
+                # alle dasselbe Fahrzeug finden.
                 cur.execute(
                     "SELECT c.c_id, c.c_ow AS customer_id, cv.name AS customer_name "
                     "FROM cars_lxcars c "
                     "LEFT JOIN customer cv ON c.c_ow = cv.id "
-                    "WHERE REPLACE(c.c_ln, ' ', '') = %s",
-                    (kennzeichen_nospace,)
+                    "WHERE REPLACE(REPLACE(UPPER(c.c_ln), ' ', ''), '-', '') = %s",
+                    (kennzeichen_normalized,)
                 )
                 car = cur.fetchone()
                 c_id = car['c_id'] if car else None
@@ -544,7 +769,7 @@ class CameraWorker(threading.Thread):
                     "INSERT INTO anpr_detections_lxcars "
                     "(camera_id, c_ln, c_id, customer_id, direction, confidence, "
                     " vehicle_height_px, frame_width, frame_height, action_taken, dismissed) "
-                    "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                    "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id",
                     (
                         self.cam_id, kennzeichen_nospace, c_id, customer_id,
                         plate_info['direction'] or 'in',
@@ -555,6 +780,10 @@ class CameraWorker(threading.Thread):
                         action_taken == 'none',
                     )
                 )
+                detection_id = cur.fetchone()[0]
+                save_snap = self.config.get('save_snapshots', True)
+                if frames and save_snap not in (False, 'f', '0', 'false', 0):
+                    self._save_snapshots(frames, plate_info, detection_id)
 
                 status = f"known={bool(car)}, open_order={has_open_order}, action={action_taken}"
                 if car and car['customer_name']:
@@ -943,11 +1172,32 @@ class AnprService:
                         worker_key = f"{client['id']}_{cam['id']}"
                         active_ids.add(worker_key)
 
-                        if worker_key not in self.workers:
+                        existing = self.workers.get(worker_key)
+
+                        if existing is None:
+                            # Neue Kamera
                             worker = CameraWorker(cam, self.ocr, db_params)
                             worker.start()
                             self.workers[worker_key] = worker
                             print(f"[CONFIG] Worker gestartet: {client['name']} / {cam.get('name', cam['id'])}")
+
+                        elif not existing.is_alive():
+                            # Worker abgestuerzt → neu starten
+                            print(f"[CONFIG] Worker neu starten (abgestuerzt): {cam.get('name', cam['id'])}")
+                            worker = CameraWorker(cam, self.ocr, db_params)
+                            worker.start()
+                            self.workers[worker_key] = worker
+
+                        elif _config_changed(existing.config, cam):
+                            # Config geaendert → Worker neu starten
+                            changed = [k for k in _CONFIG_WATCH_KEYS
+                                       if str(existing.config.get(k)) != str(cam.get(k))]
+                            print(f"[CONFIG] Config geaendert ({', '.join(changed)}), "
+                                  f"Worker neu starten: {cam.get('name', cam['id'])}")
+                            existing.stop()
+                            worker = CameraWorker(cam, self.ocr, db_params)
+                            worker.start()
+                            self.workers[worker_key] = worker
 
                 except Exception as e:
                     print(f"[CONFIG] Fehler bei Company '{client.get('name', '?')}': {e}")

@@ -768,7 +768,9 @@
         "calendarDayEnd": "Koniec dnia",
         "calendarDayEnd_help": "Najpóźniejszy czas wyświetlany w siatce dziennej kalendarza. Zdarzenia po tym czasie nie są widoczne. Format: GG:MM (np. 17:00). Puste = 19:00.",
         "wallDisplaySize": "Rozmiar wyświetlania",
-        "wallDisplaySize_help": "Kontroluje rozmiar elementów interfejsu i czcionek na wyświetlaczu ściennym.\n\n• Auto: poziome ekrany (telewizory) otrzymują kompaktowe renderowanie, pionowe ekrany (tablet ścienny) duże.\n• Kompaktowy: mały pasek narzędzi i czcionki, aby kalendarz zajmował jak najwięcej miejsca — najlepszy dla telewizorów.\n• Normalny: domyślne rozmiary FullCalendar.\n• Duży: celowo duże czcionki i przyciski, czytelne z kilku metrów — idealny dla pionowych tabletów ściennych."
+        "wallDisplaySize_help": "Kontroluje rozmiar elementów interfejsu i czcionek na wyświetlaczu ściennym.\n\n• Auto: poziome ekrany (telewizory) otrzymują kompaktowe renderowanie, pionowe ekrany (tablet ścienny) duże.\n• Kompaktowy: mały pasek narzędzi i czcionki, aby kalendarz zajmował jak najwięcej miejsca — najlepszy dla telewizorów.\n• Normalny: domyślne rozmiary FullCalendar.\n• Duży: celowo duże czcionki i przyciski, czytelne z kilku metrów — idealny dla pionowych tabletów ściennych.",
+        "wallDisplayControllers": "Wall display controllers (logins, comma-separated)",
+        "wallDisplayControllers_help": "Logins of users who can control the wall display from the regular calendar (comma-separated, e.g. ronny,admin)."
     },
     "add": "Dodaj",
     "add_fields": {

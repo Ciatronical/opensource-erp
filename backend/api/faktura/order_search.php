@@ -145,7 +145,11 @@ function searchOrders($data) {
             oe_ext.bringetermin,
             kba.hersteller,
             (SELECT description FROM oe_instructions_lxcars
-             WHERE oe_id = oe.id ORDER BY sort_order, id LIMIT 1) AS first_instruction
+             WHERE oe_id = oe.id ORDER BY sort_order, id LIMIT 1) AS first_instruction,
+            (SELECT emp.name FROM oe_instructions_lxcars instr
+             LEFT JOIN employee emp ON emp.id = instr.employee_id
+             WHERE instr.oe_id = oe.id AND instr.employee_id IS NOT NULL
+             ORDER BY instr.id DESC LIMIT 1) AS mechanic_name
         FROM oe
         LEFT JOIN customer ON customer.id = oe.customer_id
         LEFT JOIN employee ON employee.id = oe.employee_id

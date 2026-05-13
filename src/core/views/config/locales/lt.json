@@ -768,7 +768,9 @@
         "calendarDayEnd": "Dienos pabaiga",
         "calendarDayEnd_help": "Vėliausias laikas rodomas kalendoriaus dienos tinklelyje. Įvykiai po šio laiko nematomi. Formatas: HH:MM (pvz. 17:00). Tuščia = 19:00.",
         "wallDisplaySize": "Ekrano dydis",
-        "wallDisplaySize_help": "Valdo UI elementų ir šriftų dydį sieniniame ekrane.\n\n• Automatinis: horizontalūs ekranai (TV) gauna kompaktinį atvaizdavimą, vertikalūs (sieninis planšetė) — didelį.\n• Kompaktinis: maža įrankių juosta ir šriftai, kad kalendorius užimtų kuo daugiau vietos — geriausiai tinka TV.\n• Normalus: FullCalendar numatytieji dydžiai.\n• Didelis: sąmoningai dideli šriftai ir mygtukai, matomi iš kelių metrų — idealiai tinka vertikaliems sieniniams planšetėms."
+        "wallDisplaySize_help": "Valdo UI elementų ir šriftų dydį sieniniame ekrane.\n\n• Automatinis: horizontalūs ekranai (TV) gauna kompaktinį atvaizdavimą, vertikalūs (sieninis planšetė) — didelį.\n• Kompaktinis: maža įrankių juosta ir šriftai, kad kalendorius užimtų kuo daugiau vietos — geriausiai tinka TV.\n• Normalus: FullCalendar numatytieji dydžiai.\n• Didelis: sąmoningai dideli šriftai ir mygtukai, matomi iš kelių metrų — idealiai tinka vertikaliems sieniniams planšetėms.",
+        "wallDisplayControllers": "Wall display controllers (logins, comma-separated)",
+        "wallDisplayControllers_help": "Logins of users who can control the wall display from the regular calendar (comma-separated, e.g. ronny,admin)."
     },
     "add": "Pridėti",
     "add_fields": {

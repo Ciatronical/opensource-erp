@@ -768,7 +768,9 @@
         "calendarDayEnd": "Sfârșit zi",
         "calendarDayEnd_help": "Cea mai târzie oră afișată în grila zilnică a calendarului. Evenimentele după această oră nu sunt vizibile. Format: HH:MM (ex. 17:00). Gol = 19:00.",
         "wallDisplaySize": "Dimensiune afișaj",
-        "wallDisplaySize_help": "Controlează dimensiunea elementelor de interfață și a fonturilor pe afișajul de perete.\n\n• Auto: ecranele orizontale (TV) primesc redarea compactă, ecranele verticale (tabletă de perete) pe cea mare.\n• Compact: bară de instrumente și fonturi mici pentru ca calendarul să ocupe cât mai mult spațiu — ideal pentru televizoare.\n• Normal: dimensiunile implicite ale FullCalendar.\n• Mare: fonturi și butoane deliberat mari, lizibile de la câțiva metri — ideal pentru tabletele de perete verticale."
+        "wallDisplaySize_help": "Controlează dimensiunea elementelor de interfață și a fonturilor pe afișajul de perete.\n\n• Auto: ecranele orizontale (TV) primesc redarea compactă, ecranele verticale (tabletă de perete) pe cea mare.\n• Compact: bară de instrumente și fonturi mici pentru ca calendarul să ocupe cât mai mult spațiu — ideal pentru televizoare.\n• Normal: dimensiunile implicite ale FullCalendar.\n• Mare: fonturi și butoane deliberat mari, lizibile de la câțiva metri — ideal pentru tabletele de perete verticale.",
+        "wallDisplayControllers": "Wall display controllers (logins, comma-separated)",
+        "wallDisplayControllers_help": "Logins of users who can control the wall display from the regular calendar (comma-separated, e.g. ronny,admin)."
     },
     "add": "Adăugare",
     "add_fields": {

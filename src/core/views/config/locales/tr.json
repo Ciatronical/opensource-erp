@@ -768,7 +768,9 @@
         "calendarDayEnd": "Gün sonu",
         "calendarDayEnd_help": "Takvim gün ızgarasındaki en geç saat. Format: SS:DD. Boş = 19:00.",
         "wallDisplaySize": "Ekran boyutu",
-        "wallDisplaySize_help": "Duvar ekranındaki UI boyutunu kontrol eder.\n\n• Otomatik: yatay=kompakt, dikey=büyük.\n• Kompakt: TV'ler için küçük araç çubuğu.\n• Normal: varsayılan boyutlar.\n• Büyük: duvar tabletleri için büyük yazı tipler."
+        "wallDisplaySize_help": "Duvar ekranındaki UI boyutunu kontrol eder.\n\n• Otomatik: yatay=kompakt, dikey=büyük.\n• Kompakt: TV'ler için küçük araç çubuğu.\n• Normal: varsayılan boyutlar.\n• Büyük: duvar tabletleri için büyük yazı tipler.",
+        "wallDisplayControllers": "Wall display controllers (logins, comma-separated)",
+        "wallDisplayControllers_help": "Logins of users who can control the wall display from the regular calendar (comma-separated, e.g. ronny,admin)."
     },
     "add": "Ekle",
     "add_fields": {

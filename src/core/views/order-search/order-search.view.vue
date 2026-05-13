@@ -278,6 +278,7 @@ const headers = computed(() => [
     { title: t('OrderSearchView.fields.transdate'), key: 'transdate', sortable: true },
     { title: t('OrderSearchView.fields.bringetermin'), key: 'bringetermin', sortable: true },
     { title: t('OrderSearchView.fields.amount'), key: 'amount', sortable: true, align: 'end' },
+    { title: t('OrderSearchView.fields.mechanic'), key: 'mechanic_name', sortable: true },
     { title: t('OrderSearchView.fields.employee'), key: 'employee_name', sortable: true },
 ]);
 

@@ -768,7 +768,9 @@
         "calendarDayEnd": "Кінець дня",
         "calendarDayEnd_help": "Найпізніший час у сітці денного календаря. Формат: ГГ:ХХ. Порожньо = 19:00.",
         "wallDisplaySize": "Розмір відображення",
-        "wallDisplaySize_help": "Керує розміром інтерфейсу на настінному дисплеї.\n\n• Авто: альбомна = компактна, портретна = велика.\n• Компактна: маленька панель інструментів для телевізорів.\n• Нормальна: стандартні розміри.\n• Велика: великі шрифти для настінних планшетів."
+        "wallDisplaySize_help": "Керує розміром інтерфейсу на настінному дисплеї.\n\n• Авто: альбомна = компактна, портретна = велика.\n• Компактна: маленька панель інструментів для телевізорів.\n• Нормальна: стандартні розміри.\n• Велика: великі шрифти для настінних планшетів.",
+        "wallDisplayControllers": "Wall display controllers (logins, comma-separated)",
+        "wallDisplayControllers_help": "Logins of users who can control the wall display from the regular calendar (comma-separated, e.g. ronny,admin)."
     },
     "add": "Додати",
     "add_fields": {

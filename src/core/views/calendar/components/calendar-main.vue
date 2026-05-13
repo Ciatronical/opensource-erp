@@ -26,7 +26,10 @@ const props = defineProps({
     height: { type: [String, Number], default: 'auto' },
     // null = nicht an FullCalendar durchreichen (contentHeight wird dann aus height berechnet)
     contentHeight: { type: [String, Number], default: 700 },
-    expandRows: { type: Boolean, default: false }
+    expandRows: { type: Boolean, default: false },
+    dayMaxEventRows: { type: [Number, Boolean], default: undefined },
+    hiddenDays: { type: Array, default: () => [] },
+    weekDuration: { type: Number, default: 7 }
 })
 
 const emit = defineEmits(['event-click', 'date-click', 'event-drop', 'event-resize', 'dates-set'])
@@ -249,8 +252,10 @@ const calendarOptions = computed(() => {
     datesSet: handleDatesSet,
     editable: true,
     selectable: true,
-    dayMaxEvents: 3,
+    dayMaxEvents:    props.dayMaxEventRows !== undefined ? props.dayMaxEventRows : 3,
+    dayMaxEventRows: props.dayMaxEventRows !== undefined ? props.dayMaxEventRows : undefined,
     moreLinkClick: 'popover',
+    hiddenDays: props.hiddenDays,
     height: props.height,
     expandRows: props.expandRows,
     handleWindowResize: true,
@@ -294,7 +299,7 @@ const calendarOptions = computed(() => {
         },
         timeGridCustomWeek: {
             type: 'timeGrid',
-            duration: { days: 7 },
+            duration: { days: props.weekDuration },
             buttonText: t('CalendarMain.week'),
             titleFormat: { year: 'numeric', month: 'long', day: 'numeric' }
         }
@@ -316,11 +321,11 @@ function handleEventClick(info) {
 }
 
 function handleDateClick(info) {
-    if (info.allDay || info.view.type === 'dayGridMonth') {
-        emit('date-click', info.dateStr.split('T')[0])
-    } else {
-        emit('date-click', info.dateStr)
-    }
+    const isAllDay = info.allDay || info.view.type === 'dayGridMonth'
+    emit('date-click', {
+        dateStr: isAllDay ? info.dateStr.split('T')[0] : info.dateStr,
+        allDay:  isAllDay
+    })
 }
 
 function handleEventDrop(info) {
@@ -354,13 +359,33 @@ function handleDatesSet(info) {
     currentKW.value = kw
     nextTick(() => { applyKWColor(kw); applyDayProgress() })
     emit('dates-set', {
-        start: info.startStr.split('T')[0],
-        end: info.endStr.split('T')[0],
-        view: info.view.type
+        start:      info.startStr.split('T')[0],
+        end:        info.endStr.split('T')[0],
+        view:       info.view.type,
+        viewStart:  formatLocalDate(info.view.currentStart)
     })
 }
 
 function renderEventContent(arg) {
+    // LxCars-Auslastungsbalken
+    if (arg.event.extendedProps?.isWorkload) {
+        const { hours, pct, capPct, orderCount, color } = arg.event.extendedProps
+        const capLabel = capPct !== null ? `<span class="fc-wl-cap">${capPct}%</span>` : ''
+        const ordLabel = orderCount > 0
+            ? `<span class="fc-wl-orders">${orderCount} Auftrag${orderCount !== 1 ? 'träge' : ''}</span>`
+            : ''
+        return { html: `
+            <div class="fc-wl-wrap">
+                <div class="fc-wl-header">
+                    <span class="fc-wl-hours">${hours}h</span>
+                    ${capLabel}${ordLabel}
+                </div>
+                <div class="fc-wl-track">
+                    <div class="fc-wl-fill" style="width:${pct}%;background:${color}"></div>
+                </div>
+            </div>` }
+    }
+
     const desc = arg.event.extendedProps?.description
     const title = arg.event.title || ''
     const time = arg.timeText || ''
@@ -369,6 +394,11 @@ function renderEventContent(arg) {
     html += `<div class="fc-event-title">${title}</div>`
     if (desc) html += `<div class="fc-event-desc">${desc}</div>`
     return { html }
+}
+
+function formatLocalDate(date) {
+    const pad = n => String(n).padStart(2, '0')
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
 }
 
 function formatDateTime(date, allDay) {
@@ -400,6 +430,12 @@ onBeforeUnmount(() => {
 
 defineExpose({
     goToDate: (date) => calendarRef.value?.getApi()?.gotoDate(date),
+    setView: (view, date) => {
+        const api = calendarRef.value?.getApi()
+        if (!api) return
+        // changeView(view, date) ist atomar — kein doppeltes datesSet
+        api.changeView(view || 'timeGridCustomWeek', date || undefined)
+    },
     next: navigateNext,
     prev: navigatePrev,
     today: navigateToday
@@ -761,7 +797,7 @@ defineExpose({
 
 /* Uhr-Button: gleiche Schriftgröße wie Titel, kein Button-Look */
 .fc .fc-clock-button {
-    font-size: 1.5rem !important;
+    font-size: 1.9rem !important;
     font-weight: 600 !important;
     font-variant-numeric: tabular-nums;
     background: transparent !important;
@@ -804,6 +840,56 @@ defineExpose({
 
 .fc .fc-calendarWeek-button:hover {
     transform: none !important;
+}
+
+/* ── LxCars Auslastungsbalken (Monatsansicht Wandanzeige) ── */
+.fc-workload-event {
+    pointer-events: none !important;
+    cursor: default !important;
+    margin: 1px 2px !important;
+}
+.fc-workload-event .fc-event-main {
+    padding: 0 !important;
+}
+.fc-wl-wrap {
+    padding: 3px 5px 4px;
+    border-radius: 4px;
+    background: rgba(0,0,0,0.04);
+}
+.fc-wl-header {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+    margin-bottom: 3px;
+    line-height: 1;
+}
+.fc-wl-hours {
+    font-size: 12px;
+    font-weight: 800;
+    color: #212121;
+    letter-spacing: -0.03em;
+}
+.fc-wl-cap {
+    font-size: 10px;
+    font-weight: 600;
+    color: #616161;
+}
+.fc-wl-orders {
+    font-size: 9px;
+    color: #9e9e9e;
+    margin-left: auto;
+}
+.fc-wl-track {
+    height: 5px;
+    border-radius: 3px;
+    background: rgba(0,0,0,0.10);
+    overflow: hidden;
+}
+.fc-wl-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.5s ease;
+    min-width: 4px;
 }
 
 </style>
