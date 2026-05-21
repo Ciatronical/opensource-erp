@@ -160,7 +160,7 @@ export default {
 
     function openAnprDetection(det) {
       if (det.vehicle_id) {
-        router.push({ name: 'car-edit', params: { id: det.vehicle_id } })
+        router.push({ name: 'car', params: { id: det.vehicle_id } })
       } else if (det.customer_id) {
         router.push({ name: 'change-customer', params: { id: det.customer_id } })
       }

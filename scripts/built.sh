@@ -60,9 +60,7 @@ if [ $? -ne 0 ]; then
 fi
 
 echo ""
-echo "3. Build-ID schreiben..."
-date +%s > dist/build-id.txt
-echo "   Build-ID: $(cat dist/build-id.txt)"
+echo "3. Build-ID: $(cat dist/build-id.txt 2>/dev/null || echo '(von Vite geschrieben)')"
 
 echo ""
 echo "4. Berechtigungen setzen..."

@@ -430,13 +430,36 @@ export default defineComponent({
         let pollInterval = null
         const sseConnected = ref(false)
 
+        // Build-ID beim Start merken — bei SSE-Reconnect und im Polling prüfen,
+        // damit ein verpasstes build_changed-Event (SSE war kurz weg) trotzdem
+        // einen Reload auslöst.
+        let knownBuildId = ''
+
+        async function fetchBuildId() {
+            try {
+                const res = await fetch('/build-id.txt?_=' + Date.now())
+                if (res.ok) return (await res.text()).trim()
+            } catch { /* ignorieren */ }
+            return ''
+        }
+
+        async function checkBuildAndReload() {
+            if (!knownBuildId) return
+            const current = await fetchBuildId()
+            if (current && current !== knownBuildId) window.location.reload()
+        }
+
         function connectSSE() {
             if (typeof EventSource === 'undefined') {
                 startPolling()
                 return
             }
             sseSource = new EventSource('/sse/events')
-            sseSource.onopen = () => { sseConnected.value = true; stopPolling() }
+            sseSource.onopen = () => {
+                sseConnected.value = true
+                stopPolling()
+                checkBuildAndReload()
+            }
             sseSource.onmessage = (event) => {
                 sseConnected.value = true
                 try {
@@ -475,6 +498,7 @@ export default defineComponent({
         function startPolling() {
             if (pollInterval) return
             pollInterval = setInterval(() => {
+                checkBuildAndReload()
                 loadEvents()
             }, 60000)
         }
@@ -512,7 +536,8 @@ export default defineComponent({
 
         // ── Lifecycle ──
 
-        onMounted(() => {
+        onMounted(async () => {
+            knownBuildId = await fetchBuildId()
             connectSSE()
             updateClock()
             // An volle Minute synchronisieren, danach minuetlich

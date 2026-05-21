@@ -609,6 +609,7 @@ CREATE TABLE IF NOT EXISTS anpr_cameras_lxcars (
     save_snapshots   BOOLEAN DEFAULT TRUE,
     excluded_cells   TEXT DEFAULT '[]',
     min_plate_height_px SMALLINT DEFAULT 0,
+    motion_size_pct SMALLINT DEFAULT 20,
     note            TEXT,
     itime           TIMESTAMP DEFAULT now(),
     mtime           TIMESTAMP
@@ -624,6 +625,7 @@ COMMENT ON COLUMN anpr_cameras_lxcars.cooldown_minutes IS 'Minuten Cooldown nach
 COMMENT ON COLUMN anpr_cameras_lxcars.action_type IS 'Aktion bei Erkennung: infobar, actuator, both';
 COMMENT ON COLUMN anpr_cameras_lxcars.actuator_id IS 'Verknuepfter Aktor (z.B. Torantrieb)';
 COMMENT ON COLUMN anpr_cameras_lxcars.gate_height_mode IS 'Toröffnung: full (komplett), vehicle_height (Fahrzeughöhe + Puffer)';
+COMMENT ON COLUMN anpr_cameras_lxcars.motion_size_pct IS 'Mindest-Flächenwachstum des Kennzeichens in Prozent um Bewegung zu erkennen (Standard: 20)';
 COMMENT ON COLUMN anpr_cameras_lxcars.calibration_gate_height_cm IS 'Reale Torhöhe in cm (Referenz für Fahrzeughöhen-Berechnung)';
 COMMENT ON COLUMN anpr_cameras_lxcars.calibration_gate_top_y IS 'Y-Pixel der Toroberkante im Kamerabild';
 COMMENT ON COLUMN anpr_cameras_lxcars.calibration_gate_bottom_y IS 'Y-Pixel der Torunterkante im Kamerabild';

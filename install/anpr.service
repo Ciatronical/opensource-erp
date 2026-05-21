@@ -4,9 +4,14 @@ After=postgresql.service network.target
 
 [Service]
 Type=simple
-# User anpassen! Gleicher User der OpensourceERP betreibt
+# User anpassen: gleicher User der OpensourceERP betreibt (oder www-data)
 User=work
+# render-Gruppe fuer Intel iGPU (OpenVINO/OpenCL via /dev/dri/renderD128)
+SupplementaryGroups=render video
 Environment=HOME=/home/work
+# CPU-Threads begrenzen damit andere Prozesse nicht ausgehungert werden
+Environment=OMP_NUM_THREADS=4
+Environment=MKL_NUM_THREADS=4
 WorkingDirectory=/home/work/opensource-erp/backend/services/plate-recognition
 ExecStart=/home/work/opensource-erp/backend/services/plate-recognition/venv/bin/python anpr_service.py
 Restart=always

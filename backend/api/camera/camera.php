@@ -665,8 +665,65 @@ function installPythonPackage($data) {
     // pip install kann mehrere Minuten dauern (openvino ~500 MB)
     set_time_limit(0);
 
-    exec(escapeshellarg($venvPip) . ' install ' . escapeshellarg($package) . ' 2>&1', $outputLines, $exitCode);
-    $output = implode("\n", $outputLines);
+    // Venv-Besitzer ermitteln: falls www-data kein Schreibrecht hat, per sudo als Besitzer installieren
+    $venvOwnerUid = fileowner("$serviceDir/venv");
+    $venvOwnerInfo = $venvOwnerUid !== false ? posix_getpwuid($venvOwnerUid) : null;
+    $venvOwner = $venvOwnerInfo['name'] ?? null;
+    $currentUid = posix_getuid();
+    $sudoPassword = $data['sudo_password'] ?? '';
+
+    if ($venvOwner && $venvOwnerUid !== $currentUid) {
+        $homeDir = $venvOwnerInfo['dir'] ?? '/tmp';
+
+        // Prüfen ob sudo ohne Passwort möglich (NOPASSWD-Eintrag vorhanden)
+        exec('sudo -n -H -u ' . escapeshellarg($venvOwner) . ' true 2>/dev/null', $_, $nopassExit);
+        $needsPassword = ($nopassExit !== 0);
+
+        if ($needsPassword && $sudoPassword === '') {
+            // Passwort fehlt → Frontend soll Dialog öffnen
+            resultInfo(false, 'SUDO_PASSWORD_REQUIRED', '', ['owner' => $venvOwner]);
+            return;
+        }
+
+        if ($needsPassword && $sudoPassword !== '') {
+            // Passwort per stdin an sudo -S übergeben (niemals loggen)
+            $cmd = 'sudo -S -H -u ' . escapeshellarg($venvOwner)
+                . ' HOME=' . escapeshellarg($homeDir)
+                . ' ' . escapeshellarg($venvPip)
+                . ' install ' . escapeshellarg($package);
+            $proc = proc_open($cmd,
+                [['pipe', 'r'], ['pipe', 'w'], ['pipe', 'w']],
+                $pipes);
+            if (!is_resource($proc)) {
+                resultInfo(false, 'INSTALL_FAILED', '', ['output' => 'proc_open fehlgeschlagen']);
+                return;
+            }
+            fwrite($pipes[0], $sudoPassword . "\n");
+            fclose($pipes[0]);
+            $output   = stream_get_contents($pipes[1]);
+            $output  .= stream_get_contents($pipes[2]);
+            $exitCode = proc_close($proc);
+            unset($sudoPassword);   // Passwort sofort aus Speicher entfernen
+
+            // Falsches Passwort erkennen
+            if (str_contains($output, 'incorrect password') || str_contains($output, '1 incorrect password')) {
+                resultInfo(false, 'SUDO_WRONG_PASSWORD', '');
+                return;
+            }
+        } else {
+            // NOPASSWD konfiguriert
+            $pipCmd = 'sudo -n -H -u ' . escapeshellarg($venvOwner)
+                . ' HOME=' . escapeshellarg($homeDir)
+                . ' ' . escapeshellarg($venvPip)
+                . ' install ' . escapeshellarg($package) . ' 2>&1';
+            exec($pipCmd, $outputLines, $exitCode);
+            $output = implode("\n", $outputLines);
+        }
+    } else {
+        $pipCmd = escapeshellarg($venvPip) . ' install ' . escapeshellarg($package) . ' 2>&1';
+        exec($pipCmd, $outputLines, $exitCode);
+        $output = implode("\n", $outputLines);
+    }
 
     // Import pruefen
     $importName = $package === 'tflite-runtime' ? 'tflite_runtime' : str_replace('-', '_', $package);
@@ -857,6 +914,49 @@ function detectFrigate($data) {
     ]);
 }
 
+/**
+ * CPU-Kernauslastung in Echtzeit ermitteln
+ *
+ * Liest /proc/stat zweimal im Abstand von 250ms und berechnet
+ * daraus die Auslastung pro logischem Kern sowie gesamt.
+ *
+ * @testdata {}
+ */
+function getAnprCpuLoad() {
+    $s1 = _readProcStat();
+    usleep(250000);
+    $s2 = _readProcStat();
+
+    $result = [];
+    foreach ($s1 as $name => $v1) {
+        if (!isset($s2[$name])) continue;
+        $v2       = $s2[$name];
+        $idle1    = ($v1[3] ?? 0) + ($v1[4] ?? 0); // idle + iowait
+        $idle2    = ($v2[3] ?? 0) + ($v2[4] ?? 0);
+        $total1   = array_sum($v1);
+        $total2   = array_sum($v2);
+        $dtotal   = $total2 - $total1;
+        $didle    = $idle2  - $idle1;
+        $result[$name] = $dtotal > 0 ? max(0, min(100, (int)round(100 * (1 - $didle / $dtotal)))) : 0;
+    }
+
+    // Reihenfolge: erst Gesamtwert "cpu", dann cpu0..cpuN aufsteigend
+    uksort($result, fn($a, $b) => ($a === 'cpu' ? -1 : ($b === 'cpu' ? 1 : strnatcmp($a, $b))));
+
+    resultInfo(true, '', ['load' => $result]);
+}
+
+function _readProcStat(): array {
+    $stats = [];
+    $lines = @file('/proc/stat');
+    if (!$lines) return $stats;
+    foreach ($lines as $line) {
+        if (!preg_match('/^(cpu\d*)\s+(.+)/', $line, $m)) continue;
+        $stats[$m[1]] = array_map('intval', preg_split('/\s+/', trim($m[2])));
+    }
+    return $stats;
+}
+
 // --- Hardware-Erkennung Hilfsfunktionen ---
 
 function _detectCpu(): array {
@@ -993,11 +1093,17 @@ function _detectRam(): array {
 function _detectGpu(): array {
     $info = ['intel_igpu' => false, 'nvidia' => false, 'device' => ''];
 
-    // Intel iGPU
+    // Intel iGPU: entweder am Modellnamen erkennbar oder als generische Intel VGA-Karte
+    // (lspci zeigt manchmal nur "Device XXXX" wenn die PCI-ID-Datenbank nicht aktuell ist)
     $lspci = shell_exec('lspci 2>/dev/null') ?? '';
-    if (preg_match('/VGA.*Intel.*?(UHD|Iris|HD Graphics)[^\n]*/i', $lspci, $m)) {
+    if (preg_match('/VGA[^:]*:.*Intel Corporation[^\n]*/i', $lspci, $m)) {
         $info['intel_igpu'] = true;
         $info['device'] = trim($m[0]);
+        // Klartext-Name nachschlagen falls nur Device-ID angezeigt wird
+        if (preg_match('/Device\s+[0-9a-f]{4}/i', $info['device'])) {
+            $resolved = trim(shell_exec('lspci -nn 2>/dev/null | grep "00:02\.0"') ?? '');
+            if ($resolved) $info['device'] = $resolved;
+        }
     }
 
     // NVIDIA

@@ -10,6 +10,7 @@ const anprDefaultsConfig = [
     { name: "anpr_detection", type: "headline", label: "anpr.detection" },
 
     { name: "anpr_show_unknown_vehicles", type: "checkbox", label: "anpr.showUnknownVehicles", tooltip: "anpr.showUnknownVehicles_help" },
+    { name: "anpr_open_order_skip", type: "checkbox", label: "anpr.openOrderSkip", tooltip: "anpr.openOrderSkip_help" },
     { name: "anpr_detection_ttl_hours", type: "input", inputType: "number", size: 5, fieldstyle: "max-width: 15ch", label: "anpr.detectionTtlHours", tooltip: "anpr.detectionTtlHours_help" },
     { name: "anpr_infobar_max", type: "input", inputType: "number", size: 5, fieldstyle: "max-width: 15ch", label: "anpr.infobarMax", tooltip: "anpr.infobarMax_help" },
     { name: "anpr_blacklist", type: "textarea", rows: 3, fieldstyle: "max-width: 60ch", label: "anpr.blacklist", tooltip: "anpr.blacklist_help" },

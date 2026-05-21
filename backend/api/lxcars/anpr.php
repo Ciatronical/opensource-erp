@@ -66,6 +66,7 @@ function saveAnprCamera($data) {
         ':save_snapshots'             => isset($cam['save_snapshots']) ? ($cam['save_snapshots'] ? 't' : 'f') : 't',
         ':excluded_cells'             => json_encode($cam['excluded_cells'] ?? []),
         ':min_plate_height_px'        => max(0, intval($cam['min_plate_height_px'] ?? 0)),
+        ':motion_size_pct'            => max(5, min(100, intval($cam['motion_size_pct'] ?? 20))),
     ];
 
     if ($id > 0) {
@@ -88,6 +89,7 @@ function saveAnprCamera($data) {
                 save_snapshots = :save_snapshots,
                 excluded_cells = :excluded_cells,
                 min_plate_height_px = :min_plate_height_px,
+                motion_size_pct = :motion_size_pct,
                 mtime = now()
              WHERE id = :id",
             $params
@@ -100,14 +102,14 @@ function saveAnprCamera($data) {
                  action_type, actuator_id, gate_height_mode, note,
                  calibration_gate_height_cm, calibration_gate_top_y, calibration_gate_bottom_y,
                  ignore_right_pct, ignore_left_pct, direction_required, grid_size,
-                 save_snapshots, excluded_cells, min_plate_height_px)
+                 save_snapshots, excluded_cells, min_plate_height_px, motion_size_pct)
              VALUES
                 (:name, :rtsp_url, :enabled, :direction_mode, :position,
                  :frame_interval, :min_confidence, :min_detections, :cooldown_minutes,
                  :action_type, :actuator_id, :gate_height_mode, :note,
                  :calibration_gate_height_cm, :calibration_gate_top_y, :calibration_gate_bottom_y,
                  :ignore_right_pct, :ignore_left_pct, :direction_required, :grid_size,
-                 :save_snapshots, :excluded_cells, :min_plate_height_px)",
+                 :save_snapshots, :excluded_cells, :min_plate_height_px, :motion_size_pct)",
             $params
         );
         $id = $db->getOne("SELECT currval(pg_get_serial_sequence('anpr_cameras_lxcars', 'id'))")['currval'];
@@ -330,9 +332,12 @@ function reportAnprDetection($data) {
     $c_id = $car ? intval($car['c_id']) : null;
     $customer_id = $car ? intval($car['customer_id']) : null;
 
-    // Offenen Auftrag pruefen
+    // Offenen Auftrag prüfen (nur wenn anpr_open_order_skip aktiv)
     $has_open_order = false;
-    if ($c_id) {
+    $skip_row = $db->getOne("SELECT value FROM defaults_oserp WHERE key = 'anpr_open_order_skip'");
+    $open_order_skip = $skip_row && in_array($skip_row['value'], ['1', 't', 'true']);
+
+    if ($c_id && $open_order_skip) {
         $open = $db->getOne(
             "SELECT 1 FROM oe
              JOIN oe_ext ON oe.id = oe_ext.oe_id
@@ -343,24 +348,19 @@ function reportAnprDetection($data) {
         $has_open_order = !!$open;
     }
 
-    // Aktion bestimmen
-    $show_unknown = true; // Default: unbekannte Fahrzeuge anzeigen
+    // Kamera-Aktion ermitteln
+    $action_type = 'infobar';
+    $cam = null;
+    if ($camera_id > 0) {
+        $cam = $db->getOne(
+            "SELECT action_type, actuator_id, gate_height_mode FROM anpr_cameras_lxcars WHERE id = :id",
+            [':id' => $camera_id]
+        );
+        if ($cam) $action_type = $cam['action_type'];
+    }
+
     $action_taken = 'none';
-
-    if ($has_open_order) {
-        // Fahrzeug hat offenen Auftrag → nicht in Infoleiste (Probefahrt etc.)
-        $action_taken = 'none';
-    } else {
-        // Kamera-Aktion ermitteln
-        $action_type = 'infobar';
-        if ($camera_id > 0) {
-            $cam = $db->getOne(
-                "SELECT action_type, actuator_id, gate_height_mode FROM anpr_cameras_lxcars WHERE id = :id",
-                [':id' => $camera_id]
-            );
-            if ($cam) $action_type = $cam['action_type'];
-        }
-
+    if (!$has_open_order) {
         if ($action_type === 'infobar' || $action_type === 'both') {
             $action_taken = 'infobar';
         }
@@ -467,13 +467,13 @@ function dismissAnprDetection($data) {
 /**
  * ANPR-Erkennungs-Historie laden (fuer Config-Ansicht)
  *
- * @param int $data['limit'] Max. Anzahl (default 50)
+ * @param int $data['limit'] Max. Anzahl (default 200, max 500)
  * @param int $data['camera_id'] Optional: nur fuer diese Kamera
- * @testdata {"limit": 50}
+ * @testdata {"limit": 200}
  */
 function getAnprDetectionHistory($data) {
     $db = DbhCompany::begin();
-    $limit = intval($data['limit'] ?? 50);
+    $limit = min(500, max(1, intval($data['limit'] ?? 200)));
     $camera_id = intval($data['camera_id'] ?? 0);
 
     $where = '';
@@ -487,8 +487,11 @@ function getAnprDetectionHistory($data) {
     $rows = $db->getAll(
         "SELECT d.id, d.c_ln, d.c_id, d.customer_id, d.confidence,
                 d.direction, d.detected_at, d.action_taken, d.dismissed,
+                d.vehicle_height_px, d.frame_width, d.frame_height,
+                d.camera_id,
                 c.name AS customer_name,
-                cam.name AS camera_name
+                cam.name AS camera_name,
+                cam.rtsp_url AS camera_rtsp
          FROM anpr_detections_lxcars d
          LEFT JOIN customer c ON d.customer_id = c.id
          LEFT JOIN anpr_cameras_lxcars cam ON d.camera_id = cam.id
@@ -529,6 +532,63 @@ function clearAnprDetectionHistory() {
     $db = DbhCompany::begin();
     $db->execute("DELETE FROM anpr_detections_lxcars");
     resultInfo(true);
+}
+
+/**
+ * ANPR-Dienst-Gesundheitsprotokoll laden
+ *
+ * Liefert Heartbeats, Reconnects und Fehler der letzten 24h sowie
+ * eine Zusammenfassung pro Kamera.
+ *
+ * @testdata {}
+ */
+function getAnprHealth() {
+    $db = DbhCompany::begin();
+
+    // Letzte 100 Ereignisse der letzten 24h
+    $events = $db->getAll(
+        "SELECT h.id, h.camera_id, h.ts, h.event, h.message,
+                h.frames, h.detections, h.skipped,
+                cam.name AS camera_name
+         FROM anpr_health_lxcars h
+         LEFT JOIN anpr_cameras_lxcars cam ON h.camera_id = cam.id
+         WHERE h.ts > now() - interval '24 hours'
+         ORDER BY h.ts DESC
+         LIMIT 100"
+    );
+
+    // Letzter Heartbeat pro Kamera
+    $last_heartbeats = $db->getAll(
+        "SELECT DISTINCT ON (camera_id)
+                camera_id, ts, frames, detections, skipped
+         FROM anpr_health_lxcars
+         WHERE event = 'heartbeat'
+         ORDER BY camera_id, ts DESC"
+    );
+
+    // Reconnects und Fehler der letzten 24h pro Kamera
+    $problems = $db->getAll(
+        "SELECT camera_id,
+                COUNT(*) FILTER (WHERE event = 'reconnect') AS reconnects,
+                COUNT(*) FILTER (WHERE event = 'error')     AS errors
+         FROM anpr_health_lxcars
+         WHERE ts > now() - interval '24 hours'
+           AND event IN ('reconnect', 'error')
+         GROUP BY camera_id"
+    );
+
+    // Erkennungen heute gesamt
+    $today = $db->getOne(
+        "SELECT COUNT(*) AS cnt FROM anpr_detections_lxcars
+         WHERE detected_at > date_trunc('day', now())"
+    );
+
+    resultInfo(true, '', [
+        'events'          => $events ?: [],
+        'last_heartbeats' => $last_heartbeats ?: [],
+        'problems'        => $problems ?: [],
+        'today_count'     => intval($today['cnt'] ?? 0),
+    ]);
 }
 
 /**
@@ -573,24 +633,71 @@ function getAnprServiceStatus() {
     $output = shell_exec('systemctl is-active anpr 2>&1');
     $status = trim($output ?? 'unknown');
 
-    // Zusätzlich: PID und Uptime wenn aktiv
     $details = null;
     if ($status === 'active') {
-        $raw = shell_exec('systemctl show anpr --property=MainPID,ActiveEnterTimestamp 2>&1');
+        // PID, Startzeit, User aus systemctl
+        $raw = shell_exec('systemctl show anpr --property=MainPID,ActiveEnterTimestamp,User 2>&1');
         if ($raw) {
             foreach (explode("\n", $raw) as $line) {
-                if (str_starts_with($line, 'MainPID=')) {
+                if (str_starts_with($line, 'MainPID='))
                     $details['pid'] = intval(substr($line, 8));
-                }
-                if (str_starts_with($line, 'ActiveEnterTimestamp=')) {
+                if (str_starts_with($line, 'ActiveEnterTimestamp='))
                     $details['started_at'] = substr($line, 21);
+                if (str_starts_with($line, 'User='))
+                    $details['service_user'] = trim(substr($line, 5));
+            }
+        }
+
+        // Startzeit als Unix-Timestamp (für Frontend einfach verarbeitbar)
+        if (!empty($details['started_at'])) {
+            $ts = strtotime($details['started_at']);
+            if ($ts) $details['started_ts'] = $ts;
+        }
+
+        // Laufender User (kann vom konfigurierten User abweichen wenn Service veraltet)
+        $pid = $details['pid'] ?? 0;
+        if ($pid > 0) {
+            $details['run_as_user'] = trim(shell_exec("ps -p $pid -o user= 2>/dev/null") ?? '');
+            // LC_ALL=C: Dezimaltrenner ist Punkt, nicht Komma (deutsches System)
+            $psOut = trim(shell_exec("LC_ALL=C ps -p $pid -o %cpu=,%mem=,rss= 2>/dev/null") ?? '');
+            if ($psOut) {
+                $parts = preg_split('/\s+/', trim($psOut));
+                $details['cpu_pct']  = floatval(str_replace(',', '.', $parts[0] ?? '0'));
+                $details['mem_pct']  = floatval(str_replace(',', '.', $parts[1] ?? '0'));
+                $details['rss_kb']   = intval($parts[2] ?? 0);
+            }
+
+            // RTSP-Verbindungen dieses Prozesses
+            $ssOut = shell_exec("ss -tnp 2>/dev/null | grep 'pid=$pid,' | grep ':554'") ?? '';
+            $rtsp = [];
+            foreach (array_filter(explode("\n", trim($ssOut))) as $line) {
+                if (preg_match('/(\S+)\s+(\S+)\s+(\d+)\s+(\d+)\s+(\S+)\s+(\S+)/', $line, $m)) {
+                    $rtsp[] = ['state' => $m[1], 'recv_q' => intval($m[3]),
+                               'send_q' => intval($m[4]),
+                               'local' => $m[5], 'remote' => $m[6]];
                 }
             }
+            $details['rtsp_connections'] = $rtsp;
+        }
+
+        // Letzte 30 Logzeilen (kompakt)
+        $log = shell_exec('journalctl -u anpr -n 30 --no-pager --output=short 2>/dev/null') ?? '';
+        $details['log_tail'] = array_values(array_filter(explode("\n", $log)));
+
+        // Erkennungen heute
+        try {
+            $db = DbhCompany::begin();
+            $row = $db->getOne(
+                "SELECT COUNT(*) AS cnt FROM anpr_detections_lxcars WHERE detected_at >= CURRENT_DATE"
+            );
+            $details['detections_today'] = intval($row['cnt'] ?? 0);
+        } catch (\Throwable) {
+            $details['detections_today'] = null;
         }
     }
 
     resultInfo(true, '', [
-        'status' => $status,
+        'status'  => $status,
         'details' => $details,
     ]);
 }

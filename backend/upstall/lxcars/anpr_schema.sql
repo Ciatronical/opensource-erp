@@ -130,6 +130,25 @@ DO $$ BEGIN
     END IF;
 END $$;
 
+-- Service-Gesundheitsprotokoll (Heartbeats, Fehler, Reconnects)
+CREATE TABLE IF NOT EXISTS anpr_health_lxcars (
+    id          INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    camera_id   INTEGER,
+    ts          TIMESTAMP DEFAULT now(),
+    event       TEXT NOT NULL,
+    message     TEXT,
+    frames      INTEGER,
+    detections  INTEGER,
+    skipped     INTEGER
+);
+CREATE INDEX IF NOT EXISTS idx_anpr_health_ts ON anpr_health_lxcars(ts DESC);
+
+COMMENT ON TABLE anpr_health_lxcars IS 'ANPR-Service-Gesundheitsprotokoll: Heartbeats, Reconnects, Fehler';
+COMMENT ON COLUMN anpr_health_lxcars.event IS 'Ereignistyp: start, heartbeat, reconnect, error';
+COMMENT ON COLUMN anpr_health_lxcars.frames IS 'Verarbeitete Frames seit letztem Heartbeat';
+COMMENT ON COLUMN anpr_health_lxcars.detections IS 'Gemeldete Erkennungen seit letztem Heartbeat';
+COMMENT ON COLUMN anpr_health_lxcars.skipped IS 'Uebersprungene Erkennungen (Cooldown) seit letztem Heartbeat';
+
 -- Defaults
 INSERT INTO defaults_oserp (key, value) VALUES ('anpr_enabled', '0') ON CONFLICT (key) DO NOTHING;
 INSERT INTO defaults_oserp (key, value) VALUES ('anpr_service_port', '8765') ON CONFLICT (key) DO NOTHING;
@@ -137,3 +156,4 @@ INSERT INTO defaults_oserp (key, value) VALUES ('anpr_service_host', '127.0.0.1'
 INSERT INTO defaults_oserp (key, value) VALUES ('anpr_show_unknown_vehicles', '1') ON CONFLICT (key) DO NOTHING;
 INSERT INTO defaults_oserp (key, value) VALUES ('anpr_detection_ttl_hours', '8') ON CONFLICT (key) DO NOTHING;
 INSERT INTO defaults_oserp (key, value) VALUES ('anpr_infobar_max', '3') ON CONFLICT (key) DO NOTHING;
+INSERT INTO defaults_oserp (key, value) VALUES ('anpr_open_order_skip', '0') ON CONFLICT (key) DO NOTHING;

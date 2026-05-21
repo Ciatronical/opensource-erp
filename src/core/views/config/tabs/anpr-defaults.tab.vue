@@ -22,11 +22,30 @@
                                 </div>
                             </div>
 
-                            <!-- Uptime + PID -->
+                            <!-- Uptime + PID + User -->
                             <div v-if="serviceStatus === 'active' && serviceDetails && !restarting"
                                 class="text-caption text-medium-emphasis d-flex flex-column ga-0">
                                 <span v-if="serviceDetails.pid">PID {{ serviceDetails.pid }}</span>
-                                <span v-if="serviceUptime">{{ t('anpr.uptime') }}: {{ serviceUptime }}</span>
+                                <span v-if="serviceDetails.started_ts">
+                                    {{ t('anpr.since') }}: {{ formatServiceStart(serviceDetails.started_ts) }}
+                                    <span v-if="serviceUptime" class="text-medium-emphasis">({{ serviceUptime }})</span>
+                                </span>
+                                <span v-if="serviceDetails.run_as_user">
+                                    User: <strong :class="serviceDetails.run_as_user !== serviceDetails.service_user ? 'text-warning' : ''">
+                                        {{ serviceDetails.run_as_user }}
+                                    </strong>
+                                    <v-tooltip v-if="serviceDetails.run_as_user !== serviceDetails.service_user" location="top">
+                                        <template #activator="{ props }"><v-icon v-bind="props" size="12" color="warning" class="ml-1">mdi-alert</v-icon></template>
+                                        {{ t('anpr.userMismatch', { configured: serviceDetails.service_user }) }}
+                                    </v-tooltip>
+                                </span>
+                                <span v-if="serviceDetails.cpu_pct !== undefined">
+                                    CPU: {{ serviceDetails.cpu_pct.toFixed(1) }}% · RAM: {{ serviceDetails.mem_pct.toFixed(1) }}%
+                                    ({{ Math.round((serviceDetails.rss_kb || 0) / 1024) }} MB)
+                                </span>
+                                <span v-if="serviceDetails.detections_today !== null">
+                                    {{ t('anpr.detectionsToday') }}: {{ serviceDetails.detections_today }}
+                                </span>
                             </div>
 
                             <v-spacer />
@@ -34,6 +53,10 @@
                             <v-btn variant="text" size="small" icon="mdi-refresh"
                                 :loading="statusLoading && !restarting"
                                 @click="checkServiceStatus" />
+                            <v-btn v-if="serviceStatus === 'active' && serviceDetails"
+                                variant="text" size="small" icon="mdi-bug-outline"
+                                :color="serviceDebugOpen ? 'primary' : ''"
+                                @click="serviceDebugOpen = !serviceDebugOpen" />
 
                             <v-btn
                                 :color="serviceStatus === 'active' ? 'primary' : 'success'"
@@ -57,6 +80,118 @@
                                 </v-chip>
                             </div>
                         </div>
+                        <!-- Debug-Bereich: RTSP-Verbindungen + Log-Tail -->
+                        <v-expand-transition>
+                            <div v-if="serviceDebugOpen && serviceDetails" class="mt-3">
+                                <v-divider class="mb-3" />
+
+                                <!-- RTSP-Verbindungen -->
+                                <div class="text-caption font-weight-bold mb-1">{{ t('anpr.debugRtspConns') }}</div>
+                                <div v-if="serviceDetails.rtsp_connections && serviceDetails.rtsp_connections.length">
+                                    <v-table density="compact" class="mb-3" style="font-size:11px">
+                                        <thead><tr>
+                                            <th>State</th><th>Recv-Q</th><th>Remote (Kamera)</th>
+                                        </tr></thead>
+                                        <tbody>
+                                            <tr v-for="(c, i) in serviceDetails.rtsp_connections" :key="i"
+                                                :class="c.recv_q > 50000 ? 'bg-red-lighten-5' : ''">
+                                                <td>{{ c.state }}</td>
+                                                <td :class="c.recv_q > 50000 ? 'text-error font-weight-bold' : ''">
+                                                    {{ c.recv_q > 0 ? (c.recv_q / 1024).toFixed(0) + ' KB' : '0' }}
+                                                    <v-tooltip v-if="c.recv_q > 50000" location="top">
+                                                        <template #activator="{ props }"><v-icon v-bind="props" size="12" color="error">mdi-alert</v-icon></template>
+                                                        {{ t('anpr.debugRecvQWarning') }}
+                                                    </v-tooltip>
+                                                </td>
+                                                <td>{{ c.remote }}</td>
+                                            </tr>
+                                        </tbody>
+                                    </v-table>
+                                </div>
+                                <v-alert v-else type="info" variant="tonal" density="compact" class="mb-3">
+                                    {{ t('anpr.debugNoRtsp') }}
+                                </v-alert>
+
+                                <!-- Log-Tail -->
+                                <div class="text-caption font-weight-bold mb-1">{{ t('anpr.debugLogTail') }}</div>
+                                <pre v-if="serviceDetails.log_tail && serviceDetails.log_tail.length"
+                                    style="font-size:10px;max-height:200px;overflow-y:auto;background:#111;color:#aaffaa;padding:8px;border-radius:4px;white-space:pre-wrap;word-break:break-all"
+                                >{{ serviceDetails.log_tail.join('\n') }}</pre>
+                                <v-alert v-else type="info" variant="tonal" density="compact">{{ t('anpr.debugNoLog') }}</v-alert>
+                            </div>
+                        </v-expand-transition>
+                    </v-card-text>
+                </v-card>
+            </v-col>
+        </v-row>
+
+        <!-- Dienst-Diagnose -->
+        <v-row class="mb-4">
+            <v-col cols="12">
+                <v-card variant="outlined">
+                    <v-card-title class="text-body-1 font-weight-medium d-flex align-center">
+                        <v-icon class="mr-2" size="20">mdi-chart-line</v-icon>
+                        {{ t('anpr.health') }}
+                        <v-chip v-if="healthData.today_count > 0" size="x-small" color="primary" variant="tonal" class="ml-2">
+                            {{ healthData.today_count }} {{ t('anpr.healthToday') }}
+                        </v-chip>
+                        <v-spacer />
+                        <v-btn variant="text" size="small" icon="mdi-refresh"
+                            :loading="healthLoading" @click="loadHealth" />
+                    </v-card-title>
+
+                    <v-card-text v-if="healthData.events?.length > 0" class="pa-0">
+                        <!-- Zusammenfassung pro Kamera -->
+                        <div v-if="healthData.last_heartbeats?.length > 0" class="px-4 pt-3 pb-2 d-flex flex-wrap ga-3">
+                            <div v-for="hb in healthData.last_heartbeats" :key="hb.camera_id"
+                                class="d-flex align-center ga-2">
+                                <v-icon :color="heartbeatAge(hb.ts) < 120 ? 'green' : heartbeatAge(hb.ts) < 300 ? 'orange' : 'red'" size="12">mdi-circle</v-icon>
+                                <span class="text-caption font-weight-medium">{{ cameraName(hb.camera_id) }}</span>
+                                <span class="text-caption text-medium-emphasis">{{ t('anpr.healthLastSeen') }}: {{ formatAge(hb.ts) }}</span>
+                                <v-chip size="x-small" variant="tonal" color="green">{{ hb.detections }} {{ t('anpr.healthDetections') }}</v-chip>
+                                <span v-if="problemsFor(hb.camera_id)" class="text-caption text-error">
+                                    {{ problemsFor(hb.camera_id).reconnects }}× Reconnect, {{ problemsFor(hb.camera_id).errors }}× Fehler (24h)
+                                </span>
+                            </div>
+                        </div>
+                        <v-divider v-if="healthData.last_heartbeats?.length > 0" />
+
+                        <!-- Ereignisprotokoll -->
+                        <v-table density="compact">
+                            <thead>
+                                <tr>
+                                    <th style="width:140px">{{ t('anpr.time') }}</th>
+                                    <th style="width:130px">{{ t('anpr.camera') }}</th>
+                                    <th style="width:110px">{{ t('anpr.healthEvent') }}</th>
+                                    <th>{{ t('anpr.healthDetails') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="ev in healthData.events" :key="ev.id"
+                                    :class="ev.event === 'error' ? 'bg-red-lighten-5' : ev.event === 'reconnect' ? 'bg-orange-lighten-5' : ''">
+                                    <td class="text-caption">{{ formatDate(ev.ts) }}</td>
+                                    <td class="text-caption">{{ ev.camera_name || '-' }}</td>
+                                    <td>
+                                        <v-chip size="x-small" variant="flat"
+                                            :color="ev.event === 'error' ? 'error' : ev.event === 'reconnect' ? 'warning' : ev.event === 'start' ? 'info' : 'success'">
+                                            {{ t('anpr.event' + ev.event.charAt(0).toUpperCase() + ev.event.slice(1)) }}
+                                        </v-chip>
+                                    </td>
+                                    <td class="text-caption">
+                                        <template v-if="ev.event === 'heartbeat'">
+                                            {{ ev.frames }} {{ t('anpr.healthFrames') }},
+                                            {{ ev.detections }} {{ t('anpr.healthDetections') }},
+                                            {{ ev.skipped }} {{ t('anpr.healthSkipped') }}
+                                        </template>
+                                        <span v-else-if="ev.message" class="text-grey-darken-1">{{ ev.message }}</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </v-table>
+                    </v-card-text>
+
+                    <v-card-text v-else-if="healthLoaded" class="text-caption text-medium-emphasis">
+                        {{ t('anpr.healthNoData') }}
                     </v-card-text>
                 </v-card>
             </v-col>
@@ -87,6 +222,41 @@
                                         </v-tooltip>
                                     </td>
                                     <td>{{ hw.cpu?.model }} ({{ hw.cpu?.cores }}C/{{ hw.cpu?.threads }}T)</td>
+                                </tr>
+                                <!-- CPU-Last pro Kern -->
+                                <tr v-if="cpuLoad">
+                                    <td class="font-weight-medium align-top pt-2" style="white-space:nowrap">{{ t('anpr.cpuLoad') }}</td>
+                                    <td class="py-2">
+                                        <!-- Gesamt -->
+                                        <div class="d-flex align-center ga-2 mb-3">
+                                            <span class="text-caption text-medium-emphasis" style="min-width:44px">{{ t('anpr.cpuLoadTotal') }}</span>
+                                            <v-progress-linear
+                                                :model-value="cpuLoad['cpu'] ?? 0"
+                                                :color="cpuBarColor(cpuLoad['cpu'] ?? 0)"
+                                                bg-color="grey-lighten-3"
+                                                rounded height="14" style="flex:1" />
+                                            <span class="text-caption font-weight-bold" style="min-width:38px;text-align:right">
+                                                {{ cpuLoad['cpu'] ?? 0 }}%
+                                            </span>
+                                        </div>
+                                        <!-- Einzelne Kerne -->
+                                        <div class="d-flex flex-column ga-1">
+                                            <div v-for="(val, key) in cpuCores" :key="key"
+                                                class="d-flex align-center ga-2">
+                                                <span class="text-caption text-medium-emphasis" style="min-width:44px;font-size:11px">
+                                                    {{ t('anpr.cpuLoadThread') }}{{ key.replace('cpu','') }}
+                                                </span>
+                                                <v-progress-linear
+                                                    :model-value="val"
+                                                    :color="cpuBarColor(val)"
+                                                    bg-color="grey-lighten-3"
+                                                    rounded height="10" style="flex:1" />
+                                                <span class="text-caption" style="min-width:38px;text-align:right;font-size:11px">
+                                                    {{ val }}%
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </td>
                                 </tr>
                                 <!-- RAM -->
                                 <tr>
@@ -383,6 +553,20 @@
                                                     <v-icon v-bind="props" size="small" color="grey">mdi-information-outline</v-icon>
                                                 </template>
                                                 {{ t('anpr.minPlateHeightPx_help') }}
+                                            </v-tooltip>
+                                        </template>
+                                    </v-text-field>
+                                </v-col>
+                                <v-col cols="6" md="3">
+                                    <v-text-field v-model.number="cam.motion_size_pct" :label="t('anpr.motionSizePct')"
+                                        type="number" min="5" max="100" suffix="%"
+                                        variant="outlined" density="compact" hide-details="auto">
+                                        <template #append-inner>
+                                            <v-tooltip location="top">
+                                                <template #activator="{ props }">
+                                                    <v-icon v-bind="props" size="small" color="grey">mdi-information-outline</v-icon>
+                                                </template>
+                                                {{ t('anpr.motionSizePct_help') }}
                                             </v-tooltip>
                                         </template>
                                     </v-text-field>
@@ -737,6 +921,13 @@
                         <v-icon start>mdi-refresh</v-icon>
                         {{ t('anpr.loadHistory') }}
                     </v-btn>
+                    <v-select v-model="historyLimit"
+                        :items="historyLimitOptions"
+                        item-title="label" item-value="value"
+                        :label="t('anpr.historyLimit')"
+                        density="compact" variant="outlined" hide-details
+                        style="max-width:160px"
+                        @update:model-value="loadHistory" />
                     <v-btn v-if="!clearConfirm" color="error" variant="text" size="small"
                         :disabled="historyItems.length === 0"
                         @click="clearConfirm = true">
@@ -766,6 +957,7 @@
                             <th>{{ t('anpr.direction') }}</th>
                             <th>{{ t('anpr.action') }}</th>
                             <th>{{ t('anpr.snapshot') }}</th>
+                            <th></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -790,6 +982,12 @@
                                     <v-icon>mdi-camera</v-icon>
                                 </v-btn>
                                 <span v-else class="text-grey text-caption">-</span>
+                            </td>
+                            <td>
+                                <v-btn icon size="x-small" variant="text" color="grey"
+                                    @click="openDetectionDebug(d)">
+                                    <v-icon>mdi-bug-outline</v-icon>
+                                </v-btn>
                             </td>
                         </tr>
                     </tbody>
@@ -831,6 +1029,55 @@
                 </v-btn>
                 <v-spacer />
                 <v-btn @click="snapshotDialog = false">{{ t('close') }}</v-btn>
+            </v-card-actions>
+        </v-card>
+    </v-dialog>
+
+    <!-- Detection-Debug-Dialog -->
+    <v-dialog v-model="detectionDebugDialog" max-width="700">
+        <v-card v-if="detectionDebugItem">
+            <v-card-title class="d-flex align-center ga-2">
+                <v-icon color="grey">mdi-bug-outline</v-icon>
+                {{ t('anpr.debugTitle') }} #{{ detectionDebugItem.id }}
+                <v-chip size="x-small" variant="tonal" class="ml-1">{{ detectionDebugItem.c_ln }}</v-chip>
+            </v-card-title>
+            <v-card-text>
+                <v-table density="compact" style="font-size:12px">
+                    <tbody>
+                        <tr><td class="text-medium-emphasis">{{ t('anpr.debugId') }}</td><td>{{ detectionDebugItem.id }}</td></tr>
+                        <tr><td class="text-medium-emphasis">{{ t('anpr.debugTimestamp') }}</td><td>{{ formatDate(detectionDebugItem.detected_at) }}</td></tr>
+                        <tr><td class="text-medium-emphasis">{{ t('anpr.plate') }}</td><td><strong>{{ detectionDebugItem.c_ln }}</strong></td></tr>
+                        <tr><td class="text-medium-emphasis">{{ t('anpr.confidence') }}</td><td>{{ detectionDebugItem.confidence ? (detectionDebugItem.confidence * 100).toFixed(1) + '%' : '-' }}</td></tr>
+                        <tr><td class="text-medium-emphasis">{{ t('anpr.direction') }}</td>
+                            <td><v-chip v-if="detectionDebugItem.direction" size="x-small"
+                                :color="detectionDebugItem.direction === 'in' ? 'green' : 'orange'">
+                                {{ detectionDebugItem.direction === 'in' ? 'Einfahrt (in)' : 'Ausfahrt (out)' }}
+                            </v-chip><span v-else>-</span></td></tr>
+                        <tr><td class="text-medium-emphasis">{{ t('anpr.customer') }}</td><td>{{ detectionDebugItem.customer_name || '-' }} (ID: {{ detectionDebugItem.customer_id || '-' }})</td></tr>
+                        <tr><td class="text-medium-emphasis">{{ t('anpr.camera') }}</td><td>{{ detectionDebugItem.camera_name || '-' }} (ID: {{ detectionDebugItem.camera_id || '-' }})</td></tr>
+                        <tr v-if="detectionDebugItem.camera_rtsp"><td class="text-medium-emphasis">RTSP</td>
+                            <td class="text-caption" style="word-break:break-all">{{ detectionDebugItem.camera_rtsp }}</td></tr>
+                        <tr><td class="text-medium-emphasis">{{ t('anpr.action') }}</td><td>{{ detectionDebugItem.action_taken || '-' }}</td></tr>
+                        <tr><td class="text-medium-emphasis">{{ t('anpr.debugDismissed') }}</td><td>{{ detectionDebugItem.dismissed === 't' ? t('yes') : t('no') }}</td></tr>
+                        <tr><td class="text-medium-emphasis">{{ t('anpr.debugVehicleHeight') }}</td>
+                            <td>{{ detectionDebugItem.vehicle_height_px != null ? detectionDebugItem.vehicle_height_px + ' px' : '-' }}</td></tr>
+                        <tr><td class="text-medium-emphasis">{{ t('anpr.debugFrameSize') }}</td>
+                            <td>{{ detectionDebugItem.frame_width && detectionDebugItem.frame_height
+                                ? detectionDebugItem.frame_width + ' × ' + detectionDebugItem.frame_height + ' px'
+                                : '-' }}</td></tr>
+                        <tr><td class="text-medium-emphasis">{{ t('anpr.debugSnapshots') }}</td>
+                            <td>{{ detectionDebugItem.snapshot_count || 0 }}</td></tr>
+                    </tbody>
+                </v-table>
+            </v-card-text>
+            <v-card-actions>
+                <v-btn v-if="detectionDebugItem.has_snapshot" color="primary" variant="tonal" size="small"
+                    prepend-icon="mdi-camera"
+                    @click="openSnapshot(detectionDebugItem.id, detectionDebugItem.c_ln, detectionDebugItem.snapshot_count); detectionDebugDialog = false">
+                    {{ t('anpr.snapshot') }}
+                </v-btn>
+                <v-spacer />
+                <v-btn @click="detectionDebugDialog = false">{{ t('close') }}</v-btn>
             </v-card-actions>
         </v-card>
     </v-dialog>
@@ -931,10 +1178,49 @@
             </v-card-actions>
         </v-card>
     </v-dialog>
+
+    <!-- Sudo-Passwort-Dialog -->
+    <v-dialog v-model="sudoDialog" max-width="440" persistent>
+        <v-card>
+            <v-card-title class="d-flex align-center ga-2">
+                <v-icon color="warning">mdi-shield-lock-outline</v-icon>
+                {{ t('anpr.sudoTitle') }}
+            </v-card-title>
+            <v-card-text>
+                <p class="text-body-2 mb-4">
+                    {{ t('anpr.sudoInfo', { pkg: sudoPkg, user: sudoOwner }) }}
+                </p>
+                <v-text-field
+                    v-model="sudoPassword"
+                    :label="t('anpr.sudoPassword')"
+                    :type="sudoPasswordVisible ? 'text' : 'password'"
+                    :append-inner-icon="sudoPasswordVisible ? 'mdi-eye-off' : 'mdi-eye'"
+                    @click:append-inner="sudoPasswordVisible = !sudoPasswordVisible"
+                    variant="outlined" density="compact" autofocus
+                    @keydown.enter="confirmSudoInstall" />
+                <p class="text-caption text-medium-emphasis mt-1">
+                    {{ t('anpr.sudoHint') }}
+                </p>
+            </v-card-text>
+            <v-card-actions>
+                <v-btn variant="text" @click="sudoDialog = false; sudoPassword = ''">
+                    {{ t('cancel') }}
+                </v-btn>
+                <v-spacer />
+                <v-btn color="primary" variant="flat"
+                    :disabled="!sudoPassword"
+                    :loading="installingPkg === sudoPkg"
+                    @click="confirmSudoInstall">
+                    <v-icon start>mdi-package-down</v-icon>
+                    {{ t('anpr.hwInstall') }}
+                </v-btn>
+            </v-card-actions>
+        </v-card>
+    </v-dialog>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, reactive } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import axios from 'axios'
 import * as toasts from '@/core/utils/toasts.js'
@@ -963,12 +1249,17 @@ onMounted(async () => {
     loadHardwareInfo()
     loadCameras()
     loadActuators()
+    loadHistory()
+    loadHealth()
+    loadCpuLoad()
 
-    statusAutoRefresh = setInterval(checkServiceStatus, 30000)
+    statusAutoRefresh  = setInterval(checkServiceStatus, 30000)
+    cpuLoadRefreshTimer = setInterval(loadCpuLoad, 3000)
 })
 
 onUnmounted(() => {
     clearInterval(statusAutoRefresh)
+    clearInterval(cpuLoadRefreshTimer)
 })
 
 // --- Service-Status ---
@@ -976,8 +1267,10 @@ const serviceStatus = ref('unknown')
 const serviceDetails = ref(null)
 const statusLoading = ref(false)
 const restarting = ref(false)
+const serviceDebugOpen = ref(false)
 const restartPhaseIndex = ref(0)
-let statusAutoRefresh = null
+let statusAutoRefresh   = null
+let cpuLoadRefreshTimer = null
 
 const restartPhases = computed(() => [
     t('anpr.phaseStop'),
@@ -997,6 +1290,15 @@ const serviceStatusText = computed(() => {
     if (serviceStatus.value === 'failed') return t('anpr.statusFailed')
     return t('anpr.statusUnknown')
 })
+function formatServiceStart(ts) {
+    const d = new Date(ts * 1000)
+    const today = new Date()
+    const isToday = d.toDateString() === today.toDateString()
+    const time = d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+    if (isToday) return time
+    return d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }) + '  ' + time
+}
+
 const serviceUptime = computed(() => {
     const raw = serviceDetails.value?.started_at
     if (!raw) return ''
@@ -1053,10 +1355,39 @@ async function restartService() {
     setTimeout(checkServiceStatus, 1500)
 }
 
+// --- CPU-Last ---
+const cpuLoad = ref(null)
+
+const cpuCores = computed(() => {
+    if (!cpuLoad.value) return {}
+    return Object.fromEntries(
+        Object.entries(cpuLoad.value).filter(([k]) => k !== 'cpu')
+    )
+})
+
+function cpuBarColor(pct) {
+    if (pct >= 85) return 'error'
+    if (pct >= 60) return 'warning'
+    return 'success'
+}
+
+async function loadCpuLoad() {
+    try {
+        const res = await axios.post('/api/camera/', { action: 'getAnprCpuLoad' })
+        if (res.data.success) cpuLoad.value = res.data.payload?.load ?? null
+    } catch { /* ignore */ }
+}
+
 // --- Hardware-Info ---
 const hw = ref(null)
 const hwLoading = ref(false)
 const installingPkg = ref('')
+const sudoDialog = ref(false)
+const sudoPassword = ref('')
+const sudoPasswordVisible = ref(false)
+const sudoPkg = ref('')
+const sudoService = ref('')
+const sudoOwner = ref('')
 
 async function loadHardwareInfo() {
     hwLoading.value = true
@@ -1067,18 +1398,39 @@ async function loadHardwareInfo() {
     hwLoading.value = false
 }
 
-async function installPackage(pkg, service) {
+async function installPackage(pkg, service, password = '') {
     installingPkg.value = pkg
     try {
-        const res = await axios.post('/api/camera/', { action: 'installPythonPackage', package: pkg, service })
+        const payload = { action: 'installPythonPackage', package: pkg, service }
+        if (password) payload.sudo_password = password
+        const res = await axios.post('/api/camera/', payload)
+
         if (res.data.success) {
             toasts.success(t('anpr.hwInstallSuccess', { pkg }))
             loadHardwareInfo()
+        } else if (res.data.error === 'SUDO_PASSWORD_REQUIRED') {
+            sudoPkg.value = pkg
+            sudoService.value = service
+            sudoOwner.value = res.data.payload?.owner || ''
+            sudoPassword.value = ''
+            sudoPasswordVisible.value = false
+            sudoDialog.value = true
+        } else if (res.data.error === 'SUDO_WRONG_PASSWORD') {
+            toasts.error(t('anpr.sudoWrongPassword'))
+            sudoPassword.value = ''
+            sudoDialog.value = true
         } else {
-            toasts.error(t('anpr.hwInstallFailed', { pkg }) + '\n' + (res.data.payload?.output || ''))
+            toasts.error(t('anpr.hwInstallFailed', { pkg }) + (res.data.payload?.output ? '\n' + res.data.payload.output : ''))
         }
     } catch (e) { toasts.error(e.message) }
     installingPkg.value = ''
+}
+
+async function confirmSudoInstall() {
+    if (!sudoPassword.value) return
+    sudoDialog.value = false
+    await installPackage(sudoPkg.value, sudoService.value, sudoPassword.value)
+    sudoPassword.value = ''
 }
 
 const hwRecommendation = computed(() => {
@@ -1137,6 +1489,7 @@ async function loadCameras() {
                 save_snapshots: c.save_snapshots === 't' || c.save_snapshots === true,
                 excluded_cells: (() => { try { return JSON.parse(c.excluded_cells || '[]') } catch { return [] } })(),
                 min_plate_height_px: parseInt(c.min_plate_height_px) || 0,
+                motion_size_pct: parseInt(c.motion_size_pct) || 20,
                 _saving: false,
             }))
         }
@@ -1151,7 +1504,7 @@ function addCamera() {
         action_type: 'infobar', actuator_id: null, gate_height_mode: 'full',
         ignore_right_pct: 0, ignore_left_pct: 0, direction_required: true,
         grid_size: 10, save_snapshots: true, excluded_cells: [], min_plate_height_px: 0,
-        note: '', _saving: false,
+        motion_size_pct: 20, note: '', _saving: false,
     })
     openCameraPanel.value = cameras.value.length - 1
 }
@@ -1320,17 +1673,65 @@ const historyLoading = ref(false)
 const historyLoaded = ref(false)
 const historyClearing = ref(false)
 const clearConfirm = ref(false)
+const historyLimit = ref(200)
+const historyLimitOptions = [
+    { label: '50', value: 50 },
+    { label: '100', value: 100 },
+    { label: '200', value: 200 },
+    { label: '500', value: 500 },
+]
 
 async function loadHistory() {
     historyLoading.value = true
     try {
-        const res = await axios.post('/api/lxcars/', { action: 'getAnprDetectionHistory', limit: 50 })
+        const res = await axios.post('/api/lxcars/', {
+            action: 'getAnprDetectionHistory',
+            limit: historyLimit.value,
+        })
         if (res.data.success) {
             historyItems.value = res.data.payload?.detections || []
         }
     } catch { /* ignore */ }
     historyLoading.value = false
     historyLoaded.value = true
+}
+
+// --- Dienst-Diagnose ---
+const healthData = ref({ events: [], last_heartbeats: [], problems: [], today_count: 0 })
+const healthLoading = ref(false)
+const healthLoaded = ref(false)
+
+async function loadHealth() {
+    healthLoading.value = true
+    try {
+        const res = await axios.post('/api/lxcars/', { action: 'getAnprHealth' })
+        if (res.data.success) healthData.value = res.data.payload
+    } catch { /* ignore */ }
+    healthLoading.value = false
+    healthLoaded.value = true
+}
+
+function heartbeatAge(ts) {
+    if (!ts) return 9999
+    return Math.floor((Date.now() - new Date(ts).getTime()) / 1000)
+}
+
+function formatAge(ts) {
+    const sec = heartbeatAge(ts)
+    if (sec < 60) return `vor ${sec}s`
+    if (sec < 3600) return `vor ${Math.floor(sec / 60)}min`
+    return `vor ${Math.floor(sec / 3600)}h`
+}
+
+function cameraName(camId) {
+    const cam = cameras.value.find(c => c.id === camId)
+    return cam?.name || `Kamera #${camId}`
+}
+
+function problemsFor(camId) {
+    const p = healthData.value.problems?.find(x => x.camera_id === camId)
+    if (!p || (parseInt(p.reconnects) === 0 && parseInt(p.errors) === 0)) return null
+    return { reconnects: parseInt(p.reconnects), errors: parseInt(p.errors) }
 }
 
 async function clearHistory() {
@@ -1372,6 +1773,15 @@ function openSnapshot(id, plate, count) {
     snapshotPlate.value = plate
     snapshotCount.value = parseInt(count) || 1
     snapshotDialog.value = true
+}
+
+// --- Detection-Debug-Dialog ---
+const detectionDebugDialog = ref(false)
+const detectionDebugItem = ref(null)
+
+function openDetectionDebug(detection) {
+    detectionDebugItem.value = detection
+    detectionDebugDialog.value = true
 }
 
 // --- Live-Stream-Vorschau ---
