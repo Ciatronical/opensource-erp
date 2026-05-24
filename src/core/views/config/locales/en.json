@@ -708,6 +708,9 @@
         "lxcarsMechanicMode": "Mechanic Mode",
         "lxcarsMechanicModeEnabled": "Enable mechanic mode",
         "lxcarsMechanicModeEnabled_help": "Enables the mechanic mode for workshop tablets.\n\nThe mechanic sees only orders where they are assigned to a work instruction. They can:\n• Check off instructions and enter actual times\n• Edit positions\n• Record defects\n• Request spare parts (with optional photo)\n\nThe workshop manager sees pending part requests in the info bar and can mark them as ordered with supplier selection.\n\nTablet detection is automatic based on screen size.",
+        "lxcarsWartung": "Maintenance & Inspections",
+        "lxcarsWartungEnabled": "Show maintenance & service",
+        "lxcarsWartungEnabled_help": "Shows the \"Maintenance & Service\" and \"Inspections / Defects\" cards in orders. Disable for businesses that do not use maintenance or inspection tracking.",
         "filemanager": "File Manager",
         "fmDefaultView": "Default View",
         "fmDefaultView_help": "Default view when opening the file manager (list or grid)",
@@ -1127,7 +1130,16 @@
         "debugDismissed": "Dismissed",
         "debugVehicleHeight": "Vehicle height (measured)",
         "debugFrameSize": "Frame size",
-        "debugSnapshots": "Snapshots"
+        "debugSnapshots": "Snapshots",
+        "coralSetupTitle": "Google Coral: Manual installation required",
+        "coralSetupInfo": "pycoral requires the libedgetpu system library and must be installed from the Google Coral repository — not from PyPI. Please run these commands in a terminal:",
+        "coralStep1": "Step 1: Install libedgetpu (system library)",
+        "coralStep2": "Step 2: Install pycoral from the Coral repository",
+        "coralPython310Warning": "Note: Pre-built wheels may not be available for Python 3.10. If the pip command fails, pycoral must be built from source.",
+        "sudoSetupTitle": "Missing sudo permission",
+        "sudoNotAllowedInfo": "The web server user ({webUser}) is not allowed to run commands as {owner}. Set this up once as root:",
+        "sudoNotAllowedFix": "Create file and add:",
+        "sudoNotAllowedAdd": "Line for the sudoers file:"
     },
     "crm.lxcarsHuTriggerDescriptions": "Vehicle Inspection Trigger Descriptions",
     "crm.lxcarsHuTriggerDescriptions_help": "Comma-separated list of line item descriptions. If a line item contains one of these terms (substring, case-insensitive), the vehicle next inspection date is automatically set to today + 2 years (1st of month) when the invoice is created."

@@ -33,8 +33,7 @@
                                 prepend-inner-icon="mdi-magnify"
                                 clearable
                                 class="flex-grow-1"
-                                @keyup.enter="loadConversations"
-                                @click:clear="searchText = ''; loadConversations()"
+                                @click:clear="searchText = ''"
                             />
                             <v-btn variant="text" size="small" @click="loadConversations" :loading="loading">
                                 <v-icon size="small">mdi-refresh</v-icon>
@@ -99,19 +98,14 @@
                             <v-avatar size="32" color="green-lighten-4" class="mr-2 text-green-darken-2 font-weight-bold text-body-2">
                                 {{ initials(selectedConv.customer_name || selectedConv.contact_name || selectedConv.phone_number) }}
                             </v-avatar>
-                            <div class="flex-grow-1">
-                                <div class="text-subtitle-2">{{ selectedConv.customer_name || selectedConv.contact_name || selectedConv.phone_number }}</div>
+                            <div
+                                class="flex-grow-1"
+                                :class="{ 'cursor-pointer': selectedConv.customer_id }"
+                                @click="selectedConv.customer_id && openCustomer(selectedConv)"
+                            >
+                                <div class="text-subtitle-2" :class="{ 'text-primary': selectedConv.customer_id }">{{ selectedConv.customer_name || selectedConv.contact_name || selectedConv.phone_number }}</div>
                                 <div class="text-caption text-medium-emphasis">{{ selectedConv.phone_number }}</div>
                             </div>
-                            <v-btn
-                                v-if="selectedConv.customer_id"
-                                variant="text"
-                                size="x-small"
-                                color="primary"
-                                @click="openCustomer(selectedConv)"
-                            >
-                                <v-icon size="small">mdi-open-in-new</v-icon>
-                            </v-btn>
                             <v-btn variant="text" size="x-small" icon @click="selectedConv = null; chatMessages = []">
                                 <v-icon size="small">mdi-close</v-icon>
                             </v-btn>
@@ -764,7 +758,7 @@
 </template>
 
 <script>
-import { ref, reactive, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, reactive, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import axios from 'axios'
 import { useI18n } from 'vue-i18n'
 import { useRouter, useRoute } from 'vue-router'
@@ -792,6 +786,11 @@ export default {
         const loading = ref(false)
         const configError = ref(false)
         const searchText = ref('')
+        let searchDebounceTimer = null
+        watch(searchText, () => {
+            if (searchDebounceTimer) clearTimeout(searchDebounceTimer)
+            searchDebounceTimer = setTimeout(loadConversations, 300)
+        })
 
         const selectedConv = ref(null)
         const chatMessages = ref([])

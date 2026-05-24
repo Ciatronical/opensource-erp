@@ -43,6 +43,9 @@ const lxcarsDefaultsConfig = [
     { name: "lxcars_mechanic_mode", type: "headline", label: "crm_fields.lxcarsMechanicMode" },
     { name: "lxcars_mechanic_mode", type: "checkbox", label: "crm_fields.lxcarsMechanicModeEnabled", tooltip: "crm_fields.lxcarsMechanicModeEnabled_help" },
     { name: "lxcars_employee_group", type: "dynamic-select", source: "auth_groups", itemTitle: "name", itemValue: "id", fieldstyle: "max-width: 60ch", label: "crm_fields.lxcarsEmployeeGroup", tooltip: "crm_fields.lxcarsEmployeeGroup_help" },
+
+    { name: "lxcars_wartung", type: "headline", label: "crm_fields.lxcarsWartung" },
+    { name: "lxcars_wartung_enabled", type: "checkbox", label: "crm_fields.lxcarsWartungEnabled", tooltip: "crm_fields.lxcarsWartungEnabled_help" },
 ];
 
 export default lxcarsDefaultsConfig;

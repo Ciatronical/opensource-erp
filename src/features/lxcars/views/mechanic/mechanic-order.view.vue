@@ -73,7 +73,7 @@
                 </section>
 
                 <!-- Wartung & Service (nicht bei Anhängern) -->
-                <section v-if="vehicle && !vehicle.isTrailer.value" class="mb-4">
+                <section v-if="vehicle && !vehicle.isTrailer.value && wartungEnabled" class="mb-4">
                     <maintenance-section-card
                         :oe-ext-data="vehicle.oeExtData.value"
                         :has-car="!!vehicle.selectedCarId.value"
@@ -125,7 +125,7 @@
                 </section>
 
                 <!-- Mängel -->
-                <section v-if="vehicle" class="mb-4">
+                <section v-if="vehicle && wartungEnabled" class="mb-4">
                     <maengel-section-card
                         ref="maengelRef"
                         :oe-id="fakturaId"
@@ -426,9 +426,16 @@ const vehicle = useVehicleSection({
 // Wartung-Validierung beim Abschluss der letzten Anweisung
 const maintenanceIncompleteDialog = ref({ show: false, fields: [] })
 
+const wartungEnabled = computed(() => {
+    const val = oserp.getClientDefaultValue('lxcars_wartung_enabled', true)
+    if (val === null || val === undefined || val === '') return true
+    return val === true || val === 'true' || val === 't' || val === '1'
+})
+
 function validateMaintenanceBeforeComplete() {
     if (!vehicle || !vehicle.selectedCarId.value) return true
     if (vehicle.isTrailer.value) return true
+    if (!wartungEnabled.value) return true
     const e = vehicle.oeExtData.value || {}
     const missing = []
     if (!e.km_stand) missing.push('km_stand')

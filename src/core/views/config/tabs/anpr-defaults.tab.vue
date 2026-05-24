@@ -129,7 +129,8 @@
         <v-row class="mb-4">
             <v-col cols="12">
                 <v-card variant="outlined">
-                    <v-card-title class="text-body-1 font-weight-medium d-flex align-center">
+                    <v-card-title class="text-body-1 font-weight-medium d-flex align-center"
+                        style="cursor:pointer" @click="healthOpen = !healthOpen">
                         <v-icon class="mr-2" size="20">mdi-chart-line</v-icon>
                         {{ t('anpr.health') }}
                         <v-chip v-if="healthData.today_count > 0" size="x-small" color="primary" variant="tonal" class="ml-2">
@@ -137,9 +138,12 @@
                         </v-chip>
                         <v-spacer />
                         <v-btn variant="text" size="small" icon="mdi-refresh"
-                            :loading="healthLoading" @click="loadHealth" />
+                            :loading="healthLoading" @click.stop="loadHealth" />
+                        <v-icon size="small" class="ml-1">{{ healthOpen ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
                     </v-card-title>
 
+                    <v-expand-transition>
+                    <div v-show="healthOpen">
                     <v-card-text v-if="healthData.events?.length > 0" class="pa-0">
                         <!-- Zusammenfassung pro Kamera -->
                         <div v-if="healthData.last_heartbeats?.length > 0" class="px-4 pt-3 pb-2 d-flex flex-wrap ga-3">
@@ -192,6 +196,46 @@
 
                     <v-card-text v-else-if="healthLoaded" class="text-caption text-medium-emphasis">
                         {{ t('anpr.healthNoData') }}
+                    </v-card-text>
+                    </div>
+                    </v-expand-transition>
+                </v-card>
+            </v-col>
+        </v-row>
+
+        <!-- Service-Log -->
+        <v-row class="mb-4">
+            <v-col cols="12">
+                <v-card variant="outlined">
+                    <v-card-title class="text-body-1 font-weight-medium d-flex align-center">
+                        <v-icon class="mr-2" size="20">mdi-text-box-outline</v-icon>
+                        {{ t('anpr.serviceLog') }}
+                        <v-chip v-if="logLines.length" size="x-small" color="primary" variant="tonal" class="ml-2">
+                            {{ logLines.length }} {{ t('anpr.logLines') }}
+                        </v-chip>
+                        <v-spacer />
+                        <v-select
+                            v-model="logLineCount"
+                            :items="[50, 100, 200, 500]"
+                            density="compact" variant="outlined" hide-details
+                            style="max-width:90px" class="mr-2"
+                            @update:model-value="loadLog"
+                        />
+                        <v-btn variant="text" size="small" icon="mdi-refresh"
+                            :loading="logLoading" @click="loadLog" />
+                        <v-btn variant="text" size="small"
+                            :icon="logAutoRefresh ? 'mdi-pause' : 'mdi-play'"
+                            :color="logAutoRefresh ? 'success' : ''"
+                            @click="toggleLogAutoRefresh" />
+                    </v-card-title>
+                    <v-card-text class="pa-0">
+                        <pre v-if="logLines.length"
+                            ref="logPreRef"
+                            style="font-size:10px;max-height:320px;overflow-y:auto;background:#0d1117;color:#c9d1d9;padding:10px 12px;white-space:pre-wrap;word-break:break-all;margin:0;border-radius:0 0 4px 4px"
+                        >{{ logLines.join('\n') }}</pre>
+                        <div v-else-if="!logLoading" class="pa-4 text-caption text-medium-emphasis">
+                            {{ t('anpr.logEmpty') }}
+                        </div>
                     </v-card-text>
                 </v-card>
             </v-col>
@@ -689,10 +733,15 @@
                                 <v-col cols="12" class="d-flex align-center flex-wrap ga-4">
                                     <v-checkbox v-model="cam.enabled" :label="t('anpr.cameraEnabled')"
                                         hide-details density="compact" />
-                                    <v-checkbox v-model="cam.direction_required" :label="t('anpr.directionRequired')"
-                                        hide-details density="compact" />
                                     <v-checkbox v-model="cam.save_snapshots" :label="t('anpr.saveSnapshots')"
                                         hide-details density="compact" color="orange" />
+                                </v-col>
+                                <v-col cols="12" sm="6" md="4">
+                                    <v-select v-model="cam.direction_filter"
+                                        :label="t('anpr.directionFilter')"
+                                        :items="directionFilterOptions"
+                                        item-title="title" item-value="value"
+                                        variant="outlined" density="compact" hide-details="auto" />
                                 </v-col>
                             </v-row>
 
@@ -1082,6 +1131,102 @@
         </v-card>
     </v-dialog>
 
+    <!-- ================================================================ -->
+    <!-- NEAR-MISS DEBUG-SNAPSHOTS -->
+    <!-- ================================================================ -->
+    <template v-if="crmDefaults['anpr_debug_snapshots'] == true || crmDefaults['anpr_debug_snapshots'] === '1' || crmDefaults['anpr_debug_snapshots'] === 't'">
+        <v-row class="mt-8 mb-2">
+            <v-col cols="12">
+                <h3 class="text-h6 text-primary">
+                    <v-icon start>mdi-image-search-outline</v-icon>
+                    {{ t('anpr.nearMissTitle') }}
+                </h3>
+                <v-divider class="mt-2" />
+            </v-col>
+        </v-row>
+        <v-row>
+            <v-col cols="12">
+                <div class="d-flex align-center ga-2 mb-3 flex-wrap">
+                    <v-btn color="primary" variant="tonal" size="small" :loading="nearMissLoading" @click="loadNearMiss">
+                        <v-icon start>mdi-refresh</v-icon>
+                        {{ t('anpr.loadHistory') }}
+                    </v-btn>
+                    <span v-if="nearMissTotal > 0" class="text-caption text-medium-emphasis">
+                        {{ t('anpr.nearMissTotal', { n: nearMissTotal }) }}
+                    </span>
+                    <v-spacer />
+                    <v-btn v-if="!nearMissClearConfirm" color="error" variant="text" size="small"
+                        :disabled="nearMissLoaded && nearMissItems.length === 0"
+                        @click="nearMissClearConfirm = true">
+                        <v-icon start>mdi-delete-sweep</v-icon>
+                        {{ t('anpr.nearMissClear') }}
+                    </v-btn>
+                    <template v-if="nearMissClearConfirm">
+                        <span class="text-caption text-error">{{ t('anpr.clearConfirm') }}</span>
+                        <v-btn color="error" variant="flat" size="small"
+                            :loading="nearMissClearing"
+                            @click="clearNearMiss">
+                            {{ t('anpr.clearHistory') }}
+                        </v-btn>
+                        <v-btn variant="text" size="small" @click="nearMissClearConfirm = false">
+                            {{ t('cancel') }}
+                        </v-btn>
+                    </template>
+                </div>
+
+                <v-alert v-if="nearMissLoaded && nearMissItems.length === 0"
+                    type="info" variant="tonal" density="compact">
+                    {{ t('anpr.nearMissEmpty') }}
+                </v-alert>
+
+                <div v-else-if="nearMissItems.length > 0"
+                    class="d-flex flex-wrap ga-3">
+                    <v-card v-for="item in nearMissItems" :key="item.filename"
+                        variant="outlined" style="width:240px;cursor:pointer"
+                        @click="nearMissPreview = item">
+                        <img :src="`/api/lxcars/anpr-snapshot.php?debug=${encodeURIComponent(item.filename)}`"
+                            style="width:100%;height:140px;object-fit:cover;display:block"
+                            loading="lazy" />
+                        <v-card-text class="pa-2">
+                            <div class="text-caption font-weight-medium">{{ item.plate || '—' }}</div>
+                            <div class="d-flex align-center ga-1 mt-1 flex-wrap">
+                                <v-chip size="x-small" variant="tonal"
+                                    :color="item.reason === 'klein' ? 'warning' : 'orange'">
+                                    {{ t('anpr.nearMissReason_' + item.reason) || item.reason }}
+                                </v-chip>
+                                <span class="text-caption text-medium-emphasis">{{ item.cam_name }}</span>
+                            </div>
+                            <div class="text-caption text-medium-emphasis mt-1">
+                                {{ item.ts ? new Date(item.ts * 1000).toLocaleString('de-DE') : '' }}
+                            </div>
+                        </v-card-text>
+                    </v-card>
+                </div>
+            </v-col>
+        </v-row>
+    </template>
+
+    <!-- Near-miss Vollbild-Vorschau -->
+    <v-dialog v-model="nearMissPreviewOpen" max-width="1000">
+        <v-card v-if="nearMissPreview">
+            <v-card-title class="d-flex align-center pa-3">
+                <v-chip size="small" variant="tonal"
+                    :color="nearMissPreview.reason === 'klein' ? 'warning' : 'orange'" class="mr-2">
+                    {{ t('anpr.nearMissReason_' + nearMissPreview.reason) || nearMissPreview.reason }}
+                </v-chip>
+                {{ nearMissPreview.plate || '—' }} · {{ nearMissPreview.cam_name }}
+                <v-spacer />
+                <v-btn icon="mdi-close" size="small" variant="text" @click="nearMissPreview = null" />
+            </v-card-title>
+            <img :src="`/api/lxcars/anpr-snapshot.php?debug=${encodeURIComponent(nearMissPreview.filename)}`"
+                style="width:100%;max-height:70vh;object-fit:contain;display:block" />
+            <v-card-text class="text-caption text-medium-emphasis pa-2">
+                {{ nearMissPreview.ts ? new Date(nearMissPreview.ts * 1000).toLocaleString('de-DE') : '' }}
+                · {{ nearMissPreview.filename }}
+            </v-card-text>
+        </v-card>
+    </v-dialog>
+
     <!-- Live-Stream-Dialog -->
     <v-dialog v-model="streamDialog" max-width="960" @update:model-value="onStreamDialogChange">
         <v-card>
@@ -1179,6 +1324,59 @@
         </v-card>
     </v-dialog>
 
+    <!-- Coral / Sudo-Setup-Dialog -->
+    <v-dialog v-model="setupDialog" max-width="640">
+        <v-card v-if="setupDialogData">
+            <v-card-title class="d-flex align-center ga-2">
+                <v-icon color="primary">mdi-console</v-icon>
+                {{ setupDialogData.type === 'CORAL_SETUP_REQUIRED' ? t('anpr.coralSetupTitle') : t('anpr.sudoSetupTitle') }}
+            </v-card-title>
+            <v-card-text>
+
+                <!-- Coral Setup -->
+                <template v-if="setupDialogData.type === 'CORAL_SETUP_REQUIRED'">
+                    <v-alert type="info" variant="tonal" density="compact" class="mb-4">
+                        {{ t('anpr.coralSetupInfo') }}
+                    </v-alert>
+
+                    <p class="text-body-2 font-weight-bold mb-1">
+                        {{ t('anpr.coralStep1') }}
+                        <v-chip v-if="setupDialogData.lib_installed" size="x-small" color="success" class="ml-1">{{ t('installed') }}</v-chip>
+                        <v-chip v-else size="x-small" color="warning" class="ml-1">{{ t('missing') }}</v-chip>
+                    </p>
+                    <pre class="setup-cmd mb-4">echo "deb https://packages.cloud.google.com/apt coral-edgetpu-stable main" | sudo tee /etc/apt/sources.list.d/coral-edgetpu.list
+curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+sudo apt-get update
+sudo apt-get install -y libedgetpu1-std</pre>
+
+                    <p class="text-body-2 font-weight-bold mb-1">{{ t('anpr.coralStep2') }}</p>
+                    <pre v-if="setupDialogData.fake_installed" class="setup-cmd mb-2">{{ setupDialogData.venv_pip }} uninstall -y pycoral</pre>
+                    <pre class="setup-cmd mb-4">{{ setupDialogData.venv_pip }} install --extra-index-url https://google-coral.github.io/py-repo/ pycoral~=2.0</pre>
+
+                    <v-alert type="warning" variant="tonal" density="compact">
+                        {{ t('anpr.coralPython310Warning') }}
+                    </v-alert>
+                </template>
+
+                <!-- Sudo Not Allowed -->
+                <template v-else-if="setupDialogData.type === 'SUDO_NOT_ALLOWED'">
+                    <v-alert type="warning" variant="tonal" density="compact" class="mb-4">
+                        {{ t('anpr.sudoNotAllowedInfo', { webUser: setupDialogData.web_user || 'www-data', owner: setupDialogData.owner }) }}
+                    </v-alert>
+                    <p class="text-body-2 font-weight-bold mb-1">{{ t('anpr.sudoNotAllowedFix') }}</p>
+                    <pre class="setup-cmd">sudo visudo -f /etc/sudoers.d/anpr-pip</pre>
+                    <p class="text-caption text-medium-emphasis mt-1 mb-2">{{ t('anpr.sudoNotAllowedAdd') }}</p>
+                    <pre class="setup-cmd mb-4">{{ setupDialogData.web_user || 'www-data' }} ALL=({{ setupDialogData.owner }}) NOPASSWD: {{ setupDialogData.pip }} install *</pre>
+                </template>
+
+            </v-card-text>
+            <v-card-actions>
+                <v-spacer />
+                <v-btn @click="setupDialog = false">{{ t('close') }}</v-btn>
+            </v-card-actions>
+        </v-card>
+    </v-dialog>
+
     <!-- Sudo-Passwort-Dialog -->
     <v-dialog v-model="sudoDialog" max-width="440" persistent>
         <v-card>
@@ -1220,7 +1418,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import axios from 'axios'
 import * as toasts from '@/core/utils/toasts.js'
@@ -1251,6 +1449,7 @@ onMounted(async () => {
     loadActuators()
     loadHistory()
     loadHealth()
+    loadLog()
     loadCpuLoad()
 
     statusAutoRefresh  = setInterval(checkServiceStatus, 30000)
@@ -1260,6 +1459,7 @@ onMounted(async () => {
 onUnmounted(() => {
     clearInterval(statusAutoRefresh)
     clearInterval(cpuLoadRefreshTimer)
+    if (logAutoRefreshTimer) clearInterval(logAutoRefreshTimer)
 })
 
 // --- Service-Status ---
@@ -1388,6 +1588,8 @@ const sudoPasswordVisible = ref(false)
 const sudoPkg = ref('')
 const sudoService = ref('')
 const sudoOwner = ref('')
+const setupDialog = ref(false)
+const setupDialogData = ref(null)
 
 async function loadHardwareInfo() {
     hwLoading.value = true
@@ -1419,6 +1621,9 @@ async function installPackage(pkg, service, password = '') {
             toasts.error(t('anpr.sudoWrongPassword'))
             sudoPassword.value = ''
             sudoDialog.value = true
+        } else if (res.data.error === 'CORAL_SETUP_REQUIRED' || res.data.error === 'SUDO_NOT_ALLOWED') {
+            setupDialogData.value = { type: res.data.error, ...res.data.payload }
+            setupDialog.value = true
         } else {
             toasts.error(t('anpr.hwInstallFailed', { pkg }) + (res.data.payload?.output ? '\n' + res.data.payload.output : ''))
         }
@@ -1474,6 +1679,11 @@ const gateHeightModes = [
     { value: 'full', title: t('anpr.gateHeightFull') },
     { value: 'vehicle_height', title: t('anpr.gateHeightVehicle') },
 ]
+const directionFilterOptions = [
+    { value: 'moving',      title: t('anpr.directionFilter_moving') },
+    { value: 'approaching', title: t('anpr.directionFilter_approaching') },
+    { value: 'off',         title: t('anpr.directionFilter_off') },
+]
 
 async function loadCameras() {
     try {
@@ -1483,6 +1693,7 @@ async function loadCameras() {
                 ...c,
                 enabled: c.enabled === 't' || c.enabled === true,
                 direction_required: c.direction_required === 't' || c.direction_required === true,
+                direction_filter: c.direction_filter || 'approaching',
                 ignore_right_pct: parseInt(c.ignore_right_pct) || 0,
                 ignore_left_pct: parseInt(c.ignore_left_pct) || 0,
                 grid_size: parseInt(c.grid_size) || 10,
@@ -1503,6 +1714,7 @@ function addCamera() {
         min_confidence: 0.60, min_detections: 2, cooldown_minutes: 5,
         action_type: 'infobar', actuator_id: null, gate_height_mode: 'full',
         ignore_right_pct: 0, ignore_left_pct: 0, direction_required: true,
+        direction_filter: 'moving',
         grid_size: 10, save_snapshots: true, excluded_cells: [], min_plate_height_px: 0,
         motion_size_pct: 20, note: '', _saving: false,
     })
@@ -1674,6 +1886,45 @@ const historyLoaded = ref(false)
 const historyClearing = ref(false)
 const clearConfirm = ref(false)
 const historyLimit = ref(200)
+
+// --- Near-miss Debug-Snapshots ---
+const nearMissItems = ref([])
+const nearMissTotal = ref(0)
+const nearMissLoading = ref(false)
+const nearMissLoaded = ref(false)
+const nearMissClearing = ref(false)
+const nearMissClearConfirm = ref(false)
+const nearMissPreview = ref(null)
+const nearMissPreviewOpen = computed({
+    get: () => nearMissPreview.value !== null,
+    set: (v) => { if (!v) nearMissPreview.value = null }
+})
+
+async function loadNearMiss() {
+    nearMissLoading.value = true
+    try {
+        const res = await axios.post('/api/lxcars/', { action: 'getAnprDebugSnapshots' })
+        if (res.data.success) {
+            nearMissItems.value = res.data.payload?.snapshots || []
+            nearMissTotal.value = res.data.payload?.total || 0
+        }
+    } catch { /* ignore */ }
+    nearMissLoading.value = false
+    nearMissLoaded.value = true
+}
+
+async function clearNearMiss() {
+    nearMissClearing.value = true
+    try {
+        const res = await axios.post('/api/lxcars/', { action: 'clearAnprDebugSnapshots' })
+        if (res.data.success) {
+            nearMissItems.value = []
+            nearMissTotal.value = 0
+        }
+    } catch { /* ignore */ }
+    nearMissClearing.value = false
+    nearMissClearConfirm.value = false
+}
 const historyLimitOptions = [
     { label: '50', value: 50 },
     { label: '100', value: 100 },
@@ -1697,9 +1948,44 @@ async function loadHistory() {
 }
 
 // --- Dienst-Diagnose ---
+// --- Service-Log ---
+const logLines = ref([])
+const logLoading = ref(false)
+const logLineCount = ref(200)
+const logAutoRefresh = ref(false)
+const logPreRef = ref(null)
+let logAutoRefreshTimer = null
+
+async function loadLog(scrollToBottom = true) {
+    logLoading.value = true
+    try {
+        const res = await axios.post('/api/lxcars/', { action: 'getAnprLog', lines: logLineCount.value })
+        if (res.data.success) {
+            logLines.value = res.data.payload?.lines || []
+            if (scrollToBottom) {
+                await nextTick()
+                if (logPreRef.value) logPreRef.value.scrollTop = logPreRef.value.scrollHeight
+            }
+        }
+    } catch { /* ignore */ }
+    logLoading.value = false
+}
+
+function toggleLogAutoRefresh() {
+    logAutoRefresh.value = !logAutoRefresh.value
+    if (logAutoRefresh.value) {
+        loadLog()
+        logAutoRefreshTimer = setInterval(() => loadLog(true), 5000)
+    } else {
+        clearInterval(logAutoRefreshTimer)
+        logAutoRefreshTimer = null
+    }
+}
+
 const healthData = ref({ events: [], last_heartbeats: [], problems: [], today_count: 0 })
 const healthLoading = ref(false)
 const healthLoaded = ref(false)
+const healthOpen = ref(false)
 
 async function loadHealth() {
     healthLoading.value = true
@@ -1885,5 +2171,15 @@ function onStreamDialogChange(open) {
 @keyframes anpr-pulse {
     0%, 100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.5); }
     50%       { box-shadow: 0 0 0 7px rgba(76, 175, 80, 0); }
+}
+.setup-cmd {
+    background: #1e1e2e;
+    color: #cdd6f4;
+    font-size: 12px;
+    padding: 10px 14px;
+    border-radius: 6px;
+    white-space: pre-wrap;
+    word-break: break-all;
+    user-select: all;
 }
 </style>

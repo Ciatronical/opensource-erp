@@ -166,6 +166,12 @@
             "vehicleSection": "Fahrzeug / Auftragsdaten",
             "kmStand": "km-Stand",
             "kmStandRequired": "km-Stand ist Pflichtfeld – bitte vor der Rechnungserstellung eintragen.",
+            "kmPlausibility": {
+                "title": "km-Stand nicht plausibel",
+                "text": "Der eingetragene km-Stand ({current} km) liegt unter dem zuletzt erfassten Wert ({last} km) für dieses Fahrzeug. Bitte den km-Stand prüfen.",
+                "cancel": "Korrigieren",
+                "proceed": "Trotzdem fortfahren"
+            },
             "status": "Status",
             "kfzOrt": "Fahrzeugstandort",
             "kfzOrtOptions": {

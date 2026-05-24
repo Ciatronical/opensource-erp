@@ -435,6 +435,32 @@ function getCar($data) {
 }
 
 /**
+ * Prüft den km-Stand eines Auftrags auf Plausibilität gegen alle früheren Aufträge/Rechnungen desselben Fahrzeugs.
+ * Gibt den höchsten bisher erfassten km-Stand zurück (0 wenn kein Vorgänger vorhanden).
+ *
+ * @param int $data['oe_id'] Aktuelle Auftrags-ID (wird ausgeschlossen)
+ * @param int $data['c_id']  Fahrzeug-ID
+ * @testdata {"oe_id": 1, "c_id": 1}
+ */
+function checkKmStandPlausibility($data) {
+    $db = DbhCompany::begin();
+    $oeId  = intval($data['oe_id']);
+    $carId = intval($data['c_id']);
+
+    $row = $db->getOne(
+        "SELECT GREATEST(
+             COALESCE((SELECT MAX(e.km_stand) FROM oe_ext e
+                       WHERE e.c_id = :c_id AND e.oe_id != :oe_id AND e.km_stand IS NOT NULL), 0),
+             COALESCE((SELECT MAX(e.km_stand) FROM ar_ext e
+                       WHERE e.c_id = :c_id2 AND e.km_stand IS NOT NULL), 0)
+         ) AS last_km",
+        [':c_id' => $carId, ':oe_id' => $oeId, ':c_id2' => $carId]
+    );
+
+    resultInfo(true, 'OK', ['last_km' => $row ? intval($row['last_km']) : 0]);
+}
+
+/**
  * Lädt die Aufträge eines Fahrzeugs via oe_ext
  *
  * @param int $data['id'] c_id des Fahrzeugs

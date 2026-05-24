@@ -182,7 +182,7 @@
             </section>
 
             <!-- Wartung & Service (lxcars Feature, nur bei Auftrag, nicht bei Anhängern) -->
-            <section class="faktura-section" v-if="vehicle && fakturaType === 'order' && faktura.data && !vehicle.isTrailer.value">
+            <section class="faktura-section" v-if="vehicle && fakturaType === 'order' && faktura.data && !vehicle.isTrailer.value && wartungEnabled">
                 <maintenance-section-card
                     :oe-ext-data="vehicle.oeExtData.value"
                     :has-car="!!vehicle.selectedCarId.value"
@@ -237,7 +237,7 @@
             </section>
 
             <!-- Mängel (lxcars Feature, bei Aufträgen, Angeboten und Rechnungen) -->
-            <section class="faktura-section" v-if="vehicle && (fakturaType === 'order' || fakturaType === 'invoice' || fakturaType === 'quotation') && faktura.data">
+            <section class="faktura-section" v-if="vehicle && (fakturaType === 'order' || fakturaType === 'invoice' || fakturaType === 'quotation') && faktura.data && wartungEnabled">
                 <maengel-section-card ref="maengelRef" :oe-id="fakturaId" :ensure-oe-id="ensureOrderAndGetId" :doc-type="fakturaType === 'invoice' ? 'invoice' : 'order'" />
             </section>
 
@@ -312,6 +312,30 @@
                 </v-card>
             </section>
         </v-container>
+
+        <!-- km-Stand Plausibilitäts-Dialog -->
+        <v-dialog v-model="kmPlausibilityDialog.show" max-width="520" @keydown.esc="kmPlausibilityDialog.show = false">
+            <v-card>
+                <v-card-title class="d-flex align-center py-3 px-4 bg-warning">
+                    <v-icon class="mr-2">mdi-speedometer-slow</v-icon>
+                    {{ t('FakturaView.faktura.kmPlausibility.title') }}
+                    <v-spacer />
+                    <v-btn icon="mdi-close" variant="text" density="compact" size="small" @click="kmPlausibilityDialog.show = false" />
+                </v-card-title>
+                <v-card-text class="pt-4 pb-2">
+                    <p>{{ t('FakturaView.faktura.kmPlausibility.text', { current: kmPlausibilityDialog.currentKm?.toLocaleString('de-DE'), last: kmPlausibilityDialog.lastKm?.toLocaleString('de-DE') }) }}</p>
+                </v-card-text>
+                <v-card-actions class="pa-4 pt-0">
+                    <v-spacer />
+                    <v-btn variant="text" @click="kmPlausibilityDialog.show = false">
+                        {{ t('FakturaView.faktura.kmPlausibility.cancel') }}
+                    </v-btn>
+                    <v-btn color="warning" variant="elevated" prepend-icon="mdi-check-bold" @click="kmPlausibilityDialog.show = false; convertAndNavigate('invoice')">
+                        {{ t('FakturaView.faktura.kmPlausibility.proceed') }}
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
 
         <!-- Delete Item Confirmation Dialog -->
         <v-dialog v-model="items.deleteDialog.value.show" max-width="400" @keydown.esc="items.deleteDialog.value.show = false">
@@ -1178,6 +1202,13 @@ export default defineComponent({
             return val === true || val === 'true' || val === 't' || val === '1'
         })
 
+        const wartungEnabled = computed(() => {
+            if (!oserp.isLxCars()) return false
+            const val = oserp.getClientDefaultValue('lxcars_wartung_enabled', true)
+            if (val === null || val === undefined || val === '') return true
+            return val === true || val === 'true' || val === 't' || val === '1'
+        })
+
         // Ersatzteil-Bestellstatus pro Position
         const partsRequestsList = ref([])
 
@@ -1709,6 +1740,7 @@ export default defineComponent({
         function validateMaintenanceBeforeComplete() {
             if (!vehicle || !vehicle.selectedCarId.value) return true
             if (vehicle.isTrailer.value) return true
+            if (!wartungEnabled.value) return true
             const e = vehicle.oeExtData.value || {}
             const missing = []
             if (!e.km_stand) missing.push('km_stand')
@@ -1911,15 +1943,28 @@ export default defineComponent({
             convertAndNavigate('delivery_order')
         }
 
+        const kmPlausibilityDialog = ref({ show: false, currentKm: 0, lastKm: 0 })
+
         async function createInvoiceFromFaktura() {
             // Anweisungen validieren (nur lxcars)
             if (vehicle) {
                 const valid = await validateInstructionsComplete()
                 if (!valid) return
                 // km_stand ist Pflicht für Autos und Motorräder (nicht Anhänger)
-                if (vehicle.selectedCarId.value && !vehicle.isTrailer.value && !vehicle.oeExtData.value?.km_stand) {
-                    toasts.error(t('FakturaView.faktura.kmStandRequired'))
-                    return
+                if (vehicle.selectedCarId.value && !vehicle.isTrailer.value) {
+                    const kmStand = vehicle.oeExtData.value?.km_stand
+                    if (!kmStand) {
+                        toasts.error(t('FakturaView.faktura.kmStandRequired'))
+                        return
+                    }
+                    // Plausibilitätsprüfung gegen frühere Aufträge/Rechnungen
+                    try {
+                        const result = await carsStore.checkKmStandPlausibility(fakturaId.value, vehicle.selectedCarId.value)
+                        if (result.last_km > 0 && kmStand < result.last_km) {
+                            kmPlausibilityDialog.value = { show: true, currentKm: kmStand, lastKm: result.last_km }
+                            return
+                        }
+                    } catch { /* Bei Netzwerkfehler trotzdem weitermachen */ }
                 }
             }
             convertAndNavigate('invoice')
@@ -2677,6 +2722,7 @@ export default defineComponent({
             instructionsIncompleteDialog,
             maintenanceIncompleteDialog,
             validateMaintenanceBeforeComplete,
+            kmPlausibilityDialog,
             // Actions
             saveFaktura,
             closeView,
@@ -2750,6 +2796,7 @@ export default defineComponent({
             showSpecialButton,
             wallDisplayEnabled,
             mechanicModeEnabled,
+            wartungEnabled,
             partsRequestsList,
             recentVendorsList,
             onRequestPart,

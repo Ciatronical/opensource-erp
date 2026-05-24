@@ -287,10 +287,15 @@ function shutdown() {
     for (const [, entry] of listeners) {
         if (entry.reconnectTimer) clearTimeout(entry.reconnectTimer);
         if (entry.pgClient) entry.pgClient.end().catch(() => {});
+        // SSE-Streams aktiv schliessen — sonst haelt server.close() den Port besetzt
+        // bis alle Clients trennen (kann Sekunden dauern und EADDRINUSE bei PM2-Restart ausloesen)
+        for (const res of entry.sseClients) res.destroy();
+        entry.sseClients.clear();
     }
     authPool.end().catch(() => {});
-    server.close();
-    process.exit(0);
+    server.close(() => process.exit(0));
+    // Harter Fallback nach 3s falls Verbindungen nicht sauber schliessen
+    setTimeout(() => process.exit(0), 3000).unref();
 }
 
 process.on('SIGTERM', shutdown);

@@ -605,6 +605,7 @@ CREATE TABLE IF NOT EXISTS anpr_cameras_lxcars (
     ignore_right_pct SMALLINT DEFAULT 0,
     ignore_left_pct  SMALLINT DEFAULT 0,
     direction_required BOOLEAN DEFAULT TRUE,
+    direction_filter   TEXT DEFAULT 'approaching',
     grid_size        SMALLINT DEFAULT 10,
     save_snapshots   BOOLEAN DEFAULT TRUE,
     excluded_cells   TEXT DEFAULT '[]',
@@ -724,6 +725,19 @@ DO $$ BEGIN
     END IF;
 END $$;
 
+-- Health-Protokoll (Heartbeats, Reconnects, Fehler des Python-Dienstes)
+CREATE TABLE IF NOT EXISTS anpr_health_lxcars (
+    id          bigserial PRIMARY KEY,
+    camera_id   integer REFERENCES anpr_cameras_lxcars(id) ON DELETE CASCADE,
+    ts          timestamptz NOT NULL DEFAULT now(),
+    event       varchar(20) NOT NULL,   -- 'start', 'heartbeat', 'reconnect', 'error'
+    message     text,
+    frames      integer,
+    detections  integer,
+    skipped     integer
+);
+CREATE INDEX IF NOT EXISTS idx_anpr_health_ts ON anpr_health_lxcars (ts DESC);
+
 -- Defaults
 INSERT INTO defaults_oserp (key, value) VALUES ('anpr_enabled', '0') ON CONFLICT (key) DO NOTHING;
 INSERT INTO defaults_oserp (key, value) VALUES ('anpr_service_port', '8765') ON CONFLICT (key) DO NOTHING;
@@ -732,3 +746,4 @@ INSERT INTO defaults_oserp (key, value) VALUES ('anpr_show_unknown_vehicles', '1
 INSERT INTO defaults_oserp (key, value) VALUES ('anpr_detection_ttl_hours', '8') ON CONFLICT (key) DO NOTHING;
 INSERT INTO defaults_oserp (key, value) VALUES ('anpr_infobar_max', '3') ON CONFLICT (key) DO NOTHING;
 INSERT INTO defaults_oserp (key, value) VALUES ('anpr_blacklist', '') ON CONFLICT (key) DO NOTHING;
+INSERT INTO defaults_oserp (key, value) VALUES ('anpr_debug_snapshots', '0') ON CONFLICT (key) DO NOTHING;

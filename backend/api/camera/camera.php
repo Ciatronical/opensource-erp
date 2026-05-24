@@ -662,6 +662,33 @@ function installPythonPackage($data) {
         }
     }
 
+    // --- Coral/pycoral: Sonderbehandlung ---
+    // PyPI "pycoral 0.2.0" ist ein völlig anderes Paket (kein Google Coral).
+    // Echtes pycoral 2.0 kommt von google-coral.github.io/py-repo und
+    // benötigt libedgetpu als Systembibliothek — beides lässt sich nicht
+    // automatisch per pip als www-data installieren.
+    // Stattdessen: Setup-Anleitung zurückgeben.
+    if ($package === 'pycoral') {
+        $currentUser = trim(shell_exec('whoami 2>/dev/null') ?? 'www-data');
+        $venvOwnerUid = fileowner("$serviceDir/venv");
+        $venvOwnerInfo = $venvOwnerUid !== false ? posix_getpwuid($venvOwnerUid) : null;
+        $venvOwner = $venvOwnerInfo['name'] ?? 'work';
+        $libOk = (trim(shell_exec('dpkg -s libedgetpu1-std 2>/dev/null | grep -c "Status: install ok"') ?? '0') > 0);
+
+        // Falsche PyPI-Version deinstallieren falls vorhanden
+        exec(escapeshellarg($venvPip) . ' show pycoral 2>/dev/null | grep -c "^Name:"', $showOut);
+        $fakeInstalled = (intval($showOut[0] ?? 0) > 0);
+
+        resultInfo(false, 'CORAL_SETUP_REQUIRED', '', [
+            'lib_installed'  => $libOk,
+            'fake_installed' => $fakeInstalled,
+            'venv_owner'     => $venvOwner,
+            'venv_pip'       => $venvPip,
+            'web_user'       => $currentUser,
+        ]);
+        return;
+    }
+
     // pip install kann mehrere Minuten dauern (openvino ~500 MB)
     set_time_limit(0);
 
@@ -680,13 +707,11 @@ function installPythonPackage($data) {
         $needsPassword = ($nopassExit !== 0);
 
         if ($needsPassword && $sudoPassword === '') {
-            // Passwort fehlt → Frontend soll Dialog öffnen
             resultInfo(false, 'SUDO_PASSWORD_REQUIRED', '', ['owner' => $venvOwner]);
             return;
         }
 
         if ($needsPassword && $sudoPassword !== '') {
-            // Passwort per stdin an sudo -S übergeben (niemals loggen)
             $cmd = 'sudo -S -H -u ' . escapeshellarg($venvOwner)
                 . ' HOME=' . escapeshellarg($homeDir)
                 . ' ' . escapeshellarg($venvPip)
@@ -703,15 +728,21 @@ function installPythonPackage($data) {
             $output   = stream_get_contents($pipes[1]);
             $output  .= stream_get_contents($pipes[2]);
             $exitCode = proc_close($proc);
-            unset($sudoPassword);   // Passwort sofort aus Speicher entfernen
+            unset($sudoPassword);
 
-            // Falsches Passwort erkennen
             if (str_contains($output, 'incorrect password') || str_contains($output, '1 incorrect password')) {
                 resultInfo(false, 'SUDO_WRONG_PASSWORD', '');
                 return;
             }
+            // www-data darf sudo -u {owner} nicht → Setup-Hinweis
+            if (str_contains($output, 'is not allowed to execute') || str_contains($output, 'not in the sudoers')) {
+                resultInfo(false, 'SUDO_NOT_ALLOWED', '', [
+                    'owner' => $venvOwner,
+                    'pip'   => $venvPip,
+                ]);
+                return;
+            }
         } else {
-            // NOPASSWD konfiguriert
             $pipCmd = 'sudo -n -H -u ' . escapeshellarg($venvOwner)
                 . ' HOME=' . escapeshellarg($homeDir)
                 . ' ' . escapeshellarg($venvPip)
@@ -732,8 +763,7 @@ function installPythonPackage($data) {
 
     resultInfo($success, $success ? '' : 'INSTALL_FAILED', [
         'package' => $package,
-        'output' => trim($output),
-        'cmd' => "$venvPip install $package",
+        'output'  => trim($output),
     ]);
 }
 

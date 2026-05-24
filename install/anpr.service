@@ -9,6 +9,8 @@ User=work
 # render-Gruppe fuer Intel iGPU (OpenVINO/OpenCL via /dev/dri/renderD128)
 SupplementaryGroups=render video
 Environment=HOME=/home/work
+# Ohne PYTHONUNBUFFERED=1 puffert Python stdout — journald sieht dann nichts
+Environment=PYTHONUNBUFFERED=1
 # CPU-Threads begrenzen damit andere Prozesse nicht ausgehungert werden
 Environment=OMP_NUM_THREADS=4
 Environment=MKL_NUM_THREADS=4

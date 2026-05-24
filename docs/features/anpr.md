@@ -115,26 +115,32 @@ sudo journalctl -u anpr -f    # Live-Log
 
 ### 8. Neustart über die Web-Oberfläche ermöglichen
 
-Der ANPR-Service kann unter **Einstellungen > ANPR** per Klick neu gestartet werden. Dafür muss der Webserver-User (und ggf. der Entwickler-User) `systemctl restart anpr` ohne Passwort ausführen dürfen:
+Der ANPR-Service kann unter **Einstellungen > ANPR** per Klick gestartet, gestoppt und neu gestartet werden. Dafür muss der Webserver-User `systemctl start/stop/restart anpr` ohne Passwort ausführen dürfen:
 
 ```bash
-sudo visudo -f /etc/sudoers.d/anpr
+sudo tee /etc/sudoers.d/anpr << 'EOF'
+# PHP-Backend (www-data) darf den ANPR-Service via systemctl steuern
+www-data ALL=(ALL) NOPASSWD: /usr/bin/systemctl start anpr.service
+www-data ALL=(ALL) NOPASSWD: /usr/bin/systemctl stop anpr.service
+www-data ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart anpr.service
+EOF
+sudo chmod 440 /etc/sudoers.d/anpr
 ```
 
-Inhalt:
+- `www-data` = Apache/PHP-FPM (Produktivsystem, läuft ohne Terminal → kein `requiretty` nötig)
+- Für den PHP-Dev-Server (`User=work`) die Zeilen entsprechend ergänzen
 
-```
-Defaults:www-data !requiretty
-Defaults:work !requiretty
-www-data ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart anpr
-www-data ALL=(ALL) NOPASSWD: /usr/bin/systemctl is-active anpr
-work ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart anpr
-work ALL=(ALL) NOPASSWD: /usr/bin/systemctl is-active anpr
+### 9. Service-File aktuell halten
+
+Das Service-File unter `install/anpr.service` wird mit dem Repo weiterentwickelt (z.B. neue Environment-Variablen, CPU-Limits). Nach einem `git pull` prüfen ob es Änderungen gab, und ggf. neu einlesen:
+
+```bash
+sudo cp install/anpr.service /etc/systemd/system/anpr.service
+sudo systemctl daemon-reload
+sudo systemctl restart anpr
 ```
 
-- `www-data` = Apache/PHP-FPM (Produktivsystem)
-- `work` = PHP-Dev-Server (Entwicklung) — User ggf. anpassen
-- `!requiretty` ist nötig weil PHP's `shell_exec()` kein Terminal hat
+**Wichtig**: Die installierte Unit-Datei unter `/etc/systemd/system/anpr.service` wird durch `git pull` nicht automatisch aktualisiert — sie muss manuell kopiert werden.
 
 ## Funktionsweise
 
@@ -238,6 +244,29 @@ Fahrzeug:     Oberkante geschätzt bei Y=110, Unterkante bei Y=350
 Ergebnis: Ein PKW (~150cm) bekommt 180cm Öffnung, ein Transporter (~200cm) bekommt 230cm — statt jedes Mal die vollen 300cm. Das spart Energie und Verschleiß am Torantrieb.
 
 **Tipp**: Die Fahrzeughöhe wird automatisch aus der Kennzeichenposition geschätzt (ein deutsches Kennzeichen sitzt auf ~50cm Höhe und ist genormt 11cm hoch). Wenn die Kalibrierungswerte stimmen, ist die Berechnung auf ±10cm genau.
+
+## Fehlerbehebung
+
+### Near-miss Debug-Snapshots
+
+Wenn Kennzeichen nicht erkannt werden, hilft der Debug-Modus: Unter **Einstellungen > ANPR > Allgemein** die Option **"Near-miss Debug-Snapshots aktivieren"** einschalten.
+
+Der Dienst speichert dann Frames in denen ein Kennzeichen-Kandidat erkannt aber verworfen wurde — z.B. weil das Format nicht stimmt oder das Kennzeichen zu klein im Bild ist. Die Bilder erscheinen direkt im Config-Tab mit der jeweiligen Ablehnungsursache:
+
+| Grund | Bedeutung |
+|-------|-----------|
+| **Format ungültig** | OCR hat etwas erkannt (Confidence ok), aber kein deutsches Kennzeichen-Format |
+| **Kennzeichen zu klein** | Gültiges Kennzeichen, aber unter dem konfigurierten Mindest-Pixelwert |
+
+Die Bilder werden automatisch gelöscht wenn mehr als 500 vorliegen (älteste zuerst). Alle manuell löschen: Schaltfläche "Alle löschen" im Debug-Snapshots-Bereich.
+
+**Typische Ursachen:**
+- `Format ungültig`: OCR liest z.B. `8AB1234` statt `B-AB 1234` (Schlecht beleuchtetes oder schräg stehendes Kennzeichen)
+- `Kennzeichen zu klein`: Kamera zu weit weg oder Winkel zu flach → `Min. Kennzeichengröße` in den Kameraeinstellungen reduzieren oder Kamera näher montieren
+
+### Service-Log
+
+Der aktuelle `journalctl`-Output ist direkt unter **Einstellungen > ANPR > Service-Log** sichtbar — mit wählbarer Zeilenanzahl und Auto-Refresh alle 5 Sekunden (Play-Button).
 
 ## Testen
 

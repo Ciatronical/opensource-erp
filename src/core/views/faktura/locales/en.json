@@ -166,6 +166,12 @@
             "vehicleSection": "Vehicle / Order Data",
             "kmStand": "Mileage",
             "kmStandRequired": "Mileage is required – please enter it before creating the invoice.",
+            "kmPlausibility": {
+                "title": "Mileage not plausible",
+                "text": "The entered mileage ({current} km) is lower than the last recorded value ({last} km) for this vehicle. Please check the mileage.",
+                "cancel": "Correct",
+                "proceed": "Proceed anyway"
+            },
             "status": "Status",
             "kfzOrt": "Vehicle location",
             "kfzOrtOptions": {

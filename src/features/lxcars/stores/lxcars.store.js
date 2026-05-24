@@ -164,6 +164,25 @@ export const lxcarsStore = defineStore('lxcarsStore', () => {
     }
 
     /**
+     * Prüft den km-Stand auf Plausibilität gegen alle früheren Aufträge/Rechnungen des Fahrzeugs.
+     * Gibt { last_km } zurück – den höchsten bisher erfassten km-Stand (0 = kein Vorgänger).
+     *
+     * @param {number} oeId  - Aktuelle Auftrags-ID
+     * @param {number} carId - Fahrzeug-ID
+     */
+    async function checkKmStandPlausibility(oeId, carId) {
+        const response = await axios.post('/api/lxcars/', {
+            action: 'checkKmStandPlausibility',
+            oe_id: oeId,
+            c_id: carId
+        });
+        if (!response.data.success) {
+            throw new ApiError('ApiError', response.data.text, 'Error checking km plausibility');
+        }
+        return response.data.payload;
+    }
+
+    /**
      * Lädt alle Fahrzeuge eines Kunden (für Kennzeichen-Auswahl im Auftrag)
      *
      * @param {number} customerId - Kunden-ID
@@ -1134,6 +1153,7 @@ export const lxcarsStore = defineStore('lxcarsStore', () => {
         deleteCar,
         loadCar,
         loadCarOrders,
+        checkKmStandPlausibility,
         loadCustomerCars,
         loadCarForOrder,
         linkCarToFaktura,

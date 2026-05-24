@@ -61,7 +61,9 @@ function saveAnprCamera($data) {
         ':calibration_gate_bottom_y'  => !empty($cam['calibration_gate_bottom_y']) ? intval($cam['calibration_gate_bottom_y']) : null,
         ':ignore_right_pct'           => intval($cam['ignore_right_pct'] ?? 0),
         ':ignore_left_pct'            => intval($cam['ignore_left_pct'] ?? 0),
-        ':direction_required'         => isset($cam['direction_required']) ? ($cam['direction_required'] ? 't' : 'f') : 't',
+        ':direction_filter'           => in_array($cam['direction_filter'] ?? '', ['off', 'moving', 'approaching']) ? $cam['direction_filter'] : 'approaching',
+        // direction_required aus direction_filter ableiten (Legacy-Feld für Rückwärtskompatibilität)
+        ':direction_required'         => ($cam['direction_filter'] ?? 'approaching') === 'off' ? 'f' : 't',
         ':grid_size'                  => intval($cam['grid_size'] ?? 10) ?: 10,
         ':save_snapshots'             => isset($cam['save_snapshots']) ? ($cam['save_snapshots'] ? 't' : 'f') : 't',
         ':excluded_cells'             => json_encode($cam['excluded_cells'] ?? []),
@@ -85,6 +87,7 @@ function saveAnprCamera($data) {
                 ignore_right_pct = :ignore_right_pct,
                 ignore_left_pct = :ignore_left_pct,
                 direction_required = :direction_required,
+                direction_filter = :direction_filter,
                 grid_size = :grid_size,
                 save_snapshots = :save_snapshots,
                 excluded_cells = :excluded_cells,
@@ -101,14 +104,14 @@ function saveAnprCamera($data) {
                  frame_interval, min_confidence, min_detections, cooldown_minutes,
                  action_type, actuator_id, gate_height_mode, note,
                  calibration_gate_height_cm, calibration_gate_top_y, calibration_gate_bottom_y,
-                 ignore_right_pct, ignore_left_pct, direction_required, grid_size,
+                 ignore_right_pct, ignore_left_pct, direction_required, direction_filter, grid_size,
                  save_snapshots, excluded_cells, min_plate_height_px, motion_size_pct)
              VALUES
                 (:name, :rtsp_url, :enabled, :direction_mode, :position,
                  :frame_interval, :min_confidence, :min_detections, :cooldown_minutes,
                  :action_type, :actuator_id, :gate_height_mode, :note,
                  :calibration_gate_height_cm, :calibration_gate_top_y, :calibration_gate_bottom_y,
-                 :ignore_right_pct, :ignore_left_pct, :direction_required, :grid_size,
+                 :ignore_right_pct, :ignore_left_pct, :direction_required, :direction_filter, :grid_size,
                  :save_snapshots, :excluded_cells, :min_plate_height_px, :motion_size_pct)",
             $params
         );
@@ -274,24 +277,28 @@ function reportAnprDetection($data) {
 
     $db = DbhCompany::begin();
 
-    // Kennzeichen ohne Leerzeichen (so wie in der DB)
-    $kennzeichen = str_replace(' ', '', $kennzeichen);
+    // Normalisierung: alle Trennzeichen (Leerzeichen, Bindestrich, Geviertstrich) entfernen.
+    // Kennzeichen in der DB sind inkonsistent gespeichert ("B-AA5952", "B-CO 687", "BCO687").
+    // Beide Seiten werden für den Vergleich normalisiert — gespeicherter Wert bleibt unverändert.
+    $kennzeichenNorm = preg_replace('/[\s\-\x{2013}]+/u', '', $kennzeichen);
 
-    // Blacklist prüfen (ohne Leerzeichen vergleichen)
+    // Blacklist normalisiert vergleichen
     $blacklistRow = $db->getOne(
         "SELECT value FROM defaults_oserp WHERE key = 'anpr_blacklist'"
     );
     if ($blacklistRow && !empty($blacklistRow['value'])) {
-        $blacklist = array_map(function($p) { return strtoupper(str_replace(' ', '', trim($p))); },
-                               explode(',', $blacklistRow['value']));
-        if (in_array($kennzeichen, $blacklist)) {
+        $blacklist = array_map(
+            fn($p) => preg_replace('/[\s\-\x{2013}]+/', '', strtoupper(trim($p))),
+            explode(',', $blacklistRow['value'])
+        );
+        if (in_array($kennzeichenNorm, $blacklist)) {
             resultInfo(true, 'BLACKLISTED', 'Kennzeichen ist auf der Blacklist');
             return;
         }
     }
 
-    // Cooldown pruefen: Wurde dieses Kennzeichen kuerzlich schon gemeldet?
-    $cooldown = 5; // Default
+    // Cooldown pruefen
+    $cooldown = 5;
     if ($camera_id > 0) {
         $cam = $db->getOne(
             "SELECT cooldown_minutes FROM anpr_cameras_lxcars WHERE id = :id",
@@ -302,16 +309,10 @@ function reportAnprDetection($data) {
 
     $recent = $db->getOne(
         "SELECT id FROM anpr_detections_lxcars
-         WHERE c_ln = :plate AND detected_at > now() - interval ':cooldown minutes'
+         WHERE REGEXP_REPLACE(UPPER(c_ln), '[\s\-–]+', '', 'g') = :plate
+           AND detected_at > now() - make_interval(mins => :cooldown)
          ORDER BY detected_at DESC LIMIT 1",
-        [':plate' => $kennzeichen, ':cooldown' => $cooldown]
-    );
-    // Achtung: Interval mit Parameter funktioniert nicht direkt — Workaround:
-    $recent = $db->getOne(
-        "SELECT id FROM anpr_detections_lxcars
-         WHERE c_ln = :plate AND detected_at > now() - make_interval(mins => :cooldown)
-         ORDER BY detected_at DESC LIMIT 1",
-        [':plate' => $kennzeichen, ':cooldown' => $cooldown]
+        [':plate' => $kennzeichenNorm, ':cooldown' => $cooldown]
     );
 
     if ($recent) {
@@ -319,14 +320,14 @@ function reportAnprDetection($data) {
         return;
     }
 
-    // Fahrzeug in DB suchen
+    // Fahrzeug in DB suchen — normalisierter Vergleich auf beiden Seiten
     $car = $db->getOne(
         "SELECT c.c_id, c.c_ow AS customer_id, c.c_ln,
                 cv.name AS customer_name
          FROM cars_lxcars c
          LEFT JOIN customer cv ON c.c_ow = cv.id
-         WHERE c.c_ln = :plate",
-        [':plate' => $kennzeichen]
+         WHERE REGEXP_REPLACE(UPPER(c.c_ln), '[\s\-–]+', '', 'g') = :plate",
+        [':plate' => $kennzeichenNorm]
     );
 
     $c_id = $car ? intval($car['c_id']) : null;
@@ -680,8 +681,8 @@ function getAnprServiceStatus() {
             $details['rtsp_connections'] = $rtsp;
         }
 
-        // Letzte 30 Logzeilen (kompakt)
-        $log = shell_exec('journalctl -u anpr -n 30 --no-pager --output=short 2>/dev/null') ?? '';
+        // Letzte 50 Logzeilen (kompakt) fuer Service-Status-Card
+        $log = shell_exec('journalctl -u anpr -n 50 --no-pager --output=short 2>/dev/null') ?? '';
         $details['log_tail'] = array_values(array_filter(explode("\n", $log)));
 
         // Erkennungen heute
@@ -705,14 +706,14 @@ function getAnprServiceStatus() {
 /**
  * ANPR-Service neu starten
  *
- * Benötigt: www-data darf 'sudo systemctl restart anpr' ohne Passwort ausführen.
+ * Benötigt: www-data darf 'sudo systemctl restart anpr.service' ohne Passwort ausführen.
  * Einrichten: sudo visudo -f /etc/sudoers.d/anpr
- *             www-data ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart anpr
+ *             www-data ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart anpr.service
  *
  * @testdata {}
  */
 function restartAnprService() {
-    $output = shell_exec('sudo systemctl restart anpr 2>&1');
+    $output = shell_exec('sudo systemctl restart anpr.service 2>&1');
     // Warten bis Service wieder aktiv ist (max 5s)
     $status = 'unknown';
     for ($i = 0; $i < 10; $i++) {
@@ -822,4 +823,128 @@ function testAnprFile() {
     }
 
     resultInfo(true, '', ['results' => $results]);
+}
+
+// ============================================================================
+// SERVICE-LOG
+// ============================================================================
+
+/**
+ * journalctl-Log des ANPR-Dienstes laden
+ *
+ * @param int    $data['lines']  Anzahl Zeilen (default 200, max 1000)
+ * @param string $data['since']  Zeitfilter fuer journalctl (z.B. "1 hour ago"), optional
+ * @testdata {"lines": 200}
+ */
+function getAnprLog($data) {
+    $lines = min(1000, max(10, intval($data['lines'] ?? 200)));
+    $since = trim($data['since'] ?? '');
+
+    $cmd = 'journalctl -u anpr -n ' . $lines . ' --no-pager --output=short-iso 2>/dev/null';
+    if ($since !== '') {
+        $safe = preg_replace('/[^a-zA-Z0-9 \-:]/', '', $since);
+        if ($safe !== '') {
+            $cmd = 'journalctl -u anpr -n ' . $lines . ' --no-pager --output=short-iso'
+                 . ' --since ' . escapeshellarg($safe) . ' 2>/dev/null';
+        }
+    }
+
+    $raw = shell_exec($cmd) ?? '';
+    $lines_out = array_values(array_filter(explode("\n", $raw)));
+
+    resultInfo(true, '', ['lines' => $lines_out, 'count' => count($lines_out)]);
+}
+
+// ============================================================================
+// DEBUG-SNAPSHOTS (Near-miss)
+// ============================================================================
+
+/**
+ * Near-miss Debug-Snapshots auflisten
+ *
+ * Liefert maximal 200 Eintraege, neueste zuerst.
+ *
+ * @testdata {}
+ */
+function getAnprDebugSnapshots() {
+    $db = DbhCompany::begin();
+    $dbnameRow = $db->getOne("SELECT current_database() AS dbname");
+    $dir = __DIR__ . '/../../../backend/data/' . $dbnameRow['dbname'] . '/anpr-debug-snapshots/';
+
+    if (!is_dir($dir)) {
+        resultInfo(true, '', ['snapshots' => [], 'total' => 0]);
+        return;
+    }
+
+    $cameras = $db->getAll("SELECT id, name FROM anpr_cameras_lxcars ORDER BY id");
+    $camNames = [];
+    foreach ($cameras as $c) $camNames[intval($c['id'])] = $c['name'];
+
+    $files = glob($dir . '*.jpg') ?: [];
+    // Sortierung nach Zeitstempel (YYYYMMDD_HHMMSS_ffffff), cam_id-Präfix überspringen
+    usort($files, function($a, $b) {
+        $ta = substr(basename($a), strpos(basename($a), '_') + 1);
+        $tb = substr(basename($b), strpos(basename($b), '_') + 1);
+        return strcmp($tb, $ta);  // absteigend: neueste zuerst
+    });
+    $total = count($files);
+
+    $result = [];
+    foreach (array_slice($files, 0, 200) as $f) {
+        // Dateiname: {cam_id}_{YYYYMMDD}_{HHMMSS}_{ffffff}_{reason}_{plate}.jpg
+        $fname = basename($f, '.jpg');
+        $parts = explode('_', $fname, 6);
+        if (count($parts) < 5) continue;
+
+        $cam_id = intval($parts[0]);
+        $datestr = $parts[1];  // YYYYMMDD
+        $timestr = $parts[2];  // HHMMSS
+        $reason  = $parts[4] ?? '';
+        $plate   = $parts[5] ?? '';
+
+        $ts = null;
+        if (strlen($datestr) === 8 && strlen($timestr) === 6) {
+            $ts = mktime(
+                intval(substr($timestr, 0, 2)), intval(substr($timestr, 2, 2)), intval(substr($timestr, 4, 2)),
+                intval(substr($datestr, 4, 2)), intval(substr($datestr, 6, 2)), intval(substr($datestr, 0, 4))
+            );
+        }
+
+        $result[] = [
+            'filename' => basename($f),
+            'cam_id'   => $cam_id,
+            'cam_name' => $camNames[$cam_id] ?? "Kamera $cam_id",
+            'reason'   => $reason,
+            'plate'    => $plate,
+            'ts'       => $ts,
+        ];
+    }
+
+    resultInfo(true, '', ['snapshots' => $result, 'total' => $total]);
+}
+
+/**
+ * Alle Near-miss Debug-Snapshots loeschen
+ *
+ * @testdata {}
+ */
+function clearAnprDebugSnapshots() {
+    $db = DbhCompany::begin();
+    $dbnameRow = $db->getOne("SELECT current_database() AS dbname");
+    $dir = __DIR__ . '/../../../backend/data/' . $dbnameRow['dbname'] . '/anpr-debug-snapshots/';
+
+    $deleted = 0;
+    $failed = 0;
+    if (is_dir($dir)) {
+        foreach (glob($dir . '*.jpg') ?: [] as $f) {
+            if (unlink($f)) $deleted++;
+            else $failed++;
+        }
+    }
+
+    if ($failed > 0 && $deleted === 0) {
+        resultInfo(false, 'DELETE_FAILED', 'Keine Dateien konnten gelöscht werden (Berechtigung fehlt)');
+        return;
+    }
+    resultInfo(true, '', ['deleted' => $deleted, 'failed' => $failed]);
 }

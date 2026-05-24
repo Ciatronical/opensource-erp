@@ -14,6 +14,9 @@ const anprDefaultsConfig = [
     { name: "anpr_detection_ttl_hours", type: "input", inputType: "number", size: 5, fieldstyle: "max-width: 15ch", label: "anpr.detectionTtlHours", tooltip: "anpr.detectionTtlHours_help" },
     { name: "anpr_infobar_max", type: "input", inputType: "number", size: 5, fieldstyle: "max-width: 15ch", label: "anpr.infobarMax", tooltip: "anpr.infobarMax_help" },
     { name: "anpr_blacklist", type: "textarea", rows: 3, fieldstyle: "max-width: 60ch", label: "anpr.blacklist", tooltip: "anpr.blacklist_help" },
+
+    { name: "anpr_debug", type: "headline", label: "anpr.debug" },
+    { name: "anpr_debug_snapshots", type: "checkbox", label: "anpr.debugSnapshots_label", tooltip: "anpr.debugSnapshots_help" },
 ];
 
 export default anprDefaultsConfig;
