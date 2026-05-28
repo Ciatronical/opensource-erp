@@ -284,9 +284,35 @@ export function useVehicleSection({ carsStore, fakturaId, fakturaType, t }) {
 
     // ── Daten laden (wird von onMounted in der Hauptdatei aufgerufen) ──
 
-    async function loadVehicleData(customerId) {
-        // customerCars ZUERST laden, damit das Autocomplete die Einträge hat
-        // bevor selectedCarId gesetzt wird
+    function _applyCarData(car) {
+        selectedCarId.value = car?.c_id || null
+        vehicleNotes.value = car?.c_text || ''
+        fhzart.value = car?.fhzart || ''
+        oeExtData.value.km_stand = car?.km_stand || null
+        oeExtData.value.kfz_ort = car?.kfz_ort || null
+        oeExtData.value.status = car?.status || null
+        oeExtData.value.gedruckt = car?.gedruckt === true || car?.gedruckt === 't'
+        oeExtData.value.intern = car?.intern === true || car?.intern === 't'
+        oeExtData.value.bringetermin = car?.bringetermin || null
+        oeExtData.value.fertigstellung = car?.fertigstellung || null
+        oeExtData.value.no_whatsapp = car?.no_whatsapp === true || car?.no_whatsapp === 't'
+        oeExtData.value.c_sk = car?.c_sk === true || car?.c_sk === 't'
+        oeExtData.value.c_zrd = car?.c_zrd || null
+        oeExtData.value.c_zrk = car?.c_zrk ?? null
+        oeExtData.value.c_bf = car?.c_bf || null
+        oeExtData.value.c_wd = car?.c_wd || null
+    }
+
+    // Wird mit vorgeladenen Daten aus getLxCarsFakturaInit aufgerufen (preloaded != null)
+    // oder ohne Daten für den Einzelaufruf-Pfad.
+    async function loadVehicleData(customerId, preloaded = null) {
+        if (preloaded) {
+            customerCars.value = preloaded.customer_cars || []
+            if (preloaded.car_data) _applyCarData(preloaded.car_data)
+            return
+        }
+
+        // Einzelaufruf-Pfad (Neu-Modus, Kundenwechsel etc.)
         if (customerId) {
             try {
                 const cars = await carsStore.loadCustomerCars(customerId)
@@ -300,22 +326,7 @@ export function useVehicleSection({ carsStore, fakturaId, fakturaType, t }) {
             const car = isInvoice.value
                 ? await carsStore.loadCarForInvoice(fakturaId.value)
                 : await carsStore.loadCarForOrder(fakturaId.value)
-            selectedCarId.value = car?.c_id || null
-            vehicleNotes.value = car?.c_text || ''
-            fhzart.value = car?.fhzart || ''
-            oeExtData.value.km_stand = car?.km_stand || null
-            oeExtData.value.kfz_ort = car?.kfz_ort || null
-            oeExtData.value.status = car?.status || null
-            oeExtData.value.gedruckt = car?.gedruckt === true || car?.gedruckt === 't'
-            oeExtData.value.intern = car?.intern === true || car?.intern === 't'
-            oeExtData.value.bringetermin = car?.bringetermin || null
-            oeExtData.value.fertigstellung = car?.fertigstellung || null
-            oeExtData.value.no_whatsapp = car?.no_whatsapp === true || car?.no_whatsapp === 't'
-            oeExtData.value.c_sk = car?.c_sk === true || car?.c_sk === 't'
-            oeExtData.value.c_zrd = car?.c_zrd || null
-            oeExtData.value.c_zrk = car?.c_zrk ?? null
-            oeExtData.value.c_bf = car?.c_bf || null
-            oeExtData.value.c_wd = car?.c_wd || null
+            _applyCarData(car)
         } catch {}
     }
 

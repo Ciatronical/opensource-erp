@@ -2,11 +2,12 @@
 """
 Kamera-Monitor-Service fuer OpensourceERP.
 
-Nativer Ersatz fuer Frigate: liest RTSP-Streams, erkennt Bewegung + Objekte,
+Liest RTSP-Streams direkt, erkennt Bewegung und Objekte (YOLO/Coral/OpenVINO),
 schreibt Events in die DB und benachrichtigt das ERP via pg_notify.
+Live-Streams werden von go2rtc bereitgestellt (separater Dienst).
 
-Liest Konfiguration aus der Datenbank (settings.ini -> auth DB -> company DB).
-Kameras, Zonen und Regeln kommen aus den Tabellen camera, camera_zone, camera_rule.
+Konfiguration aus der Datenbank (settings.ini -> auth DB -> company DB).
+Kameras, Zonen und Regeln aus den Tabellen camera, camera_zone, camera_rule.
 
 Nutzung:
     python3 camera_monitor.py
@@ -44,6 +45,17 @@ CLIP_DIR = os.path.join(BACKEND_DIR, '..', 'public', 'camera-clips')
 
 # RTSP ueber TCP (zuverlaessiger)
 os.environ['OPENCV_FFMPEG_CAPTURE_OPTIONS'] = 'rtsp_transport;tcp'
+
+# FFmpeg h264-Dekodierungswarnungen aus dem Log entfernen.
+# OpenCV schreibt sie direkt auf C-Level fd 2 (stderr) — Python-Logging kann
+# das nicht abfangen. Wir leiten fd 2 nach /dev/null um, sichern aber vorher
+# Python-Exceptions auf stdout (damit sie im Journal sichtbar bleiben).
+import sys as _sys
+_sys.stderr = _sys.stdout          # Python-Tracebacks → stdout → Journal
+_devnull = os.open(os.devnull, os.O_WRONLY)
+os.dup2(_devnull, 2)               # C-Level fd 2 → /dev/null
+os.close(_devnull)
+del _sys, _devnull
 
 # --- Globaler Zustand --------------------------------------------------------
 
@@ -163,11 +175,27 @@ def ensure_clip_dir():
     Path(CLIP_DIR).mkdir(parents=True, exist_ok=True)
 
 
+def _is_frame_corrupt(frame):
+    """
+    Einfache Korruptionspruefung: ein stark beschaedigter H264-Frame
+    zeigt oft blockweise identische Bereiche (Freeze-Frame-Effekt) oder
+    extrem viele einfarbige 8x8-Bloecke. Wir prufen die Varianz.
+    """
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    # Laplacian-Varianz: sehr niedriger Wert = unschaerfer/artefaktreicher Frame
+    var = cv2.Laplacian(gray, cv2.CV_64F).var()
+    return var < 5.0  # Schwellwert; echte Bilder haben typisch > 50
+
+
 def save_snapshot(frame, event_id):
-    """Frame als JPEG speichern, gibt relativen URL-Pfad zurueck."""
+    """Frame als JPEG speichern (max 1280px breit). Gibt URL-Pfad zurueck."""
     ensure_snapshot_dir()
     filename = f"{event_id}.jpg"
     filepath = os.path.join(SNAPSHOT_DIR, filename)
+    h, w = frame.shape[:2]
+    if w > 1280:
+        scale = 1280 / w
+        frame = cv2.resize(frame, (1280, int(h * scale)), interpolation=cv2.INTER_AREA)
     cv2.imwrite(filepath, frame, [cv2.IMWRITE_JPEG_QUALITY, 85])
     return f"/camera-snapshots/{filename}"
 
@@ -203,7 +231,7 @@ class ClipRecorder:
     Schreibt Pre-Buffer + Live-Frames + Post-Buffer in eine MP4-Datei.
     """
 
-    def __init__(self, event_id, frame_size, fps=ANALYSIS_FPS):
+    def __init__(self, event_id, frame_size, fps=ANALYSIS_FPS, post_record_seconds=POST_RECORD_SECONDS):
         self.event_id = event_id
         self.fps = fps
         self.frame_size = frame_size  # (width, height)
@@ -213,7 +241,7 @@ class ClipRecorder:
         self.frame_count = 0
         self.max_frames = int(MAX_CLIP_DURATION * fps)
         self.post_motion_frames = 0
-        self.post_motion_limit = int(POST_RECORD_SECONDS * fps)
+        self.post_motion_limit = int(post_record_seconds * fps)
         self.motion_ended = False
         self.finished = False
 
@@ -274,7 +302,7 @@ class ClipRecorder:
         self.post_motion_frames = 0
 
     def finish(self):
-        """Aufnahme beenden und Datei abschliessen."""
+        """Aufnahme beenden, dann per ffmpeg zu browser-kompatiblem H.264 konvertieren."""
         if self.finished:
             return
         self.finished = True
@@ -283,6 +311,32 @@ class ClipRecorder:
             self.writer = None
         duration = self.frame_count / max(1, self.fps)
         print(f"[CLIP] {self.event_id}: {duration:.1f}s ({self.frame_count} Frames) -> {self.filepath}")
+        if self.frame_count > 0:
+            threading.Thread(target=self._convert_h264, daemon=True).start()
+
+    def _convert_h264(self):
+        """mp4v -> H.264 (browser-kompatibel, moov atom vorne für Streaming)."""
+        import subprocess, shutil
+        if not shutil.which('ffmpeg'):
+            return
+        tmp = self.filepath + '.h264.mp4'
+        try:
+            result = subprocess.run([
+                'ffmpeg', '-y', '-i', self.filepath,
+                '-c:v', 'libx264', '-preset', 'fast', '-crf', '23',
+                '-pix_fmt', 'yuv420p',   # Kompatibel mit allen Browsern
+                '-movflags', '+faststart',
+                tmp,
+            ], capture_output=True, timeout=120)
+            if result.returncode == 0 and os.path.getsize(tmp) > 0:
+                os.replace(tmp, self.filepath)
+            else:
+                if os.path.exists(tmp):
+                    os.unlink(tmp)
+        except Exception as e:
+            print(f"[CLIP] ffmpeg-Konvertierung fehlgeschlagen: {e}")
+            if os.path.exists(tmp):
+                os.unlink(tmp)
 
     @property
     def clip_url(self):
@@ -501,6 +555,12 @@ def _init_yolo(use_openvino=False):
             detector = YOLO(model_path)
         print("[YOLO] Modell geladen (CPU-Modus).")
 
+    # Warmup: einmal mit Dummy-Frame aufrufen damit PyTorch alle internen
+    # Strukturen initialisiert bevor Worker-Threads parallel darauf zugreifen.
+    _dummy = np.zeros((480, 640, 3), dtype=np.uint8)
+    detector(_dummy, verbose=False)
+    print("[YOLO] Warmup abgeschlossen.")
+
 
 def _detect_with_yolo(frame, min_score=DEFAULT_MIN_SCORE):
     """Objekterkennung mit YOLO (OpenVINO oder CPU)."""
@@ -699,15 +759,23 @@ class CameraWorker(threading.Thread):
         self.conn_params = company_conn_params
         self.zones = zones
         self.rules = rules
-        self.name = f"cam-{self.cam['frigate_name']}"
-        self.motion = MotionDetector()
-        self.ring_buffer = RingBuffer()
+        self.name = f"cam-{self.cam['cam_key']}"
+        self.motion_threshold  = float(self.cam.get('motion_threshold') or MOTION_THRESHOLD_PERCENT)
+        self.cam_min_score     = float(self.cam.get('min_score') or DEFAULT_MIN_SCORE)
+        self.record_clips      = bool(self.cam.get('record_clips', True))
+        self.cam_fps           = int(self.cam.get('analysis_fps') or ANALYSIS_FPS)
+        self.pre_record_secs   = int(self.cam.get('pre_record_secs') or PRE_RECORD_SECONDS)
+        self.post_record_secs  = int(self.cam.get('post_record_secs') or POST_RECORD_SECONDS)
+        self.motion = MotionDetector(self.motion_threshold)
+        self.ring_buffer = RingBuffer(max_seconds=self.pre_record_secs, fps=self.cam_fps)
+        self._db_conn = None  # Persistente DB-Verbindung
+        self.record_fps = 15.0  # Wird nach Stream-Connect aktualisiert
         self.active_events = {}   # label -> {event_id, started_at, last_seen, recorder, ...}
         self.rule_cooldowns = {}  # rule_id -> last_triggered datetime
         self.frame_size = None    # (width, height) — wird beim ersten Frame gesetzt
 
     def run(self):
-        cam_name = self.cam['frigate_name']
+        cam_name = self.cam['cam_key']
         stream_url = self.cam.get('stream_url', '')
 
         if not stream_url:
@@ -715,7 +783,7 @@ class CameraWorker(threading.Thread):
             return
 
         print(f"[{cam_name}] Starte Stream: {stream_url}")
-        frame_interval = 1.0 / ANALYSIS_FPS
+        frame_interval = 1.0 / self.cam_fps
         consecutive_errors = 0
 
         while running:
@@ -728,15 +796,28 @@ class CameraWorker(threading.Thread):
                 continue
 
             consecutive_errors = 0
-            print(f"[{cam_name}] Stream verbunden.")
+
+            # Echte Kamera-FPS ermitteln (fuer korrekten VideoWriter)
+            cam_real_fps = cap.get(cv2.CAP_PROP_FPS)
+            if not (5 <= cam_real_fps <= 60):
+                cam_real_fps = 15.0
+            self.record_fps = cam_real_fps
+
+            # Ring-Buffer mit echter FPS neu initialisieren
+            self.ring_buffer = RingBuffer(max_seconds=self.pre_record_secs, fps=cam_real_fps)
+
+            print(f"[{cam_name}] Stream verbunden. ({cam_real_fps:.0f} fps)")
 
             last_analysis = 0
+            frame_count = 0
 
             while running and cap.isOpened():
                 ret, frame = cap.read()
                 if not ret:
                     print(f"[{cam_name}] Frame-Fehler — reconnect...")
                     break
+
+                frame_count += 1
 
                 # Frame-Groesse beim ersten Frame merken
                 if self.frame_size is None:
@@ -746,7 +827,7 @@ class CameraWorker(threading.Thread):
                 # Immer in Ring-Buffer schreiben (fuer Pre-Recording)
                 self.ring_buffer.add(frame)
 
-                # Laufende Aufnahmen fuettern (jeden Frame, nicht nur Analyse-Frames)
+                # Laufende Aufnahmen mit echtem FPS fuettern
                 for ev in self.active_events.values():
                     recorder = ev.get('recorder')
                     if recorder and not recorder.finished:
@@ -783,7 +864,7 @@ class CameraWorker(threading.Thread):
             return
 
         # Objekterkennung (nur wenn Bewegung)
-        detections = detect_objects(frame)
+        detections = detect_objects(frame, self.cam_min_score)
 
         # Auch ohne Objekterkennung: Bewegung in laufende Recorder melden
         for ev in self.active_events.values():
@@ -805,7 +886,7 @@ class CameraWorker(threading.Thread):
             matched_zones = []
             for zone in self.zones:
                 if zone.get('coordinates') and detection_in_zone(box, zone['coordinates'], frame_w, frame_h):
-                    matched_zones.append(zone['frigate_zone'])
+                    matched_zones.append(zone['zone_key'])
 
             event_key = f"{label}"
             now = datetime.now()
@@ -826,12 +907,19 @@ class CameraWorker(threading.Thread):
             else:
                 # Neues Event + Aufnahme starten
                 event_id = str(uuid.uuid4())[:12]
-                snapshot_url = save_snapshot(frame, event_id)
+                # Korrupten Frame vermeiden: letzten sauberen Frame aus Ring-Buffer nehmen
+                snap_frame = frame
+                if _is_frame_corrupt(frame):
+                    clean = [f for f in reversed(self.ring_buffer.get_all()) if not _is_frame_corrupt(f)]
+                    if clean:
+                        snap_frame = clean[0]
+                snapshot_url = save_snapshot(snap_frame, event_id)
 
-                # Clip-Recorder starten mit Pre-Buffer
+                # Clip-Recorder starten mit Pre-Buffer (nur wenn record_clips aktiv)
                 recorder = None
-                if self.frame_size:
-                    recorder = ClipRecorder(event_id, self.frame_size)
+                if self.record_clips and self.frame_size:
+                    recorder = ClipRecorder(event_id, self.frame_size, self.record_fps,
+                                            post_record_seconds=self.post_record_secs)
                     pre_frames = self.ring_buffer.get_all()
                     recorder.write_pre_buffer(pre_frames)
 
@@ -852,24 +940,35 @@ class CameraWorker(threading.Thread):
                 self._insert_event(ev)
                 self._check_rules(ev)
 
+    def _db(self):
+        """Persistente DB-Verbindung — reconnect bei Bedarf."""
+        try:
+            if self._db_conn is None or self._db_conn.closed:
+                self._db_conn = psycopg2.connect(**self.conn_params)
+                self._db_conn.autocommit = True
+        except Exception as e:
+            print(f"[{self.name}] DB-Reconnect Fehler: {e}")
+            self._db_conn = None
+        return self._db_conn
+
     def _insert_event(self, ev):
         """Neues Event in die DB schreiben + pg_notify."""
+        conn = self._db()
+        if not conn:
+            return
         try:
-            conn = psycopg2.connect(**self.conn_params)
-            conn.autocommit = True
             with conn.cursor() as cur:
                 cur.execute("""
                     INSERT INTO camera_event
-                        (frigate_event_id, camera_id, camera_name, label, zones, score,
+                        (event_id, camera_id, camera_name, label, zones, score,
                          snapshot_url, started_at)
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-                    ON CONFLICT (frigate_event_id) DO NOTHING
+                    ON CONFLICT (event_id) DO NOTHING
                 """, (
                     ev['event_id'], ev['camera_id'], ev['camera_name'],
                     ev['label'], ev['zones'], ev['score'],
                     ev['snapshot_url'], ev['started_at'],
                 ))
-
                 payload = json.dumps({
                     'type': 'camera_event',
                     'event': 'new',
@@ -877,28 +976,30 @@ class CameraWorker(threading.Thread):
                     'label': ev['label'],
                     'zones': ev['zones'],
                     'score': ev['score'],
-                    'frigate_event_id': ev['event_id'],
+                    'event_id': ev['event_id'],
                 })
                 cur.execute("SELECT pg_notify('camera_event', %s)", (payload,))
-            conn.close()
+            print(f"[{ev['camera_name']}] Event: {ev['label']} ({ev['score']:.0%})")
         except Exception as e:
             print(f"[{ev['camera_name']}] DB-Insert Fehler: {e}")
+            self._db_conn = None
 
     def _update_event(self, ev):
         """Event in der DB aktualisieren (Score, Zonen)."""
+        conn = self._db()
+        if not conn:
+            return
         try:
-            conn = psycopg2.connect(**self.conn_params)
-            conn.autocommit = True
             with conn.cursor() as cur:
                 cur.execute("""
                     UPDATE camera_event SET
                         score = GREATEST(score, %s),
                         zones = %s
-                    WHERE frigate_event_id = %s
+                    WHERE event_id = %s
                 """, (ev['score'], ev['zones'], ev['event_id']))
-            conn.close()
         except Exception as e:
             print(f"[{ev['camera_name']}] DB-Update Fehler: {e}")
+            self._db_conn = None
 
     def _end_stale_events(self):
         """Events beenden die > 10s nicht mehr gesehen wurden."""
@@ -928,19 +1029,20 @@ class CameraWorker(threading.Thread):
         recorder = ev.get('recorder')
         clip_url = recorder.clip_url if recorder else None
 
+        conn = self._db()
+        if not conn:
+            return
         try:
-            conn = psycopg2.connect(**self.conn_params)
-            conn.autocommit = True
             with conn.cursor() as cur:
                 cur.execute("""
                     UPDATE camera_event SET
                         ended_at = %s,
                         clip_url = CASE WHEN %s IS NOT NULL THEN %s ELSE clip_url END
-                    WHERE frigate_event_id = %s
+                    WHERE event_id = %s
                 """, (end_time, clip_url, clip_url, ev['event_id']))
-            conn.close()
         except Exception as e:
             print(f"[{ev['camera_name']}] DB-Finalize Fehler: {e}")
+            self._db_conn = None
 
     def _finish_all_recorders(self):
         """Alle aktiven Recorder beenden (z.B. bei Stream-Abbruch)."""
@@ -978,8 +1080,8 @@ class CameraWorker(threading.Thread):
                 continue
 
             # Zone pruefen
-            if rule.get('zone_frigate'):
-                if rule['zone_frigate'] not in ev.get('zones', []):
+            if rule.get('zone_key'):
+                if rule['zone_key'] not in ev.get('zones', []):
                     continue
 
             # Score pruefen
@@ -1026,24 +1128,23 @@ class CameraWorker(threading.Thread):
             message += f" in Zone {zones_str}"
 
         if action == 'notify':
-            # pg_notify fuer Frontend-Alert
-            try:
-                conn = psycopg2.connect(**self.conn_params)
-                conn.autocommit = True
-                payload = json.dumps({
-                    'type': 'camera_alert',
-                    'rule': rule['name'],
-                    'camera': ev['camera_name'],
-                    'label': ev['label'],
-                    'zones': ev.get('zones', []),
-                    'message': message,
-                    'snapshot_url': ev.get('snapshot_url', ''),
-                })
-                with conn.cursor() as cur:
-                    cur.execute("SELECT pg_notify('camera_event', %s)", (payload,))
-                conn.close()
-            except Exception as e:
-                print(f"[REGEL] Notify-Fehler: {e}")
+            conn = self._db()
+            if conn:
+                try:
+                    payload = json.dumps({
+                        'type': 'camera_alert',
+                        'rule': rule['name'],
+                        'camera': ev['camera_name'],
+                        'label': ev['label'],
+                        'zones': ev.get('zones', []),
+                        'message': message,
+                        'snapshot_url': ev.get('snapshot_url', ''),
+                    })
+                    with conn.cursor() as cur:
+                        cur.execute("SELECT pg_notify('camera_event', %s)", (payload,))
+                except Exception as e:
+                    print(f"[REGEL] Notify-Fehler: {e}")
+                    self._db_conn = None
 
         elif action == 'log':
             print(f"[LOG] {message}")
@@ -1055,24 +1156,43 @@ class CameraWorker(threading.Thread):
 # --- Konfiguration aus DB laden -----------------------------------------------
 
 def load_cameras(conn):
-    """Aktive Kameras aus der DB laden."""
+    """Aktive Kameras mit Erkennungs-Einstellungen laden."""
     with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
-        cur.execute("SELECT * FROM camera WHERE active ORDER BY sort_order, name")
+        cur.execute("""
+            SELECT id, name, cam_key, stream_url, location, active, sort_order,
+                COALESCE(motion_threshold, 1.5)  AS motion_threshold,
+                COALESCE(min_score, 0.45)        AS min_score,
+                COALESCE(record_clips, true)      AS record_clips,
+                COALESCE(analysis_fps, 2)         AS analysis_fps,
+                COALESCE(pre_record_secs, 3)      AS pre_record_secs,
+                COALESCE(post_record_secs, 5)     AS post_record_secs
+            FROM camera WHERE active ORDER BY sort_order, name
+        """)
         return [dict(row) for row in cur.fetchall()]
 
 
 def load_zones(conn, camera_id):
-    """Zonen einer Kamera laden."""
+    """Zonen einer Kamera laden (mit Polygon-Koordinaten falls gesetzt)."""
     with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
-        cur.execute("SELECT * FROM camera_zone WHERE camera_id = %s", (camera_id,))
+        try:
+            cur.execute(
+                "SELECT id, name, zone_key, color, coordinates FROM camera_zone WHERE camera_id = %s",
+                (camera_id,)
+            )
+        except Exception:
+            cur.execute("SELECT id, name, zone_key, color FROM camera_zone WHERE camera_id = %s", (camera_id,))
         zones = []
         for row in cur.fetchall():
             zone = dict(row)
-            # Koordinaten parsen (z.B. "0,0.5,0.3,0.5,0.3,1,0,1" -> [(0,0.5),(0.3,0.5),...])
-            # Hier: Koordinaten sind als Text in der Zone gespeichert (frigate-kompatibel)
-            # Fuer native Erkennung brauchen wir Polygone
-            # Vorerst leere Koordinaten (Zone-Name wird trotzdem gemeldet)
-            zone['coordinates'] = None
+            # coordinates: [[x,y], ...] normalisiert (0.0-1.0) oder None
+            coords = zone.get('coordinates')
+            if coords and isinstance(coords, str):
+                try:
+                    import json as _json
+                    coords = _json.loads(coords)
+                except Exception:
+                    coords = None
+            zone['coordinates'] = coords if (coords and len(coords) >= 3) else None
             zones.append(zone)
         return zones
 
@@ -1081,7 +1201,7 @@ def load_rules(conn):
     """Aktive Regeln laden."""
     with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
         cur.execute("""
-            SELECT r.*, z.frigate_zone AS zone_frigate
+            SELECT r.*, z.zone_key
             FROM camera_rule r
             LEFT JOIN camera_zone z ON z.id = r.zone_id
             WHERE r.active
@@ -1185,7 +1305,11 @@ def main():
     auth_conn.close()
 
     if not all_workers:
-        print("Keine Kameras gefunden. Beende.")
+        print("Keine Kameras gefunden. Warte 60s und versuche erneut...")
+        for _ in range(60):
+            if not running:
+                break
+            time.sleep(1)
         sys.exit(0)
 
     print(f"\n{len(all_workers)} Kamera-Worker gestartet. Druecke Ctrl+C zum Beenden.\n")

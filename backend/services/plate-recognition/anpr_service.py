@@ -306,12 +306,14 @@ def is_anpr_enabled(company_conn):
 
 # --- Bildverarbeitung --------------------------------------------------------
 
+_CLAHE = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+
+
 def preprocess_frame(frame):
     """Kontrast per CLAHE erhoehen."""
     lab = cv2.cvtColor(frame, cv2.COLOR_BGR2LAB)
     l, a, b = cv2.split(lab)
-    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
-    l = clahe.apply(l)
+    l = _CLAHE.apply(l)
     return cv2.cvtColor(cv2.merge([l, a, b]), cv2.COLOR_LAB2BGR)
 
 
@@ -695,9 +697,10 @@ class FrameReader(threading.Thread):
     sofort das Vorherige), der Verarbeitungs-Thread holt immer den aktuellen Frame.
     """
 
-    def __init__(self, rtsp_url):
+    def __init__(self, rtsp_url, max_width=1280):
         super().__init__(daemon=True)
         self.rtsp_url = rtsp_url
+        self.max_width = max_width
         self._frame = None
         self._ts = 0.0
         self._opened = False
@@ -713,9 +716,19 @@ class FrameReader(threading.Thread):
             if not ret:
                 self._opened = False
                 break
+            # Hochauflösende Streams (4MP+) direkt nach dem Dekodieren runterskalieren.
+            # Reduziert RAM-Verbrauch und YOLO-Inferenzzeit drastisch; für ANPR reicht 1280px.
+            if self.max_width and frame.shape[1] > self.max_width:
+                scale = self.max_width / frame.shape[1]
+                frame = cv2.resize(frame, (self.max_width, int(frame.shape[0] * scale)),
+                                   interpolation=cv2.INTER_LINEAR)
             with self._lock:
                 self._frame = frame
                 self._ts = time.time()
+            # ~30fps-Cap: verhindert Burst-Verarbeitung aus dem OpenCV-internen Frame-Buffer.
+            # cap.read() blockiert NICHT zuverlässig auf neue Netzwerk-Frames — ohne Sleep
+            # werden gepufferte Frames im Burst verarbeitet, was den CPU-Verbrauch verdoppelt.
+            time.sleep(0.033)
         cap.release()
 
     def get_latest(self):

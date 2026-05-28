@@ -5,7 +5,7 @@
     "type": "module",
     "scripts": {
         "dev": "vite",
-        "build": "vite build",
+        "build": "vite build && ln -sfn ../public/camera-snapshots dist/camera-snapshots && ln -sfn ../public/camera-clips dist/camera-clips",
         "preview": "vite preview"
     },
     "dependencies": {

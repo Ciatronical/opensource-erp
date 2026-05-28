@@ -12,8 +12,12 @@
  * @return PDO
  */
 function connectPDO($dbHost, $dbPort, $dbName, $dbUser, $dbPass) {
-    $pdo = new PDO("pgsql:host=$dbHost;port=$dbPort;dbname=$dbName", $dbUser, $dbPass);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $pdo = new PDO(
+        "pgsql:host=$dbHost;port=$dbPort;dbname=$dbName",
+        $dbUser,
+        $dbPass,
+        [PDO::ATTR_PERSISTENT => true, PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
+    );
     return $pdo;
 }
 

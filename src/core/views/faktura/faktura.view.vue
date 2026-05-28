@@ -1617,6 +1617,17 @@ export default defineComponent({
                     return
                 }
 
+                // getTemplateList parallel zu getFakturaData starten
+                const templatePromise = faktura.getTemplateList().catch(() => null)
+
+                // LxCars: alle Initialdaten in einem Call vorladen (nur wenn aktiv).
+                // customer_id = 0 → Backend leitet sie selbst aus der Faktura ab.
+                const lxCarsTypes = ['order', 'quotation', 'invoice']
+                const needsLxCars = !!vehicle && lxCarsTypes.includes(fakturaType.value)
+                const lxCarsPromise = (needsLxCars && carsStore)
+                    ? carsStore.loadLxCarsFakturaInit(fakturaId.value, 0, fakturaType.value).catch(() => null)
+                    : Promise.resolve(null)
+
                 await faktura.fetchFakturaData(fakturaId.value, fakturaType.value)
 
                 if (faktura.data) {
@@ -1679,25 +1690,34 @@ export default defineComponent({
                     phoneNumbers.value = typeof pn === 'string' ? JSON.parse(pn) : (pn || [])
                     customerNotes.value = faktura.data.customer.notes || ''
 
-                    // lxcars: Fahrzeuge laden
-                    if (vehicle && (fakturaType.value === 'order' || fakturaType.value === 'quotation' || fakturaType.value === 'invoice')) {
-                        vehicle.loadVehicleData(faktura.data.common?.customer_id)
+                    // lxcars: Fahrzeuge + Ersatzteile + Lieferanten aus dem zusammengeführten Call
+                    if (needsLxCars) {
+                        const lxData = await lxCarsPromise
+                        if (lxData) {
+                            vehicle.loadVehicleData(null, lxData)
+                            partsRequestsList.value = lxData.parts_requests || []
+                            recentVendorsList.value = lxData.recent_vendors || []
+                        } else {
+                            // Fallback: Einzelaufrufe
+                            vehicle.loadVehicleData(faktura.data.common?.customer_id)
+                            loadPartsRequests()
+                            loadRecentVendors()
+                        }
                     }
 
                     accounting.calculateTotals()
-                    loadPartsRequests()
-                    loadRecentVendors()
 
-                    // Druckvorlagen-Sets laden
+                    // Druckvorlagen aus dem parallel gestarteten Call
                     try {
-                        const templateData = await faktura.getTemplateList()
-                        templateList.value = (templateData.templateSets || []).map(set => ({
-                            id: set.name,
-                            name: set.label
-                        }))
-                        // Aktives Set vorauswählen
-                        if (templateData.activeSet) {
-                            selectedTemplate.value = templateData.activeSet
+                        const templateData = await templatePromise
+                        if (templateData) {
+                            templateList.value = (templateData.templateSets || []).map(set => ({
+                                id: set.name,
+                                name: set.label
+                            }))
+                            if (templateData.activeSet) {
+                                selectedTemplate.value = templateData.activeSet
+                            }
                         }
                     } catch (e) {
                         console.error('Fehler beim Laden der Druckvorlagen:', e)

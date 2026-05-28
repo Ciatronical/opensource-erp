@@ -201,6 +201,28 @@ export const lxcarsStore = defineStore('lxcarsStore', () => {
     }
 
     /**
+     * Lädt alle LxCars-Initialdaten für eine Faktura in einem einzigen Call.
+     * Kombiniert: getCustomerCars + getCarForOrder/Invoice + getPartsRequestsByOrder + getRecentVendors
+     *
+     * @param {number} fakturaId
+     * @param {number} customerId
+     * @param {string} fakturaType - 'order', 'quotation' oder 'invoice'
+     * @return {Promise<{customer_cars, car_data, parts_requests, recent_vendors}>}
+     */
+    async function loadLxCarsFakturaInit(fakturaId, customerId, fakturaType) {
+        const response = await axios.post('/api/lxcars/', {
+            action: 'getLxCarsFakturaInit',
+            faktura_id: fakturaId,
+            customer_id: customerId,
+            faktura_type: fakturaType
+        });
+        if (!response.data.success) {
+            throw new ApiError('ApiError', response.data.text, 'Error loading LxCars faktura init');
+        }
+        return response.data.payload;
+    }
+
+    /**
      * Lädt das verknüpfte Fahrzeug eines Auftrags
      *
      * @param {number} oeId - Auftrags-ID
@@ -1154,6 +1176,7 @@ export const lxcarsStore = defineStore('lxcarsStore', () => {
         loadCar,
         loadCarOrders,
         checkKmStandPlausibility,
+        loadLxCarsFakturaInit,
         loadCustomerCars,
         loadCarForOrder,
         linkCarToFaktura,

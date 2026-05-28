@@ -52,7 +52,10 @@ function getCV($data, $withConfig = []) {
                 SELECT json_build_object(
                     'logged_in_employee', (
                         SELECT row_to_json(emp)
-                        FROM (SELECT * FROM employee WHERE login = '{$auth->getLogin()}') AS emp
+                        FROM (
+                            SELECT id, name, login
+                            FROM employee WHERE login = '{$auth->getLogin()}'
+                        ) AS emp
                     ),
                     'company_config', (
                         SELECT json_build_object(
@@ -88,7 +91,8 @@ function getCV($data, $withConfig = []) {
                             ),
                             'employees', (
                                 SELECT json_agg(emp) FROM (
-                                    SELECT * FROM employee WHERE deleted = false ORDER BY name ASC
+                                    SELECT id, name, login
+                                    FROM employee WHERE deleted = false ORDER BY name ASC
                                 ) AS emp
                             ),
                             'business_types', (
@@ -167,7 +171,7 @@ function getCV($data, $withConfig = []) {
                     (
                         SELECT row_to_json(emp)
                         FROM (
-                            SELECT *
+                            SELECT id, name, login
                             FROM employee
                             WHERE login = '{$auth->getLogin()}'
                         ) AS emp
@@ -211,12 +215,6 @@ function getCV($data, $withConfig = []) {
                                     SELECT * FROM currencies
                                 ) AS currency
                             ),
-                            'business', (
-                                SELECT json_agg(business)
-                                FROM (
-                                    SELECT * FROM business
-                                ) AS business
-                            ),
                             'languages', (
                                 SELECT json_agg(language)
                                 FROM (
@@ -232,7 +230,8 @@ function getCV($data, $withConfig = []) {
                             'employees', (
                                 SELECT json_agg(employees)
                                 FROM (
-                                    SELECT * FROM employee WHERE deleted = false ORDER BY name ASC
+                                    SELECT id, name, login
+                                    FROM employee WHERE deleted = false ORDER BY name ASC
                                 ) AS employees
                             ),
                             'tax', (--Steuersätze
@@ -1280,6 +1279,7 @@ function getAllCallHistory($data) {
     $pdo = $mandant->getPDO();
     $limit = isset($data['limit']) ? intval($data['limit']) : 100;
     $offset = isset($data['offset']) ? intval($data['offset']) : 0;
+    $limitClause = $limit > 0 ? "LIMIT $limit OFFSET $offset" : '';
 
     $where = [];
 
@@ -1328,7 +1328,7 @@ function getAllCallHistory($data) {
                         END AS caller_name
                     FROM filtered
                     ORDER BY crmti_init_time DESC
-                    LIMIT $limit OFFSET $offset
+                    $limitClause
                 ) AS ch
             ),
             'total_count', (

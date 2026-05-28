@@ -130,49 +130,35 @@ class ApiSession extends ApiDatabase {
         }
 
         if (!is_array($permissions)) {
-            $permissions = array($permissions);
+            $permissions = [$permissions];
         }
 
         $query = <<<SQL
-            SELECT group_id
-            FROM auth.user_group
-            WHERE user_id = :user_id
+            SELECT DISTINCT gr.right
+            FROM auth.user_group ug
+            JOIN auth.group_rights gr ON gr.group_id = ug.group_id
+            JOIN auth.clients_groups cg ON cg.group_id = ug.group_id
+            WHERE ug.user_id = :user_id
+            AND cg.client_id = :client_id
+            AND gr.granted = true
         SQL;
-        $userGroups = $this->getAll($query, [':user_id' => $user_id]);
 
-        $permited = [];
+        $granted = array_column(
+            $this->getAll($query, [':user_id' => $user_id, ':client_id' => $client_id]),
+            'right'
+        );
 
-        foreach ($userGroups as $group) {
-            $query = <<<SQL
-                SELECT gr.right
-                FROM auth.group_rights gr
-                JOIN auth.clients_groups cg ON gr.group_id = cg.group_id
-                WHERE cg.client_id = :client_id
-                AND cg.group_id = :group_id
-                AND gr.granted = true
-                ORDER BY gr.right ASC
-            SQL;
-            $grantedPermissions = $this->getAll($query, [
-                ':client_id' => $client_id,
-                ':group_id' => $group['group_id']
-            ]);
-
-            foreach ($permissions as $permission) {
-                if (in_array($permission, array_column($grantedPermissions, 'right'))) {
-                    if (!$allRequired) {
-                        return true;
-                    } else {
-                        if (!in_array($permission, $permited, true)) {
-                            $permited[] = $permission;
-                        }
-                    }
-                }
+        if (!$allRequired) {
+            foreach ($permissions as $perm) {
+                if (in_array($perm, $granted)) return true;
             }
+            return false;
         }
-        if (count($permited) == count($permissions)) {
-            return true;
+
+        foreach ($permissions as $perm) {
+            if (!in_array($perm, $granted)) return false;
         }
-        return false;
+        return true;
     }
 
     /**
@@ -188,36 +174,18 @@ class ApiSession extends ApiDatabase {
         }
 
         $query = <<<SQL
-            SELECT group_id
-            FROM auth.user_group
-            WHERE user_id = :user_id
+            SELECT DISTINCT gr.right
+            FROM auth.user_group ug
+            JOIN auth.group_rights gr ON gr.group_id = ug.group_id
+            JOIN auth.clients_groups cg ON cg.group_id = ug.group_id
+            WHERE ug.user_id = :user_id
+            AND cg.client_id = :client_id
+            AND gr.granted = true
+            ORDER BY gr.right ASC
         SQL;
-        $userGroups = $this->getAll($query, [':user_id' => $user_id]);
 
-        $permissions = [];
-
-        foreach ($userGroups as $group) {
-            $query = <<<SQL
-                SELECT gr.right
-                FROM auth.group_rights gr
-                JOIN auth.clients_groups cg ON gr.group_id = cg.group_id
-                WHERE cg.client_id = :client_id
-                AND cg.group_id = :group_id
-                AND gr.granted = true
-                ORDER BY gr.right ASC
-            SQL;
-            $grantedPermissions = $this->getAll($query, [
-                ':client_id' => $client_id,
-                ':group_id' => $group['group_id']
-            ]);
-
-            foreach ($grantedPermissions as $perm) {
-                if (!in_array($perm['right'], $permissions)) {
-                    $permissions[] = $perm['right'];
-                }
-            }
-        }
-        return $permissions;
+        $rows = $this->getAll($query, [':user_id' => $user_id, ':client_id' => $client_id]);
+        return array_column($rows, 'right');
     }
 
     /**
@@ -231,32 +199,33 @@ class ApiSession extends ApiDatabase {
             return [];
         }
 
-        // Alle Gruppen des Mandanten
-        $groups = $this->getAll(
-            'SELECT g.id, g.name
+        // Alle Gruppen mit zugehörigen Logins in einem einzigen Query
+        $rows = $this->getAll(
+            'SELECT g.id, g.name, u.login
              FROM auth."group" g
              JOIN auth.clients_groups cg ON g.id = cg.group_id
+             LEFT JOIN auth.user_group ug ON ug.group_id = g.id
+             LEFT JOIN auth."user" u ON u.id = ug.user_id
              WHERE cg.client_id = :client_id
-             ORDER BY g.name ASC',
+             ORDER BY g.name ASC, u.login ASC',
             [':client_id' => $client_id]
         );
 
-        if (!$groups) return [];
+        if (!$rows) return [];
 
-        // User-Logins pro Gruppe laden
-        foreach ($groups as &$group) {
-            $users = $this->getAll(
-                'SELECT u.login
-                 FROM auth.user_group ug
-                 JOIN auth."user" u ON ug.user_id = u.id
-                 WHERE ug.group_id = :group_id
-                 ORDER BY u.login ASC',
-                [':group_id' => $group['id']]
-            );
-            $group['logins'] = $users ? array_column($users, 'login') : [];
+        // Gruppen zusammenführen
+        $groups = [];
+        foreach ($rows as $row) {
+            $id = $row['id'];
+            if (!isset($groups[$id])) {
+                $groups[$id] = ['id' => $id, 'name' => $row['name'], 'logins' => []];
+            }
+            if ($row['login'] !== null) {
+                $groups[$id]['logins'][] = $row['login'];
+            }
         }
 
-        return $groups;
+        return array_values($groups);
     }
 }
 

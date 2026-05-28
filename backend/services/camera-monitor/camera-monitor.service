@@ -1,0 +1,16 @@
+[Unit]
+Description=OpensourceERP Kamera-Monitor (Objekterkennung)
+After=network.target go2rtc.service
+
+[Service]
+ExecStart=/home/work/opensource-erp/backend/services/camera-monitor/venv/bin/python /home/work/opensource-erp/backend/services/camera-monitor/camera_monitor.py
+WorkingDirectory=/home/work/opensource-erp/backend/services/camera-monitor
+Restart=always
+RestartSec=10
+TimeoutStopSec=8
+User=work
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

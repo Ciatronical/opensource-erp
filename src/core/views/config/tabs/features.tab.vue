@@ -1,6 +1,77 @@
 <!-- src/core/views/config/tabs/features.tab.vue -->
 <template>
     <div>
+        <!-- ═══════════════════════════════════════════════════════════════ -->
+        <!-- KAMERA & ÜBERWACHUNG -->
+        <!-- ═══════════════════════════════════════════════════════════════ -->
+        <template v-if="crmDefaults">
+            <h3 class="text-h6 mb-4">{{ $t('cameraAndSurveillance') }}</h3>
+
+            <v-row class="mb-2">
+                <!-- ANPR -->
+                <v-col cols="12" md="6">
+                    <v-card
+                        :variant="crmDefaults.feature_anpr ? 'outlined' : 'tonal'"
+                        :color="crmDefaults.feature_anpr ? 'primary' : undefined"
+                        class="feature-card"
+                    >
+                        <v-card-text class="pa-4">
+                            <div class="d-flex align-center justify-space-between">
+                                <div class="d-flex align-center ga-3">
+                                    <v-icon size="32" :color="crmDefaults.feature_anpr ? 'primary' : 'grey'">mdi-car-search</v-icon>
+                                    <div>
+                                        <div class="text-subtitle-1 font-weight-bold">ANPR</div>
+                                        <div class="text-caption text-medium-emphasis">{{ $t('featureAnprDesc') }}</div>
+                                    </div>
+                                </div>
+                                <v-switch
+                                    v-model="crmDefaults.feature_anpr"
+                                    :true-value="true"
+                                    :false-value="false"
+                                    color="primary"
+                                    hide-details
+                                    density="compact"
+                                    inset
+                                />
+                            </div>
+                        </v-card-text>
+                    </v-card>
+                </v-col>
+
+                <!-- NVR -->
+                <v-col cols="12" md="6">
+                    <v-card
+                        :variant="crmDefaults.feature_nvr ? 'outlined' : 'tonal'"
+                        :color="crmDefaults.feature_nvr ? 'primary' : undefined"
+                        class="feature-card"
+                    >
+                        <v-card-text class="pa-4">
+                            <div class="d-flex align-center justify-space-between">
+                                <div class="d-flex align-center ga-3">
+                                    <v-icon size="32" :color="crmDefaults.feature_nvr ? 'primary' : 'grey'">mdi-cctv</v-icon>
+                                    <div>
+                                        <div class="text-subtitle-1 font-weight-bold">NVR</div>
+                                        <div class="text-caption text-medium-emphasis">{{ $t('featureNvrDesc') }}</div>
+                                    </div>
+                                </div>
+                                <v-switch
+                                    v-model="crmDefaults.feature_nvr"
+                                    :true-value="true"
+                                    :false-value="false"
+                                    color="primary"
+                                    hide-details
+                                    density="compact"
+                                    inset
+                                />
+                            </div>
+                        </v-card-text>
+                    </v-card>
+                </v-col>
+            </v-row>
+
+            <v-divider class="my-6" />
+        </template>
+
         <!-- DATEV & UStVA -->
         <h3 class="text-h6 mb-4">{{ $t('datevAndUstva') }}</h3>
 
@@ -420,11 +491,14 @@ import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
 
-// Props: Erhält das defaults-Objekt vom Parent
-defineProps({
+const props = defineProps({
     defaults: {
         type: Object,
         required: true
+    },
+    crmDefaults: {
+        type: Object,
+        default: null
     }
 });
 
@@ -458,3 +532,12 @@ const emailJournalOptions = [
     { title: t('journalWithAttachments'), value: 2 }
 ];
 </script>
+
+<style scoped>
+.feature-card {
+    transition: all 0.2s ease;
+}
+.feature-card:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+</style>

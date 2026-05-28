@@ -1,0 +1,12 @@
+[Unit]
+Description=go2rtc stream server (OpensourceERP)
+After=network.target
+
+[Service]
+ExecStart=GOPATH -config CONFIGPATH
+Restart=always
+RestartSec=5
+User=www-data
+
+[Install]
+WantedBy=multi-user.target

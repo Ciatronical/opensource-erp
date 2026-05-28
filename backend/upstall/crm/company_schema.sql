@@ -941,13 +941,6 @@ CREATE TABLE IF NOT EXISTS weroni_tasks (
     completed_at    TIMESTAMP
 );
 
--- Migration: Neue Spalten für bestehende Installationen
-ALTER TABLE weroni_tasks ADD COLUMN IF NOT EXISTS source TEXT;
-ALTER TABLE weroni_tasks ADD COLUMN IF NOT EXISTS source_ref TEXT;
-ALTER TABLE weroni_tasks ADD COLUMN IF NOT EXISTS auto_action JSONB;
--- Status 'pending_confirm' erlauben
-ALTER TABLE weroni_tasks DROP CONSTRAINT IF EXISTS weroni_tasks_status_check;
-ALTER TABLE weroni_tasks ADD CONSTRAINT weroni_tasks_status_check CHECK (status IN ('open', 'pending_confirm', 'in_progress', 'waiting', 'done', 'cancelled'));
 
 -- Weroni Verarbeitungsstatus: Was wurde schon gelesen/verarbeitet
 CREATE TABLE IF NOT EXISTS weroni_monitor_state (
@@ -1519,20 +1512,26 @@ ALTER TABLE printers ADD COLUMN IF NOT EXISTS hide_factura boolean DEFAULT false
 CREATE TABLE camera (
     id INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     name TEXT NOT NULL,
-    frigate_name TEXT NOT NULL,
+    cam_key TEXT,
     stream_url TEXT,
     location TEXT,
     active BOOLEAN NOT NULL DEFAULT true,
     sort_order INTEGER NOT NULL DEFAULT 0,
+    motion_threshold NUMERIC(4,2) DEFAULT 1.5,
+    min_score NUMERIC(3,2) DEFAULT 0.45,
+    record_clips BOOLEAN DEFAULT TRUE,
+    analysis_fps SMALLINT DEFAULT 2,
+    pre_record_secs SMALLINT DEFAULT 3,
+    post_record_secs SMALLINT DEFAULT 5,
     itime TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
     mtime TIMESTAMP WITHOUT TIME ZONE,
-    CONSTRAINT camera_frigate_name_unique UNIQUE (frigate_name)
+    CONSTRAINT camera_cam_key_unique UNIQUE (cam_key)
 );
 
-COMMENT ON TABLE camera IS 'Kamera-Stammdaten (verknüpft mit Frigate-Kameranamen)';
+COMMENT ON TABLE camera IS 'Kamera-Stammdaten';
 COMMENT ON COLUMN camera.name IS 'Anzeigename der Kamera (z.B. Lager Eingang)';
-COMMENT ON COLUMN camera.frigate_name IS 'Name der Kamera in Frigate-Konfiguration';
-COMMENT ON COLUMN camera.stream_url IS 'WebRTC/RTSP Stream-URL (go2rtc oder Frigate)';
+COMMENT ON COLUMN camera.cam_key IS 'Eindeutiger Schlüssel der Kamera (Slug, z.B. lager_eingang) — wird als Stream-Name in go2rtc verwendet';
+COMMENT ON COLUMN camera.stream_url IS 'RTSP Stream-URL der Kamera';
 COMMENT ON COLUMN camera.location IS 'Standortbeschreibung';
 COMMENT ON COLUMN camera.active IS 'Kamera aktiv/inaktiv';
 COMMENT ON COLUMN camera.sort_order IS 'Sortierreihenfolge in der Übersicht';
@@ -1541,23 +1540,24 @@ CREATE TABLE camera_zone (
     id INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     camera_id INTEGER NOT NULL REFERENCES camera(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
-    frigate_zone TEXT NOT NULL,
+    zone_key TEXT NOT NULL,
     color TEXT DEFAULT '#FF5722',
+    coordinates JSONB,
     itime TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
     mtime TIMESTAMP WITHOUT TIME ZONE,
-    CONSTRAINT camera_zone_unique UNIQUE (camera_id, frigate_zone)
+    CONSTRAINT camera_zone_unique UNIQUE (camera_id, zone_key)
 );
 
-COMMENT ON TABLE camera_zone IS 'Überwachungszonen pro Kamera (Frigate Zonen)';
+COMMENT ON TABLE camera_zone IS 'Überwachungszonen pro Kamera';
 COMMENT ON COLUMN camera_zone.name IS 'Anzeigename der Zone (z.B. Wareneingang)';
-COMMENT ON COLUMN camera_zone.frigate_zone IS 'Zonenname in Frigate-Konfiguration';
+COMMENT ON COLUMN camera_zone.zone_key IS 'Eindeutiger Schlüssel der Zone (Slug)';
 COMMENT ON COLUMN camera_zone.color IS 'Farbe für UI-Anzeige (Hex)';
 
 CREATE INDEX idx_camera_zone_camera_id ON camera_zone(camera_id);
 
 CREATE TABLE camera_event (
     id INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    frigate_event_id TEXT,
+    event_id TEXT,
     camera_id INTEGER REFERENCES camera(id) ON DELETE SET NULL,
     camera_name TEXT NOT NULL,
     label TEXT NOT NULL,
@@ -1571,12 +1571,12 @@ CREATE TABLE camera_event (
     acknowledged_by INTEGER,
     notes TEXT,
     itime TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
-    CONSTRAINT camera_event_frigate_id_unique UNIQUE (frigate_event_id)
+    CONSTRAINT camera_event_id_unique UNIQUE (event_id)
 );
 
-COMMENT ON TABLE camera_event IS 'Erkannte Ereignisse von Frigate (Personen, Fahrzeuge etc.)';
-COMMENT ON COLUMN camera_event.frigate_event_id IS 'Eindeutige Event-ID von Frigate';
-COMMENT ON COLUMN camera_event.camera_name IS 'Frigate-Kameraname (auch ohne Stammdaten nutzbar)';
+COMMENT ON TABLE camera_event IS 'Erkannte Ereignisse des Kamera-Monitors (Personen, Fahrzeuge, Tiere etc.)';
+COMMENT ON COLUMN camera_event.event_id IS 'Eindeutige Event-ID (UUID-Prefix, generiert vom camera_monitor)';
+COMMENT ON COLUMN camera_event.camera_name IS 'Kamera-Schlüssel (cam_key, auch ohne Stammdaten nutzbar)';
 COMMENT ON COLUMN camera_event.label IS 'Erkanntes Objekt (person, car, dog, cat etc.)';
 COMMENT ON COLUMN camera_event.zones IS 'Betroffene Zonen als Array';
 COMMENT ON COLUMN camera_event.score IS 'Erkennungsgenauigkeit (0.000 - 1.000)';

@@ -1,0 +1,20 @@
+# OpensourceERP — Kamera- und ANPR-Dienste
+#
+# Installation (einmalig als root):
+#   cp backend/services/oserp-camera-sudoers /etc/sudoers.d/oserp-camera
+#   chmod 440 /etc/sudoers.d/oserp-camera
+#   visudo -c -f /etc/sudoers.d/oserp-camera   # Syntax prüfen
+#
+# Erlaubt dem Webserver (www-data) die Kamera-Dienste über die ERP-UI zu steuern.
+
+www-data ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart anpr.service
+www-data ALL=(ALL) NOPASSWD: /usr/bin/systemctl start anpr.service
+www-data ALL=(ALL) NOPASSWD: /usr/bin/systemctl stop anpr.service
+
+www-data ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart go2rtc.service
+www-data ALL=(ALL) NOPASSWD: /usr/bin/systemctl start go2rtc.service
+www-data ALL=(ALL) NOPASSWD: /usr/bin/systemctl stop go2rtc.service
+
+www-data ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart camera-monitor.service
+www-data ALL=(ALL) NOPASSWD: /usr/bin/systemctl start camera-monitor.service
+www-data ALL=(ALL) NOPASSWD: /usr/bin/systemctl stop camera-monitor.service

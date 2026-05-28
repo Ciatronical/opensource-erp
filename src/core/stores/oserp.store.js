@@ -88,6 +88,24 @@ export const oserpStore = defineStore('oserpStore', () => {
     }
 
     /**
+     * Prüft ob ANPR aktiviert ist (Standard: true wenn nicht explizit deaktiviert)
+     */
+    function isAnprEnabled() {
+        const v = getClientDefaultValue('feature_anpr', null);
+        if (v === null) return true;
+        return v === true || v === 'true' || v === '1' || v === 1;
+    }
+
+    /**
+     * Prüft ob NVR aktiviert ist (Standard: true wenn nicht explizit deaktiviert)
+     */
+    function isNvrEnabled() {
+        const v = getClientDefaultValue('feature_nvr', null);
+        if (v === null) return true;
+        return v === true || v === 'true' || v === '1' || v === 1;
+    }
+
+    /**
      * Prüft ob User eine Permission hat
      */
     function checkPermission(permissionName) {
@@ -345,11 +363,15 @@ export const oserpStore = defineStore('oserpStore', () => {
     // =========================================================================
 
     /**
-     * Lädt Company Config neu
-     * WICHTIG: Nach jedem Save aufrufen damit alle Komponenten aktuelle Daten sehen!
+     * Lädt Company Config neu (ohne vollständigen Session-Reload).
+     * WICHTIG: Nach jedem Config-Save aufrufen damit alle Komponenten aktuelle Daten sehen!
      */
     async function loadCompanyConfig() {
-        await restoreSession();
+        const response = await axios.post('/api/oserp_config/', { action: 'getCompanyConfig' });
+        if (response.data.success && response.data.payload?.company_config) {
+            session.company_config = response.data.payload.company_config;
+            features.splice(0, features.length, ...(response.data.payload.company_config.features || []));
+        }
     }
 
     /**
@@ -739,6 +761,8 @@ export const oserpStore = defineStore('oserpStore', () => {
         getClientDefaultValue,
         isFeatureEnabled,
         isLxCars,
+        isAnprEnabled,
+        isNvrEnabled,
         checkPermission,
         permit,
         isDebugMode,

@@ -515,6 +515,114 @@ function getCustomerCars($data) {
 }
 
 /**
+ * Lädt alle LxCars-Initialdaten für eine Faktura in einem einzigen Call.
+ * Ersetzt getCustomerCars + getCarForOrder/getCarForInvoice + getPartsRequestsByOrder + getRecentVendors.
+ *
+ * @param int $data['faktura_id'] Dokument-ID
+ * @param int $data['customer_id'] Kunden-ID
+ * @param string $data['faktura_type'] 'order', 'quotation' oder 'invoice'
+ * @testdata {"faktura_id": 1, "customer_id": 1, "faktura_type": "order"}
+ */
+function getLxCarsFakturaInit($data) {
+    $db = DbhCompany::begin();
+    $fakturaId   = intval($data['faktura_id']  ?? 0);
+    $customerId  = intval($data['customer_id'] ?? 0);
+    $fakturaType = $data['faktura_type'] ?? 'order';
+    $isInvoice   = ($fakturaType === 'invoice');
+    $isOrder     = ($fakturaType === 'order');
+
+    // customer_id aus Dokument ableiten wenn nicht übergeben
+    if (!$customerId && $fakturaId) {
+        $mainTable = $isInvoice ? 'ar' : 'oe';
+        $row = $db->getOne("SELECT customer_id FROM $mainTable WHERE id = :id", [':id' => $fakturaId]);
+        $customerId = intval($row['customer_id'] ?? 0);
+    }
+
+    $customerCars = $customerId
+        ? $db->getAll(
+            "SELECT c.c_id, c.c_ln, c.c_m, c.c_mt, COALESCE(c.c_text, '') AS c_text,
+                    COALESCE(k.fhzart, '') AS fhzart
+             FROM cars_lxcars c
+             LEFT JOIN kba_lxcars k ON k.id = c.kba_id
+             WHERE c.c_ow = :customer_id ORDER BY c.c_ln",
+            [':customer_id' => $customerId]
+        ) ?: [] : [];
+
+    $carData = null;
+    if ($fakturaId) {
+        if ($isInvoice) {
+            $carData = $db->getOne(
+                "SELECT c.c_id, c.c_ln, COALESCE(c.c_text, '') AS c_text,
+                        e.km_stand, e.fertigstellung, COALESCE(k.fhzart, '') AS fhzart
+                 FROM ar_ext e
+                 LEFT JOIN cars_lxcars c ON c.c_id = e.c_id
+                 LEFT JOIN kba_lxcars k ON k.id = c.kba_id
+                 WHERE e.ar_id = :id",
+                [':id' => $fakturaId]
+            );
+        } else {
+            $carData = $db->getOne(
+                "SELECT c.c_id, c.c_ln, COALESCE(c.c_text, '') AS c_text,
+                        e.km_stand, e.kfz_ort, e.status, e.gedruckt, e.intern,
+                        e.bringetermin, e.fertigstellung, e.no_whatsapp,
+                        c.c_sk, to_char(c.c_zrd, 'YYYY-MM-DD') AS c_zrd, c.c_zrk,
+                        to_char(c.c_bf, 'YYYY-MM-DD') AS c_bf, to_char(c.c_wd, 'YYYY-MM-DD') AS c_wd,
+                        COALESCE(k.fhzart, '') AS fhzart,
+                        COALESCE((SELECT value FROM defaults_oserp WHERE key = 'lxcars_default_abgabezeit'), '08:00') AS _def_bring,
+                        COALESCE((SELECT value FROM defaults_oserp WHERE key = 'lxcars_default_fertigstellungszeit'), '17:00') AS _def_fertig
+                 FROM oe_ext e
+                 LEFT JOIN cars_lxcars c ON c.c_id = e.c_id
+                 LEFT JOIN kba_lxcars k ON k.id = c.kba_id
+                 WHERE e.oe_id = :id",
+                [':id' => $fakturaId]
+            );
+            // Fehlende Uhrzeiten ergänzen (Datum ohne Uhrzeit)
+            if ($carData) {
+                foreach (['bringetermin' => '_def_bring', 'fertigstellung' => '_def_fertig'] as $field => $defKey) {
+                    if (!empty($carData[$field]) && !preg_match('/\d{2}:\d{2}/', $carData[$field])) {
+                        $carData[$field] = $carData[$field] . ' ' . trim($carData[$defKey]) . ':00';
+                    }
+                }
+                unset($carData['_def_bring'], $carData['_def_fertig']);
+            }
+        }
+    }
+
+    $partsRequests = [];
+    $recentVendors = [];
+    if ($isOrder && $fakturaId) {
+        $partsRequests = $db->getAll(
+            "SELECT pr.id, pr.orderitem_id, pr.status, pr.note, pr.photo,
+                    pr.requested_by, pr.vendor_id, pr.requested_at, pr.ordered_at,
+                    e.name AS requested_by_name, v.name AS vendor_name
+             FROM oe_parts_requests_lxcars pr
+             LEFT JOIN employee e ON e.id = pr.requested_by
+             LEFT JOIN vendor v ON v.id = pr.vendor_id
+             WHERE pr.oe_id = :oe_id",
+            [':oe_id' => $fakturaId]
+        ) ?: [];
+
+        $recentVendors = $db->getAll(
+            "SELECT v.id, v.name, COUNT(pr.id) AS order_count
+             FROM oe_parts_requests_lxcars pr
+             JOIN vendor v ON v.id = pr.vendor_id
+             WHERE pr.status = 'ordered' AND NOT v.obsolete
+             GROUP BY v.id, v.name
+             ORDER BY COUNT(pr.id) DESC, v.name ASC
+             LIMIT 10",
+            []
+        ) ?: [];
+    }
+
+    resultInfo(true, 'OK', [
+        'customer_cars'  => $customerCars,
+        'car_data'       => $carData,
+        'parts_requests' => $partsRequests,
+        'recent_vendors' => $recentVendors,
+    ]);
+}
+
+/**
  * Lädt das verknüpfte Fahrzeug-Kennzeichen eines Auftrags
  *
  * @param int $data['oe_id'] Auftrags-ID

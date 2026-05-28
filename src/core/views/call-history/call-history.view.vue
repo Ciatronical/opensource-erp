@@ -74,6 +74,14 @@
               :items="callHistory"
               :items-length="totalCount"
               :items-per-page="itemsPerPage"
+              :items-per-page-options="[
+                { value: 25, title: '25' },
+                { value: 50, title: '50' },
+                { value: 100, title: '100' },
+                { value: 200, title: '200' },
+                { value: 500, title: '500' },
+                { value: -1, title: t('CallHistoryView.all') },
+              ]"
               :page="page"
               :loading="loading"
               density="compact"
@@ -242,10 +250,11 @@ export default {
     async function fetchCallHistory() {
       loading.value = true;
       try {
-        const offset = (page.value - 1) * itemsPerPage.value;
+        const isAll = itemsPerPage.value === -1;
+        const offset = isAll ? 0 : (page.value - 1) * itemsPerPage.value;
         const params = {
           action: 'getAllCallHistory',
-          limit: itemsPerPage.value,
+          limit: isAll ? -1 : itemsPerPage.value,
           offset: offset,
         };
         if (filterSearch.value) params.search = filterSearch.value;

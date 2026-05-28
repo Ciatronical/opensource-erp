@@ -57,7 +57,7 @@
                         <component
                             :is="currentTabComponent"
                             :defaults="['crm','lxcars','anpr'].includes(activeTab) ? undefined : defaults"
-                            :crm-defaults="['crm','lxcars','anpr','bank'].includes(activeTab) ? crmDefaults : undefined"
+                            :crm-defaults="['crm','lxcars','anpr','bank','features'].includes(activeTab) ? crmDefaults : undefined"
                             :search-query="searchQuery"
                         />
                     </v-card-text>
@@ -88,6 +88,85 @@
                     >
                         <v-icon start>mdi-check</v-icon>
                         {{ t('featureChange.confirm_button') }}
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
+        <!-- Feature-Dienst Ein/Aus-Dialog -->
+        <v-dialog v-model="showFeatureServiceDialog" max-width="580" persistent>
+            <v-card>
+                <v-card-title class="d-flex align-center ga-2" :class="pendingFeatureService?.enabled ? 'bg-success' : 'bg-error'" style="color:white">
+                    <v-icon start>{{ pendingFeatureService?.enabled ? 'mdi-power-plug' : 'mdi-power-plug-off' }}</v-icon>
+                    {{ pendingFeatureService?.enabled
+                        ? t('featureService.enable_title', { name: featureServiceLabel })
+                        : t('featureService.disable_title', { name: featureServiceLabel }) }}
+                </v-card-title>
+                <v-card-text class="pa-4">
+                    <!-- Normaler Bestätigungstext (kein Fehler) -->
+                    <template v-if="!featureServiceErrorDetail">
+                        <p v-if="pendingFeatureService?.enabled">
+                            {{ t('featureService.enable_text', { name: featureServiceLabel, services: featureServiceNames }) }}
+                        </p>
+                        <p v-else>
+                            {{ t('featureService.disable_text', { name: featureServiceLabel, services: featureServiceNames }) }}
+                        </p>
+                    </template>
+
+                    <!-- Fehlerbereich -->
+                    <template v-if="featureServiceErrorDetail">
+                        <v-alert type="error" variant="tonal" density="compact" class="mb-3">
+                            <div class="font-weight-medium mb-1">{{ t('featureService.stop_failed') }}</div>
+                            <div class="text-caption">{{ featureServiceErrorDetail.message }}</div>
+                        </v-alert>
+
+                        <!-- systemctl-Output -->
+                        <div v-if="featureServiceErrorDetail.output" class="mb-3">
+                            <div class="text-caption text-medium-emphasis mb-1">{{ t('featureService.systemctl_output') }}</div>
+                            <pre class="feature-error-pre">{{ featureServiceErrorDetail.output }}</pre>
+                        </div>
+
+                        <!-- Manuelle Befehle -->
+                        <div v-if="featureServiceErrorDetail.manualCommands?.length">
+                            <div class="text-caption text-medium-emphasis mb-1">{{ t('featureService.manual_fix') }}</div>
+                            <div v-for="cmd in featureServiceErrorDetail.manualCommands" :key="cmd"
+                                class="d-flex align-center ga-2 mb-1">
+                                <code class="feature-cmd-code flex-grow-1">{{ cmd }}</code>
+                                <v-btn
+                                    size="x-small"
+                                    variant="tonal"
+                                    :color="copiedCmd === cmd ? 'success' : 'default'"
+                                    :prepend-icon="copiedCmd === cmd ? 'mdi-check' : 'mdi-content-copy'"
+                                    @click="copyCmd(cmd)"
+                                >
+                                    {{ copiedCmd === cmd ? t('copied') : t('copy') }}
+                                </v-btn>
+                            </div>
+                        </div>
+                    </template>
+                </v-card-text>
+                <v-card-actions>
+                    <v-btn @click="cancelFeatureService">{{ t('cancel') }}</v-btn>
+                    <v-spacer />
+                    <v-btn
+                        v-if="!featureServiceErrorDetail"
+                        :color="pendingFeatureService?.enabled ? 'success' : 'error'"
+                        variant="flat"
+                        :loading="featureServiceLoading"
+                        @click="applyFeatureService"
+                    >
+                        <v-icon start>mdi-check</v-icon>
+                        {{ pendingFeatureService?.enabled ? t('featureService.confirm_enable') : t('featureService.confirm_disable') }}
+                    </v-btn>
+                    <v-btn
+                        v-else
+                        color="primary"
+                        variant="flat"
+                        @click="retryFeatureService"
+                        :loading="featureServiceLoading"
+                    >
+                        <v-icon start>mdi-refresh</v-icon>
+                        {{ t('featureService.retry') }}
                     </v-btn>
                 </v-card-actions>
             </v-card>
@@ -151,6 +230,22 @@ let initialLoaded = false;
 let textInputFocused = false;
 let hasPendingChanges = false;
 
+// Feature-Dienst-Toggle (ANPR / NVR)
+const showFeatureServiceDialog = ref(false);
+const featureServiceLoading = ref(false);
+const featureServiceErrorDetail = ref(null); // { message, output, manualCommands }
+const pendingFeatureService = ref(null); // { feature: 'anpr'|'nvr', enabled: bool }
+const copiedCmd = ref('');
+let previousFeatureAnpr = undefined;
+let previousFeatureNvr = undefined;
+
+const featureServiceMeta = {
+    anpr: { label: 'ANPR', services: 'anpr.service' },
+    nvr:  { label: 'NVR',  services: 'go2rtc.service, camera-monitor.service' },
+};
+const featureServiceLabel = computed(() => featureServiceMeta[pendingFeatureService.value?.feature]?.label ?? '');
+const featureServiceNames = computed(() => featureServiceMeta[pendingFeatureService.value?.feature]?.services ?? '');
+
 /**
  * Prüft ob ein DOM-Element ein Texteingabefeld ist
  */
@@ -186,8 +281,38 @@ function onFocusOut(event) {
  * Speichert sofort bei Select/Checkbox-Änderungen,
  * wartet bei Textfeldern bis der Fokus verloren geht.
  */
+function _normalizeFeatureBool(v) {
+    return v === true || v === 'true' || v === '1' || v === 1;
+}
+
 function onDataChange() {
     if (!initialLoaded) return;
+
+    // ANPR-Toggle abfangen
+    const currentAnpr = crmDefaults.value.feature_anpr;
+    if (previousFeatureAnpr !== undefined) {
+        const wasOn = _normalizeFeatureBool(previousFeatureAnpr);
+        const isOn  = _normalizeFeatureBool(currentAnpr);
+        if (wasOn !== isOn) {
+            pendingFeatureService.value = { feature: 'anpr', enabled: isOn };
+            featureServiceErrorDetail.value = null;
+            showFeatureServiceDialog.value = true;
+            return;
+        }
+    }
+
+    // NVR-Toggle abfangen
+    const currentNvr = crmDefaults.value.feature_nvr;
+    if (previousFeatureNvr !== undefined) {
+        const wasOn = _normalizeFeatureBool(previousFeatureNvr);
+        const isOn  = _normalizeFeatureBool(currentNvr);
+        if (wasOn !== isOn) {
+            pendingFeatureService.value = { feature: 'nvr', enabled: isOn };
+            featureServiceErrorDetail.value = null;
+            showFeatureServiceDialog.value = true;
+            return;
+        }
+    }
 
     // Feature-Wechsel abfangen: Dialog zeigen statt direkt speichern
     const currentFeature = crmDefaults.value.features || '';
@@ -285,10 +410,11 @@ const tabs = computed(() => [
         value: 'lxcars',
         title: 'LxCars',
         icon: 'mdi-car'
-    }, {
+    }] : []),
+    ...(store.isAnprEnabled() ? [{
         value: 'anpr',
         title: 'ANPR',
-        icon: 'mdi-cctv'
+        icon: 'mdi-car-search'
     }] : []),
     {
         value: 'add',
@@ -350,8 +476,19 @@ async function loadConfig() {
         crmDefaults.value = {};
     }
 
-    // Merke aktuellen Feature-Wert für Änderungserkennung
+    // Merke aktuelle Feature-Werte für Änderungserkennung
     previousFeatures = crmDefaults.value.features || '';
+
+    // Feature-Booleans normalisieren (DB liefert Strings wie 'true'/'false'/'1'/'0')
+    // Nicht gesetzt = Standard aktiviert
+    for (const key of ['feature_anpr', 'feature_nvr']) {
+        const v = crmDefaults.value[key];
+        crmDefaults.value[key] = (v === null || v === undefined)
+            ? true
+            : (v === true || v === 'true' || v === '1' || v === 1);
+    }
+    previousFeatureAnpr = crmDefaults.value.feature_anpr;
+    previousFeatureNvr  = crmDefaults.value.feature_nvr;
 }
 
 /**
@@ -438,6 +575,94 @@ async function applyFeatureChange() {
 }
 
 /**
+ * Bricht den Feature-Dienst-Toggle ab und stellt den alten Wert wieder her
+ */
+function cancelFeatureService() {
+    if (!pendingFeatureService.value) return;
+    const { feature, enabled } = pendingFeatureService.value;
+    if (feature === 'anpr') {
+        crmDefaults.value.feature_anpr = !enabled;
+        previousFeatureAnpr = !enabled;
+    } else if (feature === 'nvr') {
+        crmDefaults.value.feature_nvr = !enabled;
+        previousFeatureNvr = !enabled;
+    }
+    showFeatureServiceDialog.value = false;
+    pendingFeatureService.value = null;
+    featureServiceErrorDetail.value = null;
+    copiedCmd.value = '';
+}
+
+/**
+ * Führt den Feature-Dienst-Toggle durch: Config speichern + Dienst stoppen/starten
+ */
+async function applyFeatureService() {
+    if (!pendingFeatureService.value) return;
+    const { feature, enabled } = pendingFeatureService.value;
+    featureServiceLoading.value = true;
+    featureServiceErrorDetail.value = null;
+
+    try {
+        await saveConfig();
+
+        const response = await api.post('/camera/', {
+            action: 'setFeatureService',
+            feature,
+            enabled,
+        });
+
+        if (response.data.success) {
+            if (feature === 'anpr') previousFeatureAnpr = enabled;
+            else if (feature === 'nvr') previousFeatureNvr = enabled;
+            showFeatureServiceDialog.value = false;
+            pendingFeatureService.value = null;
+            toasts.success(enabled ? t('featureService.enabled_toast') : t('featureService.disabled_toast'));
+        } else {
+            const payload = response.data.payload || {};
+            const rawOutput = Object.values(payload.results || {})
+                .map(r => r.output).filter(Boolean).join('\n').trim();
+            featureServiceErrorDetail.value = {
+                message:        payload.message || response.data.text || t('featureService.error'),
+                output:         rawOutput || null,
+                manualCommands: payload.manual_commands || [],
+            };
+        }
+    } catch (error) {
+        featureServiceErrorDetail.value = {
+            message:        error.message,
+            output:         null,
+            manualCommands: featureServiceMeta[feature]?.services
+                                .split(', ')
+                                .map(s => `sudo systemctl ${enabled ? 'start' : 'stop'} ${s}`) ?? [],
+        };
+    }
+
+    featureServiceLoading.value = false;
+}
+
+/**
+ * Erneuter Versuch nach Fehler
+ */
+function retryFeatureService() {
+    featureServiceErrorDetail.value = null;
+    copiedCmd.value = '';
+    applyFeatureService();
+}
+
+/**
+ * Kopiert einen Befehl in die Zwischenablage
+ */
+async function copyCmd(cmd) {
+    try {
+        await navigator.clipboard.writeText(cmd);
+        copiedCmd.value = cmd;
+        setTimeout(() => { copiedCmd.value = ''; }, 2000);
+    } catch {
+        /* Fallback: nicht unterstützt */
+    }
+}
+
+/**
  * Hilfsfunktion: Bereinigt Daten für die API
  */
 function cleanData(data) {
@@ -515,5 +740,25 @@ onMounted(async () => {
 <style scoped>
 .border-e {
     border-right: 1px solid rgba(0, 0, 0, 0.12);
+}
+.feature-error-pre {
+    font-size: 11px;
+    background: #1e1e1e;
+    color: #f48771;
+    padding: 8px 10px;
+    border-radius: 4px;
+    white-space: pre-wrap;
+    word-break: break-all;
+    max-height: 140px;
+    overflow-y: auto;
+    margin: 0;
+}
+.feature-cmd-code {
+    font-family: monospace;
+    font-size: 12px;
+    background: rgba(0, 0, 0, 0.06);
+    padding: 4px 8px;
+    border-radius: 4px;
+    word-break: break-all;
 }
 </style>

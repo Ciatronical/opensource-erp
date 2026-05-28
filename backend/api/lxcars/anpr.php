@@ -706,9 +706,7 @@ function getAnprServiceStatus() {
 /**
  * ANPR-Service neu starten
  *
- * Benötigt: www-data darf 'sudo systemctl restart anpr.service' ohne Passwort ausführen.
- * Einrichten: sudo visudo -f /etc/sudoers.d/anpr
- *             www-data ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart anpr.service
+ * Benötigt sudo-Berechtigung — siehe backend/services/oserp-camera-sudoers
  *
  * @testdata {}
  */

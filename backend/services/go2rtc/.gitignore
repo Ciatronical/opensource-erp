@@ -1,0 +1,4 @@
+# Binary wird per ERP-Button heruntergeladen
+go2rtc
+go2rtc_*
+*.log
