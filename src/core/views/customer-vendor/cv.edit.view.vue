@@ -411,7 +411,7 @@ export default {
 
         // Dropdown Options aus dem Store
         const businessTypes = computed(() => {
-            return (oserpData.session?.company_config?.business || []).map(item => ({
+            return (oserpData.session?.company_config?.business_types || []).map(item => ({
                 title: item.description,
                 value: item.id
             }))

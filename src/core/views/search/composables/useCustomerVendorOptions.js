@@ -116,7 +116,7 @@ export function useCustomerVendorOptions() {
     const businessOptions = computed(() => {
         try {
             if (!store || !store.session) return [];
-            const businesses = store.session?.company_config?.business;
+            const businesses = store.session?.company_config?.business_types;
             if (!businesses || !Array.isArray(businesses)) return [];
             return businesses.map(biz => ({
                 title: biz.description || 'Unbenannt',
