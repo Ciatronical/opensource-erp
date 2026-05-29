@@ -180,7 +180,7 @@ CREATE TABLE fs_scans_lxcars (
 
 CREATE TABLE kba_lxcars (
     id                INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    hsn                TEXT NOT NULL,
+    hsn                TEXT NOT NULL CHECK (hsn ~ '^\d{4}$'),
     tsn                TEXT NOT NULL,
     hersteller        TEXT NOT NULL,
     marke            TEXT NOT NULL,
@@ -316,6 +316,32 @@ CREATE TABLE IF NOT EXISTS special_kba_lxcars (
 
 CREATE INDEX IF NOT EXISTS idx_special_kba_lxcars_c_id ON special_kba_lxcars(c_id);
 CREATE INDEX IF NOT EXISTS idx_special_kba_lxcars_hsn_tsn ON special_kba_lxcars(hsn, tsn);
+
+-- kba_lxcars ist Stammdaten: neue HSN dürfen nicht durch Anwendungscode angelegt werden.
+-- Erlaubt: neue D2-Varianten für bereits bekannte HSN (resolveKbaWithD2 Phase 3).
+-- Verboten: HSN-Werte die noch nicht in der Tabelle existieren.
+-- Ausnahme: initialer CSV-Import setzt kba.allow_new_hsn = 'on' (SET LOCAL in importCsvToTable).
+CREATE OR REPLACE FUNCTION kba_lxcars_protect_hsn()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- HSN-Format: genau 4 Ziffern (DB-Ebene, ergänzt CHECK-Constraint)
+    IF NEW.hsn !~ '^\d{4}$' THEN
+        RAISE EXCEPTION 'kba_lxcars: Ungültige HSN "%" — nur genau 4 Ziffern erlaubt.', NEW.hsn;
+    END IF;
+    -- Neue HSN nur während initialem CSV-Import erlaubt (SET LOCAL kba.allow_new_hsn = ''on'' in importCsvToTable)
+    IF current_setting('kba.allow_new_hsn', true) IS DISTINCT FROM 'on' THEN
+        IF NOT EXISTS (SELECT 1 FROM kba_lxcars WHERE hsn = NEW.hsn) THEN
+            RAISE EXCEPTION 'kba_lxcars ist Stammdaten: Neue HSN "%" nicht erlaubt. Bitte HSN und TSN prüfen.', NEW.hsn;
+        END IF;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS kba_lxcars_hsn_guard ON kba_lxcars;
+CREATE TRIGGER kba_lxcars_hsn_guard
+    BEFORE INSERT ON kba_lxcars
+    FOR EACH ROW EXECUTE FUNCTION kba_lxcars_protect_hsn();
 
 CREATE TABLE IF NOT EXISTS instructions_lxcars (
     id              INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,

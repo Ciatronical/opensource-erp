@@ -200,6 +200,16 @@
                         <v-chip size="small" variant="flat" class="mr-2">
                             {{ t('DeveloperTools.sql.rows', { count: sqlResult.rows ? sqlResult.rows.length : 0 }) }}
                         </v-chip>
+                        <v-chip
+                            v-if="sqlResult.auto_limited"
+                            size="small"
+                            color="warning"
+                            variant="flat"
+                            class="mr-2"
+                        >
+                            <v-icon start size="small">mdi-alert</v-icon>
+                            {{ t('DeveloperTools.sql.auto_limited', { limit: sqlResult.auto_limit }) }}
+                        </v-chip>
                         <v-btn
                             v-if="sqlResult.rows && sqlResult.rows.length > 0"
                             icon

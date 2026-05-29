@@ -69,8 +69,19 @@ function executeSql($data) {
                 continue;
             }
 
+            // Automatisches LIMIT für SELECT-Queries ohne LIMIT (verhindert Speicher-Exhaustion)
+            $autoLimited = false;
+            $autoLimit = 5000;
+            $queryUpperCheck = strtoupper(ltrim($query));
+            if (strpos($queryUpperCheck, 'SELECT') === 0 && !preg_match('/\bLIMIT\b/i', $query)) {
+                $queryToExecute = $query . ' LIMIT ' . $autoLimit;
+                $autoLimited = true;
+            } else {
+                $queryToExecute = $query;
+            }
+
             $startTime = microtime(true);
-            $stmt = $db->query($query);
+            $stmt = $db->query($queryToExecute);
             $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
             $executionTime = round((microtime(true) - $startTime) * 1000, 2);
             $totalExecutionTime += $executionTime;
@@ -92,7 +103,9 @@ function executeSql($data) {
                     'editable' => $editInfo['editable'],
                     'table_name' => $editInfo['table_name'],
                     'primary_key' => $editInfo['primary_key'],
-                    'edit_reason' => $editInfo['reason']
+                    'edit_reason' => $editInfo['reason'],
+                    'auto_limited' => $autoLimited,
+                    'auto_limit' => $autoLimited ? $autoLimit : null
                 ];
 
                 // Speichere Query in History
@@ -142,7 +155,9 @@ function executeSql($data) {
                     'editable' => $singleResult['editable'],
                     'table_name' => $singleResult['table_name'],
                     'primary_key' => $singleResult['primary_key'],
-                    'edit_reason' => $singleResult['edit_reason']
+                    'edit_reason' => $singleResult['edit_reason'],
+                    'auto_limited' => $singleResult['auto_limited'] ?? false,
+                    'auto_limit' => $singleResult['auto_limit'] ?? null
                 ]);
             } else {
                 resultInfo(true, $singleResult['message'], [

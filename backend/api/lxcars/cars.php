@@ -42,10 +42,14 @@ function saveCar($data) {
 
     try {
         // KBA-Daten verarbeiten (INSERT/UPDATE in kba_lxcars, kba_id zurück)
+        $useSpecialKbaFallback = false;
         if (!empty($kbaData)) {
             $kbaId = prepareKba($kbaData);
             if ($kbaId) {
                 $car['kba_id'] = $kbaId;
+            } else {
+                // prepareKba abgelehnt (ungültige/unbekannte HSN) → nach INSERT in special_kba_lxcars speichern
+                $useSpecialKbaFallback = true;
             }
         } else {
             // KBA-Verknüpfung über HSN+TSN+D2 auflösen (manuelle Eingabe)
@@ -63,15 +67,22 @@ function saveCar($data) {
 
         $db->insert('cars_lxcars', $fields, $values);
         $result = $db->getOne("SELECT currval('cars_lxcars_c_id_seq') AS c_id");
+        $newCarId = intval($result['c_id']);
+
+        // Fallback: KBA-Daten in special_kba_lxcars wenn prepareKba abgelehnt hat
+        // (muss VOR commit stehen — gleiche Transaktion wie cars_lxcars-INSERT)
+        if ($useSpecialKbaFallback) {
+            upsertSpecialKba($db, $newCarId, $kbaData);
+        }
+
         $db->commit();
 
-        $newCarId = intval($result['c_id']);
+        $car['c_id'] = $newCarId;
 
         // Pfade & Symlinks fuer das neue Fahrzeug sicherstellen:
         //   - fahrzeuge/{c_id}/ inkl. fahrzeugschein/ + Auto-Folder
         //   - fahrzeuge/0_by-plate/{c_ln} → ../{c_id}/fahrzeugschein
         //   - customers/{c_ow}/fahrzeuge/{c_ln} → ../../../fahrzeuge/{c_id}
-        $car['c_id'] = $newCarId;
         ensureVehiclePaths($car);
 
         // Kunden-Ordner + Name-Symlink sicherstellen (legt zusaetzlich
@@ -133,6 +144,9 @@ function updateCar($data) {
             $kbaId = prepareKba($kbaData);
             if ($kbaId) {
                 $car['kba_id'] = $kbaId;
+            } else {
+                // prepareKba abgelehnt (ungültige/unbekannte HSN) → special_kba_lxcars
+                upsertSpecialKba($db, $carId, $kbaData);
             }
         }
     }
@@ -421,6 +435,29 @@ function getCar($data) {
             "SELECT * FROM kba_lxcars WHERE id = :id",
             [':id' => intval($car['kba_id'])]
         );
+    }
+
+    // Fehlende Stammdaten aus kba_lxcars nachfüllen (z.B. fhzart fehlt bei Scan-erstellten Datensätzen)
+    if ($kba && empty($kba['fhzart'])) {
+        $hsn = substr($car['c_2'] ?? '', 0, 4);
+        $tsn = substr($car['c_3'] ?? '', 0, 3);
+        if (strlen($hsn) === 4 && strlen($tsn) === 3) {
+            $masterFields = ['fhzart', 'klasse', 'aufbau', 'antrieb', 'sitze', 'datum', 'achsen', 'masse', 'j'];
+            $masterKba = $db->getOne(
+                "SELECT " . implode(', ', $masterFields) . "
+                 FROM kba_lxcars
+                 WHERE hsn = :hsn AND tsn = :tsn AND fhzart IS NOT NULL AND fhzart != ''
+                 ORDER BY id LIMIT 1",
+                [':hsn' => $hsn, ':tsn' => $tsn]
+            );
+            if ($masterKba) {
+                foreach ($masterFields as $field) {
+                    if (empty($kba[$field]) && !empty($masterKba[$field])) {
+                        $kba[$field] = $masterKba[$field];
+                    }
+                }
+            }
+        }
     }
 
     $car['kba'] = $kba;
@@ -1538,6 +1575,62 @@ function mapScanToCarFields($scanData) {
 }
 
 /**
+ * Fuzzy-KBA-Lookup: prüft ob HSN+TSN exakt in kba_lxcars existiert.
+ * Falls nicht: Suche mit OCR-typischen Zeichensubstitutionen (B↔3, O↔0, etc.)
+ *
+ * @param string $data['hsn'] HSN (4 Zeichen)
+ * @param string $data['tsn'] TSN (mind. 3 Zeichen)
+ * @return array {exact: bool, suggestions: [{id, hsn, tsn, d2, hersteller, marke, name, fhzart, hubraum, leistung, kraftstoff}]}
+ * @testdata {"hsn": "B333", "tsn": "BAU"}
+ */
+function lookupKbaFuzzy($data) {
+    $hsn = strtoupper(trim($data['hsn'] ?? ''));
+    $tsn = strtoupper(mb_substr(trim($data['tsn'] ?? ''), 0, 3));
+
+    if (empty($hsn) || strlen($tsn) < 3) {
+        resultInfo(true, 'OK', ['exact' => false, 'suggestions' => []]);
+        return;
+    }
+
+    $db = DbhCompany::begin();
+
+    // 1. Exakter Match
+    $exact = $db->getAll(
+        "SELECT id, hsn, tsn, d2, hersteller, marke, name, fhzart, hubraum, leistung, kraftstoff
+         FROM kba_lxcars WHERE hsn = :hsn AND tsn = :tsn ORDER BY d2 NULLS FIRST LIMIT 5",
+        [':hsn' => $hsn, ':tsn' => $tsn]
+    );
+
+    if ($exact) {
+        resultInfo(true, 'OK', ['exact' => true, 'suggestions' => $exact]);
+        return;
+    }
+
+    // 2. Fuzzy via OCR-typische Zeichensubstitutionen:
+    //    B→3, O→0, I→1, S→5, Z→2, D→0, G→6, Q→0, L→1
+    //    translate() normalisiert beide Seiten — kein Injektionsrisiko da hardcoded
+    $suggestions = $db->getAll(
+        "SELECT DISTINCT ON (k.hsn, k.tsn) k.id, k.hsn, k.tsn, k.d2,
+                k.hersteller, k.marke, k.name, k.fhzart, k.hubraum, k.leistung, k.kraftstoff
+         FROM kba_lxcars k
+         WHERE translate(upper(k.hsn), :ocr_f1, :ocr_t1) = translate(upper(:hsn_val), :ocr_f2, :ocr_t2)
+           AND translate(upper(k.tsn), :ocr_f3, :ocr_t3) = translate(upper(:tsn_val), :ocr_f4, :ocr_t4)
+         ORDER BY k.hsn, k.tsn, k.id
+         LIMIT 8",
+        [
+            ':ocr_f1' => 'BOISZDGQL', ':ocr_t1' => '301520601',
+            ':hsn_val' => $hsn,
+            ':ocr_f2' => 'BOISZDGQL', ':ocr_t2' => '301520601',
+            ':ocr_f3' => 'BOISZDGQL', ':ocr_t3' => '301520601',
+            ':tsn_val' => $tsn,
+            ':ocr_f4' => 'BOISZDGQL', ':ocr_t4' => '301520601',
+        ]
+    );
+
+    resultInfo(true, 'OK', ['exact' => false, 'suggestions' => $suggestions ?: []]);
+}
+
+/**
  * Sucht KBA-Datensätze anhand von HSN + TSN (+ optional D2)
  *
  * Wenn D2 angegeben ist, wird zuerst ein exakter Treffer (HSN+TSN+D2) versucht.
@@ -1712,7 +1805,7 @@ function resolveKbaWithD2($db, $hsn, $tsn, $d2) {
     $tsn = mb_substr(trim($tsn), 0, 3);
     $d2  = trim($d2);
 
-    if (strlen($hsn) < 4 || strlen($tsn) < 3) return null;
+    if (!preg_match('/^\d{4}$/', $hsn) || strlen($tsn) < 3) return null;
 
     // Fall 2: Exakter Treffer (HSN+TSN+D2) — auch wenn D2 leer ist
     if ($d2 === '') {
@@ -1788,6 +1881,11 @@ function prepareKba($kbaData) {
     $hsn = $kbaData['hsn'] ?? '';
     $tsn = mb_substr($kbaData['tsn'] ?? '', 0, 3);
     $d2  = $kbaData['d2'] ?? '';
+
+    // HSN muss genau 4 Ziffern haben — kba_lxcars ist Stammdaten, keine Buchstaben erlaubt
+    if (!preg_match('/^\d{4}$/', $hsn)) {
+        return null;
+    }
 
     // Sicherstellen dass tsn im KBA-Datensatz nur 3 Zeichen hat
     $kbaData['tsn'] = $tsn;
@@ -1882,7 +1980,24 @@ function prepareKba($kbaData) {
         }
     }
 
-    // 3. INSERT neuer Datensatz
+    // 3. kba_lxcars ist Stammdaten — neue HSN dürfen nicht per Scan angelegt werden.
+    // Nur bekannte HSN mit einem neuen D2 bekommen eine Klonvariante.
+    $template = $db->getOne(
+        "SELECT * FROM kba_lxcars WHERE hsn = :hsn ORDER BY id LIMIT 1",
+        [':hsn' => $hsn]
+    );
+    if (!$template) {
+        // Unbekannte HSN → kein Eintrag anlegen, Aufrufer fällt auf special_kba_lxcars zurück
+        return null;
+    }
+
+    // Bekannte HSN aber neue TSN+D2-Kombination: Klon aus Template (Stammdaten übernehmen)
+    $masterFields = ['fhzart', 'klasse', 'aufbau', 'antrieb', 'sitze', 'datum', 'achsen', 'masse', 'j'];
+    foreach ($masterFields as $field) {
+        if (!isset($kbaData[$field]) && !empty($template[$field])) {
+            $kbaData[$field] = $template[$field];
+        }
+    }
     $fields = array_keys($kbaData);
     $values = array_values($kbaData);
     $db->insert('kba_lxcars', $fields, $values);

@@ -836,6 +836,72 @@
             </v-dialog>
         </template>
 
+        <!-- KBA-Fuzzy-Korrektur-Dialog: öffnet wenn gescannte HSN/TSN nicht in kba_lxcars -->
+            <v-dialog v-model="kbaFuzzyDialog" max-width="720" persistent>
+                <v-card>
+                    <v-card-title class="d-flex align-center ga-2 py-3 px-4 bg-warning-lighten-5">
+                        <v-icon color="warning-darken-1" size="24">mdi-alert-circle-outline</v-icon>
+                        <span>{{ t('CarScanView.kbaFuzzy.title') }}</span>
+                    </v-card-title>
+                    <v-card-text class="pt-4">
+                        <v-alert type="warning" variant="tonal" class="mb-4" density="compact">
+                            {{ t('CarScanView.kbaFuzzy.warning', { hsn: kbaFuzzyOriginal.hsn, tsn: kbaFuzzyOriginal.tsn }) }}
+                        </v-alert>
+
+                        <!-- Crop-Bilder der HSN/TSN-Felder für Vergleich -->
+                        <div v-if="scanCrops.c_2 || scanCrops.c_3" class="d-flex ga-3 mb-4">
+                            <div v-if="scanCrops.c_2">
+                                <div class="text-caption text-medium-emphasis mb-1">Gescannte HSN:</div>
+                                <img :src="scanCrops.c_2" style="max-height:40px; border:1px solid rgba(0,0,0,0.12); border-radius:4px;" />
+                            </div>
+                            <div v-if="scanCrops.c_3">
+                                <div class="text-caption text-medium-emphasis mb-1">Gescannte TSN:</div>
+                                <img :src="scanCrops.c_3" style="max-height:40px; border:1px solid rgba(0,0,0,0.12); border-radius:4px;" />
+                            </div>
+                        </div>
+
+                        <template v-if="kbaFuzzySuggestions.length">
+                            <div class="text-body-2 font-weight-medium mb-2">{{ t('CarScanView.kbaFuzzy.suggestions') }}</div>
+                            <v-table density="compact" hover class="rounded border mb-2">
+                                <thead>
+                                    <tr>
+                                        <th class="text-left">{{ t('CarScanView.kbaFuzzy.hsn') }}</th>
+                                        <th class="text-left">{{ t('CarScanView.kbaFuzzy.tsn') }}</th>
+                                        <th class="text-left">{{ t('CarScanView.kbaFuzzy.manufacturer') }}</th>
+                                        <th class="text-left">{{ t('CarScanView.kbaFuzzy.model') }}</th>
+                                        <th class="text-left">{{ t('CarScanView.kbaFuzzy.vehicleType') }}</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="s in kbaFuzzySuggestions" :key="s.id" class="cursor-pointer" style="cursor:pointer" @click="applyKbaFuzzyCorrection(s)">
+                                        <td><strong class="text-success-darken-2">{{ s.hsn }}</strong></td>
+                                        <td><strong class="text-success-darken-2">{{ s.tsn }}</strong></td>
+                                        <td>{{ s.marke || s.hersteller }}</td>
+                                        <td>{{ s.name }}</td>
+                                        <td>{{ s.fhzart }}</td>
+                                        <td>
+                                            <v-btn size="x-small" color="primary" variant="tonal" @click.stop="applyKbaFuzzyCorrection(s)">
+                                                {{ t('CarScanView.kbaFuzzy.useButton') }}
+                                            </v-btn>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </v-table>
+                        </template>
+
+                        <v-alert v-else type="info" variant="tonal" density="compact">
+                            {{ t('CarScanView.kbaFuzzy.noSuggestions') }}
+                        </v-alert>
+                    </v-card-text>
+                    <v-card-actions class="px-4 pb-3">
+                        <v-btn color="grey" variant="text" @click="dismissKbaFuzzy">
+                            {{ t('CarScanView.kbaFuzzy.keepButton') }}
+                        </v-btn>
+                    </v-card-actions>
+                </v-card>
+            </v-dialog>
+
     </v-container>
 </template>
 
@@ -908,6 +974,11 @@ export default {
         const incompleteTsn = ref('')
         const showSpecialKbaConfirm = ref(false)
         const specialKbaForm = ref({ hersteller: '', marke: '', d2: '' })
+
+        // KBA-Fuzzy-Korrektur
+        const kbaFuzzyDialog = ref(false)
+        const kbaFuzzySuggestions = ref([])
+        const kbaFuzzyOriginal = ref({ hsn: '', tsn: '' })
 
         // Car-Autocomplete State (Kennzeichen)
         const carSearchResults = ref([])
@@ -1034,6 +1105,34 @@ export default {
                 scanResult.value.kba.d2 = (specialKbaForm.value.d2 || '').trim()
             }
             step.value = 'result'
+        }
+
+        // KBA-Fuzzy: Prüft ob HSN+TSN in kba_lxcars existiert; öffnet Korrektur-Dialog wenn nicht
+        async function checkKbaFuzzy(hsn, tsn) {
+            if (!hsn || tsn.length < 3) return
+            try {
+                const result = await carsStore.lookupKbaFuzzy(hsn, tsn)
+                if (!result.exact) {
+                    kbaFuzzySuggestions.value = result.suggestions || []
+                    kbaFuzzyOriginal.value = { hsn, tsn }
+                    kbaFuzzyDialog.value = true
+                }
+            } catch (err) {
+                console.error('KBA fuzzy check error:', err)
+            }
+        }
+
+        function applyKbaFuzzyCorrection(suggestion) {
+            const scanD2 = scanResult.value.kba?.d2 || ''
+            scanResult.value.car.c_2 = suggestion.hsn
+            scanResult.value.car.c_3 = suggestion.tsn
+            scanResult.value.kba = { ...suggestion }
+            if (!suggestion.d2 && scanD2) scanResult.value.kba.d2 = scanD2
+            kbaFuzzyDialog.value = false
+        }
+
+        function dismissKbaFuzzy() {
+            kbaFuzzyDialog.value = false
         }
 
         // Prüfen ob Halter im Scan = Halter in DB (Halterwechsel erkennen)
@@ -1480,6 +1579,10 @@ export default {
                 await showKbaSelection()
             } else {
                 step.value = 'result'
+                // KBA-Validierung: HSN+TSN in kba_lxcars prüfen → Korrektur anbieten
+                const hsn = (scanResult.value.car?.c_2 || '').trim()
+                const tsn = tsnFull.substring(0, 3)
+                await checkKbaFuzzy(hsn, tsn)
             }
 
             // Dropdown automatisch öffnen wenn Suchergebnisse vorhanden
@@ -1598,6 +1701,10 @@ export default {
                     await showKbaSelection()
                 } else {
                     step.value = 'result'
+                    // KBA-Validierung: HSN+TSN in kba_lxcars prüfen → Korrektur anbieten
+                    const hsn = (scanResult.value.car?.c_2 || '').trim()
+                    const tsn = tsnFull.substring(0, 3)
+                    await checkKbaFuzzy(hsn, tsn)
                 }
 
                 // Dropdown automatisch öffnen wenn Suchergebnisse vorhanden
@@ -2347,6 +2454,8 @@ export default {
             useSpecialKba.value = false
             incompleteTsn.value = ''
             showSpecialKbaConfirm.value = false
+            kbaFuzzyDialog.value = false
+            kbaFuzzySuggestions.value = []
         }
 
         // Beim Laden Scans abrufen
@@ -2368,6 +2477,9 @@ export default {
             // KBA-Auswahl (unvollständige TSN)
             kbaListFiltered, loadingKbaList, kbaSearchFilter, incompleteTsn, showSpecialKbaConfirm, specialKbaForm, specialKbaFormValid,
             selectKbaEntry, skipKbaSelection, confirmSpecialKba,
+            // KBA-Fuzzy-Korrektur
+            kbaFuzzyDialog, kbaFuzzySuggestions, kbaFuzzyOriginal,
+            applyKbaFuzzyCorrection, dismissKbaFuzzy,
             // Ergebnis
             scanResult, hasApiKey, ownerDisplayName, vehicleName, huExtrapolated, scanCrops, loadCropImage,
             duplicateWarnings, existingCarId, isOwnerMatch,

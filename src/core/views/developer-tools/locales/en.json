@@ -64,6 +64,7 @@
             "no_results": "No results",
             "rows": "{count} Rows",
             "affected_rows": "{count} rows affected",
+            "auto_limited": "Limited to {limit} rows",
             "download_results": "Download as CSV",
             "download_all_results": "Download all results as CSV",
             "network_error": "Network error",

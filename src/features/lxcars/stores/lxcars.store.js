@@ -664,6 +664,25 @@ export const lxcarsStore = defineStore('lxcarsStore', () => {
     }
 
     /**
+     * Fuzzy-KBA-Lookup: Prüft ob HSN+TSN exakt existiert, sonst OCR-Korrektur-Vorschläge
+     *
+     * @param {string} hsn - HSN (4 Zeichen)
+     * @param {string} tsn - TSN (mind. 3 Zeichen)
+     * @return {Promise<{exact: boolean, suggestions: Array}>}
+     */
+    async function lookupKbaFuzzy(hsn, tsn) {
+        const response = await axios.post('/api/lxcars/', {
+            action: 'lookupKbaFuzzy',
+            hsn: hsn,
+            tsn: tsn
+        });
+        if (!response.data.success) {
+            throw new ApiError('ApiError', response.data.text, 'Error in KBA fuzzy lookup: ' + response.data.text);
+        }
+        return response.data.payload;
+    }
+
+    /**
      * Speichert Scan-KBA-Daten in special_kba_lxcars (ohne Standard-KBA-Zuordnung)
      *
      * @param {number} carId - Fahrzeug-ID
@@ -1188,7 +1207,7 @@ export const lxcarsStore = defineStore('lxcarsStore', () => {
         checkLicensePlate,
         checkLicensePlateBatch,
         checkFin,
-        lookupKba, lookupKbaByHsn, saveSpecialKba,
+        lookupKba, lookupKbaByHsn, lookupKbaFuzzy, saveSpecialKba,
         loadInstructions,
         addInstruction,
         updateInstruction,

@@ -438,6 +438,19 @@
                 "required": "Pole wymagane"
             }
         },
+        "kbaFuzzy": {
+            "title": "Fahrzeugschlüssel nicht gefunden",
+            "warning": "Der gescannte Schlüssel {hsn} / {tsn} wurde nicht in der KBA-Datenbank gefunden.",
+            "suggestions": "Meinten Sie eines dieser Fahrzeuge?",
+            "noSuggestions": "Es wurden keine ähnlichen Einträge in der KBA-Datenbank gefunden. Bitte prüfen Sie HSN und TSN manuell.",
+            "useButton": "Verwenden",
+            "keepButton": "Daten beibehalten",
+            "hsn": "HSN",
+            "tsn": "TSN",
+            "manufacturer": "Hersteller / Marke",
+            "model": "Modell",
+            "vehicleType": "Fahrzeugart"
+        },
         "wiki": {
             "title": "Artykuły wiedzy",
             "newArticle": "Nowy artykuł",

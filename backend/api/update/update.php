@@ -1070,6 +1070,12 @@ function importCsvToTable($db, $schema, $tableName, $csvFile, $columns) {
         throw new Exception("Keine passenden Spalten in CSV gefunden für $schema.$tableName");
     }
 
+    // Beim CSV-Import von kba_lxcars: HSN-Trigger temporär für diese Transaktion freigeben
+    // (SET LOCAL gilt nur bis zum nächsten COMMIT — danach greift der Trigger wieder)
+    if ($tableName === 'kba_lxcars') {
+        $db->execute("SET LOCAL \"kba.allow_new_hsn\" = 'on'", []);
+    }
+
     // Lösche bestehende Daten
     $truncateSql = "TRUNCATE TABLE $schema.$tableName";
     $db->execute($truncateSql, []);
