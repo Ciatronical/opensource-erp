@@ -297,6 +297,19 @@
             "edit": "Bearbeiten",
             "noArticles": "Keine Wissensartikel für diesen Fahrzeugtyp vorhanden."
         },
+        "kbaFuzzy": {
+            "title": "Fahrzeugschlüssel nicht gefunden",
+            "warning": "Der Schlüssel {hsn} / {tsn} wurde nicht in der KBA-Datenbank gefunden. Meinten Sie eines der folgenden Fahrzeuge?",
+            "suggestions": "Ähnliche Einträge in der KBA-Datenbank:",
+            "noSuggestions": "Keine ähnlichen Einträge gefunden. Bitte HSN und TSN manuell prüfen.",
+            "useButton": "Verwenden",
+            "keepButton": "Beibehalten",
+            "hsn": "HSN",
+            "tsn": "TSN",
+            "manufacturer": "Hersteller / Marke",
+            "model": "Modell",
+            "vehicleType": "Fahrzeugart"
+        },
         "chat": {
             "title": "KI-Werkstattmeister",
             "empty": "Stelle eine Frage zum Fahrzeug — z.B. zu Diagnosen, durchgeführten Arbeiten oder Service-Intervallen.",
@@ -440,9 +453,11 @@
         },
         "kbaFuzzy": {
             "title": "Fahrzeugschlüssel nicht gefunden",
-            "warning": "Der gescannte Schlüssel {hsn} / {tsn} wurde nicht in der KBA-Datenbank gefunden.",
+            "scannedHsn": "Gescannte HSN",
+            "scannedTsn": "Gescannte TSN",
+            "warning": "Dieser Schlüssel wurde nicht in der KBA-Datenbank gefunden.",
             "suggestions": "Meinten Sie eines dieser Fahrzeuge?",
-            "noSuggestions": "Es wurden keine ähnlichen Einträge in der KBA-Datenbank gefunden. Bitte prüfen Sie HSN und TSN manuell.",
+            "noSuggestions": "Keine ähnlichen Einträge gefunden. Bitte HSN und TSN manuell prüfen.",
             "useButton": "Verwenden",
             "keepButton": "Daten beibehalten",
             "hsn": "HSN",

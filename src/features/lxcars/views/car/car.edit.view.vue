@@ -1068,6 +1068,58 @@
         <!-- Fahrzeug-Dateimanager Dialog -->
         <CarFilesDialog v-model="filesDialogOpen" :c-id="car.c_id" :plate="car.c_ln || ''" />
 
+        <!-- KBA-Fuzzy-Korrektur: öffnet bei ungültiger oder unbekannter HSN -->
+        <v-dialog v-model="kbaFuzzyDialog" max-width="720" persistent>
+            <v-card>
+                <v-card-title class="d-flex align-center ga-2 py-3 px-4">
+                    <v-icon color="warning" size="24">mdi-alert-circle-outline</v-icon>
+                    <span>{{ t('CarEditView.kbaFuzzy.title') }}</span>
+                </v-card-title>
+                <v-card-text class="pt-2">
+                    <v-alert type="warning" variant="tonal" class="mb-4" density="compact">
+                        {{ t('CarEditView.kbaFuzzy.warning', { hsn: kbaFuzzyOriginal.hsn, tsn: kbaFuzzyOriginal.tsn }) }}
+                    </v-alert>
+                    <template v-if="kbaFuzzySuggestions.length">
+                        <div class="text-body-2 font-weight-medium mb-2">{{ t('CarEditView.kbaFuzzy.suggestions') }}</div>
+                        <v-table density="compact" hover class="rounded border mb-2">
+                            <thead>
+                                <tr>
+                                    <th>{{ t('CarEditView.kbaFuzzy.hsn') }}</th>
+                                    <th>{{ t('CarEditView.kbaFuzzy.tsn') }}</th>
+                                    <th>{{ t('CarEditView.kbaFuzzy.manufacturer') }}</th>
+                                    <th>{{ t('CarEditView.kbaFuzzy.model') }}</th>
+                                    <th>{{ t('CarEditView.kbaFuzzy.vehicleType') }}</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="s in kbaFuzzySuggestions" :key="s.id" style="cursor:pointer" @click="applyKbaFuzzyCorrection(s)">
+                                    <td><strong class="text-success-darken-2">{{ s.hsn }}</strong></td>
+                                    <td><strong class="text-success-darken-2">{{ s.tsn }}</strong></td>
+                                    <td>{{ s.marke || s.hersteller }}</td>
+                                    <td>{{ s.name }}</td>
+                                    <td>{{ s.fhzart }}</td>
+                                    <td>
+                                        <v-btn size="x-small" color="primary" variant="tonal" @click.stop="applyKbaFuzzyCorrection(s)">
+                                            {{ t('CarEditView.kbaFuzzy.useButton') }}
+                                        </v-btn>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </v-table>
+                    </template>
+                    <v-alert v-else type="info" variant="tonal" density="compact">
+                        {{ t('CarEditView.kbaFuzzy.noSuggestions') }}
+                    </v-alert>
+                </v-card-text>
+                <v-card-actions class="px-4 pb-3">
+                    <v-btn color="grey" variant="text" @click="dismissKbaFuzzy">
+                        {{ t('CarEditView.kbaFuzzy.keepButton') }}
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
         <!-- E-Mail versenden Dialog -->
         <SendEmailDialog
             v-model="emailDialog"
@@ -1228,6 +1280,11 @@ export default {
         const useSpecialKba = ref(false)
         const showSpecialKbaConfirm = ref(false)
         const specialKbaForm = ref({ hersteller: '', marke: '', d2: '' })
+
+        // KBA-Fuzzy-Korrektur (ungültige oder unbekannte HSN)
+        const kbaFuzzyDialog = ref(false)
+        const kbaFuzzySuggestions = ref([])
+        const kbaFuzzyOriginal = ref({ hsn: '', tsn: '' })
 
         // Flag: Scan-Daten werden gerade importiert → Feld-Watchers (HSN/TSN) nicht auslösen
         let importingScanData = false
@@ -1416,9 +1473,16 @@ export default {
             const hsn = (car.value.c_2 || '').trim()
             const tsn = (car.value.c_3 || '').trim()
 
-            if (!/^\d{4}$/.test(hsn) || tsn.length < 3) return
-            if (car.value.kba_id || kbaData.value) return
+            if (!hsn || tsn.length < 3) return
             if (kbaLookupPending) return
+
+            // Ungültige HSN (Buchstaben) → sofort Fuzzy-Korrektur anbieten
+            if (!/^\d{4}$/.test(hsn)) {
+                await tryKbaFuzzy(hsn, tsn)
+                return
+            }
+
+            if (car.value.kba_id || kbaData.value) return
 
             kbaLookupPending = true
             try {
@@ -1433,7 +1497,11 @@ export default {
 
                 const d2 = (car.value.c_d2 || '').trim()
                 const results = await carsStore.lookupKba(hsn, tsn, d2)
-                if (!results || results.length === 0) return
+                if (!results || results.length === 0) {
+                    // Exakt kein Treffer → Fuzzy-Korrektur versuchen
+                    await tryKbaFuzzy(hsn, tsn)
+                    return
+                }
 
                 if (results.length === 1) {
                     car.value.kba_id = results[0].id
@@ -1448,6 +1516,43 @@ export default {
             } finally {
                 kbaLookupPending = false
             }
+        }
+
+        async function tryKbaFuzzy(hsn, tsn) {
+            if (!hsn || tsn.length < 3) return
+            try {
+                const tsn3 = tsn.substring(0, 3)
+                const result = await carsStore.lookupKbaFuzzy(hsn, tsn3)
+                if (result.exact) return  // Alles korrekt
+
+                const suggestions = result.suggestions || []
+
+                // Eindeutiger Treffer → sofort automatisch korrigieren
+                const uniqueHsnTsn = [...new Set(suggestions.map(s => s.hsn + '/' + s.tsn))]
+                if (uniqueHsnTsn.length === 1) {
+                    applyKbaFuzzyCorrection(suggestions[0])
+                    return
+                }
+
+                // Mehrere Treffer oder kein Treffer → Dialog
+                kbaFuzzySuggestions.value = suggestions
+                kbaFuzzyOriginal.value = { hsn, tsn: tsn3 }
+                kbaFuzzyDialog.value = true
+            } catch (e) {
+                console.error('KBA fuzzy error:', e)
+            }
+        }
+
+        function applyKbaFuzzyCorrection(suggestion) {
+            car.value.c_2 = suggestion.hsn
+            car.value.c_3 = suggestion.tsn
+            car.value.kba_id = suggestion.id
+            kbaData.value = { ...suggestion }
+            kbaFuzzyDialog.value = false
+        }
+
+        function dismissKbaFuzzy() {
+            kbaFuzzyDialog.value = false
         }
 
         const kbaSelectFiltered = computed(() => {
@@ -1563,9 +1668,14 @@ export default {
             tryKbaLookup()
         })
 
-        // Beim Laden: KBA-Lookup falls kba_id fehlt aber HSN+TSN vorhanden
+        // Beim Laden: KBA-Lookup falls kba_id fehlt; bei ungültiger HSN sofort Fuzzy-Dialog
         watch(initialLoaded, (loaded) => {
-            if (loaded && isEditMode.value && !car.value.kba_id) {
+            if (!loaded || !isEditMode.value) return
+            const hsn = (car.value.c_2 || '').trim()
+            const tsn = (car.value.c_3 || '').trim()
+            if (hsn && !/^\d{4}$/.test(hsn) && tsn.length >= 3) {
+                tryKbaFuzzy(hsn, tsn)
+            } else if (!car.value.kba_id) {
                 tryKbaLookup()
             }
         })
@@ -2140,6 +2250,7 @@ export default {
             deleteConfirmDialog, deleting, executeDeleteCar,
             kbaSelectDialog, kbaSelectOptions, kbaSelectFiltered, kbaSelectFilter, selectKba,
             skipKbaSelect, showSpecialKbaConfirm, confirmSpecialKba, useSpecialKba, specialKbaForm, specialKbaFormValid,
+            kbaFuzzyDialog, kbaFuzzySuggestions, kbaFuzzyOriginal, applyKbaFuzzyCorrection, dismissKbaFuzzy,
             hasScanImages, hasCropsAvailable, scanImagesDialog, scanImagesLoading, scanOriginalSrc,
             openScanImagesDialog,
             fieldCrops, fieldCropLabels,

@@ -844,21 +844,26 @@
                         <span>{{ t('CarScanView.kbaFuzzy.title') }}</span>
                     </v-card-title>
                     <v-card-text class="pt-4">
-                        <v-alert type="warning" variant="tonal" class="mb-4" density="compact">
-                            {{ t('CarScanView.kbaFuzzy.warning', { hsn: kbaFuzzyOriginal.hsn, tsn: kbaFuzzyOriginal.tsn }) }}
-                        </v-alert>
-
-                        <!-- Crop-Bilder der HSN/TSN-Felder für Vergleich -->
-                        <div v-if="scanCrops.c_2 || scanCrops.c_3" class="d-flex ga-3 mb-4">
-                            <div v-if="scanCrops.c_2">
-                                <div class="text-caption text-medium-emphasis mb-1">Gescannte HSN:</div>
-                                <img :src="scanCrops.c_2" style="max-height:40px; border:1px solid rgba(0,0,0,0.12); border-radius:4px;" />
+                        <!-- Gescannte Werte immer als Text + optional als Crop-Bild -->
+                        <div class="d-flex ga-4 mb-4 flex-wrap">
+                            <div>
+                                <div class="text-caption text-medium-emphasis mb-1">{{ t('CarScanView.kbaFuzzy.scannedHsn') }}</div>
+                                <div class="d-flex align-center ga-2">
+                                    <v-chip color="error" variant="tonal" size="small" class="font-weight-bold">{{ kbaFuzzyOriginal.hsn }}</v-chip>
+                                    <img v-if="typeof scanCrops.c_2 === 'string'" :src="scanCrops.c_2" style="max-height:32px; border:1px solid rgba(0,0,0,0.12); border-radius:4px;" />
+                                </div>
                             </div>
-                            <div v-if="scanCrops.c_3">
-                                <div class="text-caption text-medium-emphasis mb-1">Gescannte TSN:</div>
-                                <img :src="scanCrops.c_3" style="max-height:40px; border:1px solid rgba(0,0,0,0.12); border-radius:4px;" />
+                            <div>
+                                <div class="text-caption text-medium-emphasis mb-1">{{ t('CarScanView.kbaFuzzy.scannedTsn') }}</div>
+                                <div class="d-flex align-center ga-2">
+                                    <v-chip color="error" variant="tonal" size="small" class="font-weight-bold">{{ kbaFuzzyOriginal.tsn }}</v-chip>
+                                    <img v-if="typeof scanCrops.c_3 === 'string'" :src="scanCrops.c_3" style="max-height:32px; border:1px solid rgba(0,0,0,0.12); border-radius:4px;" />
+                                </div>
                             </div>
                         </div>
+                        <v-alert type="warning" variant="tonal" class="mb-4" density="compact">
+                            {{ t('CarScanView.kbaFuzzy.warning') }}
+                        </v-alert>
 
                         <template v-if="kbaFuzzySuggestions.length">
                             <div class="text-body-2 font-weight-medium mb-2">{{ t('CarScanView.kbaFuzzy.suggestions') }}</div>
@@ -1107,16 +1112,26 @@ export default {
             step.value = 'result'
         }
 
-        // KBA-Fuzzy: Prüft ob HSN+TSN in kba_lxcars existiert; öffnet Korrektur-Dialog wenn nicht
+        // KBA-Fuzzy: Prüft ob HSN+TSN in kba_lxcars existiert; korrigiert automatisch bei eindeutigem Treffer
         async function checkKbaFuzzy(hsn, tsn) {
             if (!hsn || tsn.length < 3) return
             try {
                 const result = await carsStore.lookupKbaFuzzy(hsn, tsn)
-                if (!result.exact) {
-                    kbaFuzzySuggestions.value = result.suggestions || []
-                    kbaFuzzyOriginal.value = { hsn, tsn }
-                    kbaFuzzyDialog.value = true
+                if (result.exact) return  // Alles korrekt
+
+                const suggestions = result.suggestions || []
+
+                // Eindeutiger Treffer → sofort automatisch korrigieren, kein Dialog nötig
+                const uniqueHsnTsn = [...new Set(suggestions.map(s => s.hsn + '/' + s.tsn))]
+                if (uniqueHsnTsn.length === 1) {
+                    applyKbaFuzzyCorrection(suggestions[0])
+                    return
                 }
+
+                // Mehrere Treffer oder kein Treffer → Dialog anzeigen
+                kbaFuzzySuggestions.value = suggestions
+                kbaFuzzyOriginal.value = { hsn, tsn }
+                kbaFuzzyDialog.value = true
             } catch (err) {
                 console.error('KBA fuzzy check error:', err)
             }

@@ -131,61 +131,70 @@ function updateCar($data) {
     $d2 = trim($car['c_d2'] ?? '');
     unset($car['c_d2']);
 
-    // KBA-Daten verarbeiten: Special-KBA hat Vorrang, sonst normale kba_lxcars
-    if (!empty($kbaData)) {
-        $hasSpecialKba = $db->getOne(
-            "SELECT id FROM special_kba_lxcars WHERE c_id = :c_id",
-            [':c_id' => $carId]
-        );
+    $db->beginTransaction();
+    try {
+        // KBA-Daten verarbeiten: Special-KBA hat Vorrang, sonst normale kba_lxcars
+        if (!empty($kbaData)) {
+            $hasSpecialKba = $db->getOne(
+                "SELECT id FROM special_kba_lxcars WHERE c_id = :c_id",
+                [':c_id' => $carId]
+            );
 
-        if ($hasSpecialKba) {
-            upsertSpecialKba($db, $carId, $kbaData);
-        } else {
-            $kbaId = prepareKba($kbaData);
+            if ($hasSpecialKba) {
+                upsertSpecialKba($db, $carId, $kbaData);
+            } else {
+                $kbaId = prepareKba($kbaData);
+                if ($kbaId) {
+                    $car['kba_id'] = $kbaId;
+                } else {
+                    // prepareKba abgelehnt (ungültige/unbekannte HSN) → special_kba_lxcars
+                    upsertSpecialKba($db, $carId, $kbaData);
+                }
+            }
+        }
+
+        // KBA-Verknüpfung über HSN+TSN+D2 auflösen (wenn nicht durch Scan gesetzt)
+        if (empty($kbaData)) {
+            $hsn = $car['c_2'] ?? '';
+            $tsn = $car['c_3'] ?? '';
+            $kbaId = resolveKbaWithD2($db, $hsn, $tsn, $d2);
             if ($kbaId) {
                 $car['kba_id'] = $kbaId;
-            } else {
-                // prepareKba abgelehnt (ungültige/unbekannte HSN) → special_kba_lxcars
-                upsertSpecialKba($db, $carId, $kbaData);
             }
         }
-    }
 
-    // KBA-Verknüpfung über HSN+TSN+D2 auflösen (wenn nicht durch Scan gesetzt)
-    if (empty($kbaData)) {
-        $hsn = $car['c_2'] ?? '';
-        $tsn = $car['c_3'] ?? '';
-        $kbaId = resolveKbaWithD2($db, $hsn, $tsn, $d2);
-        if ($kbaId) {
-            $car['kba_id'] = $kbaId;
-        }
-    }
-
-    // Schutz: Textfelder nur ueberschreiben wenn neuer Wert laenger oder bestehender leer
-    $textFields = ['c_fin', 'c_st', 'c_wt', 'c_st_l', 'c_wt_l', 'c_mt', 'c_e_id', 'c_text', 'c_color', 'c_gart', 'c_st_z', 'c_wt_z'];
-    $currentCar = $db->getOne("SELECT * FROM cars_lxcars WHERE c_id = :id", [':id' => $carId]);
-    if ($currentCar) {
-        foreach ($textFields as $tf) {
-            if (!isset($car[$tf])) continue;
-            $oldVal = trim($currentCar[$tf] ?? '');
-            $newVal = trim($car[$tf] ?? '');
-            // Kuerzeren oder leeren neuen Wert nicht uebernehmen (ausser Feld war vorher leer)
-            if (!empty($oldVal) && mb_strlen($newVal) < mb_strlen($oldVal)) {
-                unset($car[$tf]);
+        // Schutz: Textfelder nur ueberschreiben wenn neuer Wert laenger oder bestehender leer
+        $textFields = ['c_fin', 'c_st', 'c_wt', 'c_st_l', 'c_wt_l', 'c_mt', 'c_e_id', 'c_text', 'c_color', 'c_gart', 'c_st_z', 'c_wt_z'];
+        $currentCar = $db->getOne("SELECT * FROM cars_lxcars WHERE c_id = :id", [':id' => $carId]);
+        if ($currentCar) {
+            foreach ($textFields as $tf) {
+                if (!isset($car[$tf])) continue;
+                $oldVal = trim($currentCar[$tf] ?? '');
+                $newVal = trim($car[$tf] ?? '');
+                // Kuerzeren oder leeren neuen Wert nicht uebernehmen (ausser Feld war vorher leer)
+                if (!empty($oldVal) && mb_strlen($newVal) < mb_strlen($oldVal)) {
+                    unset($car[$tf]);
+                }
             }
         }
-    }
 
-    // Felder die nicht aktualisiert werden sollen
-    $db->updateRow(
-        'cars_lxcars',
-        $car,
-        ['c_id', 'c_it'],           // Exclude: PK und Insert-Timestamp
-        'c_id = :where_id',
-        [':where_id' => $carId]
-    );
+        // Felder die nicht aktualisiert werden sollen
+        $db->updateRow(
+            'cars_lxcars',
+            $car,
+            ['c_id', 'c_it'],           // Exclude: PK und Insert-Timestamp
+            'c_id = :where_id',
+            [':where_id' => $carId]
+        );
+
+        $db->commit();
+    } catch (Exception $e) {
+        $db->rollBack();
+        throw new ApiError('API_DATABASE_ERROR', $e->getMessage());
+    }
 
     // Kunden-Symlinks aktualisieren (Kennzeichen oder Eigentümer kann sich geaendert haben)
+    // (nach commit — Dateisystem-Op, nicht transaktionsfähig)
     $ownerId = intval($car['c_ow'] ?? 0);
     if (!$ownerId) {
         $ownerRow = $db->getOne("SELECT c_ow FROM cars_lxcars WHERE c_id = :id", [':id' => $carId]);
@@ -1594,24 +1603,32 @@ function lookupKbaFuzzy($data) {
 
     $db = DbhCompany::begin();
 
-    // 1. Exakter Match
-    $exact = $db->getAll(
-        "SELECT id, hsn, tsn, d2, hersteller, marke, name, fhzart, hubraum, leistung, kraftstoff
-         FROM kba_lxcars WHERE hsn = :hsn AND tsn = :tsn ORDER BY d2 NULLS FIRST LIMIT 5",
-        [':hsn' => $hsn, ':tsn' => $tsn]
-    );
+    // Felder die für KBA-Panel und Rotes Heft benötigt werden
+    $kbaSelectFields = "id, hsn, tsn, d2, d1, hersteller, marke, name, fhzart,
+                        klasse, aufbau, antrieb, sitze, datum, achsen, masse,
+                        hubraum, leistung, kraftstoff, t, f2, field_7_1, field_7_2, field_7_3";
 
-    if ($exact) {
-        resultInfo(true, 'OK', ['exact' => true, 'suggestions' => $exact]);
-        return;
+    // 1. Exakter Match — NUR wenn HSN gültig ist (genau 4 Ziffern).
+    //    Ungültige HSN (Buchstaben wie "B333") überspringen Phase 1:
+    //    Auch wenn ein Falscheintrag in der DB existiert, soll der Korrektur-Dialog erscheinen.
+
+    if (preg_match('/^\d{4}$/', $hsn)) {
+        $exact = $db->getAll(
+            "SELECT $kbaSelectFields
+             FROM kba_lxcars WHERE hsn = :hsn AND tsn = :tsn ORDER BY d2 NULLS FIRST LIMIT 5",
+            [':hsn' => $hsn, ':tsn' => $tsn]
+        );
+        if ($exact) {
+            resultInfo(true, 'OK', ['exact' => true, 'suggestions' => $exact]);
+            return;
+        }
     }
 
     // 2. Fuzzy via OCR-typische Zeichensubstitutionen:
     //    B→3, O→0, I→1, S→5, Z→2, D→0, G→6, Q→0, L→1
     //    translate() normalisiert beide Seiten — kein Injektionsrisiko da hardcoded
     $suggestions = $db->getAll(
-        "SELECT DISTINCT ON (k.hsn, k.tsn) k.id, k.hsn, k.tsn, k.d2,
-                k.hersteller, k.marke, k.name, k.fhzart, k.hubraum, k.leistung, k.kraftstoff
+        "SELECT DISTINCT ON (k.hsn, k.tsn) $kbaSelectFields
          FROM kba_lxcars k
          WHERE translate(upper(k.hsn), :ocr_f1, :ocr_t1) = translate(upper(:hsn_val), :ocr_f2, :ocr_t2)
            AND translate(upper(k.tsn), :ocr_f3, :ocr_t3) = translate(upper(:tsn_val), :ocr_f4, :ocr_t4)
@@ -1692,7 +1709,9 @@ function lookupKbaByHsn($data) {
 
     $db = DbhCompany::begin();
     $rows = $db->getAll(
-        "SELECT id, hsn, tsn, d2, hersteller, marke, name, hubraum, leistung, kraftstoff, fhzart
+        "SELECT id, hsn, tsn, d2, d1, hersteller, marke, name, fhzart,
+                klasse, aufbau, antrieb, sitze, datum, achsen, masse,
+                hubraum, leistung, kraftstoff, t, f2, field_7_1, field_7_2, field_7_3
          FROM kba_lxcars
          WHERE hsn = :hsn
          ORDER BY marke, name, tsn",
