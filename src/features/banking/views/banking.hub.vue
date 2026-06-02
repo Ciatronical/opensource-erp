@@ -2367,9 +2367,8 @@ onMounted(async () => {
     const newFor = parseInt(route.query.new_for, 10)
     if (newFor > 0) openNewTransfer(newFor)
     if (route.query.tab) activeTab.value = route.query.tab
-    // Trust-Anker sofort auffrischen und dann alle 45 Min wiederholen
-    runKeepAlive()
-    startKeepAliveTimer()
+    // Trust-Anker-Refresh global starten (läuft für die gesamte Browser-Session)
+    startGlobalKeepAlive()
 })
 
 watch(selectedAccountId, async (id) => {
