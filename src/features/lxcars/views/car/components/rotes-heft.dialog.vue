@@ -58,7 +58,7 @@
                     <tr>
                         <td class="rotes-heft__nr">4b</td>
                         <td class="rotes-heft__label">{{ t('CarEditView.rotesHeft.field4b') }}</td>
-                        <td :class="['rotes-heft__value', { 'rotes-heft__value--missing': !kbaData?.leistung }]">{{ kbaData?.leistung ? kbaData.leistung + ' kW / ' + Math.round(kbaData.leistung * 1.35962) + ' PS' : noData }}</td>
+                        <td :class="['rotes-heft__value', { 'rotes-heft__value--missing': !kbaData?.leistung }]">{{ kbaData?.leistung || noData }}</td>
                     </tr>
 
                     <!-- 4c. Leermasse bei Krafträdern -->
