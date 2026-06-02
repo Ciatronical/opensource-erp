@@ -2175,7 +2175,8 @@ export default defineComponent({
                 const blobUrl = await faktura.generatePDFPreview(
                     fakturaId.value,
                     fakturaType.value,
-                    selectedTemplate.value
+                    selectedTemplate.value,
+                    selectedPrinter.value?.id ?? null
                 )
                 window.open(blobUrl, '_blank')
             } catch (e) {

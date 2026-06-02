@@ -377,12 +377,13 @@ export const fakturaStore = defineStore('fakturaStore', () => {
      * @param {string|null} templateSet - Template-Set-Name oder null fuer Default
      * @return {Promise<string>} Blob-URL fuer window.open()
      */
-    async function generatePDFPreview(fakturaID, fakturaType, templateSet = null) {
+    async function generatePDFPreview(fakturaID, fakturaType, templateSet = null, printerId = null) {
         const response = await axios.post('/api/print/', {
             action: 'generatePDF',
             fakturaID: fakturaID,
             fakturaType: fakturaType,
             templateSet: templateSet,
+            printerId: printerId,
             'content-type': 'application/pdf'
         }, {
             responseType: 'blob'

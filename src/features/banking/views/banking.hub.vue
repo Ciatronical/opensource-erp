@@ -381,99 +381,123 @@
             <v-window-item value="templates">
                 <!-- Gruppen-Reihe -->
                 <div class="d-flex align-center mb-3 flex-wrap ga-2">
-                    <v-chip
+                    <v-btn-group
                         v-for="g in tmplStore.groups.value"
                         :key="g.id"
                         :color="g.color || 'primary'"
                         :variant="selectedGroupId === g.id ? 'elevated' : 'tonal'"
-                        class="cursor-pointer"
-                        @click="selectGroup(g.id)"
+                        density="compact"
+                        rounded="sm"
+                        divided
                     >
-                        <template #prepend><v-icon size="14">mdi-folder-outline</v-icon></template>
-                        {{ g.name }}
-                        <v-badge :content="g.template_count" inline color="white" class="ml-1" />
-                        <template #append>
-                            <v-icon size="14" class="ml-1" @click.stop="editGroup(g)">mdi-pencil</v-icon>
-                        </template>
-                    </v-chip>
-                    <v-chip color="default" variant="outlined" class="cursor-pointer" @click="openNewGroup">
-                        <template #prepend><v-icon size="14">mdi-plus</v-icon></template>
+                        <v-btn size="small" @click="selectGroup(g.id)">
+                            <v-icon start size="14">mdi-folder-outline</v-icon>
+                            {{ g.name }}
+                            <span class="ml-2 text-caption font-weight-bold">{{ g.template_count }}</span>
+                        </v-btn>
+                        <v-btn size="small" @click.stop="editGroup(g)">
+                            <v-icon size="14">mdi-pencil</v-icon>
+                        </v-btn>
+                    </v-btn-group>
+                    <v-btn
+                        v-if="ungroupedTemplateCount > 0 || selectedGroupId === -1"
+                        :variant="selectedGroupId === -1 ? 'elevated' : 'tonal'"
+                        color="default"
+                        density="compact"
+                        rounded="sm"
+                        size="small"
+                        @click="selectGroup(-1)"
+                    >
+                        <v-icon start size="14">mdi-folder-open-outline</v-icon>
+                        {{ t('BankingView.templates.noGroupLabel') }}
+                        <span class="ml-2 text-caption font-weight-bold">{{ ungroupedTemplateCount }}</span>
+                    </v-btn>
+                    <v-btn color="default" variant="outlined" density="compact" rounded="sm" size="small" @click="openNewGroup">
+                        <v-icon start size="14">mdi-plus</v-icon>
                         {{ t('BankingView.templates.newGroup') }}
-                    </v-chip>
+                    </v-btn>
                 </div>
 
-                <div v-if="!selectedGroupId" class="text-center text-disabled py-8">
-                    {{ t('BankingView.templates.noGroups') }}
+                <!-- Aktionsleiste -->
+                <div class="tab-toolbar mb-3">
+                    <v-btn color="primary" variant="tonal" size="small" @click="openNewTemplate()">
+                        <v-icon start>mdi-plus</v-icon>{{ t('BankingView.templates.newTemplate') }}
+                    </v-btn>
+                    <v-spacer />
+                    <v-btn
+                        v-if="groupTemplates.length > 0"
+                        color="success" variant="elevated" size="small"
+                        :disabled="selectedTemplateIds.length === 0"
+                        @click="executeSelectedTemplates"
+                    >
+                        <v-icon start>mdi-send</v-icon>
+                        {{ t('BankingView.templates.executeSelected', { n: selectedTemplateIds.length || groupTemplates.length }) }}
+                    </v-btn>
+                    <v-btn
+                        v-if="groupTemplates.length > 0"
+                        color="primary" variant="elevated" size="small"
+                        @click="executeAllTemplates"
+                    >
+                        <v-icon start>mdi-send-check</v-icon>
+                        {{ t('BankingView.templates.executeAll', { n: groupTemplates.length }) }}
+                    </v-btn>
                 </div>
 
-                <template v-else>
-                    <!-- Aktionsleiste -->
-                    <div class="tab-toolbar mb-3">
-                        <v-btn color="primary" variant="tonal" size="small" @click="openNewTemplate()">
-                            <v-icon start>mdi-plus</v-icon>{{ t('BankingView.templates.newTemplate') }}
-                        </v-btn>
-                        <v-spacer />
-                        <v-btn
-                            v-if="groupTemplates.length > 0"
-                            color="success" variant="elevated" size="small"
-                            :disabled="selectedTemplateIds.length === 0"
-                            @click="executeSelectedTemplates"
-                        >
-                            <v-icon start>mdi-send</v-icon>
-                            {{ t('BankingView.templates.executeSelected', { n: selectedTemplateIds.length || groupTemplates.length }) }}
-                        </v-btn>
-                        <v-btn
-                            v-if="groupTemplates.length > 0"
-                            color="primary" variant="elevated" size="small"
-                            @click="executeAllTemplates"
-                        >
-                            <v-icon start>mdi-send-check</v-icon>
-                            {{ t('BankingView.templates.executeAll', { n: groupTemplates.length }) }}
-                        </v-btn>
+                <!-- Hinweis wenn keine Gruppe gewählt -->
+                <div v-if="selectedGroupId === null" class="text-center text-disabled py-8">
+                    {{ t('BankingView.templates.noGroupSelected') }}
+                </div>
+
+                <!-- Template-Liste -->
+                <v-card v-else rounded="lg" elevation="0" border>
+                    <div v-if="groupTemplates.length > 0" class="d-flex align-center px-3 py-1 border-b">
+                        <v-checkbox-btn
+                            :model-value="allTemplatesSelected"
+                            :indeterminate="someTemplatesSelected"
+                            density="compact"
+                            hide-details
+                            @click="toggleAllTemplates"
+                        />
+                        <span class="text-caption text-disabled ml-1">{{ t('BankingView.templates.selectAll') }}</span>
                     </div>
-
-                    <!-- Template-Liste -->
-                    <v-card rounded="lg" elevation="0" border>
-                        <v-list density="compact" lines="two">
-                            <v-list-item v-if="groupTemplates.length === 0" class="text-center text-disabled py-6">
-                                {{ t('BankingView.templates.noTemplates') }}
-                            </v-list-item>
-
-                            <v-list-item
-                                v-for="tmpl in groupTemplates"
-                                :key="tmpl.id"
-                                :class="{ 'bg-primary-lighten-5': selectedTemplateIds.includes(tmpl.id) }"
-                                @click="toggleTemplateSelection(tmpl.id)"
-                            >
-                                <template #prepend>
-                                    <v-checkbox-btn
-                                        :model-value="selectedTemplateIds.includes(tmpl.id)"
-                                        density="compact"
-                                        @click.stop="toggleTemplateSelection(tmpl.id)"
-                                    />
-                                </template>
-                                <v-list-item-title class="d-flex align-center">
-                                    <span class="font-weight-medium">{{ tmpl.remote_name }}</span>
-                                    <span class="mx-2 text-disabled text-caption">{{ formatIban(tmpl.remote_iban) }}</span>
-                                    <v-spacer />
-                                    <span class="font-weight-semibold text-body-2">{{ formatCurrency(tmpl.amount) }}</span>
-                                </v-list-item-title>
-                                <v-list-item-subtitle>
-                                    <span class="text-caption">{{ tmpl.purpose_template }}</span>
-                                    <span v-if="hasPlaceholders(tmpl.purpose_template)" class="ml-2 text-primary text-caption">
-                                        → {{ resolvePurpose(tmpl.purpose_template) }}
-                                    </span>
-                                </v-list-item-subtitle>
-                                <template #append>
-                                    <div class="d-flex ga-1">
-                                        <v-btn icon="mdi-pencil" size="x-small" variant="text" @click.stop="openEditTemplate(tmpl)" />
-                                        <v-btn icon="mdi-delete" size="x-small" variant="text" color="error" @click.stop="confirmDeleteTemplate(tmpl)" />
-                                    </div>
-                                </template>
-                            </v-list-item>
-                        </v-list>
-                    </v-card>
-                </template>
+                    <v-list density="compact" lines="two">
+                        <v-list-item v-if="groupTemplates.length === 0" class="text-center text-disabled py-6">
+                            {{ t('BankingView.templates.noTemplates') }}
+                        </v-list-item>
+                        <v-list-item
+                            v-for="tmpl in groupTemplates"
+                            :key="tmpl.id"
+                            :class="{ 'bg-primary-lighten-5': selectedTemplateIds.includes(tmpl.id) }"
+                            @click="toggleTemplateSelection(tmpl.id)"
+                        >
+                            <template #prepend>
+                                <v-checkbox-btn
+                                    :model-value="selectedTemplateIds.includes(tmpl.id)"
+                                    density="compact"
+                                    @click.stop="toggleTemplateSelection(tmpl.id)"
+                                />
+                            </template>
+                            <v-list-item-title class="d-flex align-center">
+                                <span class="font-weight-medium">{{ tmpl.remote_name }}</span>
+                                <span class="mx-2 text-disabled text-caption">{{ formatIban(tmpl.remote_iban) }}</span>
+                                <v-spacer />
+                                <span class="font-weight-semibold text-body-2">{{ formatCurrency(tmpl.amount) }}</span>
+                            </v-list-item-title>
+                            <v-list-item-subtitle>
+                                <span class="text-caption">{{ tmpl.purpose_template }}</span>
+                                <span v-if="hasPlaceholders(tmpl.purpose_template)" class="ml-2 text-primary text-caption">
+                                    → {{ resolvePurpose(tmpl.purpose_template) }}
+                                </span>
+                            </v-list-item-subtitle>
+                            <template #append>
+                                <div class="d-flex ga-1">
+                                    <v-btn icon="mdi-pencil" size="x-small" variant="text" @click.stop="openEditTemplate(tmpl)" />
+                                    <v-btn icon="mdi-delete" size="x-small" variant="text" color="error" @click.stop="confirmDeleteTemplate(tmpl)" />
+                                </div>
+                            </template>
+                        </v-list-item>
+                    </v-list>
+                </v-card>
             </v-window-item>
 
             <!-- ── DAUERAUFTRÄGE ── -->
@@ -984,41 +1008,74 @@
     </v-dialog>
 
     <!-- Template Dialog -->
-    <v-dialog v-model="showTemplateDialog" max-width="560" persistent>
+    <v-dialog v-model="showTemplateDialog" max-width="600" persistent scrollable>
         <v-card rounded="xl">
-            <v-card-title class="pa-4">{{ editingTemplateId ? t('BankingView.templates.editTemplate') : t('BankingView.templates.newTemplate') }}</v-card-title>
+            <v-card-title class="pa-4">
+                {{ editingTemplateId ? t('BankingView.templates.editTemplate') : t('BankingView.templates.newTemplate') }}
+            </v-card-title>
             <v-divider />
             <v-card-text class="pa-4">
+                <!-- Bezeichnung + Gruppe -->
                 <v-row dense class="mb-3">
                     <v-col cols="7">
-                        <v-text-field v-model="tmplForm.name" :label="t('BankingView.templates.templateName')" hide-details />
+                        <v-text-field v-model="tmplForm.name" :label="t('BankingView.templates.templateName')" hide-details variant="outlined" density="compact" />
                     </v-col>
                     <v-col cols="5">
-                        <v-select v-model="tmplForm.group_id" :items="tmplStore.groups.value" item-title="name" item-value="id" :label="t('BankingView.templates.groupAssign')" hide-details clearable />
+                        <v-select v-model="tmplForm.group_id" :items="tmplStore.groups.value" item-title="name" item-value="id" :label="t('BankingView.templates.groupAssign')" hide-details clearable variant="outlined" density="compact" />
                     </v-col>
                 </v-row>
-                <v-select v-model="tmplForm.bank_account_id" :items="banking.accounts.value" item-title="name" item-value="id" :label="t('BankingView.transfers.fromAccount')" class="mb-3" />
-                <v-text-field v-model="tmplForm.remote_name" :label="t('BankingView.transfers.recipientName')" class="mb-3" />
-                <v-text-field v-model="tmplForm.remote_iban" :label="t('BankingView.transfers.recipientIban')" class="mb-3" />
-                <v-row dense class="mb-2">
+                <!-- Absenderkonto -->
+                <v-select v-model="tmplForm.bank_account_id" :items="banking.accounts.value" item-title="name" item-value="id" :label="t('BankingView.transfers.fromAccount')" class="mb-3" variant="outlined" density="compact" hide-details />
+                <!-- Empfänger-Autocomplete -->
+                <RecipientAutocomplete v-model="tmplRecipient" class="mb-2" />
+                <div v-if="tmplRecipient" class="mb-3 d-flex align-center pa-3 bg-grey-lighten-4 rounded-lg">
+                    <v-chip size="x-small" :color="tmplRecipient.recipient_type === 'customer' ? 'primary' : 'secondary'" variant="tonal" class="mr-3">
+                        {{ tmplRecipient.recipient_type === 'customer' ? t('BankingView.transfers.customerShort') : t('BankingView.transfers.vendorShort') }}
+                    </v-chip>
+                    <div class="flex-grow-1">
+                        <div class="text-body-2 font-weight-medium">{{ tmplRecipient.name }}</div>
+                        <div class="text-caption text-disabled">{{ tmplRecipient.number }}</div>
+                    </div>
+                    <v-btn icon="mdi-close-circle" size="small" variant="text" @click="tmplRecipient = null; tmplForm.remote_name = ''; tmplForm.remote_iban = ''; tmplForm.remote_bic = ''" />
+                </div>
+                <v-text-field v-if="!tmplRecipient" v-model="tmplForm.remote_name" :label="t('BankingView.transfers.recipientName')" class="mb-3" variant="outlined" density="compact" hide-details />
+                <v-text-field v-model="tmplForm.remote_iban" :label="t('BankingView.transfers.recipientIban')" class="mb-3" variant="outlined" density="compact" hide-details />
+                <v-row dense class="mb-3">
                     <v-col cols="5">
-                        <v-text-field v-model.number="tmplForm.amount" :label="t('BankingView.transfers.amount')" type="number" min="0.01" step="0.01" prefix="EUR" />
+                        <v-text-field v-model.number="tmplForm.amount" :label="t('BankingView.transfers.amount')" type="number" min="0.01" step="0.01" prefix="EUR" variant="outlined" density="compact" hide-details />
                     </v-col>
                     <v-col cols="7">
-                        <v-text-field v-model="tmplForm.remote_bic" :label="t('BankingView.transfers.recipientBic')" />
+                        <v-text-field v-model="tmplForm.remote_bic" :label="t('BankingView.transfers.recipientBic')" variant="outlined" density="compact" hide-details />
                     </v-col>
                 </v-row>
+                <!-- Verwendungszweck-Vorlage -->
                 <v-text-field
                     v-model="tmplForm.purpose_template"
                     :label="t('BankingView.templates.purposeTemplate')"
-                    :hint="t('BankingView.templates.purposeHint')"
-                    persistent-hint
+                    variant="outlined"
+                    density="compact"
                     counter="140"
                     maxlength="140"
-                    class="mb-1"
+                    class="mb-2"
                 />
-                <div v-if="tmplPurposePreview" class="text-caption text-primary mb-2">
-                    {{ t('BankingView.templates.purposePreview') }} <strong>{{ tmplPurposePreview }}</strong>
+                <!-- Klickbare Platzhalter -->
+                <div class="d-flex align-center flex-wrap ga-1 mb-2">
+                    <span class="text-caption text-disabled mr-1">{{ t('BankingView.templates.placeholders') }}:</span>
+                    <v-chip
+                        v-for="ph in purposePlaceholders"
+                        :key="ph.val"
+                        size="x-small"
+                        color="primary"
+                        variant="tonal"
+                        class="cursor-pointer"
+                        :title="ph.desc"
+                        @click="insertPlaceholder(ph.val)"
+                    >{{ ph.val }}</v-chip>
+                </div>
+                <!-- Live-Vorschau -->
+                <div v-if="tmplPurposePreview" class="pa-2 rounded-lg bg-primary-lighten-5 text-caption">
+                    <span class="text-disabled">{{ t('BankingView.templates.purposePreview') }}</span>
+                    <strong class="text-primary ml-1">{{ tmplPurposePreview }}</strong>
                 </div>
             </v-card-text>
             <v-card-actions class="pa-4">
@@ -1425,9 +1482,40 @@ const groupColors = [
     { value: 'secondary',label: 'Lila'   },
 ]
 
-const groupTemplates = computed(() =>
-    tmplStore.templates.value.filter(t => t.group_id === selectedGroupId.value)
+const ungroupedTemplateCount = computed(() =>
+    tmplStore.templates.value.filter(t => !t.group_id).length
 )
+
+const groupTemplates = computed(() => {
+    if (selectedGroupId.value === null) return []
+    if (selectedGroupId.value === -1) return tmplStore.templates.value.filter(t => !t.group_id)
+    return tmplStore.templates.value.filter(t => t.group_id === selectedGroupId.value)
+})
+
+const purposePlaceholders = [
+    { val: '{MM/JJJJ}', desc: 'Monat/Jahr, z.B. 06/2026' },
+    { val: '{MM/YYYY}', desc: 'Monat/Jahr (englisch), z.B. 06/2026' },
+    { val: '{MONAT}',   desc: 'Monatsname, z.B. Juni' },
+    { val: '{MM}',      desc: 'Monat zweistellig, z.B. 06' },
+    { val: '{JJJJ}',    desc: 'Jahr vierstellig, z.B. 2026' },
+    { val: '{DATUM}',   desc: 'Datum, z.B. 01.06.2026' },
+]
+
+function insertPlaceholder(ph) {
+    if ((tmplForm.purpose_template + ph).length <= 140)
+        tmplForm.purpose_template += ph
+}
+
+const allTemplatesSelected = computed(() =>
+    groupTemplates.value.length > 0 &&
+    selectedTemplateIds.value.length === groupTemplates.value.length
+)
+const someTemplatesSelected = computed(() => selectedTemplateIds.value.length > 0 && !allTemplatesSelected.value)
+
+function toggleAllTemplates() {
+    if (allTemplatesSelected.value) selectedTemplateIds.value = []
+    else selectedTemplateIds.value = groupTemplates.value.map(t => t.id)
+}
 
 const canSaveTemplate = computed(() =>
     !!tmplForm.remote_name && !!tmplForm.remote_iban && tmplForm.amount > 0 && !!tmplForm.purpose_template
@@ -1444,8 +1532,13 @@ function hasPlaceholders(s) {
 }
 
 function selectGroup(id) {
-    selectedGroupId.value  = id
-    selectedTemplateIds.value = []
+    selectedGroupId.value = id
+    selectedTemplateIds.value = tmplStore.templates.value
+        .filter(t => id === -1 ? !t.group_id : t.group_id === id)
+        .map(t => t.id)
+    // Vorlagen für diese Gruppe frisch laden
+    if (id === -1) tmplStore.fetchTemplates()
+    else tmplStore.fetchTemplates(id)
 }
 
 function toggleTemplateSelection(id) {
@@ -1492,8 +1585,9 @@ async function confirmDeleteGroup() {
 
 function openNewTemplate() {
     editingTemplateId.value = null
+    tmplRecipient.value = null
     Object.assign(tmplForm, {
-        group_id: selectedGroupId.value,
+        group_id: selectedGroupId.value === -1 ? null : selectedGroupId.value,
         bank_account_id: selectedAccountId.value ?? banking.accounts.value[0]?.id ?? null,
         name: '', remote_name: '', remote_iban: '', remote_bic: '',
         amount: null, purpose_template: '', sort_order: 0
@@ -1503,6 +1597,7 @@ function openNewTemplate() {
 
 function openEditTemplate(tmpl) {
     editingTemplateId.value = tmpl.id
+    tmplRecipient.value = null
     Object.assign(tmplForm, {
         group_id: tmpl.group_id, bank_account_id: tmpl.bank_account_id,
         name: tmpl.name || '', remote_name: tmpl.remote_name, remote_iban: tmpl.remote_iban,
@@ -1794,6 +1889,7 @@ async function resetTransaction(item) {
 const showTransferDialog = ref(false)
 const editingId          = ref(null)
 const recipient          = ref(null)
+const tmplRecipient      = ref(null)
 const selectedIds        = ref([])
 const batchSubmitIds     = ref([])
 const batchId            = ref(null)
@@ -1894,6 +1990,13 @@ watch(recipient, (r) => {
     transferForm.remote_name = r.name
     if (!transferForm.remote_iban && r.iban) transferForm.remote_iban = r.iban
     if (!transferForm.remote_bic  && r.bic)  transferForm.remote_bic  = r.bic
+})
+
+watch(tmplRecipient, (r) => {
+    if (!r) return
+    tmplForm.remote_name = r.name
+    if (!tmplForm.remote_iban && r.iban) tmplForm.remote_iban = r.iban
+    if (!tmplForm.remote_bic  && r.bic)  tmplForm.remote_bic  = r.bic
 })
 
 function openNewTransfer(preselectId = null) {
@@ -2386,6 +2489,7 @@ watch(selectedAccountId, async (id) => {
 })
 
 watch(activeTab, async (tab) => {
+    if (tab === 'transactions') await loadTransactions()
     if (tab === 'reconciliation' && selectedAccountId.value) {
         await banking.fetchTransactions(selectedAccountId.value, { match_status: 'all' })
         await matching.fetchOpenInvoices(selectedAccountId.value)

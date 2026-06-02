@@ -287,6 +287,23 @@ function generatePDF($data) {
     if (!$templateName) {
         $templateName = detectTemplate($fakturaType, $vars, $lxCars, $templateDir);
     }
+
+    // template_code des Druckers als Datei-Suffix anwenden (siehe printToPrinter)
+    $printerId = intval($data['printerId'] ?? 0);
+    if ($printerId) {
+        $printer = $db->getOne(
+            "SELECT template_code FROM printers WHERE id = :id",
+            [':id' => $printerId]
+        );
+        if (!empty($printer['template_code'])) {
+            $base = pathinfo($templateName, PATHINFO_FILENAME);
+            $suffixName = $base . '_' . $printer['template_code'] . '.tex';
+            if (is_file($templateDir . '/' . $suffixName)) {
+                $templateName = $suffixName;
+            }
+        }
+    }
+
     $engine = new LaTeXTemplateEngine($templateDir);
     $engine->setVariables($vars['variables']);
     $engine->setArrays($vars['arrays']);
@@ -347,13 +364,20 @@ function printToPrinter($data) {
 
     // Drucker laden
     $printer = $db->getOne(
-        "SELECT id, printer_description, printer_command FROM printers WHERE id = :id",
+        "SELECT id, printer_description, printer_command, template_code FROM printers WHERE id = :id",
         [':id' => $printerId]
     );
     if (!$printer || empty($printer['printer_command'])) {
         resultInfo(false, 'PRINTER_ERROR', 'Printer not found or no command configured');
         return;
     }
+
+    // template_code des Druckers: Datei-Suffix fuer Vorlagenvarianten.
+    // Das Vorlagen-Verzeichnis kommt immer aus defaults.templates.
+    // Bsp: template_code = "test", Vorlage = invoice.tex
+    //      -> invoice_test.tex vorhanden? -> invoice_test.tex verwenden
+    //      -> invoice_test.tex nicht vorhanden? -> Fallback auf invoice.tex
+    $templateSuffix = $printer['template_code'] ?? '';
 
     // Feature-Flag pruefen
     $lxCars = isLxCarsEnabled($db);
@@ -369,6 +393,14 @@ function printToPrinter($data) {
     $templateDir = getTemplateDir($templateSet);
     if (!$templateName) {
         $templateName = detectTemplate($fakturaType, $vars, $lxCars, $templateDir);
+    }
+    // Datei-Suffix anwenden: invoice_test.tex falls vorhanden, sonst invoice.tex
+    if ($templateSuffix) {
+        $base = pathinfo($templateName, PATHINFO_FILENAME);
+        $suffixName = $base . '_' . $templateSuffix . '.tex';
+        if (is_file($templateDir . '/' . $suffixName)) {
+            $templateName = $suffixName;
+        }
     }
     $engine = new LaTeXTemplateEngine($templateDir);
     $engine->setVariables($vars['variables']);
