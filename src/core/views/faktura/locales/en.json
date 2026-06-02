@@ -378,6 +378,13 @@
                 "cancel": "Cancel",
                 "confirm": "Delete"
             },
+            "deleteBulk": {
+                "title": "Delete positions",
+                "text": "Really delete {count} positions?",
+                "button": "Delete {count} selected",
+                "cancel": "Cancel",
+                "confirm": "Delete {count} positions"
+            },
             "editItem": {
                 "title": "Edit Item",
                 "cancel": "Cancel",

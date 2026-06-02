@@ -17,6 +17,11 @@ export function useItemManagement({
         index: null
     })
 
+    const bulkDeleteDialog = ref({
+        show: false,
+        items: []
+    })
+
     const deleteFakturaDialog = ref({
         show: false
     })
@@ -109,6 +114,35 @@ export function useItemManagement({
         }
 
         fakturaItems.value.splice(index, 1)
+        fakturaItems.value.forEach((item, idx) => { item.position = idx + 1 })
+        calculateTotals()
+        await saveAllItems()
+    }
+
+    // ── Mehrere Positionen löschen ──
+
+    function deleteSelectedItems(selectedItemsList) {
+        bulkDeleteDialog.value = { show: true, items: selectedItemsList }
+    }
+
+    async function confirmBulkDeleteItems() {
+        const itemsToDelete = bulkDeleteDialog.value.items
+        bulkDeleteDialog.value.show = false
+
+        for (const item of itemsToDelete) {
+            if (item.id) {
+                try {
+                    await faktura.deleteFakturaItem(item.id, fakturaType.value)
+                } catch (e) {
+                    console.error('Fehler beim Löschen der Position:', e)
+                    alerts.error(t('FakturaView.faktura.itemDeleteError'))
+                    return
+                }
+            }
+        }
+
+        const deletedKeys = new Set(itemsToDelete.map(i => i.id || i.tempId))
+        fakturaItems.value = fakturaItems.value.filter(item => !deletedKeys.has(item.id || item.tempId))
         fakturaItems.value.forEach((item, idx) => { item.position = idx + 1 })
         calculateTotals()
         await saveAllItems()
@@ -373,6 +407,7 @@ export function useItemManagement({
 
     return {
         deleteDialog,
+        bulkDeleteDialog,
         deleteFakturaDialog,
         editDialog,
         createDialog,
@@ -380,6 +415,8 @@ export function useItemManagement({
         addNewItemRow,
         deleteItem,
         confirmDeleteItem,
+        deleteSelectedItems,
+        confirmBulkDeleteItems,
         deleteFaktura,
         confirmDeleteFaktura,
         setItemDiscount,

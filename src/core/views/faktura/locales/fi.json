@@ -466,6 +466,13 @@
                 "error": "Virhe DHL-tarran luonnissa",
                 "deleted": "DHL-lähetys peruutettu",
                 "existingShipments": "Olemassa olevat lähetykset"
+            },
+            "deleteBulk": {
+                "title": "Poista rivit",
+                "text": "Poistetaanko {count} riviä?",
+                "button": "Poista {count} valittua",
+                "cancel": "Peruuta",
+                "confirm": "Poista {count} riviä"
             }
         },
         "dhl": {

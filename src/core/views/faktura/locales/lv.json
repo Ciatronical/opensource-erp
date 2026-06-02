@@ -466,6 +466,13 @@
                 "error": "Kļūda, veidojot DHL etiķeti",
                 "deleted": "DHL sūtījums atcelts",
                 "existingShipments": "Esošie sūtījumi"
+            },
+            "deleteBulk": {
+                "title": "Dzēst rindas",
+                "text": "Tiešām dzēst {count} rindas?",
+                "button": "Dzēst {count} atzīmētas",
+                "cancel": "Atcelt",
+                "confirm": "Dzēst {count} rindas"
             }
         },
         "dhl": {

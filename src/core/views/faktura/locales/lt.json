@@ -466,6 +466,13 @@
                 "error": "Klaida kuriant DHL etiketę",
                 "deleted": "DHL siunta atšaukta",
                 "existingShipments": "Esamos siuntos"
+            },
+            "deleteBulk": {
+                "title": "Ištrinti eilutes",
+                "text": "Ištrinti {count} eilutes?",
+                "button": "Ištrinti {count} pažymėtas",
+                "cancel": "Atšaukti",
+                "confirm": "Ištrinti {count} eilutes"
             }
         },
         "dhl": {

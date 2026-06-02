@@ -466,6 +466,13 @@
                 "error": "Fejl ved oprettelse af DHL-label",
                 "deleted": "DHL-forsendelse annulleret",
                 "existingShipments": "Eksisterende forsendelser"
+            },
+            "deleteBulk": {
+                "title": "Slet linjer",
+                "text": "Virkelig slette {count} linjer?",
+                "button": "Slet {count} markerede",
+                "cancel": "Annuller",
+                "confirm": "Slet {count} linjer"
             }
         },
         "dhl": {

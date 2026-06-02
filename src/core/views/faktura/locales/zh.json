@@ -466,6 +466,13 @@
                 "error": "创建 DHL 标签时出错",
                 "deleted": "DHL 货运已取消",
                 "existingShipments": "现有货运"
+            },
+            "deleteBulk": {
+                "title": "删除行",
+                "text": "确定删除 {count} 行？",
+                "button": "删除 {count} 个已选",
+                "cancel": "取消",
+                "confirm": "删除 {count} 行"
             }
         },
         "dhl": {

@@ -466,6 +466,13 @@
                 "error": "DHL etiketi oluşturulurken hata",
                 "deleted": "DHL gönderisi iptal edildi",
                 "existingShipments": "Mevcut gönderiler"
+            },
+            "deleteBulk": {
+                "title": "Satırları sil",
+                "text": "Gerçekten {count} satır silinsin mi?",
+                "button": "{count} seçiliyi sil",
+                "cancel": "İptal",
+                "confirm": "{count} satırı sil"
             }
         },
         "dhl": {

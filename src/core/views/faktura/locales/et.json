@@ -466,6 +466,13 @@
                 "error": "Viga DHL sildi loomisel",
                 "deleted": "DHL saadetis tühistatud",
                 "existingShipments": "Olemasolevad saadetised"
+            },
+            "deleteBulk": {
+                "title": "Kustuta read",
+                "text": "Kas kustutada {count} rida?",
+                "button": "Kustuta {count} märgitud",
+                "cancel": "Tühista",
+                "confirm": "Kustuta {count} rida"
             }
         },
         "dhl": {

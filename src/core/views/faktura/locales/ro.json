@@ -466,6 +466,13 @@
                 "error": "Eroare la crearea etichetei DHL",
                 "deleted": "Expediere DHL anulată",
                 "existingShipments": "Expedieri existente"
+            },
+            "deleteBulk": {
+                "title": "Ștergere poziții",
+                "text": "Șterge cu adevărat {count} poziții?",
+                "button": "Șterge {count} selectate",
+                "cancel": "Anulare",
+                "confirm": "Șterge {count} poziții"
             }
         },
         "dhl": {

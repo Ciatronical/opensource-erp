@@ -466,6 +466,13 @@
                 "error": "Feil ved opprettelse av DHL-etikett",
                 "deleted": "DHL-forsendelse kansellert",
                 "existingShipments": "Eksisterende forsendelser"
+            },
+            "deleteBulk": {
+                "title": "Slett linjer",
+                "text": "Virkelig slette {count} linjer?",
+                "button": "Slett {count} merkede",
+                "cancel": "Avbryt",
+                "confirm": "Slett {count} linjer"
             }
         },
         "dhl": {

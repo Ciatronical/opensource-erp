@@ -7,6 +7,17 @@
             <span class="text-subtitle-1 font-weight-medium">{{ t('FakturaView.faktura.items') }}</span>
             <v-chip v-if="modelValue.length > 1" size="x-small" variant="tonal" color="primary" class="ml-2">{{ modelValue.length - 1 }}</v-chip>
             <v-spacer />
+            <v-btn
+                v-if="selectedItems.size > 0"
+                variant="tonal"
+                color="error"
+                size="small"
+                prepend-icon="mdi-delete-sweep"
+                class="mr-2"
+                @click="emitDeleteSelected"
+            >
+                {{ t('FakturaView.dialogs.deleteBulk.button', { count: selectedItems.size }) }}
+            </v-btn>
             <v-tooltip v-if="showAiSuggest" location="bottom" :text="t('FakturaView.faktura.aiSuggestPositions')">
                 <template #activator="{ props: tip }">
                     <v-btn v-bind="tip" variant="tonal" color="purple" icon="mdi-creation"
@@ -19,6 +30,15 @@
             <v-table density="compact" class="invoice-items-table">
                 <thead>
                     <tr>
+                        <th style="width: 36px; text-align: center">
+                            <v-checkbox-btn
+                                :model-value="allRealItemsSelected"
+                                :indeterminate="someSelected"
+                                density="compact"
+                                hide-details
+                                @click="toggleSelectAll"
+                            />
+                        </th>
                         <th style="width: 50px; text-align: center">{{ t('FakturaView.faktura.position') }}</th>
                         <th style="width: 36px; text-align: center">
                             <v-icon size="small" color="grey" :title="t('FakturaView.faktura.tooltipDrag')">mdi-drag-vertical</v-icon>
@@ -67,8 +87,18 @@
                     <template #item="{ element: item, index }">
                         <tr :class="[
                             { 'new-item-row': !item.parts_id },
+                            { 'selected-item-row': item.parts_id && selectedItems.has(item.id || item.tempId) },
                             getItemOrderClass(item)
                         ]">
+                            <td class="text-center">
+                                <v-checkbox-btn
+                                    v-if="item.parts_id"
+                                    :model-value="selectedItems.has(item.id || item.tempId)"
+                                    density="compact"
+                                    hide-details
+                                    @click.stop="toggleItemSelection(item)"
+                                />
+                            </td>
                             <td class="text-center" :class="{ 'field-disabled': !item.parts_id }">
                                 {{ item.position }}
                             </td>
@@ -603,6 +633,7 @@ export default defineComponent({
         'article-select',
         'create-article',
         'delete-item',
+        'delete-selected',
         'edit-article',
         'set-item-discount',
         'set-all-discounts',
@@ -611,6 +642,8 @@ export default defineComponent({
         'ai-suggest',
         'request-part',
         'order-part',
+        'revert-part',
+        'delete-part',
         'photo-part'
     ],
     setup(props, { emit, expose }) {
@@ -620,6 +653,41 @@ export default defineComponent({
         const qtyRefs = ref([])
         const autocompleteRefs = ref([])
         const searchTimeouts = ref({})
+
+        // ── Mehrfachauswahl ──
+        const selectedItems = ref(new Set())
+
+        const realItems = computed(() => props.modelValue.filter(i => i.parts_id))
+
+        const allRealItemsSelected = computed(() =>
+            realItems.value.length > 0 && realItems.value.every(i => selectedItems.value.has(i.id || i.tempId))
+        )
+
+        const someSelected = computed(() =>
+            selectedItems.value.size > 0 && !allRealItemsSelected.value
+        )
+
+        function toggleItemSelection(item) {
+            const key = item.id || item.tempId
+            const next = new Set(selectedItems.value)
+            if (next.has(key)) next.delete(key)
+            else next.add(key)
+            selectedItems.value = next
+        }
+
+        function toggleSelectAll() {
+            if (allRealItemsSelected.value) {
+                selectedItems.value = new Set()
+            } else {
+                selectedItems.value = new Set(realItems.value.map(i => i.id || i.tempId))
+            }
+        }
+
+        function emitDeleteSelected() {
+            const items = realItems.value.filter(i => selectedItems.value.has(i.id || i.tempId))
+            emit('delete-selected', items)
+            selectedItems.value = new Set()
+        }
 
         // Langtext Dialog State
         const longDescDialog = ref({
@@ -1296,6 +1364,12 @@ export default defineComponent({
 
         return {
             t,
+            selectedItems,
+            allRealItemsSelected,
+            someSelected,
+            toggleItemSelection,
+            toggleSelectAll,
+            emitDeleteSelected,
             getItemOrderStatus,
             getItemOrderClass,
             getItemVendorName,
@@ -1476,6 +1550,15 @@ export default defineComponent({
 /* Ausgegraute Buttons für neue Zeilen */
 .btn-disabled {
     opacity: 0.25 !important;
+}
+
+/* Ausgewählte Zeile */
+.selected-item-row {
+    background-color: rgba(244, 67, 54, 0.06) !important;
+}
+
+.selected-item-row:hover {
+    background-color: rgba(244, 67, 54, 0.12) !important;
 }
 
 /* Neue Zeile - einladend gestaltet */

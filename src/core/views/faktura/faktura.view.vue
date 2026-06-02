@@ -219,6 +219,7 @@
                     @article-select="items.onArticleSelect"
                     @create-article="items.createArticle"
                     @delete-item="items.deleteItem"
+                    @delete-selected="items.deleteSelectedItems"
                     @edit-article="items.editArticle"
                     @set-item-discount="items.setItemDiscount"
                     @set-all-discounts="items.setAllDiscounts"
@@ -373,6 +374,60 @@
                         @click="items.confirmDeleteItem"
                     >
                         {{ t('FakturaView.dialogs.deleteItem.confirm') }}
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
+        <!-- Bulk Delete Items Confirmation Dialog -->
+        <v-dialog v-model="items.bulkDeleteDialog.value.show" max-width="420" @keydown.esc="items.bulkDeleteDialog.value.show = false">
+            <v-card>
+                <v-card-title class="d-flex align-center py-3 px-4 bg-error text-white">
+                    <v-icon class="mr-2">mdi-delete-sweep</v-icon>
+                    {{ t('FakturaView.dialogs.deleteBulk.title') }}
+                    <v-spacer />
+                    <v-btn
+                        icon="mdi-close"
+                        variant="text"
+                        density="compact"
+                        size="small"
+                        @click="items.bulkDeleteDialog.value.show = false"
+                    />
+                </v-card-title>
+                <v-card-text class="pt-4 pb-2">
+                    <p>{{ t('FakturaView.dialogs.deleteBulk.text', { count: items.bulkDeleteDialog.value.items.length }) }}</p>
+                    <v-list density="compact" class="mt-2 pa-0">
+                        <v-list-item
+                            v-for="item in items.bulkDeleteDialog.value.items"
+                            :key="item.id || item.tempId"
+                            class="px-0"
+                            density="compact"
+                        >
+                            <template #prepend>
+                                <v-icon size="small" color="error" class="mr-2">mdi-circle-small</v-icon>
+                            </template>
+                            <v-list-item-title class="text-body-2">
+                                <span class="font-weight-medium">{{ item.partnumber }}</span>
+                                <span v-if="item.description" class="text-medium-emphasis ml-1">– {{ item.description }}</span>
+                            </v-list-item-title>
+                        </v-list-item>
+                    </v-list>
+                </v-card-text>
+                <v-card-actions class="pa-4 pt-0">
+                    <v-spacer />
+                    <v-btn
+                        variant="text"
+                        @click="items.bulkDeleteDialog.value.show = false"
+                    >
+                        {{ t('FakturaView.dialogs.deleteBulk.cancel') }}
+                    </v-btn>
+                    <v-btn
+                        color="error"
+                        variant="elevated"
+                        prepend-icon="mdi-delete-sweep"
+                        @click="items.confirmBulkDeleteItems"
+                    >
+                        {{ t('FakturaView.dialogs.deleteBulk.confirm', { count: items.bulkDeleteDialog.value.items.length }) }}
                     </v-btn>
                 </v-card-actions>
             </v-card>

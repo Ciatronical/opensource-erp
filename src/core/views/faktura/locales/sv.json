@@ -466,6 +466,13 @@
                 "error": "Fel vid skapande av DHL-etikett",
                 "deleted": "DHL-försändelse avbruten",
                 "existingShipments": "Befintliga försändelser"
+            },
+            "deleteBulk": {
+                "title": "Ta bort rader",
+                "text": "Ta verkligen bort {count} rader?",
+                "button": "Ta bort {count} markerade",
+                "cancel": "Avbryt",
+                "confirm": "Ta bort {count} rader"
             }
         },
         "dhl": {

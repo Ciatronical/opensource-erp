@@ -466,6 +466,13 @@
                 "error": "Error al crear la etiqueta DHL",
                 "deleted": "Envío DHL cancelado",
                 "existingShipments": "Envíos existentes"
+            },
+            "deleteBulk": {
+                "title": "Eliminar posiciones",
+                "text": "¿Eliminar realmente {count} posiciones?",
+                "button": "Eliminar {count} seleccionadas",
+                "cancel": "Cancelar",
+                "confirm": "Eliminar {count} posiciones"
             }
         },
         "dhl": {

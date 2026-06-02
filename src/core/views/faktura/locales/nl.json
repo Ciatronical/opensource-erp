@@ -466,6 +466,13 @@
                 "error": "Fout bij het aanmaken van DHL-label",
                 "deleted": "DHL-zending geannuleerd",
                 "existingShipments": "Bestaande zendingen"
+            },
+            "deleteBulk": {
+                "title": "Regels verwijderen",
+                "text": "Echt {count} regels verwijderen?",
+                "button": "{count} geselecteerde verwijderen",
+                "cancel": "Annuleren",
+                "confirm": "{count} regels verwijderen"
             }
         },
         "dhl": {

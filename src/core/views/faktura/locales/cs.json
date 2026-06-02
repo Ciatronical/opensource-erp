@@ -466,6 +466,13 @@
                 "error": "Chyba při vytváření DHL štítku",
                 "deleted": "DHL zásilka zrušena",
                 "existingShipments": "Existující zásilky"
+            },
+            "deleteBulk": {
+                "title": "Smazat pozice",
+                "text": "Opravdu smazat {count} pozic?",
+                "button": "Smazat {count} označené",
+                "cancel": "Zrušit",
+                "confirm": "Smazat {count} pozic"
             }
         },
         "dhl": {

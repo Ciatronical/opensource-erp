@@ -379,6 +379,13 @@
                 "cancel": "Abbrechen",
                 "confirm": "Löschen"
             },
+            "deleteBulk": {
+                "title": "Positionen löschen",
+                "text": "{count} Positionen wirklich löschen?",
+                "button": "{count} markierte löschen",
+                "cancel": "Abbrechen",
+                "confirm": "{count} Positionen löschen"
+            },
             "editItem": {
                 "title": "Position bearbeiten",
                 "cancel": "Abbrechen",
