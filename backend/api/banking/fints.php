@@ -691,13 +691,16 @@ function fintsHandleVopActionResult(
     \Fhp\FinTs $fints,
     int $transferId,
     int $bankAccountId,
-    $db
+    $db,
+    string $painXml = ''
 ): void {
     if (!session_id()) session_start();
 
     if ($action->vopResponse !== null) {
         // VoP-Abweichung: User muss bestätigen
+        // pain.xml in Session speichern — bei Approve identische XML verwenden (sonst 9010)
         $_SESSION['fints_vop_transfer_id'] = $transferId;
+        $_SESSION['fints_vop_pain_xml']    = $painXml !== '' ? base64_encode($painXml) : '';
         $hivpp  = $action->vopResponse;
         $single = $hivpp->vopSingleResult;
         // VOP-ID als binary serialisiert aufbewahren (für HKVPA in Schritt 2)
@@ -812,7 +815,7 @@ function fintsSubmitTransferVopCheck($data) {
         [$senderAccount, $painXml] = fintsBuildVopTransferData($db, $order);
         $action = \OserpBanking\SendSEPATransferWithVoP::createWithCheck($senderAccount, $painXml);
         $fints->execute($action);
-        fintsHandleVopActionResult($action, $fints, $transferId, $order['bank_account_id'], $db);
+        fintsHandleVopActionResult($action, $fints, $transferId, $order['bank_account_id'], $db, $painXml);
 
     } catch (\Exception $e) {
         $db->execute(
@@ -901,9 +904,13 @@ function fintsSubmitTransferVopTan($data) {
                 WHERE bto.id = :id
             SQL, ['id' => $transferId]);
             [$senderAccount, $painXml] = fintsBuildVopTransferData($db, $order);
+            // Gespeicherte pain.xml aus VoP-Check wiederverwenden (sonst 9010)
+            if (!empty($_SESSION['fints_vop_pain_xml'])) {
+                $painXml = base64_decode($_SESSION['fints_vop_pain_xml']);
+            }
             $vopAction = \OserpBanking\SendSEPATransferWithVoP::createWithApproval($senderAccount, $painXml, $vopId);
             $fints->execute($vopAction);
-            unset($_SESSION['fints_vop_transfer_id'], $_SESSION['fints_vop_id_raw']);
+            unset($_SESSION['fints_vop_transfer_id'], $_SESSION['fints_vop_id_raw'], $_SESSION['fints_vop_pain_xml']);
             fintsHandleVopActionResult($vopAction, $fints, $transferId, $bankAccountId, $db);
             return;
         }
@@ -924,7 +931,7 @@ function fintsSubmitTransferVopTan($data) {
             [$senderAccount, $painXml] = fintsBuildVopTransferData($db, $order);
             $vopAction = \OserpBanking\SendSEPATransferWithVoP::createWithCheck($senderAccount, $painXml);
             $fints->execute($vopAction);
-            fintsHandleVopActionResult($vopAction, $fints, $transferId, $bankAccountId, $db);
+            fintsHandleVopActionResult($vopAction, $fints, $transferId, $bankAccountId, $db, $painXml);
             return;
         }
 
@@ -1024,14 +1031,18 @@ function fintsApproveVopTransfer($data) {
         }
 
         [$senderAccount, $painXml] = fintsBuildVopTransferData($db, $order);
+        // Gespeicherte pain.xml aus VoP-Check wiederverwenden (sonst 9010)
+        if (!empty($_SESSION['fints_vop_pain_xml'])) {
+            $painXml = base64_decode($_SESSION['fints_vop_pain_xml']);
+        }
         $action = \OserpBanking\SendSEPATransferWithVoP::createWithApproval($senderAccount, $painXml, $vopId);
         $fints->execute($action);
 
-        unset($_SESSION['fints_vop_transfer_id'], $_SESSION['fints_vop_id_raw']);
+        unset($_SESSION['fints_vop_transfer_id'], $_SESSION['fints_vop_id_raw'], $_SESSION['fints_vop_pain_xml']);
         fintsHandleVopActionResult($action, $fints, $transferId, $order['bank_account_id'], $db);
 
     } catch (\Exception $e) {
-        unset($_SESSION['fints_vop_transfer_id'], $_SESSION['fints_vop_id_raw']);
+        unset($_SESSION['fints_vop_transfer_id'], $_SESSION['fints_vop_id_raw'], $_SESSION['fints_vop_pain_xml']);
         $db->execute(
             "UPDATE bank_transfer_orders SET status = 'rejected', error_message = :err, mtime = now() WHERE id = :id",
             ['id' => $transferId, 'err' => fintsToUtf8($e->getMessage())]

@@ -2066,7 +2066,7 @@ async function confirmVopApproval() {
         const result = await transfers.approveVopTransfer(submitTarget.value.id, submitPin.value)
         if (result.tanRequired) { showVopDialog.value = false; transferTanInput.value = ''; showTransferTanDialog.value = true }
         else { showVopDialog.value = false; submitPin.value = ''; alerts.success(t('BankingView.alerts.transferSubmitted')); await transfers.fetchTransferOrders() }
-    } catch (e) { alerts.error(e.message) }
+    } catch (e) { showVopDialog.value = false; submitPin.value = ''; alerts.error(e.message) }
 }
 
 function cancelVopApproval() { showVopDialog.value = false; submitPin.value = ''; submitTarget.value = null; alerts.info(t('BankingView.alerts.transferCancelled')) }
