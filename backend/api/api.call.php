@@ -18,17 +18,17 @@ if(isset($data['action'])) {
         $action($data);
     }
     catch (PDOException $e) {
+        header('Content-Type: application/json');
         resultInfo(false, "API_DATABASE_ERROR", $e->getMessage());
-        // writeLog($e->getMessage());
     }
     catch (ApiError $e) {
+        header('Content-Type: application/json');
         resultInfo(false, $e->getId(), $e->getMessage());
-        // writeLog($e->getMessage());
         if(!is_null($e->getQuery())) writeLog($e->getQuery());
     }
     catch (\Throwable $e) {
+        header('Content-Type: application/json');
         resultInfo(false, 'API_INTERNAL_ERROR: ' . $e->getMessage() . ' in ' . basename($e->getFile()) . ':' . $e->getLine());
-        // writeLog($e->getMessage() . "\n" . $e->getTraceAsString());
     }
 }
 else {

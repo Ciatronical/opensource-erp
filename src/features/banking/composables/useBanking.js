@@ -5,6 +5,19 @@ import axios from 'axios'
 
 const API_URL = '/api/banking/'
 
+// ── Globaler Trust-Anker Keep-Alive (Modul-Level-Singleton) ──────────────────
+// Läuft unabhängig vom Lebenszyklus einzelner Komponenten für die gesamte
+// Browser-Session. Wird beim ersten Aufruf von startGlobalKeepAlive() gestartet.
+let _keepAliveTimer = null
+
+export function startGlobalKeepAlive() {
+    if (_keepAliveTimer) return
+    const run = () => axios.post(API_URL, { action: 'fintsKeepAliveAll' }).catch(() => {})
+    run()
+    _keepAliveTimer = setInterval(run, 45 * 60 * 1000)
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
 /**
  * Composable fuer Banking-Operationen
  * Zentrale Logik fuer Konten, Umsaetze, FinTS-Sync
@@ -244,6 +257,20 @@ export function useBanking() {
         throw new Error(response.data.payload || response.data.text)
     }
 
+    // Gibt 'REFRESHED' | 'EXPIRED' | 'NO_PIN_SAVED' | 'NO_STATE' zurück
+    async function keepAliveTrustAnchor(bankAccountId) {
+        const response = await axios.post(API_URL, {
+            action: 'fintsKeepAliveTrustAnchor',
+            bank_account_id: bankAccountId
+        })
+        if (!response.data.success) throw new Error(response.data.payload || response.data.text)
+        return response.data.text
+    }
+
+    async function keepAliveAll() {
+        await axios.post(API_URL, { action: 'fintsKeepAliveAll' })
+    }
+
     async function getBalance(bankAccountId, pin) {
         const response = await axios.post(API_URL, {
             action: 'fintsGetBalance',
@@ -288,6 +315,7 @@ export function useBanking() {
         getBalance,
         saveBankingPin,
         deleteBankingPin,
-        loadBankingPin
+        loadBankingPin,
+        keepAliveTrustAnchor
     }
 }

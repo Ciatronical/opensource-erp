@@ -302,22 +302,18 @@ function saveDefaults($data) {
 
         // 2. Speichere CRM-DEFAULTS (vertikale Speicherung in 'defaults_oserp' Tabelle)
         // UPSERT: Vorhandene Einträge aktualisieren, neue einfügen — nie löschen!
-        if (!empty($crmData)) {
-            $keys = array_keys($crmData);
-            $values = array_map(function($v) {
-                if (is_bool($v)) return $v ? '1' : '0';
-                return (string)$v;
-            }, array_values($crmData));
-            $params = array_merge($keys, $values);
-            $placeholders = implode(',', array_fill(0, count($crmData), '?'));
-            $db->execute("
-                INSERT INTO defaults_oserp (key, value)
-                SELECT
-                    unnest(ARRAY[{$placeholders}]::text[]) AS key,
-                    unnest(ARRAY[{$placeholders}]::text[]) AS value
-                ON CONFLICT (key)
-                DO UPDATE SET value = EXCLUDED.value, mtime = now()
-            ", $params);
+        //
+        // ACHTUNG: Kein Batch-UPSERT mit ARRAY[?,?,...] und array_merge($keys, $values)!
+        // bindTypedParams() iteriert den $params-Array per Key (0-basiert), PDO-?-Platzhalter
+        // sind aber 1-basiert — Index 0 wird ignoriert, der letzte ? bleibt ungebunden
+        // → PDOException → Config wird nie gespeichert. (Regressions-Commit: 91a5cab)
+        foreach ($crmData as $key => $value) {
+            $v = is_bool($value) ? ($value ? '1' : '0') : (string)$value;
+            $db->execute(
+                "INSERT INTO defaults_oserp (key, value) VALUES (:key, :value)
+                 ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, mtime = now()",
+                [':key' => $key, ':value' => $v]
+            );
         }
 
         // Erfolgsantwort

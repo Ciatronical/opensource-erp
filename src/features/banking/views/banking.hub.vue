@@ -1132,7 +1132,7 @@
 import { ref, reactive, computed, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
-import { useBanking } from '../composables/useBanking.js'
+import { useBanking, startGlobalKeepAlive } from '../composables/useBanking.js'
 import { useTransfers } from '../composables/useTransfers.js'
 import { useMatching } from '../composables/useMatching.js'
 import { useStandingOrders } from '../composables/useStandingOrders.js'
@@ -2074,6 +2074,7 @@ function cancelVopApproval() { showVopDialog.value = false; submitPin.value = ''
 async function submitTanForTransfer() {
     const tanValue = transfers.tanChallenge.decoupled ? '' : transferTanInput.value
     if (!transfers.tanChallenge.decoupled && !transferTanInput.value) return
+    stopDecoupledPolling()
     try {
         const result = isBatchSubmit.value
             ? await transfers.submitTransferBatchTan(batchId.value, tanValue, submitPin.value)
@@ -2081,6 +2082,7 @@ async function submitTanForTransfer() {
         if (result.tanRequired) {
             if (result.batchId) batchId.value = result.batchId
             transferTanInput.value = ''
+            if (transfers.tanChallenge.decoupled) startTransferDecoupledPolling()
             return
         }
         if (rememberTransferPin.value && submitBankAccountId.value) {
@@ -2210,6 +2212,7 @@ function startDecoupledPolling() {
             showTanDialog.value = false; syncPin.value = ''; tanInput.value = ''; syncingAccountId.value = null
             if (result.importedCount > 0) alerts.success(t('BankingView.alerts.syncSuccess', { count: result.importedCount }))
             else alerts.info(t('BankingView.alerts.syncNoNew'))
+            activeTab.value = 'transactions'
             await banking.fetchAccounts()
             await loadTransactions()
         } catch (e) { stopDecoupledPolling(); alerts.error(e.message) }
@@ -2218,6 +2221,40 @@ function startDecoupledPolling() {
 }
 
 watch(showTanDialog, v => { if (!v) stopDecoupledPolling() })
+
+function startTransferDecoupledPolling() {
+    stopDecoupledPolling()
+    const tick = async () => {
+        if (!showTransferTanDialog.value) { stopDecoupledPolling(); return }
+        try {
+            const result = isBatchSubmit.value
+                ? await transfers.submitTransferBatchTan(batchId.value, '', submitPin.value)
+                : await transfers.submitTransferTan(submitTarget.value?.id, '', submitPin.value)
+            if (result.tanRequired) {
+                if (result.batchId) batchId.value = result.batchId
+                decoupledPollTimer = setTimeout(tick, 2000)
+                return
+            }
+            stopDecoupledPolling()
+            if (rememberTransferPin.value && submitBankAccountId.value) {
+                banking.saveBankingPin(submitBankAccountId.value, submitPin.value).catch(() => {})
+                banking.fetchAccounts()
+            }
+            showTransferTanDialog.value = false; submitPin.value = ''; transferTanInput.value = ''
+            selectedIds.value = []; batchSubmitIds.value = []
+            const key = isBatchSubmit.value ? 'BankingView.alerts.batchSubmitted' : 'BankingView.alerts.transferSubmitted'
+            const params = isBatchSubmit.value ? { count: result.count || batchSubmitIds.value.length } : {}
+            alerts.success(t(key, params))
+            await transfers.fetchTransferOrders()
+        } catch (e) { stopDecoupledPolling(); showTransferTanDialog.value = false; submitPin.value = ''; alerts.error(e.message) }
+    }
+    decoupledPollTimer = setTimeout(tick, 2000)
+}
+
+watch(showTransferTanDialog, v => {
+    if (!v) { stopDecoupledPolling(); return }
+    if (transfers.tanChallenge.decoupled) startTransferDecoupledPolling()
+})
 
 async function runSync() {
     if (!syncPin.value) return
@@ -2231,6 +2268,7 @@ async function runSync() {
             syncPin.value = ''; showSyncDialog.value = false; syncingAccountId.value = null
             if (result.importedCount > 0) alerts.success(t('BankingView.alerts.syncSuccess', { count: result.importedCount }))
             else alerts.info(t('BankingView.alerts.syncNoNew'))
+            activeTab.value = 'transactions'
             await banking.fetchAccounts()
             await loadTransactions()
         }
@@ -2250,6 +2288,7 @@ async function submitTanAction() {
         showTanDialog.value = false; syncPin.value = ''; tanInput.value = ''; syncingAccountId.value = null
         if (result.importedCount > 0) alerts.success(t('BankingView.alerts.syncSuccess', { count: result.importedCount }))
         else alerts.info(t('BankingView.alerts.syncNoNew'))
+        activeTab.value = 'transactions'
         await banking.fetchAccounts()
         await loadTransactions()
     } catch (e) { alerts.error(e.message) }
@@ -2328,6 +2367,9 @@ onMounted(async () => {
     const newFor = parseInt(route.query.new_for, 10)
     if (newFor > 0) openNewTransfer(newFor)
     if (route.query.tab) activeTab.value = route.query.tab
+    // Trust-Anker sofort auffrischen und dann alle 45 Min wiederholen
+    runKeepAlive()
+    startKeepAliveTimer()
 })
 
 watch(selectedAccountId, async (id) => {

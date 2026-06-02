@@ -10,10 +10,12 @@
 % Hat man mehrere Mandanten muß man statt "Firma1" den Datenbanknamen seines
 % Mandanten eingeben.
 
-\IfSubStringInString{Firma1}{\kivicompany}{\newcommand{\identpath}{firma1}}{
-  \IfSubStringInString{Firma2}{\kivicompany}{\newcommand{\identpath}{firma2}}
-    {\newcommand{\identpath}{firma}} % sonst
-} % Ende Firma1
+\IfSubStringInString{Inter-Data}{\kivicompany}{\newcommand{\identpath}{interdata}}{
+  \IfSubStringInString{Firma1}{\kivicompany}{\newcommand{\identpath}{firma1}}{
+    \IfSubStringInString{Firma2}{\kivicompany}{\newcommand{\identpath}{firma2}}
+      {\newcommand{\identpath}{firma}} % sonst
+  }
+} % Ende Firmen
 
 % Identität
 \input{\identpath/ident.tex}
@@ -90,7 +92,7 @@
         \strasse               & \homepage           & \textBank        & \bank \\
         \ort                   & \textUstid\ \ustid  & \textIban        & \iban \\
         \textTelefon~\telefon  & \finanzamt          & \textBic         & \bic \\
-        \ifthenelse{\equal{\fax}{}}{}{\textFax~\fax} & &\textBankleitzahl	& \bankleitzahl \\
+        \ifthenelse{\equal{\fax}{}}{}{\textFax~\fax} & &\textBankleitzahl    & \bankleitzahl \\
      \end{tabular}
   }
 }

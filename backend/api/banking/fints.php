@@ -100,6 +100,114 @@ function fintsDeletePin($data) {
 }
 
 /**
+ * FinTS: Trust-Anker proaktiv auffrischen ohne Benutzer-Interaktion.
+ *
+ * Verwendet die gespeicherte PIN und den gespeicherten Trust-Anker um
+ * die FinTS-Sitzung zu verlängern, bevor sie abläuft.
+ * Gibt 'REFRESHED' zurück wenn erfolgreich, 'EXPIRED' wenn der Trust-Anker
+ * abgelaufen ist (dann muss der User einmalig per PushTAN neu authentifizieren),
+ * 'NO_PIN_SAVED' / 'NO_STATE' wenn kein gespeicherter Zustand vorhanden ist.
+ *
+ * @param int $data['bank_account_id']
+ * @testdata {"bank_account_id": 1}
+ */
+function fintsKeepAliveTrustAnchor($data) {
+    $db            = DbhCompany::begin();
+    $bankAccountId = intval($data['bank_account_id'] ?? 0);
+    if ($bankAccountId <= 0) {
+        resultInfo(false, 'VALIDATION_ERROR', 'Bankkonto-ID ist Pflicht');
+        return;
+    }
+
+    $pinRow = $db->getOne(
+        "SELECT value FROM defaults_oserp WHERE key = :key",
+        ['key' => 'fints_pin_' . $bankAccountId]
+    );
+    if (!$pinRow) { resultInfo(true, 'NO_PIN_SAVED'); return; }
+    $pin = fintsPinDecrypt($pinRow['value']);
+    if ($pin === '') { resultInfo(true, 'NO_PIN_SAVED'); return; }
+
+    $config = $db->getOne(
+        "SELECT baf.*, REGEXP_REPLACE(ba.bank_code, '\s+', '', 'g') AS fints_bank_code
+         FROM bank_account_fints baf
+         JOIN bank_accounts ba ON ba.id = baf.bank_account_id
+         WHERE baf.bank_account_id = :id",
+        ['id' => $bankAccountId]
+    );
+    if (!$config) { resultInfo(false, 'NO_FINTS_CONFIG', 'Keine FinTS-Konfiguration'); return; }
+
+    $savedState = !empty($config['persisted_state']) ? $config['persisted_state'] : null;
+    if (!$savedState) { resultInfo(true, 'NO_STATE'); return; }
+
+    require_once __DIR__.'/../../vendor/autoload.php';
+
+    try {
+        $fints = fintsCreate($config, $pin, $savedState);
+        $login = $fints->login();
+        if ($login->needsTan()) {
+            // Trust-Anker abgelaufen — stille Auffrischung nicht möglich
+            resultInfo(true, 'EXPIRED');
+            return;
+        }
+        fintsPersistTrustState($fints, $db, $bankAccountId);
+        resultInfo(true, 'REFRESHED');
+    } catch (\Exception $e) {
+        fintsLogException('KeepAliveTrustAnchor', $e, ['bank_account_id' => $bankAccountId]);
+        resultInfo(false, 'FINTS_ERROR', fintsToUtf8($e->getMessage()));
+    }
+}
+
+/**
+ * FinTS: Trust-Anker für alle Konten mit gespeicherter PIN auffrischen.
+ *
+ * Wird vom Frontend im Hintergrund aufgerufen (alle 45 Min, app-weit).
+ * Gibt pro Konto 'REFRESHED' | 'EXPIRED' | 'NO_STATE' zurück.
+ *
+ * @testdata {}
+ */
+function fintsKeepAliveAll($data) {
+    $db = DbhCompany::begin();
+
+    // Alle Konten mit gespeicherter PIN und vorhandenem Trust-Anker
+    $rows = $db->getAll(
+        "SELECT baf.bank_account_id,
+                do2.value                                            AS pin_encrypted,
+                baf.persisted_state,
+                baf.fints_url,
+                baf.fints_username,
+                baf.fints_tan_mode,
+                REGEXP_REPLACE(ba.bank_code, '\s+', '', 'g')        AS fints_bank_code
+         FROM bank_account_fints baf
+         JOIN bank_accounts ba      ON ba.id  = baf.bank_account_id
+         JOIN defaults_oserp do2   ON do2.key = 'fints_pin_' || baf.bank_account_id
+         WHERE baf.persisted_state IS NOT NULL"
+    );
+
+    if (empty($rows)) { resultInfo(true, 'NOTHING_TO_REFRESH', []); return; }
+
+    require_once __DIR__.'/../../vendor/autoload.php';
+
+    $results = [];
+    foreach ($rows as $config) {
+        $id  = $config['bank_account_id'];
+        $pin = fintsPinDecrypt($config['pin_encrypted']);
+        if ($pin === '') { $results[$id] = 'NO_PIN'; continue; }
+        try {
+            $fints = fintsCreate($config, $pin, $config['persisted_state']);
+            $login = $fints->login();
+            if ($login->needsTan()) { $results[$id] = 'EXPIRED'; continue; }
+            fintsPersistTrustState($fints, $db, $id);
+            $results[$id] = 'REFRESHED';
+        } catch (\Exception $e) {
+            fintsLogException('KeepAliveAll', $e, ['bank_account_id' => $id]);
+            $results[$id] = 'ERROR';
+        }
+    }
+    resultInfo(true, 'DONE', $results);
+}
+
+
+/**
  * FinTS Produkt-ID aus der Firmenkonfiguration lesen.
  *
  * Jeder Betreiber von OpensourceERP muss eine eigene 25-stellige FinTS-Produkt-ID

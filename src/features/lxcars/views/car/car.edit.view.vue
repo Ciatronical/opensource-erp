@@ -59,6 +59,10 @@
                     <v-icon start size="small">mdi-email-send-outline</v-icon>
                     {{ t('CarEditView.email.button') }}
                 </v-btn>
+                <v-btn v-if="isEditMode" variant="tonal" size="small" color="orange-darken-2" :title="t('CarEditView.sell.tooltip')" @click="sellDialog = true">
+                    <v-icon start size="small">mdi-tag-arrow-up-outline</v-icon>
+                    {{ t('CarEditView.sell.button') }}
+                </v-btn>
                 <v-btn v-if="isEditMode && oserpData.checkPermission('special_access')" variant="tonal" size="small" color="deep-purple" @click="specialDialog = true">
                     <v-icon start size="small">mdi-star-circle</v-icon>
                     Special
@@ -1068,6 +1072,9 @@
         <!-- Fahrzeug-Dateimanager Dialog -->
         <CarFilesDialog v-model="filesDialogOpen" :c-id="car.c_id" :plate="car.c_ln || ''" />
 
+        <!-- Verkaufstext-Dialog -->
+        <CarSellDialog v-if="isEditMode" v-model="sellDialog" :car="car" :c-id="car.c_id" />
+
         <!-- KBA-Fuzzy-Korrektur: öffnet bei ungültiger oder unbekannter HSN -->
         <v-dialog v-model="kbaFuzzyDialog" max-width="720" persistent>
             <v-card>
@@ -1184,12 +1191,13 @@ import RotesHeftDialog from './components/rotes-heft.dialog.vue'
 import CarChatCard from './components/car-chat.card.vue'
 import SendEmailDialog from './components/send-email.dialog.vue'
 import CarFilesDialog from './components/car-files.dialog.vue'
+import CarSellDialog from './components/car-sell.dialog.vue'
 
 // const SpecialDialog = defineAsyncComponent(() => import('@special/special.dialog.vue'))
 
 export default {
     name: 'CarEditView',
-    components: { NavbarView, RotesHeftDialog, CarChatCard, SendEmailDialog, CarFilesDialog /*, SpecialDialog */ },
+    components: { NavbarView, RotesHeftDialog, CarChatCard, SendEmailDialog, CarFilesDialog, CarSellDialog /*, SpecialDialog */ },
 
     props: {
         id: {
@@ -1302,6 +1310,8 @@ export default {
         const specialDialog = ref(false)
         // Fahrzeug-Dateimanager Dialog
         const filesDialogOpen = ref(false)
+        // Verkaufstext-Dialog
+        const sellDialog = ref(false)
 
         // E-Mail Dialog
         const emailDialog = ref(false)
@@ -2246,7 +2256,7 @@ export default {
             toggleOrderSort, sortIcon, formatAmount, openOrder, createNewOrder, navigateToCustomer, openCarRegistration, focusSearch,
             yellowLabelPrinting, tyreLabelPrinting, onPrintYellowLabel, onPrintTyreLabel,
             onFocusIn, onFocusOut,
-            kbaData, showDebug, rotesHeftDialog, specialDialog, filesDialogOpen,
+            kbaData, showDebug, rotesHeftDialog, specialDialog, filesDialogOpen, sellDialog,
             deleteConfirmDialog, deleting, executeDeleteCar,
             kbaSelectDialog, kbaSelectOptions, kbaSelectFiltered, kbaSelectFilter, selectKba,
             skipKbaSelect, showSpecialKbaConfirm, confirmSpecialKba, useSpecialKba, specialKbaForm, specialKbaFormValid,

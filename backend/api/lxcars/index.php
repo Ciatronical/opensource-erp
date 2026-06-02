@@ -20,6 +20,7 @@ require_once __DIR__.'/labels.php';
 require_once __DIR__.'/mechanic.php';
 require_once __DIR__.'/reports.php';
 require_once __DIR__.'/anpr.php';
+require_once __DIR__.'/sales_text.php';
 require_once __DIR__.'/../customer_vendor/filemanager.php';
 
 require_once __DIR__.'/../inc.php'; // muss mímmer unten stehen

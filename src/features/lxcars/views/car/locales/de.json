@@ -196,6 +196,10 @@
             "bodyIntro": "anbei die Daten zum Fahrzeug:",
             "bodyOutro": "Mit freundlichen Grüßen"
         },
+        "sell": {
+            "button": "Verkaufen",
+            "tooltip": "KI-Verkaufstext generieren und als verkaufstext.txt speichern"
+        },
         "yellowLabel": {
             "button": "Plakette",
             "tooltip": "Grüne Plakette drucken",
@@ -543,5 +547,23 @@
             "dateFormat": "Ungültiges Datum (z.B. 1.3.5 oder 15.06.2020)",
             "ibanFormat": "Ungültiges IBAN-Format"
         }
+    },
+    "CarSellDialog": {
+        "title": "KI-Verkaufstext generieren",
+        "step1Info": "Gibt es aktuell bekannte Mängel am Fahrzeug? Diese werden transparent im Verkaufstext aufgeführt.",
+        "defectsLabel": "Aktuelle Mängel",
+        "defectsPlaceholder": "z.B. Klimaanlage kühlt nicht, kleine Delle hinten links\n(leer lassen, falls keine Mängel vorhanden)",
+        "step1Hint": "Die KI nutzt außerdem alle Reparaturen aus den Aufträgen, Wartungsdaten und die Mängel des letzten Auftrags.",
+        "step2Info": "Der Text wurde gespeichert (verkaufstext.txt). Du kannst ihn hier bearbeiten und erneut speichern.",
+        "generate": "Verkaufstext generieren",
+        "regenerate": "Neu generieren",
+        "save": "Speichern",
+        "copy": "Kopieren",
+        "back": "Zurück",
+        "cancel": "Abbrechen",
+        "copied": "Text in Zwischenablage kopiert",
+        "savedSuccess": "Verkaufstext wurde als verkaufstext.txt gespeichert",
+        "errorGenerate": "Fehler beim Generieren des Verkaufstexts",
+        "errorSave": "Fehler beim Speichern des Verkaufstexts"
     }
 }

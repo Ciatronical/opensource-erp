@@ -391,8 +391,8 @@ function printToPrinter($data) {
         return;
     }
 
-    // gedruckt-Flag setzen (nur bei Auftraegen mit oe_ext)
-    if ($fakturaType === 'order') {
+    // gedruckt-Flag setzen (nur bei Auftraegen mit LxCars-Schema)
+    if ($fakturaType === 'order' && $lxCars) {
         $db->execute(
             "UPDATE oe_ext SET gedruckt = true WHERE oe_id = :oe_id",
             [':oe_id' => $fakturaID]
@@ -632,7 +632,8 @@ function loadPrintData($db, int $fakturaID, string $fakturaType, bool $lxCarsEna
     $instructions = [];
     $maengel = [];
 
-    if (!$isCreditNote) {
+    // oe_ext/ar_ext existieren nur wenn LxCars-Schema installiert ist
+    if (!$isCreditNote && $lxCarsEnabled) {
         // Fahrzeugdaten aus Erweiterungstabelle laden
         if ($isInvoice) {
             $extQuery = "

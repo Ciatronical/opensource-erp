@@ -684,6 +684,8 @@
         "aiGewichtAngebote_help": "Gewichtung historischer Angebote für KI-Positionsvorschläge (Standard: 1)",
         "lxcarsChatSystemPrompt": "KI-Chat: System-Prompt",
         "lxcarsChatSystemPrompt_help": "System-Prompt für den KI-Werkstattmeister-Chat im Fahrzeug. Definiert die Rolle und das Verhalten der KI.",
+        "lxcarsSellSystemPrompt": "KI-Verkaufstext: Meta-Prompt",
+        "lxcarsSellSystemPrompt_help": "Anweisung für den KI-Verkaufstext-Generator. Hier kannst du Stil und Ton vorgeben, z.B. \"Schreibe sachlich, übertreibe nicht\" oder \"Zielgruppe: Privatkäufer\".",
         "instructionPrefix": "Anweisungsnummer-Präfix",
         "instructionPrefix_help": "Optionales Präfix (z.B. \"AW-\"). Leer = reine Nummern.",
         "instructionNumber": "Letzte Anweisungsnummer",

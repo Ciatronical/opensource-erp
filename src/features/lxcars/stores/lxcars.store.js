@@ -1173,6 +1173,30 @@ export const lxcarsStore = defineStore('lxcarsStore', () => {
         return response.data
     }
 
+    // ===== Verkaufstext =====
+
+    async function getSalesText(cId) {
+        const response = await axios.post('/api/lxcars/', { action: 'getSalesText', c_id: cId })
+        if (!response.data.success) throw new ApiError('ApiError', response.data.text, 'Error loading sales text')
+        return response.data.payload
+    }
+
+    async function saveSalesText(cId, text) {
+        const response = await axios.post('/api/lxcars/', { action: 'saveSalesText', c_id: cId, text })
+        if (!response.data.success) throw new ApiError('ApiError', response.data.text, 'Error saving sales text')
+        return response.data
+    }
+
+    async function generateSalesText(cId, currentDefects) {
+        const response = await axios.post('/api/lxcars/', {
+            action: 'generateSalesText',
+            c_id: cId,
+            current_defects: currentDefects || ''
+        })
+        if (!response.data.success) throw new ApiError('ApiError', response.data.text, 'Error generating sales text')
+        return response.data.payload
+    }
+
     return {
         pendingScanData,
         getScans,
@@ -1258,6 +1282,10 @@ export const lxcarsStore = defineStore('lxcarsStore', () => {
         loadCarChat,
         sendCarChatMessage,
         clearCarChat,
+        // Verkaufstext
+        getSalesText,
+        saveSalesText,
+        generateSalesText,
         data
     };
 });
