@@ -4,6 +4,7 @@
         "actions": {
             "create": "Neuer Termin",
             "categories": "Kategorien",
+            "import": "Importieren",
             "cancel": "Abbrechen",
             "save": "Speichern",
             "delete": "Löschen",
@@ -21,7 +22,8 @@
             "deleted": "Termin gelöscht",
             "error": "Ein Fehler ist aufgetreten",
             "categoryDeleted": "Kategorie gelöscht",
-            "categorySaved": "Kategorie gespeichert"
+            "categorySaved": "Kategorie gespeichert",
+            "imported": "{n} Termine importiert"
         },
         "search": "Suche",
         "searchResults": "Suchergebnisse",
@@ -82,6 +84,37 @@
         "priorityLow": "Niedrig",
         "priorityNormal": "Normal",
         "priorityHigh": "Hoch"
+    },
+    "CalendarImport": {
+        "title": "Termine importieren",
+        "drop": {
+            "title": "Datei hier ablegen",
+            "subtitle": "oder klicken zum Auswählen",
+            "change": "klicken zum Ändern"
+        },
+        "options": {
+            "offsetTitle": "Termine verschieben",
+            "days": "Tage",
+            "noShift": "Kein Versatz",
+            "shiftedBefore": "{n} Tage früher",
+            "shiftedAfter": "{n} Tage später",
+            "categoryTitle": "Kategorie zuweisen",
+            "noCategory": "Keine Kategorie",
+            "hint": "Tipp: Für Erinnerungen (z. B. Mülltonne rausstellen) einen negativen Versatz eingeben — z. B. −1 für den Vortag."
+        },
+        "preview": {
+            "title": "Vorschau",
+            "date": "Datum",
+            "eventTitle": "Titel",
+            "allDay": "Ganztag"
+        },
+        "errors": {
+            "noEvents": "Keine Termine in der Datei gefunden",
+            "parseFailed": "Fehler beim Lesen der Datei",
+            "importFailed": "Fehler beim Importieren"
+        },
+        "cancel": "Abbrechen",
+        "importBtn": "Importieren ({n})"
     },
     "CalendarCategoryManager": {
         "title": "Kategorien verwalten",

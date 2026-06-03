@@ -4,6 +4,7 @@
         "actions": {
             "create": "New Event",
             "categories": "Categories",
+            "import": "Import",
             "cancel": "Cancel",
             "save": "Save",
             "delete": "Delete",
@@ -21,7 +22,8 @@
             "deleted": "Event deleted",
             "error": "An error occurred",
             "categoryDeleted": "Category deleted",
-            "categorySaved": "Category saved"
+            "categorySaved": "Category saved",
+            "imported": "{n} events imported"
         },
         "search": "Search",
         "searchResults": "Search Results",
@@ -82,6 +84,37 @@
         "priorityLow": "Low",
         "priorityNormal": "Normal",
         "priorityHigh": "High"
+    },
+    "CalendarImport": {
+        "title": "Import Events",
+        "drop": {
+            "title": "Drop file here",
+            "subtitle": "or click to select",
+            "change": "click to change"
+        },
+        "options": {
+            "offsetTitle": "Shift dates",
+            "days": "days",
+            "noShift": "No offset",
+            "shiftedBefore": "{n} days earlier",
+            "shiftedAfter": "{n} days later",
+            "categoryTitle": "Assign category",
+            "noCategory": "No category",
+            "hint": "Tip: For reminders (e.g. put out the trash) enter a negative offset — e.g. −1 for the day before."
+        },
+        "preview": {
+            "title": "Preview",
+            "date": "Date",
+            "eventTitle": "Title",
+            "allDay": "All day"
+        },
+        "errors": {
+            "noEvents": "No events found in this file",
+            "parseFailed": "Error reading file",
+            "importFailed": "Error importing events"
+        },
+        "cancel": "Cancel",
+        "importBtn": "Import ({n})"
     },
     "CalendarCategoryManager": {
         "title": "Manage Categories",

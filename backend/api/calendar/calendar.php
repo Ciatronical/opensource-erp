@@ -819,6 +819,285 @@ function setWallDisplayView($data) {
     resultInfo(true, '', []);
 }
 
+// ============================================================================
+// IMPORT
+// ============================================================================
+
+/**
+ * Importiert Kalendertermine aus einer Datei (iCal, CSV oder TXT).
+ * preview=true liefert nur die geparsten Termine zurück (kein Speichern).
+ *
+ * @param string $data['content']     Dateiinhalt (UTF-8 Text)
+ * @param string $data['format']      ical | csv | txt | auto
+ * @param int    $data['offset_days'] Tage verschieben (negativ = früher)
+ * @param int    $data['category_id'] Zielkategorie (optional)
+ * @param string $data['color']       Farbe für alle importierten Termine (optional)
+ * @param int    $data['visibility']  -1=alle, 0=privat
+ * @param bool   $data['preview']     true = nur Vorschau, kein Speichern
+ * @testdata {"action": "importCalendarEvents", "content": "BEGIN:VCALENDAR\r\nBEGIN:VEVENT\r\nSUMMARY:Restmüll\r\nDTSTART;VALUE=DATE:20260615\r\nEND:VEVENT\r\nEND:VCALENDAR", "format": "ical", "offset_days": -1, "preview": true}
+ */
+function importCalendarEvents($data) {
+    $mandant = DbhCompany::begin();
+    $auth    = DbhAuth::begin();
+    $auth->fetchSessionData();
+
+    $employeeId = getEmployeeIdForCalendar($mandant, $auth->getLogin());
+    if ($employeeId === 0) {
+        resultInfo(false, 'NO_EMPLOYEE', 'Kein Mitarbeiter gefunden');
+        return;
+    }
+
+    $content    = $data['content']   ?? '';
+    $format     = strtolower($data['format']      ?? 'auto');
+    $offsetDays = intval($data['offset_days']      ?? 0);
+    $categoryId = !empty($data['category_id'])     ? intval($data['category_id']) : null;
+    $color      = !empty($data['color'])           ? $data['color']               : null;
+    $visibility = intval($data['visibility']       ?? -1);
+    $preview    = !empty($data['preview']);
+
+    if (empty(trim($content))) {
+        resultInfo(false, 'EMPTY_CONTENT', 'Kein Dateiinhalt übergeben');
+        return;
+    }
+
+    if ($format === 'auto') {
+        if (strpos($content, 'BEGIN:VCALENDAR') !== false || strpos($content, 'BEGIN:VEVENT') !== false) {
+            $format = 'ical';
+        } elseif (preg_match('/^[^\r\n;,]*[;,][^\r\n;,]/m', $content)) {
+            $format = 'csv';
+        } else {
+            $format = 'txt';
+        }
+    }
+
+    switch ($format) {
+        case 'ical': $events = parseICalEvents($content); break;
+        case 'csv':  $events = parseCsvEvents($content);  break;
+        default:     $events = parseTxtEvents($content);  break;
+    }
+
+    if (empty($events)) {
+        resultInfo(false, 'NO_EVENTS', 'Keine Termine in der Datei gefunden');
+        return;
+    }
+
+    if ($offsetDays !== 0) {
+        foreach ($events as &$ev) {
+            $ev['dtstart'] = shiftDateByDays($ev['dtstart'], $offsetDays);
+            if (!empty($ev['dtend'])) $ev['dtend'] = shiftDateByDays($ev['dtend'], $offsetDays);
+        }
+        unset($ev);
+    }
+
+    if ($preview) {
+        resultInfo(true, '', ['events' => $events, 'count' => count($events)]);
+        return;
+    }
+
+    $pdo = $mandant->getPDO();
+    $inserted = 0;
+    $errors   = 0;
+
+    foreach ($events as $ev) {
+        $title       = $pdo->quote($ev['title']       ?? 'Import');
+        $description = $pdo->quote($ev['description'] ?? '');
+        $location    = $pdo->quote($ev['location']    ?? '');
+        $dtstart     = $pdo->quote($ev['dtstart']);
+        $dtend       = !empty($ev['dtend']) ? $pdo->quote($ev['dtend']) : 'NULL';
+        $allDay      = !empty($ev['allDay']) ? 'TRUE' : 'FALSE';
+        $colorSql    = $color      ? $pdo->quote($color)  : 'NULL';
+        $catSql      = $categoryId ? intval($categoryId)  : 'NULL';
+
+        try {
+            $mandant->query(
+                "INSERT INTO calendar_events
+                    (title, description, dtstart, dtend, \"allDay\", location, color,
+                     category_id, visibility, uid)
+                 VALUES
+                    ($title, $description, $dtstart, $dtend, $allDay, $location, $colorSql,
+                     $catSql, $visibility, $employeeId)"
+            );
+            $inserted++;
+        } catch (Exception $e) {
+            $errors++;
+        }
+    }
+
+    resultInfo(true, '', ['inserted' => $inserted, 'errors' => $errors, 'total' => count($events)]);
+}
+
+/**
+ * Verschiebt ein Datum um $days Tage.
+ */
+function shiftDateByDays($dateStr, $days) {
+    try {
+        $dt = new DateTime($dateStr);
+        $dt->modify("{$days} days");
+        return $dt->format('Y-m-d H:i:s');
+    } catch (Exception $e) {
+        return $dateStr;
+    }
+}
+
+/**
+ * Parst einen iCalendar-Inhalt und extrahiert alle VEVENT-Blöcke.
+ */
+function parseICalEvents($content) {
+    $events = [];
+
+    // RFC 5545 Line-Unfolding: CRLF + SPACE/TAB = Fortsetzungszeile
+    $content = preg_replace('/\r\n[ \t]/', '', $content);
+    $content = str_replace("\r\n", "\n", $content);
+    $content = preg_replace('/\n[ \t]/', '', $content);
+
+    preg_match_all('/BEGIN:VEVENT(.*?)END:VEVENT/s', $content, $matches);
+
+    foreach ($matches[1] as $block) {
+        $props = [];
+        foreach (explode("\n", trim($block)) as $line) {
+            $pos = strpos($line, ':');
+            if ($pos === false) continue;
+            $rawKey  = trim(substr($line, 0, $pos));
+            $value   = trim(substr($line, $pos + 1));
+            $baseKey = explode(';', $rawKey)[0];
+            $props[$rawKey]  = $value;
+            if (!isset($props[$baseKey])) $props[$baseKey] = $value;
+        }
+
+        $rawDs   = $props['DTSTART'] ?? '';
+        $dtstart = parseICalDate($rawDs);
+        if (empty($dtstart)) continue;
+
+        $dtend  = parseICalDate($props['DTEND'] ?? '');
+        $digits = preg_replace('/[^0-9]/', '', $rawDs);
+        $allDay = strlen($digits) === 8 || isset($props['DTSTART;VALUE=DATE']);
+
+        $events[] = [
+            'title'       => unescapeICalText($props['SUMMARY']     ?? 'Termin'),
+            'description' => unescapeICalText($props['DESCRIPTION'] ?? ''),
+            'location'    => unescapeICalText($props['LOCATION']    ?? ''),
+            'dtstart'     => $dtstart,
+            'dtend'       => $dtend ?: null,
+            'allDay'      => $allDay,
+        ];
+    }
+
+    return $events;
+}
+
+function parseICalDate($value) {
+    if (empty($value)) return '';
+    $v = preg_replace('/[^0-9T]/', '', $value);
+
+    if (strlen($v) === 8) {
+        return substr($v, 0, 4) . '-' . substr($v, 4, 2) . '-' . substr($v, 6, 2) . ' 00:00:00';
+    }
+    if (strlen($v) >= 15 && isset($v[8]) && $v[8] === 'T') {
+        $d = substr($v, 0, 8);
+        $t = substr($v, 9, 6);
+        return substr($d, 0, 4) . '-' . substr($d, 4, 2) . '-' . substr($d, 6, 2)
+             . ' ' . substr($t, 0, 2) . ':' . substr($t, 2, 2) . ':' . substr($t, 4, 2);
+    }
+    return '';
+}
+
+function unescapeICalText($text) {
+    return str_replace(['\\n', '\\N', '\\,', '\\;', '\\\\'], ["\n", "\n", ',', ';', '\\'], $text);
+}
+
+/**
+ * Parst CSV-Inhalt. Erkennt automatisch Trennzeichen, Header-Zeile und Spalten.
+ */
+function parseCsvEvents($content) {
+    $events = [];
+    $lines  = preg_split('/\r?\n/', $content);
+    if (empty($lines)) return $events;
+
+    $sep = (substr_count($lines[0], ';') >= substr_count($lines[0], ',')) ? ';' : ',';
+
+    $firstRow  = str_getcsv($lines[0], $sep);
+    $lcHeaders = array_map('mb_strtolower', array_map('trim', $firstRow));
+
+    $dateCol  = 0; $titleCol = 1; $descCol = -1; $locCol = -1;
+    $hasHeader = false;
+
+    foreach ($lcHeaders as $i => $h) {
+        if (in_array($h, ['datum', 'date', 'start', 'startdatum', 'dtstart', 'von', 'beginn', 'anfang']))
+            { $dateCol = $i; $hasHeader = true; }
+        if (in_array($h, ['titel', 'title', 'betreff', 'subject', 'summary', 'name', 'bezeichnung', 'event', 'termin', 'fraktion', 'abfallart', 'art']))
+            { $titleCol = $i; $hasHeader = true; }
+        if (in_array($h, ['beschreibung', 'description', 'notiz', 'note', 'text', 'info']))
+            { $descCol = $i; $hasHeader = true; }
+        if (in_array($h, ['ort', 'location', 'adresse', 'address', 'place']))
+            { $locCol = $i; $hasHeader = true; }
+    }
+
+    foreach (array_slice($lines, $hasHeader ? 1 : 0) as $line) {
+        $line = trim($line);
+        if (empty($line)) continue;
+        $cols    = str_getcsv($line, $sep);
+        $rawDate = trim($cols[$dateCol] ?? '');
+        $title   = trim($cols[$titleCol] ?? '');
+        if (empty($rawDate) || empty($title)) continue;
+        $dtstart = parseDateFlexible($rawDate);
+        if (empty($dtstart)) continue;
+        $events[] = [
+            'title'       => $title,
+            'description' => $descCol >= 0 ? trim($cols[$descCol] ?? '') : '',
+            'location'    => $locCol  >= 0 ? trim($cols[$locCol]  ?? '') : '',
+            'dtstart'     => $dtstart,
+            'dtend'       => null,
+            'allDay'      => true,
+        ];
+    }
+
+    return $events;
+}
+
+/**
+ * Parst TXT-Inhalt: jede Zeile "DATUM[Trennzeichen]Titel" → ein Termin.
+ */
+function parseTxtEvents($content) {
+    $events = [];
+    foreach (preg_split('/\r?\n/', $content) as $line) {
+        $line = trim($line);
+        if (empty($line) || $line[0] === '#') continue;
+        if (preg_match(
+            '/^(\d{4}-\d{1,2}-\d{1,2}|\d{1,2}\.\d{1,2}\.\d{4}|\d{1,2}\/\d{1,2}\/\d{4})[\s,;:]+(.+)$/',
+            $line, $m
+        )) {
+            $dtstart = parseDateFlexible($m[1]);
+            if (empty($dtstart)) continue;
+            $events[] = [
+                'title'       => trim($m[2]),
+                'description' => '',
+                'location'    => '',
+                'dtstart'     => $dtstart,
+                'dtend'       => null,
+                'allDay'      => true,
+            ];
+        }
+    }
+    return $events;
+}
+
+/**
+ * Erkennt und normalisiert gängige Datumsformate → Y-m-d 00:00:00.
+ */
+function parseDateFlexible($raw) {
+    $raw = trim($raw);
+    if (preg_match('/^(\d{4})-(\d{1,2})-(\d{1,2})/', $raw, $m))
+        return sprintf('%04d-%02d-%02d 00:00:00', $m[1], $m[2], $m[3]);
+    if (preg_match('/^(\d{1,2})\.(\d{1,2})\.(\d{4})/', $raw, $m))
+        return sprintf('%04d-%02d-%02d 00:00:00', $m[3], $m[2], $m[1]);
+    if (preg_match('/^(\d{1,2})\/(\d{1,2})\/(\d{4})/', $raw, $m))
+        return sprintf('%04d-%02d-%02d 00:00:00', $m[3], $m[1], $m[2]);
+    $ts = @strtotime($raw);
+    return $ts !== false ? date('Y-m-d 00:00:00', $ts) : '';
+}
+
+// ============================================================================
+
 /**
  * Liefert die LxCars-Auslastung (geplante Minuten je Bringetermin-Tag) für einen Monat.
  * Nur sinnvoll wenn LxCars aktiviert ist.

@@ -21,6 +21,14 @@
                     {{ t('CalendarView.actions.categories') }}
                 </v-btn>
                 <v-btn
+                    variant="outlined"
+                    size="small"
+                    @click="showImportDialog = true"
+                    prepend-icon="mdi-calendar-import"
+                >
+                    {{ t('CalendarView.actions.import') }}
+                </v-btn>
+                <v-btn
                     color="primary"
                     @click="openCreateDialog"
                     prepend-icon="mdi-plus"
@@ -139,6 +147,13 @@
             @save="saveEvent"
         />
 
+        <!-- Import Dialog -->
+        <calendar-import-dialog
+            v-model="showImportDialog"
+            :categories="categories"
+            @imported="onImported"
+        />
+
         <!-- Category Manager Dialog -->
         <calendar-category-manager
             v-model="showCategoryManager"
@@ -199,6 +214,7 @@ import CalendarMain from './components/calendar-main.vue'
 import CalendarEventDialog from './components/calendar-event-dialog.vue'
 import CalendarEventDetail from './components/calendar-event-detail.vue'
 import CalendarCategoryManager from './components/calendar-category-manager.vue'
+import CalendarImportDialog from './components/calendar-import-dialog.vue'
 
 const { t } = useI18n()
 const store = oserpStore()
@@ -220,6 +236,7 @@ const editingEvent = ref(null)
 const eventDetailOpen = ref(false)
 const selectedEvent = ref(null)
 const showCategoryManager = ref(false)
+const showImportDialog = ref(false)
 const deleteDialogOpen = ref(false)
 const deletingEvent = ref(null)
 
@@ -410,6 +427,11 @@ async function deleteCategory(id) {
         console.error('Error deleting category:', error)
         showSnackbar(t('CalendarView.messages.error'), 'error')
     }
+}
+
+function onImported(count) {
+    showSnackbar(t('CalendarView.messages.imported', { n: count }), 'success')
+    loadEvents()
 }
 
 // ── Search ──
