@@ -104,7 +104,7 @@ function getFakturaData($data) {
                                     LEFT JOIN chart c3 ON tc.expense_accno_id = c3.id
                                     LEFT JOIN taxkeys tk ON tk.chart_id = c2.id
                                     LEFT JOIN tax tx ON tx.id = tk.tax_id
-                                    WHERE tc.taxzone_id = '4'
+                                    WHERE tc.taxzone_id = (SELECT taxzone_id FROM {$mainTable} WHERE id = :fakturaID)
                                         AND p.id = parts.id
                                     ORDER BY tk.startdate DESC
                                     LIMIT 1
@@ -542,6 +542,7 @@ function createFakturaItem($data) {
 
     $tableConfig = getFakturaTableConfig($fakturaType);
     $itemsTable = $tableConfig['items_table'];
+    $mainTable = $tableConfig['main_table'];
 
     // Nächste Position ermitteln
     $positionQuery = "SELECT COALESCE(MAX(position), 0) + 1 AS next_position FROM {$itemsTable} WHERE trans_id = :fakturaID";
@@ -628,7 +629,7 @@ function createFakturaItem($data) {
                                 LEFT JOIN chart c2 ON tc.income_accno_id = c2.id
                                 LEFT JOIN taxkeys tk ON tk.chart_id = c2.id
                                 LEFT JOIN tax tx ON tx.id = tk.tax_id
-                                WHERE tc.taxzone_id = '4'
+                                WHERE tc.taxzone_id = (SELECT taxzone_id FROM {$mainTable} WHERE id = {$itemsTable}.trans_id)
                                     AND p.id = parts.id
                                 ORDER BY tk.startdate DESC
                                 LIMIT 1

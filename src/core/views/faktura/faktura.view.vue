@@ -1839,6 +1839,14 @@ export default defineComponent({
                 await faktura.updateFakturaField(fakturaID, fakturaType.value, field, value)
                 if (field === 'taxincluded') {
                     accounting.flushCalculation()
+                } else if (field === 'taxzone_id') {
+                    // Steuerzone bestimmt Konten und Steuersatz jeder Position →
+                    // Positionen samt buchungsziel neu laden, Summen neu berechnen ...
+                    suppressSSEReloadUntil = 0
+                    await reloadFakturaData()
+                    // ... und die Buchungssätze (acc_trans) mit den neuen
+                    // Konten/Steuersätzen neu schreiben
+                    await saveAllItems()
                 }
             } catch (e) {
                 console.error('Fehler beim Speichern des Feldes:', e)
