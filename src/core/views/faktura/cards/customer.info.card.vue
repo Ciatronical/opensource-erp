@@ -43,6 +43,8 @@
                     </div>
                 </v-col>
 
+            </v-row>
+            <v-row dense :class="{ 'section-disabled': !hasCustomer }">
                 <!-- Lieferadresse mit Edit-Button -->
                 <v-col cols="12" class="py-1">
                     <div class="d-flex align-center gap-1">
@@ -213,6 +215,7 @@
     </v-card>
 </template>
 
+
 <script>
 // src/core/views/faktura/cards/customer.info.card.vue
 
@@ -275,6 +278,10 @@ export default defineComponent({
         isVendor: {
             type: Boolean,
             default: false
+        },
+        hasCustomer: {
+            type: Boolean,
+            default: true
         }
     },
     emits: ['update:modelValue', 'update:customer-id', 'field-change'],
@@ -506,5 +513,11 @@ export default defineComponent({
 .phone-entry {
     border: 1px solid rgba(0, 0, 0, 0.12);
     background-color: #fafafa;
+}
+
+.section-disabled {
+    pointer-events: none;
+    opacity: 0.45;
+    user-select: none;
 }
 </style>

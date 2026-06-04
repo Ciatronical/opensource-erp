@@ -46,6 +46,7 @@
                     :show-vehicle-button="!!vehicle && !!vehicle.selectedCarId.value"
                     :show-special-button="showSpecialButton"
                     :show-display-button="wallDisplayEnabled"
+                    :has-customer="hasCustomer"
                     :compact-view="compactView"
                     @toggle-compact="compactView = !compactView"
                     @open-vehicle="openVehicleEdit"
@@ -65,7 +66,7 @@
             <section class="faktura-section" v-if="faktura.data && faktura.data.common">
 
                 <!-- Kompaktansicht -->
-                <v-card v-if="compactView" variant="outlined" class="faktura-card">
+                <v-card v-if="compactView" variant="outlined" class="faktura-card" :class="{ 'section-disabled': !hasCustomer }">
                     <v-card-text class="py-2 px-4">
                         <div class="d-flex align-center flex-wrap ga-4">
                             <!-- Kundenname -->
@@ -119,12 +120,13 @@
                             :phone-numbers="phoneNumbers"
                             :credit-limit="creditLimit"
                             :is-vendor="isVendor"
+                            :has-customer="hasCustomer"
                             @update:customer-id="onCustomerChange"
                             @field-change="onFakturaFieldChange"
                         />
                     </v-col>
 
-                    <v-col cols="12" md="6" lg="4">
+                    <v-col cols="12" md="6" lg="4" :class="{ 'section-disabled': !hasCustomer }">
                         <faktura-details-card
                             v-model="faktura.data.common"
                             :faktura-type="fakturaType"
@@ -132,7 +134,7 @@
                         />
                     </v-col>
 
-                    <v-col cols="12" md="6" lg="4">
+                    <v-col cols="12" md="6" lg="4" :class="{ 'section-disabled': !hasCustomer }">
                         <additional-info-card
                             v-model="faktura.data.common"
                             :ar-amount-list="accounting.arAmountList.value"
@@ -150,7 +152,7 @@
             </section>
 
             <!-- Fahrzeug / Auftragsdaten (lxcars Feature, bei Auftrag/Angebot/Rechnung) -->
-            <section class="faktura-section" v-if="vehicle && (fakturaType === 'order' || fakturaType === 'quotation' || fakturaType === 'invoice') && faktura.data">
+            <section class="faktura-section" v-if="vehicle && (fakturaType === 'order' || fakturaType === 'quotation' || fakturaType === 'invoice') && faktura.data" :class="{ 'section-disabled': !hasCustomer }">
                 <vehicle-section-card
                     ref="vehicleSectionRef"
                     :is-invoice="vehicle.isInvoice.value"
@@ -182,7 +184,7 @@
             </section>
 
             <!-- Wartung & Service (lxcars Feature, nur bei Auftrag, nicht bei Anhängern) -->
-            <section class="faktura-section" v-if="vehicle && fakturaType === 'order' && faktura.data && !vehicle.isTrailer.value && wartungEnabled">
+            <section class="faktura-section" v-if="vehicle && fakturaType === 'order' && faktura.data && !vehicle.isTrailer.value && wartungEnabled" :class="{ 'section-disabled': !hasCustomer }">
                 <maintenance-section-card
                     :oe-ext-data="vehicle.oeExtData.value"
                     :has-car="!!vehicle.selectedCarId.value"
@@ -191,7 +193,7 @@
             </section>
 
             <!-- Arbeitsanweisungen (lxcars Feature, nur bei Auftrag) -->
-            <section class="faktura-section" v-if="vehicle && fakturaType === 'order' && faktura.data">
+            <section class="faktura-section" v-if="vehicle && fakturaType === 'order' && faktura.data" :class="{ 'section-disabled': !hasCustomer }">
                 <instructions-section-card
                     ref="instructionsRef"
                     :oe-id="fakturaId"
@@ -202,7 +204,7 @@
             </section>
 
             <!-- Positionen -->
-            <section class="faktura-section" v-if="faktura.data">
+            <section class="faktura-section" v-if="faktura.data" :class="{ 'section-disabled': !hasCustomer }">
                 <faktura-items-table-component
                     ref="itemsTableRef"
                     v-model="fakturaItems"
@@ -238,12 +240,12 @@
             </section>
 
             <!-- Mängel (lxcars Feature, bei Aufträgen, Angeboten und Rechnungen) -->
-            <section class="faktura-section" v-if="vehicle && (fakturaType === 'order' || fakturaType === 'invoice' || fakturaType === 'quotation') && faktura.data && wartungEnabled">
+            <section class="faktura-section" v-if="vehicle && (fakturaType === 'order' || fakturaType === 'invoice' || fakturaType === 'quotation') && faktura.data && wartungEnabled" :class="{ 'section-disabled': !hasCustomer }">
                 <maengel-section-card ref="maengelRef" :oe-id="fakturaId" :ensure-oe-id="ensureOrderAndGetId" :doc-type="fakturaType === 'invoice' ? 'invoice' : 'order'" />
             </section>
 
             <!-- Zahlungen (nur bei Rechnungen) -->
-            <section class="faktura-section" v-if="fakturaType === 'invoice' && faktura.data">
+            <section class="faktura-section" v-if="fakturaType === 'invoice' && faktura.data" :class="{ 'section-disabled': !hasCustomer }">
                 <PaymentSectionCard
                     v-model="paymentList"
                     :payment-acc-list="paymentAccList"
@@ -254,7 +256,7 @@
             </section>
 
             <!-- Notizen -->
-            <section class="faktura-section" v-if="faktura.data && faktura.data.common">
+            <section class="faktura-section" v-if="faktura.data && faktura.data.common" :class="{ 'section-disabled': !hasCustomer }">
                 <v-card variant="outlined" class="faktura-card">
                     <v-card-title class="faktura-card__header">
                         <v-icon class="mr-2" size="small">mdi-note-text</v-icon>
@@ -1123,6 +1125,10 @@ export default defineComponent({
 
         const isVendor = computed(() => {
             return ['purchase_order', 'purchase_invoice', 'request_quotation'].includes(fakturaType.value)
+        })
+
+        const hasCustomer = computed(() => {
+            return !!(faktura.data?.common?.customer_id || faktura.data?.common?.vendor_id)
         })
 
         // Storno-Dialog
@@ -2755,6 +2761,7 @@ export default defineComponent({
             fakturaType,
             fakturaId,
             isVendor,
+            hasCustomer,
             fakturaItems,
             itemsTableRef,
             instructionsRef,
@@ -2917,6 +2924,12 @@ export default defineComponent({
 
 .faktura-section:last-child {
     margin-bottom: 0;
+}
+
+.section-disabled {
+    pointer-events: none;
+    opacity: 0.45;
+    user-select: none;
 }
 
 /* ============================================

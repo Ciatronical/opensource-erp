@@ -30,6 +30,7 @@
                             color="primary"
                             variant="elevated"
                             prepend-icon="mdi-swap-horizontal"
+                            :disabled="!hasCustomer"
                         >
                             {{ t('FakturaView.faktura.workflow') }}
                         </v-btn>
@@ -158,6 +159,7 @@
                             v-bind="props"
                             variant="tonal"
                             prepend-icon="mdi-printer-settings"
+                            :disabled="!hasCustomer"
                         >
                             {{ selectedPrinter ? selectedPrinter.printer_description : t('FakturaView.faktura.selectPrinter') }}
                         </v-btn>
@@ -182,6 +184,7 @@
                             variant="tonal"
                             icon="mdi-printer"
                             size="small"
+                            :disabled="!hasCustomer"
                             @click="$emit('print')"
                         />
                     </template>
@@ -196,6 +199,7 @@
                             color="error"
                             icon="mdi-file-pdf-box"
                             size="small"
+                            :disabled="!hasCustomer"
                             @click="$emit('pdf-preview')"
                         />
                     </template>
@@ -210,6 +214,7 @@
                             color="info"
                             icon="mdi-email"
                             size="small"
+                            :disabled="!hasCustomer"
                             @click="$emit('send-email')"
                         />
                     </template>
@@ -224,6 +229,7 @@
                             color="green-darken-1"
                             icon="mdi-whatsapp"
                             size="small"
+                            :disabled="!hasCustomer"
                             @click="$emit('send-whatsapp')"
                         />
                     </template>
@@ -238,6 +244,7 @@
                             color="amber-darken-3"
                             icon="mdi-package-variant-closed"
                             size="small"
+                            :disabled="!hasCustomer"
                             @click="$emit('create-dhl-label')"
                         />
                     </template>
@@ -252,6 +259,7 @@
                             color="deep-orange"
                             icon="mdi-monitor"
                             size="small"
+                            :disabled="!hasCustomer"
                             @click="$emit('show-on-display')"
                         />
                     </template>
@@ -267,6 +275,7 @@
                             color="teal"
                             icon="mdi-car"
                             size="small"
+                            :disabled="!hasCustomer"
                             @click="$emit('open-vehicle')"
                         />
                     </template>
@@ -281,6 +290,7 @@
                             color="orange"
                             icon="mdi-file-import"
                             size="small"
+                            :disabled="!hasCustomer"
                             @click="$emit('import-silverdat')"
                         />
                     </template>
@@ -294,6 +304,7 @@
                             color="deep-purple"
                             icon="mdi-car-wrench"
                             size="small"
+                            :disabled="!hasCustomer"
                             @click="$emit('open-special')"
                         />
                     </template>
@@ -411,6 +422,10 @@ export default defineComponent({
         compactView: {
             type: Boolean,
             default: false
+        },
+        hasCustomer: {
+            type: Boolean,
+            default: true
         }
     },
 
