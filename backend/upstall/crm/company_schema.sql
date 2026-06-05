@@ -2026,3 +2026,32 @@ CREATE TABLE IF NOT EXISTS hr_lohnsteuer_meta (
 );
 
 COMMENT ON TABLE hr_lohnsteuer_meta IS 'Metadaten der Lohnsteuertabelle (Erstellungszeitpunkt, Zeilenanzahl)';
+
+-- ── Kassenbuch ──────────────────────────────────────────────────────────────
+-- Nutzt kivitendo-kompatible Buchung über gl + acc_trans.
+-- cash_registers verknüpft eine Kasse mit dem entsprechenden Kassakonto (z. B. 1000 SKR03 / 1600 SKR04).
+-- Alle Buchungsbewegungen liegen in acc_trans (chart_id = cash_registers.chart_id).
+
+CREATE TABLE IF NOT EXISTS cash_registers (
+    id              INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    name            VARCHAR(100) NOT NULL,
+    chart_id        INTEGER NOT NULL,           -- Referenz auf chart.id (Kassakonto, z. B. 1000/1600)
+    opening_balance NUMERIC(15,2) NOT NULL DEFAULT 0,
+    currency        CHAR(3) NOT NULL DEFAULT 'EUR',
+    created_at      TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+COMMENT ON TABLE cash_registers IS 'Kassenbücher – verknüpfen UI-Kassen mit dem Kassakonto im Kontenplan';
+COMMENT ON COLUMN cash_registers.chart_id IS 'FK auf chart.id (Kassakonto: SKR03=1000, SKR04=1600)';
+COMMENT ON COLUMN cash_registers.opening_balance IS 'Anfangsbestand; wird zum acc_trans-Saldo addiert';
+
+-- Verknüpft Belege (accounting_documents) mit GL-Kassenbuchungen (gl.id)
+CREATE TABLE IF NOT EXISTS cash_gl_documents (
+    id          INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    gl_id       INTEGER NOT NULL,
+    document_id INTEGER NOT NULL REFERENCES accounting_documents(id) ON DELETE CASCADE
+);
+
+COMMENT ON TABLE cash_gl_documents IS 'Verbindet hochgeladene Belege mit manuellen Kassenbuchungen (gl.id)';
+
+CREATE INDEX IF NOT EXISTS idx_cash_gl_documents_gl ON cash_gl_documents(gl_id);

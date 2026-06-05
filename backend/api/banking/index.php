@@ -11,5 +11,6 @@ require_once __DIR__.'/banking_utils.php';
 require_once __DIR__.'/banking_ai.php';
 require_once __DIR__.'/direct_debit.php';
 require_once __DIR__.'/fints.php';
+require_once __DIR__.'/kasse.php';
 
 require_once __DIR__.'/../inc.php'; // muss immer unten stehen

@@ -245,13 +245,13 @@
             </section>
 
             <!-- Zahlungen (nur bei Rechnungen) -->
-            <section class="faktura-section" v-if="fakturaType === 'invoice' && faktura.data" :class="{ 'section-disabled': !hasCustomer }">
+            <section class="faktura-section" v-if="fakturaType === 'invoice' && faktura.data">
                 <PaymentSectionCard
                     v-model="paymentList"
                     :payment-acc-list="paymentAccList"
                     :gross-amount="accounting.calculatedGrossAmount.value"
                     :show-exchange-rate="accounting.isForeignCurrency.value"
-                    @save="saveAllItems"
+                    @save="() => saveAllItems(true)"
                 />
             </section>
 
@@ -1421,11 +1421,13 @@ export default defineComponent({
         }
 
         // saveAllItems braucht accounting — wird als Funktion definiert bevor useItemManagement aufgerufen wird
-        async function saveAllItems() {
+        async function saveAllItems(updatePayments = false) {
             try {
                 accounting.flushCalculation()
                 const accTransEntries = accounting.calculateAccTransEntries()
-                const paymentEntries = accounting.calculatePaymentEntries()
+                // paymentEntries nur berechnen und übergeben wenn PaymentSectionCard
+                // explizit speichert — sonst würde ein Item-Save alle Zahlungen löschen
+                const paymentEntries = updatePayments ? accounting.calculatePaymentEntries() : null
                 await faktura.updateFakturaItems(
                     fakturaId.value,
                     fakturaItems.value,

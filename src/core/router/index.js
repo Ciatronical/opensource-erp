@@ -105,6 +105,7 @@ const LxCarsReportsView = () => {
 
 // Banking
 const BankingHubView = () => import('@/features/banking/views/banking.hub.vue')
+const KasseView = () => import('@/features/banking/views/banking.kasse.vue')
 
 // HR-Modul
 const HrHubView = () => import('@/core/views/hr/hr.hub.vue')
@@ -505,6 +506,11 @@ const router = createRouter({
             path: i18n.global.t('BankingView.routes.bankingReconciliation'),
             name: 'banking-reconciliation',
             redirect: { name: 'banking-overview', query: { tab: 'reconciliation' } },
+        },
+        {
+            path: i18n.global.t('KasseView.routes.kasse'),
+            name: 'kasse',
+            component: KasseView,
         },
         // ── Kamera / Videoüberwachung ──
         {

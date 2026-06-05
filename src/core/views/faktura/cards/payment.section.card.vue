@@ -546,7 +546,7 @@ export default defineComponent({
             deleteDialog.value.show = false
             payments.value.splice(index, 1)
             ensureEmptyRow()
-            onPaymentChange()
+            onPaymentChange(true)
         }
 
         /**
@@ -684,7 +684,7 @@ export default defineComponent({
          * Emittiert Änderungen an Parent
          * Speichert nur wenn alle Zahlungen mit Betrag auch ein Konto haben
          */
-        function onPaymentChange() {
+        function onPaymentChange(forceSave = false) {
             ensureEmptyRow()
 
             // Flag setzen damit der Watcher nicht überschreibt
@@ -697,7 +697,12 @@ export default defineComponent({
                 return !hasAmount || (hasAmount && payment.chart_id)
             })
 
-            if (allValid) {
+            // Nur speichern wenn tatsächlich Zahlungen mit Betrag vorhanden sind,
+            // oder explizit erzwungen (z.B. nach Löschen). Verhindert, dass ein
+            // Blur auf leere Felder die bestehenden acc_trans-Einträge löscht.
+            const hasActualPayments = payments.value.some(p => Math.abs(p.amount || 0) > 0)
+
+            if (allValid && (hasActualPayments || forceSave === true)) {
                 emit('save')
             }
         }

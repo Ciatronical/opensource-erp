@@ -63,6 +63,8 @@
                 density="compact"
                 class="banking-transactions-table"
                 hover
+                :row-props="getRowProps"
+                @click:row="onRowClick"
             >
                 <!-- Datum -->
                 <template #item.transdate="{ item }">
@@ -109,17 +111,26 @@
                     </div>
                 </template>
 
-                <!-- Aktionen -->
+                <!-- Aktionen — @click.stop verhindert den Zeilen-Klick -->
                 <template #item.actions="{ item }">
-                    <div class="d-flex ga-1">
+                    <div class="d-flex ga-1" @click.stop>
                         <v-btn
-                            v-if="item.match_status === 'unmatched'"
-                            icon="mdi-link-variant"
+                            v-if="item.match_status === 'unmatched' && item.amount > 0"
+                            icon="mdi-bank-transfer-in"
                             size="x-small"
                             variant="text"
-                            color="primary"
-                            :title="t('BankingView.transactions.assign')"
-                            @click="$emit('assign', item)"
+                            color="success"
+                            :title="t('BankingView.booking.titleShort')"
+                            @click="openBookingDialog(item)"
+                        />
+                        <v-btn
+                            v-else-if="item.match_status === 'matched'"
+                            icon="mdi-check-circle-outline"
+                            size="x-small"
+                            variant="text"
+                            color="info"
+                            :title="t('BankingView.booking.titleMatched')"
+                            @click="openBookingDialog(item)"
                         />
                         <v-btn
                             v-if="item.match_status === 'unmatched'"
@@ -141,15 +152,26 @@
                 </template>
             </v-data-table>
         </v-card>
+
+        <!-- Buchungsdialog -->
+        <BookingDialog
+            v-if="dialogTransaction"
+            v-model="showBookingDialog"
+            :transaction="dialogTransaction"
+            :account-id="Number(props.id)"
+            @done="onBookingDone"
+            @ignore="onIgnoreFromDialog"
+        />
     </v-container>
 </template>
 
 <script setup>
 import { ref, watch, onMounted, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRouter, useRoute } from 'vue-router'
+import { useRouter } from 'vue-router'
 import { useBanking } from '../composables/useBanking.js'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
+import BookingDialog from '../components/booking-dialog.component.vue'
 import * as alerts from '@/core/utils/alerts.js'
 
 const props = defineProps({
@@ -164,6 +186,9 @@ const accountStats = ref(null)
 const matchFilter = ref('all')
 const fromDate = ref('')
 const toDate = ref('')
+
+const showBookingDialog = ref(false)
+const dialogTransaction = ref(null)
 
 const headers = computed(() => [
     { title: t('BankingView.transactions.date'), key: 'transdate', width: '100px' },
@@ -199,6 +224,41 @@ async function loadTransactions() {
         from_date: fromDate.value || undefined,
         to_date: toDate.value || undefined
     })
+}
+
+function isBookable(item) {
+    return (item.match_status === 'unmatched' || item.match_status === 'matched') && item.amount > 0
+}
+
+function getRowProps({ item }) {
+    const classes = []
+    if (isBookable(item)) classes.push('row-bookable')
+    if (item.match_status === 'booked') classes.push('row-booked')
+    return { class: classes.join(' ') || undefined }
+}
+
+function onRowClick(_event, { item }) {
+    if (isBookable(item)) {
+        openBookingDialog(item)
+    }
+}
+
+function openBookingDialog(item) {
+    dialogTransaction.value = item
+    showBookingDialog.value = true
+}
+
+async function onBookingDone() {
+    await loadTransactions()
+}
+
+async function onIgnoreFromDialog(transactionId) {
+    try {
+        await banking.setTransactionStatus(transactionId, 'ignored')
+        await loadTransactions()
+    } catch (e) {
+        alerts.error(e.message)
+    }
 }
 
 async function ignoreTransaction(item) {
@@ -246,3 +306,12 @@ function capitalize(str) {
     return str ? str.charAt(0).toUpperCase() + str.slice(1) : ''
 }
 </script>
+
+<style scoped>
+:deep(.row-bookable) {
+    cursor: pointer;
+}
+:deep(.row-booked) {
+    opacity: 0.65;
+}
+</style>

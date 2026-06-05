@@ -706,7 +706,8 @@ function updateFakturaItems($data) {
     $fakturaType = $data['fakturaType'] ?? 'invoice';
     $items = $data['items'] ?? [];
     $accTransEntries = $data['accTransEntries'] ?? [];
-    $paymentEntries = $data['paymentEntries'] ?? [];
+    $updatePayments = array_key_exists('paymentEntries', $data);
+    $paymentEntries = $updatePayments ? ($data['paymentEntries'] ?? []) : [];
     $netAmount = floatval($data['netAmount'] ?? 0);
     $grossAmount = floatval($data['grossAmount'] ?? 0);
 
@@ -761,8 +762,8 @@ SQL;
         ]);
     }
 
-    // 2b. Bei Rechnungen: Buchungen verarbeiten
-    if ($isInvoiceType && (!empty($accTransEntries) || !empty($paymentEntries))) {
+    // 2b. Bei Rechnungen: Positions-Buchungen verarbeiten
+    if ($isInvoiceType && !empty($accTransEntries)) {
         // Alte Buchungen löschen (NICHT die existierenden Zahlungen!)
         $deleteQuery = <<<SQL
             DELETE FROM acc_trans
@@ -805,7 +806,10 @@ SQL;
                 'taxkey' => intval($entry['taxkey'] ?? 0)
             ]);
         }
+    }
 
+    // 2c. Zahlungsbuchungen nur aktualisieren wenn explizit vom Frontend angefordert
+    if ($isInvoiceType && $updatePayments) {
         // Alte Zahlungsbuchungen löschen
         $deletePaymentsQuery = <<<SQL
             DELETE FROM acc_trans
@@ -813,12 +817,6 @@ SQL;
                 AND chart_link LIKE '{$paymentLink}'
 SQL;
         $company->execute($deletePaymentsQuery, ['fakturaID' => $fakturaID]);
-
-        // Alte AR-Gegenbuchungen für Zahlungen löschen
-        // Diese erkennt man daran, dass sie positiv sind und chart_link = 'AR'
-        // (die ursprüngliche AR-Buchung ist negativ)
-        // Wir löschen alle, da wir sie neu einfügen
-        // Hinweis: Die ursprüngliche AR-Buchung (negativ) wird oben bereits gelöscht
 
         // Neue Zahlungsbuchungen einfügen
         foreach ($paymentEntries as $entry) {
@@ -860,28 +858,43 @@ SQL;
                 'taxkey' => intval($entry['taxkey'] ?? 0)
             ]);
         }
+    }
 
-        // 3. Beträge in Rechnungstabelle aktualisieren (ar oder ap)
-        $paidAmount = 0;
-        foreach ($paymentEntries as $entry) {
-            if ($entry['amount'] > 0) {
-                $paidAmount += $entry['amount'];
+    // 3. Beträge in Rechnungstabelle aktualisieren (ar oder ap)
+    if ($isInvoiceType && (!empty($accTransEntries) || $updatePayments)) {
+        if ($updatePayments) {
+            $paidAmount = 0;
+            foreach ($paymentEntries as $entry) {
+                if ($entry['amount'] > 0) {
+                    $paidAmount += $entry['amount'];
+                }
             }
-        }
-
-        $updateInvoiceQuery = <<<SQL
-            UPDATE {$mainTable} SET
-                netamount = :netAmount,
-                amount = :grossAmount,
-                paid = :paidAmount
-            WHERE id = :fakturaID
+            $updateInvoiceQuery = <<<SQL
+                UPDATE {$mainTable} SET
+                    netamount = :netAmount,
+                    amount = :grossAmount,
+                    paid = :paidAmount
+                WHERE id = :fakturaID
 SQL;
-        $company->execute($updateInvoiceQuery, [
-            'fakturaID' => $fakturaID,
-            'netAmount' => $netAmount,
-            'grossAmount' => $grossAmount,
-            'paidAmount' => $paidAmount
-        ]);
+            $company->execute($updateInvoiceQuery, [
+                'fakturaID' => $fakturaID,
+                'netAmount' => $netAmount,
+                'grossAmount' => $grossAmount,
+                'paidAmount' => $paidAmount
+            ]);
+        } else {
+            $updateInvoiceQuery = <<<SQL
+                UPDATE {$mainTable} SET
+                    netamount = :netAmount,
+                    amount = :grossAmount
+                WHERE id = :fakturaID
+SQL;
+            $company->execute($updateInvoiceQuery, [
+                'fakturaID' => $fakturaID,
+                'netAmount' => $netAmount,
+                'grossAmount' => $grossAmount
+            ]);
+        }
     }
 
     resultInfo(true, 'UPDATED', [

@@ -161,11 +161,12 @@ export const fakturaStore = defineStore('fakturaStore', () => {
      * @param {number} grossAmount - Bruttobetrag
      * @return {Promise<Object>}
      */
-    async function updateFakturaItems(fakturaID, items, fakturaType = 'invoice', accTransEntries = [], paymentEntries = [], netAmount = 0, grossAmount = 0) {
+    async function updateFakturaItems(fakturaID, items, fakturaType = 'invoice', accTransEntries = [], paymentEntries = null, netAmount = 0, grossAmount = 0) {
         // Nur Items mit ID (bereits gespeichert) senden
         const itemsWithId = items.filter(item => item.id)
 
-        if (itemsWithId.length === 0 && accTransEntries.length === 0 && paymentEntries.length === 0) {
+        const hasPayments = paymentEntries !== null && paymentEntries.length > 0
+        if (itemsWithId.length === 0 && accTransEntries.length === 0 && !hasPayments) {
             return { success: true, count: 0 }
         }
 
@@ -182,16 +183,22 @@ export const fakturaStore = defineStore('fakturaStore', () => {
             fxsellprice: item.sellprice || 0
         }))
 
-        const response = await axios.post('/api/faktura/', {
+        const body = {
             action: 'updateFakturaItems',
             fakturaID: fakturaID,
             items: cleanItems,
             fakturaType: fakturaType,
             accTransEntries: accTransEntries,
-            paymentEntries: paymentEntries,
             netAmount: netAmount,
             grossAmount: grossAmount
-        });
+        }
+
+        // paymentEntries nur mitsenden wenn explizit übergeben (null = nicht anfassen)
+        if (paymentEntries !== null) {
+            body.paymentEntries = paymentEntries
+        }
+
+        const response = await axios.post('/api/faktura/', body);
 
         if (response.data.success) {
             return response.data.payload;

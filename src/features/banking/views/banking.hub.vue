@@ -154,6 +154,8 @@
                         :items-per-page="50"
                         density="compact"
                         hover
+                        :row-props="getTxRowProps"
+                        @click:row="onTxRowClick"
                     >
                         <template #item.transdate="{ item }">
                             <span class="text-no-wrap text-body-2">{{ formatDateShort(item.transdate) }}</span>
@@ -183,14 +185,53 @@
                             </div>
                         </template>
                         <template #item.actions="{ item }">
-                            <v-btn v-if="item.match_status === 'unmatched'" icon="mdi-eye-off" size="x-small" variant="text" @click="ignoreTransaction(item)" />
-                            <v-btn v-if="item.match_status === 'ignored'" icon="mdi-undo" size="x-small" variant="text" @click="resetTransaction(item)" />
+                            <div class="d-flex ga-1" @click.stop>
+                                <v-btn
+                                    v-if="item.match_status === 'unmatched' && item.amount > 0"
+                                    icon="mdi-bank-transfer-in"
+                                    size="x-small"
+                                    variant="text"
+                                    color="success"
+                                    :title="t('BankingView.booking.titleShort')"
+                                    @click="openBookingDialog(item)"
+                                />
+                                <v-btn
+                                    v-else-if="item.match_status === 'matched'"
+                                    icon="mdi-check-circle-outline"
+                                    size="x-small"
+                                    variant="text"
+                                    color="info"
+                                    :title="t('BankingView.booking.titleMatched')"
+                                    @click="openBookingDialog(item)"
+                                />
+                                <v-btn v-if="item.match_status === 'unmatched'" icon="mdi-eye-off" size="x-small" variant="text" @click="ignoreTransaction(item)" />
+                                <v-btn v-if="item.match_status === 'ignored'" icon="mdi-undo" size="x-small" variant="text" @click="resetTransaction(item)" />
+                                <v-btn
+                                    v-if="item.match_status === 'booked'"
+                                    icon="mdi-undo"
+                                    size="x-small"
+                                    variant="text"
+                                    color="warning"
+                                    :title="t('BankingView.booking.unbookTitle')"
+                                    @click="unbookTransaction(item)"
+                                />
+                            </div>
                         </template>
                         <template #no-data>
                             <div class="text-center pa-6 text-disabled">{{ t('BankingView.transactions.noTransactions') }}</div>
                         </template>
                     </v-data-table>
                 </v-card>
+
+                <!-- Buchungsdialog -->
+                <BookingDialog
+                    v-if="bookingDialogTransaction"
+                    v-model="showBookingDialog"
+                    :transaction="bookingDialogTransaction"
+                    :account-id="selectedAccountId"
+                    @done="onBookingDone"
+                    @ignore="onIgnoreFromDialog"
+                />
             </v-window-item>
 
             <!-- ── ÜBERWEISUNGEN ── -->
@@ -1199,6 +1240,7 @@ import { Line as LineChart } from 'vue-chartjs'
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Filler } from 'chart.js'
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Filler)
 import RecipientAutocomplete from '../components/recipient-autocomplete.component.vue'
+import BookingDialog from '../components/booking-dialog.component.vue'
 import { validateIban, validateBic, normalizeIban } from '@/core/utils/iban.js'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
 import * as alerts from '@/core/utils/alerts.js'
@@ -1885,6 +1927,49 @@ async function resetTransaction(item) {
     catch (e) { alerts.error(e.message) }
 }
 
+const showBookingDialog      = ref(false)
+const bookingDialogTransaction = ref(null)
+
+function isBookable(item) {
+    return (item.match_status === 'unmatched' || item.match_status === 'matched') && item.amount > 0
+}
+
+function getTxRowProps({ item }) {
+    if (isBookable(item)) return { class: 'tx-bookable' }
+    if (item.match_status === 'booked') return { class: 'tx-booked' }
+    return {}
+}
+
+function onTxRowClick(_e, { item }) {
+    if (isBookable(item)) openBookingDialog(item)
+}
+
+function openBookingDialog(item) {
+    bookingDialogTransaction.value = item
+    showBookingDialog.value = true
+}
+
+async function onBookingDone() {
+    await loadTransactions()
+}
+
+async function onIgnoreFromDialog(transactionId) {
+    try { await banking.setTransactionStatus(transactionId, 'ignored'); await loadTransactions() }
+    catch (e) { alerts.error(e.message) }
+}
+
+async function unbookTransaction(item) {
+    const ok = confirm(t('BankingView.booking.unbookConfirm'))
+    if (!ok) return
+    try {
+        await matching.unbookTransaction(item.id)
+        alerts.success(t('BankingView.booking.unbookSuccess'))
+        await loadTransactions()
+    } catch (e) {
+        alerts.error(e.message)
+    }
+}
+
 // ── Tabs: Überweisungen ──────────────────────────────────
 const showTransferDialog = ref(false)
 const editingId          = ref(null)
@@ -2515,5 +2600,11 @@ watch(activeTab, async (tab) => {
 .selected-tx {
     background: rgba(var(--v-theme-primary), 0.08) !important;
     border-left: 3px solid rgb(var(--v-theme-primary));
+}
+:deep(.tx-bookable) {
+    cursor: pointer;
+}
+:deep(.tx-booked) {
+    opacity: 0.65;
 }
 </style>

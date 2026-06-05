@@ -101,6 +101,7 @@ export function useNavigationCards() {
                     { title: t('AccountingView.menu.vendors'), to: t('AccountingView.routes.accountingVendors') },
                     '-',
                     { title: t('BankingView.menu.title'), to: t('BankingView.routes.bankingOverview') },
+                    { title: t('KasseView.title'), to: t('KasseView.routes.kasse') },
                     '-',
                     { title: t('AccountingView.menu.datevExport'), to: t('AccountingView.routes.accountingDatevExport') }
                 ]

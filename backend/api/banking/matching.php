@@ -300,7 +300,19 @@ function bookMatchedTransactions($data) {
             'paid_link' => '%' . $paidLink . '%',
         ]);
 
+        // Fallback fuer Rechnungen ohne GL-Erstbuchung (z. B. importierte Belege):
+        // Standard-Forderungs-/Verbindlichkeitskonto aus dem Kontenrahmen nehmen —
+        // chart.link = 'AR' bzw. 'AP', niedrigste Kontonummer (wie die Faktura-UI).
         if (!$counterChart) {
+            $counterChart = $db->getOne(
+                "SELECT id AS chart_id FROM chart WHERE link = :lnk ORDER BY accno ASC LIMIT 1",
+                ['lnk' => $linkPrefix]
+            );
+            writeLog("bookMatchedTransactions: {$invTable} #{$targetId} ohne acc_trans — Fallback-Konto " . ($counterChart['chart_id'] ?? 'KEINS'), true, DLOG_INF);
+        }
+
+        if (!$counterChart) {
+            writeLog("bookMatchedTransactions: Umsatz #{$btId} — kein {$linkPrefix}-Konto ermittelbar", true, DLOG_ERR);
             $errors[] = "Umsatz {$btId}: Forderungs-/Verbindlichkeitskonto der Rechnung nicht ermittelbar";
             continue;
         }
@@ -314,46 +326,49 @@ function bookMatchedTransactions($data) {
             continue;
         }
 
-        // Vorzeichen: AR-Zahlung → bt.amount > 0 (Geld kommt rein),
-        //             AP-Zahlung → bt.amount < 0 (Geld geht raus).
-        // Bank-Eintrag erhaelt das bt-Vorzeichen, Gegenbuchung das inverse.
-        $bankAmount    = floatval($bt['amount']);
-        $counterAmount = -$bankAmount;
-        // ar.paid / ap.paid sind in kivitendo immer positiv.
-        $paidIncrement = abs($bankAmount);
+        // Vorzeichen-Konvention gemaess calculatePaymentEntries (Faktura):
+        //   AR-Konto-Eintrag:  positiver Betrag  → wird in ar.paid gezaehlt
+        //   Bank-Eintrag:      negativer Betrag  → erscheint im Zahlungsbereich der Rechnung
+        //                       (chart_link des Bankkontos enthaelt 'AR_paid', wird von
+        //                        getFakturaData mit LIKE '%AR_paid%' gefunden)
+        // chart_link separat laden, um doppelte Named-Parameter in PDO zu vermeiden.
+        $paidIncrement   = abs(floatval($bt['amount']));
+        $counterLink     = $db->getOne("SELECT link FROM chart WHERE id = :id", ['id' => $counterChart['chart_id']]);
+        $bankChartLink   = $db->getOne("SELECT link FROM chart WHERE id = :id", ['id' => $bankAccount['chart_id']]);
+        $counterLinkVal  = $counterLink['link'] ?? 'AR';
+        $bankLinkVal     = $bankChartLink['link'] ?? 'AR_paid:AP_paid';
 
-        // Bank-Eintrag (positiv bei AR, negativ bei AP)
+        // AR-Konto-Eintrag (positiv) — wird fuer ar.paid gezaehlt
         $bankEntry = $db->getOne(<<<SQL
-            INSERT INTO acc_trans (trans_id, chart_id, amount, transdate, gldate, source, memo, chart_link)
-            VALUES (:trans_id, :chart_id, :amount, :transdate, :transdate, :source, :memo, :chart_link)
+            INSERT INTO acc_trans (trans_id, chart_id, amount, transdate, gldate, source, memo, tax_id, taxkey, chart_link)
+            VALUES (:trans_id, :chart_id, :amount, :transdate, :transdate, :source, :memo, 0, 0, :chart_link)
             RETURNING acc_trans_id
         SQL, [
             'trans_id'   => $targetId,
-            'chart_id'   => $bankAccount['chart_id'],
-            'amount'     => $bankAmount,
+            'chart_id'   => $counterChart['chart_id'],
+            'amount'     => $paidIncrement,
             'transdate'  => $bt['transdate'],
             'source'     => 'BANK',
             'memo'       => 'Bankabstimmung Umsatz #' . $btId,
-            'chart_link' => $bankAccount['chart_link'],
+            'chart_link' => $counterLinkVal,
         ]);
 
-        // Gegenbuchung gegen Forderung/Verbindlichkeit — chart_link='AR_paid' /
-        // 'AP_paid' damit kivitendo das als Zahlung erkennt.
+        // Bank-Eintrag (negativ) — chart_link des Bankkontos ('AR_paid:AP_paid')
+        // wird von getFakturaData via LIKE '%AR_paid%' im Zahlungsbereich gefunden.
         $db->execute(<<<SQL
-            INSERT INTO acc_trans (trans_id, chart_id, amount, transdate, gldate, source, memo, chart_link)
-            VALUES (:trans_id, :chart_id, :amount, :transdate, :transdate, :source, :memo, :chart_link)
+            INSERT INTO acc_trans (trans_id, chart_id, amount, transdate, gldate, source, memo, tax_id, taxkey, chart_link)
+            VALUES (:trans_id, :chart_id, :amount, :transdate, :transdate, :source, :memo, 0, 0, :chart_link)
         SQL, [
             'trans_id'   => $targetId,
-            'chart_id'   => $counterChart['chart_id'],
-            'amount'     => $counterAmount,
+            'chart_id'   => $bankAccount['chart_id'],
+            'amount'     => -$paidIncrement,
             'transdate'  => $bt['transdate'],
             'source'     => 'BANK',
             'memo'       => 'Bankabstimmung Umsatz #' . $btId,
-            'chart_link' => $paidLink,
+            'chart_link' => $bankLinkVal,
         ]);
 
-        // ar.paid bzw. ap.paid inkrementell erhoehen — Teilzahlungen bleiben
-        // damit korrekt offen.
+        // ar.paid / ap.paid mit positivem Betrag inkrementieren.
         $db->execute(
             "UPDATE {$invTable} SET paid = COALESCE(paid, 0) + :inc WHERE id = :id",
             ['inc' => $paidIncrement, 'id' => $targetId]
@@ -390,6 +405,114 @@ function bookMatchedTransactions($data) {
         'booked_count' => $bookedCount,
         'errors' => $errors
     ]);
+}
+
+/**
+ * Buchung eines Bankumsatzes rueckgaengig machen (Storno der acc_trans-Eintraege)
+ *
+ * Loescht die acc_trans-Eintraege die durch die Banking-Buchung erzeugt wurden,
+ * setzt ar.paid / ap.paid zurueck und stellt den Umsatz auf "unmatched".
+ *
+ * @param int $data['bank_transaction_id'] Bankumsatz-ID
+ * @testdata {"bank_transaction_id": 1}
+ */
+function unbookTransaction($data) {
+    $db = DbhCompany::begin();
+
+    $btId = intval($data['bank_transaction_id'] ?? 0);
+    if ($btId <= 0) {
+        resultInfo(false, 'VALIDATION_ERROR', 'Umsatz-ID fehlt');
+        return;
+    }
+
+    $bt = $db->getOne(
+        "SELECT id, amount, match_status FROM bank_transactions WHERE id = :id",
+        ['id' => $btId]
+    );
+
+    if (!$bt) {
+        resultInfo(false, 'NOT_FOUND', 'Bankumsatz nicht gefunden');
+        return;
+    }
+
+    if ($bt['match_status'] !== 'booked') {
+        resultInfo(false, 'NOT_BOOKED', 'Umsatz ist nicht gebucht');
+        return;
+    }
+
+    // acc_trans-Eintraege ueber die Memo-Felder finden (funktioniert auch wenn
+    // bank_transaction_acc_trans leer ist, z.B. nach fehlgeschlagener Buchung).
+    $memoLike = '%Umsatz #' . $btId;
+
+    $result = $db->getOne(<<<SQL
+        SELECT json_agg(row_to_json(t)) AS entries
+        FROM (
+            SELECT trans_id,
+                   sum(amount) FILTER (WHERE amount > 0) AS positive_sum
+            FROM acc_trans
+            WHERE source = 'BANK' AND memo LIKE :memo_like
+            GROUP BY trans_id
+        ) t
+    SQL, ['memo_like' => $memoLike]);
+
+    $entries = json_decode($result['entries'] ?? '[]', true) ?: [];
+
+    if (empty($entries)) {
+        // Fallback: ueber bank_transaction_acc_trans pruefen
+        $btAt = $db->getOne(
+            "SELECT count(*) AS cnt FROM bank_transaction_acc_trans WHERE bank_transaction_id = :id",
+            ['id' => $btId]
+        );
+        if (intval($btAt['cnt'] ?? 0) === 0) {
+            // Weder Memo-Eintraege noch Mapping — nur Status zuruecksetzen
+            $db->execute(
+                "UPDATE bank_transactions SET match_status = 'unmatched', cleared = false WHERE id = :id",
+                ['id' => $btId]
+            );
+            $db->execute(
+                "DELETE FROM bank_transaction_acc_trans WHERE bank_transaction_id = :id",
+                ['id' => $btId]
+            );
+            resultInfo(true, 'Status zurueckgesetzt (keine acc_trans-Eintraege gefunden)');
+            return;
+        }
+    }
+
+    // WICHTIG: Zuerst das FK-referenzierende Mapping loeschen, sonst verletzt
+    // das Loeschen der acc_trans-Eintraege die Foreign-Key-Constraint
+    // bank_transaction_acc_trans_acc_trans_id_fkey.
+    $db->execute(
+        "DELETE FROM bank_transaction_acc_trans WHERE bank_transaction_id = :id",
+        ['id' => $btId]
+    );
+
+    // Pro Rechnung: acc_trans loeschen + ar.paid zuruecksetzen
+    foreach ($entries as $entry) {
+        $transId      = intval($entry['trans_id']);
+        $positiveSum  = abs(floatval($entry['positive_sum'] ?? 0));
+
+        // Alle BANK-Eintraege dieses Umsatzes fuer diese Rechnung loeschen
+        $db->execute(
+            "DELETE FROM acc_trans WHERE trans_id = :trans_id AND source = 'BANK' AND memo LIKE :memo_like",
+            ['trans_id' => $transId, 'memo_like' => $memoLike]
+        );
+
+        // ar.paid zuruecksetzen — minimiert auf 0
+        if ($positiveSum > 0) {
+            $db->execute(
+                "UPDATE ar SET paid = GREATEST(0, COALESCE(paid, 0) - :dec) WHERE id = :id",
+                ['dec' => $positiveSum, 'id' => $transId]
+            );
+        }
+    }
+
+    // Umsatz-Status zuruecksetzen
+    $db->execute(
+        "UPDATE bank_transactions SET match_status = 'unmatched', cleared = false WHERE id = :id",
+        ['id' => $btId]
+    );
+
+    resultInfo(true, 'Buchung rueckgaengig gemacht');
 }
 
 /**
@@ -554,6 +677,407 @@ function saveMatchingRule($data) {
     }
 
     resultInfo(true, 'Gespeichert');
+}
+
+/**
+ * Zuordnungs-Kandidaten fuer einen einzelnen Bankumsatz ermitteln
+ *
+ * Liefert alle passenden AR-Rechnungen (offene Posten) sortiert nach Konfidenz.
+ * Nur fuer Zahlungseingaenge (amount > 0). AP folgt spaeter.
+ *
+ * @param int $data['transaction_id'] Bankumsatz-ID
+ * @testdata {"transaction_id": 1}
+ */
+function getMatchCandidatesForTransaction($data) {
+    $db = DbhCompany::begin();
+
+    $btId = intval($data['transaction_id'] ?? 0);
+    if ($btId <= 0) {
+        resultInfo(false, 'VALIDATION_ERROR', 'Umsatz-ID fehlt');
+        return;
+    }
+
+    $bt = $db->getOne(
+        "SELECT id, amount, remote_name, remote_iban, purpose, end_to_end_id, match_status
+         FROM bank_transactions WHERE id = :id",
+        ['id' => $btId]
+    );
+
+    if (!$bt) {
+        resultInfo(false, 'NOT_FOUND', 'Bankumsatz nicht gefunden');
+        return;
+    }
+
+    $candidates = [];
+
+    if (floatval($bt['amount']) > 0) {
+        // AR-Kandidaten — CTE vermeidet doppelte Named-Parameters in PDO
+        $result = $db->getOne(<<<SQL
+            WITH bt AS (
+                SELECT id, amount, remote_iban, remote_name, purpose, end_to_end_id
+                FROM bank_transactions
+                WHERE id = :bt_id AND amount > 0
+            )
+            SELECT json_agg(row_to_json(top) ORDER BY top.confidence DESC) AS candidates
+            FROM (
+                SELECT *
+                FROM (
+                    SELECT DISTINCT ON (m.ar_id)
+                        'ar'::TEXT             AS target_type,
+                        ar.id                  AS target_id,
+                        ar.invnumber,
+                        ar.transdate,
+                        ar.duedate,
+                        ar.amount              AS invoice_amount,
+                        ar.paid,
+                        (ar.amount - ar.paid)  AS open_amount,
+                        c.name                 AS contact_name,
+                        c.iban                 AS contact_iban,
+                        m.match_type,
+                        m.confidence
+                    FROM (
+                        -- 0.99: End-to-End-ID enthaelt Rechnungsnummer (SEPA-Strukturwert)
+                        SELECT ar.id AS ar_id, 'end_to_end_id'::TEXT AS match_type, 0.99::NUMERIC AS confidence
+                        FROM bt
+                        JOIN ar ON (ar.amount - ar.paid) > 0.01
+                            AND ar.storno IS NOT TRUE
+                            AND length(ar.invnumber) >= 4
+                            AND bt.end_to_end_id IS NOT NULL
+                            AND bt.end_to_end_id ~ ('(^|[^[:alnum:]])' || ar.invnumber || '($|[^[:alnum:]])')
+
+                        UNION ALL
+
+                        -- 0.98: Rechnungsnummer im Purpose + Kunden-IBAN bestaetigt
+                        SELECT ar.id, 'invnumber_and_iban', 0.98
+                        FROM bt
+                        JOIN customer c ON c.iban = bt.remote_iban AND bt.remote_iban IS NOT NULL
+                        JOIN ar ON ar.customer_id = c.id
+                            AND (ar.amount - ar.paid) > 0.01
+                            AND ar.storno IS NOT TRUE
+                            AND length(ar.invnumber) >= 4
+                            AND bt.purpose IS NOT NULL
+                            AND bt.purpose ~ ('(^|[^[:alnum:]])' || ar.invnumber || '($|[^[:alnum:]])')
+
+                        UNION ALL
+
+                        -- 0.92: Kunden-IBAN + exakter offener Betrag (Toleranz 0,01 EUR)
+                        SELECT ar.id, 'iban_amount_match', 0.92
+                        FROM bt
+                        JOIN customer c ON c.iban = bt.remote_iban AND bt.remote_iban IS NOT NULL
+                        JOIN ar ON ar.customer_id = c.id
+                            AND ABS((ar.amount - ar.paid) - bt.amount) < 0.01
+                            AND ar.paid < ar.amount
+                            AND ar.storno IS NOT TRUE
+
+                        UNION ALL
+
+                        -- 0.88: Rechnungsnummer im Purpose (ohne IBAN-Bestaetigung)
+                        SELECT ar.id, 'invnumber_in_purpose', 0.88
+                        FROM bt
+                        JOIN ar ON (ar.amount - ar.paid) > 0.01
+                            AND ar.storno IS NOT TRUE
+                            AND length(ar.invnumber) >= 4
+                            AND bt.purpose IS NOT NULL
+                            AND bt.purpose ~ ('(^|[^[:alnum:]])' || ar.invnumber || '($|[^[:alnum:]])')
+
+                        UNION ALL
+
+                        -- 0.80: Kunden-IBAN bekannt, Kunde hat genau eine offene Rechnung
+                        SELECT max(ar.id), 'iban_single_open', 0.80
+                        FROM bt
+                        JOIN customer c ON c.iban = bt.remote_iban AND bt.remote_iban IS NOT NULL
+                        JOIN ar ON ar.customer_id = c.id
+                            AND (ar.amount - ar.paid) > 0.01
+                            AND ar.storno IS NOT TRUE
+                        GROUP BY c.id
+                        HAVING count(ar.id) = 1
+
+                        UNION ALL
+
+                        -- 0.78: Name passt + exakter Betrag (Fallback ohne IBAN)
+                        SELECT ar.id, 'name_amount_match', 0.78
+                        FROM bt
+                        JOIN customer c ON bt.remote_name IS NOT NULL
+                            AND length(trim(bt.remote_name)) >= 3
+                            AND (c.name ILIKE '%' || trim(bt.remote_name) || '%'
+                             OR trim(bt.remote_name) ILIKE '%' || c.name || '%')
+                        JOIN ar ON ar.customer_id = c.id
+                            AND ABS((ar.amount - ar.paid) - bt.amount) < 0.01
+                            AND ar.paid < ar.amount
+                            AND ar.storno IS NOT TRUE
+
+                        UNION ALL
+
+                        -- 0.65: IBAN bekannt — alle offenen Rechnungen (manuelle Auswahl)
+                        SELECT ar.id, 'iban_customer', 0.65
+                        FROM bt
+                        JOIN customer c ON c.iban = bt.remote_iban AND bt.remote_iban IS NOT NULL
+                        JOIN ar ON ar.customer_id = c.id
+                            AND (ar.amount - ar.paid) > 0.01
+                            AND ar.storno IS NOT TRUE
+
+                    ) m
+                    JOIN ar ON ar.id = m.ar_id
+                    JOIN customer c ON c.id = ar.customer_id
+                    ORDER BY m.ar_id, m.confidence DESC
+                ) deduped
+                ORDER BY deduped.confidence DESC
+                LIMIT 10
+            ) top
+        SQL, ['bt_id' => $btId]);
+
+        $candidates = json_decode($result['candidates'] ?? '[]', true) ?: [];
+
+        // ── Sammelzahlung-Erkennung ──────────────────────────────────────────
+        // Mehrere Rechnungsnummern im Purpose + Summe = Transaktionsbetrag
+        // → hoehere Konfidenz als einzelne Treffer, kein KI noetig.
+        $groupResult = $db->getOne(<<<SQL
+            WITH bt AS (
+                SELECT id, amount, purpose FROM bank_transactions WHERE id = :bt_id AND amount > 0
+            ),
+            purpose_matches AS (
+                SELECT DISTINCT ar.id                     AS ar_id,
+                                ar.invnumber,
+                                (ar.amount - ar.paid)     AS open_amount,
+                                ar.duedate,
+                                c.name                    AS contact_name
+                FROM bt
+                JOIN ar ON (ar.amount - ar.paid) > 0.01
+                        AND ar.storno IS NOT TRUE
+                        AND length(ar.invnumber) >= 4
+                        AND bt.purpose IS NOT NULL
+                        AND bt.purpose ~ ('(^|[^[:alnum:]])' || ar.invnumber || '($|[^[:alnum:]])')
+                JOIN customer c ON c.id = ar.customer_id
+            )
+            SELECT json_agg(row_to_json(purpose_matches) ORDER BY purpose_matches.invnumber) AS invoices,
+                   sum(purpose_matches.open_amount)                                           AS total_amount
+            FROM purpose_matches
+            HAVING count(*) > 1
+               AND abs(sum(purpose_matches.open_amount) - (SELECT amount FROM bt)) < 0.01
+        SQL, ['bt_id' => $btId]);
+
+        $suggestedGroup = null;
+        if ($groupResult && !empty($groupResult['invoices'])) {
+            $groupInvoices = json_decode($groupResult['invoices'], true) ?: [];
+            if (count($groupInvoices) > 1) {
+                $suggestedGroup = [
+                    'invoices'     => $groupInvoices,
+                    'total_amount' => floatval($groupResult['total_amount']),
+                    'confidence'   => 0.96,
+                    'target_type'  => 'ar',
+                    'target_ids'   => array_column($groupInvoices, 'ar_id'),
+                ];
+            }
+        }
+    } else {
+        $suggestedGroup = null;
+    }
+
+    // Aktuelle Zuordnung laden wenn bereits matched
+    $currentMatch = null;
+    if ($bt['match_status'] === 'matched') {
+        $mapping = $db->getOne(
+            "SELECT target_type, target_id FROM bank_transaction_matches WHERE bank_transaction_id = :id",
+            ['id' => $btId]
+        );
+        if ($mapping && $mapping['target_type'] === 'ar') {
+            $invoice = $db->getOne(<<<SQL
+                SELECT ar.id, ar.invnumber, ar.amount AS invoice_amount, ar.paid,
+                       (ar.amount - ar.paid) AS open_amount, c.name AS contact_name
+                FROM ar JOIN customer c ON c.id = ar.customer_id
+                WHERE ar.id = :id
+            SQL, ['id' => $mapping['target_id']]);
+            if ($invoice) {
+                $currentMatch = array_merge($invoice, [
+                    'target_type' => 'ar',
+                    'target_id'   => intval($mapping['target_id'])
+                ]);
+            }
+        }
+    }
+
+    resultInfo(true, '', [
+        'transaction'      => $bt,
+        'candidates'       => $candidates,
+        'current_match'    => $currentMatch,
+        'suggested_group'  => $suggestedGroup,
+        'has_candidates'   => count($candidates) > 0 || $suggestedGroup !== null
+    ]);
+}
+
+/**
+ * Sammelzahlung buchen: einen Bankumsatz gegen mehrere AR-Rechnungen
+ *
+ * Jede Rechnung erhaelt ihren Anteil als eigene acc_trans-Buchung. Die Summe
+ * der offenen Betraege muss dem Transaktionsbetrag entsprechen (Toleranz 0,01 EUR).
+ *
+ * @param int   $data['transaction_id']  Bankumsatz-ID
+ * @param array $data['target_ids']      Array von AR-IDs
+ * @param int   $data['bank_account_id'] Bankkonto-ID
+ * @testdata {"transaction_id": 1, "target_ids": [100, 101], "bank_account_id": 1}
+ */
+function bookTransactionMultipleInvoices($data) {
+    $db = DbhCompany::begin();
+
+    $btId          = intval($data['transaction_id'] ?? 0);
+    $targetIds     = array_map('intval', $data['target_ids'] ?? []);
+    $bankAccountId = intval($data['bank_account_id'] ?? 0);
+
+    if ($btId <= 0 || count($targetIds) < 2 || $bankAccountId <= 0) {
+        resultInfo(false, 'VALIDATION_ERROR', 'transaction_id, mindestens 2 target_ids und bank_account_id sind Pflicht');
+        return;
+    }
+
+    $bt = $db->getOne(
+        "SELECT id, amount, match_status, transdate FROM bank_transactions WHERE id = :id",
+        ['id' => $btId]
+    );
+
+    if (!$bt) {
+        resultInfo(false, 'NOT_FOUND', 'Bankumsatz nicht gefunden');
+        return;
+    }
+    if ($bt['match_status'] === 'booked') {
+        resultInfo(false, 'ALREADY_BOOKED', 'Umsatz ist bereits gebucht');
+        return;
+    }
+
+    $bankAccount = $db->getOne(<<<SQL
+        SELECT ba.chart_id, ch.link AS chart_link
+        FROM bank_accounts ba JOIN chart ch ON ch.id = ba.chart_id
+        WHERE ba.id = :id
+    SQL, ['id' => $bankAccountId]);
+
+    if (!$bankAccount) {
+        resultInfo(false, 'NOT_FOUND', 'Bankkonto nicht gefunden');
+        return;
+    }
+
+    // Alle Rechnungen laden und Betraege summieren
+    $invoices   = [];
+    $totalOpen  = 0.0;
+    foreach ($targetIds as $arId) {
+        $inv = $db->getOne(
+            "SELECT id, amount, paid FROM ar WHERE id = :id AND storno IS NOT TRUE",
+            ['id' => $arId]
+        );
+        if (!$inv) {
+            resultInfo(false, 'NOT_FOUND', "Rechnung #{$arId} nicht gefunden");
+            return;
+        }
+        $open = round(floatval($inv['amount']) - floatval($inv['paid']), 2);
+        $invoices[] = ['id' => $arId, 'open_amount' => $open];
+        $totalOpen += $open;
+    }
+
+    // Betragsvalidierung
+    if (abs($totalOpen - floatval($bt['amount'])) > 0.01) {
+        resultInfo(false, 'AMOUNT_MISMATCH',
+            'Rechnungssumme ' . number_format($totalOpen, 2) . ' EUR != Umsatz ' . $bt['amount'] . ' EUR');
+        return;
+    }
+
+    // Pro Rechnung buchen
+    $skipped = [];
+    foreach ($invoices as $inv) {
+        $arId   = $inv['id'];
+        $amount = $inv['open_amount'];
+
+        $counterChart = $db->getOne(<<<SQL
+            SELECT chart_id FROM acc_trans
+            WHERE trans_id = :tid AND chart_link LIKE '%AR%' AND chart_link NOT LIKE '%AR_paid%'
+            ORDER BY acc_trans_id ASC LIMIT 1
+        SQL, ['tid' => $arId]);
+
+        // Fallback fuer Rechnungen ohne GL-Erstbuchung: Standard-Forderungskonto
+        if (!$counterChart) {
+            $counterChart = $db->getOne(
+                "SELECT id AS chart_id FROM chart WHERE link = 'AR' ORDER BY accno ASC LIMIT 1"
+            );
+            writeLog("bookTransactionMultipleInvoices: AR #{$arId} ohne acc_trans — Fallback-Forderungskonto " . ($counterChart['chart_id'] ?? 'KEINS'), true, DLOG_INF);
+        }
+
+        if (!$counterChart) {
+            writeLog("bookTransactionMultipleInvoices: AR #{$arId} uebersprungen — kein Forderungskonto", true, DLOG_ERR);
+            $skipped[] = $arId;
+            continue;
+        }
+
+        // chart_link separat laden (kein doppelter Named-Parameter in PDO)
+        $cLink       = $db->getOne("SELECT link FROM chart WHERE id = :id", ['id' => $counterChart['chart_id']]);
+        $bLink       = $db->getOne("SELECT link FROM chart WHERE id = :id", ['id' => $bankAccount['chart_id']]);
+        $cLinkVal    = $cLink['link'] ?? 'AR';
+        $bLinkVal    = $bLink['link'] ?? 'AR_paid:AP_paid';
+
+        // AR-Konto-Eintrag (positiv) — wird in ar.paid gezaehlt
+        $bankEntry = $db->getOne(<<<SQL
+            INSERT INTO acc_trans (trans_id, chart_id, amount, transdate, gldate, source, memo, tax_id, taxkey, chart_link)
+            VALUES (:trans_id, :chart_id, :amount, :transdate, :transdate, :source, :memo, 0, 0, :chart_link)
+            RETURNING acc_trans_id
+        SQL, [
+            'trans_id'   => $arId,
+            'chart_id'   => $counterChart['chart_id'],
+            'amount'     => $amount,
+            'transdate'  => $bt['transdate'],
+            'source'     => 'BANK',
+            'memo'       => 'Sammelzahlung Umsatz #' . $btId,
+            'chart_link' => $cLinkVal,
+        ]);
+
+        // Bank-Eintrag (negativ) — chart_link des Bankkontos, wird von Faktura-Anzeige gefunden
+        $db->execute(<<<SQL
+            INSERT INTO acc_trans (trans_id, chart_id, amount, transdate, gldate, source, memo, tax_id, taxkey, chart_link)
+            VALUES (:trans_id, :chart_id, :amount, :transdate, :transdate, :source, :memo, 0, 0, :chart_link)
+        SQL, [
+            'trans_id'   => $arId,
+            'chart_id'   => $bankAccount['chart_id'],
+            'amount'     => -$amount,
+            'transdate'  => $bt['transdate'],
+            'source'     => 'BANK',
+            'memo'       => 'Sammelzahlung Umsatz #' . $btId,
+            'chart_link' => $bLinkVal,
+        ]);
+
+        // ar.paid inkrementieren (positiver Betrag)
+        $db->execute(
+            "UPDATE ar SET paid = COALESCE(paid, 0) + :inc WHERE id = :id",
+            ['inc' => $amount, 'id' => $arId]
+        );
+
+        // Mapping Bankumsatz → acc_trans
+        $db->execute(<<<SQL
+            INSERT INTO bank_transaction_acc_trans (bank_transaction_id, acc_trans_id, ar_id, ap_id)
+            VALUES (:bt_id, :acc_trans_id, :ar_id, NULL)
+        SQL, [
+            'bt_id'        => $btId,
+            'acc_trans_id' => $bankEntry['acc_trans_id'],
+            'ar_id'        => $arId,
+        ]);
+    }
+
+    // Wenn keine einzige Rechnung gebucht werden konnte → Fehler statt falscher
+    // 'booked'-Status. So bleibt der Umsatz sichtbar und der Nutzer merkt es.
+    $bookedCount = count($invoices) - count($skipped);
+    if ($bookedCount <= 0) {
+        resultInfo(false, 'BOOKING_FAILED',
+            'Keine Rechnung konnte gebucht werden (Konto nicht ermittelbar): ' . implode(', ', $skipped));
+        return;
+    }
+
+    // Einzeln-Zuordnung entfernen falls vorhanden, Status buchen setzen
+    $db->execute(
+        "DELETE FROM bank_transaction_matches WHERE bank_transaction_id = :id",
+        ['id' => $btId]
+    );
+    $db->execute(
+        "UPDATE bank_transactions SET match_status = 'booked', cleared = true WHERE id = :id",
+        ['id' => $btId]
+    );
+
+    resultInfo(true, 'Sammelzahlung gebucht', [
+        'booked_count' => $bookedCount,
+        'skipped'      => $skipped
+    ]);
 }
 
 /**
