@@ -251,6 +251,7 @@
                     :payment-acc-list="paymentAccList"
                     :gross-amount="accounting.calculatedGrossAmount.value"
                     :show-exchange-rate="accounting.isForeignCurrency.value"
+                    :invnumber="faktura.data.common?.invnumber || ''"
                     @save="() => saveAllItems(true)"
                 />
             </section>

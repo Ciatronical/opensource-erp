@@ -2055,3 +2055,60 @@ CREATE TABLE IF NOT EXISTS cash_gl_documents (
 COMMENT ON TABLE cash_gl_documents IS 'Verbindet hochgeladene Belege mit manuellen Kassenbuchungen (gl.id)';
 
 CREATE INDEX IF NOT EXISTS idx_cash_gl_documents_gl ON cash_gl_documents(gl_id);
+
+-- ============================================================
+-- Zahlungsabrechnungen von Kartendienstleistern (Flatpay/Rapyd o.ae.)
+--
+-- Eine Sammelauszahlung auf dem Bankkonto entspricht der Summe vieler
+-- Kartenzahlungen abzueglich der Dienstleistergebuehr. Die hochgeladene
+-- Abrechnung (Excel/PDF/CSV) wird als accounting_documents beim Kreditor
+-- (Kartendienstleister) abgelegt. Jede Auszahlungszeile wird ueber
+-- net = Bankbetrag automatisch einem nicht zuordbaren Bankumsatz
+-- zugeordnet und als Split-Buchung (Brutto-Erloes + Gebuehr) gebucht.
+-- ============================================================
+CREATE TABLE IF NOT EXISTS payment_settlements (
+    id              SERIAL PRIMARY KEY,
+    provider        TEXT NOT NULL,                              -- z.B. 'Flatpay', 'Rapyd'
+    vendor_id       INTEGER REFERENCES vendor(id),              -- Kreditor (Kartendienstleister)
+    document_id     INTEGER REFERENCES accounting_documents(id) ON DELETE SET NULL,
+    period_from     DATE,                                       -- abgedeckter Gesamtzeitraum
+    period_to       DATE,
+    total_gross     NUMERIC(15,2) DEFAULT 0,                    -- Gesamteinnahmen (brutto)
+    total_fee       NUMERIC(15,2) DEFAULT 0,                    -- Transaktionskosten gesamt
+    total_net       NUMERIC(15,2) DEFAULT 0,                    -- Nettoauszahlung gesamt
+    currency        VARCHAR(3) DEFAULT 'EUR',
+    fee_chart_id    INTEGER REFERENCES chart(id),               -- gewaehltes Gebuehren-/Aufwandskonto (gemerkt je Kreditor)
+    clearing_chart_id INTEGER REFERENCES chart(id),             -- gewaehltes Verrechnungskonto (Kartenzahlungen/Geldtransit)
+    employee_id     INTEGER,
+    itime           TIMESTAMP DEFAULT NOW(),
+    mtime           TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_payment_settlements_vendor ON payment_settlements(vendor_id);
+
+COMMENT ON TABLE payment_settlements IS 'Hochgeladene Sammelabrechnungen von Kartendienstleistern (Flatpay/Rapyd). Datei liegt als accounting_documents beim Kreditor.';
+
+CREATE TABLE IF NOT EXISTS payment_settlement_lines (
+    id                          SERIAL PRIMARY KEY,
+    settlement_id               INTEGER NOT NULL REFERENCES payment_settlements(id) ON DELETE CASCADE,
+    payout_date                 DATE NOT NULL,                  -- Auszahlungsdatum (= Bank-Valuta)
+    period_from                 DATE,                           -- "Deckt den Zeitraum ab" (von)
+    period_to                   DATE,                           -- "Deckt den Zeitraum ab" (bis)
+    gross                       NUMERIC(15,2) NOT NULL DEFAULT 0,  -- Gesamteinnahmen (brutto)
+    fee                         NUMERIC(15,2) NOT NULL DEFAULT 0,  -- Transaktionskosten (positiv)
+    net                         NUMERIC(15,2) NOT NULL DEFAULT 0,  -- Nettoauszahlung (= erwarteter Bankbetrag)
+    matched_bank_transaction_id INTEGER,                        -- FK zu bank_transactions (nach Match)
+    gl_id                       INTEGER,                        -- gebuchter Vorgang (gl.id), nach Buchung
+    settled_ar_ids              JSONB,                          -- ausgeglichene Ausgangsrechnungen (ar.id-Array), fuer Storno
+    status                      VARCHAR(20) DEFAULT 'open'
+                                CHECK (status IN ('open', 'matched', 'booked', 'ignored')),
+    itime                       TIMESTAMP DEFAULT NOW(),
+    mtime                       TIMESTAMP DEFAULT NOW(),
+    UNIQUE (settlement_id, payout_date)
+);
+
+CREATE INDEX IF NOT EXISTS idx_payment_settlement_lines_settlement ON payment_settlement_lines(settlement_id);
+CREATE INDEX IF NOT EXISTS idx_payment_settlement_lines_net ON payment_settlement_lines(net);
+CREATE INDEX IF NOT EXISTS idx_payment_settlement_lines_matched ON payment_settlement_lines(matched_bank_transaction_id);
+
+COMMENT ON TABLE payment_settlement_lines IS 'Einzelne Auszahlungszeilen einer Kartenabrechnung; net = erwarteter Bankbetrag fuer Auto-Match.';

@@ -355,9 +355,10 @@ function bookMatchedTransactions($data) {
 
         // Bank-Eintrag (negativ) — chart_link des Bankkontos ('AR_paid:AP_paid')
         // wird von getFakturaData via LIKE '%AR_paid%' im Zahlungsbereich gefunden.
-        $db->execute(<<<SQL
+        $bankLeg = $db->getOne(<<<SQL
             INSERT INTO acc_trans (trans_id, chart_id, amount, transdate, gldate, source, memo, tax_id, taxkey, chart_link)
             VALUES (:trans_id, :chart_id, :amount, :transdate, :transdate, :source, :memo, 0, 0, :chart_link)
+            RETURNING acc_trans_id
         SQL, [
             'trans_id'   => $targetId,
             'chart_id'   => $bankAccount['chart_id'],
@@ -374,17 +375,22 @@ function bookMatchedTransactions($data) {
             ['inc' => $paidIncrement, 'id' => $targetId]
         );
 
-        // kivitendo-Mapping fuellen — ar_id oder ap_id setzen, damit
-        // bank_transaction_acc_trans semantisch korrekt ist.
-        $db->execute(<<<SQL
-            INSERT INTO bank_transaction_acc_trans (bank_transaction_id, acc_trans_id, ar_id, ap_id)
-            VALUES (:bt_id, :acc_trans_id, :ar_id, :ap_id)
-        SQL, [
-            'bt_id'         => $btId,
-            'acc_trans_id'  => $bankEntry['acc_trans_id'],
-            'ar_id'         => $isAr ? $targetId : null,
-            'ap_id'         => $isAr ? null : $targetId,
-        ]);
+        // kivitendo-Mapping fuellen — BEIDE Buchungsbeine verknuepfen. Das liefert
+        // eine stabile, vom (editierbaren) Memo unabhaengige Referenz fuer den Storno
+        // (unbookTransaction) und schuetzt beide Eintraege im Faktura-Editor.
+        $arIdVal = $isAr ? $targetId : null;
+        $apIdVal = $isAr ? null : $targetId;
+        foreach ([$bankEntry['acc_trans_id'], $bankLeg['acc_trans_id']] as $linkedAccTransId) {
+            $db->execute(<<<SQL
+                INSERT INTO bank_transaction_acc_trans (bank_transaction_id, acc_trans_id, ar_id, ap_id)
+                VALUES (:bt_id, :acc_trans_id, :ar_id, :ap_id)
+            SQL, [
+                'bt_id'         => $btId,
+                'acc_trans_id'  => $linkedAccTransId,
+                'ar_id'         => $arIdVal,
+                'ap_id'         => $apIdVal,
+            ]);
+        }
 
         // Pre-Booking-Mapping konsumiert — Information ist jetzt in
         // bank_transaction_acc_trans und acc_trans persistent.
@@ -440,41 +446,50 @@ function unbookTransaction($data) {
         return;
     }
 
-    // acc_trans-Eintraege ueber die Memo-Felder finden (funktioniert auch wenn
-    // bank_transaction_acc_trans leer ist, z.B. nach fehlgeschlagener Buchung).
+    // Zu stornierende acc_trans-Eintraege ermitteln — primaer ueber das stabile
+    // Mapping bank_transaction_acc_trans (beide Buchungsbeine, unabhaengig vom
+    // editierbaren Memo), ergaenzend ueber das Memo (Alt-Buchungen ohne zweites
+    // verknuepftes Bein bzw. fehlgeschlagene Buchungen ohne Mapping).
     $memoLike = '%Umsatz #' . $btId;
 
-    $result = $db->getOne(<<<SQL
-        SELECT json_agg(row_to_json(t)) AS entries
-        FROM (
-            SELECT trans_id,
-                   sum(amount) FILTER (WHERE amount > 0) AS positive_sum
-            FROM acc_trans
-            WHERE source = 'BANK' AND memo LIKE :memo_like
-            GROUP BY trans_id
-        ) t
-    SQL, ['memo_like' => $memoLike]);
+    $rows = $db->getAll(<<<SQL
+        SELECT at.acc_trans_id, at.trans_id, at.amount
+        FROM acc_trans at
+        WHERE at.source = 'BANK'
+            AND (
+                at.acc_trans_id IN (
+                    SELECT acc_trans_id FROM bank_transaction_acc_trans
+                    WHERE bank_transaction_id = :bt_id
+                )
+                OR at.memo LIKE :memo_like
+            )
+    SQL, ['bt_id' => $btId, 'memo_like' => $memoLike]);
 
-    $entries = json_decode($result['entries'] ?? '[]', true) ?: [];
-
-    if (empty($entries)) {
-        // Fallback: ueber bank_transaction_acc_trans pruefen
-        $btAt = $db->getOne(
-            "SELECT count(*) AS cnt FROM bank_transaction_acc_trans WHERE bank_transaction_id = :id",
+    if (empty($rows)) {
+        // Weder Mapping- noch Memo-Eintraege — nur Status (und evtl. verwaistes
+        // Mapping) zuruecksetzen.
+        $db->execute(
+            "DELETE FROM bank_transaction_acc_trans WHERE bank_transaction_id = :id",
             ['id' => $btId]
         );
-        if (intval($btAt['cnt'] ?? 0) === 0) {
-            // Weder Memo-Eintraege noch Mapping — nur Status zuruecksetzen
-            $db->execute(
-                "UPDATE bank_transactions SET match_status = 'unmatched', cleared = false WHERE id = :id",
-                ['id' => $btId]
-            );
-            $db->execute(
-                "DELETE FROM bank_transaction_acc_trans WHERE bank_transaction_id = :id",
-                ['id' => $btId]
-            );
-            resultInfo(true, 'Status zurueckgesetzt (keine acc_trans-Eintraege gefunden)');
-            return;
+        $db->execute(
+            "UPDATE bank_transactions SET match_status = 'unmatched', cleared = false WHERE id = :id",
+            ['id' => $btId]
+        );
+        resultInfo(true, 'Status zurueckgesetzt (keine acc_trans-Eintraege gefunden)');
+        return;
+    }
+
+    // Loesch-IDs und je Rechnung die Summe der positiven Betraege (= gebuchter
+    // Zahlbetrag) sammeln, bevor geloescht wird.
+    $ids = [];
+    $positiveByTrans = [];
+    foreach ($rows as $r) {
+        $ids[] = intval($r['acc_trans_id']);
+        $amt = floatval($r['amount']);
+        if ($amt > 0) {
+            $tid = intval($r['trans_id']);
+            $positiveByTrans[$tid] = ($positiveByTrans[$tid] ?? 0) + $amt;
         }
     }
 
@@ -486,18 +501,20 @@ function unbookTransaction($data) {
         ['id' => $btId]
     );
 
-    // Pro Rechnung: acc_trans loeschen + ar.paid zuruecksetzen
-    foreach ($entries as $entry) {
-        $transId      = intval($entry['trans_id']);
-        $positiveSum  = abs(floatval($entry['positive_sum'] ?? 0));
+    // acc_trans-Eintraege anhand ihrer IDs loeschen (memo-unabhaengig).
+    $idPlaceholders = [];
+    $idParams = [];
+    foreach ($ids as $i => $accTransId) {
+        $idPlaceholders[] = ":a{$i}";
+        $idParams["a{$i}"] = $accTransId;
+    }
+    $db->execute(
+        "DELETE FROM acc_trans WHERE acc_trans_id IN (" . implode(',', $idPlaceholders) . ")",
+        $idParams
+    );
 
-        // Alle BANK-Eintraege dieses Umsatzes fuer diese Rechnung loeschen
-        $db->execute(
-            "DELETE FROM acc_trans WHERE trans_id = :trans_id AND source = 'BANK' AND memo LIKE :memo_like",
-            ['trans_id' => $transId, 'memo_like' => $memoLike]
-        );
-
-        // ar.paid zuruecksetzen — minimiert auf 0
+    // ar.paid je betroffener Rechnung zuruecksetzen (minimiert auf 0).
+    foreach ($positiveByTrans as $transId => $positiveSum) {
         if ($positiveSum > 0) {
             $db->execute(
                 "UPDATE ar SET paid = GREATEST(0, COALESCE(paid, 0) - :dec) WHERE id = :id",
@@ -1025,9 +1042,10 @@ function bookTransactionMultipleInvoices($data) {
         ]);
 
         // Bank-Eintrag (negativ) — chart_link des Bankkontos, wird von Faktura-Anzeige gefunden
-        $db->execute(<<<SQL
+        $bankLeg = $db->getOne(<<<SQL
             INSERT INTO acc_trans (trans_id, chart_id, amount, transdate, gldate, source, memo, tax_id, taxkey, chart_link)
             VALUES (:trans_id, :chart_id, :amount, :transdate, :transdate, :source, :memo, 0, 0, :chart_link)
+            RETURNING acc_trans_id
         SQL, [
             'trans_id'   => $arId,
             'chart_id'   => $bankAccount['chart_id'],
@@ -1044,15 +1062,18 @@ function bookTransactionMultipleInvoices($data) {
             ['inc' => $amount, 'id' => $arId]
         );
 
-        // Mapping Bankumsatz → acc_trans
-        $db->execute(<<<SQL
-            INSERT INTO bank_transaction_acc_trans (bank_transaction_id, acc_trans_id, ar_id, ap_id)
-            VALUES (:bt_id, :acc_trans_id, :ar_id, NULL)
-        SQL, [
-            'bt_id'        => $btId,
-            'acc_trans_id' => $bankEntry['acc_trans_id'],
-            'ar_id'        => $arId,
-        ]);
+        // Mapping Bankumsatz → acc_trans — BEIDE Buchungsbeine verknuepfen (stabile,
+        // memo-unabhaengige Referenz fuer Storno und Faktura-Schutz).
+        foreach ([$bankEntry['acc_trans_id'], $bankLeg['acc_trans_id']] as $linkedAccTransId) {
+            $db->execute(<<<SQL
+                INSERT INTO bank_transaction_acc_trans (bank_transaction_id, acc_trans_id, ar_id, ap_id)
+                VALUES (:bt_id, :acc_trans_id, :ar_id, NULL)
+            SQL, [
+                'bt_id'        => $btId,
+                'acc_trans_id' => $linkedAccTransId,
+                'ar_id'        => $arId,
+            ]);
+        }
     }
 
     // Wenn keine einzige Rechnung gebucht werden konnte → Fehler statt falscher

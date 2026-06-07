@@ -89,6 +89,17 @@ export default defineConfig({
     },
     watch: {
       followSymlinks: false,
+      // Backend, Daten-Uploads und Build-Artefakte NICHT watchen.
+      // Sonst versucht Vite jede frisch hochgeladene Vendor-/Kunden-Datei
+      // in backend/data zu überwachen und läuft ins inotify-Limit (ENOSPC),
+      // wodurch der Dev-Server beim Upload abstürzt.
+      ignored: [
+        '**/backend/**',
+        '**/backups/**',
+        '**/dist/**',
+        '**/docker/**',
+        '**/install/**',
+      ],
     }
   }
 })

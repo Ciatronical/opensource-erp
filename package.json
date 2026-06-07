@@ -5,7 +5,7 @@
     "type": "module",
     "scripts": {
         "dev": "vite",
-        "build": "vite build && ln -sfn ../public/camera-snapshots dist/camera-snapshots && ln -sfn ../public/camera-clips dist/camera-clips",
+        "build": "vite build",
         "preview": "vite preview"
     },
     "dependencies": {
@@ -36,7 +36,8 @@
         "vue3-emoji-picker": "^1.1.8",
         "vuedraggable": "^4.1.0",
         "vuefinder": "^4.1.2",
-        "vuetify": "^3.10.7"
+        "vuetify": "^3.10.7",
+        "xlsx": "^0.18.5"
     },
     "devDependencies": {
         "@vitejs/plugin-vue": "^6.0.6",

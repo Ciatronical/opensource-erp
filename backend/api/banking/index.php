@@ -12,5 +12,10 @@ require_once __DIR__.'/banking_ai.php';
 require_once __DIR__.'/direct_debit.php';
 require_once __DIR__.'/fints.php';
 require_once __DIR__.'/kasse.php';
+require_once __DIR__.'/settlements.php';
+
+// fmDataDir() (Mandanten-Datenverzeichnis) wird von kasse.php und settlements.php
+// fuer die Dateiablage gebraucht, ist aber im customer_vendor-Modul definiert.
+require_once __DIR__.'/../customer_vendor/filemanager.php';
 
 require_once __DIR__.'/../inc.php'; // muss immer unten stehen

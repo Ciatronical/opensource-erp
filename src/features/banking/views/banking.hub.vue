@@ -132,6 +132,18 @@
                         <v-btn value="booked" size="small" color="success">{{ t('BankingView.transactions.filterBooked') }}</v-btn>
                         <v-btn value="ignored" size="small">{{ t('BankingView.transactions.filterIgnored') }}</v-btn>
                     </v-btn-toggle>
+                    <v-text-field
+                        v-model="txSearch"
+                        :placeholder="t('BankingView.transactions.searchPlaceholder')"
+                        prepend-inner-icon="mdi-magnify"
+                        density="compact"
+                        variant="outlined"
+                        rounded="lg"
+                        hide-details
+                        clearable
+                        style="max-width:320px"
+                        class="ml-2"
+                    />
                     <v-spacer />
                     <v-text-field v-model="fromDate" :label="t('BankingView.transactions.fromDate')" type="date" density="compact" hide-details style="max-width:140px" />
                     <v-text-field v-model="toDate" :label="t('BankingView.transactions.toDate')" type="date" density="compact" hide-details style="max-width:140px" />
@@ -149,7 +161,7 @@
                 <v-card rounded="lg" elevation="0" border>
                     <v-data-table
                         :headers="txHeaders"
-                        :items="banking.transactions.value"
+                        :items="displayedTransactions"
                         :loading="banking.loading.value"
                         :items-per-page="50"
                         density="compact"
@@ -181,7 +193,19 @@
                         </template>
                         <template #item.assignments="{ item }">
                             <div v-if="item.assignments?.length" class="text-caption">
-                                <div v-for="(a, i) in item.assignments" :key="i">{{ a.invnumber }}</div>
+                                <template v-for="(a, i) in item.assignments" :key="i">
+                                    <a
+                                        v-if="a.ar_id"
+                                        href="#"
+                                        class="d-block text-primary text-decoration-none font-weight-medium"
+                                        :title="t('BankingView.transactions.openInvoice')"
+                                        @click.stop.prevent="goToInvoice(a)"
+                                    >{{ a.invnumber }}</a>
+                                    <span v-else class="d-block">{{ a.invnumber }}</span>
+                                </template>
+                            </div>
+                            <div v-else-if="item.pending_invnumber" class="text-caption text-medium-emphasis">
+                                {{ item.pending_invnumber }}
                             </div>
                         </template>
                         <template #item.actions="{ item }">
@@ -194,6 +218,15 @@
                                     color="success"
                                     :title="t('BankingView.booking.titleShort')"
                                     @click="openBookingDialog(item)"
+                                />
+                                <v-btn
+                                    v-if="item.match_status === 'unmatched' && item.amount > 0"
+                                    icon="mdi-credit-card-sync-outline"
+                                    size="x-small"
+                                    variant="text"
+                                    color="primary"
+                                    :title="t('BankingView.settlement.assign')"
+                                    @click="openSettlement(item)"
                                 />
                                 <v-btn
                                     v-else-if="item.match_status === 'matched'"
@@ -231,6 +264,14 @@
                     :account-id="selectedAccountId"
                     @done="onBookingDone"
                     @ignore="onIgnoreFromDialog"
+                    @settlement="onSettlementFromBooking"
+                />
+
+                <!-- Kartenabrechnung zuordnen -->
+                <SettlementDialog
+                    v-model="showSettlementDialog"
+                    :transaction="settlementTransaction"
+                    @booked="onBookingDone"
                 />
             </v-window-item>
 
@@ -1241,6 +1282,7 @@ import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Filler)
 import RecipientAutocomplete from '../components/recipient-autocomplete.component.vue'
 import BookingDialog from '../components/booking-dialog.component.vue'
+import SettlementDialog from '../components/settlement-dialog.component.vue'
 import { validateIban, validateBic, normalizeIban } from '@/core/utils/iban.js'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
 import * as alerts from '@/core/utils/alerts.js'
@@ -1892,9 +1934,51 @@ async function confirmDeleteMandate(item) {
 }
 
 // ── Tabs: Umsätze ────────────────────────────────────────
+// Standard-Zeitraum: aktuelles (Kalender-)Geschäftsjahr — es werden nur Umsätze
+// des laufenden Jahres angezeigt. Über die Datumsfelder erweiterbar.
+const FY_START = `${new Date().getFullYear()}-01-01`
+const FY_END   = `${new Date().getFullYear()}-12-31`
 const matchFilter = ref('all')
-const fromDate    = ref('')
-const toDate      = ref('')
+const fromDate    = ref(FY_START)
+const toDate      = ref(FY_END)
+
+// true, während ein Sprung aus einer Rechnung angewandt wird — verhindert, dass
+// der Konto-Watcher den (bewusst geleerten) Datumsfilter überschreibt.
+let applyingJump = false
+
+// Kluger Volltext-Filter über die Umsätze: durchsucht Gegenname, IBAN,
+// Verwendungszweck, Betrag sowie zugeordnete Rechnungsnummern/Kunden. Mehrere
+// Begriffe (durch Leerzeichen getrennt) müssen alle vorkommen (UND-Verknüpfung).
+// Wird beim Sprung aus einer Rechnung mit der Rechnungsnummer vorbelegt.
+const txSearch = ref('')
+
+function txHaystack(tx) {
+    const parts = [
+        tx.remote_name, tx.remote_iban, tx.purpose, tx.transaction_text,
+        tx.pending_invnumber, tx.pending_target_name, String(tx.amount ?? '')
+    ]
+    for (const a of (tx.assignments || [])) {
+        parts.push(a.invnumber, a.customer_name, a.vendor_name)
+    }
+    return parts.filter(Boolean).join(' ').toLowerCase()
+}
+
+const displayedTransactions = computed(() => {
+    const all = banking.transactions.value
+    const q = (txSearch.value || '').trim().toLowerCase()
+    if (!q) return all
+    const tokens = q.split(/\s+/).filter(Boolean)
+    return all.filter(tx => {
+        const hay = txHaystack(tx)
+        return tokens.every(tok => hay.includes(tok))
+    })
+})
+
+/** Öffnet die zugeordnete (Ausgangs-)Rechnung aus der Umsatz-Liste */
+function goToInvoice(assignment) {
+    if (!assignment.ar_id) return
+    router.push({ name: 'faktura-invoice-view', params: { id: assignment.ar_id } })
+}
 
 const txHeaders = computed(() => [
     { title: t('BankingView.transactions.date'),       key: 'transdate',    width: '90px' },
@@ -1908,12 +1992,22 @@ const txHeaders = computed(() => [
 
 watch([matchFilter, fromDate, toDate], () => loadTransactions())
 
+// Suche serverseitig (debounced) — findet auch Treffer außerhalb der ersten 200
+// geladenen Zeilen; das Client-Filter (displayedTransactions) sorgt für sofortiges
+// Feedback während des Tippens.
+let txSearchTimer = null
+watch(txSearch, () => {
+    clearTimeout(txSearchTimer)
+    txSearchTimer = setTimeout(loadTransactions, 350)
+})
+
 async function loadTransactions() {
     if (!selectedAccountId.value) return
     await banking.fetchTransactions(selectedAccountId.value, {
         match_status: matchFilter.value,
         from_date: fromDate.value || undefined,
         to_date:   toDate.value   || undefined,
+        search:    (txSearch.value || '').trim() || undefined,
     })
 }
 
@@ -1949,6 +2043,20 @@ function openBookingDialog(item) {
     showBookingDialog.value = true
 }
 
+const showSettlementDialog = ref(false)
+const settlementTransaction = ref(null)
+
+function openSettlement(item) {
+    settlementTransaction.value = item
+    showSettlementDialog.value = true
+}
+
+// Aus dem "Zahlung buchen"-Dialog heraus zur Kartenabrechnung wechseln.
+function onSettlementFromBooking(item) {
+    showBookingDialog.value = false
+    openSettlement(item)
+}
+
 async function onBookingDone() {
     await loadTransactions()
 }
@@ -1959,8 +2067,13 @@ async function onIgnoreFromDialog(transactionId) {
 }
 
 async function unbookTransaction(item) {
-    const ok = confirm(t('BankingView.booking.unbookConfirm'))
-    if (!ok) return
+    const res = await alerts.question(
+        t('BankingView.booking.unbookConfirm'),
+        t('BankingView.booking.unbookTitle'),
+        t('BankingView.booking.unbookConfirmBtn'),
+        t('BankingView.booking.cancel')
+    )
+    if (!res.isConfirmed) return
     try {
         await matching.unbookTransaction(item.id)
         alerts.success(t('BankingView.booking.unbookSuccess'))
@@ -2555,13 +2668,31 @@ onMounted(async () => {
     const newFor = parseInt(route.query.new_for, 10)
     if (newFor > 0) openNewTransfer(newFor)
     if (route.query.tab) activeTab.value = route.query.tab
+
+    // Query-Parameter: aus einer Rechnung kommend den Such-Filter vorbelegen,
+    // damit nur der/die betreffende(n) Umsatz/Umsätze sichtbar sind. Datumsfilter
+    // wird hierfür geleert (die Zahlung kann auch aus einem früheren Jahr stammen).
+    if (route.query.q) {
+        applyingJump = true
+        const focusAcct = parseInt(route.query.account, 10)
+        if (focusAcct > 0) selectedAccountId.value = focusAcct
+        activeTab.value = 'transactions'
+        matchFilter.value = 'all'
+        fromDate.value = ''
+        toDate.value = ''
+        txSearch.value = String(route.query.q)
+        await loadTransactions()
+        applyingJump = false
+    }
     // Trust-Anker-Refresh global starten (läuft für die gesamte Browser-Session)
     startGlobalKeepAlive()
 })
 
 watch(selectedAccountId, async (id) => {
     if (!id) return
-    matchFilter.value = 'all'; fromDate.value = ''; toDate.value = ''
+    if (!applyingJump) {
+        matchFilter.value = 'all'; fromDate.value = FY_START; toDate.value = FY_END; txSearch.value = ''
+    }
     await Promise.all([
         loadTransactions(),
         matching.fetchOpenInvoices(id),

@@ -227,8 +227,12 @@ export function useAccounting({ fakturaItems, faktura, fakturaType, paymentList,
             const transdate = payment.transdate || new Date().toISOString().split('T')[0]
             const source = payment.source || ''
             const memo = payment.memo || ''
+            // ID der bestehenden Zahlungsbuchung (AR_paid-Bein) mitsenden, damit das
+            // Backend eine bearbeitete Zahlung erkennt statt sie zu duplizieren
+            const accTransId = payment.acc_trans_id || null
 
             entries.push({
+                acc_trans_id: accTransId,
                 chart_id: arTargetId,
                 amount: roundMoney(paymentAmount, 2),
                 transdate, source, memo,
@@ -236,6 +240,7 @@ export function useAccounting({ fakturaItems, faktura, fakturaType, paymentList,
             })
 
             entries.push({
+                acc_trans_id: accTransId,
                 chart_id: payment.chart_id,
                 amount: roundMoney(-paymentAmount, 2),
                 transdate, source, memo,

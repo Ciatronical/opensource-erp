@@ -26,6 +26,7 @@
                             <v-text-field
                                 v-model="payment.transdate"
                                 type="date"
+                                :disabled="isBankBooked(payment)"
                                 variant="outlined"
                                 density="compact"
                                 hide-details
@@ -38,6 +39,7 @@
                             <v-text-field
                                 :ref="el => { if (el) sourceRefs[index] = el }"
                                 v-model="payment.source"
+                                :disabled="isBankBooked(payment)"
                                 variant="outlined"
                                 density="compact"
                                 hide-details
@@ -61,6 +63,7 @@
                             <v-autocomplete
                                 :ref="el => { if (el) accountRefs[index] = el }"
                                 v-model="payment.chart_id"
+                                :disabled="isBankBooked(payment)"
                                 :items="paymentAccList"
                                 item-title="label"
                                 item-value="id"
@@ -83,6 +86,7 @@
                         <td v-if="showExchangeRate">
                             <v-text-field
                                 :model-value="getFormattedExchangeRate(payment, index)"
+                                :disabled="isBankBooked(payment)"
                                 @update:model-value="onExchangeRateInput(index, $event)"
                                 @blur="onExchangeRateBlur(index)"
                                 @keydown.enter="onExchangeRateBlur(index); onEnterKey(index)"
@@ -97,6 +101,7 @@
                         <td>
                             <v-text-field
                                 :ref="el => { if (el) amountRefs[index] = el }"
+                                :disabled="isBankBooked(payment)"
                                 :model-value="getFormattedAmount(payment, index)"
                                 @update:model-value="onAmountInput(index, $event)"
                                 @blur="onAmountBlur(index)"
@@ -128,6 +133,15 @@
                                     color="error"
                                     :title="t('FakturaView.dialogs.deletePayment.title')"
                                     @click="openDeleteDialog(index)"
+                                />
+                                <v-btn
+                                    v-if="isBankBooked(payment)"
+                                    icon="mdi-bank-check"
+                                    size="x-small"
+                                    variant="text"
+                                    color="info"
+                                    :title="t('FakturaView.faktura.bankBookedGoto')"
+                                    @click="goToBankTransaction(payment)"
                                 />
                             </div>
                         </td>
@@ -198,6 +212,7 @@
 
 import { defineComponent, ref, computed, watch, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 import { formatNumber, parseNumber } from '@/core/utils/numberFormat.js'
 import * as toasts from '@/core/utils/toasts.js'
 
@@ -231,11 +246,19 @@ export default defineComponent({
         showExchangeRate: {
             type: Boolean,
             default: false
+        },
+        /**
+         * Rechnungsnummer — wird beim Sprung ins Bankmodul als Suchfilter vorbelegt
+         */
+        invnumber: {
+            type: String,
+            default: ''
         }
     },
     emits: ['update:modelValue', 'save'],
     setup(props, { emit }) {
         const { t, locale } = useI18n()
+        const router = useRouter()
 
         const currentLocale = computed(() => locale.value || 'de-DE')
 
@@ -290,12 +313,44 @@ export default defineComponent({
         }
 
         /**
+         * Prüft ob eine Zahlung aus einer noch gebuchten Bankzuordnung stammt.
+         * Solche Zahlungen dürfen hier nicht gelöscht/umgebucht werden — der Storno
+         * läuft über das Bankmodul, damit auch der Bankumsatz konsistent bleibt.
+         */
+        function isBankBooked(payment) {
+            return payment.bank_booked === true
+        }
+
+        /**
+         * Springt ins Bankmodul und filtert dort auf genau diesen Bankumsatz,
+         * damit die Buchung dort eingesehen/storniert werden kann.
+         */
+        function goToBankTransaction(payment) {
+            if (!payment.bank_transaction_id) {
+                return
+            }
+            router.push({
+                name: 'banking-overview',
+                query: {
+                    tab: 'transactions',
+                    account: payment.bank_account_id,
+                    q: props.invnumber || ''
+                }
+            })
+        }
+
+        /**
          * Prüft ob eine Zahlung gelöscht werden kann
-         * Löschbar wenn: Betrag > 0 ODER gespeicherte Zahlung (mit ID)
+         * Löschbar wenn: Betrag > 0 ODER gespeicherte Zahlung (mit ID).
+         * Nicht löschbar: bank-gebuchte Zahlungen (Storno nur über das Bankmodul).
          */
         function canDeletePayment(payment, index) {
             // Leere Eingabezeile ohne ID nicht löschbar
             if (!payment.id && Math.abs(payment.amount || 0) === 0) {
+                return false
+            }
+            // Bank-gebuchte Zahlung — nur über das Bankmodul stornierbar
+            if (isBankBooked(payment)) {
                 return false
             }
             return true
@@ -722,6 +777,8 @@ export default defineComponent({
             getPaymentKey,
             isLastRow,
             canDeletePayment,
+            isBankBooked,
+            goToBankTransaction,
             getFormattedAmount,
             onAmountInput,
             onAmountBlur,

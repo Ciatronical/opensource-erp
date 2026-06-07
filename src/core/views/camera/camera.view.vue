@@ -220,10 +220,10 @@
                     <template #item.snapshot_url="{ item }">
                         <v-img
                             v-if="item.snapshot_url"
-                            :src="item.snapshot_url"
+                            :src="mediaUrl(item, 'snapshot')"
                             width="80" height="45" cover rounded="sm"
                             class="cursor-pointer my-1"
-                            @click="previewSnapshot = item.snapshot_url"
+                            @click="previewSnapshot = mediaUrl(item, 'snapshot')"
                         />
                         <v-icon v-else size="small" color="grey">mdi-image-off-outline</v-icon>
                     </template>
@@ -254,7 +254,7 @@
                             :color="item.clip_url ? 'primary' : 'grey'"
                             :title="item.clip_url ? t('cam.playClip') : t('cam.showSnapshot')"
                             size="x-small" variant="text"
-                            @click="item.clip_url ? openClip(item) : (previewSnapshot = item.snapshot_url)"
+                            @click="item.clip_url ? openClip(item) : (previewSnapshot = mediaUrl(item, 'snapshot'))"
                         />
                     </template>
                 </v-data-table>
@@ -1912,7 +1912,15 @@ function labelIcon(label) {
 }
 
 function openClip(event) {
-    clipUrl.value = event.clip_url
+    clipUrl.value = mediaUrl(event, 'clip')
+}
+
+// Medien (Snapshot/Clip) werden über den authentifizierten Endpoint geladen,
+// nicht mehr direkt aus public/. snapshot_url/clip_url dienen nur noch als
+// Vorhandensein-Flag.
+function mediaUrl(event, type) {
+    if (!event?.event_id) return ''
+    return `/api/camera/media.php?type=${type}&event=${encodeURIComponent(event.event_id)}`
 }
 
 // ── Tab-Wechsel ────────────────────────────────────────────────────────────

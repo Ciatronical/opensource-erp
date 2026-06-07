@@ -769,12 +769,32 @@ function splitSqlStatements($sqlContent) {
     $currentStatement = '';
     $inDollarQuote = false;
     $dollarTag = '';
+    $inSingleQuote = false;
 
     $length = strlen($sqlContent);
     $i = 0;
 
     while ($i < $length) {
         $char = $sqlContent[$i];
+
+        // String-Literale ('...') beachten — ein ';' darin darf NICHT splitten.
+        // Nur ausserhalb von Dollar-Quoting auswerten. '' ist ein escaptes Quote.
+        if (!$inDollarQuote && $char === "'") {
+            if ($inSingleQuote && $i + 1 < $length && $sqlContent[$i + 1] === "'") {
+                $currentStatement .= "''";
+                $i += 2;
+                continue;
+            }
+            $inSingleQuote = !$inSingleQuote;
+            $currentStatement .= $char;
+            $i++;
+            continue;
+        }
+        if ($inSingleQuote) {
+            $currentStatement .= $char;
+            $i++;
+            continue;
+        }
 
         // Prüfe auf Dollar-Quoting ($$ oder $tag$)
         if ($char === '$' && !$inDollarQuote) {

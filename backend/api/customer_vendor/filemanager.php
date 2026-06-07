@@ -59,7 +59,11 @@ function fmGetDirConfig() {
     static $config = null;
     if ($config !== null) return $config;
 
-    $config = ['mode' => 0755, 'group' => ''];
+    // Default 0775 (gruppen-schreibbar): Daten-Ordner muessen sowohl von
+    // php-fpm (www-data) als auch vom lokalen Dev-Server (work, in Gruppe
+    // www-data) beschreibbar sein. 0755 sperrt die Gruppe aus → Upload
+    // schlaegt fehl, sobald PHP nicht als der erzeugende User laeuft.
+    $config = ['mode' => 0775, 'group' => ''];
     try {
         $db = DbhCompany::begin();
         $rows = $db->getAll(
@@ -387,17 +391,61 @@ function vfUpload($data) {
     }
 
     if (empty($_FILES['file'])) {
-        resultInfo(false, 'No file uploaded');
+        resultInfo(false, 'Keine Datei empfangen');
         return;
     }
 
     $file = $_FILES['file'];
+
+    // PHP-Upload-Fehler explizit melden (z.B. Datei zu gross)
+    if (isset($file['error']) && $file['error'] !== UPLOAD_ERR_OK) {
+        $uploadErrors = [
+            UPLOAD_ERR_INI_SIZE   => 'Datei überschreitet die maximale Servergröße',
+            UPLOAD_ERR_FORM_SIZE  => 'Datei überschreitet die maximale Größe',
+            UPLOAD_ERR_PARTIAL    => 'Datei wurde nur teilweise hochgeladen',
+            UPLOAD_ERR_NO_FILE    => 'Keine Datei empfangen',
+            UPLOAD_ERR_NO_TMP_DIR => 'Temporäres Verzeichnis fehlt',
+            UPLOAD_ERR_CANT_WRITE => 'Schreiben auf die Festplatte fehlgeschlagen',
+            UPLOAD_ERR_EXTENSION  => 'Upload durch eine PHP-Erweiterung gestoppt',
+        ];
+        resultInfo(false, $uploadErrors[$file['error']] ?? 'Upload fehlgeschlagen');
+        return;
+    }
+
+    // Schreibrechte im Zielordner pruefen, bevor verschoben wird —
+    // sonst schlaegt der Upload still fehl (Ordner gehoert oft www-data/root
+    // ohne Gruppen-Schreibrecht, waehrend PHP als anderer User laeuft).
+    if (!is_writable($targetDir)) {
+        resultInfo(false, 'Keine Schreibrechte im Zielordner – bitte Dateirechte prüfen (Ordner: ' . basename($targetDir) . ')');
+        return;
+    }
+
     $filename = basename($file['name']);
     $filename = preg_replace('/[^\w.\-\s]/', '_', $filename);
     $destination = $targetDir . '/' . $filename;
 
-    move_uploaded_file($file['tmp_name'], $destination);
-    resultInfo(true, 'File uploaded', ['filename' => $filename]);
+    if (!move_uploaded_file($file['tmp_name'], $destination)) {
+        resultInfo(false, 'Datei konnte nicht gespeichert werden');
+        return;
+    }
+
+    // Rechte/Gruppe der neuen Datei an die Ordner-Konfiguration angleichen,
+    // damit auch andere Systembenutzer (www-data/work) sie ueberschreiben koennen.
+    $cfg = fmGetDirConfig();
+    if ($cfg['group'] !== '') {
+        @chgrp($destination, $cfg['group']);
+    }
+    @chmod($destination, 0664);
+
+    // Aktualisierte Verzeichnisliste zurueckgeben, damit das Frontend
+    // die neue Datei sofort anzeigt (konsistent mit vfDelete/vfRename).
+    $files = vfListDirectory($rootDir, $uploadPath, FM_STORAGE_NAME);
+    resultInfo(true, '', [
+        'storages' => [FM_STORAGE_NAME],
+        'dirname' => FM_STORAGE_NAME . '://' . $uploadPath,
+        'files' => $files,
+        'filename' => $filename,
+    ]);
 }
 
 /**

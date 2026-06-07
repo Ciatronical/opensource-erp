@@ -67,15 +67,38 @@ function getFakturaData($data) {
                     SELECT json_agg(payment ORDER BY acc_trans_id DESC)
                     FROM (
                         SELECT
-                            acc_trans_id,
-                            chart_id,
-                            amount,
-                            source,
-                            memo,
-                            transdate
-                        FROM acc_trans
-                        WHERE trans_id = :fakturaID
-                            AND chart_link LIKE '{$paymentLink}'
+                            at.acc_trans_id,
+                            at.chart_id,
+                            at.amount,
+                            at.source,
+                            at.memo,
+                            at.transdate,
+                            -- Zugehörige, noch GEBUCHTE Bankzuordnung ermitteln
+                            -- (stabil über das Mapping, für Alt-Buchungen per Memo).
+                            -- bank_transaction_id != null => Zahlung ist bank-gebucht:
+                            -- im Faktura-Editor gesperrt (Storno nur über das Bankmodul);
+                            -- bank_account_id dient dem Sprung ins Bankmodul.
+                            (btx.id IS NOT NULL) AS bank_booked,
+                            btx.id AS bank_transaction_id,
+                            btx.local_bank_account_id AS bank_account_id
+                        FROM acc_trans at
+                        LEFT JOIN LATERAL (
+                            SELECT bt.id, bt.local_bank_account_id
+                            FROM bank_transactions bt
+                            WHERE bt.match_status = 'booked'
+                                AND COALESCE(at.source, '') = 'BANK'
+                                AND (
+                                    EXISTS (
+                                        SELECT 1 FROM bank_transaction_acc_trans bat
+                                        WHERE bat.bank_transaction_id = bt.id
+                                            AND bat.acc_trans_id = at.acc_trans_id
+                                    )
+                                    OR at.memo LIKE '%Umsatz #' || bt.id
+                                )
+                            LIMIT 1
+                        ) btx ON true
+                        WHERE at.trans_id = :fakturaID
+                            AND at.chart_link LIKE '{$paymentLink}'
                     ) AS payment
                 ),
             'positions',
@@ -762,15 +785,54 @@ SQL;
         ]);
     }
 
+    // Geschützte Bank-Buchungen ermitteln: acc_trans-Einträge mit source='BANK',
+    // die zu einer noch GEBUCHTEN Bankzuordnung gehören. Erkennung über das stabile
+    // Mapping bank_transaction_acc_trans ODER (für Alt-Buchungen) über das Memo
+    // '...Umsatz #<id>'. Solche Einträge dürfen vom Faktura-Editor nicht gelöscht/
+    // verändert werden (FK bank_transaction_acc_trans_acc_trans_id_fkey, Bankabstimmung).
+    // Bereits stornierte/verwaiste BANK-Einträge sind hier NICHT enthalten und werden
+    // dadurch im Editor wieder bereinigbar (löschen/editieren).
+    $protectedBankIds = [];
+    $protectExclusion = '';
+    $protectParams = [];
+    if ($isInvoiceType) {
+        $protectedRows = $company->getAll(<<<SQL
+            SELECT pa.acc_trans_id
+            FROM acc_trans pa
+            WHERE pa.trans_id = :fakturaID
+                AND COALESCE(pa.source, '') = 'BANK'
+                AND EXISTS (
+                    SELECT 1 FROM bank_transactions bt
+                    WHERE bt.match_status = 'booked'
+                        AND (
+                            EXISTS (
+                                SELECT 1 FROM bank_transaction_acc_trans bat
+                                WHERE bat.bank_transaction_id = bt.id
+                                    AND bat.acc_trans_id = pa.acc_trans_id
+                            )
+                            OR pa.memo LIKE '%Umsatz #' || bt.id
+                        )
+                )
+SQL, ['fakturaID' => $fakturaID]);
+        $protectedBankIds = array_map(static fn($r) => intval($r['acc_trans_id']), $protectedRows);
+        if (!empty($protectedBankIds)) {
+            $ph = [];
+            foreach ($protectedBankIds as $i => $pid) {
+                $ph[] = ":pb{$i}";
+                $protectParams["pb{$i}"] = $pid;
+            }
+            $protectExclusion = ' AND acc_trans_id NOT IN (' . implode(',', $ph) . ')';
+        }
+    }
+
     // 2b. Bei Rechnungen: Positions-Buchungen verarbeiten
     if ($isInvoiceType && !empty($accTransEntries)) {
-        // Alte Buchungen löschen (NICHT die existierenden Zahlungen!)
-        $deleteQuery = <<<SQL
-            DELETE FROM acc_trans
-            WHERE trans_id = :fakturaID
-                AND chart_link NOT LIKE '{$paymentLink}'
-SQL;
-        $company->execute($deleteQuery, ['fakturaID' => $fakturaID]);
+        // Alte Buchungen löschen (NICHT die existierenden Zahlungen!).
+        // Geschützte Bank-Buchungen (gebuchte Bankzuordnung) NICHT anfassen — deren
+        // Forderungs-Gegenbuchung (chart_link='AR') würde sonst mitgelöscht und die
+        // FK bank_transaction_acc_trans_acc_trans_id_fkey verletzen.
+        $deleteQuery = "DELETE FROM acc_trans WHERE trans_id = :fakturaID AND chart_link NOT LIKE '{$paymentLink}'{$protectExclusion}";
+        $company->execute($deleteQuery, array_merge(['fakturaID' => $fakturaID], $protectParams));
 
         // Neue Positions-Buchungen einfügen
         foreach ($accTransEntries as $entry) {
@@ -810,16 +872,44 @@ SQL;
 
     // 2c. Zahlungsbuchungen nur aktualisieren wenn explizit vom Frontend angefordert
     if ($isInvoiceType && $updatePayments) {
-        // Alte Zahlungsbuchungen löschen
-        $deletePaymentsQuery = <<<SQL
-            DELETE FROM acc_trans
-            WHERE trans_id = :fakturaID
-                AND chart_link LIKE '{$paymentLink}'
-SQL;
-        $company->execute($deletePaymentsQuery, ['fakturaID' => $fakturaID]);
+        // Memo bestehender, noch gebuchter Bank-Zahlungen in-place aktualisieren.
+        // Diese Einträge sind geschützt (siehe $protectedBankIds) und werden weder
+        // gelöscht noch neu eingefügt; nur das vom Anwender editierbare Memo wird
+        // gepflegt (Betrag/Konto/Quelle bleiben unangetastet → Bankabstimmung intakt).
+        // Pro Zahlung nur ein UPDATE (dedupliziert über die acc_trans_id, da beide
+        // Buchungsbeine dieselbe ID mitsenden).
+        $bankMemoUpdates = [];
+        foreach ($paymentEntries as $entry) {
+            $accTransId = intval($entry['acc_trans_id'] ?? 0);
+            if ($accTransId > 0 && in_array($accTransId, $protectedBankIds, true)) {
+                $bankMemoUpdates[$accTransId] = $entry['memo'] ?? '';
+            }
+        }
+        foreach ($bankMemoUpdates as $accTransId => $memo) {
+            $company->execute(<<<SQL
+                UPDATE acc_trans
+                SET memo = :memo
+                WHERE acc_trans_id = :acc_trans_id
+SQL, ['memo' => $memo, 'acc_trans_id' => $accTransId]);
+        }
+
+        // Alte Zahlungsbuchungen löschen — aber NICHT die geschützten Bank-Zahlungen
+        // (noch gebuchte Bankzuordnung). Verwaiste/stornierte BANK-Einträge sind nicht
+        // geschützt und werden hier mit aufgeräumt.
+        $deletePaymentsQuery = "DELETE FROM acc_trans WHERE trans_id = :fakturaID AND chart_link LIKE '{$paymentLink}'{$protectExclusion}";
+        $company->execute($deletePaymentsQuery, array_merge(['fakturaID' => $fakturaID], $protectParams));
 
         // Neue Zahlungsbuchungen einfügen
         foreach ($paymentEntries as $entry) {
+            // Geschützte Bank-Zahlungen überspringen — sie bleiben in der DB erhalten
+            // (oben nicht gelöscht, oben per Memo-UPDATE gepflegt). Ein erneutes
+            // Einfügen würde sie verdoppeln. Erkennung über die acc_trans_id (robust
+            // gegen ein vom Anwender geändertes Quellfeld). paid (Schritt 3) zählt sie
+            // weiterhin korrekt aus $paymentEntries mit.
+            $accTransId = intval($entry['acc_trans_id'] ?? 0);
+            if ($accTransId > 0 && in_array($accTransId, $protectedBankIds, true)) {
+                continue;
+            }
             $insertQuery = <<<SQL
                 INSERT INTO acc_trans (
                     trans_id,
@@ -863,24 +953,27 @@ SQL;
     // 3. Beträge in Rechnungstabelle aktualisieren (ar oder ap)
     if ($isInvoiceType && (!empty($accTransEntries) || $updatePayments)) {
         if ($updatePayments) {
-            $paidAmount = 0;
-            foreach ($paymentEntries as $entry) {
-                if ($entry['amount'] > 0) {
-                    $paidAmount += $entry['amount'];
-                }
-            }
+            // paid NICHT aus der gesendeten Liste summieren, sondern direkt aus dem
+            // Hauptbuch ableiten — die Zahlungs-Beine (chart_link '…_paid', negativer
+            // Betrag) sind die Wahrheit. So bleibt paid auch dann konsistent, wenn
+            // geschützte Bank-Zahlungen in acc_trans stehen, aber nicht (mehr) in der
+            // übermittelten Liste enthalten sind.
             $updateInvoiceQuery = <<<SQL
                 UPDATE {$mainTable} SET
                     netamount = :netAmount,
                     amount = :grossAmount,
-                    paid = :paidAmount
+                    paid = COALESCE((
+                        SELECT -sum(amount)
+                        FROM acc_trans
+                        WHERE trans_id = :fakturaID
+                            AND chart_link LIKE '{$paymentLink}'
+                    ), 0)
                 WHERE id = :fakturaID
 SQL;
             $company->execute($updateInvoiceQuery, [
                 'fakturaID' => $fakturaID,
                 'netAmount' => $netAmount,
-                'grossAmount' => $grossAmount,
-                'paidAmount' => $paidAmount
+                'grossAmount' => $grossAmount
             ]);
         } else {
             $updateInvoiceQuery = <<<SQL

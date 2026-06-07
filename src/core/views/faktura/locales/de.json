@@ -267,6 +267,8 @@
             "deleteNotLastNumber": "Nur das zuletzt angelegte Dokument (Nr. {currentNumber}) kann gelöscht werden. Dieses Dokument hat Nr. {docNumber}.",
             "remainingAmount": "Offener Betrag",
             "applyRemainingAmount": "Fehlbetrag übernehmen: {amount}",
+            "bankBookedLocked": "Über Bankabstimmung gebucht — Storno nur im Bankmodul möglich",
+            "bankBookedGoto": "Über Bankabstimmung gebucht — im Bankmodul anzeigen/stornieren",
             "paymentNoAccount": "Bitte zuerst ein Zahlungskonto auswählen",
             "instructions": {
                 "title": "Arbeitsanweisungen",

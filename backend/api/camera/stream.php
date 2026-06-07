@@ -39,7 +39,7 @@ if (!$camera) {
     exit('Kamera nicht gefunden');
 }
 
-$snapshotDir = __DIR__ . '/../../../public/camera-snapshots';
+$snapshotDir = __DIR__ . '/../../data/camera-snapshots';
 if (!is_dir($snapshotDir)) mkdir($snapshotDir, 0755, true);
 $snapshotPath = "$snapshotDir/live_cam_{$cameraId}.jpg";
 

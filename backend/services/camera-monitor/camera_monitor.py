@@ -40,8 +40,11 @@ import psycopg2.extras
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 BACKEND_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, '..', '..'))
 SETTINGS_INI = os.path.join(BACKEND_DIR, 'config', 'settings.ini')
-SNAPSHOT_DIR = os.path.join(BACKEND_DIR, '..', 'public', 'camera-snapshots')
-CLIP_DIR = os.path.join(BACKEND_DIR, '..', 'public', 'camera-clips')
+# Medien liegen ausserhalb des DocumentRoots (nicht in public/), damit sie
+# NICHT ungeschuetzt per HTTP erreichbar sind. Auslieferung nur ueber den
+# authentifizierten Endpoint backend/api/camera/media.php.
+SNAPSHOT_DIR = os.path.join(BACKEND_DIR, 'data', 'camera-snapshots')
+CLIP_DIR = os.path.join(BACKEND_DIR, 'data', 'camera-clips')
 
 # RTSP ueber TCP (zuverlaessiger)
 os.environ['OPENCV_FFMPEG_CAPTURE_OPTIONS'] = 'rtsp_transport;tcp'

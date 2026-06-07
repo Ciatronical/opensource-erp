@@ -266,6 +266,8 @@
             "deleteNotLastNumber": "Only the last created document (No. {currentNumber}) can be deleted. This document has No. {docNumber}.",
             "remainingAmount": "Remaining amount",
             "applyRemainingAmount": "Apply remaining amount: {amount}",
+            "bankBookedLocked": "Booked via bank reconciliation — reverse it in the banking module",
+            "bankBookedGoto": "Booked via bank reconciliation — view/reverse in the banking module",
             "paymentNoAccount": "Please select a payment account first",
             "instructions": {
                 "title": "Work Instructions",

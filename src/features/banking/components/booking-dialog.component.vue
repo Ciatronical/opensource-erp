@@ -159,6 +159,16 @@
                         <v-alert type="warning" variant="tonal" class="mb-4" rounded="lg">
                             <div class="font-weight-bold">{{ t('BankingView.booking.noCandidates') }}</div>
                             <div class="text-body-2 mt-1">{{ t('BankingView.booking.noCandidatesHint') }}</div>
+                            <v-btn
+                                class="mt-3"
+                                size="small"
+                                color="primary"
+                                variant="flat"
+                                prepend-icon="mdi-credit-card-sync-outline"
+                                @click="openSettlement"
+                            >
+                                {{ t('BankingView.settlement.assign') }}
+                            </v-btn>
                         </v-alert>
                     </template>
 
@@ -285,6 +295,15 @@
                     Weroni
                 </v-btn>
                 <v-btn
+                    prepend-icon="mdi-credit-card-sync-outline"
+                    color="primary"
+                    variant="tonal"
+                    size="small"
+                    @click="openSettlement"
+                >
+                    {{ t('BankingView.settlement.assign') }}
+                </v-btn>
+                <v-btn
                     v-if="transaction.match_status !== 'ignored'"
                     variant="text"
                     size="small"
@@ -311,7 +330,7 @@ const props = defineProps({
     accountId: { type: Number, required: true }
 })
 
-const emit = defineEmits(['update:modelValue', 'done'])
+const emit = defineEmits(['update:modelValue', 'done', 'settlement'])
 
 const { t } = useI18n()
 const matching = useMatching()
@@ -378,11 +397,16 @@ async function bookNow(candidate) {
     const txAmount = Math.abs(parseFloat(props.transaction.amount) || 0)
     const invAmount = Math.abs(parseFloat(candidate.open_amount) || 0)
     if (Math.abs(txAmount - invAmount) > 0.01) {
-        const ok = confirm(t('BankingView.booking.amountMismatchWarning', {
-            invAmount: formatCurrency(candidate.open_amount),
-            txAmount: formatCurrency(props.transaction.amount)
-        }))
-        if (!ok) return
+        const res = await alerts.warning(
+            t('BankingView.booking.amountMismatchWarning', {
+                invAmount: formatCurrency(candidate.open_amount),
+                txAmount: formatCurrency(props.transaction.amount)
+            }),
+            t('BankingView.booking.amountMismatchTitle'),
+            t('BankingView.booking.actionBook'),
+            t('BankingView.booking.cancel')
+        )
+        if (!res.isConfirmed) return
     }
     booking.value = true
     try {
@@ -473,6 +497,13 @@ async function doSearch(term) {
 
 function weroni() {
     alerts.info(t('BankingView.booking.weroniSoon'))
+}
+
+// Kartenabrechnung (Flatpay/Rapyd): an den Hub melden, der den Settlement-Dialog
+// mit demselben Umsatz oeffnet.
+function openSettlement() {
+    emit('settlement', props.transaction)
+    show.value = false
 }
 
 function close() {
