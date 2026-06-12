@@ -6,7 +6,7 @@
  * Eingaben (Zwischenartefakte, deterministisch erzeugt):
  *   $WORK/datev_skrNN.csv     accno|description   (offizielle DATEV-PDF-Extraktion)
  *   $WORK/existing_skrNN.psv  accno|charttype|category|link|taxkey_id|datevautomatik|...|description
- *                             (Bestandskonfiguration aus kivitendo — bekannte gute Werte)
+ *                             (Bestandskonfiguration aus k9o — bekannte gute Werte)
  *
  * Ableitungsregeln (bewusst konservativ — kein stilles Steuer-Raten):
  *   - charttype = 'A' (Buchungskonto).

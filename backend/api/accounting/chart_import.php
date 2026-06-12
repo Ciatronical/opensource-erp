@@ -317,7 +317,7 @@ function _chartTaxTemplate($db, int $taxkey, string $link, array &$cache) {
 
 /**
  * Abweichung der bestehenden chart-Konfig gegenüber der CSV ermitteln (für 'fix'-Report).
- * Beschreibung wird bewusst NICHT verglichen (kivitendo nutzt abweichende Kurzformen).
+ * Beschreibung wird bewusst NICHT verglichen (k9o nutzt abweichende Kurzformen).
  *
  * @return array Feldname => ['ist' => x, 'soll' => y]
  */
