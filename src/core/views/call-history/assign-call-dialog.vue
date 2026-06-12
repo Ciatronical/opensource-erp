@@ -183,14 +183,15 @@ async function assign() {
   if (!selectedCv.value || !props.call) return
   saving.value = true
   try {
-    await axios.post('/api/customer_vendor/', {
+    const { data } = await axios.post('/api/customer_vendor/', {
       action: 'assignCallToCv',
       crmti_id: props.call.crmti_id,
       caller_id: selectedCv.value.id,
       caller_typ: selectedCv.value.typ,
       phone_number: props.call.crmti_number,
-      phone_label: phoneLabel.value || null,
+      phone_label: phoneLabel.value?.trim() || t('CallHistoryView.defaultPhoneLabel'),
     })
+    if (!data?.success) throw new Error(data?.text || 'assign failed')
     toast.success(t('CallHistoryView.assignSuccess'))
     emit('assigned')
     dialogVisible.value = false
@@ -205,12 +206,13 @@ async function removeAssignment() {
   if (!props.call) return
   saving.value = true
   try {
-    await axios.post('/api/customer_vendor/', {
+    const { data } = await axios.post('/api/customer_vendor/', {
       action: 'assignCallToCv',
       crmti_id: props.call.crmti_id,
       caller_id: 0,
       caller_typ: 'X',
     })
+    if (!data?.success) throw new Error(data?.text || 'remove failed')
     toast.success(t('CallHistoryView.assignRemoved'))
     emit('assigned')
     dialogVisible.value = false

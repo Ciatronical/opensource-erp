@@ -1,8 +1,11 @@
 <template>
+    <NavbarView />
     <v-container fluid>
         <v-row>
             <v-col cols="12">
-                <h1 class="text-h5 mb-4">{{ t('AccountingView.overview.title') }}</h1>
+                <h1 class="text-h5 mb-2">{{ t('AccountingView.overview.title') }}</h1>
+                <v-alert type="info" variant="tonal" density="comfortable" icon="mdi-information-outline"
+                         class="mb-2" :text="t('AccountingView.overview.info')" />
             </v-col>
         </v-row>
 
@@ -46,7 +49,41 @@
             </v-col>
         </v-row>
 
-        <!-- Steuer-Uebersicht -->
+        <!-- Offene Posten (echte Zahlen aus ar/ap) -->
+        <v-row class="mt-2">
+            <v-col cols="12" sm="6">
+                <v-card variant="tonal" color="error">
+                    <v-card-text>
+                        <div class="d-flex justify-space-between align-center">
+                            <div>
+                                <div class="text-body-2">{{ t('AccountingView.overview.openReceivables') }}</div>
+                                <div class="text-caption text-medium-emphasis">
+                                    {{ t('AccountingView.overview.openReceivablesHint', { count: dashboard?.open_items?.receivables_count || 0 }) }}
+                                </div>
+                            </div>
+                            <div class="text-h5 font-weight-bold">{{ formatCurrency(dashboard?.open_items?.receivables_sum) }}</div>
+                        </div>
+                    </v-card-text>
+                </v-card>
+            </v-col>
+            <v-col cols="12" sm="6">
+                <v-card variant="tonal" color="deep-orange">
+                    <v-card-text>
+                        <div class="d-flex justify-space-between align-center">
+                            <div>
+                                <div class="text-body-2">{{ t('AccountingView.overview.openPayables') }}</div>
+                                <div class="text-caption text-medium-emphasis">
+                                    {{ t('AccountingView.overview.openPayablesHint', { count: dashboard?.open_items?.payables_count || 0 }) }}
+                                </div>
+                            </div>
+                            <div class="text-h5 font-weight-bold">{{ formatCurrency(dashboard?.open_items?.payables_sum) }}</div>
+                        </div>
+                    </v-card-text>
+                </v-card>
+            </v-col>
+        </v-row>
+
+        <!-- Steuer-Übersicht -->
         <v-row class="mt-2">
             <v-col cols="12" sm="6" md="4">
                 <v-card variant="outlined">
@@ -160,6 +197,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
+import NavbarView from '@/core/components/navbar/navbar.view.vue'
 import { useRouter } from 'vue-router'
 import { useAccounting } from '../composables/useAccounting.js'
 

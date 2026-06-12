@@ -149,25 +149,26 @@
                 </div>
 
                 <v-autocomplete
+                    v-if="selectedArIds.length === 0"
                     v-model="clearingChartId"
-                    :items="accountItems"
+                    :items="clearingAccountItems"
                     :label="t('BankingView.settlement.clearingAccount')"
                     :hint="t('BankingView.settlement.clearingHint')"
                     :placeholder="t('BankingView.settlement.accountSearchPlaceholder')"
                     persistent-hint
                     density="compact"
                     class="mb-3"
-                    :menu-props="{ maxHeight: 400 }"
+                    :menu-props="{ maxHeight: 400, class: 'oserp-scroll-menu' }"
                 />
                 <v-autocomplete
                     v-model="feeChartId"
-                    :items="accountItems"
+                    :items="feeAccountItems"
                     :label="t('BankingView.settlement.feeAccount')"
                     :hint="t('BankingView.settlement.feeHint')"
                     :placeholder="t('BankingView.settlement.accountSearchPlaceholder')"
                     persistent-hint
                     density="compact"
-                    :menu-props="{ maxHeight: 400 }"
+                    :menu-props="{ maxHeight: 400, class: 'oserp-scroll-menu' }"
                 />
             </v-card-text>
 
@@ -250,9 +251,20 @@ const selectedArIds = ref([])
 const invoiceInfo = ref({ found: false, ambiguous: false, gross: 0 })
 const invoicesLoading = ref(false)
 
-const accountItems = computed(() =>
-    accounts.value.map(a => ({ title: `${a.accno} – ${a.description}`, value: a.id }))
-)
+function mapAccounts(list) {
+    return list.map(a => ({ title: `${a.accno} – ${a.description}`, value: a.id }))
+}
+// Sinnvolle Vorauswahl je Feld: Verrechnung/Geldtransit = Aktiva (A),
+// Gebühr = Aufwand (E). Falls ein bereits gemerktes Konto nicht in die
+// Kategorie fällt, wird es trotzdem ergänzt, damit es sichtbar bleibt.
+const clearingAccountItems = computed(() => {
+    const list = accounts.value.filter(a => a.category === 'A' || a.id === clearingChartId.value)
+    return mapAccounts(list)
+})
+const feeAccountItems = computed(() => {
+    const list = accounts.value.filter(a => a.category === 'E' || a.id === feeChartId.value)
+    return mapAccounts(list)
+})
 
 const selectedSum = computed(() =>
     invoiceCandidates.value
@@ -264,12 +276,13 @@ const sumMatches = computed(() =>
     Math.abs(selectedSum.value - Number(invoiceInfo.value.gross || 0)) < 0.005
 )
 
-// Buchen erlaubt: Konten gewaehlt und entweder keine Rechnung gewaehlt
-// (nur Split) ODER die gewaehlten Rechnungen ergeben exakt den Bruttobetrag.
-const canBook = computed(() =>
-    !!feeChartId.value && !!clearingChartId.value &&
-    (selectedArIds.value.length === 0 || sumMatches.value)
-)
+// Buchen erlaubt: Gebuehrenkonto gewaehlt; mit Rechnungsauswahl muss die Summe
+// exakt den Bruttobetrag ergeben, ohne Rechnungen braucht es ein Verrechnungskonto.
+const canBook = computed(() => {
+    if (!feeChartId.value) return false
+    if (selectedArIds.value.length > 0) return sumMatches.value
+    return !!clearingChartId.value
+})
 
 function isBankRow(r) {
     return Math.abs((r.net || 0) - (props.transaction?.amount || 0)) < 0.005

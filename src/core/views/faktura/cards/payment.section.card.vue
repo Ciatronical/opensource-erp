@@ -40,13 +40,25 @@
                                 :ref="el => { if (el) sourceRefs[index] = el }"
                                 v-model="payment.source"
                                 :disabled="isBankBooked(payment)"
+                                :readonly="!isBelegUnlocked(payment, index)"
                                 variant="outlined"
                                 density="compact"
                                 hide-details
                                 autocomplete="off"
                                 @keydown.enter="onEnterKey(index)"
                                 @blur="onPaymentChange"
-                            />
+                            >
+                                <template v-if="!isBankBooked(payment)" #append-inner>
+                                    <v-icon
+                                        size="small"
+                                        :icon="isBelegUnlocked(payment, index) ? 'mdi-lock-open-variant' : 'mdi-lock'"
+                                        :color="isBelegUnlocked(payment, index) ? 'primary' : 'medium-emphasis'"
+                                        style="cursor:pointer"
+                                        :title="isBelegUnlocked(payment, index) ? t('FakturaView.faktura.belegLock') : t('FakturaView.faktura.belegEdit')"
+                                        @click.stop="toggleBeleg(payment, index)"
+                                    />
+                                </template>
+                            </v-text-field>
                         </td>
                         <td>
                             <v-text-field
@@ -213,6 +225,7 @@
 import { defineComponent, ref, computed, watch, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
+import axios from 'axios'
 import { formatNumber, parseNumber } from '@/core/utils/numberFormat.js'
 import * as toasts from '@/core/utils/toasts.js'
 
@@ -270,6 +283,10 @@ export default defineComponent({
         const amountRefs = ref({})
         const sourceRefs = ref({})
 
+        // Beleg-Feld: standardmäßig gesperrt (automatische Belegnummer).
+        // Pro Zahlung (über getPaymentKey) merken, ob es manuell entsperrt wurde.
+        const belegUnlockedKeys = ref({})
+
         // Eingabe-Cache für formatierte Zahlenfelder
         const editingAmounts = ref({})
         const editingExchangeRates = ref({})
@@ -319,6 +336,57 @@ export default defineComponent({
          */
         function isBankBooked(payment) {
             return payment.bank_booked === true
+        }
+
+        /**
+         * Ist das Beleg-Feld dieser Zahlung manuell entsperrt? (Standard: gesperrt)
+         */
+        function isBelegUnlocked(payment, index) {
+            return !!belegUnlockedKeys.value[getPaymentKey(payment, index)]
+        }
+
+        /**
+         * Schloss umschalten — reiner Editierschutz, ändert die Belegnummer NICHT.
+         * Öffnen = Feld bearbeitbar (und fokussieren); Schließen = Wert unverändert lassen.
+         */
+        function toggleBeleg(payment, index) {
+            const key = getPaymentKey(payment, index)
+            const nowUnlocked = !belegUnlockedKeys.value[key]
+            belegUnlockedKeys.value = { ...belegUnlockedKeys.value, [key]: nowUnlocked }
+            if (nowUnlocked) {
+                focusSourceField(index)
+            }
+        }
+
+        /**
+         * Automatische fortlaufende Belegnummer EINMALIG vom Server holen, sobald
+         * ein Zahlungskonto gewählt wurde und das Beleg-Feld noch leer ist. Ein
+         * bereits vorhandener Wert (automatisch oder manuell) wird nie überschrieben.
+         *
+         * @param {number} index Index der Zahlung
+         */
+        async function fetchBelegnummer(index) {
+            const payment = payments.value[index]
+            if (!payment || !payment.chart_id || isBankBooked(payment)) {
+                return
+            }
+            // Nur ein leeres Feld befüllen — vorhandene Nummer bleibt unangetastet
+            if (String(payment.source || '').trim() !== '') {
+                return
+            }
+            try {
+                const res = await axios.post('/api/banking/', {
+                    action: 'getNextBelegnummer',
+                    chart_id: payment.chart_id,
+                    transdate: payment.transdate,
+                })
+                if (res.data?.success) {
+                    payment.source = res.data.payload.belegnummer
+                    onPaymentChange()
+                }
+            } catch (e) {
+                // Belegnummer ist eine Komfortfunktion — Fehler still ignorieren
+            }
         }
 
         /**
@@ -667,6 +735,7 @@ export default defineComponent({
                 event.stopPropagation()
                 payment.chart_id = filteredItems[0].id
                 onPaymentChange()
+                fetchBelegnummer(index)
                 focusAmountField(index)
             }
             // Bei mehreren Ergebnissen: Vuetify macht das Menu-Handling
@@ -732,6 +801,7 @@ export default defineComponent({
          */
         function onAccountSelect(index) {
             onPaymentChange()
+            fetchBelegnummer(index)
             focusAmountField(index)
         }
 
@@ -778,6 +848,8 @@ export default defineComponent({
             isLastRow,
             canDeletePayment,
             isBankBooked,
+            isBelegUnlocked,
+            toggleBeleg,
             goToBankTransaction,
             getFormattedAmount,
             onAmountInput,

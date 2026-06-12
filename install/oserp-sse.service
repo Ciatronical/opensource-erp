@@ -1,0 +1,20 @@
+[Unit]
+Description=OpensourceERP SSE-Server (Echtzeit-Benachrichtigungen via pg_notify)
+After=network.target postgresql.service
+
+[Service]
+# Pfade, User und ggf. den Node-Pfad an die Installation anpassen!
+# Findet systemd "node" nicht (z. B. nvm/Custom-Pfad), absoluten Pfad eintragen,
+# etwa: ExecStart=/usr/local/bin/node /home/work/opensource-erp/backend/sse/sse-server.js
+ExecStart=/usr/bin/env node /home/work/opensource-erp/backend/sse/sse-server.js
+WorkingDirectory=/home/work/opensource-erp/backend/sse
+Restart=always
+RestartSec=5
+TimeoutStopSec=8
+User=work
+Environment=SSE_PORT=3001
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

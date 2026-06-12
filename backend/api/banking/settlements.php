@@ -437,16 +437,18 @@ function findInvoicesForSettlementLine($data) {
  * Verknuepft den Bankumsatz (bank_transaction_acc_trans), setzt ihn auf
  * 'booked' und merkt die gewaehlten Konten beim Kreditor (Settlement-Kopf).
  *
- * Optional: Ist $data['ar_ids'] gesetzt, werden diese Ausgangsrechnungen gegen
- * das Verrechnungskonto als bezahlt gebucht (Summe der offenen Betraege muss
- * == gross sein) — das Verrechnungskonto geht damit auf 0.
+ * Mit $data['ar_ids'] werden die zugehoerigen Ausgangsrechnungen direkt als
+ * bezahlt gebucht: Bank(+net) + Gebuehr(+fee) gegen Forderungen(-gross). Die
+ * Summe der offenen Betraege muss == gross sein. Kein Geldtransit noetig, da
+ * das Geld bereits auf der Bank ist. Ohne ar_ids wird der Bruttobetrag aufs
+ * Verrechnungskonto (clearing_chart_id) gebucht (Fallback).
  *
  * @param int   $data['bank_transaction_id'] Bankumsatz-ID (Nettoauszahlung)
  * @param int   $data['settlement_line_id']  Abrechnungszeile (net muss = Bankbetrag)
  * @param int   $data['fee_chart_id']        Gebuehren-/Aufwandskonto (chart.id)
- * @param int   $data['clearing_chart_id']   Verrechnungskonto Kartenzahlungen (chart.id)
- * @param array $data['ar_ids']              optional: auszugleichende Ausgangsrechnungen (ar.id)
- * @testdata {"bank_transaction_id": 1, "settlement_line_id": 1, "fee_chart_id": 100, "clearing_chart_id": 101, "ar_ids": []}
+ * @param int   $data['clearing_chart_id']   Verrechnungskonto (nur Fallback ohne ar_ids)
+ * @param array $data['ar_ids']              auszugleichende Ausgangsrechnungen (ar.id)
+ * @testdata {"bank_transaction_id": 1, "settlement_line_id": 1, "fee_chart_id": 100, "ar_ids": [1,2]}
  */
 function bookCardSettlementLine($data) {
     $db = DbhCompany::begin();
@@ -458,7 +460,8 @@ function bookCardSettlementLine($data) {
 
     if ($btId <= 0 || $lineId <= 0) { resultInfo(false, 'VALIDATION_ERROR', 'Umsatz- und Zeilen-ID erforderlich'); return; }
     if ($feeChartId <= 0)           { resultInfo(false, 'VALIDATION_ERROR', 'Gebuehrenkonto fehlt'); return; }
-    if ($clrChartId <= 0)           { resultInfo(false, 'VALIDATION_ERROR', 'Verrechnungskonto fehlt'); return; }
+    // Geldtransit/Verrechnungskonto wird nur fuer den Fallback OHNE Rechnungs-
+    // auswahl gebraucht (siehe unten) — bei Rechnungsausgleich nicht noetig.
 
     // Bankumsatz + Bankkonto-Konto laden.
     $bank = $db->getOne(
@@ -491,10 +494,10 @@ function bookCardSettlementLine($data) {
         return;
     }
 
-    // Gegenkonten (Gebuehr/Verrechnung) inkl. chart_link laden.
+    // Gebuehrenkonto laden; Verrechnungskonto nur falls angegeben (Fallback).
     $feeChart = $db->getOne("SELECT id, accno, link FROM chart WHERE id = :id", ['id' => $feeChartId]);
-    $clrChart = $db->getOne("SELECT id, accno, link FROM chart WHERE id = :id", ['id' => $clrChartId]);
-    if (!$feeChart || !$clrChart) { resultInfo(false, 'NOT_FOUND', 'Gebuehren- oder Verrechnungskonto nicht gefunden'); return; }
+    if (!$feeChart) { resultInfo(false, 'NOT_FOUND', 'Gebuehrenkonto nicht gefunden'); return; }
+    $clrChart = $clrChartId > 0 ? $db->getOne("SELECT id, accno, link FROM chart WHERE id = :id", ['id' => $clrChartId]) : null;
 
     $net   = round((float)$bank['amount'], 2);
     $fee   = round((float)$line['fee'], 2);
@@ -526,13 +529,21 @@ function bookCardSettlementLine($data) {
                 ['tid' => $arId]
             );
             if (!$fk) { resultInfo(false, 'DATA_ERROR', 'Forderungskonto der Rechnung ' . $ar['invnumber'] . ' nicht ermittelbar'); return; }
-            $settleList[] = ['ar_id' => $arId, 'pay' => $pay, 'fk_chart_id' => $fk['chart_id']];
+            $settleList[] = ['ar_id' => $arId, 'invnumber' => $ar['invnumber'], 'pay' => $pay, 'fk_chart_id' => $fk['chart_id']];
             $sumCents += (int) round($pay * 100);
         }
         if ($sumCents !== (int) round($gross * 100)) {
             resultInfo(false, 'AMOUNT_MISMATCH', 'Summe der gewaehlten Rechnungen entspricht nicht dem Bruttobetrag');
             return;
         }
+    }
+
+    // Ohne Rechnungsauswahl braucht es ein Verrechnungskonto, um den Bruttobetrag
+    // gegenzubuchen (Fallback). Mit Rechnungsauswahl werden direkt die Forderungen
+    // ausgeglichen — kein Geldtransit noetig.
+    if (count($settleList) === 0 && !$clrChart) {
+        resultInfo(false, 'VALIDATION_ERROR', 'Ohne Rechnungsauswahl ist ein Verrechnungskonto erforderlich');
+        return;
     }
 
     // GL-Kopf.
@@ -559,31 +570,29 @@ function bookCardSettlementLine($data) {
          'memo' => 'Transaktionsgebuehr ' . $line['provider'], 'link' => $feeChart['link'] ?? '']
     );
 
-    // Bein 3: Verrechnungskonto -gross (volle Kartenumsaetze ausgeglichen).
-    $db->execute(
-        "INSERT INTO acc_trans (trans_id, chart_id, amount, transdate, gldate, source, memo, tax_id, taxkey, chart_link)
-         VALUES (:t, :c, :a, :td, :td, 'SETTLEMENT', :memo, 0, 0, :link)",
-        ['t' => $glId, 'c' => $clrChartId, 'a' => -$gross, 'td' => $transdate,
-         'memo' => 'Kartenumsaetze ' . $line['provider'], 'link' => $clrChart['link'] ?? '']
-    );
-
-    // Ausgangsrechnungen gegen das Verrechnungskonto ausgleichen (je AR zwei
-    // Beine unter ihrer eigenen trans_id; Verrechnung +pay summiert sich zu
-    // +gross und hebt das -gross-Bein der Bankbuchung auf → Konto netto 0).
-    foreach ($settleList as $s) {
+    // Bein 3: Gegenbuchung zum Geldeingang.
+    if (count($settleList) > 0) {
+        // Direkt die Forderungen der Kartenkunden ausgleichen (Geld ist bereits
+        // auf der Bank → kein Geldtransit noetig). Summe der Forderungs-Beine
+        // = -gross und hebt Bank(+net) + Gebuehr(+fee) auf.
+        foreach ($settleList as $s) {
+            $db->execute(
+                "INSERT INTO acc_trans (trans_id, chart_id, amount, transdate, gldate, source, memo, tax_id, taxkey, chart_link)
+                 VALUES (:t, :c, :a, :td, :td, 'SETTLEMENT', :memo, 0, 0, 'AR_paid')",
+                ['t' => $glId, 'c' => $s['fk_chart_id'], 'a' => -$s['pay'], 'td' => $transdate,
+                 'memo' => 'Kartenzahlung ' . $line['provider'] . ' Rg ' . $s['invnumber']]
+            );
+            $db->execute("UPDATE ar SET paid = COALESCE(paid,0) + :inc WHERE id = :id", ['inc' => $s['pay'], 'id' => $s['ar_id']]);
+        }
+    } else {
+        // Fallback ohne Rechnungsauswahl: Bruttobetrag aufs Verrechnungskonto
+        // (Geldtransit) parken; Rechnungen werden separat ausgeglichen.
         $db->execute(
             "INSERT INTO acc_trans (trans_id, chart_id, amount, transdate, gldate, source, memo, tax_id, taxkey, chart_link)
              VALUES (:t, :c, :a, :td, :td, 'SETTLEMENT', :memo, 0, 0, :link)",
-            ['t' => $s['ar_id'], 'c' => $clrChartId, 'a' => $s['pay'], 'td' => $transdate,
-             'memo' => 'Kartenzahlung ' . $line['provider'] . ' #' . $btId, 'link' => $clrChart['link'] ?? '']
+            ['t' => $glId, 'c' => $clrChartId, 'a' => -$gross, 'td' => $transdate,
+             'memo' => 'Kartenumsaetze ' . $line['provider'], 'link' => $clrChart['link'] ?? '']
         );
-        $db->execute(
-            "INSERT INTO acc_trans (trans_id, chart_id, amount, transdate, gldate, source, memo, tax_id, taxkey, chart_link)
-             VALUES (:t, :c, :a, :td, :td, 'SETTLEMENT', :memo, 0, 0, 'AR_paid')",
-            ['t' => $s['ar_id'], 'c' => $s['fk_chart_id'], 'a' => -$s['pay'], 'td' => $transdate,
-             'memo' => 'Kartenzahlung ' . $line['provider'] . ' #' . $btId]
-        );
-        $db->execute("UPDATE ar SET paid = COALESCE(paid,0) + :inc WHERE id = :id", ['inc' => $s['pay'], 'id' => $s['ar_id']]);
     }
 
     // Bankumsatz mit der Buchung verknuepfen (kivitendo-Mapping, Bank-Bein + gl_id).
@@ -602,11 +611,16 @@ function bookCardSettlementLine($data) {
              settled_ar_ids = :ar, mtime = NOW()
          WHERE id = :id",
         ['gl' => $glId, 'bt' => $btId, 'id' => $lineId,
-         'ar' => count($settleList) ? json_encode(array_column($settleList, 'ar_id')) : null]
+         'ar' => count($settleList)
+             ? json_encode(array_map(function ($s) { return ['ar_id' => $s['ar_id'], 'pay' => $s['pay']]; }, $settleList))
+             : null]
     );
+    // Gewaehltes Gebuehrenkonto (und ggf. Verrechnungskonto) beim Kreditor merken.
     $db->execute(
-        "UPDATE payment_settlements SET fee_chart_id = :fee, clearing_chart_id = :clr, mtime = NOW() WHERE id = :sid",
-        ['fee' => $feeChartId, 'clr' => $clrChartId, 'sid' => $line['settlement_id']]
+        "UPDATE payment_settlements SET fee_chart_id = :fee,
+                clearing_chart_id = COALESCE(:clr, clearing_chart_id), mtime = NOW()
+         WHERE id = :sid",
+        ['fee' => $feeChartId, 'clr' => $clrChartId > 0 ? $clrChartId : null, 'sid' => $line['settlement_id']]
     );
 
     resultInfo(true, 'Gebucht', [
@@ -646,26 +660,19 @@ function unbookCardSettlementLine($data) {
         $db->execute("DELETE FROM gl WHERE id = :gl", ['gl' => $glId]);
     }
 
-    // Rechnungsausgleich zuruecknehmen: ar.paid mindern + Settlement-Beine loeschen.
-    $settledArIds = [];
+    // Rechnungsausgleich zuruecknehmen: ar.paid je Rechnung mindern. Die Forderungs-
+    // Beine liegen unter der gl und wurden oben bereits mitgeloescht.
+    $settled = [];
     if (!empty($line['settled_ar_ids'])) {
         $decoded = json_decode($line['settled_ar_ids'], true);
-        if (is_array($decoded)) $settledArIds = $decoded;
+        if (is_array($decoded)) $settled = $decoded;
     }
-    foreach ($settledArIds as $arId) {
-        $arId = intval($arId);
-        if ($arId <= 0) continue;
-        // Gezahlter Betrag = positives Verrechnungs-Bein dieser Settlement-Buchung.
-        $row = $db->getOne(
-            "SELECT COALESCE(SUM(amount), 0) AS pay FROM acc_trans
-             WHERE trans_id = :tid AND source = 'SETTLEMENT' AND amount > 0",
-            ['tid' => $arId]
-        );
-        $pay = round((float)($row['pay'] ?? 0), 2);
-        if ($pay > 0) {
+    foreach ($settled as $s) {
+        $arId = intval($s['ar_id'] ?? 0);
+        $pay  = round((float)($s['pay'] ?? 0), 2);
+        if ($arId > 0 && $pay > 0) {
             $db->execute("UPDATE ar SET paid = COALESCE(paid,0) - :dec WHERE id = :id", ['dec' => $pay, 'id' => $arId]);
         }
-        $db->execute("DELETE FROM acc_trans WHERE trans_id = :tid AND source = 'SETTLEMENT'", ['tid' => $arId]);
     }
     if ($btId > 0) {
         $db->execute("UPDATE bank_transactions SET match_status = 'unmatched', cleared = false WHERE id = :id", ['id' => $btId]);

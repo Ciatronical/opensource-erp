@@ -13,6 +13,7 @@
             "contacts": "Ansprechpartner",
             "deliveries": "Lieferungen",
             "notes": "Bemerkungen",
+            "customVars": "Benutzerdefinierte Variablen",
             "files": "Dokumente",
             "priceRules": "Preisregeln",
             "turnover": "Umsatzstatistik",
@@ -91,6 +92,10 @@
             "done": "Fertig",
             "placeholder": "Hier können Sie Bemerkungen zum Kunden eingeben...",
             "infoText": "Hier können interne Bemerkungen zum Kunden erfasst werden."
+        },
+        "customVars": {
+            "title": "Benutzerdefinierte Variablen",
+            "noConfigs": "Es sind keine benutzerdefinierten Variablen für Kunden/Lieferanten konfiguriert."
         },
         "files": {
             "title": "Dokumente",
@@ -291,6 +296,7 @@
             "notes": "Interne Bemerkungen",
             "contact_origin": "Herkunft der personenbezogenen Daten",
             "customernumber": "Kundennummer",
+            "vendornumber": "Lieferantennummer",
             "taxnumber": "Steuernummer",
             "ustid": "USt-IdNr.",
             "c_vendor_id": "Unsere Lieferanten-Nr. beim Kunden",

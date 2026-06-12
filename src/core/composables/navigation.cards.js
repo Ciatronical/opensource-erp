@@ -99,6 +99,7 @@ export function useNavigationCards() {
                     { title: t('AccountingView.menu.outgoingMatching'), to: t('AccountingView.routes.accountingOutgoing') },
                     '-',
                     { title: t('AccountingView.menu.vendors'), to: t('AccountingView.routes.accountingVendors') },
+                    { title: t('AccountingView.menu.chartOfAccounts'), to: t('AccountingView.routes.accountingChartOfAccounts') },
                     '-',
                     { title: t('BankingView.menu.title'), to: t('BankingView.routes.bankingOverview') },
                     { title: t('KasseView.title'), to: t('KasseView.routes.kasse') },

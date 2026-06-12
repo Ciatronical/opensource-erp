@@ -117,6 +117,7 @@ const AccountingInvoiceUploadView = () => import('@/features/accounting/views/ac
 const AccountingVendorsView = () => import('@/features/accounting/views/accounting.vendors.vue')
 const AccountingDatevExportView = () => import('@/features/accounting/views/accounting.datev-export.vue')
 const AccountingOutgoingView = () => import('@/features/accounting/views/accounting.outgoing.vue')
+const AccountingChartOfAccountsView = () => import('@/features/accounting/views/accounting.chart-of-accounts.vue')
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -491,6 +492,11 @@ const router = createRouter({
             name: 'accounting-outgoing',
             component: AccountingOutgoingView,
         },
+        {
+            path: i18n.global.t('AccountingView.routes.accountingChartOfAccounts'),
+            name: 'accounting-chart-of-accounts',
+            component: AccountingChartOfAccountsView,
+        },
         // ── Banking ── (alle Funktionen in einem Hub zusammengefasst)
         {
             path: i18n.global.t('BankingView.routes.bankingOverview'),
@@ -653,8 +659,12 @@ router.beforeEach(async (to) => {
     }
 });
 
-router.onError(error => {
-    // Dynamische Import-Fehler nach neuem Build: Seite automatisch neu laden
+router.onError((error, to) => {
+    // Dynamische Import-Fehler nach neuem Build: direkt zum Ziel hart navigieren.
+    // NICHT window.location.reload() — das lädt die aktuelle (alte) Seite neu, da die
+    // Navigation zum Ziel wegen des fehlgeschlagenen Imports nie übernommen wurde.
+    // Stattdessen den Browser direkt auf die Zielroute schicken, damit der erste Klick
+    // sofort die richtige Seite mit den frischen Chunks lädt.
     if (error.message && (
         error.message.includes('dynamically imported module') ||
         error.message.includes('Failed to fetch') ||
@@ -662,7 +672,7 @@ router.onError(error => {
         error.message.includes('Loading CSS chunk')
     )) {
         console.warn('Neuer Build erkannt — Seite wird neu geladen...');
-        window.location.reload();
+        window.location.assign(to?.fullPath || window.location.href);
         return;
     }
     console.error(`Ein Navigationsfehler ist aufgetreten (${error.code}): `, error.message);

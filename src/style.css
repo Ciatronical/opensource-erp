@@ -54,3 +54,43 @@
 .swal2-icon.swal2-warning .swal2-icon-content {
     color: #f44336 !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   Dropdown-Menüs mit vielen Einträgen (z. B. Kontenauswahl):
+   sichtbaren Scrollbalken erzwingen. Das Overlay-Menü wird ans
+   <body> teleportiert, daher muss das Styling global (unscoped) sein.
+   ═══════════════════════════════════════════════════════════════ */
+/* Scroll-Container ist je nach Vuetify-Version der Overlay-Content oder die
+   Liste; die menu-props-Klasse kann am Overlay-Root ODER am Content sitzen.
+   Daher alle plausiblen Kombinationen abdecken. */
+.oserp-scroll-menu,
+.oserp-scroll-menu .v-overlay__content,
+.oserp-scroll-menu.v-overlay__content,
+.oserp-scroll-menu .v-list,
+.oserp-scroll-menu .v-select__content {
+    overflow-y: auto !important;
+    scrollbar-width: thin;                 /* Firefox */
+    scrollbar-color: rgba(0,0,0,0.45) transparent;
+}
+.oserp-scroll-menu::-webkit-scrollbar,
+.oserp-scroll-menu .v-overlay__content::-webkit-scrollbar,
+.oserp-scroll-menu.v-overlay__content::-webkit-scrollbar,
+.oserp-scroll-menu .v-list::-webkit-scrollbar {
+    width: 12px;
+}
+.oserp-scroll-menu::-webkit-scrollbar-thumb,
+.oserp-scroll-menu .v-overlay__content::-webkit-scrollbar-thumb,
+.oserp-scroll-menu.v-overlay__content::-webkit-scrollbar-thumb,
+.oserp-scroll-menu .v-list::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,0.45);
+    border-radius: 6px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+}
+.oserp-scroll-menu::-webkit-scrollbar-thumb:hover,
+.oserp-scroll-menu .v-overlay__content::-webkit-scrollbar-thumb:hover,
+.oserp-scroll-menu.v-overlay__content::-webkit-scrollbar-thumb:hover,
+.oserp-scroll-menu .v-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(0,0,0,0.65);
+    background-clip: content-box;
+}

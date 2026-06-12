@@ -142,6 +142,8 @@
             "date": "Datum",
             "paymentDate": "Datum",
             "paymentSource": "Beleg",
+            "belegEdit": "Belegnummer bearbeiten",
+            "belegLock": "Belegnummer sperren",
             "paymentMemo": "Memo",
             "paymentAccount": "Zahlungskonto",
             "paymentExchangeRate": "Wechselkurs",

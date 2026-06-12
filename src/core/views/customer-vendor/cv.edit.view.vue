@@ -139,6 +139,24 @@
                             </v-list-item-title>
                         </v-list-item>
                         <v-list-item
+                            value="custom-vars"
+                            :active="tab === 'custom-vars'"
+                            @click="tab = 'custom-vars'"
+                        >
+                            <template #prepend>
+                                <v-icon>mdi-variable</v-icon>
+                            </template>
+                            <v-list-item-title class="d-none d-md-block d-flex align-center justify-space-between">
+                                <span>{{ t('CustomerVendorEditView.tabs.customVars') }}</span>
+                                <v-badge
+                                    v-if="customVars.length > 0"
+                                    :content="customVars.length"
+                                    color="primary"
+                                    inline
+                                />
+                            </v-list-item-title>
+                        </v-list-item>
+                        <v-list-item
                             v-if="!isNewMode"
                             value="files"
                             :active="tab === 'files'"
@@ -225,6 +243,9 @@
                         </v-window-item>
                         <v-window-item value="notes">
                             <notes-tab />
+                        </v-window-item>
+                        <v-window-item value="custom-vars">
+                            <custom-vars-tab v-model="customVars" />
                         </v-window-item>
                         <v-window-item v-if="!isNewMode" value="files">
                             <files-tab
@@ -322,6 +343,7 @@ import AdditionalBillingTab from './tabs/additional-billing.tab.vue'
 import BankTab from './tabs/bank.tab.vue'
 import ShiptoTab from './tabs/shipto.tab.vue'
 import ContactsTab from './tabs/contacts.tab.vue'
+import CustomVarsTab from './tabs/custom-vars.tab.vue'
 import DeliveriesTab from './tabs/deliveries.tab.vue'
 import NotesTab from './tabs/notes.tab.vue'
 const FilesTab = defineAsyncComponent(() => import('./tabs/files.tab.vue'))
@@ -340,6 +362,7 @@ export default {
         BankTab,
         ShiptoTab,
         ContactsTab,
+        CustomVarsTab,
         DeliveriesTab,
         NotesTab,
         FilesTab,
@@ -382,6 +405,7 @@ export default {
         const cvData = ref({})
         const shiptos = ref([])
         const billingAddresses = ref([])
+        const customVars = ref([])
 
         // Duplikat-Warnung State
         const showDuplicateDialog = ref(false)
@@ -513,6 +537,7 @@ export default {
                 shiptos.value = JSON.parse(JSON.stringify(oserpData.customer_vendor.shiptos || []))
                 billingAddresses.value = JSON.parse(JSON.stringify(oserpData.customer_vendor.additional_billing_addresses || []))
                 contacts.value = JSON.parse(JSON.stringify(oserpData.customer_vendor.contacts || []))
+                customVars.value = JSON.parse(JSON.stringify(oserpData.customer_vendor.custom_vars || []))
             }
         }
 
@@ -523,7 +548,7 @@ export default {
         // }, { deep: true })
 
         // Auto-Save Watcher
-        watch([cvData, shiptos, billingAddresses, contacts], onDataChange, { deep: true })
+        watch([cvData, shiptos, billingAddresses, contacts, customVars], onDataChange, { deep: true })
 
         // Auto-Save Hilfsfunktionen
         function isTextInput(el) {
@@ -636,6 +661,7 @@ export default {
                     }))
 
                     oserpData.customer_vendor.contacts = contacts.value
+                    oserpData.customer_vendor.custom_vars = customVars.value
                 }
 
                 const result = await oserpData.saveCV()
@@ -805,7 +831,8 @@ export default {
                     ...shipto,
                     trans_id: Number(cvId),
                     module: 'CT'
-                }))
+                })),
+                custom_vars: customVars.value
             }
             navigator.sendBeacon(
                 '/api/customer_vendor/',
@@ -898,6 +925,7 @@ export default {
             shiptos,
             billingAddresses,
             contacts,
+            customVars,
             expandShiptoId,
             expandBillingAddressId,
             businessTypes,

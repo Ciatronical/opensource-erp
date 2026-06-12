@@ -155,9 +155,17 @@ else
     echo "session.cookie_secure = 0" > /usr/local/etc/php/conf.d/ssl-cookie.ini
 fi
 
-# ── 6. SSE-Server starten (Hintergrund) ──
+# ── 6. SSE-Server starten (Hintergrund, mit Auto-Restart) ──
+# Stirbt der Node-Prozess (z. B. DB-Abbruch), wuerde Apache sonst dauerhaft 503
+# unter /sse/ liefern. Die Schleife startet ihn automatisch neu.
 echo "Starte SSE-Server..."
-node /var/www/html/backend/sse/sse-server.js &
+(
+    while true; do
+        node /var/www/html/backend/sse/sse-server.js
+        echo "SSE-Server beendet (Exit $?) — Neustart in 2s..."
+        sleep 2
+    done
+) &
 
 echo "=== OpensourceERP: Starte Apache ==="
 

@@ -435,20 +435,32 @@ function getCV($data, $withConfig = []) {
                                 ),
                             'custom_vars',
                                 (
-                                    SELECT json_agg(custom_vars)
+                                    SELECT COALESCE(json_agg(custom_vars ORDER BY custom_vars.sortkey, custom_vars.config_id), '[]'::json)
                                     FROM (
                                         SELECT
+                                            cfg.id            AS config_id,
+                                            cfg.name,
+                                            cfg.description,
+                                            cfg.type,
+                                            cfg.options,
+                                            cfg.default_value,
+                                            cfg.sortkey,
+                                            var.bool_value,
+                                            var.number_value,
+                                            var.timestamp_value,
+                                            var.text_value,
                                             COALESCE(
-                                                custom_variables.bool_value::text,
-                                                custom_variables.number_value::text,
-                                                custom_variables.timestamp_value::text,
-                                                custom_variables.text_value
-                                            ) AS value,
-                                            custom_variable_configs.description
-                                        FROM custom_variables
-                                        JOIN custom_variable_configs
-                                        ON custom_variables.config_id = custom_variable_configs.id
-                                        WHERE trans_id = $cv_id
+                                                var.bool_value::text,
+                                                var.number_value::text,
+                                                to_char(var.timestamp_value, 'DD.MM.YYYY'),
+                                                var.text_value
+                                            ) AS value
+                                        FROM custom_variable_configs cfg
+                                        LEFT JOIN custom_variables var
+                                            ON var.config_id = cfg.id
+                                            AND var.trans_id = $cv_id
+                                            AND COALESCE(var.sub_module, '') = ''
+                                        WHERE cfg.module = 'CT'
                                     ) AS custom_vars
                                 ),
                             'offers',
@@ -954,6 +966,16 @@ function saveCV($data) {
         unset($data['profile']['keywords']);
     }
 
+    // benutzerdefinierte Variablen vor dem Loop extrahieren, damit sie nicht
+    // als unbekannte Tabelle im Hauptloop landen
+    $customVars = null;
+    $hasCustomVars = false;
+    if (array_key_exists('custom_vars', $data)) {
+        $hasCustomVars = true;
+        $customVars = $data['custom_vars'];
+        unset($data['custom_vars']);
+    }
+
     $apiCompanySpace->beginTransaction();
     $newId = null;
     foreach($data as $tableName => $tableData) {
@@ -965,8 +987,12 @@ function saveCV($data) {
         if('profile' === $tableName) {
             if('C' === $tableData['src']) {
                 $table = 'customer';
+                // vendornumber existiert nur in der vendor-Tabelle
+                unset($tableData['vendornumber']);
             } else {
                 $table = 'vendor';
+                // customernumber existiert nur in der customer-Tabelle
+                unset($tableData['customernumber']);
             }
             // Entferne das 'src'-Feld, da es nicht in der Tabelle existiert
             unset($tableData['src']);
@@ -1141,6 +1167,52 @@ function saveCV($data) {
              ON CONFLICT ($extFk) DO UPDATE SET keywords = :kw, mtime = now()",
             [':cid' => $cv_id, ':kw' => $kwValue]
         );
+    }
+
+    // benutzerdefinierte Variablen (custom_variables) speichern.
+    // Es gibt keinen UNIQUE-Constraint auf (config_id, trans_id), daher wird der
+    // vorhandene Wert geloescht und ggf. neu eingefuegt (leere Werte = nicht gesetzt).
+    if ($hasCustomVars && $cv_id && is_array($customVars)) {
+        foreach ($customVars as $cvar) {
+            $configId = $cvar['config_id'] ?? null;
+            if (!$configId) continue;
+            $type = $cvar['type'] ?? 'text';
+            $raw  = $cvar['value'] ?? null;
+
+            $boolVal = null; $numVal = null; $tsVal = null; $textVal = null;
+            $hasValue = !($raw === null || $raw === '');
+            switch ($type) {
+                case 'bool':
+                case 'boolean':
+                    // Checkbox: immer einen Wert setzen (true/false)
+                    $boolVal = ($raw === true || $raw === 't' || $raw === 'true' || $raw === 1 || $raw === '1') ? 't' : 'f';
+                    $hasValue = true;
+                    break;
+                case 'number':
+                    $numVal = $hasValue ? $raw : null;
+                    break;
+                case 'date':
+                case 'timestamp':
+                    $tsVal = $hasValue ? $raw : null;
+                    break;
+                default:
+                    $textVal = $hasValue ? trim((string)$raw) : null;
+                    if ($textVal === '') { $textVal = null; $hasValue = false; }
+                    break;
+            }
+
+            $apiCompanySpace->execute(
+                "DELETE FROM custom_variables WHERE config_id = :cid AND trans_id = :tid AND COALESCE(sub_module, '') = ''",
+                [':cid' => $configId, ':tid' => $cv_id]
+            );
+            if ($hasValue) {
+                $apiCompanySpace->execute(
+                    "INSERT INTO custom_variables (config_id, trans_id, sub_module, bool_value, number_value, timestamp_value, text_value)
+                     VALUES (:cid, :tid, '', :bv, :nv, :tv, :txt)",
+                    [':cid' => $configId, ':tid' => $cv_id, ':bv' => $boolVal, ':nv' => $numVal, ':tv' => $tsVal, ':txt' => $textVal]
+                );
+            }
+        }
     }
 
     $apiCompanySpace->commit();
@@ -1398,9 +1470,9 @@ function assignCallToCv($data) {
         throw new ApiError('CRMTI_NOT_FOUND', 'Anrufdatensatz nicht gefunden');
     }
 
-    // 2. Telefonnummer mit Label beim Kunden/Lieferanten speichern
+    // 2. Telefonnummer beim Kunden/Lieferanten speichern (Label ist optional)
     // Format: phone_numbers = [{"label": "Büro", "number": "030-123"}, ...]
-    if ($phoneNumber && $phoneLabel && in_array($callerTyp, ['C', 'V'])) {
+    if ($phoneNumber && in_array($callerTyp, ['C', 'V'])) {
         $extTable = $callerTyp === 'C' ? 'customer_ext' : 'vendor_ext';
         $extFk = $callerTyp === 'C' ? 'customer_id' : 'vendor_id';
 
@@ -1422,7 +1494,7 @@ function assignCallToCv($data) {
         }
 
         if (!$exists) {
-            $entries[] = ['label' => $phoneLabel, 'number' => $phoneNumber];
+            $entries[] = ['label' => $phoneLabel ?? '', 'number' => $phoneNumber];
             $jsonEntries = json_encode($entries);
 
             $upsert = $pdo->prepare(<<<SQL

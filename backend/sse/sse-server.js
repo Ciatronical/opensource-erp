@@ -74,6 +74,14 @@ const authPool = new pg.Pool({
     user: dbUser, password: dbPass, max: 3,
 });
 
+// Idle-Client-Fehler im Pool MUESSEN abgefangen werden: node-pg wirft sonst
+// bei einem Verbindungsabbruch (DB-Neustart, Idle-Timeout, Netz-Blip) eine
+// uncaughtException und beendet den Prozess. Ohne Auto-Restart liefert Apache
+// dann dauerhaft 503 unter /sse/.
+authPool.on('error', (err) => {
+    console.error('Auth-Pool Fehler (idle client):', err.message);
+});
+
 // Company-DB ueber Session-Cookie ermitteln (wie PHP DbhCompany::connectPDO)
 async function lookupCompanyDbBySession(sessionId) {
     const res = await authPool.query(`
@@ -249,6 +257,16 @@ const server = http.createServer(async (req, res) => {
 
 server.listen(SSE_PORT, '127.0.0.1', () => {
     console.log(`SSE-Server laeuft auf http://127.0.0.1:${SSE_PORT}`);
+});
+
+// Letzte Verteidigungslinie: ein unerwarteter Fehler darf den SSE-Server nicht
+// killen. Als reiner Relay-Dienst ist Weiterlaufen+Loggen besser als ein Crash,
+// der bis zum Neustart nur noch 503 produziert.
+process.on('uncaughtException', (err) => {
+    console.error('uncaughtException:', err);
+});
+process.on('unhandledRejection', (err) => {
+    console.error('unhandledRejection:', err);
 });
 
 // --- Build-ID ueberwachen: bei Aenderung alle Clients benachrichtigen ---

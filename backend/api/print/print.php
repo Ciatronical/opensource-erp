@@ -914,6 +914,11 @@ function loadPrintData($db, int $fakturaID, string $fakturaType, bool $lxCarsEna
     // Steuer
     $arrays['taxdescription'] = array_map(function($t) { return $t['taxdescription']; }, $taxes);
     $arrays['tax']            = array_map(function($t) use ($fmt) { return $fmt($t['tax_amount']); }, $taxes);
+    $arrays['taxrate']        = array_map(function($t) {
+        // Satz aus Dezimalwert (z. B. 0.19) in Prozent (19) ohne unnötige Nachkommastellen
+        $prozent = floatval($t['rate']) * 100;
+        return rtrim(rtrim(number_format($prozent, 2, ',', '.'), '0'), ',');
+    }, $taxes);
 
     // Kfz-Arrays
     if ($isKfz) {

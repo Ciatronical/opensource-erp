@@ -1,9 +1,11 @@
 <template>
+    <NavbarView />
     <v-container fluid>
         <v-row>
             <v-col cols="12">
                 <h1 class="text-h5 mb-1">{{ t('AccountingView.outgoing.title') }}</h1>
                 <p class="text-body-2 text-grey mb-4">{{ t('AccountingView.outgoing.subtitle') }}</p>
+                <v-alert type="info" variant="tonal" density="comfortable" icon="mdi-information-outline" class="mt-1 mb-2" :text="t('AccountingView.outgoing.info')" />
             </v-col>
         </v-row>
 
@@ -99,6 +101,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
+import NavbarView from '@/core/components/navbar/navbar.view.vue'
 import { useOutgoingMatching } from '../composables/useOutgoingMatching.js'
 
 const { t } = useI18n()

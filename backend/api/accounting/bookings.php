@@ -350,10 +350,21 @@ function getAccountingDashboard($data) {
         []
     );
 
+    // Offene Forderungen (Debitoren) und Verbindlichkeiten (Kreditoren) aus den
+    // kivitendo-Standardtabellen — liefert auch ohne KI-Buchungen sinnvolle Zahlen
+    $openItems = $db->getOne(<<<SQL
+        SELECT
+            (SELECT COUNT(*) FROM ar WHERE amount <> COALESCE(paid, 0)) AS receivables_count,
+            (SELECT COALESCE(SUM(amount - COALESCE(paid, 0)), 0) FROM ar WHERE amount <> COALESCE(paid, 0)) AS receivables_sum,
+            (SELECT COUNT(*) FROM ap WHERE amount <> COALESCE(paid, 0)) AS payables_count,
+            (SELECT COALESCE(SUM(amount - COALESCE(paid, 0)), 0) FROM ap WHERE amount <> COALESCE(paid, 0)) AS payables_sum
+    SQL, []);
+
     resultInfo(true, '', [
         'stats'            => $stats,
         'recent_bookings'  => $recent ?: [],
-        'unmatched_bank'   => intval($unmatchedBank['cnt'] ?? 0)
+        'unmatched_bank'   => intval($unmatchedBank['cnt'] ?? 0),
+        'open_items'       => $openItems
     ]);
 }
 

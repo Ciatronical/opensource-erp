@@ -686,7 +686,8 @@ export const oserpStore = defineStore('oserpStore', () => {
             profile: customer_vendor.value.profile,
             additional_billing_addresses: customer_vendor.value.additional_billing_addresses,
             contacts: customer_vendor.value.contacts,
-            shiptos: customer_vendor.value.shiptos
+            shiptos: customer_vendor.value.shiptos,
+            custom_vars: customer_vendor.value.custom_vars
         });
 
         if (!response.data.success) {

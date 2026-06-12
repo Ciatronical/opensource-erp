@@ -526,3 +526,31 @@ function getDocumentPdf($data) {
     readfile($filePath);
     exit;
 }
+
+/**
+ * Bereits gebuchte Eingangsrechnungen (Kreditoren) laden
+ *
+ * Zeigt die in kivitendo verbuchten Einkaufsrechnungen mit Lieferant,
+ * Betrag und Zahlungsstatus — als Historie unter dem Upload-Bereich.
+ *
+ * @param int $data['limit'] Anzahl (Standard: 50)
+ * @testdata {"limit": 50}
+ */
+function getIncomingInvoices($data) {
+    $db = DbhCompany::begin();
+    $limit = intval($data['limit'] ?? 50);
+
+    $invoices = $db->getAll(<<<SQL
+        SELECT a.id, a.invnumber, a.amount, COALESCE(a.paid, 0) AS paid,
+               (a.amount - COALESCE(a.paid, 0)) AS open_amount,
+               TO_CHAR(a.transdate, 'DD.MM.YYYY') AS transdate_fmt,
+               TO_CHAR(a.duedate, 'DD.MM.YYYY') AS duedate_fmt,
+               v.name AS vendor_name
+        FROM ap a
+        LEFT JOIN vendor v ON v.id = a.vendor_id
+        ORDER BY a.transdate DESC, a.id DESC
+        LIMIT :limit
+    SQL, [':limit' => $limit]);
+
+    resultInfo(true, '', ['invoices' => $invoices ?: []]);
+}

@@ -85,8 +85,8 @@
     <!-- Responsive Menüs -->
     <ResponsiveMenu :menus="cards" @menu-click="handleMenuAction" />
 
-    <!-- Globale Schnellsuche -->
-    <GlobalSearchComponent class="mx-2" style="max-width: 400px; flex: 1" />
+    <!-- Globale Schnellsuche (Inline ab grossen Bildschirmen) -->
+    <GlobalSearchComponent v-if="lgAndUp" class="mx-2" style="min-width: 240px; max-width: 400px; flex: 1" />
 
     <v-spacer />
 
@@ -209,6 +209,12 @@
         </v-list>
       </v-card>
     </v-menu>
+
+    <!-- Globale Schnellsuche auf kleinen Bildschirmen: eigene volle Zeile,
+         damit das Eingabefeld nicht zusammengequetscht wird -->
+    <template v-if="!lgAndUp" #extension>
+      <GlobalSearchComponent class="mx-2" style="width: 100%" />
+    </template>
   </v-app-bar>
 
   <!-- Info Bar: Neue Anrufe & E-Mails -->
@@ -329,6 +335,7 @@ import { oserpStore } from '@/core/stores/oserp.store.js'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { computed, inject, nextTick, ref } from 'vue'
+import { useDisplay } from 'vuetify'
 import MessagesView from '@/core/components/messages/messages.view.vue'
 import ResponsiveMenu from '@/core/components/menus/responsive.menus.vue'
 import GlobalSearchComponent from '@/core/components/navbar/global-search.component.vue'
@@ -368,6 +375,7 @@ export default {
     const weroni = weroniStore()
     const router = useRouter()
     const { t } = useI18n()
+    const { lgAndUp } = useDisplay()
     const cvSrc = computed(() => oserpData.customer_vendor?.profile?.src || 'C')
     const appReady = inject('appReady')
 
@@ -574,6 +582,7 @@ export default {
 
     return {
       oserpData,
+      lgAndUp,
       appTitle,
       isDemo,
       showDemoWarning,

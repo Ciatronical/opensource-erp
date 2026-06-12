@@ -13,6 +13,7 @@
             "contacts": "Contact Persons",
             "deliveries": "Deliveries",
             "notes": "Notes",
+            "customVars": "Custom Variables",
             "files": "Documents",
             "priceRules": "Price Rules",
             "turnover": "Turnover Statistics",
@@ -91,6 +92,10 @@
             "done": "Done",
             "placeholder": "Enter notes about the customer here...",
             "infoText": "Internal notes about the customer can be recorded here."
+        },
+        "customVars": {
+            "title": "Custom Variables",
+            "noConfigs": "No custom variables are configured for customers/vendors."
         },
         "files": {
             "title": "Documents",
@@ -291,6 +296,7 @@
             "notes": "Internal Notes",
             "contact_origin": "Origin of Personal Data",
             "customernumber": "Customer Number",
+            "vendornumber": "Vendor Number",
             "taxnumber": "Tax Number",
             "ustid": "VAT ID",
             "c_vendor_id": "Our Vendor Number at Customer",

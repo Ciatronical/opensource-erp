@@ -2,14 +2,16 @@
     <NavbarView />
     <v-container fluid>
 
+        <v-alert type="info" variant="tonal" density="comfortable" icon="mdi-information-outline" class="mb-3" :text="t('KasseView.info')" />
+
         <!-- Header -->
         <v-row align="center" class="mb-3">
             <v-col>
                 <h1 class="text-h5">
                     <v-icon start>mdi-cash-register</v-icon>
-                    {{ selectedRegister ? selectedRegister.name : t('KasseView.title') }}
+                    {{ t('KasseView.title') }}
                     <span v-if="selectedRegister" class="text-body-2 text-disabled ml-2">
-                        {{ t('KasseView.chartAccount') }} {{ selectedRegister.chart_accno }}
+                        {{ selectedRegister.chart_description }} · {{ t('KasseView.chartAccount') }} {{ selectedRegister.chart_accno }}
                     </span>
                 </h1>
             </v-col>
@@ -17,12 +19,12 @@
                 <v-select
                     v-model="selectedRegisterId"
                     :items="registers"
-                    item-title="name"
+                    :item-title="r => `${r.chart_accno} – ${r.name}`"
                     item-value="id"
                     density="compact"
                     hide-details
                     variant="outlined"
-                    style="min-width:220px"
+                    style="min-width:240px"
                     prepend-inner-icon="mdi-cash-register"
                 />
             </v-col>
@@ -30,7 +32,7 @@
                 <v-btn
                     v-if="selectedRegister"
                     color="primary"
-                    variant="tonal"
+                    variant="flat"
                     size="small"
                     @click="openNewTransaction()"
                 >
@@ -40,6 +42,15 @@
                 <v-progress-circular v-else-if="loading" indeterminate size="24" />
             </v-col>
         </v-row>
+
+        <v-alert
+            v-if="!loading && registers.length === 0"
+            type="info"
+            variant="tonal"
+            class="mb-4"
+        >
+            {{ t('KasseView.noKassaAccount') }}
+        </v-alert>
 
         <!-- Statistik-Karten -->
         <v-row v-if="selectedRegister" class="mb-3">
@@ -77,8 +88,8 @@
 
         <!-- Tabs -->
         <v-tabs v-if="selectedRegister" v-model="activeTab" color="primary" class="mb-4">
-            <v-tab value="transactions" prepend-icon="mdi-format-list-bulleted">
-                {{ t('KasseView.tabTransactions') }}
+            <v-tab value="transactions" prepend-icon="mdi-book-open-variant">
+                {{ t('KasseView.tabCashbook') }}
             </v-tab>
             <v-tab value="invoices" prepend-icon="mdi-file-document-outline">
                 {{ t('KasseView.tabInvoices') }}
@@ -87,54 +98,129 @@
 
         <v-window v-if="selectedRegister" v-model="activeTab">
 
-            <!-- ── KASSENBUCHUNGEN ── -->
+            <!-- ── KASSENBUCH ── -->
             <v-window-item value="transactions">
-                <div class="tab-toolbar mb-2">
+                <div class="tab-toolbar mb-3">
+                    <!-- Zeitraum-Modus: Jahr (Standard) / Monat / Gesamt -->
+                    <v-btn-toggle v-model="periodMode" mandatory density="compact" variant="outlined" rounded="lg">
+                        <v-btn value="year" size="small">{{ t('KasseView.modeYear') }}</v-btn>
+                        <v-btn value="month" size="small">{{ t('KasseView.modeMonth') }}</v-btn>
+                        <v-btn value="all" size="small">{{ t('KasseView.wholePeriod') }}</v-btn>
+                    </v-btn-toggle>
+
+                    <!-- Jahresnavigation -->
+                    <div v-if="periodMode === 'year'" class="d-flex align-center">
+                        <v-btn icon="mdi-chevron-left" variant="text" size="small" @click="shiftYear(-1)" />
+                        <div class="text-subtitle-1 font-weight-medium text-center" style="min-width:90px">
+                            {{ periodYear }}
+                        </div>
+                        <v-btn icon="mdi-chevron-right" variant="text" size="small" @click="shiftYear(1)" />
+                    </div>
+                    <!-- Monatsnavigation (wie bei Lexware) -->
+                    <div v-else-if="periodMode === 'month'" class="d-flex align-center">
+                        <v-btn icon="mdi-chevron-left" variant="text" size="small" @click="shiftMonth(-1)" />
+                        <div class="text-subtitle-1 font-weight-medium text-center" style="min-width:160px">
+                            {{ periodLabel }}
+                        </div>
+                        <v-btn icon="mdi-chevron-right" variant="text" size="small" @click="shiftMonth(1)" />
+                    </div>
+
+                    <v-spacer />
+
+                    <v-text-field
+                        v-model="search"
+                        :label="t('KasseView.searchBookings')"
+                        density="compact"
+                        hide-details
+                        variant="outlined"
+                        prepend-inner-icon="mdi-magnify"
+                        clearable
+                        style="max-width:260px"
+                    />
+
                     <v-btn-toggle v-model="typeFilter" mandatory density="compact" variant="outlined" rounded="lg">
                         <v-btn value="all" size="small">{{ t('KasseView.filterAll') }}</v-btn>
                         <v-btn value="income" size="small" color="success">{{ t('KasseView.filterIncome') }}</v-btn>
                         <v-btn value="expense" size="small" color="error">{{ t('KasseView.filterExpense') }}</v-btn>
                     </v-btn-toggle>
-                    <v-spacer />
-                    <v-text-field v-model="fromDate" :label="t('KasseView.fromDate')" type="date" density="compact" hide-details style="max-width:140px" />
-                    <v-text-field v-model="toDate" :label="t('KasseView.toDate')" type="date" density="compact" hide-details style="max-width:140px" />
                 </div>
+
+                <!-- Summenleiste (sortier-/filterunabhängig) -->
+                <v-sheet class="kassenbuch-summary-bar mb-3 px-4 py-2 d-flex flex-wrap align-center" rounded="lg" border>
+                    <div class="summary-item">
+                        <span class="text-caption text-medium-emphasis">{{ t('KasseView.openingBalance') }}<span v-if="periodMode !== 'all'"> ({{ periodHint }})</span></span>
+                        <span class="text-body-1 font-weight-medium">{{ formatCurrency(openingBalance) }}</span>
+                    </div>
+                    <v-divider vertical class="mx-3" />
+                    <div class="summary-item">
+                        <span class="text-caption text-medium-emphasis">{{ t('KasseView.sumIncome') }}</span>
+                        <span class="text-body-1 font-weight-medium text-success">+{{ formatNumber(sumIncome) }}</span>
+                    </div>
+                    <v-divider vertical class="mx-3" />
+                    <div class="summary-item">
+                        <span class="text-caption text-medium-emphasis">{{ t('KasseView.sumExpense') }}</span>
+                        <span class="text-body-1 font-weight-medium text-error">−{{ formatNumber(sumExpense) }}</span>
+                    </div>
+                    <v-spacer />
+                    <div class="summary-item text-right">
+                        <span class="text-caption text-medium-emphasis">{{ t('KasseView.closingBalance') }}</span>
+                        <span class="text-h6 font-weight-bold" :class="closingBalance < 0 ? 'text-error' : 'text-primary'">{{ formatCurrency(closingBalance) }}</span>
+                    </div>
+                </v-sheet>
 
                 <v-card rounded="lg" elevation="0" border>
                     <v-data-table
+                        v-model:sort-by="sortBy"
                         :headers="txHeaders"
-                        :items="transactions"
+                        :items="filteredTransactions"
                         :loading="txLoading"
-                        :items-per-page="50"
-                        density="compact"
-                        hover
+                        :items-per-page="-1"
+                        density="comfortable"
+                        hide-default-footer
+                        multi-sort
+                        class="kassenbuch-table"
+                        @click:row="(e, { item }) => openCashbookRow(item)"
                     >
                         <template #item.transdate="{ item }">
                             <span class="text-no-wrap text-body-2">{{ formatDateShort(item.transdate) }}</span>
                         </template>
-                        <template #item.amount="{ item }">
-                            <span :class="item.amount >= 0 ? 'text-success font-weight-semibold' : 'text-error font-weight-semibold'">
-                                {{ formatCurrency(item.amount) }}
-                            </span>
+
+                        <template #item.reference="{ item }">
+                            <span class="text-body-2">{{ item.reference || '—' }}</span>
                         </template>
+
                         <template #item.description="{ item }">
                             <div>
                                 <div class="text-body-2">
-                                    {{ item.description || item.reference || '—' }}
-                                    <span v-if="item.partner_name" class="text-disabled text-caption"> · {{ item.partner_name }}</span>
-                                </div>
-                                <div v-if="item.gegenkonto_accno" class="text-caption text-disabled">
-                                    {{ item.gegenkonto_accno }} {{ item.gegenkonto_description }}
+                                    {{ item.description || (item.amount >= 0 ? t('KasseView.income') : t('KasseView.expense')) }}
+                                    <span v-if="item.partner_name" class="text-disabled"> · {{ item.partner_name }}</span>
                                 </div>
                                 <v-chip v-if="item.source_type !== 'gl'" size="x-small" variant="tonal" :color="item.source_type === 'ar' ? 'info' : 'warning'" class="mt-1">
                                     {{ item.source_type === 'ar' ? t('KasseView.sourceAR') : t('KasseView.sourceAP') }}
                                 </v-chip>
                             </div>
                         </template>
-                        <template #item.reference="{ item }">
-                            <span class="text-body-2 text-disabled">{{ item.reference || '—' }}</span>
+
+                        <template #item.gegenkonto="{ item }">
+                            <span v-if="item.gegenkonto_accno" class="text-caption text-medium-emphasis">
+                                {{ item.gegenkonto_accno }}<br>{{ item.gegenkonto_description }}
+                            </span>
+                            <span v-else class="text-disabled">—</span>
                         </template>
-                        <template #item.document="{ item }">
+
+                        <template #item.einnahme="{ item }">
+                            <span v-if="item.amount > 0" class="text-success font-weight-medium">{{ formatNumber(item.amount) }}</span>
+                        </template>
+
+                        <template #item.ausgabe="{ item }">
+                            <span v-if="item.amount < 0" class="text-error font-weight-medium">{{ formatNumber(-item.amount) }}</span>
+                        </template>
+
+                        <template #item.saldo="{ item }">
+                            <span class="font-weight-medium" :class="item.saldo < 0 ? 'text-error' : ''">{{ formatNumber(item.saldo) }}</span>
+                        </template>
+
+                        <template v-if="documentsEnabled" #item.document="{ item }">
                             <v-tooltip v-if="item.document_id" :text="item.document_name || t('KasseView.viewDocument')">
                                 <template #activator="{ props }">
                                     <v-btn v-bind="props" icon="mdi-paperclip" size="x-small" variant="text" color="primary" @click="previewDocument(item.document_id)" />
@@ -146,6 +232,7 @@
                                 </template>
                             </v-tooltip>
                         </template>
+
                         <template #item.actions="{ item }">
                             <v-btn
                                 v-if="item.source_type === 'gl'"
@@ -157,6 +244,7 @@
                                 @click="confirmDelete(item)"
                             />
                         </template>
+
                         <template #no-data>
                             <div class="text-center pa-6 text-disabled">{{ t('KasseView.noTransactions') }}</div>
                         </template>
@@ -187,6 +275,8 @@
                         :items-per-page="50"
                         density="compact"
                         hover
+                        class="cursor-pointer"
+                        @click:row="(e, { item }) => openInvoice(item)"
                     >
                         <template #item.transdate="{ item }">
                             <span class="text-no-wrap text-body-2">{{ formatDateShort(item.transdate) }}</span>
@@ -200,7 +290,7 @@
                             <span class="font-weight-semibold">{{ formatCurrency(item.open_amount) }}</span>
                         </template>
                         <template #item.actions="{ item }">
-                            <v-btn size="small" variant="tonal" color="success" @click="bookArAsCashDialog(item)">
+                            <v-btn size="small" variant="tonal" color="success" @click.stop="bookArAsCashDialog(item)">
                                 <v-icon start>mdi-cash</v-icon>
                                 {{ t('KasseView.bookAsCash') }}
                             </v-btn>
@@ -228,13 +318,13 @@
                         color="primary"
                         class="mb-4"
                     >
-                        <v-btn value="expense">
-                            <v-icon start>mdi-arrow-up-bold</v-icon>
-                            {{ t('KasseView.expense') }}
-                        </v-btn>
                         <v-btn value="income">
                             <v-icon start>mdi-arrow-down-bold</v-icon>
                             {{ t('KasseView.income') }}
+                        </v-btn>
+                        <v-btn value="expense">
+                            <v-icon start>mdi-arrow-up-bold</v-icon>
+                            {{ t('KasseView.expense') }}
                         </v-btn>
                     </v-btn-toggle>
 
@@ -256,12 +346,14 @@
                         variant="outlined"
                         class="mb-3"
                         prepend-inner-icon="mdi-currency-eur"
+                        @blur="suggestFromAmount"
+                        @keydown.enter="suggestFromAmount"
                     />
 
                     <!-- Gegenkonto -->
                     <v-autocomplete
                         v-model="txData.counterChartId"
-                        :items="counterCharts"
+                        :items="filteredCounterCharts"
                         :item-title="c => `${c.accno} – ${c.description}`"
                         item-value="id"
                         :label="t('KasseView.counterAccount')"
@@ -270,6 +362,7 @@
                         class="mb-3"
                         clearable
                         :no-data-text="t('KasseView.noCharts')"
+                        @update:model-value="suggestFromCounter"
                     />
 
                     <v-text-field
@@ -283,11 +376,29 @@
                         v-model="txData.reference"
                         :label="t('KasseView.reference')"
                         :placeholder="t('KasseView.referencePlaceholder')"
+                        :readonly="belegLocked"
+                        :hint="belegLocked ? t('KasseView.autoBelegHint') : t('KasseView.manualBelegHint')"
+                        persistent-hint
                         density="compact"
                         variant="outlined"
                         class="mb-3"
-                    />
+                    >
+                        <template #append-inner>
+                            <v-tooltip :text="belegLocked ? t('KasseView.editBeleg') : t('KasseView.lockBeleg')" location="top">
+                                <template #activator="{ props }">
+                                    <v-icon
+                                        v-bind="props"
+                                        :icon="belegLocked ? 'mdi-lock' : 'mdi-lock-open-variant'"
+                                        :color="belegLocked ? 'medium-emphasis' : 'primary'"
+                                        style="cursor:pointer"
+                                        @click="toggleBelegLock"
+                                    />
+                                </template>
+                            </v-tooltip>
+                        </template>
+                    </v-text-field>
                     <v-file-input
+                        v-if="documentsEnabled"
                         v-model="txData.documentFile"
                         :label="t('KasseView.uploadDocument')"
                         density="compact"
@@ -375,12 +486,14 @@
 <script setup>
 import { ref, reactive, computed, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 import axios from 'axios'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
 import * as alerts from '@/core/utils/alerts.js'
 import Swal from 'sweetalert2'
 
 const { t } = useI18n()
+const router = useRouter()
 const API_URL = '/api/banking/'
 
 // ── State ──────────────────────────────────────────────────────────────────
@@ -391,13 +504,24 @@ const selectedRegisterId = ref(null)
 const counterCharts      = ref([])    // Gegenkonten (Aufwand/Ertrag)
 const transactions       = ref([])
 const txLoading          = ref(false)
+const openingBalance     = ref(0)
+const closingBalance     = ref(0)
+const sumIncome          = ref(0)
+const sumExpense         = ref(0)
+const documentsEnabled   = ref(false)
 const openAr             = ref([])
 const arLoading          = ref(false)
 const arSearch           = ref('')
 const typeFilter         = ref('all')
-const fromDate           = ref('')
-const toDate             = ref('')
+const search             = ref('')        // Freitextsuche im Kassenbuch
+const sortBy             = ref([{ key: 'transdate', order: 'desc' }])
 const activeTab          = ref('transactions')
+
+// Zeitraum-Filter: Jahr (Standard), Monat oder gesamter Zeitraum
+const now          = new Date()
+const periodYear   = ref(now.getFullYear())
+const periodMonth  = ref(now.getMonth())   // 0-basiert
+const periodMode   = ref('year')           // 'year' | 'month' | 'all'
 
 // ── Dialogs ────────────────────────────────────────────────────────────────
 
@@ -411,7 +535,7 @@ const docPreviewData        = ref('')
 const docPreviewMime        = ref('')
 
 const txData = reactive({
-    type:           'expense',
+    type:           'income',
     transdate:      new Date().toISOString().slice(0, 10),
     amount:         '',
     counterChartId: null,
@@ -419,6 +543,9 @@ const txData = reactive({
     reference:      '',
     documentFile:   null,
 })
+
+// Belegnummer: standardmäßig gesperrt (automatisch). Per Schloss freigebbar.
+const belegLocked = ref(true)
 
 const arDialogItem = ref(null)
 const arData = reactive({
@@ -433,19 +560,79 @@ const selectedRegister = computed(() =>
 )
 
 const filteredCounterCharts = computed(() => {
-    if (txData.type === 'expense') return counterCharts.value.filter(c => c.category === 'E')
-    if (txData.type === 'income')  return counterCharts.value.filter(c => c.category === 'I')
+    // Transferkonten (category A: Geldtransit, Bank) immer anbieten – in beide Richtungen
+    if (txData.type === 'expense') return counterCharts.value.filter(c => c.category === 'E' || c.category === 'A')
+    if (txData.type === 'income')  return counterCharts.value.filter(c => c.category === 'I' || c.category === 'A')
     return counterCharts.value
 })
 
-const txHeaders = computed(() => [
-    { title: t('KasseView.date'),        key: 'transdate',   width: '100px' },
-    { title: t('KasseView.amount'),      key: 'amount',      width: '120px' },
-    { title: t('KasseView.description'), key: 'description' },
-    { title: t('KasseView.reference'),   key: 'reference',   width: '130px' },
-    { title: '',                         key: 'document',    width: '48px',  sortable: false },
-    { title: '',                         key: 'actions',     width: '48px',  sortable: false },
+// Freitextsuche über Beleg, Buchungstext, Partner, Gegenkonto, Beträge, Datum
+const filteredTransactions = computed(() => {
+    const q = (search.value || '').trim().toLowerCase()
+    if (!q) return transactions.value
+    return transactions.value.filter(tx => {
+        const hay = [
+            tx.reference, tx.description, tx.partner_name,
+            tx.gegenkonto_accno, tx.gegenkonto_description,
+            formatDateShort(tx.transdate),
+            String(tx.amount ?? ''), String(tx.saldo ?? ''),
+        ].filter(Boolean).join(' ').toLowerCase()
+        return hay.includes(q)
+    })
+})
+
+const monthNames = computed(() => [
+    t('KasseView.months.jan'), t('KasseView.months.feb'), t('KasseView.months.mar'),
+    t('KasseView.months.apr'), t('KasseView.months.may'), t('KasseView.months.jun'),
+    t('KasseView.months.jul'), t('KasseView.months.aug'), t('KasseView.months.sep'),
+    t('KasseView.months.oct'), t('KasseView.months.nov'), t('KasseView.months.dec'),
 ])
+
+const periodLabel = computed(() => `${monthNames.value[periodMonth.value]} ${periodYear.value}`)
+
+// Kurzhinweis auf den aktiven Zeitraum (für die Anfangsbestand-Zeile)
+const periodHint = computed(() => {
+    if (periodMode.value === 'year')  return String(periodYear.value)
+    if (periodMode.value === 'month') return periodLabel.value
+    return ''
+})
+
+const fromDate = computed(() => {
+    if (periodMode.value === 'all')  return undefined
+    if (periodMode.value === 'year') return `${periodYear.value}-01-01`
+    const m = String(periodMonth.value + 1).padStart(2, '0')
+    return `${periodYear.value}-${m}-01`
+})
+const toDate = computed(() => {
+    if (periodMode.value === 'all')  return undefined
+    if (periodMode.value === 'year') return `${periodYear.value}-12-31`
+    const last = new Date(periodYear.value, periodMonth.value + 1, 0).getDate()
+    const m = String(periodMonth.value + 1).padStart(2, '0')
+    return `${periodYear.value}-${m}-${String(last).padStart(2, '0')}`
+})
+
+const txHeaders = computed(() => {
+    const h = [
+        { title: t('KasseView.date'),        key: 'transdate',   width: '105px', sortable: true },
+        { title: t('KasseView.reference'),   key: 'reference',   width: '120px', sortable: true,
+          value: item => isNaN(Number(item.reference)) ? (item.reference || '') : Number(item.reference) },
+        { title: t('KasseView.bookingText'), key: 'description', sortable: true,
+          value: item => [item.description, item.partner_name].filter(Boolean).join(' ') },
+        { title: t('KasseView.counterAccount'), key: 'gegenkonto', width: '150px', sortable: true,
+          value: item => [item.gegenkonto_accno, item.gegenkonto_description].filter(Boolean).join(' ') },
+        { title: t('KasseView.income'),      key: 'einnahme',    width: '110px', align: 'end', sortable: true,
+          value: item => Number(item.amount) > 0 ? Number(item.amount) : null },
+        { title: t('KasseView.expense'),     key: 'ausgabe',     width: '110px', align: 'end', sortable: true,
+          value: item => Number(item.amount) < 0 ? Math.abs(Number(item.amount)) : null },
+        { title: t('KasseView.saldo'),       key: 'saldo',       width: '120px', align: 'end', sortable: true,
+          value: item => Number(item.saldo) },
+    ]
+    if (documentsEnabled.value) {
+        h.splice(4, 0, { title: '', key: 'document', width: '48px', sortable: false })
+    }
+    h.push({ title: '', key: 'actions', width: '48px', sortable: false })
+    return h
+})
 
 const arHeaders = computed(() => [
     { title: t('KasseView.invoice'),     key: 'invnumber',   width: '130px' },
@@ -486,11 +673,17 @@ async function loadTransactions() {
             action:           'getCashTransactions',
             cash_register_id: selectedRegisterId.value,
             type_filter:      typeFilter.value,
-            from_date:        fromDate.value || undefined,
-            to_date:          toDate.value   || undefined,
+            from_date:        fromDate.value,
+            to_date:          toDate.value,
         })
         if (res.data?.success) {
-            transactions.value = res.data.payload.transactions ?? []
+            const p = res.data.payload
+            transactions.value    = p.transactions ?? []
+            openingBalance.value  = p.opening_balance ?? 0
+            closingBalance.value  = p.closing_balance ?? 0
+            sumIncome.value       = p.sum_income ?? 0
+            sumExpense.value      = p.sum_expense ?? 0
+            documentsEnabled.value = !!p.documents_enabled
         }
     } finally {
         txLoading.value = false
@@ -517,11 +710,26 @@ function debouncedLoadOpenAr() {
     arSearchTimer = setTimeout(loadOpenAr, 350)
 }
 
+// ── Zeitraum-Navigation ──────────────────────────────────────────────────────
+
+function shiftMonth(delta) {
+    let m = periodMonth.value + delta
+    let y = periodYear.value
+    if (m < 0)  { m = 11; y-- }
+    if (m > 11) { m = 0;  y++ }
+    periodMonth.value = m
+    periodYear.value  = y
+}
+
+function shiftYear(delta) {
+    periodYear.value += delta
+}
+
 // ── Neue Buchung ─────────────────────────────────────────────────────────────
 
 function openNewTransaction() {
     Object.assign(txData, {
-        type:           'expense',
+        type:           'income',
         transdate:      new Date().toISOString().slice(0, 10),
         amount:         '',
         counterChartId: null,
@@ -529,7 +737,58 @@ function openNewTransaction() {
         reference:      '',
         documentFile:   null,
     })
+    belegLocked.value = true
     showTransactionDialog.value = true
+    loadNextBeleg()
+}
+
+// Nächste fortlaufende Belegnummer vom Server holen und ins (gesperrte) Feld setzen
+async function loadNextBeleg() {
+    if (!selectedRegisterId.value) return
+    const res = await axios.post(API_URL, {
+        action:           'getNextCashBelegnummer',
+        cash_register_id: selectedRegisterId.value,
+        transdate:        txData.transdate,
+    })
+    if (res.data?.success) txData.reference = res.data.payload.belegnummer
+}
+
+// Schloss umschalten — reiner Editierschutz, ändert die Belegnummer NICHT.
+function toggleBelegLock() {
+    belegLocked.value = !belegLocked.value
+}
+
+// Buchungsvorschlag aus der Historie, sobald ein Betrag eingegeben wurde und noch
+// kein Gegenkonto gewählt ist (füllt Typ, Gegenkonto und Buchungstext vor).
+async function suggestFromAmount() {
+    const amt = Number(txData.amount)
+    if (!amt || amt <= 0 || txData.counterChartId) return
+    try {
+        const res = await axios.post(API_URL, {
+            action:           'getCashBookingSuggestion',
+            cash_register_id: selectedRegisterId.value,
+            amount:           amt,
+        })
+        const s = res.data?.payload?.suggestion
+        if (!s) return
+        if (s.type) txData.type = s.type
+        txData.counterChartId = s.counter_chart_id
+        if (!txData.description) txData.description = s.description || ''
+    } catch (e) { /* Vorschlag ist optional */ }
+}
+
+// Beim manuellen Wählen eines Gegenkontos den letzten Buchungstext dazu vorschlagen.
+async function suggestFromCounter() {
+    if (!txData.counterChartId || txData.description) return
+    try {
+        const res = await axios.post(API_URL, {
+            action:           'getCashBookingSuggestion',
+            cash_register_id: selectedRegisterId.value,
+            counter_chart_id: txData.counterChartId,
+        })
+        const s = res.data?.payload?.suggestion
+        if (s && s.description && !txData.description) txData.description = s.description
+    } catch (e) { /* Vorschlag ist optional */ }
 }
 
 async function saveTransaction() {
@@ -541,7 +800,7 @@ async function saveTransaction() {
     try {
         let documentId = null
         const rawFile = Array.isArray(txData.documentFile) ? txData.documentFile[0] : txData.documentFile
-        if (rawFile) {
+        if (rawFile && documentsEnabled.value) {
             const base64 = await fileToBase64(rawFile)
             const upRes  = await axios.post(API_URL, {
                 action: 'uploadCashDocument', filename: rawFile.name,
@@ -582,6 +841,19 @@ function bookArAsCashDialog(invoice) {
     arData.transdate   = new Date().toISOString().slice(0, 10)
     arData.amount      = String(invoice.open_amount)
     showArDialog.value = true
+}
+
+function openInvoice(invoice) {
+    if (!invoice?.id) return
+    router.push(`${t('routes.manageInvoices')}/${invoice.id}`)
+}
+
+// Klick auf eine Kassenbuch-Zeile: Kundenrechnung (AR) öffnen.
+// Manuelle Buchungen (gl) und Lieferantenzahlungen (ap) haben keine Kundenrechnung.
+function openCashbookRow(item) {
+    if (item?.source_type === 'ar' && item.gl_id) {
+        router.push(`${t('routes.manageInvoices')}/${item.gl_id}`)
+    }
 }
 
 async function confirmBookAr() {
@@ -684,7 +956,8 @@ function fileToBase64(file) {
     })
 }
 
-function formatCurrency(v)  { return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(v || 0) }
+function formatCurrency(v)  { return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(Number(v) || 0) }
+function formatNumber(v)    { return new Intl.NumberFormat('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(v) || 0) }
 function formatDateShort(d) { return d ? new Date(d).toLocaleDateString('de-DE') : '—' }
 function isOverdue(d)       { return d && new Date(d) < new Date() }
 
@@ -694,11 +967,27 @@ watch(selectedRegisterId, () => {
     loadTransactions()
     if (activeTab.value === 'invoices') loadOpenAr()
 })
-watch(typeFilter, loadTransactions)
-watch(fromDate,   loadTransactions)
-watch(toDate,     loadTransactions)
-watch(activeTab,  (tab) => { if (tab === 'invoices') loadOpenAr() })
-watch(() => txData.type, () => { txData.counterChartId = null })
+watch(typeFilter,   loadTransactions)
+watch(periodYear,   loadTransactions)
+watch(periodMonth,  loadTransactions)
+watch(periodMode,   loadTransactions)
+watch(activeTab,    (tab) => { if (tab === 'invoices') loadOpenAr() })
+// Typwechsel: gewähltes Gegenkonto nur verwerfen, wenn es nicht mehr passt.
+// Transferkonten (Geldtransit/Bank, category A) gelten für beide Richtungen.
+watch(() => txData.type, () => {
+    const c = counterCharts.value.find(x => x.id === txData.counterChartId)
+    if (!c || c.category === 'A') return
+    if ((txData.type === 'expense' && c.category !== 'E') ||
+        (txData.type === 'income'  && c.category !== 'I')) {
+        txData.counterChartId = null
+    }
+})
+// Bei Jahreswechsel im Datum die automatische Belegnummer neu holen (solange gesperrt)
+watch(() => txData.transdate, (nd, od) => {
+    if (showTransactionDialog.value && belegLocked.value && (nd || '').slice(0, 4) !== (od || '').slice(0, 4)) {
+        loadNextBeleg()
+    }
+})
 
 onMounted(() => {
     loadRegisters()
@@ -710,8 +999,18 @@ onMounted(() => {
 .tab-toolbar {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 12px;
     flex-wrap: wrap;
-    margin-bottom: 12px;
+}
+.cursor-pointer :deep(tbody tr) {
+    cursor: pointer;
+}
+.kassenbuch-summary-bar {
+    background: rgba(var(--v-theme-primary), 0.04);
+}
+.summary-item {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
 }
 </style>

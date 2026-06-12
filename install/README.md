@@ -180,6 +180,27 @@ Ausführliche Dokumentation: `docs/features/anpr.md`
 
 ---
 
+## 4b. SSE-Server (Echtzeit-Benachrichtigungen)
+
+Der SSE-Server liefert Live-Updates (Anrufliste, Kalender, Faktura, WhatsApp …)
+und wird von Apache unter `/sse/` auf `127.0.0.1:3001` weitergeleitet. Läuft er
+nicht, antwortet `/sse/events` mit **503 Service Unavailable**.
+
+Für Dauerbetrieb als Systemd-Service (Pfade, User und ggf. Node-Pfad anpassen!):
+
+```bash
+sudo cp install/oserp-sse.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable oserp-sse
+sudo systemctl start oserp-sse
+```
+
+`Restart=always` sorgt dafür, dass der Dienst nach einem Absturz automatisch
+wieder startet. Im Docker-Betrieb übernimmt der Container-Entrypoint dieselbe
+Aufgabe (Auto-Restart-Schleife), ein Service ist dort nicht nötig.
+
+---
+
 ## 5. Programmier-Stilrichtlinien
 
 Vor der Entwicklung bitte lesen:

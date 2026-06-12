@@ -31,6 +31,7 @@
         "minChars": "Enter at least 2 characters",
         "callerNumber": "Number",
         "phoneLabel": "Label (e.g. Office, Mobile, Private)",
+        "defaultPhoneLabel": "Phone",
         "generateOrder": "Generate order from recording",
         "generatingOrder": "Creating order…",
         "orderCreated": "Order {ordnumber} created",

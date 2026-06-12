@@ -142,6 +142,8 @@
             "date": "Date",
             "paymentDate": "Date",
             "paymentSource": "Reference",
+            "belegEdit": "Edit reference number",
+            "belegLock": "Lock reference number",
             "paymentMemo": "Memo",
             "paymentAccount": "Payment Account",
             "paymentExchangeRate": "Exchange Rate",

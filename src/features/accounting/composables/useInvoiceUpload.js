@@ -10,6 +10,8 @@ export function useInvoiceUpload() {
     const uploadProgress = ref(0)
     const uploadResult = ref(null)
     const error = ref(null)
+    const incomingInvoices = ref([])
+    const loadingInvoices = ref(false)
 
     async function uploadInvoice(file) {
         uploading.value = true
@@ -55,6 +57,22 @@ export function useInvoiceUpload() {
         return `/api/accounting/?action=getDocumentPdf&document_id=${documentId}`
     }
 
+    async function fetchIncomingInvoices() {
+        loadingInvoices.value = true
+        try {
+            const response = await axios.post('/api/accounting/', {
+                action: 'getIncomingInvoices'
+            })
+            if (response.data.success) {
+                incomingInvoices.value = response.data.payload.invoices || []
+            }
+        } catch (e) {
+            error.value = e.message
+        } finally {
+            loadingInvoices.value = false
+        }
+    }
+
     function _fileToBase64(file) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader()
@@ -79,8 +97,11 @@ export function useInvoiceUpload() {
         uploadProgress,
         uploadResult,
         error,
+        incomingInvoices,
+        loadingInvoices,
         uploadInvoice,
         getDocumentPdfUrl,
+        fetchIncomingInvoices,
         resetUpload
     }
 }

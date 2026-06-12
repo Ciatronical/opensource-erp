@@ -1,8 +1,10 @@
 <template>
+    <NavbarView />
     <v-container fluid>
         <v-row>
             <v-col cols="12">
                 <h1 class="text-h5 mb-2">{{ t('AccountingView.upload.title') }}</h1>
+                <v-alert type="info" variant="tonal" density="comfortable" icon="mdi-information-outline" class="mt-1 mb-2" :text="t('AccountingView.upload.info')" />
             </v-col>
         </v-row>
 
@@ -192,19 +194,61 @@
                 </div>
             </v-col>
         </v-row>
+
+        <!-- Bereits gebuchte Eingangsrechnungen -->
+        <v-row class="mt-2">
+            <v-col cols="12">
+                <v-card>
+                    <v-card-title class="text-subtitle-1">{{ t('AccountingView.upload.bookedTitle') }}</v-card-title>
+                    <v-data-table
+                        :headers="invoiceHeaders"
+                        :items="incomingInvoices"
+                        :loading="loadingInvoices"
+                        density="compact"
+                        :items-per-page="10"
+                        :no-data-text="t('AccountingView.upload.noInvoices')">
+                        <template #[`item.amount`]="{ item }">{{ formatCurrency(item.amount) }}</template>
+                        <template #[`item.paid`]="{ item }">{{ formatCurrency(item.paid) }}</template>
+                        <template #[`item.open_amount`]="{ item }">
+                            <span :class="Number(item.open_amount) <= 0 ? 'text-success' : 'text-error'">
+                                {{ formatCurrency(item.open_amount) }}
+                            </span>
+                        </template>
+                    </v-data-table>
+                </v-card>
+            </v-col>
+        </v-row>
     </v-container>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import NavbarView from '@/core/components/navbar/navbar.view.vue'
 import { useInvoiceUpload } from '../composables/useInvoiceUpload.js'
 
 const { t } = useI18n()
-const { uploading, uploadProgress, uploadResult, error, uploadInvoice, resetUpload } = useInvoiceUpload()
+const { uploading, uploadProgress, uploadResult, error, incomingInvoices, loadingInvoices,
+        uploadInvoice, fetchIncomingInvoices, resetUpload } = useInvoiceUpload()
 
 const isDragging = ref(false)
 const fileInput = ref(null)
+
+const invoiceHeaders = computed(() => [
+    { title: t('AccountingView.upload.colInvNumber'), key: 'invnumber', width: '130px' },
+    { title: t('AccountingView.upload.colVendor'), key: 'vendor_name' },
+    { title: t('AccountingView.upload.colDate'), key: 'transdate_fmt', width: '110px' },
+    { title: t('AccountingView.upload.colAmount'), key: 'amount', align: 'end', width: '120px' },
+    { title: t('AccountingView.upload.colPaid'), key: 'paid', align: 'end', width: '120px' },
+    { title: t('AccountingView.upload.colOpen'), key: 'open_amount', align: 'end', width: '120px' }
+])
+
+// Nach erfolgreicher Analyse/Buchung die Liste aktualisieren
+watch(uploadResult, (val) => { if (val) fetchIncomingInvoices() })
+
+onMounted(() => {
+    fetchIncomingInvoices()
+})
 
 function onDrop(event) {
     isDragging.value = false

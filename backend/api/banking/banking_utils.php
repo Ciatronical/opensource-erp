@@ -1,7 +1,81 @@
 <?php
 // backend/api/banking/banking_utils.php
 //
-// Hilfsfunktionen: BIC-Lookup, Alerts, Liquiditätsplanung
+// Hilfsfunktionen: BIC-Lookup, Alerts, Liquiditätsplanung, Belegnummern
+
+// ─── Fortlaufende Belegnummern ─────────────────────────────
+
+/**
+ * Nächste fortlaufende Belegnummer für einen Belegkreis (Geldkonto) und Jahr.
+ *
+ * Belegnummern sind fortlaufende Ganzzahlen je Geldkonto (Kasse bzw. Bankkonto)
+ * und Kalenderjahr. Es wird die höchste bereits vergebene Nummer gesucht; +1 ist
+ * die nächste. Gibt es noch keine (z. B. zu Jahresbeginn), wird 1 zurückgegeben.
+ *
+ * Die höchste Nummer wird aus ALLEN Speicherorten ermittelt, damit pro Konto
+ * eine einzige durchgehende Sequenz entsteht:
+ *  - gl.reference (numerisch): native kivitendo-Kassenbuchungen (Dialogbuchen)
+ *    legen die Belegnummer hier ab.
+ *  - acc_trans.source (numerisch): Kassen-/Faktura-Zahlungen legen die Nummer hier ab.
+ *    Native Rechnungs-Barzahlungen tragen aber die Rechnungsnummer in source — diese
+ *    werden ausgeschlossen (source = ar/ap-invnumber), damit die Sequenz nicht springt.
+ *  - acc_trans.memo  ("Beleg N · …"): Bankabstimmungen behalten source='BANK'
+ *    (von Faktura-Schutz/Storno benötigt) und betten die Nummer ins memo ein.
+ *
+ * Die CASE-Ausdrücke verhindern Cast-Fehler bei nicht-numerischem Wert.
+ *
+ * @param object $db        DB-Handle (DbhCompany)
+ * @param int    $chartId   Geldkonto (Belegkreis)
+ * @param string $transdate Buchungsdatum YYYY-MM-DD (bestimmt das Jahr)
+ * @return string Belegnummer als String (z. B. "1")
+ */
+function nextBelegnummer($db, $chartId, $transdate) {
+    $year = intval(substr((string)$transdate, 0, 4)) ?: intval(date('Y'));
+
+    $row = $db->getOne("
+        SELECT GREATEST(
+            -- GL-Kassenbuchungen: kivitendo legt die Belegnummer in gl.reference ab
+            COALESCE(MAX(CASE WHEN gl.reference ~ '^[0-9]+$'
+                              THEN gl.reference::bigint END), 0),
+            -- acc_trans.source, aber OHNE native Rechnungsnummern (source = ar/ap-invnumber)
+            COALESCE(MAX(CASE WHEN at.source ~ '^[0-9]+$'
+                              AND NOT EXISTS (SELECT 1 FROM ar WHERE invnumber = at.source)
+                              AND NOT EXISTS (SELECT 1 FROM ap WHERE invnumber = at.source)
+                              THEN at.source::bigint END), 0),
+            -- Bankabstimmung: Belegnummer als 'Beleg N · …' im memo
+            COALESCE(MAX(CASE WHEN at.memo ~ '^Beleg [0-9]+'
+                              THEN substring(at.memo from '^Beleg ([0-9]+)')::bigint END), 0)
+        ) + 1 AS next
+        FROM acc_trans at
+        LEFT JOIN gl ON gl.id = at.trans_id
+        WHERE at.chart_id = :cid
+          AND EXTRACT(YEAR FROM at.transdate) = :year
+    ", ['cid' => $chartId, 'year' => $year]);
+
+    return strval(intval($row['next'] ?? 1) ?: 1);
+}
+
+/**
+ * Nächste fortlaufende Belegnummer eines Geldkontos (für den Zahlungsbeleg im
+ * Rechnungseditor / die Bankmodul-Buchung)
+ *
+ * @param int    $data['chart_id']  Geldkonto (chart.id)
+ * @param string $data['transdate'] Datum (optional, bestimmt das Jahr)
+ * @testdata {"chart_id": 1}
+ */
+function getNextBelegnummer($data) {
+    $db = DbhCompany::begin();
+
+    $chartId = intval($data['chart_id'] ?? 0);
+    if ($chartId <= 0) {
+        resultInfo(false, 'VALIDATION_ERROR', 'chart_id fehlt');
+        return;
+    }
+
+    $transdate = !empty($data['transdate']) ? $data['transdate'] : date('Y-m-d');
+
+    resultInfo(true, '', ['belegnummer' => nextBelegnummer($db, $chartId, $transdate)]);
+}
 
 // ─── BIC-Lookup aus IBAN ──────────────────────────────────
 

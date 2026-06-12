@@ -31,6 +31,7 @@
         "minChars": "Min. 2 Zeichen eingeben",
         "callerNumber": "Nummer",
         "phoneLabel": "Bezeichnung (z.B. Büro, Mobil, Privat)",
+        "defaultPhoneLabel": "Telefon",
         "generateOrder": "Auftrag aus Aufnahme erstellen",
         "generatingOrder": "Auftrag wird erstellt…",
         "orderCreated": "Auftrag {ordnumber} erstellt",

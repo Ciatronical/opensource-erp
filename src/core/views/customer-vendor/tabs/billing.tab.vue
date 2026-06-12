@@ -16,7 +16,7 @@
         </v-col>
         <!-- Rechte Spalte: IDs, Finanzen, Bedingungen -->
         <v-col cols="12" lg="6">
-            <numbers-ids-card v-model="localData" />
+            <numbers-ids-card v-model="localData" :entity-src="entitySrc" />
             <access-data-card v-model="localData" class="mt-3" />
             <currency-prices-tax-card
                 v-model="localData"

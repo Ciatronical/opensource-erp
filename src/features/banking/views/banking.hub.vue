@@ -2,6 +2,8 @@
     <NavbarView />
     <v-container fluid>
 
+        <v-alert type="info" variant="tonal" density="comfortable" icon="mdi-information-outline" class="mb-3" :text="t('BankingView.menu.info')" />
+
         <!-- Header -->
         <v-row align="center" class="mb-3">
             <v-col>

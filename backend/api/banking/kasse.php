@@ -1,113 +1,158 @@
 <?php
 // backend/api/banking/kasse.php
-// Kassenbuch – nutzt kivitendo-kompatible gl + acc_trans Buchungen.
+// Kassenbuch – arbeitet direkt auf den kivitendo-Standardtabellen
+// (chart, gl, acc_trans, ar, ap). Es werden KEINE Zusatztabellen benötigt:
+// das Kassenkonto wird aus dem Kontenplan erkannt (SKR03 = 1000, SKR04 = 1600
+// oder ein beliebiges Aktivkonto mit AR_paid-Link, dessen Bezeichnung „Kasse"
+// enthält). Beleg-Funktionen nutzen optionale Tabellen und schalten sich sauber
+// ab, falls diese in der jeweiligen Firmen-DB nicht vorhanden sind.
 
-// ── Hilfsfunktion: Kassakonto-Chart laden ───────────────────────────────────
+// ── Hilfsfunktionen ──────────────────────────────────────────────────────────
 
-function _kasse_loadRegister($db, $registerId) {
+/**
+ * Ein Kassenkonto (chart-Zeile) anhand seiner chart.id laden.
+ * Die chart.id dient gleichzeitig als „Kassenbuch-ID" nach aussen.
+ */
+function _kasse_loadRegister($db, $chartId) {
     return $db->getOne(
-        "SELECT cr.id, cr.name, cr.chart_id, cr.opening_balance, cr.currency,
-                ch.accno AS chart_accno, ch.description AS chart_description, ch.link AS chart_link
-         FROM cash_registers cr
-         JOIN chart ch ON ch.id = cr.chart_id
-         WHERE cr.id = :id",
-        ['id' => $registerId]
+        "SELECT ch.id,
+                ch.id          AS chart_id,
+                ch.description AS name,
+                ch.accno       AS chart_accno,
+                ch.description AS chart_description,
+                ch.link        AS chart_link
+         FROM chart ch
+         WHERE ch.id = :id",
+        ['id' => $chartId]
     );
 }
 
-// ── Kassenbücher ─────────────────────────────────────────────────────────────
+/**
+ * Prüft, ob die optionalen Beleg-Tabellen in der aktuellen DB vorhanden sind.
+ * Nur dann werden Beleg-Upload, -Verknüpfung und -Vorschau angeboten.
+ */
+function _kasse_documentsEnabled($db) {
+    $r = $db->getOne(
+        "SELECT to_regclass('public.cash_gl_documents')   AS link_tbl,
+                to_regclass('public.accounting_documents') AS doc_tbl"
+    );
+    return !empty($r['link_tbl']) && !empty($r['doc_tbl']);
+}
 
 /**
- * Kassakonten laden (ggf. Auto-Setup aus dem Kontenplan)
+ * Liefert eine WHERE-Bedingung, die ungültige Konten ausschliesst – aber nur,
+ * wenn die Spalte chart.invalid in dieser DB existiert (ältere kivitendo-Schemas
+ * kennen sie nicht). $alias ist das Tabellen-Alias von chart in der Query.
+ */
+function _kasse_invalidClause($db, $alias) {
+    $r = $db->getOne(
+        "SELECT 1 AS ok FROM information_schema.columns
+         WHERE table_name = 'chart' AND column_name = 'invalid' LIMIT 1"
+    );
+    return $r ? "AND ({$alias}.invalid IS NULL OR {$alias}.invalid = false)" : '';
+}
+
+/**
+ * Verfügbarer Kassenbestand für eine Ausgabe am Datum $date.
  *
- * Falls noch kein Eintrag in cash_registers existiert, wird das Kassakonto
- * automatisch aus dem Kontenplan erkannt (SKR03: 1000, SKR04: 1600) und
- * ein Standardeintrag angelegt. Der Benutzer muss nichts manuell einrichten.
+ * Liefert den niedrigsten laufenden Tagesend-Saldo ab diesem Datum (Eröffnungs-/
+ * Saldovortragsbuchungen ausgeschlossen). Eine Ausgabe darf diesen Wert nicht
+ * überschreiten, sonst würde die Kasse an diesem oder einem späteren Tag negativ.
+ * Liegt das Datum nach allen Buchungen, ist es der aktuelle Gesamtbestand.
+ */
+function _kasse_availableBalance($db, $chartId, $date) {
+    $row = $db->getOne("
+        WITH daily AS (
+            SELECT transdate, SUM(-amount) AS delta
+            FROM acc_trans
+            WHERE chart_id = :cid
+              AND (ob_transaction IS NULL OR ob_transaction = false)
+            GROUP BY transdate
+        ),
+        cumulative AS (
+            SELECT transdate, SUM(delta) OVER (ORDER BY transdate) AS bal FROM daily
+        )
+        SELECT COALESCE(
+            (SELECT MIN(bal) FROM cumulative WHERE transdate >= :d),
+            (SELECT bal FROM cumulative ORDER BY transdate DESC LIMIT 1),
+            0
+        ) AS available
+    ", ['cid' => $chartId, 'd' => $date]);
+
+    return floatval($row['available'] ?? 0);
+}
+
+// ── Kassenkonten ─────────────────────────────────────────────────────────────
+
+/**
+ * Kassakonten aus dem Kontenplan laden (Kontenrahmen-unabhängig)
+ *
+ * Ein Kassakonto ist ein Aktivkonto (category = 'A'), das Zahlungen aufnehmen
+ * kann (link enthält AR_paid) und dessen Kontonummer eine Standard-Kassennummer
+ * ist (1000 bei SKR03, 1600 bei SKR04) oder dessen Bezeichnung „Kasse" enthält.
+ * So wird das richtige Konto unabhängig vom gewählten Kontenrahmen gefunden.
  *
  * @testdata {}
  */
 function getCashRegisters($data) {
     $db = DbhCompany::begin();
 
-    // Auto-Setup: Kassakonto aus Kontenplan erkennen falls noch kein Eintrag vorhanden
-    $existing = $db->getOne("SELECT COUNT(*) AS cnt FROM cash_registers");
-    if (intval($existing['cnt'] ?? 0) === 0) {
-        $kasseChart = $db->getOne("
-            SELECT id, accno, description
-            FROM chart
-            WHERE link LIKE '%AR_paid%'
-              AND category = 'A'
-              AND (invalid IS NULL OR invalid = false)
-            ORDER BY
-                CASE WHEN accno = '1000' THEN 1
-                     WHEN accno = '1600' THEN 2
-                     ELSE 99 END
-            LIMIT 1
-        ");
-        if ($kasseChart) {
-            $db->execute(
-                "INSERT INTO cash_registers (name, chart_id, opening_balance)
-                 VALUES (:name, :chart_id, 0)",
-                ['name' => $kasseChart['description'], 'chart_id' => $kasseChart['id']]
-            );
-        }
-    }
+    $invalidClause = _kasse_invalidClause($db, 'ch');
 
-    $result = $db->getAll("
+    $registers = $db->getAll("
         SELECT
-            cr.id,
-            cr.name,
-            cr.chart_id,
-            cr.opening_balance,
-            cr.currency,
-            ch.accno            AS chart_accno,
-            ch.description      AS chart_description,
-            cr.opening_balance + COALESCE(SUM(at.amount), 0) AS balance,
-            COALESCE(SUM(
-                CASE WHEN at.amount > 0
+            ch.id,
+            ch.description AS name,
+            ch.id          AS chart_id,
+            ch.accno       AS chart_accno,
+            ch.description AS chart_description,
+            -- kivitendo-Konvention: Soll = negativ, Haben = positiv.
+            -- Geld in die Kasse (Soll) ist negativ → Bestand = -SUMME (immer positiv).
+            -COALESCE(SUM(at.amount), 0) AS balance,
+            -- Einnahmen = Geld rein = negative Buchungen (negiert positiv dargestellt)
+            -COALESCE(SUM(
+                CASE WHEN at.amount < 0
+                    AND (at.ob_transaction IS NULL OR at.ob_transaction = false)
                     AND DATE_TRUNC('month', at.transdate) = DATE_TRUNC('month', CURRENT_DATE)
                 THEN at.amount ELSE 0 END
             ), 0) AS income_this_month,
-            ABS(COALESCE(SUM(
-                CASE WHEN at.amount < 0
+            -- Ausgaben = Geld raus = positive Buchungen
+            COALESCE(SUM(
+                CASE WHEN at.amount > 0
+                    AND (at.ob_transaction IS NULL OR at.ob_transaction = false)
                     AND DATE_TRUNC('month', at.transdate) = DATE_TRUNC('month', CURRENT_DATE)
                 THEN at.amount ELSE 0 END
-            ), 0)) AS expenses_this_month,
+            ), 0) AS expenses_this_month,
             MAX(at.transdate) AS last_transaction_date
-        FROM cash_registers cr
-        JOIN chart ch ON ch.id = cr.chart_id
-        LEFT JOIN acc_trans at ON at.chart_id = cr.chart_id
+        FROM chart ch
+        LEFT JOIN acc_trans at ON at.chart_id = ch.id
             AND (at.ob_transaction IS NULL OR at.ob_transaction = false)
-        GROUP BY cr.id, cr.name, cr.chart_id, cr.opening_balance, cr.currency,
-                 ch.accno, ch.description
-        ORDER BY cr.name
+        WHERE ch.link LIKE '%AR_paid%'
+          AND ch.category  = 'A'
+          AND ch.charttype = 'A'
+          {$invalidClause}
+          AND (
+              ch.accno IN ('1000', '1600')
+              OR (ch.description ILIKE '%kasse%'
+                  AND ch.description NOT ILIKE '%sparkasse%'
+                  AND ch.description NOT ILIKE '%bank%')
+          )
+        GROUP BY ch.id, ch.description, ch.accno
+        ORDER BY
+            CASE WHEN ch.description ILIKE '%kasse%' THEN 0 ELSE 1 END,
+            ch.accno
     ");
 
-    resultInfo(true, '', ['registers' => $result ?: []]);
+    resultInfo(true, '', ['registers' => $registers ?: []]);
 }
 
 /**
- * Verfügbare Kassakonten (chart mit AR_paid-Link) laden
+ * Gegenkonten für Kassenbuchungen laden
  *
- * @testdata {}
- */
-function getCashChartAccounts($data) {
-    $db = DbhCompany::begin();
-
-    $result = $db->getAll("
-        SELECT id, accno, description
-        FROM chart
-        WHERE link LIKE '%AR_paid%'
-          AND category = 'A'
-          AND (invalid IS NULL OR invalid = false)
-        ORDER BY accno
-    ");
-
-    resultInfo(true, '', ['charts' => $result ?: []]);
-}
-
-/**
- * Gegenkonten für Kassenbuchungen laden (Aufwands- und Ertragskonten)
+ * Aufwand (E) und Ertrag (I) für normale Bareinnahmen/-ausgaben, zusätzlich
+ * Transferkonten (category A): Geldtransit (Geld von/zur Bank bringen) sowie die
+ * Bankkonten selbst. Kassenkonten (1000/1600) werden als Transfer-Gegenkonto
+ * ausgeschlossen (man bucht nicht gegen sich selbst).
  *
  * @param string $data['category'] E = Aufwand, I = Ertrag, all = alle (default: all)
  * @testdata {"category": "all"}
@@ -116,76 +161,176 @@ function getCashCounterCharts($data) {
     $db = DbhCompany::begin();
 
     $category = $data['category'] ?? 'all';
-    $where    = '';
     $params   = [];
 
-    if ($category === 'E') {
-        $where          = 'AND ch.category = :cat';
-        $params['cat']  = 'E';
-    } elseif ($category === 'I') {
-        $where          = 'AND ch.category = :cat';
-        $params['cat']  = 'I';
+    if ($category === 'E' || $category === 'I') {
+        $where         = 'AND ch.category = :cat';
+        $params['cat'] = $category;
     } else {
-        $where = "AND ch.category IN ('E', 'I')";
+        // Aufwand + Ertrag + Transferkonten (Geldtransit + Bankkonten, keine Kassen)
+        $where = "AND (
+            ch.category IN ('E', 'I')
+            OR (
+                ch.category = 'A' AND (
+                    ch.description ILIKE '%geldtransit%'
+                    OR (ch.link LIKE '%AR_paid%' AND ch.accno NOT IN ('1000', '1600'))
+                )
+            )
+        )";
     }
+
+    $invalidClause = _kasse_invalidClause($db, 'ch');
 
     $result = $db->getAll("
         SELECT id, accno, description, category
         FROM chart ch
-        WHERE (invalid IS NULL OR invalid = false)
-            {$where}
-        ORDER BY accno
+        WHERE charttype = 'A'
+          {$invalidClause}
+          {$where}
+        ORDER BY
+            CASE ch.category WHEN 'I' THEN 0 WHEN 'E' THEN 1 ELSE 2 END,
+            ch.accno
     ", $params);
 
     resultInfo(true, '', ['charts' => $result ?: []]);
 }
 
 /**
- * Neues Kassenbuch anlegen
+ * Nächste fortlaufende Belegnummer eines Kassenbuchs (Vorschlag für den Dialog)
  *
- * @param string $data['name']            Name des Kassenbuchs
- * @param int    $data['chart_id']        Chart-ID des Kassakontos (aus getCashChartAccounts)
- * @param float  $data['opening_balance'] Anfangsbestand (optional, default 0)
- * @testdata {"name": "Hauptkasse", "chart_id": 1, "opening_balance": 500.00}
+ * @param int    $data['cash_register_id'] Kassakonto-ID (= chart.id)
+ * @param string $data['transdate']        Buchungsdatum (optional, bestimmt das Jahr)
+ * @testdata {"cash_register_id": 1}
  */
-function createCashRegister($data) {
+function getNextCashBelegnummer($data) {
     $db = DbhCompany::begin();
 
-    $name    = trim($data['name'] ?? '');
-    $chartId = intval($data['chart_id'] ?? 0);
-
-    if (!$name) {
-        resultInfo(false, 'VALIDATION_ERROR', 'Name fehlt');
-        return;
-    }
-    if ($chartId <= 0) {
-        resultInfo(false, 'VALIDATION_ERROR', 'Kassakonto fehlt');
+    $registerId = intval($data['cash_register_id'] ?? 0);
+    if ($registerId <= 0) {
+        resultInfo(false, 'VALIDATION_ERROR', 'Kassenbuch-ID fehlt');
         return;
     }
 
-    $openingBalance = floatval($data['opening_balance'] ?? 0);
+    $register = _kasse_loadRegister($db, $registerId);
+    if (!$register) {
+        resultInfo(false, 'NOT_FOUND', 'Kassenbuch nicht gefunden');
+        return;
+    }
 
-    $db->execute(
-        "INSERT INTO cash_registers (name, chart_id, opening_balance)
-         VALUES (:name, :chart_id, :opening_balance)",
-        ['name' => $name, 'chart_id' => $chartId, 'opening_balance' => $openingBalance]
-    );
+    $transdate = !empty($data['transdate']) ? $data['transdate'] : date('Y-m-d');
+    $beleg     = nextBelegnummer($db, $register['chart_id'], $transdate);
 
-    $new = $db->getOne(
-        "SELECT cr.id, cr.name, cr.chart_id, cr.opening_balance, ch.accno, ch.description AS chart_description
-         FROM cash_registers cr JOIN chart ch ON ch.id = cr.chart_id
-         ORDER BY cr.id DESC LIMIT 1"
-    );
-
-    resultInfo(true, '', ['register' => $new]);
+    resultInfo(true, '', ['belegnummer' => $beleg]);
 }
 
-// ── Kassenbuchungen laden ─────────────────────────────────────────────────────
+/**
+ * Buchungsvorschlag aus früheren Kassenbuchungen (ohne KI, reiner History-Lookup)
+ *
+ * Zwei Modi:
+ *  - counter_chart_id gesetzt → letzte Beschreibung für dieses Gegenkonto.
+ *  - amount gesetzt           → letzte (oder betragsähnlichste) frühere Buchung mit
+ *                               diesem Betrag; liefert Typ, Gegenkonto und Buchungstext.
+ *                               Exakter Betrag hat Vorrang; sonst die nächstliegende
+ *                               Buchung innerhalb ±50 %.
+ *
+ * Beispiel: gestern 900 € zur Bank (Geldtransit) → heute 1200 € getippt erkennt
+ * „wieder zur Bank"; 60 € für die Putzfrau letzte Woche → 60 € füllt alles vor.
+ *
+ * @param int    $data['cash_register_id'] Kassakonto-ID (= chart.id)
+ * @param float  $data['amount']           Betrag (optional)
+ * @param int    $data['counter_chart_id'] Gegenkonto-ID (optional)
+ * @testdata {"cash_register_id": 1, "amount": 60}
+ */
+function getCashBookingSuggestion($data) {
+    $db = DbhCompany::begin();
+
+    $registerId = intval($data['cash_register_id'] ?? 0);
+    if ($registerId <= 0) {
+        resultInfo(false, 'VALIDATION_ERROR', 'Kassenbuch-ID fehlt');
+        return;
+    }
+    $register = _kasse_loadRegister($db, $registerId);
+    if (!$register) {
+        resultInfo(false, 'NOT_FOUND', 'Kassenbuch nicht gefunden');
+        return;
+    }
+    $cashChart = intval($register['chart_id']);
+
+    $counterChartId = intval($data['counter_chart_id'] ?? 0);
+    $amount         = abs(floatval($data['amount'] ?? 0));
+
+    // Basis: GL-Kassenbuchungen mit ihrem Gegenkonto (nur diese taugen als Vorlage —
+    // sie haben einen freien Buchungstext und genau ein Gegenkonto).
+    $base = "
+        FROM acc_trans cash
+        JOIN gl ON gl.id = cash.trans_id AND (gl.storno IS NULL OR gl.storno = false)
+        JOIN LATERAL (
+            SELECT at2.chart_id, c2.accno, c2.description
+            FROM acc_trans at2
+            JOIN chart c2 ON c2.id = at2.chart_id
+            WHERE at2.trans_id = gl.id AND at2.chart_id <> cash.chart_id
+            ORDER BY at2.acc_trans_id ASC
+            LIMIT 1
+        ) gegen ON true
+        WHERE cash.chart_id = :cash
+    ";
+
+    $select = "
+        SELECT gl.description,
+               gegen.chart_id   AS counter_chart_id,
+               gegen.accno      AS counter_accno,
+               gegen.description AS counter_description,
+               CASE WHEN cash.amount < 0 THEN 'income' ELSE 'expense' END AS type,
+               ABS(cash.amount) AS amount
+    ";
+
+    // Modus 1: Beschreibung zum gewählten Gegenkonto
+    if ($counterChartId > 0) {
+        $row = $db->getOne("
+            {$select}
+            {$base} AND gegen.chart_id = :counter AND COALESCE(gl.description, '') <> ''
+            ORDER BY gl.transdate DESC, gl.id DESC
+            LIMIT 1
+        ", ['cash' => $cashChart, 'counter' => $counterChartId]);
+        resultInfo(true, '', ['suggestion' => $row ?: null]);
+        return;
+    }
+
+    // Modus 2: nach Betrag — exakt, sonst betragsähnlichste Buchung (±50 %)
+    if ($amount > 0) {
+        $row = $db->getOne("
+            {$select}
+            {$base} AND ABS(cash.amount) = :amt
+            ORDER BY gl.transdate DESC, gl.id DESC
+            LIMIT 1
+        ", ['cash' => $cashChart, 'amt' => $amount]);
+
+        if (!$row) {
+            $row = $db->getOne("
+                {$select}
+                {$base} AND ABS(ABS(cash.amount) - :amt) <= :tol
+                ORDER BY ABS(ABS(cash.amount) - :amt2) ASC, gl.transdate DESC
+                LIMIT 1
+            ", ['cash' => $cashChart, 'amt' => $amount, 'amt2' => $amount, 'tol' => $amount * 0.5]);
+        }
+        resultInfo(true, '', ['suggestion' => $row ?: null]);
+        return;
+    }
+
+    resultInfo(true, '', ['suggestion' => null]);
+}
+
+// ── Kassenbuch laden (Lexware-Stil mit laufendem Saldo) ───────────────────────
 
 /**
- * Kassenbuchungen eines Kassenbuchs laden (aus gl + acc_trans + AR + AP)
+ * Kassenbuch eines Kassakontos laden – Bewegungen aus gl + acc_trans + AR + AP,
+ * mit Anfangsbestand, laufendem Saldo, Summen und Endbestand (wie bei Lexware).
  *
- * @param int    $data['cash_register_id'] Kassenbuch-ID
+ * Die Liste ist chronologisch aufsteigend (älteste zuerst), jede Zeile trägt
+ * den fortlaufenden Saldo. Der Anfangsbestand ist die Summe aller Bewegungen
+ * vor dem Von-Datum (inkl. Eröffnungsbuchung); ohne Von-Datum ist er 0.
+ *
+ * @param int    $data['cash_register_id'] Kassakonto-ID (= chart.id)
  * @param string $data['from_date']        Von-Datum (optional, YYYY-MM-DD)
  * @param string $data['to_date']          Bis-Datum (optional, YYYY-MM-DD)
  * @param string $data['type_filter']      all|income|expense (default: all)
@@ -206,51 +351,77 @@ function getCashTransactions($data) {
         return;
     }
 
-    $chartId    = $register['chart_id'];
+    $chartId     = intval($register['chart_id']);
+    $docsEnabled = _kasse_documentsEnabled($db);
+
+    $fromDate   = !empty($data['from_date']) ? $data['from_date'] : null;
+    $toDate     = !empty($data['to_date'])   ? $data['to_date']   : null;
+    $typeFilter = $data['type_filter'] ?? 'all';
+
+    // ── Anfangsbestand: Bestand vor dem Von-Datum ──
+    // kivitendo-Konvention: Soll = negativ, Haben = positiv. Geld in der Kasse
+    // wird als negative Summe gespeichert → echter Bestand = -SUMME.
+    $opening = 0.0;
+    if ($fromDate) {
+        $ob = $db->getOne(
+            "SELECT COALESCE(SUM(amount), 0) AS ob
+             FROM acc_trans
+             WHERE chart_id = :cid AND transdate < :fd
+               AND (ob_transaction IS NULL OR ob_transaction = false)",
+            ['cid' => $chartId, 'fd' => $fromDate]
+        );
+        $opening = -floatval($ob['ob'] ?? 0);
+    }
+
+    // ── Filter auf die Bewegungen (Zeitraum / Typ) ──
     $params     = ['chart_id' => $chartId, 'chart_id2' => $chartId, 'chart_id3' => $chartId];
     $whereExtra = '';
-
-    $typeFilter = $data['type_filter'] ?? 'all';
     if ($typeFilter === 'income') {
-        $whereExtra .= ' AND kasse.amount > 0';
+        $whereExtra .= ' AND m.amount > 0';
     } elseif ($typeFilter === 'expense') {
-        $whereExtra .= ' AND kasse.amount < 0';
+        $whereExtra .= ' AND m.amount < 0';
+    }
+    if ($fromDate) {
+        $whereExtra .= ' AND m.transdate >= :from_date';
+        $params['from_date'] = $fromDate;
+    }
+    if ($toDate) {
+        $whereExtra .= ' AND m.transdate <= :to_date';
+        $params['to_date'] = $toDate;
     }
 
-    if (!empty($data['from_date'])) {
-        $whereExtra .= ' AND kasse.transdate >= :from_date';
-        $params['from_date'] = $data['from_date'];
+    // ── Beleg-Spalten/Joins nur, wenn die Tabellen existieren ──
+    $docCols = "NULL::integer AS document_id, NULL::text AS document_name, NULL::text AS document_mime_type";
+    $docJoin = '';
+    if ($docsEnabled) {
+        $docCols = "cgd.document_id, ad.original_name AS document_name, ad.mime_type AS document_mime_type";
+        $docJoin = "LEFT JOIN cash_gl_documents   cgd ON cgd.gl_id = gl.id
+                    LEFT JOIN accounting_documents ad  ON ad.id   = cgd.document_id";
     }
-    if (!empty($data['to_date'])) {
-        $whereExtra .= ' AND kasse.transdate <= :to_date';
-        $params['to_date'] = $data['to_date'];
-    }
+
+    $opening = number_format($opening, 5, '.', '');
+    $params['opening']  = $opening;
+    $params['opening2'] = $opening;
 
     $result = $db->getOne("
-        SELECT json_agg(row_to_json(kasse) ORDER BY kasse.transdate DESC, kasse.acc_trans_id DESC)
-               AS transactions
-        FROM (
-            -- ── 1. Manuelle GL-Buchungen (Barausgaben / Bareinnahmen) ──
+        WITH movements AS (
+            -- ── 1. Manuelle GL-Buchungen (Bareinnahmen / Barausgaben) ──
             SELECT
                 at.acc_trans_id,
                 at.trans_id     AS gl_id,
                 'gl'            AS source_type,
                 at.transdate,
-                at.amount,
-                gl.reference,
+                -at.amount      AS amount,
+                -- Belegnummer: bevorzugt acc_trans.source, sonst gl.reference (native kivitendo-Buchungen)
+                COALESCE(NULLIF(at.source, ''), gl.reference) AS reference,
                 gl.description,
                 NULL::text      AS partner_name,
-                -- Gegenkonto (jeweils das andere Konto dieser GL-Buchung)
                 gc.accno        AS gegenkonto_accno,
                 gc.description  AS gegenkonto_description,
-                -- Beleg
-                cgd.document_id,
-                ad.original_name AS document_name,
-                ad.mime_type     AS document_mime_type
+                {$docCols}
             FROM acc_trans at
             JOIN gl ON gl.id = at.trans_id
                 AND (gl.storno IS NULL OR gl.storno = false)
-                AND (gl.ob_transaction IS NULL OR gl.ob_transaction = false)
             LEFT JOIN LATERAL (
                 SELECT c2.accno, c2.description
                 FROM acc_trans at2
@@ -260,8 +431,7 @@ function getCashTransactions($data) {
                 ORDER BY at2.acc_trans_id ASC
                 LIMIT 1
             ) gc ON true
-            LEFT JOIN cash_gl_documents cgd ON cgd.gl_id = gl.id
-            LEFT JOIN accounting_documents ad ON ad.id = cgd.document_id
+            {$docJoin}
             WHERE at.chart_id = :chart_id
               AND (at.ob_transaction IS NULL OR at.ob_transaction = false)
 
@@ -273,8 +443,8 @@ function getCashTransactions($data) {
                 at.trans_id     AS gl_id,
                 'ar'            AS source_type,
                 at.transdate,
-                at.amount,
-                ar.invnumber    AS reference,
+                -at.amount      AS amount,
+                at.source       AS reference,
                 ar.invnumber    AS description,
                 c.name          AS partner_name,
                 NULL::text      AS gegenkonto_accno,
@@ -298,8 +468,8 @@ function getCashTransactions($data) {
                 at.trans_id     AS gl_id,
                 'ap'            AS source_type,
                 at.transdate,
-                at.amount,
-                ap.invnumber    AS reference,
+                -at.amount      AS amount,
+                at.source       AS reference,
                 ap.invnumber    AS description,
                 v.name          AS partner_name,
                 NULL::text      AS gegenkonto_accno,
@@ -315,11 +485,51 @@ function getCashTransactions($data) {
               AND (at.ob_transaction IS NULL OR at.ob_transaction = false)
               AND NOT EXISTS (SELECT 1 FROM gl WHERE id = at.trans_id)
               AND NOT EXISTS (SELECT 1 FROM ar WHERE id = at.trans_id)
-        ) kasse
-        WHERE 1=1 {$whereExtra}
+        ),
+        filtered AS (
+            SELECT m.* FROM movements m WHERE 1=1 {$whereExtra}
+        ),
+        numbered AS (
+            SELECT
+                f.*,
+                -- Reihenfolge = Belegnummer (= Buchungsreihenfolge), nicht acc_trans_id.
+                -- Natürliche Sortierung: Zahlteil der Belegnummer (erlaubt Präfixe wie
+                -- 'AR-291'); bei Gleichstand der volle Text, dann acc_trans_id als
+                -- Fallback (nicht-numerische/fehlende Belege).
+                :opening::numeric + SUM(f.amount) OVER (
+                    ORDER BY f.transdate ASC,
+                             COALESCE(NULLIF(regexp_replace(f.reference, '[^0-9]', '', 'g'), '')::numeric, 0) ASC,
+                             f.reference ASC NULLS FIRST,
+                             f.acc_trans_id ASC
+                    ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+                ) AS saldo
+            FROM filtered f
+        )
+        SELECT
+            json_agg(row_to_json(numbered) ORDER BY
+                numbered.transdate DESC,
+                COALESCE(NULLIF(regexp_replace(numbered.reference, '[^0-9]', '', 'g'), '')::numeric, 0) DESC,
+                numbered.reference DESC NULLS LAST,
+                numbered.acc_trans_id DESC
+            ) AS transactions,
+            COALESCE(SUM(CASE WHEN numbered.amount > 0 THEN numbered.amount ELSE 0 END), 0)      AS sum_income,
+            ABS(COALESCE(SUM(CASE WHEN numbered.amount < 0 THEN numbered.amount ELSE 0 END), 0)) AS sum_expense,
+            :opening2::numeric + COALESCE(SUM(numbered.amount), 0)                               AS closing_balance
+        FROM numbered
     ", $params);
 
-    resultInfo(true, '', ['transactions' => $result['transactions'] ?? []]);
+    resultInfo(true, '', [
+        'transactions'    => json_decode($result['transactions'] ?? '[]', true) ?: [],
+        'opening_balance' => floatval($opening),
+        'closing_balance' => floatval($result['closing_balance'] ?? $opening),
+        'sum_income'      => floatval($result['sum_income'] ?? 0),
+        'sum_expense'     => floatval($result['sum_expense'] ?? 0),
+        'documents_enabled' => $docsEnabled,
+        'register'        => [
+            'chart_accno'       => $register['chart_accno'],
+            'chart_description' => $register['chart_description'],
+        ],
+    ]);
 }
 
 // ── Manuelle Kassenbuchung anlegen ────────────────────────────────────────────
@@ -327,7 +537,7 @@ function getCashTransactions($data) {
 /**
  * Manuelle Kassenbuchung anlegen (gl + acc_trans, kivitendo-kompatibel)
  *
- * @param int    $data['cash_register_id']   Kassenbuch-ID
+ * @param int    $data['cash_register_id']   Kassakonto-ID (= chart.id)
  * @param string $data['transdate']          Buchungsdatum (YYYY-MM-DD)
  * @param float  $data['amount']             Betrag (immer positiv – Typ bestimmt das Vorzeichen)
  * @param string $data['type']               income|expense
@@ -345,9 +555,9 @@ function createCashTransaction($data) {
     $amount         = abs(floatval($data['amount'] ?? 0));
     $type           = $data['type'] ?? 'expense';
 
-    if ($registerId <= 0) { resultInfo(false, 'VALIDATION_ERROR', 'Kassenbuch-ID fehlt'); return; }
+    if ($registerId <= 0)     { resultInfo(false, 'VALIDATION_ERROR', 'Kassenbuch-ID fehlt'); return; }
     if ($counterChartId <= 0) { resultInfo(false, 'VALIDATION_ERROR', 'Gegenkonto fehlt'); return; }
-    if ($amount <= 0) { resultInfo(false, 'VALIDATION_ERROR', 'Betrag muss größer 0 sein'); return; }
+    if ($amount <= 0)         { resultInfo(false, 'VALIDATION_ERROR', 'Betrag muss größer 0 sein'); return; }
 
     $register = _kasse_loadRegister($db, $registerId);
     if (!$register) { resultInfo(false, 'NOT_FOUND', 'Kassenbuch nicht gefunden'); return; }
@@ -360,17 +570,38 @@ function createCashTransaction($data) {
 
     $transdate   = $data['transdate'] ?? date('Y-m-d');
     $description = trim($data['description'] ?? '') ?: null;
-    $reference   = trim($data['reference'] ?? '') ?: null;
+    $reference   = trim($data['reference'] ?? '');
     $documentId  = intval($data['document_id'] ?? 0) ?: null;
     $employeeId  = $_SESSION['employee_id'] ?? null;
 
-    // Vorzeichen:
-    // expense → Kasse nimmt ab (negativ auf Kassenkonto), Gegenkonto nimmt zu (positiv)
-    // income  → Kasse nimmt zu (positiv auf Kassenkonto), Gegenkonto nimmt ab (negativ)
-    $kasseAmount   = $type === 'expense' ? -$amount : $amount;
+    // Fortlaufende Belegnummer automatisch vergeben, falls keine angegeben wurde
+    // (Feld ist im Dialog gesperrt; nur bei manueller Bearbeitung kommt ein Wert).
+    if ($reference === '') {
+        $reference = nextBelegnummer($db, $register['chart_id'], $transdate);
+    }
+
+    // Kasse darf nie ins Minus: Ausgabe nur buchen, wenn sie gedeckt ist.
+    if ($type === 'expense') {
+        $available = _kasse_availableBalance($db, $register['chart_id'], $transdate);
+        if ($amount > $available + 0.005) {
+            resultInfo(false,
+                'Diese Buchung würde die Kasse ins Minus bringen. Verfügbar am '
+                . date('d.m.Y', strtotime($transdate)) . ': '
+                . number_format($available, 2, ',', '.') . ' €, benötigt: '
+                . number_format($amount, 2, ',', '.') . ' €.',
+                ['code' => 'NEGATIVE_CASH', 'available' => $available]
+            );
+            return;
+        }
+    }
+
+    // Vorzeichen (kivitendo-Konvention: Soll = negativ, Haben = positiv):
+    // income  → Geld kommt in die Kasse (Soll)  → Kasse negativ, Gegenkonto (Ertrag) positiv
+    // expense → Geld verlässt die Kasse (Haben) → Kasse positiv, Gegenkonto (Aufwand) negativ
+    $kasseAmount   = $type === 'expense' ? $amount : -$amount;
     $counterAmount = -$kasseAmount;
 
-    // GL-Eintrag (Hauptbuch-Kopf)
+    // GL-Kopf
     $glRow = $db->getOne(
         "INSERT INTO gl (reference, description, transdate, gldate, employee_id)
          VALUES (:reference, :description, :transdate, :transdate, :employee_id)
@@ -386,8 +617,8 @@ function createCashTransaction($data) {
 
     // acc_trans: Kassenkonto
     $db->execute(
-        "INSERT INTO acc_trans (trans_id, chart_id, amount, transdate, gldate, source, chart_link)
-         VALUES (:trans_id, :chart_id, :amount, :transdate, :transdate, :source, :chart_link)",
+        "INSERT INTO acc_trans (trans_id, chart_id, amount, transdate, gldate, source, chart_link, tax_id, taxkey)
+         VALUES (:trans_id, :chart_id, :amount, :transdate, :transdate, :source, :chart_link, 0, 0)",
         [
             'trans_id'   => $glId,
             'chart_id'   => $register['chart_id'],
@@ -400,8 +631,8 @@ function createCashTransaction($data) {
 
     // acc_trans: Gegenkonto
     $db->execute(
-        "INSERT INTO acc_trans (trans_id, chart_id, amount, transdate, gldate, source, chart_link)
-         VALUES (:trans_id, :chart_id, :amount, :transdate, :transdate, :source, :chart_link)",
+        "INSERT INTO acc_trans (trans_id, chart_id, amount, transdate, gldate, source, chart_link, tax_id, taxkey)
+         VALUES (:trans_id, :chart_id, :amount, :transdate, :transdate, :source, :chart_link, 0, 0)",
         [
             'trans_id'   => $glId,
             'chart_id'   => $counterChartId,
@@ -412,8 +643,8 @@ function createCashTransaction($data) {
         ]
     );
 
-    // Beleg verknüpfen
-    if ($documentId) {
+    // Beleg verknüpfen (nur falls Beleg-Tabellen vorhanden)
+    if ($documentId && _kasse_documentsEnabled($db)) {
         $db->execute(
             "INSERT INTO cash_gl_documents (gl_id, document_id) VALUES (:gl_id, :doc_id)",
             ['gl_id' => $glId, 'doc_id' => $documentId]
@@ -438,7 +669,7 @@ function deleteCashTransaction($data) {
         return;
     }
 
-    // Nur GL-Buchungen löschen (keine AR/AP-Zahlungen — die über den AR-Workflow)
+    // Nur GL-Buchungen löschen (AR/AP-Zahlungen laufen über den Rechnungs-Workflow)
     $gl = $db->getOne("SELECT id FROM gl WHERE id = :id AND (storno IS NULL OR storno = false)", ['id' => $glId]);
     if (!$gl) {
         resultInfo(false, 'NOT_FOUND', 'GL-Buchung nicht gefunden');
@@ -446,7 +677,9 @@ function deleteCashTransaction($data) {
     }
 
     $db->execute("DELETE FROM acc_trans WHERE trans_id = :id", ['id' => $glId]);
-    $db->execute("DELETE FROM cash_gl_documents WHERE gl_id = :id", ['id' => $glId]);
+    if (_kasse_documentsEnabled($db)) {
+        $db->execute("DELETE FROM cash_gl_documents WHERE gl_id = :id", ['id' => $glId]);
+    }
     $db->execute("DELETE FROM gl WHERE id = :id", ['id' => $glId]);
 
     resultInfo(true, '', []);
@@ -467,8 +700,8 @@ function getOpenArForCash($data) {
     $whereExtra = '';
 
     if (!empty($data['search'])) {
-        $whereExtra             .= " AND (ar.invnumber ILIKE :search OR c.name ILIKE :search)";
-        $params['search']        = '%' . $data['search'] . '%';
+        $whereExtra      .= " AND (ar.invnumber ILIKE :search OR c.name ILIKE :search)";
+        $params['search'] = '%' . $data['search'] . '%';
     }
 
     $result = $db->getAll("
@@ -496,7 +729,7 @@ function getOpenArForCash($data) {
 /**
  * Ausgangsrechnung als Barzahlung buchen (acc_trans + ar.paid, kivitendo-kompatibel)
  *
- * @param int    $data['cash_register_id'] Kassenbuch-ID
+ * @param int    $data['cash_register_id'] Kassakonto-ID (= chart.id)
  * @param int    $data['ar_id']            Ausgangsrechnung-ID
  * @param float  $data['amount']           Betrag (optional; default = offener Betrag)
  * @param string $data['transdate']        Buchungsdatum (optional)
@@ -533,9 +766,9 @@ function bookArAsCash($data) {
 
     $transdate = $data['transdate'] ?? date('Y-m-d');
 
-    // Gegenkonto der AR-Erstbuchung ermitteln (Forderungskonto, z.B. 1200/1400)
+    // Forderungskonto der AR-Erstbuchung ermitteln (z. B. 1200/1400)
     $counterChart = $db->getOne("
-        SELECT chart_id
+        SELECT chart_id, chart_link
         FROM acc_trans
         WHERE trans_id = :tid
           AND chart_link LIKE '%AR%'
@@ -549,32 +782,38 @@ function bookArAsCash($data) {
         return;
     }
 
-    // Exakt wie matching.php: Kassenkonto erhält den positiven Betrag (Geld kommt rein)
+    // Fortlaufende Belegnummer für diese Kassenbuchung
+    $beleg = nextBelegnummer($db, $register['chart_id'], $transdate);
+
+    // Vorzeichen exakt wie matching.php / kivitendo (Soll = negativ, Haben = positiv):
+    //   Forderungskonto: positiver Betrag (Haben) → klärt die Forderung, zählt für ar.paid
+    //   Kassenkonto:     negativer Betrag (Soll)  → Geld kommt rein; chart_link 'AR_paid'
+    //                    wird von der Faktura als Zahlung erkannt; source = Belegnummer.
     $db->execute(
-        "INSERT INTO acc_trans (trans_id, chart_id, amount, transdate, gldate, source, memo, chart_link)
-         VALUES (:trans_id, :chart_id, :amount, :transdate, :transdate, :source, :memo, :chart_link)",
+        "INSERT INTO acc_trans (trans_id, chart_id, amount, transdate, gldate, source, memo, chart_link, tax_id, taxkey)
+         VALUES (:trans_id, :chart_id, :amount, :transdate, :transdate, :source, :memo, :chart_link, 0, 0)",
         [
             'trans_id'   => $arId,
-            'chart_id'   => $register['chart_id'],
+            'chart_id'   => $counterChart['chart_id'],
             'amount'     => $payAmount,
             'transdate'  => $transdate,
             'source'     => $ar['invnumber'],
             'memo'       => 'Barzahlung Kasse',
-            'chart_link' => $register['chart_link'],
+            'chart_link' => $counterChart['chart_link'] ?? 'AR',
         ]
     );
 
-    // Gegenbuchung gegen Forderungskonto (chart_link = 'AR_paid' → kivitendo erkennt Zahlung)
     $db->execute(
-        "INSERT INTO acc_trans (trans_id, chart_id, amount, transdate, gldate, source, memo, chart_link)
-         VALUES (:trans_id, :chart_id, :amount, :transdate, :transdate, :source, :memo, 'AR_paid')",
+        "INSERT INTO acc_trans (trans_id, chart_id, amount, transdate, gldate, source, memo, chart_link, tax_id, taxkey)
+         VALUES (:trans_id, :chart_id, :amount, :transdate, :transdate, :source, :memo, :chart_link, 0, 0)",
         [
-            'trans_id' => $arId,
-            'chart_id' => $counterChart['chart_id'],
-            'amount'   => -$payAmount,
-            'transdate' => $transdate,
-            'source'   => $ar['invnumber'],
-            'memo'     => 'Barzahlung Kasse',
+            'trans_id'   => $arId,
+            'chart_id'   => $register['chart_id'],
+            'amount'     => -$payAmount,
+            'transdate'  => $transdate,
+            'source'     => $beleg,
+            'memo'       => 'Barzahlung Kasse',
+            'chart_link' => $register['chart_link'],
         ]
     );
 
@@ -587,10 +826,10 @@ function bookArAsCash($data) {
     resultInfo(true, '', ['booked_amount' => $payAmount]);
 }
 
-// ── Beleg-Upload und -Vorschau ────────────────────────────────────────────────
+// ── Beleg-Upload und -Vorschau (optional) ─────────────────────────────────────
 
 /**
- * Beleg für Kassenbuchung hochladen (in accounting_documents, ohne KI-Analyse)
+ * Beleg für Kassenbuchung hochladen (in accounting_documents)
  *
  * @param string $data['filename']    Dateiname
  * @param string $data['mime_type']   MIME-Typ
@@ -599,6 +838,11 @@ function bookArAsCash($data) {
  */
 function uploadCashDocument($data) {
     $db = DbhCompany::begin();
+
+    if (!_kasse_documentsEnabled($db)) {
+        resultInfo(false, 'DOCUMENTS_UNAVAILABLE', 'Beleg-Verwaltung in dieser Datenbank nicht verfügbar');
+        return;
+    }
 
     $filename   = trim($data['filename'] ?? '');
     $mimeType   = $data['mime_type'] ?? 'application/octet-stream';
@@ -655,7 +899,13 @@ function uploadCashDocument($data) {
  * @testdata {"gl_id": 1, "document_id": 1}
  */
 function linkDocumentToCashTransaction($data) {
-    $db    = DbhCompany::begin();
+    $db = DbhCompany::begin();
+
+    if (!_kasse_documentsEnabled($db)) {
+        resultInfo(false, 'DOCUMENTS_UNAVAILABLE', 'Beleg-Verwaltung in dieser Datenbank nicht verfügbar');
+        return;
+    }
+
     $glId  = intval($data['gl_id'] ?? 0);
     $docId = intval($data['document_id'] ?? 0);
 
@@ -664,7 +914,6 @@ function linkDocumentToCashTransaction($data) {
         return;
     }
 
-    // Idempotent: nur einfügen wenn noch nicht vorhanden
     $existing = $db->getOne(
         "SELECT id FROM cash_gl_documents WHERE gl_id = :gl_id AND document_id = :doc_id",
         ['gl_id' => $glId, 'doc_id' => $docId]
@@ -686,9 +935,14 @@ function linkDocumentToCashTransaction($data) {
  * @testdata {"document_id": 1}
  */
 function getCashDocumentContent($data) {
-    $db    = DbhCompany::begin();
-    $docId = intval($data['document_id'] ?? 0);
+    $db = DbhCompany::begin();
 
+    if (!_kasse_documentsEnabled($db)) {
+        resultInfo(false, 'DOCUMENTS_UNAVAILABLE', 'Beleg-Verwaltung in dieser Datenbank nicht verfügbar');
+        return;
+    }
+
+    $docId = intval($data['document_id'] ?? 0);
     if ($docId <= 0) {
         resultInfo(false, 'VALIDATION_ERROR', 'Dokument-ID fehlt');
         return;

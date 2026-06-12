@@ -338,6 +338,11 @@ function bookMatchedTransactions($data) {
         $counterLinkVal  = $counterLink['link'] ?? 'AR';
         $bankLinkVal     = $bankChartLink['link'] ?? 'AR_paid:AP_paid';
 
+        // Fortlaufende Belegnummer: source bleibt 'BANK' (von Faktura-Schutz und
+        // Storno benoetigt), die Nummer wird als "Beleg N · …" in memo eingebettet.
+        $beleg    = nextBelegnummer($db, $bankAccount['chart_id'], $bt['transdate']);
+        $bankMemo = "Beleg {$beleg} · Bankabstimmung Umsatz #{$btId}";
+
         // AR-Konto-Eintrag (positiv) — wird fuer ar.paid gezaehlt
         $bankEntry = $db->getOne(<<<SQL
             INSERT INTO acc_trans (trans_id, chart_id, amount, transdate, gldate, source, memo, tax_id, taxkey, chart_link)
@@ -349,7 +354,7 @@ function bookMatchedTransactions($data) {
             'amount'     => $paidIncrement,
             'transdate'  => $bt['transdate'],
             'source'     => 'BANK',
-            'memo'       => 'Bankabstimmung Umsatz #' . $btId,
+            'memo'       => $bankMemo,
             'chart_link' => $counterLinkVal,
         ]);
 
@@ -365,7 +370,7 @@ function bookMatchedTransactions($data) {
             'amount'     => -$paidIncrement,
             'transdate'  => $bt['transdate'],
             'source'     => 'BANK',
-            'memo'       => 'Bankabstimmung Umsatz #' . $btId,
+            'memo'       => $bankMemo,
             'chart_link' => $bankLinkVal,
         ]);
 
@@ -970,6 +975,11 @@ function bookTransactionMultipleInvoices($data) {
         return;
     }
 
+    // Eine fortlaufende Belegnummer fuer den gesamten (gesplitteten) Bankumsatz.
+    // source bleibt 'BANK', die Nummer steht als "Beleg N · …" im memo.
+    $beleg    = nextBelegnummer($db, $bankAccount['chart_id'], $bt['transdate']);
+    $bankMemo = "Beleg {$beleg} · Sammelzahlung Umsatz #{$btId}";
+
     // Alle Rechnungen laden und Betraege summieren
     $invoices   = [];
     $totalOpen  = 0.0;
@@ -1037,7 +1047,7 @@ function bookTransactionMultipleInvoices($data) {
             'amount'     => $amount,
             'transdate'  => $bt['transdate'],
             'source'     => 'BANK',
-            'memo'       => 'Sammelzahlung Umsatz #' . $btId,
+            'memo'       => $bankMemo,
             'chart_link' => $cLinkVal,
         ]);
 
@@ -1052,7 +1062,7 @@ function bookTransactionMultipleInvoices($data) {
             'amount'     => -$amount,
             'transdate'  => $bt['transdate'],
             'source'     => 'BANK',
-            'memo'       => 'Sammelzahlung Umsatz #' . $btId,
+            'memo'       => $bankMemo,
             'chart_link' => $bLinkVal,
         ]);
 

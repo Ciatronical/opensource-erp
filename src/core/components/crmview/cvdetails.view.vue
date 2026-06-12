@@ -363,7 +363,11 @@ const { t } = useI18n();
 const oserpData = oserpStore();
 const billing_addresses = computed(() => oserpData.customer_vendor?.billing_addresses || []);
 const contacts = computed(() => oserpData.customer_vendor?.contacts || []);
-const custom_vars = computed(() => oserpData.customer_vendor?.custom_vars || []);
+const custom_vars = computed(() =>
+    (oserpData.customer_vendor?.custom_vars || []).filter(
+        v => v.value !== null && v.value !== '' && v.value !== undefined
+    )
+);
 const cvProfile = computed(() => oserpData.customer_vendor?.profile);
 
 const route = useRoute()

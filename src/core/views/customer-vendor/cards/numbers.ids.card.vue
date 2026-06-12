@@ -10,8 +10,8 @@
       <v-row dense>
         <v-col cols="12" sm="6" class="py-1">
           <v-text-field
-            :label="t('CustomerVendorEditView.fields.customernumber')"
-            v-model="localData.customernumber"
+            :label="entityNumberLabel"
+            v-model="entityNumber"
             variant="outlined"
             density="compact"
             hide-details="auto"
@@ -108,6 +108,7 @@ export default {
   name: 'NumbersIdsCard',
   props: {
     modelValue: { type: Object, required: true },
+    entitySrc: { type: String, default: 'C' },
   },
   emits: ['update:modelValue'],
   setup(props, { emit }) {
@@ -116,6 +117,24 @@ export default {
     const localData = computed({
       get: () => props.modelValue,
       set: (value) => emit('update:modelValue', value)
+    })
+
+    // Lieferanten haben keine Spalte customernumber, sondern vendornumber
+    const isVendor = computed(() => (props.entitySrc || props.modelValue?.src) === 'V')
+
+    const entityNumberLabel = computed(() => isVendor.value
+      ? t('CustomerVendorEditView.fields.vendornumber')
+      : t('CustomerVendorEditView.fields.customernumber'))
+
+    const entityNumber = computed({
+      get: () => isVendor.value ? localData.value.vendornumber : localData.value.customernumber,
+      set: (value) => {
+        if (isVendor.value) {
+          localData.value.vendornumber = value
+        } else {
+          localData.value.customernumber = value
+        }
+      }
     })
 
     // USt-ID Validierung
@@ -254,6 +273,8 @@ export default {
 
     return {
       localData,
+      entityNumberLabel,
+      entityNumber,
       t,
       ustidError,
       ustidErrorMessage,
