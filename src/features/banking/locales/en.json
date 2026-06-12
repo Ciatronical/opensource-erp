@@ -76,6 +76,7 @@
             "actionIgnore": "Ignore",
             "weroniSoon": "Weroni AI analysis is still in development",
             "bookSuccess": "Payment booked",
+            "nothingBooked": "Nothing was booked — the transaction is not assigned or the assignment is missing. Please assign an invoice first and book again.",
             "assignSuccess": "Transaction assigned",
             "dueDate": "Due",
             "openAmount": "Open Amount",

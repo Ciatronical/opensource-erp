@@ -528,6 +528,13 @@ function bookCardSettlementLine($data) {
                  ORDER BY acc_trans_id ASC LIMIT 1",
                 ['tid' => $arId]
             );
+            // Fallback fuer Rechnungen ohne GL-Erstbuchung (z. B. importierte Belege
+            // ohne acc_trans): Standard-Forderungskonto aus dem Kontenrahmen nehmen
+            // (chart.link = 'AR', niedrigste Kontonummer) — analog zur Bankabstimmung.
+            if (!$fk) {
+                $fk = $db->getOne("SELECT id AS chart_id FROM chart WHERE link = 'AR' ORDER BY accno ASC LIMIT 1");
+                writeLog("bookCardSettlementLine: AR #{$arId} (Rg {$ar['invnumber']}) ohne acc_trans — Fallback-Forderungskonto " . ($fk['chart_id'] ?? 'KEINS'), true, DLOG_INF);
+            }
             if (!$fk) { resultInfo(false, 'DATA_ERROR', 'Forderungskonto der Rechnung ' . $ar['invnumber'] . ' nicht ermittelbar'); return; }
             $settleList[] = ['ar_id' => $arId, 'invnumber' => $ar['invnumber'], 'pay' => $pay, 'fk_chart_id' => $fk['chart_id']];
             $sumCents += (int) round($pay * 100);

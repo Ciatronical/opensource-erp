@@ -76,6 +76,7 @@
       "actionIgnore": "Ignorieren",
       "weroniSoon": "Weroni KI-Analyse ist noch in Entwicklung",
       "bookSuccess": "Zahlung gebucht",
+      "nothingBooked": "Es wurde nichts gebucht — der Umsatz ist nicht zugeordnet oder die Zuordnung fehlt. Bitte zuerst eine Rechnung zuordnen und erneut buchen.",
       "assignSuccess": "Umsatz zugeordnet",
       "dueDate": "Fällig",
       "openAmount": "Offener Betrag",

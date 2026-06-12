@@ -338,8 +338,9 @@ function bookMatchedTransactions($data) {
         $counterLinkVal  = $counterLink['link'] ?? 'AR';
         $bankLinkVal     = $bankChartLink['link'] ?? 'AR_paid:AP_paid';
 
-        // Fortlaufende Belegnummer: source bleibt 'BANK' (von Faktura-Schutz und
-        // Storno benoetigt), die Nummer wird als "Beleg N · …" in memo eingebettet.
+        // Fortlaufende Belegnummer kommt in acc_trans.source (= Beleg-Feld der Rechnung).
+        // Die Erkennung "bank-gebucht" (Faktura-Editor) und der Storno laufen ueber die
+        // Mapping-Tabelle bank_transaction_acc_trans, nicht mehr ueber source='BANK'.
         $beleg    = nextBelegnummer($db, $bankAccount['chart_id'], $bt['transdate']);
         $bankMemo = "Beleg {$beleg} · Bankabstimmung Umsatz #{$btId}";
 
@@ -353,7 +354,7 @@ function bookMatchedTransactions($data) {
             'chart_id'   => $counterChart['chart_id'],
             'amount'     => $paidIncrement,
             'transdate'  => $bt['transdate'],
-            'source'     => 'BANK',
+            'source'     => (string)$beleg,
             'memo'       => $bankMemo,
             'chart_link' => $counterLinkVal,
         ]);
@@ -369,7 +370,7 @@ function bookMatchedTransactions($data) {
             'chart_id'   => $bankAccount['chart_id'],
             'amount'     => -$paidIncrement,
             'transdate'  => $bt['transdate'],
-            'source'     => 'BANK',
+            'source'     => (string)$beleg,
             'memo'       => $bankMemo,
             'chart_link' => $bankLinkVal,
         ]);
@@ -460,14 +461,11 @@ function unbookTransaction($data) {
     $rows = $db->getAll(<<<SQL
         SELECT at.acc_trans_id, at.trans_id, at.amount
         FROM acc_trans at
-        WHERE at.source = 'BANK'
-            AND (
-                at.acc_trans_id IN (
-                    SELECT acc_trans_id FROM bank_transaction_acc_trans
-                    WHERE bank_transaction_id = :bt_id
-                )
-                OR at.memo LIKE :memo_like
+        WHERE at.acc_trans_id IN (
+                SELECT acc_trans_id FROM bank_transaction_acc_trans
+                WHERE bank_transaction_id = :bt_id
             )
+            OR at.memo LIKE :memo_like
     SQL, ['bt_id' => $btId, 'memo_like' => $memoLike]);
 
     if (empty($rows)) {
@@ -976,7 +974,7 @@ function bookTransactionMultipleInvoices($data) {
     }
 
     // Eine fortlaufende Belegnummer fuer den gesamten (gesplitteten) Bankumsatz.
-    // source bleibt 'BANK', die Nummer steht als "Beleg N · …" im memo.
+    // Sie kommt in acc_trans.source (Beleg-Feld); Erkennung/Storno ueber das Mapping.
     $beleg    = nextBelegnummer($db, $bankAccount['chart_id'], $bt['transdate']);
     $bankMemo = "Beleg {$beleg} · Sammelzahlung Umsatz #{$btId}";
 
@@ -1046,7 +1044,7 @@ function bookTransactionMultipleInvoices($data) {
             'chart_id'   => $counterChart['chart_id'],
             'amount'     => $amount,
             'transdate'  => $bt['transdate'],
-            'source'     => 'BANK',
+            'source'     => (string)$beleg,
             'memo'       => $bankMemo,
             'chart_link' => $cLinkVal,
         ]);
@@ -1061,7 +1059,7 @@ function bookTransactionMultipleInvoices($data) {
             'chart_id'   => $bankAccount['chart_id'],
             'amount'     => -$amount,
             'transdate'  => $bt['transdate'],
-            'source'     => 'BANK',
+            'source'     => (string)$beleg,
             'memo'       => $bankMemo,
             'chart_link' => $bLinkVal,
         ]);

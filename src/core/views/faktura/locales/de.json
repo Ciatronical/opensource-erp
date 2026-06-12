@@ -271,6 +271,7 @@
             "applyRemainingAmount": "Fehlbetrag übernehmen: {amount}",
             "bankBookedLocked": "Über Bankabstimmung gebucht — Storno nur im Bankmodul möglich",
             "bankBookedGoto": "Über Bankabstimmung gebucht — im Bankmodul anzeigen/stornieren",
+            "bankBookedLock": "Über das Bankmodul gebucht — gesperrt. Klicken zum Anzeigen/Stornieren im Bankmodul.",
             "paymentNoAccount": "Bitte zuerst ein Zahlungskonto auswählen",
             "instructions": {
                 "title": "Arbeitsanweisungen",

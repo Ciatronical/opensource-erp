@@ -393,6 +393,22 @@ async function loadCandidates() {
     }
 }
 
+/**
+ * Wirft einen sichtbaren Fehler, wenn die Buchung serverseitig nichts gebucht
+ * hat (booked_count === 0) oder Fehler zurückkam. Das Backend liefert in diesen
+ * Fällen success=true mit errors[] — ohne diese Prüfung bliebe der Fehlschlag
+ * still und es würde fälschlich "Erfolg" gemeldet.
+ */
+function assertBooked(result) {
+    const errs = result?.errors
+    if (Array.isArray(errs) && errs.length) {
+        throw new Error(errs.join('\n'))
+    }
+    if (typeof result?.booked_count === 'number' && result.booked_count === 0) {
+        throw new Error(t('BankingView.booking.nothingBooked'))
+    }
+}
+
 async function bookNow(candidate) {
     const txAmount = Math.abs(parseFloat(props.transaction.amount) || 0)
     const invAmount = Math.abs(parseFloat(candidate.open_amount) || 0)
@@ -411,7 +427,8 @@ async function bookNow(candidate) {
     booking.value = true
     try {
         await matching.matchTransaction(props.transaction.id, candidate.target_type, candidate.target_id)
-        await matching.bookMatchedTransactions([props.transaction.id], props.accountId)
+        const result = await matching.bookMatchedTransactions([props.transaction.id], props.accountId)
+        assertBooked(result)
         alerts.success(t('BankingView.booking.bookSuccess'))
         emit('done')
         close()
@@ -437,11 +454,12 @@ async function bookGroup() {
     if (!suggestedGroup.value) return
     booking.value = true
     try {
-        await matching.bookTransactionMultiple(
+        const result = await matching.bookTransactionMultiple(
             props.transaction.id,
             suggestedGroup.value.target_ids,
             props.accountId
         )
+        assertBooked(result)
         alerts.success(t('BankingView.booking.bookSuccess'))
         emit('done')
         close()
@@ -455,7 +473,8 @@ async function bookGroup() {
 async function bookCurrent() {
     booking.value = true
     try {
-        await matching.bookMatchedTransactions([props.transaction.id], props.accountId)
+        const result = await matching.bookMatchedTransactions([props.transaction.id], props.accountId)
+        assertBooked(result)
         alerts.success(t('BankingView.booking.bookSuccess'))
         emit('done')
         close()

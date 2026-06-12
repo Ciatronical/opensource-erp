@@ -86,7 +86,6 @@ function getFakturaData($data) {
                             SELECT bt.id, bt.local_bank_account_id
                             FROM bank_transactions bt
                             WHERE bt.match_status = 'booked'
-                                AND COALESCE(at.source, '') = 'BANK'
                                 AND (
                                     EXISTS (
                                         SELECT 1 FROM bank_transaction_acc_trans bat
@@ -785,12 +784,13 @@ SQL;
         ]);
     }
 
-    // Geschützte Bank-Buchungen ermitteln: acc_trans-Einträge mit source='BANK',
-    // die zu einer noch GEBUCHTEN Bankzuordnung gehören. Erkennung über das stabile
-    // Mapping bank_transaction_acc_trans ODER (für Alt-Buchungen) über das Memo
-    // '...Umsatz #<id>'. Solche Einträge dürfen vom Faktura-Editor nicht gelöscht/
-    // verändert werden (FK bank_transaction_acc_trans_acc_trans_id_fkey, Bankabstimmung).
-    // Bereits stornierte/verwaiste BANK-Einträge sind hier NICHT enthalten und werden
+    // Geschützte Bank-Buchungen ermitteln: acc_trans-Einträge, die zu einer noch
+    // GEBUCHTEN Bankzuordnung gehören. Erkennung über das stabile Mapping
+    // bank_transaction_acc_trans ODER (für Alt-Buchungen) über das Memo
+    // '...Umsatz #<id>' — unabhängig von source (source trägt jetzt die Belegnummer).
+    // Solche Einträge dürfen vom Faktura-Editor nicht gelöscht/verändert werden
+    // (FK bank_transaction_acc_trans_acc_trans_id_fkey, Bankabstimmung).
+    // Bereits stornierte/verwaiste Einträge sind hier NICHT enthalten und werden
     // dadurch im Editor wieder bereinigbar (löschen/editieren).
     $protectedBankIds = [];
     $protectExclusion = '';
@@ -800,7 +800,6 @@ SQL;
             SELECT pa.acc_trans_id
             FROM acc_trans pa
             WHERE pa.trans_id = :fakturaID
-                AND COALESCE(pa.source, '') = 'BANK'
                 AND EXISTS (
                     SELECT 1 FROM bank_transactions bt
                     WHERE bt.match_status = 'booked'
@@ -996,6 +995,157 @@ SQL;
         'accTransCount' => count($accTransEntries),
         'paymentCount' => count($paymentEntries)
     ]);
+}
+
+/**
+ * Bucht eine Ausgangsrechnung (ar) serverseitig ins Hauptbuch (acc_trans).
+ *
+ * Spiegelt exakt die Frontend-Logik (useAccounting.calculateAccTransEntries) und die
+ * buchungsziel-Ableitung (Buchungsgruppe → taxzone_charts → Erlöskonto/Steuer) aus
+ * createFakturaItem. Pro Erlöskonto+Steuer eine Sammelbuchung: Erlös (+netto),
+ * Steuer (+steuer), Forderungskonto (−brutto). Vorzeichen wie kivitendo.
+ *
+ * Sicherheitsnetz:
+ *  - Idempotent: existieren bereits Sach-Buchungen (chart_link NICHT '%_paid%'),
+ *    wird nichts gebucht (reason ALREADY_POSTED).
+ *  - Wird das ermittelte Brutto != ar.amount (> 1 Cent), wird NICHT gebucht
+ *    (reason AMOUNT_MISMATCH) — schützt vor falschen Steuer-/Kontenzuordnungen.
+ *  - $dryRun = true liefert nur die geplanten Buchungssätze zurück, ohne zu schreiben.
+ *
+ * @param object $db     DbhCompany-Handle
+ * @param int    $arId   ar.id
+ * @param bool   $dryRun Nur planen, nicht schreiben
+ * @return array ['posted'=>bool, 'reason'=>string, 'gross'=>float, 'ar_amount'=>float, 'entries'=>array, 'count'=>int]
+ */
+function postArInvoiceToLedger($db, $arId, $dryRun = false) {
+    $arId = intval($arId);
+    $ar = $db->getOne(
+        "SELECT id, taxzone_id, taxincluded, amount, transdate FROM ar WHERE id = :id",
+        ['id' => $arId]
+    );
+    if (!$ar) {
+        return ['posted' => false, 'reason' => 'AR_NOT_FOUND'];
+    }
+
+    // Bereits gebucht? (Sach-Buchungen außerhalb der Zahlungs-Beine '%_paid%')
+    $already = $db->getOne(
+        "SELECT 1 AS x FROM acc_trans WHERE trans_id = :id AND COALESCE(chart_link,'') NOT LIKE '%_paid%' LIMIT 1",
+        ['id' => $arId]
+    );
+    if ($already) {
+        return ['posted' => false, 'reason' => 'ALREADY_POSTED'];
+    }
+
+    $taxIncluded = in_array($ar['taxincluded'], [true, 't', '1', 1], true);
+    $transdate   = $ar['transdate'];
+
+    // Positionen inkl. buchungsziel (Erlöskonto, Steuerkonto, tax_id, rate) — exakt
+    // wie createFakturaItem: der für die Steuerzone gültige taxzone_charts-Eintrag,
+    // die Steuer kommt aus dem taxkeys-Eintrag des Erlöskontos.
+    $items = $db->getAll(<<<SQL
+        SELECT i.qty, i.sellprice, i.discount,
+               bz.income_chart_id, bz.tax_id, bz.tax_chart_id, bz.rate
+        FROM invoice i
+        JOIN parts p ON p.id = i.parts_id
+        LEFT JOIN LATERAL (
+            SELECT c2.id AS income_chart_id, tk.tax_id, tx.chart_id AS tax_chart_id, tx.rate
+            FROM buchungsgruppen bg
+            JOIN taxzone_charts tc ON tc.buchungsgruppen_id = bg.id AND tc.taxzone_id = :tz
+            JOIN chart c2 ON c2.id = tc.income_accno_id
+            LEFT JOIN taxkeys tk ON tk.chart_id = c2.id
+            LEFT JOIN tax tx ON tx.id = tk.tax_id
+            WHERE bg.id = p.buchungsgruppen_id
+            ORDER BY tk.startdate DESC NULLS LAST
+            LIMIT 1
+        ) bz ON true
+        WHERE i.trans_id = :id
+        ORDER BY i.position
+    SQL, ['id' => $arId, 'tz' => $ar['taxzone_id']]);
+
+    if (empty($items)) {
+        return ['posted' => false, 'reason' => 'NO_ITEMS'];
+    }
+
+    // Nach Erlöskonto + tax_id gruppieren und Netto summieren.
+    $groups = [];
+    foreach ($items as $it) {
+        if ($it['income_chart_id'] === null) {
+            // Ohne Erlöskonto (Buchungsgruppe/Steuerzone nicht zugeordnet) NICHT raten.
+            return ['posted' => false, 'reason' => 'NO_INCOME_ACCOUNT'];
+        }
+        $rate      = (float)($it['rate'] ?? 0);
+        $itemTotal = round((float)$it['qty'] * (float)$it['sellprice'] * (1 - (float)$it['discount']), 2);
+        $net       = ($taxIncluded && $rate) ? round($itemTotal / (1 + $rate), 2) : $itemTotal;
+        $key       = $it['income_chart_id'] . '_' . ($it['tax_id'] ?? '0');
+        if (!isset($groups[$key])) {
+            $groups[$key] = [
+                'income'    => (int)$it['income_chart_id'],
+                'tax_chart' => $it['tax_chart_id'] !== null ? (int)$it['tax_chart_id'] : null,
+                'tax_id'    => $it['tax_id'] !== null ? (int)$it['tax_id'] : 0,
+                'rate'      => $rate,
+                'net'       => 0.0,
+            ];
+        }
+        $groups[$key]['net'] += $net;
+    }
+
+    $entries = [];
+    $gross   = 0.0;
+    foreach ($groups as $g) {
+        $net    = round($g['net'], 2);
+        $tax    = $g['rate'] ? round($net * $g['rate'], 2) : 0.0;
+        $taxkey = $g['rate'] > 0.1 ? 3 : ($g['rate'] > 0 ? 2 : 0);
+
+        $entries[] = ['chart_id' => $g['income'], 'amount' => $net, 'tax_id' => $g['tax_id'], 'taxkey' => $taxkey];
+        if ($tax != 0 && $g['tax_chart']) {
+            $entries[] = ['chart_id' => $g['tax_chart'], 'amount' => $tax, 'tax_id' => 0, 'taxkey' => 0];
+        }
+        $gross += $net + $tax;
+    }
+    $gross = round($gross, 2);
+
+    // Forderungskonto (Standard: chart.link='AR', niedrigste Kontonummer).
+    $arChart = $db->getOne("SELECT id FROM chart WHERE link = 'AR' ORDER BY accno ASC LIMIT 1");
+    if (!$arChart) {
+        return ['posted' => false, 'reason' => 'NO_AR_ACCOUNT'];
+    }
+    $entries[] = ['chart_id' => (int)$arChart['id'], 'amount' => round(-$gross, 2), 'tax_id' => 0, 'taxkey' => 0];
+
+    // Sicherheitsnetz: ermitteltes Brutto muss zum gespeicherten Rechnungsbetrag passen.
+    if (abs($gross - (float)$ar['amount']) > 0.01) {
+        return ['posted' => false, 'reason' => 'AMOUNT_MISMATCH',
+                'gross' => $gross, 'ar_amount' => (float)$ar['amount'], 'entries' => $entries];
+    }
+
+    if ($dryRun) {
+        return ['posted' => false, 'reason' => 'DRY_RUN',
+                'gross' => $gross, 'ar_amount' => (float)$ar['amount'], 'entries' => $entries];
+    }
+
+    $db->beginTransaction();
+    try {
+        foreach ($entries as $e) {
+            $linkRow = $db->getOne("SELECT link FROM chart WHERE id = :id", ['id' => $e['chart_id']]);
+            $db->execute(<<<SQL
+                INSERT INTO acc_trans (trans_id, chart_id, amount, transdate, gldate, source, memo, tax_id, taxkey, chart_link)
+                VALUES (:t, :c, :a, :td, :td, '', '', :taxid, :tk, :link)
+            SQL, [
+                't'     => $arId,
+                'c'     => $e['chart_id'],
+                'a'     => $e['amount'],
+                'td'    => $transdate,
+                'taxid' => $e['tax_id'],
+                'tk'    => $e['taxkey'],
+                'link'  => $linkRow['link'] ?? '',
+            ]);
+        }
+        $db->commit();
+    } catch (\Throwable $ex) {
+        $db->rollBack();
+        throw $ex;
+    }
+
+    return ['posted' => true, 'gross' => $gross, 'ar_amount' => (float)$ar['amount'], 'count' => count($entries)];
 }
 
 /**
@@ -1802,6 +1952,22 @@ SQL;
     }
 
     $company->commit();
+
+    // Auftrag → Rechnung: sofort ins Hauptbuch buchen (acc_trans), damit die Rechnung
+    // in GuV/UStVA/Bilanz erscheint und Zahlungen/Forderungskonto sauber greifen.
+    // Best-effort NACH dem Commit: ein Buchungsfehler darf die bereits erstellte
+    // Rechnung nicht zurückrollen (postArInvoiceToLedger ist idempotent + hat den
+    // Mismatch-Schutz). Nur fuer echte Rechnungen, nicht Gutschrift/Storno.
+    if ($effectiveTarget === 'invoice') {
+        try {
+            $postRes = postArInvoiceToLedger($company, $newId);
+            if (empty($postRes['posted'])) {
+                writeLog("convertFaktura: AR #{$newId} nicht auto-gebucht (" . ($postRes['reason'] ?? '?') . ")", true, DLOG_INF);
+            }
+        } catch (\Throwable $e) {
+            writeLog("convertFaktura: Auto-Buchung AR #{$newId} fehlgeschlagen: " . $e->getMessage(), true, DLOG_ERR);
+        }
+    }
 
     resultInfo(true, 'CONVERTED', ['id' => $newId, 'fakturaType' => $effectiveTarget]);
 

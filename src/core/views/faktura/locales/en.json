@@ -270,6 +270,7 @@
             "applyRemainingAmount": "Apply remaining amount: {amount}",
             "bankBookedLocked": "Booked via bank reconciliation — reverse it in the banking module",
             "bankBookedGoto": "Booked via bank reconciliation — view/reverse in the banking module",
+            "bankBookedLock": "Booked via the banking module — locked. Click to view/reverse in the banking module.",
             "paymentNoAccount": "Please select a payment account first",
             "instructions": {
                 "title": "Work Instructions",

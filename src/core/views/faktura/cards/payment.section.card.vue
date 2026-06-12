@@ -39,8 +39,7 @@
                             <v-text-field
                                 :ref="el => { if (el) sourceRefs[index] = el }"
                                 v-model="payment.source"
-                                :disabled="isBankBooked(payment)"
-                                :readonly="!isBelegUnlocked(payment, index)"
+                                :readonly="isBankBooked(payment) || !isBelegUnlocked(payment, index)"
                                 variant="outlined"
                                 density="compact"
                                 hide-details
@@ -58,11 +57,22 @@
                                         @click.stop="toggleBeleg(payment, index)"
                                     />
                                 </template>
+                                <template v-else #append-inner>
+                                    <v-icon
+                                        size="small"
+                                        icon="mdi-lock"
+                                        color="info"
+                                        style="cursor:pointer"
+                                        :title="t('FakturaView.faktura.bankBookedLock')"
+                                        @click.stop="goToBankTransaction(payment)"
+                                    />
+                                </template>
                             </v-text-field>
                         </td>
                         <td>
                             <v-text-field
                                 v-model="payment.memo"
+                                :disabled="isBankBooked(payment)"
                                 variant="outlined"
                                 density="compact"
                                 hide-details
