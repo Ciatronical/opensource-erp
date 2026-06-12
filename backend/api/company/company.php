@@ -148,6 +148,20 @@ function createCompany($data) {
         }
         writeLog("CRM-Upstall auf '$dbName' ausgeführt", true, DLOG_INF);
 
+        // ── 8. Vollständigen DATEV-Kontenrahmen ergänzen (idempotent, + Reparatur fehlender taxkeys) ──
+        // Der Seed-Dump enthält nur einen reduzierten Starter-Kontenrahmen; hier wird er auf den
+        // vollen SKR03/SKR04-Standard gebracht. Schlägt der Import fehl, bleibt die Firma mit dem
+        // Basis-Kontenrahmen nutzbar (Warnung statt Abbruch).
+        require_once __DIR__.'/../accounting/chart_import.php';
+        try {
+            $chartReport = importChartMaster($newDb, $skr, ['mode' => 'fix', 'dry_run' => false]);
+            writeLog("Kontenrahmen '$skr' ergänzt: {$chartReport['summary']['added']} neu, "
+                . "{$chartReport['summary']['repaired_taxkeys']} repariert, "
+                . "{$chartReport['summary']['conflicts']} Konflikte", true, DLOG_INF);
+        } catch (\Throwable $chartEx) {
+            writeLog("Kontenrahmen-Import für '$dbName' fehlgeschlagen: " . $chartEx->getMessage(), true, DLOG_WRN);
+        }
+
     } catch (Exception $e) {
         // Datenbank wieder löschen bei Fehler
         try {

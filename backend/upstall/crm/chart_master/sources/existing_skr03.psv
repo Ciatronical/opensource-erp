@@ -1,0 +1,389 @@
+0027|A|A|AP_amount|9|f|||||EDV-Software
+0090|A|A|AP_amount|9|f|||||Geschäftsbauten
+0200|A|A|AP_amount|9|f|||||Techn.Anlagen und Maschinen
+0210|A|A|AP_amount|9|f|||||Maschinen
+0380|A|A|AP_amount|9|f|||||Sonst.Transportmittel
+0400|A|A|AP_amount|9|f|||||Betriebsausstattung
+0410|A|A|AP_amount|9|f|||||Geschäftsausstattung
+0420|A|A|AP_amount|9|f|||||Büroeinrichtung
+0430|A|A|AP_amount|9|f|||||Ladeneinrichtung
+0440|A|A|AP_amount|9|f|||||Werkzeuge
+0480|A|A|AP_amount|9|f|||||Geringwertige Wirtschaftsg.b.410EUR
+0631|A|A||0|f|||||Vblk.geg.Kreditinst.- Restlaufzeit b.1 Jahr
+0640|A|A||0|f|||||Vblk.geg.Kreditinst.- Restlaufzeit 1 bis 5 Jahre
+0650|A|A||0|f|||||Vblk.geg.Kreditinst.- Restlaufzeit grösser als 5 Jahre
+0853|A|Q||0|f|||||Satzungsm.Rücklagen 0% Vorbelast.(st.Einlagekto.)
+1000|A|A|AR_paid:AP_paid|0|f|||||Kasse
+1200|A|A|AR_paid:AP_paid|0|f|||||Bank
+1360|A|A||0|f|||||Geldtransit
+1400|A|A|AR|0|f|||||Ford. a.Lieferungen und Leistungen
+1445|A|A|AR|0|f|||||Ford.a.LuL z.allg.USt-Satz o.eines Kleinuntern.(EÜR)
+1446|A|A|AR|0|f|||||Ford.aLuL z.erm.USt.-Satz (EÜR)
+1447|A|A|AR|0|f|||||Ford.a.steuerfr.od.nicht steuerb.LuL (EÜR)
+1448|A|A|AR|0|f|||||Ford.a.LuL n.Durchschnittss.gem.§24UStG(EÜR)
+1449|A|A||0|f|||||Gegenkto. 1445-1448 bei Aufteil.d.Ford.n.Steuers.(EÜR)
+1450|A|A|AR|0|f|||||Ford.a.LuL n.Durchschnittss.gem.§24UStG(EÜR)
+1568|A|E|AP_tax:IC_taxpart:IC_taxservice|8|t|27|||27|Abziehbare Vorsteuer 5 %
+1570|A|E|AP_tax:IC_taxpart:IC_taxservice|0|f|||||Anrechenbare Vorsteuer
+1571|A|E|AP_tax:IC_taxpart:IC_taxservice|0|f|27|||27|Abziehbare Vorsteuer 7%
+1572|A|E|AP_tax:IC_taxpart:IC_taxservice|0|f|27|||27|Abziehbare Vorsteuer 7% innergem. Erwerb
+1573|A|E|AP_tax:IC_taxpart:IC_taxservice|0|f|27|||27|Abziehbare Vorsteuer 16% innergem. Erwerb
+1574|A|E|AP_tax:IC_taxpart:IC_taxservice|19|f|||||Abziehbare Vorsteuer aus innergem. Erwerb 19 %
+1575|A|E|AP_tax:IC_taxpart:IC_taxservice|0|f|27|||27|Abziehbare Vorsteuer 16%
+1576|A|E|AP_tax:IC_taxpart:IC_taxservice|9|f|27|||27|Abziehbare Vorsteuer 19 %
+1577|A|E|AP_tax:IC_taxpart:IC_taxservice|0|f|27|||27|Abzieb.Vorst.n.allg.Durchschnittss.UStVA Kz.63
+1578|A|E|AP_tax:IC_taxpart:IC_taxservice|0|f|27|||27|Abzieb.Vorst.n.§13b
+1580|A|A||0|f|||||Gegenkonto Vorsteuer §4/3 EStG
+1581|A|A||0|f|||||Auflösung Vorst.a.Vorjahr §4/3 EStG
+1582|A|E||0|f|27|||27|Vorst.aus Investitionen §4/3 EStG
+1584|A|E|AR_tax|0|f|27|||27|abziehb.VorSt IG Erwerb Neufzg.b.Lief. o. USt.Ident.Nr
+1588|A|E||0|f|||||Bezahlte Einfuhrumsatzsteuer
+1590|A|A||0|f|||||Durchlaufende Posten
+1592|A|A||0|f|||||Fremdgeld
+1593|A|L|AR|0|f|||||Verrechnungskonto erhalt. Anzahl. bei Buchung über Debitorenkonto
+1600|A|L|AP|0|f|||||Verbindlichkeiten aus Lief.u.Leist.
+1605|A|L|AP|0|f|||||Vblk.a.LuL z.allg.Umsatzsteuersatz (EÜR)
+1606|A|L|AP|0|f|||||Vblk.a.LuL zum erm.Umsatzsteuersatz (EÜR)
+1607|A|L|AP|0|f|||||Vblk.a.LuL ohne Vorsteuer (EÜR)
+1609|A|L||0|f|||||Gegenkonto 1605-1607 b.Aufteilung d.Vblk.n.Steuers.(EÜR)
+1711|A|L|AR_amount|0|f|||||Erhaltene, versteuerte Anzahlungen 7 % USt (Verbindlichkeiten)
+1718|A|L|AR_amount|0|f|||||Erhaltene, versteuerte Anzahlungen 19 % USt (Verbindlichkeiten)
+1767|A| ||10|f||0|||Im anderen EG-Staat steuerpfl. Lieferung
+1771|A|I|AR_tax:IC_taxpart:IC_taxservice|2|f|6|||6|Umsatzsteuer 7%
+1772|A|I|AR_tax:IC_taxpart:IC_taxservice|0|f|6|||6|Umsatzsteuer 7% innergem.Erwerb
+1773|A|I|AR_tax:IC_taxpart:IC_taxservice|0|f|28|||28|Umsatzsteuer 5 %
+1774|A|I|AR_tax:IC_taxpart:IC_taxservice|0|f|||||Umsatzsteuer aus innergem. Erwerb 19 %
+1775|A|I|AR_tax:IC_taxpart:IC_taxservice|0|f|6|||6|Umsatzsteuer 16%
+1776|A|I|AR_tax:IC_taxpart:IC_taxservice|0|f|6|||6|Umsatzsteuer 19 %
+1780|A|E||0|f|28|||28|Umsatzsteuer-Vorauszahlungen
+1785|A|I||0|f|7|33||7|Umsatzsteuer n.§13b UStG
+1787|A|I|AR_tax:IC_taxpart:IC_taxservice|0|f|||||Umsatzsteuer nach §13b UStG 19%
+1790|A|E||0|f|28|||28|Umsatzsteuer Vorjahr
+1791|A|E||0|f|28|||28|Umsatzsteuer frühere Jahre
+1800|A|Q||0|f|||||Privatentnahme allgemein
+1810|A|Q||0|f|||||Privatsteuern
+1820|A|Q||0|f|||||Sonderausgaben beschränkt abzugsfähig
+1830|A|Q||0|f|||||Sonderausgaben unbeschr.anzugsfähig
+1840|A|Q||0|f|||||Zuwendungen, Spenden
+1890|A|Q||0|f|||||Privateinlagen
+2000|A|E||0|f|30|31||30|Außerordentliche Aufwendung
+2010|A|E||0|f|24|31||24|Betriebsfremde Aufwendungen soweit n.außerord.
+2020|A|E||0|f||31|||Periodenfremde Aufwend.(soweit n.außerordentlich
+2100|A|E||0|f|29|30||29|Zinsen und ähnl.Aufwendungen
+2107|A|E||0|f|29|30||29|Zinsaufwendung-betriebliche Steuern §223aAO
+2110|A|E||0|f|29|30||29|Zinsaufwendung f.kurzf.Verbindlichk
+2120|A|E||0|f|29|30||29|Zinsaufwendung f.langf.Verbindlichk
+2125|A|E||0|f|29|||29|Zinsaufwend.f.Gebäude,die z.Betriebsvermögen gehören
+2130|A|E||0|f||30|||Diskontaufwendung
+2140|A|E||0|f|29|30||29|Zinsähnliche Aufwendungen
+2150|A|E|AR_paid:AP_paid|0|f|24|31||24|Aufwendungen aus Kursdifferenzen
+2170|A|E||0|f|24|31||24|Nicht abziehbare Vorsteuer
+2171|A|E||0|f|24|31||24|Nicht abziehbare Vorsteuer 7%
+2175|A|E||0|f|24|31||24|Nicht abziehbare Vorsteuer 16%/19%
+2200|A|E||0|f||35|||Körperschaftssteuer
+2208|A|E||0|f||35|||Solidaritätszuschlag
+2209|A|E||0|f||19|||Solidaritätszuschlag für Vorjahr
+2212|A|E||0|f|||||Kapitalertragssteuer 20%
+2214|A|E||0|f||35|||Anrechenb.Soli auf Kapitalertragssteuer 20%
+2215|A|E||0|f||35|||Zinsabschlagsteuer
+2218|A|E||0|f||35|||Anrechb.Solidari.zuschlag a.Zinsabschlagst.
+2280|A|E||0|f||31|||Stnachzahl.Vorj.v.Einkomm u.Ertrag
+2282|A|I||0|f||33|||Sterstat.Vorj.Steuer v.Eink.u.Ertrag
+2284|A|I||0|f||33|||Ertr.a.d.Aufl.v.Rücks.f.St.v.Ein.Er
+2285|A|E||0|f||31|||Steuernachzahlung Vorj.f.sons.Steue
+2287|A|I||0|f||33|||Steuererstattung Vorj.f.sons.Steuer
+2289|A|E||0|f||31|||Erträge a.d.Aufl.v. Rück.f.sons.Ste
+2310|A|E||0|f|2|31||2|Anlagenabgänge Sachanlagen Restbuchw.b.Buchverlust
+2315|A|I||0|f|2|31||2|Anlagenabgänge Sachanlagen Restbuchw.b.Buchgewinn
+2320|A|E||0|f||31|||Verluste Abgang Gegenst.d.Anlagever
+2341|A|E||0|f||20|||Einstellungen in SoPo m.Rücklageanteil (Ansparabschreibung
+2342|A|E||0|f|||||Einst.in SoPo m.Rücklageanteil (Existenzgründungsrücklage)
+2350|A|E||9|f||31|||Grundstücksaufwendungen
+2351|A|E||0|f|24|||24|Gründstücksaufwend.f.Gebäude,die nicht z.Betriebsverm.gehören
+2375|A|E||0|f||19|||Grundsteuer
+2376|A|E||0|f|||||Grundsteuer f.Gebäude,die nicht z.Betriebsvermögen geh.
+2380|A|E||0|f||31|||Zuwend.,Spenden,steuerlich n.abziehbar
+2400|A|E||0|f||20|||Forderungsverlust-übliche Höhe
+2401|A|E||2|t||20|||Forderungsverluste 7% USt.(übliche Höhe
+2405|A|E||3|t||20|||Forderungsverluste 16%/19% USt.(übliche Höhe
+2450|A|E||0|f||31|||Einstell.i.d.Pauschalwertbe.z.Forde
+2500|A|I||0|f|5|33||5|Außerordentliche Erträge
+2501|A|I||0|f|5|||5|Ausserordentliche Erträge finanzwirksam
+2505|A|I||0|f|5|||5|Ausserordentliche Erträge nicht finanzwirksam
+2510|A|I||0|f||33|||Betriebsfremde Erträge nichtaußerorden
+2520|A|I||0|f||33|||Periodenfremde Erträge nicht außero
+2600|A|I||0|f||33|||Erträge aus Beteiligungen
+2650|A|I||0|f|4|32||4|Sonstige Zinsen und änliche Erträge
+2657|A|I||0|f|4|32||4|Zinserträge-betriebliche Steuern
+2660|A|I|AR_paid:AP_paid|0|f|2|33||2|Erträge aus Kursdifferenzen
+2670|A|I||0|f|4|32||4|Diskonterträge
+2680|A|I||0|f|4|32||4|Zinsähnliche Erträge
+2700|A|I||3|f|2|33||2|Sonstige Erträge
+2710|A|I||0|f|2|33||2|Ertrag a.d.Zuschreib.d.Anlagevermög
+2715|A|I||0|f||33|||Ertr.a.Zuschreib.d.Umlaufvermögens
+2720|A|I||0|f|2|33||2|Ertr.a.d.Abgang v.Gegens.d.Anlageve
+2725|A|I||0|f|2|33||2|Ertr.a.d.Abg.v.Gegenst.d.Umlaufverm
+2730|A|I||0|f|2|33||2|Ertr.a.Herabsetzung d.PWB zu Forderungen
+2732|A|I||0|f||33|||Ertr. aus abgeschriebenen Forderung
+2733|A|I||0|f|||||Erträge a.d.Auflösung v.SoPo m.Rücklageant.(Exitenzgründungszusch.)
+2735|A|I||0|f||33|||Ertr.a.d.Auflösung v.Rückstellungen
+2739|A|I||0|f||5|||Erträge Aufl. Sopo m.R.(Ansparafa)
+2742|A|I||0|f|2|33||2|Versicherungsentschädigungen
+2743|A|I||0|f||33|||Investitionszuschüsse-steuerpflicht
+2744|A|I||0|f||33|||Investitionszulage-steuerfrei
+2746|A|I||0|f|2|||2|Steuerfr.Erträge a.d.Auflös.v.SoPo m.Rücklageanteil
+2747|A|I||0|f|2|||2|Sonst.steuerfreie Betriebseinnahmen
+2750|A|I||3|f||33|||Grundstückserträge
+2797|A|E||0|f|||||Entnahmen a.satzungsmäßigen Rücklagen
+3000|A|E|IC|9|f||4|||Roh,-Hilfs,-und Betriebsstoffe
+3090|A|E|IC|9|f|8|4||8|Energiestoffe (Fert.).
+3100|A|E|AP_amount|9|f|8|5||8|Fremdleistungen
+3110|A|E|AP_amount|8|t|8|5||8|Leist.v.ausländ.Untern. 7% VSt.u.7%USt.
+3120|A|E|AP_amount|9|t|8|5||8|Leist.v.ausländ.Untern. 16%/19% VSt.u.16%/19%USt.
+3300|A|E|AP_amount:IC_cogs|8|t|8|4||8|Wareneingang 7% Vorsteuer
+3400|A|E|AP_amount:IC_cogs|9|t|8|4||8|Wareneingang 16%/19% Vorsteuer
+3420|A|E|AP_amount:IC_cogs|0|t|8|4||8|Innergem. Erwerb 7% VSt u. USt.
+3425|A|E|AP_amount:IC_cogs|0|t|8|4||8|Innergem. Erwerb 16%/19% VSt u. USt.
+3440|A|E|AP_amount:IC_cogs|19|t|8|||8|Innergem.Erwerb v.Neufahrz.v.Lief.o.USt.Identnr.16%/19%VSt.u.16%/19%USt.
+3550|A|E|AP_amount:IC_cogs|0|f|8|||8|Steuerfreier innergem.Erwerb
+3559|A|E|AP_amount:IC_cogs|0|f|8|||8|Steuerfreie Einfuhren
+3580|A|E||0|f|8|4||8|Wareneinkauf z.allg.Umsatzsteuersatz (EÜR)
+3581|A|E||0|f|8|4||8|Wareneinkauf z.erm.Umsatzsteuersatz(EÜR)
+3582|A|E||0|f|8|4||8|Wareneinkauf ohne Vorsteuerabzug(EÜR)
+3589|A|E||0|f|||||Gegenkto.3580-3582 b.Aufteilung d.WE n.Steuersätzen(EüR)
+3600|A|E||0|f|8|5||8|Nicht abziehbare Vorsteuer
+3610|A|E||0|f|8|5||8|Nicht abziehb.Vorsteuer 7%
+3650|A|E||0|f|8|5||8|Nicht abziehb.Vorsteuer 16%/19%
+3731|A|E|AP_paid|8|t||4|||Erhaltene Skonti 7% Vorsteuer
+3732|A|E|AP_paid|8|t||4|||Erhaltene Skonti 5 % Vorsteuer
+3735|A|E|AP_paid|9|t||4|||Erhaltene Skonti 16%/19% Vorsteuer
+3737|A|E|AP_paid|9|t||4|||Erhaltene Skonti 16 % USt
+3750|A|I|AP_paid|8|t||4|||Erhaltene Boni 7% Vorsteuer
+3760|A|I|AP_paid|9|t||4|||Erhaltene Boni 16%/19% Vorsteuer
+3780|A|I|AP_paid|8|t||4|||Erhaltene Rabatte 7% Vorsteuer
+3790|A|I|AP_paid|9|t||4|||Erhaltene Rabatte 16%/19% Vorsteuer
+3800|A|E|AP_amount:IC_cogs:IC_expense|0|f|8|4||8|Bezugsnebenkosten
+3830|A|E|AP_amount:IC_cogs|0|f||4|||Leergut
+3850|A|E|AP_amount:IC_cogs|0|f||4|||Zölle und Einfuhrabgaben
+3960|A|E||0|f||2|||Bestandsver.Roh-,Hilfs-.Betriebs.sow.bez.Waren
+3970|A|A|IC|0|f|||||Bestand Roh-,Hilfs-,u.Betriebsstoff
+3980|A|A|IC|0|f|||||Bestand Waren
+3990|A|E|IC_cogs|0|f||4|||Verrechnete Stoffkosten
+4000|A|E|IC_cogs|0|f||20|||Material-und Stoffverbrauch
+4110|A|E||0|f|9|10||9|Löhne
+4120|A|E||0|f||10|||Gehälter
+4125|A|E||0|f||10|||Ehegattengehalt
+4126|A|E||0|f|9|10||9|Tantiemen
+4127|A|E||0|f|9|10||9|Geschäftsführergehälter
+4130|A|E||0|f|10|10||10|Gesetzlich soziale Aufwendungen
+4138|A|E||0|f|10|10||10|Beiträge zur Berufsgenossenschaft
+4139|A|E||0|f|10|10||10|Ausgleichsabgabe i.S.d.Schwerbehinterdengesetzes
+4140|A|E||0|f|10|10||10|Freiwillig soziale Aufwendungen lohnsteuerfrei
+4145|A|E||0|f|10|10||10|Freiwillige sozi.Aufw.lohnsteuerpflichtig.
+4149|A|E||0|f|||||Pauschale Lohnsteuera.sons.Bezüge (z.B.Fahrtkostenzu)
+4150|A|E||0|f||10|||Krankengeldzuschüsse
+4167|A|E||0|f|9|10||9|Pauschale Lohnsteuer auf sonst.Bezüge(z.B.Direktversicherung
+4170|A|E||0|f|9|10||9|Vermögenswirksame Leistungen
+4175|A|E||0|f||10|||Fahrtkostenerst.Wohnung/Arbeitsstät
+4180|A|E||0|f|9|10||9|Bedienungsgelder
+4190|A|E||0|f|9|10||9|Aushilfslöhne
+4199|A|E||0|f|10|10||10|Lohnsteuer für Aushilfe
+4200|A|E|AP_amount|9|f||11|||Raumkosten
+4210|A|E|AP_amount|9|f|11|11||11|Miete
+4220|A|E|AP_amount|0|f|11|||11|Pacht
+4230|A|E|AP_amount|9|f||11|||Heizung
+4240|A|E|AP_amount|9|f|12|11||12|Gas,Strom, Wasser
+4250|A|E|AP_amount|9|f|24|11||24|Reinigung
+4260|A|E|AP_amount|9|f|13|11||13|Instandhaltung betrieb.Räume
+4261|A|E||0|f|11|||11|Instandhlt.betriebl.Räume in Geb.die nicht z.BV gehören
+4271|A|E||0|f|11|||11|Abgaben f.betriebl.genutzten Grundbesitz,d.nicht z.BV gehört
+4280|A|E|AP_amount|9|f|13|11||13|Sonstige Raumkosten
+4288|A|E||0|f|24|||24|Aufwend.f.ein häusliches Arbeitszimmer(abziehb.Anteil)
+4289|A|E||0|f|24|11||24|Aufwend.f.ein häusliches Arbeitszimmer(nicht abziehb.Anteil)
+4301|A|E|AP_paid|0|f||20|||Nicht abziehbare Vorsteuer 7%
+4305|A|E|AP_paid|0|f||20|||Nicht abziehbare Vorsteuer 16%/19%
+4320|A|E||0|f|31|12||31|Gewerbesteuer
+4340|A|E||0|f|31|12||31|Sonstige Betriebssteuern
+4350|A|E||0|f|||||Verbrauchssteuer
+4355|A|E||0|f||12|||Ökosteuer
+4360|A|E|AP_amount|0|f|14|13||14|Versicherungen
+4361|A|E||0|f|24|||24|Versicherungen f.Gebäude,die zum BV gehören
+4380|A|E|AP_amount|0|f|14|||14|Beiträge
+4390|A|E|AP_amount|0|f|14|||14|Sonstige Abgaben
+4396|A|E||0|f|31|||31|Steuerl.abzugs.Verspätungszuschl.u.Zwangsgelder
+4397|A|E||0|f|31|||31|Steuerl.n.abzugsf.Verspätungszuschläge u.Zwangsgelder
+4500|A|E|AP_amount|0|f|17|||17|Fahrzeugkosten
+4505|A|E||0|f|17|||17|Fahrzeugkosten f.Kfz,die nicht zum BV gehören
+4510|A|E|AP_amount|0|f|15|19||15|Kfz-Steuer
+4515|A|E||0|f|15|||15|Kfz-Steuer f.Kfz,die nicht zum BV gehören
+4520|A|E|AP_amount|0|f|16|14||16|Kfz-Versicherungen
+4525|A|E||0|f|16|||16|Kfz-Versicherung f.Kfz,die nicht zum BV gehören
+4530|A|E|AP_amount|9|f|17|14||17|Laufende Kfz-Betriebskosten
+4535|A|E||0|f|17|||17|Lfd.Kfz-Betriebskosten f.Kfz,die nicht zum BV gehören
+4540|A|E|AP_amount|9|f|17|14||17|Kfz-Reparaturen
+4545|A|E||0|f|17|||17|Kfz-Rep.für Kfz,die nicht zum BV gehören
+4550|A|E|AP_amount|0|f|17|14||17|Garagenmiete
+4555|A|E||0|f|17|||17|Garagenmiete f.Kfz,die nicht zum BV gehören
+4560|A|E||0|f|17|14||17|Mautgebühren
+4565|A|E||0|f|17|||17|Mautgebühren f. Kfz,die nicht zum BV gehören
+4570|A|E|AP_amount|0|f|17|14||17|Leasingfahrzeugkosten
+4580|A|E|AP_amount|9|f|17|14||17|Sonstige Kfz-Kosten
+4595|A|E|AP_amount|0|f|17|14||17|Fremdfahrzeuge
+4600|A|E|AP_amount|9|f|18|15||18|Werbe-und Reisekosten
+4610|A|E|AP_amount|9|f|18|15||18|Werbekosten
+4630|A|E|AP_amount|0|f|18|15||18|Geschenke bis 35 EUR abzugsfähig
+4635|A|E|AP_amount|0|f|18|15||18|Geschenke über 35EUR nicht abzugsf.
+4638|A|E|AP_amount|9|f|18|||18|Geschenke ausschließl.betrieb.genut
+4640|A|E|AP_amount|9|f|18|15||18|Repräsentationskosten
+4650|A|E|AP_amount|9|f|18|20||18|Bewirtungskosten
+4651|A|E||0|f|24|20||24|Sonst.eingeschr.abziehb.Betriebsausgaben (abziehb.Anteil)
+4652|A|E||0|f|24|||24|Sonst.eingeschr.abziehb.Betriebsausgaben(nicht abziehb.Teil)
+4653|A|E|AP_amount|9|f|18|||18|Aufmerksamkeiten
+4654|A|E|AP_amount|0|f|18|||18|Nicht abzugsfähige Bewirtungskosten
+4655|A|E|AP_amount|9|f|24|15||24|Nicht abzugsf.Betriebsausg.a.Werbe-Repräsentatisonk.etc.
+4660|A|E|AP_amount|9|f|18|15||18|Reisekosten Arbeitnehmer
+4663|A|E|AP_amount|8|f|18|15||18|Reisekosten Arbeitn.m.Vorsteuerabzu f.öffentl.Verkehrsm.
+4664|A|E|AP_amount|0|f|18|15||18|Reisekosten Arbeitn.Verpflegungmehr
+4666|A|E|AP_amount|0|f|18|15||18|Reisekosten Arbeitn.Übernachtungsaufwand
+4668|A|E|AP_amount|0|f|18|15||18|Kilometerentgelderstattung Arbeitnehmer
+4670|A|E|AP_amount|9|f|18|15||18|Reisekosten Unternehmer
+4673|A|E|AP_amount|8|f|18|15||18|Reisek.Untern.m.Vorsteuerabzug (öffentl.Verkehrsm.
+4674|A|E|AP_amount|0|f|18|15||18|Reisekosten Untern.Verpflegungsmehr
+4676|A|E|AP_amount|0|f|18|15||18|Reisekosten Untern.Übernachtungsauf
+4678|A|E||0|f|18|15||18|Kilometergelderstatt.(Wohn.-Arbeitsst.abziehb.Teil)
+4679|A|E||0|f|18|||18|Fahrten zw.Wohn.und Arbeitsstätte (nicht abziehb.Teil)
+4680|A|E||0|f|18|||18|Fahrten zw.Wohn.-und Arbeitsstätte (Haben)
+4700|A|E|AP_amount:IC_cogs|0|f|24|||24|Kosten der Warenabgabe
+4710|A|E|AP_amount:IC_cogs|0|f|24|||24|Verpackungsmaterial
+4730|A|E|AP_amount:IC_cogs|0|f|24|||24|Ausgangsfracht
+4750|A|E|AP_amount:IC_cogs:IC_expense|0|f|24|||24|Transportversicherung
+4760|A|E|AP_amount:IC_expense|0|f|24|||24|Verkaufsprovision
+4780|A|E|AP_amount:IC_expense|0|f|24|||24|Fremdarbeiten
+4790|A|E|AP_amount:IC_expense|0|f|24|20||24|Aufwand für Gewährleistungen
+4800|A|E|AP_amount|9|f|19|18||19|Rep.u.Instandhaltungen v.techn.Anlagen u.Maschinen
+4805|A|E|AP_amount|9|f|19|18||19|Rep.u.Instandhalt.v.and.Anlagen u.Betriebs-u.Geschäftsausst.
+4806|A|E|AP_amount:IC_expense|9|f|19|18||19|Wartungskosten für Hard-u.Software
+4809|A|E|AP_amount|9|f|19|||19|Sonstige Reparaturen u.Instandhalt.
+4810|A|E|AP_amount|0|f|24|20||24|Mietleasing
+4815|A|E|AP_amount|0|f|24|20||24|Kaufleasing
+4822|A|E||0|f|25|||25|Abschreibungen a.immat.Vermögensgeg
+4824|A|E||0|f|25|||25|Abschreibung a.d.Geschäft-o.Firmenw
+4826|A|E||0|f|25|17||25|Außerplan.AfA a.immat.Vermögensgeg.
+4830|A|E||0|f|25|17||25|Abschreibungen auf Sachanlagen (o.Kfz u.Geb.)
+4831|A|E||0|f|25|17||25|Abschreibung auf Gebäude
+4832|A|E||0|f|25|17||25|Abschreibungen auf Kfz
+4840|A|E||0|f|25|||25|Außerplanmäßig Abschr.a.Sachanlagen
+4841|A|E||0|f|25|17||25|Absetzung f.außergew.techn.u.wirtschaftl.AfA bei Gebäuden
+4842|A|E||0|f|25|17||25|Absetzung f.außergew.techn.u.wirtschaftl.AfA des Kfz
+4843|A|E||0|f|25|17||25|Absetzung f.außergew.techn.u.wirtschaftl.AfA sonst.WG
+4850|A|E||0|f|25|17||25|Abschr.a.Sachanl.aufgr.steuerl.Sondervorschriften
+4851|A|E||0|f|25|17||25|Sonderabschreibung nach §7g(1)u.(2)EStG (ohne Kfz)
+4852|A|E||0|f|25|17||25|Sonderabschreibung n.§7g(1)u.(2)EStG (für Kfz)
+4855|A|E|AP_amount|0|f|26|||26|Sofortabschreibung GWG
+4860|A|E||0|f|25|||25|Abschreibungen auf aktivierte GWG
+4870|A|E||0|f|||||Abschreibungen auf Finanzanlagen
+4875|A|E||0|f||17|||Abschr.a.Wertp.d.Umlaufvermögens
+4880|A|E||0|f||17|||Abschreibungen auf Umlaufverm. o.Wertpapiere (soweit unübl.Höhe
+4900|A|E|AP_amount|9|f|24|20||24|Sonstige betriebliche Aufwendungen
+4905|A|E|AP_amount|9|f|24|||24|Sons.Aufw.betriebl. und regelmäßig
+4909|A|E|AP_amount|0|f|24|20||24|Fremdleistungen
+4910|A|E|AP_amount|0|f|23|20||23|Porto
+4920|A|E|AP_amount|9|f|23|20||23|Telefon
+4925|A|E|AP_amount|9|f|23|20||23|Telefax
+4930|A|E|AP_amount|9|f|23|20||23|Bürobedarf
+4940|A|E|AP_amount|8|f|20|20||20|Zeitschriften, Bücher
+4945|A|E|AP_amount|9|f|24|||24|Fortbildungskosten
+4946|A|E|AP_amount|0|f|9|||9|Freiwillige Sozialleistungen
+4950|A|E|AP_amount|9|f|22|20||22|Rechts- und Beratungskosten
+4955|A|E|AP_amount|9|f|24|||24|Buchführungskosten
+4957|A|E|AP_amount|9|f|22|20||22|Abschluß- und Prüfungskosten
+4960|A|E|AP_amount|9|f|21|20||21|Mieten für Einrichtungen
+4965|A|E||9|f|24|||24|Mietleasing
+4966|A|E||0|f|24|||24|Gewerbest.zu berücksicht.Mietleasing §8 GewStG
+4969|A|E|AP_amount|9|f|24|20||24|Aufwend.f.Abraum-u.Abfallbeseitigung
+4970|A|E||0|f|24|20||24|Nebenkosten des Geldverkehrs
+4980|A|E|AP_amount|9|f|24|20||24|Betriebsbedarf
+4985|A|E|AP_amount|9|f|19|||19|Werkzeuge und Kleingeräte
+4990|A|E||0|f||34|||Kalkulatorischer Unternehmerlohn
+4992|A|E||0|f||34|||Kalkulatorische Zinsen
+4993|A|E||0|f||34|||Kalkulatorische Aschreibungen
+4994|A|E||0|f||34|||Kalkulatorische Wagnisse
+4995|A|E||0|f||34|||Kalkulatorischer Lohn f.unentgeltl.Mitarbeiter
+8100|A|I|AR_amount|0|t||1|||Steuerfreie Umsätze §4Nr.8ff UstG
+8110|A|I|AR_amount|0|t|1|||1|Sonstige steuerfreie Umsätze Inland
+8120|A|I|AR_amount:IC_sale:IC_income|0|t|1|1||1|Steuerfreie Umsätze §4Nr.1a UstG
+8125|A|I|AR_amount:IC_sale:IC_income|0|t|1|1||1|Steuerfrei innergem. Lieferungen §41bUStG
+8130|A|I|AR_amount:IC_sale:IC_income|0|t|1|||1|Liefe.d.1.Abnehm.bei innergem.Dreiecksg §25b2UStG
+8135|A|I|AR_amount:IC_sale|0|t|1|||1|Steuerfr.innergem.Lief.v.Neufahrz.an Abn.o.USt-Ident-Nr.
+8150|A|I|AR_amount:IC_sale:IC_income|0|t|1|||1|Sonstige steuerfreie Umsätze §42-7UStG
+8190|A|I|AR_amount|0|f|1|||1|Erlöse,die mit den Durchschnittssätzen d.§24UStG vers.werd.
+8195|A|I|AR_amount|0|f|1|1||1|Erlöse als Kleinunternehmer i.S.d.§19(1)UStG
+8200|A|I|AR_amount:IC_sale:IC_income|0|f|1|1||1|Erlöse
+8300|A|I|AR_amount:IC_sale:IC_income|2|t|1|1||1|Erlöse 7 % / 5 % USt
+8310|A|I|AR_amount:IC_sale:IC_income|12|t|1|1||1|Erlöse Inland stpfl. EG-Lieferung7%
+8315|A|I|AR_amount:IC_sale:IC_income|13|t|1|1||1|Erlös Inland stpfl.EG-Lieferung 16%/19%
+8320|A|I|AR_amount:IC_sale:IC_income|10|f|1|1||1|Erlöse aus im and.EG-Land steuerpfl.Lieferungen
+8400|A|I|AR_amount:IC_sale:IC_income|3|t|1|1||1|Erlöse 19 % / 16 % USt
+8500|A|I|AR_amount:IC_income|3|f|2|5||2|Provisionserlöse
+8506|A|I|AR_amount:IC_income|2|f|2|||2|Provisionserlöse 7% USt.
+8508|A|I|AR_amount:IC_income|3|f|2|||2|Provisionserlöse 16%/19% USt.
+8520|A|I|AR_amount:IC_sale|3|f|2|||2|Erlöse Abfallverwertung
+8540|A|I|AR_amount:IC_sale|3|f|2|5||2|Erlös Leergut
+8580|A|I||0|f|1|1||1|Erlöse zum allg.Umsatzsteuersatz (EÜR)
+8581|A|I||0|f|1|1||1|Erlöse zum ermä.Umsatzsteuersatz (EÜR)
+8582|A|I||0|f|1|1||1|Erlöse steuerfrei u.nicht steuerbar (EÜR)
+8589|A|C||0|f|||||Gegenkonto 8580-8582 b.Aufteilung d.Erlöse n.Steuersätzen(EÜR)
+8590|A|I|AR_amount|0|f|2|5||2|Verrechnete sons. Sachbezüge keine Waren
+8591|A|I|AR_amount|2|t|2|5||2|Sachbezüge 7% Ust (Waren)
+8595|A|I|AR_amount|3|t|2|5||2|Sachbezüge 16%/19% Ust (Waren)
+8600|A|I|AR_amount|3|f|2|5||2|Sonstige Erlöse betriebl.u.regelmäß
+8650|A|I||0|f|4|32||4|Erlöse Zinsen und Diskotspesen
+8700|A|I||0|f|1|32||1|Erlösschmälerungen
+8710|A|I||2|t|1|32||1|Erlösschmälerung 7% USt.
+8720|A|I||3|t|1|32||1|Erlösschmälerung 16%/19% USt.
+8725|A|I||12|t|1|32||1|Erlösschmä.Inl.stpfl.EG-Lief. 7%USt
+8726|A|I||13|t|1|32||1|Erlösschmä.Inl.stpfl.EG-Lief.16%/19%USt
+8727|A|I||0|f|1|32||1|Erlösschmä.and.EG Land stpfl.Liefer
+8731|A|I|AR_paid|2|t|1|1||1|Gewährte Skonti 7% USt
+8732|A|I|AR_paid|2|t|1|1|||Gewährte Skonti 5% USt
+8735|A|I|AR_paid|3|t|1|1||1|Gewährte Skonti 16 % USt
+8736|A|I|AR_paid|3|f|1|1||1|Gewährte Skonti 19 % USt
+8750|A|E|AR_paid|2|t|1|1||1|Gewährte Boni 7% USt.
+8760|A|E|AR_paid|3|t|1|1||1|Gewährte Boni 16%/19% USt.
+8780|A|E|AR_paid|2|t|1|1||1|Gewährte Rabatte 7% USt.
+8790|A|E|AR_paid|3|t|1|1||1|Gewährte Rabatte 16%/19% Ust.
+8800|A|I|AR_amount|3|f|1|||1|Erlöse aus Anlagenverkäufen
+8801|A|E||3|t|1|5||1|Erlöse aus Anlagenverkäufen Sachanl.verm.b.Buchverl.16%/19%USt.
+8807|A|E||0|t|1|||1|Erlöse a.Verk.Sachanlagen steuerfrei§4Nr.1aUStG(b.Buchverlust)
+8808|A|E||0|t|1|||1|Erlöse a.Verk.Sachanlagen steuerfrei§4Nr.1bUStG(b.Buchverlust)
+8809|A|E||0|t|2|||2|Erlöse aus Verk.Sachanlagevermögen16%/19% USt (bei Buchverlust)
+8820|A|I|AR_amount|3|t|1|5||1|Erlöse aus Anlageverkäufen Sachanl.verm.b.Buchgewinn16%/19%Ust
+8827|A|I||0|t|1|||1|Erlöse a.Verk.Sachanlagen steuerfr.§4Nr.1aUStG(bei Buchgewinn)
+8828|A|I||0|t|2|||2|Erlöse a.Verk.Sachanlagen steuerfr.§4Nr.1bUStG(b.Buchgewinn)
+8829|A|I|AR_amount|3|f|1|||1|Erl.a.Anlagenverk.bei Buchgewinn
+8900|A|I|AR_amount|0|f|1|||1|Unentgeltliche Wertabgaben
+8905|A|I||0|f|2|5||2|Entnahme v. Gegenst.o.USt.
+8910|A|I|AR_amount|3|t|3|5||3|Entnahme des Untern.f.Zwecke ausserh.d.Untern 16%/19%(Waren)
+8915|A|I|AR_amount|2|t|3|5||3|Entnah.d.Untern.f.Zwecke ausserh.d.Untern.7%USt
+8919|A|I||0|f|3|5||3|Entnahme durch den Untern.f.Zwecke außerhalb d.Untern.(Waren)o.USt
+8920|A|I||3|t|3|5||3|Verw.v.Gegens.f.Zwecke ausserh.d.Untern.16%/19%USt.
+8921|A|I||0|t|3|5||3|Verwend.v.Gegenst.f.Zwecke außerh.d.Untern.16%/19%USt(Kfz-Nutzung)
+8922|A|I||0|t|3|5||3|Verwend.f.Gegenst.f.Zwecke außerh.d.Untern.16%/19%USt(Telefonnutzung)
+8924|A|I||0|f|3|||3|Verwendung v.Gegenständen f.Zwecke außerhalb d.Untern.o.USt.
+8925|A|I|AR_amount|3|t|3|||3|Unentgeltl.Erbring.sons.Leis.16%/19%USt
+8930|A|I|AR_amount|2|t|3|5||3|Verwendung v.Gegenst.f.Zwecke außerhalb d.Unternehmens 7% USt.
+8935|A|I|AR_amount|3|t|3|||3|Unentgeltl.Zuwend.v.Gegens. 16%/19% Ust
+8939|A|I||0|f|3|5||3|Unentgeltl.Zuw.v.Gegens.ohne Ust
+8940|A|I||3|t|3|5||3|Unentgeltl.Zuw.v Waren 16%/19% Ust
+8945|A|I||2|t|3|5||3|Unentgeltl.Zuw.von Waren 7% Ust
+8949|A|I||0|f|3|5||3|Unentgeltl.Zuwendung v.Waren o.USt.
+8950|A|I||0|f|1|5||1|Nicht steuerbare Umsätze
+8955|A|I||0|f|7|||7|Umsatzsteuervergütungen
+8960|A|E||0|f||2|||Bestandsveränderung unf.Erz.
+8970|A|E||0|f||2|||Bestandsveränd.unf.Leist.
+8980|A|E||0|f||2|||Bestandsveränd.fert..Leist.
+8990|A|E||0|f||3|||And.aktiv.Eigenleistungen
+9000|A|A||0|f|||||Saldenvorträge,Sachkonten
+9008|A|A||0|f|||||Saldenvorträge,Debitoren
+9009|A|L||0|f|||||Saldenvorträge,Kreditoren
+9090|A|A||0|f|||||Summenvortragskonto

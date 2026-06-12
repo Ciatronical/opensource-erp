@@ -1,0 +1,1620 @@
+accno,description,charttype,category,link,taxkey,datevautomatik
+0050,"Ausstehende Einlagen auf das Komplementär-Kapital, nicht eingefordert (Vollhafter)",A,A,,0,f
+0060,"Ausstehende Einlagen auf das Komplementär-Kapital, eingefordert (Vollhafter)",A,A,,0,f
+0070,"Ausstehende Einlagen auf das Kommandit-Kapital, nicht eingefordert (Teilhafter)",A,A,,0,f
+0080,"Ausstehende Einlagen auf das Kommandit-Kapital, eingefordert (Teilhafter)",A,A,,0,f
+0090,"Rückständige fällige Einzahlungen auf Geschäftsanteile",A,A,,0,f
+0100,"Entgeltlich erworbene Konzessionen, gewerbliche Schutzrechte und ähnliche Rechte und Werte sowie Lizenzen an solchen Rechten und Werten",A,A,,0,f
+0110,Konzessionen,A,A,,0,f
+0120,"Gewerbliche Schutzrechte",A,A,,0,f
+0130,"Ähnliche Rechte und Werte",A,A,,0,f
+0135,EDV-Software,A,A,AP_amount,9,f
+0140,"Lizenzen an gewerblichen Schutzrechten und ähnlichen Rechten und Werten",A,A,,0,f
+0143,"Selbst geschaffene immaterielle Vermögensgegenstände",A,A,,0,f
+0144,EDV-Software,A,A,,0,f
+0145,"Lizenzen und Franchiseverträge",A,A,,0,f
+0146,"Konzessionen und gewerbliche Schutzrechte",A,A,,0,f
+0147,"Rezepte, Verfahren, Prototypen",A,A,,0,f
+0148,"Immaterielle Vermögensgegenstände in Entwicklung",A,A,,0,f
+0150,"Geschäfts- oder Firmenwert",A,A,AP_amount,9,f
+0170,"Geleistete Anzahlungen auf immaterielle Vermögensgegenstände",A,A,,0,f
+0179,"Anzahlungen auf Geschäfts- oder Firmenwert",A,A,,0,f
+0200,"Grundstücke, grundstücksgleiche Rechte und Bauten einschließlich der Bauten auf fremden Grundstücken",A,A,,0,f
+0210,"Grundstücksgleiche Rechte ohne Bauten",A,A,,0,f
+0215,"Unbebaute Grundstücke",A,A,,0,f
+0220,"Grundstücksgleiche Rechte (Erbbaurecht, Dauerwohnrecht, unbebaute Grundstücke)",A,A,,0,f
+0225,"Grundstücke mit Substanzverzehr",A,A,,0,f
+0229,"Grundstücksanteil des häuslichen Arbeitszimmers",A,A,,0,f
+0230,"Bauten auf eigenen Grundstücken und grundstücksgleichen Rechten",A,A,,0,f
+0235,"Grundstückswerte eigener bebauter Grundstücke",A,A,,0,f
+0240,Geschäftsbauten,A,A,AP_amount,9,f
+0250,Fabrikbauten,A,A,,0,f
+0260,"Andere Bauten",A,A,,0,f
+0270,Garagen,A,A,,0,f
+0280,"Außenanlagen für Geschäfts-, Fabrik- und andere Bauten",A,A,,0,f
+0285,"Hof- und Wegebefestigungen",A,A,,0,f
+0290,"Einrichtungen für Geschäfts-, Fabrik- und andere Bauten",A,A,,0,f
+0300,Wohnbauten,A,A,,0,f
+0305,Garagen,A,A,,0,f
+0310,Außenanlagen,A,A,,0,f
+0315,"Hof- und Wegebefestigungen",A,A,,0,f
+0320,"Einrichtungen für Wohnbauten",A,A,,0,f
+0329,"Gebäudeteil des häuslichen Arbeitszimmers",A,A,,0,f
+0330,"Bauten auf fremden Grundstücken",A,A,,0,f
+0340,Geschäftsbauten,A,A,,0,f
+0350,Fabrikbauten,A,A,,0,f
+0360,Wohnbauten,A,A,,0,f
+0370,"Andere Bauten",A,A,,0,f
+0380,Garagen,A,A,,0,f
+0390,Außenanlagen,A,A,,0,f
+0395,"Hof- und Wegebefestigungen",A,A,,0,f
+0398,"Einrichtungen für Geschäfts-, Fabrik-, Wohn- und andere Bauten",A,A,,0,f
+0400,"Techn. Anlagen und Maschinen",A,A,AP_amount,9,f
+0420,"Technische Anlagen",A,A,,0,f
+0440,Maschinen,A,A,AP_amount,9,f
+0450,"Transportanlagen und Ähnliches",A,A,,0,f
+0460,"Maschinengebundene Werkzeuge",A,A,,0,f
+0470,Betriebsvorrichtungen,A,A,,0,f
+0500,"Andere Anlagen, Betriebs- und Geschäftsausstattung",A,A,AP_amount,9,f
+0510,"Andere Anlagen",A,A,AP_amount,9,f
+0520,PKW,A,A,AP_amount,9,f
+0540,Lkw,A,A,,0,f
+0560,"Sonstige Transportmittel",A,A,AP_amount,9,f
+0620,Werkzeuge,A,A,AP_amount,9,f
+0630,Betriebsausstattung,A,A,,0,f
+0635,Geschäftsausstattung,A,A,,0,f
+0640,Ladeneinrichtung,A,A,AP_amount,9,f
+0650,Büroeinrichtung,A,A,AP_amount,9,f
+0660,"Gerüst- und Schalungsmaterial",A,A,,0,f
+0670,"Geringwertige Wirtschaftsgüter",A,A,AP_amount,9,f
+0675,"Geringwertige Wirtschaftsggüter 150 - 1000 EUR (Sammelposten)",A,A,AP_amount,9,f
+0680,"Einbauten in fremde Grundstücke",A,A,,0,f
+0690,"Sonstige Betriebs- und Geschäftsausstattung",A,A,,0,f
+0700,"Geleistete Anzahlungen und Anlagen im Bau",A,A,,0,f
+0705,"Anzahlungen auf Grund und Boden",A,A,,0,f
+0710,"Geschäfts-, Fabrik- und andere Bauten im Bau auf eigenen Grundstücken",A,A,,0,f
+0720,"Anzahlungen auf Geschäfts-, Fabrik- und andere Bauten auf eigenen Grundstücken",A,A,,0,f
+0725,"Wohnbauten im Bau auf eigenen Grundstücken",A,A,,0,f
+0735,"Anzahlungen auf Wohnbauten auf eigenen Grundstücken",A,A,,0,f
+0740,"Geschäfts-, Fabrik- und andere Bauten im Bau auf fremden Grundstücken",A,A,,0,f
+0750,"Anzahlungen auf Geschäfts-, Fabrik- und andere Bauten auf fremden Grundstücken",A,A,,0,f
+0755,"Wohnbauten im Bau auf fremden Grundstücken",A,A,,0,f
+0765,"Anzahlungen auf Wohnbauten auf fremden Grundstücken",A,A,,0,f
+0770,"Technische Anlagen und Maschinen im Bau",A,A,,0,f
+0780,"Anzahlungen auf technische Anlagen und Maschinen",A,A,,0,f
+0785,"Andere Anlagen, Betriebs- und Geschäftsausstattung im Bau",A,A,,0,f
+0795,"Anzahlungen auf andere Anlagen, Betriebs- und Geschäftsausstattung Finanzanlagen",A,A,,0,f
+0800,"Anteile an verbundenen Unternehmen (Anlagevermögen)",A,A,,0,f
+0803,"Anteile an verbundenen Unternehmen, Personengesellschaften",A,A,,0,f
+0804,"Anteile an verbundenen Unternehmen, Kapitalgesellschaften",A,A,,0,f
+0805,"Anteile an herrschender oder mehrheitlich beteiligter Gesellschaft, Personengesellschaften",A,A,,0,f
+0806,"Anteile einer GmbH & Co. KG an einer Komplementär-GmbH",A,A,,0,f
+0808,"Anteile an herrschender oder mehrheitlich beteiligter Gesellschaft, Kapitalgesellschaften",A,A,,0,f
+0809,"Anteile an herrschender oder mehrheitlich beteiligter Gesellschaft",A,A,,0,f
+0810,"Ausleihungen an verbundene Unternehmen",A,A,,0,f
+0813,"Ausleihungen an verbundene Unternehmen, Personengesellschaften",A,A,,0,f
+0814,"Ausleihungen an verbundene Unternehmen, Kapitalgesellschaften",A,A,,0,f
+0815,"Ausleihungen an verbundene Unternehmen, Einzelunternehmen",A,A,,0,f
+0820,Beteiligungen,A,A,,0,f
+0829,"Beteiligung einer GmbH & Co. KG an einer Komplementär-GmbH",A,A,,0,f
+0830,"Typisch stille Beteiligungen",A,A,,0,f
+0840,"Atypisch stille Beteiligungen",A,A,,0,f
+0850,"Beteiligungen an Kapitalgesellschaften",A,A,,0,f
+0860,"Beteiligungen an Personengesellschaften",A,A,,0,f
+0880,"Ausleihungen an Unternehmen, mit denen ein Beteiligungsverhältnis besteht",A,A,,0,f
+0883,"Ausleihungen an Unternehmen, mit denen ein Beteiligungsverhältnis besteht, Personengesellschaften",A,A,,0,f
+0885,"Ausleihungen an Unternehmen, mit denen ein Beteiligungsverhältnis besteht, Kapitalgesellschaften",A,A,,0,f
+0900,"Wertpapiere des Anlagevermögens",A,A,,0,f
+0910,"Wertpapiere mit Gewinnbeteiligungsansprüchen, die dem Teileinkünfteverfahren unterliegen",A,A,,0,f
+0920,"Festverzinsliche Wertpapiere",A,A,,0,f
+0930,"Übrige sonstige Ausleihungen",A,A,,0,f
+0940,Darlehen,A,A,,0,f
+0960,"Ausleihungen an Gesellschafter",A,A,,0,f
+0961,"Ausleihungen an GmbH-Gesellschafter",A,A,,0,f
+0962,"Ausleihungen an persönlich haftende Gesellschafter",A,A,,0,f
+0963,"Ausleihungen an Kommanditisten",A,A,,0,f
+0970,"Ausleihungen an nahe stehende Personen",A,A,,0,f
+0980,"Genossenschaftsanteile zum langfristigen Verbleib",A,A,,0,f
+0990,"Rückdeckungsansprüche aus Lebensversicherungen zum langfristigen Verbleib",A,A,,0,f
+1000,"Roh-, Hilfs- und Betriebsstoffe (Bestand)",A,E,IC,9,f
+1040,"Unfertige Erzeugnisse, unfertige Leistungen (Bestand)",A,E,,0,f
+1050,"Unfertige Erzeugnisse (Bestand)",A,E,,0,f
+1080,"Unfertige Leistungen (Bestand)",A,E,,0,f
+1090,"In Ausführung befindliche Bauaufträge",A,E,,0,f
+1095,"In Arbeit befindliche Aufträge",A,E,,0,f
+1100,"Fertige Erzeugnisse und Waren (Bestand)",A,E,,0,f
+1110,"Fertige Erzeugnisse (Bestand)",A,E,,0,f
+1140,"Waren (Bestand)",A,E,IC,9,f
+1180,"Geleistete Anzahlungen auf Vorräte",A,E,,0,f
+1181,"Geleistete Anzahlungen 7 % Vorsteuer",A,E,AP_amount,8,t
+1182,"Geleistete Anzahlungen, 5 % Vorsteuer",A,E,,0,f
+1184,"Geleistete Anzahlungen, 16 % Vorsteuer",A,E,,0,f
+1186,"Geleistete Anzahlungen 19 % Vorsteuer",A,E,AP_amount,9,t
+1190,"Erhaltene Anzahlungen auf Bestellungen (von Vorräten offen abgesetzt)",A,E,,0,f
+1200,"Forderungen aus Lieferungen und Leistungen",A,A,AR,0,f
+1201,"Forderungen aus Lieferungen und Leistungen",A,A,,0,f
+1210,"Forderungen aus Lieferungen und Leistungen ohne Kontokorrent",A,A,,0,f
+1215,"Forder. aus LuL zum allg. UST-Satz oder eines Kleinunternehmers (EÜR)",A,A,AR,0,f
+1216,"Forder. aus LuL zum ermäßigten USTsatz (EÜR)",A,A,AR,0,f
+1217,"Forder. aus steuerfreien o. Nicht steuerbaren LuL (EÜR)",A,A,AR,0,f
+1218,"Forder. aus LuL nach Durchschnitzsätzen § 24 UStG (EÜR)",A,A,AR,0,f
+1219,"Gegenkonto 1215-1218 bei Auteilung d. Forder. nach Steuersätzen (EÜR)",A,A,,0,f
+1220,"Forder. nach § 11 Abs. 1 Satz 2 EStG für § 4/3 EStG",A,A,AR,0,f
+1221,"Forderungen aus Lieferungen und Leistungen ohne Kontokorrent – Restlaufzeit bis 1 Jahr",A,A,,0,f
+1225,"– Restlaufzeit größer 1 Jahr",A,A,,0,f
+1240,"Zweifelhafte Forderungen",A,A,,0,f
+1241,"– Restlaufzeit bis 1 Jahr",A,A,,0,f
+1245,"– Restlaufzeit größer 1 Jahr",A,A,,0,f
+1246,"Einzelwertberichtigungen auf Forderungen – Restlaufzeit bis 1 Jahr",A,A,,0,f
+1247,"– Restlaufzeit größer 1 Jahr",A,A,,0,f
+1248,"Pauschwertber. zu Forder. Restlzeit <1 Jahr",A,E,,0,f
+1249,"Pauschwertber. zu Forder. Restlzeit >1 Jahr",A,E,,0,f
+1250,"Forderungen aus Lieferungen und Leistungen gegen Gesellschafter",A,A,,0,f
+1251,"– Restlaufzeit bis 1 Jahr",A,A,,0,f
+1255,"– Restlaufzeit größer 1 Jahr",A,A,,0,f
+1258,"Gegenkonto zu sonstigen Vermögensgegenständen bei Buchungen über Debitorenkonto",A,A,,0,f
+1259,"Gegenkonto 1221-1229, 1240-1245,1250-1257, 1270-1279, 1290-1297 bei Aufteilung Debitorenkonto",A,A,,0,f
+1260,"Forderungen gegen verbundene Unternehmen",A,A,,0,f
+1261,"– Restlaufzeit bis 1 Jahr",A,A,,0,f
+1265,"– Restlaufzeit größer 1 Jahr",A,A,,0,f
+1270,"Forderungen aus Lieferungen und Leistungen gegen verbundene Unternehmen",A,A,,0,f
+1271,"– Restlaufzeit bis 1 Jahr",A,A,,0,f
+1275,"– Restlaufzeit größer 1 Jahr",A,A,,0,f
+1276,"Wertberichtigungen auf Forderungen gegen verbundene Unternehmen – Restlaufzeit bis 1 Jahr",A,A,,0,f
+1277,"– Restlaufzeit größer 1 Jahr",A,A,,0,f
+1280,"Forderungen gegen Unternehmen, mit denen ein Beteiligungsverhältnis besteht",A,A,,0,f
+1281,"– Restlaufzeit bis 1 Jahr",A,A,,0,f
+1285,"– Restlaufzeit größer 1 Jahr",A,A,,0,f
+1290,"Forderungen aus Lieferungen und Leistungen gegen Unternehmen, mit denen ein Beteiligungsverhältnis besteht",A,A,,0,f
+1291,"– Restlaufzeit bis 1 Jahr",A,A,,0,f
+1295,"– Restlaufzeit größer 1 Jahr",A,A,,0,f
+1296,"Wertberichtigungen auf Forderungen gegen Unternehmen, mit denen ein Beteiligungsverhältnis besteht – Restlaufzeit bis 1 Jahr",A,A,,0,f
+1297,"– Restlaufzeit größer 1 Jahr",A,A,,0,f
+1298,"Ausstehende Einlagen auf das gezeichnete Kapital, eingefordert (Forderungen, nicht eingeforderte ausstehende Einlagen s. Konto 2910)",A,A,,0,f
+1299,"Nachschüsse (Forderungen, Gegenkonto 2929)",A,A,,0,f
+1300,"Sonstige Vermögensgegenstände",A,A,,0,f
+1301,"– Restlaufzeit bis 1 Jahr",A,A,,0,f
+1305,"– Restlaufzeit größer 1 Jahr",A,A,,0,f
+1307,"Forderungen gegen GmbH-Gesellschafter",A,A,,0,f
+1308,"– Restlaufzeit bis 1 Jahr",A,A,,0,f
+1309,"– Restlaufzeit größer 1 Jahr",A,A,,0,f
+1310,"Forderungen gegen Vorstandsmitglieder und Geschäftsführer",A,A,,0,f
+1311,"– Restlaufzeit bis 1 Jahr",A,A,,0,f
+1315,"– Restlaufzeit größer 1 Jahr",A,A,,0,f
+1317,"Forderungen gegen persönlich haftende Gesellschafter",A,A,,0,f
+1318,"– Restlaufzeit bis 1 Jahr",A,A,,0,f
+1319,"– Restlaufzeit größer 1 Jahr",A,A,,0,f
+1320,"Forderungen gegen Aufsichtsrats- und Beirats-Mitglieder",A,A,,0,f
+1321,"– Restlaufzeit bis 1 Jahr",A,A,,0,f
+1325,"– Restlaufzeit größer 1 Jahr",A,A,,0,f
+1330,"Forderungen gegen sonstige Gesellschafter",A,A,,0,f
+1331,"– Restlaufzeit bis 1 Jahr",A,A,,0,f
+1335,"– Restlaufzeit größer 1 Jahr",A,A,,0,f
+1337,"Forderungen gegen typisch stille Gesellschafter",A,A,,0,f
+1338,"– Restlaufzeit bis 1 Jahr",A,A,,0,f
+1339,"– Restlaufzeit größer 1 Jahr",A,A,,0,f
+1340,"Forderungen gegen Personal aus Lohn- und Gehaltsabrechnung",A,A,,0,f
+1341,"– Restlaufzeit bis 1 Jahr",A,A,,0,f
+1345,"– Restlaufzeit größer 1 Jahr",A,A,,0,f
+1349,"Ansprüche aus betrieblicher Altersversorgung und Pensionsansprüche (Mitunternehmer)28)",A,A,,0,f
+1350,Kautionen,A,A,,0,f
+1351,"– Restlaufzeit bis 1 Jahr",A,A,,0,f
+1355,"– Restlaufzeit größer 1 Jahr",A,A,,0,f
+1360,Darlehen,A,A,,0,f
+1361,"– Restlaufzeit bis 1 Jahr",A,A,,0,f
+1365,"– Restlaufzeit größer 1 Jahr",A,A,,0,f
+1369,"Forderungen gegenüber Krankenkassen aus Aufwendungsausgleichsgesetz",A,A,,0,f
+1370,"Durchlaufende Posten",A,A,,0,f
+1374,Fremdgeld,A,A,,0,f
+1375,Agenturwarenabrechnung,A,A,,0,f
+1376,"Nachträglich abziehbare Vorsteuer nach § 15a Abs. 2 UStG",A,A,,0,f
+1377,"Zurückzuzahlende Vorsteuer nach § 15a Abs. 2 UStG",A,A,,0,f
+1378,"Ansprüche aus Rückdeckungsversicherungen",A,A,,0,f
+1380,"Vermögensgegenstände zur Erfüllung von Pensionsrückstellungen und ähnlichen Verpflichtungen zum langfristigen Verbleib",A,A,,0,f
+1381,"Vermögensgegenstände zur Saldierung mit Pensionsrückstellungen und ähnlichen Verpflichtungen zum langfristigen Verbleib nach § 246 Abs. 2 HGB",A,A,,0,f
+1382,"Vermögensgegenstände zur Erfüllung von mit der Altersversorgung vergleichbaren langfristigen Verpflichtungen",A,A,,0,f
+1383,"Vermögensgegenstände zur Saldierung mit der Altersversorgung vergleichbaren langfristigen Verpflichtungen nach § 246 Abs. 2 HGB",A,A,,0,f
+1390,"GmbH-Anteile zum kurzfristigen Verbleib",A,A,,0,f
+1391,"Forderungen gegen Arbeitsgemeinschaften",A,A,,0,f
+1393,Genussrechte,A,A,,0,f
+1394,"Einzahlungsansprüche zu Nebenleistungen oder Zuzahlungen",A,A,,0,f
+1395,"Genossenschaftsanteile zum kurzfristigen Verbleib",A,A,,0,f
+1396,"Nachträglich abziehbare Vorsteuer nach § 15a Abs. 1 UStG, bewegliche Wirtschaftsgüter",A,A,,0,f
+1397,"Zurückzuzahlende Vorsteuer nach § 15a Abs. 1 UStG, bewegliche Wirtschaftsgüter",A,A,,0,f
+1398,"Nachträglich abziehbare Vorsteuer nach § 15a Abs. 1 UStG, unbewegliche Wirtschaftsgüter",A,A,,0,f
+1399,"Zurückzuzahlende Vorsteuer nach § 15a Abs. 1 UStG, unbewegliche Wirtschaftsgüter",A,A,,0,f
+1400,"Abziehbare Vorsteuer",A,E,,0,f
+1401,"Abziehbare Vorsteuer 7%",A,E,AP_tax:IC_taxpart:IC_taxservice,0,f
+1402,"Abziehbare Vorsteuer aus innergemeinschftl. Erwerb",A,E,AP_tax:IC_taxpart:IC_taxservice,0,f
+1403,"Abziehbare Vorsteuer 5 %",A,E,AP_tax:IC_taxpart:IC_taxservice,8,f
+1404,"Abziehbare Vorsteuer aus innergemeinschftl. Erwerb 19%",A,E,AP_tax:IC_taxpart:IC_taxservice,0,f
+1405,"Abziehbare Vorsteuer 16%",A,E,AP_tax:IC_taxpart:IC_taxservice,0,f
+1406,"Abziehbare Vorsteuer 19 %",A,E,AP_tax:IC_taxpart:IC_taxservice,0,f
+1407,"Abziehbare Vorsteuer nach § 13b UStG 19%",A,E,AP_tax:IC_taxpart:IC_taxservice,0,f
+1408,"Abziehbare Vorsteuer nach § 13b UStG",A,E,AP_tax:IC_taxpart:IC_taxservice,0,f
+1409,"Abziehbare Vorsteuer nach § 13b UStG 16%",A,E,AP_tax:IC_taxpart:IC_taxservice,0,f
+1410,"Aufzuteilende Vorsteuer",A,E,,0,f
+1411,"Aufzuteilende Vorsteuer 7 %",A,E,AP_amount,8,t
+1412,"Aufzuteilende Vorsteuer aus innergemeinschaftlichem Erwerb",A,E,,0,f
+1413,"Aufzuteilende Vorsteuer aus innergemeinschaftlichem Erwerb 19 %",A,E,AP_amount,9,t
+1416,"Aufzuteilende Vorsteuer 19 %",A,E,AP_amount,9,t
+1417,"Aufzuteilende Vorsteuer nach §§ 13a und 13b UStG",A,E,,0,f
+1419,"Aufzuteilende Vorsteuer nach §§ 13a und 13b UStG 19 %",A,E,AP_amount,9,t
+1420,"Forderungen aus UmsatzsteuerVorauszahlungen",A,E,,0,f
+1422,"Umsatzsteuerforderungen Vorjahr",A,E,,0,f
+1425,"Umsatzsteuerforderungen frühere Jahre",A,E,,0,f
+1427,"Forderungen aus entrichteten Verbrauchsteuern",A,E,,0,f
+1431,"Abziehbare Vorsteuer aus der Auslagerung von Gegenständen aus einem Umsatzsteuerlager",A,E,,0,f
+1432,"abziehb. VorSt EU-Erwerb Neufzg.b.Lief. o. USt-IdNr.",A,E,AR_tax,0,f
+1433,"Bezahlte Einfuhrumsatzsteuer",A,E,,0,f
+1434,"Vorsteuer in Folgeperiode/im Folgejahr abziehbar",A,E,,0,f
+1435,"Forderungen aus Gewerbesteuerüberzahlungen",A,E,,0,f
+1436,"Vorsteuer aus Erwerb als letzter Abnehmer innerhalb eines Dreiecksgeschäfts",A,E,,0,f
+1440,"Steuererstattungsansprüche gegenüber anderen Ländern",A,E,,0,f
+1450,Körperschaftsteuerrückforderung,A,E,,0,f
+1456,"Forderungen an das Finanzamt aus abgeführtem Bauabzugsbetrag",A,E,,0,f
+1457,"Forderung gegenüber Bundesagentur für Arbeit",A,E,,0,f
+1460,Geldtransit,A,A,,0,f
+1480,"Gegenkonto Vorsteuer §4/3 EStG",A,A,,0,f
+1481,"Auflösung Vorst.a.Vorjahr §4/3 EStG",A,A,,0,f
+1482,"Vorst.aus Investitionen §4/3 EStG",A,E,,0,f
+1484,"abziehb.VorSt EU-Erwerb Neufzg.b.Lief. o. USt.Ident.Nr",A,E,AR_tax,0,f
+1486,"Verrechnungskonto für Gewinnermittlung § 4 Abs. 3 EStG, nicht ergebniswirksam",A,E,,0,f
+1487,"Wirtschaftsgüter des Umlaufvermögens nach § 4 Abs. 3 Satz 4 EStG",A,E,,0,f
+1490,"Verrechnungskonto Ist-Versteuerung",A,E,,0,f
+1491,"Neutralisierung ertragswirksamer Sachverhalte für § 4 Abs. 3 EStG",A,E,,0,f
+1494,"Forderungen gegen Gesellschaft/ Gesamthand28)",A,E,,0,f
+1495,"Verrechnungskonto erhalt. Anzahl. bei Buchung über Debitorenkonto",A,L,AR,0,f
+1498,"Überleitungskonto Kostenstellen",A,E,,0,f
+1500,"Anteile an verbundenen Unternehmen (Umlaufvermögen)",A,E,,0,f
+1504,"Anteile an herrschender oder mehrheitlich beteiligter Gesellschaft",A,E,,0,f
+1510,"Sonstige Wertpapiere",A,E,,0,f
+1525,"Andere Wertpapiere mit unwesentlichen Wertschwankungen",A,E,,0,f
+1530,"Wertpapieranlagen im Rahmen der kurzfristigen Finanzdisposition Kassenbestand, Bundesbankguthaben, Guthaben bei Kreditinstituten und Schecks",A,E,,0,f
+1600,Kasse,A,A,AR_paid:AP_paid,0,f
+1610,"Nebenkasse 1",A,A,,0,f
+1620,"Nebenkasse 2",A,A,,0,f
+1700,"Bank (Postbank)",A,E,,0,f
+1710,"Bank (Postbank 1)",A,E,,0,f
+1720,"Bank (Postbank 2)",A,E,,0,f
+1730,"Bank (Postbank 3)",A,E,,0,f
+1780,LZB-Guthaben,A,E,,0,f
+1790,Bundesbankguthaben,A,E,,0,f
+1800,Bank,A,A,AR_paid:AP_paid,0,f
+1810,"Bank 1",A,A,,0,f
+1820,"Bank 2",A,A,,0,f
+1830,"Bank 3",A,A,,0,f
+1840,"Bank 4",A,A,,0,f
+1850,"Bank 5",A,A,,0,f
+1890,"Finanzmittelanlagen im Rahmen der kurzfristigen Finanzdisposition (nicht im Finanzmittelfonds enthalten)",A,A,,0,f
+1895,"Verbindlichkeiten gegenüber Kreditinstituten (nicht im Finanzmittelfonds enthalten)",A,A,,0,f
+1900,"Aktive Rechnungsabgrenzung",A,E,,0,f
+1920,"Als Aufwand berücksichtigte Zölle und Verbrauchsteuern auf Vorräte",A,E,,0,f
+1930,"Als Aufwand berücksichtigte Umsatzsteuer auf Anzahlungen",A,E,,0,f
+1940,Damnum/Disagio,A,E,,0,f
+1950,"Aktive latente Steuern",A,E,,0,f
+2000,Festkapital,A,Q,,0,f
+2001,"Kapital (fester Anteil nur Einzelunternehmen)22)",A,Q,,0,f
+2010,"Variables Kapital",A,Q,,0,f
+2011,"Kapital (variabler Anteil, nur Einzelunternehmen)22) Fremdkapital Vollhafter",A,Q,,0,f
+2020,Gesellschafter-Darlehen,A,Q,,0,f
+2030,"(zur freien Verfügung)",A,Q,,0,f
+2050,Kommandit-Kapital,A,Q,,0,f
+2060,Verlustausgleichskonto,A,Q,,0,f
+2070,Gesellschafter-Darlehen,A,Q,,0,f
+2100,"Privatentnahmen allgemein",A,Q,,0,f
+2101,"Privatentnahmen allgemein (nur Einzelunternehmen)22)",A,Q,,0,f
+2110,"Privatentnahmen allgemein",A,Q,,0,f
+2111,"Privatentnahmen allgemein (nur Einzelunternehmen)22)",A,Q,,0,f
+2120,"Privatentnahmen allgemein",A,Q,,0,f
+2121,"Privatentnahmen allgemein (nur Einzelunternehmen)22)",A,Q,,0,f
+2130,"Unentgeltliche Wertabgaben",A,Q,,0,f
+2131,"Unentgeltliche Wertabgaben (nur Einzelunternehmen)22)",A,Q,,0,f
+2140,"Unentgeltliche Wertabgaben",A,Q,,0,f
+2141,"Unentgeltliche Wertabgaben (nur Einzelunternehmen)22)",A,Q,,0,f
+2150,Privatsteuern,A,Q,,0,f
+2151,"Privatsteuern (nur Einzelunternehmen)22)",A,Q,,0,f
+2160,Privatsteuern,A,Q,,0,f
+2161,"Privatsteuern (nur Einzelunternehmen)22)",A,Q,,0,f
+2170,Privatsteuern,A,Q,,0,f
+2171,"Privatsteuern (nur Einzelunternehmen)22)",A,Q,,0,f
+2180,Privateinlagen,A,Q,,0,f
+2181,"Privateinlagen (nur Einzelunternehmen)22)",A,Q,,0,f
+2190,Privateinlagen,A,Q,,0,f
+2191,"Privateinlagen (nur Einzelunternehmen)22)",A,Q,,0,f
+2200,"Sonderausgaben beschränkt abzugsfähig",A,Q,,0,f
+2201,"Sonderausgaben beschränkt abzugsfähig (nur Einzelunternehmen)22)",A,Q,,0,f
+2210,"Sonderausgaben beschränkt abzugsfähig",A,Q,,0,f
+2211,"Sonderausgaben beschränkt abzugsfähig (nur Einzelunternehmen)22)",A,Q,,0,f
+2220,"Sonderausgaben beschränkt abzugsfähig",A,Q,,0,f
+2221,"Sonderausgaben beschränkt abzugsfähig (nur Einzelunternehmen)22)",A,Q,,0,f
+2230,"Sonderausgaben unbeschränkt abzugsfähig",A,Q,,0,f
+2231,"Sonderausgaben unbeschränkt abzugsfähig (nur Einzelunternehmen)22)",A,Q,,0,f
+2240,"Sonderausgaben unbeschränkt abzugsfähig",A,Q,,0,f
+2241,"Sonderausgaben unbeschränkt abzugsfähig (nur Einzelunternehmen)22)",A,Q,,0,f
+2250,"Zuwendungen, Spenden",A,Q,,0,f
+2251,"Zuwendungen, Spenden (nur Einzelunternehmen)22)",A,Q,,0,f
+2260,"Zuwendungen, Spenden",A,Q,,0,f
+2261,"Zuwendungen, Spenden (nur Einzelunternehmen)22)",A,Q,,0,f
+2270,"Zuwendungen, Spenden",A,Q,,0,f
+2271,"Zuwendungen, Spenden (nur Einzelunternehmen)22)",A,Q,,0,f
+2280,"Außergewöhnliche Belastungen",A,Q,,0,f
+2281,"Außergewöhnliche Belastungen (nur Einzelunternehmen)22)",A,Q,,0,f
+2290,"Außergewöhnliche Belastungen",A,Q,,0,f
+2291,"Außergewöhnliche Belastungen (nur Einzelunternehmen)22)",A,Q,,0,f
+2300,Grundstücksaufwand,A,Q,,0,f
+2301,"Grundstücksaufwand (nur Einzelunternehmen)22)",A,Q,,0,f
+2309,"Grundstücksaufwand (Umsatzsteuerschlüssel möglich, nur Einzelunternehmen)10)22)",A,Q,,0,f
+2310,Grundstücksaufwand,A,Q,,0,f
+2311,"Grundstücksaufwand (nur Einzelunternehmen)22)",A,Q,,0,f
+2319,"Grundstücksaufwand (Umsatzsteuerschlüssel möglich, nur Einzelunternehmen)10)22)",A,Q,,0,f
+2320,Grundstücksaufwand,A,Q,,0,f
+2321,"Grundstücksaufwand (nur Einzelunternehmen)22)",A,Q,,0,f
+2329,"Grundstücksaufwand (Umsatzsteuerschlüssel möglich, nur Einzelunternehmen)10)22)",A,Q,,0,f
+2330,Grundstücksaufwand,A,Q,,0,f
+2331,"Grundstücksaufwand (nur Einzelunternehmen)22)",A,Q,,0,f
+2339,"Grundstücksaufwand (Umsatzsteuerschlüssel möglich, nur Einzelunternehmen)10)22)",A,Q,,0,f
+2340,Grundstücksaufwand,A,Q,,0,f
+2341,"Grundstücksaufwand (nur Einzelunternehmen)22)",A,Q,,0,f
+2349,"Grundstücksaufwand (Umsatzsteuerschlüssel möglich, nur Einzelunternehmen)10)22)",A,Q,,0,f
+2350,Grundstücksertrag,A,Q,,0,f
+2351,"Grundstücksertrag (nur Einzelunternehmen)22)",A,Q,,0,f
+2359,"Grundstücksertrag (Umsatzsteuerschlüssel möglich, nur Einzelunternehmen)10)22)",A,Q,,0,f
+2360,Grundstücksertrag,A,Q,,0,f
+2361,"Grundstücksertrag (nur Einzelunternehmen)22)",A,Q,,0,f
+2369,"Grundstücksertrag (Umsatzsteuerschlüssel möglich, nur Einzelunternehmen)10)22)",A,Q,,0,f
+2370,Grundstücksertrag,A,Q,,0,f
+2371,"Grundstücksertrag (nur Einzelunternehmen)22)",A,Q,,0,f
+2379,"Grundstücksertrag (Umsatzsteuerschlüssel möglich, nur Einzelunternehmen)10)22)",A,Q,,0,f
+2380,Grundstücksertrag,A,Q,,0,f
+2381,"Grundstücksertrag (nur Einzelunternehmen)22)",A,Q,,0,f
+2389,"Grundstücksertrag (Umsatzsteuerschlüssel möglich, nur Einzelunternehmen)10)22)",A,Q,,0,f
+2390,Grundstücksertrag,A,Q,,0,f
+2391,"Grundstücksertrag (nur Einzelunternehmen)22)",A,Q,,0,f
+2399,"Grundstücksertrag (Umsatzsteuerschlüssel möglich, nur Einzelunternehmen)10)22) Privat (Fremdkapital) Teilhafter",A,Q,,0,f
+2500,"Auszahlungen allgemein (Teilhafter), Fremdkapital8)",A,Q,,0,f
+2510,"Auszahlungen allgemein (Teilhafter), Fremdkapital8)",A,Q,,0,f
+2520,"Auszahlungen allgemein (Teilhafter), Fremdkapital8)",A,Q,,0,f
+2530,"Unentgeltliche Wertabgaben (Teilhafter), Fremdkapital",A,Q,,0,f
+2540,"Unentgeltliche Wertabgaben (Teilhafter), Fremdkapital",A,Q,,0,f
+2550,"Privatsteuern (Teilhafter), Fremdkapital",A,Q,,0,f
+2560,"Privatsteuern (Teilhafter), Fremdkapital",A,Q,,0,f
+2570,"Privatsteuern (Teilhafter), Fremdkapital",A,Q,,0,f
+2580,"Einzahlungen (Teilhafter), Fremdkapital8)",A,Q,,0,f
+2590,"Einzahlungen (Teilhafter), Fremdkapital8)",A,Q,,0,f
+2600,"Sonderausgaben beschränkt abzugsfähig (Teilhafter), Fremdkapital",A,Q,,0,f
+2610,"Sonderausgaben beschränkt abzugsfähig (Teilhafter), Fremdkapital",A,Q,,0,f
+2620,"Sonderausgaben beschränkt abzugsfähig (Teilhafter), Fremdkapital",A,Q,,0,f
+2630,"Sonderausgaben unbeschränkt abzugsfähig (Teilhafter), Fremdkapital",A,Q,,0,f
+2640,"Sonderausgaben unbeschränkt abzugsfähig (Teilhafter), Fremdkapital",A,Q,,0,f
+2650,"Zuwendungen, Spenden (Teilhafter), Fremdkapital",A,Q,,0,f
+2660,"Zuwendungen, Spenden (Teilhafter), Fremdkapital",A,Q,,0,f
+2670,"Zuwendungen, Spenden (Teilhafter), Fremdkapital",A,Q,,0,f
+2680,"Außergewöhnliche Belastungen (Teilhafter), Fremdkapital",A,Q,,0,f
+2690,"Außergewöhnliche Belastungen (Teilhafter), Fremdkapital",A,Q,,0,f
+2700,"Grundstücksaufwand (Teilhafter), Fremdkapital",A,Q,,0,f
+2710,"Grundstücksaufwand (Teilhafter), Fremdkapital",A,Q,,0,f
+2720,"Grundstücksaufwand (Teilhafter), Fremdkapital",A,Q,,0,f
+2730,"Grundstücksaufwand (Teilhafter), Fremdkapital",A,Q,,0,f
+2740,"Grundstücksaufwand (Teilhafter), Fremdkapital",A,Q,,0,f
+2750,"Grundstücksertrag (Teilhafter), Fremdkapital",A,Q,,0,f
+2760,"Grundstücksertrag (Teilhafter), Fremdkapital",A,Q,,0,f
+2770,"Grundstücksertrag (Teilhafter), Fremdkapital",A,Q,,0,f
+2780,"Grundstücksertrag (Teilhafter), Fremdkapital",A,Q,,0,f
+2790,"Grundstücksertrag (Teilhafter), Fremdkapital",A,Q,,0,f
+2900,"Gezeichnetes Kapital17)",A,Q,,0,f
+2901,"Geschäftsguthaben der verbleibenden Mitglieder17)",A,Q,,0,f
+2902,"Geschäftsguthaben der ausscheidenden Mitglieder17)",A,Q,,0,f
+2903,"Geschäftsguthaben aus gekündigten Geschäftsanteilen17)",A,Q,,0,f
+2906,"Rückständige fällige Einzahlungen auf Geschäftsanteile, vermerkt17)",A,Q,,0,f
+2907,"Gegenkonto Rückständige fällige Einzahlungen auf Geschäftsanteile, vermerkt",A,Q,,0,f
+2908,"Kapitalerhöhung aus Gesellschaftsmitteln17)",A,Q,,0,f
+2909,"Erworbene eigene Anteile17)",A,Q,,0,f
+2910,"Ausstehende Einlagen auf das gezeichnete Kapital, nicht eingefordert (Passivausweis, vom gezeichneten Kapital offen abgesetzt; eingeforderte ausstehende Einlagen s. Konto 1298)",A,Q,,0,f
+2920,Kapitalrücklage17),A,Q,,0,f
+2925,"Kapitalrücklage durch Ausgabe von Anteilen über Nennbetrag17)",A,Q,,0,f
+2926,"Kapitalrücklage durch Ausgabe von Schuldverschreibungen für Wandlungsrechte und Optionsrechte zum Erwerb von Anteilen17)",A,Q,,0,f
+2927,"Kapitalrücklage durch Zuzahlungen gegen Gewährung eines Vorzugs für Anteile17)",A,Q,,0,f
+2928,"Kapitalrücklage durch Zuzahlungen in das Eigenkapital17)",A,Q,,0,f
+2929,"Nachschusskapital (Gegenkonto 1299)17) Gewinnrücklagen",A,Q,,0,f
+2930,"Gesetzliche Rücklage17)",A,Q,,0,f
+2935,"Rücklage für Anteile an einem herrschenden oder mehrheitlich beteiligten Unternehmen",A,Q,,0,f
+2937,"Andere Ergebnisrücklagen17)",A,Q,,0,f
+2950,"Satzungsmäßige Rücklagen",A,Q,,0,f
+2959,"Gesamthänderisch gebundene Rücklagen (mit Aufteilung für Kapitalkontenentwicklung)",A,Q,,0,f
+2960,"Andere Gewinnrücklagen17)",A,Q,,0,f
+2961,"Andere Gewinnrücklagen aus dem Erwerb eigener Anteile17)",A,Q,,0,f
+2962,"Eigenkapitalanteil von Wertaufholungen17)",A,Q,,0,f
+2963,"Gewinnrücklagen aus den Übergangsvorschriften BilMoG11)",A,Q,,0,f
+2964,"Gewinnrücklagen aus den Übergangsvorschriften BilMoG (Zuschreibung Sachanlagevermögen)11)",A,Q,,0,f
+2965,"Gewinnrücklagen aus den Übergangsvorschriften BilMoG (Zuschreibung Finanzanlagevermögen)11)",A,Q,,0,f
+2966,"Gewinnrücklagen aus den Übergangsvorschriften BilMoG (Auflösung der Sonderposten mit Rücklageanteil)11)",A,Q,,0,f
+2967,"Latente Steuern (Gewinnrücklage Haben) aus erfolgsneutralen Verrechnungen11)",A,Q,,0,f
+2968,"Latente Steuern (Gewinnrücklage Soll) aus erfolgsneutralen Verrechnungen11)",A,Q,,0,f
+2969,"Rechnungsabgrenzungsposten (Gewinnrücklage Soll) aus erfolgsneutralen Verrechnungen11)",A,Q,,0,f
+2970,"Gewinnvortrag vor Verwendung17)",A,Q,,0,f
+2975,"Gewinnvortrag vor Verwendung (mit Aufteilung für Kapitalkontenentwicklung)",A,Q,,0,f
+2977,"Verlustvortrag vor Verwendung (mit Aufteilung für Kapitalkontenentwicklung)",A,Q,,0,f
+2978,"Verlustvortrag vor Verwendung17)",A,Q,,0,f
+2980,"Übrige andere Sonderposten",A,Q,,0,f
+2981,"Steuerfreie Rücklagen nach § 6b EStG",A,Q,,0,f
+2982,"Rücklage für Ersatzbeschaffung",A,Q,,0,f
+2988,"Rücklage für Zuschüsse",A,Q,,0,f
+2990,"Sonderposten mit Rücklageanteil, Sonderabschreibungen6)",A,Q,,0,f
+2995,"Ausgleichsposten bei Entnahmen § 4g EStG",A,Q,,0,f
+2997,"Sonderposten mit Rücklageanteil nach § 7g Abs. 5 EStG",A,Q,,0,f
+2998,"Sonderposten für Zuschüsse Dritter",A,Q,,0,f
+2999,"Sonderposten für Investitionszulagen",A,Q,,0,f
+3000,"Rückstellungen für Pensionen und ähnliche Verpflichtungen",A,L,,0,f
+3005,"Rückstellungen für Pensionen und ähnliche Verpflichtungen gegenüber Gesellschaftern oder nahe stehenden Personen",A,L,,0,f
+3009,"Rückstellungen für Pensionen und ähnliche Verpflichtungen zur Saldierung mit Vermögensgegenständen zum langfristigen Verbleib nach § 246 Abs. 2 HGB",A,L,,0,f
+3010,"Rückstellungen für Direktzusagen",A,L,,0,f
+3011,"Rückstellungen für Zuschussverpflichtungen für Pensionskassen und Lebensversicherungen",A,L,,0,f
+3015,"Rückstellungen für pensionsähnliche Verpflichtungen",A,L,,0,f
+3020,Steuerrückstellungen,A,L,,0,f
+3035,"Gewerbesteuerrückstellung nach § 4 Abs. 5b EStG",A,L,,0,f
+3040,Körperschaftsteuerrückstellung,A,L,,0,f
+3050,"Steuerrückstellung aus Steuerstundung (BStBK)",A,L,,0,f
+3060,"Rückstellung für latente Steuern",A,L,,0,f
+3065,"Passive latente Steuern",A,L,,0,f
+3070,"Sonstige Rückstellungen",A,L,,0,f
+3074,"Rückstellungen für Personalkosten",A,L,,0,f
+3075,"Rückstellungen für unterlassene Aufwendungen für Instandhaltung, Nachholung in den ersten drei Monaten",A,L,,0,f
+3076,"Rückstellungen für mit der Altersversorgung vergleichbare langfristige Verpflichtungen zum langfristigen Verbleib",A,L,,0,f
+3077,"Rückstellungen für mit der Altersversorgung vergleichbare langfristige Verpflichtungen zur Saldierung mit Vermögensgegenständen zum langfristigen Verbleib nach § 246 Abs. 2 HGB",A,L,,0,f
+3079,Urlaubsrückstellungen,A,L,,0,f
+3085,"Rückstellungen für Abraum- und Abfallbeseitigung",A,L,,0,f
+3090,"Rückstellungen für Gewährleistungen (Gegenkonto 6790)",A,L,,0,f
+3092,"Rückstellungen für drohende Verluste aus schwebenden Geschäften",A,L,,0,f
+3095,"Rückstellungen für Abschluss- und Prüfungskosten",A,L,,0,f
+3096,"Rückstellungen zur Erfüllung der Aufbewahrungspflichten",A,L,,0,f
+3099,"Rückstellungen für Umweltschutz",A,L,,0,f
+3100,"Anleihen, nicht konvertibel",A,L,,0,f
+3101,"– Restlaufzeit bis 1 Jahr",A,L,,0,f
+3105,"– Restlaufzeit 1 bis 5 Jahre",A,L,,0,f
+3110,"– Restlaufzeit größer 5 Jahre",A,L,,0,f
+3120,"Anleihen, konvertibel",A,L,,0,f
+3121,"– Restlaufzeit bis 1 Jahr",A,L,,0,f
+3125,"– Restlaufzeit 1 bis 5 Jahre",A,L,,0,f
+3130,"– Restlaufzeit größer 5 Jahre",A,L,,0,f
+3150,"Verbindlichkeiten gegenüber Kreditinstituten",A,L,,0,f
+3151,"Verbindlk. geg Krditinst. - Restlzeit <1 Jahr",A,L,,0,f
+3160,"Verbindlk. geg Krditinst. - Restlzeit 1 - 5 Jahre",A,L,,0,f
+3170,"Verbindlk. geg Krditinst. - Restlzeit >5 Jahre",A,L,,0,f
+3180,"Verbindlichkeiten gegenüber Kreditinstituten aus Teilzahlungsverträgen",A,L,,0,f
+3181,"– Restlaufzeit bis 1 Jahr",A,L,,0,f
+3190,"– Restlaufzeit 1 bis 5 Jahre",A,L,,0,f
+3200,"– Restlaufzeit größer 5 Jahre",A,L,,0,f
+3210,"Verbindlichkeiten gegenüber Kreditinstituten, vor Restlaufzeitdifferenzierung",A,L,,0,f
+3249,"Gegenkonto 3150-3209 bei Aufteilung der Konten 3210-3248",A,L,,0,f
+3250,"Erhaltene Anzahlungen auf Bestellungen (Verbindlichkeiten)",A,L,,0,f
+3260,"Erhaltene, versteuerte Anzahlungen 7 % USt (Verbindlichkeiten)",A,L,AR_amount,0,f
+3261,"Erhaltene, versteuerte Anzahlungen 5 % USt (Verbindlichkeiten)",A,L,,0,f
+3264,"Erhaltene, versteuerte Anzahlungen 0 % USt (Verbindlichkeiten)",A,L,,0,f
+3270,"Erhaltene, versteuerte Anzahlungen 16 % USt (Verbindlichkeiten)",A,L,,0,f
+3272,"Erhaltene, versteuerte Anzahlungen 19 % USt (Verbindlichkeiten)",A,L,AR_amount,0,f
+3279,"Erhaltene Anzahlungen - Nachsteuer",A,L,,0,f
+3280,"Erhaltene Anzahlungen – Restlaufzeit bis 1 Jahr",A,L,,0,f
+3284,"– Restlaufzeit 1 bis 5 Jahre",A,L,,0,f
+3285,"– Restlaufzeit größer 5 Jahre",A,L,,0,f
+3300,"Verbindlichkeiten aus Lief.u.Leist.",A,L,AP,0,f
+3301,"Verbindlichkeiten aus Lieferungen und Leistungen",A,L,,0,f
+3305,"Verbindlk. aus LuL zum allg. USTsatz (EÜR)",A,L,AP,0,f
+3306,"Verbindlk. aus LuL zum erm. USTsatz (EÜR)",A,L,AP,0,f
+3307,"Verbindlk. aus LuL ohne Vorsteuer (EÜR)",A,L,AP,0,f
+3309,"Gegenkonto 3305-3307 bei Auteilung d. Forder. nach Steuersätzen (EÜR)",A,L,,0,f
+3310,"Verbindlichkeiten aus Lieferungen und Leistungen ohne Kontokorrent",A,L,,0,f
+3334,"Verbindlichkeiten aus Lieferungen und Leistungen für Investitionen für § 4 Abs. 3 EStG",A,L,,0,f
+3335,"Verbindlichkeiten aus Lieferungen und Leistungen ohne Kontokorrent – Restlaufzeit bis 1 Jahr",A,L,,0,f
+3337,"– Restlaufzeit 1 bis 5 Jahre",A,L,,0,f
+3338,"– Restlaufzeit größer 5 Jahre",A,L,,0,f
+3340,"Verbindlichkeiten aus Lieferungen und Leistungen gegenüber Gesellschaftern",A,L,,0,f
+3341,"– Restlaufzeit bis 1 Jahr",A,L,,0,f
+3345,"– Restlaufzeit 1 bis 5 Jahre",A,L,,0,f
+3348,"– Restlaufzeit größer 5 Jahre",A,L,,0,f
+3349,"Gegenkonto 3335-3348, 3420-3449, 3470-3499 bei Aufteilung Kreditorenkonto",A,L,,0,f
+3400,"Verbindlichkeiten gegenüber verbundenen Unternehmen",A,L,,0,f
+3401,"– Restlaufzeit bis 1 Jahr",A,L,,0,f
+3405,"– Restlaufzeit 1 bis 5 Jahre",A,L,,0,f
+3410,"– Restlaufzeit größer 5 Jahre",A,L,,0,f
+3420,"Verbindlichkeiten aus Lieferungen und Leistungen gegenüber verbundenen Unternehmen",A,L,,0,f
+3421,"– Restlaufzeit bis 1 Jahr",A,L,,0,f
+3425,"– Restlaufzeit 1 bis 5 Jahre",A,L,,0,f
+3430,"– Restlaufzeit größer 5 Jahre",A,L,,0,f
+3450,"Verbindlichkeiten gegenüber Unternehmen, mit denen ein Beteiligungsverhältnis besteht",A,L,,0,f
+3451,"– Restlaufzeit bis 1 Jahr",A,L,,0,f
+3455,"– Restlaufzeit 1 bis 5 Jahre",A,L,,0,f
+3460,"– Restlaufzeit größer 5 Jahre",A,L,,0,f
+3470,"Verbindlichkeiten aus Lieferungen und Leistungen gegenüber Unternehmen, mit denen ein Beteiligungsverhältnis besteht",A,L,,0,f
+3471,"– Restlaufzeit bis 1 Jahr",A,L,,0,f
+3475,"– Restlaufzeit 1 bis 5 Jahre",A,L,,0,f
+3480,"– Restlaufzeit größer 5 Jahre",A,L,,0,f
+3500,"Sonstige Verbindlichkeiten",A,L,,0,f
+3501,"– Restlaufzeit bis 1 Jahr",A,L,,0,f
+3504,"– Restlaufzeit 1 bis 5 Jahre",A,L,,0,f
+3507,"– Restlaufzeit größer 5 Jahre",A,L,,0,f
+3509,"Sonstige Verbindlichkeiten nach § 11 Abs. 2 Satz 2 EStG für § 4 Abs. 3 EStG",A,L,,0,f
+3510,"Verbindlichkeiten gegenüber Gesellschaftern",A,L,,0,f
+3511,"– Restlaufzeit bis 1 Jahr",A,L,,0,f
+3514,"– Restlaufzeit 1 bis 5 Jahre",A,L,,0,f
+3517,"– Restlaufzeit größer 5 Jahre",A,L,,0,f
+3519,"Verbindlichkeiten gegenüber Gesellschaftern für offene Ausschüttungen",A,L,,0,f
+3520,"Verbindlichkeiten gegenüber typisch stillen Gesellschaftern",A,L,,0,f
+3521,"– Restlaufzeit bis 1 Jahr",A,L,,0,f
+3524,"– Restlaufzeit 1 bis 5 Jahre",A,L,,0,f
+3527,"– Restlaufzeit größer 5 Jahre",A,L,,0,f
+3530,"Verbindlichkeiten gegenüber atypisch stillen Gesellschaftern",A,L,,0,f
+3531,"– Restlaufzeit bis 1 Jahr",A,L,,0,f
+3534,"– Restlaufzeit 1 bis 5 Jahre",A,L,,0,f
+3537,"– Restlaufzeit größer 5 Jahre",A,L,,0,f
+3540,"Partiarische Darlehen",A,L,,0,f
+3541,"– Restlaufzeit bis 1 Jahr",A,L,,0,f
+3544,"– Restlaufzeit 1 bis 5 Jahre",A,L,,0,f
+3547,"– Restlaufzeit größer 5 Jahre",A,L,,0,f
+3550,"Erhaltene Kautionen",A,L,,0,f
+3551,"– Restlaufzeit bis 1 Jahr",A,L,,0,f
+3554,"– Restlaufzeit 1 bis 5 Jahre",A,L,,0,f
+3557,"– Restlaufzeit größer 5 Jahre",A,L,,0,f
+3560,Darlehen,A,L,,0,f
+3561,"– Restlaufzeit bis 1 Jahr",A,L,,0,f
+3564,"– Restlaufzeit 1 bis 5 Jahre",A,L,,0,f
+3567,"– Restlaufzeit größer 5 Jahre",A,L,,0,f
+3570,"Sonstige Verbindlichkeiten, vor Restlaufzeitdifferenzierung (nur Bilanzierer)",A,L,,0,f
+3599,"Gegenkonto 3500-3569 und 3640-3658 bei Aufteilung der Konten 3570-3598",A,L,,0,f
+3600,Agenturwarenabrechnung,A,L,,0,f
+3610,Kreditkartenabrechnung,A,L,,0,f
+3611,"Verbindlichkeiten gegenüber Arbeitsgemeinschaften",A,L,,0,f
+3612,"Neutralisierung aufwandswirksamer Sachverhalte für § 4 Abs. 3 EStG",A,L,,0,f
+3613,"Ergebnisneutrale Sachverhalte für § 4 Abs. 3 EStG",A,L,,0,f
+3620,"Gewinnverfügungskonto stille Gesellschafter - sonstige Verbindlichkeiten",A,L,,0,f
+3630,"Sonstige Verrechnungskonten (Interimskonto)",A,L,,0,f
+3634,"Verbindlichkeiten gegenüber Gesellschaft/Gesamthand28)",A,L,,0,f
+3635,"Sonstige Verbindlichkeiten aus genossenschaftlicher Rückvergütung",A,L,,0,f
+3640,"Verbindlichkeiten gegenüber GmbH-Gesellschaftern",A,L,,0,f
+3641,"– Restlaufzeit bis 1 Jahr",A,L,,0,f
+3642,"– Restlaufzeit 1 bis 5 Jahre",A,L,,0,f
+3643,"– Restlaufzeit größer 5 Jahre",A,L,,0,f
+3645,"Verbindlichkeiten gegenüber persönlich haftenden Gesellschaftern",A,L,,0,f
+3646,"– Restlaufzeit bis 1 Jahr",A,L,,0,f
+3647,"– Restlaufzeit 1 bis 5 Jahre",A,L,,0,f
+3648,"– Restlaufzeit größer 5 Jahre",A,L,,0,f
+3650,"Verbindlichkeiten gegenüber Kommanditisten",A,L,,0,f
+3651,"– Restlaufzeit bis 1 Jahr",A,L,,0,f
+3652,"– Restlaufzeit 1 bis 5 Jahre",A,L,,0,f
+3653,"– Restlaufzeit größer 5 Jahre",A,L,,0,f
+3655,"Verbindlichkeiten gegenüber stillen Gesellschaftern",A,L,,0,f
+3656,"– Restlaufzeit bis 1 Jahr",A,L,,0,f
+3657,"– Restlaufzeit 1 bis 5 Jahre",A,L,,0,f
+3658,"– Restlaufzeit größer 5 Jahre",A,L,,0,f
+3695,"Verrechnungskonto geleistete Anzahlungen bei Buchung über Kreditorenkonto",A,L,,0,f
+3700,"Verbindlichkeiten aus Steuern und Abgaben",A,L,,0,f
+3701,"– Restlaufzeit bis 1 Jahr",A,L,,0,f
+3710,"– Restlaufzeit 1 bis 5 Jahre",A,L,,0,f
+3715,"– Restlaufzeit größer 5 Jahre",A,L,,0,f
+3720,"Verbindlichkeiten aus Lohn und Gehalt",A,L,,0,f
+3725,"Verbindlichkeiten für Einbehaltungen von Arbeitnehmern",A,L,,0,f
+3726,"Verbindlichkeiten an das Finanzamt aus abzuführendem Bauabzugsbetrag",A,L,,0,f
+3730,"Verbindlichkeiten aus Lohn- und Kirchensteuer",A,L,,0,f
+3740,"Verbindlichkeiten im Rahmen der sozialen Sicherheit",A,L,,0,f
+3741,"– Restlaufzeit bis 1 Jahr",A,L,,0,f
+3750,"– Restlaufzeit 1 bis 5 Jahre",A,L,,0,f
+3755,"– Restlaufzeit größer 5 Jahre",A,L,,0,f
+3759,"Voraussichtliche Beitragsschuld gegenüber den Sozialversicherungsträgern",A,L,,0,f
+3760,"Verbindlichkeiten aus Einbehaltungen (KapESt und SolZ, KiSt auf KapESt) für offene Ausschüttungen",A,L,,0,f
+3761,"Verbindlichkeiten für Verbrauchsteuern",A,L,,0,f
+3770,"Verbindlichkeiten aus Vermögensbildung",A,L,,0,f
+3771,"– Restlaufzeit bis 1 Jahr",A,L,,0,f
+3780,"– Restlaufzeit 1 bis 5 Jahre",A,L,,0,f
+3785,"– Restlaufzeit größer 5 Jahre",A,L,,0,f
+3786,"Ausgegebene Geschenkgutscheine",A,L,,0,f
+3790,"Lohn- und Gehaltsverrechnungskonto",A,L,,0,f
+3791,"Lohn- und Gehaltsverrechnung nach § 11 Abs. 2 Satz 2 EStG für § 4 Abs. 3 EStG",A,L,,0,f
+3796,"Verbindlichkeiten im Rahmen der sozialen Sicherheit für § 4 Abs. 3 EStG",A,L,,0,f
+3798,"Umsatzsteuer aus im anderen EU-Land steuerpflichtigen elektronischen Dienstleistungen",A,L,,0,f
+3799,"Steuerzahlungen aus im anderen EU-Land steuerpflichtigen Leistungen",A,L,,0,f
+3800,Umsatzsteuer,A,I,,0,f
+3801,"Umsatzsteuer 7%",A,I,AR_tax:IC_taxpart:IC_taxservice,0,f
+3802,"Umsatzsteuer aus innergemeinschftl. Erwerb",A,I,AR_tax:IC_taxpart:IC_taxservice,0,f
+3803,"Umsatzsteuer 5 %",A,I,AR_tax:IC_taxpart:IC_taxservice,2,f
+3804,"Umsatzsteuer aus innergemeinschftl. Erwerb 19%",A,I,AR_tax:IC_taxpart:IC_taxservice,0,f
+3805,"Umsatzsteuer 16%",A,I,AR_tax:IC_taxpart:IC_taxservice,0,f
+3806,"Umsatzsteuer 19%",A,I,AR_tax:IC_taxpart:IC_taxservice,0,f
+3807,"Umsatzsteuer aus im Inland steuerpflichtigen EU-Lieferungen",A,I,,0,f
+3808,"Umsatzsteuer aus im Inland steuerpflichtigen EU-Lieferungen 19 %",A,I,AR_amount,3,t
+3809,"Umsatzsteuer aus innergemeinschaftlichem Erwerb ohne Vorsteuerabzug",A,I,,0,f
+3810,"Umsatzsteuer nicht fällig",A,I,,0,f
+3811,"Umsatzsteuer nicht fällig 7 %",A,I,AR_amount,2,t
+3812,"Umsatzsteuer nicht fällig aus im Inland steuerpflichtigen EU-Lieferungen",A,I,,0,f
+3814,"Umsatzsteuer nicht fällig aus im Inland steuerpflichtigen EU-Lieferungen 19 %",A,I,AR_amount,3,t
+3816,"Umsatzsteuer nicht fällig 19 %",A,I,AR_amount,3,t
+3817,"Umsatzsteuer aus in anderen EG-Land stpfl. Lieferungen",A,,,10,f
+3818,"Umsatzsteuer aus im anderen EU-Land steuerpflichtigen sonstigen Leistungen/Werklieferungen",A,I,,0,f
+3819,"Umsatzsteuer aus Erwerb als letzter Abnehmer innerhalb eines Dreiecksgeschäfts",A,I,,0,f
+3820,Umsatzsteuer-Vorauszahlungen,A,E,,0,f
+3830,"Umsatzsteuer-Vorauszahlungen 1/11",A,E,,0,f
+3831,"Umsatzsteuer aus im Inland steuerpflichtigen EU-Lieferungen, nur",A,I,,0,f
+3832,"Nachsteuer, UStVA Kz. 65",A,I,,0,f
+3834,"Umsatzsteuer aus innergemeinschaftlichem Erwerb von Neufahrzeugen von Lieferanten ohne Umsatzsteuer-Identifikationsnummer",A,I,,0,f
+3835,"Umsatzsteuer nach § 13b UStG",A,I,,0,f
+3836,"Umsatzsteuer nach § 13b UStG 16%/19%",A,I,,0,f
+3837,"Umsatzsteuer nach § 13b UStG 19%",A,I,,0,f
+3839,"Umsatzsteuer aus der Auslagerung von Gegenständen aus einem Umsatzsteuerlager",A,I,,0,f
+3840,"Umsatzsteuer laufendes Jahr",A,I,,0,f
+3841,"Umsatzsteuer Vorjahr",A,E,,0,f
+3845,"Umsatzsteuer frühere Jahre",A,E,,0,f
+3851,"In Rechnung unrichtig oder unberechtigt ausgewiesene Steuerbeträge, UStVA Kz. 69",A,I,,0,f
+3854,"Steuerzahlungen an andere Länder",A,I,,0,f
+3860,"Verbindlichkeiten aus Umsatzsteuer-Vorauszahlungen",A,I,,0,f
+3865,"Umsatzsteuer in Folgeperiode fällig (§§ 13 Abs. 1 Nr. 6 und 13b Abs. 2 UStG)",A,I,,0,f
+3900,"Passive Rechnungsabgrenzung",A,L,,0,f
+3950,"Abgrenzung unterjährig pauschal gebuchter Abschreibungen für",A,L,,0,f
+4000,"Umsatzerlöse (Zur freien Verfügung)",A,I,,0,f
+4100,"Steuerfreie Umsätze § 4 Nr. 8 ff. UStG",A,I,,0,f
+4105,"Steuerfreie Umsätze nach § 4 Nr. 12 UStG (Vermietung und Verpachtung)",A,I,,0,f
+4110,"Sonstige steuerfreie Umsätze Inland",A,I,AR_amount,0,t
+4120,"Steuerfreie Umsätze §4Nr.1a UstG",A,I,AR_amount:IC_sale:IC_income,0,t
+4125,"Steuerfrei innergem. Lieferungen §41bUStG",A,I,AR_amount:IC_sale:IC_income,0,t
+4130,"Liefe.d.1.Abnehm.bei innergem.Dreiecksg §25b2UStG",A,I,AR_amount:IC_sale:IC_income,0,t
+4131,"Umsatzerlöse nach § 25 UStG ohne USt1)",A,I,,0,f
+4132,"Umsatzerlöse nach § 25a UStG ohne USt1)",A,I,,0,f
+4133,"Umsatzerlöse nach § 25 UStG 19 % USt1)",A,I,,0,f
+4134,"Umsatzerlöse nach § 25a UStG 19 % USt1)",A,I,,0,f
+4135,"Steuerfr.innergem.Lief.v.Neufahrz.an Abn.o. USt-IdNr.",A,I,AR_amount:IC_sale,0,t
+4136,"Umsatzerlöse nach §§ 25 und 25a UStG 19 % USt11)",A,I,,0,f
+4138,"Umsatzerlöse nach §§ 25 und 25a UStG ohne USt11)",A,I,,0,f
+4139,"Umsatzerlöse aus Reiseleistungen § 25 Abs. 2 UStG, steuerfrei",A,I,,0,f
+4140,"Steuerfreie Umsätze Offshore etc.",A,I,,0,f
+4150,"Sonstige steuerfreie Umsätze §42-7UStG",A,I,AR_amount:IC_sale:IC_income,0,t
+4160,"Steuerfreie Umsätze ohne Vorsteuerabzug zum Gesamtumsatz gehörend, § 4 UStG",A,I,,0,f
+4165,"Steuerfreie Umsätze ohne Vorsteuerabzug zum Gesamtumsatz gehörend",A,I,,0,f
+4180,"Erlöse,die mit den Durchschnittssätzen d.§24UStG vers.werd.",A,I,AR_amount,0,f
+4184,"Steuerfreie Erlöse Kleinunternehmer nach § 19 Abs. 1 UStG",A,I,,0,f
+4185,"Erlöse als Kleinunternehmer i.S.d.§19(1)UStG",A,I,AR_amount,0,f
+4200,Erlöse,A,I,AR_amount:IC_sale:IC_income,0,f
+4290,"Erlöse 0 % USt",A,I,,0,f
+4300,"Erlöse 7% USt",A,I,AR_amount:IC_sale:IC_income,2,t
+4310,"Erlöse aus im Inland strpfl. EG-Lieferungen 7%",A,I,AR_amount:IC_sale:IC_income,12,t
+4315,"Erlöse aus im Inland strpfl. EG-Lieferungen 19%",A,I,AR_amount:IC_sale:IC_income,13,t
+4320,"Erlöse aus im anderen EG-Land strpfl. Lieferungen",A,I,AR_amount:IC_sale:IC_income,10,f
+4330,"Erlöse aus im Inland strpfl. EG-Lieferungen 16%/19%",A,I,AR_amount:IC_sale:IC_income,13,t
+4331,"Erlöse aus im anderen EU-Land steuerpflichtigen elektronischen Dienstleistungen5)",A,I,,0,f
+4334,"Erlöse 7 % USt",A,I,AR_amount,2,t
+4335,"Erlöse aus Lieferungen von Mobilfunkgeräten, Tablet-Computern, Spielekonsolen und integrierten Schaltkreisen, für die der Leistungsempfänger die Umsatzsteuer nach § 13b UStG schuldet",A,I,,0,f
+4336,"Erlöse aus im anderen EU-Land steuerpflichtigen sonstigen Leistungen, für die der Leistungsempfänger die Umsatzsteuer schuldet",A,I,,0,f
+4337,"Erlöse aus Leistungen, für die der Leistungsempfänger die Umsatzsteuer nach § 13b UStG schuldet",A,I,,0,f
+4338,"Erlöse aus im Drittland steuerbaren Leistungen, im Inland nicht steuerbare Umsätze",A,I,,0,f
+4339,"Erlöse aus im anderen EU-Land steuerbaren Leistungen, im Inland nicht steuerbare Umsätze",A,I,,0,f
+4340,"Erlöse 16%/19% USt",A,I,AR_amount:IC_sale:IC_income,5,t
+4400,"Erlöse 19% USt",A,I,AR_amount:IC_sale:IC_income,3,t
+4410,"Erlöse 19 % USt",A,I,AR_amount,3,t
+4449,"Erlöse aus im Inland steuerpflichtigen elektronischen Dienstleistungen 19 % USt",A,I,AR_amount,3,t
+4499,"Nebenerlöse (Bezug zu Materialaufwand) Konten für die Verbuchung von Sonderbetriebseinnahmen",A,I,,0,f
+4500,Provisionserlöse,A,I,AR_amount:IC_income,3,f
+4501,"Sonderbetriebseinnahmen, Miet-/Pachteinnahmen28)",A,I,,0,f
+4502,"Sonderbetriebseinnahmen, Zinseinnahmen28)",A,I,,0,f
+4503,"Sonderbetriebseinnahmen, Haftungsvergütung28)",A,I,,0,f
+4504,"Steuerfreie Umsätze §4Nr.8ff UstG",A,I,AR_amount,0,t
+4505,"Sonderbetriebseinnahmen, sonstige Sonderbetriebseinnahmen28)",A,I,,0,f
+4510,"Erlöse Abfallverwertung",A,I,AR_amount:IC_sale,3,f
+4520,"Erlös Leergut",A,I,AR_amount:IC_sale,3,f
+4560,Provisionsumsätze,A,I,,0,f
+4564,"Provisionsumsätze, steuerfrei § 4 Nr. 8 ff. UStG",A,I,,0,f
+4565,"Provisionsumsätze, steuerfrei § 4 Nr. 5 UStG",A,I,,0,f
+4566,"Provisionserlöse 7% USt.",A,I,AR_amount:IC_income,2,f
+4568,"Provisionserlöse 16%/19% USt",A,I,AR_amount:IC_income,5,f
+4569,"Provisionserlöse 19% USt",A,I,AR_amount:IC_income,3,f
+4570,"Sonstige Erträge aus Provisionen, Lizenzen und Patenten",A,I,,0,f
+4580,"Erlöse zum allg.Umsatzsteuersatz (EÜR)",A,I,,0,f
+4581,"Erlöse zum ermä.Umsatzsteuersatz (EÜR)",A,I,,0,f
+4582,"Erlöse steuerfrei u.nicht steuerbar (EÜR)",A,I,,0,f
+4589,"Gegenkonto 8580-8582 b.Aufteilung d.Erlöse n.Steuersätzen(EÜR)",A,C,,0,f
+4600,"Unentgeltliche Wertabgaben",A,I,AR_amount,0,f
+4605,"Entnahme von Gegenständen o. USt",A,I,,0,f
+4610,"Entnahme (Waren) d. Unternehmer f. Zwecke außerh. des Untern. 7% USt",A,I,AR_amount,2,t
+4616,"Entnahme durch den Unternehmer für Zwecke außerhalb des Unternehmens (Waren) 7 % USt",A,I,AR_amount,2,t
+4619,"Entnahme (Waren) d. Unternehmer f. Zwecke außerh. des Untern. o. USt",A,I,,0,f
+4620,"Entnahme (Waren) d. Unternehmer f. Zwecke außerh. des Untern. 19% USt",A,I,AR_amount,3,t
+4630,"Verwendung v.Gegenst.f.Zwecke außerhalb d.Unternehmens 7% USt.",A,I,AR_amount,2,t
+4636,"Verwendung von Gegenständen für Zwecke außerhalb des Unternehmens 7 % USt",A,I,AR_amount,2,t
+4637,"Verwendung v.Gegenständen f.Zwecke außerhalb d.Untern.o.USt.",A,I,,0,f
+4638,"Verwendung von Gegenständen für Zwecke außerhalb des Unternehmens ohne USt (TelefonNutzung)",A,I,,0,f
+4639,"Verwendung von Gegenständen für Zwecke außerhalb des Unternehmens ohne USt (FahrzeugNutzung)",A,I,,0,f
+4640,"Verw. v. Gegenst. f. Zwecke außerh. des Untern. 19% USt",A,I,,3,t
+4645,"Verw. v. Gegenst. f. Zwecke außerh. des Untern. 19% USt (Kfz-Nutzung)",A,I,,0,t
+4646,"Verw. v. Gegenst. f. Zwecke außerh. des Untern. 19% USt (Tel-Nutzung)",A,I,,0,t
+4650,"Unentgeltliche Erbringung einer sonstigen Leistung 7 % USt",A,I,AR_amount,2,t
+4656,"Unentgeltliche Erbringung einer sonstigen Leistung 7 % USt",A,I,AR_amount,2,t
+4659,"Unentgeltliche Erbringung einer sonstigen Leistung ohne USt",A,I,,0,f
+4660,"Unentgeltl. Erbringung sonst. Leist. 19% USt",A,I,AR_amount,3,t
+4670,"Unentgeltl. Zuwend. Waren 19% USt",A,I,,2,t
+4676,"Unentgeltliche Zuwendung von Waren 7 % USt",A,I,AR_amount,2,t
+4679,"Unentgeltl. Zuwend. Waren o. USt",A,I,,0,f
+4680,"Unentgeltl.Zuw.v Waren 16%/19% Ust",A,I,,3,t
+4686,"Unentgeltl. Zuwend. Gegenst. 19% USt",A,I,AR_amount,3,t
+4689,"Unentgeltl. Zuwend. Gegenst. o. USt",A,I,,0,f
+4690,"Nicht steuerbare Umsätze (Innenumsätze)",A,I,,0,f
+4695,Umsatzsteuervergütungen,A,I,,0,f
+4699,"Direkt mit dem Umsatz verbundene Steuern",A,I,,0,f
+4700,Erlösschmälerungen,A,I,,0,f
+4701,"Erlösschmälerungen für steuerfreie Umsätze nach § 4 Nr. 8 ff. UStG",A,I,,0,f
+4702,"Erlösschmälerungen für steuerfreie Umsätze nach § 4 Nr. 2 bis 7 UStG",A,I,,0,f
+4703,"Erlösschmälerungen für sonstige steuerfreie Umsätze ohne Vorsteuerabzug",A,I,,0,f
+4704,"Erlösschmälerungen für sonstige steuerfreie Umsätze mit Vorsteuerabzug",A,I,,0,f
+4705,"Erlösschmälerungen aus steuerfreien Umsätzen § 4 Nr. 1a UStG",A,I,,0,f
+4706,"Erlösschmälerungen für steuerfreie innergemeinschaftliche Dreiecksgeschäfte nach § 25b Abs. 2 und 4 UStG",A,I,,0,f
+4707,"Erlösschmälerungen für steuerfreie Umsätze nach § 19 Abs. 1 UStG1)",A,I,,0,f
+4708,"Erlösschmälerungen für Umsätze nach § 25 UStG 19 % USt1)",A,I,,0,f
+4709,"Erlösschmälerungen für Umsätze nach § 25a UStG 19 % USt1)",A,I,,0,f
+4710,"Erlösschmälerung 7% USt.",A,I,,2,t
+4719,"Erlösschmälerungen 0 % USt",A,I,,0,f
+4720,"Erlösschmälerung 19% USt.",A,I,,3,t
+4723,"Erlösschmälerung 16%/19% USt.",A,I,,5,t
+4724,"Erlösschmälerungen aus steuerfreien innergemeinschaftlichen Lieferungen",A,I,,0,f
+4725,"Erlösschmäler aus im inl. Stpflcht. EG-Lieferungen 7%USt",A,I,,12,t
+4726,"Erlösschmäler aus im inl. Stpflcht. EG-Lieferungen 19% USt",A,I,,13,t
+4727,"Erlösschmäler. im and. EG-land Stpflchtg. Lieferungen",A,I,,0,f
+4729,"Erlösschmäler. aus im inl. Stpflcht. EG-Lieferungen 16%/19% USt",A,I,,0,f
+4731,"Gewährte Skonti 7% USt",A,I,AR_paid,2,t
+4732,"Gewährte Skonti 5 % USt",A,I,AR_paid,2,t
+4735,"Gewährte Skonti 16%",A,I,AR_paid,5,f
+4736,"Gewährte Skonti 19% USt",A,I,AR_paid,3,f
+4750,"Gewährte Boni 7% USt",A,E,AR_paid,2,t
+4760,"Gewährte Boni 19% USt",A,E,AR_paid,3,t
+4762,"Gewährte Boni 16%/19% USt",A,E,AR_paid,5,t
+4769,"Gewährte Boni",A,I,,0,f
+4770,"Gewährte Rabatte",A,I,,0,f
+4780,"Gewährte Rabatte 7% USt",A,E,AR_paid,2,t
+4790,"Gewährte Rabatte 19% USt",A,E,AR_paid,3,t
+4792,"Gewährte Rabatte 16%/19% USt",A,E,AR_paid,5,t
+4800,"Bestandsveränd. fert. Erzeugnisse",A,E,,0,f
+4810,"Bestandsveränd. unfert. Erzeugnisse",A,E,,0,f
+4815,"Bestandsveränd. unfert. Leistungen",A,E,,0,f
+4816,"Bestandsveränderungen in Ausführung befindlicher Bauaufträge",A,I,,0,f
+4818,"Bestandsveränderungen in Arbeit befindlicher Aufträge Andere aktivierte Eigenleistungen",A,I,,0,f
+4820,And.aktiv.Eigenleistungen,A,E,,0,f
+4824,"Aktivierte Eigenleistungen (den Herstellungskosten zurechenbare Fremdkapitalzinsen)",A,I,,0,f
+4825,"Aktivierte Eigenleistungen zur Erstellung von selbst geschaffenen immateriellen Vermögensgegenständen Sonstige betriebliche Erträge",A,I,,0,f
+4830,"Sonstige betrbl. Erträge",A,I,,3,f
+4832,"Sonstige betriebliche Erträge von verbundenen Unternehmen",A,I,,0,f
+4833,"Andere Nebenerlöse",A,I,,0,f
+4834,"Sonstige Erträge betrieblich und regelmäßig 16 % USt",A,I,,0,f
+4835,"Sonstige Erlöse betriebl.u.regelmäß",A,I,AR_amount,3,f
+4836,"Sonstige Erträge betrieblich und regelmäßig 19 % USt",A,I,AR_amount,3,t
+4837,"Sonstige Erträge betrfremd und regelm.",A,I,,0,f
+4838,"Erstattete Vorsteuer anderer Länder",A,I,,0,f
+4839,"Sonstige Erträge unregelmäßig",A,I,,0,f
+4840,"Erträge aus Kursdifferenzen",A,I,AR_paid:AP_paid,0,f
+4841,"Sonstige Erträge betrieblich und regelmäßig, steuerfrei § 4 Nr. 8 ff. UStG",A,I,,0,f
+4842,"Sonstige betriebliche Erträge, steuerfrei z. B. § 4 Nr. 2 bis 7 UStG",A,I,,0,f
+4843,"Erträge aus Bewertung Finanzmittelfonds",A,I,,0,f
+4844,"Erlöse aus Verkäufen Sachanlagevermögen steuerfrei § 4 Nr. 1a UStG (bei Buchgewinn)",A,I,,0,f
+4845,"Erlöse aus Verkäufen Sachanlagevermögen 19 % USt (bei Buchgewinn)",A,I,AR_amount,3,t
+4847,"Erträge aus der Währungsumrechnung (nicht § 256a HGB)",A,I,,0,f
+4848,"Erlöse aus Verkäufen Sachanlagevermögen steuerfrei § 4 Nr. 1b UStG (bei Buchgewinn)",A,I,,0,f
+4849,"Erlöse aus Verk. Sachanl.verm. (bei Buchgewinn)",A,I,AR_amount,3,f
+4850,"Erlöse aus Verkäufen immaterieller Vermögensgegenstände (bei Buchgewinn)",A,I,,0,f
+4851,"Erlöse aus Verkäufen Finanzanlagen (bei Buchgewinn)",A,I,,0,f
+4852,"Erlöse aus Verkäufen Finanzanlagen § 3 Nr. 40 EStG bzw. § 8b Abs. 2 KStG (bei Buchgewinn)9)",A,I,,0,f
+4855,"Anlagenabgänge Sachanlagen (Restbuchwert bei Buchgewinn)",A,I,,0,f
+4856,"Anlagenabgänge immaterielle Vermögensgegenstände (Restbuchwert bei Buchgewinn)",A,I,,0,f
+4857,"Anlagenabgänge Finanzanlagen (Restbuchwert bei Buchgewinn)",A,I,,0,f
+4858,"Anlagenabgänge Finanzanlagen § 3 Nr. 40 EStG bzw. § 8b Abs. 2 KStG (Restbuchwert bei Buchgewinn)9)",A,I,,0,f
+4860,Grundstückserträge,A,I,,3,f
+4861,"Erlöse aus Vermietung und Verpachtung, umsatzsteuerfrei § 4 Nr. 12 UStG",A,I,,0,f
+4862,"Erlöse aus Vermietung und Verpachtung 19 % USt",A,I,AR_amount,3,t
+4865,"Erlöse aus Verkäufen von Wirtschaftsgütern des Umlaufvermögens 19 % USt für § 4 Abs. 3 Satz 4 EStG",A,I,AR_amount,3,t
+4866,"Erlöse aus Verkäufen von Wirtschaftsgütern des Umlaufvermögens, umsatzsteuerfrei § 4 Nr. 8 ff. UStG i. V. m. § 4 Abs. 3 Satz 4 EStG",A,I,,0,f
+4867,"Erlöse aus Verkäufen von Wirtschaftsgütern des Umlaufvermögens, umsatzsteuerfrei § 4 Nr. 8 ff. UStG i. V. m. § 4 Abs. 3 Satz 4 EStG, § 3 Nr. 40 EStG bzw. § 8b Abs. 2 KStG9)",A,I,,0,f
+4869,"Erlöse aus Verkäufen von Wirtschaftsgütern des Umlaufvermögens nach § 4 Abs. 3 Satz 4 EStG",A,I,,0,f
+4900,"Erträge Abgang Gegst. d. Anlageverm.",A,I,,0,f
+4904,"Abgänge Wertpapiere des Umlaufvermögens § 8b Abs. 2 KStG (Buchwert bei Buchgewinn9)",A,I,,0,f
+4905,"Erträge Abgang Gegst. d. Umlaufverm.",A,I,,0,f
+4906,"Erträge aus dem Abgang von Gegenständen des Umlaufvermögens (außer Vorräte) § 3 Nr. 40 EStG bzw. § 8b Abs. 2 KStG9)",A,I,,0,f
+4910,"Erträge Zuschreibung d. Sachanl.verm.",A,I,,0,f
+4911,"Erträge aus Zuschreibungen des immateriellen Anlagevermögens",A,I,,0,f
+4912,"Erträge aus Zuschreibungen des Finanzanlagevermögens",A,I,,0,f
+4913,"Erträge aus Zuschreibungen des Finanzanlagevermögens § 3 Nr. 40 EStG bzw. § 8b Abs. 3 S. 9 KStG9)",A,I,,0,f
+4914,"Erträge aus Zuschreibungen § 3 Nr. 40 EStG bzw. § 8b Abs. 2 KStG9)",A,I,,0,f
+4915,"Erträge Zuschreibung d. Umlaufverm.",A,I,,0,f
+4916,"Erträge aus Zuschreibungen des Umlaufvermögens § 3 Nr. 40 EStG bzw. § 8b Abs. 3 S. 9 KStG9)",A,I,,0,f
+4920,"Erträge d. Herabs. Pauschwber. zu Forderungen",A,I,,0,f
+4923,"Erträge aus der Herabsetzung der Einzelwertberichtigung auf Forderungen",A,I,,0,f
+4925,"Erträge aus abgeschriebenen Forderungen",A,I,,0,f
+4927,"Erträge aus der Auflösung einer steuerlichen Rücklage nach § 6b Abs. 3 EStG",A,I,,0,f
+4928,"Erträge aus der Auflösung einer steuerlichen Rücklage nach § 6b Abs. 10 EStG",A,I,,0,f
+4929,"Erträge aus der Auflösung der Rücklage für Ersatzbeschaffung, R 6.6 EStR",A,I,,0,f
+4930,"Erträge aus Auflösung von Rückstellungen",A,I,,0,f
+4932,"Erträge aus der Herabsetzung von Verbindlichkeiten",A,I,,0,f
+4934,"Erträge a.d.Auflösung v.SoPo m.Rücklageant.(Exitenzgründungszusch.)",A,I,,0,f
+4935,"Erträge aus der Auflösung sonstiger steuerlicher Rücklagen",A,I,,0,f
+4937,"Erträge aus der Auflösung steuerrechtlicher Sonderabschreibungen",A,I,,0,f
+4938,"Erträge aus der Auflösung einer steuerlichen Rücklage nach § 4g EStG",A,I,,0,f
+4939,"Erträge aus Auflösung SoPo mit Rücklagenanteil (AnsparAfA)",A,I,,0,f
+4940,"Verrechnete sonstige Sachbezüge (keine Waren)",A,I,,0,f
+4941,"Sachbezüge 7% USt (Waren)",A,I,AR_amount,2,t
+4945,"Sachbezüge 19% Ust (Waren)",A,I,AR_amount,3,t
+4946,"Verrechnete sons. Sachbezüge",A,I,AR_amount,0,f
+4947,"Verrechnete sonstige Sachbezüge aus Fahrzeug-Gestellung 19 % USt",A,I,AR_amount,3,t
+4948,"Verrechnete sonstige Sachbezüge 19 % USt",A,I,AR_amount,3,t
+4949,"Verrechnete sonstige Sachbezüge ohne Umsatzsteuer",A,I,,0,f
+4960,"Periodenfremde Erträge nicht außero",A,I,,0,f
+4970,Versicherungsentschädigungen,A,I,,0,f
+4972,"Erstattungen Aufwendungsausgleichsgesetz",A,I,,0,f
+4975,"Investitionszuschüsse (steuerpflichtig)",A,I,,0,f
+4980,"Investitionszulagen (steuerfrei)",A,I,,0,f
+4981,"Steuerfr.Erträge a.d.Auflös.v.SoPo m.Rücklageanteil",A,I,,0,f
+4982,"Sonst.steuerfreie Betriebseinnahmen",A,I,,0,f
+4987,"Erträge aus der Aktivierung unentgeltlich erworbener Vermögensgegenstände",A,I,,0,f
+4989,"Kostenerstattungen, Rückvergütungen und Gutschriften für frühere Jahre",A,I,,0,f
+4992,"Erträge aus Verwaltungskostenumlagen",A,I,,0,f
+5000,"Aufwendungen für Roh-, Hilfs- und Betriebsstoffe und für bezogene Waren",A,E,,0,f
+5100,"Einkauf Roh-, Hilfs- und Betriebsstoffe",A,E,,0,f
+5110,"Einkauf Roh-, Hilfs- und Betriebsstoffe 7 % Vorsteuer",A,E,AP_amount,8,t
+5129,"Einkauf Roh-, Hilfs- und Betriebsstoffe ohne Vorsteuerabzug",A,E,,0,f
+5130,"Einkauf Roh-, Hilfs- und Betriebsstoffe 19 % Vorsteuer",A,E,AP_amount,9,t
+5160,"Einkauf Roh-, Hilfs- und Betriebsstoffe, innergemeinschaftlicher Erwerb 7 % Vorsteuer und 7 % Umsatzsteuer",A,E,AP_amount,8,t
+5162,"Einkauf Roh-, Hilfs- und Betriebsstoffe, innergemeinschaftlicher Erwerb 19 % Vorsteuer und 19 % Umsatzsteuer",A,E,AP_amount,9,t
+5166,"Einkauf Roh-, Hilfs- und Betriebsstoffe, innergemeinschaftlicher Erwerb ohne Vorsteuer und 7 % Umsatzsteuer",A,E,AP_amount,8,t
+5167,"Einkauf Roh-, Hilfs- und Betriebsstoffe, innergemeinschaftlicher Erwerb ohne Vorsteuer und 19 % Umsatzsteuer",A,E,AP_amount,9,t
+5170,"Einkauf Roh-, Hilfs- und Betriebsstoffe 5,5 % Vorsteuer",A,E,,0,f
+5171,"Einkauf Roh-, Hilfs- und Betriebsstoffe 7,8 % Vorsteuer8)",A,E,,0,f
+5175,"Einkauf Roh-, Hilfs- und Betriebsstoffe aus einem USt-Lager § 13a UStG 7 % Vorsteuer und 7 % Umsatzsteuer",A,E,AP_amount,8,t
+5176,"Einkauf Roh-, Hilfs- und Betriebsstoffe aus einem USt-Lager § 13a UStG 19 % Vorsteuer und 19 % Umsatzsteuer",A,E,AP_amount,9,t
+5189,"Erwerb Roh-, Hilfs- und Betriebsstoffe als letzter Abnehmer innerhalb Dreiecksgeschäft 19 % Vorsteuer und 19 % Umsatzsteuer",A,E,AP_amount,9,t
+5190,"Energiestoffe (Fert.)",A,E,IC,9,f
+5191,"Energiestoffe (Fertigung) 7 % Vorsteuer",A,E,AP_amount,8,t
+5192,"Energiestoffe (Fertigung) 19 % Vorsteuer",A,E,AP_amount,9,t
+5200,Wareneingang,A,E,,0,f
+5300,"Wareneingang 7% Vorsteuer",A,E,AP_amount:IC_cogs,8,t
+5347,"Wareneingang 7 % Vorsteuer",A,E,AP_amount,8,t
+5349,"Wareneingang ohne Vorsteuerabzug",A,E,,0,f
+5400,"Wareneingang 19% Vorsteuer",A,E,AP_amount:IC_cogs,9,t
+5418,"Wareneingang 19 % Vorsteuer",A,E,AP_amount,9,t
+5420,"Innergemein.Erwerb 7% VorSt u. Ust",A,E,AP_amount:IC_cogs,18,t
+5425,"Innergem.Erwerb 19% VorSt u. Ust",A,E,AP_amount:IC_cogs,19,t
+5430,"Innergemeinschaftlicher Erwerb ohne Vorsteuer und 7 % Umsatzsteuer",A,E,AP_amount,8,t
+5435,"Innergemeinschaftlicher Erwerb ohne Vorsteuer und 19 % Umsatzsteuer",A,E,AP_amount,9,t
+5440,"Innergem.Erwerb v.Neufahrz.v.Lief.o.USt-IdNr. 19%VSt.u.19%USt.",A,E,AP_amount:IC_cogs,19,t
+5505,"Wareneingang 5,5 % Vorsteuer",A,E,,0,f
+5540,"Wareneingang zum Durchschnittssatz nach § 24 UStG 7,8 % Vorsteuer8)",A,E,,0,f
+5550,"Steuerfreier innergem.Erwerb",A,E,AP_amount:IC_cogs,0,f
+5551,"Wareneingang im Drittland steuerbar",A,E,,0,f
+5552,"Erwerb 1. Abnehmer innerhalb eines Dreiecksgeschäftes",A,E,,0,f
+5553,"Erwerb Waren als letzter Abnehmer innerhalb Dreiecksgeschäft 19 % Vorsteuer und 19 % Umsatzsteuer",A,E,AP_amount,9,t
+5558,"Wareneingang im anderen EU-Land steuerbar",A,E,,0,f
+5559,"Steuerfreie Einfuhren",A,E,AP_amount:IC_cogs,0,f
+5560,"Waren aus einem Umsatzsteuerlager, § 13a UStG 7 % Vorsteuer und 7 % Umsatzsteuer",A,E,AP_amount,8,t
+5565,"Waren aus einem Umsatzsteuerlager, § 13a UStG 19 % Vorsteuer und 19 % Umsatzsteuer",A,E,AP_amount,9,t
+5580,"Wareneinkauf z.allg.Umsatzsteuersatz (EÜR)",A,E,,0,f
+5581,"Wareneinkauf z.erm.Umsatzsteuersatz(EÜR)",A,E,,0,f
+5582,"Wareneinkauf ohne Vorsteuerabzug(EÜR)",A,E,,0,f
+5589,"Gegenkto.3580-3582 b.Aufteilung d.WE n.Steuersätzen(EüR)",A,E,,0,f
+5600,"Nicht abziehbare Vorsteuer",A,E,,0,f
+5610,"Nicht abziehb.Vorsteuer 7%",A,E,,0,f
+5660,"Nicht abziehb.Vorsteuer 19%",A,E,,0,f
+5700,Nachlässe,A,I,,0,f
+5701,"Nachlässe aus Einkauf Roh-, Hilfs- und Betriebsstoffe",A,I,,0,f
+5710,"Nachlässe 7 % Vorsteuer",A,I,AP_amount,8,t
+5714,"Nachlässe aus Einkauf Roh-, Hilfs- und Betriebsstoffe 7 % Vorsteuer",A,I,AP_amount,8,t
+5715,"Nachlässe aus Einkauf Roh-, Hilfs- und Betriebsstoffe 19 % Vorsteuer",A,I,AP_amount,9,t
+5717,"Nachlässe aus Einkauf Roh-, Hilfs- und Betriebsstoffe, innergemeinschaftlicher Erwerb 7 % Vorsteuer und 7 % Umsatzsteuer",A,I,AP_amount,8,t
+5718,"Nachlässe aus Einkauf Roh-, Hilfs- und Betriebsstoffe, innergemeinschaftlicher Erwerb 19 % Vorsteuer und 19 % Umsatzsteuer",A,I,AP_amount,9,t
+5720,"Nachlässe 19 % Vorsteuer",A,I,AP_amount,9,t
+5724,"Nachlässe aus innergemeinschaftlichem Erwerb 7 % Vorsteuer und 7 % Umsatzsteuer",A,I,AP_amount,8,t
+5725,"Nachlässe aus innergemeinschaftlichem Erwerb 19 % Vorsteuer und 19 % Umsatzsteuer",A,I,AP_amount,9,t
+5730,"Erhaltene Skonti",A,I,,0,f
+5731,"Erhaltene Skonti 7% Vorsteuer",A,E,AP_paid,8,t
+5732,"Erhaltene Skonti 5 % Vorsteuer",A,E,AP_paid,8,t
+5733,"Erhaltene Skonti aus Einkauf Roh-, Hilfs- und Betriebsstoffe",A,I,,0,f
+5734,"Erhaltene Skonti aus Einkauf Roh-, Hilfs- und Betriebsstoffe 7 % Vorsteuer",A,I,AP_amount,8,t
+5735,"Erhaltene Skonti 16%/19% Vorsteuer",A,E,AP_paid,7,t
+5736,"Erhaltene Skonti 19% Vorsteuer",A,I,AP_paid,9,t
+5738,"Erhaltene Skonti aus Einkauf Roh-, Hilfs- und Betriebsstoffe 19 % Vorsteuer",A,I,AP_amount,9,t
+5741,"Erhaltene Skonti aus Einkauf Roh-, Hilfs- und Betriebsstoffe aus steuerpflichtigem innergemeinschaftlichem Erwerb 19 % Vorsteuer und 19 % Umsatzsteuer",A,I,AP_amount,9,t
+5743,"Erhaltene Skonti aus Einkauf Roh-, Hilfs- und Betriebsstoffe aus steuerpflichtigem innergemeinschaftlichem Erwerb 7 % Vorsteuer und 7 % Umsatzsteuer",A,I,AP_amount,8,t
+5744,"Erhaltene Skonti aus Einkauf Roh-, Hilfs- und Betriebsstoffe aus steuerpflichtigem innergemeinschaftlichem Erwerb",A,I,,0,f
+5745,"Erhaltene Skonti aus steuerpflichtigem innergemeinschaftlichem Erwerb",A,I,,0,f
+5746,"Erhaltene Skonti aus steuerpflichtigem innergemeinschaftlichem Erwerb 7 % Vorsteuer und 7 % Umsatzsteuer",A,I,AP_amount,8,t
+5748,"Erhaltene Skonti aus steuerpflichtigem innergemeinschaftlichem Erwerb 19 % Vorsteuer und 19 % Umsatzsteuer",A,I,AP_amount,9,t
+5750,"Erhaltene Boni 7% Vorsteuer",A,I,AP_paid,8,t
+5753,"Erhaltene Boni aus Einkauf Roh-, Hilfs- und Betriebsstoffe",A,I,,0,f
+5754,"Erhaltene Boni aus Einkauf Roh-, Hilfs- und Betriebsstoffe 7 % Vorsteuer",A,I,AP_amount,8,t
+5755,"Erhaltene Boni aus Einkauf Roh-, Hilfs- und Betriebsstoffe 19 % Vorsteuer",A,I,AP_amount,9,t
+5760,"Erhaltene Boni 19% Vorsteuer",A,I,AP_paid,9,t
+5764,"Erhaltene Boni 16%/19% Vorsteuer",A,I,AP_paid,7,t
+5769,"Erhaltene Boni",A,I,,0,f
+5770,"Erhaltene Rabatte",A,I,,0,f
+5780,"Erhaltene Rabatte 7% Vorsteuer",A,I,AP_paid,8,t
+5783,"Erhaltene Rabatte aus Einkauf Roh-, Hilfs- und Betriebsstoffe",A,I,,0,f
+5784,"Erhaltene Rabatte aus Einkauf Roh-, Hilfs- und Betriebsstoffe 7 % Vorsteuer",A,I,AP_amount,8,t
+5785,"Erhaltene Rabatte aus Einkauf Roh-, Hilfs- und Betriebsstoffe 19 % Vorsteuer",A,I,AP_amount,9,t
+5787,"Erhaltene Skonti aus Einkauf Roh-, Hilfs- und Betriebsstoffe 9,0 % Vorsteuer11)",A,I,,0,f
+5790,"Erhaltene Rabatte 19% Vorsteuer",A,I,AP_paid,9,t
+5792,"Erhaltene Skonti aus Erwerb Roh-, Hilfs- und Betriebsstoffe als letzter Abnehmer innerhalb Dreiecksgeschäft 19 % Vorsteuer und 19 % Umsatzsteuer11)",A,I,AP_amount,9,t
+5793,"Erhaltene Skonti aus Erwerb Waren als letzter Abnehmer innerhalb Dreiecksgeschäft 19 % Vorsteuer und 19 % Umsatzsteuer",A,I,AP_amount,9,t
+5794,"Erhaltene Rabatte 16%/19% Vorsteuer",A,I,AP_paid,7,t
+5795,"Erhaltene Skonti 9,0 % Vorsteuer11)",A,I,,0,f
+5798,"Erhaltene Skonti aus Einkauf Roh-, Hilfs- und Betriebsstoffe 5,5 % Vorsteuer",A,I,,0,f
+5800,Bezugsnebenkosten,A,E,AP_amount:IC_cogs:IC_expense,0,f
+5820,Leergut,A,E,AP_amount:IC_cogs,0,f
+5840,"Zölle und Einfuhrabgaben",A,E,AP_amount:IC_cogs,0,f
+5860,"Verrechnete Stoffkosten (GegenKto 5000-99)",A,E,IC_cogs,0,f
+5880,"Bestandsveränd. Roh-, Hilfs-,  Betriebsstoffe/Waren",A,E,,0,f
+5881,"Bestandsveränderungen Waren",A,E,,0,f
+5885,"Bestandsveränderungen Roh-, Hilfs- und Betriebsstoffe Aufwendungen für bezogene Leistungen",A,E,,0,f
+5900,Fremdleistungen,A,E,AP_amount,9,f
+5906,"Fremdleistungen 19 % Vorsteuer",A,E,AP_amount,9,t
+5908,"Fremdleistungen 7 % Vorsteuer",A,E,AP_amount,8,t
+5909,"Fremdleistungen ohne Vorsteuer Umsätze, für die als Leistungsempfänger die Steuer nach § 13b UStG geschuldet wird",A,E,,0,f
+5910,"Bauleistungen eines im Inland ansässigen Unternehmers 7 % Vorsteuer und 7 % Umsatzsteuer",A,E,AP_amount,8,t
+5913,"Sonstige Leistungen eines im anderen EU-Land ansässigen Unternehmers 7 % Vorsteuer und 7 % Umsatzsteuer",A,E,AP_amount,8,t
+5915,"Leist.v.ausländ.Untern. 7% VSt.u.7%USt.",A,E,AP_amount,18,t
+5920,"Bauleistungen eines im Inland ansässigen Unternehmers 19 % Vorsteuer und 19 % Umsatzsteuer",A,E,AP_amount,9,t
+5923,"Sonstige Leistungen eines im anderen EU-Land ansässigen Unternehmers 19 % Vorsteuer und 19 % Umsatzsteuer",A,E,AP_amount,9,t
+5925,"Leist.v.ausländ.Untern. 19% VSt.u.19%USt.",A,E,AP_amount,19,t
+5930,"Bauleistungen eines im Inland ansässigen Unternehmers ohne Vorsteuer und 7 % Umsatzsteuer",A,E,AP_amount,8,t
+5933,"Sonstige Leistungen eines im anderen EU-Land ansässigen Unternehmers ohne Vorsteuer und 7 % Umsatzsteuer",A,E,AP_amount,8,t
+5935,"Leistungen eines im Ausland ansässigen Unternehmers ohne Vorsteuer und 7 % Umsatzsteuer",A,E,AP_amount,8,t
+5940,"Bauleistungen eines im Inland ansässigen Unternehmers ohne Vorsteuer und 19 % Umsatzsteuer",A,E,AP_amount,9,t
+5943,"Sonstige Leistungen eines im anderen EU-Land ansässigen Unternehmers ohne Vorsteuer und 19 % Umsatzsteuer",A,E,AP_amount,9,t
+5945,"Leistungen eines im Ausland ansässigen Unternehmers ohne Vorsteuer und 19 % Umsatzsteuer",A,E,AP_amount,9,t
+5950,"Erhaltene Skonti aus Leistungen, für die als Leistungsempfänger die Steuer nach § 13b UStG geschuldet wird",A,E,,0,f
+5951,"Erhaltene Skonti aus Leistungen, für die als Leistungsempfänger die Steuer nach § 13b UStG geschuldet wird 19 % Vorsteuer und 19 % Umsatzsteuer",A,E,AP_amount,9,t
+5953,"Erhaltene Skonti aus Leistungen, für die als Leistungsempfänger die Steuer nach § 13b UStG geschuldet wird ohne Vorsteuer aber mit Umsatzsteuer",A,E,,0,f
+5954,"Erhaltene Skonti aus Leistungen, für die als Leistungsempfänger die Steuer nach § 13b UStG geschuldet wird ohne Vorsteuer, mit 19 % Umsatzsteuer",A,E,AP_amount,9,t
+5960,"Leistungen nach § 13b UStG mit Vorsteuerabzug21)",A,E,,0,f
+5965,"Leistungen nach § 13b UStG ohne Vorsteuerabzug21)",A,E,,0,f
+5970,"Fremdleistungen (Miet- und Pachtzinsen bewegliche Wirtschaftsgüter)",A,E,,0,f
+5975,"Fremdleistungen (Miet- und Pachtzinsen unbewegliche Wirtschaftsgüter)",A,E,,0,f
+5980,"Fremdleistungen (Entgelte für Rechte und Lizenzen)",A,E,,0,f
+5985,"Fremdleistungen (Vergütungen für die Überlassung von Wirtschaftsgütern - mit Sonderbetriebseinnahme korrespondierend)",A,E,,0,f
+6000,"Löhne und Gehälter",A,E,,0,f
+6010,Löhne,A,E,,0,f
+6020,Gehälter,A,E,,0,f
+6024,"Geschäftsführergehälter der GmbH-Gesellschafter",A,E,,0,f
+6026,Tantiemen,A,E,,0,f
+6027,Geschäftsführergehälter,A,E,,0,f
+6028,"Vergütungen an angestellte Mitunternehmer § 15 EStG (mit Sonderbetriebseinnahme korrespondierend)",A,E,,0,f
+6029,"Tantiemen Arbeitnehmer",A,E,,0,f
+6030,Aushilfslöhne,A,E,,0,f
+6035,"Löhne für Minijobs",A,E,,0,f
+6036,"Pauschale Steuer für Minijobber",A,E,,0,f
+6037,"Pauschale Steuer für Gesellschafter-Geschäftsführer",A,E,,0,f
+6038,"Pauschale Steuer für angestellte Mitunternehmer § 15 EStG (mit Sonderbetriebseinnahme korrespondierend)",A,E,,0,f
+6039,"Pauschale Steuer für Arbeitnehmer",A,E,,0,f
+6040,"Pauschale Steuer für Aushilfen",A,E,,0,f
+6045,Bedienungsgelder,A,E,,0,f
+6050,Ehegattengehalt,A,E,,0,f
+6060,"Freiwillige sozi.Aufw.lohnsteuerpflichtig.",A,E,,0,f
+6066,"Freiwillige Zuwendungen an Minijobber",A,E,,0,f
+6067,"Freiwillige Zuwendungen an Gesellschafter-Geschäftsführer",A,E,,0,f
+6068,"Freiwillige Zuwendungen an angestellte Mitunternehmer § 15 EStG (mit Sonderbetriebseinnahme korrespondierend)",A,E,,0,f
+6069,"Pauschale Steuer auf sonst. Bezüge (z.B. Fahrtkostenzuschuss)",A,E,,0,f
+6070,Krankengeldzuschüsse,A,E,,0,f
+6071,"Sachzuwendungen und Dienstleistungen an Minijobber",A,E,,0,f
+6072,"Sachzuwendungen und Dienstleistungen an Arbeitnehmer",A,E,,0,f
+6073,"Sachzuwendungen und Dienstleistungen an GesellschafterGeschäftsführer",A,E,,0,f
+6074,"Sachzuwendungen und Dienstleistungen an angestellte Mitunternehmer § 15 EStG (mit Sonderbetriebseinnahme korrespondierend)",A,E,,0,f
+6075,"Zuschüsse der Agenturen für Arbeit (Haben)",A,E,,0,f
+6076,"Aufwendungen aus der Veränderung von Urlaubsrückstellungen",A,E,,0,f
+6077,"Aufwendungen aus der Veränderung von Urlaubsrückstellungen für Gesellschafter-Geschäftsführer",A,E,,0,f
+6078,"Aufwendungen aus der Veränderung von Urlaubsrückstellungen für angestellte Mitunternehmer § 15 EStG (mit Sonderbetriebseinnahme korrespondierend)",A,E,,0,f
+6079,"Aufwendungen aus der Veränderung von Urlaubsrückstellungen für Minijobber",A,E,,0,f
+6080,"Vermögenswirksame Leistungen",A,E,,0,f
+6090,Fahrtkostenerst.Wohnung/Arbeitsstät,A,E,,0,f
+6100,"Soziale Abgaben und Aufwendungen für Altersversorgung und für Unterstützung",A,E,,0,f
+6110,"Gesetzlich soziale Aufwendungen",A,E,,0,f
+6118,"Gesetzliche soziale Aufwendungen für Mitunternehmer § 15 EStG (mit Sonderbetriebseinnahme korrespondierend)",A,E,,0,f
+6120,"Beiträge zur Berufsgenossenschaft",A,E,,0,f
+6130,"Freiwillig soziale Aufwendungen lohnsteuerfrei",A,E,,0,f
+6140,"Aufwendungen für Altersversorgung",A,E,,0,f
+6147,"Pauschale Lohnsteuer auf sonst.Bezüge(z.B.Direktversicherung",A,E,,0,f
+6148,"Aufwendungen für Altersversorgung für Mitunternehmer § 15 EStG (mit Sonderbetriebseinnahme korrespondierend)",A,E,,0,f
+6149,"Aufwendungen für Altersversorgung für GesellschafterGeschäftsführer",A,E,,0,f
+6150,Versorgungskassen,A,E,,0,f
+6160,"Aufwendungen für Unterstützung",A,E,,0,f
+6170,"Sonstige soziale Abgaben",A,E,,0,f
+6171,"Soziale Abgaben für Minijobber Abschreibungen auf immaterielle Vermögensgegenstände des Anlagevermögens und Sachanlagen",A,E,,0,f
+6200,"Abschreibungen a.immat.Vermögensgeg",A,E,,0,f
+6201,"Abschreibungen auf selbst geschaffene immaterielle Vermögensgegenstände",A,E,,0,f
+6205,"Abschreibung auf Gesch.- o. Firmenwert",A,E,,0,f
+6209,"Außerplanmäßige Abschreibungen auf den Geschäfts- oder Firmenwert",A,E,,0,f
+6210,"Außerplan.AfA a.immat.Vermögensgeg.",A,E,,0,f
+6211,"Außerplanmäßige Abschreibungen auf selbst geschaffene immaterielle Vermögensgegenstände",A,E,,0,f
+6220,"Abschreibungen auf Sachanlagen (o.Kfz u.Geb.)",A,E,,0,f
+6221,"Abschreibung auf Gebäude",A,E,,0,f
+6222,"Abschreibungen auf Kfz",A,E,,0,f
+6223,"Abschreibungen auf Gebäudeteil des häuslichen Arbeitszimmers",A,E,,0,f
+6230,"Außerplanmäßig Abschr.a.Sachanlagen",A,E,,0,f
+6231,"Absetzung f.außergew.techn.u.wirtschaftl.AfA bei Gebäuden",A,E,,0,f
+6232,"Absetzung f.außergew.techn.u.wirtschaftl.AfA des Kfz",A,E,,0,f
+6233,"Absetzung f.außergew.techn.u.wirtschaftl.AfA sonst.WG",A,E,,0,f
+6240,Abschr.a.Sachanl.aufgr.steuerl.Sondervorschriften,A,E,,0,f
+6241,"Sonderabschreibung nach §7g(1)u.(2)EStG (ohne Kfz)",A,E,,0,f
+6242,"Sonderabschreibung n.§7g(1)u.(2)EStG (für Kfz)",A,E,,0,f
+6243,"Kürzung der Anschaffungs- oder Herstellungskosten nach § 7g Abs. 2 EStG (ohne Fahrzeuge)",A,E,,0,f
+6244,"Kürzung der Anschaffungs- oder Herstellungskosten nach § 7g Abs. 2 EStG (für Fahrzeuge)",A,E,,0,f
+6245,"Sonderabschreibungen nach § 7b EStG (Mietwohnungsneubau)",A,E,,0,f
+6249,"Abzugsbetrag nach § 6b EStG",A,E,,0,f
+6250,Kaufleasing,A,E,AP_amount,0,f
+6260,"Sofortabschreibung GWG",A,E,AP_amount,0,f
+6262,"Abschreibungen auf aktivierte GWG",A,E,,0,f
+6264,"Abschreibungen auf den Sammelposten Wirtschaftsgüter",A,E,,0,f
+6266,"Außerplanmäßige Abschreibungen auf aktivierte, geringwertige Wirtschaftsgüter Abschreibungen auf Vermögensgegenstände des Umlaufvermögens, soweit diese die in der Kapitalgesellschaft üblichen Abschreibungen überschreiten",A,E,,0,f
+6270,"Abschreibungen auf Finanzanlagen (unübl. hoch)",A,E,,0,f
+6272,"Abschreibungen auf Umlaufvermögen, steuerrechtlich bedingt (soweit unüblich hoch)",A,E,,0,f
+6275,"Abschr.a.Wertp.d.Umlaufvermögens (unübl. hoch)",A,E,,0,f
+6278,"Abschreibungen auf Roh-, Hilfs- und Betriebsstoffe/Waren (soweit unüblich hoch)",A,E,,0,f
+6279,"Abschreibungen auf fertige und unfertige Erzeugnisse (soweit unüblich hoch)",A,E,,0,f
+6280,"Forderungsverlust (unübl. hoch)",A,E,,0,f
+6281,"Forderungsverluste 7% USt (unübl. hoch)",A,E,,2,t
+6285,"Forderungsverluste 16%/19% USt (unübl. hoch)",A,E,,5,t
+6286,"Forderungsverluste 19% USt (unübl. hoch)",A,E,,3,t
+6287,"Forderungsverluste 15% USt (unübl. hoch)",A,E,,3,t
+6290,"Abschreibungen auf Forderungen gegenüber Kapitalgesellschaften, an denen eine Beteiligung besteht (soweit unüblich hoch), § 3c EStG bzw. § 8b Abs. 3 KStG",A,E,,0,f
+6291,"Abschreibungen auf Forderungen gegenüber Gesellschaftern und nahe stehende Personen (soweit unüblich hoch), § 3 Nr. 40 EStG bzw. § 8b Abs. 3 KStG9)",A,E,,0,f
+6300,"Sonstige betriebliche Aufwendungen",A,E,AP_amount,9,f
+6302,"Interimskonto für Aufwendungen in einem anderen Land, bei denen eine Vorsteuervergütung möglich ist",A,E,,0,f
+6303,Fremdleistungen,A,E,AP_amount,0,f
+6304,"Sons.Aufw.betriebl. und regelmäßig",A,E,AP_amount,9,f
+6305,Raumkosten,A,E,AP_amount,9,f
+6310,"Miete (unbewegl. WG)",A,E,AP_amount,9,f
+6312,"Miete/Aufwendungen für doppelte Haushaltsführung Unternehmer",A,E,,0,f
+6313,"Vergütungen an Gesellschafter für die miet- oder pachtweise Überlassung ihrer unbeweglichen Wirtschaftsgüter",A,E,,0,f
+6314,"Vergütungen an Mitunternehmer für die mietweise Überlassung ihrer unbeweglichen Wirtschaftsgüter § 15 EStG (mit Sonderbetriebseinnahme korrespondierend)",A,E,,0,f
+6315,"Pacht (unbewegl. WG)",A,E,AP_amount,0,f
+6316,"Leasing (unbewegliche Wirtschaftsgüter)",A,E,,0,f
+6317,"Aufwendungen für gemietete oder gepachtete unbewegliche Wirtschaftsgüter, die gewerbesteuerlich hinzuzurechnen sind",A,E,,0,f
+6318,"Miet- und Pachtnebenkosten, die gewerbesteuerlich nicht hinzuzurechnen sind",A,E,,0,f
+6319,"Vergütungen an Mitunternehmer für die pachtweise Überlassung ihrer unbeweglichen Wirtschaftsgüter § 15 EStG (mit Sonderbetriebseinnahme korrespondierend)",A,E,,0,f
+6320,Heizung,A,E,AP_amount,9,f
+6325,"Gas,Strom, Wasser",A,E,AP_amount,9,f
+6330,Reinigung,A,E,AP_amount,9,f
+6335,"Instandhaltung betrieb.Räume",A,E,AP_amount,9,f
+6340,"Abgaben für betrieblich genutzten Grundbesitz",A,E,,0,f
+6345,"Sonstige Raumkosten",A,E,AP_amount,9,f
+6347,"Tagespauschale für die Tätigkeit in der häuslichen Wohnung",A,E,,0,f
+6348,"Aufwend.f.ein häusliches Arbeitszimmer(abziehb.Anteil)",A,E,,0,f
+6349,"Aufwend.f.ein häusliches Arbeitszimmer(nicht abziehb.Anteil)",A,E,,0,f
+6350,Grundstücksaufwendungen,A,E,,9,f
+6352,"Sonstige Grundstücksaufwendungen (neutral)",A,E,,0,f
+6390,"Zuwend.,Spenden,steuerlich n.abziehbar",A,E,,0,f
+6391,"Zuwendungen, Spenden für wissenschaftliche und kulturelle Zwecke",A,E,,0,f
+6392,"Zuwendungen, Spenden für mildtätige Zwecke",A,E,,0,f
+6393,"Zuwendungen, Spenden für kirchliche, religiöse und gemeinnützige Zwecke",A,E,,0,f
+6394,"Zuwendungen, Spenden an politische Parteien",A,E,,0,f
+6395,"Zuwendungen, Spenden in das zu erhaltende Vermögen (Vermögensstock) einer Stiftung für gemeinnützige Zwecke",A,E,,0,f
+6397,"Zuwendungen, Spenden in das zu erhaltende Vermögen (Vermögensstock) einer Stiftung für kirchliche, religiöse und gemeinnützige Zwecke",A,E,,0,f
+6398,"Zuwendungen, Spenden an Stiftungen in das zu erhaltende Vermögen (Vermögensstock) für wissenschaftliche, mildtätige, kulturelle Zwecke",A,E,,0,f
+6400,Versicherungen,A,E,AP_amount,0,f
+6405,"Versicherungen für Gebäude",A,E,,0,f
+6410,"Netto-Prämie für Rückdeckung künftiger Versorgungsleistungen",A,E,,0,f
+6420,Beiträge,A,E,AP_amount,0,f
+6430,"Sonstige Abgaben",A,E,AP_amount,0,f
+6436,Steuerl.abzugs.Verspätungszuschl.u.Zwangsgelder,A,E,,0,f
+6437,"Steuerl.n.abzugsf.Verspätungszuschläge u.Zwangsgelder",A,E,,0,f
+6440,"Ausgleichsabgabe i.S.d.Schwerbehinterdengesetzes",A,E,,0,f
+6450,"Reparaturen und Instandhaltung von Bauten",A,E,,0,f
+6460,"Rep.u.Instandhaltungen v.techn.Anlagen u.Maschinen",A,E,AP_amount,9,f
+6470,"Rep u. Instandh. v. Betr.- u. Geschäftsausstattung",A,E,AP_amount,9,f
+6475,"Zuführung zu Aufwandsrückstellungen",A,E,,0,f
+6485,"Reparaturen und Instandhaltung von anderen Anlagen",A,E,,0,f
+6490,"Sonstige Reparaturen u.Instandhalt.",A,E,AP_amount,9,f
+6495,"Wartungskosten für Hard-u.Software",A,E,AP_amount:IC_expense,9,f
+6498,Mietleasing,A,E,AP_amount,0,f
+6500,Fahrzeugkosten,A,E,AP_amount,0,f
+6520,Kfz-Versicherungen,A,E,AP_amount,0,f
+6530,"Laufende Kfz-Betriebskosten",A,E,AP_amount,9,f
+6540,Kfz-Reparaturen,A,E,AP_amount,9,f
+6550,Garagenmiete,A,E,AP_amount,0,f
+6560,"Mietleasing Kfz",A,E,AP_amount,0,f
+6565,"Mietleasingaufwendungen für Elektrofahrzeuge und Fahrräder, die gewerbesteuerlich hinzuzurechnen sind",A,E,,0,f
+6570,"Sonstige Kfz-Kosten",A,E,AP_amount,9,f
+6580,Mautgebühren,A,E,,0,f
+6590,"Fahrzeugkosten f.Kfz,die nicht zum BV gehören",A,E,,0,f
+6595,Fremdfahrzeuge,A,E,AP_amount,0,f
+6600,Werbekosten,A,E,AP_amount,9,f
+6605,Streuartikel,A,E,,0,f
+6610,"Geschenke bis 35 EUR abzugsfähig",A,E,AP_amount,0,f
+6611,"Geschenke abzugsfähig mit § 37b EStG",A,E,,0,f
+6612,"Pauschale Steuer für Geschenke und Zuwendungen abzugsfähig",A,E,,0,f
+6620,"Geschenke über 35EUR nicht abzugsf.",A,E,AP_amount,0,f
+6621,"Geschenke nicht abzugsfähig mit § 37b EStG",A,E,,0,f
+6622,"Pauschale Steuer für Geschenke und Zuwendungen nicht abzugsfähig",A,E,,0,f
+6625,"Geschenke ausschließl.betrieb.genut",A,E,AP_amount,9,f
+6629,"Zugaben mit § 37b EStG",A,E,,0,f
+6630,Repräsentationskosten,A,E,AP_amount,9,f
+6640,Bewirtungskosten,A,E,AP_amount,9,f
+6641,"Sonstige eingeschränkt abziehbare Betriebsausgaben (abziehbarer Anteil)",A,E,,0,f
+6642,"Sonstige eingeschränkt abziehbare Betriebsausgaben (nicht abziehbarer Anteil)",A,E,,0,f
+6643,Aufmerksamkeiten,A,E,AP_amount,9,f
+6644,"Nicht abzugsfähige Bewirtungskosten",A,E,AP_amount,0,f
+6645,"Nicht abzugsf.Betriebsausg.a.Werbe-Repräsentatisonk.etc.",A,E,AP_amount,9,f
+6650,"Reisekosten Arbeitnehmer",A,E,AP_amount,9,f
+6660,"Reisekosten Arbeitn.Übernachtungsaufwand",A,E,AP_amount,0,f
+6663,"Reisekosten Arbeitnehmer, Reisekosten",A,E,AP_amount,8,f
+6664,"Reisekosten Arbeitn.Verpflegungmehr",A,E,AP_amount,0,f
+6668,"Kilometerentgelderstattung Arbeitnehmer",A,E,AP_amount,0,f
+6670,"Reisekosten Unternehmer",A,E,AP_amount,9,f
+6672,"Reisekosten Unternehmer (nicht abziehbarer Anteil)",A,E,,0,f
+6673,"Reisekosten Unternehmer, Reisekosten",A,E,AP_amount,8,f
+6674,"Reisekosten Untern.Verpflegungsmehr",A,E,AP_amount,0,f
+6680,"Reisekosten Untern.Übernachtungsauf",A,E,AP_amount,0,f
+6688,"Fahrten zwischen Wohnung und Betriebsstätte und Familienheimfahrten (abziehbarer Anteil) - Fahrzeuge im Betriebsvermögen",A,E,,0,f
+6689,"Fahrten zw.Wohn.und Arbeitsstätte (nicht abziehb.Teil)",A,E,,0,f
+6690,"Fahrten zw.Wohn.-und Arbeitsstätte (Haben)",A,E,,0,f
+6691,"Verpflegungsmehraufwendungen im Rahmen der doppelten Haushaltsführung Unternehmer",A,E,,0,f
+6700,"Kosten der Warenabgabe",A,E,AP_amount:IC_cogs,0,f
+6710,Verpackungsmaterial,A,E,AP_amount:IC_cogs,0,f
+6740,Ausgangsfracht,A,E,AP_amount:IC_cogs,0,f
+6760,Transportversicherung,A,E,AP_amount:IC_cogs:IC_expense,0,f
+6770,Verkaufsprovision,A,E,AP_amount:IC_expense,0,f
+6780,"Fremdarbeiten (Vertrieb)",A,E,AP_amount:IC_expense,0,f
+6790,"Aufwand für Gewährleistungen",A,E,AP_amount:IC_expense,0,f
+6800,Porto,A,E,AP_amount,0,f
+6805,Telefon,A,E,AP_amount,9,f
+6810,"Telefax und Internet",A,E,AP_amount,9,f
+6815,Bürobedarf,A,E,AP_amount,9,f
+6820,"Zeitschriften, Bücher",A,E,AP_amount,8,f
+6821,Fortbildungskosten,A,E,AP_amount,9,f
+6822,"Freiwillige Sozialleistungen",A,E,AP_amount,0,f
+6823,"Sonstige Vergütungen an Mitunternehmer § 15 EStG (mit Sonderbetriebseinnahme korrespondierend)",A,E,,0,f
+6824,"Haftungsvergütung an Mitunternehmer § 15 EStG (mit Sonderbetriebseinnahme korrespondierend)",A,E,,0,f
+6825,"Rechts- und Beratungskosten",A,E,AP_amount,9,f
+6827,"Abschluß- und Prüfungskosten",A,E,AP_amount,9,f
+6830,Buchführungskosten,A,E,AP_amount,9,f
+6833,"Vergütungen an Gesellschafter für die miet- oder pachtweise Überlassung ihrer beweglichen Wirtschaftsgüter",A,E,,0,f
+6834,"Vergütungen an Mitunternehmer für die miet- oder pachtweise Überlassung ihrer beweglichen Wirtschaftsgüter § 15 EStG (mit Sonderbetriebseinnahme korrespondierend)",A,E,,0,f
+6835,"Mieten für Einrichtungen",A,E,AP_amount,9,f
+6836,"Pacht (bewegliche Wirtschaftsgüter)",A,E,,0,f
+6837,"Aufwendungen für die zeitlich befristete Überlassung von Rechten (Lizenzen, Konzessionen)",A,E,,0,f
+6838,"Aufwendungen für gemietete oder gepachtete bewegliche Wirtschaftsgüter, die gewerbesteuerlich hinzuzurechnen sind",A,E,,0,f
+6840,"Mietleasing (bewegl. WG)",A,E,AP_amount,9,f
+6845,"Werkzeuge und Kleingeräte",A,E,AP_amount,9,f
+6850,Betriebsbedarf,A,E,AP_amount,9,f
+6854,"Genossenschaftliche Rückvergütung an Mitglieder",A,E,,0,f
+6855,"Nebenkosten des Geldverkehrs",A,E,,0,f
+6856,"Aufwendungen aus Anteilen an Kapitalgesellschaften §§ 3 Nr. 40 und 3c EStG bzw. § 8b Abs. 1 und 4 KStG9)16)",A,E,,0,f
+6857,"Veräußerungskosten § 3 Nr. 40 EStG bzw. § 8b Abs. 2 KStG (bei Buchgewinn)",A,E,,0,f
+6858,"Veräußerungskosten § 3 Nr. 40 EStG bzw. § 8b Abs. 2 i. V. m. § 8b Abs. 3 S. 3 KStG (bei Buchverlust)",A,E,,0,f
+6859,Aufwend.f.Abraum-u.Abfallbeseitigung,A,E,AP_amount,9,f
+6860,"Nicht abziehbare Vorsteuer",A,E,,0,f
+6865,"Nicht abziehbare Vorsteuer 7%",A,E,AP_paid,0,f
+6870,"Nicht abziehbare Vorsteuer 19%",A,E,AP_paid,0,f
+6871,"Nicht abziehbare Vorsteuer 19 %",A,E,AP_amount,9,t
+6875,"Nicht abziehbare Hälfte der Aufsichtsratsvergütungen",A,E,,0,f
+6876,"Abziehbare Aufsichtsratsvergütungen",A,E,,0,f
+6879,Verwahrentgelt,A,E,,0,f
+6880,"Aufwendungen aus Kursdifferenzen",A,E,AR_paid:AP_paid,0,f
+6881,"Aufwendungen aus der Währungsumrechnung (nicht § 256a HGB)",A,E,,0,f
+6883,"Aufwendungen aus Bewertung Finanzmittelfonds",A,E,,0,f
+6884,"Erlöse a.Verk.Sachanlagen steuerfrei§4Nr.1aUStG(b.Buchverlust)",A,E,,0,t
+6885,"Erlöse aus Verk. Sachanl.verm. 19% USt (bei Buchverlust)",A,E,,0,t
+6888,"Erlöse a.Verk.Sachanlagen steuerfrei§4Nr.1bUStG(b.Buchverlust)",A,E,,0,t
+6889,"Erlöse aus Verkäufen Sachanlagevermögen (bei Buchverlust)",A,E,,0,f
+6890,"Erlöse aus Verkäufen immaterieller Vermögensgegenstände (bei Buchverlust)",A,E,,0,f
+6891,"Erlöse aus Verkäufen Finanzanlagen (bei Buchverlust)",A,E,,0,f
+6892,"Erlöse aus Verkäufen Finanzanlagen § 3 Nr. 40 EStG bzw. § 8b Abs. 2 KStG i. V. m. § 8b Abs. 3 S. 3 KStG (bei Buchverlust)9)",A,E,,0,f
+6895,"Abgänge Sachanlagen Restbuchwert",A,E,,0,f
+6896,"Anlagenabgänge immaterielle Vermögensgegenstände (Restbuchwert bei Buchverlust)",A,E,,0,f
+6897,"Anlagenabgänge Finanzanlagen (Restbuchwert bei Buchverlust)",A,E,,0,f
+6898,"Anlagenabgänge Finanzanlagen § 3 Nr. 40 EStG bzw. § 8b Abs. 2 KStG i. V. m. § 8b Abs. 3 S. 3 KStG (Restbuchwert bei Buchverlust)9)",A,E,,0,f
+6900,"Verluste aus Anlagenabgang",A,E,,0,f
+6904,"Abgänge Wertpapiere des Umlaufvermögens § 8b Abs. 2 KStG i. V. m. § 8b Abs. 3 S. 3 KStG (Buchwert bei Buchverlust)9)",A,E,,0,f
+6905,"Verluste aus dem Abgang von Gegenständen des Umlaufvermögens außer Vorräte",A,E,,0,f
+6906,"Verluste aus dem Abgang von Gegenständen des Umlaufvermögens (außer Vorräte) § 3 Nr. 40 EStG bzw. § 8b Abs. 2 KStG i. V. m. § 8b Abs. 3 S. 3 KStG9)",A,E,,0,f
+6907,"Abgang von Wirtschaftsgütern des Umlaufvermögens nach § 4 Abs. 3 Satz 4 EstG",A,E,,0,f
+6908,"Abgang von Wirtschaftsgütern des Umlaufvermögens § 3 Nr. 40 EStG bzw. § 8b Abs. 2 KStG i. V. m. § 8b Abs. 3 S. 3 KStG nach § 4 Abs. 3 S. 4 EStG9)",A,E,,0,f
+6910,"Abschreibungen auf Umlaufvermögen außer Vorräte und Wertpapiere des Umlaufvermögens (übliche Höhe)",A,E,,0,f
+6912,"Abschreibungen auf Umlaufvermögen außer Vorräte und Wertpapiere des Umlaufvermögens, steuerrechtlich bedingt (übliche Höhe)",A,E,,0,f
+6918,"Aufwendungen aus dem Erwerb eigener Anteile",A,E,,0,f
+6920,"Einstellung in die Pauschalwertberichtigung auf Forderungen",A,E,,0,f
+6922,"Einstellungen in die steuerliche Rücklage nach § 6b Abs. 3 EStG",A,E,,0,f
+6923,"Einstellung in die Einzelwertberichtigung auf Forderungen",A,E,,0,f
+6924,"Einstellungen in die steuerliche Rücklage nach § 6b Abs. 10 EStG",A,E,,0,f
+6926,"Einstellungen in SoPo m.Rücklageanteil (Ansparabschreibung)",A,E,,0,f
+6927,"Einstellungen in sonstige steuerliche Rücklagen",A,E,,0,f
+6928,"Einstellungen in die Rücklage für Ersatzbeschaffung nach R 6.6 EStR",A,E,,0,f
+6929,"Einstellungen in die steuerliche Rücklage nach § 4g EStG",A,E,,0,f
+6930,"Forderungsverluste (übliche Höhe)",A,E,,0,f
+6931,"Forderungsverluste 7 % USt (übliche Höhe)",A,E,AR_amount,2,t
+6932,"Forderungsverluste aus steuerfreien EU-Lieferungen (übliche Höhe)",A,E,,0,f
+6933,"Forderungsverluste aus im Inland steuerpflichtigen EU-Lieferungen 7 % USt (übliche Höhe)",A,E,AR_amount,2,t
+6936,"Forderungsverluste 19 % USt (übliche Höhe)",A,E,AR_amount,3,t
+6938,"Forderungsverluste aus im Inland steuerpflichtigen EU-Lieferungen 19 % USt (übliche Höhe)",A,E,AR_amount,3,t
+6960,"Periodenfremde Aufwend.(soweit n.außerordentlich",A,E,,0,f
+6967,"Sonst. Aufwendungen betriebsfremd, regelmäßig",A,E,,0,f
+6968,"Sonstige nicht abziehbare Aufwendungen Kalkulatorische Kosten",A,E,,0,f
+6970,"Kalkulatorischer Unternehmerlohn",A,E,,0,f
+6972,"Kalkulatorische Miete/Pacht",A,E,,0,f
+6974,"Kalkulatorische Zinsen",A,E,,0,f
+6976,"Kalkulatorische Aschreibungen",A,E,,0,f
+6978,"Kalkulatorische Wagnisse",A,E,,0,f
+6979,"Kalkulatorischer Lohn f.unentgeltl.Mitarbeiter",A,E,,0,f
+6980,"Verrechneter kalkulatorischer Unternehmerlohn",A,E,,0,f
+6982,"Verrechnete kalkulatorische Miete/Pacht",A,E,,0,f
+6984,"Verrechnete kalkulatorische Zinsen",A,E,,0,f
+6986,"Verrechnete kalkulatorische Abschreibungen",A,E,,0,f
+6988,"Verrechnete kalkulatorische Wagnisse",A,E,,0,f
+6989,"Verrechneter kalkulatorischer Lohn für unentgeltliche Mitarbeiter Kosten bei Anwendung des Umsatzkostenverfahrens",A,E,,0,f
+6990,Herstellungskosten,A,E,,0,f
+6992,Verwaltungskosten,A,E,,0,f
+6994,Vertriebskosten,A,E,,0,f
+6999,"Gegenkonto 6990-6998",A,E,,0,f
+7000,"Erträge aus Beteiligungen",A,I,,0,f
+7002,"Erträge aus typisch stillen Beteiligungen",A,I,,0,f
+7003,"Erträge aus atypisch stillen Beteiligungen23)",A,I,,0,f
+7004,"Erträge aus Beteiligungen an Personengesellschaften (verbundene Unternehmen), § 9 GewStG bzw. § 18 EStG23)",A,I,,0,f
+7005,"Erträge aus Anteilen an Kapitalgesellschaften (Beteiligung) § 3 Nr. 40 EStG bzw. § 8b Abs. 1 KStG9)",A,I,,0,f
+7006,"Erträge aus Anteilen an Kapitalgesellschaften (verbundene Unternehmen) § 3 Nr. 40 EStG bzw. § 8b Abs. 1 KStG9)",A,I,,0,f
+7008,"Gewinnanteile aus gewerblichen und selbständigen Mitunternehmerschaften, § 9 GewStG bzw. § 18 EStG23)",A,I,,0,f
+7009,"Erträge aus Beteiligungen an verbundenen Unternehmen Erträge aus anderen Wertpapieren und Ausleihungen des Finanzanlagevermögens",A,I,,0,f
+7010,"Erträge aus anderen Wertpapieren und Ausleihungen des Finanzanlagevermögens",A,I,,0,f
+7011,"Erträge aus Ausleihungen des Finanzanlagevermögens",A,I,,0,f
+7012,"Erträge aus Ausleihungen des Finanzanlagevermögens an verbundenen Unternehmen",A,I,,0,f
+7013,"Erträge aus Anteilen an Personengesellschaften (Finanzanlagevermögen)",A,I,,0,f
+7014,"Erträge aus Anteilen an Kapitalgesellschaften (Finanzanlagevermögen) § 3 Nr. 40 EStG bzw. § 8b Abs. 1 und 4 KStG9)",A,I,,0,f
+7015,"Erträge aus Anteilen an Kapitalgesellschaften (verbundene Unternehmen) § 3 Nr. 40 EStG bzw. § 8b Abs. 1 KStG9)",A,I,,0,f
+7016,"Erträge aus Anteilen an Personengesellschaften (verbundene Unternehmen)",A,I,,0,f
+7017,"Erträge aus anderen Wertpapieren des Finanzanlagevermögens an Kapitalgesellschaften (verbundene Unternehmen)",A,I,,0,f
+7018,"Erträge aus anderen Wertpapieren des Finanzanlagevermögens an Personengesellschaften (verbundene Unternehmen)",A,I,,0,f
+7019,"Erträge aus anderen Wertpapieren und Ausleihungen des Finanzanlagevermögens aus verbundenen Unternehmen",A,I,,0,f
+7020,"Zins- und Dividendenerträge",A,I,,0,f
+7030,"Erhaltene Ausgleichszahlungen (als außenstehender Aktionär)",A,I,,0,f
+7100,"Sonstige Zinsen und änliche Erträge",A,I,,0,f
+7103,"Erträge aus Anteilen an Kapitalgesellschaften (Umlaufvermögen) § 3 Nr. 40 EStG bzw. § 8b Abs. 1 und 4 KStG9)",A,I,,0,f
+7104,"Erträge aus Anteilen an Kapitalgesellschaften (verbundene Unternehmen) § 3 Nr. 40 EStG bzw. § 8b Abs. 1 KStG9)",A,I,,0,f
+7105,"Zinserträge § 233a AO, steuerpflichtig",A,I,,0,f
+7106,"Zinserträge § 233a AO, steuerfrei (Anlage GK KSt)",A,I,,0,f
+7107,"Zinserträge § 233a AO und § 4 Abs. 5b EStG, steuerfrei",A,I,,0,f
+7109,"Sonstige Zinsen und ähnliche Erträge aus verbundenen Unternehmen",A,I,,0,f
+7110,"Sonstige Zinserträge",A,I,,0,f
+7115,"Erträge aus anderen Wertpapieren und Ausleihungen des Umlaufvermögens",A,I,,0,f
+7119,"Sonstige Zinserträge aus verbundenen Unternehmen",A,I,,0,f
+7120,"Zinsähnliche Erträge",A,I,,0,f
+7129,"Zinsähnliche Erträge aus verbundenen Unternehmen",A,I,,0,f
+7130,Diskonterträge,A,I,,0,f
+7140,"Steuerfreie Zinserträge aus der Abzinsung von Rückstellungen",A,I,,0,f
+7141,"Zinserträge aus der Abzinsung von auf Rentenverpflichtungen beruhenden Verbindlichkeiten, für die eine Gegenleistung nicht mehr zu erwarten ist8)",A,I,,0,f
+7142,"Zinserträge aus der Abzinsung von Rückstellungen",A,I,,0,f
+7143,"Zinserträge aus der Abzinsung von Pensionsrückstellungen und ähnlichen/vergleichbaren Verpflichtungen",A,I,,0,f
+7144,"Zinserträge aus der Abzinsung von Pensionsrückstellungen und ähnlichen/vergleichbaren Verpflichtungen zur Verrechnung nach § 246 Abs. 2 HGB",A,I,,0,f
+7145,"Erträge aus Vermögensgegenständen zur Verrechnung nach § 246 Abs. 2 HGB Erträge aus Verlustübernahme und auf Grund einer Gewinngemeinschaft, eines Gewinn- oder Teilgewinnabführungsvertrags erhaltene Gewinne",A,I,,0,f
+7190,"Erträge aus Verlustübernahme",A,I,,0,f
+7192,"Erhaltene Gewinne auf Grund einer Gewinngemeinschaft",A,I,,0,f
+7194,"Erhaltene Gewinne auf Grund eines Gewinn- oder Teilgewinnabführungsvertrags",A,I,,0,f
+7200,"Abschreibungen auf Finanzanlagen (dauerhaft)",A,E,,0,f
+7201,"Abschreibungen auf Finanzanlagen (nicht dauerhaft)",A,E,,0,f
+7204,"Abschreibungen auf Finanzanlagen § 3 Nr. 40 EStG bzw. § 8b Abs. 3 KStG (dauerhaft)9)",A,E,,0,f
+7207,"Abschreibungen auf Finanzanlagen - verbundene Unternehmen",A,E,,0,f
+7208,"Aufwendungen auf Grund von Verlustanteilen an gewerblichen und selbständigen Mitunternehmerschaften, § 8 GewStG bzw. § 18 EStG23)",A,E,,0,f
+7210,"Abschreibungen auf Wertpapiere des Umlaufvermögens",A,E,,0,f
+7214,"Abschreibungen auf Wertpapiere des Umlaufvermögens § 3 Nr. 40 EStG bzw. § 8b Abs. 3 KStG9)",A,E,,0,f
+7217,"Abschreibungen auf Wertpapiere des Umlaufvermögens - verbundene Unternehmen",A,E,,0,f
+7250,"Abschreibungen auf Finanzanlagen auf Grund § 6b EStG-Rücklage",A,E,,0,f
+7255,"Abschreibungen auf Finanzanlagen auf Grund § 6b EStG-Rücklage, § 3 Nr. 40 EStG bzw. § 8b Abs. 3 KStG9) Zinsen und ähnliche Aufwendungen",A,E,,0,f
+7300,"Zinsen und ähnl.Aufwendungen",A,E,,0,f
+7302,"Steuerlich nicht abzugsfähige andere Nebenleistungen zu Steuern § 4 Abs. 5b EStG",A,E,,0,f
+7303,"Steuerlich abzugsfähige andere Nebenleistungen zu Steuern",A,E,,0,f
+7304,"Steuerlich nicht abzugsfähige andere Nebenleistungen zu Steuern",A,E,,0,f
+7305,"Zinsaufwendung-betriebliche Steuern §223aAO",A,E,,0,f
+7306,"Zinsaufwendungen §§ 234 bis 237 AO nicht abzugsfähig",A,E,,0,f
+7308,"Zinsaufwendungen § 233a AO nicht abzugsfähig",A,E,,0,f
+7309,"Zinsaufwendungen an verbundene Unternehmen",A,E,,0,f
+7310,"Zinsaufwendung f. kurzf.Verbindlichk",A,E,,0,f
+7311,"Zinsaufwendungen §§ 234 bis 237 AO abzugsfähig",A,E,,0,f
+7313,"Nicht abzugsfähige Schuldzinsen nach § 4 Abs. 4a EStG (Hinzurechnungsbetrag)",A,E,,0,f
+7316,"Zinsen für Gesellschafterdarlehen",A,E,,0,f
+7317,"Zinsen an Gesellschafter mit einer Beteiligung von mehr als 25 % bzw. diesen nahe stehende Personen",A,E,,0,f
+7318,"Zinsen auf Kontokorrentkonten",A,E,,0,f
+7319,"Zinsaufwendungen für kurzfristige Verbindlichkeiten an verbundene Unternehmen",A,E,,0,f
+7320,"Zinsaufwendung f. langf.Verbindlichk",A,E,,0,f
+7323,"Abschreibungen auf ein Agio oder Disagio/Damnum zur Finanzierung",A,E,,0,f
+7324,"Abschreibungen auf ein Agio oder Disagio/Damnum zur Finanzierung des Anlagevermögens",A,E,,0,f
+7325,"Zinsaufwend.f.Gebäude,die z.Betriebsvermögen gehören",A,E,,0,f
+7326,"Zinsen zur Finanzierung Anlagevermögen",A,E,,0,f
+7327,"Renten und dauernde Lasten",A,E,,0,f
+7328,"Zinsaufwendungen für Kapitalüberlassung durch Mitunternehmer § 15 EStG (mit Sonderbetriebseinnahme korrespondierend)",A,E,,0,f
+7329,"Zinsaufwendungen für langfristige Verbindlichkeiten an verbundene Unternehmen",A,E,,0,f
+7330,"Zinsähnliche Aufwendungen",A,E,,0,f
+7339,"Zinsähnliche Aufwendungen an verbundene Unternehmen",A,E,,0,f
+7340,Diskontaufwendung,A,E,,0,f
+7350,"Zinsen und ähnliche Aufwendungen §§ 3 Nr. 40 und 3c EStG bzw. § 8b Abs. 1 und 4 KStG9)16)",A,E,,0,f
+7351,"Zinsen und ähnliche Aufwendungen an verbundene Unternehmen §§ 3 Nr. 40 und 3c EStG bzw. § 8b Abs. 1 KStG9)16)",A,E,,0,f
+7355,"Kreditprovisionen und Verwaltungskostenbeiträge",A,E,,0,f
+7360,"Zinsanteil der Zuführungen zu Pensionsrückstellungen",A,E,,0,f
+7361,"Zinsaufwendungen aus der Abzinsung von auf Rentenverpflichtungen beruhenden Verbindlichkeiten, für die eine Gegenleistung nicht mehr zu erwarten ist8)",A,E,,0,f
+7362,"Zinsaufwendungen aus der Abzinsung von Rückstellungen",A,E,,0,f
+7363,"Zinsaufwendungen aus der Abzinsung von Pensionsrückstellungen und ähnlichen/vergleichbaren Verpflichtungen",A,E,,0,f
+7364,"Zinsaufwendungen aus der Abzinsung von Pensionsrückstellungen und ähnlichen/vergleichbaren Verpflichtungen zur Verrechnung nach § 246 Abs. 2 HGB",A,E,,0,f
+7365,"Aufwendungen aus Vermögensgegenständen zur Verrechnung nach § 246 Abs. 2 HGB",A,E,,0,f
+7366,"Steuerlich nicht abzugsfähige Zinsaufwendungen aus der Abzinsung von Rückstellungen",A,E,,0,f
+7390,"Aufwendungen aus Verlustübernahme",A,E,,0,f
+7392,"Abgeführte Gewinne auf Grund einer Gewinngemeinschaft",A,E,,0,f
+7394,"Abgeführte Gewinne auf Grund eines Gewinn- oder Teilgewinnabführungsvertrags",A,E,,0,f
+7398,"Abgeführte Gewinnanteile (Soll) / ausgeglichene Verlustanteile (Haben) bei atypisch stiller Beteiligung",A,E,,0,f
+7399,"Abgeführte Gewinnanteile (Soll) / ausgeglichene Verlustanteile (Haben) bei typisch stiller Beteiligung § 8 GewStG",A,E,,0,f
+7400,"Außerordentliche Erträge",A,I,,0,f
+7401,"Ausserordentliche Erträge finanzwirksam",A,I,,0,f
+7450,"Ausserordentliche Erträge nicht finanzwirksam",A,I,,0,f
+7451,"Erträge durch Verschmelzung und Umwandlung",A,I,,0,f
+7500,"Außerordentliche Aufwendung",A,E,,0,f
+7551,"Verluste durch Verschmelzung und Umwandlung",A,E,,0,f
+7553,"Aufwendungen für Restrukturierungs- und Sanierungsmaßnahmen",A,E,,0,f
+7600,Körperschaftssteuer,A,E,,0,f
+7603,"Körperschaftsteuer für Vorjahre",A,E,,0,f
+7604,"Körperschaftsteuererstattungen für Vorjahre",A,E,,0,f
+7607,"Solidaritätszuschlagerstattungen für Vorjahre",A,E,,0,f
+7608,Solidaritätszuschlag,A,E,,0,f
+7609,"Solidaritätszuschlag für Vorjahr",A,E,,0,f
+7610,Gewerbesteuer,A,E,,0,f
+7630,"Kapitalertragsteuer 25 %",A,E,,0,f
+7632,"Kapitalertragssteuer 20%",A,E,,0,f
+7633,"Anrechenbarer Solidaritätszuschlag auf Kapitalertragsteuer 25 %",A,E,,0,f
+7634,"Anrechenb.Soli auf Kapitalertragssteuer 20%",A,E,,0,f
+7635,Zinsabschlagsteuer,A,E,,0,f
+7638,"Anrechb.Solidari.zuschlag a.Zinsabschlagst.",A,E,,0,f
+7639,"Anrechnung/Abzug ausländischer Quellensteuer",A,E,,0,f
+7640,"Gewerbestnachzahl.Vorj.v.Einkomm u.Ertrag",A,E,,0,f
+7641,"Gewerbesteuernachzahlungen und Gewerbesteuererstattungen für Vorjahre nach § 4 Abs. 5b EStG",A,E,,0,f
+7642,"Gewerbesterstat.Vorj.Steuer v.Eink.u.Ertrag",A,I,,0,f
+7643,"Erträge aus der Auflösung von Gewerbesteuerrückstellungen nach § 4 Abs. 5b EStG",A,E,,0,f
+7644,"Erträge aus Auflösung v. GewSt.Rückst.",A,I,,0,f
+7645,"Aufwendungen aus der Zuführung und Auflösung von latenten Steuern",A,E,,0,f
+7646,"Aufwendungen aus der Zuführung zu Steuerrückstellungen für Steuerstundung (BStBK)",A,E,,0,f
+7648,"Erträge aus der Auflösung von Steuerrückstellungen für Steuerstundung (BStBK)",A,E,,0,f
+7649,"Erträge aus der Zuführung und Auflösung von latenten Steuern Sonstige Steuern",A,E,,0,f
+7650,"Sonstige Steuern",A,E,,0,f
+7675,Verbrauchssteuer,A,E,,0,f
+7678,Ökosteuer,A,E,,0,f
+7680,Grundsteuer,A,E,,0,f
+7685,Kfz-Steuer,A,E,AP_amount,0,f
+7690,"Steuernachzahlung Vorj.f.sons.Steue",A,E,,0,f
+7692,"Steuererstattung Vorj.f.sons.Steuer",A,I,,0,f
+7694,"Erträge a.d.Aufl.v. Rück.f.sons.Ste",A,E,,0,f
+7700,"Gewinnvortrag nach Verwendung",A,E,,0,f
+7705,"Gewinnvortrag nach Verwendung (mit Aufteilung für Kapitalkontenentwicklung)",A,E,,0,f
+7720,"Verlustvortrag nach Verwendung",A,E,,0,f
+7725,"Verlustvortrag nach Verwendung (mit Aufteilung für Kapitalkontenentwicklung)",A,E,,0,f
+7730,"Entnahmen aus der Kapitalrücklage",A,E,,0,f
+7735,"Entnahmen aus der gesetzlichen Rücklage",A,E,,0,f
+7740,"Entnahmen aus dem Ausgleichsposten für aktivierte eigene Anteile",A,E,,0,f
+7743,"Entnahmen aus der Rücklage für Anteile an einem herrschenden oder mehrheitlich beteiligten Unternehmen",A,E,,0,f
+7744,"Entnahmen aus anderen Ergebnisrücklagen",A,E,,0,f
+7745,"Entnahmen a.satzungsmäßigen Rücklagen",A,E,,0,f
+7750,"Entnahmen aus anderen Gewinnrücklagen",A,E,,0,f
+7751,"Entnahmen aus gesamthänderisch gebundenen Rücklagen (mit Aufteilung für Kapitalkontenentwicklung)",A,E,,0,f
+7755,"Ertrag aus der Kapitalherabsetzung8)",A,E,,0,f
+7760,"Einstellungen in die Kapitalrücklage nach den Vorschriften über die vereinfachte Kapitalherabsetzung",A,E,,0,f
+7765,"Einstellungen in die gesetzliche Rücklage",A,E,,0,f
+7770,"Einstellungen in den Ausgleichsposten für aktivierte eigene Anteile",A,E,,0,f
+7773,"Einstellungen in die Rücklage für Anteile an einem herrschenden oder mehrheitlich beteiligten Unternehmen",A,E,,0,f
+7775,"Einstellungen in satzungsmäßige Rücklagen",A,E,,0,f
+7780,"Einstellungen in andere Gewinnrücklagen",A,E,,0,f
+7781,"Einstellungen in gesamthänderisch gebundene Rücklagen (mit Aufteilung für Kapitalkontenentwicklung)",A,E,,0,f
+7785,"Einstellungen in andere Ergebnisrücklagen",A,E,,0,f
+7788,"Änderung steuerlicher Ausgleichsposten (Körperschaften)",A,E,,0,f
+7789,"Änderung steuerlicher Ausgleichsposten (Personengesellschaften, Einzelunternehmen)",A,E,,0,f
+7790,Vorabausschüttung,A,E,,0,f
+7800,"(zur freien Verfügung)",A,E,,0,f
+7900,"(reserviertes Konto)",A,E,,0,f
+9000,"Saldenvorträge,Sachkonten",A,A,,0,f
+9001,"Saldenvorträge, Sachkonten",A,A,,0,f
+9008,"Saldenvorträge,Debitoren",A,A,,0,f
+9009,"Saldenvorträge,Kreditoren",A,L,,0,f
+9051,"Offene Posten aus 2021",A,A,,0,f
+9052,"Offene Posten aus 2022",A,A,,0,f
+9053,"Offene Posten aus 2023",A,A,,0,f
+9054,"Offene Posten aus 2024",A,A,,0,f
+9055,"Offene Posten aus 2025",A,A,,0,f
+9056,"Offene Posten aus 20261)",A,A,,0,f
+9090,Summenvortragskonto,A,A,,0,f
+9101,Verkaufstage12),A,A,,0,f
+9102,"Anzahl der Barkunden12)",A,A,,0,f
+9120,Erweiterungsinvestitionen,A,A,,0,f
+9135,"Auftragseingang im Geschäftsjahr",A,A,,0,f
+9141,"Variables Kapital TH",A,A,,0,f
+9142,"Variables Kapital - Anteil Teilhafter",A,A,,0,f
+9143,"Privatsteuern Kapitalertragsteuer (Sammelposten)",A,A,,0,f
+9144,"Privatsteuern Solidaritätszuschlag (Sammelposten)",A,A,,0,f
+9145,"Privatsteuern Kirchensteuer (Sammelposten) Kapitaländerungen durch Übertragung einer § 6b EStG-Rücklage",A,A,,0,f
+9146,"Variables Kapital Vollhafter - Übertragung einer § 6b EStG-Rücklage",A,A,,0,f
+9147,"Variables Kapital Teilhafter - Übertragung einer § 6b EStG-Rücklage",A,A,,0,f
+9150,"Festkapital - andere Kapitalkontenanpassungen VH",A,A,,0,f
+9151,"Variables Kapital - andere Kapitalkontenanpassungen VH",A,A,,0,f
+9152,"Verlust-/Vortragskonto - andere Kapitalkontenanpassungen VH",A,A,,0,f
+9153,"Kapitalkonto III - andere Kapitalkontenanpassungen VH",A,A,,0,f
+9154,"Ausstehende Einlagen auf das Komplementär-Kapital, nicht eingefordert - andere Kapitalkontenanpassungen VH",A,A,,0,f
+9155,"Verrechnungskonto für Einzahlungsverpflichtungen - andere Kapitalkontenanpassungen VH",A,A,,0,f
+9157,"Privatsteuern Kapitalertragsteuer (Vollhafter)",A,A,,0,f
+9158,"Privatsteuern Solidaritätszuschlag (Vollhafter)",A,A,,0,f
+9159,"Privatsteuern Kirchensteuer (Vollhafter) Andere Kapitalkontenanpassungen: Teilhafter",A,A,,0,f
+9160,"Kommandit-Kapital - andere Kapitalkontenanpassungen TH",A,A,,0,f
+9161,"Variables Kapital - andere Kapitalkontenanpassungen TH",A,A,,0,f
+9162,"Verlustausgleichskonto - andere Kapitalkontenanpassungen TH",A,A,,0,f
+9163,"Kapitalkonto III - andere Kapitalkontenanpassungen TH",A,A,,0,f
+9164,"Ausstehende Einlagen auf das Kommandit-Kapital, nicht eingefordert - andere Kapitalkontenanpassungen TH",A,A,,0,f
+9165,"Verrechnungskonto für Einzahlungsverpflichtungen - andere Kapitalkontenanpassungen TH",A,A,,0,f
+9167,"Privatsteuern Kapitalertragsteuer (Teilhafter), Eigenkapital",A,A,,0,f
+9168,"Privatsteuern Solidaritätszuschlag (Teilhafter), Eigenkapital",A,A,,0,f
+9169,"Privatsteuern Kirchensteuer (Teilhafter), Eigenkapital",A,A,,0,f
+9170,"Festkapital - Umbuchungen VH",A,A,,0,f
+9171,"Variables Kapital - Umbuchungen VH",A,A,,0,f
+9172,"Verlust-/Vortragskonto - Umbuchungen VH",A,A,,0,f
+9173,"Kapitalkonto III - Umbuchungen VH",A,A,,0,f
+9174,"Ausstehende Einlagen auf das Komplementär-Kapital, nicht eingefordert - Umbuchungen VH",A,A,,0,f
+9175,"Verrechnungskonto für Einzahlungsverpflichtungen - Umbuchungen VH",A,A,,0,f
+9180,"Kommandit-Kapital - Umbuchungen TH",A,A,,0,f
+9181,"Variables Kapital - Umbuchungen TH",A,A,,0,f
+9182,"Verlustausgleichskonto - Umbuchungen TH",A,A,,0,f
+9183,"Kapitalkonto III - Umbuchungen TH",A,A,,0,f
+9184,"Ausstehende Einlagen auf das Kommandit-Kapital, nicht eingefordert - Umbuchungen TH",A,A,,0,f
+9185,"Verrechnungskonto für Einzahlungsverpflichtungen - Umbuchungen TH Anrechenbare Privatsteuern Teilhafter, Fremdkapital",A,A,,0,f
+9186,"Privatsteuern Kapitalertragsteuer (Teilhafter), Fremdkapital",A,A,,0,f
+9187,"Privatsteuern Solidaritätszuschlag (Teilhafter), Fremdkapital",A,A,,0,f
+9188,"Privatsteuern Kirchensteuer (Teilhafter), Fremdkapital",A,A,,0,f
+9189,"Verrechnungskonto für Umbuchungen zwischen Gesellschafter-Eigenkapitalkonten Gegenkonto zu statistischen Konten für Betriebswirtschaftliche Auswertungen",A,A,,0,f
+9190,"Gegenkonto für statistische Mengeneinheiten Konten 9101-91028)",A,A,,0,f
+9199,"Gegenkonto zu Konten 9120 und 91358)",A,A,,0,f
+9200,"Beschäftigte Personen",A,A,,0,f
+9209,"Gegenkonto zu 9200",A,A,,0,f
+9210,"Produktive Löhne",A,A,,0,f
+9219,"Gegenkonto zu 9210",A,A,,0,f
+9220,"Gezeichnetes Kapital in DM (Art. 42 Abs. 3 Satz 1 EGHGB)",A,A,,0,f
+9229,"Gegenkonto zu 9220",A,A,,0,f
+9240,"Investitionsverbindlichkeiten bei den Leistungsverbindlichkeiten",A,A,,0,f
+9241,"Investitionsverbindlichkeiten aus Sachanlagekäufen bei Leistungsverbindlichkeiten",A,A,,0,f
+9242,"Investitionsverbindlichkeiten aus Käufen von immateriellen Vermögensgegenständen bei Leistungsverbindlichkeiten",A,A,,0,f
+9243,"Investitionsverbindlichkeiten aus Käufen von Finanzanlagen bei Leistungsverbindlichkeiten",A,A,,0,f
+9244,"Gegenkonto zu Konto 9240-43",A,A,,0,f
+9245,"Forderungen aus Sachanlageverkäufen bei sonstigen Vermögensgegenständen",A,A,,0,f
+9246,"Forderungen aus Verkäufen immaterieller Vermögensgegenstände bei sonstigen Vermögensgegenständen",A,A,,0,f
+9247,"Forderungen aus Verkäufen von Finanzanlagen bei sonstigen Vermögensgegenständen",A,A,,0,f
+9249,"Gegenkonto zu Konto 9245-47",A,A,,0,f
+9260,"Kurzfristige Rückstellungen",A,A,,0,f
+9262,"Mittelfristige Rückstellungen",A,A,,0,f
+9264,"Langfristige Rückstellungen, außer Pensionen",A,A,,0,f
+9269,"Gegenkonto zu Konten",A,A,,0,f
+9292,"Statistisches Konto Fremdgeld",A,A,,0,f
+9293,"Gegenkonto zu 9292",A,A,,0,f
+9295,"Einlagen atypisch stiller Gesellschafter",A,A,,0,f
+9297,"Steuerlicher Ausgleichsposten (Körperschaften17)",A,A,,0,f
+9298,"Steuerlicher Ausgleichsposten VH (Personengesellschaften, Einzelunternehmen)",A,A,,0,f
+9299,"Steuerlicher Ausgleichsposten TH (Personengesellschaften) 9300",A,A,,0,f
+9390,"Konto für Branchenlösungen (Werte 1), (Zur freien Verfügung)24)",A,A,,0,f
+9391,"Konto für Branchenlösungen (Werte 2), (Zur freien Verfügung)24)",A,A,,0,f
+9392,"Konto für Branchenlösungen (Werte 3), (Zur freien Verfügung)24)",A,A,,0,f
+9393,"Konto für Branchenlösungen (Werte 4), (Zur freien Verfügung)24)",A,A,,0,f
+9394,"Gegenkonto für Branchenlösungen (Werte), (Zur freien Verfügung)24)",A,A,,0,f
+9395,"Konto für Branchenlösungen (Menge 1), (Zur freien Verfügung)7)",A,A,,0,f
+9396,"Konto für Branchenlösungen (Menge 2), (Zur freien Verfügung)7)",A,A,,0,f
+9397,"Konto für Branchenlösungen (Menge 3), (Zur freien Verfügung)7)",A,A,,0,f
+9398,"Konto für Branchenlösungen (Menge 4), (Zur freien Verfügung)7)",A,A,,0,f
+9399,"Gegenkonto für Branchenlösungen (Menge), (Zur freien Verfügung)7) Privat Teilhafter (Eigenkapital, für Verrechnung mit Kapitalkonto III - Konto 9840)",A,A,,0,f
+9400,"Privatentnahmen allgemein (Teilhafter), Eigenkapital 9401",A,A,,0,f
+9410,"Privatsteuern (Teilhafter), Eigenkapital 9411",A,A,,0,f
+9420,"Sonderausgaben beschränkt abzugsfähig (Teilhafter), Eigenkapital 9421",A,A,,0,f
+9430,"Sonderausgaben unbeschränkt abzugsfähig (Teilhafter), Eigenkapital 9431",A,A,,0,f
+9440,"Zuwendungen, Spenden (Teilhafter), Eigenkapital",A,A,,0,f
+9450,"Außergewöhnliche Belastungen (Teilhafter), Eigenkapital",A,A,,0,f
+9460,"Grundstücksaufwand (Teilhafter), Eigenkapital",A,A,,0,f
+9470,"Grundstücksertrag (Teilhafter), Eigenkapital",A,A,,0,f
+9480,"Unentgeltliche Wertabgaben (Teilhafter), Eigenkapital",A,A,,0,f
+9490,"Privateinlagen (Teilhafter), Eigenkapital",A,A,,0,f
+9500,"Anteil für Konto 2000 Vollhafter - Festkapital",A,A,,0,f
+9510,"Anteil für Konto 2010 Vollhafter - Variables Kapital",A,A,,0,f
+9520,"Anteil für Konto 2020 Vollhafter - Gesellschafter-Darlehen",A,A,,0,f
+9530,"Anteil für Konto 9810 Vollhafter - Kapitalkonto III",A,A,,0,f
+9540,"Anteil für Konto 0060 Vollhafter - Ausstehende Einlagen auf das Komplementär-Kapital",A,A,,0,f
+9550,"Anteil für Konto 2050 Teilhafter - Kommandit-Kapital",A,A,,0,f
+9560,"Anteil für Konto 2060 Teilhafter - Verlustausgleichskonto",A,A,,0,f
+9570,"Anteil für Konto 2070 Teilhafter - Gesellschafter-Darlehen",A,A,,0,f
+9580,"Anteil für Konto 9820 Vollhafter - Verlustvortrag",A,A,,0,f
+9590,"Anteil für Konto 0080 Teilhafter - Ausstehende Einlagen auf das Kommandit-Kapital",A,A,,0,f
+9600,"Name des Gesellschafters Vollhafter",A,A,,0,f
+9610,"Tätigkeitsvergütung Vollhafter",A,A,,0,f
+9620,"Tantieme Vollhafter",A,A,,0,f
+9630,"Darlehensverzinsung Vollhafter",A,A,,0,f
+9640,"Gebrauchsüberlassung Vollhafter",A,A,,0,f
+9650,"Sonstige Vergütungen Vollhafter",A,A,,0,f
+9660,"Sonstige Vergütungen Vollhafter",A,A,,0,f
+9670,"Sonstige Vergütungen Vollhafter",A,A,,0,f
+9680,"Sonstige Vergütungen Vollhafter",A,A,,0,f
+9690,"Restanteil Vollhafter",A,A,,0,f
+9700,"Name des Gesellschafters Teilhafter",A,A,,0,f
+9710,"Tätigkeitsvergütung Teilhafter",A,A,,0,f
+9720,"Tantieme Teilhafter",A,A,,0,f
+9730,"Darlehensverzinsung Teilhafter",A,A,,0,f
+9740,"Gebrauchsüberlassung Teilhafter",A,A,,0,f
+9750,"Sonstige Vergütungen Teilhafter",A,A,,0,f
+9760,"Sonstige Vergütungen Teilhafter",A,A,,0,f
+9770,"Sonstige Vergütungen Teilhafter",A,A,,0,f
+9780,"Anteil für Konto 9840 Teilhafter - Kapitalkonto III",A,A,,0,f
+9790,"Restanteil Teilhafter",A,A,,0,f
+9791,"Anteil Rücklagen variables Kapitalkonto Vollhafter1)",A,A,,0,f
+9792,"Anteil Rücklagen Kapitalkonto III Vollhafter1)",A,A,,0,f
+9793,"Anteil Rücklagen Verlust-/Vortragskonto Vollhafter1)",A,A,,0,f
+9794,"Gegenkonto Anteil Rücklagen Vollhafter1)",A,A,,0,f
+9795,"Anteil Rücklagen variables Kapitalkonto Teilhafter1)",A,A,,0,f
+9796,"Anteil Rücklagen Kapitalkonto III Teilhafter1)",A,A,,0,f
+9797,"Anteil Rücklagen Verlustausgleichskonto Teilhafter1)",A,A,,0,f
+9798,"Gegenkonto Anteil Rücklagen Teilhafter1)",A,A,,0,f
+9802,"Gesamthänderisch gebundene Rücklagen - andere Kapitalkontenanpassungen",A,A,,0,f
+9803,"Gewinnvortrag/Verlustvortrag andere Kapitalkontenanpassungen",A,A,,0,f
+9804,"Gesamthänderisch gebundene Rücklagen - Umbuchungen",A,A,,0,f
+9805,"Gewinnvortrag/Verlustvortrag – Umbuchungen",A,A,,0,f
+9806,"Zuzurechnender Anteil am Jahresüberschuss/Jahresfehlbetrag - je Gesellschafter",A,A,,0,f
+9807,"Zuzurechnender Anteil am Bilanzgewinn/Bilanzverlust - je Gesellschafter",A,A,,0,f
+9808,"Gegenkonto für zuzurechnenden Anteil am Jahresüberschuss/ Jahresfehlbetrag",A,A,,0,f
+9809,"Gegenkonto für zuzurechnenden Anteil am Bilanzgewinn/Bilanzverlust",A,A,,0,f
+9810,"Kapitalkonto III",A,A,,0,f
+9820,Verlust-/Vortragskonto,A,A,,0,f
+9830,"Verrechnungskonto für Einzahlungsverpflichtungen",A,A,,0,f
+9840,"Kapitalkonto III",A,A,,0,f
+9850,"Verrechnungskonto für Einzahlungsverpflichtungen",A,A,,0,f
+9860,"Einzahlungsverpflichtungen persönlich haftender Gesellschafter (Vollhafter)",A,A,,0,f
+9870,"Einzahlungsverpflichtungen Kommanditisten (Teilhafter)",A,A,,0,f
+9880,"Ausgleichsposten für aktivierte eigene Anteile",A,A,,0,f
+9883,"Nicht durch Vermögenseinlagen gedeckte Entnahmen persönlich haftender Gesellschafter",A,A,,0,f
+9884,"Nicht durch Vermögenseinlagen gedeckte Entnahmen Kommanditisten",A,A,,0,f
+9885,"Verrechnungskonto für nicht durch Vermögenseinlagen gedeckte Entnahmen persönlich haftender Gesellschafter",A,A,,0,f
+9886,"Verrechnungskonto für nicht durch Vermögenseinlagen gedeckte Entnahmen Kommanditisten",A,A,,0,f
+9887,"Steueraufwand der Gesellschafter",A,A,,0,f
+9889,"Gegenkonto zu 9887",A,A,,0,f
+9890,"Statistisches Konto für den Gewinnzuschlag nach §§ 6b Abs. 7 und 6c EStG (Haben)",A,A,,0,f
+9891,"Gegenkonto zu statistischen Konten für den Gewinnzuschlag (Soll) Veränderung der gesamthänderisch gebundenen Rücklagen (Einlagen/Entnahmen)",A,A,,0,f
+9892,"Veränderung der gesamthänderisch gebundenen Rücklagen (Einlagen/Entnahmen) Vorsteuer-/Umsatzsteuerkonten zur Korrektur der Forderungen/Verbindlichkeiten (EÜR)",A,A,,0,f
+9893,"Umsatzsteuer in den Forderungen zum allgemeinen Umsatzsteuersatz (EÜR)",A,A,,0,f
+9894,"Umsatzsteuer in den Forderungen zum ermäßigten Umsatzsteuersatz (EÜR)",A,A,,0,f
+9895,"Gegenkonto 9893-9894 für die Aufteilung der Umsatzsteuer (EÜR)",A,A,,0,f
+9896,"Vorsteuer in den Verbindlichkeiten zum allgemeinen Umsatzsteuersatz (EÜR)",A,A,,0,f
+9897,"Vorsteuer in den Verbindlichkeiten zum ermäßigten Umsatzsteuersatz (EÜR)",A,A,,0,f
+9898,"Vorsteuer in den Verbindlichkeiten aus verschiedenen Kosten (EÜR)",A,A,,0,f
+9899,"Gegenkonto 9896-9897 für die Aufteilung der Vorsteuer (EÜR)",A,A,,0,f
+9900,"Umsatzsteuer nicht fällig - sonstige Erlöse (EÜR)",A,A,,0,f
+9901,"Gegenkonto zu 9900",A,A,,0,f
+9902,"Umsatzsteuer in den Forderungen aus sonstigen Erlösen (EÜR)",A,A,,0,f
+9906,"Steuerfreie Einnahmen und Entnahmen nach § 3 Nr. 72 EStG (Soll)",A,A,,0,f
+9907,"Gegenkonto zu steuerfreien Einnahmen und Entnahmen nach § 3 Nr. 72 EStG (Haben)",A,A,,0,f
+9908,"Nicht abzugsfähige Betriebsausgaben nach § 3c Abs. 1 EStG i. V. m. § 3 Nr. 72 EStG (Haben)",A,A,,0,f
+9909,"Gegenkonto zu nicht abzugsfähigen Betriebsausgaben nach § 3c Abs. 1 EStG i. V. m. § 3 Nr. 72 EStG (Soll)",A,A,,0,f
+9910,"Gegenkonto zur Minderung der Entnahmen § 4 Abs. 4a EStG",A,A,,0,f
+9911,"Minderung der Entnahmen § 4 Abs. 4a EStG (Haben)",A,A,,0,f
+9912,"Erhöhung der Entnahmen § 4 Abs. 4a EStG",A,A,,0,f
+9913,"Gegenkonto zur Erhöhung der Entnahmen § 4 Abs. 4a EStG (Haben)",A,A,,0,f
+9916,"Hinzurechnung Investitionsabzugsbetrag § 7g Abs. 2 EStG aus dem 2. vorangegangenen Wirtschaftsjahr, außerbilanziell (Haben)",A,A,,0,f
+9917,"Hinzurechnung Investitionsabzugsbetrag § 7g Abs. 2 EStG aus dem 3. vorangegangenen Wirtschaftsjahr, außerbilanziell (Haben)",A,A,,0,f
+9918,"Rückgängigmachung Investitionsabzugsbetrag § 7g Abs. 3 und 4 EStG im 2. vorangegangenen Wirtschaftsjahr",A,A,,0,f
+9919,"Rückgängigmachung Investitionsabzugsbetrag § 7g Abs. 3 und 4 EStG im 3. vorangegangenen Wirtschaftsjahr Konten zu Bewertungskorrekturen",A,A,,0,f
+9960,"Bewertungskorrektur zu Forderungen aus Lieferungen und Leistungen (Währungsumrechnung)",A,A,,0,f
+9961,"Bewertungskorrektur zu sonstigen Verbindlichkeiten (Währungsumrechnung)",A,A,,0,f
+9962,"Bewertungskorrektur zu Guthaben bei Kreditinstituten (Bewertung Finanzmittelfonds)",A,A,,0,f
+9963,"Bewertungskorrektur zu Verbindlichkeiten gegenüber Kreditinstituten (Bewertung Finanzmittelfonds)",A,A,,0,f
+9964,"Bewertungskorrektur zu Verbindlichkeiten aus Lieferungen und Leistungen (Währungsumrechnung)",A,A,,0,f
+9965,"Bewertungskorrektur zu sonstigen Vermögensgegenständen (Währungsumrechnung)",A,A,,0,f
+9970,"Investitionsabzugsbetrag § 7g Abs. 1 EStG, außerbilanziell (Soll)",A,A,,0,f
+9971,"Investitionsabzugsbetrag § 7g Abs. 1 EStG, außerbilanziell (Haben) - Gegenkonto zu 9970",A,A,,0,f
+9972,"Hinzurechnung Investitionsabzugsbetrag § 7g Abs. 2 EStG aus dem vorangegangenen Wirtschaftsjahr, außerbilanziell (Haben)",A,A,,0,f
+9973,"Hinzurechnung Investitionsabzugsbetrag § 7g Abs. 2 EStG aus den vorangegangenen Wirtschaftsjahren, außerbilanziell (Soll) - Gegenkonto zu 9972, 9916, 9917",A,A,,0,f
+9974,"Rückgängigmachung Investitionsabzugsbetrag § 7g Abs. 3 und 4 EStG im vorangegangenen Wirtschaftsjahr",A,A,,0,f
+9975,"Rückgängigmachung Investitionsabzugsbetrag § 7g Abs. 3 und 4 EStG in den vorangegangenen Wirtschaftsjahren - Gegenkonto zu 9974, 9918, 9919",A,A,,0,f
+9976,"Nicht abzugsfähige Zinsaufwendungen nach § 4h EStG (Haben)",A,A,,0,f
+9977,"Nicht abzugsfähige Zinsaufwendungen nach § 4h EStG (Soll) - Gegenkonto zu 9976",A,A,,0,f
+9978,"Abziehbare Zinsaufwendungen aus Vorjahren nach § 4h EStG (Soll)",A,A,,0,f
+9979,"Abziehbare Zinsaufwendungen aus Vorjahren nach § 4h EStG (Haben) - Gegenkonto zu 9978",A,A,,0,f
+9980,"Anteil Belastung auf Verbindlichkeitskonten",A,A,,0,f
+9981,"Verrechnungskonto für Anteil Belastung auf Verbindlichkeitskonten",A,A,,0,f
+9982,"Anteil Gutschrift auf Verbindlichkeitskonten",A,A,,0,f
+9983,"Verrechnungskonto für Anteil Gutschrift auf Verbindlichkeitskonten",A,A,,0,f
+9984,"Gewinnkorrektur nach § 60 Abs. 2 EStDV - Erhöhung handelsrechtliches Ergebnis durch Habenbuchung - Minderung handelsrechtliches Ergebnis durch Sollbuchung",A,A,,0,f
+9985,"Gegenkonto zu 9984",A,A,,0,f
+9986,"Ergebnisverteilung auf Fremdkapital",A,A,,0,f
+9987,"Korrekturkonto für die Überleitungsrechnung",A,A,,0,f
+9989,"Gegenkonto zu 9986-9988",A,A,,0,f
+9990,"Erträge von außergewöhnlicher Größenordnung oder Bedeutung",A,A,,0,f
+9991,"Erträge (aperiodisch)",A,A,,0,f
+9992,"Erträge von außergewöhnlicher Größenordnung oder Bedeutung (aperiodisch)",A,A,,0,f
+9993,"Aufwendungen von außergewöhnlicher Größenordnung oder Bedeutung",A,A,,0,f
+9994,"Aufwendungen (aperiodisch)",A,A,,0,f
+9995,"Aufwendungen von außergewöhnlicher Größenordnung oder Bedeutung (aperiodisch)",A,A,,0,f
+9998,"Gegenkonto zu 9990-9997",A,A,,0,f

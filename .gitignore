@@ -66,3 +66,6 @@ public/camera-clips/
 backend/.composer/
 backend/vendor/
 backend/composer.phar
+
+# Laufzeit-Artefakte (z. B. Kontenrahmen-Backups vor Rollout) nicht ins Repo
+/var/
