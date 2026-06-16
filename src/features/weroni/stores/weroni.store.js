@@ -16,7 +16,7 @@ export const weroniStore = defineStore('weroniStore', () => {
             message,
             session_id: sessionId.value
         })
-        if (!response.data.success) throw new Error(response.data.text)
+        if (!response.data.success) throw new Error(response.data.payload || response.data.text)
         return response.data.payload
     }
 
@@ -106,7 +106,7 @@ export const weroniStore = defineStore('weroniStore', () => {
             session_id: sessionId.value,
             message
         })
-        if (!response.data.success) throw new Error(response.data.text)
+        if (!response.data.success) throw new Error(response.data.payload || response.data.text)
         return response.data.payload
     }
 

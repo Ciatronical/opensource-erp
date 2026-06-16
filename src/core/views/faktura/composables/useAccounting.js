@@ -230,13 +230,17 @@ export function useAccounting({ fakturaItems, faktura, fakturaType, paymentList,
             // ID der bestehenden Zahlungsbuchung (AR_paid-Bein) mitsenden, damit das
             // Backend eine bearbeitete Zahlung erkennt statt sie zu duplizieren
             const accTransId = payment.acc_trans_id || null
+            // Entsperrte bank-gebuchte Zahlung: Backend soll die geschützten acc_trans-Beine
+            // in-place aktualisieren statt sie nur zu schützen (siehe payment.section.card.vue).
+            const bankEdit = payment.bank_edit === true
 
             entries.push({
                 acc_trans_id: accTransId,
                 chart_id: arTargetId,
                 amount: roundMoney(paymentAmount, 2),
                 transdate, source, memo,
-                tax_id: 0, taxkey: 0
+                tax_id: 0, taxkey: 0,
+                bank_edit: bankEdit
             })
 
             entries.push({
@@ -244,7 +248,8 @@ export function useAccounting({ fakturaItems, faktura, fakturaType, paymentList,
                 chart_id: payment.chart_id,
                 amount: roundMoney(-paymentAmount, 2),
                 transdate, source, memo,
-                tax_id: 0, taxkey: 0
+                tax_id: 0, taxkey: 0,
+                bank_edit: bankEdit
             })
         })
 

@@ -94,6 +94,9 @@
             <v-tab value="invoices" prepend-icon="mdi-file-document-outline">
                 {{ t('KasseView.tabInvoices') }}
             </v-tab>
+            <v-tab value="payables" prepend-icon="mdi-file-document-arrow-right-outline">
+                {{ t('KasseView.tabPayables') }}
+            </v-tab>
         </v-tabs>
 
         <v-window v-if="selectedRegister" v-model="activeTab">
@@ -302,6 +305,54 @@
                 </v-card>
             </v-window-item>
 
+            <!-- ── OFFENE EINGANGSRECHNUNGEN (Lieferanten) ── -->
+            <v-window-item value="payables">
+                <div class="tab-toolbar mb-2">
+                    <v-text-field
+                        v-model="apSearch"
+                        :label="t('KasseView.searchPayable')"
+                        density="compact"
+                        hide-details
+                        prepend-inner-icon="mdi-magnify"
+                        clearable
+                        style="max-width:320px"
+                        @update:model-value="debouncedLoadOpenAp"
+                    />
+                </div>
+
+                <v-card rounded="lg" elevation="0" border>
+                    <v-data-table
+                        :headers="apHeaders"
+                        :items="openAp"
+                        :loading="apLoading"
+                        :items-per-page="50"
+                        density="compact"
+                        hover
+                    >
+                        <template #item.transdate="{ item }">
+                            <span class="text-no-wrap text-body-2">{{ formatDateShort(item.transdate) }}</span>
+                        </template>
+                        <template #item.duedate="{ item }">
+                            <span class="text-no-wrap text-body-2" :class="isOverdue(item.duedate) ? 'text-error' : ''">
+                                {{ formatDateShort(item.duedate) }}
+                            </span>
+                        </template>
+                        <template #item.open_amount="{ item }">
+                            <span class="font-weight-semibold">{{ formatCurrency(item.open_amount) }}</span>
+                        </template>
+                        <template #item.actions="{ item }">
+                            <v-btn size="small" variant="tonal" color="warning" @click.stop="bookApAsCashDialog(item)">
+                                <v-icon start>mdi-cash-minus</v-icon>
+                                {{ t('KasseView.payCash') }}
+                            </v-btn>
+                        </template>
+                        <template #no-data>
+                            <div class="text-center pa-6 text-disabled">{{ t('KasseView.noOpenPayables') }}</div>
+                        </template>
+                    </v-data-table>
+                </v-card>
+            </v-window-item>
+
         </v-window>
 
         <!-- ── Dialog: Neue manuelle Buchung ── -->
@@ -456,6 +507,45 @@
             </v-card>
         </v-dialog>
 
+        <!-- ── Dialog: Eingangsrechnung bar bezahlen ── -->
+        <v-dialog v-model="showApDialog" max-width="440" persistent>
+            <v-card>
+                <v-card-title>{{ t('KasseView.payCash') }}</v-card-title>
+                <v-card-text v-if="apDialogItem">
+                    <v-alert type="warning" variant="tonal" density="compact" class="mb-4">
+                        <div>{{ apDialogItem.invnumber }} · {{ apDialogItem.vendor_name }}</div>
+                        <div class="text-caption">{{ t('KasseView.openAmount') }}: {{ formatCurrency(apDialogItem.open_amount) }}</div>
+                    </v-alert>
+                    <v-text-field
+                        v-model="apData.transdate"
+                        :label="t('KasseView.date')"
+                        type="date"
+                        density="compact"
+                        variant="outlined"
+                        class="mb-3"
+                    />
+                    <v-text-field
+                        v-model="apData.amount"
+                        :label="t('KasseView.amount')"
+                        type="number"
+                        step="0.01"
+                        min="0.01"
+                        density="compact"
+                        variant="outlined"
+                        prepend-inner-icon="mdi-currency-eur"
+                    />
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer />
+                    <v-btn @click="showApDialog = false">{{ t('KasseView.cancel') }}</v-btn>
+                    <v-btn color="warning" :loading="apSaving" @click="confirmBookAp">
+                        <v-icon start>mdi-cash-minus</v-icon>
+                        {{ t('KasseView.payCash') }}
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
         <!-- ── Dialog: Beleg-Vorschau ── -->
         <v-dialog v-model="showDocPreview" max-width="860">
             <v-card>
@@ -512,6 +602,9 @@ const documentsEnabled   = ref(false)
 const openAr             = ref([])
 const arLoading          = ref(false)
 const arSearch           = ref('')
+const openAp             = ref([])     // offene Eingangsrechnungen (Lieferanten)
+const apLoading          = ref(false)
+const apSearch           = ref('')
 const typeFilter         = ref('all')
 const search             = ref('')        // Freitextsuche im Kassenbuch
 const sortBy             = ref([{ key: 'transdate', order: 'desc' }])
@@ -527,9 +620,11 @@ const periodMode   = ref('year')           // 'year' | 'month' | 'all'
 
 const showTransactionDialog = ref(false)
 const showArDialog          = ref(false)
+const showApDialog          = ref(false)
 const showDocPreview        = ref(false)
 const txSaving              = ref(false)
 const arSaving              = ref(false)
+const apSaving              = ref(false)
 const docPreviewLoading     = ref(false)
 const docPreviewData        = ref('')
 const docPreviewMime        = ref('')
@@ -549,6 +644,12 @@ const belegLocked = ref(true)
 
 const arDialogItem = ref(null)
 const arData = reactive({
+    transdate: new Date().toISOString().slice(0, 10),
+    amount:    '',
+})
+
+const apDialogItem = ref(null)
+const apData = reactive({
     transdate: new Date().toISOString().slice(0, 10),
     amount:    '',
 })
@@ -643,6 +744,15 @@ const arHeaders = computed(() => [
     { title: '',                         key: 'actions',     width: '160px', sortable: false },
 ])
 
+const apHeaders = computed(() => [
+    { title: t('KasseView.invoice'),     key: 'invnumber',   width: '130px' },
+    { title: t('KasseView.vendor'),      key: 'vendor_name' },
+    { title: t('KasseView.invoiceDate'), key: 'transdate',   width: '100px' },
+    { title: t('KasseView.dueDate'),     key: 'duedate',     width: '100px' },
+    { title: t('KasseView.openAmount'),  key: 'open_amount', width: '120px' },
+    { title: '',                         key: 'actions',     width: '160px', sortable: false },
+])
+
 // ── API ─────────────────────────────────────────────────────────────────────
 
 async function loadRegisters() {
@@ -708,6 +818,26 @@ let arSearchTimer = null
 function debouncedLoadOpenAr() {
     clearTimeout(arSearchTimer)
     arSearchTimer = setTimeout(loadOpenAr, 350)
+}
+
+async function loadOpenAp() {
+    if (!selectedRegisterId.value) return
+    apLoading.value = true
+    try {
+        const res = await axios.post(API_URL, {
+            action: 'getOpenApForCash',
+            search: apSearch.value || undefined,
+        })
+        if (res.data?.success) openAp.value = res.data.payload.invoices ?? []
+    } finally {
+        apLoading.value = false
+    }
+}
+
+let apSearchTimer = null
+function debouncedLoadOpenAp() {
+    clearTimeout(apSearchTimer)
+    apSearchTimer = setTimeout(loadOpenAp, 350)
 }
 
 // ── Zeitraum-Navigation ──────────────────────────────────────────────────────
@@ -883,6 +1013,42 @@ async function confirmBookAr() {
     }
 }
 
+// ── AP (Eingangsrechnung) bar bezahlen ────────────────────────────────────────
+
+function bookApAsCashDialog(invoice) {
+    apDialogItem.value = invoice
+    apData.transdate   = new Date().toISOString().slice(0, 10)
+    apData.amount      = String(invoice.open_amount)
+    showApDialog.value = true
+}
+
+async function confirmBookAp() {
+    const amt = Number(apData.amount)
+    if (!amt || amt <= 0) { alerts.error(t('KasseView.amountRequired')); return }
+
+    apSaving.value = true
+    try {
+        const res = await axios.post(API_URL, {
+            action:           'bookApAsCash',
+            cash_register_id: selectedRegisterId.value,
+            ap_id:            apDialogItem.value.id,
+            amount:           amt,
+            transdate:        apData.transdate,
+        })
+        if (res.data?.success) {
+            alerts.success(t('KasseView.paymentBooked'))
+            showApDialog.value = false
+            await loadRegisters()
+            await loadTransactions()
+            await loadOpenAp()
+        } else {
+            alerts.error(res.data?.text || t('KasseView.saveError'))
+        }
+    } finally {
+        apSaving.value = false
+    }
+}
+
 // ── Buchung löschen ────────────────────────────────────────────────────────────
 
 async function confirmDelete(item) {
@@ -966,12 +1132,16 @@ function isOverdue(d)       { return d && new Date(d) < new Date() }
 watch(selectedRegisterId, () => {
     loadTransactions()
     if (activeTab.value === 'invoices') loadOpenAr()
+    if (activeTab.value === 'payables') loadOpenAp()
 })
 watch(typeFilter,   loadTransactions)
 watch(periodYear,   loadTransactions)
 watch(periodMonth,  loadTransactions)
 watch(periodMode,   loadTransactions)
-watch(activeTab,    (tab) => { if (tab === 'invoices') loadOpenAr() })
+watch(activeTab,    (tab) => {
+    if (tab === 'invoices') loadOpenAr()
+    if (tab === 'payables') loadOpenAp()
+})
 // Typwechsel: gewähltes Gegenkonto nur verwerfen, wenn es nicht mehr passt.
 // Transferkonten (Geldtransit/Bank, category A) gelten für beide Richtungen.
 watch(() => txData.type, () => {

@@ -600,6 +600,7 @@
         "openaiApiKey_help": "API-Schlüssel für OpenAI Whisper (Sprogrkennung). Erhältlich unter platform.openai.com",
         "anthropicApiKey": "Anthropic API-Key",
         "anthropicApiKey_help": "API-Schlüssel für Claude (Datenextraktion). Erhältlich unter console.anthropic.com",
+        "anthropicBilling": "Administrer fakturering og kredit for API-nøglen i Anthropic Console under Plans & Billing:",
         "aiGewichtRechnungen": "KI-Gewicht: Fakturaen",
         "aiGewichtRechnungen_help": "Gewichtung historischer Fakturaen für KI-Positionsvorschläge (Standard: 5)",
         "aiGewichtAuftraege": "KI-Gewicht: Ordrer",

@@ -635,7 +635,7 @@ function weroniAnalyzeDocument($data) {
     curl_close($ch);
 
     if ($httpCode !== 200) {
-        throw new ApiError('CLAUDE_API_ERROR', 'Vision-Analyse fehlgeschlagen (HTTP ' . $httpCode . '): ' . $response);
+        throw new ApiError('CLAUDE_API_ERROR', _weroniClaudeErrorMessage($httpCode, $response));
     }
 
     $responseData = json_decode($response, true);
@@ -663,6 +663,47 @@ function weroniAnalyzeDocument($data) {
         'message' => $chatMessage,
         'session_id' => $sessionId
     ]);
+}
+
+/**
+ * Übersetzt einen HTTP-Fehler der Anthropic-API in eine verständliche
+ * deutsche Meldung. Erkennt insbesondere fehlendes Guthaben (Billing) und
+ * ungültige API-Keys und ergänzt einen Link zur Bezahlung.
+ *
+ * @param int    $httpCode HTTP-Statuscode der API-Antwort
+ * @param string $response Roher Antwort-Body (JSON)
+ * @return string Benutzerfreundliche Fehlermeldung (Markdown)
+ */
+function _weroniClaudeErrorMessage($httpCode, $response) {
+    $billingUrl = 'https://console.anthropic.com/settings/billing';
+    $decoded = json_decode($response, true);
+    $apiType = $decoded['error']['type'] ?? '';
+    $apiMessage = $decoded['error']['message'] ?? '';
+    $lowerMessage = strtolower($apiMessage);
+
+    // Guthaben aufgebraucht — häufigste Ursache, dass Weroni "nicht mehr geht"
+    if (str_contains($lowerMessage, 'credit balance') || str_contains($lowerMessage, 'billing')) {
+        return "Weroni kann gerade nicht antworten, weil das Anthropic-Guthaben aufgebraucht ist. "
+            . "Bitte lade in der Anthropic Console unter **Plans & Billing** Guthaben auf bzw. hinterlege eine Zahlungsmethode: "
+            . "[console.anthropic.com/settings/billing]({$billingUrl})";
+    }
+
+    // Ungültiger oder fehlender API-Key
+    if ($httpCode === 401 || $apiType === 'authentication_error') {
+        return "Der Anthropic API-Key ist ungültig oder abgelaufen. "
+            . "Bitte prüfe den Key in der Anthropic Console und trage ihn in den Einstellungen ein: "
+            . "[console.anthropic.com/settings/keys](https://console.anthropic.com/settings/keys)";
+    }
+
+    // Ratenlimit erreicht
+    if ($httpCode === 429 || $apiType === 'rate_limit_error') {
+        return "Das Anfragelimit der Anthropic-API ist erreicht. Bitte versuche es in einer Minute erneut. "
+            . "Höhere Limits gibt es in der Anthropic Console unter [Plans & Billing]({$billingUrl}).";
+    }
+
+    // Sonstiger Fehler — Originaltext mitliefern
+    $detail = $apiMessage !== '' ? $apiMessage : $response;
+    return "Claude API Fehler (HTTP {$httpCode}): {$detail}";
 }
 
 /**
@@ -699,7 +740,7 @@ function _callClaudeWithTools($apiKey, $systemPrompt, $messages, $tools) {
         return ['error' => 'cURL-Fehler: ' . $curlError];
     }
     if ($httpCode !== 200) {
-        return ['error' => 'Claude API Fehler (HTTP ' . $httpCode . '): ' . $response];
+        return ['error' => _weroniClaudeErrorMessage($httpCode, $response)];
     }
 
     $data = json_decode($response, true);

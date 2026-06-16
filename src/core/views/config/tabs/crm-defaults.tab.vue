@@ -152,6 +152,23 @@
                 </v-col>
             </v-row>
 
+            <!-- Hinweis mit klickbarem Link -->
+            <v-row v-else-if="field.type === 'info'" class="my-1">
+                <v-col cols="12" md="8">
+                    <v-alert
+                        type="info"
+                        variant="tonal"
+                        density="compact"
+                        :icon="field.icon || 'mdi-information-outline'"
+                    >
+                        {{ t(field.label) }}
+                        <a v-if="field.url" :href="field.url" target="_blank" rel="noopener noreferrer" class="ms-1">
+                            {{ field.url }}
+                        </a>
+                    </v-alert>
+                </v-col>
+            </v-row>
+
             <!-- Custom Component (z.B. WhatsApp Templates) -->
             <v-row v-else-if="field.type === 'component' && field.component === 'whatsapp-templates'" class="my-1">
                 <v-col cols="12">

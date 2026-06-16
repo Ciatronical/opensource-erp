@@ -77,15 +77,25 @@ export function useAccounting() {
         }
     }
 
-    async function approveBooking(bookingId) {
+    async function approveBooking(bookingId, extra = {}) {
         try {
             const response = await axios.post('/api/accounting/', {
                 action: 'approveBooking',
-                booking_id: bookingId
+                booking_id: bookingId,
+                ...extra   // optional: vendor_id, debit_account (Freigabe-Override)
             })
             return response.data
         } catch (e) {
             return { success: false, text: e.message }
+        }
+    }
+
+    async function searchVendors(query) {
+        try {
+            const response = await axios.post('/api/accounting/', { action: 'searchVendors', query })
+            return response.data?.payload?.vendors ?? []
+        } catch (e) {
+            return []
         }
     }
 
@@ -157,6 +167,7 @@ export function useAccounting() {
         approveBookingsBatch,
         rejectBooking,
         updateBooking,
-        searchAccounts
+        searchAccounts,
+        searchVendors
     }
 }

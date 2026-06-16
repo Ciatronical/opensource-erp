@@ -199,6 +199,46 @@ sudo systemctl start oserp-sse
 wieder startet. Im Docker-Betrieb übernimmt der Container-Entrypoint dieselbe
 Aufgabe (Auto-Restart-Schleife), ein Service ist dort nicht nötig.
 
+**Wichtig — `Restart=always`, nicht `on-failure`:** Der Server kann sich auch
+sauber (Exit 0) beenden, z. B. wenn die DB-Verbindung wegbricht. Mit
+`Restart=on-failure` wird er dann **nicht** neu gestartet und bleibt still
+liegen (Port 3001 leer, Frontend ohne Live-Updates). Deshalb zwingend
+`Restart=always` verwenden.
+
+### Variante ohne root (User-Service)
+
+Wird OpensourceERP als normaler Benutzer betrieben (Standardfall, siehe 1.),
+kann der SSE-Server auch als **systemd-User-Service** laufen — ohne `sudo` und
+ohne System-Unit. Dafür die Unit nach `~/.config/systemd/user/` legen und
+`linger` aktivieren, damit der Dienst Logout überlebt und beim Boot startet:
+
+```bash
+mkdir -p ~/.config/systemd/user
+cp install/oserp-sse.service ~/.config/systemd/user/
+# Findet systemd "node" nicht (nvm/Custom-Pfad): absoluten Node-Pfad in ExecStart eintragen
+systemctl --user daemon-reload
+systemctl --user enable --now oserp-sse
+sudo loginctl enable-linger "$USER"   # einmalig: Dienst läuft ohne aktive Session
+```
+
+Status/Logs dann **immer mit `--user`** prüfen (im System-Scope taucht er nicht
+auf, sonst wirkt er fälschlich „nicht installiert"):
+
+```bash
+systemctl --user status oserp-sse
+journalctl --user -u oserp-sse -f
+```
+
+### Healthcheck
+
+```bash
+curl -m3 -D- http://127.0.0.1:3001/events
+```
+
+**HTTP 401 Unauthorized ist gesund** — der Server verlangt eine Login-Session
+und weist Anfragen ohne Cookie ab. „Connection refused" bedeutet dagegen, dass
+der Server tot ist.
+
 ---
 
 ## 5. Programmier-Stilrichtlinien

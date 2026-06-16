@@ -294,34 +294,52 @@ PROMPT;
     );
     } // Ende else (KI-Extraktion)
 
-    // Lieferanten-Matching
-    $vendorData = $extracted['vendor'] ?? [];
-    $vendorMatch = _matchOrCreateVendor($db, $vendorData);
-
-    if ($vendorMatch['vendor_id']) {
-        $db->execute(
-            "UPDATE accounting_documents SET vendor_id = :vid WHERE id = :id",
-            [':vid' => $vendorMatch['vendor_id'], ':id' => $docId]
-        );
-    }
-
-    // Buchungsvorschlag generieren
+    // Buchungsvorschlag + Beträge (zuerst – für die Kleinbetrags-Entscheidung)
     $booking = $extracted['booking_suggestion'] ?? [];
     $amounts = $extracted['amounts'] ?? [];
     $invoice = $extracted['invoice'] ?? [];
+    $gross   = floatval($amounts['gross'] ?? 0);
 
-    // Wenn ein bekannter Lieferant mit Kontenzuordnung gefunden wurde, uebernehmen
-    if ($vendorMatch['vendor_id']) {
+    // Lieferanten-Auflösung (neue Regeln): IBAN/USt-ID exakt oder Name ≥90 % → auto;
+    // 60–90 % → Freigabe mit Kandidaten; sonst echter Kreditor (mit IBAN/USt) bzw.
+    // Sammelkreditor „Diverse" (Kleinbeleg/Tankstelle), echter Name im Buchungstext.
+    $vendorData = $extracted['vendor'] ?? [];
+    $vres = _iv_resolveVendor($db, $vendorData, $gross);
+    $vendorId = intval($vres['vendor_id'] ?? 0);
+    if ($vres['status'] === 'new') {
+        $vendorId = _iv_createVendor($db, $vendorData);
+        $vres['vendor_id'] = $vendorId;
+    }
+    if (!empty($vres['is_collective']) && !empty($vres['original_name']) && empty($booking['description'])) {
+        $booking['description'] = $vres['original_name'];
+    }
+    $vendorMatch = [
+        'vendor_id'     => $vendorId ?: null,
+        'vendor_name'   => $vres['vendor_name'],
+        'match_type'    => $vres['status'],
+        'match_score'   => $vres['match_score'],
+        'candidates'    => $vres['candidates'],
+        'is_new'        => ($vres['status'] === 'new'),
+        'is_collective' => !empty($vres['is_collective']),
+        'status'        => $vres['status'],
+    ];
+
+    if ($vendorId) {
+        $db->execute(
+            "UPDATE accounting_documents SET vendor_id = :vid WHERE id = :id",
+            [':vid' => $vendorId, ':id' => $docId]
+        );
+        // Kontenzuordnung vom letzten verbuchten Beleg dieses Lieferanten lernen
         $lastBooking = $db->getOne(
             "SELECT debit_account, credit_account, tax_key FROM accounting_bookings
-             WHERE vendor_id = :vid AND type = 'incoming' AND status IN ('approved', 'booked')
+             WHERE vendor_id = :vid AND type = 'incoming' AND ap_id IS NOT NULL
              ORDER BY booking_date DESC LIMIT 1",
-            [':vid' => $vendorMatch['vendor_id']]
+            [':vid' => $vendorId]
         );
         if ($lastBooking) {
-            $booking['debit_account'] = $lastBooking['debit_account'];
+            $booking['debit_account']  = $lastBooking['debit_account'];
             $booking['credit_account'] = $lastBooking['credit_account'];
-            $booking['tax_key'] = $lastBooking['tax_key'];
+            $booking['tax_key']        = $lastBooking['tax_key'];
         }
     }
 
@@ -372,6 +390,34 @@ PROMPT;
         [':bid' => $bookingId, ':id' => $docId]
     );
 
+    // Lieferanten-Auflösung (inkl. Kandidaten bei Unsicherheit) am Dokument ablegen
+    // – die Freigabe-UI kann daraus den Kandidaten-Picker bauen.
+    $db->execute(
+        "UPDATE accounting_documents
+         SET extracted_data = jsonb_set(COALESCE(extracted_data, '{}'::jsonb), '{vendor_resolution}', :vr::jsonb)
+         WHERE id = :id",
+        [':vr' => json_encode($vres, JSON_UNESCAPED_UNICODE), ':id' => $docId]
+    );
+
+    // ── Hybrid: bei hoher Sicherheit automatisch ins Hauptbuch buchen (echte ap) ──
+    // Sonst bleibt die Buchung 'pending' zur Freigabe.
+    $autoBooked = false;
+    $autoApId   = null;
+    $debitChart = $db->getOne("SELECT id FROM chart WHERE accno = :a", [':a' => ($booking['debit_account'] ?? '')]);
+    $canAutoBook = floatval($confidence) >= 0.85
+        && $vendorId > 0
+        && $vres['status'] !== 'ambiguous'
+        && $debitChart
+        && $gross > 0;
+    if ($canAutoBook) {
+        try {
+            $autoApId   = _iv_postBooking($db, $bookingId);
+            $autoBooked = ($autoApId !== null);
+        } catch (ApiError $e) {
+            // Buchung scheitert (z. B. Konto/Steuer unklar) → bleibt zur Freigabe liegen.
+        }
+    }
+
     // Buchungspositionen anlegen
     $positions = $extracted['positions'] ?? [];
     foreach ($positions as $idx => $pos) {
@@ -394,11 +440,16 @@ PROMPT;
     }
 
     resultInfo(true, 'OK', [
-        'document_id' => $docId,
-        'booking_id'  => $bookingId,
-        'extracted'   => $extracted,
-        'vendor'      => $vendorMatch,
-        'reference'   => $bookingRef['ref']
+        'document_id'  => $docId,
+        'booking_id'   => $bookingId,
+        'extracted'    => $extracted,
+        'vendor'       => $vendorMatch,
+        'reference'    => $bookingRef['ref'],
+        'auto_booked'  => $autoBooked,           // true = automatisch ins Hauptbuch gebucht (echte ap)
+        'ap_id'        => $autoApId,             // ID der echten Eingangsrechnung (falls auto)
+        'needs_review' => !$autoBooked,          // false = fertig; true = Freigabe nötig
+        'vendor_status' => $vres['status'],      // matched | collective | new | ambiguous
+        'vendor_candidates' => $vres['candidates'],
     ]);
 }
 

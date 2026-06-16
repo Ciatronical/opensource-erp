@@ -156,20 +156,42 @@ function approveBooking($data) {
     if (!$bookingId) throw new ApiError('VALIDATION_ERROR', 'booking_id erforderlich');
 
     $booking = $db->getOne(
-        "SELECT id, status FROM accounting_bookings WHERE id = :id",
+        "SELECT id, status, ap_id, type FROM accounting_bookings WHERE id = :id",
         [':id' => $bookingId]
     );
     if (!$booking) throw new ApiError('DATA_NOT_FOUND', 'Buchung nicht gefunden');
-    if ($booking['status'] !== 'pending') {
-        throw new ApiError('VALIDATION_ERROR', 'Buchung kann nur im Status "pending" freigegeben werden');
+
+    // Optionale Korrekturen aus der Freigabe (Lieferant/Aufwandskonto) übernehmen –
+    // z. B. wenn der Lieferant unsicher war (Kandidaten-Picker).
+    $vendorOverride = intval($data['vendor_id'] ?? 0);
+    $debitOverride  = trim($data['debit_account'] ?? '');
+    $sets = []; $params = [':id' => $bookingId];
+    if ($vendorOverride > 0) { $sets[] = 'vendor_id = :vid';     $params[':vid'] = $vendorOverride; }
+    if ($debitOverride !== '') { $sets[] = 'debit_account = :da'; $params[':da']  = $debitOverride; }
+    if ($sets) {
+        $db->execute("UPDATE accounting_bookings SET " . implode(', ', $sets) . ", mtime = NOW() WHERE id = :id", $params);
+    }
+
+    // Eingangsrechnung: echte ap ins Hauptbuch buchen (idempotent). Andere Typen nur freigeben.
+    if (empty($booking['ap_id']) && $booking['type'] === 'incoming') {
+        try {
+            _iv_postBooking($db, $bookingId);
+        } catch (ApiError $e) {
+            resultInfo(false, $e->getMessage());
+            return;
+        }
     }
 
     $db->execute(
-        "UPDATE accounting_bookings SET status = 'approved', approved_by = :eid, approved_at = NOW(), mtime = NOW() WHERE id = :id",
+        "UPDATE accounting_bookings
+         SET status = CASE WHEN status = 'pending' THEN 'approved' ELSE status END,
+             approved_by = :eid, approved_at = NOW(), mtime = NOW()
+         WHERE id = :id",
         [':eid' => intval($_SESSION['employee_id'] ?? 0), ':id' => $bookingId]
     );
 
-    resultInfo(true, 'Buchung freigegeben', ['booking_id' => $bookingId]);
+    $ap = $db->getOne("SELECT ap_id FROM accounting_bookings WHERE id = :id", [':id' => $bookingId]);
+    resultInfo(true, 'Buchung freigegeben und gebucht', ['booking_id' => $bookingId, 'ap_id' => $ap['ap_id'] ?? null]);
 }
 
 /**
@@ -183,23 +205,31 @@ function approveBookingsBatch($data) {
     $ids = $data['booking_ids'] ?? [];
     if (empty($ids)) throw new ApiError('VALIDATION_ERROR', 'booking_ids erforderlich');
 
-    $count = 0;
+    $count = 0; $skipped = [];
     foreach ($ids as $id) {
         $id = intval($id);
         $booking = $db->getOne(
-            "SELECT id, status FROM accounting_bookings WHERE id = :id AND status = 'pending'",
+            "SELECT id, status, ap_id, type FROM accounting_bookings WHERE id = :id AND status = 'pending'",
             [':id' => $id]
         );
-        if ($booking) {
-            $db->execute(
-                "UPDATE accounting_bookings SET status = 'approved', approved_by = :eid, approved_at = NOW(), mtime = NOW() WHERE id = :id",
-                [':eid' => intval($_SESSION['employee_id'] ?? 0), ':id' => $id]
-            );
-            $count++;
+        if (!$booking) continue;
+
+        // Echte ap buchen (idempotent). Scheitert es (Lieferant/Konto unklar) → überspringen.
+        if (empty($booking['ap_id']) && $booking['type'] === 'incoming') {
+            try { _iv_postBooking($db, $id); }
+            catch (ApiError $e) { $skipped[] = $id; continue; }
         }
+        $db->execute(
+            "UPDATE accounting_bookings
+             SET status = CASE WHEN status = 'pending' THEN 'approved' ELSE status END,
+                 approved_by = :eid, approved_at = NOW(), mtime = NOW()
+             WHERE id = :id",
+            [':eid' => intval($_SESSION['employee_id'] ?? 0), ':id' => $id]
+        );
+        $count++;
     }
 
-    resultInfo(true, $count . ' Buchungen freigegeben', ['approved_count' => $count]);
+    resultInfo(true, $count . ' Buchungen freigegeben und gebucht', ['approved_count' => $count, 'skipped' => $skipped]);
 }
 
 /**
@@ -400,4 +430,26 @@ function searchAccounts($data) {
     );
 
     resultInfo(true, '', ['accounts' => $accounts ?: []]);
+}
+
+/**
+ * Lieferanten suchen (für den Kandidaten-Picker in der Freigabe)
+ *
+ * @param string $data['query'] Suchbegriff (Name oder Lieferantennummer)
+ * @testdata {"query": "baumarkt"}
+ */
+function searchVendors($data) {
+    $db = DbhCompany::begin();
+    $q = trim($data['query'] ?? '');
+    if (mb_strlen($q) < 2) { resultInfo(true, '', ['vendors' => []]); return; }
+
+    $vendors = $db->getAll(
+        "SELECT id, name, vendornumber
+         FROM vendor
+         WHERE obsolete IS NOT TRUE AND (name ILIKE :q OR vendornumber ILIKE :q)
+         ORDER BY name LIMIT 20",
+        [':q' => '%' . $q . '%']
+    );
+
+    resultInfo(true, '', ['vendors' => $vendors ?: []]);
 }

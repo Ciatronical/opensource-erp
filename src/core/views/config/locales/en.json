@@ -665,6 +665,7 @@
         "openaiApiKey_help": "API key for OpenAI Whisper (speech recognition). Available at platform.openai.com",
         "anthropicApiKey": "Anthropic API Key",
         "anthropicApiKey_help": "API key for Claude (data extraction). Available at console.anthropic.com",
+        "anthropicBilling": "Manage billing and credits for the API key in the Anthropic Console under Plans & Billing:",
         "aiGewichtRechnungen": "AI Weight: Invoices",
         "aiGewichtRechnungen_help": "Weight of historical invoices for AI position suggestions (default: 5)",
         "aiGewichtAuftraege": "AI Weight: Orders",

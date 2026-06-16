@@ -64,13 +64,39 @@
                     <span class="ml-2 font-weight-bold">{{ uploadResult.reference }}</span>
                 </v-alert>
 
+                <!-- Hybrid-Status: automatisch gebucht vs. Freigabe nötig -->
+                <v-alert
+                    :type="uploadResult.auto_booked ? 'success' : 'warning'"
+                    variant="tonal"
+                    class="mb-4"
+                    :icon="uploadResult.auto_booked ? 'mdi-robot-happy-outline' : 'mdi-account-clock-outline'"
+                >
+                    <template v-if="uploadResult.auto_booked">
+                        {{ t('AccountingView.upload.autoBooked') }}
+                    </template>
+                    <template v-else>
+                        {{ uploadResult.vendor_status === 'ambiguous'
+                            ? t('AccountingView.upload.reviewVendor')
+                            : t('AccountingView.upload.reviewNeeded') }}
+                        <v-btn class="ml-3" size="small" variant="tonal" :to="t('AccountingView.routes.accountingBookings')">
+                            {{ t('AccountingView.upload.toReview') }}
+                        </v-btn>
+                    </template>
+                </v-alert>
+
                 <!-- Lieferant -->
                 <v-card class="mb-4">
                     <v-card-title>
                         <v-icon start>mdi-domain</v-icon>
                         {{ t('AccountingView.upload.vendorInfo') }}
-                        <v-chip v-if="uploadResult.vendor?.is_new" color="info" size="small" class="ml-2">
+                        <v-chip v-if="uploadResult.vendor?.is_collective" color="warning" size="small" class="ml-2">
+                            {{ t('AccountingView.upload.collectiveVendor') }}
+                        </v-chip>
+                        <v-chip v-else-if="uploadResult.vendor?.is_new" color="info" size="small" class="ml-2">
                             {{ t('AccountingView.upload.newVendor') }}
+                        </v-chip>
+                        <v-chip v-else-if="uploadResult.vendor_status === 'ambiguous'" color="warning" size="small" class="ml-2">
+                            {{ t('AccountingView.upload.vendorAmbiguous') }}
                         </v-chip>
                         <v-chip v-else-if="uploadResult.vendor?.vendor_name" color="success" size="small" class="ml-2">
                             {{ t('AccountingView.upload.existingVendor') }}

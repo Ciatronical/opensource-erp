@@ -38,6 +38,7 @@ const crmDefaultsConfig = [
 
     { name: "openai_api_key", type: "password", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.openaiApiKey", tooltip: "crm_fields.openaiApiKey_help" },
     { name: "anthropic_api_key", type: "password", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.anthropicApiKey", tooltip: "crm_fields.anthropicApiKey_help" },
+    { name: "anthropic_billing_info", type: "info", icon: "mdi-credit-card-outline", url: "https://console.anthropic.com/settings/billing", label: "crm_fields.anthropicBilling" },
 
     { name: "brevo", type: "headline", label: "crm_fields.brevo" },
 

@@ -871,25 +871,130 @@ SQL;
 
     // 2c. Zahlungsbuchungen nur aktualisieren wenn explizit vom Frontend angefordert
     if ($isInvoiceType && $updatePayments) {
-        // Memo bestehender, noch gebuchter Bank-Zahlungen in-place aktualisieren.
-        // Diese Einträge sind geschützt (siehe $protectedBankIds) und werden weder
-        // gelöscht noch neu eingefügt; nur das vom Anwender editierbare Memo wird
-        // gepflegt (Betrag/Konto/Quelle bleiben unangetastet → Bankabstimmung intakt).
-        // Pro Zahlung nur ein UPDATE (dedupliziert über die acc_trans_id, da beide
-        // Buchungsbeine dieselbe ID mitsenden).
-        $bankMemoUpdates = [];
+        // Geschützte, noch gebuchte Bank-Zahlungen behandeln. Pro Zahlung kommen zwei
+        // Beine an (Forderung +Betrag, Bank −Betrag), beide tragen die acc_trans_id des
+        // Bank-Beins → dedupliziert über diese ID.
+        //   - Standard (bank_edit aus): nur das editierbare Memo pflegen, Betrag/Konto/
+        //     Quelle bleiben unangetastet → Bankabstimmung intakt.
+        //   - bank_edit (Schloss im Editor geöffnet): den gebuchten Satz direkt
+        //     bearbeiten. Beide acc_trans-Beine werden in-place aktualisiert (stabile
+        //     acc_trans_id → FK bank_transaction_acc_trans bleibt gültig). Der Bankumsatz
+        //     selbst wird NICHT verändert; Betrag/Konto können dadurch bewusst von der
+        //     Bankabstimmung abweichen (vom Anwender so gewollt, Warnung im Frontend).
+        $bankMemoUpdates = [];   // acc_trans_id (Bank-Bein) => memo
+        $bankFullEdits   = [];   // acc_trans_id (Bank-Bein) => [amount, transdate, source, memo, bank_chart_id]
         foreach ($paymentEntries as $entry) {
             $accTransId = intval($entry['acc_trans_id'] ?? 0);
-            if ($accTransId > 0 && in_array($accTransId, $protectedBankIds, true)) {
+            if ($accTransId <= 0 || !in_array($accTransId, $protectedBankIds, true)) {
+                continue;
+            }
+            $amount = floatval($entry['amount']);
+            if (!empty($entry['bank_edit'])) {
+                if (!isset($bankFullEdits[$accTransId])) {
+                    $bankFullEdits[$accTransId] = [
+                        'amount'        => abs($amount),
+                        'transdate'     => $entry['transdate'],
+                        'source'        => $entry['source'] ?? '',
+                        'memo'          => $entry['memo'] ?? '',
+                        'bank_chart_id' => null,
+                    ];
+                }
+                // Das negative Bein liefert das Geldkonto (Bank) und den Betrag.
+                if ($amount < 0) {
+                    $bankFullEdits[$accTransId]['bank_chart_id'] = intval($entry['chart_id']);
+                    $bankFullEdits[$accTransId]['amount']        = abs($amount);
+                }
+            } else {
                 $bankMemoUpdates[$accTransId] = $entry['memo'] ?? '';
             }
         }
+
         foreach ($bankMemoUpdates as $accTransId => $memo) {
             $company->execute(<<<SQL
                 UPDATE acc_trans
                 SET memo = :memo
                 WHERE acc_trans_id = :acc_trans_id
 SQL, ['memo' => $memo, 'acc_trans_id' => $accTransId]);
+        }
+
+        foreach ($bankFullEdits as $bankLegId => $edit) {
+            // Gegenbein (Forderung) über das stabile Mapping finden — selber Bankumsatz,
+            // andere acc_trans_id.
+            $counterRow = $company->getOne(<<<SQL
+                SELECT acc_trans_id
+                FROM bank_transaction_acc_trans
+                WHERE bank_transaction_id = (
+                        SELECT bank_transaction_id FROM bank_transaction_acc_trans
+                        WHERE acc_trans_id = :bankLeg LIMIT 1
+                    )
+                  AND acc_trans_id <> :bankLeg
+                LIMIT 1
+SQL, ['bankLeg' => $bankLegId]);
+            $counterId = $counterRow ? intval($counterRow['acc_trans_id']) : null;
+
+            // Fallback für Alt-Buchungen ohne Mapping-Zeile: Gegenbein über das
+            // (noch unveränderte) identische Memo derselben Rechnung finden.
+            if (!$counterId) {
+                $counterRow = $company->getOne(<<<SQL
+                    SELECT acc_trans_id
+                    FROM acc_trans
+                    WHERE trans_id = :tid
+                      AND acc_trans_id <> :bankLeg
+                      AND chart_link NOT LIKE '{$paymentLink}'
+                      AND memo = (SELECT memo FROM acc_trans WHERE acc_trans_id = :bankLeg2)
+                    LIMIT 1
+SQL, ['tid' => $fakturaID, 'bankLeg' => $bankLegId, 'bankLeg2' => $bankLegId]);
+                $counterId = $counterRow ? intval($counterRow['acc_trans_id']) : null;
+            }
+
+            $amt = round((float)$edit['amount'], 2);
+
+            // Bank-Bein (negativ). chart_link separat laden (vermeidet doppelte
+            // Named-Parameter) und mit aktualisieren, falls das Geldkonto gewechselt wurde.
+            if (!empty($edit['bank_chart_id'])) {
+                $bankChartLink = $company->getOne(
+                    "SELECT link FROM chart WHERE id = :id",
+                    ['id' => $edit['bank_chart_id']]
+                );
+                $company->execute(<<<SQL
+                    UPDATE acc_trans SET
+                        amount     = :amount,
+                        transdate  = :transdate,
+                        gldate     = :transdate,
+                        source     = :source,
+                        memo       = :memo,
+                        chart_id   = :chart_id,
+                        chart_link = :chart_link
+                    WHERE acc_trans_id = :acc_trans_id
+SQL, [
+                    'amount'       => -$amt,
+                    'transdate'    => $edit['transdate'],
+                    'source'       => (string)$edit['source'],
+                    'memo'         => $edit['memo'],
+                    'chart_id'     => $edit['bank_chart_id'],
+                    'chart_link'   => $bankChartLink['link'] ?? 'AR_paid:AP_paid',
+                    'acc_trans_id' => $bankLegId,
+                ]);
+            }
+
+            // Gegenbein (Forderung, positiv) — Konto/chart_link bleiben unverändert.
+            if ($counterId) {
+                $company->execute(<<<SQL
+                    UPDATE acc_trans SET
+                        amount    = :amount,
+                        transdate = :transdate,
+                        gldate    = :transdate,
+                        source    = :source,
+                        memo      = :memo
+                    WHERE acc_trans_id = :acc_trans_id
+SQL, [
+                    'amount'       => $amt,
+                    'transdate'    => $edit['transdate'],
+                    'source'       => (string)$edit['source'],
+                    'memo'         => $edit['memo'],
+                    'acc_trans_id' => $counterId,
+                ]);
+            }
         }
 
         // Alte Zahlungsbuchungen löschen — aber NICHT die geschützten Bank-Zahlungen
@@ -1146,6 +1251,149 @@ function postArInvoiceToLedger($db, $arId, $dryRun = false) {
     }
 
     return ['posted' => true, 'gross' => $gross, 'ar_amount' => (float)$ar['amount'], 'count' => count($entries)];
+}
+
+/**
+ * Bucht eine Eingangsrechnung (ap) serverseitig ins Hauptbuch (acc_trans).
+ *
+ * Spiegelbild zu postArInvoiceToLedger: pro Aufwandskonto+Steuer eine Sammelbuchung
+ * Aufwand (−netto) + Vorsteuer (−steuer) gegen Kreditor (+brutto). Aufwandskonto und
+ * Vorsteuer kommen aus der Buchungsgruppe (taxzone_charts.expense_accno → dessen
+ * taxkeys → tax_id/rate/Steuerkonto). Vorzeichen wie kivitendo (siehe AP-Referenz).
+ *
+ * Sicherheitsnetz wie bei AR: idempotent (ALREADY_POSTED) und Brutto==ap.amount-Schutz
+ * (AMOUNT_MISMATCH). $dryRun liefert nur die geplanten Buchungssätze.
+ *
+ * @param object $db     DbhCompany-Handle
+ * @param int    $apId   ap.id
+ * @param bool   $dryRun Nur planen, nicht schreiben
+ * @return array ['posted'=>bool,'reason'=>string,'gross'=>float,'ap_amount'=>float,'entries'=>array,'count'=>int]
+ */
+function postApInvoiceToLedger($db, $apId, $dryRun = false) {
+    $apId = intval($apId);
+    $ap = $db->getOne(
+        "SELECT id, taxzone_id, taxincluded, amount, transdate FROM ap WHERE id = :id",
+        ['id' => $apId]
+    );
+    if (!$ap) {
+        return ['posted' => false, 'reason' => 'AP_NOT_FOUND'];
+    }
+
+    $already = $db->getOne(
+        "SELECT 1 AS x FROM acc_trans WHERE trans_id = :id AND COALESCE(chart_link,'') NOT LIKE '%_paid%' LIMIT 1",
+        ['id' => $apId]
+    );
+    if ($already) {
+        return ['posted' => false, 'reason' => 'ALREADY_POSTED'];
+    }
+
+    $taxIncluded = in_array($ap['taxincluded'], [true, 't', '1', 1], true);
+    $transdate   = $ap['transdate'];
+
+    // Positionen inkl. buchungsziel: Aufwandskonto (expense_accno) + Vorsteuer aus
+    // dem taxkeys-Eintrag des Aufwandskontos.
+    $items = $db->getAll(<<<SQL
+        SELECT i.qty, i.sellprice, i.discount,
+               bz.expense_chart_id, bz.tax_id, bz.tax_chart_id, bz.rate
+        FROM invoice i
+        JOIN parts p ON p.id = i.parts_id
+        LEFT JOIN LATERAL (
+            SELECT c2.id AS expense_chart_id, tk.tax_id, tx.chart_id AS tax_chart_id, tx.rate
+            FROM buchungsgruppen bg
+            JOIN taxzone_charts tc ON tc.buchungsgruppen_id = bg.id AND tc.taxzone_id = :tz
+            JOIN chart c2 ON c2.id = tc.expense_accno_id
+            LEFT JOIN taxkeys tk ON tk.chart_id = c2.id
+            LEFT JOIN tax tx ON tx.id = tk.tax_id
+            WHERE bg.id = p.buchungsgruppen_id
+            ORDER BY tk.startdate DESC NULLS LAST
+            LIMIT 1
+        ) bz ON true
+        WHERE i.trans_id = :id
+        ORDER BY i.position
+    SQL, ['id' => $apId, 'tz' => $ap['taxzone_id']]);
+
+    if (empty($items)) {
+        return ['posted' => false, 'reason' => 'NO_ITEMS'];
+    }
+
+    $groups = [];
+    foreach ($items as $it) {
+        if ($it['expense_chart_id'] === null) {
+            return ['posted' => false, 'reason' => 'NO_EXPENSE_ACCOUNT'];
+        }
+        $rate      = (float)($it['rate'] ?? 0);
+        $itemTotal = round((float)$it['qty'] * (float)$it['sellprice'] * (1 - (float)$it['discount']), 2);
+        $net       = ($taxIncluded && $rate) ? round($itemTotal / (1 + $rate), 2) : $itemTotal;
+        $key       = $it['expense_chart_id'] . '_' . ($it['tax_id'] ?? '0');
+        if (!isset($groups[$key])) {
+            $groups[$key] = [
+                'expense'   => (int)$it['expense_chart_id'],
+                'tax_chart' => $it['tax_chart_id'] !== null ? (int)$it['tax_chart_id'] : null,
+                'tax_id'    => $it['tax_id'] !== null ? (int)$it['tax_id'] : 0,
+                'rate'      => $rate,
+                'net'       => 0.0,
+            ];
+        }
+        $groups[$key]['net'] += $net;
+    }
+
+    $entries = [];
+    $gross   = 0.0;
+    foreach ($groups as $g) {
+        $net    = round($g['net'], 2);
+        $tax    = $g['rate'] ? round($net * $g['rate'], 2) : 0.0;
+        // Vorsteuer-Schlüssel: 19% = 9, 7% = 8, sonst 0 (Einkaufsseite)
+        $taxkey = $g['rate'] > 0.1 ? 9 : ($g['rate'] > 0 ? 8 : 0);
+
+        $entries[] = ['chart_id' => $g['expense'], 'amount' => -$net, 'tax_id' => $g['tax_id'], 'taxkey' => $taxkey];
+        if ($tax != 0 && $g['tax_chart']) {
+            $entries[] = ['chart_id' => $g['tax_chart'], 'amount' => -$tax, 'tax_id' => 0, 'taxkey' => 0];
+        }
+        $gross += $net + $tax;
+    }
+    $gross = round($gross, 2);
+
+    // Kreditorenkonto (Standard: chart.link='AP', niedrigste Kontonummer).
+    $apChart = $db->getOne("SELECT id FROM chart WHERE link = 'AP' ORDER BY accno ASC LIMIT 1");
+    if (!$apChart) {
+        return ['posted' => false, 'reason' => 'NO_AP_ACCOUNT'];
+    }
+    $entries[] = ['chart_id' => (int)$apChart['id'], 'amount' => round($gross, 2), 'tax_id' => 0, 'taxkey' => 0];
+
+    if (abs($gross - (float)$ap['amount']) > 0.01) {
+        return ['posted' => false, 'reason' => 'AMOUNT_MISMATCH',
+                'gross' => $gross, 'ap_amount' => (float)$ap['amount'], 'entries' => $entries];
+    }
+
+    if ($dryRun) {
+        return ['posted' => false, 'reason' => 'DRY_RUN',
+                'gross' => $gross, 'ap_amount' => (float)$ap['amount'], 'entries' => $entries];
+    }
+
+    $db->beginTransaction();
+    try {
+        foreach ($entries as $e) {
+            $linkRow = $db->getOne("SELECT link FROM chart WHERE id = :id", ['id' => $e['chart_id']]);
+            $db->execute(<<<SQL
+                INSERT INTO acc_trans (trans_id, chart_id, amount, transdate, gldate, source, memo, tax_id, taxkey, chart_link)
+                VALUES (:t, :c, :a, :td, :td, '', '', :taxid, :tk, :link)
+            SQL, [
+                't'     => $apId,
+                'c'     => $e['chart_id'],
+                'a'     => $e['amount'],
+                'td'    => $transdate,
+                'taxid' => $e['tax_id'],
+                'tk'    => $e['taxkey'],
+                'link'  => $linkRow['link'] ?? '',
+            ]);
+        }
+        $db->commit();
+    } catch (\Throwable $ex) {
+        $db->rollBack();
+        throw $ex;
+    }
+
+    return ['posted' => true, 'gross' => $gross, 'ap_amount' => (float)$ap['amount'], 'count' => count($entries)];
 }
 
 /**
@@ -1966,6 +2214,15 @@ SQL;
             }
         } catch (\Throwable $e) {
             writeLog("convertFaktura: Auto-Buchung AR #{$newId} fehlgeschlagen: " . $e->getMessage(), true, DLOG_ERR);
+        }
+    } elseif ($effectiveTarget === 'purchase_invoice') {
+        try {
+            $postRes = postApInvoiceToLedger($company, $newId);
+            if (empty($postRes['posted'])) {
+                writeLog("convertFaktura: AP #{$newId} nicht auto-gebucht (" . ($postRes['reason'] ?? '?') . ")", true, DLOG_INF);
+            }
+        } catch (\Throwable $e) {
+            writeLog("convertFaktura: Auto-Buchung AP #{$newId} fehlgeschlagen: " . $e->getMessage(), true, DLOG_ERR);
         }
     }
 

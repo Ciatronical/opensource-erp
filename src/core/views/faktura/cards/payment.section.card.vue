@@ -26,7 +26,7 @@
                             <v-text-field
                                 v-model="payment.transdate"
                                 type="date"
-                                :disabled="isBankBooked(payment)"
+                                :disabled="isBankBooked(payment) && !isBelegUnlocked(payment, index)"
                                 variant="outlined"
                                 density="compact"
                                 hide-details
@@ -39,7 +39,7 @@
                             <v-text-field
                                 :ref="el => { if (el) sourceRefs[index] = el }"
                                 v-model="payment.source"
-                                :readonly="isBankBooked(payment) || !isBelegUnlocked(payment, index)"
+                                :readonly="!isBelegUnlocked(payment, index)"
                                 variant="outlined"
                                 density="compact"
                                 hide-details
@@ -47,24 +47,14 @@
                                 @keydown.enter="onEnterKey(index)"
                                 @blur="onPaymentChange"
                             >
-                                <template v-if="!isBankBooked(payment)" #append-inner>
+                                <template #append-inner>
                                     <v-icon
                                         size="small"
                                         :icon="isBelegUnlocked(payment, index) ? 'mdi-lock-open-variant' : 'mdi-lock'"
-                                        :color="isBelegUnlocked(payment, index) ? 'primary' : 'medium-emphasis'"
+                                        :color="lockColor(payment, index)"
                                         style="cursor:pointer"
-                                        :title="isBelegUnlocked(payment, index) ? t('FakturaView.faktura.belegLock') : t('FakturaView.faktura.belegEdit')"
+                                        :title="lockTitle(payment, index)"
                                         @click.stop="toggleBeleg(payment, index)"
-                                    />
-                                </template>
-                                <template v-else #append-inner>
-                                    <v-icon
-                                        size="small"
-                                        icon="mdi-lock"
-                                        color="info"
-                                        style="cursor:pointer"
-                                        :title="t('FakturaView.faktura.bankBookedLock')"
-                                        @click.stop="goToBankTransaction(payment)"
                                     />
                                 </template>
                             </v-text-field>
@@ -72,7 +62,7 @@
                         <td>
                             <v-text-field
                                 v-model="payment.memo"
-                                :disabled="isBankBooked(payment)"
+                                :disabled="isBankBooked(payment) && !isBelegUnlocked(payment, index)"
                                 variant="outlined"
                                 density="compact"
                                 hide-details
@@ -85,7 +75,7 @@
                             <v-autocomplete
                                 :ref="el => { if (el) accountRefs[index] = el }"
                                 v-model="payment.chart_id"
-                                :disabled="isBankBooked(payment)"
+                                :disabled="isBankBooked(payment) && !isBelegUnlocked(payment, index)"
                                 :items="paymentAccList"
                                 item-title="label"
                                 item-value="id"
@@ -108,7 +98,7 @@
                         <td v-if="showExchangeRate">
                             <v-text-field
                                 :model-value="getFormattedExchangeRate(payment, index)"
-                                :disabled="isBankBooked(payment)"
+                                :disabled="isBankBooked(payment) && !isBelegUnlocked(payment, index)"
                                 @update:model-value="onExchangeRateInput(index, $event)"
                                 @blur="onExchangeRateBlur(index)"
                                 @keydown.enter="onExchangeRateBlur(index); onEnterKey(index)"
@@ -123,7 +113,7 @@
                         <td>
                             <v-text-field
                                 :ref="el => { if (el) amountRefs[index] = el }"
-                                :disabled="isBankBooked(payment)"
+                                :disabled="isBankBooked(payment) && !isBelegUnlocked(payment, index)"
                                 :model-value="getFormattedAmount(payment, index)"
                                 @update:model-value="onAmountInput(index, $event)"
                                 @blur="onAmountBlur(index)"
@@ -356,13 +346,49 @@ export default defineComponent({
         }
 
         /**
-         * Schloss umschalten — reiner Editierschutz, ändert die Belegnummer NICHT.
-         * Öffnen = Feld bearbeitbar (und fokussieren); Schließen = Wert unverändert lassen.
+         * Farbe des Schloss-Icons: entsperrt = primary, bank-gebucht & gesperrt = info,
+         * sonst dezent.
+         */
+        function lockColor(payment, index) {
+            if (isBelegUnlocked(payment, index)) return 'primary'
+            return isBankBooked(payment) ? 'info' : 'medium-emphasis'
+        }
+
+        /**
+         * Tooltip des Schloss-Icons je nach Zustand (bank-gebucht vs. normal).
+         */
+        function lockTitle(payment, index) {
+            const unlocked = isBelegUnlocked(payment, index)
+            if (isBankBooked(payment)) {
+                return unlocked
+                    ? t('FakturaView.faktura.bankBookedUnlocked')
+                    : t('FakturaView.faktura.bankBookedEdit')
+            }
+            return unlocked
+                ? t('FakturaView.faktura.belegLock')
+                : t('FakturaView.faktura.belegEdit')
+        }
+
+        /**
+         * Schloss umschalten — Editierschutz der Zahlungszeile.
+         * Öffnen = Felder bearbeitbar (und Beleg-Feld fokussieren); Schließen = sperren.
+         *
+         * Bei bank-gebuchten Zahlungen erlaubt das Entsperren die direkte Bearbeitung des
+         * bereits gebuchten Satzes. Das Backend aktualisiert dann beide acc_trans-Beine
+         * in-place (Flag payment.bank_edit). Der Bankumsatz selbst bleibt unangetastet —
+         * Betrag/Konto-Änderungen können also von der Bankabstimmung abweichen, daher die
+         * Warnung.
          */
         function toggleBeleg(payment, index) {
             const key = getPaymentKey(payment, index)
             const nowUnlocked = !belegUnlockedKeys.value[key]
             belegUnlockedKeys.value = { ...belegUnlockedKeys.value, [key]: nowUnlocked }
+            if (isBankBooked(payment)) {
+                payment.bank_edit = nowUnlocked
+                if (nowUnlocked) {
+                    toasts.warning(t('FakturaView.faktura.bankBookedEditWarning'))
+                }
+            }
             if (nowUnlocked) {
                 focusSourceField(index)
             }
@@ -489,6 +515,9 @@ export default defineComponent({
                 return
             }
             payments.value = [...newValue]
+            // Frische (extern geladene) Daten: alle Entsperrungen zurücksetzen, damit
+            // bank-gebuchte Zeilen nach einem Speichern/Neuladen wieder gesperrt sind.
+            belegUnlockedKeys.value = {}
             ensureEmptyRow()
         }, { immediate: true })
 
@@ -859,6 +888,8 @@ export default defineComponent({
             canDeletePayment,
             isBankBooked,
             isBelegUnlocked,
+            lockColor,
+            lockTitle,
             toggleBeleg,
             goToBankTransaction,
             getFormattedAmount,

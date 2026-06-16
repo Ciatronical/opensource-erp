@@ -600,6 +600,7 @@
         "openaiApiKey_help": "OpenAI Whisper（语音识别）的 API 密钥。可在 platform.openai.com 获取",
         "anthropicApiKey": "Anthropic API 密钥",
         "anthropicApiKey_help": "Claude（数据提取）的 API 密钥。可在 console.anthropic.com 获取",
+        "anthropicBilling": "在 Anthropic 控制台的 Plans & Billing 中管理 API 密钥的账单和余额：",
         "aiGewichtRechnungen": "AI 权重：发票",
         "aiGewichtRechnungen_help": "历史发票在 AI 项目建议中的权重（默认：5）",
         "aiGewichtAuftraege": "AI 权重：订单",

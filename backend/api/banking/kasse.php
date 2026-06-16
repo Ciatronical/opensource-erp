@@ -826,6 +826,169 @@ function bookArAsCash($data) {
     resultInfo(true, '', ['booked_amount' => $payAmount]);
 }
 
+// ── Eingangsrechnung (AP) als Barzahlung buchen ───────────────────────────────
+
+/**
+ * Offene Eingangsrechnungen (Lieferantenrechnungen) für Barzahlung laden
+ *
+ * @param string $data['search'] Suchbegriff: Rechnungsnr. oder Lieferantenname (optional)
+ * @testdata {}
+ */
+function getOpenApForCash($data) {
+    $db = DbhCompany::begin();
+
+    $params     = [];
+    $whereExtra = '';
+
+    if (!empty($data['search'])) {
+        $whereExtra      .= " AND (ap.invnumber ILIKE :search OR v.name ILIKE :search)";
+        $params['search'] = '%' . $data['search'] . '%';
+    }
+
+    $result = $db->getAll("
+        SELECT
+            ap.id,
+            ap.invnumber,
+            ap.transdate,
+            ap.duedate,
+            ap.amount,
+            ap.paid,
+            (ap.amount - ap.paid) AS open_amount,
+            v.name AS vendor_name
+        FROM ap
+        JOIN vendor v ON v.id = ap.vendor_id
+        WHERE ap.amount > ap.paid
+          AND ap.storno IS NOT TRUE
+          {$whereExtra}
+        ORDER BY ap.duedate ASC NULLS LAST, ap.transdate ASC
+        LIMIT 100
+    ", $params);
+
+    resultInfo(true, '', ['invoices' => $result ?: []]);
+}
+
+/**
+ * Eingangsrechnung als Barzahlung buchen (acc_trans + ap.paid, kivitendo-kompatibel)
+ *
+ * Spiegelbild von bookArAsCash: hier verlässt Geld die Kasse (Auszahlung an den
+ * Lieferanten). Vorzeichen daher umgekehrt; die Kasse darf nicht ins Minus.
+ *
+ * @param int    $data['cash_register_id'] Kassakonto-ID (= chart.id)
+ * @param int    $data['ap_id']            Eingangsrechnung-ID
+ * @param float  $data['amount']           Betrag (optional; default = offener Betrag)
+ * @param string $data['transdate']        Buchungsdatum (optional)
+ * @testdata {"cash_register_id": 1, "ap_id": 1}
+ */
+function bookApAsCash($data) {
+    $db = DbhCompany::begin();
+
+    $registerId = intval($data['cash_register_id'] ?? 0);
+    $apId       = intval($data['ap_id'] ?? 0);
+
+    if ($registerId <= 0 || $apId <= 0) {
+        resultInfo(false, 'VALIDATION_ERROR', 'cash_register_id und ap_id erforderlich');
+        return;
+    }
+
+    $register = _kasse_loadRegister($db, $registerId);
+    if (!$register) { resultInfo(false, 'NOT_FOUND', 'Kassenbuch nicht gefunden'); return; }
+
+    $ap = $db->getOne(
+        "SELECT id, invnumber, amount, paid FROM ap WHERE id = :id AND storno IS NOT TRUE",
+        ['id' => $apId]
+    );
+    if (!$ap) { resultInfo(false, 'NOT_FOUND', 'Eingangsrechnung nicht gefunden'); return; }
+
+    $openAmount = floatval($ap['amount']) - floatval($ap['paid']);
+    $payAmount  = isset($data['amount']) ? min(abs(floatval($data['amount'])), $openAmount) : $openAmount;
+
+    if ($payAmount <= 0) {
+        resultInfo(false, 'VALIDATION_ERROR', 'Rechnung bereits vollständig bezahlt');
+        return;
+    }
+
+    $transdate = $data['transdate'] ?? date('Y-m-d');
+
+    // Kasse darf nie ins Minus: Auszahlung nur, wenn gedeckt.
+    $available = _kasse_availableBalance($db, $register['chart_id'], $transdate);
+    if ($payAmount > $available + 0.005) {
+        resultInfo(false,
+            'Diese Zahlung würde die Kasse ins Minus bringen. Verfügbar am '
+            . date('d.m.Y', strtotime($transdate)) . ': '
+            . number_format($available, 2, ',', '.') . ' €, benötigt: '
+            . number_format($payAmount, 2, ',', '.') . ' €.',
+            ['code' => 'NEGATIVE_CASH', 'available' => $available]
+        );
+        return;
+    }
+
+    // Verbindlichkeitskonto der AP-Erstbuchung ermitteln (z. B. 3300)
+    $counterChart = $db->getOne("
+        SELECT chart_id, chart_link
+        FROM acc_trans
+        WHERE trans_id = :tid
+          AND chart_link LIKE '%AP%'
+          AND chart_link NOT LIKE '%AP_paid%'
+        ORDER BY acc_trans_id ASC
+        LIMIT 1
+    ", ['tid' => $apId]);
+
+    // Fallback (wie matching.php): Rechnungen ohne GL-Erstbuchung → Standard-
+    // Verbindlichkeitskonto aus dem Kontenrahmen (chart.link = 'AP', kleinste Nr.).
+    if (!$counterChart) {
+        $counterChart = $db->getOne(
+            "SELECT id AS chart_id, link AS chart_link FROM chart WHERE link = 'AP' ORDER BY accno ASC LIMIT 1"
+        );
+    }
+
+    if (!$counterChart) {
+        resultInfo(false, 'DATA_ERROR', 'Verbindlichkeitskonto der Rechnung nicht ermittelbar');
+        return;
+    }
+
+    $beleg = nextBelegnummer($db, $register['chart_id'], $transdate);
+
+    // Vorzeichen (Soll = negativ, Haben = positiv):
+    //   Verbindlichkeitskonto: negativer Betrag (Soll) → klärt die Verbindlichkeit, zählt für ap.paid
+    //   Kassenkonto:           positiver Betrag (Haben) → Geld verlässt die Kasse; chart_link 'AP_paid'
+    //                          wird von der Faktura als Zahlung erkannt; source = Belegnummer.
+    $db->execute(
+        "INSERT INTO acc_trans (trans_id, chart_id, amount, transdate, gldate, source, memo, chart_link, tax_id, taxkey)
+         VALUES (:trans_id, :chart_id, :amount, :transdate, :transdate, :source, :memo, :chart_link, 0, 0)",
+        [
+            'trans_id'   => $apId,
+            'chart_id'   => $counterChart['chart_id'],
+            'amount'     => -$payAmount,
+            'transdate'  => $transdate,
+            'source'     => $ap['invnumber'],
+            'memo'       => 'Barzahlung Kasse',
+            'chart_link' => $counterChart['chart_link'] ?? 'AP',
+        ]
+    );
+
+    $db->execute(
+        "INSERT INTO acc_trans (trans_id, chart_id, amount, transdate, gldate, source, memo, chart_link, tax_id, taxkey)
+         VALUES (:trans_id, :chart_id, :amount, :transdate, :transdate, :source, :memo, :chart_link, 0, 0)",
+        [
+            'trans_id'   => $apId,
+            'chart_id'   => $register['chart_id'],
+            'amount'     => $payAmount,
+            'transdate'  => $transdate,
+            'source'     => $beleg,
+            'memo'       => 'Barzahlung Kasse',
+            'chart_link' => $register['chart_link'],
+        ]
+    );
+
+    // ap.paid erhöhen
+    $db->execute(
+        "UPDATE ap SET paid = COALESCE(paid, 0) + :inc WHERE id = :id",
+        ['inc' => $payAmount, 'id' => $apId]
+    );
+
+    resultInfo(true, '', ['booked_amount' => $payAmount]);
+}
+
 // ── Beleg-Upload und -Vorschau (optional) ─────────────────────────────────────
 
 /**

@@ -37,7 +37,7 @@
         "vuedraggable": "^4.1.0",
         "vuefinder": "^4.1.2",
         "vuetify": "^3.10.7",
-        "xlsx": "^0.18.5"
+        "xlsx": "https://cdn.sheetjs.com/xlsx-latest/xlsx-latest.tgz"
     },
     "devDependencies": {
         "@vitejs/plugin-vue": "^6.0.6",

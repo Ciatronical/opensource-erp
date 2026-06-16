@@ -97,7 +97,7 @@
                     </template>
                     <template #item.actions="{ item }">
                         <v-btn v-if="item.status === 'pending'" icon size="x-small" color="success"
-                               @click.stop="approveOne(item.id)" :title="t('AccountingView.bookings.approve')">
+                               @click.stop="approveOne(item.id, item)" :title="t('AccountingView.bookings.approve')">
                             <v-icon>mdi-check</v-icon>
                         </v-btn>
                         <v-btn v-if="item.status === 'pending'" icon size="x-small" color="error" class="ml-1"
@@ -165,6 +165,38 @@
                         <div v-if="selectedBooking.ai_notes" class="mt-1 text-body-2">{{ selectedBooking.ai_notes }}</div>
                     </v-alert>
 
+                    <!-- Lieferant zuordnen (unsichere Erkennung) -->
+                    <v-alert v-if="needsVendor" type="warning" variant="tonal" class="mt-4">
+                        <div class="font-weight-medium mb-2">
+                            <v-icon start>mdi-account-question-outline</v-icon>
+                            {{ t('AccountingView.bookings.assignVendorTitle') }}
+                            <span v-if="extractedVendorName" class="text-medium-emphasis"> — „{{ extractedVendorName }}"</span>
+                        </div>
+                        <div v-if="vendorCandidates.length" class="mb-2">
+                            <span class="text-caption">{{ t('AccountingView.bookings.candidates') }}:</span>
+                            <v-chip
+                                v-for="c in vendorCandidates" :key="c.vendor_id"
+                                class="ma-1" size="small"
+                                :color="assignVendorId === c.vendor_id ? 'primary' : undefined"
+                                :variant="assignVendorId === c.vendor_id ? 'flat' : 'outlined'"
+                                @click="selectVendor(c.vendor_id, c.vendor_name)"
+                            >
+                                {{ c.vendor_name }} ({{ Math.round((c.match_score || 0) * 100) }}%)
+                            </v-chip>
+                        </div>
+                        <v-autocomplete
+                            v-model="assignVendorId"
+                            :items="vendorOptions"
+                            :item-title="v => v.vendornumber ? `${v.name} (${v.vendornumber})` : v.name"
+                            item-value="id"
+                            :label="t('AccountingView.bookings.searchVendor')"
+                            density="compact" variant="outlined" hide-details
+                            :loading="vendorLoading" no-filter clearable
+                            prepend-inner-icon="mdi-magnify"
+                            @update:search="onVendorSearch"
+                        />
+                    </v-alert>
+
                     <!-- Positionen -->
                     <div v-if="selectedBooking.lines && selectedBooking.lines.length > 0" class="mt-4">
                         <h3 class="text-subtitle-1 mb-2">{{ t('AccountingView.bookings.lines') }}</h3>
@@ -199,9 +231,10 @@
                     <v-btn v-if="selectedBooking.status === 'pending'" color="error" variant="text" @click="rejectOne(selectedBooking.id)">
                         {{ t('AccountingView.bookings.reject') }}
                     </v-btn>
-                    <v-btn v-if="selectedBooking.status === 'pending'" color="success" variant="elevated" @click="approveOne(selectedBooking.id)">
+                    <v-btn v-if="selectedBooking.status === 'pending'" color="success" variant="elevated"
+                           :disabled="needsVendor && !assignVendorId" @click="approveOne(selectedBooking.id)">
                         <v-icon start>mdi-check</v-icon>
-                        {{ t('AccountingView.bookings.approve') }}
+                        {{ needsVendor ? t('AccountingView.bookings.assignAndBook') : t('AccountingView.bookings.approve') }}
                     </v-btn>
                     <v-btn variant="text" @click="detailDialog = false">
                         {{ t('AccountingView.bookings.cancel') }}
@@ -218,15 +251,49 @@ import { useI18n } from 'vue-i18n'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAccounting } from '../composables/useAccounting.js'
+import * as toasts from '@/core/utils/toasts.js'
 
 const { t } = useI18n()
 const router = useRouter()
 const route = useRoute()
-const { loading, bookings, stats, fetchBookings, fetchBooking, approveBooking, approveBookingsBatch, rejectBooking } = useAccounting()
+const { loading, bookings, stats, fetchBookings, fetchBooking, approveBooking, approveBookingsBatch, rejectBooking, searchVendors } = useAccounting()
 
 const selected = ref([])
 const detailDialog = ref(false)
 const selectedBooking = ref(null)
+
+// Kandidaten-Picker (Lieferant zuordnen bei unsicherer Erkennung)
+const assignVendorId = ref(null)
+const vendorOptions  = ref([])
+const vendorLoading  = ref(false)
+let   vendorTimer    = null
+
+const needsVendor = computed(() =>
+    selectedBooking.value?.status === 'pending' && !selectedBooking.value?.vendor_id
+)
+const vendorCandidates = computed(() =>
+    selectedBooking.value?.extracted_data?.vendor_resolution?.candidates ?? []
+)
+const extractedVendorName = computed(() =>
+    selectedBooking.value?.extracted_data?.vendor_resolution?.original_name
+    || selectedBooking.value?.extracted_data?.vendor?.name || ''
+)
+
+function selectVendor(id, name) {
+    assignVendorId.value = id
+    if (!vendorOptions.value.find(v => v.id === id)) {
+        vendorOptions.value = [{ id, name }, ...vendorOptions.value]
+    }
+}
+function onVendorSearch(q) {
+    clearTimeout(vendorTimer)
+    if (!q || q.length < 2) return
+    vendorTimer = setTimeout(async () => {
+        vendorLoading.value = true
+        vendorOptions.value = await searchVendors(q)
+        vendorLoading.value = false
+    }, 300)
+}
 
 const filters = ref({
     status: route.query.status || 'all',
@@ -270,15 +337,29 @@ async function loadBookings() {
 }
 
 async function openDetail(item) {
+    assignVendorId.value = null
+    vendorOptions.value = []
     selectedBooking.value = await fetchBooking(item.id)
+    // Kandidaten als Auswahl vorbereiten
+    vendorOptions.value = (selectedBooking.value?.extracted_data?.vendor_resolution?.candidates ?? [])
+        .map(c => ({ id: c.vendor_id, name: c.vendor_name }))
     detailDialog.value = true
 }
 
-async function approveOne(id) {
-    const result = await approveBooking(id)
+async function approveOne(id, item = null) {
+    // Inline-Freigabe einer Buchung ohne Lieferant → Detail öffnen, damit zugeordnet werden kann
+    if (item && item.status === 'pending' && !item.vendor_id) {
+        await openDetail(item)
+        return
+    }
+    const extra = (needsVendor.value && assignVendorId.value) ? { vendor_id: assignVendorId.value } : {}
+    const result = await approveBooking(id, extra)
     if (result.success) {
+        toasts.success(t('AccountingView.bookings.bookedSuccess'))
         await loadBookings()
         detailDialog.value = false
+    } else if (result.text) {
+        toasts.error(result.text)   // z. B. "Aufwandskonto … nicht im Kontenrahmen"
     }
 }
 

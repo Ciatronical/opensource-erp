@@ -600,6 +600,7 @@
         "openaiApiKey_help": "Klucz API dla OpenAI Whisper (rozpoznawanie mowy). Dostępny na platform.openai.com",
         "anthropicApiKey": "Klucz API Anthropic",
         "anthropicApiKey_help": "Klucz API dla Claude (ekstrakcja danych). Dostępny na console.anthropic.com",
+        "anthropicBilling": "Rozliczenia i środki dla klucza API zarządzasz w konsoli Anthropic w sekcji Plans & Billing:",
         "aiGewichtRechnungen": "Waga AI: Faktury",
         "aiGewichtRechnungen_help": "Waga historycznych faktur dla propozycji pozycji AI (domyślnie: 5)",
         "aiGewichtAuftraege": "Waga AI: Zlecenia",
