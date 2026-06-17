@@ -150,6 +150,26 @@ export const fakturaStore = defineStore('fakturaStore', () => {
     }
 
     /**
+     * Überträgt die Fahrzeug-/Kundendaten eines Auftrags an AAG-Online und
+     * liefert die Portal-URL zurück, unter der der Beleg geöffnet wird.
+     *
+     * @param {number} fakturaID - ID des Auftrags (oe.id)
+     * @return {Promise<string>} Portal-URL von AAG-Online
+     */
+    async function getAagUrl(fakturaID) {
+        const response = await axios.post('/api/faktura/', {
+            action: 'getAagUrl',
+            fakturaID
+        })
+
+        if (response.data.success) {
+            return response.data.payload?.portalUrl
+        } else {
+            throw new ApiError('ApiError', response.data.text, 'Error fetching AAG-Online URL: ' + response.data.text)
+        }
+    }
+
+    /**
      * Aktualisiert mehrere Faktura-Positionen (Bulk-Update) und Buchungen
      *
      * @param {number} fakturaID - ID des Dokuments
@@ -507,6 +527,7 @@ export const fakturaStore = defineStore('fakturaStore', () => {
         deleteFaktura,
         createFakturaItem,
         importSilverDATItems,
+        getAagUrl,
         updateFakturaItems,
         updateFakturaField,
         updatePart,

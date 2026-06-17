@@ -311,6 +311,10 @@
             "openButton": "Ava sõiduki failid",
             "dialogTitle": "Sõiduki failid",
             "openInTab": "Ava"
+        },
+        "aag": {
+            "tsnTooltip": "Search vehicle by VIN in AAG-Online",
+            "error": "Could not open AAG-Online"
         }
     },
     "CarScanView": {

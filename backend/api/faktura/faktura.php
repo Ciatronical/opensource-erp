@@ -2283,6 +2283,11 @@ function importSilverDATItems($data) {
 
     $createdIds = [];
 
+    // Atomar importieren: schlägt eine einzige Position fehl, wird nichts
+    // angelegt (kein Teil-Import, der den Beleg inkonsistent zuruecklaesst).
+    $company->beginTransaction();
+    try {
+
     foreach ($items as $item) {
         $nextPosition++;
         $description = trim($item['description'] ?? '');
@@ -2328,7 +2333,7 @@ SQL;
                 $partQuery = <<<SQL
                     WITH next_num AS (
                         SELECT GREATEST(
-                            COALESCE(regexp_replace({$numberField}, '[^0-9]', '', 'g')::bigint, 0),
+                            COALESCE(NULLIF(regexp_replace(COALESCE({$numberField}, ''), '[^0-9]', '', 'g'), '')::bigint, 0),
                             COALESCE(
                                 (SELECT MAX(regexp_replace(partnumber, '[^0-9]', '', 'g')::bigint)
                                  FROM parts WHERE partnumber ~ '^\d+$'),
@@ -2383,6 +2388,13 @@ SQL;
             $params
         );
         $createdIds[] = intval($insertResult['id']);
+    }
+
+        $company->commit();
+    } catch (\Throwable $e) {
+        $company->rollBack();
+        resultInfo(false, 'IMPORT_FAILED', ['message' => 'Import fehlgeschlagen: ' . $e->getMessage()]);
+        return;
     }
 
     if (empty($createdIds)) {

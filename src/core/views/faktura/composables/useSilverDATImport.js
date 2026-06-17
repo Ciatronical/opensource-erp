@@ -95,6 +95,31 @@ function parseVXS(xmlString) {
         })
     }
 
+    // 1b. Kleinersatzteile-/Verbrauchsmaterialzuschlag
+    // Steht im VXS nur in der Summary (RepairCalculationSummary > SparePartsCosts),
+    // nicht als eigene MaterialPosition – muss daher separat als Position ergänzt werden.
+    const sparePartsCosts = calcResult.getElementsByTagNameNS(ns, 'SparePartsCosts')[0]
+    if (sparePartsCosts) {
+        const consumables = parseFloat(
+            sparePartsCosts.getElementsByTagNameNS(ns, 'ConsumablesSurcharge')[0]?.textContent || '0'
+        )
+        if (consumables > 0) {
+            const pct = sparePartsCosts.getElementsByTagNameNS(ns, 'ConsumablesSurchargePercentage')[0]?.textContent?.trim()
+            items.push({
+                category: 'part',
+                // bewusst 'service': Position ohne Teilenummer wird so über die
+                // funktionierende servicenumber-Vergabe angelegt (Buchungsgruppe identisch)
+                part_type: 'service',
+                description: 'Kleinersatzteile' + (pct ? ` (${pct}%)` : ''),
+                partnumber: '',
+                qty: 1,
+                sellprice: Math.round(consumables * 100) / 100,
+                unit: 'Pausch.',
+                longdescription: ''
+            })
+        }
+    }
+
     // 2. LabourPositions (Arbeitszeit)
     const labourPositions = calcResult.getElementsByTagNameNS(ns, 'LabourPosition')
     for (let i = 0; i < labourPositions.length; i++) {

@@ -160,6 +160,8 @@
             "dateMustBeFuture": "Дата должна быть в будущем",
             "openVehicle": "Транспортное средство",
             "importSilverDAT": "Импорт SilverDAT",
+            "openAag": "AAG-Online – transfer vehicle and open",
+            "aagError": "Could not open AAG-Online",
             "silverdat": {
                 "title": "Импорт SilverDAT",
                 "dropzone": "Перетащите XML-файл сюда или нажмите",

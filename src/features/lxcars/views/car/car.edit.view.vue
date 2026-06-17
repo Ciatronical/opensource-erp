@@ -193,7 +193,7 @@
                                     </v-text-field>
                                 </v-col>
                             </v-row>
-                            <v-row dense>
+                            <v-row dense align="center">
                                 <v-col cols="12" sm="6" class="py-1">
                                     <v-text-field ref="tsnFieldRef" v-model="car.c_3" :label="t('CarEditView.fields.c_3')" variant="outlined" density="compact" hide-details="auto" maxlength="10" tabindex="3" :rules="rulesTsn" @click="copyToClipboard('TSN', car.c_3)" @dblclick="copyToClipboardNow('KBA', kbaClipboardText())">
                                         <template #append-inner>
@@ -208,6 +208,23 @@
                                             </v-icon>
                                         </template>
                                     </v-text-field>
+                                </v-col>
+                                <!-- AAG-Online per FIN suchen, wenn TSN ein Platzhalter ist (000…) -->
+                                <v-col v-if="showAagTsnButton" cols="auto" class="py-1">
+                                    <v-tooltip location="bottom" :text="t('CarEditView.aag.tsnTooltip')">
+                                        <template #activator="{ props: tipProps }">
+                                            <v-btn
+                                                v-bind="tipProps"
+                                                icon="mdi-car-search"
+                                                variant="tonal"
+                                                color="indigo"
+                                                size="small"
+                                                tabindex="-1"
+                                                :loading="aagLoading"
+                                                @click="openAagByFin"
+                                            />
+                                        </template>
+                                    </v-tooltip>
                                 </v-col>
                             </v-row>
                             <v-row dense>
@@ -1741,6 +1758,52 @@ export default {
             router.push({ name: 'car-registration', params: { id: props.id } })
         }
 
+        // ===== AAG-Online per FIN (bei TSN-Platzhalter) =====
+
+        const aagLoading = ref(false)
+
+        // Button anzeigen, wenn die TSN ein Platzhalter ist (beginnt mit 000)
+        // und eine FIN vorhanden ist, mit der gesucht werden kann.
+        const showAagTsnButton = computed(() =>
+            (car.value.c_3 || '').substring(0, 3) === '000' && !!(car.value.c_fin || '').trim()
+        )
+
+        async function openAagByFin() {
+            const vin = (car.value.c_fin || '').trim()
+            if (!vin) return
+
+            // Fenster sofort öffnen (Popup-Blocker vermeiden, wirkt schneller)
+            const aagWindow = window.open('', 'aag-online')
+
+            aagLoading.value = true
+            try {
+                const { data } = await axios.post('/api/lxcars/', {
+                    action: 'getAagVehicleUrl',
+                    c_id: Number(props.id) || 0,
+                    vin
+                })
+
+                const portalUrl = data?.success ? data.payload?.portalUrl : null
+                if (!portalUrl) {
+                    if (aagWindow) aagWindow.close()
+                    Swal.fire({ icon: 'error', title: t('CarEditView.aag.error'), text: data?.text || '' })
+                    return
+                }
+                if (aagWindow) {
+                    aagWindow.location.href = portalUrl
+                    aagWindow.focus()
+                } else {
+                    window.open(portalUrl, '_blank')
+                }
+            } catch (e) {
+                if (aagWindow) aagWindow.close()
+                console.error('AAG-Online error:', e)
+                Swal.fire({ icon: 'error', title: t('CarEditView.aag.error'), text: String(e?.message || e) })
+            } finally {
+                aagLoading.value = false
+            }
+        }
+
         // ===== Label-Druck =====
 
         const yellowLabelPrinting = ref(false)
@@ -2254,6 +2317,7 @@ export default {
             displayKm, onBlurKmStand,
             toggleShield, sortedOrders, orderSortField, orderFilter,
             toggleOrderSort, sortIcon, formatAmount, openOrder, createNewOrder, navigateToCustomer, openCarRegistration, focusSearch,
+            showAagTsnButton, aagLoading, openAagByFin,
             yellowLabelPrinting, tyreLabelPrinting, onPrintYellowLabel, onPrintTyreLabel,
             onFocusIn, onFocusOut,
             kbaData, showDebug, rotesHeftDialog, specialDialog, filesDialogOpen, sellDialog,

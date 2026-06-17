@@ -51,6 +51,8 @@
                     @toggle-compact="compactView = !compactView"
                     @open-vehicle="openVehicleEdit"
                     @import-silverdat="onImportSilverdat"
+                    @open-aag="onOpenAag"
+                    :aag-loading="aagLoading"
                     @open-special="openSpecialDialog"
                 />
             </section>
@@ -1938,6 +1940,41 @@ export default defineComponent({
             }
         }
 
+        // ===== AAG-Online =====
+
+        const aagLoading = ref(false)
+
+        async function onOpenAag() {
+            if (!fakturaId.value) return
+
+            // Fenster sofort öffnen (vermeidet Popup-Blocker und wirkt schneller),
+            // Inhalt wird gesetzt sobald die Portal-URL vorliegt.
+            const aagWindow = window.open('', 'aag-online')
+
+            aagLoading.value = true
+            try {
+                const portalUrl = await faktura.getAagUrl(fakturaId.value)
+                if (!portalUrl) {
+                    if (aagWindow) aagWindow.close()
+                    toasts.error(t('FakturaView.faktura.aagError'))
+                    return
+                }
+                if (aagWindow) {
+                    aagWindow.location.href = portalUrl
+                    aagWindow.focus()
+                } else {
+                    // Fenster wurde blockiert – im selben Tab als Fallback öffnen
+                    window.open(portalUrl, '_blank')
+                }
+            } catch (e) {
+                if (aagWindow) aagWindow.close()
+                console.error('AAG-Online error:', e)
+                toasts.error(t('FakturaView.faktura.aagError') + (e?.text ? '\n' + e.text : ''))
+            } finally {
+                aagLoading.value = false
+            }
+        }
+
         function showOnDisplay() {
             if (!fakturaId.value) return
             const displayRoute = router.resolve({
@@ -2879,6 +2916,8 @@ export default defineComponent({
             onImportSilverdat,
             onSilverdatImport,
             onSilverdatClose,
+            aagLoading,
+            onOpenAag,
             // KI-Positionsvorschläge
             showAiSuggest,
             aiLoading,

@@ -311,6 +311,10 @@
             "openButton": "Avaa ajoneuvon tiedostot",
             "dialogTitle": "Ajoneuvon tiedostot",
             "openInTab": "Avaa"
+        },
+        "aag": {
+            "tsnTooltip": "Search vehicle by VIN in AAG-Online",
+            "error": "Could not open AAG-Online"
         }
     },
     "CarScanView": {

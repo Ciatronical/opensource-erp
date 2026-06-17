@@ -296,6 +296,22 @@
                     </template>
                 </v-tooltip>
 
+                <!-- AAG-Online (nur bei Aufträgen mit LxCars) -->
+                <v-tooltip v-if="canOpenAag" location="bottom" :text="t('FakturaView.faktura.openAag')">
+                    <template #activator="{ props: tip }">
+                        <v-btn
+                            v-bind="tip"
+                            variant="tonal"
+                            color="indigo"
+                            icon="mdi-car-search"
+                            size="small"
+                            :disabled="!hasCustomer"
+                            :loading="aagLoading"
+                            @click="$emit('open-aag')"
+                        />
+                    </template>
+                </v-tooltip>
+
                 <v-tooltip v-if="showSpecialButton" location="bottom" :text="t('SpecialDialog.buttonTooltip')">
                     <template #activator="{ props: tip }">
                         <v-btn
@@ -426,6 +442,10 @@ export default defineComponent({
         hasCustomer: {
             type: Boolean,
             default: true
+        },
+        aagLoading: {
+            type: Boolean,
+            default: false
         }
     },
 
@@ -456,6 +476,7 @@ export default defineComponent({
         'delete',
         'open-vehicle',
         'import-silverdat',
+        'open-aag',
         'open-special',
         'create-dhl-label',
         'show-on-display'
@@ -502,6 +523,9 @@ export default defineComponent({
         // SilverDAT Import - bei Aufträgen mit LxCars
         const canImportSilverDAT = computed(() => props.fakturaType === 'order' && props.showVehicleButton)
 
+        // AAG-Online - bei Aufträgen mit verknüpftem Fahrzeug
+        const canOpenAag = computed(() => props.fakturaType === 'order' && props.showVehicleButton)
+
         return {
             t,
             canCreateQuotation,
@@ -515,7 +539,8 @@ export default defineComponent({
             canCreateComplaint,
             canSaveAsDraft,
             canExportXInvoice,
-            canImportSilverDAT
+            canImportSilverDAT,
+            canOpenAag
         }
     }
 })

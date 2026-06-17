@@ -311,6 +311,10 @@
             "openButton": "Araç dosyalarını aç",
             "dialogTitle": "Araç dosyaları",
             "openInTab": "Aç"
+        },
+        "aag": {
+            "tsnTooltip": "Search vehicle by VIN in AAG-Online",
+            "error": "Could not open AAG-Online"
         }
     },
     "CarScanView": {

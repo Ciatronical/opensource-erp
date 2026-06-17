@@ -160,6 +160,8 @@
             "dateMustBeFuture": "日期必须在未来",
             "openVehicle": "车辆",
             "importSilverDAT": "SilverDAT 导入",
+            "openAag": "AAG-Online – transfer vehicle and open",
+            "aagError": "Could not open AAG-Online",
             "silverdat": {
                 "title": "SilverDAT 导入",
                 "dropzone": "将 XML 文件拖到此处或点击",

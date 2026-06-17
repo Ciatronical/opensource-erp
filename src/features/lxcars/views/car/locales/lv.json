@@ -311,6 +311,10 @@
             "openButton": "Atvērt transportlīdzekļa failus",
             "dialogTitle": "Transportlīdzekļa faili",
             "openInTab": "Atvērt"
+        },
+        "aag": {
+            "tsnTooltip": "Search vehicle by VIN in AAG-Online",
+            "error": "Could not open AAG-Online"
         }
     },
     "CarScanView": {

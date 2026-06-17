@@ -311,6 +311,10 @@
             "openButton": "Deschide fișierele vehiculului",
             "dialogTitle": "Fișiere vehicul",
             "openInTab": "Deschide"
+        },
+        "aag": {
+            "tsnTooltip": "Search vehicle by VIN in AAG-Online",
+            "error": "Could not open AAG-Online"
         }
     },
     "CarScanView": {

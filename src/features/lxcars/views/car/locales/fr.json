@@ -311,6 +311,10 @@
             "openButton": "Ouvrir les fichiers du véhicule",
             "dialogTitle": "Fichiers du véhicule",
             "openInTab": "Ouvrir"
+        },
+        "aag": {
+            "tsnTooltip": "Rechercher le véhicule par VIN dans AAG-Online",
+            "error": "Impossible d'ouvrir AAG-Online"
         }
     },
     "CarScanView": {

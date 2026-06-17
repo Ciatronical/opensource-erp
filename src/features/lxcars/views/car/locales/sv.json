@@ -311,6 +311,10 @@
             "openButton": "Öppna fordonsfiler",
             "dialogTitle": "Fordonsfiler",
             "openInTab": "Öppna"
+        },
+        "aag": {
+            "tsnTooltip": "Search vehicle by VIN in AAG-Online",
+            "error": "Could not open AAG-Online"
         }
     },
     "CarScanView": {

@@ -328,6 +328,10 @@
             "uploadDoc": "Dokument hochladen",
             "uploadError": "Ungültiger Dateityp",
             "uploadUnsupported": "Bitte lade eine PDF- oder Textdatei hoch."
+        },
+        "aag": {
+            "tsnTooltip": "Fahrzeug über die FIN in AAG-Online suchen",
+            "error": "AAG-Online konnte nicht geöffnet werden"
         }
     },
     "CarScanView": {

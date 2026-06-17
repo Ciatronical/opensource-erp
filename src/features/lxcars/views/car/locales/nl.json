@@ -311,6 +311,10 @@
             "openButton": "Voertuigbestanden openen",
             "dialogTitle": "Voertuigbestanden",
             "openInTab": "Openen"
+        },
+        "aag": {
+            "tsnTooltip": "Voertuig op VIN zoeken in AAG-Online",
+            "error": "Kan AAG-Online niet openen"
         }
     },
     "CarScanView": {

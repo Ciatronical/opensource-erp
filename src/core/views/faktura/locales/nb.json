@@ -160,6 +160,8 @@
             "dateMustBeFuture": "Dato muss in der Zukunft liegen",
             "openVehicle": "Kjoeretoeyer",
             "importSilverDAT": "SilverDAT Import",
+            "openAag": "AAG-Online – transfer vehicle and open",
+            "aagError": "Could not open AAG-Online",
             "silverdat": {
                 "title": "SilverDAT Import",
                 "dropzone": "XML-Fil hierher ziehen oder klicken",
