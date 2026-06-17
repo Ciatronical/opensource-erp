@@ -887,7 +887,17 @@
             @save="items.onCreateArticleSave"
         />
 
-        <!-- SilverDAT Import Dialog -->
+        <!-- SilverDAT Import: verstecktes Dateifeld – Dateidialog erscheint sofort beim Klick -->
+        <input
+            v-if="silverdatImport"
+            ref="silverdatFileInput"
+            type="file"
+            accept=".xml"
+            class="d-none"
+            @change="onSilverdatFileSelect"
+        />
+
+        <!-- SilverDAT Import Dialog (Vorschau nach Dateiauswahl) -->
         <silverdat-import-dialog
             v-if="silverdatImport"
             v-model="silverdatImport.showDialog.value"
@@ -897,11 +907,9 @@
             :import-error="silverdatImport.importError.value"
             :file-name="silverdatImport.fileName.value"
             :summary="silverdatImport.summary.value"
-            @file-select="silverdatImport.onFileSelect"
-            @drop="silverdatImport.onDrop"
             @do-import="onSilverdatImport"
             @close="onSilverdatClose"
-            @change-file="silverdatImport.reset()"
+            @change-file="onImportSilverdat"
             @clear-error="silverdatImport.importError.value = ''"
         />
 
@@ -1986,9 +1994,25 @@ export default defineComponent({
 
         // ===== SilverDAT Import =====
 
+        const silverdatFileInput = ref(null)
+
+        // Öffnet sofort den Dateiauswahldialog (ohne Zwischen-Dropzone)
         function onImportSilverdat() {
-            if (silverdatImport) {
-                silverdatImport.reset()
+            if (!silverdatImport) return
+            silverdatImport.reset()
+            silverdatImport.showDialog.value = false
+            const input = silverdatFileInput.value
+            if (input) {
+                input.value = '' // gleiche Datei erneut wählbar
+                input.click()
+            }
+        }
+
+        // Nach Dateiauswahl: parsen und Vorschau-Dialog öffnen
+        async function onSilverdatFileSelect(event) {
+            if (!silverdatImport) return
+            await silverdatImport.onFileSelect(event)
+            if (silverdatImport.importItems.value.length || silverdatImport.importError.value) {
                 silverdatImport.showDialog.value = true
             }
         }
@@ -2913,6 +2937,8 @@ export default defineComponent({
             openVehicleEdit,
             showOnDisplay,
             silverdatImport,
+            silverdatFileInput,
+            onSilverdatFileSelect,
             onImportSilverdat,
             onSilverdatImport,
             onSilverdatClose,

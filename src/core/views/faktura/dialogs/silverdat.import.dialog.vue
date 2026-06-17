@@ -23,32 +23,6 @@
             </v-card-title>
 
             <v-card-text class="pt-4">
-                <!-- Drop-Zone -->
-                <div
-                    v-if="!importItems.length && !importError"
-                    class="silverdat-dropzone"
-                    @dragover.prevent="dragOver = true"
-                    @dragleave="dragOver = false"
-                    @drop.prevent="onDrop"
-                    @click="$refs.fileInput.click()"
-                    :class="{ 'silverdat-dropzone--active': dragOver }"
-                >
-                    <input
-                        ref="fileInput"
-                        type="file"
-                        accept=".xml"
-                        class="d-none"
-                        @change="onFileChange"
-                    />
-                    <v-icon size="48" color="orange-darken-2" class="mb-2">mdi-file-xml-box</v-icon>
-                    <div class="text-body-1 font-weight-medium">
-                        {{ t('FakturaView.faktura.silverdat.dropzone') }}
-                    </div>
-                    <div class="text-body-2 text-grey">
-                        {{ t('FakturaView.faktura.silverdat.dropzoneHint') }}
-                    </div>
-                </div>
-
                 <!-- Fehler -->
                 <v-alert v-if="importError" type="error" variant="tonal" class="mb-4" closable @click:close="$emit('clear-error')">
                     {{ importError }}
@@ -175,7 +149,7 @@
 </template>
 
 <script>
-import { defineComponent, ref, computed } from 'vue'
+import { defineComponent, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 export default defineComponent({
@@ -193,8 +167,6 @@ export default defineComponent({
 
     emits: [
         'update:modelValue',
-        'file-select',
-        'drop',
         'do-import',
         'close',
         'change-file',
@@ -203,7 +175,6 @@ export default defineComponent({
 
     setup(props, { emit }) {
         const { t } = useI18n()
-        const dragOver = ref(false)
 
         const tableHeaders = computed(() => [
             { title: t('FakturaView.faktura.silverdat.type'), key: 'category', width: '80px', sortable: false },
@@ -239,16 +210,6 @@ export default defineComponent({
             return new Intl.NumberFormat('de-DE', { minimumFractionDigits: 1, maximumFractionDigits: 2 }).format(value)
         }
 
-        function onFileChange(event) {
-            emit('file-select', event)
-            dragOver.value = false
-        }
-
-        function onDrop(event) {
-            dragOver.value = false
-            emit('drop', event)
-        }
-
         function onClose() {
             emit('close')
             emit('update:modelValue', false)
@@ -260,14 +221,11 @@ export default defineComponent({
 
         return {
             t,
-            dragOver,
             tableHeaders,
             categoryColor,
             categoryLabel,
             formatCurrency,
             formatNumber,
-            onFileChange,
-            onDrop,
             onClose,
             onChangeFile
         }
@@ -276,25 +234,6 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.silverdat-dropzone {
-    border: 2px dashed #bdbdbd;
-    border-radius: 12px;
-    padding: 48px 24px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-}
-
-.silverdat-dropzone:hover,
-.silverdat-dropzone--active {
-    border-color: #e65100;
-    background-color: #fff3e0;
-}
-
 .silverdat-table :deep(.v-data-table__td) {
     font-size: 12px !important;
     padding: 4px 8px !important;

@@ -114,7 +114,7 @@ function parseVXS(xmlString) {
                 partnumber: '',
                 qty: 1,
                 sellprice: Math.round(consumables * 100) / 100,
-                unit: 'Pausch.',
+                unit: 'Stck',
                 longdescription: ''
             })
         }
