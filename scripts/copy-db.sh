@@ -1,15 +1,19 @@
 #!/usr/bin/env bash
 #
-# Kopiert die Datenbank autoprofis_gmbh in ap_dev (Quelle bleibt unverändert).
+# Kopiert die Datenbank ap_rebuild in ap_dev (Quelle bleibt unverändert).
 # Lokale PostgreSQL auf Port 5432.
 #
 # Variante mit pg_dump | psql: Die Quell-DB wird NICHT angetastet und es werden
 # KEINE Verbindungen getrennt — kivitendo kann während des Kopierens weiterlaufen.
 # Nur die Ziel-DB ap_dev wird gelöscht und neu aufgebaut.
 #
+# Kopiert ZUSÄTZLICH die mandantenspezifischen Belege/Dateien
+# (backend/data/<db>/), da diese pro DB-Name getrennt liegen und sonst in der
+# Kopie fehlen würden.
+#
 set -euo pipefail
 
-SRC_DB="autoprofis_gmbh"
+SRC_DB="ap_rebuild"
 DST_DB="ap_dev"
 
 PGHOST="${PGHOST:-localhost}"
@@ -76,4 +80,45 @@ SQL
     rm -f "$LOGO_FILE"
 fi
 
-echo "Fertig. '$DST_DB' ist jetzt eine Kopie von '$SRC_DB' (Logo beibehalten)."
+# Belege/Dateien mitkopieren — liegen pro DB-Name getrennt unter backend/data/<db>/
+# (siehe fmDataDir() in backend/api/customer_vendor/filemanager.php). Ohne diesen
+# Schritt fehlen in der Kopie alle Kunden-/Lieferanten-Belege.
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+DATA_DIR="$REPO_ROOT/backend/data"
+SRC_DATA="$DATA_DIR/$SRC_DB"
+DST_DATA="$DATA_DIR/$DST_DB"
+
+if [ -d "$SRC_DATA" ]; then
+    echo "Kopiere Belege/Dateien '$SRC_DATA/' -> '$DST_DATA/' ..."
+
+    # Ein vorhandenes Ziel kann Unterordner enthalten, die php-fpm als www-data
+    # und NICHT gruppenschreibbar angelegt hat — darin kann der ausführende
+    # Benutzer keine neuen Ordner erstellen (rsync scheitert mit Permission
+    # denied). Da uns der übergeordnete data/-Ordner gehört, schieben wir das
+    # alte Ziel beiseite und kopieren in einen frischen, eigenen Ordner. So
+    # funktioniert es ohne sudo, unabhängig von den Alt-Rechten.
+    TRASH=""
+    if [ -d "$DST_DATA" ]; then
+        TRASH="$DATA_DIR/.trash-$DST_DB"
+        rm -rf "$TRASH" 2>/dev/null || true
+        # Reste, die uns nicht gehören (www-data), ließen sich evtl. nicht
+        # löschen — dann eindeutigen Namen wählen statt das mv zu riskieren.
+        [ -e "$TRASH" ] && TRASH="$TRASH-$(date +%s)"
+        mv "$DST_DATA" "$TRASH"
+    fi
+
+    mkdir -p "$DST_DATA"
+    rsync -a "$SRC_DATA/" "$DST_DATA/"
+    find "$DST_DATA" -type d -exec chmod 2775 {} +
+    echo "  $(find "$DST_DATA" -type f | wc -l) Dateien kopiert."
+
+    # Altes Ziel best-effort entfernen; www-data-eigene Reste brauchen sudo.
+    if [ -n "$TRASH" ]; then
+        rm -rf "$TRASH" 2>/dev/null || true
+        [ -e "$TRASH" ] && echo "Hinweis: Reste in '$TRASH' gehören www-data — bei Bedarf mit 'sudo rm -rf $TRASH' entfernen." >&2
+    fi
+else
+    echo "Hinweis: Quell-Datenverzeichnis '$SRC_DATA' existiert nicht — Dateien werden übersprungen." >&2
+fi
+
+echo "Fertig. '$DST_DB' ist jetzt eine Kopie von '$SRC_DB' (DB + Belege, Logo beibehalten)."

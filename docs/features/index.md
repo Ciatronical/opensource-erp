@@ -18,6 +18,7 @@
 | Feature | Beschreibung |
 |---------|-------------|
 | [WhatsApp](whatsapp.md) | Business-Messaging über die WhatsApp Business API |
+| [Telefonie (CRMTI)](telefonie-crmti.md) | CTI-Anbindung über Asterisk: Anruferkennung in Echtzeit, Mitschnitt |
 | [DHL](dhl.md) | Versandintegration mit Label-Druck |
 
 ## KI
