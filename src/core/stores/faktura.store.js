@@ -170,6 +170,16 @@ export const fakturaStore = defineStore('fakturaStore', () => {
     }
 
     /**
+     * Lädt das AAG-Online-Token im Hintergrund vor, damit der langsame Login
+     * (~3 s) nicht erst beim Klick auf den AAG-Button anfällt. Bewusst
+     * "feuern und vergessen" – Fehler werden ignoriert, der Auftrag darf
+     * dadurch nicht langsamer werden.
+     */
+    function warmAagToken() {
+        axios.post('/api/faktura/', { action: 'warmAagToken' }).catch(() => {})
+    }
+
+    /**
      * Aktualisiert mehrere Faktura-Positionen (Bulk-Update) und Buchungen
      *
      * @param {number} fakturaID - ID des Dokuments
@@ -528,6 +538,7 @@ export const fakturaStore = defineStore('fakturaStore', () => {
         createFakturaItem,
         importSilverDATItems,
         getAagUrl,
+        warmAagToken,
         updateFakturaItems,
         updateFakturaField,
         updatePart,

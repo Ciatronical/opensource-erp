@@ -446,6 +446,10 @@ export default defineComponent({
         aagLoading: {
             type: Boolean,
             default: false
+        },
+        aagConfigured: {
+            type: Boolean,
+            default: false
         }
     },
 
@@ -523,8 +527,8 @@ export default defineComponent({
         // SilverDAT Import - bei Aufträgen mit LxCars
         const canImportSilverDAT = computed(() => props.fakturaType === 'order' && props.showVehicleButton)
 
-        // AAG-Online - bei Aufträgen mit verknüpftem Fahrzeug
-        const canOpenAag = computed(() => props.fakturaType === 'order' && props.showVehicleButton)
+        // AAG-Online - bei Aufträgen mit verknüpftem Fahrzeug, nur wenn konfiguriert
+        const canOpenAag = computed(() => props.fakturaType === 'order' && props.showVehicleButton && props.aagConfigured)
 
         return {
             t,

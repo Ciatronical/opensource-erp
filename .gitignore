@@ -69,3 +69,6 @@ backend/composer.phar
 
 # Laufzeit-Artefakte (z. B. Kontenrahmen-Backups vor Rollout) nicht ins Repo
 /var/
+# carparts-cat / TOPMOTIVE Doku-Zugang (lokal, niemals committen)
+dev/.carparts-creds
+dev/carparts-cat-docs/

@@ -332,6 +332,11 @@
         "aag": {
             "tsnTooltip": "Fahrzeug über die FIN in AAG-Online suchen",
             "error": "AAG-Online konnte nicht geöffnet werden"
+        },
+        "ktype": {
+            "label": "Ktype",
+            "resolving": "Ktype wird ermittelt …",
+            "refresh": "Ktype neu ermitteln"
         }
     },
     "CarScanView": {

@@ -53,6 +53,7 @@
                     @import-silverdat="onImportSilverdat"
                     @open-aag="onOpenAag"
                     :aag-loading="aagLoading"
+                    :aag-configured="aagConfigured"
                     @open-special="openSpecialDialog"
                 />
             </section>
@@ -1268,6 +1269,12 @@ export default defineComponent({
             return val === true || val === 'true' || val === 't' || val === '1'
         })
 
+        // AAG-Online nur anbieten, wenn Zugangsdaten hinterlegt sind
+        const aagConfigured = computed(() =>
+            !!String(oserp.getClientDefaultValue('aag_online_user', '') || '').trim() &&
+            !!String(oserp.getClientDefaultValue('aag_online_passwd', '') || '').trim()
+        )
+
         const mechanicModeEnabled = computed(() => {
             if (!oserp.isLxCars()) return false
             const val = oserp.getClientDefaultValue('lxcars_mechanic_mode', false)
@@ -1951,6 +1958,21 @@ export default defineComponent({
         // ===== AAG-Online =====
 
         const aagLoading = ref(false)
+
+        // Token im Hintergrund vorladen, sobald ein Auftrag mit Fahrzeug geladen
+        // ist (Bedingung wie der AAG-Button). Nicht-blockierend, einmalig pro
+        // Auftrag – der Auftrag selbst wird dadurch nicht langsamer.
+        let aagTokenWarmed = false
+        watch(
+            () => aagConfigured.value && fakturaType.value === 'order' && !!vehicle && !!vehicle.selectedCarId?.value,
+            (ready) => {
+                if (ready && !aagTokenWarmed) {
+                    aagTokenWarmed = true
+                    faktura.warmAagToken()
+                }
+            },
+            { immediate: true }
+        )
 
         async function onOpenAag() {
             if (!fakturaId.value) return
@@ -2912,6 +2934,7 @@ export default defineComponent({
             sendWhatsApp,
             // DHL
             dhlEnabled,
+            aagConfigured,
             dhlDialogVisible,
             dhlWeight,
             dhlProduct,

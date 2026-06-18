@@ -319,6 +319,24 @@
                                 </v-col>
                             </v-row>
 
+                            <!-- TecDoc-Ktype (über AAG-Online aus HSN/TSN bzw. FIN ermittelt) -->
+                            <v-row v-if="isEditMode && (ktypeNo || ktypeLoading)" dense align="center">
+                                <v-col cols="12" class="py-1">
+                                    <v-chip v-if="ktypeNo" size="small" color="indigo" variant="tonal" prepend-icon="mdi-car-info">
+                                        {{ t('CarEditView.ktype.label') }} {{ ktypeNo }}<template v-if="ktypeDesc"> · {{ ktypeDesc }}</template>
+                                    </v-chip>
+                                    <span v-else class="text-caption text-medium-emphasis d-inline-flex align-center">
+                                        <v-progress-circular indeterminate size="14" width="2" class="mr-2" />
+                                        {{ t('CarEditView.ktype.resolving') }}
+                                    </span>
+                                    <v-tooltip v-if="!readonly && !ktypeLoading && aagConfigured" location="bottom" :text="t('CarEditView.ktype.refresh')">
+                                        <template #activator="{ props: tipProps }">
+                                            <v-btn v-bind="tipProps" icon="mdi-refresh" variant="text" size="x-small" tabindex="-1" class="ml-1" @click="resolveKtypeBg" />
+                                        </template>
+                                    </v-tooltip>
+                                </v-col>
+                            </v-row>
+
                             <v-divider class="my-2" />
 
                             <v-row dense>
@@ -1762,9 +1780,16 @@ export default {
 
         const aagLoading = ref(false)
 
-        // Button anzeigen, wenn die TSN ein Platzhalter ist (beginnt mit 000)
-        // und eine FIN vorhanden ist, mit der gesucht werden kann.
+        // AAG-Online konfiguriert? (Zugangsdaten in den Firmen-Defaults hinterlegt)
+        const aagConfigured = computed(() =>
+            !!String(oserpData.getClientDefaultValue('aag_online_user', '') || '').trim() &&
+            !!String(oserpData.getClientDefaultValue('aag_online_passwd', '') || '').trim()
+        )
+
+        // Button anzeigen, wenn AAG konfiguriert ist, die TSN ein Platzhalter ist
+        // (beginnt mit 000) und eine FIN vorhanden ist, mit der gesucht werden kann.
         const showAagTsnButton = computed(() =>
+            aagConfigured.value &&
             (car.value.c_3 || '').substring(0, 3) === '000' && !!(car.value.c_fin || '').trim()
         )
 
@@ -1803,6 +1828,44 @@ export default {
                 aagLoading.value = false
             }
         }
+
+        // ===== TecDoc-Ktype (Hintergrund-Ermittlung beim Laden) =====
+
+        const ktypeNo = ref(null)
+        const ktypeDesc = ref('')
+        const ktypeLoading = ref(false)
+
+        // Fahrzeug identifizierbar, wenn gültige HSN/TSN ODER eine FIN vorliegt
+        function carIsIdentifiable() {
+            const hsn = (car.value.c_2 || '').trim()
+            const tsn = (car.value.c_3 || '').trim()
+            const hasKba = /^\d{4}$/.test(hsn) && tsn.length >= 3 && !hasTsnPlaceholder(tsn)
+            return hasKba || !!(car.value.c_fin || '').trim()
+        }
+
+        async function resolveKtypeBg() {
+            if (ktypeLoading.value || !isEditMode.value || !aagConfigured.value || !carIsIdentifiable()) return
+            ktypeLoading.value = true
+            try {
+                const res = await carsStore.resolveKtype(Number(props.id))
+                if (res?.c_ktype) {
+                    ktypeNo.value = res.c_ktype
+                    ktypeDesc.value = res.c_ktype_desc || ''
+                }
+            } catch (e) {
+                console.error('Ktype resolve error:', e)
+            } finally {
+                ktypeLoading.value = false
+            }
+        }
+
+        // Beim Laden: gespeicherten Ktype übernehmen, sonst im Hintergrund ermitteln
+        watch(initialLoaded, (loaded) => {
+            if (!loaded || !isEditMode.value) return
+            ktypeNo.value = car.value.c_ktype || null
+            ktypeDesc.value = car.value.c_ktype_desc || ''
+            if (!ktypeNo.value) resolveKtypeBg()
+        })
 
         // ===== Label-Druck =====
 
@@ -2317,7 +2380,8 @@ export default {
             displayKm, onBlurKmStand,
             toggleShield, sortedOrders, orderSortField, orderFilter,
             toggleOrderSort, sortIcon, formatAmount, openOrder, createNewOrder, navigateToCustomer, openCarRegistration, focusSearch,
-            showAagTsnButton, aagLoading, openAagByFin,
+            showAagTsnButton, aagLoading, openAagByFin, aagConfigured,
+            ktypeNo, ktypeDesc, ktypeLoading, resolveKtypeBg,
             yellowLabelPrinting, tyreLabelPrinting, onPrintYellowLabel, onPrintTyreLabel,
             onFocusIn, onFocusOut,
             kbaData, showDebug, rotesHeftDialog, specialDialog, filesDialogOpen, sellDialog,

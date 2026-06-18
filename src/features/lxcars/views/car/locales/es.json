@@ -315,6 +315,11 @@
         "aag": {
             "tsnTooltip": "Buscar vehículo por VIN en AAG-Online",
             "error": "No se pudo abrir AAG-Online"
+        },
+        "ktype": {
+            "label": "Ktype",
+            "resolving": "Resolviendo Ktype …",
+            "refresh": "Actualizar Ktype"
         }
     },
     "CarScanView": {

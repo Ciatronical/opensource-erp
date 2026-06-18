@@ -7,8 +7,14 @@
 
 const AAG_LOGIN_URL  = 'https://tm-next.dvse.de/data/TM.Next.Authority/external/login/GetAuthToken';
 const AAG_IMPORT_URL = 'https://tm-next.dvse.de/data/TM.Next.Dms/api/portal/service/v1/Gsi/ImportVoucher';
+// GSI-Voucher-Endpunkte (dokumentierte API) für den Ktype-Roundtrip Import→Export
+const AAG_GSI_IMPORT_URL = 'https://tm-next.dvse.de/data/TM.Next.Dms/gsi/vouchers/ImportVoucher';
+const AAG_GSI_EXPORT_URL = 'https://tm-next.dvse.de/data/TM.Next.Dms/gsi/vouchers/ExportVoucher';
 const AAG_AUTH_ID    = 'ti6x'; // Authentifizierungs-ID der DVSE: ti6x = AAG-Online
-const AAG_TOKEN_TTL  = 1800;   // Token-Cache-Dauer in Sekunden (30 Min.)
+const AAG_TOKEN_TTL  = 43200;  // Fallback-Gueltigkeit (12 h), falls AAG kein 'expiration' liefert
+const AAG_TOKEN_SKEW = 300;    // Sicherheitspuffer (5 Min.): Token vor echtem Ablauf erneuern
+// Cloudflare vor docs/API blockt Default-Clients ohne Browser-User-Agent
+const AAG_USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0 Safari/537.36';
 
 /**
  * Holt ein Bearer-Token von AAG-Online.
@@ -33,10 +39,11 @@ function aagGetToken($db, $forceRefresh = false) {
          WHERE key IN ('aag_online_user', 'aag_online_passwd', 'aag_online_token', 'aag_online_token_exp')"
     );
 
-    // Gültiges Token aus dem Cache verwenden
+    // Gültiges Token aus dem Cache verwenden (mit Sicherheitspuffer, damit ein
+    // kurz vor Ablauf stehendes Token nicht mitten in einer Operation verfällt)
     if (!$forceRefresh
         && !empty($cfg['aag_token'])
-        && intval($cfg['aag_token_exp'] ?? 0) > time()) {
+        && intval($cfg['aag_token_exp'] ?? 0) > time() + AAG_TOKEN_SKEW) {
         return $cfg['aag_token'];
     }
 
@@ -76,16 +83,44 @@ function aagGetToken($db, $forceRefresh = false) {
 
     $token = $decoded['token'];
 
+    // Echte Gueltigkeit aus der AAG-Antwort uebernehmen ('expiration' in Sekunden,
+    // i.d.R. 12 h). Fehlt das Feld, greift der Fallback AAG_TOKEN_TTL.
+    $ttl = intval($decoded['expiration'] ?? 0);
+    if ($ttl <= 0) $ttl = AAG_TOKEN_TTL;
+    $exp = time() + $ttl;
+
     // Token cachen
     $db->execute(
         "INSERT INTO defaults_oserp (key, value, mtime) VALUES
             ('aag_online_token', :token, now()),
             ('aag_online_token_exp', :exp, now())
          ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, mtime = now()",
-        ['token' => $token, 'exp' => (string)(time() + AAG_TOKEN_TTL)]
+        ['token' => $token, 'exp' => (string)$exp]
     );
 
     return $token;
+}
+
+/**
+ * Stellt im Hintergrund sicher, dass ein gültiges AAG-Online-Token vorliegt.
+ *
+ * Wird beim Öffnen eines Auftrags nicht-blockierend aufgerufen, damit der
+ * langsame Login (~3 s) nicht erst beim Klick auf den AAG-Button anfällt.
+ * Ist das gecachte Token noch gültig (i.d.R. 12 h), ist das ein reiner
+ * DB-Lesezugriff ohne HTTP-Roundtrip. Fehlende Zugangsdaten werden still
+ * ignoriert (kein Fehler-Toast für ein reines Vorladen).
+ *
+ * @testdata {}
+ */
+function warmAagToken($data) {
+    $company = DbhCompany::begin();
+    try {
+        aagGetToken($company);
+        resultInfo(true, '', ['warmed' => true]);
+    } catch (ApiError $e) {
+        // Vorladen ist optional – kein harter Fehler nach außen
+        resultInfo(true, '', ['warmed' => false]);
+    }
 }
 
 /**
@@ -360,4 +395,144 @@ function getAagVehicleUrl($data) {
     }
 
     resultInfo(true, '', ['portalUrl' => $result['portalUrl']]);
+}
+
+/**
+ * Sendet einen JSON-POST an einen AAG-Online-Endpunkt (mit Token + 401-Retry).
+ *
+ * @param object $db   DbhCompany-Handle (für Token)
+ * @param string $url  Endpunkt-URL
+ * @param array  $body Request-Body
+ * @return array ['status' => int, 'data' => array|null, 'error' => string]
+ */
+function aagPostJson($db, $url, $body) {
+    $token = aagGetToken($db);
+
+    for ($try = 0; $try < 2; $try++) {
+        $curl = curl_init();
+        curl_setopt_array($curl, [
+            CURLOPT_URL            => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_CONNECTTIMEOUT => 10,
+            CURLOPT_TIMEOUT        => 60,
+            CURLOPT_HTTP_VERSION   => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST  => 'POST',
+            CURLOPT_USERAGENT      => AAG_USER_AGENT,
+            CURLOPT_POSTFIELDS     => json_encode($body),
+            CURLOPT_HTTPHEADER     => [
+                'Accept-Language: de',
+                'Content-Type: application/json',
+                'Accept: */*',
+                'Authorization: Bearer ' . $token
+            ]
+        ]);
+
+        $response = curl_exec($curl);
+        $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        $err = curl_error($curl);
+        curl_close($curl);
+
+        if ($err) {
+            $token = aagGetToken($db, true);
+            continue;
+        }
+        if ($httpCode === 401) {
+            $token = aagGetToken($db, true);
+            continue;
+        }
+
+        return ['status' => $httpCode, 'data' => json_decode($response, true), 'error' => ''];
+    }
+
+    return ['status' => 0, 'data' => null, 'error' => 'AAG-Online nicht erreichbar'];
+}
+
+/**
+ * Ermittelt die TecDoc-Ktype-Nummer eines Fahrzeugs über AAG-Online und
+ * speichert sie (mit Klartext-Beschreibung) in cars_lxcars.
+ *
+ * Identifikation über die KBA-Nummer (HSN+TSN), falls gültig vorhanden,
+ * sonst über die FIN. Der Katalog identifiziert headless: ImportVoucher legt
+ * den Vorgang an, ExportVoucher liefert das aufgelöste Fahrzeug zurück.
+ * Gespeichert wird nur bei eindeutigem Treffer (vehicleType.id > 0).
+ *
+ * @param mixed $data['c_id'] Fahrzeug-ID (cars_lxcars.c_id)
+ * @testdata {"c_id": 6471}
+ */
+function resolveKtype($data) {
+    $cId = intval($data['c_id'] ?? 0);
+    if ($cId <= 0) {
+        resultInfo(false, 'INVALID_CAR_ID', ['message' => 'Ungültige Fahrzeug-ID']);
+        return;
+    }
+
+    $company = DbhCompany::begin();
+
+    $car = $company->getOne(
+        "SELECT c_2, c_3, c_fin, c_ktype FROM cars_lxcars WHERE c_id = :c_id",
+        ['c_id' => $cId]
+    );
+    if (!$car) {
+        resultInfo(false, 'CAR_NOT_FOUND', ['message' => 'Fahrzeug nicht gefunden']);
+        return;
+    }
+
+    $hsn = trim($car['c_2'] ?? '');
+    $tsn = trim($car['c_3'] ?? '');
+    $vin = strtoupper(trim($car['c_fin'] ?? ''));
+
+    // Fahrzeug-Identifikation: bevorzugt KBA (zuverlässiger), sonst FIN
+    $hasKba = preg_match('/^\d{4}$/', $hsn) && $tsn !== '' && substr($tsn, 0, 3) !== '000';
+
+    $vehicle = ['referenceId' => 'v_' . $cId, 'vehicleType' => ['id' => 0, 'type' => 1]];
+    if ($hasKba) {
+        $vehicle['registrationInformation'] = [
+            'countryCode'        => 'DE',
+            'registrationNo'     => $hsn . $tsn, // KBA-Nummer = HSN+TSN
+            'registrationTypeId' => 0
+        ];
+    } elseif ($vin !== '') {
+        $vehicle['vin'] = $vin;
+        $vehicle['registrationInformation'] = ['countryCode' => 'DE'];
+    } else {
+        resultInfo(false, 'NO_IDENTIFIER', ['message' => 'Weder gültige HSN/TSN noch FIN vorhanden']);
+        return;
+    }
+
+    $referenceId = 'OSERP_FZG_' . $cId;
+
+    // 1. ImportVoucher: Vorgang anlegen / Fahrzeugsuche auslösen
+    $imp = aagPostJson($company, AAG_GSI_IMPORT_URL, [
+        'referenceId' => $referenceId,
+        'voucherType' => ['referenceId' => '1', 'description' => 'Fahrzeugidentifikation'],
+        'vehicle'     => $vehicle
+    ]);
+    if ($imp['status'] !== 200) {
+        resultInfo(false, 'AAG_IMPORT_FAILED', ['message' => $imp['error'] ?: ('HTTP ' . $imp['status'])]);
+        return;
+    }
+
+    // 2. ExportVoucher: aufgelöstes Fahrzeug zurücklesen
+    $exp = aagPostJson($company, AAG_GSI_EXPORT_URL, ['referenceId' => $referenceId]);
+    if ($exp['status'] !== 200) {
+        resultInfo(false, 'AAG_EXPORT_FAILED', ['message' => $exp['error'] ?: ('HTTP ' . $exp['status'])]);
+        return;
+    }
+
+    $vt = $exp['data']['vehicle']['vehicleType'] ?? null;
+    $ktype = intval($vt['id'] ?? 0);
+    $desc = trim($vt['description'] ?? '');
+
+    if ($ktype <= 0) {
+        // Kein eindeutiger Treffer (mehrere Fahrzeuge oder nicht gefunden) → nichts speichern
+        resultInfo(false, 'NO_UNIQUE_MATCH', ['message' => 'Kein eindeutiges Fahrzeug ermittelt']);
+        return;
+    }
+
+    $company->execute(
+        "UPDATE cars_lxcars SET c_ktype = :k, c_ktype_desc = :d WHERE c_id = :c_id",
+        ['k' => $ktype, 'd' => $desc, 'c_id' => $cId]
+    );
+
+    resultInfo(true, '', ['c_ktype' => $ktype, 'c_ktype_desc' => $desc, 'source' => $hasKba ? 'kba' : 'vin']);
 }

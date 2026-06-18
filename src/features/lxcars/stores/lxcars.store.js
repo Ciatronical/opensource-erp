@@ -90,6 +90,21 @@ export const lxcarsStore = defineStore('lxcarsStore', () => {
     }
 
     /**
+     * Ermittelt die TecDoc-Ktype-Nummer eines Fahrzeugs über AAG-Online
+     * (per HSN/TSN oder FIN) und speichert sie serverseitig in cars_lxcars.
+     *
+     * @param {number} carId - Fahrzeug-ID (c_id)
+     * @return {Promise<Object|null>} { c_ktype, c_ktype_desc, source } oder null wenn nicht eindeutig
+     */
+    async function resolveKtype(carId) {
+        const response = await axios.post('/api/lxcars/', {
+            action: 'resolveKtype',
+            c_id: carId
+        });
+        return response.data.success ? response.data.payload : null;
+    }
+
+    /**
      * Prüft ob ein Kennzeichen bereits vergeben ist
      *
      * @param {string} licensePlate - Kennzeichen
@@ -1217,6 +1232,7 @@ export const lxcarsStore = defineStore('lxcarsStore', () => {
         updateCar,
         deleteCar,
         loadCar,
+        resolveKtype,
         loadCarOrders,
         checkKmStandPlausibility,
         loadLxCarsFakturaInit,

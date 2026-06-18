@@ -41,6 +41,8 @@ CREATE TABLE cars_lxcars (
     scan_detail_id  text,
     scan_id         text,
     filename        text,
+    c_ktype         integer,
+    c_ktype_desc    text,
     CONSTRAINT cars_lxcars_c_ln_unique UNIQUE (c_ln),
     CONSTRAINT cars_lxcars_c_fin_unique UNIQUE (c_fin),
     CONSTRAINT cars_lxcars_scan_detail_unique UNIQUE (scan_detail_id),
