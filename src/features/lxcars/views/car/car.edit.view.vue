@@ -211,7 +211,7 @@
                                 </v-col>
                                 <!-- AAG-Online per FIN suchen, wenn TSN ein Platzhalter ist (000…) -->
                                 <v-col v-if="showAagTsnButton" cols="auto" class="py-1">
-                                    <v-tooltip location="bottom" :text="t('CarEditView.aag.tsnTooltip')">
+                                    <v-tooltip location="bottom" :text="ktypeLoading ? t('CarEditView.ktype.resolving') : t('CarEditView.aag.tsnTooltip')">
                                         <template #activator="{ props: tipProps }">
                                             <v-btn
                                                 v-bind="tipProps"
@@ -220,7 +220,7 @@
                                                 color="indigo"
                                                 size="small"
                                                 tabindex="-1"
-                                                :loading="aagLoading"
+                                                :loading="aagLoading || ktypeLoading"
                                                 @click="openAagByFin"
                                             />
                                         </template>

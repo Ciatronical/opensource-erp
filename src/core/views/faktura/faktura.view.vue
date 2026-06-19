@@ -1999,7 +1999,7 @@ export default defineComponent({
             } catch (e) {
                 if (aagWindow) aagWindow.close()
                 console.error('AAG-Online error:', e)
-                toasts.error(t('FakturaView.faktura.aagError') + (e?.text ? '\n' + e.text : ''))
+                toasts.error(t('FakturaView.faktura.aagError') + (e?.message ? '\n' + e.message : ''))
             } finally {
                 aagLoading.value = false
             }

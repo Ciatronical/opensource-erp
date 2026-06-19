@@ -5,11 +5,14 @@
 // an das Portal übertragen und die Portal-URL zurückliefern.
 // Wird von der Faktura (Auftrag) und vom Fahrzeug (LxCars) genutzt.
 
-const AAG_LOGIN_URL  = 'https://tm-next.dvse.de/data/TM.Next.Authority/external/login/GetAuthToken';
-const AAG_IMPORT_URL = 'https://tm-next.dvse.de/data/TM.Next.Dms/api/portal/service/v1/Gsi/ImportVoucher';
+// AAG-Online Basis-URL. Produktiv: https://tm2.carparts-cat.com
+// (Testsystem war https://tm-next.dvse.de). Host hier zentral umstellen.
+const AAG_BASE = 'https://tm2.carparts-cat.com';
+const AAG_LOGIN_URL  = AAG_BASE . '/data/TM.Next.Authority/external/login/GetAuthToken';
+const AAG_IMPORT_URL = AAG_BASE . '/data/TM.Next.Dms/api/portal/service/v1/Gsi/ImportVoucher';
 // GSI-Voucher-Endpunkte (dokumentierte API) für den Ktype-Roundtrip Import→Export
-const AAG_GSI_IMPORT_URL = 'https://tm-next.dvse.de/data/TM.Next.Dms/gsi/vouchers/ImportVoucher';
-const AAG_GSI_EXPORT_URL = 'https://tm-next.dvse.de/data/TM.Next.Dms/gsi/vouchers/ExportVoucher';
+const AAG_GSI_IMPORT_URL = AAG_BASE . '/data/TM.Next.Dms/gsi/vouchers/ImportVoucher';
+const AAG_GSI_EXPORT_URL = AAG_BASE . '/data/TM.Next.Dms/gsi/vouchers/ExportVoucher';
 const AAG_AUTH_ID    = 'ti6x'; // Authentifizierungs-ID der DVSE: ti6x = AAG-Online
 const AAG_TOKEN_TTL  = 43200;  // Fallback-Gueltigkeit (12 h), falls AAG kein 'expiration' liefert
 const AAG_TOKEN_SKEW = 300;    // Sicherheitspuffer (5 Min.): Token vor echtem Ablauf erneuern
@@ -242,6 +245,7 @@ function getAagUrl($data) {
             car.c_fin,
             car.c_mkb,
             car.c_text,
+            car.c_ktype,
             to_char(car.c_d, 'YYYY-MM-DD\"T\"HH24:MI:SS.MS\"Z\"') AS registration_date,
             to_char(car.c_it, 'YYYY-MM-DD\"T\"HH24:MI:SS.MS\"Z\"') AS car_itime,
             CONCAT(car.c_2, car.c_3) AS kba
@@ -296,9 +300,12 @@ function getAagUrl($data) {
         ],
         'vehicle' => [
             'referenceId' => (string) $row['c_id'],
-            'vehicleType' => [
-                'type' => 1 // PKW
-            ],
+            // Ktype (TecDoc-Typnummer) hat höchste Such-Priorität: wenn bekannt,
+            // identifiziert der Katalog das Fahrzeug direkt – auch bei
+            // ausgenullter TSN, wo die KBA-Suche scheitert.
+            'vehicleType' => intval($row['c_ktype']) > 0
+                ? ['id' => intval($row['c_ktype']), 'type' => 1]
+                : ['type' => 1], // PKW
             'registrationInformation' => [
                 'plateId'          => $row['c_ln'],
                 'countryCode'      => 'DE',
@@ -349,18 +356,20 @@ function getAagVehicleUrl($data) {
 
     $company = DbhCompany::begin();
 
-    // Kennzeichen/Erstzulassung ergänzen, falls das Fahrzeug bereits gespeichert ist
+    // Kennzeichen/Erstzulassung/Ktype ergänzen, falls das Fahrzeug bereits gespeichert ist
     $plate = '';
     $registrationDate = null;
+    $ktype = 0;
     if ($cId > 0) {
         $car = $company->getOne(
-            "SELECT c_ln, to_char(c_d, 'YYYY-MM-DD\"T\"HH24:MI:SS.MS\"Z\"') AS reg_date
+            "SELECT c_ln, c_ktype, to_char(c_d, 'YYYY-MM-DD\"T\"HH24:MI:SS.MS\"Z\"') AS reg_date
              FROM cars_lxcars WHERE c_id = :c_id",
             ['c_id' => $cId]
         );
         if ($car) {
             $plate = $car['c_ln'] ?? '';
             $registrationDate = $car['reg_date'];
+            $ktype = intval($car['c_ktype'] ?? 0);
         }
     }
 
@@ -371,7 +380,12 @@ function getAagVehicleUrl($data) {
     if ($plate !== '') $registration['plateId'] = $plate;
     if ($registrationDate) $registration['registrationDate'] = $registrationDate;
 
-    // Minimaler Beleg: Fahrzeug wird allein über die FIN identifiziert
+    // Ktype (TecDoc-Typnummer) hat höchste Such-Priorität: wenn bekannt,
+    // identifiziert der Katalog das Fahrzeug direkt – wichtig bei ausgenullter
+    // TSN, wo die reine VIN-/KBA-Suche das Modell sonst nicht findet.
+    $vehicleType = $ktype > 0 ? ['id' => $ktype, 'type' => 1] : ['type' => 1]; // PKW
+
+    // Minimaler Beleg: Fahrzeug wird über Ktype (falls vorhanden) bzw. FIN identifiziert
     $payload = [
         'referenceId' => 'FZG_' . ($cId > 0 ? $cId : $vin),
         'voucherType' => [
@@ -381,7 +395,7 @@ function getAagVehicleUrl($data) {
         ],
         'vehicle' => [
             'referenceId'             => $vin,
-            'vehicleType'             => ['type' => 1], // PKW
+            'vehicleType'             => $vehicleType,
             'registrationInformation' => $registration,
             'vin'                     => $vin
         ]

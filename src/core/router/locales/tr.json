@@ -37,6 +37,7 @@
         "userConfig": "/benutzer/konfiguration",
         "huSerienbrief": "/serienbrief/hu",
         "wallDisplay": "/wandanzeige",
+        "anschlagtafel": "/anschlagtafel",
         "editCv": "/musteri-tedarikci/duzenle",
         "lxcarsReports": "/kullanici/raporlar",
         "camera": "/cameras",

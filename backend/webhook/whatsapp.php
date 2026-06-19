@@ -461,7 +461,10 @@ function _downloadAndSaveMedia(PDO $pdo, string $dbname, string $metaMediaId, st
         error_log("[WHATSAPP WEBHOOK] Ungueltiger dbname: {$dbname}");
         return null;
     }
-    $baseDir = realpath(__DIR__ . '/../../data') ?: (__DIR__ . '/../../data');
+    // Hinweis: Diese Datei liegt in backend/webhook (eine Ebene unter backend),
+    // daher '/../data'. Das Idiom '/../../data' stammt aus filemanager.php, die
+    // zwei Ebenen tiefer (api/customer_vendor) liegt — dort ergibt es backend/data.
+    $baseDir = realpath(__DIR__ . '/../data') ?: (__DIR__ . '/../data');
     $dataDir = $baseDir . '/' . $dbname;
     if (!is_dir($dataDir)) {
         mkdir($dataDir, 0755, true);

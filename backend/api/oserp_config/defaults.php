@@ -24,7 +24,9 @@ function getCompanyConfig($data) {
                         FROM (SELECT * FROM defaults) AS config
                     ),
                     'defaults_oserp', (
+                        -- aag_online_token* sind serverseitiger Token-Cache, nie an Clients ausliefern
                         SELECT json_object_agg(key, value) FROM defaults_oserp
+                        WHERE key NOT IN ('aag_online_token', 'aag_online_token_exp')
                     ),
                     'business_types', (
                         SELECT json_agg(business) FROM (SELECT * FROM business) AS business
@@ -198,7 +200,8 @@ function getDefaults($data) {
         $result = $db->getOne(
             "SELECT
                 (SELECT row_to_json(d) FROM defaults d LIMIT 1) AS defaults,
-                (SELECT COALESCE(json_object_agg(key, value), '{}') FROM defaults_oserp) AS defaults_oserp"
+                (SELECT COALESCE(json_object_agg(key, value), '{}') FROM defaults_oserp
+                    WHERE key NOT IN ('aag_online_token', 'aag_online_token_exp')) AS defaults_oserp"
         );
 
         $defaults = json_decode($result['defaults'] ?? '{}', true) ?: [];

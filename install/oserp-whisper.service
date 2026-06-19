@@ -1,0 +1,25 @@
+[Unit]
+Description=OpensourceERP Whisper-Transkriptionsdienst (faster-whisper, lokal/CPU)
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/work/opensource-erp/backend/whisper
+# Nutzt das venv aus install.sh. Pfad ggf. an die Installation anpassen.
+ExecStart=/home/work/opensource-erp/backend/whisper/.venv/bin/python whisper-server.py
+Restart=always
+RestartSec=5
+# Modell-Laden braucht beim ersten Start Zeit (Download) -> grosszuegig.
+TimeoutStartSec=600
+Environment=WHISPER_PORT=3002
+Environment=WHISPER_MODEL=large-v3-turbo
+Environment=WHISPER_DEVICE=cpu
+Environment=WHISPER_COMPUTE=int8
+Environment=WHISPER_LANG=de
+# Optionales Shared-Secret (auch in backend/config setzen, falls genutzt):
+# Environment=WHISPER_TOKEN=geheim
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target

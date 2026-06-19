@@ -527,6 +527,70 @@ DO $$ BEGIN
     END IF;
 END $$;
 
+-- ============================================================================
+-- SPRACHNOTIZEN (Telegram-Sprachnachricht -> Whisper -> Anschlagtafel)
+-- ============================================================================
+
+CREATE TABLE IF NOT EXISTS voice_notes (
+    id INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    telegram_message_id TEXT,
+    telegram_chat_id TEXT,
+    sender_name TEXT,
+    employee_id INTEGER,
+    audio_file TEXT,
+    duration NUMERIC(8,2),
+    transcript TEXT,
+    language TEXT,
+    status TEXT NOT NULL DEFAULT 'transcribed',
+    itime TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    mtime TIMESTAMPTZ,
+    hidden BOOLEAN NOT NULL DEFAULT FALSE,
+    CONSTRAINT voice_notes_telegram_msg_unique UNIQUE (telegram_message_id)
+);
+
+COMMENT ON TABLE voice_notes IS 'Per Telegram eingesprochene Sprachnotizen, server-seitig via Whisper transkribiert, Anzeige auf der Anschlagtafel';
+COMMENT ON COLUMN voice_notes.telegram_message_id IS 'Telegram message_id zur Idempotenz (Webhook kann doppelt zustellen)';
+COMMENT ON COLUMN voice_notes.telegram_chat_id IS 'Telegram-Chat-ID des Absenders (Zuordnung Mitarbeiter)';
+COMMENT ON COLUMN voice_notes.sender_name IS 'Anzeigename des Absenders (aus Mapping oder Telegram-Profil)';
+COMMENT ON COLUMN voice_notes.employee_id IS 'Zugeordneter Mitarbeiter (optional)';
+COMMENT ON COLUMN voice_notes.audio_file IS 'Relativer Pfad zur Audiodatei ab data/<dbname>/';
+COMMENT ON COLUMN voice_notes.duration IS 'Audiolaenge in Sekunden';
+COMMENT ON COLUMN voice_notes.transcript IS 'Whisper-Transkript';
+COMMENT ON COLUMN voice_notes.status IS 'transcribed, failed';
+
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE indexname = 'idx_voice_notes_itime') THEN
+        CREATE INDEX idx_voice_notes_itime ON voice_notes(itime DESC);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE indexname = 'idx_voice_notes_chat') THEN
+        CREATE INDEX idx_voice_notes_chat ON voice_notes(telegram_chat_id);
+    END IF;
+END $$;
+
+-- Trigger: pg_notify bei neuer Sprachnotiz (SSE -> Anschlagtafel live)
+CREATE OR REPLACE FUNCTION notify_voice_note() RETURNS trigger AS $$
+BEGIN
+    PERFORM pg_notify('voicenote_change', json_build_object(
+        'id', NEW.id,
+        'sender_name', NEW.sender_name,
+        'transcript', NEW.transcript,
+        'duration', NEW.duration,
+        'status', NEW.status,
+        'itime', NEW.itime
+    )::TEXT);
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'voice_notes_notify') THEN
+        CREATE TRIGGER voice_notes_notify
+            AFTER INSERT ON voice_notes
+            FOR EACH ROW
+            EXECUTE FUNCTION notify_voice_note();
+    END IF;
+END $$;
+
 -- Trigger: pg_notify bei Kalender-Aenderungen (SSE fuer Echtzeit-Updates)
 CREATE OR REPLACE FUNCTION notify_calendar_change() RETURNS trigger AS $$
 BEGIN

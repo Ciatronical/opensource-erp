@@ -31,6 +31,7 @@ const WikiCategoriesView = () => import('@/core/views/wiki/wiki.categories.view.
 const OrderSearchView = () => import('@/core/views/order-search/order-search.view.vue')
 const UserConfigView = () => import('@/core/views/user-config/user-config.view.vue')
 const WallDisplayView = () => import('@/core/views/wall-display/wall-display.view.vue')
+const AnschlagtafelView = () => import('@/core/views/anschlagtafel/anschlagtafel.view.vue')
 const CameraView = () => import('@/core/views/camera/camera.view.vue')
 
 const HuSerienbriefView = () => {
@@ -235,6 +236,11 @@ const router = createRouter({
             path: i18n.global.t('routes.wallDisplay'),
             name: 'wall-display',
             component: WallDisplayView,
+        },
+        {
+            path: i18n.global.t('routes.anschlagtafel'),
+            name: 'anschlagtafel',
+            component: AnschlagtafelView,
         },
         {
             path: '/mechaniker',

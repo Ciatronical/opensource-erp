@@ -165,7 +165,10 @@ export const fakturaStore = defineStore('fakturaStore', () => {
         if (response.data.success) {
             return response.data.payload?.portalUrl
         } else {
-            throw new ApiError('ApiError', response.data.text, 'Error fetching AAG-Online URL: ' + response.data.text)
+            // Backend liefert den Klartext-Grund in payload.message, den Fehlercode in text.
+            // Beides nach oben durchreichen, damit der Toast den echten Grund zeigt.
+            const detail = response.data.payload?.message || response.data.text || ''
+            throw new ApiError('ApiError', response.data.text, detail || 'AAG-Online URL konnte nicht abgerufen werden')
         }
     }
 

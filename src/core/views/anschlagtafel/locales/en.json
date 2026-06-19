@@ -1,0 +1,11 @@
+{
+    "Anschlagtafel": {
+        "title": "Bulletin Board",
+        "exit": "Exit",
+        "empty": "No voice notes yet",
+        "unknown": "Unknown",
+        "dismiss": "Done",
+        "failed": "Transcription failed",
+        "offline": "No live connection"
+    }
+}

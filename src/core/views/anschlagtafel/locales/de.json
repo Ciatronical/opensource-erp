@@ -1,0 +1,11 @@
+{
+    "Anschlagtafel": {
+        "title": "Anschlagtafel",
+        "exit": "Beenden",
+        "empty": "Noch keine Sprachnotizen",
+        "unknown": "Unbekannt",
+        "dismiss": "Erledigt",
+        "failed": "Transkription fehlgeschlagen",
+        "offline": "Keine Live-Verbindung"
+    }
+}

@@ -137,13 +137,16 @@ async function connectListener(dbInfo, entry) {
         await client.query('LISTEN weroni_question');
         await client.query('LISTEN camera_event');
         await client.query('LISTEN wall_display_command');
+        await client.query('LISTEN voicenote_change');
         entry.pgClient = client;
-        console.log(`LISTEN ... + wall_display_command auf ${dbInfo.dbname}@${dbInfo.dbhost}:${dbInfo.dbport}`);
+        console.log(`LISTEN ... + voicenote_change auf ${dbInfo.dbname}@${dbInfo.dbhost}:${dbInfo.dbport}`);
+
+        // Kanaele, die als Named Event (addEventListener im Frontend) ankommen sollen.
+        const namedEventChannels = new Set(['wall_display_command', 'voicenote_change']);
 
         client.on('notification', (msg) => {
-            // wall_display_command als Named Event senden (addEventListener im Frontend)
-            const data = msg.channel === 'wall_display_command'
-                ? `event: wall_display_command\ndata: ${msg.payload}\n\n`
+            const data = namedEventChannels.has(msg.channel)
+                ? `event: ${msg.channel}\ndata: ${msg.payload}\n\n`
                 : `data: ${msg.payload}\n\n`;
             for (const res of entry.sseClients) {
                 res.write(data);

@@ -40,6 +40,7 @@
         "lxcarsReports": "/benutzer/auswertung",
         "huSerienbrief": "/serienbrief/hu",
         "wallDisplay": "/wandanzeige",
+        "anschlagtafel": "/anschlagtafel",
         "camera": "/kameras",
         "hr": "/personal",
         "hrPayroll": "/personal/lohn",

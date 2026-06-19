@@ -1,0 +1,5 @@
+# Whisper-Transkriptionsdienst (lokal, CPU)
+# faster-whisper nutzt CTranslate2 (kein PyTorch noetig) -> schlank und CPU-schnell.
+faster-whisper==1.1.0
+# faster-whisper 1.1.0 importiert requests, deklariert es aber nicht selbst.
+requests

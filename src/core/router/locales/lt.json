@@ -37,6 +37,7 @@
         "userConfig": "/benutzer/konfiguration",
         "huSerienbrief": "/serienbrief/hu",
         "wallDisplay": "/wandanzeige",
+        "anschlagtafel": "/anschlagtafel",
         "editCv": "/klientas-tiekejas/redaguoti",
         "lxcarsReports": "/vartotojas/ataskaitos",
         "camera": "/cameras",

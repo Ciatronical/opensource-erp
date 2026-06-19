@@ -80,18 +80,31 @@ Smartphone (1 Button)
 - **„Kein Login":** Zuordnung Telegram-Chat-ID ↔ Mitarbeiter wird einmalig
   eingerichtet (z.B. Start-Code), danach kein Anmelden mehr.
 
-## Umsetzungs-Bausteine (für morgen)
+## Umsetzungs-Bausteine — ✅ ALLE ERLEDIGT
 
-1. **Telegram-Bot anbinden:** Webhook-Endpunkt in `backend/api/`, der Telegram-
-   Updates entgegennimmt und die Voice-Datei (OGG/Opus) herunterlädt.
-2. **Whisper lokal:** Dienst aufsetzen (`whisper.cpp`/`faster-whisper`),
-   Audiodatei → Text. `dev/install-nerd-dictation.sh` als Referenz prüfen.
-3. **Speichern:** neue Tabelle für Sprachnotizen — Schema NUR in
-   `backend/upstall/crm/company_schema.sql`, kein direktes DDL, kein ALTER TABLE.
-4. **SSE-Event feuern** nach dem Speichern (Muster aus vorhandenem SSE-Client
-   übernehmen).
-5. **Anschlagtafel-Vue-View:** abonniert SSE, zeigt Nachrichten live (neueste
-   oben), läuft dauerhaft auf dem Firmenbildschirm; vue-i18n, echte Umlaute.
+Einrichtungs-/Betriebsanleitung: `dev/telegram-sprachnotiz-setup.md`.
+
+1. **Telegram-Bot anbinden:** ✅ `backend/webhook/telegram.php` (erreichbar unter
+   `/webhook/telegram.php`). Kein Session-Check; ordnet die Nachricht per
+   `X-Telegram-Bot-Api-Secret-Token` dem Mandanten zu, lädt die Voice-Datei
+   (OGG/Opus) herunter, ruft Whisper, speichert, sendet optional Bestätigung.
+2. **Whisper lokal:** ✅ `faster-whisper`-Dienst unter `backend/whisper/`
+   (`127.0.0.1:3002`, Modell `large-v3-turbo`/CPU, systemd-User-Service
+   `oserp-whisper`). Doku: `backend/whisper/README.md`. (`nerd-dictation` nutzt
+   VOSK — andere Engine, nicht verwendet.)
+3. **Speichern:** ✅ Tabelle `voice_notes` in
+   `backend/upstall/crm/company_schema.sql` (kein direktes DDL, kein ALTER).
+   API zum Lesen/Ausblenden: `backend/api/voicenotes/`.
+4. **SSE-Event feuern:** ✅ DB-Trigger `voice_notes_notify` →
+   `pg_notify('voicenote_change', …)`; `sse-server.js` lauscht darauf und sendet
+   es als Named Event `voicenote_change`.
+5. **Anschlagtafel-Vue-View:** ✅ `src/core/views/anschlagtafel/`, Route
+   `/anschlagtafel`. Vollbild, neueste oben, live über SSE, Polling-Fallback,
+   vue-i18n (de/en + Route in allen 21 Sprachen), echte Umlaute.
+
+**Noch auszuführen vor Produktivnutzung:** Schema-Rollout von `voice_notes` auf
+die Firmen-DB(s) über den normalen Update-Mechanismus (aus `company_schema.sql`),
+und die `telegram_*`-Konfigschlüssel je Mandant setzen (siehe Setup-Doku).
 
 ## Wiederverwendbare vorhandene Bausteine
 
