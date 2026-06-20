@@ -149,28 +149,6 @@ export const fakturaStore = defineStore('fakturaStore', () => {
         }
     }
 
-    /**
-     * Überträgt die Fahrzeug-/Kundendaten eines Auftrags an AAG-Online und
-     * liefert die Portal-URL zurück, unter der der Beleg geöffnet wird.
-     *
-     * @param {number} fakturaID - ID des Auftrags (oe.id)
-     * @return {Promise<string>} Portal-URL von AAG-Online
-     */
-    async function getAagUrl(fakturaID) {
-        const response = await axios.post('/api/faktura/', {
-            action: 'getAagUrl',
-            fakturaID
-        })
-
-        if (response.data.success) {
-            return response.data.payload?.portalUrl
-        } else {
-            // Backend liefert den Klartext-Grund in payload.message, den Fehlercode in text.
-            // Beides nach oben durchreichen, damit der Toast den echten Grund zeigt.
-            const detail = response.data.payload?.message || response.data.text || ''
-            throw new ApiError('ApiError', response.data.text, detail || 'AAG-Online URL konnte nicht abgerufen werden')
-        }
-    }
 
     /**
      * Lädt das AAG-Online-Token im Hintergrund vor, damit der langsame Login
@@ -540,7 +518,6 @@ export const fakturaStore = defineStore('fakturaStore', () => {
         deleteFaktura,
         createFakturaItem,
         importSilverDATItems,
-        getAagUrl,
         warmAagToken,
         updateFakturaItems,
         updateFakturaField,

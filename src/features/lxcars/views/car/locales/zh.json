@@ -26,6 +26,7 @@
             "c_t": "车辆类型",
             "c_d": "首次注册",
             "c_hu": "车检",
+            "c_pb": "客运（出租车）",
             "c_fin": "车辆识别码 (VIN)",
             "c_st": "夏季轮胎型号",
             "c_wt": "冬季轮胎型号",
@@ -313,8 +314,14 @@
             "openInTab": "打开"
         },
         "aag": {
+            "button": "AAG-Online",
             "tsnTooltip": "Search vehicle by VIN in AAG-Online",
             "error": "Could not open AAG-Online"
+        },
+        "esi": {
+            "button": "ESI",
+            "tooltip": "通过 HSN/TSN 在 Bosch ESI[tronic] 中打开车辆",
+            "noKba": "没有有效的密钥编号 (HSN/TSN)"
         },
         "ktype": {
             "label": "Ktype",

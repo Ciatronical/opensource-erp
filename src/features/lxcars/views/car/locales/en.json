@@ -26,6 +26,7 @@
             "c_t": "Vehicle type",
             "c_d": "First registration",
             "c_hu": "Inspection (MOT)",
+            "c_pb": "Passenger transport (taxi/hire car)",
             "c_fin": "Vehicle identification number (VIN)",
             "c_st": "Summer tire type",
             "c_wt": "Winter tire type",
@@ -313,8 +314,14 @@
             "openInTab": "Open"
         },
         "aag": {
+            "button": "AAG-Online",
             "tsnTooltip": "Search vehicle by VIN in AAG-Online",
             "error": "Could not open AAG-Online"
+        },
+        "esi": {
+            "button": "ESI",
+            "tooltip": "Open vehicle in Bosch ESI[tronic] by HSN/TSN",
+            "noKba": "No valid key numbers (HSN/TSN) available"
         },
         "ktype": {
             "label": "Ktype",

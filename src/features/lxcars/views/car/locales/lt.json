@@ -26,6 +26,7 @@
             "c_t": "Fahrzeugtyp",
             "c_d": "Pirmoji registracija",
             "c_hu": "HU (TÜV)",
+            "c_pb": "Keleivių vežimas (taksi)",
             "c_fin": "Kėbulo numeris (VIN)",
             "c_st": "Sommerreifen Typ",
             "c_wt": "Winterreifen Typ",
@@ -313,8 +314,14 @@
             "openInTab": "Atidaryti"
         },
         "aag": {
+            "button": "AAG-Online",
             "tsnTooltip": "Search vehicle by VIN in AAG-Online",
             "error": "Could not open AAG-Online"
+        },
+        "esi": {
+            "button": "ESI",
+            "tooltip": "Atidaryti transporto priemonę Bosch ESI[tronic] pagal HSN/TSN",
+            "noKba": "Nėra galiojančių rakto numerių (HSN/TSN)"
         },
         "ktype": {
             "label": "Ktype",

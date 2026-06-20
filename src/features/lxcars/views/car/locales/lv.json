@@ -26,6 +26,7 @@
             "c_t": "Fahrzeugtyp",
             "c_d": "Pirmreizējā reģistrācija",
             "c_hu": "HU (TÜV)",
+            "c_pb": "Pasažieru pārvadājumi (taksometrs)",
             "c_fin": "Virsbūves numurs (VIN)",
             "c_st": "Sommerreifen Typ",
             "c_wt": "Winterreifen Typ",
@@ -313,8 +314,14 @@
             "openInTab": "Atvērt"
         },
         "aag": {
+            "button": "AAG-Online",
             "tsnTooltip": "Search vehicle by VIN in AAG-Online",
             "error": "Could not open AAG-Online"
+        },
+        "esi": {
+            "button": "ESI",
+            "tooltip": "Atvērt transportlīdzekli Bosch ESI[tronic] pēc HSN/TSN",
+            "noKba": "Nav pieejami derīgi atslēgas numuri (HSN/TSN)"
         },
         "ktype": {
             "label": "Ktype",

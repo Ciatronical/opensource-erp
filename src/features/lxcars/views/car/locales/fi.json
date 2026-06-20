@@ -26,6 +26,7 @@
             "c_t": "Fahrzeugtyp",
             "c_d": "Erstzulassung",
             "c_hu": "HU (TÜV)",
+            "c_pb": "Henkilökuljetus (taksi)",
             "c_fin": "Fahrgestellnummer (FIN)",
             "c_st": "Sommerreifen Typ",
             "c_wt": "Winterreifen Typ",
@@ -313,8 +314,14 @@
             "openInTab": "Avaa"
         },
         "aag": {
+            "button": "AAG-Online",
             "tsnTooltip": "Search vehicle by VIN in AAG-Online",
             "error": "Could not open AAG-Online"
+        },
+        "esi": {
+            "button": "ESI",
+            "tooltip": "Avaa ajoneuvo Bosch ESI[tronic]issa HSN/TSN:n avulla",
+            "noKba": "Kelvollisia avainnumeroita (HSN/TSN) ei ole saatavilla"
         },
         "ktype": {
             "label": "Ktype",

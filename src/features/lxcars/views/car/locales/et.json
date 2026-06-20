@@ -26,6 +26,7 @@
             "c_t": "Fahrzeugtyp",
             "c_d": "Esmane registreerimine",
             "c_hu": "HU (TÜV)",
+            "c_pb": "Reisijatevedu (takso)",
             "c_fin": "Kere number (VIN)",
             "c_st": "Sommerreifen Typ",
             "c_wt": "Winterreifen Typ",
@@ -313,8 +314,14 @@
             "openInTab": "Ava"
         },
         "aag": {
+            "button": "AAG-Online",
             "tsnTooltip": "Search vehicle by VIN in AAG-Online",
             "error": "Could not open AAG-Online"
+        },
+        "esi": {
+            "button": "ESI",
+            "tooltip": "Ava sõiduk Bosch ESI[tronic]-is HSN/TSN järgi",
+            "noKba": "Kehtivad võtmenumbrid (HSN/TSN) puuduvad"
         },
         "ktype": {
             "label": "Ktype",

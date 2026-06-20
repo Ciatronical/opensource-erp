@@ -26,6 +26,7 @@
             "c_t": "Voertuigtype",
             "c_d": "Eerste toelating",
             "c_hu": "APK",
+            "c_pb": "Personenvervoer (taxi)",
             "c_fin": "Voertuigidentificatienummer (VIN)",
             "c_st": "Zomerbanden type",
             "c_wt": "Winterbanden type",
@@ -313,8 +314,14 @@
             "openInTab": "Openen"
         },
         "aag": {
+            "button": "AAG-Online",
             "tsnTooltip": "Voertuig op VIN zoeken in AAG-Online",
             "error": "Kan AAG-Online niet openen"
+        },
+        "esi": {
+            "button": "ESI",
+            "tooltip": "Voertuig openen in Bosch ESI[tronic] via HSN/TSN",
+            "noKba": "Geen geldige sleutelnummers (HSN/TSN) beschikbaar"
         },
         "ktype": {
             "label": "Ktype",

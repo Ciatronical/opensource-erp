@@ -1399,6 +1399,30 @@ function mapScanData($data) {
  *          "15.03.2020" → "2020-03-15", "03/26" → "2026-03-01"
  * Gibt null zurück wenn das Datum nicht geparst werden kann
  */
+/**
+ * Erkennt anhand der Scan-Rohdaten, ob das Fahrzeug der Personenbeförderung
+ * dient (Taxi/Mietwagen/Krankenkraftwagen) — diese haben jährliche HU (12/12).
+ * Quelle sind die Bemerkungen (Feld 22) sowie die Aufbau-/Klassenfelder.
+ *
+ * @param array $scanData Scan-Rohdaten
+ * @return bool
+ */
+function detectPassengerTransport($scanData) {
+    $haystack = mb_strtolower(trim(
+        ($scanData['field_22'] ?? '') . ' ' .
+        ($scanData['field_5_1'] ?? '') . ' ' .
+        ($scanData['field_5_2'] ?? '') . ' ' .
+        ($scanData['field_4'] ?? '')
+    ));
+    if ($haystack === '') return false;
+
+    foreach (['taxi', 'mietwagen', 'personenbeförderung', 'personenbefoerderung',
+              'krankenkraftwagen', 'krankenwagen'] as $needle) {
+        if (mb_strpos($haystack, $needle) !== false) return true;
+    }
+    return false;
+}
+
 function parseScanDate($dateStr) {
     if (empty($dateStr)) return null;
     $dateStr = trim($dateStr);
@@ -1504,6 +1528,7 @@ function mapScanToCarFields($scanData) {
         'c_d'      => parseScanDate($scanData['ez'] ?? ''),
         'c_hu'     => parseScanDate($scanData['hu'] ?? ''),
         'c_em'     => mb_substr($scanData['field_14_1'] ?? ($scanData['field_14'] ?? ''), 0, 6),
+        'c_pb'     => detectPassengerTransport($scanData),
     ];
 
     // --- KBA-Stammdaten (kba_lxcars) ---

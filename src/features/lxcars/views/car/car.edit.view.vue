@@ -35,6 +35,14 @@
                     <v-icon start size="small">mdi-folder-open-outline</v-icon>
                     {{ t('CarEditView.files.button') }}
                 </v-btn>
+                <v-btn v-if="aagAvailable" variant="tonal" size="small" color="indigo" :loading="aagLoading || ktypeLoading" :title="t('CarEditView.aag.tsnTooltip')" @click="openAag">
+                    <v-icon start size="small">mdi-car-search</v-icon>
+                    {{ t('CarEditView.aag.button') }}
+                </v-btn>
+                <v-btn v-if="esiAvailable" variant="tonal" size="small" color="teal-darken-1" :title="t('CarEditView.esi.tooltip')" @click="openEsi">
+                    <v-icon start size="small">mdi-cog-outline</v-icon>
+                    {{ t('CarEditView.esi.button') }}
+                </v-btn>
                 <v-btn v-if="isEditMode" variant="tonal" size="small" color="success" @click="openCarRegistration">
                     <v-icon start size="small">mdi-card-account-details</v-icon>
                     {{ t('CarEditView.registration.button') }}
@@ -221,7 +229,7 @@
                                                 size="small"
                                                 tabindex="-1"
                                                 :loading="aagLoading || ktypeLoading"
-                                                @click="openAagByFin"
+                                                @click="openAag"
                                             />
                                         </template>
                                     </v-tooltip>
@@ -229,7 +237,16 @@
                             </v-row>
                             <v-row dense>
                                 <v-col cols="12" sm="6" class="py-1">
-                                    <v-text-field v-model="car.c_d2" :label="t('CarEditView.fields.d2')" variant="outlined" density="compact" hide-details="auto" maxlength="30" tabindex="4" />
+                                    <v-text-field v-model="car.c_d2" :label="t('CarEditView.fields.d2')" variant="outlined" density="compact" hide-details="auto" maxlength="30" tabindex="4">
+                                        <template v-if="fieldCrops.c_d2" #append-inner>
+                                            <v-tooltip location="end" content-class="crop-tooltip">
+                                                <template #activator="{ props: tipProps }">
+                                                    <v-icon v-bind="tipProps" size="small" color="blue-lighten-2" class="cursor-pointer" tabindex="-1">mdi-image-outline</v-icon>
+                                                </template>
+                                                <img :src="fieldCrops.c_d2" class="crop-tooltip-img" loading="eager" />
+                                            </v-tooltip>
+                                        </template>
+                                    </v-text-field>
                                 </v-col>
                             </v-row>
                             <v-row dense>
@@ -284,6 +301,9 @@
                                             </v-icon>
                                         </template>
                                     </v-text-field>
+                                </v-col>
+                                <v-col cols="12" sm="6" class="py-1 d-flex align-center">
+                                    <v-checkbox v-model="car.c_pb" :label="t('CarEditView.fields.c_pb')" color="indigo" density="compact" hide-details tabindex="-1" :disabled="readonly" />
                                 </v-col>
                             </v-row>
 
@@ -341,10 +361,10 @@
 
                             <v-row dense>
                                 <v-col cols="12" sm="4" class="py-1">
-                                    <v-text-field v-model="car.c_gart" :label="t('CarEditView.fields.c_gart')" variant="outlined" density="compact" hide-details="auto" maxlength="30" tabindex="10" />
+                                    <v-combobox v-model="car.c_mkb" :items="installedEnginesList" :label="t('CarEditView.fields.c_mkb')" variant="outlined" density="compact" hide-details="auto" tabindex="10" @update:model-value="triggerSave" />
                                 </v-col>
                                 <v-col cols="12" sm="4" class="py-1">
-                                    <v-text-field v-model="car.c_mkb" :label="t('CarEditView.fields.c_mkb')" variant="outlined" density="compact" hide-details="auto" maxlength="20" tabindex="11" />
+                                    <v-text-field v-model="car.c_gart" :label="t('CarEditView.fields.c_gart')" variant="outlined" density="compact" hide-details="auto" maxlength="30" tabindex="11" />
                                 </v-col>
                                 <v-col cols="12" sm="4" class="py-1">
                                     <v-text-field v-model="car.c_color" :label="t('CarEditView.fields.c_color')" variant="outlined" density="compact" hide-details="auto" maxlength="30" tabindex="12" />
@@ -1208,12 +1228,13 @@
 </template>
 
 <script>
-import { ref, computed, watch, nextTick, defineAsyncComponent } from 'vue'
+import { ref, computed, watch, nextTick, defineAsyncComponent, onMounted, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter, useRoute, onBeforeRouteLeave } from 'vue-router'
 import axios from 'axios'
 import { oserpStore } from '@/core/stores/oserp.store.js'
 import { lxcarsStore } from '@/features/lxcars/stores/lxcars.store.js'
+import { openAppWindow } from '@/core/utils/aagWindow.js'
 import { wikiStore } from '@/core/stores/wiki.store.js'
 import { getDistrictByPlate } from '@/features/lxcars/utils/kennzeichen.js'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
@@ -1285,9 +1306,19 @@ export default {
             chk_c_ln: true, chk_c_2: true, chk_c_3: true, chk_c_em: true,
             chk_c_d: true, chk_fin: true, chk_c_hu: true,
             c_sk: false, c_zrk: null, c_zrd: '', c_bf: '', c_wd: '', c_km: null,
+            c_pb: false,
             c_finchk: '', kba_id: null,
+            installed_engines: '',
             scan_detail_id: '', scan_id: '', filename: ''
         })
+
+        // Verbaute Motorkennbuchstaben (aus Ktype-Auflösung) als Dropdown-Optionen
+        const installedEnginesList = computed(() =>
+            String(car.value.installed_engines || '')
+                .split(',')
+                .map(s => s.trim())
+                .filter(Boolean)
+        )
 
         const district = computed(() => getDistrictByPlate(car.value.c_ln))
         const initialLoaded = ref(false)
@@ -1779,6 +1810,11 @@ export default {
         // ===== AAG-Online per FIN (bei TSN-Platzhalter) =====
 
         const aagLoading = ref(false)
+        // Wurde das AAG-Portal geöffnet? Dann beim Zurückkehren (Fenster-Fokus)
+        // prüfen, ob dort ein Fahrzeug gewählt wurde, und den Ktype übernehmen.
+        let aagPortalOpened = false
+        let aagPopup = null        // Handle des AAG-Popup-Fensters
+        let aagCloseTimer = null   // Poll-Timer, der auf das Schließen des Popups wartet
 
         // AAG-Online konfiguriert? (Zugangsdaten in den Firmen-Defaults hinterlegt)
         const aagConfigured = computed(() =>
@@ -1786,26 +1822,49 @@ export default {
             !!String(oserpData.getClientDefaultValue('aag_online_passwd', '') || '').trim()
         )
 
-        // Button anzeigen, wenn AAG konfiguriert ist, die TSN ein Platzhalter ist
+        // Kontextbutton am TSN-Feld: nur wenn AAG konfiguriert, TSN ein Platzhalter
         // (beginnt mit 000) und eine FIN vorhanden ist, mit der gesucht werden kann.
         const showAagTsnButton = computed(() =>
             aagConfigured.value &&
             (car.value.c_3 || '').substring(0, 3) === '000' && !!(car.value.c_fin || '').trim()
         )
 
-        async function openAagByFin() {
-            const vin = (car.value.c_fin || '').trim()
-            if (!vin) return
+        // AAG-Button in der oberen Leiste: sobald das Fahrzeug identifizierbar ist
+        // (Ktype, gültige HSN/TSN oder FIN) und AAG konfiguriert ist.
+        const aagAvailable = computed(() => {
+            if (!aagConfigured.value || !isEditMode.value) return false
+            const hsn = (car.value.c_2 || '').trim()
+            const tsn = (car.value.c_3 || '').trim()
+            const hasKba = /^\d{4}$/.test(hsn) && tsn.length >= 3 && !hasTsnPlaceholder(tsn)
+            return !!ktypeNo.value || hasKba || !!(car.value.c_fin || '').trim()
+        })
 
-            // Fenster sofort öffnen (Popup-Blocker vermeiden, wirkt schneller)
-            const aagWindow = window.open('', 'aag-online')
+        // Fenstertitel/-name für AAG-Online: Kennzeichen zuerst, dann Modell
+        // (z. B. "M-AB 1234 · Audi Q5"). Modell aus den KBA-Daten, sonst aus dem
+        // Typ-Feld (D.2) bzw. dem gespeicherten Modelltext.
+        function aagWindowInfo() {
+            const plate = (car.value.c_ln || '').trim()
+            const model =
+                [kbaData.value?.hersteller, kbaData.value?.name].filter(Boolean).join(' ').trim() ||
+                (car.value.c_d2 || '').trim() ||
+                (car.value.c_mt || '').trim()
+            const title = [plate, model].filter(Boolean).join(' · ') || 'AAG-Online'
+            const name = 'aag-' + (plate.replace(/\s+/g, '') || String(props.id) || 'online')
+            return { title, name }
+        }
+
+        async function openAag() {
+            // Als eigenes App-Fenster (Popup ohne Tab-Leiste) öffnen, nicht als Tab.
+            // Sofort öffnen (Popup-Blocker vermeiden, wirkt schneller).
+            const { title, name } = aagWindowInfo()
+            const aagWindow = openAppWindow(name, title)
 
             aagLoading.value = true
             try {
                 const { data } = await axios.post('/api/lxcars/', {
                     action: 'getAagVehicleUrl',
                     c_id: Number(props.id) || 0,
-                    vin
+                    vin: (car.value.c_fin || '').trim()
                 })
 
                 const portalUrl = data?.success ? data.payload?.portalUrl : null
@@ -1814,9 +1873,13 @@ export default {
                     Swal.fire({ icon: 'error', title: t('CarEditView.aag.error'), text: data?.text || '' })
                     return
                 }
+                aagPortalOpened = true // beim Zurückkehren ggf. Auswahl übernehmen
                 if (aagWindow) {
                     aagWindow.location.href = portalUrl
                     aagWindow.focus()
+                    aagPopup = aagWindow
+                    startAagCloseWatch()
+                    console.log('[AAG-MKB] Portal geöffnet für Fahrzeug', props.id, '– c_mkb=', car.value.c_mkb)
                 } else {
                     window.open(portalUrl, '_blank')
                 }
@@ -1827,6 +1890,35 @@ export default {
             } finally {
                 aagLoading.value = false
             }
+        }
+
+        // ===== Esitronic (Bosch ESI[tronic] 2.0) per HSN/TSN öffnen =====
+        //
+        // Der Browser kann keine lokale .exe starten. Auf den Arbeitsplätzen ist
+        // daher einmalig ein Custom-URL-Protokoll registriert (esitronic://),
+        // das einen kleinen Launcher mit HSN/TSN aufruft und ESI[tronic] startet.
+        // Siehe dev/esitronic-protokoll-setup.md.
+
+        // Gültige KBA-Schlüsselnummern (HSN vierstellig, TSN ohne Platzhalter)?
+        const esiAvailable = computed(() => {
+            if (!isEditMode.value) return false
+            const hsn = (car.value.c_2 || '').trim()
+            const tsn = (car.value.c_3 || '').trim()
+            return /^\d{4}$/.test(hsn) && tsn.length >= 3 && !hasTsnPlaceholder(tsn)
+        })
+
+        function openEsi() {
+            const hsn = (car.value.c_2 || '').trim()
+            const tsn = (car.value.c_3 || '').trim()
+            if (!/^\d{4}$/.test(hsn) || tsn.length < 3 || hasTsnPlaceholder(tsn)) {
+                Swal.fire({ icon: 'warning', title: t('CarEditView.esi.noKba') })
+                return
+            }
+            // Protokoll-Aufruf an den lokal registrierten Handler übergeben.
+            // Registrierte Protokolle navigieren die Seite nicht weg; ist nichts
+            // registriert, zeigt der Browser nur einen Hinweis.
+            const url = `esitronic://vehicle?hsn=${encodeURIComponent(hsn)}&tsn=${encodeURIComponent(tsn)}`
+            window.location.href = url
         }
 
         // ===== TecDoc-Ktype (Hintergrund-Ermittlung beim Laden) =====
@@ -1843,7 +1935,17 @@ export default {
             return hasKba || !!(car.value.c_fin || '').trim()
         }
 
-        async function resolveKtypeBg() {
+        // Motorcode sichtbar machen: ist c_mkb leer und genau ein Motor bekannt,
+        // diesen ins Feld übernehmen. Wird beim Laden UND nach der Ktype-Abfrage genutzt.
+        function applyEnginesToMkb() {
+            if (!(car.value.c_mkb || '').trim() && installedEnginesList.value.length === 1) {
+                car.value.c_mkb = installedEnginesList.value[0]
+            }
+        }
+
+        // fromPortal=true: nach Rückkehr aus dem AAG-Portal — die dort getroffene
+        // Motorauswahl (engine_code) wird als aktiver c_mkb übernommen.
+        async function resolveKtypeBg(fromPortal = false) {
             if (ktypeLoading.value || !isEditMode.value || !aagConfigured.value || !carIsIdentifiable()) return
             ktypeLoading.value = true
             try {
@@ -1851,6 +1953,20 @@ export default {
                 if (res?.c_ktype) {
                     ktypeNo.value = res.c_ktype
                     ktypeDesc.value = res.c_ktype_desc || ''
+                }
+                // Verbaute Motorkennbuchstaben übernehmen (für das c_mkb-Dropdown)
+                if (res && res.installed_engines !== undefined && res.installed_engines !== null) {
+                    car.value.installed_engines = res.installed_engines
+                }
+                const picked = (res?.engine_code || '').trim()
+                if (fromPortal && picked) {
+                    // Im Portal gewählten Motor als aktiven MKB übernehmen und speichern
+                    if (car.value.c_mkb !== picked) {
+                        car.value.c_mkb = picked
+                        triggerSave()
+                    }
+                } else {
+                    applyEnginesToMkb()
                 }
             } catch (e) {
                 console.error('Ktype resolve error:', e)
@@ -1864,7 +1980,74 @@ export default {
             if (!loaded || !isEditMode.value) return
             ktypeNo.value = car.value.c_ktype || null
             ktypeDesc.value = car.value.c_ktype_desc || ''
-            if (!ktypeNo.value) resolveKtypeBg()
+            // Bereits gespeicherten Motorcode sofort sichtbar machen
+            applyEnginesToMkb()
+            // Motorcode nachladen, wenn FIN vorhanden, aber noch keiner gespeichert ist.
+            // Pro Browser-Session nur einmal je Fahrzeug versuchen — sonst würden
+            // Fahrzeuge, für die AAG keinen Motorcode kennt, bei jedem Öffnen erneut
+            // mehrere AAG-Abfragen auslösen.
+            const triedKey = `aag_eng_tried_${props.id}`
+            const needEngines = !!(car.value.c_fin || '').trim()
+                && !installedEnginesList.value.length
+                && !sessionStorage.getItem(triedKey)
+            if (needEngines) sessionStorage.setItem(triedKey, '1')
+            if (!ktypeNo.value || needEngines) resolveKtypeBg()
+        })
+
+        // Leichtgewichtiger Motor-Sync: liest den im AAG-Beleg hinterlegten Motor
+        // (= im Portal gewähltes Fahrzeug) und übernimmt ihn als aktiven c_mkb.
+        // Wird häufig aufgerufen (jeder Fenster-Fokus, Popup-Schließen) → bewusst leicht.
+        async function syncAagEngine(reason) {
+            try {
+                const res = await carsStore.getAagEngine(Number(props.id))
+                console.log('[AAG-MKB] sync (' + reason + ') →', JSON.stringify(res))
+                if (!res) return
+                if (res.installed_engines !== undefined && res.installed_engines !== null) {
+                    car.value.installed_engines = res.installed_engines
+                }
+                const picked = (res.engine_code || '').trim()
+                if (picked && car.value.c_mkb !== picked) {
+                    console.log('[AAG-MKB] c_mkb übernehmen:', car.value.c_mkb, '→', picked)
+                    car.value.c_mkb = picked
+                    triggerSave()
+                } else if (picked) {
+                    console.log('[AAG-MKB] c_mkb unverändert (' + picked + ')')
+                } else {
+                    console.log('[AAG-MKB] kein engineCode im Beleg (export_status=' + res.export_status + ')')
+                }
+            } catch (e) {
+                console.warn('[AAG-MKB] sync-Fehler:', e)
+            }
+        }
+
+        // Pollt, ob das AAG-Popup geschlossen wurde → dann finaler, vollständiger
+        // Sync (Ktype + Motor). Robuster als der reine Fenster-Fokus, weil das
+        // Schließen das eindeutige "fertig"-Signal des Benutzers ist.
+        function startAagCloseWatch() {
+            if (aagCloseTimer) clearInterval(aagCloseTimer)
+            aagCloseTimer = setInterval(() => {
+                if (aagPopup && aagPopup.closed) {
+                    clearInterval(aagCloseTimer); aagCloseTimer = null
+                    aagPopup = null
+                    aagPortalOpened = false
+                    console.log('[AAG-MKB] Popup geschlossen → finaler Sync (resolveKtype)')
+                    resolveKtypeBg(true)
+                }
+            }, 1000)
+        }
+
+        // Nach Rückkehr aus dem AAG-Portal (Fenster-Fokus): Motorauswahl übernehmen.
+        // aagPortalOpened bleibt aktiv, solange das Popup offen ist (mehrere Wechsel
+        // möglich) — der letzte Sync gewinnt; final synchronisiert das Close-Watch.
+        function onWindowFocusKtype() {
+            if (!aagPortalOpened || ktypeLoading.value) return
+            console.log('[AAG-MKB] Fenster-Fokus → Motor-Sync')
+            syncAagEngine('focus')
+        }
+        onMounted(() => window.addEventListener('focus', onWindowFocusKtype))
+        onBeforeUnmount(() => {
+            window.removeEventListener('focus', onWindowFocusKtype)
+            if (aagCloseTimer) { clearInterval(aagCloseTimer); aagCloseTimer = null }
         })
 
         // ===== Label-Druck =====
@@ -2136,7 +2319,10 @@ export default {
             c_finchk: ['field_3_img', 'field_3Img'],
             c_d: ['ez_img', 'ezImg'],
             c_hu: ['hu_img', 'huImg'],
-            c_em: ['field_14_1_img', 'em_img', 'emImg', 'field_14_img'],
+            c_d2: ['d2_1_img', 'd2_1Img', 'd2_2_img', 'd2_2Img', 'd2_3_img', 'd2_3Img', 'd2_4_img', 'd2_4Img'],
+            // Nur field_14_1 (= Emissionsklasse). field_14 ist ein anderer/größerer
+            // Bereich und darf NICHT als Emissions-Crop verwendet werden.
+            c_em: ['field_14_1_img', 'em_img', 'emImg'],
         }
 
         // Mapping: Backend-Crop-Feldname (aus Dateiname) → Car-Feld
@@ -2148,7 +2334,10 @@ export default {
             vin: 'c_fin', 'vin_': 'c_fin',
             ez: 'c_d', 'ez_': 'c_d',
             hu: 'c_hu', 'hu_': 'c_hu',
-            field_14_1: 'c_em', 'field_14_1_': 'c_em', em: 'c_em', 'em_': 'c_em', field_14: 'c_em', 'field_14_': 'c_em',
+            d2_1: 'c_d2', 'd2_1_': 'c_d2', d2_2: 'c_d2', d2_3: 'c_d2', d2_4: 'c_d2',
+            // Nur field_14_1 (= Emissionsklasse) auf c_em mappen, NICHT field_14
+            // (anderer, größerer Bereich → falscher Ausschnitt).
+            field_14_1: 'c_em', 'field_14_1_': 'c_em', em: 'c_em', 'em_': 'c_em',
             field_3: 'c_finchk', 'field_3_': 'c_finchk',
         }
 
@@ -2380,8 +2569,10 @@ export default {
             displayKm, onBlurKmStand,
             toggleShield, sortedOrders, orderSortField, orderFilter,
             toggleOrderSort, sortIcon, formatAmount, openOrder, createNewOrder, navigateToCustomer, openCarRegistration, focusSearch,
-            showAagTsnButton, aagLoading, openAagByFin, aagConfigured,
+            showAagTsnButton, aagAvailable, aagLoading, openAag, aagConfigured,
+            esiAvailable, openEsi,
             ktypeNo, ktypeDesc, ktypeLoading, resolveKtypeBg,
+            installedEnginesList, triggerSave,
             yellowLabelPrinting, tyreLabelPrinting, onPrintYellowLabel, onPrintTyreLabel,
             onFocusIn, onFocusOut,
             kbaData, showDebug, rotesHeftDialog, specialDialog, filesDialogOpen, sellDialog,

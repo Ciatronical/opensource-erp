@@ -26,6 +26,7 @@
             "c_t": "Тип транспортного средства",
             "c_d": "Первая регистрация",
             "c_hu": "ТО",
+            "c_pb": "Перевозка пассажиров (такси)",
             "c_fin": "Идентификационный номер (VIN)",
             "c_st": "Летние шины тип",
             "c_wt": "Зимние шины тип",
@@ -313,8 +314,14 @@
             "openInTab": "Открыть"
         },
         "aag": {
+            "button": "AAG-Online",
             "tsnTooltip": "Search vehicle by VIN in AAG-Online",
             "error": "Could not open AAG-Online"
+        },
+        "esi": {
+            "button": "ESI",
+            "tooltip": "Открыть автомобиль в Bosch ESI[tronic] по HSN/TSN",
+            "noKba": "Нет действительных ключевых номеров (HSN/TSN)"
         },
         "ktype": {
             "label": "Ktype",

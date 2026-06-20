@@ -26,6 +26,7 @@
             "c_t": "Fahrzeugtyp",
             "c_d": "Erstzulassung",
             "c_hu": "HU (TÜV)",
+            "c_pb": "Yolcu taşımacılığı (taksi)",
             "c_fin": "Fahrgestellnummer (FIN)",
             "c_st": "Sommerreifen Typ",
             "c_wt": "Winterreifen Typ",
@@ -313,8 +314,14 @@
             "openInTab": "Aç"
         },
         "aag": {
+            "button": "AAG-Online",
             "tsnTooltip": "Search vehicle by VIN in AAG-Online",
             "error": "Could not open AAG-Online"
+        },
+        "esi": {
+            "button": "ESI",
+            "tooltip": "Aracı HSN/TSN ile Bosch ESI[tronic]'te aç",
+            "noKba": "Geçerli anahtar numarası (HSN/TSN) yok"
         },
         "ktype": {
             "label": "Ktype",

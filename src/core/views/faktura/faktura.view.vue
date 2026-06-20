@@ -1074,6 +1074,7 @@ import { onMounted, onBeforeUnmount, ref, computed, nextTick, defineAsyncCompone
 import { useRouter, useRoute } from 'vue-router'
 import * as alerts from '@/core/utils/alerts.js'
 import * as toasts from '@/core/utils/toasts.js'
+import { openAppWindow } from '@/core/utils/aagWindow.js'
 
 const specialDialogModules = import.meta.glob('../special/special.dialog.vue')
 const SpecialDialog = specialDialogModules['../special/special.dialog.vue']
@@ -1977,13 +1978,28 @@ export default defineComponent({
         async function onOpenAag() {
             if (!fakturaId.value) return
 
-            // Fenster sofort öffnen (vermeidet Popup-Blocker und wirkt schneller),
-            // Inhalt wird gesetzt sobald die Portal-URL vorliegt.
-            const aagWindow = window.open('', 'aag-online')
+            // Als eigenes App-Fenster (Popup ohne Tab-Leiste) öffnen, nicht als Tab.
+            // Sofort öffnen (vermeidet Popup-Blocker); URL wird gesetzt, sobald sie vorliegt.
+            // Wie der Fahrzeug-Button: nur das Fahrzeug an AAG-Online übergeben, kein
+            // Auftrags-/WorkTask-Beleg. So zeigt AAG die Fahrzeug-Ansicht (Kennzeichen
+            // + Modell) statt "Auftrag ##### Name". Titel daher: "Kennzeichen · Modell".
+            const cId = vehicle?.selectedCarId?.value || 0
+            const carObj = vehicle?.customerCars?.value?.find(c => c.c_id === cId)
+            const plate = (carObj?.c_ln || '').trim()
+            const model = (carObj?.c_mt || '').trim()
+            const aagTitle = [plate, model].filter(Boolean).join(' · ') || 'AAG-Online'
+            const aagName = 'aag-' + (plate.replace(/\s+/g, '') || String(cId) || 'online')
+            const aagWindow = openAppWindow(aagName, aagTitle)
 
             aagLoading.value = true
             try {
-                const portalUrl = await faktura.getAagUrl(fakturaId.value)
+                const { data } = await axios.post('/api/lxcars/', {
+                    action: 'getAagVehicleUrl',
+                    c_id: cId,
+                    vin: (carObj?.c_fin || '').trim(),
+                    oe_id: fakturaId.value
+                })
+                const portalUrl = data?.success ? data.payload?.portalUrl : null
                 if (!portalUrl) {
                     if (aagWindow) aagWindow.close()
                     toasts.error(t('FakturaView.faktura.aagError'))

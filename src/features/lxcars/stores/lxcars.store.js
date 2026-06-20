@@ -105,6 +105,21 @@ export const lxcarsStore = defineStore('lxcarsStore', () => {
     }
 
     /**
+     * Leichtgewichtiger Motor-Sync: liest den aktuell im AAG-Beleg hinterlegten
+     * Motorkennbuchstaben (im Portal gewähltes Fahrzeug) ohne erneuten Ktype-Vorgang.
+     *
+     * @param {number} carId - Fahrzeug-ID (c_id)
+     * @return {Promise<Object|null>} { engine_code, installed_engines, export_status }
+     */
+    async function getAagEngine(carId) {
+        const response = await axios.post('/api/lxcars/', {
+            action: 'getAagEngine',
+            c_id: carId
+        });
+        return response.data.success ? response.data.payload : null;
+    }
+
+    /**
      * Prüft ob ein Kennzeichen bereits vergeben ist
      *
      * @param {string} licensePlate - Kennzeichen
@@ -1233,6 +1248,7 @@ export const lxcarsStore = defineStore('lxcarsStore', () => {
         deleteCar,
         loadCar,
         resolveKtype,
+        getAagEngine,
         loadCarOrders,
         checkKmStandPlausibility,
         loadLxCarsFakturaInit,

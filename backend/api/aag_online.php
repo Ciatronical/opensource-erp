@@ -181,196 +181,115 @@ function aagImportVoucher($db, $payload) {
 }
 
 /**
- * Überträgt die Fahrzeug-/Kundendaten eines Auftrags an AAG-Online und liefert
- * die Portal-URL zurück, unter der der Beleg im Teilekatalog geöffnet wird.
- *
- * @param mixed $data['fakturaID'] ID des Auftrags (oe.id)
- * @testdata {"fakturaID": 29116}
- */
-function getAagUrl($data) {
-    $fakturaID = intval($data['fakturaID'] ?? 0);
-
-    if ($fakturaID <= 0) {
-        resultInfo(false, 'INVALID_FAKTURA_ID', ['message' => 'Ungültige Auftrags-ID']);
-        return;
-    }
-
-    $company = DbhCompany::begin();
-
-    permit(getPermissionForFakturaType('order'));
-
-    // Auftrag + Kunde + Fahrzeug in einer Abfrage holen
-    $row = $company->getOne(
-        "SELECT
-            oe.id AS oe_id,
-            oe.ordnumber,
-            ext.km_stand,
-            customer.id AS customer_id,
-            customer.customernumber,
-            CASE
-                WHEN customer.greeting ILIKE '%Herr/Frau%' THEN 0
-                WHEN customer.greeting ILIKE '%Herr%'      THEN 1
-                WHEN customer.greeting ILIKE '%Frau%'      THEN 2
-                ELSE 3
-            END AS title,
-            customer.name,
-            CASE
-                WHEN customer.greeting IN ('Frau', 'Herr', 'Herr/Frau') THEN
-                    split_part(customer.name, ' ', array_length(string_to_array(customer.name, ' '), 1))
-                ELSE ''
-            END AS last_name,
-            CASE
-                WHEN customer.greeting IN ('Frau', 'Herr') THEN
-                    array_to_string(array_remove(string_to_array(customer.name, ' '),
-                        split_part(customer.name, ' ', array_length(string_to_array(customer.name, ' '), 1))), ' ')
-                ELSE ''
-            END AS first_name,
-            CASE
-                WHEN customer.greeting NOT IN ('Frau', 'Herr') THEN customer.name
-                ELSE ''
-            END AS company_name,
-            customer.street,
-            customer.zipcode,
-            customer.city,
-            customer.country,
-            customer.phone,
-            customer.fax,
-            customer.phone3,
-            customer.email,
-            customer.notes,
-            to_char(customer.itime, 'YYYY-MM-DD\"T\"HH24:MI:SS.MS\"Z\"') AS customer_itime,
-            to_char(customer.mtime, 'YYYY-MM-DD\"T\"HH24:MI:SS.MS\"Z\"') AS customer_mtime,
-            car.c_id,
-            car.c_ln,
-            car.c_fin,
-            car.c_mkb,
-            car.c_text,
-            car.c_ktype,
-            to_char(car.c_d, 'YYYY-MM-DD\"T\"HH24:MI:SS.MS\"Z\"') AS registration_date,
-            to_char(car.c_it, 'YYYY-MM-DD\"T\"HH24:MI:SS.MS\"Z\"') AS car_itime,
-            CONCAT(car.c_2, car.c_3) AS kba
-         FROM oe
-         JOIN customer ON customer.id = oe.customer_id
-         JOIN oe_ext ext ON ext.oe_id = oe.id
-         JOIN cars_lxcars car ON car.c_id = ext.c_id
-         WHERE oe.id = :oe_id",
-        ['oe_id' => $fakturaID]
-    );
-
-    if (!$row) {
-        resultInfo(false, 'NO_VEHICLE', ['message' => 'Kein Fahrzeug am Auftrag verknüpft']);
-        return;
-    }
-
-    // Belegdaten für AAG-Online (DVSE ImportVoucher) zusammenstellen
-    $payload = [
-        'referenceId' => $row['ordnumber'],
-        'voucherId'   => (string) $row['oe_id'],
-        'voucherType' => [
-            'referenceId' => '2',
-            'description' => 'Auftrag',
-            'countryCode' => 'DE'
-        ],
-        'customer' => [
-            'referenceId' => (string) $row['customer_id'],
-            'customerId'  => $row['customernumber'],
-            'title'       => intval($row['title']),
-            'firstName'   => $row['first_name'],
-            'lastName'    => $row['last_name'],
-            'companyName' => $row['company_name'],
-            'generalAddress' => [
-                'description' => 'Anschrift',
-                'street'      => $row['street'],
-                'city'        => $row['city'],
-                'zip'         => $row['zipcode'],
-                'country'     => $row['country']
-            ],
-            'phone'  => $row['phone'],
-            'mobile' => $row['fax'],
-            'fax'    => $row['phone3'],
-            'email'  => $row['email'],
-            'memos'  => [[
-                'description' => 'Bemerkungen',
-                'value'       => $row['notes'] ?? '',
-                'type'        => '0',
-                'isVisible'   => true
-            ]],
-            'creationDate' => $row['customer_itime'],
-            'modifiedDate' => $row['customer_mtime']
-        ],
-        'vehicle' => [
-            'referenceId' => (string) $row['c_id'],
-            // Ktype (TecDoc-Typnummer) hat höchste Such-Priorität: wenn bekannt,
-            // identifiziert der Katalog das Fahrzeug direkt – auch bei
-            // ausgenullter TSN, wo die KBA-Suche scheitert.
-            'vehicleType' => intval($row['c_ktype']) > 0
-                ? ['id' => intval($row['c_ktype']), 'type' => 1]
-                : ['type' => 1], // PKW
-            'registrationInformation' => [
-                'plateId'          => $row['c_ln'],
-                'countryCode'      => 'DE',
-                'registrationNo'   => $row['kba'], // KBA-Nummer (wird nur genutzt wenn keine KTYPNR übergeben wird)
-                'registrationDate' => $row['registration_date'],
-                'registrationTypeId' => 0 // KBA
-            ],
-            'vin'         => $row['c_fin'],
-            'mileage'     => intval($row['km_stand']),
-            'mileageType' => 1, // Kilometer
-            'engineCode'  => $row['c_mkb'],
-            'memos'       => [[
-                'description' => 'Bemerkungen zum Fahrzeug',
-                'value'       => $row['c_text'] ?? '',
-                'type'        => '0',
-                'isVisible'   => true
-            ]],
-            'creationDate' => $row['car_itime']
-        ]
-    ];
-
-    $result = aagImportVoucher($company, $payload);
-
-    if (!$result['portalUrl']) {
-        resultInfo(false, 'AAG_IMPORT_FAILED', ['message' => $result['error'] ?: 'AAG-Online Übertragung fehlgeschlagen']);
-        return;
-    }
-
-    resultInfo(true, '', ['portalUrl' => $result['portalUrl']]);
-}
-
-/**
  * Öffnet ein Fahrzeug in AAG-Online anhand der FIN (ohne Auftragskontext).
  * Wird auf der Fahrzeugseite genutzt, wenn die TSN ein Platzhalter ist.
  *
- * @param mixed $data['c_id'] Fahrzeug-ID (cars_lxcars.c_id), für die Referenz
- * @param mixed $data['vin']  FIN/Fahrgestellnummer (Pflicht)
- * @testdata {"c_id": 6471, "vin": "WAUZZZ4G3DN045044"}
+ * @param mixed $data['c_id']  Fahrzeug-ID (cars_lxcars.c_id), für die Referenz
+ * @param mixed $data['vin']   FIN/Fahrgestellnummer (Pflicht)
+ * @param mixed $data['oe_id'] Optional: Auftrags-ID für den km-Stand-Kontext
+ * @testdata {"c_id": 6471, "vin": "WAUZZZ4G3DN045044", "oe_id": 29116}
  */
 function getAagVehicleUrl($data) {
     $cId = intval($data['c_id'] ?? 0);
     $vin = strtoupper(trim($data['vin'] ?? ''));
-
-    if ($vin === '') {
-        resultInfo(false, 'NO_VIN', ['message' => 'Keine FIN angegeben']);
-        return;
-    }
+    $oeId = intval($data['oe_id'] ?? 0);
 
     $company = DbhCompany::begin();
 
-    // Kennzeichen/Erstzulassung/Ktype ergänzen, falls das Fahrzeug bereits gespeichert ist
+    // Fahrzeugdaten laden (Identifikation per Ktype > KBA > FIN).
+    // km_stand: bevorzugt der des aktuellen Auftrags; ist dort keiner erfasst,
+    // der zuletzt erfasste km-Stand aus einem vorherigen Auftrag des Fahrzeugs.
     $plate = '';
     $registrationDate = null;
     $ktype = 0;
+    $hsn = '';
+    $tsn = '';
+    $mileage = 0;
+    $nextHu = null;   // c_hu = nächste HU-Fälligkeit
+    $lastHu = null;   // letzte HU = nächste HU minus HU-Intervall (fahrzeugartabhängig)
+    $nextService = null; // c_wd = nächster Wartungsdienst (Inspektion)
+    $mkb = '';        // c_mkb = gewählter Motorkennbuchstabe (an AAG als engineCode)
     if ($cId > 0) {
+        // HU-Intervalle nach Anlage VIII StVZO, aus der Fahrzeugart (KBA) abgeleitet:
+        //   - Personenbeförderung (Taxi/Mietwagen/Kranken, Flag c_pb): 12 / 12 (jährlich)
+        //   - PKW / leichte Nfz (≤3,5t):      Erst-HU 36 Mon., danach alle 24 Mon.
+        //   - Kraftrad:                       24 / 24
+        //   - schwere Nfz/Anhänger (>3,5t):   12 / 12 (jährlich)
+        //   - mehr als 8 Sitzplätze (Bus):    12 / 12
+        // Die letzte HU = nächste HU minus Folge-Intervall; liegt dieser Termin vor
+        // der rechnerischen Erst-HU (Erstzulassung + Erst-Intervall), gab es noch
+        // keine HU → letzte HU bleibt leer (kein erfundenes Datum).
         $car = $company->getOne(
-            "SELECT c_ln, c_ktype, to_char(c_d, 'YYYY-MM-DD\"T\"HH24:MI:SS.MS\"Z\"') AS reg_date
-             FROM cars_lxcars WHERE c_id = :c_id",
-            ['c_id' => $cId]
+            "WITH base AS (
+                SELECT c.c_id, c.c_ln, c.c_2, c.c_3, c.c_fin, c.c_ktype, c.c_mkb, c.c_d, c.c_hu, c.c_wd, c.c_pb,
+                       k.fhzart,
+                       NULLIF(regexp_replace(COALESCE(k.masse,''), '\\D', '', 'g'), '')::int AS masse_n,
+                       NULLIF(regexp_replace(COALESCE(k.sitze,''), '\\D', '', 'g'), '')::int AS sitze_n
+                FROM cars_lxcars c
+                LEFT JOIN kba_lxcars k ON k.id = c.kba_id
+                WHERE c.c_id = :c_id
+            ), iv AS (
+                SELECT *,
+                    CASE WHEN c_pb THEN 12
+                         WHEN COALESCE(sitze_n, 0) > 8 THEN 12
+                         WHEN fhzart = 'bike' THEN 24
+                         WHEN fhzart IN ('truck','tractor','trailer') AND COALESCE(masse_n, 0) > 3500 THEN 12
+                         ELSE 24 END AS periodic_m,
+                    CASE WHEN c_pb THEN 12
+                         WHEN COALESCE(sitze_n, 0) > 8 THEN 12
+                         WHEN fhzart = 'bike' THEN 24
+                         WHEN fhzart IN ('truck','tractor','trailer') AND COALESCE(masse_n, 0) > 3500 THEN 12
+                         ELSE 36 END AS first_m
+                FROM base
+            )
+            SELECT c_ln, c_2, c_3, c_fin, c_ktype, c_mkb,
+                   to_char(c_d,  'YYYY-MM-DD\"T\"HH24:MI:SS.MS\"Z\"') AS reg_date,
+                   to_char(c_hu, 'YYYY-MM-DD\"T\"HH24:MI:SS.MS\"Z\"') AS next_hu,
+                   to_char(c_wd, 'YYYY-MM-DD\"T\"HH24:MI:SS.MS\"Z\"') AS next_service,
+                   CASE
+                       WHEN c_hu IS NULL THEN NULL
+                       WHEN c_d IS NOT NULL
+                            AND (c_hu - make_interval(months => periodic_m))
+                                < (c_d + make_interval(months => first_m) - interval '3 mon')
+                         THEN NULL
+                       ELSE to_char(c_hu - make_interval(months => periodic_m), 'YYYY-MM-DD\"T\"HH24:MI:SS.MS\"Z\"')
+                   END AS last_hu,
+                   COALESCE(
+                       NULLIF((SELECT km_stand FROM oe_ext WHERE oe_id = :oe_id_cur), 0),
+                       (SELECT oe2.km_stand
+                          FROM oe_ext oe2
+                          JOIN oe ON oe.id = oe2.oe_id
+                         WHERE oe2.c_id = iv.c_id
+                           AND oe2.oe_id <> :oe_id_prev
+                           AND COALESCE(oe2.km_stand, 0) > 0
+                         ORDER BY oe.transdate DESC, oe.id DESC
+                         LIMIT 1),
+                       0
+                   ) AS km_stand
+            FROM iv",
+            ['c_id' => $cId, 'oe_id_cur' => $oeId, 'oe_id_prev' => $oeId]
         );
         if ($car) {
             $plate = $car['c_ln'] ?? '';
             $registrationDate = $car['reg_date'];
             $ktype = intval($car['c_ktype'] ?? 0);
+            $hsn = trim($car['c_2'] ?? '');
+            $tsn = trim($car['c_3'] ?? '');
+            $mileage = intval($car['km_stand'] ?? 0);
+            $nextHu = $car['next_hu'];
+            $lastHu = $car['last_hu'];
+            $nextService = $car['next_service'];
+            $mkb = trim($car['c_mkb'] ?? '');
+            if ($vin === '') $vin = strtoupper(trim($car['c_fin'] ?? ''));
         }
+    }
+
+    $hasKba = preg_match('/^\d{4}$/', $hsn) && $tsn !== '' && substr($tsn, 0, 3) !== '000';
+
+    // Mindestens ein Identifikationsmerkmal nötig
+    if ($ktype <= 0 && !$hasKba && $vin === '') {
+        resultInfo(false, 'NO_IDENTIFIER', ['message' => 'Fahrzeug nicht identifizierbar (weder Ktype, HSN/TSN noch FIN)']);
+        return;
     }
 
     $registration = [
@@ -379,13 +298,29 @@ function getAagVehicleUrl($data) {
     ];
     if ($plate !== '') $registration['plateId'] = $plate;
     if ($registrationDate) $registration['registrationDate'] = $registrationDate;
+    if ($hasKba) $registration['registrationNo'] = $hsn . $tsn; // KBA-Nummer
 
     // Ktype (TecDoc-Typnummer) hat höchste Such-Priorität: wenn bekannt,
     // identifiziert der Katalog das Fahrzeug direkt – wichtig bei ausgenullter
     // TSN, wo die reine VIN-/KBA-Suche das Modell sonst nicht findet.
     $vehicleType = $ktype > 0 ? ['id' => $ktype, 'type' => 1] : ['type' => 1]; // PKW
 
-    // Minimaler Beleg: Fahrzeug wird über Ktype (falls vorhanden) bzw. FIN identifiziert
+    $vehicle = [
+        'referenceId'             => $vin !== '' ? $vin : 'FZG_' . $cId,
+        'vehicleType'             => $vehicleType,
+        'registrationInformation' => $registration
+    ];
+    if ($vin !== '') $vehicle['vin'] = $vin;
+    if ($mkb !== '') $vehicle['engineCode'] = $mkb; // gewählten Motor vorselektieren
+    if ($mileage > 0) {
+        $vehicle['mileage']     = $mileage;
+        $vehicle['mileageType'] = 1; // Kilometer
+    }
+    // HU- und Inspektionstermine (AAG-Feldnamen via ImportVoucher/ExportVoucher verifiziert)
+    if ($nextHu)      $vehicle['nextGeneralInspection'] = $nextHu;   // nächste HU
+    if ($lastHu)      $vehicle['lastGeneralInspection'] = $lastHu;   // letzte HU (c_hu - 24 Mon.)
+    if ($nextService) $vehicle['nextServiceDate']       = $nextService; // nächste Inspektion (c_wd)
+
     $payload = [
         'referenceId' => 'FZG_' . ($cId > 0 ? $cId : $vin),
         'voucherType' => [
@@ -393,12 +328,7 @@ function getAagVehicleUrl($data) {
             'description' => 'Fahrzeug',
             'countryCode' => 'DE'
         ],
-        'vehicle' => [
-            'referenceId'             => $vin,
-            'vehicleType'             => $vehicleType,
-            'registrationInformation' => $registration,
-            'vin'                     => $vin
-        ]
+        'vehicle' => $vehicle
     ];
 
     $result = aagImportVoucher($company, $payload);
@@ -462,12 +392,144 @@ function aagPostJson($db, $url, $body) {
 }
 
 /**
+ * Leichtgewichtiger Motor-Sync: liest NUR den aktuell im AAG-Beleg (FZG_<c_id>)
+ * hinterlegten Motorkennbuchstaben aus (= im Portal gewähltes Fahrzeug) und merged
+ * ihn in installed_engines. Kein erneuter Import/Ktype-Vorgang — gedacht für den
+ * häufigen Aufruf beim Zurückwechseln aus dem Portal.
+ *
+ * @param mixed $data['c_id'] Fahrzeug-ID
+ * @testdata {"c_id": 7543}
+ */
+function getAagEngine($data) {
+    $cId = intval($data['c_id'] ?? 0);
+    if ($cId <= 0) {
+        resultInfo(false, 'INVALID_CAR_ID', ['message' => 'Ungültige Fahrzeug-ID']);
+        return;
+    }
+    $company = DbhCompany::begin();
+    $exp = aagPostJson($company, AAG_GSI_EXPORT_URL, ['referenceId' => 'FZG_' . $cId]);
+    $code = ($exp['status'] === 200) ? trim($exp['data']['vehicle']['engineCode'] ?? '') : '';
+    $engines = $code !== ''
+        ? mergeInstalledEngines($company, $cId, [$code])
+        : currentInstalledEngines($company, $cId);
+    resultInfo(true, '', [
+        'engine_code'       => $code,
+        'installed_engines' => $engines,
+        'export_status'     => $exp['status'], // Debug: 200 = Beleg gelesen
+    ]);
+}
+
+/**
+ * Speichert den Ktype aus einem ExportVoucher-vehicleType in cars_lxcars,
+ * sofern eindeutig (id > 0), und gibt die Erfolgsantwort aus.
+ *
+ * @return bool true wenn gespeichert (Antwort wurde bereits gesendet)
+ */
+function aagPersistKtype($company, $cId, $vehicle, $source, $vin = '') {
+    $vehicleType = $vehicle['vehicleType'] ?? [];
+    $ktype = intval($vehicleType['id'] ?? 0);
+    if ($ktype <= 0) return false;
+    $desc = trim($vehicleType['description'] ?? '');
+    $company->execute(
+        "UPDATE cars_lxcars SET c_ktype = :k, c_ktype_desc = :d WHERE c_id = :c_id",
+        ['k' => $ktype, 'd' => $desc, 'c_id' => $cId]
+    );
+
+    // Motorkennbuchstaben sammeln und in installed_engines mergen:
+    //  1. engineCode aus DIESEM Export — das ist das im Portal gewählte/identifizierte
+    //     Fahrzeug (erfasst eine vom Benutzer in AAG-Online getroffene Motorauswahl),
+    //  2. zusätzlich der per VIN-Decodierung ermittelte Motorcode.
+    // Mehr als diese liefert die GSI-API nicht (Vehicle-Objekt hat genau ein engineCode;
+    // eine Mehrfachauswahl trifft der Benutzer im Portal — siehe GSI-Doku).
+    $codes = [];
+    $exportCode = trim($vehicle['engineCode'] ?? '');
+    if ($exportCode !== '') $codes[] = $exportCode;
+    if ($vin !== '') {
+        $vinCode = aagEngineCodeByVin($company, $cId, $vin);
+        if ($vinCode !== '') $codes[] = $vinCode;
+    }
+    $engines = mergeInstalledEngines($company, $cId, $codes);
+
+    resultInfo(true, '', [
+        'c_ktype'           => $ktype,
+        'c_ktype_desc'      => $desc,
+        'source'            => $source,
+        'installed_engines' => $engines,
+        // Der im Export hinterlegte Motor = im Portal gewähltes/identifiziertes
+        // Fahrzeug. Das Frontend übernimmt ihn bei Rückkehr aus dem Portal als c_mkb.
+        'engine_code'       => $exportCode,
+    ]);
+    return true;
+}
+
+/**
+ * Liest die gespeicherten Motorkennbuchstaben eines Fahrzeugs (installed_engines).
+ */
+function currentInstalledEngines($company, $cId) {
+    $row = $company->getOne("SELECT installed_engines FROM cars_lxcars WHERE c_id = :c_id", ['c_id' => $cId]);
+    return trim($row['installed_engines'] ?? '');
+}
+
+/**
+ * Fügt neue Motorkennbuchstaben (ohne Dubletten) zu installed_engines hinzu und
+ * gibt die aktualisierte, komma-separierte Liste zurück.
+ *
+ * @param array $newCodes Neue Codes (werden getrimmt/dedupliziert)
+ */
+function mergeInstalledEngines($company, $cId, array $newCodes) {
+    $current = currentInstalledEngines($company, $cId);
+    $list = array_values(array_filter(array_map('trim', explode(',', $current)), fn($e) => $e !== ''));
+    foreach ($newCodes as $c) {
+        $c = trim($c);
+        if ($c !== '' && !in_array($c, $list, true)) $list[] = $c;
+    }
+    $joined = implode(', ', $list);
+    if ($joined !== $current) {
+        $company->execute(
+            "UPDATE cars_lxcars SET installed_engines = :e WHERE c_id = :c_id",
+            ['e' => $joined, 'c_id' => $cId]
+        );
+    }
+    return $joined;
+}
+
+/**
+ * Ermittelt den verbauten Motorkennbuchstaben per VIN-Decodierung aus AAG-Online.
+ *
+ * Wichtig: Die VIN muss OHNE KBA-Nummer übertragen werden — sobald registrationNo
+ * mitgesendet wird, identifiziert AAG über die KBA und liefert keinen engineCode.
+ * Eigene referenceId (ENG_FZG_<c_id>), damit der Vorgang den FZG_<c_id>-Beleg des
+ * AAG-Buttons (= Portal-Auswahl) nicht überschreibt.
+ *
+ * @return string Motorcode oder '' wenn AAG keinen liefert
+ */
+function aagEngineCodeByVin($company, $cId, $vin) {
+    $ref = 'ENG_FZG_' . $cId;
+    $imp = aagPostJson($company, AAG_GSI_IMPORT_URL, [
+        'referenceId' => $ref,
+        'voucherType' => ['referenceId' => '2', 'description' => 'Fahrzeug'],
+        'vehicle'     => [
+            'referenceId'             => $vin,
+            'vehicleType'             => ['type' => 1],
+            'vin'                     => $vin,
+            'registrationInformation' => ['countryCode' => 'DE'],
+        ],
+    ]);
+    if ($imp['status'] !== 200) return '';
+    $exp = aagPostJson($company, AAG_GSI_EXPORT_URL, ['referenceId' => $ref]);
+    if ($exp['status'] !== 200) return '';
+    return trim($exp['data']['vehicle']['engineCode'] ?? '');
+}
+
+/**
  * Ermittelt die TecDoc-Ktype-Nummer eines Fahrzeugs über AAG-Online und
  * speichert sie (mit Klartext-Beschreibung) in cars_lxcars.
  *
- * Identifikation über die KBA-Nummer (HSN+TSN), falls gültig vorhanden,
- * sonst über die FIN. Der Katalog identifiziert headless: ImportVoucher legt
- * den Vorgang an, ExportVoucher liefert das aufgelöste Fahrzeug zurück.
+ * Nutzt denselben Vorgang wie der AAG-Button (referenceId FZG_<c_id>):
+ *  1. ExportVoucher zuerst – hat der Benutzer im Portal bereits ein Fahrzeug
+ *     gewählt (z.B. bei mehrdeutiger FIN: 118 vs. 125 kW), wird genau diese
+ *     Auswahl übernommen.
+ *  2. Sonst headless versuchen: KBA (HSN+TSN) falls gültig, sonst FIN.
  * Gespeichert wird nur bei eindeutigem Treffer (vehicleType.id > 0).
  *
  * @param mixed $data['c_id'] Fahrzeug-ID (cars_lxcars.c_id)
@@ -483,7 +545,7 @@ function resolveKtype($data) {
     $company = DbhCompany::begin();
 
     $car = $company->getOne(
-        "SELECT c_2, c_3, c_fin, c_ktype FROM cars_lxcars WHERE c_id = :c_id",
+        "SELECT c_2, c_3, c_fin FROM cars_lxcars WHERE c_id = :c_id",
         ['c_id' => $cId]
     );
     if (!$car) {
@@ -491,11 +553,22 @@ function resolveKtype($data) {
         return;
     }
 
-    $hsn = trim($car['c_2'] ?? '');
-    $tsn = trim($car['c_3'] ?? '');
     $vin = strtoupper(trim($car['c_fin'] ?? ''));
 
-    // Fahrzeug-Identifikation: bevorzugt KBA (zuverlässiger), sonst FIN
+    // Gemeinsamer Vorgang mit dem AAG-Button, damit eine im Portal getroffene
+    // manuelle Fahrzeugauswahl hier übernommen werden kann.
+    $referenceId = 'FZG_' . $cId;
+
+    // 1. Bereits im Katalog ausgewähltes Fahrzeug übernehmen (manuelle Auswahl)
+    $exp = aagPostJson($company, AAG_GSI_EXPORT_URL, ['referenceId' => $referenceId]);
+    if ($exp['status'] === 200
+        && aagPersistKtype($company, $cId, $exp['data']['vehicle'] ?? [], 'selection', $vin)) {
+        return;
+    }
+
+    // 2. Sonst headless identifizieren: bevorzugt KBA (zuverlässiger), sonst FIN
+    $hsn = trim($car['c_2'] ?? '');
+    $tsn = trim($car['c_3'] ?? '');
     $hasKba = preg_match('/^\d{4}$/', $hsn) && $tsn !== '' && substr($tsn, 0, 3) !== '000';
 
     $vehicle = ['referenceId' => 'v_' . $cId, 'vehicleType' => ['id' => 0, 'type' => 1]];
@@ -513,9 +586,6 @@ function resolveKtype($data) {
         return;
     }
 
-    $referenceId = 'OSERP_FZG_' . $cId;
-
-    // 1. ImportVoucher: Vorgang anlegen / Fahrzeugsuche auslösen
     $imp = aagPostJson($company, AAG_GSI_IMPORT_URL, [
         'referenceId' => $referenceId,
         'voucherType' => ['referenceId' => '1', 'description' => 'Fahrzeugidentifikation'],
@@ -526,27 +596,17 @@ function resolveKtype($data) {
         return;
     }
 
-    // 2. ExportVoucher: aufgelöstes Fahrzeug zurücklesen
-    $exp = aagPostJson($company, AAG_GSI_EXPORT_URL, ['referenceId' => $referenceId]);
-    if ($exp['status'] !== 200) {
-        resultInfo(false, 'AAG_EXPORT_FAILED', ['message' => $exp['error'] ?: ('HTTP ' . $exp['status'])]);
+    $exp2 = aagPostJson($company, AAG_GSI_EXPORT_URL, ['referenceId' => $referenceId]);
+    if ($exp2['status'] !== 200) {
+        resultInfo(false, 'AAG_EXPORT_FAILED', ['message' => $exp2['error'] ?: ('HTTP ' . $exp2['status'])]);
         return;
     }
 
-    $vt = $exp['data']['vehicle']['vehicleType'] ?? null;
-    $ktype = intval($vt['id'] ?? 0);
-    $desc = trim($vt['description'] ?? '');
-
-    if ($ktype <= 0) {
-        // Kein eindeutiger Treffer (mehrere Fahrzeuge oder nicht gefunden) → nichts speichern
-        resultInfo(false, 'NO_UNIQUE_MATCH', ['message' => 'Kein eindeutiges Fahrzeug ermittelt']);
+    if (aagPersistKtype($company, $cId, $exp2['data']['vehicle'] ?? [], $hasKba ? 'kba' : 'vin', $vin)) {
         return;
     }
 
-    $company->execute(
-        "UPDATE cars_lxcars SET c_ktype = :k, c_ktype_desc = :d WHERE c_id = :c_id",
-        ['k' => $ktype, 'd' => $desc, 'c_id' => $cId]
-    );
-
-    resultInfo(true, '', ['c_ktype' => $ktype, 'c_ktype_desc' => $desc, 'source' => $hasKba ? 'kba' : 'vin']);
+    // Kein eindeutiger Treffer (mehrere Fahrzeuge / nicht gefunden) → nichts speichern.
+    // Wählt der Benutzer das Fahrzeug im Portal, wird es beim nächsten Aufruf (Schritt 1) übernommen.
+    resultInfo(false, 'NO_UNIQUE_MATCH', ['message' => 'Kein eindeutiges Fahrzeug ermittelt']);
 }

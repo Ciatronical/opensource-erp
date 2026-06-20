@@ -26,6 +26,7 @@
             "c_t": "Typ pojazdu",
             "c_d": "Pierwsza rejestracja",
             "c_hu": "Przegląd",
+            "c_pb": "Przewóz osób (taksówka)",
             "c_fin": "Numer identyfikacyjny pojazdu (VIN)",
             "c_st": "Opony letnie typ",
             "c_wt": "Opony zimowe typ",
@@ -313,8 +314,14 @@
             "openInTab": "Otwórz"
         },
         "aag": {
+            "button": "AAG-Online",
             "tsnTooltip": "Search vehicle by VIN in AAG-Online",
             "error": "Could not open AAG-Online"
+        },
+        "esi": {
+            "button": "ESI",
+            "tooltip": "Otwórz pojazd w Bosch ESI[tronic] według HSN/TSN",
+            "noKba": "Brak prawidłowych numerów kluczowych (HSN/TSN)"
         },
         "ktype": {
             "label": "Ktype",

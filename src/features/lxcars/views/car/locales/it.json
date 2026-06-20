@@ -26,6 +26,7 @@
             "c_t": "Tipo veicolo",
             "c_d": "Prima immatricolazione",
             "c_hu": "HU (TÜV)",
+            "c_pb": "Trasporto di persone (taxi)",
             "c_fin": "Numero di telaio (VIN)",
             "c_st": "Tipo pneumatici estivi",
             "c_wt": "Tipo pneumatici invernali",
@@ -313,8 +314,14 @@
             "openInTab": "Apri"
         },
         "aag": {
+            "button": "AAG-Online",
             "tsnTooltip": "Cerca il veicolo tramite VIN in AAG-Online",
             "error": "Impossibile aprire AAG-Online"
+        },
+        "esi": {
+            "button": "ESI",
+            "tooltip": "Apri il veicolo in Bosch ESI[tronic] tramite HSN/TSN",
+            "noKba": "Nessun numero chiave valido (HSN/TSN) disponibile"
         },
         "ktype": {
             "label": "Ktype",

@@ -35,6 +35,7 @@
             "c_t": "Fahrzeugtyp",
             "c_d": "Erstzulassung",
             "c_hu": "HU (TÜV)",
+            "c_pb": "Personenbeförderung (Taxi/Mietwagen)",
             "c_fin": "Fahrgestellnummer (FIN)",
             "c_st": "Sommerreifen Typ",
             "c_wt": "Winterreifen Typ",
@@ -330,8 +331,14 @@
             "uploadUnsupported": "Bitte lade eine PDF- oder Textdatei hoch."
         },
         "aag": {
+            "button": "AAG-Online",
             "tsnTooltip": "Fahrzeug über die FIN in AAG-Online suchen",
             "error": "AAG-Online konnte nicht geöffnet werden"
+        },
+        "esi": {
+            "button": "ESI",
+            "tooltip": "Fahrzeug in Bosch ESI[tronic] über HSN/TSN öffnen",
+            "noKba": "Keine gültigen Schlüsselnummern (HSN/TSN) vorhanden"
         },
         "ktype": {
             "label": "Ktype",
