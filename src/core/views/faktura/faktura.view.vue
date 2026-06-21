@@ -1074,7 +1074,7 @@ import { onMounted, onBeforeUnmount, ref, computed, nextTick, defineAsyncCompone
 import { useRouter, useRoute } from 'vue-router'
 import * as alerts from '@/core/utils/alerts.js'
 import * as toasts from '@/core/utils/toasts.js'
-import { openAppWindow } from '@/core/utils/aagWindow.js'
+import { openAppWindow, aagWindowOpen, setAagWindowCarId } from '@/core/utils/aagWindow.js'
 
 const specialDialogModules = import.meta.glob('../special/special.dialog.vue')
 const SpecialDialog = specialDialogModules['../special/special.dialog.vue']
@@ -1989,6 +1989,8 @@ export default defineComponent({
             const model = (carObj?.c_mt || '').trim()
             const aagTitle = [plate, model].filter(Boolean).join(' · ') || 'AAG-Online'
             const aagName = 'aag-' + (plate.replace(/\s+/g, '') || String(cId) || 'online')
+            // Vorhandenes AAG-Fenster wiederverwenden (genau ein Fenster) oder neu öffnen.
+            const reusing = aagWindowOpen()
             const aagWindow = openAppWindow(aagName, aagTitle)
 
             aagLoading.value = true
@@ -2001,19 +2003,20 @@ export default defineComponent({
                 })
                 const portalUrl = data?.success ? data.payload?.portalUrl : null
                 if (!portalUrl) {
-                    if (aagWindow) aagWindow.close()
+                    if (aagWindow && !reusing) aagWindow.close() // nur frisch geöffnetes schließen
                     toasts.error(t('FakturaView.faktura.aagError'))
                     return
                 }
                 if (aagWindow) {
                     aagWindow.location.href = portalUrl
                     aagWindow.focus()
+                    setAagWindowCarId(cId)
                 } else {
                     // Fenster wurde blockiert – im selben Tab als Fallback öffnen
                     window.open(portalUrl, '_blank')
                 }
             } catch (e) {
-                if (aagWindow) aagWindow.close()
+                if (aagWindow && !reusing) aagWindow.close()
                 console.error('AAG-Online error:', e)
                 toasts.error(t('FakturaView.faktura.aagError') + (e?.message ? '\n' + e.message : ''))
             } finally {

@@ -1234,7 +1234,7 @@ import { useRouter, useRoute, onBeforeRouteLeave } from 'vue-router'
 import axios from 'axios'
 import { oserpStore } from '@/core/stores/oserp.store.js'
 import { lxcarsStore } from '@/features/lxcars/stores/lxcars.store.js'
-import { openAppWindow } from '@/core/utils/aagWindow.js'
+import { openAppWindow, aagWindowOpen, aagWindowCarId, setAagWindowCarId } from '@/core/utils/aagWindow.js'
 import { wikiStore } from '@/core/stores/wiki.store.js'
 import { getDistrictByPlate } from '@/features/lxcars/utils/kennzeichen.js'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
@@ -1813,8 +1813,8 @@ export default {
         // Wurde das AAG-Portal geöffnet? Dann beim Zurückkehren (Fenster-Fokus)
         // prüfen, ob dort ein Fahrzeug gewählt wurde, und den Ktype übernehmen.
         let aagPortalOpened = false
-        let aagPopup = null        // Handle des AAG-Popup-Fensters
         let aagCloseTimer = null   // Poll-Timer, der auf das Schließen des Popups wartet
+        let aagEngineSeed = ''     // beim Button gesendeter Motorcode (Echo ignorieren)
 
         // AAG-Online konfiguriert? (Zugangsdaten in den Firmen-Defaults hinterlegt)
         const aagConfigured = computed(() =>
@@ -1854,8 +1854,19 @@ export default {
         }
 
         async function openAag() {
-            // Als eigenes App-Fenster (Popup ohne Tab-Leiste) öffnen, nicht als Tab.
+            // Zeigt das (einzige) AAG-Fenster bereits dieses Fahrzeug? Dann nur nach
+            // vorn holen — kein erneuter Import. Ein Re-Import würde die Portal-Sitzung
+            // neu laden (gewähltes Fahrzeug/Warenkorb weg) und den Beleg neu mit c_mkb
+            // seeden. Für eine bewusste Neu-Übertragung (geänderte Daten) das
+            // AAG-Fenster vorher schließen.
+            if (aagWindowOpen() && aagWindowCarId() === Number(props.id)) {
+                openAppWindow() // bringt das vorhandene Fenster in den Vordergrund
+                return
+            }
+
+            // Vorhandenes AAG-Fenster wiederverwenden (genau ein Fenster) oder neu öffnen.
             // Sofort öffnen (Popup-Blocker vermeiden, wirkt schneller).
+            const reusing = aagWindowOpen()
             const { title, name } = aagWindowInfo()
             const aagWindow = openAppWindow(name, title)
 
@@ -1869,22 +1880,24 @@ export default {
 
                 const portalUrl = data?.success ? data.payload?.portalUrl : null
                 if (!portalUrl) {
-                    if (aagWindow) aagWindow.close()
+                    if (aagWindow && !reusing) aagWindow.close() // nur frisch geöffnetes schließen
                     Swal.fire({ icon: 'error', title: t('CarEditView.aag.error'), text: data?.text || '' })
                     return
                 }
                 aagPortalOpened = true // beim Zurückkehren ggf. Auswahl übernehmen
+                // Den jetzt gesendeten Motorcode merken — AAG echo't ihn zurück,
+                // er zählt also NICHT als neue Auswahl (nur ein abweichender Code zählt).
+                aagEngineSeed = (car.value.c_mkb || '').trim()
                 if (aagWindow) {
                     aagWindow.location.href = portalUrl
                     aagWindow.focus()
-                    aagPopup = aagWindow
+                    setAagWindowCarId(Number(props.id))
                     startAagCloseWatch()
-                    console.log('[AAG-MKB] Portal geöffnet für Fahrzeug', props.id, '– c_mkb=', car.value.c_mkb)
                 } else {
                     window.open(portalUrl, '_blank')
                 }
             } catch (e) {
-                if (aagWindow) aagWindow.close()
+                if (aagWindow && !reusing) aagWindow.close()
                 console.error('AAG-Online error:', e)
                 Swal.fire({ icon: 'error', title: t('CarEditView.aag.error'), text: String(e?.message || e) })
             } finally {
@@ -1943,9 +1956,10 @@ export default {
             }
         }
 
-        // fromPortal=true: nach Rückkehr aus dem AAG-Portal — die dort getroffene
-        // Motorauswahl (engine_code) wird als aktiver c_mkb übernommen.
-        async function resolveKtypeBg(fromPortal = false) {
+        // Ktype (und ggf. Motor) auflösen/aktualisieren. Setzt c_mkb nur, wenn es leer
+        // ist (applyEnginesToMkb) — die aktive Motorauswahl aus dem Portal läuft
+        // seed-bewusst über syncAagEngine, nicht hier (sonst Echo-Übernahme).
+        async function resolveKtypeBg() {
             if (ktypeLoading.value || !isEditMode.value || !aagConfigured.value || !carIsIdentifiable()) return
             ktypeLoading.value = true
             try {
@@ -1958,16 +1972,7 @@ export default {
                 if (res && res.installed_engines !== undefined && res.installed_engines !== null) {
                     car.value.installed_engines = res.installed_engines
                 }
-                const picked = (res?.engine_code || '').trim()
-                if (fromPortal && picked) {
-                    // Im Portal gewählten Motor als aktiven MKB übernehmen und speichern
-                    if (car.value.c_mkb !== picked) {
-                        car.value.c_mkb = picked
-                        triggerSave()
-                    }
-                } else {
-                    applyEnginesToMkb()
-                }
+                applyEnginesToMkb()
             } catch (e) {
                 console.error('Ktype resolve error:', e)
             } finally {
@@ -1994,55 +1999,53 @@ export default {
             if (!ktypeNo.value || needEngines) resolveKtypeBg()
         })
 
-        // Leichtgewichtiger Motor-Sync: liest den im AAG-Beleg hinterlegten Motor
-        // (= im Portal gewähltes Fahrzeug) und übernimmt ihn als aktiven c_mkb.
-        // Wird häufig aufgerufen (jeder Fenster-Fokus, Popup-Schließen) → bewusst leicht.
-        async function syncAagEngine(reason) {
+        // Leichtgewichtiger Motor-Sync: liest den im AAG-Beleg hinterlegten Motor und
+        // übernimmt ihn als aktiven c_mkb — ABER nur, wenn er sich vom gesendeten Seed
+        // unterscheidet (sonst ist es nur das Echo, KEINE echte Portal-Auswahl).
+        async function syncAagEngine() {
             try {
-                const res = await carsStore.getAagEngine(Number(props.id))
-                console.log('[AAG-MKB] sync (' + reason + ') →', JSON.stringify(res))
+                const res = await carsStore.getAagEngine(Number(props.id), aagEngineSeed)
                 if (!res) return
                 if (res.installed_engines !== undefined && res.installed_engines !== null) {
                     car.value.installed_engines = res.installed_engines
                 }
-                const picked = (res.engine_code || '').trim()
+                const picked = (res.engine_code || '').trim() // bereits seed-bereinigt (echte Auswahl)
                 if (picked && car.value.c_mkb !== picked) {
-                    console.log('[AAG-MKB] c_mkb übernehmen:', car.value.c_mkb, '→', picked)
                     car.value.c_mkb = picked
                     triggerSave()
-                } else if (picked) {
-                    console.log('[AAG-MKB] c_mkb unverändert (' + picked + ')')
-                } else {
-                    console.log('[AAG-MKB] kein engineCode im Beleg (export_status=' + res.export_status + ')')
                 }
             } catch (e) {
-                console.warn('[AAG-MKB] sync-Fehler:', e)
+                console.warn('AAG-Motor-Sync fehlgeschlagen:', e)
             }
         }
 
-        // Pollt, ob das AAG-Popup geschlossen wurde → dann finaler, vollständiger
-        // Sync (Ktype + Motor). Robuster als der reine Fenster-Fokus, weil das
-        // Schließen das eindeutige "fertig"-Signal des Benutzers ist.
+        // Rückkehr aus dem Portal: Hat das Fahrzeug schon einen Ktype, nur den Motor
+        // syncen (seed-bewusst). Sonst (mehrdeutige FIN: Fahrzeug erst im Portal gewählt)
+        // den Ktype auflösen — das übernimmt den Motor mit (c_mkb war leer).
+        function onPortalReturn() {
+            if (ktypeLoading.value) return
+            if (ktypeNo.value) syncAagEngine()
+            else resolveKtypeBg()
+        }
+
+        // Pollt, ob das AAG-Popup geschlossen wurde → finaler Sync. Robuster als der
+        // reine Fenster-Fokus, weil das Schließen das eindeutige "fertig"-Signal ist.
         function startAagCloseWatch() {
             if (aagCloseTimer) clearInterval(aagCloseTimer)
             aagCloseTimer = setInterval(() => {
-                if (aagPopup && aagPopup.closed) {
+                if (!aagWindowOpen()) {
                     clearInterval(aagCloseTimer); aagCloseTimer = null
-                    aagPopup = null
                     aagPortalOpened = false
-                    console.log('[AAG-MKB] Popup geschlossen → finaler Sync (resolveKtype)')
-                    resolveKtypeBg(true)
+                    onPortalReturn()
                 }
             }, 1000)
         }
 
-        // Nach Rückkehr aus dem AAG-Portal (Fenster-Fokus): Motorauswahl übernehmen.
-        // aagPortalOpened bleibt aktiv, solange das Popup offen ist (mehrere Wechsel
-        // möglich) — der letzte Sync gewinnt; final synchronisiert das Close-Watch.
+        // Fenster-Fokus, solange das Popup offen ist: Motorauswahl übernehmen.
+        // aagPortalOpened bleibt aktiv (mehrere Wechsel möglich) — der letzte Sync gewinnt.
         function onWindowFocusKtype() {
-            if (!aagPortalOpened || ktypeLoading.value) return
-            console.log('[AAG-MKB] Fenster-Fokus → Motor-Sync')
-            syncAagEngine('focus')
+            if (!aagPortalOpened) return
+            onPortalReturn()
         }
         onMounted(() => window.addEventListener('focus', onWindowFocusKtype))
         onBeforeUnmount(() => {

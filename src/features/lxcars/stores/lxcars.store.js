@@ -109,12 +109,14 @@ export const lxcarsStore = defineStore('lxcarsStore', () => {
      * Motorkennbuchstaben (im Portal gewähltes Fahrzeug) ohne erneuten Ktype-Vorgang.
      *
      * @param {number} carId - Fahrzeug-ID (c_id)
-     * @return {Promise<Object|null>} { engine_code, installed_engines, export_status }
+     * @param {string} seed - Beim Button gesendeter Motorcode (Echo wird ignoriert)
+     * @return {Promise<Object|null>} { engine_code, installed_engines }
      */
-    async function getAagEngine(carId) {
+    async function getAagEngine(carId, seed = '') {
         const response = await axios.post('/api/lxcars/', {
             action: 'getAagEngine',
-            c_id: carId
+            c_id: carId,
+            seed
         });
         return response.data.success ? response.data.payload : null;
     }

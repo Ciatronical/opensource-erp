@@ -9,24 +9,49 @@
 // Browser bei Popups aus Sicherheitsgründen weiterhin an – sie lässt sich per
 // JavaScript nicht entfernen. Tab-Leiste, Lesezeichen und Menü entfallen aber.
 
+// Genau EIN AAG-Fenster für die ganze App. Wir halten das Window-Handle modulweit
+// (überlebt SPA-Navigation), statt uns auf den Fensternamen zu verlassen — die
+// AAG-Seite überschreibt `window.name` teils selbst, dann fände der Browser das
+// bestehende Fenster nicht mehr und öffnete ein zweites.
+let sharedAagWindow = null
+let sharedAagCarId = null
+
+/** Ist das gemeinsame AAG-Fenster aktuell offen? */
+export function aagWindowOpen() {
+    return !!(sharedAagWindow && !sharedAagWindow.closed)
+}
+
+/** Fahrzeug-ID, die das AAG-Fenster aktuell zeigt (oder null, wenn geschlossen). */
+export function aagWindowCarId() {
+    return aagWindowOpen() ? sharedAagCarId : null
+}
+
+/** Merkt, welches Fahrzeug das AAG-Fenster gerade zeigt. */
+export function setAagWindowCarId(id) {
+    sharedAagCarId = id
+}
+
 /**
- * Öffnet ein bildschirmfüllendes App-Popup-Fenster (anfangs leer) und liefert
- * das Window-Handle zurück (oder null, falls vom Browser blockiert).
+ * Liefert das gemeinsame AAG-Fenster (bringt es in den Vordergrund) oder öffnet
+ * ein neues, falls keines offen ist. Es gibt immer höchstens EIN AAG-Fenster.
  *
  * Das Fenster wird auf die nutzbare Bildschirmgröße maximiert (ohne Taskleiste)
  * und oben links positioniert. Echtes OS-Vollbild (F11) ist nicht möglich, da
  * die geöffnete Seite cross-origin ist.
  *
- * Wird ein Titel übergeben, zeigt das Fenster bis zum Laden der cross-origin-Seite
- * einen kurzen Lade-Splash mit diesem Titel und setzt `document.title`. Sobald
- * AAG-Online geladen ist, übernimmt dessen Seite Titel und Inhalt (Same-Origin-
- * Policy – wir können den Titel danach nicht mehr setzen).
+ * Wird ein Titel übergeben (nur bei NEU geöffnetem Fenster), zeigt das Fenster
+ * bis zum Laden der cross-origin-Seite einen Lade-Splash mit diesem Titel.
  *
- * @param {string} name Fenstername (gleicher Name → selbes Fenster wiederverwenden)
+ * @param {string} name Fenstername (Fallback-Wiederverwendung nach Full-Reload)
  * @param {string} [title] Optionaler Titel/Überschrift für den Lade-Splash
  * @returns {Window|null}
  */
 export function openAppWindow(name = 'aag-online', title = '') {
+    // Bereits offenes AAG-Fenster wiederverwenden → genau ein Fenster.
+    if (aagWindowOpen()) {
+        sharedAagWindow.focus()
+        return sharedAagWindow
+    }
     const w = window.screen?.availWidth || 1920
     const h = window.screen?.availHeight || 1080
     const left = 0
@@ -50,6 +75,8 @@ export function openAppWindow(name = 'aag-online', title = '') {
         `top=${top}`,
     ].join(',')
     const win = window.open('', name, features)
+    sharedAagWindow = win
+    sharedAagCarId = null
     if (win && title) renderSplash(win, title)
     return win
 }

@@ -398,6 +398,11 @@ function aagPostJson($db, $url, $body) {
  * häufigen Aufruf beim Zurückwechseln aus dem Portal.
  *
  * @param mixed $data['c_id'] Fahrzeug-ID
+ * @param mixed $data['seed'] Optional: der beim Button gesendete Motorcode (= c_mkb).
+ *                            AAG echo't gesendete engineCodes zurück; ist der Beleg-Code
+ *                            gleich dem Seed, ist es nur das Echo (KEINE Portal-Auswahl)
+ *                            und wird ignoriert. Nur ein abweichender Code zählt als
+ *                            echte Auswahl und wird übernommen/gemerged.
  * @testdata {"c_id": 7543}
  */
 function getAagEngine($data) {
@@ -406,16 +411,18 @@ function getAagEngine($data) {
         resultInfo(false, 'INVALID_CAR_ID', ['message' => 'Ungültige Fahrzeug-ID']);
         return;
     }
+    $seed = trim($data['seed'] ?? '');
     $company = DbhCompany::begin();
     $exp = aagPostJson($company, AAG_GSI_EXPORT_URL, ['referenceId' => 'FZG_' . $cId]);
-    $code = ($exp['status'] === 200) ? trim($exp['data']['vehicle']['engineCode'] ?? '') : '';
-    $engines = $code !== ''
-        ? mergeInstalledEngines($company, $cId, [$code])
+    $raw = ($exp['status'] === 200) ? trim($exp['data']['vehicle']['engineCode'] ?? '') : '';
+    // Echte Auswahl = Beleg-Code, der nicht dem gesendeten Seed (Echo) entspricht.
+    $selected = ($raw !== '' && ($seed === '' || strcasecmp($raw, $seed) !== 0)) ? $raw : '';
+    $engines = $selected !== ''
+        ? mergeInstalledEngines($company, $cId, [$selected])
         : currentInstalledEngines($company, $cId);
     resultInfo(true, '', [
-        'engine_code'       => $code,
+        'engine_code'       => $selected,  // echte Portal-Auswahl (oder '' = nur Echo/keine)
         'installed_engines' => $engines,
-        'export_status'     => $exp['status'], // Debug: 200 = Beleg gelesen
     ]);
 }
 
