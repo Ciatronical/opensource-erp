@@ -323,6 +323,16 @@
             "tooltip": "Abrir veículo no Bosch ESI[tronic] por HSN/TSN",
             "noKba": "Não há números de chave válidos (HSN/TSN) disponíveis"
         },
+        "gutmann": {
+            "button": "Gutmann",
+            "tooltip": "Abrir veículo no Hella Gutmann mega macs por HSN/TSN",
+            "noKba": "Não há números de chave válidos (HSN/TSN) disponíveis"
+        },
+        "hgs": {
+            "button": "HGS-Data",
+            "tooltip": "Abrir dados do veículo no HGS Data",
+            "error": "Não foi possível abrir o HGS Data"
+        },
         "ktype": {
             "label": "Ktype",
             "resolving": "A determinar Ktype …",

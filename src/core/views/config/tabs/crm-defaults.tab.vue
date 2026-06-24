@@ -183,6 +183,13 @@
                 </v-col>
             </v-row>
 
+            <!-- SumUp Reader koppeln -->
+            <v-row v-else-if="field.type === 'component' && field.component === 'sumup-reader-pairing'" class="my-1">
+                <v-col cols="12">
+                    <SumupReaderPairingConfig />
+                </v-col>
+            </v-row>
+
             <!-- Dynamic Select (Items aus company_config) -->
             <v-row v-else-if="field.type === 'dynamic-select'" class="my-1">
                 <v-col cols="12" md="6">
@@ -221,6 +228,7 @@ import { useI18n } from 'vue-i18n';
 import axios from 'axios';
 import WhatsAppTemplatesConfig from './whatsapp-templates.config.vue';
 import WhatsAppProfilePictureConfig from './whatsapp-profile-picture.config.vue';
+import SumupReaderPairingConfig from './sumup-reader-pairing.config.vue';
 
 const { t } = useI18n();
 

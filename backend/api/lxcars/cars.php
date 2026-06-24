@@ -548,7 +548,7 @@ function getCustomerCars($data) {
     $customerId = intval($data['customer_id']);
 
     $cars = $db->getAll(
-        "SELECT c.c_id, c.c_ln, c.c_m, c.c_mt, COALESCE(c.c_text, '') AS c_text,
+        "SELECT c.c_id, c.c_ln, c.c_m, c.c_mt, c.c_2, c.c_3, c.c_fin, c.c_ktype, COALESCE(c.c_text, '') AS c_text,
                 COALESCE(k.fhzart, '') AS fhzart
          FROM cars_lxcars c
          LEFT JOIN kba_lxcars k ON k.id = c.kba_id
@@ -586,7 +586,7 @@ function getLxCarsFakturaInit($data) {
 
     $customerCars = $customerId
         ? $db->getAll(
-            "SELECT c.c_id, c.c_ln, c.c_m, c.c_mt, COALESCE(c.c_text, '') AS c_text,
+            "SELECT c.c_id, c.c_ln, c.c_m, c.c_mt, c.c_2, c.c_3, c.c_fin, c.c_ktype, COALESCE(c.c_text, '') AS c_text,
                     COALESCE(k.fhzart, '') AS fhzart
              FROM cars_lxcars c
              LEFT JOIN kba_lxcars k ON k.id = c.kba_id

@@ -323,6 +323,16 @@
             "tooltip": "Aracı HSN/TSN ile Bosch ESI[tronic]'te aç",
             "noKba": "Geçerli anahtar numarası (HSN/TSN) yok"
         },
+        "gutmann": {
+            "button": "Gutmann",
+            "tooltip": "Aracı HSN/TSN ile Hella Gutmann mega macs'te aç",
+            "noKba": "Geçerli anahtar numarası (HSN/TSN) yok"
+        },
+        "hgs": {
+            "button": "HGS-Data",
+            "tooltip": "Araç verilerini HGS Data'da aç",
+            "error": "HGS Data açılamadı"
+        },
         "ktype": {
             "label": "Ktype",
             "resolving": "Resolving Ktype …",

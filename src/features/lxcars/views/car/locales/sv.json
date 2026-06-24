@@ -323,6 +323,16 @@
             "tooltip": "Öppna fordon i Bosch ESI[tronic] via HSN/TSN",
             "noKba": "Inga giltiga nyckelnummer (HSN/TSN) tillgängliga"
         },
+        "gutmann": {
+            "button": "Gutmann",
+            "tooltip": "Öppna fordon i Hella Gutmann mega macs via HSN/TSN",
+            "noKba": "Inga giltiga nyckelnummer (HSN/TSN) tillgängliga"
+        },
+        "hgs": {
+            "button": "HGS-Data",
+            "tooltip": "Öppna fordonsdata i HGS Data",
+            "error": "Kunde inte öppna HGS Data"
+        },
         "ktype": {
             "label": "Ktype",
             "resolving": "Resolving Ktype …",

@@ -21,6 +21,21 @@ const lxcarsDefaultsConfig = [
     { name: "lxcars_hu_brief_text", type: "textarea", rows: 12, fieldstyle: "max-width: 80ch", label: "crm_fields.lxcarsHuBriefText", tooltip: "crm_fields.lxcarsHuBriefText_help" },
     { name: "lxcars_hu_whatsapp_enabled", type: "checkbox", label: "crm_fields.lxcarsHuWhatsappEnabled", tooltip: "crm_fields.lxcarsHuWhatsappEnabled_help" },
 
+    { name: "aag_online", type: "headline", label: "crm_fields.aagOnline" },
+
+    { name: "aag_online_user", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.aagOnlineUser", tooltip: "crm_fields.aagOnlineUser_help" },
+    { name: "aag_online_passwd", type: "password", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.aagOnlinePassword", tooltip: "crm_fields.aagOnlinePassword_help" },
+    { name: "aag_online_passwd2", type: "password", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.aagOnlinePassword2", tooltip: "crm_fields.aagOnlinePassword2_help" },
+
+    { name: "gutmann", type: "headline", label: "crm_fields.gutmann" },
+
+    { name: "gutmann_megamacs_url", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.gutmannMegamacsUrl", tooltip: "crm_fields.gutmannMegamacsUrl_help" },
+
+    { name: "hgs_data", type: "headline", label: "crm_fields.hgsData" },
+
+    { name: "hgs_data_user", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.hgsDataUser", tooltip: "crm_fields.hgsDataUser_help" },
+    { name: "hgs_data_passwd", type: "password", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.hgsDataPassword", tooltip: "crm_fields.hgsDataPassword_help" },
+
     { name: "lxcars_termin", type: "headline", label: "crm_fields.lxcarsTermin" },
     { name: "lxcars_default_abgabezeit", type: "input", inputType: "time", size: 10, fieldstyle: "max-width: 15ch", label: "crm_fields.lxcarsDefaultAbgabezeit", tooltip: "crm_fields.lxcarsDefaultAbgabezeit_help" },
     { name: "lxcars_default_fertigstellungszeit", type: "input", inputType: "time", size: 10, fieldstyle: "max-width: 15ch", label: "crm_fields.lxcarsDefaultFertigstellungszeit", tooltip: "crm_fields.lxcarsDefaultFertigstellungszeit_help" },

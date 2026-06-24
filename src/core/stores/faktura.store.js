@@ -484,6 +484,32 @@ export const fakturaStore = defineStore('fakturaStore', () => {
     }
 
     /**
+     * Sendet einen Betrag an das gekoppelte SumUp-Kartenterminal (Cloud API).
+     * Liefert synchron nur die Bestätigung, dass der Checkout am Terminal
+     * gestartet wurde – das Zahlungsergebnis kommt bei SumUp asynchron.
+     *
+     * @param {number} amount - Zu kassierender Betrag (brutto)
+     * @param {Object} [opts] - { fakturaID, currency, description }
+     * @return {Promise<Object>}
+     */
+    async function sendSumupCheckout(amount, { fakturaID = null, currency = 'EUR', description = '' } = {}) {
+        const response = await axios.post('/api/payment/', {
+            action: 'sumupCheckout',
+            amount: amount,
+            fakturaID: fakturaID,
+            currency: currency,
+            description: description
+        });
+
+        if (response.data.success) {
+            return response.data.payload;
+        }
+        else {
+            throw new ApiError('ApiError', response.data.text, 'Error sending SumUp checkout: ' + response.data.text);
+        }
+    }
+
+    /**
      * Konvertiert ein Dokument in einen anderen Dokumenttyp
      * (z.B. Angebot → Auftrag, Auftrag → Rechnung)
      *
@@ -528,6 +554,7 @@ export const fakturaStore = defineStore('fakturaStore', () => {
         generatePDFPreview,
         generatePDFBase64,
         printToPrinter,
+        sendSumupCheckout,
         data
     };
 });

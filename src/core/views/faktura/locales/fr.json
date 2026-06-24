@@ -161,6 +161,10 @@
             "openVehicle": "Vehicule",
             "importSilverDAT": "Import SilverDAT",
             "openAag": "AAG-Online – transférer le véhicule et ouvrir",
+            "openEsi": "Ouvrir le véhicule dans ESI[tronic]",
+            "openGutmann": "Ouvrir le véhicule dans Hella Gutmann mega macs",
+            "openHgs": "Ouvrir les données du véhicule dans HGS Data",
+            "hgsError": "Impossible d'ouvrir HGS Data",
             "aagError": "Impossible d'ouvrir AAG-Online",
             "silverdat": {
                 "title": "Import SilverDAT",

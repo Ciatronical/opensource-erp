@@ -68,6 +68,7 @@ CREATE TABLE IF NOT EXISTS oe_ext (
     status         text,
     kennzeichen      text,
     no_whatsapp    boolean DEFAULT false,
+    asanetwork_sent_at timestamp,
     CONSTRAINT oe_ext_pkey PRIMARY KEY (oe_id)
 );
 

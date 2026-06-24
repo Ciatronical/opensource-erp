@@ -103,6 +103,13 @@ const crmDefaultsConfig = [
     { name: "ec_terminal_port", type: "input", inputType: "number", size: 10, fieldstyle: "max-width: 60ch", label: "crm_fields.ecTerminalPort", tooltip: "crm_fields.ecTerminalPort_help" },
     { name: "ec_terminal_passwd", type: "password", size: 20, fieldstyle: "max-width: 60ch", label: "crm_fields.ecTerminalPassword", tooltip: "crm_fields.ecTerminalPassword_help" },
 
+    { name: "sumup", type: "headline", label: "crm_fields.sumup" },
+
+    { name: "sumup_enabled", type: "checkbox", label: "crm_fields.sumupEnabled", tooltip: "crm_fields.sumupEnabled_help" },
+    { name: "sumup_api_key", type: "password", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.sumupApiKey", tooltip: "crm_fields.sumupApiKey_help" },
+    { name: "sumup_merchant_code", type: "input", size: 30, fieldstyle: "max-width: 40ch", label: "crm_fields.sumupMerchantCode", tooltip: "crm_fields.sumupMerchantCode_help" },
+    { name: "sumup_reader_pairing", type: "component", component: "sumup-reader-pairing" },
+
     { name: "eletter", type: "headline", label: "crm_fields.eletter" },
 
     { name: "eletter_hostname", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.eletterHostname", tooltip: "crm_fields.eletterHostname_help" },
@@ -175,12 +182,6 @@ const crmDefaultsConfig = [
     { name: "infobar_max_calls", type: "input", inputType: "number", size: 5, fieldstyle: "max-width: 15ch", label: "crm_fields.infoBarMaxCalls", tooltip: "crm_fields.infoBarMaxCalls_help" },
     { name: "infobar_max_emails", type: "input", inputType: "number", size: 5, fieldstyle: "max-width: 15ch", label: "crm_fields.infoBarMaxEmails", tooltip: "crm_fields.infoBarMaxEmails_help" },
     { name: "infobar_max_whatsapps", type: "input", inputType: "number", size: 5, fieldstyle: "max-width: 15ch", label: "crm_fields.infoBarMaxWhatsapps", tooltip: "crm_fields.infoBarMaxWhatsapps_help" },
-
-    { name: "aag_online", type: "headline", label: "crm_fields.aagOnline" },
-
-    { name: "aag_online_user", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.aagOnlineUser", tooltip: "crm_fields.aagOnlineUser_help" },
-    { name: "aag_online_passwd", type: "password", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.aagOnlinePassword", tooltip: "crm_fields.aagOnlinePassword_help" },
-    { name: "aag_online_passwd2", type: "password", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.aagOnlinePassword2", tooltip: "crm_fields.aagOnlinePassword2_help" },
 
     { name: "calendar", type: "headline", label: "crm_fields.calendar" },
 

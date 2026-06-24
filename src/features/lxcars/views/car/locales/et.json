@@ -323,6 +323,16 @@
             "tooltip": "Ava sõiduk Bosch ESI[tronic]-is HSN/TSN järgi",
             "noKba": "Kehtivad võtmenumbrid (HSN/TSN) puuduvad"
         },
+        "gutmann": {
+            "button": "Gutmann",
+            "tooltip": "Ava sõiduk Hella Gutmann mega macs-is HSN/TSN järgi",
+            "noKba": "Kehtivad võtmenumbrid (HSN/TSN) puuduvad"
+        },
+        "hgs": {
+            "button": "HGS-Data",
+            "tooltip": "Ava sõidukiandmed HGS Datas",
+            "error": "HGS Data avamine ebaõnnestus"
+        },
         "ktype": {
             "label": "Ktype",
             "resolving": "Resolving Ktype …",

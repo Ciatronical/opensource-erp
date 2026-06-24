@@ -312,6 +312,52 @@
                     </template>
                 </v-tooltip>
 
+                <!-- ESI[tronic] (nur bei Aufträgen mit gültiger HSN/TSN) -->
+                <v-tooltip v-if="esiAvailable" location="bottom" :text="t('FakturaView.faktura.openEsi')">
+                    <template #activator="{ props: tip }">
+                        <v-btn
+                            v-bind="tip"
+                            variant="tonal"
+                            color="teal-darken-1"
+                            icon="mdi-cog-outline"
+                            size="small"
+                            :disabled="!hasCustomer"
+                            @click="$emit('open-esi')"
+                        />
+                    </template>
+                </v-tooltip>
+
+                <!-- Hella Gutmann mega macs (nur bei Aufträgen mit gültiger HSN/TSN, wenn konfiguriert) -->
+                <v-tooltip v-if="gutmannAvailable" location="bottom" :text="t('FakturaView.faktura.openGutmann')">
+                    <template #activator="{ props: tip }">
+                        <v-btn
+                            v-bind="tip"
+                            variant="tonal"
+                            color="cyan-darken-2"
+                            icon="mdi-lan-connect"
+                            size="small"
+                            :disabled="!hasCustomer"
+                            @click="$emit('open-gutmann')"
+                        />
+                    </template>
+                </v-tooltip>
+
+                <!-- HGS-Data (nur bei Aufträgen mit identifizierbarem Fahrzeug) -->
+                <v-tooltip v-if="hgsAvailable" location="bottom" :text="t('FakturaView.faktura.openHgs')">
+                    <template #activator="{ props: tip }">
+                        <v-btn
+                            v-bind="tip"
+                            variant="tonal"
+                            color="blue-grey-darken-1"
+                            icon="mdi-database-search-outline"
+                            size="small"
+                            :disabled="!hasCustomer"
+                            :loading="hgsLoading"
+                            @click="$emit('open-hgs')"
+                        />
+                    </template>
+                </v-tooltip>
+
                 <v-tooltip v-if="showSpecialButton" location="bottom" :text="t('SpecialDialog.buttonTooltip')">
                     <template #activator="{ props: tip }">
                         <v-btn
@@ -450,6 +496,22 @@ export default defineComponent({
         aagConfigured: {
             type: Boolean,
             default: false
+        },
+        esiAvailable: {
+            type: Boolean,
+            default: false
+        },
+        gutmannAvailable: {
+            type: Boolean,
+            default: false
+        },
+        hgsAvailable: {
+            type: Boolean,
+            default: false
+        },
+        hgsLoading: {
+            type: Boolean,
+            default: false
         }
     },
 
@@ -481,6 +543,9 @@ export default defineComponent({
         'open-vehicle',
         'import-silverdat',
         'open-aag',
+        'open-esi',
+        'open-gutmann',
+        'open-hgs',
         'open-special',
         'create-dhl-label',
         'show-on-display'

@@ -106,7 +106,7 @@ function getCompanyConfig($data) {
                             LEFT JOIN parts p ON p.buchungsgruppen_id = bg.id
                             WHERE bg.obsolete = false
                             GROUP BY bg.id, bg.description, bg.inventory_accno_id, bg.sortkey, bg.obsolete
-                            ORDER BY bg.sortkey
+                            ORDER BY bg.sortkey, bg.id
                         ) AS buchungsgruppen
                     ),
                     'pricegroups', (

@@ -161,6 +161,10 @@
             "openVehicle": "Fordon",
             "importSilverDAT": "SilverDAT Import",
             "openAag": "AAG-Online – transfer vehicle and open",
+            "openEsi": "Öppna fordon i ESI[tronic]",
+            "openGutmann": "Öppna fordon i Hella Gutmann mega macs",
+            "openHgs": "Öppna fordonsdata i HGS Data",
+            "hgsError": "Kunde inte öppna HGS Data",
             "aagError": "Could not open AAG-Online",
             "silverdat": {
                 "title": "SilverDAT Import",

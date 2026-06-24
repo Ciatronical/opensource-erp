@@ -54,6 +54,13 @@
                     @open-aag="onOpenAag"
                     :aag-loading="aagLoading"
                     :aag-configured="aagConfigured"
+                    :esi-available="esiAvailable"
+                    :gutmann-available="gutmannAvailable"
+                    :hgs-available="hgsAvailable"
+                    :hgs-loading="hgsLoading"
+                    @open-esi="onOpenEsi"
+                    @open-gutmann="onOpenGutmann"
+                    @open-hgs="onOpenHgs"
                     @open-special="openSpecialDialog"
                 />
             </section>
@@ -1075,6 +1082,7 @@ import { useRouter, useRoute } from 'vue-router'
 import * as alerts from '@/core/utils/alerts.js'
 import * as toasts from '@/core/utils/toasts.js'
 import { openAppWindow, aagWindowOpen, setAagWindowCarId } from '@/core/utils/aagWindow.js'
+import { hasVehicleId, isKbaValid, buildEsiUrl, buildGutmannUrl } from '@/core/utils/diagLinks.js'
 
 const specialDialogModules = import.meta.glob('../special/special.dialog.vue')
 const SpecialDialog = specialDialogModules['../special/special.dialog.vue']
@@ -1643,6 +1651,41 @@ export default defineComponent({
             }
         })
 
+        // SumUp: Beim Öffnen einer noch offenen Rechnung den fälligen Betrag
+        // automatisch an das gekoppelte Kartenterminal senden. Schutz: nur bei
+        // Typ "Rechnung", nur wenn SumUp aktiviert ist und nur wenn noch ein
+        // offener Betrag besteht – sonst würde der Reader bei jedem Ansehen
+        // blockiert bzw. eine bezahlte Rechnung erneut zur Kasse gebeten.
+        let terminalCheckoutSent = false
+        async function maybeSendInvoiceToTerminal() {
+            if (terminalCheckoutSent) return
+            if (fakturaType.value !== 'invoice' || !fakturaId.value) return
+
+            const en = oserp.getClientDefaultValue('sumup_enabled', null)
+            const enabled = en === true || en === 'true' || en === 't' || en === '1' || en === 1
+            if (!enabled) return
+
+            // Bruttobetrag sofort berechnen (Debounce umgehen) und offenen Rest ermitteln
+            accounting.flushCalculation()
+            const gross = accounting.calculatedGrossAmount.value || 0
+            const paid = (paymentList.value || []).reduce((sum, p) => sum + Math.abs(p.amount || 0), 0)
+            const remaining = Math.round((gross - paid) * 100) / 100
+            if (remaining <= 0) return // bereits (vollständig) bezahlt
+
+            terminalCheckoutSent = true
+            try {
+                toasts.info(t('FakturaView.faktura.terminalSending', { amount: remaining.toFixed(2) }))
+                await faktura.sendSumupCheckout(remaining, {
+                    fakturaID: fakturaId.value,
+                    description: faktura.data?.common?.invnumber || ''
+                })
+                toasts.success(t('FakturaView.faktura.terminalSent'))
+            } catch (e) {
+                terminalCheckoutSent = false // bei Fehler erneuter Versuch möglich
+                toasts.error(t('FakturaView.faktura.terminalError', { msg: e.message || '' }))
+            }
+        }
+
         onMounted(async () => {
             try {
                 if (!fakturaId.value) {
@@ -1788,6 +1831,9 @@ export default defineComponent({
                     }
 
                     accounting.calculateTotals()
+
+                    // SumUp: offenen Rechnungsbetrag automatisch ans Terminal senden
+                    maybeSendInvoiceToTerminal()
 
                     // Druckvorlagen aus dem parallel gestarteten Call
                     try {
@@ -2021,6 +2067,86 @@ export default defineComponent({
                 toasts.error(t('FakturaView.faktura.aagError') + (e?.message ? '\n' + e.message : ''))
             } finally {
                 aagLoading.value = false
+            }
+        }
+
+        // ===== ESI[tronic] / Hella Gutmann (verknüpftes Fahrzeug des Auftrags) =====
+
+        // Das aktuell verknüpfte Fahrzeug aus der Kundenfahrzeug-Liste (enthält
+        // seit der Backend-Erweiterung c_2/c_3/c_fin).
+        const selectedCarObj = computed(() =>
+            vehicle?.customerCars?.value?.find(c => c.c_id === vehicle?.selectedCarId?.value) || null
+        )
+
+        const gutmannBaseUrl = computed(() =>
+            String(oserp.getClientDefaultValue('gutmann_megamacs_url', '') || '').trim()
+        )
+
+        // Sichtbar wie der AAG-Button: Auftrag mit verknüpftem, identifizierbarem
+        // Fahrzeug (gültige HSN/TSN ODER FIN — auch bei ausgenullter TSN).
+        const esiAvailable = computed(() =>
+            fakturaType.value === 'order' && !!selectedCarObj.value &&
+            hasVehicleId(selectedCarObj.value.c_2, selectedCarObj.value.c_3, selectedCarObj.value.c_fin)
+        )
+
+        const gutmannAvailable = computed(() =>
+            esiAvailable.value && !!gutmannBaseUrl.value
+        )
+
+        function onOpenEsi() {
+            const car = selectedCarObj.value
+            if (!car || !hasVehicleId(car.c_2, car.c_3, car.c_fin)) return
+            window.location.href = buildEsiUrl(car.c_2, car.c_3, car.c_fin)
+        }
+
+        function onOpenGutmann() {
+            const car = selectedCarObj.value
+            if (!car || !hasVehicleId(car.c_2, car.c_3, car.c_fin)) return
+            const url = buildGutmannUrl(gutmannBaseUrl.value, car.c_2, car.c_3, car.c_fin)
+            const win = openAppWindow('gutmann-megamacs')
+            if (win) {
+                win.location.href = url
+                win.focus()
+            } else {
+                window.open(url, '_blank')
+            }
+        }
+
+        // HGS-Data-Suche braucht gültige HSN/TSN; Auflösung der vehicleId im Backend.
+        const hgsLoading = ref(false)
+        const hgsAvailable = computed(() =>
+            fakturaType.value === 'order' && !!selectedCarObj.value &&
+            isKbaValid(selectedCarObj.value.c_2, selectedCarObj.value.c_3)
+        )
+
+        async function onOpenHgs() {
+            const car = selectedCarObj.value
+            if (!car) return
+            const win = openAppWindow('hgs-data')
+            hgsLoading.value = true
+            try {
+                const { data } = await axios.post('/api/lxcars/', {
+                    action: 'getHgsVehicleUrl',
+                    c_id: car.c_id
+                })
+                const portalUrl = data?.success ? data.payload?.portalUrl : null
+                if (!portalUrl) {
+                    if (win) win.close()
+                    toasts.error(t('FakturaView.faktura.hgsError') + (data?.payload?.message ? '\n' + data.payload.message : ''))
+                    return
+                }
+                if (win) {
+                    win.location.href = portalUrl
+                    win.focus()
+                } else {
+                    window.open(portalUrl, '_blank')
+                }
+            } catch (e) {
+                if (win) win.close()
+                console.error('HGS-Data error:', e)
+                toasts.error(t('FakturaView.faktura.hgsError') + (e?.message ? '\n' + e.message : ''))
+            } finally {
+                hgsLoading.value = false
             }
         }
 
@@ -2954,6 +3080,13 @@ export default defineComponent({
             // DHL
             dhlEnabled,
             aagConfigured,
+            esiAvailable,
+            gutmannAvailable,
+            hgsAvailable,
+            hgsLoading,
+            onOpenEsi,
+            onOpenGutmann,
+            onOpenHgs,
             dhlDialogVisible,
             dhlWeight,
             dhlProduct,

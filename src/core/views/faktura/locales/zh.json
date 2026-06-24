@@ -161,6 +161,10 @@
             "openVehicle": "车辆",
             "importSilverDAT": "SilverDAT 导入",
             "openAag": "AAG-Online – transfer vehicle and open",
+            "openEsi": "在 ESI[tronic] 中打开车辆",
+            "openGutmann": "在 Hella Gutmann mega macs 中打开车辆",
+            "openHgs": "在 HGS Data 中打开车辆数据",
+            "hgsError": "无法打开 HGS Data",
             "aagError": "Could not open AAG-Online",
             "silverdat": {
                 "title": "SilverDAT 导入",

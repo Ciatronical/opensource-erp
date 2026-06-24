@@ -323,6 +323,16 @@
             "tooltip": "Deschide vehiculul în Bosch ESI[tronic] după HSN/TSN",
             "noKba": "Nu există numere de cheie valide (HSN/TSN)"
         },
+        "gutmann": {
+            "button": "Gutmann",
+            "tooltip": "Deschide vehiculul în Hella Gutmann mega macs după HSN/TSN",
+            "noKba": "Nu există numere de cheie valide (HSN/TSN)"
+        },
+        "hgs": {
+            "button": "HGS-Data",
+            "tooltip": "Deschide datele vehiculului în HGS Data",
+            "error": "Nu s-a putut deschide HGS Data"
+        },
         "ktype": {
             "label": "Ktype",
             "resolving": "Resolving Ktype …",

@@ -43,6 +43,14 @@
                     <v-icon start size="small">mdi-cog-outline</v-icon>
                     {{ t('CarEditView.esi.button') }}
                 </v-btn>
+                <v-btn v-if="gutmannAvailable" variant="tonal" size="small" color="cyan-darken-2" :title="t('CarEditView.gutmann.tooltip')" @click="openGutmann">
+                    <v-icon start size="small">mdi-lan-connect</v-icon>
+                    {{ t('CarEditView.gutmann.button') }}
+                </v-btn>
+                <v-btn v-if="hgsAvailable" variant="tonal" size="small" color="blue-grey-darken-1" :loading="hgsLoading" :title="t('CarEditView.hgs.tooltip')" @click="openHgs">
+                    <v-icon start size="small">mdi-database-search-outline</v-icon>
+                    {{ t('CarEditView.hgs.button') }}
+                </v-btn>
                 <v-btn v-if="isEditMode" variant="tonal" size="small" color="success" @click="openCarRegistration">
                     <v-icon start size="small">mdi-card-account-details</v-icon>
                     {{ t('CarEditView.registration.button') }}
@@ -1235,6 +1243,7 @@ import axios from 'axios'
 import { oserpStore } from '@/core/stores/oserp.store.js'
 import { lxcarsStore } from '@/features/lxcars/stores/lxcars.store.js'
 import { openAppWindow, aagWindowOpen, aagWindowCarId, setAagWindowCarId } from '@/core/utils/aagWindow.js'
+import { hasVehicleId, isKbaValid, buildEsiUrl, buildGutmannUrl } from '@/core/utils/diagLinks.js'
 import { wikiStore } from '@/core/stores/wiki.store.js'
 import { getDistrictByPlate } from '@/features/lxcars/utils/kennzeichen.js'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
@@ -1912,26 +1921,96 @@ export default {
         // das einen kleinen Launcher mit HSN/TSN aufruft und ESI[tronic] startet.
         // Siehe dev/esitronic-protokoll-setup.md.
 
-        // Gültige KBA-Schlüsselnummern (HSN vierstellig, TSN ohne Platzhalter)?
-        const esiAvailable = computed(() => {
-            if (!isEditMode.value) return false
-            const hsn = (car.value.c_2 || '').trim()
-            const tsn = (car.value.c_3 || '').trim()
-            return /^\d{4}$/.test(hsn) && tsn.length >= 3 && !hasTsnPlaceholder(tsn)
-        })
+        // Sichtbar wie der AAG-Button: sobald das Fahrzeug identifizierbar ist
+        // (gültige HSN/TSN ODER eine FIN). Bei ausgenullter TSN wird die FIN übergeben.
+        const esiAvailable = computed(() =>
+            isEditMode.value && hasVehicleId(car.value.c_2, car.value.c_3, car.value.c_fin)
+        )
 
         function openEsi() {
-            const hsn = (car.value.c_2 || '').trim()
-            const tsn = (car.value.c_3 || '').trim()
-            if (!/^\d{4}$/.test(hsn) || tsn.length < 3 || hasTsnPlaceholder(tsn)) {
+            if (!hasVehicleId(car.value.c_2, car.value.c_3, car.value.c_fin)) {
                 Swal.fire({ icon: 'warning', title: t('CarEditView.esi.noKba') })
                 return
             }
             // Protokoll-Aufruf an den lokal registrierten Handler übergeben.
             // Registrierte Protokolle navigieren die Seite nicht weg; ist nichts
             // registriert, zeigt der Browser nur einen Hinweis.
-            const url = `esitronic://vehicle?hsn=${encodeURIComponent(hsn)}&tsn=${encodeURIComponent(tsn)}`
-            window.location.href = url
+            window.location.href = buildEsiUrl(car.value.c_2, car.value.c_3, car.value.c_fin)
+        }
+
+        // ===== Hella Gutmann mega macs (Web-Oberfläche im Werkstatt-LAN) =====
+        //
+        // Anders als ESI (Desktop) ist mega macs X über eine Browser-Oberfläche
+        // im Werkstattnetz erreichbar. Basis-URL kommt aus den Firmen-Defaults
+        // (gutmann_megamacs_url, z. B. http://macsx-6129:8889); HSN/TSN/FIN
+        // werden als Query angehängt und die Seite als App-Fenster geöffnet.
+
+        const gutmannBaseUrl = computed(() =>
+            String(oserpData.getClientDefaultValue('gutmann_megamacs_url', '') || '').trim()
+        )
+
+        const gutmannAvailable = computed(() =>
+            isEditMode.value && !!gutmannBaseUrl.value && hasVehicleId(car.value.c_2, car.value.c_3, car.value.c_fin)
+        )
+
+        function openGutmann() {
+            if (!hasVehicleId(car.value.c_2, car.value.c_3, car.value.c_fin)) {
+                Swal.fire({ icon: 'warning', title: t('CarEditView.gutmann.noKba') })
+                return
+            }
+            const url = buildGutmannUrl(gutmannBaseUrl.value, car.value.c_2, car.value.c_3, car.value.c_fin)
+
+            // mega macs ist eine Web-App → als eigenes App-Fenster öffnen (wie AAG)
+            const win = openAppWindow('gutmann-megamacs')
+            if (win) {
+                win.location.href = url
+                win.focus()
+            } else {
+                window.open(url, '_blank')
+            }
+        }
+
+        // ===== HGS-Data (Hella Gutmann Online-Fahrzeugdaten) =====
+        //
+        // HGS-Data adressiert Fahrzeuge über eine interne vehicleId. Das Backend
+        // meldet sich an, löst per HSN/TSN-Suche die vehicleId auf und liefert die
+        // car-data-URL; wir öffnen sie als App-Fenster (Browser ist eingeloggt).
+
+        const hgsLoading = ref(false)
+
+        // HGS-Data-Suche braucht gültige HSN/TSN.
+        const hgsAvailable = computed(() =>
+            isEditMode.value && isKbaValid(car.value.c_2, car.value.c_3)
+        )
+
+        async function openHgs() {
+            // Sofort öffnen (Popup-Blocker vermeiden); URL setzen, sobald sie vorliegt.
+            const win = openAppWindow('hgs-data')
+            hgsLoading.value = true
+            try {
+                const { data } = await axios.post('/api/lxcars/', {
+                    action: 'getHgsVehicleUrl',
+                    c_id: Number(props.id) || 0
+                })
+                const portalUrl = data?.success ? data.payload?.portalUrl : null
+                if (!portalUrl) {
+                    if (win) win.close()
+                    Swal.fire({ icon: 'error', title: t('CarEditView.hgs.error'), text: data?.payload?.message || data?.text || '' })
+                    return
+                }
+                if (win) {
+                    win.location.href = portalUrl
+                    win.focus()
+                } else {
+                    window.open(portalUrl, '_blank')
+                }
+            } catch (e) {
+                if (win) win.close()
+                console.error('HGS-Data error:', e)
+                Swal.fire({ icon: 'error', title: t('CarEditView.hgs.error'), text: String(e?.message || e) })
+            } finally {
+                hgsLoading.value = false
+            }
         }
 
         // ===== TecDoc-Ktype (Hintergrund-Ermittlung beim Laden) =====
@@ -2574,6 +2653,8 @@ export default {
             toggleOrderSort, sortIcon, formatAmount, openOrder, createNewOrder, navigateToCustomer, openCarRegistration, focusSearch,
             showAagTsnButton, aagAvailable, aagLoading, openAag, aagConfigured,
             esiAvailable, openEsi,
+            gutmannAvailable, openGutmann,
+            hgsAvailable, hgsLoading, openHgs,
             ktypeNo, ktypeDesc, ktypeLoading, resolveKtypeBg,
             installedEnginesList, triggerSave,
             yellowLabelPrinting, tyreLabelPrinting, onPrintYellowLabel, onPrintTyreLabel,

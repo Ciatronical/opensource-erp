@@ -323,6 +323,16 @@
             "tooltip": "Atidaryti transporto priemonę Bosch ESI[tronic] pagal HSN/TSN",
             "noKba": "Nėra galiojančių rakto numerių (HSN/TSN)"
         },
+        "gutmann": {
+            "button": "Gutmann",
+            "tooltip": "Atidaryti transporto priemonę Hella Gutmann mega macs pagal HSN/TSN",
+            "noKba": "Nėra galiojančių rakto numerių (HSN/TSN)"
+        },
+        "hgs": {
+            "button": "HGS-Data",
+            "tooltip": "Atidaryti transporto priemonės duomenis HGS Data",
+            "error": "Nepavyko atidaryti HGS Data"
+        },
         "ktype": {
             "label": "Ktype",
             "resolving": "Resolving Ktype …",

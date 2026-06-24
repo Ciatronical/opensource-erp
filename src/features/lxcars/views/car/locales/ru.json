@@ -323,6 +323,16 @@
             "tooltip": "Открыть автомобиль в Bosch ESI[tronic] по HSN/TSN",
             "noKba": "Нет действительных ключевых номеров (HSN/TSN)"
         },
+        "gutmann": {
+            "button": "Gutmann",
+            "tooltip": "Открыть автомобиль в Hella Gutmann mega macs по HSN/TSN",
+            "noKba": "Нет действительных ключевых номеров (HSN/TSN)"
+        },
+        "hgs": {
+            "button": "HGS-Data",
+            "tooltip": "Открыть данные автомобиля в HGS Data",
+            "error": "Не удалось открыть HGS Data"
+        },
         "ktype": {
             "label": "Ktype",
             "resolving": "Resolving Ktype …",

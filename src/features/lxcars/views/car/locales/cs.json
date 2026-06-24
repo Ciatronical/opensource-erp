@@ -323,6 +323,16 @@
             "tooltip": "Otevřít vozidlo v Bosch ESI[tronic] podle HSN/TSN",
             "noKba": "Nejsou k dispozici platná klíčová čísla (HSN/TSN)"
         },
+        "gutmann": {
+            "button": "Gutmann",
+            "tooltip": "Otevřít vozidlo v Hella Gutmann mega macs podle HSN/TSN",
+            "noKba": "Nejsou k dispozici platná klíčová čísla (HSN/TSN)"
+        },
+        "hgs": {
+            "button": "HGS-Data",
+            "tooltip": "Otevřít data vozidla v HGS Data",
+            "error": "HGS Data se nepodařilo otevřít"
+        },
         "ktype": {
             "label": "Ktype",
             "resolving": "Resolving Ktype …",
