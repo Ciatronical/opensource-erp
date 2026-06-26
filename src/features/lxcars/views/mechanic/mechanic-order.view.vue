@@ -10,18 +10,28 @@
             <div class="ml-2 flex-grow-1">
                 <div class="d-flex align-center ga-2 flex-wrap">
                     <span class="text-subtitle-1 font-weight-bold">{{ docNumber }}</span>
-                    <span class="text-body-2 text-medium-emphasis">{{ customerName }}</span>
-                    <v-chip
+                    <v-btn
+                        v-if="customerId"
+                        size="small"
+                        variant="tonal"
+                        color="primary"
+                        prepend-icon="mdi-account"
+                        @click="openCustomer"
+                    >
+                        {{ customerName }}
+                    </v-btn>
+                    <span v-else class="text-body-2 text-medium-emphasis">{{ customerName }}</span>
+                    <v-btn
                         v-if="vehiclePlate"
                         size="small"
                         variant="tonal"
                         color="primary"
                         prepend-icon="mdi-car"
-                        :class="selectedCarId ? 'cursor-pointer' : ''"
+                        :disabled="!selectedCarId"
                         @click="openCarDetails"
                     >
                         {{ vehiclePlate }}
-                    </v-chip>
+                    </v-btn>
                     <v-chip v-if="vehicleInfo" size="x-small" variant="text">{{ vehicleInfo }}</v-chip>
                 </div>
             </div>
@@ -441,10 +451,15 @@ const vehiclePlate = computed(() => {
     return car?.c_ln || ''
 })
 const selectedCarId = computed(() => vehicle?.selectedCarId?.value || null)
+const customerId = computed(() => faktura.data?.common?.customer_id || null)
 
 function openCarDetails() {
     const carId = selectedCarId.value
     if (carId) router.push({ name: 'mechanic-car', params: { id: carId }, query: { order: fakturaId.value } })
+}
+
+function openCustomer() {
+    if (customerId.value) router.push({ name: 'change-customer', params: { id: customerId.value } })
 }
 const vehicleInfo = computed(() => {
     const cars = vehicle?.customerCars?.value || []
