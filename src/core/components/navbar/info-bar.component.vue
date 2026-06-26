@@ -22,7 +22,7 @@
       >
         <v-icon start size="14">{{ chipIcon(item) }}</v-icon>
         <span class="info-chip-text font-weight-medium">
-          {{ truncate(chipLabel(item), 18) }}
+          {{ truncate(chipLabel(item), item.type === 'missing_order' ? 28 : 18) }}
         </span>
       </v-chip>
     </v-sheet>
@@ -81,6 +81,7 @@ export default {
     function chipColor(item) {
       if (item.type === 'completed') return 'success'
       if (item.type === 'parts') return 'deep-orange'
+      if (item.type === 'missing_order') return 'orange-darken-3'
       if (item.type === 'anpr') return 'light-blue'
       if (item.type === 'call') {
         if (isCallMissed(item.data?.crmti_status)) return 'red'
@@ -94,6 +95,7 @@ export default {
     function chipIcon(item) {
       if (item.type === 'completed') return 'mdi-check-circle'
       if (item.type === 'parts') return 'mdi-cart-arrow-down'
+      if (item.type === 'missing_order') return 'mdi-clipboard-alert-outline'
       if (item.type === 'anpr') return 'mdi-car-side'
       if (item.type === 'call') {
         if (isCallMissed(item.data?.crmti_status)) return item.direction === 'E' ? 'mdi-phone-missed' : 'mdi-phone-cancel'
@@ -107,6 +109,7 @@ export default {
     function chipLabel(item) {
       if (item.type === 'completed') return (item.name || ('#' + item.data.oe_id)) + ' ✔'
       if (item.type === 'parts') return item.name || ('#' + item.data.oe_id)
+      if (item.type === 'missing_order') return (item.name || '?') + ' ' + t('InfoBar.noOrder')
       if (item.type === 'anpr') return item.name || ''
       return item.name || t('InfoBar.unknownCaller')
     }
@@ -123,6 +126,10 @@ export default {
         const cust = item.data.customer_name ? ' — ' + item.data.customer_name : ''
         return item.data.c_ln + cust + ' (' + formatDateTime(item.timestamp) + ')'
       }
+      if (item.type === 'missing_order') {
+        const owner = item.data.owner_name ? ' — ' + item.data.owner_name : ''
+        return (item.name || '?') + ' ' + t('InfoBar.noOrder') + owner + ' (' + formatDateTime(item.timestamp) + ')'
+      }
       return (item.name || t('InfoBar.unknownCaller')) + ' — ' + formatDateTime(item.timestamp)
     }
 
@@ -131,6 +138,7 @@ export default {
       else if (item.type === 'parts') openOrderWithParts(item.data)
       else if (item.type === 'anpr') openAnprDetection(item.data)
       else if (item.type === 'call') openCall(item.data)
+      else if (item.type === 'missing_order') openMissingOrder(item.data)
       else if (item.type === 'email') openEmail(item.data)
       else if (item.type === 'whatsapp') openWhatsapp(item.data)
     }
@@ -141,6 +149,14 @@ export default {
         router.push({ name: routeName, params: { id: call.crmti_caller_id } })
       } else {
         router.push({ name: 'call-history' })
+      }
+    }
+
+    function openMissingOrder(mo) {
+      // Hat die Meldung ein erkanntes Fahrzeug, zur Fahrzeugansicht springen,
+      // damit das Büro von dort den fehlenden Auftrag anlegen kann.
+      if (mo.c_id) {
+        router.push({ name: 'car', params: { id: mo.c_id } })
       }
     }
 

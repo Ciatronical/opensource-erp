@@ -1087,6 +1087,18 @@ export const lxcarsStore = defineStore('lxcarsStore', () => {
         return response.data.payload
     }
 
+    async function searchCarsForMechanic(search) {
+        const response = await axios.post('/api/lxcars/', { action: 'searchCarsForMechanic', search })
+        if (!response.data.success) throw new ApiError('ApiError', response.data.text, 'Error searching cars')
+        return response.data.payload || []
+    }
+
+    async function addMissingOrder(label, cId = null) {
+        const response = await axios.post('/api/lxcars/', { action: 'addMissingOrder', label, c_id: cId })
+        if (!response.data.success) throw new ApiError('ApiError', response.data.text, 'Error adding missing order')
+        return response.data.payload
+    }
+
     async function loadMechanicOrderDetail(oeId) {
         const response = await axios.post('/api/lxcars/', { action: 'getMechanicOrderDetail', oe_id: oeId })
         if (!response.data.success) throw new ApiError('ApiError', response.data.text, 'Error loading mechanic order detail')
@@ -1296,6 +1308,8 @@ export const lxcarsStore = defineStore('lxcarsStore', () => {
         // Mechaniker-Modus
         loadMechanicOrders,
         loadAllMechanicOrders,
+        searchCarsForMechanic,
+        addMissingOrder,
         loadMechanicOrderDetail,
         addPartsRequest,
         updatePartsRequest,

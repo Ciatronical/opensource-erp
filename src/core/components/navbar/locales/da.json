@@ -66,6 +66,7 @@
         "requestedBy": "af",
         "selectVendor": "Søg leverandør...",
         "markOrdered": "Markér {count} som bestilt",
-        "yesterday": "I går"
+        "yesterday": "I går",
+        "noOrder": "ingen ordre"
     }
 }

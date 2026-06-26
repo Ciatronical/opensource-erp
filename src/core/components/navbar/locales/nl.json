@@ -66,6 +66,7 @@
         "requestedBy": "door",
         "selectVendor": "Leverancier zoeken...",
         "markOrdered": "{count} als besteld markeren",
-        "yesterday": "Gisteren"
+        "yesterday": "Gisteren",
+        "noOrder": "geen order"
     }
 }

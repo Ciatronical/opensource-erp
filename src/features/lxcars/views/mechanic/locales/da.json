@@ -44,6 +44,18 @@
         "allOrders": "Alle",
         "refresh": "Opdater",
         "exitMechanic": "Afslut mekanikertilstand",
-        "filter": "License plate, customer, order, vehicle ..."
+        "filter": "License plate, customer, order, vehicle ...",
+        "missingOrder": {
+            "label": "Ordre mangler",
+            "hint": "Søg køretøj via navn, nummerplade eller VIN",
+            "noVehicle": "Intet køretøj fundet",
+            "addFreeText": "Rapportér som fritekst",
+            "freeTextTitle": "Ordre mangler – fritekst",
+            "freeTextLabel": "Betegnelse (nummerplade eller navn)",
+            "cancel": "Annuller",
+            "add": "Rapportér",
+            "added": "Rapporteret: {label}",
+            "error": "Rapportering mislykkedes"
+        }
     }
 }

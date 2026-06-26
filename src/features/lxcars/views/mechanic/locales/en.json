@@ -44,6 +44,18 @@
         "save": "Save",
         "refresh": "Refresh",
         "exitMechanic": "Exit mechanic mode",
-        "filter": "License plate, customer, order, vehicle ..."
+        "filter": "License plate, customer, order, vehicle ...",
+        "missingOrder": {
+            "label": "Order missing",
+            "hint": "Search vehicle by name, plate or VIN",
+            "noVehicle": "No vehicle found",
+            "addFreeText": "Report as free text",
+            "freeTextTitle": "Order missing – free text",
+            "freeTextLabel": "Label (plate or name)",
+            "cancel": "Cancel",
+            "add": "Report",
+            "added": "Reported: {label}",
+            "error": "Report failed"
+        }
     }
 }

@@ -44,6 +44,18 @@
         "allOrders": "Toate",
         "refresh": "Reîmprospătare",
         "exitMechanic": "Ieșire din modul mecanic",
-        "filter": "License plate, customer, order, vehicle ..."
+        "filter": "License plate, customer, order, vehicle ...",
+        "missingOrder": {
+            "label": "Lipsă comandă",
+            "hint": "Caută vehicul după nume, număr sau VIN",
+            "noVehicle": "Niciun vehicul găsit",
+            "addFreeText": "Raportează ca text liber",
+            "freeTextTitle": "Lipsă comandă – text liber",
+            "freeTextLabel": "Denumire (număr sau nume)",
+            "cancel": "Anulează",
+            "add": "Raportează",
+            "added": "Raportat: {label}",
+            "error": "Raportare eșuată"
+        }
     }
 }

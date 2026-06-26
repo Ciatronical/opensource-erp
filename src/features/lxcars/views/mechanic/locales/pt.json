@@ -44,6 +44,18 @@
         "allOrders": "Todas",
         "refresh": "Atualizar",
         "exitMechanic": "Sair do modo mecânico",
-        "filter": "License plate, customer, order, vehicle ..."
+        "filter": "License plate, customer, order, vehicle ...",
+        "missingOrder": {
+            "label": "Falta ordem",
+            "hint": "Procurar veículo por nome, matrícula ou VIN",
+            "noVehicle": "Nenhum veículo encontrado",
+            "addFreeText": "Reportar como texto livre",
+            "freeTextTitle": "Falta ordem – texto livre",
+            "freeTextLabel": "Designação (matrícula ou nome)",
+            "cancel": "Cancelar",
+            "add": "Reportar",
+            "added": "Reportado: {label}",
+            "error": "Falha ao reportar"
+        }
     }
 }

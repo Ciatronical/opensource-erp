@@ -66,6 +66,7 @@
         "requestedBy": "by",
         "selectVendor": "Search vendor...",
         "markOrdered": "Mark {count} as ordered",
-        "yesterday": "Yesterday"
+        "yesterday": "Yesterday",
+        "noOrder": "no order"
     }
 }

@@ -44,6 +44,18 @@
         "allOrders": "Alla",
         "refresh": "Uppdatera",
         "exitMechanic": "Avsluta mekanikerläge",
-        "filter": "License plate, customer, order, vehicle ..."
+        "filter": "License plate, customer, order, vehicle ...",
+        "missingOrder": {
+            "label": "Order saknas",
+            "hint": "Sök fordon via namn, registreringsnr eller VIN",
+            "noVehicle": "Inget fordon hittades",
+            "addFreeText": "Rapportera som fritext",
+            "freeTextTitle": "Order saknas – fritext",
+            "freeTextLabel": "Beteckning (regnr eller namn)",
+            "cancel": "Avbryt",
+            "add": "Rapportera",
+            "added": "Rapporterad: {label}",
+            "error": "Rapportering misslyckades"
+        }
     }
 }

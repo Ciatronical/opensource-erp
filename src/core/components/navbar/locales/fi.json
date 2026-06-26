@@ -66,6 +66,7 @@
         "requestedBy": "tekijä",
         "selectVendor": "Hae toimittajaa...",
         "markOrdered": "Merkitse {count} tilatuksi",
-        "yesterday": "Eilen"
+        "yesterday": "Eilen",
+        "noOrder": "ei tilausta"
     }
 }

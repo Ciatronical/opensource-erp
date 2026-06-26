@@ -44,6 +44,18 @@
         "allOrders": "Wszystkie",
         "refresh": "Odśwież",
         "exitMechanic": "Zamknij tryb mechanika",
-        "filter": "License plate, customer, order, vehicle ..."
+        "filter": "License plate, customer, order, vehicle ...",
+        "missingOrder": {
+            "label": "Brak zlecenia",
+            "hint": "Szukaj pojazdu po nazwie, numerze rej. lub VIN",
+            "noVehicle": "Nie znaleziono pojazdu",
+            "addFreeText": "Zgłoś jako tekst",
+            "freeTextTitle": "Brak zlecenia – tekst",
+            "freeTextLabel": "Oznaczenie (nr rej. lub nazwa)",
+            "cancel": "Anuluj",
+            "add": "Zgłoś",
+            "added": "Zgłoszono: {label}",
+            "error": "Zgłoszenie nie powiodło się"
+        }
     }
 }

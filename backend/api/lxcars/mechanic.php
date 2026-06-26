@@ -864,3 +864,102 @@ function searchVendors($data) {
 
     resultInfo(true, 'OK', $rows ?: []);
 }
+
+/**
+ * Sucht Fahrzeuge für die "Auftrag fehlt"-Meldung im Mechanikermodus
+ * anhand Halter-Name, Kennzeichen oder FIN.
+ *
+ * @param string $data['search'] Suchbegriff (Name, Kennzeichen oder FIN)
+ * @testdata {"search": "MOL"}
+ */
+function searchCarsForMechanic($data) {
+    $db = DbhCompany::begin();
+    $search = trim($data['search'] ?? '');
+    if (mb_strlen($search) < 2) {
+        resultInfo(true, 'OK', []);
+        return;
+    }
+    $like = '%' . $search . '%';
+    $rows = $db->getAll(
+        "SELECT c.c_id, c.c_ln, COALESCE(c.c_fin, '') AS c_fin,
+                COALESCE(cu.name, '') AS owner_name,
+                COALESCE(NULLIF(c.c_m, ''), k.hersteller, '') AS manufacturer,
+                COALESCE(c.c_mt, '') AS model
+         FROM cars_lxcars c
+         LEFT JOIN customer cu ON cu.id = c.c_ow
+         LEFT JOIN kba_lxcars k ON k.id = c.kba_id
+         WHERE c.c_ln ILIKE :q OR c.c_fin ILIKE :q OR cu.name ILIKE :q
+         ORDER BY c.c_ln
+         LIMIT 25",
+        [':q' => $like]
+    );
+    resultInfo(true, 'OK', $rows ?: []);
+}
+
+/**
+ * Meldet ein fehlendes Auftrags-Fahrzeug (erscheint in der Info-Bar).
+ * Entweder ein erkanntes Fahrzeug (c_id + Kennzeichen) oder Freitext.
+ *
+ * @param int    $data['c_id']  Optional: Fahrzeug-ID
+ * @param string $data['label'] Anzeigetext (Kennzeichen oder Freitext)
+ * @testdata {"label": "B-XX 1234"}
+ */
+function addMissingOrder($data) {
+    $db = DbhCompany::begin();
+    $cId = isset($data['c_id']) && $data['c_id'] !== '' ? intval($data['c_id']) : null;
+    $label = trim($data['label'] ?? '');
+    if ($label === '') {
+        resultInfo(false, 'MISSING_LABEL', 'Bezeichnung fehlt');
+        return;
+    }
+    $empId = _getMechanicEmployeeId();
+    $row = $db->getOne(
+        "INSERT INTO missing_orders_lxcars (c_id, label, created_by)
+         VALUES (:c_id, :label, :emp)
+         RETURNING id, c_id, label, itime",
+        [':c_id' => $cId, ':label' => $label, ':emp' => $empId]
+    );
+    resultInfo(true, 'OK', $row);
+}
+
+/**
+ * Liefert die offenen "Auftrag fehlt"-Meldungen für die Info-Bar.
+ *
+ * @testdata {}
+ */
+function getMissingOrders() {
+    $db = DbhCompany::begin();
+    $rows = $db->getAll(
+        "SELECT m.id, m.c_id, m.label, m.itime,
+                car.c_ln AS vehicle_plate,
+                COALESCE(cu.name, '') AS owner_name
+         FROM missing_orders_lxcars m
+         LEFT JOIN cars_lxcars car ON car.c_id = m.c_id
+         LEFT JOIN customer cu ON cu.id = car.c_ow
+         WHERE m.dismissed IS NOT TRUE
+         ORDER BY m.itime DESC",
+        []
+    );
+    resultInfo(true, 'OK', $rows ?: []);
+}
+
+/**
+ * Markiert eine "Auftrag fehlt"-Meldung als erledigt (dismiss).
+ *
+ * @param int $data['id'] Meldungs-ID
+ * @testdata {"id": 1}
+ */
+function dismissMissingOrder($data) {
+    $id = intval($data['id'] ?? 0);
+    if ($id <= 0) {
+        resultInfo(false, 'MISSING_ID');
+        return;
+    }
+    $db = DbhCompany::begin();
+    $empId = _getMechanicEmployeeId();
+    $db->execute(
+        "UPDATE missing_orders_lxcars SET dismissed = true, dismissed_by = :emp WHERE id = :id",
+        [':id' => $id, ':emp' => $empId]
+    );
+    resultInfo(true);
+}

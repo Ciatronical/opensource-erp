@@ -66,6 +66,7 @@
         "requestedBy": "no",
         "selectVendor": "Meklēt piegādātāju...",
         "markOrdered": "Atzīmēt {count} kā pasūtītus",
-        "yesterday": "Vakar"
+        "yesterday": "Vakar",
+        "noOrder": "nav pasūtījuma"
     }
 }

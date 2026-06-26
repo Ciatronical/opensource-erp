@@ -44,6 +44,18 @@
         "allOrders": "Все",
         "refresh": "Обновить",
         "exitMechanic": "Выйти из режима механика",
-        "filter": "License plate, customer, order, vehicle ..."
+        "filter": "License plate, customer, order, vehicle ...",
+        "missingOrder": {
+            "label": "Нет заказа",
+            "hint": "Поиск ТС по имени, номеру или VIN",
+            "noVehicle": "ТС не найдено",
+            "addFreeText": "Указать текстом",
+            "freeTextTitle": "Нет заказа — текст",
+            "freeTextLabel": "Обозначение (номер или имя)",
+            "cancel": "Отмена",
+            "add": "Сообщить",
+            "added": "Сообщено: {label}",
+            "error": "Не удалось сообщить"
+        }
     }
 }

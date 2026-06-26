@@ -66,6 +66,7 @@
         "requestedBy": "від",
         "selectVendor": "Шукати постачальника...",
         "markOrdered": "Позначити {count} як замовлені",
-        "yesterday": "Вчора"
+        "yesterday": "Вчора",
+        "noOrder": "немає замовлення"
     }
 }

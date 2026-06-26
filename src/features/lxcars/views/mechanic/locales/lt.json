@@ -44,6 +44,18 @@
         "allOrders": "Visi",
         "refresh": "Atnaujinti",
         "exitMechanic": "Išeiti iš mechaniko režimo",
-        "filter": "License plate, customer, order, vehicle ..."
+        "filter": "License plate, customer, order, vehicle ...",
+        "missingOrder": {
+            "label": "Trūksta užsakymo",
+            "hint": "Ieškoti automobilio pagal vardą, numerį ar VIN",
+            "noVehicle": "Automobilis nerastas",
+            "addFreeText": "Pranešti laisvu tekstu",
+            "freeTextTitle": "Trūksta užsakymo – tekstas",
+            "freeTextLabel": "Pavadinimas (numeris ar vardas)",
+            "cancel": "Atšaukti",
+            "add": "Pranešti",
+            "added": "Pranešta: {label}",
+            "error": "Nepavyko pranešti"
+        }
     }
 }

@@ -44,6 +44,18 @@
         "allOrders": "Tümü",
         "refresh": "Yenile",
         "exitMechanic": "Tamirci modundan çık",
-        "filter": "License plate, customer, order, vehicle ..."
+        "filter": "License plate, customer, order, vehicle ...",
+        "missingOrder": {
+            "label": "Sipariş eksik",
+            "hint": "Aracı ad, plaka veya VIN ile ara",
+            "noVehicle": "Araç bulunamadı",
+            "addFreeText": "Serbest metin olarak bildir",
+            "freeTextTitle": "Sipariş eksik – serbest metin",
+            "freeTextLabel": "Tanım (plaka veya ad)",
+            "cancel": "İptal",
+            "add": "Bildir",
+            "added": "Bildirildi: {label}",
+            "error": "Bildirim başarısız"
+        }
     }
 }

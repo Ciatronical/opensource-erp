@@ -44,6 +44,18 @@
         "save": "Speichern",
         "refresh": "Aktualisieren",
         "exitMechanic": "Mechaniker-Modus verlassen",
-        "filter": "Kennzeichen, Kunde, Auftrag, Fahrzeug ..."
+        "filter": "Kennzeichen, Kunde, Auftrag, Fahrzeug ...",
+        "missingOrder": {
+            "label": "Auftrag fehlt",
+            "hint": "Fahrzeug per Name, Kennzeichen oder FIN suchen",
+            "noVehicle": "Kein Fahrzeug gefunden",
+            "addFreeText": "Als Freitext melden",
+            "freeTextTitle": "Auftrag fehlt – Freitext",
+            "freeTextLabel": "Bezeichnung (Kennzeichen oder Name)",
+            "cancel": "Abbrechen",
+            "add": "Melden",
+            "added": "Gemeldet: {label}",
+            "error": "Melden fehlgeschlagen"
+        }
     }
 }

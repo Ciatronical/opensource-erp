@@ -66,6 +66,7 @@
         "requestedBy": "от",
         "selectVendor": "Поиск поставщика...",
         "markOrdered": "Отметить {count} как заказанные",
-        "yesterday": "Вчера"
+        "yesterday": "Вчера",
+        "noOrder": "нет заказа"
     }
 }

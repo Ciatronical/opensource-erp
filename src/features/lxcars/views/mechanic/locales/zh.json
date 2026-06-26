@@ -44,6 +44,18 @@
         "allOrders": "全部",
         "refresh": "刷新",
         "exitMechanic": "退出技工模式",
-        "filter": "License plate, customer, order, vehicle ..."
+        "filter": "License plate, customer, order, vehicle ...",
+        "missingOrder": {
+            "label": "缺少工单",
+            "hint": "按姓名、车牌或车架号搜索车辆",
+            "noVehicle": "未找到车辆",
+            "addFreeText": "以自由文本上报",
+            "freeTextTitle": "缺少工单 – 自由文本",
+            "freeTextLabel": "名称（车牌或姓名）",
+            "cancel": "取消",
+            "add": "上报",
+            "added": "已上报：{label}",
+            "error": "上报失败"
+        }
     }
 }

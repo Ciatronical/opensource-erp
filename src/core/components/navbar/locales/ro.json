@@ -66,6 +66,7 @@
         "requestedBy": "de",
         "selectVendor": "Caută furnizor...",
         "markOrdered": "Marchează {count} ca comandate",
-        "yesterday": "Ieri"
+        "yesterday": "Ieri",
+        "noOrder": "fără comandă"
     }
 }

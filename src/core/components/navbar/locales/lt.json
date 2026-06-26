@@ -66,6 +66,7 @@
         "requestedBy": "nuo",
         "selectVendor": "Ieškoti tiekėjo...",
         "markOrdered": "Pažymėti {count} kaip užsakytus",
-        "yesterday": "Vakar"
+        "yesterday": "Vakar",
+        "noOrder": "nėra užsakymo"
     }
 }

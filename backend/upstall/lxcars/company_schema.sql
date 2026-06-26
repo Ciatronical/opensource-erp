@@ -778,3 +778,45 @@ INSERT INTO defaults_oserp (key, value) VALUES ('anpr_detection_ttl_hours', '8')
 INSERT INTO defaults_oserp (key, value) VALUES ('anpr_infobar_max', '3') ON CONFLICT (key) DO NOTHING;
 INSERT INTO defaults_oserp (key, value) VALUES ('anpr_blacklist', '') ON CONFLICT (key) DO NOTHING;
 INSERT INTO defaults_oserp (key, value) VALUES ('anpr_debug_snapshots', '0') ON CONFLICT (key) DO NOTHING;
+
+-- ============================================================================
+-- AUFTRAG FEHLT (Mechanikermodus)
+-- ============================================================================
+-- Meldungen aus dem Mechanikermodus: ein Fahrzeug wird bearbeitet, zu dem noch
+-- kein Auftrag im System existiert. Erscheint als Item in der Info-Bar
+-- ("<Kennzeichen> kein Auftrag" bzw. "<Freitext> kein Auftrag"), bis es dort
+-- weggeklickt (dismissed) wird. c_id ist optional (Freitext-Meldung ohne Fahrzeug).
+CREATE TABLE IF NOT EXISTS missing_orders_lxcars (
+    id           INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    c_id         INTEGER REFERENCES cars_lxcars(c_id) ON DELETE SET NULL,
+    label        TEXT NOT NULL,          -- Kennzeichen oder Freitext
+    created_by   INTEGER,                -- employee.id des meldenden Mechanikers
+    dismissed    BOOLEAN DEFAULT false,
+    dismissed_by INTEGER,
+    itime        TIMESTAMP DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_missing_orders_pending
+    ON missing_orders_lxcars(dismissed, itime)
+    WHERE dismissed IS NOT TRUE;
+
+-- Trigger: SSE-Benachrichtigung bei neuen Meldungen (Info-Bar aktualisiert live)
+CREATE OR REPLACE FUNCTION notify_missing_order() RETURNS trigger AS $$
+BEGIN
+    PERFORM pg_notify('faktura_change', json_build_object(
+        'action', TG_OP,
+        'table', 'missing_orders_lxcars',
+        'id', NEW.id,
+        'label', NEW.label
+    )::TEXT);
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'missing_order_notify') THEN
+        CREATE TRIGGER missing_order_notify
+            AFTER INSERT ON missing_orders_lxcars
+            FOR EACH ROW
+            EXECUTE FUNCTION notify_missing_order();
+    END IF;
+END $$;

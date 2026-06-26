@@ -66,6 +66,7 @@
         "requestedBy": "od",
         "selectVendor": "Hledat dodavatele...",
         "markOrdered": "Označit {count} jako objednané",
-        "yesterday": "Včera"
+        "yesterday": "Včera",
+        "noOrder": "bez zakázky"
     }
 }

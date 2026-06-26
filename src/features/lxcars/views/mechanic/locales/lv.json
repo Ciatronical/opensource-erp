@@ -44,6 +44,18 @@
         "allOrders": "Visi",
         "refresh": "Atjaunināt",
         "exitMechanic": "Iziet no mehāniķa režīma",
-        "filter": "License plate, customer, order, vehicle ..."
+        "filter": "License plate, customer, order, vehicle ...",
+        "missingOrder": {
+            "label": "Trūkst pasūtījuma",
+            "hint": "Meklēt auto pēc nosaukuma, numura vai VIN",
+            "noVehicle": "Auto nav atrasts",
+            "addFreeText": "Ziņot kā brīvu tekstu",
+            "freeTextTitle": "Trūkst pasūtījuma – teksts",
+            "freeTextLabel": "Apzīmējums (numurs vai vārds)",
+            "cancel": "Atcelt",
+            "add": "Ziņot",
+            "added": "Ziņots: {label}",
+            "error": "Ziņošana neizdevās"
+        }
     }
 }

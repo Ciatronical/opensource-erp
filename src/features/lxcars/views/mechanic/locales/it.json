@@ -44,6 +44,18 @@
         "allOrders": "Tutti",
         "refresh": "Aggiorna",
         "exitMechanic": "Esci dalla modalità meccanico",
-        "filter": "License plate, customer, order, vehicle ..."
+        "filter": "License plate, customer, order, vehicle ...",
+        "missingOrder": {
+            "label": "Ordine mancante",
+            "hint": "Cerca veicolo per nome, targa o VIN",
+            "noVehicle": "Nessun veicolo trovato",
+            "addFreeText": "Segnala come testo libero",
+            "freeTextTitle": "Ordine mancante – testo libero",
+            "freeTextLabel": "Descrizione (targa o nome)",
+            "cancel": "Annulla",
+            "add": "Segnala",
+            "added": "Segnalato: {label}",
+            "error": "Segnalazione non riuscita"
+        }
     }
 }

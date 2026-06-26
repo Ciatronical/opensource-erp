@@ -66,6 +66,7 @@
         "requestedBy": "poolt",
         "selectVendor": "Otsi tarnijat...",
         "markOrdered": "Märgi {count} telllituks",
-        "yesterday": "Eile"
+        "yesterday": "Eile",
+        "noOrder": "tellimuseta"
     }
 }

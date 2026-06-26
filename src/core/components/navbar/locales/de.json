@@ -66,6 +66,7 @@
         "requestedBy": "von",
         "selectVendor": "Lieferant suchen...",
         "markOrdered": "{count} als bestellt markieren",
-        "yesterday": "Gestern"
+        "yesterday": "Gestern",
+        "noOrder": "kein Auftrag"
     }
 }

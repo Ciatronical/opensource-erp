@@ -44,6 +44,18 @@
         "allOrders": "Kõik",
         "refresh": "Värskenda",
         "exitMechanic": "Väljuge mehaanikurežiimist",
-        "filter": "License plate, customer, order, vehicle ..."
+        "filter": "License plate, customer, order, vehicle ...",
+        "missingOrder": {
+            "label": "Tellimus puudub",
+            "hint": "Otsi sõidukit nime, numbri või VIN järgi",
+            "noVehicle": "Sõidukit ei leitud",
+            "addFreeText": "Teata vabatekstina",
+            "freeTextTitle": "Tellimus puudub – vabatekst",
+            "freeTextLabel": "Tähis (number või nimi)",
+            "cancel": "Tühista",
+            "add": "Teata",
+            "added": "Teatatud: {label}",
+            "error": "Teatamine ebaõnnestus"
+        }
     }
 }

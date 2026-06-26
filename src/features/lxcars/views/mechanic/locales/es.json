@@ -44,6 +44,18 @@
         "allOrders": "Todas",
         "refresh": "Actualizar",
         "exitMechanic": "Salir del modo mecánico",
-        "filter": "License plate, customer, order, vehicle ..."
+        "filter": "License plate, customer, order, vehicle ...",
+        "missingOrder": {
+            "label": "Falta pedido",
+            "hint": "Buscar vehículo por nombre, matrícula o VIN",
+            "noVehicle": "No se encontró vehículo",
+            "addFreeText": "Informar como texto libre",
+            "freeTextTitle": "Falta pedido – texto libre",
+            "freeTextLabel": "Descripción (matrícula o nombre)",
+            "cancel": "Cancelar",
+            "add": "Informar",
+            "added": "Informado: {label}",
+            "error": "Error al informar"
+        }
     }
 }

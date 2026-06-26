@@ -44,6 +44,18 @@
         "allOrders": "Усі",
         "refresh": "Оновити",
         "exitMechanic": "Вийти з режиму механіка",
-        "filter": "License plate, customer, order, vehicle ..."
+        "filter": "License plate, customer, order, vehicle ...",
+        "missingOrder": {
+            "label": "Немає замовлення",
+            "hint": "Пошук авто за іменем, номером або VIN",
+            "noVehicle": "Авто не знайдено",
+            "addFreeText": "Вказати текстом",
+            "freeTextTitle": "Немає замовлення — текст",
+            "freeTextLabel": "Позначення (номер або ім'я)",
+            "cancel": "Скасувати",
+            "add": "Повідомити",
+            "added": "Повідомлено: {label}",
+            "error": "Не вдалося повідомити"
+        }
     }
 }

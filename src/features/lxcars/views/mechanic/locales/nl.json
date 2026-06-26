@@ -44,6 +44,18 @@
         "allOrders": "Alle",
         "refresh": "Vernieuwen",
         "exitMechanic": "Monteursmodus verlaten",
-        "filter": "License plate, customer, order, vehicle ..."
+        "filter": "License plate, customer, order, vehicle ...",
+        "missingOrder": {
+            "label": "Order ontbreekt",
+            "hint": "Voertuig zoeken op naam, kenteken of VIN",
+            "noVehicle": "Geen voertuig gevonden",
+            "addFreeText": "Als vrije tekst melden",
+            "freeTextTitle": "Order ontbreekt – vrije tekst",
+            "freeTextLabel": "Omschrijving (kenteken of naam)",
+            "cancel": "Annuleren",
+            "add": "Melden",
+            "added": "Gemeld: {label}",
+            "error": "Melden mislukt"
+        }
     }
 }

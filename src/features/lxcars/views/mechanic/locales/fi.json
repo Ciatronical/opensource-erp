@@ -44,6 +44,18 @@
         "allOrders": "Kaikki",
         "refresh": "Päivitä",
         "exitMechanic": "Poistu mekaanikkotilasta",
-        "filter": "License plate, customer, order, vehicle ..."
+        "filter": "License plate, customer, order, vehicle ...",
+        "missingOrder": {
+            "label": "Tilaus puuttuu",
+            "hint": "Hae ajoneuvoa nimellä, rekisterinumerolla tai VIN",
+            "noVehicle": "Ajoneuvoa ei löytynyt",
+            "addFreeText": "Ilmoita vapaana tekstinä",
+            "freeTextTitle": "Tilaus puuttuu – vapaa teksti",
+            "freeTextLabel": "Nimike (rekisterinumero tai nimi)",
+            "cancel": "Peruuta",
+            "add": "Ilmoita",
+            "added": "Ilmoitettu: {label}",
+            "error": "Ilmoitus epäonnistui"
+        }
     }
 }

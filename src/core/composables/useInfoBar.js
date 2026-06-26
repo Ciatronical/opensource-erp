@@ -25,6 +25,7 @@ export function useInfoBar() {
     const pendingPartsRequests = ref([])
     const anprDetections = ref([])
     const completedOrders = ref([])
+    const missingOrders = ref([])
     const dismissed = ref({ calls: [], emails: [], whatsapps: [], parts: [], anpr: [], completed: [], parts_ts: null })
 
     let eventSource = null
@@ -185,6 +186,18 @@ export function useInfoBar() {
         } catch { /* LxCars nicht verfügbar */ }
     }
 
+    async function fetchMissingOrders() {
+        if (!oserp.isLxCars()) return
+        try {
+            const response = await axios.post('/api/lxcars/', {
+                action: 'getMissingOrders'
+            })
+            if (response.data.success) {
+                missingOrders.value = response.data.payload || []
+            }
+        } catch { /* LxCars nicht verfügbar */ }
+    }
+
     async function fetchAnprDetections() {
         if (!oserp.isLxCars()) return
         const enabled = oserp.getClientDefaultValue('anpr_enabled', '0')
@@ -257,6 +270,18 @@ export function useInfoBar() {
                     data: det
                 })
             })
+
+        // "Auftrag fehlt"-Meldungen aus dem Mechanikermodus (Dismiss serverseitig)
+        missingOrders.value.forEach(mo => {
+            items.push({
+                type: 'missing_order',
+                id: 'mo-' + mo.id,
+                dismissId: mo.id,
+                timestamp: mo.itime ? new Date(mo.itime).getTime() : 0,
+                name: mo.label,
+                data: mo
+            })
+        })
 
         // Anrufe
         newCalls.value
@@ -334,6 +359,7 @@ export function useInfoBar() {
             case 'whatsapp': return d.customer_id || d.phone_number || null
             case 'anpr':     return d.c_ln || null
             case 'call':     return d.crmti_caller_id || d.crmti_src || null
+            case 'missing_order': return d.c_id || d.label || null
             case 'email':    return d.from || null
             default:         return null
         }
@@ -366,6 +392,13 @@ export function useInfoBar() {
                 // Auch serverseitig als dismissed markieren
                 axios.post('/api/lxcars/', { action: 'dismissAnprDetection', id: i }).catch(() => {})
             })
+        } else if (type === 'missing_order') {
+            // Dismiss rein serverseitig (Tabelle missing_orders_lxcars)
+            ids.forEach(i => {
+                axios.post('/api/lxcars/', { action: 'dismissMissingOrder', id: i }).catch(() => {})
+            })
+            missingOrders.value = missingOrders.value.filter(m => !ids.includes(m.id))
+            return
         }
         console.log('[InfoBar] dismissed nach Update:', JSON.parse(JSON.stringify(dismissed.value)))
         saveDismissed()
@@ -380,7 +413,8 @@ export function useInfoBar() {
             whatsapp:  { list: newWhatsapps.value,         idField: 'id' },
             parts:     { list: pendingPartsRequests.value, idField: 'oe_id' },
             anpr:      { list: anprDetections.value,       idField: 'id' },
-            completed: { list: completedOrders.value,      idField: 'oe_id' }
+            completed: { list: completedOrders.value,      idField: 'oe_id' },
+            missing_order: { list: missingOrders.value,    idField: 'id' }
         }
         const src = sourceMap[type]
         if (!src) {
@@ -437,6 +471,8 @@ export function useInfoBar() {
                     fetchNewWhatsapps()
                 } else if (data.table === 'anpr_detections_lxcars') {
                     fetchAnprDetections()
+                } else if (data.table === 'missing_orders_lxcars') {
+                    fetchMissingOrders()
                 } else if (data.table === 'oe_instructions_lxcars') {
                     fetchCompletedOrders()
                 } else if (data.table === 'oe_parts_requests_lxcars') {
@@ -483,6 +519,7 @@ export function useInfoBar() {
         fetchPendingPartsRequests()
         fetchCompletedOrders()
         fetchAnprDetections()
+        fetchMissingOrders()
     }
 
     // --- Firmenwechsel: Daten zuruecksetzen und neu laden ---
@@ -493,6 +530,7 @@ export function useInfoBar() {
         pendingPartsRequests.value = []
         completedOrders.value = []
         anprDetections.value = []
+        missingOrders.value = []
         dismissed.value = { calls: [], emails: [], whatsapps: [], parts: [], anpr: [], completed: [], parts_ts: null }
 
         stopListeners()

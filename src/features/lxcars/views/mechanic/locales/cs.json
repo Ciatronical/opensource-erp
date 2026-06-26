@@ -44,6 +44,18 @@
         "allOrders": "Všechny",
         "refresh": "Obnovit",
         "exitMechanic": "Ukončit režim mechanika",
-        "filter": "License plate, customer, order, vehicle ..."
+        "filter": "License plate, customer, order, vehicle ...",
+        "missingOrder": {
+            "label": "Chybí zakázka",
+            "hint": "Hledat vozidlo dle jména, SPZ nebo VIN",
+            "noVehicle": "Vozidlo nenalezeno",
+            "addFreeText": "Nahlásit jako text",
+            "freeTextTitle": "Chybí zakázka – text",
+            "freeTextLabel": "Označení (SPZ nebo jméno)",
+            "cancel": "Zrušit",
+            "add": "Nahlásit",
+            "added": "Nahlášeno: {label}",
+            "error": "Nahlášení selhalo"
+        }
     }
 }

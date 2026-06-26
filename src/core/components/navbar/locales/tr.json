@@ -66,6 +66,7 @@
         "requestedBy": "tarafından",
         "selectVendor": "Tedarikçi ara...",
         "markOrdered": "{count} adet sipariş edildi olarak işaretle",
-        "yesterday": "Dün"
+        "yesterday": "Dün",
+        "noOrder": "sipariş yok"
     }
 }

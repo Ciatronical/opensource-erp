@@ -44,6 +44,18 @@
         "allOrders": "Toutes",
         "refresh": "Actualiser",
         "exitMechanic": "Quitter le mode mécanicien",
-        "filter": "License plate, customer, order, vehicle ..."
+        "filter": "License plate, customer, order, vehicle ...",
+        "missingOrder": {
+            "label": "Commande manquante",
+            "hint": "Rechercher un véhicule par nom, plaque ou VIN",
+            "noVehicle": "Aucun véhicule trouvé",
+            "addFreeText": "Signaler en texte libre",
+            "freeTextTitle": "Commande manquante – texte libre",
+            "freeTextLabel": "Désignation (plaque ou nom)",
+            "cancel": "Annuler",
+            "add": "Signaler",
+            "added": "Signalé : {label}",
+            "error": "Échec du signalement"
+        }
     }
 }

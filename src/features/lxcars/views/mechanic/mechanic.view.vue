@@ -4,10 +4,64 @@
     <div class="mechanic-view">
         <!-- Header -->
         <div class="mechanic-header pa-4">
-            <div class="d-flex align-center">
-                <v-icon size="large" color="primary" class="mr-3">mdi-wrench</v-icon>
+            <div class="d-flex align-center flex-wrap ga-2">
+                <v-icon size="large" color="primary">mdi-wrench</v-icon>
                 <h1 class="text-h5 font-weight-bold flex-grow-1">{{ t('MechanicView.title') }}</h1>
-                <v-btn-toggle v-model="viewMode" mandatory density="compact" color="primary" class="mr-2">
+
+                <v-text-field
+                    v-model="filterText"
+                    :placeholder="t('MechanicView.filter')"
+                    prepend-inner-icon="mdi-magnify"
+                    variant="outlined"
+                    density="compact"
+                    hide-details
+                    clearable
+                    class="mechanic-field flex-grow-0"
+                />
+
+                <!-- "Auftrag fehlt": Fahrzeug per Name/Kennzeichen/FIN suchen und melden -->
+                <v-autocomplete
+                    v-model="missingOrderSelected"
+                    v-model:search="missingOrderSearch"
+                    :items="missingOrderResults"
+                    :loading="missingOrderLoading"
+                    :label="t('MechanicView.missingOrder.label')"
+                    item-title="display"
+                    item-value="c_id"
+                    return-object
+                    no-filter
+                    clearable
+                    hide-details
+                    density="compact"
+                    variant="outlined"
+                    color="warning"
+                    base-color="warning"
+                    prepend-inner-icon="mdi-clipboard-alert-outline"
+                    class="mechanic-field flex-grow-0"
+                    @update:model-value="onMissingOrderSelect"
+                >
+                    <template #no-data>
+                        <div class="pa-3">
+                            <div class="text-body-2 text-medium-emphasis mb-2">
+                                {{ missingOrderSearch && missingOrderSearch.trim().length >= 2
+                                    ? t('MechanicView.missingOrder.noVehicle')
+                                    : t('MechanicView.missingOrder.hint') }}
+                            </div>
+                            <v-btn
+                                v-if="missingOrderSearch && missingOrderSearch.trim().length >= 2"
+                                size="small"
+                                variant="tonal"
+                                color="warning"
+                                prepend-icon="mdi-pencil-plus"
+                                @click="openFreeTextDialog"
+                            >
+                                {{ t('MechanicView.missingOrder.addFreeText') }}
+                            </v-btn>
+                        </div>
+                    </template>
+                </v-autocomplete>
+
+                <v-btn-toggle v-model="viewMode" mandatory density="compact" color="primary">
                     <v-btn value="mine" size="small">
                         <v-icon start size="small">mdi-account</v-icon>
                         {{ t('MechanicView.myOrders') }}
@@ -24,17 +78,37 @@
                     <v-icon>mdi-exit-to-app</v-icon>
                 </v-btn>
             </div>
-            <v-text-field
-                v-model="filterText"
-                :placeholder="t('MechanicView.filter')"
-                prepend-inner-icon="mdi-magnify"
-                variant="outlined"
-                density="compact"
-                hide-details
-                clearable
-                class="mt-3"
-            />
         </div>
+
+        <!-- Freitext-Dialog, wenn kein Fahrzeug gefunden wurde -->
+        <v-dialog v-model="freeTextDialog" max-width="440">
+            <v-card>
+                <v-card-title class="d-flex align-center">
+                    <v-icon class="mr-2" color="warning">mdi-clipboard-alert-outline</v-icon>
+                    {{ t('MechanicView.missingOrder.freeTextTitle') }}
+                </v-card-title>
+                <v-card-text>
+                    <v-text-field
+                        v-model="freeText"
+                        :label="t('MechanicView.missingOrder.freeTextLabel')"
+                        variant="outlined"
+                        density="compact"
+                        autofocus
+                        hide-details
+                        @keyup.enter="confirmFreeText"
+                    />
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer />
+                    <v-btn variant="text" @click="freeTextDialog = false">
+                        {{ t('MechanicView.missingOrder.cancel') }}
+                    </v-btn>
+                    <v-btn color="warning" variant="elevated" :disabled="!freeText.trim()" @click="confirmFreeText">
+                        {{ t('MechanicView.missingOrder.add') }}
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
 
         <!-- Loading -->
         <div v-if="loading" class="d-flex justify-center pa-8">
@@ -94,6 +168,7 @@ import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { lxcarsStore } from '@/features/lxcars/stores/lxcars.store.js'
+import * as toast from '@/core/utils/toasts.js'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -139,6 +214,69 @@ watch(viewMode, () => loadOrders())
 
 function openOrder(order) {
     router.push({ name: 'mechanic-order', params: { id: order.id } })
+}
+
+// ===== "Auftrag fehlt": Fahrzeug suchen und melden =====
+const missingOrderSearch = ref('')
+const missingOrderResults = ref([])
+const missingOrderLoading = ref(false)
+const missingOrderSelected = ref(null)
+const freeTextDialog = ref(false)
+const freeText = ref('')
+let missingSearchTimer = null
+
+watch(missingOrderSearch, (q) => {
+    const term = (q || '').trim()
+    clearTimeout(missingSearchTimer)
+    if (term.length < 2) { missingOrderResults.value = []; return }
+    missingSearchTimer = setTimeout(async () => {
+        missingOrderLoading.value = true
+        try {
+            const rows = await carsStore.searchCarsForMechanic(term)
+            missingOrderResults.value = rows.map(c => ({
+                ...c,
+                display: [c.c_ln, c.owner_name, [c.manufacturer, c.model].filter(Boolean).join(' ')]
+                    .filter(Boolean).join(' · ')
+            }))
+        } catch {
+            missingOrderResults.value = []
+        } finally {
+            missingOrderLoading.value = false
+        }
+    }, 300)
+})
+
+async function reportMissingOrder(label, cId = null) {
+    try {
+        await carsStore.addMissingOrder(label, cId)
+        toast.success(t('MechanicView.missingOrder.added', { label }))
+    } catch {
+        toast.error(t('MechanicView.missingOrder.error'))
+    }
+}
+
+async function onMissingOrderSelect(val) {
+    if (!val) return
+    await reportMissingOrder(val.c_ln || val.display, val.c_id ?? null)
+    // Feld zuruecksetzen
+    missingOrderSelected.value = null
+    missingOrderSearch.value = ''
+    missingOrderResults.value = []
+}
+
+function openFreeTextDialog() {
+    freeText.value = (missingOrderSearch.value || '').trim()
+    freeTextDialog.value = true
+}
+
+async function confirmFreeText() {
+    const label = freeText.value.trim()
+    if (!label) return
+    freeTextDialog.value = false
+    await reportMissingOrder(label, null)
+    missingOrderSelected.value = null
+    missingOrderSearch.value = ''
+    missingOrderResults.value = []
 }
 
 function formatDate(d) {
@@ -187,6 +325,18 @@ onBeforeUnmount(() => {
     position: sticky;
     top: 0;
     z-index: 5;
+}
+
+/* Such- und "Auftrag fehlt"-Feld: feste Breite, rechts in der Titelzeile.
+   Auf schmalen Bildschirmen volle Breite, damit nichts gequetscht wird. */
+.mechanic-field {
+    width: 240px;
+    flex: 0 0 auto;
+}
+@media (max-width: 600px) {
+    .mechanic-field {
+        width: 100%;
+    }
 }
 
 .mechanic-order-card {
