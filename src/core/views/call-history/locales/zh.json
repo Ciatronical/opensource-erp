@@ -38,6 +38,7 @@
         "missingApiKeys": "API 密钥未配置（设置 -> LxCars）",
         "noRecording": "未找到录音",
         "transcriptionFailed": "转录失败",
-        "extractionFailed": "数据提取失败"
+        "extractionFailed": "数据提取失败",
+        "missed": "未接"
     }
 }

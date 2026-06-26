@@ -38,6 +38,7 @@
         "missingApiKeys": "API-ключі не налаштовано (Налаштування -> LxCars)",
         "noRecording": "Запис не знайдено",
         "transcriptionFailed": "Транскрипція не вдалася",
-        "extractionFailed": "Витяг даних не вдався"
+        "extractionFailed": "Витяг даних не вдався",
+        "missed": "Пропущений"
     }
 }

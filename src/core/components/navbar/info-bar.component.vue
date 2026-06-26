@@ -34,6 +34,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { useInfoBar } from '@/core/composables/useInfoBar'
+import { isCallMissed } from '@/core/utils/callStatus.js'
 
 const WEEKDAYS_DE = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa']
 const WEEKDAYS_EN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -81,7 +82,10 @@ export default {
       if (item.type === 'completed') return 'success'
       if (item.type === 'parts') return 'deep-orange'
       if (item.type === 'anpr') return 'light-blue'
-      if (item.type === 'call') return item.direction === 'E' ? 'teal' : 'blue-grey'
+      if (item.type === 'call') {
+        if (isCallMissed(item.data?.crmti_status)) return 'red'
+        return item.direction === 'E' ? 'teal' : 'blue-grey'
+      }
       if (item.type === 'email') return 'deep-purple'
       if (item.type === 'whatsapp') return 'green'
       return 'grey'
@@ -91,7 +95,10 @@ export default {
       if (item.type === 'completed') return 'mdi-check-circle'
       if (item.type === 'parts') return 'mdi-cart-arrow-down'
       if (item.type === 'anpr') return 'mdi-car-side'
-      if (item.type === 'call') return item.direction === 'E' ? 'mdi-phone-incoming' : 'mdi-phone-outgoing'
+      if (item.type === 'call') {
+        if (isCallMissed(item.data?.crmti_status)) return item.direction === 'E' ? 'mdi-phone-missed' : 'mdi-phone-cancel'
+        return item.direction === 'E' ? 'mdi-phone-incoming' : 'mdi-phone-outgoing'
+      }
       if (item.type === 'email') return 'mdi-email-outline'
       if (item.type === 'whatsapp') return 'mdi-whatsapp'
       return 'mdi-bell-outline'

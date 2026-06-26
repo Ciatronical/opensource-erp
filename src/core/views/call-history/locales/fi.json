@@ -38,6 +38,7 @@
         "missingApiKeys": "API-avaimet eivat ole maaritettyna (Asetukset -> LxCars)",
         "noRecording": "Nauhoitetta ei loytynyt",
         "transcriptionFailed": "Litterointi epaonnistui",
-        "extractionFailed": "Tietojen poiminta epaonnistui"
+        "extractionFailed": "Tietojen poiminta epaonnistui",
+        "missed": "Vastaamaton"
     }
 }

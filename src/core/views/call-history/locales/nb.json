@@ -38,6 +38,7 @@
         "missingApiKeys": "API-noekler ikke konfigurert (Innstillinger -> LxCars)",
         "noRecording": "Intet opptak funnet",
         "transcriptionFailed": "Transkripsjon mislyktes",
-        "extractionFailed": "Dataekstraksjon mislyktes"
+        "extractionFailed": "Dataekstraksjon mislyktes",
+        "missed": "Tapt"
     }
 }

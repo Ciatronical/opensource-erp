@@ -34,8 +34,8 @@ Frontend.
 
 Der ERP-seitige Teil ist Bestandteil von OpensourceERP:
 
-- Tabelle `crmti`, Funktionen `CallIn()`/`CallOut()`, Trigger `trg_crmti_notify`
-  → `backend/upstall/crm/company_schema.sql`
+- Tabelle `crmti`, Funktionen `CallIn()`/`CallOut()`/`CallStatus()`, Trigger
+  `trg_crmti_notify` → `backend/upstall/crm/company_schema.sql`
 - Live-Ereignis `crmti_change` → `backend/sse/sse-server.js`
 - Anzeige → `src/core/views/call-history/call-history.view.vue`,
   `src/core/components/navbar/info-bar.component.vue`,
@@ -46,6 +46,39 @@ Der ERP-seitige Teil ist Bestandteil von OpensourceERP:
 
 Die **Asterisk-/ODBC-Seite** (Telefonanlage) ist Server-Infrastruktur und liegt
 außerhalb des Repos. Die folgenden Abschnitte beschreiben deren Einrichtung.
+
+### Nicht angenommene Anrufe (rot)
+
+`crmti_status` hält den Asterisk-`DIALSTATUS` des Anrufs. Da dieser erst **nach**
+dem `Dial()` feststeht (`CallIn`/`CallOut` laufen davor), trägt die Funktion
+`CallStatus(unique_id, status)` ihn nachträglich in die crmti-Zeile ein und löst
+erneut `pg_notify('crmti_change')` aus. Im Dialplan (`extensions.ael`) steht dazu
+nach jedem `Dial()`:
+
+```
+Dial(...);
+Set(cstatus=${ODBC_CALLSTATUS(${UNIQUEID},${DIALSTATUS})});
+```
+
+Bei **ausgehenden** Anrufen läuft der Dialplan nach `Dial()` allerdings nicht
+zuverlässig weiter (legt die Gegenseite auf/drückt weg oder der Anrufer selbst
+auf, wird der Kanal beendet — die Zeile nach `Dial()` wird übersprungen). Deshalb
+trägt dort zusätzlich ein **Hangup-Handler** (`h`-Extension) je Ausgangs-Kontext
+den Status nach — der läuft beim Auflegen garantiert, `${DIALSTATUS}` ist dort
+noch gesetzt:
+
+```
+context autoprofis1 {
+    _0. => { ...; Dial(...); }
+    h   => { Set(cstatus=${ODBC_CALLSTATUS(${UNIQUEID},${DIALSTATUS})}); }
+}
+```
+
+`ODBC_CALLSTATUS` ist in `func_odbc.conf` definiert (Section `[CALLSTATUS]` →
+`SELECT CallStatus(...)`). Ist `crmti_status` gesetzt und ungleich `ANSWERED`,
+gilt der Anruf als **nicht angenommen** (eingehend verpasst bzw. ausgehend nicht
+erreicht) und wird in Anrufliste und Info-Bar **rot** dargestellt
+(`src/core/utils/callStatus.js`). Altdaten ohne Status bleiben unauffällig.
 
 ---
 
@@ -58,10 +91,10 @@ Section `[crmti]`:
 ```ini
 [crmti]
 ...
-Database	= ap_rebuild      # ← muss auf die AKTUELLE Firmendatenbank zeigen
-Servername	= localhost
-Username	= postgres
-Port		= 5432
+Database    = ap_rebuild      # ← muss auf die AKTUELLE Firmendatenbank zeigen
+Servername    = localhost
+Username    = postgres
+Port        = 5432
 ```
 
 Wird die Firmendatenbank gewechselt (z. B. `autoprofis_gmbh` → `ap_rebuild`),

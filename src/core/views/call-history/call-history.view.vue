@@ -86,6 +86,7 @@
               :loading="loading"
               density="compact"
               :no-data-text="t('CallHistoryView.noData')"
+              :row-props="getRowProps"
               hover
               class="zebra-table"
               @update:page="onPageChange"
@@ -120,12 +121,13 @@
               </template>
               <template #item.crmti_direction="{ item }">
                 <v-chip
-                  :color="item.crmti_direction === 'E' ? 'success' : 'info'"
+                  :color="isCallMissed(item.crmti_status) ? 'error' : (item.crmti_direction === 'E' ? 'success' : 'info')"
                   size="small"
                   variant="tonal"
+                  :title="isCallMissed(item.crmti_status) ? t('CallHistoryView.missed') : ''"
                 >
                   <v-icon start size="small">
-                    {{ item.crmti_direction === 'E' ? 'mdi-phone-incoming' : 'mdi-phone-outgoing' }}
+                    {{ directionIcon(item) }}
                   </v-icon>
                   {{ item.crmti_direction === 'E' ? t('CallHistoryView.inbound') : t('CallHistoryView.outbound') }}
                 </v-chip>
@@ -191,6 +193,7 @@ import PhoneActionBar from '@/core/components/phone-action-bar.vue'
 import AssignCallDialog from './assign-call-dialog.vue'
 import * as toast from '@/core/utils/toasts.js'
 import { formatPhone } from '@/core/utils/phoneFormat.js'
+import { isCallMissed } from '@/core/utils/callStatus.js'
 
 export default {
   name: 'CallHistoryView',
@@ -289,6 +292,19 @@ export default {
       return new Date(ts).toLocaleString();
     }
 
+    // Nicht angenommene Anrufe rot hervorheben (eingehend verpasst / ausgehend nicht erreicht)
+    function getRowProps({ item }) {
+      return isCallMissed(item.crmti_status) ? { class: 'missed-call' } : {}
+    }
+
+    // Verpasst: eingehend = phone-missed, ausgehend nicht erreicht = phone-cancel
+    function directionIcon(item) {
+      if (isCallMissed(item.crmti_status)) {
+        return item.crmti_direction === 'E' ? 'mdi-phone-missed' : 'mdi-phone-cancel'
+      }
+      return item.crmti_direction === 'E' ? 'mdi-phone-incoming' : 'mdi-phone-outgoing'
+    }
+
     function openCustomer(item) {
       if (item.crmti_caller_id) {
         const routeName = item.crmti_caller_typ === 'V' ? 'change-vendor' : 'change-customer'
@@ -363,7 +379,8 @@ export default {
     });
 
     return {
-      t, headers, callHistory, totalCount, loading,
+      t, headers, callHistory, totalCount, loading, isCallMissed,
+      getRowProps, directionIcon,
       page, itemsPerPage, formatCallDate, formatPhone, openCustomer,
       playPhoneCall, onPageChange, onItemsPerPageChange,
       filterSearch, filterDirection, filterDateFrom, filterDateTo,
@@ -378,6 +395,14 @@ export default {
 <style scoped>
 .zebra-table :deep(tbody tr:nth-child(odd)) {
   background-color: rgba(0, 0, 0, 0.03);
+}
+/* Nicht angenommene Anrufe rot hervorheben (gewinnt gegen Zebra) */
+.zebra-table :deep(tbody tr.missed-call),
+.zebra-table :deep(tbody tr.missed-call:nth-child(odd)) {
+  background-color: rgba(var(--v-theme-error), 0.10);
+}
+.zebra-table :deep(tbody tr.missed-call:hover) {
+  background-color: rgba(var(--v-theme-error), 0.18) !important;
 }
 .zebra-table :deep(table) {
   width: 100% !important;

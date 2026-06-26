@@ -352,6 +352,35 @@ AS $BODY$
     END;
 $BODY$;
 
+-- Schreibt den Anruf-Status (Asterisk DIALSTATUS) in die crmti-Zeile.
+-- Wird aus extensions.ael NACH dem Dial() via ODBC_CALLSTATUS aufgerufen, da der
+-- DIALSTATUS erst nach dem Wählversuch feststeht (CallIn/CallOut laufen davor).
+-- Status != 'ANSWERED' bedeutet: nicht angenommen (eingehend verpasst bzw.
+-- ausgehend nicht erreicht) — das Frontend färbt solche Anrufe rot.
+-- Das erneute pg_notify aktualisiert Anrufliste/Info-Bar in Echtzeit.
+CREATE OR REPLACE FUNCTION callstatus(
+    text,
+    text)
+    RETURNS text
+    LANGUAGE 'plpgsql'
+    COST 100
+    VOLATILE PARALLEL UNSAFE
+AS $BODY$
+    DECLARE
+        p_call_id ALIAS FOR $1;
+        p_status  ALIAS FOR $2;
+        new_row crmti%rowtype;
+    BEGIN
+        UPDATE crmti SET crmti_status = p_status
+         WHERE crmti.unique_call_id = p_call_id
+         RETURNING * INTO new_row;
+        IF FOUND THEN
+            PERFORM pg_notify('crmti_change', to_json(new_row)::TEXT);
+        END IF;
+        return p_status;
+    END;
+$BODY$;
+
 -- ============================================================================
 -- CALENDAR EVENT CATEGORIES
 -- ============================================================================

@@ -38,6 +38,7 @@
         "missingApiKeys": "API-noegler ikke konfigureret (Indstillinger -> LxCars)",
         "noRecording": "Ingen optagelse fundet",
         "transcriptionFailed": "Transskription mislykkedes",
-        "extractionFailed": "Dataekstraktion mislykkedes"
+        "extractionFailed": "Dataekstraktion mislykkedes",
+        "missed": "Mistet"
     }
 }

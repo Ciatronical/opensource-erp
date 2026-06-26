@@ -38,6 +38,7 @@
         "missingApiKeys": "API-nycklar inte konfigurerade (Installningar -> LxCars)",
         "noRecording": "Ingen inspelning hittades",
         "transcriptionFailed": "Transkription misslyckades",
-        "extractionFailed": "Dataextraktion misslyckades"
+        "extractionFailed": "Dataextraktion misslyckades",
+        "missed": "Missat"
     }
 }

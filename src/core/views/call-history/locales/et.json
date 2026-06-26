@@ -38,6 +38,7 @@
         "missingApiKeys": "API-võtmed pole seadistatud (Seaded -> LxCars)",
         "noRecording": "Salvestist ei leitud",
         "transcriptionFailed": "Transkriptsioon ebaõnnestus",
-        "extractionFailed": "Andmete eraldamine ebaõnnestus"
+        "extractionFailed": "Andmete eraldamine ebaõnnestus",
+        "missed": "Vastamata"
     }
 }

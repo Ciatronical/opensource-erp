@@ -38,6 +38,7 @@
         "missingApiKeys": "Klucze API nie skonfigurowane (Ustawienia -> LxCars)",
         "noRecording": "Nie znaleziono nagrania",
         "transcriptionFailed": "Transkrypcja nie powiodła się",
-        "extractionFailed": "Ekstrakcja danych nie powiodła się"
+        "extractionFailed": "Ekstrakcja danych nie powiodła się",
+        "missed": "Nieodebrane"
     }
 }

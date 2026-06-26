@@ -38,6 +38,7 @@
         "missingApiKeys": "API raktai nesukonfigūruoti (Nustatymai -> LxCars)",
         "noRecording": "Įrašas nerastas",
         "transcriptionFailed": "Transkripcija nepavyko",
-        "extractionFailed": "Duomenų išgavimas nepavyko"
+        "extractionFailed": "Duomenų išgavimas nepavyko",
+        "missed": "Praleistas"
     }
 }

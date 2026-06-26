@@ -38,6 +38,7 @@
         "missingApiKeys": "Chei API neconfigurate (Setari -> LxCars)",
         "noRecording": "Inregistrare negasita",
         "transcriptionFailed": "Transcrierea a esuat",
-        "extractionFailed": "Extractia datelor a esuat"
+        "extractionFailed": "Extractia datelor a esuat",
+        "missed": "Pierdut"
     }
 }

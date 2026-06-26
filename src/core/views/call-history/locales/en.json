@@ -40,6 +40,7 @@
         "noRecording": "No recording found",
         "transcriptionFailed": "Transcription failed",
         "extractionFailed": "Data extraction failed",
-        "all": "All"
+        "all": "All",
+        "missed": "Missed"
     }
 }

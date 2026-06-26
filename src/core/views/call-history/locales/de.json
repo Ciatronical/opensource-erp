@@ -40,6 +40,7 @@
         "noRecording": "Keine Aufnahme gefunden",
         "transcriptionFailed": "Transkription fehlgeschlagen",
         "extractionFailed": "Datenextraktion fehlgeschlagen",
-        "all": "Alle"
+        "all": "Alle",
+        "missed": "Verpasst"
     }
 }

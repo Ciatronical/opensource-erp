@@ -38,6 +38,7 @@
         "missingApiKeys": "API klice nejsou nakonfigurovany (Nastaveni -> LxCars)",
         "noRecording": "Nahravka nenalezena",
         "transcriptionFailed": "Prepis selhal",
-        "extractionFailed": "Extrakce dat selhala"
+        "extractionFailed": "Extrakce dat selhala",
+        "missed": "Zmeškaný"
     }
 }

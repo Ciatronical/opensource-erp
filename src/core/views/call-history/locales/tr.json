@@ -38,6 +38,7 @@
         "missingApiKeys": "API anahtarlari yapilandirilmamis (Ayarlar -> LxCars)",
         "noRecording": "Kayit bulunamadi",
         "transcriptionFailed": "Transkripsiyon basarisiz",
-        "extractionFailed": "Veri cikartma basarisiz"
+        "extractionFailed": "Veri cikartma basarisiz",
+        "missed": "Cevapsız"
     }
 }

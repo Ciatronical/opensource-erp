@@ -38,6 +38,7 @@
         "missingApiKeys": "API-sleutels niet geconfigureerd (Instellingen -> LxCars)",
         "noRecording": "Geen opname gevonden",
         "transcriptionFailed": "Transcriptie mislukt",
-        "extractionFailed": "Gegevensextractie mislukt"
+        "extractionFailed": "Gegevensextractie mislukt",
+        "missed": "Gemist"
     }
 }
