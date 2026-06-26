@@ -30,7 +30,8 @@
             "title": "Arama sonuclari",
             "text_no_search_table_shown": "Lutfen arama kriterlerini girin ve ENTER veya \"Ara\" ye basin. Sonuclar burada gosterilecektir.",
             "text_no_results": "Siparis bulunamadi.",
-            "results_count": "Sonuclar"
+            "results_count": "Sonuclar",
+            "intern": "Dahili"
         },
         "alerts": {
             "warning_no_search_criteria": "Arama kriteri girilmedi. Tum siparisleri yuklemek istiyor musunuz?"

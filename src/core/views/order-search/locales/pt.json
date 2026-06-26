@@ -30,7 +30,8 @@
             "title": "Resultados da pesquisa",
             "text_no_search_table_shown": "Introduza critérios de pesquisa e prima ENTER ou \"Pesquisar\". Os resultados serão apresentados aqui.",
             "text_no_results": "Nenhuma encomenda encontrada.",
-            "results_count": "Resultados"
+            "results_count": "Resultados",
+            "intern": "Interno"
         },
         "alerts": {
             "warning_no_search_criteria": "Não foram introduzidos critérios de pesquisa. Deseja carregar todas as encomendas?"

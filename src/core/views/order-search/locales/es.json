@@ -30,7 +30,8 @@
             "title": "Resultados de búsqueda",
             "text_no_search_table_shown": "Introduzca criterios de búsqueda y pulse ENTER o \"Buscar\". Los resultados se mostrarán aquí.",
             "text_no_results": "No se encontraron pedidos.",
-            "results_count": "Resultados"
+            "results_count": "Resultados",
+            "intern": "Interno"
         },
         "alerts": {
             "warning_no_search_criteria": "No se han introducido criterios de búsqueda. ¿Desea cargar todos los pedidos?"

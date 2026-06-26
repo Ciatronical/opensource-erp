@@ -30,7 +30,8 @@
             "title": "Rezultate cautare",
             "text_no_search_table_shown": "Va rugam introduceti criterii de cautare si apasati ENTER sau \"Cauta\". Rezultatele vor fi afisate aici.",
             "text_no_results": "Nu s-au gasit comenzi.",
-            "results_count": "Rezultate"
+            "results_count": "Rezultate",
+            "intern": "Intern"
         },
         "alerts": {
             "warning_no_search_criteria": "Nu au fost introduse criterii de cautare. Doriti sa incarcati toate comenzile?"

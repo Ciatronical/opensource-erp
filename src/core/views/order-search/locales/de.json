@@ -30,7 +30,8 @@
             "title": "Suchergebnisse",
             "text_no_search_table_shown": "Bitte Suchkriterien eingeben und mit ENTER oder \"Suchen\" starten. Suchergebnisse werden hier angezeigt.",
             "text_no_results": "Keine Aufträge gefunden.",
-            "results_count": "Ergebnisse"
+            "results_count": "Ergebnisse",
+            "intern": "Intern"
         },
         "alerts": {
             "warning_no_search_criteria": "Es wurden keine Suchkriterien eingegeben. Möchten Sie wirklich alle Aufträge laden?"

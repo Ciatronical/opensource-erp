@@ -30,7 +30,8 @@
             "title": "Resultats de recherche",
             "text_no_search_table_shown": "Veuillez saisir des criteres de recherche et lancer avec ENTREE ou \"Rechercher\". Les resultats s'afficheront ici.",
             "text_no_results": "Aucune commande trouvee.",
-            "results_count": "Resultats"
+            "results_count": "Resultats",
+            "intern": "Interne"
         },
         "alerts": {
             "warning_no_search_criteria": "Aucun critere de recherche saisi. Voulez-vous vraiment charger toutes les commandes ?"

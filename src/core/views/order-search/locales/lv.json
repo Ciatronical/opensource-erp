@@ -30,7 +30,8 @@
             "title": "Meklēšanas rezultāti",
             "text_no_search_table_shown": "Ievadiet meklēšanas kritērijus un nospiediet ENTER vai \"Meklēt\". Rezultāti tiks parādīti šeit.",
             "text_no_results": "Pasūtījumi nav atrasti.",
-            "results_count": "Rezultāti"
+            "results_count": "Rezultāti",
+            "intern": "Iekšējs"
         },
         "alerts": {
             "warning_no_search_criteria": "Nav ievadīti meklēšanas kritēriji. Vai tiešām vēlaties ielādēt visus pasūtījumus?"

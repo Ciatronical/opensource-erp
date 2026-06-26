@@ -156,7 +156,18 @@
                 @click:row="onRowClick"
             >
                 <template #item.ordnumber="{ item }">
-                    <span class="font-weight-medium">{{ item.ordnumber }}</span>
+                    <div class="d-flex align-center ga-2">
+                        <span class="font-weight-medium">{{ item.ordnumber }}</span>
+                        <v-chip
+                            v-if="item.intern"
+                            color="warning"
+                            variant="tonal"
+                            size="x-small"
+                            prepend-icon="mdi-hammer-wrench"
+                        >
+                            {{ t('OrderSearchView.table.intern') }}
+                        </v-chip>
+                    </div>
                 </template>
 
                 <template #item.transdate="{ item }">
@@ -342,12 +353,16 @@ const tableSortBy = ref([{ key: 'bringetermin', order: 'desc' }]);
 const page = ref(1);
 const itemsPerPage = ref(100);
 
-// Zukunfts-Aufträge immer zuerst, innerhalb jeder Gruppe nach User-Sortierung
+// Interne Aufträge immer ganz unten, davor Zukunfts-Aufträge zuerst,
+// innerhalb jeder Gruppe nach User-Sortierung
 const sortedResults = computed(() => {
     const future = []
     const rest = []
+    const intern = []
     for (const item of searchResults.value) {
-        if (item.bringetermin && item.bringetermin.slice(0, 10) > today) {
+        if (item.intern) {
+            intern.push(item)
+        } else if (item.bringetermin && item.bringetermin.slice(0, 10) > today) {
             future.push(item)
         } else {
             rest.push(item)
@@ -366,7 +381,7 @@ const sortedResults = computed(() => {
         return 0
     }
 
-    return [...future.sort(compare), ...rest.sort(compare)]
+    return [...future.sort(compare), ...rest.sort(compare), ...intern.sort(compare)]
 });
 
 const displayResults = computed(() => {
@@ -378,6 +393,9 @@ const displayResults = computed(() => {
 watch(tableSortBy, () => { page.value = 1 });
 
 const getRowProps = ({ item }) => {
+    if (item.intern) {
+        return { class: 'intern-order' }
+    }
     if (item.bringetermin && item.bringetermin.slice(0, 10) > today) {
         return { class: 'future-order' }
     }
@@ -412,5 +430,11 @@ const onRowClick = (event, row) => {
 }
 .zebra-table :deep(tbody tr.future-order) {
     opacity: 0.45;
+}
+.zebra-table :deep(tbody tr.intern-order) {
+    background-color: rgba(var(--v-theme-warning), 0.08);
+}
+.zebra-table :deep(tbody tr.intern-order:hover) {
+    background-color: rgba(var(--v-theme-warning), 0.16) !important;
 }
 </style>

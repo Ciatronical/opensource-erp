@@ -30,7 +30,8 @@
             "title": "Vysledky hledani",
             "text_no_search_table_shown": "Zadejte prosim kriteria hledani a stisknete ENTER nebo \"Hledat\". Vysledky se zobrazi zde.",
             "text_no_results": "Zadne objednavky nenalezeny.",
-            "results_count": "Vysledky"
+            "results_count": "Vysledky",
+            "intern": "Interní"
         },
         "alerts": {
             "warning_no_search_criteria": "Nebyla zadana zadna kriteria hledani. Chcete opravdu nacist vsechny objednavky?"

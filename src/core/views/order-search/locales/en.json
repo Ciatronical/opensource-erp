@@ -30,7 +30,8 @@
             "title": "Search Results",
             "text_no_search_table_shown": "Please enter search criteria and press ENTER or click \"Search\". Search results will be displayed here.",
             "text_no_results": "No orders found.",
-            "results_count": "results"
+            "results_count": "results",
+            "intern": "Internal"
         },
         "alerts": {
             "warning_no_search_criteria": "No search criteria has been entered. Do you really want to load all orders?"

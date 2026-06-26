@@ -30,7 +30,8 @@
             "title": "Zoekresultaten",
             "text_no_search_table_shown": "Voer zoekcriteria in en start met ENTER of \"Zoeken\". Zoekresultaten worden hier weergegeven.",
             "text_no_results": "Geen orders gevonden.",
-            "results_count": "Resultaten"
+            "results_count": "Resultaten",
+            "intern": "Intern"
         },
         "alerts": {
             "warning_no_search_criteria": "Er zijn geen zoekcriteria ingevoerd. Wilt u echt alle orders laden?"

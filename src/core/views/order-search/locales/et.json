@@ -30,7 +30,8 @@
             "title": "Otsingutulemused",
             "text_no_search_table_shown": "Sisestage otsingukriteeriumid ja vajutage ENTER või \"Otsi\". Otsingutulemused kuvatakse siin.",
             "text_no_results": "Tellimusi ei leitud.",
-            "results_count": "Tulemused"
+            "results_count": "Tulemused",
+            "intern": "Sisemine"
         },
         "alerts": {
             "warning_no_search_criteria": "Otsingukriteeriumeid pole sisestatud. Kas soovite tõesti kõik tellimused laadida?"

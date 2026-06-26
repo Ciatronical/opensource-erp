@@ -30,7 +30,8 @@
             "title": "Paieškos rezultatai",
             "text_no_search_table_shown": "Įveskite paieškos kriterijus ir paspauskite ENTER arba \"Ieškoti\". Rezultatai bus rodomi čia.",
             "text_no_results": "Užsakymų nerasta.",
-            "results_count": "Rezultatai"
+            "results_count": "Rezultatai",
+            "intern": "Vidinis"
         },
         "alerts": {
             "warning_no_search_criteria": "Paieškos kriterijai neįvesti. Ar tikrai norite įkelti visus užsakymus?"

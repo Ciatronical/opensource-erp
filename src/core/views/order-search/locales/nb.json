@@ -30,7 +30,8 @@
             "title": "Soekeresultater",
             "text_no_search_table_shown": "Vennligst skriv inn soekekriterier og start med ENTER eller \"Soek\". Resultater vises her.",
             "text_no_results": "Ingen ordrer funnet.",
-            "results_count": "Resultater"
+            "results_count": "Resultater",
+            "intern": "Intern"
         },
         "alerts": {
             "warning_no_search_criteria": "Ingen soekekriterier angitt. Vil du virkelig laste alle ordrer?"

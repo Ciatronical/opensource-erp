@@ -143,6 +143,7 @@ function searchOrders($data) {
             oe_ext.status AS oe_ext_status,
             oe_ext.kfz_ort,
             oe_ext.bringetermin,
+            oe_ext.intern,
             kba.hersteller,
             (SELECT description FROM oe_instructions_lxcars
              WHERE oe_id = oe.id ORDER BY sort_order, id LIMIT 1) AS first_instruction,
@@ -159,6 +160,7 @@ function searchOrders($data) {
         WHERE oe.record_type IN ('sales_order', 'purchase_order')
         AND $search
         ORDER BY
+            CASE WHEN oe_ext.intern THEN 1 ELSE 0 END,
             CASE WHEN oe_ext.bringetermin > CURRENT_DATE THEN 0 ELSE 1 END,
             COALESCE(oe_ext.bringetermin, oe.itime::date) DESC
         LIMIT 200

@@ -30,7 +30,8 @@
             "title": "Wyniki wyszukiwania",
             "text_no_search_table_shown": "Proszę podać kryteria wyszukiwania i uruchomić za pomocą ENTER lub \"Szukaj\". Wyniki wyszukiwania pojawią się tutaj.",
             "text_no_results": "Nie znaleziono zamówień.",
-            "results_count": "Wyniki"
+            "results_count": "Wyniki",
+            "intern": "Wewnętrzne"
         },
         "alerts": {
             "warning_no_search_criteria": "Nie podano kryteriów wyszukiwania. Czy na pewno chcesz załadować wszystkie zamówienia?"

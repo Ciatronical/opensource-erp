@@ -30,7 +30,8 @@
             "title": "Sokresultat",
             "text_no_search_table_shown": "Ange sokkriterier och starta med ENTER eller \"Sok\". Resultat visas har.",
             "text_no_results": "Inga ordrar hittades.",
-            "results_count": "Resultat"
+            "results_count": "Resultat",
+            "intern": "Intern"
         },
         "alerts": {
             "warning_no_search_criteria": "Inga sokkriterier angivna. Vill du verkligen ladda alla ordrar?"

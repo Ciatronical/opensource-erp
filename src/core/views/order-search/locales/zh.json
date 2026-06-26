@@ -30,7 +30,8 @@
             "title": "搜索结果",
             "text_no_search_table_shown": "请输入搜索条件，然后按 ENTER 或点击\"搜索\"开始。搜索结果将在此显示。",
             "text_no_results": "未找到订单。",
-            "results_count": "结果"
+            "results_count": "结果",
+            "intern": "内部"
         },
         "alerts": {
             "warning_no_search_criteria": "未输入搜索条件。确定要加载所有订单吗？"

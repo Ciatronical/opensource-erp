@@ -216,6 +216,79 @@ CREATE TABLE crmti (
 
 DROP INDEX IF EXISTS crmti_unique_call_id_idx;
 
+-- Kürzt eine Telefonnummer von rechts auf n Stellen
+-- (löst die 0049/+49/0-Präfix-Problematik beim Vergleich)
+CREATE OR REPLACE FUNCTION kuerze(integer, text)
+    RETURNS text
+    LANGUAGE plpgsql
+AS $function$
+    DECLARE
+        laenge INT;
+    BEGIN
+        laenge = length( $2 );
+        IF laenge <= $1 THEN
+            RETURN $2;
+        ELSE
+            RETURN substring( $2, laenge  - $1 + 1 );
+        END IF;
+    END;
+$function$;
+
+-- Sucht zu einer eingehenden/ausgehenden Telefonnummer den passenden Namen.
+-- Durchsucht Kunden, Lieferanten, Kontakte sowie die zusätzlichen Nummern in den
+-- JSON-Spalten von customer_ext und vendor_ext.
+-- Rueckgabe: record (id, name, typ); typ = C=Kunde, V=Lieferant, K=Kontakt,
+-- Y=nicht numerisch, X=nicht gefunden. id=0 bei Y/X.
+CREATE OR REPLACE FUNCTION suchenummer(text)
+    RETURNS record
+    LANGUAGE plpgsql
+AS $function$
+    DECLARE
+        telnum ALIAS FOR $1;
+        myname text;
+        result record;
+        format text;
+    BEGIN
+        format := '99999999999999999';
+        IF telnum !~ '[0-9]' THEN
+            SELECT INTO result 0 AS id, telnum AS name, 'Y'::char AS typ;
+            return result;
+        END IF;
+        SELECT INTO result id, name::text, 'C'::char AS typ FROM (SELECT id, name, to_number(phone, format)::char(16) AS p, to_number(phone, format)::char(16) AS f, char_length(to_number(phone, format)::char(16)) AS l, char_length(to_number(phone, format)::char(16)) AS l1, char_length(to_number(telnum, format)::char(16)) AS lt FROM customer WHERE phone !='') AS xyz WHERE kuerze(lt,xyz.p) LIKE kuerze(l,to_number(telnum, format)::char(16))||'%';
+        IF result.name != '' THEN return result; END IF;
+        SELECT INTO result id, name::text, 'C'::char AS typ FROM (SELECT id, name, to_number(phone3, format)::char(16) AS p, to_number(phone3, format)::char(16) AS f, char_length(to_number(phone3, format)::char(16)) AS l, char_length(to_number(phone3, format)::char(16)) AS l1, char_length(to_number(telnum, format)::char(16)) AS lt FROM customer WHERE phone3 !='') AS xyz WHERE kuerze(lt,xyz.p) LIKE kuerze(l,to_number(telnum, format)::char(16))||'%';
+        IF result.name != '' THEN return result; END IF;
+        SELECT INTO result id, name::text, 'C'::char AS typ FROM (SELECT id, name, to_number(fax, format)::char(16) AS p, to_number(fax, format)::char(16) AS f, char_length(to_number(fax, format)::char(16)) AS l, char_length(to_number(fax, format)::char(16)) AS l1, char_length(to_number(telnum, format)::char(16)) AS lt FROM customer WHERE fax !='') AS xyz WHERE kuerze(lt,xyz.p) LIKE kuerze(l,to_number(telnum, format)::char(16))||'%';
+        IF result.name != '' THEN return result; END IF;
+        -- Zusätzliche Telefonnummern aus customer_ext (JSON-Array [{"label":..,"number":..}])
+        SELECT INTO result id, name::text, 'C'::char AS typ FROM (SELECT c.id AS id, c.name AS name, to_number(e.elem->>'number', format)::char(16) AS p, char_length(to_number(e.elem->>'number', format)::char(16)) AS l, char_length(to_number(telnum, format)::char(16)) AS lt FROM customer_ext ce JOIN customer c ON c.id = ce.customer_id CROSS JOIN LATERAL jsonb_array_elements(ce.phone_numbers) AS e(elem) WHERE jsonb_typeof(ce.phone_numbers) = 'array' AND (e.elem->>'number') ~ '[0-9]') AS xyz WHERE kuerze(lt,xyz.p) LIKE kuerze(l,to_number(telnum, format)::char(16))||'%';
+        IF result.name != '' THEN return result; END IF;
+        SELECT INTO result id, name AS name, 'V'::char AS typ FROM (SELECT id, name, to_number(phone, format)::char(16) AS p, to_number(phone, format)::char(16) AS f, char_length(to_number(phone, format)::char(16)) AS l, char_length(to_number(phone, format)::char(16)) AS l1, char_length(to_number(telnum, format)::char(16)) AS lt FROM vendor WHERE phone !='') AS xyz WHERE kuerze(lt,xyz.p) LIKE kuerze(l,to_number(telnum, format)::char(16))||'%';
+        IF result.name != '' THEN return result; END IF;
+        SELECT INTO result id, name AS name, 'V'::char AS typ FROM (SELECT id, name, to_number(phone3, format)::char(16) AS p, to_number(phone3, format)::char(16) AS f, char_length(to_number(phone3, format)::char(16)) AS l, char_length(to_number(phone3, format)::char(16)) AS l1, char_length(to_number(telnum, format)::char(16)) AS lt FROM vendor WHERE phone3 !='') AS xyz WHERE kuerze(lt,xyz.p) LIKE kuerze(l,to_number(telnum, format)::char(16))||'%';
+        IF result.name != '' THEN return result; END IF;
+        SELECT INTO result id, name, 'V'::char AS typ FROM (SELECT id, name, to_number(fax, format)::char(16) AS p, to_number(fax, format)::char(16) AS f, char_length(to_number(fax, format)::char(16)) AS l, char_length(to_number(fax, format)::char(16)) AS l1, char_length(to_number(telnum, format)::char(16)) AS lt FROM vendor WHERE fax !='') AS xyz WHERE kuerze(lt,xyz.p) LIKE kuerze(l,to_number(telnum, format)::char(16))||'%';
+        IF result.name != '' THEN return result; END IF;
+        -- Zusätzliche Telefonnummern aus vendor_ext (JSON-Array [{"label":..,"number":..}])
+        SELECT INTO result id, name::text, 'V'::char AS typ FROM (SELECT v.id AS id, v.name AS name, to_number(e.elem->>'number', format)::char(16) AS p, char_length(to_number(e.elem->>'number', format)::char(16)) AS l, char_length(to_number(telnum, format)::char(16)) AS lt FROM vendor_ext ve JOIN vendor v ON v.id = ve.vendor_id CROSS JOIN LATERAL jsonb_array_elements(ve.phone_numbers) AS e(elem) WHERE jsonb_typeof(ve.phone_numbers) = 'array' AND (e.elem->>'number') ~ '[0-9]') AS xyz WHERE kuerze(lt,xyz.p) LIKE kuerze(l,to_number(telnum, format)::char(16))||'%';
+        IF result.name != '' THEN return result; END IF;
+        SELECT INTO result id, name, 'K'::char AS typ FROM (SELECT cp_id AS id, (cp_givenname||' '||cp_name)::text AS name, to_number(cp_phone1, format)::char(16) AS p, to_number(cp_phone1, format)::char(16) AS f, char_length(to_number(cp_phone1, format)::char(16)) AS l, char_length(to_number(cp_phone1, format)::char(16)) AS l1, char_length(to_number(telnum, format)::char(16)) AS lt FROM contacts WHERE cp_phone1 !='') AS xyz WHERE kuerze(lt,xyz.p) LIKE kuerze(l,to_number(telnum, format)::char(16))||'%';
+        IF result.name != '' THEN return result; END IF;
+        SELECT INTO result id, name, 'K'::char AS typ FROM (SELECT cp_id AS id, (cp_givenname||' '||cp_name)::text AS name, to_number(cp_phone2, format)::char(16) AS p, to_number(cp_phone2, format)::char(16) AS f, char_length(to_number(cp_phone2, format)::char(16)) AS l, char_length(to_number(cp_phone2, format)::char(16)) AS l1, char_length(to_number(telnum, format)::char(16)) AS lt FROM contacts WHERE cp_phone2 !='') AS xyz WHERE kuerze(lt,xyz.p) LIKE kuerze(l,to_number(telnum, format)::char(16))||'%';
+        IF result.name != '' THEN return result; END IF;
+        SELECT INTO result id, name, 'K'::char AS typ FROM (SELECT cp_id AS id, (cp_givenname||' '||cp_name)::text AS name, to_number(cp_mobile1, format)::char(16) AS p, to_number(cp_mobile1, format)::char(16) AS f, char_length(to_number(cp_mobile1, format)::char(16)) AS l, char_length(to_number(cp_mobile1, format)::char(16)) AS l1, char_length(to_number(telnum, format)::char(16)) AS lt FROM contacts WHERE cp_mobile1 !='') AS xyz WHERE kuerze(lt,xyz.p) LIKE kuerze(l,to_number(telnum, format)::char(16))||'%';
+        IF result.name != '' THEN return result; END IF;
+        SELECT INTO result id, name, 'K'::char AS typ FROM (SELECT cp_id AS id, (cp_givenname||' '||cp_name)::text AS name, to_number(cp_mobile2, format)::char(16) AS p, to_number(cp_mobile2, format)::char(16) AS f, char_length(to_number(cp_mobile2, format)::char(16)) AS l, char_length(to_number(cp_mobile2, format)::char(16)) AS l1, char_length(to_number(telnum, format)::char(16)) AS lt FROM contacts WHERE cp_mobile2 !='') AS xyz WHERE kuerze(lt,xyz.p) LIKE kuerze(l,to_number(telnum, format)::char(16))||'%';
+        IF result.name != '' THEN return result; END IF;
+        SELECT INTO result id, name, 'K'::char AS typ FROM (SELECT cp_id AS id, (cp_givenname||' '||cp_name)::text AS name, to_number(cp_privatphone, format)::char(16) AS p, to_number(cp_privatphone, format)::char(16) AS f, char_length(to_number(cp_privatphone, format)::char(16)) AS l, char_length(to_number(cp_privatphone, format)::char(16)) AS l1, char_length(to_number(telnum, format)::char(16)) AS lt FROM contacts WHERE cp_privatphone !='') AS xyz WHERE kuerze(lt,xyz.p) LIKE kuerze(l,to_number(telnum, format)::char(16))||'%';
+        IF result.name != '' THEN return result; END IF;
+        SELECT INTO result id, name, 'K'::char AS typ FROM (SELECT cp_id AS id, (cp_givenname||' '||cp_name)::text AS name, to_number(cp_fax, format)::char(16) AS p, to_number(cp_fax, format)::char(16) AS f, char_length(to_number(cp_fax, format)::char(16)) AS l, char_length(to_number(cp_fax, format)::char(16)) AS l1, char_length(to_number(telnum, format)::char(16)) AS lt FROM contacts WHERE cp_fax !='') AS xyz WHERE kuerze(lt,xyz.p) LIKE kuerze(l,to_number(telnum, format)::char(16))||'%';
+        IF result.name != '' THEN return result; END IF;
+        SELECT INTO result 0 AS id, telnum AS name, 'X'::char AS typ;
+        return result;
+    END;
+$function$;
+
 CREATE OR REPLACE FUNCTION callin(
     text,
     text,

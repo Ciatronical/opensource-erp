@@ -30,7 +30,8 @@
             "title": "Risultati della ricerca",
             "text_no_search_table_shown": "Inserire i criteri di ricerca e premere INVIO o \"Cerca\". I risultati verranno mostrati qui.",
             "text_no_results": "Nessun ordine trovato.",
-            "results_count": "Risultati"
+            "results_count": "Risultati",
+            "intern": "Interno"
         },
         "alerts": {
             "warning_no_search_criteria": "Non sono stati inseriti criteri di ricerca. Vuoi davvero caricare tutti gli ordini?"
