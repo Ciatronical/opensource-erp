@@ -21,7 +21,6 @@ require_once __DIR__.'/mechanic.php';
 require_once __DIR__.'/reports.php';
 require_once __DIR__.'/anpr.php';
 require_once __DIR__.'/sales_text.php';
-require_once __DIR__.'/asanetwork.php';
 require_once __DIR__.'/../aag_online.php';
 require_once __DIR__.'/../hgs_data.php';
 require_once __DIR__.'/../customer_vendor/filemanager.php';
