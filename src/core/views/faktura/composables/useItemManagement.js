@@ -383,6 +383,39 @@ export function useItemManagement({
         }
     }
 
+    // Ersetzt den Artikel einer BESTEHENDEN Position in derselben Zeile.
+    // Persistenz über die isolierte Einzel-Funktion (setzt parts_id NUR für
+    // diese eine Position; saveAllItems aktualisiert danach Beträge/übrige
+    // Felder per Bulk OHNE parts_id → kann keine andere Position beeinflussen).
+    async function onArticleReplace(item, index, selectedArticle) {
+        if (!selectedArticle || typeof selectedArticle === 'string') return
+
+        item.description = selectedArticle.description
+        fillArticleData(item, selectedArticle)
+
+        suppressSSEReload?.()
+
+        try {
+            await ensureFakturaExists()
+            if (!item.id) {
+                const savedItem = await faktura.createFakturaItem(fakturaId.value, item, fakturaType.value)
+                item.id = savedItem.id
+            } else {
+                await faktura.replaceFakturaItemArticle(item.id, item.parts_id, {
+                    description: item.description,
+                    qty: item.qty,
+                    sellprice: item.sellprice,
+                    unit: item.unit
+                }, fakturaType.value)
+            }
+            calculateTotals()
+            await saveAllItems()
+            flushRouteReplace?.()
+        } catch (e) {
+            alerts.error(t('FakturaView.faktura.itemUpdateError'))
+        }
+    }
+
     function fillArticleData(item, selectedArticle) {
         item.parts_id = selectedArticle.id
         item.partnumber = selectedArticle.partnumber
@@ -427,6 +460,7 @@ export function useItemManagement({
         onCreateArticleSave,
         onArticleSearch,
         onArticleSelect,
+        onArticleReplace,
         fillArticleData
     }
 }

@@ -716,6 +716,57 @@ SQL;
 }
 
 /**
+ * Ersetzt den Artikel EINER bestehenden Position (parts_id + zugehörige Felder).
+ * Bewusst isoliertes Einzel-Update per id – kann konstruktionsbedingt KEINE
+ * andere Position beeinflussen (anders als das Bulk-Update, das parts_id
+ * absichtlich nicht anfasst).
+ *
+ * @param int    $data['item_id']     ID der Position
+ * @param int    $data['parts_id']    Neue Artikel-ID
+ * @param string $data['description'] Beschreibung
+ * @param float  $data['qty']         Menge
+ * @param float  $data['sellprice']   Verkaufspreis
+ * @param string $data['unit']        Einheit
+ * @param string $data['fakturaType'] order|invoice|quotation...
+ * @testdata {"item_id": 1, "parts_id": 1, "description": "Test", "qty": 1, "sellprice": 0, "unit": "Stk", "fakturaType": "order"}
+ */
+function replaceFakturaItemArticle($data) {
+    $fakturaType = $data['fakturaType'] ?? 'order';
+    $itemId  = intval($data['item_id'] ?? 0);
+    $partsId = intval($data['parts_id'] ?? 0);
+    if ($itemId <= 0 || $partsId <= 0) {
+        resultInfo(false, 'INVALID_ARGS', 'item_id und parts_id erforderlich');
+        return;
+    }
+
+    $company = DbhCompany::begin();
+    permit(getPermissionForFakturaType($fakturaType));
+
+    $tableConfig = getFakturaTableConfig($fakturaType);
+    $itemsTable = $tableConfig['items_table']; // kontrollierter Tabellenname (kein User-Input)
+
+    $company->execute(
+        "UPDATE {$itemsTable}
+            SET parts_id = :parts_id,
+                description = :description,
+                qty = :qty,
+                sellprice = :sellprice,
+                unit = COALESCE(NULLIF(:unit, ''), unit)
+          WHERE id = :item_id",
+        [
+            ':parts_id'    => $partsId,
+            ':description' => $data['description'] ?? '',
+            ':qty'         => $data['qty'] ?? 1,
+            ':sellprice'   => $data['sellprice'] ?? 0,
+            ':unit'        => $data['unit'] ?? '',
+            ':item_id'     => $itemId,
+        ]
+    );
+
+    resultInfo(true, 'REPLACED');
+}
+
+/**
  * Aktualisiert mehrere Faktura-Positionen in einem Query (Bulk-Update)
  * und verarbeitet die Buchungen für acc_trans
  *

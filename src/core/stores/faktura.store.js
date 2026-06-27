@@ -123,6 +123,30 @@ export const fakturaStore = defineStore('fakturaStore', () => {
     }
 
     /**
+     * Ersetzt den Artikel einer bestehenden Position (isoliertes Einzel-Update).
+     * @param {number} itemId
+     * @param {number} partsId
+     * @param {Object} fields - { description, qty, sellprice, unit }
+     * @param {string} fakturaType
+     */
+    async function replaceFakturaItemArticle(itemId, partsId, fields, fakturaType = 'order') {
+        const response = await axios.post('/api/faktura/', {
+            action: 'replaceFakturaItemArticle',
+            item_id: itemId,
+            parts_id: partsId,
+            description: fields.description ?? '',
+            qty: fields.qty ?? 1,
+            sellprice: fields.sellprice ?? 0,
+            unit: fields.unit ?? '',
+            fakturaType
+        });
+        if (!response.data.success) {
+            throw new ApiError('ApiError', response.data.text, 'Error replacing article: ' + response.data.text);
+        }
+        return response.data;
+    }
+
+    /**
      * Importiert SilverDAT VXS-Positionen als Faktura-Positionen (Bulk)
      *
      * @param {number} fakturaID - ID des Dokuments
@@ -543,6 +567,7 @@ export const fakturaStore = defineStore('fakturaStore', () => {
         deleteFakturaItem,
         deleteFaktura,
         createFakturaItem,
+        replaceFakturaItemArticle,
         importSilverDATItems,
         warmAagToken,
         updateFakturaItems,

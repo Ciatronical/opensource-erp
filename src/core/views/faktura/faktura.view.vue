@@ -229,6 +229,7 @@
                     :ai-loading="aiLoading"
                     @article-search="items.onArticleSearch"
                     @article-select="items.onArticleSelect"
+                    @article-replace="items.onArticleReplace"
                     @create-article="items.createArticle"
                     @delete-item="items.deleteItem"
                     @delete-selected="items.deleteSelectedItems"

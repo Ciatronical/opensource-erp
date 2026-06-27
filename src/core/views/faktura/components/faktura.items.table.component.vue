@@ -178,17 +178,44 @@
                                         />
                                     </template>
                                 </v-autocomplete>
-                                <!-- Beschreibung editierbar nach Artikelauswahl -->
-                                <v-text-field
-                                    v-else
-                                    v-model="item.description"
-                                    variant="outlined"
-                                    density="compact"
-                                    hide-details
-                                    autocomplete="off"
-                                    @blur="onDescriptionBlur(item)"
-                                    @keydown.enter="handleEnter(index)"
-                                />
+                                <!-- Bestehende Position: zuverlässiges Textfeld + EIGENE
+                                     Vorschlagsliste (kein v-menu/v-autocomplete – die fangen
+                                     Pfeiltasten/Fokus selbst ab). Per Teleport an body, damit
+                                     die Tabelle die Liste nicht abschneidet. -->
+                                <div v-else class="article-replace-wrap" :ref="el => { if (el) wrapRefs[index] = el }">
+                                    <v-text-field
+                                        v-model="item.description"
+                                        variant="outlined"
+                                        density="compact"
+                                        hide-details
+                                        autocomplete="off"
+                                        @update:model-value="onExistingDescInput(item, index, $event)"
+                                        @blur="onExistingDescBlur(item, index)"
+                                        @keydown.down="moveReplaceHighlight(item, index, 1, $event)"
+                                        @keydown.up="moveReplaceHighlight(item, index, -1, $event)"
+                                        @keydown.enter="onExistingEnter(item, index, $event)"
+                                        @keydown.esc.stop.prevent="replaceMenu[index] = false"
+                                    />
+                                    <Teleport to="body">
+                                        <div
+                                            v-if="replaceMenu[index] && (item.localArticleList || []).length"
+                                            class="ac-suggestions"
+                                            :style="suggestionStyle(index)"
+                                        >
+                                            <div
+                                                v-for="(art, ai) in item.localArticleList"
+                                                :key="art.id"
+                                                class="ac-suggestion"
+                                                :class="{ 'ac-active': replaceActiveIdx[index] === ai }"
+                                                @mousedown.prevent="chooseReplacement(item, index, art)"
+                                                @mousemove="replaceActiveIdx[index] = ai"
+                                            >
+                                                <div class="ac-suggestion__title">{{ art.description }}</div>
+                                                <div class="ac-suggestion__sub">{{ art.partnumber }}</div>
+                                            </div>
+                                        </div>
+                                    </Teleport>
+                                </div>
                             </td>
                             <td class="text-center">
                                 <v-btn
@@ -631,6 +658,7 @@ export default defineComponent({
         'update:modelValue',
         'article-search',
         'article-select',
+        'article-replace',
         'create-article',
         'delete-item',
         'delete-selected',
@@ -944,7 +972,97 @@ export default defineComponent({
             if (item) {
                 item.localArticleList = articles
                 item.localArticleLoading = false
+                // Eigenes Ersetzen-Vorschlagsmenü (gefüllte Positionen) öffnen,
+                // sobald Treffer vorliegen; schließen, wenn keine. Für leere
+                // Zeilen ist dieses Menü nicht im DOM → ohne Wirkung.
+                replaceMenu[index] = (articles && articles.length > 0)
+                replaceActiveIdx[index] = 0 // Tastatur-Markierung auf ersten Treffer
             }
+        }
+
+        // ===== Eigenes Artikel-Ersetzen-Menü für bestehende Positionen =====
+        // Bewusst KEIN v-autocomplete/v-combobox (deren Modell-Reset leerte die
+        // Anzeige). Ein normales Textfeld zeigt die Beschreibung zuverlässig;
+        // beim Tippen erscheinen Vorschläge in einem eigenen v-menu, ein Klick
+        // ersetzt die komplette Position.
+        const replaceMenu = reactive({})
+        const replaceActiveIdx = reactive({}) // markierter Vorschlag je Zeile (Tastatur)
+        const wrapRefs = reactive({})         // Wrapper-Element je Zeile (für Positionierung)
+
+        // Position der Teleport-Vorschlagsliste aus dem Wrapper-Rechteck (fixed).
+        function suggestionStyle(index) {
+            const el = wrapRefs[index]
+            if (!el || !el.getBoundingClientRect) return { display: 'none' }
+            const r = el.getBoundingClientRect()
+            return {
+                position: 'fixed',
+                top: (r.bottom + 2) + 'px',
+                left: r.left + 'px',
+                width: r.width + 'px',
+                zIndex: 3000
+            }
+        }
+
+        // Pfeiltasten: Markierung im Vorschlagsmenü bewegen (nur wenn offen).
+        function moveReplaceHighlight(item, index, delta, event) {
+            const list = item?.localArticleList || []
+            if (!replaceMenu[index] || !list.length) return // sonst Cursor normal bewegen
+            event?.preventDefault?.()
+            const cur = replaceActiveIdx[index] ?? 0
+            let next = cur + delta
+            if (next < 0) next = list.length - 1
+            if (next >= list.length) next = 0
+            replaceActiveIdx[index] = next
+        }
+
+        // Enter: markierten Vorschlag übernehmen, sonst normales Verhalten (nächste Zeile).
+        function onExistingEnter(item, index, event) {
+            const list = item?.localArticleList || []
+            if (replaceMenu[index] && list.length) {
+                event?.preventDefault?.()
+                const i = replaceActiveIdx[index] ?? 0
+                chooseReplacement(item, index, list[i])
+            } else {
+                handleEnter(index)
+            }
+        }
+
+        function onExistingDescInput(item, index, val) {
+            // v-model hat item.description bereits gesetzt; hier nur die Suche anstoßen.
+            onLocalArticleSearch(item, index, val)
+            if (!val || val.trim().length < 2) {
+                replaceMenu[index] = false
+            }
+        }
+
+        function onExistingDescBlur(item, index) {
+            // Menü schließen und Beschreibung wie gehabt speichern.
+            // (Klicks auf Vorschläge nutzen @mousedown.prevent → kein vorzeitiger Blur.)
+            replaceMenu[index] = false
+            onDescriptionBlur(item)
+        }
+
+        function chooseReplacement(item, index, article) {
+            replaceMenu[index] = false
+            item.localArticleList = []
+            emit('article-replace', item, index, article)
+            // Fokus wie beim normalen Erfassen auf die nächste Position legen.
+            focusNextPosition(index)
+        }
+
+        // Fokussiert das Eingabefeld der nächsten Position – egal ob diese eine
+        // gefüllte Zeile (eigenes Textfeld) oder die leere Zeile (Autocomplete) ist.
+        function focusNextPosition(index) {
+            const next = index + 1
+            nextTick(() => {
+                setTimeout(() => {
+                    let input = wrapRefs[next]?.querySelector?.('input')
+                    if (!input && autocompleteRefs.value[next]) {
+                        input = autocompleteRefs.value[next].$el?.querySelector('input')
+                    }
+                    if (input) input.focus()
+                }, 60)
+            })
         }
 
         /**
@@ -1414,6 +1532,15 @@ export default defineComponent({
             onDiscountInput,
             onDiscountBlur,
             onDescriptionBlur,
+            replaceMenu,
+            replaceActiveIdx,
+            wrapRefs,
+            suggestionStyle,
+            onExistingDescInput,
+            onExistingDescBlur,
+            moveReplaceHighlight,
+            onExistingEnter,
+            chooseReplacement,
             openLongDescriptionDialog,
             closeLongDescriptionDialog,
             saveLongDescription
@@ -1426,6 +1553,32 @@ export default defineComponent({
 /* ============================================
    FAKTURA ITEMS TABLE
    ============================================ */
+
+/* Eigene Artikel-Vorschlagsliste (per Teleport an body) */
+.article-replace-wrap { position: relative; }
+.ac-suggestions {
+    background: rgb(var(--v-theme-surface));
+    border: 1px solid rgba(var(--v-border-color), 0.25);
+    border-radius: 4px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+    max-height: 320px;
+    overflow-y: auto;
+    min-width: 280px;
+}
+.ac-suggestion {
+    padding: 6px 12px;
+    cursor: pointer;
+    line-height: 1.25;
+}
+.ac-suggestion.ac-active,
+.ac-suggestion:hover {
+    background: rgba(var(--v-theme-primary), 0.12);
+}
+.ac-suggestion__title { font-weight: 500; }
+.ac-suggestion__sub {
+    font-size: 0.75rem;
+    color: rgba(var(--v-theme-on-surface), 0.6);
+}
 
 /* Card Styling */
 .faktura-card {
