@@ -2,6 +2,8 @@
     "OrderSearchView": {
         "title": "Tilaushaku",
         "fields": {
+            "q": "Haku",
+            "q_hint": "Tilausnro, asiakas, rekisterinumero, VIN, HSN/TSN, kuvaus …",
             "ordnumber": "Tilausnumero",
             "customer_name": "Asiakkaan nimi",
             "transaction_description": "Kuvaus",
@@ -20,7 +22,11 @@
             "bringetermin": "Toimituspaiva",
             "amount": "Summa",
             "cusordnumber": "Asiakkaan tilausnumero",
-            "hersteller": "Valmistaja"
+            "hersteller": "Valmistaja",
+            "kennzeichen": "Rekisterinumero",
+            "status_not_hidden": "Ei {status}",
+            "status_all": "Kaikki",
+            "status_open": "Avoimet"
         },
         "buttons": {
             "search": "Hae",

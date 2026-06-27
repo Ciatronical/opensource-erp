@@ -2,6 +2,8 @@
     "OrderSearchView": {
         "title": "Užsakymų paieška",
         "fields": {
+            "q": "Paieška",
+            "q_hint": "Užsakymo nr., klientas, valst. nr., VIN, HSN/TSN, aprašymas …",
             "ordnumber": "Užsakymo numeris",
             "customer_name": "Kliento vardas",
             "transaction_description": "Aprašymas",
@@ -20,7 +22,11 @@
             "bringetermin": "Atvežimo terminas",
             "amount": "Suma",
             "cusordnumber": "Kliento užsakymo numeris",
-            "hersteller": "Gamintojas"
+            "hersteller": "Gamintojas",
+            "kennzeichen": "Valst. nr",
+            "status_not_hidden": "Ne {status}",
+            "status_all": "Visi",
+            "status_open": "Atviri"
         },
         "buttons": {
             "search": "Ieškoti",

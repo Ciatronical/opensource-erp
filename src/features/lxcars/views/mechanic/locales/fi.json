@@ -55,7 +55,9 @@
             "cancel": "Peruuta",
             "add": "Ilmoita",
             "added": "Ilmoitettu: {label}",
-            "error": "Ilmoitus epäonnistui"
+            "error": "Ilmoitus epäonnistui",
+            "searchLabel": "Nimi, rekisterinumero tai VIN",
+            "addFreeTextNamed": "Ilmoita ”{label}” vapaana tekstinä"
         }
     }
 }

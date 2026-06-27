@@ -2,6 +2,8 @@
     "OrderSearchView": {
         "title": "Búsqueda de pedidos",
         "fields": {
+            "q": "Buscar",
+            "q_hint": "N.º de pedido, cliente, matrícula, VIN, HSN/TSN, descripción …",
             "ordnumber": "Número de pedido",
             "customer_name": "Nombre del cliente",
             "transaction_description": "Descripción",
@@ -20,7 +22,11 @@
             "bringetermin": "Fecha de entrega",
             "amount": "Importe",
             "cusordnumber": "Número de pedido del cliente",
-            "hersteller": "Fabricante"
+            "hersteller": "Fabricante",
+            "kennzeichen": "Matrícula",
+            "status_not_hidden": "No {status}",
+            "status_all": "Todos",
+            "status_open": "Abiertos"
         },
         "buttons": {
             "search": "Buscar",

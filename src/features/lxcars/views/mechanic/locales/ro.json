@@ -55,7 +55,9 @@
             "cancel": "Anulează",
             "add": "Raportează",
             "added": "Raportat: {label}",
-            "error": "Raportare eșuată"
+            "error": "Raportare eșuată",
+            "searchLabel": "Nume, număr sau VIN",
+            "addFreeTextNamed": "Raportează „{label}” ca text liber"
         }
     }
 }

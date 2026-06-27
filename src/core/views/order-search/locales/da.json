@@ -2,6 +2,8 @@
     "OrderSearchView": {
         "title": "Ordresoegning",
         "fields": {
+            "q": "Søg",
+            "q_hint": "Ordrenr., kunde, nummerplade, stelnr., HSN/TSN, beskrivelse …",
             "ordnumber": "Ordrenummer",
             "customer_name": "Kundenavn",
             "transaction_description": "Beskrivelse",
@@ -20,7 +22,11 @@
             "bringetermin": "Afleveringsdato",
             "amount": "Beloeb",
             "cusordnumber": "Kundeordrenummer",
-            "hersteller": "Producent"
+            "hersteller": "Producent",
+            "kennzeichen": "Nummerplade",
+            "status_not_hidden": "Ikke {status}",
+            "status_all": "Alle",
+            "status_open": "Åbne"
         },
         "buttons": {
             "search": "Soeg",

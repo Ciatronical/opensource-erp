@@ -2,6 +2,8 @@
     "OrderSearchView": {
         "title": "Pesquisa de encomendas",
         "fields": {
+            "q": "Pesquisar",
+            "q_hint": "N.º de encomenda, cliente, matrícula, VIN, HSN/TSN, descrição …",
             "ordnumber": "Número da encomenda",
             "customer_name": "Nome do cliente",
             "transaction_description": "Descrição",
@@ -20,7 +22,11 @@
             "bringetermin": "Data de entrega",
             "amount": "Montante",
             "cusordnumber": "Número de encomenda do cliente",
-            "hersteller": "Fabricante"
+            "hersteller": "Fabricante",
+            "kennzeichen": "Matrícula",
+            "status_not_hidden": "Não {status}",
+            "status_all": "Todos",
+            "status_open": "Abertos"
         },
         "buttons": {
             "search": "Pesquisar",

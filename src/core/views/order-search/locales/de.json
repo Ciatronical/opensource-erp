@@ -2,6 +2,8 @@
     "OrderSearchView": {
         "title": "Auftragssuche",
         "fields": {
+            "q": "Suche",
+            "q_hint": "Auftragsnr., Kunde, Kennzeichen, FIN, HSN/TSN, Beschreibung …",
             "ordnumber": "Auftragsnummer",
             "customer_name": "Kundenname",
             "transaction_description": "Beschreibung",
@@ -20,7 +22,11 @@
             "bringetermin": "Bringetermin",
             "amount": "Betrag",
             "cusordnumber": "Kundenauftragsnummer",
-            "hersteller": "Hersteller"
+            "hersteller": "Hersteller",
+            "kennzeichen": "Kennzeichen",
+            "status_not_hidden": "Nicht {status}",
+            "status_all": "Alle",
+            "status_open": "Offen"
         },
         "buttons": {
             "search": "Suchen",

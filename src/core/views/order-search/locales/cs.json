@@ -2,6 +2,8 @@
     "OrderSearchView": {
         "title": "Hledani objednavek",
         "fields": {
+            "q": "Hledat",
+            "q_hint": "Č. zakázky, zákazník, SPZ, VIN, HSN/TSN, popis …",
             "ordnumber": "Cislo objednavky",
             "customer_name": "Jmeno zakaznika",
             "transaction_description": "Popis",
@@ -20,7 +22,11 @@
             "bringetermin": "Termin dodani",
             "amount": "Castka",
             "cusordnumber": "Cislo zakaznicke objednavky",
-            "hersteller": "Vyrobce"
+            "hersteller": "Vyrobce",
+            "kennzeichen": "SPZ",
+            "status_not_hidden": "Ne: {status}",
+            "status_all": "Vše",
+            "status_open": "Otevřené"
         },
         "buttons": {
             "search": "Hledat",

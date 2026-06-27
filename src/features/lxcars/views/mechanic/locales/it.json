@@ -55,7 +55,9 @@
             "cancel": "Annulla",
             "add": "Segnala",
             "added": "Segnalato: {label}",
-            "error": "Segnalazione non riuscita"
+            "error": "Segnalazione non riuscita",
+            "searchLabel": "Nome, targa o VIN",
+            "addFreeTextNamed": "Segnala «{label}» come testo libero"
         }
     }
 }

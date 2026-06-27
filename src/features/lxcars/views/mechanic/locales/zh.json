@@ -55,7 +55,9 @@
             "cancel": "取消",
             "add": "上报",
             "added": "已上报：{label}",
-            "error": "上报失败"
+            "error": "上报失败",
+            "searchLabel": "姓名、车牌或车架号",
+            "addFreeTextNamed": "将“{label}”作为自由文本上报"
         }
     }
 }

@@ -34,37 +34,17 @@
 
         <!-- Filter -->
         <v-row dense @keydown.enter.capture="handleEnterKey">
-            <v-col cols="12" sm="6" md="2">
+            <v-col cols="12" md="8">
                 <v-text-field
-                    v-model="searchCriteria.ordnumber"
-                    :label="t('OrderSearchView.fields.ordnumber')"
-                    prepend-inner-icon="mdi-pound"
+                    v-model="searchCriteria.q"
+                    :label="t('OrderSearchView.fields.q')"
+                    :placeholder="t('OrderSearchView.fields.q_hint')"
+                    prepend-inner-icon="mdi-magnify"
                     variant="outlined"
                     density="compact"
                     hide-details
                     clearable
-                />
-            </v-col>
-            <v-col cols="12" sm="6" md="3">
-                <v-text-field
-                    v-model="searchCriteria.customer_name"
-                    :label="t('OrderSearchView.fields.customer_name')"
-                    prepend-inner-icon="mdi-account"
-                    variant="outlined"
-                    density="compact"
-                    hide-details
-                    clearable
-                />
-            </v-col>
-            <v-col cols="12" sm="6" md="3">
-                <v-text-field
-                    v-model="searchCriteria.transaction_description"
-                    :label="t('OrderSearchView.fields.first_instruction')"
-                    prepend-inner-icon="mdi-text-short"
-                    variant="outlined"
-                    density="compact"
-                    hide-details
-                    clearable
+                    autofocus
                 />
             </v-col>
             <v-col cols="6" sm="3" md="2">
@@ -72,10 +52,11 @@
                     v-model="searchCriteria.status"
                     :label="t('OrderSearchView.fields.status')"
                     :items="statusFilterOptions"
+                    item-title="title"
+                    item-value="value"
                     variant="outlined"
                     density="compact"
                     hide-details
-                    clearable
                 />
             </v-col>
             <v-col cols="6" sm="3" md="2">
@@ -170,6 +151,11 @@
                     </div>
                 </template>
 
+                <template #item.kennzeichen="{ item }">
+                    <span v-if="item.kennzeichen" class="font-weight-medium text-no-wrap">{{ item.kennzeichen }}</span>
+                    <span v-else>-</span>
+                </template>
+
                 <template #item.transdate="{ item }">
                     {{ formatDate(item.transdate) }}
                 </template>
@@ -235,9 +221,13 @@ const props = defineProps({
     }
 });
 
+// Status-Sentinels (siehe backend/api/faktura/order_search.php)
+const NOT_HIDDEN = '__not_hidden__';  // Default: Hide-Status ausblenden ("Nicht abgerechnet")
+const ALL_STATUS = '__all__';         // alle Status anzeigen
+
 // Reactive state
 const loading = ref(false);
-const searchCriteria = ref({});
+const searchCriteria = ref({ status: NOT_HIDDEN });
 const searchResults = ref([]);
 const hasSearched = ref(false);
 
@@ -251,8 +241,16 @@ watch(searchCriteria, () => {
 
 // Config-basierte Filter-Optionen und Farben
 const statusFilterOptions = computed(() => {
-    const raw = store.session?.company_config?.defaults_oserp?.lxcars_order_statuses || ''
-    return getValues(raw)
+    const cfg = store.session?.company_config?.defaults_oserp || {}
+    const hideStatus = cfg.lxcars_order_hide_status || ''
+    const notHiddenLabel = hideStatus
+        ? t('OrderSearchView.fields.status_not_hidden', { status: hideStatus.toLowerCase() })
+        : t('OrderSearchView.fields.status_open')
+    return [
+        { title: notHiddenLabel, value: NOT_HIDDEN },
+        { title: t('OrderSearchView.fields.status_all'), value: ALL_STATUS },
+        ...getValues(cfg.lxcars_order_statuses || '').map(s => ({ title: s, value: s })),
+    ]
 });
 
 const kfzOrtFilterOptions = computed(() => {
@@ -271,7 +269,8 @@ const kfzOrtColorMap = computed(() => {
 });
 
 const hasSearchCriteria = computed(() => {
-    return Object.values(searchCriteria.value).some(value => {
+    return Object.entries(searchCriteria.value).some(([key, value]) => {
+        if (key === 'status' && value === NOT_HIDDEN) return false; // Default zählt nicht
         if (value === null || value === undefined) return false;
         if (value === false) return true;
         if (typeof value === 'string') return value.trim() !== '';
@@ -282,6 +281,7 @@ const hasSearchCriteria = computed(() => {
 const headers = computed(() => [
     { title: t('OrderSearchView.fields.ordnumber'), key: 'ordnumber', sortable: true },
     { title: t('OrderSearchView.fields.customer_name'), key: 'customer_name', sortable: true },
+    { title: t('OrderSearchView.fields.kennzeichen'), key: 'kennzeichen', sortable: true },
     { title: t('OrderSearchView.fields.hersteller'), key: 'hersteller', sortable: true },
     { title: t('OrderSearchView.fields.first_instruction'), key: 'first_instruction', sortable: true },
     { title: t('OrderSearchView.fields.status'), key: 'oe_ext_status', sortable: true },
@@ -344,7 +344,7 @@ const loadData = async () => {
 };
 
 const reset = () => {
-    searchCriteria.value = {};
+    searchCriteria.value = { status: NOT_HIDDEN };
     loadData();
 };
 

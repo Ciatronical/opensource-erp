@@ -2,6 +2,8 @@
     "OrderSearchView": {
         "title": "Siparis arama",
         "fields": {
+            "q": "Ara",
+            "q_hint": "Sipariş no, müşteri, plaka, şasi no, HSN/TSN, açıklama …",
             "ordnumber": "Siparis numarasi",
             "customer_name": "Musteri adi",
             "transaction_description": "Aciklama",
@@ -20,7 +22,11 @@
             "bringetermin": "Teslim tarihi",
             "amount": "Tutar",
             "cusordnumber": "Musteri siparis numarasi",
-            "hersteller": "Uretici"
+            "hersteller": "Uretici",
+            "kennzeichen": "Plaka",
+            "status_not_hidden": "{status} değil",
+            "status_all": "Tümü",
+            "status_open": "Açık"
         },
         "buttons": {
             "search": "Ara",

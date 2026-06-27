@@ -55,7 +55,9 @@
             "cancel": "Annuleren",
             "add": "Melden",
             "added": "Gemeld: {label}",
-            "error": "Melden mislukt"
+            "error": "Melden mislukt",
+            "searchLabel": "Naam, kenteken of VIN",
+            "addFreeTextNamed": "‘{label}’ als vrije tekst melden"
         }
     }
 }

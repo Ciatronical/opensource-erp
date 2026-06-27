@@ -55,7 +55,9 @@
             "cancel": "Annuler",
             "add": "Signaler",
             "added": "Signalé : {label}",
-            "error": "Échec du signalement"
+            "error": "Échec du signalement",
+            "searchLabel": "Nom, plaque ou VIN",
+            "addFreeTextNamed": "Signaler « {label} » en texte libre"
         }
     }
 }

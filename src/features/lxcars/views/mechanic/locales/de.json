@@ -55,7 +55,9 @@
             "cancel": "Abbrechen",
             "add": "Melden",
             "added": "Gemeldet: {label}",
-            "error": "Melden fehlgeschlagen"
+            "error": "Melden fehlgeschlagen",
+            "searchLabel": "Name, Kennzeichen oder FIN",
+            "addFreeTextNamed": "„{label}“ als Freitext melden"
         }
     }
 }

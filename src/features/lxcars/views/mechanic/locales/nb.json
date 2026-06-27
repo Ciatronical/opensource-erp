@@ -55,7 +55,9 @@
             "cancel": "Avbryt",
             "add": "Rapporter",
             "added": "Rapportert: {label}",
-            "error": "Rapportering mislyktes"
+            "error": "Rapportering mislyktes",
+            "searchLabel": "Navn, kjennemerke eller VIN",
+            "addFreeTextNamed": "Rapporter «{label}» som fritekst"
         }
     }
 }

@@ -2,6 +2,8 @@
     "OrderSearchView": {
         "title": "Tellimuse otsing",
         "fields": {
+            "q": "Otsing",
+            "q_hint": "Tellimuse nr, klient, reg. märk, VIN, HSN/TSN, kirjeldus …",
             "ordnumber": "Tellimuse number",
             "customer_name": "Kliendi nimi",
             "transaction_description": "Kirjeldus",
@@ -20,7 +22,11 @@
             "bringetermin": "Toomise tähtaeg",
             "amount": "Summa",
             "cusordnumber": "Kliendi tellimuse number",
-            "hersteller": "Tootja"
+            "hersteller": "Tootja",
+            "kennzeichen": "Reg. nr",
+            "status_not_hidden": "Pole {status}",
+            "status_all": "Kõik",
+            "status_open": "Avatud"
         },
         "buttons": {
             "search": "Otsi",

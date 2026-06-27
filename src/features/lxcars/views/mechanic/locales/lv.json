@@ -55,7 +55,9 @@
             "cancel": "Atcelt",
             "add": "Ziņot",
             "added": "Ziņots: {label}",
-            "error": "Ziņošana neizdevās"
+            "error": "Ziņošana neizdevās",
+            "searchLabel": "Vārds, numurs vai VIN",
+            "addFreeTextNamed": "Ziņot „{label}“ kā tekstu"
         }
     }
 }

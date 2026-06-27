@@ -55,7 +55,9 @@
             "cancel": "Annuller",
             "add": "Rapportér",
             "added": "Rapporteret: {label}",
-            "error": "Rapportering mislykkedes"
+            "error": "Rapportering mislykkedes",
+            "searchLabel": "Navn, nummerplade eller VIN",
+            "addFreeTextNamed": "Rapportér ”{label}” som fritekst"
         }
     }
 }

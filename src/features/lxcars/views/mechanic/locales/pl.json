@@ -55,7 +55,9 @@
             "cancel": "Anuluj",
             "add": "Zgłoś",
             "added": "Zgłoszono: {label}",
-            "error": "Zgłoszenie nie powiodło się"
+            "error": "Zgłoszenie nie powiodło się",
+            "searchLabel": "Nazwa, nr rej. lub VIN",
+            "addFreeTextNamed": "Zgłoś „{label}” jako tekst"
         }
     }
 }

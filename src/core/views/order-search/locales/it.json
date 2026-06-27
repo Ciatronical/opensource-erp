@@ -2,6 +2,8 @@
     "OrderSearchView": {
         "title": "Ricerca ordini",
         "fields": {
+            "q": "Cerca",
+            "q_hint": "N. ordine, cliente, targa, telaio, HSN/TSN, descrizione …",
             "ordnumber": "Numero ordine",
             "customer_name": "Nome cliente",
             "transaction_description": "Descrizione",
@@ -20,7 +22,11 @@
             "bringetermin": "Data di consegna",
             "amount": "Importo",
             "cusordnumber": "Numero ordine cliente",
-            "hersteller": "Produttore"
+            "hersteller": "Produttore",
+            "kennzeichen": "Targa",
+            "status_not_hidden": "Non {status}",
+            "status_all": "Tutti",
+            "status_open": "Aperti"
         },
         "buttons": {
             "search": "Cerca",

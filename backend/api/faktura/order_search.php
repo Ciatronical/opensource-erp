@@ -5,16 +5,17 @@
  * Sucht nach Auftraegen mit optionalen Filtern
  *
  * @param array $data['where'] Filter-Objekt mit optionalen Feldern:
- *   - ordnumber: ILIKE auf oe.ordnumber
- *   - customer_name: ILIKE auf customer.name
- *   - transaction_description: ILIKE auf erste Instruction (oe_instructions_lxcars)
- *   - status: exakter Match auf oe_ext.status
+ *   - q: intelligente Volltextsuche (Tokens per Leerzeichen getrennt, je Token
+ *        AND-verknüpft, je Token OR über Auftragsnr., Kundenauftragsnr., Kunde,
+ *        Beschreibung, Anweisungen, Kennzeichen, FIN, HSN/TSN, Hersteller/Marke)
+ *   - status: '__not_hidden__' (Default) blendet Hide-Status aus, '__all__' zeigt alle,
+ *             sonst exakter Match auf oe_ext.status
  *   - kfz_ort: exakter Match auf oe_ext.kfz_ort
  *   - transdate_from / transdate_to: Datumsbereich
  *   - bringetermin_from / bringetermin_to: Bringetermin-Bereich (oe_ext)
  *   - amount_from / amount_to: Betragsbereich
  *   - employee_id: Mitarbeiter-Filter
- * @testdata {"where": {"ordnumber": "1"}}
+ * @testdata {"where": {"q": "0603 469"}}
  */
 function searchOrders($data) {
     permit('sales_order_edit');
@@ -27,36 +28,36 @@ function searchOrders($data) {
     $paramIndex = 0;
 
     if (!empty($where) && is_array($where)) {
-        // Auftragsnummer
-        if (!empty($where['ordnumber'])) {
-            $paramIndex++;
-            $paramName = ":p$paramIndex";
-            $conditions[] = "oe.ordnumber ILIKE $paramName";
-            $params[$paramName] = '%' . $where['ordnumber'] . '%';
-        }
-
-        // Kundenname
-        if (!empty($where['customer_name'])) {
-            $paramIndex++;
-            $paramName = ":p$paramIndex";
-            $conditions[] = "customer.name ILIKE $paramName";
-            $params[$paramName] = '%' . $where['customer_name'] . '%';
-        }
-
-        // Beschreibung (sucht in erster Instruction)
-        if (!empty($where['transaction_description'])) {
-            $paramIndex++;
-            $paramName = ":p$paramIndex";
-            $conditions[] = "EXISTS (SELECT 1 FROM oe_instructions_lxcars instr WHERE instr.oe_id = oe.id AND instr.description ILIKE $paramName)";
-            $params[$paramName] = '%' . $where['transaction_description'] . '%';
-        }
-
-        // Status aus oe_ext (exakter Match)
-        if (!empty($where['status'])) {
-            $paramIndex++;
-            $paramName = ":p$paramIndex";
-            $conditions[] = "oe_ext.status = $paramName";
-            $params[$paramName] = $where['status'];
+        // Intelligente Volltextsuche: ein Feld findet alles.
+        // Eingabe wird per Leerzeichen in Tokens zerlegt. Jedes Token muss in
+        // mindestens einer Spalte vorkommen (OR), alle Tokens zusammen per AND.
+        // So trennt z. B. "Müller Golf" oder HSN/TSN "0603 469" sauber.
+        if (!empty($where['q'])) {
+            $tokens = preg_split('/\s+/', trim($where['q']), -1, PREG_SPLIT_NO_EMPTY);
+            foreach ($tokens as $token) {
+                $paramIndex++;
+                $paramName = ":p$paramIndex";
+                $params[$paramName] = $token;
+                $conditions[] = <<<SQL
+                    (
+                        oe.ordnumber ILIKE '%' || $paramName || '%'
+                        OR oe.cusordnumber ILIKE '%' || $paramName || '%'
+                        OR customer.name ILIKE '%' || $paramName || '%'
+                        OR oe.transaction_description ILIKE '%' || $paramName || '%'
+                        OR car.c_fin ILIKE '%' || $paramName || '%'
+                        OR kba.hsn ILIKE '%' || $paramName || '%'
+                        OR kba.tsn ILIKE '%' || $paramName || '%'
+                        OR kba.hersteller ILIKE '%' || $paramName || '%'
+                        OR kba.marke ILIKE '%' || $paramName || '%'
+                        OR replace(COALESCE(NULLIF(car.c_ln, ''), oe_ext.kennzeichen, ''), '-', '')
+                           ILIKE '%' || replace($paramName, '-', '') || '%'
+                        OR EXISTS (
+                            SELECT 1 FROM oe_instructions_lxcars instr
+                            WHERE instr.oe_id = oe.id AND instr.description ILIKE '%' || $paramName || '%'
+                        )
+                    )
+                SQL;
+            }
         }
 
         // Lokation / kfz_ort aus oe_ext (exakter Match)
@@ -118,11 +119,30 @@ function searchOrders($data) {
         }
     }
 
-    // Config-Filter: Status ausblenden (Subquery statt Extra-Query)
-    $conditions[] = "(oe_ext.status IS NULL OR oe_ext.status != COALESCE((SELECT value FROM defaults_oserp WHERE key = 'lxcars_order_hide_status'), ''))";
+    // Status-Filter aus oe_ext.
+    //   Sentinel '__not_hidden__' (Default) -> Hide-Status ausblenden ("Nicht abgerechnet").
+    //   Sentinel '__all__'                  -> keine Status-Einschränkung.
+    //   konkreter Status                    -> exakter Match; so wird auch der sonst
+    //                                          versteckte Hide-Status (z. B. Abgerechnet) gefunden.
+    $status = $where['status'] ?? '__not_hidden__';
+    if ($status === '__all__') {
+        // keine Status-Einschränkung
+    } elseif ($status !== '' && $status !== '__not_hidden__') {
+        $paramIndex++;
+        $paramName = ":p$paramIndex";
+        $conditions[] = "oe_ext.status = $paramName";
+        $params[$paramName] = $status;
+    } else {
+        $conditions[] = "(oe_ext.status IS NULL OR oe_ext.status != COALESCE((SELECT value FROM defaults_oserp WHERE key = 'lxcars_order_hide_status'), ''))";
+    }
 
-    // Config-Filter: Bringetermin-Zukunftsfenster (Subquery statt Extra-Query)
-    $conditions[] = "(oe_ext.bringetermin IS NULL OR oe_ext.bringetermin <= CURRENT_DATE + COALESCE((SELECT value::integer FROM defaults_oserp WHERE key = 'lxcars_order_future_days'), 7) * INTERVAL '1 day')";
+    // Config-Filter: Bringetermin-Zukunftsfenster nur im Standard-Dashboard anwenden.
+    // Bei aktiver Volltextsuche (q) oder explizitem Bringetermin-Bereich aufheben,
+    // damit die Suche wirklich alles findet.
+    $hasBringeRange = !empty($where['bringetermin_from']) || !empty($where['bringetermin_to']);
+    if (empty($where['q']) && !$hasBringeRange) {
+        $conditions[] = "(oe_ext.bringetermin IS NULL OR oe_ext.bringetermin <= CURRENT_DATE + COALESCE((SELECT value::integer FROM defaults_oserp WHERE key = 'lxcars_order_future_days'), 7) * INTERVAL '1 day')";
+    }
 
     $search = implode(' AND ', $conditions);
 
@@ -144,6 +164,7 @@ function searchOrders($data) {
             oe_ext.kfz_ort,
             oe_ext.bringetermin,
             oe_ext.intern,
+            COALESCE(NULLIF(car.c_ln, ''), oe_ext.kennzeichen) AS kennzeichen,
             kba.hersteller,
             (SELECT description FROM oe_instructions_lxcars
              WHERE oe_id = oe.id ORDER BY sort_order, id LIMIT 1) AS first_instruction,

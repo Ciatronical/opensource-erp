@@ -2,6 +2,8 @@
     "OrderSearchView": {
         "title": "Пошук замовлень",
         "fields": {
+            "q": "Пошук",
+            "q_hint": "№ замовлення, клієнт, номерний знак, VIN, HSN/TSN, опис …",
             "ordnumber": "Номер замовлення",
             "customer_name": "Ім'я клієнта",
             "transaction_description": "Опис",
@@ -20,7 +22,11 @@
             "bringetermin": "Термін здачі",
             "amount": "Сума",
             "cusordnumber": "Номер замовлення клієнта",
-            "hersteller": "Виробник"
+            "hersteller": "Виробник",
+            "kennzeichen": "Номер",
+            "status_not_hidden": "Не {status}",
+            "status_all": "Усі",
+            "status_open": "Відкриті"
         },
         "buttons": {
             "search": "Шукати",

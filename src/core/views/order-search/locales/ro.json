@@ -2,6 +2,8 @@
     "OrderSearchView": {
         "title": "Cautare comenzi",
         "fields": {
+            "q": "Căutare",
+            "q_hint": "Nr. comandă, client, nr. înmatriculare, VIN, HSN/TSN, descriere …",
             "ordnumber": "Numar comanda",
             "customer_name": "Nume client",
             "transaction_description": "Descriere",
@@ -20,7 +22,11 @@
             "bringetermin": "Termen predare",
             "amount": "Suma",
             "cusordnumber": "Numar comanda client",
-            "hersteller": "Producator"
+            "hersteller": "Producator",
+            "kennzeichen": "Număr",
+            "status_not_hidden": "Nu {status}",
+            "status_all": "Toate",
+            "status_open": "Deschise"
         },
         "buttons": {
             "search": "Cauta",

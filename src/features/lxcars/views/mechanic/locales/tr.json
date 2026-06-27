@@ -55,7 +55,9 @@
             "cancel": "İptal",
             "add": "Bildir",
             "added": "Bildirildi: {label}",
-            "error": "Bildirim başarısız"
+            "error": "Bildirim başarısız",
+            "searchLabel": "Ad, plaka veya VIN",
+            "addFreeTextNamed": "“{label}” serbest metin olarak bildir"
         }
     }
 }

@@ -55,7 +55,9 @@
             "cancel": "Cancelar",
             "add": "Reportar",
             "added": "Reportado: {label}",
-            "error": "Falha ao reportar"
+            "error": "Falha ao reportar",
+            "searchLabel": "Nome, matrícula ou VIN",
+            "addFreeTextNamed": "Reportar «{label}» como texto livre"
         }
     }
 }

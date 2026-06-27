@@ -2,6 +2,8 @@
     "OrderSearchView": {
         "title": "Ordresoek",
         "fields": {
+            "q": "Søk",
+            "q_hint": "Ordrenr., kunde, skiltnr., understellsnr., HSN/TSN, beskrivelse …",
             "ordnumber": "Ordrenummer",
             "customer_name": "Kundenavn",
             "transaction_description": "Beskrivelse",
@@ -20,7 +22,11 @@
             "bringetermin": "Innleveringsdato",
             "amount": "Beloep",
             "cusordnumber": "Kundeordrenummer",
-            "hersteller": "Produsent"
+            "hersteller": "Produsent",
+            "kennzeichen": "Kjennemerke",
+            "status_not_hidden": "Ikke {status}",
+            "status_all": "Alle",
+            "status_open": "Åpne"
         },
         "buttons": {
             "search": "Soek",

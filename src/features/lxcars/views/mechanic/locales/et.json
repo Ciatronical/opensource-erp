@@ -55,7 +55,9 @@
             "cancel": "Tühista",
             "add": "Teata",
             "added": "Teatatud: {label}",
-            "error": "Teatamine ebaõnnestus"
+            "error": "Teatamine ebaõnnestus",
+            "searchLabel": "Nimi, number või VIN",
+            "addFreeTextNamed": "Teata „{label}“ vabatekstina"
         }
     }
 }

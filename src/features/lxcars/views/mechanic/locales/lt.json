@@ -55,7 +55,9 @@
             "cancel": "Atšaukti",
             "add": "Pranešti",
             "added": "Pranešta: {label}",
-            "error": "Nepavyko pranešti"
+            "error": "Nepavyko pranešti",
+            "searchLabel": "Vardas, numeris ar VIN",
+            "addFreeTextNamed": "Pranešti „{label}“ laisvu tekstu"
         }
     }
 }

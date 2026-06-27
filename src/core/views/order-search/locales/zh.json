@@ -2,6 +2,8 @@
     "OrderSearchView": {
         "title": "订单搜索",
         "fields": {
+            "q": "搜索",
+            "q_hint": "订单号、客户、车牌、车架号、HSN/TSN、描述 …",
             "ordnumber": "订单编号",
             "customer_name": "客户名称",
             "transaction_description": "描述",
@@ -20,7 +22,11 @@
             "bringetermin": "交车日期",
             "amount": "金额",
             "cusordnumber": "客户订单编号",
-            "hersteller": "制造商"
+            "hersteller": "制造商",
+            "kennzeichen": "车牌",
+            "status_not_hidden": "非{status}",
+            "status_all": "全部",
+            "status_open": "未完成"
         },
         "buttons": {
             "search": "搜索",

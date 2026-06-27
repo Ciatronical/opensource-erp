@@ -2,6 +2,8 @@
     "OrderSearchView": {
         "title": "Ordersok",
         "fields": {
+            "q": "Sök",
+            "q_hint": "Ordernr, kund, regnr, chassinr, HSN/TSN, beskrivning …",
             "ordnumber": "Ordernummer",
             "customer_name": "Kundnamn",
             "transaction_description": "Beskrivning",
@@ -20,7 +22,11 @@
             "bringetermin": "Inlamningsdatum",
             "amount": "Belopp",
             "cusordnumber": "Kundordernummer",
-            "hersteller": "Tillverkare"
+            "hersteller": "Tillverkare",
+            "kennzeichen": "Reg.nr",
+            "status_not_hidden": "Inte {status}",
+            "status_all": "Alla",
+            "status_open": "Öppna"
         },
         "buttons": {
             "search": "Sok",

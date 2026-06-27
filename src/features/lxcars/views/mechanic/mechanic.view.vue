@@ -19,47 +19,16 @@
                     class="mechanic-field flex-grow-0"
                 />
 
-                <!-- "Auftrag fehlt": Fahrzeug per Name/Kennzeichen/FIN suchen und melden -->
-                <v-autocomplete
-                    v-model="missingOrderSelected"
-                    v-model:search="missingOrderSearch"
-                    :items="missingOrderResults"
-                    :loading="missingOrderLoading"
-                    :label="t('MechanicView.missingOrder.label')"
-                    item-title="display"
-                    item-value="c_id"
-                    return-object
-                    no-filter
-                    clearable
-                    hide-details
-                    density="compact"
-                    variant="outlined"
+                <!-- "Auftrag fehlt": öffnet Such-Dialog -->
+                <v-btn
                     color="warning"
-                    base-color="warning"
-                    prepend-inner-icon="mdi-clipboard-alert-outline"
-                    class="mechanic-field flex-grow-0"
-                    @update:model-value="onMissingOrderSelect"
+                    variant="tonal"
+                    prepend-icon="mdi-clipboard-alert-outline"
+                    class="flex-grow-0"
+                    @click="openMissingOrderDialog"
                 >
-                    <template #no-data>
-                        <div class="pa-3">
-                            <div class="text-body-2 text-medium-emphasis mb-2">
-                                {{ missingOrderSearch && missingOrderSearch.trim().length >= 2
-                                    ? t('MechanicView.missingOrder.noVehicle')
-                                    : t('MechanicView.missingOrder.hint') }}
-                            </div>
-                            <v-btn
-                                v-if="missingOrderSearch && missingOrderSearch.trim().length >= 2"
-                                size="small"
-                                variant="tonal"
-                                color="warning"
-                                prepend-icon="mdi-pencil-plus"
-                                @click="openFreeTextDialog"
-                            >
-                                {{ t('MechanicView.missingOrder.addFreeText') }}
-                            </v-btn>
-                        </div>
-                    </template>
-                </v-autocomplete>
+                    {{ t('MechanicView.missingOrder.label') }}
+                </v-btn>
 
                 <v-btn-toggle v-model="viewMode" mandatory density="compact" color="primary">
                     <v-btn value="mine" size="small">
@@ -80,31 +49,76 @@
             </div>
         </div>
 
-        <!-- Freitext-Dialog, wenn kein Fahrzeug gefunden wurde -->
-        <v-dialog v-model="freeTextDialog" max-width="440">
+        <!-- "Auftrag fehlt": Such-Dialog (Fahrzeug per Name/Kennzeichen/FIN oder Freitext) -->
+        <v-dialog v-model="missingOrderDialog" max-width="520">
             <v-card>
                 <v-card-title class="d-flex align-center">
                     <v-icon class="mr-2" color="warning">mdi-clipboard-alert-outline</v-icon>
-                    {{ t('MechanicView.missingOrder.freeTextTitle') }}
+                    {{ t('MechanicView.missingOrder.label') }}
                 </v-card-title>
                 <v-card-text>
-                    <v-text-field
-                        v-model="freeText"
-                        :label="t('MechanicView.missingOrder.freeTextLabel')"
-                        variant="outlined"
-                        density="compact"
+                    <v-autocomplete
+                        v-model="missingOrderSelected"
+                        v-model:search="missingOrderSearch"
+                        :items="missingOrderResults"
+                        :loading="missingOrderLoading"
+                        :label="t('MechanicView.missingOrder.searchLabel')"
+                        item-title="display"
+                        item-value="c_id"
+                        return-object
+                        no-filter
+                        clearable
                         autofocus
                         hide-details
-                        @keyup.enter="confirmFreeText"
-                    />
+                        variant="outlined"
+                        prepend-inner-icon="mdi-magnify"
+                        :menu-props="{ maxHeight: 320 }"
+                        @update:model-value="onMissingOrderSelect"
+                    >
+                        <template #item="{ props, item }">
+                            <v-list-item v-bind="props" :title="null" lines="two">
+                                <template #prepend>
+                                    <v-icon size="small" color="grey-darken-1">mdi-car</v-icon>
+                                </template>
+                                <v-list-item-title class="font-weight-medium">{{ item.raw.c_ln }}</v-list-item-title>
+                                <v-list-item-subtitle v-if="item.raw.subtitle" class="text-caption">
+                                    {{ item.raw.subtitle }}
+                                </v-list-item-subtitle>
+                            </v-list-item>
+                        </template>
+
+                        <template #no-data>
+                            <div class="px-4 py-3 text-body-2 text-medium-emphasis">
+                                {{ missingOrderSearch && missingOrderSearch.trim().length >= 2
+                                    ? t('MechanicView.missingOrder.noVehicle')
+                                    : t('MechanicView.missingOrder.hint') }}
+                            </div>
+                        </template>
+
+                        <!-- Freitext immer am Listenende anbieten, sobald getippt wurde -->
+                        <template #append-item>
+                            <template v-if="missingOrderSearch && missingOrderSearch.trim().length >= 2">
+                                <v-divider />
+                                <v-list-item @click="reportFreeText">
+                                    <template #prepend>
+                                        <v-icon color="warning">mdi-pencil-plus</v-icon>
+                                    </template>
+                                    <v-list-item-title>
+                                        {{ t('MechanicView.missingOrder.addFreeTextNamed', { label: missingOrderSearch.trim() }) }}
+                                    </v-list-item-title>
+                                </v-list-item>
+                            </template>
+                        </template>
+                    </v-autocomplete>
+
+                    <div class="text-caption text-medium-emphasis mt-2">
+                        {{ t('MechanicView.missingOrder.hint') }}
+                    </div>
                 </v-card-text>
                 <v-card-actions>
                     <v-spacer />
-                    <v-btn variant="text" @click="freeTextDialog = false">
+                    <v-btn variant="text" @click="missingOrderDialog = false">
                         {{ t('MechanicView.missingOrder.cancel') }}
-                    </v-btn>
-                    <v-btn color="warning" variant="elevated" :disabled="!freeText.trim()" @click="confirmFreeText">
-                        {{ t('MechanicView.missingOrder.add') }}
                     </v-btn>
                 </v-card-actions>
             </v-card>
@@ -217,12 +231,11 @@ function openOrder(order) {
 }
 
 // ===== "Auftrag fehlt": Fahrzeug suchen und melden =====
+const missingOrderDialog = ref(false)
 const missingOrderSearch = ref('')
 const missingOrderResults = ref([])
 const missingOrderLoading = ref(false)
 const missingOrderSelected = ref(null)
-const freeTextDialog = ref(false)
-const freeText = ref('')
 let missingSearchTimer = null
 
 watch(missingOrderSearch, (q) => {
@@ -235,7 +248,9 @@ watch(missingOrderSearch, (q) => {
             const rows = await carsStore.searchCarsForMechanic(term)
             missingOrderResults.value = rows.map(c => ({
                 ...c,
-                display: [c.c_ln, c.owner_name, [c.manufacturer, c.model].filter(Boolean).join(' ')]
+                // Kompakt: Kennzeichen als Titel, Halter/Fahrzeug als zweite Zeile
+                display: c.c_ln,
+                subtitle: [c.owner_name, [c.manufacturer, c.model].filter(Boolean).join(' ')]
                     .filter(Boolean).join(' · ')
             }))
         } catch {
@@ -255,28 +270,31 @@ async function reportMissingOrder(label, cId = null) {
     }
 }
 
+function resetMissingOrder() {
+    missingOrderSelected.value = null
+    missingOrderSearch.value = ''
+    missingOrderResults.value = []
+}
+
+function openMissingOrderDialog() {
+    resetMissingOrder()
+    missingOrderDialog.value = true
+}
+
 async function onMissingOrderSelect(val) {
     if (!val) return
+    missingOrderDialog.value = false
     await reportMissingOrder(val.c_ln || val.display, val.c_id ?? null)
-    // Feld zuruecksetzen
-    missingOrderSelected.value = null
-    missingOrderSearch.value = ''
-    missingOrderResults.value = []
+    resetMissingOrder()
 }
 
-function openFreeTextDialog() {
-    freeText.value = (missingOrderSearch.value || '').trim()
-    freeTextDialog.value = true
-}
-
-async function confirmFreeText() {
-    const label = freeText.value.trim()
+// Freitext melden: der eingetippte Suchbegriff wird zur Bezeichnung
+async function reportFreeText() {
+    const label = (missingOrderSearch.value || '').trim()
     if (!label) return
-    freeTextDialog.value = false
+    missingOrderDialog.value = false
     await reportMissingOrder(label, null)
-    missingOrderSelected.value = null
-    missingOrderSearch.value = ''
-    missingOrderResults.value = []
+    resetMissingOrder()
 }
 
 function formatDate(d) {

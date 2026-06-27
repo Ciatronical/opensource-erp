@@ -55,7 +55,9 @@
             "cancel": "Avbryt",
             "add": "Rapportera",
             "added": "Rapporterad: {label}",
-            "error": "Rapportering misslyckades"
+            "error": "Rapportering misslyckades",
+            "searchLabel": "Namn, regnr eller VIN",
+            "addFreeTextNamed": "Rapportera ”{label}” som fritext"
         }
     }
 }

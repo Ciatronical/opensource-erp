@@ -2,6 +2,8 @@
     "OrderSearchView": {
         "title": "Pasūtījumu meklēšana",
         "fields": {
+            "q": "Meklēt",
+            "q_hint": "Pasūtījuma nr., klients, valsts nr., VIN, HSN/TSN, apraksts …",
             "ordnumber": "Pasūtījuma numurs",
             "customer_name": "Klienta vārds",
             "transaction_description": "Apraksts",
@@ -20,7 +22,11 @@
             "bringetermin": "Atvešanas termiņš",
             "amount": "Summa",
             "cusordnumber": "Klienta pasūtījuma numurs",
-            "hersteller": "Ražotājs"
+            "hersteller": "Ražotājs",
+            "kennzeichen": "Reģ. nr",
+            "status_not_hidden": "Nav {status}",
+            "status_all": "Visi",
+            "status_open": "Atvērtie"
         },
         "buttons": {
             "search": "Meklēt",

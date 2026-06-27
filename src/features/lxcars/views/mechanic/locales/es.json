@@ -55,7 +55,9 @@
             "cancel": "Cancelar",
             "add": "Informar",
             "added": "Informado: {label}",
-            "error": "Error al informar"
+            "error": "Error al informar",
+            "searchLabel": "Nombre, matrícula o VIN",
+            "addFreeTextNamed": "Informar «{label}» como texto libre"
         }
     }
 }

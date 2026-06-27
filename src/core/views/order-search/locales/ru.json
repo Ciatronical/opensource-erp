@@ -2,6 +2,8 @@
     "OrderSearchView": {
         "title": "Поиск заказов",
         "fields": {
+            "q": "Поиск",
+            "q_hint": "№ заказа, клиент, госномер, VIN, HSN/TSN, описание …",
             "ordnumber": "Номер заказа",
             "customer_name": "Имя клиента",
             "transaction_description": "Описание",
@@ -20,7 +22,11 @@
             "bringetermin": "Срок сдачи",
             "amount": "Сумма",
             "cusordnumber": "Номер заказа клиента",
-            "hersteller": "Производитель"
+            "hersteller": "Производитель",
+            "kennzeichen": "Госномер",
+            "status_not_hidden": "Не {status}",
+            "status_all": "Все",
+            "status_open": "Открытые"
         },
         "buttons": {
             "search": "Искать",

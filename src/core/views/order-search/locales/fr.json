@@ -2,6 +2,8 @@
     "OrderSearchView": {
         "title": "Recherche de commandes",
         "fields": {
+            "q": "Recherche",
+            "q_hint": "N° de commande, client, plaque, VIN, HSN/TSN, description …",
             "ordnumber": "Numero de commande",
             "customer_name": "Nom du client",
             "transaction_description": "Description",
@@ -20,7 +22,11 @@
             "bringetermin": "Date de depot",
             "amount": "Montant",
             "cusordnumber": "Numero de commande client",
-            "hersteller": "Constructeur"
+            "hersteller": "Constructeur",
+            "kennzeichen": "Plaque",
+            "status_not_hidden": "Pas {status}",
+            "status_all": "Tous",
+            "status_open": "Ouverts"
         },
         "buttons": {
             "search": "Rechercher",

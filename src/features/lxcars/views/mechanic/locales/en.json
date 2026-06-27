@@ -55,7 +55,9 @@
             "cancel": "Cancel",
             "add": "Report",
             "added": "Reported: {label}",
-            "error": "Report failed"
+            "error": "Report failed",
+            "searchLabel": "Name, plate or VIN",
+            "addFreeTextNamed": "Report “{label}” as free text"
         }
     }
 }

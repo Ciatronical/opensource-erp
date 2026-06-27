@@ -2,6 +2,8 @@
     "OrderSearchView": {
         "title": "Orders zoeken",
         "fields": {
+            "q": "Zoeken",
+            "q_hint": "Ordernr., klant, kenteken, VIN, HSN/TSN, omschrijving …",
             "ordnumber": "Ordernummer",
             "customer_name": "Klantnaam",
             "transaction_description": "Beschrijving",
@@ -20,7 +22,11 @@
             "bringetermin": "Inleverdatum",
             "amount": "Bedrag",
             "cusordnumber": "Klantordernummer",
-            "hersteller": "Fabrikant"
+            "hersteller": "Fabrikant",
+            "kennzeichen": "Kenteken",
+            "status_not_hidden": "Niet {status}",
+            "status_all": "Alle",
+            "status_open": "Open"
         },
         "buttons": {
             "search": "Zoeken",

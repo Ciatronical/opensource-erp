@@ -2,6 +2,8 @@
     "OrderSearchView": {
         "title": "Wyszukiwanie zamówień",
         "fields": {
+            "q": "Szukaj",
+            "q_hint": "Nr zlecenia, klient, nr rej., VIN, HSN/TSN, opis …",
             "ordnumber": "Numer zamówienia",
             "customer_name": "Nazwa klienta",
             "transaction_description": "Opis",
@@ -20,7 +22,11 @@
             "bringetermin": "Termin dostarczenia",
             "amount": "Kwota",
             "cusordnumber": "Numer zamówienia klienta",
-            "hersteller": "Producent"
+            "hersteller": "Producent",
+            "kennzeichen": "Nr rej.",
+            "status_not_hidden": "Nie {status}",
+            "status_all": "Wszystkie",
+            "status_open": "Otwarte"
         },
         "buttons": {
             "search": "Szukaj",

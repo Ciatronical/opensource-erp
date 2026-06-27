@@ -1147,8 +1147,6 @@
         "phaseStop": "Service stoppen",
         "phaseStart": "Service starten",
         "phaseWait": "Bereit",
-        "blacklist": "Blacklist",
-        "blacklist_help": "Kommagetrennte Liste von Kennzeichen die ignoriert werden (z.B. RGELH0, ABC123)",
         "openOrderSkip": "Fahrzeuge mit offenem Auftrag überspringen",
         "openOrderSkip_help": "Wenn aktiv: Fahrzeuge mit laufendem Werkstattauftrag werden nicht in der Infoleiste angezeigt und öffnen kein Tor. Standard: deaktiviert (alle Fahrzeuge werden angezeigt).",
         "health": "Dienst-Diagnose",

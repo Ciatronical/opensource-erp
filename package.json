@@ -5,6 +5,7 @@
     "type": "module",
     "scripts": {
         "dev": "vite",
+        "check:api": "php tools/check-api-health.php",
         "build": "vite build",
         "preview": "vite preview"
     },

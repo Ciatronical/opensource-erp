@@ -1138,8 +1138,6 @@
         "phaseStop": "Stopping service",
         "phaseStart": "Starting service",
         "phaseWait": "Ready",
-        "blacklist": "Blacklist",
-        "blacklist_help": "Comma-separated list of plates to ignore (e.g. RGELH0, ABC123)",
         "openOrderSkip": "Skip vehicles with open work orders",
         "openOrderSkip_help": "When active: vehicles with an ongoing workshop order are not shown in the info bar and do not open the gate. Default: disabled (all vehicles are shown).",
         "health": "Service diagnostics",

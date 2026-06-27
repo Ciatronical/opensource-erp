@@ -880,6 +880,8 @@ function searchCarsForMechanic($data) {
         return;
     }
     $like = '%' . $search . '%';
+    $prefix = $search . '%';
+    // Relevanz: Kennzeichen-Treffer vor Halter/FIN, Präfix vor Teiltreffer.
     $rows = $db->getAll(
         "SELECT c.c_id, c.c_ln, COALESCE(c.c_fin, '') AS c_fin,
                 COALESCE(cu.name, '') AS owner_name,
@@ -889,9 +891,14 @@ function searchCarsForMechanic($data) {
          LEFT JOIN customer cu ON cu.id = c.c_ow
          LEFT JOIN kba_lxcars k ON k.id = c.kba_id
          WHERE c.c_ln ILIKE :q OR c.c_fin ILIKE :q OR cu.name ILIKE :q
-         ORDER BY c.c_ln
-         LIMIT 25",
-        [':q' => $like]
+         ORDER BY
+             CASE WHEN c.c_ln ILIKE :prefix THEN 0
+                  WHEN c.c_ln ILIKE :q THEN 1
+                  WHEN cu.name ILIKE :prefix THEN 2
+                  ELSE 3 END,
+             c.c_ln
+         LIMIT 10",
+        [':q' => $like, ':prefix' => $prefix]
     );
     resultInfo(true, 'OK', $rows ?: []);
 }

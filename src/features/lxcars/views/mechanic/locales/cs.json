@@ -55,7 +55,9 @@
             "cancel": "Zrušit",
             "add": "Nahlásit",
             "added": "Nahlášeno: {label}",
-            "error": "Nahlášení selhalo"
+            "error": "Nahlášení selhalo",
+            "searchLabel": "Jméno, SPZ nebo VIN",
+            "addFreeTextNamed": "Nahlásit „{label}“ jako text"
         }
     }
 }

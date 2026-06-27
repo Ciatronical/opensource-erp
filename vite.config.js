@@ -2,11 +2,37 @@
 import { fileURLToPath, URL } from 'node:url'
 import { writeFileSync, mkdirSync } from 'node:fs'
 import { resolve, dirname } from 'node:path'
+import { execFileSync } from 'node:child_process'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vuetify from 'vite-plugin-vuetify'
 // vue-devtools bei Ärger, erst mal weglassen
 import vueDevTools from 'vite-plugin-vue-devtools'
+
+// Vor jedem Build die Backend-API absichern: verwaiste require_once (wie einst
+// asanetwork.php → ganze /api/lxcars/-API tot → Autocomplete in instructions/
+// Positionen ausgefallen), Syntaxfehler und Output vor <?php hart abfangen.
+// Bricht den Build ab, wenn die API kaputt wäre. Fehlt PHP, wird nur gewarnt
+// (Build läuft weiter), damit reine Frontend-Umgebungen nicht blockiert werden.
+function apiHealthPlugin() {
+  return {
+    name: 'api-health-check',
+    apply: 'build',
+    buildStart() {
+      const script = resolve(__dirname, 'tools/check-api-health.php')
+      try {
+        execFileSync('php', [script], { stdio: 'inherit' })
+      } catch (e) {
+        if (e && e.code === 'ENOENT') {
+          this.warn('PHP nicht gefunden — API-Health-Check übersprungen.')
+          return
+        }
+        // Non-zero Exit = echte Probleme → Build abbrechen
+        this.error('API-Health-Check fehlgeschlagen — Build abgebrochen (siehe Ausgabe oben).')
+      }
+    }
+  }
+}
 
 // Nach jedem Build eine build-id.txt schreiben, damit der SSE-Server
 // den Clients ein build_changed Event senden kann
@@ -27,6 +53,7 @@ export default defineConfig({
     // Vuetify Tree-Shaking: importiert nur tatsächlich verwendete Komponenten
     vuetify({ autoImport: true }),
     vueDevTools(),
+    apiHealthPlugin(),
     buildIdPlugin(),
   ],
   resolve: {

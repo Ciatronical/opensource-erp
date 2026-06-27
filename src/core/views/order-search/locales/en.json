@@ -2,6 +2,8 @@
     "OrderSearchView": {
         "title": "Order Search",
         "fields": {
+            "q": "Search",
+            "q_hint": "Order no., customer, plate, VIN, HSN/TSN, description …",
             "ordnumber": "Order Number",
             "customer_name": "Customer Name",
             "transaction_description": "Description",
@@ -20,7 +22,11 @@
             "bringetermin": "Drop-off Date",
             "amount": "Amount",
             "cusordnumber": "Customer Order Number",
-            "hersteller": "Manufacturer"
+            "hersteller": "Manufacturer",
+            "kennzeichen": "Plate",
+            "status_not_hidden": "Not {status}",
+            "status_all": "All",
+            "status_open": "Open"
         },
         "buttons": {
             "search": "Search",
