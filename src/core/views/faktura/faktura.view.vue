@@ -223,6 +223,8 @@
                     :net-amount="accounting.calculatedNetAmount.value"
                     :gross-amount="accounting.calculatedGrossAmount.value"
                     :tax-breakdown="accounting.taxBreakdown.value"
+                    :taxincluded="!!faktura.data.common.taxincluded"
+                    @update:taxincluded="onTaxIncludedChange"
                     :calculate-item-total="accounting.calculateItemTotal"
                     :calculate-totals="accounting.calculateTotals"
                     :show-ai-suggest="showAiSuggest"
@@ -1912,7 +1914,10 @@ export default defineComponent({
             try {
                 await faktura.updateFakturaField(fakturaID, fakturaType.value, field, value)
                 if (field === 'taxincluded') {
-                    accounting.flushCalculation()
+                    // "Steuer im Preis inbegriffen" ändert die Netto/Brutto-Aufteilung
+                    // jeder Position → Summen neu berechnen UND die persistierten
+                    // Beträge (netamount/amount) samt Buchungssätzen (acc_trans) neu schreiben.
+                    await saveAllItems()
                 } else if (field === 'taxzone_id') {
                     // Steuerzone bestimmt Konten und Steuersatz jeder Position →
                     // Positionen samt buchungsziel neu laden, Summen neu berechnen ...
@@ -1926,6 +1931,18 @@ export default defineComponent({
                 console.error('Fehler beim Speichern des Feldes:', e)
                 alerts.error(t('FakturaView.faktura.fieldUpdateError'))
             }
+        }
+
+        // Schalter "Steuer im Preis inbegriffen" sitzt im Summenbereich der Positionen
+        // und emittiert nur den neuen Wert → erst im Speicher setzen (damit Neuberechnung
+        // und Schalterzustand stimmen), dann speichern + Summen/Buchungssätze neu schreiben.
+        async function onTaxIncludedChange(value) {
+            if (!faktura.data?.common) return
+            faktura.data.common.taxincluded = value
+            // Summen sofort sichtbar neu berechnen (vor dem Speichern-Roundtrip),
+            // onFakturaFieldChange persistiert anschließend Flag + Buchungssätze.
+            accounting.flushCalculation()
+            await onFakturaFieldChange('taxincluded', value)
         }
 
         async function toggleClosed() {
@@ -2415,22 +2432,62 @@ export default defineComponent({
             }
         }
 
+        /**
+         * Baut einen sprechenden Dateinamen für den PDF-Download,
+         * z. B. "Angebot-0815--Ronny-Zimmermann.pdf"
+         */
+        function buildPdfFilename() {
+            const typeNames = {
+                invoice: 'Rechnung',
+                purchase_invoice: 'Eingangsrechnung',
+                order: 'Auftrag',
+                purchase_order: 'Bestellung',
+                quotation: 'Angebot',
+                request_quotation: 'Anfrage',
+                delivery_order: 'Lieferschein',
+                credit_note: 'Gutschrift',
+            }
+            const typePart = typeNames[fakturaType.value] || 'Dokument'
+            const numberPart = compactDocNumber.value || fakturaId.value || ''
+            const namePart = (customerName.value || faktura.data?.customer?.name || '').trim()
+
+            // Für Dateisysteme unzulässige Zeichen entfernen, Leerzeichen → Bindestrich
+            const sanitize = (s) => String(s)
+                .replace(/[\\/:*?"<>|]/g, '')
+                .replace(/\s+/g, '-')
+                .replace(/-+/g, '-')
+                .replace(/^-|-$/g, '')
+
+            const parts = [sanitize(typePart), sanitize(numberPart)].filter(Boolean)
+            let filename = parts.join('-')
+            const cleanName = sanitize(namePart)
+            if (cleanName) filename += '--' + cleanName
+            return (filename || 'Dokument') + '.pdf'
+        }
+
         async function showPdfPreview() {
+            let blobUrl = null
             try {
                 pdfLoading.value = true
-                const blobUrl = await faktura.generatePDFPreview(
+                blobUrl = await faktura.generatePDFPreview(
                     fakturaId.value,
                     fakturaType.value,
                     selectedTemplate.value,
                     selectedPrinter.value?.id ?? null
                 )
-                window.open(blobUrl, '_blank')
+                const link = document.createElement('a')
+                link.href = blobUrl
+                link.download = buildPdfFilename()
+                document.body.appendChild(link)
+                link.click()
+                document.body.removeChild(link)
             } catch (e) {
                 console.error('Fehler bei PDF-Vorschau:', e)
                 const detail = e.code || ''
                 alerts.error(detail || t('FakturaView.faktura.pdfError'))
                 if (e.message) console.error('LaTeX Debug:', e.message)
             } finally {
+                if (blobUrl) setTimeout(() => URL.revokeObjectURL(blobUrl), 10000)
                 pdfLoading.value = false
             }
         }
@@ -3041,6 +3098,7 @@ export default defineComponent({
             saveAllItems,
             toggleClosed,
             onFakturaFieldChange,
+            onTaxIncludedChange,
             onCustomerChange,
             instructionsIncompleteDialog,
             maintenanceIncompleteDialog,

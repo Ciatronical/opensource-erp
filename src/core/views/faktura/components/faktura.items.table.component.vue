@@ -476,6 +476,19 @@
             <v-row dense class="mt-4 mr-2 mb-2 justify-end">
                 <v-col cols="12" md="3">
                     <v-row dense>
+                        <!-- Steuer im Preis inbegriffen -->
+                        <v-col cols="12" class="py-1">
+                            <v-switch
+                                :model-value="taxincluded"
+                                @update:model-value="$emit('update:taxincluded', $event)"
+                                :label="t('FakturaView.faktura.taxIncluded')"
+                                color="primary"
+                                density="compact"
+                                hide-details
+                                inset
+                            />
+                        </v-col>
+
                         <!-- Nettobetrag -->
                         <v-col cols="12" class="py-1">
                             <v-text-field
@@ -625,6 +638,10 @@ export default defineComponent({
             type: Array,
             default: () => []
         },
+        taxincluded: {
+            type: Boolean,
+            default: false
+        },
         calculateItemTotal: {
             type: Function,
             required: true
@@ -656,6 +673,7 @@ export default defineComponent({
     },
     emits: [
         'update:modelValue',
+        'update:taxincluded',
         'article-search',
         'article-select',
         'article-replace',

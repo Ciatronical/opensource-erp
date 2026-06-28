@@ -42,17 +42,6 @@
                 </v-col>
 
                 <v-col cols="12" class="py-1">
-                    <v-checkbox
-                        :model-value="modelValue.taxincluded"
-                        @update:model-value="onFieldChange('taxincluded', $event)"
-                        :label="t('FakturaView.faktura.taxIncluded')"
-                        density="compact"
-                        hide-details
-                        color="primary"
-                    />
-                </v-col>
-
-                <v-col cols="12" class="py-1">
                     <v-autocomplete
                         :model-value="modelValue.language_id"
                         @update:model-value="onFieldChange('language_id', $event)"
