@@ -45,10 +45,23 @@
           <v-card-title class="d-flex align-center bg-grey-lighten-4 py-3">
             <v-icon color="primary" class="me-2">mdi-file-document-multiple</v-icon>
             {{ $t('CrmView.occurrences') }}
+            <v-spacer />
+            <v-text-field
+              v-model="occurrenceFilter"
+              :placeholder="$t('CrmView.filterPlaceholder')"
+              prepend-inner-icon="mdi-magnify"
+              variant="solo-filled"
+              density="compact"
+              flat
+              hide-details
+              clearable
+              single-line
+              style="max-width: 240px;"
+            />
           </v-card-title>
           <v-divider />
           <v-card-text class="flex-grow-1 pa-0">
-            <OccurrenceView />
+            <OccurrenceView :search-text="occurrenceFilter" />
           </v-card-text>
         </v-card>
       </v-col>
@@ -131,7 +144,7 @@
 </template>
 
 <script>
-import { computed, onActivated, onMounted } from 'vue'
+import { ref, computed, onActivated, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
@@ -148,6 +161,9 @@ export default {
     const oserp = oserpStore();
     const router = useRouter();
     const { t } = useI18n();
+
+    // Volltextfilter fuer die Vorgangs-Tabs (rechts neben dem Titel)
+    const occurrenceFilter = ref('');
 
     // Kundendaten beim Aktivieren aktualisieren (nur wirksam innerhalb <keep-alive>).
     // Ohne <keep-alive> uebernimmt StartupView.setup() den Refresh (auch ohne id-Prop).
@@ -210,7 +226,7 @@ export default {
       if (editRoute.value) router.push(editRoute.value)
     }
 
-    return { oserp, router, isCustomer, contactHistoryHeaders, contactHistory, formatCallDate, playPhoneCall, editRoute, goToEdit };
+    return { oserp, router, occurrenceFilter, isCustomer, contactHistoryHeaders, contactHistory, formatCallDate, playPhoneCall, editRoute, goToEdit };
   }
 }
 </script>

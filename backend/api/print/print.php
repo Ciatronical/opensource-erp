@@ -334,6 +334,143 @@ function generatePDF($data) {
 }
 
 /**
+ * Rendert ein einzelnes Dokument zu einer PDF-Datei (ohne Cleanup).
+ *
+ * Hilfsfunktion fuer den Sammeldruck (generateBatchPdf). Gibt die Engine
+ * mit zurueck, damit der Aufrufer das Temp-Verzeichnis spaeter aufraeumen kann.
+ *
+ * @return array|false ['path' => <pdfPath>, 'filename' => <name>, 'engine' => LaTeXTemplateEngine]
+ */
+function renderDocumentPdfFile($db, int $fakturaID, string $fakturaType, ?string $templateSet, bool $lxCars, &$error = null) {
+    if (!$templateSet || resolveTemplateDir($templateSet) === false) {
+        $templateSet = getTemplateSet($db);
+    }
+
+    $vars = loadPrintData($db, $fakturaID, $fakturaType, $lxCars);
+    if ($vars === false) {
+        $error = "Belegdaten fuer ID $fakturaID konnten nicht geladen werden";
+        return false;
+    }
+
+    $templateDir = getTemplateDir($templateSet);
+    $templateName = detectTemplate($fakturaType, $vars, $lxCars, $templateDir);
+
+    $engine = new LaTeXTemplateEngine($templateDir);
+    $engine->setVariables($vars['variables']);
+    $engine->setArrays($vars['arrays']);
+
+    $pdfPath = $engine->generatePDF($templateName);
+    if ($pdfPath === false) {
+        $error = $engine->getError();
+        return false;
+    }
+
+    return [
+        'path'     => $pdfPath,
+        'filename' => $vars['variables']['filename'] ?? "beleg_$fakturaID.pdf",
+        'engine'   => $engine,
+    ];
+}
+
+/**
+ * Erzeugt aus mehreren Belegen EIN zusammengefuehrtes PDF (pdfunite) und gibt es aus.
+ *
+ * Erwartet eine Liste von Belegen mit jeweils id + fakturaType (Verkaufsseite),
+ * rendert jeden einzeln und fuegt sie per pdfunite zusammen. Antwort als PDF-Stream
+ * (content-type=application/pdf) oder Base64-JSON.
+ *
+ * @param array $data['documents'] Liste von {id, fakturaType}
+ * @param string $data['filename'] Optionaler Dateiname fuer die Ausgabe
+ * @testdata {"documents":[{"id":1,"fakturaType":"invoice"}],"content-type":"application/pdf"}
+ */
+function generateBatchPdf($data) {
+    $documents = $data['documents'] ?? [];
+    $isPdfRequest = isset($data['content-type']) && $data['content-type'] === 'application/pdf';
+
+    if (!is_array($documents) || count($documents) === 0) {
+        if ($isPdfRequest) header('Content-Type: application/json');
+        resultInfo(false, 'VALIDATION_ERROR', 'documents required');
+        return;
+    }
+
+    $db = DbhCompany::begin();
+    $lxCars = isLxCarsEnabled($db);
+    $templateSet = $data['templateSet'] ?? null;
+
+    $rendered = [];   // ['path','filename','engine'] je Beleg — fuer Cleanup
+    $pdfPaths = [];
+    $errors = [];
+
+    foreach ($documents as $doc) {
+        $id = intval($doc['id'] ?? 0);
+        $type = $doc['fakturaType'] ?? 'invoice';
+        if (!$id) continue;
+
+        $err = null;
+        $res = renderDocumentPdfFile($db, $id, $type, $templateSet, $lxCars, $err);
+        if ($res === false) {
+            $errors[] = "Beleg $id: $err";
+            continue;
+        }
+        $rendered[] = $res;
+        $pdfPaths[] = $res['path'];
+    }
+
+    $cleanup = function () use ($rendered) {
+        foreach ($rendered as $r) {
+            $r['engine']->cleanup($r['path']);
+        }
+    };
+
+    if (count($pdfPaths) === 0) {
+        $cleanup();
+        if ($isPdfRequest) header('Content-Type: application/json');
+        resultInfo(false, 'PDF_ERROR', 'Keine PDFs erzeugt', implode("\n", $errors));
+        return;
+    }
+
+    // Zusammenfuehren (ein einzelnes PDF braucht kein Merge)
+    $mergedTemp = null;
+    if (count($pdfPaths) === 1) {
+        $mergedPath = $pdfPaths[0];
+    } else {
+        $mergedTemp = sys_get_temp_dir() . '/oserp_batch_' . uniqid('', true) . '.pdf';
+        $cmd = '/usr/bin/pdfunite '
+            . implode(' ', array_map('escapeshellarg', $pdfPaths)) . ' '
+            . escapeshellarg($mergedTemp) . ' 2>&1';
+        exec($cmd, $out, $rc);
+
+        if ($rc !== 0 || !file_exists($mergedTemp)) {
+            $cleanup();
+            if ($mergedTemp && file_exists($mergedTemp)) unlink($mergedTemp);
+            if ($isPdfRequest) header('Content-Type: application/json');
+            resultInfo(false, 'MERGE_ERROR', 'PDF-Zusammenfuehrung fehlgeschlagen', implode("\n", $out));
+            return;
+        }
+        $mergedPath = $mergedTemp;
+    }
+
+    $pdfContent = file_get_contents($mergedPath);
+
+    // Aufraeumen (erst nach dem Einlesen!)
+    $cleanup();
+    if ($mergedTemp && file_exists($mergedTemp)) unlink($mergedTemp);
+
+    $filename = $data['filename'] ?? 'belege.pdf';
+    if ($isPdfRequest) {
+        header('Content-Length: ' . strlen($pdfContent));
+        header('Content-Disposition: inline; filename="' . $filename . '"');
+        echo $pdfContent;
+    } else {
+        resultInfo(true, 'OK', [
+            'pdf' => base64_encode($pdfContent),
+            'filename' => $filename,
+            'errors' => $errors,
+        ]);
+    }
+}
+
+/**
  * Generiert PDF und sendet es an einen Drucker
  *
  * Erwartet: fakturaID, fakturaType, printerId, templateSet (optional)
