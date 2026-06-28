@@ -151,6 +151,30 @@
                     </div>
                 </template>
 
+                <template #item.customer_name="{ item }">
+                    <span v-if="item.customer_name" class="customer-name-hover">
+                        {{ item.customer_name }}
+                        <v-tooltip
+                            v-if="hasAddress(item)"
+                            activator="parent"
+                            location="top"
+                            open-delay="200"
+                            content-class="address-bubble"
+                        >
+                            <div class="font-weight-medium mb-1">{{ item.customer_name }}</div>
+                            <div v-if="item.customer_street">{{ item.customer_street }}</div>
+                            <div v-if="item.customer_zipcode || item.customer_city">
+                                {{ [item.customer_zipcode, item.customer_city].filter(Boolean).join(' ') }}
+                            </div>
+                            <div v-if="item.customer_country">{{ item.customer_country }}</div>
+                            <div v-if="item.customer_phone" class="mt-1">
+                                <v-icon size="x-small" class="me-1">mdi-phone</v-icon>{{ item.customer_phone }}
+                            </div>
+                        </v-tooltip>
+                    </span>
+                    <span v-else>-</span>
+                </template>
+
                 <template #item.kennzeichen="{ item }">
                     <span v-if="item.kennzeichen" class="font-weight-medium text-no-wrap">{{ item.kennzeichen }}</span>
                     <span v-else>-</span>
@@ -301,6 +325,17 @@ function formatAmount(value) {
     }) + ' \u20AC';
 }
 
+// Adressbubble nur zeigen, wenn \u00FCberhaupt Adressdaten vorhanden sind
+function hasAddress(item) {
+    return Boolean(
+        item.customer_street ||
+        item.customer_zipcode ||
+        item.customer_city ||
+        item.customer_country ||
+        item.customer_phone
+    );
+}
+
 const handleEnterKey = (event) => {
     const target = event.target;
     if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) {
@@ -436,5 +471,13 @@ const onRowClick = (event, row) => {
 }
 .zebra-table :deep(tbody tr.intern-order:hover) {
     background-color: rgba(var(--v-theme-warning), 0.16) !important;
+}
+.customer-name-hover {
+    cursor: help;
+    text-decoration: underline dotted rgba(var(--v-theme-on-surface), 0.4);
+    text-underline-offset: 2px;
+}
+:deep(.address-bubble) {
+    opacity: 1 !important;
 }
 </style>
