@@ -41,6 +41,22 @@
                     />
                 </v-col>
 
+                <v-col
+                    v-if="modelValue.record_type === 'sales_order' || modelValue.record_type === 'sales_order_intake'"
+                    cols="12"
+                    class="py-1"
+                >
+                    <v-switch
+                        :model-value="modelValue.record_type === 'sales_order'"
+                        @update:model-value="onFieldChange('record_type', $event ? 'sales_order' : 'sales_order_intake')"
+                        :label="t('FakturaView.faktura.orderConfirmed')"
+                        color="success"
+                        density="compact"
+                        hide-details
+                        inset
+                    />
+                </v-col>
+
                 <v-col cols="12" class="py-1">
                     <v-autocomplete
                         :model-value="modelValue.language_id"

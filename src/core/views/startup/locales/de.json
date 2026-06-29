@@ -82,6 +82,7 @@
         "number": "Nummer",
         "amount": "Betrag",
         "confirmed": "Bestätigt",
+        "notConfirmed": "Auftragseingang",
         "storno": "Storno",
         "creditNote": "Gutschrift",
         "licensePlate": "Kennzeichen",

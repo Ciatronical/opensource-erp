@@ -82,6 +82,7 @@
         "number": "Number",
         "amount": "Amount",
         "confirmed": "Confirmed",
+        "notConfirmed": "Order intake",
         "storno": "Cancelled",
         "creditNote": "Credit Note",
         "licensePlate": "License Plate",

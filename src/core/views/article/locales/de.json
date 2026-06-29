@@ -1,27 +1,42 @@
 {
-    "ArticleEditView": {
-        "titleEdit": "Artikel bearbeiten",
-        "saving": "Speichert...",
-        "saved": "Gespeichert",
-        "sections": {
-            "masterData": "Stammdaten"
-        },
-        "fields": {
-            "partnumber": "Artikelnummer",
-            "description": "Beschreibung",
-            "partType": "Artikeltyp",
-            "typePart": "Ware",
-            "typeService": "Dienstleistung",
-            "unit": "Einheit",
-            "buchungsgruppe": "Buchungsgruppe",
-            "sellprice": "Verkaufspreis",
-            "notes": "Langbeschreibung",
-            "obsolete": "Veraltet / Nicht mehr verwenden"
-        },
-        "messages": {
-            "loading": "Artikel wird geladen",
-            "loadError": "Fehler beim Laden des Artikels",
-            "notFound": "Artikel nicht gefunden"
-        }
+  "ArticleEditView": {
+    "titleEdit": "Artikel bearbeiten",
+    "saving": "Speichert...",
+    "saved": "Gespeichert",
+    "sections": {
+      "masterData": "Stammdaten"
+    },
+    "fields": {
+      "partnumber": "Artikelnummer",
+      "description": "Beschreibung",
+      "partType": "Artikeltyp",
+      "typePart": "Ware",
+      "typeService": "Dienstleistung",
+      "unit": "Einheit",
+      "buchungsgruppe": "Buchungsgruppe",
+      "sellprice": "Verkaufspreis",
+      "notes": "Langbeschreibung",
+      "obsolete": "Veraltet / Nicht mehr verwenden"
+    },
+    "messages": {
+      "loading": "Artikel wird geladen",
+      "loadError": "Fehler beim Laden des Artikels",
+      "notFound": "Artikel nicht gefunden"
+    },
+    "ebay": {
+      "title": "eBay-Artikel",
+      "checkbox": "Bei eBay einstellen",
+      "images": "Artikelbilder",
+      "addImage": "Bild hinzufügen",
+      "noImages": "Noch keine Bilder. eBay benötigt mindestens ein Bild.",
+      "deleteImage": "Bild löschen",
+      "statusActive": "Bei eBay eingestellt",
+      "statusEnded": "Listing beendet",
+      "statusError": "eBay-Fehler",
+      "listingId": "Listing-ID: {id}",
+      "busy": "eBay wird aktualisiert …",
+      "uploadError": "Bild-Upload fehlgeschlagen.",
+      "needImageHint": "Bitte zuerst mindestens ein Bild hochladen."
     }
+  }
 }

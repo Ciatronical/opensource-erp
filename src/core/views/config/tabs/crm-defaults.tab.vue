@@ -190,6 +190,13 @@
                 </v-col>
             </v-row>
 
+            <!-- eBay: Verbindung testen / Bestellungen abrufen / Status -->
+            <v-row v-else-if="field.type === 'component' && field.component === 'ebay-status'" class="my-1">
+                <v-col cols="12">
+                    <EbayStatusConfig />
+                </v-col>
+            </v-row>
+
             <!-- Dynamic Select (Items aus company_config) -->
             <v-row v-else-if="field.type === 'dynamic-select'" class="my-1">
                 <v-col cols="12" md="6">
@@ -229,6 +236,7 @@ import axios from 'axios';
 import WhatsAppTemplatesConfig from './whatsapp-templates.config.vue';
 import WhatsAppProfilePictureConfig from './whatsapp-profile-picture.config.vue';
 import SumupReaderPairingConfig from './sumup-reader-pairing.config.vue';
+import EbayStatusConfig from './ebay-status.config.vue';
 
 const { t } = useI18n();
 

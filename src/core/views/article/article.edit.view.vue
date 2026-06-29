@@ -173,6 +173,82 @@
                         </v-card-text>
                     </v-card>
 
+                    <!-- eBay-Artikel (nur wenn Feature aktiv) -->
+                    <v-card v-if="ebayListingEnabled" variant="outlined" class="mt-4">
+                        <v-card-title class="text-subtitle-1 d-flex align-center">
+                            <v-icon class="mr-2" color="primary">mdi-shopping</v-icon>
+                            {{ t('ArticleEditView.ebay.title') }}
+                        </v-card-title>
+                        <v-card-text>
+                            <!-- Bilder -->
+                            <div class="text-caption text-grey mb-2">{{ t('ArticleEditView.ebay.images') }}</div>
+                            <div class="d-flex flex-wrap ga-2 mb-2">
+                                <div
+                                    v-for="img in ebayImages"
+                                    :key="img.id"
+                                    class="position-relative"
+                                    style="width: 96px; height: 96px;"
+                                >
+                                    <v-img :src="img.url" width="96" height="96" cover class="rounded border" />
+                                    <v-btn
+                                        icon="mdi-close"
+                                        size="x-small"
+                                        color="error"
+                                        variant="flat"
+                                        class="position-absolute"
+                                        style="top: -8px; right: -8px;"
+                                        :title="t('ArticleEditView.ebay.deleteImage')"
+                                        @click="deleteImage(img.id)"
+                                    />
+                                </div>
+                                <v-btn
+                                    variant="outlined"
+                                    height="96"
+                                    :loading="uploading"
+                                    prepend-icon="mdi-camera-plus"
+                                    @click="pickImage"
+                                >
+                                    {{ t('ArticleEditView.ebay.addImage') }}
+                                </v-btn>
+                                <input ref="fileInput" type="file" accept="image/*" class="d-none" @change="onFileChange" />
+                            </div>
+                            <div v-if="!ebayImages.length" class="text-caption text-grey mb-2">
+                                {{ t('ArticleEditView.ebay.noImages') }}
+                            </div>
+
+                            <!-- Checkbox: Bei eBay einstellen -->
+                            <v-checkbox
+                                :model-value="ebayListed"
+                                :disabled="ebayBusy || (!ebayListed && !ebayImages.length)"
+                                :label="t('ArticleEditView.ebay.checkbox')"
+                                density="compact"
+                                hide-details
+                                color="primary"
+                                @update:model-value="toggleEbay"
+                            />
+                            <div v-if="!ebayListed && !ebayImages.length" class="text-caption text-grey">
+                                {{ t('ArticleEditView.ebay.needImageHint') }}
+                            </div>
+
+                            <!-- Status -->
+                            <v-alert v-if="ebayBusy" type="info" variant="tonal" density="compact" class="mt-3">
+                                {{ t('ArticleEditView.ebay.busy') }}
+                            </v-alert>
+                            <v-alert v-else-if="ebayStatus === 'active'" type="success" variant="tonal" density="compact" class="mt-3">
+                                {{ t('ArticleEditView.ebay.statusActive') }}
+                                <span v-if="ebayListingId" class="text-caption d-block">
+                                    {{ t('ArticleEditView.ebay.listingId', { id: ebayListingId }) }}
+                                </span>
+                            </v-alert>
+                            <v-alert v-else-if="ebayStatus === 'error'" type="error" variant="tonal" density="compact" class="mt-3">
+                                {{ t('ArticleEditView.ebay.statusError') }}: {{ ebayMessage }}
+                            </v-alert>
+                            <v-alert v-else-if="ebayStatus === 'ended'" type="info" variant="tonal" density="compact" class="mt-3">
+                                {{ t('ArticleEditView.ebay.statusEnded') }}
+                            </v-alert>
+                        </v-card-text>
+                    </v-card>
+
                 </v-col>
             </v-row>
         </div>
@@ -222,6 +298,105 @@ export default defineComponent({
         const buchungsgruppen = computed(() => {
             return oserp.session?.company_config?.buchungsgruppen || []
         })
+
+        // ── eBay-Artikel (feature-gated über defaults_oserp.ebay_listing_enabled) ──
+
+        const ebayListingEnabled = computed(() => {
+            const v = oserp.getClientDefaultValue('ebay_listing_enabled', false)
+            return v === true || v === 't' || v === 'true' || v === 1 || v === '1'
+        })
+
+        const ebayImages = ref([])
+        const ebayListed = ref(false)
+        const ebayStatus = ref(null)
+        const ebayMessage = ref('')
+        const ebayListingId = ref(null)
+        const ebayBusy = ref(false)
+        const uploading = ref(false)
+        const fileInput = ref(null)
+
+        async function loadEbay(articleId) {
+            if (!ebayListingEnabled.value) return
+            try {
+                const [imgs, st] = await Promise.all([
+                    axios.post('/api/ebay/', { action: 'ebayListPartImages', parts_id: Number(articleId) }),
+                    axios.post('/api/ebay/', { action: 'ebayGetPartListing', parts_id: Number(articleId) })
+                ])
+                if (imgs.data.success) ebayImages.value = imgs.data.payload.images || []
+                if (st.data.success) {
+                    const p = st.data.payload
+                    ebayListed.value = !!p.listed
+                    ebayStatus.value = p.status
+                    ebayMessage.value = p.message || ''
+                    ebayListingId.value = p.listing_id || null
+                }
+            } catch (e) {
+                // eBay-Konfiguration (noch) nicht verfügbar – Bereich bleibt leer
+            }
+        }
+
+        function pickImage() {
+            fileInput.value?.click()
+        }
+
+        async function onFileChange(ev) {
+            const file = ev.target.files?.[0]
+            if (!file) return
+            uploading.value = true
+            try {
+                const dataUrl = await new Promise((resolve, reject) => {
+                    const reader = new FileReader()
+                    reader.onload = () => resolve(reader.result)
+                    reader.onerror = reject
+                    reader.readAsDataURL(file)
+                })
+                const resp = await axios.post('/api/ebay/', {
+                    action: 'ebayUploadPartImage',
+                    parts_id: Number(props.id),
+                    filename: file.name,
+                    data: dataUrl
+                })
+                if (resp.data.success) ebayImages.value = resp.data.payload.images || []
+            } catch (e) {
+                error.value = t('ArticleEditView.ebay.uploadError')
+            } finally {
+                uploading.value = false
+                if (fileInput.value) fileInput.value.value = ''
+            }
+        }
+
+        async function deleteImage(imageId) {
+            try {
+                await axios.post('/api/ebay/', { action: 'ebayDeletePartImage', image_id: imageId })
+                ebayImages.value = ebayImages.value.filter(i => i.id !== imageId)
+            } catch (e) {
+                // ignorieren – UI bleibt konsistent beim nächsten Laden
+            }
+        }
+
+        async function toggleEbay(val) {
+            ebayBusy.value = true
+            try {
+                const resp = await axios.post('/api/ebay/', {
+                    action: 'ebaySetPartListed',
+                    parts_id: Number(props.id),
+                    listed: val
+                })
+                if (resp.data.success) {
+                    const p = resp.data.payload
+                    ebayStatus.value = p.status
+                    ebayMessage.value = p.message || ''
+                    ebayListingId.value = p.listing_id || null
+                    ebayListed.value = p.status === 'active'
+                } else {
+                    ebayListed.value = !val
+                }
+            } catch (e) {
+                ebayListed.value = !val
+            } finally {
+                ebayBusy.value = false
+            }
+        }
 
         // ── Focus-Tracking ──
 
@@ -360,6 +535,7 @@ export default defineComponent({
 
         onMounted(async () => {
             await fetchArticle(props.id)
+            await loadEbay(props.id)
             await nextTick()
             initialLoaded.value = true
             window.addEventListener('beforeunload', flushPendingChanges)
@@ -375,6 +551,7 @@ export default defineComponent({
             initialLoaded.value = false
             if (newId) {
                 await fetchArticle(newId)
+                await loadEbay(newId)
             }
             await nextTick()
             initialLoaded.value = true
@@ -389,7 +566,21 @@ export default defineComponent({
             unitOptions,
             buchungsgruppen,
             onFocusIn,
-            onFocusOut
+            onFocusOut,
+            // eBay
+            ebayListingEnabled,
+            ebayImages,
+            ebayListed,
+            ebayStatus,
+            ebayMessage,
+            ebayListingId,
+            ebayBusy,
+            uploading,
+            fileInput,
+            pickImage,
+            onFileChange,
+            deleteImage,
+            toggleEbay
         }
     }
 })

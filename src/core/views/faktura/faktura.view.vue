@@ -1912,6 +1912,12 @@ export default defineComponent({
             const fakturaID = faktura.data.common?.id
             if (!fakturaID) return
             try {
+                // "Bestätigt"-Schalter: record_type (sales_order ↔ sales_order_intake)
+                // läuft über eine eigene, validierte Action statt updateFakturaField.
+                if (field === 'record_type') {
+                    await faktura.setOrderConfirmed(fakturaID, value === 'sales_order')
+                    return
+                }
                 await faktura.updateFakturaField(fakturaID, fakturaType.value, field, value)
                 if (field === 'taxincluded') {
                     // "Steuer im Preis inbegriffen" ändert die Netto/Brutto-Aufteilung

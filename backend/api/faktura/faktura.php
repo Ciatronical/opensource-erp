@@ -385,17 +385,7 @@ function createFaktura($data) {
     $isVendor = ($cvSrc === 'V');
     $company = DbhCompany::begin();
 
-    // Effektiven Dokumenttyp bestimmen (Kivitendo-Logik)
-    $effectiveType = $fakturaType;
-    if ($isVendor) {
-        $typeMap = [
-            'order' => 'purchase_order',
-            'quotation' => 'request_quotation',
-            'invoice' => 'purchase_invoice'
-        ];
-        $effectiveType = $typeMap[$fakturaType] ?? $fakturaType;
-    }
-
+    $effectiveType = resolveEffectiveFakturaType($fakturaType, $isVendor);
     permit(getPermissionForFakturaType($effectiveType));
 
     // Employee-ID aus Session-Login ermitteln
@@ -406,6 +396,43 @@ function createFaktura($data) {
         ['login' => $login]
     );
     $employeeId = $employee ? intval($employee['id']) : null;
+
+    $res = createFakturaCore($company, $fakturaType, $cvId, $cvSrc, $employeeId);
+    resultInfo(true, 'CREATED', $res);
+}
+
+/**
+ * Verkaufs- → Einkaufs-Dokumenttyp (Kivitendo-Logik). Für Lieferanten ($isVendor)
+ * wird der Einkaufstyp gemappt, sonst bleibt der Typ unverändert.
+ */
+function resolveEffectiveFakturaType($fakturaType, $isVendor) {
+    if (!$isVendor) {
+        return $fakturaType;
+    }
+    $typeMap = [
+        'order' => 'purchase_order',
+        'quotation' => 'request_quotation',
+        'invoice' => 'purchase_invoice'
+    ];
+    return $typeMap[$fakturaType] ?? $fakturaType;
+}
+
+/**
+ * Kern der Faktura-Erstellung – session-unabhängig (Mitarbeiter als Parameter).
+ * Wird von createFaktura (HTTP) und vom eBay-Import (CLI) gemeinsam genutzt, damit
+ * Nummernkreis- und Buchungslogik nur an einer Stelle existieren.
+ *
+ * @param object      $company     DbhCompany-Handle
+ * @param string      $fakturaType  'invoice'|'order'|'quotation' (Verkaufssicht)
+ * @param int|null    $cvId         Kunden-/Lieferanten-ID
+ * @param string|null $cvSrc        'C' = Kunde, 'V' = Lieferant
+ * @param int|null    $employeeId   Mitarbeiter-ID
+ * @param array       $opts         Optionale Overrides: ['taxincluded' => bool]
+ * @return array ['id'=>int, 'fakturaType'=>string, 'docNumber'=>mixed]
+ */
+function createFakturaCore($company, $fakturaType, $cvId, $cvSrc, $employeeId, $opts = []) {
+    $isVendor = ($cvSrc === 'V');
+    $effectiveType = resolveEffectiveFakturaType($fakturaType, $isVendor);
 
     // Defaults laden (currency_id)
     $defaults = $company->getOne("SELECT currency_id FROM defaults LIMIT 1");
@@ -426,6 +453,11 @@ function createFaktura($data) {
     if (!$taxzoneId) {
         $taxzone = $company->getOne("SELECT id FROM tax_zones ORDER BY id LIMIT 1");
         $taxzoneId = $taxzone ? intval($taxzone['id']) : 4;
+    }
+
+    // Optionaler Override (z. B. eBay-Import: Preise sind brutto → taxincluded = true)
+    if (array_key_exists('taxincluded', $opts)) {
+        $taxincluded = (bool)$opts['taxincluded'];
     }
 
     // customer_id / vendor_id zuweisen
@@ -514,8 +546,10 @@ SQL;
 
     } else {
         // Auftrag (Verkauf oder Einkauf) → oe-Tabelle, Nummer in ordnumber
+        // Neue Verkaufsaufträge starten als Auftragseingang (unbestätigt) und werden
+        // über den "Bestätigt"-Schalter (setOrderConfirmed) zu sales_order.
         $defaultsCol = ($effectiveType === 'purchase_order') ? 'ponumber' : 'sonumber';
-        $recordType  = ($effectiveType === 'purchase_order') ? 'purchase_order' : 'sales_order';
+        $recordType  = ($effectiveType === 'purchase_order') ? 'purchase_order' : 'sales_order_intake';
 
         $query = <<<SQL
             WITH tmp AS (UPDATE defaults SET {$defaultsCol} = COALESCE({$defaultsCol}::INT, 0) + 1 RETURNING {$defaultsCol})
@@ -540,11 +574,11 @@ SQL;
     // Dokumentnummer aus dem RETURNING-Ergebnis extrahieren
     $docNumber = $result['invnumber'] ?? $result['ordnumber'] ?? $result['quonumber'] ?? null;
 
-    resultInfo(true, 'CREATED', [
+    return [
         'id' => intval($result['id']),
         'fakturaType' => $effectiveType,
         'docNumber' => $docNumber
-    ]);
+    ];
 }
 
 /**
@@ -562,9 +596,68 @@ function createFakturaItem($data) {
 
     permit(getPermissionForFakturaType($fakturaType));
 
+    $newId = createFakturaItemCore($company, $fakturaType, $fakturaID, $item);
+
     $tableConfig = getFakturaTableConfig($fakturaType);
     $itemsTable = $tableConfig['items_table'];
     $mainTable = $tableConfig['main_table'];
+
+    // Komplette Position mit allen Daten zurückgeben (wie in getFakturaData)
+    $selectQuery = <<<SQL
+        SELECT json_build_object(
+            'success', true,
+            'payload', (
+                SELECT row_to_json(item)
+                FROM (
+                    SELECT
+                        {$itemsTable}.*,
+                        parts.partnumber,
+                        parts.part_type,
+                        parts.classification_id,
+                        (
+                            SELECT row_to_json(buchungsziel)
+                            FROM (
+                                SELECT
+                                    c2.id AS income_chart_id,
+                                    tk.tax_id,
+                                    tx.chart_id AS tax_chart_id,
+                                    tx.rate
+                                FROM parts p
+                                LEFT JOIN buchungsgruppen bg ON p.buchungsgruppen_id = bg.id
+                                LEFT JOIN taxzone_charts tc ON bg.id = tc.buchungsgruppen_id
+                                LEFT JOIN chart c2 ON tc.income_accno_id = c2.id
+                                LEFT JOIN taxkeys tk ON tk.chart_id = c2.id
+                                LEFT JOIN tax tx ON tx.id = tk.tax_id
+                                WHERE tc.taxzone_id = (SELECT taxzone_id FROM {$mainTable} WHERE id = {$itemsTable}.trans_id)
+                                    AND p.id = parts.id
+                                ORDER BY tk.startdate DESC
+                                LIMIT 1
+                            ) AS buchungsziel
+                        ) AS buchungsziel
+                    FROM {$itemsTable}
+                    LEFT JOIN parts ON {$itemsTable}.parts_id = parts.id
+                    WHERE {$itemsTable}.id = :itemId
+                ) AS item
+            )
+        ) AS result
+SQL;
+
+    echo $company->getOne($selectQuery, ['itemId' => $newId])['result'];
+}
+
+/**
+ * Kern: fügt eine Faktura-Position ein und liefert die neue Positions-ID zurück.
+ * Session-unabhängig; von createFakturaItem (HTTP) und vom eBay-Import (CLI) genutzt.
+ *
+ * @param object $company     DbhCompany-Handle
+ * @param string $fakturaType  Dokumenttyp (z. B. 'invoice')
+ * @param int    $fakturaID    trans_id des Belegs
+ * @param array  $item         ['parts_id','description','longdescription','qty','sellprice','discount','unit']
+ * @return int   Neue Positions-ID
+ */
+function createFakturaItemCore($company, $fakturaType, $fakturaID, $item) {
+    $tableConfig = getFakturaTableConfig($fakturaType);
+    $itemsTable = $tableConfig['items_table'];
 
     // Nächste Position ermitteln
     $positionQuery = "SELECT COALESCE(MAX(position), 0) + 1 AS next_position FROM {$itemsTable} WHERE trans_id = :fakturaID";
@@ -620,52 +713,8 @@ function createFakturaItem($data) {
     // Insert mit RETURNING für die generierte ID
     $query = "INSERT INTO {$itemsTable} ({$columnList}) VALUES ({$valueList}) RETURNING id";
 
-    // debugQuery($query, $params, 'Faktura Position einfügen');
-
     $result = $company->getOne($query, $params);
-    $newId = $result['id'];
-
-    // Komplette Position mit allen Daten zurückgeben (wie in getFakturaData)
-    $selectQuery = <<<SQL
-        SELECT json_build_object(
-            'success', true,
-            'payload', (
-                SELECT row_to_json(item)
-                FROM (
-                    SELECT
-                        {$itemsTable}.*,
-                        parts.partnumber,
-                        parts.part_type,
-                        parts.classification_id,
-                        (
-                            SELECT row_to_json(buchungsziel)
-                            FROM (
-                                SELECT
-                                    c2.id AS income_chart_id,
-                                    tk.tax_id,
-                                    tx.chart_id AS tax_chart_id,
-                                    tx.rate
-                                FROM parts p
-                                LEFT JOIN buchungsgruppen bg ON p.buchungsgruppen_id = bg.id
-                                LEFT JOIN taxzone_charts tc ON bg.id = tc.buchungsgruppen_id
-                                LEFT JOIN chart c2 ON tc.income_accno_id = c2.id
-                                LEFT JOIN taxkeys tk ON tk.chart_id = c2.id
-                                LEFT JOIN tax tx ON tx.id = tk.tax_id
-                                WHERE tc.taxzone_id = (SELECT taxzone_id FROM {$mainTable} WHERE id = {$itemsTable}.trans_id)
-                                    AND p.id = parts.id
-                                ORDER BY tk.startdate DESC
-                                LIMIT 1
-                            ) AS buchungsziel
-                        ) AS buchungsziel
-                    FROM {$itemsTable}
-                    LEFT JOIN parts ON {$itemsTable}.parts_id = parts.id
-                    WHERE {$itemsTable}.id = :itemId
-                ) AS item
-            )
-        ) AS result
-SQL;
-
-    echo $company->getOne($selectQuery, ['itemId' => $newId])['result'];
+    return $result['id'];
 }
 
 /**
@@ -1673,6 +1722,46 @@ function updateFakturaField($data) {
         'dbField' => $dbField,
         'value' => $cleanValue
     ]);
+}
+
+/**
+ * Bestätigt einen Verkaufsauftrag oder setzt ihn auf Auftragseingang zurück.
+ *
+ * Schaltet record_type zwischen 'sales_order' (bestätigt) und
+ * 'sales_order_intake' (Auftragseingang/unbestätigt). Nur für Verkaufsaufträge —
+ * Angebote, Lieferscheine, Rechnungen und Einkaufsbelege werden abgelehnt.
+ *
+ * @param int  $data['fakturaID'] Auftrags-ID (oe.id)
+ * @param bool $data['confirmed'] true = bestätigt, false = Auftragseingang
+ * @testdata {"fakturaID": 1, "confirmed": true}
+ */
+function setOrderConfirmed($data) {
+    $fakturaID = intval($data['fakturaID'] ?? 0);
+    if (!$fakturaID) {
+        resultInfo(false, 'VALIDATION_ERROR', 'fakturaID required');
+        return;
+    }
+
+    $company = DbhCompany::begin();
+    permit(getPermissionForFakturaType('order'));
+
+    $row = $company->getOne(
+        "SELECT record_type FROM oe WHERE id = :id",
+        [':id' => $fakturaID]
+    );
+    if (!$row) {
+        resultInfo(false, 'NOT_FOUND', 'Auftrag nicht gefunden');
+        return;
+    }
+    if (!in_array($row['record_type'], ['sales_order', 'sales_order_intake'], true)) {
+        resultInfo(false, 'INVALID_TYPE', 'Nur Verkaufsaufträge können bestätigt werden');
+        return;
+    }
+
+    $newType = !empty($data['confirmed']) ? 'sales_order' : 'sales_order_intake';
+    $company->update('oe', ['record_type'], [$newType], 'id = ' . $fakturaID);
+
+    resultInfo(true, 'UPDATED', ['record_type' => $newType]);
 }
 
 /**

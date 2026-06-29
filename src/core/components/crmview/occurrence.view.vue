@@ -106,8 +106,11 @@
                     class="cursor-pointer zebra-table"
                 >
                     <template #item.record_type="{ item }">
-                        <v-icon v-if="item.record_type === 'sales_order_intake'" color="success" size="small">
-                            mdi-check
+                        <v-icon v-if="item.record_type === 'sales_order'" color="success" size="small" :title="t('CrmView.confirmed')">
+                            mdi-check-circle
+                        </v-icon>
+                        <v-icon v-else-if="item.record_type === 'sales_order_intake'" color="grey" size="small" :title="t('CrmView.notConfirmed')">
+                            mdi-clock-outline
                         </v-icon>
                     </template>
                     <template #item.amount="{ item }">
@@ -321,14 +324,22 @@ const invoicesHeaders = [
     { title: t('CrmView.amount'), key: 'amount', sortable: true, align: 'end' }
 ];
 
-// Headers für Aufträge mit zusätzlicher Spalte "Bestätigt"
-const ordersHeaders = [
-    { title: t('CrmView.number'), key: 'number', sortable: true },
-    { title: t('CrmView.date'), key: 'date', sortable: true },
-    { title: t('CrmView.description'), key: 'description', sortable: false },
-    { title: t('CrmView.confirmed'), key: 'record_type', sortable: true, align: 'center' },
-    { title: t('CrmView.amount'), key: 'amount', sortable: true, align: 'end' }
-];
+// Headers für Aufträge: bei LxCars zusätzliche Kennzeichen-Spalte, plus Spalte "Bestätigt"
+const ordersHeaders = computed(() => {
+    const cols = [
+        { title: t('CrmView.number'), key: 'number', sortable: true },
+        { title: t('CrmView.date'), key: 'date', sortable: true },
+        { title: t('CrmView.description'), key: 'description', sortable: false },
+    ];
+    if (lxCarsEnabled.value) {
+        cols.push({ title: t('CrmView.licensePlate'), key: 'license_plate', sortable: true });
+    }
+    cols.push(
+        { title: t('CrmView.confirmed'), key: 'record_type', sortable: true, align: 'center' },
+        { title: t('CrmView.amount'), key: 'amount', sortable: true, align: 'end' }
+    );
+    return cols;
+});
 
 // Headers für Lieferscheine: bei LxCars zusätzliche Kennzeichen-Spalte
 const deliveryOrdersHeaders = computed(() => {

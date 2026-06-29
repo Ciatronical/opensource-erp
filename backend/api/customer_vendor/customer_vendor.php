@@ -162,6 +162,14 @@ function getCV($data, $withConfig = []) {
               ''
           )"
         : "''";
+    // Auftrag (oe) selbst: Kennzeichen aus oe_ext, Fallback Fahrzeug-Kennzeichen (cars_lxcars.c_ln)
+    $kennzeichenForOrder = $lxCars
+        ? "(SELECT COALESCE(NULLIF(car.c_ln, ''), oe_ext.kennzeichen, '')
+            FROM oe_ext
+            LEFT JOIN cars_lxcars car ON car.c_id = oe_ext.c_id
+            WHERE oe_ext.oe_id = oe.id
+            LIMIT 1)"
+        : "''";
 
     $auth = DbhAuth::begin();
     $auth->fetchSessionData();
@@ -502,6 +510,7 @@ function getCV($data, $withConfig = []) {
                                                 'currency', c.name,
                                                 'number', oe.ordnumber,
                                                 'record_type', oe.record_type,
+                                                'license_plate', {$kennzeichenForOrder},
                                                 'id', oe.id
                                             ) AS obj
                                         FROM oe

@@ -273,7 +273,28 @@ const crmDefaultsConfig = [
     { name: "accounting_default_tax_rate", type: "select", items: [{ value: "19", title: "19% (Standard)" }, { value: "7", title: "7% (Ermaessigt)" }, { value: "0", title: "0% (Steuerfrei)" }], fieldstyle: "max-width: 20ch", label: "crm_fields.accountingDefaultTaxRate", tooltip: "crm_fields.accountingDefaultTaxRate_help" },
     { name: "accounting_default_debit_account", type: "input", size: 10, fieldstyle: "max-width: 15ch", label: "crm_fields.accountingDefaultDebitAccount", tooltip: "crm_fields.accountingDefaultDebitAccount_help" },
     { name: "accounting_default_credit_account", type: "input", size: 10, fieldstyle: "max-width: 15ch", label: "crm_fields.accountingDefaultCreditAccount", tooltip: "crm_fields.accountingDefaultCreditAccount_help" },
-    { name: "accounting_auto_create_vendor", type: "checkbox", label: "crm_fields.accountingAutoCreateVendor", tooltip: "crm_fields.accountingAutoCreateVendor_help" }
+    { name: "accounting_auto_create_vendor", type: "checkbox", label: "crm_fields.accountingAutoCreateVendor", tooltip: "crm_fields.accountingAutoCreateVendor_help" },
+
+    { name: "ebay", type: "headline", label: "crm_fields.ebayHeadline" },
+    { name: "ebay_enabled", type: "checkbox", label: "crm_fields.ebayEnabled", tooltip: "crm_fields.ebayEnabled_help" },
+    { name: "ebay_environment", type: "select", items: [{ value: "production", title: "Produktiv" }, { value: "sandbox", title: "Sandbox (Test)" }], fieldstyle: "max-width: 30ch", label: "crm_fields.ebayEnvironment", tooltip: "crm_fields.ebayEnvironment_help" },
+    { name: "ebay_marketplace_id", type: "input", size: 20, fieldstyle: "max-width: 20ch", label: "crm_fields.ebayMarketplaceId", tooltip: "crm_fields.ebayMarketplaceId_help" },
+    { name: "ebay_client_id", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.ebayClientId", tooltip: "crm_fields.ebayClientId_help" },
+    { name: "ebay_client_secret", type: "password", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.ebayClientSecret", tooltip: "crm_fields.ebayClientSecret_help" },
+    { name: "ebay_refresh_token", type: "password", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.ebayRefreshToken", tooltip: "crm_fields.ebayRefreshToken_help" },
+    { name: "ebay_default_parts_id", type: "input", inputType: "number", size: 10, fieldstyle: "max-width: 20ch", label: "crm_fields.ebayDefaultPartsId", tooltip: "crm_fields.ebayDefaultPartsId_help" },
+    { name: "ebay_employee_login", type: "input", size: 30, fieldstyle: "max-width: 30ch", label: "crm_fields.ebayEmployeeLogin", tooltip: "crm_fields.ebayEmployeeLogin_help" },
+    { name: "ebay_panel", type: "component", component: "ebay-status", label: "crm_fields.ebayPanel" },
+
+    { name: "ebay_listing", type: "headline", label: "crm_fields.ebayListingHeadline" },
+    { name: "ebay_listing_enabled", type: "checkbox", label: "crm_fields.ebayListingEnabled", tooltip: "crm_fields.ebayListingEnabled_help" },
+    { name: "ebay_default_category_id", type: "input", size: 20, fieldstyle: "max-width: 30ch", label: "crm_fields.ebayCategoryId", tooltip: "crm_fields.ebayCategoryId_help" },
+    { name: "ebay_default_condition", type: "select", items: [{ value: "NEW", title: "Neu" }, { value: "USED_EXCELLENT", title: "Gebraucht – sehr gut" }, { value: "USED_GOOD", title: "Gebraucht – gut" }, { value: "USED_ACCEPTABLE", title: "Gebraucht – akzeptabel" }, { value: "FOR_PARTS_OR_NOT_WORKING", title: "Defekt / Ersatzteil" }], fieldstyle: "max-width: 40ch", label: "crm_fields.ebayCondition", tooltip: "crm_fields.ebayCondition_help" },
+    { name: "ebay_payment_policy_id", type: "input", size: 30, fieldstyle: "max-width: 40ch", label: "crm_fields.ebayPaymentPolicy", tooltip: "crm_fields.ebayPaymentPolicy_help" },
+    { name: "ebay_return_policy_id", type: "input", size: 30, fieldstyle: "max-width: 40ch", label: "crm_fields.ebayReturnPolicy", tooltip: "crm_fields.ebayReturnPolicy_help" },
+    { name: "ebay_fulfillment_policy_id", type: "input", size: 30, fieldstyle: "max-width: 40ch", label: "crm_fields.ebayFulfillmentPolicy", tooltip: "crm_fields.ebayFulfillmentPolicy_help" },
+    { name: "ebay_merchant_location_key", type: "input", size: 30, fieldstyle: "max-width: 40ch", label: "crm_fields.ebayLocationKey", tooltip: "crm_fields.ebayLocationKey_help" },
+    { name: "ebay_listing_quantity", type: "input", inputType: "number", size: 10, fieldstyle: "max-width: 20ch", label: "crm_fields.ebayListingQuantity", tooltip: "crm_fields.ebayListingQuantity_help" }
 ];
 
 export default crmDefaultsConfig;

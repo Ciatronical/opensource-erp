@@ -339,6 +339,29 @@ export const fakturaStore = defineStore('fakturaStore', () => {
     }
 
     /**
+     * Bestätigt einen Verkaufsauftrag oder setzt ihn auf Auftragseingang zurück
+     * (schaltet record_type sales_order ↔ sales_order_intake).
+     *
+     * @param {number} fakturaID - Auftrags-ID
+     * @param {boolean} confirmed - true = bestätigt, false = Auftragseingang
+     * @return {Promise<Object>} { record_type }
+     */
+    async function setOrderConfirmed(fakturaID, confirmed) {
+        const response = await axios.post('/api/faktura/', {
+            action: 'setOrderConfirmed',
+            fakturaID: fakturaID,
+            confirmed: confirmed
+        });
+
+        if (response.data.success) {
+            return response.data.payload;
+        }
+        else {
+            throw new ApiError('ApiError', response.data.text, 'Error confirming order: ' + response.data.text);
+        }
+    }
+
+    /**
      * Legt einen neuen Artikel in der parts Tabelle an
      *
      * @param {Object} partData - Artikel-Daten
@@ -572,6 +595,7 @@ export const fakturaStore = defineStore('fakturaStore', () => {
         warmAagToken,
         updateFakturaItems,
         updateFakturaField,
+        setOrderConfirmed,
         updatePart,
         createPart,
         getTemplateList,

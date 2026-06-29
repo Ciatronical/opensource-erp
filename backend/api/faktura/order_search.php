@@ -183,7 +183,7 @@ function searchOrders($data) {
         LEFT JOIN oe_ext ON oe_ext.oe_id = oe.id
         LEFT JOIN cars_lxcars car ON car.c_id = oe_ext.c_id
         LEFT JOIN kba_lxcars kba ON kba.id = car.kba_id
-        WHERE oe.record_type IN ('sales_order', 'purchase_order')
+        WHERE oe.record_type IN ('sales_order', 'sales_order_intake', 'purchase_order')
         AND $search
         ORDER BY
             CASE WHEN oe_ext.intern THEN 1 ELSE 0 END,

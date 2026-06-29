@@ -2278,3 +2278,57 @@ CREATE INDEX IF NOT EXISTS idx_payment_settlement_lines_net ON payment_settlemen
 CREATE INDEX IF NOT EXISTS idx_payment_settlement_lines_matched ON payment_settlement_lines(matched_bank_transaction_id);
 
 COMMENT ON TABLE payment_settlement_lines IS 'Einzelne Auszahlungszeilen einer Kartenabrechnung; net = erwarteter Bankbetrag fuer Auto-Match.';
+
+-- eBay-Bestellimport: Idempotenz, Audit und Kaeufer->Kunde-Verknuepfung.
+-- UNIQUE(ebay_order_id) ist die zentrale Sperre gegen doppelte Rechnungen.
+-- buyer_username dient als schnellster Dubletten-Treffer fuer wiederkehrende Kaeufer.
+CREATE TABLE IF NOT EXISTS ebay_orders (
+    id              SERIAL PRIMARY KEY,
+    ebay_order_id   TEXT NOT NULL UNIQUE,                       -- eBay orderId (Idempotenz-Schluessel)
+    ar_id           INTEGER REFERENCES ar(id) ON DELETE SET NULL,  -- erzeugte Ausgangsrechnung
+    customer_id     INTEGER REFERENCES customer(id) ON DELETE SET NULL,  -- zugeordneter Kunde
+    buyer_username  TEXT,                                       -- eBay-Kaeufername (stabilster Dubletten-Schluessel)
+    order_status    VARCHAR(30),                                -- eBay orderFulfillmentStatus
+    total           NUMERIC(15,2) DEFAULT 0,                    -- Bruttogesamtbetrag der Bestellung
+    posting_reason  VARCHAR(40),                                -- Ergebnis von postArInvoiceToLedger (posted/AMOUNT_MISMATCH/...)
+    raw             JSONB,                                      -- Rohbestellung von eBay (Audit/Reklamation)
+    itime           TIMESTAMP DEFAULT NOW(),
+    mtime           TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_ebay_orders_buyer ON ebay_orders(buyer_username);
+CREATE INDEX IF NOT EXISTS idx_ebay_orders_customer ON ebay_orders(customer_id);
+
+COMMENT ON TABLE ebay_orders IS 'Importierte eBay-Bestellungen; UNIQUE(ebay_order_id) verhindert doppelte Rechnungen, buyer_username verknuepft wiederkehrende Kaeufer mit dem Kunden.';
+
+-- eBay-Artikelbilder (Outbound-Listing). Dateien liegen unter data/<db>/parts/<parts_id>/;
+-- oeffentlich ausgeliefert ueber webhook/part-image.php, damit eBay sie laden kann.
+CREATE TABLE IF NOT EXISTS ebay_part_images (
+    id          SERIAL PRIMARY KEY,
+    parts_id    INTEGER NOT NULL,                           -- Artikel (parts.id; kein FK, parts ist kivitendo-Kerntabelle)
+    filename    TEXT NOT NULL,                              -- Dateiname im Artikelordner
+    sort        INTEGER DEFAULT 0,                          -- Reihenfolge (0 = Hauptbild)
+    itime       TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_ebay_part_images_part ON ebay_part_images(parts_id);
+
+COMMENT ON TABLE ebay_part_images IS 'Artikelbilder fuer eBay-Listings; Dateien unter data/<db>/parts/<parts_id>/, oeffentlich via webhook/part-image.php.';
+
+-- eBay-Listing-Status je Artikel. Checkbox "eBay-Artikel" = status='active'.
+CREATE TABLE IF NOT EXISTS ebay_listings (
+    id          SERIAL PRIMARY KEY,
+    parts_id    INTEGER NOT NULL UNIQUE,                    -- Artikel (parts.id)
+    sku         TEXT,                                       -- = parts.partnumber (Bruecke zum Inbound-Abgleich)
+    offer_id    TEXT,                                       -- eBay offerId
+    listing_id  TEXT,                                       -- eBay listingId (nach publish)
+    status      VARCHAR(20) DEFAULT 'active'
+                CHECK (status IN ('active', 'ended', 'error')),
+    message     TEXT,                                       -- letzte eBay-Meldung (z. B. Validierungsfehler)
+    itime       TIMESTAMP DEFAULT NOW(),
+    mtime       TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_ebay_listings_status ON ebay_listings(status);
+
+COMMENT ON TABLE ebay_listings IS 'eBay-Outbound-Listing je Artikel; status=active bedeutet bei eBay veroeffentlicht, ended=zurueckgezogen, error=Publish-Fehler (siehe message).';

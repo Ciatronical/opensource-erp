@@ -87,6 +87,7 @@
             "currency": "Währung",
             "taxZone": "Steuerzone",
             "taxIncluded": "Steuer im Preis inbegriffen",
+            "orderConfirmed": "Bestätigt",
             "shippingPoint": "Versandort",
             "shipVia": "Versandart",
             "transactionDescription": "Vorgangsbeschreibung",

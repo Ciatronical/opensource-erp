@@ -1,27 +1,42 @@
 {
-    "ArticleEditView": {
-        "titleEdit": "Edit Article",
-        "saving": "Saving...",
-        "saved": "Saved",
-        "sections": {
-            "masterData": "Master Data"
-        },
-        "fields": {
-            "partnumber": "Article Number",
-            "description": "Description",
-            "partType": "Article Type",
-            "typePart": "Goods",
-            "typeService": "Service",
-            "unit": "Unit",
-            "buchungsgruppe": "Posting Group",
-            "sellprice": "Selling Price",
-            "notes": "Long Description",
-            "obsolete": "Obsolete / Do not use"
-        },
-        "messages": {
-            "loading": "Loading article",
-            "loadError": "Error loading article",
-            "notFound": "Article not found"
-        }
+  "ArticleEditView": {
+    "titleEdit": "Edit Article",
+    "saving": "Saving...",
+    "saved": "Saved",
+    "sections": {
+      "masterData": "Master Data"
+    },
+    "fields": {
+      "partnumber": "Article Number",
+      "description": "Description",
+      "partType": "Article Type",
+      "typePart": "Goods",
+      "typeService": "Service",
+      "unit": "Unit",
+      "buchungsgruppe": "Posting Group",
+      "sellprice": "Selling Price",
+      "notes": "Long Description",
+      "obsolete": "Obsolete / Do not use"
+    },
+    "messages": {
+      "loading": "Loading article",
+      "loadError": "Error loading article",
+      "notFound": "Article not found"
+    },
+    "ebay": {
+      "title": "eBay article",
+      "checkbox": "List on eBay",
+      "images": "Article images",
+      "addImage": "Add image",
+      "noImages": "No images yet. eBay requires at least one image.",
+      "deleteImage": "Delete image",
+      "statusActive": "Listed on eBay",
+      "statusEnded": "Listing ended",
+      "statusError": "eBay error",
+      "listingId": "Listing id: {id}",
+      "busy": "Updating eBay …",
+      "uploadError": "Image upload failed.",
+      "needImageHint": "Please upload at least one image first."
     }
+  }
 }
