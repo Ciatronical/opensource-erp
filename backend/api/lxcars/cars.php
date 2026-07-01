@@ -528,7 +528,7 @@ function getCarOrders($data) {
          FROM oe_ext e
          JOIN oe o ON o.id = e.oe_id
          WHERE e.c_id = :c_id
-           AND o.record_type = 'sales_order'
+           AND o.record_type IN ('sales_order', 'sales_order_intake')
          ORDER BY o.transdate DESC
          LIMIT 20",
         [':c_id' => $carId]

@@ -22,6 +22,35 @@ function connectPDO($dbHost, $dbPort, $dbName, $dbUser, $dbPass) {
 }
 
 /**
+ * Übersetzt technische PostgreSQL-Fehler in verständliche Meldungen.
+ *
+ * Bekannte SQLSTATEs bekommen einen klaren Text; alles andere wird unverändert
+ * durchgereicht, damit bei Entwicklung/Support die Originalmeldung sichtbar bleibt.
+ *
+ * @param PDOException $e Die abgefangene Datenbank-Ausnahme
+ * @return string Verständliche Fehlermeldung
+ */
+function dbFriendlyError(PDOException $e) {
+    $sqlstate = $e->getCode();
+    $raw = $e->getMessage();
+
+    // 22003 = numeric_value_out_of_range (z. B. Nummernkreis-Zähler > INT-Bereich)
+    if ($sqlstate === '22003' || stripos($raw, 'out of range') !== false) {
+        return 'Der interne Nummernkreis wurde überschritten: Der zuletzt vergebene '
+             . 'Wert ist zu gross für den Zahlentyp. Bitte die zuletzt vergebene '
+             . 'Artikel- bzw. Dienstleistungsnummer in den Einstellungen auf einen '
+             . 'kleineren Wert zurücksetzen.';
+    }
+
+    // 23505 = unique_violation
+    if ($sqlstate === '23505' || stripos($raw, 'duplicate key') !== false) {
+        return 'Der Datensatz existiert bereits (eindeutiger Wert doppelt vergeben).';
+    }
+
+    return $raw;
+}
+
+/**
  * Basisklasse für Datenbankverbindungen
  */
 class ApiDatabase {
@@ -212,7 +241,7 @@ class ApiDatabase {
             $stmt->execute(['data' => $dataJson]);
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
-            throw new ApiError("API_DATABASE_ERROR", $e->getMessage());
+            throw new ApiError("API_DATABASE_ERROR", dbFriendlyError($e));
         }
         if ($row === false) {
             throw new ApiError("DATA_NOT_FOUND", 'Keine Daten gefunden');
@@ -233,7 +262,7 @@ class ApiDatabase {
             $stmt = $this->pdo->query($query);
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
-            throw new ApiError("API_DATABASE_ERROR", $e->getMessage(), $query);
+            throw new ApiError("API_DATABASE_ERROR", dbFriendlyError($e), $query);
         }
         if ($row === false) {
             throw new ApiError("DATA_NOT_FOUND", 'Keine Daten gefunden', $query);
@@ -727,9 +756,10 @@ class DbhCompany {
  * @return string Die nächste freie Nummer
  */
 function nextFreeNumber($db, $defaultsCol, $targetTable, $targetCol) {
-    // Atomisch hochzählen — sperrt gleichzeitig die defaults-Zeile gegen parallele Zugriffe
+    // Atomisch hochzählen — sperrt gleichzeitig die defaults-Zeile gegen parallele Zugriffe.
+    // BIGINT statt INT: der Nummernkreis-Zähler darf gross werden, ohne zu überlaufen.
     $row = $db->getOne(
-        "UPDATE defaults SET $defaultsCol = COALESCE({$defaultsCol}::INT, 0) + 1 RETURNING {$defaultsCol}"
+        "UPDATE defaults SET $defaultsCol = COALESCE({$defaultsCol}::BIGINT, 0) + 1 RETURNING {$defaultsCol}"
     );
     $candidate = (int)$row[$defaultsCol];
 

@@ -19,7 +19,7 @@ if(isset($data['action'])) {
     }
     catch (PDOException $e) {
         header('Content-Type: application/json');
-        resultInfo(false, "API_DATABASE_ERROR", $e->getMessage());
+        resultInfo(false, "API_DATABASE_ERROR", dbFriendlyError($e));
     }
     catch (ApiError $e) {
         header('Content-Type: application/json');

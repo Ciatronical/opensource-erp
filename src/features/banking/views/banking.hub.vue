@@ -317,6 +317,20 @@
                         return-object
                         item-value="id"
                     >
+                        <!-- Sammel-Pfeil im Tabellenkopf: sendet alle offenen Entwuerfe auf einmal -->
+                        <template #header.actions>
+                            <v-btn
+                                v-if="draftCount > 0"
+                                icon="mdi-send"
+                                size="small"
+                                variant="tonal"
+                                color="primary"
+                                :loading="transfers.loading.value"
+                                :title="t('BankingView.transfers.submitAllHint', { count: draftCount })"
+                                @click="confirmSubmitAllDrafts"
+                            />
+                        </template>
+
                         <template #item.status="{ item }">
                             <div>
                                 <v-chip :color="transferStatusColor(item.status)" size="x-small" variant="tonal">
@@ -340,8 +354,8 @@
                         </template>
                         <template #item.actions="{ item }">
                             <div class="d-flex ga-1">
-                                <v-btn v-if="item.status === 'draft'" icon="mdi-pencil" size="x-small" variant="text" @click="editTransfer(item)" />
-                                <v-btn v-if="item.status === 'draft'" icon="mdi-send" size="x-small" variant="text" color="primary" @click="confirmSubmitTransfer(item)" />
+                                <v-btn v-if="sendableStatuses.includes(item.status)" icon="mdi-pencil" size="x-small" variant="text" @click="editTransfer(item)" />
+                                <v-btn v-if="sendableStatuses.includes(item.status)" icon="mdi-send" size="x-small" variant="text" color="primary" @click="confirmSubmitTransfer(item)" />
                                 <v-btn v-if="item.status !== 'executed'" icon="mdi-delete" size="x-small" variant="text" color="error" @click="confirmDeleteTransfer(item)" />
                                 <v-btn
                                     v-if="['submitted','executed'].includes(item.status)"
@@ -1260,7 +1274,7 @@
             </v-card-text>
             <v-card-actions class="pa-4">
                 <v-spacer />
-                <v-btn variant="text" @click="showTransferTanDialog = false">{{ t('BankingView.tan.cancel') }}</v-btn>
+                <v-btn variant="text" @click="cancelTransferTan">{{ t('BankingView.tan.cancel') }}</v-btn>
                 <v-btn color="primary" variant="elevated" :loading="transfers.loading.value" @click="submitTanForTransfer">
                     {{ transfers.tanChallenge.decoupled ? t('BankingView.tan.submitDecoupled') : t('BankingView.tan.submit') }}
                 </v-btn>
@@ -2160,7 +2174,7 @@ const canSave = computed(() =>
 const batchSelectable = computed(() => {
     const drafts = selectedIds.value
         .map(item => transfers.transferOrders.value.find(o => o.id === (item.id || item)))
-        .filter(o => o && o.status === 'draft' && !o.instant)
+        .filter(o => o && sendableStatuses.includes(o.status) && !o.instant)
     if (drafts.length < 2) return []
     const accountId = drafts[0].bank_account_id
     const execDate  = drafts[0].execution_date || null
@@ -2168,6 +2182,33 @@ const batchSelectable = computed(() => {
 })
 const batchSelectableCount = computed(() => batchSelectable.value.length)
 const batchSelectableTotal = computed(() => batchSelectable.value.reduce((s, o) => s + parseFloat(o.amount||0), 0))
+
+// Sendbare Aufträge: Entwürfe und zuvor fehlgeschlagene (rejected) — ohne
+// Instant, die sind per Definition Einzeltransaktionen. Basis für den
+// "Alle senden"-Pfeil im Tabellenkopf.
+const sendableStatuses = ['draft', 'rejected']
+const draftOrders = computed(() => transfers.transferOrders.value.filter(o => sendableStatuses.includes(o.status) && !o.instant))
+const draftCount  = computed(() => draftOrders.value.length)
+const draftTotal  = computed(() => draftOrders.value.reduce((s, o) => s + parseFloat(o.amount||0), 0))
+
+// Warteschlange fuer "Alle senden": nach (Konto, Ausfuehrungsdatum) gruppierte
+// Drafts. Jede Gruppe geht als eigener SEPA-Sammelauftrag raus (eine TAN je
+// Gruppe). Normalfall — alle Drafts gleiches Konto, sofort — ist genau eine
+// Gruppe und damit eine einzige TAN-Bestaetigung fuer alles.
+const pendingGroups = ref([])
+
+// Ausführungsdatum für "Alle senden": macht aus dem (von der Bank blockierten)
+// Sofort-Sammelauftrag eine terminierte Sammelüberweisung mit EINER pushTAN.
+// Nur für den "Alle senden"-Weg gesetzt; manuelle Auswahl bleibt null (Sofort).
+const batchExecutionDate = ref(null)
+
+// Nächster Werktag (Mo–Fr) als Vorgabe-Ausführungsdatum, YYYY-MM-DD.
+function nextBusinessDayIso() {
+    const d = new Date()
+    d.setDate(d.getDate() + 1)
+    while (d.getDay() === 0 || d.getDay() === 6) d.setDate(d.getDate() + 1)
+    return d.toISOString().slice(0, 10)
+}
 
 const batchDeletable = computed(() =>
     selectedIds.value
@@ -2318,13 +2359,25 @@ async function confirmSubmitTransfer(item) {
     showPinDialog.value = true
 }
 
+// "Auswahl senden" (manuelle Checkbox-Auswahl) — ausgewählte Überweisungen
+// einzeln nacheinander senden, jede mit eigener pushTAN (wie "Alle senden").
 async function confirmSubmitBatch() {
-    const drafts = batchSelectable.value
-    if (drafts.length < 2) return
-    submitTarget.value = null; batchSubmitIds.value = drafts.map(d => d.id)
-    batchSubmitTotalCache = drafts.reduce((s,d) => s + parseFloat(d.amount||0), 0)
+    if (batchSelectable.value.length < 2) return
+    batchExecutionDate.value = null
+    pendingGroups.value = batchSelectable.value.map(o => [o])
+    await startSubmitGroup(pendingGroups.value[0])
+}
+
+// Startet das Senden einer Gruppe gleichartiger Drafts (gleiches Konto +
+// Ausfuehrungsdatum). >= 2 -> Sammelauftrag, sonst Einzelueberweisung. Bei
+// gespeicherter PIN wird ohne Dialog direkt gesendet.
+async function startSubmitGroup(group) {
+    if (!group || group.length === 0) return
+    if (group.length < 2) { await confirmSubmitTransfer(group[0]); return }
+    submitTarget.value = null; batchSubmitIds.value = group.map(d => d.id)
+    batchSubmitTotalCache = group.reduce((s,d) => s + parseFloat(d.amount||0), 0)
     batchId.value = null; submitPin.value = ''
-    const accountId = drafts[0].bank_account_id
+    const accountId = group[0].bank_account_id
     const account = banking.accounts.value.find(a => a.id === accountId)
     if (account?.has_saved_pin) {
         try {
@@ -2335,16 +2388,47 @@ async function confirmSubmitBatch() {
     showPinDialog.value = true
 }
 
+// "Alle senden" — sammelt alle Drafts, gruppiert nach Konto+Datum und sendet
+// Gruppe fuer Gruppe. Nach erfolgreichem Senden einer Gruppe startet
+// advanceGroupQueue() automatisch die naechste.
+async function confirmSubmitAllDrafts() {
+    if (draftCount.value === 0) { alerts.info(t('BankingView.transfers.noDraftsToSubmit')); return }
+    const r = await Swal.fire({
+        title: t('BankingView.transfers.submitAllConfirmTitle'),
+        text:  t('BankingView.transfers.submitAllConfirmText', { count: draftCount.value, total: formatCurrency(draftTotal.value) }),
+        icon: 'question', showCancelButton: true,
+        confirmButtonText: t('BankingView.transfers.submit'),
+        cancelButtonText:  t('BankingView.sync.cancel')
+    })
+    if (!r.isConfirmed) return
+    batchExecutionDate.value = null
+    // Einzeln nacheinander abarbeiten: jede Überweisung als eigener Auftrag mit
+    // eigener pushTAN-Freigabe. Ein echter Sammelauftrag wird von der Sparkasse
+    // blockiert (asynchroner VoP-Namensabgleich → keine Sammel-pushTAN); der
+    // Einzelversand funktioniert dagegen zuverlässig. Ein Klick startet die
+    // ganze Kette, der Nutzer bestätigt jede Freigabe am Handy.
+    pendingGroups.value = draftOrders.value.map(o => [o])
+    await startSubmitGroup(pendingGroups.value[0])
+}
+
+// Aktuelle Gruppe als fertig markieren und ggf. die naechste starten.
+async function advanceGroupQueue() {
+    if (pendingGroups.value.length === 0) return
+    pendingGroups.value.shift()
+    const next = pendingGroups.value[0]
+    if (next) await startSubmitGroup(next)
+}
+
 let batchSubmitTotalCache = 0
 const batchSubmitTotal = computed(() => batchSubmitTotalCache)
 
-function closePinDialog() { submitPin.value = ''; submitTarget.value = null; batchSubmitIds.value = []; batchId.value = null; showPinDialog.value = false }
+function closePinDialog() { submitPin.value = ''; submitTarget.value = null; batchSubmitIds.value = []; batchId.value = null; pendingGroups.value = []; showPinDialog.value = false }
 
 async function executeSubmitTransfer() {
     if (!submitPin.value) return
     try {
         const result = isBatchSubmit.value
-            ? await transfers.submitTransferBatch(batchSubmitIds.value, submitPin.value)
+            ? await transfers.submitTransferBatch(batchSubmitIds.value, submitPin.value, batchExecutionDate.value)
             : await transfers.submitTransfer(submitTarget.value.id, submitPin.value)
         if (result.vopApprovalRequired) { showPinDialog.value = false; showVopDialog.value = true; return }
         if (result.tanRequired) {
@@ -2360,19 +2444,20 @@ async function executeSubmitTransfer() {
             submitPin.value = ''; showPinDialog.value = false; selectedIds.value = []; batchSubmitIds.value = []
             alerts.success(t(key, params))
             await transfers.fetchTransferOrders()
+            await advanceGroupQueue()
         }
-    } catch (e) { alerts.error(e.message) }
+    } catch (e) { pendingGroups.value = []; alerts.error(e.message) }
 }
 
 async function confirmVopApproval() {
     try {
         const result = await transfers.approveVopTransfer(submitTarget.value.id, submitPin.value)
         if (result.tanRequired) { showVopDialog.value = false; transferTanInput.value = ''; showTransferTanDialog.value = true }
-        else { showVopDialog.value = false; submitPin.value = ''; alerts.success(t('BankingView.alerts.transferSubmitted')); await transfers.fetchTransferOrders() }
-    } catch (e) { showVopDialog.value = false; submitPin.value = ''; alerts.error(e.message) }
+        else { showVopDialog.value = false; submitPin.value = ''; alerts.success(t('BankingView.alerts.transferSubmitted')); await transfers.fetchTransferOrders(); await advanceGroupQueue() }
+    } catch (e) { pendingGroups.value = []; showVopDialog.value = false; submitPin.value = ''; alerts.error(e.message) }
 }
 
-function cancelVopApproval() { showVopDialog.value = false; submitPin.value = ''; submitTarget.value = null; alerts.info(t('BankingView.alerts.transferCancelled')) }
+function cancelVopApproval() { showVopDialog.value = false; submitPin.value = ''; submitTarget.value = null; pendingGroups.value = []; alerts.info(t('BankingView.alerts.transferCancelled')) }
 
 async function submitTanForTransfer() {
     const tanValue = transfers.tanChallenge.decoupled ? '' : transferTanInput.value
@@ -2392,13 +2477,16 @@ async function submitTanForTransfer() {
             banking.saveBankingPin(submitBankAccountId.value, submitPin.value).catch(() => {})
             banking.fetchAccounts()
         }
-        showTransferTanDialog.value = false; submitPin.value = ''; transferTanInput.value = ''
-        selectedIds.value = []; batchSubmitIds.value = []
+        // Erfolgsmeldung VOR dem Leeren von batchSubmitIds bestimmen — sonst ist
+        // isBatchSubmit bereits false und es käme fälschlich der Einzel-Toast.
         const key = isBatchSubmit.value ? 'BankingView.alerts.batchSubmitted' : 'BankingView.alerts.transferSubmitted'
         const params = isBatchSubmit.value ? { count: result.count || batchSubmitIds.value.length } : {}
+        showTransferTanDialog.value = false; submitPin.value = ''; transferTanInput.value = ''
+        selectedIds.value = []; batchSubmitIds.value = []
         alerts.success(t(key, params))
         await transfers.fetchTransferOrders()
-    } catch (e) { alerts.error(e.message) }
+        await advanceGroupQueue()
+    } catch (e) { pendingGroups.value = []; alerts.error(e.message) }
 }
 
 async function runReconcile() {
@@ -2543,13 +2631,15 @@ function startTransferDecoupledPolling() {
                 banking.saveBankingPin(submitBankAccountId.value, submitPin.value).catch(() => {})
                 banking.fetchAccounts()
             }
-            showTransferTanDialog.value = false; submitPin.value = ''; transferTanInput.value = ''
-            selectedIds.value = []; batchSubmitIds.value = []
+            // Erfolgsmeldung VOR dem Leeren von batchSubmitIds bestimmen (sonst Einzel-Toast).
             const key = isBatchSubmit.value ? 'BankingView.alerts.batchSubmitted' : 'BankingView.alerts.transferSubmitted'
             const params = isBatchSubmit.value ? { count: result.count || batchSubmitIds.value.length } : {}
+            showTransferTanDialog.value = false; submitPin.value = ''; transferTanInput.value = ''
+            selectedIds.value = []; batchSubmitIds.value = []
             alerts.success(t(key, params))
             await transfers.fetchTransferOrders()
-        } catch (e) { stopDecoupledPolling(); showTransferTanDialog.value = false; submitPin.value = ''; alerts.error(e.message) }
+            await advanceGroupQueue()
+        } catch (e) { stopDecoupledPolling(); pendingGroups.value = []; showTransferTanDialog.value = false; submitPin.value = ''; alerts.error(e.message) }
     }
     decoupledPollTimer = setTimeout(tick, 2000)
 }
@@ -2558,6 +2648,12 @@ watch(showTransferTanDialog, v => {
     if (!v) { stopDecoupledPolling(); return }
     if (transfers.tanChallenge.decoupled) startTransferDecoupledPolling()
 })
+
+// Abbruch im TAN-Dialog: laufende Gruppen-Warteschlange verwerfen.
+function cancelTransferTan() {
+    pendingGroups.value = []
+    showTransferTanDialog.value = false
+}
 
 async function runSync() {
     if (!syncPin.value) return

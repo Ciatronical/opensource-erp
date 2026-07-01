@@ -362,6 +362,27 @@ function fintsCreate($config, $pin, $persistedInstance = null) {
  *                                null fuer Sofort
  * @return string PAIN-XML
  */
+/**
+ * Bereinigt Text für den eingeschränkten SEPA-Zeichensatz (EPC).
+ * Erlaubt: a-z A-Z 0-9 / - ? : ( ) . , ' + und Leerzeichen. Deutsche Umlaute/ß
+ * und gängige Akzente werden transliteriert, alle übrigen Zeichen (z. B. der
+ * Unterstrich in "Hryshchenko_Inna", &, *) durch ein Leerzeichen ersetzt.
+ * Verhindert Bank-Fehler 9010 ("Zeichen außerhalb SEPA-Range").
+ */
+function sepaSanitizeText($s): string {
+    $s = (string)$s;
+    $map = [
+        'ä'=>'ae','ö'=>'oe','ü'=>'ue','Ä'=>'Ae','Ö'=>'Oe','Ü'=>'Ue','ß'=>'ss',
+        'à'=>'a','á'=>'a','â'=>'a','ã'=>'a','å'=>'a','è'=>'e','é'=>'e','ê'=>'e','ë'=>'e',
+        'ì'=>'i','í'=>'i','î'=>'i','ï'=>'i','ò'=>'o','ó'=>'o','ô'=>'o','õ'=>'o',
+        'ù'=>'u','ú'=>'u','û'=>'u','ý'=>'y','ç'=>'c','ñ'=>'n','&'=>'+',
+    ];
+    $s = strtr($s, $map);
+    $s = preg_replace('/[^A-Za-z0-9\/?:()., \'+-]/u', ' ', $s);
+    $s = preg_replace('/\s+/u', ' ', $s);
+    return trim($s);
+}
+
 function buildSepaCreditTransferPainXml($senderName, $senderIban, $senderBic, array $transactions, ?string $executionDate = null) {
     if (empty($transactions)) {
         throw new \InvalidArgumentException('Mindestens eine Transaktion erforderlich');
@@ -399,7 +420,7 @@ function buildSepaCreditTransferPainXml($senderName, $senderIban, $senderBic, ar
     $grpHdr->appendChild($el('NbOfTxs', (string)$nbOfTx));
     $grpHdr->appendChild($el('CtrlSum', $ctrlSum));
     $initgPty = $el('InitgPty');
-    $initgPty->appendChild($el('Nm', $senderName));
+    $initgPty->appendChild($el('Nm', sepaSanitizeText($senderName)));
     $grpHdr->appendChild($initgPty);
 
     // PmtInf — ein Block fuer alle Tx (Sammel = mehrere CdtTrfTxInf)
@@ -419,7 +440,7 @@ function buildSepaCreditTransferPainXml($senderName, $senderIban, $senderBic, ar
     $pmtInf->appendChild($el('ReqdExctnDt', $reqdDt));
 
     $dbtr = $el('Dbtr');
-    $dbtr->appendChild($el('Nm', $senderName));
+    $dbtr->appendChild($el('Nm', sepaSanitizeText($senderName)));
     $pmtInf->appendChild($dbtr);
 
     $dbtrAcct = $el('DbtrAcct');
@@ -464,7 +485,7 @@ function buildSepaCreditTransferPainXml($senderName, $senderIban, $senderBic, ar
         }
 
         $cdtr = $el('Cdtr');
-        $cdtr->appendChild($el('Nm', $tx['name']));
+        $cdtr->appendChild($el('Nm', sepaSanitizeText($tx['name'])));
         $cdtTrfTxInf->appendChild($cdtr);
 
         $cdtrAcct = $el('CdtrAcct');
@@ -475,7 +496,7 @@ function buildSepaCreditTransferPainXml($senderName, $senderIban, $senderBic, ar
 
         if (!empty($tx['purpose'])) {
             $rmtInf = $el('RmtInf');
-            $rmtInf->appendChild($el('Ustrd', $tx['purpose']));
+            $rmtInf->appendChild($el('Ustrd', sepaSanitizeText($tx['purpose'])));
             $cdtTrfTxInf->appendChild($rmtInf);
         }
     }
@@ -1194,8 +1215,8 @@ function fintsSubmitTransferPhp($data) {
         return;
     }
 
-    if ($order['status'] !== 'draft') {
-        resultInfo(false, 'NOT_SUBMITTABLE', 'Nur Entwuerfe koennen gesendet werden');
+    if (!in_array($order['status'], ['draft', 'rejected'], true)) {
+        resultInfo(false, 'NOT_SUBMITTABLE', 'Nur Entwürfe können gesendet werden');
         return;
     }
 
@@ -1477,7 +1498,7 @@ function fintsSubmitTransferTanPhp($data) {
 }
 
 /**
- * FinTS: Sammelueberweisung — mehrere Auftraege in einem PAIN-Batch absenden.
+ * FinTS: Sammelüberweisung — mehrere Auftraege in einem PAIN-Batch absenden.
  * Alle Auftraege muessen zum gleichen Bankkonto gehoeren, im 'draft' sein, und
  * entweder alle ein execution_date haben (HKCME) oder keiner (HKCCM). Instant
  * ist im Batch nicht erlaubt — Sofort-Ueberweisungen sind per Definition
@@ -1487,6 +1508,28 @@ function fintsSubmitTransferTanPhp($data) {
  * @param string $data['pin']                 Online-Banking PIN
  * @testdata {"transfer_order_ids": [1, 2, 3], "pin": "12345"}
  */
+/**
+ * Baut eine benannte IN-Klausel für eine Liste von IDs.
+ *
+ * Der DB-Wrapper (bindTypedParams) bindet ausschließlich über Array-Keys —
+ * positionsbasierte '?'-Platzhalter mit 0-indizierten Arrays scheitern an
+ * PDO::bindValue (Argument #1 muss >= 1 sein). Deshalb erzeugen wir benannte
+ * Parameter :bid0, :bid1, … die sich mit weiteren named params mischen lassen.
+ *
+ * @param array $ids Liste von IDs
+ * @return array [string $placeholders, array $params]
+ */
+function fintsBuildIdInClause(array $ids): array {
+    $names = [];
+    $params = [];
+    foreach (array_values($ids) as $i => $id) {
+        $key = 'bid' . $i;
+        $names[] = ':' . $key;
+        $params[$key] = (int)$id;
+    }
+    return [implode(',', $names), $params];
+}
+
 function fintsSubmitTransferBatch($data) {
     $db = DbhCompany::begin();
 
@@ -1500,12 +1543,12 @@ function fintsSubmitTransferBatch($data) {
 
     $ids = array_values(array_filter(array_map('intval', $ids), fn($i) => $i > 0));
     if (count($ids) < 2) {
-        resultInfo(false, 'VALIDATION_ERROR', 'Mindestens 2 gueltige Auftrags-IDs erforderlich');
+        resultInfo(false, 'VALIDATION_ERROR', 'Mindestens 2 gültige Auftrags-IDs erforderlich');
         return;
     }
 
-    // Auftraege laden + auf gleiche bank_account_id und draft pruefen.
-    $placeholders = implode(',', array_fill(0, count($ids), '?'));
+    // Aufträge laden + auf gleiche bank_account_id und Sendbarkeit prüfen.
+    [$placeholders, $idParams] = fintsBuildIdInClause($ids);
     $orders = $db->getAll(<<<SQL
         SELECT bto.*,
                        REGEXP_REPLACE(ba.iban, '\s+', '', 'g')           as sender_iban,
@@ -1516,25 +1559,28 @@ function fintsSubmitTransferBatch($data) {
         JOIN bank_accounts ba ON ba.id = bto.bank_account_id
         WHERE bto.id IN ($placeholders)
         ORDER BY bto.id ASC
-    SQL, $ids);
+    SQL, $idParams);
 
     if (count($orders) !== count($ids)) {
-        resultInfo(false, 'NOT_FOUND', 'Ein oder mehrere Auftraege nicht gefunden');
+        resultInfo(false, 'NOT_FOUND', 'Ein oder mehrere Aufträge nicht gefunden');
         return;
     }
 
     $accountId = $orders[0]['bank_account_id'];
     foreach ($orders as $o) {
-        if ($o['status'] !== 'draft') {
-            resultInfo(false, 'NOT_SUBMITTABLE', 'Nur Entwuerfe koennen gesendet werden');
+        // Entwürfe und zuvor fehlgeschlagene (rejected) Aufträge dürfen gesendet
+        // werden — ein abgelehnter Auftrag wurde nicht ausgeführt, der Wiederholversuch
+        // ist also sicher.
+        if (!in_array($o['status'], ['draft', 'rejected'], true)) {
+            resultInfo(false, 'NOT_SUBMITTABLE', 'Nur Entwürfe können gesendet werden');
             return;
         }
         if ($o['bank_account_id'] != $accountId) {
-            resultInfo(false, 'VALIDATION_ERROR', 'Alle Auftraege muessen vom selben Konto sein');
+            resultInfo(false, 'VALIDATION_ERROR', 'Alle Aufträge müssen vom selben Konto sein');
             return;
         }
         if (!empty($o['instant'])) {
-            resultInfo(false, 'VALIDATION_ERROR', 'Sofort-Ueberweisungen koennen nicht im Batch gesendet werden');
+            resultInfo(false, 'VALIDATION_ERROR', 'Sofort-Überweisungen können nicht im Batch gesendet werden');
             return;
         }
     }
@@ -1543,19 +1589,46 @@ function fintsSubmitTransferBatch($data) {
     // Datum) oder alle sofort. Mischbatches lehnt phpFinTS ab.
     $execDates = array_unique(array_filter(array_map(fn($o) => $o['execution_date'], $orders)));
     if (count($execDates) > 1) {
-        resultInfo(false, 'VALIDATION_ERROR', 'Auftraege im Batch muessen das gleiche Ausfuehrungsdatum haben');
+        resultInfo(false, 'VALIDATION_ERROR', 'Aufträge im Batch müssen das gleiche Ausführungsdatum haben');
         return;
     }
     $batchExecDate = $execDates ? reset($execDates) : null;
-    // Wenn manche Auftraege ein Datum haben und andere nicht, ist das
+    // Wenn manche Aufträge ein Datum haben und andere nicht, ist das
     // ebenfalls ein Mix — nicht erlaubt.
     if ($batchExecDate !== null) {
         foreach ($orders as $o) {
             if (empty($o['execution_date'])) {
-                resultInfo(false, 'VALIDATION_ERROR', 'Auftraege im Batch muessen entweder alle terminiert oder alle sofort sein');
+                resultInfo(false, 'VALIDATION_ERROR', 'Aufträge im Batch müssen entweder alle terminiert oder alle sofort sein');
                 return;
             }
         }
+    }
+
+    // Terminierte Sammelüberweisung: ein optionales Batch-Ausführungsdatum (aus
+    // dem "Alle senden"-Dialog) macht aus dem SOFORT-Sammelauftrag (HKCCM) eine
+    // terminierte Sammelüberweisung (HKCME). Hintergrund: die Sparkasse blockiert
+    // den Sofort-Sammelauftrag, weil der VoP-Namensabgleich für mehrere Empfänger
+    // asynchron läuft (3093 "noch in Bearbeitung" -> 3945 "Freigabe kann nicht
+    // erteilt werden"). Mit Termin nimmt die Bank den Auftrag sofort an und
+    // erledigt den Abgleich bis zum Datum — genau eine pushTAN für alle.
+    $reqExecDate = trim((string)($data['execution_date'] ?? ''));
+    if ($reqExecDate !== '') {
+        $d = \DateTime::createFromFormat('Y-m-d', $reqExecDate);
+        if (!$d || $d->format('Y-m-d') !== $reqExecDate) {
+            resultInfo(false, 'VALIDATION_ERROR', 'Ungültiges Ausführungsdatum');
+            return;
+        }
+        if ($reqExecDate < date('Y-m-d')) {
+            resultInfo(false, 'VALIDATION_ERROR', 'Ausführungsdatum darf nicht in der Vergangenheit liegen');
+            return;
+        }
+        $batchExecDate = $reqExecDate;
+        // Datum auf allen Aufträgen persistieren — konsistent für PAIN-Neuaufbau
+        // im Folge-TAN-Schritt (login-batch) und für die Anzeige.
+        $db->execute(
+            "UPDATE bank_transfer_orders SET execution_date = :d, mtime = now() WHERE id IN ($placeholders)",
+            array_merge(['d' => $reqExecDate], $idParams)
+        );
     }
 
     $config = $db->getOne(
@@ -1589,7 +1662,7 @@ function fintsSubmitTransferBatch($data) {
             $_SESSION['fints_stage'] = 'login-batch';
             $db->execute(
                 "UPDATE bank_transfer_orders SET status = 'pending_tan', batch_id = :batch, mtime = now() WHERE id IN ($placeholders)",
-                array_merge(['batch' => $batchId], $ids)
+                array_merge(['batch' => $batchId], $idParams)
             );
             $payload = fintsBuildTanResponse($fints, $login);
             $payload['batch_id'] = $batchId;
@@ -1622,8 +1695,25 @@ function fintsSubmitTransferBatch($data) {
             $batchExecDate
         );
 
-        $sepaTransfer = \Fhp\Action\SendSEPATransfer::create($senderAccount, $painXml);
+        // VoP-konform (HKVPP + HKCCM): die Sparkasse verlangt für Sammelaufträge
+        // einen Empfänger-Namensabgleich (sonst Code 9076). Diese Lib führt ihn
+        // durch — stimmen alle Namen, kommt direkt EINE TAN für den ganzen Batch.
+        require_once __DIR__.'/lib/SendSEPATransferWithVoP.php';
+        $sepaTransfer = \OserpBanking\SendSEPATransferWithVoP::createWithCheck($senderAccount, $painXml);
         $fints->execute($sepaTransfer);
+
+        // Namensabgleich für mindestens einen Empfänger nicht eindeutig
+        // (RVMC/RVNM/RVNA bzw. Sperrcode 3945). Eine Pro-Empfänger-Bestätigung
+        // gibt es im Sammelauftrag nicht → zurück auf Entwurf, Einzelversand-Hinweis.
+        if ($sepaTransfer->vopResponse !== null) {
+            $db->execute(
+                "UPDATE bank_transfer_orders SET status = 'draft', batch_id = NULL, mtime = now() WHERE id IN ($placeholders)",
+                $idParams
+            );
+            resultInfo(false, 'VOP_MISMATCH_BATCH',
+                'Namensabgleich für mindestens einen Empfänger nicht eindeutig — eine Sammelüberweisung ist dafür nicht möglich. Bitte die betroffenen Überweisungen einzeln senden (Pfeil in der Zeile) und dort den Namensabgleich bestätigen.');
+            return;
+        }
 
         if ($sepaTransfer->needsTan()) {
             session_start();
@@ -1636,7 +1726,7 @@ function fintsSubmitTransferBatch($data) {
 
             $db->execute(
                 "UPDATE bank_transfer_orders SET status = 'pending_tan', batch_id = :batch, mtime = now() WHERE id IN ($placeholders)",
-                array_merge(['batch' => $batchId], $ids)
+                array_merge(['batch' => $batchId], $idParams)
             );
             $payload = fintsBuildTanResponse($fints, $sepaTransfer);
             $payload['batch_id'] = $batchId;
@@ -1647,14 +1737,14 @@ function fintsSubmitTransferBatch($data) {
         // Kein TAN noetig — alle als submitted markieren
         $db->execute(
             "UPDATE bank_transfer_orders SET status = 'submitted', submitted_at = now(), batch_id = :batch, mtime = now() WHERE id IN ($placeholders)",
-            array_merge(['batch' => $batchId], $ids)
+            array_merge(['batch' => $batchId], $idParams)
         );
-        resultInfo(true, 'Sammelueberweisung gesendet', ['batch_id' => $batchId, 'count' => count($ids)]);
+        resultInfo(true, 'Sammelüberweisung gesendet', ['batch_id' => $batchId, 'count' => count($ids)]);
 
     } catch (\Exception $e) {
         $db->execute(
             "UPDATE bank_transfer_orders SET status = 'rejected', error_message = :error, mtime = now() WHERE id IN ($placeholders)",
-            array_merge(['error' => fintsToUtf8($e->getMessage())], $ids)
+            array_merge(['error' => fintsToUtf8($e->getMessage())], $idParams)
         );
         fintsLogException('SubmitTransferBatch', $e, ['batch_id' => $batchId, 'ids' => $ids]);
         resultInfo(false, 'FINTS_ERROR', 'FinTS-Fehler: ' . fintsToUtf8($e->getMessage()));
@@ -1662,8 +1752,8 @@ function fintsSubmitTransferBatch($data) {
 }
 
 /**
- * FinTS: TAN fuer Sammelueberweisung einreichen. Spiegelt fintsSubmitTransferTan
- * fuer Batch-Sessions — die TAN gilt fuer alle Auftraege gemeinsam.
+ * FinTS: TAN für Sammelüberweisung einreichen. Spiegelt fintsSubmitTransferTan
+ * für Batch-Sessions — die TAN gilt für alle Aufträge gemeinsam.
  *
  * @param string $data['tan']      TAN-Eingabe (leer bei Decoupled)
  * @param string $data['pin']      Online-Banking PIN
@@ -1695,10 +1785,10 @@ function fintsSubmitTransferBatchTan($data) {
 
     $ids = $_SESSION['fints_batch_ids'] ?? [];
     if (!is_array($ids) || empty($ids)) {
-        resultInfo(false, 'NO_PENDING_ACTION', 'Batch-Session ungueltig');
+        resultInfo(false, 'NO_PENDING_ACTION', 'Batch-Session ungültig');
         return;
     }
-    $placeholders = implode(',', array_fill(0, count($ids), '?'));
+    [$placeholders, $idParams] = fintsBuildIdInClause($ids);
 
     $bankAccountId = (int)$_SESSION['fints_bank_account_id'];
     $config = $db->getOne(
@@ -1732,7 +1822,7 @@ function fintsSubmitTransferBatchTan($data) {
 
         $stage = $_SESSION['fints_stage'] ?? 'batch';
         if ($stage === 'login-batch') {
-            // Login-TAN war erfolgreich, jetzt die eigentliche Sammelueberweisung
+            // Login-TAN war erfolgreich, jetzt die eigentliche Sammelüberweisung
             unset($_SESSION['fints_action'], $_SESSION['fints_persist'], $_SESSION['fints_stage']);
 
             $orders = $db->getAll(<<<SQL
@@ -1745,7 +1835,7 @@ function fintsSubmitTransferBatchTan($data) {
                 JOIN bank_accounts ba ON ba.id = bto.bank_account_id
                 WHERE bto.id IN ($placeholders)
                 ORDER BY bto.id ASC
-            SQL, $ids);
+            SQL, $idParams);
 
             $companyRow = $db->getOne("SELECT company FROM defaults");
             $senderName = trim($companyRow['company'] ?? '') ?: 'Absender';
@@ -1767,8 +1857,22 @@ function fintsSubmitTransferBatchTan($data) {
                 $senderName, $orders[0]['sender_iban'], $orders[0]['sender_bic'] ?? '',
                 $txList, $batchExecDate
             );
-            $sepaTransfer = \Fhp\Action\SendSEPATransfer::create($senderAccount, $painXml);
+            // VoP-konform wie in fintsSubmitTransferBatch (HKVPP + HKCCM).
+            require_once __DIR__.'/lib/SendSEPATransferWithVoP.php';
+            $sepaTransfer = \OserpBanking\SendSEPATransferWithVoP::createWithCheck($senderAccount, $painXml);
             $fints->execute($sepaTransfer);
+            if ($sepaTransfer->vopResponse !== null) {
+                unset($_SESSION['fints_action'], $_SESSION['fints_persist'],
+                      $_SESSION['fints_bank_account_id'], $_SESSION['fints_batch_id'],
+                      $_SESSION['fints_batch_ids'], $_SESSION['fints_stage']);
+                $db->execute(
+                    "UPDATE bank_transfer_orders SET status = 'draft', batch_id = NULL, mtime = now() WHERE id IN ($placeholders)",
+                    $idParams
+                );
+                resultInfo(false, 'VOP_MISMATCH_BATCH',
+                    'Namensabgleich für mindestens einen Empfänger nicht eindeutig — eine Sammelüberweisung ist dafür nicht möglich. Bitte die betroffenen Überweisungen einzeln senden und dort den Namensabgleich bestätigen.');
+                return;
+            }
             if ($sepaTransfer->needsTan()) {
                 session_start();
                 $_SESSION['fints_action'] = serialize($sepaTransfer);
@@ -1785,13 +1889,13 @@ function fintsSubmitTransferBatchTan($data) {
             fintsPersistTrustState($fints, $db, $orders[0]['bank_account_id']);
             $db->execute(
                 "UPDATE bank_transfer_orders SET status = 'submitted', submitted_at = now(), mtime = now() WHERE id IN ($placeholders)",
-                $ids
+                $idParams
             );
-            resultInfo(true, 'Sammelueberweisung gesendet', ['count' => count($ids)]);
+            resultInfo(true, 'Sammelüberweisung gesendet', ['count' => count($ids)]);
             return;
         }
 
-        // stage = batch — Action-TAN, Sammelueberweisung war direkt in der Action
+        // stage = batch — Action-TAN, Sammelüberweisung war direkt in der Action
         unset($_SESSION['fints_action'], $_SESSION['fints_persist'],
               $_SESSION['fints_bank_account_id'], $_SESSION['fints_batch_id'],
               $_SESSION['fints_batch_ids'], $_SESSION['fints_stage']);
@@ -1799,9 +1903,9 @@ function fintsSubmitTransferBatchTan($data) {
         fintsPersistTrustState($fints, $db, $bankAccountId);
         $db->execute(
             "UPDATE bank_transfer_orders SET status = 'submitted', submitted_at = now(), mtime = now() WHERE id IN ($placeholders)",
-            $ids
+            $idParams
         );
-        resultInfo(true, 'Sammelueberweisung gesendet', ['count' => count($ids)]);
+        resultInfo(true, 'Sammelüberweisung gesendet', ['count' => count($ids)]);
 
     } catch (\Exception $e) {
         unset($_SESSION['fints_action'], $_SESSION['fints_persist'],
@@ -1810,7 +1914,7 @@ function fintsSubmitTransferBatchTan($data) {
 
         $db->execute(
             "UPDATE bank_transfer_orders SET status = 'rejected', error_message = :error, mtime = now() WHERE id IN ($placeholders)",
-            array_merge(['error' => fintsToUtf8($e->getMessage())], $ids)
+            array_merge(['error' => fintsToUtf8($e->getMessage())], $idParams)
         );
         fintsLogException('SubmitTransferBatchTan', $e, ['batch_id' => $batchId, 'ids' => $ids]);
         resultInfo(false, 'FINTS_ERROR', 'FinTS-Fehler: ' . fintsToUtf8($e->getMessage()));

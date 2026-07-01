@@ -246,8 +246,10 @@ function updateTransferOrder($data) {
         return;
     }
 
-    if ($existing['status'] !== 'draft') {
-        resultInfo(false, 'NOT_EDITABLE', 'Nur Entwuerfe koennen bearbeitet werden');
+    // Entwürfe und fehlgeschlagene (rejected) Aufträge dürfen bearbeitet werden —
+    // z. B. um die Ursache der Ablehnung (falsche IBAN) zu korrigieren und neu zu senden.
+    if (!in_array($existing['status'], ['draft', 'rejected'], true)) {
+        resultInfo(false, 'NOT_EDITABLE', 'Nur Entwürfe können bearbeitet werden');
         return;
     }
 

@@ -31,7 +31,7 @@ function searchCV($data) {
                 'order' => [
                     'table' => 'oe',
                     'foreignKey' => 'customer_id',
-                    'condition' => "record_type = 'sales_order'",
+                    'condition' => "record_type IN ('sales_order', 'sales_order_intake')",
                 ],
                 'delivery_order' => [
                     'table' => 'delivery_orders',

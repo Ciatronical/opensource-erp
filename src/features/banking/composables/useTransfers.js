@@ -208,14 +208,15 @@ export function useTransfers() {
         }
     }
 
-    async function submitTransferBatch(transferOrderIds, pin) {
+    async function submitTransferBatch(transferOrderIds, pin, executionDate = null) {
         loading.value = true
         tanRequired.value = false
         try {
             const response = await axios.post(API_URL, {
                 action: 'fintsSubmitTransferBatch',
                 transfer_order_ids: transferOrderIds,
-                pin
+                pin,
+                execution_date: executionDate || ''
             })
             if (response.data.success) {
                 if (response.data.text === 'TAN_REQUIRED') {

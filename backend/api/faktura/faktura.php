@@ -685,7 +685,10 @@ function createFakturaItemCore($company, $fakturaType, $fakturaID, $item) {
         ':qty',
         ':sellprice',
         ':discount',
-        ':unit'
+        // Leere Einheit -> Einheit des Artikels (parts.unit), sonst NULL.
+        // Verhindert FK-Verletzung (orderitems_unit_fkey/invoice_unit_fkey),
+        // wenn das Frontend keine Einheit mitsendet (z. B. bei Dienstleistungen).
+        "COALESCE(NULLIF(:unit, ''), (SELECT unit FROM parts WHERE id = :unit_parts_id))"
     ];
 
     $params = [
@@ -697,7 +700,8 @@ function createFakturaItemCore($company, $fakturaType, $fakturaID, $item) {
         'qty' => floatval($item['qty'] ?? 1),
         'sellprice' => floatval($item['sellprice'] ?? 0),
         'discount' => floatval($item['discount'] ?? 0),
-        'unit' => $item['unit'] ?? ''
+        'unit' => $item['unit'] ?? '',
+        'unit_parts_id' => intval($item['parts_id'])
     ];
 
     // Zusätzliche Spalten nur für Rechnungen (invoice Tabelle)
@@ -2468,30 +2472,20 @@ SQL;
                     'unit' => trim($item['unit'] ?? 'Stck')
                 ]);
             } else {
-                // Ohne Teilenummer → automatische Nummernvergabe
+                // Ohne Teilenummer → interne Nummer aus dem defaults-Nummernkreis.
+                // Bewusst KEIN MAX(partnumber)-Scan: importierte Fremdnummern (z. B.
+                // EANs) sollen den internen Zähler nicht hochreissen. nextFreeNumber
+                // zählt defaults hoch und überspringt bereits vergebene Nummern.
                 $numberField = ($partType === 'service') ? 'servicenumber' : 'articlenumber';
+                $newNumber = nextFreeNumber($company, $numberField, 'parts', 'partnumber');
+
                 $partQuery = <<<SQL
-                    WITH next_num AS (
-                        SELECT GREATEST(
-                            COALESCE(NULLIF(regexp_replace(COALESCE({$numberField}, ''), '[^0-9]', '', 'g'), '')::bigint, 0),
-                            COALESCE(
-                                (SELECT MAX(regexp_replace(partnumber, '[^0-9]', '', 'g')::bigint)
-                                 FROM parts WHERE partnumber ~ '^\d+$'),
-                                0
-                            )
-                        ) + 1 AS n
-                        FROM defaults
-                    ),
-                    tmp AS (
-                        UPDATE defaults
-                        SET {$numberField} = (SELECT n::text FROM next_num)
-                        RETURNING {$numberField} AS new_number
-                    )
                     INSERT INTO parts (partnumber, description, part_type, buchungsgruppen_id, sellprice, unit, obsolete)
-                    SELECT (SELECT new_number FROM tmp), :description, :part_type, :buchungsgruppen_id, :sellprice, :unit, FALSE
+                    VALUES (:partnumber, :description, :part_type, :buchungsgruppen_id, :sellprice, :unit, FALSE)
                     RETURNING id
 SQL;
                 $partResult = $company->getOne($partQuery, [
+                    'partnumber' => $newNumber,
                     'description' => $description,
                     'part_type' => $partType,
                     'buchungsgruppen_id' => $buchungsgruppenId,
