@@ -7,12 +7,10 @@ import { formatNumber } from '@/core/utils/numberFormat.js'
 export function useCarOrders(locale) {
     const orders = ref([])
     const orderFilter = ref('')
-    const searchIndexLoaded = ref(false)
-    const searchIndexLoading = ref(false)
 
     // Kluger Filter: jeder Suchbegriff muss irgendwo im Auftrag vorkommen
     // (Auftrag-Nr., Datum, Beschreibung, Summe, Waren, Warenbeträge,
-    //  Arbeitsanweisungen, Rechnungsnummer/-betrag – search_text wird lazy nachgeladen).
+    //  Arbeitsanweisungen, Rechnungsnummer/-betrag – alles im search_text vom Backend).
     const filteredOrders = computed(() => {
         const list = orders.value
         const q = (orderFilter.value || '').trim().toLowerCase()
@@ -27,33 +25,6 @@ export function useCarOrders(locale) {
         })
     })
 
-    /**
-     * Lädt den durchsuchbaren Text-Blob (Waren, Anweisungen, Rechnung) einmalig
-     * nach und merged ihn in die bereits geladenen Aufträge. Wird erst beim
-     * ersten Filtern angestoßen, damit die Ladezeit des Fahrzeugs nicht leidet.
-     *
-     * @param {Function} loader - liefert Promise<[{ id, search_text }]>
-     */
-    async function ensureSearchIndex(loader) {
-        if (searchIndexLoaded.value || searchIndexLoading.value) return
-        searchIndexLoading.value = true
-        try {
-            const rows = await loader()
-            const map = {}
-            for (const r of rows || []) map[r.id] = r.search_text || ''
-            orders.value = orders.value.map(o => ({ ...o, search_text: map[o.id] || '' }))
-            searchIndexLoaded.value = true
-        } catch {
-            // Ohne Index filtert der Nutzer weiterhin über die Anzeigefelder
-        } finally {
-            searchIndexLoading.value = false
-        }
-    }
-
-    function resetSearchIndex() {
-        searchIndexLoaded.value = false
-    }
-
     function formatAmount(value) {
         return formatNumber(value, locale.value) + ' €'
     }
@@ -67,7 +38,6 @@ export function useCarOrders(locale) {
 
     return {
         orders, orderFilter, filteredOrders,
-        searchIndexLoading, ensureSearchIndex, resetSearchIndex,
         formatAmount, compareDate
     }
 }

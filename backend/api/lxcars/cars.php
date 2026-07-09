@@ -530,9 +530,9 @@ function getCarOrders($data) {
     $db = DbhCompany::begin();
     $carId = intval($data['id']);
 
-    // Bewusst leichtgewichtig (nur Anzeigefelder, keine aggregierenden Subqueries),
-    // damit die Ladezeit des Fahrzeugs nicht leidet. Der durchsuchbare Text-Blob
-    // (Waren, Anweisungen, Rechnung) wird bei Bedarf per getCarOrdersSearchIndex nachgeladen.
+    // search_text = durchsuchbarer Text-Blob je Auftrag (Auftrag-Nr., Waren +
+    // Artikelnummern + Warenbeträge, Arbeitsanweisungen, verknüpfte Rechnung).
+    // Die aggregierenden Subqueries sind indexgestützt und günstig (~8ms pro Fahrzeug).
     $orders = $db->getAll(
         "SELECT o.id, o.ordnumber, TO_CHAR(o.transdate, 'DD.MM.YYYY') AS transdate,
                 o.amount, o.record_type,
@@ -541,35 +541,7 @@ function getCarOrders($data) {
                      WHERE il.oe_id = o.id ORDER BY il.sort_order, il.id LIMIT 1),
                     (SELECT oi.description FROM orderitems oi
                      WHERE oi.trans_id = o.id ORDER BY oi.position LIMIT 1)
-                ) AS description
-         FROM oe_ext e
-         JOIN oe o ON o.id = e.oe_id
-         WHERE e.c_id = :c_id
-           AND o.record_type IN ('sales_order', 'sales_order_intake')
-         ORDER BY o.transdate DESC",
-        [':c_id' => $carId]
-    );
-
-    resultInfo(true, 'OK', $orders ?: []);
-}
-
-/**
- * Liefert je Auftrag eines Fahrzeugs einen durchsuchbaren Text-Blob
- * (Auftrag-Nr., Waren + Artikelnummern + Warenbeträge, Arbeitsanweisungen,
- * verknüpfte Rechnungsnummer + Rechnungsbetrag).
- *
- * Wird vom Frontend erst beim ersten Filtern nachgeladen, damit die
- * aggregierenden Subqueries die Ladezeit des Fahrzeugs nicht belasten.
- *
- * @param int $data['id'] Fahrzeug-ID (c_id)
- * @testdata {"id": 1}
- */
-function getCarOrdersSearchIndex($data) {
-    $db = DbhCompany::begin();
-    $carId = intval($data['id']);
-
-    $rows = $db->getAll(
-        "SELECT o.id,
+                ) AS description,
                 CONCAT_WS(' ',
                     o.ordnumber, o.cusordnumber,
                     o.amount::text, REPLACE(o.amount::text, '.', ','),
@@ -587,11 +559,12 @@ function getCarOrdersSearchIndex($data) {
          FROM oe_ext e
          JOIN oe o ON o.id = e.oe_id
          WHERE e.c_id = :c_id
-           AND o.record_type IN ('sales_order', 'sales_order_intake')",
+           AND o.record_type IN ('sales_order', 'sales_order_intake')
+         ORDER BY o.transdate DESC",
         [':c_id' => $carId]
     );
 
-    resultInfo(true, 'OK', $rows ?: []);
+    resultInfo(true, 'OK', $orders ?: []);
 }
 
 /**

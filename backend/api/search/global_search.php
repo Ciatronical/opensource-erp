@@ -25,7 +25,27 @@ function globalSearch($data) {
     $prefixQ = $query . '%';
     $containsQ = '%' . $query . '%';
 
+    // Telefonsuche: Ziffern aus dem Suchbegriff extrahieren, damit Formatierung
+    // (Leerzeichen, /, -, Klammern) beim Vergleich keine Rolle spielt. Erst ab
+    // 3 Ziffern, um zu breite Treffer zu vermeiden.
+    $digits = preg_replace('/[^0-9]/', '', $query);
+    $digitsContainsQ = '%' . $digits . '%';
+    $searchPhone = strlen($digits) >= 3;
+
     // ===== Kunden =====
+    $custPhoneCond = '';
+    $custParams = [':contains' => $containsQ, ':prefix' => $prefixQ, ':contains2' => $containsQ, ':contains3' => $containsQ];
+    if ($searchPhone) {
+        $custPhoneCond = "
+                OR regexp_replace(COALESCE(customer.phone, ''), '[^0-9]', '', 'g') LIKE :ph1
+                OR regexp_replace(COALESCE(customer.fax, ''),   '[^0-9]', '', 'g') LIKE :ph2
+                OR EXISTS (SELECT 1 FROM jsonb_array_elements(customer_ext.phone_numbers) e
+                           WHERE jsonb_typeof(customer_ext.phone_numbers) = 'array'
+                             AND regexp_replace(e->>'number', '[^0-9]', '', 'g') LIKE :ph3)";
+        $custParams[':ph1'] = $digitsContainsQ;
+        $custParams[':ph2'] = $digitsContainsQ;
+        $custParams[':ph3'] = $digitsContainsQ;
+    }
     $customers = $db->getAll(
         "SELECT customer.id, customer.name, customer.customernumber, customer.email, customer.city
          FROM customer
@@ -34,10 +54,10 @@ function globalSearch($data) {
            AND (LOWER(customer.name) LIKE LOWER(:contains)
                 OR LOWER(customer.customernumber) LIKE LOWER(:prefix)
                 OR LOWER(customer.email) LIKE LOWER(:contains2)
-                OR LOWER(customer_ext.keywords) LIKE LOWER(:contains3))
+                OR LOWER(customer_ext.keywords) LIKE LOWER(:contains3)$custPhoneCond)
          ORDER BY customer.name
          LIMIT 5",
-        [':contains' => $containsQ, ':prefix' => $prefixQ, ':contains2' => $containsQ, ':contains3' => $containsQ]
+        $custParams
     );
 
     foreach ($customers ?: [] as $row) {
@@ -51,6 +71,19 @@ function globalSearch($data) {
     }
 
     // ===== Lieferanten =====
+    $venPhoneCond = '';
+    $venParams = [':contains' => $containsQ, ':prefix' => $prefixQ, ':contains2' => $containsQ, ':contains3' => $containsQ];
+    if ($searchPhone) {
+        $venPhoneCond = "
+                OR regexp_replace(COALESCE(vendor.phone, ''), '[^0-9]', '', 'g') LIKE :pv1
+                OR regexp_replace(COALESCE(vendor.fax, ''),   '[^0-9]', '', 'g') LIKE :pv2
+                OR EXISTS (SELECT 1 FROM jsonb_array_elements(vendor_ext.phone_numbers) e
+                           WHERE jsonb_typeof(vendor_ext.phone_numbers) = 'array'
+                             AND regexp_replace(e->>'number', '[^0-9]', '', 'g') LIKE :pv3)";
+        $venParams[':pv1'] = $digitsContainsQ;
+        $venParams[':pv2'] = $digitsContainsQ;
+        $venParams[':pv3'] = $digitsContainsQ;
+    }
     $vendors = $db->getAll(
         "SELECT vendor.id, vendor.name, vendor.vendornumber, vendor.email, vendor.city
          FROM vendor
@@ -59,10 +92,10 @@ function globalSearch($data) {
            AND (LOWER(vendor.name) LIKE LOWER(:contains)
                 OR LOWER(vendor.vendornumber) LIKE LOWER(:prefix)
                 OR LOWER(vendor.email) LIKE LOWER(:contains2)
-                OR LOWER(vendor_ext.keywords) LIKE LOWER(:contains3))
+                OR LOWER(vendor_ext.keywords) LIKE LOWER(:contains3)$venPhoneCond)
          ORDER BY vendor.name
          LIMIT 5",
-        [':contains' => $containsQ, ':prefix' => $prefixQ, ':contains2' => $containsQ, ':contains3' => $containsQ]
+        $venParams
     );
 
     foreach ($vendors ?: [] as $row) {
@@ -167,6 +200,8 @@ function globalSearch($data) {
 
     // ===== Fahrzeuge (nur wenn lxcars aktiv) =====
     if (in_array('lxcars', $features)) {
+        // c_2 = HSN, c_3 = TSN, c_fin = FIN/VIN, c_ln = Kennzeichen, c_mkb = Marke/Modell.
+        // Zusätzlich HSN+TSN kombiniert (leerzeichenbereinigt), damit z. B. "0603 AAB" trifft.
         $vehicles = $db->getAll(
             "SELECT cl.c_id, cl.c_ln, cl.c_fin, cl.c_mkb, c.name AS owner_name
              FROM cars_lxcars cl
@@ -174,9 +209,12 @@ function globalSearch($data) {
              WHERE LOWER(cl.c_ln) LIKE LOWER(:q1)
                 OR LOWER(cl.c_fin) LIKE LOWER(:q2)
                 OR LOWER(cl.c_mkb) LIKE LOWER(:q3)
+                OR LOWER(cl.c_2) LIKE LOWER(:q4)
+                OR LOWER(cl.c_3) LIKE LOWER(:q5)
+                OR REPLACE(LOWER(COALESCE(cl.c_2, '') || COALESCE(cl.c_3, '')), ' ', '') LIKE REPLACE(LOWER(:q6), ' ', '')
              ORDER BY cl.c_ln
              LIMIT 5",
-            [':q1' => $containsQ, ':q2' => $containsQ, ':q3' => $containsQ]
+            [':q1' => $containsQ, ':q2' => $containsQ, ':q3' => $containsQ, ':q4' => $containsQ, ':q5' => $containsQ, ':q6' => $containsQ]
         );
 
         foreach ($vehicles ?: [] as $row) {

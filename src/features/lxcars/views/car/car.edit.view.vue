@@ -871,7 +871,6 @@
                                 prepend-inner-icon="mdi-magnify"
                                 :placeholder="t('CarEditView.orderTable.filterPlaceholder')"
                                 :title="t('CarEditView.orderTable.filterHint')"
-                                :loading="searchIndexLoading"
                                 variant="solo-filled"
                                 density="compact"
                                 flat
@@ -1330,7 +1329,6 @@ export default {
 
         const {
             orders, orderFilter, filteredOrders,
-            searchIndexLoading, ensureSearchIndex, resetSearchIndex,
             formatAmount, compareDate
         } = useCarOrders(locale)
 
@@ -1342,17 +1340,6 @@ export default {
             { title: t('CarEditView.orderTable.status'), key: 'record_type', sortable: true, align: 'center', width: '60px' },
             { title: t('CarEditView.orderTable.amount'), key: 'amount', sortable: true, align: 'end' },
         ])
-
-        // Such-Index (Waren/Anweisungen/Rechnung) erst beim ersten Filtern nachladen
-        watch(orderFilter, (val) => {
-            if ((val || '').trim() && carId.value) {
-                ensureSearchIndex(() => carsStore.loadCarOrdersSearchIndex(Number(carId.value)))
-            }
-        })
-        // Bei frisch (neu) geladenen Aufträgen fehlt search_text → Index neu erlauben
-        watch(orders, (val) => {
-            if (val.length && val.some(o => o.search_text === undefined)) resetSearchIndex()
-        })
 
         const {
             rulesLn, rulesHsn, rulesTsn, rulesEm, rulesD, rulesHu, rulesFin, rulesMonthYear,
@@ -2658,7 +2645,7 @@ export default {
             displayZrd, displayBf, displayWd, onBlurMonthYear,
             displayZrk, onBlurKm,
             displayKm, onBlurKmStand,
-            toggleShield, orderFilter, filteredOrders, orderHeaders, searchIndexLoading,
+            toggleShield, orderFilter, filteredOrders, orderHeaders,
             formatAmount, openOrder, createNewOrder, navigateToCustomer, openCarRegistration, focusSearch,
             showAagTsnButton, aagAvailable, aagLoading, openAag, aagConfigured,
             esiAvailable, openEsi,
