@@ -34,7 +34,8 @@ function globalSearch($data) {
 
     // ===== Kunden =====
     $custPhoneCond = '';
-    $custParams = [':contains' => $containsQ, ':prefix' => $prefixQ, ':contains2' => $containsQ, ':contains3' => $containsQ];
+    $custParams = [':contains' => $containsQ, ':prefix' => $prefixQ, ':contains2' => $containsQ, ':contains3' => $containsQ,
+                   ':street' => $containsQ, ':zip' => $prefixQ, ':city' => $containsQ];
     if ($searchPhone) {
         $custPhoneCond = "
                 OR regexp_replace(COALESCE(customer.phone, ''), '[^0-9]', '', 'g') LIKE :ph1
@@ -54,7 +55,10 @@ function globalSearch($data) {
            AND (LOWER(customer.name) LIKE LOWER(:contains)
                 OR LOWER(customer.customernumber) LIKE LOWER(:prefix)
                 OR LOWER(customer.email) LIKE LOWER(:contains2)
-                OR LOWER(customer_ext.keywords) LIKE LOWER(:contains3)$custPhoneCond)
+                OR LOWER(customer_ext.keywords) LIKE LOWER(:contains3)
+                OR LOWER(customer.street) LIKE LOWER(:street)
+                OR customer.zipcode LIKE :zip
+                OR LOWER(customer.city) LIKE LOWER(:city)$custPhoneCond)
          ORDER BY customer.name
          LIMIT 5",
         $custParams
@@ -72,7 +76,8 @@ function globalSearch($data) {
 
     // ===== Lieferanten =====
     $venPhoneCond = '';
-    $venParams = [':contains' => $containsQ, ':prefix' => $prefixQ, ':contains2' => $containsQ, ':contains3' => $containsQ];
+    $venParams = [':contains' => $containsQ, ':prefix' => $prefixQ, ':contains2' => $containsQ, ':contains3' => $containsQ,
+                  ':street' => $containsQ, ':zip' => $prefixQ, ':city' => $containsQ];
     if ($searchPhone) {
         $venPhoneCond = "
                 OR regexp_replace(COALESCE(vendor.phone, ''), '[^0-9]', '', 'g') LIKE :pv1
@@ -92,7 +97,10 @@ function globalSearch($data) {
            AND (LOWER(vendor.name) LIKE LOWER(:contains)
                 OR LOWER(vendor.vendornumber) LIKE LOWER(:prefix)
                 OR LOWER(vendor.email) LIKE LOWER(:contains2)
-                OR LOWER(vendor_ext.keywords) LIKE LOWER(:contains3)$venPhoneCond)
+                OR LOWER(vendor_ext.keywords) LIKE LOWER(:contains3)
+                OR LOWER(vendor.street) LIKE LOWER(:street)
+                OR vendor.zipcode LIKE :zip
+                OR LOWER(vendor.city) LIKE LOWER(:city)$venPhoneCond)
          ORDER BY vendor.name
          LIMIT 5",
         $venParams
