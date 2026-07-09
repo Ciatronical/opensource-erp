@@ -50,6 +50,7 @@ const userConfig = [
             { value: "customer-vendor", title: "CRM-Ansicht" },
             { value: "main-menu", title: "Hauptmenü" },
             { value: "wall-display", title: "Wandanzeige" },
+            { value: "anschlagtafel", title: "Tafel" },
             { value: "mechanic", title: "Mechaniker-Modus" },
         ],
         label: "user_fields.startupView",

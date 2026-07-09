@@ -185,6 +185,8 @@ function _processVoiceMessage(PDO $pdo, array $dbInfo, array $message): void {
     $fileId    = $media['file_id'];
 
     // Doppelte Zustellung frueh abfangen (Telegram wiederholt bei Timeout).
+    // Auch Kommando-Nachrichten hinterlassen eine (ausgeblendete) Zeile, damit
+    // ein erneutes Zustellen nicht ein zweites Mal loescht.
     try {
         $chk = $pdo->prepare("SELECT 1 FROM voice_notes WHERE telegram_message_id = :m LIMIT 1");
         $chk->execute([':m' => $messageId]);
@@ -198,12 +200,8 @@ function _processVoiceMessage(PDO $pdo, array $dbInfo, array $message): void {
 
     // Audiodatei von Telegram herunterladen
     $audioBytes = '';
-    $localPath  = null;
     if ($botToken !== '') {
         $audioBytes = _downloadTelegramFile($botToken, $fileId);
-        if ($audioBytes !== '') {
-            $localPath = _saveAudio($dbInfo['dbname'], $audioBytes, $mime);
-        }
     }
 
     // Transkribieren (Whisper-Dienst). Schlaegt das fehl, wird die Notiz
@@ -218,6 +216,60 @@ function _processVoiceMessage(PDO $pdo, array $dbInfo, array $message): void {
             $language   = $result['language'] ?? null;
             $status     = 'transcribed';
         }
+    }
+
+    // ── Sprachbefehle erkennen (nur bei erfolgreicher Transkription) ──
+    $command = $status === 'transcribed'
+        ? _detectCommand($transcript)
+        : ['cmd' => null, 'text' => $transcript];
+
+    if ($command['cmd'] === 'help') {
+        _recordCommand($pdo, $messageId, $chatId, $senderName, $transcript, $duration, $language);
+        _confirm($botToken, $chatId, _helpText());
+        return;
+    }
+
+    if ($command['cmd'] === 'clear_all') {
+        _recordCommand($pdo, $messageId, $chatId, $senderName, $transcript, $duration, $language);
+        _clearAll($pdo);
+        _confirm($botToken, $chatId, "\u{1F9F9} Alle Eintraege geloescht.");
+        return;
+    }
+
+    if ($command['cmd'] === 'delete') {
+        _recordCommand($pdo, $messageId, $chatId, $senderName, $transcript, $duration, $language);
+        $removed = _deleteAt($pdo, $command['from'], $command['n']);
+        $label = _positionLabel($command['from'], $command['n']);
+        _confirm($botToken, $chatId, $removed !== null
+            ? "\u{1F5D1}\u{FE0F} {$label} geloescht."
+            : "\u{2139}\u{FE0F} Kein Eintrag an dieser Position vorhanden.");
+        return;
+    }
+
+    if ($command['cmd'] === 'correction') {
+        _recordCommand($pdo, $messageId, $chatId, $senderName, $transcript, $duration, $language);
+        $label = _positionLabel($command['from'], $command['n']);
+        if ($command['text'] === '') {
+            // Ohne neuen Text: Eintrag an der Position entfernen (Rueckgaengig-Machen).
+            $removed = _deleteAt($pdo, $command['from'], $command['n']);
+            _confirm($botToken, $chatId, $removed !== null
+                ? "\u{270F}\u{FE0F} {$label} geloescht (Korrektur)."
+                : "\u{2139}\u{FE0F} Kein Eintrag an dieser Position vorhanden.");
+            return;
+        }
+        // Mit Text: Eintrag an Ort und Stelle ueberschreiben, Position bleibt erhalten.
+        $updated = _updateAt($pdo, $command['from'], $command['n'], $command['text']);
+        _confirm($botToken, $chatId, $updated !== null
+            ? "\u{270F}\u{FE0F} {$label} korrigiert:\n" . mb_substr($command['text'], 0, 350)
+            : "\u{2139}\u{FE0F} Kein Eintrag an dieser Position vorhanden.");
+        return;
+    }
+
+    // ── Normale Notiz speichern ──
+    // Audio erst jetzt ablegen, damit reine Kommandos keine Dateileichen erzeugen.
+    $localPath = null;
+    if ($audioBytes !== '') {
+        $localPath = _saveAudio($dbInfo['dbname'], $audioBytes, $mime);
     }
 
     // Speichern — Trigger voice_notes_notify feuert pg_notify('voicenote_change')
@@ -248,9 +300,349 @@ function _processVoiceMessage(PDO $pdo, array $dbInfo, array $message): void {
     // Optionale Bestaetigung an den Absender (UX: "kein Browser").
     if ($botToken !== '' && _cfg($pdo, 'telegram_confirm_reply', '1') === '1') {
         $reply = $status === 'transcribed'
-            ? "\u{2705} Notiz aufgenommen:\n" . mb_substr($transcript, 0, 350)
+            ? "\u{2705} Eintrag auf der Tafel sichtbar:\n" . mb_substr($transcript, 0, 350)
             : "\u{26A0}\u{FE0F} Audio gespeichert, aber Transkription fehlgeschlagen.";
         _sendTelegramMessage($botToken, $chatId, $reply);
+    }
+}
+
+/**
+ * Ordnungs- und Grundzahlwoerter (1..10) fuer die Positionserkennung.
+ * Bewusst als Funktion, damit sowohl _detectCommand als auch _parsePosition
+ * dieselbe Quelle nutzen.
+ */
+function _numberWords(): array {
+    return [
+        'ordinals' => [
+            'erste' => 1, 'ersten' => 1, 'erster' => 1, 'erstes' => 1,
+            'zweite' => 2, 'zweiten' => 2, 'zweiter' => 2, 'zweites' => 2,
+            'dritte' => 3, 'dritten' => 3, 'dritter' => 3, 'drittes' => 3,
+            'vierte' => 4, 'vierten' => 4, 'vierter' => 4, 'viertes' => 4,
+            'fünfte' => 5, 'fünften' => 5, 'fünfter' => 5, 'fünftes' => 5,
+            'sechste' => 6, 'sechsten' => 6, 'sechster' => 6, 'sechstes' => 6,
+            'siebte' => 7, 'siebten' => 7, 'siebter' => 7, 'siebente' => 7, 'siebenten' => 7,
+            'achte' => 8, 'achten' => 8, 'achter' => 8, 'achtes' => 8,
+            'neunte' => 9, 'neunten' => 9, 'neunter' => 9,
+            'zehnte' => 10, 'zehnten' => 10, 'zehnter' => 10,
+        ],
+        'cardinals' => [
+            'eins' => 1, 'ein' => 1, 'eine' => 1, 'einen' => 1,
+            'zwei' => 2, 'drei' => 3, 'vier' => 4, 'fünf' => 5,
+            'sechs' => 6, 'sieben' => 7, 'acht' => 8, 'neun' => 9, 'zehn' => 10,
+        ],
+    ];
+}
+
+/**
+ * Erkennt Sprachbefehle im transkribierten Text.
+ *
+ * Unterstuetzt beliebige Positionen, gezaehlt von oben (neueste zuerst) oder von
+ * unten (aelteste zuerst):
+ *   Loeschen:   "loesche den letzten/ersten/vorletzten Eintrag",
+ *               "loesche den dritten Eintrag von oben", "vorletzten loeschen",
+ *               "alle loeschen"
+ *   Korrektur:  "Korrektur <Text>"                     -> ersetzt den letzten (obersten)
+ *               "korrigiere den dritten von oben <Text>" -> ersetzt genau diesen Eintrag
+ *               "Korrektur" ohne Text                  -> loescht den obersten Eintrag
+ *
+ * @return array{cmd:?string,from?:string,n?:int,text?:string} cmd = clear_all|delete|correction|null.
+ *         Bei delete/correction gibt from (top|bottom) + n (1-basiert) die Zielposition an,
+ *         text ist bei correction der neue Inhalt (leer = nur loeschen).
+ */
+function _detectCommand(string $transcript): array {
+    $raw = trim($transcript);
+
+    // Normalisierte Vergleichsform: klein, Satzzeichen an den Raendern entfernt.
+    $norm = function_exists('mb_strtolower') ? mb_strtolower($raw) : strtolower($raw);
+    $norm = trim($norm, " \t\n\r\0\x0B.,!?;:\"'„“”‚‘’");
+    $norm = preg_replace('/\s+/u', ' ', $norm);
+
+    // ── Hilfe: ganze Nachricht ist eine Hilfe-Anfrage (schuetzt normale Notizen) ──
+    if (in_array($norm, [
+        'hilfe', 'hilfe bitte', 'hilfe anzeigen', 'zeig hilfe', 'zeige hilfe', 'zeig mir hilfe',
+        'help', 'befehle', 'kommandos', 'sprachbefehle', 'welche befehle', 'welche befehle gibt es',
+        'was kann ich sagen', 'was kann ich sprechen', 'was geht',
+    ], true)) {
+        return ['cmd' => 'help'];
+    }
+
+    // ── Korrektur: muss mit dem Schluesselwort beginnen (sonst nur normale Notiz) ──
+    if (preg_match('/^(?:korrektur|korrigiere?|korrigier|korrigieren|ändere?|ändern)\b[\s.,:!?…-]*(.*)$/isu', $raw, $m)) {
+        $rest = trim($m[1]);
+        $pos  = _parsePosition($rest);
+        if ($pos !== null) {
+            // Positionsangabe abgeschnitten -> Rest ist der neue Text.
+            return ['cmd' => 'correction', 'from' => $pos['from'], 'n' => $pos['n'], 'text' => trim($pos['rest'])];
+        }
+        // Ohne Positionsangabe: oberster (letzter) Eintrag.
+        return ['cmd' => 'correction', 'from' => 'top', 'n' => 1, 'text' => $rest];
+    }
+
+    // ── Loeschen: nur wenn der ganze Satz ausschliesslich aus Befehls-/Positions-
+    //    Woertern besteht (schuetzt normale Notizen, die "loeschen" enthalten). ──
+    if (preg_match('/\b(lösch\w*|entfern\w*)\b/u', $norm) && _onlyCommandTokens($norm)) {
+        // "alle/alles/saemtliche loeschen" -> gesamte Tafel leeren.
+        if (preg_match('/\b(alle|alles|sämtliche|saemtliche)\b/u', $norm)) {
+            return ['cmd' => 'clear_all'];
+        }
+        // Verben/Fueller entfernen, Rest als Position deuten.
+        $body = preg_replace('/\b(lösch\w*|entfern\w*|bitte|mal|doch|jetzt)\b/u', ' ', $norm);
+        $body = trim(preg_replace('/\s+/u', ' ', $body));
+        $pos  = _parsePosition($body);
+        if ($pos !== null) {
+            return ['cmd' => 'delete', 'from' => $pos['from'], 'n' => $pos['n']];
+        }
+        // Blosses "loeschen" ohne Position -> oberster (letzter) Eintrag.
+        return ['cmd' => 'delete', 'from' => 'top', 'n' => 1];
+    }
+
+    return ['cmd' => null, 'text' => $raw];
+}
+
+/**
+ * Hilfetext mit allen Sprachbefehlen, den der Bot auf "Hilfe" zurueckschickt.
+ */
+function _helpText(): string {
+    return "\u{1F399}\u{FE0F} Sprachbefehle für die Anschlagtafel\n"
+        . "\n"
+        . "\u{1F5D1}\u{FE0F} Löschen:\n"
+        . "• „Letzten Eintrag löschen\" – neueste (oben)\n"
+        . "• „Ersten Eintrag löschen\" – älteste (unten)\n"
+        . "• „Vorletzten löschen\" oder „Dritten von oben löschen\" – beliebige Position\n"
+        . "• „Alle löschen\" – ganze Tafel leeren\n"
+        . "\n"
+        . "\u{270F}\u{FE0F} Korrigieren:\n"
+        . "• „Korrektur: neuer Text\" – ersetzt den obersten Eintrag\n"
+        . "• „Zweiten von oben korrigieren: Text\" – ersetzt genau diese Position\n"
+        . "\n"
+        . "\u{2139}\u{FE0F} „von oben\" zählt ab der neuesten, „von unten\" ab der ältesten Notiz.\n"
+        . "Alles andere wird als normale Notiz auf der Tafel angezeigt.";
+}
+
+/**
+ * Prueft, ob ein Satz ausschliesslich aus erlaubten Befehls-, Positions- und
+ * Fuellwoertern besteht. Nur dann ist ein "loeschen" wirklich ein Befehl und
+ * nicht Teil einer normalen Notiz ("Kunde will seinen Account loeschen").
+ */
+function _onlyCommandTokens(string $norm): bool {
+    $tokens = preg_split('/\s+/u', trim($norm), -1, PREG_SPLIT_NO_EMPTY);
+    if (!$tokens) {
+        return false;
+    }
+    $words   = _numberWords();
+    $fillers = array_fill_keys(array_merge([
+        'bitte', 'mal', 'doch', 'jetzt', 'den', 'die', 'das', 'der', 'dem', 'und',
+        'von', 'oben', 'unten', 'weg', 'raus', 'alle', 'alles', 'sämtliche', 'saemtliche',
+        'eintrag', 'eintrags', 'eintrages', 'einträge', 'eintraege', 'eintraege',
+        'notiz', 'notizen', 'position', 'positionen', 'mir',
+    ], array_keys($words['ordinals']), array_keys($words['cardinals'])), true);
+
+    foreach ($tokens as $tk) {
+        if (isset($fillers[$tk])) {
+            continue;
+        }
+        // Verben + Endpunkt-Woerter (letzter, vorletzter, oberster, ...) + Ziffern.
+        if (preg_match('/^(lösch\w*|entfern\w*|vorvorletzt\w+|vorletzt\w+|letzt\w+|erst\w+|oberst\w+|unterst\w+|neuest\w+|ältest\w+|aeltest\w+|\d{1,2}\.?)$/u', $tk)) {
+            continue;
+        }
+        return false;
+    }
+    return true;
+}
+
+/**
+ * Liest eine Positionsangabe am Anfang eines Textes und liefert Zielseite + Rang.
+ *
+ * from = 'top' zaehlt von der neuesten (obersten) Notiz, 'bottom' von der aeltesten
+ * (untersten). n ist 1-basiert. "rest" ist der Text nach der Positionsangabe (fuer
+ * die Korrektur der neue Inhalt).
+ *
+ * Beispiele: "letzten" -> top/1, "vorletzten" -> top/2, "ersten" -> bottom/1,
+ *            "dritten eintrag von oben Text" -> top/3 + rest "Text".
+ *
+ * @return array{from:string,n:int,rest:string}|null null, wenn keine Position erkannt wurde.
+ */
+function _parsePosition(string $phrase): ?array {
+    $phrase = trim($phrase);
+    if ($phrase === '') {
+        return null;
+    }
+    $words = _numberWords();
+    // Laengere Woerter zuerst, damit z. B. "siebenten" vor "sieben" greift.
+    $ordKeys  = array_keys($words['ordinals']);
+    $cardKeys = array_keys($words['cardinals']);
+    usort($ordKeys,  fn($a, $b) => mb_strlen($b) <=> mb_strlen($a));
+    usort($cardKeys, fn($a, $b) => mb_strlen($b) <=> mb_strlen($a));
+    $ordAlt  = implode('|', array_map(fn($w) => preg_quote($w, '/'), $ordKeys));
+    $cardAlt = implode('|', array_map(fn($w) => preg_quote($w, '/'), $cardKeys));
+
+    $special = 'vorvorletzt\w+|vorletzt\w+|letzt\w+|erst\w+|oberst\w+|unterst\w+|neuest\w+|ältest\w+|aeltest\w+';
+    $article = '(?:(?:der|die|das|den|dem)\\s+)?';
+    $noun    = '(?:\\s+(?:eintrag\\w*|einträge|eintraege|notiz\\w*|position\\w*))';
+    $vondir  = '(?:\\s+von\\s+(oben|unten))';
+    $tail    = '[\\s.,:;!?…-]*';
+
+    // 1) Eindeutige Kerne: Sonderwoerter (letzter, vorletzter, erster, …) oder
+    //    Ordinalzahlen (dritter, …). Nomen und Richtung sind optional.
+    $re1 = "/^{$article}((?:$special)|(?:$ordAlt)){$noun}?{$vondir}?{$tail}/iu";
+    if (preg_match($re1, $phrase, $m)) {
+        $rest = preg_replace($re1, '', $phrase, 1);
+        return _posFromCore($m[1], $m[2] ?? '', $words, (string)$rest);
+    }
+
+    // 2) Ziffer/Grundzahl nur MIT Qualifizierer ("… Eintrag", "… von oben"), damit
+    //    z. B. "Korrektur eine wichtige Sache" nicht als Position missdeutet wird.
+    $re2 = "/^{$article}(\\d{1,2}\\.?|$cardAlt)(?:{$noun}{$vondir}?|{$vondir}){$tail}/iu";
+    if (preg_match($re2, $phrase, $m)) {
+        $dir  = $m[2] !== '' ? $m[2] : ($m[3] ?? '');
+        $rest = preg_replace($re2, '', $phrase, 1);
+        return _posFromCore($m[1], $dir, $words, (string)$rest);
+    }
+
+    return null;
+}
+
+/**
+ * Leitet aus dem erkannten Kernwort (+ optionaler Richtung) Zielseite und Rang ab.
+ */
+function _posFromCore(string $coreWord, string $dir, array $words, string $rest): array {
+    $c   = function_exists('mb_strtolower') ? mb_strtolower($coreWord) : strtolower($coreWord);
+    $dir = strtolower($dir);
+
+    if (preg_match('/^vorvorletzt/u', $c))                 { $from = 'top';    $n = 3; }
+    elseif (preg_match('/^vorletzt/u', $c))                { $from = 'top';    $n = 2; }
+    elseif (preg_match('/^letzt/u', $c))                   { $from = 'top';    $n = 1; }
+    elseif (preg_match('/^(oberst|neuest)/u', $c))         { $from = 'top';    $n = 1; }
+    elseif (preg_match('/^(unterst|ältest|aeltest)/u', $c)) { $from = 'bottom'; $n = 1; }
+    elseif (preg_match('/^erst/u', $c))                    { $from = 'bottom'; $n = 1; }
+    elseif (preg_match('/^\d/u', $c))                      { $from = 'bottom'; $n = (int)$c; }
+    elseif (isset($words['ordinals'][$c]))                 { $from = 'bottom'; $n = $words['ordinals'][$c]; }
+    elseif (isset($words['cardinals'][$c]))                { $from = 'bottom'; $n = $words['cardinals'][$c]; }
+    else                                                   { $from = 'top';    $n = 1; }
+
+    // Explizite Richtung ("von oben"/"von unten") hat immer Vorrang.
+    if ($dir === 'oben')      $from = 'top';
+    elseif ($dir === 'unten') $from = 'bottom';
+    if ($n < 1) $n = 1;
+
+    return ['from' => $from, 'n' => $n, 'rest' => trim($rest)];
+}
+
+/**
+ * Klartext-Bezeichnung einer Position fuer die Telegram-Bestaetigung.
+ */
+function _positionLabel(string $from, int $n): string {
+    if ($from === 'top') {
+        if ($n === 1) return 'Letzter Eintrag';
+        if ($n === 2) return 'Vorletzter Eintrag';
+        if ($n === 3) return 'Vorvorletzter Eintrag';
+        return "{$n}. Eintrag von oben";
+    }
+    if ($n === 1) return 'Erster Eintrag';
+    return "{$n}. Eintrag von unten";
+}
+
+/**
+ * Ermittelt den sichtbaren Eintrag an Position n, gezaehlt von oben (neueste) oder
+ * unten (aelteste). Liefert die DB-Zeile (id, transcript) oder null.
+ */
+function _resolveNoteAt(PDO $pdo, string $from, int $n): ?array {
+    $order  = $from === 'top' ? 'itime DESC, id DESC' : 'itime ASC, id ASC';
+    $offset = max(0, $n - 1);
+    $stmt = $pdo->prepare(
+        "SELECT id, transcript FROM voice_notes WHERE hidden = FALSE ORDER BY $order OFFSET :off LIMIT 1"
+    );
+    $stmt->bindValue(':off', $offset, PDO::PARAM_INT);
+    $stmt->execute();
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    return $row ?: null;
+}
+
+/**
+ * Blendet den Eintrag an der angegebenen Position aus (Soft-Delete) und meldet es live.
+ * @return int|null Die ID des ausgeblendeten Eintrags oder null, wenn keiner da war.
+ */
+function _deleteAt(PDO $pdo, string $from, int $n): ?int {
+    $row = _resolveNoteAt($pdo, $from, $n);
+    if (!$row) {
+        return null;
+    }
+    $id = (int)$row['id'];
+    $pdo->prepare("UPDATE voice_notes SET hidden = TRUE, mtime = NOW() WHERE id = :id")
+        ->execute([':id' => $id]);
+    _notifyChange($pdo, ['action' => 'removed', 'id' => $id]);
+    return $id;
+}
+
+/**
+ * Ueberschreibt den Text des Eintrags an der angegebenen Position an Ort und Stelle
+ * (Position/Reihenfolge bleiben erhalten) und meldet es live.
+ * @return int|null Die ID des geaenderten Eintrags oder null, wenn keiner da war.
+ */
+function _updateAt(PDO $pdo, string $from, int $n, string $text): ?int {
+    $row = _resolveNoteAt($pdo, $from, $n);
+    if (!$row) {
+        return null;
+    }
+    $id = (int)$row['id'];
+    $pdo->prepare("UPDATE voice_notes SET transcript = :t, status = 'transcribed', mtime = NOW() WHERE id = :id")
+        ->execute([':t' => $text, ':id' => $id]);
+    _notifyChange($pdo, ['action' => 'updated', 'id' => $id, 'transcript' => $text, 'status' => 'transcribed']);
+    return $id;
+}
+
+/**
+ * Blendet alle sichtbaren Eintraege aus (Soft-Delete) und meldet es live.
+ */
+function _clearAll(PDO $pdo): void {
+    $pdo->exec("UPDATE voice_notes SET hidden = TRUE, mtime = NOW() WHERE hidden = FALSE");
+    _notifyChange($pdo, ['action' => 'cleared']);
+}
+
+/**
+ * Sendet ein Live-Event an die Anschlagtafel (SSE-Kanal voicenote_change).
+ */
+function _notifyChange(PDO $pdo, array $payload): void {
+    try {
+        $pdo->prepare("SELECT pg_notify('voicenote_change', :p)")
+            ->execute([':p' => json_encode($payload, JSON_UNESCAPED_UNICODE)]);
+    } catch (\Exception $e) {
+        error_log('[TELEGRAM WEBHOOK] notify error: ' . $e->getMessage());
+    }
+}
+
+/**
+ * Legt eine ausgeblendete Kommando-Zeile ab (Dedup gegen doppelte Zustellung
+ * + Protokoll). Loest wegen hidden=TRUE kein Anschlagtafel-Event aus.
+ */
+function _recordCommand(PDO $pdo, string $messageId, string $chatId, string $senderName, string $transcript, ?float $duration, ?string $language): void {
+    try {
+        $stmt = $pdo->prepare(
+            "INSERT INTO voice_notes
+                (telegram_message_id, telegram_chat_id, sender_name, duration,
+                 transcript, language, status, hidden)
+             VALUES (:msg, :chat, :sender, :duration, :transcript, :lang, 'command', TRUE)
+             ON CONFLICT (telegram_message_id) DO NOTHING"
+        );
+        $stmt->execute([
+            ':msg'        => $messageId,
+            ':chat'       => $chatId,
+            ':sender'     => $senderName,
+            ':duration'   => $duration,
+            ':transcript' => $transcript !== '' ? $transcript : null,
+            ':lang'       => $language,
+        ]);
+    } catch (\Exception $e) {
+        error_log('[TELEGRAM WEBHOOK] Command record error: ' . $e->getMessage());
+    }
+}
+
+/**
+ * Kurze Bestaetigung an den Absender senden (falls Bot-Token vorhanden).
+ */
+function _confirm(string $botToken, string $chatId, string $text): void {
+    if ($botToken !== '') {
+        _sendTelegramMessage($botToken, $chatId, $text);
     }
 }
 

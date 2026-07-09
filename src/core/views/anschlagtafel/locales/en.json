@@ -3,9 +3,12 @@
         "title": "Bulletin Board",
         "exit": "Exit",
         "empty": "No voice notes yet",
+        "emptyHint": "Record a note via Telegram – it appears here live.",
         "unknown": "Unknown",
         "dismiss": "Done",
         "failed": "Transcription failed",
-        "offline": "No live connection"
+        "online": "Live connection active",
+        "offline": "No live connection",
+        "latestBadge": "Latest"
     }
 }

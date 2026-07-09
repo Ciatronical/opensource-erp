@@ -6,6 +6,47 @@ OpensourceERP ist eine Vue.js-basierte ERP-Anwendung mit PHP/PostgreSQL-Backend.
 
 ---
 
+## Schnellstart: automatischer Installer
+
+Für eine **frische Maschine** richtet `install/install.sh` den kompletten Stack
+idempotent ein (Pakete, PHP-FPM, Build, Apache, SSE, Whisper, Ollama, ANPR,
+Kameras, Cron, Asterisk-Gerüst, Borg-Gerüst, kivitendo).
+
+```bash
+git clone <repo> opensource-erp && cd opensource-erp
+./install/install.sh --list          # Schritte anzeigen
+./install/install.sh                 # alles einrichten (als Betriebs-User, nutzt sudo)
+./install/install.sh --only apache,sse   # nur einzelne Schritte erneut
+```
+
+**Wichtig:** Es werden **keine Versionen hardcodiert**. PHP-Version und FPM-Socket
+werden zur Laufzeit erkannt und als Apache-`Define` (`OSERP_ROOT`, `OSERP_PHP_FPM`)
+nach `/etc/apache2/conf-available/oserp-defines.conf` geschrieben; der vHost
+`apacheOpensourceErp.conf` referenziert nur diese Variablen. Beim PHP-Update
+(8.3 → 9.0 …) muss nichts angepasst werden.
+
+Secrets/umgebungsspezifische Teile (DB-Passwort, Asterisk-Config, Borg-Repo)
+markiert der Installer mit `[TODO]` — diese werden vom alten Server migriert.
+
+### Vorher in einer VM testen
+
+Nie ungetestet auf der Zielmaschine — `install/test-vm.sh` zieht eine
+wegwerfbare Ubuntu-VM hoch (multipass), kopiert einen sauberen Repo-Stand und
+führt den Installer darin aus. Snapshots erlauben beliebige Wiederholung:
+
+```bash
+sudo snap install multipass
+./install/test-vm.sh up
+./install/test-vm.sh snapshot base
+./install/test-vm.sh all             # up + deploy + run
+# bei Fehler fixen, committen, dann:
+./install/test-vm.sh restore base && ./install/test-vm.sh all
+```
+
+Die manuellen Einzelschritte unten dienen als Referenz / für Sonderfälle.
+
+---
+
 ## 0. Software installieren
 
 ```bash

@@ -251,7 +251,12 @@
             "amount": "Total",
             "number": "Order No.",
             "noOrders": "No orders available",
-            "newOrder": "New order"
+            "newOrder": "New order",
+            "status": "Status",
+            "confirmed": "Confirmed",
+            "notConfirmed": "Intake (unconfirmed)",
+            "filterPlaceholder": "Search…",
+            "filterHint": "Searches order no., date, description, total, goods, item amounts, work instructions and invoice. Multiple terms are AND-combined."
         },
         "messages": {
             "saved": "Vehicle saved",

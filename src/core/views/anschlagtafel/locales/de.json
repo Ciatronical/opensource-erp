@@ -3,9 +3,12 @@
         "title": "Anschlagtafel",
         "exit": "Beenden",
         "empty": "Noch keine Sprachnotizen",
+        "emptyHint": "Sprich eine Notiz per Telegram ein – sie erscheint hier live.",
         "unknown": "Unbekannt",
         "dismiss": "Erledigt",
         "failed": "Transkription fehlgeschlagen",
-        "offline": "Keine Live-Verbindung"
+        "online": "Live-Verbindung aktiv",
+        "offline": "Keine Live-Verbindung",
+        "latestBadge": "Letzter"
     }
 }

@@ -24,7 +24,7 @@ define('FM_STORAGE_NAME', 'local');
  * der den Mandanten anhand der phone_number_id ermittelt).
  */
 function fmDataDirForDb($dbname) {
-    if (!is_string($dbname) || $dbname === '' || !preg_match('/^[a-zA-Z0-9_]+$/', $dbname)) {
+    if (!is_string($dbname) || $dbname === '' || !preg_match('/^[a-zA-Z0-9_-]+$/', $dbname)) {
         throw new ApiError('FM_INVALID_DATABASE', 'Datenbankname konnte nicht ermittelt werden');
     }
     $dir = FM_DATA_BASE_DIR . '/' . $dbname;

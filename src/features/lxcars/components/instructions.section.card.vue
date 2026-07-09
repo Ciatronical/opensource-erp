@@ -124,18 +124,49 @@
                                 <td class="text-center" :class="{ 'field-disabled': instruction.done }">
                                     {{ instruction.instruction_number }}
                                 </td>
-                                <!-- Description (inline editierbar wie bei Positionen) -->
+                                <!-- Description (inline editierbar + Ersetzen per AC wie bei Positionen) -->
                                 <td>
-                                    <v-text-field
-                                        :ref="el => { if (el) descriptionRefs[index] = el }"
-                                        v-model="instruction.description"
-                                        :class="{ 'field-disabled': instruction.done }"
-                                        variant="outlined"
-                                        density="compact"
-                                        hide-details
-                                        autocomplete="off"
-                                        @blur="onDescriptionBlur(instruction)"
-                                    />
+                                    <div class="instr-replace-wrap" :ref="el => { if (el) descWrapRefs[index] = el }">
+                                        <v-text-field
+                                            :ref="el => { if (el) descriptionRefs[index] = el }"
+                                            v-model="instruction.description"
+                                            :class="{ 'field-disabled': instruction.done }"
+                                            variant="outlined"
+                                            density="compact"
+                                            hide-details
+                                            autocomplete="off"
+                                            @update:model-value="onDescInput(instruction, index, $event)"
+                                            @blur="onDescriptionBlur(instruction, index)"
+                                            @keydown.down="moveReplaceHighlight(instruction, index, 1, $event)"
+                                            @keydown.up="moveReplaceHighlight(instruction, index, -1, $event)"
+                                            @keydown.enter="onDescEnter(instruction, index, $event)"
+                                            @keydown.esc.stop.prevent="replaceMenu[index] = false"
+                                        />
+                                        <!-- Eigene Vorschlagsliste (per Teleport an body, damit die
+                                             Tabelle sie nicht abschneidet) — ein Klick ersetzt die
+                                             komplette Anweisung durch die gewaehlte Master-Anweisung. -->
+                                        <Teleport to="body">
+                                            <div
+                                                v-if="replaceMenu[index] && (instruction._replaceList || []).length"
+                                                class="ac-suggestions"
+                                                :style="suggestionStyle(index)"
+                                            >
+                                                <div
+                                                    v-for="(sug, si) in instruction._replaceList"
+                                                    :key="sug.id"
+                                                    class="ac-suggestion"
+                                                    :class="{ 'ac-active': replaceActiveIdx[index] === si }"
+                                                    @mousedown.prevent="chooseReplacement(instruction, index, sug)"
+                                                    @mousemove="replaceActiveIdx[index] = si"
+                                                >
+                                                    <div class="ac-suggestion__title">{{ sug.description }}</div>
+                                                    <div v-if="sug.instruction_number" class="ac-suggestion__sub">
+                                                        {{ t('FakturaView.faktura.instructions.number') }} {{ sug.instruction_number }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </Teleport>
+                                    </div>
                                 </td>
                                 <!-- Geplante Zeit -->
                                 <td style="width: 90px">
@@ -754,6 +785,15 @@ export default defineComponent({
         const actualTimeRefs = {}
         const employeeRefs = {}
 
+        // Ersetzen-per-Autocomplete für bestehende Anweisungen (wie bei Positionen).
+        // Bewusst KEIN v-autocomplete: ein normales Textfeld zeigt die Beschreibung
+        // zuverlässig, beim Tippen erscheinen Master-Vorschläge in einer eigenen
+        // Teleport-Liste, ein Klick ersetzt die komplette Anweisung.
+        const replaceMenu = reactive({})        // Menü offen? je Zeile
+        const replaceActiveIdx = reactive({})   // markierter Vorschlag je Zeile (Tastatur)
+        const descWrapRefs = reactive({})       // Wrapper-Element je Zeile (für Positionierung)
+        const descSearchTimeouts = {}           // Debounce-Timer je Zeile
+
         // SSE-Reload unterdrücken wenn eigener Save gerade läuft
         let suppressSSEReloadUntil = 0
 
@@ -871,7 +911,8 @@ export default defineComponent({
                     _plannedDisplay: formatDuration(parseInt(r.planned_minutes) || 0),
                     _actualDisplay: formatDuration(parseInt(r.actual_minutes) || 0),
                     _prevPlanned: parseInt(r.planned_minutes) || 0,
-                    _prevActual: parseInt(r.actual_minutes) || 0
+                    _prevActual: parseInt(r.actual_minutes) || 0,
+                    _replaceList: []
                 }))
                 // Timer-State aus geladenen Instructions erkennen
                 detectFromInstructions(rows || [], props.oeId)
@@ -961,7 +1002,8 @@ export default defineComponent({
                     _plannedDisplay: formatDuration(plannedMin),
                     _actualDisplay: '',
                     _prevPlanned: plannedMin,
-                    _prevActual: 0
+                    _prevActual: 0,
+                    _replaceList: []
                 })
                 // SSE-Reload unterdrücken — sonst zerstört der Reload die Refs
                 suppressSSEReloadUntil = Date.now() + 2000
@@ -1065,7 +1107,10 @@ export default defineComponent({
             })
         }
 
-        async function onDescriptionBlur(instruction) {
+        async function onDescriptionBlur(instruction, index) {
+            // Vorschlagsmenü schließen (Klicks auf Vorschläge nutzen @mousedown.prevent
+            // → kein vorzeitiger Blur). Freitext wird wie gehabt gespeichert.
+            if (index !== undefined) replaceMenu[index] = false
             const trimmed = (instruction.description || '').trim()
             if (!trimmed || trimmed === instruction._prevDescription) return
             try {
@@ -1074,6 +1119,94 @@ export default defineComponent({
                 instruction._prevDescription = trimmed
             } catch (e) {
                 console.error('Error updating instruction description:', e)
+            }
+        }
+
+        // ===== Ersetzen per Autocomplete (bestehende Anweisung) =====
+
+        // Position der Teleport-Vorschlagsliste aus dem Wrapper-Rechteck (fixed).
+        function suggestionStyle(index) {
+            const el = descWrapRefs[index]
+            if (!el || !el.getBoundingClientRect) return { display: 'none' }
+            const r = el.getBoundingClientRect()
+            return {
+                position: 'fixed',
+                top: (r.bottom + 2) + 'px',
+                left: r.left + 'px',
+                width: r.width + 'px',
+                zIndex: 3000
+            }
+        }
+
+        // Beim Tippen: Master-Anweisungen suchen und Vorschlagsmenü öffnen.
+        function onDescInput(instruction, index, val) {
+            if (instruction.done) return
+            if (descSearchTimeouts[index]) clearTimeout(descSearchTimeouts[index])
+            const q = (val || '').trim()
+            if (q.length < 2) {
+                replaceMenu[index] = false
+                instruction._replaceList = []
+                return
+            }
+            descSearchTimeouts[index] = setTimeout(async () => {
+                try {
+                    const results = await carsStore.searchInstructions(q)
+                    instruction._replaceList = results || []
+                    replaceMenu[index] = (results && results.length > 0)
+                    replaceActiveIdx[index] = 0
+                } catch (e) {
+                    instruction._replaceList = []
+                    replaceMenu[index] = false
+                }
+            }, 150)
+        }
+
+        // Pfeiltasten: Markierung im Vorschlagsmenü bewegen (nur wenn offen).
+        function moveReplaceHighlight(instruction, index, delta, event) {
+            const list = instruction?._replaceList || []
+            if (!replaceMenu[index] || !list.length) return
+            event?.preventDefault?.()
+            const cur = replaceActiveIdx[index] ?? 0
+            let next = cur + delta
+            if (next < 0) next = list.length - 1
+            if (next >= list.length) next = 0
+            replaceActiveIdx[index] = next
+        }
+
+        // Enter: markierten Vorschlag übernehmen (sonst normales Verhalten = Blur speichert).
+        function onDescEnter(instruction, index, event) {
+            const list = instruction?._replaceList || []
+            if (replaceMenu[index] && list.length) {
+                event?.preventDefault?.()
+                const i = replaceActiveIdx[index] ?? 0
+                chooseReplacement(instruction, index, list[i])
+            }
+        }
+
+        // Vorschlag gewählt → bestehende Anweisung ersetzen (Beschreibung, Nummer, Planzeit).
+        async function chooseReplacement(instruction, index, sug) {
+            replaceMenu[index] = false
+            instruction._replaceList = []
+            if (descSearchTimeouts[index]) clearTimeout(descSearchTimeouts[index])
+            const newDescription = (sug?.description || '').trim()
+            if (!newDescription) return
+            suppressSSEReloadUntil = Date.now() + 2000
+            // Lokal sofort setzen (verhindert doppeltes Speichern via Blur).
+            instruction.description = newDescription
+            instruction._prevDescription = newDescription
+            try {
+                const result = await carsStore.replaceInstruction(instruction.id, newDescription)
+                if (result) {
+                    if (result.instruction_number !== undefined) {
+                        instruction.instruction_number = result.instruction_number
+                    }
+                    const planned = parseInt(result.planned_minutes) || 0
+                    instruction.planned_minutes = planned
+                    instruction._plannedDisplay = formatDuration(planned)
+                    instruction._prevPlanned = planned
+                }
+            } catch (e) {
+                console.error('Error replacing instruction:', e)
             }
         }
 
@@ -1637,6 +1770,14 @@ export default defineComponent({
             onToggleDone,
             closeActualRequiredDialog,
             onDescriptionBlur,
+            replaceMenu,
+            replaceActiveIdx,
+            descWrapRefs,
+            suggestionStyle,
+            onDescInput,
+            moveReplaceHighlight,
+            onDescEnter,
+            chooseReplacement,
             onPlannedBlur,
             onPlannedNext,
             onActualBlur,
@@ -1720,6 +1861,32 @@ export default defineComponent({
 
 .faktura-card__table-body {
     padding: 0 !important;
+}
+
+/* Eigene Vorschlagsliste zum Ersetzen einer Anweisung (per Teleport an body) */
+.instr-replace-wrap { position: relative; }
+.ac-suggestions {
+    background: rgb(var(--v-theme-surface));
+    border: 1px solid rgba(var(--v-border-color), 0.25);
+    border-radius: 4px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+    max-height: 320px;
+    overflow-y: auto;
+    min-width: 280px;
+}
+.ac-suggestion {
+    padding: 6px 12px;
+    cursor: pointer;
+    line-height: 1.25;
+}
+.ac-suggestion.ac-active,
+.ac-suggestion:hover {
+    background: rgba(var(--v-theme-primary), 0.12);
+}
+.ac-suggestion__title { font-weight: 500; }
+.ac-suggestion__sub {
+    font-size: 0.75rem;
+    color: rgba(var(--v-theme-on-surface), 0.6);
 }
 
 /* Tabellen Styling */

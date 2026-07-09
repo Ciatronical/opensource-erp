@@ -414,6 +414,85 @@ function searchInstructions($data) {
     resultInfo(true, 'OK', $rows ?: []);
 }
 
+/**
+ * Ersetzt eine bestehende Auftrags-Anweisung durch eine Master-Anweisung.
+ *
+ * Wird verwendet, wenn sich der Benutzer bei einer bereits erfassten Anweisung
+ * vertippt hat und diese per Autocomplete durch die korrekte Master-Anweisung
+ * ersetzen moechte. Uebernimmt Beschreibung, Anweisungsnummer und — falls im
+ * Master hinterlegt — die geplante Zeit; analog zum Anlegen einer Anweisung.
+ *
+ * @param int    $data['id']          ID der Auftrags-Anweisung (oe_instructions_lxcars)
+ * @param string $data['description'] Neue Beschreibung (Master-Anweisung)
+ * @testdata {"id": 1, "description": "Oelwechsel durchfuehren"}
+ */
+function replaceInstruction($data) {
+    $db = DbhCompany::begin();
+    $id = intval($data['id'] ?? 0);
+    $description = trim($data['description'] ?? '');
+
+    if (!$id || empty($description)) {
+        resultInfo(false, 'VALIDATION_ERROR: id and description required');
+        return;
+    }
+
+    $db->beginTransaction();
+    try {
+        // Master-Anweisung anhand der Beschreibung ermitteln
+        $master = $db->getOne(
+            "SELECT id, instruction_number, avg_minutes FROM instructions_lxcars
+             WHERE description = :description",
+            [':description' => $description]
+        );
+
+        if ($master) {
+            $plannedMinutes = intval($master['avg_minutes'] ?? 0);
+            // usage_count der Master-Anweisung erhoehen (wie beim Anlegen)
+            $db->execute(
+                "UPDATE instructions_lxcars SET usage_count = usage_count + 1 WHERE id = :id",
+                [':id' => $master['id']]
+            );
+            // Geplante Zeit nur uebernehmen, wenn im Master hinterlegt — sonst
+            // bereits erfasste Planzeit der Position nicht ueberschreiben.
+            if ($plannedMinutes > 0) {
+                $db->execute(
+                    "UPDATE oe_instructions_lxcars
+                     SET description = :description, instruction_number = :number, planned_minutes = :planned
+                     WHERE id = :id",
+                    [':description' => $description, ':number' => $master['instruction_number'],
+                     ':planned' => $plannedMinutes, ':id' => $id]
+                );
+            } else {
+                $db->execute(
+                    "UPDATE oe_instructions_lxcars
+                     SET description = :description, instruction_number = :number
+                     WHERE id = :id",
+                    [':description' => $description, ':number' => $master['instruction_number'], ':id' => $id]
+                );
+            }
+        } else {
+            // Kein Master-Treffer (freier Text) — nur die Beschreibung aktualisieren
+            $db->execute(
+                "UPDATE oe_instructions_lxcars SET description = :description WHERE id = :id",
+                [':description' => $description, ':id' => $id]
+            );
+        }
+
+        $row = $db->getOne(
+            "SELECT instruction_number, planned_minutes FROM oe_instructions_lxcars WHERE id = :id",
+            [':id' => $id]
+        );
+        $db->commit();
+        resultInfo(true, 'REPLACED', [
+            'instruction_number' => $row['instruction_number'] ?? null,
+            'planned_minutes' => intval($row['planned_minutes'] ?? 0)
+        ]);
+    } catch (Exception $e) {
+        $db->rollBack();
+        throw new ApiError('API_DATABASE_ERROR', $e->getMessage());
+    }
+}
+
 // ===== Master-Arbeitsanweisungen Verwaltung =====
 
 /**

@@ -264,7 +264,12 @@
             "amount": "Summe",
             "number": "Auftrag-Nr.",
             "noOrders": "Keine Aufträge vorhanden",
-            "newOrder": "Neuer Auftrag"
+            "newOrder": "Neuer Auftrag",
+            "status": "Status",
+            "confirmed": "Bestätigt",
+            "notConfirmed": "Eingang (unbestätigt)",
+            "filterPlaceholder": "Suchen…",
+            "filterHint": "Durchsucht Auftrag-Nr., Datum, Beschreibung, Summe, Waren, Warenbeträge, Arbeitsanweisungen und Rechnung. Mehrere Begriffe werden UND-verknüpft."
         },
         "messages": {
             "saved": "Fahrzeug gespeichert",

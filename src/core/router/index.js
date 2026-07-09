@@ -143,6 +143,7 @@ const router = createRouter({
                 const oserp = oserpStore()
                 const startupView = oserp.getStartupViewConfig()
                 if (startupView === 'wall-display') return { name: 'wall-display' }
+                if (startupView === 'anschlagtafel') return { name: 'anschlagtafel' }
                 if (startupView === 'mechanic') return { name: 'mechanic' }
                 return true
             },
@@ -239,6 +240,7 @@ const router = createRouter({
         },
         {
             path: i18n.global.t('routes.anschlagtafel'),
+            alias: '/tafel',
             name: 'anschlagtafel',
             component: AnschlagtafelView,
         },

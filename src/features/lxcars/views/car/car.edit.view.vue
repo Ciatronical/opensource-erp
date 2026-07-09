@@ -410,7 +410,7 @@
                                     <v-text-field v-model="car.c_st_z" variant="outlined" density="compact" hide-details maxlength="30" tabindex="15" />
                                 </v-col>
                                 <v-col cols="auto" class="py-1" style="width: 80px">
-                                    <v-btn v-if="isEditMode && !readonly" size="small" variant="tonal" color="orange" :title="t('CarEditView.tyreLabel.tooltip')" :loading="tyreLabelPrinting" @click="onPrintTyreLabel('summer')">
+                                    <v-btn v-if="isEditMode && !readonly" size="small" variant="tonal" color="orange" :title="t('CarEditView.tyreLabel.tooltip')" :loading="tyreLabelPrinting === 'summer'" @click="onPrintTyreLabel('summer')">
                                         <v-icon size="small">mdi-printer</v-icon>
                                     </v-btn>
                                 </v-col>
@@ -428,7 +428,7 @@
                                     <v-text-field v-model="car.c_wt_z" variant="outlined" density="compact" hide-details maxlength="30" tabindex="18" />
                                 </v-col>
                                 <v-col cols="auto" class="py-1" style="width: 80px">
-                                    <v-btn v-if="isEditMode && !readonly" size="small" variant="tonal" color="blue" :title="t('CarEditView.tyreLabel.tooltip')" :loading="tyreLabelPrinting" @click="onPrintTyreLabel('winter')">
+                                    <v-btn v-if="isEditMode && !readonly" size="small" variant="tonal" color="blue" :title="t('CarEditView.tyreLabel.tooltip')" :loading="tyreLabelPrinting === 'winter'" @click="onPrintTyreLabel('winter')">
                                         <v-icon size="small">mdi-printer</v-icon>
                                     </v-btn>
                                 </v-col>
@@ -869,59 +869,47 @@
                                 v-if="orders.length > 2"
                                 v-model="orderFilter"
                                 prepend-inner-icon="mdi-magnify"
-                                variant="outlined"
+                                :placeholder="t('CarEditView.orderTable.filterPlaceholder')"
+                                :title="t('CarEditView.orderTable.filterHint')"
+                                :loading="searchIndexLoading"
+                                variant="solo-filled"
                                 density="compact"
+                                flat
                                 hide-details
                                 single-line
                                 clearable
-                                class="orders-table__filter"
+                                style="max-width: 240px;"
                                 tabindex="-1"
                             />
                         </v-card-title>
                         <v-divider />
                         <v-card-text class="pa-0">
-                            <v-table density="compact" class="orders-table">
-                                <thead>
-                                    <tr>
-                                        <th class="orders-table__th" @click="toggleOrderSort('ordnumber')">
-                                            {{ t('CarEditView.orderTable.number') }}
-                                            <v-icon size="14" class="ml-1 orders-table__sort" :class="{ 'orders-table__sort--active': orderSortField === 'ordnumber' }">{{ sortIcon('ordnumber') }}</v-icon>
-                                        </th>
-                                        <th class="orders-table__th" @click="toggleOrderSort('transdate')">
-                                            {{ t('CarEditView.orderTable.date') }}
-                                            <v-icon size="14" class="ml-1 orders-table__sort" :class="{ 'orders-table__sort--active': orderSortField === 'transdate' }">{{ sortIcon('transdate') }}</v-icon>
-                                        </th>
-                                        <th class="orders-table__th" @click="toggleOrderSort('first_position')">
-                                            {{ t('CarEditView.orderTable.firstPosition') }}
-                                            <v-icon size="14" class="ml-1 orders-table__sort" :class="{ 'orders-table__sort--active': orderSortField === 'first_position' }">{{ sortIcon('first_position') }}</v-icon>
-                                        </th>
-                                        <th class="text-right orders-table__th" @click="toggleOrderSort('amount')">
-                                            {{ t('CarEditView.orderTable.amount') }}
-                                            <v-icon size="14" class="ml-1 orders-table__sort" :class="{ 'orders-table__sort--active': orderSortField === 'amount' }">{{ sortIcon('amount') }}</v-icon>
-                                        </th>
-                                        <th style="width: 36px"></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <template v-if="sortedOrders.length">
-                                        <tr v-for="order in sortedOrders" :key="order.id" :class="['orders-table__row', { 'orders-table__row--readonly': readonly }]" @click="readonly ? null : openOrder(order.id)">
-                                            <td class="font-weight-medium text-no-wrap">{{ order.ordnumber }}</td>
-                                            <td class="text-medium-emphasis text-no-wrap">{{ order.transdate }}</td>
-                                            <td class="orders-table__desc">{{ order.description }}</td>
-                                            <td class="text-right font-weight-medium text-no-wrap">{{ formatAmount(order.amount) }}</td>
-                                            <td class="text-center pa-0">
-                                                <v-icon size="14" color="grey-lighten-1" class="orders-table__icon">mdi-open-in-new</v-icon>
-                                            </td>
-                                        </tr>
-                                    </template>
-                                    <tr v-else>
-                                        <td colspan="5" class="text-center py-6">
-                                            <v-icon size="40" color="grey-lighten-1" class="d-block mx-auto mb-2">mdi-file-document-remove-outline</v-icon>
-                                            <span class="text-body-2 text-medium-emphasis">{{ t('CarEditView.orderTable.noOrders') }}</span>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </v-table>
+                            <v-data-table
+                                :headers="orderHeaders"
+                                :items="filteredOrders"
+                                :sort-by="[{ key: 'transdate', order: 'desc' }]"
+                                :items-per-page="20"
+                                :no-data-text="t('CarEditView.orderTable.noOrders')"
+                                density="compact"
+                                hover
+                                :row-props="() => ({ class: readonly ? 'zebra-row' : 'zebra-row cursor-pointer' })"
+                                class="orders-table zebra-table"
+                                @click:row="(event, { item }) => readonly ? null : openOrder(item.id)"
+                            >
+                                <template #item.ordnumber="{ item }">
+                                    <span class="font-weight-medium text-no-wrap">{{ item.ordnumber }}</span>
+                                </template>
+                                <template #item.transdate="{ item }">
+                                    <span class="text-medium-emphasis text-no-wrap">{{ item.transdate }}</span>
+                                </template>
+                                <template #item.record_type="{ item }">
+                                    <v-icon v-if="item.record_type === 'sales_order'" color="success" size="small" :title="t('CarEditView.orderTable.confirmed')">mdi-check-circle</v-icon>
+                                    <v-icon v-else color="grey" size="small" :title="t('CarEditView.orderTable.notConfirmed')">mdi-clock-outline</v-icon>
+                                </template>
+                                <template #item.amount="{ item }">
+                                    <span class="font-weight-medium text-no-wrap">{{ formatAmount(item.amount) }}</span>
+                                </template>
+                            </v-data-table>
                         </v-card-text>
                     </v-card>
                 </v-col>
@@ -1341,9 +1329,30 @@ export default {
         } = useCarDates(car)
 
         const {
-            orders, sortedOrders, orderSortField, orderFilter,
-            toggleOrderSort, sortIcon, formatAmount
+            orders, orderFilter, filteredOrders,
+            searchIndexLoading, ensureSearchIndex, resetSearchIndex,
+            formatAmount, compareDate
         } = useCarOrders(locale)
+
+        // Spalten der Auftrags-Tabelle (CRM-Optik: v-data-table mit Pager)
+        const orderHeaders = computed(() => [
+            { title: t('CarEditView.orderTable.number'), key: 'ordnumber', sortable: true },
+            { title: t('CarEditView.orderTable.date'), key: 'transdate', sortable: true, sort: compareDate },
+            { title: t('CarEditView.orderTable.firstPosition'), key: 'description', sortable: true },
+            { title: t('CarEditView.orderTable.status'), key: 'record_type', sortable: true, align: 'center', width: '60px' },
+            { title: t('CarEditView.orderTable.amount'), key: 'amount', sortable: true, align: 'end' },
+        ])
+
+        // Such-Index (Waren/Anweisungen/Rechnung) erst beim ersten Filtern nachladen
+        watch(orderFilter, (val) => {
+            if ((val || '').trim() && carId.value) {
+                ensureSearchIndex(() => carsStore.loadCarOrdersSearchIndex(Number(carId.value)))
+            }
+        })
+        // Bei frisch (neu) geladenen Aufträgen fehlt search_text → Index neu erlauben
+        watch(orders, (val) => {
+            if (val.length && val.some(o => o.search_text === undefined)) resetSearchIndex()
+        })
 
         const {
             rulesLn, rulesHsn, rulesTsn, rulesEm, rulesD, rulesHu, rulesFin, rulesMonthYear,
@@ -2135,7 +2144,7 @@ export default {
         // ===== Label-Druck =====
 
         const yellowLabelPrinting = ref(false)
-        const tyreLabelPrinting = ref(false)
+        const tyreLabelPrinting = ref(null)  // null | 'summer' | 'winter' — pro Saison, damit nur der geklickte Button den Spinner zeigt
 
         /**
          * Druckt grüne Plakette mit Kennzeichen
@@ -2200,7 +2209,7 @@ export default {
             const fhzTyp = kbaData.value?.d2 || ''
             const hubraum = kbaData.value?.hubraum || 0
 
-            tyreLabelPrinting.value = true
+            tyreLabelPrinting.value = season
             try {
                 await carsStore.printTyreLabel({
                     c_ln: car.value.c_ln,
@@ -2215,7 +2224,7 @@ export default {
                 console.error('Tyre label print error:', err)
                 Swal.fire({ toast: true, icon: 'error', position: 'top-end', showConfirmButton: false, timer: 3000, title: t('CarEditView.tyreLabel.error') })
             } finally {
-                tyreLabelPrinting.value = false
+                tyreLabelPrinting.value = null
             }
         }
 
@@ -2649,8 +2658,8 @@ export default {
             displayZrd, displayBf, displayWd, onBlurMonthYear,
             displayZrk, onBlurKm,
             displayKm, onBlurKmStand,
-            toggleShield, sortedOrders, orderSortField, orderFilter,
-            toggleOrderSort, sortIcon, formatAmount, openOrder, createNewOrder, navigateToCustomer, openCarRegistration, focusSearch,
+            toggleShield, orderFilter, filteredOrders, orderHeaders, searchIndexLoading,
+            formatAmount, openOrder, createNewOrder, navigateToCustomer, openCarRegistration, focusSearch,
             showAagTsnButton, aagAvailable, aagLoading, openAag, aagConfigured,
             esiAvailable, openEsi,
             gutmannAvailable, openGutmann,
@@ -2685,67 +2694,18 @@ export default {
 }
 
 
-/* ── Auftrags-Tabelle ── */
-.orders-table__filter {
-    max-width: 180px;
-    font-size: 0.8125rem;
-}
-
-.orders-table thead th.orders-table__th {
+/* ── Auftrags-Tabelle (CRM-Optik: v-data-table mit Pager + Zebra) ── */
+.orders-table :deep(tbody tr.cursor-pointer) {
     cursor: pointer;
-    user-select: none;
-    white-space: nowrap;
-    font-weight: 700;
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-    color: rgba(0, 0, 0, 0.7);
-    border-bottom: 2px solid rgba(0, 0, 0, 0.12);
-    padding-top: 10px;
-    padding-bottom: 10px;
 }
-.orders-table__th:hover {
-    color: rgb(var(--v-theme-primary)) !important;
+.zebra-table :deep(tbody tr:nth-child(odd)) {
+    background-color: rgba(0, 0, 0, 0.03);
 }
-.orders-table__sort {
-    opacity: 0.3;
-    transition: opacity 0.15s ease;
+.zebra-table :deep(tbody tr:hover) {
+    background-color: rgba(var(--v-theme-primary), 0.08) !important;
 }
-.orders-table__sort--active {
-    opacity: 1;
-    color: rgb(var(--v-theme-primary));
-}
-.orders-table__th:hover .orders-table__sort {
-    opacity: 0.7;
-}
-
-.orders-table__row {
-    cursor: pointer;
-    transition: background-color 0.15s ease;
-}
-
-.orders-table__row--readonly {
-    cursor: default;
-}
-
-.orders-table__row--readonly:hover {
-    background-color: transparent !important;
-}
-
-.orders-table__row:nth-child(even) {
-    background-color: rgba(0, 0, 0, 0.02);
-}
-
-.orders-table__row:hover {
-    background-color: rgba(var(--v-theme-primary), 0.06) !important;
-}
-
-.orders-table__row:hover .orders-table__icon {
-    color: rgb(var(--v-theme-primary)) !important;
-}
-
-.orders-table__desc {
-    max-width: 280px;
+.orders-table :deep(td) {
+    max-width: 320px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;

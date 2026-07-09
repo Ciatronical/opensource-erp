@@ -196,6 +196,26 @@ export const lxcarsStore = defineStore('lxcarsStore', () => {
     }
 
     /**
+     * Lädt je Auftrag eines Fahrzeugs einen durchsuchbaren Text-Blob
+     * (Waren, Warenbeträge, Arbeitsanweisungen, Rechnungsnummer/-betrag).
+     * Wird erst beim ersten Filtern nachgeladen (Ladezeit-schonend).
+     *
+     * @param {number} carId - Fahrzeug-ID (c_id)
+     * @return {Promise<Array>} [{ id, search_text }]
+     */
+    async function loadCarOrdersSearchIndex(carId) {
+        const response = await axios.post('/api/lxcars/', {
+            action: 'getCarOrdersSearchIndex',
+            id: carId
+        });
+
+        if (!response.data.success) {
+            throw new ApiError('ApiError', response.data.text, 'Error loading car orders search index: ' + response.data.text);
+        }
+        return response.data.payload;
+    }
+
+    /**
      * Prüft den km-Stand auf Plausibilität gegen alle früheren Aufträge/Rechnungen des Fahrzeugs.
      * Gibt { last_km } zurück – den höchsten bisher erfassten km-Stand (0 = kein Vorgänger).
      *
@@ -469,6 +489,18 @@ export const lxcarsStore = defineStore('lxcarsStore', () => {
         });
         if (!response.data.success) {
             throw new ApiError('ApiError', response.data.text, 'Error searching instructions: ' + response.data.text);
+        }
+        return response.data.payload;
+    }
+
+    async function replaceInstruction(id, description) {
+        const response = await axios.post('/api/lxcars/', {
+            action: 'replaceInstruction',
+            id: id,
+            description: description
+        });
+        if (!response.data.success) {
+            throw new ApiError('ApiError', response.data.text, 'Error replacing instruction: ' + response.data.text);
         }
         return response.data.payload;
     }
@@ -1264,6 +1296,7 @@ export const lxcarsStore = defineStore('lxcarsStore', () => {
         resolveKtype,
         getAagEngine,
         loadCarOrders,
+        loadCarOrdersSearchIndex,
         checkKmStandPlausibility,
         loadLxCarsFakturaInit,
         loadCustomerCars,
@@ -1286,6 +1319,7 @@ export const lxcarsStore = defineStore('lxcarsStore', () => {
         deleteAllInstructions,
         reorderInstructions,
         searchInstructions,
+        replaceInstruction,
         loadMasterInstructions,
         addMasterInstruction,
         updateMasterInstruction,

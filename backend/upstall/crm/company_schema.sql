@@ -672,14 +672,19 @@ END $$;
 -- Trigger: pg_notify bei neuer Sprachnotiz (SSE -> Anschlagtafel live)
 CREATE OR REPLACE FUNCTION notify_voice_note() RETURNS trigger AS $$
 BEGIN
-    PERFORM pg_notify('voicenote_change', json_build_object(
-        'id', NEW.id,
-        'sender_name', NEW.sender_name,
-        'transcript', NEW.transcript,
-        'duration', NEW.duration,
-        'status', NEW.status,
-        'itime', NEW.itime
-    )::TEXT);
+    -- Nur sichtbare Notizen auf die Anschlagtafel schieben. Ausgeblendete
+    -- Zeilen (z.B. Kommando-Nachrichten mit hidden=true) loesen kein Event aus.
+    IF NEW.hidden = FALSE THEN
+        PERFORM pg_notify('voicenote_change', json_build_object(
+            'action', 'new',
+            'id', NEW.id,
+            'sender_name', NEW.sender_name,
+            'transcript', NEW.transcript,
+            'duration', NEW.duration,
+            'status', NEW.status,
+            'itime', NEW.itime
+        )::TEXT);
+    END IF;
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;

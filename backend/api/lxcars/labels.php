@@ -80,6 +80,9 @@ function printYellowLabel($data) {
  * @testdata {"c_ln": "HH-AB 1234", "name": "Mustermann", "dim": "205/55R16", "location": "B1D4", "hersteller": "VW", "fhz_typ": "Golf", "hubraum": 1984, "printerId": 1}
  */
 function printTyreLabel($data) {
+    /*** unbedint drin lassen ************
+     * https://labelary.com/viewer.html
+     *************************************/
     $cLn       = trim($data['c_ln'] ?? '');
     $name      = trim($data['name'] ?? '');
     $dim       = trim($data['dim'] ?? '');
@@ -118,6 +121,8 @@ function printTyreLabel($data) {
     $wheels = ['VR', 'VL', 'HR', 'HL'];
     foreach ($wheels as $wheel) {
         $zpl = "^XA\n";
+        $zpl .= "^PW1200\n";   // Etikettenbreite 100mm = 1200 dots (300dpi) erzwingen – Drucker-Reset beim Umzug hatte PRINT WIDTH auf 648 gesetzt (Inhalt sonst zentriert + rechts abgeschnitten)
+        $zpl .= "^LH110,0\n";  // linker Rand ~9mm (110 dots bei 300dpi); y-Ursprung 0
         $zpl .= "^CI28\n";
         $zpl .= "^FO20,200^A0N,190,190^FD" . $cLn . "^FS\n";
         $zpl .= "^FO20,400^A0N,110,110^FD" . $name . "^FS\n";
@@ -147,5 +152,5 @@ function printTyreLabel($data) {
         }
     }
 
-    echo resultInfo(true, '', ['message' => '4 Reifenetiketten gedruckt']);
+    echo resultInfo(true, '', ['message' => count($wheels) . ' Reifenetikett(en) gedruckt']);
 }

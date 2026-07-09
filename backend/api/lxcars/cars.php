@@ -207,16 +207,12 @@ function updateCar($data) {
         }
     }
 
-    // KBA-Daten zurückgeben wenn sich die Verknüpfung geändert hat
-    $responseKba = null;
-    if (!empty($car['kba_id'])) {
-        $responseKba = $db->getOne(
-            "SELECT * FROM kba_lxcars WHERE id = :id",
-            [':id' => intval($car['kba_id'])]
-        );
-    }
+    // KBA-Anzeigeobjekt zurückgeben — identisch zu getCar, damit nach dem
+    // Speichern (z.B. Reifen/Lagerort) keine unteren KBA-Felder verschwinden.
+    $currentCarRow = $db->getOne("SELECT * FROM cars_lxcars WHERE c_id = :id", [':id' => $carId]);
+    $responseKba = $currentCarRow ? resolveDisplayKba($db, $currentCarRow) : null;
 
-    resultInfo(true, 'UPDATED', ['kba_id' => $car['kba_id'] ?? null, 'kba' => $responseKba]);
+    resultInfo(true, 'UPDATED', ['kba_id' => $currentCarRow['kba_id'] ?? null, 'kba' => $responseKba]);
 }
 
 /**
@@ -411,25 +407,19 @@ function checkCarFin($data) {
 }
 
 /**
- * Lädt ein Fahrzeug anhand der ID
+ * Baut das KBA-Anzeigeobjekt eines Fahrzeugs auf
  *
- * Erwartet: { action: 'getCar', id: <c_id> }
- * Gibt zurück: { success: true, payload: { c_id, c_ow, c_ln, ... } }
- * @testdata {"id": 1}
+ * Priorität: special_kba_lxcars vor kba_lxcars. Fehlende Stammdaten
+ * (fhzart, klasse, ...) werden aus einem passenden kba_lxcars-Master
+ * nachgefüllt. Wird von getCar UND updateCar genutzt, damit die Anzeige
+ * nach dem Speichern identisch bleibt (sonst verschwinden untere Felder).
+ *
+ * @param object $db  DbhCompany-Instanz
+ * @param array  $car cars_lxcars-Zeile (braucht c_id, c_2, c_3, kba_id)
+ * @return array|null KBA-Objekt oder null
  */
-function getCar($data) {
-    $db = DbhCompany::begin();
-    $carId = intval($data['id']);
-
-    $car = $db->getOne(
-        "SELECT * FROM cars_lxcars WHERE c_id = :c_id",
-        [':c_id' => $carId]
-    );
-
-    if (!$car) {
-        resultInfo(false, 'DATA_NOT_FOUND');
-        return;
-    }
+function resolveDisplayKba($db, $car) {
+    $carId = intval($car['c_id']);
 
     // KBA-Stammdaten laden: zuerst special_kba_lxcars, dann Fallback auf kba_lxcars
     $kba = $db->getOne(
@@ -469,7 +459,31 @@ function getCar($data) {
         }
     }
 
-    $car['kba'] = $kba;
+    return $kba;
+}
+
+/**
+ * Lädt ein Fahrzeug anhand der ID
+ *
+ * Erwartet: { action: 'getCar', id: <c_id> }
+ * Gibt zurück: { success: true, payload: { c_id, c_ow, c_ln, ... } }
+ * @testdata {"id": 1}
+ */
+function getCar($data) {
+    $db = DbhCompany::begin();
+    $carId = intval($data['id']);
+
+    $car = $db->getOne(
+        "SELECT * FROM cars_lxcars WHERE c_id = :c_id",
+        [':c_id' => $carId]
+    );
+
+    if (!$car) {
+        resultInfo(false, 'DATA_NOT_FOUND');
+        return;
+    }
+
+    $car['kba'] = resolveDisplayKba($db, $car);
 
     // Pfade & Symlinks fuer das Fahrzeug sicherstellen (idempotent):
     //   - fahrzeuge/{c_id}/ inkl. fahrzeugschein/ + Auto-Folder
@@ -516,9 +530,12 @@ function getCarOrders($data) {
     $db = DbhCompany::begin();
     $carId = intval($data['id']);
 
+    // Bewusst leichtgewichtig (nur Anzeigefelder, keine aggregierenden Subqueries),
+    // damit die Ladezeit des Fahrzeugs nicht leidet. Der durchsuchbare Text-Blob
+    // (Waren, Anweisungen, Rechnung) wird bei Bedarf per getCarOrdersSearchIndex nachgeladen.
     $orders = $db->getAll(
         "SELECT o.id, o.ordnumber, TO_CHAR(o.transdate, 'DD.MM.YYYY') AS transdate,
-                o.amount,
+                o.amount, o.record_type,
                 COALESCE(
                     (SELECT il.description FROM oe_instructions_lxcars il
                      WHERE il.oe_id = o.id ORDER BY il.sort_order, il.id LIMIT 1),
@@ -529,12 +546,52 @@ function getCarOrders($data) {
          JOIN oe o ON o.id = e.oe_id
          WHERE e.c_id = :c_id
            AND o.record_type IN ('sales_order', 'sales_order_intake')
-         ORDER BY o.transdate DESC
-         LIMIT 20",
+         ORDER BY o.transdate DESC",
         [':c_id' => $carId]
     );
 
     resultInfo(true, 'OK', $orders ?: []);
+}
+
+/**
+ * Liefert je Auftrag eines Fahrzeugs einen durchsuchbaren Text-Blob
+ * (Auftrag-Nr., Waren + Artikelnummern + Warenbeträge, Arbeitsanweisungen,
+ * verknüpfte Rechnungsnummer + Rechnungsbetrag).
+ *
+ * Wird vom Frontend erst beim ersten Filtern nachgeladen, damit die
+ * aggregierenden Subqueries die Ladezeit des Fahrzeugs nicht belasten.
+ *
+ * @param int $data['id'] Fahrzeug-ID (c_id)
+ * @testdata {"id": 1}
+ */
+function getCarOrdersSearchIndex($data) {
+    $db = DbhCompany::begin();
+    $carId = intval($data['id']);
+
+    $rows = $db->getAll(
+        "SELECT o.id,
+                CONCAT_WS(' ',
+                    o.ordnumber, o.cusordnumber,
+                    o.amount::text, REPLACE(o.amount::text, '.', ','),
+                    (SELECT string_agg(CONCAT_WS(' ', p.partnumber, oi.description,
+                            oi.sellprice::text, REPLACE(oi.sellprice::text, '.', ',')), ' ')
+                     FROM orderitems oi LEFT JOIN parts p ON p.id = oi.parts_id
+                     WHERE oi.trans_id = o.id),
+                    (SELECT string_agg(il.description, ' ')
+                     FROM oe_instructions_lxcars il WHERE il.oe_id = o.id),
+                    (SELECT string_agg(CONCAT_WS(' ', a.invnumber,
+                            a.amount::text, REPLACE(a.amount::text, '.', ',')), ' ')
+                     FROM record_links rl JOIN ar a ON a.id = rl.to_id
+                     WHERE rl.from_table = 'oe' AND rl.from_id = o.id AND rl.to_table = 'ar')
+                ) AS search_text
+         FROM oe_ext e
+         JOIN oe o ON o.id = e.oe_id
+         WHERE e.c_id = :c_id
+           AND o.record_type IN ('sales_order', 'sales_order_intake')",
+        [':c_id' => $carId]
+    );
+
+    resultInfo(true, 'OK', $rows ?: []);
 }
 
 /**
