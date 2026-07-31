@@ -268,6 +268,7 @@
                                     ref="addInputRef"
                                     v-model="newInstructionSelected"
                                     v-model:search="newInstructionSearch"
+                                    v-model:menu="addMenuOpen"
                                     :items="suggestions"
                                     :loading="false"
                                     item-title="description"
@@ -286,12 +287,23 @@
                                     @update:model-value="onSuggestionSelect"
                                     @keydown.enter="onEnterAdd"
                                 >
+                                    <!-- Mikrofon sitzt IM Feld (append-inner) — Feld- und
+                                         Dropdown-Breite bleiben exakt wie vorher. -->
+                                    <template #append-inner>
+                                        <VoiceInputButton
+                                            density="compact"
+                                            color="grey-darken-1"
+                                            @transcript="onVoiceInstruction"
+                                        />
+                                    </template>
                                     <template #item="{ props: itemProps, item }">
                                         <v-list-item v-bind="itemProps" :title="undefined">
                                             <template #prepend>
-                                                <span v-if="item.raw.instruction_number" class="text-grey font-weight-medium mr-3" style="font-size: 12px; min-width: 40px">{{ item.raw.instruction_number }}</span>
+                                                <v-icon v-if="item.raw._voiceNew" size="small" class="mr-2" color="primary">mdi-plus</v-icon>
+                                                <span v-else-if="item.raw.instruction_number" class="text-grey font-weight-medium mr-3" style="font-size: 12px; min-width: 40px">{{ item.raw.instruction_number }}</span>
                                             </template>
                                             <template #title>{{ item.raw.description }}</template>
+                                            <template v-if="item.raw._voiceNew" #subtitle>{{ t('voiceInput.addAsNew') }}</template>
                                         </v-list-item>
                                     </template>
                                 </v-autocomplete>
@@ -704,10 +716,11 @@ import { useInstructionTimer } from '@/core/composables/useInstructionTimer.js'
 import draggable from 'vuedraggable'
 import axios from 'axios'
 import * as toast from '@/core/utils/toasts.js'
+import VoiceInputButton from '@/core/components/voice-input-button.vue'
 
 export default defineComponent({
     name: 'InstructionsSectionCard',
-    components: { draggable },
+    components: { draggable, VoiceInputButton },
 
     props: {
         oeId: {
@@ -779,7 +792,13 @@ export default defineComponent({
         const suggestionsLoading = ref(false)
         const newInstructionSearch = ref('')
         const newInstructionSelected = ref(null)
+        const addMenuOpen = ref(false)
         const addInputRef = ref(null)
+        // Diktat-Zustand: der gesprochene Text (den onVoiceInstruction selbst ins
+        // Feld schreibt) und ein Merker, dass die aktuelle Vorschlagsliste aus einer
+        // Spracheingabe stammt (für Enter-Vorrang + Überspringen der Tipp-Suche).
+        let voiceText = ''
+        const voiceMode = ref(false)
         const descriptionRefs = {}
         const plannedTimeRefs = {}
         const actualTimeRefs = {}
@@ -959,6 +978,11 @@ export default defineComponent({
 
         // Autocomplete-Suche (150ms debounce, ab 2 Zeichen)
         function onSearchInput(val) {
+            // Von der Spracheingabe selbst gesetzter Text: ignorieren (onVoiceInstruction
+            // hat die Vorschläge schon kuratiert). Erst wenn der Benutzer den Text
+            // wirklich ändert, ist der Diktat-Modus vorbei und es wird normal gesucht.
+            if (voiceMode.value && val === voiceText) return
+            voiceMode.value = false
             if (searchTimeout) clearTimeout(searchTimeout)
             if (!val || val.length < 2) {
                 suggestions.value = []
@@ -1012,6 +1036,8 @@ export default defineComponent({
                 suggestions.value = []
                 newInstructionSelected.value = null
                 newInstructionSearch.value = ''
+                voiceMode.value = false
+                addMenuOpen.value = false
                 // Focus zurück ins Eingabefeld für die nächste Anweisung
                 nextTick(() => {
                     setTimeout(() => {
@@ -1024,12 +1050,54 @@ export default defineComponent({
         }
 
         function onSuggestionSelect(item) {
+            // Bestehende Anweisung ODER die "neu"-Option (gesprochener Wortlaut).
+            // Beides läuft über addNewInstruction; bei bestehendem Text dedupliziert
+            // die Master-Tabelle per exaktem Match → kein Zumüllen.
+            voiceMode.value = false
             if (item && item.description) {
                 addNewInstruction(item.description)
             }
         }
 
+        // Diktierte Anweisung: NICHT sofort anlegen (das würde die Master-Tabelle
+        // zumüllen), sondern wie getippt behandeln — Feld füllen, bestehende
+        // ähnliche Anweisungen wortweise suchen und oben anzeigen, den gesprochenen
+        // Wortlaut als letzte Option anhängen. Kein Satzpunkt am Ende.
+        async function onVoiceInstruction(text) {
+            const spoken = (text || '').trim().replace(/[.!?…]+$/u, '').trim()
+            if (!spoken) return
+
+            voiceText = spoken
+            voiceMode.value = true
+            newInstructionSelected.value = null
+            newInstructionSearch.value = spoken
+
+            let existing = []
+            try { existing = await carsStore.searchInstructions(spoken) } catch (e) { existing = [] }
+            const list = Array.isArray(existing) ? existing.slice(0, 15) : []
+            // Gesprochenen Wortlaut als "neu"-Option anhängen (außer exakt vorhanden).
+            const spokenLower = spoken.toLowerCase()
+            if (!list.some(s => (s.description || '').toLowerCase() === spokenLower)) {
+                list.push({ id: '__voice_new__', description: spoken, _voiceNew: true })
+            }
+            suggestions.value = list
+            nextTick(() => {
+                addInputRef.value?.focus()
+                addMenuOpen.value = true
+            })
+        }
+
         async function onEnterAdd() {
+            // Diktat: Vorrang hat immer ein bestehender ähnlicher Eintrag; nur wenn
+            // es keinen gibt, den gesprochenen Wortlaut anlegen.
+            if (voiceMode.value) {
+                const firstExisting = (suggestions.value || []).find(s => !s._voiceNew)
+                const chosen = firstExisting ? firstExisting.description : (newInstructionSearch.value || '').trim()
+                voiceMode.value = false
+                if (chosen) addNewInstruction(chosen)
+                return
+            }
+
             const text = (newInstructionSearch.value || '').trim()
             if (!text) return
 
@@ -1753,6 +1821,7 @@ export default defineComponent({
             suggestionsLoading,
             newInstructionSearch,
             newInstructionSelected,
+            addMenuOpen,
             addInputRef,
             doneCount,
             allDone,
@@ -1765,6 +1834,7 @@ export default defineComponent({
             employeeList,
             formatDuration,
             onSearchInput,
+            onVoiceInstruction,
             onSuggestionSelect,
             onEnterAdd,
             onToggleDone,

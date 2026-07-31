@@ -43,6 +43,14 @@
         },
         "incompleteText": "Before the order can be completed, the following fields must be filled in:",
         "incompleteTitle": "Maintenance data incomplete",
-        "title": "Maintenance & Service"
+        "title": "Maintenance & Service",
+        "voice": {
+            "hint": "Dictate maintenance data — e.g. \"mileage 120369, timing belt due at 20000, brake fluid 02/2029\"",
+            "stop": "Stop recording and apply",
+            "applied": "Applied:",
+            "nothing": "Nothing recognized — please speak more clearly",
+            "failed": "Speech recognition failed",
+            "kmStand": "Mileage"
+        }
     }
 }

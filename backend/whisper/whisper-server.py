@@ -13,8 +13,13 @@ das PHP-Backend schickt die Bytes hierher und bekommt den fertigen Text zurueck.
 Aufruf:
     POST http://127.0.0.1:3002/transcribe
     Body: rohe Audio-Bytes (OGG/Opus, MP3, WAV, M4A ... ffmpeg dekodiert alles)
-    Header (optional): X-Whisper-Token: <geheim>   (wenn WHISPER_TOKEN gesetzt)
-    Header (optional): X-Whisper-Lang:  de | auto   (ueberschreibt WHISPER_LANG)
+    Header (optional): X-Whisper-Token:  <geheim>   (wenn WHISPER_TOKEN gesetzt)
+    Header (optional): X-Whisper-Lang:   de | auto   (ueberschreibt WHISPER_LANG)
+    Header (optional): X-Whisper-Prompt: <base64(utf-8)>  Fachbegriffe-Glossar als
+                       initial_prompt. Verbessert die Erkennung von Domaenen-
+                       Vokabular (Kfz-Teile, Namen). Base64-kodiert, damit Umlaute/
+                       Kommas den HTTP-Header nicht sprengen. Whisper nutzt nur die
+                       letzten ~224 Tokens des Prompts -> Glossar kurz halten.
 
 Antwort (JSON):
     {"ok": true, "text": "...", "language": "de", "duration": 4.2}
@@ -33,6 +38,7 @@ Konfiguration ueber Umgebungsvariablen:
                      X-Whisper-Token passen, sonst 401
 """
 
+import base64
 import json
 import os
 import sys
@@ -97,6 +103,17 @@ class Handler(BaseHTTPRequestHandler):
         lang = self.headers.get("X-Whisper-Lang", DEFAULT_LANG)
         lang = None if lang == "auto" else lang
 
+        # Fachbegriffe-Glossar (initial_prompt) — base64-kodiert im Header, damit
+        # Umlaute/Kommas den HTTP-Header nicht sprengen. Leerer/ungueltiger Header
+        # -> kein Prompt (unveraendertes Verhalten wie bisher).
+        prompt = None
+        raw_prompt = self.headers.get("X-Whisper-Prompt", "")
+        if raw_prompt:
+            try:
+                prompt = base64.b64decode(raw_prompt).decode("utf-8").strip() or None
+            except Exception:  # noqa: BLE001 - kaputter Header darf nicht crashen
+                prompt = None
+
         tmp_path = None
         try:
             with tempfile.NamedTemporaryFile(suffix=".audio", delete=False) as tmp:
@@ -106,6 +123,7 @@ class Handler(BaseHTTPRequestHandler):
             segments, info = model.transcribe(
                 tmp_path,
                 language=lang,
+                initial_prompt=prompt,  # Domaenen-Vokabular vorgeben
                 vad_filter=True,  # Stille/Pausen herausfiltern -> sauberer Text
             )
             text = "".join(seg.text for seg in segments).strip()

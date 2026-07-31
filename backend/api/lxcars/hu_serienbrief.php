@@ -48,6 +48,11 @@ function getHuFaelligList($data) {
         ? ''
         : 'AND (cext.hu_serienbrief_excluded IS NULL OR cext.hu_serienbrief_excluded = false)';
 
+    // Fahrzeuge, deren HU-Benachrichtigung im Fahrzeug abgewählt wurde, ausblenden
+    $notifyCondition = $includeExcluded
+        ? ''
+        : 'AND (car.c_hu_notify IS NULL OR car.c_hu_notify = true)';
+
     $query = <<<SQL
         SELECT
             c.id AS customer_id,
@@ -63,7 +68,8 @@ function getHuFaelligList($data) {
                 'c_ln', car.c_ln,
                 'c_hu', car.c_hu,
                 'c_m', car.c_m,
-                'c_t', car.c_t
+                'c_t', car.c_t,
+                'c_hu_notify', COALESCE(car.c_hu_notify, true)
             ) ORDER BY car.c_hu) AS fahrzeuge
         FROM cars_lxcars car
         JOIN customer c ON c.id = car.c_ow
@@ -72,6 +78,7 @@ function getHuFaelligList($data) {
         AND car.c_hu <= :date_to
         AND car.c_hu >= :date_from
         $excludeCondition
+        $notifyCondition
         GROUP BY c.id, c.name, c.street, c.zipcode, c.city, c.phone, c.email, cext.hu_serienbrief_excluded
         ORDER BY MIN(car.c_hu) ASC
     SQL;
@@ -124,6 +131,31 @@ function setHuExcluded($data) {
             hu_serienbrief_excluded = :excluded,
             mtime = now()",
         [':customer_id' => $customerId, ':excluded' => $excluded ? 't' : 'f']
+    );
+
+    resultInfo(true, 'UPDATED');
+}
+
+/**
+ * Schaltet die HU-Benachrichtigung für ein einzelnes Fahrzeug ein oder aus.
+ *
+ * Wird sowohl aus der Fahrzeug-Bearbeitung (Schalter neben dem Kennzeichen)
+ * als auch aus der Serienbrief-Liste (Fahrzeug abwählen) genutzt.
+ *
+ * @param int $data['c_id'] Fahrzeug-ID
+ * @param bool $data['notify'] true = Benachrichtigung senden, false = abgewählt
+ * @testdata {"c_id": 1, "notify": false}
+ */
+function setCarHuNotify($data) {
+    permit('sales_order_edit');
+
+    $mandant = DbhCompany::begin();
+    $carId = intval($data['c_id']);
+    $notify = !empty($data['notify']);
+
+    $mandant->execute(
+        "UPDATE cars_lxcars SET c_hu_notify = :notify WHERE c_id = :c_id",
+        [':c_id' => $carId, ':notify' => $notify ? 't' : 'f']
     );
 
     resultInfo(true, 'UPDATED');
@@ -202,6 +234,7 @@ function _buildHuPdf($customerIds, $dateFrom = '', $dateTo = '', &$debug = []) {
           AND c.id IN ($idList)
           AND car.c_hu >= :date_from
           AND car.c_hu <= :date_to
+          AND (car.c_hu_notify IS NULL OR car.c_hu_notify = true)
         ORDER BY c.name, car.c_hu
     SQL;
 
@@ -513,6 +546,7 @@ function sendHuWhatsAppBulk($data) {
          WHERE car.c_hu IS NOT NULL
            AND c.id IN ($idList)
            AND c.phone IS NOT NULL AND c.phone != ''
+           AND (car.c_hu_notify IS NULL OR car.c_hu_notify = true)
          ORDER BY c.name, car.c_hu"
     );
 

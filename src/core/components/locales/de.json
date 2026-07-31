@@ -1,0 +1,10 @@
+{
+    "voiceInput": {
+        "start": "Spracheingabe starten",
+        "stop": "Aufnahme beenden und erkennen",
+        "transcribing": "Wird erkannt …",
+        "permissionDenied": "Kein Mikrofonzugriff — im Browser erlauben",
+        "error": "Spracherkennung fehlgeschlagen",
+        "addAsNew": "Gesprochenen Text neu übernehmen"
+    }
+}

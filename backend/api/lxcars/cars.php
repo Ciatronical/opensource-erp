@@ -2724,3 +2724,78 @@ function checkDuplicateCustomer($data) {
 
     resultInfo(true, 'OK', ['exact' => $exact, 'partial' => $partial]);
 }
+
+/**
+ * Gesprochene Fahrzeug-Wartungsdaten per lokalem LLM in strukturierte Felder wandeln.
+ *
+ * Der Kollege spricht frei, z. B.: "Kilometerstand 120369, Zahnriemen fällig bei
+ * Kilometer 20000, Bremsflüssigkeit fällig 02/2029". Das lokale LLM (Ollama) macht
+ * daraus ein JSON, das das Frontend direkt in die Fahrzeugfelder setzt. Es werden
+ * nur bekannte, erwähnte Felder zurückgegeben — nichts erfunden.
+ *
+ * @param string $data['text'] Das Transkript (aus Whisper)
+ * @testdata {"action": "extractVehicleData", "text": "Kilometerstand 120369, Zahnriemen fällig bei Kilometer 20000, Bremsflüssigkeit fällig 02/2029"}
+ */
+function extractVehicleData($data) {
+    require_once dirname(__DIR__).'/lib/llm.php';
+
+    $text = trim($data['text'] ?? '');
+    if ($text === '') {
+        resultInfo(false, 'EMPTY_TEXT', 'Kein Text übergeben');
+        return;
+    }
+
+    $system = <<<'PROMPT'
+Du extrahierst Fahrzeug-Wartungsdaten aus gesprochenem Deutsch und antwortest AUSSCHLIESSLICH mit einem JSON-Objekt (keine Erklärung, kein Text drumherum).
+
+Schlüssel — gib nur aus, was WÖRTLICH genannt ist, und ordne exakt nach dem genannten Stichwort zu:
+- "c_km":  Kilometerstand / km-Stand (ganze Zahl ohne Tausenderpunkt)
+- "c_zrk": Zahnriemen bei Kilometer/km (ganze Zahl)
+- "c_zrd": Zahnriemen fällig Datum ("MM/YYYY")
+- "c_bf":  Bremsflüssigkeit fällig ("MM/YYYY")
+- "c_wd":  Wiedervorlage / nächster Wartungsdienst ("MM/YYYY")
+- "c_hu":  HU / TÜV fällig ("MM/YYYY")
+- "c_ln":  Kennzeichen (Großbuchstaben, mit Leerzeichen wie gesprochen)
+
+Regeln:
+- Monats-/Jahresangaben wie "2 2029", "Februar 2029" oder "02 2029" => "02/2029". Zweistellige Jahre zu 20xx ergänzen.
+- Kilometer als reine Zahl (z. B. "hundertzwanzigtausend" => 120000).
+- Nichts raten. Fehlt eine Angabe, lass den Schlüssel weg.
+- Antworte nur mit dem JSON-Objekt.
+
+Beispiel:
+Eingabe: "Kennzeichen HH AB 1234, km-Stand 120000, Zahnriemen bei 20000, Bremsflüssigkeit 02/2029, HU Mai 2027, Wiedervorlage September 2026"
+Ausgabe: {"c_ln":"HH AB 1234","c_km":120000,"c_zrk":20000,"c_bf":"02/2029","c_hu":"05/2027","c_wd":"09/2026"}
+PROMPT;
+
+    try {
+        $raw = oserpLlmChat([
+            ['role' => 'system', 'content' => $system],
+            ['role' => 'user',   'content' => $text],
+        ], ['json' => true, 'temperature' => 0.1, 'max_tokens' => 400]);
+    } catch (ApiError $e) {
+        resultInfo(false, $e->getId(), $e->getMessage());
+        return;
+    }
+
+    $fields = json_decode($raw, true);
+    // Fallback: JSON aus umgebendem Text herausschneiden, falls das Modell doch quatscht.
+    if (!is_array($fields) && preg_match('/\{.*\}/s', $raw, $m)) {
+        $fields = json_decode($m[0], true);
+    }
+    if (!is_array($fields)) {
+        resultInfo(false, 'PARSE_FAILED', 'LLM-Antwort war kein JSON: ' . mb_substr($raw, 0, 200));
+        return;
+    }
+
+    // Whitelist — nur bekannte Felder mit echtem Wert durchlassen.
+    $allowed = ['c_km', 'c_zrk', 'c_zrd', 'c_bf', 'c_wd', 'c_hu', 'c_ln'];
+    $out = [];
+    foreach ($allowed as $k) {
+        if (array_key_exists($k, $fields) && $fields[$k] !== null && $fields[$k] !== '') {
+            $out[$k] = is_string($fields[$k]) ? trim($fields[$k]) : $fields[$k];
+        }
+    }
+
+    resultInfo(true, '', ['fields' => $out, 'transcript' => $text]);
+}

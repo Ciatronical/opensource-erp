@@ -41,6 +41,8 @@
                     @show-on-display="showOnDisplay"
                     @show-history="showHistory"
                     @set-followup="setFollowUp"
+                    :show-vehicle-voice="!!vehicle && !!vehicle.selectedCarId.value"
+                    @voice-vehicle="onVoiceVehicle"
                     @export-xinvoice="exportXInvoice"
                     @delete="items.deleteFaktura"
                     :show-vehicle-button="!!vehicle && !!vehicle.selectedCarId.value"
@@ -198,6 +200,7 @@
                 <maintenance-section-card
                     :oe-ext-data="vehicle.oeExtData.value"
                     :has-car="!!vehicle.selectedCarId.value"
+                    :show-voice="false"
                     @oe-ext-field-change="vehicle.onOeExtFieldChange"
                 />
             </section>
@@ -1086,6 +1089,7 @@ import * as alerts from '@/core/utils/alerts.js'
 import * as toasts from '@/core/utils/toasts.js'
 import { openAppWindow, aagWindowOpen, setAagWindowCarId } from '@/core/utils/aagWindow.js'
 import { hasVehicleId, isKbaValid, buildEsiUrl, buildGutmannUrl } from '@/core/utils/diagLinks.js'
+import { parseMonthYear, formatMonthYear } from '@/features/lxcars/utils/validation.js'
 
 const specialDialogModules = import.meta.glob('../special/special.dialog.vue')
 const SpecialDialog = specialDialogModules['../special/special.dialog.vue']
@@ -2351,6 +2355,54 @@ export default defineComponent({
             // TODO: Implement follow-up
         }
 
+        // Fahrzeugdaten per Sprache: der Kollege spricht frei ("Kilometerstand
+        // 120369, Zahnriemen fällig bei 20000, Bremsflüssigkeit 02/2029"). Whisper
+        // transkribiert, der lokale LLM strukturiert, wir tragen die Felder in die
+        // Auftrags-Fahrzeugdaten (oe_ext) ein — Auto-Save läuft über
+        // onOeExtFieldChange. Gekoppelte Zahnriemen-Felder (c_sk) werden übersprungen.
+        async function onVoiceVehicle(text) {
+            const spoken = (text || '').trim()
+            if (!spoken || !vehicle || !vehicle.selectedCarId.value) return
+            try {
+                const { data } = await axios.post('/api/lxcars/', { action: 'extractVehicleData', text: spoken })
+                if (!data?.success) {
+                    alerts.error(data?.text || t('CarEditView.voice.failed'))
+                    return
+                }
+                const f = data.payload?.fields || {}
+                const ext = vehicle.onOeExtFieldChange
+                const coupled = !!vehicle.oeExtData.value?.c_sk
+                const kmFmt = (v) => Number(v) ? Number(v).toLocaleString('de-DE') : ''
+                const done = []
+
+                if (f.c_km != null) {
+                    const v = parseInt(f.c_km, 10)
+                    if (v > 0) { ext('km_stand', v); done.push(`${t('MaintenanceSectionCard.voice.kmStand')}: ${kmFmt(v)} km`) }
+                }
+                if (f.c_zrk != null && !coupled) {
+                    let n = parseInt(f.c_zrk, 10)
+                    if (n > 0) { n = n < 1000 ? n * 1000 : n; ext('c_zrk', n); done.push(`${t('MaintenanceSectionCard.fields.c_zrk')}: ${kmFmt(n)} km`) }
+                }
+                if (f.c_zrd && !coupled) {
+                    const d = parseMonthYear(f.c_zrd)
+                    if (d) { ext('c_zrd', d); done.push(`${t('MaintenanceSectionCard.fields.c_zrd')}: ${formatMonthYear(d)}`) }
+                }
+                if (f.c_bf) {
+                    const d = parseMonthYear(f.c_bf)
+                    if (d) { ext('c_bf', d); done.push(`${t('MaintenanceSectionCard.fields.c_bf')}: ${formatMonthYear(d)}`) }
+                }
+                if (f.c_wd) {
+                    const d = parseMonthYear(f.c_wd)
+                    if (d) { ext('c_wd', d); done.push(`${t('MaintenanceSectionCard.fields.c_wd')}: ${formatMonthYear(d)}`) }
+                }
+
+                if (done.length) toasts.success(t('MaintenanceSectionCard.voice.applied') + ' ' + done.join(' · '))
+                else toasts.info(t('MaintenanceSectionCard.voice.nothing'))
+            } catch (e) {
+                alerts.error(t('CarEditView.voice.failed'))
+            }
+        }
+
         async function exportXInvoice() {
             if (!fakturaId.value) {
                 alerts.warning(t('FakturaView.faktura.einvoice.saveFirst'))
@@ -3128,6 +3180,7 @@ export default defineComponent({
             saveAsDraft,
             showHistory,
             setFollowUp,
+            onVoiceVehicle,
             exportXInvoice,
             selectPrinter,
             selectTemplate,

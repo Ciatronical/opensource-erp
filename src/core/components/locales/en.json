@@ -1,0 +1,10 @@
+{
+    "voiceInput": {
+        "start": "Start voice input",
+        "stop": "Stop recording and transcribe",
+        "transcribing": "Transcribing …",
+        "permissionDenied": "No microphone access — allow it in the browser",
+        "error": "Speech recognition failed",
+        "addAsNew": "Add spoken text as new"
+    }
+}

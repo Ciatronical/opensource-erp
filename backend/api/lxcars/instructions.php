@@ -400,15 +400,41 @@ function searchInstructions($data) {
         return;
     }
 
+    // Wortweise Suche: ein diktierter Satz ("professionellen Urlaubscheck ...")
+    // soll den bestehenden Einzelwort-Eintrag ("Urlaubscheck") finden. Die volle
+    // Phrase zählt am stärksten, danach die Anzahl getroffener Wörter.
+    $stop = array_flip([
+        'der','die','das','und','oder','ein','eine','einen','einem','einer','eines',
+        'mit','ohne','für','von','vom','zum','zur','den','dem','des','auf','aus','bei',
+        'durchführen','durchfuhren','prüfen','pruefen','machen','bitte','mal',
+    ]);
+    $words = preg_split('/\s+/u', $query, -1, PREG_SPLIT_NO_EMPTY);
+    $words = array_values(array_filter($words, function ($w) use ($stop) {
+        return mb_strlen($w) >= 3 && !isset($stop[mb_strtolower($w)]);
+    }));
+
+    $params = [':full' => '%' . $query . '%', ':numquery' => $query . '%', ':exact' => $query];
+    $conds  = ['LOWER(description) LIKE LOWER(:full)', 'instruction_number LIKE :numquery'];
+    $scores = ['CASE WHEN LOWER(description) LIKE LOWER(:full) THEN 100 ELSE 0 END'];
+    foreach ($words as $i => $w) {
+        $p = ':w' . $i;
+        $params[$p] = '%' . $w . '%';
+        $conds[]  = "LOWER(description) LIKE LOWER($p)";
+        $scores[] = "CASE WHEN LOWER(description) LIKE LOWER($p) THEN 1 ELSE 0 END";
+    }
+    $where = implode(' OR ', $conds);
+    $score = implode(' + ', $scores);
+
     $rows = $db->getAll(
-        "SELECT id, description, instruction_number
+        "SELECT id, description, instruction_number, ($score) AS match_score
          FROM instructions_lxcars
-         WHERE LOWER(description) LIKE LOWER(:query) OR instruction_number LIKE :numquery
+         WHERE $where
          ORDER BY
              CASE WHEN instruction_number = :exact THEN 0 ELSE 1 END,
+             match_score DESC,
              usage_count DESC, description
          LIMIT 15",
-        [':query' => '%' . $query . '%', ':numquery' => $query . '%', ':exact' => $query]
+        $params
     );
 
     resultInfo(true, 'OK', $rows ?: []);

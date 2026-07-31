@@ -44,6 +44,8 @@
             "error_loading": "Error loading HU list.",
             "excluded_success": "Customer has been excluded.",
             "included_success": "Customer has been included again.",
+            "car_excluded": "Vehicle has been excluded from HU notifications.",
+            "car_included": "Vehicle will be notified again.",
             "exclude_error": "Error saving.",
             "email_sent": "Email has been sent.",
             "email_error": "Error sending email.",
@@ -58,7 +60,9 @@
         "tooltips": {
             "whatsapp_single": "Send HU reminder via WhatsApp",
             "exclude": "Exclude customer from HU notifications",
-            "include": "Include customer in HU notifications again"
+            "include": "Include customer in HU notifications again",
+            "car_exclude": "Exclude this vehicle from HU notifications",
+            "car_include": "Notify this vehicle again"
         },
         "dialogs": {
             "confirm_exclude_title": "Exclude Customer",

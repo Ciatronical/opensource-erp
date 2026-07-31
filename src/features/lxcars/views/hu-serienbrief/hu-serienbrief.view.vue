@@ -163,9 +163,25 @@
                 </template>
 
                 <template #item.fahrzeuge="{ item }">
-                    <div v-for="fz in item.fahrzeuge" :key="fz.c_id" class="text-no-wrap">
+                    <div v-for="fz in item.fahrzeuge" :key="fz.c_id" class="d-flex align-center text-no-wrap">
+                        <v-tooltip
+                            :text="fz.c_hu_notify === false ? t('HuSerienbriefView.tooltips.car_include') : t('HuSerienbriefView.tooltips.car_exclude')"
+                            location="top"
+                        >
+                            <template #activator="{ props: tp }">
+                                <v-btn
+                                    v-bind="tp"
+                                    :icon="fz.c_hu_notify === false ? 'mdi-bell-off-outline' : 'mdi-bell-ring-outline'"
+                                    :color="fz.c_hu_notify === false ? 'grey' : 'primary'"
+                                    size="x-small"
+                                    variant="text"
+                                    class="me-1"
+                                    @click.stop="toggleCarNotify(item, fz)"
+                                />
+                            </template>
+                        </v-tooltip>
                         <v-icon size="x-small" class="me-1">mdi-car</v-icon>
-                        <strong>{{ fz.c_ln }}</strong>
+                        <strong :class="{ 'text-disabled text-decoration-line-through': fz.c_hu_notify === false }">{{ fz.c_ln }}</strong>
                         <span v-if="fz.c_m" class="text-medium-emphasis ms-1">{{ fz.c_m }} {{ fz.c_t }}</span>
                     </div>
                 </template>
@@ -356,6 +372,32 @@ async function includeCustomer(item) {
         });
         toasts.success(t('HuSerienbriefView.toasts.included_success'));
         item.hu_excluded = false;
+    } catch {
+        toasts.error(t('HuSerienbriefView.toasts.exclude_error'));
+    }
+}
+
+async function toggleCarNotify(item, fz) {
+    // Aktueller Zustand: c_hu_notify === false → abgewählt. Klick invertiert.
+    const newNotify = fz.c_hu_notify === false;
+    try {
+        await axios.post('/api/lxcars/', {
+            action: 'setCarHuNotify',
+            c_id: fz.c_id,
+            notify: newNotify
+        });
+        fz.c_hu_notify = newNotify;
+        toasts.success(newNotify
+            ? t('HuSerienbriefView.toasts.car_included')
+            : t('HuSerienbriefView.toasts.car_excluded'));
+
+        // Abgewähltes Fahrzeug ausblenden, wenn nicht "auch abgewählte anzeigen"
+        if (!newNotify && !showExcluded.value) {
+            item.fahrzeuge = item.fahrzeuge.filter(f => f.c_id !== fz.c_id);
+            if (!item.fahrzeuge.length) {
+                customers.value = customers.value.filter(c => c.customer_id !== item.customer_id);
+            }
+        }
     } catch {
         toasts.error(t('HuSerienbriefView.toasts.exclude_error'));
     }

@@ -56,8 +56,8 @@
                         <!-- LAZY LOADED TABS - Nur der aktive Tab wird geladen! -->
                         <component
                             :is="currentTabComponent"
-                            :defaults="['crm','lxcars','anpr'].includes(activeTab) ? undefined : defaults"
-                            :crm-defaults="['crm','lxcars','anpr','bank','features'].includes(activeTab) ? crmDefaults : undefined"
+                            :defaults="['crm','lxcars','anpr','ai_health'].includes(activeTab) ? undefined : defaults"
+                            :crm-defaults="['crm','lxcars','anpr','bank','features','ai_health'].includes(activeTab) ? crmDefaults : undefined"
                             :search-query="searchQuery"
                         />
                     </v-card-text>
@@ -199,6 +199,7 @@ const EinvoiceTab = defineAsyncComponent(() => import('./tabs/einvoice.tab.vue')
 const CrmTab = defineAsyncComponent(() => import('./tabs/crm-defaults.tab.vue'));
 const LxCarsTab = defineAsyncComponent(() => import('./tabs/lxcars-defaults.tab.vue'));
 const AnprTab = defineAsyncComponent(() => import('./tabs/anpr-defaults.tab.vue'));
+const AiHealthTab = defineAsyncComponent(() => import('./tabs/ai-health.tab.vue'));
 const AddTab = defineAsyncComponent(() => import('./tabs/add.tab.vue'));
 
 const { t } = useI18n();
@@ -417,6 +418,11 @@ const tabs = computed(() => [
         icon: 'mdi-car-search'
     }] : []),
     {
+        value: 'ai_health',
+        title: t('aiHealth.tabTitle'),
+        icon: 'mdi-robot-happy-outline'
+    },
+    {
         value: 'add',
         title: t('add'),
         icon: 'mdi-plus-circle'
@@ -445,6 +451,7 @@ const currentTabComponent = computed(() => {
         'crm': CrmTab,
         'lxcars': LxCarsTab,
         'anpr': AnprTab,
+        'ai_health': AiHealthTab,
         'add': AddTab
     };
 

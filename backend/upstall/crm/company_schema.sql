@@ -1070,6 +1070,62 @@ CREATE TRIGGER trg_crmti_notify
     FOR EACH ROW
     EXECUTE FUNCTION notify_crmti_insert();
 
+-- ----------------------------------------------------------------------------
+-- Backfill: Wird ein Kunde/Lieferant NACH einem Anruf angelegt (oder dessen
+-- Rufnummer geaendert), waren die zurueckliegenden crmti-Zeilen bis dahin
+-- "unbekannt" (crmti_caller_typ = 'X'/'Y', crmti_caller_id = 0) und blieben es
+-- auch nach Reload, weil die Namensaufloesung nur einmalig zum Anrufzeitpunkt
+-- lief. Dieser Trigger loest die noch unaufgeloesten Zeilen erneut ueber
+-- SucheNummer auf und aktualisiert Kennung + Anzeigename. Danach zeigt die
+-- Anrufliste den neuen Kunden/Lieferanten korrekt an.
+--
+-- Laeuft nur ueber die (per Pruning ~512 Zeilen kleine) Menge unaufgeloester
+-- Anrufe und nur beim Anlegen bzw. bei Rufnummern-Aenderung — daher guenstig.
+-- pg_notify('crmti_change', ...) aktualisiert offene Anruflisten live.
+CREATE OR REPLACE FUNCTION backfill_crmti_caller()
+    RETURNS trigger
+    LANGUAGE plpgsql
+AS $$
+DECLARE
+    r      record;
+    treffer record;
+BEGIN
+    FOR r IN
+        SELECT crmti_id, crmti_number, crmti_direction
+        FROM crmti
+        WHERE (crmti_caller_typ IN ('X', 'Y') OR crmti_caller_id = 0 OR crmti_caller_id IS NULL)
+          AND crmti_number ~ '[0-9]'
+    LOOP
+        treffer := SucheNummer(r.crmti_number);
+        IF treffer.typ IN ('C', 'V') AND treffer.id <> 0 THEN
+            UPDATE crmti
+               SET crmti_caller_id  = treffer.id,
+                   crmti_caller_typ = treffer.typ,
+                   crmti_src = CASE WHEN crmti_direction = 'E' THEN treffer.name ELSE crmti_src END,
+                   crmti_dst = CASE WHEN crmti_direction = 'A' THEN treffer.name ELSE crmti_dst END
+             WHERE crmti_id = r.crmti_id;
+            PERFORM pg_notify('crmti_change', json_build_object(
+                'action', 'backfill',
+                'crmti_id', r.crmti_id
+            )::text);
+        END IF;
+    END LOOP;
+    RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_customer_backfill_crmti ON customer;
+CREATE TRIGGER trg_customer_backfill_crmti
+    AFTER INSERT OR UPDATE OF phone, phone3, fax ON customer
+    FOR EACH ROW
+    EXECUTE FUNCTION backfill_crmti_caller();
+
+DROP TRIGGER IF EXISTS trg_vendor_backfill_crmti ON vendor;
+CREATE TRIGGER trg_vendor_backfill_crmti
+    AFTER INSERT OR UPDATE OF phone, phone3, fax ON vendor
+    FOR EACH ROW
+    EXECUTE FUNCTION backfill_crmti_caller();
+
 -- =============================================================================
 -- Weroni — KI-Bürokauffrau (Autonomer Agent)
 -- =============================================================================

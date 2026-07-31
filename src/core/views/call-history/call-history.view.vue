@@ -366,7 +366,17 @@ export default {
     onMounted(() => {
       fetchCallHistory();
       eventSource = new EventSource('/sse/events');
-      eventSource.onmessage = () => {
+      eventSource.onmessage = (event) => {
+        // Nur bei echten Anruf-Änderungen neu laden. Der SSE-Server liefert
+        // alle unbenannten Kanäle (WhatsApp, Kalender, Faktura, Kamera …) über
+        // denselben onmessage-Handler; ohne diesen Filter würde jede fremde
+        // Notification (v. a. camera_event) die Liste neu laden → Flackern.
+        // crmti_change ist am Feld crmti_id erkennbar (ganze Zeile oder
+        // {action:'insert', crmti_id}).
+        try {
+          const data = JSON.parse(event.data);
+          if (data.crmti_id === undefined) return;
+        } catch { return; }
         if (!loading.value) fetchCallHistory();
       };
     });

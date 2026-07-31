@@ -162,6 +162,7 @@
                                     item-title="label"
                                     item-value="id"
                                     return-object
+                                    menu-icon=""
                                     variant="outlined"
                                     density="compact"
                                     hide-details
@@ -170,6 +171,16 @@
                                     @update:model-value="onLocalArticleSelect(item, index, $event)"
                                     @keydown.enter="onArticleEnter(item, index, $event)"
                                 >
+                                    <!-- Mikrofon IM Feld — Feld-/Dropdown-Breite bleibt
+                                         identisch. Diktat sucht bestehende Artikel (Vorrang),
+                                         legt nie neue an. -->
+                                    <template #append-inner>
+                                        <VoiceInputButton
+                                            density="compact"
+                                            color="grey-darken-1"
+                                            @transcript="text => onVoicePosition(item, index, text)"
+                                        />
+                                    </template>
                                     <template #item="{ props, item: listItem }">
                                         <v-list-item
                                             v-bind="props"
@@ -552,6 +563,11 @@
                 <v-icon class="mr-2">mdi-text-box</v-icon>
                 {{ t('FakturaView.faktura.longDescription') }}
                 <v-spacer />
+                <VoiceInputButton
+                    color="primary"
+                    class="mr-1"
+                    @transcript="onVoiceLongDesc"
+                />
                 <v-btn
                     icon="mdi-close"
                     variant="text"
@@ -607,11 +623,13 @@ import { formatNumber, parseNumber } from '@/core/utils/numberFormat.js'
 import { oserpStore } from '@/core/stores/oserp.store.js'
 import { lxcarsStore } from '@/features/lxcars/stores/lxcars.store.js'
 import draggable from 'vuedraggable'
+import VoiceInputButton from '@/core/components/voice-input-button.vue'
 
 export default defineComponent({
     name: 'FakturaItemsTableComponent',
     components: {
-        draggable
+        draggable,
+        VoiceInputButton
     },
     props: {
         modelValue: {
@@ -966,6 +984,24 @@ export default defineComponent({
          *
          * @param {number} index - Index des Items
          */
+        // Diktierte Position: wie getippt behandeln — den gesprochenen Text in die
+        // Artikelsuche füttern (Vorrang haben bestehende Artikel, es wird nie ein
+        // neuer Artikel angelegt). Kein Satzpunkt am Ende. Über ein natives
+        // input-Event, damit Vuetifys interne Suche (@update:search) anspringt.
+        function onVoicePosition(item, index, text) {
+            const spoken = (text || '').trim().replace(/[.!?…]+$/u, '').trim()
+            if (!spoken) return
+            nextTick(() => {
+                const ac = autocompleteRefs.value[index]
+                const input = ac?.$el?.querySelector('input')
+                if (!input) return
+                input.focus()
+                const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set
+                setter.call(input, spoken)
+                input.dispatchEvent(new Event('input', { bubbles: true }))
+            })
+        }
+
         function focusArticleField(index) {
             nextTick(() => {
                 setTimeout(() => {
@@ -1387,6 +1423,17 @@ export default defineComponent({
         }
 
         /**
+         * Diktierten Text an den Langtext anhängen (nicht ersetzen), damit man
+         * mehrere Sätze nacheinander einsprechen kann.
+         */
+        function onVoiceLongDesc(text) {
+            const add = (text || '').trim()
+            if (!add) return
+            const cur = longDescDialog.value.text || ''
+            longDescDialog.value.text = cur ? (cur.replace(/\s+$/, '') + ' ' + add) : add
+        }
+
+        /**
          * Schließt den Langtext-Dialog ohne zu speichern
          */
         function closeLongDescriptionDialog() {
@@ -1526,6 +1573,8 @@ export default defineComponent({
             autocompleteRefs,
             searchTimeouts,
             longDescDialog,
+            onVoiceLongDesc,
+            onVoicePosition,
             getItemKey,
             canMoveItem,
             onDragChange,
@@ -1757,10 +1806,8 @@ export default defineComponent({
     opacity: 0.7;
 }
 
-/* Dropdown-Pfeil verstecken - sieht aus wie normales Textfeld */
-.new-item-input :deep(.v-field__append-inner) {
-    display: none;
-}
+/* Dropdown-Pfeil ist über menu-icon="" entfernt; append-inner bleibt sichtbar,
+   damit der Mikrofon-Knopf angezeigt wird. */
 
 /* Action-Buttons in den Zellen */
 .invoice-items-table :deep(.v-btn--icon) {

@@ -170,7 +170,7 @@
                                     </v-autocomplete>
                                 </v-col>
                             </v-row>
-                            <v-row dense>
+                            <v-row dense align="center">
                                 <v-col cols="12" sm="6" class="py-1">
                                     <v-text-field v-model="car.c_ln" :label="t('CarEditView.fields.c_ln')" variant="outlined" density="compact" hide-details="auto" maxlength="10" tabindex="1" :rules="rulesLn" @click="copyToClipboard('Kennzeichen', car.c_ln)">
                                         <template #append-inner>
@@ -190,6 +190,20 @@
                                             </v-icon>
                                         </template>
                                     </v-text-field>
+                                </v-col>
+                                <!-- HU-Benachrichtigung: pro Fahrzeug ein-/ausschaltbar (steuert Serienbrief/WhatsApp) -->
+                                <v-col cols="12" sm="6" class="py-1 d-flex align-center">
+                                    <v-switch
+                                        v-model="car.c_hu_notify"
+                                        :label="t('CarEditView.fields.c_hu_notify')"
+                                        :prepend-icon="car.c_hu_notify ? 'mdi-bell-ring-outline' : 'mdi-bell-off-outline'"
+                                        color="primary"
+                                        density="compact"
+                                        hide-details
+                                        inset
+                                        :disabled="readonly"
+                                        tabindex="-1"
+                                    />
                                 </v-col>
                             </v-row>
                             <v-row dense>
@@ -442,6 +456,23 @@
                             <v-icon class="mr-2" size="small">mdi-wrench</v-icon>
                             <span class="text-subtitle-1 font-weight-medium">{{ t('CarEditView.sections.maintenance') }}</span>
                             <v-spacer />
+                            <v-tooltip location="top" :text="voiceRecording ? t('CarEditView.voice.stop') : t('CarEditView.voice.hint')">
+                                <template #activator="{ props: tp }">
+                                    <v-btn
+                                        v-if="voiceSupported"
+                                        v-bind="tp"
+                                        :icon="voiceRecording ? 'mdi-stop' : 'mdi-microphone'"
+                                        :color="voiceRecording ? 'error' : 'primary'"
+                                        :loading="voiceBusy || voiceExtracting"
+                                        :disabled="readonly"
+                                        size="small"
+                                        variant="tonal"
+                                        class="mr-2"
+                                        tabindex="-1"
+                                        @click="voiceToggle()"
+                                    />
+                                </template>
+                            </v-tooltip>
                             <v-chip
                                 :variant="car.c_sk ? 'flat' : 'outlined'"
                                 :color="car.c_sk ? 'primary' : undefined"
@@ -1235,6 +1266,8 @@ import { wikiStore } from '@/core/stores/wiki.store.js'
 import { getDistrictByPlate } from '@/features/lxcars/utils/kennzeichen.js'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
 import { useCarDates } from './composables/useCarDates.js'
+import { useVoiceInput } from '@/core/composables/useVoiceInput.js'
+import * as toasts from '@/core/utils/toasts.js'
 import { useCarValidation } from './composables/useCarValidation.js'
 import { useCarOrders } from './composables/useCarOrders.js'
 import { useCarAutoSave } from './composables/useCarAutoSave.js'
@@ -1302,7 +1335,7 @@ export default {
             chk_c_ln: true, chk_c_2: true, chk_c_3: true, chk_c_em: true,
             chk_c_d: true, chk_fin: true, chk_c_hu: true,
             c_sk: false, c_zrk: null, c_zrd: '', c_bf: '', c_wd: '', c_km: null,
-            c_pb: false,
+            c_pb: false, c_hu_notify: true,
             c_finchk: '', kba_id: null,
             installed_engines: '',
             scan_detail_id: '', scan_id: '', filename: ''
@@ -1326,6 +1359,54 @@ export default {
             displayZrk, onBlurKm,
             displayKm, onBlurKmStand
         } = useCarDates(car)
+
+        // ── Intelligente Spracheingabe (Wartung) ──────────────────────────────
+        // Der Kollege spricht frei ("Kilometerstand 120369, Zahnriemen fällig bei
+        // Kilometer 20000, Bremsflüssigkeit fällig 02/2029"). Whisper transkribiert,
+        // der lokale LLM strukturiert, wir tragen die Felder ein wie von Hand
+        // getippt (Blur-Handler → Auto-Save greift automatisch).
+        const voiceExtracting = ref(false)
+        const kmFmt = (v) => Number(v) ? Number(v).toLocaleString('de-DE') : ''
+
+        async function applyVehicleSpeech(text) {
+            const spoken = (text || '').trim()
+            if (!spoken || readonly.value) return
+            voiceExtracting.value = true
+            try {
+                const { data } = await axios.post('/api/lxcars/', { action: 'extractVehicleData', text: spoken })
+                if (!data?.success) {
+                    toasts.error(data?.text || t('CarEditView.voice.failed'))
+                    return
+                }
+                const f = data.payload?.fields || {}
+                const done = []
+
+                if (f.c_km != null)  { displayKm.value  = String(f.c_km);  onBlurKmStand(); done.push(`${t('CarEditView.fields.c_km')}: ${kmFmt(car.value.c_km)} km`) }
+                if (f.c_zrk != null) { displayZrk.value = String(f.c_zrk); onBlurKm();      done.push(`${t('CarEditView.fields.c_zrk')}: ${kmFmt(car.value.c_zrk)} km`) }
+                if (f.c_zrd)         { displayZrd.value = String(f.c_zrd); onBlurMonthYear('c_zrd'); done.push(`${t('CarEditView.fields.c_zrd')}: ${displayZrd.value}`) }
+                if (f.c_bf)          { displayBf.value  = String(f.c_bf);  onBlurMonthYear('c_bf');  done.push(`${t('CarEditView.fields.c_bf')}: ${displayBf.value}`) }
+                if (f.c_wd)          { displayWd.value  = String(f.c_wd);  onBlurMonthYear('c_wd');  done.push(`${t('CarEditView.fields.c_wd')}: ${displayWd.value}`) }
+                if (f.c_hu)          { displayHu.value  = '01.' + String(f.c_hu).replace('/', '.'); onBlurDate('c_hu'); done.push(`${t('CarEditView.fields.c_hu')}: ${displayHu.value}`) }
+                if (f.c_ln)          { car.value.c_ln = String(f.c_ln).toUpperCase(); done.push(`${t('CarEditView.fields.c_ln')}: ${car.value.c_ln}`) }
+
+                if (done.length) {
+                    toasts.success(t('CarEditView.voice.applied') + ' ' + done.join(' · '))
+                } else {
+                    toasts.info(t('CarEditView.voice.nothing'))
+                }
+            } catch (e) {
+                toasts.error(t('CarEditView.voice.failed'))
+            } finally {
+                voiceExtracting.value = false
+            }
+        }
+
+        const {
+            recording: voiceRecording,
+            busy: voiceBusy,
+            supported: voiceSupported,
+            toggle: voiceToggle
+        } = useVoiceInput({ onText: applyVehicleSpeech })
 
         const {
             orders, orderFilter, filteredOrders,
@@ -2645,6 +2726,7 @@ export default {
             displayZrd, displayBf, displayWd, onBlurMonthYear,
             displayZrk, onBlurKm,
             displayKm, onBlurKmStand,
+            voiceRecording, voiceBusy, voiceExtracting, voiceSupported, voiceToggle,
             toggleShield, orderFilter, filteredOrders, orderHeaders,
             formatAmount, openOrder, createNewOrder, navigateToCustomer, openCarRegistration, focusSearch,
             showAagTsnButton, aagAvailable, aagLoading, openAag, aagConfigured,

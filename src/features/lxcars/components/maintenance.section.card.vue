@@ -6,6 +6,23 @@
             <v-icon class="mr-2" size="small">mdi-wrench</v-icon>
             {{ t('MaintenanceSectionCard.title') }}
             <v-spacer />
+            <v-tooltip location="top" :text="voiceRecording ? t('MaintenanceSectionCard.voice.stop') : t('MaintenanceSectionCard.voice.hint')">
+                <template #activator="{ props: tp }">
+                    <v-btn
+                        v-if="voiceSupported && showVoice"
+                        v-bind="tp"
+                        :icon="voiceRecording ? 'mdi-stop' : 'mdi-microphone'"
+                        :color="voiceRecording ? 'error' : 'primary'"
+                        :loading="voiceBusy || voiceExtracting"
+                        :disabled="!hasCar"
+                        size="small"
+                        variant="tonal"
+                        class="mr-2"
+                        tabindex="-1"
+                        @click="voiceToggle()"
+                    />
+                </template>
+            </v-tooltip>
             <v-chip
                 :variant="oeExtData.c_sk ? 'flat' : 'outlined'"
                 :color="oeExtData.c_sk ? 'primary' : undefined"
@@ -78,13 +95,19 @@
 <script>
 import { defineComponent, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import axios from 'axios'
 import { parseMonthYear, formatMonthYear } from '@/features/lxcars/utils/validation.js'
+import { useVoiceInput } from '@/core/composables/useVoiceInput.js'
+import * as toasts from '@/core/utils/toasts.js'
 
 export default defineComponent({
     name: 'MaintenanceSectionCard',
     props: {
         oeExtData: { type: Object, required: true },
-        hasCar: { type: Boolean, default: false }
+        hasCar: { type: Boolean, default: false },
+        // Im Auftrag sitzt das Sprach-Mic in der Aktionsleiste (neben Wiedervorlage);
+        // dort wird das Karten-Mic ausgeblendet. Im Werkstatt-Modus (ohne Leiste) an.
+        showVoice: { type: Boolean, default: true }
     },
     emits: ['oe-ext-field-change'],
     setup(props, { emit }) {
@@ -141,7 +164,68 @@ export default defineComponent({
             emit('oe-ext-field-change', 'c_sk', !props.oeExtData.c_sk)
         }
 
-        return { t, displayZrd, displayBf, displayWd, displayZrk, onBlurMonthYear, onBlurKm, onToggleSk }
+        // ── Intelligente Spracheingabe ────────────────────────────────────────
+        // Frei gesprochen ("Kilometerstand 120369, Zahnriemen fällig bei 20000,
+        // Bremsflüssigkeit 02/2029"): Whisper transkribiert, der lokale LLM
+        // strukturiert, wir setzen die Felder wie von Hand (Auto-Save greift über
+        // die oe-ext-field-change-Events). Gekoppelte Zahnriemen-Felder (c_sk)
+        // werden übersprungen — genau wie beim Tippen (dort sind sie deaktiviert).
+        const voiceExtracting = ref(false)
+
+        async function applyMaintenanceSpeech(text) {
+            const spoken = (text || '').trim()
+            if (!spoken || !props.hasCar) return
+            voiceExtracting.value = true
+            try {
+                const { data } = await axios.post('/api/lxcars/', { action: 'extractVehicleData', text: spoken })
+                if (!data?.success) {
+                    toasts.error(data?.text || t('MaintenanceSectionCard.voice.failed'))
+                    return
+                }
+                const f = data.payload?.fields || {}
+                const done = []
+
+                if (f.c_km != null) {
+                    const v = parseInt(f.c_km, 10)
+                    if (v > 0) { emit('oe-ext-field-change', 'km_stand', v); done.push(`${t('MaintenanceSectionCard.voice.kmStand')}: ${formatKm(v)} km`) }
+                }
+                if (f.c_zrk != null && !props.oeExtData.c_sk) {
+                    let n = parseInt(f.c_zrk, 10)
+                    if (n > 0) { n = n < 1000 ? n * 1000 : n; emit('oe-ext-field-change', 'c_zrk', n); done.push(`${t('MaintenanceSectionCard.fields.c_zrk')}: ${formatKm(n)} km`) }
+                }
+                if (f.c_zrd && !props.oeExtData.c_sk) {
+                    const d = parseMonthYear(f.c_zrd)
+                    if (d) { emit('oe-ext-field-change', 'c_zrd', d); done.push(`${t('MaintenanceSectionCard.fields.c_zrd')}: ${formatMonthYear(d)}`) }
+                }
+                if (f.c_bf) {
+                    const d = parseMonthYear(f.c_bf)
+                    if (d) { emit('oe-ext-field-change', 'c_bf', d); done.push(`${t('MaintenanceSectionCard.fields.c_bf')}: ${formatMonthYear(d)}`) }
+                }
+                if (f.c_wd) {
+                    const d = parseMonthYear(f.c_wd)
+                    if (d) { emit('oe-ext-field-change', 'c_wd', d); done.push(`${t('MaintenanceSectionCard.fields.c_wd')}: ${formatMonthYear(d)}`) }
+                }
+
+                if (done.length) toasts.success(t('MaintenanceSectionCard.voice.applied') + ' ' + done.join(' · '))
+                else toasts.info(t('MaintenanceSectionCard.voice.nothing'))
+            } catch (e) {
+                toasts.error(t('MaintenanceSectionCard.voice.failed'))
+            } finally {
+                voiceExtracting.value = false
+            }
+        }
+
+        const {
+            recording: voiceRecording,
+            busy: voiceBusy,
+            supported: voiceSupported,
+            toggle: voiceToggle
+        } = useVoiceInput({ onText: applyMaintenanceSpeech })
+
+        return {
+            t, displayZrd, displayBf, displayWd, displayZrk, onBlurMonthYear, onBlurKm, onToggleSk,
+            voiceRecording, voiceBusy, voiceExtracting, voiceSupported, voiceToggle
+        }
     }
 })
 </script>

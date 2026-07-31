@@ -401,6 +401,13 @@
                     </template>
                     <span>{{ t('FakturaView.faktura.followUp') }}</span>
                 </v-tooltip>
+
+                <!-- Fahrzeugdaten einsprechen (Kilometerstand, Zahnriemen, Bremsflüssigkeit …) -->
+                <VoiceInputButton
+                    v-if="showVehicleVoice"
+                    color="primary"
+                    @transcript="$emit('voice-vehicle', $event)"
+                />
             </div>
 
             <div class="action-bar__right">
@@ -432,9 +439,11 @@
 
 import { defineComponent, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import VoiceInputButton from '@/core/components/voice-input-button.vue'
 
 export default defineComponent({
     name: 'ActionBarComponent',
+    components: { VoiceInputButton },
 
     props: {
         printerList: {
@@ -466,6 +475,10 @@ export default defineComponent({
             default: false
         },
         showVehicleButton: {
+            type: Boolean,
+            default: false
+        },
+        showVehicleVoice: {
             type: Boolean,
             default: false
         },
@@ -538,6 +551,7 @@ export default defineComponent({
         'select-template',
         'show-history',
         'set-followup',
+        'voice-vehicle',
         'export-xinvoice',
         'delete',
         'open-vehicle',

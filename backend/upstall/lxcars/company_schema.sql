@@ -38,6 +38,7 @@ CREATE TABLE cars_lxcars (
     c_wd      date,
     c_finchk  char(1),
     c_pb      boolean DEFAULT false,
+    c_hu_notify boolean DEFAULT true,
     kba_id          integer,
     scan_detail_id  text,
     scan_id         text,

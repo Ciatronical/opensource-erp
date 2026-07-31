@@ -44,6 +44,8 @@
             "error_loading": "Fehler beim Laden der HU-Liste.",
             "excluded_success": "Kunde wurde abgewählt.",
             "included_success": "Kunde wurde wieder aufgenommen.",
+            "car_excluded": "Fahrzeug wurde von HU-Benachrichtigungen abgewählt.",
+            "car_included": "Fahrzeug wird wieder benachrichtigt.",
             "exclude_error": "Fehler beim Speichern.",
             "email_sent": "E-Mail wurde versendet.",
             "email_error": "Fehler beim E-Mail-Versand.",
@@ -58,7 +60,9 @@
         "tooltips": {
             "whatsapp_single": "HU-Erinnerung per WhatsApp senden",
             "exclude": "Kunde von HU-Benachrichtigungen ausschließen",
-            "include": "Kunde wieder in HU-Benachrichtigungen aufnehmen"
+            "include": "Kunde wieder in HU-Benachrichtigungen aufnehmen",
+            "car_exclude": "Dieses Fahrzeug von HU-Benachrichtigungen abwählen",
+            "car_include": "Dieses Fahrzeug wieder benachrichtigen"
         },
         "dialogs": {
             "confirm_exclude_title": "Kunde abwählen",

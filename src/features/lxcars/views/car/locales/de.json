@@ -19,6 +19,13 @@
             "kbaExtra": "Weitere KBA-Felder",
             "debug": "Debug-Infos"
         },
+        "voice": {
+            "hint": "Wartungsdaten einsprechen — z. B. „Kilometerstand 120369, Zahnriemen fällig bei 20000, Bremsflüssigkeit 02/2029\"",
+            "stop": "Aufnahme beenden und übernehmen",
+            "applied": "Übernommen:",
+            "nothing": "Nichts erkannt — bitte deutlicher sprechen",
+            "failed": "Spracherkennung fehlgeschlagen"
+        },
         "files": {
             "button": "Dateien",
             "openButton": "Dateien zum Fahrzeug öffnen",
@@ -35,6 +42,7 @@
             "c_t": "Fahrzeugtyp",
             "c_d": "Erstzulassung",
             "c_hu": "HU (TÜV)",
+            "c_hu_notify": "HU-Benachrichtigung senden",
             "c_pb": "Personenbeförderung (Taxi/Mietwagen)",
             "c_fin": "Fahrgestellnummer (FIN)",
             "c_st": "Sommerreifen Typ",

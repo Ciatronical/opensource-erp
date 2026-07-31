@@ -16,6 +16,13 @@
             "kbaExtra": "More KBA fields",
             "debug": "Debug info"
         },
+        "voice": {
+            "hint": "Dictate maintenance data — e.g. \"mileage 120369, timing belt due at 20000, brake fluid 02/2029\"",
+            "stop": "Stop recording and apply",
+            "applied": "Applied:",
+            "nothing": "Nothing recognized — please speak more clearly",
+            "failed": "Speech recognition failed"
+        },
         "fields": {
             "c_ln": "License plate",
             "c_2": "HSN (2.1)",
@@ -26,6 +33,7 @@
             "c_t": "Vehicle type",
             "c_d": "First registration",
             "c_hu": "Inspection (MOT)",
+            "c_hu_notify": "Send inspection reminder",
             "c_pb": "Passenger transport (taxi/hire car)",
             "c_fin": "Vehicle identification number (VIN)",
             "c_st": "Summer tire type",

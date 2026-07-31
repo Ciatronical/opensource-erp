@@ -27,7 +27,15 @@
         },
         "incompleteTitle": "Wartungsdaten unvollständig",
         "incompleteText": "Bevor der Auftrag abgeschlossen werden kann, müssen folgende Felder ausgefüllt sein:",
-        "close": "Schließen"
+        "close": "Schließen",
+        "voice": {
+            "hint": "Wartungsdaten einsprechen — z. B. „Kilometerstand 120369, Zahnriemen fällig bei 20000, Bremsflüssigkeit 02/2029\"",
+            "stop": "Aufnahme beenden und übernehmen",
+            "applied": "Übernommen:",
+            "nothing": "Nichts erkannt — bitte deutlicher sprechen",
+            "failed": "Spracherkennung fehlgeschlagen",
+            "kmStand": "Kilometerstand"
+        }
     },
     "PartsRequests": {
         "title": "Ersatzteile",
