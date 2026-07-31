@@ -1267,6 +1267,7 @@ import { getDistrictByPlate } from '@/features/lxcars/utils/kennzeichen.js'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
 import { useCarDates } from './composables/useCarDates.js'
 import { useVoiceInput } from '@/core/composables/useVoiceInput.js'
+import { useViewHistory } from '@/core/composables/useViewHistory.js'
 import * as toasts from '@/core/utils/toasts.js'
 import { useCarValidation } from './composables/useCarValidation.js'
 import { useCarOrders } from './composables/useCarOrders.js'
@@ -1508,6 +1509,23 @@ export default {
             saving, loading, error, savedCarId,
             toggleShield, onFocusIn, onFocusOut, triggerSave, markDeleted
         } = useCarAutoSave({ car, isEditMode, hasValidationErrors, oserpData, carsStore, router, props, t, orders, validationCleanup, initialLoaded, pendingKbaData, kbaData, pendingScanImages, useSpecialKba, kbaSelectDialog, readonly })
+
+        // Aufgerufenes Fahrzeug im "Zuletzt besucht"-Verlauf der Schnellsuche merken.
+        // Greift bei jedem Öffnen eines Fahrzeugs (nicht nur aus der Fahrzeugsuche),
+        // damit auch über Auftrag/Kunde/Direktlink besuchte Fahrzeuge auftauchen.
+        const { saveToHistory: saveVehicleToHistory } = useViewHistory()
+        watch(initialLoaded, (loaded) => {
+            if (!loaded || !isEditMode.value || readonly.value) return
+            const plate = car.value.c_ln
+            if (!plate) return
+            saveVehicleToHistory({
+                type: 'vehicle',
+                id: Number(props.id),
+                title: plate,
+                subtitle: [kbaData.value?.hersteller, kbaData.value?.name, oserpData.customer_vendor?.profile?.name].filter(Boolean).join(' · '),
+                route: { name: 'car', params: { id: Number(props.id) } }
+            })
+        })
 
         // Scan-Daten übernehmen (von car.scan.view.vue via Store)
         watch(initialLoaded, (loaded) => {
