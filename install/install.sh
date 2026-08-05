@@ -68,7 +68,7 @@ as_user() { sudo -u "$OSERP_USER" -H bash -lc "$*"; }
 # --------------------------------------------------------------------------
 ALL_STEPS=(packages php_fpm node_build config permissions apache \
            sse whisper ollama anpr go2rtc camera_monitor camera_sudoers \
-           cron asterisk borg kivitendo healthcheck)
+           cron dyndns asterisk borg kivitendo healthcheck)
 
 declare -A STEP_DESC=(
   [packages]="Systempakete via apt (Apache, PostgreSQL, PHP, Node, LaTeX, ffmpeg, borg, asterisk ...)"
@@ -85,6 +85,7 @@ declare -A STEP_DESC=(
   [camera_monitor]="Kamera-Objekterkennung als systemd-Dienst"
   [camera_sudoers]="sudoers-Regel damit die UI die Kameradienste steuern darf"
   [cron]="Cronjobs (WhatsApp-Reminder, eBay, Nachbuchen, asanetwork ...)"
+  [dyndns]="DynDNS-Updater + systemd-Timer (Zugang in /etc/oserp/dyndns.conf)"
   [asterisk]="Asterisk/CRMTI-Telefonie (Paket + Konfig-Gerüst)"
   [borg]="Borg-Backup (Paket + Gerüst, Repo-Secrets manuell)"
   [kivitendo]="kivitendo via externem Installer"
@@ -128,7 +129,13 @@ if [[ "$(id -u)" -eq 0 ]]; then
     err "Bitte NICHT als root ausführen. Als Betriebs-User starten (Script nutzt sudo)."
     exit 1
 fi
-if ! sudo -v; then err "sudo wird benötigt."; exit 1; fi
+# "sudo -n true" zuerst: bei NOPASSWD-sudo (bzw. nicht-interaktiven Läufen ohne
+# TTY) verlangt "sudo -v" trotzdem ein Passwort und bricht ab, obwohl sudo
+# einwandfrei funktioniert. Erst wenn das fehlschlägt, interaktiv nachfragen.
+if ! sudo -n true 2>/dev/null && ! sudo -v; then
+    err "sudo wird benötigt."
+    exit 1
+fi
 if [[ ! -f /etc/os-release ]]; then err "Unbekanntes OS (kein /etc/os-release)."; exit 1; fi
 . /etc/os-release
 info "OS:          ${PRETTY_NAME:-$ID}"
@@ -211,11 +218,14 @@ EOF
 node_build() {
     step "Build (npm / vite / sse / composer)"
     as_user "cd '$OSERP_ROOT' && npm install"
-    as_user "cd '$OSERP_ROOT' && npm run build"
-    as_user "cd '$OSERP_ROOT/backend/sse' && npm install --omit=dev"
+    # composer MUSS vor dem Vite-Build laufen: der API-Health-Check im Build
+    # prüft die require-Pfade der PHP-Dateien und bricht ab, solange
+    # backend/vendor/ (autoload.php, setasign/fpdf) fehlt.
     if [[ -f "$OSERP_ROOT/backend/composer.json" ]]; then
         as_user "cd '$OSERP_ROOT/backend' && composer install --no-interaction --no-dev --optimize-autoloader"
     fi
+    as_user "cd '$OSERP_ROOT' && npm run build"
+    as_user "cd '$OSERP_ROOT/backend/sse' && npm install --omit=dev"
     ok "Build fertig ($(cat "$OSERP_ROOT/dist/build-id.txt" 2>/dev/null || echo 'build-id unbekannt'))"
 }
 
@@ -262,13 +272,36 @@ setup_permissions() {
     # Webserver (www-data) muss in Datenverzeichnisse schreiben; Repo gehört OSERP_USER.
     # www-data zur Gruppe des Users hinzufügen und Gruppenrechte geben.
     sudo usermod -aG "$OSERP_USER" www-data || true
-    for d in backend/log backend/tmp backend/data backend/backups dist log; do
+
+    # WICHTIG: php-fpm wurde im Schritt php_fpm bereits gestartet — VOR diesem usermod.
+    # Bereits laufende FPM-Worker haben die neue Gruppe $OSERP_USER noch NICHT geladen
+    # (Supplementary Groups werden nur beim Prozessstart gelesen) und können daher
+    # /home/$OSERP_USER (Mode 0750) nicht traversieren. Folge: JEDER PHP-Request unter
+    # dem Repo scheitert mit "Primary script unknown" (Apache AH01071 -> HTTP 404
+    # "File not found"), während statische Dateien (Apache wird später neu gestartet)
+    # funktionieren. Deshalb FPM hier neu starten, damit die Gruppe wirksam wird.
+    local _fpm_ver _fpm_svc
+    _fpm_ver="$(php -r 'echo PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION;' 2>/dev/null || true)"
+    if [[ -n "$_fpm_ver" ]]; then
+        _fpm_svc="php${_fpm_ver}-fpm"
+        sudo systemctl try-restart "$_fpm_svc" 2>/dev/null \
+            && ok "php-fpm ($_fpm_svc) neu gestartet — www-data-Gruppe $OSERP_USER greift jetzt" \
+            || true
+    fi
+
+    # Hinweis: DB-Backups landen laut backend/api/config.php in BACKUP_BASE_DIR =
+    # <repo>/backups/ (Repo-Root, NICHT backend/backups). Der Ordner muss von www-data
+    # (in Gruppe $OSERP_USER) beschreibbar sein, sonst scheitert das Vor-Update-Backup
+    # ("Backup-Verzeichnis konnte nicht erstellt werden").
+    for d in backend/log backend/tmp backend/data backups dist log; do
         as_user "mkdir -p '$OSERP_ROOT/$d'"
     done
     sudo chgrp -R "$OSERP_USER" "$OSERP_ROOT/backend/data" "$OSERP_ROOT/backend/log" \
-        "$OSERP_ROOT/backend/tmp" 2>/dev/null || true
+        "$OSERP_ROOT/backend/tmp" "$OSERP_ROOT/backups" 2>/dev/null || true
     sudo chmod -R g+rwX "$OSERP_ROOT/backend/data" "$OSERP_ROOT/backend/log" \
-        "$OSERP_ROOT/backend/tmp" 2>/dev/null || true
+        "$OSERP_ROOT/backend/tmp" "$OSERP_ROOT/backups" 2>/dev/null || true
+    # setgid, damit von www-data angelegte Unterordner (pro DB) die Gruppe $OSERP_USER erben.
+    sudo chmod g+s "$OSERP_ROOT/backups" 2>/dev/null || true
     ok "Rechte gesetzt (www-data in Gruppe $OSERP_USER; siehe project_mmelissa_perms_divergence)"
 }
 
@@ -440,6 +473,114 @@ EOF
 }
 
 # =============================================================================
+#  SCHRITT: dyndns  (dynamischer DNS-Name für den Anschluss)
+#
+#  Bewusst OHNE ddclient: die in Ubuntu 24.04 ausgelieferte Version 3.10.0
+#  wertet weder "usev4=webv4" noch die alte "use=web"-Form korrekt aus und
+#  fällt auf use=ip zurück (ermittelt dann gar keine Adresse). Der Updater
+#  hier ist ein paar Zeilen curl und tut genau das, was gebraucht wird.
+#
+#  Zugangsdaten sind ein Secret und liegen NICHT im Repo, sondern in
+#  /etc/oserp/dyndns.conf (0600, root). Ohne ausgefüllte Datei wird der
+#  Timer nicht aktiviert, der Schritt bleibt aber idempotent.
+# =============================================================================
+DYNDNS_CONF=/etc/oserp/dyndns.conf
+
+setup_dyndns() {
+    step "DynDNS"
+
+    sudo install -d -m 755 /etc/oserp /var/lib/oserp
+
+    if [[ ! -f "$DYNDNS_CONF" ]]; then
+        sudo tee "$DYNDNS_CONF" >/dev/null <<'CONF'
+# DynDNS-Zugang — wird von /usr/local/sbin/oserp-dyndns-update gelesen.
+# Platzhalter ersetzen, danach: sudo systemctl enable --now oserp-dyndns.timer
+DYNDNS_HOST=BITTE-EINTRAGEN.spdns.de
+DYNDNS_USER=BITTE-EINTRAGEN
+DYNDNS_PASS=BITTE-EINTRAGEN
+DYNDNS_UPDATE_URL=https://update.spdyn.de/nic/update
+DYNDNS_CHECKIP_URL=https://checkip4.spdyn.de/
+CONF
+        sudo chmod 600 "$DYNDNS_CONF"
+        info "Vorlage angelegt: $DYNDNS_CONF"
+    fi
+
+    sudo tee /usr/local/sbin/oserp-dyndns-update >/dev/null <<'SCRIPT'
+#!/usr/bin/env bash
+# Aktualisiert den DynDNS-A-Record auf die aktuelle öffentliche IPv4.
+# Sendet nur bei tatsächlicher Änderung — unnötige Updates wertet der
+# Anbieter als Missbrauch. Mit --force wird immer gesendet.
+set -euo pipefail
+CONF=/etc/oserp/dyndns.conf
+STATE=/var/lib/oserp/dyndns.ip
+[[ -r $CONF ]] || { logger -t oserp-dyndns "Config $CONF fehlt"; exit 1; }
+# shellcheck disable=SC1090
+source "$CONF"
+
+ip="$(curl -4 -fsS --max-time 15 "$DYNDNS_CHECKIP_URL" | tr -dc '0-9.')"
+if [[ ! $ip =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]]; then
+    logger -t oserp-dyndns "Keine gültige IPv4 ermittelt: '$ip'"
+    exit 1
+fi
+
+last="$(cat "$STATE" 2>/dev/null || true)"
+if [[ "$ip" == "$last" && ${1:-} != --force ]]; then
+    exit 0
+fi
+
+resp="$(curl -fsS --max-time 20 -u "$DYNDNS_USER:$DYNDNS_PASS" \
+        "$DYNDNS_UPDATE_URL?hostname=$DYNDNS_HOST&myip=$ip" || echo 'curl-fehler')"
+case "$resp" in
+    good*|nochg*)
+        printf '%s' "$ip" > "$STATE"
+        logger -t oserp-dyndns "$DYNDNS_HOST -> $ip ($(echo "$resp" | head -1))"
+        ;;
+    *)
+        logger -t oserp-dyndns "FEHLER beim Update von $DYNDNS_HOST: $(echo "$resp" | head -1)"
+        exit 1
+        ;;
+esac
+SCRIPT
+    sudo chmod 750 /usr/local/sbin/oserp-dyndns-update
+
+    sudo tee /etc/systemd/system/oserp-dyndns.service >/dev/null <<'UNIT'
+[Unit]
+Description=OSERP DynDNS-Update
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/oserp-dyndns-update
+UNIT
+
+    sudo tee /etc/systemd/system/oserp-dyndns.timer >/dev/null <<'UNIT'
+[Unit]
+Description=OSERP DynDNS-Update alle 5 Minuten
+
+[Timer]
+OnBootSec=1min
+OnUnitActiveSec=5min
+Unit=oserp-dyndns.service
+
+[Install]
+WantedBy=timers.target
+UNIT
+
+    sudo systemctl daemon-reload
+
+    if sudo grep -q "BITTE-EINTRAGEN" "$DYNDNS_CONF"; then
+        todo "DynDNS: Zugangsdaten in $DYNDNS_CONF eintragen, dann:"
+        todo "  sudo systemctl enable --now oserp-dyndns.timer"
+        warn "DynDNS-Timer noch nicht aktiviert (Config enthält Platzhalter)"
+    else
+        sudo systemctl enable --now oserp-dyndns.timer >/dev/null 2>&1
+        sudo /usr/local/sbin/oserp-dyndns-update --force || warn "Erstes DynDNS-Update fehlgeschlagen — journalctl -t oserp-dyndns"
+        ok "DynDNS aktiv ($(sudo grep -oP '(?<=^DYNDNS_HOST=).*' "$DYNDNS_CONF") -> $(cat /var/lib/oserp/dyndns.ip 2>/dev/null || echo '?'))"
+    fi
+}
+
+# =============================================================================
 #  SCHRITT: asterisk  (Telefonie — Paket + Gerüst; Config ist umgebungsspezifisch)
 # =============================================================================
 setup_asterisk() {
@@ -506,7 +647,14 @@ healthcheck() {
     _chk "PHP-FPM aktiv"       "systemctl is-active --quiet php*-fpm || pgrep -f php-fpm"
     _chk "SSE :3001"           "curl -m3 -so /dev/null http://127.0.0.1:3001/events"
     _chk "HTTP :80"            "curl -m3 -so /dev/null http://127.0.0.1/"
+    # Echter PHP-Ausführungstest: erkennt "Primary script unknown" (HTTP 404), z. B. wenn
+    # php-fpm die www-data-Gruppe $OSERP_USER noch nicht geladen hat (siehe setup_permissions).
+    # getClients braucht keine gültige Session; alles außer 404 = PHP läuft.
+    _chk "API-PHP :80/api"     "[ \"\$(curl -m3 -s -o /dev/null -w '%{http_code}' -X POST -H 'Content-Type: application/json' -d '{\"action\":\"getClients\"}' http://127.0.0.1/api/)\" != 404 ]"
     want ollama  && _chk "Ollama :11434" "curl -m3 -so /dev/null http://127.0.0.1:11434/"
+    if want dyndns && ! grep -q "BITTE-EINTRAGEN" "$DYNDNS_CONF" 2>/dev/null; then
+        _chk "DynDNS-Timer aktiv" "systemctl is-active --quiet oserp-dyndns.timer"
+    fi
     echo
     if [[ $ok_all -eq 1 ]]; then
         ok "Grund-Stack läuft. URL: http://localhost"
@@ -525,7 +673,8 @@ declare -A STEP_FN=(
   [config]=setup_config [permissions]=setup_permissions [apache]=setup_apache
   [sse]=setup_sse [whisper]=setup_whisper [ollama]=setup_ollama [anpr]=setup_anpr
   [go2rtc]=setup_go2rtc [camera_monitor]=setup_camera_monitor
-  [camera_sudoers]=setup_camera_sudoers [cron]=setup_cron [asterisk]=setup_asterisk
+  [camera_sudoers]=setup_camera_sudoers [cron]=setup_cron [dyndns]=setup_dyndns
+  [asterisk]=setup_asterisk
   [borg]=setup_borg [kivitendo]=setup_kivitendo [healthcheck]=healthcheck
 )
 

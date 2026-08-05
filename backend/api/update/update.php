@@ -1112,6 +1112,7 @@ function importCsvToTable($db, $schema, $tableName, $csvFile, $columns) {
 
     // Lese CSV zeilenweise und füge Daten ein
     $rowCount = 0;
+    $skippedCount = 0;
     while (($row = fgetcsv($handle)) !== false) {
         $params = [];
         foreach ($csvColumns as $i => $col) {
@@ -1124,15 +1125,26 @@ function importCsvToTable($db, $schema, $tableName, $csvFile, $columns) {
                 $params[':' . $col] = ($value === '' || $value === null) ? null : $value;
             }
         }
+        // kba_lxcars ist Stammdaten mit HSN-Format-Guard (genau 4 Ziffern). Die offizielle
+        // KBA-CSV enthält vereinzelt Sätze mit ungültiger HSN (z. B. "-"); diese einzeln
+        // überspringen statt den gesamten Import (und damit das DB-Update) abzubrechen.
+        if ($tableName === 'kba_lxcars' && isset($params[':hsn'])
+            && !preg_match('/^\d{4}$/', (string)$params[':hsn'])) {
+            $skippedCount++;
+            continue;
+        }
         $db->execute($insertSql, $params);
         $rowCount++;
     }
 
     fclose($handle);
 
+    if ($skippedCount > 0) {
+        writeLog("$skippedCount Zeilen in $schema.$tableName wegen ungültiger HSN übersprungen", true, DLOG_INF);
+    }
     writeLog("$rowCount Zeilen in $schema.$tableName importiert", true, DLOG_INF);
 
-    return ['rows' => $rowCount];
+    return ['rows' => $rowCount, 'skipped' => $skippedCount];
 }
 
 /**

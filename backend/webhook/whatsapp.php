@@ -279,37 +279,35 @@ function _processIncomingMessage(PDO $pdo, string $dbname, array $msg, array $co
     $cvSrc = null; // 'C' oder 'V'
     try {
         $digits = substr(preg_replace('/[^0-9]/', '', $phone), -8);
-        // Kunde suchen: phone, phone3 und customer_ext.phone_numbers (JSONB)
+        // Kunde suchen: phone und customer_ext.phone_numbers (JSONB)
         $stmt = $pdo->prepare(
             "SELECT c.id FROM customer c
              LEFT JOIN customer_ext ce ON ce.customer_id = c.id
              WHERE REGEXP_REPLACE(c.phone, '[^0-9]', '', 'g') LIKE '%' || :d1
-                OR REGEXP_REPLACE(c.phone3, '[^0-9]', '', 'g') LIKE '%' || :d2
                 OR EXISTS (
                     SELECT 1 FROM jsonb_array_elements(COALESCE(ce.phone_numbers, '[]'::jsonb)) pn
                     WHERE REGEXP_REPLACE(pn->>'number', '[^0-9]', '', 'g') LIKE '%' || :d3
                 )
              LIMIT 1"
         );
-        $stmt->execute([':d1' => $digits, ':d2' => $digits, ':d3' => $digits]);
+        $stmt->execute([':d1' => $digits, ':d3' => $digits]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         if ($row) {
             $customerId = (int)$row['id'];
             $cvSrc = 'C';
         } else {
-            // Lieferant suchen: phone, phone3 und vendor_ext.phone_numbers (JSONB)
+            // Lieferant suchen: phone und vendor_ext.phone_numbers (JSONB)
             $stmt = $pdo->prepare(
                 "SELECT v.id FROM vendor v
                  LEFT JOIN vendor_ext ve ON ve.vendor_id = v.id
                  WHERE REGEXP_REPLACE(v.phone, '[^0-9]', '', 'g') LIKE '%' || :d1
-                    OR REGEXP_REPLACE(v.phone3, '[^0-9]', '', 'g') LIKE '%' || :d2
                     OR EXISTS (
                         SELECT 1 FROM jsonb_array_elements(COALESCE(ve.phone_numbers, '[]'::jsonb)) pn
                         WHERE REGEXP_REPLACE(pn->>'number', '[^0-9]', '', 'g') LIKE '%' || :d3
                     )
                  LIMIT 1"
             );
-            $stmt->execute([':d1' => $digits, ':d2' => $digits, ':d3' => $digits]);
+            $stmt->execute([':d1' => $digits, ':d3' => $digits]);
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
             if ($row) {
                 $customerId = (int)$row['id'];

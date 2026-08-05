@@ -116,7 +116,6 @@ function _findCustomerByPhone(string $phone): ?array {
         "SELECT c.id, c.name FROM customer c
          LEFT JOIN customer_ext ce ON ce.customer_id = c.id
          WHERE REGEXP_REPLACE(c.phone, '[^0-9]', '', 'g') LIKE '%' || :digits
-            OR REGEXP_REPLACE(c.phone3, '[^0-9]', '', 'g') LIKE '%' || :digits
             OR EXISTS (
                 SELECT 1 FROM jsonb_array_elements(COALESCE(ce.phone_numbers, '[]'::jsonb)) pn
                 WHERE REGEXP_REPLACE(pn->>'number', '[^0-9]', '', 'g') LIKE '%' || :digits
@@ -428,12 +427,12 @@ function searchCvPhones($data) {
     $search = '%' . $query . '%';
 
     $results = $db->getAll(
-        "SELECT c.id, c.name, c.customernumber AS number, c.phone, c.phone3, 'customer' AS type,
+        "SELECT c.id, c.name, c.customernumber AS number, c.phone, 'customer' AS type,
                 COALESCE((SELECT string_agg(pn->>'number', ', ')
                  FROM customer_ext ce, jsonb_array_elements(COALESCE(ce.phone_numbers, '[]'::jsonb)) pn
                  WHERE ce.customer_id = c.id), '') AS extra_phones
          FROM customer c
-         WHERE (c.name ILIKE :search OR c.customernumber ILIKE :search OR c.phone ILIKE :search OR c.phone3 ILIKE :search)
+         WHERE (c.name ILIKE :search OR c.customernumber ILIKE :search OR c.phone ILIKE :search)
            AND COALESCE(c.obsolete, FALSE) = FALSE
          ORDER BY c.name
          LIMIT 20",
@@ -444,7 +443,6 @@ function searchCvPhones($data) {
     foreach ($results as $row) {
         $phones = [];
         if (!empty($row['phone'])) $phones[] = $row['phone'];
-        if (!empty($row['phone3'])) $phones[] = $row['phone3'];
         if (!empty($row['extra_phones'])) {
             foreach (explode(', ', $row['extra_phones']) as $p) {
                 if (!empty(trim($p))) $phones[] = trim($p);

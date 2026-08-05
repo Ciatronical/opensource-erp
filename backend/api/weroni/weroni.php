@@ -114,7 +114,7 @@ MODUS: {$modeInstruction}
 DATENBANK-SCHEMA (PostgreSQL mit pg_trgm-Erweiterung):
 
 Kunden/Lieferanten:
-  customer (id, name, greeting, street, zipcode, city, phone, phone3, email, notes)
+  customer (id, name, greeting, street, zipcode, city, phone, email, notes)
   customer_ext (customer_id, phone_numbers JSONB [{label,number}], emails JSONB)
   vendor (id, name, street, zipcode, city, phone, email, notes)
 

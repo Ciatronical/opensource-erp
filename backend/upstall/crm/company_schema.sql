@@ -255,19 +255,13 @@ AS $function$
             return result;
         END IF;
         SELECT INTO result id, name::text, 'C'::char AS typ FROM (SELECT id, name, to_number(phone, format)::char(16) AS p, to_number(phone, format)::char(16) AS f, char_length(to_number(phone, format)::char(16)) AS l, char_length(to_number(phone, format)::char(16)) AS l1, char_length(to_number(telnum, format)::char(16)) AS lt FROM customer WHERE phone !='') AS xyz WHERE kuerze(lt,xyz.p) LIKE kuerze(l,to_number(telnum, format)::char(16))||'%';
-        IF result.name != '' THEN return result; END IF;
-        SELECT INTO result id, name::text, 'C'::char AS typ FROM (SELECT id, name, to_number(phone3, format)::char(16) AS p, to_number(phone3, format)::char(16) AS f, char_length(to_number(phone3, format)::char(16)) AS l, char_length(to_number(phone3, format)::char(16)) AS l1, char_length(to_number(telnum, format)::char(16)) AS lt FROM customer WHERE phone3 !='') AS xyz WHERE kuerze(lt,xyz.p) LIKE kuerze(l,to_number(telnum, format)::char(16))||'%';
-        IF result.name != '' THEN return result; END IF;
-        SELECT INTO result id, name::text, 'C'::char AS typ FROM (SELECT id, name, to_number(fax, format)::char(16) AS p, to_number(fax, format)::char(16) AS f, char_length(to_number(fax, format)::char(16)) AS l, char_length(to_number(fax, format)::char(16)) AS l1, char_length(to_number(telnum, format)::char(16)) AS lt FROM customer WHERE fax !='') AS xyz WHERE kuerze(lt,xyz.p) LIKE kuerze(l,to_number(telnum, format)::char(16))||'%';
+        IF result.name != '' THEN return result; END IF;        SELECT INTO result id, name::text, 'C'::char AS typ FROM (SELECT id, name, to_number(fax, format)::char(16) AS p, to_number(fax, format)::char(16) AS f, char_length(to_number(fax, format)::char(16)) AS l, char_length(to_number(fax, format)::char(16)) AS l1, char_length(to_number(telnum, format)::char(16)) AS lt FROM customer WHERE fax !='') AS xyz WHERE kuerze(lt,xyz.p) LIKE kuerze(l,to_number(telnum, format)::char(16))||'%';
         IF result.name != '' THEN return result; END IF;
         -- Zusätzliche Telefonnummern aus customer_ext (JSON-Array [{"label":..,"number":..}])
         SELECT INTO result id, name::text, 'C'::char AS typ FROM (SELECT c.id AS id, c.name AS name, to_number(e.elem->>'number', format)::char(16) AS p, char_length(to_number(e.elem->>'number', format)::char(16)) AS l, char_length(to_number(telnum, format)::char(16)) AS lt FROM customer_ext ce JOIN customer c ON c.id = ce.customer_id CROSS JOIN LATERAL jsonb_array_elements(ce.phone_numbers) AS e(elem) WHERE jsonb_typeof(ce.phone_numbers) = 'array' AND (e.elem->>'number') ~ '[0-9]') AS xyz WHERE kuerze(lt,xyz.p) LIKE kuerze(l,to_number(telnum, format)::char(16))||'%';
         IF result.name != '' THEN return result; END IF;
         SELECT INTO result id, name AS name, 'V'::char AS typ FROM (SELECT id, name, to_number(phone, format)::char(16) AS p, to_number(phone, format)::char(16) AS f, char_length(to_number(phone, format)::char(16)) AS l, char_length(to_number(phone, format)::char(16)) AS l1, char_length(to_number(telnum, format)::char(16)) AS lt FROM vendor WHERE phone !='') AS xyz WHERE kuerze(lt,xyz.p) LIKE kuerze(l,to_number(telnum, format)::char(16))||'%';
-        IF result.name != '' THEN return result; END IF;
-        SELECT INTO result id, name AS name, 'V'::char AS typ FROM (SELECT id, name, to_number(phone3, format)::char(16) AS p, to_number(phone3, format)::char(16) AS f, char_length(to_number(phone3, format)::char(16)) AS l, char_length(to_number(phone3, format)::char(16)) AS l1, char_length(to_number(telnum, format)::char(16)) AS lt FROM vendor WHERE phone3 !='') AS xyz WHERE kuerze(lt,xyz.p) LIKE kuerze(l,to_number(telnum, format)::char(16))||'%';
-        IF result.name != '' THEN return result; END IF;
-        SELECT INTO result id, name, 'V'::char AS typ FROM (SELECT id, name, to_number(fax, format)::char(16) AS p, to_number(fax, format)::char(16) AS f, char_length(to_number(fax, format)::char(16)) AS l, char_length(to_number(fax, format)::char(16)) AS l1, char_length(to_number(telnum, format)::char(16)) AS lt FROM vendor WHERE fax !='') AS xyz WHERE kuerze(lt,xyz.p) LIKE kuerze(l,to_number(telnum, format)::char(16))||'%';
+        IF result.name != '' THEN return result; END IF;        SELECT INTO result id, name, 'V'::char AS typ FROM (SELECT id, name, to_number(fax, format)::char(16) AS p, to_number(fax, format)::char(16) AS f, char_length(to_number(fax, format)::char(16)) AS l, char_length(to_number(fax, format)::char(16)) AS l1, char_length(to_number(telnum, format)::char(16)) AS lt FROM vendor WHERE fax !='') AS xyz WHERE kuerze(lt,xyz.p) LIKE kuerze(l,to_number(telnum, format)::char(16))||'%';
         IF result.name != '' THEN return result; END IF;
         -- Zusätzliche Telefonnummern aus vendor_ext (JSON-Array [{"label":..,"number":..}])
         SELECT INTO result id, name::text, 'V'::char AS typ FROM (SELECT v.id AS id, v.name AS name, to_number(e.elem->>'number', format)::char(16) AS p, char_length(to_number(e.elem->>'number', format)::char(16)) AS l, char_length(to_number(telnum, format)::char(16)) AS lt FROM vendor_ext ve JOIN vendor v ON v.id = ve.vendor_id CROSS JOIN LATERAL jsonb_array_elements(ve.phone_numbers) AS e(elem) WHERE jsonb_typeof(ve.phone_numbers) = 'array' AND (e.elem->>'number') ~ '[0-9]') AS xyz WHERE kuerze(lt,xyz.p) LIKE kuerze(l,to_number(telnum, format)::char(16))||'%';
@@ -413,6 +407,19 @@ FROM (VALUES
 WHERE NOT EXISTS (SELECT 1 FROM event_category LIMIT 1);
 
 -- ============================================================================
+-- NUMMERNKREISE — DATEV/Lexware-konforme Startwerte für Kunden/Lieferanten
+-- ============================================================================
+-- Auf frischen kivitendo-Firmen-DBs sind defaults.customernumber/vendornumber leer;
+-- nextFreeNumber() (backend/api/database.php) würde dann bei 1 beginnen. Hier idempotent
+-- die DATEV/Lexware-üblichen Bereiche vorbelegen — NUR wenn noch leer, bestehende Nummern
+-- (Produktiv-DBs) werden nie überschrieben. Da nextFreeNumber erst hochzählt, ist der
+-- Startzähler = erster gewünschter Wert minus 1:
+--   Debitoren/Kunden        10000–69999  -> Zähler 9999  (nächste vergebene Nummer = 10000)
+--   Kreditoren/Lieferanten  70000–99999  -> Zähler 69999 (nächste vergebene Nummer = 70000)
+UPDATE defaults SET customernumber = '9999'  WHERE customernumber IS NULL OR TRIM(customernumber) = '';
+UPDATE defaults SET vendornumber   = '69999' WHERE vendornumber   IS NULL OR TRIM(vendornumber)   = '';
+
+-- ============================================================================
 -- CALENDAR EVENTS
 -- ============================================================================
 
@@ -485,6 +492,17 @@ CREATE TABLE zipcode_location_oserp
     landkreis text,
     bundesland text NOT NULL,
     CONSTRAINT zipcode_location_oserp_pkey PRIMARY KEY (id)
+);
+
+-- PLZ-Zentroide (Koordinaten) fuer Entfernungsberechnung. Datenquelle: GeoNames
+-- (CC BY 4.0), aggregiert pro PLZ. Wird aus company_data/zipcode_geo_oserp.csv
+-- automatisch befuellt (leere Tabelle -> Seed durch Update-Mechanismus).
+CREATE TABLE zipcode_geo_oserp
+(
+    plz character(5) NOT NULL,
+    lat numeric(9,6) NOT NULL,
+    lon numeric(9,6) NOT NULL,
+    CONSTRAINT zipcode_geo_oserp_pkey PRIMARY KEY (plz)
 );
 
 -- ============================================================================
@@ -647,6 +665,7 @@ CREATE TABLE IF NOT EXISTS voice_notes (
     itime TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     mtime TIMESTAMPTZ,
     hidden BOOLEAN NOT NULL DEFAULT FALSE,
+    sort_order DOUBLE PRECISION,
     CONSTRAINT voice_notes_telegram_msg_unique UNIQUE (telegram_message_id)
 );
 
@@ -659,6 +678,7 @@ COMMENT ON COLUMN voice_notes.audio_file IS 'Relativer Pfad zur Audiodatei ab da
 COMMENT ON COLUMN voice_notes.duration IS 'Audiolaenge in Sekunden';
 COMMENT ON COLUMN voice_notes.transcript IS 'Whisper-Transkript';
 COMMENT ON COLUMN voice_notes.status IS 'transcribed, failed';
+COMMENT ON COLUMN voice_notes.sort_order IS 'Manuelle Sortierung der Anschlagtafel (hoeher = weiter oben); NULL faellt auf itime zurueck';
 
 DO $$ BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE indexname = 'idx_voice_notes_itime') THEN
@@ -1114,15 +1134,18 @@ BEGIN
 END;
 $$;
 
+-- Trigger auf den kivitendo-Standardspalten phone + fax (customer/vendor bleiben
+-- unveraendert). Zusatznummern liegen in customer_ext/vendor_ext.phone_numbers (JSON)
+-- und werden von SucheNummer separat ausgewertet.
 DROP TRIGGER IF EXISTS trg_customer_backfill_crmti ON customer;
 CREATE TRIGGER trg_customer_backfill_crmti
-    AFTER INSERT OR UPDATE OF phone, phone3, fax ON customer
+    AFTER INSERT OR UPDATE OF phone, fax ON customer
     FOR EACH ROW
     EXECUTE FUNCTION backfill_crmti_caller();
 
 DROP TRIGGER IF EXISTS trg_vendor_backfill_crmti ON vendor;
 CREATE TRIGGER trg_vendor_backfill_crmti
-    AFTER INSERT OR UPDATE OF phone, phone3, fax ON vendor
+    AFTER INSERT OR UPDATE OF phone, fax ON vendor
     FOR EACH ROW
     EXECUTE FUNCTION backfill_crmti_caller();
 
