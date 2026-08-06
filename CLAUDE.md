@@ -66,7 +66,8 @@ require_once __DIR__.'/inc.php';  // ohne Klammern
 - DB-Container ist leeres PostgreSQL — Schemas und Daten werden manuell per `dbdump` geladen
 - Lokale Node-Version: 25 — Dockerfile muss `node:25-alpine` nutzen (Vite 7 braucht crypto.hash, ab Node 20.19+)
 - `php:fpm-bookworm` ist KEIN Apache-Image — Runtime-Dirs muessen im Entrypoint erstellt werden
-- DB-Schema-Dumps (`backend/db/*.sql`) enthalten bereits CRM-Tabellen — kein `ON_ERROR_STOP=1` bei CRM-Erweiterungsskripten
+- Basis-Schemas sind eigene kivitendo-Dumps (nicht im Repository, `backend/db/` gibt es nicht mehr); Erweiterungen kommen aus `backend/upstall/` per `./scripts/docker.sh upstall`
+- Basisdumps können bereits CRM-Tabellen enthalten — kein `ON_ERROR_STOP=1` bei CRM-Erweiterungsskripten
 - Lokale PostgreSQL laeuft auf Port 5432 — Docker nutzt 5433 (siehe `docker/.env.example`)
 - Docker-Kommandos: `./scripts/docker.sh help` — granulare Steuerung (up-db, up-web, down-db, destroy-all, dbdump etc.)
 - Docker Clean-State: `./scripts/docker.sh destroy-all` dann manuell neu einrichten

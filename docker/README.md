@@ -36,9 +36,9 @@ CREATE DATABASE oserp_company;
 ```
 
 ```bash
-# 5. Schemas laden
-./scripts/docker.sh dbdump backend/db/auth_schema.sql oserp_auth
-./scripts/docker.sh dbdump backend/db/company_schema.sql oserp_company
+# 5. Basis-Schemas laden (eigene kivitendo-Dumps, nicht im Repository)
+./scripts/docker.sh dbdump dumps/auth.sql oserp_auth
+./scripts/docker.sh dbdump dumps/company.sql oserp_company
 
 # 6. Erweiterungen installieren (CRM, lxcars etc.)
 ./scripts/docker.sh upstall
@@ -141,8 +141,8 @@ neu eingerichtet werden (Datenbanken anlegen, Schemas laden etc.).
 
 ```bash
 ./scripts/docker.sh up-db
-./scripts/docker.sh dbdump backend/db/auth_schema.sql oserp_auth
-./scripts/docker.sh dbdump backend/db/company_schema.sql oserp_company
+./scripts/docker.sh dbdump dumps/auth.sql oserp_auth
+./scripts/docker.sh dbdump dumps/company.sql oserp_company
 ./scripts/docker.sh upstall
 ./scripts/docker.sh psql oserp_company
 ./scripts/docker.sh logs web

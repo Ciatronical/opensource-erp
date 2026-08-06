@@ -98,9 +98,12 @@ siehe `docker/SETUP_DEMO.md`.
 | `psql <db>` | PostgreSQL-Shell öffnen. Datenbankname ist Pflicht. |
 | `backup` | Erstellt gzip-komprimierte Backups beider Datenbanken im Ordner `backups/`. |
 
+Die Basis-Schemas (kivitendo) liegen nicht im Repository — eigene pg_dump-Dateien
+verwenden. `upstall` ergänzt darauf nur die OpensourceERP-Tabellen.
+
 ```bash
-./scripts/docker.sh dbdump backend/db/auth_schema.sql oserp_auth
-./scripts/docker.sh dbdump backend/db/company_schema.sql oserp_company
+./scripts/docker.sh dbdump dumps/auth.sql oserp_auth
+./scripts/docker.sh dbdump dumps/company.sql oserp_company
 ./scripts/docker.sh upstall
 ./scripts/docker.sh psql oserp_company
 ./scripts/docker.sh backup

@@ -380,11 +380,23 @@ CREATE DATABASE oserp_company;
 \q
 ```
 
-### 8.3 Schemas laden
+### 8.3 Basis-Schemas laden (kivitendo)
+
+Die Basisstruktur stammt aus kivitendo (`auth.clients`, `customer`, `parts`,
+`ar` …) und liegt **nicht im Repository** — sie muss als eigener pg_dump
+mitgebracht werden, entweder aus einer kivitendo-Installation oder vom
+Produktivserver:
 
 ```bash
-./scripts/docker.sh dbdump backend/db/auth_schema.sql oserp_auth
-./scripts/docker.sh dbdump backend/db/company_schema.sql oserp_company
+pg_dump --no-owner --no-privileges kivitendo_auth > dumps/auth.sql
+pg_dump --no-owner --no-privileges <firmen_db>    > dumps/company.sql
+```
+
+Anschließend einspielen (Pfade an die eigenen Dateien anpassen):
+
+```bash
+./scripts/docker.sh dbdump dumps/auth.sql oserp_auth
+./scripts/docker.sh dbdump dumps/company.sql oserp_company
 ```
 
 > **Hinweis:** `dbdump` erkennt automatisch Auth-Datenbanken und passt die
@@ -397,8 +409,10 @@ CREATE DATABASE oserp_company;
 ./scripts/docker.sh upstall
 ```
 
-Installiert alle SQL-Erweiterungen aus `backend/upstall/` (CRM, lxcars etc.)
-automatisch in die richtigen Datenbanken.
+Installiert alle SQL-Erweiterungen aus `backend/upstall/` (CRM, lxcars, skr03,
+skr04) automatisch in die richtigen Datenbanken. Dieser Schritt ergänzt nur die
+OpensourceERP-Tabellen und setzt die Basis aus 8.3 voraus — insbesondere das
+`auth`-Schema.
 
 ### 8.5 CSV-Referenzdaten laden
 
