@@ -1,0 +1,26 @@
+{
+    "Tafel": {
+        "title": "Board",
+        "online": "Live",
+        "offline": "Offline",
+        "openBoard": "Open bulletin board",
+        "senderLabel": "From",
+        "textLabel": "Note",
+        "textPlaceholder": "What goes on the board?",
+        "enterHint": "Enter to add, Shift+Enter for a new line",
+        "addButton": "Add",
+        "addError": "Could not add note",
+        "empty": "No entries yet",
+        "emptyHint": "Add a note above or dictate one via Telegram – it also shows up on the bulletin board.",
+        "count": "{n} entries",
+        "dragHint": "Drag to reorder",
+        "unknown": "Unknown",
+        "failed": "Transcription failed",
+        "delete": "Delete",
+        "cancel": "Cancel",
+        "confirmDeleteTitle": "Delete entry?",
+        "confirmDeleteText": "The entry will also be removed from the bulletin board (TV).",
+        "deleteError": "Could not delete note",
+        "reorderError": "Could not save the new order"
+    }
+}

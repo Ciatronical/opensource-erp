@@ -41,6 +41,7 @@
         "huSerienbrief": "/serienbrief/hu",
         "wallDisplay": "/wandanzeige",
         "anschlagtafel": "/anschlagtafel",
+        "tafel": "/tafel-verwaltung",
         "camera": "/kameras",
         "hr": "/personal",
         "hrPayroll": "/personal/lohn",

@@ -10,19 +10,47 @@
         <v-container fluid class="pa-0">
             <v-row no-gutters>
             <!-- Linke Sidebar mit Tabs -->
-            <v-col cols="12" md="3" lg="2" class="border-e">
+            <v-col cols="12" md="3" lg="2" class="border-e sidebar-col">
                 <v-card flat class="rounded-0">
-                    <!-- Tab-Liste -->
-                    <v-list density="compact" nav>
-                        <v-list-item
-                            v-for="tab in tabs"
-                            :key="tab.value"
-                            :value="tab.value"
-                            :active="activeTab === tab.value"
-                            @click="activeTab = tab.value"
-                            :prepend-icon="tab.icon"
-                        >
-                            <v-list-item-title>{{ tab.title }}</v-list-item-title>
+                    <!-- Suchfeld: filtert die Sektionen UND die Felder im aktiven Tab -->
+                    <div class="pa-3">
+                        <v-text-field
+                            v-model="searchQuery"
+                            :label="$t('searchSettings')"
+                            prepend-inner-icon="mdi-magnify"
+                            variant="outlined"
+                            density="compact"
+                            clearable
+                            hide-details
+                            autofocus
+                        />
+                    </div>
+
+                    <v-divider />
+
+                    <!-- Gruppierte Tab-Liste -->
+                    <v-list density="compact" nav class="pt-0">
+                        <template v-for="group in filteredGroups" :key="group.key">
+                            <v-list-subheader class="text-uppercase text-caption font-weight-bold">
+                                {{ group.title }}
+                            </v-list-subheader>
+                            <v-list-item
+                                v-for="tab in group.items"
+                                :key="tab.value"
+                                :value="tab.value"
+                                :active="activeTab === tab.value"
+                                @click="activeTab = tab.value"
+                                :prepend-icon="tab.icon"
+                            >
+                                <v-list-item-title>{{ tab.title }}</v-list-item-title>
+                            </v-list-item>
+                        </template>
+
+                        <!-- Keine passende Sektion -->
+                        <v-list-item v-if="filteredGroups.length === 0" :title="$t('noSectionsFound')" disabled>
+                            <template #prepend>
+                                <v-icon>mdi-magnify-close</v-icon>
+                            </template>
                         </v-list-item>
                     </v-list>
                 </v-card>
@@ -37,17 +65,17 @@
                             <span>{{ currentTab?.title }}</span>
                         </div>
 
-                        <!-- Suchfeld für Felder -->
-                        <v-text-field
-                            v-model="searchQuery"
-                            :label="$t('searchFields')"
-                            prepend-inner-icon="mdi-magnify"
-                            variant="outlined"
-                            density="compact"
-                            clearable
-                            hide-details
-                            style="max-width: 300px;"
-                        />
+                        <!-- Aktiver Suchbegriff als entfernbarer Chip -->
+                        <v-chip
+                            v-if="searchQuery"
+                            closable
+                            color="primary"
+                            variant="tonal"
+                            prepend-icon="mdi-magnify"
+                            @click:close="searchQuery = ''"
+                        >
+                            {{ searchQuery }}
+                        </v-chip>
                     </v-card-title>
 
                     <v-divider />
@@ -56,7 +84,7 @@
                         <!-- LAZY LOADED TABS - Nur der aktive Tab wird geladen! -->
                         <component
                             :is="currentTabComponent"
-                            :defaults="['crm','lxcars','anpr','ai_health'].includes(activeTab) ? undefined : defaults"
+                            :defaults="['crm','lxcars','anpr','ai_health','employees'].includes(activeTab) ? undefined : defaults"
                             :crm-defaults="['crm','lxcars','anpr','bank','features','ai_health'].includes(activeTab) ? crmDefaults : undefined"
                             :search-query="searchQuery"
                         />
@@ -200,6 +228,7 @@ const CrmTab = defineAsyncComponent(() => import('./tabs/crm-defaults.tab.vue'))
 const LxCarsTab = defineAsyncComponent(() => import('./tabs/lxcars-defaults.tab.vue'));
 const AnprTab = defineAsyncComponent(() => import('./tabs/anpr-defaults.tab.vue'));
 const AiHealthTab = defineAsyncComponent(() => import('./tabs/ai-health.tab.vue'));
+const EmployeesTab = defineAsyncComponent(() => import('./tabs/employees.tab.vue'));
 const AddTab = defineAsyncComponent(() => import('./tabs/add.tab.vue'));
 
 const { t } = useI18n();
@@ -340,97 +369,89 @@ function triggerSave() {
 watch(defaults, onDataChange, { deep: true });
 watch(crmDefaults, onDataChange, { deep: true });
 
-// WICHTIG: tabs muss COMPUTED sein damit Übersetzungen reaktiv sind!
-const tabs = computed(() => [
+// WICHTIG: COMPUTED, damit Übersetzungen reaktiv sind.
+// Logisch gruppiert; `keywords` speisen die Sektions-Suche (DE + EN).
+const tabGroups = computed(() => [
     {
-        value: 'company',
-        title: t('company'),
-        icon: 'mdi-domain'
+        key: 'master_data',
+        title: t('configGroups.masterData'),
+        items: [
+            { value: 'company',   title: t('company'),   icon: 'mdi-domain',           keywords: ['firma', 'company', 'stammdaten', 'adresse', 'logo', 'ust', 'steuernummer'] },
+            { value: 'employees', title: t('employeesTab.title'), icon: 'mdi-account-tie', keywords: ['mitarbeiter', 'employee', 'personal', 'obsolet', 'obsolete', 'verkäufer', 'benutzer', 'user', 'staff'] },
+            { value: 'warehouse', title: t('warehouse'), icon: 'mdi-warehouse',        keywords: ['lager', 'warehouse', 'bestand', 'stock', 'ort'] },
+            { value: 'crm',       title: t('crm'),       icon: 'mdi-account-multiple', keywords: ['crm', 'kunde', 'customer', 'kontakt', 'contact'] },
+        ]
     },
     {
-        value: 'ranges_of_numbers',
-        title: t('rangesOfNumbers'),
-        icon: 'mdi-numeric'
+        key: 'accounting',
+        title: t('configGroups.accounting'),
+        items: [
+            { value: 'default_accounts',          title: t('defaultAccounts'),        icon: 'mdi-bank',               keywords: ['konto', 'konten', 'account', 'standardkonto', 'fibu', 'sachkonto'] },
+            { value: 'posting_configuration',     title: t('postingConfiguration'),   icon: 'mdi-file-document-edit', keywords: ['buchung', 'posting', 'buchen', 'kontierung'] },
+            { value: 'datev_check_configuration', title: t('datevCheckConfiguration'),icon: 'mdi-check-circle',       keywords: ['datev', 'export', 'prüfung', 'steuerberater'] },
+            { value: 'bank',                      title: t('bank'),                   icon: 'mdi-bank-transfer',      keywords: ['bank', 'sepa', 'iban', 'überweisung', 'fints', 'zahlung', 'payment'] },
+        ]
     },
     {
-        value: 'default_accounts',
-        title: t('defaultAccounts'),
-        icon: 'mdi-bank'
+        key: 'documents',
+        title: t('configGroups.documents'),
+        items: [
+            { value: 'ranges_of_numbers', title: t('rangesOfNumbers'), icon: 'mdi-numeric',              keywords: ['nummer', 'nummernkreis', 'number', 'rechnung', 'invoice', 'auftrag', 'order', 'angebot', 'kunde', 'lieferant', 'artikel'] },
+            { value: 'record_links',      title: t('recordLinks'),     icon: 'mdi-link-variant',         keywords: ['verknüpfung', 'link', 'beleg', 'record', 'kette'] },
+            { value: 'orders_deleteable', title: t('ordersDeleteable'),icon: 'mdi-delete',               keywords: ['löschen', 'delete', 'auftrag', 'order', 'beleg'] },
+            { value: 'einvoice',          title: t('einvoice.tab_title'), icon: 'mdi-file-document-check',keywords: ['erechnung', 'e-rechnung', 'einvoice', 'zugferd', 'xrechnung', 'xml'] },
+            { value: 'stocktaking',       title: t('stocktaking'),     icon: 'mdi-clipboard-list',       keywords: ['inventur', 'stocktaking', 'zählung', 'bestand'] },
+        ]
     },
     {
-        value: 'posting_configuration',
-        title: t('postingConfiguration'),
-        icon: 'mdi-file-document-edit'
+        key: 'features',
+        title: t('configGroups.features'),
+        items: [
+            { value: 'features', title: t('features'), icon: 'mdi-star', keywords: ['feature', 'funktion', 'modul', 'branche', 'module'] },
+            ...(store.isLxCars() ? [{ value: 'lxcars', title: 'LxCars', icon: 'mdi-car', keywords: ['lxcars', 'fahrzeug', 'auto', 'werkstatt', 'kfz', 'reifen'] }] : []),
+            ...(store.isAnprEnabled() ? [{ value: 'anpr', title: 'ANPR', icon: 'mdi-car-search', keywords: ['anpr', 'kennzeichen', 'kamera', 'nummernschild'] }] : []),
+            { value: 'ai_health', title: t('aiHealth.tabTitle'), icon: 'mdi-robot-happy-outline', keywords: ['ki', 'ai', 'whisper', 'llm', 'ollama', 'spracheingabe', 'gesundheit', 'health'] },
+        ]
     },
     {
-        value: 'datev_check_configuration',
-        title: t('datevCheckConfiguration'),
-        icon: 'mdi-check-circle'
-    },
-    {
-        value: 'orders_deleteable',
-        title: t('ordersDeleteable'),
-        icon: 'mdi-delete'
-    },
-    {
-        value: 'warehouse',
-        title: t('warehouse'),
-        icon: 'mdi-warehouse'
-    },
-    {
-        value: 'features',
-        title: t('features'),
-        icon: 'mdi-star'
-    },
-    {
-        value: 'stocktaking',
-        title: t('stocktaking'),
-        icon: 'mdi-clipboard-list'
-    },
-    {
-        value: 'record_links',
-        title: t('recordLinks'),
-        icon: 'mdi-link-variant'
-    },
-    {
-        value: 'bank',
-        title: t('bank'),
-        icon: 'mdi-bank-transfer'
-    },
-    {
-        value: 'einvoice',
-        title: t('einvoice.tab_title'),
-        icon: 'mdi-file-document-check'
-    },
-    {
-        value: 'crm',
-        title: t('crm'),
-        icon: 'mdi-account-multiple'
-    },
-    ...(store.isLxCars() ? [{
-        value: 'lxcars',
-        title: 'LxCars',
-        icon: 'mdi-car'
-    }] : []),
-    ...(store.isAnprEnabled() ? [{
-        value: 'anpr',
-        title: 'ANPR',
-        icon: 'mdi-car-search'
-    }] : []),
-    {
-        value: 'ai_health',
-        title: t('aiHealth.tabTitle'),
-        icon: 'mdi-robot-happy-outline'
-    },
-    {
-        value: 'add',
-        title: t('add'),
-        icon: 'mdi-plus-circle'
+        key: 'tools',
+        title: t('configGroups.tools'),
+        items: [
+            { value: 'add', title: t('add'), icon: 'mdi-plus-circle', keywords: ['hinzufügen', 'add', 'neu', 'anlegen', 'werkzeug'] },
+        ]
     }
 ]);
 
+// Flache Liste aller sichtbaren Tabs (für Lookups & Query-Param-Handling)
+const allTabs = computed(() => tabGroups.value.flatMap(g => g.items));
+
+// Sektions-Suche: filtert Gruppen/Items anhand Titel + Keywords.
+const filteredGroups = computed(() => {
+    const q = (searchQuery.value || '').trim().toLowerCase();
+    if (!q) return tabGroups.value;
+    return tabGroups.value
+        .map(group => ({
+            ...group,
+            items: group.items.filter(tab =>
+                tab.title.toLowerCase().includes(q) ||
+                tab.keywords.some(k => k.includes(q))
+            )
+        }))
+        .filter(group => group.items.length > 0);
+});
+
 const currentTab = computed(() => {
-    return tabs.value.find(tab => tab.value === activeTab.value);
+    return allTabs.value.find(tab => tab.value === activeTab.value);
+});
+
+// Wenn die Suche den aktiven Tab ausblendet, automatisch zum ersten Treffer springen —
+// so führt die Suche direkt zur passenden Sektion.
+watch(filteredGroups, (groups) => {
+    if (!searchQuery.value) return;
+    const visible = groups.flatMap(g => g.items.map(i => i.value));
+    if (visible.length && !visible.includes(activeTab.value)) {
+        activeTab.value = visible[0];
+    }
 });
 
 // Computed: Gibt die aktuelle Tab-Component zurück (Lazy Loading!)
@@ -452,6 +473,7 @@ const currentTabComponent = computed(() => {
         'lxcars': LxCarsTab,
         'anpr': AnprTab,
         'ai_health': AiHealthTab,
+        'employees': EmployeesTab,
         'add': AddTab
     };
 
@@ -711,7 +733,7 @@ onMounted(async () => {
 
     // Query-Parameter: ?tab=lxcars&focus=lxcars_yellow_label_printer
     const tabParam = route.query.tab;
-    if (tabParam && tabs.value.some(t => t.value === tabParam)) {
+    if (tabParam && allTabs.value.some(t => t.value === tabParam)) {
         activeTab.value = tabParam;
     }
     const focusParam = route.query.focus;
@@ -747,6 +769,17 @@ onMounted(async () => {
 <style scoped>
 .border-e {
     border-right: 1px solid rgba(0, 0, 0, 0.12);
+}
+/* Sidebar bleibt beim Scrollen sichtbar; lange Listen scrollen intern */
+.sidebar-col :deep(> .v-card) {
+    position: sticky;
+    top: 0;
+    max-height: 100vh;
+    overflow-y: auto;
+}
+.sidebar-col :deep(.v-list-subheader) {
+    min-height: 28px;
+    opacity: 0.7;
 }
 .feature-error-pre {
     font-size: 11px;

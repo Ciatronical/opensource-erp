@@ -55,7 +55,9 @@ export function useNavigationCards() {
             { title: t('ContactMenu.callHistory'), to: t('routes.callHistory') },
             '-',
             { title: t('ContactMenu.emails'), to: '/emails' },
-            { title: t('ContactMenu.whatsapp'), to: '/whatsapp' }
+            { title: t('ContactMenu.whatsapp'), to: '/whatsapp' },
+            '-',
+            { title: t('Tafel.title'), to: t('routes.tafel') }
         ]
         if (oserp.isLxCars()) {
             contactItems.push('-')
@@ -97,6 +99,7 @@ export function useNavigationCards() {
                     { title: t('AccountingView.menu.invoiceUpload'), to: t('AccountingView.routes.accountingInvoiceUpload') },
                     { title: t('AccountingView.menu.bookings'), to: t('AccountingView.routes.accountingBookings') },
                     { title: t('AccountingView.menu.outgoingMatching'), to: t('AccountingView.routes.accountingOutgoing') },
+                    { title: t('AccountingView.menu.openItems'), to: t('AccountingView.routes.accountingOpenItems') },
                     '-',
                     { title: t('AccountingView.menu.vendors'), to: t('AccountingView.routes.accountingVendors') },
                     { title: t('AccountingView.menu.chartOfAccounts'), to: t('AccountingView.routes.accountingChartOfAccounts') },

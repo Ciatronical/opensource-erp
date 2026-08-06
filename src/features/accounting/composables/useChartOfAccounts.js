@@ -12,6 +12,9 @@ export function useChartOfAccounts() {
     const error = ref(null)
     const accounts = ref([])
     const taxOptions = ref([])
+    const eurOptions = ref([])
+    const bwaOptions = ref([])
+    const ustvaOptions = ref([])
 
     async function fetchAccounts(filters = {}) {
         loading.value = true
@@ -54,13 +57,19 @@ export function useChartOfAccounts() {
         }
     }
 
-    async function fetchTaxOptions() {
+    // Alle Auswahllisten des Konten-Dialogs (Steuerschlüssel, EÜR, BWA, UStVA)
+    // kommen in einem Aufruf aus der Datenbank
+    async function fetchOptions() {
         try {
             const response = await axios.post('/api/accounting/', {
-                action: 'getChartAccountTaxOptions'
+                action: 'getChartAccountOptions'
             })
             if (response.data.success) {
-                taxOptions.value = response.data.payload.taxes || []
+                const options = response.data.payload.options || {}
+                taxOptions.value = options.taxes || []
+                eurOptions.value = options.eur || []
+                bwaOptions.value = options.bwa || []
+                ustvaOptions.value = options.ustva || []
             }
         } catch (e) {
             error.value = e.message
@@ -78,8 +87,10 @@ export function useChartOfAccounts() {
             if (response.data.success) {
                 return { success: true }
             }
-            error.value = response.data.text
-            return { success: false, text: response.data.text }
+            // Bei Fehlern steht in text der Fehlercode und in payload die Meldung
+            const message = response.data.payload || response.data.text
+            error.value = message
+            return { success: false, text: message }
         } catch (e) {
             error.value = e.message
             return { success: false, text: e.message }
@@ -94,9 +105,12 @@ export function useChartOfAccounts() {
         error,
         accounts,
         taxOptions,
+        eurOptions,
+        bwaOptions,
+        ustvaOptions,
         fetchAccounts,
         fetchAccount,
-        fetchTaxOptions,
+        fetchOptions,
         saveAccount
     }
 }

@@ -191,19 +191,27 @@
                                         </template>
                                     </v-text-field>
                                 </v-col>
-                                <!-- HU-Benachrichtigung: pro Fahrzeug ein-/ausschaltbar (steuert Serienbrief/WhatsApp) -->
+                                <!-- HU-Benachrichtigung: pro Fahrzeug ein-/ausschaltbar (steuert Serienbrief/WhatsApp).
+                                     Ist der Halter kundenweit ausgeschlossen, wird der Schalter ausgegraut. -->
                                 <v-col cols="12" sm="6" class="py-1 d-flex align-center">
-                                    <v-switch
-                                        v-model="car.c_hu_notify"
-                                        :label="t('CarEditView.fields.c_hu_notify')"
-                                        :prepend-icon="car.c_hu_notify ? 'mdi-bell-ring-outline' : 'mdi-bell-off-outline'"
-                                        color="primary"
-                                        density="compact"
-                                        hide-details
-                                        inset
-                                        :disabled="readonly"
-                                        tabindex="-1"
-                                    />
+                                    <v-tooltip location="top" max-width="320" :disabled="!ownerHuExcluded" :text="t('CarEditView.fields.c_hu_notify_locked')">
+                                        <template #activator="{ props: tp }">
+                                            <div v-bind="tp" class="d-inline-flex align-center">
+                                                <v-switch
+                                                    :model-value="car.c_hu_notify && !ownerHuExcluded"
+                                                    :label="t('CarEditView.fields.c_hu_notify')"
+                                                    :prepend-icon="(car.c_hu_notify && !ownerHuExcluded) ? 'mdi-bell-ring-outline' : 'mdi-bell-off-outline'"
+                                                    :color="(car.c_hu_notify && !ownerHuExcluded) ? 'success' : undefined"
+                                                    density="compact"
+                                                    hide-details
+                                                    inset
+                                                    :disabled="readonly || ownerHuExcluded"
+                                                    tabindex="-1"
+                                                    @update:model-value="v => { car.c_hu_notify = v }"
+                                                />
+                                            </div>
+                                        </template>
+                                    </v-tooltip>
                                 </v-col>
                             </v-row>
                             <v-row dense>
@@ -1351,6 +1359,10 @@ export default {
         )
 
         const district = computed(() => getDistrictByPlate(car.value.c_ln))
+
+        // Kunde zaehlt mehr als Fahrzeug: hat der Halter HU-Benachrichtigungen
+        // komplett deaktiviert, kann der Fahrzeug-Schalter nicht aktiviert werden.
+        const ownerHuExcluded = computed(() => !!oserpData.customer_vendor?.profile?.hu_serienbrief_excluded)
         const initialLoaded = ref(false)
 
         // Composables
@@ -2736,7 +2748,7 @@ export default {
         })
 
         return {
-            t, oserpData, car, orders, loading, error, saving, isEditMode, readonly, isMechanicMode, backOrderId, backToOrder, goBack, district,
+            t, oserpData, car, orders, loading, error, saving, isEditMode, readonly, isMechanicMode, backOrderId, backToOrder, goBack, district, ownerHuExcluded,
             ownerItems, ownerLoading, currentOwnerId, onOwnerSearch, onOwnerChange,
             rulesLn, rulesHsn, rulesTsn, rulesEm, rulesD, rulesHu, rulesFin, rulesMonthYear,
             finFieldRef, tsnFieldRef, newOrderBtn, copyToClipboard, copyToClipboardNow, kbaClipboardText,

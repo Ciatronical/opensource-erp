@@ -102,6 +102,15 @@
     "masterTemplate": "Master Template",
     "createCopy": "Create Copy",
     "noTemplateSetsFound": "No print template sets found",
+    "templateSetAppliesImmediately": "Applied immediately and used for all documents",
+    "basedOnMaster": "based on {master}",
+    "templateSetActivated": "Print template set activated",
+    "templateSetActivateFailed": "Could not activate print template set",
+    "templateSetCreated": "Print template set created and activated",
+    "templateSetCreateFailed": "Could not create print template set",
+    "templateSetsLoadFailed": "Could not load print template sets",
+    "templateSetNameInvalid": "Only letters, digits, hyphen and underscore allowed",
+    "templateSetNameExists": "This name is already in use",
     "interpolateVariablesInPositions": "Interpolate Variables in Position Texts",
     "interpolateVariablesInPositionsHelp": "Whether variable placeholders like <%invdate%> in position texts such as article description should be replaced with the actual value from the document",
     "printers": "Printers",
@@ -1285,5 +1294,33 @@
         "sudoNotAllowedAdd": "Line for the sudoers file:"
     },
     "crm.lxcarsHuTriggerDescriptions": "Vehicle Inspection Trigger Descriptions",
-    "crm.lxcarsHuTriggerDescriptions_help": "Comma-separated list of line item descriptions. If a line item contains one of these terms (substring, case-insensitive), the vehicle next inspection date is automatically set to today + 2 years (1st of month) when the invoice is created."
+    "crm.lxcarsHuTriggerDescriptions_help": "Comma-separated list of line item descriptions. If a line item contains one of these terms (substring, case-insensitive), the vehicle next inspection date is automatically set to today + 2 years (1st of month) when the invoice is created.",
+    "searchSettings": "Search settings",
+    "noSectionsFound": "No matching section",
+    "configGroups": {
+        "masterData": "Master data",
+        "accounting": "Accounting",
+        "documents": "Documents & Numbers",
+        "features": "Features",
+        "tools": "Tools"
+    },
+    "employeesTab": {
+        "title": "Employees",
+        "intro": "Set employees who have left the company to “obsolete”. They then disappear from all selection lists (e.g. salesperson, mechanic) but remain in existing records and history. This step is reversible at any time.",
+        "search": "Search employees",
+        "filterActive": "Active",
+        "filterObsolete": "Obsolete",
+        "filterAll": "All",
+        "colName": "Name",
+        "colSales": "Salesperson",
+        "colStatus": "Status",
+        "colActive": "Active",
+        "statusActive": "Active",
+        "statusObsolete": "Obsolete",
+        "noResults": "No employees found",
+        "loadFailed": "Could not load employees",
+        "saveFailed": "Could not save change",
+        "markedObsolete": "{name} set to obsolete",
+        "markedActive": "{name} reactivated"
+    }
 }

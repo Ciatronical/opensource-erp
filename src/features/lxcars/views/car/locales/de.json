@@ -43,6 +43,7 @@
             "c_d": "Erstzulassung",
             "c_hu": "HU (TÜV)",
             "c_hu_notify": "HU-Benachrichtigung senden",
+            "c_hu_notify_locked": "HU-Benachrichtigungen sind für diesen Kunden komplett deaktiviert. Aktivieren Sie sie zuerst beim Kunden (Reiter „Rechnung“, Bedingungen), um sie für dieses Fahrzeug wieder einschalten zu können.",
             "c_pb": "Personenbeförderung (Taxi/Mietwagen)",
             "c_fin": "Fahrgestellnummer (FIN)",
             "c_st": "Sommerreifen Typ",

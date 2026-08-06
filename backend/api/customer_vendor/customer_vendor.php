@@ -128,6 +128,11 @@ function getCV($data, $withConfig = []) {
     $extFk    = $isVendor ? 'vendor_id'  : 'customer_id';
     $phoneNumbersSelect = "(SELECT phone_numbers FROM $extTable WHERE $extFk = $cv_id)";
     $keywordsSelect     = "(SELECT keywords FROM $extTable WHERE $extFk = $cv_id)";
+    // LxCars: kundenweiter HU-Benachrichtigungs-Ausschluss (nur Kunde). Kunde zaehlt
+    // mehr als Fahrzeug — ist dies true, sind alle Fahrzeuge des Kunden ausgeschlossen.
+    $huExcludedSelect = $isVendor
+        ? "false"
+        : "COALESCE((SELECT hu_serienbrief_excluded FROM customer_ext WHERE customer_id = $cv_id), false)";
 
     $orderFirstDescription = $lxCars
         ? "SELECT il.description FROM oe_instructions_lxcars il WHERE il.oe_id = oe.id ORDER BY il.sort_order, il.id LIMIT 1"
@@ -437,7 +442,8 @@ function getCV($data, $withConfig = []) {
                                     FROM (
                                         SELECT '$cvSrcLiteral' AS src, t.*,
                                             $phoneNumbersSelect AS phone_numbers,
-                                            $keywordsSelect AS keywords
+                                            $keywordsSelect AS keywords,
+                                            $huExcludedSelect AS hu_serienbrief_excluded
                                         FROM $cvTable t WHERE t.id = $cv_id
                                     ) AS cv
                                 ),
@@ -975,6 +981,16 @@ function saveCV($data) {
         unset($data['profile']['keywords']);
     }
 
+    // hu_serienbrief_excluded (LxCars, nur Kunde) vor dem Loop extrahieren und aus
+    // profile entfernen — liegt in customer_ext, nicht in der customer-Tabelle.
+    $huExcluded = false;
+    $hasHuExcluded = false;
+    if (array_key_exists('hu_serienbrief_excluded', $data['profile'])) {
+        $hasHuExcluded = true;
+        $huExcluded = !empty($data['profile']['hu_serienbrief_excluded']);
+        unset($data['profile']['hu_serienbrief_excluded']);
+    }
+
     // benutzerdefinierte Variablen vor dem Loop extrahieren, damit sie nicht
     // als unbekannte Tabelle im Hauptloop landen
     $customVars = null;
@@ -1175,6 +1191,15 @@ function saveCV($data) {
             "INSERT INTO $extTable ($extFk, keywords) VALUES (:cid, :kw)
              ON CONFLICT ($extFk) DO UPDATE SET keywords = :kw, mtime = now()",
             [':cid' => $cv_id, ':kw' => $kwValue]
+        );
+    }
+
+    // hu_serienbrief_excluded in customer_ext speichern (nur Kunde, LxCars)
+    if ($hasHuExcluded && $cv_id && $src !== 'V') {
+        $apiCompanySpace->execute(
+            "INSERT INTO customer_ext (customer_id, hu_serienbrief_excluded) VALUES (:cid, :ex)
+             ON CONFLICT (customer_id) DO UPDATE SET hu_serienbrief_excluded = :ex, mtime = now()",
+            [':cid' => $cv_id, ':ex' => $huExcluded ? 't' : 'f']
         );
     }
 

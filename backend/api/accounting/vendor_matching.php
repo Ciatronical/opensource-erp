@@ -27,15 +27,33 @@ function getAccountingVendors($data) {
         $params[':q4'] = '%' . $query . '%';
     }
 
+    // Buchungen/Gesamtbetrag kommen aus den echten Lieferantenrechnungen (ap),
+    // nicht aus accounting_bookings — dort stehen nur die noch nicht
+    // freigegebenen KI-Vorschlaege, sodass die Spalten sonst immer 0 zeigen.
+    // Standardkonto = zuletzt bebuchtes Aufwandskonto des Lieferanten.
     $vendors = $db->getAll(<<<SQL
         SELECT v.id, v.name, v.vendornumber, v.street, v.zipcode, v.city,
                v.phone, v.email, v.iban, v.bic, v.taxnumber, v.ustid,
                v.obsolete,
-               (SELECT COUNT(*) FROM accounting_bookings ab WHERE ab.vendor_id = v.id) AS booking_count,
-               (SELECT SUM(ab.amount) FROM accounting_bookings ab WHERE ab.vendor_id = v.id AND ab.type = 'incoming' AND ab.status != 'rejected') AS total_amount,
-               (SELECT ab.debit_account FROM accounting_bookings ab WHERE ab.vendor_id = v.id AND ab.type = 'incoming' ORDER BY ab.booking_date DESC LIMIT 1) AS default_account,
+               COALESCE(inv.booking_count, 0) AS booking_count,
+               inv.total_amount,
+               acc.accno AS default_account,
                (SELECT STRING_AGG(va.alias_name, ', ') FROM vendor_aliases va WHERE va.vendor_id = v.id) AS aliases
         FROM vendor v
+        LEFT JOIN (
+            SELECT a.vendor_id, COUNT(*) AS booking_count, SUM(a.amount) AS total_amount
+            FROM ap a
+            GROUP BY a.vendor_id
+        ) inv ON inv.vendor_id = v.id
+        LEFT JOIN LATERAL (
+            SELECT c.accno
+            FROM ap a
+            JOIN acc_trans t ON t.trans_id = a.id
+            JOIN chart c ON c.id = t.chart_id
+            WHERE a.vendor_id = v.id AND c.link LIKE '%AP_amount%'
+            ORDER BY a.transdate DESC, t.acc_trans_id
+            LIMIT 1
+        ) acc ON TRUE
         WHERE {$where}
         ORDER BY v.name
         LIMIT :limit

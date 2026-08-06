@@ -32,6 +32,7 @@ const OrderSearchView = () => import('@/core/views/order-search/order-search.vie
 const UserConfigView = () => import('@/core/views/user-config/user-config.view.vue')
 const WallDisplayView = () => import('@/core/views/wall-display/wall-display.view.vue')
 const AnschlagtafelView = () => import('@/core/views/anschlagtafel/anschlagtafel.view.vue')
+const TafelView = () => import('@/core/views/tafel/tafel.view.vue')
 const CameraView = () => import('@/core/views/camera/camera.view.vue')
 
 const HuSerienbriefView = () => {
@@ -119,6 +120,7 @@ const AccountingVendorsView = () => import('@/features/accounting/views/accounti
 const AccountingDatevExportView = () => import('@/features/accounting/views/accounting.datev-export.vue')
 const AccountingOutgoingView = () => import('@/features/accounting/views/accounting.outgoing.vue')
 const AccountingChartOfAccountsView = () => import('@/features/accounting/views/accounting.chart-of-accounts.vue')
+const AccountingOpenItemsView = () => import('@/features/accounting/views/accounting.open-items.vue')
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -243,6 +245,12 @@ const router = createRouter({
             alias: '/tafel',
             name: 'anschlagtafel',
             component: AnschlagtafelView,
+        },
+        {
+            // PC-Variante der Anschlagtafel: Eintraege hinzufuegen/loeschen
+            path: i18n.global.t('routes.tafel'),
+            name: 'tafel',
+            component: TafelView,
         },
         {
             path: '/mechaniker',
@@ -474,36 +482,49 @@ const router = createRouter({
             path: i18n.global.t('AccountingView.routes.accountingOverview'),
             name: 'accounting-overview',
             component: AccountingOverviewView,
+            meta: { hideCustomerBar: true },
         },
         {
             path: i18n.global.t('AccountingView.routes.accountingBookings'),
             name: 'accounting-bookings',
             component: AccountingBookingsView,
+            meta: { hideCustomerBar: true },
         },
         {
             path: i18n.global.t('AccountingView.routes.accountingInvoiceUpload'),
             name: 'accounting-invoice-upload',
             component: AccountingInvoiceUploadView,
+            meta: { hideCustomerBar: true },
         },
         {
             path: i18n.global.t('AccountingView.routes.accountingVendors'),
             name: 'accounting-vendors',
             component: AccountingVendorsView,
+            meta: { hideCustomerBar: true },
         },
         {
             path: i18n.global.t('AccountingView.routes.accountingDatevExport'),
             name: 'accounting-datev-export',
             component: AccountingDatevExportView,
+            meta: { hideCustomerBar: true },
         },
         {
             path: i18n.global.t('AccountingView.routes.accountingOutgoing'),
             name: 'accounting-outgoing',
             component: AccountingOutgoingView,
+            meta: { hideCustomerBar: true },
         },
         {
             path: i18n.global.t('AccountingView.routes.accountingChartOfAccounts'),
             name: 'accounting-chart-of-accounts',
             component: AccountingChartOfAccountsView,
+            meta: { hideCustomerBar: true },
+        },
+        {
+            path: i18n.global.t('AccountingView.routes.accountingOpenItems'),
+            name: 'accounting-open-items',
+            component: AccountingOpenItemsView,
+            meta: { hideCustomerBar: true },
         },
         // ── Banking ── (alle Funktionen in einem Hub zusammengefasst)
         {

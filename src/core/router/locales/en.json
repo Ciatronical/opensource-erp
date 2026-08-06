@@ -41,6 +41,7 @@
         "huSerienbrief": "/serial-letter/hu",
         "wallDisplay": "/wall-display",
         "anschlagtafel": "/bulletin-board",
+        "tafel": "/bulletin-board/manage",
         "camera": "/cameras",
         "hr": "/hr",
         "hrPayroll": "/hr/payroll",

@@ -1,0 +1,26 @@
+{
+    "Tafel": {
+        "title": "Tafel",
+        "online": "Live",
+        "offline": "Offline",
+        "openBoard": "Anschlagtafel öffnen",
+        "senderLabel": "Von",
+        "textLabel": "Notiz",
+        "textPlaceholder": "Was soll auf die Tafel?",
+        "enterHint": "Enter zum Hinzufügen, Umschalt+Enter für neue Zeile",
+        "addButton": "Hinzufügen",
+        "addError": "Notiz konnte nicht hinzugefügt werden",
+        "empty": "Noch keine Einträge",
+        "emptyHint": "Füge oben eine Notiz hinzu oder sprich sie per Telegram ein – sie erscheint auch auf der Anschlagtafel.",
+        "count": "{n} Einträge",
+        "dragHint": "Zum Sortieren ziehen",
+        "unknown": "Unbekannt",
+        "failed": "Transkription fehlgeschlagen",
+        "delete": "Löschen",
+        "cancel": "Abbrechen",
+        "confirmDeleteTitle": "Eintrag löschen?",
+        "confirmDeleteText": "Der Eintrag wird auch von der Anschlagtafel (TV) entfernt.",
+        "deleteError": "Notiz konnte nicht gelöscht werden",
+        "reorderError": "Reihenfolge konnte nicht gespeichert werden"
+    }
+}

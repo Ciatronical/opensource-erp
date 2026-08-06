@@ -34,6 +34,7 @@
             "c_d": "First registration",
             "c_hu": "Inspection (MOT)",
             "c_hu_notify": "Send inspection reminder",
+            "c_hu_notify_locked": "Inspection reminders are completely disabled for this customer. Enable them on the customer first (Billing tab, Conditions) before you can turn them back on for this vehicle.",
             "c_pb": "Passenger transport (taxi/hire car)",
             "c_fin": "Vehicle identification number (VIN)",
             "c_st": "Summer tire type",

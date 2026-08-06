@@ -314,6 +314,8 @@
             "dunning_lock": "Dunning Lock",
             "order_lock": "Shop Order Lock",
             "direct_debit": "Direct Debit",
+            "hu_notify": "Send inspection reminders",
+            "hu_notify_hint": "Applies to all of this customer's vehicles – including ones added later. When off, no inspection reminders are sent and the reminder can no longer be enabled on an individual vehicle (the customer takes precedence).",
             "payment_terms": "Payment Terms",
             "delivery_terms": "Delivery Terms",
             "depositor": "Account Holder",

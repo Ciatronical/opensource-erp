@@ -8,6 +8,33 @@ define('PRINT_BACKEND_ROOT', realpath(__DIR__ . '/../..'));
 define('PRINT_MASTER_SETS', ['RB', 'marei', 'mersiha', 'rev-odt']);
 define('PRINT_MASTER_BASE', PRINT_BACKEND_ROOT . '/templates-default');
 
+// ===== Belegarten =====
+// Eine Tabelle fuer alle drei Ableitungen, damit Vorlagendatei, Kivitendo-formname
+// und Dateiname beim Ergaenzen einer Belegart nicht auseinanderlaufen.
+//
+//   fakturaType => [Vorlagendatei, Kivitendo-formname, Dateiname-Praefix, Belegnummer-Spalte]
+//
+// Nicht enthalten: Reklamationen (reclamations), Mahnungen (dunning) und
+// Lagerbelege. Die Vorlagen dafuer liegen zwar in den Master-Sets, es gibt aber
+// noch keine Maske, die solche Belege anlegt — sie waeren nicht druckbar.
+define('PRINT_TEMPLATE_MAP', [
+    'invoice'                   => ['invoice.tex',                   'invoice',                   'Rechnung',              'invnumber'],
+    'invoice_storno'            => ['storno_invoice.tex',            'storno_invoice',            'Storno',                'invnumber'],
+    'credit_note'               => ['credit_note.tex',               'credit_note',               'Gutschrift',            'invnumber'],
+    'proforma'                  => ['proforma.tex',                  'proforma',                  'Proformarechnung',      'invnumber'],
+    'order'                     => ['sales_order.tex',               'sales_order',               'Auftrag',               'ordnumber'],
+    'sales_order_intake'        => ['sales_order.tex',               'sales_order',               'Auftragseingang',       'ordnumber'],
+    'quotation'                 => ['sales_quotation.tex',           'sales_quotation',           'Angebot',               'quonumber'],
+    'request_quotation'         => ['request_quotation.tex',         'request_quotation',         'Anfrage',               'quonumber'],
+    'purchase_quotation_intake' => ['purchase_quotation_intake.tex', 'purchase_quotation_intake', 'Lieferantenangebot',    'quonumber'],
+    'purchase_order'            => ['purchase_order.tex',            'purchase_order',            'Bestellung',            'ordnumber'],
+    'delivery_order'            => ['sales_delivery_order.tex',      'sales_delivery_order',      'Lieferschein',          'donumber'],
+    'purchase_delivery_order'   => ['supplier_delivery_order.tex',   'supplier_delivery_order',   'Lieferantenlieferschein', 'donumber'],
+]);
+
+// Belegarten, die im Lieferschein-Schema (delivery_orders) statt in oe/ar liegen
+define('PRINT_DELIVERY_TYPES', ['delivery_order', 'purchase_delivery_order']);
+
 /**
  * Liest das konfigurierte Template-Set aus der defaults Tabelle
  *
@@ -158,9 +185,12 @@ function getTemplateList($data) {
 /**
  * Erstellt ein neues Template-Set durch Kopie eines Master-Sets
  *
- * Erwartet: masterSet (string), newName (string)
  * Kopiert templates-default/{masterSet}/ nach templates/{newName}/
  * und setzt defaults.templates auf den neuen Namen.
+ *
+ * @param string $data['masterSet'] Name des Master-Sets (RB, marei, mersiha, rev-odt)
+ * @param string $data['newName'] Name des neuen Sets (nur a-z, A-Z, 0-9, _ und -)
+ * @testdata {"masterSet": "RB", "newName": "Testvorlage"}
  */
 function createTemplateSet($data) {
     $masterSet = $data['masterSet'] ?? '';
@@ -245,9 +275,16 @@ function recursiveCopy(string $src, string $dst): bool {
 /**
  * Generiert ein PDF aus einer Faktura
  *
- * Erwartet: fakturaID, fakturaType (invoice|order|quotation|delivery_order|credit_note),
- *           templateSet (optional, sonst aus defaults)
- * Gibt Raw-PDF-Binary zurueck wenn content-type: application/pdf gesetzt ist.
+ * Gibt Raw-PDF-Binary zurueck wenn content-type: application/pdf gesetzt ist,
+ * sonst Base64 im JSON-Payload.
+ *
+ * @param int $data['fakturaID'] ID des Belegs
+ * @param string $data['fakturaType'] Belegart, siehe PRINT_TEMPLATE_MAP
+ * @param string $data['templateSet'] Optional: Vorlagen-Set, sonst aus defaults.templates
+ * @param string $data['templateName'] Optional: Vorlagendatei, sonst automatisch erkannt
+ * @param int $data['printerId'] Optional: Drucker, dessen template_code als Datei-Suffix dient
+ * @param string $data['content-type'] Optional: 'application/pdf' fuer Binaerausgabe
+ * @testdata {"fakturaID": 1, "fakturaType": "invoice"}
  */
 function generatePDF($data) {
     $fakturaID = intval($data['fakturaID'] ?? 0);
@@ -473,8 +510,14 @@ function generateBatchPdf($data) {
 /**
  * Generiert PDF und sendet es an einen Drucker
  *
- * Erwartet: fakturaID, fakturaType, printerId, templateSet (optional)
- * Setzt oe_ext.gedruckt = true nach erfolgreichem Druck.
+ * Setzt oe_ext.gedruckt = true nach erfolgreichem Druck (nur Auftraege mit LxCars).
+ *
+ * @param int $data['fakturaID'] ID des Belegs
+ * @param string $data['fakturaType'] Belegart, siehe PRINT_TEMPLATE_MAP
+ * @param int $data['printerId'] ID des Druckers aus der printers-Tabelle
+ * @param string $data['templateSet'] Optional: Vorlagen-Set, sonst aus defaults.templates
+ * @param string $data['templateName'] Optional: Vorlagendatei, sonst automatisch erkannt
+ * @testdata {"fakturaID": 1, "fakturaType": "invoice", "printerId": 1}
  */
 function printToPrinter($data) {
     $fakturaID = intval($data['fakturaID'] ?? 0);
@@ -574,7 +617,11 @@ function printToPrinter($data) {
 /**
  * Speichert das aktive Template-Set in den Firmen-Defaults
  *
- * Erwartet: templateSet (string) - Name des Template-Set-Verzeichnisses
+ * Im Gegensatz zum generischen saveDefaults wird hier geprueft, ob das
+ * Verzeichnis wirklich existiert — verhindert einen toten Vorlagen-Pfad.
+ *
+ * @param string $data['templateSet'] Set-Name ('Standard') oder Kivitendo-Pfad ('templates/oserp')
+ * @testdata {"templateSet": "Standard"}
  */
 function saveTemplateSet($data) {
     $templateSet = $data['templateSet'] ?? '';
@@ -615,57 +662,49 @@ function isLxCarsEnabled($db): bool {
  */
 function detectTemplate(string $fakturaType, array $vars, bool $lxCarsEnabled = false, ?string $templateDir = null): string {
     $isStorno = !empty($vars['variables']['is_storno']);
+    $isKfz    = !empty($vars['variables']['is_kfz']);
 
-    switch ($fakturaType) {
-        case 'invoice':
-            // Storno: bevorzugt storno_invoice.tex (kivitendo-kompatibel), Fallback invoice.tex
-            if ($isStorno && $templateDir && is_file($templateDir.'/storno_invoice.tex')) {
-                return 'storno_invoice.tex';
-            }
-            return 'invoice.tex';
+    // Kandidaten in absteigender Genauigkeit. Fehlt die Spezialvorlage im Set —
+    // etwa in einer aelteren Kopie ohne storno_invoice.tex — wird die Basisvorlage
+    // derselben Belegart genommen, statt LaTeX auflaufen zu lassen.
+    $candidates = [];
 
-        case 'order':
-            // Kfz-Auftrag wenn Feature lxcars aktiv oder Fahrzeug verknuepft
-            if ($lxCarsEnabled || !empty($vars['variables']['is_kfz'])) {
-                return 'kfz_order.tex';
-            }
-            return 'sales_order.tex';
-
-        case 'quotation':
-            return 'sales_quotation.tex';
-
-        case 'delivery_order':
-            return 'sales_delivery_order.tex';
-
-        case 'credit_note':
-            return 'credit_note.tex';
-
-        case 'purchase_order':
-            return 'purchase_order.tex';
-
-        case 'purchase_delivery_order':
-            return 'supplier_delivery_order.tex';
-
-        default:
-            return 'sales_order.tex';
+    if ($fakturaType === 'invoice' && $isStorno) {
+        $candidates[] = PRINT_TEMPLATE_MAP['invoice_storno'][0];
+        $candidates[] = PRINT_TEMPLATE_MAP['invoice'][0];
     }
+    elseif (in_array($fakturaType, ['order', 'sales_order_intake'], true) && ($lxCarsEnabled || $isKfz)) {
+        // Kfz-Auftrag wenn Feature lxcars aktiv oder Fahrzeug verknuepft
+        $candidates[] = 'kfz_order.tex';
+        $candidates[] = PRINT_TEMPLATE_MAP[$fakturaType][0];
+    }
+    elseif (isset(PRINT_TEMPLATE_MAP[$fakturaType])) {
+        $candidates[] = PRINT_TEMPLATE_MAP[$fakturaType][0];
+    }
+    else {
+        debugLog('Druck: unbekannte Belegart "' . $fakturaType . '" — Fallback auf sales_order.tex', DLOG_WRN);
+        $candidates[] = 'sales_order.tex';
+    }
+
+    foreach ($candidates as $candidate) {
+        if (!$templateDir || is_file($templateDir . '/' . $candidate)) {
+            return $candidate;
+        }
+    }
+
+    // Keine der Vorlagen liegt im Set. Bewusst KEIN Ausweichen auf eine fremde
+    // Belegart — ein Lieferschein darf nicht als Auftrag aus dem Drucker kommen.
+    // Die erste Wahl zurueckgeben, damit die LaTeX-Fehlermeldung den fehlenden
+    // Dateinamen nennt.
+    debugLog('Druck: Vorlage "' . $candidates[0] . '" fehlt in ' . $templateDir, DLOG_WRN);
+    return $candidates[0];
 }
 
 /**
  * Mappt internen fakturaType auf Kivitendo formname
  */
 function mapFormname(string $fakturaType): string {
-    $map = [
-        'invoice'                   => 'invoice',
-        'invoice_storno'            => 'storno_invoice',
-        'order'                     => 'sales_order',
-        'quotation'                 => 'sales_quotation',
-        'delivery_order'            => 'sales_delivery_order',
-        'credit_note'               => 'credit_note',
-        'purchase_order'            => 'purchase_order',
-        'purchase_delivery_order'   => 'supplier_delivery_order',
-    ];
-    return $map[$fakturaType] ?? $fakturaType;
+    return PRINT_TEMPLATE_MAP[$fakturaType][1] ?? $fakturaType;
 }
 
 /**
@@ -674,58 +713,98 @@ function mapFormname(string $fakturaType): string {
  * @return array|false ['variables' => [...], 'arrays' => [...]]
  */
 function loadPrintData($db, int $fakturaID, string $fakturaType, bool $lxCarsEnabled = false) {
-    $isInvoice = ($fakturaType === 'invoice');
+    $isInvoice    = ($fakturaType === 'invoice');
     $isCreditNote = ($fakturaType === 'credit_note');
+    $isProforma   = ($fakturaType === 'proforma');
+    $isDelivery   = in_array($fakturaType, PRINT_DELIVERY_TYPES, true);
 
-    // Haupttabelle bestimmen
-    if ($isInvoice || $isCreditNote) {
-        $mainTable = 'ar';
+    // Rechnungsartige Belege liegen in ar/invoice
+    $isArDocument = ($isInvoice || $isCreditNote || $isProforma);
+
+    // Haupttabelle bestimmen. Lieferscheine haben ein eigenes Schema — sie liegen
+    // NICHT in oe/orderitems und ihre Positionen haengen an delivery_order_id
+    // statt an trans_id.
+    if ($isDelivery) {
+        $mainTable  = 'delivery_orders';
+        $itemsTable = 'delivery_order_items';
+        $itemsFk    = 'delivery_order_id';
+    }
+    elseif ($isArDocument) {
+        $mainTable  = 'ar';
         $itemsTable = 'invoice';
-    } else {
-        $mainTable = 'oe';
+        $itemsFk    = 'trans_id';
+    }
+    else {
+        $mainTable  = 'oe';
         $itemsTable = 'orderitems';
+        $itemsFk    = 'trans_id';
     }
 
-    // === Kopfdaten + Kunde + Mitarbeiter ===
+    // Belegspezifische Kopfspalten — die drei Tabellen haben nicht dieselben Felder
+    if ($isDelivery) {
+        // delivery_orders kennt weder quonumber noch amount/netamount
+        $headColumns = "m.donumber, m.ordnumber, m.transdate, m.reqdate,
+                        0 AS amount, 0 AS netamount,";
+    }
+    elseif ($isArDocument) {
+        $headColumns = "m.invnumber, m.storno, m.storno_id, m.invnumber_for_credit_note, m.type AS ar_type,
+                        m.ordnumber, m.quonumber, m.transdate, m.duedate, m.deliverydate,
+                        m.amount, m.netamount,";
+    }
+    else {
+        $headColumns = "m.ordnumber, m.quonumber, m.transdate, m.reqdate,
+                        m.amount, m.netamount,";
+    }
+
+    // === Kopfdaten + Kunde/Lieferant + Mitarbeiter + Lieferadresse ===
+    // Einkaufsbelege (Bestellung, Lieferantenlieferschein) haengen an vendor
+    // statt customer — beide joinen und per COALESCE auf dieselben
+    // Template-Variablen legen. ar kennt kein vendor_id (Einkaufsrechnungen
+    // liegen in ap), dort laeuft der Join bewusst ins Leere.
+    $vendorKey = $isArDocument ? 'NULL' : 'm.vendor_id';
     $headQuery = "
         SELECT
             m.id,
-            " . (($isInvoice || $isCreditNote) ? "m.invnumber, m.storno, m.storno_id, m.invnumber_for_credit_note, m.type AS ar_type," : "") . "
-            m.ordnumber,
-            m.quonumber,
-            m.transdate,
-            " . (($isInvoice || $isCreditNote) ? "m.duedate, m.deliverydate," : "m.reqdate,") . "
+            {$headColumns}
             m.notes,
             m.intnotes,
             m.cusordnumber,
             m.taxincluded,
-            m.amount,
-            m.netamount,
             m.taxzone_id,
             m.payment_id,
             m.cp_id,
             m.transaction_description,
-            c.id AS customer_id,
-            c.customernumber,
-            c.name AS customer_name,
-            c.department_1,
-            c.department_2,
-            c.street AS customer_street,
-            c.zipcode AS customer_zipcode,
-            c.city AS customer_city,
-            c.country AS customer_country,
-            c.ustid AS customer_ustid,
-            c.phone AS customer_phone,
-            c.fax AS customer_fax,
-            c.email AS customer_email,
-            c.greeting AS customer_greeting,
-            c.natural_person,
+            COALESCE(c.id, v.id) AS customer_id,
+            COALESCE(c.customernumber, v.vendornumber) AS customernumber,
+            COALESCE(c.name, v.name) AS customer_name,
+            COALESCE(c.department_1, v.department_1) AS department_1,
+            COALESCE(c.department_2, v.department_2) AS department_2,
+            COALESCE(c.street, v.street) AS customer_street,
+            COALESCE(c.zipcode, v.zipcode) AS customer_zipcode,
+            COALESCE(c.city, v.city) AS customer_city,
+            COALESCE(c.country, v.country) AS customer_country,
+            COALESCE(c.ustid, v.ustid) AS customer_ustid,
+            COALESCE(c.phone, v.phone) AS customer_phone,
+            COALESCE(c.fax, v.fax) AS customer_fax,
+            COALESCE(c.email, v.email) AS customer_email,
+            COALESCE(c.greeting, v.greeting) AS customer_greeting,
+            COALESCE(c.natural_person, v.natural_person) AS natural_person,
+            s.shiptoname,
+            s.shiptodepartment_1,
+            s.shiptodepartment_2,
+            s.shiptocontact,
+            s.shiptostreet,
+            s.shiptozipcode,
+            s.shiptocity,
+            s.shiptocountry,
             e.name AS employee_name,
             e.deleted_tel AS employee_tel,
             e.deleted_email AS employee_email,
             pt.description_long AS payment_terms
         FROM {$mainTable} m
         LEFT JOIN customer c ON c.id = m.customer_id
+        LEFT JOIN vendor v ON v.id = {$vendorKey}
+        LEFT JOIN shipto s ON s.shipto_id = m.shipto_id
         LEFT JOIN employee e ON e.id = m.employee_id
         LEFT JOIN payment_terms pt ON pt.id = m.payment_id
         WHERE m.id = :id
@@ -743,6 +822,8 @@ function loadPrintData($db, int $fakturaID, string $fakturaType, bool $lxCarsEna
     }
 
     // === Positionen ===
+    // Seriennummern fuehrt nur das Lieferschein-Schema
+    $serialColumn = $isDelivery ? "i.serialnumber" : "'' AS serialnumber";
     $itemsQuery = "
         SELECT
             ROW_NUMBER() OVER (ORDER BY i.position ASC) AS runningnumber,
@@ -754,46 +835,51 @@ function loadPrintData($db, int $fakturaID, string $fakturaType, bool $lxCarsEna
             i.unit,
             i.sellprice,
             i.discount,
+            {$serialColumn},
             ROUND((i.qty * i.sellprice * (1.0 - COALESCE(i.discount, 0)))::numeric, 2) AS linetotal
         FROM {$itemsTable} i
         LEFT JOIN parts p ON p.id = i.parts_id
-        WHERE i.trans_id = :id
+        WHERE i.{$itemsFk} = :id
         ORDER BY i.position ASC
     ";
     $items = $db->getAll($itemsQuery, [':id' => $fakturaID]);
 
     // === Steuer-Aufschluesselung ===
-    $taxQuery = "
-        SELECT
-            t.taxdescription,
-            t.rate,
-            ROUND((SUM(sub.linetotal * t.rate))::numeric, 2) AS tax_amount
-        FROM (
+    // Lieferscheine weisen keine Betraege aus — die Abfrage waere reine Last.
+    $taxes = [];
+    if (!$isDelivery) {
+        $taxQuery = "
             SELECT
-                i.parts_id,
-                ROUND((i.qty * i.sellprice * (1.0 - COALESCE(i.discount, 0)))::numeric, 2) AS linetotal,
-                (
-                    SELECT tk.tax_id
-                    FROM parts p2
-                    LEFT JOIN buchungsgruppen bg ON bg.id = p2.buchungsgruppen_id
-                    LEFT JOIN taxzone_charts tc ON tc.buchungsgruppen_id = bg.id
-                    LEFT JOIN chart c ON c.id = tc.income_accno_id
-                    LEFT JOIN taxkeys tk ON tk.chart_id = c.id
-                    WHERE p2.id = i.parts_id
-                        AND tc.taxzone_id = (SELECT taxzone_id FROM {$mainTable} WHERE id = :id2)
-                        AND tk.startdate <= (SELECT transdate FROM {$mainTable} WHERE id = :id3)
-                    ORDER BY tk.startdate DESC
-                    LIMIT 1
-                ) AS tax_id
-            FROM {$itemsTable} i
-            WHERE i.trans_id = :id
-        ) sub
-        LEFT JOIN tax t ON t.id = sub.tax_id
-        WHERE t.id IS NOT NULL
-        GROUP BY t.id, t.taxdescription, t.rate
-        ORDER BY t.rate ASC
-    ";
-    $taxes = $db->getAll($taxQuery, [':id' => $fakturaID, ':id2' => $fakturaID, ':id3' => $fakturaID]);
+                t.taxdescription,
+                t.rate,
+                ROUND((SUM(sub.linetotal * t.rate))::numeric, 2) AS tax_amount
+            FROM (
+                SELECT
+                    i.parts_id,
+                    ROUND((i.qty * i.sellprice * (1.0 - COALESCE(i.discount, 0)))::numeric, 2) AS linetotal,
+                    (
+                        SELECT tk.tax_id
+                        FROM parts p2
+                        LEFT JOIN buchungsgruppen bg ON bg.id = p2.buchungsgruppen_id
+                        LEFT JOIN taxzone_charts tc ON tc.buchungsgruppen_id = bg.id
+                        LEFT JOIN chart c ON c.id = tc.income_accno_id
+                        LEFT JOIN taxkeys tk ON tk.chart_id = c.id
+                        WHERE p2.id = i.parts_id
+                            AND tc.taxzone_id = (SELECT taxzone_id FROM {$mainTable} WHERE id = :id2)
+                            AND tk.startdate <= (SELECT transdate FROM {$mainTable} WHERE id = :id3)
+                        ORDER BY tk.startdate DESC
+                        LIMIT 1
+                    ) AS tax_id
+                FROM {$itemsTable} i
+                WHERE i.{$itemsFk} = :id
+            ) sub
+            LEFT JOIN tax t ON t.id = sub.tax_id
+            WHERE t.id IS NOT NULL
+            GROUP BY t.id, t.taxdescription, t.rate
+            ORDER BY t.rate ASC
+        ";
+        $taxes = $db->getAll($taxQuery, [':id' => $fakturaID, ':id2' => $fakturaID, ':id3' => $fakturaID]);
+    }
 
     // === Kfz-Daten (Auftraege und Rechnungen) ===
     $isKfz = false;
@@ -801,10 +887,11 @@ function loadPrintData($db, int $fakturaID, string $fakturaType, bool $lxCarsEna
     $instructions = [];
     $maengel = [];
 
-    // oe_ext/ar_ext existieren nur wenn LxCars-Schema installiert ist
-    if (!$isCreditNote && $lxCarsEnabled) {
+    // oe_ext/ar_ext existieren nur wenn LxCars-Schema installiert ist.
+    // Lieferscheine haben keine Erweiterungstabelle.
+    if (!$isCreditNote && !$isDelivery && $lxCarsEnabled) {
         // Fahrzeugdaten aus Erweiterungstabelle laden
-        if ($isInvoice) {
+        if ($isArDocument) {
             $extQuery = "
                 SELECT
                     ext.c_id,
@@ -856,7 +943,7 @@ function loadPrintData($db, int $fakturaID, string $fakturaType, bool $lxCarsEna
 
         // Arbeitsanweisungen und Maengel: bei lxcars oder verknuepftem Fahrzeug laden
         if ($isKfz) {
-            if (!$isInvoice) {
+            if (!$isArDocument) {
                 $instructions = $db->getAll(
                     "SELECT instruction_number, description FROM oe_instructions_lxcars
                      WHERE oe_id = :id ORDER BY sort_order ASC, id ASC",
@@ -864,7 +951,7 @@ function loadPrintData($db, int $fakturaID, string $fakturaType, bool $lxCarsEna
                 );
             }
 
-            if ($isInvoice) {
+            if ($isArDocument) {
                 $maengel = $db->getAll(
                     "SELECT defect_code, defect_description, defect_class FROM ar_defects
                      WHERE ar_id = :id ORDER BY sort_order ASC, id ASC",
@@ -924,9 +1011,11 @@ function loadPrintData($db, int $fakturaID, string $fakturaType, bool $lxCarsEna
         'invnumber'       => $head['invnumber'] ?? '',
         'ordnumber'       => $head['ordnumber'] ?? '',
         'quonumber'       => $head['quonumber'] ?? '',
+        'donumber'        => $head['donumber'] ?? '',
         'invdate'         => formatDate($head['transdate'] ?? ''),
         'orddate'         => formatDate($head['transdate'] ?? ''),
         'quodate'         => formatDate($head['transdate'] ?? ''),
+        'dodate'          => formatDate($head['transdate'] ?? ''),
         'reqdate'         => formatDate($head['reqdate'] ?? ''),
         'duedate'         => formatDate($head['duedate'] ?? ''),
         'deliverydate'    => formatDate($head['deliverydate'] ?? ''),
@@ -948,6 +1037,18 @@ function loadPrintData($db, int $fakturaID, string $fakturaType, bool $lxCarsEna
         'natural_person'  => $head['natural_person'] ?? '',
         'customer_phone'  => $head['customer_phone'] ?? '',
         'customer_fax'    => $head['customer_fax'] ?? '',
+
+        // Lieferadresse. Bewusst OHNE Fallback auf die Rechnungsadresse:
+        // die Vorlagen pruefen selbst auf leeres shiptoname und blenden den
+        // Block "abweichende Lieferadresse" dann aus.
+        'shiptoname'         => $head['shiptoname'] ?? '',
+        'shiptodepartment_1' => $head['shiptodepartment_1'] ?? '',
+        'shiptodepartment_2' => $head['shiptodepartment_2'] ?? '',
+        'shiptocontact'      => $head['shiptocontact'] ?? '',
+        'shiptostreet'       => $head['shiptostreet'] ?? '',
+        'shiptozipcode'      => $head['shiptozipcode'] ?? '',
+        'shiptocity'         => $head['shiptocity'] ?? '',
+        'shiptocountry'      => $head['shiptocountry'] ?? '',
 
         // Kontaktperson
         'cp_givenname'    => $cp['cp_givenname'] ?? '',
@@ -1039,6 +1140,7 @@ function loadPrintData($db, int $fakturaID, string $fakturaType, bool $lxCarsEna
     $arrays['number']        = array_column($items, 'partnumber');
     $arrays['description']   = array_column($items, 'description');
     $arrays['longdescription'] = array_column($items, 'longdescription');
+    $arrays['serialnumber']  = array_column($items, 'serialnumber');
     $arrays['qty']           = array_map(function($i) use ($fmt) { return $fmt($i['qty']); }, $items);
     $arrays['unit']          = array_column($items, 'unit');
     $arrays['sellprice']     = array_map(function($i) use ($fmt) { return $fmt($i['sellprice']); }, $items);
@@ -1101,27 +1203,19 @@ function formatDate(?string $date): string {
  * Baut einen sinnvollen PDF-Dateinamen
  */
 function buildFilename(array $head, string $fakturaType): string {
-    $typeNames = [
-        'invoice'       => 'Rechnung',
-        'order'         => 'Auftrag',
-        'quotation'     => 'Angebot',
-        'delivery_order' => 'Lieferschein',
-        'credit_note'   => 'Gutschrift',
-        'purchase_order' => 'Bestellung',
-    ];
     $isStorno = $fakturaType === 'invoice'
         && (($head['storno'] ?? false) === true
             || ($head['storno'] ?? false) === 't'
             || ($head['ar_type'] ?? '') === 'invoice_storno');
+
+    $mapKey = $isStorno ? 'invoice_storno' : $fakturaType;
+    $entry  = PRINT_TEMPLATE_MAP[$mapKey] ?? null;
+
     $parts = [];
-    $parts[] = $isStorno ? 'Storno' : ($typeNames[$fakturaType] ?? 'Dokument');
-    if ($fakturaType === 'invoice' || $fakturaType === 'credit_note') {
-        $parts[] = $head['invnumber'] ?? '';
-    } elseif ($fakturaType === 'quotation') {
-        $parts[] = $head['quonumber'] ?? '';
-    } else {
-        $parts[] = $head['ordnumber'] ?? '';
-    }
+    $parts[] = $entry[2] ?? 'Dokument';
+    // Belegnummer-Spalte kommt aus derselben Tabelle wie die Vorlage
+    $parts[] = $head[$entry[3] ?? 'ordnumber'] ?? '';
     $parts[] = str_replace('-', '', $head['transdate'] ?? date('Y-m-d'));
+
     return implode('_', array_filter($parts)) . '.pdf';
 }

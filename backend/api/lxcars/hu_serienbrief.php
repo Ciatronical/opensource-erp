@@ -53,6 +53,31 @@ function getHuFaelligList($data) {
         ? ''
         : 'AND (car.c_hu_notify IS NULL OR car.c_hu_notify = true)';
 
+    // Entfernung nur berechnen, wenn Geo-Tabelle UND Firmen-PLZ-Spalte vorhanden sind.
+    // Auf noch nicht aktualisierten DBs fehlt zipcode_geo_oserp (bzw. defaults.address_zipcode)
+    // — sonst wuerde die gesamte Abfrage scheitern ("Fehler beim Laden der HU-Liste").
+    $geoReady = $mandant->getOne("SELECT to_regclass('public.zipcode_geo_oserp') AS t");
+    $hasAddrCol = $mandant->getOne(
+        "SELECT 1 AS ok FROM information_schema.columns
+         WHERE table_name = 'defaults' AND column_name = 'address_zipcode' LIMIT 1"
+    );
+    if (!empty($geoReady['t']) && !empty($hasAddrCol)) {
+        $distanceSelect = "(
+                SELECT ROUND((6371 * acos(LEAST(1,
+                        cos(radians(comp.lat)) * cos(radians(g.lat)) * cos(radians(g.lon) - radians(comp.lon))
+                        + sin(radians(comp.lat)) * sin(radians(g.lat))
+                    )))::numeric, 0)
+                FROM zipcode_geo_oserp g
+                CROSS JOIN (
+                    SELECT lat, lon FROM zipcode_geo_oserp
+                    WHERE TRIM(plz) = (SELECT NULLIF(TRIM(address_zipcode), '') FROM defaults LIMIT 1)
+                ) comp
+                WHERE TRIM(g.plz) = TRIM(c.zipcode)
+            )";
+    } else {
+        $distanceSelect = 'NULL';
+    }
+
     $query = <<<SQL
         SELECT
             c.id AS customer_id,
@@ -63,6 +88,13 @@ function getHuFaelligList($data) {
             c.phone AS customer_phone,
             c.email AS customer_email,
             COALESCE(cext.hu_serienbrief_excluded, false) AS hu_excluded,
+            COALESCE((
+                SELECT SUM(ar.amount * COALESCE(ar.exchangerate, 1))
+                FROM ar
+                WHERE ar.customer_id = c.id
+                  AND ar.transdate >= CURRENT_DATE - INTERVAL '12 months'
+            ), 0) AS annual_revenue,
+            $distanceSelect AS distance_km,
             json_agg(json_build_object(
                 'c_id', car.c_id,
                 'c_ln', car.c_ln,
@@ -221,6 +253,7 @@ function _buildHuPdf($customerIds, $dateFrom = '', $dateTo = '', &$debug = []) {
             COALESCE(oe_emp.name, e.name, '') AS employee_name
         FROM cars_lxcars car
         JOIN customer c ON c.id = car.c_ow
+        LEFT JOIN customer_ext cext ON cext.customer_id = c.id
         LEFT JOIN employee e ON c.employee = e.id
         LEFT JOIN (
             SELECT
@@ -235,6 +268,7 @@ function _buildHuPdf($customerIds, $dateFrom = '', $dateTo = '', &$debug = []) {
           AND car.c_hu >= :date_from
           AND car.c_hu <= :date_to
           AND (car.c_hu_notify IS NULL OR car.c_hu_notify = true)
+          AND COALESCE(cext.hu_serienbrief_excluded, false) = false
         ORDER BY c.name, car.c_hu
     SQL;
 
@@ -543,10 +577,12 @@ function sendHuWhatsAppBulk($data) {
                 c.id AS customer_id, c.name AS customer_name, c.phone
          FROM cars_lxcars car
          JOIN customer c ON c.id = car.c_ow
+         LEFT JOIN customer_ext cext ON cext.customer_id = c.id
          WHERE car.c_hu IS NOT NULL
            AND c.id IN ($idList)
            AND c.phone IS NOT NULL AND c.phone != ''
            AND (car.c_hu_notify IS NULL OR car.c_hu_notify = true)
+           AND COALESCE(cext.hu_serienbrief_excluded, false) = false
          ORDER BY c.name, car.c_hu"
     );
 

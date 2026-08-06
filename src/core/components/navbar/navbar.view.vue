@@ -223,7 +223,10 @@
   <!-- Weroni Panel (rechtes Drawer) -->
   <WeroniPanel v-if="weroniEnabled" />
 
-  <div v-if="oserpData.customer_vendor !== false" class="text-left pa-2">
+  <!-- Ausgewaehlter Kunde/Lieferant. Auf Seiten mit meta.hideCustomerBar
+       (z. B. der gesamten Buchhaltung) ausgeblendet — dort arbeitet man
+       mandantenweit und der zuletzt gewaehlte Kunde stiftet nur Verwirrung. -->
+  <div v-if="oserpData.customer_vendor !== false && !route.meta.hideCustomerBar" class="text-left pa-2">
     <v-btn
       v-if="editRoute"
       icon
@@ -332,7 +335,7 @@
 
 <script>
 import { oserpStore } from '@/core/stores/oserp.store.js'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { computed, inject, nextTick, ref } from 'vue'
 import { useDisplay } from 'vuetify'
@@ -374,6 +377,7 @@ export default {
     const oserpData = oserpStore()
     const weroni = weroniStore()
     const router = useRouter()
+    const route = useRoute()
     const { t } = useI18n()
     const { lgAndUp } = useDisplay()
     const cvSrc = computed(() => oserpData.customer_vendor?.profile?.src || 'C')
@@ -582,6 +586,7 @@ export default {
 
     return {
       oserpData,
+      route,
       lgAndUp,
       appTitle,
       isDemo,

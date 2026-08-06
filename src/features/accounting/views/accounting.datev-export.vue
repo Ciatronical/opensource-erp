@@ -75,18 +75,28 @@
                                               type="date" density="compact" variant="outlined" />
                             </v-col>
                         </v-row>
-                        <div class="d-flex gap-2 mt-2">
+                        <div class="d-flex flex-wrap mt-2" style="gap: 8px">
                             <v-btn variant="outlined" @click="onPreview">
                                 <v-icon start>mdi-eye</v-icon>
                                 {{ t('AccountingView.datev.preview') }}
                             </v-btn>
-                            <v-btn color="primary" variant="elevated" @click="onExport"
+                            <v-btn variant="outlined" @click="onExport"
                                    :disabled="!preview || preview.count === 0">
-                                <v-icon start>mdi-download</v-icon>
+                                <v-icon start>mdi-file-delimited-outline</v-icon>
                                 {{ t('AccountingView.datev.export') }}
-                                <span v-if="preview">({{ preview.count }})</span>
+                                <span v-if="preview" class="ml-1">({{ preview.count }})</span>
+                            </v-btn>
+                            <!-- Fuer Steuerberater und Betriebspruefung: mit Belegbildern -->
+                            <v-btn color="primary" variant="elevated" :loading="packing" @click="onExportPackage"
+                                   :disabled="!preview || preview.count === 0">
+                                <v-icon start>mdi-folder-zip-outline</v-icon>
+                                {{ t('AccountingView.datev.exportPackage') }}
                             </v-btn>
                         </div>
+                        <p v-if="preview" class="text-caption text-medium-emphasis mt-2 mb-0">
+                            {{ t('AccountingView.datev.packageHint', {
+                                    withDoc: preview.with_document || 0, total: preview.count }) }}
+                        </p>
                     </v-card-text>
                 </v-card>
             </v-col>
@@ -126,9 +136,13 @@ import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
 import { useDatevExport } from '../composables/useDatevExport.js'
+import * as toasts from '@/core/utils/toasts.js'
 
 const { t } = useI18n()
-const { loading, preview, datevConfig, fetchPreview, exportCsv, fetchConfig, saveConfig } = useDatevExport()
+const { loading, preview, datevConfig, fetchPreview, exportCsv, exportPackage, fetchConfig, saveConfig } = useDatevExport()
+
+// Das Paket enthaelt alle Scans und kann dauern — Knopf so lange sperren
+const packing = ref(false)
 
 const now = new Date()
 const fromDate = ref(now.getFullYear() + '-01-01')
@@ -159,6 +173,13 @@ async function onPreview() {
 
 async function onExport() {
     await exportCsv(fromDate.value, toDate.value)
+}
+
+async function onExportPackage() {
+    packing.value = true
+    const result = await exportPackage(fromDate.value, toDate.value)
+    packing.value = false
+    if (!result.success) toasts.error(result.text || t('AccountingView.datev.exportError'))
 }
 
 async function onSaveConfig() {

@@ -87,6 +87,7 @@ export default defineComponent({
         let sseSource = null
         let pollInterval = null
         let clockInterval = null
+        let reconcileInterval = null
 
         // ── Daten laden ──
 
@@ -120,6 +121,10 @@ export default defineComponent({
             sseSource.onopen = () => {
                 sseConnected.value = true
                 stopPolling()
+                // Bei jeder (Wieder-)Verbindung mit dem DB-Stand abgleichen. Entfernt
+                // "Geister"-Eintraege, die geloescht wurden, waehrend die Tafel offline
+                // war oder ein 'removed'-Event verpasst hat.
+                loadNotes()
             }
             sseSource.addEventListener('voicenote_change', (e) => {
                 sseConnected.value = true
@@ -138,6 +143,15 @@ export default defineComponent({
                     } else if (d.action === 'cleared') {
                         // Sprachbefehl "Alle loeschen".
                         notes.value = []
+                    } else if (d.action === 'reordered') {
+                        // Reihenfolge von der PC-Tafel per Drag & Drop live uebernehmen.
+                        if (Array.isArray(d.order)) {
+                            const rank = new Map(d.order.map((id, i) => [id, i]))
+                            notes.value = [...notes.value].sort((a, b) =>
+                                (rank.has(a.id) ? rank.get(a.id) : Infinity) -
+                                (rank.has(b.id) ? rank.get(b.id) : Infinity)
+                            )
+                        }
                     } else {
                         // Neue Notiz oben einfuegen, Duplikate vermeiden.
                         if (!notes.value.some(n => n.id === d.id)) {
@@ -212,12 +226,17 @@ export default defineComponent({
             clockInterval = setInterval(tickClock, 10000)
             loadNotes()
             connectSSE()
+            // Sicherheits-Abgleich: auch bei stehender SSE-Verbindung regelmaessig mit
+            // dem DB-Stand synchronisieren, damit verpasste Loeschungen ("Geister") nicht
+            // dauerhaft auf dem Dauer-Display haengenbleiben.
+            reconcileInterval = setInterval(loadNotes, 300000)
         })
 
         onBeforeUnmount(() => {
             if (sseSource) sseSource.close()
             stopPolling()
             if (clockInterval) clearInterval(clockInterval)
+            if (reconcileInterval) clearInterval(reconcileInterval)
         })
 
         return {

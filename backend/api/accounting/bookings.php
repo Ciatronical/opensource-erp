@@ -273,7 +273,7 @@ function updateBooking($data) {
     if (!$bookingId) throw new ApiError('VALIDATION_ERROR', 'booking_id erforderlich');
 
     $booking = $db->getOne(
-        "SELECT id, status FROM accounting_bookings WHERE id = :id",
+        "SELECT id, status, vendor_id, ap_id, ar_id, gl_id FROM accounting_bookings WHERE id = :id",
         [':id' => $bookingId]
     );
     if (!$booking) throw new ApiError('DATA_NOT_FOUND', 'Buchung nicht gefunden');
@@ -281,14 +281,33 @@ function updateBooking($data) {
         throw new ApiError('VALIDATION_ERROR', 'Gebuchte Buchungen koennen nicht mehr bearbeitet werden');
     }
 
+    // Ist der Beleg bereits im Hauptbuch (ap/ar/gl), duerfen die zahlungs- und
+    // steuerrelevanten Felder NICHT mehr geaendert werden: die Aenderung wuerde
+    // nur hier landen, nicht in ap/acc_trans. Der DATEV-Export liest aus dieser
+    // Tabelle — der Steuerberater bekaeme sonst einen Betrag, den es im
+    // Hauptbuch gar nicht gibt. Korrekturen laufen ueber eine Stornobuchung.
+    $isPosted = !empty($booking['ap_id']) || !empty($booking['ar_id']) || !empty($booking['gl_id']);
+
     $fields = [];
     $params = [':id' => $bookingId];
 
-    $allowedFields = [
+    // Nach dem Verbuchen bleiben nur beschreibende Felder aenderbar.
+    $financialFields = [
         'debit_account', 'credit_account', 'amount', 'net_amount', 'tax_amount',
-        'tax_rate', 'tax_key', 'description', 'booking_date', 'invoice_date',
-        'due_date', 'invoice_number', 'vendor_id', 'customer_id', 'cost_center'
+        'tax_rate', 'tax_key', 'booking_date', 'invoice_date', 'due_date',
+        'invoice_number', 'vendor_id', 'customer_id'
     ];
+    $descriptiveFields = ['description', 'cost_center'];
+    $allowedFields = $isPosted ? $descriptiveFields : array_merge($financialFields, $descriptiveFields);
+
+    if ($isPosted) {
+        $blocked = array_values(array_intersect($financialFields, array_keys($data)));
+        if ($blocked) {
+            throw new ApiError('ALREADY_POSTED',
+                'Der Beleg ist bereits im Hauptbuch gebucht — ' . implode(', ', $blocked)
+                . ' kann nicht mehr geaendert werden. Bitte stornieren und neu buchen.');
+        }
+    }
 
     foreach ($allowedFields as $field) {
         if (array_key_exists($field, $data)) {
@@ -324,14 +343,25 @@ function _updateAccountRule($db, $booking, $data) {
     $vendorId = $data['vendor_id'] ?? $booking['vendor_id'] ?? null;
     if (!$vendorId) return;
 
+    // Ohne korrigiertes Aufwandskonto gibt es nichts zu lernen. Fruehere
+    // Ersatzwerte ('4980'/'1600') stammen aus SKR03 und haetten in diesem
+    // SKR04-Mandanten falsche Regeln erzeugt (4980 ist dort ein Ertragskonto).
+    $debit = trim($data['debit_account'] ?? '');
+    if ($debit === '') return;
+
+    // Habenkonto immer aus dem Kontenrahmen (chart.link = 'AP')
+    $apAcc  = $db->getOne("SELECT accno FROM chart WHERE link = 'AP' ORDER BY accno ASC LIMIT 1", []);
+    $credit = $apAcc['accno'] ?? ($data['credit_account'] ?? '');
+    if ($credit === '') return;
+
     $db->execute(
         "INSERT INTO accounting_account_rules (vendor_id, debit_account, credit_account, tax_key, hit_count)
          VALUES (:vid, :debit, :credit, :tkey, 1)
          ON CONFLICT ON CONSTRAINT accounting_account_rules_pkey DO NOTHING",
         [
             ':vid'    => intval($vendorId),
-            ':debit'  => $data['debit_account'] ?? '4980',
-            ':credit' => $data['credit_account'] ?? '1600',
+            ':debit'  => $debit,
+            ':credit' => $credit,
             ':tkey'   => intval($data['tax_key'] ?? 9)
         ]
     );
@@ -345,56 +375,129 @@ function _updateAccountRule($db, $booking, $data) {
 function getAccountingDashboard($data) {
     $db = DbhCompany::begin();
 
-    $stats = $db->getOne(<<<SQL
+    // Alles in EINER Abfrage. Die Kennzahlen kommen aus dem echten Hauptbuch
+    // (acc_trans/ar/ap/gl), NICHT aus accounting_bookings — dort stehen nur die
+    // KI-Buchungsvorschlaege. Wichtig: Viele Betriebe buchen Ausgaben nicht als
+    // Kreditorenrechnung (ap), sondern als Dialogbuchung (gl) direkt auf ein
+    // Aufwandskonto. Deshalb werden Einnahmen/Ausgaben aus den GuV-Konten
+    // ermittelt (Kategorie I = Erlöse, E = Aufwand) und erfassen damit ALLE
+    // Buchungsarten — nicht nur ar/ap.
+    //
+    // Vorzeichen in acc_trans (Soll negativ, Haben positiv): Erlöse (I) und
+    // Umsatzsteuer (AR_tax) stehen positiv; Aufwand (E) und Vorsteuer (AP_tax)
+    // negativ und werden negiert.
+    //
+    // Kopfzahl ist das laufende Jahr — am Monatsanfang waeren reine
+    // „diesen Monat"-Zahlen sonst durchweg null. Monat + Vormonat kommen
+    // zusaetzlich (Vormonat u. a. fuer die UStVA).
+    $row = $db->getOne(<<<SQL
+        WITH p AS (
+            SELECT DATE_TRUNC('month', CURRENT_DATE)::date                        AS cur_from,
+                   (DATE_TRUNC('month', CURRENT_DATE) + INTERVAL '1 month')::date AS cur_to,
+                   (DATE_TRUNC('month', CURRENT_DATE) - INTERVAL '1 month')::date AS prev_from,
+                   DATE_TRUNC('month', CURRENT_DATE)::date                        AS prev_to,
+                   DATE_TRUNC('year',  CURRENT_DATE)::date                        AS year_from
+        ),
+        pl AS (
+            SELECT
+                COALESCE( SUM(t.amount) FILTER (WHERE c.category = 'I' AND COALESCE(c.link,'') NOT LIKE '%tax%' AND t.transdate >= p.year_from), 0)                                       AS income_year,
+                COALESCE( SUM(t.amount) FILTER (WHERE c.category = 'I' AND COALESCE(c.link,'') NOT LIKE '%tax%' AND t.transdate >= p.cur_from  AND t.transdate < p.cur_to), 0)            AS income_cur,
+                COALESCE( SUM(t.amount) FILTER (WHERE c.category = 'I' AND COALESCE(c.link,'') NOT LIKE '%tax%' AND t.transdate >= p.prev_from AND t.transdate < p.prev_to), 0)           AS income_prev,
+                COALESCE(-SUM(t.amount) FILTER (WHERE c.category = 'E' AND COALESCE(c.link,'') NOT LIKE '%tax%' AND t.transdate >= p.year_from), 0)                                       AS expense_year,
+                COALESCE(-SUM(t.amount) FILTER (WHERE c.category = 'E' AND COALESCE(c.link,'') NOT LIKE '%tax%' AND t.transdate >= p.cur_from  AND t.transdate < p.cur_to), 0)            AS expense_cur,
+                COALESCE(-SUM(t.amount) FILTER (WHERE c.category = 'E' AND COALESCE(c.link,'') NOT LIKE '%tax%' AND t.transdate >= p.prev_from AND t.transdate < p.prev_to), 0)           AS expense_prev,
+                COALESCE(-SUM(t.amount) FILTER (WHERE c.link LIKE '%AP_tax%' AND t.transdate >= p.cur_from  AND t.transdate < p.cur_to), 0)      AS vst_cur,
+                COALESCE(-SUM(t.amount) FILTER (WHERE c.link LIKE '%AP_tax%' AND t.transdate >= p.prev_from AND t.transdate < p.prev_to), 0)     AS vst_prev,
+                COALESCE( SUM(t.amount) FILTER (WHERE c.link LIKE '%AR_tax%' AND t.transdate >= p.cur_from  AND t.transdate < p.cur_to), 0)      AS ust_cur,
+                COALESCE( SUM(t.amount) FILTER (WHERE c.link LIKE '%AR_tax%' AND t.transdate >= p.prev_from AND t.transdate < p.prev_to), 0)     AS ust_prev
+            FROM acc_trans t JOIN chart c ON c.id = t.chart_id CROSS JOIN p
+            WHERE t.transdate >= LEAST(p.year_from, p.prev_from)
+        )
         SELECT
-            COUNT(*) FILTER (WHERE status = 'pending') AS pending_count,
-            COUNT(*) FILTER (WHERE status = 'approved') AS approved_count,
-            COUNT(*) FILTER (WHERE status = 'booked') AS booked_count,
-            COALESCE(SUM(amount) FILTER (WHERE type = 'incoming' AND status != 'rejected'
-                AND booking_date >= DATE_TRUNC('month', CURRENT_DATE)), 0) AS incoming_this_month,
-            COALESCE(SUM(amount) FILTER (WHERE type = 'outgoing' AND status != 'rejected'
-                AND booking_date >= DATE_TRUNC('month', CURRENT_DATE)), 0) AS outgoing_this_month,
-            COALESCE(SUM(tax_amount) FILTER (WHERE type = 'incoming' AND status != 'rejected'
-                AND booking_date >= DATE_TRUNC('month', CURRENT_DATE)), 0) AS vst_this_month,
-            COALESCE(SUM(tax_amount) FILTER (WHERE type = 'outgoing' AND status != 'rejected'
-                AND booking_date >= DATE_TRUNC('month', CURRENT_DATE)), 0) AS ust_this_month
-        FROM accounting_bookings
-    SQL, []);
+            TO_CHAR(p.cur_from,  'MM/YYYY') AS current_period,
+            TO_CHAR(p.prev_from, 'MM/YYYY') AS previous_period,
+            TO_CHAR(p.year_from, 'YYYY')    AS current_year,
 
-    // Letzte 10 Buchungen
-    $recent = $db->getAll(<<<SQL
-        SELECT b.id, b.booking_date, b.amount, b.type, b.status, b.description,
-               b.invoice_number, b.ai_generated, b.debit_account, b.credit_account,
-               TO_CHAR(b.booking_date, 'DD.MM.YYYY') AS booking_date_fmt,
-               COALESCE(v.name, c.name) AS partner_name
-        FROM accounting_bookings b
-        LEFT JOIN vendor v ON v.id = b.vendor_id
-        LEFT JOIN customer c ON c.id = b.customer_id
-        ORDER BY b.itime DESC
-        LIMIT 10
-    SQL, []);
+            -- KI-Buchungsvorschlaege (nur bei Belegscan genutzt)
+            (SELECT COUNT(*) FROM accounting_bookings WHERE status = 'pending')  AS pending_count,
+            (SELECT COUNT(*) FROM accounting_bookings WHERE status = 'approved') AS approved_count,
+            (SELECT COUNT(*) FROM accounting_bookings WHERE status = 'booked')   AS booked_count,
 
-    // Offene Eingangsrechnungen (nicht zugeordnete Bankbewegungen)
-    $unmatchedBank = $db->getOne(
-        "SELECT COUNT(*) AS cnt FROM bank_transactions WHERE match_status = 'unmatched'",
-        []
-    );
+            -- Anzahl echter Buchungen im laufenden Jahr (Ausgangs-, Eingangs-, Dialogbuchungen)
+            ( (SELECT COUNT(*) FROM ar WHERE transdate >= p.year_from)
+            + (SELECT COUNT(*) FROM ap WHERE transdate >= p.year_from)
+            + (SELECT COUNT(*) FROM gl WHERE transdate >= p.year_from) ) AS bookings_year,
 
-    // Offene Forderungen (Debitoren) und Verbindlichkeiten (Kreditoren) aus den
-    // kivitendo-Standardtabellen — liefert auch ohne KI-Buchungen sinnvolle Zahlen
-    $openItems = $db->getOne(<<<SQL
-        SELECT
-            (SELECT COUNT(*) FROM ar WHERE amount <> COALESCE(paid, 0)) AS receivables_count,
-            (SELECT COALESCE(SUM(amount - COALESCE(paid, 0)), 0) FROM ar WHERE amount <> COALESCE(paid, 0)) AS receivables_sum,
-            (SELECT COUNT(*) FROM ap WHERE amount <> COALESCE(paid, 0)) AS payables_count,
-            (SELECT COALESCE(SUM(amount - COALESCE(paid, 0)), 0) FROM ap WHERE amount <> COALESCE(paid, 0)) AS payables_sum
+            pl.income_year,  pl.income_cur,  pl.income_prev,
+            pl.expense_year, pl.expense_cur, pl.expense_prev,
+            pl.vst_cur, pl.vst_prev, pl.ust_cur, pl.ust_prev,
+
+            -- Offene Posten
+            (SELECT COUNT(*) FROM ar WHERE (amount - COALESCE(paid, 0)) > 0.005)                                   AS receivables_count,
+            (SELECT COALESCE(SUM(amount - COALESCE(paid, 0)), 0) FROM ar WHERE (amount - COALESCE(paid, 0)) > 0.005) AS receivables_sum,
+            (SELECT COUNT(*) FROM ap WHERE (amount - COALESCE(paid, 0)) > 0.005)                                   AS payables_count,
+            (SELECT COALESCE(SUM(amount - COALESCE(paid, 0)), 0) FROM ap WHERE (amount - COALESCE(paid, 0)) > 0.005) AS payables_sum,
+
+            (SELECT COUNT(*) FROM bank_transactions WHERE match_status = 'unmatched') AS unmatched_bank,
+
+            -- Letzte 10 echte Buchungen aus dem Hauptbuch-Journal
+            (SELECT COALESCE(json_agg(x), '[]'::json) FROM (
+                SELECT j.src, j.id, j.type, j.reference, j.partner, j.description, j.amount,
+                       TO_CHAR(j.transdate, 'DD.MM.YYYY') AS transdate_fmt
+                FROM (
+                    SELECT 'ar' AS src, a.id, a.transdate, a.invnumber AS reference, c.name AS partner,
+                           COALESCE(NULLIF(a.transaction_description,''), NULLIF(a.notes,''), 'Ausgangsrechnung') AS description,
+                           a.amount, 'outgoing' AS type
+                    FROM ar a LEFT JOIN customer c ON c.id = a.customer_id
+                    UNION ALL
+                    SELECT 'ap', a.id, a.transdate, a.invnumber, v.name,
+                           COALESCE(NULLIF(a.transaction_description,''), NULLIF(a.notes,''), 'Eingangsrechnung'),
+                           a.amount, 'incoming'
+                    FROM ap a LEFT JOIN vendor v ON v.id = a.vendor_id
+                    UNION ALL
+                    SELECT 'gl', g.id, g.transdate, g.reference, NULL,
+                           COALESCE(NULLIF(g.description,''), 'Dialogbuchung'),
+                           COALESCE((SELECT SUM(t.amount) FROM acc_trans t WHERE t.trans_id = g.id AND t.amount > 0), 0), 'manual'
+                    FROM gl g
+                ) j
+                ORDER BY j.transdate DESC, j.id DESC
+                LIMIT 10
+            ) x) AS recent_bookings
+        FROM p CROSS JOIN pl
     SQL, []);
 
     resultInfo(true, '', [
-        'stats'            => $stats,
-        'recent_bookings'  => $recent ?: [],
-        'unmatched_bank'   => intval($unmatchedBank['cnt'] ?? 0),
-        'open_items'       => $openItems
+        'stats' => [
+            'current_period'      => $row['current_period'],
+            'previous_period'     => $row['previous_period'],
+            'current_year'        => $row['current_year'],
+            'pending_count'       => $row['pending_count'],
+            'approved_count'      => $row['approved_count'],
+            'booked_count'        => $row['booked_count'],
+            'bookings_year'       => intval($row['bookings_year']),
+            // Einnahmen (Erlöse) und Ausgaben (Aufwand) — laufendes Jahr, Monat, Vormonat
+            'income_year'         => $row['income_year'],
+            'income_this_month'   => $row['income_cur'],
+            'income_last_month'   => $row['income_prev'],
+            'expense_year'        => $row['expense_year'],
+            'expense_this_month'  => $row['expense_cur'],
+            'expense_last_month'  => $row['expense_prev'],
+            'vst_this_month'      => $row['vst_cur'],
+            'vst_last_month'      => $row['vst_prev'],
+            'ust_this_month'      => $row['ust_cur'],
+            'ust_last_month'      => $row['ust_prev'],
+            // Zahllast = Umsatzsteuer abzueglich Vorsteuer (negativ = Erstattung)
+            'payable_this_month'  => $row['ust_cur']  - $row['vst_cur'],
+            'payable_last_month'  => $row['ust_prev'] - $row['vst_prev'],
+        ],
+        'recent_bookings' => json_decode($row['recent_bookings'], true) ?: [],
+        'unmatched_bank'  => intval($row['unmatched_bank']),
+        'open_items'      => [
+            'receivables_count' => $row['receivables_count'],
+            'receivables_sum'   => $row['receivables_sum'],
+            'payables_count'    => $row['payables_count'],
+            'payables_sum'      => $row['payables_sum'],
+        ],
     ]);
 }
 
@@ -452,4 +555,288 @@ function searchVendors($data) {
     );
 
     resultInfo(true, '', ['vendors' => $vendors ?: []]);
+}
+
+/**
+ * Offene Forderungen (Debitoren) — nicht vollständig bezahlte Ausgangsrechnungen.
+ *
+ * Sortiert nach Fälligkeit (überfälligste zuerst) — so sieht man sofort, was
+ * angemahnt werden muss. Liefert zusätzlich eine Summenzeile.
+ *
+ * @testdata {}
+ */
+function getOpenReceivables($data) {
+    $db = DbhCompany::begin();
+
+    $rows = $db->getAll(<<<SQL
+        SELECT a.id, a.invnumber, a.customer_id AS partner_id, c.name AS partner,
+               TO_CHAR(a.transdate, 'DD.MM.YYYY') AS transdate_fmt,
+               EXTRACT(YEAR FROM a.transdate)::int AS year,
+               TO_CHAR(a.duedate,   'DD.MM.YYYY') AS duedate_fmt,
+               a.amount, COALESCE(a.paid, 0) AS paid,
+               (a.amount - COALESCE(a.paid, 0)) AS open_amount,
+               CASE WHEN a.duedate IS NOT NULL AND a.duedate < CURRENT_DATE
+                    THEN (CURRENT_DATE - a.duedate) ELSE 0 END AS days_overdue
+        FROM ar a LEFT JOIN customer c ON c.id = a.customer_id
+        WHERE (a.amount - COALESCE(a.paid, 0)) > 0.005
+        ORDER BY a.duedate ASC NULLS LAST, a.transdate ASC
+    SQL, []);
+
+    $sum = $db->getOne(<<<SQL
+        SELECT COUNT(*) AS cnt,
+               COALESCE(SUM(a.amount - COALESCE(a.paid, 0)), 0) AS total,
+               COALESCE(SUM(a.amount - COALESCE(a.paid, 0)) FILTER (
+                   WHERE a.duedate IS NOT NULL AND a.duedate < CURRENT_DATE), 0) AS overdue_total
+        FROM ar a WHERE (a.amount - COALESCE(a.paid, 0)) > 0.005
+    SQL, []);
+
+    resultInfo(true, '', ['items' => $rows ?: [], 'summary' => $sum]);
+}
+
+/**
+ * Offene Verbindlichkeiten (Kreditoren) — nicht vollständig bezahlte Eingangsrechnungen.
+ *
+ * @testdata {}
+ */
+function getOpenPayables($data) {
+    $db = DbhCompany::begin();
+
+    $rows = $db->getAll(<<<SQL
+        SELECT a.id, a.invnumber, a.vendor_id AS partner_id, v.name AS partner,
+               TO_CHAR(a.transdate, 'DD.MM.YYYY') AS transdate_fmt,
+               EXTRACT(YEAR FROM a.transdate)::int AS year,
+               TO_CHAR(a.duedate,   'DD.MM.YYYY') AS duedate_fmt,
+               a.amount, COALESCE(a.paid, 0) AS paid,
+               (a.amount - COALESCE(a.paid, 0)) AS open_amount,
+               CASE WHEN a.duedate IS NOT NULL AND a.duedate < CURRENT_DATE
+                    THEN (CURRENT_DATE - a.duedate) ELSE 0 END AS days_overdue
+        FROM ap a LEFT JOIN vendor v ON v.id = a.vendor_id
+        WHERE (a.amount - COALESCE(a.paid, 0)) > 0.005
+        ORDER BY a.duedate ASC NULLS LAST, a.transdate ASC
+    SQL, []);
+
+    $sum = $db->getOne(<<<SQL
+        SELECT COUNT(*) AS cnt,
+               COALESCE(SUM(a.amount - COALESCE(a.paid, 0)), 0) AS total,
+               COALESCE(SUM(a.amount - COALESCE(a.paid, 0)) FILTER (
+                   WHERE a.duedate IS NOT NULL AND a.duedate < CURRENT_DATE), 0) AS overdue_total
+        FROM ap a WHERE (a.amount - COALESCE(a.paid, 0)) > 0.005
+    SQL, []);
+
+    resultInfo(true, '', ['items' => $rows ?: [], 'summary' => $sum]);
+}
+
+/**
+ * Monatsverlauf Einnahmen/Ausgaben für das Dashboard-Diagramm (letzte 12 Monate).
+ *
+ * Netto aus den GuV-Konten (Kategorie I/E) ohne Steuerkonten — gleiche Logik wie
+ * das Dashboard. Leere Monate werden per generate_series aufgefüllt.
+ *
+ * @param int $data['months'] Anzahl Monate rückwärts (Default 12)
+ * @testdata {"months": 12}
+ */
+function getAccountingChart($data) {
+    $db = DbhCompany::begin();
+    $months = max(1, min(36, intval($data['months'] ?? 12)));
+
+    $rows = $db->getAll(<<<SQL
+        WITH p AS (
+            SELECT (DATE_TRUNC('month', CURRENT_DATE) - (:months - 1) * INTERVAL '1 month')::date AS start_m,
+                   DATE_TRUNC('month', CURRENT_DATE)::date AS cur_m
+        ),
+        months AS (
+            SELECT generate_series((SELECT start_m FROM p), (SELECT cur_m FROM p), INTERVAL '1 month')::date AS m
+        ),
+        pl AS (
+            SELECT DATE_TRUNC('month', t.transdate)::date AS m,
+                    SUM(t.amount) FILTER (WHERE c.category = 'I' AND COALESCE(c.link,'') NOT LIKE '%tax%') AS income,
+                   -SUM(t.amount) FILTER (WHERE c.category = 'E' AND COALESCE(c.link,'') NOT LIKE '%tax%') AS expense
+            FROM acc_trans t JOIN chart c ON c.id = t.chart_id
+            WHERE t.transdate >= (SELECT start_m FROM p)
+            GROUP BY 1
+        )
+        SELECT TO_CHAR(months.m, 'MM/YYYY')       AS label,
+               COALESCE(ROUND(pl.income,  2), 0)  AS income,
+               COALESCE(ROUND(pl.expense, 2), 0)  AS expense,
+               (months.m = (SELECT cur_m FROM p))::int AS is_current
+        FROM months LEFT JOIN pl ON pl.m = months.m
+        ORDER BY months.m
+    SQL, [':months' => $months]);
+
+    resultInfo(true, '', ['series' => $rows ?: []]);
+}
+
+/**
+ * Echtes Buchungsjournal aus dem kivitendo-Hauptbuch (ar/ap/gl).
+ *
+ * Zeigt die tatsächlich verbuchten Geschäftsvorfälle — eine Zeile je Transaktion:
+ * Ausgangsrechnungen (ar → ausgehend), Eingangsrechnungen (ap → eingehend) und
+ * Dialog-/Hauptbuchbuchungen (gl → manuell). Nicht zu verwechseln mit
+ * `accounting_bookings` (KI-Vorerfassung, siehe getAccountingBookings).
+ *
+ * @param string $data['type']      all | incoming | outgoing | manual
+ * @param string $data['from_date'] Von-Datum (YYYY-MM-DD), optional
+ * @param string $data['to_date']   Bis-Datum (YYYY-MM-DD), optional
+ * @param int    $data['limit']     max. Zeilen (Default 200)
+ * @param int    $data['offset']    Offset für Pagination
+ * @testdata {"type": "all", "limit": 50}
+ */
+function getLedgerJournal($data) {
+    $db = DbhCompany::begin();
+
+    $type   = $data['type'] ?? 'all';
+    $limit  = intval($data['limit'] ?? 200);
+    $offset = intval($data['offset'] ?? 0);
+
+    // Filter nur einmal je benanntem Platzhalter verwenden (kein Parameter-Reuse).
+    $where  = [];
+    $filter = [];
+    if (!empty($data['from_date'])) { $where[] = 'j.transdate >= :from_date'; $filter[':from_date'] = $data['from_date']; }
+    if (!empty($data['to_date']))   { $where[] = 'j.transdate <= :to_date';   $filter[':to_date']   = $data['to_date']; }
+    if ($type !== 'all')            { $where[] = 'j.type = :type';             $filter[':type']      = $type; }
+    $whereClause = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+
+    // Gemeinsame UNION über die drei kivitendo-Buchungsquellen. Vorzeichen:
+    // ar.amount/ap.amount sind Brutto (positiv); gl hat keinen Betrag → Summe
+    // der Haben-Zeilen (amount > 0) aus acc_trans.
+    $union = <<<SQL
+        SELECT 'ar' AS src, a.id, a.transdate,
+               a.invnumber AS reference,
+               c.name AS partner,
+               COALESCE(NULLIF(a.transaction_description, ''), NULLIF(a.notes, ''), 'Ausgangsrechnung') AS description,
+               a.amount, a.netamount AS net_amount, (a.amount - a.netamount) AS tax_amount,
+               a.paid, (a.amount - COALESCE(a.paid, 0)) AS open_amount, a.duedate,
+               'outgoing' AS type
+        FROM ar a LEFT JOIN customer c ON c.id = a.customer_id
+        UNION ALL
+        SELECT 'ap' AS src, a.id, a.transdate,
+               a.invnumber AS reference,
+               v.name AS partner,
+               COALESCE(NULLIF(a.transaction_description, ''), NULLIF(a.notes, ''), 'Eingangsrechnung') AS description,
+               a.amount, a.netamount AS net_amount, (a.amount - a.netamount) AS tax_amount,
+               a.paid, (a.amount - COALESCE(a.paid, 0)) AS open_amount, a.duedate,
+               'incoming' AS type
+        FROM ap a LEFT JOIN vendor v ON v.id = a.vendor_id
+        UNION ALL
+        SELECT 'gl' AS src, g.id, g.transdate,
+               g.reference AS reference,
+               NULL AS partner,
+               COALESCE(NULLIF(g.description, ''), 'Dialogbuchung') AS description,
+               COALESCE((SELECT SUM(t.amount) FROM acc_trans t WHERE t.trans_id = g.id AND t.amount > 0), 0) AS amount,
+               NULL::numeric AS net_amount, NULL::numeric AS tax_amount,
+               NULL::numeric AS paid, NULL::numeric AS open_amount, NULL::date AS duedate,
+               'manual' AS type
+        FROM gl g
+    SQL;
+
+    $rows = $db->getAll(<<<SQL
+        SELECT j.src, j.id, j.type, j.reference, j.partner, j.description,
+               j.amount, j.net_amount, j.tax_amount, j.paid, j.open_amount,
+               TO_CHAR(j.transdate, 'DD.MM.YYYY') AS transdate_fmt,
+               TO_CHAR(j.duedate,   'DD.MM.YYYY') AS duedate_fmt,
+               j.transdate
+        FROM ({$union}) j
+        {$whereClause}
+        ORDER BY j.transdate DESC, j.id DESC
+        LIMIT :limit OFFSET :offset
+    SQL, array_merge($filter, [':limit' => $limit, ':offset' => $offset]));
+
+    $stats = $db->getOne(<<<SQL
+        SELECT COUNT(*) AS total,
+               COUNT(*) FILTER (WHERE j.type = 'incoming') AS count_incoming,
+               COUNT(*) FILTER (WHERE j.type = 'outgoing') AS count_outgoing,
+               COUNT(*) FILTER (WHERE j.type = 'manual')   AS count_manual,
+               COALESCE(SUM(j.amount) FILTER (WHERE j.type = 'incoming'), 0) AS sum_incoming,
+               COALESCE(SUM(j.amount) FILTER (WHERE j.type = 'outgoing'), 0) AS sum_outgoing
+        FROM ({$union}) j
+        {$whereClause}
+    SQL, $filter);
+
+    resultInfo(true, '', [
+        'journal' => $rows ?: [],
+        'total'   => intval($stats['total'] ?? 0),
+        'stats'   => $stats,
+    ]);
+}
+
+/**
+ * Einzelne Hauptbuch-Transaktion mit allen Soll-/Haben-Zeilen (acc_trans).
+ *
+ * @param int    $data['id']  trans_id der Buchung
+ * @param string $data['src'] ar | ap | gl (bestimmt die Kopfdaten)
+ * @testdata {"id": 7019, "src": "gl"}
+ */
+function getLedgerEntry($data) {
+    $db  = DbhCompany::begin();
+    $id  = intval($data['id'] ?? 0);
+    $src = $data['src'] ?? 'gl';
+
+    // Kopfdaten je nach Quelle
+    if ($src === 'ar') {
+        $head = $db->getOne(
+            "SELECT a.invnumber AS reference, c.name AS partner,
+                    COALESCE(NULLIF(a.transaction_description,''), NULLIF(a.notes,''), 'Ausgangsrechnung') AS description,
+                    TO_CHAR(a.transdate,'DD.MM.YYYY') AS transdate_fmt, a.amount
+             FROM ar a LEFT JOIN customer c ON c.id = a.customer_id WHERE a.id = :id",
+            [':id' => $id]
+        );
+    } elseif ($src === 'ap') {
+        $head = $db->getOne(
+            "SELECT a.invnumber AS reference, v.name AS partner,
+                    COALESCE(NULLIF(a.transaction_description,''), NULLIF(a.notes,''), 'Eingangsrechnung') AS description,
+                    TO_CHAR(a.transdate,'DD.MM.YYYY') AS transdate_fmt, a.amount
+             FROM ap a LEFT JOIN vendor v ON v.id = a.vendor_id WHERE a.id = :id",
+            [':id' => $id]
+        );
+    } else {
+        $head = $db->getOne(
+            "SELECT g.reference, NULL AS partner,
+                    COALESCE(NULLIF(g.description,''), 'Dialogbuchung') AS description,
+                    TO_CHAR(g.transdate,'DD.MM.YYYY') AS transdate_fmt,
+                    COALESCE((SELECT SUM(t.amount) FROM acc_trans t WHERE t.trans_id = g.id AND t.amount > 0), 0) AS amount
+             FROM gl g WHERE g.id = :id",
+            [':id' => $id]
+        );
+    }
+
+    // Soll = negatives Vorzeichen, Haben = positives (kivitendo-Konvention).
+    // Die eigentliche Steuerzeile erkennt man am Konto-Link (AR_tax/AP_tax) —
+    // NICHT an t.tax_id, das in kivitendo auf JEDER Zeile einer besteuerten
+    // Buchung gesetzt ist.
+    $lines = $db->getAll(
+        "SELECT t.acc_trans_id, c.accno, c.description AS account_name,
+                CASE WHEN t.amount < 0 THEN -t.amount ELSE 0 END AS soll,
+                CASE WHEN t.amount > 0 THEN  t.amount ELSE 0 END AS haben,
+                t.taxkey, COALESCE(c.link,'') LIKE '%tax%' AS is_tax, t.source, t.memo
+         FROM acc_trans t JOIN chart c ON c.id = t.chart_id
+         WHERE t.trans_id = :id
+         ORDER BY t.acc_trans_id",
+        [':id' => $id]
+    );
+
+    // Gescannter Beleg zu dieser Buchung. Ohne diese Verknuepfung waere das
+    // Bild nur ueber die KI-Vorschlagsliste erreichbar — im Hauptbuch-Journal,
+    // also dort wo taeglich gearbeitet und bei einer Pruefung nachgesehen wird,
+    // haette man nur Zahlen ohne Beleg.
+    $document = null;
+    if ($src === 'ap' || $src === 'ar') {
+        $spalte = $src === 'ap' ? 'ap_id' : 'ar_id';
+        $hatSpalte = $db->getOne(
+            "SELECT 1 FROM information_schema.columns
+             WHERE table_name = 'accounting_documents' AND column_name = :c LIMIT 1",
+            [':c' => $spalte]
+        );
+        if ($hatSpalte) {
+            $document = $db->getOne(
+                "SELECT id, original_name, mime_type, file_size, file_hash,
+                        TO_CHAR(itime, 'DD.MM.YYYY HH24:MI') AS uploaded_fmt
+                 FROM accounting_documents
+                 WHERE {$spalte} = :id
+                 ORDER BY id DESC LIMIT 1",
+                [':id' => $id]
+            ) ?: null;
+        }
+    }
+
+    resultInfo(true, '', ['head' => $head, 'lines' => $lines ?: [], 'document' => $document]);
 }

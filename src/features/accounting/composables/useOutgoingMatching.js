@@ -24,7 +24,8 @@ export function useOutgoingMatching() {
                 matchStats.value = {
                     matchCount: response.data.payload.match_count,
                     totalTransactions: response.data.payload.total_transactions,
-                    totalOpenInvoices: response.data.payload.total_open_invoices
+                    totalOpenInvoices: response.data.payload.total_open_invoices,
+                    alreadySettled: response.data.payload.already_settled
                 }
             } else {
                 error.value = response.data.text

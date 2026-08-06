@@ -287,15 +287,28 @@
                         variant="outlined"
                         density="compact"
                         class="mt-2"
+                        :loading="activatingTemplateSet"
+                        :hint="$t('templateSetAppliesImmediately')"
+                        persistent-hint
                         :no-data-text="$t('noTemplateSetsFound')"
-                    />
+                        @update:model-value="onSelectTemplateSet"
+                    >
+                        <!-- Herkunft direkt am Eintrag zeigen, damit Kopien
+                             desselben Vorlagensatzes unterscheidbar bleiben -->
+                        <template #item="{ props: itemProps, item }">
+                            <v-list-item
+                                v-bind="itemProps"
+                                :subtitle="item.raw.basedOn ? $t('basedOnMaster', { master: item.raw.basedOn }) : ''"
+                            />
+                        </template>
+                    </v-select>
 
                     <v-radio
                         value="new"
                         :label="$t('createNewFromMaster')"
                         class="mt-4"
                     />
-                    <v-row v-if="useTemplates === 'new'" class="mt-2" align="center">
+                    <v-row v-if="useTemplates === 'new'" class="mt-2" align="start">
                         <v-col cols="12" md="4">
                             <v-select
                                 v-model="newMasterTemplate"
@@ -313,6 +326,8 @@
                                 :placeholder="$t('newName')"
                                 variant="outlined"
                                 density="compact"
+                                :error-messages="newTemplateSetNameError"
+                                @keyup.enter="onCreateTemplateSet"
                             />
                         </v-col>
                         <v-col cols="12" md="4">
@@ -320,7 +335,7 @@
                                 color="primary"
                                 variant="elevated"
                                 :loading="creatingTemplateSet"
-                                :disabled="!newMasterTemplate || !newTemplateSetName"
+                                :disabled="!canCreateTemplateSet"
                                 @click="onCreateTemplateSet"
                             >
                                 {{ $t('createCopy') }}
@@ -469,7 +484,7 @@ const store = oserpStore();
 const faktura = fakturaStore();
 
 // Props: Erhält das defaults-Objekt vom Parent
-defineProps({
+const props = defineProps({
     defaults: {
         type: Object,
         required: true
@@ -481,6 +496,7 @@ const useTemplates = ref('existing');
 const newMasterTemplate = ref('');
 const newTemplateSetName = ref('');
 const creatingTemplateSet = ref(false);
+const activatingTemplateSet = ref(false);
 
 // === Drucker ===
 const printers = ref([]);
@@ -514,21 +530,67 @@ async function loadTemplateSets() {
             newMasterTemplate.value = masterTemplateSets.value[0].name;
         }
     } catch (e) {
+        toasts.error(t('templateSetsLoadFailed'));
         console.error('Fehler beim Laden der Template-Sets:', e);
     }
 }
 
+/**
+ * Validierung des Namens für ein neues Set — dieselben Zeichen, die das
+ * Backend durchlässt, damit der Name nicht stillschweigend beschnitten wird.
+ */
+const newTemplateSetNameError = computed(() => {
+    const name = newTemplateSetName.value.trim();
+    if (!name) return '';
+    if (!/^[a-zA-Z0-9_-]+$/.test(name)) return t('templateSetNameInvalid');
+    const taken = availableTemplateSets.value.some(s => s.label.toLowerCase() === name.toLowerCase());
+    if (taken) return t('templateSetNameExists');
+    return '';
+});
+
+const canCreateTemplateSet = computed(() =>
+    !!newMasterTemplate.value && !!newTemplateSetName.value.trim() && !newTemplateSetNameError.value
+);
+
+/**
+ * Vorlagen-Set aktivieren. Läuft sofort gegen das Backend statt erst beim
+ * globalen Speichern: createTemplateSet setzt das Set serverseitig ebenfalls
+ * sofort, und saveTemplateSet prüft zusätzlich, ob das Verzeichnis existiert —
+ * ein toter Vorlagen-Pfad in defaults.templates bricht sonst jeden Druck.
+ */
+async function onSelectTemplateSet(templateSet) {
+    if (!templateSet) return;
+    activatingTemplateSet.value = true;
+    try {
+        await faktura.saveTemplateSet(templateSet);
+        toasts.success(t('templateSetActivated'));
+    } catch (e) {
+        toasts.error(t('templateSetActivateFailed'));
+        console.error('Fehler beim Aktivieren des Template-Sets:', e);
+        // Auswahl zurückdrehen, damit die Anzeige nicht lügt
+        await loadTemplateSets();
+    } finally {
+        activatingTemplateSet.value = false;
+    }
+}
+
 async function onCreateTemplateSet() {
-    if (!newMasterTemplate.value || !newTemplateSetName.value) return;
+    if (!canCreateTemplateSet.value) return;
     creatingTemplateSet.value = true;
     try {
-        await faktura.createTemplateSet(newMasterTemplate.value, newTemplateSetName.value);
-        // Liste neu laden
+        const created = await faktura.createTemplateSet(newMasterTemplate.value, newTemplateSetName.value.trim());
         await loadTemplateSets();
-        // Auf "Vorhandene" wechseln
+        // Das Backend hat das neue Set bereits aktiviert — die Auswahl im
+        // Formular nachziehen, sonst überschreibt das globale Speichern
+        // defaults.templates wieder mit dem alten Set.
+        if (created?.name) {
+            props.defaults.templates = created.name;
+        }
         useTemplates.value = 'existing';
         newTemplateSetName.value = '';
+        toasts.success(t('templateSetCreated'));
     } catch (e) {
+        toasts.error(e?.text || t('templateSetCreateFailed'));
         console.error('Fehler beim Erstellen des Template-Sets:', e);
     } finally {
         creatingTemplateSet.value = false;

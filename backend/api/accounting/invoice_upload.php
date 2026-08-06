@@ -99,17 +99,30 @@ function uploadInvoiceDocument($data) {
         throw new ApiError('MISSING_API_KEYS', 'Anthropic API-Key nicht konfiguriert');
     }
 
-    $aiModel = $config['accounting_ai_model'] ?? 'claude-sonnet-4-6-20250514';
+    // Model-IDs tragen KEIN Datums-Suffix — ein solches Suffix liefert HTTP 404.
+    $aiModel = trim($config['accounting_ai_model'] ?? '');
+    if ($aiModel === '') $aiModel = 'claude-opus-4-8';
 
-    // Kontenrahmen laden (fuer KI-Kontext)
+    // Kontenrahmen laden (fuer KI-Kontext).
+    // Bebuchbare Aufwands- und Aktivkonten — KEIN LIMIT: mit "ORDER BY accno
+    // LIMIT 200" endete die Liste bei Kontonummer 1350, sodass in SKR04
+    // ueberhaupt kein Aufwandskonto (6xxx) zur Auswahl stand und die KI
+    // gezwungenermassen ein falsches Konto vorschlug.
     $accounts = $db->getAll(
-        "SELECT accno, description, link, category FROM chart WHERE NOT invalid ORDER BY accno LIMIT 200",
+        "SELECT accno, description, category FROM chart
+         WHERE NOT invalid AND charttype = 'A' AND category IN ('E', 'A')
+         ORDER BY accno",
         []
     );
     $accountList = [];
     foreach ($accounts as $a) {
-        $accountList[] = $a['accno'] . ' ' . $a['description'] . ($a['link'] ? ' [' . $a['link'] . ']' : '');
+        $accountList[] = $a['accno'] . ' ' . $a['description']
+            . ($a['category'] === 'E' ? ' [Aufwand]' : ' [Aktiv]');
     }
+
+    // Name des Kontenrahmens — die Kontonummern unterscheiden sich je nach SKR
+    $coa = $db->getOne("SELECT coa FROM defaults LIMIT 1", []);
+    $coaName = $coa['coa'] ?? 'unbekannt';
 
     // Steuersaetze laden
     $taxes = $db->getAll(
@@ -123,14 +136,24 @@ function uploadInvoiceDocument($data) {
         $taxList[] = "Steuerschluessel {$t['taxkey']}: {$t['taxdescription']} ({$t['rate']}%) → Konto {$t['tax_account']}";
     }
 
-    // Bekannte Lieferanten fuer Kontext (letzte 50 mit Kontenzuordnung)
+    // Bekannte Lieferanten fuer Kontext: nur solche, die schon einmal bebucht
+    // wurden — mit ihrem zuletzt verwendeten Aufwandskonto. Zuvor lieferte
+    // "ORDER BY v.id LIMIT 50" die 50 aeltesten Kreditoren, meist ohne jede
+    // Kontenzuordnung und damit ohne Nutzen fuer den Vorschlag.
     $knownVendors = $db->getAll(
-        "SELECT DISTINCT ON (v.id) v.id, v.name, v.iban, v.taxnumber, v.ustid,
-                ar.debit_account AS last_debit, ar.credit_account AS last_credit
+        "SELECT v.name, v.iban, l.accno AS last_account, l.transdate
          FROM vendor v
-         LEFT JOIN accounting_bookings ar ON ar.vendor_id = v.id AND ar.type = 'incoming'
+         JOIN LATERAL (
+             SELECT c.accno, a.transdate
+             FROM ap a
+             JOIN acc_trans t ON t.trans_id = a.id
+             JOIN chart c ON c.id = t.chart_id
+             WHERE a.vendor_id = v.id AND c.link LIKE '%AP_amount%'
+             ORDER BY a.transdate DESC, t.acc_trans_id
+             LIMIT 1
+         ) l ON TRUE
          WHERE v.obsolete IS NOT TRUE
-         ORDER BY v.id, ar.itime DESC NULLS LAST
+         ORDER BY l.transdate DESC
          LIMIT 50",
         []
     );
@@ -138,23 +161,21 @@ function uploadInvoiceDocument($data) {
     foreach ($knownVendors as $kv) {
         $line = $kv['name'];
         if ($kv['iban']) $line .= ' (IBAN: ' . $kv['iban'] . ')';
-        if ($kv['last_debit']) $line .= ' → Konto ' . $kv['last_debit'] . '/' . $kv['last_credit'];
+        $line .= ' → zuletzt Konto ' . $kv['last_account'];
         $vendorContext[] = $line;
     }
+    if (empty($vendorContext)) $vendorContext[] = '(noch keine bebuchten Lieferanten)';
 
     // Claude API aufrufen
     $extractionPrompt = <<<PROMPT
 Du bist Weroni, eine KI-Buchhalterin. Analysiere diese Eingangsrechnung und extrahiere alle relevanten Daten.
 Antworte AUSSCHLIESSLICH mit einem validen JSON-Objekt (kein Markdown, kein Text drumherum).
 
-KONTENRAHMEN (verfuegbare Sachkonten):
+KONTENRAHMEN %COA% (bebuchbare Sachkonten):
 %ACCOUNTS%
 
 STEUERSCHLUESSEL:
 %TAXES%
-
-BEKANNTE LIEFERANTEN:
-%VENDORS%
 
 Extrahiere folgende Felder und gib sie als JSON zurueck:
 
@@ -197,7 +218,6 @@ Extrahiere folgende Felder und gib sie als JSON zurueck:
   ],
   "booking_suggestion": {
     "debit_account": "Sachkonto-Nummer (Aufwandskonto)",
-    "credit_account": "Kreditorenkonto oder 1600",
     "tax_key": 9,
     "description": "Kurzer Buchungstext"
   },
@@ -209,16 +229,30 @@ REGELN:
 - Betraege immer als Zahlen (nicht als Strings)
 - Datumsformat immer YYYY-MM-DD
 - Steuersatz als Zahl (19, 7, 0)
-- Fuer das Sollkonto: waehle das passende Aufwandskonto aus dem Kontenrahmen (z.B. 4980 fuer Reparaturen, 6300 fuer Bueromat., 4530 fuer Kfz-Kosten)
-- Fuer das Habenkonto: 1600 (Verbindlichkeiten aus Lieferungen) ist Standard
+- Sollkonto: waehle die Kontonummer AUS DER OBIGEN LISTE. Erfinde keine Nummer
+  und verwende keine Nummer aus einem anderen Kontenrahmen — dieser Mandant
+  bucht nach %COA%.
+- Das Habenkonto wird vom System aus dem Kontenrahmen gesetzt und ist nicht Teil
+  deiner Antwort.
 - Steuerschluessel: 9 fuer 19% VSt, 8 fuer 7% VSt, 0 fuer steuerfrei
-- Wenn ein bekannter Lieferant erkannt wird, verwende dessen bisherige Kontenzuordnung
-- confidence: 0.0-1.0, wie sicher du dir bei der Extraktion bist
+- Wenn ein bekannter Lieferant erkannt wird, verwende dessen bisheriges Konto
+- confidence: 0.0-1.0, wie sicher du dir bei der Extraktion bist. Setze sie unter
+  0.85, wenn du beim Sollkonto unsicher bist — dann wird der Beleg zur Freigabe
+  vorgelegt statt automatisch gebucht.
 PROMPT;
 
-    $extractionPrompt = str_replace('%ACCOUNTS%', implode("\n", $accountList), $extractionPrompt);
-    $extractionPrompt = str_replace('%TAXES%', implode("\n", $taxList), $extractionPrompt);
-    $extractionPrompt = str_replace('%VENDORS%', implode("\n", $vendorContext), $extractionPrompt);
+    $extractionPrompt = str_replace(
+        ['%COA%', '%ACCOUNTS%', '%TAXES%'],
+        [$coaName, implode("\n", $accountList), implode("\n", $taxList)],
+        $extractionPrompt
+    );
+
+    // Die Lieferantenliste aendert sich pro Beleg und steht deshalb NICHT im
+    // System-Prompt — sonst waere der zwischengespeicherte Praefix bei jedem
+    // Upload ungueltig.
+    $vendorPrompt = "BEKANNTE LIEFERANTEN (mit zuletzt verwendetem Konto):\n"
+        . implode("\n", $vendorContext)
+        . "\n\nAnalysiere die beigefuegte Eingangsrechnung.";
 
     // PDF als Document-Block senden
     if (str_starts_with($mimeType, 'application/pdf')) {
@@ -233,12 +267,23 @@ PROMPT;
         ];
     }
 
+    // max_tokens deckt Denk- UND Antwort-Tokens ab — knapp bemessen bricht die
+    // Antwort mitten im JSON ab. effort 'medium' reicht fuer die Extraktion.
+    // Kontenrahmen + Regeln stehen im System-Prompt und werden zwischengespeichert
+    // (cache_control) — er ist bei jedem Beleg identisch, sodass nur der erste
+    // Upload den vollen Preis fuer die ~1000 Konten zahlt.
     $requestBody = json_encode([
         'model' => $aiModel,
-        'max_tokens' => 4096,
+        'max_tokens' => 16000,
+        'output_config' => ['effort' => 'medium'],
+        'system' => [[
+            'type' => 'text',
+            'text' => $extractionPrompt,
+            'cache_control' => ['type' => 'ephemeral'],
+        ]],
         'messages' => [[
             'role' => 'user',
-            'content' => [$contentBlock, ['type' => 'text', 'text' => $extractionPrompt]]
+            'content' => [$contentBlock, ['type' => 'text', 'text' => $vendorPrompt]]
         ]]
     ], JSON_UNESCAPED_UNICODE);
 
@@ -261,11 +306,21 @@ PROMPT;
 
     if ($httpCode !== 200) {
         $db->execute("UPDATE accounting_documents SET status = 'error' WHERE id = :id", [':id' => $docId]);
-        throw new ApiError('CLAUDE_API_ERROR', 'KI-Analyse fehlgeschlagen (HTTP ' . $httpCode . ')');
+        // Fehlertext der API mitgeben — sonst ist z. B. eine falsche Model-ID
+        // (HTTP 404) im Frontend nicht von einem Netzwerkfehler zu unterscheiden.
+        $apiError = json_decode((string)$response, true)['error']['message'] ?? '';
+        throw new ApiError('CLAUDE_API_ERROR',
+            'KI-Analyse fehlgeschlagen (HTTP ' . $httpCode . ')' . ($apiError !== '' ? ': ' . $apiError : ''));
     }
 
     $responseData = json_decode($response, true);
-    $aiText = $responseData['content'][0]['text'] ?? '';
+
+    // Die Antwort kann mit einem Thinking-Block beginnen — den ersten
+    // Text-Block suchen statt blind content[0] zu lesen.
+    $aiText = '';
+    foreach ($responseData['content'] ?? [] as $block) {
+        if (($block['type'] ?? '') === 'text') { $aiText = $block['text'] ?? ''; break; }
+    }
 
     // JSON aus Antwort extrahieren (falls in Markdown-Block)
     if (preg_match('/```(?:json)?\s*(\{[\s\S]*?\})\s*```/', $aiText, $matches)) {
@@ -346,6 +401,17 @@ PROMPT;
     // Buchungsnummer generieren
     $bookingRef = $db->getOne("SELECT next_booking_number() AS ref", []);
 
+    // Habenkonto kommt aus dem Kontenrahmen (chart.link = 'AP'), nicht aus der
+    // KI — sonst steht in der Liste ein anderes Konto (z. B. SKR03 1600) als
+    // tatsaechlich gebucht wird (SKR04 3300).
+    $apAccount   = _iv_apAccount($db);
+    $creditAccno = $apAccount['accno'] ?? ($booking['credit_account'] ?? '');
+
+    // Kein Ersatz-Aufwandskonto erfinden: ein hartkodiertes Konto waere im
+    // falschen Kontenrahmen ggf. ein Ertragskonto. Fehlt der Vorschlag, bleibt
+    // das Feld leer und die Buchung muss vor der Freigabe ergaenzt werden.
+    $debitAccno = trim($booking['debit_account'] ?? '');
+
     // Buchung anlegen (Status: pending = wartet auf Freigabe)
     $db->execute(
         "INSERT INTO accounting_bookings
@@ -365,8 +431,8 @@ PROMPT;
             ':tax'    => floatval($amounts['tax'] ?? 0),
             ':trate'  => floatval($amounts['tax_rate'] ?? 19),
             ':tkey'   => intval($booking['tax_key'] ?? 9),
-            ':debit'  => $booking['debit_account'] ?? '4980',
-            ':credit' => $booking['credit_account'] ?? '1600',
+            ':debit'  => $debitAccno,
+            ':credit' => $creditAccno,
             ':invnr'  => $invoice['number'] ?? null,
             ':desc'   => $booking['description'] ?? $vendorData['name'] ?? 'Eingangsrechnung',
             ':ref'    => $bookingRef['ref'],
@@ -403,7 +469,14 @@ PROMPT;
     // Sonst bleibt die Buchung 'pending' zur Freigabe.
     $autoBooked = false;
     $autoApId   = null;
-    $debitChart = $db->getOne("SELECT id FROM chart WHERE accno = :a", [':a' => ($booking['debit_account'] ?? '')]);
+    // Nur auf ein bebuchbares Aufwands-/Aktivkonto automatisch buchen. Ohne
+    // diese Pruefung landet ein Vorschlag, der zufaellig auf ein Ertrags- oder
+    // Ueberschriftskonto zeigt, unbemerkt im Hauptbuch.
+    $debitChart = $db->getOne(
+        "SELECT id FROM chart
+         WHERE accno = :a AND NOT invalid AND charttype = 'A' AND category IN ('E', 'A')",
+        [':a' => $debitAccno]
+    );
     $canAutoBook = floatval($confidence) >= 0.85
         && $vendorId > 0
         && $vres['status'] !== 'ambiguous'

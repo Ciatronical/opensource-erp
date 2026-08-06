@@ -435,6 +435,29 @@ export const fakturaStore = defineStore('fakturaStore', () => {
     }
 
     /**
+     * Setzt das aktive Druckvorlagen-Set in den Firmen-Defaults
+     *
+     * Das Backend prueft dabei, ob das Verzeichnis wirklich existiert — anders
+     * als beim generischen saveDefaults.
+     *
+     * @param {string} templateSet - Set-Name ('Standard') oder Pfad ('templates/oserp')
+     * @return {Promise<Object>} {templateSet}
+     */
+    async function saveTemplateSet(templateSet) {
+        const response = await axios.post('/api/print/', {
+            action: 'saveTemplateSet',
+            templateSet: templateSet
+        });
+
+        if (response.data.success) {
+            return response.data.payload;
+        }
+        else {
+            throw new ApiError('ApiError', response.data.text, 'Error saving template set: ' + response.data.text);
+        }
+    }
+
+    /**
      * Generiert eine PDF-Vorschau und gibt eine Blob-URL zurueck
      *
      * @param {number} fakturaID - ID des Dokuments
@@ -600,6 +623,7 @@ export const fakturaStore = defineStore('fakturaStore', () => {
         createPart,
         getTemplateList,
         createTemplateSet,
+        saveTemplateSet,
         generatePDFPreview,
         generatePDFBase64,
         printToPrinter,

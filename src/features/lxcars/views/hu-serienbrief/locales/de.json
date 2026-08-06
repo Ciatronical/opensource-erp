@@ -15,13 +15,26 @@
             "date_to": "HU fällig bis"
         },
         "buttons": {
-            "print_all": "Ausgewählte drucken",
+            "print_all": "Briefe drucken",
             "email_all": "E-Mail senden",
             "reload": "Aktualisieren",
             "exclude": "Abwählen",
             "include": "Wieder aufnehmen",
             "send_pin": "Mit PIN versenden",
             "whatsapp_all": "WhatsApp senden"
+        },
+        "actionbar": {
+            "recipients": "{count} Empfänger aktiv:"
+        },
+        "hint": {
+            "bells": "Glocke = HU-Benachrichtigung. Aus (grau) heißt: wird nicht benachrichtigt – sofort im Fahrzeug bzw. beim Kunden gespeichert. Die Kunden-Glocke schaltet alle Fahrzeuge des Kunden ab (auch künftige)."
+        },
+        "sort": {
+            "label": "Sortieren nach:",
+            "best": "Beste zuerst",
+            "revenue": "Umsatz",
+            "distance": "Entfernung",
+            "toggle_hint": "Nochmal klicken kehrt die Reihenfolge um"
         },
         "checkboxes": {
             "show_excluded": "Auch abgewählte anzeigen"
@@ -59,10 +72,16 @@
         },
         "tooltips": {
             "whatsapp_single": "HU-Erinnerung per WhatsApp senden",
-            "exclude": "Kunde von HU-Benachrichtigungen ausschließen",
+            "print_single": "Nur diesen Kunden drucken",
+            "revenue": "Umsatz der letzten 12 Monate",
+            "distance": "Luftlinie von Ihrem Firmenstandort",
+            "open_customer": "Zum Kunden",
+            "open_vehicle": "Zum Fahrzeug",
+            "exclude": "Alle Fahrzeuge dieses Kunden abwählen",
             "include": "Kunde wieder in HU-Benachrichtigungen aufnehmen",
             "car_exclude": "Dieses Fahrzeug von HU-Benachrichtigungen abwählen",
-            "car_include": "Dieses Fahrzeug wieder benachrichtigen"
+            "car_include": "Dieses Fahrzeug wieder benachrichtigen",
+            "car_locked": "HU-Benachrichtigungen sind für diesen Kunden komplett deaktiviert (Kunde hat Vorrang). Erst beim Kunden aktivieren, um einzelne Fahrzeuge wieder einschalten zu können."
         },
         "dialogs": {
             "confirm_exclude_title": "Kunde abwählen",

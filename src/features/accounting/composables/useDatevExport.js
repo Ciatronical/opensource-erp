@@ -60,6 +60,33 @@ export function useDatevExport() {
         }
     }
 
+    // Vollstaendiges Paket: CSV + alle Scans + Belegliste als ZIP
+    async function exportPackage(fromDate, toDate) {
+        try {
+            const response = await axios.post('/api/accounting/', {
+                action: 'exportDatev',
+                from_date: fromDate,
+                to_date: toDate,
+                format: 'package'
+            }, {
+                responseType: 'blob'
+            })
+
+            const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/zip' }))
+            const link = document.createElement('a')
+            link.href = url
+            link.setAttribute('download', `Buchhaltung_${fromDate}_${toDate}.zip`)
+            document.body.appendChild(link)
+            link.click()
+            link.remove()
+            window.URL.revokeObjectURL(url)
+
+            return { success: true }
+        } catch (e) {
+            return { success: false, text: e.message }
+        }
+    }
+
     async function fetchConfig() {
         try {
             const response = await axios.post('/api/accounting/', {
@@ -92,6 +119,7 @@ export function useDatevExport() {
         datevConfig,
         fetchPreview,
         exportCsv,
+        exportPackage,
         fetchConfig,
         saveConfig
     }

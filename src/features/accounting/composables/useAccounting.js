@@ -13,6 +13,8 @@ export function useAccounting() {
     const stats = ref({})
     const total = ref(0)
     const dashboard = ref(null)
+    const journal = ref([])
+    const journalStats = ref({})
 
     async function fetchDashboard() {
         loading.value = true
@@ -137,6 +139,62 @@ export function useAccounting() {
         }
     }
 
+    // Echtes kivitendo-Buchungsjournal (ar/ap/gl), nicht die KI-Vorerfassung
+    async function fetchJournal(filters = {}) {
+        loading.value = true
+        error.value = null
+        try {
+            const response = await axios.post('/api/accounting/', {
+                action: 'getLedgerJournal',
+                ...filters
+            })
+            if (response.data.success) {
+                journal.value = response.data.payload.journal || []
+                journalStats.value = response.data.payload.stats || {}
+                total.value = response.data.payload.total || 0
+            } else {
+                error.value = response.data.text
+            }
+        } catch (e) {
+            error.value = e.message
+        } finally {
+            loading.value = false
+        }
+    }
+
+    async function fetchOpenItems(type = 'receivables') {
+        const action = type === 'payables' ? 'getOpenPayables' : 'getOpenReceivables'
+        try {
+            const response = await axios.post('/api/accounting/', { action })
+            if (response.data.success) return response.data.payload
+            return { items: [], summary: {} }
+        } catch (e) {
+            return { items: [], summary: {} }
+        }
+    }
+
+    async function fetchChart(months = 12) {
+        try {
+            const response = await axios.post('/api/accounting/', { action: 'getAccountingChart', months })
+            if (response.data.success) return response.data.payload.series || []
+            return []
+        } catch (e) {
+            return []
+        }
+    }
+
+    async function fetchJournalEntry(id, src) {
+        try {
+            const response = await axios.post('/api/accounting/', {
+                action: 'getLedgerEntry', id, src
+            })
+            if (response.data.success) return response.data.payload
+            return null
+        } catch (e) {
+            return null
+        }
+    }
+
     async function searchAccounts(query, link = null) {
         try {
             const response = await axios.post('/api/accounting/', {
@@ -160,7 +218,13 @@ export function useAccounting() {
         stats,
         total,
         dashboard,
+        journal,
+        journalStats,
         fetchDashboard,
+        fetchChart,
+        fetchOpenItems,
+        fetchJournal,
+        fetchJournalEntry,
         fetchBookings,
         fetchBooking,
         approveBooking,

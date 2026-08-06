@@ -314,6 +314,8 @@
             "dunning_lock": "Mahnsperre",
             "order_lock": "Shopauftragssperre",
             "direct_debit": "Lastschrifteinzug",
+            "hu_notify": "HU-Benachrichtigung senden",
+            "hu_notify_hint": "Gilt für alle Fahrzeuge dieses Kunden – auch für künftig angelegte. Ist der Schalter aus, werden keine HU-Erinnerungen versendet und die Benachrichtigung lässt sich beim einzelnen Fahrzeug nicht mehr einschalten (der Kunde hat Vorrang).",
             "payment_terms": "Zahlungsbedingungen",
             "delivery_terms": "Lieferbedingungen",
             "depositor": "Kontoinhaber",

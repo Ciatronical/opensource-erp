@@ -31,6 +31,7 @@
                 v-model="localData"
                 :payment-terms="paymentTerms"
                 :delivery-terms="deliveryTerms"
+                :entity-src="entitySrc"
                 class="mt-3"
             />
         </v-col>
