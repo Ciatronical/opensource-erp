@@ -180,6 +180,7 @@ export function useItemManagement({
         item.discount = discount
         calculateItemTotal(item)
         calculateTotals()
+        saveAllItems()
     }
 
     function setAllDiscounts(discount) {
