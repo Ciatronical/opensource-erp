@@ -1116,18 +1116,17 @@ export default defineComponent({
                 }
             }
 
-            // Wenn Vorschläge geladen sind, besten Match verwenden statt Rohtext
+            // Bestehende Anweisung nur bei EXAKTER Übereinstimmung übernehmen.
+            // Kein automatisches Ersetzen durch einen bloß ähnlichen Vorschlag —
+            // „Räder nachziehen" darf nicht zu „Räderwechsel durchführen" werden.
+            // Wer einen Vorschlag will, wählt ihn bewusst aus der Liste.
             if (suggestions.value.length > 0) {
                 const lowerText = text.toLowerCase()
-                // Exakter Match hat Vorrang
                 const exactMatch = suggestions.value.find(s => s.description.toLowerCase() === lowerText)
                 if (exactMatch) {
                     addNewInstruction(exactMatch.description)
                     return
                 }
-                // Ersten Vorschlag nehmen (sortiert nach usage_count, also relevantester)
-                addNewInstruction(suggestions.value[0].description)
-                return
             }
 
             addNewInstruction(text)
