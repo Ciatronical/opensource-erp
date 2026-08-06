@@ -419,6 +419,16 @@ WHERE NOT EXISTS (SELECT 1 FROM event_category LIMIT 1);
 UPDATE defaults SET customernumber = '9999'  WHERE customernumber IS NULL OR TRIM(customernumber) = '';
 UPDATE defaults SET vendornumber   = '69999' WHERE vendornumber   IS NULL OR TRIM(vendornumber)   = '';
 
+-- Artikel/Dienstleistungen (keine DATEV-Vorgabe): getrennte, gut unterscheidbare Bereiche.
+-- Startzähler = erste gewünschte Nummer minus 1 (nextFreeNumber zählt erst hoch):
+--   Artikel/Waren        ab 100000 -> Zähler 99999
+--   Dienstleistungen     ab 900000 -> Zähler 899999
+--   Erzeugnisse/Sortimente ab 800000 -> Zähler 799999
+UPDATE defaults SET articlenumber    = '99999'  WHERE articlenumber    IS NULL OR TRIM(articlenumber)    = '';
+UPDATE defaults SET servicenumber    = '899999' WHERE servicenumber    IS NULL OR TRIM(servicenumber)    = '';
+UPDATE defaults SET assemblynumber   = '799999' WHERE assemblynumber   IS NULL OR TRIM(assemblynumber)   = '';
+UPDATE defaults SET assortmentnumber = '799999' WHERE assortmentnumber IS NULL OR TRIM(assortmentnumber) = '';
+
 -- ============================================================================
 -- CALENDAR EVENTS
 -- ============================================================================
