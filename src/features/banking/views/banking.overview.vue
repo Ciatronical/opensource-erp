@@ -365,7 +365,7 @@ function balanceColor(balance) {
 }
 
 function viewTransactions(accountId) {
-    router.push({ name: 'banking-transactions', params: { id: accountId } })
+    router.push({ name: 'banking-overview', query: { tab: 'transactions', account: accountId } })
 }
 
 function newTransferFor(accountId) {

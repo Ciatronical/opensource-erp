@@ -156,6 +156,7 @@ import { ref, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { useViewHistory } from '@/core/composables/useViewHistory.js';
+import { transTypeRoute } from '@/core/constants/routes.js';
 
 const { t, d } = useI18n();
 const router = useRouter();
@@ -290,24 +291,18 @@ const historyTypeMap = {
 };
 
 function navigateToLink(link) {
-    // Navigation basierend auf trans_type mit named routes
-    const routeMap = {
-        customer: { name: 'customer-edit', params: { id: link.trans_id } },
-        vendor: { name: 'vendor-edit', params: { id: link.trans_id } },
-        sales_quotation: { name: 'quotation-edit', params: { id: link.trans_id } },
-        sales_order: { name: 'order-edit', params: { id: link.trans_id } },
-        sales_invoice: { name: 'invoice-view', params: { invoiceID: link.trans_id } }
-    };
+    // Navigation basierend auf trans_type
+    const target = transTypeRoute(link.trans_type, link.trans_id);
 
-    if (routeMap[link.trans_type]) {
+    if (target) {
         saveToHistory({
             type: historyTypeMap[link.trans_type] || link.trans_type,
             id: link.trans_id,
             title: link.trans_info || '',
             subtitle: '',
-            route: routeMap[link.trans_type]
+            route: target
         });
-        router.push(routeMap[link.trans_type]);
+        router.push(target);
     } else {
         console.warn('Unknown link type:', link.trans_type);
     }

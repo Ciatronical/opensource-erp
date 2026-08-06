@@ -31,6 +31,7 @@
         "currentCustomerEdit": "/customer/edit",
         "callHistory": "/call-history",
         "calendar": "/calendar",
+        "tasks": "/tasks",
         "systemUpdate": "/system/update",
         "wiki": "/wiki",
         "wikiNew": "/wiki/new",
@@ -45,7 +46,17 @@
         "camera": "/cameras",
         "hr": "/hr",
         "hrPayroll": "/hr/payroll",
-        "hrVacation": "/hr/vacation"
+        "hrVacation": "/hr/vacation",
+        "setup": "/setup",
+        "login": "/login",
+        "emails": "/emails",
+        "whatsapp": "/whatsapp",
+        "docs": "/docs",
+        "mechanic": "/mechanic",
+        "mechanicOrder": "/mechanic/order",
+        "mechanicCar": "/mechanic/car",
+        "privacy": "/privacy",
+        "dataDeletion": "/data-deletion"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Error: The password file api/config/api.passwd.php was not found. Please rename the file api/config/api.passwd.php.example to api/config/api.passwd.php and adjust the settings accordingly.",

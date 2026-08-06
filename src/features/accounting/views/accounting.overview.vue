@@ -21,7 +21,7 @@
                 </v-card>
             </v-col>
             <v-col cols="12" sm="6" md="3">
-                <v-card color="success" variant="tonal" :to="t('AccountingView.routes.accountingBookings')">
+                <v-card color="success" variant="tonal" :to="{ name: 'accounting-bookings' }">
                     <v-card-text class="text-center">
                         <v-icon size="32" class="mb-2">mdi-book-open-variant</v-icon>
                         <div class="text-h4 font-weight-bold">{{ dashboard?.stats?.bookings_year || 0 }}</div>
@@ -161,7 +161,7 @@
                 </v-card>
             </v-col>
             <v-col cols="12">
-                <v-card variant="outlined" @click="router.push(t('BankingView.routes.bankingReconciliation'))">
+                <v-card variant="outlined" @click="router.push({ name: 'banking-reconciliation' })">
                     <v-card-text>
                         <div class="d-flex justify-space-between align-center">
                             <span class="text-body-2">{{ t('AccountingView.overview.unmatchedBank') }}</span>
@@ -181,7 +181,7 @@
             </v-col>
             <v-col cols="12" sm="6" md="3">
                 <v-btn block color="primary" size="large" variant="elevated"
-                       :to="t('AccountingView.routes.accountingInvoiceUpload')">
+                       :to="{ name: 'accounting-invoice-upload' }">
                     <v-icon start>mdi-upload</v-icon>
                     {{ t('AccountingView.overview.uploadInvoice') }}
                 </v-btn>
@@ -195,14 +195,14 @@
             </v-col>
             <v-col cols="12" sm="6" md="3">
                 <v-btn block size="large" variant="elevated"
-                       :to="t('AccountingView.routes.accountingOutgoing')">
+                       :to="{ name: 'accounting-outgoing' }">
                     <v-icon start>mdi-cash-check</v-icon>
                     {{ t('AccountingView.menu.outgoingMatching') }}
                 </v-btn>
             </v-col>
             <v-col cols="12" sm="6" md="3">
                 <v-btn block size="large" variant="elevated"
-                       :to="t('AccountingView.routes.accountingDatevExport')">
+                       :to="{ name: 'accounting-datev-export' }">
                     <v-icon start>mdi-file-export</v-icon>
                     {{ t('AccountingView.menu.datevExport') }}
                 </v-btn>
@@ -216,7 +216,7 @@
                     <v-card-title class="d-flex align-center">
                         {{ t('AccountingView.overview.recentBookings') }}
                         <v-spacer />
-                        <v-btn variant="text" size="small" :to="t('AccountingView.routes.accountingBookings')">
+                        <v-btn variant="text" size="small" :to="{ name: 'accounting-bookings' }">
                             {{ t('AccountingView.bookings.filterAll') }}
                             <v-icon end>mdi-arrow-right</v-icon>
                         </v-btn>
@@ -282,17 +282,17 @@ function journalTypeColor(type) {
 }
 
 function goToBookings(status) {
-    router.push({ path: t('AccountingView.routes.accountingBookings'), query: { status } })
+    router.push({ name: 'accounting-bookings', query: { status } })
 }
 
 // Klick auf eine Buchung/Belegnummer → Journal öffnen und die Buchung direkt anzeigen
 function openBooking(item) {
-    router.push({ path: t('AccountingView.routes.accountingBookings'), query: { src: item.src, id: item.id } })
+    router.push({ name: 'accounting-bookings', query: { src: item.src, id: item.id } })
 }
 
 // Klick auf „Offene Forderungen/Verbindlichkeiten" → Offene-Posten-Liste
 function goToOpenItems(type) {
-    router.push({ path: t('AccountingView.routes.accountingOpenItems'), query: { type } })
+    router.push({ name: 'accounting-open-items', query: { type } })
 }
 
 function formatCurrency(value) {

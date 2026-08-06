@@ -1,7 +1,7 @@
 <template>
   <v-app-bar color="grey-lighten-4" elevation="1" density="comfortable" aria-label="OpensourceERP Theme Navbar">
     <v-toolbar-title class="text-h6">
-      <router-link to="/" class="text-decoration-none text-primary">OpensourceERP</router-link>
+      <router-link :to="{ name: 'startup' }" class="text-decoration-none text-primary">OpensourceERP</router-link>
     </v-toolbar-title>
   </v-app-bar>
   <v-container>
@@ -43,11 +43,11 @@
           <v-divider />
 
           <v-card-text class="text-center">
-            <router-link to="/datenschutz" class="text-caption text-grey text-decoration-none">
+            <router-link :to="{ name: 'datenschutz' }" class="text-caption text-grey text-decoration-none">
               {{ t('LoginView.privacy') }}
             </router-link>
             <span class="text-caption text-grey mx-2 update-trigger" @click="runUpdate">|</span>
-            <router-link to="/datenloeschung" class="text-caption text-grey text-decoration-none">
+            <router-link :to="{ name: 'datenloeschung' }" class="text-caption text-grey text-decoration-none">
               {{ t('LoginView.dataDeletion') }}
             </router-link>
             <v-alert v-if="updateLoading" type="info" variant="tonal" density="compact" class="mt-3">
@@ -162,12 +162,13 @@ export default {
         const result = await oserp.login(username.value, password.value, clientCode.value, rememberMe.value)
 
         if (result === AuthStatus.UPDATE_REQUIRED) {
-          router.replace({ name: 'update' })
+          router.replace({ name: 'system-update' })
           return
         }
 
-        const redirectPath = route.query.redirect || '/'
-        router.replace(redirectPath)
+        // redirect ist ein vom Router selbst erzeugter fullPath (Guard), sonst Startseite
+        const redirectPath = route.query.redirect
+        router.replace(redirectPath ? String(redirectPath) : { name: 'startup' })
       } catch (err) {
         // Template-Handler uebergeben Event-Objekte; deshalb strikter Vergleich auf true
         if (isRetry !== true && isSchemaMismatchError(err)) {

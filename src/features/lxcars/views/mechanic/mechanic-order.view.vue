@@ -38,7 +38,7 @@
             <v-btn icon variant="text" color="primary" @click="reloadAll" :title="t('MechanicView.refresh')">
                 <v-icon>mdi-refresh</v-icon>
             </v-btn>
-            <v-btn icon variant="text" color="primary" @click="$router.push(t('routes.mainmenu'))" :title="t('MechanicView.exitMechanic')">
+            <v-btn icon variant="text" color="primary" @click="$router.push({ name: 'menu' })" :title="t('MechanicView.exitMechanic')">
                 <v-icon>mdi-exit-to-app</v-icon>
             </v-btn>
         </div>

@@ -114,6 +114,7 @@
 import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
+import { transTypeRoute } from '@/core/constants/routes.js'
 import FullCalendar from '@fullcalendar/vue3'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin from '@fullcalendar/interaction'
@@ -249,18 +250,12 @@ function editEvent() {
 }
 
 function navigateToLink(link) {
-    // Navigation basierend auf trans_type mit named routes - EXAKT wie in follow-up-card.vue
-    const routeMap = {
-        customer: { name: 'customer-edit', params: { id: link.trans_id } },
-        vendor: { name: 'vendor-edit', params: { id: link.trans_id } },
-        sales_quotation: { name: 'quotation-edit', params: { id: link.trans_id } },
-        sales_order: { name: 'order-edit', params: { id: link.trans_id } },
-        sales_invoice: { name: 'invoice-view', params: { invoiceID: link.trans_id } }
-    };
+    // Navigation basierend auf trans_type - EXAKT wie in follow-up-card.vue
+    const target = transTypeRoute(link.trans_type, link.trans_id);
 
-    if (routeMap[link.trans_type]) {
+    if (target) {
         showEventDialog.value = false;
-        router.push(routeMap[link.trans_type]);
+        router.push(target);
     } else {
         console.warn('Unknown link type:', link.trans_type);
     }

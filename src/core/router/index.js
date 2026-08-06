@@ -1,4 +1,5 @@
 // src/router/index.js
+import { watch } from 'vue'
 import { createRouter, createWebHistory } from 'vue-router'
 
 // Statisch: Nur Login, Setup, Startup, NotFound (werden sofort gebraucht)
@@ -19,6 +20,7 @@ const FakturaView = () => import('@/core/views/faktura/faktura.view.vue')
 const FollowUpView = () => import('@/core/views/follow-up/follow-up.view.vue')
 const CallHistoryView = () => import('@/core/views/call-history/call-history.view.vue')
 const CalendarView = () => import('@/core/views/calendar/calendar.view.vue')
+const TasksView = () => import('@/core/views/tasks/tasks.view.vue')
 const EmailView = () => import('@/core/views/email/email.view.vue')
 const WhatsAppView = () => import('@/core/views/whatsapp/whatsapp.view.vue')
 const DatenschutzView = () => import('@/core/views/datenschutz/datenschutz.view.vue')
@@ -64,7 +66,80 @@ const MechanicOrderView = () => {
 import { oserpStore } from '@/core/stores/oserp.store.js'
 import { AuthStatus } from '@/core/constants/auth.js';
 import * as alerts from '@/core/utils/alerts.js';
-import i18n from '@/i18n';
+import i18n, { getStoredLocale, storeLocale } from '@/i18n';
+
+// ───────────────────────── Sprachabhängige URLs ─────────────────────────
+//
+// Die Routen-Tabelle wird für genau eine Sprache gebaut: deren Pfade sind die
+// kanonischen URLs, die in der Adresszeile stehen. Die Pfade aller übrigen
+// Sprachen hängen als `alias` an derselben Route. Dadurch bleibt jede URL in
+// jeder Sprache gültig — Lesezeichen überleben den Sprachwechsel und ein Link,
+// den ein Benutzer mit deutscher Oberfläche verschickt, funktioniert auch beim
+// Empfänger mit englischer.
+//
+// Sprachen mit eigener URL-Schreibweise. Die übrigen Oberflächensprachen
+// spiegeln derzeit die deutschen Pfade und werden im nächsten Schritt ergänzt.
+export const ROUTE_LOCALES = ['de', 'en'];
+
+/**
+ * Ordnet einer Oberflächensprache die URL-Schreibweise zu
+ *
+ * Sprachen ohne eigene Pfad-Vokabeln spiegeln die deutschen Pfade — genau das
+ * steht auch in ihren Locale-Dateien. Ohne diese Zuordnung bliebe beim Wechsel
+ * von Englisch auf z. B. Polnisch die englische URL stehen.
+ *
+ * @param {string} locale - Oberflächensprache
+ * @return {string} Sprache, aus der die Pfade gelesen werden
+ */
+function routeLocaleFor(locale) {
+    return ROUTE_LOCALES.includes(locale) ? locale : 'de';
+}
+
+// Sprache, für die die aktuelle Routen-Tabelle gebaut ist
+let routeLocale = routeLocaleFor(getStoredLocale());
+
+/**
+ * Liest einen Pfad-Baustein aus dem Sprachkatalog
+ *
+ * @param {string} key - i18n-Schlüssel, z. B. 'routes.customer'
+ * @param {string} locale - Sprache, aus der gelesen wird
+ * @return {string|null} Pfad oder null, wenn die Sprache den Schlüssel nicht kennt
+ */
+function pathFor(key, locale) {
+    // te() statt t(): sonst liefert der Fallback den englischen Pfad und
+    // erzeugt einen Alias, den es in dieser Sprache gar nicht gibt.
+    if (!i18n.global.te(key, locale)) return null;
+    const value = i18n.global.t(key, {}, { locale });
+    return typeof value === 'string' && value.startsWith('/') ? value : null;
+}
+
+/**
+ * Baut `path` (aktuelle Sprache) und `alias` (alle übrigen Sprachen)
+ * für einen Routen-Schlüssel.
+ *
+ * @param {string} key - i18n-Schlüssel des Pfads
+ * @param {string} [suffix] - Parameter-Anhang, z. B. '/:id(\\d+)'
+ * @param {string[]} [extraAliases] - zusätzliche Altpfade, die gültig bleiben sollen
+ * @return {Object} { path } bzw. { path, alias }
+ */
+function routePath(key, suffix = '', extraAliases = []) {
+    const canonical = pathFor(key, routeLocale);
+    if (!canonical) {
+        throw new Error(`Routen-Schlüssel fehlt: ${key} (${routeLocale})`);
+    }
+    const path = canonical + suffix;
+    const alias = [];
+    for (const locale of ROUTE_LOCALES) {
+        if (locale === routeLocale) continue;
+        const other = pathFor(key, locale);
+        if (other && other + suffix !== path) alias.push(other + suffix);
+    }
+    for (const extra of extraAliases) {
+        if (extra !== path) alias.push(extra);
+    }
+    const unique = [...new Set(alias)];
+    return unique.length ? { path, alias: unique } : { path };
+}
 
 const CarEditView = () => {
     const oserp = oserpStore()
@@ -122,17 +197,21 @@ const AccountingOutgoingView = () => import('@/features/accounting/views/account
 const AccountingChartOfAccountsView = () => import('@/features/accounting/views/accounting.chart-of-accounts.vue')
 const AccountingOpenItemsView = () => import('@/features/accounting/views/accounting.open-items.vue')
 
-const router = createRouter({
-    history: createWebHistory(import.meta.env.BASE_URL),
-    routes: [
+/**
+ * Baut die vollständige Routen-Tabelle für die aktuell gesetzte `routeLocale`
+ *
+ * @return {Array} Routen-Definitionen für vue-router
+ */
+function buildRoutes() {
+    return [
         {
-            path: '/setup',
+            ...routePath('routes.setup'),
             name: 'setup',
             component: SetupView,
             meta: { requiresSetup: true }
         },
         {
-            path: i18n.global.t('routes.systemUpdate'),
+            ...routePath('routes.systemUpdate'),
             name: 'system-update',
             component: UpdateView,
         },
@@ -158,13 +237,13 @@ const router = createRouter({
             },
         },
         {
-            path: i18n.global.t('routes.customer'),
+            ...routePath('routes.customer'),
             name: 'customer-vendor',
             component: StartupView,
             props: { crmView: true },
         },
         {
-            path: i18n.global.t('routes.customer') + '/:id(\\d+)',
+            ...routePath('routes.customer', '/:id(\\d+)'),
             name: 'change-customer',
             component: StartupView,
             props: route => ({
@@ -173,34 +252,34 @@ const router = createRouter({
             }),
         },
         {
-            path: i18n.global.t('routes.mainmenu'),
+            ...routePath('routes.mainmenu'),
             name: 'menu',
             component: StartupView,
             props: { crmView: false },
         },
         {
-            path: '/login',
+            ...routePath('routes.login'),
             name: 'login',
             component: LoginView,
         },
         {
-            path: i18n.global.t('routes.currentCustomerEdit'),
+            ...routePath('routes.currentCustomerEdit'),
             name: 'current-customer-edit',
             component: CurrentCVeditView,
         },
         {
-            path: i18n.global.t('routes.editCustomer') + '/:id(\\d+)',
+            ...routePath('routes.editCustomer', '/:id(\\d+)'),
             name: 'customer-edit',
             component: CustomerEditView,
             props: true,
         },
         {
-            path: i18n.global.t('routes.search'),
+            ...routePath('routes.search'),
             name: 'search',
             component: CustomerVendorSearchView,
         },
         {
-            path: i18n.global.t('routes.clientConfig'),
+            ...routePath('routes.clientConfig'),
             name: 'client-defaults',
             component: ClientDefaultsView,
         },
@@ -211,83 +290,88 @@ const router = createRouter({
             redirect: to => ({ name: 'client-defaults', query: to.query }),
         },
         {
-            path: i18n.global.t('CarView.routes.newCar'),
+            ...routePath('CarView.routes.newCar'),
             name: 'fahrzeug-neu',
             component: CarEditView,
         },
         {
-            path: i18n.global.t('CarView.routes.manageCars') + '/:id(\\d+)',
+            ...routePath('CarView.routes.manageCars', '/:id(\\d+)'),
             name: 'car',
             component: CarEditView,
             props: true,
         },
         {
-            path: i18n.global.t('routes.developerTools'),
+            ...routePath('routes.developerTools'),
             name: 'developer-tools',
             component: DeveloperToolsView,
         },
         {
-            path: i18n.global.t('routes.followUp'),
+            ...routePath('routes.followUp'),
             name: 'follow-up',
             component: FollowUpView,
         },
         {
-            path: i18n.global.t('routes.callHistory'),
+            ...routePath('routes.callHistory'),
             name: 'call-history',
             component: CallHistoryView,
         },
         {
-            path: i18n.global.t('routes.calendar'),
+            ...routePath('routes.calendar'),
             name: 'calendar',
             component: CalendarView,
         },
         {
-            path: i18n.global.t('routes.wallDisplay'),
+            ...routePath('routes.tasks'),
+            name: 'tasks',
+            component: TasksView,
+        },
+        {
+            ...routePath('routes.wallDisplay'),
             name: 'wall-display',
             component: WallDisplayView,
         },
         {
-            path: i18n.global.t('routes.anschlagtafel'),
-            alias: '/tafel',
+            // '/tafel' war die urspruengliche URL und bleibt gueltig
+            ...routePath('routes.anschlagtafel', '', ['/tafel']),
             name: 'anschlagtafel',
             component: AnschlagtafelView,
         },
         {
             // PC-Variante der Anschlagtafel: Eintraege hinzufuegen/loeschen
-            path: i18n.global.t('routes.tafel'),
+            ...routePath('routes.tafel'),
             name: 'tafel',
             component: TafelView,
         },
         {
-            path: '/mechaniker',
+            ...routePath('routes.mechanic'),
             name: 'mechanic',
             component: MechanicView,
         },
         {
-            path: '/mechaniker/auftrag/:id(\\d+)',
+            ...routePath('routes.mechanicOrder', '/:id(\\d+)'),
             name: 'mechanic-order',
             component: MechanicOrderView,
             props: true,
         },
         {
-            path: '/mechaniker/fahrzeug/:id(\\d+)',
+            ...routePath('routes.mechanicCar', '/:id(\\d+)'),
             name: 'mechanic-car',
             component: CarEditView,
             props: route => ({ id: route.params.id, readonly: true }),
         },
         {
-            path: '/emails',
+            ...routePath('routes.emails'),
             name: 'emails',
             component: EmailView,
         },
         {
-            path: '/whatsapp',
+            ...routePath('routes.whatsapp'),
             name: 'whatsapp',
             component: WhatsAppView,
         },
         {
             // Rechnungen
-            path: i18n.global.t('routes.manageInvoices') + '/:id(\\d+)',
+            ...routePath('routes.manageInvoices', '/:id(\\d+)'),
             name: 'faktura-invoice-view',
             component: FakturaView,
             props: true,
@@ -298,7 +382,7 @@ const router = createRouter({
         },
         {
             // Aufträge
-            path: i18n.global.t('routes.manageOrders') + '/:id(\\d+)',
+            ...routePath('routes.manageOrders', '/:id(\\d+)'),
             name: 'faktura-order-view',
             component: FakturaView,
             props: true,
@@ -309,7 +393,7 @@ const router = createRouter({
         },
         {
             // Angebote
-            path: i18n.global.t('routes.manageQuotations') + '/:id(\\d+)',
+            ...routePath('routes.manageQuotations', '/:id(\\d+)'),
             name: 'faktura-quotation-view',
             component: FakturaView,
             props: true,
@@ -320,7 +404,7 @@ const router = createRouter({
         },
         {
             // Gutschriften
-            path: i18n.global.t('routes.manageCreditNotes') + '/:id(\\d+)',
+            ...routePath('routes.manageCreditNotes', '/:id(\\d+)'),
             name: 'faktura-credit-note-view',
             component: FakturaView,
             props: true,
@@ -331,7 +415,7 @@ const router = createRouter({
         },
         {
             // Lieferscheine
-            path: i18n.global.t('routes.manageDeliveryOrders') + '/:id(\\d+)',
+            ...routePath('routes.manageDeliveryOrders', '/:id(\\d+)'),
             name: 'faktura-delivery-order-view',
             component: FakturaView,
             props: true,
@@ -342,19 +426,19 @@ const router = createRouter({
         },
         // ── Stammdaten: Kunden/Lieferanten ──
         {
-            path: i18n.global.t('routes.newCustomer'),
+            ...routePath('routes.newCustomer'),
             name: 'customer-new',
             component: CustomerEditView,
             props: () => ({ src: 'C' }),
         },
         {
-            path: i18n.global.t('routes.newVendor'),
+            ...routePath('routes.newVendor'),
             name: 'vendor-new',
             component: CustomerEditView,
             props: () => ({ src: 'V' }),
         },
         {
-            path: i18n.global.t('routes.manageVendors') + '/:id(\\d+)',
+            ...routePath('routes.manageVendors', '/:id(\\d+)'),
             name: 'change-vendor',
             component: StartupView,
             props: route => ({
@@ -364,20 +448,20 @@ const router = createRouter({
             }),
         },
         {
-            path: i18n.global.t('routes.editVendor') + '/:id(\\d+)',
+            ...routePath('routes.editVendor', '/:id(\\d+)'),
             name: 'vendor-edit',
             component: CustomerEditView,
             props: route => ({ id: route.params.id, src: 'V' }),
         },
         {
-            path: i18n.global.t('routes.manageArticles') + '/:id(\\d+)',
+            ...routePath('routes.manageArticles', '/:id(\\d+)'),
             name: 'article-edit',
             component: ArticleEditView,
             props: true,
         },
         // ── Platzhalter-Routen: Verkauf ──
         {
-            path: i18n.global.t('routes.newQuotation'),
+            ...routePath('routes.newQuotation'),
             name: 'quotation-new',
             component: FakturaView,
             meta: {
@@ -386,13 +470,13 @@ const router = createRouter({
             }
         },
         {
-            path: i18n.global.t('routes.editQuotation') + '/:id(\\d+)',
+            ...routePath('routes.editQuotation', '/:id(\\d+)'),
             name: 'quotation-edit',
             component: NotFoundView,
             props: true,
         },
         {
-            path: i18n.global.t('routes.newOrder'),
+            ...routePath('routes.newOrder'),
             name: 'order-new',
             component: FakturaView,
             meta: {
@@ -401,14 +485,14 @@ const router = createRouter({
             }
         },
         {
-            path: i18n.global.t('routes.editOrder') + '/:id(\\d+)',
+            ...routePath('routes.editOrder', '/:id(\\d+)'),
             name: 'order-edit',
             component: NotFoundView,
             props: true,
         },
         {
             // Gutschriften-Liste
-            path: i18n.global.t('routes.manageCreditNotes'),
+            ...routePath('routes.manageCreditNotes'),
             name: 'credit-note-list',
             component: OrderSearchView,
             meta: {
@@ -417,7 +501,7 @@ const router = createRouter({
             }
         },
         {
-            path: i18n.global.t('routes.orderSearch'),
+            ...routePath('routes.orderSearch'),
             name: 'order-search',
             component: OrderSearchView,
             meta: {
@@ -425,7 +509,7 @@ const router = createRouter({
             }
         },
         {
-            path: i18n.global.t('routes.huSerienbrief'),
+            ...routePath('routes.huSerienbrief'),
             name: 'hu-serienbrief',
             component: HuSerienbriefView,
             meta: {
@@ -433,7 +517,7 @@ const router = createRouter({
             }
         },
         {
-            path: i18n.global.t('routes.newInvoice'),
+            ...routePath('routes.newInvoice'),
             name: 'invoice-new',
             component: FakturaView,
             meta: {
@@ -442,7 +526,7 @@ const router = createRouter({
             }
         },
         {
-            path: i18n.global.t('routes.newDeliveryOrder'),
+            ...routePath('routes.newDeliveryOrder'),
             name: 'delivery-order-new',
             component: FakturaView,
             meta: {
@@ -451,186 +535,188 @@ const router = createRouter({
             }
         },
         {
-            path: i18n.global.t('routes.viewInvoice') + '/:id(\\d+)',
+            // Altpfad /rechnung/anzeigen/:id — zeigte auf NotFound. Leitet jetzt
+            // auf die echte Rechnungsansicht um, damit Lesezeichen und
+            // Wiedervorlage-Verknuepfungen funktionieren.
+            ...routePath('routes.viewInvoice', '/:id(\\d+)'),
             name: 'invoice-view',
-            component: NotFoundView,
-            props: true,
+            redirect: to => ({ name: 'faktura-invoice-view', params: { id: to.params.id }, query: to.query }),
         },
         {
-            path: i18n.global.t('routes.manageDeliveryOrders'),
+            ...routePath('routes.manageDeliveryOrders'),
             name: 'delivery-order-list',
             component: NotFoundView,
         },
         // ── Platzhalter-Routen: Kfz (lxcars) ──
         {
-            path: i18n.global.t('CarView.routes.newCarFromScan'),
+            ...routePath('CarView.routes.newCarFromScan'),
             name: 'car-new-from-scan',
             component: CarScanView,
         },
         {
-            path: i18n.global.t('CarView.routes.carRegistration') + '/:id(\\d+)',
+            ...routePath('CarView.routes.carRegistration', '/:id(\\d+)'),
             name: 'car-registration',
             component: CarRegView,
             props: true,
         },
         {
-            path: i18n.global.t('CarView.routes.manageCars'),
+            ...routePath('CarView.routes.manageCars'),
             name: 'car-list',
             component: NotFoundView,
         },
         {
-            path: i18n.global.t('CarView.routes.orderSearch'),
+            ...routePath('CarView.routes.orderSearch'),
             name: 'car-order-search',
             component: NotFoundView,
         },
         // ── Buchhaltung ──
         {
-            path: i18n.global.t('AccountingView.routes.accountingOverview'),
+            ...routePath('AccountingView.routes.accountingOverview'),
             name: 'accounting-overview',
             component: AccountingOverviewView,
             meta: { hideCustomerBar: true },
         },
         {
-            path: i18n.global.t('AccountingView.routes.accountingBookings'),
+            ...routePath('AccountingView.routes.accountingBookings'),
             name: 'accounting-bookings',
             component: AccountingBookingsView,
             meta: { hideCustomerBar: true },
         },
         {
-            path: i18n.global.t('AccountingView.routes.accountingInvoiceUpload'),
+            ...routePath('AccountingView.routes.accountingInvoiceUpload'),
             name: 'accounting-invoice-upload',
             component: AccountingInvoiceUploadView,
             meta: { hideCustomerBar: true },
         },
         {
-            path: i18n.global.t('AccountingView.routes.accountingVendors'),
+            ...routePath('AccountingView.routes.accountingVendors'),
             name: 'accounting-vendors',
             component: AccountingVendorsView,
             meta: { hideCustomerBar: true },
         },
         {
-            path: i18n.global.t('AccountingView.routes.accountingDatevExport'),
+            ...routePath('AccountingView.routes.accountingDatevExport'),
             name: 'accounting-datev-export',
             component: AccountingDatevExportView,
             meta: { hideCustomerBar: true },
         },
         {
-            path: i18n.global.t('AccountingView.routes.accountingOutgoing'),
+            ...routePath('AccountingView.routes.accountingOutgoing'),
             name: 'accounting-outgoing',
             component: AccountingOutgoingView,
             meta: { hideCustomerBar: true },
         },
         {
-            path: i18n.global.t('AccountingView.routes.accountingChartOfAccounts'),
+            ...routePath('AccountingView.routes.accountingChartOfAccounts'),
             name: 'accounting-chart-of-accounts',
             component: AccountingChartOfAccountsView,
             meta: { hideCustomerBar: true },
         },
         {
-            path: i18n.global.t('AccountingView.routes.accountingOpenItems'),
+            ...routePath('AccountingView.routes.accountingOpenItems'),
             name: 'accounting-open-items',
             component: AccountingOpenItemsView,
             meta: { hideCustomerBar: true },
         },
         // ── Banking ── (alle Funktionen in einem Hub zusammengefasst)
         {
-            path: i18n.global.t('BankingView.routes.bankingOverview'),
+            ...routePath('BankingView.routes.bankingOverview'),
             name: 'banking-overview',
             component: BankingHubView,
         },
         {
-            path: i18n.global.t('BankingView.routes.bankingTransfers'),
+            ...routePath('BankingView.routes.bankingTransfers'),
             name: 'banking-transfers',
             redirect: to => ({ name: 'banking-overview', query: { tab: 'transfers', ...to.query } }),
         },
         {
-            path: i18n.global.t('BankingView.routes.bankingReconciliation'),
+            ...routePath('BankingView.routes.bankingReconciliation'),
             name: 'banking-reconciliation',
             redirect: { name: 'banking-overview', query: { tab: 'reconciliation' } },
         },
         {
-            path: i18n.global.t('KasseView.routes.kasse'),
+            ...routePath('KasseView.routes.kasse'),
             name: 'kasse',
             component: KasseView,
         },
         // ── Kamera / Videoüberwachung ──
         {
-            path: i18n.global.t('routes.camera'),
+            ...routePath('routes.camera'),
             name: 'camera',
             component: CameraView,
         },
         // ── Wiki ──
         {
-            path: i18n.global.t('routes.wiki'),
+            ...routePath('routes.wiki'),
             name: 'wiki-list',
             component: WikiListView,
         },
         {
-            path: i18n.global.t('routes.wikiNew'),
+            ...routePath('routes.wikiNew'),
             name: 'wiki-new',
             component: WikiEditView,
         },
         {
-            path: i18n.global.t('routes.wikiCategories'),
+            ...routePath('routes.wikiCategories'),
             name: 'wiki-categories',
             component: WikiCategoriesView,
         },
         {
-            path: i18n.global.t('routes.wiki') + '/:id(\\d+)',
+            ...routePath('routes.wiki', '/:id(\\d+)'),
             name: 'wiki-read',
             component: WikiReadView,
             props: true,
         },
         {
-            path: i18n.global.t('routes.wikiEdit') + '/:id(\\d+)',
+            ...routePath('routes.wikiEdit', '/:id(\\d+)'),
             name: 'wiki-edit',
             component: WikiEditView,
             props: true,
         },
         // ── Benutzer ──
         {
-            path: i18n.global.t('routes.userConfig'),
+            ...routePath('routes.userConfig'),
             name: 'user-config',
             component: UserConfigView,
         },
         {
-            path: i18n.global.t('routes.lxcarsReports'),
+            ...routePath('routes.lxcarsReports'),
             name: 'lxcars-reports',
             component: LxCarsReportsView,
         },
         // ── Dokumentation ──
         {
-            path: '/docs/:slug?',
+            ...routePath('routes.docs', '/:slug?'),
             name: 'docs',
             component: DocsView,
             props: true,
         },
         // ── Öffentliche Seiten ──
         {
-            path: '/datenschutz',
+            ...routePath('routes.privacy'),
             name: 'datenschutz',
             component: DatenschutzView,
             meta: { public: true },
         },
         {
-            path: '/datenloeschung',
+            ...routePath('routes.dataDeletion'),
             name: 'datenloeschung',
             component: DatenloeschungView,
             meta: { public: true },
         },
         // ── HR-Modul ──
         {
-            path: i18n.global.t('routes.hr'),
+            ...routePath('routes.hr'),
             name: 'hr',
             component: HrHubView,
         },
         {
-            path: i18n.global.t('routes.hrPayroll'),
+            ...routePath('routes.hrPayroll'),
             name: 'hr-payroll',
             redirect: { name: 'hr', query: { tab: 'payroll' } },
         },
         {
-            path: i18n.global.t('routes.hrVacation'),
+            ...routePath('routes.hrVacation'),
             name: 'hr-vacation',
             redirect: { name: 'hr', query: { tab: 'vacation' } },
         },
@@ -640,7 +726,12 @@ const router = createRouter({
             name: 'not-found',
             component: NotFoundView,
         },
-    ],
+    ];
+}
+
+const router = createRouter({
+    history: createWebHistory(import.meta.env.BASE_URL),
+    routes: buildRoutes(),
 })
 
 // Navigations-Guards
@@ -711,6 +802,49 @@ router.onError((error, to) => {
         return;
     }
     console.error(`Ein Navigationsfehler ist aufgetreten (${error.code}): `, error.message);
+});
+
+/**
+ * Schaltet die URL-Sprache um: Routen-Tabelle neu registrieren und die
+ * aktuelle Adresse in der neuen Schreibweise ersetzen.
+ *
+ * Die Route-Namen bleiben dabei unverändert — deshalb behält die laufende
+ * Ansicht ihren Zustand und alle Verlinkungen im Code funktionieren weiter.
+ *
+ * @param {string} locale - Zielsprache
+ * @return {Promise<void>}
+ */
+export async function applyRouteLocale(locale) {
+    const target = routeLocaleFor(locale);
+    if (target === routeLocale) return;
+
+    routeLocale = target;
+
+    const current = router.currentRoute.value;
+
+    // Namen vorher einsammeln: removeRoute() entfernt auch die Alias-Einträge,
+    // sodass sich getRoutes() waehrend des Durchlaufs veraendern wuerde.
+    const names = [...new Set(router.getRoutes().map(r => r.name).filter(Boolean))];
+    for (const name of names) router.removeRoute(name);
+    for (const definition of buildRoutes()) router.addRoute(definition);
+
+    // Adresszeile auf die neue Schreibweise bringen. Ohne Namen (Direktaufruf
+    // einer unbekannten URL) gibt es nichts umzuschreiben.
+    if (current.name && current.name !== 'not-found') {
+        await router.replace({
+            name: current.name,
+            params: current.params,
+            query: current.query,
+            hash: current.hash,
+        });
+    }
+}
+
+// Auf jeden Sprachwechsel reagieren — egal, wer ihn ausloest (Benutzer-
+// einstellung, Session, Firmenwechsel).
+watch(() => i18n.global.locale.value, (locale) => {
+    storeLocale(locale);
+    applyRouteLocale(locale);
 });
 
 export default router

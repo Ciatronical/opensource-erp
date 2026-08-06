@@ -34,10 +34,10 @@
     >
       <v-icon>mdi-widgets</v-icon>
     </v-btn>
-    <router-link to="/" class="text-decoration-none text-primary me-1"><v-icon>mdi-home</v-icon></router-link>
+    <router-link :to="{ name: 'startup' }" class="text-decoration-none text-primary me-1"><v-icon>mdi-home</v-icon></router-link>
 
     <v-toolbar-title class="text-h6">
-      <router-link to="/" class="text-decoration-none text-primary">{{ appTitle }}</router-link>
+      <router-link :to="{ name: 'startup' }" class="text-decoration-none text-primary">{{ appTitle }}</router-link>
     </v-toolbar-title>
 
     <!-- LxCars Schnellzugriff -->
@@ -46,7 +46,7 @@
       icon
       variant="text"
       color="primary"
-      :to="$t('routes.orderSearch')"
+      :to="{ name: 'order-search' }"
       :title="$t('CarView.orderSearchTooltip')"
     >
       <v-icon>mdi-clipboard-search-outline</v-icon>
@@ -74,7 +74,7 @@
       icon
       variant="text"
       color="primary"
-      :to="$t('CarView.routes.newCarFromScan')"
+      :to="{ name: 'car-new-from-scan' }"
       :title="$t('CarView.scanTooltip')"
       style="position: relative"
     >
@@ -125,15 +125,15 @@
           <v-list-item-title class="text-body-2">{{ t('NavbarView.newCompany') }}</v-list-item-title>
         </v-list-item>
         <v-divider class="my-1" />
-        <v-list-item :to="t('routes.clientConfig')" @click="clientMenuOpen = false">
+        <v-list-item :to="{ name: 'client-defaults' }" @click="clientMenuOpen = false">
           <template #prepend><v-icon size="small" class="me-2">mdi-cog</v-icon></template>
           <v-list-item-title class="text-body-2">{{ t('SystemMenu.clientConfig') }}</v-list-item-title>
         </v-list-item>
-        <v-list-item :to="t('routes.developerTools')" @click="clientMenuOpen = false">
+        <v-list-item :to="{ name: 'developer-tools' }" @click="clientMenuOpen = false">
           <template #prepend><v-icon size="small" class="me-2">mdi-wrench</v-icon></template>
           <v-list-item-title class="text-body-2">{{ t('SystemMenu.developerTools') }}</v-list-item-title>
         </v-list-item>
-        <v-list-item :to="t('routes.systemUpdate')" @click="clientMenuOpen = false">
+        <v-list-item :to="{ name: 'system-update' }" @click="clientMenuOpen = false">
           <template #prepend><v-icon size="small" class="me-2">mdi-update</v-icon></template>
           <v-list-item-title class="text-body-2">{{ t('SystemMenu.systemUpdate') }}</v-list-item-title>
         </v-list-item>
@@ -406,7 +406,7 @@ export default {
           onReset: async () => {
             appReady.value = false
             try { await oserpData.logout() } catch {}
-            await router.push('/login')
+            await router.push({ name: 'login' })
             appReady.value = true
           }
         })
@@ -530,12 +530,12 @@ export default {
       } catch (err) {
         console.error('Logout error:', err)
       }
-      await router.push('/login')
+      await router.push({ name: 'login' })
       appReady.value = true
     }
 
     const openMenu = () => {
-      router.push(t('routes.mainmenu'))
+      router.push({ name: 'menu' })
     }
 
     const openInNewTab = () => {

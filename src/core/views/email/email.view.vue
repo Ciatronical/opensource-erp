@@ -293,6 +293,7 @@ import { ref, watch, onMounted } from 'vue'
 import axios from 'axios'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
+import { entityRoute } from '@/core/constants/routes.js'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
 
 export default {
@@ -463,9 +464,10 @@ export default {
         }
 
         function openCustomer() {
-            if (composeCustomer.value?.route) {
+            const target = entityRoute(composeCustomer.value?.type, composeCustomer.value?.id)
+            if (target) {
                 showCompose.value = false
-                router.push(composeCustomer.value.route)
+                router.push(target)
             }
         }
 

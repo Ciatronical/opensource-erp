@@ -6,6 +6,7 @@
     "scripts": {
         "dev": "vite",
         "check:api": "php tools/check-api-health.php",
+        "check:routes": "node tools/check-routes.mjs",
         "build": "vite build",
         "preview": "vite preview"
     },

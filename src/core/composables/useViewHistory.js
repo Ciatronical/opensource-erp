@@ -1,6 +1,7 @@
 // src/core/composables/useViewHistory.js
 
 import { oserpStore } from '@/core/stores/oserp.store.js'
+import { entityRoute } from '@/core/constants/routes.js'
 
 const HISTORY_CONFIG_KEY = 'view-history'
 const MAX_HISTORY = 10
@@ -22,7 +23,15 @@ export function useViewHistory() {
     function loadHistory() {
         try {
             const raw = oserp.getConfigValue(HISTORY_CONFIG_KEY, '[]')
-            return JSON.parse(raw) || []
+            const history = JSON.parse(raw) || []
+            // Alteintraege enthalten noch einen festen Pfad-String. Der wird
+            // verworfen und aus type/id neu abgeleitet, damit gespeicherte
+            // Verlaeufe unabhaengig von der URL-Schreibweise bleiben.
+            return history.map(h => (
+                typeof h.route === 'string'
+                    ? { ...h, route: entityRoute(h.type, h.id) }
+                    : h
+            ))
         } catch {
             return []
         }
@@ -36,7 +45,7 @@ export function useViewHistory() {
      * @param {number|string} item.id - ID des Datensatzes
      * @param {string} item.title - Anzeigename
      * @param {string} [item.subtitle] - Zusatzinfo
-     * @param {string|Object} item.route - Vue-Router-Pfad oder Route-Objekt
+     * @param {Object} item.route - Route-Objekt ({ name, params, query }) — nie ein Pfad-String
      */
     function saveToHistory(item) {
         const entry = {

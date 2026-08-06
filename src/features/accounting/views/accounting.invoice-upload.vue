@@ -78,7 +78,7 @@
                         {{ uploadResult.vendor_status === 'ambiguous'
                             ? t('AccountingView.upload.reviewVendor')
                             : t('AccountingView.upload.reviewNeeded') }}
-                        <v-btn class="ml-3" size="small" variant="tonal" :to="t('AccountingView.routes.accountingBookings')">
+                        <v-btn class="ml-3" size="small" variant="tonal" :to="{ name: 'accounting-bookings' }">
                             {{ t('AccountingView.upload.toReview') }}
                         </v-btn>
                     </template>
@@ -209,7 +209,7 @@
                 <!-- Aktionen -->
                 <div class="d-flex gap-4">
                     <v-btn color="primary" variant="elevated"
-                           :to="t('AccountingView.routes.accountingBookings') + '?status=pending'">
+                           :to="{ name: 'accounting-bookings', query: { status: 'pending' } }">
                         <v-icon start>mdi-check-all</v-icon>
                         {{ t('AccountingView.upload.goToBookings') }}
                     </v-btn>

@@ -274,6 +274,59 @@ Warum?
 "Benutzer"
 ```
 
+### 5.3 Navigation: immer über Route-Namen, nie über Pfade
+
+**Kein Pfad-String im Anwendungscode.** Jede Navigation nennt den Route-Namen,
+der Router bildet daraus die URL.
+
+```js
+// ❌ FALSCH — bricht, sobald sich die URL ändert oder die Sprache wechselt
+router.push('/kunde/bearbeiten/' + id)
+router.push(t('routes.editCustomer'))
+<router-link to="/kunde">
+<v-list-item :to="t('routes.clientConfig')">
+
+// ✅ RICHTIG
+router.push({ name: 'customer-edit', params: { id } })
+<router-link :to="{ name: 'customer-vendor' }">
+<v-list-item :to="{ name: 'client-defaults' }">
+```
+
+Gründe:
+* Ein Tippfehler im Namen erzeugt eine Router-Warnung; ein Tippfehler im Pfad landet stumm auf NotFound
+* Pfade umbenennen ist eine Ein-Zeilen-Änderung in der Locale-Datei statt einer projektweiten Suche
+* Die URL-Schreibweise hängt von der Sprache ab (siehe 5.4) — Aufrufer dürfen davon nichts wissen
+
+Das gilt auch fürs **Backend**: PHP-Payloads liefern niemals Frontend-Pfade.
+Ein Suchtreffer gibt `type` und `id` zurück, das Ziel baut das Frontend über
+`entityRoute()` aus `src/core/constants/routes.js`.
+
+Prüfen: `npm run check:routes` lädt die echte Routen-Tabelle und meldet
+unbekannte Route-Namen, fehlende Pflichtparameter und übrig gebliebene
+Pfad-Navigation.
+
+### 5.4 Sprachabhängige URLs
+
+Die URLs sind übersetzt: `/kunde` auf Deutsch, `/customer` auf Englisch. Die
+Pfade stehen als normale Übersetzungen in den Locale-Dateien unter dem
+Schlüssel `routes.*` und werden in `src/core/router/index.js` über
+`routePath()` eingebunden.
+
+* Die Routen-Tabelle wird für **eine** Sprache gebaut — deren Pfade sind die
+  kanonischen URLs in der Adresszeile
+* Die Pfade aller übrigen Sprachen hängen als `alias` an derselben Route.
+  Dadurch bleibt jede URL in jeder Sprache gültig: Lesezeichen überleben den
+  Sprachwechsel, und ein Link von einem Kollegen mit deutscher Oberfläche
+  funktioniert auch bei englischer
+* Beim Sprachwechsel registriert `applyRouteLocale()` die Tabelle neu und
+  schreibt die aktuelle Adresse um. Die Route-**Namen** bleiben dabei gleich
+* Sprachen ohne eigene Pfad-Vokabeln fallen auf die deutschen Pfade zurück
+  (`ROUTE_LOCALES` in `src/core/router/index.js`)
+
+**Neue Route anlegen:** Pfad-Schlüssel in `src/core/router/locales/de.json`
+und `en.json` ergänzen, dann in der Routen-Tabelle `...routePath('routes.xyz')`
+verwenden — kein literaler Pfad.
+
 ---
 
 ## 6. Versionierung

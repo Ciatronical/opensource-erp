@@ -52,6 +52,18 @@ resultInfo(false, 'ERROR_CODE', 'Nachricht'); // Fehler
 - Validierungen und Datenformatierungen in Vue, nicht im Backend
 - Kein Gendern — generisches Maskulinum verwenden (Kunde, Benutzer, Mitarbeiter)
 
+### Navigation (PFLICHT)
+**Nie Pfad-Strings — immer Route-Namen:**
+```js
+router.push({ name: 'customer-edit', params: { id } })   // ✅
+router.push('/kunde/bearbeiten/' + id)                   // ❌
+router.push(t('routes.editCustomer'))                    // ❌
+```
+- URLs sind sprachabhaengig (`/kunde` ↔ `/customer`), Pfade stehen als `routes.*` in den Locale-Dateien
+- Routen-Tabelle: `...routePath('routes.xyz')` statt `path:` — Pfade der anderen Sprachen haengen automatisch als `alias` dran, damit Lesezeichen gueltig bleiben
+- Backend liefert **keine** Frontend-Pfade: nur `type` + `id`, Ziel baut das Frontend ueber `entityRoute()` (`src/core/constants/routes.js`)
+- Pruefen mit `npm run check:routes`
+
 ### PHP-Schreibweisen
 ```php
 require_once __DIR__.'/inc.php';  // ohne Klammern

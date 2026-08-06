@@ -975,14 +975,14 @@ function bookArAsCashDialog(invoice) {
 
 function openInvoice(invoice) {
     if (!invoice?.id) return
-    router.push(`${t('routes.manageInvoices')}/${invoice.id}`)
+    router.push({ name: 'faktura-invoice-view', params: { id: invoice.id } })
 }
 
 // Klick auf eine Kassenbuch-Zeile: Kundenrechnung (AR) öffnen.
 // Manuelle Buchungen (gl) und Lieferantenzahlungen (ap) haben keine Kundenrechnung.
 function openCashbookRow(item) {
     if (item?.source_type === 'ar' && item.gl_id) {
-        router.push(`${t('routes.manageInvoices')}/${item.gl_id}`)
+        router.push({ name: 'faktura-invoice-view', params: { id: item.gl_id } })
     }
 }
 

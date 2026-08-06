@@ -1,7 +1,7 @@
 <template>
   <v-app-bar color="grey-lighten-4" elevation="1" density="comfortable">
     <v-toolbar-title class="text-h6">
-      <router-link to="/" class="text-decoration-none text-primary">OpensourceERP</router-link>
+      <router-link :to="{ name: 'startup' }" class="text-decoration-none text-primary">OpensourceERP</router-link>
     </v-toolbar-title>
   </v-app-bar>
 
@@ -55,7 +55,7 @@
 
       <div class="d-flex align-center justify-space-between">
         <p class="text-body-2 text-grey mb-0">Stand: März 2026</p>
-        <router-link to="/datenschutz" class="text-caption text-grey text-decoration-none">
+        <router-link :to="{ name: 'datenschutz' }" class="text-caption text-grey text-decoration-none">
           Datenschutzerklärung
         </router-link>
       </div>

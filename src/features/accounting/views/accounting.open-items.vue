@@ -174,7 +174,7 @@ function open(item) {
     if (isReceivable.value) {
         router.push({ name: 'faktura-invoice-view', params: { id: item.id } })
     } else {
-        router.push({ path: t('AccountingView.routes.accountingBookings'), query: { src: 'ap', id: item.id } })
+        router.push({ name: 'accounting-bookings', query: { src: 'ap', id: item.id } })
     }
 }
 

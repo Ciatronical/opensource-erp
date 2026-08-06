@@ -17,16 +17,16 @@ export function useNavigationCards() {
         // Feature-basiertes Menü: lxcars
         if (oserp.isLxCars()) {
             const lxcarsItems = [
-                { title: t('CarView.orderSearch'), to: t('routes.orderSearch') },
-                { title: t('CarView.newCarFromScan'), to: t('CarView.routes.newCarFromScan') },
+                { title: t('CarView.orderSearch'), to: { name: 'order-search' } },
+                { title: t('CarView.newCarFromScan'), to: { name: 'car-new-from-scan' } },
                 '-',
-                { title: t('CarView.newCar'), to: t('CarView.routes.newCar') },
-                { title: t('CarView.manageCars'), to: t('CarView.routes.manageCars') }
+                { title: t('CarView.newCar'), to: { name: 'fahrzeug-neu' } },
+                { title: t('CarView.manageCars'), to: { name: 'car-list' } }
             ]
             const mechMode = oserp.getClientDefaultValue('lxcars_mechanic_mode', '0')
             if (mechMode === '1' || mechMode === 'true' || mechMode === true) {
                 lxcarsItems.push('-')
-                lxcarsItems.push({ title: t('MechanicView.title'), to: '/mechaniker' })
+                lxcarsItems.push({ title: t('MechanicView.title'), to: { name: 'mechanic' } })
             }
             result.push({ title: t('CarView.title'), icon: 'mdi-car', items: lxcarsItems })
         }
@@ -37,31 +37,31 @@ export function useNavigationCards() {
                 title: t('MasterDataMenu.title'),
                 icon: 'mdi-database',
                 items: [
-                    { title: t('MasterDataMenu.editCustomer'), to: t('routes.editCustomer') },
-                    { title: t('MasterDataMenu.newCustomer'), to: t('routes.newCustomer') },
-                    { title: t('MasterDataMenu.manageCustomers'), to: t('routes.manageCustomers') },
-                    { title: t('MasterDataMenu.search'), to: t('routes.search') },
+                    { title: t('MasterDataMenu.editCustomer'), to: { name: 'current-customer-edit' } },
+                    { title: t('MasterDataMenu.newCustomer'), to: { name: 'customer-new' } },
+                    { title: t('MasterDataMenu.manageCustomers'), to: { name: 'customer-vendor' } },
+                    { title: t('MasterDataMenu.search'), to: { name: 'search' } },
                     '-',
-                    { title: t('MasterDataMenu.newVendor'), to: t('routes.newVendor') },
+                    { title: t('MasterDataMenu.newVendor'), to: { name: 'vendor-new' } },
                     '-',
-                    { title: t('FollowUpView.title'), to: t('routes.followUp') },
-                    { title: t('CalendarView.title'), to: t('routes.calendar') }
+                    { title: t('FollowUpView.title'), to: { name: 'follow-up' } },
+                    { title: t('CalendarView.title'), to: { name: 'calendar' } }
                 ]
             }
         )
 
         // Kontakt-Menü
         const contactItems = [
-            { title: t('ContactMenu.callHistory'), to: t('routes.callHistory') },
+            { title: t('ContactMenu.callHistory'), to: { name: 'call-history' } },
             '-',
-            { title: t('ContactMenu.emails'), to: '/emails' },
-            { title: t('ContactMenu.whatsapp'), to: '/whatsapp' },
+            { title: t('ContactMenu.emails'), to: { name: 'emails' } },
+            { title: t('ContactMenu.whatsapp'), to: { name: 'whatsapp' } },
             '-',
-            { title: t('Tafel.title'), to: t('routes.tafel') }
+            { title: t('Tafel.title'), to: { name: 'tafel' } }
         ]
         if (oserp.isLxCars()) {
             contactItems.push('-')
-            contactItems.push({ title: t('CarView.huSerienbrief'), to: t('routes.huSerienbrief') })
+            contactItems.push({ title: t('CarView.huSerienbrief'), to: { name: 'hu-serienbrief' } })
         }
         result.push(
             {
@@ -77,13 +77,13 @@ export function useNavigationCards() {
                 title: t('SalesMenu.title'),
                 icon: 'mdi-cash-register',
                 items: [
-                    { title: t('SalesMenu.newQuotation'), to: t('routes.newQuotation') },
+                    { title: t('SalesMenu.newQuotation'), to: { name: 'quotation-new' } },
                     '-',
-                    { title: t('SalesMenu.newOrder'), to: t('routes.newOrder') },
+                    { title: t('SalesMenu.newOrder'), to: { name: 'order-new' } },
                     '-',
-                    { title: t('SalesMenu.newInvoice'), to: t('routes.newInvoice') },
+                    { title: t('SalesMenu.newInvoice'), to: { name: 'invoice-new' } },
                     '-',
-                    { title: t('SalesMenu.manageCreditNotes'), to: t('routes.manageCreditNotes') }
+                    { title: t('SalesMenu.manageCreditNotes'), to: { name: 'credit-note-list' } }
                 ]
             }
         )
@@ -94,20 +94,20 @@ export function useNavigationCards() {
                 title: t('AccountingView.menu.title'),
                 icon: 'mdi-calculator-variant',
                 items: [
-                    { title: t('AccountingView.menu.overview'), to: t('AccountingView.routes.accountingOverview') },
+                    { title: t('AccountingView.menu.overview'), to: { name: 'accounting-overview' } },
                     '-',
-                    { title: t('AccountingView.menu.invoiceUpload'), to: t('AccountingView.routes.accountingInvoiceUpload') },
-                    { title: t('AccountingView.menu.bookings'), to: t('AccountingView.routes.accountingBookings') },
-                    { title: t('AccountingView.menu.outgoingMatching'), to: t('AccountingView.routes.accountingOutgoing') },
-                    { title: t('AccountingView.menu.openItems'), to: t('AccountingView.routes.accountingOpenItems') },
+                    { title: t('AccountingView.menu.invoiceUpload'), to: { name: 'accounting-invoice-upload' } },
+                    { title: t('AccountingView.menu.bookings'), to: { name: 'accounting-bookings' } },
+                    { title: t('AccountingView.menu.outgoingMatching'), to: { name: 'accounting-outgoing' } },
+                    { title: t('AccountingView.menu.openItems'), to: { name: 'accounting-open-items' } },
                     '-',
-                    { title: t('AccountingView.menu.vendors'), to: t('AccountingView.routes.accountingVendors') },
-                    { title: t('AccountingView.menu.chartOfAccounts'), to: t('AccountingView.routes.accountingChartOfAccounts') },
+                    { title: t('AccountingView.menu.vendors'), to: { name: 'accounting-vendors' } },
+                    { title: t('AccountingView.menu.chartOfAccounts'), to: { name: 'accounting-chart-of-accounts' } },
                     '-',
-                    { title: t('BankingView.menu.title'), to: t('BankingView.routes.bankingOverview') },
-                    { title: t('KasseView.title'), to: t('KasseView.routes.kasse') },
+                    { title: t('BankingView.menu.title'), to: { name: 'banking-overview' } },
+                    { title: t('KasseView.title'), to: { name: 'kasse' } },
                     '-',
-                    { title: t('AccountingView.menu.datevExport'), to: t('AccountingView.routes.accountingDatevExport') }
+                    { title: t('AccountingView.menu.datevExport'), to: { name: 'accounting-datev-export' } }
                 ]
             }
         )
@@ -118,10 +118,10 @@ export function useNavigationCards() {
                 title: t('WikiMenu.title'),
                 icon: 'mdi-book-open-variant',
                 items: [
-                    { title: t('WikiMenu.newPage'), to: '/wiki/neu' },
-                    { title: t('WikiMenu.allPages'), to: '/wiki' },
+                    { title: t('WikiMenu.newPage'), to: { name: 'wiki-new' } },
+                    { title: t('WikiMenu.allPages'), to: { name: 'wiki-list' } },
                     '-',
-                    { title: t('WikiMenu.categories'), to: '/wiki/kategorien' }
+                    { title: t('WikiMenu.categories'), to: { name: 'wiki-categories' } }
                 ]
             }
         )
@@ -132,10 +132,10 @@ export function useNavigationCards() {
                 title: t('HrMenu.title'),
                 icon: 'mdi-account-group',
                 items: [
-                    { title: t('HrMenu.hub'), to: t('routes.hr') },
+                    { title: t('HrMenu.hub'), to: { name: 'hr' } },
                     '-',
-                    { title: t('HrMenu.payroll'), to: t('routes.hrPayroll') },
-                    { title: t('HrMenu.vacation'), to: t('routes.hrVacation') }
+                    { title: t('HrMenu.payroll'), to: { name: 'hr-payroll' } },
+                    { title: t('HrMenu.vacation'), to: { name: 'hr-vacation' } }
                 ]
             }
         )

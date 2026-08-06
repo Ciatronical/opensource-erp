@@ -197,7 +197,7 @@
                             <v-btn
                                 color="primary"
                                 prepend-icon="mdi-check-all"
-                                @click="$router.push('/')"
+                                @click="$router.push({ name: 'startup' })"
                             >
                                 {{ $t('update.buttons.finish') }}
                             </v-btn>

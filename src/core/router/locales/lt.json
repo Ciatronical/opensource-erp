@@ -30,6 +30,7 @@
         "currentCustomerEdit": "/kunde/bearbeiten",
         "callHistory": "/anrufliste",
         "calendar": "/kalender",
+        "tasks": "/aufgaben",
         "wiki": "/wiki",
         "wikiNew": "/wiki/neu",
         "wikiCategories": "/wiki/kategorien",
@@ -44,7 +45,17 @@
         "hr": "/hr",
         "hrPayroll": "/hr/payroll",
         "hrVacation": "/hr/vacation",
-        "newDeliveryOrder": "/delivery-order/new"
+        "newDeliveryOrder": "/delivery-order/new",
+        "setup": "/setup",
+        "login": "/login",
+        "emails": "/emails",
+        "whatsapp": "/whatsapp",
+        "docs": "/docs",
+        "mechanic": "/mechaniker",
+        "mechanicOrder": "/mechaniker/auftrag",
+        "mechanicCar": "/mechaniker/fahrzeug",
+        "privacy": "/datenschutz",
+        "dataDeletion": "/datenloeschung"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Klaida: Slaptazodzio failas api/config/api.passwd.php nerastas. Pervadinkite faila api/config/api.passwd.php.example i api/config/api.passwd.php ir pritaikykite nustatymus.",

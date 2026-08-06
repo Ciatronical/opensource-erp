@@ -32,6 +32,7 @@
         "editCv": "/kunde-lieferant/bearbeiten",
         "callHistory": "/anrufliste",
         "calendar": "/kalender",
+        "tasks": "/aufgaben",
         "wiki": "/wiki",
         "wikiNew": "/wiki/neu",
         "wikiCategories": "/wiki/kategorien",
@@ -45,7 +46,17 @@
         "camera": "/kameras",
         "hr": "/personal",
         "hrPayroll": "/personal/lohn",
-        "hrVacation": "/personal/urlaub"
+        "hrVacation": "/personal/urlaub",
+        "setup": "/setup",
+        "login": "/login",
+        "emails": "/emails",
+        "whatsapp": "/whatsapp",
+        "docs": "/docs",
+        "mechanic": "/mechaniker",
+        "mechanicOrder": "/mechaniker/auftrag",
+        "mechanicCar": "/mechaniker/fahrzeug",
+        "privacy": "/datenschutz",
+        "dataDeletion": "/datenloeschung"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Fehler: Die Passwort-Datei api/config/api.passwd.php wurde nicht gefunden. Bitte benennen Sie die Datei api/config/api.passwd.php.example in api/config/api.passwd.php um und passen Sie die Einstellungen entsprechend an.",

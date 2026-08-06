@@ -134,7 +134,6 @@ function searchCvEmails($data) {
             'name' => $row['name'],
             'number' => $row['customernumber'],
             'emails' => $emails,
-            'route' => '/kunde/' . $row['id'],
         ];
     }
 
@@ -166,7 +165,6 @@ function searchCvEmails($data) {
             'name' => $row['name'],
             'number' => $row['vendornumber'],
             'emails' => $emails,
-            'route' => '/lieferant/' . $row['id'],
         ];
     }
 

@@ -155,6 +155,7 @@
 import { ref, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
+import { transTypeRoute } from '@/core/constants/routes.js';
 
 const { t, d } = useI18n();
 const router = useRouter();
@@ -280,16 +281,10 @@ function getLinkIcon(transType) {
 }
 
 function navigateToLink(link) {
-    // Navigation basierend auf trans_type
-    const routes = {
-        customer: `/kunde/bearbeiten/${link.trans_id}`,
-        vendor: `/lieferant/bearbeiten/${link.trans_id}`,
-        sales_invoice: `/rechnung/anzeigen/${link.trans_id}`
-        // Weitere Routen hinzufügen
-    };
-
-    if (routes[link.trans_type]) {
-        router.push(routes[link.trans_type]);
+    // Navigation basierend auf trans_type — Ziel kommt aus TRANS_TYPE_ROUTE_NAMES
+    const target = transTypeRoute(link.trans_type, link.trans_id);
+    if (target) {
+        router.push(target);
     }
 }
 </script>

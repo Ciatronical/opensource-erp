@@ -218,7 +218,7 @@ export default defineComponent({
         }
 
         function exit() {
-            router.push('/')
+            router.push({ name: 'startup' })
         }
 
         onMounted(() => {

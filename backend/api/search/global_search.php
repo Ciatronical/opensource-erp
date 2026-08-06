@@ -70,7 +70,6 @@ function globalSearch($data) {
             'id' => intval($row['id']),
             'title' => $row['name'],
             'subtitle' => trim($row['customernumber'] . ($row['city'] ? ' · ' . $row['city'] : '')),
-            'route' => '/kunde/' . $row['id']
         ];
     }
 
@@ -112,7 +111,6 @@ function globalSearch($data) {
             'id' => intval($row['id']),
             'title' => $row['name'],
             'subtitle' => trim($row['vendornumber'] . ($row['city'] ? ' · ' . $row['city'] : '')),
-            'route' => '/lieferant/' . $row['id']
         ];
     }
 
@@ -134,7 +132,6 @@ function globalSearch($data) {
             'id' => intval($row['id']),
             'title' => $row['invnumber'],
             'subtitle' => trim($row['customer_name'] . ' · ' . $row['transdate']),
-            'route' => '/rechnung/' . $row['id']
         ];
     }
 
@@ -157,7 +154,6 @@ function globalSearch($data) {
             'id' => intval($row['id']),
             'title' => $row['ordnumber'],
             'subtitle' => trim($row['customer_name'] . ' · ' . $row['transdate']),
-            'route' => '/auftrag/' . $row['id']
         ];
     }
 
@@ -180,7 +176,6 @@ function globalSearch($data) {
             'id' => intval($row['id']),
             'title' => $row['quonumber'],
             'subtitle' => trim($row['customer_name'] . ' · ' . $row['transdate']),
-            'route' => '/angebot/' . $row['id']
         ];
     }
 
@@ -202,7 +197,6 @@ function globalSearch($data) {
             'id' => intval($row['id']),
             'title' => $row['partnumber'] . ' — ' . $row['description'],
             'subtitle' => trim(($row['sellprice'] ? number_format(floatval($row['sellprice']), 2, ',', '.') . ' €' : '') . ($row['unit'] ? ' / ' . $row['unit'] : '')),
-            'route' => '/artikel/' . $row['id']
         ];
     }
 
@@ -232,7 +226,6 @@ function globalSearch($data) {
                 'id' => intval($row['c_id']),
                 'title' => $row['c_ln'],
                 'subtitle' => trim(($row['c_mkb'] ?: '') . ($row['owner_name'] ? ' · ' . $row['owner_name'] : '')),
-                'route' => '/fahrzeug/' . $row['c_id']
             ];
         }
     }
@@ -256,7 +249,6 @@ function globalSearch($data) {
                 'id' => intval($row['id']),
                 'title' => $row['title'],
                 'subtitle' => $row['category_name'] ?: '',
-                'route' => '/wiki/' . $row['id']
             ];
         }
     }

@@ -64,11 +64,44 @@ function loadLocaleMessages() {
     return messages
 }
 
+const LOCALE_STORAGE_KEY = 'oserp-locale'
+
+/**
+ * Zuletzt verwendete Sprache aus dem Browser-Speicher
+ *
+ * Wird gebraucht, bevor die Session geladen ist: der Router baut seine
+ * URL-Tabelle beim Modul-Import und muss die Sprache da bereits kennen.
+ * Ohne das startet die App immer deutsch und die URLs würden nach dem
+ * Login sichtbar umspringen.
+ *
+ * @return {string} Sprachkürzel, im Zweifel 'de'
+ */
+export function getStoredLocale() {
+    try {
+        return localStorage.getItem(LOCALE_STORAGE_KEY) || 'de'
+    } catch {
+        return 'de'
+    }
+}
+
+/**
+ * Merkt die Sprache für den nächsten Seitenaufruf
+ *
+ * @param {string} locale - Sprachkürzel
+ */
+export function storeLocale(locale) {
+    try {
+        localStorage.setItem(LOCALE_STORAGE_KEY, locale)
+    } catch {
+        // privater Modus o. Ä. — dann eben ohne Merken
+    }
+}
+
 // Sprachkonfiguration für i18n
 const i18n = createI18n({
     legacy: false, // Wichtig für den Composition API-Modus
     globalInjection: true, // Erhält den globalen $t-Zugriff
-    locale: 'de', // Standard-Sprache setzen
+    locale: getStoredLocale(), // Zuletzt gewählte Sprache, sonst Deutsch
     fallbackLocale: 'en', // Fallback-Sprache setzen
     messages: loadLocaleMessages(), // Alle Sprachdateien laden
 })

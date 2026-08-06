@@ -456,7 +456,6 @@ function searchCvPhones($data) {
             'number' => $row['number'],
             'phones' => array_unique($phones),
             'type' => $row['type'],
-            'route' => '/kunde/' . $row['id']
         ];
     }
 

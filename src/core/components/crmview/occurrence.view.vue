@@ -5,25 +5,25 @@
         <v-tabs v-model="occurrenceTab" color="primary" density="compact" show-arrows>
             <v-tab value="offers">
                 <span class="d-none d-sm-inline">{{ labelOffers }}</span>
-                <v-btn icon size="x-small" variant="text" class="ms-1" @click.stop="createNew('routes.newQuotation')">
+                <v-btn icon size="x-small" variant="text" class="ms-1" @click.stop="createNew('quotation-new')">
                     <v-icon size="small">mdi-plus</v-icon>
                 </v-btn>
             </v-tab>
             <v-tab value="orders">
                 <span class="d-none d-sm-inline">{{ labelOrders }}</span>
-                <v-btn icon size="x-small" variant="text" class="ms-1" @click.stop="createNew('routes.newOrder')">
+                <v-btn icon size="x-small" variant="text" class="ms-1" @click.stop="createNew('order-new')">
                     <v-icon size="small">mdi-plus</v-icon>
                 </v-btn>
             </v-tab>
             <v-tab value="delivery_orders">
                 <span class="d-none d-sm-inline">{{ labelDeliveryOrders }}</span>
-                <v-btn icon size="x-small" variant="text" class="ms-1" @click.stop="createNew('routes.newDeliveryOrder')">
+                <v-btn icon size="x-small" variant="text" class="ms-1" @click.stop="createNew('delivery-order-new')">
                     <v-icon size="small">mdi-plus</v-icon>
                 </v-btn>
             </v-tab>
             <v-tab value="invoices">
                 <span class="d-none d-sm-inline">{{ labelInvoices }}</span>
-                <v-btn icon size="x-small" variant="text" class="ms-1" @click.stop="createNew('routes.newInvoice')">
+                <v-btn icon size="x-small" variant="text" class="ms-1" @click.stop="createNew('invoice-new')">
                     <v-icon size="small">mdi-plus</v-icon>
                 </v-btn>
             </v-tab>
@@ -82,7 +82,7 @@
                     :items-per-page="10"
                     :no-data-text="noOffersText"
                     hover
-                    @click:row="(event, { item }) => navigateTo('routes.manageQuotations', item.id)"
+                    @click:row="(event, { item }) => navigateTo('faktura-quotation-view', item.id)"
                     class="cursor-pointer zebra-table"
                 >
                     <template #item.amount="{ item }">
@@ -102,7 +102,7 @@
                     :items-per-page="10"
                     :no-data-text="noOrdersText"
                     hover
-                    @click:row="(event, { item }) => navigateTo('routes.manageOrders', item.id)"
+                    @click:row="(event, { item }) => navigateTo('faktura-order-view', item.id)"
                     class="cursor-pointer zebra-table"
                 >
                     <template #item.record_type="{ item }">
@@ -131,7 +131,7 @@
                     :no-data-text="noDeliveryOrdersText"
                     hover
                     :row-props="statusRowProps"
-                    @click:row="(event, { item }) => navigateTo('routes.manageDeliveryOrders', item.id)"
+                    @click:row="(event, { item }) => navigateTo('faktura-delivery-order-view', item.id)"
                     class="cursor-pointer zebra-table"
                 >
                     <template #item.status="{ item }">
@@ -387,16 +387,16 @@ const statusRowProps = ({ item }) => {
 };
 
 const navigateToInvoice = (item) => {
-    const routeKey = isCreditNote(item) ? 'routes.manageCreditNotes' : 'routes.manageInvoices';
-    router.push(`${t(routeKey)}/${item.id}`);
+    const routeName = isCreditNote(item) ? 'faktura-credit-note-view' : 'faktura-invoice-view';
+    router.push({ name: routeName, params: { id: item.id } });
 };
 
-const navigateTo = (routeKey, id) => {
-    router.push(`${t(routeKey)}/${id}`);
+const navigateTo = (routeName, id) => {
+    router.push({ name: routeName, params: { id } });
 };
 
-const createNew = (routeKey) => {
-    router.push(t(routeKey));
+const createNew = (routeName) => {
+    router.push({ name: routeName });
 };
 
 // ===== Mehrfachauswahl, Druck & Export =====

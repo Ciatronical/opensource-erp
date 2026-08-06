@@ -82,6 +82,7 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { oserpStore } from '@/core/stores/oserp.store.js'
 import { useViewHistory } from '@/core/composables/useViewHistory.js'
+import { entityRoute } from '@/core/constants/routes.js'
 import axios from 'axios'
 
 export default defineComponent({
@@ -222,8 +223,13 @@ export default defineComponent({
 
             saveToHistory(item)
 
-            if (item.route) {
-                router.push(item.route)
+            // Verlaufseintraege bringen ein Route-Objekt mit (ggf. mit Query),
+            // frische Suchtreffer werden aus type/id abgeleitet.
+            const target = (item.route && typeof item.route === 'object')
+                ? item.route
+                : entityRoute(item.type, item.id)
+            if (target) {
+                router.push(target)
             }
 
             // Laufenden Request und Timer abbrechen

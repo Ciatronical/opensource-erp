@@ -89,7 +89,7 @@
                 </v-btn>
             </template>
             <v-spacer />
-            <v-btn v-if="isMechanicMode" icon variant="text" color="primary" :title="t('MechanicView.exitMechanic')" @click="router.push(t('routes.mainmenu'))">
+            <v-btn v-if="isMechanicMode" icon variant="text" color="primary" :title="t('MechanicView.exitMechanic')" @click="router.push({ name: 'menu' })">
                 <v-icon>mdi-exit-to-app</v-icon>
             </v-btn>
             <template v-if="!readonly">
@@ -1503,7 +1503,7 @@ export default {
                 if (customerId) {
                     router.push({ name: 'change-customer', params: { id: customerId } })
                 } else {
-                    router.push('/')
+                    router.push({ name: 'startup' })
                 }
             } catch (err) {
                 console.error('Delete car error:', err)

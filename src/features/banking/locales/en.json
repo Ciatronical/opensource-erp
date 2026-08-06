@@ -413,7 +413,7 @@
     },
     "KasseView": {
         "routes": {
-            "kasse": "/kasse"
+            "kasse": "/cash-register"
         },
         "title": "Cash Register",
         "info": "The digital cash book for cash income and expenses. How to use: select the register at the top, record cash movements with \"Income\"/\"Expense\" (amount, account, receipt) – the cash balance is updated automatically. Please record daily and reconcile the balance with the cash drawer.",
@@ -449,9 +449,18 @@
         "wholePeriod": "All",
         "noKassaAccount": "No cash account found in the chart of accounts. Please add a cash account (SKR03: 1000, SKR04: 1600).",
         "months": {
-            "jan": "January", "feb": "February", "mar": "March", "apr": "April",
-            "may": "May", "jun": "June", "jul": "July", "aug": "August",
-            "sep": "September", "oct": "October", "nov": "November", "dec": "December"
+            "jan": "January",
+            "feb": "February",
+            "mar": "March",
+            "apr": "April",
+            "may": "May",
+            "jun": "June",
+            "jul": "July",
+            "aug": "August",
+            "sep": "September",
+            "oct": "October",
+            "nov": "November",
+            "dec": "December"
         },
         "date": "Date",
         "amount": "Amount",
