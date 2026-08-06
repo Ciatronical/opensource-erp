@@ -205,6 +205,12 @@ const router = createRouter({
             component: ClientDefaultsView,
         },
         {
+            // Alte URL (/system/mandantenkonfiguration) auf neue umleiten,
+            // damit bestehende Lesezeichen weiter funktionieren.
+            path: '/system/mandantenkonfiguration',
+            redirect: to => ({ name: 'client-defaults', query: to.query }),
+        },
+        {
             path: i18n.global.t('CarView.routes.newCar'),
             name: 'fahrzeug-neu',
             component: CarEditView,

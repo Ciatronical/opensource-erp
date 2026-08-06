@@ -19,7 +19,7 @@
             variant="accordion"
         >
             <!-- 1. Buchungsgruppen -->
-            <v-expansion-panel value="buchungsgruppen">
+            <v-expansion-panel value="buchungsgruppen" data-panel="buchungsgruppen">
                 <v-expansion-panel-title>
                     <div class="d-flex align-center">
                         <v-icon class="me-3" color="primary" size="large">mdi-file-document-multiple</v-icon>
@@ -92,7 +92,7 @@
             </v-expansion-panel>
 
             <!-- 2. Steuerzonen -->
-            <v-expansion-panel value="taxzones">
+            <v-expansion-panel value="taxzones" data-panel="taxzones">
                 <v-expansion-panel-title>
                     <div class="d-flex align-center">
                         <v-icon class="me-3" color="primary" size="large">mdi-earth</v-icon>
@@ -168,7 +168,7 @@
             </v-expansion-panel>
 
             <!-- 3. Steuern -->
-            <v-expansion-panel value="taxes">
+            <v-expansion-panel value="taxes" data-panel="taxes">
                 <v-expansion-panel-title>
                     <div class="d-flex align-center">
                         <v-icon class="me-3" color="primary" size="large">mdi-percent</v-icon>
@@ -252,7 +252,7 @@
             </v-expansion-panel>
 
             <!-- 4. Bankkonten -->
-            <v-expansion-panel value="bank_accounts">
+            <v-expansion-panel value="bank_accounts" data-panel="bank_accounts">
                 <v-expansion-panel-title>
                     <div class="d-flex align-center">
                         <v-icon class="me-3" color="primary" size="large">mdi-bank</v-icon>
@@ -373,7 +373,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, watch, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { oserpStore } from '@/core/stores/oserp.store.js';
 import BuchungsgruppeEdit from './edit/buchungsgruppe-edit.vue';
@@ -385,8 +385,27 @@ import draggable from 'vuedraggable';
 const { t } = useI18n();
 const store = oserpStore();
 
+// openPanel: von der Suche gesetzt, um direkt in ein Panel zu springen
+// (z. B. Suche "Bankkonten" -> Panel bank_accounts oeffnen).
+const props = defineProps({
+    openPanel: {
+        type: String,
+        default: ''
+    }
+});
+
 // Welche Panels sind geöffnet
 const openPanels = ref([]);
+
+// Bei Deep-Link aus der Suche das gewuenschte Panel oeffnen und hinscrollen.
+watch(() => props.openPanel, (panel) => {
+    if (!panel) return;
+    if (!openPanels.value.includes(panel)) openPanels.value.push(panel);
+    nextTick(() => {
+        const el = document.querySelector(`[data-panel="${panel}"]`);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+}, { immediate: true });
 
 // Edit Dialog State
 const editDialog = ref(false);

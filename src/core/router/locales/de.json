@@ -25,7 +25,7 @@
         "search": "/suche",
         "searchCustomers": "/kunde/suche",
         "followUp": "/wiedervorlage",
-        "clientConfig": "/system/mandantenkonfiguration",
+        "clientConfig": "/system/firmenconfig",
         "developerTools": "/system/developer-tools",
         "systemUpdate": "/system/aktualisierung",
         "currentCustomerEdit": "/kunde/bearbeiten",

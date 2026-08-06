@@ -28,9 +28,9 @@
 
                     <v-divider />
 
-                    <!-- Gruppierte Tab-Liste -->
-                    <v-list density="compact" nav class="pt-0">
-                        <template v-for="group in filteredGroups" :key="group.key">
+                    <!-- Ohne Suche: gruppierte Tab-Liste -->
+                    <v-list v-if="!searchQuery" density="compact" nav class="pt-0">
+                        <template v-for="group in tabGroups" :key="group.key">
                             <v-list-subheader class="text-uppercase text-caption font-weight-bold">
                                 {{ group.title }}
                             </v-list-subheader>
@@ -45,9 +45,28 @@
                                 <v-list-item-title>{{ tab.title }}</v-list-item-title>
                             </v-list-item>
                         </template>
+                    </v-list>
 
-                        <!-- Keine passende Sektion -->
-                        <v-list-item v-if="filteredGroups.length === 0" :title="$t('noSectionsFound')" disabled>
+                    <!-- Mit Suche: flache, gerankte Trefferliste (inkl. Unterbereichen) -->
+                    <v-list v-else density="compact" nav class="pt-0">
+                        <v-list-subheader class="text-uppercase text-caption font-weight-bold">
+                            {{ $t('searchResults') }} ({{ searchResults.length }})
+                        </v-list-subheader>
+                        <v-list-item
+                            v-for="result in searchResults"
+                            :key="result.id"
+                            :active="activeTab === result.tab && (result.type === 'tab' || pendingPanel === result.panel)"
+                            @click="goToResult(result)"
+                            :prepend-icon="result.icon"
+                        >
+                            <v-list-item-title>{{ result.title }}</v-list-item-title>
+                            <v-list-item-subtitle v-if="result.type === 'sub'" class="text-caption">
+                                {{ result.parent }}
+                            </v-list-item-subtitle>
+                        </v-list-item>
+
+                        <!-- Keine Treffer -->
+                        <v-list-item v-if="searchResults.length === 0" :title="$t('noSectionsFound')" disabled>
                             <template #prepend>
                                 <v-icon>mdi-magnify-close</v-icon>
                             </template>
@@ -87,6 +106,7 @@
                             :defaults="['crm','lxcars','anpr','ai_health','employees'].includes(activeTab) ? undefined : defaults"
                             :crm-defaults="['crm','lxcars','anpr','bank','features','ai_health'].includes(activeTab) ? crmDefaults : undefined"
                             :search-query="searchQuery"
+                            :open-panel="activeTab === 'add' ? pendingPanel : undefined"
                         />
                     </v-card-text>
 
@@ -376,9 +396,9 @@ const tabGroups = computed(() => [
         key: 'master_data',
         title: t('configGroups.masterData'),
         items: [
-            { value: 'company',   title: t('company'),   icon: 'mdi-domain',           keywords: ['firma', 'company', 'stammdaten', 'adresse', 'logo', 'ust', 'steuernummer'] },
+            { value: 'company',   title: t('company'),   icon: 'mdi-domain',           keywords: ['firma', 'company', 'stammdaten', 'adresse', 'address', 'logo', 'ust', 'ust-idnr', 'umsatzsteuer', 'steuernummer', 'währung', 'currency', 'sprache', 'language', 'drucker', 'printer', 'druckvorlage', 'template', 'gewicht', 'weight', 'signatur', 'gläubiger', 'creditor'] },
             { value: 'employees', title: t('employeesTab.title'), icon: 'mdi-account-tie', keywords: ['mitarbeiter', 'employee', 'personal', 'obsolet', 'obsolete', 'verkäufer', 'benutzer', 'user', 'staff'] },
-            { value: 'warehouse', title: t('warehouse'), icon: 'mdi-warehouse',        keywords: ['lager', 'warehouse', 'bestand', 'stock', 'ort'] },
+            { value: 'warehouse', title: t('warehouse'), icon: 'mdi-warehouse',        keywords: ['lager', 'warehouse', 'bestand', 'stock', 'lagerort', 'ort'] },
             { value: 'crm',       title: t('crm'),       icon: 'mdi-account-multiple', keywords: ['crm', 'kunde', 'customer', 'kontakt', 'contact'] },
         ]
     },
@@ -386,20 +406,20 @@ const tabGroups = computed(() => [
         key: 'accounting',
         title: t('configGroups.accounting'),
         items: [
-            { value: 'default_accounts',          title: t('defaultAccounts'),        icon: 'mdi-bank',               keywords: ['konto', 'konten', 'account', 'standardkonto', 'fibu', 'sachkonto'] },
-            { value: 'posting_configuration',     title: t('postingConfiguration'),   icon: 'mdi-file-document-edit', keywords: ['buchung', 'posting', 'buchen', 'kontierung'] },
-            { value: 'datev_check_configuration', title: t('datevCheckConfiguration'),icon: 'mdi-check-circle',       keywords: ['datev', 'export', 'prüfung', 'steuerberater'] },
-            { value: 'bank',                      title: t('bank'),                   icon: 'mdi-bank-transfer',      keywords: ['bank', 'sepa', 'iban', 'überweisung', 'fints', 'zahlung', 'payment'] },
+            { value: 'default_accounts',          title: t('defaultAccounts'),        icon: 'mdi-bank',               keywords: ['konto', 'konten', 'account', 'standardkonto', 'sachkonto', 'fibu', 'erlöskonto', 'aufwandskonto', 'warenbestand', 'forderungen', 'verbindlichkeiten', 'jahresabschluss', 'gewinnvortrag', 'verlustvortrag'] },
+            { value: 'posting_configuration',     title: t('postingConfiguration'),   icon: 'mdi-file-document-edit', keywords: ['buchung', 'posting', 'buchen', 'kontierung', 'zahlungsziel', 'skonto'] },
+            { value: 'datev_check_configuration', title: t('datevCheckConfiguration'),icon: 'mdi-check-circle',       keywords: ['datev', 'export', 'prüfung', 'steuerberater', 'ustva'] },
+            { value: 'bank',                      title: t('bank'),                   icon: 'mdi-bank-transfer',      keywords: ['bank', 'sepa', 'iban', 'überweisung', 'fints', 'hbci', 'zahlung', 'payment', 'banking'] },
         ]
     },
     {
         key: 'documents',
         title: t('configGroups.documents'),
         items: [
-            { value: 'ranges_of_numbers', title: t('rangesOfNumbers'), icon: 'mdi-numeric',              keywords: ['nummer', 'nummernkreis', 'number', 'rechnung', 'invoice', 'auftrag', 'order', 'angebot', 'kunde', 'lieferant', 'artikel'] },
+            { value: 'ranges_of_numbers', title: t('rangesOfNumbers'), icon: 'mdi-numeric',              keywords: ['nummer', 'nummernkreis', 'number', 'rechnung', 'invoice', 'auftrag', 'order', 'angebot', 'kunde', 'lieferant', 'artikel', 'dienstleistung', 'erzeugnis'] },
             { value: 'record_links',      title: t('recordLinks'),     icon: 'mdi-link-variant',         keywords: ['verknüpfung', 'link', 'beleg', 'record', 'kette'] },
-            { value: 'orders_deleteable', title: t('ordersDeleteable'),icon: 'mdi-delete',               keywords: ['löschen', 'delete', 'auftrag', 'order', 'beleg'] },
-            { value: 'einvoice',          title: t('einvoice.tab_title'), icon: 'mdi-file-document-check',keywords: ['erechnung', 'e-rechnung', 'einvoice', 'zugferd', 'xrechnung', 'xml'] },
+            { value: 'orders_deleteable', title: t('ordersDeleteable'),icon: 'mdi-delete',               keywords: ['löschen', 'delete', 'auftrag', 'order', 'beleg', 'stornieren'] },
+            { value: 'einvoice',          title: t('einvoice.tab_title'), icon: 'mdi-file-document-check',keywords: ['erechnung', 'e-rechnung', 'einvoice', 'zugferd', 'xrechnung', 'factur-x', 'xml', 'leitweg'] },
             { value: 'stocktaking',       title: t('stocktaking'),     icon: 'mdi-clipboard-list',       keywords: ['inventur', 'stocktaking', 'zählung', 'bestand'] },
         ]
     },
@@ -407,17 +427,31 @@ const tabGroups = computed(() => [
         key: 'features',
         title: t('configGroups.features'),
         items: [
-            { value: 'features', title: t('features'), icon: 'mdi-star', keywords: ['feature', 'funktion', 'modul', 'branche', 'module'] },
+            { value: 'features', title: t('features'), icon: 'mdi-star', keywords: ['feature', 'funktion', 'modul', 'branche', 'module', 'e-mail', 'email', 'dms', 'dokumente', 'webdav', 'kamera', 'überwachung', 'datev', 'ustva'] },
             ...(store.isLxCars() ? [{ value: 'lxcars', title: 'LxCars', icon: 'mdi-car', keywords: ['lxcars', 'fahrzeug', 'auto', 'werkstatt', 'kfz', 'reifen'] }] : []),
             ...(store.isAnprEnabled() ? [{ value: 'anpr', title: 'ANPR', icon: 'mdi-car-search', keywords: ['anpr', 'kennzeichen', 'kamera', 'nummernschild'] }] : []),
-            { value: 'ai_health', title: t('aiHealth.tabTitle'), icon: 'mdi-robot-happy-outline', keywords: ['ki', 'ai', 'whisper', 'llm', 'ollama', 'spracheingabe', 'gesundheit', 'health'] },
+            { value: 'ai_health', title: t('aiHealth.tabTitle'), icon: 'mdi-robot-happy-outline', keywords: ['ki', 'ai', 'whisper', 'llm', 'ollama', 'spracheingabe', 'glossar', 'fachbegriffe', 'gesundheit', 'health', 'cloud', 'api-key', 'positionsvorschläge'] },
         ]
     },
     {
         key: 'tools',
         title: t('configGroups.tools'),
         items: [
-            { value: 'add', title: t('add'), icon: 'mdi-plus-circle', keywords: ['hinzufügen', 'add', 'neu', 'anlegen', 'werkzeug'] },
+            {
+                value: 'add',
+                title: t('add'),
+                icon: 'mdi-plus-circle',
+                keywords: ['systemeinstellungen', 'grunddaten', 'stammdaten', 'hinzufügen', 'add', 'neu', 'anlegen', 'werkzeug',
+                    'buchungsgruppe', 'buchungsgruppen', 'steuerzone', 'steuerzonen', 'steuer', 'steuersatz', 'steuersätze', 'tax', 'mwst', 'ust',
+                    'bank', 'bankkonto', 'bankkonten', 'iban', 'konto'],
+                // Unterbereiche (Accordion-Panels) — direkt anspringbar via Suche.
+                subsections: [
+                    { key: 'buchungsgruppen', title: t('add_fields.buchungsgruppen.title'), panel: 'buchungsgruppen', keywords: ['buchungsgruppe', 'buchungsgruppen', 'booking group'] },
+                    { key: 'taxzones',        title: t('add_fields.taxzones.title'),        panel: 'taxzones',        keywords: ['steuerzone', 'steuerzonen', 'taxzone'] },
+                    { key: 'taxes',           title: t('add_fields.taxes.title'),           panel: 'taxes',           keywords: ['steuer', 'steuersatz', 'steuersätze', 'tax', 'mwst', 'ust'] },
+                    { key: 'bank_accounts',   title: t('add_fields.bank_accounts.title'),   panel: 'bank_accounts',   keywords: ['bank', 'bankkonto', 'bankkonten', 'iban', 'konto'] },
+                ],
+            },
         ]
     }
 ]);
@@ -425,32 +459,72 @@ const tabGroups = computed(() => [
 // Flache Liste aller sichtbaren Tabs (für Lookups & Query-Param-Handling)
 const allTabs = computed(() => tabGroups.value.flatMap(g => g.items));
 
-// Sektions-Suche: filtert Gruppen/Items anhand Titel + Keywords.
-const filteredGroups = computed(() => {
+// Panel, das im Ziel-Tab geöffnet werden soll (Deep-Link aus der Suche).
+const pendingPanel = ref('');
+
+/**
+ * Zentraler Such-Index als flache, gerankte Trefferliste.
+ *
+ * Durchsucht Titel + Keywords der Sektionen UND deren Unterbereiche
+ * (z. B. "Bankkonten" im Tab "Hinzufügen"). Ein Unterbereich-Treffer
+ * springt direkt in das passende Accordion-Panel.
+ *
+ * Ranking: Titel-Anfang (0) < Titel enthält (1) < Keyword (2).
+ */
+const searchResults = computed(() => {
     const q = (searchQuery.value || '').trim().toLowerCase();
-    if (!q) return tabGroups.value;
-    return tabGroups.value
-        .map(group => ({
-            ...group,
-            items: group.items.filter(tab =>
-                tab.title.toLowerCase().includes(q) ||
-                tab.keywords.some(k => k.includes(q))
-            )
-        }))
-        .filter(group => group.items.length > 0);
+    if (!q) return [];
+
+    const rank = (title, keywords) => {
+        const t = title.toLowerCase();
+        if (t.startsWith(q)) return 0;
+        if (t.includes(q)) return 1;
+        if (keywords.some(k => k.includes(q))) return 2;
+        return -1;
+    };
+
+    const results = [];
+    for (const group of tabGroups.value) {
+        for (const tab of group.items) {
+            const tabScore = rank(tab.title, tab.keywords);
+            if (tabScore >= 0) {
+                results.push({ id: tab.value, type: 'tab', tab: tab.value, title: tab.title, icon: tab.icon, group: group.title, score: tabScore });
+            }
+            for (const sub of (tab.subsections || [])) {
+                const subScore = rank(sub.title, sub.keywords);
+                if (subScore >= 0) {
+                    results.push({ id: `${tab.value}/${sub.key}`, type: 'sub', tab: tab.value, panel: sub.panel, title: sub.title, icon: tab.icon, parent: tab.title, group: group.title, score: subScore });
+                }
+            }
+        }
+    }
+    return results.sort((a, b) => a.score - b.score);
 });
 
 const currentTab = computed(() => {
     return allTabs.value.find(tab => tab.value === activeTab.value);
 });
 
-// Wenn die Suche den aktiven Tab ausblendet, automatisch zum ersten Treffer springen —
-// so führt die Suche direkt zur passenden Sektion.
-watch(filteredGroups, (groups) => {
-    if (!searchQuery.value) return;
-    const visible = groups.flatMap(g => g.items.map(i => i.value));
-    if (visible.length && !visible.includes(activeTab.value)) {
-        activeTab.value = visible[0];
+/**
+ * Navigiert zu einem Suchtreffer: setzt den Tab und öffnet bei
+ * Unterbereich-Treffern das passende Panel.
+ */
+function goToResult(result) {
+    activeTab.value = result.tab;
+    // pendingPanel neu setzen (auch bei gleichem Panel), damit der
+    // Watcher im Ziel-Tab erneut feuert und hinscrollt.
+    pendingPanel.value = '';
+    if (result.type === 'sub' && result.panel) {
+        nextTick(() => { pendingPanel.value = result.panel; });
+    }
+}
+
+// Beim Tippen automatisch zum besten Treffer springen, damit die Suche
+// direkt zur passenden Sektion führt (Panel wird erst per Klick geöffnet).
+watch(searchResults, (results) => {
+    if (!searchQuery.value || results.length === 0) return;
+    if (!results.some(r => r.tab === activeTab.value)) {
+        activeTab.value = results[0].tab;
     }
 });
 
