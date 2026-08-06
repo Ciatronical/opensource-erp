@@ -302,6 +302,27 @@ watchFile(buildIdPath, { interval: 2000 }, () => {
     }
 });
 
+// settings.ini live ueberwachen: Wird das DB-Passwort erst NACH dem ersten Start
+// eingetragen (frische Installation, DB-Passwort ist ein manueller [TODO]-Schritt) oder
+// spaeter geaendert, haelt der authPool sonst dauerhaft die alten (falschen) Credentials
+// -> Session-Lookups scheitern mit "password authentication failed" (HTTP 500 im Browser
+// bei /sse/events MIT Login-Cookie). Bei Aenderung der DB-Zugangsdaten den Dienst sauber
+// beenden; systemd (Restart=always) startet ihn mit frischer Konfiguration neu.
+watchFile(iniPath, { interval: 2000 }, () => {
+    try {
+        const fresh = parseIni(iniPath);
+        const freshPass = fresh.database?.auth_pass ? decryptPassword(fresh.database.auth_pass) : '';
+        const freshUser = fresh.database?.auth_user || 'postgres';
+        const freshDb   = fresh.database?.auth_db   || 'oserp_auth';
+        if (freshPass !== dbPass || freshUser !== dbUser || freshDb !== authDbName) {
+            console.log('settings.ini geaendert (DB-Zugangsdaten) — starte SSE-Server neu, um neue Credentials zu laden');
+            shutdown();
+        }
+    } catch (err) {
+        console.error('settings.ini Reload-Pruefung fehlgeschlagen:', err.message);
+    }
+});
+
 // Graceful Shutdown
 function shutdown() {
     console.log('Shutting down...');
