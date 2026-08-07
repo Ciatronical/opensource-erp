@@ -293,7 +293,12 @@ export default defineComponent({
         let hasPendingChanges = false
         let saveTimeout = null
 
-        const unitOptions = ['Stck', 'Std', 'kg', 'm', 'm²', 'm³', 'l', 'Psch', 'Tag']
+        // Einheiten kommen aus der DB (units-Tabelle via company_config), NICHT hardcodiert.
+        // Sonst FK-Verletzung parts_unit_fkey, sobald eine angebotene Einheit (z. B. 'l')
+        // nicht in units existiert (dort z. B. 'L'). units.name ist der FK-Wert.
+        const unitOptions = computed(() =>
+            (oserp.session?.company_config?.units || []).map(u => u.name)
+        )
 
         const buchungsgruppen = computed(() => {
             return oserp.session?.company_config?.buchungsgruppen || []

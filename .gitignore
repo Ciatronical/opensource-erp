@@ -73,3 +73,6 @@ backend/composer.phar
 # carparts-cat / TOPMOTIVE Doku-Zugang (lokal, niemals committen)
 dev/.carparts-creds
 dev/carparts-cat-docs/
+
+#Github Verzeichnis ausschließen
+.github/
