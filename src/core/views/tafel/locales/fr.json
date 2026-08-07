@@ -1,0 +1,26 @@
+{
+    "Tafel": {
+        "title": "Tableau",
+        "online": "En direct",
+        "offline": "Hors ligne",
+        "openBoard": "Ouvrir le tableau d'affichage",
+        "senderLabel": "De",
+        "textLabel": "Note",
+        "textPlaceholder": "Que faut-il afficher sur le tableau ?",
+        "enterHint": "Entrée pour ajouter, Maj+Entrée pour une nouvelle ligne",
+        "addButton": "Ajouter",
+        "addError": "Impossible d'ajouter la note",
+        "empty": "Aucune entrée",
+        "emptyHint": "Ajoutez une note ci-dessus ou dictez-la via Telegram – elle apparaîtra aussi sur le tableau d'affichage.",
+        "count": "{n} entrées",
+        "dragHint": "Glissez pour réordonner",
+        "unknown": "Inconnu",
+        "failed": "Échec de la transcription",
+        "delete": "Supprimer",
+        "cancel": "Annuler",
+        "confirmDeleteTitle": "Supprimer l'entrée ?",
+        "confirmDeleteText": "L'entrée sera également retirée du tableau d'affichage (TV).",
+        "deleteError": "Impossible de supprimer la note",
+        "reorderError": "Impossible d'enregistrer le nouvel ordre"
+    }
+}

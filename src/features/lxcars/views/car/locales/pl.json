@@ -57,7 +57,9 @@
             "scan_detail_id": "ID szczegółów skanu",
             "filename": "Nazwa pliku",
             "c_ow": "Właściciel",
-            "c_km": "Ostatni przebieg"
+            "c_km": "Ostatni przebieg",
+            "c_hu_notify": "Wysyłaj przypomnienia o przeglądzie",
+            "c_hu_notify_locked": "Przypomnienia o przeglądzie są całkowicie wyłączone dla tego klienta. Najpierw włącz je u klienta (zakładka „Faktura\", warunki), aby móc je ponownie aktywować dla tego pojazdu."
         },
         "kba": {
             "hersteller": "Producent",
@@ -221,7 +223,11 @@
             "amount": "Suma",
             "number": "Nr zlecenia",
             "noOrders": "Brak zleceń",
-            "newOrder": "Nowe zlecenie"
+            "newOrder": "Nowe zlecenie",
+            "confirmed": "Potwierdzone",
+            "notConfirmed": "Przyjęte (niepotwierdzone)",
+            "filterPlaceholder": "Szukaj…",
+            "filterHint": "Przeszukuje numer zlecenia, datę, opis, sumę, towary, kwoty pozycji, instrukcje robocze i fakturę. Wiele słów łączonych jest operatorem I."
         },
         "messages": {
             "saved": "Pojazd zapisany",
@@ -337,6 +343,28 @@
             "label": "Ktype",
             "resolving": "Resolving Ktype …",
             "refresh": "Refresh Ktype"
+        },
+        "voice": {
+            "hint": "Podyktuj dane serwisowe — np. „przebieg 120369, pasek rozrządu na 20000, płyn hamulcowy 02/2029\"",
+            "stop": "Zakończ nagrywanie i zastosuj",
+            "applied": "Zastosowano:",
+            "nothing": "Nic nie rozpoznano — mów wyraźniej",
+            "failed": "Rozpoznawanie mowy nie powiodło się"
+        },
+        "sell": {
+            "button": "Sprzedaj",
+            "tooltip": "Wygeneruj tekst sprzedażowy przez AI i zapisz jako verkaufstext.txt"
+        },
+        "kbaFuzzy": {
+            "title": "Nie znaleziono klucza pojazdu",
+            "warning": "Klucza {hsn} / {tsn} nie znaleziono w bazie KBA. Czy chodziło o jeden z tych pojazdów?",
+            "suggestions": "Podobne wpisy w bazie KBA:",
+            "noSuggestions": "Nie znaleziono podobnych wpisów. Sprawdź HSN i TSN ręcznie.",
+            "useButton": "Użyj",
+            "keepButton": "Zachowaj",
+            "manufacturer": "Producent / Marka",
+            "model": "Model",
+            "vehicleType": "Rodzaj pojazdu"
         }
     },
     "CarScanView": {
@@ -465,17 +493,19 @@
             }
         },
         "kbaFuzzy": {
-            "title": "Fahrzeugschlüssel nicht gefunden",
-            "warning": "Der gescannte Schlüssel {hsn} / {tsn} wurde nicht in der KBA-Datenbank gefunden.",
-            "suggestions": "Meinten Sie eines dieser Fahrzeuge?",
-            "noSuggestions": "Es wurden keine ähnlichen Einträge in der KBA-Datenbank gefunden. Bitte prüfen Sie HSN und TSN manuell.",
-            "useButton": "Verwenden",
-            "keepButton": "Daten beibehalten",
+            "title": "Nie znaleziono klucza pojazdu",
+            "warning": "Tego klucza nie znaleziono w bazie KBA.",
+            "suggestions": "Czy chodziło o jeden z tych pojazdów?",
+            "noSuggestions": "Nie znaleziono podobnych wpisów. Sprawdź HSN i TSN ręcznie.",
+            "useButton": "Użyj",
+            "keepButton": "Zachowaj dane",
             "hsn": "HSN",
             "tsn": "TSN",
-            "manufacturer": "Hersteller / Marke",
-            "model": "Modell",
-            "vehicleType": "Fahrzeugart"
+            "manufacturer": "Producent / Marka",
+            "model": "Model",
+            "vehicleType": "Rodzaj pojazdu",
+            "scannedHsn": "Zeskanowany HSN",
+            "scannedTsn": "Zeskanowany TSN"
         },
         "wiki": {
             "title": "Artykuły wiedzy",
@@ -554,5 +584,23 @@
             "ibanFormat": "Nieprawidłowy format IBAN"
         },
         "generateDraftPdf": "Wygeneruj PDF robocze"
+    },
+    "CarSellDialog": {
+        "title": "Wygeneruj tekst sprzedażowy przez AI",
+        "step1Info": "Czy pojazd ma obecnie znane usterki? Zostaną one przejrzyście wymienione w tekście sprzedażowym.",
+        "defectsLabel": "Aktualne usterki",
+        "defectsPlaceholder": "np. klimatyzacja nie chłodzi, małe wgniecenie z tyłu po lewej\n(pozostaw puste, jeśli nie ma usterek)",
+        "step1Hint": "AI wykorzystuje ponadto wszystkie naprawy ze zleceń, dane serwisowe oraz usterki z ostatniego zlecenia.",
+        "step2Info": "Tekst został zapisany (verkaufstext.txt). Możesz go tutaj edytować i zapisać ponownie.",
+        "generate": "Wygeneruj tekst sprzedażowy",
+        "regenerate": "Wygeneruj ponownie",
+        "save": "Zapisz",
+        "copy": "Kopiuj",
+        "back": "Wstecz",
+        "cancel": "Anuluj",
+        "copied": "Tekst skopiowany do schowka",
+        "savedSuccess": "Tekst sprzedażowy zapisano jako verkaufstext.txt",
+        "errorGenerate": "Błąd podczas generowania tekstu sprzedażowego",
+        "errorSave": "Błąd podczas zapisywania tekstu sprzedażowego"
     }
 }

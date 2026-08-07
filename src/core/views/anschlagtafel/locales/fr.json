@@ -1,0 +1,14 @@
+{
+    "Anschlagtafel": {
+        "title": "Tableau d'affichage",
+        "exit": "Quitter",
+        "empty": "Aucune note vocale",
+        "emptyHint": "Dictez une note via Telegram – elle apparaît ici en direct.",
+        "unknown": "Inconnu",
+        "dismiss": "Traité",
+        "failed": "Échec de la transcription",
+        "online": "Connexion en direct active",
+        "offline": "Aucune connexion en direct",
+        "latestBadge": "Dernière"
+    }
+}

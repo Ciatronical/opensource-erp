@@ -57,7 +57,9 @@
             "scan_detail_id": "ID de detail de scan",
             "filename": "Nom du fichier",
             "c_ow": "Proprietaire",
-            "c_km": "Dernier kilométrage"
+            "c_km": "Dernier kilométrage",
+            "c_hu_notify": "Envoyer les rappels de contrôle technique",
+            "c_hu_notify_locked": "Les rappels de contrôle technique sont entièrement désactivés pour ce client. Activez-les d'abord chez le client (onglet « Facture », conditions) pour pouvoir les réactiver sur ce véhicule."
         },
         "kba": {
             "hersteller": "Constructeur",
@@ -221,7 +223,11 @@
             "amount": "Total",
             "number": "N. commande",
             "noOrders": "Aucune commande disponible",
-            "newOrder": "Nouvelle commande"
+            "newOrder": "Nouvelle commande",
+            "confirmed": "Confirmé",
+            "notConfirmed": "Réception (non confirmée)",
+            "filterPlaceholder": "Rechercher…",
+            "filterHint": "Recherche dans le n° d'ordre, la date, la description, le total, les marchandises, les montants des lignes, les instructions de travail et la facture. Plusieurs termes sont combinés par ET."
         },
         "messages": {
             "saved": "Vehicule enregistre",
@@ -337,6 +343,28 @@
             "label": "Ktype",
             "resolving": "Détermination du Ktype …",
             "refresh": "Actualiser le Ktype"
+        },
+        "voice": {
+            "hint": "Dictez les données d'entretien — p. ex. « kilométrage 120369, courroie de distribution à 20000, liquide de frein 02/2029 »",
+            "stop": "Arrêter l'enregistrement et appliquer",
+            "applied": "Appliqué :",
+            "nothing": "Rien de reconnu — parlez plus distinctement",
+            "failed": "Échec de la reconnaissance vocale"
+        },
+        "sell": {
+            "button": "Vendre",
+            "tooltip": "Générer un texte de vente par IA et l'enregistrer sous verkaufstext.txt"
+        },
+        "kbaFuzzy": {
+            "title": "Clé du véhicule introuvable",
+            "warning": "La clé {hsn} / {tsn} est introuvable dans la base KBA. S'agissait-il de l'un de ces véhicules ?",
+            "suggestions": "Entrées similaires dans la base KBA :",
+            "noSuggestions": "Aucune entrée similaire trouvée. Veuillez vérifier HSN et TSN manuellement.",
+            "useButton": "Utiliser",
+            "keepButton": "Conserver",
+            "manufacturer": "Constructeur / Marque",
+            "model": "Modèle",
+            "vehicleType": "Type de véhicule"
         }
     },
     "CarScanView": {
@@ -469,6 +497,19 @@
             "newArticle": "Nouvel article",
             "edit": "Modifier",
             "noArticles": "Aucun article de connaissances pour ce type de vehicule."
+        },
+        "kbaFuzzy": {
+            "title": "Clé du véhicule introuvable",
+            "scannedHsn": "HSN scanné",
+            "scannedTsn": "TSN scanné",
+            "warning": "Cette clé est introuvable dans la base KBA.",
+            "suggestions": "S'agissait-il de l'un de ces véhicules ?",
+            "noSuggestions": "Aucune entrée similaire trouvée. Veuillez vérifier HSN et TSN manuellement.",
+            "useButton": "Utiliser",
+            "keepButton": "Conserver les données",
+            "manufacturer": "Constructeur / Marque",
+            "model": "Modèle",
+            "vehicleType": "Type de véhicule"
         }
     },
     "CarRegView": {
@@ -541,5 +582,23 @@
             "ibanFormat": "Format IBAN invalide"
         },
         "generateDraftPdf": "Générer PDF brouillon"
+    },
+    "CarSellDialog": {
+        "title": "Générer un texte de vente par IA",
+        "step1Info": "Le véhicule présente-t-il des défauts connus ? Ils seront mentionnés en toute transparence dans le texte de vente.",
+        "defectsLabel": "Défauts actuels",
+        "defectsPlaceholder": "p. ex. la climatisation ne refroidit pas, petite bosse à l'arrière gauche\n(laisser vide s'il n'y a aucun défaut)",
+        "step1Hint": "L'IA utilise en outre toutes les réparations issues des ordres, les données d'entretien et les défauts du dernier ordre.",
+        "step2Info": "Le texte a été enregistré (verkaufstext.txt). Vous pouvez le modifier ici et l'enregistrer à nouveau.",
+        "generate": "Générer le texte de vente",
+        "regenerate": "Régénérer",
+        "save": "Enregistrer",
+        "copy": "Copier",
+        "back": "Retour",
+        "cancel": "Annuler",
+        "copied": "Texte copié dans le presse-papiers",
+        "savedSuccess": "Texte de vente enregistré sous verkaufstext.txt",
+        "errorGenerate": "Erreur lors de la génération du texte de vente",
+        "errorSave": "Erreur lors de l'enregistrement du texte de vente"
     }
 }

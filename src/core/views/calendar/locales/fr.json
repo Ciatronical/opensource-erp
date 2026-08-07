@@ -8,7 +8,8 @@
             "save": "Enregistrer",
             "delete": "Supprimer",
             "edit": "Modifier",
-            "close": "Fermer"
+            "close": "Fermer",
+            "import": "Importer"
         },
         "confirmDelete": {
             "title": "Supprimer le rendez-vous ?",
@@ -21,7 +22,8 @@
             "deleted": "Rendez-vous supprime",
             "error": "Une erreur est survenue",
             "categoryDeleted": "Categorie supprimee",
-            "categorySaved": "Categorie enregistree"
+            "categorySaved": "Categorie enregistree",
+            "imported": "{n} rendez-vous importés"
         },
         "search": "Recherche",
         "searchResults": "Resultats de recherche",
@@ -92,5 +94,36 @@
         "delete": "Supprimer",
         "confirmDelete": "Voulez-vous vraiment supprimer cette categorie ? Les rendez-vous conservent leurs donnees mais perdent l'attribution de la categorie.",
         "noCategories": "Aucune categorie disponible"
+    },
+    "CalendarImport": {
+        "title": "Importer des rendez-vous",
+        "drop": {
+            "title": "Déposez le fichier ici",
+            "subtitle": "ou cliquez pour sélectionner",
+            "change": "cliquez pour changer"
+        },
+        "options": {
+            "offsetTitle": "Décaler les dates",
+            "days": "jours",
+            "noShift": "Aucun décalage",
+            "shiftedBefore": "{n} jours plus tôt",
+            "shiftedAfter": "{n} jours plus tard",
+            "categoryTitle": "Attribuer une catégorie",
+            "noCategory": "Aucune catégorie",
+            "hint": "Astuce : pour des rappels (p. ex. sortir la poubelle), saisissez un décalage négatif — p. ex. −1 pour la veille."
+        },
+        "preview": {
+            "title": "Aperçu",
+            "date": "Date",
+            "eventTitle": "Titre",
+            "allDay": "Journée entière"
+        },
+        "errors": {
+            "noEvents": "Aucun rendez-vous trouvé dans le fichier",
+            "parseFailed": "Erreur lors de la lecture du fichier",
+            "importFailed": "Erreur lors de l'importation"
+        },
+        "cancel": "Annuler",
+        "importBtn": "Importer ({n})"
     }
 }

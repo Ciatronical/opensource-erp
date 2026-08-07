@@ -102,7 +102,8 @@
                     "rows": "Wiersze",
                     "actions": "Akcje"
                 }
-            }
+            },
+            "auto_limited": "Ograniczono do {limit} wierszy"
         },
         "table_list": {
             "title": "Tabele kivitendo",

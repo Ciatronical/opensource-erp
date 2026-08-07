@@ -53,16 +53,39 @@
             "whatsapp_sent": "Message WhatsApp envoye.",
             "whatsapp_error": "Erreur lors de l'envoi du message WhatsApp.",
             "whatsapp_bulk_sent": "{sent} messages WhatsApp envoyes, {failed} echoues.",
-            "whatsapp_no_phone": "Aucun des clients selectionnes n'a de numero de telephone."
+            "whatsapp_no_phone": "Aucun des clients selectionnes n'a de numero de telephone.",
+            "car_excluded": "Véhicule exclu des rappels de contrôle technique.",
+            "car_included": "Les rappels sont réactivés pour ce véhicule."
         },
         "tooltips": {
             "whatsapp_single": "Envoyer un rappel CT par WhatsApp",
             "exclude": "Exclure le client des notifications CT",
-            "include": "Inclure le client a nouveau dans les notifications CT"
+            "include": "Inclure le client a nouveau dans les notifications CT",
+            "print_single": "Imprimer uniquement ce client",
+            "revenue": "Chiffre d'affaires des 12 derniers mois",
+            "distance": "Distance à vol d'oiseau depuis le site de votre entreprise",
+            "open_customer": "Vers le client",
+            "open_vehicle": "Vers le véhicule",
+            "car_exclude": "Exclure ce véhicule des rappels de contrôle technique",
+            "car_include": "Réactiver les rappels pour ce véhicule",
+            "car_locked": "Les rappels de contrôle technique sont entièrement désactivés pour ce client (le réglage du client prime). Activez-les d'abord chez le client pour pouvoir réactiver des véhicules individuels."
         },
         "dialogs": {
             "confirm_exclude_title": "Exclure le client",
             "confirm_exclude_text": "Ce client sera definitivement retire de la liste des notifications CT. Voulez-vous continuer ?"
+        },
+        "actionbar": {
+            "recipients": "{count} destinataires actifs :"
+        },
+        "hint": {
+            "bells": "Cloche = rappel de contrôle technique. Éteinte (grise) signifie : pas de notification – enregistré immédiatement sur le véhicule ou chez le client. La cloche du client désactive tous ses véhicules (y compris les futurs)."
+        },
+        "sort": {
+            "label": "Trier par :",
+            "best": "Meilleurs d'abord",
+            "revenue": "Chiffre d'affaires",
+            "distance": "Distance",
+            "toggle_hint": "Cliquez à nouveau pour inverser l'ordre"
         }
     }
 }

@@ -53,16 +53,39 @@
             "whatsapp_sent": "Wiadomość WhatsApp została wysłana.",
             "whatsapp_error": "Błąd podczas wysyłania wiadomości WhatsApp.",
             "whatsapp_bulk_sent": "Wysłano {sent} wiadomości WhatsApp, {failed} nie powiodło się.",
-            "whatsapp_no_phone": "Żaden z wybranych klientów nie ma numeru telefonu."
+            "whatsapp_no_phone": "Żaden z wybranych klientów nie ma numeru telefonu.",
+            "car_excluded": "Pojazd wyłączono z przypomnień o przeglądzie.",
+            "car_included": "Przypomnienia dla pojazdu ponownie włączone."
         },
         "tooltips": {
             "whatsapp_single": "Wyślij przypomnienie o przeglądzie przez WhatsApp",
             "exclude": "Wyklucz klienta z powiadomień o przeglądzie",
-            "include": "Przywróć klienta do powiadomień o przeglądzie"
+            "include": "Przywróć klienta do powiadomień o przeglądzie",
+            "print_single": "Drukuj tylko tego klienta",
+            "revenue": "Obrót z ostatnich 12 miesięcy",
+            "distance": "Odległość w linii prostej od siedziby firmy",
+            "open_customer": "Do klienta",
+            "open_vehicle": "Do pojazdu",
+            "car_exclude": "Wyłącz ten pojazd z przypomnień o przeglądzie",
+            "car_include": "Ponownie wysyłaj przypomnienia dla tego pojazdu",
+            "car_locked": "Przypomnienia o przeglądzie są całkowicie wyłączone dla tego klienta (ustawienie klienta ma pierwszeństwo). Najpierw włącz je u klienta, aby móc aktywować poszczególne pojazdy."
         },
         "dialogs": {
             "confirm_exclude_title": "Odznacz klienta",
             "confirm_exclude_text": "Ten klient zostanie trwale usunięty z listy powiadomień o przeglądzie. Czy chcesz kontynuować?"
+        },
+        "actionbar": {
+            "recipients": "Aktywnych odbiorców: {count}"
+        },
+        "hint": {
+            "bells": "Dzwonek = przypomnienie o przeglądzie. Wyłączony (szary) oznacza: brak powiadomienia – zapisywane od razu przy pojeździe lub kliencie. Dzwonek klienta wyłącza wszystkie jego pojazdy (również przyszłe)."
+        },
+        "sort": {
+            "label": "Sortuj według:",
+            "best": "Najlepsze najpierw",
+            "revenue": "Obrót",
+            "distance": "Odległość",
+            "toggle_hint": "Kliknij ponownie, aby odwrócić kolejność"
         }
     }
 }

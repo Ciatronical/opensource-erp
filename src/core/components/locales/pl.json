@@ -1,0 +1,10 @@
+{
+    "voiceInput": {
+        "start": "Rozpocznij wprowadzanie głosowe",
+        "stop": "Zakończ nagrywanie i rozpoznaj",
+        "transcribing": "Rozpoznawanie …",
+        "permissionDenied": "Brak dostępu do mikrofonu — zezwól w przeglądarce",
+        "error": "Rozpoznawanie mowy nie powiodło się",
+        "addAsNew": "Dodaj wypowiedziany tekst jako nowy"
+    }
+}
