@@ -22,6 +22,21 @@
             "loading": "Ładowanie artykułu",
             "loadError": "Błąd podczas ładowania artykułu",
             "notFound": "Artykuł nie znaleziony"
+        },
+        "ebay": {
+            "title": "Artykuł eBay",
+            "checkbox": "Wystaw na eBay",
+            "images": "Zdjęcia artykułu",
+            "addImage": "Dodaj zdjęcie",
+            "noImages": "Brak zdjęć. eBay wymaga co najmniej jednego zdjęcia.",
+            "deleteImage": "Usuń zdjęcie",
+            "statusActive": "Wystawiono na eBay",
+            "statusEnded": "Aukcja zakończona",
+            "statusError": "Błąd eBay",
+            "listingId": "ID aukcji: {id}",
+            "busy": "Aktualizowanie eBay …",
+            "uploadError": "Przesyłanie zdjęcia nie powiodło się.",
+            "needImageHint": "Najpierw prześlij co najmniej jedno zdjęcie."
         }
     }
 }

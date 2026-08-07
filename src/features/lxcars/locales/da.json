@@ -1,11 +1,11 @@
 {
     "CarView": {
         "routes": {
-            "newCar": "/fahrzeug/neu",
-            "newCarFromScan": "/fahrzeug/neu-vom-scan",
-            "manageCars": "/fahrzeug",
-            "orderSearch": "/fahrzeug-auftrag/suche",
-            "carRegistration": "/fahrzeug/zulassung"
+            "newCar": "/koeretoej/ny",
+            "newCarFromScan": "/koeretoej/ny-fra-scanning",
+            "manageCars": "/koeretoej",
+            "orderSearch": "/koeretoejsordre/soeg",
+            "carRegistration": "/koeretoej/registrering"
         },
         "newCar": "Opret ny",
         "newCarFromScan": "Scanliste",

@@ -1,10 +1,10 @@
 {
     "BankingView": {
         "routes": {
-            "bankingOverview": "/banking",
-            "bankingAccount": "/bankkonto",
-            "bankingReconciliation": "/bankabstimmung",
-            "bankingTransfers": "/überweisungen"
+            "bankingOverview": "/banque",
+            "bankingAccount": "/compte-bancaire",
+            "bankingReconciliation": "/rapprochement-bancaire",
+            "bankingTransfers": "/virements"
         },
         "menu": {
             "title": "Banque",
@@ -327,6 +327,11 @@
             "confirm": "Envoyer quand même",
             "mismatchHint": "La banque n'a pas pu confirmer sans ambiguïté le nom du bénéficiaire par rapport à l'IBAN. Vérifiez les données et confirmez uniquement si vous êtes sûr que l'IBAN est correct.",
             "title": "Vérification du bénéficiaire — examiner le bénéficiaire"
+        }
+    },
+    "KasseView": {
+        "routes": {
+            "kasse": "/caisse"
         }
     }
 }

@@ -1,0 +1,14 @@
+{
+    "AccountingView": {
+        "routes": {
+            "accountingOverview": "/regnskap",
+            "accountingBookings": "/regnskap/posteringer",
+            "accountingInvoiceUpload": "/regnskap/inngaende-fakturaer",
+            "accountingVendors": "/regnskap/leverandorer",
+            "accountingDatevExport": "/regnskap/datev-export",
+            "accountingOutgoing": "/regnskap/innbetalinger",
+            "accountingChartOfAccounts": "/regnskap/kontoplan",
+            "accountingOpenItems": "/regnskap/apne-poster"
+        }
+    }
+}

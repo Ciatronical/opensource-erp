@@ -39,6 +39,8 @@
         "noRecording": "Запис не знайдено",
         "transcriptionFailed": "Транскрипція не вдалася",
         "extractionFailed": "Витяг даних не вдався",
-        "missed": "Пропущений"
+        "missed": "Пропущений",
+        "defaultPhoneLabel": "Телефон",
+        "all": "Усі"
     }
 }

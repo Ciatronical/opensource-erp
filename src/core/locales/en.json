@@ -1,18 +1,18 @@
 {
     "LoginView": {
         "title": "Login",
-        "username": "Benutzername",
-        "password": "Passwort",
-        "client": "Mandant",
-        "button": "Anmelden",
+        "username": "Username",
+        "password": "Password",
+        "client": "Client",
+        "button": "Sign in",
         "rememberMe": "Stay signed in",
-        "failed": "Anmeldung fehlgeschlagen. Bitte überprüfen Sie Ihre Anmeldedaten.",
-        "EMPTY_FIELDS": "Bitte Name und Passwort angeben.",
-        "USER_NOT_FOUND": "Benutzer nicht gefunden.",
-        "WRONG_PASSWORD": "Ungültiges Passwort.",
-        "ERROR": "Fehler bei der Anmeldung. Bitte versuchen Sie es erneut.",
-        "ERROR_LOADING_CLIENTS": "Fehler beim Laden der Mandanten. Bitte versuchen Sie es später erneut.",
-        "USER_NOT_ASSIGNED_TO_CLIENT": "Benutzer nicht dem Mandanten zugeordnet.",
+        "failed": "Sign-in failed. Please check your credentials.",
+        "EMPTY_FIELDS": "Please enter a name and password.",
+        "USER_NOT_FOUND": "User not found.",
+        "WRONG_PASSWORD": "Invalid password.",
+        "ERROR": "Sign-in error. Please try again.",
+        "ERROR_LOADING_CLIENTS": "Error loading clients. Please try again later.",
+        "USER_NOT_ASSIGNED_TO_CLIENT": "User is not assigned to this client.",
         "PASSWORD_FILE_NOT_FOUND": "Error: The password file api/config/api.passwd.php was not found. Please rename the file api/config/api.passwd.php.example to api/config/api.passwd.php and adjust the settings accordingly.",
         "CONFIG_FILE_NOT_FOUND": "Error: The configuration file was not found. Please check the settings.",
         "updateButton": "Run update",
@@ -22,9 +22,9 @@
         "dataDeletion": "Data Deletion"
     },
     "NotFoundView": {
-        "title": "Seite nicht gefunden",
-        "message": "Die angeforderte Seite wurde nicht gefunden.",
-        "back_home": "Zurück zur Startseite"
+        "title": "Page not found",
+        "message": "The requested page could not be found.",
+        "back_home": "Back to home page"
     },
     "NavbarView": {
         "logoutTooltip": "Logout",

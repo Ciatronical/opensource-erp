@@ -1,10 +1,10 @@
 {
     "BankingView": {
         "routes": {
-            "bankingOverview": "/banking",
-            "bankingAccount": "/bankkonto",
-            "bankingReconciliation": "/bankabstimmung",
-            "bankingTransfers": "/überweisungen"
+            "bankingOverview": "/pankki",
+            "bankingAccount": "/pankkitili",
+            "bankingReconciliation": "/pankkitaysmaytys",
+            "bankingTransfers": "/tilisiirrot"
         },
         "menu": {
             "title": "Pankkitoiminta",
@@ -327,6 +327,11 @@
             "confirm": "Lähetä silti",
             "mismatchHint": "Pankki ei voinut yksiselitteisesti vahvistaa saajan nimeä IBAN:ia vastaan. Tarkista tiedot ja vahvista vain, jos olet varma IBAN:in oikeellisuudesta.",
             "title": "Saajan vahvistus — tarkista saaja"
+        }
+    },
+    "KasseView": {
+        "routes": {
+            "kasse": "/kassa"
         }
     }
 }

@@ -307,9 +307,10 @@ Pfad-Navigation.
 
 ### 5.4 Sprachabhängige URLs
 
-Die URLs sind übersetzt: `/kunde` auf Deutsch, `/customer` auf Englisch. Die
-Pfade stehen als normale Übersetzungen in den Locale-Dateien unter dem
-Schlüssel `routes.*` und werden in `src/core/router/index.js` über
+Die URLs sind in **allen 21 Oberflächensprachen** übersetzt: `/kunde` auf
+Deutsch, `/customer` auf Englisch, `/client` auf Französisch, `/musteri` auf
+Türkisch. Die Pfade stehen als normale Übersetzungen unter dem Schlüssel
+`routes.*` in den Locale-Dateien und werden in `src/core/router/index.js` über
 `routePath()` eingebunden.
 
 * Die Routen-Tabelle wird für **eine** Sprache gebaut — deren Pfade sind die
@@ -319,13 +320,26 @@ Schlüssel `routes.*` und werden in `src/core/router/index.js` über
   Sprachwechsel, und ein Link von einem Kollegen mit deutscher Oberfläche
   funktioniert auch bei englischer
 * Beim Sprachwechsel registriert `applyRouteLocale()` die Tabelle neu und
-  schreibt die aktuelle Adresse um. Die Route-**Namen** bleiben dabei gleich
-* Sprachen ohne eigene Pfad-Vokabeln fallen auf die deutschen Pfade zurück
-  (`ROUTE_LOCALES` in `src/core/router/index.js`)
+  schreibt die aktuelle Adresse um. Die Route-**Namen** bleiben dabei gleich,
+  deshalb behält die offene Ansicht ihren Zustand
+* Die zuletzt gewählte Sprache liegt in `localStorage` (`oserp-locale`).
+  Der Router braucht sie schon beim Modul-Import — sonst startet die App
+  deutsch und die URLs springen nach dem Login sichtbar um
+* Fehlt ein Pfad in einer Sprache, greift Englisch, dann Deutsch. Eine Lücke
+  in den Übersetzungen legt die Navigation nie lahm
+
+Schreibweise der Pfade:
+* nur ASCII, Kleinbuchstaben, Bindestriche — mit Diakritika stünden
+  prozentkodierte URLs in der Adresszeile
+* `ru`/`uk` sind lateinisch transliteriert (`/klient`, `/schet`), `zh` nutzt
+  die englischen Pfade — Pinyin-URLs sind schlechter lesbar als Englisch
+* Eigennamen und Fachbegriffe bleiben stehen: `wiki`, `whatsapp`, `hu`,
+  `datev-export`, `developer-tools`
 
 **Neue Route anlegen:** Pfad-Schlüssel in `src/core/router/locales/de.json`
-und `en.json` ergänzen, dann in der Routen-Tabelle `...routePath('routes.xyz')`
-verwenden — kein literaler Pfad.
+und `en.json` ergänzen (die übrigen Sprachen fallen bis zur Übersetzung auf
+Englisch zurück), dann in der Routen-Tabelle `...routePath('routes.xyz')`
+verwenden — kein literaler Pfad. Anschliessend `npm run check:routes`.
 
 ---
 

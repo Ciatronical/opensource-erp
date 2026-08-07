@@ -1,0 +1,14 @@
+{
+    "AccountingView": {
+        "routes": {
+            "accountingOverview": "/bokforing",
+            "accountingBookings": "/bokforing/bokningar",
+            "accountingInvoiceUpload": "/bokforing/leverantorsfakturor",
+            "accountingVendors": "/bokforing/leverantorer",
+            "accountingDatevExport": "/bokforing/datev-export",
+            "accountingOutgoing": "/bokforing/inbetalningar",
+            "accountingChartOfAccounts": "/bokforing/kontoplan",
+            "accountingOpenItems": "/bokforing/oppna-poster"
+        }
+    }
+}

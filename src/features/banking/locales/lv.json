@@ -1,10 +1,10 @@
 {
     "BankingView": {
         "routes": {
-            "bankingOverview": "/banking",
-            "bankingAccount": "/bankkonto",
-            "bankingReconciliation": "/bankabstimmung",
-            "bankingTransfers": "/überweisungen"
+            "bankingOverview": "/banka",
+            "bankingAccount": "/bankas-konts",
+            "bankingReconciliation": "/bankas-salidzinajums",
+            "bankingTransfers": "/parskaitijumi"
         },
         "menu": {
             "title": "Banka",
@@ -327,6 +327,11 @@
             "confirm": "Sūtīt jebkurā gadījumā",
             "mismatchHint": "Banka nevarēja nepārprotami apstiprināt saņēmēja nosaukumu pret IBAN. Pārbaudiet datus un apstipriniet tikai tad, ja esat pārliecināts, ka IBAN ir pareizs.",
             "title": "Saņēmēja verifikācija — pārbaudiet saņēmēju"
+        }
+    },
+    "KasseView": {
+        "routes": {
+            "kasse": "/kase"
         }
     }
 }

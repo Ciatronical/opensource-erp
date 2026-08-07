@@ -252,7 +252,7 @@
             "storage": "Storage",
             "condition": "Condition",
             "summer": "Su",
-            "winter": "Wi"
+            "winter": "Wtr"
         },
         "orderTable": {
             "date": "Date",
@@ -351,6 +351,21 @@
             "label": "Ktype",
             "resolving": "Resolving Ktype …",
             "refresh": "Refresh Ktype"
+        },
+        "sell": {
+            "button": "Sell",
+            "tooltip": "Generate an AI sales text and save it as verkaufstext.txt"
+        },
+        "kbaFuzzy": {
+            "title": "Vehicle key not found",
+            "warning": "The key {hsn} / {tsn} was not found in the KBA database. Did you mean one of the following vehicles?",
+            "suggestions": "Similar entries in the KBA database:",
+            "noSuggestions": "No similar entries found. Please check HSN and TSN manually.",
+            "useButton": "Use",
+            "keepButton": "Keep",
+            "manufacturer": "Manufacturer / Make",
+            "model": "Model",
+            "vehicleType": "Vehicle type"
         }
     },
     "CarScanView": {
@@ -483,6 +498,19 @@
             "newArticle": "New Article",
             "edit": "Edit",
             "noArticles": "No knowledge articles available for this vehicle type."
+        },
+        "kbaFuzzy": {
+            "title": "Vehicle key not found",
+            "scannedHsn": "Scanned HSN",
+            "scannedTsn": "Scanned TSN",
+            "warning": "This key was not found in the KBA database.",
+            "suggestions": "Did you mean one of these vehicles?",
+            "noSuggestions": "No similar entries found. Please check HSN and TSN manually.",
+            "useButton": "Use",
+            "keepButton": "Keep data",
+            "manufacturer": "Manufacturer / Make",
+            "model": "Model",
+            "vehicleType": "Vehicle type"
         }
     },
     "CarRegView": {
@@ -555,5 +583,23 @@
             "dateFormat": "Invalid date (e.g. 1.3.5 or 15.06.2020)",
             "ibanFormat": "Invalid IBAN format"
         }
+    },
+    "CarSellDialog": {
+        "title": "Generate AI sales text",
+        "step1Info": "Are there any known defects on the vehicle? They will be listed transparently in the sales text.",
+        "defectsLabel": "Current defects",
+        "defectsPlaceholder": "e.g. air conditioning does not cool, small dent at the rear left\n(leave empty if there are no defects)",
+        "step1Hint": "The AI also uses all repairs from the orders, service data and the defects from the last order.",
+        "step2Info": "The text has been saved (verkaufstext.txt). You can edit it here and save it again.",
+        "generate": "Generate sales text",
+        "regenerate": "Regenerate",
+        "save": "Save",
+        "copy": "Copy",
+        "back": "Back",
+        "cancel": "Cancel",
+        "copied": "Text copied to clipboard",
+        "savedSuccess": "Sales text saved as verkaufstext.txt",
+        "errorGenerate": "Error generating the sales text",
+        "errorSave": "Error saving the sales text"
     }
 }

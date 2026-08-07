@@ -1,11 +1,11 @@
 {
     "CarView": {
         "routes": {
-            "newCar": "/fahrzeug/neu",
-            "newCarFromScan": "/fahrzeug/neu-vom-scan",
-            "manageCars": "/fahrzeug",
-            "orderSearch": "/fahrzeug-auftrag/suche",
-            "carRegistration": "/fahrzeug/zulassung"
+            "newCar": "/vehiculo/nuevo",
+            "newCarFromScan": "/vehiculo/nuevo-desde-escaneo",
+            "manageCars": "/vehiculo",
+            "orderSearch": "/pedido-vehiculo/buscar",
+            "carRegistration": "/vehiculo/matriculacion"
         },
         "newCar": "Crear nuevo",
         "newCarFromScan": "Lista de escaneo",

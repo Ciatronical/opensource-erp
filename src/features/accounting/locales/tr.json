@@ -1,0 +1,14 @@
+{
+    "AccountingView": {
+        "routes": {
+            "accountingOverview": "/muhasebe",
+            "accountingBookings": "/muhasebe/kayitlar",
+            "accountingInvoiceUpload": "/muhasebe/gelen-faturalar",
+            "accountingVendors": "/muhasebe/tedarikciler",
+            "accountingDatevExport": "/muhasebe/datev-export",
+            "accountingOutgoing": "/muhasebe/tahsilatlar",
+            "accountingChartOfAccounts": "/muhasebe/hesap-plani",
+            "accountingOpenItems": "/muhasebe/acik-kalemler"
+        }
+    }
+}

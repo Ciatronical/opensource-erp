@@ -17,7 +17,8 @@
             "priceRules": "Reguły cenowe",
             "turnover": "Statystyki obrotów",
             "emails": "E-maile",
-            "whatsapp": "WhatsApp"
+            "whatsapp": "WhatsApp",
+            "customVars": "Zmienne użytkownika"
         },
         "billing": {
             "nameAddressTitle": "Nazwa i adres",
@@ -321,7 +322,10 @@
             "phone_private": "Tel. prywatny",
             "phoneLabel": "Oznaczenie",
             "phoneNumber": "Numer",
-            "addPhone": "Dodaj telefon"
+            "addPhone": "Dodaj telefon",
+            "vendornumber": "Numer dostawcy",
+            "hu_notify": "Wysyłaj przypomnienia o przeglądzie",
+            "hu_notify_hint": "Dotyczy wszystkich pojazdów tego klienta – także tych dodanych później. Gdy opcja jest wyłączona, przypomnienia o przeglądzie nie są wysyłane i nie można ich włączyć przy pojedynczym pojeździe (ustawienie klienta ma pierwszeństwo)."
         },
         "price-rules": {
             "title": "Reguły cenowe",
@@ -384,6 +388,10 @@
             "option_xrechnung_test": "XRechnung 3.0 (Tryb testowy)",
             "option_zugferd": "Factur-X / ZUGFeRD 2.2 extended",
             "option_zugferd_test": "Factur-X / ZUGFeRD extended (Tryb testowy)"
+        },
+        "customVars": {
+            "title": "Zmienne użytkownika",
+            "noConfigs": "Dla klientów/dostawców nie skonfigurowano żadnych zmiennych użytkownika."
         }
     }
 }

@@ -1,0 +1,14 @@
+{
+    "AccountingView": {
+        "routes": {
+            "accountingOverview": "/raamatupidamine",
+            "accountingBookings": "/raamatupidamine/kanded",
+            "accountingInvoiceUpload": "/raamatupidamine/ostuarved",
+            "accountingVendors": "/raamatupidamine/tarnijad",
+            "accountingDatevExport": "/raamatupidamine/datev-export",
+            "accountingOutgoing": "/raamatupidamine/laekumised",
+            "accountingChartOfAccounts": "/raamatupidamine/kontoplaan",
+            "accountingOpenItems": "/raamatupidamine/avatud-arved"
+        }
+    }
+}

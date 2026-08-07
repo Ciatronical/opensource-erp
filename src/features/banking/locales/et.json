@@ -1,10 +1,10 @@
 {
     "BankingView": {
         "routes": {
-            "bankingOverview": "/banking",
-            "bankingAccount": "/bankkonto",
-            "bankingReconciliation": "/bankabstimmung",
-            "bankingTransfers": "/überweisungen"
+            "bankingOverview": "/pank",
+            "bankingAccount": "/pangakonto",
+            "bankingReconciliation": "/panga-vordlus",
+            "bankingTransfers": "/ulekanded"
         },
         "menu": {
             "title": "Pangandus",
@@ -327,6 +327,11 @@
             "confirm": "Saada ikkagi",
             "mismatchHint": "Pank ei suutnud saaja nime IBAN-ga üheselt kinnitada. Kontrollige andmeid ja kinnitage ainult siis, kui olete kindel, et IBAN on õige.",
             "title": "Saaja kinnitamine — kontrollige saajat"
+        }
+    },
+    "KasseView": {
+        "routes": {
+            "kasse": "/kassa"
         }
     }
 }

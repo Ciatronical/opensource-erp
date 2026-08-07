@@ -1,11 +1,11 @@
 {
     "CarView": {
         "routes": {
-            "newCar": "/fahrzeug/neu",
-            "newCarFromScan": "/fahrzeug/neu-vom-scan",
-            "manageCars": "/fahrzeug",
-            "orderSearch": "/fahrzeug-auftrag/suche",
-            "carRegistration": "/fahrzeug/zulassung"
+            "newCar": "/arac/yeni",
+            "newCarFromScan": "/arac/taramadan-yeni",
+            "manageCars": "/arac",
+            "orderSearch": "/arac-siparisi/arama",
+            "carRegistration": "/arac/tescil"
         },
         "newCar": "Yeni olustur",
         "newCarFromScan": "Tarama listesi",

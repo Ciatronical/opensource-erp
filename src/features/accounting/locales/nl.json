@@ -1,0 +1,14 @@
+{
+    "AccountingView": {
+        "routes": {
+            "accountingOverview": "/boekhouding",
+            "accountingBookings": "/boekhouding/boekingen",
+            "accountingInvoiceUpload": "/boekhouding/inkoopfacturen",
+            "accountingVendors": "/boekhouding/leveranciers",
+            "accountingDatevExport": "/boekhouding/datev-export",
+            "accountingOutgoing": "/boekhouding/ontvangsten",
+            "accountingChartOfAccounts": "/boekhouding/rekeningschema",
+            "accountingOpenItems": "/boekhouding/openstaande-posten"
+        }
+    }
+}

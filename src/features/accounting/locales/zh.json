@@ -1,0 +1,14 @@
+{
+    "AccountingView": {
+        "routes": {
+            "accountingOverview": "/accounting",
+            "accountingBookings": "/accounting/bookings",
+            "accountingInvoiceUpload": "/accounting/incoming-invoices",
+            "accountingVendors": "/accounting/vendors",
+            "accountingDatevExport": "/accounting/datev-export",
+            "accountingOutgoing": "/accounting/incoming-payments",
+            "accountingChartOfAccounts": "/accounting/chart-of-accounts",
+            "accountingOpenItems": "/accounting/open-items"
+        }
+    }
+}

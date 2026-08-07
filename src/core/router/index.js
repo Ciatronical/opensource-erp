@@ -77,9 +77,12 @@ import i18n, { getStoredLocale, storeLocale } from '@/i18n';
 // den ein Benutzer mit deutscher Oberfläche verschickt, funktioniert auch beim
 // Empfänger mit englischer.
 //
-// Sprachen mit eigener URL-Schreibweise. Die übrigen Oberflächensprachen
-// spiegeln derzeit die deutschen Pfade und werden im nächsten Schritt ergänzt.
-export const ROUTE_LOCALES = ['de', 'en'];
+// Sprachen mit eigener URL-Schreibweise. Die Pfade stehen als gewöhnliche
+// Übersetzungen unter `routes.*` in den Locale-Dateien.
+export const ROUTE_LOCALES = [
+    'de', 'en', 'fr', 'nl', 'es', 'it', 'pt', 'pl', 'cs', 'ro',
+    'da', 'nb', 'sv', 'fi', 'et', 'lv', 'lt', 'tr', 'ru', 'uk', 'zh',
+];
 
 /**
  * Ordnet einer Oberflächensprache die URL-Schreibweise zu
@@ -123,9 +126,12 @@ function pathFor(key, locale) {
  * @return {Object} { path } bzw. { path, alias }
  */
 function routePath(key, suffix = '', extraAliases = []) {
-    const canonical = pathFor(key, routeLocale);
+    // Fehlt der Pfad in der aktiven Sprache (Modul noch nicht übersetzt),
+    // wird der englische und zuletzt der deutsche genommen. Eine Lücke in den
+    // Übersetzungen darf die Navigation nie lahmlegen.
+    const canonical = pathFor(key, routeLocale) || pathFor(key, 'en') || pathFor(key, 'de');
     if (!canonical) {
-        throw new Error(`Routen-Schlüssel fehlt: ${key} (${routeLocale})`);
+        throw new Error(`Routen-Schlüssel fehlt in allen Sprachen: ${key}`);
     }
     const path = canonical + suffix;
     const alias = [];
@@ -731,8 +737,28 @@ function buildRoutes() {
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
-    routes: buildRoutes(),
+    // Die Tabelle wird gleich über registerRoutes() gesetzt — nur so bekommen
+    // wir für JEDE Route die Entfernen-Funktion und können beim Sprachwechsel
+    // restlos aufräumen.
+    routes: [],
 })
+
+// Entfernen-Funktionen der aktuell registrierten Routen
+let removeRouteHandles = [];
+
+/**
+ * Ersetzt die Routen-Tabelle durch die der aktuellen `routeLocale`
+ *
+ * Bewusst nicht über `removeRoute(name)`: namenlose Einträge (etwa der
+ * Redirect für die alte Mandantenkonfigurations-URL) blieben dabei stehen und
+ * würden sich mit jedem Sprachwechsel erneut ansammeln.
+ */
+function registerRoutes() {
+    for (const remove of removeRouteHandles) remove();
+    removeRouteHandles = buildRoutes().map(definition => router.addRoute(definition));
+}
+
+registerRoutes();
 
 // Navigations-Guards
 router.beforeEach(async (to) => {
@@ -822,11 +848,7 @@ export async function applyRouteLocale(locale) {
 
     const current = router.currentRoute.value;
 
-    // Namen vorher einsammeln: removeRoute() entfernt auch die Alias-Einträge,
-    // sodass sich getRoutes() waehrend des Durchlaufs veraendern wuerde.
-    const names = [...new Set(router.getRoutes().map(r => r.name).filter(Boolean))];
-    for (const name of names) router.removeRoute(name);
-    for (const definition of buildRoutes()) router.addRoute(definition);
+    registerRoutes();
 
     // Adresszeile auf die neue Schreibweise bringen. Ohne Namen (Direktaufruf
     // einer unbekannten URL) gibt es nichts umzuschreiben.

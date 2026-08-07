@@ -1,10 +1,10 @@
 {
     "BankingView": {
         "routes": {
-            "bankingOverview": "/banking",
-            "bankingAccount": "/bankkonto",
-            "bankingReconciliation": "/bankabstimmung",
-            "bankingTransfers": "/überweisungen"
+            "bankingOverview": "/banka",
+            "bankingAccount": "/banka-hesabi",
+            "bankingReconciliation": "/banka-mutabakati",
+            "bankingTransfers": "/transferler"
         },
         "menu": {
             "title": "Bankacılık",
@@ -327,6 +327,11 @@
             "confirm": "Yine de gönder",
             "mismatchHint": "Banka, alıcı adını IBAN ile kesin olarak doğrulayamadı. Lütfen verileri kontrol edin ve yalnızca IBAN'ın doğru olduğundan eminseniz onaylayın.",
             "title": "Alıcı doğrulama — alıcıyı inceleyin"
+        }
+    },
+    "KasseView": {
+        "routes": {
+            "kasse": "/kasa"
         }
     }
 }

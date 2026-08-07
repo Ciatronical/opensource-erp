@@ -1,0 +1,14 @@
+{
+    "AccountingView": {
+        "routes": {
+            "accountingOverview": "/contabilidade",
+            "accountingBookings": "/contabilidade/lancamentos",
+            "accountingInvoiceUpload": "/contabilidade/faturas-compra",
+            "accountingVendors": "/contabilidade/fornecedores",
+            "accountingDatevExport": "/contabilidade/datev-export",
+            "accountingOutgoing": "/contabilidade/recebimentos",
+            "accountingChartOfAccounts": "/contabilidade/plano-contas",
+            "accountingOpenItems": "/contabilidade/itens-abertos"
+        }
+    }
+}

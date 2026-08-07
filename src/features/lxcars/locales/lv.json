@@ -1,11 +1,11 @@
 {
     "CarView": {
         "routes": {
-            "newCar": "/fahrzeug/neu",
-            "newCarFromScan": "/fahrzeug/neu-vom-scan",
-            "manageCars": "/fahrzeug",
-            "orderSearch": "/fahrzeug-auftrag/suche",
-            "carRegistration": "/fahrzeug/zulassung"
+            "newCar": "/transportlidzeklis/jauns",
+            "newCarFromScan": "/transportlidzeklis/jauns-no-skenejuma",
+            "manageCars": "/transportlidzeklis",
+            "orderSearch": "/transportlidzekla-pasutijums/meklet",
+            "carRegistration": "/transportlidzeklis/registracija"
         },
         "newCar": "Jauns transportlīdzeklis",
         "newCarFromScan": "Skenēšanas saraksts",

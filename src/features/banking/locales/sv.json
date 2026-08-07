@@ -1,10 +1,10 @@
 {
     "BankingView": {
         "routes": {
-            "bankingOverview": "/banking",
+            "bankingOverview": "/bank",
             "bankingAccount": "/bankkonto",
-            "bankingReconciliation": "/bankabstimmung",
-            "bankingTransfers": "/überweisungen"
+            "bankingReconciliation": "/bankavstamning",
+            "bankingTransfers": "/overforingar"
         },
         "menu": {
             "title": "Bank",
@@ -327,6 +327,11 @@
             "confirm": "Skicka ändå",
             "mismatchHint": "Banken kunde inte entydigt bekräfta mottagarnamnet mot IBAN. Kontrollera uppgifterna och bekräfta bara om du är säker på att IBAN är korrekt.",
             "title": "Verifiering av mottagare — granska mottagare"
+        }
+    },
+    "KasseView": {
+        "routes": {
+            "kasse": "/kassa"
         }
     }
 }

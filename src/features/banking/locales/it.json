@@ -1,10 +1,10 @@
 {
     "BankingView": {
         "routes": {
-            "bankingOverview": "/banking",
-            "bankingAccount": "/bankkonto",
-            "bankingReconciliation": "/bankabstimmung",
-            "bankingTransfers": "/überweisungen"
+            "bankingOverview": "/banca",
+            "bankingAccount": "/conto-bancario",
+            "bankingReconciliation": "/riconciliazione-bancaria",
+            "bankingTransfers": "/bonifici"
         },
         "menu": {
             "title": "Banca",
@@ -327,6 +327,11 @@
             "confirm": "Invia comunque",
             "mismatchHint": "La banca non ha potuto confermare in modo univoco il nome del beneficiario rispetto all'IBAN. Verifica i dati e conferma solo se sei sicuro che l'IBAN sia corretto.",
             "title": "Verifica del beneficiario — controlla il beneficiario"
+        }
+    },
+    "KasseView": {
+        "routes": {
+            "kasse": "/cassa"
         }
     }
 }

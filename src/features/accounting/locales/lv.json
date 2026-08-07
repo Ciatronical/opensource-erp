@@ -1,0 +1,14 @@
+{
+    "AccountingView": {
+        "routes": {
+            "accountingOverview": "/gramatvediba",
+            "accountingBookings": "/gramatvediba/gramatojumi",
+            "accountingInvoiceUpload": "/gramatvediba/ienakosie-rekini",
+            "accountingVendors": "/gramatvediba/piegadataji",
+            "accountingDatevExport": "/gramatvediba/datev-export",
+            "accountingOutgoing": "/gramatvediba/ienakosie-maksajumi",
+            "accountingChartOfAccounts": "/gramatvediba/kontu-plans",
+            "accountingOpenItems": "/gramatvediba/atvertie-posteni"
+        }
+    }
+}

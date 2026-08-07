@@ -39,6 +39,8 @@
         "noRecording": "Nie znaleziono nagrania",
         "transcriptionFailed": "Transkrypcja nie powiodła się",
         "extractionFailed": "Ekstrakcja danych nie powiodła się",
-        "missed": "Nieodebrane"
+        "missed": "Nieodebrane",
+        "defaultPhoneLabel": "Telefon",
+        "all": "Wszystkie"
     }
 }

@@ -1,0 +1,14 @@
+{
+    "AccountingView": {
+        "routes": {
+            "accountingOverview": "/comptabilite",
+            "accountingBookings": "/comptabilite/ecritures",
+            "accountingInvoiceUpload": "/comptabilite/factures-fournisseurs",
+            "accountingVendors": "/comptabilite/fournisseurs",
+            "accountingDatevExport": "/comptabilite/datev-export",
+            "accountingOutgoing": "/comptabilite/encaissements",
+            "accountingChartOfAccounts": "/comptabilite/plan-comptable",
+            "accountingOpenItems": "/comptabilite/postes-ouverts"
+        }
+    }
+}

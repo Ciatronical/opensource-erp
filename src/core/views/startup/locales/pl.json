@@ -96,7 +96,22 @@
         "statusOpen": "otwarte",
         "storno": "Anulowane",
         "vendorDeliveryOrders": "Przyjęcia towaru",
-        "vendorReclamations": "Reklamacje zakupowe"
+        "vendorReclamations": "Reklamacje zakupowe",
+        "nSelected": "Wybrano: {n}",
+        "print": "Drukuj",
+        "export": "Eksportuj",
+        "deselectAll": "Wyczyść zaznaczenie",
+        "filterPlaceholder": "Filtruj…",
+        "printDialogTitle": "Drukuj dokumenty: {n}",
+        "printDialogHint": "„Pokaż PDF\" otwiera wszystkie dokumenty scalone w przeglądarce do wydruku. „Wyślij do drukarki\" drukuje każdy dokument osobno na wybranej drukarce.",
+        "printer": "Drukarka",
+        "showPdf": "Pokaż PDF",
+        "sendToPrinter": "Wyślij do drukarki",
+        "printError": "Nie udało się utworzyć pliku PDF",
+        "printSent": "Wysłano dokumenty do drukarki: {n}",
+        "printPartial": "Wydrukowano: {ok}, nieudane: {fail}",
+        "currency": "Waluta",
+        "notConfirmed": "Przyjęcie zlecenia"
     },
     "PhoneActions": {
         "clickToCall": "Zadzwoń",

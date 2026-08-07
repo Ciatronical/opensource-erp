@@ -1,0 +1,14 @@
+{
+    "AccountingView": {
+        "routes": {
+            "accountingOverview": "/contabilita",
+            "accountingBookings": "/contabilita/registrazioni",
+            "accountingInvoiceUpload": "/contabilita/fatture-acquisto",
+            "accountingVendors": "/contabilita/fornitori",
+            "accountingDatevExport": "/contabilita/datev-export",
+            "accountingOutgoing": "/contabilita/incassi",
+            "accountingChartOfAccounts": "/contabilita/piano-conti",
+            "accountingOpenItems": "/contabilita/partite-aperte"
+        }
+    }
+}

@@ -96,7 +96,22 @@
         "statusOpen": "відкрито",
         "storno": "Скасовано",
         "vendorDeliveryOrders": "Надходження товарів",
-        "vendorReclamations": "Рекламації по закупівлях"
+        "vendorReclamations": "Рекламації по закупівлях",
+        "nSelected": "Обрано: {n}",
+        "print": "Друк",
+        "export": "Експортувати",
+        "deselectAll": "Зняти виділення",
+        "filterPlaceholder": "Фільтрувати…",
+        "printDialogTitle": "Друк документів: {n}",
+        "printDialogHint": "«Показати PDF» відкриває всі документи об'єднаними у браузері для друку. «Надіслати на принтер» друкує кожен документ окремо на обраному принтері.",
+        "printer": "Принтер",
+        "showPdf": "Показати PDF",
+        "sendToPrinter": "Надіслати на принтер",
+        "printError": "Не вдалося створити PDF",
+        "printSent": "Надіслано документів на принтер: {n}",
+        "printPartial": "Надруковано: {ok}, не вдалося: {fail}",
+        "currency": "Валюта",
+        "notConfirmed": "Прийом замовлення"
     },
     "PhoneActions": {
         "clickToCall": "Зателефонувати",

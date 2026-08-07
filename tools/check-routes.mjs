@@ -93,7 +93,7 @@ const routerMod = await server.ssrLoadModule('/src/core/router/index.js')
 const router = routerMod.default
 
 const names = router.getRoutes().map(r => r.name).filter(Boolean)
-console.log(`Routen geladen: ${names.length}`)
+console.log(`Routen geladen: ${new Set(names).size} benannte, ${router.getRoutes().length} Matcher-Eintraege (inkl. Alias je Sprache)`)
 
 // --- alle im Code verwendeten Navigationsziele einsammeln ---
 function walk(dir, out = []) {
@@ -214,57 +214,97 @@ const snapshot = async (locale) => {
     return out
 }
 
-const de = await snapshot('de')
-const en = await snapshot('en')
+const routerMod2 = await server.ssrLoadModule('/src/core/router/index.js')
+const LOCALES = routerMod2.ROUTE_LOCALES
+
+// Fuer jede Sprache: Route-Name -> kanonische URL
+const byLocale = new Map()
+for (const loc of LOCALES) byLocale.set(loc, await snapshot(loc))
+const de = byLocale.get('de')
 
 console.log('\n=== Sprachumschaltung der URLs ===')
-const changed = [...de].filter(([n, h]) => en.get(n) !== h)
-const unchanged = [...de].filter(([n, h]) => en.get(n) === h)
-console.log(`  Routen gesamt: ${de.size}`)
-console.log(`  URL geaendert: ${changed.length}, unveraendert: ${unchanged.length}`)
-changed.slice(0, 12).forEach(([n, h]) => console.log(`    ${n.padEnd(30)} ${h.padEnd(34)} -> ${en.get(n)}`))
-console.log(`    ... (${Math.max(0, changed.length - 12)} weitere)`)
-console.log('  unveraendert (in beiden Sprachen gleich geschrieben):')
-unchanged.forEach(([n, h]) => console.log(`    ${n.padEnd(30)} ${h}`))
-
-// Namen muessen deckungsgleich sein
-const nameDrift = [...de.keys()].filter(n => !en.has(n)).concat([...en.keys()].filter(n => !de.has(n)))
-
-// Kreuzprobe: jede URL muss in BEIDER Sprache auf dieselbe Route zeigen
-const crossFails = []
-i18n.global.locale.value = 'en'; await tick()
-for (const [name, deHref] of de) {
-    const r = router.resolve(deHref)
-    if (r.name !== name) crossFails.push(`unter EN: ${deHref} -> ${r.name || 'KEIN TREFFER'} (erwartet ${name})`)
+console.log(`  Sprachen: ${LOCALES.length}, Routen je Sprache: ${de.size}`)
+for (const loc of LOCALES) {
+    const m = byLocale.get(loc)
+    const diff = [...de].filter(([n, h]) => m.get(n) !== h).length
+    console.log(`    ${loc}  ${String(diff).padStart(2)} abweichende URLs   z.B. customer-vendor -> ${m.get('customer-vendor')}, faktura-invoice-view -> ${m.get('faktura-invoice-view')}`)
 }
-i18n.global.locale.value = 'de'; await tick()
-for (const [name, enHref] of en) {
-    const r = router.resolve(enHref)
-    if (r.name !== name) crossFails.push(`unter DE: ${enHref} -> ${r.name || 'KEIN TREFFER'} (erwartet ${name})`)
+
+// Route-Namen muessen in allen Sprachen deckungsgleich sein
+const nameDrift = []
+for (const loc of LOCALES) {
+    const m = byLocale.get(loc)
+    for (const n of de.keys()) if (!m.has(n)) nameDrift.push(`${loc}: ${n} fehlt`)
+}
+
+// ── Kollisionspruefung ───────────────────────────────────────────────────
+// Mit 21 Sprachen als Alias koennte der Pfad der Sprache A fuer Route X
+// zufaellig gleich dem Pfad der Sprache B fuer Route Y sein. Dann wuerde eine
+// URL still auf der falschen Seite landen.
+const owner = new Map()          // URL -> Route-Name
+const collisions = []
+for (const loc of LOCALES) {
+    for (const [name, href] of byLocale.get(loc)) {
+        const prev = owner.get(href)
+        if (prev && prev.name !== name) {
+            collisions.push(`${href}  =  ${prev.name} (${prev.loc})  vs  ${name} (${loc})`)
+        } else if (!prev) {
+            owner.set(href, { name, loc })
+        }
+    }
+}
+
+// ── Kreuzprobe ───────────────────────────────────────────────────────────
+// Jede URL jeder Sprache muss unter JEDER aktiven Sprache dieselbe Route
+// treffen — nur so ueberleben Lesezeichen und weitergeleitete Links.
+const crossFails = []
+let crossChecks = 0
+for (const active of LOCALES) {
+    i18n.global.locale.value = active
+    await tick()
+    for (const loc of LOCALES) {
+        for (const [name, href] of byLocale.get(loc)) {
+            crossChecks++
+            const r = router.resolve(href)
+            if (r.name !== name) {
+                crossFails.push(`aktiv=${active}: ${href} (${loc}/${name}) -> ${r.name || 'KEIN TREFFER'}`)
+            }
+        }
+    }
 }
 
 console.log('')
-console.log(`  ${changed.length ? '✔' : '✗'} ${changed.length} URLs werden uebersetzt`)
-console.log(`  ${nameDrift.length ? '✗' : '✔'} Route-Namen bleiben identisch${nameDrift.length ? ': ' + nameDrift.join(', ') : ''}`)
-if (crossFails.length) {
-    console.log(`  ✗ ${crossFails.length} Kreuzproben fehlgeschlagen:`)
-    crossFails.slice(0, 15).forEach(f => console.log('      ' + f))
+console.log(`  ${nameDrift.length ? '✗' : '✔'} Route-Namen in allen ${LOCALES.length} Sprachen identisch${nameDrift.length ? ': ' + nameDrift.slice(0, 5).join(', ') : ''}`)
+if (collisions.length) {
+    console.log(`  ✗ ${collisions.length} Pfad-Kollisionen zwischen verschiedenen Routen:`)
+    ;[...new Set(collisions)].slice(0, 20).forEach(c => console.log('      ' + c))
 } else {
-    console.log(`  ✔ Alle ${de.size * 2} URLs (DE und EN) loesen in beiden Sprachen auf dieselbe Route auf`)
+    console.log(`  ✔ Keine Pfad-Kollision: ${owner.size} verschiedene URLs, jede gehoert genau einer Route`)
+}
+if (crossFails.length) {
+    console.log(`  ✗ ${crossFails.length} von ${crossChecks} Kreuzproben fehlgeschlagen:`)
+    crossFails.slice(0, 20).forEach(f => console.log('      ' + f))
+} else {
+    console.log(`  ✔ Alle ${crossChecks} Kreuzproben bestanden (jede URL trifft in jeder Sprache ihre Route)`)
 }
 
-// Sprache ohne eigene URL-Vokabeln: muss auf die deutschen Pfade zurueckfallen
-i18n.global.locale.value = 'en'; await tick()
-i18n.global.locale.value = 'pl'; await tick()
-const plHref = router.resolve({ name: 'customer-vendor' }).href
-const plOk = plHref === de.get('customer-vendor')
-console.log(`  ${plOk ? '✔' : '✗'} Sprache ohne eigene URLs (pl) faellt auf die deutschen Pfade zurueck — ${plHref}`)
-
-// Zurueck auf Deutsch fuer die Schlussmeldung
 i18n.global.locale.value = 'de'; await tick()
+
+// ── Stabilitaet der Tabelle ──────────────────────────────────────────────
+// Beim Sprachwechsel wird die Tabelle neu registriert. Bleibt dabei auch nur
+// ein Eintrag liegen (etwa eine namenlose Redirect-Route), waechst sie mit
+// jedem Wechsel weiter. Laufzeiten werden hier NICHT gemessen — durch Vites
+// SSR-Instrumentierung waeren sie um Groessenordnungen daneben; dafuer ist der
+// Browsertest zustaendig.
+const sizeBefore = router.getRoutes().length
+for (const loc of [...LOCALES, 'de']) { i18n.global.locale.value = loc; await tick() }
+const sizeAfter = router.getRoutes().length
+console.log(`\n=== Stabilitaet ===`)
+console.log(`  ${sizeBefore === sizeAfter ? '✔' : '✗'} Matcher-Eintraege nach ${LOCALES.length + 1} Sprachwechseln: ${sizeBefore} -> ${sizeAfter}`)
+const leaked = sizeAfter !== sizeBefore
 
 await server.close()
 console.log(`\n${broken} von ${bookmarks.length} alten URLs kaputt`)
-const failed = failures.length || broken || nameDrift.length || crossFails.length || !changed.length || !plOk
+const failed = failures.length || broken || nameDrift.length || crossFails.length || collisions.length || leaked
 console.log(failed ? '\n✗ PRUEFUNG FEHLGESCHLAGEN' : '\n✔ ALLE PRUEFUNGEN BESTANDEN')
 process.exit(failed ? 1 : 0)

@@ -2,9 +2,9 @@
     "BankingView": {
         "routes": {
             "bankingOverview": "/banking",
-            "bankingAccount": "/bankkonto",
-            "bankingReconciliation": "/bankabstimmung",
-            "bankingTransfers": "/überweisungen"
+            "bankingAccount": "/bank-account",
+            "bankingReconciliation": "/bank-reconciliation",
+            "bankingTransfers": "/transfers"
         },
         "menu": {
             "title": "银行业务",
@@ -327,6 +327,11 @@
             "confirm": "仍然发送",
             "mismatchHint": "银行无法明确地通过IBAN确认收款人名称。请检查数据，只有在确认IBAN正确的情况下才确认。",
             "title": "收款人验证 — 审核收款人"
+        }
+    },
+    "KasseView": {
+        "routes": {
+            "kasse": "/cash-register"
         }
     }
 }

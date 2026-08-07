@@ -1,11 +1,11 @@
 {
     "CarView": {
         "routes": {
-            "newCar": "/fahrzeug/neu",
-            "newCarFromScan": "/fahrzeug/neu-vom-scan",
-            "manageCars": "/fahrzeug",
-            "orderSearch": "/fahrzeug-auftrag/suche",
-            "carRegistration": "/fahrzeug/zulassung"
+            "newCar": "/fordon/ny",
+            "newCarFromScan": "/fordon/ny-fran-skanning",
+            "manageCars": "/fordon",
+            "orderSearch": "/fordonsorder/sok",
+            "carRegistration": "/fordon/registrering"
         },
         "newCar": "Skapa ny",
         "newCarFromScan": "Skanlista",

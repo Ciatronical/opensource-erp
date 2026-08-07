@@ -1,10 +1,10 @@
 {
     "BankingView": {
         "routes": {
-            "bankingOverview": "/banking",
-            "bankingAccount": "/bankkonto",
-            "bankingReconciliation": "/bankabstimmung",
-            "bankingTransfers": "/überweisungen"
+            "bankingOverview": "/bank",
+            "bankingAccount": "/bankovskii-schet",
+            "bankingReconciliation": "/sverka-banka",
+            "bankingTransfers": "/perevody"
         },
         "menu": {
             "title": "Банк",
@@ -327,6 +327,11 @@
             "confirm": "Отправить всё равно",
             "mismatchHint": "Банк не смог однозначно подтвердить имя получателя по IBAN. Проверьте данные и подтвердите только если уверены в правильности IBAN.",
             "title": "Проверка получателя — проверьте получателя"
+        }
+    },
+    "KasseView": {
+        "routes": {
+            "kasse": "/kassa"
         }
     }
 }

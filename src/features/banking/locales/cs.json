@@ -1,10 +1,10 @@
 {
     "BankingView": {
         "routes": {
-            "bankingOverview": "/banking",
-            "bankingAccount": "/bankkonto",
-            "bankingReconciliation": "/bankabstimmung",
-            "bankingTransfers": "/überweisungen"
+            "bankingOverview": "/banka",
+            "bankingAccount": "/bankovni-ucet",
+            "bankingReconciliation": "/bankovni-odsouhlaseni",
+            "bankingTransfers": "/prevody"
         },
         "menu": {
             "title": "Bankovnictví",
@@ -327,6 +327,11 @@
             "confirm": "Přesto odeslat",
             "mismatchHint": "Banka nemohla jednoznačně potvrdit jméno příjemce k IBAN. Zkontrolujte prosím údaje a potvrďte jen pokud jste si jisti, že IBAN je správný.",
             "title": "Ověření příjemce — zkontrolujte příjemce"
+        }
+    },
+    "KasseView": {
+        "routes": {
+            "kasse": "/pokladna"
         }
     }
 }

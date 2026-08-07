@@ -1,11 +1,11 @@
 {
     "CarView": {
         "routes": {
-            "newCar": "/fahrzeug/neu",
-            "newCarFromScan": "/fahrzeug/neu-vom-scan",
-            "manageCars": "/fahrzeug",
-            "orderSearch": "/fahrzeug-auftrag/suche",
-            "carRegistration": "/fahrzeug/zulassung"
+            "newCar": "/transporto-priemone/naujas",
+            "newCarFromScan": "/transporto-priemone/naujas-is-skenavimo",
+            "manageCars": "/transporto-priemone",
+            "orderSearch": "/transporto-priemones-uzsakymas/paieska",
+            "carRegistration": "/transporto-priemone/registracija"
         },
         "newCar": "Nauja transporto priemonė",
         "newCarFromScan": "Nuskaitymo sąrašas",

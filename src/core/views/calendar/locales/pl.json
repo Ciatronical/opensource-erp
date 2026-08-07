@@ -8,7 +8,8 @@
             "save": "Zapisz",
             "delete": "Usuń",
             "edit": "Edytuj",
-            "close": "Zamknij"
+            "close": "Zamknij",
+            "import": "Importuj"
         },
         "confirmDelete": {
             "title": "Usunąć wydarzenie?",
@@ -21,7 +22,8 @@
             "deleted": "Wydarzenie usunięte",
             "error": "Wystąpił błąd",
             "categoryDeleted": "Kategoria usunięta",
-            "categorySaved": "Kategoria zapisana"
+            "categorySaved": "Kategoria zapisana",
+            "imported": "Zaimportowano terminy: {n}"
         },
         "search": "Szukaj",
         "searchResults": "Wyniki wyszukiwania",
@@ -92,5 +94,36 @@
         "delete": "Usuń",
         "confirmDelete": "Czy na pewno usunąć kategorię? Wydarzenia zachowają swoje dane, ale stracą przypisanie do kategorii.",
         "noCategories": "Brak kategorii"
+    },
+    "CalendarImport": {
+        "title": "Importuj terminy",
+        "drop": {
+            "title": "Upuść plik tutaj",
+            "subtitle": "lub kliknij, aby wybrać",
+            "change": "kliknij, aby zmienić"
+        },
+        "options": {
+            "offsetTitle": "Przesuń terminy",
+            "days": "dni",
+            "noShift": "Bez przesunięcia",
+            "shiftedBefore": "{n} dni wcześniej",
+            "shiftedAfter": "{n} dni później",
+            "categoryTitle": "Przypisz kategorię",
+            "noCategory": "Brak kategorii",
+            "hint": "Wskazówka: dla przypomnień (np. wystawienie kosza na śmieci) wprowadź ujemne przesunięcie — np. −1 dla dnia poprzedniego."
+        },
+        "preview": {
+            "title": "Podgląd",
+            "date": "Data",
+            "eventTitle": "Tytuł",
+            "allDay": "Cały dzień"
+        },
+        "errors": {
+            "noEvents": "Nie znaleziono terminów w pliku",
+            "parseFailed": "Błąd odczytu pliku",
+            "importFailed": "Błąd podczas importu"
+        },
+        "cancel": "Anuluj",
+        "importBtn": "Importuj ({n})"
     }
 }

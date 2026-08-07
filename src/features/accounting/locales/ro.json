@@ -1,0 +1,14 @@
+{
+    "AccountingView": {
+        "routes": {
+            "accountingOverview": "/contabilitate",
+            "accountingBookings": "/contabilitate/inregistrari",
+            "accountingInvoiceUpload": "/contabilitate/facturi-intrare",
+            "accountingVendors": "/contabilitate/furnizori",
+            "accountingDatevExport": "/contabilitate/datev-export",
+            "accountingOutgoing": "/contabilitate/incasari",
+            "accountingChartOfAccounts": "/contabilitate/plan-conturi",
+            "accountingOpenItems": "/contabilitate/pozitii-deschise"
+        }
+    }
+}

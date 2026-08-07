@@ -1,0 +1,14 @@
+{
+    "AccountingView": {
+        "routes": {
+            "accountingOverview": "/buhalterija",
+            "accountingBookings": "/buhalterija/irasai",
+            "accountingInvoiceUpload": "/buhalterija/gaunamos-saskaitos",
+            "accountingVendors": "/buhalterija/tiekejai",
+            "accountingDatevExport": "/buhalterija/datev-export",
+            "accountingOutgoing": "/buhalterija/gaunami-mokejimai",
+            "accountingChartOfAccounts": "/buhalterija/saskaitu-planas",
+            "accountingOpenItems": "/buhalterija/neapmoketos-saskaitos"
+        }
+    }
+}

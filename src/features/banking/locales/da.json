@@ -1,10 +1,10 @@
 {
     "BankingView": {
         "routes": {
-            "bankingOverview": "/banking",
+            "bankingOverview": "/bank",
             "bankingAccount": "/bankkonto",
-            "bankingReconciliation": "/bankabstimmung",
-            "bankingTransfers": "/überweisungen"
+            "bankingReconciliation": "/bankafstemning",
+            "bankingTransfers": "/overfoersler"
         },
         "menu": {
             "title": "Bank",
@@ -327,6 +327,11 @@
             "confirm": "Send alligevel",
             "mismatchHint": "Banken kunne ikke entydigt bekræfte modtagernavnet mod IBAN. Kontrollér venligst dataene og bekræft kun, hvis du er sikker på at IBAN er korrekt.",
             "title": "Verifikation af betalingsmodtager — gennemgå modtager"
+        }
+    },
+    "KasseView": {
+        "routes": {
+            "kasse": "/kasse"
         }
     }
 }

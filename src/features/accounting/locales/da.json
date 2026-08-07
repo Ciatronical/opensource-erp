@@ -1,0 +1,14 @@
+{
+    "AccountingView": {
+        "routes": {
+            "accountingOverview": "/bogfoering",
+            "accountingBookings": "/bogfoering/posteringer",
+            "accountingInvoiceUpload": "/bogfoering/indgaaende-fakturaer",
+            "accountingVendors": "/bogfoering/leverandoerer",
+            "accountingDatevExport": "/bogfoering/datev-export",
+            "accountingOutgoing": "/bogfoering/indbetalinger",
+            "accountingChartOfAccounts": "/bogfoering/kontoplan",
+            "accountingOpenItems": "/bogfoering/aabne-poster"
+        }
+    }
+}

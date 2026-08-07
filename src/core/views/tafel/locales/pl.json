@@ -1,0 +1,24 @@
+{
+    "Tafel": {
+        "title": "Tablica",
+        "openBoard": "Otwórz tablicę ogłoszeń",
+        "senderLabel": "Od",
+        "textLabel": "Notatka",
+        "textPlaceholder": "Co ma trafić na tablicę?",
+        "enterHint": "Enter dodaje, Shift+Enter tworzy nowy wiersz",
+        "addButton": "Dodaj",
+        "addError": "Nie udało się dodać notatki",
+        "empty": "Brak wpisów",
+        "emptyHint": "Dodaj notatkę powyżej lub nagraj ją przez Telegram – pojawi się także na tablicy ogłoszeń.",
+        "count": "Wpisy: {n}",
+        "dragHint": "Przeciągnij, aby zmienić kolejność",
+        "unknown": "Nieznany",
+        "failed": "Transkrypcja nie powiodła się",
+        "delete": "Usuń",
+        "cancel": "Anuluj",
+        "confirmDeleteTitle": "Usunąć wpis?",
+        "confirmDeleteText": "Wpis zostanie usunięty również z tablicy ogłoszeń (TV).",
+        "deleteError": "Nie udało się usunąć notatki",
+        "reorderError": "Nie udało się zapisać nowej kolejności"
+    }
+}

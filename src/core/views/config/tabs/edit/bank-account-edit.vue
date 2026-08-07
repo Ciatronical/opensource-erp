@@ -125,21 +125,13 @@
                 {{ t('bank_account.usage') }}
             </v-card-title>
             <v-card-text>
-                <v-checkbox
-                    v-model="localItem.use_with_bank_import"
-                    :label="t('bank_account.use_with_bank_import')"
-                    hide-details
-                    class="mb-2"
-                >
-                    <template v-slot:append>
-                        <v-tooltip location="top">
-                            <template v-slot:activator="{ props }">
-                                <v-icon v-bind="props" size="small" color="info">mdi-information</v-icon>
-                            </template>
-                            {{ t('bank_account.use_with_bank_import_help') }}
-                        </v-tooltip>
-                    </template>
-                </v-checkbox>
+                <!--
+                    "use_with_bank_import" ist ein kivitendo-Feld und wird hier
+                    nicht angezeigt: Umsätze kommen per FinTS direkt von der Bank,
+                    einen Dateiimport (MT940/CAMT/CSV) gibt es nicht. Die Spalte
+                    bleibt für die kivitendo-Kompatibilität in der Datenbank und
+                    wird beim Speichern unverändert durchgereicht.
+                -->
                 <v-checkbox
                     v-model="localItem.use_for_zugferd"
                     :label="t('bank_account.use_for_zugferd')"

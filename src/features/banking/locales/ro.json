@@ -1,10 +1,10 @@
 {
     "BankingView": {
         "routes": {
-            "bankingOverview": "/banking",
-            "bankingAccount": "/bankkonto",
-            "bankingReconciliation": "/bankabstimmung",
-            "bankingTransfers": "/überweisungen"
+            "bankingOverview": "/banca",
+            "bankingAccount": "/cont-bancar",
+            "bankingReconciliation": "/reconciliere-bancara",
+            "bankingTransfers": "/transferuri"
         },
         "menu": {
             "title": "Bancă",
@@ -327,6 +327,11 @@
             "confirm": "Trimiteți oricum",
             "mismatchHint": "Banca nu a putut confirma fără ambiguitate numele beneficiarului față de IBAN. Verificați datele și confirmați numai dacă sunteți sigur că IBAN-ul este corect.",
             "title": "Verificarea beneficiarului — revizuiți beneficiarul"
+        }
+    },
+    "KasseView": {
+        "routes": {
+            "kasse": "/casa"
         }
     }
 }

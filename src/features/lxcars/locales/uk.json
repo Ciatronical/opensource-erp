@@ -1,11 +1,11 @@
 {
     "CarView": {
         "routes": {
-            "newCar": "/fahrzeug/neu",
-            "newCarFromScan": "/fahrzeug/neu-vom-scan",
-            "manageCars": "/fahrzeug",
-            "orderSearch": "/fahrzeug-auftrag/suche",
-            "carRegistration": "/fahrzeug/zulassung"
+            "newCar": "/avto/novyi",
+            "newCarFromScan": "/avto/novyi-zi-skanu",
+            "manageCars": "/avto",
+            "orderSearch": "/zamovlennia-avto/poshuk",
+            "carRegistration": "/avto/reiestratsiia"
         },
         "newCar": "Створити новий",
         "newCarFromScan": "Список сканів",
@@ -43,6 +43,14 @@
         },
         "incompleteText": "Перед завершенням замовлення необхідно заповнити такі поля:",
         "incompleteTitle": "Дані ТО неповні",
-        "title": "ТО та обслуговування"
+        "title": "ТО та обслуговування",
+        "voice": {
+            "hint": "Надиктуйте сервісні дані — напр. «пробіг 120369, ремінь ГРМ до 20000, гальмівна рідина 02/2029»",
+            "stop": "Завершити запис і застосувати",
+            "applied": "Застосовано:",
+            "nothing": "Нічого не розпізнано — говоріть чіткіше",
+            "failed": "Не вдалося розпізнати мовлення",
+            "kmStand": "Пробіг"
+        }
     }
 }

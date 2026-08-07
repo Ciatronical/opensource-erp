@@ -1,16 +1,17 @@
 {
     "BankingView": {
         "routes": {
-            "bankingOverview": "/banking",
-            "bankingAccount": "/bankkonto",
-            "bankingReconciliation": "/bankabstimmung",
-            "bankingTransfers": "/überweisungen"
+            "bankingOverview": "/bankowosc",
+            "bankingAccount": "/konto-bankowe",
+            "bankingReconciliation": "/uzgodnienie-bankowe",
+            "bankingTransfers": "/przelewy"
         },
         "menu": {
             "title": "Bankowość",
             "overview": "Przegląd kont",
             "reconciliation": "Uzgodnienie bankowe",
-            "transfers": "Przelewy"
+            "transfers": "Przelewy",
+            "info": "Bankowość internetowa bezpośrednio w systemie: transakcje są pobierane z banku przez FinTS — import pliku nie jest potrzebny. Jak to działa: wybierz u góry rachunek bankowy, pobierz bieżące księgowania przyciskiem \"Pobierz transakcje\" (PIN/TAN), następnie w zakładce \"Transakcje\" przypisz otwarte pozycje do faktur lub kont i uzgodnij je w uzgodnieniu bankowym. Przelewy, polecenia zapłaty i zlecenia stałe również wysyłasz bezpośrednio przez FinTS. Dostęp konfigurujesz w zakładce \"Przegląd kont\" przez \"Skonfiguruj FinTS\"."
         },
         "overview": {
             "title": "Przegląd kont",
@@ -49,7 +50,9 @@
             "ignore": "Ignoruj",
             "resetStatus": "Resetuj",
             "assign": "Przypisz",
-            "details": "Szczegóły"
+            "details": "Szczegóły",
+            "searchPlaceholder": "Szukaj: nazwa, tytuł przelewu, kwota, nr faktury …",
+            "openInvoice": "Otwórz fakturę"
         },
         "reconciliation": {
             "title": "Uzgodnienie bankowe",
@@ -327,6 +330,52 @@
             "confirm": "Wyślij mimo to",
             "mismatchHint": "Bank nie mógł jednoznacznie potwierdzić nazwy odbiorcy względem IBAN. Sprawdź dane i potwierdź tylko jeśli masz pewność, że IBAN jest poprawny.",
             "title": "Weryfikacja odbiorcy — sprawdź odbiorcę"
+        },
+        "booking": {
+            "title": "Zaksięguj płatność",
+            "titleShort": "Zaksięguj",
+            "titleMatched": "Zakończ księgowanie",
+            "recommendation": "Rekomendacja",
+            "candidates": "Kandydaci",
+            "otherCandidates": "Pozostali kandydaci",
+            "currentMatch": "Bieżące przypisanie",
+            "noCandidates": "Nie znaleziono pasującej faktury",
+            "noCandidatesHint": "Wyszukaj fakturę ręcznie lub użyj Weroni do analizy wspieranej przez AI.",
+            "manualSearch": "Szukaj faktury",
+            "searchPlaceholder": "Numer faktury lub nazwa klienta...",
+            "noSearchResults": "Nie znaleziono faktur",
+            "actionBookNow": "Przypisz i zaksięguj",
+            "actionAssign": "Przypisz i zaksięguj",
+            "actionAssignOnly": "Tylko przypisz",
+            "amountMismatchWarning": "Otwarta kwota tej faktury ({invAmount}) nie zgadza się z transakcją ({txAmount}). Zaksięgować mimo to?",
+            "actionBook": "Zaksięguj teraz",
+            "actionChangeAssignment": "Inna faktura",
+            "actionIgnore": "Ignoruj",
+            "weroniSoon": "Analiza AI Weroni jest jeszcze w opracowaniu",
+            "bookSuccess": "Płatność zaksięgowana",
+            "nothingBooked": "Nic nie zaksięgowano — transakcja nie jest przypisana lub brakuje przypisania. Najpierw przypisz fakturę i zaksięguj ponownie.",
+            "assignSuccess": "Transakcja przypisana",
+            "dueDate": "Termin",
+            "openAmount": "Otwarta kwota",
+            "cancel": "Anuluj",
+            "unbookTitle": "Cofnij księgowanie",
+            "unbookConfirm": "Na pewno stornować to księgowanie? Wpisy acc_trans zostaną usunięte, a transakcja wróci do stanu „nieprzypisana\".",
+            "unbookConfirmBtn": "Stornuj",
+            "unbookSuccess": "Księgowanie stornowane",
+            "amountMismatchTitle": "Kwota się różni",
+            "groupPayment": "Wykryto płatność zbiorczą",
+            "groupTotal": "Suma",
+            "actionBookGroup": "Zaksięguj wszystkie faktury: {count}",
+            "matchType_end_to_end_id": "Referencja SEPA zawiera numer faktury",
+            "matchType_invnumber_and_iban": "Numer faktury w tytule przelewu + IBAN",
+            "matchType_iban_amount_match": "IBAN i kwota się zgadzają",
+            "matchType_invnumber_in_purpose": "Numer faktury w tytule przelewu",
+            "matchType_iban_single_open": "IBAN znany · jedyna otwarta faktura"
+        }
+    },
+    "KasseView": {
+        "routes": {
+            "kasse": "/kasa"
         }
     }
 }

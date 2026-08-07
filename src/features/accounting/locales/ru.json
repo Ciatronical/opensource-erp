@@ -1,0 +1,14 @@
+{
+    "AccountingView": {
+        "routes": {
+            "accountingOverview": "/bukhgalteriya",
+            "accountingBookings": "/bukhgalteriya/provodki",
+            "accountingInvoiceUpload": "/bukhgalteriya/vkhodyashchie-scheta",
+            "accountingVendors": "/bukhgalteriya/postavshchiki",
+            "accountingDatevExport": "/bukhgalteriya/datev-export",
+            "accountingOutgoing": "/bukhgalteriya/vkhodyashchie-platezhi",
+            "accountingChartOfAccounts": "/bukhgalteriya/plan-schetov",
+            "accountingOpenItems": "/bukhgalteriya/otkrytye-pozitsii"
+        }
+    }
+}

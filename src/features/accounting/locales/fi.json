@@ -1,0 +1,14 @@
+{
+    "AccountingView": {
+        "routes": {
+            "accountingOverview": "/kirjanpito",
+            "accountingBookings": "/kirjanpito/kirjaukset",
+            "accountingInvoiceUpload": "/kirjanpito/ostolaskut",
+            "accountingVendors": "/kirjanpito/toimittajat",
+            "accountingDatevExport": "/kirjanpito/datev-export",
+            "accountingOutgoing": "/kirjanpito/saapuvat-maksut",
+            "accountingChartOfAccounts": "/kirjanpito/tilikartta",
+            "accountingOpenItems": "/kirjanpito/avoimet-erat"
+        }
+    }
+}

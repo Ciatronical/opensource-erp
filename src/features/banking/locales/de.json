@@ -11,7 +11,7 @@
       "overview": "Kontenübersicht",
       "reconciliation": "Bankabstimmung",
       "transfers": "Überweisungen",
-      "info": "Hier sehen Sie die Umsätze Ihrer Bankkonten und ordnen sie Rechnungen oder Konten zu. So geht's: Oben das Bankkonto wählen, importierte Kontoauszüge in den Reitern durchgehen, offene Umsätze buchen bzw. mit der Bankabstimmung abgleichen. Kontoauszüge importieren Sie über das Banking-Menü (CSV/MT940)."
+      "info": "Ihr Online-Banking direkt im System: Die Umsätze werden per FinTS bei Ihrer Bank abgerufen — ein Dateiimport ist nicht nötig. So geht's: Oben das Bankkonto wählen, mit \"Umsätze abrufen\" die aktuellen Buchungen holen (PIN/TAN), anschließend im Reiter \"Umsätze\" offene Posten Rechnungen oder Konten zuordnen und in der Bankabstimmung abgleichen. Überweisungen, Lastschriften und Daueraufträge senden Sie ebenfalls direkt per FinTS. Den Zugang richten Sie im Reiter \"Kontenübersicht\" über \"FinTS einrichten\" ein."
     },
     "overview": {
       "title": "Kontenübersicht",
@@ -171,7 +171,7 @@
       "statusCancelled": "Storniert",
       "statusExpired": "Nicht ausgeführt",
       "reconcile": "Status aktualisieren",
-      "reconcileHint": "Gleicht offene Überweisungen mit den importierten Kontoauszügen ab",
+      "reconcileHint": "Gleicht offene Überweisungen mit den abgerufenen Umsätzen ab",
       "executionDateHint": "Leer = sofort ausführen, Datum = terminierte Überweisung",
       "executionDatePast": "Ausführungsdatum darf nicht in der Vergangenheit liegen",
       "executionDateTooFar": "Ausführungsdatum darf maximal 1 Jahr in der Zukunft liegen",

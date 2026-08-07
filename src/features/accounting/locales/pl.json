@@ -1,0 +1,14 @@
+{
+    "AccountingView": {
+        "routes": {
+            "accountingOverview": "/ksiegowosc",
+            "accountingBookings": "/ksiegowosc/ksiegowania",
+            "accountingInvoiceUpload": "/ksiegowosc/faktury-zakupu",
+            "accountingVendors": "/ksiegowosc/dostawcy",
+            "accountingDatevExport": "/ksiegowosc/datev-export",
+            "accountingOutgoing": "/ksiegowosc/wplaty",
+            "accountingChartOfAccounts": "/ksiegowosc/plan-kont",
+            "accountingOpenItems": "/ksiegowosc/rozrachunki"
+        }
+    }
+}

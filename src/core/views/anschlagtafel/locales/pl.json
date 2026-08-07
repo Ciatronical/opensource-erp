@@ -1,0 +1,14 @@
+{
+    "Anschlagtafel": {
+        "title": "Tablica ogłoszeń",
+        "exit": "Zakończ",
+        "empty": "Brak notatek głosowych",
+        "emptyHint": "Nagraj notatkę przez Telegram – pojawi się tutaj na żywo.",
+        "unknown": "Nieznany",
+        "dismiss": "Załatwione",
+        "failed": "Transkrypcja nie powiodła się",
+        "online": "Połączenie na żywo aktywne",
+        "offline": "Brak połączenia na żywo",
+        "latestBadge": "Ostatnia"
+    }
+}

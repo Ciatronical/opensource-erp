@@ -1,11 +1,11 @@
 {
     "CarView": {
         "routes": {
-            "newCar": "/fahrzeug/neu",
-            "newCarFromScan": "/fahrzeug/neu-vom-scan",
-            "manageCars": "/fahrzeug",
-            "orderSearch": "/fahrzeug-auftrag/suche",
-            "carRegistration": "/fahrzeug/zulassung"
+            "newCar": "/kjoretoy/ny",
+            "newCarFromScan": "/kjoretoy/ny-fra-skanning",
+            "manageCars": "/kjoretoy",
+            "orderSearch": "/kjoretoyordre/sok",
+            "carRegistration": "/kjoretoy/registrering"
         },
         "newCar": "Opprett ny",
         "newCarFromScan": "Scanliste",

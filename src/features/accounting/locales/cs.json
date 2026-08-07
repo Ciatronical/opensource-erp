@@ -1,0 +1,14 @@
+{
+    "AccountingView": {
+        "routes": {
+            "accountingOverview": "/ucetnictvi",
+            "accountingBookings": "/ucetnictvi/zauctovani",
+            "accountingInvoiceUpload": "/ucetnictvi/prijate-faktury",
+            "accountingVendors": "/ucetnictvi/dodavatele",
+            "accountingDatevExport": "/ucetnictvi/datev-export",
+            "accountingOutgoing": "/ucetnictvi/prijate-platby",
+            "accountingChartOfAccounts": "/ucetnictvi/uctova-osnova",
+            "accountingOpenItems": "/ucetnictvi/otevrene-polozky"
+        }
+    }
+}

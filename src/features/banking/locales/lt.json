@@ -1,10 +1,10 @@
 {
     "BankingView": {
         "routes": {
-            "bankingOverview": "/banking",
-            "bankingAccount": "/bankkonto",
-            "bankingReconciliation": "/bankabstimmung",
-            "bankingTransfers": "/überweisungen"
+            "bankingOverview": "/bankas",
+            "bankingAccount": "/banko-saskaita",
+            "bankingReconciliation": "/banko-suderinimas",
+            "bankingTransfers": "/pavedimai"
         },
         "menu": {
             "title": "Bankininkystė",
@@ -327,6 +327,11 @@
             "confirm": "Vis tiek siųsti",
             "mismatchHint": "Bankas negalėjo vienareikšmiškai patvirtinti gavėjo pavadinimo pagal IBAN. Patikrinkite duomenis ir patvirtinkite tik tuo atveju, jei esate tikri, kad IBAN yra teisingas.",
             "title": "Gavėjo patikrinimas — peržiūrėkite gavėją"
+        }
+    },
+    "KasseView": {
+        "routes": {
+            "kasse": "/kasa"
         }
     }
 }

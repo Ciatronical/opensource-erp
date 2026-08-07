@@ -1,11 +1,11 @@
 {
     "CarView": {
         "routes": {
-            "newCar": "/fahrzeug/neu",
-            "newCarFromScan": "/fahrzeug/neu-vom-scan",
-            "manageCars": "/fahrzeug",
-            "orderSearch": "/fahrzeug-auftrag/suche",
-            "carRegistration": "/fahrzeug/zulassung"
+            "newCar": "/pojazd/nowy",
+            "newCarFromScan": "/pojazd/nowy-ze-skanu",
+            "manageCars": "/pojazd",
+            "orderSearch": "/zlecenie-pojazd/szukaj",
+            "carRegistration": "/pojazd/rejestracja"
         },
         "newCar": "Utwórz nowy",
         "newCarFromScan": "Lista skanów",
@@ -43,6 +43,14 @@
         },
         "incompleteText": "Przed zamknięciem zlecenia należy wypełnić następujące pola:",
         "incompleteTitle": "Dane serwisowe niekompletne",
-        "title": "Konserwacja i serwis"
+        "title": "Konserwacja i serwis",
+        "voice": {
+            "hint": "Podyktuj dane serwisowe — np. „przebieg 120369, pasek rozrządu na 20000, płyn hamulcowy 02/2029\"",
+            "stop": "Zakończ nagrywanie i zastosuj",
+            "applied": "Zastosowano:",
+            "nothing": "Nic nie rozpoznano — mów wyraźniej",
+            "failed": "Rozpoznawanie mowy nie powiodło się",
+            "kmStand": "Przebieg"
+        }
     }
 }

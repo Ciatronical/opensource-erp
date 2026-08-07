@@ -1,11 +1,11 @@
 {
     "CarView": {
         "routes": {
-            "newCar": "/fahrzeug/neu",
-            "newCarFromScan": "/fahrzeug/neu-vom-scan",
-            "manageCars": "/fahrzeug",
-            "orderSearch": "/fahrzeug-auftrag/suche",
-            "carRegistration": "/fahrzeug/zulassung"
+            "newCar": "/soiduk/uus",
+            "newCarFromScan": "/soiduk/uus-skaneeringust",
+            "manageCars": "/soiduk",
+            "orderSearch": "/soiduki-tellimus/otsi",
+            "carRegistration": "/soiduk/registreerimine"
         },
         "newCar": "Uus sõiduk",
         "newCarFromScan": "Skannimisloend",

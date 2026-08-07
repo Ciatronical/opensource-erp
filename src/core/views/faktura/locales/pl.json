@@ -355,7 +355,25 @@
                 "onlyInvoice": "Faktury elektroniczne można generować tylko z faktur sprzedaży.",
                 "saveFirst": "Zapisz fakturę przed wygenerowaniem e-faktury."
             },
-            "kmStandRequired": "Stan licznika km jest wymagany — proszę wpisać przed wystawieniem faktury."
+            "kmStandRequired": "Stan licznika km jest wymagany — proszę wpisać przed wystawieniem faktury.",
+            "orderConfirmed": "Potwierdzone",
+            "belegEdit": "Edytuj numer dokumentu",
+            "belegLock": "Zablokuj numer dokumentu",
+            "bankBookedEdit": "Zaksięgowane bankowo — kliknij, aby edytować zapis księgowy",
+            "bankBookedUnlocked": "Edycja aktywna — kliknij ponownie, aby zablokować",
+            "bankBookedEditWarning": "Uwaga: ta płatność została zaksięgowana przez uzgodnienie bankowe. Zmiany modyfikują zapis księgowy, a nie transakcję bankową — oba mogą się przez to rozejść.",
+            "kmPlausibility": {
+                "title": "Przebieg niewiarygodny",
+                "text": "Wprowadzony przebieg ({current} km) jest niższy niż ostatnio zapisana wartość ({last} km) dla tego pojazdu. Sprawdź przebieg.",
+                "cancel": "Popraw",
+                "proceed": "Kontynuuj mimo to"
+            },
+            "terminalSending": "Wysyłanie {amount} € do terminala kartowego …",
+            "terminalSent": "Kwota wysłana do terminala – przyłóż kartę do terminala",
+            "terminalError": "Terminal kartowy: {msg}",
+            "bankBookedLocked": "Zaksięgowane przez uzgodnienie bankowe — storno możliwe tylko w module bankowym",
+            "bankBookedGoto": "Zaksięgowane przez uzgodnienie bankowe — pokaż/stornuj w module bankowym",
+            "bankBookedLock": "Zaksięgowane przez moduł bankowy — zablokowane. Kliknij, aby pokazać/stornować w module bankowym."
         },
         "workflow": {
             "created": "Dokument pomyślnie utworzony",

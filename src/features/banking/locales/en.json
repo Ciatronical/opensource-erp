@@ -11,7 +11,7 @@
             "overview": "Account Overview",
             "reconciliation": "Bank Reconciliation",
             "transfers": "Transfers",
-            "info": "Here you see the transactions of your bank accounts and assign them to invoices or accounts. How to use: select the bank account at the top, go through the imported statements in the tabs, post open transactions or match them via bank reconciliation. Import bank statements via the Banking menu (CSV/MT940)."
+            "info": "Your online banking directly in the system: transactions are fetched from your bank via FinTS — no file import required. How to use: select the bank account at the top, fetch the latest entries with \"Fetch Transactions\" (PIN/TAN), then assign open items to invoices or accounts in the \"Transactions\" tab and match them via bank reconciliation. Transfers, direct debits and standing orders are also sent directly via FinTS. Set up access in the \"Accounts\" tab via \"Set up FinTS\"."
         },
         "overview": {
             "title": "Account Overview",
@@ -171,7 +171,7 @@
             "statusCancelled": "Cancelled",
             "statusExpired": "Not executed",
             "reconcile": "Refresh status",
-            "reconcileHint": "Match open transfers against imported bank statements",
+            "reconcileHint": "Match open transfers against the fetched transactions",
             "executionDateHint": "Empty = execute immediately, date = scheduled transfer",
             "executionDatePast": "Execution date cannot be in the past",
             "executionDateTooFar": "Execution date cannot be more than 1 year in the future",
@@ -290,7 +290,11 @@
             "confirmDeleteGroup": "Delete group?",
             "confirmDeleteTemplate": "Delete template?",
             "hasTemplates": "The group still contains templates",
-            "purposeAutoFill": "No purpose entered — date inserted automatically"
+            "purposeAutoFill": "No purpose entered — date inserted automatically",
+            "noGroupSelected": "No group selected — pick a group or click \"New template\"",
+            "noGroupLabel": "Without group",
+            "placeholders": "Insert placeholder",
+            "selectAll": "Select all"
         },
         "standing": {
             "title": "Standing Orders",

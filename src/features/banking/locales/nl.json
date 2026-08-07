@@ -1,10 +1,10 @@
 {
     "BankingView": {
         "routes": {
-            "bankingOverview": "/banking",
-            "bankingAccount": "/bankkonto",
-            "bankingReconciliation": "/bankabstimmung",
-            "bankingTransfers": "/überweisungen"
+            "bankingOverview": "/bank",
+            "bankingAccount": "/bankrekening",
+            "bankingReconciliation": "/bankafstemming",
+            "bankingTransfers": "/overboekingen"
         },
         "menu": {
             "title": "Bankieren",
@@ -327,6 +327,11 @@
             "confirm": "Toch versturen",
             "mismatchHint": "De bank kon de naam van de ontvanger niet ondubbelzinnig bevestigen tegen de IBAN. Controleer de gegevens en bevestig alleen als u zeker bent dat de IBAN correct is.",
             "title": "Verificatie van begunstigde — ontvanger controleren"
+        }
+    },
+    "KasseView": {
+        "routes": {
+            "kasse": "/kassa"
         }
     }
 }
