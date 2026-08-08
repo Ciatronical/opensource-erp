@@ -2,6 +2,8 @@
 
 Übersicht aller Features mit Anleitungen zur Einrichtung und Verwendung.
 
+> **[Gesamtübersicht aller Features](alle-features.md)** — vollständige Aufstellung von Kernsystem und LxCars in einem Dokument.
+
 ## Kernfunktionen
 
 | Feature | Beschreibung |
