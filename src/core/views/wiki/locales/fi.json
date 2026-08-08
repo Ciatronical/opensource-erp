@@ -1,9 +1,6 @@
 {
     "WikiMenu": {
-        "title": "Wiki",
-        "newPage": "Uusi artikkeli",
-        "allPages": "Kaikki artikkelit",
-        "categories": "Kategoriat"
+        "title": "Wiki"
     },
     "WikiListView": {
         "title": "Wiki - Tietopankki",

@@ -8,7 +8,8 @@
             "accountingDatevExport": "/bukhhalteriia/datev-export",
             "accountingOutgoing": "/bukhhalteriia/vkhidni-platezhi",
             "accountingChartOfAccounts": "/bukhhalteriia/plan-rakhunkiv",
-            "accountingOpenItems": "/bukhhalteriia/vidkryti-pozytsii"
+            "accountingOpenItems": "/bukhhalteriia/vidkryti-pozytsii",
+            "accountingUstva": "/bukhhalteriia/pdv"
         },
         "openItems": {
             "titleReceivables": "Відкрита дебіторська заборгованість",

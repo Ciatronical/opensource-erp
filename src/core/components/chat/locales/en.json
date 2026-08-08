@@ -1,0 +1,27 @@
+{
+    "Chat": {
+        "title": "Chat",
+        "subtitle": "Messages to employees",
+        "tooltip": "Chat",
+        "conversations": "Conversations",
+        "newChat": "New chat",
+        "searchPlaceholder": "Search employee or message",
+        "messagePlaceholder": "Write a message … (Enter sends, Shift+Enter new line)",
+        "noMessages": "No message yet",
+        "noEmployees": "No other employees available",
+        "startHint": "Write the first message to {name}.",
+        "unknown": "Unknown",
+        "youPrefix": "You:",
+        "send": "Send",
+        "sendError": "Message could not be sent",
+        "back": "Back",
+        "close": "Close",
+        "delete": "Delete",
+        "cancel": "Cancel",
+        "confirmDeleteTitle": "Delete message",
+        "confirmDeleteText": "Delete this message?",
+        "read": "Read",
+        "sent": "Sent",
+        "newMessageFrom": "New message from {name}"
+    }
+}

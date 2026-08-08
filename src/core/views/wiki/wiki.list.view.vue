@@ -7,6 +7,24 @@
             <v-icon color="primary" class="mr-1">mdi-book-open-page-variant</v-icon>
             <h1 class="text-h6 mb-0">{{ t('WikiListView.title') }}</h1>
             <v-spacer />
+            <v-btn
+                icon="mdi-tag-multiple"
+                size="small"
+                variant="text"
+                class="mr-1"
+                :title="t('WikiCategoriesView.title')"
+                :to="{ name: 'wiki-categories' }"
+            />
+            <v-btn
+                color="primary"
+                size="small"
+                variant="tonal"
+                prepend-icon="mdi-tag-plus"
+                class="mr-2"
+                @click="openCategoryDialog"
+            >
+                {{ t('WikiCategoriesView.newCategory') }}
+            </v-btn>
             <v-btn color="primary" size="small" prepend-icon="mdi-plus" :to="{ name: 'wiki-new' }">
                 {{ t('WikiListView.newPage') }}
             </v-btn>
@@ -105,6 +123,36 @@
                 </v-card>
             </v-col>
         </v-row>
+
+        <!-- Neue Kategorie -->
+        <v-dialog v-model="categoryDialog" max-width="450">
+            <v-card>
+                <v-card-title class="py-3 px-4 bg-grey-lighten-4 d-flex align-center">
+                    {{ t('WikiCategoriesView.newCategory') }}
+                    <v-spacer />
+                    <v-btn icon="mdi-close" size="x-small" variant="text" @click="categoryDialog = false" />
+                </v-card-title>
+                <v-divider />
+                <v-card-text class="pt-4">
+                    <v-text-field
+                        v-model="newCategoryName"
+                        :label="t('WikiCategoriesView.name')"
+                        variant="outlined"
+                        density="compact"
+                        autofocus
+                        hide-details
+                        @keydown.enter="createCategory"
+                    />
+                </v-card-text>
+                <v-card-actions class="pa-4 pt-0">
+                    <v-spacer />
+                    <v-btn variant="text" @click="categoryDialog = false">{{ t('WikiCategoriesView.cancel') }}</v-btn>
+                    <v-btn color="primary" :loading="creatingCategory" @click="createCategory">
+                        {{ t('WikiCategoriesView.save') }}
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
     </v-container>
 </template>
 
@@ -132,6 +180,9 @@ export default {
         const loading = ref(false)
         const search = ref('')
         const selectedCategory = ref(null)
+        const categoryDialog = ref(false)
+        const newCategoryName = ref('')
+        const creatingCategory = ref(false)
 
         const filteredPages = computed(() => {
             let result = pages.value
@@ -179,6 +230,35 @@ export default {
             }
         }
 
+        function openCategoryDialog() {
+            newCategoryName.value = ''
+            categoryDialog.value = true
+        }
+
+        async function createCategory() {
+            const name = newCategoryName.value.trim()
+            if (!name) return
+
+            creatingCategory.value = true
+            try {
+                // Sortkey ans Ende haengen (10er-Schritte wie in der Kategorienverwaltung)
+                const maxSortkey = categories.value.reduce((max, c) => Math.max(max, c.sortkey || 0), 0)
+                const result = await wiki.saveCategory({ name, sortkey: maxSortkey + 10 })
+                categories.value = await wiki.fetchCategories()
+                if (result.id) {
+                    selectedCategory.value = result.id
+                }
+                categoryDialog.value = false
+                newCategoryName.value = ''
+                toasts.success(t('WikiCategoriesView.saved'))
+            } catch (e) {
+                console.error('Wiki createCategory error:', e)
+                toasts.error(t('WikiCategoriesView.saveError'))
+            } finally {
+                creatingCategory.value = false
+            }
+        }
+
         function openPage(item) {
             saveToHistory({
                 type: 'wiki',
@@ -214,7 +294,9 @@ export default {
 
         return {
             t, pages, categories, loading, search, selectedCategory,
+            categoryDialog, newCategoryName, creatingCategory,
             filteredPages, getSnippet, formatDate,
+            openCategoryDialog, createCategory,
             openPage, editPage, confirmDelete
         }
     }

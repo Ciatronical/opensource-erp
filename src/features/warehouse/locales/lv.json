@@ -1,0 +1,9 @@
+{
+    "WarehouseView": {
+        "routes": {
+            "warehouse": "/noliktava",
+            "warehouseScanner": "/noliktava/skeneris",
+            "warehouseStocktaking": "/noliktava/inventarizacija"
+        }
+    }
+}

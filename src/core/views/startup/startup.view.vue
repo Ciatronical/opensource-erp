@@ -7,12 +7,22 @@
   <v-container class="pt-5" v-else>
     <v-row justify="center" align="stretch" class="text-center">
       <v-col cols="12" sm="8" md="8" lg="8" xl="3" v-for="card in cards" :key="card.title">
-        <v-card variant="outlined" elevation="1" class="d-flex flex-column h-100">
+        <v-card
+          variant="outlined"
+          elevation="1"
+          class="d-flex flex-column h-100"
+          :to="card.to"
+          :link="!!card.to"
+        >
           <v-card-title class="py-3 bg-secondary text-white">
             <h4 class="m-0">{{ card.title }}</h4>
           </v-card-title>
           <v-card-text class="flex-grow-1">
-            <v-list density="comfortable">
+            <!-- Menü ohne Untereinträge: nur das Symbol, die Karte selbst ist der Link -->
+            <div v-if="!card.items" class="d-flex align-center justify-center py-6">
+              <v-icon size="48" color="secondary">{{ card.icon }}</v-icon>
+            </div>
+            <v-list v-else density="comfortable">
               <template v-for="(item, i) in card.items" :key="i">
                 <v-divider v-if="item === '-'" class="my-2" />
                 <v-list-item v-else :title="item.title" :to="item.to" :link="!!item.to" />

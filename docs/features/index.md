@@ -11,6 +11,8 @@
 | [CRM](crm.md) | Kunden- und Lieferantenverwaltung, Kontakte, Kommunikation |
 | [Faktura](faktura.md) | Angebote, Aufträge, Rechnungen |
 | [Banking](banking.md) | Bankanbindung per FinTS, Kontoumsätze, SEPA-Überweisungen |
+| [UStVA](ustva.md) | Umsatzsteuer-Voranmeldung aus den echten Buchungen, mit Nachweis je Kennzahl |
+| [Lager](lager.md) | Bestandsführung, Scanner-Modus und geführte Inventur |
 | [E-Mail](email.md) | IMAP/SMTP-Integration mit automatischer Kundenzuordnung |
 | [Kalender](kalender.md) | Terminplanung mit Echtzeit-Updates und Wall-Display |
 | [Wiki](wiki.md) | Internes Wissenssystem mit Kategorien und Versionierung |

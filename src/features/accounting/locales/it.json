@@ -8,7 +8,8 @@
             "accountingDatevExport": "/contabilita/datev-export",
             "accountingOutgoing": "/contabilita/incassi",
             "accountingChartOfAccounts": "/contabilita/piano-conti",
-            "accountingOpenItems": "/contabilita/partite-aperte"
+            "accountingOpenItems": "/contabilita/partite-aperte",
+            "accountingUstva": "/contabilita/iva"
         }
     }
 }

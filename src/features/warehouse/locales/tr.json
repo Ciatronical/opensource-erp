@@ -1,0 +1,9 @@
+{
+    "WarehouseView": {
+        "routes": {
+            "warehouse": "/depo",
+            "warehouseScanner": "/depo/tarayici",
+            "warehouseStocktaking": "/depo/sayim"
+        }
+    }
+}

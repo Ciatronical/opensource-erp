@@ -1,9 +1,6 @@
 {
     "WikiMenu": {
-        "title": "Wiki",
-        "newPage": "Нова стаття",
-        "allPages": "Всі статті",
-        "categories": "Категорії"
+        "title": "Wiki"
     },
     "WikiListView": {
         "title": "Wiki - База знань",

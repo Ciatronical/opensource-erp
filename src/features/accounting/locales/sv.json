@@ -8,7 +8,8 @@
             "accountingDatevExport": "/bokforing/datev-export",
             "accountingOutgoing": "/bokforing/inbetalningar",
             "accountingChartOfAccounts": "/bokforing/kontoplan",
-            "accountingOpenItems": "/bokforing/oppna-poster"
+            "accountingOpenItems": "/bokforing/oppna-poster",
+            "accountingUstva": "/bokforing/moms"
         }
     }
 }

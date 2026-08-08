@@ -8,7 +8,8 @@
             "accountingDatevExport": "/buchhaltung/datev-export",
             "accountingOutgoing": "/buchhaltung/zahlungseingaenge",
             "accountingChartOfAccounts": "/buchhaltung/konten",
-            "accountingOpenItems": "/buchhaltung/offene-posten"
+            "accountingOpenItems": "/buchhaltung/offene-posten",
+            "accountingUstva": "/buchhaltung/umsatzsteuer-voranmeldung"
         },
         "openItems": {
             "titleReceivables": "Offene Forderungen",
@@ -38,7 +39,8 @@
             "datevExport": "DATEV Export",
             "outgoingMatching": "Zahlungseingänge",
             "chartOfAccounts": "Konten",
-            "openItems": "Offene Posten"
+            "openItems": "Offene Posten",
+            "ustva": "Umsatzsteuer"
         },
         "chartOfAccounts": {
             "title": "Konten",
@@ -363,6 +365,100 @@
             "matchConfirmed": "Zahlungseingang gebucht",
             "error": "Ein Fehler ist aufgetreten",
             "uploadSuccess": "Rechnung analysiert und Buchungsvorschlag erstellt"
+        },
+        "ustva": {
+            "title": "Umsatzsteuer-Voranmeldung",
+            "monthly": "Monate",
+            "quarterly": "Quartale",
+            "payable": "Zahllast",
+            "refund": "Erstattung",
+            "dueOn": "Fällig am {date}",
+            "dueIn": "in {days} Tagen fällig",
+            "overdueBy": "seit {days} Tagen überfällig",
+            "vatOut": "Umsatzsteuer",
+            "vatIn": "Vorsteuer",
+            "method": "Besteuerungsart",
+            "accrual": "Soll-Versteuerung",
+            "cash": "Ist-Versteuerung",
+            "accrualHint": "Maßgeblich ist das Rechnungsdatum.",
+            "cashHint": "Maßgeblich ist der Zahlungseingang. Teilzahlungen werden anteilig auf die Steueranteile der Rechnung verteilt.",
+            "methodOverride": "Abweichend von der Mandantenvorgabe ({method}) — nur zum Vergleich, nicht zur Abgabe.",
+            "showEmpty": "Leere Kennzahlen anzeigen",
+            "clickHint": "Kennzahl anklicken zeigt die Buchungen dahinter",
+            "taxOf": "Steuer {tax}",
+            "taxMismatch": "Gerechnet {computed}, gebucht {booked}",
+            "copy": "Betrag kopieren",
+            "copied": "Kennzahl {kz} kopiert",
+            "close": "Schließen",
+            "markFiled": "Als abgegeben markieren",
+            "filedOn": "Abgegeben am {date}",
+            "reopen": "Abgabe zurücknehmen",
+            "reopenConfirm": "Abgabe zurücknehmen? Der Zeitraum gilt danach wieder als offen.",
+            "fileConfirm": "Voranmeldung für {period} als abgegeben markieren? Die Kennzahlen werden als Momentaufnahme gesichert.",
+            "filed": "Als abgegeben markiert",
+            "exportCsv": "Als CSV exportieren",
+            "noElsterHint": "OpensourceERP übermittelt nicht selbst an ELSTER. Die Kennzahlen lassen sich einzeln kopieren oder als CSV an die Steuerkanzlei geben.",
+            "sections": {
+                "umsatz": "Steuerpflichtige Umsätze",
+                "umsatz_frei": "Steuerfreie und nicht steuerbare Umsätze",
+                "erwerb": "Innergemeinschaftliche Erwerbe",
+                "reverse": "Leistungen nach § 13b UStG",
+                "steuer": "Weitere Steuerbeträge",
+                "vorsteuer": "Abziehbare Vorsteuerbeträge",
+                "ergebnis": "Ergebnis"
+            },
+            "checks": {
+                "title": "Prüfungen",
+                "unmapped": "{amount} ohne Kennzahl",
+                "unmappedOk": "Alle Beträge sind zugeordnet",
+                "taxMismatch": "{count} Kennzahlen mit Steuerdifferenz",
+                "taxOk": "Gerechnete und gebuchte Steuer stimmen überein",
+                "noTaxkey": "{count} Erlösbuchungen ohne Steuerschlüssel ({amount})",
+                "noTaxkeyOk": "Alle Erlöse haben einen Steuerschlüssel",
+                "lateBookings": "{count} Buchungen nach der Abgabe — Berichtigung prüfen",
+                "lateOk": "Keine Buchungen nach der Abgabe"
+            },
+            "unmapped": {
+                "title": "Nicht zugeordnet",
+                "text": "Diese Beträge gehören steuerlich in die Voranmeldung, lassen sich aber keiner Kennzahl zuordnen. Sie werden hier ausgewiesen statt weggelassen.",
+                "taxkey": "Steuerschlüssel {taxkey} · {rate}",
+                "assign": "Zuordnen",
+                "assignTitle": "Kennzahl zuordnen",
+                "choose": "Kennzahl wählen …",
+                "assigned": "Zuordnung gespeichert"
+            },
+            "details": {
+                "date": "Datum",
+                "doc": "Beleg",
+                "account": "Konto",
+                "taxkey": "Steuerschl. / Satz",
+                "amount": "Betrag",
+                "paid": "Gezahlt / Brutto",
+                "empty": "Keine Buchungen zu dieser Kennzahl",
+                "base": "Bemessungsgrundlage",
+                "tax": "Steuer"
+            },
+            "mapping": {
+                "open": "Zuordnung bearbeiten",
+                "title": "Zuordnung der Steuerschlüssel",
+                "text": "Legt fest, in welche Kennzahl eine Buchung fließt. Ein Eintrag mit Konto hat Vorrang vor dem allgemeinen Eintrag.",
+                "dir": "Seite",
+                "roleCol": "Art",
+                "taxkey": "Steuerschl.",
+                "rate": "Satz",
+                "account": "Konto",
+                "kz": "Kennzahl",
+                "revenue": "Ausgang",
+                "expense": "Eingang",
+                "role_base": "Bemessungsgrundlage",
+                "role_tax": "Steuerkonto"
+            },
+            "running": "Zeitraum läuft noch",
+            "excluded": {
+                "title": "Bewusst nicht gemeldet",
+                "entries": "{count} Buchungen",
+                "text": "Diese Beträge sind zugeordnet, gehören aber in keine Formularzeile — etwa durchlaufende Posten nach § 10 Abs. 1 Satz 6 UStG. Sie werden hier ausgewiesen, damit sichtbar bleibt, dass die Entscheidung getroffen wurde."
+            }
         }
     }
 }

@@ -8,7 +8,8 @@
             "accountingDatevExport": "/accounting/datev-export",
             "accountingOutgoing": "/accounting/incoming-payments",
             "accountingChartOfAccounts": "/accounting/chart-of-accounts",
-            "accountingOpenItems": "/accounting/open-items"
+            "accountingOpenItems": "/accounting/open-items",
+            "accountingUstva": "/accounting/vat-return"
         }
     }
 }

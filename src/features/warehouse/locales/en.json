@@ -1,0 +1,163 @@
+{
+    "WarehouseView": {
+        "routes": {
+            "warehouse": "/warehouse",
+            "warehouseScanner": "/warehouse/scanner",
+            "warehouseStocktaking": "/warehouse/stocktaking"
+        },
+        "title": "Warehouse",
+        "warehouse": "Warehouse",
+        "bin": "Bin",
+        "save": "Save",
+        "cancel": "Cancel",
+        "onboarding": {
+            "title": "Set up your warehouse",
+            "text": "Stock tracking needs a warehouse and at least one bin. Both are created here in one step and stored as the default for delivery orders and stocktaking.",
+            "create": "Create warehouse",
+            "done": "Warehouse created"
+        },
+        "kpi": {
+            "partsInStock": "Items in stock",
+            "stockValue": "Stock value",
+            "belowRop": "Below reorder point",
+            "deadStock": "Slow movers"
+        },
+        "drift": {
+            "title": "Stock figures differ",
+            "text": "For {count} items the cached quantity does not match the sum of stock movements. This happens after data imports and can be recalculated safely.",
+            "fix": "Recalculate now",
+            "done": "{count} items recalculated"
+        },
+        "tabs": {
+            "stock": "Stock",
+            "journal": "Movements",
+            "stocktaking": "Stocktaking",
+            "master": "Warehouses & bins"
+        },
+        "stock": {
+            "searchHint": "Item number, description or EAN …",
+            "allWarehouses": "All warehouses",
+            "count": "{shown} of {total}",
+            "empty": "No items found",
+            "partnumber": "Item number",
+            "description": "Description",
+            "qty": "Quantity",
+            "value": "Value",
+            "lastMove": "Last movement",
+            "ropReached": "Reorder point {rop} reached",
+            "setRop": "Set reorder point",
+            "noLocations": "No stock in any bin",
+            "filters": {
+                "all": "All",
+                "below_rop": "Below reorder point",
+                "dead": "Slow movers",
+                "zero": "Without stock"
+            }
+        },
+        "booking": {
+            "title": "Stock movement",
+            "in": "Stock in",
+            "out": "Stock out",
+            "transfer": "Transfer",
+            "part": "Item",
+            "partHint": "Enter item number, EAN or description",
+            "qty": "Quantity",
+            "date": "Date",
+            "source": "From",
+            "target": "To",
+            "available": "Stock in this bin: {qty} {unit}",
+            "more": "More details",
+            "type": "Movement type",
+            "charge": "Batch",
+            "bestbefore": "Best before",
+            "comment": "Comment",
+            "book": "Post",
+            "done": "Movement saved",
+            "notEnough": "Not enough stock: {available} available, {requested} required."
+        },
+        "transferTypes": {
+            "stock": "Goods receipt",
+            "found": "Found",
+            "correction": "Correction",
+            "used": "Used",
+            "disposed": "Disposed",
+            "back": "Returned",
+            "missing": "Missing",
+            "shipped": "Shipped",
+            "stocktaking": "Stocktaking",
+            "transfer": "Transfer",
+            "assembled": "Production"
+        },
+        "journal": {
+            "from": "From",
+            "to": "To",
+            "direction": "Direction",
+            "allDirections": "All directions",
+            "searchHint": "Item or comment …",
+            "date": "Date",
+            "type": "Type",
+            "comment": "Comment",
+            "empty": "No movements in the selected period",
+            "undo": "Undo",
+            "undoConfirm": "Really undo this movement?",
+            "undone": "Movement undone",
+            "undoExpired": "The undo period has expired ({days} days). Please post a correction instead.",
+            "fromRecord": "Movement belongs to a record and is changed there"
+        },
+        "stocktaking": {
+            "title": "Stocktaking",
+            "new": "New stocktaking",
+            "name": "Name",
+            "cutoff": "Cut-off date",
+            "cutoffHint": "Stock is counted as of this date",
+            "start": "Start counting",
+            "status": {
+                "open": "Open",
+                "posted": "Posted",
+                "cancelled": "Cancelled"
+            },
+            "progress": "{counted} of {expected} bins counted",
+            "count": "Counted",
+            "show": "View",
+            "empty": "No stocktaking created yet.",
+            "counted": "Counted",
+            "diffs": "Differences",
+            "blind": "Blind count",
+            "blindHint": "The book quantity stays hidden until you enter a count. The difference appears right afterwards — so people count instead of copying.",
+            "searchHint": "Search or scan item …",
+            "emptyList": "Nothing to count",
+            "book": "Book quantity",
+            "diff": "Difference",
+            "postedRow": "Already posted",
+            "diffFound": "{part}: difference {diff}",
+            "summaryTitle": "Complete stocktaking",
+            "surplus": "Surplus / shortage",
+            "diffValue": "Value difference",
+            "postHint": "Every difference creates a stock movement of type \"stocktaking\". Lines without a difference are left untouched. The stocktaking is closed afterwards.",
+            "noDiffs": "No differences — stock matches.",
+            "postDiffs": "Post differences",
+            "posted": "{booked} differences posted, {unchanged} lines unchanged",
+            "cancel": "Discard",
+            "cancelConfirm": "Discard stocktaking? All counts that have not been posted will be lost.",
+            "finish": "Complete"
+        },
+        "scanner": {
+            "title": "Scanner",
+            "targetBin": "Target bin",
+            "codeHint": "Scan or type item",
+            "codeHelp": "Scan a barcode or type the item number and press Enter",
+            "currentStock": "Current stock: {qty} {unit}",
+            "recent": "Recently posted",
+            "notFound": "No item found for \"{code}\"",
+            "booked": "{part}: {qty} posted — new stock {onhand}",
+            "comment": "Scanner",
+            "noTarget": "Please choose a target bin"
+        },
+        "master": {
+            "inactive": "Out of service",
+            "summary": "{parts} items · {qty} units",
+            "newBin": "Add bin …",
+            "newWarehouse": "New warehouse"
+        }
+    }
+}

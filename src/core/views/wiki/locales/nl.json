@@ -1,9 +1,6 @@
 {
     "WikiMenu": {
-        "title": "Wiki",
-        "newPage": "Nieuw artikel",
-        "allPages": "Alle artikelen",
-        "categories": "Categorieen"
+        "title": "Wiki"
     },
     "WikiListView": {
         "title": "Wiki - Kennisbank",

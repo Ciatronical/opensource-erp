@@ -8,7 +8,8 @@
             "accountingDatevExport": "/comptabilite/datev-export",
             "accountingOutgoing": "/comptabilite/encaissements",
             "accountingChartOfAccounts": "/comptabilite/plan-comptable",
-            "accountingOpenItems": "/comptabilite/postes-ouverts"
+            "accountingOpenItems": "/comptabilite/postes-ouverts",
+            "accountingUstva": "/comptabilite/tva"
         },
         "openItems": {
             "titleReceivables": "Créances ouvertes",

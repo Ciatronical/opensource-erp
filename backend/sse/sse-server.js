@@ -138,11 +138,12 @@ async function connectListener(dbInfo, entry) {
         await client.query('LISTEN camera_event');
         await client.query('LISTEN wall_display_command');
         await client.query('LISTEN voicenote_change');
+        await client.query('LISTEN chat_message');
         entry.pgClient = client;
-        console.log(`LISTEN ... + voicenote_change auf ${dbInfo.dbname}@${dbInfo.dbhost}:${dbInfo.dbport}`);
+        console.log(`LISTEN ... + voicenote_change + chat_message auf ${dbInfo.dbname}@${dbInfo.dbhost}:${dbInfo.dbport}`);
 
         // Kanaele, die als Named Event (addEventListener im Frontend) ankommen sollen.
-        const namedEventChannels = new Set(['wall_display_command', 'voicenote_change']);
+        const namedEventChannels = new Set(['wall_display_command', 'voicenote_change', 'chat_message']);
 
         client.on('notification', (msg) => {
             const data = namedEventChannels.has(msg.channel)

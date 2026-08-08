@@ -1,0 +1,163 @@
+{
+    "WarehouseView": {
+        "routes": {
+            "warehouse": "/lager",
+            "warehouseScanner": "/lager/scanner",
+            "warehouseStocktaking": "/lager/inventur"
+        },
+        "title": "Lager",
+        "warehouse": "Lager",
+        "bin": "Lagerplatz",
+        "save": "Speichern",
+        "cancel": "Abbrechen",
+        "onboarding": {
+            "title": "Lager einrichten",
+            "text": "Bevor Bestände geführt werden können, braucht es ein Lager und mindestens einen Lagerplatz. Beides wird hier in einem Schritt angelegt und als Vorgabe für Lieferscheine und Inventur hinterlegt.",
+            "create": "Lager anlegen",
+            "done": "Lager eingerichtet"
+        },
+        "kpi": {
+            "partsInStock": "Artikel mit Bestand",
+            "stockValue": "Lagerwert",
+            "belowRop": "Unter Meldebestand",
+            "deadStock": "Ladenhüter"
+        },
+        "drift": {
+            "title": "Bestände weichen ab",
+            "text": "Bei {count} Artikeln passt das Schnellfeld nicht zur Summe der Lagerbewegungen. Das kommt nach Datenimporten vor und lässt sich gefahrlos angleichen.",
+            "fix": "Jetzt abgleichen",
+            "done": "{count} Artikel abgeglichen"
+        },
+        "tabs": {
+            "stock": "Bestand",
+            "journal": "Bewegungen",
+            "stocktaking": "Inventur",
+            "master": "Lager & Plätze"
+        },
+        "stock": {
+            "searchHint": "Artikelnummer, Bezeichnung oder EAN …",
+            "allWarehouses": "Alle Lager",
+            "count": "{shown} von {total}",
+            "empty": "Keine Artikel gefunden",
+            "partnumber": "Artikelnummer",
+            "description": "Bezeichnung",
+            "qty": "Bestand",
+            "value": "Wert",
+            "lastMove": "Letzte Bewegung",
+            "ropReached": "Meldebestand {rop} erreicht",
+            "setRop": "Meldebestand setzen",
+            "noLocations": "Kein Bestand auf einem Lagerplatz",
+            "filters": {
+                "all": "Alle",
+                "below_rop": "Unter Meldebestand",
+                "dead": "Ladenhüter",
+                "zero": "Ohne Bestand"
+            }
+        },
+        "booking": {
+            "title": "Lagerbuchung",
+            "in": "Einlagern",
+            "out": "Auslagern",
+            "transfer": "Umlagern",
+            "part": "Artikel",
+            "partHint": "Artikelnummer, EAN oder Bezeichnung eingeben",
+            "qty": "Menge",
+            "date": "Datum",
+            "source": "Von",
+            "target": "Nach",
+            "available": "Bestand an diesem Platz: {qty} {unit}",
+            "more": "Weitere Angaben",
+            "type": "Bewegungsart",
+            "charge": "Charge",
+            "bestbefore": "Mindesthaltbarkeit",
+            "comment": "Bemerkung",
+            "book": "Buchen",
+            "done": "Buchung gespeichert",
+            "notEnough": "Nicht genug Bestand: verfügbar {available}, gebraucht {requested}."
+        },
+        "transferTypes": {
+            "stock": "Wareneingang",
+            "found": "Fund",
+            "correction": "Korrektur",
+            "used": "Verbraucht",
+            "disposed": "Entsorgt",
+            "back": "Rückgabe",
+            "missing": "Fehlmenge",
+            "shipped": "Versendet",
+            "stocktaking": "Inventur",
+            "transfer": "Umlagerung",
+            "assembled": "Fertigung"
+        },
+        "journal": {
+            "from": "Von",
+            "to": "Bis",
+            "direction": "Richtung",
+            "allDirections": "Alle Richtungen",
+            "searchHint": "Artikel oder Bemerkung …",
+            "date": "Datum",
+            "type": "Art",
+            "comment": "Bemerkung",
+            "empty": "Keine Bewegungen im gewählten Zeitraum",
+            "undo": "Zurücknehmen",
+            "undoConfirm": "Diese Buchung wirklich zurücknehmen?",
+            "undone": "Buchung zurückgenommen",
+            "undoExpired": "Die Frist zum Zurücknehmen ist abgelaufen ({days} Tage). Bitte mit einer Korrekturbuchung ausgleichen.",
+            "fromRecord": "Buchung stammt aus einem Beleg und wird dort geändert"
+        },
+        "stocktaking": {
+            "title": "Inventur",
+            "new": "Neue Inventur",
+            "name": "Bezeichnung",
+            "cutoff": "Stichtag",
+            "cutoffHint": "Gezählt wird der Bestand zu diesem Datum",
+            "start": "Zählung starten",
+            "status": {
+                "open": "Offen",
+                "posted": "Gebucht",
+                "cancelled": "Abgebrochen"
+            },
+            "progress": "{counted} von {expected} Plätzen gezählt",
+            "count": "Gezählt",
+            "show": "Ansehen",
+            "empty": "Noch keine Inventur angelegt.",
+            "counted": "Gezählt",
+            "diffs": "Abweichungen",
+            "blind": "Blind zählen",
+            "blindHint": "Der Buchbestand bleibt verborgen, bis eine Menge eingetragen ist. Danach erscheint die Abweichung sofort — so wird gezählt statt abgeschrieben.",
+            "searchHint": "Artikel suchen oder scannen …",
+            "emptyList": "Keine Positionen zu zählen",
+            "book": "Buchbestand",
+            "diff": "Differenz",
+            "postedRow": "Bereits gebucht",
+            "diffFound": "{part}: Abweichung {diff}",
+            "summaryTitle": "Inventur abschließen",
+            "surplus": "Mehr / Fehlbestand",
+            "diffValue": "Wertdifferenz",
+            "postHint": "Für jede Abweichung wird eine Lagerbuchung mit der Bewegungsart „Inventur\" erzeugt. Zeilen ohne Abweichung bleiben unberührt. Die Inventur wird danach abgeschlossen.",
+            "noDiffs": "Keine Abweichungen — der Bestand stimmt.",
+            "postDiffs": "Differenzen buchen",
+            "posted": "{booked} Differenzen gebucht, {unchanged} Positionen ohne Abweichung",
+            "cancel": "Verwerfen",
+            "cancelConfirm": "Inventur verwerfen? Alle noch nicht gebuchten Zählungen gehen verloren.",
+            "finish": "Abschließen"
+        },
+        "scanner": {
+            "title": "Scanner",
+            "targetBin": "Zielplatz",
+            "codeHint": "Artikel scannen oder eingeben",
+            "codeHelp": "Barcode scannen oder Artikelnummer tippen und Enter drücken",
+            "currentStock": "Aktueller Bestand: {qty} {unit}",
+            "recent": "Zuletzt gebucht",
+            "notFound": "Kein Artikel zu „{code}\" gefunden",
+            "booked": "{part}: {qty} gebucht — neuer Bestand {onhand}",
+            "comment": "Scanner",
+            "noTarget": "Bitte einen Zielplatz wählen"
+        },
+        "master": {
+            "inactive": "Außer Betrieb",
+            "summary": "{parts} Artikel · {qty} Einheiten",
+            "newBin": "Lagerplatz hinzufügen …",
+            "newWarehouse": "Neues Lager"
+        }
+    }
+}

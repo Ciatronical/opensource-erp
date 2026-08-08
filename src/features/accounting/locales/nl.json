@@ -8,7 +8,8 @@
             "accountingDatevExport": "/boekhouding/datev-export",
             "accountingOutgoing": "/boekhouding/ontvangsten",
             "accountingChartOfAccounts": "/boekhouding/rekeningschema",
-            "accountingOpenItems": "/boekhouding/openstaande-posten"
+            "accountingOpenItems": "/boekhouding/openstaande-posten",
+            "accountingUstva": "/boekhouding/btw-aangifte"
         }
     }
 }

@@ -1,0 +1,27 @@
+{
+    "Chat": {
+        "title": "Chat",
+        "subtitle": "Nachrichten an Mitarbeiter",
+        "tooltip": "Chat",
+        "conversations": "Unterhaltungen",
+        "newChat": "Neuer Chat",
+        "searchPlaceholder": "Mitarbeiter oder Nachricht suchen",
+        "messagePlaceholder": "Nachricht schreiben … (Enter sendet, Shift+Enter neue Zeile)",
+        "noMessages": "Noch keine Nachricht",
+        "noEmployees": "Keine weiteren Mitarbeiter vorhanden",
+        "startHint": "Schreibe die erste Nachricht an {name}.",
+        "unknown": "Unbekannt",
+        "youPrefix": "Du:",
+        "send": "Senden",
+        "sendError": "Nachricht konnte nicht gesendet werden",
+        "back": "Zurück",
+        "close": "Schließen",
+        "delete": "Löschen",
+        "cancel": "Abbrechen",
+        "confirmDeleteTitle": "Nachricht löschen",
+        "confirmDeleteText": "Soll diese Nachricht gelöscht werden?",
+        "read": "Gelesen",
+        "sent": "Gesendet",
+        "newMessageFrom": "Neue Nachricht von {name}"
+    }
+}

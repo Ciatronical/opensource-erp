@@ -1,9 +1,6 @@
 {
     "WikiMenu": {
-        "title": "Wiki",
-        "newPage": "Articol nou",
-        "allPages": "Toate articolele",
-        "categories": "Categorii"
+        "title": "Wiki"
     },
     "WikiListView": {
         "title": "Wiki - Baza de cunostinte",

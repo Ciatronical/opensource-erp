@@ -8,7 +8,8 @@
             "accountingDatevExport": "/accounting/datev-export",
             "accountingOutgoing": "/accounting/incoming-payments",
             "accountingChartOfAccounts": "/accounting/chart-of-accounts",
-            "accountingOpenItems": "/accounting/open-items"
+            "accountingOpenItems": "/accounting/open-items",
+            "accountingUstva": "/accounting/vat-return"
         },
         "openItems": {
             "titleReceivables": "Open Receivables",
@@ -38,7 +39,8 @@
             "datevExport": "DATEV Export",
             "outgoingMatching": "Incoming Payments",
             "chartOfAccounts": "Chart of Accounts",
-            "openItems": "Open items"
+            "openItems": "Open items",
+            "ustva": "VAT return"
         },
         "chartOfAccounts": {
             "title": "Chart of Accounts",
@@ -363,6 +365,100 @@
             "matchConfirmed": "Payment booked",
             "error": "An error occurred",
             "uploadSuccess": "Invoice analyzed and booking suggestion created"
+        },
+        "ustva": {
+            "title": "VAT return",
+            "monthly": "Months",
+            "quarterly": "Quarters",
+            "payable": "VAT payable",
+            "refund": "Refund",
+            "dueOn": "Due on {date}",
+            "dueIn": "due in {days} days",
+            "overdueBy": "overdue by {days} days",
+            "vatOut": "Output VAT",
+            "vatIn": "Input VAT",
+            "method": "Accounting basis",
+            "accrual": "Accrual basis",
+            "cash": "Cash basis",
+            "accrualHint": "Based on the invoice date.",
+            "cashHint": "Based on payment. Partial payments are attributed proportionally to the invoice's tax structure.",
+            "methodOverride": "Differs from the client default ({method}) — for comparison only, not for filing.",
+            "showEmpty": "Show empty boxes",
+            "clickHint": "Click a box to see the underlying entries",
+            "taxOf": "tax {tax}",
+            "taxMismatch": "Calculated {computed}, posted {booked}",
+            "copy": "Copy amount",
+            "copied": "Box {kz} copied",
+            "close": "Close",
+            "markFiled": "Mark as filed",
+            "filedOn": "Filed on {date}",
+            "reopen": "Undo filing",
+            "reopenConfirm": "Undo filing? The period will be open again afterwards.",
+            "fileConfirm": "Mark the return for {period} as filed? The figures are stored as a snapshot.",
+            "filed": "Marked as filed",
+            "exportCsv": "Export as CSV",
+            "noElsterHint": "OpensourceERP does not transmit to the tax authority itself. Copy the individual figures or hand the CSV to your tax advisor.",
+            "sections": {
+                "umsatz": "Taxable turnover",
+                "umsatz_frei": "Exempt and non-taxable turnover",
+                "erwerb": "Intra-community acquisitions",
+                "reverse": "Reverse charge (§ 13b UStG)",
+                "steuer": "Other tax amounts",
+                "vorsteuer": "Deductible input VAT",
+                "ergebnis": "Result"
+            },
+            "checks": {
+                "title": "Checks",
+                "unmapped": "{amount} without a box",
+                "unmappedOk": "All amounts are mapped",
+                "taxMismatch": "{count} boxes with a tax difference",
+                "taxOk": "Calculated and posted tax match",
+                "noTaxkey": "{count} revenue entries without a tax key ({amount})",
+                "noTaxkeyOk": "All revenue entries have a tax key",
+                "lateBookings": "{count} entries posted after filing — check for a correction",
+                "lateOk": "No entries posted after filing"
+            },
+            "unmapped": {
+                "title": "Not mapped",
+                "text": "These amounts belong in the return but cannot be assigned to a box. They are shown here rather than dropped.",
+                "taxkey": "Tax key {taxkey} · {rate}",
+                "assign": "Map",
+                "assignTitle": "Map to a box",
+                "choose": "Choose a box …",
+                "assigned": "Mapping saved"
+            },
+            "details": {
+                "date": "Date",
+                "doc": "Document",
+                "account": "Account",
+                "taxkey": "Tax key / rate",
+                "amount": "Amount",
+                "paid": "Paid / gross",
+                "empty": "No entries for this box",
+                "base": "tax base",
+                "tax": "tax"
+            },
+            "mapping": {
+                "open": "Edit mapping",
+                "title": "Tax key mapping",
+                "text": "Defines which box an entry flows into. An entry with an account takes precedence over the general one.",
+                "dir": "Side",
+                "roleCol": "Kind",
+                "taxkey": "Tax key",
+                "rate": "Rate",
+                "account": "Account",
+                "kz": "Box",
+                "revenue": "Output",
+                "expense": "Input",
+                "role_base": "Tax base",
+                "role_tax": "Tax account"
+            },
+            "running": "period still running",
+            "excluded": {
+                "title": "Deliberately not reported",
+                "entries": "{count} entries",
+                "text": "These amounts are mapped but belong in no box of the form — pass-through items, for example. They are shown here so it stays visible that the decision was made."
+            }
         }
     }
 }

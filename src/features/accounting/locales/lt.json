@@ -8,7 +8,8 @@
             "accountingDatevExport": "/buhalterija/datev-export",
             "accountingOutgoing": "/buhalterija/gaunami-mokejimai",
             "accountingChartOfAccounts": "/buhalterija/saskaitu-planas",
-            "accountingOpenItems": "/buhalterija/neapmoketos-saskaitos"
+            "accountingOpenItems": "/buhalterija/neapmoketos-saskaitos",
+            "accountingUstva": "/buhalterija/pvm"
         }
     }
 }

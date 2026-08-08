@@ -8,7 +8,8 @@
             "accountingDatevExport": "/contabilitate/datev-export",
             "accountingOutgoing": "/contabilitate/incasari",
             "accountingChartOfAccounts": "/contabilitate/plan-conturi",
-            "accountingOpenItems": "/contabilitate/pozitii-deschise"
+            "accountingOpenItems": "/contabilitate/pozitii-deschise",
+            "accountingUstva": "/contabilitate/tva"
         }
     }
 }

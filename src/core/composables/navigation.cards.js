@@ -88,6 +88,19 @@ export function useNavigationCards() {
             }
         )
 
+        // Lager-Menü
+        result.push(
+            {
+                title: t('WarehouseView.title'),
+                icon: 'mdi-warehouse',
+                items: [
+                    { title: t('WarehouseView.tabs.stock'), to: { name: 'warehouse' } },
+                    '-',
+                    { title: t('WarehouseView.scanner.title'), to: { name: 'warehouse-scanner' } }
+                ]
+            }
+        )
+
         // Buchhaltung-Menü (ehemals Banking)
         result.push(
             {
@@ -107,22 +120,18 @@ export function useNavigationCards() {
                     { title: t('BankingView.menu.title'), to: { name: 'banking-overview' } },
                     { title: t('KasseView.title'), to: { name: 'kasse' } },
                     '-',
+                    { title: t('AccountingView.menu.ustva'), to: { name: 'accounting-ustva' } },
                     { title: t('AccountingView.menu.datevExport'), to: { name: 'accounting-datev-export' } }
                 ]
             }
         )
 
-        // Wiki-Menü
+        // Wiki (direkter Link, kein Untermenü)
         result.push(
             {
                 title: t('WikiMenu.title'),
                 icon: 'mdi-book-open-variant',
-                items: [
-                    { title: t('WikiMenu.newPage'), to: { name: 'wiki-new' } },
-                    { title: t('WikiMenu.allPages'), to: { name: 'wiki-list' } },
-                    '-',
-                    { title: t('WikiMenu.categories'), to: { name: 'wiki-categories' } }
-                ]
+                to: { name: 'wiki-list' }
             }
         )
 

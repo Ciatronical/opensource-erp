@@ -1,9 +1,6 @@
 {
     "WikiMenu": {
-        "title": "Wiki",
-        "newPage": "新文章",
-        "allPages": "所有文章",
-        "categories": "分类"
+        "title": "Wiki"
     },
     "WikiListView": {
         "title": "Wiki - 知识库",

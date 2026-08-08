@@ -8,7 +8,8 @@
             "accountingDatevExport": "/gramatvediba/datev-export",
             "accountingOutgoing": "/gramatvediba/ienakosie-maksajumi",
             "accountingChartOfAccounts": "/gramatvediba/kontu-plans",
-            "accountingOpenItems": "/gramatvediba/atvertie-posteni"
+            "accountingOpenItems": "/gramatvediba/atvertie-posteni",
+            "accountingUstva": "/gramatvediba/pvn"
         }
     }
 }

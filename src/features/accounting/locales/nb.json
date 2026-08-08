@@ -8,7 +8,8 @@
             "accountingDatevExport": "/regnskap/datev-export",
             "accountingOutgoing": "/regnskap/innbetalinger",
             "accountingChartOfAccounts": "/regnskap/kontoplan",
-            "accountingOpenItems": "/regnskap/apne-poster"
+            "accountingOpenItems": "/regnskap/apne-poster",
+            "accountingUstva": "/regnskap/mva"
         }
     }
 }

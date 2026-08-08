@@ -1,0 +1,9 @@
+{
+    "WarehouseView": {
+        "routes": {
+            "warehouse": "/depozit",
+            "warehouseScanner": "/depozit/scaner",
+            "warehouseStocktaking": "/depozit/inventar"
+        }
+    }
+}

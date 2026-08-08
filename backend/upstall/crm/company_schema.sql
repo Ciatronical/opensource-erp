@@ -2426,3 +2426,301 @@ CREATE TABLE IF NOT EXISTS ebay_listings (
 CREATE INDEX IF NOT EXISTS idx_ebay_listings_status ON ebay_listings(status);
 
 COMMENT ON TABLE ebay_listings IS 'eBay-Outbound-Listing je Artikel; status=active bedeutet bei eBay veroeffentlicht, ended=zurueckgezogen, error=Publish-Fehler (siehe message).';
+
+-- ═══════════════════════════════════════════════════════════════════════════
+-- LAGER — Inventur-Sitzungen
+-- ═══════════════════════════════════════════════════════════════════════════
+--
+-- Die Zaehlergebnisse selbst liegen in der kivitendo-Tabelle `stocktakings`
+-- (dort ist inventory_id NULL, solange die Differenz noch nicht gebucht ist).
+-- Diese Tabelle klammert eine Zaehlung nur organisatorisch: Name, Lager,
+-- Stichtag, Status. Verknuepft wird ueber (warehouse_id, cutoff_date) — dadurch
+-- bleibt `stocktakings` unveraendert kivitendo-kompatibel.
+CREATE TABLE IF NOT EXISTS stocktaking_sessions (
+    id              SERIAL PRIMARY KEY,
+    name            TEXT NOT NULL,                              -- z. B. "Jahresinventur 2026"
+    warehouse_id    INTEGER NOT NULL REFERENCES warehouse(id),  -- gezaehltes Lager
+    cutoff_date     DATE NOT NULL,                              -- Stichtag (= stocktakings.cutoff_date)
+    status          VARCHAR(20) NOT NULL DEFAULT 'open'
+                    CHECK (status IN ('open', 'posted', 'cancelled')),
+    employee_id     INTEGER,                                    -- wer die Zaehlung angelegt hat
+    posted_at       TIMESTAMP,                                  -- wann die Differenzen gebucht wurden
+    itime           TIMESTAMP DEFAULT NOW(),
+    mtime           TIMESTAMP DEFAULT NOW()
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_stocktaking_sessions_key
+    ON stocktaking_sessions(warehouse_id, cutoff_date);
+
+COMMENT ON TABLE stocktaking_sessions IS 'Klammer um eine Inventur; die Zaehlzeilen stehen in der kivitendo-Tabelle stocktakings und werden ueber (warehouse_id, cutoff_date) zugeordnet.';
+
+-- ═══════════════════════════════════════════════════════════════════════════
+-- UMSATZSTEUER-VORANMELDUNG (UStVA)
+-- ═══════════════════════════════════════════════════════════════════════════
+
+-- Kennzahlen des amtlichen UStVA-Formulars.
+-- Steht bewusst in der Datenbank statt im Code: das Formular aendert sich
+-- gelegentlich und laesst sich so ohne Deployment nachziehen.
+--   section : umsatz | umsatz_frei | erwerb | reverse | steuer | vorsteuer | ergebnis
+--   kind    : base = Bemessungsgrundlage (volle Euro), tax = Steuerbetrag (mit Cent)
+--   rate    : Steuersatz zur Berechnung der Steuer aus der Bemessungsgrundlage
+--             (NULL, wenn die Steuer separat als eigene Kennzahl gemeldet wird)
+CREATE TABLE IF NOT EXISTS ustva_kennzahlen (
+    kz          INTEGER PRIMARY KEY,
+    label       TEXT NOT NULL,
+    section     VARCHAR(20) NOT NULL,
+    kind        VARCHAR(10) NOT NULL CHECK (kind IN ('base', 'tax')),
+    rate        NUMERIC(15,5),
+    sortkey     INTEGER NOT NULL DEFAULT 0
+);
+
+COMMENT ON TABLE ustva_kennzahlen IS 'Kennzahlen des amtlichen UStVA-Formulars inkl. Abschnitt, Art (Bemessungsgrundlage/Steuer) und Steuersatz.';
+
+-- Zuordnung Buchung -> UStVA-Kennzahl.
+-- Eine Buchungszeile wird ueber Steuerschluessel + Steuersatz zugeordnet; ein
+-- Eintrag mit gesetzter chart_id gewinnt gegenueber dem allgemeinen Eintrag
+-- (noetig z. B. bei § 13b, wo Vorsteuer und Umsatzsteuer denselben
+-- Steuerschluessel tragen und nur das Konto sie unterscheidet).
+--   role      : base = Bemessungsgrundlage (AR_amount/AP_amount), tax = Steuerkonto (AR_tax/AP_tax)
+--   direction : revenue = Ausgangsseite, expense = Eingangsseite
+CREATE TABLE IF NOT EXISTS ustva_mapping (
+    id          SERIAL PRIMARY KEY,
+    taxkey      INTEGER,                                    -- NULL = beliebig (nur mit chart_id sinnvoll)
+    rate        NUMERIC(15,5),                              -- NULL = beliebiger Steuersatz
+    chart_id    INTEGER,                                    -- NULL = alle Konten; sonst Vorrang fuer dieses Konto
+    role        VARCHAR(10) NOT NULL CHECK (role IN ('base', 'tax')),
+    direction   VARCHAR(10) NOT NULL CHECK (direction IN ('revenue', 'expense')),
+    kz          INTEGER NOT NULL,
+    description TEXT,
+    itime       TIMESTAMP DEFAULT NOW(),
+    mtime       TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_ustva_mapping_lookup ON ustva_mapping(role, direction, taxkey);
+
+COMMENT ON TABLE ustva_mapping IS 'Zuordnung von Steuerschluessel/Steuersatz (optional Konto) zu einer UStVA-Kennzahl; in der Oberflaeche editierbar.';
+
+-- Abgegebene Voranmeldungen. Der Kennzahlen-Stand wird beim Abgeben als
+-- Momentaufnahme gesichert, damit spaetere Buchungen die abgegebenen Zahlen
+-- nicht rueckwirkend veraendern (und eine Berichtigung erkennbar wird).
+CREATE TABLE IF NOT EXISTS ustva_filings (
+    id              SERIAL PRIMARY KEY,
+    period_start    DATE NOT NULL,
+    period_end      DATE NOT NULL,
+    period_type     VARCHAR(10) NOT NULL CHECK (period_type IN ('month', 'quarter', 'year')),
+    method          VARCHAR(10) NOT NULL,                   -- accrual (Soll) | cash (Ist)
+    payload         JSONB,                                  -- Momentaufnahme aller Kennzahlen
+    vat_payable     NUMERIC(15,2),                          -- Kennzahl 83 zum Zeitpunkt der Abgabe
+    filed_at        TIMESTAMP,
+    filed_by        INTEGER,                                -- employee.id
+    note            TEXT,
+    itime           TIMESTAMP DEFAULT NOW(),
+    mtime           TIMESTAMP DEFAULT NOW()
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_ustva_filings_period
+    ON ustva_filings(period_start, period_end);
+
+COMMENT ON TABLE ustva_filings IS 'Als abgegeben markierte Voranmeldungen inkl. Momentaufnahme der Kennzahlen zum Abgabezeitpunkt.';
+
+-- ── Stammdaten: Kennzahlen des amtlichen Formulars ─────────────────────────
+INSERT INTO ustva_kennzahlen (kz, label, section, kind, rate, sortkey) VALUES
+    -- Kennzahl 0 ist keine Formularzeile, sondern die bewusste Entscheidung
+    -- "gehoert nicht in die Voranmeldung" — etwa durchlaufende Posten nach
+    -- § 10 Abs. 1 Satz 6 UStG. Ohne diese Moeglichkeit muessten solche Konten
+    -- dauerhaft als "nicht zugeordnet" gemeldet bleiben.
+    ( 0, 'Nicht melden (durchlaufender Posten / nicht steuerbar)',         'ignoriert',   'base', NULL, 900),
+    (81, 'Steuerpflichtige Umsätze zum Steuersatz von 19 %',                     'umsatz',      'base', 0.19, 10),
+    (86, 'Steuerpflichtige Umsätze zum Steuersatz von 7 %',                      'umsatz',      'base', 0.07, 20),
+    (35, 'Umsätze zu anderen Steuersätzen',                                      'umsatz',      'base', NULL, 30),
+    (36, 'Steuer auf Umsätze zu anderen Steuersätzen',                           'umsatz',      'tax',  NULL, 31),
+    (77, 'Umsätze land- und forstwirtschaftlicher Betriebe (§ 24 UStG)',         'umsatz',      'base', NULL, 40),
+    (41, 'Innergemeinschaftliche Lieferungen an Abnehmer mit USt-IdNr.',         'umsatz_frei', 'base', 0,    50),
+    (44, 'Weitere steuerfreie Umsätze mit Vorsteuerabzug',                       'umsatz_frei', 'base', 0,    60),
+    (48, 'Umsätze nach § 4 Nr. 8 ff. UStG (ohne Vorsteuerabzug)',                'umsatz_frei', 'base', 0,    70),
+    (21, 'Nicht steuerbare sonstige Leistungen (§ 18b Satz 1 Nr. 2 UStG)',       'umsatz_frei', 'base', 0,    80),
+    (45, 'Übrige nicht steuerbare Umsätze (Leistungsort nicht im Inland)',       'umsatz_frei', 'base', 0,    90),
+    (89, 'Innergemeinschaftliche Erwerbe zum Steuersatz von 19 %',               'erwerb',      'base', 0.19, 100),
+    (93, 'Innergemeinschaftliche Erwerbe zum Steuersatz von 7 %',                'erwerb',      'base', 0.07, 110),
+    (95, 'Innergemeinschaftliche Erwerbe zu anderen Steuersätzen',               'erwerb',      'base', NULL, 120),
+    (98, 'Steuer auf innergemeinschaftliche Erwerbe zu anderen Steuersätzen',    'erwerb',      'tax',  NULL, 121),
+    (91, 'Steuerfreie innergemeinschaftliche Erwerbe',                           'erwerb',      'base', 0,    130),
+    (46, 'Leistungen eines im Ausland ansässigen Unternehmers (§ 13b UStG)',     'reverse',     'base', NULL, 140),
+    (47, 'Steuer auf Leistungen nach § 13b UStG',                                'reverse',     'tax',  NULL, 141),
+    (69, 'Steuerbeträge, die vom letzten Abnehmer geschuldet werden',            'steuer',      'tax',  NULL, 150),
+    (66, 'Vorsteuerbeträge aus Rechnungen von anderen Unternehmern',             'vorsteuer',   'tax',  NULL, 200),
+    (61, 'Vorsteuerbeträge aus dem innergemeinschaftlichen Erwerb',              'vorsteuer',   'tax',  NULL, 210),
+    (62, 'Entstandene Einfuhrumsatzsteuer',                                      'vorsteuer',   'tax',  NULL, 220),
+    (67, 'Vorsteuerbeträge aus Leistungen nach § 13b UStG',                      'vorsteuer',   'tax',  NULL, 230),
+    (63, 'Vorsteuerbeträge, berechnet nach Durchschnittssätzen',                 'vorsteuer',   'tax',  NULL, 240),
+    (64, 'Berichtigung des Vorsteuerabzugs (§ 15a UStG)',                        'vorsteuer',   'tax',  NULL, 250),
+    (59, 'Vorsteuerabzug für innergem. Lieferungen neuer Fahrzeuge',             'vorsteuer',   'tax',  NULL, 260),
+    (39, 'Anrechnung der Sondervorauszahlung',                                   'ergebnis',    'tax',  NULL, 300),
+    (83, 'Verbleibende Umsatzsteuer-Vorauszahlung / verbleibender Überschuss',   'ergebnis',    'tax',  NULL, 310)
+ON CONFLICT (kz) DO NOTHING;
+
+-- ── Stammdaten: Standardzuordnung der kivitendo-Steuerschlüssel ────────────
+-- Je Kombination aus Rolle, Richtung, Steuerschlüssel und Steuersatz wird nur
+-- dann ein Eintrag angelegt, wenn es ihn noch nicht gibt. Dadurch kommen neue
+-- Vorgaben bei einem Update dazu, ohne eigene Anpassungen zu überschreiben.
+INSERT INTO ustva_mapping (taxkey, rate, role, direction, kz, description)
+SELECT seed.* FROM (VALUES
+    -- Ausgangsseite: Bemessungsgrundlagen
+    ( 1, 0.00000::numeric, 'base', 'revenue', 48, 'USt-frei'),
+    ( 2, 0.07000::numeric, 'base', 'revenue', 86, 'Umsatzsteuer 7 %'),
+    ( 2, 0.05000::numeric, 'base', 'revenue', 35, 'Umsatzsteuer 5 % (anderer Steuersatz)'),
+    ( 3, 0.19000::numeric, 'base', 'revenue', 81, 'Umsatzsteuer 19 %'),
+    ( 3, 0.16000::numeric, 'base', 'revenue', 35, 'Umsatzsteuer 16 % (anderer Steuersatz)'),
+    ( 5, 0.16000::numeric, 'base', 'revenue', 35, 'Umsatzsteuer 16 % (anderer Steuersatz)'),
+    (10, 0.00000::numeric, 'base', 'revenue', 21, 'Im anderen EU-Staat steuerpflichtige Lieferung'),
+    (11, 0.00000::numeric, 'base', 'revenue', 41, 'Steuerfreie innergem. Lieferung an Abnehmer mit USt-IdNr.'),
+    (12, 0.07000::numeric, 'base', 'revenue', 93, 'Innergemeinschaftlicher Erwerb 7 %'),
+    (13, 0.19000::numeric, 'base', 'revenue', 89, 'Innergemeinschaftlicher Erwerb 19 %'),
+    -- Ausgangsseite: Steuerkonten. Bei 81/86/89/93 rechnet das Finanzamt die
+    -- Steuer selbst aus der Bemessungsgrundlage; die gebuchte Steuer dient hier
+    -- als Kontrollwert. Bei "anderen Steuersätzen" wird sie separat gemeldet.
+    ( 2, 0.07000::numeric, 'tax',  'revenue', 86, 'Umsatzsteuer 7 % (Kontrollwert)'),
+    ( 3, 0.19000::numeric, 'tax',  'revenue', 81, 'Umsatzsteuer 19 % (Kontrollwert)'),
+    (12, 0.07000::numeric, 'tax',  'revenue', 93, 'Umsatzsteuer innergem. Erwerb 7 % (Kontrollwert)'),
+    (13, 0.19000::numeric, 'tax',  'revenue', 89, 'Umsatzsteuer innergem. Erwerb 19 % (Kontrollwert)'),
+    ( 2, 0.05000::numeric, 'tax',  'revenue', 36, 'Steuer 5 %'),
+    ( 3, 0.16000::numeric, 'tax',  'revenue', 36, 'Steuer 16 %'),
+    ( 5, 0.16000::numeric, 'tax',  'revenue', 36, 'Steuer 16 %'),
+    -- Eingangsseite: Vorsteuer
+    ( 7, 0.16000::numeric, 'tax',  'expense', 66, 'Vorsteuer 16 %'),
+    ( 8, 0.05000::numeric, 'tax',  'expense', 66, 'Vorsteuer 5 %'),
+    ( 8, 0.07000::numeric, 'tax',  'expense', 66, 'Vorsteuer 7 %'),
+    ( 9, 0.16000::numeric, 'tax',  'expense', 66, 'Vorsteuer 16 %'),
+    ( 9, 0.19000::numeric, 'tax',  'expense', 66, 'Vorsteuer 19 %'),
+    (18, 0.07000::numeric, 'tax',  'expense', 61, 'Vorsteuer aus innergem. Erwerb 7 %'),
+    (19, 0.19000::numeric, 'tax',  'expense', 61, 'Vorsteuer aus innergem. Erwerb 19 %'),
+    -- Eingangsseite: § 13b — Bemessungsgrundlage und Vorsteuer
+    (94, 0.19000::numeric, 'base', 'expense', 46, 'Leistung nach § 13b UStG 19 %'),
+    (94, 0.19000::numeric, 'tax',  'expense', 67, 'Vorsteuer aus Leistungen nach § 13b UStG')
+) AS seed(taxkey, rate, role, direction, kz, description)
+WHERE NOT EXISTS (
+    SELECT 1 FROM ustva_mapping m
+    WHERE m.role      = seed.role
+      AND m.direction = seed.direction
+      AND m.taxkey IS NOT DISTINCT FROM seed.taxkey
+      AND m.rate   IS NOT DISTINCT FROM seed.rate
+      AND m.chart_id IS NULL
+);
+
+-- ============================================================================
+-- MITARBEITER-CHAT (interner Chat zwischen Benutzern, Echtzeit via SSE)
+-- ============================================================================
+
+CREATE TABLE IF NOT EXISTS chat_conversations (
+    id INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    title TEXT,
+    is_group BOOLEAN NOT NULL DEFAULT FALSE,
+    created_by INTEGER,
+    itime TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    mtime TIMESTAMPTZ
+);
+
+COMMENT ON TABLE chat_conversations IS 'Chat-Unterhaltung zwischen Mitarbeitern (1:1 oder Gruppe)';
+COMMENT ON COLUMN chat_conversations.title IS 'Nur fuer Gruppen-Chats; 1:1-Chats zeigen den Namen des Gegenuebers';
+COMMENT ON COLUMN chat_conversations.is_group IS 'FALSE = genau zwei Teilnehmer (1:1), TRUE = Gruppe';
+COMMENT ON COLUMN chat_conversations.created_by IS 'employee.id des Erstellers';
+
+CREATE TABLE IF NOT EXISTS chat_participants (
+    id INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    conversation_id INTEGER NOT NULL,
+    employee_id INTEGER NOT NULL,
+    last_read_id INTEGER NOT NULL DEFAULT 0,
+    muted BOOLEAN NOT NULL DEFAULT FALSE,
+    itime TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT chat_participants_unique UNIQUE (conversation_id, employee_id)
+);
+
+COMMENT ON TABLE chat_participants IS 'Teilnehmer einer Chat-Unterhaltung inkl. Lesestand';
+COMMENT ON COLUMN chat_participants.last_read_id IS 'Hoechste gelesene chat_messages.id — daraus ergibt sich die Ungelesen-Zahl';
+COMMENT ON COLUMN chat_participants.muted IS 'Keine Popup-Benachrichtigung fuer diese Unterhaltung';
+
+CREATE TABLE IF NOT EXISTS chat_messages (
+    id INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    conversation_id INTEGER NOT NULL,
+    employee_id INTEGER NOT NULL,
+    message TEXT NOT NULL,
+    itime TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted BOOLEAN NOT NULL DEFAULT FALSE
+);
+
+COMMENT ON TABLE chat_messages IS 'Einzelne Chat-Nachricht innerhalb einer Unterhaltung';
+COMMENT ON COLUMN chat_messages.employee_id IS 'Absender (employee.id)';
+COMMENT ON COLUMN chat_messages.deleted IS 'Soft-Delete — geloeschte Nachrichten bleiben fuer die Historie erhalten';
+
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE indexname = 'idx_chat_messages_conversation') THEN
+        CREATE INDEX idx_chat_messages_conversation ON chat_messages(conversation_id, id DESC);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE indexname = 'idx_chat_participants_employee') THEN
+        CREATE INDEX idx_chat_participants_employee ON chat_participants(employee_id);
+    END IF;
+END $$;
+
+-- Trigger: pg_notify bei neuer Nachricht (SSE -> Chat-Fenster oeffnet sich live
+-- beim Empfaenger). Die Empfaengerliste steckt im Payload, damit der Client ohne
+-- Rueckfrage entscheiden kann, ob ihn die Nachricht betrifft.
+CREATE OR REPLACE FUNCTION notify_chat_message() RETURNS trigger AS $$
+DECLARE
+    v_sender     TEXT;
+    v_recipients INTEGER[];
+BEGIN
+    -- Fallback auf den Login: nicht jeder Mitarbeiterdatensatz hat einen Namen
+    SELECT COALESCE(NULLIF(TRIM(e.name), ''), e.login) INTO v_sender
+      FROM employee e WHERE e.id = NEW.employee_id;
+    SELECT array_agg(p.employee_id) INTO v_recipients
+      FROM chat_participants p WHERE p.conversation_id = NEW.conversation_id;
+
+    PERFORM pg_notify('chat_message', json_build_object(
+        'action',          'new',
+        'id',              NEW.id,
+        'conversation_id', NEW.conversation_id,
+        'employee_id',     NEW.employee_id,
+        'sender_name',     COALESCE(v_sender, ''),
+        -- pg_notify ist auf 8000 Byte begrenzt; laengere Texte holt der Client nach
+        'message',         left(NEW.message, 2000),
+        'truncated',       length(NEW.message) > 2000,
+        'itime',           NEW.itime,
+        'recipients',      COALESCE(v_recipients, ARRAY[]::INTEGER[])
+    )::TEXT);
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'chat_messages_notify') THEN
+        CREATE TRIGGER chat_messages_notify
+            AFTER INSERT ON chat_messages
+            FOR EACH ROW
+            EXECUTE FUNCTION notify_chat_message();
+    END IF;
+END $$;
+
+-- Trigger: Lesebestaetigung. Setzt ein Teilnehmer seinen Lesestand hoch, erfaehrt
+-- der Absender das live (Haken-Anzeige) — ohne zusaetzlichen Ajax-Call.
+CREATE OR REPLACE FUNCTION notify_chat_read() RETURNS trigger AS $$
+BEGIN
+    IF NEW.last_read_id IS DISTINCT FROM OLD.last_read_id THEN
+        PERFORM pg_notify('chat_message', json_build_object(
+            'action',          'read',
+            'conversation_id', NEW.conversation_id,
+            'employee_id',     NEW.employee_id,
+            'last_read_id',    NEW.last_read_id
+        )::TEXT);
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'chat_participants_read_notify') THEN
+        CREATE TRIGGER chat_participants_read_notify
+            AFTER UPDATE ON chat_participants
+            FOR EACH ROW
+            EXECUTE FUNCTION notify_chat_read();
+    END IF;
+END $$;

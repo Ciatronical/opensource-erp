@@ -1,0 +1,9 @@
+{
+    "WarehouseView": {
+        "routes": {
+            "warehouse": "/sandelis",
+            "warehouseScanner": "/sandelis/skeneris",
+            "warehouseStocktaking": "/sandelis/inventorizacija"
+        }
+    }
+}

@@ -8,7 +8,8 @@
             "accountingDatevExport": "/contabilidad/datev-export",
             "accountingOutgoing": "/contabilidad/cobros",
             "accountingChartOfAccounts": "/contabilidad/plan-cuentas",
-            "accountingOpenItems": "/contabilidad/partidas-abiertas"
+            "accountingOpenItems": "/contabilidad/partidas-abiertas",
+            "accountingUstva": "/contabilidad/iva"
         }
     }
 }

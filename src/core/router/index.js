@@ -202,6 +202,12 @@ const AccountingDatevExportView = () => import('@/features/accounting/views/acco
 const AccountingOutgoingView = () => import('@/features/accounting/views/accounting.outgoing.vue')
 const AccountingChartOfAccountsView = () => import('@/features/accounting/views/accounting.chart-of-accounts.vue')
 const AccountingOpenItemsView = () => import('@/features/accounting/views/accounting.open-items.vue')
+const AccountingUstvaView = () => import('@/features/accounting/views/accounting.ustva.vue')
+
+// Lager
+const WarehouseHubView = () => import('@/features/warehouse/views/warehouse.hub.vue')
+const WarehouseScannerView = () => import('@/features/warehouse/views/warehouse.scanner.vue')
+const WarehouseStocktakingView = () => import('@/features/warehouse/views/warehouse.stocktaking.vue')
 
 /**
  * Baut die vollständige Routen-Tabelle für die aktuell gesetzte `routeLocale`
@@ -214,12 +220,13 @@ function buildRoutes() {
             ...routePath('routes.setup'),
             name: 'setup',
             component: SetupView,
-            meta: { requiresSetup: true }
+            meta: { requiresSetup: true, hideCustomerBar: true }
         },
         {
             ...routePath('routes.systemUpdate'),
             name: 'system-update',
             component: UpdateView,
+            meta: { hideCustomerBar: true },
         },
         {
             path: '/',
@@ -267,6 +274,7 @@ function buildRoutes() {
             ...routePath('routes.login'),
             name: 'login',
             component: LoginView,
+            meta: { hideCustomerBar: true },
         },
         {
             ...routePath('routes.currentCustomerEdit'),
@@ -288,6 +296,7 @@ function buildRoutes() {
             ...routePath('routes.clientConfig'),
             name: 'client-defaults',
             component: ClientDefaultsView,
+            meta: { hideCustomerBar: true },
         },
         {
             // Alte URL (/system/mandantenkonfiguration) auf neue umleiten,
@@ -310,6 +319,7 @@ function buildRoutes() {
             ...routePath('routes.developerTools'),
             name: 'developer-tools',
             component: DeveloperToolsView,
+            meta: { hideCustomerBar: true },
         },
         {
             ...routePath('routes.followUp'),
@@ -335,18 +345,21 @@ function buildRoutes() {
             ...routePath('routes.wallDisplay'),
             name: 'wall-display',
             component: WallDisplayView,
+            meta: { hideCustomerBar: true },
         },
         {
             // '/tafel' war die urspruengliche URL und bleibt gueltig
             ...routePath('routes.anschlagtafel', '', ['/tafel']),
             name: 'anschlagtafel',
             component: AnschlagtafelView,
+            meta: { hideCustomerBar: true },
         },
         {
             // PC-Variante der Anschlagtafel: Eintraege hinzufuegen/loeschen
             ...routePath('routes.tafel'),
             name: 'tafel',
             component: TafelView,
+            meta: { hideCustomerBar: true },
         },
         {
             ...routePath('routes.mechanic'),
@@ -624,11 +637,38 @@ function buildRoutes() {
             component: AccountingOpenItemsView,
             meta: { hideCustomerBar: true },
         },
+        {
+            ...routePath('AccountingView.routes.accountingUstva'),
+            name: 'accounting-ustva',
+            component: AccountingUstvaView,
+            meta: { hideCustomerBar: true },
+        },
+        // ── Lager ──
+        {
+            ...routePath('WarehouseView.routes.warehouse'),
+            name: 'warehouse',
+            component: WarehouseHubView,
+            meta: { hideCustomerBar: true },
+        },
+        {
+            ...routePath('WarehouseView.routes.warehouseScanner'),
+            name: 'warehouse-scanner',
+            component: WarehouseScannerView,
+            meta: { hideCustomerBar: true },
+        },
+        {
+            ...routePath('WarehouseView.routes.warehouseStocktaking', '/:id(\\d+)'),
+            name: 'warehouse-stocktaking',
+            component: WarehouseStocktakingView,
+            props: true,
+            meta: { hideCustomerBar: true },
+        },
         // ── Banking ── (alle Funktionen in einem Hub zusammengefasst)
         {
             ...routePath('BankingView.routes.bankingOverview'),
             name: 'banking-overview',
             component: BankingHubView,
+            meta: { hideCustomerBar: true },
         },
         {
             ...routePath('BankingView.routes.bankingTransfers'),
@@ -644,51 +684,60 @@ function buildRoutes() {
             ...routePath('KasseView.routes.kasse'),
             name: 'kasse',
             component: KasseView,
+            meta: { hideCustomerBar: true },
         },
         // ── Kamera / Videoüberwachung ──
         {
             ...routePath('routes.camera'),
             name: 'camera',
             component: CameraView,
+            meta: { hideCustomerBar: true },
         },
         // ── Wiki ──
         {
             ...routePath('routes.wiki'),
             name: 'wiki-list',
             component: WikiListView,
+            meta: { hideCustomerBar: true },
         },
         {
             ...routePath('routes.wikiNew'),
             name: 'wiki-new',
             component: WikiEditView,
+            meta: { hideCustomerBar: true },
         },
         {
             ...routePath('routes.wikiCategories'),
             name: 'wiki-categories',
             component: WikiCategoriesView,
+            meta: { hideCustomerBar: true },
         },
         {
             ...routePath('routes.wiki', '/:id(\\d+)'),
             name: 'wiki-read',
             component: WikiReadView,
             props: true,
+            meta: { hideCustomerBar: true },
         },
         {
             ...routePath('routes.wikiEdit', '/:id(\\d+)'),
             name: 'wiki-edit',
             component: WikiEditView,
             props: true,
+            meta: { hideCustomerBar: true },
         },
         // ── Benutzer ──
         {
             ...routePath('routes.userConfig'),
             name: 'user-config',
             component: UserConfigView,
+            meta: { hideCustomerBar: true },
         },
         {
             ...routePath('routes.lxcarsReports'),
             name: 'lxcars-reports',
             component: LxCarsReportsView,
+            meta: { hideCustomerBar: true },
         },
         // ── Dokumentation ──
         {
@@ -696,25 +745,27 @@ function buildRoutes() {
             name: 'docs',
             component: DocsView,
             props: true,
+            meta: { hideCustomerBar: true },
         },
         // ── Öffentliche Seiten ──
         {
             ...routePath('routes.privacy'),
             name: 'datenschutz',
             component: DatenschutzView,
-            meta: { public: true },
+            meta: { public: true, hideCustomerBar: true },
         },
         {
             ...routePath('routes.dataDeletion'),
             name: 'datenloeschung',
             component: DatenloeschungView,
-            meta: { public: true },
+            meta: { public: true, hideCustomerBar: true },
         },
         // ── HR-Modul ──
         {
             ...routePath('routes.hr'),
             name: 'hr',
             component: HrHubView,
+            meta: { hideCustomerBar: true },
         },
         {
             ...routePath('routes.hrPayroll'),
@@ -731,6 +782,7 @@ function buildRoutes() {
             path: '/:pathMatch(.*)*',
             name: 'not-found',
             component: NotFoundView,
+            meta: { hideCustomerBar: true },
         },
     ];
 }

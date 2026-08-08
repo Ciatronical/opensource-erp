@@ -8,7 +8,8 @@
             "accountingDatevExport": "/bukhgalteriya/datev-export",
             "accountingOutgoing": "/bukhgalteriya/vkhodyashchie-platezhi",
             "accountingChartOfAccounts": "/bukhgalteriya/plan-schetov",
-            "accountingOpenItems": "/bukhgalteriya/otkrytye-pozitsii"
+            "accountingOpenItems": "/bukhgalteriya/otkrytye-pozitsii",
+            "accountingUstva": "/bukhgalteriya/nds"
         }
     }
 }

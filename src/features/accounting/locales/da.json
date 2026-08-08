@@ -8,7 +8,8 @@
             "accountingDatevExport": "/bogfoering/datev-export",
             "accountingOutgoing": "/bogfoering/indbetalinger",
             "accountingChartOfAccounts": "/bogfoering/kontoplan",
-            "accountingOpenItems": "/bogfoering/aabne-poster"
+            "accountingOpenItems": "/bogfoering/aabne-poster",
+            "accountingUstva": "/bogfoering/moms"
         }
     }
 }

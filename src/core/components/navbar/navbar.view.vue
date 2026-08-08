@@ -159,6 +159,24 @@
       <v-icon>mdi-cctv</v-icon>
     </v-btn>
 
+    <!-- Mitarbeiter-Chat -->
+    <v-btn
+      icon
+      variant="text"
+      :title="t('Chat.tooltip')"
+      @click="toggleChatPanel"
+    >
+      <v-badge
+        :model-value="chatUnread > 0"
+        :content="chatUnread"
+        color="error"
+        offset-x="-2"
+        offset-y="-2"
+      >
+        <v-icon>mdi-forum</v-icon>
+      </v-badge>
+    </v-btn>
+
     <!-- Account-Menü -->
     <v-menu v-model="accountMenuOpen" location="bottom end" :close-on-content-click="false">
       <template #activator="{ props }">
@@ -222,6 +240,9 @@
 
   <!-- Weroni Panel (rechtes Drawer) -->
   <WeroniPanel v-if="weroniEnabled" />
+
+  <!-- Mitarbeiter-Chat (rechtes Drawer, oeffnet sich bei neuer Nachricht selbst) -->
+  <ChatPanel />
 
   <!-- Ausgewaehlter Kunde/Lieferant. Auf Seiten mit meta.hideCustomerBar
        (z. B. der gesamten Buchhaltung) ausgeblendet — dort arbeitet man
@@ -337,7 +358,7 @@
 import { oserpStore } from '@/core/stores/oserp.store.js'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { computed, inject, nextTick, ref } from 'vue'
+import { computed, inject, nextTick, onMounted, onUnmounted, ref } from 'vue'
 import { useDisplay } from 'vuetify'
 import MessagesView from '@/core/components/messages/messages.view.vue'
 import ResponsiveMenu from '@/core/components/menus/responsive.menus.vue'
@@ -350,6 +371,8 @@ import WeroniPanel from '@/features/weroni/components/weroni-panel.vue'
 import { weroniStore } from '@/features/weroni/stores/weroni.store.js'
 import { useNavigationCards } from '@/core/composables/navigation.cards'
 import { useActivityTracker } from '@/core/composables/useActivityTracker'
+import ChatPanel from '@/core/components/chat/chat.panel.vue'
+import { startChat, stopChat, toggleChatPanel, unreadTotal as chatUnread } from '@/core/composables/useChat.js'
 
 export default {
   name: 'NavbarView',
@@ -359,7 +382,8 @@ export default {
     GlobalSearchComponent,
     InfoBarComponent,
     AboutDialog,
-    WeroniPanel
+    WeroniPanel,
+    ChatPanel
   },
   props: {
     // alte API (einzelne Nachricht)
@@ -437,6 +461,10 @@ export default {
 
     // Navigation Cards aus Composable
     const { cards } = useNavigationCards(true)
+
+    // Mitarbeiter-Chat: eine SSE-Verbindung fuer Badge und Panel
+    onMounted(startChat)
+    onUnmounted(stopChat)
 
     // Firmenwechsel
     const accountMenuOpen = ref(false)
@@ -525,6 +553,7 @@ export default {
 
     const logout = async () => {
       appReady.value = false
+      stopChat()
       try {
         await oserpData.logout()
       } catch (err) {
@@ -624,7 +653,9 @@ export default {
       skrOptions,
       openCreateCompanyDialog,
       closeCreateCompanyDialog,
-      doCreateCompany
+      doCreateCompany,
+      chatUnread,
+      toggleChatPanel
     }
   }
 }

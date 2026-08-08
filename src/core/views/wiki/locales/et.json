@@ -1,9 +1,6 @@
 {
     "WikiMenu": {
-        "title": "Wiki",
-        "newPage": "Uus artikkel",
-        "allPages": "Kõik artiklid",
-        "categories": "Kategooriad"
+        "title": "Wiki"
     },
     "WikiListView": {
         "title": "Wiki - Teadmusbaas",

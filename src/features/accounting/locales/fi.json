@@ -8,7 +8,8 @@
             "accountingDatevExport": "/kirjanpito/datev-export",
             "accountingOutgoing": "/kirjanpito/saapuvat-maksut",
             "accountingChartOfAccounts": "/kirjanpito/tilikartta",
-            "accountingOpenItems": "/kirjanpito/avoimet-erat"
+            "accountingOpenItems": "/kirjanpito/avoimet-erat",
+            "accountingUstva": "/kirjanpito/alv"
         }
     }
 }

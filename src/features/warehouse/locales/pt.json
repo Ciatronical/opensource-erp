@@ -1,0 +1,9 @@
+{
+    "WarehouseView": {
+        "routes": {
+            "warehouse": "/armazem",
+            "warehouseScanner": "/armazem/scanner",
+            "warehouseStocktaking": "/armazem/inventario"
+        }
+    }
+}

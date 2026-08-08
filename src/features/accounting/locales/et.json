@@ -8,7 +8,8 @@
             "accountingDatevExport": "/raamatupidamine/datev-export",
             "accountingOutgoing": "/raamatupidamine/laekumised",
             "accountingChartOfAccounts": "/raamatupidamine/kontoplaan",
-            "accountingOpenItems": "/raamatupidamine/avatud-arved"
+            "accountingOpenItems": "/raamatupidamine/avatud-arved",
+            "accountingUstva": "/raamatupidamine/kaibemaks"
         }
     }
 }

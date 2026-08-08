@@ -1,0 +1,9 @@
+{
+    "WarehouseView": {
+        "routes": {
+            "warehouse": "/ladu",
+            "warehouseScanner": "/ladu/skanner",
+            "warehouseStocktaking": "/ladu/inventuur"
+        }
+    }
+}

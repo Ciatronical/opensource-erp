@@ -156,7 +156,7 @@ Für Sammelauszahlungen von Kartendienstleistern (z. B. Flatpay, Rapyd, SumUp):
 
 ## 2. Buchhaltung
 
-Eigener Menübereich mit acht Ansichten.
+Eigener Menübereich mit neun Ansichten.
 
 ### 2.1 Übersicht / Dashboard
 
@@ -235,9 +235,24 @@ Zwei Modi in einer Ansicht:
 - DATEV-Konfiguration (Berater-/Mandantennummer, Wirtschaftsjahr etc.) speicherbar
 - Eigener Konfigurations-Tab für DATEV-Prüfungen
 
-> Hinweis: Eine ELSTER-Übermittlung der UStVA ist nicht enthalten — die UStVA-Kennzahlen werden ermittelt und angezeigt, die Übermittlung erfolgt über DATEV bzw. den Steuerberater.
+### 2.9 Umsatzsteuer-Voranmeldung
 
-### 2.9 Buchen aus der Faktura
+Eigene Ansicht, die die UStVA-Kennzahlen aus den tatsächlich gebuchten Vorfällen ermittelt — nicht aus den Konten-Stammdaten geschätzt. Details: [UStVA](ustva.md).
+
+- **Soll- und Ist-Versteuerung**: Vorgabe aus der Firmenkonfiguration, in der Ansicht umschaltbar. Bei Ist-Versteuerung wird jede Zahlung im Zeitraum **anteilig** auf die Steuerstruktur der zugehörigen Rechnung verteilt (Teilzahlungen inklusive)
+- **Jahres-Zeitstrahl** mit Monaten oder Quartalen: Zahllast und Status je Zeitraum (läuft / offen / überfällig / abgegeben)
+- **Abgabefrist** automatisch berechnet — 10. des Folgemonats, mit Dauerfristverlängerung einen Monat später, Wochenendverschiebung berücksichtigt
+- **Kennzahlen** nach Abschnitten gruppiert, Bemessungsgrundlagen ohne Cent, Steuerbeträge mit Cent, Kopier-Knopf je Kennzahl
+- **Nachweis je Kennzahl**: Klick öffnet alle zugrundeliegenden Buchungen mit Datum, Beleg, Konto, Steuerschlüssel und Betrag; bei Ist-Versteuerung zusätzlich gezahlt/brutto
+- **Nicht zugeordnete Beträge werden ausgewiesen**, nicht weggelassen — mit Ein-Klick-Zuordnung, die die Regel dauerhaft anlegt
+- **Plausibilitätsprüfungen**: Beträge ohne Kennzahl, gerechnete gegen gebuchte Steuer, Erlöse ohne Steuerschlüssel, Buchungen nach der Abgabe
+- **Abgeben und festschreiben**: sichert die Kennzahlen als Momentaufnahme; spätere Buchungen im Zeitraum erscheinen als Hinweis auf eine Berichtigung
+- **Zuordnungstabelle** in der Oberfläche editierbar (Steuerschlüssel, Steuersatz, optional Konto → Kennzahl); kontospezifische Regeln haben Vorrang, etwa für § 13b
+- **CSV-Export** aller Kennzahlen
+
+> Eine ELSTER-Übermittlung ist nicht enthalten. Die Kennzahlen lassen sich einzeln kopieren oder als CSV weitergeben; der vollständige Buchungsstapel geht über den DATEV-Export.
+
+### 2.10 Buchen aus der Faktura
 
 - Ausgangsrechnungen werden **serverseitig ins Hauptbuch gebucht** (`acc_trans`)
 - Eingangsrechnungen ebenso
@@ -263,9 +278,64 @@ Zwei Modi in einer Ansicht:
 
 ## 4. Lager & Inventur
 
-OpensourceERP arbeitet auf einer kivitendo-Datenbank und übernimmt deren Lagerlogik. Im Frontend ist der Lagerbereich derzeit **auf die Konfiguration beschränkt** — es gibt keine eigene Lagerbewegungs- oder Inventurmaske in der Vue-Oberfläche. Die Einstellungen wirken auf die zugrundeliegende kivitendo-Lagerverwaltung.
+Vollwertiges Lagermodul direkt auf den kivitendo-Tabellen `warehouse`, `bin` und `inventory` — keine Parallelhaltung, keine Synchronisation. Details: [Lager](lager.md).
 
-**Lager-Konfiguration**
+### 4.1 Einrichtung
+
+- **Einstieg in einem Schritt**: Ist kein Lager vorhanden, legt ein Klick Lager, Lagerplatz und die Vorgaben in der Firmenkonfiguration gemeinsam an
+- Beliebig viele Lager und Lagerplätze, Lager als „außer Betrieb" kennzeichenbar
+- Lagerplätze löschbar, solange dort nie etwas gelagert wurde
+
+### 4.2 Lager-Cockpit
+
+- Vier Kennzahlen, die zugleich Filter sind: **Artikel mit Bestand · Lagerwert · unter Meldebestand · Ladenhüter**
+- **Bestandsabgleich**: Weicht das kivitendo-Schnellfeld `parts.onhand` von der Summe der Bewegungen ab (typisch nach Datenimporten), wird das gemeldet und lässt sich per Klick angleichen — der Bestand selbst wird immer aus den Bewegungen gerechnet
+
+### 4.3 Bestand
+
+- **Sofortsuche** über Artikelnummer, Bezeichnung und EAN statt Filterformular
+- Jede Zeile aufklappbar: Verteilung auf Lager, Lagerplatz und Charge — ohne Nachladen
+- Lagerwert je Artikel, Meldebestand-Warnung, letzte Bewegung
+- **Meldebestand** je Artikel direkt aus der Liste setzen
+
+### 4.4 Buchen
+
+Ein Dialog für alle drei Bewegungen, keine getrennten Masken:
+
+- **Einlagern · Auslagern · Umlagern** — Zielfelder erscheinen nur beim Umlagern
+- Umlagerungen entstehen als **ein Vorgang** (zwei Zeilen mit gemeinsamer Vorgangsnummer)
+- **Bestandsschutz**: Aus- und Umlagern prüfen den Bestand am Quellplatz inkl. Charge; die Meldung nennt verfügbare und angeforderte Menge
+- Bewegungsart, Charge, Mindesthaltbarkeit und Bemerkung aufklappbar
+- Bebuchte Artikel werden automatisch als lagerfähig markiert
+- **Zurücknehmen** innerhalb der konfigurierten Frist; Belegbuchungen sind gesperrt
+
+### 4.5 Scanner-Modus
+
+Vollbildansicht für Tablet und Handscanner (`/lager/scanner`):
+
+- Richtung und Lagerplatz einmal einstellen, dann fortlaufend scannen
+- Eindeutiger Treffer (EAN oder Artikelnummer) springt direkt zur Mengeneingabe
+- Schnellmengen (1/2/5/10/20), großes Zahlenfeld
+- Das Eingabefeld hat immer den Fokus — der Ablauf läuft ohne Berührung des Bildschirms
+- Die letzten Buchungen bleiben mit **Rückgängig** stehen
+
+### 4.6 Inventur
+
+Geführter Zählvorgang je Lager und Stichtag:
+
+- **Blindzählung**: Der Buchbestand wird nicht mitgeschickt, solange keine Menge eingetragen ist — wer die Sollmenge sieht, schreibt sie ab. Nach der Eingabe erscheint die Differenz sofort
+- Fortschrittsanzeige (gezählte von erwarteten Plätzen), Suche und Scan zum Springen
+- **Zusammenfassung** mit Anzahl Abweichungen, Mehr- und Fehlbestand und Wertdifferenz
+- **Differenzen buchen** erzeugt je Abweichung eine Lagerbuchung mit der Bewegungsart „Inventur"; Positionen ohne Abweichung bleiben unberührt
+- Gebuchte Zählzeilen sind gesperrt; Verwerfen löscht nur die noch nicht gebuchten
+
+### 4.7 Bewegungsjournal
+
+- Alle Lagerbewegungen mit Filter für Zeitraum, Lager, Richtung und Freitext
+- Zusammengehörende Umlagerungen als ein Vorgang
+- Belegbuchungen sind gekennzeichnet und hier nicht änderbar
+
+### 4.8 Lager-Konfiguration
 
 - Standardlager und Standard-Lagerplatz
 - Getrennte Vorgabe für Dienstleistungen
@@ -998,7 +1068,8 @@ Automatische Kennzeichenerkennung an der Werkstattzufahrt.
 | `feature_anpr` | ANPR-Kennzeichenerkennung inkl. Konfigurations-Tab (Standard: an) |
 | `feature_nvr` | Videoüberwachung / NVR (Standard: an) |
 | `feature_datev` | DATEV-Funktionen |
-| `feature_ustva` | Umsatzsteuer-Voranmeldung |
+| `feature_ustva` | UStVA-Kennzahlen in den kivitendo-Auswertungen |
+| `ustva_permanent_extension` | Dauerfristverlängerung — verschiebt die berechnete Abgabefrist um einen Monat |
 | `lxcars_mechanic_mode` | Mechaniker-Modus im Menü und als Startansicht |
 | `lxcars_hu_whatsapp_enabled` | HU-Benachrichtigungen per WhatsApp |
 | `lxcars_wartung_enabled` | Prüfung der Wartungsdaten vor Auftragsabschluss |

@@ -57,6 +57,23 @@ Alle Belegarten in einer einheitlichen, modernen Oberfläche:
 - Beleghistorie und Statusverwaltung (offen/geschlossen)
 - Kompakt- und Vollansicht umschaltbar
 
+### Lager
+
+- Bestandsführung auf Lager-, Lagerplatz- und Chargenebene (kivitendo-kompatibel)
+- Ein Buchungsdialog für Einlagern, Auslagern und Umlagern — keine getrennten Masken
+- Scanner-Modus für Tablet und Handscanner: scannen, Menge, Enter, weiter
+- Geführte Inventur mit Blindzählung — der Buchbestand erscheint erst nach der Eingabe
+- Bewegungsjournal mit Rückgängig-Funktion innerhalb der konfigurierten Frist
+- Kennzahlen als Filter: Lagerwert, unter Meldebestand, Ladenhüter
+
+### Umsatzsteuer-Voranmeldung
+
+- Kennzahlen aus den tatsächlich gebuchten Vorfällen, nicht aus Stammdaten geschätzt
+- Soll- und Ist-Versteuerung; bei Ist-Versteuerung anteilige Verteilung von Teilzahlungen
+- Nachweis je Kennzahl bis zur einzelnen Buchung
+- Nicht zuordenbare Beträge werden ausgewiesen statt weggelassen
+- Plausibilitätsprüfungen, Abgabefrist mit Dauerfristverlängerung, Festschreiben, CSV-Export
+
 ### Integrierter E-Mail-Client
 
 - IMAP-Posteingang direkt im ERP

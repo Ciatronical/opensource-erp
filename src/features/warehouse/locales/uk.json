@@ -1,0 +1,9 @@
+{
+    "WarehouseView": {
+        "routes": {
+            "warehouse": "/sklad",
+            "warehouseScanner": "/sklad/skaner",
+            "warehouseStocktaking": "/sklad/inventaryzatsiia"
+        }
+    }
+}

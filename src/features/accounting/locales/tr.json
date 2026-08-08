@@ -8,7 +8,8 @@
             "accountingDatevExport": "/muhasebe/datev-export",
             "accountingOutgoing": "/muhasebe/tahsilatlar",
             "accountingChartOfAccounts": "/muhasebe/hesap-plani",
-            "accountingOpenItems": "/muhasebe/acik-kalemler"
+            "accountingOpenItems": "/muhasebe/acik-kalemler",
+            "accountingUstva": "/muhasebe/kdv"
         }
     }
 }

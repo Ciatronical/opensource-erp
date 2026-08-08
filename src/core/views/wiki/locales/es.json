@@ -1,9 +1,6 @@
 {
     "WikiMenu": {
-        "title": "Wiki",
-        "newPage": "Nuevo artículo",
-        "allPages": "Todos los artículos",
-        "categories": "Categorías"
+        "title": "Wiki"
     },
     "WikiListView": {
         "title": "Wiki - Base de conocimiento",
