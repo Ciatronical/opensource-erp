@@ -1,7 +1,10 @@
 <template>
   <div class="responsive-menu">
-    <!-- Desktop (>=xl / 1920px): Buttons mit Text -->
-    <div class="d-none d-xl-flex align-center">
+    <!-- Ab md: Buttons mit Text — aber nur, solange sie wirklich hineinpassen.
+         Ob das der Fall ist, misst die Navbar (prop `compact`); eine feste
+         Breakpoint-Schwelle passte nicht, weil die Leiste je nach Mandant,
+         Sprache und aktiven Features unterschiedlich viel Platz braucht. -->
+    <div v-if="!compact" class="d-none d-md-flex align-center">
       <template v-for="(menu, index) in menus" :key="index">
         <!-- Direkter Link ohne Untermenue -->
         <v-btn
@@ -50,8 +53,8 @@
       </template>
     </div>
 
-    <!-- Tablet (md bis xl): Nur Icons mit Tooltip -->
-    <div class="d-none d-md-flex d-xl-none align-center">
+    <!-- Zu wenig Platz fuer Text: nur Symbole mit Tooltip -->
+    <div v-else class="d-none d-md-flex align-center">
       <template v-for="(menu, index) in menus" :key="index">
         <!-- Direkter Link ohne Untermenue -->
         <v-tooltip v-if="menu.to" :text="menu.title" location="bottom">
@@ -176,6 +179,11 @@ export default {
     menus: {
       type: Array,
       required: true
+    },
+    // true = Symbolleiste statt Textbuttons (von der Navbar gemessen)
+    compact: {
+      type: Boolean,
+      default: false
     }
   },
   emits: ['menu-click'],

@@ -6,7 +6,7 @@
         "conversations": "Conversations",
         "newChat": "New chat",
         "searchPlaceholder": "Search employee or message",
-        "messagePlaceholder": "Write a message … (Enter sends, Shift+Enter new line)",
+        "messagePlaceholder": "Type a message …",
         "noMessages": "No message yet",
         "noEmployees": "No other employees available",
         "startHint": "Write the first message to {name}.",
@@ -22,6 +22,9 @@
         "confirmDeleteText": "Delete this message?",
         "read": "Read",
         "sent": "Sent",
-        "newMessageFrom": "New message from {name}"
+        "newMessageFrom": "New message from {name}",
+        "today": "Today",
+        "yesterday": "Yesterday",
+        "pickHint": "Pick a conversation on the left or start a new chat."
     }
 }

@@ -36,7 +36,7 @@
     </v-btn>
     <router-link :to="{ name: 'startup' }" class="text-decoration-none text-primary me-1"><v-icon>mdi-home</v-icon></router-link>
 
-    <v-toolbar-title class="text-h6">
+    <v-toolbar-title class="text-h6 navbar-title">
       <router-link :to="{ name: 'startup' }" class="text-decoration-none text-primary">{{ appTitle }}</router-link>
     </v-toolbar-title>
 
@@ -82,13 +82,20 @@
       <v-icon size="11" style="position: absolute; bottom: 6px; right: 6px;" color="primary">mdi-camera</v-icon>
     </v-btn>
 
-    <!-- Responsive Menüs -->
-    <ResponsiveMenu :menus="cards" @menu-click="handleMenuAction" />
+    <!-- Responsive Menüs — geben bei Platzmangel als Erstes nach, damit die
+         Symbole rechts nicht aus der Leiste geschoben werden (die Toolbar
+         schneidet Überhang kommentarlos ab) -->
+    <div ref="menuBox" class="navbar-flex">
+      <ResponsiveMenu :menus="cards" :compact="menusCompact" @menu-click="handleMenuAction" />
+    </div>
 
     <!-- Globale Schnellsuche (Inline ab grossen Bildschirmen) -->
-    <GlobalSearchComponent v-if="lgAndUp" class="mx-2" style="min-width: 240px; max-width: 400px; flex: 1" />
+    <GlobalSearchComponent v-if="lgAndUp" class="mx-2 navbar-search" />
 
-    <v-spacer />
+    <v-spacer ref="spacerBox" />
+
+    <!-- Rechte Seite: darf nie abgeschnitten werden -->
+    <div class="navbar-right">
 
     <!-- Firmenlogo oder Firmenname — Klick öffnet Firmenliste -->
     <v-menu v-model="clientMenuOpen" location="bottom end" :close-on-content-click="true" open-on-hover>
@@ -163,6 +170,7 @@
     <v-btn
       icon
       variant="text"
+      color="primary"
       :title="t('Chat.tooltip')"
       @click="toggleChatPanel"
     >
@@ -173,7 +181,7 @@
         offset-x="-2"
         offset-y="-2"
       >
-        <v-icon>mdi-forum</v-icon>
+        <v-icon>mdi-chat-outline</v-icon>
       </v-badge>
     </v-btn>
 
@@ -227,6 +235,8 @@
         </v-list>
       </v-card>
     </v-menu>
+
+    </div><!-- /navbar-right -->
 
     <!-- Globale Schnellsuche auf kleinen Bildschirmen: eigene volle Zeile,
          damit das Eingabefeld nicht zusammengequetscht wird -->
@@ -358,7 +368,7 @@
 import { oserpStore } from '@/core/stores/oserp.store.js'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { computed, inject, nextTick, onMounted, onUnmounted, ref } from 'vue'
+import { computed, inject, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useDisplay } from 'vuetify'
 import MessagesView from '@/core/components/messages/messages.view.vue'
 import ResponsiveMenu from '@/core/components/menus/responsive.menus.vue'
@@ -465,6 +475,49 @@ export default {
     // Mitarbeiter-Chat: eine SSE-Verbindung fuer Badge und Panel
     onMounted(startChat)
     onUnmounted(stopChat)
+
+    // ── Menuebreite messen ──────────────────────────────────────────────
+    // Die Toolbar schneidet Ueberhang ohne Vorwarnung ab. Statt einer festen
+    // Breakpoint-Schwelle wird gemessen: passen die Textbuttons nicht mehr,
+    // schaltet das Menue auf Symbole um. Zurueck erst, wenn wieder genug
+    // Luft da ist (Puffer gegen Hin-und-Her-Springen).
+    const menuBox = ref(null)
+    const spacerBox = ref(null)
+    const menusCompact = ref(false)
+    let naturalTextWidth = 0
+    let resizeObserver = null
+
+    function measureMenus() {
+      const box = menuBox.value
+      if (!box) return
+      if (!menusCompact.value) {
+        naturalTextWidth = Math.max(naturalTextWidth, box.scrollWidth)
+        if (box.scrollWidth > box.clientWidth + 1) menusCompact.value = true
+        return
+      }
+      const spacer = spacerBox.value?.$el || spacerBox.value
+      const free = spacer ? spacer.clientWidth : 0
+      // 60px Puffer: sonst kippt die Leiste bei jedem Pixel hin und her
+      if (naturalTextWidth && free > (naturalTextWidth - box.clientWidth) + 60) {
+        menusCompact.value = false
+      }
+    }
+
+    onMounted(() => {
+      nextTick(measureMenus)
+      if (typeof ResizeObserver !== 'undefined' && menuBox.value?.parentElement) {
+        resizeObserver = new ResizeObserver(() => measureMenus())
+        resizeObserver.observe(menuBox.value.parentElement)
+      }
+    })
+    onUnmounted(() => { if (resizeObserver) resizeObserver.disconnect() })
+
+    // Menuepunkte aendern sich mit Sprache, Mandant und Features — dann neu messen
+    watch(() => cards.value.length, () => {
+      naturalTextWidth = 0
+      menusCompact.value = false
+      nextTick(measureMenus)
+    })
 
     // Firmenwechsel
     const accountMenuOpen = ref(false)
@@ -575,7 +628,11 @@ export default {
 
     // Handler für Menü-Aktionen ohne Route
     const handleMenuAction = (item) => {
-      // Hier können Custom-Actions behandelt werden
+      if (item?.action === 'chat') {
+        toggleChatPanel()
+        return
+      }
+      // Hier können weitere Custom-Actions behandelt werden
       console.log('Menu action:', item)
     }
 
@@ -655,13 +712,40 @@ export default {
       closeCreateCompanyDialog,
       doCreateCompany,
       chatUnread,
-      toggleChatPanel
+      toggleChatPanel,
+      menuBox,
+      spacerBox,
+      menusCompact
     }
   }
 }
 </script>
 
 <style scoped>
+/* Die Toolbar schneidet Überhang ohne Vorwarnung ab (overflow: hidden).
+   Darum bekommt die rechte Gruppe festen Platz, während Menüs und Suchfeld
+   nachgeben — sonst verschwinden Kamera, Chat und Benutzer bei vielen
+   Menüpunkten oder schmalem Fenster einfach aus dem Bild. */
+.navbar-right {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+}
+.navbar-flex {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  overflow: hidden;
+}
+/* Der Produktname soll nicht zu "L..." schrumpfen — Platz gibt die Suche her */
+.navbar-title {
+  flex: 0 0 auto;
+}
+.navbar-search {
+  flex: 1 1 auto;
+  min-width: 120px;
+  max-width: 400px;
+}
 .cursor-pointer {
   cursor: pointer;
 }

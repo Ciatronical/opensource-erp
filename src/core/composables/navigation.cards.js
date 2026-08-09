@@ -52,6 +52,9 @@ export function useNavigationCards() {
 
         // Kontakt-Menü
         const contactItems = [
+            // Mitarbeiter-Chat: keine eigene Seite, sondern das Chatfenster rechts
+            { title: t('Chat.title'), action: 'chat' },
+            '-',
             { title: t('ContactMenu.callHistory'), to: { name: 'call-history' } },
             '-',
             { title: t('ContactMenu.emails'), to: { name: 'emails' } },

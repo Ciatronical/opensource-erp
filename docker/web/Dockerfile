@@ -5,8 +5,11 @@ FROM node:25-alpine AS builder
 
 WORKDIR /build
 
-COPY package.json package-lock.json ./
-RUN npm install --no-audit --no-fund
+# .npmrc muss mit: ohne legacy-peer-deps loest npm @vue/devtools-api anders auf
+# (8.2.1 gehoistet statt 6.6.4) — der Container haette sonst einen anderen
+# Abhaengigkeitsbaum als die lokale Entwicklung, ohne dass es auffaellt.
+COPY package.json package-lock.json .npmrc ./
+RUN npm ci --no-audit --no-fund
 
 COPY src/ ./src/
 COPY public/ ./public/

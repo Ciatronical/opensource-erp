@@ -38,6 +38,12 @@ function getChatOverview($data) {
                       FROM chat_participants pp
                      WHERE pp.conversation_id = c.id
                        AND pp.employee_id <> :employee_id) AS partner_ids,
+                   -- Niedrigster Lesestand der Gegenseite: daraus wird in der
+                   -- Liste der Haken an der letzten eigenen Nachricht abgeleitet
+                   (SELECT COALESCE(MIN(p2.last_read_id), 0)
+                      FROM chat_participants p2
+                     WHERE p2.conversation_id = c.id
+                       AND p2.employee_id <> :employee_id) AS partner_read_id,
                    lm.id          AS last_message_id,
                    lm.message     AS last_message,
                    lm.employee_id AS last_employee_id,

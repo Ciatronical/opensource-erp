@@ -6,7 +6,7 @@
         "conversations": "Unterhaltungen",
         "newChat": "Neuer Chat",
         "searchPlaceholder": "Mitarbeiter oder Nachricht suchen",
-        "messagePlaceholder": "Nachricht schreiben … (Enter sendet, Shift+Enter neue Zeile)",
+        "messagePlaceholder": "Nachricht schreiben …",
         "noMessages": "Noch keine Nachricht",
         "noEmployees": "Keine weiteren Mitarbeiter vorhanden",
         "startHint": "Schreibe die erste Nachricht an {name}.",
@@ -22,6 +22,9 @@
         "confirmDeleteText": "Soll diese Nachricht gelöscht werden?",
         "read": "Gelesen",
         "sent": "Gesendet",
-        "newMessageFrom": "Neue Nachricht von {name}"
+        "newMessageFrom": "Neue Nachricht von {name}",
+        "today": "Heute",
+        "yesterday": "Gestern",
+        "pickHint": "Wähle links eine Unterhaltung oder starte einen neuen Chat."
     }
 }

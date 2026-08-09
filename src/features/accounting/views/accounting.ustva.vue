@@ -483,11 +483,19 @@ function pct(v) { return v === null || v === undefined ? '—' : formatNumber(Nu
 function d(v)   { return v ? formatDate(v, locale.value) : '' }
 function dt(v)  { return v ? formatDateTime(v, locale.value) : '' }
 
+// Toleranz für den Abgleich gerechnete vs. gebuchte Steuer.
+// Die Rundung pro Beleg (positionsweise Steuerberechnung, Euro-Kürzung der
+// Bemessungsgrundlage) hebt sich weitgehend auf und wächst NICHT linear mit der
+// Belegzahl, sondern nur mit deren Wurzel — empirisch bleibt der Rest selbst bei
+// >140 Belegen unter ~0,25 €. 0,50 € schluckt diese normale Rundung auf jeder
+// Betriebsgröße, schlägt aber bei echten Fehlbuchungen (€-groß) sofort an.
+const TAX_MISMATCH_TOLERANCE = 0.50
+
 /** Weicht die aus der Bemessungsgrundlage gerechnete Steuer von der gebuchten ab? */
 function taxMismatch(r) {
     if (r.computed_tax === null || r.computed_tax === undefined) return false
     if (!Number(r.booked_tax)) return false
-    return Math.abs(Number(r.computed_tax) - Number(r.booked_tax)) > 0.02
+    return Math.abs(Number(r.computed_tax) - Number(r.booked_tax)) > TAX_MISMATCH_TOLERANCE
 }
 
 async function loadYear() {

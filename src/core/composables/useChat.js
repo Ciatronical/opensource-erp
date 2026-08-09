@@ -23,6 +23,11 @@ export const partnerReadId = ref(0)
 export const loadingOverview = ref(false)
 export const loadingMessages = ref(false)
 export const sending = ref(false)
+// Zaehler, den nur bewusste Benutzeraktionen hochsetzen (Klick auf den
+// Chat-Button). Das Panel setzt daraufhin den Fokus ins Eingabefeld — beim
+// automatischen Aufpoppen einer eingehenden Nachricht bewusst nicht, sonst
+// landet der naechste Tastendruck ungewollt im Chat.
+export const focusRequest = ref(0)
 
 export const unreadTotal = computed(() =>
     conversations.value.reduce((sum, c) => sum + Number(c.unread || 0), 0)
@@ -302,14 +307,17 @@ export function stopChat() {
 /** Panel umschalten — beim Oeffnen wird die Uebersicht aufgefrischt */
 export function toggleChatPanel() {
     panelOpen.value = !panelOpen.value
-    if (panelOpen.value) loadOverview()
+    if (panelOpen.value) {
+        loadOverview()
+        focusRequest.value++
+    }
 }
 
 export function useChat() {
     return {
         panelOpen, conversations, employees, messages, activeConversationId,
         activeConversation, activeTitle, pendingEmployee, partnerReadId,
-        loadingOverview, loadingMessages, sending, unreadTotal,
+        loadingOverview, loadingMessages, sending, unreadTotal, focusRequest,
         loadOverview, openConversation, openChatWith, closeConversation,
         sendMessage, deleteMessage, markRead, startChat, stopChat, toggleChatPanel,
     }

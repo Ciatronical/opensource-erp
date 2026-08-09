@@ -153,8 +153,60 @@ if [ -f "$PROJECT_DIR/backend/composer.json" ]; then
 fi
 
 # Veraltete Frontend-Pakete (nur Info, kein Alarm)
-OUTDATED=$(npm outdated 2>/dev/null | tail -n +2 | wc -l)
+#
+# 'npm outdated' liest stumpf den "latest"-Tag aus der Registry. Bei Paketen, deren
+# Maintainer den Tag nie umgehängt hat, zeigt der rückwärts: vuedraggable meldet
+# "latest 2.24.3", das ist aber die Vue-2-Linie — die Vue-3-Version 4.1.0 hängt am
+# "next"-Tag. Solche Einträge werden hier aussortiert, sonst steht dauerhaft ein
+# Fehlalarm im Report und echte Rückstände gehen darin unter.
+OUTDATED_RAW=$( (npm outdated --json 2>/dev/null || true) | node -e '
+    let s = "";
+    process.stdin.on("data", d => s += d);
+    process.stdin.on("end", () => {
+        let o = {};
+        try { o = JSON.parse(s || "{}"); } catch (e) { console.log("0"); console.log(""); return; }
+        const num = v => String(v || "0").split("-")[0].split(".").map(n => parseInt(n, 10) || 0);
+        const cmp = (a, b) => {
+            const x = num(a), y = num(b);
+            for (let i = 0; i < 3; i++) if ((x[i]||0) !== (y[i]||0)) return (x[i]||0) < (y[i]||0) ? -1 : 1;
+            return 0;
+        };
+        const real = [], traps = [];
+        for (const [name, raw] of Object.entries(o)) {
+            const info = Array.isArray(raw) ? raw[0] : raw;
+            if (!info || !info.current || !info.latest) continue;
+            const d = cmp(info.latest, info.current);
+            if (d < 0) traps.push(name + " (" + info.current + " > latest " + info.latest + ")");
+            else if (d > 0) real.push(name);
+        }
+        console.log(real.length);
+        console.log(traps.join(", "));
+    });
+' 2>/dev/null )
+{ read -r OUTDATED; read -r TRAPS; } <<< "$OUTDATED_RAW"
+
 [ "${OUTDATED:-0}" -gt 0 ] && echo "  ${Y}ℹ${B} $OUTDATED veraltete npm-Paket(e) — Details: 'npm outdated'"
+[ -n "${TRAPS:-}" ] && echo "  ${Y}ℹ${B} ignoriert, \"latest\"-Tag zeigt rückwärts: $TRAPS"
+
+# Gegenprobe: ist so ein Paket bereits versehentlich heruntergestuft worden?
+# 'npm i <paket>@latest' schreibt die Range in package.json einfach um, das ^ schützt
+# davor nicht. Hier fällt es beim nächsten Build auf, statt erst im kaputten Frontend.
+# Format: paketname:erwarteter-mindest-major
+DIST_TAG_GUARD="vuedraggable:4"
+
+DOWNGRADE_ALERT=0
+for entry in $DIST_TAG_GUARD; do
+    pkg="${entry%:*}"
+    min="${entry##*:}"
+    pkg_json="$PROJECT_DIR/node_modules/$pkg/package.json"
+    [ -f "$pkg_json" ] || continue
+    installed=$(node -p "require('$pkg_json').version" 2>/dev/null) || continue
+    major="${installed%%.*}"
+    if [ "${major:-0}" -lt "$min" ]; then
+        echo "  ${R} ✗ [$pkg] Version $installed installiert, erwartet >= $min.x ${B}"
+        DOWNGRADE_ALERT=$((DOWNGRADE_ALERT + 1))
+    fi
+done
 
 echo ""
 if [ "$TOTAL_ALL" -eq 0 ]; then
@@ -173,4 +225,16 @@ else
     echo "${Y} ⚠  $TOTAL_ALL Sicherheitshinweis(e) (mittel/niedrig).${B}"
     echo "${Y}    Beheben:  npm audit fix${B}"
     echo "${Y}=========================================${B}"
+fi
+
+# Falsche Paket-Version ist keine Sicherheitslücke, aber genauso build-relevant —
+# deshalb ein eigener Block unterhalb des Sicherheits-Banners.
+if [ "${DOWNGRADE_ALERT:-0}" -gt 0 ]; then
+    echo ""
+    echo "${R}                                                          ${B}"
+    echo "${R}   ⚠  FALSCHE PAKET-VERSION INSTALLIERT!  ⚠               ${B}"
+    echo "${R}                                                          ${B}"
+    echo "${R}   $DOWNGRADE_ALERT Paket(e) auf einer inkompatiblen Linie.        ${B}"
+    echo "${R}   Beheben:  npm ci    (stellt package-lock.json wieder her)${B}"
+    echo "${R}                                                          ${B}"
 fi

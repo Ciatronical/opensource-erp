@@ -25,7 +25,13 @@
             <v-list v-else density="comfortable">
               <template v-for="(item, i) in card.items" :key="i">
                 <v-divider v-if="item === '-'" class="my-2" />
-                <v-list-item v-else :title="item.title" :to="item.to" :link="!!item.to" />
+                <v-list-item
+                  v-else
+                  :title="item.title"
+                  :to="item.to"
+                  :link="!!item.to || !!item.action"
+                  @click="item.action === 'chat' ? toggleChatPanel() : null"
+                />
               </template>
             </v-list>
           </v-card-text>
@@ -41,6 +47,7 @@ import CrmView from '@/core/components/crmview/crm.view.vue'
 import { ref } from 'vue'
 import { oserpStore } from '@/core/stores/oserp.store.js'
 import { useNavigationCards } from '@/core/composables/navigation.cards.js'
+import { toggleChatPanel } from '@/core/composables/useChat.js'
 
 export default {
   name: 'StartupView',
@@ -90,7 +97,7 @@ export default {
       }
     }
 
-    return { cards }
+    return { cards, toggleChatPanel }
   }
 }
 </script>

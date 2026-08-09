@@ -224,7 +224,12 @@ export default defineComponent({
                     codeBlock: false,
                     code: false,
                     blockquote: false,
-                    horizontalRule: false
+                    horizontalRule: false,
+                    // TipTap 3: StarterKit enthaelt jetzt link + underline. Hier deaktivieren,
+                    // da beide unten separat (mit eigener Konfiguration) eingebunden werden —
+                    // sonst "Duplicate extension names found: ['link','underline']".
+                    link: false,
+                    underline: false
                 }),
                 Underline,
                 Link.configure({
