@@ -414,7 +414,7 @@
                                     <v-list-item v-if="ownerNameSearchText.length >= 2" :title="t('CarScanView.result.noResults')" />
                                 </template>
                                 <template #item="{ item, props: itemProps }">
-                                    <v-list-item v-bind="itemProps" :subtitle="[item.raw.street, item.raw.zipcode + ' ' + item.raw.city].filter(Boolean).join(' · ')" />
+                                    <v-list-item v-bind="itemProps" :subtitle="[item.street, item.zipcode + ' ' + item.city].filter(Boolean).join(' · ')" />
                                 </template>
                             </v-combobox>
                         </v-col>
@@ -587,7 +587,7 @@
                                     <v-list-item v-if="carSearchText.length >= 2" :title="t('CarScanView.result.noCarResults')" />
                                 </template>
                                 <template #item="{ item, props: itemProps }">
-                                    <v-list-item v-bind="itemProps" :subtitle="[item.raw.owner_name, [item.raw.hersteller, item.raw.modell].filter(Boolean).join(' ')].filter(Boolean).join(' · ')" />
+                                    <v-list-item v-bind="itemProps" :subtitle="[item.owner_name, [item.hersteller, item.modell].filter(Boolean).join(' ')].filter(Boolean).join(' · ')" />
                                 </template>
                             </v-combobox>
                         </v-col>

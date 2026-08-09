@@ -1,4 +1,18 @@
 /* ═══════════════════════════════════════════════════════════════
+   Kein horizontales Scrollen der ganzen Seite
+   Geschlossene Off-Canvas-Panels (Weroni, Chat) stehen als fixierte
+   Elemente rechts neben dem Viewport und blaehen sonst die Dokument-
+   breite auf — auf schmalen Geraeten entsteht dadurch eine Scrollleiste
+   ueber die gesamte Seite. Breite Inhalte (Tabellen) scrollen ohnehin in
+   ihrem eigenen Container.
+   ═══════════════════════════════════════════════════════════════ */
+html,
+body,
+.v-application {
+    overflow-x: hidden;
+}
+
+/* ═══════════════════════════════════════════════════════════════
    TABLET-MODUS: Buttons zeigen nur Icons, keine Beschriftung
    Gilt fuer alle Bildschirme unterhalb Desktop (< 1280px / Vuetify lg)
    Betrifft nur Buttons innerhalb .v-main (nicht Dialoge/Menus/Navbar)
@@ -26,6 +40,44 @@
 
 .swal2-toast-above-overlay {
     z-index: 100000 !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Anklickbare Einblendung (z. B. eingehende Chatnachricht)
+   Ein normaler Toast ist zu schmal: der Nachrichtentext quetscht sich
+   neben dem Icon zu einer duennen Spalte. Hier breiter und linksbuendig,
+   damit man die Nachricht in zwei, drei Zeilen wirklich lesen kann.
+   Der blaue Streifen zeigt, dass ein Klick weiterfuehrt.
+   ═══════════════════════════════════════════════════════════════ */
+.swal2-popup.swal2-toast.swal2-toast-clickable {
+    width: 25rem;
+    max-width: calc(100vw - 2rem);
+    padding: 12px 16px;
+    border-left: 4px solid #0277BD;
+}
+
+.swal2-popup.swal2-toast.swal2-toast-clickable .swal2-title {
+    margin: 0 0 3px;
+    font-size: 0.95rem;
+    color: #0277BD;
+    text-align: left;
+}
+
+.swal2-popup.swal2-toast.swal2-toast-clickable .swal2-html-container {
+    margin: 0;
+    font-size: 0.88rem;
+    line-height: 1.4;
+    color: #263238;
+    text-align: left;
+}
+
+.swal2-popup.swal2-toast.swal2-toast-clickable .swal2-icon.swal2-info {
+    border-color: #0277BD;
+    color: #0277BD;
+}
+
+.swal2-popup.swal2-toast.swal2-toast-clickable .swal2-timer-progress-bar {
+    background: #0277BD;
 }
 
 

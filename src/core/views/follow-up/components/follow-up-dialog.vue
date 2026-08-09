@@ -192,13 +192,13 @@
                                                                 <v-icon>{{ getLinkIcon(formData.transType) }}</v-icon>
                                                             </template>
                                                             <template #title>
-                                                                <strong>{{ item.raw.name || item.raw.number || item.raw.id }}</strong>
+                                                                <strong>{{ item.name || item.number || item.id }}</strong>
                                                             </template>
                                                             <template #subtitle>
-                                                                <span v-if="item.raw.customer_name">{{ item.raw.customer_name }}</span>
-                                                                <span v-else-if="item.raw.vendor_name">{{ item.raw.vendor_name }}</span>
-                                                                <span v-if="item.raw.city"> · {{ item.raw.city }}</span>
-                                                                <span v-if="item.raw.amount" class="text-green"> · {{ formatAmount(item.raw.amount) }}</span>
+                                                                <span v-if="item.customer_name">{{ item.customer_name }}</span>
+                                                                <span v-else-if="item.vendor_name">{{ item.vendor_name }}</span>
+                                                                <span v-if="item.city"> · {{ item.city }}</span>
+                                                                <span v-if="item.amount" class="text-green"> · {{ formatAmount(item.amount) }}</span>
                                                             </template>
                                                         </v-list-item>
                                                     </template>

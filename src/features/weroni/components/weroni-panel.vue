@@ -5,7 +5,7 @@
         v-model="store.panelOpen"
         location="right"
         temporary
-        width="480"
+        :width="drawerWidth"
         class="weroni-panel"
     >
         <!-- Header -->
@@ -211,6 +211,7 @@
 
 <script>
 import { ref, computed, watch, nextTick, reactive } from 'vue'
+import { useDisplay } from 'vuetify'
 import { useI18n } from 'vue-i18n'
 import { weroniStore } from '@/features/weroni/stores/weroni.store.js'
 import weroniIcon36 from '@/assets/weroni/weroni-36.png'
@@ -222,6 +223,12 @@ export default {
     setup() {
         const { t } = useI18n()
         const store = weroniStore()
+        const { width: screenWidth } = useDisplay()
+
+        // Nie breiter als der Bildschirm: das geschlossene Drawer steht sonst
+        // rechts neben dem Viewport und zieht auf schmalen Geraeten die ganze
+        // Seite in die Breite (horizontale Scrollleiste).
+        const drawerWidth = computed(() => Math.min(480, screenWidth.value || 480))
 
         const messages = ref([])
         const inputMessage = ref('')
@@ -400,6 +407,7 @@ export default {
         })
 
         return {
+            drawerWidth,
             t, store, weroniIcon36, weroniIcon56,
             messages, inputMessage, sending, loading, chatContainer,
             fileInput, dragOver,

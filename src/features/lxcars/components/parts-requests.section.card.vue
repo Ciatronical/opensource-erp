@@ -27,7 +27,7 @@
                     class="flex-grow-1"
                 >
                     <template #item="{ item, props: itemProps }">
-                        <v-list-item v-bind="itemProps" :subtitle="item.raw.partnumber" />
+                        <v-list-item v-bind="itemProps" :subtitle="item.partnumber" />
                     </template>
                 </v-autocomplete>
                 <v-text-field

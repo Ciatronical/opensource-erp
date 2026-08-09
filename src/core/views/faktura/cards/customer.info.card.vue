@@ -64,8 +64,8 @@
                             <template #item="{ item, props }">
                                 <v-list-item
                                     v-bind="props"
-                                    :title="item.raw.shiptoname"
-                                    :subtitle="`${item.raw.shiptostreet || ''} ${item.raw.shiptozipcode || ''} ${item.raw.shiptocity || ''}`"
+                                    :title="item.shiptoname"
+                                    :subtitle="`${item.shiptostreet || ''} ${item.shiptozipcode || ''} ${item.shiptocity || ''}`"
                                 />
                             </template>
                         </v-autocomplete>
@@ -102,8 +102,8 @@
                             <template #item="{ item, props }">
                                 <v-list-item
                                     v-bind="props"
-                                    :title="item.raw.adr_code"
-                                    :subtitle="`${item.raw.street || ''} ${item.raw.zipcode || ''} ${item.raw.city || ''}`"
+                                    :title="item.adr_code"
+                                    :subtitle="`${item.street || ''} ${item.zipcode || ''} ${item.city || ''}`"
                                 />
                             </template>
                         </v-autocomplete>

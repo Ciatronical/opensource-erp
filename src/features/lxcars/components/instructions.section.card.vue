@@ -299,11 +299,11 @@
                                     <template #item="{ props: itemProps, item }">
                                         <v-list-item v-bind="itemProps" :title="undefined">
                                             <template #prepend>
-                                                <v-icon v-if="item.raw._voiceNew" size="small" class="mr-2" color="primary">mdi-plus</v-icon>
-                                                <span v-else-if="item.raw.instruction_number" class="text-grey font-weight-medium mr-3" style="font-size: 12px; min-width: 40px">{{ item.raw.instruction_number }}</span>
+                                                <v-icon v-if="item._voiceNew" size="small" class="mr-2" color="primary">mdi-plus</v-icon>
+                                                <span v-else-if="item.instruction_number" class="text-grey font-weight-medium mr-3" style="font-size: 12px; min-width: 40px">{{ item.instruction_number }}</span>
                                             </template>
-                                            <template #title>{{ item.raw.description }}</template>
-                                            <template v-if="item.raw._voiceNew" #subtitle>{{ t('voiceInput.addAsNew') }}</template>
+                                            <template #title>{{ item.description }}</template>
+                                            <template v-if="item._voiceNew" #subtitle>{{ t('voiceInput.addAsNew') }}</template>
                                         </v-list-item>
                                     </template>
                                 </v-autocomplete>

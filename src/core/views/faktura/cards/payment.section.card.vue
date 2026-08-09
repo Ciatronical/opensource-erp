@@ -89,8 +89,8 @@
                                 <template #item="{ props, item }">
                                     <v-list-item
                                         v-bind="props"
-                                        :title="item.raw.label"
-                                        :subtitle="item.raw.accno"
+                                        :title="item.label"
+                                        :subtitle="item.accno"
                                     />
                                 </template>
                             </v-autocomplete>

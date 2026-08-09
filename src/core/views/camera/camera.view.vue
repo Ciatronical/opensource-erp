@@ -1370,7 +1370,10 @@ async function installCameraMonitorService() {
             installDialog.success = true
             loadCameraMonitorStatus()
         } else {
-            installDialog.output = res.data.text || ''
+            installDialog.output = typeof p === 'string'
+                ? p
+                : [p?.message, p?.output].filter(Boolean).join('\n\n') || res.data.text || ''
+            installDialog.cmd = (typeof p === 'object' && p?.cmd) ? p.cmd : ''
             installDialog.success = false
         }
     } catch (e) {

@@ -563,7 +563,7 @@
                                 hide-details="auto"
                             >
                                 <template #chip="{ item }">
-                                    <v-chip size="small" :color="item.raw.color" variant="flat">{{ item.raw.name }}</v-chip>
+                                    <v-chip size="small" :color="item.color" variant="flat">{{ item.name }}</v-chip>
                                 </template>
                             </v-select>
                         </v-col>

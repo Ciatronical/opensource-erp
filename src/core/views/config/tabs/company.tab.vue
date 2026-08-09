@@ -66,7 +66,7 @@
             </v-col>
 
             <v-col cols="12">
-                <div class="d-flex align-center ga-4 mb-4">
+                <div class="d-flex align-center ga-4 mb-4 flex-wrap">
                     <img
                         v-if="companyLogo"
                         :src="companyLogo"
@@ -298,7 +298,7 @@
                         <template #item="{ props: itemProps, item }">
                             <v-list-item
                                 v-bind="itemProps"
-                                :subtitle="item.raw.basedOn ? $t('basedOnMaster', { master: item.raw.basedOn }) : ''"
+                                :subtitle="item.basedOn ? $t('basedOnMaster', { master: item.basedOn }) : ''"
                             />
                         </template>
                     </v-select>
@@ -819,16 +819,20 @@ async function deletePrinter() {
 </script>
 
 <style scoped>
+/* min-width: 0, damit die 450px-Vorschau auf schmalen Geraeten wirklich
+   schrumpft und die Buttons daneben nicht aus dem Bild schiebt */
 .company-logo-preview {
     height: 90px;
     width: 450px;
     max-width: 100%;
+    min-width: 0;
     object-fit: contain;
 }
 .company-logo-placeholder {
     height: 90px;
     width: 450px;
     max-width: 100%;
+    min-width: 0;
     background: #f5f5f5;
 }
 </style>

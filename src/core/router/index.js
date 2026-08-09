@@ -31,6 +31,7 @@ const WikiEditView = () => import('@/core/views/wiki/wiki.edit.view.vue')
 const WikiReadView = () => import('@/core/views/wiki/wiki.read.view.vue')
 const WikiCategoriesView = () => import('@/core/views/wiki/wiki.categories.view.vue')
 const OrderSearchView = () => import('@/core/views/order-search/order-search.view.vue')
+const DocumentListView = () => import('@/core/views/document-list/document.list.view.vue')
 const UserConfigView = () => import('@/core/views/user-config/user-config.view.vue')
 const WallDisplayView = () => import('@/core/views/wall-display/wall-display.view.vue')
 const AnschlagtafelView = () => import('@/core/views/anschlagtafel/anschlagtafel.view.vue')
@@ -509,15 +510,40 @@ function buildRoutes() {
             component: NotFoundView,
             props: true,
         },
+        // ── Beleglisten ──
+        // Die Pfade standen in den Router-Locales, hatten aber keine Ansicht:
+        // /rechnung, /auftrag, /angebot, /lieferschein und /artikel liefen auf
+        // "Seite nicht gefunden". Alle teilen sich DocumentListView, der Typ
+        // steht in meta.listType.
         {
-            // Gutschriften-Liste
+            ...routePath('routes.manageInvoices'),
+            name: 'invoice-list',
+            component: DocumentListView,
+            meta: { permission: 'invoice_edit', listType: 'invoice' }
+        },
+        {
             ...routePath('routes.manageCreditNotes'),
             name: 'credit-note-list',
-            component: OrderSearchView,
-            meta: {
-                permission: 'invoice_edit',
-                documentType: 'credit_note'
-            }
+            component: DocumentListView,
+            meta: { permission: 'invoice_edit', listType: 'credit_note' }
+        },
+        {
+            ...routePath('routes.manageOrders'),
+            name: 'order-list',
+            component: DocumentListView,
+            meta: { permission: 'sales_order_edit', listType: 'order' }
+        },
+        {
+            ...routePath('routes.manageQuotations'),
+            name: 'quotation-list',
+            component: DocumentListView,
+            meta: { permission: 'sales_quotation_edit', listType: 'quotation' }
+        },
+        {
+            ...routePath('routes.manageArticles'),
+            name: 'article-list',
+            component: DocumentListView,
+            meta: { listType: 'part' }
         },
         {
             ...routePath('routes.orderSearch'),
@@ -564,7 +590,8 @@ function buildRoutes() {
         {
             ...routePath('routes.manageDeliveryOrders'),
             name: 'delivery-order-list',
-            component: NotFoundView,
+            component: DocumentListView,
+            meta: { permission: 'sales_delivery_order_edit', listType: 'delivery_order' }
         },
         // ── Platzhalter-Routen: Kfz (lxcars) ──
         {

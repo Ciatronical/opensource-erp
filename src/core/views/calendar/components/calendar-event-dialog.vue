@@ -280,8 +280,8 @@
                         <template #item="{ props: itemProps, item }">
                             <v-list-item v-bind="itemProps">
                                 <template #append>
-                                    <v-icon size="small" :color="item.raw.typ === 'C' ? 'primary' : 'warning'">
-                                        {{ item.raw.typ === 'C' ? 'mdi-account' : 'mdi-domain' }}
+                                    <v-icon size="small" :color="item.typ === 'C' ? 'primary' : 'warning'">
+                                        {{ item.typ === 'C' ? 'mdi-account' : 'mdi-domain' }}
                                     </v-icon>
                                 </template>
                             </v-list-item>

@@ -1134,9 +1134,20 @@ PYEOF;
 
     $db = DbhCompany::begin();
     $existing = $db->getAll("SELECT id, cam_key, stream_url, active FROM camera");
-    $existingByKey = [];
+
+    // Zuordnung über zwei Wege: den Kamera-Schlüssel und die IP aus der
+    // Stream-URL. Der Schlüssel allein reicht nicht — wird er in der
+    // Oberfläche umbenannt, würde jeder Scan die Kamera erneut anlegen.
+    $existingByKey  = [];
+    $existingByHost = [];
     foreach ($existing as $row) {
-        $existingByKey[$row['cam_key']] = $row;
+        if (!empty($row['cam_key'])) {
+            $existingByKey[$row['cam_key']] = $row;
+        }
+        $host = parse_url($row['stream_url'] ?? '', PHP_URL_HOST);
+        if ($host) {
+            $existingByHost[$host] = $row;
+        }
     }
 
     $added = 0;
@@ -1151,8 +1162,12 @@ PYEOF;
             $location = $location ? "$location ($hardware)" : $hardware;
         }
 
-        if (array_key_exists($camKey, $existingByKey)) {
-            $existingCam = $existingByKey[$camKey];
+        $existingCam = $existingByKey[$camKey] ?? $existingByHost[$cam['ip']] ?? null;
+
+        if ($existingCam !== null) {
+            // Bestehenden Schlüssel behalten — sonst entsteht in go2rtc ein
+            // zweiter Stream auf dieselbe Kamera.
+            $camKey = $existingCam['cam_key'] ?: $camKey;
             if (!$existingCam['active']) {
                 $db->execute(
                     "UPDATE camera SET active = true, name = :name, location = :location, stream_url = COALESCE(NULLIF(:stream_url, ''), stream_url), mtime = NOW() WHERE id = :id",
@@ -1170,9 +1185,10 @@ PYEOF;
             continue;
         }
 
-        $db->execute("
+        $new = $db->getOne("
             INSERT INTO camera (name, cam_key, stream_url, location, sort_order)
             VALUES (:name, :cam_key, :stream_url, :location, :sort)
+            RETURNING id, cam_key, stream_url, active
         ", [
             ':name' => $name,
             ':cam_key' => $camKey,
@@ -1180,6 +1196,14 @@ PYEOF;
             ':location' => $location,
             ':sort' => $added,
         ]);
+
+        // Frisch angelegte Kamera sofort mitzählen, damit ein doppelter
+        // Treffer im selben Scan nicht ein zweites Mal einfügt.
+        $existingByKey[$camKey] = $new;
+        if (!empty($cam['ip'])) {
+            $existingByHost[$cam['ip']] = $new;
+        }
+
         if ($streamUrl) _syncGo2rtc($camKey, $streamUrl);
         $added++;
     }
@@ -1454,6 +1478,22 @@ function installCameraMonitor($data) {
         return;
     }
 
+    // Python-Umgebung wirklich benutzbar? Nach einem Betriebssystem-Upgrade
+    // zeigt venv/bin/python auf eine neue Python-Version, waehrend die Pakete
+    // unter der alten liegen — der Dienst wuerde beim Start endlos abstuerzen.
+    exec(escapeshellarg($venvPython) . ' -c ' . escapeshellarg('import cv2, numpy, psycopg2') . ' 2>&1', $impOut, $impExit);
+    if ($impExit !== 0) {
+        resultInfo(false, 'VENV_BROKEN', [
+            'output'    => implode("\n", $impOut),
+            'cmd'       => "rm -rf $serviceDir/venv\n"
+                         . "python3 -m venv $serviceDir/venv\n"
+                         . "$serviceDir/venv/bin/pip install -r $serviceDir/requirements.txt",
+            'message'   => 'Die Python-Umgebung ist unvollständig oder passt nicht zur installierten '
+                         . 'Python-Version. Neu anlegen und Pakete installieren:',
+        ]);
+        return;
+    }
+
     // Service-User = Eigentümer des venv
     $venvOwner = 'www-data';
     $venvStat = @stat("$serviceDir/venv");
@@ -1463,7 +1503,9 @@ function installCameraMonitor($data) {
     }
 
     // Service-Datei generieren
-    $serviceContent = "[Unit]\nDescription=OpensourceERP Kamera-Monitor (Objekterkennung)\nAfter=network.target go2rtc.service\n\n[Service]\nExecStart=$venvPython $scriptPath\nWorkingDirectory=$serviceDir\nRestart=always\nRestartSec=10\nUser=$venvOwner\nStandardOutput=journal\nStandardError=journal\n\n[Install]\nWantedBy=multi-user.target\n";
+    // PYTHONUNBUFFERED: ohne das puffert Python die Ausgabe blockweise und im
+    // Journal steht minutenlang nichts — auch nicht in der Statusanzeige.
+    $serviceContent = "[Unit]\nDescription=OpensourceERP Kamera-Monitor (Objekterkennung)\nAfter=network.target go2rtc.service\n\n[Service]\nExecStart=$venvPython $scriptPath\nWorkingDirectory=$serviceDir\nEnvironment=PYTHONUNBUFFERED=1\nRestart=always\nRestartSec=10\nUser=$venvOwner\nStandardOutput=journal\nStandardError=journal\n\n[Install]\nWantedBy=multi-user.target\n";
     file_put_contents($svcTemplate, $serviceContent);
 
     $log = [];
@@ -1549,12 +1591,40 @@ function setFeatureService($data) {
         'nvr'  => ['go2rtc.service', 'camera-monitor.service'],
     ];
 
+    // Schlüssel in defaults_oserp, an denen die Dienste erkennen ob ein
+    // Mandant das Feature nutzt.
+    $configKeyMap = [
+        'anpr' => ['feature_anpr', 'anpr_enabled'],
+        'nvr'  => ['feature_nvr'],
+    ];
+
     if (!isset($serviceMap[$feature])) {
         resultInfo(false, 'UNKNOWN_FEATURE', 'Unbekanntes Feature: ' . $feature);
         return;
     }
 
     $services = $serviceMap[$feature];
+
+    // Abschalten: Die Dienste bedienen alle Mandanten gemeinsam. Nutzt ein
+    // anderer Mandant das Feature noch, bleiben sie laufen — der eigene
+    // Mandant fällt beim nächsten Konfigurations-Durchlauf des Dienstes
+    // von selbst heraus.
+    if (!$enabled && _featureUsedByOtherClients($configKeyMap[$feature])) {
+        $statuses = [];
+        foreach ($services as $svc) {
+            $statuses[$svc] = trim(shell_exec("systemctl is-active " . escapeshellarg($svc) . " 2>/dev/null") ?? 'unknown');
+        }
+        resultInfo(true, '', [
+            'feature'          => $feature,
+            'enabled'          => false,
+            'services_stopped' => false,
+            'statuses'         => $statuses,
+            'message'          => 'Dienste laufen für andere Mandanten weiter. '
+                                . 'Für diesen Mandanten wird die Verarbeitung binnen einer Minute eingestellt.',
+        ]);
+        return;
+    }
+
     $action   = $enabled ? 'start' : 'stop';
     $results  = [];
     $hasError = false;
@@ -1599,11 +1669,60 @@ function setFeatureService($data) {
     }
 
     resultInfo(true, '', [
-        'feature'  => $feature,
-        'enabled'  => $enabled,
-        'results'  => $results,
-        'statuses' => $statuses,
+        'feature'          => $feature,
+        'enabled'          => $enabled,
+        'services_stopped' => !$enabled,
+        'results'          => $results,
+        'statuses'         => $statuses,
     ]);
+}
+
+/**
+ * Prüft ob ein anderer Mandant das Feature noch eingeschaltet hat.
+ *
+ * go2rtc, camera-monitor und der ANPR-Dienst laufen je einmal für alle
+ * Mandanten. Ein Mandant darf sie deshalb nicht stoppen, solange ein anderer
+ * sie braucht. Der Cross-Mandanten-Blick erfordert je eine Verbindung pro
+ * Company-DB — das ist hier vertretbar, weil der Schalter eine seltene
+ * Administrationsaktion ist und kein Datenfluss der Oberfläche.
+ *
+ * @param array $configKeys Schlüssel in defaults_oserp die als "aktiv" gelten
+ * @return bool True wenn mindestens ein anderer Mandant das Feature nutzt
+ */
+function _featureUsedByOtherClients(array $configKeys): bool {
+    $db = DbhCompany::begin();
+    $own = $db->getOne("SELECT current_database() AS dbname");
+    $ownDb = $own['dbname'] ?? '';
+
+    $auth = DbhAuth::begin();
+    $clients = $auth->getAll(
+        "SELECT dbhost, dbport, dbname, dbuser, dbpasswd
+         FROM auth.clients WHERE dbname <> :own ORDER BY id",
+        [':own' => $ownDb]
+    );
+
+    foreach ($clients as $client) {
+        try {
+            $pdo = connectPDO(
+                $client['dbhost'] ?: 'localhost',
+                $client['dbport'] ?: 5432,
+                $client['dbname'],
+                $client['dbuser'],
+                $client['dbpasswd']
+            );
+            $stmt = $pdo->prepare(
+                "SELECT count(*) FROM defaults_oserp
+                 WHERE key = ANY(string_to_array(:keys, ',')) AND value IN ('1', 't', 'true')"
+            );
+            $stmt->execute([':keys' => implode(',', $configKeys)]);
+            if ((int)$stmt->fetchColumn() > 0) return true;
+        } catch (Exception $e) {
+            // Mandant nicht erreichbar (alte oder entfernte DB) — zählt nicht als aktiv
+            continue;
+        }
+    }
+
+    return false;
 }
 
 function _pgArrayToPhp($pgArray): array {

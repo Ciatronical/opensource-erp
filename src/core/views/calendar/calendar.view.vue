@@ -65,7 +65,7 @@
                     hide-details
                 >
                     <template #selection="{ item, index }">
-                        <v-chip v-if="index < 3" :color="item.raw.color" size="x-small" label>
+                        <v-chip v-if="index < 3" :color="item.color" size="x-small" label>
                             {{ item.title }}
                         </v-chip>
                         <span v-if="index === 3" class="text-grey text-caption ms-1">
@@ -75,7 +75,7 @@
                     <template #item="{ item, props: itemProps }">
                         <v-list-item v-bind="itemProps">
                             <template #prepend>
-                                <v-icon :color="item.raw.color">mdi-circle</v-icon>
+                                <v-icon :color="item.color">mdi-circle</v-icon>
                             </template>
                         </v-list-item>
                     </template>

@@ -116,7 +116,7 @@
                             <template #item="{ props, item }">
                                 <v-list-item
                                     v-bind="props"
-                                    :title="item.raw.description"
+                                    :title="item.description"
                                 />
                             </template>
                         </v-autocomplete>

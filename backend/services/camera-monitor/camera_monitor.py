@@ -100,6 +100,13 @@ MAX_CLIP_DURATION = 120
 CLIP_CODEC = 'mp4v'
 CLIP_EXT = '.mp4'
 
+# Maximale Breite fuer Aufnahmen und den Pre-Record-Ringpuffer.
+# Der Puffer haelt PRE_RECORD_SECONDS * Kamera-FPS Frames im Arbeitsspeicher —
+# bei einer 4K-Kamera waeren das 25 MB pro Frame und ~1,9 GB pro Kamera.
+# Auf 1280 skaliert sind es rund 200 MB, bei fuer Beweiszwecke ausreichender
+# Aufloesung (Snapshots werden ohnehin auf dieselbe Breite gerechnet).
+RECORD_MAX_WIDTH = 1280
+
 
 # --- DB-Verbindung aus settings.ini ------------------------------------------
 
@@ -148,22 +155,28 @@ def connect_company_db(client):
 
 
 def is_camera_enabled(company_conn):
-    """Prueft ob Kamera-Feature fuer diese Company aktiviert ist."""
+    """
+    Prueft ob die Videoueberwachung fuer diese Company aktiviert ist.
+
+    Massgeblich ist feature_nvr — der Schalter unter Einstellungen > Funktionen.
+    'camera' in der features-Liste wird aus Kompatibilitaet weiter akzeptiert.
+    """
     with company_conn.cursor() as cur:
-        # Pruefe ob Tabelle existiert
         cur.execute(
             "SELECT EXISTS (SELECT 1 FROM information_schema.tables "
             "WHERE table_name = 'camera')"
         )
         if not cur.fetchone()[0]:
             return False
-        cur.execute(
-            "SELECT value FROM defaults_oserp WHERE key = 'features'"
-        )
-        row = cur.fetchone()
-        if not row:
-            return False
-        return 'camera' in row[0]
+        cur.execute("""
+            SELECT coalesce(bool_or(
+                       CASE WHEN key = 'feature_nvr' THEN value IN ('1', 'true', 't')
+                            ELSE value LIKE '%camera%' END
+                   ), false)
+            FROM defaults_oserp
+            WHERE key IN ('feature_nvr', 'features')
+        """)
+        return bool(cur.fetchone()[0])
 
 
 # --- Snapshot-/Clip-Verwaltung -----------------------------------------------
@@ -201,6 +214,21 @@ def save_snapshot(frame, event_id):
         frame = cv2.resize(frame, (1280, int(h * scale)), interpolation=cv2.INTER_AREA)
     cv2.imwrite(filepath, frame, [cv2.IMWRITE_JPEG_QUALITY, 85])
     return f"/camera-snapshots/{filename}"
+
+
+def scale_for_record(frame):
+    """
+    Frame auf Aufnahmebreite bringen.
+
+    Analysiert wird weiterhin das Original in voller Aufloesung — nur was in
+    den Ringpuffer und in den Clip wandert, wird verkleinert. Das entscheidet
+    ueber den Arbeitsspeicherbedarf des Dienstes.
+    """
+    h, w = frame.shape[:2]
+    if w <= RECORD_MAX_WIDTH:
+        return frame
+    scale = RECORD_MAX_WIDTH / w
+    return cv2.resize(frame, (RECORD_MAX_WIDTH, int(h * scale)), interpolation=cv2.INTER_AREA)
 
 
 class RingBuffer:
@@ -646,12 +674,17 @@ def detect_objects(frame, min_score=DEFAULT_MIN_SCORE):
             if _detection_backend is None:
                 _init_detection_backend()
 
-    if _detection_backend == 'coral':
-        return _detect_with_coral(frame, min_score)
-    elif _detection_backend in ('openvino', 'yolo_cpu'):
-        return _detect_with_yolo(frame, min_score)
-    else:
-        return []
+    # Inferenz serialisieren: Alle Kamera-Threads teilen sich ein einziges
+    # Modell. Weder das YOLO-Objekt von ultralytics noch der Coral-Interpreter
+    # sind thread-safe — parallele Aufrufe stuerzen im nativen Code ab
+    # (SIGFPE/SIGSEGV). Ein Backend schafft ohnehin nur eine Inferenz zur Zeit.
+    with DETECTOR_LOCK:
+        if _detection_backend == 'coral':
+            return _detect_with_coral(frame, min_score)
+        elif _detection_backend in ('openvino', 'yolo_cpu'):
+            return _detect_with_yolo(frame, min_score)
+        else:
+            return []
 
 
 # --- Bewegungserkennung -------------------------------------------------------
@@ -763,6 +796,9 @@ class CameraWorker(threading.Thread):
         self.zones = zones
         self.rules = rules
         self.name = f"cam-{self.cam['cam_key']}"
+        # Einzelner Worker kann gestoppt werden, ohne den ganzen Dienst zu beenden
+        # (Kamera deaktiviert, Einstellungen geaendert, Mandant abgeschaltet).
+        self._stop = threading.Event()
         self.motion_threshold  = float(self.cam.get('motion_threshold') or MOTION_THRESHOLD_PERCENT)
         self.cam_min_score     = float(self.cam.get('min_score') or DEFAULT_MIN_SCORE)
         self.record_clips      = bool(self.cam.get('record_clips', True))
@@ -776,6 +812,15 @@ class CameraWorker(threading.Thread):
         self.active_events = {}   # label -> {event_id, started_at, last_seen, recorder, ...}
         self.rule_cooldowns = {}  # rule_id -> last_triggered datetime
         self.frame_size = None    # (width, height) — wird beim ersten Frame gesetzt
+        self.record_size = None   # (width, height) der Aufnahme (auf RECORD_MAX_WIDTH begrenzt)
+
+    def stop(self):
+        """Worker beenden (Stream schliessen, laufende Clips sauber abschliessen)."""
+        self._stop.set()
+
+    @property
+    def _active(self):
+        return running and not self._stop.is_set()
 
     def run(self):
         cam_name = self.cam['cam_key']
@@ -789,13 +834,13 @@ class CameraWorker(threading.Thread):
         frame_interval = 1.0 / self.cam_fps
         consecutive_errors = 0
 
-        while running:
+        while self._active:
             cap = cv2.VideoCapture(stream_url, cv2.CAP_FFMPEG)
             if not cap.isOpened():
                 consecutive_errors += 1
                 wait = min(30, 5 * consecutive_errors)
                 print(f"[{cam_name}] Stream nicht erreichbar — Retry in {wait}s")
-                time.sleep(wait)
+                self._stop.wait(wait)
                 continue
 
             consecutive_errors = 0
@@ -814,7 +859,7 @@ class CameraWorker(threading.Thread):
             last_analysis = 0
             frame_count = 0
 
-            while running and cap.isOpened():
+            while self._active and cap.isOpened():
                 ret, frame = cap.read()
                 if not ret:
                     print(f"[{cam_name}] Frame-Fehler — reconnect...")
@@ -827,14 +872,20 @@ class CameraWorker(threading.Thread):
                     h, w = frame.shape[:2]
                     self.frame_size = (w, h)
 
-                # Immer in Ring-Buffer schreiben (fuer Pre-Recording)
-                self.ring_buffer.add(frame)
+                # Ohne Aufnahme wird weder skaliert noch gepuffert
+                if self.record_clips:
+                    rec_frame = scale_for_record(frame)
+                    if self.record_size is None:
+                        rh, rw = rec_frame.shape[:2]
+                        self.record_size = (rw, rh)
 
-                # Laufende Aufnahmen mit echtem FPS fuettern
-                for ev in self.active_events.values():
-                    recorder = ev.get('recorder')
-                    if recorder and not recorder.finished:
-                        recorder.write_frame(frame)
+                    self.ring_buffer.add(rec_frame)
+
+                    # Laufende Aufnahmen mit echtem FPS fuettern
+                    for ev in self.active_events.values():
+                        recorder = ev.get('recorder')
+                        if recorder and not recorder.finished:
+                            recorder.write_frame(rec_frame)
 
                 now = time.time()
                 if now - last_analysis < frame_interval:
@@ -849,8 +900,16 @@ class CameraWorker(threading.Thread):
             # Stream unterbrochen: alle aktiven Recorder beenden
             self._finish_all_recorders()
             cap.release()
-            if running:
-                time.sleep(2)
+            if self._active:
+                self._stop.wait(2)
+
+        # Worker beendet: DB-Verbindung freigeben
+        if self._db_conn is not None and not self._db_conn.closed:
+            try:
+                self._db_conn.close()
+            except Exception:
+                pass
+        print(f"[{cam_name}] Worker beendet.")
 
     def _analyze_frame(self, frame, cam_name):
         """Frame analysieren: Bewegung -> Objekterkennung -> Events + Aufnahme."""
@@ -920,8 +979,8 @@ class CameraWorker(threading.Thread):
 
                 # Clip-Recorder starten mit Pre-Buffer (nur wenn record_clips aktiv)
                 recorder = None
-                if self.record_clips and self.frame_size:
-                    recorder = ClipRecorder(event_id, self.frame_size, self.record_fps,
+                if self.record_clips and self.record_size:
+                    recorder = ClipRecorder(event_id, self.record_size, self.record_fps,
                                             post_record_seconds=self.post_record_secs)
                     pre_frames = self.ring_buffer.get_all()
                     recorder.write_pre_buffer(pre_frames)
@@ -1228,46 +1287,156 @@ def load_rules(conn):
 
 # --- Hauptprogramm ------------------------------------------------------------
 
-def monitor_company(client, auth_settings):
-    """Kamera-Monitoring fuer eine Company starten."""
+# Zuletzt gemeldeter Fehler je Mandant — verhindert, dass eine dauerhaft
+# fehlende Datenbank das Journal bei jedem Durchlauf zumuellt.
+_client_errors = {}
+
+
+def _report_client_error(client_name, message):
+    """Fehler nur melden, wenn er sich geaendert hat."""
+    if _client_errors.get(client_name) != message:
+        _client_errors[client_name] = message
+        print(f"[{client_name}] {message}")
+
+
+def _clear_client_error(client_name):
+    if _client_errors.pop(client_name, None) is not None:
+        print(f"[{client_name}] Datenbank wieder erreichbar.")
+
+
+def collect_company_cameras(client):
+    """
+    Soll-Zustand eines Mandanten ermitteln: welche Kamera-Worker muessten laufen?
+
+    Liefert {worker_key: spec}. Leer, wenn die Videoueberwachung fuer den
+    Mandanten aus ist, die DB nicht erreichbar ist oder keine Kamera mit
+    Stream-URL aktiv ist. Die Signatur im Spec deckt Kamera-Einstellungen,
+    Zonen und Regeln ab — aendert sie sich, wird der Worker neu gestartet.
+    """
     try:
         conn = connect_company_db(client)
         conn.autocommit = True
     except Exception as e:
-        print(f"[{client['name']}] DB-Verbindungsfehler: {e}")
-        return []
+        _report_client_error(client['name'], f"DB-Verbindungsfehler: {str(e).strip()}")
+        return {}
 
-    if not is_camera_enabled(conn):
+    _clear_client_error(client['name'])
+
+    try:
+        if not is_camera_enabled(conn):
+            return {}
+
+        cameras = load_cameras(conn)
+        if not cameras:
+            return {}
+
+        rules = load_rules(conn)
+        conn_params = {
+            'host': client['dbhost'] or 'localhost',
+            'port': int(client['dbport'] or 5432),
+            'database': client['dbname'],
+            'user': client['dbuser'],
+            'password': client['dbpasswd'],
+        }
+
+        specs = {}
+        for cam in cameras:
+            if not cam.get('stream_url'):
+                continue
+            zones = load_zones(conn, cam['id'])
+            specs[f"{client['id']}:{cam['cam_key']}"] = {
+                'client': client['name'],
+                'camera': cam,
+                'zones': zones,
+                'rules': rules,
+                'conn_params': conn_params,
+                'signature': json.dumps([cam, zones, rules], sort_keys=True, default=str),
+            }
+        return specs
+    except Exception as e:
+        _report_client_error(client['name'], f"Konfiguration nicht lesbar: {str(e).strip()}")
+        return {}
+    finally:
         conn.close()
-        return []
 
-    cameras = load_cameras(conn)
-    if not cameras:
-        print(f"[{client['name']}] Keine aktiven Kameras.")
-        conn.close()
-        return []
 
-    rules = load_rules(conn)
-    print(f"[{client['name']}] {len(cameras)} Kamera(s), {len(rules)} Regel(n)")
+def collect_desired_workers(auth_conn):
+    """Soll-Zustand ueber alle Mandanten hinweg."""
+    desired = {}
+    for client in get_company_databases(auth_conn):
+        desired.update(collect_company_cameras(client))
+    return desired
 
-    # Connection-Params fuer Worker-Threads
-    conn_params = {
-        'host': client['dbhost'] or 'localhost',
-        'port': int(client['dbport'] or 5432),
-        'database': client['dbname'],
-        'user': client['dbuser'],
-        'password': client['dbpasswd'],
-    }
 
-    workers = []
-    for cam in cameras:
-        zones = load_zones(conn, cam['id'])
-        worker = CameraWorker(cam, conn_params, zones, rules)
-        worker.start()
-        workers.append(worker)
+def supervise(auth_settings):
+    """
+    Hauptschleife: gleicht alle CONFIG_RELOAD_INTERVAL Sekunden den Soll-Zustand
+    aus der Datenbank mit den laufenden Workern ab.
 
-    conn.close()
-    return workers
+    Dadurch greifen neue Kameras, geaenderte Zonen und Regeln sowie der
+    Schalter unter Einstellungen > Funktionen ohne Neustart des Dienstes.
+    """
+    workers = {}   # worker_key -> {'signature': str, 'worker': CameraWorker}
+    auth_conn = None
+    idle_reported = False
+
+    while running:
+        try:
+            if auth_conn is None or auth_conn.closed:
+                auth_conn = psycopg2.connect(**auth_settings)
+                auth_conn.autocommit = True
+            desired = collect_desired_workers(auth_conn)
+        except Exception as e:
+            print(f"Auth-DB nicht erreichbar: {e} — naechster Versuch in {CONFIG_RELOAD_INTERVAL}s")
+            if auth_conn is not None:
+                try:
+                    auth_conn.close()
+                except Exception:
+                    pass
+                auth_conn = None
+            desired = None
+
+        if desired is not None:
+            # Worker stoppen: Kamera weg, Konfiguration geaendert oder Thread tot
+            for key in list(workers):
+                entry = workers[key]
+                if not entry['worker'].is_alive():
+                    print(f"[{key}] Worker unerwartet beendet — wird neu gestartet.")
+                    del workers[key]
+                elif key not in desired:
+                    print(f"[{key}] Kamera entfernt oder deaktiviert — Worker wird gestoppt.")
+                    entry['worker'].stop()
+                    del workers[key]
+                elif desired[key]['signature'] != entry['signature']:
+                    print(f"[{key}] Konfiguration geaendert — Worker wird neu gestartet.")
+                    entry['worker'].stop()
+                    del workers[key]
+
+            # Worker starten: neue Kameras und Neustarts
+            for key, spec in desired.items():
+                if key in workers:
+                    continue
+                worker = CameraWorker(spec['camera'], spec['conn_params'], spec['zones'], spec['rules'])
+                worker.start()
+                workers[key] = {'signature': spec['signature'], 'worker': worker}
+                print(f"[{spec['client']}] Kamera {spec['camera']['cam_key']} gestartet.")
+
+            if not workers and not idle_reported:
+                print(f"Keine aktive Kamera — Pruefung alle {CONFIG_RELOAD_INTERVAL}s")
+            idle_reported = not workers
+
+        for _ in range(CONFIG_RELOAD_INTERVAL):
+            if not running:
+                break
+            time.sleep(1)
+
+    for entry in workers.values():
+        entry['worker'].stop()
+    for entry in workers.values():
+        entry['worker'].join(timeout=5)
+
+    if auth_conn is not None and not auth_conn.closed:
+        auth_conn.close()
 
 
 def main():
@@ -1286,40 +1455,11 @@ def main():
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
 
-    # DB-Verbindung
     settings = read_settings_ini()
     print(f"Auth-DB: {settings['host']}:{settings['port']}/{settings['dbname']}")
+    print(f"Konfiguration wird alle {CONFIG_RELOAD_INTERVAL}s neu eingelesen.\n")
 
-    try:
-        auth_conn = psycopg2.connect(**settings)
-        auth_conn.autocommit = True
-    except Exception as e:
-        print(f"FEHLER: Auth-DB nicht erreichbar: {e}")
-        sys.exit(1)
-
-    # Alle Companies pruefen
-    companies = get_company_databases(auth_conn)
-    all_workers = []
-
-    for client in companies:
-        workers = monitor_company(client, settings)
-        all_workers.extend(workers)
-
-    auth_conn.close()
-
-    if not all_workers:
-        print("Keine Kameras gefunden. Warte 60s und versuche erneut...")
-        for _ in range(60):
-            if not running:
-                break
-            time.sleep(1)
-        sys.exit(0)
-
-    print(f"\n{len(all_workers)} Kamera-Worker gestartet. Druecke Ctrl+C zum Beenden.\n")
-
-    # Hauptthread wartet
-    while running:
-        time.sleep(1)
+    supervise(settings)
 
     print("Alle Worker beendet.")
 

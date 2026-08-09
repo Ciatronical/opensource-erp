@@ -37,17 +37,17 @@
             <v-list-item v-bind="itemProps">
               <template #prepend>
                 <v-icon
-                  :color="item.raw.typ === 'C' ? 'blue' : 'orange'"
+                  :color="item.typ === 'C' ? 'blue' : 'orange'"
                   size="small"
                   class="me-2"
                 >
-                  {{ item.raw.typ === 'C' ? 'mdi-account' : 'mdi-truck' }}
+                  {{ item.typ === 'C' ? 'mdi-account' : 'mdi-truck' }}
                 </v-icon>
               </template>
               <template #subtitle>
                 <span class="text-caption">
-                  {{ item.raw.typ === 'C' ? t('CallHistoryView.typeCustomer') : t('CallHistoryView.typeVendor') }}
-                  · {{ item.raw.number }}
+                  {{ item.typ === 'C' ? t('CallHistoryView.typeCustomer') : t('CallHistoryView.typeVendor') }}
+                  · {{ item.number }}
                 </span>
               </template>
             </v-list-item>

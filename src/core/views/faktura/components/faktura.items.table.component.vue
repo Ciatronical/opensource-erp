@@ -184,8 +184,8 @@
                                     <template #item="{ props, item: listItem }">
                                         <v-list-item
                                             v-bind="props"
-                                            :title="listItem.raw.description"
-                                            :subtitle="listItem.raw.partnumber"
+                                            :title="listItem.description"
+                                            :subtitle="listItem.partnumber"
                                         />
                                     </template>
                                 </v-autocomplete>

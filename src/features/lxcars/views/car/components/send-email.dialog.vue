@@ -42,12 +42,12 @@
                     <template #item="{ props: itemProps, item }">
                         <v-list-item v-bind="itemProps" :title="undefined">
                             <template #prepend>
-                                <v-icon size="small" :color="item.raw.cvType === 'vendor' ? 'orange-darken-2' : 'primary'">
-                                    {{ item.raw.cvType === 'vendor' ? 'mdi-truck-delivery' : 'mdi-account' }}
+                                <v-icon size="small" :color="item.cvType === 'vendor' ? 'orange-darken-2' : 'primary'">
+                                    {{ item.cvType === 'vendor' ? 'mdi-truck-delivery' : 'mdi-account' }}
                                 </v-icon>
                             </template>
-                            <v-list-item-title>{{ item.raw.name }}</v-list-item-title>
-                            <v-list-item-subtitle>{{ item.raw.email }}</v-list-item-subtitle>
+                            <v-list-item-title>{{ item.name }}</v-list-item-title>
+                            <v-list-item-subtitle>{{ item.email }}</v-list-item-subtitle>
                         </v-list-item>
                     </template>
                 </v-combobox>
@@ -81,12 +81,12 @@
                     <template #item="{ props: itemProps, item }">
                         <v-list-item v-bind="itemProps" :title="undefined">
                             <template #prepend>
-                                <v-icon size="small" :color="item.raw.cvType === 'vendor' ? 'orange-darken-2' : 'primary'">
-                                    {{ item.raw.cvType === 'vendor' ? 'mdi-truck-delivery' : 'mdi-account' }}
+                                <v-icon size="small" :color="item.cvType === 'vendor' ? 'orange-darken-2' : 'primary'">
+                                    {{ item.cvType === 'vendor' ? 'mdi-truck-delivery' : 'mdi-account' }}
                                 </v-icon>
                             </template>
-                            <v-list-item-title>{{ item.raw.name }}</v-list-item-title>
-                            <v-list-item-subtitle>{{ item.raw.email }}</v-list-item-subtitle>
+                            <v-list-item-title>{{ item.name }}</v-list-item-title>
+                            <v-list-item-subtitle>{{ item.email }}</v-list-item-subtitle>
                         </v-list-item>
                     </template>
                 </v-combobox>
@@ -113,12 +113,12 @@
                     <template #item="{ props: itemProps, item }">
                         <v-list-item v-bind="itemProps" :title="undefined">
                             <template #prepend>
-                                <v-icon size="small" :color="item.raw.cvType === 'vendor' ? 'orange-darken-2' : 'primary'">
-                                    {{ item.raw.cvType === 'vendor' ? 'mdi-truck-delivery' : 'mdi-account' }}
+                                <v-icon size="small" :color="item.cvType === 'vendor' ? 'orange-darken-2' : 'primary'">
+                                    {{ item.cvType === 'vendor' ? 'mdi-truck-delivery' : 'mdi-account' }}
                                 </v-icon>
                             </template>
-                            <v-list-item-title>{{ item.raw.name }}</v-list-item-title>
-                            <v-list-item-subtitle>{{ item.raw.email }}</v-list-item-subtitle>
+                            <v-list-item-title>{{ item.name }}</v-list-item-title>
+                            <v-list-item-subtitle>{{ item.email }}</v-list-item-subtitle>
                         </v-list-item>
                     </template>
                 </v-combobox>

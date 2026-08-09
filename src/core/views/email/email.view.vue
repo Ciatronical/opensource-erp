@@ -220,12 +220,12 @@
                         <template #item="{ item, props: itemProps }">
                             <v-list-item v-bind="itemProps">
                                 <template #subtitle>
-                                    <span>{{ item.raw.number }}</span>
-                                    <span class="ml-2 text-primary">{{ item.raw.emails.join(', ') }}</span>
+                                    <span>{{ item.number }}</span>
+                                    <span class="ml-2 text-primary">{{ item.emails.join(', ') }}</span>
                                 </template>
                                 <template #append>
                                     <v-icon size="x-small" color="grey">
-                                        {{ item.raw.type === 'customer' ? 'mdi-account' : 'mdi-truck' }}
+                                        {{ item.type === 'customer' ? 'mdi-account' : 'mdi-truck' }}
                                     </v-icon>
                                 </template>
                             </v-list-item>

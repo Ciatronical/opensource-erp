@@ -4,11 +4,11 @@
     "version": "4.0.0",
     "type": "module",
     "scripts": {
-        "dev": "vite",
+        "dev": "vite --configLoader native",
         "check:api": "php tools/check-api-health.php",
         "check:routes": "node tools/check-routes.mjs",
-        "build": "vite build",
-        "preview": "vite preview"
+        "build": "vite build --configLoader native",
+        "preview": "vite preview --configLoader native"
     },
     "dependencies": {
         "@fullcalendar/core": "^6.1.21",

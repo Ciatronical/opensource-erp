@@ -1,0 +1,36 @@
+{
+    "DocumentList": {
+        "titles": {
+            "invoice": "Invoices",
+            "creditNote": "Credit notes",
+            "order": "Orders",
+            "quotation": "Quotations",
+            "deliveryOrder": "Delivery orders",
+            "part": "Articles"
+        },
+        "columns": {
+            "number": "Number",
+            "date": "Date",
+            "customer": "Customer",
+            "description": "Description",
+            "amount": "Amount",
+            "status": "Status",
+            "partnumber": "Article number",
+            "unit": "Unit",
+            "sellprice": "Sales price",
+            "onhand": "Stock"
+        },
+        "search": "Search (number, customer, description)",
+        "searchParts": "Search (article number, description)",
+        "from": "Date from",
+        "to": "Date to",
+        "openOnly": "Open only",
+        "withObsolete": "Show obsolete",
+        "reset": "Reset filters",
+        "open": "Open",
+        "closed": "Done",
+        "obsolete": "Obsolete",
+        "noData": "No entries found",
+        "loadError": "The list could not be loaded"
+    }
+}

@@ -6,7 +6,7 @@
   </v-app-bar>
   <v-container>
     <v-row justify="center" class="pt-4">
-      <v-col cols="12" sm="6" md="6" lg="6" xl="2">
+      <v-col cols="12" class="login-col">
         <v-card variant="outlined" class="border-md">
           <v-card-title class="pb-5">
             <strong>{{ t('LoginView.title') }}</strong>
@@ -230,4 +230,6 @@ export default {
 <style scoped>
 .text-primary { color: var(--v-theme-primary) !important; }
 .update-trigger { cursor: default; user-select: none; }
+/* Volle Breite auf dem Handy, sonst feste, angenehme Kartenbreite auf jedem Monitor */
+.login-col { max-width: 520px; }
 </style>

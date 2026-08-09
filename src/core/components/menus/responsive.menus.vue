@@ -1,17 +1,16 @@
 <template>
   <div class="responsive-menu">
-    <!-- Ab md: Buttons mit Text — aber nur, solange sie wirklich hineinpassen.
-         Ob das der Fall ist, misst die Navbar (prop `compact`); eine feste
-         Breakpoint-Schwelle passte nicht, weil die Leiste je nach Mandant,
-         Sprache und aktiven Features unterschiedlich viel Platz braucht. -->
-    <div v-if="!compact" class="d-none d-md-flex align-center">
+    <!-- Darstellung bestimmt die Navbar per Messung (prop `mode`), nicht ein
+         fester Breakpoint: wie viel Platz die Leiste braucht, haengt von
+         Mandant, Sprache und aktiven Features ab. -->
+    <div v-if="mode === 'text'" class="d-flex align-center">
       <template v-for="(menu, index) in menus" :key="index">
         <!-- Direkter Link ohne Untermenue -->
         <v-btn
           v-if="menu.to"
           variant="text"
           color="primary"
-          class="mx-1"
+          class="px-2 text-none-wrap"
           :to="menu.to"
         >
           {{ menu.title }}
@@ -27,10 +26,10 @@
               variant="text"
               color="primary"
               v-bind="props"
-              class="mx-1"
+              class="px-2 text-none-wrap"
             >
               {{ menu.title }}
-              <v-icon end>mdi-chevron-down</v-icon>
+              <v-icon size="small" class="ms-1">mdi-chevron-down</v-icon>
             </v-btn>
           </template>
 
@@ -54,7 +53,7 @@
     </div>
 
     <!-- Zu wenig Platz fuer Text: nur Symbole mit Tooltip -->
-    <div v-else class="d-none d-md-flex align-center">
+    <div v-else-if="mode === 'icons'" class="d-flex align-center">
       <template v-for="(menu, index) in menus" :key="index">
         <!-- Direkter Link ohne Untermenue -->
         <v-tooltip v-if="menu.to" :text="menu.title" location="bottom">
@@ -112,8 +111,8 @@
       </template>
     </div>
 
-    <!-- Mobile (<md): Hamburger-Menü -->
-    <div class="d-flex d-md-none">
+    <!-- Ganz eng: alles unter einem Hamburger -->
+    <div v-else class="d-flex">
       <v-menu location="bottom end" :close-on-content-click="false">
         <template #activator="{ props }">
           <v-btn
@@ -180,10 +179,10 @@ export default {
       type: Array,
       required: true
     },
-    // true = Symbolleiste statt Textbuttons (von der Navbar gemessen)
-    compact: {
-      type: Boolean,
-      default: false
+    // 'text' | 'icons' | 'burger' — von der Navbar gemessen
+    mode: {
+      type: String,
+      default: 'text'
     }
   },
   emits: ['menu-click'],
@@ -202,6 +201,12 @@ export default {
 </script>
 
 <style scoped>
+/* Enge Textbuttons: so passt die Beschriftung auf 1920px noch komplett hinein,
+   statt auf Symbole auszuweichen. */
+.text-none-wrap {
+  min-width: 0 !important;
+  white-space: nowrap;
+}
 .responsive-menu {
   display: flex;
   align-items: center;

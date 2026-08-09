@@ -1887,6 +1887,56 @@ COMMENT ON COLUMN camera_rule.active IS 'Regel aktiv/inaktiv';
 COMMENT ON COLUMN camera_rule.cooldown_seconds IS 'Mindestabstand zwischen zwei Auslösungen (Sekunden)';
 COMMENT ON COLUMN camera_rule.last_triggered_at IS 'Letzter Auslösezeitpunkt (für Cooldown)';
 
+-- Altinstallationen: Frigate wurde durch den eigenen Kamera-Monitor ersetzt.
+-- frigate_name/frigate_zone/frigate_event_id heissen jetzt cam_key/zone_key/event_id.
+-- Das Update-System legt nur neue Spalten an, die alten bleiben stehen und
+-- blockieren mit ihrem NOT NULL jedes INSERT — deshalb hier umziehen und entfernen.
+DO $camera_legacy$
+BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.columns
+               WHERE table_schema = 'public' AND table_name = 'camera'
+                 AND column_name = 'frigate_name') THEN
+        UPDATE camera SET cam_key = frigate_name WHERE cam_key IS NULL OR cam_key = '';
+        ALTER TABLE camera DROP COLUMN frigate_name;
+    END IF;
+
+    IF EXISTS (SELECT 1 FROM information_schema.columns
+               WHERE table_schema = 'public' AND table_name = 'camera_zone'
+                 AND column_name = 'frigate_zone') THEN
+        UPDATE camera_zone SET zone_key = frigate_zone WHERE zone_key IS NULL OR zone_key = '';
+        ALTER TABLE camera_zone DROP COLUMN frigate_zone;
+    END IF;
+
+    IF EXISTS (SELECT 1 FROM information_schema.columns
+               WHERE table_schema = 'public' AND table_name = 'camera_event'
+                 AND column_name = 'frigate_event_id') THEN
+        UPDATE camera_event SET event_id = frigate_event_id WHERE event_id IS NULL;
+        ALTER TABLE camera_event DROP COLUMN frigate_event_id;
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint
+                   WHERE conrelid = 'camera'::regclass AND conname = 'camera_cam_key_unique')
+       AND NOT EXISTS (SELECT 1 FROM camera WHERE cam_key IS NOT NULL
+                       GROUP BY cam_key HAVING count(*) > 1) THEN
+        ALTER TABLE camera ADD CONSTRAINT camera_cam_key_unique UNIQUE (cam_key);
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint
+                   WHERE conrelid = 'camera_zone'::regclass AND conname = 'camera_zone_unique')
+       AND NOT EXISTS (SELECT 1 FROM camera_zone
+                       GROUP BY camera_id, zone_key HAVING count(*) > 1) THEN
+        ALTER TABLE camera_zone ADD CONSTRAINT camera_zone_unique UNIQUE (camera_id, zone_key);
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint
+                   WHERE conrelid = 'camera_event'::regclass AND conname = 'camera_event_id_unique')
+       AND NOT EXISTS (SELECT 1 FROM camera_event WHERE event_id IS NOT NULL
+                       GROUP BY event_id HAVING count(*) > 1) THEN
+        ALTER TABLE camera_event ADD CONSTRAINT camera_event_id_unique UNIQUE (event_id);
+    END IF;
+END
+$camera_legacy$;
+
 -- =============================================================================
 -- BUCHHALTUNG (Weroni Accounting)
 -- DATEV-kompatible Buchungsverwaltung mit KI-basierter Belegerfassung
@@ -2661,9 +2711,10 @@ DO $$ BEGIN
     END IF;
 END $$;
 
--- Trigger: pg_notify bei neuer Nachricht (SSE -> Chat-Fenster oeffnet sich live
--- beim Empfaenger). Die Empfaengerliste steckt im Payload, damit der Client ohne
--- Rueckfrage entscheiden kann, ob ihn die Nachricht betrifft.
+-- Trigger: pg_notify bei neuer Nachricht (SSE -> Einblendung beim Empfaenger).
+-- Die Empfaengerliste steckt im Payload, damit der Client ohne Rueckfrage
+-- entscheiden kann, ob ihn die Nachricht betrifft; der Nachrichtentext ist
+-- ebenfalls dabei, damit die Einblendung ihn ohne zweiten Call zeigen kann.
 CREATE OR REPLACE FUNCTION notify_chat_message() RETURNS trigger AS $$
 DECLARE
     v_sender     TEXT;

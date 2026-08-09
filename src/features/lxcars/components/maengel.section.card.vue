@@ -102,13 +102,13 @@
                                     <template #item="{ props, item }">
                                         <v-list-item v-bind="props" :title="null">
                                             <v-list-item-title class="text-body-2">
-                                                <span class="font-weight-bold">{{ item.raw.defect_code }}</span>
-                                                {{ item.raw.defect_description }}
+                                                <span class="font-weight-bold">{{ item.defect_code }}</span>
+                                                {{ item.defect_description }}
                                             </v-list-item-title>
                                             <v-list-item-subtitle class="text-caption">
-                                                {{ item.raw.pruefgruppe }}
+                                                {{ item.pruefgruppe }}
                                                 <v-chip
-                                                    v-for="kl in (item.raw.possible_classes || '').split('|')"
+                                                    v-for="kl in (item.possible_classes || '').split('|')"
                                                     :key="kl"
                                                     size="x-small"
                                                     variant="tonal"

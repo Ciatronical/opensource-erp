@@ -171,7 +171,7 @@
                                             <template #prepend>
                                                 <v-icon
                                                     size="small"
-                                                    :color="item.raw.color || 'grey-lighten-2'"
+                                                    :color="item.color || 'grey-lighten-2'"
                                                     class="me-1"
                                                 >
                                                     mdi-circle
@@ -181,9 +181,9 @@
                                     </template>
                                     <template #selection="{ item }">
                                         <v-icon
-                                            v-if="item.raw.color"
+                                            v-if="item.color"
                                             size="small"
-                                            :color="item.raw.color"
+                                            :color="item.color"
                                             class="me-1"
                                         >
                                             mdi-circle

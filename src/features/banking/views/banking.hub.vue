@@ -22,7 +22,7 @@
                     prepend-inner-icon="mdi-bank"
                 />
             </v-col>
-            <v-col cols="auto" class="d-flex ga-2">
+            <v-col cols="12" sm="auto" class="d-flex ga-2 flex-wrap">
                 <v-btn
                     v-if="selectedAccount?.fints_id"
                     variant="text"

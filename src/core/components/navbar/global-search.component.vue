@@ -27,15 +27,15 @@
         <template #item="{ props: itemProps, item }">
             <!-- Gruppen-Header -->
             <v-list-subheader
-                v-if="item.raw._groupHeader"
+                v-if="item._groupHeader"
                 class="text-caption font-weight-bold"
             >
-                {{ item.raw._groupLabel }}
+                {{ item._groupLabel }}
             </v-list-subheader>
 
             <!-- Verlauf löschen -->
             <v-list-item
-                v-else-if="item.raw._clearHistory"
+                v-else-if="item._clearHistory"
                 class="text-center"
                 @click.stop="clearHistory"
             >
@@ -49,18 +49,18 @@
                 v-else
                 v-bind="itemProps"
                 :title="null"
-                :prepend-icon="typeConfig[item.raw.type]?.icon"
+                :prepend-icon="typeConfig[item.type]?.icon"
             >
                 <v-list-item-title class="text-body-2">
-                    {{ item.raw.title }}
+                    {{ item.title }}
                 </v-list-item-title>
-                <v-list-item-subtitle v-if="item.raw.subtitle" class="text-caption">
-                    {{ item.raw.subtitle }}
+                <v-list-item-subtitle v-if="item.subtitle" class="text-caption">
+                    {{ item.subtitle }}
                 </v-list-item-subtitle>
 
                 <template #prepend>
-                    <v-icon :color="typeConfig[item.raw.type]?.color" size="small" class="mr-3">
-                        {{ typeConfig[item.raw.type]?.icon }}
+                    <v-icon :color="typeConfig[item.type]?.color" size="small" class="mr-3">
+                        {{ typeConfig[item.type]?.icon }}
                     </v-icon>
                 </template>
             </v-list-item>

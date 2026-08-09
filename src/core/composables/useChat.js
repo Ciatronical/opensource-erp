@@ -24,9 +24,9 @@ export const loadingOverview = ref(false)
 export const loadingMessages = ref(false)
 export const sending = ref(false)
 // Zaehler, den nur bewusste Benutzeraktionen hochsetzen (Klick auf den
-// Chat-Button). Das Panel setzt daraufhin den Fokus ins Eingabefeld — beim
-// automatischen Aufpoppen einer eingehenden Nachricht bewusst nicht, sonst
-// landet der naechste Tastendruck ungewollt im Chat.
+// Chat-Button oder auf die Nachrichten-Einblendung). Das Panel setzt daraufhin
+// den Fokus ins Eingabefeld — ungefragt passiert das nie, sonst landet der
+// naechste Tastendruck ungewollt im Chat.
 export const focusRequest = ref(0)
 
 export const unreadTotal = computed(() =>
@@ -199,6 +199,29 @@ function playNotificationSound() {
     } catch { /* Ton ist nur Beiwerk */ }
 }
 
+/** Lange Nachrichten gekuerzt anzeigen — die Einblendung soll klein bleiben */
+function preview(text) {
+    const clean = (text || '').replace(/\s+/g, ' ').trim()
+    return clean.length > 140 ? `${clean.slice(0, 140)} …` : clean
+}
+
+// Eingehende Nachricht oben einblenden — Absender und Text stehen direkt drin.
+// Bewusst OHNE das Panel aufzuklappen: wer gerade an einem Beleg sitzt, wird
+// nicht aus der Arbeit gerissen, sieht die Nachricht aber trotzdem sofort.
+// Ein Klick auf die Einblendung fuehrt in die Unterhaltung.
+function notifyIncoming(payload) {
+    playNotificationSound()
+    toast.clickable(
+        i18n.global.t('Chat.newMessageFrom', { name: payload.sender_name }),
+        preview(payload.message),
+        () => {
+            panelOpen.value = true
+            openConversation(payload.conversation_id)
+            focusRequest.value++
+        },
+    )
+}
+
 // --- SSE ---
 
 function handleChatEvent(payload) {
@@ -221,7 +244,7 @@ function handleChatEvent(payload) {
     const isActive = payload.conversation_id === activeConversationId.value
 
     if (isActive) {
-        // Offener Chat: Nachricht direkt anhaengen und als gelesen melden
+        // Geoeffnete Unterhaltung: Nachricht wandert direkt in den Verlauf
         if (!messages.value.some(m => m.id === payload.id)) {
             messages.value.push({
                 id: payload.id,
@@ -232,9 +255,16 @@ function handleChatEvent(payload) {
             })
         }
         if (!own) {
-            if (payload.truncated) openConversation(payload.conversation_id)
-            else markRead(payload.conversation_id)
-            if (!panelOpen.value) playNotificationSound()
+            if (panelOpen.value) {
+                // Nur was sichtbar auf dem Schirm steht, gilt als gelesen —
+                // gekuerzte Nachrichten dabei vollstaendig nachladen.
+                if (payload.truncated) openConversation(payload.conversation_id)
+                else markRead(payload.conversation_id)
+            } else {
+                // Panel zu: die Nachricht bleibt ungelesen (Zaehler in der Navbar)
+                // und wird nur oben eingeblendet.
+                notifyIncoming(payload)
+            }
         }
         loadOverview()
         return
@@ -244,15 +274,7 @@ function handleChatEvent(payload) {
 
     if (own) return   // eigene Nachricht aus einem anderen Tab
 
-    playNotificationSound()
-    toast.info(i18n.global.t('Chat.newMessageFrom', { name: payload.sender_name }))
-
-    // Steckt der Benutzer gerade in einer anderen Unterhaltung, wird er nicht
-    // herausgerissen — dort zeigt der Zaehler in der Liste die neue Nachricht.
-    // Sonst oeffnet sich das Chatfenster direkt mit der Nachricht.
-    if (activeConversationId.value) return
-    panelOpen.value = true
-    openConversation(payload.conversation_id)
+    notifyIncoming(payload)
 }
 
 /** Unterhaltung als gelesen markieren (ohne Nachladen der Nachrichten) */
@@ -309,6 +331,9 @@ export function toggleChatPanel() {
     panelOpen.value = !panelOpen.value
     if (panelOpen.value) {
         loadOverview()
+        // Waehrend das Panel zu war, koennen Nachrichten aufgelaufen sein — die
+        // offene Unterhaltung frisch holen und erst jetzt als gelesen melden.
+        if (activeConversationId.value) openConversation(activeConversationId.value)
         focusRequest.value++
     }
 }

@@ -70,7 +70,8 @@
         "search": "Suche",
         "searchCustomers": "Kunden suchen",
         "newVendor": "Neuen Lieferanten anlegen",
-        "calendar": "Kalender"
+        "calendar": "Kalender",
+        "manageArticles": "Artikel"
     },
     "ContactMenu": {
         "title": "Kontakt",
@@ -83,7 +84,11 @@
         "newQuotation": "Neues Angebot anlegen",
         "newOrder": "Neuen Auftrag anlegen",
         "newInvoice": "Neue Rechnung anlegen",
-        "manageCreditNotes": "Gutschriften"
+        "manageCreditNotes": "Gutschriften",
+        "manageQuotations": "Angebote",
+        "manageOrders": "Aufträge",
+        "manageInvoices": "Rechnungen",
+        "manageDeliveryOrders": "Lieferscheine"
     },
     "SystemMenu": {
         "title": "System",

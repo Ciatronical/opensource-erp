@@ -15,6 +15,7 @@
     </v-btn>
 
     <v-btn
+      v-if="showQuickIcons"
       icon
       variant="text"
       color="primary"
@@ -36,13 +37,13 @@
     </v-btn>
     <router-link :to="{ name: 'startup' }" class="text-decoration-none text-primary me-1"><v-icon>mdi-home</v-icon></router-link>
 
-    <v-toolbar-title class="text-h6 navbar-title">
+    <v-toolbar-title v-if="showCompany" class="text-h6 navbar-title">
       <router-link :to="{ name: 'startup' }" class="text-decoration-none text-primary">{{ appTitle }}</router-link>
     </v-toolbar-title>
 
     <!-- LxCars Schnellzugriff -->
     <v-btn
-      v-if="oserpData.isLxCars()"
+      v-if="oserpData.isLxCars() && showQuickIcons"
       icon
       variant="text"
       color="primary"
@@ -52,6 +53,7 @@
       <v-icon>mdi-clipboard-search-outline</v-icon>
     </v-btn>
     <v-btn
+      v-if="showQuickIcons"
       icon
       variant="text"
       color="primary"
@@ -61,6 +63,7 @@
       <v-icon>mdi-calendar-month</v-icon>
     </v-btn>
     <v-btn
+      v-if="showQuickIcons"
       icon
       variant="text"
       color="primary"
@@ -70,7 +73,7 @@
       <v-icon>mdi-phone</v-icon>
     </v-btn>
     <v-btn
-      v-if="oserpData.isLxCars()"
+      v-if="oserpData.isLxCars() && showQuickIcons"
       icon
       variant="text"
       color="primary"
@@ -86,19 +89,19 @@
          Symbole rechts nicht aus der Leiste geschoben werden (die Toolbar
          schneidet Überhang kommentarlos ab) -->
     <div ref="menuBox" class="navbar-flex">
-      <ResponsiveMenu :menus="cards" :compact="menusCompact" @menu-click="handleMenuAction" />
+      <ResponsiveMenu :menus="cards" :mode="menuMode" @menu-click="handleMenuAction" />
     </div>
 
     <!-- Globale Schnellsuche (Inline ab grossen Bildschirmen) -->
-    <GlobalSearchComponent v-if="lgAndUp" class="mx-2 navbar-search" />
+    <GlobalSearchComponent v-if="searchInline" class="mx-2 navbar-search" />
 
-    <v-spacer ref="spacerBox" />
+    <v-spacer />
 
     <!-- Rechte Seite: darf nie abgeschnitten werden -->
     <div class="navbar-right">
 
     <!-- Firmenlogo oder Firmenname — Klick öffnet Firmenliste -->
-    <v-menu v-model="clientMenuOpen" location="bottom end" :close-on-content-click="true" open-on-hover>
+    <v-menu v-if="showCompany" v-model="clientMenuOpen" location="bottom end" :close-on-content-click="true" open-on-hover>
       <template #activator="{ props: menuProps }">
         <div v-bind="menuProps" class="d-flex align-center cursor-pointer">
           <img
@@ -200,7 +203,7 @@
             :color="sseConnected ? 'primary' : 'orange-darken-2'"
             :title="sseConnected ? t('NavbarView.sseConnected') : t('NavbarView.sseDisconnected')"
           >mdi-account-circle</v-icon>
-          <span class="text-body-2">{{ oserpData.session.user }}</span>
+          <span v-if="showUserName" class="text-body-2">{{ oserpData.session.user }}</span>
         </v-btn>
       </template>
 
@@ -240,7 +243,7 @@
 
     <!-- Globale Schnellsuche auf kleinen Bildschirmen: eigene volle Zeile,
          damit das Eingabefeld nicht zusammengequetscht wird -->
-    <template v-if="!lgAndUp" #extension>
+    <template v-if="!searchInline" #extension>
       <GlobalSearchComponent class="mx-2" style="width: 100%" />
     </template>
   </v-app-bar>
@@ -251,7 +254,7 @@
   <!-- Weroni Panel (rechtes Drawer) -->
   <WeroniPanel v-if="weroniEnabled" />
 
-  <!-- Mitarbeiter-Chat (rechtes Drawer, oeffnet sich bei neuer Nachricht selbst) -->
+  <!-- Mitarbeiter-Chat (rechtes Drawer, oeffnet sich nur auf Klick) -->
   <ChatPanel />
 
   <!-- Ausgewaehlter Kunde/Lieferant. Auf Seiten mit meta.hideCustomerBar
@@ -369,7 +372,6 @@ import { oserpStore } from '@/core/stores/oserp.store.js'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { computed, inject, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
-import { useDisplay } from 'vuetify'
 import MessagesView from '@/core/components/messages/messages.view.vue'
 import ResponsiveMenu from '@/core/components/menus/responsive.menus.vue'
 import GlobalSearchComponent from '@/core/components/navbar/global-search.component.vue'
@@ -413,7 +415,6 @@ export default {
     const router = useRouter()
     const route = useRoute()
     const { t } = useI18n()
-    const { lgAndUp } = useDisplay()
     const cvSrc = computed(() => oserpData.customer_vendor?.profile?.src || 'C')
     const appReady = inject('appReady')
 
@@ -476,47 +477,89 @@ export default {
     onMounted(startChat)
     onUnmounted(stopChat)
 
-    // ── Menuebreite messen ──────────────────────────────────────────────
-    // Die Toolbar schneidet Ueberhang ohne Vorwarnung ab. Statt einer festen
-    // Breakpoint-Schwelle wird gemessen: passen die Textbuttons nicht mehr,
-    // schaltet das Menue auf Symbole um. Zurueck erst, wenn wieder genug
-    // Luft da ist (Puffer gegen Hin-und-Her-Springen).
+    // ── Platz in der Leiste messen ─────────────────────────────────────
+    // Die Toolbar schneidet Ueberhang ohne Vorwarnung ab (overflow: hidden),
+    // und wie viel Platz sie braucht, haengt von Mandant, Sprache und aktiven
+    // Features ab — feste Breakpoints reichen dafuer nicht. Darum wird
+    // gemessen und stufenweise ausgeduennt, bis alles hineinpasst.
+    //
+    //   0 Textmenue + Suche in der Leiste + Logo + Benutzername
+    //   1 Menue als Symbole
+    //   2 Suche in die zweite Zeile
+    //   3 Menue als Hamburger
+    //   4 Schnellzugriff-Symbole (Kalender, Telefon, ...) aus
+    //   5 Firmenlogo/-name aus
+    //   6 Benutzername aus (nur noch Symbol)
+    const MAX_STAGE = 6
     const menuBox = ref(null)
-    const spacerBox = ref(null)
-    const menusCompact = ref(false)
-    let naturalTextWidth = 0
+    const stage = ref(initialStage())
+    // Fensterbreite merken, bei der auf die naechste Stufe geschaltet wurde —
+    // erst deutlich darueber geht es wieder zurueck (kein Hin-und-Her).
+    const escalatedAt = []
     let resizeObserver = null
 
-    function measureMenus() {
+    // Startwert grob schaetzen, damit die Leiste nicht sichtbar durchschaltet
+    function initialStage() {
+      const w = typeof window !== 'undefined' ? window.innerWidth : 1920
+      if (w < 600) return 6
+      if (w < 860) return 5
+      if (w < 1100) return 3
+      if (w < 1400) return 2
+      if (w < 2100) return 1
+      return 0
+    }
+
+    const menuMode = computed(() => {
+      if (stage.value >= 3) return 'burger'
+      if (stage.value >= 1) return 'icons'
+      return 'text'
+    })
+    const searchInline = computed(() => stage.value < 2)
+    const showQuickIcons = computed(() => stage.value < 4)
+    const showCompany = computed(() => stage.value < 5)
+    const showUserName = computed(() => stage.value < 6)
+
+    function measureBar() {
       const box = menuBox.value
-      if (!box) return
-      if (!menusCompact.value) {
-        naturalTextWidth = Math.max(naturalTextWidth, box.scrollWidth)
-        if (box.scrollWidth > box.clientWidth + 1) menusCompact.value = true
+      const toolbar = box?.closest('.v-toolbar__content')
+      if (!toolbar) return
+      const w = window.innerWidth
+
+      if (toolbar.scrollWidth > toolbar.clientWidth + 1) {
+        if (stage.value < MAX_STAGE) {
+          escalatedAt[stage.value] = w
+          stage.value++
+          nextTick(measureBar)
+        }
         return
       }
-      const spacer = spacerBox.value?.$el || spacerBox.value
-      const free = spacer ? spacer.clientWidth : 0
-      // 60px Puffer: sonst kippt die Leiste bei jedem Pixel hin und her
-      if (naturalTextWidth && free > (naturalTextWidth - box.clientWidth) + 60) {
-        menusCompact.value = false
+
+      // Es passt: probeweise eine Stufe zurueck. Wurde auf dieser Breite schon
+      // einmal hochgestuft, erst ab 40px mehr Fensterbreite erneut versuchen —
+      // sonst kippt die Leiste bei jedem Pixel hin und her.
+      if (stage.value > 0) {
+        const at = escalatedAt[stage.value - 1]
+        if (at === undefined || w > at + 40) {
+          stage.value--
+          nextTick(measureBar)
+        }
       }
     }
 
     onMounted(() => {
-      nextTick(measureMenus)
+      nextTick(measureBar)
       if (typeof ResizeObserver !== 'undefined' && menuBox.value?.parentElement) {
-        resizeObserver = new ResizeObserver(() => measureMenus())
+        resizeObserver = new ResizeObserver(() => measureBar())
         resizeObserver.observe(menuBox.value.parentElement)
       }
     })
     onUnmounted(() => { if (resizeObserver) resizeObserver.disconnect() })
 
-    // Menuepunkte aendern sich mit Sprache, Mandant und Features — dann neu messen
+    // Menuepunkte aendern sich mit Sprache, Mandant und Features — neu messen
     watch(() => cards.value.length, () => {
-      naturalTextWidth = 0
-      menusCompact.value = false
-      nextTick(measureMenus)
+      escalatedAt.length = 0
+      stage.value = initialStage()
+      nextTick(measureBar)
     })
 
     // Firmenwechsel
@@ -673,7 +716,6 @@ export default {
     return {
       oserpData,
       route,
-      lgAndUp,
       appTitle,
       isDemo,
       showDemoWarning,
@@ -714,8 +756,11 @@ export default {
       chatUnread,
       toggleChatPanel,
       menuBox,
-      spacerBox,
-      menusCompact
+      menuMode,
+      searchInline,
+      showQuickIcons,
+      showCompany,
+      showUserName
     }
   }
 }
@@ -731,20 +776,25 @@ export default {
   align-items: center;
   flex: 0 0 auto;
 }
+/* Menüleiste schrumpft nicht — lieber gibt das Suchfeld Breite ab, und wenn
+   selbst das nicht reicht, schaltet measureMenus() auf Symbole um. */
 .navbar-flex {
   display: flex;
   align-items: center;
-  min-width: 0;
-  overflow: hidden;
+  flex: 0 0 auto;
 }
 /* Der Produktname soll nicht zu "L..." schrumpfen — Platz gibt die Suche her */
 .navbar-title {
   flex: 0 0 auto;
 }
+/* Das Suchfeld nimmt den freien Platz, nicht der v-spacer: mit gleichem
+   flex-grow teilen sich beide den Rest und das Feld bleibt unnoetig schmal.
+   Unter 200px ist es kaum brauchbar — dann schiebt measureBar() es lieber in
+   die zweite Zeile, wo es die volle Breite hat. */
 .navbar-search {
-  flex: 1 1 auto;
-  min-width: 120px;
-  max-width: 400px;
+  flex: 6 1 auto;
+  min-width: 200px;
+  max-width: 720px;
 }
 .cursor-pointer {
   cursor: pointer;

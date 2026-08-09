@@ -8,7 +8,8 @@ webrtc:
 # Streams werden automatisch vom ERP per REST-API hinzugefügt wenn du eine Kamera speicherst.
 # Manuelle Einträge sind möglich, werden aber vom ERP nicht verwaltet.
 streams:
-  anpr: "rtsp://admin:IagbI-D...@192.168.178.170:554/Streaming/Channels/101"
+  cam_192_168_178_232:
+    - rtsp://admin:admin@192.168.178.232:554/stream1
   cam_124: "rtsp://admin:admin@192.168.178.124:554/stream1"
   cam_125: "rtsp://admin:admin@192.168.178.125:554/stream1"
   cam_126: "rtsp://admin:admin@192.168.178.126:554/stream1"

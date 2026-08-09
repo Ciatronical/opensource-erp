@@ -3,6 +3,7 @@
 
 require_once __DIR__.'/faktura.php';
 require_once __DIR__.'/order_search.php';
+require_once __DIR__.'/document_search.php';
 require_once __DIR__.'/einvoice.php';
 require_once __DIR__.'/../aag_online.php';
 

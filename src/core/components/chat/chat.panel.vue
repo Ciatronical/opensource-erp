@@ -1,27 +1,29 @@
 <!-- src/core/components/chat/chat.panel.vue -->
-<!-- Mitarbeiter-Chat im WhatsApp-Look: links die Unterhaltungen, rechts der
-     Verlauf. Oeffnet sich automatisch, sobald eine Nachricht eintrifft
-     (siehe useChat.js) — der Kollege sieht sie sofort.
-     Farben und Bubble-Stil sind bewusst identisch zur WhatsApp-Ansicht
-     (whatsapp.view.vue), damit sich beides gleich anfuehlt. -->
+<!-- Mitarbeiter-Chat: links die Unterhaltungen, rechts der Verlauf.
+     Oeffnet sich nur auf Klick — eine eingehende Nachricht wird stattdessen
+     oben eingeblendet (siehe notifyIncoming in useChat.js).
+     Der Bubble-Stil ist bewusst der vertraute Messenger-Look, die Farben
+     sind aber die des Projekts (Blau wie im Favicon) — der interne Chat
+     darf nicht mit dem WhatsApp-Modul (whatsapp.view.vue, gruen) und nicht
+     mit Weroni (violett) verwechselt werden. -->
 <template>
     <v-navigation-drawer
         v-model="panelOpen"
         location="right"
         temporary
         :width="drawerWidth"
-        class="wa"
+        class="chat"
     >
-        <div class="wa__root">
+        <div class="chat__root">
             <!-- ── Linke Spalte: Unterhaltungen ── -->
-            <aside v-show="showList" class="wa__pane wa__pane--list" :class="{ 'wa__pane--full': !twoPane }">
-                <header class="wa__header">
-                    <v-avatar size="34" class="wa__avatar wa__avatar--me">
+            <aside v-show="showList" class="chat__pane chat__pane--list" :class="{ 'chat__pane--full': !twoPane }">
+                <header class="chat__header">
+                    <v-avatar size="34" class="chat__avatar chat__avatar--me">
                         <span>{{ initials(meName) }}</span>
                     </v-avatar>
-                    <div class="wa__headline">
-                        <div class="wa__headline-title">{{ t('Chat.title') }}</div>
-                        <div class="wa__headline-sub">{{ meName }}</div>
+                    <div class="chat__headline">
+                        <div class="chat__headline-title">{{ t('Chat.title') }}</div>
+                        <div class="chat__headline-sub">{{ meName }}</div>
                     </div>
                     <v-spacer />
                     <v-btn icon size="small" variant="text" color="white" :title="t('Chat.close')" @click="panelOpen = false">
@@ -29,7 +31,7 @@
                     </v-btn>
                 </header>
 
-                <div class="wa__search">
+                <div class="chat__search">
                     <v-text-field
                         v-model="search"
                         :placeholder="t('Chat.searchPlaceholder')"
@@ -39,70 +41,70 @@
                         density="compact"
                         hide-details
                         rounded="lg"
-                        bg-color="#f0f2f5"
+                        bg-color="#ECEFF1"
                         clearable
                     />
                 </div>
 
-                <div class="wa__scroll">
-                    <v-progress-linear v-if="loadingOverview && !conversations.length" indeterminate color="#00a884" />
+                <div class="chat__scroll">
+                    <v-progress-linear v-if="loadingOverview && !conversations.length" indeterminate color="#0277BD" />
 
                     <!-- Laufende Unterhaltungen -->
                     <div
                         v-for="conv in filteredConversations"
                         :key="conv.id"
-                        class="wa__row"
-                        :class="{ 'wa__row--active': conv.id === activeConversationId }"
+                        class="chat__row"
+                        :class="{ 'chat__row--active': conv.id === activeConversationId }"
                         @click="openConversation(conv.id)"
                     >
-                        <v-avatar size="46" class="wa__avatar">
+                        <v-avatar size="46" class="chat__avatar">
                             <span>{{ initials(conv.title || conv.partner_names) }}</span>
                         </v-avatar>
-                        <div class="wa__row-body">
-                            <div class="wa__row-top">
-                                <span class="wa__row-name">{{ conv.title || conv.partner_names || t('Chat.unknown') }}</span>
-                                <span class="wa__row-time" :class="{ 'wa__row-time--unread': Number(conv.unread) > 0 }">
+                        <div class="chat__row-body">
+                            <div class="chat__row-top">
+                                <span class="chat__row-name">{{ conv.title || conv.partner_names || t('Chat.unknown') }}</span>
+                                <span class="chat__row-time" :class="{ 'chat__row-time--unread': Number(conv.unread) > 0 }">
                                     {{ shortTime(conv.last_itime) }}
                                 </span>
                             </div>
-                            <div class="wa__row-bottom">
-                                <span class="wa__row-preview">
+                            <div class="chat__row-bottom">
+                                <span class="chat__row-preview">
                                     <v-icon
                                         v-if="conv.last_employee_id === myEmployeeId"
                                         size="14"
                                         class="me-1"
-                                        :color="conv.last_message_id <= conv.partner_read_id ? '#53bdeb' : '#8696a0'"
+                                        :color="conv.last_message_id <= conv.partner_read_id ? '#29B6F6' : '#90A4AE'"
                                     >{{ conv.last_message_id <= conv.partner_read_id ? 'mdi-check-all' : 'mdi-check' }}</v-icon>
                                     {{ conv.last_message || t('Chat.noMessages') }}
                                 </span>
-                                <span v-if="Number(conv.unread) > 0" class="wa__badge">{{ conv.unread }}</span>
+                                <span v-if="Number(conv.unread) > 0" class="chat__badge">{{ conv.unread }}</span>
                             </div>
                         </div>
                     </div>
 
                     <!-- Kollegen fuer einen neuen Chat -->
-                    <div class="wa__section">{{ t('Chat.newChat') }}</div>
-                    <div v-if="!filteredEmployees.length" class="wa__empty-hint">{{ t('Chat.noEmployees') }}</div>
+                    <div class="chat__section">{{ t('Chat.newChat') }}</div>
+                    <div v-if="!filteredEmployees.length" class="chat__empty-hint">{{ t('Chat.noEmployees') }}</div>
                     <div
                         v-for="emp in filteredEmployees"
                         :key="emp.id"
-                        class="wa__row"
+                        class="chat__row"
                         @click="openChatWith(emp)"
                     >
-                        <v-avatar size="40" class="wa__avatar wa__avatar--muted">
+                        <v-avatar size="40" class="chat__avatar chat__avatar--muted">
                             <span>{{ initials(emp.name) }}</span>
                         </v-avatar>
-                        <div class="wa__row-body">
-                            <div class="wa__row-name">{{ emp.name }}</div>
-                            <div class="wa__row-preview text-truncate">{{ emp.login }}</div>
+                        <div class="chat__row-body">
+                            <div class="chat__row-name">{{ emp.name }}</div>
+                            <div class="chat__row-preview text-truncate">{{ emp.login }}</div>
                         </div>
                     </div>
                 </div>
             </aside>
 
             <!-- ── Rechte Spalte: Verlauf ── -->
-            <section v-if="inConversation" class="wa__pane wa__pane--thread">
-                <header class="wa__header">
+            <section v-if="inConversation" class="chat__pane chat__pane--thread">
+                <header class="chat__header">
                     <v-btn
                         v-if="!twoPane"
                         icon
@@ -114,12 +116,12 @@
                     >
                         <v-icon>mdi-arrow-left</v-icon>
                     </v-btn>
-                    <v-avatar size="38" class="wa__avatar">
+                    <v-avatar size="38" class="chat__avatar">
                         <span>{{ initials(activeTitle) }}</span>
                     </v-avatar>
-                    <div class="wa__headline">
-                        <div class="wa__headline-title">{{ activeTitle }}</div>
-                        <div class="wa__headline-sub">{{ t('Chat.subtitle') }}</div>
+                    <div class="chat__headline">
+                        <div class="chat__headline-title">{{ activeTitle }}</div>
+                        <div class="chat__headline-sub">{{ t('Chat.subtitle') }}</div>
                     </div>
                     <v-spacer />
                     <v-btn icon size="small" variant="text" color="white" :title="t('Chat.close')" @click="panelOpen = false">
@@ -127,47 +129,47 @@
                     </v-btn>
                 </header>
 
-                <div ref="messageBox" class="wa__messages">
+                <div ref="messageBox" class="chat__messages">
                   <!-- Innerer Wrapper: schiebt wenige Nachrichten nach unten an die
                        Eingabezeile (wie WhatsApp), scrollt bei vielen normal -->
-                  <div class="wa__messages-inner">
-                    <v-progress-linear v-if="loadingMessages" indeterminate color="#00a884" />
+                  <div class="chat__messages-inner">
+                    <v-progress-linear v-if="loadingMessages" indeterminate color="#0277BD" />
 
-                    <div v-if="!messages.length && !loadingMessages" class="wa__placeholder">
-                        <v-icon size="44" color="#8696a0">mdi-message-text-outline</v-icon>
+                    <div v-if="!messages.length && !loadingMessages" class="chat__placeholder">
+                        <v-icon size="44" color="#90A4AE">mdi-message-text-outline</v-icon>
                         <div class="mt-2">{{ t('Chat.startHint', { name: activeTitle }) }}</div>
                     </div>
 
                     <template v-for="(msg, idx) in messages" :key="msg.id">
-                        <div v-if="showDateSeparator(idx)" class="wa__date">
-                            <span class="wa__date-chip">{{ dateLabel(msg.itime) }}</span>
+                        <div v-if="showDateSeparator(idx)" class="chat__date">
+                            <span class="chat__date-chip">{{ dateLabel(msg.itime) }}</span>
                         </div>
 
-                        <div class="wa__msgrow" :class="msg.employee_id === myEmployeeId ? 'wa__msgrow--out' : 'wa__msgrow--in'">
-                            <div class="wa__bubble" :class="msg.employee_id === myEmployeeId ? 'wa__bubble--out' : 'wa__bubble--in'">
+                        <div class="chat__msgrow" :class="msg.employee_id === myEmployeeId ? 'chat__msgrow--out' : 'chat__msgrow--in'">
+                            <div class="chat__bubble" :class="msg.employee_id === myEmployeeId ? 'chat__bubble--out' : 'chat__bubble--in'">
                                 <v-btn
                                     v-if="msg.employee_id === myEmployeeId"
-                                    class="wa__bubble-delete"
+                                    class="chat__bubble-delete"
                                     icon
                                     size="x-small"
                                     variant="text"
                                     :title="t('Chat.delete')"
                                     @click.stop="removeMessage(msg)"
                                 >
-                                    <v-icon size="14" color="#8696a0">mdi-delete-outline</v-icon>
+                                    <v-icon size="14" color="#90A4AE">mdi-delete-outline</v-icon>
                                 </v-btn>
 
-                                <div v-if="msg.employee_id !== myEmployeeId" class="wa__bubble-sender">
+                                <div v-if="msg.employee_id !== myEmployeeId" class="chat__bubble-sender">
                                     {{ msg.employee_name }}
                                 </div>
-                                <div class="wa__bubble-text">{{ msg.message }}</div>
-                                <div class="wa__bubble-meta">
+                                <div class="chat__bubble-text">{{ msg.message }}</div>
+                                <div class="chat__bubble-meta">
                                     <span>{{ clockTime(msg.itime) }}</span>
                                     <v-icon
                                         v-if="msg.employee_id === myEmployeeId"
                                         size="15"
                                         class="ms-1"
-                                        :color="msg.id <= partnerReadId ? '#53bdeb' : '#8696a0'"
+                                        :color="msg.id <= partnerReadId ? '#29B6F6' : '#90A4AE'"
                                         :title="msg.id <= partnerReadId ? t('Chat.read') : t('Chat.sent')"
                                     >{{ msg.id <= partnerReadId ? 'mdi-check-all' : 'mdi-check' }}</v-icon>
                                 </div>
@@ -177,7 +179,7 @@
                   </div>
                 </div>
 
-                <footer class="wa__composer">
+                <footer class="chat__composer">
                     <v-textarea
                         ref="composer"
                         v-model="draft"
@@ -197,7 +199,7 @@
                     />
                     <v-btn
                         icon
-                        class="wa__send"
+                        class="chat__send"
                         :loading="sending"
                         :disabled="!draft.trim()"
                         :title="t('Chat.send')"
@@ -209,8 +211,8 @@
             </section>
 
             <!-- Breiter Modus ohne gewaehlten Chat -->
-            <section v-else-if="twoPane" class="wa__pane wa__pane--thread wa__intro">
-                <v-icon size="72" color="#8696a0">mdi-forum-outline</v-icon>
+            <section v-else-if="twoPane" class="chat__pane chat__pane--thread chat__intro">
+                <v-icon size="72" color="#90A4AE">mdi-forum-outline</v-icon>
                 <div class="text-h6 mt-3">{{ t('Chat.title') }}</div>
                 <div class="text-body-2 mt-1">{{ t('Chat.pickHint') }}</div>
             </section>
@@ -234,7 +236,7 @@ export default {
     name: 'ChatPanel',
     setup() {
         const { t, locale } = useI18n()
-        const { lgAndUp } = useDisplay()
+        const { lgAndUp, width: screenWidth } = useDisplay()
         const oserp = oserpStore()
 
         const search = ref('')
@@ -249,7 +251,10 @@ export default {
         // Ab grossen Bildschirmen beide Spalten nebeneinander (wie WhatsApp Web),
         // darunter immer nur eine — sonst wird es zusammengequetscht.
         const twoPane = computed(() => lgAndUp.value)
-        const drawerWidth = computed(() => (twoPane.value ? 820 : 440))
+        // Nie breiter als der Bildschirm — auf dem Handy sonst abgeschnitten
+        const drawerWidth = computed(() =>
+            Math.min(twoPane.value ? 820 : 440, screenWidth.value || 440)
+        )
         const showList = computed(() => twoPane.value || !inConversation.value)
 
         const filteredConversations = computed(() => {
@@ -380,59 +385,59 @@ export default {
 <style scoped>
 /* Der Drawer selbst darf nicht scrollen — das uebernehmen Liste und Verlauf
    jeweils fuer sich. Sonst rutscht die Eingabezeile aus dem Bild. */
-.wa :deep(.v-navigation-drawer__content) {
+.chat :deep(.v-navigation-drawer__content) {
     display: flex;
     flex-direction: column;
     overflow: hidden;
 }
 
-.wa__root {
+.chat__root {
     display: flex;
     flex: 1 1 auto;
     min-height: 0;
     background: #ffffff;
 }
 
-.wa__pane {
+.chat__pane {
     display: flex;
     flex-direction: column;
     min-height: 0;
     min-width: 0;
 }
 
-.wa__pane--list {
+.chat__pane--list {
     flex: 0 0 340px;
     max-width: 340px;
-    border-right: 1px solid #e9edef;
+    border-right: 1px solid #DDE5EA;
 }
 
 /* Einspaltig: die Liste fuellt den Drawer allein aus */
-.wa__pane--full {
+.chat__pane--full {
     flex: 1 1 auto;
     max-width: none;
     border-right: none;
 }
 
-.wa__pane--thread {
+.chat__pane--thread {
     flex: 1 1 auto;
 }
 
-/* ── Kopfzeilen (WhatsApp-Gruen) ── */
-.wa__header {
+/* ── Kopfzeilen (Projektblau, wie das Favicon) ── */
+.chat__header {
     display: flex;
     align-items: center;
     gap: 10px;
     padding: 8px 10px;
-    background: #008069;
+    background: linear-gradient(135deg, #0277BD 0%, #01579B 100%);
     color: #ffffff;
     flex: 0 0 auto;
 }
 
-.wa__headline {
+.chat__headline {
     min-width: 0;
 }
 
-.wa__headline-title {
+.chat__headline-title {
     font-size: 0.95rem;
     font-weight: 600;
     line-height: 1.2;
@@ -441,7 +446,7 @@ export default {
     text-overflow: ellipsis;
 }
 
-.wa__headline-sub {
+.chat__headline-sub {
     font-size: 0.72rem;
     opacity: 0.85;
     white-space: nowrap;
@@ -449,106 +454,106 @@ export default {
     text-overflow: ellipsis;
 }
 
-.wa__avatar {
-    background: #d1e7dd;
-    color: #075e54;
+.chat__avatar {
+    background: #E1F5FE;
+    color: #01579B;
     font-weight: 700;
     font-size: 0.8rem;
     flex: 0 0 auto;
 }
 
-.wa__avatar--me {
+.chat__avatar--me {
     background: #ffffff;
-    color: #008069;
+    color: #0277BD;
 }
 
-.wa__avatar--muted {
-    background: #e9edef;
-    color: #54656f;
+.chat__avatar--muted {
+    background: #DDE5EA;
+    color: #546E7A;
 }
 
 /* ── Suchleiste ── */
-.wa__search {
+.chat__search {
     padding: 8px;
     background: #ffffff;
-    border-bottom: 1px solid #e9edef;
+    border-bottom: 1px solid #DDE5EA;
     flex: 0 0 auto;
 }
 
 /* ── Unterhaltungsliste ── */
-.wa__scroll {
+.chat__scroll {
     flex: 1 1 auto;
     overflow-y: auto;
     background: #ffffff;
 }
 
-.wa__row {
+.chat__row {
     display: flex;
     align-items: center;
     gap: 12px;
     padding: 8px 12px;
     cursor: pointer;
-    border-bottom: 1px solid #f0f2f5;
+    border-bottom: 1px solid #ECEFF1;
 }
 
-.wa__row:hover {
-    background: #f5f6f6;
+.chat__row:hover {
+    background: #F2F6F8;
 }
 
-.wa__row--active {
-    background: #f0f2f5;
+.chat__row--active {
+    background: #ECEFF1;
 }
 
-.wa__row-body {
+.chat__row-body {
     flex: 1 1 auto;
     min-width: 0;
 }
 
-.wa__row-top {
+.chat__row-top {
     display: flex;
     align-items: baseline;
     justify-content: space-between;
     gap: 8px;
 }
 
-.wa__row-name {
+.chat__row-name {
     font-size: 0.92rem;
-    color: #111b21;
+    color: #263238;
     font-weight: 500;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-.wa__row-time {
+.chat__row-time {
     font-size: 0.7rem;
-    color: #667781;
+    color: #607D8B;
     flex: 0 0 auto;
 }
 
-.wa__row-time--unread {
-    color: #00a884;
+.chat__row-time--unread {
+    color: #0277BD;
     font-weight: 600;
 }
 
-.wa__row-bottom {
+.chat__row-bottom {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 8px;
 }
 
-.wa__row-preview {
+.chat__row-preview {
     font-size: 0.8rem;
-    color: #667781;
+    color: #607D8B;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-.wa__badge {
+.chat__badge {
     flex: 0 0 auto;
-    background: #25d366;
+    background: #0288D1;
     color: #ffffff;
     font-size: 0.68rem;
     font-weight: 700;
@@ -561,31 +566,31 @@ export default {
     justify-content: center;
 }
 
-.wa__section {
+.chat__section {
     padding: 10px 12px 4px;
     font-size: 0.7rem;
     font-weight: 700;
     letter-spacing: 0.5px;
     text-transform: uppercase;
-    color: #008069;
+    color: #0277BD;
     background: #ffffff;
 }
 
-.wa__empty-hint {
+.chat__empty-hint {
     padding: 4px 12px 10px;
     font-size: 0.78rem;
-    color: #667781;
+    color: #607D8B;
 }
 
 /* ── Verlauf ── */
-.wa__messages {
+.chat__messages {
     flex: 1 1 auto;
     overflow-y: auto;
-    background-color: #efeae2;
-    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d4cfc6' fill-opacity='0.25'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    background-color: #E3EDF4;
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23b0c9dc' fill-opacity='0.25'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
 }
 
-.wa__messages-inner {
+.chat__messages-inner {
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
@@ -593,22 +598,22 @@ export default {
     padding: 14px 12px;
 }
 
-.wa__placeholder {
+.chat__placeholder {
     text-align: center;
-    color: #667781;
+    color: #607D8B;
     font-size: 0.85rem;
     padding: 40px 12px;
 }
 
-.wa__date {
+.chat__date {
     text-align: center;
     margin: 12px 0;
 }
 
-.wa__date-chip {
+.chat__date-chip {
     display: inline-block;
-    background: rgba(225, 218, 208, 0.9);
-    color: #54656f;
+    background: rgba(255, 255, 255, 0.92);
+    color: #546E7A;
     font-size: 12px;
     font-weight: 500;
     padding: 4px 12px;
@@ -616,20 +621,20 @@ export default {
     box-shadow: 0 1px 1px rgba(0, 0, 0, 0.08);
 }
 
-.wa__msgrow {
+.chat__msgrow {
     display: flex;
     margin-bottom: 3px;
 }
 
-.wa__msgrow--out {
+.chat__msgrow--out {
     justify-content: flex-end;
 }
 
-.wa__msgrow--in {
+.chat__msgrow--in {
     justify-content: flex-start;
 }
 
-.wa__bubble {
+.chat__bubble {
     position: relative;
     max-width: 72%;
     min-width: 96px;
@@ -639,42 +644,42 @@ export default {
     word-wrap: break-word;
 }
 
-.wa__bubble--out {
-    background: #d9fdd3;
+.chat__bubble--out {
+    background: #D5EBFA;
     border-top-right-radius: 0;
 }
 
-.wa__bubble--in {
+.chat__bubble--in {
     background: #ffffff;
     border-top-left-radius: 0;
 }
 
-.wa__bubble-sender {
+.chat__bubble-sender {
     font-size: 12px;
     font-weight: 600;
-    color: #1fa855;
+    color: #0277BD;
     margin-bottom: 2px;
 }
 
-.wa__bubble-text {
+.chat__bubble-text {
     font-size: 14px;
     line-height: 1.4;
-    color: #111b21;
+    color: #263238;
     white-space: pre-wrap;
 }
 
-.wa__bubble-meta {
+.chat__bubble-meta {
     display: flex;
     align-items: center;
     justify-content: flex-end;
     gap: 3px;
     margin-top: 2px;
     font-size: 11px;
-    color: #667781;
+    color: #607D8B;
     line-height: 1;
 }
 
-.wa__bubble-delete {
+.chat__bubble-delete {
     position: absolute;
     top: 2px;
     right: 2px;
@@ -682,36 +687,36 @@ export default {
     transition: opacity 0.15s;
 }
 
-.wa__bubble:hover .wa__bubble-delete {
+.chat__bubble:hover .chat__bubble-delete {
     opacity: 1;
 }
 
 /* ── Eingabezeile ── */
-.wa__composer {
+.chat__composer {
     display: flex;
     align-items: flex-end;
     gap: 8px;
     padding: 8px 10px;
-    background: #f0f2f5;
+    background: #ECEFF1;
     flex: 0 0 auto;
 }
 
-.wa__send {
-    background: #00a884 !important;
+.chat__send {
+    background: #0277BD !important;
     flex: 0 0 auto;
 }
 
-.wa__send:disabled {
+.chat__send:disabled {
     opacity: 0.5;
 }
 
 /* ── Platzhalter im Zweispalten-Modus ── */
-.wa__intro {
+.chat__intro {
     align-items: center;
     justify-content: center;
     text-align: center;
-    color: #41525d;
-    background: #f0f2f5;
-    border-left: 1px solid #e9edef;
+    color: #455A64;
+    background: #ECEFF1;
+    border-left: 1px solid #DDE5EA;
 }
 </style>

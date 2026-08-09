@@ -70,7 +70,8 @@
         "search": "Search",
         "searchCustomers": "Search Customers",
         "newVendor": "New Vendor",
-        "calendar": "Calendar"
+        "calendar": "Calendar",
+        "manageArticles": "Articles"
     },
     "ContactMenu": {
         "title": "Contact",
@@ -83,7 +84,11 @@
         "newQuotation": "New Quotation",
         "newOrder": "New Order",
         "newInvoice": "New Invoice",
-        "manageCreditNotes": "Credit Notes"
+        "manageCreditNotes": "Credit Notes",
+        "manageQuotations": "Quotations",
+        "manageOrders": "Orders",
+        "manageInvoices": "Invoices",
+        "manageDeliveryOrders": "Delivery notes"
     },
     "SystemMenu": {
         "title": "System",

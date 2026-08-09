@@ -1,0 +1,36 @@
+{
+    "DocumentList": {
+        "titles": {
+            "invoice": "Rechnungen",
+            "creditNote": "Gutschriften",
+            "order": "Aufträge",
+            "quotation": "Angebote",
+            "deliveryOrder": "Lieferscheine",
+            "part": "Artikel"
+        },
+        "columns": {
+            "number": "Nummer",
+            "date": "Datum",
+            "customer": "Kunde",
+            "description": "Bezeichnung",
+            "amount": "Betrag",
+            "status": "Status",
+            "partnumber": "Artikelnummer",
+            "unit": "Einheit",
+            "sellprice": "Verkaufspreis",
+            "onhand": "Bestand"
+        },
+        "search": "Suchen (Nummer, Kunde, Bezeichnung)",
+        "searchParts": "Suchen (Artikelnummer, Bezeichnung)",
+        "from": "Datum von",
+        "to": "Datum bis",
+        "openOnly": "Nur offene",
+        "withObsolete": "Ausgemusterte anzeigen",
+        "reset": "Filter zurücksetzen",
+        "open": "Offen",
+        "closed": "Erledigt",
+        "obsolete": "Ausgemustert",
+        "noData": "Keine Einträge gefunden",
+        "loadError": "Die Liste konnte nicht geladen werden"
+    }
+}

@@ -75,7 +75,7 @@
                         <template #item="{ props, item }">
                             <v-list-item v-bind="props">
                                 <template #subtitle>
-                                    {{ item.raw.date }} - {{ item.raw.size }}
+                                    {{ item.date }} - {{ item.size }}
                                 </template>
                             </v-list-item>
                         </template>

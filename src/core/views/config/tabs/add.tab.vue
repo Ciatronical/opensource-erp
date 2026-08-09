@@ -752,7 +752,7 @@ async function saveBuchungsgruppeOrder() {
 }
 </script>
 
-<style>
+<style scoped>
 :deep(.v-expansion-panel-title) {
     padding: 20px 24px;
 }

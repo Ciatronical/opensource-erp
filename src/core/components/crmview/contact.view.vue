@@ -86,8 +86,8 @@
                     <template #item="{ item, props: itemProps }">
                         <v-list-item v-bind="itemProps">
                             <template #subtitle>
-                                <span v-if="item.raw.phone" class="text-caption">
-                                    <v-icon size="x-small">mdi-phone</v-icon> {{ item.raw.phone }}
+                                <span v-if="item.phone" class="text-caption">
+                                    <v-icon size="x-small">mdi-phone</v-icon> {{ item.phone }}
                                 </span>
                                 <span v-else class="text-caption text-error">
                                     {{ t('CrmView.noPhone') }}

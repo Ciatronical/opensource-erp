@@ -631,8 +631,8 @@
                         <template #item="{ item, props: itemProps }">
                             <v-list-item v-bind="itemProps">
                                 <template #subtitle>
-                                    <span>{{ item.raw.number }}</span>
-                                    <span class="ml-2 text-green-darken-2">{{ item.raw.phones.join(', ') }}</span>
+                                    <span>{{ item.number }}</span>
+                                    <span class="ml-2 text-green-darken-2">{{ item.phones.join(', ') }}</span>
                                 </template>
                             </v-list-item>
                         </template>

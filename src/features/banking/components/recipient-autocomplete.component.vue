@@ -20,28 +20,28 @@
             @update:model-value="onPick"
         >
             <template #item="{ props: itemProps, item }">
-                <v-list-item v-if="item.raw.is_create_action" v-bind="itemProps" :title="undefined" prepend-icon="mdi-plus-circle">
+                <v-list-item v-if="item.is_create_action" v-bind="itemProps" :title="undefined" prepend-icon="mdi-plus-circle">
                     <v-list-item-title>
-                        {{ t('BankingView.transfers.createRecipient', { name: item.raw.create_name }) }}
+                        {{ t('BankingView.transfers.createRecipient', { name: item.create_name }) }}
                     </v-list-item-title>
                 </v-list-item>
                 <v-list-item v-else v-bind="itemProps" :title="undefined">
                     <template #prepend>
                         <v-chip
                             size="x-small"
-                            :color="item.raw.recipient_type === 'customer' ? 'primary' : 'secondary'"
+                            :color="item.recipient_type === 'customer' ? 'primary' : 'secondary'"
                             variant="tonal"
                             class="mr-2"
                         >
-                            {{ item.raw.recipient_type === 'customer' ? t('BankingView.transfers.customerShort') : t('BankingView.transfers.vendorShort') }}
+                            {{ item.recipient_type === 'customer' ? t('BankingView.transfers.customerShort') : t('BankingView.transfers.vendorShort') }}
                         </v-chip>
                     </template>
                     <v-list-item-title>
-                        {{ item.raw.name }}
-                        <span class="text-caption text-medium-emphasis ml-2">{{ item.raw.number }}</span>
+                        {{ item.name }}
+                        <span class="text-caption text-medium-emphasis ml-2">{{ item.number }}</span>
                     </v-list-item-title>
-                    <v-list-item-subtitle v-if="item.raw.iban">
-                        {{ formatIban(item.raw.iban) }}
+                    <v-list-item-subtitle v-if="item.iban">
+                        {{ formatIban(item.iban) }}
                     </v-list-item-subtitle>
                     <v-list-item-subtitle v-else class="text-warning">
                         {{ t('BankingView.transfers.noIbanOnFile') }}

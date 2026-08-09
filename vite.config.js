@@ -19,7 +19,7 @@ function apiHealthPlugin() {
     name: 'api-health-check',
     apply: 'build',
     buildStart() {
-      const script = resolve(__dirname, 'tools/check-api-health.php')
+      const script = resolve(import.meta.dirname, 'tools/check-api-health.php')
       try {
         execFileSync('php', [script], { stdio: 'inherit' })
       } catch (e) {
@@ -40,7 +40,7 @@ function buildIdPlugin() {
   return {
     name: 'write-build-id',
     closeBundle() {
-      const outPath = resolve(__dirname, 'dist/build-id.txt')
+      const outPath = resolve(import.meta.dirname, 'dist/build-id.txt')
       mkdirSync(dirname(outPath), { recursive: true })
       writeFileSync(outPath, Date.now().toString(), 'utf-8')
     }

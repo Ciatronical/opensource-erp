@@ -41,6 +41,7 @@ export function useNavigationCards() {
                     { title: t('MasterDataMenu.newCustomer'), to: { name: 'customer-new' } },
                     { title: t('MasterDataMenu.manageCustomers'), to: { name: 'customer-vendor' } },
                     { title: t('MasterDataMenu.search'), to: { name: 'search' } },
+                    { title: t('MasterDataMenu.manageArticles'), to: { name: 'article-list' } },
                     '-',
                     { title: t('MasterDataMenu.newVendor'), to: { name: 'vendor-new' } },
                     '-',
@@ -86,6 +87,11 @@ export function useNavigationCards() {
                     '-',
                     { title: t('SalesMenu.newInvoice'), to: { name: 'invoice-new' } },
                     '-',
+                    // Beleglisten
+                    { title: t('SalesMenu.manageQuotations'), to: { name: 'quotation-list' } },
+                    { title: t('SalesMenu.manageOrders'), to: { name: 'order-list' } },
+                    { title: t('SalesMenu.manageInvoices'), to: { name: 'invoice-list' } },
+                    { title: t('SalesMenu.manageDeliveryOrders'), to: { name: 'delivery-order-list' } },
                     { title: t('SalesMenu.manageCreditNotes'), to: { name: 'credit-note-list' } }
                 ]
             }

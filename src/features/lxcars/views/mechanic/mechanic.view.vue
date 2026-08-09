@@ -80,9 +80,9 @@
                                 <template #prepend>
                                     <v-icon size="small" color="grey-darken-1">mdi-car</v-icon>
                                 </template>
-                                <v-list-item-title class="font-weight-medium">{{ item.raw.c_ln }}</v-list-item-title>
-                                <v-list-item-subtitle v-if="item.raw.subtitle" class="text-caption">
-                                    {{ item.raw.subtitle }}
+                                <v-list-item-title class="font-weight-medium">{{ item.c_ln }}</v-list-item-title>
+                                <v-list-item-subtitle v-if="item.subtitle" class="text-caption">
+                                    {{ item.subtitle }}
                                 </v-list-item-subtitle>
                             </v-list-item>
                         </template>
