@@ -28,6 +28,9 @@ class LaTeXTemplateEngine {
     private $templateDir = '';
     private $tmpDir = '/tmp';
     private $error = null;
+    // Zusaetzliche Dateien (Name => Binaerinhalt), die vor dem Compile in den
+    // Arbeitsordner geschrieben werden (z.B. der pro-Beleg erzeugte GiroCode-QR).
+    private $extraFiles = [];
 
     // HTML-Tags zu LaTeX Mappings (aus SL::Template::LaTeX)
     private static $htmlReplace = [
@@ -530,6 +533,14 @@ class LaTeXTemplateEngine {
      * @param string $latexContent Vollstaendiger LaTeX-Inhalt
      * @return string|false Pfad zur PDF-Datei oder false bei Fehler
      */
+    /**
+     * Legt eine Zusatzdatei fest, die vor dem Compile in den Arbeitsordner
+     * geschrieben wird (z.B. das pro-Beleg erzeugte GiroCode-QR-PNG).
+     */
+    public function addExtraFile(string $name, string $content): void {
+        $this->extraFiles[$name] = $content;
+    }
+
     public function compile(string $latexContent) {
         // Einzigartiges Temp-Verzeichnis erstellen
         $workDir = $this->tmpDir . '/oserp_print_' . uniqid('', true);
@@ -544,6 +555,12 @@ class LaTeXTemplateEngine {
         // .tex Datei schreiben
         $texFile = $workDir . '/document.tex';
         file_put_contents($texFile, $latexContent);
+
+        // Zusatzdateien (z.B. GiroCode-QR-PNG) in den Arbeitsordner legen,
+        // damit \includegraphics{giroqr.png} sie findet.
+        foreach ($this->extraFiles as $name => $content) {
+            file_put_contents($workDir . '/' . basename($name), $content);
+        }
 
         // TEXINPUTS setzen damit \input{} funktioniert
         $texinputs = $workDir . ':' . $this->templateDir . ':';

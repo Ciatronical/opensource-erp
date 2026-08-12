@@ -62,6 +62,12 @@ export default defineConfig({
       '@special': fileURLToPath(new URL('./special/frontend', import.meta.url))
     }
   },
+  // Der geteilte SSE-SharedWorker (sse.worker.js) wird als ES-Modul geladen
+  // (new SharedWorker(..., { type: 'module' })) — daher auch im Build als ESM
+  // bündeln statt als klassisches IIFE.
+  worker: {
+    format: 'es'
+  },
   build: {
     rollupOptions: {
       output: {

@@ -4,10 +4,10 @@
         <h3 class="text-h6 mb-4">{{ $t('lastNumbersPrefixes') }}</h3>
 
         <v-row>
-            <v-col 
-                v-for="field in filteredFields" 
+            <v-col
+                v-for="field in filteredFields"
                 :key="field.key"
-                cols="12" 
+                cols="12"
                 md="6"
             >
                 <v-text-field
@@ -28,8 +28,9 @@
 </template>
 
 <script setup>
-import { computed, defineProps } from 'vue';
+import { defineProps, toRef } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useFieldSearch } from '../composables/useFieldSearch.js';
 
 const { t } = useI18n();
 
@@ -69,39 +70,8 @@ const fields = [
     { key: 'assortmentnumber', label: t('assortment'), searchTerms: ['sortiment', 'assortment'] }
 ];
 
-// Gefilterte Felder basierend auf Suchbegriff
-const filteredFields = computed(() => {
-    if (!props.searchQuery || props.searchQuery.trim() === '') {
-        return fields;
-    }
-    
-    const query = props.searchQuery.toLowerCase();
-    return fields.filter(field => {
-        // Suche in Label
-        if (field.label.toLowerCase().includes(query)) {
-            return true;
-        }
-        // Suche in Suchbegriffen
-        if (field.searchTerms.some(term => term.toLowerCase().includes(query))) {
-            return true;
-        }
-        // Suche im Key
-        if (field.key.toLowerCase().includes(query)) {
-            return true;
-        }
-        return false;
-    });
-});
-
-// Prüfe ob Feld hervorgehoben werden soll
-function isHighlighted(field) {
-    if (!props.searchQuery || props.searchQuery.trim() === '') {
-        return false;
-    }
-    const query = props.searchQuery.toLowerCase();
-    return field.label.toLowerCase().includes(query) || 
-           field.searchTerms.some(term => term.toLowerCase().includes(query));
-}
+// Gemeinsame Feld-Suche (Filter + Highlight) aus dem Composable
+const { filteredFields, isHighlighted } = useFieldSearch(fields, toRef(props, 'searchQuery'));
 </script>
 
 <style scoped>

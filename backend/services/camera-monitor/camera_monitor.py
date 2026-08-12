@@ -22,16 +22,34 @@ import base64
 import configparser
 import json
 import os
+import select
 import signal
 import sys
 import threading
 import time
 import uuid
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta
 from pathlib import Path
 
+# --- CPU-Deckelung der nativen Thread-Pools ----------------------------------
+# OpenCV, NumPy/OpenBLAS und PyTorch dimensionieren ihre Thread-Pools per
+# Default auf die CPU-Zahl (hier 14). Bei 6 parallelen Kamera-Workern ergibt
+# das massive Ueberbuchung (6 x 14 Threads auf 14 Kernen) → Load > 30, obwohl
+# die eigentliche Arbeit (Analyse nur ANALYSIS_FPS/s) gering ist. Wir deckeln
+# die Pools VOR dem Import der Bibliotheken; einzelne Operationen laufen
+# minimal langsamer, aber ohne Kernkonkurrenz sinkt die Gesamtlast drastisch.
+# MUSS vor 'import cv2'/'import numpy' stehen, sonst greifen die Env-Vars nicht.
+CPU_THREADS_PER_TASK = 2
+for _var in ('OMP_NUM_THREADS', 'OPENBLAS_NUM_THREADS', 'MKL_NUM_THREADS',
+             'NUMEXPR_NUM_THREADS', 'VECLIB_MAXIMUM_THREADS'):
+    os.environ.setdefault(_var, str(CPU_THREADS_PER_TASK))
+
 import cv2
 import numpy as np
+
+# OpenCVs eigener Parallelismus zusaetzlich hart begrenzen.
+cv2.setNumThreads(CPU_THREADS_PER_TASK)
 import psycopg2
 import psycopg2.extras
 
@@ -46,8 +64,11 @@ SETTINGS_INI = os.path.join(BACKEND_DIR, 'config', 'settings.ini')
 SNAPSHOT_DIR = os.path.join(BACKEND_DIR, 'data', 'camera-snapshots')
 CLIP_DIR = os.path.join(BACKEND_DIR, 'data', 'camera-clips')
 
-# RTSP ueber TCP (zuverlaessiger)
-os.environ['OPENCV_FFMPEG_CAPTURE_OPTIONS'] = 'rtsp_transport;tcp'
+# RTSP ueber TCP (zuverlaessiger). 'threads' begrenzt die libav-Decoder-Threads
+# pro Stream — ohne das dekodiert ffmpeg jeden Stream mit CPU-Zahl (14) Frame-
+# Threads, bei 6 Kameras also ~168 Decoder-Threads allein fuers Einlesen.
+os.environ['OPENCV_FFMPEG_CAPTURE_OPTIONS'] = \
+    f'rtsp_transport;tcp|threads;{CPU_THREADS_PER_TASK}'
 
 # FFmpeg h264-Dekodierungswarnungen aus dem Log entfernen.
 # OpenCV schreibt sie direkt auf C-Level fd 2 (stderr) — Python-Logging kann
@@ -106,6 +127,39 @@ CLIP_EXT = '.mp4'
 # Auf 1280 skaliert sind es rund 200 MB, bei fuer Beweiszwecke ausreichender
 # Aufloesung (Snapshots werden ohnehin auf dieselbe Breite gerechnet).
 RECORD_MAX_WIDTH = 1280
+
+# H.264-Reencoding gedrosselt: EIN gemeinsamer Pool mit wenigen Workern statt
+# eines eigenen Threads pro Clip. Ohne diese Deckelung startet jeder fertige
+# Clip sofort ein eigenes libx264-ffmpeg — bei Dauerbewegung entstehen Clips
+# schneller als sie konvertiert werden, es stauen sich hunderte Threads und
+# alle CPU-Kerne laufen voll (Load > 30, Swap voll). MAX_CONVERT_WORKERS
+# begrenzt die parallelen Encodes; ueberschuessige Clips warten in der Queue.
+MAX_CONVERT_WORKERS = 2
+# Threads pro einzelnem libx264-Encode (sonst nutzt ffmpeg alle Kerne).
+CONVERT_FFMPEG_THREADS = 2
+_convert_pool = ThreadPoolExecutor(
+    max_workers=MAX_CONVERT_WORKERS, thread_name_prefix='clip-convert')
+
+# --- Hardware-Dekodierung (Intel iGPU / VAAPI) -------------------------------
+# Die Kameras liefern 4K-H.264. Wird das in Software dekodiert, kostet EIN
+# Stream ~1 CPU-Kern; bei ~12 Kameras laeuft die Maschine damit voll (Load>30,
+# Swap voll). Stattdessen dekodiert und skaliert die Intel-iGPU jeden Stream
+# per ffmpeg/VAAPI und liefert kleine BGR-Frames — ~0,2 Kerne pro Stream.
+#
+# Hinweis: Der reine GPU-Weg (scale_vaapi + h264_vaapi) wirft auf dem iHD-
+# Treiber "Cannot allocate memory" (Scaler- und Encoder-Pool zusammen). Daher:
+# GPU dekodiert + skaliert, die Frames werden heruntergeladen (hwdownload) und
+# als rohes BGR direkt in den Prozess gelesen — KEIN Re-Encode noetig.
+HW_DECODE_ENABLED = True
+HW_VAAPI_DEVICE = '/dev/dri/renderD128'
+HW_FRAME_WIDTH = 1280           # Analyse-/Aufnahme-Aufloesung (aus 4K skaliert)
+HW_FRAME_HEIGHT = 720
+HW_FRAME_FPS = 10               # 10 fps genuegen fuer Erkennung + Clips; senkt Transcode- UND Python-Last je ~1/3
+# Kommt nach dem ffmpeg-Start kein Frame in dieser Zeit, gilt der Stream als tot
+# (Kamera offline) — die Quelle meldet dann "nicht offen", damit die Worker-Schleife
+# in den Backoff geht statt im Sekundentakt neue ffmpeg-Prozesse zu starten.
+HW_FIRST_FRAME_TIMEOUT = 8      # Sekunden auf den ersten Frame
+HW_READ_TIMEOUT = 12            # Sekunden im laufenden Betrieb, bevor als haengend gilt
 
 
 # --- DB-Verbindung aus settings.ini ------------------------------------------
@@ -343,31 +397,50 @@ class ClipRecorder:
         duration = self.frame_count / max(1, self.fps)
         print(f"[CLIP] {self.event_id}: {duration:.1f}s ({self.frame_count} Frames) -> {self.filepath}")
         if self.frame_count > 0:
-            threading.Thread(target=self._convert_h264, daemon=True).start()
+            # In den gedrosselten Pool geben statt pro Clip einen Thread zu
+            # starten — verhindert den ffmpeg-/Thread-Stau bei Dauerbewegung.
+            _convert_pool.submit(self._convert_h264)
 
     def _convert_h264(self):
-        """mp4v -> H.264 (browser-kompatibel, moov atom vorne für Streaming)."""
+        """mp4v -> H.264 (browser-kompatibel, moov atom vorne für Streaming).
+
+        Bevorzugt den Hardware-Encoder der iGPU (h264_vaapi) — der Reencode
+        landet damit auf der GPU statt auf der CPU (libx264 kostet bei vielen
+        Bewegungs-Clips mehrere Kerne). Faellt bei Problemen auf libx264 zurueck.
+        """
         import subprocess, shutil
         if not shutil.which('ffmpeg'):
             return
         tmp = self.filepath + '.h264.mp4'
-        try:
-            result = subprocess.run([
-                'ffmpeg', '-y', '-i', self.filepath,
-                '-c:v', 'libx264', '-preset', 'fast', '-crf', '23',
-                '-pix_fmt', 'yuv420p',   # Kompatibel mit allen Browsern
-                '-movflags', '+faststart',
-                tmp,
-            ], capture_output=True, timeout=120)
-            if result.returncode == 0 and os.path.getsize(tmp) > 0:
-                os.replace(tmp, self.filepath)
-            else:
-                if os.path.exists(tmp):
-                    os.unlink(tmp)
-        except Exception as e:
-            print(f"[CLIP] ffmpeg-Konvertierung fehlgeschlagen: {e}")
+
+        hw_cmd = [
+            'ffmpeg', '-y', '-vaapi_device', HW_VAAPI_DEVICE,
+            '-i', self.filepath,
+            '-vf', 'format=nv12,hwupload',
+            '-c:v', 'h264_vaapi', '-b:v', '2M',
+            '-movflags', '+faststart', tmp,
+        ]
+        sw_cmd = [
+            'ffmpeg', '-y', '-threads', str(CONVERT_FFMPEG_THREADS),
+            '-i', self.filepath,
+            '-c:v', 'libx264', '-preset', 'fast', '-crf', '23',
+            '-threads', str(CONVERT_FFMPEG_THREADS),
+            '-pix_fmt', 'yuv420p',   # Kompatibel mit allen Browsern
+            '-movflags', '+faststart', tmp,
+        ]
+        use_hw = HW_DECODE_ENABLED and os.path.exists(HW_VAAPI_DEVICE)
+        candidates = [hw_cmd, sw_cmd] if use_hw else [sw_cmd]
+
+        for cmd in candidates:
+            try:
+                result = subprocess.run(cmd, capture_output=True, timeout=120)
+                if result.returncode == 0 and os.path.exists(tmp) and os.path.getsize(tmp) > 0:
+                    os.replace(tmp, self.filepath)
+                    return
+            except Exception as e:
+                print(f"[CLIP] ffmpeg-Konvertierung fehlgeschlagen: {e}")
             if os.path.exists(tmp):
-                os.unlink(tmp)
+                os.unlink(tmp)   # Fehlversuch aufraeumen, dann naechster Kandidat
 
     @property
     def clip_url(self):
@@ -559,6 +632,13 @@ def _init_yolo(use_openvino=False):
     global detector
 
     from ultralytics import YOLO
+
+    # YOLO/PyTorch sonst mit CPU-Zahl (14) Intra-Op-Threads — deckeln.
+    try:
+        import torch
+        torch.set_num_threads(CPU_THREADS_PER_TASK)
+    except Exception:
+        pass
 
     if use_openvino:
         # OpenVINO: YOLO exportiert automatisch ins OpenVINO-Format
@@ -775,6 +855,128 @@ def detection_in_zone(detection_box, zone_coords, frame_w, frame_h):
 
 # --- Kamera-Worker -----------------------------------------------------------
 
+class HwFrameSource:
+    """RTSP-Quelle mit VAAPI-Hardware-Dekodierung auf der Intel-iGPU.
+
+    Ersetzt cv2.VideoCapture: ffmpeg dekodiert den 4K-Stream auf der GPU,
+    skaliert ihn und liefert fertige BGR-Frames ueber eine Pipe. Damit laeuft
+    die teure H.264-Dekodierung NICHT in Software. Schnittstelle (isOpened /
+    read / get / release) ist zu cv2.VideoCapture kompatibel, sodass die
+    Worker-Schleife unveraendert bleibt.
+    """
+
+    def __init__(self, stream_url, width=HW_FRAME_WIDTH, height=HW_FRAME_HEIGHT,
+                 fps=HW_FRAME_FPS, device=HW_VAAPI_DEVICE):
+        self.stream_url = stream_url
+        self.width = int(width)
+        self.height = int(height)
+        self.fps = int(fps)
+        self.device = device
+        self._frame_bytes = self.width * self.height * 3
+        self._proc = None
+        self._fd = None
+        self._first_frame = None
+        self._open()
+
+    def _open(self):
+        import subprocess
+        cmd = [
+            'ffmpeg', '-hide_banner', '-loglevel', 'error', '-nostdin',
+            '-init_hw_device', f'vaapi=va:{self.device}',
+            '-hwaccel', 'vaapi', '-hwaccel_device', 'va',
+            '-hwaccel_output_format', 'vaapi', '-filter_hw_device', 'va',
+            '-rtsp_transport', 'tcp', '-i', self.stream_url,
+            # fps-Drossel VOR hwdownload: so werden ueberzaehlige Frames noch als
+            # GPU-Surface verworfen und nicht erst teuer nach RAM kopiert/konvertiert.
+            '-vf', f'scale_vaapi={self.width}:{self.height},fps={self.fps},hwdownload,format=nv12',
+            '-an', '-f', 'rawvideo', '-pix_fmt', 'bgr24', '-',
+        ]
+        try:
+            # bufsize=0: unbuffert, damit os.read auf dem Roh-fd sauber funktioniert.
+            self._proc = subprocess.Popen(
+                cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, bufsize=0)
+            self._fd = self._proc.stdout.fileno()
+        except Exception as e:
+            print(f"[HwFrameSource] ffmpeg-Start fehlgeschlagen: {e}")
+            self._proc = None
+            return
+        # Ersten Frame verifizieren: kommt in HW_FIRST_FRAME_TIMEOUT keiner, ist der
+        # Stream tot (Kamera offline) — Quelle als NICHT offen behandeln (Backoff).
+        self._first_frame = self._read_frame(HW_FIRST_FRAME_TIMEOUT)
+        if self._first_frame is None:
+            self.release()
+
+    def _read_frame(self, timeout):
+        """Genau einen Frame mit Timeout lesen. None bei Timeout/EOF/Fehler."""
+        if self._proc is None or self._fd is None:
+            return None
+        remaining = self._frame_bytes
+        chunks = []
+        while remaining > 0:
+            r, _, _ = select.select([self._fd], [], [], timeout)
+            if not r:
+                return None   # Timeout — kein Frame rechtzeitig
+            try:
+                part = os.read(self._fd, remaining)
+            except OSError:
+                return None
+            if not part:
+                return None   # EOF — ffmpeg beendet
+            chunks.append(part)
+            remaining -= len(part)
+        buf = b''.join(chunks)
+        # .copy(): np.frombuffer liefert ein schreibgeschuetztes Array; nachfolgende
+        # OpenCV-Operationen (z. B. Zeichnen) brauchen aber beschreibbaren Speicher.
+        return np.frombuffer(buf, np.uint8).reshape(self.height, self.width, 3).copy()
+
+    def isOpened(self):
+        return self._proc is not None and self._proc.poll() is None
+
+    def read(self):
+        """Einen Frame lesen. Rueckgabe (True, frame) wie cv2.VideoCapture."""
+        # Der beim Oeffnen bereits verifizierte erste Frame wird zuerst geliefert.
+        if self._first_frame is not None:
+            frame = self._first_frame
+            self._first_frame = None
+            return True, frame
+        if not self.isOpened():
+            return False, None
+        frame = self._read_frame(HW_READ_TIMEOUT)
+        if frame is None:
+            return False, None
+        return True, frame
+
+    def get(self, prop):
+        if prop == cv2.CAP_PROP_FPS:
+            return float(self.fps)
+        return 0.0
+
+    def release(self):
+        if self._proc is None:
+            return
+        try:
+            self._proc.terminate()
+            try:
+                self._proc.wait(timeout=3)
+            except Exception:
+                self._proc.kill()
+        except Exception:
+            pass
+        self._proc = None
+
+
+def open_stream(stream_url):
+    """Frame-Quelle oeffnen: Hardware (VAAPI) wenn aktiviert, sonst OpenCV/Software."""
+    if HW_DECODE_ENABLED and os.path.exists(HW_VAAPI_DEVICE):
+        src = HwFrameSource(stream_url)
+        if src.isOpened():
+            return src
+        # Hardware-Start scheiterte → sauber schliessen und auf Software zurueckfallen.
+        src.release()
+        print("[HW] VAAPI-Start fehlgeschlagen — Software-Dekodierung (cv2).")
+    return cv2.VideoCapture(stream_url, cv2.CAP_FFMPEG)
+
+
 class CameraWorker(threading.Thread):
     """
     Thread pro Kamera: liest RTSP-Stream, erkennt Bewegung + Objekte,
@@ -798,7 +1000,7 @@ class CameraWorker(threading.Thread):
         self.name = f"cam-{self.cam['cam_key']}"
         # Einzelner Worker kann gestoppt werden, ohne den ganzen Dienst zu beenden
         # (Kamera deaktiviert, Einstellungen geaendert, Mandant abgeschaltet).
-        self._stop = threading.Event()
+        self._stop_event = threading.Event()
         self.motion_threshold  = float(self.cam.get('motion_threshold') or MOTION_THRESHOLD_PERCENT)
         self.cam_min_score     = float(self.cam.get('min_score') or DEFAULT_MIN_SCORE)
         self.record_clips      = bool(self.cam.get('record_clips', True))
@@ -816,11 +1018,11 @@ class CameraWorker(threading.Thread):
 
     def stop(self):
         """Worker beenden (Stream schliessen, laufende Clips sauber abschliessen)."""
-        self._stop.set()
+        self._stop_event.set()
 
     @property
     def _active(self):
-        return running and not self._stop.is_set()
+        return running and not self._stop_event.is_set()
 
     def run(self):
         cam_name = self.cam['cam_key']
@@ -835,12 +1037,12 @@ class CameraWorker(threading.Thread):
         consecutive_errors = 0
 
         while self._active:
-            cap = cv2.VideoCapture(stream_url, cv2.CAP_FFMPEG)
+            cap = open_stream(stream_url)
             if not cap.isOpened():
                 consecutive_errors += 1
                 wait = min(30, 5 * consecutive_errors)
                 print(f"[{cam_name}] Stream nicht erreichbar — Retry in {wait}s")
-                self._stop.wait(wait)
+                self._stop_event.wait(wait)
                 continue
 
             consecutive_errors = 0
@@ -901,7 +1103,7 @@ class CameraWorker(threading.Thread):
             self._finish_all_recorders()
             cap.release()
             if self._active:
-                self._stop.wait(2)
+                self._stop_event.wait(2)
 
         # Worker beendet: DB-Verbindung freigeben
         if self._db_conn is not None and not self._db_conn.closed:

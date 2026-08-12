@@ -12,7 +12,7 @@
             <!-- Linke Sidebar mit Tabs -->
             <v-col cols="12" md="3" lg="2" class="border-e sidebar-col">
                 <v-card flat class="rounded-0">
-                    <!-- Suchfeld: filtert die Sektionen UND die Felder im aktiven Tab -->
+                    <!-- Suchfeld + Strg+K-Hinweis -->
                     <div class="pa-3">
                         <v-text-field
                             v-model="searchQuery"
@@ -23,32 +23,80 @@
                             clearable
                             hide-details
                             autofocus
-                        />
+                        >
+                            <template #append-inner>
+                                <v-tooltip location="bottom" :text="$t('quickSearchHint')">
+                                    <template #activator="{ props }">
+                                        <button
+                                            v-bind="props"
+                                            type="button"
+                                            class="kbd-hint"
+                                            @click="openPalette"
+                                        >Strg K</button>
+                                    </template>
+                                </v-tooltip>
+                            </template>
+                        </v-text-field>
                     </div>
 
                     <v-divider />
 
-                    <!-- Ohne Suche: gruppierte Tab-Liste -->
-                    <v-list v-if="!searchQuery" density="compact" nav class="pt-0">
+                    <!-- Mobil: kompakte Bereichsauswahl statt langer Liste -->
+                    <div class="d-md-none pa-3">
+                        <v-select
+                            :model-value="activeTab"
+                            :items="mobileTabItems"
+                            :label="$t('selectSection')"
+                            variant="outlined"
+                            density="compact"
+                            hide-details
+                            @update:model-value="goToTab"
+                        />
+                    </div>
+
+                    <!-- Ohne Suche: gruppierte Tab-Liste (Desktop) -->
+                    <v-list v-if="!searchQuery" density="compact" nav class="pt-0 d-none d-md-block">
+                        <v-list-item
+                            :value="'overview'"
+                            :active="activeTab === 'overview'"
+                            @click="goToTab('overview')"
+                            prepend-icon="mdi-view-dashboard-outline"
+                        >
+                            <v-list-item-title>{{ $t('overview') }}</v-list-item-title>
+                        </v-list-item>
+
                         <template v-for="group in tabGroups" :key="group.key">
                             <v-list-subheader class="text-uppercase text-caption font-weight-bold">
                                 {{ group.title }}
                             </v-list-subheader>
-                            <v-list-item
-                                v-for="tab in group.items"
-                                :key="tab.value"
-                                :value="tab.value"
-                                :active="activeTab === tab.value"
-                                @click="activeTab = tab.value"
-                                :prepend-icon="tab.icon"
-                            >
-                                <v-list-item-title>{{ tab.title }}</v-list-item-title>
-                            </v-list-item>
+                            <template v-for="tab in group.items" :key="tab.value">
+                                <v-list-item
+                                    :value="tab.value"
+                                    :active="activeTab === tab.value"
+                                    @click="activeTab = tab.value"
+                                    :prepend-icon="tab.icon"
+                                >
+                                    <v-list-item-title>{{ tab.title }}</v-list-item-title>
+                                </v-list-item>
+                                <!-- Unterbereiche direkt anspringbar -->
+                                <v-list-item
+                                    v-for="sub in (tab.subsections || [])"
+                                    :key="tab.value + '/' + sub.key"
+                                    class="subsection-item"
+                                    :active="activeTab === tab.value && pendingPanel === sub.panel"
+                                    @click="goToResult({ type: 'sub', tab: tab.value, panel: sub.panel })"
+                                >
+                                    <template #prepend>
+                                        <v-icon size="small" class="ms-4">mdi-circle-small</v-icon>
+                                    </template>
+                                    <v-list-item-title class="text-caption">{{ sub.title }}</v-list-item-title>
+                                </v-list-item>
+                            </template>
                         </template>
                     </v-list>
 
                     <!-- Mit Suche: flache, gerankte Trefferliste (inkl. Unterbereichen) -->
-                    <v-list v-else density="compact" nav class="pt-0">
+                    <v-list v-else density="compact" nav class="pt-0 d-none d-md-block">
                         <v-list-subheader class="text-uppercase text-caption font-weight-bold">
                             {{ $t('searchResults') }} ({{ searchResults.length }})
                         </v-list-subheader>
@@ -78,30 +126,52 @@
             <!-- Hauptinhalt -->
             <v-col cols="12" md="9" lg="10">
                 <v-card flat class="rounded-0">
-                    <v-card-title class="d-flex align-center justify-space-between pa-4">
+                    <v-card-title class="d-flex align-center justify-space-between pa-4 ga-2">
                         <div class="d-flex align-center">
-                            <v-icon class="me-2">{{ currentTab?.icon }}</v-icon>
-                            <span>{{ currentTab?.title }}</span>
+                            <v-icon class="me-2">{{ activeTab === 'overview' ? 'mdi-view-dashboard-outline' : currentTab?.icon }}</v-icon>
+                            <span>{{ activeTab === 'overview' ? $t('overview') : currentTab?.title }}</span>
                         </div>
 
-                        <!-- Aktiver Suchbegriff als entfernbarer Chip -->
-                        <v-chip
-                            v-if="searchQuery"
-                            closable
-                            color="primary"
-                            variant="tonal"
-                            prepend-icon="mdi-magnify"
-                            @click:close="searchQuery = ''"
-                        >
-                            {{ searchQuery }}
-                        </v-chip>
+                        <div class="d-flex align-center ga-2">
+                            <!-- Speicher-Status: dauerhaft sichtbar statt nur Toast -->
+                            <span class="save-status text-caption">
+                                <template v-if="saving">
+                                    <v-progress-circular indeterminate size="14" width="2" class="me-1" color="primary" />
+                                    {{ $t('savingChanges') }}
+                                </template>
+                                <template v-else-if="lastSaved">
+                                    <v-icon size="16" color="success" class="me-1">mdi-check-circle-outline</v-icon>
+                                    {{ $t('savedAllChanges') }}
+                                </template>
+                            </span>
+
+                            <!-- Aktiver Suchbegriff als entfernbarer Chip -->
+                            <v-chip
+                                v-if="searchQuery"
+                                closable
+                                color="primary"
+                                variant="tonal"
+                                prepend-icon="mdi-magnify"
+                                @click:close="searchQuery = ''"
+                            >
+                                {{ searchQuery }}
+                            </v-chip>
+                        </div>
                     </v-card-title>
 
                     <v-divider />
 
                     <v-card-text class="pa-4" @focusin.capture="onFocusIn" @focusout.capture="onFocusOut">
+                        <!-- Startseite: Gruppen-Übersicht -->
+                        <overview-tab
+                            v-if="activeTab === 'overview'"
+                            :cards="overviewCards"
+                            @select="goToTab"
+                        />
+
                         <!-- LAZY LOADED TABS - Nur der aktive Tab wird geladen! -->
                         <component
+                            v-else
                             :is="currentTabComponent"
                             :defaults="['crm','lxcars','anpr','ai_health','employees'].includes(activeTab) ? undefined : defaults"
                             :crm-defaults="['crm','lxcars','anpr','bank','features','ai_health'].includes(activeTab) ? crmDefaults : undefined"
@@ -114,6 +184,52 @@
             </v-col>
         </v-row>
     </v-container>
+
+        <!-- Strg+K Befehls-Suche (Schnellsuche über alle Bereiche) -->
+        <v-dialog v-model="showPalette" max-width="560" scrollable>
+            <v-card class="palette-card">
+                <div class="pa-3">
+                    <v-text-field
+                        v-model="paletteQuery"
+                        :placeholder="$t('quickSearch')"
+                        prepend-inner-icon="mdi-magnify"
+                        variant="outlined"
+                        density="compact"
+                        hide-details
+                        autofocus
+                        clearable
+                        @keydown.enter="paletteResults.length && selectPaletteResult(paletteResults[0])"
+                        @keydown.esc="showPalette = false"
+                    />
+                </div>
+                <v-divider />
+                <v-list density="compact" nav class="palette-list">
+                    <v-list-item
+                        v-for="result in paletteResults"
+                        :key="result.id"
+                        :prepend-icon="result.icon"
+                        @click="selectPaletteResult(result)"
+                    >
+                        <v-list-item-title>{{ result.title }}</v-list-item-title>
+                        <template #append>
+                            <span class="text-caption text-medium-emphasis">
+                                {{ result.type === 'sub' ? `${result.parent}` : result.group }}
+                            </span>
+                        </template>
+                    </v-list-item>
+                    <v-list-item v-if="paletteQuery && paletteResults.length === 0" :title="$t('noSectionsFound')" disabled>
+                        <template #prepend>
+                            <v-icon>mdi-magnify-close</v-icon>
+                        </template>
+                    </v-list-item>
+                    <v-list-item v-if="!paletteQuery" :subtitle="$t('quickSearchHint')" disabled>
+                        <template #prepend>
+                            <v-icon>mdi-keyboard-outline</v-icon>
+                        </template>
+                    </v-list-item>
+                </v-list>
+            </v-card>
+        </v-dialog>
 
         <!-- Feature-Wechsel Bestätigungs-Dialog -->
         <v-dialog v-model="showFeatureChangeDialog" max-width="500" persistent>
@@ -223,12 +339,13 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, nextTick, defineAsyncComponent } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted, nextTick, defineAsyncComponent } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
 import { oserpStore } from '@/core/stores/oserp.store.js';
 import axios from 'axios';
 import NavbarView from '@/core/components/navbar/navbar.view.vue';
+import OverviewTab from './tabs/overview.tab.vue';
 import * as toasts from '@/core/utils/toasts.js';
 
 // LAZY LOADING: Tabs werden nur bei Bedarf geladen - Performance-Optimierung!
@@ -266,11 +383,16 @@ const api = axios.create({
     }
 });
 
-const activeTab = ref('company');
+const activeTab = ref('overview');
 const searchQuery = ref('');
 const defaults = ref({});
 const crmDefaults = ref({});
 const saving = ref(false);
+const lastSaved = ref(null); // Zeitpunkt der letzten erfolgreichen Speicherung
+
+// Strg+K Befehls-Suche (Palette)
+const showPalette = ref(false);
+const paletteQuery = ref('');
 const showFeatureChangeDialog = ref(false);
 const featureUpdateLoading = ref(false);
 const pendingFeature = ref('');
@@ -439,8 +561,8 @@ const tabGroups = computed(() => [
         items: [
             {
                 value: 'add',
-                title: t('add'),
-                icon: 'mdi-plus-circle',
+                title: t('grunddaten'),
+                icon: 'mdi-cog-outline',
                 keywords: ['systemeinstellungen', 'grunddaten', 'stammdaten', 'hinzufügen', 'add', 'neu', 'anlegen', 'werkzeug',
                     'buchungsgruppe', 'buchungsgruppen', 'steuerzone', 'steuerzonen', 'steuer', 'steuersatz', 'steuersätze', 'tax', 'mwst', 'ust',
                     'bank', 'bankkonto', 'bankkonten', 'iban', 'konto'],
@@ -471,14 +593,14 @@ const pendingPanel = ref('');
  *
  * Ranking: Titel-Anfang (0) < Titel enthält (1) < Keyword (2).
  */
-const searchResults = computed(() => {
-    const q = (searchQuery.value || '').trim().toLowerCase();
+function buildResults(rawQuery) {
+    const q = (rawQuery || '').trim().toLowerCase();
     if (!q) return [];
 
     const rank = (title, keywords) => {
-        const t = title.toLowerCase();
-        if (t.startsWith(q)) return 0;
-        if (t.includes(q)) return 1;
+        const tl = title.toLowerCase();
+        if (tl.startsWith(q)) return 0;
+        if (tl.includes(q)) return 1;
         if (keywords.some(k => k.includes(q))) return 2;
         return -1;
     };
@@ -499,7 +621,9 @@ const searchResults = computed(() => {
         }
     }
     return results.sort((a, b) => a.score - b.score);
-});
+}
+
+const searchResults = computed(() => buildResults(searchQuery.value));
 
 const currentTab = computed(() => {
     return allTabs.value.find(tab => tab.value === activeTab.value);
@@ -527,6 +651,70 @@ watch(searchResults, (results) => {
         activeTab.value = results[0].tab;
     }
 });
+
+/** Wechselt den Tab (Übersichts-Kacheln, Mobil-Auswahl) und leert die Suche. */
+function goToTab(value) {
+    activeTab.value = value;
+    searchQuery.value = '';
+}
+
+// ── Übersichts-Kacheln ────────────────────────────────────────────────
+// Kurzbeschreibung je Gruppe für die Startseite. Nur ehrliche Kennzahlen:
+// Anzahl Bereiche bzw. echte Eintragszahlen aus dem Store.
+const groupDescriptions = {
+    master_data: () => t('overviewDesc.masterData'),
+    accounting:  () => t('overviewDesc.accounting'),
+    documents:   () => t('overviewDesc.documents'),
+    features:    () => t('overviewDesc.features'),
+    tools:       () => {
+        const cc = store.session?.company_config || {};
+        const bg = (cc.buchungsgruppen || []).length;
+        const tax = (cc.tax || []).length;
+        const ba = (cc.bank_accounts || []).length;
+        return `${bg} ${t('add_fields.buchungsgruppen.title')} · ${tax} ${t('add_fields.taxes.title')} · ${ba} ${t('add_fields.bank_accounts.title')}`;
+    },
+};
+
+const overviewCards = computed(() =>
+    tabGroups.value
+        .filter(g => g.items.length > 0)
+        .map(g => ({
+            key: g.key,
+            title: g.title,
+            icon: g.items[0].icon,
+            meta: groupDescriptions[g.key]
+                ? groupDescriptions[g.key]()
+                : `${g.items.length} ${t('sectionsLabel')}`,
+            target: g.items[0].value,
+        }))
+);
+
+// Flache Auswahl-Liste für die mobile Bereichsauswahl (inkl. Übersicht).
+const mobileTabItems = computed(() => [
+    { title: t('overview'), value: 'overview' },
+    ...allTabs.value.map(tab => ({ title: tab.title, value: tab.value })),
+]);
+
+// ── Strg+K Befehls-Suche ──────────────────────────────────────────────
+const paletteResults = computed(() => buildResults(paletteQuery.value));
+
+function openPalette() {
+    paletteQuery.value = '';
+    showPalette.value = true;
+}
+
+function selectPaletteResult(result) {
+    goToResult(result);
+    showPalette.value = false;
+}
+
+function onGlobalKeydown(e) {
+    // Strg+K / Cmd+K öffnet die Schnellsuche
+    if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
+        e.preventDefault();
+        openPalette();
+    }
+}
 
 // Computed: Gibt die aktuelle Tab-Component zurück (Lazy Loading!)
 const currentTabComponent = computed(() => {
@@ -624,6 +812,7 @@ async function saveConfig() {
                 store.session.company_config.defaults_oserp = { ...crmDefaults.value };
             }
 
+            lastSaved.value = new Date();
             toasts.success(t('saveSuccess'));
         } else {
             console.error('API Error:', response.data);
@@ -803,6 +992,7 @@ function cleanData(data) {
 
 // Lade Konfiguration beim Mounten
 onMounted(async () => {
+    window.addEventListener('keydown', onGlobalKeydown);
     await loadConfig();
 
     // Query-Parameter: ?tab=lxcars&focus=lxcars_yellow_label_printer
@@ -837,6 +1027,10 @@ onMounted(async () => {
     nextTick(() => {
         initialLoaded = true;
     });
+});
+
+onUnmounted(() => {
+    window.removeEventListener('keydown', onGlobalKeydown);
 });
 </script>
 
@@ -874,5 +1068,45 @@ onMounted(async () => {
     padding: 4px 8px;
     border-radius: 4px;
     word-break: break-all;
+}
+
+/* Strg+K-Hinweis im Suchfeld */
+.kbd-hint {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    color: rgba(var(--v-theme-on-surface), 0.6);
+    border: 1px solid rgba(var(--v-theme-on-surface), 0.2);
+    border-radius: 5px;
+    padding: 1px 6px;
+    white-space: nowrap;
+    cursor: pointer;
+    background: transparent;
+}
+.kbd-hint:hover {
+    border-color: rgb(var(--v-theme-primary));
+    color: rgb(var(--v-theme-primary));
+}
+
+/* Unterbereiche in der Navigation etwas dezenter */
+.subsection-item {
+    min-height: 32px;
+}
+.subsection-item :deep(.v-list-item-title) {
+    opacity: 0.85;
+}
+
+/* Speicher-Status im Kopf */
+.save-status {
+    display: inline-flex;
+    align-items: center;
+    color: rgba(var(--v-theme-on-surface), 0.6);
+    white-space: nowrap;
+}
+
+/* Befehls-Suche (Palette) */
+.palette-list {
+    max-height: 60vh;
+    overflow-y: auto;
 }
 </style>

@@ -294,16 +294,12 @@ function buildRoutes() {
             component: CustomerVendorSearchView,
         },
         {
-            ...routePath('routes.clientConfig'),
+            // Alte URL /system/mandantenkonfiguration bleibt als Alias gültig,
+            // damit bestehende Lesezeichen nach der Umbenennung weiter funktionieren.
+            ...routePath('routes.clientConfig', '', ['/system/mandantenkonfiguration']),
             name: 'client-defaults',
             component: ClientDefaultsView,
             meta: { hideCustomerBar: true },
-        },
-        {
-            // Alte URL (/system/mandantenkonfiguration) auf neue umleiten,
-            // damit bestehende Lesezeichen weiter funktionieren.
-            path: '/system/mandantenkonfiguration',
-            redirect: to => ({ name: 'client-defaults', query: to.query }),
         },
         {
             ...routePath('CarView.routes.newCar'),

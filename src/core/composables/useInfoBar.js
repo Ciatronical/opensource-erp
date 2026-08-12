@@ -3,12 +3,13 @@ import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import axios from 'axios'
 import { oserpStore } from '@/core/stores/oserp.store.js'
 import { weroniStore } from '@/features/weroni/stores/weroni.store.js'
+import { onServerEvent, sseConnected } from '@/core/composables/sseClient.js'
 import * as toast from '@/core/utils/toasts.js'
 
-/**
- * SSE-Verbindungsstatus (modul-weit, geteilt zwischen allen Consumern)
- */
-export const sseConnected = ref(false)
+// SSE-Verbindungsstatus: kommt jetzt aus dem geteilten sseClient (eine
+// Verbindung für Chat + Info-Leiste + alle Tabs). Re-Export, damit bestehende
+// Importe (z. B. Navbar-Statuspunkt) unverändert weiterlaufen.
+export { sseConnected }
 
 /**
  * Composable fuer die Info Bar in der Navbar
@@ -28,7 +29,8 @@ export function useInfoBar() {
     const missingOrders = ref([])
     const dismissed = ref({ calls: [], emails: [], whatsapps: [], parts: [], anpr: [], completed: [], parts_ts: null })
 
-    let eventSource = null
+    let unsubMessage = null
+    let unsubBuild = null
     let emailPollInterval = null
     let whatsappPollInterval = null
 
@@ -453,15 +455,12 @@ export function useInfoBar() {
     }
 
     // --- Setup: SSE + Polling starten ---
+    // Alle Realtime-Consumer teilen sich EINE Verbindung über den sseClient
+    // (per SharedWorker sogar über mehrere Tabs). Hier werden nur die für die
+    // Info-Leiste relevanten Events abonniert — Verbindungsauf-/-abbau und
+    // Reconnect übernimmt der Client, sseConnected wird von ihm gesetzt.
     function startListeners() {
-        console.log('[SSE] Verbindung wird aufgebaut: /sse/events')
-        eventSource = new EventSource('/sse/events')
-        eventSource.onopen = () => {
-            console.log('[SSE] Verbindung hergestellt ✓')
-            sseConnected.value = true
-        }
-        eventSource.onmessage = (event) => {
-            console.log('[SSE] Message empfangen:', event.data)
+        unsubMessage = onServerEvent('message', (event) => {
             try {
                 const data = JSON.parse(event.data)
                 if (data.type === 'camera_event' || data.type === 'camera_alert') {
@@ -487,28 +486,22 @@ export function useInfoBar() {
                 fetchNewCalls()
                 fetchNewWhatsapps()
             }
-        }
+        })
         // Neuer Build erkannt: Seite automatisch neu laden
-        eventSource.addEventListener('build_changed', (event) => {
-            console.warn('[SSE] build_changed empfangen:', event.data)
+        unsubBuild = onServerEvent('build_changed', () => {
             toast.info('Neues Update verfügbar — Seite wird neu geladen...')
             setTimeout(() => window.location.reload(), 2000)
         })
-        eventSource.onerror = (err) => {
-            console.error('[SSE] Verbindungsfehler — readyState:', eventSource.readyState,
-                '(0=CONNECTING, 1=OPEN, 2=CLOSED)', err)
-            sseConnected.value = false
-        }
 
         emailPollInterval = setInterval(fetchNewEmails, 60000)
         whatsappPollInterval = setInterval(fetchNewWhatsapps, 120000)
     }
 
     function stopListeners() {
-        if (eventSource) { eventSource.close(); eventSource = null }
+        if (unsubMessage) { unsubMessage(); unsubMessage = null }
+        if (unsubBuild) { unsubBuild(); unsubBuild = null }
         if (emailPollInterval) { clearInterval(emailPollInterval); emailPollInterval = null }
         if (whatsappPollInterval) { clearInterval(whatsappPollInterval); whatsappPollInterval = null }
-        sseConnected.value = false
     }
 
     function loadAndFetchAll() {

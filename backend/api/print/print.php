@@ -345,6 +345,13 @@ function generatePDF($data) {
     $engine->setVariables($vars['variables']);
     $engine->setArrays($vars['arrays']);
 
+    // GiroCode/EPC-QR fuer Rechnungen: Banking-App scannt -> uebernimmt Empfaenger,
+    // IBAN, BIC, Betrag und Verwendungszweck fuer die Ueberweisung.
+    $giroPng = buildGiroCodePng($templateDir, $vars, $fakturaType);
+    if ($giroPng !== null) {
+        $engine->addExtraFile('giroqr.png', $giroPng);
+    }
+
     // PDF generieren
     $pdfPath = $engine->generatePDF($templateName);
     if ($pdfPath === false) {
@@ -378,6 +385,68 @@ function generatePDF($data) {
  *
  * @return array|false ['path' => <pdfPath>, 'filename' => <name>, 'engine' => LaTeXTemplateEngine]
  */
+/**
+ * Erzeugt den GiroCode/EPC-QR (EPC069-12) fuer eine Rechnung als PNG.
+ *
+ * Banking-Apps scannen den QR und uebernehmen Empfaenger, IBAN, BIC, Betrag und
+ * Verwendungszweck fuer eine SEPA-Ueberweisung. Bankdaten kommen aus der
+ * euro_account.tex des Template-Sets (dort liegt die Firmen-IBAN), der Betrag aus
+ * dem Beleg (epc_amount, Punkt-Dezimal).
+ *
+ * @return string|null PNG-Bytes, oder null (kein QR bei falschem Belegtyp/fehlenden Daten)
+ */
+function buildGiroCodePng(string $templateDir, array $vars, string $fakturaType): ?string {
+    // Nur Rechnungen (Geld geht an die eigene Firma).
+    if ($fakturaType !== 'invoice') return null;
+
+    $v = $vars['variables'] ?? [];
+    $amount = (string)($v['epc_amount'] ?? '');
+    if ($amount === '' || (float)$amount <= 0) return null;
+
+    $bank = readTemplateBankData($templateDir);
+    if (!$bank || $bank['iban'] === '' || $bank['name'] === '') return null;
+
+    $iban = strtoupper(preg_replace('/\s+/', '', $bank['iban']));   // ohne Leerzeichen
+    $bic  = strtoupper(preg_replace('/\s+/', '', $bank['bic']));
+    $name = mb_substr(trim($bank['name']), 0, 70);
+    $ref  = mb_substr('Rechnung ' . trim((string)($v['invnumber'] ?? '')), 0, 140);
+
+    // EPC069-12: Version 002, Zeichensatz 1 = UTF-8, SEPA Credit Transfer (SCT).
+    $epc = implode("\n", ['BCD', '002', '1', 'SCT', $bic, $name, $iban, 'EUR' . $amount, '', '', $ref]);
+
+    $desc = [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']];
+    $proc = @proc_open('qrencode -t PNG -l M -8 -s 6 -m 1 -o -', $desc, $pipes);
+    if (!is_resource($proc)) return null;
+    fwrite($pipes[0], $epc);
+    fclose($pipes[0]);
+    $png = stream_get_contents($pipes[1]);
+    fclose($pipes[1]);
+    fclose($pipes[2]);
+    if (proc_close($proc) !== 0 || $png === '' || substr($png, 1, 3) !== 'PNG') return null;
+    return $png;
+}
+
+/**
+ * Liest IBAN/BIC/Kontoinhaber aus der euro_account.tex des aktiven identpath im Set.
+ */
+function readTemplateBankData(string $templateDir): ?array {
+    $identpath = 'autoprofis';
+    $ins = @file_get_contents($templateDir . '/insettings.tex');
+    if ($ins !== false && preg_match('/\\\\newcommand\{\\\\identpath\}\{([^}]+)\}/', $ins, $m)) {
+        $identpath = trim($m[1]);
+    }
+    $acc = @file_get_contents($templateDir . '/' . $identpath . '/euro_account.tex');
+    if ($acc === false) {
+        $g = glob($templateDir . '/*/euro_account.tex');
+        $acc = ($g && isset($g[0])) ? @file_get_contents($g[0]) : false;
+    }
+    if ($acc === false || $acc === '') return null;
+    $grab = function ($cmd) use ($acc) {
+        return preg_match('/\\\\newcommand\{\\\\' . $cmd . '\}\s*\{([^}]*)\}/', $acc, $mm) ? trim($mm[1]) : '';
+    };
+    return ['iban' => $grab('iban'), 'bic' => $grab('bic'), 'name' => $grab('kontoinhab')];
+}
+
 function renderDocumentPdfFile($db, int $fakturaID, string $fakturaType, ?string $templateSet, bool $lxCars, &$error = null) {
     if (!$templateSet || resolveTemplateDir($templateSet) === false) {
         $templateSet = getTemplateSet($db);
@@ -395,6 +464,13 @@ function renderDocumentPdfFile($db, int $fakturaID, string $fakturaType, ?string
     $engine = new LaTeXTemplateEngine($templateDir);
     $engine->setVariables($vars['variables']);
     $engine->setArrays($vars['arrays']);
+
+    // GiroCode/EPC-QR fuer Rechnungen: Banking-App scannt -> uebernimmt Empfaenger,
+    // IBAN, BIC, Betrag und Verwendungszweck fuer die Ueberweisung.
+    $giroPng = buildGiroCodePng($templateDir, $vars, $fakturaType);
+    if ($giroPng !== null) {
+        $engine->addExtraFile('giroqr.png', $giroPng);
+    }
 
     $pdfPath = $engine->generatePDF($templateName);
     if ($pdfPath === false) {
@@ -585,6 +661,13 @@ function printToPrinter($data) {
     $engine = new LaTeXTemplateEngine($templateDir);
     $engine->setVariables($vars['variables']);
     $engine->setArrays($vars['arrays']);
+
+    // GiroCode/EPC-QR fuer Rechnungen: Banking-App scannt -> uebernimmt Empfaenger,
+    // IBAN, BIC, Betrag und Verwendungszweck fuer die Ueberweisung.
+    $giroPng = buildGiroCodePng($templateDir, $vars, $fakturaType);
+    if ($giroPng !== null) {
+        $engine->addExtraFile('giroqr.png', $giroPng);
+    }
 
     $pdfPath = $engine->generatePDF($templateName);
     if ($pdfPath === false) {
@@ -845,40 +928,95 @@ function loadPrintData($db, int $fakturaID, string $fakturaType, bool $lxCarsEna
     $items = $db->getAll($itemsQuery, [':id' => $fakturaID]);
 
     // === Steuer-Aufschluesselung ===
+    // Die Umsatzsteuer kommt aus der DB, nicht aus einer LaTeX-/PHP-Nachberechnung:
+    //
+    // 1. Verbuchte Rechnungen (ar): die tatsaechlichen USt-Betraege stehen in acc_trans
+    //    auf den AR_tax-Konten. Sie werden pro Steuersatz uebernommen und stimmen exakt
+    //    mit (amount - netamount) ueberein — auch bei taxincluded, wo eine Multiplikation
+    //    des Brutto-Zeilenbetrags mit dem Satz die Steuer sonst zu hoch ausweist.
+    // 2. Noch nicht verbuchte Belege sowie Auftraege/Angebote (oe) haben keine
+    //    acc_trans-Steuerzeilen. Dort wird der DB-Kopfbetrag (amount - netamount)
+    //    anhand der Nettoanteile je Steuersatz verteilt — bei nur einem Satz exakt.
+    //
     // Lieferscheine weisen keine Betraege aus — die Abfrage waere reine Last.
     $taxes = [];
     if (!$isDelivery) {
-        $taxQuery = "
-            SELECT
-                t.taxdescription,
-                t.rate,
-                ROUND((SUM(sub.linetotal * t.rate))::numeric, 2) AS tax_amount
-            FROM (
-                SELECT
-                    i.parts_id,
-                    ROUND((i.qty * i.sellprice * (1.0 - COALESCE(i.discount, 0)))::numeric, 2) AS linetotal,
-                    (
-                        SELECT tk.tax_id
+        if ($isArDocument) {
+            // Pro Steuerkonto den gebuchten USt-Betrag summieren, dann den Satz/die
+            // Bezeichnung aus der tax-Tabelle nachschlagen (LATERAL + LIMIT 1 verhindert
+            // Doppelzaehlung, falls ein Konto mehrere tax-Eintraege hat).
+            $taxes = $db->getAll("
+                SELECT tx.taxdescription, tx.rate, s.tax_amount
+                FROM (
+                    SELECT ac.chart_id, ROUND(SUM(ac.amount)::numeric, 2) AS tax_amount
+                    FROM acc_trans ac
+                    JOIN chart c ON c.id = ac.chart_id
+                    WHERE ac.trans_id = :id AND c.link LIKE '%AR_tax%'
+                    GROUP BY ac.chart_id
+                    HAVING ROUND(SUM(ac.amount)::numeric, 2) <> 0
+                ) s
+                JOIN LATERAL (
+                    SELECT taxdescription, rate FROM tax
+                    WHERE chart_id = s.chart_id ORDER BY rate DESC LIMIT 1
+                ) tx ON true
+                ORDER BY tx.rate ASC
+            ", [':id' => $fakturaID]);
+        }
+
+        if (empty($taxes)) {
+            // Fallback ohne acc_trans: Nettoanteile je Steuersatz aus den Positionen holen
+            // und den DB-Kopf-Steuerbetrag (amount - netamount) proportional verteilen.
+            $weights = $db->getAll("
+                SELECT sub.rate, sub.taxdescription,
+                       ROUND(SUM(sub.linetotal)::numeric, 2) AS net_weight
+                FROM (
+                    SELECT
+                        ROUND((i.qty * i.sellprice * (1.0 - COALESCE(i.discount, 0)))::numeric, 2) AS linetotal,
+                        tk.rate, tk.taxdescription
+                    FROM {$itemsTable} i
+                    LEFT JOIN LATERAL (
+                        SELECT t.rate, t.taxdescription
                         FROM parts p2
                         LEFT JOIN buchungsgruppen bg ON bg.id = p2.buchungsgruppen_id
                         LEFT JOIN taxzone_charts tc ON tc.buchungsgruppen_id = bg.id
                         LEFT JOIN chart c ON c.id = tc.income_accno_id
-                        LEFT JOIN taxkeys tk ON tk.chart_id = c.id
+                        LEFT JOIN taxkeys tak ON tak.chart_id = c.id
+                        LEFT JOIN tax t ON t.id = tak.tax_id
                         WHERE p2.id = i.parts_id
-                            AND tc.taxzone_id = (SELECT taxzone_id FROM {$mainTable} WHERE id = :id2)
-                            AND tk.startdate <= (SELECT transdate FROM {$mainTable} WHERE id = :id3)
-                        ORDER BY tk.startdate DESC
-                        LIMIT 1
-                    ) AS tax_id
-                FROM {$itemsTable} i
-                WHERE i.{$itemsFk} = :id
-            ) sub
-            LEFT JOIN tax t ON t.id = sub.tax_id
-            WHERE t.id IS NOT NULL
-            GROUP BY t.id, t.taxdescription, t.rate
-            ORDER BY t.rate ASC
-        ";
-        $taxes = $db->getAll($taxQuery, [':id' => $fakturaID, ':id2' => $fakturaID, ':id3' => $fakturaID]);
+                            AND tc.taxzone_id = :tz
+                            AND tak.startdate <= :td
+                        ORDER BY tak.startdate DESC LIMIT 1
+                    ) tk ON true
+                    WHERE i.{$itemsFk} = :id
+                ) sub
+                WHERE sub.rate IS NOT NULL AND sub.rate <> 0
+                GROUP BY sub.rate, sub.taxdescription
+                ORDER BY sub.rate ASC
+            ", [':id' => $fakturaID, ':tz' => $head['taxzone_id'], ':td' => $head['transdate']]);
+
+            $headerTax = round(floatval($head['amount']) - floatval($head['netamount']), 2);
+            $totalWeight = 0.0;
+            foreach ($weights as $w) { $totalWeight += floatval($w['net_weight']); }
+
+            if ($headerTax != 0.0 && abs($totalWeight) > 0.0001) {
+                $allocated = 0.0;
+                $last = count($weights) - 1;
+                foreach ($weights as $idx => $w) {
+                    // Letzte Zeile bekommt den Rest, damit die Summe exakt dem Kopf entspricht.
+                    if ($idx === $last) {
+                        $amt = round($headerTax - $allocated, 2);
+                    } else {
+                        $amt = round($headerTax * floatval($w['net_weight']) / $totalWeight, 2);
+                        $allocated += $amt;
+                    }
+                    $taxes[] = [
+                        'taxdescription' => $w['taxdescription'] ?? 'Umsatzsteuer',
+                        'rate'           => $w['rate'],
+                        'tax_amount'     => $amt,
+                    ];
+                }
+            }
+        }
     }
 
     // === Kfz-Daten (Auftraege und Rechnungen) ===
@@ -1065,6 +1203,8 @@ function loadPrintData($db, int $fakturaID, string $fakturaType, bool $lxCarsEna
         'subtotal'        => $fmt($head['netamount']),
         'invtotal'        => $fmt($head['amount']),
         'ordtotal'        => $fmt($head['amount']),
+        // Roh-Bruttobetrag mit Punkt-Dezimaltrennung fuer den EPC/GiroCode-QR (z.B. "39.15")
+        'epc_amount'      => number_format((float)($head['amount'] ?? 0), 2, '.', ''),
 
         // Zahlungsbedingungen
         'payment_terms'   => $head['payment_terms'] ?? '',

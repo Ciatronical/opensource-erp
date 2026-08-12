@@ -167,8 +167,19 @@ install_packages() {
         git curl unzip
         python3 python3-venv python3-full
         ffmpeg
-        # Druck (siehe reference_print_latex_dependency): LaTeX inkl. deutsch + CUPS
-        texlive texlive-latex-extra texlive-lang-german cups
+        # Druck (siehe reference_print_latex_dependency): LaTeX inkl. deutsch + CUPS.
+        # Pakete explizit, damit die Druckvorlagen (backend/templates/*) alle .sty/.cls
+        # finden — nicht auf transitive Abhaengigkeiten des texlive-Metapakets verlassen:
+        #   latex-base: graphicx,ifthen,latexsym,url,textcomp,longtable,tabularx,inputenc,fontenc
+        #   latex-recommended: koma-script (scrartcl, scrlayer-scrpage), xcolor, colortbl, ulem, hyperref
+        #   latex-extra: eurosym, wallpaper, substr, xstring, lastpage
+        #   pictures: xy (xypic), qrcode   · fonts-recommended: lmodern   · lang-german: german.sty
+        # latexmk ist PFLICHT: das Druck-Backend (backend/api/print) ruft /usr/bin/latexmk auf;
+        # fehlt es -> PDF_ERROR "LaTeX compilation failed (exit code 127): latexmk not found".
+        # qrencode: der GiroCode/EPC-QR auf Rechnungen wird per qrencode erzeugt (print.php).
+        texlive texlive-latex-base texlive-latex-recommended texlive-latex-extra \
+        texlive-fonts-recommended texlive-pictures texlive-lang-german texlive-plain-generic \
+        latexmk qrencode cups
         # Backup / Telefonie
         borgbackup
         # kivitendo-Basis (der externe Installer ergänzt den Rest)

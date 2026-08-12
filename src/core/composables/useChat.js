@@ -7,6 +7,7 @@
 import { ref, computed, watch } from 'vue'
 import axios from 'axios'
 import { oserpStore } from '@/core/stores/oserp.store.js'
+import { onServerEvent } from '@/core/composables/sseClient.js'
 import * as toast from '@/core/utils/toasts.js'
 import i18n from '@/i18n'
 
@@ -45,7 +46,7 @@ export const activeTitle = computed(() => {
     return c.title || c.partner_names || ''
 })
 
-let eventSource = null
+let unsubscribe = null
 let started = false
 
 function myEmployeeId() {
@@ -300,23 +301,20 @@ export function startChat() {
         if (id && id !== old) loadOverview()
     })
 
-    if (typeof EventSource === 'undefined') return
-    eventSource = new EventSource('/sse/events')
-    eventSource.addEventListener('chat_message', (event) => {
+    // Chat-Nachrichten laufen über die geteilte SSE-Verbindung (sseClient) —
+    // dieselbe Verbindung versorgt auch die Info-Leiste und, per SharedWorker,
+    // alle weiteren Tabs. Reconnect erledigt der Client selbst.
+    unsubscribe = onServerEvent('chat_message', (event) => {
         try {
             handleChatEvent(JSON.parse(event.data))
         } catch (err) {
             console.error('[Chat] SSE-Payload nicht lesbar:', err)
         }
     })
-    eventSource.onerror = () => {
-        // EventSource verbindet selbststaendig neu; beim naechsten Oeffnen des
-        // Panels wird ohnehin frisch geladen.
-    }
 }
 
 export function stopChat() {
-    if (eventSource) { eventSource.close(); eventSource = null }
+    if (unsubscribe) { unsubscribe(); unsubscribe = null }
     started = false
     conversations.value = []
     employees.value = []
