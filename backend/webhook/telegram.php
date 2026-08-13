@@ -188,8 +188,11 @@ function _processVoiceMessage(PDO $pdo, array $dbInfo, array $message): void {
     // Auch Kommando-Nachrichten hinterlassen eine (ausgeblendete) Zeile, damit
     // ein erneutes Zustellen nicht ein zweites Mal loescht.
     try {
-        $chk = $pdo->prepare("SELECT 1 FROM voice_notes WHERE telegram_message_id = :m LIMIT 1");
-        $chk->execute([':m' => $messageId]);
+        $chk = $pdo->prepare(
+            "SELECT 1 FROM voice_notes
+              WHERE telegram_chat_id = :chat AND telegram_message_id = :m LIMIT 1"
+        );
+        $chk->execute([':chat' => $chatId, ':m' => $messageId]);
         if ($chk->fetch()) return;
     } catch (\Exception $e) {
         // weiter — ON CONFLICT faengt es ohnehin ab
@@ -280,7 +283,7 @@ function _processVoiceMessage(PDO $pdo, array $dbInfo, array $message): void {
                  duration, transcript, language, status)
              VALUES
                 (:msg, :chat, :sender, :audio, :duration, :transcript, :lang, :status)
-             ON CONFLICT (telegram_message_id) DO NOTHING"
+             ON CONFLICT (telegram_chat_id, telegram_message_id) DO NOTHING"
         );
         $stmt->execute([
             ':msg'        => $messageId,
@@ -622,7 +625,7 @@ function _recordCommand(PDO $pdo, string $messageId, string $chatId, string $sen
                 (telegram_message_id, telegram_chat_id, sender_name, duration,
                  transcript, language, status, hidden)
              VALUES (:msg, :chat, :sender, :duration, :transcript, :lang, 'command', TRUE)
-             ON CONFLICT (telegram_message_id) DO NOTHING"
+             ON CONFLICT (telegram_chat_id, telegram_message_id) DO NOTHING"
         );
         $stmt->execute([
             ':msg'        => $messageId,

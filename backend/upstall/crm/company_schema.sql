@@ -676,7 +676,9 @@ CREATE TABLE IF NOT EXISTS voice_notes (
     mtime TIMESTAMPTZ,
     hidden BOOLEAN NOT NULL DEFAULT FALSE,
     sort_order DOUBLE PRECISION,
-    CONSTRAINT voice_notes_telegram_msg_unique UNIQUE (telegram_message_id)
+    -- message_id ist nur je Chat eindeutig, nicht global — deshalb zusammengesetzt.
+    -- Der Webhook nutzt genau diese Spaltenkombination in ON CONFLICT.
+    CONSTRAINT voice_notes_telegram_chat_msg_unique UNIQUE (telegram_chat_id, telegram_message_id)
 );
 
 COMMENT ON TABLE voice_notes IS 'Per Telegram eingesprochene Sprachnotizen, server-seitig via Whisper transkribiert, Anzeige auf der Anschlagtafel';
