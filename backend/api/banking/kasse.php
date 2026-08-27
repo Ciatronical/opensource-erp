@@ -55,18 +55,40 @@ function _kasse_invalidClause($db, $alias) {
 /**
  * Verfügbarer Kassenbestand für eine Ausgabe am Datum $date.
  *
- * Liefert den niedrigsten laufenden Tagesend-Saldo ab diesem Datum (Eröffnungs-/
- * Saldovortragsbuchungen ausgeschlossen). Eine Ausgabe darf diesen Wert nicht
+ * Liefert den niedrigsten laufenden Tagesend-Saldo ab diesem Datum. Eine Ausgabe darf diesen Wert nicht
  * überschreiten, sonst würde die Kasse an diesem oder einem späteren Tag negativ.
  * Liegt das Datum nach allen Buchungen, ist es der aktuelle Gesamtbestand.
  */
+/**
+ * SQL-Ausdruck: Trägt der Link-Ausdruck $linkExpr den Token $token ('AR'/'AP')?
+ *
+ * chart.link ist eine ':'-getrennte Liste. Das Kontroll-Konto (Forderungen /
+ * Verbindlichkeiten) trägt EXAKT den Token 'AR' bzw. 'AP'. Ein blosses
+ * LIKE '%AR%' trifft auch 'AR_amount' (Erlös) und 'AR_tax' (Umsatzsteuer) —
+ * genau daran sind Barzahlungen schon auf dem Erlöskonto gelandet statt die
+ * Forderung auszugleichen. Gleiche Absicht wie der Token-Regex in matching.php,
+ * hier ohne '$' geschrieben, damit der Ausdruck in PHP-Strings gefahrlos steht.
+ *
+ * @param string $linkExpr Spalte/Ausdruck mit dem Link (z. B. 'c2.link')
+ * @param string $token    'AR' oder 'AP'
+ * @return string SQL-Boolean-Ausdruck
+ */
+function _kasse_hasLinkToken($linkExpr, $token) {
+    return "POSITION(':{$token}:' IN ':' || {$linkExpr} || ':') > 0";
+}
+
 function _kasse_availableBalance($db, $chartId, $date) {
     $row = $db->getOne("
         WITH daily AS (
             SELECT transdate, SUM(-amount) AS delta
             FROM acc_trans
+            -- Ab dem letzten Saldenvortrag rechnen, ihn selbst eingeschlossen:
+            -- er ist der Anfangsbestand des laufenden Buchungsjahres, alles
+            -- davor steckt bereits darin.
             WHERE chart_id = :cid
-              AND (ob_transaction IS NULL OR ob_transaction = false)
+              AND transdate >= (SELECT COALESCE(MAX(transdate), '-infinity'::date)
+                                  FROM acc_trans
+                                 WHERE chart_id = :cid2 AND ob_transaction IS TRUE)
             GROUP BY transdate
         ),
         cumulative AS (
@@ -77,7 +99,7 @@ function _kasse_availableBalance($db, $chartId, $date) {
             (SELECT bal FROM cumulative ORDER BY transdate DESC LIMIT 1),
             0
         ) AS available
-    ", ['cid' => $chartId, 'd' => $date]);
+    ", ['cid' => $chartId, 'cid2' => $chartId, 'd' => $date]);
 
     return floatval($row['available'] ?? 0);
 }
@@ -98,6 +120,7 @@ function getCashRegisters($data) {
     $db = DbhCompany::begin();
 
     $invalidClause = _kasse_invalidClause($db, 'ch');
+    $kassenkonto   = kassenkontoBedingung('ch');
 
     $registers = $db->getAll("
         SELECT
@@ -125,18 +148,21 @@ function getCashRegisters($data) {
             ), 0) AS expenses_this_month,
             MAX(at.transdate) AS last_transaction_date
         FROM chart ch
-        LEFT JOIN acc_trans at ON at.chart_id = ch.id
-            AND (at.ob_transaction IS NULL OR at.ob_transaction = false)
+        -- Bezugspunkt jedes Kontos ist sein letzter Saldenvortrag. Alles davor
+        -- ist abgeschlossen und steckt bereits im Vortrag; würde man es dazu
+        -- addieren, zählte man dieselben Jahre zweimal. Genau so rechnet auch
+        -- kivitendo (SL/CA.pm): Vortrag des Jahres plus Bewegungen des Jahres.
+        LEFT JOIN LATERAL (
+            SELECT COALESCE(MAX(o.transdate), '-infinity'::date) AS ab
+            FROM acc_trans o
+            WHERE o.chart_id = ch.id AND o.ob_transaction IS TRUE
+        ) v ON true
+        LEFT JOIN acc_trans at ON at.chart_id = ch.id AND at.transdate >= v.ab
         WHERE ch.link LIKE '%AR_paid%'
           AND ch.category  = 'A'
           AND ch.charttype = 'A'
           {$invalidClause}
-          AND (
-              ch.accno IN ('1000', '1600')
-              OR (ch.description ILIKE '%kasse%'
-                  AND ch.description NOT ILIKE '%sparkasse%'
-                  AND ch.description NOT ILIKE '%bank%')
-          )
+          AND {$kassenkonto}
         GROUP BY ch.id, ch.description, ch.accno
         ORDER BY
             CASE WHEN ch.description ILIKE '%kasse%' THEN 0 ELSE 1 END,
@@ -151,8 +177,8 @@ function getCashRegisters($data) {
  *
  * Aufwand (E) und Ertrag (I) für normale Bareinnahmen/-ausgaben, zusätzlich
  * Transferkonten (category A): Geldtransit (Geld von/zur Bank bringen) sowie die
- * Bankkonten selbst. Kassenkonten (1000/1600) werden als Transfer-Gegenkonto
- * ausgeschlossen (man bucht nicht gegen sich selbst).
+ * Bankkonten selbst. Kassenkonten werden als Transfer-Gegenkonto ausgeschlossen
+ * (man bucht nicht gegen sich selbst) — welche das sind, sagt der Kontenrahmen.
  *
  * @param string $data['category'] E = Aufwand, I = Ertrag, all = alle (default: all)
  * @testdata {"category": "all"}
@@ -160,8 +186,9 @@ function getCashRegisters($data) {
 function getCashCounterCharts($data) {
     $db = DbhCompany::begin();
 
-    $category = $data['category'] ?? 'all';
-    $params   = [];
+    $category    = $data['category'] ?? 'all';
+    $params      = [];
+    $kassenkonto = kassenkontoBedingung('ch');
 
     if ($category === 'E' || $category === 'I') {
         $where         = 'AND ch.category = :cat';
@@ -173,7 +200,7 @@ function getCashCounterCharts($data) {
             OR (
                 ch.category = 'A' AND (
                     ch.description ILIKE '%geldtransit%'
-                    OR (ch.link LIKE '%AR_paid%' AND ch.accno NOT IN ('1000', '1600'))
+                    OR (ch.link LIKE '%AR_paid%' AND NOT {$kassenkonto})
                 )
             )
         )";
@@ -358,23 +385,12 @@ function getCashTransactions($data) {
     $toDate     = !empty($data['to_date'])   ? $data['to_date']   : null;
     $typeFilter = $data['type_filter'] ?? 'all';
 
-    // ── Anfangsbestand: Bestand vor dem Von-Datum ──
-    // kivitendo-Konvention: Soll = negativ, Haben = positiv. Geld in der Kasse
-    // wird als negative Summe gespeichert → echter Bestand = -SUMME.
-    $opening = 0.0;
-    if ($fromDate) {
-        $ob = $db->getOne(
-            "SELECT COALESCE(SUM(amount), 0) AS ob
-             FROM acc_trans
-             WHERE chart_id = :cid AND transdate < :fd
-               AND (ob_transaction IS NULL OR ob_transaction = false)",
-            ['cid' => $chartId, 'fd' => $fromDate]
-        );
-        $opening = -floatval($ob['ob'] ?? 0);
-    }
-
     // ── Filter auf die Bewegungen (Zeitraum / Typ) ──
-    $params     = ['chart_id' => $chartId, 'chart_id2' => $chartId, 'chart_id3' => $chartId];
+    $params     = [
+        'chart_id' => $chartId, 'chart_id2' => $chartId, 'chart_id3' => $chartId,
+        'ob_chart' => $chartId, 'ob_von' => $fromDate, 'ob_bis' => $toDate,
+        'v_chart'  => $chartId, 'v_bis'  => $toDate,
+    ];
     $whereExtra = '';
     if ($typeFilter === 'income') {
         $whereExtra .= ' AND m.amount > 0';
@@ -399,12 +415,42 @@ function getCashTransactions($data) {
                     LEFT JOIN accounting_documents ad  ON ad.id   = cgd.document_id";
     }
 
-    $opening = number_format($opening, 5, '.', '');
-    $params['opening']  = $opening;
-    $params['opening2'] = $opening;
+    // Rangfolge fürs Gegenkonto: Forderung/Verbindlichkeit schlägt Erlös/Aufwand.
+    $arLinkToken = _kasse_hasLinkToken('c2.link', 'AR');
+    $apLinkToken = _kasse_hasLinkToken('c2.link', 'AP');
 
     $result = $db->getOne("
-        WITH movements AS (
+        WITH vortrag AS (
+            -- Bezugspunkt: der letzte Saldenvortrag bis zum Bis-Datum. Ab hier
+            -- ist das Buch offen; alles davor ist abgeschlossen und im Vortrag
+            -- enthalten. Ohne Vortrag reicht das Buch bis zur ersten Buchung.
+            SELECT COALESCE(MAX(transdate), '-infinity'::date) AS ab
+            FROM acc_trans
+            WHERE chart_id = :v_chart AND ob_transaction IS TRUE
+              AND (:v_bis::date IS NULL OR transdate <= :v_bis::date)
+        ),
+        eroeffnung AS (
+            -- Anfangsbestand des Zeitraums.
+            --
+            -- Zwei Sorten Buchungen gehören hinein: alles vor dem Von-Datum, und
+            -- die Saldenvorträge (ob_transaction) des Zeitraums selbst. Letztere
+            -- sind der springende Punkt — ein Saldenvortrag vom 01.01. liegt
+            -- INNERHALB des Jahres 2026 und wäre mit einer reinen Vorher-Abfrage
+            -- nirgends erfasst: nicht im Anfangsbestand und nicht in den
+            -- Bewegungen, aus denen er bewusst herausgehalten wird. Genau so ist
+            -- er bisher verschwunden.
+            --
+            -- kivitendo-Konvention: Soll = negativ, Haben = positiv. Geld in der
+            -- Kasse wird als negative Summe gespeichert → Bestand = -SUMME.
+            SELECT COALESCE(-SUM(amount), 0) AS opening
+            FROM acc_trans
+            WHERE chart_id = :ob_chart
+              AND transdate >= (SELECT ab FROM vortrag)
+              AND ((:ob_von::date IS NOT NULL AND transdate < :ob_von::date)
+                   OR ob_transaction IS TRUE)
+              AND (:ob_bis::date IS NULL OR transdate <= :ob_bis::date)
+        ),
+        movements AS (
             -- ── 1. Manuelle GL-Buchungen (Bareinnahmen / Barausgaben) ──
             SELECT
                 at.acc_trans_id,
@@ -447,15 +493,32 @@ function getCashTransactions($data) {
                 at.source       AS reference,
                 ar.invnumber    AS description,
                 c.name          AS partner_name,
-                NULL::text      AS gegenkonto_accno,
-                NULL::text      AS gegenkonto_description,
+                gc.accno        AS gegenkonto_accno,
+                gc.description  AS gegenkonto_description,
                 NULL::integer   AS document_id,
                 NULL::text      AS document_name,
                 NULL::text      AS document_mime_type
             FROM acc_trans at
+            -- Kein Storno-Filter auf ar/ap: das Kennzeichen storno gehört zur Rechnung,
+            -- nicht zur Zahlung. Eine Barauszahlung, die auf einer Stornorechnung
+            -- gebucht ist, ist echtes Geld, das die Lade verlassen hat — sie muss
+            -- im Kassenbuch stehen. Bei gl ist es umgekehrt: dort bilden Buchung
+            -- und Storno ein Paar, das sich aufhebt und beide Zeilen entfallen.
             JOIN ar ON ar.id = at.trans_id
-                AND (ar.storno IS NULL OR ar.storno = false)
             JOIN customer c ON c.id = ar.customer_id
+            -- Gegenkonto einer Barzahlung ist das Forderungskonto der Rechnung
+            -- (Debitoren-Sammelkonto, z. B. 1200) — die Kasse gleicht die Forderung
+            -- aus, sie bucht keinen Erlös. Ohne die Rangfolge gewänne je nach
+            -- Buchungsroutine mal die Erlös-, mal die Forderungszeile.
+            LEFT JOIN LATERAL (
+                SELECT c2.accno, c2.description
+                FROM acc_trans at2
+                JOIN chart c2 ON c2.id = at2.chart_id
+                WHERE at2.trans_id = at.trans_id
+                  AND at2.chart_id != at.chart_id
+                ORDER BY (CASE WHEN {$arLinkToken} THEN 0 ELSE 1 END), at2.acc_trans_id ASC
+                LIMIT 1
+            ) gc ON true
             WHERE at.chart_id = :chart_id2
               AND (at.ob_transaction IS NULL OR at.ob_transaction = false)
               AND NOT EXISTS (SELECT 1 FROM gl WHERE id = at.trans_id)
@@ -472,22 +535,33 @@ function getCashTransactions($data) {
                 at.source       AS reference,
                 ap.invnumber    AS description,
                 v.name          AS partner_name,
-                NULL::text      AS gegenkonto_accno,
-                NULL::text      AS gegenkonto_description,
+                gc.accno        AS gegenkonto_accno,
+                gc.description  AS gegenkonto_description,
                 NULL::integer   AS document_id,
                 NULL::text      AS document_name,
                 NULL::text      AS document_mime_type
             FROM acc_trans at
             JOIN ap ON ap.id = at.trans_id
-                AND (ap.storno IS NULL OR ap.storno = false)
             JOIN vendor v ON v.id = ap.vendor_id
+            -- Spiegelbild zu AR: das Verbindlichkeitskonto der Rechnung
+            -- (Kreditoren-Sammelkonto, z. B. 1600/3300), nicht das Aufwandskonto.
+            LEFT JOIN LATERAL (
+                SELECT c2.accno, c2.description
+                FROM acc_trans at2
+                JOIN chart c2 ON c2.id = at2.chart_id
+                WHERE at2.trans_id = at.trans_id
+                  AND at2.chart_id != at.chart_id
+                ORDER BY (CASE WHEN {$apLinkToken} THEN 0 ELSE 1 END), at2.acc_trans_id ASC
+                LIMIT 1
+            ) gc ON true
             WHERE at.chart_id = :chart_id3
               AND (at.ob_transaction IS NULL OR at.ob_transaction = false)
               AND NOT EXISTS (SELECT 1 FROM gl WHERE id = at.trans_id)
               AND NOT EXISTS (SELECT 1 FROM ar WHERE id = at.trans_id)
         ),
         filtered AS (
-            SELECT m.* FROM movements m WHERE 1=1 {$whereExtra}
+            SELECT m.* FROM movements m
+            WHERE m.transdate >= (SELECT ab FROM vortrag) {$whereExtra}
         ),
         numbered AS (
             SELECT
@@ -496,7 +570,7 @@ function getCashTransactions($data) {
                 -- Natürliche Sortierung: Zahlteil der Belegnummer (erlaubt Präfixe wie
                 -- 'AR-291'); bei Gleichstand der volle Text, dann acc_trans_id als
                 -- Fallback (nicht-numerische/fehlende Belege).
-                :opening::numeric + SUM(f.amount) OVER (
+                (SELECT opening FROM eroeffnung) + SUM(f.amount) OVER (
                     ORDER BY f.transdate ASC,
                              COALESCE(NULLIF(regexp_replace(f.reference, '[^0-9]', '', 'g'), '')::numeric, 0) ASC,
                              f.reference ASC NULLS FIRST,
@@ -514,14 +588,15 @@ function getCashTransactions($data) {
             ) AS transactions,
             COALESCE(SUM(CASE WHEN numbered.amount > 0 THEN numbered.amount ELSE 0 END), 0)      AS sum_income,
             ABS(COALESCE(SUM(CASE WHEN numbered.amount < 0 THEN numbered.amount ELSE 0 END), 0)) AS sum_expense,
-            :opening2::numeric + COALESCE(SUM(numbered.amount), 0)                               AS closing_balance
+            (SELECT opening FROM eroeffnung)                                                     AS opening_balance,
+            (SELECT opening FROM eroeffnung) + COALESCE(SUM(numbered.amount), 0)                 AS closing_balance
         FROM numbered
     ", $params);
 
     resultInfo(true, '', [
         'transactions'    => json_decode($result['transactions'] ?? '[]', true) ?: [],
-        'opening_balance' => floatval($opening),
-        'closing_balance' => floatval($result['closing_balance'] ?? $opening),
+        'opening_balance' => floatval($result['opening_balance'] ?? 0),
+        'closing_balance' => floatval($result['closing_balance'] ?? 0),
         'sum_income'      => floatval($result['sum_income'] ?? 0),
         'sum_expense'     => floatval($result['sum_expense'] ?? 0),
         'documents_enabled' => $docsEnabled,
@@ -529,6 +604,271 @@ function getCashTransactions($data) {
             'chart_accno'       => $register['chart_accno'],
             'chart_description' => $register['chart_description'],
         ],
+    ]);
+}
+
+/**
+ * Kassenbuch als PDF drucken — Aufbau und Spalten wie in Lexware.
+ *
+ * Ein Kassenbuch ist ein steuerlich relevanter Ausdruck: es muss lückenlos und
+ * nachvollziehbar sein. Deshalb aufsteigend nach Datum, mit laufender Nummer,
+ * Übertrag (Anfangsbestand) als erster Zeile, Bestand in jeder Zeile und
+ * Endbestand plus Unterschriftsfeld am Schluss.
+ *
+ * @param int    $data['cash_register_id'] Kassakonto-ID (= chart.id)
+ * @param string $data['from_date']        Von-Datum (optional)
+ * @param string $data['to_date']          Bis-Datum (optional)
+ * @param string $data['period_label']     Beschriftung des Zeitraums (optional)
+ * @testdata {"cash_register_id": 1, "from_date": "2026-01-01", "to_date": "2026-12-31"}
+ */
+function getCashbookPdf($data) {
+    $db = DbhCompany::begin();
+
+    $registerId = intval($data['cash_register_id'] ?? 0);
+    if ($registerId <= 0) { resultInfo(false, 'VALIDATION_ERROR', 'Kassenbuch-ID fehlt'); return; }
+
+    $from = !empty($data['from_date']) ? $data['from_date'] : null;
+    $to   = !empty($data['to_date'])   ? $data['to_date']   : null;
+
+    // Eine Abfrage fuer alles: Kassenkopf, Anfangsbestand, alle Bewegungen mit
+    // laufender Nummer und laufendem Bestand sowie die Summen. Der Umsatzsteuer-
+    // satz kommt aus der Gegenbuchung, denn dort hängt der Steuerschlüssel.
+    $arLinkToken = _kasse_hasLinkToken('c2.link', 'AR');
+    $apLinkToken = _kasse_hasLinkToken('c2.link', 'AP');
+
+    $report = $db->getOne(<<<SQL
+        WITH p AS (
+            SELECT :chart_id::int AS cid, :von::date AS von, :bis::date AS bis
+        ),
+        kasse AS (
+            SELECT ch.id, ch.accno, ch.description
+            FROM chart ch CROSS JOIN p WHERE ch.id = p.cid
+        ),
+        vortrag AS (
+            -- Siehe getCashTransactions: ab dem letzten Saldenvortrag ist das
+            -- Buch offen, alles davor steckt bereits in ihm.
+            SELECT COALESCE(MAX(at.transdate), '-infinity'::date) AS ab
+            FROM acc_trans at CROSS JOIN p
+            WHERE at.chart_id = p.cid AND at.ob_transaction IS TRUE
+              AND (p.bis IS NULL OR at.transdate <= p.bis)
+        ),
+        eroeffnung AS (
+            -- Anfangsbestand: alles vor dem Von-Datum plus die Saldenvorträge des
+            -- Zeitraums selbst. Ein Vortrag vom 01.01. liegt innerhalb des Jahres
+            -- und käme sonst weder hier noch in den Bewegungen vor.
+            -- kivitendo: Soll = negativ. Der Bestand ist daher -SUMME.
+            SELECT COALESCE(-SUM(at.amount), 0) AS opening
+            FROM acc_trans at CROSS JOIN p
+            WHERE at.chart_id = p.cid
+              AND at.transdate >= (SELECT ab FROM vortrag)
+              AND ((p.von IS NOT NULL AND at.transdate < p.von)
+                   OR at.ob_transaction IS TRUE)
+              AND (p.bis IS NULL OR at.transdate <= p.bis)
+        ),
+        movements AS (
+            SELECT at.acc_trans_id, at.transdate, -at.amount AS amount,
+                   COALESCE(NULLIF(at.source, ''), gl.reference) AS reference,
+                   gl.description                               AS description,
+                   NULL::text                                   AS partner_name,
+                   gk.accno                                     AS gegenkonto_accno,
+                   gk.description                               AS gegenkonto_description,
+                   gk.tax_rate                                  AS tax_rate
+            FROM acc_trans at
+            CROSS JOIN p
+            JOIN gl ON gl.id = at.trans_id AND (gl.storno IS NULL OR gl.storno = false)
+            LEFT JOIN LATERAL (
+                SELECT c2.accno, c2.description, COALESCE(tx.rate, 0) AS tax_rate
+                FROM acc_trans at2
+                JOIN chart c2 ON c2.id = at2.chart_id
+                LEFT JOIN tax tx ON tx.id = at2.tax_id
+                WHERE at2.trans_id = at.trans_id AND at2.chart_id != at.chart_id
+                ORDER BY at2.acc_trans_id ASC LIMIT 1
+            ) gk ON true
+            WHERE at.chart_id = p.cid
+              AND (at.ob_transaction IS NULL OR at.ob_transaction = false)
+
+            UNION ALL
+
+            SELECT at.acc_trans_id, at.transdate, -at.amount AS amount,
+                   at.source, ar.invnumber, c.name,
+                   gk.accno, gk.description, 0::numeric
+            FROM acc_trans at
+            CROSS JOIN p
+            -- Kein Storno-Filter auf ar/ap: das Kennzeichen storno gehört zur Rechnung,
+            -- nicht zur Zahlung. Eine Barauszahlung, die auf einer Stornorechnung
+            -- gebucht ist, ist echtes Geld, das die Lade verlassen hat — sie muss
+            -- im Kassenbuch stehen. Bei gl ist es umgekehrt: dort bilden Buchung
+            -- und Storno ein Paar, das sich aufhebt und beide Zeilen entfallen.
+            JOIN ar ON ar.id = at.trans_id
+            JOIN customer c ON c.id = ar.customer_id
+            -- Gegenkonto einer Barzahlung ist das Forderungskonto der Rechnung
+            -- (Debitoren-Sammelkonto, z. B. 1200) — die Kasse gleicht die Forderung
+            -- aus, sie bucht keinen Erlös. Ohne die Rangfolge gewänne je nach
+            -- Buchungsroutine mal die Erlös-, mal die Forderungszeile.
+            LEFT JOIN LATERAL (
+                SELECT c2.accno, c2.description
+                FROM acc_trans at2
+                JOIN chart c2 ON c2.id = at2.chart_id
+                WHERE at2.trans_id = at.trans_id AND at2.chart_id != at.chart_id
+                ORDER BY (CASE WHEN {$arLinkToken} THEN 0 ELSE 1 END), at2.acc_trans_id ASC LIMIT 1
+            ) gk ON true
+            WHERE at.chart_id = p.cid
+              AND (at.ob_transaction IS NULL OR at.ob_transaction = false)
+              AND NOT EXISTS (SELECT 1 FROM gl WHERE id = at.trans_id)
+
+            UNION ALL
+
+            SELECT at.acc_trans_id, at.transdate, -at.amount AS amount,
+                   at.source, ap.invnumber, v.name,
+                   gk.accno, gk.description, 0::numeric
+            FROM acc_trans at
+            CROSS JOIN p
+            JOIN ap ON ap.id = at.trans_id
+            JOIN vendor v ON v.id = ap.vendor_id
+            -- Spiegelbild zu AR: das Verbindlichkeitskonto der Rechnung
+            -- (Kreditoren-Sammelkonto, z. B. 1600/3300), nicht das Aufwandskonto.
+            LEFT JOIN LATERAL (
+                SELECT c2.accno, c2.description
+                FROM acc_trans at2
+                JOIN chart c2 ON c2.id = at2.chart_id
+                WHERE at2.trans_id = at.trans_id AND at2.chart_id != at.chart_id
+                ORDER BY (CASE WHEN {$apLinkToken} THEN 0 ELSE 1 END), at2.acc_trans_id ASC LIMIT 1
+            ) gk ON true
+            WHERE at.chart_id = p.cid
+              AND (at.ob_transaction IS NULL OR at.ob_transaction = false)
+              AND NOT EXISTS (SELECT 1 FROM gl WHERE id = at.trans_id)
+              AND NOT EXISTS (SELECT 1 FROM ar WHERE id = at.trans_id)
+        ),
+        filtered AS (
+            SELECT m.* FROM movements m CROSS JOIN p
+            WHERE m.transdate >= (SELECT ab FROM vortrag)
+              AND (p.von IS NULL OR m.transdate >= p.von)
+              AND (p.bis IS NULL OR m.transdate <= p.bis)
+        ),
+        numbered AS (
+            SELECT f.*,
+                   ROW_NUMBER() OVER w                                       AS lfd,
+                   (SELECT opening FROM eroeffnung)
+                       + SUM(f.amount) OVER (w ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS saldo
+            FROM filtered f
+            WINDOW w AS (
+                ORDER BY f.transdate ASC,
+                         COALESCE(NULLIF(regexp_replace(f.reference, '[^0-9]', '', 'g'), '')::numeric, 0) ASC,
+                         f.reference ASC NULLS FIRST,
+                         f.acc_trans_id ASC
+            )
+        )
+        SELECT
+            (SELECT accno       FROM kasse)      AS chart_accno,
+            (SELECT description FROM kasse)      AS chart_description,
+            (SELECT company     FROM defaults)   AS company,
+            (SELECT opening     FROM eroeffnung) AS opening,
+            COALESCE((SELECT opening FROM eroeffnung), 0)
+                + COALESCE(SUM(n.amount), 0)                                AS closing,
+            COALESCE(SUM(n.amount) FILTER (WHERE n.amount > 0), 0)          AS sum_income,
+            ABS(COALESCE(SUM(n.amount) FILTER (WHERE n.amount < 0), 0))     AS sum_expense,
+            COUNT(n.*)::int                                                 AS row_count,
+            COALESCE(json_agg(row_to_json(n) ORDER BY n.lfd ASC)
+                     FILTER (WHERE n.lfd IS NOT NULL), '[]')                AS rows
+        FROM numbered n
+    SQL, ['chart_id' => $registerId, 'von' => $from, 'bis' => $to]);
+
+    if (!$report || $report['chart_accno'] === null) {
+        resultInfo(false, 'NOT_FOUND', 'Kassenbuch nicht gefunden');
+        return;
+    }
+
+    $rows    = json_decode($report['rows'] ?? '[]', true) ?: [];
+    $opening = (float)($report['opening'] ?? 0);
+
+    require_once __DIR__ . '/../lib/report_pdf.php';
+
+    $zeitraum = trim((string)($data['period_label'] ?? ''));
+    if ($zeitraum === '') {
+        $zeitraum = $from || $to
+            ? ($from ? _bu_datum($from) : 'Beginn') . ' bis ' . ($to ? _bu_datum($to) : 'heute')
+            : 'gesamter Buchungsbestand';
+    }
+
+    $pdf = new ReportPdf('P', 'mm', 'A4');
+    $pdf->reportTitle = 'Kassenbuch';
+    $pdf->reportLines = array_filter([
+        $report['company'] ?? '',
+        'Kasse: ' . ($report['chart_description'] ?? '') . ' (Konto ' . ($report['chart_accno'] ?? '') . ')',
+        'Zeitraum: ' . $zeitraum,
+    ]);
+    $pdf->columns = [
+        ['w' =>  8, 'label' => 'Nr.',           'align' => 'R'],
+        ['w' => 17, 'label' => 'Datum'],
+        ['w' => 18, 'label' => 'Beleg-Nr.'],
+        ['w' => 44, 'label' => 'Buchungstext'],
+        ['w' => 32, 'label' => 'Gegenkonto'],
+        ['w' => 10, 'label' => 'USt %',    'align' => 'R'],
+        ['w' => 17, 'label' => 'Einnahme', 'align' => 'R'],
+        ['w' => 17, 'label' => 'Ausgabe',  'align' => 'R'],
+        ['w' => 17, 'label' => 'Bestand',  'align' => 'R'],
+    ];
+    $pdf->footNote = 'Erstellt am ' . date('d.m.Y H:i') . ' · ' . ($report['company'] ?? '');
+    $pdf->SetMargins(15, 15, 15);
+    $pdf->SetAutoPageBreak(true, 26); // Platz für Fußzeile und Unterschriftsfeld
+    $pdf->AliasNbPages();
+    $pdf->AddPage();
+
+    $pdf->row([
+        '', ($from ? _bu_datum($from) : ''), '',
+        ['text' => 'Übertrag / Anfangsbestand', 'bold' => true],
+        '', '', '', '',
+        ['text' => ReportPdf::money($opening), 'bold' => true],
+    ], false);
+
+    foreach ($rows as $row) {
+        $amount = (float)$row['amount'];
+        $text   = trim((string)($row['description'] ?? ''));
+        if (!empty($row['partner_name'])) {
+            $text = $text === '' ? $row['partner_name'] : $text . ' · ' . $row['partner_name'];
+        }
+        if ($text === '') $text = $amount >= 0 ? 'Bareinnahme' : 'Barausgabe';
+
+        $taxRate = (float)($row['tax_rate'] ?? 0);
+
+        $pdf->row([
+            (string)$row['lfd'],
+            _bu_datum($row['transdate']),
+            $row['reference'] ?: '',
+            ['text' => $text, 'wrap' => true, 'maxLines' => 2],
+            trim(($row['gegenkonto_accno'] ?? '') . ' ' . ($row['gegenkonto_description'] ?? '')),
+            $taxRate > 0 ? ReportPdf::money($taxRate * 100) : '',
+            ReportPdf::money($amount > 0 ? $amount : 0, true),
+            ReportPdf::money($amount < 0 ? -$amount : 0, true),
+            ReportPdf::money($row['saldo']),
+        ]);
+    }
+
+    if (!$rows) {
+        $pdf->row(['', '', '', 'Keine Buchungen im gewählten Zeitraum.', '', '', '', '', '']);
+    }
+
+    $pdf->totalRow([
+        '', '', '',
+        'Summe (' . (int)($report['row_count'] ?? 0) . ' Buchungen)',
+        '', '',
+        ['text' => ReportPdf::money($report['sum_income']  ?? 0), 'align' => 'R'],
+        ['text' => ReportPdf::money($report['sum_expense'] ?? 0), 'align' => 'R'],
+        ['text' => ReportPdf::money($report['closing']     ?? 0), 'align' => 'R'],
+    ]);
+
+    // Unterschriftsfeld: ein Kassenbuch wird abgezeichnet, nicht nur abgelegt.
+    $pdf->Ln(10);
+    $pdf->SetFont('Arial', '', 8);
+    $pdf->SetTextColor(90, 90, 90);
+    $pdf->Cell(85, 5, ReportPdf::de('Kassenbestand laut Zählung: ______________________'), 0, 0);
+    $pdf->Cell(0,  5, ReportPdf::de('Datum, Unterschrift: ______________________________'), 0, 1);
+    $pdf->SetTextColor(0, 0, 0);
+
+    resultInfo(true, '', [
+        'filename' => 'kassenbuch_' . ($report['chart_accno'] ?? '') . '_' . date('Y-m-d') . '.pdf',
+        'mime'     => 'application/pdf',
+        'data'     => base64_encode($pdf->Output('S')),
     ]);
 }
 
@@ -690,19 +1030,24 @@ function deleteCashTransaction($data) {
 /**
  * Offene Ausgangsrechnungen für Barzahlung laden
  *
- * @param string $data['search'] Suchbegriff: Rechnungsnr. oder Kundenname (optional)
- * @testdata {}
+ * Neueste zuerst: bar kassiert wird in aller Regel die eben geschriebene
+ * Rechnung, nicht die älteste offene.
+ *
+ * Eine Suche greift bewusst über alle Zeiträume hinweg. Wer eine Rechnungsnummer
+ * eintippt, sucht genau diese Rechnung — und die ist oft gerade deshalb nicht
+ * im eingestellten Monat, weil sie liegengeblieben ist.
+ *
+ * @param string $data['search']    Suchbegriff: Rechnungsnr. oder Kundenname (optional)
+ * @param string $data['from_date'] Frühestes Rechnungsdatum (optional)
+ * @param string $data['to_date']   Spätestes Rechnungsdatum (optional)
+ * @testdata {"from_date": "2026-08-01", "to_date": "2026-08-31"}
  */
 function getOpenArForCash($data) {
     $db = DbhCompany::begin();
 
-    $params     = [];
-    $whereExtra = '';
-
-    if (!empty($data['search'])) {
-        $whereExtra      .= " AND (ar.invnumber ILIKE :search OR c.name ILIKE :search)";
-        $params['search'] = '%' . $data['search'] . '%';
-    }
+    $search = trim($data['search'] ?? '');
+    $from   = $search === '' && !empty($data['from_date']) ? $data['from_date'] : null;
+    $to     = $search === '' && !empty($data['to_date'])   ? $data['to_date']   : null;
 
     $result = $db->getAll("
         SELECT
@@ -718,10 +1063,16 @@ function getOpenArForCash($data) {
         JOIN customer c ON c.id = ar.customer_id
         WHERE ar.amount > ar.paid
           AND ar.storno IS NOT TRUE
-          {$whereExtra}
-        ORDER BY ar.duedate ASC NULLS LAST, ar.transdate ASC
+          AND (:search::text IS NULL OR ar.invnumber ILIKE :search OR c.name ILIKE :search)
+          AND (:from::date   IS NULL OR ar.transdate >= :from::date)
+          AND (:to::date     IS NULL OR ar.transdate <= :to::date)
+        ORDER BY ar.transdate DESC NULLS LAST, ar.id DESC
         LIMIT 100
-    ", $params);
+    ", [
+        'search' => $search === '' ? null : '%' . $search . '%',
+        'from'   => $from,
+        'to'     => $to,
+    ]);
 
     resultInfo(true, '', ['invoices' => $result ?: []]);
 }
@@ -767,12 +1118,12 @@ function bookArAsCash($data) {
     $transdate = $data['transdate'] ?? date('Y-m-d');
 
     // Forderungskonto der AR-Erstbuchung ermitteln (z. B. 1200/1400)
+    $tokenLink = _kasse_hasLinkToken('chart_link', 'AR');
     $counterChart = $db->getOne("
         SELECT chart_id, chart_link
         FROM acc_trans
         WHERE trans_id = :tid
-          AND chart_link LIKE '%AR%'
-          AND chart_link NOT LIKE '%AR_paid%'
+          AND {$tokenLink}
         ORDER BY acc_trans_id ASC
         LIMIT 1
     ", ['tid' => $arId]);
@@ -785,45 +1136,63 @@ function bookArAsCash($data) {
     // Fortlaufende Belegnummer für diese Kassenbuchung
     $beleg = nextBelegnummer($db, $register['chart_id'], $transdate);
 
-    // Vorzeichen exakt wie matching.php / kivitendo (Soll = negativ, Haben = positiv):
-    //   Forderungskonto: positiver Betrag (Haben) → klärt die Forderung, zählt für ar.paid
-    //   Kassenkonto:     negativer Betrag (Soll)  → Geld kommt rein; chart_link 'AR_paid'
-    //                    wird von der Faktura als Zahlung erkannt; source = Belegnummer.
-    $db->execute(
-        "INSERT INTO acc_trans (trans_id, chart_id, amount, transdate, gldate, source, memo, chart_link, tax_id, taxkey)
-         VALUES (:trans_id, :chart_id, :amount, :transdate, :transdate, :source, :memo, :chart_link, 0, 0)",
-        [
-            'trans_id'   => $arId,
-            'chart_id'   => $counterChart['chart_id'],
-            'amount'     => $payAmount,
-            'transdate'  => $transdate,
-            'source'     => $ar['invnumber'],
-            'memo'       => 'Barzahlung Kasse',
-            'chart_link' => $counterChart['chart_link'] ?? 'AR',
-        ]
-    );
+    // Klammer um die drei Schreibvorgänge: zwei acc_trans-Zeilen und ar.paid
+    // gehören zusammen. Bricht es dazwischen ab, stünde eine halbe Zahlung in
+    // den Büchern — genau die Sorte Buchung, die später als Differenz zwischen
+    // Soll und Haben in der Saldenliste auftaucht und niemand mehr zuordnen kann.
+    $db->beginTransaction();
+    try {
 
-    $db->execute(
-        "INSERT INTO acc_trans (trans_id, chart_id, amount, transdate, gldate, source, memo, chart_link, tax_id, taxkey)
-         VALUES (:trans_id, :chart_id, :amount, :transdate, :transdate, :source, :memo, :chart_link, 0, 0)",
-        [
-            'trans_id'   => $arId,
-            'chart_id'   => $register['chart_id'],
-            'amount'     => -$payAmount,
-            'transdate'  => $transdate,
-            'source'     => $beleg,
-            'memo'       => 'Barzahlung Kasse',
-            'chart_link' => $register['chart_link'],
-        ]
-    );
+        // Vorzeichen exakt wie matching.php / kivitendo (Soll = negativ, Haben = positiv):
+        //   Forderungskonto: positiver Betrag (Haben) → klärt die Forderung, zählt für ar.paid
+        //   Kassenkonto:     negativer Betrag (Soll)  → Geld kommt rein; chart_link 'AR_paid'
+        //                    wird von der Faktura als Zahlung erkannt; source = Belegnummer.
+        $db->execute(
+            "INSERT INTO acc_trans (trans_id, chart_id, amount, transdate, gldate, source, memo, chart_link, tax_id, taxkey)
+             VALUES (:trans_id, :chart_id, :amount, :transdate, :transdate, :source, :memo, :chart_link, 0, 0)",
+            [
+                'trans_id'   => $arId,
+                'chart_id'   => $counterChart['chart_id'],
+                'amount'     => $payAmount,
+                'transdate'  => $transdate,
+                'source'     => $ar['invnumber'],
+                'memo'       => 'Barzahlung Kasse',
+                'chart_link' => $counterChart['chart_link'] ?? 'AR',
+            ]
+        );
 
-    // ar.paid erhöhen
-    $db->execute(
-        "UPDATE ar SET paid = COALESCE(paid, 0) + :inc WHERE id = :id",
-        ['inc' => $payAmount, 'id' => $arId]
-    );
+        $db->execute(
+            "INSERT INTO acc_trans (trans_id, chart_id, amount, transdate, gldate, source, memo, chart_link, tax_id, taxkey)
+             VALUES (:trans_id, :chart_id, :amount, :transdate, :transdate, :source, :memo, :chart_link, 0, 0)",
+            [
+                'trans_id'   => $arId,
+                'chart_id'   => $register['chart_id'],
+                'amount'     => -$payAmount,
+                'transdate'  => $transdate,
+                'source'     => $beleg,
+                'memo'       => 'Barzahlung Kasse',
+                'chart_link' => $register['chart_link'],
+            ]
+        );
 
-    resultInfo(true, '', ['booked_amount' => $payAmount]);
+        // ar.paid erhöhen
+        $db->execute(
+            "UPDATE ar SET paid = COALESCE(paid, 0) + :inc WHERE id = :id",
+            ['inc' => $payAmount, 'id' => $arId]
+        );
+
+        $db->commit();
+    } catch (\Throwable $e) {
+        $db->rollBack();
+        throw $e;
+    }
+
+    resultInfo(true, '', [
+        'booked_amount' => $payAmount,
+        'beleg'         => $beleg,
+        'invnumber'     => $ar['invnumber'],
+        'open_after'    => round($openAmount - $payAmount, 2),
+    ]);
 }
 
 // ── Eingangsrechnung (AP) als Barzahlung buchen ───────────────────────────────
@@ -831,19 +1200,21 @@ function bookArAsCash($data) {
 /**
  * Offene Eingangsrechnungen (Lieferantenrechnungen) für Barzahlung laden
  *
- * @param string $data['search'] Suchbegriff: Rechnungsnr. oder Lieferantenname (optional)
- * @testdata {}
+ * Sortierung und Zeitraumfilter wie bei den Ausgangsrechnungen — zwei Listen
+ * nebeneinander, die sich unterschiedlich verhalten, wären für sich genommen
+ * schon ein Fehler.
+ *
+ * @param string $data['search']    Suchbegriff: Rechnungsnr. oder Lieferantenname (optional)
+ * @param string $data['from_date'] Frühestes Rechnungsdatum (optional)
+ * @param string $data['to_date']   Spätestes Rechnungsdatum (optional)
+ * @testdata {"from_date": "2026-08-01", "to_date": "2026-08-31"}
  */
 function getOpenApForCash($data) {
     $db = DbhCompany::begin();
 
-    $params     = [];
-    $whereExtra = '';
-
-    if (!empty($data['search'])) {
-        $whereExtra      .= " AND (ap.invnumber ILIKE :search OR v.name ILIKE :search)";
-        $params['search'] = '%' . $data['search'] . '%';
-    }
+    $search = trim($data['search'] ?? '');
+    $from   = $search === '' && !empty($data['from_date']) ? $data['from_date'] : null;
+    $to     = $search === '' && !empty($data['to_date'])   ? $data['to_date']   : null;
 
     $result = $db->getAll("
         SELECT
@@ -859,10 +1230,16 @@ function getOpenApForCash($data) {
         JOIN vendor v ON v.id = ap.vendor_id
         WHERE ap.amount > ap.paid
           AND ap.storno IS NOT TRUE
-          {$whereExtra}
-        ORDER BY ap.duedate ASC NULLS LAST, ap.transdate ASC
+          AND (:search::text IS NULL OR ap.invnumber ILIKE :search OR v.name ILIKE :search)
+          AND (:from::date   IS NULL OR ap.transdate >= :from::date)
+          AND (:to::date     IS NULL OR ap.transdate <= :to::date)
+        ORDER BY ap.transdate DESC NULLS LAST, ap.id DESC
         LIMIT 100
-    ", $params);
+    ", [
+        'search' => $search === '' ? null : '%' . $search . '%',
+        'from'   => $from,
+        'to'     => $to,
+    ]);
 
     resultInfo(true, '', ['invoices' => $result ?: []]);
 }
@@ -923,12 +1300,12 @@ function bookApAsCash($data) {
     }
 
     // Verbindlichkeitskonto der AP-Erstbuchung ermitteln (z. B. 3300)
+    $tokenLink = _kasse_hasLinkToken('chart_link', 'AP');
     $counterChart = $db->getOne("
         SELECT chart_id, chart_link
         FROM acc_trans
         WHERE trans_id = :tid
-          AND chart_link LIKE '%AP%'
-          AND chart_link NOT LIKE '%AP_paid%'
+          AND {$tokenLink}
         ORDER BY acc_trans_id ASC
         LIMIT 1
     ", ['tid' => $apId]);
@@ -948,45 +1325,60 @@ function bookApAsCash($data) {
 
     $beleg = nextBelegnummer($db, $register['chart_id'], $transdate);
 
-    // Vorzeichen (Soll = negativ, Haben = positiv):
-    //   Verbindlichkeitskonto: negativer Betrag (Soll) → klärt die Verbindlichkeit, zählt für ap.paid
-    //   Kassenkonto:           positiver Betrag (Haben) → Geld verlässt die Kasse; chart_link 'AP_paid'
-    //                          wird von der Faktura als Zahlung erkannt; source = Belegnummer.
-    $db->execute(
-        "INSERT INTO acc_trans (trans_id, chart_id, amount, transdate, gldate, source, memo, chart_link, tax_id, taxkey)
-         VALUES (:trans_id, :chart_id, :amount, :transdate, :transdate, :source, :memo, :chart_link, 0, 0)",
-        [
-            'trans_id'   => $apId,
-            'chart_id'   => $counterChart['chart_id'],
-            'amount'     => -$payAmount,
-            'transdate'  => $transdate,
-            'source'     => $ap['invnumber'],
-            'memo'       => 'Barzahlung Kasse',
-            'chart_link' => $counterChart['chart_link'] ?? 'AP',
-        ]
-    );
+    // Klammer wie bei der Ausgangsrechnung — siehe bookArAsCash().
+    $db->beginTransaction();
+    try {
 
-    $db->execute(
-        "INSERT INTO acc_trans (trans_id, chart_id, amount, transdate, gldate, source, memo, chart_link, tax_id, taxkey)
-         VALUES (:trans_id, :chart_id, :amount, :transdate, :transdate, :source, :memo, :chart_link, 0, 0)",
-        [
-            'trans_id'   => $apId,
-            'chart_id'   => $register['chart_id'],
-            'amount'     => $payAmount,
-            'transdate'  => $transdate,
-            'source'     => $beleg,
-            'memo'       => 'Barzahlung Kasse',
-            'chart_link' => $register['chart_link'],
-        ]
-    );
+        // Vorzeichen (Soll = negativ, Haben = positiv):
+        //   Verbindlichkeitskonto: negativer Betrag (Soll) → klärt die Verbindlichkeit, zählt für ap.paid
+        //   Kassenkonto:           positiver Betrag (Haben) → Geld verlässt die Kasse; chart_link 'AP_paid'
+        //                          wird von der Faktura als Zahlung erkannt; source = Belegnummer.
+        $db->execute(
+            "INSERT INTO acc_trans (trans_id, chart_id, amount, transdate, gldate, source, memo, chart_link, tax_id, taxkey)
+             VALUES (:trans_id, :chart_id, :amount, :transdate, :transdate, :source, :memo, :chart_link, 0, 0)",
+            [
+                'trans_id'   => $apId,
+                'chart_id'   => $counterChart['chart_id'],
+                'amount'     => -$payAmount,
+                'transdate'  => $transdate,
+                'source'     => $ap['invnumber'],
+                'memo'       => 'Barzahlung Kasse',
+                'chart_link' => $counterChart['chart_link'] ?? 'AP',
+            ]
+        );
 
-    // ap.paid erhöhen
-    $db->execute(
-        "UPDATE ap SET paid = COALESCE(paid, 0) + :inc WHERE id = :id",
-        ['inc' => $payAmount, 'id' => $apId]
-    );
+        $db->execute(
+            "INSERT INTO acc_trans (trans_id, chart_id, amount, transdate, gldate, source, memo, chart_link, tax_id, taxkey)
+             VALUES (:trans_id, :chart_id, :amount, :transdate, :transdate, :source, :memo, :chart_link, 0, 0)",
+            [
+                'trans_id'   => $apId,
+                'chart_id'   => $register['chart_id'],
+                'amount'     => $payAmount,
+                'transdate'  => $transdate,
+                'source'     => $beleg,
+                'memo'       => 'Barzahlung Kasse',
+                'chart_link' => $register['chart_link'],
+            ]
+        );
 
-    resultInfo(true, '', ['booked_amount' => $payAmount]);
+        // ap.paid erhöhen
+        $db->execute(
+            "UPDATE ap SET paid = COALESCE(paid, 0) + :inc WHERE id = :id",
+            ['inc' => $payAmount, 'id' => $apId]
+        );
+
+        $db->commit();
+    } catch (\Throwable $e) {
+        $db->rollBack();
+        throw $e;
+    }
+
+    resultInfo(true, '', [
+        'booked_amount' => $payAmount,
+        'beleg'         => $beleg,
+        'invnumber'     => $ap['invnumber'],
+        'open_after'    => round($openAmount - $payAmount, 2),
+    ]);
 }
 
 // ── Beleg-Upload und -Vorschau (optional) ─────────────────────────────────────

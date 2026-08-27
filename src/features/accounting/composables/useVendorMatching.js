@@ -57,12 +57,13 @@ export function useVendorMatching() {
         }
     }
 
-    async function mergeVendors(keepId, mergeId) {
+    async function mergeVendors(keepId, mergeId, deleteMerged = false) {
         try {
             const response = await axios.post('/api/accounting/', {
                 action: 'mergeVendors',
                 keep_vendor_id: keepId,
-                merge_vendor_id: mergeId
+                merge_vendor_id: mergeId,
+                delete_merged: deleteMerged
             })
             return response.data
         } catch (e) {

@@ -1,21 +1,24 @@
 {
-    "title": "Konfiguracja u\u017cytkownika",
-    "loading": "\u0141adowanie konfiguracji...",
-    "configLoadError": "B\u0142\u0105d konfiguracji",
+    "title": "Konfiguracja użytkownika",
+    "loading": "Ładowanie konfiguracji...",
+    "configLoadError": "Błąd konfiguracji",
     "user_fields": {
-        "appearance": "Wygl\u0105d",
+        "appearance": "Wygląd",
         "darkMode": "Ciemny motyw (Dark Mode)",
-        "darkMode_help": "W\u0142\u0105cza ciemny schemat kolor\u00f3w dla ca\u0142ej aplikacji.",
-        "locale": "J\u0119zyk wy\u015bwietlania",
-        "locale_help": "J\u0119zyk interfejsu u\u017cytkownika. Stosowany natychmiast.",
-        "general": "Og\u00f3lne",
-        "startupView": "Widok pocz\u0105tkowy",
-        "startupView_help": "Widok wy\u015bwietlany po zalogowaniu. Nadpisuje ustawienie firmy.",
+        "darkMode_help": "Włącza ciemny schemat kolorów dla całej aplikacji.",
+        "locale": "Język wyświetlania",
+        "locale_help": "Język interfejsu użytkownika. Stosowany natychmiast.",
+        "general": "Ogólne",
+        "startupView": "Widok początkowy",
+        "startupView_help": "Widok wyświetlany po zalogowaniu. Nadpisuje ustawienie firmy.",
         "faktura": "Faktura",
-        "fakturaCompactView": "Domy\u015blnie w\u0142\u0105cz widok kompaktowy",
-        "fakturaCompactView_help": "Ukrywa karty szczeg\u00f3\u0142\u00f3w (klient, szczeg\u00f3\u0142y dokumentu, dodatkowe informacje) i wy\u015bwietla tylko kompaktowe podsumowanie.",
+        "fakturaCompactView": "Domyślnie włącz widok kompaktowy",
+        "fakturaCompactView_help": "Ukrywa karty szczegółów (klient, szczegóły dokumentu, dodatkowe informacje) i wyświetla tylko kompaktowe podsumowanie.",
         "printer": "Drukarka",
-        "defaultPrinter": "Domy\u015blna drukarka",
-        "defaultPrinter_help": "Drukarka domy\u015blnie u\u017cywana do drukowania"
+        "defaultPrinter": "Domyślna drukarka",
+        "defaultPrinter_help": "Drukarka domyślnie używana do drukowania",
+        "accounting": "Księgowość",
+        "accountingEasymode": "Tryb prosty",
+        "accountingEasymode_help": "Pokazuje księgowość zwykłym językiem: bez Winien i Ma, bez kluczy podatkowych, tylko bieżąca praca. Po wyłączeniu pojawia się widok fachowy. Można też przełączyć bezpośrednio w księgowości."
     }
 }

@@ -110,18 +110,23 @@
                 </span>
             </div>
 
-            <draggable
-                :list="notes"
-                item-key="id"
+            <VueDraggable
+                v-model="notes"
                 handle=".tafel-handle"
                 :animation="180"
                 ghost-class="tafel-ghost"
                 chosen-class="tafel-chosen"
                 drag-class="tafel-drag"
-                @change="onDragChange"
+                @update="onDragChange"
             >
-                <template #item="{ element: note }">
-                    <v-card class="tafel-card mb-2" rounded="lg" variant="flat" border>
+                <v-card
+                    v-for="note in notes"
+                    :key="note.id"
+                    class="tafel-card mb-2"
+                    rounded="lg"
+                    variant="flat"
+                    border
+                >
                         <div class="d-flex align-center pa-3">
                             <v-icon
                                 class="tafel-handle me-2"
@@ -167,8 +172,7 @@
                             />
                         </div>
                     </v-card>
-                </template>
-            </draggable>
+            </VueDraggable>
         </template>
     </v-container>
 </template>
@@ -177,14 +181,14 @@
 import { defineComponent, ref, onMounted, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
 import axios from 'axios'
-import draggable from 'vuedraggable'
+import { VueDraggable } from 'vue-draggable-plus'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
 import { oserpStore } from '@/core/stores/oserp.store.js'
 import * as alerts from '@/core/utils/alerts.js'
 
 export default defineComponent({
     name: 'TafelView',
-    components: { NavbarView, draggable },
+    components: { NavbarView, VueDraggable },
     setup() {
         const { t } = useI18n()
         const oserp = oserpStore()
@@ -283,8 +287,7 @@ export default defineComponent({
 
         // ── Umsortieren (Drag & Drop) ──
 
-        async function onDragChange(evt) {
-            if (!evt.moved) return
+        async function onDragChange() {
             const order = notes.value.map(n => n.id)
             try {
                 await axios.post('/api/voicenotes/', { action: 'reorderVoiceNotes', ids: order })

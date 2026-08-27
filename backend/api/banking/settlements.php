@@ -522,11 +522,14 @@ function bookCardSettlementLine($data) {
             if (!$ar) { resultInfo(false, 'NOT_FOUND', 'Rechnung #' . $arId . ' nicht gefunden'); return; }
             $pay = round((float)$ar['amount'] - (float)$ar['paid'], 2);
             if ($pay <= 0) { resultInfo(false, 'ALREADY_PAID', 'Rechnung ' . $ar['invnumber'] . ' ist bereits bezahlt'); return; }
+            // Kontroll-Konto tragt den Token 'AR' EXAKT (':'-getrennte Liste).
+            // LIKE '%AR%' wuerde auch 'AR_amount'/'AR_tax' treffen und die Zahlung
+            // auf dem Erloes- statt dem Forderungskonto ausgleichen.
             $fk = $db->getOne(
                 "SELECT chart_id FROM acc_trans
-                 WHERE trans_id = :tid AND chart_link LIKE '%AR%' AND chart_link NOT LIKE '%AR_paid%'
+                 WHERE trans_id = :tid AND chart_link ~ :token_link
                  ORDER BY acc_trans_id ASC LIMIT 1",
-                ['tid' => $arId]
+                ['tid' => $arId, 'token_link' => '(^|:)AR($|:)']
             );
             // Fallback fuer Rechnungen ohne GL-Erstbuchung (z. B. importierte Belege
             // ohne acc_trans): Standard-Forderungskonto aus dem Kontenrahmen nehmen

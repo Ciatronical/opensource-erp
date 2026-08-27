@@ -1,9 +1,10 @@
 <template>
     <NavbarView />
     <v-container fluid>
+        <AccountingPageHeader :title="t('AccountingView.bookings.title')" />
+
         <v-row>
             <v-col cols="12">
-                <h1 class="text-h5 mb-2">{{ t('AccountingView.bookings.title') }}</h1>
                 <v-alert type="info" variant="tonal" density="comfortable" icon="mdi-information-outline" class="mt-1 mb-2"
                          :text="viewMode === 'journal' ? t('AccountingView.bookings.infoJournal') : t('AccountingView.bookings.info')" />
             </v-col>
@@ -11,11 +12,15 @@
 
         <!-- Umschalter: echtes Hauptbuch-Journal vs. KI-Belegvorschläge -->
         <v-row>
-            <v-col cols="12">
+            <v-col cols="12" class="d-flex align-center flex-wrap ga-2">
                 <v-btn-toggle v-model="viewMode" mandatory density="comfortable" color="primary" variant="outlined">
                     <v-btn value="journal"><v-icon start>mdi-book-open-variant</v-icon>{{ t('AccountingView.bookings.modeJournal') }}</v-btn>
                     <v-btn value="ki"><v-icon start>mdi-robot</v-icon>{{ t('AccountingView.bookings.modeKi') }}</v-btn>
                 </v-btn-toggle>
+                <v-spacer />
+                <v-btn color="primary" variant="tonal" :to="{ name: 'accounting-invoice-manual' }">
+                    <v-icon start>mdi-file-document-plus</v-icon>{{ t('AccountingView.bookings.manualEntry') }}
+                </v-btn>
             </v-col>
         </v-row>
 
@@ -473,6 +478,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
+import AccountingPageHeader from '../components/accounting.page-header.vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAccounting } from '../composables/useAccounting.js'
 import * as toasts from '@/core/utils/toasts.js'
@@ -686,8 +692,10 @@ async function openDetail(item) {
 }
 
 async function approveOne(id, item = null) {
-    // Inline-Freigabe einer Buchung ohne Lieferant → Detail öffnen, damit zugeordnet werden kann
+    // Inline-Freigabe einer Buchung ohne Lieferant → Detail öffnen, damit zugeordnet werden kann.
+    // Ohne Hinweis wirkt der Klick, als würde nichts passieren – deshalb ein Info-Toast.
     if (item && item.status === 'pending' && !item.vendor_id) {
+        toasts.info(t('AccountingView.bookings.needVendorHint'))
         await openDetail(item)
         return
     }
@@ -699,6 +707,10 @@ async function approveOne(id, item = null) {
         detailDialog.value = false
     } else if (result.text) {
         toasts.error(result.text)   // z. B. "Aufwandskonto … nicht im Kontenrahmen"
+        // Fehlt das Aufwandskonto, direkt in die Bearbeitung springen statt den Nutzer raten zu lassen.
+        if (/Aufwandskonto|ACCOUNT_REQUIRED/i.test(result.text) && selectedBooking.value?.id === id) {
+            startEdit()
+        }
     }
 }
 

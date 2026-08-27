@@ -16,6 +16,9 @@
         "fakturaCompactView_help": "Ascunde cardurile de detaliu (client, detalii document, informatii suplimentare) si afiseaza doar un rezumat compact.",
         "printer": "Imprimanta",
         "defaultPrinter": "Imprimanta implicita",
-        "defaultPrinter_help": "Imprimanta utilizata implicit pentru imprimare"
+        "defaultPrinter_help": "Imprimanta utilizata implicit pentru imprimare",
+        "accounting": "Contabilitate",
+        "accountingEasymode": "Mod simplu",
+        "accountingEasymode_help": "Afișează contabilitatea în limbaj obișnuit: fără debit și credit, fără coduri de TVA, doar munca de făcut. Dezactivat apare vederea profesională. Se poate schimba și direct în contabilitate."
     }
 }

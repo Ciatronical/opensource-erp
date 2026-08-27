@@ -527,7 +527,7 @@ function searchAccounts($data) {
     }
 
     $accounts = $db->getAll(
-        "SELECT c.accno, c.description, c.link, c.category
+        "SELECT c.id, c.accno, c.description, c.link, c.category
          FROM chart c WHERE {$where} ORDER BY c.accno LIMIT 20",
         $params
     );
@@ -839,4 +839,84 @@ function getLedgerEntry($data) {
     }
 
     resultInfo(true, '', ['head' => $head, 'lines' => $lines ?: [], 'document' => $document]);
+}
+
+/**
+ * Kontoblatt / Sachkontoauszug: alle acc_trans-Zeilen EINES Kontos chronologisch
+ * mit Eröffnungssaldo und laufendem Saldo. Vorzeichen kivitendo: Soll = amount<0,
+ * Haben = amount>0. Saldo als laufende Summe Soll−Haben (= -amount), so wird ein
+ * Aktiv-/Aufwandskonto positiv dargestellt.
+ *
+ * @param string $data['accno']     Kontonummer (Pflicht, alternativ chart_id)
+ * @param int    $data['chart_id']  Konto-ID (alternativ zu accno)
+ * @param string $data['from_date'] Von-Datum (optional, Default: Jahresanfang)
+ * @param string $data['to_date']   Bis-Datum (optional, Default: heute)
+ * @testdata {"accno": "5400"}
+ */
+function getAccountLedger($data) {
+    $db = DbhCompany::begin();
+
+    $accno    = trim($data['accno'] ?? '');
+    $chartId  = intval($data['chart_id'] ?? 0);
+    $from     = !empty($data['from_date']) ? $data['from_date'] : date('Y') . '-01-01';
+    $to       = !empty($data['to_date'])   ? $data['to_date']   : date('Y-m-d');
+
+    $chart = $chartId > 0
+        ? $db->getOne("SELECT id, accno, description FROM chart WHERE id = :id", [':id' => $chartId])
+        : $db->getOne("SELECT id, accno, description FROM chart WHERE accno = :a", [':a' => $accno]);
+    if (!$chart) throw new ApiError('DATA_NOT_FOUND', 'Konto nicht gefunden');
+    $cid = intval($chart['id']);
+
+    // Eröffnungssaldo = Soll−Haben aller Buchungen VOR dem Von-Datum
+    $opening = $db->getOne(
+        "SELECT COALESCE(-SUM(amount), 0) AS saldo FROM acc_trans WHERE chart_id = :cid AND transdate < :from",
+        [':cid' => $cid, ':from' => $from]
+    );
+    $openingSaldo = floatval($opening['saldo'] ?? 0);
+
+    // Buchungszeilen im Zeitraum. trans_id ist über ar/ap/gl eindeutig
+    // (gemeinsame Sequenz), daher LEFT JOIN auf alle drei gefahrlos.
+    $rows = $db->getAll(
+        "SELECT t.acc_trans_id, t.trans_id, t.transdate,
+                TO_CHAR(t.transdate, 'DD.MM.YYYY') AS transdate_fmt,
+                CASE WHEN ar.id IS NOT NULL THEN 'ar' WHEN ap.id IS NOT NULL THEN 'ap' ELSE 'gl' END AS src,
+                COALESCE(ar.invnumber, ap.invnumber, gl.reference) AS reference,
+                COALESCE(cu.name, ve.name) AS partner,
+                COALESCE(NULLIF(t.memo,''), NULLIF(gl.description,''),
+                         NULLIF(ar.transaction_description,''), NULLIF(ap.transaction_description,'')) AS memo,
+                CASE WHEN t.amount < 0 THEN -t.amount ELSE 0 END AS soll,
+                CASE WHEN t.amount > 0 THEN  t.amount ELSE 0 END AS haben,
+                t.amount
+         FROM acc_trans t
+         LEFT JOIN ar ON ar.id = t.trans_id
+         LEFT JOIN ap ON ap.id = t.trans_id
+         LEFT JOIN gl ON gl.id = t.trans_id
+         LEFT JOIN customer cu ON cu.id = ar.customer_id
+         LEFT JOIN vendor   ve ON ve.id = ap.vendor_id
+         WHERE t.chart_id = :cid AND t.transdate BETWEEN :from AND :to
+         ORDER BY t.transdate, t.trans_id, t.acc_trans_id",
+        [':cid' => $cid, ':from' => $from, ':to' => $to]
+    );
+
+    // Laufenden Saldo in PHP aufaddieren (Soll−Haben = -amount)
+    $saldo = $openingSaldo;
+    $sumSoll = 0.0; $sumHaben = 0.0;
+    foreach ($rows as &$r) {
+        $saldo += floatval($r['soll']) - floatval($r['haben']);
+        $r['saldo'] = round($saldo, 2);
+        $sumSoll  += floatval($r['soll']);
+        $sumHaben += floatval($r['haben']);
+    }
+    unset($r);
+
+    resultInfo(true, '', [
+        'account'   => ['id' => $cid, 'accno' => $chart['accno'], 'description' => $chart['description']],
+        'from_date' => $from,
+        'to_date'   => $to,
+        'opening'   => round($openingSaldo, 2),
+        'closing'   => round($saldo, 2),
+        'sum_soll'  => round($sumSoll, 2),
+        'sum_haben' => round($sumHaben, 2),
+        'rows'      => $rows ?: [],
+    ]);
 }

@@ -16,6 +16,9 @@
         "fakturaCompactView_help": "Doljer detaljkorten (Kund, Dokumentdetaljer, Tillaggsinformation) och visar bara en kompakt sammanfattning.",
         "printer": "Skrivare",
         "defaultPrinter": "Standardskrivare",
-        "defaultPrinter_help": "Skrivare som anvands som standard for utskrifter"
+        "defaultPrinter_help": "Skrivare som anvands som standard for utskrifter",
+        "accounting": "Bokföring",
+        "accountingEasymode": "Enkelt läge",
+        "accountingEasymode_help": "Visar bokföringen i vardagligt språk: utan debet och kredit, utan momskoder, bara arbetet som väntar. Avstängt visas den fackliga vyn. Kan även växlas direkt i bokföringen."
     }
 }

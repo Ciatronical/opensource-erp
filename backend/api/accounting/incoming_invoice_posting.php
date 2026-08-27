@@ -351,10 +351,18 @@ function postIncomingInvoice($data) {
         }
     }
 
+    // Aufwandskonto: chart-id direkt, sonst aus der Kontonummer (accno) auflösen
+    $expenseChartId = intval($data['expense_chart_id'] ?? 0);
+    if ($expenseChartId <= 0 && !empty($data['debit_account'])) {
+        $row = $db->getOne("SELECT id FROM chart WHERE accno = :a", [':a' => trim($data['debit_account'])]);
+        if (!$row) { resultInfo(false, 'Aufwandskonto (' . $data['debit_account'] . ') nicht im Kontenrahmen'); return; }
+        $expenseChartId = intval($row['id']);
+    }
+
     try {
         $apId = _iv_postAp($db, [
             'vendor_id'        => $vendorId,
-            'expense_chart_id' => intval($data['expense_chart_id'] ?? 0),
+            'expense_chart_id' => $expenseChartId,
             'invnumber'        => $data['invnumber'] ?? '',
             'transdate'        => $data['transdate'] ?? date('Y-m-d'),
             'duedate'          => $data['duedate'] ?? null,

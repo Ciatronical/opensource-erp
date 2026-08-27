@@ -16,6 +16,9 @@
         "fakturaCompactView_help": "Peidab detailkaardid (klient, dokumendi üksikasjad, lisainfo) ja kuvab ainult kompaktse kokkuvõtte.",
         "printer": "Printer",
         "defaultPrinter": "Vaikeprinter",
-        "defaultPrinter_help": "Printer, mida kasutatakse vaikimisi printimiseks"
+        "defaultPrinter_help": "Printer, mida kasutatakse vaikimisi printimiseks",
+        "accounting": "Raamatupidamine",
+        "accountingEasymode": "Lihtne režiim",
+        "accountingEasymode_help": "Näitab raamatupidamist igapäevases keeles: ilma deebeti ja kreediti, ilma maksukoodideta, ainult ees ootava tööga. Väljalülitatuna kuvatakse erialane vaade. Saab ümber lülitada ka otse raamatupidamises."
     }
 }

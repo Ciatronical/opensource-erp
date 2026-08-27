@@ -49,10 +49,22 @@
       "expense": "Ausgang",
       "ignore": "Ignorieren",
       "resetStatus": "Zurücksetzen",
-      "searchPlaceholder": "Suchen: Name, Verwendungszweck, Betrag, Rechnungsnr. …",
+      "searchPlaceholder": "Name, Zweck, Nr., Betrag …",
       "openInvoice": "Rechnung öffnen",
       "assign": "Zuordnen",
-      "details": "Details"
+      "details": "Details",
+      "documentPresent": "Beleg hinterlegt",
+      "documentMissing": "Kein Beleg hinterlegt",
+      "searchHelpTitle": "Wonach kann ich suchen?",
+      "searchHelpFooter": "Mehrere Begriffe werden UND-verknüpft. Beim Betrag ist das Vorzeichen egal — gefunden werden Ein- und Ausgänge.",
+      "searchExampleExact": "Genau dieser Betrag (auch 159.03)",
+      "searchExampleGreater": "Alle Beträge über 500 €",
+      "searchExampleLess": "Alle Beträge bis 50 €",
+      "searchExampleRange": "Beträge zwischen 100 € und 200 €",
+      "searchExampleInvoice": "Rechnungsnr., Name oder Zweck",
+      "searchHintExact": "Betrag {amount} oder Text",
+      "searchHintCompare": "Betrag {op} {amount}",
+      "searchHintRange": "Betrag {from} bis {to}"
     },
     "booking": {
       "title": "Zahlung buchen",
@@ -115,7 +127,27 @@
       "payables": "Eingangsrechnungen",
       "openAmount": "Offener Betrag",
       "dueDate": "Fällig am",
-      "matchManually": "Manuell zuordnen"
+      "matchManually": "Manuell zuordnen",
+      "createApTitle": "Als Eingangsrechnung buchen",
+      "createApHint": "Legt aus diesem Bankumsatz eine echte Eingangsrechnung an und bucht sie sofort als bezahlt. Der Bruttobetrag wird aus dem Umsatz übernommen.",
+      "createApBook": "Anlegen und buchen",
+      "createApSuccess": "Eingangsrechnung über {gross} angelegt und bezahlt",
+      "vendor": "Lieferant",
+      "expenseAccount": "Aufwandskonto",
+      "taxRate": "Steuersatz",
+      "invnumber": "Rechnungsnummer (optional)",
+      "cancel": "Abbrechen",
+      "document": "Beleg (Rechnung, Quittung)",
+      "documentHint": "PDF oder Foto. Wird fest an die Eingangsrechnung gehängt und im DATEV-Export mitgeliefert.",
+      "documentAttached": "Beleg wird an die Buchung gehängt.",
+      "documentMissing": "Ohne Beleg keine ordnungsgemäße Buchung — bitte Rechnung oder Quittung anhängen.",
+      "documentFailed": "Buchung steht, aber der Beleg konnte nicht gespeichert werden: {reason}",
+      "noDocumentTitle": "Ohne Beleg buchen?",
+      "noDocumentConfirm": "Zu dieser Buchung ist kein Beleg hinterlegt. Bei einer Betriebsprüfung muss zu jeder Buchung ein Beleg vorliegen. Trotzdem buchen?",
+      "noDocumentContinue": "Ohne Beleg buchen",
+      "accountSource_rule": "Zuletzt für diesen Lieferanten verwendet",
+      "accountSource_history": "Aus der letzten Eingangsrechnung dieses Lieferanten",
+      "accountSource_default": "Standardkonto aus den Einstellungen"
     },
     "settlement": {
       "title": "Kartenabrechnung zuordnen",
@@ -236,7 +268,8 @@
       "syncAllDone": "{imported} Umsätze importiert ({n} Konten)",
       "bicFound": "BIC automatisch erkannt: {bic}",
       "alertsTitle": "Banking-Hinweise",
-      "noAlerts": "Keine Hinweise"
+      "noAlerts": "Keine Hinweise",
+      "printStatement": "Kontoauszug drucken"
     },
     "liquidity": {
       "title": "Liquidität",
@@ -453,9 +486,18 @@
     "wholePeriod": "Gesamt",
     "noKassaAccount": "Kein Kassakonto im Kontenplan gefunden. Bitte legen Sie im Kontenrahmen ein Kassenkonto an (SKR03: 1000, SKR04: 1600).",
     "months": {
-      "jan": "Januar", "feb": "Februar", "mar": "März", "apr": "April",
-      "may": "Mai", "jun": "Juni", "jul": "Juli", "aug": "August",
-      "sep": "September", "oct": "Oktober", "nov": "November", "dec": "Dezember"
+      "jan": "Januar",
+      "feb": "Februar",
+      "mar": "März",
+      "apr": "April",
+      "may": "Mai",
+      "jun": "Juni",
+      "jul": "Juli",
+      "aug": "August",
+      "sep": "September",
+      "oct": "Oktober",
+      "nov": "November",
+      "dec": "Dezember"
     },
     "date": "Datum",
     "amount": "Betrag",
@@ -505,6 +547,13 @@
     "chartAccount": "Konto",
     "noCharts": "Keine Konten gefunden",
     "sourceAR": "Kundenzahlung",
-    "sourceAP": "Lieferantenzahlung"
+    "sourceAP": "Lieferantenzahlung",
+    "print": "Kassenbuch drucken",
+    "bookWithDetails": "Teilbetrag oder anderes Datum…",
+    "bookedInSuccess": "Rechnung {invnumber} bar vereinnahmt: {amount} — Beleg {beleg}",
+    "bookedOutSuccess": "Rechnung {invnumber} bar bezahlt: {amount} — Beleg {beleg}",
+    "searchAllPeriods": "Die Suche geht über alle Zeiträume, nicht nur über den eingestellten.",
+    "previousPeriod": "Vorheriger Zeitraum",
+    "nextPeriod": "Nächster Zeitraum"
   }
 }

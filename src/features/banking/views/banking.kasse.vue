@@ -104,29 +104,7 @@
             <!-- ── KASSENBUCH ── -->
             <v-window-item value="transactions">
                 <div class="tab-toolbar mb-3">
-                    <!-- Zeitraum-Modus: Jahr (Standard) / Monat / Gesamt -->
-                    <v-btn-toggle v-model="periodMode" mandatory density="compact" variant="outlined" rounded="lg">
-                        <v-btn value="year" size="small">{{ t('KasseView.modeYear') }}</v-btn>
-                        <v-btn value="month" size="small">{{ t('KasseView.modeMonth') }}</v-btn>
-                        <v-btn value="all" size="small">{{ t('KasseView.wholePeriod') }}</v-btn>
-                    </v-btn-toggle>
-
-                    <!-- Jahresnavigation -->
-                    <div v-if="periodMode === 'year'" class="d-flex align-center">
-                        <v-btn icon="mdi-chevron-left" variant="text" size="small" @click="shiftYear(-1)" />
-                        <div class="text-subtitle-1 font-weight-medium text-center" style="min-width:90px">
-                            {{ periodYear }}
-                        </div>
-                        <v-btn icon="mdi-chevron-right" variant="text" size="small" @click="shiftYear(1)" />
-                    </div>
-                    <!-- Monatsnavigation (wie bei Lexware) -->
-                    <div v-else-if="periodMode === 'month'" class="d-flex align-center">
-                        <v-btn icon="mdi-chevron-left" variant="text" size="small" @click="shiftMonth(-1)" />
-                        <div class="text-subtitle-1 font-weight-medium text-center" style="min-width:160px">
-                            {{ periodLabel }}
-                        </div>
-                        <v-btn icon="mdi-chevron-right" variant="text" size="small" @click="shiftMonth(1)" />
-                    </div>
+                    <PeriodPicker v-model:mode="periodMode" v-model:year="periodYear" v-model:month="periodMonth" />
 
                     <v-spacer />
 
@@ -146,6 +124,13 @@
                         <v-btn value="income" size="small" color="success">{{ t('KasseView.filterIncome') }}</v-btn>
                         <v-btn value="expense" size="small" color="error">{{ t('KasseView.filterExpense') }}</v-btn>
                     </v-btn-toggle>
+
+                    <!-- Gedruckt wird immer der volle Zeitraum: ein Kassenbuch mit
+                         herausgefiltertem Teil wäre kein Kassenbuch mehr. -->
+                    <v-btn variant="tonal" size="small" class="text-none" :loading="printing" @click="printCashbook">
+                        <v-icon start size="small">mdi-printer-outline</v-icon>
+                        {{ t('KasseView.print') }}
+                    </v-btn>
                 </div>
 
                 <!-- Summenleiste (sortier-/filterunabhängig) -->
@@ -258,6 +243,8 @@
             <!-- ── OFFENE AUSGANGSRECHNUNGEN ── -->
             <v-window-item value="invoices">
                 <div class="tab-toolbar mb-2">
+                    <PeriodPicker v-model:mode="invPeriodMode" v-model:year="invPeriodYear" v-model:month="invPeriodMonth" />
+                    <v-spacer />
                     <v-text-field
                         v-model="arSearch"
                         :label="t('KasseView.searchInvoice')"
@@ -268,6 +255,12 @@
                         style="max-width:320px"
                         @update:model-value="debouncedLoadOpenAr"
                     />
+                </div>
+                <!-- Ohne diesen Hinweis wirkt es wie ein Fehler, wenn die Suche
+                     Rechnungen aus einem anderen Monat zutage fördert. -->
+                <div v-if="arSearch" class="text-caption text-medium-emphasis mb-2">
+                    <v-icon size="14" class="mr-1">mdi-information-outline</v-icon>
+                    {{ t('KasseView.searchAllPeriods') }}
                 </div>
 
                 <v-card rounded="lg" elevation="0" border>
@@ -293,10 +286,21 @@
                             <span class="font-weight-semibold">{{ formatCurrency(item.open_amount) }}</span>
                         </template>
                         <template #item.actions="{ item }">
-                            <v-btn size="small" variant="tonal" color="success" @click.stop="bookArAsCashDialog(item)">
-                                <v-icon start>mdi-cash</v-icon>
-                                {{ t('KasseView.bookAsCash') }}
-                            </v-btn>
+                            <div class="d-flex align-center justify-end ga-1">
+                                <!-- Ein Klick, voller offener Betrag, heutiges Datum,
+                                     Belegnummer vergibt die Kasse selbst. -->
+                                <v-btn size="small" variant="flat" color="success"
+                                       :loading="bookingRow === item.id" :disabled="!!bookingRow"
+                                       @click.stop="bookArNow(item)">
+                                    <v-icon start>mdi-cash</v-icon>
+                                    {{ t('KasseView.bookAsCash') }}
+                                </v-btn>
+                                <!-- Teilbetrag oder abweichendes Datum: der alte Weg
+                                     ueber den Dialog bleibt daneben stehen. -->
+                                <v-btn icon="mdi-tune-variant" size="small" variant="text"
+                                       :disabled="!!bookingRow" :title="t('KasseView.bookWithDetails')"
+                                       @click.stop="bookArAsCashDialog(item)" />
+                            </div>
                         </template>
                         <template #no-data>
                             <div class="text-center pa-6 text-disabled">{{ t('KasseView.noOpenInvoices') }}</div>
@@ -308,6 +312,8 @@
             <!-- ── OFFENE EINGANGSRECHNUNGEN (Lieferanten) ── -->
             <v-window-item value="payables">
                 <div class="tab-toolbar mb-2">
+                    <PeriodPicker v-model:mode="invPeriodMode" v-model:year="invPeriodYear" v-model:month="invPeriodMonth" />
+                    <v-spacer />
                     <v-text-field
                         v-model="apSearch"
                         :label="t('KasseView.searchPayable')"
@@ -318,6 +324,10 @@
                         style="max-width:320px"
                         @update:model-value="debouncedLoadOpenAp"
                     />
+                </div>
+                <div v-if="apSearch" class="text-caption text-medium-emphasis mb-2">
+                    <v-icon size="14" class="mr-1">mdi-information-outline</v-icon>
+                    {{ t('KasseView.searchAllPeriods') }}
                 </div>
 
                 <v-card rounded="lg" elevation="0" border>
@@ -341,10 +351,17 @@
                             <span class="font-weight-semibold">{{ formatCurrency(item.open_amount) }}</span>
                         </template>
                         <template #item.actions="{ item }">
-                            <v-btn size="small" variant="tonal" color="warning" @click.stop="bookApAsCashDialog(item)">
-                                <v-icon start>mdi-cash-minus</v-icon>
-                                {{ t('KasseView.payCash') }}
-                            </v-btn>
+                            <div class="d-flex align-center justify-end ga-1">
+                                <v-btn size="small" variant="flat" color="warning"
+                                       :loading="bookingRow === item.id" :disabled="!!bookingRow"
+                                       @click.stop="bookApNow(item)">
+                                    <v-icon start>mdi-cash-minus</v-icon>
+                                    {{ t('KasseView.payCash') }}
+                                </v-btn>
+                                <v-btn icon="mdi-tune-variant" size="small" variant="text"
+                                       :disabled="!!bookingRow" :title="t('KasseView.bookWithDetails')"
+                                       @click.stop="bookApAsCashDialog(item)" />
+                            </div>
                         </template>
                         <template #no-data>
                             <div class="text-center pa-6 text-disabled">{{ t('KasseView.noOpenPayables') }}</div>
@@ -576,13 +593,16 @@
 <script setup>
 import { ref, reactive, computed, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
+import PeriodPicker from '../components/kasse.period-picker.component.vue'
 import * as alerts from '@/core/utils/alerts.js'
+import { openBase64Pdf } from '@/core/utils/download.js'
 import Swal from 'sweetalert2'
 
 const { t } = useI18n()
+const route  = useRoute()
 const router = useRouter()
 const API_URL = '/api/banking/'
 
@@ -594,6 +614,7 @@ const selectedRegisterId = ref(null)
 const counterCharts      = ref([])    // Gegenkonten (Aufwand/Ertrag)
 const transactions       = ref([])
 const txLoading          = ref(false)
+const printing           = ref(false)
 const openingBalance     = ref(0)
 const closingBalance     = ref(0)
 const sumIncome          = ref(0)
@@ -606,15 +627,32 @@ const openAp             = ref([])     // offene Eingangsrechnungen (Lieferanten
 const apLoading          = ref(false)
 const apSearch           = ref('')
 const typeFilter         = ref('all')
+const bookingRow         = ref(null)      // id der Rechnung, die gerade gebucht wird
 const search             = ref('')        // Freitextsuche im Kassenbuch
 const sortBy             = ref([{ key: 'transdate', order: 'desc' }])
-const activeTab          = ref('transactions')
+// Der offene Reiter steht in der Adresse, nicht nur im Speicher der Seite.
+// Nur so findet der Zurück-Knopf des Browsers nach dem Sprung in eine Rechnung
+// wieder den Reiter, aus dem heraus geklickt wurde.
+const TABS               = ['transactions', 'invoices', 'payables']
+const activeTab          = ref(TABS.includes(route.query.tab) ? route.query.tab : 'transactions')
 
-// Zeitraum-Filter: Jahr (Standard), Monat oder gesamter Zeitraum
+// Zeitraum-Filter: Monat (Standard), Jahr oder gesamter Zeitraum.
+// Der laufende Monat ist bewusst die Voreinstellung: ein volles Jahr sind
+// schnell mehrere hundert Zeilen, und die Seite braucht dann spürbar länger
+// zum Aufbauen. Anfangsbestand und laufender Saldo stimmen trotzdem, weil der
+// Bestand vor dem Von-Datum als Übertrag mitgeliefert wird.
 const now          = new Date()
 const periodYear   = ref(now.getFullYear())
 const periodMonth  = ref(now.getMonth())   // 0-basiert
-const periodMode   = ref('year')           // 'year' | 'month' | 'all'
+const periodMode   = ref('month')          // 'month' | 'year' | 'all'
+
+// Eigener Zeitraum fuer die beiden Rechnungslisten. Sie teilen ihn miteinander
+// — wer im August nach offenen Posten sieht, meint beide Richtungen —, aber
+// nicht mit dem Kassenbuch: dort blaettert man in der Vergangenheit, hier
+// kassiert man im Heute.
+const invPeriodYear  = ref(now.getFullYear())
+const invPeriodMonth = ref(now.getMonth())
+const invPeriodMode  = ref('month')
 
 // ── Dialogs ────────────────────────────────────────────────────────────────
 
@@ -704,6 +742,20 @@ const fromDate = computed(() => {
     const m = String(periodMonth.value + 1).padStart(2, '0')
     return `${periodYear.value}-${m}-01`
 })
+const invFromDate = computed(() => {
+    if (invPeriodMode.value === 'all')  return undefined
+    if (invPeriodMode.value === 'year') return `${invPeriodYear.value}-01-01`
+    return `${invPeriodYear.value}-${String(invPeriodMonth.value + 1).padStart(2, '0')}-01`
+})
+
+const invToDate = computed(() => {
+    if (invPeriodMode.value === 'all')  return undefined
+    if (invPeriodMode.value === 'year') return `${invPeriodYear.value}-12-31`
+    // Tag 0 des Folgemonats = letzter Tag des gewaehlten Monats
+    const last = new Date(invPeriodYear.value, invPeriodMonth.value + 1, 0)
+    return `${last.getFullYear()}-${String(last.getMonth() + 1).padStart(2, '0')}-${String(last.getDate()).padStart(2, '0')}`
+})
+
 const toDate = computed(() => {
     if (periodMode.value === 'all')  return undefined
     if (periodMode.value === 'year') return `${periodYear.value}-12-31`
@@ -770,6 +822,32 @@ async function loadRegisters() {
     }
 }
 
+/**
+ * Kassenbuch als PDF öffnen (Aufbau wie bei Lexware).
+ * Der Zeitraum ist der der Ansicht, der Typfilter bewusst nicht — gedruckt wird
+ * das vollständige Buch, sonst fehlten Zeilen und der Bestand wäre nicht mehr
+ * nachvollziehbar.
+ */
+async function printCashbook() {
+    if (!selectedRegisterId.value) return
+    printing.value = true
+    try {
+        const res = await axios.post(API_URL, {
+            action:           'getCashbookPdf',
+            cash_register_id: selectedRegisterId.value,
+            from_date:        fromDate.value,
+            to_date:          toDate.value,
+            period_label:     periodMode.value === 'all' ? '' : periodHint.value,
+        })
+        if (!res.data?.success) throw new Error(res.data?.text || res.data?.payload)
+        openBase64Pdf(res.data.payload.data, res.data.payload.filename)
+    } catch (e) {
+        alerts.error(e.message)
+    } finally {
+        printing.value = false
+    }
+}
+
 async function loadCharts() {
     const res = await axios.post(API_URL, { action: 'getCashCounterCharts' })
     if (res.data?.success) counterCharts.value = res.data.payload.charts
@@ -805,8 +883,10 @@ async function loadOpenAr() {
     arLoading.value = true
     try {
         const res = await axios.post(API_URL, {
-            action: 'getOpenArForCash',
-            search: arSearch.value || undefined,
+            action:    'getOpenArForCash',
+            search:    arSearch.value || undefined,
+            from_date: invFromDate.value,
+            to_date:   invToDate.value,
         })
         if (res.data?.success) openAr.value = res.data.payload.invoices ?? []
     } finally {
@@ -825,8 +905,10 @@ async function loadOpenAp() {
     apLoading.value = true
     try {
         const res = await axios.post(API_URL, {
-            action: 'getOpenApForCash',
-            search: apSearch.value || undefined,
+            action:    'getOpenApForCash',
+            search:    apSearch.value || undefined,
+            from_date: invFromDate.value,
+            to_date:   invToDate.value,
         })
         if (res.data?.success) openAp.value = res.data.payload.invoices ?? []
     } finally {
@@ -838,21 +920,6 @@ let apSearchTimer = null
 function debouncedLoadOpenAp() {
     clearTimeout(apSearchTimer)
     apSearchTimer = setTimeout(loadOpenAp, 350)
-}
-
-// ── Zeitraum-Navigation ──────────────────────────────────────────────────────
-
-function shiftMonth(delta) {
-    let m = periodMonth.value + delta
-    let y = periodYear.value
-    if (m < 0)  { m = 11; y-- }
-    if (m > 11) { m = 0;  y++ }
-    periodMonth.value = m
-    periodYear.value  = y
-}
-
-function shiftYear(delta) {
-    periodYear.value += delta
 }
 
 // ── Neue Buchung ─────────────────────────────────────────────────────────────
@@ -972,6 +1039,50 @@ function bookArAsCashDialog(invoice) {
     arData.amount      = String(invoice.open_amount)
     showArDialog.value = true
 }
+
+/**
+ * Rechnung in einem Zug bar buchen: voller offener Betrag, heutiges Datum,
+ * fortlaufende Belegnummer aus der Kasse.
+ *
+ * Bewusst ohne Rueckfrage — genau das ist der Sinn des Knopfes. Was gebucht
+ * wurde, steht danach in der Meldung: Rechnungsnummer, Betrag und Belegnummer.
+ * Ohne diese drei Angaben waere eine Buchung ohne Dialog nicht nachvollziehbar.
+ *
+ * @param {object} invoice Zeile aus der Liste der offenen Rechnungen
+ * @param {'ar'|'ap'} kind Ausgangs- oder Eingangsrechnung
+ */
+async function bookInvoiceNow(invoice, kind) {
+    if (!invoice?.id || !selectedRegisterId.value || bookingRow.value) return
+    bookingRow.value = invoice.id
+    try {
+        const res = await axios.post(API_URL, {
+            action:           kind === 'ar' ? 'bookArAsCash' : 'bookApAsCash',
+            cash_register_id: selectedRegisterId.value,
+            [kind === 'ar' ? 'ar_id' : 'ap_id']: invoice.id,
+            transdate:        new Date().toISOString().slice(0, 10),
+        })
+        if (!res.data?.success) {
+            alerts.error(res.data?.text || t('KasseView.saveError'))
+            return
+        }
+        const p = res.data.payload
+        alerts.success(t(kind === 'ar' ? 'KasseView.bookedInSuccess' : 'KasseView.bookedOutSuccess', {
+            invnumber: p.invnumber,
+            amount:    formatCurrency(p.booked_amount),
+            beleg:     p.beleg,
+        }))
+        await Promise.all([
+            loadRegisters(),
+            loadTransactions(),
+            kind === 'ar' ? loadOpenAr() : loadOpenAp(),
+        ])
+    } finally {
+        bookingRow.value = null
+    }
+}
+
+const bookArNow = (invoice) => bookInvoiceNow(invoice, 'ar')
+const bookApNow = (invoice) => bookInvoiceNow(invoice, 'ap')
 
 function openInvoice(invoice) {
     if (!invoice?.id) return
@@ -1138,9 +1249,28 @@ watch(typeFilter,   loadTransactions)
 watch(periodYear,   loadTransactions)
 watch(periodMonth,  loadTransactions)
 watch(periodMode,   loadTransactions)
+watch([invPeriodMode, invPeriodYear, invPeriodMonth], () => {
+    if (activeTab.value === 'invoices') loadOpenAr()
+    if (activeTab.value === 'payables') loadOpenAp()
+})
 watch(activeTab,    (tab) => {
     if (tab === 'invoices') loadOpenAr()
     if (tab === 'payables') loadOpenAp()
+
+    // replace statt push: ein Reiterwechsel ist kein eigener Schritt in der
+    // Verlaufskette. Sonst müsste man sich mit dem Zurück-Knopf erst durch
+    // alle angetippten Reiter arbeiten, statt die Kasse zu verlassen.
+    if ((route.query.tab || 'transactions') === tab) return
+    const query = { ...route.query }
+    if (tab === 'transactions') delete query.tab
+    else query.tab = tab
+    router.replace({ query })
+})
+
+// Zurück/Vorwärts im Browser: bleibt die Seite dabei stehen (gleiche Route,
+// andere Adresse), meldet nur die Adresse den Wechsel — der Reiter zieht nach.
+watch(() => route.query.tab, (tab) => {
+    activeTab.value = TABS.includes(tab) ? tab : 'transactions'
 })
 // Typwechsel: gewähltes Gegenkonto nur verwerfen, wenn es nicht mehr passt.
 // Transferkonten (Geldtransit/Bank, category A) gelten für beide Richtungen.
@@ -1162,6 +1292,10 @@ watch(() => txData.transdate, (nd, od) => {
 onMounted(() => {
     loadRegisters()
     loadCharts()
+    // Kommt die Seite mit einem Reiter aus der Adresse hoch, feuert der Watcher
+    // darauf nicht — die Liste dieses Reiters bliebe sonst leer.
+    if (activeTab.value === 'invoices') loadOpenAr()
+    if (activeTab.value === 'payables') loadOpenAp()
 })
 </script>
 

@@ -162,7 +162,13 @@ function loadConfigValues() {
 
     userConfigFields.value.forEach(field => {
         if (field.type !== 'headline') {
-            const value = employeeConfig[field.name];
+            // Ohne gespeicherten Wert gilt der Standard aus der Felddefinition.
+            // Sonst zeigt die Maske "aus", waehrend die Anwendung den Standard
+            // bereits als "an" behandelt.
+            const stored = employeeConfig[field.name];
+            const value = stored === undefined || stored === null || stored === ''
+                ? field.default
+                : stored;
 
             if (field.type === 'checkbox') {
                 configValues.value[field.name] =

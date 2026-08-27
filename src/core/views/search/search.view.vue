@@ -96,6 +96,18 @@
                                 </v-btn>
                             </template>
 
+                            <!-- Dubletten des gewaehlten Typs in der Buchhaltung aufraeumen -->
+                            <v-btn
+                                v-if="typeFilter === 'customer' || typeFilter === 'vendor'"
+                                color="secondary"
+                                variant="outlined"
+                                prepend-icon="mdi-content-duplicate"
+                                @click="openDuplicates"
+                                class="mr-2"
+                            >
+                                {{ t('CustomerVendorSearchView.buttons.duplicates') }}
+                            </v-btn>
+
                             <!--
                                 WICHTIG: Suchen-Button ruft searchCV() auf
                                 Diese Funktion wird AUCH vom Enter-Listener aufgerufen!
@@ -489,6 +501,12 @@ const pageTitle = computed(() => {
 const loading = ref(false);
 const selected = ref([]);
 const typeFilter = ref('customer');
+
+// Dublettenpruefung: fuehrt in die Buchhaltungsansicht des gewaehlten Typs,
+// wo doppelte Stammdaten zusammengefuehrt oder geloescht werden koennen.
+function openDuplicates() {
+    router.push({ name: typeFilter.value === 'vendor' ? 'accounting-vendors' : 'accounting-customers' });
+}
 const useSqlQuery = ref(false);
 const showAdditionalCriteriaCV = ref(false);
 const sqlQuery = ref('');

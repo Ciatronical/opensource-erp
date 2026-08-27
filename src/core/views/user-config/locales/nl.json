@@ -16,6 +16,9 @@
         "fakturaCompactView_help": "Verbergt de detailkaarten (klant, documentdetails, extra informatie) en toont alleen een compact overzicht.",
         "printer": "Printer",
         "defaultPrinter": "Standaardprinter",
-        "defaultPrinter_help": "Printer die standaard wordt gebruikt voor afdrukken"
+        "defaultPrinter_help": "Printer die standaard wordt gebruikt voor afdrukken",
+        "accounting": "Boekhouding",
+        "accountingEasymode": "Eenvoudige modus",
+        "accountingEasymode_help": "Toont de boekhouding in gewone taal: zonder debet en credit, zonder btw-codes, alleen het werk dat klaarligt. Uitgeschakeld verschijnt de vakkundige weergave. Ook direct in de boekhouding om te schakelen."
     }
 }

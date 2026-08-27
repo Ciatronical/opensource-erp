@@ -234,7 +234,8 @@
             "brevo_marketing_mail": "Brevo Marketing Mail",
             "help": "Hilfe",
             "save_query": "Speichern",
-            "saved_queries": "Gespeicherte Abfragen"
+            "saved_queries": "Gespeicherte Abfragen",
+            "duplicates": "Dubletten suchen"
         },
         "table": {
             "title": "Suchergebnisse",

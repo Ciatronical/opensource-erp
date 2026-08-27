@@ -16,6 +16,9 @@
         "fakturaCompactView_help": "Oculta las tarjetas de detalle (cliente, detalles del documento, información adicional) y muestra solo un resumen compacto.",
         "printer": "Impresora",
         "defaultPrinter": "Impresora predeterminada",
-        "defaultPrinter_help": "Impresora que se utiliza por defecto para las impresiones"
+        "defaultPrinter_help": "Impresora que se utiliza por defecto para las impresiones",
+        "accounting": "Contabilidad",
+        "accountingEasymode": "Modo sencillo",
+        "accountingEasymode_help": "Muestra la contabilidad en lenguaje cotidiano: sin debe y haber, sin claves fiscales, solo el trabajo pendiente. Desactivado aparece la vista técnica. También se puede cambiar directamente en la contabilidad."
     }
 }

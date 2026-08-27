@@ -51,7 +51,7 @@
             "resetStatus": "Resetuj",
             "assign": "Przypisz",
             "details": "Szczegóły",
-            "searchPlaceholder": "Szukaj: nazwa, tytuł przelewu, kwota, nr faktury …",
+            "searchPlaceholder": "Nazwa, tytuł, nr, kwota …",
             "openInvoice": "Otwórz fakturę"
         },
         "reconciliation": {
@@ -330,7 +330,8 @@
             "printConfirmation": "Drukuj potwierdzenie",
             "syncAll": "Synchronizuj wszystko",
             "syncAllDone": "{imported} transakcji zaimportowano ({n} kont)",
-            "syncAllRunning": "Synchronizowanie {n} kont..."
+            "syncAllRunning": "Synchronizowanie {n} kont...",
+            "printStatement": "Drukuj wyciąg"
         },
         "vop": {
             "cancel": "Anuluj",

@@ -13,8 +13,331 @@ body,
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   Vuetify 4: Spalten dürfen wieder schrumpfen
+   In Vuetify 4 hat .v-col flex-shrink: 0, und Spalten ohne Größen-
+   angabe (<v-col> als Rest-Spalte) zusätzlich min-width: auto. Sobald
+   der Inhalt breiter ist als der Platz, kann die Spalte deshalb nicht
+   mehr schrumpfen und rutscht in die nächste Zeile — vertikale Tabs
+   in einer <v-col cols="auto"> standen dadurch plötzlich oberhalb des
+   Inhalts statt links daneben (z. B. /suche). Vuetify-3-Verhalten
+   wiederherstellen: nur Spalten mit cols="auto" behalten ihre
+   Inhaltsbreite, alle anderen dürfen schrumpfen.
+   ═══════════════════════════════════════════════════════════════ */
+.v-col:not([class*='--cols-auto']) {
+    min-width: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Vuetify 4: Typografie-Klassen wiederherstellen
+
+   Vuetify 4 hat die komplette Typografie-Skala auf Material-Design-3-
+   Namen umbenannt:
+
+     text-h1 … text-h6   →  text-display-* / text-headline-* / text-title-*
+     text-subtitle-1/2   →  text-title-medium / text-title-small
+     text-body-1/2       →  text-body-large / text-body-medium
+     text-caption        →  text-body-small
+     text-overline       →  text-label-small
+
+   Die alten Namen gibt es schlicht nicht mehr — sie sind seit dem
+   Umstieg WIRKUNGSLOS. Im Projekt stehen sie an 1.359 Stellen in 160
+   Dateien. Ueberschriften fielen dadurch auf die rohe h1/h2-Groesse
+   zurueck (ein <h1 class="text-h6"> rendert 32px statt 20px), und
+   Beschriftungen verloren ihre kleinere Groesse. Das ist der Grund,
+   warum Zeilen mit gemischten Elementen unruhig wirkten: mal hoch,
+   mal tief.
+
+   Hier stehen die Original-Werte aus Vuetify 3.9.7, damit die 1.359
+   Stellen wieder genau so aussehen wie vor dem Umstieg — statt sie
+   alle anzufassen und dabei die Groessen zu veraendern (die MD3-Skala
+   ist nicht deckungsgleich: text-h6 war 1.25rem, text-title-large
+   ist 1.375rem).
+
+   font-family bleibt bewusst weg: die App erbt ihre Schrift von
+   Vuetify, ein hartes "Roboto" wuerde das ueberschreiben.
+
+   Spaeter migrieren? Dann Klasse fuer Klasse auf die MD3-Namen
+   umstellen und diesen Block entsprechend kuerzen.
+   ═══════════════════════════════════════════════════════════════ */
+.text-h4 {
+    font-size: 2.125rem;
+    font-weight: 400;
+    line-height: 1.175;
+    letter-spacing: 0.0073529412em;
+    text-transform: none;
+}
+
+.text-h5 {
+    font-size: 1.5rem;
+    font-weight: 400;
+    line-height: 1.333;
+    letter-spacing: normal;
+    text-transform: none;
+}
+
+.text-h6 {
+    font-size: 1.25rem;
+    font-weight: 500;
+    line-height: 1.6;
+    letter-spacing: 0.0125em;
+    text-transform: none;
+}
+
+.text-subtitle-1 {
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.75;
+    letter-spacing: 0.009375em;
+    text-transform: none;
+}
+
+.text-subtitle-2 {
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.6;
+    letter-spacing: 0.0071428571em;
+    text-transform: none;
+}
+
+.text-body-1 {
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    letter-spacing: 0.03125em;
+    text-transform: none;
+}
+
+.text-body-2 {
+    font-size: 0.875rem;
+    font-weight: 400;
+    line-height: 1.425;
+    letter-spacing: 0.0178571429em;
+    text-transform: none;
+}
+
+.text-caption {
+    font-size: 0.75rem;
+    font-weight: 400;
+    line-height: 1.667;
+    letter-spacing: 0.0333333333em;
+    text-transform: none;
+}
+
+.text-overline {
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 2.667;
+    letter-spacing: 0.1666666667em;
+    text-transform: uppercase;
+}
+
+/* Responsive Varianten: im Projekt nur als "text-h5 text-sm-h4" bzw.
+   "text-h5 text-md-h4" an Seitentiteln verwendet (9 Stellen) — kleine
+   Ueberschrift auf schmalen Geraeten, groessere ab Tablet.
+   Breakpoints nach Vuetify 4 (sm 600px, md 840px), damit sie zum
+   uebrigen responsiven Verhalten der App passen. */
+@media screen and (min-width: 600px) {
+    .text-sm-h4 {
+        font-size: 2.125rem;
+        font-weight: 400;
+        line-height: 1.175;
+        letter-spacing: 0.0073529412em;
+        text-transform: none;
+    }
+}
+
+@media screen and (min-width: 840px) {
+    .text-md-h4 {
+        font-size: 2.125rem;
+        font-weight: 400;
+        line-height: 1.175;
+        letter-spacing: 0.0073529412em;
+        text-transform: none;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Vuetify 4: Buttons wieder als Buttons erkennbar
+   Vuetify 4 hat den Buttons drei Dinge genommen, die sie vorher vom
+   Fliesstext abgehoben haben: die Grossschreibung (text-transform ging
+   von uppercase auf none), fast die gesamte Laufweite (letter-spacing
+   0.089em → 0.007em) und die kraeftigeren Schatten. Uebrig blieben
+   Beschriftungen, die wie normaler Text aussehen.
+
+   Die Grossschreibung holen wir bewusst NICHT zurueck: deutsche
+   Beschriftungen wie "ZUSAMMENFUEHREN" brauchen rund ein Fuenftel mehr
+   Platz und brechen in engen Aktionsleisten um. Stattdessen bekommen die
+   Buttons ihr Gewicht ueber Schriftschnitt, etwas Laufweite, klarere
+   Raender und weichere Ecken zurueck.
+
+   Warum hier global und nicht ueber Vuetify-Defaults: Laufweite und
+   Schriftschnitt gibt es nicht als Prop. Warum ohne !important: Vuetify 4
+   legt seine Stile in @layer vuetify-components ab, ungeschichtetes CSS
+   gewinnt gegen jede Schicht — unabhaengig von der Spezifitaet.
+   ═══════════════════════════════════════════════════════════════ */
+.v-btn {
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    /* Vuetify setzt text-indent gleich der Laufweite, um den Leerraum
+       hinter dem letzten Zeichen auszugleichen — sonst sitzt die
+       Beschriftung sichtbar links aus der Mitte. */
+    text-indent: 0.02em;
+}
+
+/* Hauchduenne Raender wirkten auf Weiss wie ein Rahmenrest statt wie ein
+   Button. Nicht ueber die --variant-outlined-Regel hinaus verstaerken:
+   in Button-Gruppen stossen die Raender aneinander. */
+.v-btn--variant-outlined {
+    border-width: 1.5px;
+}
+
+/* Weichere Ecken — aber nur fuer freistehende Buttons. Icon-Buttons sind
+   rund, Buttons mit rounded-Prop bringen ihren eigenen Radius mit, und in
+   Gruppen und Pagination gibt Vuetify die Ecken vor (aussen rund, innen
+   eckig). Die Ausnahmen muessen hier stehen, weil ungeschichtetes CSS
+   sonst auch diese Regeln ueberstimmt. */
+.v-btn:not(.v-btn--icon):not(.v-btn--rounded):not(.v-btn-group > .v-btn):not(.v-pagination .v-btn) {
+    border-radius: 8px;
+}
+
+/* Vuetify 4 hat den Schatten der elevated-Buttons so weit abgeflacht, dass
+   sie kaum noch von flat zu unterscheiden waren. Etwas Tiefe zurueck,
+   aber weicher als der harte Materialschatten von Vuetify 3.
+   Farbe ueber --v-shadow-color statt hart Schwarz, damit der Schatten im
+   Dunkelmodus so sitzt wie Vuetifys eigene. */
+.v-btn--variant-elevated {
+    box-shadow:
+        0 1px 2px rgba(var(--v-shadow-color), 0.32),
+        0 2px 6px rgba(var(--v-shadow-color), 0.20);
+}
+
+.v-btn--variant-elevated:hover {
+    box-shadow:
+        0 2px 4px rgba(var(--v-shadow-color), 0.36),
+        0 4px 10px rgba(var(--v-shadow-color), 0.24);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Vuetify 4: "dense" bei v-row wieder dicht machen
+
+   In Vuetify 3 bedeutete <v-row dense> 4px-Rinnen:
+       .v-row--dense          { margin: -4px }
+       .v-row--dense > .v-col { padding: 4px }
+       .v-row + .v-row--dense { margin-top: 4px }
+
+   In Vuetify 4 ist "dense" veraltet und wird intern auf
+   density="comfortable" abgebildet — und das sind 16px. Die Sonderregel
+   fuer aufeinanderfolgende dichte Zeilen (4px) gibt es ersatzlos nicht
+   mehr, es greift nur noch `.v-row + .v-row { margin-top: gap-y }`.
+
+   Ergebnis: der sichtbare Abstand zwischen zwei Formularzeilen ist von
+   12px auf 24px gestiegen — exakt das Doppelte, und das an 254 Stellen
+   in 64 Dateien. Formulare wirkten dadurch ueberall auseinandergezogen
+   (z. B. unter dem Besitzer-Feld in der Fahrzeugansicht).
+
+   Die Klasse .v-row--density-comfortable entsteht in diesem Projekt
+   AUSSCHLIESSLICH aus dem dense-Prop — es gibt keine einzige explizite
+   density-Angabe an einer v-row. Die Werte hier treffen also genau die
+   gemeinten Zeilen.
+
+   Sauberer waere, die 254 Stellen auf density="compact" umzustellen
+   (Vuetify meldet dense inzwischen als veraltet). Das waere aber 8px
+   statt der urspruenglichen 4px — also weiterhin doppelt so luftig wie
+   vor dem Umstieg.
+   ═══════════════════════════════════════════════════════════════ */
+.v-row--density-comfortable {
+    /* waagerecht 8px: in Vuetify 3 ergaben die 4px Polsterung links und
+       rechts zusammen 8px zwischen zwei Spalten.
+       senkrecht 4px: zusammen mit der 4px-Polsterung der Spalten oben und
+       unten sind das wieder die 12px Abstand zwischen zwei Zeilen. */
+    --v-col-gap-x: 8px;
+    --v-col-gap-y: 4px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Ueberschriften in Flex-Zeilen auf eine Hoehe bringen
+
+   <h1> traegt den Standardrand des Browsers (margin: 0.67em 0). In einer
+   Zeile mit d-flex align-center verschiebt dieser Rand die Ueberschrift
+   nach unten: bei text-h6 sind das 13px, wodurch ihr Mittelpunkt 6px
+   tiefer sitzt als der von Kennzeichen und Buttons daneben. Genau das
+   liess "Fahrzeug bearbeiten MOL-ID35" unterschiedlich hoch wirken.
+
+   Weder Vuetify 3 noch 4 setzen diesen Rand zurueck — der Fehler ist
+   also aelter als der Umstieg, faellt aber erst auf, seit die Zeile
+   sonst sauber sitzt.
+
+   Bewusst nur fuer Ueberschriften, die direkt in einer Flex-Zeile
+   stehen: im normalen Textfluss bleibt der Abstand erhalten.
+   ═══════════════════════════════════════════════════════════════ */
+.d-flex > h1,
+.d-flex > h2,
+.d-flex > h3,
+.d-flex > h4,
+.d-flex > h5,
+.d-flex > h6 {
+    margin-block: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Info und Aktion auseinanderhalten
+
+   Ein Chip mit variant="tonal" color="primary" sah exakt aus wie ein
+   Button mit variant="tonal" size="small" color="primary" — in der
+   Fahrzeugansicht standen genau die beiden nebeneinander (Kennzeichen
+   neben zwoelf Aktionen). Gleiche Farbe, gleiche Groesse, gleiche
+   Schriftstaerke; unterschieden hat sie nur die Eckenform.
+
+   Vuetify markiert klickbare Chips mit .v-chip--link (nur die bekommen
+   auch cursor: pointer). Alles andere ist reine Information und darf
+   deshalb ruhiger auftreten: normale Schriftstaerke statt der 600, die
+   die Buttons tragen. Die Farbe bleibt — sie transportiert Bedeutung
+   (Status, Warnung, Treffergenauigkeit).
+   ═══════════════════════════════════════════════════════════════ */
+.v-chip:not(.v-chip--link):not(.v-chip--filter) {
+    font-weight: 400;
+    cursor: default;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Kennzeichen als Kennzeichen darstellen
+
+   Das amtliche Kennzeichen ist die wichtigste Kennung eines Fahrzeugs
+   und war als blauer Chip nicht von den Aktionen daneben zu trennen.
+   Als Schild gesetzt ist es sofort als Angabe lesbar und kann mit
+   keinem Button verwechselt werden.
+   ═══════════════════════════════════════════════════════════════ */
+.kennzeichen {
+    display: inline-flex;
+    align-items: center;
+    height: 28px;
+    padding: 0 10px;
+    border: 2px solid rgb(var(--v-theme-on-surface));
+    border-radius: 4px;
+    background: rgb(var(--v-theme-surface));
+    color: rgb(var(--v-theme-on-surface));
+    font-weight: 700;
+    font-size: 0.9375rem;
+    letter-spacing: 0.06em;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+/* Der blaue Streifen links deutet das EU-Feld an */
+.kennzeichen::before {
+    content: '';
+    align-self: stretch;
+    width: 7px;
+    margin: -1px 8px -1px -10px;
+    border-radius: 2px 0 0 2px;
+    background: #003399;
+}
+
+/* ═══════════════════════════════════════════════════════════════
    TABLET-MODUS: Buttons zeigen nur Icons, keine Beschriftung
-   Gilt fuer alle Bildschirme unterhalb Desktop (< 1280px / Vuetify lg)
+   Gilt fuer alle Bildschirme unterhalb Desktop (< 1280px; bewusst ein
+   fester Wert, nicht der Vuetify-lg-Breakpoint — der liegt seit
+   Vuetify 4 bei 1145px)
    Betrifft nur Buttons innerhalb .v-main (nicht Dialoge/Menus/Navbar)
    ═══════════════════════════════════════════════════════════════ */
 @media screen and (max-width: 1279px) {

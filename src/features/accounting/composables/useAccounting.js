@@ -92,6 +92,19 @@ export function useAccounting() {
         }
     }
 
+    // Manuelle Eingangsrechnung buchen (ohne Scan/KI) → echte ap + acc_trans
+    async function postIncomingInvoice(payload) {
+        try {
+            const response = await axios.post('/api/accounting/', {
+                action: 'postIncomingInvoice',
+                ...payload
+            })
+            return response.data
+        } catch (e) {
+            return { success: false, text: e.message }
+        }
+    }
+
     async function searchVendors(query) {
         try {
             const response = await axios.post('/api/accounting/', { action: 'searchVendors', query })
@@ -195,6 +208,20 @@ export function useAccounting() {
         }
     }
 
+    // Kontoblatt / Sachkontoauszug: alle Buchungen eines Kontos mit laufendem Saldo
+    async function fetchAccountLedger(params) {
+        try {
+            const response = await axios.post('/api/accounting/', {
+                action: 'getAccountLedger',
+                ...params
+            })
+            if (response.data.success) return response.data.payload
+            return null
+        } catch (e) {
+            return null
+        }
+    }
+
     async function searchAccounts(query, link = null) {
         try {
             const response = await axios.post('/api/accounting/', {
@@ -232,6 +259,8 @@ export function useAccounting() {
         rejectBooking,
         updateBooking,
         searchAccounts,
-        searchVendors
+        searchVendors,
+        postIncomingInvoice,
+        fetchAccountLedger
     }
 }

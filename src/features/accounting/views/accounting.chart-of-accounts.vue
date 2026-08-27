@@ -1,9 +1,10 @@
 <template>
     <NavbarView />
     <v-container fluid>
+        <AccountingPageHeader :title="t('AccountingView.chartOfAccounts.title')" />
+
         <v-row>
             <v-col cols="12">
-                <h1 class="text-h5 mb-2">{{ t('AccountingView.chartOfAccounts.title') }}</h1>
                 <p class="text-medium-emphasis">{{ t('AccountingView.chartOfAccounts.subtitle') }}</p>
                 <v-alert type="info" variant="tonal" density="comfortable" icon="mdi-information-outline" class="mt-1 mb-2" :text="t('AccountingView.chartOfAccounts.info')" />
             </v-col>
@@ -48,10 +49,20 @@
                         </v-chip>
                         <span v-else class="text-disabled">–</span>
                     </template>
+                    <template #[`item.balance`]="{ item }">
+                        <span v-if="Number(item.booking_count) > 0"
+                              :class="Number(item.balance) < 0 ? 'text-error' : ''">
+                            {{ formatCurrency(item.balance) }}
+                        </span>
+                        <span v-else class="text-disabled">–</span>
+                    </template>
                     <template #[`item.invalid`]="{ item }">
                         <v-icon v-if="item.invalid" color="warning" size="small">mdi-eye-off</v-icon>
                     </template>
                     <template #[`item.actions`]="{ item }">
+                        <v-btn icon="mdi-book-open-variant" size="small" variant="text"
+                               :title="t('AccountingView.chartOfAccounts.openLedger')"
+                               @click.stop="openLedger(item)" />
                         <v-btn icon="mdi-pencil" size="small" variant="text" @click.stop="openEdit(item)" />
                     </template>
                 </v-data-table>
@@ -313,11 +324,23 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 import { useChartOfAccounts } from '../composables/useChartOfAccounts.js'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
+import AccountingPageHeader from '../components/accounting.page-header.vue'
 import * as alerts from '@/core/utils/alerts.js'
 
 const { t } = useI18n()
+const router = useRouter()
+
+// Kontoblatt des Kontos öffnen (Sachkontoauszug)
+function openLedger(item) {
+    router.push({ name: 'accounting-account-ledger', query: { accno: item.accno } })
+}
+
+function formatCurrency(value) {
+    return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(value || 0)
+}
 const { loading, saving, accounts, taxOptions, eurOptions, bwaOptions, ustvaOptions,
         fetchAccounts, fetchAccount, fetchOptions, saveAccount } = useChartOfAccounts()
 
@@ -337,8 +360,9 @@ const headers = computed(() => [
     { title: t('AccountingView.chartOfAccounts.description'), key: 'description' },
     { title: t('AccountingView.chartOfAccounts.category'), key: 'category', width: '120px' },
     { title: t('AccountingView.chartOfAccounts.taxkey'), key: 'taxkey', width: '170px', sortable: false },
+    { title: t('AccountingView.chartOfAccounts.balance'), key: 'balance', width: '130px', align: 'end' },
     { title: t('AccountingView.chartOfAccounts.invalid'), key: 'invalid', width: '80px', align: 'center' },
-    { title: '', key: 'actions', width: '60px', sortable: false, align: 'end' }
+    { title: '', key: 'actions', width: '100px', sortable: false, align: 'end' }
 ])
 
 const charttypeItems = computed(() => [

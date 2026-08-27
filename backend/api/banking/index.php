@@ -1,6 +1,7 @@
 <?php
 // backend/api/banking/index.php
 
+require_once __DIR__.'/../lib/kontenrahmen.php';
 require_once __DIR__.'/banking.php';
 require_once __DIR__.'/transactions.php';
 require_once __DIR__.'/matching.php';

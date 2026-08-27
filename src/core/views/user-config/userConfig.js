@@ -67,6 +67,16 @@ const userConfig = [
         tooltip: "user_fields.fakturaCompactView_help"
     },
 
+    { name: "buchhaltung", type: "headline", label: "user_fields.accounting" },
+
+    {
+        name: "accounting_easymode",
+        type: "checkbox",
+        default: true,
+        label: "user_fields.accountingEasymode",
+        tooltip: "user_fields.accountingEasymode_help"
+    },
+
     { name: "drucker", type: "headline", label: "user_fields.printer" },
 
     {

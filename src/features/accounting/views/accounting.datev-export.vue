@@ -1,9 +1,10 @@
 <template>
     <NavbarView />
     <v-container fluid>
+        <AccountingPageHeader :title="t('AccountingView.datev.title')" />
+
         <v-row>
             <v-col cols="12">
-                <h1 class="text-h5 mb-2">{{ t('AccountingView.datev.title') }}</h1>
                 <v-alert type="info" variant="tonal" density="comfortable" icon="mdi-information-outline" class="mt-1 mb-2" :text="t('AccountingView.datev.info')" />
             </v-col>
         </v-row>
@@ -135,6 +136,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
+import AccountingPageHeader from '../components/accounting.page-header.vue'
 import { useDatevExport } from '../composables/useDatevExport.js'
 import * as toasts from '@/core/utils/toasts.js'
 

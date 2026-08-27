@@ -16,6 +16,9 @@
         "fakturaCompactView_help": "Nasconde le schede dettaglio (cliente, dettagli documento, informazioni aggiuntive) e mostra solo un riepilogo compatto.",
         "printer": "Stampante",
         "defaultPrinter": "Stampante predefinita",
-        "defaultPrinter_help": "Stampante utilizzata per impostazione predefinita per le stampe"
+        "defaultPrinter_help": "Stampante utilizzata per impostazione predefinita per le stampe",
+        "accounting": "Contabilità",
+        "accountingEasymode": "Modalità semplice",
+        "accountingEasymode_help": "Mostra la contabilità in linguaggio quotidiano: senza dare e avere, senza codici IVA, solo il lavoro da svolgere. Disattivata compare la vista tecnica. Si può cambiare anche direttamente nella contabilità."
     }
 }

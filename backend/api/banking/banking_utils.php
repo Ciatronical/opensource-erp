@@ -460,7 +460,12 @@ function exportTransactionsCsv($data) {
 }
 
 /**
- * Kontoauszug als PDF (FPDF) zurückgeben (base64-kodiert im JSON).
+ * Kontoauszug als PDF (base64-kodiert im JSON).
+ *
+ * Bewusst wie ein Bankauszug aufgebaut und nicht wie ein Tabellenexport:
+ * chronologisch aufsteigend, mit Anfangssaldo, laufendem Saldo je Buchung und
+ * Endsaldo. Ohne diese drei Zahlen ist ein Auszug für die Buchhaltung wertlos —
+ * er lässt sich dann weder gegen den Vormonat noch gegen das Sachkonto prüfen.
  *
  * @param int    $data['bank_account_id']
  * @param string $data['from_date']       optional
@@ -472,58 +477,149 @@ function exportTransactionsPdf($data) {
     $accountId = intval($data['bank_account_id'] ?? 0);
     if (!$accountId) { resultInfo(false, 'VALIDATION_ERROR', 'Bankkonto-ID fehlt'); return; }
 
-    $where  = ['bt.local_bank_account_id = :id'];
-    $params = ['id' => $accountId];
-    if (!empty($data['from_date'])) { $where[] = 'bt.transdate >= :from'; $params['from'] = $data['from_date']; }
-    if (!empty($data['to_date']))   { $where[] = 'bt.transdate <= :to';   $params['to']   = $data['to_date']; }
+    $from = !empty($data['from_date']) ? $data['from_date'] : null;
+    $to   = !empty($data['to_date'])   ? $data['to_date']   : null;
 
-    $wClause2 = implode(' AND ', $where);
-    $rows = $db->getAll(<<<SQL
-        SELECT bt.transdate, bt.amount, bt.remote_name, bt.purpose, bt.match_status
-        FROM bank_transactions bt
-        WHERE {$wClause2}
-        ORDER BY bt.transdate DESC, bt.id DESC
-    SQL, $params);
+    // Eine Abfrage: Kontokopf, Anfangssaldo, Buchungen mit laufendem Saldo und
+    // die Summen. Der laufende Saldo kommt aus einem Fensterausdruck, damit die
+    // Reihenfolge im PDF exakt der Reihenfolge in der Datenbank entspricht.
+    $report = $db->getOne(<<<SQL
+        WITH p AS (
+            -- Zeitraum einmal binden und überall daraus lesen: die Grenzen
+            -- stehen so an genau einer Stelle und können in den folgenden
+            -- Abschnitten nicht auseinanderlaufen.
+            SELECT :from::date AS von, :to::date AS bis
+        ),
+        konto AS (
+            SELECT ba.id, ba.name, ba.iban, ba.bank,
+                   COALESCE(ba.reconciliation_starting_balance, 0) AS start_balance
+            FROM bank_accounts ba WHERE ba.id = :id
+        ),
+        eroeffnung AS (
+            SELECT k.start_balance + COALESCE(SUM(bt.amount), 0) AS opening
+            FROM konto k
+            CROSS JOIN p
+            LEFT JOIN bank_transactions bt
+                   ON bt.local_bank_account_id = k.id
+                  AND p.von IS NOT NULL
+                  AND bt.transdate < p.von
+            GROUP BY k.start_balance
+        ),
+        bewegungen AS (
+            SELECT bt.transdate, bt.valutadate, bt.amount, bt.remote_name, bt.purpose,
+                   (SELECT opening FROM eroeffnung) + SUM(bt.amount) OVER (
+                       ORDER BY bt.transdate ASC, bt.id ASC
+                       ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+                   ) AS saldo
+            FROM bank_transactions bt
+            CROSS JOIN p
+            WHERE bt.local_bank_account_id = (SELECT id FROM konto)
+              AND (p.von IS NULL OR bt.transdate >= p.von)
+              AND (p.bis IS NULL OR bt.transdate <= p.bis)
+        )
+        SELECT
+            (SELECT name    FROM konto)      AS account_name,
+            (SELECT iban    FROM konto)      AS iban,
+            (SELECT bank    FROM konto)      AS bank,
+            (SELECT company FROM defaults)   AS company,
+            (SELECT opening FROM eroeffnung) AS opening,
+            COALESCE((SELECT opening FROM eroeffnung), 0)
+                + COALESCE(SUM(b.amount), 0)                            AS closing,
+            COALESCE(SUM(b.amount) FILTER (WHERE b.amount > 0), 0)      AS sum_in,
+            ABS(COALESCE(SUM(b.amount) FILTER (WHERE b.amount < 0), 0)) AS sum_out,
+            COUNT(b.*)::int                                             AS row_count,
+            COALESCE(json_agg(row_to_json(b) ORDER BY b.transdate ASC)
+                     FILTER (WHERE b.transdate IS NOT NULL), '[]')      AS rows
+        FROM bewegungen b
+    SQL, ['id' => $accountId, 'from' => $from, 'to' => $to]);
 
-    $acct    = $db->getOne("SELECT name, iban FROM bank_accounts WHERE id = :id", ['id' => $accountId]);
-    $company = $db->getOne("SELECT company FROM defaults");
-
-    require_once __DIR__.'/../../vendor/setasign/fpdf/fpdf.php';
-
-    $pdf = new \FPDF('P', 'mm', 'A4');
-    $pdf->SetMargins(15, 15, 15);
-    $pdf->AddPage();
-    $pdf->SetFont('Arial', 'B', 14);
-    $pdf->Cell(0, 8, mb_convert_encoding('Kontoauszug', 'ISO-8859-1', 'UTF-8'), 0, 1);
-    $pdf->SetFont('Arial', '', 10);
-    $pdf->Cell(0, 6, mb_convert_encoding(($company['company'] ?? '') . ' · ' . ($acct['name'] ?? ''), 'ISO-8859-1', 'UTF-8'), 0, 1);
-    $pdf->Cell(0, 6, mb_convert_encoding('IBAN: ' . ($acct['iban'] ?? ''), 'ISO-8859-1', 'UTF-8'), 0, 1);
-    $pdf->Cell(0, 6, mb_convert_encoding('Erstellt: ' . date('d.m.Y H:i'), 'ISO-8859-1', 'UTF-8'), 0, 1);
-    $pdf->Ln(3);
-
-    // Tabellen-Header
-    $pdf->SetFillColor(240, 240, 240);
-    $pdf->SetFont('Arial', 'B', 9);
-    $pdf->Cell(22, 6, 'Datum', 1, 0, 'L', true);
-    $pdf->Cell(70, 6, mb_convert_encoding('Auftraggeber/Empfänger', 'ISO-8859-1', 'UTF-8'), 1, 0, 'L', true);
-    $pdf->Cell(80, 6, 'Verwendungszweck', 1, 0, 'L', true);
-    $pdf->Cell(0,  6, 'Betrag', 1, 1, 'R', true);
-
-    $pdf->SetFont('Arial', '', 8);
-    foreach ($rows as $r) {
-        $amtFmt = number_format((float)$r['amount'], 2, ',', '.') . ' EUR';
-        $pdf->Cell(22, 5, $r['transdate'], 1, 0);
-        $pdf->Cell(70, 5, mb_convert_encoding(mb_strimwidth($r['remote_name'] ?? '', 0, 40, '...'), 'ISO-8859-1', 'UTF-8'), 1, 0);
-        $pdf->Cell(80, 5, mb_convert_encoding(mb_strimwidth($r['purpose'] ?? '', 0, 55, '...'), 'ISO-8859-1', 'UTF-8'), 1, 0);
-        $pdf->Cell(0,  5, $amtFmt, 1, 1, 'R');
+    if (!$report || $report['account_name'] === null && $report['iban'] === null) {
+        // getOne liefert bei fehlendem Konto eine Zeile aus lauter NULL-Werten
+        $exists = $db->getOne("SELECT 1 AS ok FROM bank_accounts WHERE id = :id", ['id' => $accountId]);
+        if (!$exists) { resultInfo(false, 'NOT_FOUND', 'Bankkonto nicht gefunden'); return; }
     }
 
-    $pdfData = $pdf->Output('S');
-    resultInfo(true, '', [
-        'filename' => 'kontoauszug_' . date('Y-m-d') . '.pdf',
-        'mime'     => 'application/pdf',
-        'data'     => base64_encode($pdfData),
+    $rows    = json_decode($report['rows'] ?? '[]', true) ?: [];
+    $opening = (float)($report['opening'] ?? 0);
+
+    require_once __DIR__ . '/../lib/report_pdf.php';
+
+    $zeitraum = $from || $to
+        ? 'Zeitraum: ' . ($from ? _bu_datum($from) : 'Beginn') . ' bis ' . ($to ? _bu_datum($to) : 'heute')
+        : 'Zeitraum: gesamter Buchungsbestand';
+
+    $pdf = new ReportPdf('P', 'mm', 'A4');
+    $pdf->reportTitle = 'Kontoauszug';
+    $pdf->reportLines = array_filter([
+        $report['company'] ?? '',
+        trim(($report['account_name'] ?? '') . ' · ' . ($report['bank'] ?? ''), ' ·'),
+        'IBAN: ' . ($report['iban'] ?? '—'),
+        $zeitraum,
     ]);
+    $pdf->columns = [
+        ['w' => 19, 'label' => 'Datum'],
+        ['w' => 19, 'label' => 'Valuta'],
+        ['w' => 45, 'label' => 'Auftraggeber/Empfänger'],
+        ['w' => 55, 'label' => 'Verwendungszweck'],
+        ['w' => 21, 'label' => 'Betrag', 'align' => 'R'],
+        ['w' => 21, 'label' => 'Saldo',  'align' => 'R'],
+    ];
+    $pdf->footNote = 'Erstellt am ' . date('d.m.Y H:i') . ' · ' . ($report['company'] ?? '');
+    $pdf->SetMargins(15, 15, 15);
+    $pdf->SetAutoPageBreak(true, 18);
+    $pdf->AliasNbPages();
+    $pdf->AddPage();
+
+    // Anfangssaldo als erste Zeile — so lässt sich der Auszug lückenlos
+    // an den vorherigen anschliessen.
+    $pdf->row([
+        ['text' => $from ? _bu_datum($from) : '', 'bold' => true],
+        '',
+        ['text' => 'Anfangssaldo', 'bold' => true],
+        '',
+        '',
+        ['text' => ReportPdf::money($opening), 'bold' => true],
+    ], false);
+
+    foreach ($rows as $row) {
+        $amount = (float)$row['amount'];
+        $pdf->row([
+            _bu_datum($row['transdate']),
+            _bu_datum($row['valutadate']),
+            ['text' => $row['remote_name'] ?? '', 'wrap' => true, 'maxLines' => 2],
+            ['text' => $row['purpose'] ?? '',     'wrap' => true, 'maxLines' => 3],
+            ['text' => ReportPdf::money($amount), 'align' => 'R',
+             'color' => $amount < 0 ? [178, 34, 34] : [0, 110, 60]],
+            ReportPdf::money($row['saldo']),
+        ]);
+    }
+
+    if (!$rows) {
+        $pdf->row(['', '', 'Keine Buchungen im gewählten Zeitraum.', '', '', '']);
+    }
+
+    $pdf->totalRow([
+        '', '',
+        'Summen und Endsaldo (' . (int)($report['row_count'] ?? 0) . ' Buchungen)',
+        'Eingang ' . ReportPdf::money($report['sum_in'] ?? 0)
+            . ' / Ausgang ' . ReportPdf::money($report['sum_out'] ?? 0),
+        ['text' => ReportPdf::money(($report['sum_in'] ?? 0) - ($report['sum_out'] ?? 0)), 'align' => 'R'],
+        ['text' => ReportPdf::money($report['closing'] ?? 0), 'align' => 'R'],
+    ]);
+
+    resultInfo(true, '', [
+        'filename' => 'kontoauszug_' . preg_replace('/[^A-Za-z0-9]+/', '-', (string)($report['account_name'] ?? 'bank'))
+                      . '_' . date('Y-m-d') . '.pdf',
+        'mime'     => 'application/pdf',
+        'data'     => base64_encode($pdf->Output('S')),
+    ]);
+}
+
+/** Datum aus der Datenbank (YYYY-MM-DD) deutsch darstellen */
+function _bu_datum($value) {
+    if (!$value) return '';
+    $ts = strtotime((string)$value);
+    return $ts ? date('d.m.Y', $ts) : (string)$value;
 }
 
 /**
@@ -605,4 +701,84 @@ function getTransferConfirmationPdf($data) {
         'mime'     => 'application/pdf',
         'data'     => base64_encode($pdf->Output('S')),
     ]);
+}
+
+/**
+ * Beleg-Datei im Mandanten-Datenverzeichnis ablegen und in accounting_documents
+ * erfassen. Gemeinsamer Kern für alle Stellen, die einen Beleg an eine Buchung
+ * hängen (Bankmodul, Kasse, Eingangsrechnungen).
+ *
+ * Dedupliziert über den SHA-256 der Datei: derselbe Beleg wird nur einmal
+ * gespeichert, ein erneuter Upload liefert die bestehende ID zurück. Das ist
+ * für die GoBD wichtig — ein Beleg, eine Ablage, keine Dubletten.
+ *
+ * @param object $db       offene DB-Verbindung
+ * @param string $filename Originaldateiname
+ * @param string $mime     MIME-Type
+ * @param string $base64   Dateiinhalt base64-kodiert
+ * @param int|null $vendorId optionaler Lieferantenbezug
+ * @return array {ok:bool, document_id?:int, duplicate?:bool, error?:string}
+ */
+function storeAccountingDocument($db, $filename, $mime, $base64, $vendorId = null) {
+    $filename = trim((string)$filename);
+    if ($filename === '' || $base64 === '') {
+        return ['ok' => false, 'error' => 'Dateiname und Inhalt erforderlich'];
+    }
+
+    $content = base64_decode($base64, true);
+    if ($content === false || $content === '') {
+        return ['ok' => false, 'error' => 'Ungültiges Base64-Format'];
+    }
+
+    // 20 MB Deckel — darüber gehört der Beleg in den Dateimanager, nicht in
+    // einen AJAX-Request.
+    if (strlen($content) > 20 * 1024 * 1024) {
+        return ['ok' => false, 'error' => 'Beleg größer als 20 MB'];
+    }
+
+    $hash = hash('sha256', $content);
+
+    $existing = $db->getOne(
+        "SELECT id, stored_path FROM accounting_documents WHERE file_hash = :hash LIMIT 1",
+        ['hash' => $hash]
+    );
+    if ($existing && !empty($existing['stored_path'])) {
+        return ['ok' => true, 'document_id' => intval($existing['id']), 'duplicate' => true];
+    }
+
+    $dir = fmDataDir() . '/accounting';
+    if (!is_dir($dir) && !mkdir($dir, 0755, true) && !is_dir($dir)) {
+        return ['ok' => false, 'error' => 'Belegverzeichnis nicht anlegbar'];
+    }
+
+    // status 'booked' — der Beleg hängt unmittelbar an einer Buchung. ACHTUNG:
+    // accounting_documents_status_check lässt nur pending|processing|extracted|
+    // booked|error|duplicate zu.
+    $doc = $db->getOne(<<<SQL
+        INSERT INTO accounting_documents
+            (original_name, mime_type, file_size, file_hash, status, employee_id, vendor_id)
+        VALUES (:name, :mime, :size, :hash, 'booked', :eid, :vid)
+        RETURNING id
+    SQL, [
+        'name' => $filename,
+        'mime' => $mime ?: 'application/octet-stream',
+        'size' => strlen($content),
+        'hash' => $hash,
+        'eid'  => $_SESSION['employee_id'] ?? null,
+        'vid'  => $vendorId ?: null,
+    ]);
+
+    $docId      = intval($doc['id']);
+    $safeName   = preg_replace('/[^a-zA-Z0-9._-]/', '_', $filename);
+    $storedPath = "accounting/{$docId}_{$safeName}";
+
+    if (file_put_contents(fmDataDir() . '/' . $storedPath, $content) === false) {
+        return ['ok' => false, 'error' => 'Beleg konnte nicht gespeichert werden'];
+    }
+    $db->execute(
+        "UPDATE accounting_documents SET stored_path = :path WHERE id = :id",
+        ['path' => $storedPath, 'id' => $docId]
+    );
+
+    return ['ok' => true, 'document_id' => $docId, 'duplicate' => false];
 }

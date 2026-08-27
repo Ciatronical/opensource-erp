@@ -81,15 +81,17 @@
                             </th>
                         </tr>
                     </thead>
-                    <draggable
-                        :list="instructions"
+                    <VueDraggable
+                        v-model="instructions"
                         tag="tbody"
-                        item-key="id"
                         handle=".drag-handle"
-                        @change="onDragChange"
+                        @update="onDragChange"
                     >
-                        <template #item="{ element: instruction, index }">
-                            <tr :class="{ 'row-done': instruction.done }">
+                            <tr
+                                v-for="(instruction, index) in instructions"
+                                :key="instruction.id"
+                                :class="{ 'row-done': instruction.done }"
+                            >
                                 <!-- Position (1,2,3,...) -->
                                 <td class="text-center field-disabled">
                                     {{ index + 1 }}
@@ -253,8 +255,7 @@
                                     />
                                 </td>
                             </tr>
-                        </template>
-                    </draggable>
+                    </VueDraggable>
                     <!-- Add-Row -->
                     <tbody>
                         <tr class="new-item-row">
@@ -713,14 +714,14 @@ import { useI18n } from 'vue-i18n'
 import { lxcarsStore } from '@/features/lxcars/stores/lxcars.store.js'
 import { oserpStore } from '@/core/stores/oserp.store.js'
 import { useInstructionTimer } from '@/core/composables/useInstructionTimer.js'
-import draggable from 'vuedraggable'
+import { VueDraggable } from 'vue-draggable-plus'
 import axios from 'axios'
 import * as toast from '@/core/utils/toasts.js'
 import VoiceInputButton from '@/core/components/voice-input-button.vue'
 
 export default defineComponent({
     name: 'InstructionsSectionCard',
-    components: { draggable, VoiceInputButton },
+    components: { VueDraggable, VoiceInputButton },
 
     props: {
         oeId: {
@@ -1374,14 +1375,12 @@ export default defineComponent({
             }
         }
 
-        async function onDragChange(evt) {
-            if (evt.moved) {
-                const order = instructions.value.map(i => i.id)
-                try {
-                    await carsStore.reorderInstructions(props.oeId, order)
-                } catch (e) {
-                    console.error('Error reordering instructions:', e)
-                }
+        async function onDragChange() {
+            const order = instructions.value.map(i => i.id)
+            try {
+                await carsStore.reorderInstructions(props.oeId, order)
+            } catch (e) {
+                console.error('Error reordering instructions:', e)
             }
         }
 

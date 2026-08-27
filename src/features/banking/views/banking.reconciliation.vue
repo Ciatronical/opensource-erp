@@ -85,6 +85,15 @@
                             </v-list-item-subtitle>
 
                             <template #append>
+                                <v-btn
+                                    v-if="bt.match_status === 'unmatched' && bt.amount < 0"
+                                    icon="mdi-file-document-plus"
+                                    size="x-small"
+                                    variant="text"
+                                    color="primary"
+                                    :title="t('BankingView.reconciliation.createApTitle')"
+                                    @click.stop="openApDialog(bt)"
+                                />
                                 <v-chip
                                     :color="statusColor(bt.match_status)"
                                     size="x-small"
@@ -216,6 +225,59 @@
                 </v-card>
             </v-col>
         </v-row>
+
+        <!-- Eingangsrechnung direkt aus dem Bankumsatz anlegen + bezahlen -->
+        <v-dialog v-model="apDialog" max-width="560">
+            <v-card v-if="apSource">
+                <v-card-title>{{ t('BankingView.reconciliation.createApTitle') }}</v-card-title>
+                <v-card-subtitle>
+                    {{ formatCurrency(Math.abs(apSource.amount)) }} · {{ apSource.remote_name || '—' }}
+                    · {{ formatDateShort(apSource.transdate) }}
+                </v-card-subtitle>
+                <v-card-text>
+                    <v-autocomplete
+                        v-model="apForm.vendor_id"
+                        :items="vendorOptions"
+                        :item-title="v => v.vendornumber ? `${v.name} (${v.vendornumber})` : v.name"
+                        item-value="id"
+                        :label="t('BankingView.reconciliation.vendor') + ' *'"
+                        density="comfortable" variant="outlined"
+                        :loading="vendorLoading" no-filter clearable
+                        prepend-inner-icon="mdi-domain"
+                        @update:search="onVendorSearch" />
+                    <v-autocomplete
+                        v-model="apForm.account"
+                        :items="accountOptions"
+                        item-title="label" item-value="accno" return-object
+                        :label="t('BankingView.reconciliation.expenseAccount') + ' *'"
+                        density="comfortable" variant="outlined"
+                        :loading="accountLoading" no-filter clearable
+                        prepend-inner-icon="mdi-bank-outline"
+                        @update:search="onAccountSearch" />
+                    <div class="d-flex ga-3">
+                        <v-select
+                            v-model.number="apForm.rate" :items="taxRateOptions"
+                            :label="t('BankingView.reconciliation.taxRate')"
+                            density="comfortable" variant="outlined" style="max-width: 200px" />
+                        <v-text-field
+                            v-model="apForm.invnumber"
+                            :label="t('BankingView.reconciliation.invnumber')"
+                            density="comfortable" variant="outlined" />
+                    </div>
+                    <v-alert type="info" variant="tonal" density="compact">
+                        {{ t('BankingView.reconciliation.createApHint') }}
+                    </v-alert>
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer />
+                    <v-btn variant="text" @click="apDialog = false">{{ t('BankingView.reconciliation.cancel') }}</v-btn>
+                    <v-btn color="primary" variant="elevated" :loading="apSaving"
+                           :disabled="!apForm.vendor_id || !apForm.account" @click="submitAp">
+                        <v-icon start>mdi-check</v-icon>{{ t('BankingView.reconciliation.createApBook') }}
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
     </v-container>
 </template>
 
@@ -224,12 +286,14 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useBanking } from '../composables/useBanking.js'
 import { useMatching } from '../composables/useMatching.js'
+import { useAccounting } from '@/features/accounting/composables/useAccounting.js'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
 import * as alerts from '@/core/utils/alerts.js'
 
 const { t } = useI18n()
 const banking = useBanking()
 const matching = useMatching()
+const { searchVendors, searchAccounts } = useAccounting()
 
 const selectedAccountId = ref(null)
 const selectedTransaction = ref(null)
@@ -350,6 +414,74 @@ async function reloadData() {
         banking.fetchTransactions(selectedAccountId.value, { match_status: 'all', limit: 500 }),
         matching.fetchOpenInvoices('all', invoiceSearch.value || '')
     ])
+}
+
+// ── Eingangsrechnung direkt aus Bankumsatz anlegen ──────────────────────────
+const apDialog = ref(false)
+const apSource = ref(null)
+const apSaving = ref(false)
+const apForm = ref({ vendor_id: null, account: null, rate: 19, invnumber: '' })
+const vendorOptions = ref([])
+const vendorLoading = ref(false)
+const accountOptions = ref([])
+const accountLoading = ref(false)
+let vendorTimer = null
+let accountTimer = null
+const taxRateOptions = [
+    { title: '19 %', value: 19 },
+    { title: '7 %', value: 7 },
+    { title: '0 % (steuerfrei)', value: 0 }
+]
+
+function openApDialog(bt) {
+    apSource.value = bt
+    apForm.value = { vendor_id: null, account: null, rate: 19, invnumber: '' }
+    vendorOptions.value = []
+    accountOptions.value = []
+    apDialog.value = true
+}
+
+function onVendorSearch(q) {
+    clearTimeout(vendorTimer)
+    if (!q || q.length < 2) return
+    vendorTimer = setTimeout(async () => {
+        vendorLoading.value = true
+        vendorOptions.value = await searchVendors(q)
+        vendorLoading.value = false
+    }, 300)
+}
+
+function onAccountSearch(q) {
+    clearTimeout(accountTimer)
+    if (!q || q.length < 1) return
+    accountTimer = setTimeout(async () => {
+        accountLoading.value = true
+        const rows = await searchAccounts(q)
+        accountOptions.value = rows.map(a => ({ id: a.id, accno: a.accno, label: `${a.accno} ${a.description}` }))
+        accountLoading.value = false
+    }, 300)
+}
+
+async function submitAp() {
+    if (!apForm.value.vendor_id || !apForm.value.account) return
+    apSaving.value = true
+    try {
+        const res = await matching.createApFromBankTransaction({
+            bank_transaction_id: apSource.value.id,
+            bank_account_id: selectedAccountId.value,
+            vendor_id: apForm.value.vendor_id,
+            expense_chart_id: apForm.value.account.id,
+            rate: apForm.value.rate,
+            invnumber: apForm.value.invnumber || undefined
+        })
+        alerts.success(t('BankingView.reconciliation.createApSuccess', { gross: formatCurrency(res.gross) }))
+        apDialog.value = false
+        await reloadData()
+    } catch (e) {
+        alerts.error(e.message)
+    } finally {
+        apSaving.value = false
+    }
 }
 
 function formatCurrency(value) {

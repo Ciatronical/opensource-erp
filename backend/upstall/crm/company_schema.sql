@@ -1530,16 +1530,58 @@ BEGIN
     -- Zuordnungen wenn z. B. Rechnungsnummer im Purpose UND IBAN+Betrag
     -- gleichzeitig passen.
     --
-    -- Konfidenz-Stufen:
+    -- ZWEI HARTE PLAUSIBILITÄTS-REGELN gelten für JEDE Rechnungs-Strategie:
+    --   (a) bt.transdate >= rechnung.transdate — eine Zahlung kann nicht vor
+    --       der Rechnung liegen, die sie ausgleicht. Ohne diese Regel wurden
+    --       Zahlungseingänge auf Rechnungen gebucht, die es zum
+    --       Zahlungszeitpunkt noch gar nicht gab.
+    --   (b) ABS(bt.amount) <= offener Betrag + 0,01 — nie mehr zuordnen als
+    --       offen ist. Sammelzahlungen über mehrere Rechnungen gehören in
+    --       die Sammelzahlungs-Erkennung, nicht komplett auf die erstbeste
+    --       Einzelrechnung.
+    --
+    -- Konfidenz-Stufen (explizite Rechnungsreferenz schlägt Betrags-Zufall —
+    -- bei wiederkehrenden Standardpreisen trifft ein reiner Betragsvergleich
+    -- sonst systematisch die falsche Rechnung):
     --   0.99  Rechnungsnummer in End-to-End-ID (strukturierter SEPA-Wert)
     --   0.98  Rechnungsnummer im Purpose + Empfaenger-IBAN bestaetigt
+    --   0.94  Rechnungsnummer im Purpose (vom Zahler selbst angegeben)
     --   0.92  IBAN passt + exakter offener Betrag (Toleranz 0,01 EUR)
-    --   0.88  Rechnungsnummer im Purpose ohne IBAN-Bestaetigung
     --   0.85  Zahlenwert aus Purpose endet auf ap.invnumber (z. B. RE9016 -> 9016)
     --   0.80  IBAN passt + Kontakt hat genau eine offene Rechnung
     --   0.78  Name passt + exakter offener Betrag (Fallback ohne IBAN)
     --   0.70  Benutzer-Regel
     RETURN QUERY
+    WITH kandidaten AS (
+        SELECT id, transdate, amount, purpose, remote_iban, remote_name, end_to_end_id
+        FROM bank_transactions
+        WHERE local_bank_account_id = p_bank_account_id
+          AND match_status = 'unmatched'
+    ),
+    -- Umsätze, in deren Verwendungszweck eine EIGENE Rechnungsnummer steht —
+    -- egal ob die Rechnung noch offen oder längst bezahlt ist. Der Zahler hat
+    -- damit gesagt, was er begleicht. Greift dann keine der
+    -- Rechnungsnummer-Strategien (weil die Rechnung schon bezahlt ist), ist das
+    -- ein Fall für den Menschen — und NICHT für einen Betragsvergleich, der
+    -- bei wiederkehrenden Standardpreisen die nächstbeste fremde Rechnung
+    -- greift. Genau so entstanden Zahlungen auf noch nicht existierende
+    -- Rechnungen.
+    -- Umsetzung über Tokens statt Regex-je-Rechnung: aus Zweck und
+    -- End-to-End-ID werden die zusammenhängenden alphanumerischen Blöcke
+    -- gezogen und per Gleichheit gegen invnumber gejoint (nutzt
+    -- ar_invnumber_key / ap_invnumber_key). Das ist exakt äquivalent zum
+    -- Regex '(^|[^[:alnum:]])invnumber($|[^[:alnum:]])' — der verlangt
+    -- ebenfalls, dass die Nummer einen vollständigen alnum-Block bildet —
+    -- aber es vergleicht nicht mehr jeden Umsatz gegen jede Rechnung.
+    mit_rechnungsbezug AS MATERIALIZED (
+        SELECT DISTINCT k.id
+        FROM kandidaten k
+        CROSS JOIN LATERAL regexp_matches(
+            coalesce(k.purpose, '') || ' ' || coalesce(k.end_to_end_id, ''),
+            '[[:alnum:]]{4,}', 'g') AS t(token)
+        WHERE EXISTS (SELECT 1 FROM ar x WHERE x.invnumber = t.token[1])
+           OR EXISTS (SELECT 1 FROM ap y WHERE y.invnumber = t.token[1])
+    )
     SELECT bank_transaction_id, match_type, target_type, target_id, confidence
     FROM (
         SELECT DISTINCT ON (bank_transaction_id)
@@ -1556,6 +1598,8 @@ BEGIN
                    0.99::NUMERIC AS confidence
             FROM bank_transactions bt
             JOIN ar ON (ar.amount - ar.paid) > 0.01
+                    AND bt.transdate >= ar.transdate
+                    AND bt.amount <= (ar.amount - ar.paid) + 0.01
                     AND length(ar.invnumber) >= 4
                     AND bt.end_to_end_id IS NOT NULL
                     AND bt.end_to_end_id ~ ('(^|[^[:alnum:]])' || ar.invnumber || '($|[^[:alnum:]])')
@@ -1575,6 +1619,8 @@ BEGIN
             JOIN customer c ON c.iban = bt.remote_iban AND bt.remote_iban IS NOT NULL
             JOIN ar ON ar.customer_id = c.id
                     AND (ar.amount - ar.paid) > 0.01
+                    AND bt.transdate >= ar.transdate
+                    AND bt.amount <= (ar.amount - ar.paid) + 0.01
                     AND length(ar.invnumber) >= 4
                     AND bt.purpose ~ ('(^|[^[:alnum:]])' || ar.invnumber || '($|[^[:alnum:]])')
             WHERE bt.local_bank_account_id = p_bank_account_id
@@ -1583,12 +1629,14 @@ BEGIN
 
             UNION ALL
 
-            -- 1b. AR-Nummer im Purpose ohne IBAN — nur eindeutige Treffer.
-            --     Wenn die gleiche Nummer bei mehreren offenen ARs vorkommt
-            --     (sehr selten), lassen wir den Match weg.
-            SELECT bt.id, 'invnumber_in_purpose', 'ar'::TEXT, ar.id, 0.88
+            -- 1b. AR-Nummer im Purpose ohne IBAN. Der Zahler hat die Nummer
+            --     selbst angegeben — das ist ein stärkeres Signal als ein
+            --     zufällig passender Betrag und rangiert deshalb über 2.
+            SELECT bt.id, 'invnumber_in_purpose', 'ar'::TEXT, ar.id, 0.94
             FROM bank_transactions bt
             JOIN ar ON (ar.amount - ar.paid) > 0.01
+                    AND bt.transdate >= ar.transdate
+                    AND bt.amount <= (ar.amount - ar.paid) + 0.01
                     AND length(ar.invnumber) >= 4
                     AND bt.purpose ~ ('(^|[^[:alnum:]])' || ar.invnumber || '($|[^[:alnum:]])')
             WHERE bt.local_bank_account_id = p_bank_account_id
@@ -1603,10 +1651,12 @@ BEGIN
             JOIN customer c ON c.iban = bt.remote_iban AND bt.remote_iban IS NOT NULL
             JOIN ar ON ar.customer_id = c.id
                     AND ABS((ar.amount - ar.paid) - bt.amount) < 0.01
+                    AND bt.transdate >= ar.transdate
                     AND ar.paid < ar.amount
             WHERE bt.local_bank_account_id = p_bank_account_id
               AND bt.match_status = 'unmatched'
               AND bt.amount > 0
+              AND bt.id NOT IN (SELECT id FROM mit_rechnungsbezug)
 
             UNION ALL
 
@@ -1618,12 +1668,15 @@ BEGIN
                 SELECT id, amount, paid
                 FROM ar
                 WHERE customer_id = c.id AND (amount - paid) > 0.01
+                  AND bt.transdate >= ar.transdate
                 LIMIT 2
             ) ar_count ON true
             JOIN ar ON ar.id = ar_count.id
+                    AND bt.amount <= (ar.amount - ar.paid) + 0.01
             WHERE bt.local_bank_account_id = p_bank_account_id
               AND bt.match_status = 'unmatched'
               AND bt.amount > 0
+              AND bt.id NOT IN (SELECT id FROM mit_rechnungsbezug)
             GROUP BY bt.id, ar.id
             HAVING count(*) = 1
 
@@ -1637,12 +1690,14 @@ BEGIN
                             OR bt.remote_name ILIKE '%' || c.name || '%'
             JOIN ar ON ar.customer_id = c.id
                     AND ABS((ar.amount - ar.paid) - bt.amount) < 0.01
+                    AND bt.transdate >= ar.transdate
                     AND ar.paid < ar.amount
             WHERE bt.local_bank_account_id = p_bank_account_id
               AND bt.match_status = 'unmatched'
               AND bt.amount > 0
               AND bt.remote_iban IS NULL
               AND length(bt.remote_name) >= 4
+              AND bt.id NOT IN (SELECT id FROM mit_rechnungsbezug)
 
             UNION ALL
 
@@ -1652,6 +1707,8 @@ BEGIN
             SELECT bt.id, 'end_to_end_id', 'ap'::TEXT, ap.id, 0.99
             FROM bank_transactions bt
             JOIN ap ON (ap.amount - ap.paid) > 0.01
+                    AND bt.transdate >= ap.transdate
+                    AND ABS(bt.amount) <= (ap.amount - ap.paid) + 0.01
                     AND length(ap.invnumber) >= 4
                     AND bt.end_to_end_id IS NOT NULL
                     AND bt.end_to_end_id ~ ('(^|[^[:alnum:]])' || ap.invnumber || '($|[^[:alnum:]])')
@@ -1667,6 +1724,22 @@ BEGIN
             JOIN vendor v ON v.iban = bt.remote_iban AND bt.remote_iban IS NOT NULL
             JOIN ap ON ap.vendor_id = v.id
                     AND (ap.amount - ap.paid) > 0.01
+                    AND bt.transdate >= ap.transdate
+                    AND ABS(bt.amount) <= (ap.amount - ap.paid) + 0.01
+                    AND length(ap.invnumber) >= 4
+                    AND bt.purpose ~ ('(^|[^[:alnum:]])' || ap.invnumber || '($|[^[:alnum:]])')
+            WHERE bt.local_bank_account_id = p_bank_account_id
+              AND bt.match_status = 'unmatched'
+              AND bt.amount < 0
+
+            UNION ALL
+
+            -- 4b. AP-Nummer im Purpose ohne IBAN
+            SELECT bt.id, 'invnumber_in_purpose', 'ap'::TEXT, ap.id, 0.94
+            FROM bank_transactions bt
+            JOIN ap ON (ap.amount - ap.paid) > 0.01
+                    AND bt.transdate >= ap.transdate
+                    AND ABS(bt.amount) <= (ap.amount - ap.paid) + 0.01
                     AND length(ap.invnumber) >= 4
                     AND bt.purpose ~ ('(^|[^[:alnum:]])' || ap.invnumber || '($|[^[:alnum:]])')
             WHERE bt.local_bank_account_id = p_bank_account_id
@@ -1683,21 +1756,11 @@ BEGIN
             FROM bank_transactions bt
             CROSS JOIN LATERAL regexp_matches(bt.purpose, '\d{4,}', 'g') AS m(token)
             JOIN ap ON (ap.amount - ap.paid) > 0.01
+                    AND bt.transdate >= ap.transdate
+                    AND ABS(bt.amount) <= (ap.amount - ap.paid) + 0.01
                     AND length(ap.invnumber) >= 4
                     AND m.token[1] LIKE '%' || ap.invnumber
                     AND length(m.token[1]) - length(ap.invnumber) <= 3  -- max 3 Praefix-Zeichen
-            WHERE bt.local_bank_account_id = p_bank_account_id
-              AND bt.match_status = 'unmatched'
-              AND bt.amount < 0
-
-            UNION ALL
-
-            -- 4b. AP-Nummer im Purpose ohne IBAN
-            SELECT bt.id, 'invnumber_in_purpose', 'ap'::TEXT, ap.id, 0.88
-            FROM bank_transactions bt
-            JOIN ap ON (ap.amount - ap.paid) > 0.01
-                    AND length(ap.invnumber) >= 4
-                    AND bt.purpose ~ ('(^|[^[:alnum:]])' || ap.invnumber || '($|[^[:alnum:]])')
             WHERE bt.local_bank_account_id = p_bank_account_id
               AND bt.match_status = 'unmatched'
               AND bt.amount < 0
@@ -1710,10 +1773,12 @@ BEGIN
             JOIN vendor v ON v.iban = bt.remote_iban AND bt.remote_iban IS NOT NULL
             JOIN ap ON ap.vendor_id = v.id
                     AND ABS((ap.amount - ap.paid) - ABS(bt.amount)) < 0.01
+                    AND bt.transdate >= ap.transdate
                     AND ap.paid < ap.amount
             WHERE bt.local_bank_account_id = p_bank_account_id
               AND bt.match_status = 'unmatched'
               AND bt.amount < 0
+              AND bt.id NOT IN (SELECT id FROM mit_rechnungsbezug)
 
             UNION ALL
 
@@ -1725,12 +1790,15 @@ BEGIN
                 SELECT id
                 FROM ap
                 WHERE vendor_id = v.id AND (amount - paid) > 0.01
+                  AND bt.transdate >= ap.transdate
                 LIMIT 2
             ) ap_count ON true
             JOIN ap ON ap.id = ap_count.id
+                    AND ABS(bt.amount) <= (ap.amount - ap.paid) + 0.01
             WHERE bt.local_bank_account_id = p_bank_account_id
               AND bt.match_status = 'unmatched'
               AND bt.amount < 0
+              AND bt.id NOT IN (SELECT id FROM mit_rechnungsbezug)
             GROUP BY bt.id, ap.id
             HAVING count(*) = 1
 

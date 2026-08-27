@@ -34,10 +34,10 @@
         "sweetalert2": "^11.26.25",
         "vue": "^3.5.41",
         "vue-chartjs": "^5.3.4",
+        "vue-draggable-plus": "^0.6.1",
         "vue-i18n": "^11.4.8",
         "vue-router": "^5.2.0",
         "vue3-emoji-picker": "^1.1.8",
-        "vuedraggable": "^4.1.0",
         "vuefinder": "^4.7.3",
         "vuetify": "^4.1.8",
         "xlsx": "https://cdn.sheetjs.com/xlsx-latest/xlsx-latest.tgz"

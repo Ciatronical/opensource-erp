@@ -661,8 +661,9 @@ export default defineComponent({
     gap: 8px;
 }
 
-/* Responsive: Auf kleinen Bildschirmen untereinander */
-@media (max-width: 960px) {
+/* Responsive: Auf kleinen Bildschirmen untereinander
+   (unterhalb des Vuetify-Breakpoints md, seit Vuetify 4: 840px) */
+@media (max-width: 839.98px) {
     .action-bar__content {
         flex-direction: column;
         align-items: stretch;

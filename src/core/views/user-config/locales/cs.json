@@ -16,6 +16,9 @@
         "fakturaCompactView_help": "Skryje detailni karty (zakaznik, udaje dokladu, doplnkove informace) a zobrazi pouze kompaktni souhrn.",
         "printer": "Tiskarna",
         "defaultPrinter": "Vychozi tiskarna",
-        "defaultPrinter_help": "Tiskarna, ktera se standardne pouziva pro tisk"
+        "defaultPrinter_help": "Tiskarna, ktera se standardne pouziva pro tisk",
+        "accounting": "Účetnictví",
+        "accountingEasymode": "Jednoduchý režim",
+        "accountingEasymode_help": "Zobrazuje účetnictví běžným jazykem: bez Má dáti a Dal, bez daňových klíčů, jen práci, která čeká. Po vypnutí se objeví odborný pohled. Přepnout lze i přímo v účetnictví."
     }
 }

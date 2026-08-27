@@ -51,7 +51,7 @@
             "resetStatus": "Скинути",
             "assign": "Зіставити",
             "details": "Деталі",
-            "searchPlaceholder": "Пошук: назва, призначення платежу, сума, номер рахунка …",
+            "searchPlaceholder": "Назва, призначення, сума …",
             "openInvoice": "Відкрити рахунок"
         },
         "reconciliation": {
@@ -330,7 +330,8 @@
             "printConfirmation": "Роздрукувати підтвердження",
             "syncAll": "Синхронізувати все",
             "syncAllDone": "{imported} транзакцій імпортовано ({n} рахунків)",
-            "syncAllRunning": "Синхронізація {n} рахунків..."
+            "syncAllRunning": "Синхронізація {n} рахунків...",
+            "printStatement": "Роздрукувати виписку"
         },
         "vop": {
             "cancel": "Скасувати",

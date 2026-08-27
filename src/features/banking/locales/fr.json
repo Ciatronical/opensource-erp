@@ -51,7 +51,7 @@
             "resetStatus": "Réinitialiser",
             "assign": "Attribuer",
             "details": "Détails",
-            "searchPlaceholder": "Rechercher : nom, libellé, montant, n° de facture …",
+            "searchPlaceholder": "Nom, libellé, n°, montant …",
             "openInvoice": "Ouvrir la facture"
         },
         "reconciliation": {
@@ -330,7 +330,8 @@
             "printConfirmation": "Imprimer la confirmation",
             "syncAll": "Synchroniser tout",
             "syncAllDone": "{imported} transactions importées ({n} comptes)",
-            "syncAllRunning": "Synchronisation de {n} comptes..."
+            "syncAllRunning": "Synchronisation de {n} comptes...",
+            "printStatement": "Imprimer le relevé"
         },
         "vop": {
             "cancel": "Annuler",

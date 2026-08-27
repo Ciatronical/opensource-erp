@@ -133,6 +133,33 @@ export function useMatching() {
         throw new Error(response.data.payload || response.data.text)
     }
 
+    // Aus einem offenen Bankumsatz direkt eine Eingangsrechnung anlegen und
+    // sofort als bezahlt verbuchen (payload: {bank_transaction_id, vendor_id,
+    // expense_chart_id|debit_account, rate, invnumber?, notes?})
+    async function createApFromBankTransaction(payload) {
+        const response = await axios.post(API_URL, {
+            action: 'createApFromBankTransaction',
+            ...payload
+        })
+        if (response.data.success) {
+            return response.data.payload
+        }
+        throw new Error(response.data.text || response.data.payload)
+    }
+
+    // Aufwandskonto + Steuersatz fuer einen Lieferanten vorschlagen (gelernte
+    // Regel > zuletzt benutztes Konto > Hausstandard aus den Einstellungen)
+    async function suggestExpenseAccount(vendorId) {
+        const response = await axios.post(API_URL, {
+            action: 'suggestExpenseAccount',
+            vendor_id: vendorId
+        })
+        if (response.data.success) {
+            return response.data.payload
+        }
+        return { account: null, rate: 19 }
+    }
+
     // ═══════════════════════════════════════════════
     // REGELN
     // ═══════════════════════════════════════════════
@@ -181,6 +208,8 @@ export function useMatching() {
         matchTransaction,
         unmatchTransaction,
         bookMatchedTransactions,
+        createApFromBankTransaction,
+        suggestExpenseAccount,
 
         fetchMatchingRules,
         saveMatchingRule,

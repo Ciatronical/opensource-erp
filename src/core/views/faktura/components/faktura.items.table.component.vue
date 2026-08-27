@@ -76,16 +76,18 @@
                         </th>
                     </tr>
                 </thead>
-                <draggable
-                    :list="modelValue"
+                <VueDraggable
+                    :model-value="modelValue"
                     tag="tbody"
-                    :item-key="getItemKey"
                     handle=".drag-handle"
-                    :move="canMoveItem"
-                    @change="onDragChange"
+                    draggable=".faktura-draggable-row"
+                    @update:model-value="onListReorder"
                 >
-                    <template #item="{ element: item, index }">
-                        <tr :class="[
+                        <tr
+                            v-for="(item, index) in modelValue"
+                            :key="getItemKey(item)"
+                            :class="[
+                            { 'faktura-draggable-row': item.parts_id },
                             { 'new-item-row': !item.parts_id },
                             { 'selected-item-row': item.parts_id && selectedItems.has(item.id || item.tempId) },
                             getItemOrderClass(item)
@@ -479,8 +481,7 @@
                                 />
                             </td>
                         </tr>
-                    </template>
-                </draggable>
+                </VueDraggable>
             </v-table>
 
             <!-- Totals -->
@@ -622,13 +623,13 @@ import { useI18n } from 'vue-i18n'
 import { formatNumber, parseNumber } from '@/core/utils/numberFormat.js'
 import { oserpStore } from '@/core/stores/oserp.store.js'
 import { lxcarsStore } from '@/features/lxcars/stores/lxcars.store.js'
-import draggable from 'vuedraggable'
+import { VueDraggable } from 'vue-draggable-plus'
 import VoiceInputButton from '@/core/components/voice-input-button.vue'
 
 export default defineComponent({
     name: 'FakturaItemsTableComponent',
     components: {
-        draggable,
+        VueDraggable,
         VoiceInputButton
     },
     props: {
@@ -779,44 +780,22 @@ export default defineComponent({
         }
 
         /**
-         * Prüft ob ein Item bewegt werden darf
+         * Nach dem Drag: neue Reihenfolge uebernehmen und Positionen neu nummerieren.
          *
-         * @param {Object} evt - Das Drag-Event
-         * @returns {boolean} True wenn Item bewegt werden darf
-         */
-        function canMoveItem(evt) {
-            const draggedItem = evt.draggedContext.element
-            const relatedItem = evt.relatedContext.element
-
-            // Leere Zeilen (ohne parts_id) dürfen nicht gezogen werden
-            if (!draggedItem.parts_id) {
-                return false
-            }
-
-            // Nicht vor/über leere Zeilen droppen (leere Zeile muss immer am Ende bleiben)
-            if (relatedItem && !relatedItem.parts_id) {
-                return false
-            }
-
-            return true
-        }
-
-        /**
-         * Nach dem Drag: Positionen neu nummerieren
+         * Leere Zeilen (ohne parts_id) sind ueber den draggable-Selektor vom Ziehen
+         * ausgenommen und bleiben dadurch immer am Ende.
          *
-         * @param {Object} evt - Das Change-Event
+         * @param {Array} newList - Die neu sortierte Positionsliste
          */
-        function onDragChange(evt) {
-            // Nur bei moved-Events reagieren
-            if (evt.moved) {
-                // Positionen neu nummerieren
-                props.modelValue.forEach((item, idx) => {
-                    item.position = idx + 1
-                })
+        function onListReorder(newList) {
+            // Positionen neu nummerieren
+            newList.forEach((item, idx) => {
+                item.position = idx + 1
+            })
 
-                // Änderungen speichern
-                emit('items-changed')
-            }
+            // Neue Reihenfolge nach oben durchreichen und speichern
+            emit('update:modelValue', newList)
+            emit('items-changed')
         }
 
         // Computed für "Alle Rabatte"-Button Label
@@ -1576,8 +1555,7 @@ export default defineComponent({
             onVoiceLongDesc,
             onVoicePosition,
             getItemKey,
-            canMoveItem,
-            onDragChange,
+            onListReorder,
             allDiscountsButtonLabel,
             toggleAllDiscounts,
             getItemDiscountButtonLabel,

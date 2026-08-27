@@ -122,7 +122,8 @@ export default {
     gap: 8px;
 }
 
-@media (max-width: 960px) {
+/* Unterhalb des Vuetify-Breakpoints md (seit Vuetify 4: 840px) */
+@media (max-width: 839.98px) {
     .action-bar__content {
         flex-direction: column;
         align-items: stretch;

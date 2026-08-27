@@ -9,6 +9,10 @@
         "failed": "Échec de la transcription",
         "online": "Connexion en direct active",
         "offline": "Aucune connexion en direct",
-        "latestBadge": "Dernière"
+        "latestBadge": "Dernière",
+        "soundOn": "Son activé – les nouvelles notes sonnent",
+        "soundOff": "Son désactivé",
+        "enableSound": "Activer le son",
+        "enableSoundHint": "Touchez une fois ou appuyez sur OK sur la télécommande – chaque nouvelle note sonnera ensuite."
     }
 }

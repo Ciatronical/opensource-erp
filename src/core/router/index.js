@@ -195,13 +195,18 @@ const KasseView = () => import('@/features/banking/views/banking.kasse.vue')
 const HrHubView = () => import('@/core/views/hr/hr.hub.vue')
 
 // Buchhaltung
-const AccountingOverviewView = () => import('@/features/accounting/views/accounting.overview.vue')
+const AccountingCockpitView = () => import('@/features/accounting/views/accounting.cockpit.vue')
+const AccountingRunView = () => import('@/features/accounting/views/accounting.run.vue')
 const AccountingBookingsView = () => import('@/features/accounting/views/accounting.bookings.vue')
 const AccountingInvoiceUploadView = () => import('@/features/accounting/views/accounting.invoice-upload.vue')
+const AccountingInvoiceManualView = () => import('@/features/accounting/views/accounting.invoice-manual.vue')
 const AccountingVendorsView = () => import('@/features/accounting/views/accounting.vendors.vue')
+const AccountingCustomersView = () => import('@/features/accounting/views/accounting.customers.vue')
 const AccountingDatevExportView = () => import('@/features/accounting/views/accounting.datev-export.vue')
 const AccountingOutgoingView = () => import('@/features/accounting/views/accounting.outgoing.vue')
 const AccountingChartOfAccountsView = () => import('@/features/accounting/views/accounting.chart-of-accounts.vue')
+const AccountingAccountLedgerView = () => import('@/features/accounting/views/accounting.account-ledger.vue')
+const AccountingReportsView = () => import('@/features/accounting/views/accounting.reports.vue')
 const AccountingOpenItemsView = () => import('@/features/accounting/views/accounting.open-items.vue')
 const AccountingUstvaView = () => import('@/features/accounting/views/accounting.ustva.vue')
 
@@ -615,7 +620,15 @@ function buildRoutes() {
         {
             ...routePath('AccountingView.routes.accountingOverview'),
             name: 'accounting-overview',
-            component: AccountingOverviewView,
+            component: AccountingCockpitView,
+            meta: { hideCustomerBar: true },
+        },
+        {
+            // Durchlauf: :kind unterscheidet die Stapel (belege, bank)
+            ...routePath('AccountingView.routes.accountingRun', '/:kind'),
+            name: 'accounting-run',
+            component: AccountingRunView,
+            props: true,
             meta: { hideCustomerBar: true },
         },
         {
@@ -631,9 +644,21 @@ function buildRoutes() {
             meta: { hideCustomerBar: true },
         },
         {
+            ...routePath('AccountingView.routes.accountingInvoiceManual'),
+            name: 'accounting-invoice-manual',
+            component: AccountingInvoiceManualView,
+            meta: { hideCustomerBar: true },
+        },
+        {
             ...routePath('AccountingView.routes.accountingVendors'),
             name: 'accounting-vendors',
             component: AccountingVendorsView,
+            meta: { hideCustomerBar: true },
+        },
+        {
+            ...routePath('AccountingView.routes.accountingCustomers'),
+            name: 'accounting-customers',
+            component: AccountingCustomersView,
             meta: { hideCustomerBar: true },
         },
         {
@@ -652,6 +677,18 @@ function buildRoutes() {
             ...routePath('AccountingView.routes.accountingChartOfAccounts'),
             name: 'accounting-chart-of-accounts',
             component: AccountingChartOfAccountsView,
+            meta: { hideCustomerBar: true },
+        },
+        {
+            ...routePath('AccountingView.routes.accountingAccountLedger'),
+            name: 'accounting-account-ledger',
+            component: AccountingAccountLedgerView,
+            meta: { hideCustomerBar: true },
+        },
+        {
+            ...routePath('AccountingView.routes.accountingReports'),
+            name: 'accounting-reports',
+            component: AccountingReportsView,
             meta: { hideCustomerBar: true },
         },
         {

@@ -16,6 +16,9 @@
         "fakturaCompactView_help": "Detay kartlarini (musteri, belge detaylari, ek bilgiler) gizler ve yalnizca kompakt bir ozet gosterir.",
         "printer": "Yazici",
         "defaultPrinter": "Varsayilan yazici",
-        "defaultPrinter_help": "Yazdirimalar icin varsayilan olarak kullanilan yazici"
+        "defaultPrinter_help": "Yazdirimalar icin varsayilan olarak kullanilan yazici",
+        "accounting": "Muhasebe",
+        "accountingEasymode": "Basit kip",
+        "accountingEasymode_help": "Muhasebeyi günlük dille gösterir: borç ve alacak olmadan, vergi kodları olmadan, yalnızca bekleyen iş. Kapalıyken uzman görünümü belirir. Doğrudan muhasebe içinden de değiştirilebilir."
     }
 }

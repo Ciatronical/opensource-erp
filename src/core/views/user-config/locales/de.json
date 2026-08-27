@@ -16,6 +16,9 @@
         "fakturaCompactView_help": "Blendet die Detailkarten (Kunde, Belegdetails, Zusatzinfos) aus und zeigt nur eine kompakte Zusammenfassung.",
         "printer": "Drucker",
         "defaultPrinter": "Standard-Drucker",
-        "defaultPrinter_help": "Drucker, der standardmäßig für Ausdrucke verwendet wird"
+        "defaultPrinter_help": "Drucker, der standardmäßig für Ausdrucke verwendet wird",
+        "accounting": "Buchhaltung",
+        "accountingEasymode": "Einfacher Modus",
+        "accountingEasymode_help": "Zeigt die Buchhaltung in Alltagssprache: ohne Soll und Haben, ohne Steuerschlüssel, nur mit der anstehenden Arbeit. Ausgeschaltet erscheint die fachliche Sicht. Lässt sich auch direkt in der Buchhaltung umschalten."
     }
 }

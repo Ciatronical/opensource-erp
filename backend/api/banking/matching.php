@@ -9,6 +9,9 @@
  * @testdata {"type": "all"}
  */
 function getOpenInvoicesForMatching($data) {
+    // Die Abfragen liefern genau eine Zeile mit einem json_agg-Feld. Mit getAll
+    // (Liste von Zeilen) griff $result['invoices'] ins Leere, sodass die
+    // Funktion immer eine leere Liste zurueckgab.
     $db = DbhCompany::begin();
 
     $type = $data['type'] ?? 'all';
@@ -25,7 +28,7 @@ function getOpenInvoicesForMatching($data) {
             $arParams['search'] = '%' . $search . '%';
         }
 
-        $arResult = $db->getAll(<<<SQL
+        $arResult = $db->getOne(<<<SQL
             SELECT json_agg(row_to_json(t)) as invoices
             FROM (
                 SELECT
@@ -63,7 +66,7 @@ function getOpenInvoicesForMatching($data) {
             $apParams['search'] = '%' . $search . '%';
         }
 
-        $apResult = $db->getAll(<<<SQL
+        $apResult = $db->getOne(<<<SQL
             SELECT json_agg(row_to_json(t)) as invoices
             FROM (
                 SELECT
@@ -109,6 +112,22 @@ function runAutoMatch($data) {
         resultInfo(false, 'VALIDATION_ERROR', 'Bankkonto-ID fehlt');
         return;
     }
+
+    // Selbstheilung: Umsätze, die als 'matched' markiert sind, zu denen aber
+    // keine Zuordnungszeile (mehr) existiert, hängen fest — der Auto-Match
+    // sieht nur 'unmatched', und das Buchen scheitert an der fehlenden
+    // Zuordnung. Vor jedem Lauf zurück auf 'unmatched', damit sie wieder
+    // mitlaufen.
+    $db->execute(<<<SQL
+        UPDATE bank_transactions bt
+        SET match_status = 'unmatched'
+        WHERE bt.local_bank_account_id = :bank_account_id
+          AND bt.match_status = 'matched'
+          AND NOT EXISTS (
+              SELECT 1 FROM bank_transaction_matches m
+              WHERE m.bank_transaction_id = bt.id
+          )
+    SQL, ['bank_account_id' => $bankAccountId]);
 
     $result = $db->getOne(<<<SQL
         SELECT json_agg(row_to_json(t)) as matches
@@ -275,147 +294,409 @@ function bookMatchedTransactions($data) {
             continue;
         }
 
-        $targetType = $mapping['target_type'];   // 'ar' oder 'ap'
-        $targetId   = intval($mapping['target_id']);
-        $isAr       = $targetType === 'ar';
-        $invTable   = $isAr ? 'ar' : 'ap';
-        $linkPrefix = $isAr ? 'AR' : 'AP';
-        $paidLink   = $linkPrefix . '_paid';
-
-        // Rechnungs-Stammbuchung lesen — daraus ergibt sich das Forderungs-/
-        // Verbindlichkeits-Konto (chart_id), gegen das die Erstbuchung lief.
-        // Wir buchen die Zahlung gegen genau dieses Konto, kompatibel mit dem
-        // jeweiligen Kontenrahmen des Kunden/Lieferanten.
-        $counterChart = $db->getOne(<<<SQL
-            SELECT chart_id
-            FROM acc_trans
-            WHERE trans_id = :tid
-              AND chart_link LIKE :base_link
-              AND chart_link NOT LIKE :paid_link
-            ORDER BY acc_trans_id ASC
-            LIMIT 1
-        SQL, [
-            'tid'       => $targetId,
-            'base_link' => '%' . $linkPrefix . '%',
-            'paid_link' => '%' . $paidLink . '%',
-        ]);
-
-        // Fallback fuer Rechnungen ohne GL-Erstbuchung (z. B. importierte Belege):
-        // Standard-Forderungs-/Verbindlichkeitskonto aus dem Kontenrahmen nehmen —
-        // chart.link = 'AR' bzw. 'AP', niedrigste Kontonummer (wie die Faktura-UI).
-        if (!$counterChart) {
-            $counterChart = $db->getOne(
-                "SELECT id AS chart_id FROM chart WHERE link = :lnk ORDER BY accno ASC LIMIT 1",
-                ['lnk' => $linkPrefix]
-            );
-            writeLog("bookMatchedTransactions: {$invTable} #{$targetId} ohne acc_trans — Fallback-Konto " . ($counterChart['chart_id'] ?? 'KEINS'), true, DLOG_INF);
-        }
-
-        if (!$counterChart) {
-            writeLog("bookMatchedTransactions: Umsatz #{$btId} — kein {$linkPrefix}-Konto ermittelbar", true, DLOG_ERR);
-            $errors[] = "Umsatz {$btId}: Forderungs-/Verbindlichkeitskonto der Rechnung nicht ermittelbar";
-            continue;
-        }
-
-        $invoice = $db->getOne(
-            "SELECT id, amount, paid FROM {$invTable} WHERE id = :id",
-            ['id' => $targetId]
-        );
-        if (!$invoice) {
-            $errors[] = "Umsatz {$btId}: {$invTable} #{$targetId} nicht gefunden";
-            continue;
-        }
-
-        // Vorzeichen-Konvention gemaess calculatePaymentEntries (Faktura):
-        //   AR-Konto-Eintrag:  positiver Betrag  → wird in ar.paid gezaehlt
-        //   Bank-Eintrag:      negativer Betrag  → erscheint im Zahlungsbereich der Rechnung
-        //                       (chart_link des Bankkontos enthaelt 'AR_paid', wird von
-        //                        getFakturaData mit LIKE '%AR_paid%' gefunden)
-        // chart_link separat laden, um doppelte Named-Parameter in PDO zu vermeiden.
-        $paidIncrement   = abs(floatval($bt['amount']));
-        $counterLink     = $db->getOne("SELECT link FROM chart WHERE id = :id", ['id' => $counterChart['chart_id']]);
-        $bankChartLink   = $db->getOne("SELECT link FROM chart WHERE id = :id", ['id' => $bankAccount['chart_id']]);
-        $counterLinkVal  = $counterLink['link'] ?? 'AR';
-        $bankLinkVal     = $bankChartLink['link'] ?? 'AR_paid:AP_paid';
-
-        // Fortlaufende Belegnummer kommt in acc_trans.source (= Beleg-Feld der Rechnung).
-        // Die Erkennung "bank-gebucht" (Faktura-Editor) und der Storno laufen ueber die
-        // Mapping-Tabelle bank_transaction_acc_trans, nicht mehr ueber source='BANK'.
-        $beleg    = nextBelegnummer($db, $bankAccount['chart_id'], $bt['transdate']);
-        $bankMemo = "Beleg {$beleg} · Bankabstimmung Umsatz #{$btId}";
-
-        // AR-Konto-Eintrag (positiv) — wird fuer ar.paid gezaehlt
-        $bankEntry = $db->getOne(<<<SQL
-            INSERT INTO acc_trans (trans_id, chart_id, amount, transdate, gldate, source, memo, tax_id, taxkey, chart_link)
-            VALUES (:trans_id, :chart_id, :amount, :transdate, :transdate, :source, :memo, 0, 0, :chart_link)
-            RETURNING acc_trans_id
-        SQL, [
-            'trans_id'   => $targetId,
-            'chart_id'   => $counterChart['chart_id'],
-            'amount'     => $paidIncrement,
-            'transdate'  => $bt['transdate'],
-            'source'     => (string)$beleg,
-            'memo'       => $bankMemo,
-            'chart_link' => $counterLinkVal,
-        ]);
-
-        // Bank-Eintrag (negativ) — chart_link des Bankkontos ('AR_paid:AP_paid')
-        // wird von getFakturaData via LIKE '%AR_paid%' im Zahlungsbereich gefunden.
-        $bankLeg = $db->getOne(<<<SQL
-            INSERT INTO acc_trans (trans_id, chart_id, amount, transdate, gldate, source, memo, tax_id, taxkey, chart_link)
-            VALUES (:trans_id, :chart_id, :amount, :transdate, :transdate, :source, :memo, 0, 0, :chart_link)
-            RETURNING acc_trans_id
-        SQL, [
-            'trans_id'   => $targetId,
-            'chart_id'   => $bankAccount['chart_id'],
-            'amount'     => -$paidIncrement,
-            'transdate'  => $bt['transdate'],
-            'source'     => (string)$beleg,
-            'memo'       => $bankMemo,
-            'chart_link' => $bankLinkVal,
-        ]);
-
-        // ar.paid / ap.paid mit positivem Betrag inkrementieren.
-        $db->execute(
-            "UPDATE {$invTable} SET paid = COALESCE(paid, 0) + :inc WHERE id = :id",
-            ['inc' => $paidIncrement, 'id' => $targetId]
-        );
-
-        // kivitendo-Mapping fuellen — BEIDE Buchungsbeine verknuepfen. Das liefert
-        // eine stabile, vom (editierbaren) Memo unabhaengige Referenz fuer den Storno
-        // (unbookTransaction) und schuetzt beide Eintraege im Faktura-Editor.
-        $arIdVal = $isAr ? $targetId : null;
-        $apIdVal = $isAr ? null : $targetId;
-        foreach ([$bankEntry['acc_trans_id'], $bankLeg['acc_trans_id']] as $linkedAccTransId) {
-            $db->execute(<<<SQL
-                INSERT INTO bank_transaction_acc_trans (bank_transaction_id, acc_trans_id, ar_id, ap_id)
-                VALUES (:bt_id, :acc_trans_id, :ar_id, :ap_id)
-            SQL, [
-                'bt_id'         => $btId,
-                'acc_trans_id'  => $linkedAccTransId,
-                'ar_id'         => $arIdVal,
-                'ap_id'         => $apIdVal,
-            ]);
-        }
-
-        // Pre-Booking-Mapping konsumiert — Information ist jetzt in
-        // bank_transaction_acc_trans und acc_trans persistent.
-        $db->execute(
-            "DELETE FROM bank_transaction_matches WHERE bank_transaction_id = :id",
-            ['id' => $btId]
-        );
-
-        $db->execute(
-            "UPDATE bank_transactions SET match_status = 'booked', cleared = true WHERE id = :id",
-            ['id' => $btId]
-        );
-
+        $res = _bookBankPaymentAgainstInvoice($db, $bt, $mapping['target_type'], intval($mapping['target_id']), $bankAccount);
+        if (!$res['ok']) { $errors[] = "Umsatz {$btId}: " . $res['error']; continue; }
         $bookedCount++;
     }
 
     resultInfo(true, "Gebucht", [
         'booked_count' => $bookedCount,
         'errors' => $errors
+    ]);
+}
+
+/**
+ * Bucht EINE Bankzahlung gegen eine bestehende AR/AP-Rechnung: schreibt die zwei
+ * acc_trans-Beine (Forderungs-/Verbindlichkeitskonto + Bankkonto), erhöht
+ * ar.paid/ap.paid, verknüpft beide Beine in bank_transaction_acc_trans, räumt
+ * ein evtl. Vor-Mapping ab und markiert den Umsatz als gebucht. Gemeinsamer Kern
+ * von bookMatchedTransactions und createApFromBankTransaction.
+ *
+ * @param array $bt          {id, amount, transdate}
+ * @param array $bankAccount {chart_id, chart_link}
+ * @return array {ok:bool, error?:string}
+ */
+function _bookBankPaymentAgainstInvoice($db, array $bt, $targetType, $targetId, array $bankAccount) {
+    $btId       = intval($bt['id']);
+    $isAr       = $targetType === 'ar';
+    $invTable   = $isAr ? 'ar' : 'ap';
+    $linkPrefix = $isAr ? 'AR' : 'AP';
+
+    // Forderungs-/Verbindlichkeitskonto der Erstbuchung ermitteln (gegen genau
+    // dieses Konto wird die Zahlung gebucht — kontenrahmen-kompatibel).
+    // WICHTIG: Das Kontroll-Konto trägt link EXAKT 'AP' bzw. 'AR' (als Token in
+    // einer ':'-getrennten Liste). Ein blosses LIKE '%AP%' würde auch 'AP_amount'
+    // (Aufwand) und 'AP_tax' (Vorsteuer) treffen — je nach Buchungsreihenfolge
+    // landete die Zahlung dann auf dem falschen Konto. Der Token-Regex
+    // '(^|:)AP($|:)' matcht 'AP' und 'AP' in 'X:AP', aber NICHT 'AP_amount'/'AP_paid'.
+    $counterChart = $db->getOne(<<<SQL
+        SELECT chart_id
+        FROM acc_trans
+        WHERE trans_id = :tid
+          AND chart_link ~ :token_link
+        ORDER BY acc_trans_id ASC
+        LIMIT 1
+    SQL, [
+        'tid'        => $targetId,
+        'token_link' => '(^|:)' . $linkPrefix . '($|:)',
+    ]);
+
+    // Fallback fuer Rechnungen ohne GL-Erstbuchung: Standard-AR/AP-Konto.
+    if (!$counterChart) {
+        $counterChart = $db->getOne(
+            "SELECT id AS chart_id FROM chart WHERE link = :lnk ORDER BY accno ASC LIMIT 1",
+            ['lnk' => $linkPrefix]
+        );
+        writeLog("_bookBankPaymentAgainstInvoice: {$invTable} #{$targetId} ohne acc_trans — Fallback-Konto " . ($counterChart['chart_id'] ?? 'KEINS'), true, DLOG_INF);
+    }
+    if (!$counterChart) {
+        writeLog("_bookBankPaymentAgainstInvoice: Umsatz #{$btId} — kein {$linkPrefix}-Konto ermittelbar", true, DLOG_ERR);
+        return ['ok' => false, 'error' => 'Forderungs-/Verbindlichkeitskonto der Rechnung nicht ermittelbar'];
+    }
+
+    $invoice = $db->getOne("SELECT id, amount, paid, transdate FROM {$invTable} WHERE id = :id", ['id' => $targetId]);
+    if (!$invoice) return ['ok' => false, 'error' => "{$invTable} #{$targetId} nicht gefunden"];
+
+    // ── Plausibilitäts-Sperren (letzte Instanz vor dem Hauptbuch) ───────────
+    // 1. Eine Zahlung kann nicht vor der Rechnung liegen, die sie ausgleicht.
+    //    Ohne diese Sperre hat der Auto-Match Zahlungseingänge auf Rechnungen
+    //    gebucht, die es zum Zahlungszeitpunkt noch gar nicht gab (bis zu 75
+    //    Tage Vorlauf). Anzahlungen sind bewusst NICHT erfasst — die gehören
+    //    als eigener Geschäftsvorfall gebucht, nicht als Rechnungsausgleich.
+    if (strtotime($bt['transdate']) < strtotime($invoice['transdate'])) {
+        return ['ok' => false, 'error' => sprintf(
+            'Zahlung vom %s liegt vor dem Rechnungsdatum %s — Zuordnung unplausibel',
+            date('d.m.Y', strtotime($bt['transdate'])),
+            date('d.m.Y', strtotime($invoice['transdate']))
+        )];
+    }
+
+    // 2. Es darf nie mehr gebucht werden als offen ist. Sammelzahlungen über
+    //    mehrere Rechnungen gehören durch bookTransactionMultipleInvoices,
+    //    nicht komplett auf die erstbeste Einzelrechnung.
+    $openAmount = floatval($invoice['amount']) - floatval($invoice['paid']);
+    if (abs(floatval($bt['amount'])) > abs($openAmount) + 0.01) {
+        return ['ok' => false, 'error' => sprintf(
+            'Betrag %s übersteigt den offenen Rechnungsbetrag %s — evtl. Sammelzahlung über mehrere Rechnungen',
+            number_format(abs(floatval($bt['amount'])), 2, ',', '.'),
+            number_format(abs($openAmount), 2, ',', '.')
+        )];
+    }
+
+    // 3. Doppelbuchung: Wurde dieselbe Zahlung schon einmal auf diese Rechnung
+    //    gebucht (z. B. als kivitendo-Altbestand ohne source), darf sie nicht
+    //    ein zweites Mal ins Hauptbuch. Kriterium: gleiches Datum, gleicher
+    //    Betrag, Zahlungs-Bein (AR_paid/AP_paid) auf derselben Rechnung.
+    $dupe = $db->getOne(<<<SQL
+        SELECT at.acc_trans_id
+        FROM acc_trans at
+        JOIN chart ch ON ch.id = at.chart_id
+        WHERE at.trans_id = :tid
+          AND at.transdate = :tdate
+          AND ch.link ~ '(^|:)(AR_paid|AP_paid)($|:)'
+          AND ABS(ABS(at.amount) - :amt) < 0.01
+        LIMIT 1
+    SQL, ['tid' => $targetId, 'tdate' => $bt['transdate'], 'amt' => abs(floatval($bt['amount']))]);
+    if ($dupe) {
+        return ['ok' => false, 'error' => sprintf(
+            'Auf diese Rechnung ist am %s bereits eine Zahlung über %s gebucht — Doppelbuchung verhindert',
+            date('d.m.Y', strtotime($bt['transdate'])),
+            number_format(abs(floatval($bt['amount'])), 2, ',', '.')
+        )];
+    }
+
+    // Vorzeichen richtungsabhängig (Soll = negativ, Haben = positiv):
+    //   AR (Kunde zahlt uns): Forderungskonto +  (klärt die Forderung, Haben),
+    //                         Bank −            (Geld kommt rein, Soll).
+    //   AP (wir zahlen):      Verbindlichkeit − (klärt die Schuld, Soll),
+    //                         Bank +            (Geld geht raus, Haben) — wie bookApAsCash.
+    // Ein fixes AR-Vorzeichen (wie zuvor) verbuchte AP-Zahlungen spiegelverkehrt.
+    $paidIncrement  = abs(floatval($bt['amount']));
+    $counterAmount  = $isAr ?  $paidIncrement : -$paidIncrement;
+    $bankAmount     = -$counterAmount;
+    $counterLink    = $db->getOne("SELECT link FROM chart WHERE id = :id", ['id' => $counterChart['chart_id']]);
+    $bankChartLink  = $db->getOne("SELECT link FROM chart WHERE id = :id", ['id' => $bankAccount['chart_id']]);
+    $counterLinkVal = $counterLink['link'] ?? $linkPrefix;
+    $bankLinkVal    = $bankChartLink['link'] ?? 'AR_paid:AP_paid';
+
+    $beleg    = nextBelegnummer($db, $bankAccount['chart_id'], $bt['transdate']);
+    $bankMemo = "Beleg {$beleg} · Bankabstimmung Umsatz #{$btId}";
+
+    $bankEntry = $db->getOne(<<<SQL
+        INSERT INTO acc_trans (trans_id, chart_id, amount, transdate, gldate, source, memo, tax_id, taxkey, chart_link)
+        VALUES (:trans_id, :chart_id, :amount, :transdate, :transdate, :source, :memo, 0, 0, :chart_link)
+        RETURNING acc_trans_id
+    SQL, [
+        'trans_id' => $targetId, 'chart_id' => $counterChart['chart_id'], 'amount' => $counterAmount,
+        'transdate' => $bt['transdate'], 'source' => (string)$beleg, 'memo' => $bankMemo, 'chart_link' => $counterLinkVal,
+    ]);
+
+    $bankLeg = $db->getOne(<<<SQL
+        INSERT INTO acc_trans (trans_id, chart_id, amount, transdate, gldate, source, memo, tax_id, taxkey, chart_link)
+        VALUES (:trans_id, :chart_id, :amount, :transdate, :transdate, :source, :memo, 0, 0, :chart_link)
+        RETURNING acc_trans_id
+    SQL, [
+        'trans_id' => $targetId, 'chart_id' => $bankAccount['chart_id'], 'amount' => $bankAmount,
+        'transdate' => $bt['transdate'], 'source' => (string)$beleg, 'memo' => $bankMemo, 'chart_link' => $bankLinkVal,
+    ]);
+
+    $db->execute("UPDATE {$invTable} SET paid = COALESCE(paid, 0) + :inc WHERE id = :id",
+        ['inc' => $paidIncrement, 'id' => $targetId]);
+
+    $arIdVal = $isAr ? $targetId : null;
+    $apIdVal = $isAr ? null : $targetId;
+    foreach ([$bankEntry['acc_trans_id'], $bankLeg['acc_trans_id']] as $linkedAccTransId) {
+        $db->execute(<<<SQL
+            INSERT INTO bank_transaction_acc_trans (bank_transaction_id, acc_trans_id, ar_id, ap_id)
+            VALUES (:bt_id, :acc_trans_id, :ar_id, :ap_id)
+        SQL, ['bt_id' => $btId, 'acc_trans_id' => $linkedAccTransId, 'ar_id' => $arIdVal, 'ap_id' => $apIdVal]);
+    }
+
+    $db->execute("DELETE FROM bank_transaction_matches WHERE bank_transaction_id = :id", ['id' => $btId]);
+    $db->execute("UPDATE bank_transactions SET match_status = 'booked', cleared = true WHERE id = :id", ['id' => $btId]);
+
+    return ['ok' => true];
+}
+
+/**
+ * Aufwandskonto + Steuersatz für einen Lieferanten vorschlagen.
+ *
+ * Bisher blieb das Feld "Aufwandskonto" im Dialog "Als Eingangsrechnung buchen"
+ * leer — es gab schlicht keine Vorbelegung. Die Reihenfolge:
+ *   1. gelernte Regel aus accounting_account_rules (wird beim Buchen gepflegt)
+ *   2. das zuletzt bei diesem Lieferanten benutzte Aufwandskonto
+ *   3. der Hausstandard aus defaults_oserp.accounting_default_debit_account
+ * Der Steuersatz kommt aus der letzten Eingangsrechnung des Lieferanten, sonst
+ * aus defaults_oserp.accounting_default_tax_rate.
+ *
+ * @param int $data['vendor_id'] Lieferant
+ * @testdata {"vendor_id": 25942}
+ */
+function suggestExpenseAccount($data) {
+    $db = DbhCompany::begin();
+
+    $vendorId = intval($data['vendor_id'] ?? 0);
+    if ($vendorId <= 0) {
+        resultInfo(false, 'VALIDATION_ERROR', 'Kein Lieferant angegeben');
+        return;
+    }
+
+    $row = $db->getOne(<<<SQL
+        WITH kandidaten AS (
+            -- 1. gelernte Regel zum Lieferanten
+            (SELECT ch.id            AS chart_id,
+                    ch.accno         AS accno,
+                    ch.description   AS description,
+                    'rule'::text     AS quelle,
+                    1                AS prio
+             FROM accounting_account_rules r
+             JOIN chart ch ON ch.accno = r.debit_account
+             WHERE r.vendor_id = :vendor_id
+               AND r.active
+               AND r.match_pattern IS NULL
+             ORDER BY r.priority ASC, r.hit_count DESC
+             LIMIT 1)
+
+            UNION ALL
+
+            -- 2. zuletzt bei diesem Lieferanten bebuchtes Aufwandskonto
+            (SELECT ch.id, ch.accno, ch.description, 'history'::text, 2
+             FROM ap
+             JOIN acc_trans at ON at.trans_id = ap.id
+             JOIN chart ch ON ch.id = at.chart_id
+                          AND ch.link ~ '(^|:)AP_amount($|:)'
+             WHERE ap.vendor_id = :vendor_id
+             ORDER BY ap.transdate DESC, at.acc_trans_id DESC
+             LIMIT 1)
+
+            UNION ALL
+
+            -- 3. Hausstandard
+            (SELECT ch.id, ch.accno, ch.description, 'default'::text, 3
+             FROM defaults_oserp d
+             JOIN chart ch ON ch.accno = d.value
+             WHERE d.key = 'accounting_default_debit_account'
+               AND coalesce(d.value, '') <> ''
+             LIMIT 1)
+        )
+        SELECT k.chart_id,
+               k.accno,
+               k.description,
+               k.quelle,
+               COALESCE(
+                   -- Steuersatz der letzten Eingangsrechnung des Lieferanten
+                   (SELECT round((ap.amount - ap.netamount) / nullif(ap.netamount, 0) * 100)
+                    FROM ap
+                    WHERE ap.vendor_id = :vendor_id AND ap.netamount > 0
+                    ORDER BY ap.transdate DESC, ap.id DESC
+                    LIMIT 1),
+                   (SELECT nullif(value, '')::numeric FROM defaults_oserp
+                    WHERE key = 'accounting_default_tax_rate'),
+                   19
+               ) AS rate
+        FROM kandidaten k
+        ORDER BY k.prio
+        LIMIT 1
+    SQL, ['vendor_id' => $vendorId]);
+
+    resultInfo(true, '', [
+        'account' => $row ? [
+            'id'          => intval($row['chart_id']),
+            'accno'       => $row['accno'],
+            'description' => $row['description'],
+            'label'       => $row['accno'] . ' ' . $row['description'],
+            'source'      => $row['quelle'],
+        ] : null,
+        'rate' => $row ? floatval($row['rate']) : 19.0,
+    ]);
+}
+
+/**
+ * Aus einem (noch offenen) Bankumsatz direkt eine Eingangsrechnung (ap) anlegen
+ * UND sie in einem Rutsch mit diesem Umsatz als bezahlt verbuchen. Für die
+ * typische Buchhalter-Arbeitsweise „Kontoauszug durchgehen und jede
+ * Lieferantenzahlung wegbuchen", ohne dass vorher eine Rechnung erfasst wurde.
+ *
+ * Der Bruttobetrag kommt aus dem Bankumsatz; Netto/Steuer werden aus dem
+ * gewählten Steuersatz abgeleitet. Aufwandskonto per chart_id oder Kontonummer.
+ *
+ * @param int    $data['bank_transaction_id'] Bankumsatz (Pflicht)
+ * @param int    $data['bank_account_id']     Bankkonto (optional; sonst aus dem Umsatz)
+ * @param int    $data['vendor_id']           Lieferant (Pflicht)
+ * @param int    $data['expense_chart_id']    Aufwandskonto-ID (oder debit_account)
+ * @param string $data['debit_account']       Aufwandskonto-Nummer (Alternative)
+ * @param float  $data['rate']                Steuersatz 19/7/0 (Default 19)
+ * @param string $data['invnumber']           Rechnungsnummer (optional)
+ * @param string $data['notes']               Buchungstext (optional)
+ * @param array  $data['document']            Beleg {filename, mime_type, file_base64} (optional)
+ * @param int    $data['document_id']         bereits hochgeladener Beleg (Alternative)
+ * @testdata {"bank_transaction_id": 1, "vendor_id": 1000, "debit_account": "5400", "rate": 19}
+ */
+function createApFromBankTransaction($data) {
+    require_once __DIR__ . '/../accounting/incoming_invoice_posting.php';
+    $db = DbhCompany::begin();
+
+    $btId     = intval($data['bank_transaction_id'] ?? 0);
+    $vendorId = intval($data['vendor_id'] ?? 0);
+    if ($btId <= 0)     { resultInfo(false, 'VALIDATION_ERROR', 'Kein Bankumsatz angegeben'); return; }
+    if ($vendorId <= 0) { resultInfo(false, 'VENDOR_REQUIRED', 'Kein Lieferant gewählt'); return; }
+
+    // Aufwandskonto: id direkt oder aus Kontonummer
+    $expenseChartId = intval($data['expense_chart_id'] ?? 0);
+    if ($expenseChartId <= 0 && !empty($data['debit_account'])) {
+        $row = $db->getOne("SELECT id FROM chart WHERE accno = :a", [':a' => trim($data['debit_account'])]);
+        if (!$row) { resultInfo(false, 'ACCOUNT_REQUIRED', 'Aufwandskonto (' . $data['debit_account'] . ') nicht im Kontenrahmen'); return; }
+        $expenseChartId = intval($row['id']);
+    }
+    if ($expenseChartId <= 0) { resultInfo(false, 'ACCOUNT_REQUIRED', 'Kein Aufwandskonto gewählt'); return; }
+
+    $bt = $db->getOne(
+        "SELECT id, amount, transdate, local_bank_account_id, match_status, remote_name, purpose
+         FROM bank_transactions WHERE id = :id",
+        ['id' => $btId]
+    );
+    if (!$bt) { resultInfo(false, 'NOT_FOUND', 'Bankumsatz nicht gefunden'); return; }
+    if ($bt['match_status'] === 'booked') { resultInfo(false, 'ALREADY_BOOKED', 'Umsatz ist bereits gebucht'); return; }
+
+    $bankAccountId = intval($data['bank_account_id'] ?? 0) ?: intval($bt['local_bank_account_id']);
+    $bankAccount = $db->getOne(
+        "SELECT ba.chart_id, ch.link AS chart_link
+         FROM bank_accounts ba JOIN chart ch ON ch.id = ba.chart_id WHERE ba.id = :id",
+        ['id' => $bankAccountId]
+    );
+    if (!$bankAccount) { resultInfo(false, 'NOT_FOUND', 'Bankkonto nicht gefunden'); return; }
+
+    // Brutto aus dem Umsatz, Netto/Steuer aus dem Satz ableiten
+    $gross   = round(abs(floatval($bt['amount'])), 2);
+    if ($gross <= 0) { resultInfo(false, 'VALIDATION_ERROR', 'Bankumsatz ohne Betrag'); return; }
+    $ratePct = floatval($data['rate'] ?? 19); if ($ratePct > 0 && $ratePct < 1) $ratePct *= 100;
+    $net     = $ratePct > 0 ? round($gross / (1 + $ratePct / 100), 2) : $gross;
+    $tax     = round($gross - $net, 2);
+
+    $invnumber = trim($data['invnumber'] ?? '') ?: ('BANK-' . $btId);
+    $notes     = trim($data['notes'] ?? '') ?: trim(($bt['remote_name'] ?? '') . ' · ' . ($bt['purpose'] ?? ''), ' ·');
+
+    // 1) echte Eingangsrechnung anlegen
+    try {
+        $apId = _iv_postAp($db, [
+            'vendor_id'        => $vendorId,
+            'expense_chart_id' => $expenseChartId,
+            'invnumber'        => $invnumber,
+            'transdate'        => $bt['transdate'],
+            'duedate'          => $bt['transdate'],
+            'net'              => $net,
+            'tax'              => $tax,
+            'gross'            => $gross,
+            'rate'             => $data['rate'] ?? 19,
+            'notes'            => $notes ?: null,
+        ]);
+    } catch (ApiError $e) {
+        resultInfo(false, $e->getMessage());
+        return;
+    }
+
+    // 2) sofort mit diesem Bankumsatz als bezahlt verbuchen (gleiche Logik wie Bankabstimmung)
+    $res = _bookBankPaymentAgainstInvoice($db, $bt, 'ap', intval($apId), $bankAccount);
+    if (!$res['ok']) { resultInfo(false, 'BOOK_FAILED', $res['error']); return; }
+
+    // 3) Beleg an die Eingangsrechnung hängen. Ohne Beleg keine ordnungsgemäße
+    //    Buchung — das Ergebnis geht deshalb zurück an die Oberfläche, damit
+    //    fehlende Belege sichtbar bleiben.
+    $documentId = intval($data['document_id'] ?? 0);
+    $docWarning = null;
+    if ($documentId <= 0 && !empty($data['document']['file_base64'])) {
+        $stored = storeAccountingDocument(
+            $db,
+            $data['document']['filename']  ?? 'beleg.pdf',
+            $data['document']['mime_type'] ?? 'application/octet-stream',
+            $data['document']['file_base64'],
+            $vendorId
+        );
+        if ($stored['ok']) {
+            $documentId = $stored['document_id'];
+        } else {
+            // Die Buchung steht bereits — ein Beleg-Fehler darf sie nicht kippen.
+            $docWarning = $stored['error'];
+            writeLog("createApFromBankTransaction: Beleg zu ap #{$apId} nicht gespeichert — " . $stored['error'], true, DLOG_ERR);
+        }
+    }
+    if ($documentId > 0) {
+        $db->execute(
+            "UPDATE accounting_documents
+                SET ap_id = :ap_id, vendor_id = COALESCE(vendor_id, :vendor_id),
+                    status = 'booked', mtime = now()
+              WHERE id = :id",
+            ['ap_id' => $apId, 'vendor_id' => $vendorId, 'id' => $documentId]
+        );
+    }
+
+    // 4) Aufwandskonto für diesen Lieferanten merken, damit der Dialog es beim
+    //    nächsten Mal vorbelegt (siehe suggestExpenseAccount).
+    $accno = $db->getOne("SELECT accno FROM chart WHERE id = :id", ['id' => $expenseChartId]);
+    if ($accno) {
+        $db->execute(<<<SQL
+            INSERT INTO accounting_account_rules
+                (vendor_id, debit_account, credit_account, priority, active, hit_count)
+            SELECT :vendor_id, :debit, :credit, 100, true, 0
+            WHERE NOT EXISTS (
+                SELECT 1 FROM accounting_account_rules
+                WHERE vendor_id = :vendor_id AND match_pattern IS NULL
+            )
+        SQL, ['vendor_id' => $vendorId, 'debit' => $accno['accno'], 'credit' => '1800']);
+
+        $db->execute(<<<SQL
+            UPDATE accounting_account_rules
+               SET debit_account = :debit, hit_count = hit_count + 1, active = true, mtime = now()
+             WHERE vendor_id = :vendor_id AND match_pattern IS NULL
+        SQL, ['vendor_id' => $vendorId, 'debit' => $accno['accno']]);
+    }
+
+    resultInfo(true, 'Eingangsrechnung angelegt und bezahlt', [
+        'ap_id'       => $apId,
+        'vendor_id'   => $vendorId,
+        'gross'       => $gross,
+        'document_id' => $documentId ?: null,
+        'doc_warning' => $docWarning,
     ]);
 }
 
@@ -458,14 +739,40 @@ function unbookTransaction($data) {
     // verknuepftes Bein bzw. fehlgeschlagene Buchungen ohne Mapping).
     $memoLike = '%Umsatz #' . $btId;
 
+    // Alt-Buchungen des Bankmoduls haben NUR das Bankbein verknüpft und tragen
+    // kein Memo — das Forderungs-/Verbindlichkeitsbein wurde damals nicht in
+    // bank_transaction_acc_trans eingetragen. Wird nur das Bankbein gelöscht,
+    // bleibt ein unausgeglichener Rest auf 1200/3300 stehen und ar.paid wird
+    // nicht zurückgesetzt (das Gegenbein trägt den positiven Betrag). Das
+    // Gegenbein wird deshalb über trans_id + Datum + Gegenbetrag nachgezogen.
     $rows = $db->getAll(<<<SQL
-        SELECT at.acc_trans_id, at.trans_id, at.amount
-        FROM acc_trans at
-        WHERE at.acc_trans_id IN (
-                SELECT acc_trans_id FROM bank_transaction_acc_trans
-                WHERE bank_transaction_id = :bt_id
-            )
-            OR at.memo LIKE :memo_like
+        WITH verknuepft AS (
+            SELECT at.acc_trans_id, at.trans_id, at.amount, at.transdate, at.chart_id
+            FROM acc_trans at
+            WHERE at.acc_trans_id IN (
+                    SELECT acc_trans_id FROM bank_transaction_acc_trans
+                    WHERE bank_transaction_id = :bt_id
+                )
+                OR at.memo LIKE :memo_like
+        ),
+        gegenbein AS (
+            SELECT DISTINCT ON (v.acc_trans_id)
+                   at.acc_trans_id, at.trans_id, at.amount
+            FROM verknuepft v
+            JOIN chart bc ON bc.id = v.chart_id
+                         AND bc.link ~ '(^|:)(AR_paid|AP_paid)($|:)'
+            JOIN acc_trans at ON at.trans_id  = v.trans_id
+                             AND at.transdate = v.transdate
+                             AND at.amount    = -v.amount
+                             AND at.acc_trans_id <> v.acc_trans_id
+            JOIN chart cc ON cc.id = at.chart_id
+                         AND cc.link ~ '(^|:)(AR|AP)($|:)'
+            WHERE at.acc_trans_id NOT IN (SELECT acc_trans_id FROM verknuepft)
+            ORDER BY v.acc_trans_id, at.acc_trans_id
+        )
+        SELECT acc_trans_id, trans_id, amount FROM verknuepft
+        UNION
+        SELECT acc_trans_id, trans_id, amount FROM gegenbein
     SQL, ['bt_id' => $btId, 'memo_like' => $memoLike]);
 
     if (empty($rows)) {
@@ -516,13 +823,18 @@ function unbookTransaction($data) {
         $idParams
     );
 
-    // ar.paid je betroffener Rechnung zuruecksetzen (minimiert auf 0).
+    // paid je betroffener Rechnung zurücksetzen (minimiert auf 0). Die trans_id
+    // gehört entweder zu ar ODER zu ap (gemeinsame id-Sequenz) — bisher wurde
+    // nur ar zurückgesetzt, Lieferantenzahlungen blieben nach dem Storno als
+    // bezahlt stehen.
     foreach ($positiveByTrans as $transId => $positiveSum) {
         if ($positiveSum > 0) {
-            $db->execute(
-                "UPDATE ar SET paid = GREATEST(0, COALESCE(paid, 0) - :dec) WHERE id = :id",
-                ['dec' => $positiveSum, 'id' => $transId]
-            );
+            foreach (['ar', 'ap'] as $tbl) {
+                $db->execute(
+                    "UPDATE {$tbl} SET paid = GREATEST(0, COALESCE(paid, 0) - :dec) WHERE id = :id",
+                    ['dec' => $positiveSum, 'id' => $transId]
+                );
+            }
         }
     }
 
@@ -734,7 +1046,7 @@ function getMatchCandidatesForTransaction($data) {
         // AR-Kandidaten — CTE vermeidet doppelte Named-Parameters in PDO
         $result = $db->getOne(<<<SQL
             WITH bt AS (
-                SELECT id, amount, remote_iban, remote_name, purpose, end_to_end_id
+                SELECT id, amount, transdate, remote_iban, remote_name, purpose, end_to_end_id
                 FROM bank_transactions
                 WHERE id = :bt_id AND amount > 0
             )
@@ -761,6 +1073,7 @@ function getMatchCandidatesForTransaction($data) {
                         FROM bt
                         JOIN ar ON (ar.amount - ar.paid) > 0.01
                             AND ar.storno IS NOT TRUE
+                            AND bt.transdate >= ar.transdate
                             AND length(ar.invnumber) >= 4
                             AND bt.end_to_end_id IS NOT NULL
                             AND bt.end_to_end_id ~ ('(^|[^[:alnum:]])' || ar.invnumber || '($|[^[:alnum:]])')
@@ -774,6 +1087,7 @@ function getMatchCandidatesForTransaction($data) {
                         JOIN ar ON ar.customer_id = c.id
                             AND (ar.amount - ar.paid) > 0.01
                             AND ar.storno IS NOT TRUE
+                            AND bt.transdate >= ar.transdate
                             AND length(ar.invnumber) >= 4
                             AND bt.purpose IS NOT NULL
                             AND bt.purpose ~ ('(^|[^[:alnum:]])' || ar.invnumber || '($|[^[:alnum:]])')
@@ -788,14 +1102,16 @@ function getMatchCandidatesForTransaction($data) {
                             AND ABS((ar.amount - ar.paid) - bt.amount) < 0.01
                             AND ar.paid < ar.amount
                             AND ar.storno IS NOT TRUE
+                            AND bt.transdate >= ar.transdate
 
                         UNION ALL
 
                         -- 0.88: Rechnungsnummer im Purpose (ohne IBAN-Bestaetigung)
-                        SELECT ar.id, 'invnumber_in_purpose', 0.88
+                        SELECT ar.id, 'invnumber_in_purpose', 0.94
                         FROM bt
                         JOIN ar ON (ar.amount - ar.paid) > 0.01
                             AND ar.storno IS NOT TRUE
+                            AND bt.transdate >= ar.transdate
                             AND length(ar.invnumber) >= 4
                             AND bt.purpose IS NOT NULL
                             AND bt.purpose ~ ('(^|[^[:alnum:]])' || ar.invnumber || '($|[^[:alnum:]])')
@@ -809,6 +1125,7 @@ function getMatchCandidatesForTransaction($data) {
                         JOIN ar ON ar.customer_id = c.id
                             AND (ar.amount - ar.paid) > 0.01
                             AND ar.storno IS NOT TRUE
+                            AND bt.transdate >= ar.transdate
                         GROUP BY c.id
                         HAVING count(ar.id) = 1
 
@@ -825,6 +1142,7 @@ function getMatchCandidatesForTransaction($data) {
                             AND ABS((ar.amount - ar.paid) - bt.amount) < 0.01
                             AND ar.paid < ar.amount
                             AND ar.storno IS NOT TRUE
+                            AND bt.transdate >= ar.transdate
 
                         UNION ALL
 
@@ -835,6 +1153,7 @@ function getMatchCandidatesForTransaction($data) {
                         JOIN ar ON ar.customer_id = c.id
                             AND (ar.amount - ar.paid) > 0.01
                             AND ar.storno IS NOT TRUE
+                            AND bt.transdate >= ar.transdate
 
                     ) m
                     JOIN ar ON ar.id = m.ar_id
@@ -853,7 +1172,7 @@ function getMatchCandidatesForTransaction($data) {
         // → hoehere Konfidenz als einzelne Treffer, kein KI noetig.
         $groupResult = $db->getOne(<<<SQL
             WITH bt AS (
-                SELECT id, amount, purpose FROM bank_transactions WHERE id = :bt_id AND amount > 0
+                SELECT id, amount, transdate, purpose FROM bank_transactions WHERE id = :bt_id AND amount > 0
             ),
             purpose_matches AS (
                 SELECT DISTINCT ar.id                     AS ar_id,
@@ -864,6 +1183,7 @@ function getMatchCandidatesForTransaction($data) {
                 FROM bt
                 JOIN ar ON (ar.amount - ar.paid) > 0.01
                         AND ar.storno IS NOT TRUE
+                        AND bt.transdate >= ar.transdate
                         AND length(ar.invnumber) >= 4
                         AND bt.purpose IS NOT NULL
                         AND bt.purpose ~ ('(^|[^[:alnum:]])' || ar.invnumber || '($|[^[:alnum:]])')
@@ -1008,11 +1328,13 @@ function bookTransactionMultipleInvoices($data) {
         $arId   = $inv['id'];
         $amount = $inv['open_amount'];
 
+        // Token-Match wie in _bookBankPaymentAgainstInvoice: 'AR' exakt, nicht
+        // 'AR_amount' (Erloes) oder 'AR_tax' (Umsatzsteuer).
         $counterChart = $db->getOne(<<<SQL
             SELECT chart_id FROM acc_trans
-            WHERE trans_id = :tid AND chart_link LIKE '%AR%' AND chart_link NOT LIKE '%AR_paid%'
+            WHERE trans_id = :tid AND chart_link ~ :token_link
             ORDER BY acc_trans_id ASC LIMIT 1
-        SQL, ['tid' => $arId]);
+        SQL, ['tid' => $arId, 'token_link' => '(^|:)AR($|:)']);
 
         // Fallback fuer Rechnungen ohne GL-Erstbuchung: Standard-Forderungskonto
         if (!$counterChart) {

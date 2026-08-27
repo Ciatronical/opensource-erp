@@ -12,10 +12,10 @@
     <NavbarView />
     <v-container fluid class="pt-3">
 
+        <AccountingPageHeader :title="t('AccountingView.ustva.title')" />
+
         <!-- Kopf -->
         <div class="d-flex align-center flex-wrap ga-2 mb-3">
-            <v-icon color="primary">mdi-file-percent-outline</v-icon>
-            <h1 class="text-h6 mb-0">{{ t('AccountingView.ustva.title') }}</h1>
             <v-spacer />
             <v-btn-toggle v-model="granularity" mandatory density="compact" variant="outlined" divided>
                 <v-btn value="month" size="small">{{ t('AccountingView.ustva.monthly') }}</v-btn>
@@ -339,6 +339,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
+import AccountingPageHeader from '../components/accounting.page-header.vue'
 import { useUstva } from '../composables/useUstva.js'
 import { formatNumber } from '@/core/utils/numberFormat.js'
 import { formatDate, formatDateTime } from '@/core/utils/dateFormatter.js'

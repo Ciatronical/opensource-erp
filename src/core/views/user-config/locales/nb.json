@@ -16,6 +16,9 @@
         "fakturaCompactView_help": "Skjuler detaljkortene (Kunde, Dokumentdetaljer, Tilleggsinformasjon) og viser kun et kompakt sammendrag.",
         "printer": "Skriver",
         "defaultPrinter": "Standardskriver",
-        "defaultPrinter_help": "Skriver som brukes som standard for utskrifter"
+        "defaultPrinter_help": "Skriver som brukes som standard for utskrifter",
+        "accounting": "Regnskap",
+        "accountingEasymode": "Enkel modus",
+        "accountingEasymode_help": "Viser regnskapet i dagligdags språk: uten debet og kredit, uten avgiftskoder, bare arbeidet som venter. Slått av vises den faglige visningen. Kan også byttes direkte i regnskapet."
     }
 }

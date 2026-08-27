@@ -110,28 +110,14 @@ export function useNavigationCards() {
             }
         )
 
-        // Buchhaltung-Menü (ehemals Banking)
+        // Buchhaltung (direkter Link, kein Untermenü)
+        // Ein Menüpunkt genügt: das Cockpit zeigt die anstehende Arbeit als
+        // Kacheln, alles Seltene findet die Befehlspalette (Strg+K).
         result.push(
             {
                 title: t('AccountingView.menu.title'),
                 icon: 'mdi-calculator-variant',
-                items: [
-                    { title: t('AccountingView.menu.overview'), to: { name: 'accounting-overview' } },
-                    '-',
-                    { title: t('AccountingView.menu.invoiceUpload'), to: { name: 'accounting-invoice-upload' } },
-                    { title: t('AccountingView.menu.bookings'), to: { name: 'accounting-bookings' } },
-                    { title: t('AccountingView.menu.outgoingMatching'), to: { name: 'accounting-outgoing' } },
-                    { title: t('AccountingView.menu.openItems'), to: { name: 'accounting-open-items' } },
-                    '-',
-                    { title: t('AccountingView.menu.vendors'), to: { name: 'accounting-vendors' } },
-                    { title: t('AccountingView.menu.chartOfAccounts'), to: { name: 'accounting-chart-of-accounts' } },
-                    '-',
-                    { title: t('BankingView.menu.title'), to: { name: 'banking-overview' } },
-                    { title: t('KasseView.title'), to: { name: 'kasse' } },
-                    '-',
-                    { title: t('AccountingView.menu.ustva'), to: { name: 'accounting-ustva' } },
-                    { title: t('AccountingView.menu.datevExport'), to: { name: 'accounting-datev-export' } }
-                ]
+                to: { name: 'accounting-overview' }
             }
         )
 

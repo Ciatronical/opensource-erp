@@ -1,9 +1,10 @@
 <template>
     <NavbarView />
     <v-container fluid>
+        <AccountingPageHeader :title="t('AccountingView.outgoing.title')" />
+
         <v-row>
             <v-col cols="12">
-                <h1 class="text-h5 mb-1">{{ t('AccountingView.outgoing.title') }}</h1>
                 <p class="text-body-2 text-grey mb-4">{{ t('AccountingView.outgoing.subtitle') }}</p>
                 <v-alert type="info" variant="tonal" density="comfortable" icon="mdi-information-outline" class="mt-1 mb-2" :text="t('AccountingView.outgoing.info')" />
             </v-col>
@@ -127,6 +128,7 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
+import AccountingPageHeader from '../components/accounting.page-header.vue'
 import { useOutgoingMatching } from '../composables/useOutgoingMatching.js'
 import * as toasts from '@/core/utils/toasts.js'
 

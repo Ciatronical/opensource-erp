@@ -30,35 +30,34 @@
         </v-card>
 
         <!-- Kategorien als sortierbare Karten -->
-        <draggable
+        <VueDraggable
             v-else
             v-model="categories"
             tag="div"
             class="d-flex flex-wrap ga-3"
-            :item-key="item => item.id"
             handle=".drag-handle"
             @end="onDragEnd"
         >
-            <template #item="{ element: cat }">
-                <v-card
-                    variant="outlined"
-                    elevation="1"
-                    style="min-width: 220px; max-width: 320px; flex: 1 1 220px;"
-                >
-                    <v-card-text class="d-flex align-center pa-3">
-                        <v-icon class="drag-handle mr-3 cursor-grab" color="grey" size="20">mdi-drag</v-icon>
-                        <div class="flex-grow-1">
-                            <div class="text-subtitle-2 font-weight-medium">{{ cat.name }}</div>
-                            <div class="text-caption text-medium-emphasis">
-                                {{ cat.page_count }} {{ t('WikiCategoriesView.pageCount') }}
-                            </div>
+            <v-card
+                v-for="cat in categories"
+                :key="cat.id"
+                variant="outlined"
+                elevation="1"
+                style="min-width: 220px; max-width: 320px; flex: 1 1 220px;"
+            >
+                <v-card-text class="d-flex align-center pa-3">
+                    <v-icon class="drag-handle mr-3 cursor-grab" color="grey" size="20">mdi-drag</v-icon>
+                    <div class="flex-grow-1">
+                        <div class="text-subtitle-2 font-weight-medium">{{ cat.name }}</div>
+                        <div class="text-caption text-medium-emphasis">
+                            {{ cat.page_count }} {{ t('WikiCategoriesView.pageCount') }}
                         </div>
-                        <v-btn icon="mdi-pencil" size="x-small" variant="text" @click="openDialog(cat)" />
-                        <v-btn icon="mdi-delete" size="x-small" variant="text" color="red" @click="confirmDelete(cat)" />
-                    </v-card-text>
-                </v-card>
-            </template>
-        </draggable>
+                    </div>
+                    <v-btn icon="mdi-pencil" size="x-small" variant="text" @click="openDialog(cat)" />
+                    <v-btn icon="mdi-delete" size="x-small" variant="text" color="red" @click="confirmDelete(cat)" />
+                </v-card-text>
+            </v-card>
+        </VueDraggable>
 
         <!-- Erstellen/Bearbeiten Dialog -->
         <v-dialog v-model="dialog" max-width="450">
@@ -104,11 +103,11 @@ import { wikiStore } from '@/core/stores/wiki.store.js'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
 import * as alerts from '@/core/utils/alerts.js'
 import * as toasts from '@/core/utils/toasts.js'
-import draggable from 'vuedraggable'
+import { VueDraggable } from 'vue-draggable-plus'
 
 export default {
     name: 'WikiCategoriesView',
-    components: { NavbarView, draggable },
+    components: { NavbarView, VueDraggable },
     setup() {
         const { t } = useI18n()
         const wiki = wikiStore()

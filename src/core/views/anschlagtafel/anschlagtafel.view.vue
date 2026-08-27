@@ -5,6 +5,7 @@
     Hochformat (Samsung QM50, 1080x1920), neueste Notiz oben, Echtzeit ueber
     SSE (Named Event 'voicenote_change' mit action: new | removed | cleared).
     Design an Apple orientiert: dunkel, Frosted-Glass-Karten, grosse Typo.
+    Neue Notizen loesen einen Signalton aus (Web Audio, kein Sound-Asset noetig).
 -->
 <template>
     <div class="atafel">
@@ -23,8 +24,34 @@
                 <div class="atafel__clock">{{ currentTime }}</div>
                 <div class="atafel__date">{{ currentDate }}</div>
             </div>
-            <button class="atafel__exit" :title="t('Anschlagtafel.exit')" @click="exit">✕</button>
+            <div class="atafel__actions">
+                <button
+                    class="atafel__icon-btn"
+                    :class="{ 'atafel__icon-btn--muted': !soundEnabled }"
+                    :title="soundEnabled ? t('Anschlagtafel.soundOn') : t('Anschlagtafel.soundOff')"
+                    @click="toggleSound"
+                >
+                    <svg viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true">
+                        <path fill="currentColor" d="M4 9v6h4l5 5V4L8 9H4Z"/>
+                        <path v-if="soundEnabled" fill="currentColor"
+                              d="M16.5 12a4.5 4.5 0 0 0-2.5-4.03v8.06A4.5 4.5 0 0 0 16.5 12Zm-2.5 8.7a8.5 8.5 0 0 0 0-17.4v2.06a6.5 6.5 0 0 1 0 13.28v2.06Z"/>
+                        <path v-else fill="currentColor"
+                              d="m21.4 8.4-1.4-1.4-2.6 2.6-2.6-2.6-1.4 1.4 2.6 2.6-2.6 2.6 1.4 1.4 2.6-2.6 2.6 2.6 1.4-1.4-2.6-2.6 2.6-2.6Z"/>
+                    </svg>
+                </button>
+                <button class="atafel__icon-btn" :title="t('Anschlagtafel.exit')" @click="exit">✕</button>
+            </div>
         </header>
+
+        <!-- Der Browser (auch der Tizen-Browser des Samsung-Displays) gibt Audio erst
+             nach einer Nutzeraktion frei. Ein Klick bzw. OK auf der Fernbedienung genuegt. -->
+        <button v-if="soundEnabled && soundLocked" class="atafel__unlock" @click="unlockAudio">
+            <span class="atafel__unlock-icon">🔔</span>
+            <span class="atafel__unlock-text">
+                <strong>{{ t('Anschlagtafel.enableSound') }}</strong>
+                <small>{{ t('Anschlagtafel.enableSoundHint') }}</small>
+            </span>
+        </button>
 
         <main class="atafel__board">
             <div v-if="notes.length === 0" class="atafel__empty">
@@ -83,11 +110,70 @@ export default defineComponent({
         const sseConnected = ref(false)
         const currentTime = ref('')
         const currentDate = ref('')
+        const soundEnabled = ref(localStorage.getItem('anschlagtafel_sound') !== 'off')
+        const soundLocked = ref(true)
 
         let sseSource = null
         let pollInterval = null
         let clockInterval = null
         let reconcileInterval = null
+        let audioCtx = null
+        let lastChime = 0
+        let knownIds = new Set()
+        let initialLoadDone = false
+
+        // ── Signalton ──
+
+        // Der Ton wird per Web Audio erzeugt, damit auf dem Display keine
+        // Sound-Datei geladen werden muss (funktioniert auch offline).
+        function chime(volume = 0.9) {
+            if (!soundEnabled.value) return
+            const ctx = audioCtx
+            if (!ctx || ctx.state !== 'running') { soundLocked.value = true; return }
+            const start = ctx.currentTime + 0.02
+            // Zwei Glockentöne (Ding-Dong) mit klarer Hüllkurve — auf dem Display gut hörbar.
+            const toene = [[880, 0], [1174.66, 0.22]]
+            for (const [frequenz, versatz] of toene) {
+                const osc = ctx.createOscillator()
+                const gain = ctx.createGain()
+                const t0 = start + versatz
+                osc.type = 'triangle'
+                osc.frequency.value = frequenz
+                gain.gain.setValueAtTime(0.0001, t0)
+                gain.gain.exponentialRampToValueAtTime(volume, t0 + 0.02)
+                gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 1.1)
+                osc.connect(gain).connect(ctx.destination)
+                osc.start(t0)
+                osc.stop(t0 + 1.15)
+            }
+        }
+
+        // Mehrere Notizen kurz hintereinander sollen nur einmal klingeln.
+        function notifyNew() {
+            const jetzt = Date.now()
+            if (jetzt - lastChime < 3000) return
+            lastChime = jetzt
+            chime()
+        }
+
+        async function unlockAudio(mitBestaetigung = true) {
+            if (!audioCtx) {
+                const Ctx = window.AudioContext || window.webkitAudioContext
+                if (!Ctx) { soundLocked.value = false; return }
+                audioCtx = new Ctx()
+            }
+            const warGesperrt = soundLocked.value
+            try { await audioCtx.resume() } catch { /* Autoplay-Sperre, Banner bleibt */ }
+            soundLocked.value = audioCtx.state !== 'running'
+            // Kurze Bestätigung, damit die Lautstärke am Display gleich geprüft werden kann.
+            if (mitBestaetigung && warGesperrt && !soundLocked.value) chime(0.5)
+        }
+
+        function toggleSound() {
+            soundEnabled.value = !soundEnabled.value
+            localStorage.setItem('anschlagtafel_sound', soundEnabled.value ? 'on' : 'off')
+            if (soundEnabled.value) unlockAudio()
+        }
 
         // ── Daten laden ──
 
@@ -98,7 +184,13 @@ export default defineComponent({
                     limit: 50,
                 })
                 if (res.data.success) {
-                    notes.value = res.data.payload.notes || []
+                    const liste = res.data.payload.notes || []
+                    // Beim ersten Laden nicht klingeln — nur bei wirklich neuen Einträgen.
+                    const hatNeue = initialLoadDone && liste.some(n => !knownIds.has(n.id))
+                    notes.value = liste
+                    knownIds = new Set(liste.map(n => n.id))
+                    initialLoadDone = true
+                    if (hatNeue) notifyNew()
                 }
             } catch { /* Netzwerkfehler ignorieren, Polling versucht es erneut */ }
         }
@@ -157,6 +249,8 @@ export default defineComponent({
                         if (!notes.value.some(n => n.id === d.id)) {
                             notes.value.unshift(d)
                             if (notes.value.length > 50) notes.value.pop()
+                            knownIds = new Set(notes.value.map(n => n.id))
+                            notifyNew()
                         }
                     }
                 } catch { /* ignorieren */ }
@@ -221,9 +315,26 @@ export default defineComponent({
             router.push({ name: 'startup' })
         }
 
+        // Erste beliebige Nutzeraktion (Klick, Touch, OK auf der Fernbedienung)
+        // gibt den Ton frei; danach wird der Listener nicht mehr gebraucht.
+        function onFirstInteraction() {
+            unlockAudio()
+            if (!soundLocked.value) removeUnlockListeners()
+        }
+
+        function removeUnlockListeners() {
+            window.removeEventListener('pointerdown', onFirstInteraction)
+            window.removeEventListener('keydown', onFirstInteraction)
+        }
+
         onMounted(() => {
             tickClock()
             clockInterval = setInterval(tickClock, 10000)
+            // Manche Signage-Browser erlauben Audio ohne Nutzeraktion — erst versuchen,
+            // sonst blendet das Banner die Freischaltung ein.
+            if (soundEnabled.value) unlockAudio(false)
+            window.addEventListener('pointerdown', onFirstInteraction)
+            window.addEventListener('keydown', onFirstInteraction)
             loadNotes()
             connectSSE()
             // Sicherheits-Abgleich: auch bei stehender SSE-Verbindung regelmaessig mit
@@ -237,10 +348,13 @@ export default defineComponent({
             stopPolling()
             if (clockInterval) clearInterval(clockInterval)
             if (reconcileInterval) clearInterval(reconcileInterval)
+            removeUnlockListeners()
+            if (audioCtx) { audioCtx.close(); audioCtx = null }
         })
 
         return {
             t, notes, sseConnected, currentTime, currentDate,
+            soundEnabled, soundLocked, toggleSound, unlockAudio,
             dismiss, formatTime, initials, avatarColor, exit,
         }
     },
@@ -339,8 +453,17 @@ export default defineComponent({
     text-transform: capitalize;
 }
 
-.atafel__exit {
+.atafel__actions {
     flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 1vh;
+}
+
+.atafel__icon-btn {
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
     width: 4vh;
     height: 4vh;
     border: none;
@@ -351,7 +474,34 @@ export default defineComponent({
     cursor: pointer;
     transition: background 0.2s, color 0.2s;
 }
-.atafel__exit:hover { background: rgba(255, 59, 48, 0.15); color: #ff3b30; }
+.atafel__icon-btn:hover { background: rgba(255, 59, 48, 0.15); color: #ff3b30; }
+.atafel__icon-btn--muted { color: #ff3b30; background: rgba(255, 59, 48, 0.12); }
+
+/* ── Ton freischalten ───────────────────────────────────────── */
+.atafel__unlock {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 2vh;
+    width: 100%;
+    padding: 1.4vh 3vh;
+    border: none;
+    border-bottom: 1px solid rgba(255, 149, 0, 0.25);
+    text-align: left;
+    color: #7a4a00;
+    background: linear-gradient(180deg, rgba(255, 204, 0, 0.22), rgba(255, 149, 0, 0.14));
+    cursor: pointer;
+    animation: unlock-pulse 2.4s ease-in-out infinite;
+}
+.atafel__unlock-icon { font-size: 3.2vh; line-height: 1; }
+.atafel__unlock-text { display: flex; flex-direction: column; gap: 0.3vh; }
+.atafel__unlock-text strong { font-size: 2.1vh; font-weight: 700; }
+.atafel__unlock-text small { font-size: 1.6vh; color: #9a6a2a; }
+
+@keyframes unlock-pulse {
+    0%, 100% { background: linear-gradient(180deg, rgba(255, 204, 0, 0.22), rgba(255, 149, 0, 0.14)); }
+    50%      { background: linear-gradient(180deg, rgba(255, 204, 0, 0.38), rgba(255, 149, 0, 0.24)); }
+}
 
 /* ── Board ──────────────────────────────────────────────────── */
 .atafel__board {

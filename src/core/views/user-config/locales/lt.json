@@ -16,6 +16,9 @@
         "fakturaCompactView_help": "Paslepia detalių korteles (klientas, dokumento detalės, papildoma info) ir rodo tik kompaktišką santrauką.",
         "printer": "Spausdintuvas",
         "defaultPrinter": "Numatytasis spausdintuvas",
-        "defaultPrinter_help": "Spausdintuvas, naudojamas pagal numatytuosius spausdinimui"
+        "defaultPrinter_help": "Spausdintuvas, naudojamas pagal numatytuosius spausdinimui",
+        "accounting": "Buhalterija",
+        "accountingEasymode": "Paprasta veiksena",
+        "accountingEasymode_help": "Rodo buhalteriją kasdiene kalba: be debeto ir kredito, be mokesčių raktų, tik laukiantį darbą. Išjungus rodomas profesionalus vaizdas. Galima perjungti ir tiesiai buhalterijoje."
     }
 }

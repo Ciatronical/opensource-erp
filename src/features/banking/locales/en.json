@@ -49,10 +49,22 @@
             "expense": "Expense",
             "ignore": "Ignore",
             "resetStatus": "Reset",
-            "searchPlaceholder": "Search: name, purpose, amount, invoice no. …",
+            "searchPlaceholder": "Name, purpose, amount …",
             "openInvoice": "Open invoice",
             "assign": "Assign",
-            "details": "Details"
+            "details": "Details",
+            "documentPresent": "Receipt attached",
+            "documentMissing": "No receipt attached",
+            "searchHelpTitle": "What can I search for?",
+            "searchHelpFooter": "Multiple terms are combined with AND. The sign is ignored for amounts — both credits and debits are found.",
+            "searchExampleExact": "Exactly this amount (159,03 works too)",
+            "searchExampleGreater": "All amounts above 500",
+            "searchExampleLess": "All amounts up to 50",
+            "searchExampleRange": "Amounts between 100 and 200",
+            "searchExampleInvoice": "Invoice no., name or reference",
+            "searchHintExact": "Amount {amount} or text",
+            "searchHintCompare": "Amount {op} {amount}",
+            "searchHintRange": "Amount {from} to {to}"
         },
         "booking": {
             "title": "Book Payment",
@@ -115,7 +127,27 @@
             "payables": "Payables",
             "openAmount": "Open amount",
             "dueDate": "Due date",
-            "matchManually": "Match manually"
+            "matchManually": "Match manually",
+            "createApTitle": "Post as incoming invoice",
+            "createApHint": "Creates a real incoming invoice from this bank transaction and immediately books it as paid. The gross amount is taken from the transaction.",
+            "createApBook": "Create and post",
+            "createApSuccess": "Incoming invoice for {gross} created and paid",
+            "vendor": "Vendor",
+            "expenseAccount": "Expense account",
+            "taxRate": "Tax rate",
+            "invnumber": "Invoice no. (optional)",
+            "cancel": "Cancel",
+            "document": "Receipt (invoice, voucher)",
+            "documentHint": "PDF or photo. Permanently attached to the purchase invoice and included in the DATEV export.",
+            "documentAttached": "Receipt will be attached to the booking.",
+            "documentMissing": "A booking without a receipt is not compliant — please attach the invoice or voucher.",
+            "documentFailed": "Booking succeeded, but the receipt could not be stored: {reason}",
+            "noDocumentTitle": "Book without a receipt?",
+            "noDocumentConfirm": "No receipt is attached to this booking. A tax audit requires a receipt for every booking. Book anyway?",
+            "noDocumentContinue": "Book without receipt",
+            "accountSource_rule": "Last used for this vendor",
+            "accountSource_history": "From this vendor's most recent purchase invoice",
+            "accountSource_default": "Default account from settings"
         },
         "settlement": {
             "title": "Assign card settlement",
@@ -236,7 +268,8 @@
             "syncAllDone": "{imported} transactions imported ({n} accounts)",
             "bicFound": "BIC auto-detected: {bic}",
             "alertsTitle": "Banking alerts",
-            "noAlerts": "No alerts"
+            "noAlerts": "No alerts",
+            "printStatement": "Print statement"
         },
         "liquidity": {
             "title": "Liquidity",
@@ -514,6 +547,13 @@
         "chartAccount": "Account",
         "noCharts": "No accounts found",
         "sourceAR": "Customer payment",
-        "sourceAP": "Vendor payment"
+        "sourceAP": "Vendor payment",
+        "print": "Print cash book",
+        "bookWithDetails": "Partial amount or another date…",
+        "bookedInSuccess": "Invoice {invnumber} received in cash: {amount} — voucher {beleg}",
+        "bookedOutSuccess": "Invoice {invnumber} paid in cash: {amount} — voucher {beleg}",
+        "searchAllPeriods": "The search covers all periods, not just the selected one.",
+        "previousPeriod": "Previous period",
+        "nextPeriod": "Next period"
     }
 }

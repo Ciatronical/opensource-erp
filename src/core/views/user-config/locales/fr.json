@@ -16,6 +16,9 @@
         "fakturaCompactView_help": "Masque les cartes de detail (client, details du document, informations supplementaires) et affiche uniquement un resume compact.",
         "printer": "Imprimante",
         "defaultPrinter": "Imprimante par defaut",
-        "defaultPrinter_help": "Imprimante utilisee par defaut pour les impressions"
+        "defaultPrinter_help": "Imprimante utilisee par defaut pour les impressions",
+        "accounting": "Comptabilité",
+        "accountingEasymode": "Mode simple",
+        "accountingEasymode_help": "Affiche la comptabilité en langage courant : sans débit ni crédit, sans code TVA, uniquement le travail en cours. Désactivé, la vue technique apparaît. Se change aussi directement dans la comptabilité."
     }
 }

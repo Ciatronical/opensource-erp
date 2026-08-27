@@ -5,6 +5,35 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>OpenSource ERP</title>
+
+    <!--
+      Reihenfolge der Vuetify-4-CSS-Layer festnageln.
+
+      MUSS hier stehen und nicht in einer importierten CSS-Datei: Bei
+      Cascade-Layern entscheidet nicht die Spezifitaet, sondern die
+      Reihenfolge — und die steht fest, sobald ein Layername das erste Mal
+      auftaucht. Im Build laedt vendor-vuetify.css als erstes Stylesheet;
+      eine importierte Datei kaeme zu spaet. Ein <style> im <head> steht vor
+      allen von Vite eingefuegten <link>-Tags und gewinnt damit das Rennen —
+      im Dev-Server wie im Build.
+
+      Vuetify legt diese Reihenfolge in 'vuetify/styles' selbst fest. Durch
+      das Tree-Shaking (vite-plugin-vuetify) bringt aber jede Komponente ihr
+      eigenes CSS mit, und VBtn.css beginnt mit @layer vuetify-components —
+      dadurch wurde vuetify-components VOR vuetify-core deklariert und die
+      Reihenfolge kippte.
+
+      Folge war: der Browser-Reset in vuetify-core (button { font: inherit })
+      schlug die Groessenregeln der Komponenten. Buttons erbten ihre
+      Schriftgroesse vom Elternelement statt aus ihrer size-Angabe —
+      size="small" und size="large" blieben wirkungslos (beide 14px), und in
+      einem v-card-title (1.375rem) wuchs die Beschriftung auf 22px an
+      (z. B. "Neues Fahrzeug" in der Kundenansicht).
+
+      Eigene Regeln (src/style.css) stehen weiterhin ausserhalb aller Layer
+      und gewinnen damit gegen jede dieser Schichten.
+    -->
+    <style>@layer vuetify-core, vuetify-components, vuetify-overrides, vuetify-utilities, vuetify-final;</style>
   </head>
   <body>
     <div id="app"></div>

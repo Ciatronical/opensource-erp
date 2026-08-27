@@ -16,6 +16,9 @@
         "fakturaCompactView_help": "Piilottaa yksityiskohtakortit (asiakas, asiakirjan tiedot, lisatiedot) ja nayttaa vain tiivistetyn yhteenvedon.",
         "printer": "Tulostin",
         "defaultPrinter": "Oletustulostin",
-        "defaultPrinter_help": "Tulostin, jota kaytetaan oletuksena tulostamiseen"
+        "defaultPrinter_help": "Tulostin, jota kaytetaan oletuksena tulostamiseen",
+        "accounting": "Kirjanpito",
+        "accountingEasymode": "Yksinkertainen tila",
+        "accountingEasymode_help": "Näyttää kirjanpidon arkikielellä: ilman debetiä ja kreditiä, ilman veroavaimia, vain edessä olevan työn. Pois päältä näkyy ammattinäkymä. Voidaan vaihtaa myös suoraan kirjanpidossa."
     }
 }

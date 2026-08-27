@@ -16,6 +16,9 @@
         "fakturaCompactView_help": "隐藏详细卡片（客户、单据详情、附加信息），仅显示紧凑摘要。",
         "printer": "打印机",
         "defaultPrinter": "默认打印机",
-        "defaultPrinter_help": "默认用于打印的打印机"
+        "defaultPrinter_help": "默认用于打印的打印机",
+        "accounting": "会计",
+        "accountingEasymode": "简易模式",
+        "accountingEasymode_help": "以日常用语显示会计：没有借贷、没有税码，只显示待办的工作。关闭后显示专业视图。也可以直接在会计页面切换。"
     }
 }

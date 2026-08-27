@@ -13,9 +13,9 @@
             <h1 class="text-h6 mb-0">
                 {{ readonly ? t('CarEditView.titleView') : (isEditMode ? t('CarEditView.titleEdit') : t('CarEditView.titleNew')) }}
             </h1>
-            <v-chip v-if="isEditMode && car.c_ln" size="small" variant="tonal" color="primary" class="font-weight-bold">
-                {{ car.c_ln }}
-            </v-chip>
+            <!-- Kennzeichen ist eine Angabe, kein Button: als Schild gesetzt,
+                 damit es nicht mit den Aktionen daneben verwechselt wird (.kennzeichen in style.css) -->
+            <span v-if="isEditMode && car.c_ln" class="kennzeichen">{{ car.c_ln }}</span>
             <template v-if="readonly">
                 <v-chip size="x-small" color="info" variant="tonal">
                     <v-icon start size="x-small">mdi-eye</v-icon>

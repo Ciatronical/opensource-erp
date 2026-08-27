@@ -31,11 +31,19 @@ function getChartAccounts($data) {
     }
     $whereClause = implode(' AND ', $where);
 
+    // Optional bis zu einem Stichtag saldieren (Default: alle Buchungen).
+    // Saldo = Soll−Haben = -SUM(amount) (kivitendo-Vorzeichen). Subquery statt
+    // JOIN, damit die taxkey-Zählung nicht durch acc_trans-Zeilen vervielfacht wird.
+    $balCond = '';
+    if (!empty($data['to_date'])) { $balCond = ' AND a.transdate <= :to_date'; $params[':to_date'] = $data['to_date']; }
+
     $accounts = $db->getAll(<<<SQL
         SELECT c.id, c.accno, c.description, c.charttype, c.category, c.invalid,
                c.taxkey_id,
                COUNT(tk.id) AS taxkey_count,
-               (COUNT(tk.id) = 0 AND c.taxkey_id IS NOT NULL AND c.taxkey_id <> 0) AS taxkey_missing
+               (COUNT(tk.id) = 0 AND c.taxkey_id IS NOT NULL AND c.taxkey_id <> 0) AS taxkey_missing,
+               (SELECT COALESCE(-SUM(a.amount), 0) FROM acc_trans a WHERE a.chart_id = c.id{$balCond}) AS balance,
+               (SELECT COUNT(*) FROM acc_trans a WHERE a.chart_id = c.id) AS booking_count
         FROM chart c
         LEFT JOIN taxkeys tk ON tk.chart_id = c.id
         WHERE {$whereClause}

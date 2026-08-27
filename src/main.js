@@ -33,7 +33,12 @@ const vuetify = createVuetify({
         colors: {
           background: '#FFFFFF',
           surface: '#FFFFFF',
-          primary: '#757575',
+          // Primaerfarbe traegt die Hauptaktion. Das fruehere Grau (#757575)
+          // gab ihr kein Signal: "Speichern" sah aus wie jeder andere Button,
+          // und tonale bzw. outlined Buttons verschwanden auf Weiss beinahe.
+          // #1976D2 erfuellt WCAG AA (4,6:1 gegen Weiss) und kollidiert mit
+          // keiner der semantischen Farben (success/warning/error).
+          primary: '#1976D2',
           secondary: '#616161',
           accent: '#E0E0E0',
           error: '#FF5252',

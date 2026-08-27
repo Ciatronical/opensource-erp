@@ -177,6 +177,28 @@ export default {
 .markdown-body :deep(li) {
   margin-bottom: 0.3rem;
 }
+/* Die Konzeptseiten arbeiten mit eingebetteten SVG-Grafiken. Sie zeichnen mit
+   currentColor, damit sie in hellem wie dunklem Thema lesbar bleiben. */
+.markdown-body :deep(figure) {
+  margin: 1.5rem 0;
+}
+.markdown-body :deep(svg) {
+  display: block;
+  width: 100%;
+  max-width: 860px;
+  height: auto;
+  margin: 0 auto;
+}
+.markdown-body :deep(figcaption) {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  opacity: 0.7;
+  text-align: center;
+}
+.markdown-body :deep(img) {
+  max-width: 100%;
+  height: auto;
+}
 .markdown-body :deep(hr) {
   border: none;
   border-top: 1px solid #e0e0e0;

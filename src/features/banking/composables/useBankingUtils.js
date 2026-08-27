@@ -17,20 +17,12 @@ export async function lookupBicFromIban(iban) {
     } catch { return null }
 }
 
-// ── Datei-Download (base64 → Blob → <a>) ─────────────────
+// ── Datei-Download ────────────────────────────────────────
+// Liegt in src/core/utils/download.js, weil auch die Buchhaltung druckt.
+// Der Wiederexport hält die bestehenden Importe aus dem Banking gültig.
 
-export function downloadBase64File(base64, filename, mime) {
-    const bytes  = Uint8Array.from(atob(base64), c => c.charCodeAt(0))
-    const blob   = new Blob([bytes], { type: mime })
-    const url    = URL.createObjectURL(blob)
-    const link   = document.createElement('a')
-    link.href    = url
-    link.download = filename
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    URL.revokeObjectURL(url)
-}
+import { downloadBase64File, openBase64Pdf } from '@/core/utils/download.js'
+export { downloadBase64File, openBase64Pdf }
 
 // ── Composable ────────────────────────────────────────────
 
@@ -80,11 +72,13 @@ export function useBankingUtils() {
         downloadBase64File(data, filename, mime)
     }
 
+    // Der Kontoauszug wird gedruckt, nicht archiviert — deshalb öffnet er sich
+    // im Betrachter statt im Download-Ordner zu landen.
     async function exportPdf(bankAccountId, fromDate = null, toDate = null) {
         const r = await axios.post(API_URL, { action: 'exportTransactionsPdf', bank_account_id: bankAccountId, from_date: fromDate, to_date: toDate })
         if (!r.data.success) throw new Error(r.data.payload || r.data.text)
-        const { data, filename, mime } = r.data.payload
-        downloadBase64File(data, filename, mime)
+        const { data, filename } = r.data.payload
+        openBase64Pdf(data, filename)
     }
 
     async function printTransferConfirmation(transferId) {

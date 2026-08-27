@@ -46,36 +46,34 @@
                     <div v-if="buchungsgruppenList.length > 0" class="mb-4">
                         <div class="text-subtitle-2 mb-2">{{ t('add_fields.existing') }}:</div>
                         <v-list density="compact" class="bg-grey-lighten-5 rounded">
-                            <draggable
+                            <VueDraggable
                                 v-model="sortableBuchungsgruppen"
-                                item-key="id"
                                 handle=".drag-handle"
                                 @end="saveBuchungsgruppeOrder"
                             >
-                                <template #item="{ element: item }">
-                                    <v-list-item
-                                        :key="item.id"
-                                        @click="editBuchungsgruppe(item)"
-                                        class="item-hover"
-                                    >
-                                        <template v-slot:prepend>
-                                            <v-icon class="drag-handle me-2" size="small" style="cursor: move">mdi-drag</v-icon>
-                                            <v-icon size="small">mdi-file-document</v-icon>
-                                        </template>
-                                        <v-list-item-title>{{ item.description }}</v-list-item-title>
-                                        <template v-slot:append>
-                                            <v-btn
-                                                icon
-                                                variant="text"
-                                                size="small"
-                                                @click.stop="editBuchungsgruppe(item)"
-                                            >
-                                                <v-icon size="small">mdi-pencil</v-icon>
-                                            </v-btn>
-                                        </template>
-                                    </v-list-item>
-                                </template>
-                            </draggable>
+                                <v-list-item
+                                    v-for="item in sortableBuchungsgruppen"
+                                    :key="item.id"
+                                    @click="editBuchungsgruppe(item)"
+                                    class="item-hover"
+                                >
+                                    <template v-slot:prepend>
+                                        <v-icon class="drag-handle me-2" size="small" style="cursor: move">mdi-drag</v-icon>
+                                        <v-icon size="small">mdi-file-document</v-icon>
+                                    </template>
+                                    <v-list-item-title>{{ item.description }}</v-list-item-title>
+                                    <template v-slot:append>
+                                        <v-btn
+                                            icon
+                                            variant="text"
+                                            size="small"
+                                            @click.stop="editBuchungsgruppe(item)"
+                                        >
+                                            <v-icon size="small">mdi-pencil</v-icon>
+                                        </v-btn>
+                                    </template>
+                                </v-list-item>
+                            </VueDraggable>
                         </v-list>
                     </div>
 
@@ -119,39 +117,37 @@
                     <div v-if="taxzonesList.length > 0" class="mb-4">
                         <div class="text-subtitle-2 mb-2">{{ t('add_fields.existing') }}:</div>
                         <v-list density="compact" class="bg-grey-lighten-5 rounded">
-                            <draggable
+                            <VueDraggable
                                 v-model="sortableTaxzones"
-                                item-key="id"
                                 handle=".drag-handle"
                                 @end="saveTaxzoneOrder"
                             >
-                                <template #item="{ element: item }">
-                                    <v-list-item
-                                        :key="item.id"
-                                        @click="editTaxzone(item)"
-                                        class="item-hover"
-                                    >
-                                        <template v-slot:prepend>
-                                            <v-icon class="drag-handle me-2" size="small" style="cursor: move">mdi-drag</v-icon>
-                                            <v-icon size="small">mdi-earth</v-icon>
-                                        </template>
-                                        <v-list-item-title>{{ item.description }}</v-list-item-title>
-                                        <v-list-item-subtitle v-if="item.obsolete" class="text-red">
-                                            {{ t('add_fields.obsolete') }}
-                                        </v-list-item-subtitle>
-                                        <template v-slot:append>
-                                            <v-btn
-                                                icon
-                                                variant="text"
-                                                size="small"
-                                                @click.stop="editTaxzone(item)"
-                                            >
-                                                <v-icon size="small">mdi-pencil</v-icon>
-                                            </v-btn>
-                                        </template>
-                                    </v-list-item>
-                                </template>
-                            </draggable>
+                                <v-list-item
+                                    v-for="item in sortableTaxzones"
+                                    :key="item.id"
+                                    @click="editTaxzone(item)"
+                                    class="item-hover"
+                                >
+                                    <template v-slot:prepend>
+                                        <v-icon class="drag-handle me-2" size="small" style="cursor: move">mdi-drag</v-icon>
+                                        <v-icon size="small">mdi-earth</v-icon>
+                                    </template>
+                                    <v-list-item-title>{{ item.description }}</v-list-item-title>
+                                    <v-list-item-subtitle v-if="item.obsolete" class="text-red">
+                                        {{ t('add_fields.obsolete') }}
+                                    </v-list-item-subtitle>
+                                    <template v-slot:append>
+                                        <v-btn
+                                            icon
+                                            variant="text"
+                                            size="small"
+                                            @click.stop="editTaxzone(item)"
+                                        >
+                                            <v-icon size="small">mdi-pencil</v-icon>
+                                        </v-btn>
+                                    </template>
+                                </v-list-item>
+                            </VueDraggable>
                         </v-list>
                     </div>
 
@@ -278,39 +274,38 @@
                     <!-- Bestehende Bankkonten -->
                     <div v-if="sortableBankAccounts.length > 0" class="mb-4">
                         <div class="text-subtitle-2 mb-2">{{ t('add_fields.existing') }}:</div>
-                        <draggable
+                        <VueDraggable
                             v-model="sortableBankAccounts"
                             @end="saveBankAccountsOrder"
-                            item-key="id"
                             handle=".drag-handle"
                         >
-                            <template #item="{ element: item }">
-                                <v-list-item
-                                    @click="editBankAccount(item)"
-                                    class="item-hover bg-grey-lighten-5 mb-1 rounded"
-                                >
-                                    <template v-slot:prepend>
-                                        <v-icon class="drag-handle" style="cursor: grab">mdi-drag</v-icon>
-                                        <v-icon size="small" class="ms-2">mdi-bank</v-icon>
-                                    </template>
-                                    <v-list-item-title>{{ item.name }}</v-list-item-title>
-                                    <v-list-item-subtitle v-if="item.iban">
-                                        {{ item.iban }}
-                                    </v-list-item-subtitle>
-                                    <template v-slot:append>
-                                        <v-icon v-if="item.used" size="small" color="success" class="me-2">mdi-check</v-icon>
-                                        <v-btn
-                                            icon
-                                            variant="text"
-                                            size="small"
-                                            @click.stop="editBankAccount(item)"
-                                        >
-                                            <v-icon size="small">mdi-pencil</v-icon>
-                                        </v-btn>
-                                    </template>
-                                </v-list-item>
-                            </template>
-                        </draggable>
+                            <v-list-item
+                                v-for="item in sortableBankAccounts"
+                                :key="item.id"
+                                @click="editBankAccount(item)"
+                                class="item-hover bg-grey-lighten-5 mb-1 rounded"
+                            >
+                                <template v-slot:prepend>
+                                    <v-icon class="drag-handle" style="cursor: grab">mdi-drag</v-icon>
+                                    <v-icon size="small" class="ms-2">mdi-bank</v-icon>
+                                </template>
+                                <v-list-item-title>{{ item.name }}</v-list-item-title>
+                                <v-list-item-subtitle v-if="item.iban">
+                                    {{ item.iban }}
+                                </v-list-item-subtitle>
+                                <template v-slot:append>
+                                    <v-icon v-if="item.used" size="small" color="success" class="me-2">mdi-check</v-icon>
+                                    <v-btn
+                                        icon
+                                        variant="text"
+                                        size="small"
+                                        @click.stop="editBankAccount(item)"
+                                    >
+                                        <v-icon size="small">mdi-pencil</v-icon>
+                                    </v-btn>
+                                </template>
+                            </v-list-item>
+                        </VueDraggable>
                     </div>
 
                     <!-- Neu erstellen Button -->
@@ -380,7 +375,7 @@ import BuchungsgruppeEdit from './edit/buchungsgruppe-edit.vue';
 import TaxzoneEdit from './edit/taxzone-edit.vue';
 import TaxEdit from './edit/tax-edit.vue';
 import BankAccountEdit from './edit/bank-account-edit.vue';
-import draggable from 'vuedraggable';
+import { VueDraggable } from 'vue-draggable-plus';
 
 const { t } = useI18n();
 const store = oserpStore();

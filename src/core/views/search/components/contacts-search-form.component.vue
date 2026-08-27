@@ -4,7 +4,7 @@
         <v-row dense>
             <v-col>
                 <v-row dense>
-                    <v-col cols="1">
+                    <v-col cols="6" sm="4" md="3" lg="1">
                         <v-text-field
                             :model-value="modelValue?.cp_title || ''"
                             @update:model-value="updateField('cp_title', $event)"
@@ -15,7 +15,7 @@
                             clearable
                         ></v-text-field>
                     </v-col>
-                    <v-col cols="3">
+                    <v-col cols="12" sm="6" md="4" lg="3">
                         <v-text-field
                             :model-value="modelValue?.cp_givenname || ''"
                             @update:model-value="updateField('cp_givenname', $event)"
@@ -26,7 +26,7 @@
                             clearable
                         ></v-text-field>
                     </v-col>
-                    <v-col cols="3">
+                    <v-col cols="12" sm="6" md="4" lg="3">
                         <v-text-field
                             :model-value="modelValue?.cp_name || ''"
                             @update:model-value="updateField('cp_name', $event)"
@@ -37,7 +37,7 @@
                             clearable
                         ></v-text-field>
                     </v-col>
-                    <v-col cols="3">
+                    <v-col cols="12" sm="6" md="4" lg="3">
                         <v-text-field
                             :model-value="modelValue?.cp_email || ''"
                             @update:model-value="updateField('cp_email', $event)"
@@ -48,7 +48,7 @@
                             clearable
                         ></v-text-field>
                     </v-col>
-                    <v-col cols="2">
+                    <v-col cols="6" sm="4" md="3" lg="2">
                         <v-text-field
                             :model-value="modelValue?.phone || ''"
                             @update:model-value="updateField('phone', $event)"
@@ -61,7 +61,7 @@
                     </v-col>
                 </v-row>
                 <v-row dense>
-                    <v-col cols="3">
+                    <v-col cols="12" sm="6" md="4" lg="3">
                         <v-text-field
                             :model-value="modelValue?.number || ''"
                             @update:model-value="updateField('number', $event)"
@@ -72,7 +72,7 @@
                             clearable
                         ></v-text-field>
                     </v-col>
-                    <v-col cols="3">
+                    <v-col cols="12" sm="6" md="4" lg="3">
                         <v-text-field
                             :model-value="modelValue?.cp_position || ''"
                             @update:model-value="updateField('cp_position', $event)"
@@ -83,7 +83,7 @@
                             clearable
                         ></v-text-field>
                     </v-col>
-                    <v-col cols="3">
+                    <v-col cols="12" sm="6" md="4" lg="3">
                         <v-text-field
                             :model-value="modelValue?.cp_project || ''"
                             @update:model-value="updateField('cp_project', $event)"
@@ -94,7 +94,7 @@
                             clearable
                         ></v-text-field>
                     </v-col>
-                    <v-col cols="3">
+                    <v-col cols="12" sm="6" md="4" lg="3">
                         <v-text-field
                             :model-value="modelValue?.cp_abteilung || ''"
                             @update:model-value="updateField('cp_abteilung', $event)"
@@ -121,7 +121,7 @@
         <v-row v-show="showAdditionalCriteria" dense>
             <v-col>
                 <v-row dense>
-                    <v-col cols="3">
+                    <v-col cols="12" sm="6" md="4" lg="3">
                         <v-text-field
                             :model-value="modelValue?.cv_name || ''"
                             @update:model-value="updateField('cv_name', $event)"
@@ -132,7 +132,7 @@
                             clearable
                         ></v-text-field>
                     </v-col>
-                    <v-col cols="2">
+                    <v-col cols="6" sm="4" md="3" lg="2">
                         <v-select
                             :model-value="modelValue?.cv_type"
                             @update:model-value="updateField('cv_type', $event)"
@@ -149,7 +149,7 @@
                             clearable
                         ></v-select>
                     </v-col>
-                    <v-col cols="2">
+                    <v-col cols="6" sm="4" md="3" lg="2">
                         <v-select
                             :model-value="modelValue?.cp_gender"
                             @update:model-value="updateField('cp_gender', $event)"
@@ -163,7 +163,7 @@
                             clearable
                         ></v-select>
                     </v-col>
-                    <v-col cols="2">
+                    <v-col cols="6" sm="4" md="3" lg="2">
                         <v-select
                             :model-value="modelValue?.cp_main"
                             @update:model-value="updateField('cp_main', $event)"
@@ -177,7 +177,7 @@
                             clearable
                         ></v-select>
                     </v-col>
-                    <v-col cols="3">
+                    <v-col cols="12" sm="6" md="4" lg="3">
                         <v-text-field
                             :model-value="modelValue?.cp_street || ''"
                             @update:model-value="updateField('cp_street', $event)"
@@ -190,7 +190,7 @@
                     </v-col>
                 </v-row>
                 <v-row dense>
-                    <v-col cols="2">
+                    <v-col cols="6" sm="4" md="3" lg="2">
                         <v-text-field
                             :model-value="modelValue?.cp_zipcode || ''"
                             @update:model-value="updateField('cp_zipcode', $event)"
@@ -201,7 +201,7 @@
                             clearable
                         ></v-text-field>
                     </v-col>
-                    <v-col cols="4">
+                    <v-col cols="12" sm="6" md="4">
                         <v-text-field
                             :model-value="modelValue?.cp_city || ''"
                             @update:model-value="updateField('cp_city', $event)"
@@ -212,12 +212,12 @@
                             clearable
                         ></v-text-field>
                     </v-col>
-                    <v-col cols="6">
+                    <v-col cols="12" sm="6">
                         <!-- Platz für weitere Felder -->
                     </v-col>
                 </v-row>
                 <v-row dense>
-                    <v-col cols="3">
+                    <v-col cols="12" sm="6" md="4" lg="3">
                         <v-text-field
                             :model-value="modelValue?.cp_birthday || ''"
                             @update:model-value="updateField('cp_birthday', $event)"
@@ -229,7 +229,7 @@
                             clearable
                         ></v-text-field>
                     </v-col>
-                    <v-col cols="3">
+                    <v-col cols="12" sm="6" md="4" lg="3">
                         <v-text-field
                             :model-value="modelValue?.cp_birthday_from || ''"
                             @update:model-value="updateField('cp_birthday_from', $event)"
@@ -241,7 +241,7 @@
                             clearable
                         ></v-text-field>
                     </v-col>
-                    <v-col cols="3">
+                    <v-col cols="12" sm="6" md="4" lg="3">
                         <v-text-field
                             :model-value="modelValue?.cp_birthday_to || ''"
                             @update:model-value="updateField('cp_birthday_to', $event)"
@@ -253,12 +253,12 @@
                             clearable
                         ></v-text-field>
                     </v-col>
-                    <v-col cols="3">
+                    <v-col cols="12" sm="6" md="4" lg="3">
                         <!-- Platz für weitere Felder -->
                     </v-col>
                 </v-row>
                 <v-row dense>
-                    <v-col cols="3">
+                    <v-col cols="12" sm="6" md="4" lg="3">
                         <v-text-field
                             :model-value="modelValue?.itime_from || ''"
                             @update:model-value="updateField('itime_from', $event)"
@@ -270,7 +270,7 @@
                             clearable
                         ></v-text-field>
                     </v-col>
-                    <v-col cols="3">
+                    <v-col cols="12" sm="6" md="4" lg="3">
                         <v-text-field
                             :model-value="modelValue?.itime_to || ''"
                             @update:model-value="updateField('itime_to', $event)"
@@ -282,7 +282,7 @@
                             clearable
                         ></v-text-field>
                     </v-col>
-                    <v-col cols="3">
+                    <v-col cols="12" sm="6" md="4" lg="3">
                         <v-text-field
                             :model-value="modelValue?.mtime_from || ''"
                             @update:model-value="updateField('mtime_from', $event)"
@@ -294,7 +294,7 @@
                             clearable
                         ></v-text-field>
                     </v-col>
-                    <v-col cols="3">
+                    <v-col cols="12" sm="6" md="4" lg="3">
                         <v-text-field
                             :model-value="modelValue?.mtime_to || ''"
                             @update:model-value="updateField('mtime_to', $event)"

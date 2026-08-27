@@ -16,6 +16,9 @@
         "fakturaCompactView_help": "Slēpj detaļu kartes (klients, dokumenta detaļas, papildinformācija) un rāda tikai kompaktu kopsavilkumu.",
         "printer": "Printeris",
         "defaultPrinter": "Noklusējuma printeris",
-        "defaultPrinter_help": "Printeris, kas tiek izmantots pēc noklusējuma drukāšanai"
+        "defaultPrinter_help": "Printeris, kas tiek izmantots pēc noklusējuma drukāšanai",
+        "accounting": "Grāmatvedība",
+        "accountingEasymode": "Vienkāršais režīms",
+        "accountingEasymode_help": "Rāda grāmatvedību ikdienas valodā: bez debeta un kredīta, bez nodokļu kodiem, tikai darāmo darbu. Izslēgtā stāvoklī parādās profesionālais skats. Pārslēdzams arī tieši grāmatvedībā."
     }
 }

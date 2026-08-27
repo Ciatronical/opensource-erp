@@ -16,6 +16,9 @@
         "fakturaCompactView_help": "Hides detail cards (customer, document details, additional info) and shows a compact summary instead.",
         "printer": "Printer",
         "defaultPrinter": "Default Printer",
-        "defaultPrinter_help": "Printer used by default for printouts"
+        "defaultPrinter_help": "Printer used by default for printouts",
+        "accounting": "Accounting",
+        "accountingEasymode": "Simple mode",
+        "accountingEasymode_help": "Shows accounting in everyday wording: no debit and credit, no tax keys, only the work at hand. Switched off, the professional view appears. Can also be toggled directly in accounting."
     }
 }

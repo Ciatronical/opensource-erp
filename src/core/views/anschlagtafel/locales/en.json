@@ -9,6 +9,10 @@
         "failed": "Transcription failed",
         "online": "Live connection active",
         "offline": "No live connection",
-        "latestBadge": "Latest"
+        "latestBadge": "Latest",
+        "soundOn": "Sound on – new notes chime",
+        "soundOff": "Sound off",
+        "enableSound": "Enable sound",
+        "enableSoundHint": "Tap once or press OK on the remote – every new note will chime after that."
     }
 }

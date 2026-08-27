@@ -2,6 +2,73 @@
 // backend/api/banking/transactions.php
 
 /**
+ * Wandelt ein Suchwort in eine SQL-Bedingung auf bt.amount, sofern es wie ein
+ * Betrag aussieht. Liefert NULL, wenn das Wort kein Betrag ist (dann greift die
+ * normale Volltextsuche).
+ *
+ * Erkannt werden:
+ *   "159,03" / "159.03" / "1.234,56" / "1,234.56"  exakter Betrag (+/-)
+ *   ">500" ">=500" "<50" "<=50"                    Vergleich
+ *   "100-200"                                      Bereich (einschliesslich)
+ *
+ * Der Dezimaltrenner wird nach der Regel "letzter Trenner gewinnt" bestimmt,
+ * damit deutsche und englische Schreibweise gleichermaßen funktionieren.
+ *
+ * @param string $tok    Suchwort
+ * @param string $key    Basis fuer die Parameternamen
+ * @param array  $params Parameter-Array (wird ergaenzt)
+ * @return string|null   SQL-Bedingung oder NULL
+ */
+function _bt_amountSearchCondition($tok, $key, array &$params) {
+    if (!preg_match('/^(>=|<=|>|<)?\s*([0-9][0-9.,]*)\s*(?:-\s*([0-9][0-9.,]*))?$/', $tok, $m)) {
+        return null;
+    }
+    $op   = $m[1] ?? '';
+    $from = _bt_parseAmount($m[2]);
+    $to   = isset($m[3]) && $m[3] !== '' ? _bt_parseAmount($m[3]) : null;
+    if ($from === null) return null;
+
+    // Reine Ziffernfolge ohne Trenner und ohne Operator ist eher eine
+    // Rechnungs-/Kundennummer als ein Betrag — die soll weiter im Text suchen,
+    // zusätzlich aber auch als Betrag treffen dürfen.
+    if ($op === '' && $to === null) {
+        $params[$key . '_val'] = $from;
+        $params[$key . '_txt'] = '%' . $tok . '%';
+        return "round(abs(bt.amount), 2) = :{$key}_val";
+    }
+    if ($to !== null) {
+        $lo = min($from, $to);
+        $hi = max($from, $to);
+        $params[$key . '_lo'] = $lo;
+        $params[$key . '_hi'] = $hi;
+        return "round(abs(bt.amount), 2) BETWEEN :{$key}_lo AND :{$key}_hi";
+    }
+    $params[$key . '_val'] = $from;
+    return "round(abs(bt.amount), 2) {$op} :{$key}_val";
+}
+
+/**
+ * Zahl aus deutscher oder englischer Schreibweise lesen.
+ * Regel: der LETZTE Trenner ist der Dezimaltrenner, alle davor sind
+ * Tausendertrenner ("1.234,56" -> 1234.56, "1,234.56" -> 1234.56,
+ * "1234" -> 1234.0). Steht hinter dem letzten Trenner keine 1-2stellige
+ * Gruppe, gilt er als Tausendertrenner ("1.234" -> 1234.0).
+ */
+function _bt_parseAmount($raw) {
+    $raw = trim($raw);
+    if ($raw === '' || !preg_match('/^[0-9.,]+$/', $raw)) return null;
+    $lastSep = max(strrpos($raw, ','), strrpos($raw, '.'));
+    if ($lastSep === false) return (float)$raw;
+    $decimals = strlen($raw) - $lastSep - 1;
+    if ($decimals >= 1 && $decimals <= 2) {
+        $intPart  = preg_replace('/[.,]/', '', substr($raw, 0, $lastSep));
+        $fracPart = substr($raw, $lastSep + 1);
+        return (float)($intPart . '.' . $fracPart);
+    }
+    return (float)preg_replace('/[.,]/', '', $raw);
+}
+
+/**
  * Bankumsaetze eines Kontos laden mit Zuordnungsstatus
  *
  * @param int    $data['bank_account_id'] Bankkonto-ID
@@ -95,8 +162,26 @@ HAY;
         $idx = 0;
         foreach ($tokens as $tok) {
             $key = 'srch' . $idx;
-            $searchWhere .= " AND srch.hay ILIKE :{$key}";
-            $searchParams[$key] = '%' . $tok . '%';
+
+            // Betragssuche: der Volltext vergleicht gegen bt.amount::text und damit
+            // gegen die Postgres-Schreibweise ("-159.03000"). Wer deutsch "159,03"
+            // tippt, fand deshalb nichts. Betrags-Tokens werden jetzt numerisch
+            // ausgewertet — inkl. Vergleichen (>500), Bereichen (100-200) und
+            // beider Dezimalschreibweisen. Das Vorzeichen ist egal: gesucht wird
+            // über den Absolutbetrag, damit "159,03" Ein- wie Ausgang findet.
+            $amountCond = _bt_amountSearchCondition($tok, $key, $searchParams);
+            if ($amountCond !== null) {
+                // Reiner Zahlenwert darf zusaetzlich im Text treffen (z. B. eine
+                // Rechnungsnummer im Verwendungszweck); Vergleiche/Bereiche nicht.
+                if (isset($searchParams[$key . '_txt'])) {
+                    $searchWhere .= " AND ({$amountCond} OR srch.hay ILIKE :{$key}_txt)";
+                } else {
+                    $searchWhere .= " AND {$amountCond}";
+                }
+            } else {
+                $searchWhere .= " AND srch.hay ILIKE :{$key}";
+                $searchParams[$key] = '%' . $tok . '%';
+            }
             $idx++;
         }
     }
@@ -152,7 +237,17 @@ HAY;
                         LEFT JOIN vendor v ON v.id = ap.vendor_id
                         WHERE bta.bank_transaction_id = bt.id
                     ) a
-                ) as assignments
+                ) as assignments,
+                -- Belegnachweis: hängt an mindestens einer zugeordneten
+                -- Eingangsrechnung ein Beleg? Für die GoBD muss sichtbar sein,
+                -- wo einer fehlt — die Oberfläche zeigt das als Symbol an.
+                EXISTS (
+                    SELECT 1
+                    FROM bank_transaction_acc_trans bta2
+                    JOIN accounting_documents ad ON ad.ap_id = bta2.ap_id
+                    WHERE bta2.bank_transaction_id = bt.id
+                      AND bta2.ap_id IS NOT NULL
+                ) AS has_document
             FROM bank_transactions bt
             LEFT JOIN bank_transaction_matches btm ON btm.bank_transaction_id = bt.id
             LEFT JOIN ar       ar_pending ON btm.target_type = 'ar' AND ar_pending.id = btm.target_id

@@ -145,7 +145,58 @@
                         clearable
                         style="max-width:320px"
                         class="ml-2"
-                    />
+                    >
+                        <!-- Suchhilfe: die Betrags-Syntax ist sonst nirgends
+                             ersichtlich — der Platzhalter ist zu kurz dafür und
+                             verschwindet beim Tippen. -->
+                        <template #append-inner>
+                            <v-menu :close-on-content-click="false" location="bottom end">
+                                <template #activator="{ props }">
+                                    <v-icon
+                                        v-bind="props"
+                                        icon="mdi-help-circle-outline"
+                                        size="small"
+                                        class="text-medium-emphasis"
+                                        style="cursor:pointer"
+                                        :title="t('BankingView.transactions.searchHelpTitle')"
+                                    />
+                                </template>
+                                <v-card min-width="380" rounded="lg">
+                                    <v-card-title class="text-body-2 font-weight-semibold py-2">
+                                        {{ t('BankingView.transactions.searchHelpTitle') }}
+                                    </v-card-title>
+                                    <v-divider />
+                                    <v-list density="compact" class="py-1">
+                                        <v-list-item
+                                            v-for="ex in txSearchExamples"
+                                            :key="ex.q"
+                                            @click="txSearch = ex.q"
+                                        >
+                                            <template #prepend>
+                                                <v-chip size="x-small" label variant="tonal" color="primary"
+                                                        class="mr-3 font-weight-bold">{{ ex.q }}</v-chip>
+                                            </template>
+                                            <v-list-item-title class="text-caption">{{ ex.desc }}</v-list-item-title>
+                                        </v-list-item>
+                                    </v-list>
+                                    <v-divider />
+                                    <div class="text-caption text-medium-emphasis pa-3 pt-2">
+                                        {{ t('BankingView.transactions.searchHelpFooter') }}
+                                    </div>
+                                </v-card>
+                            </v-menu>
+                        </template>
+                    </v-text-field>
+                    <!-- Live-Rückmeldung: zeigt, dass die Eingabe als Betrag
+                         verstanden wurde (und nicht als Text). -->
+                    <v-chip
+                        v-if="txSearchHint"
+                        size="small"
+                        variant="tonal"
+                        color="primary"
+                        class="ml-2"
+                        prepend-icon="mdi-cash-multiple"
+                    >{{ txSearchHint }}</v-chip>
                     <v-spacer />
                     <v-text-field v-model="fromDate" :label="t('BankingView.transactions.fromDate')" type="date" density="compact" hide-details style="max-width:140px" />
                     <v-text-field v-model="toDate" :label="t('BankingView.transactions.toDate')" type="date" density="compact" hide-details style="max-width:140px" />
@@ -156,7 +207,7 @@
                         <v-icon start>mdi-file-delimited-outline</v-icon>{{ t('BankingView.utils.exportCsv') }}
                     </v-btn>
                     <v-btn variant="text" size="small" :loading="exportingPdf" @click="doExportPdf">
-                        <v-icon start>mdi-file-pdf-box</v-icon>{{ t('BankingView.utils.exportPdf') }}
+                        <v-icon start>mdi-printer-outline</v-icon>{{ t('BankingView.utils.printStatement') }}
                     </v-btn>
                 </div>
 
@@ -209,6 +260,17 @@
                             <div v-else-if="item.pending_invnumber" class="text-caption text-medium-emphasis">
                                 {{ item.pending_invnumber }}
                             </div>
+                            <!-- Belegnachweis: bei gebuchten Eingangsrechnungen sichtbar
+                                 machen, ob ein Beleg hinterlegt ist (GoBD) -->
+                            <v-icon
+                                v-if="hasApAssignment(item)"
+                                :icon="item.has_document ? 'mdi-paperclip' : 'mdi-paperclip-off'"
+                                :color="item.has_document ? 'success' : 'warning'"
+                                size="x-small"
+                                :title="item.has_document
+                                    ? t('BankingView.transactions.documentPresent')
+                                    : t('BankingView.transactions.documentMissing')"
+                            />
                         </template>
                         <template #item.actions="{ item }">
                             <div class="d-flex ga-1" @click.stop>
@@ -229,6 +291,15 @@
                                     color="primary"
                                     :title="t('BankingView.settlement.assign')"
                                     @click="openSettlement(item)"
+                                />
+                                <v-btn
+                                    v-if="item.match_status === 'unmatched' && item.amount < 0"
+                                    icon="mdi-file-document-plus"
+                                    size="x-small"
+                                    variant="text"
+                                    color="primary"
+                                    :title="t('BankingView.reconciliation.createApTitle')"
+                                    @click="openApDialog(item)"
                                 />
                                 <v-btn
                                     v-else-if="item.match_status === 'matched'"
@@ -275,6 +346,76 @@
                     :transaction="settlementTransaction"
                     @booked="onBookingDone"
                 />
+
+                <!-- Ausgehende Zahlung → Eingangsrechnung anlegen + bezahlen -->
+                <v-dialog v-model="showApDialog" max-width="560">
+                    <v-card v-if="apSource" rounded="lg">
+                        <v-card-title class="text-body-1 font-weight-semibold">{{ t('BankingView.reconciliation.createApTitle') }}</v-card-title>
+                        <v-card-subtitle>
+                            {{ formatCurrency(Math.abs(apSource.amount)) }} · {{ apSource.remote_name || '—' }} · {{ formatDateShort(apSource.transdate) }}
+                        </v-card-subtitle>
+                        <v-card-text>
+                            <v-autocomplete
+                                v-model="apForm.vendor_id"
+                                :items="apVendorOptions"
+                                :item-title="v => v.vendornumber ? `${v.name} (${v.vendornumber})` : v.name"
+                                item-value="id"
+                                :label="t('BankingView.reconciliation.vendor') + ' *'"
+                                density="comfortable" variant="outlined"
+                                :loading="apVendorLoading" no-filter clearable
+                                prepend-inner-icon="mdi-domain"
+                                @update:search="onApVendorSearch" />
+                            <v-autocomplete
+                                v-model="apForm.account"
+                                :items="apAccountOptions"
+                                item-title="label" item-value="id" return-object
+                                :label="t('BankingView.reconciliation.expenseAccount') + ' *'"
+                                density="comfortable" variant="outlined"
+                                :loading="apAccountLoading || apSuggesting" no-filter clearable
+                                prepend-inner-icon="mdi-bank-outline"
+                                :hint="apAccountSource ? t('BankingView.reconciliation.accountSource_' + apAccountSource) : ''"
+                                persistent-hint
+                                @update:search="onApAccountSearch" />
+                            <div class="d-flex ga-3">
+                                <v-select
+                                    v-model.number="apForm.rate" :items="apTaxRateOptions"
+                                    :label="t('BankingView.reconciliation.taxRate')"
+                                    density="comfortable" variant="outlined" style="max-width:200px" />
+                                <v-text-field
+                                    v-model="apForm.invnumber"
+                                    :label="t('BankingView.reconciliation.invnumber')"
+                                    density="comfortable" variant="outlined" />
+                            </div>
+                            <v-file-input
+                                v-model="apForm.document"
+                                :label="t('BankingView.reconciliation.document')"
+                                :hint="t('BankingView.reconciliation.documentHint')"
+                                persistent-hint
+                                accept=".pdf,.jpg,.jpeg,.png,.webp,.tif,.tiff"
+                                density="comfortable" variant="outlined"
+                                prepend-icon="" prepend-inner-icon="mdi-paperclip"
+                                show-size clearable class="mt-3" />
+                            <v-alert
+                                :type="apForm.document ? 'success' : 'warning'"
+                                variant="tonal" density="compact" class="mt-3">
+                                {{ apForm.document
+                                    ? t('BankingView.reconciliation.documentAttached')
+                                    : t('BankingView.reconciliation.documentMissing') }}
+                            </v-alert>
+                            <v-alert type="info" variant="tonal" density="compact" class="mt-3">
+                                {{ t('BankingView.reconciliation.createApHint') }}
+                            </v-alert>
+                        </v-card-text>
+                        <v-card-actions>
+                            <v-spacer />
+                            <v-btn variant="text" @click="showApDialog = false">{{ t('BankingView.reconciliation.cancel') }}</v-btn>
+                            <v-btn color="primary" variant="elevated" :loading="apSaving"
+                                   :disabled="!apForm.vendor_id || !apForm.account" @click="submitAp">
+                                <v-icon start>mdi-check</v-icon>{{ t('BankingView.reconciliation.createApBook') }}
+                            </v-btn>
+                        </v-card-actions>
+                    </v-card>
+                </v-dialog>
             </v-window-item>
 
             <!-- ── ÜBERWEISUNGEN ── -->
@@ -738,6 +879,15 @@
                                         <span class="mx-2 text-disabled">·</span>
                                         <span class="text-truncate">{{ bt.remote_name || bt.purpose }}</span>
                                         <v-spacer />
+                                        <v-btn
+                                            v-if="bt.match_status === 'unmatched' && bt.amount < 0"
+                                            icon="mdi-file-document-plus"
+                                            size="x-small"
+                                            variant="text"
+                                            color="primary"
+                                            :title="t('BankingView.reconciliation.createApTitle')"
+                                            @click.stop="openApDialog(bt)"
+                                        />
                                         <span class="text-caption text-disabled text-no-wrap">{{ formatDateShort(bt.transdate) }}</span>
                                     </v-list-item-title>
                                     <v-list-item-subtitle v-if="bt.match_status === 'matched' && bt.matched_invoice" class="text-caption text-success">
@@ -1293,6 +1443,7 @@ import { useMatching } from '../composables/useMatching.js'
 import { useStandingOrders } from '../composables/useStandingOrders.js'
 import { useTransferTemplates, resolvePurpose } from '../composables/useTransferTemplates.js'
 import { useBankingUtils, lookupBicFromIban } from '../composables/useBankingUtils.js'
+import { useAccounting } from '@/features/accounting/composables/useAccounting.js'
 import { Line as LineChart } from 'vue-chartjs'
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Filler } from 'chart.js'
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Filler)
@@ -1313,6 +1464,7 @@ const matching   = useMatching()
 const soStore    = useStandingOrders()
 const tmplStore  = useTransferTemplates()
 const bankUtils  = useBankingUtils()
+const { searchVendors, searchAccounts } = useAccounting()
 
 // ── Zustand ──────────────────────────────────────────────
 const activeTab          = ref('transactions')
@@ -1979,6 +2131,88 @@ function txHaystack(tx) {
     return parts.filter(Boolean).join(' ').toLowerCase()
 }
 
+/**
+ * Zahl aus deutscher oder englischer Schreibweise lesen — letzter Trenner ist
+ * der Dezimaltrenner. Spiegelt _bt_parseAmount() im Backend.
+ */
+function parseSearchAmount(raw) {
+    if (!/^[0-9.,]+$/.test(raw)) return null
+    const lastSep = Math.max(raw.lastIndexOf(','), raw.lastIndexOf('.'))
+    if (lastSep < 0) return parseFloat(raw)
+    const decimals = raw.length - lastSep - 1
+    if (decimals >= 1 && decimals <= 2) {
+        return parseFloat(raw.slice(0, lastSep).replace(/[.,]/g, '') + '.' + raw.slice(lastSep + 1))
+    }
+    return parseFloat(raw.replace(/[.,]/g, ''))
+}
+
+/**
+ * Betrags-Token auswerten: "159,03", ">500", "<=50", "100-200". Liefert eine
+ * Prüffunktion auf den Absolutbetrag oder null, wenn das Wort kein Betrag ist.
+ * Spiegelt _bt_amountSearchCondition() im Backend.
+ */
+function amountMatcher(tok) {
+    const m = tok.match(/^(>=|<=|>|<)?\s*([0-9][0-9.,]*)\s*(?:-\s*([0-9][0-9.,]*))?$/)
+    if (!m) return null
+    const op = m[1] || ''
+    const from = parseSearchAmount(m[2])
+    const to = m[3] ? parseSearchAmount(m[3]) : null
+    if (from === null || Number.isNaN(from)) return null
+    if (to !== null && !Number.isNaN(to)) {
+        const lo = Math.min(from, to), hi = Math.max(from, to)
+        return v => v >= lo && v <= hi
+    }
+    switch (op) {
+        case '>':  return v => v > from
+        case '>=': return v => v >= from
+        case '<':  return v => v < from
+        case '<=': return v => v <= from
+        // Reine Zahl: Betrag ODER Textreffer (z. B. Rechnungsnummer im Zweck)
+        default:   return null
+    }
+}
+
+// Klickbare Beispiele für die Suchhilfe. Die Beschreibungen kommen aus i18n,
+// die Suchbegriffe selbst sind bewusst nicht übersetzt — Operatoren und
+// Zahlenformat sind in jeder Sprache gleich.
+const txSearchExamples = computed(() => [
+    { q: '159,03',  desc: t('BankingView.transactions.searchExampleExact') },
+    { q: '>500',    desc: t('BankingView.transactions.searchExampleGreater') },
+    { q: '<=50',    desc: t('BankingView.transactions.searchExampleLess') },
+    { q: '100-200', desc: t('BankingView.transactions.searchExampleRange') },
+    { q: '252143',  desc: t('BankingView.transactions.searchExampleInvoice') },
+])
+
+/** Betrag für die Anzeige formatieren (ohne Währungsanhang doppelt) */
+function fmtAmount(v) {
+    return formatCurrency(v)
+}
+
+// Beschreibt, wie ein Betrags-Token verstanden wurde — erscheint als Chip neben
+// dem Suchfeld, sobald die Eingabe als Betrag greift.
+const txSearchHint = computed(() => {
+    const q = (txSearch.value || '').trim()
+    if (!q) return null
+    for (const tok of q.split(/\s+/).filter(Boolean)) {
+        const m = tok.match(/^(>=|<=|>|<)?\s*([0-9][0-9.,]*)\s*(?:-\s*([0-9][0-9.,]*))?$/)
+        if (!m) continue
+        const from = parseSearchAmount(m[2])
+        if (from === null || Number.isNaN(from)) continue
+        const to = m[3] ? parseSearchAmount(m[3]) : null
+        if (to !== null && !Number.isNaN(to)) {
+            return t('BankingView.transactions.searchHintRange', {
+                from: fmtAmount(Math.min(from, to)),
+                to:   fmtAmount(Math.max(from, to))
+            })
+        }
+        if (m[1]) {
+            return t('BankingView.transactions.searchHintCompare', { op: m[1], amount: fmtAmount(from) })
+        }
+        return t('BankingView.transactions.searchHintExact', { amount: fmtAmount(from) })
+    }
+    return null
+})
+
 const displayedTransactions = computed(() => {
     const all = banking.transactions.value
     const q = (txSearch.value || '').trim().toLowerCase()
@@ -1986,9 +2220,21 @@ const displayedTransactions = computed(() => {
     const tokens = q.split(/\s+/).filter(Boolean)
     return all.filter(tx => {
         const hay = txHaystack(tx)
-        return tokens.every(tok => hay.includes(tok))
+        const betrag = Math.round(Math.abs(Number(tx.amount) || 0) * 100) / 100
+        return tokens.every(tok => {
+            const cmp = amountMatcher(tok)
+            if (cmp) return cmp(betrag)
+            const val = parseSearchAmount(tok)
+            if (val !== null && !Number.isNaN(val) && betrag === val) return true
+            return hay.includes(tok)
+        })
     })
 })
+
+/** Hängt am Umsatz mindestens eine Eingangsrechnung? Nur dort ist ein Beleg Pflicht. */
+function hasApAssignment(tx) {
+    return (tx.assignments || []).some(a => a.ap_id)
+}
 
 /** Öffnet die zugeordnete (Ausgangs-)Rechnung aus der Umsatz-Liste */
 function goToInvoice(assignment) {
@@ -2071,6 +2317,132 @@ function openSettlement(item) {
 function onSettlementFromBooking(item) {
     showBookingDialog.value = false
     openSettlement(item)
+}
+
+// ── Ausgehende Zahlung → Eingangsrechnung anlegen + sofort bezahlen ──────────
+const showApDialog     = ref(false)
+const apSource         = ref(null)
+const apSaving         = ref(false)
+const apForm           = ref({ vendor_id: null, account: null, rate: 19, invnumber: '' })
+const apVendorOptions  = ref([])
+const apVendorLoading  = ref(false)
+const apAccountOptions = ref([])
+const apAccountLoading = ref(false)
+let   apVendorTimer    = null
+let   apAccountTimer   = null
+const apTaxRateOptions = [
+    { title: '19 %', value: 19 },
+    { title: '7 %', value: 7 },
+    { title: '0 % (steuerfrei)', value: 0 }
+]
+
+function openApDialog(bt) {
+    apSource.value = bt
+    apForm.value = { vendor_id: null, account: null, rate: 19, invnumber: '', document: null }
+    apVendorOptions.value = []
+    apAccountOptions.value = []
+    apAccountSource.value = null
+    showApDialog.value = true
+}
+
+// Woher der Kontovorschlag stammt — wird als Hinweis unter dem Feld gezeigt,
+// damit nachvollziehbar bleibt, warum dort etwas steht.
+const apAccountSource = ref(null)
+const apSuggesting = ref(false)
+
+// Sobald ein Lieferant gewählt ist, Aufwandskonto und Steuersatz vorbelegen.
+// Eine bereits getroffene Auswahl wird nicht überschrieben.
+watch(() => apForm.value.vendor_id, async (vendorId) => {
+    apAccountSource.value = null
+    if (!vendorId) return
+    apSuggesting.value = true
+    try {
+        const res = await matching.suggestExpenseAccount(vendorId)
+        if (res?.account && !apForm.value.account) {
+            apAccountOptions.value = [res.account]
+            apForm.value.account = res.account
+            apAccountSource.value = res.account.source
+        }
+        if (res?.rate != null) apForm.value.rate = Number(res.rate)
+    } finally {
+        apSuggesting.value = false
+    }
+})
+
+/** Datei als reines Base64 (ohne data:-Präfix) lesen */
+function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = () => resolve(String(reader.result).split(',')[1] || '')
+        reader.onerror = reject
+        reader.readAsDataURL(file)
+    })
+}
+
+function onApVendorSearch(q) {
+    clearTimeout(apVendorTimer)
+    if (!q || q.length < 2) return
+    apVendorTimer = setTimeout(async () => {
+        apVendorLoading.value = true
+        apVendorOptions.value = await searchVendors(q)
+        apVendorLoading.value = false
+    }, 300)
+}
+
+function onApAccountSearch(q) {
+    clearTimeout(apAccountTimer)
+    if (!q || q.length < 1) return
+    apAccountTimer = setTimeout(async () => {
+        apAccountLoading.value = true
+        const rows = await searchAccounts(q)
+        apAccountOptions.value = rows.map(a => ({ id: a.id, accno: a.accno, label: `${a.accno} ${a.description}` }))
+        apAccountLoading.value = false
+    }, 300)
+}
+
+async function submitAp() {
+    if (!apForm.value.vendor_id || !apForm.value.account) return
+
+    // Ohne Beleg ist die Buchung für eine Betriebsprüfung angreifbar — einmal
+    // nachfragen, aber nicht blockieren (Bankgebühren u. Ä. haben keinen).
+    const beleg = apForm.value.document
+    if (!beleg) {
+        const res = await alerts.question(
+            t('BankingView.reconciliation.noDocumentConfirm'),
+            t('BankingView.reconciliation.noDocumentTitle'),
+            t('BankingView.reconciliation.noDocumentContinue'),
+            t('BankingView.reconciliation.cancel')
+        )
+        if (!res.isConfirmed) return
+    }
+
+    apSaving.value = true
+    try {
+        const payload = {
+            bank_transaction_id: apSource.value.id,
+            bank_account_id: selectedAccountId.value,
+            vendor_id: apForm.value.vendor_id,
+            expense_chart_id: apForm.value.account.id,
+            rate: apForm.value.rate,
+            invnumber: apForm.value.invnumber || undefined
+        }
+        if (beleg) {
+            payload.document = {
+                filename:    beleg.name,
+                mime_type:   beleg.type || 'application/octet-stream',
+                file_base64: await fileToBase64(beleg)
+            }
+        }
+        const res = await matching.createApFromBankTransaction(payload)
+        alerts.success(t('BankingView.reconciliation.createApSuccess', { gross: formatCurrency(res.gross) }))
+        if (res.doc_warning) alerts.error(t('BankingView.reconciliation.documentFailed', { reason: res.doc_warning }))
+        showApDialog.value = false
+        await loadTransactions()
+    } catch (e) {
+        alerts.error(e.message)
+    } finally {
+        apSaving.value = false
+    }
 }
 
 async function onBookingDone() {
@@ -2532,7 +2904,7 @@ function selectTransaction(bt) {
 async function matchInvoiceToTransaction(inv) {
     if (!selectedTransaction.value) { alerts.info('Bitte zuerst einen Bankumsatz auswählen'); return }
     try {
-        await matching.matchTransaction(selectedTransaction.value.id, inv.id, invoiceTab.value === 'payables' ? 'ap' : 'ar')
+        await matching.matchTransaction(selectedTransaction.value.id, invoiceTab.value === 'payables' ? 'ap' : 'ar', inv.id)
         alerts.success(t('BankingView.alerts.matchSuccess'))
         selectedTransaction.value = null
         await loadTransactions()

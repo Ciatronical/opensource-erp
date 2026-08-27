@@ -1,9 +1,10 @@
 <template>
     <NavbarView />
     <v-container fluid>
+        <AccountingPageHeader :title="t('AccountingView.upload.title')" />
+
         <v-row>
             <v-col cols="12">
-                <h1 class="text-h5 mb-2">{{ t('AccountingView.upload.title') }}</h1>
                 <v-alert type="info" variant="tonal" density="comfortable" icon="mdi-information-outline" class="mt-1 mb-2" :text="t('AccountingView.upload.info')" />
             </v-col>
         </v-row>
@@ -189,7 +190,7 @@
                             <thead>
                                 <tr>
                                     <th>{{ t('AccountingView.bookings.description') }}</th>
-                                    <th class="text-end">Menge</th>
+                                    <th class="text-end">{{ t('AccountingView.bookings.quantity') }}</th>
                                     <th class="text-end">{{ t('AccountingView.bookings.netAmount') }}</th>
                                     <th class="text-end">{{ t('AccountingView.bookings.amount') }}</th>
                                 </tr>
@@ -251,6 +252,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
+import AccountingPageHeader from '../components/accounting.page-header.vue'
 import { useInvoiceUpload } from '../composables/useInvoiceUpload.js'
 
 const { t } = useI18n()

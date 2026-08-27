@@ -9,6 +9,10 @@
         "failed": "Transkription fehlgeschlagen",
         "online": "Live-Verbindung aktiv",
         "offline": "Keine Live-Verbindung",
-        "latestBadge": "Letzter"
+        "latestBadge": "Letzter",
+        "soundOn": "Ton an – neue Notizen klingeln",
+        "soundOff": "Ton aus",
+        "enableSound": "Ton aktivieren",
+        "enableSoundHint": "Einmal antippen oder OK auf der Fernbedienung drücken – danach klingelt jede neue Notiz."
     }
 }

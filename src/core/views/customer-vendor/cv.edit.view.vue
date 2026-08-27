@@ -33,8 +33,11 @@
         </v-alert>
         <v-sheet elevation="2">
             <v-row no-gutters>
-                <!-- Linke Seite: Vertikale Tab-Liste -->
-                <v-col cols="12" md="3" lg="2">
+                <!-- Linke Seite: Vertikale Tab-Liste
+                     Steht in jeder Bildschirmbreite links; unterhalb md sind
+                     die Beschriftungen ausgeblendet, die Spalte ist dann eine
+                     schmale Icon-Leiste (cols="auto"). -->
+                <v-col cols="auto" md="3" lg="2">
                     <v-list density="compact" class="tabs-list">
                         <v-list-item
                             value="billing"
@@ -56,7 +59,7 @@
                             <template #prepend>
                                 <v-icon>mdi-receipt-text-plus</v-icon>
                             </template>
-                            <v-list-item-title class="d-none d-md-block d-flex align-center justify-space-between">
+                            <v-list-item-title class="d-none d-md-flex align-center justify-space-between">
                                 <span>{{ t('CustomerVendorEditView.tabs.additionalBilling') }}</span>
                                 <v-badge
                                     v-if="billingAddresses.length > 0"
@@ -86,7 +89,7 @@
                             <template #prepend>
                                 <v-icon>mdi-truck-delivery</v-icon>
                             </template>
-                            <v-list-item-title class="d-none d-md-block d-flex align-center justify-space-between">
+                            <v-list-item-title class="d-none d-md-flex align-center justify-space-between">
                                 <span>{{ t('CustomerVendorEditView.tabs.shipto') }}</span>
                                 <v-badge
                                     v-if="shiptos.length > 0"
@@ -104,7 +107,7 @@
                             <template #prepend>
                                 <v-icon>mdi-account-group</v-icon>
                             </template>
-                            <v-list-item-title class="d-none d-md-block d-flex align-center justify-space-between">
+                            <v-list-item-title class="d-none d-md-flex align-center justify-space-between">
                                 <span>{{ t('CustomerVendorEditView.tabs.contacts') }}</span>
                                 <v-badge
                                     v-if="contacts.length > 0"
@@ -146,7 +149,7 @@
                             <template #prepend>
                                 <v-icon>mdi-variable</v-icon>
                             </template>
-                            <v-list-item-title class="d-none d-md-block d-flex align-center justify-space-between">
+                            <v-list-item-title class="d-none d-md-flex align-center justify-space-between">
                                 <span>{{ t('CustomerVendorEditView.tabs.customVars') }}</span>
                                 <v-badge
                                     v-if="customVars.length > 0"
@@ -195,10 +198,9 @@
                         </v-list-item>
                     </v-list>
                 </v-col>
-                <v-divider vertical class="d-none d-md-block"></v-divider>
-                <v-divider class="d-md-none"></v-divider>
+                <v-divider vertical></v-divider>
                 <!-- Rechte Seite: Tab-Inhalte -->
-                <v-col cols="12" md="9" lg="10"
+                <v-col md="9" lg="10"
                     @focusin.capture="onFocusIn"
                     @focusout.capture="onFocusOut"
                 >
@@ -967,10 +969,6 @@ export default {
     border-right: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
 }
 
-/* Responsive Anpassung für kleinere Bildschirme */
-@media (max-width: 960px) {
-    .tabs-list {
-        border-right: none;
-    }
-}
+/* Die Liste steht immer links neben dem Inhalt und behält damit in jeder
+   Bildschirmbreite ihren rechten Rand. */
 </style>

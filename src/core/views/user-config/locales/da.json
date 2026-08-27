@@ -16,6 +16,9 @@
         "fakturaCompactView_help": "Skjuler detaljekortene (Kunde, Dokumentdetaljer, Yderligere info) og viser kun en kompakt oversigt.",
         "printer": "Printer",
         "defaultPrinter": "Standardprinter",
-        "defaultPrinter_help": "Printer der som standard bruges til udskrifter"
+        "defaultPrinter_help": "Printer der som standard bruges til udskrifter",
+        "accounting": "Bogføring",
+        "accountingEasymode": "Enkel tilstand",
+        "accountingEasymode_help": "Viser bogføringen i dagligdags sprog: uden debet og kredit, uden momskoder, kun det arbejde der venter. Slået fra vises den faglige visning. Kan også skiftes direkte i bogføringen."
     }
 }

@@ -234,7 +234,8 @@
             "brevo_marketing_mail": "Brevo Marketing Mail",
             "help": "Help",
             "save_query": "Save",
-            "saved_queries": "Saved Queries"
+            "saved_queries": "Saved Queries",
+            "duplicates": "Find duplicates"
         },
         "table": {
             "title": "Search Results",

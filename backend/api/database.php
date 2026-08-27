@@ -740,6 +740,44 @@ class DbhCompany {
         return self::$instance;
     }
 }
+
+/**
+ * Filtert eine Tabellenliste auf die in dieser Firmen-DB vorhandenen Tabellen
+ *
+ * Nicht jede Firmen-DB kennt jede Erweiterungstabelle: Basisdumps sind rohe
+ * k9o-Bestände, und Zusatzmodule (eBay, WhatsApp, Weroni …) werden erst mit
+ * ihrem Upstall angelegt. Eine Abfrage, die eine fehlende Tabelle nennt,
+ * scheitert schon beim Parsen — der Laufzeit-Zustand hilft nicht, die Abfrage
+ * darf den Namen gar nicht erst enthalten. Deshalb wird die Tabellenliste vor
+ * dem Zusammenbauen der Abfrage hier gefiltert.
+ *
+ * Eine Abfrage fuer die ganze Liste, Ergebnis pro Request gemerkt.
+ *
+ * @param ApiDatabase $db     Offene Verbindung
+ * @param array       $tables Tabellennamen ohne Schema
+ * @return array Die Namen in Eingabereihenfolge, die es wirklich gibt
+ */
+function existingTables($db, array $tables) {
+    static $known = [];
+
+    // Nur Bezeichner zulassen — die Namen wandern als Array-Literal in die Abfrage
+    $tables = array_values(array_filter($tables, fn($t) => preg_match('/^[a-z_][a-z0-9_]*$/', $t)));
+
+    $unknown = array_values(array_diff($tables, array_keys($known)));
+    if ($unknown) {
+        $present = $db->getAll(
+            "SELECT t FROM unnest(:tables::text[]) AS t WHERE to_regclass('public.' || t) IS NOT NULL",
+            [':tables' => '{' . implode(',', $unknown) . '}']
+        );
+        $present = array_column($present ?: [], 't');
+        foreach ($unknown as $table) {
+            $known[$table] = in_array($table, $present, true);
+        }
+    }
+
+    return array_values(array_filter($tables, fn($t) => $known[$t]));
+}
+
 /**
  * Ermittelt die nächste freie Nummer aus dem Nummernkreis.
  *

@@ -9,6 +9,10 @@
         "failed": "Transkrypcja nie powiodła się",
         "online": "Połączenie na żywo aktywne",
         "offline": "Brak połączenia na żywo",
-        "latestBadge": "Ostatnia"
+        "latestBadge": "Ostatnia",
+        "soundOn": "Dźwięk włączony – nowe notatki dzwonią",
+        "soundOff": "Dźwięk wyłączony",
+        "enableSound": "Włącz dźwięk",
+        "enableSoundHint": "Dotknij raz lub naciśnij OK na pilocie – od tej chwili każda nowa notatka zadzwoni."
     }
 }

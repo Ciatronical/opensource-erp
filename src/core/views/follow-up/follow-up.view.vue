@@ -120,25 +120,24 @@
                         </v-chip>
                     </div>
                     <div class="board-column-content pa-2">
-                        <draggable
+                        <VueDraggable
                             v-model="overdueItems"
                             group="followups"
-                            item-key="id"
                             class="min-height-200"
                             @start="onDragStart"
                             @move="onDragMove"
                             @end="onDragEnd"
                         >
-                            <template #item="{ element }">
-                                <follow-up-card
-                                    :follow-up="element"
-                                    color="red-lighten-5"
-                                    @click="openEditDialog(element)"
-                                    @done="markDone(element)"
-                                    @delete="confirmDelete(element)"
-                                />
-                            </template>
-                        </draggable>
+                            <follow-up-card
+                                v-for="element in overdueItems"
+                                :key="element.id"
+                                :follow-up="element"
+                                color="red-lighten-5"
+                                @click="openEditDialog(element)"
+                                @done="markDone(element)"
+                                @delete="confirmDelete(element)"
+                            />
+                        </VueDraggable>
                     </div>
                 </div>
             </v-col>
@@ -156,25 +155,24 @@
                         </v-chip>
                     </div>
                     <div class="board-column-content pa-2">
-                        <draggable
+                        <VueDraggable
                             v-model="todayItems"
                             group="followups"
-                            item-key="id"
                             class="min-height-200"
                             @start="onDragStart"
                             @move="onDragMove"
                             @end="onDragEnd"
                         >
-                            <template #item="{ element }">
-                                <follow-up-card
-                                    :follow-up="element"
-                                    color="amber-lighten-5"
-                                    @click="openEditDialog(element)"
-                                    @done="markDone(element)"
-                                    @delete="confirmDelete(element)"
-                                />
-                            </template>
-                        </draggable>
+                            <follow-up-card
+                                v-for="element in todayItems"
+                                :key="element.id"
+                                :follow-up="element"
+                                color="amber-lighten-5"
+                                @click="openEditDialog(element)"
+                                @done="markDone(element)"
+                                @delete="confirmDelete(element)"
+                            />
+                        </VueDraggable>
                     </div>
                 </div>
             </v-col>
@@ -192,25 +190,24 @@
                         </v-chip>
                     </div>
                     <div class="board-column-content pa-2">
-                        <draggable
+                        <VueDraggable
                             v-model="upcomingItems"
                             group="followups"
-                            item-key="id"
                             class="min-height-200"
                             @start="onDragStart"
                             @move="onDragMove"
                             @end="onDragEnd"
                         >
-                            <template #item="{ element }">
-                                <follow-up-card
-                                    :follow-up="element"
-                                    color="green-lighten-5"
-                                    @click="openEditDialog(element)"
-                                    @done="markDone(element)"
-                                    @delete="confirmDelete(element)"
-                                />
-                            </template>
-                        </draggable>
+                            <follow-up-card
+                                v-for="element in upcomingItems"
+                                :key="element.id"
+                                :follow-up="element"
+                                color="green-lighten-5"
+                                @click="openEditDialog(element)"
+                                @done="markDone(element)"
+                                @delete="confirmDelete(element)"
+                            />
+                        </VueDraggable>
                     </div>
                 </div>
             </v-col>
@@ -331,7 +328,7 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import axios from 'axios';
 import { oserpStore } from '@/core/stores/oserp.store.js';
-import draggable from 'vuedraggable';
+import { VueDraggable } from 'vue-draggable-plus';
 import NavbarView from '@/core/components/navbar/navbar.view.vue';
 import FollowUpCard from './components/follow-up-card.vue';
 import FollowUpDialog from './components/follow-up-dialog.vue';
@@ -630,7 +627,7 @@ function onDragEnd(event) {
     console.log('[View] event.to', event.to);
     console.log('[View] event.from', event.from);
 
-    const item = event.item.__draggable_context?.element;
+    const item = event.data;
     console.log('[View] Draggable item:', item);
 
     if (!item) {

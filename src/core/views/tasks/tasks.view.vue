@@ -98,17 +98,17 @@
                         <v-chip size="x-small" color="red" class="ms-2">{{ overdueItems.length }}</v-chip>
                     </div>
                     <div class="board-column-content pa-2">
-                        <draggable v-model="overdueItems" group="tasks" item-key="id" class="min-height-200" @end="onDragEnd">
-                            <template #item="{ element }">
-                                <tasks-card
-                                    :task="element"
-                                    color="red-lighten-5"
-                                    @click="openEditDialog(element)"
-                                    @done="markDone(element)"
-                                    @delete="confirmDelete(element)"
-                                />
-                            </template>
-                        </draggable>
+                        <VueDraggable v-model="overdueItems" group="tasks" class="min-height-200" @end="onDragEnd">
+                            <tasks-card
+                                v-for="element in overdueItems"
+                                :key="element.id"
+                                :task="element"
+                                color="red-lighten-5"
+                                @click="openEditDialog(element)"
+                                @done="markDone(element)"
+                                @delete="confirmDelete(element)"
+                            />
+                        </VueDraggable>
                     </div>
                 </div>
             </v-col>
@@ -121,17 +121,17 @@
                         <v-chip size="x-small" color="amber" class="ms-2">{{ todayItems.length }}</v-chip>
                     </div>
                     <div class="board-column-content pa-2">
-                        <draggable v-model="todayItems" group="tasks" item-key="id" class="min-height-200" @end="onDragEnd">
-                            <template #item="{ element }">
-                                <tasks-card
-                                    :task="element"
-                                    color="amber-lighten-5"
-                                    @click="openEditDialog(element)"
-                                    @done="markDone(element)"
-                                    @delete="confirmDelete(element)"
-                                />
-                            </template>
-                        </draggable>
+                        <VueDraggable v-model="todayItems" group="tasks" class="min-height-200" @end="onDragEnd">
+                            <tasks-card
+                                v-for="element in todayItems"
+                                :key="element.id"
+                                :task="element"
+                                color="amber-lighten-5"
+                                @click="openEditDialog(element)"
+                                @done="markDone(element)"
+                                @delete="confirmDelete(element)"
+                            />
+                        </VueDraggable>
                     </div>
                 </div>
             </v-col>
@@ -144,17 +144,17 @@
                         <v-chip size="x-small" color="green" class="ms-2">{{ upcomingItems.length }}</v-chip>
                     </div>
                     <div class="board-column-content pa-2">
-                        <draggable v-model="upcomingItems" group="tasks" item-key="id" class="min-height-200" @end="onDragEnd">
-                            <template #item="{ element }">
-                                <tasks-card
-                                    :task="element"
-                                    color="green-lighten-5"
-                                    @click="openEditDialog(element)"
-                                    @done="markDone(element)"
-                                    @delete="confirmDelete(element)"
-                                />
-                            </template>
-                        </draggable>
+                        <VueDraggable v-model="upcomingItems" group="tasks" class="min-height-200" @end="onDragEnd">
+                            <tasks-card
+                                v-for="element in upcomingItems"
+                                :key="element.id"
+                                :task="element"
+                                color="green-lighten-5"
+                                @click="openEditDialog(element)"
+                                @done="markDone(element)"
+                                @delete="confirmDelete(element)"
+                            />
+                        </VueDraggable>
                     </div>
                 </div>
             </v-col>
@@ -241,7 +241,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import draggable from 'vuedraggable'
+import { VueDraggable } from 'vue-draggable-plus'
 import axios from 'axios'
 import TasksCard from './components/tasks-card.vue'
 import TasksList from './components/tasks-list.vue'
@@ -417,7 +417,7 @@ function confirmDelete(item) {
 }
 
 function onDragEnd(event) {
-    const item = event.item.__draggable_context?.element
+    const item = event.data
     if (!item) return
     const targetClass = event.to.closest('.board-column')?.classList
     let newDate = item.follow_up_date
