@@ -130,7 +130,9 @@ function getCV($data, $withConfig = []) {
     $keywordsSelect     = "(SELECT keywords FROM $extTable WHERE $extFk = $cv_id)";
     // LxCars: kundenweiter HU-Benachrichtigungs-Ausschluss (nur Kunde). Kunde zaehlt
     // mehr als Fahrzeug — ist dies true, sind alle Fahrzeuge des Kunden ausgeschlossen.
-    $huExcludedSelect = $isVendor
+    // Die Spalte legt erst upstall/lxcars/company_schema.sql an. Ohne aktives Feature
+    // darf ihr Name gar nicht in der Abfrage stehen, sonst scheitert schon das Parsen.
+    $huExcludedSelect = ($isVendor || !$lxCars)
         ? "false"
         : "COALESCE((SELECT hu_serienbrief_excluded FROM customer_ext WHERE customer_id = $cv_id), false)";
 
