@@ -387,10 +387,19 @@
     "crm.aagOnlinePassword_help": "Passwort für AAG Online",
     "crm.aagOnlinePassword2": "AAG Online Passwort (Wiederholung)",
     "crm.aagOnlinePassword2_help": "Passwort-Wiederholung zur Bestätigung",
-    "featureChange": {
-        "confirm_title": "Feature wechseln?",
-        "confirm_text": "Das Feature wird auf '{feature}' geändert. Dabei wird ein Datenbank-Update ausgeführt und die Anwendung neu geladen.",
-        "confirm_button": "Ja, Feature wechseln"
+    "extensions": {
+        "title": "Laajennukset",
+        "intro": "Itsenäisiä moduuleja, joilla on oma tietokantakaava. Vaihto suorittaa tietokantapäivityksen ja lataa sovelluksen uudelleen.",
+        "none": "Ei laajennuksia saatavilla."
+    },
+    "extensionChange": {
+        "confirm_title": "Muutetaanko laajennuksia?",
+        "confirm_text": "Aktiivisina muutoksen jälkeen: {extensions}. Tietokantapäivitys suoritetaan ja sovellus ladataan uudelleen.",
+        "confirm_text_none": "Kaikki laajennukset poistetaan käytöstä. Tietokantapäivitys suoritetaan ja sovellus ladataan uudelleen.",
+        "data_hint": "Käytöstä poistetun laajennuksen tiedot säilyvät.",
+        "confirm_button": "Kyllä, muuta laajennuksia",
+        "schema_update_required": "Laajennuksia ei voitu tallentaa. Suorita ensin tietokantapäivitys (Kehittäjätyökalut > Skeeman päivitys).",
+        "save_failed": "Laajennuksia ei voitu tallentaa."
     },
     "configLoadError": "Konfigurationsfehler",
     "syntaxErrorInConfigFile": "Syntaxfehler in der Konfigurationsdatei",
@@ -405,10 +414,8 @@
         "blzdb_help": "Bankleitzahlen-Datenbank",
         "debug": "Debug",
         "debug_help": "Debugausgaben in der Konsole und auf dem Bildschirm",
-        "features": "Erweiterung",
         "start-view": "Startansicht",
         "select-view": "Auswahl der Startansicht",
-        "features_help": "Hier können Features ausgewählt werden. Die Liste ist in der Konfigurationsdatei hardcodiert.",
         "brevo": "Brevo",
         "brevoApiEndpoint": "Brevo API Endpoint",
         "brevoApiEndpoint_help": "URL des Brevo API Endpunkts (Standard: https://api.brevo.com/v3)",

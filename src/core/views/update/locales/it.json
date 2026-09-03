@@ -17,7 +17,7 @@
         "backupSuccess": "Backup creato: {filename}",
         "backupFailed": "Backup fallito",
         "backupSkipped": "Il backup non viene creato in modalità anteprima",
-        "features": "Funzionalità: {features}",
+        "extensions": "Estensioni: {extensions}",
         "noClients": "Nessuna azienda trovata.",
         "overallSuccess": "Tutti i database aggiornati con successo",
         "overallFailed": "Errore nell'aggiornamento",

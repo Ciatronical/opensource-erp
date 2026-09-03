@@ -9,8 +9,6 @@
  * @testdata {"fakturaID": 1, "fakturaType": "invoice"}
  */
 function getFakturaData($data) {
-    include_once __DIR__ . '/../features.php';
-
     $fakturaID = intval($data['fakturaID']);
     $fakturaType = $data['fakturaType'] ?? 'invoice';
 

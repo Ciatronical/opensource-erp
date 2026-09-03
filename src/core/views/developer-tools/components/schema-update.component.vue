@@ -156,20 +156,20 @@
                         </v-expansion-panel-text>
                     </v-expansion-panel>
 
-                    <!-- Verarbeitete Features -->
-                    <v-expansion-panel v-if="updateResult.processed_features">
+                    <!-- Verarbeitete Erweiterungen -->
+                    <v-expansion-panel v-if="updateResult.processed_extensions">
                         <v-expansion-panel-title>
                             <v-icon class="mr-2" color="secondary">mdi-puzzle</v-icon>
-                            {{ t('DeveloperTools.schemaUpdate.results.processed_features') }}
+                            {{ t('DeveloperTools.schemaUpdate.results.processed_extensions') }}
                         </v-expansion-panel-title>
                         <v-expansion-panel-text>
                             <v-chip
-                                v-for="feature in updateResult.processed_features"
-                                :key="feature"
+                                v-for="extension in updateResult.processed_extensions"
+                                :key="extension"
                                 class="ma-1"
                                 size="small"
                             >
-                                {{ feature }}
+                                {{ extension }}
                             </v-chip>
                         </v-expansion-panel-text>
                     </v-expansion-panel>

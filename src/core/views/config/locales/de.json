@@ -467,10 +467,19 @@
     "crm.aagOnlinePassword_help": "Passwort für AAG Online",
     "crm.aagOnlinePassword2": "AAG Online Passwort (Wiederholung)",
     "crm.aagOnlinePassword2_help": "Passwort-Wiederholung zur Bestätigung",
-    "featureChange": {
-        "confirm_title": "Feature wechseln?",
-        "confirm_text": "Das Feature wird auf '{feature}' geändert. Dabei wird ein Datenbank-Update ausgeführt und die Anwendung neu geladen.",
-        "confirm_button": "Ja, Feature wechseln"
+    "extensions": {
+        "title": "Erweiterungen",
+        "intro": "Eigenständige Module mit eigenem Datenbankschema. Beim Umschalten wird ein Datenbank-Update ausgeführt und die Anwendung neu geladen.",
+        "none": "Keine Erweiterungen verfügbar."
+    },
+    "extensionChange": {
+        "confirm_title": "Erweiterungen ändern?",
+        "confirm_text": "Aktiv werden: {extensions}. Dabei wird ein Datenbank-Update ausgeführt und die Anwendung neu geladen.",
+        "confirm_text_none": "Alle Erweiterungen werden deaktiviert. Dabei wird ein Datenbank-Update ausgeführt und die Anwendung neu geladen.",
+        "data_hint": "Die Daten einer deaktivierten Erweiterung bleiben erhalten.",
+        "confirm_button": "Ja, Erweiterungen ändern",
+        "schema_update_required": "Die Erweiterungen konnten nicht gespeichert werden. Bitte zuerst das Datenbank-Update ausführen (Entwickler-Werkzeuge > Schema-Update).",
+        "save_failed": "Die Erweiterungen konnten nicht gespeichert werden."
     },
     "featureService": {
         "enable_title": "{name} aktivieren",
@@ -503,10 +512,8 @@
         "blzdb_help": "Bankleitzahlen-Datenbank",
         "debug": "Debug",
         "debug_help": "Debugausgaben in der Konsole und auf dem Bildschirm",
-        "features": "Erweiterung",
         "start-view": "Startansicht",
         "select-view": "Auswahl der Startansicht",
-        "features_help": "Hier können Features ausgewählt werden. Die Liste ist in der Konfigurationsdatei hardcodiert.",
         "brevo": "Brevo",
         "brevoApiEndpoint": "Brevo API Endpoint",
         "brevoApiEndpoint_help": "URL des Brevo API Endpunkts (Standard: https://api.brevo.com/v3)",

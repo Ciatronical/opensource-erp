@@ -17,7 +17,7 @@
         "backupSuccess": "Sikkerhetskopi opprettet: {filename}",
         "backupFailed": "Sikkerhetskopi mislyktes",
         "backupSkipped": "Sikkerhetskopi opprettes ikke ved dry-run",
-        "features": "Features: {features}",
+        "extensions": "Utvidelser: {extensions}",
         "noClients": "Ingen firmaer funnet.",
         "overallSuccess": "Alle databaser oppdatert",
         "overallFailed": "Feil ved oppdatering",

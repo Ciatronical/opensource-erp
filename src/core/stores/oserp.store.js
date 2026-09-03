@@ -61,9 +61,12 @@ export const oserpStore = defineStore('oserpStore', () => {
     });
 
     /**
-     * Aktivierte Features
+     * Aktivierte Erweiterungen (Module wie LxCars)
+     *
+     * Nicht zu verwechseln mit den Features (feature_anpr, feature_nvr, ...):
+     * das sind einfache Ein-/Aus-Schalter und liegen in den Client-Defaults.
      */
-    const features = reactive([]);
+    const extensions = reactive([]);
 
     function isDebugMode() {
         return getClientDefaultValue('debug', 'f') === 't';
@@ -74,17 +77,17 @@ export const oserpStore = defineStore('oserpStore', () => {
     // =========================================================================
 
     /**
-     * Prüft ob ein Feature aktiviert ist
+     * Prüft ob eine Erweiterung aktiviert ist
      */
-    function isFeatureEnabled(featureName) {
-        return features.some(f => (typeof f === 'object' ? f.value : f) === featureName);
+    function isExtensionEnabled(extensionName) {
+        return extensions.includes(extensionName);
     }
 
     /**
-     * Prüft ob LxCars aktiviert ist
+     * Prüft ob die Erweiterung LxCars aktiviert ist
      */
     function isLxCars() {
-        return isFeatureEnabled('lxcars');
+        return isExtensionEnabled('lxcars');
     }
 
     /**
@@ -194,7 +197,7 @@ export const oserpStore = defineStore('oserpStore', () => {
         session.is_demo = responseData.payload.is_demo || false;
         session.demo_inactivity_minutes = responseData.payload.demo_inactivity_minutes || 20;
         session.can_create_company = responseData.payload.can_create_company || false;
-        features.splice(0, features.length, ...(responseData.payload.main.company_config?.features || []));
+        extensions.splice(0, extensions.length, ...(responseData.payload.main.company_config?.extensions || []));
         customer_vendor.value = responseData.payload.main.customer_vendor;
 
         // Letzten CV in localStorage merken
@@ -331,7 +334,7 @@ export const oserpStore = defineStore('oserpStore', () => {
      * @returns {AuthStatus} Status der Session-Wiederherstellung
      */
     async function restoreSession() {
-        const response = await axios.post('/api/', { action: 'restoreSession', features: features, ...getLastCvParams() });
+        const response = await axios.post('/api/', { action: 'restoreSession', ...getLastCvParams() });
 
         if (response.data.success) {
             transformResponseToStoreData(response.data);
@@ -370,7 +373,7 @@ export const oserpStore = defineStore('oserpStore', () => {
         const response = await axios.post('/api/oserp_config/', { action: 'getCompanyConfig' });
         if (response.data.success && response.data.payload?.company_config) {
             session.company_config = response.data.payload.company_config;
-            features.splice(0, features.length, ...(response.data.payload.company_config.features || []));
+            extensions.splice(0, extensions.length, ...(response.data.payload.company_config.extensions || []));
         }
     }
 
@@ -724,8 +727,7 @@ export const oserpStore = defineStore('oserpStore', () => {
         const response = await axios.post('/api/customer_vendor/', {
             action: 'getCV',
             customerId: customerId,
-            src: src,
-            features: features
+            src: src
         });
 
         if (response.data.success) {
@@ -753,14 +755,14 @@ export const oserpStore = defineStore('oserpStore', () => {
         // State
         session,
         customer_vendor,
-        features,
+        extensions,
 
         // Helper Functions
         getConfigValue,
         setConfigValue,
         deleteConfigValue,
         getClientDefaultValue,
-        isFeatureEnabled,
+        isExtensionEnabled,
         isLxCars,
         isAnprEnabled,
         isNvrEnabled,

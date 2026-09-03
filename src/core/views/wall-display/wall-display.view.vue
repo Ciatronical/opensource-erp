@@ -334,7 +334,7 @@ export default defineComponent({
         }
 
         async function loadMonthWorkload() {
-            if (!oserp.isFeatureEnabled('lxcars')) return []
+            if (!oserp.isExtensionEnabled('lxcars')) return []
             try {
                 const res = await axios.post('/api/calendar/', {
                     action:    'getMonthWorkload',

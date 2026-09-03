@@ -17,7 +17,7 @@
         "backupSuccess": "Backup erstellt: {filename}",
         "backupFailed": "Backup fehlgeschlagen",
         "backupSkipped": "Backup wird bei Dry-Run nicht erstellt",
-        "features": "Features: {features}",
+        "extensions": "Erweiterungen: {extensions}",
         "noClients": "Keine Mandanten gefunden.",
         "overallSuccess": "Alle Datenbanken erfolgreich aktualisiert",
         "overallFailed": "Fehler bei der Aktualisierung",

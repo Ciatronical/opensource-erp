@@ -387,10 +387,19 @@
     "crm.aagOnlinePassword_help": "Passwort für AAG Online",
     "crm.aagOnlinePassword2": "AAG Online Passwort (Wiederholung)",
     "crm.aagOnlinePassword2_help": "Passwort-Wiederholung zur Bestätigung",
-    "featureChange": {
-        "confirm_title": "Feature wechseln?",
-        "confirm_text": "Das Feature wird auf '{feature}' geändert. Dabei wird ein Datenbank-Update ausgeführt und die Anwendung neu geladen.",
-        "confirm_button": "Ja, Feature wechseln"
+    "extensions": {
+        "title": "Uitbreidingen",
+        "intro": "Zelfstandige modules met een eigen databaseschema. Bij het omschakelen wordt een database-update uitgevoerd en de applicatie herladen.",
+        "none": "Geen uitbreidingen beschikbaar."
+    },
+    "extensionChange": {
+        "confirm_title": "Uitbreidingen wijzigen?",
+        "confirm_text": "Actief na de wijziging: {extensions}. Er wordt een database-update uitgevoerd en de applicatie wordt herladen.",
+        "confirm_text_none": "Alle uitbreidingen worden gedeactiveerd. Er wordt een database-update uitgevoerd en de applicatie wordt herladen.",
+        "data_hint": "De gegevens van een gedeactiveerde uitbreiding blijven behouden.",
+        "confirm_button": "Ja, uitbreidingen wijzigen",
+        "schema_update_required": "De uitbreidingen konden niet worden opgeslagen. Voer eerst de database-update uit (Ontwikkelaarshulpmiddelen > Schema-update).",
+        "save_failed": "De uitbreidingen konden niet worden opgeslagen."
     },
     "configLoadError": "Configuratiefout",
     "syntaxErrorInConfigFile": "Syntaxfout in het configuratiebestand",
@@ -405,10 +414,8 @@
         "blzdb_help": "Bankcodes-database",
         "debug": "Debug",
         "debug_help": "Debugausgaben in der Konsole und auf dem Bildschirm",
-        "features": "Uitbreiding",
         "start-view": "Startweergave",
         "select-view": "Selectie van startweergave",
-        "features_help": "Hier können Features ausgewählt werden. Die Liste ist in der Konfigurationsdatei hardcodiert.",
         "brevo": "Brevo",
         "brevoApiEndpoint": "Brevo API Endpoint",
         "brevoApiEndpoint_help": "URL des Brevo API Endpunkts (Standard: https://api.brevo.com/v3)",

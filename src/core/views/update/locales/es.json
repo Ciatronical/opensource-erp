@@ -17,7 +17,7 @@
         "backupSuccess": "Copia de seguridad creada: {filename}",
         "backupFailed": "Error en la copia de seguridad",
         "backupSkipped": "La copia de seguridad no se crea en modo de vista previa",
-        "features": "Funcionalidades: {features}",
+        "extensions": "Extensiones: {extensions}",
         "noClients": "No se encontraron empresas.",
         "overallSuccess": "Todas las bases de datos actualizadas con éxito",
         "overallFailed": "Error en la actualización",

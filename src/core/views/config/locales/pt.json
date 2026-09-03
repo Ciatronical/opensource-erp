@@ -387,10 +387,19 @@
     "crm.aagOnlinePassword_help": "Passwort für AAG Online",
     "crm.aagOnlinePassword2": "AAG Online Passwort (Wiederholung)",
     "crm.aagOnlinePassword2_help": "Passwort-Wiederholung zur Bestätigung",
-    "featureChange": {
-        "confirm_title": "Feature wechseln?",
-        "confirm_text": "Das Feature wird auf '{feature}' geändert. Dabei wird ein Datenbank-Update ausgeführt und die Anwendung neu geladen.",
-        "confirm_button": "Ja, Feature wechseln"
+    "extensions": {
+        "title": "Extensões",
+        "intro": "Módulos autónomos com esquema de base de dados próprio. Ao alternar é executada uma atualização da base de dados e a aplicação é recarregada.",
+        "none": "Nenhuma extensão disponível."
+    },
+    "extensionChange": {
+        "confirm_title": "Alterar as extensões?",
+        "confirm_text": "Ativas após a alteração: {extensions}. Será executada uma atualização da base de dados e a aplicação será recarregada.",
+        "confirm_text_none": "Todas as extensões serão desativadas. Será executada uma atualização da base de dados e a aplicação será recarregada.",
+        "data_hint": "Os dados de uma extensão desativada são preservados.",
+        "confirm_button": "Sim, alterar as extensões",
+        "schema_update_required": "Não foi possível guardar as extensões. Execute primeiro a atualização da base de dados (Ferramentas de programação > Atualização do esquema).",
+        "save_failed": "Não foi possível guardar as extensões."
     },
     "configLoadError": "Erro de configuração",
     "syntaxErrorInConfigFile": "Syntaxfehler in der Konfigurationsdatei",
@@ -405,10 +414,8 @@
         "blzdb_help": "Bankleitzahlen-Datenbank",
         "debug": "Debug",
         "debug_help": "Debugausgaben in der Konsole und auf dem Bildschirm",
-        "features": "Extensão",
         "start-view": "Vista inicial",
         "select-view": "Seleção da vista inicial",
-        "features_help": "Hier können Features ausgewählt werden. Die Liste ist in der Konfigurationsdatei hardcodiert.",
         "brevo": "Brevo",
         "brevoApiEndpoint": "Brevo API Endpoint",
         "brevoApiEndpoint_help": "URL des Brevo API Endpunkts (Standard: https://api.brevo.com/v3)",

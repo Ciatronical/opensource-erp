@@ -177,6 +177,8 @@
                             :crm-defaults="['crm','lxcars','anpr','bank','features','ai_health'].includes(activeTab) ? crmDefaults : undefined"
                             :search-query="searchQuery"
                             :open-panel="activeTab === 'add' ? pendingPanel : undefined"
+                            :extensions="activeTab === 'features' ? availableExtensions : undefined"
+                            @toggle-extension="onToggleExtension"
                         />
                     </v-card-text>
 
@@ -232,26 +234,33 @@
         </v-dialog>
 
         <!-- Feature-Wechsel Bestätigungs-Dialog -->
-        <v-dialog v-model="showFeatureChangeDialog" max-width="500" persistent>
+        <v-dialog v-model="showExtensionChangeDialog" max-width="500" persistent>
             <v-card>
                 <v-card-title class="bg-warning text-white">
                     <v-icon start>mdi-alert</v-icon>
-                    {{ t('featureChange.confirm_title') }}
+                    {{ t('extensionChange.confirm_title') }}
                 </v-card-title>
                 <v-card-text class="pa-4">
-                    <p>{{ t('featureChange.confirm_text', { feature: pendingFeature }) }}</p>
+                    <p>
+                        {{ pendingExtensions.length
+                            ? t('extensionChange.confirm_text', { extensions: pendingExtensions.join(', ') })
+                            : t('extensionChange.confirm_text_none') }}
+                    </p>
+                    <p class="text-caption text-medium-emphasis mt-3">
+                        {{ t('extensionChange.data_hint') }}
+                    </p>
                 </v-card-text>
                 <v-card-actions>
-                    <v-btn @click="cancelFeatureChange">{{ t('cancel') }}</v-btn>
+                    <v-btn @click="cancelExtensionChange">{{ t('cancel') }}</v-btn>
                     <v-spacer />
                     <v-btn
                         color="warning"
                         variant="flat"
-                        :loading="featureUpdateLoading"
-                        @click="applyFeatureChange"
+                        :loading="extensionUpdateLoading"
+                        @click="applyExtensionChange"
                     >
                         <v-icon start>mdi-check</v-icon>
-                        {{ t('featureChange.confirm_button') }}
+                        {{ t('extensionChange.confirm_button') }}
                     </v-btn>
                 </v-card-actions>
             </v-card>
@@ -393,10 +402,11 @@ const lastSaved = ref(null); // Zeitpunkt der letzten erfolgreichen Speicherung
 // Strg+K Befehls-Suche (Palette)
 const showPalette = ref(false);
 const paletteQuery = ref('');
-const showFeatureChangeDialog = ref(false);
-const featureUpdateLoading = ref(false);
-const pendingFeature = ref('');
-let previousFeatures = '';
+// Erweiterungen (Module wie LxCars) — Katalog kommt aus getExtensions
+const availableExtensions = ref([]);
+const showExtensionChangeDialog = ref(false);
+const extensionUpdateLoading = ref(false);
+const pendingExtensions = ref([]);
 let saveTimeout = null;
 let initialLoaded = false;
 let textInputFocused = false;
@@ -484,14 +494,6 @@ function onDataChange() {
             showFeatureServiceDialog.value = true;
             return;
         }
-    }
-
-    // Feature-Wechsel abfangen: Dialog zeigen statt direkt speichern
-    const currentFeature = crmDefaults.value.features || '';
-    if (currentFeature !== previousFeatures) {
-        pendingFeature.value = currentFeature;
-        showFeatureChangeDialog.value = true;
-        return;
     }
 
     if (textInputFocused) {
@@ -767,9 +769,6 @@ async function loadConfig() {
         crmDefaults.value = {};
     }
 
-    // Merke aktuelle Feature-Werte für Änderungserkennung
-    previousFeatures = crmDefaults.value.features || '';
-
     // Feature-Booleans normalisieren (DB liefert Strings wie 'true'/'false'/'1'/'0')
     // Nicht gesetzt = Standard aktiviert
     for (const key of ['feature_anpr', 'feature_nvr']) {
@@ -825,25 +824,69 @@ async function saveConfig() {
 }
 
 /**
- * Bricht den Feature-Wechsel ab und stellt den alten Wert wieder her
+ * Lädt den Katalog der verfügbaren Erweiterungen samt Aktivierungszustand
  */
-function cancelFeatureChange() {
-    crmDefaults.value.features = previousFeatures;
-    showFeatureChangeDialog.value = false;
-    pendingFeature.value = '';
+async function loadExtensions() {
+    try {
+        const response = await api.post('/oserp_config/', { action: 'getExtensions' });
+        availableExtensions.value = response.data.success
+            ? (response.data.payload?.results || [])
+            : [];
+    } catch (error) {
+        console.error('getExtensions fehlgeschlagen:', error);
+        availableExtensions.value = [];
+    }
 }
 
 /**
- * Führt den Feature-Wechsel durch: Config speichern, Schema-Update, App-Reload
+ * Ein Schalter im Erweiterungs-Abschnitt wurde umgelegt: Bestätigung einholen,
+ * gespeichert wird erst nach Zustimmung. Die Anzeige bleibt bis dahin unverändert.
  */
-async function applyFeatureChange() {
-    featureUpdateLoading.value = true;
+function onToggleExtension({ name, enabled }) {
+    const active = availableExtensions.value.filter(e => e.active).map(e => e.name);
+    pendingExtensions.value = enabled
+        ? [...new Set([...active, name])]
+        : active.filter(n => n !== name);
+    showExtensionChangeDialog.value = true;
+}
+
+/**
+ * Bricht die Änderung ab — die Anzeige stellt sich von selbst zurück,
+ * da der Schalter nur den Zustand aus dem Katalog spiegelt.
+ */
+function cancelExtensionChange() {
+    showExtensionChangeDialog.value = false;
+    pendingExtensions.value = [];
+    availableExtensions.value = [...availableExtensions.value];
+}
+
+/**
+ * Führt die Änderung durch: Erweiterungen speichern, Schema-Update, App-Reload
+ */
+async function applyExtensionChange() {
+    extensionUpdateLoading.value = true;
 
     try {
-        // 1. Config speichern (neues Feature wird in defaults_oserp geschrieben)
-        await saveConfig();
+        // 1. Aktive Erweiterungen speichern (Tabelle extensions_oserp)
+        const saveResponse = await api.post('/oserp_config/', {
+            action: 'saveExtensions',
+            extensions: pendingExtensions.value
+        });
 
-        // 2. Schema-Update ausführen (nur Company-DB, da Features nur dort relevant)
+        if (!saveResponse.data.success) {
+            // Häufigster Fall: Die Tabelle extensions_oserp fehlt noch, weil auf dieser
+            // Installation das Schema-Update nach dem Rollout nicht gelaufen ist.
+            const code = saveResponse.data.text;
+            toasts.error(code === 'SCHEMA_UPDATE_REQUIRED'
+                ? t('extensionChange.schema_update_required')
+                : t('extensionChange.save_failed'));
+            extensionUpdateLoading.value = false;
+            showExtensionChangeDialog.value = false;
+            pendingExtensions.value = [];
+            return;
+        }
+
+        // 2. Schema-Update ausführen (nur Company-DB, Erweiterungen wirken nur dort)
         const updateResponse = await api.post('/update/', {
             action: 'updateSchema',
             dry_run: false,
@@ -855,14 +898,14 @@ async function applyFeatureChange() {
             console.error('Schema-Update fehlgeschlagen:', updateResponse.data);
         }
 
-        // 3. App neu laden
+        // 3. App neu laden — Menü, Routen und Store lesen die Erweiterungen neu ein
         window.location.reload();
     } catch (error) {
-        console.error('Feature-Wechsel Fehler:', error);
-        // Bei Fehler: Feature zurücksetzen
-        crmDefaults.value.features = previousFeatures;
-        featureUpdateLoading.value = false;
-        showFeatureChangeDialog.value = false;
+        console.error('Erweiterungs-Wechsel Fehler:', error);
+        toasts.error(t('extensionChange.save_failed'));
+        extensionUpdateLoading.value = false;
+        showExtensionChangeDialog.value = false;
+        pendingExtensions.value = [];
     }
 }
 
@@ -994,6 +1037,7 @@ function cleanData(data) {
 onMounted(async () => {
     window.addEventListener('keydown', onGlobalKeydown);
     await loadConfig();
+    await loadExtensions();
 
     // Query-Parameter: ?tab=lxcars&focus=lxcars_yellow_label_printer
     const tabParam = route.query.tab;

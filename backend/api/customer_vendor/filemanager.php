@@ -1029,8 +1029,7 @@ function getFiles($data) {
     $vehicles = [];
     if ($subPath === '' && $src === 'C') {
         $db = DbhCompany::begin();
-        $features = $db->getOne("SELECT value FROM defaults_oserp WHERE key = 'features'");
-        $lxCars = $features && str_contains($features['value'] ?? '', 'lxcars');
+        $lxCars = isExtensionActive($db, 'lxcars');
 
         if ($lxCars) {
             $vehicles = $db->getAll(
@@ -1483,8 +1482,7 @@ function ensureCustomerFolder($cvId, $src, $name) {
 
     if ($src === 'C') {
         $db = DbhCompany::begin();
-        $features = $db->getOne("SELECT value FROM defaults_oserp WHERE key = 'features'");
-        $lxCars = $features && str_contains($features['value'] ?? '', 'lxcars');
+        $lxCars = isExtensionActive($db, 'lxcars');
 
         if ($lxCars) {
             $vehicles = $db->getAll(

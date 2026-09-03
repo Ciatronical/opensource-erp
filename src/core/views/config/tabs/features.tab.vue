@@ -2,6 +2,54 @@
 <template>
     <div>
         <!-- ═══════════════════════════════════════════════════════════════ -->
+        <!-- ERWEITERUNGEN -->
+        <!-- Eigenständige Module mit eigenem Datenbankschema. Beim Umschalten
+             läuft ein Schema-Update, daher der Bestätigungsdialog im Parent. -->
+        <!-- ═══════════════════════════════════════════════════════════════ -->
+        <template v-if="extensions">
+            <h3 class="text-h6 mb-1">{{ $t('extensions.title') }}</h3>
+            <div class="text-caption text-medium-emphasis mb-4">{{ $t('extensions.intro') }}</div>
+
+            <v-row v-if="extensions.length" class="mb-2">
+                <v-col v-for="extension in extensions" :key="extension.name" cols="12" md="6">
+                    <v-card
+                        :variant="extension.active ? 'outlined' : 'tonal'"
+                        :color="extension.active ? 'primary' : undefined"
+                        class="feature-card"
+                    >
+                        <v-card-text class="pa-4">
+                            <div class="d-flex align-center justify-space-between">
+                                <div class="d-flex align-center ga-3">
+                                    <v-icon size="32" :color="extension.active ? 'primary' : 'grey'">
+                                        {{ extension.icon }}
+                                    </v-icon>
+                                    <div>
+                                        <div class="text-subtitle-1 font-weight-bold">{{ extension.title }}</div>
+                                        <div class="text-caption text-medium-emphasis">{{ extension.description }}</div>
+                                    </div>
+                                </div>
+                                <v-switch
+                                    :model-value="extension.active"
+                                    color="primary"
+                                    hide-details
+                                    density="compact"
+                                    inset
+                                    @update:model-value="value => emit('toggle-extension', { name: extension.name, enabled: !!value })"
+                                />
+                            </div>
+                        </v-card-text>
+                    </v-card>
+                </v-col>
+            </v-row>
+
+            <v-alert v-else type="info" variant="tonal" density="compact" class="mb-2">
+                {{ $t('extensions.none') }}
+            </v-alert>
+
+            <v-divider class="my-6" />
+        </template>
+
+        <!-- ═══════════════════════════════════════════════════════════════ -->
         <!-- KAMERA & ÜBERWACHUNG -->
         <!-- ═══════════════════════════════════════════════════════════════ -->
         <template v-if="crmDefaults">
@@ -499,8 +547,15 @@ const props = defineProps({
     crmDefaults: {
         type: Object,
         default: null
+    },
+    // Katalog der verfügbaren Erweiterungen inklusive Aktivierungszustand
+    extensions: {
+        type: Array,
+        default: null
     }
 });
+
+const emit = defineEmits(['toggle-extension']);
 
 // Ja/Nein Optionen für Boolean-Felder
 const yesNoOptions = [

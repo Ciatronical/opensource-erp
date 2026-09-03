@@ -17,7 +17,7 @@
         "backupSuccess": "Varukoopia loodud: {filename}",
         "backupFailed": "Varukoopia ebaõnnestus",
         "backupSkipped": "Varukoopiat ei looda eelvaates",
-        "features": "Funktsioonid: {features}",
+        "extensions": "Laiendused: {extensions}",
         "noClients": "Ettevõtteid ei leitud.",
         "overallSuccess": "Kõik andmebaasid edukalt uuendatud",
         "overallFailed": "Uuendamisel ilmnes viga",

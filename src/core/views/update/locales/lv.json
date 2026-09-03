@@ -17,7 +17,7 @@
         "backupSuccess": "Dublējums izveidots: {filename}",
         "backupFailed": "Dublēšana neizdevās",
         "backupSkipped": "Dublējums netiek izveidots priekšskatījumā",
-        "features": "Funkcijas: {features}",
+        "extensions": "Paplašinājumi: {extensions}",
         "noClients": "Nav atrasti uzņēmumi.",
         "overallSuccess": "Visas datu bāzes veiksmīgi atjauninātas",
         "overallFailed": "Kļūda atjaunināšanā",

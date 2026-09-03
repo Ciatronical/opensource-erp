@@ -156,7 +156,7 @@
                 "messages": "Messaggi ({count})",
                 "sql_statements": "Istruzioni SQL ({count})",
                 "errors": "Errori ({count})",
-                "processed_features": "Funzionalità elaborate"
+                "processed_extensions": "Estensioni elaborate"
             },
             "msg": {
                 "dry_run_mode": "Modalità Dry-Run attiva",

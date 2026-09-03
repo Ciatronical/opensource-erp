@@ -17,7 +17,7 @@
         "backupSuccess": "备份已创建：{filename}",
         "backupFailed": "备份失败",
         "backupSkipped": "Dry-Run 模式下不创建备份",
-        "features": "功能：{features}",
+        "extensions": "扩展：{extensions}",
         "noClients": "未找到公司。",
         "overallSuccess": "所有数据库更新成功",
         "overallFailed": "更新时出错",

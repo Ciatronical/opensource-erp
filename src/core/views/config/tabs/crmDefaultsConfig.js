@@ -19,20 +19,9 @@ const crmDefaultsConfig = [
         fieldstyle: "max-width: 60ch"
     },
 
-    { name: "features", type: "headline", label: "crm_fields.features" },
-
-    {
-        name: "features",
-        type: "select",
-        items: [
-            { value: "lxcars", title: "LxCars" },
-            { value: "flatcosts", title: "Flatcosts" },
-            { value: "newfeature", title: "NewFeature" }
-        ],
-        label: "crm_fields.features",
-        tooltip: "crm_fields.features_help",
-        fieldstyle: "max-width: 60ch"
-    },
+    // Erweiterungen (LxCars und weitere Module) werden nicht mehr hier gepflegt,
+    // sondern im Tab "Features" > Abschnitt "Erweiterungen". Sie liegen in der
+    // Tabelle extensions_oserp, nicht in defaults_oserp.
 
     // KI-Schlüssel (OpenAI, Anthropic) liegen jetzt im Tab "KI und Gesundheit"
     // (ai-health.tab.vue) — dort ist alles rund um KI gebündelt.

@@ -80,7 +80,6 @@
 import { defineComponent, ref, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
-import { oserpStore } from '@/core/stores/oserp.store.js'
 import { useViewHistory } from '@/core/composables/useViewHistory.js'
 import { entityRoute } from '@/core/constants/routes.js'
 import axios from 'axios'
@@ -91,7 +90,6 @@ export default defineComponent({
     setup() {
         const { t } = useI18n()
         const router = useRouter()
-        const oserp = oserpStore()
         const { saveToHistory, clearHistory: clearHistoryData, getHistoryItems } = useViewHistory()
 
         const searchRef = ref(null)
@@ -157,13 +155,9 @@ export default defineComponent({
                 abortController = new AbortController()
 
                 try {
-                    const features = []
-                    if (oserp.isLxCars()) features.push('lxcars')
-
                     const response = await axios.post('/api/search/', {
                         action: 'globalSearch',
-                        query: val,
-                        features: features
+                        query: val
                     }, { signal: abortController.signal })
 
                     abortController = null

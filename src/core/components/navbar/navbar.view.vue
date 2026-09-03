@@ -418,18 +418,14 @@ export default {
     const cvSrc = computed(() => oserpData.customer_vendor?.profile?.src || 'C')
     const appReady = inject('appReady')
 
-    const featureDisplayNames = {
+    // Titel der Anwendung: erste aktive Erweiterung mit eigenem Namen gewinnt
+    const extensionDisplayNames = {
       lxcars: 'LxCars'
     }
 
     const appTitle = computed(() => {
-      const active = oserpData.features.find(f => {
-        const key = typeof f === 'object' ? f.value : f
-        return featureDisplayNames[key]
-      })
-      if (!active) return 'OpensourceERP'
-      const key = typeof active === 'object' ? active.value : active
-      return featureDisplayNames[key]
+      const active = oserpData.extensions.find(e => extensionDisplayNames[e])
+      return active ? extensionDisplayNames[active] : 'OpensourceERP'
     })
 
     // Demo-Modus

@@ -8,8 +8,6 @@
  * @testdata {"term": "a", "taxzone": 4}
  */
 function findParts($data) {
-    include_once __DIR__ . '/../features.php';
-
     $mandant = DbhCompany::begin();
     $term = $data['term'];
     $termLike   = "%{$term}%";

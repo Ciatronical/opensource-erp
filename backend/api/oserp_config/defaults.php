@@ -11,14 +11,18 @@ function getCompanyConfig($data) {
     $login = pg_escape_string($auth->getLogin());
     $db = DbhCompany::begin();
 
+    // Übergangslösung Rollout: siehe extensionsSelectSql()
+    $extensionsSelect = extensionsSelectSql($db, true);
+
     $query = <<<SQL
         SELECT json_build_object(
             'company_config', (
                 SELECT json_build_object(
-                    'features', (
-                        SELECT json_agg(feature)
-                        FROM (SELECT value FROM defaults_oserp WHERE key = 'features') AS feature
-                    ),
+                    'extensions', {$extensionsSelect},
+                    -- 'features' ist der alte Schlüssel: noch geladene Frontend-Bundles
+                    -- lesen ihn, bis der Benutzer die Seite neu lädt. Entfällt im
+                    -- Release nach dem Rollout.
+                    'features', {$extensionsSelect},
                     'defaults', (
                         SELECT row_to_json(config)
                         FROM (SELECT * FROM defaults) AS config

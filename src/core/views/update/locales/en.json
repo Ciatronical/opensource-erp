@@ -17,7 +17,7 @@
         "backupSuccess": "Backup created: {filename}",
         "backupFailed": "Backup failed",
         "backupSkipped": "Backup is skipped during dry-run",
-        "features": "Features: {features}",
+        "extensions": "Extensions: {extensions}",
         "noClients": "No clients found.",
         "overallSuccess": "All databases updated successfully",
         "overallFailed": "Error during update",

@@ -17,7 +17,7 @@
         "backupSuccess": "Kopia zapasowa utworzona: {filename}",
         "backupFailed": "Tworzenie kopii zapasowej nie powiod\u0142o si\u0119",
         "backupSkipped": "Kopia zapasowa nie jest tworzona w trybie podgl\u0105du",
-        "features": "Funkcje: {features}",
+        "extensions": "Rozszerzenia: {extensions}",
         "noClients": "Nie znaleziono firm.",
         "overallSuccess": "Wszystkie bazy danych zaktualizowane pomy\u015blnie",
         "overallFailed": "B\u0142\u0105d podczas aktualizacji",

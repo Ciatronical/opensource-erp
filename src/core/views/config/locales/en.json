@@ -465,10 +465,19 @@
     "crm.aagOnlinePassword_help": "Password for AAG Online",
     "crm.aagOnlinePassword2": "AAG Online Password (Repeat)",
     "crm.aagOnlinePassword2_help": "Password repetition for confirmation",
-    "featureChange": {
-        "confirm_title": "Change feature?",
-        "confirm_text": "The feature will be changed to '{feature}'. A database update will be executed and the application will be reloaded.",
-        "confirm_button": "Yes, change feature"
+    "extensions": {
+        "title": "Extensions",
+        "intro": "Standalone modules with their own database schema. Switching runs a database update and reloads the application.",
+        "none": "No extensions available."
+    },
+    "extensionChange": {
+        "confirm_title": "Change extensions?",
+        "confirm_text": "Active after the change: {extensions}. A database update will be executed and the application will be reloaded.",
+        "confirm_text_none": "All extensions will be deactivated. A database update will be executed and the application will be reloaded.",
+        "data_hint": "Data of a deactivated extension is preserved.",
+        "confirm_button": "Yes, change extensions",
+        "schema_update_required": "Extensions could not be saved. Please run the database update first (Developer Tools > Schema Update).",
+        "save_failed": "Extensions could not be saved."
     },
     "featureService": {
         "enable_title": "Enable {name}",
@@ -501,10 +510,8 @@
         "blzdb_help": "Bank code database",
         "debug": "Debug",
         "debug_help": "Debug output in console and on screen",
-        "features": "Features",
         "start-view": "Start View",
         "select-view": "Start View Selection",
-        "features_help": "Features can be selected here. The list is hardcoded in the configuration file.",
         "brevo": "Brevo",
         "brevoApiEndpoint": "Brevo API Endpoint",
         "brevoApiEndpoint_help": "URL of the Brevo API endpoint (default: https://api.brevo.com/v3)",

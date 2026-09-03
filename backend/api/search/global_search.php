@@ -5,16 +5,14 @@
  * Globale Schnellsuche über alle Entitätstypen
  *
  * Durchsucht Kunden, Lieferanten, Rechnungen, Aufträge, Angebote, Artikel
- * und optional Fahrzeuge (wenn lxcars Feature aktiv).
+ * und optional Fahrzeuge (wenn die Erweiterung lxcars aktiv ist).
  *
  * @param string $data['query'] Suchbegriff (min 2 Zeichen)
- * @param array $data['features'] Aktive Features (optional, für lxcars-Check)
- * @testdata {"query": "Test", "features": ["lxcars"]}
+ * @testdata {"query": "Test"}
  */
 function globalSearch($data) {
     $db = DbhCompany::begin();
     $query = trim($data['query'] ?? '');
-    $features = $data['features'] ?? [];
 
     if (strlen($query) < 2) {
         resultInfo(true, 'OK', []);
@@ -200,8 +198,8 @@ function globalSearch($data) {
         ];
     }
 
-    // ===== Fahrzeuge (nur wenn lxcars aktiv) =====
-    if (in_array('lxcars', $features)) {
+    // ===== Fahrzeuge (nur wenn Erweiterung lxcars aktiv) =====
+    if (isExtensionActive($db, 'lxcars')) {
         // c_2 = HSN, c_3 = TSN, c_fin = FIN/VIN, c_ln = Kennzeichen, c_mkb = Marke/Modell.
         // Zusätzlich HSN+TSN kombiniert (leerzeichenbereinigt), damit z. B. "0603 AAB" trifft.
         $vehicles = $db->getAll(

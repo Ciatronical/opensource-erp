@@ -17,7 +17,7 @@
         "backupSuccess": "Atsarginė kopija sukurta: {filename}",
         "backupFailed": "Atsarginės kopijos kūrimas nepavyko",
         "backupSkipped": "Atsarginė kopija nekuriama peržiūros režimu",
-        "features": "Funkcijos: {features}",
+        "extensions": "Plėtiniai: {extensions}",
         "noClients": "Įmonių nerasta.",
         "overallSuccess": "Visos duomenų bazės sėkmingai atnaujintos",
         "overallFailed": "Atnaujinimo klaida",

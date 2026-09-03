@@ -6,7 +6,7 @@ ANPR (Automatic Number Plate Recognition) erkennt Fahrzeuge an der Werkstattzufa
 
 - **IP-Kamera** mit RTSP-Stream (z.B. Hikvision, Dahua), mindestens 2 MP, Infrarot/Nachtsicht
 - **Python 3.12+** auf dem Server (für den Erkennungsdienst)
-- **LxCars** muss als Feature aktiviert sein
+- **LxCars** muss als Erweiterung aktiviert sein
 
 ## Einrichtung
 

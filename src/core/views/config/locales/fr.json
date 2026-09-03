@@ -387,10 +387,19 @@
     "crm.aagOnlinePassword_help": "Passwort für AAG Online",
     "crm.aagOnlinePassword2": "AAG Online Passwort (Wiederholung)",
     "crm.aagOnlinePassword2_help": "Passwort-Wiederholung zur Bestätigung",
-    "featureChange": {
-        "confirm_title": "Feature wechseln?",
-        "confirm_text": "Das Feature wird auf '{feature}' geändert. Dabei wird ein Datenbank-Update ausgeführt und die Anwendung neu geladen.",
-        "confirm_button": "Ja, Feature wechseln"
+    "extensions": {
+        "title": "Extensions",
+        "intro": "Modules autonomes avec leur propre schéma de base de données. Le changement exécute une mise à jour de la base de données et recharge l'application.",
+        "none": "Aucune extension disponible."
+    },
+    "extensionChange": {
+        "confirm_title": "Modifier les extensions ?",
+        "confirm_text": "Actives après la modification : {extensions}. Une mise à jour de la base de données sera exécutée et l'application rechargée.",
+        "confirm_text_none": "Toutes les extensions seront désactivées. Une mise à jour de la base de données sera exécutée et l'application rechargée.",
+        "data_hint": "Les données d'une extension désactivée sont conservées.",
+        "confirm_button": "Oui, modifier les extensions",
+        "schema_update_required": "Les extensions n'ont pas pu être enregistrées. Veuillez d'abord exécuter la mise à jour de la base de données (Outils de développement > Mise à jour du schéma).",
+        "save_failed": "Les extensions n'ont pas pu être enregistrées."
     },
     "configLoadError": "Erreur de configuration",
     "syntaxErrorInConfigFile": "Erreur de syntaxe dans le fichier de configuration",
@@ -405,10 +414,8 @@
         "blzdb_help": "Base de donnees des codes bancaires",
         "debug": "Debug",
         "debug_help": "Debugausgaben in der Konsole und auf dem Bildschirm",
-        "features": "Extension",
         "start-view": "Vue de demarrage",
         "select-view": "Selection de la vue de demarrage",
-        "features_help": "Hier können Features ausgewählt werden. Die Liste ist in der Konfigurationsdatei hardcodiert.",
         "brevo": "Brevo",
         "brevoApiEndpoint": "Brevo API Endpoint",
         "brevoApiEndpoint_help": "URL des Brevo API Endpunkts (Standard: https://api.brevo.com/v3)",

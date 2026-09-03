@@ -17,7 +17,7 @@
         "backupSuccess": "Sauvegarde creee : {filename}",
         "backupFailed": "Echec de la sauvegarde",
         "backupSkipped": "La sauvegarde n'est pas creee en mode apercu",
-        "features": "Fonctionnalites : {features}",
+        "extensions": "Extensions : {extensions}",
         "noClients": "Aucune societe trouvee.",
         "overallSuccess": "Toutes les bases de donnees ont ete mises a jour avec succes",
         "overallFailed": "Erreur lors de la mise a jour",

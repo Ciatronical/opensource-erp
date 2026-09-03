@@ -156,7 +156,7 @@
                 "messages": "消息（{count}）",
                 "sql_statements": "SQL 语句（{count}）",
                 "errors": "错误（{count}）",
-                "processed_features": "已处理的功能"
+                "processed_extensions": "已处理的扩展"
             },
             "msg": {
                 "dry_run_mode": "Dry-Run 模式已激活",

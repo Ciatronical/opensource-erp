@@ -157,7 +157,7 @@
                 "messages": "Komunikaty ({count})",
                 "sql_statements": "Instrukcje SQL ({count})",
                 "errors": "Błędy ({count})",
-                "processed_features": "Przetworzone funkcje"
+                "processed_extensions": "Przetworzone rozszerzenia"
             },
             "msg": {
                 "dry_run_mode": "Tryb Dry-Run aktywny",

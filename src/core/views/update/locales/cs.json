@@ -17,7 +17,7 @@
         "backupSuccess": "Zaloha vytvorena: {filename}",
         "backupFailed": "Zalohovani selhalo",
         "backupSkipped": "Zaloha se pri Dry-Run nevytvari",
-        "features": "Funkce: {features}",
+        "extensions": "Rozšíření: {extensions}",
         "noClients": "Zadne firmy nenalezeny.",
         "overallSuccess": "Vsechny databaze uspesne aktualizovany",
         "overallFailed": "Chyba pri aktualizaci",

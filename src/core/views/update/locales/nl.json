@@ -17,7 +17,7 @@
         "backupSuccess": "Backup aangemaakt: {filename}",
         "backupFailed": "Backup mislukt",
         "backupSkipped": "Backup wordt niet aangemaakt bij voorbeeld",
-        "features": "Features: {features}",
+        "extensions": "Uitbreidingen: {extensions}",
         "noClients": "Geen bedrijven gevonden.",
         "overallSuccess": "Alle databases succesvol bijgewerkt",
         "overallFailed": "Fout bij de update",

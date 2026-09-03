@@ -17,7 +17,7 @@
         "backupSuccess": "Backup oprettet: {filename}",
         "backupFailed": "Backup mislykkedes",
         "backupSkipped": "Backup oprettes ikke ved dry-run",
-        "features": "Features: {features}",
+        "extensions": "Udvidelser: {extensions}",
         "noClients": "Ingen firmaer fundet.",
         "overallSuccess": "Alle databaser opdateret",
         "overallFailed": "Fejl ved opdatering",

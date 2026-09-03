@@ -2,23 +2,47 @@
 -- Tabellen für das public-Schema (Company-Datenbank)
 
 -- ============================================================================
--- FEATURES
+-- ERWEITERUNGEN (EXTENSIONS)
 -- ============================================================================
+--
+-- Erweiterungen sind eigenständige Module mit eigenem Schema unter
+-- backend/upstall/<name>/, eigenem Backend unter backend/api/<name>/ und
+-- eigenem Frontend unter src/features/<name>/. Mehrere Erweiterungen können
+-- gleichzeitig aktiv sein. Der Name entspricht dem Verzeichnisnamen.
+--
+-- Nicht zu verwechseln mit den Features (feature_anpr, feature_nvr,
+-- feature_datev, ...): das sind einfache Ein-/Aus-Schalter innerhalb
+-- bestehender Funktionen und liegen weiterhin in defaults_oserp bzw. defaults.
 
-CREATE TABLE features_oserp (
+CREATE TABLE extensions_oserp (
     id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
-    feature TEXT,
-    active BOOL,
+    extension TEXT NOT NULL,
+    active BOOL NOT NULL DEFAULT true,
     itime TIMESTAMP WITHOUT TIME ZONE DEFAULT now(),
     mtime TIMESTAMP WITHOUT TIME ZONE
 );
 
-COMMENT ON TABLE features_oserp IS 'Feature-Flags für OpensourceERP Funktionen';
-COMMENT ON COLUMN features_oserp.id IS 'Primärschlüssel (automatisch generiert)';
-COMMENT ON COLUMN features_oserp.feature IS 'Name des Features';
-COMMENT ON COLUMN features_oserp.active IS 'Feature aktiviert (true) oder deaktiviert (false)';
-COMMENT ON COLUMN features_oserp.itime IS 'Zeitstempel der Erstellung';
-COMMENT ON COLUMN features_oserp.mtime IS 'Zeitstempel der letzten Änderung';
+COMMENT ON TABLE extensions_oserp IS 'Aktivierte Erweiterungen (Module wie LxCars)';
+COMMENT ON COLUMN extensions_oserp.id IS 'Primärschlüssel (automatisch generiert)';
+COMMENT ON COLUMN extensions_oserp.extension IS 'Name der Erweiterung, entspricht dem Verzeichnis unter backend/upstall/';
+COMMENT ON COLUMN extensions_oserp.active IS 'Erweiterung aktiviert (true) oder deaktiviert (false)';
+COMMENT ON COLUMN extensions_oserp.itime IS 'Zeitstempel der Erstellung';
+COMMENT ON COLUMN extensions_oserp.mtime IS 'Zeitstempel der letzten Änderung';
+
+CREATE UNIQUE INDEX idx_extensions_oserp_extension ON extensions_oserp(extension);
+
+-- Migration: früher lag genau eine Erweiterung als Textwert in
+-- defaults_oserp.key = 'features'. Der Wert wird einmalig übernommen,
+-- danach sind diese Statements wirkungslos (idempotent).
+INSERT INTO extensions_oserp (extension, active)
+SELECT trim(value), true
+FROM defaults_oserp
+WHERE key = 'features' AND trim(COALESCE(value, '')) <> ''
+ON CONFLICT (extension) DO NOTHING;
+
+DELETE FROM defaults_oserp WHERE key = 'features';
+
+DROP TABLE IF EXISTS features_oserp;
 
 -- ============================================================================
 -- EMPLOYEE CONFIGURATION

@@ -17,7 +17,7 @@
         "backupSuccess": "Yedek olusturuldu: {filename}",
         "backupFailed": "Yedekleme basarisiz",
         "backupSkipped": "Dry-Run modunda yedek olusturulmaz",
-        "features": "Ozellikler: {features}",
+        "extensions": "Uzantılar: {extensions}",
         "noClients": "Firma bulunamadi.",
         "overallSuccess": "Tum veritabanlari basariyla guncellendi",
         "overallFailed": "Guncelleme hatasi",

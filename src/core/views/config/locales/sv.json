@@ -387,10 +387,19 @@
     "crm.aagOnlinePassword_help": "Losenord für AAG Online",
     "crm.aagOnlinePassword2": "AAG Online Losenord (Wiederholung)",
     "crm.aagOnlinePassword2_help": "Losenord-Wiederholung zur Bestätigung",
-    "featureChange": {
-        "confirm_title": "Feature wechseln?",
-        "confirm_text": "Das Feature wird auf '{feature}' geändert. Dabei wird ein Databas-Update ausgeführt und die Anwendung neu geladen.",
-        "confirm_button": "Ja, Feature wechseln"
+    "extensions": {
+        "title": "Tillägg",
+        "intro": "Fristående moduler med eget databasschema. Vid växling körs en databasuppdatering och applikationen laddas om.",
+        "none": "Inga tillägg tillgängliga."
+    },
+    "extensionChange": {
+        "confirm_title": "Ändra tillägg?",
+        "confirm_text": "Aktiva efter ändringen: {extensions}. En databasuppdatering körs och applikationen laddas om.",
+        "confirm_text_none": "Alla tillägg inaktiveras. En databasuppdatering körs och applikationen laddas om.",
+        "data_hint": "Data från ett inaktiverat tillägg bevaras.",
+        "confirm_button": "Ja, ändra tillägg",
+        "schema_update_required": "Tilläggen kunde inte sparas. Kör först databasuppdateringen (Utvecklarverktyg > Schemauppdatering).",
+        "save_failed": "Tilläggen kunde inte sparas."
     },
     "configLoadError": "Konfigurationsfehler",
     "syntaxErrorInConfigFile": "Syntaxfehler in der Konfigurationsdatei",
@@ -405,10 +414,8 @@
         "blzdb_help": "Bankleitzahlen-Databas",
         "debug": "Debug",
         "debug_help": "Debugausgaben in der Konsole und auf dem Bildschirm",
-        "features": "Erweiterung",
         "start-view": "Startansicht",
         "select-view": "Auswahl der Startansicht",
-        "features_help": "Hier können Features ausgewählt werden. Die Liste ist in der Konfigurationsdatei hardcodiert.",
         "brevo": "Brevo",
         "brevoApiEndpoint": "Brevo API Endpoint",
         "brevoApiEndpoint_help": "URL des Brevo API Endpunkts (Standard: https://api.brevo.com/v3)",

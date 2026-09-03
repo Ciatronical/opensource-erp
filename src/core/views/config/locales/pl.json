@@ -387,10 +387,19 @@
     "crm.aagOnlinePassword_help": "Hasło do AAG Online",
     "crm.aagOnlinePassword2": "Hasło AAG Online (powtórzenie)",
     "crm.aagOnlinePassword2_help": "Powtórzenie hasła do potwierdzenia",
-    "featureChange": {
-        "confirm_title": "Zmienić funkcję?",
-        "confirm_text": "Funkcja zostanie zmieniona na '{feature}'. Przy tym zostanie wykonana aktualizacja bazy danych i aplikacja zostanie ponownie załadowana.",
-        "confirm_button": "Tak, zmień funkcję"
+    "extensions": {
+        "title": "Rozszerzenia",
+        "intro": "Samodzielne moduły z własnym schematem bazy danych. Przełączenie uruchamia aktualizację bazy danych i przeładowuje aplikację.",
+        "none": "Brak dostępnych rozszerzeń."
+    },
+    "extensionChange": {
+        "confirm_title": "Zmienić rozszerzenia?",
+        "confirm_text": "Aktywne po zmianie: {extensions}. Zostanie wykonana aktualizacja bazy danych, a aplikacja zostanie przeładowana.",
+        "confirm_text_none": "Wszystkie rozszerzenia zostaną wyłączone. Zostanie wykonana aktualizacja bazy danych, a aplikacja zostanie przeładowana.",
+        "data_hint": "Dane wyłączonego rozszerzenia zostają zachowane.",
+        "confirm_button": "Tak, zmień rozszerzenia",
+        "schema_update_required": "Nie udało się zapisać rozszerzeń. Najpierw wykonaj aktualizację bazy danych (Narzędzia programisty > Aktualizacja schematu).",
+        "save_failed": "Nie udało się zapisać rozszerzeń."
     },
     "configLoadError": "Błąd konfiguracji",
     "syntaxErrorInConfigFile": "Błąd składni w pliku konfiguracyjnym",
@@ -405,10 +414,8 @@
         "blzdb_help": "Baza danych kodów bankowych",
         "debug": "Debug",
         "debug_help": "Dane debugowania w konsoli i na ekranie",
-        "features": "Rozszerzenie",
         "start-view": "Widok startowy",
         "select-view": "Wybór widoku startowego",
-        "features_help": "Tutaj można wybrać funkcje. Lista jest zakodowana w pliku konfiguracyjnym.",
         "brevo": "Brevo",
         "brevoApiEndpoint": "Punkt końcowy Brevo API",
         "brevoApiEndpoint_help": "URL punktu końcowego Brevo API (domyślnie: https://api.brevo.com/v3)",

@@ -17,7 +17,7 @@
         "backupSuccess": "Backup creat: {filename}",
         "backupFailed": "Backup esuat",
         "backupSkipped": "Backup-ul nu se creeaza in modul Dry-Run",
-        "features": "Functionalitati: {features}",
+        "extensions": "Extensii: {extensions}",
         "noClients": "Nu s-au gasit firme.",
         "overallSuccess": "Toate bazele de date au fost actualizate cu succes",
         "overallFailed": "Eroare la actualizare",

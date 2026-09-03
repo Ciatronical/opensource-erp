@@ -387,10 +387,19 @@
     "crm.aagOnlinePassword_help": "AAG Online 的密码",
     "crm.aagOnlinePassword2": "AAG Online 密码（确认）",
     "crm.aagOnlinePassword2_help": "确认密码",
-    "featureChange": {
-        "confirm_title": "切换功能？",
-        "confirm_text": "功能将更改为 '{feature}'。这将执行数据库更新并重新加载应用。",
-        "confirm_button": "是的，切换功能"
+    "extensions": {
+        "title": "扩展",
+        "intro": "拥有独立数据库结构的独立模块。切换时会执行数据库更新并重新加载应用。",
+        "none": "没有可用的扩展。"
+    },
+    "extensionChange": {
+        "confirm_title": "更改扩展？",
+        "confirm_text": "更改后启用：{extensions}。将执行数据库更新并重新加载应用。",
+        "confirm_text_none": "所有扩展都将被停用。将执行数据库更新并重新加载应用。",
+        "data_hint": "已停用扩展的数据会保留。",
+        "confirm_button": "是的，更改扩展",
+        "schema_update_required": "无法保存扩展。请先执行数据库更新（开发者工具 > 结构更新）。",
+        "save_failed": "无法保存扩展。"
     },
     "configLoadError": "配置错误",
     "syntaxErrorInConfigFile": "配置文件语法错误",
@@ -405,10 +414,8 @@
         "blzdb_help": "银行代码数据库",
         "debug": "调试",
         "debug_help": "在控制台和屏幕上输出调试信息",
-        "features": "扩展",
         "start-view": "启动视图",
         "select-view": "选择启动视图",
-        "features_help": "在此可以选择功能。列表在配置文件中硬编码。",
         "brevo": "Brevo",
         "brevoApiEndpoint": "Brevo API 端点",
         "brevoApiEndpoint_help": "Brevo API 端点的 URL（默认：https://api.brevo.com/v3）",

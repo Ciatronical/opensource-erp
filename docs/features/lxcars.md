@@ -2,9 +2,11 @@
 
 LxCars ist das Werkstattmodul für Kfz-Betriebe. Es verwaltet Fahrzeuge, Werkstattaufträge, Arbeitsanweisungen, Ersatzteilanforderungen, Mängelerfassung und bietet einen Mechaniker-Modus für die direkte Arbeit am Fahrzeug.
 
-## Feature aktivieren
+## Erweiterung aktivieren
 
-Unter **Einstellungen > Features** den Eintrag "LxCars" auswählen und bestätigen. Nach dem Neuladen der Seite erscheinen die LxCars-Menüpunkte.
+Unter **Einstellungen > Features** im Abschnitt "Erweiterungen" den Schalter bei "LxCars" einschalten und bestätigen. Dabei läuft ein Datenbank-Update; nach dem Neuladen der Seite erscheinen die LxCars-Menüpunkte.
+
+Mehrere Erweiterungen können gleichzeitig aktiv sein. Wird LxCars wieder abgeschaltet, bleiben alle Daten erhalten — beim erneuten Einschalten ist der alte Stand wieder da.
 
 ## Fahrzeugverwaltung
 

@@ -17,7 +17,7 @@
         "backupSuccess": "Varmuuskopio luotu: {filename}",
         "backupFailed": "Varmuuskopiointi epaonnistui",
         "backupSkipped": "Varmuuskopiota ei luoda Dry-Run-tilassa",
-        "features": "Ominaisuudet: {features}",
+        "extensions": "Laajennukset: {extensions}",
         "noClients": "Yrityksia ei loytynyt.",
         "overallSuccess": "Kaikki tietokannat paivitetty onnistuneesti",
         "overallFailed": "Virhe paivityksessa",

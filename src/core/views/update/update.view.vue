@@ -133,16 +133,16 @@
                                                 {{ $t('update.backupSkipped') }}
                                             </v-chip>
                                         </span>
-                                        <span v-if="client.features && client.features.length > 1" class="text-caption ms-2">
+                                        <span v-if="client.extensions && client.extensions.length > 1" class="text-caption ms-2">
                                             <v-chip
-                                                v-for="feature in client.features.filter(f => f !== 'crm')"
-                                                :key="feature"
+                                                v-for="extension in client.extensions.filter(e => e !== 'crm')"
+                                                :key="extension"
                                                 size="x-small"
                                                 color="info"
                                                 variant="tonal"
                                                 class="ms-1"
                                             >
-                                                {{ feature }}
+                                                {{ extension }}
                                             </v-chip>
                                         </span>
                                     </v-expansion-panel-title>

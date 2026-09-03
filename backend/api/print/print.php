@@ -739,14 +739,10 @@ function saveTemplateSet($data) {
 // ===== Hilfsfunktionen =====
 
 /**
- * Prueft ob das Feature lxcars aktiviert ist
+ * Prüft ob die Erweiterung lxcars aktiviert ist
  */
 function isLxCarsEnabled($db): bool {
-    $row = $db->getOne(
-        "SELECT value FROM defaults_oserp WHERE key = 'features'",
-        []
-    );
-    return $row && str_contains($row['value'], 'lxcars');
+    return isExtensionActive($db, 'lxcars');
 }
 
 /**

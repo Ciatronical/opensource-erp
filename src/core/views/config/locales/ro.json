@@ -387,10 +387,19 @@
     "crm.aagOnlinePassword_help": "Passwort für AAG Online",
     "crm.aagOnlinePassword2": "AAG Online Passwort (Wiederholung)",
     "crm.aagOnlinePassword2_help": "Passwort-Wiederholung zur Bestätigung",
-    "featureChange": {
-        "confirm_title": "Feature wechseln?",
-        "confirm_text": "Das Feature wird auf '{feature}' geändert. Dabei wird ein Datenbank-Update ausgeführt und die Anwendung neu geladen.",
-        "confirm_button": "Ja, Feature wechseln"
+    "extensions": {
+        "title": "Extensii",
+        "intro": "Module de sine stătătoare cu schemă proprie de bază de date. Comutarea execută o actualizare a bazei de date și reîncarcă aplicația.",
+        "none": "Nicio extensie disponibilă."
+    },
+    "extensionChange": {
+        "confirm_title": "Modificați extensiile?",
+        "confirm_text": "Active după modificare: {extensions}. Se va executa o actualizare a bazei de date și aplicația va fi reîncărcată.",
+        "confirm_text_none": "Toate extensiile vor fi dezactivate. Se va executa o actualizare a bazei de date și aplicația va fi reîncărcată.",
+        "data_hint": "Datele unei extensii dezactivate se păstrează.",
+        "confirm_button": "Da, modifică extensiile",
+        "schema_update_required": "Extensiile nu au putut fi salvate. Executați mai întâi actualizarea bazei de date (Instrumente pentru dezvoltatori > Actualizare schemă).",
+        "save_failed": "Extensiile nu au putut fi salvate."
     },
     "configLoadError": "Konfigurationsfehler",
     "syntaxErrorInConfigFile": "Syntaxfehler in der Konfigurationsdatei",
@@ -405,10 +414,8 @@
         "blzdb_help": "Bankleitzahlen-Datenbank",
         "debug": "Debug",
         "debug_help": "Debugausgaben in der Konsole und auf dem Bildschirm",
-        "features": "Erweiterung",
         "start-view": "Startansicht",
         "select-view": "Auswahl der Startansicht",
-        "features_help": "Hier können Features ausgewählt werden. Die Liste ist in der Konfigurationsdatei hardcodiert.",
         "brevo": "Brevo",
         "brevoApiEndpoint": "Brevo API Endpoint",
         "brevoApiEndpoint_help": "URL des Brevo API Endpunkts (Standard: https://api.brevo.com/v3)",

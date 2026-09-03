@@ -9,9 +9,9 @@
  *
  * SQL-Dateien werden aus dem Verzeichnis 'backend/upstall/' geladen:
  * - Basis-CRM: upstall/crm/auth_schema.sql und upstall/crm/company_schema.sql
- * - Feature: upstall/{feature}/auth_schema.sql und upstall/{feature}/company_schema.sql
+ * - Erweiterung: upstall/{extension}/auth_schema.sql und upstall/{extension}/company_schema.sql
  *
- * Das aktive Feature wird aus der Company-DB gelesen (defaults_oserp).
+ * Die aktiven Erweiterungen werden aus der Company-DB gelesen (extensions_oserp).
  */
 
 /**
@@ -26,10 +26,11 @@
  *
  * SQL-Dateien werden aus folgenden Verzeichnissen geladen:
  * - Basis: ../../upstall/crm/ (auth_schema.sql, company_schema.sql)
- * - Feature: ../../upstall/{feature}/ (auth_schema.sql, company_schema.sql falls vorhanden)
+ * - Erweiterung: ../../upstall/{extension}/ (auth_schema.sql, company_schema.sql falls vorhanden)
  *
- * Das aktive Feature wird aus der Company-Datenbank gelesen
- * (defaults_oserp WHERE key = 'features').
+ * Die aktiven Erweiterungen werden aus der Company-Datenbank gelesen
+ * (Tabelle extensions_oserp). Mehrere Erweiterungen können gleichzeitig aktiv
+ * sein; crm läuft immer zuerst, danach die Erweiterungen alphabetisch.
  *
  * @param array $data Request-Daten
  * @return void
@@ -48,56 +49,54 @@ function updateSchema($data) {
     $updateCompanyDb = isset($data['company_db']) ? $data['company_db'] === true : true;
 
     // Sammle alle zu verarbeitenden Verzeichnisse (crm ist immer dabei)
-    $featureDirs = ['crm'];
+    $extensionDirs = ['crm'];
 
-    // Aktives Feature aus der Company-Datenbank lesen
+    // Aktive Erweiterungen aus der Company-Datenbank lesen
     if ($updateCompanyDb) {
         try {
             $companyDb = DbhCompany::begin();
-            $featureQuery = "SELECT value FROM defaults_oserp WHERE key = 'features'";
-            $featureResult = $companyDb->getOne($featureQuery, []);
-            if ($featureResult && !empty($featureResult['value'])) {
-                $feature = trim($featureResult['value']);
-                if (preg_match('/^[a-zA-Z0-9_-]+$/', $feature)) {
-                    $featureDirs[] = $feature;
-                    writeLog("Aktives Feature aus DB geladen: $feature", true, DLOG_INF);
+            foreach (getActiveExtensions($companyDb) as $extension) {
+                // Der Name wird als Pfadbestandteil verwendet — nur harmlose Zeichen zulassen
+                if (preg_match('/^[a-zA-Z0-9_-]+$/', $extension)) {
+                    $extensionDirs[] = $extension;
+                    writeLog("Aktive Erweiterung aus DB geladen: $extension", true, DLOG_INF);
                 } else {
-                    writeLog("Ungültiger Feature-Name in defaults_oserp: $feature", true, DLOG_WRN);
+                    writeLog("Ungültiger Erweiterungsname in extensions_oserp: $extension", true, DLOG_WRN);
                 }
             }
         } catch (Exception $e) {
-            writeLog("Feature konnte nicht aus Company-DB geladen werden: " . $e->getMessage(), true, DLOG_WRN);
+            writeLog("Erweiterungen konnten nicht aus Company-DB geladen werden: " . $e->getMessage(), true, DLOG_WRN);
         }
     }
 
     $sqlFiles = [];
     $csvFiles = ['auth' => [], 'company' => []];
 
-    // Sammle SQL- und CSV-Dateien aus allen Feature-Verzeichnissen
-    foreach ($featureDirs as $featureDir) {
-        $featurePath = $upstallBaseDir . $featureDir . '/';
+    // Sammle SQL- und CSV-Dateien aus allen Erweiterungs-Verzeichnissen
+    foreach ($extensionDirs as $extensionDir) {
+        $extensionPath = $upstallBaseDir . $extensionDir . '/';
 
-        if (!is_dir($featurePath)) {
-            if ($featureDir === 'crm') {
-                resultInfo(false, "Basis-Verzeichnis nicht gefunden: $featurePath");
+        if (!is_dir($extensionPath)) {
+            if ($extensionDir === 'crm') {
+                resultInfo(false, "Basis-Verzeichnis nicht gefunden: $extensionPath");
                 return;
             }
-            writeLog("Feature-Verzeichnis nicht gefunden: $featurePath", true, DLOG_WRN);
+            writeLog("Erweiterungs-Verzeichnis nicht gefunden: $extensionPath", true, DLOG_WRN);
             continue;
         }
 
         if ($updateAuthDb) {
-            $authFile = $featurePath . 'auth_schema.sql';
+            $authFile = $extensionPath . 'auth_schema.sql';
             if (file_exists($authFile)) {
                 $sqlFiles[] = $authFile;
                 writeLog("Auth-Schema gefunden: $authFile", true, DLOG_INF);
-            } elseif ($featureDir === 'crm') {
+            } elseif ($extensionDir === 'crm') {
                 resultInfo(false, "Basis auth_schema.sql nicht gefunden: $authFile");
                 return;
             }
 
             // Suche CSV-Dateien im auth_data-Unterverzeichnis
-            $authCsvDir = $featurePath . 'auth_data/';
+            $authCsvDir = $extensionPath . 'auth_data/';
             if (is_dir($authCsvDir)) {
                 $csvFilesFound = glob($authCsvDir . '*.csv');
                 foreach ($csvFilesFound as $csvFile) {
@@ -108,17 +107,17 @@ function updateSchema($data) {
         }
 
         if ($updateCompanyDb) {
-            $companyFile = $featurePath . 'company_schema.sql';
+            $companyFile = $extensionPath . 'company_schema.sql';
             if (file_exists($companyFile)) {
                 $sqlFiles[] = $companyFile;
                 writeLog("Company-Schema gefunden: $companyFile", true, DLOG_INF);
-            } elseif ($featureDir === 'crm') {
+            } elseif ($extensionDir === 'crm') {
                 resultInfo(false, "Basis company_schema.sql nicht gefunden: $companyFile");
                 return;
             }
 
             // Suche CSV-Dateien im company_data-Unterverzeichnis
-            $companyCsvDir = $featurePath . 'company_data/';
+            $companyCsvDir = $extensionPath . 'company_data/';
             if (is_dir($companyCsvDir)) {
                 $csvFilesFound = glob($companyCsvDir . '*.csv');
                 foreach ($csvFilesFound as $csvFile) {
@@ -168,8 +167,8 @@ function updateSchema($data) {
         $results['backups'] = $backupResults;
     }
 
-    // Füge verarbeitete Features zu den Ergebnissen hinzu
-    $results['processed_features'] = $featureDirs;
+    // Füge verarbeitete Erweiterungen zu den Ergebnissen hinzu
+    $results['processed_extensions'] = $extensionDirs;
 
     if ($results['success']) {
         $message = 'Schema-Update erfolgreich';
@@ -1245,8 +1244,8 @@ function updateAllDatabases($data) {
         }
     }
 
-    // Auth-Schemas aus Feature-Verzeichnissen werden spaeter pro Client geladen
-    // (da Features pro Client unterschiedlich sein koennen)
+    // Auth-Schemas aus Erweiterungs-Verzeichnissen werden später pro Client geladen
+    // (da Erweiterungen pro Client unterschiedlich sein können)
 
     if (!empty($authSqlFiles)) {
         $authUpdateResult = updateDatabaseSchema($authSqlFiles, $authCsvFiles, $dryRun);
@@ -1273,7 +1272,7 @@ function updateAllDatabases($data) {
             'dbname' => $client['dbname'],
             'backup' => null,
             'update' => null,
-            'features' => ['crm']
+            'extensions' => ['crm']
         ];
 
         $clientCredentials = [
@@ -1306,57 +1305,52 @@ function updateAllDatabases($data) {
             );
             $clientDb = new ApiDatabase($clientPdo);
 
-            // Features aus dieser Client-DB lesen
-            $featureDirs = ['crm'];
+            // Erweiterungen aus dieser Client-DB lesen
+            $extensionDirs = ['crm'];
             try {
-                $featureResult = $clientDb->getOne(
-                    "SELECT value FROM defaults_oserp WHERE key = 'features'",
-                    []
-                );
-                if ($featureResult && !empty($featureResult['value'])) {
-                    $feature = trim($featureResult['value']);
-                    if (preg_match('/^[a-zA-Z0-9_-]+$/', $feature)) {
-                        $featureDirs[] = $feature;
-                        writeLog("Feature '$feature' fuer Mandant '{$client['name']}' geladen", true, DLOG_INF);
+                foreach (getActiveExtensions($clientDb) as $extension) {
+                    if (preg_match('/^[a-zA-Z0-9_-]+$/', $extension)) {
+                        $extensionDirs[] = $extension;
+                        writeLog("Erweiterung '$extension' für Mandant '{$client['name']}' geladen", true, DLOG_INF);
                     }
                 }
             } catch (Exception $e) {
-                writeLog("Feature konnte nicht aus '{$client['dbname']}' gelesen werden: " . $e->getMessage(), true, DLOG_WRN);
+                writeLog("Erweiterungen konnten nicht aus '{$client['dbname']}' gelesen werden: " . $e->getMessage(), true, DLOG_WRN);
             }
 
-            $clientResult['features'] = $featureDirs;
+            $clientResult['extensions'] = $extensionDirs;
 
             // SQL- und CSV-Dateien fuer diesen Client sammeln
             $companySqlFiles = [];
             $companyCsvFiles = ['company' => []];
 
-            foreach ($featureDirs as $featureDir) {
-                $featurePath = $upstallBaseDir . $featureDir . '/';
-                if (!is_dir($featurePath)) {
+            foreach ($extensionDirs as $extensionDir) {
+                $extensionPath = $upstallBaseDir . $extensionDir . '/';
+                if (!is_dir($extensionPath)) {
                     continue;
                 }
 
                 // Company-Schema
-                $companyFile = $featurePath . 'company_schema.sql';
+                $companyFile = $extensionPath . 'company_schema.sql';
                 if (file_exists($companyFile)) {
                     $companySqlFiles[] = $companyFile;
                 }
 
                 // Company-CSV-Daten
-                $companyCsvDir = $featurePath . 'company_data/';
+                $companyCsvDir = $extensionPath . 'company_data/';
                 if (is_dir($companyCsvDir)) {
                     foreach (glob($companyCsvDir . '*.csv') as $csvFile) {
                         $companyCsvFiles['company'][] = $csvFile;
                     }
                 }
 
-                // Auth-Schema aus Feature-Verzeichnis (falls vorhanden)
-                $featureAuthFile = $featurePath . 'auth_schema.sql';
-                if ($featureDir !== 'crm' && file_exists($featureAuthFile)) {
-                    // Feature-spezifische Auth-Schemas werden einmalig auf die Auth-DB angewendet
-                    $featureAuthResult = updateDatabaseSchema([$featureAuthFile], [], $dryRun);
-                    if (!$featureAuthResult['success']) {
-                        writeLog("Feature-Auth-Schema '$featureDir' fehlgeschlagen", true, DLOG_WRN);
+                // Auth-Schema aus Erweiterungs-Verzeichnis (falls vorhanden)
+                $extensionAuthFile = $extensionPath . 'auth_schema.sql';
+                if ($extensionDir !== 'crm' && file_exists($extensionAuthFile)) {
+                    // Erweiterungs-Auth-Schemas werden einmalig auf die Auth-DB angewendet
+                    $extensionAuthResult = updateDatabaseSchema([$extensionAuthFile], [], $dryRun);
+                    if (!$extensionAuthResult['success']) {
+                        writeLog("Auth-Schema der Erweiterung '$extensionDir' fehlgeschlagen", true, DLOG_WRN);
                     }
                 }
             }

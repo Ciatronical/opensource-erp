@@ -2,6 +2,7 @@
 // opensource-erp/backend/api/oserp_config/index.php
 
 require_once __DIR__.'/defaults.php';
+require_once __DIR__.'/extensions.php';
 //require_once __DIR__.'/crm_defaults.php';
 require_once __DIR__.'/buchungsgruppen.php';
 require_once __DIR__.'/taxzones.php';

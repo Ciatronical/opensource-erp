@@ -156,7 +156,7 @@
                 "messages": "Meldungen ({count})",
                 "sql_statements": "SQL-Statements ({count})",
                 "errors": "Fehler ({count})",
-                "processed_features": "Verarbeitete Features"
+                "processed_extensions": "Apdoroti plėtiniai"
             },
             "msg": {
                 "dry_run_mode": "Dry-Run Modus aktiv",

@@ -17,7 +17,7 @@
         "backupSuccess": "Резервну копію створено: {filename}",
         "backupFailed": "Створення резервної копії не вдалося",
         "backupSkipped": "Резервна копія не створюється при попередньому перегляді",
-        "features": "Функції: {features}",
+        "extensions": "Розширення: {extensions}",
         "noClients": "Компанії не знайдені.",
         "overallSuccess": "Всі бази даних успішно оновлено",
         "overallFailed": "Помилка при оновленні",

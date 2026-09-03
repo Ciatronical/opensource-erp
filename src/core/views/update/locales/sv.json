@@ -17,7 +17,7 @@
         "backupSuccess": "Sakerhetskopia skapad: {filename}",
         "backupFailed": "Sakerhetskopia misslyckades",
         "backupSkipped": "Sakerhetskopia skapas inte vid dry-run",
-        "features": "Features: {features}",
+        "extensions": "Tillägg: {extensions}",
         "noClients": "Inga foretag hittades.",
         "overallSuccess": "Alla databaser uppdaterade",
         "overallFailed": "Fel vid uppdatering",

@@ -48,6 +48,9 @@ function getCV($data, $withConfig = []) {
             // Login-Kontext: company_config trotzdem laden (Steuerzonen, Währungen etc.)
             $auth = DbhAuth::begin();
             $auth->fetchSessionData();
+            // Übergangslösung Rollout: liest je nach Migrationsstand aus
+            // extensions_oserp oder noch aus defaults_oserp
+            $extensionsSelect = extensionsSelectSql($mandant, true);
             $configQuery = <<<SQL
                 SELECT json_build_object(
                     'logged_in_employee', (
@@ -59,11 +62,11 @@ function getCV($data, $withConfig = []) {
                     ),
                     'company_config', (
                         SELECT json_build_object(
-                            'features', (
-                                SELECT json_agg(feature) FROM (
-                                    SELECT value FROM defaults_oserp WHERE key = 'features'
-                                ) AS feature
-                            ),
+                            'extensions', {$extensionsSelect},
+                            -- 'features' ist der alte Schlüssel: noch geladene Frontend-Bundles
+                            -- lesen ihn, bis der Benutzer die Seite neu lädt. Entfällt im
+                            -- Release nach dem Rollout.
+                            'features', {$extensionsSelect},
                             'defaults', (
                                 SELECT row_to_json(config) FROM (SELECT * FROM defaults) AS config
                             ),
@@ -113,9 +116,7 @@ function getCV($data, $withConfig = []) {
         return;
     }
 
-    $features = $mandant->fetchAll("SELECT value FROM defaults_oserp WHERE key = 'features'");
-    $feature = $features[0]['value'] ?? null;
-    $lxCars = str_contains($feature, 'lxcars');
+    $lxCars = isExtensionActive($mandant, 'lxcars');
 
     // Vendor vs. Customer: unterschiedliche Tabellen/FK/record_types
     $isVendor = ($cvSrc === 'V');
@@ -180,6 +181,8 @@ function getCV($data, $withConfig = []) {
 
     $auth = DbhAuth::begin();
     $auth->fetchSessionData();
+    // Übergangslösung Rollout: siehe extensionsSelectSql()
+    $extensionsSelect = extensionsSelectSql($mandant, true);
     $query = <<<SQL
            SELECT json_build_object(
                 'logged_in_employee',
@@ -194,14 +197,11 @@ function getCV($data, $withConfig = []) {
                 'company_config',
                     (
                         SELECT json_build_object(
-                            'features', (
-                                SELECT json_agg(feature)
-                                FROM (
-                                    SELECT value
-                                    FROM defaults_oserp
-                                    WHERE key = 'features'
-                                ) AS feature
-                            ),
+                            'extensions', {$extensionsSelect},
+                            -- 'features' ist der alte Schlüssel: noch geladene Frontend-Bundles
+                            -- lesen ihn, bis der Benutzer die Seite neu lädt. Entfällt im
+                            -- Release nach dem Rollout.
+                            'features', {$extensionsSelect},
                             'defaults', (
                                 SELECT row_to_json(config)
                                 FROM (
@@ -875,7 +875,6 @@ SQL;
  * @testdata {"profile": {"id": 1, "src": "C", "name": "Test Kunde", "customernumber": "K-001"}}
  */
 function saveCV($data) {
-    include_once __DIR__ . '/../features.php';
     $apiCompanySpace = DbhCompany::begin();
     $cv_id = $data['profile']['id'] ?? null;
     $isNew = empty($cv_id);
