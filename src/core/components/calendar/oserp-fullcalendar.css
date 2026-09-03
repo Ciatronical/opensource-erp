@@ -1,0 +1,323 @@
+/* src/core/components/calendar/oserp-fullcalendar.css
+   OSERP-Optik für FullCalendar 7 (Classic-Theme). Die ofc-*-Klassen werden
+   über die Class-Hooks in oserp-fullcalendar.js an die Kalender-DOM gehängt.
+   Selektoren bewusst mit .oserp-cal-Vorfahre: schlägt die Ein-Klassen-Regeln
+   des Themes ohne !important. */
+
+.oserp-cal {
+    font-family: inherit;
+    --fc-classic-border: #e0e0e0;
+    --fc-classic-background: #fff;
+    --fc-classic-faint: #fafafa;
+    --fc-classic-today: rgba(25, 118, 210, 0.06);
+    --fc-classic-now: #E53935;
+    --fc-classic-primary: #1976d2;
+    --fc-classic-primary-foreground: #fff;
+    --fc-classic-event: #1976d2;
+    --fc-classic-event-contrast: #fff;
+}
+
+/* ── Toolbar ─────────────────────────────────────────────────────────── */
+.oserp-cal .ofc-toolbar {
+    margin-bottom: 24px;
+    padding: 16px 20px;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.oserp-cal .ofc-toolbar-section {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.oserp-cal .ofc-toolbar-title {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #1a1a1a;
+    letter-spacing: -0.02em;
+}
+
+.oserp-cal .ofc-btn-group {
+    gap: 4px;
+}
+
+.oserp-cal .ofc-btn {
+    padding: 10px 16px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.2;
+    text-transform: none;
+    border: none;
+    border-radius: 10px;
+    background: #f0f0f0;
+    color: #424242;
+    box-shadow: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.oserp-cal .ofc-btn:hover {
+    background: #e0e0e0;
+    transform: translateY(-1px);
+}
+
+.oserp-cal .ofc-btn--active,
+.oserp-cal .ofc-btn:active {
+    background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+    color: #fff;
+}
+
+.oserp-cal .ofc-btn--primary {
+    background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3);
+}
+
+.oserp-cal .ofc-btn--primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(25, 118, 210, 0.4);
+}
+
+.oserp-cal .ofc-btn--disabled,
+.oserp-cal .ofc-btn--disabled:hover {
+    opacity: 0.5;
+    transform: none;
+    cursor: default;
+}
+
+.oserp-cal .ofc-btn--icon {
+    padding: 10px 12px;
+}
+
+.oserp-cal .ofc-btn .mdi {
+    font-size: 1.25em;
+    line-height: 1;
+}
+
+/* ── Ansicht / Kopfzeile ─────────────────────────────────────────────── */
+.oserp-cal .ofc-view {
+    background: #fff;
+    border: none;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+
+.oserp-cal .ofc-table-header {
+    background: linear-gradient(180deg, #f8f9fa 0%, #f0f2f5 100%);
+}
+
+.oserp-cal .ofc-day-header {
+    padding: 14px 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #616161;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.oserp-cal .ofc-day-header-inner {
+    font-weight: 600;
+}
+
+/* ── Monatsraster ────────────────────────────────────────────────────── */
+.oserp-cal .ofc-day-cell {
+    min-height: 100px;
+    transition: background-color 0.2s;
+}
+
+.oserp-cal .ofc-day-cell:hover {
+    background-color: rgba(25, 118, 210, 0.03);
+}
+
+.oserp-cal .ofc-day-number {
+    padding: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #424242;
+}
+
+.oserp-cal .ofc-day-cell--today .ofc-day-number {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3);
+}
+
+.oserp-cal .ofc-day-cell--other .ofc-day-number {
+    color: #bdbdbd;
+}
+
+.oserp-cal .ofc-day-cell--weekend,
+.oserp-cal .ofc-day-lane--weekend {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* ── Termine ─────────────────────────────────────────────────────────── */
+.oserp-cal .ofc-event {
+    border: none;
+    cursor: pointer;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.oserp-cal .ofc-event-title {
+    font-weight: 600;
+}
+
+.oserp-cal .ofc-row-event {
+    padding: 4px 8px;
+    margin: 2px 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.oserp-cal .ofc-row-event:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.oserp-cal .ofc-row-event .ofc-event-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.oserp-cal .ofc-col-event {
+    border-radius: 4px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+    overflow: visible;
+}
+
+.oserp-cal .ofc-col-event:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.oserp-cal .ofc-col-event .ofc-event-inner {
+    padding: 2px 6px;
+    overflow: visible;
+}
+
+.oserp-cal .ofc-col-event .ofc-event-title {
+    overflow: visible;
+    text-overflow: unset;
+    white-space: normal;
+    line-height: 1.3;
+}
+
+/* ── Mehr-Link & Popover ─────────────────────────────────────────────── */
+.oserp-cal .ofc-more-link {
+    padding: 4px 10px;
+    margin: 2px 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #1976d2;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+}
+
+.ofc-popover {
+    border: none;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+.ofc-popover .ofc-popover-header {
+    padding: 14px 18px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: none;
+    letter-spacing: normal;
+    border-bottom: none;
+    background: linear-gradient(135deg, #f5f5f5 0%, #eeeeee 100%);
+}
+
+/* ── Zeitraster (Slot-Höhe: Option slotMinHeight, nicht per CSS) ─────── */
+.oserp-cal .ofc-slot-header {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #757575;
+}
+
+.oserp-cal .ofc-allday-header {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #757575;
+    text-transform: uppercase;
+}
+
+.oserp-cal .ofc-now-line {
+    border-color: #E53935;
+    border-width: 2px;
+}
+
+.oserp-cal .ofc-now-arrow {
+    border-color: #E53935;
+}
+
+.oserp-cal .ofc-non-business {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* ── Listenansicht ───────────────────────────────────────────────────── */
+.oserp-cal .ofc-list-day-header {
+    padding: 10px 16px;
+    font-weight: 600;
+    background: linear-gradient(180deg, #f8f9fa 0%, #f0f2f5 100%);
+}
+
+.oserp-cal .ofc-list-event {
+    cursor: pointer;
+}
+
+.oserp-cal .ofc-list-event:hover {
+    background-color: rgba(25, 118, 210, 0.04);
+}
+
+.oserp-cal .ofc-list-event .ofc-event-time {
+    font-size: 0.85rem;
+    color: #616161;
+    white-space: nowrap;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .oserp-cal .ofc-toolbar {
+        flex-direction: column;
+        gap: 12px;
+        padding: 12px;
+    }
+
+    .oserp-cal .ofc-toolbar-section {
+        justify-content: center;
+        gap: 4px;
+    }
+
+    .oserp-cal .ofc-toolbar-title {
+        font-size: 1.1rem;
+    }
+
+    .oserp-cal .ofc-btn {
+        padding: 8px 12px;
+        font-size: 0.75rem;
+    }
+
+    .oserp-cal .ofc-day-cell {
+        min-height: 80px;
+    }
+}

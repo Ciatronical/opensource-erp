@@ -6,15 +6,15 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
 import FullCalendar from '@fullcalendar/vue3'
-import dayGridPlugin from '@fullcalendar/daygrid'
-import timeGridPlugin from '@fullcalendar/timegrid'
-import listPlugin from '@fullcalendar/list'
-import interactionPlugin from '@fullcalendar/interaction'
+import dayGridPlugin from '@fullcalendar/vue3/daygrid'
+import timeGridPlugin from '@fullcalendar/vue3/timegrid'
+import listPlugin from '@fullcalendar/vue3/list'
+import interactionPlugin from '@fullcalendar/vue3/interaction'
 import rrulePlugin from '@fullcalendar/rrule'
-import deLocale from '@fullcalendar/core/locales/de'
+import { classicThemePlugin, calendarLocale, oserpCalendarHooks } from '@/core/components/calendar/oserp-fullcalendar.js'
 import { oserpStore } from '@/core/stores/oserp.store.js'
 import { buildWorkdayProgressSVG, parseWorkdayConfig } from '@/core/utils/workdayProgress.js'
 
@@ -29,7 +29,9 @@ const props = defineProps({
     expandRows: { type: Boolean, default: false },
     dayMaxEventRows: { type: [Number, Boolean], default: undefined },
     hiddenDays: { type: Array, default: () => [] },
-    weekDuration: { type: Number, default: 7 }
+    weekDuration: { type: Number, default: 7 },
+    // Höhe eines Zeitraster-Slots in px (bestimmt, wie viele Stunden ohne Scrollen sichtbar sind)
+    slotMinHeight: { type: Number, default: 40 }
 })
 
 const emit = defineEmits(['event-click', 'date-click', 'event-drop', 'event-resize', 'dates-set'])
@@ -42,16 +44,13 @@ const oserp = oserpStore()
 const currentTime = ref('')
 let clockTimer = null
 const workdayConfig = parseWorkdayConfig(k => oserp.getClientDefaultValue(k))
+// Tagesfortschritt-SVG als State: FullCalendar rendert den Button über
+// iconContent neu, sobald sich der Wert mit der Uhr ändert
+const dayProgressSVG = ref('')
 
 function updateClock() {
     currentTime.value = new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }) + ' Uhr'
-    nextTick(applyDayProgress)
-}
-
-function applyDayProgress() {
-    const btn = calendarRef.value?.getApi()?.el?.querySelector('.fc-dayProgress-button')
-    if (!btn) return
-    btn.innerHTML = buildWorkdayProgressSVG(workdayConfig)
+    dayProgressSVG.value = buildWorkdayProgressSVG(workdayConfig)
 }
 
 // ── Kalenderwoche ──
@@ -65,40 +64,36 @@ function getISOWeek(date) {
     return Math.ceil((((d - yearStart) / 86400000) + 1) / 7)
 }
 
-function applyKWColor(kw) {
-    if (!kw) return
-    const btn = calendarRef.value?.getApi()?.el?.querySelector('.fc-calendarWeek-button')
-    if (!btn) return
-    const isEven = kw % 2 === 0
-    btn.style.color = isEven ? '#1565c0' : '#2e7d32'
-    btn.style.backgroundColor = isEven ? '#e3f2fd' : '#e8f5e9'
-}
-
-const mergedCustomButtons = computed(() => ({
-    calendarWeek: {
-        text: `${currentKW.value}.KW`,
-        hint: 'Kalenderwoche'
-    },
-    clock: {
-        text: currentTime.value || '--:--'
-    },
-    customPrev: {
-        icon: 'chevron-left',
-        click: navigatePrev
-    },
-    customNext: {
-        icon: 'chevron-right',
-        click: navigateNext
-    },
-    customToday: {
-        text: t('CalendarMain.today'),
-        click: navigateToday
-    },
-    dayProgress: {
-        text: ' '
-    },
-    ...props.customButtons
-}))
+// Toolbar-Buttons. prev/next/today sind die Standard-Buttons mit eigener
+// Navigation (KW-Wochenlogik) — preventDefault unterdrückt die eingebaute.
+// KW-Farbe gerade/ungerade über CSS-Klassen (.ofc-kw--even/--odd).
+const mergedButtons = computed(() => {
+    const svg = dayProgressSVG.value
+    return {
+        prev:  { iconClass: 'mdi mdi-chevron-left',  click: (ev) => { ev.preventDefault(); navigatePrev() } },
+        next:  { iconClass: 'mdi mdi-chevron-right', click: (ev) => { ev.preventDefault(); navigateNext() } },
+        today: { text: t('CalendarMain.today'), isPrimary: true, click: (ev) => { ev.preventDefault(); navigateToday() } },
+        calendarWeek: {
+            text: `${currentKW.value}.KW`,
+            hint: 'Kalenderwoche',
+            className: currentKW.value % 2 === 0 ? 'ofc-kw ofc-kw--even' : 'ofc-kw ofc-kw--odd'
+        },
+        clock: {
+            text: currentTime.value || '--:--',
+            className: 'ofc-clock'
+        },
+        dayProgress: {
+            display: 'icon',
+            iconContent: () => ({ html: svg }),
+            className: 'ofc-dayprogress'
+        },
+        listCustomWeek:     { text: t('CalendarMain.list') },
+        timeGridCustomWeek: { text: t('CalendarMain.week') },
+        timeGridDay:        { text: t('CalendarMain.day') },
+        dayGridMonth:       { text: t('CalendarMain.month') },
+        ...props.customButtons
+    }
+})
 
 // Arbeitszeiten aus Company-Config — sichtbarer Tagesbereich im TimeGrid.
 // Werte aus HH:MM in HH:MM:SS normalisieren (FullCalendar-Format).
@@ -123,7 +118,7 @@ const calendarEvents = computed(() => {
                 start: event.dtstart,
                 allDay: true,
                 display: 'background',
-                backgroundColor: 'rgba(229, 57, 53, 0.10)',
+                color: 'rgba(229, 57, 53, 0.10)',
                 extendedProps: { isHoliday: true }
             })
             result.push({
@@ -131,11 +126,10 @@ const calendarEvents = computed(() => {
                 title: event.title,
                 start: event.dtstart,
                 allDay: true,
-                backgroundColor: '#FFEBEE',
-                borderColor: '#E53935',
-                textColor: '#B71C1C',
+                color: '#FFEBEE',
+                contrastColor: '#B71C1C',
                 editable: false,
-                classNames: ['fc-event-holiday'],
+                className: 'ofc-holiday',
                 extendedProps: { isHoliday: true }
             })
             continue
@@ -145,9 +139,8 @@ const calendarEvents = computed(() => {
             id: String(event.id),
             title: event.title,
             allDay: event.allDay,
-            backgroundColor: event.color || '#1976D2',
-            borderColor: 'transparent',
-            textColor: '#fff',
+            color: event.color || '#1976D2',
+            contrastColor: '#fff',
             extendedProps: {
                 description: event.description,
                 location: event.location,
@@ -234,16 +227,17 @@ function navigateToday() {
 
 const calendarOptions = computed(() => {
     const opts = {
-    plugins: [dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin, rrulePlugin],
+    ...oserpCalendarHooks,
+    plugins: [classicThemePlugin, dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin, rrulePlugin],
     initialView: props.initialView,
     initialDate: getStartDate(),
-    locale: locale.value === 'de' ? deLocale : undefined,
+    locale: calendarLocale(locale.value),
     headerToolbar: props.headerToolbar || {
-        left: 'customPrev,customNext customToday',
+        left: 'prev,next today',
         center: 'calendarWeek title clock dayProgress',
         right: 'listCustomWeek,timeGridCustomWeek,timeGridDay,dayGridMonth'
     },
-    customButtons: mergedCustomButtons.value,
+    buttons: mergedButtons.value,
     events: calendarEvents.value,
     eventClick: handleEventClick,
     dateClick: handleDateClick,
@@ -258,7 +252,6 @@ const calendarOptions = computed(() => {
     hiddenDays: props.hiddenDays,
     height: props.height,
     expandRows: props.expandRows,
-    handleWindowResize: true,
     firstDay: 1,
     fixedWeekCount: false,
     showNonCurrentDates: true,
@@ -267,32 +260,23 @@ const calendarOptions = computed(() => {
     allDayText: t('CalendarMain.allDay'),
     slotMinTime,
     slotMaxTime,
+    slotMinHeight: props.slotMinHeight,
     businessHours: {
         daysOfWeek: [1, 2, 3, 4, 5],
         startTime: businessStart,
         endTime: businessEnd
     },
-    buttonText: {
-        today: t('CalendarMain.today'),
-        month: t('CalendarMain.month'),
-        week: t('CalendarMain.week'),
-        day: t('CalendarMain.day'),
-        list: t('CalendarMain.list')
-    },
     titleFormat: { year: 'numeric', month: 'long' },
     eventContent: renderEventContent,
     eventResizableFromStart: true,
+    // Uhrzeit-Termine im Monatsraster als farbige Blöcke statt Punkt-Liste
+    eventDisplay: 'block',
     views: {
         listCustomWeek: {
             type: 'list',
             duration: { days: 9 },
-            buttonText: t('CalendarMain.list'),
             titleFormat: { year: 'numeric', month: 'long', day: 'numeric' },
-            displayEventTime: true,
-            eventDisplay: 'auto'
-        },
-        dayGridMonth: {
-            eventDisplay: 'block'
+            displayEventTime: true
         },
         timeGridDay: {
             titleFormat: { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' }
@@ -300,8 +284,11 @@ const calendarOptions = computed(() => {
         timeGridCustomWeek: {
             type: 'timeGrid',
             duration: { days: props.weekDuration },
-            buttonText: t('CalendarMain.week'),
             titleFormat: { year: 'numeric', month: 'long', day: 'numeric' }
+        },
+        // Ganztags-Zeile aller Zeitraster-Ansichten (Wandanzeige begrenzt sie per CSS)
+        timeGrid: {
+            dayRowClass: 'ofc-allday-row'
         }
     }
     }
@@ -355,9 +342,7 @@ function handleDatesSet(info) {
     const viewEnd = new Date(info.end)
     // KW immer nach heutigem Tag — wechselt Montag/Sonntag-Grenze (ISO)
     const kwDate = (today >= viewStart && today < viewEnd) ? today : viewStart
-    const kw = getISOWeek(kwDate)
-    currentKW.value = kw
-    nextTick(() => { applyKWColor(kw); applyDayProgress() })
+    currentKW.value = getISOWeek(kwDate)
     emit('dates-set', {
         start:      info.startStr.split('T')[0],
         end:        info.endStr.split('T')[0],
@@ -370,18 +355,18 @@ function renderEventContent(arg) {
     // LxCars-Auslastungsbalken
     if (arg.event.extendedProps?.isWorkload) {
         const { hours, pct, capPct, orderCount, color } = arg.event.extendedProps
-        const capLabel = capPct !== null ? `<span class="fc-wl-cap">${capPct}%</span>` : ''
+        const capLabel = capPct !== null ? `<span class="ofc-wl-cap">${capPct}%</span>` : ''
         const ordLabel = orderCount > 0
-            ? `<span class="fc-wl-orders">${orderCount} Auftrag${orderCount !== 1 ? 'träge' : ''}</span>`
+            ? `<span class="ofc-wl-orders">${orderCount} Auftrag${orderCount !== 1 ? 'träge' : ''}</span>`
             : ''
         return { html: `
-            <div class="fc-wl-wrap">
-                <div class="fc-wl-header">
-                    <span class="fc-wl-hours">${hours}h</span>
+            <div class="ofc-wl-wrap">
+                <div class="ofc-wl-header">
+                    <span class="ofc-wl-hours">${hours}h</span>
                     ${capLabel}${ordLabel}
                 </div>
-                <div class="fc-wl-track">
-                    <div class="fc-wl-fill" style="width:${pct}%;background:${color}"></div>
+                <div class="ofc-wl-track">
+                    <div class="ofc-wl-fill" style="width:${pct}%;background:${color}"></div>
                 </div>
             </div>` }
     }
@@ -389,10 +374,12 @@ function renderEventContent(arg) {
     const desc = arg.event.extendedProps?.description
     const title = arg.event.title || ''
     const time = arg.timeText || ''
-    let html = ''
-    if (time) html += `<div class="fc-event-time">${time}</div>`
-    html += `<div class="fc-event-title">${title}</div>`
-    if (desc) html += `<div class="fc-event-desc">${desc}</div>`
+    // Ein Block-Container: das Theme legt mehrere Kinder sonst als Flex-Zeile nebeneinander
+    let html = '<div class="ofc-ev">'
+    if (time) html += `<div class="ofc-ev-time">${time}</div>`
+    html += `<div class="ofc-ev-title">${title}</div>`
+    if (desc) html += `<div class="ofc-ev-desc">${desc}</div>`
+    html += '</div>'
     return { html }
 }
 
@@ -416,7 +403,6 @@ watch(() => props.events, () => {
 
 onMounted(() => {
     updateClock()
-    nextTick(applyDayProgress)
     const msToNextMinute = (60 - new Date().getSeconds()) * 1000
     setTimeout(() => {
         updateClock()
@@ -448,166 +434,20 @@ defineExpose({
     background: linear-gradient(180deg, #fafafa 0%, #fff 100%);
 }
 
-/* FullCalendar Basis */
-.fc {
-    font-family: inherit;
-    --fc-border-color: #e0e0e0;
-    --fc-today-bg-color: rgba(25, 118, 210, 0.06);
-    --fc-neutral-bg-color: #fafafa;
-    --fc-page-bg-color: #fff;
-    --fc-now-indicator-color: #E53935;
+/* Basis-Optik: src/core/components/calendar/oserp-fullcalendar.css */
+
+/* Termin-Inhalt aus renderEventContent */
+.oserp-cal .ofc-ev {
+    min-width: 0;
+    overflow-wrap: normal;
+    word-break: normal;
 }
 
-/* Toolbar */
-.fc .fc-toolbar {
-    margin-bottom: 24px;
-    padding: 16px 20px;
-    background: white;
-    border-radius: 16px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-    flex-wrap: wrap;
-    gap: 12px;
-}
-
-/* Toolbar-Chunks: Items horizontal nebeneinander. Ohne dieses Flex
-   bricht der H2-Titel (display:block) um und stapelt KW/Title/Clock. */
-.fc .fc-toolbar-chunk {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-}
-
-.fc .fc-toolbar-title {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: #1a1a1a;
-    letter-spacing: -0.02em;
-}
-
-/* Toolbar Buttons */
-.fc .fc-button {
-    padding: 10px 16px;
-    font-size: 0.875rem;
-    font-weight: 600;
-    text-transform: none;
-    border-radius: 10px;
-    border: none;
-    box-shadow: none !important;
-    transition: all 0.2s ease;
-}
-
-.fc .fc-button-primary {
-    background-color: #f0f0f0;
-    color: #424242;
-}
-
-.fc .fc-button-primary:hover {
-    background-color: #e0e0e0;
-    transform: translateY(-1px);
-}
-
-.fc .fc-button-primary:not(:disabled).fc-button-active,
-.fc .fc-button-primary:not(:disabled):active {
-    background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
-    color: white;
-}
-
-.fc .fc-today-button {
-    background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%) !important;
-    color: white !important;
-    box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3) !important;
-}
-
-.fc .fc-today-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(25, 118, 210, 0.4) !important;
-}
-
-.fc .fc-today-button:disabled {
-    opacity: 0.5;
-    transform: none;
-}
-
-/* Calendar Container */
-.fc .fc-view-harness {
-    background: white;
-    border-radius: 16px;
-    overflow: hidden;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
-}
-
-/* Header (Weekdays) */
-.fc .fc-col-header {
-    background: linear-gradient(180deg, #f8f9fa 0%, #f0f2f5 100%);
-}
-
-.fc .fc-col-header-cell {
-    padding: 14px 4px;
-    font-weight: 600;
-    font-size: 0.8rem;
-    color: #616161;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    border-bottom: 2px solid #e0e0e0;
-}
-
-/* Day Cells (Month view) */
-.fc .fc-daygrid-day {
-    min-height: 100px;
-    transition: background-color 0.2s;
-}
-
-.fc .fc-daygrid-day:hover {
-    background-color: rgba(25, 118, 210, 0.03);
-}
-
-.fc .fc-daygrid-day-number {
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: #424242;
-    padding: 8px;
-}
-
-.fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
-    background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
-    color: white;
-    border-radius: 50%;
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3);
-}
-
-.fc .fc-daygrid-day.fc-day-other .fc-daygrid-day-number {
-    color: #bdbdbd;
-}
-
-/* Events */
-.fc .fc-daygrid-event {
-    border-radius: 3px;
-    padding: 4px 8px;
-    margin: 2px 4px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    cursor: pointer;
-    border: none;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    transition: all 0.2s ease;
-}
-
-.fc .fc-daygrid-event:hover {
-    transform: translateY(-2px) scale(1.02);
-    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-}
-
-.fc .fc-event-title {
+.oserp-cal .ofc-ev-title {
     font-weight: 600;
 }
 
-.fc .fc-event-desc {
+.oserp-cal .ofc-ev-desc {
     font-weight: 500;
     font-size: 0.95em;
     line-height: 1.3;
@@ -616,280 +456,130 @@ defineExpose({
     white-space: nowrap;
 }
 
-/* TimeGrid Events */
-.fc .fc-timegrid-event {
-    border-radius: 4px;
-    border: none;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-    cursor: pointer;
-    transition: all 0.2s ease;
-    overflow: visible;
-}
-
-.fc .fc-timegrid-event:hover {
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-}
-
-.fc .fc-timegrid-event .fc-event-main {
-    padding: 2px 6px;
-    overflow: visible;
-}
-
-.fc .fc-timegrid-event .fc-event-title {
-    overflow: visible;
-    text-overflow: unset;
+.oserp-cal .ofc-col-event .ofc-ev-title,
+.oserp-cal .ofc-list-event .ofc-ev-title {
     white-space: normal;
     line-height: 1.3;
 }
 
-/* TimeGrid Slots */
-.fc .fc-timegrid-slot {
-    height: 40px;
-}
-
-.fc .fc-timegrid-slot-label {
-    font-size: 0.75rem;
-    color: #757575;
-    font-weight: 500;
-}
-
-/* Now Indicator */
-.fc .fc-timegrid-now-indicator-line {
-    border-color: #E53935;
-    border-width: 2px;
-}
-
-.fc .fc-timegrid-now-indicator-arrow {
-    border-color: #E53935;
-}
-
-/* More Link */
-.fc .fc-daygrid-more-link {
-    color: #1976d2;
-    font-weight: 600;
-    font-size: 0.75rem;
-    padding: 4px 10px;
-    margin: 2px 4px;
-    border-radius: 8px;
-    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-}
-
-/* Popover */
-.fc .fc-popover {
-    border-radius: 16px;
-    box-shadow: 0 12px 40px rgba(0,0,0,0.15);
-    border: none;
-    overflow: hidden;
-}
-
-.fc .fc-popover-header {
-    background: linear-gradient(135deg, #f5f5f5 0%, #eeeeee 100%);
-    padding: 14px 18px;
-    font-weight: 600;
-}
-
-/* Sonntag */
-.fc .fc-day-sun {
-    background-color: rgba(0,0,0,0.02);
-}
-
-/* Non-business hours */
-.fc .fc-non-business {
-    background-color: rgba(0,0,0,0.02);
-}
-
-/* List View */
-.fc .fc-list {
-    border-radius: 16px;
-    overflow: hidden;
-}
-
-.fc .fc-list-day-cushion {
-    background: linear-gradient(180deg, #f8f9fa 0%, #f0f2f5 100%);
-    padding: 10px 16px;
-    font-weight: 600;
-}
-
-.fc .fc-list-event {
-    cursor: pointer;
-}
-
-.fc .fc-list-event:hover td {
-    background-color: rgba(25, 118, 210, 0.04);
-}
-
-.fc .fc-list-event-dot {
-    border-radius: 50%;
-}
-
-.fc .fc-list-event-time {
-    font-size: 0.85rem;
-    color: #616161;
-    white-space: nowrap;
-}
-
-.fc .fc-list-event-title {
-    font-weight: 600;
-}
-
-/* Liste: Event-Blöcke zurücksetzen — kein Abschneiden, keine Rundung */
-.fc .fc-list-event .fc-event {
-    border-radius: 0;
-    padding: 0;
-    margin: 0;
-    box-shadow: none;
-    background: transparent !important;
-    border: none;
-}
-
-.fc .fc-list-event .fc-event-title {
-    overflow: visible;
-    text-overflow: unset;
-    white-space: normal;
-    line-height: 1.4;
-}
-
-.fc .fc-list-event .fc-event-main {
-    padding: 0;
-}
-
 /* Feiertage */
-.fc .fc-event-holiday {
-    cursor: default !important;
+.oserp-cal .ofc-holiday,
+.oserp-cal .ofc-holiday:hover {
+    cursor: default;
     font-style: italic;
-    font-size: 0.75rem !important;
-    padding: 2px 6px !important;
+    font-size: 0.75rem;
+    padding: 2px 6px;
+    transform: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.fc .fc-event-holiday:hover {
-    transform: none !important;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .calendar-wrapper {
-        padding: 12px;
-    }
-
-    .fc .fc-toolbar {
-        flex-direction: column;
-        gap: 12px;
-        padding: 12px;
-    }
-
-    .fc .fc-toolbar-chunk {
-        display: flex;
-        justify-content: center;
-        flex-wrap: wrap;
-        gap: 4px;
-    }
-
-    .fc .fc-toolbar-title {
-        font-size: 1.1rem;
-    }
-
-    .fc .fc-button {
-        padding: 8px 12px;
-        font-size: 0.75rem;
-    }
-}
-
-/* Uhr-Button: gleiche Schriftgröße wie Titel, kein Button-Look */
-.fc .fc-clock-button {
-    font-size: 1.9rem !important;
-    font-weight: 600 !important;
+/* Uhr: Titelgröße, kein Button-Look */
+.oserp-cal .ofc-clock,
+.oserp-cal .ofc-clock:hover {
+    font-size: 1.9rem;
+    font-weight: 600;
     font-variant-numeric: tabular-nums;
-    background: transparent !important;
-    color: #424242 !important;
-    cursor: default !important;
-    pointer-events: none;
-    box-shadow: none !important;
+    padding: 4px 10px;
     border-radius: 8px;
-    padding: 4px 10px !important;
-}
-
-.fc .fc-clock-button:hover {
-    background: transparent !important;
-    transform: none !important;
-}
-
-.fc .fc-dayProgress-button,
-.fc .fc-dayProgress-button:hover,
-.fc .fc-dayProgress-button:focus,
-.fc .fc-dayProgress-button:active {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    padding: 4px 6px !important;
-    cursor: default !important;
+    background: transparent;
+    color: #424242;
+    box-shadow: none;
+    transform: none;
+    cursor: default;
     pointer-events: none;
+}
+
+/* Tagesfortschritt: nur das SVG */
+.oserp-cal .ofc-dayprogress,
+.oserp-cal .ofc-dayprogress:hover {
+    padding: 4px 6px;
     line-height: 0;
-}
-
-/* Kalenderwoche-Button: kein Button-Look, Farbe per JS gesetzt */
-.fc .fc-calendarWeek-button {
-    font-size: 1.1rem !important;
-    font-weight: 700 !important;
-    cursor: default !important;
+    border: none;
+    background: transparent;
+    box-shadow: none;
+    transform: none;
+    cursor: default;
     pointer-events: none;
-    border-radius: 8px;
-    padding: 4px 10px !important;
-    box-shadow: none !important;
 }
 
-.fc .fc-calendarWeek-button:hover {
-    transform: none !important;
+/* Kalenderwoche: gerade blau, ungerade grün */
+.oserp-cal .ofc-kw,
+.oserp-cal .ofc-kw:hover {
+    font-size: 1.1rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 8px;
+    box-shadow: none;
+    transform: none;
+    cursor: default;
+    pointer-events: none;
+}
+
+.oserp-cal .ofc-kw--even {
+    color: #1565c0;
+    background: #e3f2fd;
+}
+
+.oserp-cal .ofc-kw--odd {
+    color: #2e7d32;
+    background: #e8f5e9;
 }
 
 /* ── LxCars Auslastungsbalken (Monatsansicht Wandanzeige) ── */
-.fc-workload-event {
-    pointer-events: none !important;
-    cursor: default !important;
-    margin: 1px 2px !important;
+.oserp-cal .ofc-workload-event {
+    pointer-events: none;
+    cursor: default;
+    margin: 1px 2px;
 }
-.fc-workload-event .fc-event-main {
-    padding: 0 !important;
+
+.oserp-cal .ofc-workload-event .ofc-event-inner {
+    padding: 0;
 }
-.fc-wl-wrap {
+
+.ofc-wl-wrap {
     padding: 3px 5px 4px;
     border-radius: 4px;
-    background: rgba(0,0,0,0.04);
+    background: rgba(0, 0, 0, 0.04);
 }
-.fc-wl-header {
+
+.ofc-wl-header {
     display: flex;
     align-items: baseline;
     gap: 5px;
     margin-bottom: 3px;
     line-height: 1;
 }
-.fc-wl-hours {
+
+.ofc-wl-hours {
     font-size: 12px;
     font-weight: 800;
     color: #212121;
     letter-spacing: -0.03em;
 }
-.fc-wl-cap {
+
+.ofc-wl-cap {
     font-size: 10px;
     font-weight: 600;
     color: #616161;
 }
-.fc-wl-orders {
+
+.ofc-wl-orders {
     font-size: 9px;
     color: #9e9e9e;
     margin-left: auto;
 }
-.fc-wl-track {
+
+.ofc-wl-track {
     height: 5px;
     border-radius: 3px;
-    background: rgba(0,0,0,0.10);
+    background: rgba(0, 0, 0, 0.10);
     overflow: hidden;
 }
-.fc-wl-fill {
+
+.ofc-wl-fill {
     height: 100%;
     border-radius: 3px;
     transition: width 0.5s ease;
     min-width: 4px;
 }
-
 </style>

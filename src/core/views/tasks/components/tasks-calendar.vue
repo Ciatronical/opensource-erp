@@ -182,10 +182,10 @@
 import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import FullCalendar from '@fullcalendar/vue3'
-import dayGridPlugin from '@fullcalendar/daygrid'
-import timeGridPlugin from '@fullcalendar/timegrid'
-import interactionPlugin from '@fullcalendar/interaction'
-import deLocale from '@fullcalendar/core/locales/de'
+import dayGridPlugin from '@fullcalendar/vue3/daygrid'
+import timeGridPlugin from '@fullcalendar/vue3/timegrid'
+import interactionPlugin from '@fullcalendar/vue3/interaction'
+import { classicThemePlugin, calendarLocale, oserpCalendarHooks } from '@/core/components/calendar/oserp-fullcalendar.js'
 
 const props = defineProps({
     items: { type: Array, default: () => [] }
@@ -193,7 +193,7 @@ const props = defineProps({
 
 const emit = defineEmits(['edit', 'mark-done', 'mark-undone', 'create', 'date-change'])
 
-const { locale } = useI18n()
+const { t, locale } = useI18n()
 const calendarRef = ref(null)
 const showEventDialog = ref(false)
 const showCreateDialog = ref(false)
@@ -206,10 +206,9 @@ const calendarEvents = computed(() => {
         title: item.subject || item.note?.subject || 'Ohne Betreff',
         start: item.follow_up_date,
         allDay: true,
-        backgroundColor: getPriorityColor(item.priority),
-        borderColor: 'transparent',
-        textColor: item.priority === 'today' ? '#000' : '#fff',
-        classNames: ['fc-event-' + item.priority],
+        color: getPriorityColor(item.priority),
+        contrastColor: item.priority === 'today' ? '#000' : '#fff',
+        className: 'ofc-prio-' + item.priority,
         extendedProps: {
             priority: item.priority,
             body: item.body || item.note?.body,
@@ -221,13 +220,20 @@ const calendarEvents = computed(() => {
 })
 
 const calendarOptions = computed(() => ({
-    plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
+    ...oserpCalendarHooks,
+    plugins: [classicThemePlugin, dayGridPlugin, timeGridPlugin, interactionPlugin],
     initialView: 'dayGridMonth',
-    locale: locale.value === 'de' ? deLocale : undefined,
+    locale: calendarLocale(locale.value),
     headerToolbar: {
         left: 'prev,next today',
         center: 'title',
         right: 'dayGridMonth,timeGridWeek,timeGridDay'
+    },
+    buttons: {
+        today:        { text: t('TasksView.calendar.today'), isPrimary: true },
+        dayGridMonth: { text: t('TasksView.calendar.month') },
+        timeGridWeek: { text: t('TasksView.calendar.week') },
+        timeGridDay:  { text: t('TasksView.calendar.day') }
     },
     events: calendarEvents.value,
     eventClick: handleEventClick,
@@ -239,20 +245,14 @@ const calendarOptions = computed(() => ({
     moreLinkClick: 'popover',
     height: 'auto',
     contentHeight: 650,
-    handleWindowResize: true,
     fixedWeekCount: false,
     showNonCurrentDates: true,
     nowIndicator: true,
     slotMinTime: '06:00:00',
     slotMaxTime: '22:00:00',
+    slotMinHeight: 48,
     allDaySlot: true,
     allDayText: 'Ganztägig',
-    buttonText: {
-        today: 'Heute',
-        month: 'Monat',
-        week: 'Woche',
-        day: 'Tag'
-    },
     titleFormat: { year: 'numeric', month: 'long' },
     eventDisplay: 'block',
     views: {
@@ -383,363 +383,32 @@ defineExpose({
     border-radius: 24px 24px 0 0;
 }
 
-/* FullCalendar Basis */
-.fc {
-    font-family: inherit;
-    --fc-border-color: #e8e8e8;
-    --fc-today-bg-color: rgba(25, 118, 210, 0.04);
-    --fc-neutral-bg-color: #fafafa;
-    --fc-page-bg-color: #fff;
-    --fc-now-indicator-color: #E53935;
-}
+/* Basis-Optik: src/core/components/calendar/oserp-fullcalendar.css */
 
-/* Toolbar */
-.fc .fc-toolbar {
-    margin-bottom: 24px;
-    padding: 16px 20px;
-    background: white;
-    border-radius: 16px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
-    flex-wrap: wrap;
-    gap: 12px;
-}
-
-.fc .fc-toolbar-title {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: #1a1a1a;
-    letter-spacing: -0.02em;
-}
-
-/* Toolbar Buttons */
-.fc .fc-button {
-    padding: 10px 18px;
-    font-size: 0.875rem;
-    font-weight: 600;
-    text-transform: none;
-    border-radius: 12px;
-    border: none;
-    box-shadow: none !important;
-    transition: all 0.2s ease;
-}
-
-.fc .fc-button-primary {
-    background-color: #f0f0f0;
-    color: #424242;
-}
-
-.fc .fc-button-primary:hover {
-    background-color: #e0e0e0;
-    transform: translateY(-1px);
-}
-
-.fc .fc-button-primary:not(:disabled).fc-button-active,
-.fc .fc-button-primary:not(:disabled):active {
-    background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
-    color: white;
-}
-
-.fc .fc-today-button {
-    background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%) !important;
-    color: white !important;
-    box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3) !important;
-}
-
-.fc .fc-today-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(25, 118, 210, 0.4) !important;
-}
-
-.fc .fc-today-button:disabled {
-    opacity: 0.5;
-    transform: none;
-}
-
-.fc .fc-prev-button,
-.fc .fc-next-button {
-    padding: 10px 12px;
-}
-
-.fc .fc-icon {
-    font-size: 1.1em;
-}
-
-/* Kalender Container */
-.fc .fc-view-harness {
-    background: white;
-    border-radius: 16px;
-    overflow: hidden;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
-}
-
-/* Header (Wochentage) */
-.fc .fc-col-header {
-    background: linear-gradient(180deg, #f8f9fa 0%, #f0f2f5 100%);
-}
-
-.fc .fc-col-header-cell {
-    padding: 16px 4px;
-    font-weight: 600;
-    font-size: 0.8rem;
-    color: #616161;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    border-bottom: 2px solid #e8e8e8;
-}
-
-/* Tages-Zellen */
-.fc .fc-daygrid-day {
-    min-height: 110px;
-    transition: background-color 0.2s;
-}
-
-.fc .fc-daygrid-day:hover {
-    background-color: rgba(25, 118, 210, 0.02);
-}
-
-.fc .fc-daygrid-day-frame {
-    padding: 4px;
-}
-
-.fc .fc-daygrid-day-top {
-    flex-direction: row;
-    padding: 8px;
-}
-
-.fc .fc-daygrid-day-number {
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: #424242;
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 10px;
-    transition: all 0.2s;
-}
-
-.fc .fc-daygrid-day:hover .fc-daygrid-day-number {
-    background-color: #f0f0f0;
-}
-
-.fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
-    background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
-    color: white;
-    box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3);
-}
-
-.fc .fc-daygrid-day.fc-day-other .fc-daygrid-day-number {
-    color: #bdbdbd;
-}
-
-/* Time Grid (Woche/Tag) */
-.fc .fc-timegrid-slot {
-    height: 48px;
-}
-
-.fc .fc-timegrid-slot-label {
-    font-size: 0.75rem;
-    color: #757575;
-    font-weight: 500;
-}
-
-.fc .fc-timegrid-now-indicator-line {
-    border-color: #E53935;
-    border-width: 2px;
-}
-
-.fc .fc-timegrid-now-indicator-arrow {
-    border-color: #E53935;
-    border-top-color: transparent;
-    border-bottom-color: transparent;
-}
-
-.fc .fc-timegrid-col.fc-day-today {
-    background-color: rgba(25, 118, 210, 0.03);
-}
-
-/* All Day Slot */
-.fc .fc-timegrid-axis-cushion {
-    font-size: 0.75rem;
-    color: #757575;
-    font-weight: 600;
-    text-transform: uppercase;
-}
-
-.fc .fc-timegrid-divider {
-    padding: 0;
-    border: none;
-    background: #e8e8e8;
-}
-
-/* Events */
-.fc .fc-daygrid-event-harness {
-    margin: 2px 6px;
-}
-
-.fc .fc-daygrid-event,
-.fc .fc-timegrid-event {
-    border-radius: 8px;
-    padding: 6px 10px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    cursor: pointer;
-    border: none;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    transition: all 0.2s ease;
-}
-
-.fc .fc-daygrid-event:hover,
-.fc .fc-timegrid-event:hover {
-    transform: translateY(-2px) scale(1.02);
-    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-}
-
-.fc .fc-event-title {
-    font-weight: 600;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-/* Priority Event Styles */
-.fc .fc-event-overdue {
+/* Prioritäts-Farben — !important übersteuert die Inline-Farbe von FullCalendar */
+.oserp-cal .ofc-prio-overdue {
     background: linear-gradient(135deg, #E53935 0%, #C62828 100%) !important;
     box-shadow: 0 2px 8px rgba(229, 57, 53, 0.3);
 }
 
-.fc .fc-event-overdue:hover {
-    box-shadow: 0 4px 16px rgba(229, 57, 53, 0.4);
-}
-
-.fc .fc-event-today {
+.oserp-cal .ofc-prio-today {
     background: linear-gradient(135deg, #FFC107 0%, #FFB300 100%) !important;
     box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3);
 }
 
-.fc .fc-event-soon {
+.oserp-cal .ofc-prio-soon {
     background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%) !important;
     box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3);
 }
 
-.fc .fc-event-normal {
+.oserp-cal .ofc-prio-normal {
     background: linear-gradient(135deg, #4CAF50 0%, #43A047 100%) !important;
     box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
 }
 
-.fc .fc-event-done {
+.oserp-cal .ofc-prio-done {
     background: linear-gradient(135deg, #9E9E9E 0%, #757575 100%) !important;
     text-decoration: line-through;
     opacity: 0.7;
-}
-
-/* More Link */
-.fc .fc-daygrid-more-link {
-    color: #1976d2;
-    font-weight: 600;
-    font-size: 0.75rem;
-    padding: 4px 10px;
-    margin: 2px 6px;
-    border-radius: 8px;
-    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-    transition: all 0.2s;
-}
-
-.fc .fc-daygrid-more-link:hover {
-    background: linear-gradient(135deg, #bbdefb 0%, #90caf9 100%);
-    transform: scale(1.05);
-}
-
-/* Popover */
-.fc .fc-popover {
-    border-radius: 16px;
-    box-shadow: 0 12px 40px rgba(0,0,0,0.15);
-    border: none;
-    overflow: hidden;
-}
-
-.fc .fc-popover-header {
-    background: linear-gradient(135deg, #f5f5f5 0%, #eeeeee 100%);
-    padding: 14px 18px;
-    font-weight: 600;
-    font-size: 0.9rem;
-}
-
-.fc .fc-popover-body {
-    padding: 10px;
-    max-height: 300px;
-    overflow-y: auto;
-}
-
-/* Wochenende */
-.fc .fc-day-sat,
-.fc .fc-day-sun {
-    background-color: rgba(0,0,0,0.015);
-}
-
-.fc .fc-day-sat .fc-daygrid-day-number,
-.fc .fc-day-sun .fc-daygrid-day-number {
-    color: #9e9e9e;
-}
-
-/* Scrollbar */
-.fc .fc-popover-body::-webkit-scrollbar,
-.fc .fc-scroller::-webkit-scrollbar {
-    width: 6px;
-}
-
-.fc .fc-popover-body::-webkit-scrollbar-track,
-.fc .fc-scroller::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 3px;
-}
-
-.fc .fc-popover-body::-webkit-scrollbar-thumb,
-.fc .fc-scroller::-webkit-scrollbar-thumb {
-    background: #c1c1c1;
-    border-radius: 3px;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .tasks-calendar-wrapper {
-        padding: 12px;
-    }
-
-    .fc .fc-toolbar {
-        flex-direction: column;
-        gap: 12px;
-        padding: 12px;
-    }
-
-    .fc .fc-toolbar-chunk {
-        display: flex;
-        justify-content: center;
-    }
-
-    .fc .fc-toolbar-title {
-        font-size: 1.2rem;
-    }
-
-    .fc .fc-button {
-        padding: 8px 14px;
-        font-size: 0.8rem;
-    }
-
-    .fc .fc-daygrid-day {
-        min-height: 80px;
-    }
-
-    .fc .fc-daygrid-day-number {
-        font-size: 0.8rem;
-        width: 28px;
-        height: 28px;
-    }
-
-    .fc .fc-daygrid-event {
-        padding: 4px 6px;
-        font-size: 0.7rem;
-    }
 }
 </style>

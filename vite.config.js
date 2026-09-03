@@ -83,8 +83,11 @@ export default defineConfig({
               id.includes('node_modules/@intlify/') ||
               id.includes('node_modules/vuedraggable') ||
               id.includes('node_modules/sortablejs')) return 'vendor-vue'
-          // FullCalendar
-          if (id.includes('node_modules/@fullcalendar')) return 'vendor-calendar'
+          // FullCalendar (+ Headless-Core, Preact-Renderer, Temporal-Polyfill)
+          if (id.includes('node_modules/@fullcalendar') ||
+              id.includes('node_modules/@full-ui/') ||
+              id.includes('node_modules/preact') ||
+              id.includes('node_modules/temporal-polyfill')) return 'vendor-calendar'
           // Tiptap Rich-Text-Editor
           if (id.includes('node_modules/@tiptap') ||
               id.includes('node_modules/prosemirror') ||

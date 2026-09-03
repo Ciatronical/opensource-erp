@@ -32,6 +32,7 @@
                 :day-max-event-rows="false"
                 :hidden-days="[0]"
                 :week-duration="8"
+                :slot-min-height="calendarSlotMinHeight"
                 @dates-set="onDatesSet"
                 @event-click="onEventClick"
             />
@@ -205,6 +206,12 @@ export default defineComponent({
             return viewportWidth.value >= viewportHeight.value ? 'compact' : 'large'
         })
 
+        // Slot-Höhe im Zeitraster je Größenmodus (px) — bestimmt, wie viele
+        // Stunden ohne Scrollen sichtbar sind. large nutzt den Default.
+        const calendarSlotMinHeight = computed(() =>
+            ({ compact: 16, normal: 36, qm50c: 35.8 })[effectiveSize.value] ?? 40
+        )
+
         // FullCalendar-Toolbar fuer den Wand-Display-Kalender:
         // Exit-Button rechts vom Heute-Button, Uhr direkt hinter dem Titel.
         function exitWallDisplay() {
@@ -214,13 +221,14 @@ export default defineComponent({
         const calendarCustomButtons = computed(() => ({
             exit: {
                 text: '\u2715',
-                click: exitWallDisplay
+                click: exitWallDisplay,
+                className: 'ofc-exit'
             }
             // clock wird von calendar-main intern verwaltet
         }))
 
         const calendarHeaderToolbar = {
-            left: 'customPrev,customNext customToday exit',
+            left: 'prev,next today exit',
             center: 'calendarWeek title clock dayProgress',
             right: 'listCustomWeek,timeGridCustomWeek,timeGridDay,dayGridMonth'
         }
@@ -315,10 +323,9 @@ export default defineComponent({
                     start: day.work_date,
                     allDay: true,
                     display: 'block',
-                    classNames: ['fc-workload-event'],
-                    backgroundColor: 'transparent',
-                    borderColor:     'transparent',
-                    textColor:       '#333',
+                    className: 'ofc-workload-event',
+                    color: 'transparent',
+                    contrastColor: '#333',
                     editable: false,
                     extendedProps: {
                         isWorkload:   true,
@@ -569,7 +576,7 @@ export default defineComponent({
             t, mode, events, calendarInitialView, calendarMainRef,
             eventDetailOpen, selectedEvent,
             fakturaData, fakturaVehicle, fakturaDocNumber, fakturaDocLabel, fakturaPositions,
-            currentTime, calendarCustomButtons, calendarHeaderToolbar, effectiveSize,
+            currentTime, calendarCustomButtons, calendarHeaderToolbar, effectiveSize, calendarSlotMinHeight,
             sseConnected,
             onDatesSet, onEventClick, exitWallDisplay,
             formatDate, formatCurrency, formatQty, formatEventTime
@@ -630,20 +637,20 @@ export default defineComponent({
 }
 
 /* Toolbar-Chunks als Flex layouten, damit Title und Uhr nebeneinander stehen */
-.wall-display__calendar :deep(.fc .fc-toolbar-chunk) {
+.wall-display__calendar :deep(.ofc-toolbar-section) {
     display: flex;
     align-items: center;
 }
 
-.wall-display__calendar :deep(.fc .fc-toolbar-chunk > :not(:first-child)) {
+.wall-display__calendar :deep(.ofc-toolbar-section > :not(:first-child)) {
     margin-left: 0 !important;
 }
 
 /* Uhr in der FullCalendar-Toolbar — als Text statt Button darstellen */
-.wall-display__calendar :deep(.fc-clock-button),
-.wall-display__calendar :deep(.fc-clock-button:hover),
-.wall-display__calendar :deep(.fc-clock-button:focus),
-.wall-display__calendar :deep(.fc-clock-button:active) {
+.wall-display__calendar :deep(.ofc-clock),
+.wall-display__calendar :deep(.ofc-clock:hover),
+.wall-display__calendar :deep(.ofc-clock:focus),
+.wall-display__calendar :deep(.ofc-clock:active) {
     background: transparent !important;
     color: #424242 !important;
     box-shadow: none !important;
@@ -658,10 +665,10 @@ export default defineComponent({
 }
 
 /* Exit-Button rechts vom Heute-Button — kompakt, rot, nur Icon */
-.wall-display__calendar :deep(.fc-exit-button),
-.wall-display__calendar :deep(.fc-exit-button:hover),
-.wall-display__calendar :deep(.fc-exit-button:focus),
-.wall-display__calendar :deep(.fc-exit-button:active) {
+.wall-display__calendar :deep(.ofc-exit),
+.wall-display__calendar :deep(.ofc-exit:hover),
+.wall-display__calendar :deep(.ofc-exit:focus),
+.wall-display__calendar :deep(.ofc-exit:active) {
     background: rgba(240,240,240,0.18) !important;
     color: rgba(66,66,66,0.35) !important;
     margin-left: 8px !important;
@@ -735,13 +742,13 @@ export default defineComponent({
      gerendert wird. !important schlaegt die Default-Regeln aus calendar-main.vue. -->
 <style>
 /* Ganztags-Zeile: maximal 4em hoch */
-.wall-display .fc-timegrid .fc-daygrid-body {
+.wall-display .ofc-allday-row {
     max-height: 4em;
     overflow: hidden;
 }
 
 /* 1–2 Termine: normales vertikales Stacking, kompakter */
-.wall-display .fc-timegrid .fc-daygrid-event {
+.wall-display .ofc-allday-row .ofc-row-event {
     padding-top: 0 !important;
     padding-bottom: 0 !important;
     margin-bottom: 1px !important;
@@ -749,32 +756,10 @@ export default defineComponent({
     line-height: 1.4;
 }
 
-/* Alle Ganztagstermine nebeneinander mit gleicher Breite */
-.wall-display .fc-timegrid .fc-daygrid-day-events {
-    display: flex !important;
-    flex-direction: row !important;
-    flex-wrap: nowrap !important;
-    align-items: stretch !important;
-    gap: 2px !important;
-    padding: 1px !important;
-}
-.wall-display .fc-timegrid .fc-daygrid-event-harness {
-    position: relative !important;
-    top: auto !important;
-    left: auto !important;
-    right: auto !important;
-    flex: 1 1 0 !important;
-    min-width: 0 !important;
-    margin: 0 !important;
-}
-.wall-display .fc-timegrid .fc-h-event {
-    height: 100% !important;
-}
-
 /* Schmaler Separator nach Samstag (Wochenende-/Wochenanfang-Trenner) */
-.wall-display .fc .fc-col-header-cell.fc-day-sat,
-.wall-display .fc .fc-timegrid-col.fc-day-sat,
-.wall-display .fc .fc-daygrid-day.fc-day-sat {
+.wall-display .ofc-day-header.ofc-dow-6,
+.wall-display .ofc-day-lane.ofc-dow-6,
+.wall-display .ofc-day-cell.ofc-dow-6 {
     border-right: 3px solid #90a4ae !important;
 }
 
@@ -782,158 +767,146 @@ export default defineComponent({
 .wall-display--size-compact .calendar-wrapper {
     padding: 4px !important;
 }
-.wall-display--size-compact .fc .fc-toolbar {
+.wall-display--size-compact .ofc-toolbar {
     margin-bottom: 4px !important;
     padding: 4px 10px !important;
     border-radius: 6px !important;
     gap: 4px !important;
 }
-.wall-display--size-compact .fc .fc-toolbar-title {
+.wall-display--size-compact .ofc-toolbar-title {
     font-size: 0.95rem !important;
 }
-.wall-display--size-compact .fc .fc-button {
+.wall-display--size-compact .ofc-btn {
     padding: 3px 8px !important;
     font-size: 0.7rem !important;
     border-radius: 5px !important;
 }
-.wall-display--size-compact .fc .fc-col-header-cell {
+.wall-display--size-compact .ofc-day-header {
     padding: 3px 4px !important;
     font-size: 0.7rem !important;
 }
-.wall-display--size-compact .fc .fc-timegrid-slot-label {
+.wall-display--size-compact .ofc-slot-header {
     font-size: 0.65rem !important;
 }
-.wall-display--size-compact .fc .fc-timegrid-slot {
-    height: 16px !important;
-}
-.wall-display--size-compact .fc .fc-event-title,
-.wall-display--size-compact .fc .fc-event-time {
+.wall-display--size-compact .ofc-ev-title,
+.wall-display--size-compact .ofc-ev-time {
     font-size: 0.7rem !important;
 }
-.wall-display--size-compact .fc .fc-clock-button,
-.wall-display--size-compact .fc .fc-clock-button:hover,
-.wall-display--size-compact .fc .fc-clock-button:focus,
-.wall-display--size-compact .fc .fc-clock-button:active {
+.wall-display--size-compact .ofc-clock,
+.wall-display--size-compact .ofc-clock:hover,
+.wall-display--size-compact .ofc-clock:focus,
+.wall-display--size-compact .ofc-clock:active {
     font-size: 1.1rem !important;
     padding: 0 0 0 12px !important;
 }
-.wall-display--size-compact .fc .fc-calendarWeek-button {
+.wall-display--size-compact .ofc-kw {
     font-size: 0.95rem !important;
     padding: 4px 8px !important;
 }
-.wall-display--size-compact .fc .fc-exit-button,
-.wall-display--size-compact .fc .fc-exit-button:hover {
+.wall-display--size-compact .ofc-exit,
+.wall-display--size-compact .ofc-exit:hover {
     padding: 3px 8px !important;
     font-size: 0.85rem !important;
     margin-left: 6px !important;
 }
 
 /* normal: nahe an FullCalendar-Defaults */
-.wall-display--size-normal .fc .fc-toolbar {
+.wall-display--size-normal .ofc-toolbar {
     padding: 10px 14px !important;
     margin-bottom: 12px !important;
 }
-.wall-display--size-normal .fc .fc-toolbar-title {
+.wall-display--size-normal .ofc-toolbar-title {
     font-size: 1.25rem !important;
 }
-.wall-display--size-normal .fc .fc-button {
+.wall-display--size-normal .ofc-btn {
     padding: 8px 14px !important;
     font-size: 0.85rem !important;
 }
-.wall-display--size-normal .fc .fc-calendarWeek-button {
+.wall-display--size-normal .ofc-kw {
     font-size: 1.25rem !important;
     padding: 4px 10px !important;
 }
 
-/* Slot-Höhe bestimmt wie viele Stunden sichtbar sind (ohne Scrollen) */
-.wall-display--size-normal .fc .fc-timegrid-slot {
-    height: 36px !important;
-}
-
 /* qm50c: Samsung QM50C — 50 Zoll 4K, Querformat, Abstand ~3–5 m */
-.wall-display--size-qm50c .fc .fc-toolbar {
+.wall-display--size-qm50c .ofc-toolbar {
     padding: 12px 18px !important;
     margin-bottom: 14px !important;
 }
-.wall-display--size-qm50c .fc .fc-toolbar-title {
+.wall-display--size-qm50c .ofc-toolbar-title {
     font-size: 1.6rem !important;
 }
-.wall-display--size-qm50c .fc .fc-button {
+.wall-display--size-qm50c .ofc-btn {
     padding: 10px 18px !important;
     font-size: 1rem !important;
 }
-.wall-display--size-qm50c .fc .fc-col-header-cell {
+.wall-display--size-qm50c .ofc-day-header {
     padding: 6px 4px !important;
     font-size: 0.95rem !important;
 }
-.wall-display--size-qm50c .fc .fc-timegrid-slot-label {
+.wall-display--size-qm50c .ofc-slot-header {
     font-size: 0.9rem !important;
 }
-/* Slot-Höhe: Legt die sichtbare Höhe des Kalenders fest (ohne Scrollen) */
-.wall-display--size-qm50c .fc .fc-timegrid-slot {
-    height: 35.8px !important;
-}
-.wall-display--size-qm50c .fc .fc-event-title,
-.wall-display--size-qm50c .fc .fc-event-time {
+.wall-display--size-qm50c .ofc-ev-title,
+.wall-display--size-qm50c .ofc-ev-time {
     font-size: 0.95rem !important;
 }
-.wall-display--size-qm50c .fc .fc-clock-button,
-.wall-display--size-qm50c .fc .fc-clock-button:hover,
-.wall-display--size-qm50c .fc .fc-clock-button:focus,
-.wall-display--size-qm50c .fc .fc-clock-button:active {
+.wall-display--size-qm50c .ofc-clock,
+.wall-display--size-qm50c .ofc-clock:hover,
+.wall-display--size-qm50c .ofc-clock:focus,
+.wall-display--size-qm50c .ofc-clock:active {
     font-size: 1.8rem !important;
     padding: 0 0 0 20px !important;
 }
-.wall-display--size-qm50c .fc .fc-calendarWeek-button {
+.wall-display--size-qm50c .ofc-kw {
     font-size: 1.6rem !important;
     padding: 5px 12px !important;
 }
-.wall-display--size-qm50c .fc .fc-exit-button,
-.wall-display--size-qm50c .fc .fc-exit-button:hover {
+.wall-display--size-qm50c .ofc-exit,
+.wall-display--size-qm50c .ofc-exit:hover {
     padding: 10px 18px !important;
     font-size: 1.1rem !important;
     margin-left: 8px !important;
 }
 
 /* large: Hochformat-Wandtablet — bewusst gross */
-.wall-display--size-large .fc {
+.wall-display--size-large .oserp-cal {
     font-size: 1.15rem !important;
 }
-.wall-display--size-large .fc .fc-toolbar {
+.wall-display--size-large .ofc-toolbar {
     padding: 18px 22px !important;
     margin-bottom: 20px !important;
 }
-.wall-display--size-large .fc .fc-toolbar-title {
+.wall-display--size-large .ofc-toolbar-title {
     font-size: 2rem !important;
 }
-.wall-display--size-large .fc .fc-button {
+.wall-display--size-large .ofc-btn {
     padding: 14px 22px !important;
     font-size: 1.1rem !important;
 }
-.wall-display--size-large .fc .fc-col-header-cell {
+.wall-display--size-large .ofc-day-header {
     padding: 16px 4px !important;
     font-size: 1.05rem !important;
 }
-.wall-display--size-large .fc .fc-timegrid-slot-label {
+.wall-display--size-large .ofc-slot-header {
     font-size: 1rem !important;
 }
-.wall-display--size-large .fc .fc-event-title,
-.wall-display--size-large .fc .fc-event-time {
+.wall-display--size-large .ofc-ev-title,
+.wall-display--size-large .ofc-ev-time {
     font-size: 1.05rem !important;
 }
-.wall-display--size-large .fc .fc-clock-button,
-.wall-display--size-large .fc .fc-clock-button:hover,
-.wall-display--size-large .fc .fc-clock-button:focus,
-.wall-display--size-large .fc .fc-clock-button:active {
+.wall-display--size-large .ofc-clock,
+.wall-display--size-large .ofc-clock:hover,
+.wall-display--size-large .ofc-clock:focus,
+.wall-display--size-large .ofc-clock:active {
     font-size: 2.9rem !important;
     padding: 0 0 0 24px !important;
 }
-.wall-display--size-large .fc .fc-calendarWeek-button {
+.wall-display--size-large .ofc-kw {
     font-size: 2.5rem !important;
     padding: 6px 14px !important;
 }
-.wall-display--size-large .fc .fc-exit-button,
-.wall-display--size-large .fc .fc-exit-button:hover {
+.wall-display--size-large .ofc-exit,
+.wall-display--size-large .ofc-exit:hover {
     padding: 12px 20px !important;
     font-size: 1.1rem !important;
 }

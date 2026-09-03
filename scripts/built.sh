@@ -34,7 +34,11 @@ npm install
 
 echo ""
 echo "2. Vue.js bauen..."
-npm run build
+if ! npm run build; then
+    echo ""
+    echo "❌ Build fehlgeschlagen!"
+    exit 1
+fi
 
 echo ""
 echo "2b. SSE-Server Dependencies..."
@@ -51,12 +55,6 @@ if [ -f backend/composer.json ]; then
         echo "  WARNUNG: composer nicht gefunden und backend/composer.phar fehlt."
         echo "  Bitte einmalig: sudo apt install composer"
     fi
-fi
-
-if [ $? -ne 0 ]; then
-    echo ""
-    echo "❌ Build fehlgeschlagen!"
-    exit 1
 fi
 
 echo ""
