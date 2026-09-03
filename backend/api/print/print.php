@@ -364,6 +364,10 @@ function generatePDF($data) {
     $pdfContent = file_get_contents($pdfPath);
     $engine->cleanup($pdfPath);
 
+    // Versandexemplar aufbewahren, bevor es das Haus verlaesst.
+    ausgangsrechnungArchivieren($db, $fakturaID, $fakturaType, $pdfContent,
+        $vars['variables']['filename'] ?? null, mitarbeiterId($data));
+
     if ($isPdfRequest) {
         header('Content-Length: ' . strlen($pdfContent));
         header('Content-Disposition: inline; filename="' . $vars['variables']['filename'] . '"');
@@ -521,6 +525,10 @@ function generateBatchPdf($data) {
 
         $err = null;
         $res = renderDocumentPdfFile($db, $id, $type, $templateSet, $lxCars, $err);
+        if ($res !== false) {
+            ausgangsrechnungArchivieren($db, $id, $type, (string)@file_get_contents($res['path']),
+                $res['filename'] ?? null, mitarbeiterId($data));
+        }
         if ($res === false) {
             $errors[] = "Beleg $id: $err";
             continue;
@@ -676,6 +684,9 @@ function printToPrinter($data) {
     }
 
     // An Drucker senden
+    ausgangsrechnungArchivieren($db, $fakturaID, $fakturaType, (string)@file_get_contents($pdfPath),
+        $vars['variables']['filename'] ?? null, mitarbeiterId($data));
+
     $cmd = sprintf('%s %s 2>&1', $printer['printer_command'], escapeshellarg($pdfPath));
     exec($cmd, $output, $returnCode);
 

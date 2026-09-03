@@ -369,7 +369,7 @@ function confirmOutgoingMatch($data) {
             ':cid'    => intval($inv['customer_id']),
             ':arid'   => $invId,
             ':txid'   => $txId,
-            ':eid'    => intval($_SESSION['employee_id'] ?? 0)
+            ':eid'    => mitarbeiterId($data)
         ]);
 
         $db->commit();

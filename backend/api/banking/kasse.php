@@ -407,12 +407,52 @@ function getCashTransactions($data) {
     }
 
     // ── Beleg-Spalten/Joins nur, wenn die Tabellen existieren ──
-    $docCols = "NULL::integer AS document_id, NULL::text AS document_name, NULL::text AS document_mime_type";
-    $docJoin = '';
+    //
+    // Zwei Wege, wie ein Beleg an einer Kassenzeile hängt:
+    //   manuelle Buchung  → Verknüpfungstabelle cash_gl_documents
+    //   Barzahlung auf ER → accounting_documents.ap_id, also der Scan der
+    //                       Eingangsrechnung selbst
+    // Der zweite Weg fehlte bisher: die Spalten waren im AP-Zweig fest auf NULL
+    // gesetzt, obwohl der Beleg längst in der Datenbank lag. Wer bar bezahlte,
+    // sah in der Kasse keine Rechnung — für eine Prüfung wertlos.
+    $leer       = "NULL::integer AS document_id, NULL::text AS document_name, NULL::text AS document_mime_type";
+    $docCols    = $leer;
+    $docJoin    = '';
+    $docColsAp  = $leer;
+    $docJoinAp  = '';
+    $docColsAr  = $leer;
+    $docJoinAr  = '';
     if ($docsEnabled) {
         $docCols = "cgd.document_id, ad.original_name AS document_name, ad.mime_type AS document_mime_type";
         $docJoin = "LEFT JOIN cash_gl_documents   cgd ON cgd.gl_id = gl.id
                     LEFT JOIN accounting_documents ad  ON ad.id   = cgd.document_id";
+
+        // Zu einer Rechnung können mehrere Belege liegen (Rechnung, Lieferschein).
+        // Der jüngste steht stellvertretend an der Zeile, deshalb LIMIT 1.
+        $docColsAp = "apd.id AS document_id, apd.original_name AS document_name, apd.mime_type AS document_mime_type";
+        $docJoinAp = "LEFT JOIN LATERAL (
+                          SELECT d.id, d.original_name, d.mime_type
+                          FROM accounting_documents d
+                          WHERE d.ap_id = ap.id AND d.stored_path IS NOT NULL
+                          ORDER BY d.id DESC LIMIT 1
+                      ) apd ON true";
+
+        // Ausgangsrechnung: das archivierte Versandexemplar. Die Spalte ar_id
+        // kommt erst mit dem Schema-Update — ohne die Pruefung scheiterte das
+        // Kassenbuch bis dahin an einer fehlenden Spalte.
+        $hatArId = $db->getOne(
+            "SELECT 1 AS ok FROM information_schema.columns
+             WHERE table_name = 'accounting_documents' AND column_name = 'ar_id' LIMIT 1"
+        );
+        if ($hatArId) {
+            $docColsAr = "ard.id AS document_id, ard.original_name AS document_name, ard.mime_type AS document_mime_type";
+            $docJoinAr = "LEFT JOIN LATERAL (
+                              SELECT d.id, d.original_name, d.mime_type
+                              FROM accounting_documents d
+                              WHERE d.ar_id = ar.id AND d.stored_path IS NOT NULL
+                              ORDER BY d.id DESC LIMIT 1
+                          ) ard ON true";
+        }
     }
 
     // Rangfolge fürs Gegenkonto: Forderung/Verbindlichkeit schlägt Erlös/Aufwand.
@@ -495,9 +535,7 @@ function getCashTransactions($data) {
                 c.name          AS partner_name,
                 gc.accno        AS gegenkonto_accno,
                 gc.description  AS gegenkonto_description,
-                NULL::integer   AS document_id,
-                NULL::text      AS document_name,
-                NULL::text      AS document_mime_type
+                {$docColsAr}
             FROM acc_trans at
             -- Kein Storno-Filter auf ar/ap: das Kennzeichen storno gehört zur Rechnung,
             -- nicht zur Zahlung. Eine Barauszahlung, die auf einer Stornorechnung
@@ -506,6 +544,7 @@ function getCashTransactions($data) {
             -- und Storno ein Paar, das sich aufhebt und beide Zeilen entfallen.
             JOIN ar ON ar.id = at.trans_id
             JOIN customer c ON c.id = ar.customer_id
+            {$docJoinAr}
             -- Gegenkonto einer Barzahlung ist das Forderungskonto der Rechnung
             -- (Debitoren-Sammelkonto, z. B. 1200) — die Kasse gleicht die Forderung
             -- aus, sie bucht keinen Erlös. Ohne die Rangfolge gewänne je nach
@@ -537,12 +576,11 @@ function getCashTransactions($data) {
                 v.name          AS partner_name,
                 gc.accno        AS gegenkonto_accno,
                 gc.description  AS gegenkonto_description,
-                NULL::integer   AS document_id,
-                NULL::text      AS document_name,
-                NULL::text      AS document_mime_type
+                {$docColsAp}
             FROM acc_trans at
             JOIN ap ON ap.id = at.trans_id
             JOIN vendor v ON v.id = ap.vendor_id
+            {$docJoinAp}
             -- Spiegelbild zu AR: das Verbindlichkeitskonto der Rechnung
             -- (Kreditoren-Sammelkonto, z. B. 1600/3300), nicht das Aufwandskonto.
             LEFT JOIN LATERAL (
@@ -912,7 +950,7 @@ function createCashTransaction($data) {
     $description = trim($data['description'] ?? '') ?: null;
     $reference   = trim($data['reference'] ?? '');
     $documentId  = intval($data['document_id'] ?? 0) ?: null;
-    $employeeId  = $_SESSION['employee_id'] ?? null;
+    $employeeId  = mitarbeiterId($data);
 
     // Fortlaufende Belegnummer automatisch vergeben, falls keine angegeben wurde
     // (Feld ist im Dialog gesperrt; nur bei manueller Bearbeitung kommt ein Wert).
@@ -1415,7 +1453,7 @@ function uploadCashDocument($data) {
     }
 
     $fileHash   = hash('sha256', $fileContent);
-    $employeeId = $_SESSION['employee_id'] ?? null;
+    $employeeId = mitarbeiterId($data);
 
     $existing = $db->getOne(
         "SELECT id FROM accounting_documents WHERE file_hash = :hash",
@@ -1429,9 +1467,14 @@ function uploadCashDocument($data) {
     $accountingDir = fmDataDir() . '/accounting';
     if (!is_dir($accountingDir)) mkdir($accountingDir, 0755, true);
 
+    // status 'booked': der Beleg wird im selben Arbeitsgang an eine Kassenbuchung
+    // gehaengt. 'manual' stand hier frueher — ein Wert, den
+    // accounting_documents_status_check gar nicht zulaesst; der Upload lief
+    // deshalb ausnahmslos in eine Constraint-Verletzung. 'pending' waere falsch,
+    // das ist die Warteschlange der Belegerkennung.
     $db->execute(
         "INSERT INTO accounting_documents (original_name, mime_type, file_size, file_hash, status, employee_id)
-         VALUES (:name, :mime, :size, :hash, 'manual', :eid)",
+         VALUES (:name, :mime, :size, :hash, 'booked', :eid)",
         ['name' => $filename, 'mime' => $mimeType, 'size' => strlen($fileContent), 'hash' => $fileHash, 'eid' => $employeeId]
     );
 
@@ -1440,8 +1483,12 @@ function uploadCashDocument($data) {
     $safeName = preg_replace('/[^a-zA-Z0-9._-]/', '_', $filename);
 
     $storedPath = "accounting/{$docId}_{$safeName}";
-    file_put_contents(fmDataDir() . '/' . $storedPath, $fileContent);
-    $db->execute("UPDATE accounting_documents SET stored_path = :path WHERE id = :id", ['path' => $storedPath, 'id' => $docId]);
+    if (!belegSchreiben(fmDataDir() . '/' . $storedPath, $fileContent)) {
+        resultInfo(false, 'STORAGE_ERROR', 'Beleg konnte nicht gespeichert werden');
+        return;
+    }
+    belegAblageEintragen($db, $docId, $storedPath);
+    belegProtokoll($db, $docId, $employeeId, 'ablage', null, $filename);
 
     resultInfo(true, '', ['document_id' => $docId]);
 }
@@ -1478,6 +1525,7 @@ function linkDocumentToCashTransaction($data) {
             "INSERT INTO cash_gl_documents (gl_id, document_id) VALUES (:gl_id, :doc_id)",
             ['gl_id' => $glId, 'doc_id' => $docId]
         );
+        belegProtokoll($db, $docId, mitarbeiterId($data), 'verknuepfung', null, "Kassenbuchung {$glId}");
     }
 
     resultInfo(true, '', []);
@@ -1517,6 +1565,8 @@ function getCashDocumentContent($data) {
         resultInfo(false, 'DATA_NOT_FOUND', 'Datei nicht gefunden');
         return;
     }
+
+    belegProtokoll($db, $docId, mitarbeiterId($data), 'ansicht');
 
     resultInfo(true, '', [
         'content_base64' => base64_encode(file_get_contents($filePath)),

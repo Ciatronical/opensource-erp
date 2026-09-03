@@ -650,7 +650,8 @@ function createApFromBankTransaction($data) {
             $data['document']['filename']  ?? 'beleg.pdf',
             $data['document']['mime_type'] ?? 'application/octet-stream',
             $data['document']['file_base64'],
-            $vendorId
+            $vendorId,
+            mitarbeiterId($data)
         );
         if ($stored['ok']) {
             $documentId = $stored['document_id'];

@@ -458,7 +458,9 @@ const lookupLinks = computed(() => [
     { key: 'bank',    icon: 'mdi-bank-outline', title: t('BankingView.menu.title'),
       to: { name: 'banking-overview' } },
     { key: 'kasse',   icon: 'mdi-cash-register', title: t('KasseView.title'),
-      to: { name: 'kasse' } }
+      to: { name: 'kasse' } },
+    { key: 'belege',  icon: 'mdi-shield-check-outline', title: t('AccountingView.documentCheck.title'),
+      to: { name: 'accounting-document-check' } }
 ])
 
 const proLinks = computed(() => [

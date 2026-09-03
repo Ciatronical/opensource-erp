@@ -719,7 +719,7 @@ function getTransferConfirmationPdf($data) {
  * @param int|null $vendorId optionaler Lieferantenbezug
  * @return array {ok:bool, document_id?:int, duplicate?:bool, error?:string}
  */
-function storeAccountingDocument($db, $filename, $mime, $base64, $vendorId = null) {
+function storeAccountingDocument($db, $filename, $mime, $base64, $vendorId = null, $employeeId = null) {
     $filename = trim((string)$filename);
     if ($filename === '' || $base64 === '') {
         return ['ok' => false, 'error' => 'Dateiname und Inhalt erforderlich'];
@@ -764,7 +764,7 @@ function storeAccountingDocument($db, $filename, $mime, $base64, $vendorId = nul
         'mime' => $mime ?: 'application/octet-stream',
         'size' => strlen($content),
         'hash' => $hash,
-        'eid'  => $_SESSION['employee_id'] ?? null,
+        'eid'  => $employeeId,
         'vid'  => $vendorId ?: null,
     ]);
 
@@ -772,13 +772,11 @@ function storeAccountingDocument($db, $filename, $mime, $base64, $vendorId = nul
     $safeName   = preg_replace('/[^a-zA-Z0-9._-]/', '_', $filename);
     $storedPath = "accounting/{$docId}_{$safeName}";
 
-    if (file_put_contents(fmDataDir() . '/' . $storedPath, $content) === false) {
+    if (!belegSchreiben(fmDataDir() . '/' . $storedPath, $content)) {
         return ['ok' => false, 'error' => 'Beleg konnte nicht gespeichert werden'];
     }
-    $db->execute(
-        "UPDATE accounting_documents SET stored_path = :path WHERE id = :id",
-        ['path' => $storedPath, 'id' => $docId]
-    );
+    belegAblageEintragen($db, $docId, $storedPath);
+    belegProtokoll($db, $docId, $employeeId, 'ablage', null, $filename);
 
     return ['ok' => true, 'document_id' => $docId, 'duplicate' => false];
 }

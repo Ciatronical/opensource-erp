@@ -385,6 +385,7 @@ erst überlegen musste, wo man hin will, bevor man arbeiten konnte. Heute gilt:
 
 ## Verwandte Seiten
 
+- [Belegablage — Verfahrensdokumentation](gobd-belege.md) — wo Belege liegen, wer sie anfasst, wie lange sie bleiben
 - [Banking](banking.md) — FinTS, Überweisungen, Lastschriften, Bankabstimmung
 - [Umsatzsteuer-Voranmeldung](ustva.md) — Kennzahlen, Fristen, ELSTER
 - [Faktura](faktura.md) — Angebot, Auftrag, Rechnung

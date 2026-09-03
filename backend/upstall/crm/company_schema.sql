@@ -2034,10 +2034,12 @@ CREATE TABLE IF NOT EXISTS accounting_documents (
     vendor_id       INTEGER REFERENCES vendor(id),
     booking_id      INTEGER,                     -- FK wird spaeter gesetzt
     ap_id           INTEGER REFERENCES ap(id),   -- Verknuepfung zur Eingangsrechnung
+    ar_id           INTEGER REFERENCES ar(id),   -- Verknuepfung zur Ausgangsrechnung (archiviertes Versandexemplar)
 
     -- Meta
-    employee_id     INTEGER,
+    employee_id     INTEGER,                     -- wer den Beleg abgelegt hat (GoBD: Nachvollziehbarkeit)
     notes           TEXT,
+    retention_until DATE,                        -- Ende der Aufbewahrungsfrist (AO §147)
     itime           TIMESTAMP DEFAULT NOW(),
     mtime           TIMESTAMP DEFAULT NOW()
 );
@@ -2433,6 +2435,22 @@ CREATE TABLE IF NOT EXISTS cash_gl_documents (
 );
 
 COMMENT ON TABLE cash_gl_documents IS 'Verbindet hochgeladene Belege mit manuellen Kassenbuchungen (gl.id)';
+
+-- Zugriffsprotokoll fuer Belege (GoBD: Nachvollziehbarkeit und Unveraenderbarkeit).
+-- Haelt fest, wer einen Beleg abgelegt, angesehen oder geprueft hat. Wird nur
+-- angehaengt, nie geaendert oder geloescht.
+CREATE TABLE IF NOT EXISTS accounting_document_log (
+    id          INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    document_id INTEGER NOT NULL REFERENCES accounting_documents(id) ON DELETE CASCADE,
+    employee_id INTEGER,                          -- wer; NULL nur bei Hintergrundlaeufen
+    aktion      VARCHAR(20) NOT NULL
+                CHECK (aktion IN ('ablage', 'ansicht', 'pruefung', 'verknuepfung')),
+    ergebnis    VARCHAR(20),                      -- bei 'pruefung': ok, geaendert, fehlt
+    hinweis     TEXT,
+    itime       TIMESTAMP DEFAULT NOW()
+);
+
+COMMENT ON TABLE accounting_document_log IS 'Protokoll aller Zugriffe auf Buchhaltungsbelege (GoBD)';
 
 CREATE INDEX IF NOT EXISTS idx_cash_gl_documents_gl ON cash_gl_documents(gl_id);
 

@@ -53,7 +53,7 @@ function uploadInvoiceDocument($data) {
             ':mime' => $mimeType,
             ':size' => strlen($fileContent),
             ':hash' => $fileHash,
-            ':eid'  => intval($_SESSION['employee_id'] ?? 0)
+            ':eid'  => mitarbeiterId($data)
         ]
     );
     $doc = $db->getOne(
@@ -65,12 +65,12 @@ function uploadInvoiceDocument($data) {
     // Datei auf Disk speichern
     $safeFilename = $docId . '_' . preg_replace('/[^a-zA-Z0-9.\-_]/', '_', $filename);
     $storedPath = $accountingDir . '/' . $safeFilename;
-    file_put_contents($storedPath, $fileContent);
+    if (!belegSchreiben($storedPath, $fileContent)) {
+        throw new ApiError('STORAGE_ERROR', 'Beleg konnte nicht gespeichert werden');
+    }
 
-    $db->execute(
-        "UPDATE accounting_documents SET stored_path = :path WHERE id = :id",
-        [':path' => 'accounting/' . $safeFilename, ':id' => $docId]
-    );
+    belegAblageEintragen($db, $docId, 'accounting/' . $safeFilename);
+    belegProtokoll($db, $docId, mitarbeiterId($data), 'ablage', null, $filename);
 
     // E-Rechnung-Fast-Path: wenn das Dokument ZUGFeRD/XRechnung-XML enthält,
     // strukturierte Daten direkt extrahieren und den KI-Call überspringen.
@@ -440,7 +440,7 @@ PROMPT;
             ':docid'  => $docId,
             ':conf'   => $confidence,
             ':notes'  => $extracted['notes'] ?? null,
-            ':eid'    => intval($_SESSION['employee_id'] ?? 0)
+            ':eid'    => mitarbeiterId($data)
         ]
     );
 
@@ -643,6 +643,8 @@ function getDocumentPdf($data) {
     if (!file_exists($filePath)) {
         throw new ApiError('DATA_NOT_FOUND', 'Datei nicht gefunden');
     }
+
+    belegProtokoll($db, $docId, mitarbeiterId($data), 'ansicht');
 
     header('Content-Type: ' . $doc['mime_type']);
     header('Content-Disposition: inline; filename="' . $doc['original_name'] . '"');

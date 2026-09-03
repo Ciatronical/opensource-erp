@@ -14,6 +14,7 @@ import { createVuetify } from 'vuetify'
 import '@mdi/font/css/materialdesignicons.css'
 import './style.css'
 import preserveCursor from '@/core/directives/preserveCursor'
+import axios from 'axios'
 
 // App & Plugins
 const pinia = createPinia()
@@ -85,6 +86,27 @@ app.directive('preserve-cursor', preserveCursor)
 
 /* 🔥 WICHTIG: NACH pinia */
 const store = oserpStore()
+
+/**
+ * Mitarbeiter-Kennung an jede Anfrage hängen.
+ *
+ * Das Backend darf nicht raten, wer gerade handelt: die PHP-Session kennt den
+ * Mitarbeiter nicht (sie wird nirgends damit gefüllt), der Store dagegen schon.
+ * Buchungen und Belege tragen dadurch, wer sie angelegt hat — ohne diese Angabe
+ * ist eine Buchhaltung nicht nachvollziehbar.
+ *
+ * Ein bereits gesetztes employee_id im Aufruf gewinnt; Datei-Uploads per
+ * FormData bleiben unangetastet.
+ */
+axios.interceptors.request.use(config => {
+    const daten = config.data
+    if (!daten || typeof daten !== 'object' || daten instanceof FormData) return config
+    if (daten.employee_id !== undefined) return config
+
+    const id = store.session?.logged_in_employee?.id
+    if (id) daten.employee_id = id
+    return config
+})
 
 // Debug-Modus prüfen
 if (!store.isDebugMode()) {

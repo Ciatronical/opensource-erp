@@ -207,6 +207,7 @@ const AccountingOutgoingView = () => import('@/features/accounting/views/account
 const AccountingChartOfAccountsView = () => import('@/features/accounting/views/accounting.chart-of-accounts.vue')
 const AccountingAccountLedgerView = () => import('@/features/accounting/views/accounting.account-ledger.vue')
 const AccountingReportsView = () => import('@/features/accounting/views/accounting.reports.vue')
+const AccountingDocumentCheckView = () => import('@/features/accounting/views/accounting.document-check.vue')
 const AccountingOpenItemsView = () => import('@/features/accounting/views/accounting.open-items.vue')
 const AccountingUstvaView = () => import('@/features/accounting/views/accounting.ustva.vue')
 
@@ -689,6 +690,12 @@ function buildRoutes() {
             ...routePath('AccountingView.routes.accountingReports'),
             name: 'accounting-reports',
             component: AccountingReportsView,
+            meta: { hideCustomerBar: true },
+        },
+        {
+            ...routePath('AccountingView.routes.accountingDocumentCheck'),
+            name: 'accounting-document-check',
+            component: AccountingDocumentCheckView,
             meta: { hideCustomerBar: true },
         },
         {

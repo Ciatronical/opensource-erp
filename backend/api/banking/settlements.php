@@ -163,7 +163,7 @@ function uploadCardSettlement($data) {
         return;
     }
 
-    $employeeId = $_SESSION['employee_id'] ?? null;
+    $employeeId = mitarbeiterId($data);
 
     // 1) Datei ablegen (beim Kreditor) — Muster wie uploadInvoiceDocument, Dedup ueber Hash.
     $documentId = null;
@@ -190,8 +190,9 @@ function uploadCardSettlement($data) {
             $documentId = intval($doc['id']);
             $safeName   = preg_replace('/[^a-zA-Z0-9._-]/', '_', $filename);
             $storedPath = "{$relDir}/{$documentId}_{$safeName}";
-            file_put_contents(fmDataDir() . '/' . $storedPath, $content);
-            $db->execute("UPDATE accounting_documents SET stored_path = :p WHERE id = :id", ['p' => $storedPath, 'id' => $documentId]);
+            belegSchreiben(fmDataDir() . '/' . $storedPath, $content);
+            belegAblageEintragen($db, $documentId, $storedPath);
+            belegProtokoll($db, $documentId, $employeeId, 'ablage', null, $filename);
         }
     }
 
@@ -506,7 +507,7 @@ function bookCardSettlementLine($data) {
     $gross = round($net + $fee, 2);
 
     $transdate  = $bank['transdate'];
-    $employeeId = $_SESSION['employee_id'] ?? null;
+    $employeeId = mitarbeiterId($data);
     $descr      = 'Kartenabrechnung ' . $line['provider'] . ' (Auszahlung ' . $line['payout_date'] . ')';
 
     // Optionaler Rechnungsausgleich vorbereiten + validieren (vor jeder Buchung).

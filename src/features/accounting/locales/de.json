@@ -11,6 +11,7 @@
             "accountingChartOfAccounts": "/buchhaltung/konten",
             "accountingAccountLedger": "/buchhaltung/kontoblatt",
             "accountingReports": "/buchhaltung/berichte",
+            "accountingDocumentCheck": "/buchhaltung/belegpruefung",
             "accountingOpenItems": "/buchhaltung/offene-posten",
             "accountingUstva": "/buchhaltung/umsatzsteuer-voranmeldung",
             "accountingCustomers": "/buchhaltung/kunden",
@@ -108,6 +109,50 @@
             "haben": "Haben",
             "closing": "Endsaldo",
             "noRows": "Im gewählten Zeitraum wurde auf kein Konto gebucht."
+        },
+        "documentCheck": {
+            "title": "Belegprüfung",
+            "info": "Jeder Beleg trägt seit der Ablage eine Prüfsumme (SHA-256). Diese Seite liest jede Datei neu ein und rechnet sie nach. So fällt auf, wenn eine Datei nachträglich ausgetauscht wurde oder verschwunden ist — und welche Belege ohne Bearbeiter oder ohne Buchung dastehen.",
+            "run": "Jetzt prüfen",
+            "startHint": "Noch keine Prüfung gelaufen.",
+            "noRows": "Keine Belege vorhanden.",
+            "onlyProblems": "Nur Auffälligkeiten",
+            "directory": "Ablageverzeichnis",
+            "allGood": "{count} Belege geprüft — alle unverändert und vollständig vorhanden.",
+            "tampered": "Achtung: {changed} Belege wurden nach der Ablage verändert, {missing} Dateien fehlen. Beides ist ein Fall für den Steuerberater.",
+            "notAllChecked": "{count} weitere Belege wurden diesmal nicht geprüft.",
+            "tileChecked": "Geprüft",
+            "tileNoEmployee": "Ohne Bearbeiter",
+            "tileOrphan": "Ohne Buchung",
+            "colResult": "Ergebnis",
+            "colName": "Beleg",
+            "colStored": "Abgelegt am",
+            "colBy": "Abgelegt von",
+            "colLink": "Zuordnung",
+            "colUntil": "Aufbewahrung bis",
+            "noEmployee": "unbekannt",
+            "orphan": "keine",
+            "toInvoice": "Eingangsrechnung",
+            "toCash": "Kassenbuchung",
+            "result": {
+                "ok": "unverändert",
+                "geaendert": "verändert",
+                "fehlt": "Datei fehlt",
+                "ohne_datei": "nicht abgelegt",
+                "ohne_hash": "nicht prüfbar"
+            },
+            "action": {
+                "ablage": "abgelegt",
+                "ansicht": "angesehen",
+                "pruefung": "geprüft",
+                "verknuepfung": "verknüpft"
+            },
+            "logTitle": "Protokoll dieses Belegs",
+            "logWhen": "Zeitpunkt",
+            "logWhat": "Vorgang",
+            "logWho": "Mitarbeiter",
+            "logNote": "Hinweis",
+            "logEmpty": "Noch keine Einträge."
         },
         "manual": {
             "title": "Eingangsrechnung erfassen",
@@ -623,7 +668,8 @@
             "runHint": "Durchlauf",
             "groupGoto": "Springen zu",
             "groupData": "Aus der Datenbank",
-            "reportsHint": "Alle Konten mit Anfangssaldo, Soll, Haben und Endsaldo"
+            "reportsHint": "Alle Konten mit Anfangssaldo, Soll, Haben und Endsaldo",
+            "checkHint": "Belege gegen ihre Prüfsumme abgleichen"
         },
         "cockpit": {
             "reload": "Neu laden",

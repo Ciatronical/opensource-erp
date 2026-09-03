@@ -187,7 +187,7 @@ function approveBooking($data) {
          SET status = CASE WHEN status = 'pending' THEN 'approved' ELSE status END,
              approved_by = :eid, approved_at = NOW(), mtime = NOW()
          WHERE id = :id",
-        [':eid' => intval($_SESSION['employee_id'] ?? 0), ':id' => $bookingId]
+        [':eid' => mitarbeiterId($data), ':id' => $bookingId]
     );
 
     $ap = $db->getOne("SELECT ap_id FROM accounting_bookings WHERE id = :id", [':id' => $bookingId]);
@@ -224,7 +224,7 @@ function approveBookingsBatch($data) {
              SET status = CASE WHEN status = 'pending' THEN 'approved' ELSE status END,
                  approved_by = :eid, approved_at = NOW(), mtime = NOW()
              WHERE id = :id",
-            [':eid' => intval($_SESSION['employee_id'] ?? 0), ':id' => $id]
+            [':eid' => mitarbeiterId($data), ':id' => $id]
         );
         $count++;
     }

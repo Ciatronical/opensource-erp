@@ -11,6 +11,7 @@
             "accountingChartOfAccounts": "/accounting/chart-of-accounts",
             "accountingAccountLedger": "/accounting/account-ledger",
             "accountingReports": "/accounting/reports",
+            "accountingDocumentCheck": "/accounting/document-check",
             "accountingOpenItems": "/accounting/open-items",
             "accountingUstva": "/accounting/vat-return",
             "accountingCustomers": "/accounting/customers",
@@ -108,6 +109,50 @@
             "haben": "Credit",
             "closing": "Closing balance",
             "noRows": "Nothing was posted to any account in the selected period."
+        },
+        "documentCheck": {
+            "title": "Document check",
+            "info": "Every document carries a checksum (SHA-256) taken when it was stored. This page reads each file again and recomputes it, revealing files that were replaced or have gone missing — and documents with no owner or no booking.",
+            "run": "Check now",
+            "startHint": "No check has run yet.",
+            "noRows": "No documents.",
+            "onlyProblems": "Problems only",
+            "directory": "Storage directory",
+            "allGood": "{count} documents checked — all unchanged and present.",
+            "tampered": "Warning: {changed} documents were altered after storage, {missing} files are missing. Both belong on your accountant’s desk.",
+            "notAllChecked": "{count} further documents were not checked this time.",
+            "tileChecked": "Checked",
+            "tileNoEmployee": "No owner",
+            "tileOrphan": "No booking",
+            "colResult": "Result",
+            "colName": "Document",
+            "colStored": "Stored on",
+            "colBy": "Stored by",
+            "colLink": "Linked to",
+            "colUntil": "Keep until",
+            "noEmployee": "unknown",
+            "orphan": "none",
+            "toInvoice": "Purchase invoice",
+            "toCash": "Cash entry",
+            "result": {
+                "ok": "unchanged",
+                "geaendert": "altered",
+                "fehlt": "file missing",
+                "ohne_datei": "not stored",
+                "ohne_hash": "not verifiable"
+            },
+            "action": {
+                "ablage": "stored",
+                "ansicht": "viewed",
+                "pruefung": "checked",
+                "verknuepfung": "linked"
+            },
+            "logTitle": "Audit trail for this document",
+            "logWhen": "Time",
+            "logWhat": "Action",
+            "logWho": "Employee",
+            "logNote": "Note",
+            "logEmpty": "No entries yet."
         },
         "manual": {
             "title": "Enter Incoming Invoice",
@@ -623,7 +668,8 @@
             "runHint": "Run",
             "groupGoto": "Go to",
             "groupData": "From the database",
-            "reportsHint": "Every account with opening balance, debit, credit and closing balance"
+            "reportsHint": "Every account with opening balance, debit, credit and closing balance",
+            "checkHint": "Verify documents against their checksum"
         },
         "cockpit": {
             "reload": "Reload",

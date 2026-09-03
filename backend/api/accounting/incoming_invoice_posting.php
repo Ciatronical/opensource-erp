@@ -125,7 +125,7 @@ function _iv_postAp($db, array $p) {
     $apAcc = _iv_apAccount($db);
     if (!$apAcc) throw new ApiError('DATA_ERROR', 'Verbindlichkeitskonto (AP) nicht im Kontenrahmen');
 
-    $employeeId = intval($p['employee_id'] ?? ($_SESSION['employee_id'] ?? 0)) ?: null;
+    $employeeId = mitarbeiterId($p);
     if (!$employeeId) {
         $emp = $db->getOne("SELECT id FROM employee ORDER BY id LIMIT 1");
         $employeeId = $emp['id'] ?? null;
