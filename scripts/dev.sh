@@ -1,5 +1,10 @@
 #!/bin/bash
-# start-dev.sh - Startet die Entwicklungsumgebung mit automatischem git pull
+# dev.sh - Startet die Entwicklungsumgebung mit automatischem git pull
+#
+# Aufruf:
+#   ./scripts/dev.sh              normaler Start (Installation nur bei Bedarf)
+#   ./scripts/dev.sh --force      Installation und Vite-Cache erzwingen
+#   ./scripts/dev.sh --skip-pull  ohne git pull starten
 
 # === KONFIGURATION ===
 TERMINAL_WIDTH=250
@@ -7,6 +12,20 @@ TERMINAL_HEIGHT=40
 
 # Verwende System-PHP
 PHP_BIN="php"
+
+# === ARGUMENTE ===
+RUN_SERVERS_ONLY=0
+FORCE_INSTALL=0
+SKIP_PULL=0
+
+for arg in "$@"; do
+    case "$arg" in
+        --run-servers) RUN_SERVERS_ONLY=1 ;;
+        --force|--force-install|-f) FORCE_INSTALL=1 ;;
+        --skip-pull) SKIP_PULL=1 ;;
+        *) echo "Unbekannte Option: $arg"; exit 1 ;;
+    esac
+done
 
 # Prüfe ob PHP installiert ist
 if ! command -v php &> /dev/null; then
@@ -23,74 +42,131 @@ if [ "$PHP_MAJOR" -lt 8 ]; then
     exit 1
 fi
 
-# === GIT PULL ===
-echo "=== Updating from Git ==="
-if ! git pull; then
-    echo "ERROR: Git pull fehlgeschlagen!"
-    read -p "Trotzdem fortfahren? (j/N) " -n 1 -r
-    echo
-    if [[ ! $REPLY =~ ^[Jj]$ ]]; then
-        exit 1
+# === INSTALLATIONS-HELFER ===
+# Berechnet eine Pruefsumme ueber die Manifest-Dateien eines Verzeichnisses
+deps_hash() {
+    cat "$@" 2>/dev/null | sha256sum | awk '{print $1}'
+}
+
+# npm install nur, wenn sich package.json/package-lock.json geaendert haben
+npm_install_if_needed() {
+    local dir="$1"
+    local label="$2"
+    local stamp="$dir/node_modules/.dev-deps-stamp"
+    local current
+    current=$(deps_hash "$dir/package.json" "$dir/package-lock.json")
+
+    if [ "$FORCE_INSTALL" -eq 0 ] \
+        && [ -d "$dir/node_modules" ] \
+        && [ -f "$stamp" ] \
+        && [ "$(cat "$stamp")" = "$current" ]; then
+        echo "$label: Abhängigkeiten unverändert — Installation übersprungen."
+        return 0
     fi
-fi
-echo ""
 
-# Erstelle Log-Verzeichnis falls nicht vorhanden
-mkdir -p backend/log
-touch backend/log/php_error.log 2>/dev/null || true
-touch backend/log/opensource_erp.api.debug.log 2>/dev/null || true
-# Log-Dateien muessen dem aktuellen User gehoeren
-if [ -f backend/log/opensource_erp.api.debug.log ] && [ ! -w backend/log/opensource_erp.api.debug.log ]; then
-    echo "WARNUNG: backend/log/opensource_erp.api.debug.log ist nicht beschreibbar."
-    echo "  Fix: sudo chown $(whoami):apache2 backend/log/opensource_erp.api.debug.log"
-fi
-
-echo "Using PHP: $($PHP_BIN -v | head -n 1)"
-echo "PHP logs to: backend/log/php_error.log"
-echo "API logs to: backend/log/opensource_erp.api.debug.log"
-
-# === Projekt-Statistiken ===
-echo ""
-echo "=== Projekt-Statistiken ==="
-FILE_COUNT=$(find src -name '*.vue' -o -name '*.js' | wc -l)
-LINE_COUNT=$(find src -name '*.vue' -o -name '*.js' | xargs wc -l 2>/dev/null | tail -1 | awk '{print $1}')
-SRC_SIZE=$(du -sh --exclude='.git' src/ | awk '{print $1}')
-echo "  Dateien (Vue/JS): $FILE_COUNT"
-echo "  Codezeilen:       $LINE_COUNT"
-echo "  src/ Größe:       $SRC_SIZE"
-echo ""
-
-# Installiere npm-Abhängigkeiten
-npm install
-
-# Installiere SSE-Server-Abhängigkeiten
-echo "Installing SSE server dependencies..."
-(cd backend/sse && npm install)
-
-# Installiere PHP-Abhängigkeiten (Composer) — für E-Rechnung, FinTS etc.
-if [ -f backend/composer.json ]; then
-    echo ""
-    echo "Installing PHP dependencies (composer)..."
-    if command -v composer &>/dev/null; then
-        (cd backend && composer install --no-interaction)
-    elif [ -f backend/composer.phar ]; then
-        (cd backend && php composer.phar install --no-interaction)
+    echo "$label: Installiere Abhängigkeiten..."
+    if (cd "$dir" && npm install --no-audit --no-fund); then
+        echo "$current" > "$stamp"
     else
-        echo "WARNUNG: composer nicht gefunden und backend/composer.phar fehlt."
-        echo "  Installation: sudo apt install composer"
-        echo "  oder: cd backend && php -r \"copy('https://getcomposer.org/installer', 'composer-setup.php');\" && php composer-setup.php && rm composer-setup.php"
+        echo "WARNUNG: npm install in $dir fehlgeschlagen."
+        return 1
     fi
-fi
+}
 
-# Stoppe eventuell laufende Server
-echo "Stopping old servers..."
-pkill -f "php -S localhost:8000" 2>/dev/null
-pkill -f "vite" 2>/dev/null
-pkill -f "sse-server.js" 2>/dev/null
-sleep 1
+# composer install nur, wenn sich composer.json/composer.lock geaendert haben
+composer_install_if_needed() {
+    local dir="$1"
+    local stamp="$dir/vendor/.dev-deps-stamp"
+    local current
+    current=$(deps_hash "$dir/composer.json" "$dir/composer.lock")
+
+    if [ "$FORCE_INSTALL" -eq 0 ] \
+        && [ -d "$dir/vendor" ] \
+        && [ -f "$stamp" ] \
+        && [ "$(cat "$stamp")" = "$current" ]; then
+        echo "Composer: Abhängigkeiten unverändert — Installation übersprungen."
+        return 0
+    fi
+
+    echo "Installing PHP dependencies (composer)..."
+    local ok=0
+    if command -v composer &>/dev/null; then
+        (cd "$dir" && composer install --no-interaction) && ok=1
+    elif [ -f "$dir/composer.phar" ]; then
+        (cd "$dir" && php composer.phar install --no-interaction) && ok=1
+    else
+        echo "WARNUNG: composer nicht gefunden und $dir/composer.phar fehlt."
+        echo "  Installation: sudo apt install composer"
+        echo "  oder: cd $dir && php -r \"copy('https://getcomposer.org/installer', 'composer-setup.php');\" && php composer-setup.php && rm composer-setup.php"
+        return 1
+    fi
+
+    if [ "$ok" -eq 1 ]; then
+        echo "$current" > "$stamp"
+    else
+        echo "WARNUNG: composer install fehlgeschlagen."
+        return 1
+    fi
+}
+
+# === VORBEREITUNG (git pull, Logs, Abhaengigkeiten) ===
+prepare_env() {
+    if [ "$SKIP_PULL" -eq 0 ]; then
+        echo "=== Updating from Git ==="
+        if ! git pull; then
+            echo "ERROR: Git pull fehlgeschlagen!"
+            read -p "Trotzdem fortfahren? (j/N) " -n 1 -r
+            echo
+            if [[ ! $REPLY =~ ^[Jj]$ ]]; then
+                exit 1
+            fi
+        fi
+        echo ""
+    fi
+
+    # Erstelle Log-Verzeichnis falls nicht vorhanden
+    mkdir -p backend/log
+    touch backend/log/php_error.log 2>/dev/null || true
+    touch backend/log/opensource_erp.api.debug.log 2>/dev/null || true
+    # Log-Dateien muessen dem aktuellen User gehoeren
+    if [ -f backend/log/opensource_erp.api.debug.log ] && [ ! -w backend/log/opensource_erp.api.debug.log ]; then
+        echo "WARNUNG: backend/log/opensource_erp.api.debug.log ist nicht beschreibbar."
+        echo "  Fix: sudo chown $(whoami):apache2 backend/log/opensource_erp.api.debug.log"
+    fi
+
+    echo "Using PHP: $($PHP_BIN -v | head -n 1)"
+    echo "PHP logs to: backend/log/php_error.log"
+    echo "API logs to: backend/log/opensource_erp.api.debug.log"
+
+    # === Projekt-Statistiken ===
+    echo ""
+    echo "=== Projekt-Statistiken ==="
+    FILE_COUNT=$(find src -name '*.vue' -o -name '*.js' | wc -l)
+    LINE_COUNT=$(find src -name '*.vue' -o -name '*.js' | xargs wc -l 2>/dev/null | tail -1 | awk '{print $1}')
+    SRC_SIZE=$(du -sh --exclude='.git' src/ | awk '{print $1}')
+    echo "  Dateien (Vue/JS): $FILE_COUNT"
+    echo "  Codezeilen:       $LINE_COUNT"
+    echo "  src/ Größe:       $SRC_SIZE"
+    echo ""
+
+    # Abhaengigkeiten nur bei Bedarf installieren
+    npm_install_if_needed "." "Frontend"
+    npm_install_if_needed "backend/sse" "SSE-Server"
+    if [ -f backend/composer.json ]; then
+        composer_install_if_needed "backend"
+    fi
+    echo ""
+}
 
 # === Server-Start-Funktion ===
 run_servers() {
+    # Stoppe eventuell laufende Server
+    echo "Stopping old servers..."
+    pkill -f "php -S localhost:8000" 2>/dev/null
+    pkill -f "vite" 2>/dev/null
+    pkill -f "sse-server.js" 2>/dev/null
+    sleep 1
+
     echo "=== OpensourceERP Development Environment ==="
     echo ""
 
@@ -143,10 +219,15 @@ run_servers() {
     # Kurze Pause damit PHP und SSE starten können
     sleep 2
 
-    # Starte npm dev server
+    # Starte npm dev server — Vite-Cache nur bei --force neu aufbauen
     echo ""
     echo "Starting NPM Dev Server..."
-    npm run dev -- --force 2>&1 | while read line; do
+    if [ "$FORCE_INSTALL" -eq 1 ]; then
+        VITE_ARGS="--force"
+    else
+        VITE_ARGS=""
+    fi
+    npm run dev -- $VITE_ARGS 2>&1 | while read line; do
         echo "[NPM] $line"
     done &
     NPM_PID=$!
@@ -182,10 +263,16 @@ run_servers() {
 }
 
 # Starte Server — in gnome-terminal falls GUI vorhanden, sonst direkt im Terminal
-if [ "$1" = "--run-servers" ]; then
+if [ "$RUN_SERVERS_ONLY" -eq 1 ]; then
+    # Zweiter Durchlauf im neuen Terminal: Vorbereitung lief bereits
     run_servers
-elif command -v gnome-terminal &>/dev/null && [ -n "$DISPLAY" ]; then
-    gnome-terminal --title="OpensourceERP" --geometry=${TERMINAL_WIDTH}x${TERMINAL_HEIGHT} -- bash -c "cd $(pwd) && bash scripts/dev.sh --run-servers; exec bash"
 else
-    run_servers
+    prepare_env
+    if command -v gnome-terminal &>/dev/null && [ -n "$DISPLAY" ]; then
+        CHILD_ARGS="--run-servers"
+        [ "$FORCE_INSTALL" -eq 1 ] && CHILD_ARGS="$CHILD_ARGS --force"
+        gnome-terminal --title="OpensourceERP" --geometry=${TERMINAL_WIDTH}x${TERMINAL_HEIGHT} -- bash -c "cd $(pwd) && bash scripts/dev.sh $CHILD_ARGS; exec bash"
+    else
+        run_servers
+    fi
 fi
