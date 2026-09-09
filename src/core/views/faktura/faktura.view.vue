@@ -2624,7 +2624,8 @@ export default defineComponent({
                 const pdfBase64 = await faktura.generatePDFBase64(
                     fakturaId.value,
                     fakturaType.value,
-                    selectedTemplate.value
+                    selectedTemplate.value,
+                    selectedPrinter.value?.id ?? null
                 )
 
                 const defaults = oserp.session.company_config?.defaults || {}
@@ -2847,7 +2848,8 @@ export default defineComponent({
                 const pdfBase64 = await faktura.generatePDFBase64(
                     fakturaId.value,
                     fakturaType.value,
-                    selectedTemplate.value
+                    selectedTemplate.value,
+                    selectedPrinter.value?.id ?? null
                 )
 
                 const common = faktura.data?.common || {}

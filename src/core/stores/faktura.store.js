@@ -494,14 +494,16 @@ export const fakturaStore = defineStore('fakturaStore', () => {
      * @param {number} fakturaID - ID des Dokuments
      * @param {string} fakturaType - Typ: 'invoice', 'order', 'quotation', 'delivery_order'
      * @param {string|null} templateSet - Template-Set-Name oder null fuer Default
+     * @param {number|null} printerId - Drucker, dessen Vorlagen-Kürzel die Variante bestimmt (wie beim Drucken)
      * @return {Promise<string>} Base64-kodierter PDF-Inhalt
      */
-    async function generatePDFBase64(fakturaID, fakturaType, templateSet = null) {
+    async function generatePDFBase64(fakturaID, fakturaType, templateSet = null, printerId = null) {
         const response = await axios.post('/api/print/', {
             action: 'generatePDF',
             fakturaID: fakturaID,
             fakturaType: fakturaType,
             templateSet: templateSet,
+            printerId: printerId,
             'content-type': 'application/pdf'
         }, {
             responseType: 'blob'
