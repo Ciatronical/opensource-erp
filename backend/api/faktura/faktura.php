@@ -679,7 +679,8 @@ function createFakturaItemCore($company, $fakturaType, $fakturaID, $item) {
         ':parts_id',
         ':position',
         ':description',
-        ':longdescription',
+        // Leerer Langtext -> Langtext des Artikels (parts.notes), wie in kivitendo
+        "COALESCE(NULLIF(:longdescription, ''), (SELECT notes FROM parts WHERE id = :ld_parts_id), '')",
         ':qty',
         ':sellprice',
         ':discount',
@@ -699,7 +700,8 @@ function createFakturaItemCore($company, $fakturaType, $fakturaID, $item) {
         'sellprice' => floatval($item['sellprice'] ?? 0),
         'discount' => floatval($item['discount'] ?? 0),
         'unit' => $item['unit'] ?? '',
-        'unit_parts_id' => intval($item['parts_id'])
+        'unit_parts_id' => intval($item['parts_id']),
+        'ld_parts_id' => intval($item['parts_id'])
     ];
 
     // Zusätzliche Spalten nur für Rechnungen (invoice Tabelle)
@@ -796,16 +798,20 @@ function replaceFakturaItemArticle($data) {
     $tableConfig = getFakturaTableConfig($fakturaType);
     $itemsTable = $tableConfig['items_table']; // kontrollierter Tabellenname (kein User-Input)
 
-    $company->execute(
+    // Langtext folgt dem neuen Artikel (parts.notes), wie in kivitendo
+    $row = $company->getOne(
         "UPDATE {$itemsTable}
             SET parts_id = :parts_id,
                 description = :description,
+                longdescription = COALESCE((SELECT notes FROM parts WHERE id = :ld_parts_id), ''),
                 qty = :qty,
                 sellprice = :sellprice,
                 unit = COALESCE(NULLIF(:unit, ''), unit)
-          WHERE id = :item_id",
+          WHERE id = :item_id
+          RETURNING id, longdescription",
         [
             ':parts_id'    => $partsId,
+            ':ld_parts_id' => $partsId,
             ':description' => $data['description'] ?? '',
             ':qty'         => $data['qty'] ?? 1,
             ':sellprice'   => $data['sellprice'] ?? 0,
@@ -814,7 +820,7 @@ function replaceFakturaItemArticle($data) {
         ]
     );
 
-    resultInfo(true, 'REPLACED');
+    resultInfo(true, 'REPLACED', $row ?: []);
 }
 
 /**
@@ -2444,10 +2450,12 @@ SQL;
 
         // 2. Position einfügen
         $columns = 'trans_id, parts_id, position, description, longdescription, qty, sellprice, discount, unit';
-        $values = ':trans_id, :parts_id, :position, :description, :longdescription, :qty, :sellprice, :discount, :unit';
+        // Leerer Langtext -> Langtext des Artikels (parts.notes), wie in kivitendo
+        $values = ":trans_id, :parts_id, :position, :description, COALESCE(NULLIF(:longdescription, ''), (SELECT notes FROM parts WHERE id = :ld_parts_id), ''), :qty, :sellprice, :discount, :unit";
         $params = [
             'trans_id' => $fakturaID,
             'parts_id' => $partsId,
+            'ld_parts_id' => $partsId,
             'position' => $nextPosition,
             'description' => $description,
             'longdescription' => trim($item['longdescription'] ?? ''),

@@ -143,7 +143,7 @@ export const fakturaStore = defineStore('fakturaStore', () => {
         if (!response.data.success) {
             throw new ApiError('ApiError', response.data.text, 'Error replacing article: ' + response.data.text);
         }
-        return response.data;
+        return response.data.payload || {};
     }
 
     /**

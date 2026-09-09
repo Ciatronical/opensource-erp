@@ -63,6 +63,15 @@ export function useItemManagement({
 
     // ── Neue Zeile hinzufügen ──
 
+    // Übernimmt die vom Server vergebenen Werte in das Store-Item. Der Langtext
+    // (longdescription) wird beim Anlegen aus parts.notes gefüllt und muss im
+    // Item stehen, sonst überschreibt der folgende Bulk-Save ihn mit ''.
+    function applySavedItem(item, savedItem) {
+        if (!savedItem) return
+        if (savedItem.id) item.id = savedItem.id
+        if (savedItem.longdescription !== undefined) item.longdescription = savedItem.longdescription || ''
+    }
+
     async function addNewItemRow(index) {
         if (index === fakturaItems.value.length - 1) {
             const currentItem = fakturaItems.value[index]
@@ -71,7 +80,7 @@ export function useItemManagement({
                 try {
                     await ensureFakturaExists()
                     const savedItem = await faktura.createFakturaItem(fakturaId.value, currentItem, fakturaType.value)
-                    currentItem.id = savedItem.id
+                    applySavedItem(currentItem, savedItem)
 
                     fakturaItems.value.push(createEmptyItem())
                     calculateTotals()
@@ -294,9 +303,7 @@ export function useItemManagement({
 
             await ensureFakturaExists()
             const savedItem = await faktura.createFakturaItem(fakturaId.value, targetItem, fakturaType.value)
-            if (savedItem && savedItem.id) {
-                targetItem.id = savedItem.id
-            }
+            applySavedItem(targetItem, savedItem)
 
             fakturaItems.value.push(createEmptyItem())
             flushRouteReplace?.()
@@ -365,7 +372,7 @@ export function useItemManagement({
         try {
             await ensureFakturaExists()
             const savedItem = await faktura.createFakturaItem(fakturaId.value, item, fakturaType.value)
-            item.id = savedItem.id
+            applySavedItem(item, savedItem)
             calculateTotals()
             await saveAllItems()
             flushRouteReplace?.()
@@ -400,14 +407,15 @@ export function useItemManagement({
             await ensureFakturaExists()
             if (!item.id) {
                 const savedItem = await faktura.createFakturaItem(fakturaId.value, item, fakturaType.value)
-                item.id = savedItem.id
+                applySavedItem(item, savedItem)
             } else {
-                await faktura.replaceFakturaItemArticle(item.id, item.parts_id, {
+                const replaced = await faktura.replaceFakturaItemArticle(item.id, item.parts_id, {
                     description: item.description,
                     qty: item.qty,
                     sellprice: item.sellprice,
                     unit: item.unit
                 }, fakturaType.value)
+                applySavedItem(item, replaced)
             }
             calculateTotals()
             await saveAllItems()

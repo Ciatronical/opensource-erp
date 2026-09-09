@@ -112,18 +112,59 @@ class LaTeXTemplateEngine {
      * Escaped LaTeX-Sonderzeichen (Port von quote_special_chars in SL::Locale)
      */
     private function escapeLatex(string $value): string {
-        // Reihenfolge wichtig: Backslash zuerst
-        $value = str_replace('\\', '\\textbackslash{}', $value);
-        $value = str_replace(
-            ['&',  '%',  '$',  '#',  '_',  '{',  '}'],
-            ['\\&', '\\%', '\\$', '\\#', '\\_', '\\{', '\\}'],
-            $value
-        );
-        $value = str_replace('~', '\\textasciitilde{}', $value);
-        $value = str_replace('^', '\\textasciicircum{}', $value);
-        // Steuerzeichen entfernen
-        $value = preg_replace('/[\x00-\x1f]/', '', $value);
-        return $value;
+        // Port der Tabelle [Template/LaTeX] aus kivitendo locale/de/special_chars.
+        // strtr() ersetzt in einem Durchgang (laengster Treffer zuerst), daher
+        // kein Doppel-Escaping des Backslashs noetig.
+        static $map = [
+            '\\'          => '\\textbackslash ',
+            '<pagebreak>' => '',
+            '&'           => '\\&',
+            "\n"          => '\\newline ',
+            "\r"          => '',
+            '"'           => "''",          // " ist unter german.sty ein aktives Zeichen
+            '$'           => '\\$',
+            '<bullet>'    => '$\\bullet$',
+            '%'           => '\\%',
+            '_'           => '\\_',
+            '#'           => '\\#',
+            '^'           => '\\^\\ ',
+            '{'           => '\\{',
+            '}'           => '\\}',
+            '<'           => '$<$',         // in OT1 sonst als "¡" gesetzt
+            '>'           => '$>$',         // in OT1 sonst als "¿" gesetzt
+            '£'           => '\\pounds ',
+            '±'           => '$\\pm$',
+            '²'           => '$^2$',
+            '³'           => '$^3$',
+            '°'           => '$^\\circ$',
+            '§'           => '\\S ',
+            '®'           => '{\\textregistered}',
+            '©'           => '{\\textcopyright}',
+            '~'           => '{\\raisebox{0.5ex}{\\texttildelow}}',
+            "\xC2\xAD"    => '\\-',          // weiches Trennzeichen
+            "\xC2\xA0"    => '~',             // geschuetztes Leerzeichen
+            '➔'           => '$\\rightarrow$',
+            '→'           => '$\\rightarrow$',
+            '←'           => '$\\leftarrow$',
+            '↔'           => '$\\leftrightarrow$',
+            '↕'           => '$\\updownarrow$',
+            '|'           => '{\\textbar}',
+            '−'           => '{\\textemdash}',
+            '≤'           => '$\\leq$',
+            '≥'           => '$\\geq$',
+            '‐'           => '{}-{}',
+            '‑'           => '{}-{}',
+            "\xE2\x80\x8B" => '{\\hspace{0pt}}', // Nullbreiten-Leerzeichen
+            'Ω'           => '$\\Omega$',
+            'μ'           => '{\\textmu}',
+            'Δ'           => '$\\Delta$',
+            'λ'           => '$\\lambda$',
+            'Ø'           => '{\\O}',
+            'ø'           => '{\\o}',
+        ];
+        $value = strtr($value, $map);
+        // Uebrige Steuerzeichen entfernen (Zeilenumbrueche sind bereits \newline)
+        return preg_replace('/[\x00-\x1f]/', '', $value);
     }
 
     /**
