@@ -1,0 +1,71 @@
+{
+    "ShopView": {
+        "routes": {
+            "shopOverview": "/sklep",
+            "shopOrders": "/sklep/zamowienia",
+            "shopWithdrawals": "/sklep/odstapienia"
+        },
+        "menu": {
+            "title": "Sklep",
+            "overview": "Przegląd"
+        },
+        "common": {
+            "reload": "Odśwież"
+        },
+        "status": {
+            "ready": "Sklep jest gotowy do pracy.",
+            "notReady": "Sklep nie przyjmuje jeszcze zamówień",
+            "notReadyHint": "Brakuje tych danych. Znajdują się w ustawieniach w sekcji Rozszerzenia → Sklep.",
+            "hints": "Tych danych wciąż brakuje. Sklep działa, ale w ograniczonym zakresie:",
+            "partsWithShopData": "Artykuły z danymi sklepu",
+            "carts": "Koszyki",
+            "sessions": "Sesje"
+        },
+        "orders": {
+            "title": "Zamówienia",
+            "subtitle": "Co zamówiono przez sklep",
+            "invnumber": "Faktura",
+            "date": "Data",
+            "customer": "Klient",
+            "positions": "Pozycje",
+            "amount": "Kwota",
+            "payment": "Płatność",
+            "guest": "Gość",
+            "empty": "Brak zamówień",
+            "onlyUnpaid": "Tylko niezapłacone",
+            "openInvoice": "Otwórz fakturę"
+        },
+        "payments": {
+            "title": "Płatności w toku",
+            "explain": "Te płatności nie zostały jeszcze rozstrzygnięte w PayPal. Uzgodnienie pyta o wynik i go zapisuje.",
+            "reconcile": "Zapytaj PayPal",
+            "empty": "Brak płatności w toku",
+            "since": "Od",
+            "reason": "Powód",
+            "result": "Wynik uzgodnienia",
+            "bookingHint": "Potwierdzone płatności są odnotowane, ale niezaksięgowane — robi się to ręcznie, tak jak przy przelewach.",
+            "paid": "zapłacone",
+            "pending": "w toku",
+            "failed": "nieudane",
+            "open": "otwarte"
+        },
+        "withdrawals": {
+            "title": "Odstąpienia",
+            "subtitle": "Otrzymane oświadczenia o odstąpieniu",
+            "received": "Otrzymano",
+            "name": "Nazwisko",
+            "order": "Zamówienie",
+            "state": "Stan",
+            "email": "E-mail",
+            "reason": "Uzasadnienie",
+            "noReason": "nie podano uzasadnienia",
+            "empty": "Brak odstąpień",
+            "onlyOpen": "Tylko otwarte",
+            "done": "załatwione",
+            "open": "otwarte",
+            "markDone": "Oznacz jako załatwione",
+            "reopen": "Otwórz ponownie",
+            "unmatched": "Nie znaleziono faktury dla tego numeru zamówienia"
+        }
+    }
+}

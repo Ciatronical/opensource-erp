@@ -1,0 +1,71 @@
+{
+    "ShopView": {
+        "routes": {
+            "shopOverview": "/butikk",
+            "shopOrders": "/butikk/bestillinger",
+            "shopWithdrawals": "/butikk/angrerett"
+        },
+        "menu": {
+            "title": "Butikk",
+            "overview": "Oversikt"
+        },
+        "common": {
+            "reload": "Last inn på nytt"
+        },
+        "status": {
+            "ready": "Butikken er klar til bruk.",
+            "notReady": "Butikken tar ennå ikke imot bestillinger",
+            "notReadyHint": "Disse opplysningene mangler. De finnes i innstillingene under Utvidelser → Butikk.",
+            "hints": "Disse opplysningene mangler fortsatt. Butikken virker, men begrenset:",
+            "partsWithShopData": "Varer med butikkdata",
+            "carts": "Handlekurver",
+            "sessions": "Økter"
+        },
+        "orders": {
+            "title": "Bestillinger",
+            "subtitle": "Hva som er bestilt via butikken",
+            "invnumber": "Faktura",
+            "date": "Dato",
+            "customer": "Kunde",
+            "positions": "Linjer",
+            "amount": "Beløp",
+            "payment": "Betaling",
+            "guest": "Gjest",
+            "empty": "Ingen bestillinger",
+            "onlyUnpaid": "Kun ubetalte",
+            "openInvoice": "Åpne faktura"
+        },
+        "payments": {
+            "title": "Ventende betalinger",
+            "explain": "Disse betalingene er ennå ikke avgjort hos PayPal. Avstemmingen spør om utfallet og noterer det.",
+            "reconcile": "Spør PayPal",
+            "empty": "Ingen ventende betalinger",
+            "since": "Siden",
+            "reason": "Årsak",
+            "result": "Resultat av avstemmingen",
+            "bookingHint": "Bekreftede betalinger er notert, men ikke ført — det gjøres for hånd, som ved overføringer.",
+            "paid": "betalt",
+            "pending": "venter",
+            "failed": "mislyktes",
+            "open": "åpen"
+        },
+        "withdrawals": {
+            "title": "Angrerett",
+            "subtitle": "Mottatte angremeldinger",
+            "received": "Mottatt",
+            "name": "Navn",
+            "order": "Bestilling",
+            "state": "Status",
+            "email": "E-post",
+            "reason": "Begrunnelse",
+            "noReason": "ingen begrunnelse oppgitt",
+            "empty": "Ingen angremeldinger",
+            "onlyOpen": "Kun åpne",
+            "done": "behandlet",
+            "open": "åpen",
+            "markDone": "Merk som behandlet",
+            "reopen": "Åpne igjen",
+            "unmatched": "Fant ingen faktura for dette bestillingsnummeret"
+        }
+    }
+}

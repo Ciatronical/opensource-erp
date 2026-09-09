@@ -1,0 +1,71 @@
+{
+    "ShopView": {
+        "routes": {
+            "shopOverview": "/winkel",
+            "shopOrders": "/winkel/bestellingen",
+            "shopWithdrawals": "/winkel/herroepingen"
+        },
+        "menu": {
+            "title": "Winkel",
+            "overview": "Overzicht"
+        },
+        "common": {
+            "reload": "Opnieuw laden"
+        },
+        "status": {
+            "ready": "De winkel is klaar voor gebruik.",
+            "notReady": "De winkel neemt nog geen bestellingen aan",
+            "notReadyHint": "Deze gegevens ontbreken. Ze staan bij de instellingen onder Uitbreidingen → Winkel.",
+            "hints": "Deze gegevens ontbreken nog. De winkel werkt, maar beperkt:",
+            "partsWithShopData": "Artikelen met winkelgegevens",
+            "carts": "Winkelwagens",
+            "sessions": "Sessies"
+        },
+        "orders": {
+            "title": "Bestellingen",
+            "subtitle": "Wat er via de winkel is besteld",
+            "invnumber": "Factuur",
+            "date": "Datum",
+            "customer": "Klant",
+            "positions": "Regels",
+            "amount": "Bedrag",
+            "payment": "Betaling",
+            "guest": "Gast",
+            "empty": "Geen bestellingen",
+            "onlyUnpaid": "Alleen onbetaald",
+            "openInvoice": "Factuur openen"
+        },
+        "payments": {
+            "title": "Openstaande betalingen",
+            "explain": "Deze betalingen zijn bij PayPal nog niet beslist. De afstemming vraagt de uitkomst op en legt die vast.",
+            "reconcile": "PayPal raadplegen",
+            "empty": "Geen openstaande betalingen",
+            "since": "Sinds",
+            "reason": "Reden",
+            "result": "Resultaat van de afstemming",
+            "bookingHint": "Bevestigde betalingen zijn genoteerd maar niet geboekt — dat gebeurt handmatig, net als bij overboekingen.",
+            "paid": "betaald",
+            "pending": "in behandeling",
+            "failed": "mislukt",
+            "open": "open"
+        },
+        "withdrawals": {
+            "title": "Herroepingen",
+            "subtitle": "Ontvangen herroepingsverklaringen",
+            "received": "Ontvangen",
+            "name": "Naam",
+            "order": "Bestelling",
+            "state": "Status",
+            "email": "E-mail",
+            "reason": "Reden",
+            "noReason": "geen reden opgegeven",
+            "empty": "Geen herroepingen",
+            "onlyOpen": "Alleen open",
+            "done": "afgehandeld",
+            "open": "open",
+            "markDone": "Als afgehandeld markeren",
+            "reopen": "Heropenen",
+            "unmatched": "Geen factuur gevonden bij dit bestelnummer"
+        }
+    }
+}

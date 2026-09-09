@@ -1,0 +1,71 @@
+{
+    "ShopView": {
+        "routes": {
+            "shopOverview": "/negozio",
+            "shopOrders": "/negozio/ordini",
+            "shopWithdrawals": "/negozio/recessi"
+        },
+        "menu": {
+            "title": "Negozio",
+            "overview": "Panoramica"
+        },
+        "common": {
+            "reload": "Ricarica"
+        },
+        "status": {
+            "ready": "Il negozio è pronto all'uso.",
+            "notReady": "Il negozio non accetta ancora ordini",
+            "notReadyHint": "Mancano questi dati. Si trovano nelle impostazioni, in Estensioni → Negozio.",
+            "hints": "Mancano ancora questi dati. Il negozio funziona, ma in modo limitato:",
+            "partsWithShopData": "Articoli con dati del negozio",
+            "carts": "Carrelli",
+            "sessions": "Sessioni"
+        },
+        "orders": {
+            "title": "Ordini",
+            "subtitle": "Cosa è stato ordinato tramite il negozio",
+            "invnumber": "Fattura",
+            "date": "Data",
+            "customer": "Cliente",
+            "positions": "Righe",
+            "amount": "Importo",
+            "payment": "Pagamento",
+            "guest": "Ospite",
+            "empty": "Nessun ordine",
+            "onlyUnpaid": "Solo non pagati",
+            "openInvoice": "Apri fattura"
+        },
+        "payments": {
+            "title": "Pagamenti in sospeso",
+            "explain": "Questi pagamenti non sono ancora stati definiti su PayPal. La riconciliazione ne chiede l'esito e lo registra.",
+            "reconcile": "Chiedi a PayPal",
+            "empty": "Nessun pagamento in sospeso",
+            "since": "Dal",
+            "reason": "Motivo",
+            "result": "Esito della riconciliazione",
+            "bookingHint": "I pagamenti confermati risultano annotati ma non registrati in contabilità: ciò avviene a mano, come per i bonifici.",
+            "paid": "pagato",
+            "pending": "in sospeso",
+            "failed": "fallito",
+            "open": "aperto"
+        },
+        "withdrawals": {
+            "title": "Recessi",
+            "subtitle": "Dichiarazioni di recesso ricevute",
+            "received": "Ricevuto",
+            "name": "Nome",
+            "order": "Ordine",
+            "state": "Stato",
+            "email": "E-mail",
+            "reason": "Motivo",
+            "noReason": "nessun motivo indicato",
+            "empty": "Nessun recesso",
+            "onlyOpen": "Solo aperti",
+            "done": "gestito",
+            "open": "aperto",
+            "markDone": "Segna come gestito",
+            "reopen": "Riapri",
+            "unmatched": "Nessuna fattura trovata per questo numero d'ordine"
+        }
+    }
+}

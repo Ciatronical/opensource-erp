@@ -1,0 +1,71 @@
+{
+    "ShopView": {
+        "routes": {
+            "shopOverview": "/shop",
+            "shopOrders": "/shop/bestellungen",
+            "shopWithdrawals": "/shop/widerrufe"
+        },
+        "menu": {
+            "title": "Shop",
+            "overview": "Übersicht"
+        },
+        "common": {
+            "reload": "Neu laden"
+        },
+        "status": {
+            "ready": "Der Shop ist einsatzbereit eingerichtet.",
+            "notReady": "Der Shop nimmt noch keine Bestellungen an",
+            "notReadyHint": "Diese Angaben fehlen. Sie stehen in den Einstellungen unter Erweiterungen → Shop.",
+            "hints": "Diese Angaben fehlen noch. Der Shop läuft, aber eingeschränkt:",
+            "partsWithShopData": "Artikel mit Shop-Angaben",
+            "carts": "Warenkörbe",
+            "sessions": "Sitzungen"
+        },
+        "orders": {
+            "title": "Bestellungen",
+            "subtitle": "Was über den Shop bestellt wurde",
+            "invnumber": "Rechnung",
+            "date": "Datum",
+            "customer": "Kunde",
+            "positions": "Positionen",
+            "amount": "Betrag",
+            "payment": "Zahlung",
+            "guest": "Gast",
+            "empty": "Keine Bestellungen",
+            "onlyUnpaid": "Nur unbezahlte",
+            "openInvoice": "Rechnung öffnen"
+        },
+        "payments": {
+            "title": "Schwebende Zahlungen",
+            "explain": "Diese Zahlungen sind bei PayPal noch nicht entschieden. Der Abgleich fragt den Ausgang nach und trägt ihn ein.",
+            "reconcile": "Bei PayPal nachfragen",
+            "empty": "Keine schwebenden Zahlungen",
+            "since": "Seit",
+            "reason": "Grund",
+            "result": "Ergebnis des Abgleichs",
+            "bookingHint": "Bestätigte Zahlungen sind damit vermerkt, aber noch nicht gebucht — das geschieht wie bei Überweisungen von Hand.",
+            "paid": "bezahlt",
+            "pending": "schwebend",
+            "failed": "gescheitert",
+            "open": "offen"
+        },
+        "withdrawals": {
+            "title": "Widerrufe",
+            "subtitle": "Eingegangene Widerrufserklärungen",
+            "received": "Eingegangen",
+            "name": "Name",
+            "order": "Bestellung",
+            "state": "Stand",
+            "email": "E-Mail",
+            "reason": "Begründung",
+            "noReason": "keine Begründung angegeben",
+            "empty": "Keine Widerrufe",
+            "onlyOpen": "Nur offene",
+            "done": "bearbeitet",
+            "open": "offen",
+            "markDone": "Als bearbeitet vormerken",
+            "reopen": "Wieder öffnen",
+            "unmatched": "Zu dieser Bestellnummer wurde keine Rechnung gefunden"
+        }
+    }
+}

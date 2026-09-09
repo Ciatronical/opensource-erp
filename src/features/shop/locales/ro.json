@@ -1,0 +1,71 @@
+{
+    "ShopView": {
+        "routes": {
+            "shopOverview": "/magazin",
+            "shopOrders": "/magazin/comenzi",
+            "shopWithdrawals": "/magazin/retrageri"
+        },
+        "menu": {
+            "title": "Magazin",
+            "overview": "Prezentare"
+        },
+        "common": {
+            "reload": "Reîncarcă"
+        },
+        "status": {
+            "ready": "Magazinul este gata de utilizare.",
+            "notReady": "Magazinul nu preia încă comenzi",
+            "notReadyHint": "Lipsesc aceste date. Se află în setări, la Extensii → Magazin.",
+            "hints": "Aceste date lipsesc încă. Magazinul funcționează, dar limitat:",
+            "partsWithShopData": "Articole cu date de magazin",
+            "carts": "Coșuri",
+            "sessions": "Sesiuni"
+        },
+        "orders": {
+            "title": "Comenzi",
+            "subtitle": "Ce s-a comandat prin magazin",
+            "invnumber": "Factură",
+            "date": "Dată",
+            "customer": "Client",
+            "positions": "Poziții",
+            "amount": "Sumă",
+            "payment": "Plată",
+            "guest": "Oaspete",
+            "empty": "Nicio comandă",
+            "onlyUnpaid": "Doar neplătite",
+            "openInvoice": "Deschide factura"
+        },
+        "payments": {
+            "title": "Plăți în așteptare",
+            "explain": "Aceste plăți nu au fost încă decise la PayPal. Reconcilierea întreabă rezultatul și îl înregistrează.",
+            "reconcile": "Întreabă PayPal",
+            "empty": "Nicio plată în așteptare",
+            "since": "Din",
+            "reason": "Motiv",
+            "result": "Rezultatul reconcilierii",
+            "bookingHint": "Plățile confirmate sunt consemnate, dar neînregistrate contabil — asta se face manual, ca la transferuri.",
+            "paid": "plătit",
+            "pending": "în așteptare",
+            "failed": "eșuat",
+            "open": "deschis"
+        },
+        "withdrawals": {
+            "title": "Retrageri",
+            "subtitle": "Declarații de retragere primite",
+            "received": "Primit",
+            "name": "Nume",
+            "order": "Comandă",
+            "state": "Stare",
+            "email": "E-mail",
+            "reason": "Motiv",
+            "noReason": "fără motiv indicat",
+            "empty": "Nicio retragere",
+            "onlyOpen": "Doar deschise",
+            "done": "rezolvat",
+            "open": "deschis",
+            "markDone": "Marchează ca rezolvat",
+            "reopen": "Redeschide",
+            "unmatched": "Nu s-a găsit nicio factură pentru acest număr de comandă"
+        }
+    }
+}

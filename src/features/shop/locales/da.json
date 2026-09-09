@@ -1,0 +1,71 @@
+{
+    "ShopView": {
+        "routes": {
+            "shopOverview": "/butik",
+            "shopOrders": "/butik/ordrer",
+            "shopWithdrawals": "/butik/fortrydelser"
+        },
+        "menu": {
+            "title": "Butik",
+            "overview": "Oversigt"
+        },
+        "common": {
+            "reload": "Genindlæs"
+        },
+        "status": {
+            "ready": "Butikken er klar til brug.",
+            "notReady": "Butikken tager endnu ikke imod ordrer",
+            "notReadyHint": "Disse oplysninger mangler. De findes i indstillingerne under Udvidelser → Butik.",
+            "hints": "Disse oplysninger mangler stadig. Butikken kører, men begrænset:",
+            "partsWithShopData": "Varer med butiksdata",
+            "carts": "Kurve",
+            "sessions": "Sessioner"
+        },
+        "orders": {
+            "title": "Ordrer",
+            "subtitle": "Hvad der er bestilt via butikken",
+            "invnumber": "Faktura",
+            "date": "Dato",
+            "customer": "Kunde",
+            "positions": "Linjer",
+            "amount": "Beløb",
+            "payment": "Betaling",
+            "guest": "Gæst",
+            "empty": "Ingen ordrer",
+            "onlyUnpaid": "Kun ubetalte",
+            "openInvoice": "Åbn faktura"
+        },
+        "payments": {
+            "title": "Afventende betalinger",
+            "explain": "Disse betalinger er endnu ikke afgjort hos PayPal. Afstemningen spørger om udfaldet og noterer det.",
+            "reconcile": "Spørg PayPal",
+            "empty": "Ingen afventende betalinger",
+            "since": "Siden",
+            "reason": "Årsag",
+            "result": "Resultat af afstemningen",
+            "bookingHint": "Bekræftede betalinger er noteret, men ikke bogført — det sker manuelt, ligesom ved overførsler.",
+            "paid": "betalt",
+            "pending": "afventer",
+            "failed": "mislykket",
+            "open": "åben"
+        },
+        "withdrawals": {
+            "title": "Fortrydelser",
+            "subtitle": "Modtagne fortrydelseserklæringer",
+            "received": "Modtaget",
+            "name": "Navn",
+            "order": "Ordre",
+            "state": "Status",
+            "email": "E-mail",
+            "reason": "Begrundelse",
+            "noReason": "ingen begrundelse angivet",
+            "empty": "Ingen fortrydelser",
+            "onlyOpen": "Kun åbne",
+            "done": "behandlet",
+            "open": "åben",
+            "markDone": "Marker som behandlet",
+            "reopen": "Åbn igen",
+            "unmatched": "Der blev ikke fundet nogen faktura til dette ordrenummer"
+        }
+    }
+}

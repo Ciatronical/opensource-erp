@@ -1,0 +1,71 @@
+{
+    "ShopView": {
+        "routes": {
+            "shopOverview": "/kauppa",
+            "shopOrders": "/kauppa/tilaukset",
+            "shopWithdrawals": "/kauppa/peruutukset"
+        },
+        "menu": {
+            "title": "Kauppa",
+            "overview": "Yleiskatsaus"
+        },
+        "common": {
+            "reload": "Lataa uudelleen"
+        },
+        "status": {
+            "ready": "Kauppa on käyttövalmis.",
+            "notReady": "Kauppa ei vielä ota vastaan tilauksia",
+            "notReadyHint": "Nämä tiedot puuttuvat. Ne löytyvät asetuksista kohdasta Laajennukset → Kauppa.",
+            "hints": "Nämä tiedot puuttuvat vielä. Kauppa toimii, mutta rajoitetusti:",
+            "partsWithShopData": "Tuotteet, joilla on kauppatiedot",
+            "carts": "Ostoskorit",
+            "sessions": "Istunnot"
+        },
+        "orders": {
+            "title": "Tilaukset",
+            "subtitle": "Mitä kaupan kautta on tilattu",
+            "invnumber": "Lasku",
+            "date": "Päivä",
+            "customer": "Asiakas",
+            "positions": "Rivit",
+            "amount": "Summa",
+            "payment": "Maksu",
+            "guest": "Vieras",
+            "empty": "Ei tilauksia",
+            "onlyUnpaid": "Vain maksamattomat",
+            "openInvoice": "Avaa lasku"
+        },
+        "payments": {
+            "title": "Odottavat maksut",
+            "explain": "Näitä maksuja ei ole vielä ratkaistu PayPalissa. Täsmäytys kysyy lopputuloksen ja kirjaa sen.",
+            "reconcile": "Kysy PayPalilta",
+            "empty": "Ei odottavia maksuja",
+            "since": "Alkaen",
+            "reason": "Syy",
+            "result": "Täsmäytyksen tulos",
+            "bookingHint": "Vahvistetut maksut on merkitty mutta ei kirjattu — se tehdään käsin, kuten tilisiirroissakin.",
+            "paid": "maksettu",
+            "pending": "odottaa",
+            "failed": "epäonnistui",
+            "open": "avoin"
+        },
+        "withdrawals": {
+            "title": "Peruutukset",
+            "subtitle": "Saapuneet peruutusilmoitukset",
+            "received": "Saapunut",
+            "name": "Nimi",
+            "order": "Tilaus",
+            "state": "Tila",
+            "email": "Sähköposti",
+            "reason": "Peruste",
+            "noReason": "perustetta ei ilmoitettu",
+            "empty": "Ei peruutuksia",
+            "onlyOpen": "Vain avoimet",
+            "done": "käsitelty",
+            "open": "avoin",
+            "markDone": "Merkitse käsitellyksi",
+            "reopen": "Avaa uudelleen",
+            "unmatched": "Tälle tilausnumerolle ei löytynyt laskua"
+        }
+    }
+}

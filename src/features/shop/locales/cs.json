@@ -1,0 +1,71 @@
+{
+    "ShopView": {
+        "routes": {
+            "shopOverview": "/obchod",
+            "shopOrders": "/obchod/objednavky",
+            "shopWithdrawals": "/obchod/odstoupeni"
+        },
+        "menu": {
+            "title": "Obchod",
+            "overview": "Přehled"
+        },
+        "common": {
+            "reload": "Načíst znovu"
+        },
+        "status": {
+            "ready": "Obchod je připraven k provozu.",
+            "notReady": "Obchod zatím nepřijímá objednávky",
+            "notReadyHint": "Tyto údaje chybí. Najdete je v nastavení pod Rozšíření → Obchod.",
+            "hints": "Tyto údaje ještě chybí. Obchod běží, ale omezeně:",
+            "partsWithShopData": "Položky s údaji pro obchod",
+            "carts": "Košíky",
+            "sessions": "Relace"
+        },
+        "orders": {
+            "title": "Objednávky",
+            "subtitle": "Co bylo objednáno přes obchod",
+            "invnumber": "Faktura",
+            "date": "Datum",
+            "customer": "Zákazník",
+            "positions": "Řádky",
+            "amount": "Částka",
+            "payment": "Platba",
+            "guest": "Host",
+            "empty": "Žádné objednávky",
+            "onlyUnpaid": "Jen nezaplacené",
+            "openInvoice": "Otevřít fakturu"
+        },
+        "payments": {
+            "title": "Čekající platby",
+            "explain": "Tyto platby zatím nejsou u PayPalu rozhodnuty. Sesouhlasení se zeptá na výsledek a zaznamená jej.",
+            "reconcile": "Zeptat se PayPalu",
+            "empty": "Žádné čekající platby",
+            "since": "Od",
+            "reason": "Důvod",
+            "result": "Výsledek sesouhlasení",
+            "bookingHint": "Potvrzené platby jsou poznamenány, ale nezaúčtovány — to se dělá ručně, stejně jako u převodů.",
+            "paid": "zaplaceno",
+            "pending": "čeká",
+            "failed": "selhalo",
+            "open": "otevřeno"
+        },
+        "withdrawals": {
+            "title": "Odstoupení",
+            "subtitle": "Přijatá odstoupení od smlouvy",
+            "received": "Přijato",
+            "name": "Jméno",
+            "order": "Objednávka",
+            "state": "Stav",
+            "email": "E-mail",
+            "reason": "Důvod",
+            "noReason": "důvod neuveden",
+            "empty": "Žádná odstoupení",
+            "onlyOpen": "Jen otevřená",
+            "done": "vyřízeno",
+            "open": "otevřeno",
+            "markDone": "Označit jako vyřízené",
+            "reopen": "Znovu otevřít",
+            "unmatched": "K tomuto číslu objednávky nebyla nalezena faktura"
+        }
+    }
+}

@@ -1,0 +1,71 @@
+{
+    "ShopView": {
+        "routes": {
+            "shopOverview": "/butik",
+            "shopOrders": "/butik/bestallningar",
+            "shopWithdrawals": "/butik/angerratt"
+        },
+        "menu": {
+            "title": "Butik",
+            "overview": "Översikt"
+        },
+        "common": {
+            "reload": "Läs om"
+        },
+        "status": {
+            "ready": "Butiken är klar att användas.",
+            "notReady": "Butiken tar ännu inte emot beställningar",
+            "notReadyHint": "Dessa uppgifter saknas. De finns i inställningarna under Tillägg → Butik.",
+            "hints": "Dessa uppgifter saknas fortfarande. Butiken fungerar, men begränsat:",
+            "partsWithShopData": "Artiklar med butiksuppgifter",
+            "carts": "Varukorgar",
+            "sessions": "Sessioner"
+        },
+        "orders": {
+            "title": "Beställningar",
+            "subtitle": "Vad som beställts via butiken",
+            "invnumber": "Faktura",
+            "date": "Datum",
+            "customer": "Kund",
+            "positions": "Rader",
+            "amount": "Belopp",
+            "payment": "Betalning",
+            "guest": "Gäst",
+            "empty": "Inga beställningar",
+            "onlyUnpaid": "Endast obetalda",
+            "openInvoice": "Öppna faktura"
+        },
+        "payments": {
+            "title": "Väntande betalningar",
+            "explain": "Dessa betalningar är ännu inte avgjorda hos PayPal. Avstämningen frågar efter utfallet och noterar det.",
+            "reconcile": "Fråga PayPal",
+            "empty": "Inga väntande betalningar",
+            "since": "Sedan",
+            "reason": "Orsak",
+            "result": "Avstämningens resultat",
+            "bookingHint": "Bekräftade betalningar är noterade men inte bokförda — det görs för hand, precis som vid överföringar.",
+            "paid": "betald",
+            "pending": "väntar",
+            "failed": "misslyckad",
+            "open": "öppen"
+        },
+        "withdrawals": {
+            "title": "Ångerrätt",
+            "subtitle": "Mottagna ångeranmälningar",
+            "received": "Mottagen",
+            "name": "Namn",
+            "order": "Beställning",
+            "state": "Status",
+            "email": "E-post",
+            "reason": "Skäl",
+            "noReason": "inget skäl angivet",
+            "empty": "Inga ångeranmälningar",
+            "onlyOpen": "Endast öppna",
+            "done": "hanterad",
+            "open": "öppen",
+            "markDone": "Markera som hanterad",
+            "reopen": "Öppna igen",
+            "unmatched": "Ingen faktura hittades för detta beställningsnummer"
+        }
+    }
+}

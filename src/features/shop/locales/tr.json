@@ -1,0 +1,71 @@
+{
+    "ShopView": {
+        "routes": {
+            "shopOverview": "/magaza",
+            "shopOrders": "/magaza/siparisler",
+            "shopWithdrawals": "/magaza/cayma"
+        },
+        "menu": {
+            "title": "Mağaza",
+            "overview": "Genel bakış"
+        },
+        "common": {
+            "reload": "Yeniden yükle"
+        },
+        "status": {
+            "ready": "Mağaza kullanıma hazır.",
+            "notReady": "Mağaza henüz sipariş almıyor",
+            "notReadyHint": "Bu bilgiler eksik. Ayarlarda Uzantılar → Mağaza altında bulunur.",
+            "hints": "Bu bilgiler hâlâ eksik. Mağaza çalışıyor, ancak sınırlı:",
+            "partsWithShopData": "Mağaza bilgisi olan ürünler",
+            "carts": "Sepetler",
+            "sessions": "Oturumlar"
+        },
+        "orders": {
+            "title": "Siparişler",
+            "subtitle": "Mağaza üzerinden ne sipariş edildi",
+            "invnumber": "Fatura",
+            "date": "Tarih",
+            "customer": "Müşteri",
+            "positions": "Kalemler",
+            "amount": "Tutar",
+            "payment": "Ödeme",
+            "guest": "Misafir",
+            "empty": "Sipariş yok",
+            "onlyUnpaid": "Yalnızca ödenmemiş",
+            "openInvoice": "Faturayı aç"
+        },
+        "payments": {
+            "title": "Bekleyen ödemeler",
+            "explain": "Bu ödemeler PayPal'da henüz sonuçlanmadı. Mutabakat sonucu sorar ve kaydeder.",
+            "reconcile": "PayPal'a sor",
+            "empty": "Bekleyen ödeme yok",
+            "since": "Şu tarihten beri",
+            "reason": "Neden",
+            "result": "Mutabakat sonucu",
+            "bookingHint": "Onaylanan ödemeler not edilir ancak muhasebeleştirilmez — bu, havalelerde olduğu gibi elle yapılır.",
+            "paid": "ödendi",
+            "pending": "bekliyor",
+            "failed": "başarısız",
+            "open": "açık"
+        },
+        "withdrawals": {
+            "title": "Cayma bildirimleri",
+            "subtitle": "Gelen cayma beyanları",
+            "received": "Geliş",
+            "name": "Ad",
+            "order": "Sipariş",
+            "state": "Durum",
+            "email": "E-posta",
+            "reason": "Gerekçe",
+            "noReason": "gerekçe belirtilmedi",
+            "empty": "Cayma bildirimi yok",
+            "onlyOpen": "Yalnızca açık",
+            "done": "işlendi",
+            "open": "açık",
+            "markDone": "İşlendi olarak işaretle",
+            "reopen": "Yeniden aç",
+            "unmatched": "Bu sipariş numarasına ait fatura bulunamadı"
+        }
+    }
+}

@@ -1,0 +1,71 @@
+{
+    "ShopView": {
+        "routes": {
+            "shopOverview": "/veikals",
+            "shopOrders": "/veikals/pasutijumi",
+            "shopWithdrawals": "/veikals/atteikumi"
+        },
+        "menu": {
+            "title": "Veikals",
+            "overview": "Pārskats"
+        },
+        "common": {
+            "reload": "Ielādēt no jauna"
+        },
+        "status": {
+            "ready": "Veikals ir gatavs darbam.",
+            "notReady": "Veikals vēl nepieņem pasūtījumus",
+            "notReadyHint": "Trūkst šo datu. Tie ir iestatījumos sadaļā Paplašinājumi → Veikals.",
+            "hints": "Šo datu vēl trūkst. Veikals darbojas, bet ierobežoti:",
+            "partsWithShopData": "Preces ar veikala datiem",
+            "carts": "Grozi",
+            "sessions": "Sesijas"
+        },
+        "orders": {
+            "title": "Pasūtījumi",
+            "subtitle": "Kas pasūtīts caur veikalu",
+            "invnumber": "Rēķins",
+            "date": "Datums",
+            "customer": "Klients",
+            "positions": "Rindas",
+            "amount": "Summa",
+            "payment": "Maksājums",
+            "guest": "Viesis",
+            "empty": "Nav pasūtījumu",
+            "onlyUnpaid": "Tikai neapmaksātie",
+            "openInvoice": "Atvērt rēķinu"
+        },
+        "payments": {
+            "title": "Gaidošie maksājumi",
+            "explain": "Šie maksājumi PayPal vēl nav izšķirti. Saskaņošana noskaidro iznākumu un to ieraksta.",
+            "reconcile": "Vaicāt PayPal",
+            "empty": "Nav gaidošu maksājumu",
+            "since": "Kopš",
+            "reason": "Iemesls",
+            "result": "Saskaņošanas rezultāts",
+            "bookingHint": "Apstiprinātie maksājumi ir atzīmēti, bet nav iegrāmatoti — to dara ar roku, tāpat kā pārskaitījumus.",
+            "paid": "apmaksāts",
+            "pending": "gaida",
+            "failed": "neizdevās",
+            "open": "atvērts"
+        },
+        "withdrawals": {
+            "title": "Atteikumi",
+            "subtitle": "Saņemtie atteikuma paziņojumi",
+            "received": "Saņemts",
+            "name": "Vārds",
+            "order": "Pasūtījums",
+            "state": "Statuss",
+            "email": "E-pasts",
+            "reason": "Pamatojums",
+            "noReason": "pamatojums nav norādīts",
+            "empty": "Nav atteikumu",
+            "onlyOpen": "Tikai atvērtie",
+            "done": "apstrādāts",
+            "open": "atvērts",
+            "markDone": "Atzīmēt kā apstrādātu",
+            "reopen": "Atvērt no jauna",
+            "unmatched": "Šim pasūtījuma numuram rēķins netika atrasts"
+        }
+    }
+}

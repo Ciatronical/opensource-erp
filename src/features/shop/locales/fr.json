@@ -1,0 +1,71 @@
+{
+    "ShopView": {
+        "routes": {
+            "shopOverview": "/boutique",
+            "shopOrders": "/boutique/commandes",
+            "shopWithdrawals": "/boutique/retractations"
+        },
+        "menu": {
+            "title": "Boutique",
+            "overview": "Vue d'ensemble"
+        },
+        "common": {
+            "reload": "Recharger"
+        },
+        "status": {
+            "ready": "La boutique est prête à fonctionner.",
+            "notReady": "La boutique n'accepte pas encore de commandes",
+            "notReadyHint": "Ces informations manquent. Elles se trouvent dans les paramètres, sous Extensions → Boutique.",
+            "hints": "Ces informations manquent encore. La boutique fonctionne, mais de façon limitée :",
+            "partsWithShopData": "Articles avec données boutique",
+            "carts": "Paniers",
+            "sessions": "Sessions"
+        },
+        "orders": {
+            "title": "Commandes",
+            "subtitle": "Ce qui a été commandé via la boutique",
+            "invnumber": "Facture",
+            "date": "Date",
+            "customer": "Client",
+            "positions": "Lignes",
+            "amount": "Montant",
+            "payment": "Paiement",
+            "guest": "Invité",
+            "empty": "Aucune commande",
+            "onlyUnpaid": "Impayées seulement",
+            "openInvoice": "Ouvrir la facture"
+        },
+        "payments": {
+            "title": "Paiements en attente",
+            "explain": "Ces paiements ne sont pas encore réglés chez PayPal. Le rapprochement demande l'issue et l'enregistre.",
+            "reconcile": "Interroger PayPal",
+            "empty": "Aucun paiement en attente",
+            "since": "Depuis",
+            "reason": "Motif",
+            "result": "Résultat du rapprochement",
+            "bookingHint": "Les paiements confirmés sont notés mais pas comptabilisés — cela se fait à la main, comme pour les virements.",
+            "paid": "payé",
+            "pending": "en attente",
+            "failed": "échoué",
+            "open": "ouvert"
+        },
+        "withdrawals": {
+            "title": "Rétractations",
+            "subtitle": "Déclarations de rétractation reçues",
+            "received": "Reçue",
+            "name": "Nom",
+            "order": "Commande",
+            "state": "État",
+            "email": "Courriel",
+            "reason": "Motif",
+            "noReason": "aucun motif indiqué",
+            "empty": "Aucune rétractation",
+            "onlyOpen": "Ouvertes seulement",
+            "done": "traitée",
+            "open": "ouverte",
+            "markDone": "Marquer comme traitée",
+            "reopen": "Rouvrir",
+            "unmatched": "Aucune facture trouvée pour ce numéro de commande"
+        }
+    }
+}

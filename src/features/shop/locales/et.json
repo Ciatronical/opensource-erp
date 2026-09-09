@@ -1,0 +1,71 @@
+{
+    "ShopView": {
+        "routes": {
+            "shopOverview": "/pood",
+            "shopOrders": "/pood/tellimused",
+            "shopWithdrawals": "/pood/taganemised"
+        },
+        "menu": {
+            "title": "Pood",
+            "overview": "Ülevaade"
+        },
+        "common": {
+            "reload": "Laadi uuesti"
+        },
+        "status": {
+            "ready": "Pood on kasutusvalmis.",
+            "notReady": "Pood ei võta veel tellimusi vastu",
+            "notReadyHint": "Need andmed puuduvad. Need on seadetes jaotises Laiendused → Pood.",
+            "hints": "Need andmed on veel puudu. Pood töötab, kuid piiratult:",
+            "partsWithShopData": "Poeandmetega artiklid",
+            "carts": "Ostukorvid",
+            "sessions": "Seansid"
+        },
+        "orders": {
+            "title": "Tellimused",
+            "subtitle": "Mida poe kaudu on tellitud",
+            "invnumber": "Arve",
+            "date": "Kuupäev",
+            "customer": "Klient",
+            "positions": "Read",
+            "amount": "Summa",
+            "payment": "Makse",
+            "guest": "Külaline",
+            "empty": "Tellimusi pole",
+            "onlyUnpaid": "Ainult tasumata",
+            "openInvoice": "Ava arve"
+        },
+        "payments": {
+            "title": "Ootel maksed",
+            "explain": "Need maksed pole PayPalis veel otsustatud. Võrdlus küsib tulemuse ja kannab selle sisse.",
+            "reconcile": "Küsi PayPalilt",
+            "empty": "Ootel makseid pole",
+            "since": "Alates",
+            "reason": "Põhjus",
+            "result": "Võrdluse tulemus",
+            "bookingHint": "Kinnitatud maksed on märgitud, kuid mitte kantud — see tehakse käsitsi, nagu ülekannetegi puhul.",
+            "paid": "makstud",
+            "pending": "ootel",
+            "failed": "ebaõnnestus",
+            "open": "avatud"
+        },
+        "withdrawals": {
+            "title": "Taganemised",
+            "subtitle": "Saabunud taganemisavaldused",
+            "received": "Saabunud",
+            "name": "Nimi",
+            "order": "Tellimus",
+            "state": "Olek",
+            "email": "E-post",
+            "reason": "Põhjendus",
+            "noReason": "põhjendust pole esitatud",
+            "empty": "Taganemisi pole",
+            "onlyOpen": "Ainult avatud",
+            "done": "menetletud",
+            "open": "avatud",
+            "markDone": "Märgi menetletuks",
+            "reopen": "Ava uuesti",
+            "unmatched": "Selle tellimuse numbriga arvet ei leitud"
+        }
+    }
+}

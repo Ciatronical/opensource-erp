@@ -1,0 +1,71 @@
+{
+    "ShopView": {
+        "routes": {
+            "shopOverview": "/parduotuve",
+            "shopOrders": "/parduotuve/uzsakymai",
+            "shopWithdrawals": "/parduotuve/atsisakymai"
+        },
+        "menu": {
+            "title": "Parduotuvė",
+            "overview": "Apžvalga"
+        },
+        "common": {
+            "reload": "Įkelti iš naujo"
+        },
+        "status": {
+            "ready": "Parduotuvė paruošta darbui.",
+            "notReady": "Parduotuvė dar nepriima užsakymų",
+            "notReadyHint": "Trūksta šių duomenų. Jie yra nustatymuose, skiltyje Plėtiniai → Parduotuvė.",
+            "hints": "Šių duomenų dar trūksta. Parduotuvė veikia, bet ribotai:",
+            "partsWithShopData": "Prekės su parduotuvės duomenimis",
+            "carts": "Krepšeliai",
+            "sessions": "Seansai"
+        },
+        "orders": {
+            "title": "Užsakymai",
+            "subtitle": "Kas užsakyta per parduotuvę",
+            "invnumber": "Sąskaita",
+            "date": "Data",
+            "customer": "Klientas",
+            "positions": "Eilutės",
+            "amount": "Suma",
+            "payment": "Mokėjimas",
+            "guest": "Svečias",
+            "empty": "Užsakymų nėra",
+            "onlyUnpaid": "Tik neapmokėti",
+            "openInvoice": "Atverti sąskaitą"
+        },
+        "payments": {
+            "title": "Laukiantys mokėjimai",
+            "explain": "Šie mokėjimai „PayPal“ dar neišspręsti. Sutikrinimas užklausia rezultato ir jį įrašo.",
+            "reconcile": "Klausti „PayPal“",
+            "empty": "Laukiančių mokėjimų nėra",
+            "since": "Nuo",
+            "reason": "Priežastis",
+            "result": "Sutikrinimo rezultatas",
+            "bookingHint": "Patvirtinti mokėjimai pažymėti, bet neįtraukti į apskaitą – tai daroma rankiniu būdu, kaip ir su pavedimais.",
+            "paid": "apmokėta",
+            "pending": "laukiama",
+            "failed": "nepavyko",
+            "open": "neapmokėta"
+        },
+        "withdrawals": {
+            "title": "Atsisakymai",
+            "subtitle": "Gauti pranešimai apie sutarties atsisakymą",
+            "received": "Gauta",
+            "name": "Vardas",
+            "order": "Užsakymas",
+            "state": "Būsena",
+            "email": "El. paštas",
+            "reason": "Priežastis",
+            "noReason": "priežastis nenurodyta",
+            "empty": "Atsisakymų nėra",
+            "onlyOpen": "Tik neišspręsti",
+            "done": "išspręsta",
+            "open": "neišspręsta",
+            "markDone": "Žymėti kaip išspręstą",
+            "reopen": "Atverti iš naujo",
+            "unmatched": "Pagal šį užsakymo numerį sąskaitos nerasta"
+        }
+    }
+}

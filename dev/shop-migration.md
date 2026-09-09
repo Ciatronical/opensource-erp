@@ -115,7 +115,7 @@ die reine Shop-Variante stand.
 | 3 | Fachschicht: Kontext, Warenkorb, Konto, Suche | **erledigt** |
 | 4 | Beide Einstiegspunkte, Allowlist, `shopLogin`/`shopLogout` | **erledigt** |
 | 5 | Rechnung und Zahlung auf Faktura, Print und E-Mail | **erledigt**, PDF/Mail/PayPal ungeprüft |
-| 6 | `src/features/shop/` — Admin-Panel, Routen in 21 Sprachen | offen |
+| 6 | `src/features/shop/` — Admin-Panel, Routen in 21 Sprachen | **erledigt**, Artikel-Shopdaten offen |
 | 7 | `shop-ui` auf das Antwortformat umstellen, Proxy einrichten | offen |
 
 Nach Stufe 5 ist der Shop lauffähig, nach Stufe 6 verwaltbar.
@@ -538,3 +538,61 @@ eines Objekts neu vergeben — eine frisch aufgebaute Verbindung erbte die
 Kennung einer zerstörten und bekam deren Einstellungen. Genau der Fall, gegen
 den die Trennung gedacht war. Jetzt eine `WeakMap`, die über das Objekt selbst
 schlüsselt.
+
+## Stufe 6 — was angelegt wurde
+
+`src/features/shop/` nach dem Muster von `banking`:
+
+| Datei | Inhalt |
+| --- | --- |
+| `composables/useShop.js` | Zugriff auf `/api/shop/`, Fehler landen in `error` statt zu werfen |
+| `views/shop.hub.vue` | Einrichtungsstand, drei Kennzahlen, Wege zu den Ansichten |
+| `views/shop.orders.vue` | Bestellungen und schwebende Zahlungen in zwei Reitern |
+| `views/shop.withdrawals.vue` | Widerrufe, ausklappbar, als bearbeitet vormerkbar |
+| `locales/*.json` | 21 Sprachen, 53 Schlüssel je Sprache |
+
+Drei Routen (`shop-overview`, `shop-orders`, `shop-withdrawals`) über
+`routePath('ShopView.routes.*')`, also mit Pfad in der aktiven Sprache und den
+übrigen 20 als Alias. Der Menüeintrag in `navigation.cards.js` erscheint nur
+bei aktiver Erweiterung, ebenso liefern die Routen sonst die
+Nicht-gefunden-Seite — ohne das stünde die Adresse jedem offen, der sie kennt.
+
+### Wo der Einrichtungsstand hingehört
+
+Die Prüfung aus `getShopStatus()` steht oben im Hub und nicht in den
+Einstellungen: dort sieht man die einzelnen Felder, aber nicht, ob das
+Zusammenspiel stimmt — ob es den Versandartikel wirklich gibt zum Beispiel.
+Getrennt wird, was den Betrieb verhindert (rote Meldung) von dem, was ihn nur
+einschränkt (blaue). Die Feldnamen kommen aus `crm_fields`, die der
+Einstellungen-Tab ohnehin trägt; ein gemeldeter Punkt ohne solchen Schlüssel
+(`parts_ext`) bleibt als Schlüsselname stehen, statt eine leere Zeile zu zeigen.
+
+### Schwebende Zahlungen
+
+Der zweite Reiter der Bestellansicht ist der Ort, an dem jemand hinsieht —
+solange das niemand tut, bleibt eine schwebende Zahlung offen stehen. Der
+Abgleich fragt bei PayPal nach und trägt das Ergebnis ein; der Hinweis darunter
+sagt, dass bestätigte Zahlungen damit vermerkt, aber nicht gebucht sind.
+
+### Nachgemessen
+
+- `npm run check:routes`: Routennamen in allen 21 Sprachen identisch, keine
+  Pfad-Kollision (1538 URLs), 41.454 Kreuzproben bestanden, keine der 52 alten
+  URLs kaputt
+- `npm run build` fehlerfrei; die drei Ansichten werden als eigene Bündel
+  ausgeliefert und nur bei Bedarf geladen
+- `npm run check:api` ohne Beanstandung
+- Vollständigkeitsprüfung der Übersetzungen: 53 Schlüssel in jeder der 21
+  Sprachen, keine Lücke
+
+### Noch offen
+
+**Artikel-Shopdaten.** Die Aktionen `getPartShopData` und `savePartShopData`
+stehen im Backend, eine Oberfläche dafür fehlt. Sinnvoller als eine eigene
+Ansicht wäre eine Karte in der Artikelmaske — dort sucht man den Artikel
+ohnehin. Das berührt allerdings Kernbestand und gehört deshalb bewusst
+entschieden.
+
+**Die Ansichten sind nicht im laufenden System gesehen worden.** Geprüft sind
+Übersetzung, Routen und Build; wie sie sich mit echten Daten anfühlen, zeigt
+erst der erste Aufruf im Browser.

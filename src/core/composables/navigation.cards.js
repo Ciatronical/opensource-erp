@@ -31,6 +31,19 @@ export function useNavigationCards() {
             result.push({ title: t('CarView.title'), icon: 'mdi-car', items: lxcarsItems })
         }
 
+        // Shop-Erweiterung
+        if (oserp.isExtensionEnabled('shop')) {
+            result.push({
+                title: t('ShopView.menu.title'),
+                icon: 'mdi-storefront',
+                items: [
+                    { title: t('ShopView.menu.overview'), to: { name: 'shop-overview' } },
+                    { title: t('ShopView.orders.title'), to: { name: 'shop-orders' } },
+                    { title: t('ShopView.withdrawals.title'), to: { name: 'shop-withdrawals' } }
+                ]
+            })
+        }
+
         // Stammdaten-Menü
         result.push(
             {

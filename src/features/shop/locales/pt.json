@@ -1,0 +1,71 @@
+{
+    "ShopView": {
+        "routes": {
+            "shopOverview": "/loja",
+            "shopOrders": "/loja/encomendas",
+            "shopWithdrawals": "/loja/retratacoes"
+        },
+        "menu": {
+            "title": "Loja",
+            "overview": "Resumo"
+        },
+        "common": {
+            "reload": "Recarregar"
+        },
+        "status": {
+            "ready": "A loja está pronta a funcionar.",
+            "notReady": "A loja ainda não aceita encomendas",
+            "notReadyHint": "Faltam estes dados. Estão nas definições, em Extensões → Loja.",
+            "hints": "Ainda faltam estes dados. A loja funciona, mas de forma limitada:",
+            "partsWithShopData": "Artigos com dados de loja",
+            "carts": "Carrinhos",
+            "sessions": "Sessões"
+        },
+        "orders": {
+            "title": "Encomendas",
+            "subtitle": "O que foi encomendado através da loja",
+            "invnumber": "Fatura",
+            "date": "Data",
+            "customer": "Cliente",
+            "positions": "Linhas",
+            "amount": "Valor",
+            "payment": "Pagamento",
+            "guest": "Convidado",
+            "empty": "Sem encomendas",
+            "onlyUnpaid": "Apenas por pagar",
+            "openInvoice": "Abrir fatura"
+        },
+        "payments": {
+            "title": "Pagamentos pendentes",
+            "explain": "Estes pagamentos ainda não foram decididos no PayPal. A conciliação consulta o resultado e regista-o.",
+            "reconcile": "Consultar o PayPal",
+            "empty": "Sem pagamentos pendentes",
+            "since": "Desde",
+            "reason": "Motivo",
+            "result": "Resultado da conciliação",
+            "bookingHint": "Os pagamentos confirmados ficam anotados mas não lançados — isso é feito à mão, tal como as transferências.",
+            "paid": "pago",
+            "pending": "pendente",
+            "failed": "falhado",
+            "open": "em aberto"
+        },
+        "withdrawals": {
+            "title": "Retratações",
+            "subtitle": "Declarações de retratação recebidas",
+            "received": "Recebido",
+            "name": "Nome",
+            "order": "Encomenda",
+            "state": "Estado",
+            "email": "E-mail",
+            "reason": "Motivo",
+            "noReason": "sem motivo indicado",
+            "empty": "Sem retratações",
+            "onlyOpen": "Apenas em aberto",
+            "done": "tratado",
+            "open": "em aberto",
+            "markDone": "Marcar como tratado",
+            "reopen": "Reabrir",
+            "unmatched": "Não foi encontrada nenhuma fatura para este número de encomenda"
+        }
+    }
+}

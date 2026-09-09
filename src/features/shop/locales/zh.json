@@ -1,0 +1,71 @@
+{
+    "ShopView": {
+        "routes": {
+            "shopOverview": "/shop",
+            "shopOrders": "/shop/orders",
+            "shopWithdrawals": "/shop/withdrawals"
+        },
+        "menu": {
+            "title": "商店",
+            "overview": "概览"
+        },
+        "common": {
+            "reload": "重新加载"
+        },
+        "status": {
+            "ready": "商店已配置完毕，可以使用。",
+            "notReady": "商店尚未接受订单",
+            "notReadyHint": "缺少这些信息。可在设置的“扩展 → 商店”中填写。",
+            "hints": "这些信息仍然缺失。商店可以运行，但功能受限：",
+            "partsWithShopData": "含商店信息的商品",
+            "carts": "购物车",
+            "sessions": "会话"
+        },
+        "orders": {
+            "title": "订单",
+            "subtitle": "通过商店下的订单",
+            "invnumber": "发票",
+            "date": "日期",
+            "customer": "客户",
+            "positions": "行项",
+            "amount": "金额",
+            "payment": "付款",
+            "guest": "访客",
+            "empty": "没有订单",
+            "onlyUnpaid": "仅未付款",
+            "openInvoice": "打开发票"
+        },
+        "payments": {
+            "title": "待定付款",
+            "explain": "这些付款在 PayPal 尚未确定。对账会查询结果并记录下来。",
+            "reconcile": "向 PayPal 查询",
+            "empty": "没有待定付款",
+            "since": "自",
+            "reason": "原因",
+            "result": "对账结果",
+            "bookingHint": "已确认的付款只做记录，尚未入账——入账像银行转账一样由人工完成。",
+            "paid": "已付款",
+            "pending": "待定",
+            "failed": "失败",
+            "open": "未付款"
+        },
+        "withdrawals": {
+            "title": "撤回",
+            "subtitle": "收到的撤回声明",
+            "received": "收到时间",
+            "name": "姓名",
+            "order": "订单",
+            "state": "状态",
+            "email": "电子邮件",
+            "reason": "理由",
+            "noReason": "未说明理由",
+            "empty": "没有撤回",
+            "onlyOpen": "仅未处理",
+            "done": "已处理",
+            "open": "未处理",
+            "markDone": "标记为已处理",
+            "reopen": "重新打开",
+            "unmatched": "未找到该订单号对应的发票"
+        }
+    }
+}

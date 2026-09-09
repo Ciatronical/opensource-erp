@@ -187,6 +187,27 @@ const LxCarsReportsView = () => {
     }
 }
 
+// Shop — nur mit aktiver Erweiterung, sonst die Nicht-gefunden-Seite. Ohne
+// diese Prüfung stünde die Adresse jedem offen, der sie kennt.
+const ShopHubView = () => {
+    const oserp = oserpStore()
+    return oserp.isExtensionEnabled('shop')
+        ? import('@/features/shop/views/shop.hub.vue')
+        : import('@/core/views/notfound/notfound.view.vue')
+}
+const ShopOrdersView = () => {
+    const oserp = oserpStore()
+    return oserp.isExtensionEnabled('shop')
+        ? import('@/features/shop/views/shop.orders.vue')
+        : import('@/core/views/notfound/notfound.view.vue')
+}
+const ShopWithdrawalsView = () => {
+    const oserp = oserpStore()
+    return oserp.isExtensionEnabled('shop')
+        ? import('@/features/shop/views/shop.withdrawals.vue')
+        : import('@/core/views/notfound/notfound.view.vue')
+}
+
 // Banking
 const BankingHubView = () => import('@/features/banking/views/banking.hub.vue')
 const KasseView = () => import('@/features/banking/views/banking.kasse.vue')
@@ -728,6 +749,25 @@ function buildRoutes() {
             name: 'warehouse-stocktaking',
             component: WarehouseStocktakingView,
             props: true,
+            meta: { hideCustomerBar: true },
+        },
+        // ── Shop ──
+        {
+            ...routePath('ShopView.routes.shopOverview'),
+            name: 'shop-overview',
+            component: ShopHubView,
+            meta: { hideCustomerBar: true },
+        },
+        {
+            ...routePath('ShopView.routes.shopOrders'),
+            name: 'shop-orders',
+            component: ShopOrdersView,
+            meta: { hideCustomerBar: true },
+        },
+        {
+            ...routePath('ShopView.routes.shopWithdrawals'),
+            name: 'shop-withdrawals',
+            component: ShopWithdrawalsView,
             meta: { hideCustomerBar: true },
         },
         // ── Banking ── (alle Funktionen in einem Hub zusammengefasst)

@@ -1,0 +1,71 @@
+{
+    "ShopView": {
+        "routes": {
+            "shopOverview": "/tienda",
+            "shopOrders": "/tienda/pedidos",
+            "shopWithdrawals": "/tienda/desistimientos"
+        },
+        "menu": {
+            "title": "Tienda",
+            "overview": "Resumen"
+        },
+        "common": {
+            "reload": "Recargar"
+        },
+        "status": {
+            "ready": "La tienda está lista para funcionar.",
+            "notReady": "La tienda todavía no acepta pedidos",
+            "notReadyHint": "Faltan estos datos. Están en los ajustes, en Extensiones → Tienda.",
+            "hints": "Aún faltan estos datos. La tienda funciona, pero con limitaciones:",
+            "partsWithShopData": "Artículos con datos de tienda",
+            "carts": "Cestas",
+            "sessions": "Sesiones"
+        },
+        "orders": {
+            "title": "Pedidos",
+            "subtitle": "Lo que se ha pedido a través de la tienda",
+            "invnumber": "Factura",
+            "date": "Fecha",
+            "customer": "Cliente",
+            "positions": "Líneas",
+            "amount": "Importe",
+            "payment": "Pago",
+            "guest": "Invitado",
+            "empty": "Sin pedidos",
+            "onlyUnpaid": "Solo sin pagar",
+            "openInvoice": "Abrir factura"
+        },
+        "payments": {
+            "title": "Pagos pendientes",
+            "explain": "Estos pagos aún no se han resuelto en PayPal. La conciliación consulta el resultado y lo registra.",
+            "reconcile": "Consultar a PayPal",
+            "empty": "Sin pagos pendientes",
+            "since": "Desde",
+            "reason": "Motivo",
+            "result": "Resultado de la conciliación",
+            "bookingHint": "Los pagos confirmados quedan anotados, pero no contabilizados: eso se hace a mano, igual que las transferencias.",
+            "paid": "pagado",
+            "pending": "pendiente",
+            "failed": "fallido",
+            "open": "abierto"
+        },
+        "withdrawals": {
+            "title": "Desistimientos",
+            "subtitle": "Declaraciones de desistimiento recibidas",
+            "received": "Recibido",
+            "name": "Nombre",
+            "order": "Pedido",
+            "state": "Estado",
+            "email": "Correo",
+            "reason": "Motivo",
+            "noReason": "sin motivo indicado",
+            "empty": "Sin desistimientos",
+            "onlyOpen": "Solo abiertos",
+            "done": "tramitado",
+            "open": "abierto",
+            "markDone": "Marcar como tramitado",
+            "reopen": "Reabrir",
+            "unmatched": "No se encontró ninguna factura para este número de pedido"
+        }
+    }
+}

@@ -1,0 +1,71 @@
+{
+    "ShopView": {
+        "routes": {
+            "shopOverview": "/shop",
+            "shopOrders": "/shop/orders",
+            "shopWithdrawals": "/shop/withdrawals"
+        },
+        "menu": {
+            "title": "Shop",
+            "overview": "Overview"
+        },
+        "common": {
+            "reload": "Reload"
+        },
+        "status": {
+            "ready": "The shop is fully set up.",
+            "notReady": "The shop does not accept orders yet",
+            "notReadyHint": "These entries are missing. They are in the settings under Extensions → Shop.",
+            "hints": "These entries are still missing. The shop runs, but with limitations:",
+            "partsWithShopData": "Products with shop data",
+            "carts": "Carts",
+            "sessions": "Sessions"
+        },
+        "orders": {
+            "title": "Orders",
+            "subtitle": "What has been ordered through the shop",
+            "invnumber": "Invoice",
+            "date": "Date",
+            "customer": "Customer",
+            "positions": "Items",
+            "amount": "Amount",
+            "payment": "Payment",
+            "guest": "Guest",
+            "empty": "No orders",
+            "onlyUnpaid": "Unpaid only",
+            "openInvoice": "Open invoice"
+        },
+        "payments": {
+            "title": "Pending payments",
+            "explain": "These payments have not been settled at PayPal yet. The reconciliation asks for the outcome and records it.",
+            "reconcile": "Ask PayPal",
+            "empty": "No pending payments",
+            "since": "Since",
+            "reason": "Reason",
+            "result": "Reconciliation result",
+            "bookingHint": "Confirmed payments are recorded but not posted — that is done manually, just like bank transfers.",
+            "paid": "paid",
+            "pending": "pending",
+            "failed": "failed",
+            "open": "open"
+        },
+        "withdrawals": {
+            "title": "Withdrawals",
+            "subtitle": "Received withdrawal declarations",
+            "received": "Received",
+            "name": "Name",
+            "order": "Order",
+            "state": "State",
+            "email": "E-mail",
+            "reason": "Reason",
+            "noReason": "no reason given",
+            "empty": "No withdrawals",
+            "onlyOpen": "Open only",
+            "done": "processed",
+            "open": "open",
+            "markDone": "Mark as processed",
+            "reopen": "Reopen",
+            "unmatched": "No invoice found for this order number"
+        }
+    }
+}
