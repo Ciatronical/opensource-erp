@@ -565,6 +565,8 @@
         <send-email-dialog
             v-model="emailDialogVisible"
             :initial-to="emailDialogTo"
+            :initial-cc="emailDialogCc"
+            :initial-bcc="emailDialogBcc"
             :initial-subject="emailDialogSubject"
             :initial-body="emailDialogBody"
             :attachment-name="emailDialogAttachmentName"
@@ -1638,6 +1640,12 @@ export default defineComponent({
             sseSource.onmessage = (event) => {
                 try {
                     const data = JSON.parse(event.data)
+                    // Kunde/Lieferant des offenen Belegs in einem anderen Fenster geaendert:
+                    // Stammdaten (E-Mail, CC, BCC, Telefon, Notizen) neu laden
+                    if (data.table === 'customer' || data.table === 'vendor') {
+                        if (Number(data.id) === Number(faktura.data?.customer?.id)) reloadFakturaData()
+                        return
+                    }
                     const fakturaTables = ['oe', 'ar', 'orderitems', 'invoice', 'oe_instructions_lxcars', 'oe_defects', 'ar_defects', 'oe_parts_requests_lxcars']
                     if (!fakturaTables.includes(data.table)) return
                     if (Number(data.id) !== Number(fakturaId.value)) return
@@ -2553,6 +2561,8 @@ export default defineComponent({
         // ===== E-Mail Dialog =====
         const emailDialogVisible = ref(false)
         const emailDialogTo = ref('')
+        const emailDialogCc = ref('')
+        const emailDialogBcc = ref('')
         const emailDialogSubject = ref('')
         const emailDialogBody = ref('')
         const emailDialogAttachmentName = ref('')
@@ -2590,8 +2600,10 @@ export default defineComponent({
             const docTypeLabel = t(`FakturaView.dokumentTypes.${fakturaType.value}`)
             const docNumber = common.invnumber || common.ordnumber || common.quonumber || common.donumber || ''
 
-            // Empfaenger: Kunden-E-Mail
+            // Empfaenger: Kunden-E-Mail; CC/BCC aus dem Kundenstamm (customer.cc / customer.bcc)
             emailDialogTo.value = contactEmail.value || ''
+            emailDialogCc.value = faktura.data?.customer?.cc || ''
+            emailDialogBcc.value = faktura.data?.customer?.bcc || ''
 
             // Betreff: Dokumenttyp + Nummer, optional mit Vorgangsbeschreibung
             let subject = `${docTypeLabel} ${docNumber}`.trim()
@@ -2639,12 +2651,11 @@ export default defineComponent({
                     name: ''
                 })).filter(e => e.email)
 
-                const ccList = emailData.cc
-                    ? emailData.cc.split(/[,;]/).map(e => ({
-                        email: e.trim(),
-                        name: ''
-                    })).filter(e => e.email)
-                    : []
+                const splitAddresses = (value) => (value || '').split(/[,;]/)
+                    .map(e => ({ email: e.trim(), name: '' }))
+                    .filter(e => e.email)
+                const ccList = splitAddresses(emailData.cc)
+                const bccList = splitAddresses(emailData.bcc)
 
                 // E-Mail via Backend senden
                 const response = await axios.post('/api/email/', {
@@ -2652,6 +2663,7 @@ export default defineComponent({
                     from_name: fromName,
                     to: toList,
                     cc: ccList,
+                    bcc: bccList,
                     subject: emailData.subject,
                     body_text: emailData.body,
                     body_html: '',
@@ -3192,6 +3204,8 @@ export default defineComponent({
             sendEmail,
             emailDialogVisible,
             emailDialogTo,
+            emailDialogCc,
+            emailDialogBcc,
             emailDialogSubject,
             emailDialogBody,
             emailDialogAttachmentName,

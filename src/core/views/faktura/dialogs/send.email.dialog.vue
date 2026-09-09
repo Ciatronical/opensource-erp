@@ -36,8 +36,8 @@
                         />
                     </v-col>
 
-                    <!-- CC (optional) -->
-                    <v-col cols="12">
+                    <!-- CC / BCC (optional, vorbelegt aus dem Kundenstamm) -->
+                    <v-col cols="12" sm="6">
                         <v-text-field
                             v-model="emailCc"
                             :label="t('FakturaView.dialogs.sendEmail.cc')"
@@ -45,6 +45,16 @@
                             density="compact"
                             autocomplete="off"
                             prepend-inner-icon="mdi-account-multiple"
+                        />
+                    </v-col>
+                    <v-col cols="12" sm="6">
+                        <v-text-field
+                            v-model="emailBcc"
+                            :label="t('FakturaView.dialogs.sendEmail.bcc')"
+                            variant="outlined"
+                            density="compact"
+                            autocomplete="off"
+                            prepend-inner-icon="mdi-account-multiple-outline"
                         />
                     </v-col>
 
@@ -132,6 +142,20 @@ export default defineComponent({
             default: ''
         },
         /**
+         * Vorausgefuellte CC-Adressen (Kundenstamm)
+         */
+        initialCc: {
+            type: String,
+            default: ''
+        },
+        /**
+         * Vorausgefuellte BCC-Adressen (Kundenstamm)
+         */
+        initialBcc: {
+            type: String,
+            default: ''
+        },
+        /**
          * Vorausgefuellter Betreff
          */
         initialSubject: {
@@ -159,6 +183,7 @@ export default defineComponent({
 
         const emailTo = ref('')
         const emailCc = ref('')
+        const emailBcc = ref('')
         const emailSubject = ref('')
         const emailBody = ref('')
         const sending = ref(false)
@@ -172,7 +197,8 @@ export default defineComponent({
         watch(() => props.modelValue, (newValue) => {
             if (newValue) {
                 emailTo.value = props.initialTo || ''
-                emailCc.value = ''
+                emailCc.value = props.initialCc || ''
+                emailBcc.value = props.initialBcc || ''
                 emailSubject.value = props.initialSubject || ''
                 emailBody.value = props.initialBody || ''
                 sending.value = false
@@ -186,6 +212,7 @@ export default defineComponent({
             emit('send', {
                 to: emailTo.value.trim(),
                 cc: emailCc.value.trim(),
+                bcc: emailBcc.value.trim(),
                 subject: emailSubject.value.trim(),
                 body: emailBody.value.trim()
             })
@@ -207,6 +234,7 @@ export default defineComponent({
             t,
             emailTo,
             emailCc,
+            emailBcc,
             emailSubject,
             emailBody,
             sending,

@@ -470,6 +470,7 @@
                 "to": "Empfänger",
                 "toRequired": "Empfänger ist erforderlich",
                 "cc": "CC (optional)",
+                "bcc": "BCC (optional)",
                 "subject": "Betreff",
                 "subjectRequired": "Betreff ist erforderlich",
                 "body": "Nachricht",

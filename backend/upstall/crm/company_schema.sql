@@ -839,6 +839,28 @@ DO $$ BEGIN
     END IF;
 END $$;
 
+-- Kunde/Lieferant: offene Belege laden die Stammdaten (E-Mail, CC, BCC, Telefon,
+-- Notizen) neu, wenn sie in einem anderen Fenster geaendert werden. Gleiche
+-- Nachricht wie bei oe/ar (table + id); die Faktura-Ansicht filtert auf die
+-- Kunden-ID des offenen Belegs.
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'customer_faktura_notify') THEN
+        CREATE TRIGGER customer_faktura_notify
+            AFTER UPDATE ON customer
+            FOR EACH ROW
+            EXECUTE FUNCTION notify_faktura_change();
+    END IF;
+END $$;
+
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'vendor_faktura_notify') THEN
+        CREATE TRIGGER vendor_faktura_notify
+            AFTER UPDATE ON vendor
+            FOR EACH ROW
+            EXECUTE FUNCTION notify_faktura_change();
+    END IF;
+END $$;
+
 -- ============================================================================
 -- WHATSAPP TEMPLATES
 -- ============================================================================
