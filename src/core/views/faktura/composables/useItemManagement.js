@@ -245,6 +245,53 @@ export function useItemManagement({
         }
     }
 
+    // Bearbeitete Position als neuen Artikel in die Stammdaten übernehmen und
+    // die Position dem neuen Artikel zuordnen (Typ vom bisherigen Artikel).
+    async function onEditItemSaveAsNewPart(payload) {
+        const { item, partnumber } = payload
+        const originalItem = fakturaItems.value[editDialog.value.index]
+        if (!originalItem || !originalItem.id) {
+            alerts.error(t('FakturaView.dialogs.editItem.saveAsNewPartError'))
+            return
+        }
+
+        try {
+            const created = await faktura.saveItemAsNewPart(originalItem.id, fakturaType.value, {
+                description: item.description,
+                longdescription: item.longdescription,
+                sellprice: item.sellprice,
+                unit: item.unit,
+                qty: item.qty,
+                discount: item.discount,
+                part_type: originalItem.part_type || 'part',
+                partnumber: partnumber || ''
+            })
+
+            Object.assign(originalItem, {
+                parts_id: created.parts_id,
+                partnumber: created.partnumber,
+                description: item.description,
+                longdescription: item.longdescription || '',
+                qty: item.qty,
+                sellprice: item.sellprice,
+                discount: item.discount,
+                unit: created.unit || item.unit
+            })
+            calculateItemTotal(originalItem)
+            calculateTotals()
+            editDialog.value.show = false
+
+            await saveAllItems()
+            toasts.success(t('FakturaView.dialogs.editItem.savedAsNewPart', { partnumber: created.partnumber }))
+        } catch (e) {
+            console.error('Fehler beim Anlegen des Artikels aus der Position:', e)
+            // Dialog bleibt offen, damit die Artikelnummer geändert werden kann
+            alerts.error(e?.code === 'PARTNUMBER_EXISTS'
+                ? t('FakturaView.dialogs.editItem.partnumberExists', { partnumber })
+                : t('FakturaView.dialogs.editItem.saveAsNewPartError'))
+        }
+    }
+
     // ── Artikel erstellen ──
 
     function createArticle(searchText, item, index) {
@@ -465,6 +512,7 @@ export function useItemManagement({
         setAllDiscounts,
         editArticle,
         onEditItemSave,
+        onEditItemSaveAsNewPart,
         createArticle,
         onCreateArticleSave,
         onArticleSearch,

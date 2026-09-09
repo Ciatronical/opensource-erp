@@ -414,7 +414,15 @@
                 "save": "Save",
                 "updateMasterData": "Also update article master data",
                 "updateMasterDataHint": "Updates description, price and unit in master data",
-                "masterDataUpdated": "Article master data has been updated"
+                "masterDataUpdated": "Article master data has been updated",
+                "saveAsNewPart": "Save as new article",
+                "savedAsNewPart": "New article {partnumber} created and assigned to the item",
+                "saveAsNewPartError": "The article could not be created",
+                "newPartnumber": "Article number for the new article",
+                "newPartnumberHint": "Suggested from the number range, can be changed",
+                "confirmSaveAsNewPart": "Create new article",
+                "back": "Back",
+                "partnumberExists": "Article number {partnumber} is already in use"
             },
             "createPart": {
                 "title": "Create New Article",

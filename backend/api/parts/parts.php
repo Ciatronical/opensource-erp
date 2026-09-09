@@ -653,3 +653,30 @@ function searchParts($data) {
         ]);
     }
 }
+
+/**
+ * Liefert die nächste freie Artikelnummer aus dem Nummernkreis, OHNE den Zähler
+ * hochzuzählen (Vorbelegung im Dialog). Bereits vergebene Nummern werden übersprungen,
+ * genau wie in nextFreeNumber(). Verbraucht wird die Nummer erst beim Anlegen.
+ *
+ * @param string $data['part_type'] 'part' (articlenumber) oder 'service' (servicenumber)
+ * @return void JSON {partnumber}
+ * @testdata {"part_type": "part"}
+ */
+function peekNextPartnumber($data) {
+    permit(['invoice_edit', 'sales_order_edit', 'sales_quotation_edit'], false);
+
+    $company = DbhCompany::begin();
+    $numberField = (($data['part_type'] ?? 'part') === 'service') ? 'servicenumber' : 'articlenumber';
+
+    $row = $company->getOne(<<<SQL
+        WITH RECURSIVE c(n) AS (
+            SELECT COALESCE({$numberField}::BIGINT, 0) + 1 FROM defaults
+            UNION ALL
+            SELECT n + 1 FROM c WHERE EXISTS (SELECT 1 FROM parts WHERE partnumber = c.n::TEXT)
+        )
+        SELECT MAX(n)::TEXT AS partnumber FROM c
+    SQL);
+
+    resultInfo(true, '', ['partnumber' => $row['partnumber'] ?? '']);
+}

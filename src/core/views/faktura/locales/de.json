@@ -414,7 +414,15 @@
                 "save": "Speichern",
                 "updateMasterData": "Auch Artikel-Stammdaten aktualisieren",
                 "updateMasterDataHint": "Aktualisiert Beschreibung, Preis und Einheit in den Stammdaten",
-                "masterDataUpdated": "Artikel-Stammdaten wurden aktualisiert"
+                "masterDataUpdated": "Artikel-Stammdaten wurden aktualisiert",
+                "saveAsNewPart": "Als neuen Artikel speichern",
+                "savedAsNewPart": "Neuer Artikel {partnumber} angelegt und der Position zugeordnet",
+                "saveAsNewPartError": "Der Artikel konnte nicht angelegt werden",
+                "newPartnumber": "Artikelnummer für den neuen Artikel",
+                "newPartnumberHint": "Vorschlag aus dem Nummernkreis, kann geändert werden",
+                "confirmSaveAsNewPart": "Neuen Artikel anlegen",
+                "back": "Zurück",
+                "partnumberExists": "Die Artikelnummer {partnumber} ist bereits vergeben"
             },
             "createPart": {
                 "title": "Neuen Artikel anlegen",

@@ -558,6 +558,7 @@
             v-model="items.editDialog.value.show"
             :item="items.editDialog.value.item"
             @save="items.onEditItemSave"
+            @save-as-new="items.onEditItemSaveAsNewPart"
         />
 
         <!-- Send Email Dialog -->

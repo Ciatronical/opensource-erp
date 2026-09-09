@@ -147,6 +147,33 @@ export const fakturaStore = defineStore('fakturaStore', () => {
     }
 
     /**
+     * Speichert eine bearbeitete Position als neuen Artikel und ordnet sie ihm zu.
+     * @param {number} itemId
+     * @param {string} fakturaType
+     * @param {Object} fields - { description, longdescription, sellprice, unit, qty, discount, part_type, partnumber }
+     * @return {Promise<Object>} { parts_id, partnumber, unit }
+     */
+    async function saveItemAsNewPart(itemId, fakturaType, fields) {
+        const response = await axios.post('/api/faktura/', {
+            action: 'saveFakturaItemAsNewPart',
+            item_id: itemId,
+            fakturaType,
+            description: fields.description ?? '',
+            longdescription: fields.longdescription ?? '',
+            sellprice: fields.sellprice ?? 0,
+            unit: fields.unit ?? '',
+            qty: fields.qty ?? 1,
+            discount: fields.discount ?? 0,
+            part_type: fields.part_type ?? 'part',
+            partnumber: fields.partnumber ?? ''
+        });
+        if (!response.data.success) {
+            throw new ApiError('ApiError', response.data.text, 'Error saving item as new part: ' + response.data.text);
+        }
+        return response.data.payload || {};
+    }
+
+    /**
      * Importiert SilverDAT VXS-Positionen als Faktura-Positionen (Bulk)
      *
      * @param {number} fakturaID - ID des Dokuments
@@ -616,6 +643,7 @@ export const fakturaStore = defineStore('fakturaStore', () => {
         deleteFaktura,
         createFakturaItem,
         replaceFakturaItemArticle,
+        saveItemAsNewPart,
         importSilverDATItems,
         warmAagToken,
         updateFakturaItems,

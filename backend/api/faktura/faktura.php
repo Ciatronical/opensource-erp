@@ -824,6 +824,115 @@ function replaceFakturaItemArticle($data) {
 }
 
 /**
+ * Speichert eine bearbeitete Position als neuen Artikel in den Stammdaten und
+ * ordnet die Position dem neuen Artikel zu.
+ *
+ * Der Artikeltyp kommt aus dem Store (part_type der Position). Buchungsgruppe und
+ * Einheit erbt der neue Artikel vom bisherigen Artikel der Position, die
+ * Artikelnummer kommt aus dem Nummernkreis (articlenumber/servicenumber).
+ *
+ * @param string $data['fakturaType']     Belegart
+ * @param int    $data['item_id']         Positions-ID
+ * @param string $data['description']     Beschreibung (Pflicht)
+ * @param string $data['longdescription'] Langtext -> parts.notes
+ * @param float  $data['sellprice']       Verkaufspreis
+ * @param string $data['unit']            Einheit (leer -> Einheit des bisherigen Artikels)
+ * @param float  $data['qty']             Menge der Position
+ * @param float  $data['discount']        Rabatt der Position (Faktor 0-1)
+ * @param string $data['part_type']       'part' oder 'service'
+ * @param string $data['partnumber']      Gewünschte Artikelnummer (leer -> Nummernkreis)
+ * @return void JSON {parts_id, partnumber, unit}
+ * @testdata {"fakturaType": "quotation", "item_id": 1, "description": "Test Artikel", "part_type": "part"}
+ */
+function saveFakturaItemAsNewPart($data) {
+    $fakturaType = $data['fakturaType'] ?? 'order';
+    $itemId      = intval($data['item_id'] ?? 0);
+    $description = trim($data['description'] ?? '');
+    $partType    = in_array($data['part_type'] ?? '', ['part', 'service'], true) ? $data['part_type'] : 'part';
+
+    if ($itemId <= 0 || $description === '') {
+        resultInfo(false, 'INVALID_ARGS', 'item_id und description erforderlich');
+        return;
+    }
+
+    $company = DbhCompany::begin();
+    permit(getPermissionForFakturaType($fakturaType));
+
+    $tableConfig = getFakturaTableConfig($fakturaType);
+    $itemsTable  = $tableConfig['items_table']; // kontrollierter Tabellenname (kein User-Input)
+
+    $partnumber = trim($data['partnumber'] ?? '');
+    if ($partnumber !== '') {
+        // Vom Benutzer gewählte Nummer: muss frei sein
+        if ($company->getOne("SELECT 1 FROM parts WHERE partnumber = :pn", [':pn' => $partnumber])) {
+            resultInfo(false, 'PARTNUMBER_EXISTS', ['partnumber' => $partnumber]);
+            return;
+        }
+    } else {
+        $numberField = ($partType === 'service') ? 'servicenumber' : 'articlenumber';
+        $partnumber  = nextFreeNumber($company, $numberField, 'parts', 'partnumber');
+    }
+
+    $sellprice = floatval($data['sellprice'] ?? 0);
+    $notes     = trim($data['longdescription'] ?? '');
+
+    $row = $company->getOne(<<<SQL
+        WITH src AS (
+            SELECT p.buchungsgruppen_id, p.unit AS part_unit
+            FROM {$itemsTable} i
+            LEFT JOIN parts p ON p.id = i.parts_id
+            WHERE i.id = :item_id
+        ),
+        np AS (
+            INSERT INTO parts (partnumber, description, part_type, buchungsgruppen_id, sellprice, unit, notes, obsolete)
+            SELECT :partnumber, :description, :part_type,
+                   COALESCE(src.buchungsgruppen_id,
+                            (SELECT id FROM buchungsgruppen WHERE NOT obsolete ORDER BY sortkey LIMIT 1)),
+                   :sellprice,
+                   COALESCE(NULLIF(:unit, ''), src.part_unit, 'Stck'),
+                   :notes, FALSE
+            FROM src
+            RETURNING id, partnumber, unit
+        ),
+        upd AS (
+            UPDATE {$itemsTable} i
+               SET parts_id        = np.id,
+                   description     = :description2,
+                   longdescription = :notes2,
+                   sellprice       = :sellprice2,
+                   unit            = np.unit,
+                   qty             = :qty,
+                   discount        = :discount
+              FROM np
+             WHERE i.id = :item_id2
+            RETURNING i.id
+        )
+        SELECT np.id AS parts_id, np.partnumber, np.unit FROM np
+    SQL, [
+        ':item_id'      => $itemId,
+        ':item_id2'     => $itemId,
+        ':partnumber'   => $partnumber,
+        ':description'  => $description,
+        ':description2' => $description,
+        ':part_type'    => $partType,
+        ':sellprice'    => $sellprice,
+        ':sellprice2'   => $sellprice,
+        ':unit'         => trim($data['unit'] ?? ''),
+        ':notes'        => $notes,
+        ':notes2'       => $notes,
+        ':qty'          => floatval($data['qty'] ?? 1),
+        ':discount'     => floatval($data['discount'] ?? 0),
+    ]);
+
+    if (!$row) {
+        resultInfo(false, 'ITEM_NOT_FOUND', 'Position nicht gefunden');
+        return;
+    }
+
+    resultInfo(true, 'CREATED', $row);
+}
+
+/**
  * Aktualisiert mehrere Faktura-Positionen in einem Query (Bulk-Update)
  * und verarbeitet die Buchungen für acc_trans
  *

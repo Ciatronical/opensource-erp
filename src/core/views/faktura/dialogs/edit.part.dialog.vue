@@ -14,9 +14,24 @@
 
             <v-card-text class="pt-4">
                 <v-row v-if="localItem" dense>
-                    <!-- Artikelnummer (readonly) -->
+                    <!-- Artikelnummer: readonly, beim Anlegen als neuer Artikel editierbar -->
                     <v-col cols="12" sm="4">
                         <v-text-field
+                            v-if="saveAsNewMode"
+                            v-model="newPartnumber"
+                            :label="t('FakturaView.dialogs.editItem.newPartnumber')"
+                            :hint="t('FakturaView.dialogs.editItem.newPartnumberHint')"
+                            :loading="peekingPartnumber"
+                            persistent-hint
+                            variant="outlined"
+                            density="compact"
+                            autocomplete="off"
+                            color="primary"
+                            autofocus
+                            @keydown.enter="confirmSaveAsNew"
+                        />
+                        <v-text-field
+                            v-else
                             :model-value="localItem.partnumber"
                             :label="t('FakturaView.faktura.partNumber')"
                             variant="outlined"
@@ -141,15 +156,43 @@
                 >
                     {{ t('FakturaView.dialogs.editItem.cancel') }}
                 </v-btn>
-                <v-btn
-                    color="primary"
-                    variant="elevated"
-                    prepend-icon="mdi-content-save"
-                    :loading="saving"
-                    @click="save"
-                >
-                    {{ t('FakturaView.dialogs.editItem.save') }}
-                </v-btn>
+                <template v-if="saveAsNewMode">
+                    <v-btn
+                        variant="text"
+                        @click="saveAsNewMode = false"
+                    >
+                        {{ t('FakturaView.dialogs.editItem.back') }}
+                    </v-btn>
+                    <v-btn
+                        color="primary"
+                        variant="elevated"
+                        prepend-icon="mdi-content-save-plus"
+                        :disabled="saving || peekingPartnumber"
+                        @click="confirmSaveAsNew"
+                    >
+                        {{ t('FakturaView.dialogs.editItem.confirmSaveAsNewPart') }}
+                    </v-btn>
+                </template>
+                <template v-else>
+                    <v-btn
+                        color="primary"
+                        variant="tonal"
+                        prepend-icon="mdi-content-save-plus"
+                        :disabled="saving"
+                        @click="startSaveAsNew"
+                    >
+                        {{ t('FakturaView.dialogs.editItem.saveAsNewPart') }}
+                    </v-btn>
+                    <v-btn
+                        color="primary"
+                        variant="elevated"
+                        prepend-icon="mdi-content-save"
+                        :loading="saving"
+                        @click="save"
+                    >
+                        {{ t('FakturaView.dialogs.editItem.save') }}
+                    </v-btn>
+                </template>
             </v-card-actions>
         </v-card>
     </v-dialog>
@@ -159,6 +202,7 @@
 import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { parseNumber, formatNumber } from '@/core/utils/numberFormat.js'
+import axios from 'axios'
 
 const { t } = useI18n()
 
@@ -173,11 +217,16 @@ const props = defineProps({
     }
 })
 
-const emit = defineEmits(['update:modelValue', 'save'])
+const emit = defineEmits(['update:modelValue', 'save', 'save-as-new'])
 
 const localItem = ref(null)
 const updateMasterData = ref(true)  // Default: aktiviert
 const saving = ref(false)
+
+// "Als neuen Artikel speichern": Artikelnummer wird vor dem Anlegen editierbar
+const saveAsNewMode = ref(false)
+const newPartnumber = ref('')
+const peekingPartnumber = ref(false)
 
 // v-model Binding für Dialog
 const dialogVisible = computed({
@@ -191,6 +240,8 @@ watch(() => props.modelValue, (newValue) => {
         localItem.value = { ...props.item }
         updateMasterData.value = true  // Default: aktiviert
         saving.value = false
+        saveAsNewMode.value = false
+        newPartnumber.value = ''
     }
 }, { immediate: true })
 
@@ -266,6 +317,35 @@ function save() {
     emit('save', {
         item: { ...localItem.value },
         updateMasterData: updateMasterData.value
+    })
+}
+
+// Schritt 1: Artikelnummer editierbar machen, vorbelegt mit der nächsten freien
+// Nummer aus dem Nummernkreis (Zähler wird dabei nicht verbraucht)
+async function startSaveAsNew() {
+    saveAsNewMode.value = true
+    peekingPartnumber.value = true
+    try {
+        const response = await axios.post('/api/parts/', {
+            action: 'peekNextPartnumber',
+            part_type: localItem.value?.part_type || 'part'
+        })
+        if (response.data.success && !newPartnumber.value) {
+            newPartnumber.value = response.data.payload?.partnumber || ''
+        }
+    } catch (e) {
+        console.error('Artikelnummer-Vorschlag fehlgeschlagen:', e)
+    } finally {
+        peekingPartnumber.value = false
+    }
+}
+
+// Schritt 2: Stammdaten anlegen und Position zuordnen
+function confirmSaveAsNew() {
+    if (peekingPartnumber.value) return
+    emit('save-as-new', {
+        item: { ...localItem.value },
+        partnumber: (newPartnumber.value || '').trim()
     })
 }
 
