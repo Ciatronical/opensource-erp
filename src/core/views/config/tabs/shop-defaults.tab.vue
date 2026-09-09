@@ -1,5 +1,4 @@
 <!-- src/core/views/config/tabs/shop-defaults.tab.vue -->
-
 <template>
     <v-container fluid class="pa-0">
         <!-- Fehler beim Laden der Config -->
@@ -41,202 +40,150 @@
                 {{ t('crm_fields.shopSecretsNotice') }}
             </v-alert>
 
-            <template v-for="field in shopConfig" :key="field.name">
+            <template v-for="(field, i) in shopConfig" :key="field.name + '-' + i">
                 <!-- Überschrift -->
                 <v-row v-if="field.type === 'headline'" class="mt-6 mb-2">
                     <v-col cols="12">
-                        <h3 class="text-h6 text-primary">
-                            {{ t(field.label) }}
-                        </h3>
+                        <h3 class="text-h6 text-primary">{{ t(field.label) }}</h3>
                         <v-divider class="mt-2"></v-divider>
                     </v-col>
                 </v-row>
 
-                <!-- Checkbox -->
-                <v-row v-else-if="field.type === 'checkbox'" class="my-1" :data-field-name="field.name">
-                    <v-col cols="12" md="6">
-                        <v-checkbox
-                            v-model="crmDefaults[field.name]"
-                            :label="t(field.label)"
-                            hide-details="auto"
-                            density="compact"
-                        >
-                            <template v-if="field.tooltip" #append>
-                                <v-tooltip location="top">
-                                    <template #activator="{ props }">
-                                        <v-icon v-bind="props" size="small" color="grey">
-                                            mdi-information-outline
-                                        </v-icon>
-                                    </template>
-                                    {{ t(field.tooltip) }}
-                                </v-tooltip>
-                            </template>
-                        </v-checkbox>
-                    </v-col>
-                </v-row>
+                <!--
+                    Gruppe: fasst zusammengehörige Felder in einer Karte.
 
-                <!-- Eingabefeld / Passwort -->
-                <v-row v-else-if="field.type === 'input' || field.type === 'password'" class="my-1" :data-field-name="field.name">
-                    <v-col cols="12" md="6">
-                        <v-text-field
-                            v-model="crmDefaults[field.name]"
-                            :label="t(field.label)"
-                            :type="field.type === 'password' ? 'password' : (field.inputType || 'text')"
-                            :placeholder="field.type === 'password' ? t('crm_fields.shopSecretKeep') : undefined"
-                            :persistent-placeholder="field.type === 'password'"
-                            :style="field.fieldstyle"
-                            hide-details="auto"
-                            density="compact"
-                            variant="outlined"
-                            autocomplete="new-password"
-                        >
-                            <template v-if="field.tooltip" #append-inner>
-                                <v-tooltip location="top">
-                                    <template #activator="{ props }">
-                                        <v-icon v-bind="props" size="small" color="grey">
-                                            mdi-information-outline
-                                        </v-icon>
-                                    </template>
-                                    {{ t(field.tooltip) }}
-                                </v-tooltip>
-                            </template>
-                        </v-text-field>
-                    </v-col>
-                </v-row>
+                    Die PayPal-Zugangsdaten gibt es zweimal — für Test- und für
+                    Echtbetrieb. Ohne diese Trennung stünden vier fast gleich
+                    benannte Felder untereinander, und welches Paar gerade gilt,
+                    stünde nirgends. Die Karte des aktiven Paars ist deshalb
+                    hervorgehoben, die andere zurückgenommen.
+                -->
+                <v-card
+                    v-else-if="field.type === 'group'"
+                    :variant="istAktiv(field) ? 'tonal' : 'outlined'"
+                    :color="istAktiv(field) ? 'primary' : undefined"
+                    class="my-3"
+                    :data-group-name="field.name"
+                >
+                    <v-card-item>
+                        <template #prepend>
+                            <v-icon :icon="field.icon || 'mdi-folder-outline'" />
+                        </template>
+                        <v-card-title class="text-subtitle-1">
+                            {{ t(field.label) }}
+                            <v-chip
+                                v-if="field.activeWhen"
+                                size="x-small"
+                                :color="istAktiv(field) ? 'success' : 'grey'"
+                                variant="flat"
+                                class="ml-2"
+                            >
+                                {{ istAktiv(field) ? t('crm_fields.shopGroupActive') : t('crm_fields.shopGroupInactive') }}
+                            </v-chip>
+                        </v-card-title>
+                        <v-card-subtitle v-if="field.tooltip">{{ t(field.tooltip) }}</v-card-subtitle>
+                    </v-card-item>
 
-                <!-- Auswahl mit festen Werten -->
-                <v-row v-else-if="field.type === 'select'" class="my-1" :data-field-name="field.name">
-                    <v-col cols="12" md="6">
-                        <v-select
-                            v-model="crmDefaults[field.name]"
-                            :items="field.items"
-                            :label="t(field.label)"
-                            :style="field.fieldstyle"
-                            hide-details="auto"
-                            density="compact"
-                            variant="outlined"
-                        >
-                            <template v-if="field.tooltip" #append-inner>
-                                <v-tooltip location="top">
-                                    <template #activator="{ props }">
-                                        <v-icon v-bind="props" size="small" color="grey">
-                                            mdi-information-outline
-                                        </v-icon>
-                                    </template>
-                                    {{ t(field.tooltip) }}
-                                </v-tooltip>
-                            </template>
-                        </v-select>
-                    </v-col>
-                </v-row>
+                    <v-card-text class="pt-0">
+                        <ShopConfigField
+                            v-for="unterfeld in field.fields"
+                            :key="unterfeld.name"
+                            :field="unterfeld"
+                            :werte="crmDefaults"
+                        />
+                    </v-card-text>
+                </v-card>
 
-                <!-- Auswahl aus company_config -->
-                <v-row v-else-if="field.type === 'dynamic-select'" class="my-1" :data-field-name="field.name">
-                    <v-col cols="12" md="6">
-                        <v-select
-                            v-model="crmDefaults[field.name]"
-                            :items="getDynamicItems(field.source)"
-                            :item-title="field.itemTitle || 'title'"
-                            :item-value="field.itemValue || 'value'"
-                            :label="t(field.label)"
-                            :style="field.fieldstyle"
-                            hide-details="auto"
-                            density="compact"
-                            variant="outlined"
-                            clearable
-                        >
-                            <template v-if="field.tooltip" #append-inner>
-                                <v-tooltip location="top">
-                                    <template #activator="{ props }">
-                                        <v-icon v-bind="props" size="small" color="grey">
-                                            mdi-information-outline
-                                        </v-icon>
-                                    </template>
-                                    {{ t(field.tooltip) }}
-                                </v-tooltip>
-                            </template>
-                        </v-select>
-                    </v-col>
-                </v-row>
+                <!-- Einzelfeld -->
+                <ShopConfigField v-else :field="field" :werte="crmDefaults" />
             </template>
         </template>
     </v-container>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { useI18n } from 'vue-i18n';
-import { oserpStore } from '@/core/stores/oserp.store.js';
+import { ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
+import ShopConfigField from './shop-config-field.component.vue'
 
-const { t } = useI18n();
-const store = oserpStore();
-
-function getDynamicItems(source) {
-    return store.session?.[source] || store.session?.company_config?.[source] || [];
-}
+const { t } = useI18n()
 
 const props = defineProps({
     crmDefaults: {
         type: Object,
         required: true
     }
-});
+})
 
-const shopConfig = ref([]);
-const configError = ref(null);
-const configLoaded = ref(false);
+const shopConfig = ref([])
+const configError = ref(null)
+const configLoaded = ref(false)
+
+/**
+ * Gilt diese Gruppe gerade?
+ *
+ * activeWhen nennt ein Feld und den Wert, bei dem die Gruppe zählt — für die
+ * PayPal-Zugangsdaten ist das der Schalter shop_paypal_sandbox. Ohne
+ * activeWhen ist eine Gruppe immer aktiv.
+ */
+function istAktiv(gruppe) {
+    if (!gruppe.activeWhen) return true
+    return Boolean(props.crmDefaults[gruppe.activeWhen.field]) === Boolean(gruppe.activeWhen.value)
+}
 
 /**
  * Lädt die Felddefinition
  */
 async function loadConfigFile() {
     try {
-        const config = await import('./shopDefaultsConfig.js');
-        shopConfig.value = config.default || [];
-        configError.value = null;
-        configLoaded.value = true;
+        const config = await import('./shopDefaultsConfig.js')
+        shopConfig.value = config.default || []
+        configError.value = null
+        configLoaded.value = true
     } catch (error) {
-        console.error('Error loading shopDefaultsConfig.js:', error);
-        configError.value = error.message;
-        shopConfig.value = [];
-        configLoaded.value = false;
+        console.error('Error loading shopDefaultsConfig.js:', error)
+        configError.value = error.message
+        shopConfig.value = []
+        configLoaded.value = false
     }
 }
 
 /**
  * Wandelt die Werte aus der Datenbank in JavaScript-Typen
  *
- * Wahrheitswerte kommen als 't'/'f'/'1'/'0'. Anders als bei LxCars werden
- * dynamic-selects nicht in Zahlen gewandelt: shop_contact_login ist ein
- * Login-Name, keine ID.
+ * Wahrheitswerte kommen als 't'/'f'/'1'/'0'. Passwortfelder bleiben leer — sie
+ * werden von getCompanyConfig bewusst nicht ausgeliefert, und cleanData()
+ * übergeht leere Felder beim Speichern.
  *
- * Passwortfelder bleiben leer — sie werden von getCompanyConfig bewusst nicht
- * ausgeliefert, und cleanData() übergeht leere Felder beim Speichern.
+ * Läuft auch über die Felder in Gruppen: sonst blieben die PayPal-Zugangsdaten
+ * unbehandelt.
  */
 function normalizeShopDefaults() {
-    shopConfig.value.forEach(field => {
+    const alleFelder = shopConfig.value.flatMap(f => f.type === 'group' ? (f.fields || []) : [f])
+
+    alleFelder.forEach(field => {
         if (field.type === 'checkbox') {
-            const value = props.crmDefaults[field.name];
+            const value = props.crmDefaults[field.name]
             props.crmDefaults[field.name] =
                 value === true ||
                 value === 'true' ||
                 value === 't' ||
                 value === '1' ||
-                value === 1;
+                value === 1
         } else if (field.type === 'password') {
-            props.crmDefaults[field.name] = '';
+            props.crmDefaults[field.name] = ''
         }
-    });
+    })
 }
 
 onMounted(async () => {
-    await loadConfigFile();
+    await loadConfigFile()
     if (!configError.value) {
-        normalizeShopDefaults();
+        normalizeShopDefaults()
     }
-});
+})
 
 defineExpose({
     normalizeShopDefaults
-});
+})
 </script>

@@ -38,9 +38,8 @@ const shopDefaultsConfig = [
 
     { name: "shop_paypal", type: "headline", label: "crm_fields.shopPaypal" },
 
-    { name: "shop_paypal_client_id", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopPaypalClientId", tooltip: "crm_fields.shopPaypalClientId_help" },
-    // Wie shop_public_key: wird nicht ausgeliefert, leeres Feld behält den Wert.
-    { name: "shop_paypal_secret", type: "password", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopPaypalSecret", tooltip: "crm_fields.shopPaypalSecret_help" },
+    // Der Schalter steht vor den beiden Gruppen: er entscheidet, welche gilt,
+    // und die Oberfläche zeigt das dann an der Karte an.
     { name: "shop_paypal_sandbox", type: "checkbox", label: "crm_fields.shopPaypalSandbox", tooltip: "crm_fields.shopPaypalSandbox_help" },
     {
         name: "shop_paypal_payment_method_preference", type: "select", fieldstyle: "max-width: 45ch",
@@ -51,9 +50,39 @@ const shopDefaultsConfig = [
         label: "crm_fields.shopPaypalPaymentMethodPreference", tooltip: "crm_fields.shopPaypalPaymentMethodPreference_help"
     },
 
-    // Nur sinnvoll, solange die Testumgebung aktiv ist — im Echtbetrieb bleibt
-    // die Kopfzeile ohnehin aus.
-    { name: "shop_paypal_mock_response", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopPaypalMockResponse", tooltip: "crm_fields.shopPaypalMockResponse_help" },
+    // PayPal vergibt für Test- und Echtbetrieb getrennte Zugangsdaten. Zwei
+    // Karten, damit die vier ähnlich benannten Felder nicht ineinander
+    // übergehen und sichtbar ist, welches Paar gerade gilt.
+    //
+    // Die Geheimnisse werden wie shop_public_key nicht ausgeliefert; ein leer
+    // gelassenes Feld behält den gespeicherten Wert.
+    {
+        type: "group",
+        name: "shop_paypal_sandbox_group",
+        icon: "mdi-test-tube",
+        label: "crm_fields.shopPaypalSandboxGroup",
+        tooltip: "crm_fields.shopPaypalSandboxGroup_help",
+        activeWhen: { field: "shop_paypal_sandbox", value: true },
+        fields: [
+            { name: "shop_paypal_sandbox_client_id", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopPaypalSandboxClientId", tooltip: "crm_fields.shopPaypalSandboxClientId_help" },
+            { name: "shop_paypal_sandbox_secret", type: "password", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopPaypalSandboxSecret", tooltip: "crm_fields.shopPaypalSandboxSecret_help" },
+            // Erzwingt Fehlerantworten von PayPal — wirkt nur in der Testumgebung
+            // und steht deshalb hier und nicht bei den allgemeinen Angaben.
+            { name: "shop_paypal_mock_response", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopPaypalMockResponse", tooltip: "crm_fields.shopPaypalMockResponse_help" },
+        ],
+    },
+    {
+        type: "group",
+        name: "shop_paypal_live_group",
+        icon: "mdi-cash-multiple",
+        label: "crm_fields.shopPaypalLiveGroup",
+        tooltip: "crm_fields.shopPaypalLiveGroup_help",
+        activeWhen: { field: "shop_paypal_sandbox", value: false },
+        fields: [
+            { name: "shop_paypal_live_client_id", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopPaypalLiveClientId", tooltip: "crm_fields.shopPaypalLiveClientId_help" },
+            { name: "shop_paypal_live_secret", type: "password", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopPaypalLiveSecret", tooltip: "crm_fields.shopPaypalLiveSecret_help" },
+        ],
+    },
 
     { name: "shop_links", type: "headline", label: "crm_fields.shopLinks" },
 

@@ -499,6 +499,56 @@ die Bestellung steht.
 - **PayPal.** Braucht Zugangsdaten. Geprüft ist, dass ohne sie sauber
   `SHOP_CONFIG_MISSING` unter Nennung des fehlenden Schlüssels kommt.
 
+### Zwei PayPal-Zugangsdatenpaare
+
+Nachgetragen, nachdem der erste Entwurf nur eines vorsah: PayPal vergibt für
+Test- und Echtbetrieb getrennte Kennungen, und die `passwd.php` der Bridge
+hielt beide vor (`if(!$PAYPAL_SANDBOX)`). Mit nur einem Paar müsste man sie
+beim Umschalten jedes Mal austauschen — und beim Zurückschalten wieder.
+
+Vier Einstellungen statt zwei: `shop_paypal_live_client_id`,
+`shop_paypal_live_secret`, `shop_paypal_sandbox_client_id`,
+`shop_paypal_sandbox_secret`. Welches Paar gilt, entscheidet derselbe Schalter,
+der auch die Adresse bestimmt (`shop_paypal_sandbox`) — so können die beiden
+nicht auseinanderlaufen. Beide Geheimnisse stehen in der Ausschlussliste von
+`getCompanyConfig`, `getShopStatus()` prüft das jeweils aktive Paar.
+
+Das Schema zieht einen Altbestand aus der ersten Fassung in die
+Echtbetrieb-Schlüssel und löscht die alten Zeilen — auch auf Datenbanken, die
+die erste Fassung nie hatten.
+
+`web/oserp/einstellungen-uebernehmen.php` im Bridge-Repo liest beide Paare aus
+der `passwd.php`. Welcher Zweig welcher ist, entscheidet dort nicht die
+Reihenfolge, sondern die Bedingung im Quelltext: vertauschte Zugangsdaten wären
+ein teurer Fehler. Findet sich die Weiche nicht, kommt eine Warnung und gar
+nichts — die Zugangsdaten gehören dann von Hand eingetragen.
+
+**Nachgemessen:** Schema-Übergang übernimmt den Altbestand und räumt die alten
+Schlüssel weg; die Adresse folgt dem Schalter; und über einen Ersatzdienst an
+PayPals Stelle, dass bei aktiver Testumgebung tatsächlich die
+Testumgebung-Zugangsdaten hinausgehen.
+
+### Test- und Echtbetrieb im Einstellungen-Tab
+
+Vier fast gleich benannte Felder untereinander machen den Tab unlesbar, und
+welches Paar gerade gilt, stünde nirgends. Der Tab kennt deshalb einen
+Feldtyp `group`: eine Karte mit Überschrift, Erklärung und den enthaltenen
+Feldern. `activeWhen` nennt Feld und Wert, bei dem die Gruppe gilt — hier
+jeweils `shop_paypal_sandbox`. Die geltende Karte steht hervorgehoben
+(`variant="tonal"`, Merkmal "gilt"), die andere zurückgenommen
+(`variant="outlined"`, "gilt nicht"); beide bleiben bearbeitbar, damit sich
+das ruhende Paar vor dem Umschalten eintragen lässt.
+
+`shop_paypal_mock_response` steht in der Testumgebung-Gruppe, weil der
+Fehlertest nur dort wirkt. Der Schalter selbst und die Zahlungsarten stehen
+über den Karten — sie entscheiden, welche gilt.
+
+Die Felddarstellung liegt in
+`src/core/views/config/tabs/shop-config-field.component.vue`, damit dieselben
+Feldtypen auf oberster Ebene und innerhalb einer Gruppe gleich aussehen.
+`normalizeShopDefaults()` läuft über die Felder in Gruppen mit, sonst blieben
+die vier Zugangsdatenfelder beim Laden unbehandelt.
+
 ### PayPal-Fehlertest
 
 Nachgerüstet als Einstellung `shop_paypal_mock_response` (in der Bridge die

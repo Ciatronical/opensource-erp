@@ -76,8 +76,13 @@ function getShopStatus($data) {
     if ('' === shopConfigValue($db, 'shop_contact_login') || !$wahr($stand['kontakt'])) {
         $hinweise[] = 'shop_contact_login';
     }
-    if ('' === shopConfigValue($db, 'shop_paypal_client_id')) {
-        $hinweise[] = 'shop_paypal_client_id';
+    // Geprueft wird das Paar, das gerade gilt — im Testbetrieb nuetzen die
+    // Echtbetrieb-Zugangsdaten nichts und umgekehrt.
+    $paypalVorsilbe = shopConfigBool($db, 'shop_paypal_sandbox', true)
+        ? 'shop_paypal_sandbox_' : 'shop_paypal_live_';
+    if ('' === shopConfigValue($db, $paypalVorsilbe.'client_id')
+        || '' === shopConfigValue($db, $paypalVorsilbe.'secret')) {
+        $hinweise[] = $paypalVorsilbe.'client_id';
     }
     if ('' === shopConfigValue($db, 'shop_payment_iban')) {
         $hinweise[] = 'shop_payment_iban';

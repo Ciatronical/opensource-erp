@@ -37,7 +37,8 @@ function getCompanyConfig($data) {
                         -- gelassenes Feld laesst den gespeicherten Wert also unangetastet.
                         SELECT json_object_agg(key, value) FROM defaults_oserp
                         WHERE key NOT IN ('aag_online_token', 'aag_online_token_exp',
-                                          'shop_paypal_secret', 'shop_public_key')
+                                          'shop_paypal_live_secret', 'shop_paypal_sandbox_secret',
+                                          'shop_public_key')
                     ),
                     'business_types', (
                         SELECT json_agg(business) FROM (SELECT * FROM business) AS business

@@ -186,8 +186,15 @@ function paypalRequest($db, string $pfad, string $methode = 'GET', $rumpf = null
  * @throws ShopPaymentError, ApiError SHOP_CONFIG_MISSING
  */
 function paypalAccessToken($db): string {
-    $clientId = shopConfigRequire($db, 'shop_paypal_client_id');
-    $secret   = shopConfigRequire($db, 'shop_paypal_secret');
+    // PayPal vergibt fuer Test- und Echtbetrieb getrennte Zugangsdaten. Beide
+    // stehen nebeneinander in den Einstellungen; welches Paar gilt, entscheidet
+    // derselbe Schalter, der auch die Adresse bestimmt — so koennen die beiden
+    // nicht auseinanderlaufen.
+    $vorsilbe = shopConfigBool($db, 'shop_paypal_sandbox', true)
+        ? 'shop_paypal_sandbox_' : 'shop_paypal_live_';
+
+    $clientId = shopConfigRequire($db, $vorsilbe.'client_id');
+    $secret   = shopConfigRequire($db, $vorsilbe.'secret');
 
     $antwort = paypalRequest($db, '/v1/oauth2/token', 'POST', 'grant_type=client_credentials', [
         'Accept: application/json',

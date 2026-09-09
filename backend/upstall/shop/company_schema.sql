@@ -428,9 +428,30 @@ INSERT INTO defaults_oserp (key, value) VALUES ('shop_payment_iban', '') ON CONF
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_payment_bic', '') ON CONFLICT (key) DO NOTHING;
 
 -- PayPal. Sandbox bleibt an, bis jemand bewusst umschaltet.
-INSERT INTO defaults_oserp (key, value) VALUES ('shop_paypal_client_id', '') ON CONFLICT (key) DO NOTHING;
-INSERT INTO defaults_oserp (key, value) VALUES ('shop_paypal_secret', '') ON CONFLICT (key) DO NOTHING;
+--
+-- Zwei Zugangsdatenpaare, wie es die Bridge in ihrer passwd.php ebenfalls
+-- hielt: PayPal vergibt fuer Test- und Echtbetrieb getrennte Kennungen. Wer
+-- nur eines vorhaelt, muesste sie beim Umschalten jedesmal austauschen — und
+-- beim Zurueckschalten wieder. Welches Paar gilt, entscheidet
+-- shop_paypal_sandbox.
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_paypal_sandbox', '1') ON CONFLICT (key) DO NOTHING;
+INSERT INTO defaults_oserp (key, value) VALUES ('shop_paypal_live_client_id', '') ON CONFLICT (key) DO NOTHING;
+INSERT INTO defaults_oserp (key, value) VALUES ('shop_paypal_live_secret', '') ON CONFLICT (key) DO NOTHING;
+INSERT INTO defaults_oserp (key, value) VALUES ('shop_paypal_sandbox_client_id', '') ON CONFLICT (key) DO NOTHING;
+INSERT INTO defaults_oserp (key, value) VALUES ('shop_paypal_sandbox_secret', '') ON CONFLICT (key) DO NOTHING;
+
+-- Uebergang: die erste Fassung dieser Erweiterung kannte nur ein Paar. Wo es
+-- gefuellt ist, wandert es in die Echtbetrieb-Schluessel und der Altbestand
+-- verschwindet. Laeuft auch dann durch, wenn es die alten Zeilen nie gab.
+UPDATE defaults_oserp z SET value = a.value, mtime = now()
+  FROM defaults_oserp a
+ WHERE a.key = 'shop_paypal_client_id' AND COALESCE(a.value, '') <> ''
+   AND z.key = 'shop_paypal_live_client_id' AND COALESCE(z.value, '') = '';
+UPDATE defaults_oserp z SET value = a.value, mtime = now()
+  FROM defaults_oserp a
+ WHERE a.key = 'shop_paypal_secret' AND COALESCE(a.value, '') <> ''
+   AND z.key = 'shop_paypal_live_secret' AND COALESCE(z.value, '') = '';
+DELETE FROM defaults_oserp WHERE key IN ('shop_paypal_client_id', 'shop_paypal_secret');
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_paypal_payment_method_preference', 'IMMEDIATE_PAYMENT_REQUIRED') ON CONFLICT (key) DO NOTHING;
 -- Fehlertest: erzwingt eine bestimmte Fehlerantwort von PayPal, statt den
 -- Aufruf auszufuehren. Wirkt nur in der Testumgebung; siehe paypalMockHeader().
