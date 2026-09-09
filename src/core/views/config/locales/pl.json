@@ -958,7 +958,9 @@
         "shopInvoiceMailSubject": "Temat e-maila z fakturą",
         "shopInvoiceMailSubject_help": "Pierwsze %s to numer faktury, drugie data.",
         "shopWithdrawalMailTo": "Adres e-mail dla odstąpień",
-        "shopWithdrawalMailTo_help": "Adres, na który zgłaszane są otrzymane odstąpienia od umowy."
+        "shopWithdrawalMailTo_help": "Adres, na który zgłaszane są otrzymane odstąpienia od umowy.",
+        "shopPaypalMockResponse": "Test błędu PayPal",
+        "shopPaypalMockResponse_help": "Wymusza określoną odpowiedź błędu z PayPal zamiast wykonania wywołania. Postać: create:KOD, capture:KOD lub read:KOD; bez przedrostka kod dotyczy wszystkich trzech wywołań. Przykład: capture:TRANSACTION_REFUSED. Działa tylko przy włączonym środowisku testowym; do normalnej pracy pozostaw puste."
     },
     "add": "Dodaj",
     "add_fields": {

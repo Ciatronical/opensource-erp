@@ -854,7 +854,9 @@
         "shopInvoiceMailSubject": "发票邮件主题",
         "shopInvoiceMailSubject_help": "第一个 %s 是发票号，第二个是日期。",
         "shopWithdrawalMailTo": "撤回通知的电子邮件地址",
-        "shopWithdrawalMailTo_help": "收到的撤回通知将发送到的地址。"
+        "shopWithdrawalMailTo_help": "收到的撤回通知将发送到的地址。",
+        "shopPaypalMockResponse": "PayPal 错误测试",
+        "shopPaypalMockResponse_help": "强制 PayPal 返回指定的错误响应，而不执行该调用。格式：create:代码、capture:代码 或 read:代码；不带前缀时该代码对三个调用均生效。示例：capture:TRANSACTION_REFUSED。仅在启用测试环境时有效；正常运行时请留空。"
     },
     "add": "添加",
     "add_fields": {

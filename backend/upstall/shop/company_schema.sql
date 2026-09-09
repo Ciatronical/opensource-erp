@@ -432,6 +432,9 @@ INSERT INTO defaults_oserp (key, value) VALUES ('shop_paypal_client_id', '') ON 
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_paypal_secret', '') ON CONFLICT (key) DO NOTHING;
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_paypal_sandbox', '1') ON CONFLICT (key) DO NOTHING;
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_paypal_payment_method_preference', 'IMMEDIATE_PAYMENT_REQUIRED') ON CONFLICT (key) DO NOTHING;
+-- Fehlertest: erzwingt eine bestimmte Fehlerantwort von PayPal, statt den
+-- Aufruf auszufuehren. Wirkt nur in der Testumgebung; siehe paypalMockHeader().
+INSERT INTO defaults_oserp (key, value) VALUES ('shop_paypal_mock_response', '') ON CONFLICT (key) DO NOTHING;
 
 -- Adressen der Shop-Webseite (fuer Links in Suche, Mails und Auswertung)
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_base_url', '') ON CONFLICT (key) DO NOTHING;
@@ -450,24 +453,17 @@ INSERT INTO defaults_oserp (key, value) VALUES ('shop_withdrawal_mail_to', '') O
 -- VERSANDARTIKEL
 -- ============================================================================
 --
--- Nur anlegen, wenn er fehlt. Die Bridge schrieb hier ON CONFLICT DO UPDATE
--- mit festem sellprice — auf einer laufenden Installation haette jedes
--- Schema-Update den vom Betreiber gepflegten Versandpreis zurueckgesetzt.
+-- Wird bewusst NICHT angelegt. Die Bridge tat das (mit ON CONFLICT DO UPDATE,
+-- was bei jedem Schema-Update den gepflegten Preis zurueckgesetzt haette), und
+-- auch ein blosses Anlegen ist heikel: parts traegt je nach kivitendo-Stand
+-- unterschiedliche Pflichtfelder und Fremdschluessel — nachgemessen ist der
+-- Lauf an part_classification_id_fkey gescheitert. Ein Schema-Update darf
+-- daran nicht scheitern.
 --
--- Ohne passende Buchungsgruppe entsteht nichts: dann fehlt die Grundlage fuer
--- Erloes- und Steuerkonto, und ein Artikel ohne die waere in der Rechnung
--- wertlos. Das Admin-Panel meldet den Fall.
-
-INSERT INTO parts (partnumber, description, sellprice, buchungsgruppen_id, unit, part_type)
-SELECT cfg.value, 'Versand', 7.90, bg.id, 'Stck', 'part'
-  FROM defaults_oserp cfg
-  JOIN buchungsgruppen bg ON bg.description ILIKE 'Standard 19%'
- WHERE cfg.key = 'shop_shipping_partnumber'
-   AND COALESCE(cfg.value, '') <> ''
-   AND NOT EXISTS (SELECT 1 FROM parts p WHERE p.partnumber = cfg.value);
-
-INSERT INTO parts_ext (parts_id, hugoshop_breadcrumbs, hugoshop_technical_data, hugoshop_properties, hugoshop_downloads, hugoshop_images, hugoshop_hyperlink, hugoshop_category)
-SELECT p.id, '[]'::jsonb, '{}'::jsonb, '{}'::jsonb, '[]'::jsonb, '[]'::jsonb, 'versand', 'Versandkosten'
-  FROM parts p
-  JOIN defaults_oserp cfg ON cfg.key = 'shop_shipping_partnumber' AND p.partnumber = cfg.value
- WHERE NOT EXISTS (SELECT 1 FROM parts_ext e WHERE e.parts_id = p.id);
+-- Sachlich gehoert der Artikel ohnehin dem Betreiber: Preis, Buchungsgruppe
+-- und damit der Steuersatz sind seine Entscheidung. Fehlt er, meldet
+-- getShopStatus() das als blockierenden Punkt, und das Admin-Panel zeigt es
+-- vor der ersten Bestellung an.
+--
+-- Anzulegen ist ein gewoehnlicher Artikel mit der Nummer aus der Einstellung
+-- shop_shipping_partnumber (Vorgabe: 8).

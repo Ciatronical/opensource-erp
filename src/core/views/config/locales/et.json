@@ -854,7 +854,9 @@
         "shopInvoiceMailSubject": "Arve e-kirja teema",
         "shopInvoiceMailSubject_help": "Esimene %s on arve number, teine kuupäev.",
         "shopWithdrawalMailTo": "Taganemiste e-posti aadress",
-        "shopWithdrawalMailTo_help": "Aadress, kuhu saabunud taganemised teatatakse."
+        "shopWithdrawalMailTo_help": "Aadress, kuhu saabunud taganemised teatatakse.",
+        "shopPaypalMockResponse": "PayPali veatest",
+        "shopPaypalMockResponse_help": "Sunnib PayPalilt kindla veavastuse selle asemel, et päring täita. Kuju: create:KOOD, capture:KOOD või read:KOOD; ilma eesliiteta kehtib kood kõigi kolme päringu kohta. Näide: capture:TRANSACTION_REFUSED. Mõjub ainult aktiivse testkeskkonnaga; tavakasutuses jäta tühjaks."
     },
     "add": "Lisa",
     "add_fields": {

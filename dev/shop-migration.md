@@ -114,7 +114,7 @@ die reine Shop-Variante stand.
 | 2 | Einstellungen aus `defaults_oserp` lesen, Einstellungen-Tab, `DbhCompany::begin($pdo)` | **erledigt** |
 | 3 | Fachschicht: Kontext, Warenkorb, Konto, Suche | **erledigt** |
 | 4 | Beide Einstiegspunkte, Allowlist, `shopLogin`/`shopLogout` | **erledigt** |
-| 5 | Rechnung und Zahlung auf Faktura, Print und E-Mail | offen |
+| 5 | Rechnung und Zahlung auf Faktura, Print und E-Mail | **erledigt**, PDF/Mail/PayPal ungeprüft |
 | 6 | `src/features/shop/` — Admin-Panel, Routen in 21 Sprachen | offen |
 | 7 | `shop-ui` auf das Antwortformat umstellen, Proxy einrichten | offen |
 
@@ -138,10 +138,10 @@ Gegenüber `kivitendo_bridge/sql/install.sql` geändert:
   Rechnungspositionen. Der Index wird in einem `DO`-Block angelegt, der bei
   vorhandenen Doppeleinträgen eine `NOTICE` ausgibt statt das Update
   abzubrechen.
-- **Versandartikel** wird nur noch angelegt, wenn er fehlt.
-  `install.sql:165` schreibt `ON CONFLICT DO UPDATE SET … sellprice = 7.90` und
-  hätte damit bei jedem Schema-Update den vom Betreiber gepflegten Versandpreis
-  zurückgesetzt.
+- **Versandartikel** wird gar nicht mehr angelegt (in Stufe 5 nachgezogen,
+  Begründung dort). `install.sql:165` schrieb `ON CONFLICT DO UPDATE SET …
+  sellprice = 7.90` und hätte bei jedem Schema-Update den gepflegten
+  Versandpreis zurückgesetzt.
 - **Aufräumfristen** der beiden Trigger kommen aus `defaults_oserp`
   (`shop_cart_lifetime_hours`, `shop_context_lifetime_hours`) statt fest aus dem
   Funktionsrumpf.
@@ -416,3 +416,125 @@ Der Durchlauf hat außerdem bestätigt, dass `DbhCompany::begin($pdo)` beim
 zweiten Aufruf im selben Prozess wirft — im Betrieb ist ein Request ein
 Prozess, im ersten Testanlauf (mehrere Anfragen in einem Prozess) fiel es auf.
 Deshalb läuft der Test jetzt über echtes HTTP.
+
+## Stufe 5 — was angelegt wurde
+
+| Datei | Inhalt |
+| --- | --- |
+| `lib/invoice.php` | Warenkorb → Rechnung, Rechnungsansichten, PDF-Abruf |
+| `lib/mail.php` | Rechnungsmail, Kontaktmail, Widerrufsmails |
+| `lib/payment.php` | PayPal: Bestellung, Einzug, Zahlungsstand, Abgleich |
+| `lib/withdrawal.php` | Widerruf entgegennehmen und verwalten |
+| `lib/analytics.php` | Angaben für die Reichweitenmessung |
+| `templates/` | fünf Mailvorlagen (Rahmen, Rechnung, Kontakt, zwei Widerrufsmails) |
+
+Dazu 16 weitere öffentliche Aktionen (Rechnung, Zahlung, Auswertung, Kontakt,
+Widerruf) und acht Admin-Aktionen (Bestellungen, schwebende Zahlungen,
+Abgleich, Widerrufe, Artikel-Shopdaten).
+
+### Was von der Bridge übrig bleibt
+
+`invoicing()` hatte rund 200 Zeilen. Geblieben ist ein Ablauf, der vorhandene
+Bausteine aneinanderreiht:
+
+| Schritt | jetzt |
+| --- | --- |
+| Versandkosten | `cartApplyShipping()` |
+| Lieferadresse | `shiptoCreate()` — dieselbe Funktion wie im Konto |
+| `ar` + `invoice` | ein `INSERT … SELECT` aus den Warenkorbzeilen |
+| `acc_trans` | `postArInvoiceToLedger()` aus `faktura.php` |
+| Beträge | aus dem Trockenlauf derselben Funktion |
+| PDF | `renderDocumentPdfFile()` — Perl und `shell_exec` entfallen |
+| Mail | `SmtpClient` — PHPMailer entfällt |
+
+Der feste Teiler `/1.19` ist damit weg: die Steuer kommt je Position aus der
+Buchungsgruppe. Nachgemessen an einem Warenkorb mit 19 % und 7 %: fünf
+Buchungszeilen, Summe null.
+
+**Betrag und Buchung können nicht auseinanderlaufen.**
+`postArInvoiceToLedger()` prüft den gerechneten Bruttobetrag gegen `ar.amount`
+und verweigert bei Abweichung. Deshalb wird die Funktion zuerst im Trockenlauf
+gefragt, ihr Ergebnis als Betrag gesetzt und dann gebucht — sonst könnte die
+Prüfung an einem Rundungscent scheitern.
+
+### Versandartikel: Anlage zurückgenommen
+
+Stufe 1 legte ihn an, wenn er fehlt. Der Lauf gegen ein echtes
+kivitendo-Schema scheiterte daran mit
+`part_classification_id_fkey` — `parts` trägt je nach Stand unterschiedliche
+Pflichtfelder. Ein Schema-Update darf daran nicht scheitern, und sachlich
+gehört der Artikel ohnehin dem Betreiber (Preis, Buchungsgruppe, Steuersatz).
+`getShopStatus()` meldet ihn jetzt als blockierenden Punkt, wenn er fehlt.
+
+### Nachgemessen
+
+**Rechnungskern** (40 Prüfungen, Stub-Schema): Rechnung mit zwei Steuersätzen,
+Positionen, Beträge, Buchungssatz (fünf Zeilen, Summe null, Forderung negativ),
+kein Zahlungseingang gebucht, Warenkorb geleert, Nummernkreis zählt hoch,
+Ansichten, Fremdzugriff verwehrt, leerer Warenkorb abgewiesen.
+
+**Über HTTP** (22 Prüfungen): Kauf auf Rechnung, Bestellliste, Einzelansicht,
+Zusammenfassung über den Rechnungslink, Auswertung, Widerruf samt Honigtopf,
+Fremdzugriff auf Bestellungen und PDF verwehrt. Ein fehlgeschlagener
+Mailversand kippt den Kauf nicht — die Antwort meldet `email_status: error`,
+die Bestellung steht.
+
+**Zwei echte Fehler gefunden und behoben:**
+
+1. `ROUND(qty * sellprice * (1 - discount), 2)` — `invoice.discount` ist `real`,
+   der Ausdruck damit `double precision`, und `ROUND(double precision, integer)`
+   gibt es in PostgreSQL nicht. Jetzt mit `::numeric`.
+2. Division durch Null, wenn `defaults.precision` 0 oder nicht gesetzt ist —
+   der Rundungsschritt steht im Nenner. Der Shop meldete nur „division by
+   zero". Jetzt `COALESCE(NULLIF(precision, 0), 0.01)`.
+
+### Was noch nicht geprüft ist
+
+- **PDF-Erzeugung.** Der Aufruf ist verdrahtet und erreicht `loadPrintData()`;
+  ein vollständiger Lauf braucht ein echtes kivitendo-Schema mit gefüllter
+  `defaults`-Zeile. Der Versuch über eine schemagleiche Kopie scheiterte an
+  Fremdschlüsseln der `defaults`-Zeile (`bin_id`) — mit einer echten
+  Mandanten-Datenbank ist das in Minuten nachzuholen.
+- **Mailversand.** Braucht eingerichtetes SMTP. Geprüft ist, dass ein
+  Fehlschlag den Kauf nicht kippt.
+- **PayPal.** Braucht Zugangsdaten. Geprüft ist, dass ohne sie sauber
+  `SHOP_CONFIG_MISSING` unter Nennung des fehlenden Schlüssels kommt.
+
+### PayPal-Fehlertest
+
+Nachgerüstet als Einstellung `shop_paypal_mock_response` (in der Bridge die
+Konstante `PAYPAL_MOCK_RESPONSE`). PayPal beantwortet einen Aufruf damit mit
+einem bestimmten Fehler, statt ihn auszuführen — die Grundlage für Fehlertests
+im Kaufablauf.
+
+Aufbau: `create:CODE`, `capture:CODE` oder `read:CODE`; ohne Vorsilbe gilt der
+Code für alle drei Aufrufe. Ein vollständiges JSON
+(`{"mock_application_codes":"…"}`) geht auch und wird nie als Vorsilbe
+missverstanden. Beispiel: `capture:TRANSACTION_REFUSED`.
+
+Zwei Absicherungen aus der Bridge übernommen: die Kopfzeile entsteht im
+Echtbetrieb gar nicht erst (nicht erst „später wieder herausnehmen"), und jeder
+erzwungene Aufruf schreibt eine Warnung ins Protokoll — eine erzwungene
+Ablehnung sähe dort sonst genauso aus wie eine echte. Dazu neu: Antwortet
+PayPal mit HTTP 403 und leerem Rumpf, steht der Hinweis im Protokoll, dass der
+Code nicht zum Aufruf gehört; ohne ihn trifft eine leere Antwort ebenso einen
+Proxy, eine Zeitüberschreitung oder eine Drosselung.
+
+Eine schwebende Buchung (`PENDING`) lässt sich damit nicht erzeugen: der
+Katalog besteht aus Fehlern, `PENDING` ist eine erfolgreiche Antwort mit
+zurückgehaltener Buchung.
+
+**Nachgemessen** (22 Prüfungen): wann die Kopfzeile entsteht und wann nicht
+(leere Einstellung, Echtbetrieb, passende und unpassende Vorsilbe), dass die
+Vorsilbe abgeschnitten wird, dass ein JSON unverändert durchgeht und sein
+Doppelpunkt nicht als Vorsilbe gelesen wird, dass eine unbekannte Vorsilbe Teil
+des Codes bleibt, dass der Protokolleintrag entsteht — und über einen lokalen
+Ersatzdienst, dass die Kopfzeile beim Empfänger ankommt, bei `capture` aber
+nicht bei `create`.
+
+**Dabei ein echter Fehler gefunden:** `shopConfig()` schlüsselte seinen
+Zwischenspeicher über `spl_object_id`. Diese Kennung wird nach dem Freigeben
+eines Objekts neu vergeben — eine frisch aufgebaute Verbindung erbte die
+Kennung einer zerstörten und bekam deren Einstellungen. Genau der Fall, gegen
+den die Trennung gedacht war. Jetzt eine `WeakMap`, die über das Objekt selbst
+schlüsselt.

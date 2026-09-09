@@ -854,7 +854,9 @@
         "shopInvoiceMailSubject": "Objet du courriel de facture",
         "shopInvoiceMailSubject_help": "Le premier %s est le numéro de facture, le second la date.",
         "shopWithdrawalMailTo": "Adresse pour les rétractations",
-        "shopWithdrawalMailTo_help": "Adresse à laquelle les rétractations reçues sont signalées."
+        "shopWithdrawalMailTo_help": "Adresse à laquelle les rétractations reçues sont signalées.",
+        "shopPaypalMockResponse": "Test d'erreur PayPal",
+        "shopPaypalMockResponse_help": "Force une réponse d'erreur précise de PayPal au lieu d'exécuter l'appel. Format : create:CODE, capture:CODE ou read:CODE ; sans préfixe, le code s'applique aux trois appels. Exemple : capture:TRANSACTION_REFUSED. N'agit qu'avec l'environnement de test actif ; laisser vide en fonctionnement normal."
     },
     "add": "Ajouter",
     "add_fields": {

@@ -854,7 +854,9 @@
         "shopInvoiceMailSubject": "Asunto del correo de factura",
         "shopInvoiceMailSubject_help": "El primer %s es el número de factura, el segundo la fecha.",
         "shopWithdrawalMailTo": "Correo para desistimientos",
-        "shopWithdrawalMailTo_help": "Dirección a la que se notifican los desistimientos recibidos."
+        "shopWithdrawalMailTo_help": "Dirección a la que se notifican los desistimientos recibidos.",
+        "shopPaypalMockResponse": "Prueba de error de PayPal",
+        "shopPaypalMockResponse_help": "Fuerza una respuesta de error concreta de PayPal en lugar de ejecutar la llamada. Formato: create:CÓDIGO, capture:CÓDIGO o read:CÓDIGO; sin prefijo el código se aplica a las tres llamadas. Ejemplo: capture:TRANSACTION_REFUSED. Solo surte efecto con el entorno de pruebas activo; dejar vacío para el funcionamiento normal."
     },
     "add": "Añadir",
     "add_fields": {

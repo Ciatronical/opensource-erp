@@ -1055,7 +1055,9 @@
         "shopInvoiceMailSubject": "Invoice e-mail subject",
         "shopInvoiceMailSubject_help": "The first %s is the invoice number, the second one the date.",
         "shopWithdrawalMailTo": "E-mail address for withdrawals",
-        "shopWithdrawalMailTo_help": "Address incoming withdrawals are reported to."
+        "shopWithdrawalMailTo_help": "Address incoming withdrawals are reported to.",
+        "shopPaypalMockResponse": "PayPal error test",
+        "shopPaypalMockResponse_help": "Forces a specific error response from PayPal instead of executing the call. Format: create:CODE, capture:CODE or read:CODE — without a prefix the code applies to all three calls. Example: capture:TRANSACTION_REFUSED. Only effective while the sandbox is enabled; leave empty for normal operation."
     },
     "add": "Add",
     "add_fields": {

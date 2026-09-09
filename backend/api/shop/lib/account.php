@@ -30,7 +30,11 @@
 function shopInvoicingData($db, ?int $customerId): array {
     if (null === $customerId) {
         $vorgaben = $db->getOne(
-            "SELECT d.precision, d.currency_id,
+            // precision ist der Rundungsschritt und steht im Nenner. Ist er 0
+            // oder nicht gesetzt — auf einer frisch aufgesetzten Datenbank
+            // kommt das vor —, scheitert jede Preisabfrage an einer Division
+            // durch Null, und der Shop meldet nur "division by zero".
+            "SELECT COALESCE(NULLIF(d.precision, 0), 0.01) AS precision, d.currency_id,
                     (SELECT name FROM currencies WHERE id = d.currency_id) AS currency,
                     COALESCE(
                         (SELECT id FROM tax_zones
@@ -47,7 +51,7 @@ function shopInvoicingData($db, ?int $customerId): array {
     }
 
     $kunde = $db->getOne(
-        "SELECT (SELECT precision FROM defaults) AS precision,
+        "SELECT COALESCE(NULLIF((SELECT precision FROM defaults), 0), 0.01) AS precision,
                 c.id AS customer_id, c.name, c.email, c.phone, c.street, c.zipcode, c.city,
                 c.country, c.greeting, c.customernumber, c.natural_person, c.contact,
                 c.taxzone_id, c.currency_id, c.payment_id,

@@ -1057,7 +1057,9 @@
         "shopInvoiceMailSubject": "Betreff der Rechnungsmail",
         "shopInvoiceMailSubject_help": "Das erste %s ist die Rechnungsnummer, das zweite das Datum.",
         "shopWithdrawalMailTo": "E-Mail-Adresse für Widerrufe",
-        "shopWithdrawalMailTo_help": "Adresse, an die eingehende Widerrufe gemeldet werden."
+        "shopWithdrawalMailTo_help": "Adresse, an die eingehende Widerrufe gemeldet werden.",
+        "shopPaypalMockResponse": "PayPal-Fehlertest",
+        "shopPaypalMockResponse_help": "Erzwingt eine bestimmte Fehlerantwort von PayPal, statt den Aufruf auszuführen. Aufbau: create:CODE, capture:CODE oder read:CODE — ohne Vorsilbe gilt der Code für alle drei Aufrufe. Beispiel: capture:TRANSACTION_REFUSED. Wirkt nur bei aktiver Testumgebung; leer lassen für den Normalbetrieb."
     },
     "add": "Hinzufügen",
     "add_fields": {

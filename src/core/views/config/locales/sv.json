@@ -854,7 +854,9 @@
         "shopInvoiceMailSubject": "Ämne i fakturamejlet",
         "shopInvoiceMailSubject_help": "Första %s är fakturanumret, det andra datumet.",
         "shopWithdrawalMailTo": "E-postadress för ångeranmälningar",
-        "shopWithdrawalMailTo_help": "Adress dit inkomna ångeranmälningar rapporteras."
+        "shopWithdrawalMailTo_help": "Adress dit inkomna ångeranmälningar rapporteras.",
+        "shopPaypalMockResponse": "PayPal-feltest",
+        "shopPaypalMockResponse_help": "Framtvingar ett visst felsvar från PayPal i stället för att utföra anropet. Format: create:KOD, capture:KOD eller read:KOD; utan prefix gäller koden för alla tre anropen. Exempel: capture:TRANSACTION_REFUSED. Fungerar bara med aktiv testmiljö; lämna tomt vid normal drift."
     },
     "add": "Lagg till",
     "add_fields": {

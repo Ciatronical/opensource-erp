@@ -854,7 +854,9 @@
         "shopInvoiceMailSubject": "Předmět e-mailu s fakturou",
         "shopInvoiceMailSubject_help": "První %s je číslo faktury, druhé datum.",
         "shopWithdrawalMailTo": "E-mailová adresa pro odstoupení",
-        "shopWithdrawalMailTo_help": "Adresa, na kterou se hlásí přijatá odstoupení od smlouvy."
+        "shopWithdrawalMailTo_help": "Adresa, na kterou se hlásí přijatá odstoupení od smlouvy.",
+        "shopPaypalMockResponse": "Test chyby PayPal",
+        "shopPaypalMockResponse_help": "Vynutí od PayPalu určitou chybovou odpověď místo provedení volání. Tvar: create:KÓD, capture:KÓD nebo read:KÓD; bez předpony platí kód pro všechna tři volání. Příklad: capture:TRANSACTION_REFUSED. Působí jen při zapnutém testovacím prostředí; pro běžný provoz ponechte prázdné."
     },
     "add": "Přidat",
     "add_fields": {

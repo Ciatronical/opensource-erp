@@ -854,7 +854,9 @@
         "shopInvoiceMailSubject": "Subiectul e-mailului cu factura",
         "shopInvoiceMailSubject_help": "Primul %s este numărul facturii, al doilea data.",
         "shopWithdrawalMailTo": "Adresă pentru retrageri",
-        "shopWithdrawalMailTo_help": "Adresa la care sunt raportate retragerile primite."
+        "shopWithdrawalMailTo_help": "Adresa la care sunt raportate retragerile primite.",
+        "shopPaypalMockResponse": "Test de eroare PayPal",
+        "shopPaypalMockResponse_help": "Forțează un anumit răspuns de eroare de la PayPal în loc să execute apelul. Format: create:COD, capture:COD sau read:COD; fără prefix codul se aplică tuturor celor trei apeluri. Exemplu: capture:TRANSACTION_REFUSED. Are efect doar cu mediul de test activ; lăsați gol pentru funcționarea normală."
     },
     "add": "Adăugare",
     "add_fields": {

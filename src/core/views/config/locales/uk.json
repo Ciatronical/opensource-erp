@@ -854,7 +854,9 @@
         "shopInvoiceMailSubject": "Тема листа з рахунком",
         "shopInvoiceMailSubject_help": "Перше %s — номер рахунку, друге — дата.",
         "shopWithdrawalMailTo": "Адреса для відмов від договору",
-        "shopWithdrawalMailTo_help": "Адреса, на яку повідомляють про отримані відмови."
+        "shopWithdrawalMailTo_help": "Адреса, на яку повідомляють про отримані відмови.",
+        "shopPaypalMockResponse": "Перевірка помилок PayPal",
+        "shopPaypalMockResponse_help": "Змушує PayPal повернути задану відповідь про помилку замість виконання виклику. Вигляд: create:КОД, capture:КОД або read:КОД; без префікса код діє для всіх трьох викликів. Приклад: capture:TRANSACTION_REFUSED. Діє лише за увімкненого тестового середовища; для звичайної роботи залиште порожнім."
     },
     "add": "Додати",
     "add_fields": {

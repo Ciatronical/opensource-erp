@@ -854,7 +854,9 @@
         "shopInvoiceMailSubject": "Laskusähköpostin aihe",
         "shopInvoiceMailSubject_help": "Ensimmäinen %s on laskun numero, toinen päivämäärä.",
         "shopWithdrawalMailTo": "Peruutusten sähköpostiosoite",
-        "shopWithdrawalMailTo_help": "Osoite, johon saapuneet peruutukset ilmoitetaan."
+        "shopWithdrawalMailTo_help": "Osoite, johon saapuneet peruutukset ilmoitetaan.",
+        "shopPaypalMockResponse": "PayPalin virhetesti",
+        "shopPaypalMockResponse_help": "Pakottaa PayPalilta tietyn virhevastauksen kutsun suorittamisen sijaan. Muoto: create:KOODI, capture:KOODI tai read:KOODI; ilman etuliitettä koodi koskee kaikkia kolmea kutsua. Esimerkki: capture:TRANSACTION_REFUSED. Vaikuttaa vain testiympäristön ollessa käytössä; jätä tyhjäksi normaalikäytössä."
     },
     "add": "Lisää",
     "add_fields": {

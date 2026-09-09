@@ -854,7 +854,9 @@
         "shopInvoiceMailSubject": "Onderwerp van de factuurmail",
         "shopInvoiceMailSubject_help": "De eerste %s is het factuurnummer, de tweede de datum.",
         "shopWithdrawalMailTo": "E-mailadres voor herroepingen",
-        "shopWithdrawalMailTo_help": "Adres waarnaar binnengekomen herroepingen worden gemeld."
+        "shopWithdrawalMailTo_help": "Adres waarnaar binnengekomen herroepingen worden gemeld.",
+        "shopPaypalMockResponse": "PayPal-fouttest",
+        "shopPaypalMockResponse_help": "Dwingt een bepaald foutantwoord van PayPal af in plaats van de aanroep uit te voeren. Opbouw: create:CODE, capture:CODE of read:CODE; zonder voorvoegsel geldt de code voor alle drie de aanroepen. Voorbeeld: capture:TRANSACTION_REFUSED. Werkt alleen met een actieve testomgeving; leeg laten voor normaal gebruik."
     },
     "add": "Toevoegen",
     "add_fields": {

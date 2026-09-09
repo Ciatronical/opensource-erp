@@ -51,6 +51,10 @@ const shopDefaultsConfig = [
         label: "crm_fields.shopPaypalPaymentMethodPreference", tooltip: "crm_fields.shopPaypalPaymentMethodPreference_help"
     },
 
+    // Nur sinnvoll, solange die Testumgebung aktiv ist — im Echtbetrieb bleibt
+    // die Kopfzeile ohnehin aus.
+    { name: "shop_paypal_mock_response", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopPaypalMockResponse", tooltip: "crm_fields.shopPaypalMockResponse_help" },
+
     { name: "shop_links", type: "headline", label: "crm_fields.shopLinks" },
 
     { name: "shop_base_url", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopBaseUrl", tooltip: "crm_fields.shopBaseUrl_help" },

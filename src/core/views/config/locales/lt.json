@@ -854,7 +854,9 @@
         "shopInvoiceMailSubject": "Sąskaitos el. laiško tema",
         "shopInvoiceMailSubject_help": "Pirmasis %s yra sąskaitos numeris, antrasis – data.",
         "shopWithdrawalMailTo": "El. pašto adresas atsisakymams",
-        "shopWithdrawalMailTo_help": "Adresas, kuriuo pranešama apie gautus atsisakymus."
+        "shopWithdrawalMailTo_help": "Adresas, kuriuo pranešama apie gautus atsisakymus.",
+        "shopPaypalMockResponse": "„PayPal“ klaidos bandymas",
+        "shopPaypalMockResponse_help": "Priverčia „PayPal“ grąžinti nurodytą klaidos atsakymą, užuot įvykdžius kreipinį. Formatas: create:KODAS, capture:KODAS arba read:KODAS; be priešdėlio kodas galioja visiems trims kreipiniams. Pavyzdys: capture:TRANSACTION_REFUSED. Veikia tik esant įjungtai bandomajai aplinkai; įprastam darbui palikite tuščią."
     },
     "add": "Pridėti",
     "add_fields": {

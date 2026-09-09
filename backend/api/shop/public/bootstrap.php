@@ -27,11 +27,24 @@ require_once __DIR__.'/../../error.php';
 require_once __DIR__.'/../../config.php';
 require_once __DIR__.'/../../logging.php';
 require_once __DIR__.'/../../database.php';
+// Bausteine des ERP, auf die die Erweiterung aufsetzt. Sie bringen eigene
+// Aktionen mit — erreichbar sind sie trotzdem nicht: darueber entscheidet
+// allein die Liste in shopPublicActions().
+require_once __DIR__.'/../../faktura/faktura.php';   // postArInvoiceToLedger
+require_once __DIR__.'/../../print/print.php';       // renderDocumentPdfFile
+require_once __DIR__.'/../../print/template_engine.php';
+require_once __DIR__.'/../../email/smtp.class.php';
+
 require_once __DIR__.'/../lib/config.php';
 require_once __DIR__.'/../lib/context.php';
 require_once __DIR__.'/../lib/cart.php';
 require_once __DIR__.'/../lib/account.php';
 require_once __DIR__.'/../lib/search.php';
+require_once __DIR__.'/../lib/invoice.php';
+require_once __DIR__.'/../lib/mail.php';
+require_once __DIR__.'/../lib/payment.php';
+require_once __DIR__.'/../lib/analytics.php';
+require_once __DIR__.'/../lib/withdrawal.php';
 
 /**
  * Verbindung zur Auth-Datenbank

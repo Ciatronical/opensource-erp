@@ -854,7 +854,9 @@
         "shopInvoiceMailSubject": "Emne i fakturamailen",
         "shopInvoiceMailSubject_help": "Første %s er fakturanummeret, andet er datoen.",
         "shopWithdrawalMailTo": "E-mailadresse til fortrydelser",
-        "shopWithdrawalMailTo_help": "Adresse, som modtagne fortrydelser meldes til."
+        "shopWithdrawalMailTo_help": "Adresse, som modtagne fortrydelser meldes til.",
+        "shopPaypalMockResponse": "PayPal-fejltest",
+        "shopPaypalMockResponse_help": "Fremtvinger et bestemt fejlsvar fra PayPal i stedet for at udføre kaldet. Opbygning: create:KODE, capture:KODE eller read:KODE; uden præfiks gælder koden for alle tre kald. Eksempel: capture:TRANSACTION_REFUSED. Virker kun med aktivt testmiljø; lad feltet stå tomt ved normal drift."
     },
     "add": "Tilfoej",
     "add_fields": {

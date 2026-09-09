@@ -376,5 +376,193 @@ function shopPublicActions(): array {
         'billingAndShipping', 'contactInit',
         // Suche
         'fastSearch', 'moreSearchResults', 'fullSearch',
+        // Bestellung und Rechnung
+        'checkout', 'invoicing', 'personalOrders', 'personalOrder',
+        'getInvoiceSummary', 'downloadInvoice', 'downloadInvoiceLink',
+        // Zahlung
+        'beginPayment', 'endPayment', 'paymentCanceled',
+        // Auswertung, Kontakt, Widerruf
+        'gtmGetProductInfo', 'gtmGetPurchased', 'gtmGetPurchasedProducts',
+        'sendContactMail', 'submitWiderruf',
     ];
+}
+
+// ============================================================================
+// BESTELLUNG UND RECHNUNG
+// ============================================================================
+
+/** Kasse: Warenkorb mit Versandkosten */
+function checkout($db, string $uuid, array $daten) {
+    getCart($db, $uuid, $daten);
+}
+
+/**
+ * Wandelt den Warenkorb in eine Rechnung — Zahlung auf Rechnung
+ *
+ * Der Weg über PayPal läuft über beginPayment/endPayment.
+ */
+function invoicing($db, string $uuid, array $daten) {
+    $adressen = shopVar($daten, 'adresses', []);
+    $lieferadresse = is_array($adressen) ? ($adressen['shipping'] ?? []) : [];
+
+    // Die Oberfläche schickt entweder eine vorhandene Adresse oder die Felder
+    // einer neuen; "default" heisst: an die Rechnungsadresse.
+    if (!empty($lieferadresse['default'])) {
+        $lieferadresse = [];
+    }
+
+    $rechnung = createShopInvoice($db, $uuid, $lieferadresse);
+    $versendet = shopSendInvoiceMail($db, (int)$rechnung['ar_id']);
+
+    resultInfo(true, '', [
+        'ar_link'      => $rechnung['ar_link'],
+        'invnumber'    => $rechnung['invnumber'],
+        'email_status' => $versendet ? 'success' : 'error',
+    ]);
+}
+
+/** Bestellungen des Kunden */
+function personalOrders($db, string $uuid, array $daten) {
+    resultInfo(true, '', customerInvoices($db, shopCustomerId($db, $uuid)));
+}
+
+/** Eine Bestellung des Kunden */
+function personalOrder($db, string $uuid, array $daten) {
+    resultInfo(true, '', customerInvoice($db, shopCustomerId($db, $uuid), shopVarInt($daten, 'id')));
+}
+
+/** Zusammenfassung zum Rechnungslink — auch für Gäste ohne Anmeldung */
+function getInvoiceSummary($db, string $uuid, array $daten) {
+    resultInfo(true, '', invoiceSummaryByLink($db, (string)shopVar($daten, 'ar_link', '')));
+}
+
+/** Rechnungs-PDF einer eigenen Bestellung */
+function downloadInvoice($db, string $uuid, array $daten) {
+    shopSendPdf($db, shopInvoiceForCustomer($db, $uuid, shopVarInt($daten, 'payment-id')));
+}
+
+/** Rechnungs-PDF über den Rechnungslink */
+function downloadInvoiceLink($db, string $uuid, array $daten) {
+    shopSendPdf($db, shopInvoiceIdByLink($db, (string)shopVar($daten, 'ar-link', '')));
+}
+
+/**
+ * Prüft, ob die Rechnung dem Kunden der Sitzung gehört
+ *
+ * Ohne diese Prüfung liesse sich durch Hochzählen der Kennung jede fremde
+ * Rechnung herunterladen.
+ */
+function shopInvoiceForCustomer($db, string $uuid, int $arId): int {
+    customerInvoice($db, shopCustomerId($db, $uuid), $arId);
+    return $arId;
+}
+
+/** Liefert ein Rechnungs-PDF aus und räumt die Datei weg */
+function shopSendPdf($db, int $arId) {
+    $pdf = shopInvoicePdf($db, $arId);
+
+    header('Content-Type: application/pdf');
+    header('Content-Disposition: attachment; filename="'.$pdf['filename'].'"');
+    header('Content-Length: '.(string)filesize($pdf['path']));
+    readfile($pdf['path']);
+    @unlink($pdf['path']);
+}
+
+// ============================================================================
+// ZAHLUNG
+// ============================================================================
+
+/** Beginnt die Bezahlung und schickt den Kunden zu PayPal */
+function beginPayment($db, string $uuid, array $daten) {
+    $bezahlt = paymentBegin(
+        $db, $uuid,
+        (string)shopVar($daten, 'bill', ''),
+        (string)shopVar($daten, 'canceled', '')
+    );
+    shopRedirect($bezahlt['approval_url']);
+}
+
+/** Rückweg von PayPal: einziehen, Rechnung anlegen, zur Rechnungsseite */
+function endPayment($db, string $uuid, array $daten) {
+    $ergebnis = paymentEnd($db, (string)shopVar($daten, 'token', ''));
+    shopRedirect((string)shopVar($daten, 'page', '/').'?link='.$ergebnis['ar_link'].'#focus');
+}
+
+/** Der Kunde hat bei PayPal abgebrochen */
+function paymentCanceled($db, string $uuid, array $daten) {
+    shopRedirect((string)shopVar($daten, 'page', '/'));
+}
+
+/**
+ * Schickt den Browser weiter
+ *
+ * Der Aufrufer ist hier der Browser des Kunden, nicht ein Programm: eine
+ * JSON-Antwort brächte ihn nicht weiter. Die Bridge endete im Fehlerfall
+ * stumm, und der Kunde wusste nicht, ob er bezahlt hat.
+ */
+function shopRedirect(string $ziel) {
+    if ('' === trim($ziel)) { $ziel = '/'; }
+
+    if (headers_sent()) {
+        echo '<meta http-equiv="refresh" content="0; url='.htmlspecialchars($ziel, ENT_QUOTES).'">';
+        return;
+    }
+    header('Location: '.$ziel);
+}
+
+// ============================================================================
+// AUSWERTUNG, KONTAKT, WIDERRUF
+// ============================================================================
+
+/** Angaben zu einem Artikel für die Reichweitenmessung */
+function gtmGetProductInfo($db, string $uuid, array $daten) {
+    resultInfo(true, '', ['product' => analyticsProduct($db, shopVarInt($daten, 'product_id'))]);
+}
+
+/** Angaben zu einem Kauf */
+function gtmGetPurchased($db, string $uuid, array $daten) {
+    resultInfo(true, '', ['purchased' => analyticsPurchase($db, (string)shopVar($daten, 'ar_link', ''))]);
+}
+
+/** Gekaufte Artikel und Kaufangaben */
+function gtmGetPurchasedProducts($db, string $uuid, array $daten) {
+    resultInfo(true, '', analyticsPurchaseItems($db, (string)shopVar($daten, 'ar_link', '')));
+}
+
+/** Anfrage aus dem Kontaktformular */
+function sendContactMail($db, string $uuid, array $daten) {
+    $versendet = shopSendContactMail($db, [
+        'name'  => shopVar($daten, 'name', ''),
+        'email' => shopVar($daten, 'email', ''),
+        'phone' => shopVar($daten, 'phone', ''),
+        'term'  => shopVar($daten, 'term', ''),
+    ]);
+
+    $versendet
+        ? resultInfo(true, 'CONTACT_SENT')
+        : resultInfo(false, 'CONTACT_NOT_SENT', null, 'Die Nachricht konnte nicht versendet werden');
+}
+
+/** Widerruf entgegennehmen */
+function submitWiderruf($db, string $uuid, array $daten) {
+    // Für Menschen unsichtbares Feld: ist es ausgefüllt, war ein Programm am
+    // Werk. Wir tun so, als sei alles in Ordnung, halten aber nichts fest.
+    if ('' !== trim((string)shopVar($daten, 'website', ''))) {
+        resultInfo(true, 'WITHDRAWAL_RECEIVED');
+        return;
+    }
+
+    $context = shopContext($db, $uuid);
+    $customerId = empty($context['customer_id']) ? null : (int)$context['customer_id'];
+
+    $widerruf = submitWithdrawal($db, $customerId, [
+        'name'        => shopVar($daten, 'name', ''),
+        'ordernumber' => shopVar($daten, 'ordernumber', ''),
+        'email'       => shopVar($daten, 'email', ''),
+        'reason'      => shopVar($daten, 'reason', ''),
+        'remote_addr' => $_SERVER['REMOTE_ADDR']     ?? '',
+        'user_agent'  => $_SERVER['HTTP_USER_AGENT'] ?? '',
+    ]);
+
+    resultInfo(true, 'WITHDRAWAL_RECEIVED', ['id' => $widerruf['id']]);
 }

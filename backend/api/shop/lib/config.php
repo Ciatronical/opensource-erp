@@ -21,15 +21,23 @@
  * einer anderen Verbindung (anderer Mandant) liest neu — sonst trüge ein
  * Durchlauf über mehrere Mandanten die Werte des ersten weiter.
  *
+ * WeakMap und nicht spl_object_id als Schlüssel: die Objektkennung wird nach
+ * dem Freigeben eines Objekts neu vergeben. Eine frisch aufgebaute Verbindung
+ * kann damit die Kennung einer zerstörten erben und bekäme deren Werte —
+ * nachgemessen, genau das trat ein. WeakMap schlüsselt über das Objekt selbst
+ * und hält es nicht am Leben.
+ *
  * @param object $db Company-Datenbankverbindung
  * @return array Schlüssel ohne Präfix-Verlust, also z.B. ['shop_base_url' => '...']
  */
 function shopConfig($db): array {
-    static $gehalten = [];
+    static $gehalten = null;
+    if (null === $gehalten) {
+        $gehalten = new WeakMap();
+    }
 
-    $kennung = spl_object_id($db);
-    if (isset($gehalten[$kennung])) {
-        return $gehalten[$kennung];
+    if (isset($gehalten[$db])) {
+        return $gehalten[$db];
     }
 
     // Der Unterstrich ist in LIKE ein Platzhalter für ein Zeichen und gehört
@@ -41,8 +49,8 @@ function shopConfig($db): array {
         []
     );
 
-    $gehalten[$kennung] = json_decode($zeile['config'] ?? '{}', true) ?: [];
-    return $gehalten[$kennung];
+    $gehalten[$db] = json_decode($zeile['config'] ?? '{}', true) ?: [];
+    return $gehalten[$db];
 }
 
 /**

@@ -854,7 +854,9 @@
         "shopInvoiceMailSubject": "Rēķina e-pasta temats",
         "shopInvoiceMailSubject_help": "Pirmais %s ir rēķina numurs, otrais – datums.",
         "shopWithdrawalMailTo": "E-pasta adrese atteikumiem",
-        "shopWithdrawalMailTo_help": "Adrese, uz kuru tiek ziņots par saņemtajiem atteikumiem."
+        "shopWithdrawalMailTo_help": "Adrese, uz kuru tiek ziņots par saņemtajiem atteikumiem.",
+        "shopPaypalMockResponse": "PayPal kļūdu pārbaude",
+        "shopPaypalMockResponse_help": "Piespiež PayPal atgriezt noteiktu kļūdas atbildi, nevis izpildīt izsaukumu. Formāts: create:KODS, capture:KODS vai read:KODS; bez priedēkļa kods attiecas uz visiem trim izsaukumiem. Piemērs: capture:TRANSACTION_REFUSED. Darbojas tikai ar ieslēgtu testa vidi; parastā darbā atstājiet tukšu."
     },
     "add": "Pievienot",
     "add_fields": {

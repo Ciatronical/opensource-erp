@@ -854,7 +854,9 @@
         "shopInvoiceMailSubject": "Fatura e-postasının konusu",
         "shopInvoiceMailSubject_help": "İlk %s fatura numarası, ikincisi tarihtir.",
         "shopWithdrawalMailTo": "Cayma bildirimleri için e-posta adresi",
-        "shopWithdrawalMailTo_help": "Gelen cayma bildirimlerinin iletileceği adres."
+        "shopWithdrawalMailTo_help": "Gelen cayma bildirimlerinin iletileceği adres.",
+        "shopPaypalMockResponse": "PayPal hata denemesi",
+        "shopPaypalMockResponse_help": "Çağrıyı yürütmek yerine PayPal'dan belirli bir hata yanıtı almaya zorlar. Biçim: create:KOD, capture:KOD veya read:KOD; ön ek olmadan kod her üç çağrı için geçerlidir. Örnek: capture:TRANSACTION_REFUSED. Yalnızca test ortamı açıkken etkilidir; normal işletimde boş bırakın."
     },
     "add": "Ekle",
     "add_fields": {
