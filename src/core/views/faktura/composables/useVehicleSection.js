@@ -81,9 +81,26 @@ export function useVehicleSection({ carsStore, fakturaId, fakturaType, t }) {
         }
         const num = parseInt(raw, 10)
         if (isNaN(num)) return
+        const changed = num !== oeExtData.value.km_stand
         oeExtData.value.km_stand = num
         displayKmStand.value = formatKm(num)
         onOeExtFieldChange('km_stand', num)
+        if (changed) checkKmPlausibility(num)
+    }
+
+    // km-Plausibilität: Warnung sofort beim Verlassen des Feldes, mit Link auf den Beleg mit dem höheren Wert
+    const kmPlausibility = ref({ show: false, currentKm: 0, lastKm: 0, source: null })
+
+    async function checkKmPlausibility(kmStand) {
+        if (!fakturaId.value || !selectedCarId.value || isTrailer.value || !kmStand) return
+        try {
+            const result = await carsStore.checkKmStandPlausibility(fakturaId.value, fakturaType.value, selectedCarId.value)
+            if (result.last_km > 0 && kmStand < result.last_km) {
+                kmPlausibility.value = { show: true, currentKm: kmStand, lastKm: result.last_km, source: result.source }
+            }
+        } catch (e) {
+            console.error('Error checking km plausibility:', e)
+        }
     }
 
     function toggleIntern() {
@@ -382,6 +399,7 @@ export function useVehicleSection({ carsStore, fakturaId, fakturaType, t }) {
         statusOptions,
         displayKmStand,
         onBlurKmStand,
+        kmPlausibility,
         toggleIntern,
         displayBringetermin,
         displayFertigstellung,

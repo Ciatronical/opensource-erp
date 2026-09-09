@@ -39,8 +39,9 @@ function getBankingOverview($data) {
                 (
                     SELECT COUNT(*)::INTEGER
                     FROM bank_transactions bt
+                    LEFT JOIN bank_transactions_ext bte ON bte.bank_transaction_id = bt.id
                     WHERE bt.local_bank_account_id = ba.id
-                      AND bt.match_status = 'unmatched'
+                      AND COALESCE(bte.match_status, 'unmatched') = 'unmatched'
                 ) as unmatched_count,
                 (
                     SELECT MAX(bt.transdate)

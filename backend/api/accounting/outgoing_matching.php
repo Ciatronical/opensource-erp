@@ -51,7 +51,7 @@ function matchOutgoingInvoices($data) {
 
     $bankAccountId = intval($data['bank_account_id'] ?? 0);
 
-    $where = "bt.match_status = 'unmatched' AND bt.amount > 0"; // Eingaenge (positiv)
+    $where = "COALESCE(bte.match_status, 'unmatched') = 'unmatched' AND bt.amount > 0"; // Eingaenge (positiv)
     $params = [];
 
     if ($bankAccountId) {
@@ -61,9 +61,10 @@ function matchOutgoingInvoices($data) {
 
     // Nicht zugeordnete Eingaenge laden
     $transactions = $db->getAll(<<<SQL
-        SELECT bt.id, bt.amount, bt.remote_name, bt.remote_iban, bt.purpose,
+        SELECT bt.id, bt.amount, bt.remote_name, bt.remote_account_number AS remote_iban, bt.purpose,
                bt.transdate, bt.local_bank_account_id
         FROM bank_transactions bt
+        LEFT JOIN bank_transactions_ext bte ON bte.bank_transaction_id = bt.id
         WHERE {$where}
         ORDER BY bt.transdate DESC
         LIMIT 200
@@ -216,7 +217,8 @@ function matchOutgoingInvoices($data) {
         WITH eingang AS (
             SELECT bt.id, (regexp_matches(COALESCE(bt.purpose, ''), '([0-9]{6})', 'g'))[1] AS nr
             FROM bank_transactions bt
-            WHERE bt.match_status = 'unmatched' AND bt.amount > 0
+            LEFT JOIN bank_transactions_ext bte ON bte.bank_transaction_id = bt.id
+            WHERE COALESCE(bte.match_status, 'unmatched') = 'unmatched' AND bt.amount > 0
         )
         SELECT COUNT(DISTINCT e.id) AS cnt
         FROM eingang e
@@ -252,8 +254,8 @@ function confirmOutgoingMatch($data) {
     }
 
     $tx = $db->getOne(
-        "SELECT id, amount, purpose, transdate, match_status, local_bank_account_id
-         FROM bank_transactions WHERE id = :id",
+        "SELECT bt.id, bt.amount, bt.purpose, bt.transdate, COALESCE(bte.match_status, 'unmatched') AS match_status, bt.local_bank_account_id
+         FROM bank_transactions bt LEFT JOIN bank_transactions_ext bte ON bte.bank_transaction_id = bt.id WHERE bt.id = :id",
         [':id' => $txId]
     );
     if (!$tx) throw new ApiError('DATA_NOT_FOUND', 'Banktransaktion nicht gefunden');
@@ -340,7 +342,7 @@ function confirmOutgoingMatch($data) {
         );
 
         // Bankbewegung als gebucht markieren und mit der Hauptbuch-Bankzeile verknüpfen
-        $db->execute("UPDATE bank_transactions SET match_status = 'booked' WHERE id = :id", [':id' => $txId]);
+        $db->execute("INSERT INTO bank_transactions_ext (bank_transaction_id, match_status) VALUES (:id, 'booked') ON CONFLICT (bank_transaction_id) DO UPDATE SET match_status = EXCLUDED.match_status", [':id' => $txId]);
         $db->execute(
             "INSERT INTO bank_transaction_acc_trans (bank_transaction_id, acc_trans_id, ar_id) VALUES (:tx, :acc, :ar)",
             [':tx' => $txId, ':acc' => intval($bankAcc['id']), ':ar' => $invId]

@@ -1533,11 +1533,43 @@ CREATE TABLE bank_matching_rules (
     itime               timestamp DEFAULT now()
 );
 
-ALTER TABLE bank_transactions ADD COLUMN IF NOT EXISTS match_status text DEFAULT 'unmatched';
-ALTER TABLE bank_transactions ADD COLUMN IF NOT EXISTS remote_iban varchar(40);
-CREATE INDEX IF NOT EXISTS idx_bank_transactions_match_status ON bank_transactions(match_status);
-CREATE INDEX IF NOT EXISTS idx_bank_transactions_remote_iban ON bank_transactions(remote_iban);
-CREATE INDEX IF NOT EXISTS idx_bank_transactions_transdate ON bank_transactions(transdate);
+-- Abstimmungsstatus je Bankumsatz. Die kivitendo-Tabelle bank_transactions
+-- bleibt unveraendert (nur 'cleared'); alles Weitere liegt hier.
+-- match_status: unmatched | matched | booked | ignored
+-- Die Gegen-IBAN steht in der kivitendo-Spalte bank_transactions.remote_account_number.
+CREATE TABLE bank_transactions_ext (
+    bank_transaction_id integer NOT NULL REFERENCES bank_transactions(id) ON DELETE CASCADE,
+    match_status        text NOT NULL DEFAULT 'unmatched',
+    CONSTRAINT bank_transactions_ext_pkey PRIMARY KEY (bank_transaction_id)
+);
+
+COMMENT ON TABLE bank_transactions_ext IS 'opensource-erp-Erweiterung zu bank_transactions (Abstimmungsstatus)';
+COMMENT ON COLUMN bank_transactions_ext.match_status IS 'unmatched | matched | booked | ignored';
+
+-- Altlast: match_status und remote_iban lagen frueher direkt in bank_transactions.
+-- Daten umziehen und die Spalten entfernen, damit die kivitendo-Tabelle wieder original ist.
+DO $bt_ext_legacy$
+BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.columns
+               WHERE table_schema = 'public' AND table_name = 'bank_transactions'
+                 AND column_name = 'match_status') THEN
+        INSERT INTO bank_transactions_ext (bank_transaction_id, match_status)
+        SELECT id, COALESCE(match_status, 'unmatched') FROM bank_transactions
+        ON CONFLICT (bank_transaction_id) DO NOTHING;
+        ALTER TABLE bank_transactions DROP COLUMN match_status;
+    END IF;
+
+    IF EXISTS (SELECT 1 FROM information_schema.columns
+               WHERE table_schema = 'public' AND table_name = 'bank_transactions'
+                 AND column_name = 'remote_iban') THEN
+        UPDATE bank_transactions
+           SET remote_account_number = remote_iban
+         WHERE remote_iban IS NOT NULL AND remote_iban <> ''
+           AND (remote_account_number IS NULL OR remote_account_number = '');
+        ALTER TABLE bank_transactions DROP COLUMN remote_iban;
+    END IF;
+END
+$bt_ext_legacy$;
 
 CREATE OR REPLACE FUNCTION bank_auto_match(p_bank_account_id INTEGER)
 RETURNS TABLE(
@@ -1577,10 +1609,10 @@ BEGIN
     --   0.70  Benutzer-Regel
     RETURN QUERY
     WITH kandidaten AS (
-        SELECT id, transdate, amount, purpose, remote_iban, remote_name, end_to_end_id
-        FROM bank_transactions
-        WHERE local_bank_account_id = p_bank_account_id
-          AND match_status = 'unmatched'
+        SELECT bt.id, bt.transdate, bt.amount, bt.purpose, bt.remote_account_number AS remote_iban, bt.remote_name, bt.end_to_end_id
+        FROM bank_transactions bt
+        WHERE bt.local_bank_account_id = p_bank_account_id
+          AND COALESCE((SELECT e.match_status FROM bank_transactions_ext e WHERE e.bank_transaction_id = bt.id), 'unmatched') = 'unmatched'
     ),
     -- Umsätze, in deren Verwendungszweck eine EIGENE Rechnungsnummer steht —
     -- egal ob die Rechnung noch offen oder längst bezahlt ist. Der Zahler hat
@@ -1628,7 +1660,7 @@ BEGIN
                     AND bt.end_to_end_id IS NOT NULL
                     AND bt.end_to_end_id ~ ('(^|[^[:alnum:]])' || ar.invnumber || '($|[^[:alnum:]])')
             WHERE bt.local_bank_account_id = p_bank_account_id
-              AND bt.match_status = 'unmatched'
+              AND COALESCE((SELECT e.match_status FROM bank_transactions_ext e WHERE e.bank_transaction_id = bt.id), 'unmatched') = 'unmatched'
               AND bt.amount > 0
 
             UNION ALL
@@ -1640,7 +1672,7 @@ BEGIN
                    ar.id AS target_id,
                    0.98::NUMERIC AS confidence
             FROM bank_transactions bt
-            JOIN customer c ON c.iban = bt.remote_iban AND bt.remote_iban IS NOT NULL
+            JOIN customer c ON c.iban = bt.remote_account_number AND bt.remote_account_number IS NOT NULL
             JOIN ar ON ar.customer_id = c.id
                     AND (ar.amount - ar.paid) > 0.01
                     AND bt.transdate >= ar.transdate
@@ -1648,7 +1680,7 @@ BEGIN
                     AND length(ar.invnumber) >= 4
                     AND bt.purpose ~ ('(^|[^[:alnum:]])' || ar.invnumber || '($|[^[:alnum:]])')
             WHERE bt.local_bank_account_id = p_bank_account_id
-              AND bt.match_status = 'unmatched'
+              AND COALESCE((SELECT e.match_status FROM bank_transactions_ext e WHERE e.bank_transaction_id = bt.id), 'unmatched') = 'unmatched'
               AND bt.amount > 0
 
             UNION ALL
@@ -1664,7 +1696,7 @@ BEGIN
                     AND length(ar.invnumber) >= 4
                     AND bt.purpose ~ ('(^|[^[:alnum:]])' || ar.invnumber || '($|[^[:alnum:]])')
             WHERE bt.local_bank_account_id = p_bank_account_id
-              AND bt.match_status = 'unmatched'
+              AND COALESCE((SELECT e.match_status FROM bank_transactions_ext e WHERE e.bank_transaction_id = bt.id), 'unmatched') = 'unmatched'
               AND bt.amount > 0
 
             UNION ALL
@@ -1672,13 +1704,13 @@ BEGIN
             -- 2. Kunden-IBAN + exakter offener Betrag (Toleranz 0,01)
             SELECT bt.id, 'iban_amount_match', 'ar'::TEXT, ar.id, 0.92
             FROM bank_transactions bt
-            JOIN customer c ON c.iban = bt.remote_iban AND bt.remote_iban IS NOT NULL
+            JOIN customer c ON c.iban = bt.remote_account_number AND bt.remote_account_number IS NOT NULL
             JOIN ar ON ar.customer_id = c.id
                     AND ABS((ar.amount - ar.paid) - bt.amount) < 0.01
                     AND bt.transdate >= ar.transdate
                     AND ar.paid < ar.amount
             WHERE bt.local_bank_account_id = p_bank_account_id
-              AND bt.match_status = 'unmatched'
+              AND COALESCE((SELECT e.match_status FROM bank_transactions_ext e WHERE e.bank_transaction_id = bt.id), 'unmatched') = 'unmatched'
               AND bt.amount > 0
               AND bt.id NOT IN (SELECT id FROM mit_rechnungsbezug)
 
@@ -1687,7 +1719,7 @@ BEGIN
             -- 3. Kunden-IBAN + Kunde hat genau eine offene Rechnung
             SELECT bt.id, 'iban_single_open', 'ar'::TEXT, ar.id, 0.80
             FROM bank_transactions bt
-            JOIN customer c ON c.iban = bt.remote_iban AND bt.remote_iban IS NOT NULL
+            JOIN customer c ON c.iban = bt.remote_account_number AND bt.remote_account_number IS NOT NULL
             JOIN LATERAL (
                 SELECT id, amount, paid
                 FROM ar
@@ -1698,7 +1730,7 @@ BEGIN
             JOIN ar ON ar.id = ar_count.id
                     AND bt.amount <= (ar.amount - ar.paid) + 0.01
             WHERE bt.local_bank_account_id = p_bank_account_id
-              AND bt.match_status = 'unmatched'
+              AND COALESCE((SELECT e.match_status FROM bank_transactions_ext e WHERE e.bank_transaction_id = bt.id), 'unmatched') = 'unmatched'
               AND bt.amount > 0
               AND bt.id NOT IN (SELECT id FROM mit_rechnungsbezug)
             GROUP BY bt.id, ar.id
@@ -1717,9 +1749,9 @@ BEGIN
                     AND bt.transdate >= ar.transdate
                     AND ar.paid < ar.amount
             WHERE bt.local_bank_account_id = p_bank_account_id
-              AND bt.match_status = 'unmatched'
+              AND COALESCE((SELECT e.match_status FROM bank_transactions_ext e WHERE e.bank_transaction_id = bt.id), 'unmatched') = 'unmatched'
               AND bt.amount > 0
-              AND bt.remote_iban IS NULL
+              AND bt.remote_account_number IS NULL
               AND length(bt.remote_name) >= 4
               AND bt.id NOT IN (SELECT id FROM mit_rechnungsbezug)
 
@@ -1737,7 +1769,7 @@ BEGIN
                     AND bt.end_to_end_id IS NOT NULL
                     AND bt.end_to_end_id ~ ('(^|[^[:alnum:]])' || ap.invnumber || '($|[^[:alnum:]])')
             WHERE bt.local_bank_account_id = p_bank_account_id
-              AND bt.match_status = 'unmatched'
+              AND COALESCE((SELECT e.match_status FROM bank_transactions_ext e WHERE e.bank_transaction_id = bt.id), 'unmatched') = 'unmatched'
               AND bt.amount < 0
 
             UNION ALL
@@ -1745,7 +1777,7 @@ BEGIN
             -- 4a. AP-Nummer im Purpose UND Lieferanten-IBAN
             SELECT bt.id, 'invnumber_and_iban', 'ap'::TEXT, ap.id, 0.98
             FROM bank_transactions bt
-            JOIN vendor v ON v.iban = bt.remote_iban AND bt.remote_iban IS NOT NULL
+            JOIN vendor v ON v.iban = bt.remote_account_number AND bt.remote_account_number IS NOT NULL
             JOIN ap ON ap.vendor_id = v.id
                     AND (ap.amount - ap.paid) > 0.01
                     AND bt.transdate >= ap.transdate
@@ -1753,7 +1785,7 @@ BEGIN
                     AND length(ap.invnumber) >= 4
                     AND bt.purpose ~ ('(^|[^[:alnum:]])' || ap.invnumber || '($|[^[:alnum:]])')
             WHERE bt.local_bank_account_id = p_bank_account_id
-              AND bt.match_status = 'unmatched'
+              AND COALESCE((SELECT e.match_status FROM bank_transactions_ext e WHERE e.bank_transaction_id = bt.id), 'unmatched') = 'unmatched'
               AND bt.amount < 0
 
             UNION ALL
@@ -1767,7 +1799,7 @@ BEGIN
                     AND length(ap.invnumber) >= 4
                     AND bt.purpose ~ ('(^|[^[:alnum:]])' || ap.invnumber || '($|[^[:alnum:]])')
             WHERE bt.local_bank_account_id = p_bank_account_id
-              AND bt.match_status = 'unmatched'
+              AND COALESCE((SELECT e.match_status FROM bank_transactions_ext e WHERE e.bank_transaction_id = bt.id), 'unmatched') = 'unmatched'
               AND bt.amount < 0
 
             UNION ALL
@@ -1786,7 +1818,7 @@ BEGIN
                     AND m.token[1] LIKE '%' || ap.invnumber
                     AND length(m.token[1]) - length(ap.invnumber) <= 3  -- max 3 Praefix-Zeichen
             WHERE bt.local_bank_account_id = p_bank_account_id
-              AND bt.match_status = 'unmatched'
+              AND COALESCE((SELECT e.match_status FROM bank_transactions_ext e WHERE e.bank_transaction_id = bt.id), 'unmatched') = 'unmatched'
               AND bt.amount < 0
 
             UNION ALL
@@ -1794,13 +1826,13 @@ BEGIN
             -- 5. Lieferanten-IBAN + exakter offener Betrag (Toleranz 0,01)
             SELECT bt.id, 'iban_amount_match', 'ap'::TEXT, ap.id, 0.92
             FROM bank_transactions bt
-            JOIN vendor v ON v.iban = bt.remote_iban AND bt.remote_iban IS NOT NULL
+            JOIN vendor v ON v.iban = bt.remote_account_number AND bt.remote_account_number IS NOT NULL
             JOIN ap ON ap.vendor_id = v.id
                     AND ABS((ap.amount - ap.paid) - ABS(bt.amount)) < 0.01
                     AND bt.transdate >= ap.transdate
                     AND ap.paid < ap.amount
             WHERE bt.local_bank_account_id = p_bank_account_id
-              AND bt.match_status = 'unmatched'
+              AND COALESCE((SELECT e.match_status FROM bank_transactions_ext e WHERE e.bank_transaction_id = bt.id), 'unmatched') = 'unmatched'
               AND bt.amount < 0
               AND bt.id NOT IN (SELECT id FROM mit_rechnungsbezug)
 
@@ -1809,7 +1841,7 @@ BEGIN
             -- 6. Lieferanten-IBAN + Lieferant hat genau eine offene Rechnung
             SELECT bt.id, 'iban_single_open', 'ap'::TEXT, ap.id, 0.80
             FROM bank_transactions bt
-            JOIN vendor v ON v.iban = bt.remote_iban AND bt.remote_iban IS NOT NULL
+            JOIN vendor v ON v.iban = bt.remote_account_number AND bt.remote_account_number IS NOT NULL
             JOIN LATERAL (
                 SELECT id
                 FROM ap
@@ -1820,7 +1852,7 @@ BEGIN
             JOIN ap ON ap.id = ap_count.id
                     AND ABS(bt.amount) <= (ap.amount - ap.paid) + 0.01
             WHERE bt.local_bank_account_id = p_bank_account_id
-              AND bt.match_status = 'unmatched'
+              AND COALESCE((SELECT e.match_status FROM bank_transactions_ext e WHERE e.bank_transaction_id = bt.id), 'unmatched') = 'unmatched'
               AND bt.amount < 0
               AND bt.id NOT IN (SELECT id FROM mit_rechnungsbezug)
             GROUP BY bt.id, ap.id
@@ -1841,14 +1873,14 @@ BEGIN
             FROM bank_transactions bt
             JOIN bank_matching_rules bmr ON bmr.active
                 AND (bmr.bank_account_id IS NULL OR bmr.bank_account_id = bt.local_bank_account_id)
-                AND (bmr.match_remote_iban IS NULL OR bt.remote_iban = bmr.match_remote_iban)
+                AND (bmr.match_remote_iban IS NULL OR bt.remote_account_number = bmr.match_remote_iban)
                 AND (bmr.match_remote_name IS NULL OR bt.remote_name ILIKE '%' || bmr.match_remote_name || '%')
                 AND (bmr.match_purpose IS NULL OR bt.purpose ILIKE '%' || bmr.match_purpose || '%')
                 AND (bmr.match_amount_min IS NULL OR ABS(bt.amount) >= bmr.match_amount_min)
                 AND (bmr.match_amount_max IS NULL OR ABS(bt.amount) <= bmr.match_amount_max)
                 AND (bmr.match_booking_key IS NULL OR bt.transaction_code = bmr.match_booking_key)
             WHERE bt.local_bank_account_id = p_bank_account_id
-              AND bt.match_status = 'unmatched'
+              AND COALESCE((SELECT e.match_status FROM bank_transactions_ext e WHERE e.bank_transaction_id = bt.id), 'unmatched') = 'unmatched'
         ) AS all_matches
         ORDER BY bank_transaction_id, confidence DESC
     ) AS best_per_tx
@@ -1856,8 +1888,29 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Drucker: Spalte zum Ausblenden in Faktura
-ALTER TABLE printers ADD COLUMN IF NOT EXISTS hide_factura boolean DEFAULT false;
+-- Drucker: opensource-erp-Zusatzfelder zur kivitendo-Tabelle printers
+CREATE TABLE printers_ext (
+    printer_id   integer NOT NULL REFERENCES printers(id) ON DELETE CASCADE,
+    hide_factura boolean NOT NULL DEFAULT false,
+    CONSTRAINT printers_ext_pkey PRIMARY KEY (printer_id)
+);
+
+COMMENT ON TABLE printers_ext IS 'opensource-erp-Erweiterung zu printers';
+COMMENT ON COLUMN printers_ext.hide_factura IS 'Drucker in der Faktura-Druckerauswahl ausblenden';
+
+-- Altlast: hide_factura lag frueher direkt in printers.
+DO $printers_ext_legacy$
+BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.columns
+               WHERE table_schema = 'public' AND table_name = 'printers'
+                 AND column_name = 'hide_factura') THEN
+        INSERT INTO printers_ext (printer_id, hide_factura)
+        SELECT id, COALESCE(hide_factura, false) FROM printers
+        ON CONFLICT (printer_id) DO NOTHING;
+        ALTER TABLE printers DROP COLUMN hide_factura;
+    END IF;
+END
+$printers_ext_legacy$;
 
 -- ============================================================================
 -- KAMERA / VIDEOÜBERWACHUNG (Frigate NVR Integration)

@@ -104,7 +104,7 @@ function getBankTransactions($data) {
     $whereExtra = '';
 
     if ($matchStatus !== 'all' && in_array($matchStatus, ['unmatched', 'matched', 'booked', 'ignored'])) {
-        $whereExtra .= " AND bt.match_status = :match_status";
+        $whereExtra .= " AND COALESCE(bte.match_status, 'unmatched') = :match_status";
         $params['match_status'] = $matchStatus;
     }
 
@@ -125,7 +125,7 @@ function getBankTransactions($data) {
     $haySql = <<<HAY
         COALESCE(bt.remote_name, '') || ' ' ||
         COALESCE(bt.purpose, '') || ' ' ||
-        COALESCE(bt.remote_iban, '') || ' ' ||
+        COALESCE(bt.remote_account_number, '') || ' ' ||
         COALESCE(bt.transaction_text, '') || ' ' ||
         bt.amount::text || ' ' ||
         COALESCE((
@@ -197,12 +197,12 @@ HAY;
                 bt.valutadate,
                 bt.amount,
                 bt.remote_name,
-                bt.remote_iban,
+                bt.remote_account_number AS remote_iban,
                 bt.remote_bank_code,
                 bt.remote_account_number,
                 bt.purpose,
                 bt.end_to_end_id,
-                bt.match_status,
+                COALESCE(bte.match_status, 'unmatched') AS match_status,
                 bt.cleared,
                 bt.transaction_code,
                 bt.transaction_text,
@@ -249,6 +249,7 @@ HAY;
                       AND bta2.ap_id IS NOT NULL
                 ) AS has_document
             FROM bank_transactions bt
+            LEFT JOIN bank_transactions_ext bte ON bte.bank_transaction_id = bt.id
             LEFT JOIN bank_transaction_matches btm ON btm.bank_transaction_id = bt.id
             LEFT JOIN ar       ar_pending ON btm.target_type = 'ar' AND ar_pending.id = btm.target_id
             LEFT JOIN ap       ap_pending ON btm.target_type = 'ap' AND ap_pending.id = btm.target_id
@@ -268,7 +269,7 @@ HAY;
     $countWhere = '';
 
     if ($matchStatus !== 'all' && in_array($matchStatus, ['unmatched', 'matched', 'booked', 'ignored'])) {
-        $countWhere .= " AND bt.match_status = :match_status";
+        $countWhere .= " AND COALESCE(bte.match_status, 'unmatched') = :match_status";
         $countParams['match_status'] = $matchStatus;
     }
     if ($fromDate) {
@@ -284,6 +285,7 @@ HAY;
     $count = $db->getOne(<<<SQL
         SELECT COUNT(*)::INTEGER as total
         FROM bank_transactions bt
+        LEFT JOIN bank_transactions_ext bte ON bte.bank_transaction_id = bt.id
         {$searchJoin}
         WHERE bt.local_bank_account_id = :bank_account_id
             {$countWhere}
@@ -376,7 +378,7 @@ function setTransactionStatus($data) {
     }
 
     $db->execute(
-        "UPDATE bank_transactions SET match_status = :status WHERE id = :id",
+        "INSERT INTO bank_transactions_ext (bank_transaction_id, match_status) VALUES (:id, :status) ON CONFLICT (bank_transaction_id) DO UPDATE SET match_status = EXCLUDED.match_status",
         ['id' => $transactionId, 'status' => $status]
     );
 
@@ -406,16 +408,17 @@ function getBankAccountStats($data) {
             COALESCE(ba.reconciliation_starting_balance, 0)
                 + COALESCE(SUM(bt.amount), 0) as balance,
             COUNT(bt.id)::INTEGER as total_transactions,
-            COUNT(bt.id) FILTER (WHERE bt.match_status = 'unmatched')::INTEGER as unmatched,
-            COUNT(bt.id) FILTER (WHERE bt.match_status = 'matched')::INTEGER as matched,
-            COUNT(bt.id) FILTER (WHERE bt.match_status = 'booked')::INTEGER as booked,
-            COUNT(bt.id) FILTER (WHERE bt.match_status = 'ignored')::INTEGER as ignored,
+            COUNT(bt.id) FILTER (WHERE COALESCE(bte.match_status, 'unmatched') = 'unmatched')::INTEGER as unmatched,
+            COUNT(bt.id) FILTER (WHERE COALESCE(bte.match_status, 'unmatched') = 'matched')::INTEGER as matched,
+            COUNT(bt.id) FILTER (WHERE COALESCE(bte.match_status, 'unmatched') = 'booked')::INTEGER as booked,
+            COUNT(bt.id) FILTER (WHERE COALESCE(bte.match_status, 'unmatched') = 'ignored')::INTEGER as ignored,
             COALESCE(SUM(bt.amount) FILTER (WHERE bt.amount > 0 AND bt.transdate >= date_trunc('month', CURRENT_DATE)), 0) as income_this_month,
             COALESCE(SUM(bt.amount) FILTER (WHERE bt.amount < 0 AND bt.transdate >= date_trunc('month', CURRENT_DATE)), 0) as expenses_this_month,
             MIN(bt.transdate) as first_transaction,
             MAX(bt.transdate) as last_transaction
         FROM bank_accounts ba
         LEFT JOIN bank_transactions bt ON bt.local_bank_account_id = ba.id
+        LEFT JOIN bank_transactions_ext bte ON bte.bank_transaction_id = bt.id
         WHERE ba.id = :bank_account_id
         GROUP BY ba.id, ba.name, ba.iban, ba.bank, ba.reconciliation_starting_balance
     SQL, ['bank_account_id' => $bankAccountId]);

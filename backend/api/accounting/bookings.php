@@ -438,7 +438,7 @@ function getAccountingDashboard($data) {
             (SELECT COUNT(*) FROM ap WHERE (amount - COALESCE(paid, 0)) > 0.005)                                   AS payables_count,
             (SELECT COALESCE(SUM(amount - COALESCE(paid, 0)), 0) FROM ap WHERE (amount - COALESCE(paid, 0)) > 0.005) AS payables_sum,
 
-            (SELECT COUNT(*) FROM bank_transactions WHERE match_status = 'unmatched') AS unmatched_bank,
+            (SELECT COUNT(*) FROM bank_transactions bt LEFT JOIN bank_transactions_ext bte ON bte.bank_transaction_id = bt.id WHERE COALESCE(bte.match_status, 'unmatched') = 'unmatched') AS unmatched_bank,
 
             -- Letzte 10 echte Buchungen aus dem Hauptbuch-Journal
             (SELECT COALESCE(json_agg(x), '[]'::json) FROM (

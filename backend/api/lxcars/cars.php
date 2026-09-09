@@ -495,29 +495,44 @@ function getCar($data) {
 }
 
 /**
- * Prüft den km-Stand eines Auftrags auf Plausibilität gegen alle früheren Aufträge/Rechnungen desselben Fahrzeugs.
- * Gibt den höchsten bisher erfassten km-Stand zurück (0 wenn kein Vorgänger vorhanden).
+ * Prüft den km-Stand eines Belegs auf Plausibilität gegen alle anderen Aufträge/Angebote/Rechnungen desselben Fahrzeugs.
+ * Gibt den höchsten bisher erfassten km-Stand zurück (0 wenn kein Vorgänger vorhanden) sowie den Beleg,
+ * in dem er erfasst wurde (source: {id, type, number} oder null), damit das Frontend darauf verlinken kann.
  *
- * @param int $data['oe_id'] Aktuelle Auftrags-ID (wird ausgeschlossen)
- * @param int $data['c_id']  Fahrzeug-ID
- * @testdata {"oe_id": 1, "c_id": 1}
+ * @param int    $data['id']   Aktuelle Beleg-ID (wird ausgeschlossen)
+ * @param string $data['type'] Belegtyp der aktuellen ID: 'invoice' (ar) oder sonst oe (order/quotation)
+ * @param int    $data['c_id'] Fahrzeug-ID
+ * @testdata {"id": 1, "type": "order", "c_id": 1}
  */
 function checkKmStandPlausibility($data) {
     $db = DbhCompany::begin();
-    $oeId  = intval($data['oe_id']);
-    $carId = intval($data['c_id']);
+    $id        = intval($data['id'] ?? 0);
+    $carId     = intval($data['c_id']);
+    $isInvoice = ($data['type'] ?? '') === 'invoice';
+    $exOe = $isInvoice ? 0 : $id;
+    $exAr = $isInvoice ? $id : 0;
 
     $row = $db->getOne(
-        "SELECT GREATEST(
-             COALESCE((SELECT MAX(e.km_stand) FROM oe_ext e
-                       WHERE e.c_id = :c_id AND e.oe_id != :oe_id AND e.km_stand IS NOT NULL), 0),
-             COALESCE((SELECT MAX(e.km_stand) FROM ar_ext e
-                       WHERE e.c_id = :c_id2 AND e.km_stand IS NOT NULL), 0)
-         ) AS last_km",
-        [':c_id' => $carId, ':oe_id' => $oeId, ':c_id2' => $carId]
+        "SELECT km_stand, id, type, number FROM (
+             SELECT e.km_stand, o.id,
+                    CASE WHEN o.record_type = 'sales_quotation' THEN 'quotation' ELSE 'order' END AS type,
+                    CASE WHEN o.record_type = 'sales_quotation' THEN o.quonumber ELSE o.ordnumber END AS number
+               FROM oe_ext e JOIN oe o ON o.id = e.oe_id
+              WHERE e.c_id = :c_id AND e.km_stand IS NOT NULL AND e.oe_id != :ex_oe
+             UNION ALL
+             SELECT e.km_stand, a.id, 'invoice' AS type, a.invnumber AS number
+               FROM ar_ext e JOIN ar a ON a.id = e.ar_id
+              WHERE e.c_id = :c_id2 AND e.km_stand IS NOT NULL AND e.ar_id != :ex_ar
+         ) s
+         ORDER BY km_stand DESC, (type = 'order') DESC, id DESC
+         LIMIT 1",
+        [':c_id' => $carId, ':ex_oe' => $exOe, ':c_id2' => $carId, ':ex_ar' => $exAr]
     );
 
-    resultInfo(true, 'OK', ['last_km' => $row ? intval($row['last_km']) : 0]);
+    resultInfo(true, 'OK', [
+        'last_km' => $row ? intval($row['km_stand']) : 0,
+        'source'  => $row ? ['id' => intval($row['id']), 'type' => $row['type'], 'number' => $row['number']] : null
+    ]);
 }
 
 /**

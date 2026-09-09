@@ -126,20 +126,21 @@ function getAccountingCockpit($data) {
             FROM accounting_bookings
         ),
         bank AS (
-            SELECT COUNT(*) FILTER (WHERE match_status = 'unmatched')                       AS unmatched,
-                   COUNT(*) FILTER (WHERE match_status = 'matched')                         AS matched,
-                   COUNT(*) FILTER (WHERE match_status = 'unmatched' AND amount > 0)        AS unmatched_in,
-                   COUNT(*) FILTER (WHERE match_status = 'unmatched' AND amount < 0)        AS unmatched_out
-            FROM bank_transactions
+            SELECT COUNT(*) FILTER (WHERE COALESCE(bte.match_status, 'unmatched') = 'unmatched')                    AS unmatched,
+                   COUNT(*) FILTER (WHERE COALESCE(bte.match_status, 'unmatched') = 'matched')                      AS matched,
+                   COUNT(*) FILTER (WHERE COALESCE(bte.match_status, 'unmatched') = 'unmatched' AND bt.amount > 0)  AS unmatched_in,
+                   COUNT(*) FILTER (WHERE COALESCE(bte.match_status, 'unmatched') = 'unmatched' AND bt.amount < 0)  AS unmatched_out
+            FROM bank_transactions bt
+            LEFT JOIN bank_transactions_ext bte ON bte.bank_transaction_id = bt.id
         ),
         closing AS (
             -- Der abzuschliessende Monat ist der Vormonat. Fertig ist er, wenn
             -- keine Bankumsaetze und keine Belege dieses Monats mehr offen sind.
             SELECT (SELECT COUNT(*) FROM bank_transactions bt CROSS JOIN p
                      WHERE bt.transdate >= p.prev_from AND bt.transdate < p.prev_to)                            AS bank_total,
-                   (SELECT COUNT(*) FROM bank_transactions bt CROSS JOIN p
+                   (SELECT COUNT(*) FROM bank_transactions bt LEFT JOIN bank_transactions_ext bte ON bte.bank_transaction_id = bt.id CROSS JOIN p
                      WHERE bt.transdate >= p.prev_from AND bt.transdate < p.prev_to
-                       AND bt.match_status = 'unmatched')                                                       AS bank_open,
+                       AND COALESCE(bte.match_status, 'unmatched') = 'unmatched')                                                       AS bank_open,
                    (SELECT COUNT(*) FROM accounting_bookings b CROSS JOIN p
                      WHERE b.status = 'pending' AND b.booking_date >= p.prev_from AND b.booking_date < p.prev_to) AS book_open
         ),
@@ -320,9 +321,10 @@ function getAccountingStack($data) {
                 -- Erst den Arbeitsvorrat begrenzen, dann bewerten: sonst wuerde
                 -- jeder Aufruf saemtliche offenen Umsaetze gegen alle offenen
                 -- Rechnungen rechnen.
-                SELECT bt.*
+                SELECT bt.*, bt.remote_account_number AS remote_iban
                 FROM bank_transactions bt
-                WHERE bt.match_status = 'unmatched'
+                LEFT JOIN bank_transactions_ext bte ON bte.bank_transaction_id = bt.id
+                WHERE COALESCE(bte.match_status, 'unmatched') = 'unmatched'
                 ORDER BY bt.transdate DESC, bt.id DESC
                 LIMIT :lim
             )
@@ -387,7 +389,7 @@ function getAccountingStack($data) {
         SQL, [':lim' => $limit]);
 
         $total = $db->getOne(
-            "SELECT COUNT(*) AS n FROM bank_transactions WHERE match_status = 'unmatched'", []
+            "SELECT COUNT(*) AS n FROM bank_transactions bt LEFT JOIN bank_transactions_ext bte ON bte.bank_transaction_id = bt.id WHERE COALESCE(bte.match_status, 'unmatched') = 'unmatched'", []
         );
 
         resultInfo(true, '', ['results' => [
@@ -431,7 +433,8 @@ function getAccountingStack($data) {
         LEFT JOIN LATERAL (
             SELECT bt.id, bt.transdate, bt.amount
             FROM bank_transactions bt
-            WHERE bt.match_status = 'unmatched'
+            LEFT JOIN bank_transactions_ext bte ON bte.bank_transaction_id = bt.id
+            WHERE COALESCE(bte.match_status, 'unmatched') = 'unmatched'
               AND ABS(ABS(bt.amount) - b.amount) < 0.005
               AND b.invoice_date IS NOT NULL
               AND bt.transdate BETWEEN b.invoice_date - 10 AND b.invoice_date + 90

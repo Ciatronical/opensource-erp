@@ -466,9 +466,10 @@ function bookCardSettlementLine($data) {
 
     // Bankumsatz + Bankkonto-Konto laden.
     $bank = $db->getOne(
-        "SELECT bt.id, bt.amount, bt.transdate, bt.match_status, bt.purpose,
+        "SELECT bt.id, bt.amount, bt.transdate, COALESCE(bte.match_status, 'unmatched') AS match_status, bt.purpose,
                 ba.chart_id AS bank_chart_id, bc.link AS bank_link
          FROM bank_transactions bt
+         LEFT JOIN bank_transactions_ext bte ON bte.bank_transaction_id = bt.id
          JOIN bank_accounts ba ON ba.id = bt.local_bank_account_id
          JOIN chart bc ON bc.id = ba.chart_id
          WHERE bt.id = :id",
@@ -613,7 +614,7 @@ function bookCardSettlementLine($data) {
         ['bt' => $btId, 'at' => $bankLeg['acc_trans_id'], 'gl' => $glId]
     );
     $db->execute("DELETE FROM bank_transaction_matches WHERE bank_transaction_id = :id", ['id' => $btId]);
-    $db->execute("UPDATE bank_transactions SET match_status = 'booked', cleared = true WHERE id = :id", ['id' => $btId]);
+    $db->execute("WITH u AS (UPDATE bank_transactions SET cleared = true WHERE id = :id) INSERT INTO bank_transactions_ext (bank_transaction_id, match_status) VALUES (:id2, 'booked') ON CONFLICT (bank_transaction_id) DO UPDATE SET match_status = EXCLUDED.match_status", ['id' => $btId, 'id2' => $btId]);
 
     // Abrechnungszeile abschliessen + Konten beim Kreditor merken.
     $db->execute(
@@ -686,7 +687,7 @@ function unbookCardSettlementLine($data) {
         }
     }
     if ($btId > 0) {
-        $db->execute("UPDATE bank_transactions SET match_status = 'unmatched', cleared = false WHERE id = :id", ['id' => $btId]);
+        $db->execute("WITH u AS (UPDATE bank_transactions SET cleared = false WHERE id = :id) INSERT INTO bank_transactions_ext (bank_transaction_id, match_status) VALUES (:id2, 'unmatched') ON CONFLICT (bank_transaction_id) DO UPDATE SET match_status = EXCLUDED.match_status", ['id' => $btId, 'id2' => $btId]);
     }
     $db->execute(
         "UPDATE payment_settlement_lines

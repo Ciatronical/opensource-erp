@@ -176,7 +176,12 @@
                 "title": "Mileage not plausible",
                 "text": "The entered mileage ({current} km) is lower than the last recorded value ({last} km) for this vehicle. Please check the mileage.",
                 "cancel": "Correct",
-                "proceed": "Proceed anyway"
+                "recordedIn": "Recorded in:",
+                "source": {
+                    "order": "Order {number}",
+                    "quotation": "Quotation {number}",
+                    "invoice": "Invoice {number}"
+                }
             },
             "status": "Status",
             "kfzOrt": "Vehicle location",

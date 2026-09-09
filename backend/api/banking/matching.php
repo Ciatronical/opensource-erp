@@ -119,10 +119,12 @@ function runAutoMatch($data) {
     // Zuordnung. Vor jedem Lauf zurück auf 'unmatched', damit sie wieder
     // mitlaufen.
     $db->execute(<<<SQL
-        UPDATE bank_transactions bt
+        UPDATE bank_transactions_ext bte
         SET match_status = 'unmatched'
-        WHERE bt.local_bank_account_id = :bank_account_id
-          AND bt.match_status = 'matched'
+        FROM bank_transactions bt
+        WHERE bt.id = bte.bank_transaction_id
+          AND bt.local_bank_account_id = :bank_account_id
+          AND bte.match_status = 'matched'
           AND NOT EXISTS (
               SELECT 1 FROM bank_transaction_matches m
               WHERE m.bank_transaction_id = bt.id
@@ -171,7 +173,7 @@ function matchTransaction($data) {
 
     // Bankumsatz laden
     $bt = $db->getOne(
-        "SELECT id, amount, match_status FROM bank_transactions WHERE id = :id",
+        "SELECT bt.id, bt.amount, COALESCE(bte.match_status, 'unmatched') AS match_status FROM bank_transactions bt LEFT JOIN bank_transactions_ext bte ON bte.bank_transaction_id = bt.id WHERE bt.id = :id",
         ['id' => $btId]
     );
 
@@ -221,7 +223,7 @@ function matchTransaction($data) {
 
     // Status auf matched setzen
     $db->execute(
-        "UPDATE bank_transactions SET match_status = 'matched' WHERE id = :id",
+        "INSERT INTO bank_transactions_ext (bank_transaction_id, match_status) VALUES (:id, 'matched') ON CONFLICT (bank_transaction_id) DO UPDATE SET match_status = EXCLUDED.match_status",
         ['id' => $btId]
     );
 
@@ -273,7 +275,7 @@ function bookMatchedTransactions($data) {
         $btId = intval($btId);
 
         $bt = $db->getOne(
-            "SELECT id, amount, match_status, transdate FROM bank_transactions WHERE id = :id",
+            "SELECT bt.id, bt.amount, COALESCE(bte.match_status, 'unmatched') AS match_status, bt.transdate FROM bank_transactions bt LEFT JOIN bank_transactions_ext bte ON bte.bank_transaction_id = bt.id WHERE bt.id = :id",
             ['id' => $btId]
         );
 
@@ -453,7 +455,7 @@ function _bookBankPaymentAgainstInvoice($db, array $bt, $targetType, $targetId, 
     }
 
     $db->execute("DELETE FROM bank_transaction_matches WHERE bank_transaction_id = :id", ['id' => $btId]);
-    $db->execute("UPDATE bank_transactions SET match_status = 'booked', cleared = true WHERE id = :id", ['id' => $btId]);
+    $db->execute("WITH u AS (UPDATE bank_transactions SET cleared = true WHERE id = :id) INSERT INTO bank_transactions_ext (bank_transaction_id, match_status) VALUES (:id2, 'booked') ON CONFLICT (bank_transaction_id) DO UPDATE SET match_status = EXCLUDED.match_status", ['id' => $btId, 'id2' => $btId]);
 
     return ['ok' => true];
 }
@@ -591,8 +593,8 @@ function createApFromBankTransaction($data) {
     if ($expenseChartId <= 0) { resultInfo(false, 'ACCOUNT_REQUIRED', 'Kein Aufwandskonto gewählt'); return; }
 
     $bt = $db->getOne(
-        "SELECT id, amount, transdate, local_bank_account_id, match_status, remote_name, purpose
-         FROM bank_transactions WHERE id = :id",
+        "SELECT bt.id, bt.amount, bt.transdate, bt.local_bank_account_id, COALESCE(bte.match_status, 'unmatched') AS match_status, bt.remote_name, bt.purpose
+         FROM bank_transactions bt LEFT JOIN bank_transactions_ext bte ON bte.bank_transaction_id = bt.id WHERE bt.id = :id",
         ['id' => $btId]
     );
     if (!$bt) { resultInfo(false, 'NOT_FOUND', 'Bankumsatz nicht gefunden'); return; }
@@ -720,7 +722,7 @@ function unbookTransaction($data) {
     }
 
     $bt = $db->getOne(
-        "SELECT id, amount, match_status FROM bank_transactions WHERE id = :id",
+        "SELECT bt.id, bt.amount, COALESCE(bte.match_status, 'unmatched') AS match_status FROM bank_transactions bt LEFT JOIN bank_transactions_ext bte ON bte.bank_transaction_id = bt.id WHERE bt.id = :id",
         ['id' => $btId]
     );
 
@@ -784,8 +786,7 @@ function unbookTransaction($data) {
             ['id' => $btId]
         );
         $db->execute(
-            "UPDATE bank_transactions SET match_status = 'unmatched', cleared = false WHERE id = :id",
-            ['id' => $btId]
+            "WITH u AS (UPDATE bank_transactions SET cleared = false WHERE id = :id) INSERT INTO bank_transactions_ext (bank_transaction_id, match_status) VALUES (:id2, 'unmatched') ON CONFLICT (bank_transaction_id) DO UPDATE SET match_status = EXCLUDED.match_status", ['id' => $btId, 'id2' => $btId]
         );
         resultInfo(true, 'Status zurueckgesetzt (keine acc_trans-Eintraege gefunden)');
         return;
@@ -841,8 +842,7 @@ function unbookTransaction($data) {
 
     // Umsatz-Status zuruecksetzen
     $db->execute(
-        "UPDATE bank_transactions SET match_status = 'unmatched', cleared = false WHERE id = :id",
-        ['id' => $btId]
+        "WITH u AS (UPDATE bank_transactions SET cleared = false WHERE id = :id) INSERT INTO bank_transactions_ext (bank_transaction_id, match_status) VALUES (:id2, 'unmatched') ON CONFLICT (bank_transaction_id) DO UPDATE SET match_status = EXCLUDED.match_status", ['id' => $btId, 'id2' => $btId]
     );
 
     resultInfo(true, 'Buchung rueckgaengig gemacht');
@@ -864,7 +864,7 @@ function unmatchTransaction($data) {
     }
 
     $bt = $db->getOne(
-        "SELECT id, match_status FROM bank_transactions WHERE id = :id",
+        "SELECT bt.id, COALESCE(bte.match_status, 'unmatched') AS match_status FROM bank_transactions bt LEFT JOIN bank_transactions_ext bte ON bte.bank_transaction_id = bt.id WHERE bt.id = :id",
         ['id' => $btId]
     );
 
@@ -885,7 +885,7 @@ function unmatchTransaction($data) {
         ['id' => $btId]
     );
     $db->execute(
-        "UPDATE bank_transactions SET match_status = 'unmatched' WHERE id = :id",
+        "INSERT INTO bank_transactions_ext (bank_transaction_id, match_status) VALUES (:id, 'unmatched') ON CONFLICT (bank_transaction_id) DO UPDATE SET match_status = EXCLUDED.match_status",
         ['id' => $btId]
     );
 
@@ -1031,8 +1031,8 @@ function getMatchCandidatesForTransaction($data) {
     }
 
     $bt = $db->getOne(
-        "SELECT id, amount, remote_name, remote_iban, purpose, end_to_end_id, match_status
-         FROM bank_transactions WHERE id = :id",
+        "SELECT bt.id, bt.amount, bt.remote_name, bt.remote_account_number AS remote_iban, bt.purpose, bt.end_to_end_id, COALESCE(bte.match_status, 'unmatched') AS match_status
+         FROM bank_transactions bt LEFT JOIN bank_transactions_ext bte ON bte.bank_transaction_id = bt.id WHERE bt.id = :id",
         ['id' => $btId]
     );
 
@@ -1047,7 +1047,7 @@ function getMatchCandidatesForTransaction($data) {
         // AR-Kandidaten — CTE vermeidet doppelte Named-Parameters in PDO
         $result = $db->getOne(<<<SQL
             WITH bt AS (
-                SELECT id, amount, transdate, remote_iban, remote_name, purpose, end_to_end_id
+                SELECT id, amount, transdate, remote_account_number AS remote_iban, remote_name, purpose, end_to_end_id
                 FROM bank_transactions
                 WHERE id = :bt_id AND amount > 0
             )
@@ -1270,7 +1270,7 @@ function bookTransactionMultipleInvoices($data) {
     }
 
     $bt = $db->getOne(
-        "SELECT id, amount, match_status, transdate FROM bank_transactions WHERE id = :id",
+        "SELECT bt.id, bt.amount, COALESCE(bte.match_status, 'unmatched') AS match_status, bt.transdate FROM bank_transactions bt LEFT JOIN bank_transactions_ext bte ON bte.bank_transaction_id = bt.id WHERE bt.id = :id",
         ['id' => $btId]
     );
 
@@ -1422,8 +1422,7 @@ function bookTransactionMultipleInvoices($data) {
         ['id' => $btId]
     );
     $db->execute(
-        "UPDATE bank_transactions SET match_status = 'booked', cleared = true WHERE id = :id",
-        ['id' => $btId]
+        "WITH u AS (UPDATE bank_transactions SET cleared = true WHERE id = :id) INSERT INTO bank_transactions_ext (bank_transaction_id, match_status) VALUES (:id2, 'booked') ON CONFLICT (bank_transaction_id) DO UPDATE SET match_status = EXCLUDED.match_status", ['id' => $btId, 'id2' => $btId]
     );
 
     resultInfo(true, 'Sammelzahlung gebucht', [

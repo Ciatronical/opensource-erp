@@ -121,7 +121,7 @@ function getCompanyConfig($data) {
                         SELECT json_agg(department) FROM (SELECT * FROM department) AS department
                     ),
                     'printers', (
-                        SELECT json_agg(printers) FROM (SELECT * FROM printers) AS printers
+                        SELECT json_agg(printers) FROM (SELECT p.*, COALESCE(pe.hide_factura, false) AS hide_factura FROM printers p LEFT JOIN printers_ext pe ON pe.printer_id = p.id) AS printers
                     ),
                     'generic_translations', (
                         SELECT json_agg(generic_translations)

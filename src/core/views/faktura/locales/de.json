@@ -176,7 +176,12 @@
                 "title": "km-Stand nicht plausibel",
                 "text": "Der eingetragene km-Stand ({current} km) liegt unter dem zuletzt erfassten Wert ({last} km) für dieses Fahrzeug. Bitte den km-Stand prüfen.",
                 "cancel": "Korrigieren",
-                "proceed": "Trotzdem fortfahren"
+                "recordedIn": "Erfasst in:",
+                "source": {
+                    "order": "Auftrag {number}",
+                    "quotation": "Angebot {number}",
+                    "invoice": "Rechnung {number}"
+                }
             },
             "status": "Status",
             "kfzOrt": "Fahrzeugstandort",
@@ -259,7 +264,6 @@
             "terminalError": "Kartenterminal: {msg}",
             "paymentBooked": "Zahlung erfolgreich gebucht",
             "paymentError": "Fehler beim Buchen der Zahlung",
-            "paymentAccount": "Zahlungskonto",
             "searchArticle": "Artikelnr. oder Beschreibung",
             "itemCreateError": "Fehler beim Anlegen der Position",
             "itemDeleteError": "Fehler beim Löschen der Position",

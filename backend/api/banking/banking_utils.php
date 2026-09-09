@@ -173,7 +173,8 @@ function getBankingAlerts($data) {
     $oldUnmatched = $db->getOne(<<<SQL
         SELECT COUNT(*)::int AS cnt
         FROM bank_transactions bt
-        WHERE bt.match_status = 'unmatched'
+        LEFT JOIN bank_transactions_ext bte ON bte.bank_transaction_id = bt.id
+        WHERE COALESCE(bte.match_status, 'unmatched') = 'unmatched'
           AND bt.transdate < :cutoff
           {$unmatchWhere}
     SQL, $params3);
@@ -326,7 +327,7 @@ function getLiquidityForecast($data) {
     // Empfänger die bereits als aktiver Dauerauftrag erfasst sind, werden ausgelassen.
     $extrapolated = $db->getAll(<<<SQL
         WITH base AS (
-            SELECT bt.remote_name, bt.remote_iban, bt.transdate, bt.amount
+            SELECT bt.remote_name, bt.remote_account_number AS remote_iban, bt.transdate, bt.amount
             FROM bank_transactions bt
             WHERE bt.local_bank_account_id = :id
               AND bt.amount < 0
@@ -337,7 +338,7 @@ function getLiquidityForecast($data) {
                   WHERE so.bank_account_id = :id
                     AND so.status = 'active'
                     AND so.remote_iban IS NOT NULL
-                    AND so.remote_iban = bt.remote_iban
+                    AND so.remote_iban = bt.remote_account_number
               )
         ),
         with_lag AS (
@@ -427,9 +428,10 @@ function exportTransactionsCsv($data) {
     $wClause = implode(' AND ', $where);
 
     $rows = $db->getAll(<<<SQL
-        SELECT bt.transdate, bt.valutadate, bt.amount, bt.remote_name, bt.remote_iban,
-               bt.purpose, bt.match_status
+        SELECT bt.transdate, bt.valutadate, bt.amount, bt.remote_name, bt.remote_account_number AS remote_iban,
+               bt.purpose, COALESCE(bte.match_status, 'unmatched') AS match_status
         FROM bank_transactions bt
+        LEFT JOIN bank_transactions_ext bte ON bte.bank_transaction_id = bt.id
         WHERE {$wClause}
         ORDER BY bt.transdate DESC, bt.id DESC
     SQL, $params);

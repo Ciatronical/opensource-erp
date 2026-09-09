@@ -679,7 +679,7 @@ function matchTransfersToTransactions($db, $bankAccountId) {
                   WHERE matched_transaction_id IS NOT NULL
               )
               AND (
-                  UPPER(REPLACE(COALESCE(bt.remote_iban, bt.remote_account_number, ''), ' ', ''))
+                  UPPER(REPLACE(COALESCE(bt.remote_account_number, ''), ' ', ''))
                       = UPPER(REPLACE(:iban, ' ', ''))
                   OR (:remote_name <> '' AND bt.remote_name ILIKE :name_pattern)
               )

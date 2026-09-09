@@ -341,7 +341,7 @@ function getCV($data, $withConfig = []) {
                             'printers', (--Drucker
                                 SELECT json_agg(printers)
                                 FROM (
-                                    SELECT * FROM printers
+                                    SELECT p.*, COALESCE(pe.hide_factura, false) AS hide_factura FROM printers p LEFT JOIN printers_ext pe ON pe.printer_id = p.id
                                 ) AS printers
                             ),
                             'generic_translations', (--Allgemeine Übersetzungen

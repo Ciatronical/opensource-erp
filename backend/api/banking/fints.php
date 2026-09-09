@@ -2199,26 +2199,27 @@ function importFintsStatements($db, $bankAccountId, $statements, $fromDate, $toD
             }
 
             $db->execute(<<<SQL
-                INSERT INTO bank_transactions (
-                    local_bank_account_id, transdate, valutadate, amount,
-                    remote_name, remote_iban, remote_bank_code, remote_account_number,
-                    purpose, transaction_code,
-                    end_to_end_id, currency_id,
-                    match_status
-                ) VALUES (
-                    :account_id, :transdate, :valutadate, :amount,
-                    :remote_name, :remote_iban, :remote_bank_code, :remote_account_number,
-                    :purpose, :transaction_code,
-                    :end_to_end_id, :currency_id,
-                    'unmatched'
+                WITH ins AS (
+                    INSERT INTO bank_transactions (
+                        local_bank_account_id, transdate, valutadate, amount,
+                        remote_name, remote_bank_code, remote_account_number,
+                        purpose, transaction_code,
+                        end_to_end_id, currency_id
+                    ) VALUES (
+                        :account_id, :transdate, :valutadate, :amount,
+                        :remote_name, :remote_bank_code, :remote_account_number,
+                        :purpose, :transaction_code,
+                        :end_to_end_id, :currency_id
+                    ) RETURNING id
                 )
+                INSERT INTO bank_transactions_ext (bank_transaction_id, match_status)
+                SELECT id, 'unmatched' FROM ins
             SQL, [
                 'account_id' => $bankAccountId,
                 'transdate' => $transdate,
                 'valutadate' => $valutadate,
                 'amount' => $amount,
                 'remote_name' => $remoteName,
-                'remote_iban' => $remoteIban,
                 'remote_bank_code' => $remoteBic,
                 'remote_account_number' => $remoteIban,
                 'purpose' => $purpose,

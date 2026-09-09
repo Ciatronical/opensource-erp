@@ -1157,6 +1157,7 @@ function loadPrintData($db, int $fakturaID, string $fakturaType, bool $lxCarsEna
         'ordnumber'       => $head['ordnumber'] ?? '',
         'quonumber'       => $head['quonumber'] ?? '',
         'donumber'        => $head['donumber'] ?? '',
+        'transdate'       => formatDate($head['transdate'] ?? ''),
         'invdate'         => formatDate($head['transdate'] ?? ''),
         'orddate'         => formatDate($head['transdate'] ?? ''),
         'quodate'         => formatDate($head['transdate'] ?? ''),

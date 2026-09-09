@@ -333,8 +333,8 @@
             </section>
         </v-container>
 
-        <!-- km-Stand Plausibilitäts-Dialog -->
-        <v-dialog v-model="kmPlausibilityDialog.show" max-width="520" @keydown.esc="kmPlausibilityDialog.show = false">
+        <!-- km-Stand Plausibilitäts-Dialog (beim Verlassen des km-Feldes) -->
+        <v-dialog v-if="kmPlausibilityDialog" v-model="kmPlausibilityDialog.show" max-width="520" @keydown.esc="kmPlausibilityDialog.show = false">
             <v-card>
                 <v-card-title class="d-flex align-center py-3 px-4 bg-warning">
                     <v-icon class="mr-2">mdi-speedometer-slow</v-icon>
@@ -344,14 +344,17 @@
                 </v-card-title>
                 <v-card-text class="pt-4 pb-2">
                     <p>{{ t('FakturaView.faktura.kmPlausibility.text', { current: kmPlausibilityDialog.currentKm?.toLocaleString('de-DE'), last: kmPlausibilityDialog.lastKm?.toLocaleString('de-DE') }) }}</p>
+                    <p v-if="kmPlausibilityDialog.source" class="mt-3 mb-0">
+                        {{ t('FakturaView.faktura.kmPlausibility.recordedIn') }}
+                        <a :href="kmSourceHref" target="_blank" rel="noopener" class="font-weight-bold">
+                            <v-icon size="small" class="mr-1">mdi-open-in-new</v-icon>{{ t('FakturaView.faktura.kmPlausibility.source.' + kmPlausibilityDialog.source.type, { number: kmPlausibilityDialog.source.number }) }}
+                        </a>
+                    </p>
                 </v-card-text>
                 <v-card-actions class="pa-4 pt-0">
                     <v-spacer />
-                    <v-btn variant="text" @click="kmPlausibilityDialog.show = false">
+                    <v-btn color="warning" variant="elevated" prepend-icon="mdi-pencil" @click="kmPlausibilityDialog.show = false">
                         {{ t('FakturaView.faktura.kmPlausibility.cancel') }}
-                    </v-btn>
-                    <v-btn color="warning" variant="elevated" prepend-icon="mdi-check-bold" @click="kmPlausibilityDialog.show = false; convertAndNavigate('invoice')">
-                        {{ t('FakturaView.faktura.kmPlausibility.proceed') }}
                     </v-btn>
                 </v-card-actions>
             </v-card>
@@ -2291,7 +2294,14 @@ export default defineComponent({
             convertAndNavigate('delivery_order')
         }
 
-        const kmPlausibilityDialog = ref({ show: false, currentKm: 0, lastKm: 0 })
+        // km-Plausibilitätsdialog wird vom Vehicle-Composable beim Verlassen des km-Feldes befüllt
+        const kmPlausibilityDialog = vehicle?.kmPlausibility ?? null
+        const kmSourceRoutes = { invoice: 'faktura-invoice-view', order: 'faktura-order-view', quotation: 'faktura-quotation-view' }
+        const kmSourceHref = computed(() => {
+            const src = kmPlausibilityDialog?.value?.source
+            if (!src || !kmSourceRoutes[src.type]) return '#'
+            return router.resolve({ name: kmSourceRoutes[src.type], params: { id: src.id } }).href
+        })
 
         async function createInvoiceFromFaktura() {
             // Anweisungen validieren (nur lxcars)
@@ -2299,20 +2309,9 @@ export default defineComponent({
                 const valid = await validateInstructionsComplete()
                 if (!valid) return
                 // km_stand ist Pflicht für Autos und Motorräder (nicht Anhänger)
-                if (vehicle.selectedCarId.value && !vehicle.isTrailer.value) {
-                    const kmStand = vehicle.oeExtData.value?.km_stand
-                    if (!kmStand) {
-                        toasts.error(t('FakturaView.faktura.kmStandRequired'))
-                        return
-                    }
-                    // Plausibilitätsprüfung gegen frühere Aufträge/Rechnungen
-                    try {
-                        const result = await carsStore.checkKmStandPlausibility(fakturaId.value, vehicle.selectedCarId.value)
-                        if (result.last_km > 0 && kmStand < result.last_km) {
-                            kmPlausibilityDialog.value = { show: true, currentKm: kmStand, lastKm: result.last_km }
-                            return
-                        }
-                    } catch { /* Bei Netzwerkfehler trotzdem weitermachen */ }
+                if (vehicle.selectedCarId.value && !vehicle.isTrailer.value && !vehicle.oeExtData.value?.km_stand) {
+                    toasts.error(t('FakturaView.faktura.kmStandRequired'))
+                    return
                 }
             }
             convertAndNavigate('invoice')
@@ -3162,6 +3161,7 @@ export default defineComponent({
             maintenanceIncompleteDialog,
             validateMaintenanceBeforeComplete,
             kmPlausibilityDialog,
+            kmSourceHref,
             // Actions
             saveFaktura,
             closeView,

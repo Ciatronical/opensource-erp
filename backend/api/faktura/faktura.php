@@ -83,7 +83,7 @@ function getFakturaData($data) {
                         LEFT JOIN LATERAL (
                             SELECT bt.id, bt.local_bank_account_id
                             FROM bank_transactions bt
-                            WHERE bt.match_status = 'booked'
+                            WHERE EXISTS (SELECT 1 FROM bank_transactions_ext bte WHERE bte.bank_transaction_id = bt.id AND bte.match_status = 'booked')
                                 AND (
                                     EXISTS (
                                         SELECT 1 FROM bank_transaction_acc_trans bat
@@ -904,7 +904,7 @@ SQL;
             WHERE pa.trans_id = :fakturaID
                 AND EXISTS (
                     SELECT 1 FROM bank_transactions bt
-                    WHERE bt.match_status = 'booked'
+                    WHERE EXISTS (SELECT 1 FROM bank_transactions_ext bte WHERE bte.bank_transaction_id = bt.id AND bte.match_status = 'booked')
                         AND (
                             EXISTS (
                                 SELECT 1 FROM bank_transaction_acc_trans bat
@@ -1878,52 +1878,6 @@ function convertFaktura($data) {
     // Nummernfeld und record_type je nach Zieltyp
     $newId = null;
 
-    /* Für Ronny (alter Code):
-
-    function insertInvoiceFromOrder( $data ){
-        $exists = $GLOBALS['dbh']->getOne( "SELECT id FROM ar WHERE ordnumber = '".$data['ordnumber']."' LIMIT 1" );
-
-        if( is_array( $exists ) && sizeof( $exists ) > 0 ){
-            getInvoice( $exists, "exists" );
-            return;
-        }
-
-        $GLOBALS['dbh']->beginTransaction();
-        $id = $GLOBALS['dbh']->getOne( "WITH tmp AS ( UPDATE defaults SET invnumber = invnumber::INT + 1 RETURNING invnumber) ".
-                                    "INSERT INTO ar ( invnumber, customer_id, employee_id, taxzone_id, currency_id, shippingpoint, notes, ordnumber, intnotes, shipvia, amount, netamount, invoice, type ) ".
-                                    "SELECT (SELECT invnumber FROM tmp), oe.customer_id, ".$_SESSION['id'].", oe.taxzone_id, oe.currency_id, oe.shippingpoint, oe.notes, oe.ordnumber, oe.intnotes, oe.shipvia, oe.amount, oe.netamount, true AS invoice, 'invoice' AS type ".
-                                    "FROM oe WHERE id = ".$data['oe_id']." RETURNING id;" )['id'];
-
-        $query = "INSERT INTO invoice (trans_id, position, parts_id, description, longdescription, qty, unit, sellprice, discount, marge_total, fxsellprice) ".
-                "(SELECT ".$id.", position, parts_id, description, longdescription, qty, unit, sellprice, discount, marge_total, sellprice AS fxsellprice FROM orderitems WHERE trans_id = ".$data['oe_id'].")";
-
-        $GLOBALS['dbh']->myquery( $query );
-        $GLOBALS['dbh']->commit();
-
-        $exists = array( "id" => $id );
-        getInvoice( $exists );
-    }
-
-    function insertOfferFromOrder( $data ){//Auftrag in Angebot kopieren
-        $query = "WITH tmp AS ( UPDATE defaults SET sqnumber = sqnumber::INT + 1 RETURNING sqnumber ) ".
-                    "INSERT INTO oe ( quonumber, record_type, ".
-                    "ordnumber, vendor_id, customer_id, amount, netamount, reqdate, taxincluded, shippingpoint, notes, employee_id, ".
-                    "closed, cusordnumber, intnotes, department_id, shipvia, cp_id, language_id, payment_id, delivery_customer_id, ".
-                    "delivery_vendor_id, taxzone_id, proforma, shipto_id, order_probability, expected_billing_date, globalproject_id, delivered, ".
-                    "salesman_id, marge_total, marge_percent, transaction_description, delivery_term_id, currency_id, exchangerate, ".
-                    "tax_point, km_stnd, c_id, status, car_status, finish_time, printed, car_manuf, car_type, internalorder, ".
-                    "billing_address_id, order_status_id ".
-                    ") SELECT ( SELECT sqnumber FROM tmp ), 'sales_quotation', ".
-                    "ordnumber, vendor_id, customer_id, amount, netamount, reqdate, taxincluded, shippingpoint, notes, ".$_SESSION['id'].", ".
-                    "closed, cusordnumber, intnotes, department_id, shipvia, cp_id, language_id, payment_id, delivery_customer_id, ".
-                    "delivery_vendor_id, taxzone_id, proforma, shipto_id, order_probability, expected_billing_date, globalproject_id, delivered, ".
-                    "salesman_id, marge_total, marge_percent, transaction_description, delivery_term_id, currency_id, exchangerate, ".
-                    "tax_point, km_stnd, c_id, status, car_status, finish_time, printed, car_manuf, car_type, internalorder, ".
-                    "billing_address_id, order_status_id ".
-                    "FROM oe WHERE id = ".$data['oe_id']." RETURNING id;";
-
-    */
-
     // Nummernkreis-Spalte je nach Zieltyp bestimmen
     $defaultsColMap = [
         'invoice'            => 'invnumber',
@@ -1941,12 +1895,6 @@ function convertFaktura($data) {
     // writeLog("convertFaktura VORHER: defaults.{$nkCol} = " . ($nkBefore[$nkCol] ?? 'NULL') . " (sourceType={$sourceType}, targetType={$targetType}, effectiveTarget={$effectiveTarget})");
 
     if ($effectiveTarget === 'invoice') {
-        /* Für Ronny (alter Code):
-        $id = $GLOBALS['dbh']->getOne( "WITH tmp AS ( UPDATE defaults SET invnumber = invnumber::INT + 1 RETURNING invnumber) ".
-                                    "INSERT INTO ar ( invnumber, customer_id, employee_id, taxzone_id, currency_id, shippingpoint, notes, ordnumber, intnotes, shipvia, amount, netamount, invoice, type ) ".
-                                    "SELECT (SELECT invnumber FROM tmp), oe.customer_id, ".$_SESSION['id'].", oe.taxzone_id, oe.currency_id, oe.shippingpoint, oe.notes, oe.ordnumber, oe.intnotes, oe.shipvia, oe.amount, oe.netamount, true AS invoice, 'invoice' AS type ".
-                                    "FROM oe WHERE id = ".$data['oe_id']." RETURNING id;" )['id'];
-        */
         $query = <<<SQL
             WITH tmp AS (UPDATE defaults SET invnumber = COALESCE(invnumber::INT, 0) + 1 RETURNING invnumber)
             INSERT INTO ar (invnumber, transdate, gldate, employee_id, customer_id, taxzone_id, currency_id, invoice)
