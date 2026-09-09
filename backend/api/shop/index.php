@@ -12,6 +12,14 @@
  * Beide Zugaenge teilen sich die Fachschicht unter lib/.
  */
 
+// ApiError muss VOR lib/payment.php stehen: dort erbt ShopPaymentError davon,
+// und eine Basisklasse muss beim Laden der Datei bekannt sein — anders als
+// Funktionen, die erst beim Aufruf aufgeloest werden. inc.php gehoert ans Ende
+// (Projektkonvention) und kaeme dafuer zu spaet; error.php ist genau dafuer aus
+// inc.php herausgeloest. Doppeltes Laden schadet nicht, inc.php holt es sich
+// per require_once ohnehin.
+require_once __DIR__.'/../error.php';
+
 require_once __DIR__.'/../faktura/faktura.php';
 require_once __DIR__.'/../print/print.php';
 require_once __DIR__.'/../print/template_engine.php';

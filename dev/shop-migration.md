@@ -62,18 +62,10 @@ Diese Teile der Bridge werden nicht portiert, sondern ersetzt:
 3. ~~**Namenskollision `login`/`logout`.**~~ Erledigt in Stufe 4: die Aktionen
    heißen `shopLogin`/`shopLogout`, die Fachfunktionen `shopLoginCustomer`/
    `shopLogoutCustomer`.
-4. **Same-Origin.** `shop-ui` ruft `/shop-api/` same-origin auf, das
-   Kontext-Cookie steht auf `SameSite=Strict`. Nach der Migration liegt die API
-   auf der OSERP-Domain. Empfohlen: Reverse-Proxy im Shop-Docroot, dann bleibt
-   alles same-origin und das Shop-Frontend unverändert. Liegen beide Zugänge
-   unter derselben Domain, schickt der Browser den OSERP-Sitzungscookie auch an
-   den Kundenendpunkt — der muss ihn ausdrücklich ignorieren.
-5. **Antwortformat.** Der Kundenzugang liefert heute keinen einheitlichen
-   Rahmen (siehe Kopfkommentar in `shop-ui/src/core/api.js`). Entschieden:
-   OSERP-Format mit `payload` auch für den Kundenzugang; im `shop-ui` ändert
-   sich dafür eine Zeile (`return data.payload ?? data`). Beim Portieren
-   beachten: die Bridge-Signatur `resultInfo($success, $text, $debug)` führt an
-   dritter Stelle etwas anderes als OSERP.
+4. ~~**Same-Origin.**~~ Erledigt in Stufe 7: Proxy im Shop-Docroot, damit
+   bleibt der Aufruf same-origin und das Kontext-Cookie geht nicht verloren.
+5. ~~**Antwortformat.**~~ Erledigt in Stufe 7: das `shop-ui` nimmt Antworten
+   mit und ohne Hülle an.
 
 ## Tabellennamen
 
@@ -116,7 +108,7 @@ die reine Shop-Variante stand.
 | 4 | Beide Einstiegspunkte, Allowlist, `shopLogin`/`shopLogout` | **erledigt** |
 | 5 | Rechnung und Zahlung auf Faktura, Print und E-Mail | **erledigt**, PDF/Mail/PayPal ungeprüft |
 | 6 | `src/features/shop/` — Admin-Panel, Routen in 21 Sprachen | **erledigt**, Artikel-Shopdaten offen |
-| 7 | `shop-ui` auf das Antwortformat umstellen, Proxy einrichten | offen |
+| 7 | `shop-ui` auf das Antwortformat umstellen, Proxy einrichten | **erledigt** |
 
 Nach Stufe 5 ist der Shop lauffähig, nach Stufe 6 verwaltbar.
 
@@ -343,6 +335,13 @@ Herkunftsprüfung, Verteiler), `public/actions.php` die 31 Aktionen.
 Beide standen in `inc.php` — der Datei, die der öffentliche Zugang nicht laden
 darf. Sie stehen jetzt in `backend/api/error.php`, das `inc.php` als erstes
 einbindet. Für die übrigen Module ändert sich nichts.
+
+**Auch der Admin-Zugang braucht `error.php` ausdrücklich**, und zwar vor
+`lib/payment.php`: dort erbt `ShopPaymentError` von `ApiError`, und eine
+Basisklasse muss beim *Laden* der Datei bekannt sein — anders als Funktionen,
+die erst beim Aufruf aufgelöst werden. `inc.php` gehört ans Ende
+(Projektkonvention) und käme dafür zu spät. Ohne diese Zeile endet jeder
+Aufruf von `/api/shop/` mit `Class "ApiError" not found`.
 
 ### Mandant ohne Sitzung
 
@@ -596,3 +595,72 @@ entschieden.
 **Die Ansichten sind nicht im laufenden System gesehen worden.** Geprüft sind
 Übersetzung, Routen und Build; wie sie sich mit echten Daten anfühlen, zeigt
 erst der erste Aufruf im Browser.
+
+## Stufe 7 — was angelegt wurde
+
+Diese Stufe berührt **das Bridge-Repository**, nicht OpensourceERP:
+`/home/worker/Projekte/dev.hugoshop.dev/kivitendo_bridge/`.
+
+### Das `shop-ui` verträgt jetzt beide Backends
+
+Damit lässt sich der Shop neu bauen, bevor umgeschaltet wird — und im Zweifel
+zurückschalten, ohne ihn erneut zu bauen.
+
+| Datei | Änderung |
+| --- | --- |
+| `src/core/api.js` | Antwort mit Hülle (`payload`) und ohne; `login`/`logout` versuchen erst `shopLogin`/`shopLogout` und fallen auf die alten Namen zurück |
+| `src/core/dates.js` | neu: nimmt `15.03.2026` und `2026-03-15` an |
+| `src/core/cart-data.js` | `thumbnail` mit Rückfall auf den Schreibfehler `tumbnail` |
+| `src/components/shop-account-orders.js` | dasselbe für die Rechnungspositionen, Datum über `formatDate()` |
+| `shop-login.js`, `shop-register.js`, `shop-account-buttons.js` | rufen die neuen Helfer statt `apiRequest('login')` |
+
+Preise brauchten keine Änderung: `src/core/money.js` wandelt jeden Betrag beim
+Eintreffen in eine Zahl um und verkraftet beide Schreibweisen. Dass das
+Backend jetzt Zahlen statt formatierter Zeichenketten liefert, merkt die
+Oberfläche nicht.
+
+### Der Proxy
+
+`web/oserp/shop-api-proxy.php` tritt an die Stelle von `web/shop-api/index.php`.
+Er hält den Aufruf same-origin — sonst schickt der Browser das Cookie
+`HUGOSHOPCLIENTID` (`SameSite=Strict`) nicht mit und der Warenkorb wäre bei
+jeder Anfrage leer — und trägt den Shop-Schlüssel nach, sodass der Browser ihn
+nie sieht.
+
+Weiterleitungen folgt er bewusst nicht: der Rückweg von PayPal gehört in den
+Browser des Kunden, nicht in den Proxy. Durchgereicht werden nur die
+Kopfzeilen, die der Browser braucht (Inhaltstyp, Cookie, Weiterleitung,
+Dateiname beim PDF).
+
+`web/oserp/README.md` beschreibt beide Wege — Reverse-Proxy im Webserver
+(nginx und Apache, ohne PHP-Prozess je Anfrage) und den PHP-Proxy für
+Umgebungen ohne Zugriff auf die Serverkonfiguration — samt Reihenfolge beim
+Umschalten.
+
+### Nachgemessen
+
+16 Prüfungen über den vollständigen Weg: Shop-Oberfläche → Proxy → Erweiterung,
+mit zwei Webservern und einer Testdatenbank.
+
+- Der Aufruf kommt **ohne Schlüssel** durch — der Proxy trägt ihn nach
+- Die Sitzung hält über mehrere Anfragen (Cookie wird durchgereicht)
+- Warenkorb, Konto, Anmeldung mit `shopLogin`, Bestellung, Rechnungslink,
+  Bestellliste
+- Der alte Aktionsname `login` bleibt am öffentlichen Zugang verwehrt
+  (`API_ACTION_NOT_ALLOWED`) — genau der Fehlercode, auf den der Rückfall im
+  `shop-ui` reagiert
+- Eine Weiterleitung (302 mit `Location`) wird nicht verschluckt
+- Ohne konfigurierten Schlüssel meldet der Proxy HTTP 503 und
+  `SHOP_PROXY_NOT_CONFIGURED`
+- `npm run build` des `shop-ui` fehlerfrei (152 kB)
+
+### Was der Umstellung noch fehlt
+
+Das Ganze ist gegen Testdatenbanken geprüft, nicht gegen den echten Shop. Vor
+dem Umschalten von `sonic24.de`:
+
+1. Erweiterung beim Mandanten aktivieren, Schema-Update laufen lassen
+2. Shop-Einstellungen füllen, bis die Übersicht grün ist
+3. `shop-ui` neu bauen und veröffentlichen (läuft weiter gegen die Bridge)
+4. Proxy einrichten — ab hier läuft der Shop gegen OpensourceERP
+5. PDF und Mailversand prüfen: beides ist bisher nirgends vollständig gelaufen
