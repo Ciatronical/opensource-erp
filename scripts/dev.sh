@@ -13,6 +13,10 @@ TERMINAL_HEIGHT=40
 # Verwende System-PHP
 PHP_BIN="php"
 
+# Projektverzeichnis — dient nur dazu, beim Beenden alter Server gezielt die
+# eigenen Prozesse zu treffen und keinen Vite-Server eines anderen Projekts.
+ERP_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
 # === ARGUMENTE ===
 RUN_SERVERS_ONLY=0
 FORCE_INSTALL=0
@@ -163,7 +167,7 @@ run_servers() {
     # Stoppe eventuell laufende Server
     echo "Stopping old servers..."
     pkill -f "php -S localhost:8000" 2>/dev/null
-    pkill -f "vite" 2>/dev/null
+    pkill -f "$ERP_PROJECT_DIR/node_modules.*vite" 2>/dev/null
     pkill -f "sse-server.js" 2>/dev/null
     sleep 1
 
@@ -246,7 +250,7 @@ run_servers() {
         echo "=== Stopping Servers ==="
         kill $PHP_PID $NPM_PID $SSE_PID $TAIL_PHP_PID $TAIL_API_PID 2>/dev/null
         pkill -f "php -S localhost:8000" 2>/dev/null
-        pkill -f "vite" 2>/dev/null
+        pkill -f "$ERP_PROJECT_DIR/node_modules.*vite" 2>/dev/null
         pkill -f "sse-server.js" 2>/dev/null
         exit 0
     }
