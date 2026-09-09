@@ -53,9 +53,9 @@ Diese Teile der Bridge werden nicht portiert, sondern ersetzt:
 
 ## Offene Konstruktionspunkte
 
-1. **`DbhCompany::begin($pdo)` ignoriert seinen Parameter**
-   (`backend/api/database.php:735`). Der Kundenzugang löst die Company-Datenbank
-   über einen Shop-Schlüssel auf und muss die Verbindung setzen können.
+1. ~~**`DbhCompany::begin($pdo)` ignoriert seinen Parameter.**~~ Erledigt in
+   Stufe 2: die Verbindung lässt sich jetzt übernehmen, ein Austausch bei
+   stehender Verbindung wirft `DB_ALREADY_CONNECTED`.
 2. **Der Aktionsmechanismus kennt keine Grenzen.** `api.call.php:16` prüft nur
    `function_exists()`, und `inc.php` lädt `auth.php` immer mit — `login`,
    `logout`, `getClients`, `restoreSession`, `switchClient` wären damit in jedem
@@ -115,7 +115,7 @@ die reine Shop-Variante stand.
 | --- | --- | --- |
 | 1 | `backend/upstall/shop/` — Schema und `extension.json` | **erledigt** |
 | 2 | Einstellungen aus `defaults_oserp` lesen, Einstellungen-Tab, `DbhCompany::begin($pdo)` | **erledigt** |
-| 3 | Fachschicht: Kontext, Warenkorb, Konto, Suche | offen |
+| 3 | Fachschicht: Kontext, Warenkorb, Konto, Suche | **erledigt** |
 | 4 | Beide Einstiegspunkte, Allowlist, `shopLogin`/`shopLogout` | offen |
 | 5 | Rechnung und Zahlung auf Faktura, Print und E-Mail | offen |
 | 6 | `src/features/shop/` — Admin-Panel, Routen in 21 Sprachen | offen |
@@ -250,3 +250,75 @@ Teil dieser Stufe — dasselbe Vorgehen liesse sich dort anwenden.
   danach dieselbe Instanz, ein zweites `begin($pdo)` wirft
 - Gegenprobe der Übersetzungen: alle 66 im Tab verwendeten Schlüssel sind in
   allen 21 Sprachen vorhanden, keiner davon unbenutzt
+
+## Stufe 3 — was angelegt wurde
+
+Die Fachschicht unter `backend/api/shop/lib/`. Jede Funktion folgt der
+Signaturregel aus `shop-migration-zuschnitt.md`: `$db` zuerst, `customer_id`
+als Parameter, Rückgabe ein Array, kein `echo`, kein Zugriff auf `$_POST` oder
+`$_COOKIE`. Damit ist jede Funktion von beiden Zugängen aufrufbar.
+
+| Datei | Inhalt |
+| --- | --- |
+| `context.php` | Sitzung des Shop-Besuchers, Anmeldung, Abmeldung, Artikellink |
+| `cart.php` | Warenkorb: lesen, ergänzen, ändern, Summen, Versand, Zusammenführen |
+| `account.php` | Kundenkonto: Anlegen, Anschriften, Profil, Kennwort, Zahlungsart, Kasse |
+| `search.php` | Artikelsuche mit Präfixtreffern und Preisgewichtung |
+
+Die Bestell- und Rechnungsansichten (`personalOrders`, `personalOrder`,
+`getInvoiceSummary`, die PDF-Ausgabe) fehlen bewusst: sie hängen an der
+Rechnungserstellung und kommen mit Stufe 5.
+
+### Abweichungen von der Bridge
+
+Beim Portieren korrigiert, jeweils im Code begründet:
+
+- **Kennwort bei der Anmeldung.** Die Bridge setzte
+  `('false' == $guest) ? null : password_hash(...)` — also andersherum. Ein
+  angelegtes Konto bekam kein Kennwort und kam durch die Anmeldung nie
+  hindurch, eine Gastbestellung einen Hash über ein Feld, das dort nicht
+  gesetzt wird. Jetzt bekommt das Konto das Kennwort und der Gast keines.
+- **Rundung.** `ROUND(x / precision, 2) * precision` rundet eine bereits ganze
+  Zahl auf zwei Stellen und lässt den Rundungsschritt des Mandanten wirkungslos
+  (sichtbar erst bei `precision <> 0.01`). Jetzt `ROUND(x / precision) * precision`,
+  und gerundet wird je Position, danach summiert — sonst weicht die Summe von
+  der Addition der angezeigten Positionsbeträge ab.
+- **Steuersatz des Versands.** Die Bridge rechnete ihn mit `MAX(tax.rate)` des
+  Warenkorbs. Jetzt mit dem eigenen Satz des Versandartikels.
+- **Kundennummer.** Statt `LOCK TABLE customer IN EXCLUSIVE MODE` plus
+  Zählschleife jetzt `nextFreeNumber()` aus `backend/api/database.php`.
+- **Zugehörigkeit von Lieferadressen.** Jede Funktion, die eine `shipto_id`
+  entgegennimmt, führt `trans_id` in der Bedingung mit und meldet
+  `ADDRESS_NOT_FOUND`, wenn nichts getroffen wurde. Die Bridge meldete bei
+  `updateDeliveryAddress` auch dann Erfolg, wenn keine Zeile geändert wurde.
+- **Preise als Zahlen.** Die Bridge lieferte formatierte Zeichenketten
+  (`formatPrice`). Formatiert wird jetzt in der Oberfläche — für das `shop-ui`
+  ein Punkt in Stufe 7.
+- **Eindeutiger Index auf `(cart_uuid, parts_id)`** im Schema ergänzt. Damit
+  wird aus Suchen-und-Entscheiden ein `INSERT … ON CONFLICT DO UPDATE`; zwei
+  gleichzeitige Anfragen können keine zwei Zeilen mehr anlegen. Vorhandene
+  Doppeleinträge fasst der Upstall vorher zusammen (Mengen addiert) statt sie
+  nur zu melden — anders als bei `parts_ext` gibt es hier eine eindeutig
+  richtige Auflösung.
+
+### Nachgemessen
+
+62 Prüfungen gegen PostgreSQL 14.24 auf einer Wegwerf-Datenbank mit Stubs der
+kivitendo-Tabellen, danach wieder entfernt: Kontext anlegen und wiederfinden,
+Warenkorb füllen und ändern (auch mit zwei Steuersätzen), Versandkosten-Regel
+in allen drei Fällen, Registrierung samt Kundennummer und Kennwort,
+Warenkörbe-Zusammenführen beim Anmelden, Fremdzugriff auf Lieferadressen in
+allen vier Varianten, Profil, Kennwortwechsel, Zahlungsart, Kasse,
+Kontaktformular, Suche (Präfix, Kategorie, Sonderzeichen, mehrere Wörter) und
+Abmelden.
+
+Zwei echte Fehler hat der Durchlauf aufgedeckt und sie sind behoben:
+
+1. `cartAdd` zählte die Positionen im selben CTE wie das `INSERT` — alle Zweige
+   einer Anweisung lesen denselben Stand, die Zählung sah den Warenkorb also
+   vor dem Einfügen. Jetzt eine getrennte Abfrage.
+2. Die Rundung (siehe oben) fiel beim Vergleich der erwarteten Summe auf.
+
+Der Duplikat-Fall des neuen Index wurde eigens geprüft: drei überzählige
+Zeilen in zwei Warenkörben wurden zu den richtigen Mengen zusammengefasst
+(2+3+1 und 7+1), danach der Index angelegt.

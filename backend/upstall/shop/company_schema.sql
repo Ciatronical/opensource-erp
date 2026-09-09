@@ -142,6 +142,7 @@ CREATE TABLE IF NOT EXISTS cart_parts_hugoshop
     cart_uuid text NOT NULL,
     amount    integer DEFAULT 0,
     parts_id  integer,
+    CONSTRAINT cart_parts_hugoshop_cart_parts_key UNIQUE (cart_uuid, parts_id),
     CONSTRAINT cart_parts_hugoshop_carts_uuid_fk FOREIGN KEY (cart_uuid)
         REFERENCES carts_hugoshop (uuid) ON UPDATE NO ACTION ON DELETE CASCADE
 );
@@ -150,6 +151,52 @@ COMMENT ON TABLE cart_parts_hugoshop IS 'Shop: Positionen eines Warenkorbs';
 
 CREATE INDEX IF NOT EXISTS cart_parts_hugoshop_cart_uuid_idx
     ON cart_parts_hugoshop (cart_uuid);
+
+-- Ein Artikel steht im Warenkorb genau einmal, mit einer Menge. Die Bridge
+-- setzte das voraus (inCart sucht die Position und zaehlt sie hoch), ohne es
+-- zu sichern — zwei gleichzeitige Anfragen legten zwei Zeilen an.
+--
+-- Mit dem eindeutigen Index wird aus Suchen-und-Entscheiden ein einziges
+-- INSERT ... ON CONFLICT DO UPDATE, und das Zusammenfuehren zweier Warenkoerbe
+-- beim Anmelden ebenso.
+--
+-- Vorhandene Doppeleintraege werden vorher zusammengefasst statt gemeldet:
+-- anders als bei parts_ext gibt es hier eine eindeutig richtige Auflösung —
+-- die Mengen gehoeren addiert.
+DO $$
+DECLARE
+    zusammengefasst integer;
+BEGIN
+    IF EXISTS (SELECT 1 FROM pg_constraint
+                WHERE conrelid = 'cart_parts_hugoshop'::regclass
+                  AND conname = 'cart_parts_hugoshop_cart_parts_key') THEN
+        RETURN;
+    END IF;
+
+    WITH summen AS (
+        SELECT cart_uuid, parts_id, SUM(amount) AS menge, MIN(id) AS behalten
+          FROM cart_parts_hugoshop
+         GROUP BY cart_uuid, parts_id
+        HAVING count(*) > 1
+    ), aktualisiert AS (
+        UPDATE cart_parts_hugoshop c SET amount = s.menge
+          FROM summen s WHERE c.id = s.behalten
+        RETURNING c.id
+    ), geloescht AS (
+        DELETE FROM cart_parts_hugoshop c
+         USING summen s
+         WHERE c.cart_uuid = s.cart_uuid AND c.parts_id = s.parts_id AND c.id <> s.behalten
+        RETURNING c.id
+    )
+    SELECT count(*) INTO zusammengefasst FROM geloescht;
+
+    IF zusammengefasst > 0 THEN
+        RAISE NOTICE 'cart_parts_hugoshop: % doppelte Positionen zusammengefasst.', zusammengefasst;
+    END IF;
+
+    ALTER TABLE cart_parts_hugoshop
+        ADD CONSTRAINT cart_parts_hugoshop_cart_parts_key UNIQUE (cart_uuid, parts_id);
+END $$;
 
 -- ============================================================================
 -- SITZUNGSKONTEXT
