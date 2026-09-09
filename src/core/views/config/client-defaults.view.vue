@@ -173,8 +173,8 @@
                         <component
                             v-else
                             :is="currentTabComponent"
-                            :defaults="['crm','lxcars','anpr','ai_health','employees'].includes(activeTab) ? undefined : defaults"
-                            :crm-defaults="['crm','lxcars','anpr','bank','features','ai_health'].includes(activeTab) ? crmDefaults : undefined"
+                            :defaults="['crm','lxcars','shop','anpr','ai_health','employees'].includes(activeTab) ? undefined : defaults"
+                            :crm-defaults="['crm','lxcars','shop','anpr','bank','features','ai_health'].includes(activeTab) ? crmDefaults : undefined"
                             :search-query="searchQuery"
                             :open-panel="activeTab === 'add' ? pendingPanel : undefined"
                             :extensions="activeTab === 'features' ? availableExtensions : undefined"
@@ -372,6 +372,7 @@ const BankTab = defineAsyncComponent(() => import('./tabs/bank.tab.vue'));
 const EinvoiceTab = defineAsyncComponent(() => import('./tabs/einvoice.tab.vue'));
 const CrmTab = defineAsyncComponent(() => import('./tabs/crm-defaults.tab.vue'));
 const LxCarsTab = defineAsyncComponent(() => import('./tabs/lxcars-defaults.tab.vue'));
+const ShopTab = defineAsyncComponent(() => import('./tabs/shop-defaults.tab.vue'));
 const AnprTab = defineAsyncComponent(() => import('./tabs/anpr-defaults.tab.vue'));
 const AiHealthTab = defineAsyncComponent(() => import('./tabs/ai-health.tab.vue'));
 const EmployeesTab = defineAsyncComponent(() => import('./tabs/employees.tab.vue'));
@@ -553,6 +554,7 @@ const tabGroups = computed(() => [
         items: [
             { value: 'features', title: t('features'), icon: 'mdi-star', keywords: ['feature', 'funktion', 'modul', 'branche', 'module', 'e-mail', 'email', 'dms', 'dokumente', 'webdav', 'kamera', 'überwachung', 'datev', 'ustva'] },
             ...(store.isLxCars() ? [{ value: 'lxcars', title: 'LxCars', icon: 'mdi-car', keywords: ['lxcars', 'fahrzeug', 'auto', 'werkstatt', 'kfz', 'reifen'] }] : []),
+            ...(store.isExtensionEnabled('shop') ? [{ value: 'shop', title: 'Shop', icon: 'mdi-storefront', keywords: ['shop', 'webshop', 'onlineshop', 'warenkorb', 'bestellung', 'paypal', 'versand', 'zahlung'] }] : []),
             ...(store.isAnprEnabled() ? [{ value: 'anpr', title: 'ANPR', icon: 'mdi-car-search', keywords: ['anpr', 'kennzeichen', 'kamera', 'nummernschild'] }] : []),
             { value: 'ai_health', title: t('aiHealth.tabTitle'), icon: 'mdi-robot-happy-outline', keywords: ['ki', 'ai', 'whisper', 'llm', 'ollama', 'spracheingabe', 'glossar', 'fachbegriffe', 'gesundheit', 'health', 'cloud', 'api-key', 'positionsvorschläge'] },
         ]
@@ -735,6 +737,7 @@ const currentTabComponent = computed(() => {
         'einvoice': EinvoiceTab,
         'crm': CrmTab,
         'lxcars': LxCarsTab,
+        'shop': ShopTab,
         'anpr': AnprTab,
         'ai_health': AiHealthTab,
         'employees': EmployeesTab,

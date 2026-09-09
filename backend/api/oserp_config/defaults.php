@@ -29,8 +29,15 @@ function getCompanyConfig($data) {
                     ),
                     'defaults_oserp', (
                         -- aag_online_token* sind serverseitiger Token-Cache, nie an Clients ausliefern
+                        --
+                        -- shop_paypal_secret und shop_public_key ebenso: mit ihnen liessen
+                        -- sich Zahlungen abwickeln bzw. der oeffentliche Shop-Zugang
+                        -- uebernehmen. Der Einstellungen-Tab zeigt sie deshalb leer an;
+                        -- cleanData() im Frontend uebergeht leere Felder, ein leer
+                        -- gelassenes Feld laesst den gespeicherten Wert also unangetastet.
                         SELECT json_object_agg(key, value) FROM defaults_oserp
-                        WHERE key NOT IN ('aag_online_token', 'aag_online_token_exp')
+                        WHERE key NOT IN ('aag_online_token', 'aag_online_token_exp',
+                                          'shop_paypal_secret', 'shop_public_key')
                     ),
                     'business_types', (
                         SELECT json_agg(business) FROM (SELECT * FROM business) AS business

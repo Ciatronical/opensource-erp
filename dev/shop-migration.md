@@ -114,7 +114,7 @@ die reine Shop-Variante stand.
 | Stufe | Inhalt | Stand |
 | --- | --- | --- |
 | 1 | `backend/upstall/shop/` — Schema und `extension.json` | **erledigt** |
-| 2 | Einstellungen aus `defaults_oserp` lesen, Einstellungen-Tab, `DbhCompany::begin($pdo)` | offen |
+| 2 | Einstellungen aus `defaults_oserp` lesen, Einstellungen-Tab, `DbhCompany::begin($pdo)` | **erledigt** |
 | 3 | Fachschicht: Kontext, Warenkorb, Konto, Suche | offen |
 | 4 | Beide Einstiegspunkte, Allowlist, `shopLogin`/`shopLogout` | offen |
 | 5 | Rechnung und Zahlung auf Faktura, Print und E-Mail | offen |
@@ -180,3 +180,73 @@ Nicht übernommen: die auskommentierten Blöcke am Dateiende von `install.sql`
 (`search_tsv`, `parts_ext_search_gin`, die `jsonb`-Umstellungen). Sie gehören zu
 einer Suchvariante, die nicht in Betrieb ist — `shop.search.php` baut den
 `tsvector` zur Laufzeit.
+
+## Stufe 2 — was angelegt wurde
+
+### `DbhCompany::begin($pdo)`
+
+`backend/api/database.php` löst die Zusage aus Signatur und Kommentar jetzt ein:
+mit `$pdo` übernimmt das Singleton eine bereits aufgebaute Verbindung. Das
+braucht jeder Einstiegspunkt ohne Mitarbeiter-Sitzung — der öffentliche Zugang
+des Shops über den Shop-Schlüssel, die Webhooks über ihr Secret. Die
+Fachfunktionen rufen anschliessend wie überall `begin()` ohne Argument.
+
+Ein zweiter Aufruf mit `$pdo` bei bereits stehender Verbindung wirft
+`DB_ALREADY_CONNECTED`. Die Verbindung nachträglich austauschen zu wollen ist
+immer ein Programmierfehler: alles bisher Gelesene stammte dann aus einer
+anderen Datenbank. Für die 595 vorhandenen Aufrufe von `begin()` ohne Argument
+ändert sich nichts.
+
+### `backend/api/shop/lib/config.php`
+
+`shopConfig($db)` liest alle `shop_*`-Schlüssel in einer Abfrage und hält sie
+für die Dauer des Requests — pro Verbindung getrennt, damit ein Durchlauf über
+mehrere Mandanten nicht die Werte des ersten weiterträgt. Dazu die Zugriffe
+`shopConfigValue`, `shopConfigRequire` (wirft `SHOP_CONFIG_MISSING` bei leerem
+Pflichtwert), `shopConfigBool`, `shopConfigInt` und `shopConfigFloat`.
+
+Damit ist der Ersatz für `config.php` und `passwd.php` der Bridge vollständig:
+rund 60 Konstanten aus zwei Dateien je Shop-Instanz sind jetzt Einstellungen je
+Mandant.
+
+### Einstellungen-Tab
+
+`src/core/views/config/tabs/shop-defaults.tab.vue` samt Felddefinition in
+`shopDefaultsConfig.js`, eingehängt in `client-defaults.view.vue` unter
+„Erweiterungen" — sichtbar nur bei aktiver Erweiterung
+(`store.isExtensionEnabled('shop')`), analog zu LxCars. 28 Felder in acht
+Abschnitten. Gespeichert wird über den vorhandenen Weg `saveCrmDefaults`; ein
+eigenes Backend braucht der Tab nicht.
+
+Übersetzt in alle 21 Sprachen (66 Schlüssel unter `crm_fields` je Sprache).
+
+### Geheimnisse
+
+`getCompanyConfig` liefert `defaults_oserp` vollständig an den Browser jedes
+angemeldeten Benutzers. Für `shop_paypal_secret` und `shop_public_key` wäre das
+zu weitgehend: mit ihnen liessen sich Zahlungen abwickeln bzw. der öffentliche
+Shop-Zugang übernehmen. Beide stehen deshalb jetzt in der Ausschlussliste neben
+`aag_online_token*`.
+
+Bearbeiten lassen sie sich trotzdem, ohne Sonderweg im Backend: `cleanData()`
+in `client-defaults.view.vue` übergeht leere Zeichenketten beim Speichern. Der
+Tab zeigt die beiden Felder also leer mit dem Hinweis „hinterlegt – leer lassen
+zum Behalten"; wer nichts einträgt, ändert nichts, wer etwas einträgt,
+überschreibt.
+
+Anmerkung für später: `aag_online_passwd`, `aag_online_passwd2` und
+`hgs_data_passwd` gehen weiterhin an den Browser. Das ist Bestand und war nicht
+Teil dieser Stufe — dasselbe Vorgehen liesse sich dort anwenden.
+
+### Nachgemessen
+
+- `npm run build` fehlerfrei, `npm run check:api` (167 Dateien) und
+  `npm run check:routes` ohne Beanstandung
+- `shopConfig()` gegen eine Wegwerf-Datenbank mit eingespieltem Shop-Schema:
+  28 Schlüssel, Typumwandlungen, Rückfallwerte, `SHOP_CONFIG_MISSING` bei
+  leerem Pflichtwert; ein zusätzlich angelegter Schlüssel `shopping_fremd` wird
+  nicht mitgelesen (die `LIKE`-Maskierung greift)
+- `DbhCompany::begin($pdo)` übernimmt die Verbindung, `begin()` liefert
+  danach dieselbe Instanz, ein zweites `begin($pdo)` wirft
+- Gegenprobe der Übersetzungen: alle 66 im Tab verwendeten Schlüssel sind in
+  allen 21 Sprachen vorhanden, keiner davon unbenutzt

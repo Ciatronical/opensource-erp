@@ -729,13 +729,29 @@ class DbhCompany {
     /**
      * Gibt die Singleton-Instanz zurück
      *
-     * @param PDO|null $pdo Optionales PDO-Objekt für die Verbindung
+     * Ohne $pdo wird die Firmen-Datenbank über die Sitzung des angemeldeten
+     * Mitarbeiters ermittelt (auth.session_oserp) — der Normalfall.
+     *
+     * Mit $pdo wird eine bereits aufgebaute Verbindung übernommen. Das braucht
+     * jeder Einstiegspunkt ohne Mitarbeiter-Sitzung, der den Mandanten anders
+     * auflöst: der öffentliche Zugang der Shop-Erweiterung über den
+     * Shop-Schlüssel, die Webhooks über ihr Secret. Die Fachfunktionen rufen
+     * anschliessend wie überall begin() ohne Argument.
+     *
+     * Die Verbindung lässt sich nur setzen, solange keine steht. Sie
+     * nachträglich austauschen zu wollen ist immer ein Programmierfehler —
+     * alle bereits gelesenen Daten stammten dann aus einer anderen Datenbank.
+     *
+     * @param PDO|null $pdo Bereits aufgebaute Verbindung zur Firmen-Datenbank
      * @return ApiDatabase
+     * @throws ApiError wenn $pdo übergeben wird, obwohl die Verbindung steht
      */
     public static function begin($pdo = null) {
+        if (null !== $pdo && null !== self::$instance) {
+            throw new ApiError("DB_ALREADY_CONNECTED", 'Die Verbindung zur Firmen-Datenbank steht bereits');
+        }
         if (null === self::$instance) {
-            $session = DbhAuth::begin();
-            self::$instance = new ApiDatabase($session->connectPDO());
+            self::$instance = new ApiDatabase($pdo ?? DbhAuth::begin()->connectPDO());
         }
         return self::$instance;
     }
