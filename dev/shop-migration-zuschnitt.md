@@ -278,10 +278,10 @@ vorhanden und geprüft sind, aber nie aufgerufen werden.
 | `enqueueShopBatchjob` | `batchjobEnqueue($db, $funktion, $partnumber, $param)` | neu |
 | `getWithdrawals` | `withdrawalsList($db, $filter)` | neu (siehe 4., Widerruf) |
 
-Alle mit `permit()` abgesichert. Vorschlag für die Rechte: `shop_view`
-(lesen), `shop_edit` (Artikeldaten, Weiterleitungen, Batchjobs),
-`shop_payment` (Zahlungsstände nachtragen). Die Shop-Einstellungen laufen über
-den bestehenden `defaults_oserp`-Mechanismus und dessen Rechte.
+Alle mit `permit()` abgesichert. Eigene Rechte braucht die Erweiterung nicht:
+kivitendo bringt `shop_order` (Bestellungen), `shop_part_edit`
+(Artikel-Shopdaten) und `edit_shop_config` (Einstellungen) bereits mit, und die
+Gruppe „Vollzugriff" hat sie. Nachgesehen in der Entwicklungsdatenbank.
 
 Die Kundenverwaltung des Shops braucht keine eigenen Aktionen: ein Shop-Kunde
 ist ein `customer`, also zuständig ist `backend/api/customer_vendor/`.

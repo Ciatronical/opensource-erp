@@ -56,15 +56,12 @@ Diese Teile der Bridge werden nicht portiert, sondern ersetzt:
 1. ~~**`DbhCompany::begin($pdo)` ignoriert seinen Parameter.**~~ Erledigt in
    Stufe 2: die Verbindung lässt sich jetzt übernehmen, ein Austausch bei
    stehender Verbindung wirft `DB_ALREADY_CONNECTED`.
-2. **Der Aktionsmechanismus kennt keine Grenzen.** `api.call.php:16` prüft nur
-   `function_exists()`, und `inc.php` lädt `auth.php` immer mit — `login`,
-   `logout`, `getClients`, `restoreSession`, `switchClient` wären damit in jedem
-   Modul erreichbar. Der öffentliche Einstiegspunkt bindet `inc.php` deshalb
-   nicht ein und führt eine Allowlist.
-3. **Namenskollision.** Von 55 Bridge-Funktionen kollidieren genau zwei mit
-   OSERP: `login` und `logout` (`shop.session.php:219`/`:227` gegen
-   `auth.php:84`/`:369`). Ohne Umbenennung auf `shopLogin`/`shopLogout` bricht
-   PHP beim Laden ab.
+2. ~~**Der Aktionsmechanismus kennt keine Grenzen.**~~ Erledigt in Stufe 4:
+   der öffentliche Einstiegspunkt bindet `inc.php` nicht ein und lässt nur die
+   Aktionen aus `shopPublicActions()` zu.
+3. ~~**Namenskollision `login`/`logout`.**~~ Erledigt in Stufe 4: die Aktionen
+   heißen `shopLogin`/`shopLogout`, die Fachfunktionen `shopLoginCustomer`/
+   `shopLogoutCustomer`.
 4. **Same-Origin.** `shop-ui` ruft `/shop-api/` same-origin auf, das
    Kontext-Cookie steht auf `SameSite=Strict`. Nach der Migration liegt die API
    auf der OSERP-Domain. Empfohlen: Reverse-Proxy im Shop-Docroot, dann bleibt
@@ -116,7 +113,7 @@ die reine Shop-Variante stand.
 | 1 | `backend/upstall/shop/` — Schema und `extension.json` | **erledigt** |
 | 2 | Einstellungen aus `defaults_oserp` lesen, Einstellungen-Tab, `DbhCompany::begin($pdo)` | **erledigt** |
 | 3 | Fachschicht: Kontext, Warenkorb, Konto, Suche | **erledigt** |
-| 4 | Beide Einstiegspunkte, Allowlist, `shopLogin`/`shopLogout` | offen |
+| 4 | Beide Einstiegspunkte, Allowlist, `shopLogin`/`shopLogout` | **erledigt** |
 | 5 | Rechnung und Zahlung auf Faktura, Print und E-Mail | offen |
 | 6 | `src/features/shop/` — Admin-Panel, Routen in 21 Sprachen | offen |
 | 7 | `shop-ui` auf das Antwortformat umstellen, Proxy einrichten | offen |
@@ -322,3 +319,100 @@ Zwei echte Fehler hat der Durchlauf aufgedeckt und sie sind behoben:
 Der Duplikat-Fall des neuen Index wurde eigens geprüft: drei überzählige
 Zeilen in zwei Warenkörben wurden zu den richtigen Mengen zusammengefasst
 (2+3+1 und 7+1), danach der Index angelegt.
+
+## Stufe 4 — was angelegt wurde
+
+### Die beiden Einstiegspunkte
+
+| Datei | Zugang |
+| --- | --- |
+| `backend/shop/index.php` | Kunden des Betreibers, anonym, Shop-Schlüssel |
+| `backend/api/shop/index.php` | Mitarbeiter, normale Sitzung, `permit()` |
+
+Der öffentliche Zugang liegt bewusst **neben** `backend/api/` und nicht darin:
+alles unter `api/` lädt über `inc.php` auch `auth.php`, und über den
+Aktionsmechanismus wären dann `login`, `logout`, `getClients`,
+`restoreSession` und `switchClient` von der Shop-Webseite aus erreichbar. Er
+liegt damit neben `backend/webhook/`, das aus demselben Grund dort steht.
+
+`backend/api/shop/public/bootstrap.php` trägt den Unterbau (Mandant, Cookie,
+Herkunftsprüfung, Verteiler), `public/actions.php` die 31 Aktionen.
+
+### `resultInfo` und `ApiError` herausgelöst
+
+Beide standen in `inc.php` — der Datei, die der öffentliche Zugang nicht laden
+darf. Sie stehen jetzt in `backend/api/error.php`, das `inc.php` als erstes
+einbindet. Für die übrigen Module ändert sich nichts.
+
+### Mandant ohne Sitzung
+
+Die Shop-Webseite weist sich mit dem Kopf `X-Shop-Key` aus; der Wert steht in
+`defaults_oserp.shop_public_key`. Gesucht wird wie in
+`backend/webhook/telegram.php`: über die Mandanten der Auth-Datenbank, Vergleich
+mit `hash_equals`, ein leerer Schlüssel wird nie angenommen.
+
+Den Kopf setzt sinnvollerweise der Reverse-Proxy im Shop-Docroot — dann sieht
+der Browser den Schlüssel nie. Das Beispiel steht im Kopf von
+`backend/shop/index.php`.
+
+Bei vielen Mandanten wird die Suche linear teuer, weil sie je Mandant eine
+Verbindung aufbaut. Bei der heutigen Größenordnung unkritisch; eine Zuordnung
+in der Auth-Datenbank wäre die Antwort, wenn es einmal viele werden.
+
+### Die Allowlist ist die Grenze
+
+`shopPublicActions()` nennt die zugelassenen Aktionen. Was dort nicht steht,
+ist nicht erreichbar — auch nicht, wenn die Funktion geladen ist. Damit wird
+eine neue Fachfunktion nicht dadurch öffentlich, dass jemand sie einbindet.
+
+### Cookie und Herkunft
+
+Ohne Eintrag in `shop_allowed_origins` läuft der Shop über einen Proxy unter
+derselben Adresse: keine Freigabe-Kopfzeilen, Cookie `SameSite=Strict`. Steht
+dort eine Adresse und die Anfrage kommt von ihr, werden die Freigaben gesetzt
+und das Cookie auf `SameSite=None; Secure` — sonst schickt der Browser es bei
+fremder Herkunft nicht mit. Eine nicht eingetragene Herkunft bekommt keine
+Kopfzeilen; der Browser bricht dann selbst ab, und die Antwort verrät nicht,
+welche Adressen zugelassen sind.
+
+Als Sitzungskennung wird nur die selbst vergebene Form angenommen (32
+Hexzeichen); alles andere wird ersetzt, damit fremde Werte nicht in der Tabelle
+landen.
+
+### Rechte
+
+Eigene Rechte braucht die Erweiterung nicht: kivitendo bringt `shop_order`,
+`shop_part_edit` und `edit_shop_config` bereits mit, und die Gruppe
+„Vollzugriff" hat sie. Nachgesehen in der Entwicklungsdatenbank.
+
+`getShopStatus` in `backend/api/shop/admin.php` prüft die Einrichtung und
+trennt dabei, was den Betrieb verhindert (fehlender Shop-Schlüssel,
+Versandartikel, Forderungskonto) von dem, was ihn nur einschränkt (kein
+Ansprechpartner, keine PayPal-Zugangsdaten, keine Artikel mit Shopdaten,
+Sandbox noch aktiv). Damit hält das Admin-Panel die Zusage ein, die der
+Kommentar im Schema beim Versandartikel gibt.
+
+### Nachgemessen
+
+42 Prüfungen über echtes HTTP gegen den eingebauten PHP-Webserver, mit eigenen
+Test-Datenbanken und eigener `settings.ini` — die Entwicklungskonfiguration
+blieb unangetastet, alles danach entfernt.
+
+- Ohne und mit falschem Shop-Schlüssel: HTTP 403, keine Nutzdaten, kein Cookie
+- `login`, `logout`, `getClients`, `restoreSession`, `switchClient` sind über
+  den öffentlichen Zugang **nicht** erreichbar, ebenso wenig die
+  Fachfunktionen (`cartAdd`, `customerRegister`, `shopConfigValue`, …), der
+  Mandantensucher selbst und die Admin-Aktion `getShopStatus`
+- Cookie wird gesetzt, ist `HttpOnly` und `SameSite=Strict`, bleibt über
+  Anfragen hinweg bestehen; ein unbrauchbarer Wert wird ersetzt
+- Warenkorb füllen und lesen, Konto anlegen, anmelden, abmelden — danach kein
+  Kontozugriff mehr
+- Erlaubte Herkunft bekommt die Freigaben und `SameSite=None; Secure`, eine
+  nicht eingetragene bekommt keine Kopfzeilen, `OPTIONS` antwortet mit 204
+- Einschleusversuch in der Suche bleibt folgenlos, die Artikel stehen danach
+  unverändert da
+
+Der Durchlauf hat außerdem bestätigt, dass `DbhCompany::begin($pdo)` beim
+zweiten Aufruf im selben Prozess wirft — im Betrieb ist ein Request ein
+Prozess, im ersten Testanlauf (mehrere Anfragen in einem Prozess) fiel es auf.
+Deshalb läuft der Test jetzt über echtes HTTP.

@@ -121,6 +121,8 @@ function shopContextStatus($db, string $uuid): array {
 /**
  * Meldet einen Shop-Kunden an
  *
+ * Heisst nicht shopLogin: so heisst die Aktion, die das shop-ui ruft.
+ *
  * Kundenkonten liegen in customer.user_password (bcrypt) und haben mit
  * auth.user nichts zu tun: ein Shop-Kunde ist kein Benutzer des ERP und
  * bekommt weder Rechte noch Zugang zum Admin-Panel.
@@ -138,7 +140,7 @@ function shopContextStatus($db, string $uuid): array {
  * @return array{customer_id: int}
  * @throws ApiError SHOP_CONTEXT_ERROR, ACCOUNT_NOT_FOUND, WRONG_PASSWORD
  */
-function shopLogin($db, string $uuid, string $email, string $password): array {
+function shopLoginCustomer($db, string $uuid, string $email, string $password): array {
     shopContextRequire($db, $uuid);
 
     $konto = $db->getOne(
@@ -182,7 +184,7 @@ function shopLogin($db, string $uuid, string $email, string $password): array {
  * @param string $uuid Wert des Kontext-Cookies
  * @return void
  */
-function shopLogout($db, string $uuid): void {
+function shopLogoutCustomer($db, string $uuid): void {
     $db->execute("DELETE FROM context_hugoshop WHERE uuid = :uuid", [':uuid' => $uuid]);
 }
 
