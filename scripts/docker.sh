@@ -680,11 +680,32 @@ cmd_demo_up() {
     success "Demo-Stack laeuft. DB wird bei jedem Restart neu geseeded."
 }
 
+# ------ php-fpm nach einem DB-Reset neu laden ------------------------------
+# database.php oeffnet die PDO-Verbindungen mit PDO::ATTR_PERSISTENT => true.
+# Die PHP-FPM-Worker halten sie ueber einen DB-Neustart hinweg fest und liefern
+# danach "SQLSTATE[HY000]: server closed the connection unexpectedly", bis sie
+# von selbst durchrotiert sind. SIGUSR2 an den Master erzwingt einen Graceful
+# Restart: alle Worker werden ersetzt, damit auch alle toten Verbindungen.
+#
+# Gezielt der Master, denn PID 1 im Web-Container ist Apache — ein Signal
+# dorthin wuerde den Webserver treffen.
+reload_php_fpm() {
+    if ! is_running "$WEB_CONTAINER"; then
+        return 0
+    fi
+    if docker exec "$WEB_CONTAINER" pkill -USR2 -f 'php-fpm: master process' 2>/dev/null; then
+        info "PHP-FPM neu geladen (persistente DB-Verbindungen verworfen)."
+    else
+        warn "PHP-FPM konnte nicht neu geladen werden - erste Requests koennen fehlschlagen."
+    fi
+}
+
 # ------ demo-restart-db ---------------------------------------------------
 cmd_demo_restart_db() {
     check_env
     info "Restart DB-Container -> Seed wird neu eingespielt..."
     dc_demo restart db
+    reload_php_fpm
     success "DB zurueckgesetzt."
 }
 
@@ -784,6 +805,7 @@ cmd_demo_idle_watch() {
 
     info "Idle ${idle}s >= ${idle_seconds}s - starte DB-Reset..."
     if dc_demo restart db; then
+        reload_php_fpm
         touch "$marker"
         success "Demo-DB zurueckgesetzt."
     else
