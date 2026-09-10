@@ -52,7 +52,7 @@
             </v-row>
 
             <!-- Checkbox -->
-            <v-row v-else-if="field.type === 'checkbox'" class="my-1">
+            <v-row v-else-if="field.type === 'checkbox'" class="my-4">
                 <v-col cols="12" md="6">
                     <v-checkbox
                         v-model="crmDefaults[field.name]"
@@ -75,7 +75,7 @@
             </v-row>
 
             <!-- Input / Password -->
-            <v-row v-else-if="field.type === 'input' || field.type === 'password'" class="my-1">
+            <v-row v-else-if="field.type === 'input' || field.type === 'password'" class="my-4">
                 <v-col cols="12" md="6">
                     <v-text-field
                         v-model="crmDefaults[field.name]"
@@ -101,7 +101,7 @@
             </v-row>
 
             <!-- Textarea -->
-            <v-row v-else-if="field.type === 'textarea'" class="my-1">
+            <v-row v-else-if="field.type === 'textarea'" class="my-4">
                 <v-col cols="12" md="8">
                     <v-textarea
                         v-model="crmDefaults[field.name]"
@@ -127,7 +127,7 @@
             </v-row>
 
             <!-- Select features -->
-            <v-row v-else-if="field.type === 'select'" class="my-1">
+            <v-row v-else-if="field.type === 'select'" class="my-4">
                 <v-col cols="12" md="6">
                     <v-select
                         v-model="crmDefaults[field.name]"
@@ -153,7 +153,7 @@
             </v-row>
 
             <!-- Hinweis mit klickbarem Link -->
-            <v-row v-else-if="field.type === 'info'" class="my-1">
+            <v-row v-else-if="field.type === 'info'" class="my-4">
                 <v-col cols="12" md="8">
                     <v-alert
                         type="info"
@@ -170,35 +170,35 @@
             </v-row>
 
             <!-- Custom Component (z.B. WhatsApp Templates) -->
-            <v-row v-else-if="field.type === 'component' && field.component === 'whatsapp-templates'" class="my-1">
+            <v-row v-else-if="field.type === 'component' && field.component === 'whatsapp-templates'" class="my-4">
                 <v-col cols="12">
                     <WhatsAppTemplatesConfig />
                 </v-col>
             </v-row>
 
             <!-- WhatsApp Profilbild -->
-            <v-row v-else-if="field.type === 'component' && field.component === 'whatsapp-profile-picture'" class="my-1">
+            <v-row v-else-if="field.type === 'component' && field.component === 'whatsapp-profile-picture'" class="my-4">
                 <v-col cols="12">
                     <WhatsAppProfilePictureConfig />
                 </v-col>
             </v-row>
 
             <!-- SumUp Reader koppeln -->
-            <v-row v-else-if="field.type === 'component' && field.component === 'sumup-reader-pairing'" class="my-1">
+            <v-row v-else-if="field.type === 'component' && field.component === 'sumup-reader-pairing'" class="my-4">
                 <v-col cols="12">
                     <SumupReaderPairingConfig />
                 </v-col>
             </v-row>
 
             <!-- eBay: Verbindung testen / Bestellungen abrufen / Status -->
-            <v-row v-else-if="field.type === 'component' && field.component === 'ebay-status'" class="my-1">
+            <v-row v-else-if="field.type === 'component' && field.component === 'ebay-status'" class="my-4">
                 <v-col cols="12">
                     <EbayStatusConfig />
                 </v-col>
             </v-row>
 
             <!-- Dynamic Select (Items aus company_config) -->
-            <v-row v-else-if="field.type === 'dynamic-select'" class="my-1">
+            <v-row v-else-if="field.type === 'dynamic-select'" class="my-4">
                 <v-col cols="12" md="6">
                     <v-select
                         v-model="crmDefaults[field.name]"
@@ -230,7 +230,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted, inject } from 'vue';
 import { useI18n } from 'vue-i18n';
 import axios from 'axios';
 import WhatsAppTemplatesConfig from './whatsapp-templates.config.vue';
@@ -323,11 +323,19 @@ function normalizeCrmDefaults() {
     });
 }
 
+/**
+ * Normalisieren, ohne dass die Elternansicht daraus eine Nutzeränderung macht
+ *
+ * Fallback für den Fall, dass der Tab außerhalb der Firmenkonfiguration
+ * eingebunden wird: dann läuft fn einfach ungeschuetzt.
+ */
+const ohneSpeichern = inject('ohneSpeichern', fn => fn());
+
 // Lade Config beim Mount
 onMounted(async () => {
     await loadConfigFile();
     if (!configError.value) {
-        normalizeCrmDefaults();
+        ohneSpeichern(normalizeCrmDefaults);
         loadDynamicSelectSources();
     }
 });

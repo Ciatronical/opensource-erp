@@ -102,7 +102,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, inject } from 'vue'
 import { useI18n } from 'vue-i18n'
 import ShopConfigField from './shop-config-field.component.vue'
 
@@ -176,10 +176,18 @@ function normalizeShopDefaults() {
     })
 }
 
+/**
+ * Normalisieren, ohne dass die Elternansicht daraus eine Nutzeränderung macht
+ *
+ * Fallback für den Fall, dass der Tab außerhalb der Firmenkonfiguration
+ * eingebunden wird: dann läuft fn einfach ungeschuetzt.
+ */
+const ohneSpeichern = inject('ohneSpeichern', fn => fn())
+
 onMounted(async () => {
     await loadConfigFile()
     if (!configError.value) {
-        normalizeShopDefaults()
+        ohneSpeichern(normalizeShopDefaults)
     }
 })
 

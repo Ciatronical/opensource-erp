@@ -8,7 +8,7 @@
 -->
 <template>
     <!-- Checkbox -->
-    <v-row v-if="field.type === 'checkbox'" class="my-1" :data-field-name="field.name">
+    <v-row v-if="field.type === 'checkbox'" class="my-4" :data-field-name="field.name">
         <v-col cols="12" md="6">
             <v-checkbox
                 v-model="werte[field.name]"
@@ -24,7 +24,7 @@
     </v-row>
 
     <!-- Eingabefeld / Passwort -->
-    <v-row v-else-if="field.type === 'input' || field.type === 'password'" class="my-1" :data-field-name="field.name">
+    <v-row v-else-if="field.type === 'input' || field.type === 'password'" class="my-4" :data-field-name="field.name">
         <v-col cols="12" md="6">
             <v-text-field
                 v-model="werte[field.name]"
@@ -46,7 +46,7 @@
     </v-row>
 
     <!-- Auswahl mit festen Werten -->
-    <v-row v-else-if="field.type === 'select'" class="my-1" :data-field-name="field.name">
+    <v-row v-else-if="field.type === 'select'" class="my-4" :data-field-name="field.name">
         <v-col cols="12" md="6">
             <v-select
                 v-model="werte[field.name]"
@@ -65,7 +65,7 @@
     </v-row>
 
     <!-- Auswahl aus company_config -->
-    <v-row v-else-if="field.type === 'dynamic-select'" class="my-1" :data-field-name="field.name">
+    <v-row v-else-if="field.type === 'dynamic-select'" class="my-4" :data-field-name="field.name">
         <v-col cols="12" md="6">
             <v-select
                 v-model="werte[field.name]"

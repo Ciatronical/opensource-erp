@@ -185,7 +185,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, inject } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { oserpStore } from '@/core/stores/oserp.store.js';
 
@@ -257,11 +257,19 @@ function normalizeLxcarsDefaults() {
     });
 }
 
+/**
+ * Normalisieren, ohne dass die Elternansicht daraus eine Nutzeränderung macht
+ *
+ * Fallback für den Fall, dass der Tab außerhalb der Firmenkonfiguration
+ * eingebunden wird: dann läuft fn einfach ungeschuetzt.
+ */
+const ohneSpeichern = inject('ohneSpeichern', fn => fn());
+
 // Lade Config beim Mount
 onMounted(async () => {
     await loadConfigFile();
     if (!configError.value) {
-        normalizeLxcarsDefaults();
+        ohneSpeichern(normalizeLxcarsDefaults);
     }
 });
 

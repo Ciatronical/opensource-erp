@@ -348,7 +348,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onUnmounted, nextTick, defineAsyncComponent } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted, nextTick, provide, defineAsyncComponent } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
 import { oserpStore } from '@/core/stores/oserp.store.js';
@@ -470,6 +470,7 @@ function _normalizeFeatureBool(v) {
 
 function onDataChange() {
     if (!initialLoaded) return;
+    if (normalisierung) return;
 
     // ANPR-Toggle abfangen
     const currentAnpr = crmDefaults.value.feature_anpr;
@@ -510,6 +511,31 @@ function triggerSave() {
         saveConfig();
     }, 500);
 }
+
+/**
+ * Führt fn aus, ohne dass der Deep Watcher daraus eine Nutzeränderung macht.
+ *
+ * Die Tabs wandeln beim Mounten die Werte aus der Datenbank in JavaScript-Typen
+ * ('t' -> true) und leeren die Passwortfelder. Das sind Schreibzugriffe auf
+ * crmDefaults — der Watcher kann sie nicht von einer Eingabe unterscheiden und
+ * hat bisher beim bloßen Öffnen eines Tabs gespeichert.
+ *
+ * Über provide erreichbar, weil die Tabs asynchron nachgeladen werden und
+ * nicht über Props verdrahtet sind.
+ */
+let normalisierung = false;
+
+function ohneSpeichern(fn) {
+    normalisierung = true;
+    try {
+        fn();
+    } finally {
+        // Deep Watcher laufen mit flush 'pre', also vor dem nächsten Rendern.
+        nextTick(() => { normalisierung = false; });
+    }
+}
+
+provide('ohneSpeichern', ohneSpeichern);
 
 watch(defaults, onDataChange, { deep: true });
 watch(crmDefaults, onDataChange, { deep: true });

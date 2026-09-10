@@ -1418,7 +1418,7 @@ sudo apt-get install -y libedgetpu1-std</pre>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick, inject } from 'vue'
 import { useI18n } from 'vue-i18n'
 import axios from 'axios'
 import * as toasts from '@/core/utils/toasts.js'
@@ -1431,16 +1431,27 @@ const props = defineProps({
 
 // --- Config-Felder ---
 const anprConfig = ref([])
+
+/**
+ * Normalisieren, ohne dass die Elternansicht daraus eine Nutzeränderung macht
+ *
+ * Fallback für den Fall, dass der Tab außerhalb der Firmenkonfiguration
+ * eingebunden wird: dann läuft fn einfach ungeschützt.
+ */
+const ohneSpeichern = inject('ohneSpeichern', fn => fn())
+
 onMounted(async () => {
     const config = await import('./anprDefaultsConfig.js')
     anprConfig.value = config.default || []
 
     // Checkboxen normalisieren
-    anprConfig.value.forEach(field => {
-        if (field.type === 'checkbox') {
-            const v = props.crmDefaults[field.name]
-            props.crmDefaults[field.name] = v === true || v === 'true' || v === 't' || v === '1' || v === 1
-        }
+    ohneSpeichern(() => {
+        anprConfig.value.forEach(field => {
+            if (field.type === 'checkbox') {
+                const v = props.crmDefaults[field.name]
+                props.crmDefaults[field.name] = v === true || v === 'true' || v === 't' || v === '1' || v === 1
+            }
+        })
     })
 
     checkServiceStatus()

@@ -121,7 +121,7 @@
                                         :min="cropScaleMin"
                                         :max="3"
                                         :step="0.01"
-                                        hide-details
+
                                         density="compact"
                                         @update:model-value="drawCrop"
                                     />
@@ -138,7 +138,6 @@
                                 density="compact"
                                 prepend-icon=""
                                 prepend-inner-icon="mdi-camera"
-                                hide-details
                                 @update:model-value="onLogoFileSelected"
                             />
                         </v-card-text>
@@ -385,7 +384,6 @@
                             v-model="item.printer_description"
                             variant="plain"
                             density="compact"
-                            hide-details
                             @blur="onPrinterBlur(item)"
                         />
                     </template>
@@ -396,7 +394,6 @@
                             v-model="item.printer_command"
                             variant="plain"
                             density="compact"
-                            hide-details
                             @blur="onPrinterBlur(item)"
                         />
                     </template>
@@ -407,7 +404,6 @@
                             v-model="item.template_code"
                             variant="plain"
                             density="compact"
-                            hide-details
                             @blur="onPrinterBlur(item)"
                         />
                     </template>
@@ -416,7 +412,6 @@
                     <template #item.hide_factura="{ item }">
                         <v-checkbox
                             v-model="item.hide_factura"
-                            hide-details
                             density="compact"
                             @update:model-value="onPrinterBlur(item)"
                         />
