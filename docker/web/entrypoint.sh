@@ -74,16 +74,75 @@ chown www-data:www-data "$SETTINGS_FILE"
 chmod 640 "$SETTINGS_FILE"
 
 # ── 3. Demo-Modus: DB-Snapshot erstellen ──
+# Der Snapshot ist die Vorlage für den Demo-Reset. Er darf den Containerstart
+# NICHT abbrechen: Ein harter Fehler an dieser Stelle führte zu einer endlosen
+# Restart-Schleife und damit zu 502 am Reverse-Proxy. Deshalb gilt hier:
+# auf die DB warten, pg_dump wiederholen, im Zweifel ohne frischen Snapshot
+# weiterstarten.
 if [ "${DEMO_MODE}" = "true" ]; then
     SNAPSHOT_FILE="/var/www/html/backend/data/demo_snapshot.sql"
-    echo "Demo-Modus: Erstelle Datenbank-Snapshot..."
-    PGPASSWORD="${POSTGRES_PASSWORD}" pg_dump \
-        -h db -p 5432 \
-        -U "${POSTGRES_USER}" \
-        --clean --if-exists \
-        "${DB_COMPANY_NAME:-oserp_company}" > "$SNAPSHOT_FILE"
-    chown www-data:www-data "$SNAPSHOT_FILE"
-    echo "Demo-Snapshot erstellt: $SNAPSHOT_FILE ($(du -h "$SNAPSHOT_FILE" | cut -f1))"
+    COMPANY_DB="${DB_COMPANY_NAME:-oserp_company}"
+    DB_WAIT_SECONDS="${DEMO_DB_WAIT_SECONDS:-180}"
+    DUMP_RETRIES="${DEMO_DUMP_RETRIES:-3}"
+
+    export PGPASSWORD="${POSTGRES_PASSWORD}"
+
+    # 3a. Auf die Company-DB warten.
+    # pg_isready genügt nicht: Während des Auto-Seeds nimmt Postgres bereits
+    # Verbindungen an, die Company-DB existiert aber noch nicht. Deshalb wird
+    # eine echte Verbindung zur Ziel-Datenbank getestet.
+    echo "Demo-Modus: Warte auf Datenbank '${COMPANY_DB}' (max. ${DB_WAIT_SECONDS}s)..."
+    db_ready=false
+    waited=0
+    while [ "$waited" -lt "$DB_WAIT_SECONDS" ]; do
+        if psql -h db -p 5432 -U "${POSTGRES_USER}" -d "$COMPANY_DB" \
+                -tAc 'SELECT 1' >/dev/null 2>&1; then
+            db_ready=true
+            break
+        fi
+        sleep 2
+        waited=$(( waited + 2 ))
+    done
+
+    if [ "$db_ready" != true ]; then
+        echo "WARNUNG: '${COMPANY_DB}' war nach ${DB_WAIT_SECONDS}s nicht erreichbar."
+        echo "         Container startet ohne frischen Snapshot weiter."
+    else
+        echo "Datenbank erreichbar nach ${waited}s. Erstelle Datenbank-Snapshot..."
+
+        # 3b. pg_dump mit Wiederholung. Der Dump landet zuerst in einer
+        # temporären Datei, damit ein Fehlversuch einen bereits vorhandenen
+        # Snapshot nicht überschreibt.
+        snapshot_ok=false
+        attempt=1
+        while [ "$attempt" -le "$DUMP_RETRIES" ]; do
+            if pg_dump -h db -p 5432 -U "${POSTGRES_USER}" \
+                    --clean --if-exists "$COMPANY_DB" \
+                    > "${SNAPSHOT_FILE}.tmp" 2>/tmp/pg_dump.err; then
+                mv "${SNAPSHOT_FILE}.tmp" "$SNAPSHOT_FILE"
+                snapshot_ok=true
+                break
+            fi
+            echo "pg_dump Versuch ${attempt}/${DUMP_RETRIES} fehlgeschlagen: $(tr '\n' ' ' < /tmp/pg_dump.err)"
+            rm -f "${SNAPSHOT_FILE}.tmp"
+            attempt=$(( attempt + 1 ))
+            if [ "$attempt" -le "$DUMP_RETRIES" ]; then sleep 3; fi
+        done
+
+        if [ "$snapshot_ok" = true ]; then
+            chown www-data:www-data "$SNAPSHOT_FILE"
+            echo "Demo-Snapshot erstellt: $SNAPSHOT_FILE ($(du -h "$SNAPSHOT_FILE" | cut -f1))"
+        else
+            echo "WARNUNG: Snapshot nach ${DUMP_RETRIES} Versuchen fehlgeschlagen."
+        fi
+    fi
+
+    if [ ! -f "$SNAPSHOT_FILE" ]; then
+        echo "WARNUNG: Kein Demo-Snapshot vorhanden — der Demo-Reset bleibt bis zum"
+        echo "         nächsten erfolgreichen Containerstart deaktiviert."
+    fi
+
+    unset PGPASSWORD
 fi
 
 # ── 4. PHP-FPM starten (Daemon-Modus) ──

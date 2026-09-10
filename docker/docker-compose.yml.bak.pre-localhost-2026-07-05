@@ -14,8 +14,8 @@ services:
     container_name: ${STACK_NAME:-oserp}-web
     restart: unless-stopped
     ports:
-      - "127.0.0.1:${WEB_HTTP_PORT:-8080}:80"
-      - "127.0.0.1:${WEB_HTTPS_PORT:-8443}:443"
+      - "${WEB_HTTP_PORT:-8080}:80"
+      - "${WEB_HTTPS_PORT:-8443}:443"
     environment:
       - DOMAIN=${DOMAIN}
       - CERTBOT_EMAIL=${CERTBOT_EMAIL}
@@ -37,9 +37,6 @@ services:
       - app_logs:/var/www/html/backend/log
       - app_backups:/var/www/html/backend/backups
       - apache_logs:/var/log/apache2
-    depends_on:
-      db:
-        condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "curl -sf http://localhost/ || exit 1"]
       interval: 30s
@@ -62,22 +59,17 @@ services:
     container_name: ${STACK_NAME:-oserp}-db
     restart: unless-stopped
     ports:
-      - "127.0.0.1:${DB_EXTERNAL_PORT:-5433}:5432"
+      - "${DB_EXTERNAL_PORT:-5433}:5432"
     environment:
       - POSTGRES_USER=${POSTGRES_USER:-postgres}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     volumes:
       - pg_data:/var/lib/postgresql/data
     healthcheck:
-      # -h 127.0.0.1 ist wichtig: Waehrend des Auto-Seeds (Demo-Overlay) laeuft
-      # Postgres nur auf dem Unix-Socket. Ohne -h waere der Container schon
-      # "healthy", bevor die Dumps eingespielt sind.
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -h 127.0.0.1"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
       interval: 5s
       timeout: 5s
       retries: 5
-      # Deckt die Seed-Dauer ab; Fehlschlaege zaehlen hier noch nicht als unhealthy.
-      start_period: 180s
     logging:
       driver: json-file
       options:

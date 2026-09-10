@@ -37,6 +37,8 @@ settings.ini.backup.*
 
 # Docker
 docker/.env
+# Marker des Demo-Reset (nur die mtime zaehlt) — reiner Laufzeitzustand pro Server
+docker/.demo-last-reset
 
 # Private Features
 special/

@@ -136,7 +136,8 @@ cmd_help() {
     echo "    backup              Datenbank-Backup erstellen (beide DBs)"
     echo ""
     echo -e "  ${BOLD}Demo-Modus (tmpfs + Auto-Seed):${NC}"
-    echo "                        Seed-Dateien in docker/db/init/ werden beim DB-Start eingespielt"
+    echo "                        Init-Skripte aus docker/db/init/ spielen beim DB-Start die"
+    echo "                        Dumps aus DEMO_AUTH_DUMP / DEMO_COMPANY_DUMP (docker/.env) ein"
     echo "    demo-up             Stack mit Demo-Overlay starten (DB laeuft im tmpfs)"
     echo "    demo-restart-db     DB-Container neu starten (spielt Seed neu ein)"
     echo "    demo-idle-watch     DB nur zuruecksetzen, wenn seit DEMO_INACTIVITY_MINUTES"
@@ -590,19 +591,89 @@ cmd_upstall() {
 }
 
 # ------ demo-up -----------------------------------------------------------
+# Prueft die Voraussetzungen des Demo-Overlays, bevor der Stack startet:
+#   1. Init-Skripte in docker/db/init/  (*.sh, *.sql, *.sql.gz)
+#   2. Dump-Dateien aus docker/.env     (werden nach /dumps/ eingehaengt)
+#   3. pg_data-Volume liegt im tmpfs    (sonst greift der Auto-Seed nicht)
 cmd_demo_up() {
     check_env
     if [[ ! -f "$DEMO_COMPOSE_FILE" ]]; then
         error "Demo-Overlay fehlt: $DEMO_COMPOSE_FILE"
         exit 1
     fi
-    if ! ls "$COMPOSE_DIR/db/init/"*.sql* >/dev/null 2>&1; then
-        warn "Keine Seed-Dateien in docker/db/init/ gefunden."
-        echo "  Zuerst ausfuehren: ./scripts/docker.sh generate-demo-seed"
-        echo ""
-        read -rp "Trotzdem starten (DB wird leer sein)? (ja/nein): " confirm
-        [[ "$confirm" == "ja" ]] || { info "Abgebrochen."; exit 0; }
+
+    # --yes / -y: keine Rueckfragen (fuer Cron und Deploy-Skripte)
+    local assume_yes=false
+    [[ "${1:-}" == "--yes" || "${1:-}" == "-y" ]] && assume_yes=true
+    # Ohne Terminal kann ohnehin niemand antworten
+    [[ -t 0 ]] || assume_yes=true
+
+    load_db_vars
+
+    # ── 1. Init-Skripte ──
+    # Postgres verarbeitet *.sql, *.sql.gz und *.sh alphabetisch. Die Dumps
+    # selbst liegen NICHT hier, sondern werden vom Overlay nach /dumps/
+    # eingehaengt und von den .sh-Skripten geladen.
+    if ! compgen -G "$COMPOSE_DIR/db/init/*.sql" >/dev/null \
+       && ! compgen -G "$COMPOSE_DIR/db/init/*.sql.gz" >/dev/null \
+       && ! compgen -G "$COMPOSE_DIR/db/init/*.sh" >/dev/null; then
+        error "Keine Init-Skripte in docker/db/init/ gefunden (*.sh, *.sql, *.sql.gz)."
+        echo "  Ohne Init-Skripte startet die DB leer und der Web-Container findet"
+        echo "  die Company-DB nicht."
+        exit 1
     fi
+
+    # ── 2. Dump-Dateien aus docker/.env ──
+    # Fehlt eine Quelldatei, legt Docker an dieser Stelle stillschweigend ein
+    # leeres Verzeichnis an — die DB bliebe leer, ohne dass es auffaellt.
+    local missing=0 var path
+    for var in DEMO_AUTH_DUMP DEMO_COMPANY_DUMP; do
+        path="${!var:-}"
+        if [[ -z "$path" ]]; then
+            error "$var fehlt in docker/.env"
+            missing=1
+        elif [[ ! -f "$path" ]]; then
+            error "$var zeigt auf eine nicht vorhandene Datei: $path"
+            missing=1
+        fi
+    done
+    if [[ -z "${DEMO_SCAN_DATA:-}" ]]; then
+        error "DEMO_SCAN_DATA fehlt in docker/.env"
+        missing=1
+    elif [[ ! -d "$DEMO_SCAN_DATA" ]]; then
+        error "DEMO_SCAN_DATA zeigt auf ein nicht vorhandenes Verzeichnis: $DEMO_SCAN_DATA"
+        missing=1
+    fi
+    if (( missing )); then
+        echo ""
+        echo "  Pfade in docker/.env korrigieren und erneut starten."
+        exit 1
+    fi
+
+    # ── 3. tmpfs-Volume ──
+    # Wurde der Stack einmal ohne Overlay gestartet, liegt ein normales
+    # local-Volume vor. Der Auto-Seed laeuft dann nie wieder an, weil das
+    # Datenverzeichnis einen Restart ueberlebt.
+    local vol
+    vol="$(get_stack_name)-pg-data"
+    if docker volume inspect "$vol" >/dev/null 2>&1 \
+       && [[ "$(docker volume inspect "$vol" --format '{{index .Options "type"}}' 2>/dev/null)" != "tmpfs" ]]; then
+        warn "Volume '$vol' ist kein tmpfs-Volume."
+        echo "  Der Stack lief vermutlich einmal ohne Demo-Overlay. Solange dieses"
+        echo "  Volume existiert, wird die Demo-DB beim Restart NICHT zurueckgesetzt."
+        echo ""
+        if [[ "$assume_yes" == true ]]; then
+            error "Nicht-interaktiv — bitte manuell entfernen:"
+            echo "    docker volume rm $vol"
+            exit 1
+        fi
+        read -rp "Volume jetzt entfernen und neu aufbauen? (ja/nein): " confirm
+        [[ "$confirm" == "ja" ]] || { info "Abgebrochen."; exit 0; }
+        dc_demo down
+        docker volume rm "$vol"
+        success "Volume entfernt."
+    fi
+
     info "Starte Stack im Demo-Modus (tmpfs + Auto-Seed)..."
     dc_demo up -d --build
     success "Demo-Stack laeuft. DB wird bei jedem Restart neu geseeded."
