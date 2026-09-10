@@ -66,6 +66,31 @@
             "markDone": "Merk som behandlet",
             "reopen": "Åpne igjen",
             "unmatched": "Fant ingen faktura for dette bestillingsnummeret"
+        },
+        "partCard": {
+            "title": "Butikk",
+            "listed": "Tilby i butikken",
+            "listedHint": "Bare varer med butikkopplysninger vises i butikkens søk.",
+            "category": "Kategori",
+            "hyperlink": "Produktside",
+            "hyperlinkHint": "Sti til produktsiden på butikkens nettsted, uten basisadresse. La stå tomt for å bruke forslaget.",
+            "openInShop": "Vis i butikken",
+            "breadcrumbs": "Navigasjonssti",
+            "breadcrumbsHint": "Trinn i butikkens navigasjon i rekkefølge; bekreft hvert med Enter.",
+            "images": "Bilder",
+            "imagesHint": "Filnavn på butikkens nettsted; bekreft hvert med Enter. Det første bildet er miniatyrbildet.",
+            "thumbnail": "Miniatyrbilde",
+            "technicalData": "Tekniske data",
+            "properties": "Egenskaper",
+            "downloads": "Nedlastinger",
+            "label": "Betegnelse",
+            "value": "Verdi",
+            "displayName": "Visningsnavn",
+            "file": "Fil",
+            "addRow": "Legg til rad",
+            "removeRow": "Fjern rad",
+            "saveError": "Butikkopplysningene kunne ikke lagres.",
+            "noPermission": "Du har ikke tillatelse til å endre butikkopplysninger."
         }
     }
 }

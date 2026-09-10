@@ -66,6 +66,31 @@
             "markDone": "Mark as processed",
             "reopen": "Reopen",
             "unmatched": "No invoice found for this order number"
+        },
+        "partCard": {
+            "title": "Shop",
+            "listed": "List in shop",
+            "listedHint": "Only articles with shop details appear in the shop search.",
+            "category": "Category",
+            "hyperlink": "Product page",
+            "hyperlinkHint": "Path of the product page on the shop website, without the base address. Leave empty to use the suggestion.",
+            "openInShop": "View in shop",
+            "breadcrumbs": "Navigation path",
+            "breadcrumbsHint": "Steps of the shop navigation in order; confirm each with Enter.",
+            "images": "Images",
+            "imagesHint": "File names on the shop website; confirm each with Enter. The first image is the thumbnail.",
+            "thumbnail": "Thumbnail",
+            "technicalData": "Technical data",
+            "properties": "Properties",
+            "downloads": "Downloads",
+            "label": "Label",
+            "value": "Value",
+            "displayName": "Display name",
+            "file": "File",
+            "addRow": "Add row",
+            "removeRow": "Remove row",
+            "saveError": "The shop details could not be saved.",
+            "noPermission": "You are not allowed to change shop details."
         }
     }
 }

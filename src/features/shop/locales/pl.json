@@ -66,6 +66,31 @@
             "markDone": "Oznacz jako załatwione",
             "reopen": "Otwórz ponownie",
             "unmatched": "Nie znaleziono faktury dla tego numeru zamówienia"
+        },
+        "partCard": {
+            "title": "Sklep",
+            "listed": "Oferuj w sklepie",
+            "listedHint": "W wyszukiwarce sklepu pojawiają się tylko artykuły z danymi sklepu.",
+            "category": "Kategoria",
+            "hyperlink": "Strona produktu",
+            "hyperlinkHint": "Ścieżka strony produktu w witrynie sklepu, bez adresu bazowego. Pozostaw puste, aby użyć propozycji.",
+            "openInShop": "Zobacz w sklepie",
+            "breadcrumbs": "Ścieżka nawigacji",
+            "breadcrumbsHint": "Kroki nawigacji sklepu w kolejności; każdy zatwierdź klawiszem Enter.",
+            "images": "Obrazy",
+            "imagesHint": "Nazwy plików w witrynie sklepu; każdą zatwierdź klawiszem Enter. Pierwszy obraz jest miniaturą.",
+            "thumbnail": "Miniatura",
+            "technicalData": "Dane techniczne",
+            "properties": "Właściwości",
+            "downloads": "Pliki do pobrania",
+            "label": "Nazwa",
+            "value": "Wartość",
+            "displayName": "Nazwa wyświetlana",
+            "file": "Plik",
+            "addRow": "Dodaj wiersz",
+            "removeRow": "Usuń wiersz",
+            "saveError": "Nie udało się zapisać danych sklepu.",
+            "noPermission": "Nie masz uprawnień do zmiany danych sklepu."
         }
     }
 }

@@ -66,6 +66,31 @@
             "markDone": "Markera som hanterad",
             "reopen": "Öppna igen",
             "unmatched": "Ingen faktura hittades för detta beställningsnummer"
+        },
+        "partCard": {
+            "title": "Butik",
+            "listed": "Erbjud i butiken",
+            "listedHint": "Endast artiklar med butiksuppgifter visas i butikens sökning.",
+            "category": "Kategori",
+            "hyperlink": "Produktsida",
+            "hyperlinkHint": "Sökväg till produktsidan på butikens webbplats, utan basadress. Lämna tomt för att använda förslaget.",
+            "openInShop": "Visa i butiken",
+            "breadcrumbs": "Navigeringsväg",
+            "breadcrumbsHint": "Steg i butikens navigering i ordning; bekräfta vart och ett med Enter.",
+            "images": "Bilder",
+            "imagesHint": "Filnamn på butikens webbplats; bekräfta vart och ett med Enter. Den första bilden är miniatyren.",
+            "thumbnail": "Miniatyr",
+            "technicalData": "Tekniska data",
+            "properties": "Egenskaper",
+            "downloads": "Nedladdningar",
+            "label": "Benämning",
+            "value": "Värde",
+            "displayName": "Visningsnamn",
+            "file": "Fil",
+            "addRow": "Lägg till rad",
+            "removeRow": "Ta bort rad",
+            "saveError": "Butiksuppgifterna kunde inte sparas.",
+            "noPermission": "Du har inte behörighet att ändra butiksuppgifter."
         }
     }
 }

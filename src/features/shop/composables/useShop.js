@@ -56,9 +56,21 @@ export function useShop() {
     const setWithdrawalProcessed = (id, processed) =>
         call('setShopWithdrawalProcessed', { id, processed })
 
+    /** Shop-Angaben eines Artikels; listed = steht im Shop */
+    const fetchPartShopData = (parts_id) => call('getPartShopData', { parts_id })
+
+    /** Speichert die Shop-Angaben — und nimmt den Artikel damit in den Shop */
+    const savePartShopData = (daten) => call('savePartShopData', daten)
+
+    /** Nimmt den Artikel aus dem Shop */
+    const deletePartShopData = (parts_id) => call('deletePartShopData', { parts_id })
+
     return {
         loading,
         error,
+        fetchPartShopData,
+        savePartShopData,
+        deletePartShopData,
         fetchStatus,
         fetchOrders,
         fetchPendingPayments,

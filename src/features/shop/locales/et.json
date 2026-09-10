@@ -66,6 +66,31 @@
             "markDone": "Märgi menetletuks",
             "reopen": "Ava uuesti",
             "unmatched": "Selle tellimuse numbriga arvet ei leitud"
+        },
+        "partCard": {
+            "title": "Pood",
+            "listed": "Paku poes",
+            "listedHint": "Poe otsingus kuvatakse ainult poeandmetega artikleid.",
+            "category": "Kategooria",
+            "hyperlink": "Tooteleht",
+            "hyperlinkHint": "Tootelehe tee poe veebisaidil ilma baasaadressita. Soovituse kasutamiseks jäta tühjaks.",
+            "openInShop": "Vaata poes",
+            "breadcrumbs": "Navigeerimistee",
+            "breadcrumbsHint": "Poe navigeerimise sammud järjekorras; kinnita igaüks Enteriga.",
+            "images": "Pildid",
+            "imagesHint": "Failinimed poe veebisaidil; kinnita igaüks Enteriga. Esimene pilt on eelvaatepilt.",
+            "thumbnail": "Eelvaatepilt",
+            "technicalData": "Tehnilised andmed",
+            "properties": "Omadused",
+            "downloads": "Allalaadimised",
+            "label": "Nimetus",
+            "value": "Väärtus",
+            "displayName": "Kuvatav nimi",
+            "file": "Fail",
+            "addRow": "Lisa rida",
+            "removeRow": "Eemalda rida",
+            "saveError": "Poeandmeid ei õnnestunud salvestada.",
+            "noPermission": "Teil puudub õigus poeandmeid muuta."
         }
     }
 }

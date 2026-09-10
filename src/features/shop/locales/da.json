@@ -66,6 +66,31 @@
             "markDone": "Marker som behandlet",
             "reopen": "Åbn igen",
             "unmatched": "Der blev ikke fundet nogen faktura til dette ordrenummer"
+        },
+        "partCard": {
+            "title": "Butik",
+            "listed": "Udbyd i butikken",
+            "listedHint": "Kun varer med butiksoplysninger vises i butikkens søgning.",
+            "category": "Kategori",
+            "hyperlink": "Produktside",
+            "hyperlinkHint": "Sti til produktsiden på butikkens websted, uden basisadresse. Lad feltet stå tomt for at bruge forslaget.",
+            "openInShop": "Vis i butikken",
+            "breadcrumbs": "Navigationssti",
+            "breadcrumbsHint": "Trin i butikkens navigation i rækkefølge; bekræft hvert med Enter.",
+            "images": "Billeder",
+            "imagesHint": "Filnavne på butikkens websted; bekræft hvert med Enter. Det første billede er miniaturen.",
+            "thumbnail": "Miniature",
+            "technicalData": "Tekniske data",
+            "properties": "Egenskaber",
+            "downloads": "Downloads",
+            "label": "Betegnelse",
+            "value": "Værdi",
+            "displayName": "Visningsnavn",
+            "file": "Fil",
+            "addRow": "Tilføj række",
+            "removeRow": "Fjern række",
+            "saveError": "Butiksoplysningerne kunne ikke gemmes.",
+            "noPermission": "Du har ikke tilladelse til at ændre butiksoplysninger."
         }
     }
 }

@@ -66,6 +66,31 @@
             "markDone": "Marquer comme traitée",
             "reopen": "Rouvrir",
             "unmatched": "Aucune facture trouvée pour ce numéro de commande"
+        },
+        "partCard": {
+            "title": "Boutique",
+            "listed": "Proposer dans la boutique",
+            "listedHint": "Seuls les articles avec des données boutique apparaissent dans la recherche de la boutique.",
+            "category": "Catégorie",
+            "hyperlink": "Page produit",
+            "hyperlinkHint": "Chemin de la page produit sur le site de la boutique, sans l'adresse de base. Laisser vide pour utiliser la suggestion.",
+            "openInShop": "Voir dans la boutique",
+            "breadcrumbs": "Chemin de navigation",
+            "breadcrumbsHint": "Étapes de la navigation de la boutique dans l'ordre ; valider chacune avec Entrée.",
+            "images": "Images",
+            "imagesHint": "Noms de fichiers sur le site de la boutique ; valider chacun avec Entrée. La première image sert de vignette.",
+            "thumbnail": "Vignette",
+            "technicalData": "Données techniques",
+            "properties": "Propriétés",
+            "downloads": "Téléchargements",
+            "label": "Désignation",
+            "value": "Valeur",
+            "displayName": "Nom affiché",
+            "file": "Fichier",
+            "addRow": "Ajouter une ligne",
+            "removeRow": "Supprimer la ligne",
+            "saveError": "Les données boutique n'ont pas pu être enregistrées.",
+            "noPermission": "Vous n'êtes pas autorisé à modifier les données boutique."
         }
     }
 }

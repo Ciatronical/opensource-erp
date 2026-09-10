@@ -189,32 +189,16 @@
                                 </v-col>
                             </v-row>
                         </v-card-text>
-
-                        <!-- Anlegen: erst danach gibt es den Artikel, und die Maske
-                             speichert wie gewohnt selbst -->
-                        <template v-if="isNewMode">
-                            <v-alert v-if="createError" type="error" variant="tonal" density="compact" class="mx-3 mb-2">
-                                {{ createError }}
-                            </v-alert>
-                            <v-divider />
-                            <v-card-actions class="px-3">
-                                <v-spacer />
-                                <v-btn variant="text" :to="{ name: 'article-list' }">
-                                    {{ t('ArticleEditView.cancel') }}
-                                </v-btn>
-                                <v-btn
-                                    color="primary"
-                                    variant="elevated"
-                                    prepend-icon="mdi-content-save"
-                                    :disabled="!canCreate"
-                                    :loading="creating"
-                                    @click="createArticle"
-                                >
-                                    {{ t('ArticleEditView.create') }}
-                                </v-btn>
-                            </v-card-actions>
-                        </template>
                     </v-card>
+
+                    <!-- Shop-Angaben: Komponente der Shop-Erweiterung, nur geladen,
+                         wenn sie aktiv ist -->
+                    <PartShopCard
+                        v-if="shopEnabled"
+                        ref="shopCard"
+                        :parts-id="isNewMode ? null : id"
+                        :suggested-link="shopLinkSuggestion"
+                    />
 
                     <!-- eBay-Artikel (nur wenn Feature aktiv und der Artikel angelegt ist) -->
                     <v-card v-if="ebayListingEnabled && !isNewMode" variant="outlined" class="mt-4">
@@ -292,6 +276,30 @@
                         </v-card-text>
                     </v-card>
 
+                    <!-- Anlegen: unter allen Karten, damit auch die Shop-Angaben davor
+                         stehen. Erst danach gibt es den Artikel, und die Maske
+                         speichert wie gewohnt selbst. -->
+                    <div v-if="isNewMode" class="mt-4">
+                        <v-alert v-if="createError" type="error" variant="tonal" density="compact" class="mb-2">
+                            {{ createError }}
+                        </v-alert>
+                        <div class="d-flex justify-end ga-2">
+                            <v-btn variant="text" :to="{ name: 'article-list' }">
+                                {{ t('ArticleEditView.cancel') }}
+                            </v-btn>
+                            <v-btn
+                                color="primary"
+                                variant="elevated"
+                                prepend-icon="mdi-content-save"
+                                :disabled="!canCreate"
+                                :loading="creating"
+                                @click="createArticle"
+                            >
+                                {{ t('ArticleEditView.create') }}
+                            </v-btn>
+                        </div>
+                    </div>
+
                 </v-col>
             </v-row>
         </div>
@@ -300,16 +308,19 @@
 </template>
 
 <script>
-import { defineComponent, ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { defineComponent, defineAsyncComponent, ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { oserpStore } from '@/core/stores/oserp.store.js'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
 import axios from 'axios'
 
+// Die Shop-Karte gehört zur Shop-Erweiterung: erst laden, wenn sie gebraucht wird
+const PartShopCard = defineAsyncComponent(() => import('@/features/shop/components/part-shop.card.vue'))
+
 export default defineComponent({
     name: 'ArticleEditView',
-    components: { NavbarView },
+    components: { NavbarView, PartShopCard },
     props: {
         // Ohne id: Neuanlage (Route article-new)
         id: { type: [String, Number], default: null }
@@ -593,6 +604,24 @@ export default defineComponent({
         const createError = ref('')
         const nextPartnumber = ref('')
 
+        // ── Shop (nur bei aktiver Erweiterung) ──
+
+        const shopEnabled = computed(() => oserp.isExtensionEnabled('shop'))
+        const shopCard = ref(null)
+
+        // Vorschlag für die Produktseite: Nummer und Beschreibung als Pfad aus
+        // Kleinbuchstaben, Ziffern und Bindestrichen — so wie die Produktseiten
+        // der bisherigen Shops heißen
+        const shopLinkSuggestion = computed(() => {
+            const nummer = String(article.value.partnumber || nextPartnumber.value || '')
+            return (nummer + ' ' + (article.value.description || ''))
+                .toLowerCase()
+                .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss')
+                .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/^-+|-+$/g, '')
+        })
+
         const requiredRule = v =>
             (v !== null && v !== undefined && String(v).trim() !== '') || t('ArticleEditView.messages.required')
 
@@ -670,7 +699,10 @@ export default defineComponent({
                 })
 
                 if (response.data?.success) {
-                    router.replace({ name: 'article-edit', params: { id: response.data.payload.parts_id } })
+                    const partsId = response.data.payload.parts_id
+                    // Shop-Angaben erst jetzt: vorher gab es keinen Artikel, an dem sie hängen
+                    if (shopCard.value?.saveFor) await shopCard.value.saveFor(partsId)
+                    router.replace({ name: 'article-edit', params: { id: partsId } })
                 } else {
                     createError.value = createErrorText(response.data?.text)
                 }
@@ -740,6 +772,10 @@ export default defineComponent({
             canCreate,
             createArticle,
             requiredRule,
+            // Shop
+            shopEnabled,
+            shopCard,
+            shopLinkSuggestion,
             // eBay
             ebayListingEnabled,
             ebayImages,

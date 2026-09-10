@@ -66,6 +66,31 @@
             "markDone": "Als afgehandeld markeren",
             "reopen": "Heropenen",
             "unmatched": "Geen factuur gevonden bij dit bestelnummer"
+        },
+        "partCard": {
+            "title": "Winkel",
+            "listed": "In de winkel aanbieden",
+            "listedHint": "Alleen artikelen met winkelgegevens verschijnen in de zoekfunctie van de winkel.",
+            "category": "Categorie",
+            "hyperlink": "Productpagina",
+            "hyperlinkHint": "Pad van de productpagina op de winkelwebsite, zonder basisadres. Leeg laten voor het voorstel.",
+            "openInShop": "In de winkel bekijken",
+            "breadcrumbs": "Navigatiepad",
+            "breadcrumbsHint": "Stappen van de winkelnavigatie in volgorde; elk met Enter bevestigen.",
+            "images": "Afbeeldingen",
+            "imagesHint": "Bestandsnamen op de winkelwebsite; elk met Enter bevestigen. De eerste afbeelding is de miniatuur.",
+            "thumbnail": "Miniatuur",
+            "technicalData": "Technische gegevens",
+            "properties": "Eigenschappen",
+            "downloads": "Downloads",
+            "label": "Omschrijving",
+            "value": "Waarde",
+            "displayName": "Weergavenaam",
+            "file": "Bestand",
+            "addRow": "Regel toevoegen",
+            "removeRow": "Regel verwijderen",
+            "saveError": "De winkelgegevens konden niet worden opgeslagen.",
+            "noPermission": "U hebt geen rechten om winkelgegevens te wijzigen."
         }
     }
 }

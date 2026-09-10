@@ -66,6 +66,31 @@
             "markDone": "Marchează ca rezolvat",
             "reopen": "Redeschide",
             "unmatched": "Nu s-a găsit nicio factură pentru acest număr de comandă"
+        },
+        "partCard": {
+            "title": "Magazin",
+            "listed": "Oferă în magazin",
+            "listedHint": "Doar articolele cu date de magazin apar în căutarea magazinului.",
+            "category": "Categorie",
+            "hyperlink": "Pagina produsului",
+            "hyperlinkHint": "Calea paginii produsului pe site-ul magazinului, fără adresa de bază. Lăsați gol pentru a folosi sugestia.",
+            "openInShop": "Vezi în magazin",
+            "breadcrumbs": "Cale de navigare",
+            "breadcrumbsHint": "Pașii navigării din magazin în ordine; confirmați fiecare cu Enter.",
+            "images": "Imagini",
+            "imagesHint": "Numele fișierelor de pe site-ul magazinului; confirmați fiecare cu Enter. Prima imagine este miniatura.",
+            "thumbnail": "Miniatură",
+            "technicalData": "Date tehnice",
+            "properties": "Proprietăți",
+            "downloads": "Descărcări",
+            "label": "Denumire",
+            "value": "Valoare",
+            "displayName": "Nume afișat",
+            "file": "Fișier",
+            "addRow": "Adaugă rând",
+            "removeRow": "Elimină rândul",
+            "saveError": "Datele de magazin nu au putut fi salvate.",
+            "noPermission": "Nu aveți dreptul să modificați datele de magazin."
         }
     }
 }

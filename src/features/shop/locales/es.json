@@ -66,6 +66,31 @@
             "markDone": "Marcar como tramitado",
             "reopen": "Reabrir",
             "unmatched": "No se encontró ninguna factura para este número de pedido"
+        },
+        "partCard": {
+            "title": "Tienda",
+            "listed": "Ofrecer en la tienda",
+            "listedHint": "Solo los artículos con datos de tienda aparecen en la búsqueda de la tienda.",
+            "category": "Categoría",
+            "hyperlink": "Página del producto",
+            "hyperlinkHint": "Ruta de la página del producto en el sitio web de la tienda, sin la dirección base. Déjelo vacío para usar la sugerencia.",
+            "openInShop": "Ver en la tienda",
+            "breadcrumbs": "Ruta de navegación",
+            "breadcrumbsHint": "Pasos de la navegación de la tienda en orden; confirme cada uno con Intro.",
+            "images": "Imágenes",
+            "imagesHint": "Nombres de archivo en el sitio web de la tienda; confirme cada uno con Intro. La primera imagen es la miniatura.",
+            "thumbnail": "Miniatura",
+            "technicalData": "Datos técnicos",
+            "properties": "Propiedades",
+            "downloads": "Descargas",
+            "label": "Denominación",
+            "value": "Valor",
+            "displayName": "Nombre visible",
+            "file": "Archivo",
+            "addRow": "Añadir fila",
+            "removeRow": "Quitar fila",
+            "saveError": "No se pudieron guardar los datos de tienda.",
+            "noPermission": "No tiene permiso para modificar los datos de tienda."
         }
     }
 }

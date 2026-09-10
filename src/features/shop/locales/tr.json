@@ -66,6 +66,31 @@
             "markDone": "İşlendi olarak işaretle",
             "reopen": "Yeniden aç",
             "unmatched": "Bu sipariş numarasına ait fatura bulunamadı"
+        },
+        "partCard": {
+            "title": "Mağaza",
+            "listed": "Mağazada sun",
+            "listedHint": "Mağaza aramasında yalnızca mağaza bilgileri olan ürünler görünür.",
+            "category": "Kategori",
+            "hyperlink": "Ürün sayfası",
+            "hyperlinkHint": "Mağaza web sitesindeki ürün sayfasının yolu, temel adres olmadan. Öneriyi kullanmak için boş bırakın.",
+            "openInShop": "Mağazada görüntüle",
+            "breadcrumbs": "Gezinme yolu",
+            "breadcrumbsHint": "Mağaza gezinmesinin adımları sırayla; her birini Enter ile onaylayın.",
+            "images": "Görseller",
+            "imagesHint": "Mağaza web sitesindeki dosya adları; her birini Enter ile onaylayın. İlk görsel küçük resimdir.",
+            "thumbnail": "Küçük resim",
+            "technicalData": "Teknik veriler",
+            "properties": "Özellikler",
+            "downloads": "İndirmeler",
+            "label": "Tanım",
+            "value": "Değer",
+            "displayName": "Görünen ad",
+            "file": "Dosya",
+            "addRow": "Satır ekle",
+            "removeRow": "Satırı kaldır",
+            "saveError": "Mağaza bilgileri kaydedilemedi.",
+            "noPermission": "Mağaza bilgilerini değiştirme yetkiniz yok."
         }
     }
 }

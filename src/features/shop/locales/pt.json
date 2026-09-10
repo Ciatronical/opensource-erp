@@ -66,6 +66,31 @@
             "markDone": "Marcar como tratado",
             "reopen": "Reabrir",
             "unmatched": "Não foi encontrada nenhuma fatura para este número de encomenda"
+        },
+        "partCard": {
+            "title": "Loja",
+            "listed": "Disponibilizar na loja",
+            "listedHint": "Apenas os artigos com dados de loja aparecem na pesquisa da loja.",
+            "category": "Categoria",
+            "hyperlink": "Página do produto",
+            "hyperlinkHint": "Caminho da página do produto no site da loja, sem o endereço base. Deixe vazio para usar a sugestão.",
+            "openInShop": "Ver na loja",
+            "breadcrumbs": "Caminho de navegação",
+            "breadcrumbsHint": "Etapas da navegação da loja por ordem; confirme cada uma com Enter.",
+            "images": "Imagens",
+            "imagesHint": "Nomes de ficheiro no site da loja; confirme cada um com Enter. A primeira imagem é a miniatura.",
+            "thumbnail": "Miniatura",
+            "technicalData": "Dados técnicos",
+            "properties": "Propriedades",
+            "downloads": "Transferências",
+            "label": "Designação",
+            "value": "Valor",
+            "displayName": "Nome apresentado",
+            "file": "Ficheiro",
+            "addRow": "Adicionar linha",
+            "removeRow": "Remover linha",
+            "saveError": "Não foi possível guardar os dados da loja.",
+            "noPermission": "Não tem permissão para alterar os dados da loja."
         }
     }
 }

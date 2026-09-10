@@ -66,6 +66,31 @@
             "markDone": "Segna come gestito",
             "reopen": "Riapri",
             "unmatched": "Nessuna fattura trovata per questo numero d'ordine"
+        },
+        "partCard": {
+            "title": "Negozio",
+            "listed": "Offrire nel negozio",
+            "listedHint": "Solo gli articoli con dati del negozio compaiono nella ricerca del negozio.",
+            "category": "Categoria",
+            "hyperlink": "Pagina prodotto",
+            "hyperlinkHint": "Percorso della pagina prodotto sul sito del negozio, senza l'indirizzo di base. Lasciare vuoto per usare il suggerimento.",
+            "openInShop": "Vedi nel negozio",
+            "breadcrumbs": "Percorso di navigazione",
+            "breadcrumbsHint": "Passi della navigazione del negozio in ordine; confermare ciascuno con Invio.",
+            "images": "Immagini",
+            "imagesHint": "Nomi dei file sul sito del negozio; confermare ciascuno con Invio. La prima immagine è l'anteprima.",
+            "thumbnail": "Anteprima",
+            "technicalData": "Dati tecnici",
+            "properties": "Proprietà",
+            "downloads": "Download",
+            "label": "Denominazione",
+            "value": "Valore",
+            "displayName": "Nome visualizzato",
+            "file": "File",
+            "addRow": "Aggiungi riga",
+            "removeRow": "Rimuovi riga",
+            "saveError": "Impossibile salvare i dati del negozio.",
+            "noPermission": "Non si dispone dell'autorizzazione per modificare i dati del negozio."
         }
     }
 }

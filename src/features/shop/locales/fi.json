@@ -66,6 +66,31 @@
             "markDone": "Merkitse käsitellyksi",
             "reopen": "Avaa uudelleen",
             "unmatched": "Tälle tilausnumerolle ei löytynyt laskua"
+        },
+        "partCard": {
+            "title": "Kauppa",
+            "listed": "Tarjoa kaupassa",
+            "listedHint": "Vain tuotteet, joilla on kauppatiedot, näkyvät kaupan haussa.",
+            "category": "Luokka",
+            "hyperlink": "Tuotesivu",
+            "hyperlinkHint": "Tuotesivun polku kaupan verkkosivustolla ilman perusosoitetta. Jätä tyhjäksi, niin ehdotusta käytetään.",
+            "openInShop": "Näytä kaupassa",
+            "breadcrumbs": "Navigointipolku",
+            "breadcrumbsHint": "Kaupan navigoinnin vaiheet järjestyksessä; vahvista kukin Enterillä.",
+            "images": "Kuvat",
+            "imagesHint": "Tiedostonimet kaupan verkkosivustolla; vahvista kukin Enterillä. Ensimmäinen kuva on esikatselukuva.",
+            "thumbnail": "Esikatselukuva",
+            "technicalData": "Tekniset tiedot",
+            "properties": "Ominaisuudet",
+            "downloads": "Lataukset",
+            "label": "Nimitys",
+            "value": "Arvo",
+            "displayName": "Näyttönimi",
+            "file": "Tiedosto",
+            "addRow": "Lisää rivi",
+            "removeRow": "Poista rivi",
+            "saveError": "Kauppatietoja ei voitu tallentaa.",
+            "noPermission": "Sinulla ei ole oikeutta muuttaa kauppatietoja."
         }
     }
 }

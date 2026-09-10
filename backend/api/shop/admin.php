@@ -215,6 +215,9 @@ function setShopWithdrawalProcessed($data) {
 /**
  * Shop-Angaben eines Artikels
  *
+ * listed sagt, ob es die Zeile in parts_ext gibt — nur dann findet die
+ * Shop-Suche den Artikel. Die übrigen Felder sind ohne Zeile leer.
+ *
  * @param array $data['parts_id'] Artikel
  * @return void
  * @testdata {"parts_id": 1}
@@ -225,6 +228,7 @@ function getPartShopData($data) {
 
     resultInfo(true, '', $db->getOne(
         "SELECT p.id AS parts_id, p.partnumber, p.description, TRUNC(p.sellprice, 2) AS sellprice,
+                (pe.id IS NOT NULL) AS listed,
                 pe.hugoshop_breadcrumbs, pe.hugoshop_technical_data, pe.hugoshop_properties,
                 pe.hugoshop_downloads, pe.hugoshop_images, pe.hugoshop_hyperlink,
                 pe.hugoshop_category
@@ -243,9 +247,9 @@ function getPartShopData($data) {
  * @param array $data['hyperlink'] Zielseite im Shop
  * @param array $data['breadcrumbs'] JSON-Array
  * @param array $data['images'] JSON-Array
- * @param array $data['technical_data'] JSON-Objekt
- * @param array $data['properties'] JSON-Objekt
- * @param array $data['downloads'] JSON-Array
+ * @param array $data['technical_data'] JSON-Objekt: Bezeichnung => Wert
+ * @param array $data['properties'] JSON-Objekt: Bezeichnung => Wert
+ * @param array $data['downloads'] JSON-Objekt: Anzeigename => Dateiname
  * @return void
  * @testdata {"parts_id": 1, "category": "Bremsen", "hyperlink": "bremsscheibe"}
  */
@@ -258,6 +262,10 @@ function savePartShopData($data) {
         resultInfo(false, 'VALIDATION_ERROR', null, 'parts_id fehlt');
         return;
     }
+
+    // Die drei Felder sind Objekte. Ohne JSON_FORCE_OBJECT würde ein leeres zu []
+    // und eines mit Schlüsseln "0", "1", … zu einer Liste.
+    $objekt = fn($wert) => json_encode(is_array($wert) ? $wert : [], JSON_FORCE_OBJECT);
 
     // Ein Vorgang: anlegen oder ändern, entschieden über den eindeutigen
     // Index auf parts_id.
@@ -282,11 +290,33 @@ function savePartShopData($data) {
             ':hyperlink'   => $data['hyperlink'] ?? null,
             ':breadcrumbs' => json_encode($data['breadcrumbs']    ?? []),
             ':images'      => json_encode($data['images']         ?? []),
-            ':technical'   => json_encode($data['technical_data'] ?? new stdClass()),
-            ':properties'  => json_encode($data['properties']     ?? new stdClass()),
-            ':downloads'   => json_encode($data['downloads']      ?? []),
+            ':technical'   => $objekt($data['technical_data'] ?? null),
+            ':properties'  => $objekt($data['properties']     ?? null),
+            ':downloads'   => $objekt($data['downloads']      ?? null),
         ]
     );
 
     resultInfo(true, 'PART_SHOP_DATA_SAVED');
+}
+
+/**
+ * Nimmt einen Artikel aus dem Shop
+ *
+ * Löscht seine Shop-Angaben; ohne sie findet die Shop-Suche ihn nicht mehr.
+ * Der Artikel selbst, Warenkörbe und Rechnungen bleiben unberührt.
+ *
+ * @param array $data['parts_id'] Artikel
+ * @return void
+ * @testdata {"parts_id": 1}
+ */
+function deletePartShopData($data) {
+    permit(['shop_part_edit', 'edit_shop_config'], false);
+    $db = DbhCompany::begin();
+
+    $db->execute(
+        "DELETE FROM parts_ext WHERE parts_id = :parts_id",
+        [':parts_id' => (int)($data['parts_id'] ?? 0)]
+    );
+
+    resultInfo(true, 'PART_SHOP_DATA_REMOVED');
 }

@@ -66,6 +66,31 @@
             "markDone": "Označit jako vyřízené",
             "reopen": "Znovu otevřít",
             "unmatched": "K tomuto číslu objednávky nebyla nalezena faktura"
+        },
+        "partCard": {
+            "title": "Obchod",
+            "listed": "Nabízet v obchodě",
+            "listedHint": "Ve vyhledávání obchodu se zobrazují jen artikly s údaji pro obchod.",
+            "category": "Kategorie",
+            "hyperlink": "Stránka produktu",
+            "hyperlinkHint": "Cesta ke stránce produktu na webu obchodu, bez základní adresy. Ponechte prázdné pro použití návrhu.",
+            "openInShop": "Zobrazit v obchodě",
+            "breadcrumbs": "Navigační cesta",
+            "breadcrumbsHint": "Kroky navigace obchodu v pořadí; každý potvrďte klávesou Enter.",
+            "images": "Obrázky",
+            "imagesHint": "Názvy souborů na webu obchodu; každý potvrďte klávesou Enter. První obrázek je náhled.",
+            "thumbnail": "Náhled",
+            "technicalData": "Technické údaje",
+            "properties": "Vlastnosti",
+            "downloads": "Ke stažení",
+            "label": "Označení",
+            "value": "Hodnota",
+            "displayName": "Zobrazovaný název",
+            "file": "Soubor",
+            "addRow": "Přidat řádek",
+            "removeRow": "Odebrat řádek",
+            "saveError": "Údaje pro obchod se nepodařilo uložit.",
+            "noPermission": "Nemáte oprávnění měnit údaje pro obchod."
         }
     }
 }

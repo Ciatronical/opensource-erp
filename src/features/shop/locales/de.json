@@ -66,6 +66,31 @@
             "markDone": "Als bearbeitet vormerken",
             "reopen": "Wieder öffnen",
             "unmatched": "Zu dieser Bestellnummer wurde keine Rechnung gefunden"
+        },
+        "partCard": {
+            "title": "Shop",
+            "listed": "Im Shop anbieten",
+            "listedHint": "Nur Artikel mit Shop-Angaben erscheinen in der Suche des Shops.",
+            "category": "Kategorie",
+            "hyperlink": "Produktseite",
+            "hyperlinkHint": "Pfad der Produktseite auf der Shop-Webseite, ohne Basisadresse. Leer lassen für den Vorschlag.",
+            "openInShop": "Im Shop ansehen",
+            "breadcrumbs": "Navigationspfad",
+            "breadcrumbsHint": "Stationen der Shop-Navigation in ihrer Reihenfolge, jeweils mit Enter übernehmen.",
+            "images": "Bilder",
+            "imagesHint": "Dateinamen auf der Shop-Webseite, jeweils mit Enter übernehmen. Das erste Bild ist das Vorschaubild.",
+            "thumbnail": "Vorschaubild",
+            "technicalData": "Technische Daten",
+            "properties": "Eigenschaften",
+            "downloads": "Downloads",
+            "label": "Bezeichnung",
+            "value": "Wert",
+            "displayName": "Anzeigename",
+            "file": "Datei",
+            "addRow": "Zeile hinzufügen",
+            "removeRow": "Zeile entfernen",
+            "saveError": "Die Shop-Angaben konnten nicht gespeichert werden.",
+            "noPermission": "Keine Berechtigung, Shop-Angaben zu ändern."
         }
     }
 }

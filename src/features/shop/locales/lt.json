@@ -66,6 +66,31 @@
             "markDone": "Žymėti kaip išspręstą",
             "reopen": "Atverti iš naujo",
             "unmatched": "Pagal šį užsakymo numerį sąskaitos nerasta"
+        },
+        "partCard": {
+            "title": "Parduotuvė",
+            "listed": "Siūlyti parduotuvėje",
+            "listedHint": "Parduotuvės paieškoje rodomos tik prekės su parduotuvės duomenimis.",
+            "category": "Kategorija",
+            "hyperlink": "Prekės puslapis",
+            "hyperlinkHint": "Prekės puslapio kelias parduotuvės svetainėje be bazinio adreso. Palikite tuščią, kad būtų naudojamas pasiūlymas.",
+            "openInShop": "Žiūrėti parduotuvėje",
+            "breadcrumbs": "Naršymo kelias",
+            "breadcrumbsHint": "Parduotuvės naršymo žingsniai iš eilės; kiekvieną patvirtinkite klavišu Enter.",
+            "images": "Paveikslėliai",
+            "imagesHint": "Failų pavadinimai parduotuvės svetainėje; kiekvieną patvirtinkite klavišu Enter. Pirmasis paveikslėlis yra miniatiūra.",
+            "thumbnail": "Miniatiūra",
+            "technicalData": "Techniniai duomenys",
+            "properties": "Savybės",
+            "downloads": "Atsisiuntimai",
+            "label": "Pavadinimas",
+            "value": "Reikšmė",
+            "displayName": "Rodomas pavadinimas",
+            "file": "Failas",
+            "addRow": "Pridėti eilutę",
+            "removeRow": "Pašalinti eilutę",
+            "saveError": "Parduotuvės duomenų išsaugoti nepavyko.",
+            "noPermission": "Neturite teisės keisti parduotuvės duomenų."
         }
     }
 }

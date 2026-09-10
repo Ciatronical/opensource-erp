@@ -107,7 +107,7 @@ die reine Shop-Variante stand.
 | 3 | Fachschicht: Kontext, Warenkorb, Konto, Suche | **erledigt** |
 | 4 | Beide Einstiegspunkte, Allowlist, `shopLogin`/`shopLogout` | **erledigt** |
 | 5 | Rechnung und Zahlung auf Faktura, Print und E-Mail | **erledigt**, PDF/Mail/PayPal ungeprüft |
-| 6 | `src/features/shop/` — Admin-Panel, Routen in 21 Sprachen | **erledigt**, Artikel-Shopdaten offen |
+| 6 | `src/features/shop/` — Admin-Panel, Routen in 21 Sprachen | **erledigt** |
 | 7 | `shop-ui` auf das Antwortformat umstellen, Proxy einrichten | **erledigt** |
 
 Nach Stufe 5 ist der Shop lauffähig, nach Stufe 6 verwaltbar.
@@ -636,11 +636,49 @@ sagt, dass bestätigte Zahlungen damit vermerkt, aber nicht gebucht sind.
 
 ### Noch offen
 
-**Artikel-Shopdaten.** Die Aktionen `getPartShopData` und `savePartShopData`
-stehen im Backend, eine Oberfläche dafür fehlt. Sinnvoller als eine eigene
-Ansicht wäre eine Karte in der Artikelmaske — dort sucht man den Artikel
-ohnehin. Das berührt allerdings Kernbestand und gehört deshalb bewusst
-entschieden.
+**Artikel-Shopdaten** — inzwischen erledigt, siehe den folgenden Abschnitt.
+
+### Artikel-Shopdaten in der Artikelmaske
+
+Voraussetzung war, dass der Kern Artikel überhaupt anlegen kann: die
+Artikelmaske (`src/core/views/article/article.edit.view.vue`) hat dafür einen
+Neu-Modus unter der Route `article-new` bekommen, erreichbar über
+Stammdaten → „Neuen Artikel anlegen" und die Artikelliste. `createPart` prüft
+eine vorgegebene Artikelnummer jetzt selbst (`PARTNUMBER_EXISTS`).
+
+Die Shop-Angaben stehen in einer Karte der Erweiterung
+(`src/features/shop/components/part-shop.card.vue`). Die Artikelmaske lädt sie
+per `defineAsyncComponent` nur bei aktiver Shop-Erweiterung — wie der Router die
+Shop-Ansichten.
+
+- **„Im Shop anbieten"** entscheidet über die `parts_ext`-Zeile. Nur Artikel
+  mit Zeile findet die Shop-Suche (`JOIN`). Ohne diesen Schalter hätte jede
+  Bearbeitung bei aktivem Shop eine Zeile angelegt. Ausschalten löscht die
+  Zeile über die neue Aktion `deletePartShopData`; Warenkorb und Rechnungen
+  verknüpfen per `LEFT JOIN` und behalten ihre Positionen.
+- **Bearbeiten:** die Karte lädt selbst (`getPartShopData` meldet jetzt
+  `listed`) und speichert Änderungen nach 800 ms; gleiche Daten werden nicht
+  erneut gesendet.
+- **Neuanlage:** „Im Shop anbieten" ist eingeschaltet — wer bei aktivem Shop
+  einen Artikel anlegt, meint ihn in der Regel für den Shop. Die Karte sammelt
+  nur; die Maske ruft nach `createPart` `saveFor(neueId)` auf, und erst dann
+  wechselt die Route auf `article-edit`. Vorhandene Artikel zeigen den
+  gespeicherten Stand.
+- **Produktseite:** leer bedeutet den Vorschlag der Maske — Nummer und
+  Beschreibung als Pfad aus Kleinbuchstaben, Ziffern und Bindestrichen, wie die
+  Produktseiten der bisherigen Shops heißen. Mit `shop_products_link` zeigt die
+  Karte einen Link auf die Seite, mit `shop_thumbnails_link` Bildvorschauen.
+- **Technische Daten, Eigenschaften, Downloads** sind Objekte aus Bezeichnung
+  und Wert (Downloads: Anzeigename → Dateiname, so auch in den Daten der
+  Bridge). `savePartShopData` speichert sie mit `JSON_FORCE_OBJECT`, damit ein
+  leeres nicht als `[]` ankommt. Der Spaltenkommentar sprach bei den Downloads
+  von einem Array und ist korrigiert.
+- **Rechte:** bearbeitbar mit `shop_part_edit` oder `edit_shop_config`, sonst
+  nur lesbar.
+
+Nicht im Browser gesehen, und die Abfragen nicht gegen eine Datenbank
+ausgeführt. Geprüft sind Syntax, Übersetzbarkeit der Vue-Dateien, `check:api`
+und die Vollständigkeit der Texte in allen 21 Sprachen.
 
 **Die Ansichten sind nicht im laufenden System gesehen worden.** Geprüft sind
 Übersetzung, Routen und Build; wie sie sich mit echten Daten anfühlen, zeigt

@@ -66,6 +66,31 @@
             "markDone": "标记为已处理",
             "reopen": "重新打开",
             "unmatched": "未找到该订单号对应的发票"
+        },
+        "partCard": {
+            "title": "商店",
+            "listed": "在商店中上架",
+            "listedHint": "只有带商店信息的商品才会出现在商店搜索中。",
+            "category": "类别",
+            "hyperlink": "商品页面",
+            "hyperlinkHint": "商品页面在商店网站上的路径，不含基础地址。留空则使用建议值。",
+            "openInShop": "在商店中查看",
+            "breadcrumbs": "导航路径",
+            "breadcrumbsHint": "商店导航的各级，按顺序输入，每项按回车确认。",
+            "images": "图片",
+            "imagesHint": "商店网站上的文件名，每项按回车确认。第一张图片为缩略图。",
+            "thumbnail": "缩略图",
+            "technicalData": "技术数据",
+            "properties": "属性",
+            "downloads": "下载",
+            "label": "名称",
+            "value": "值",
+            "displayName": "显示名称",
+            "file": "文件",
+            "addRow": "添加行",
+            "removeRow": "删除行",
+            "saveError": "无法保存商店信息。",
+            "noPermission": "您没有修改商店信息的权限。"
         }
     }
 }

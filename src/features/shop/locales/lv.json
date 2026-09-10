@@ -66,6 +66,31 @@
             "markDone": "Atzīmēt kā apstrādātu",
             "reopen": "Atvērt no jauna",
             "unmatched": "Šim pasūtījuma numuram rēķins netika atrasts"
+        },
+        "partCard": {
+            "title": "Veikals",
+            "listed": "Piedāvāt veikalā",
+            "listedHint": "Veikala meklēšanā tiek rādītas tikai preces ar veikala datiem.",
+            "category": "Kategorija",
+            "hyperlink": "Produkta lapa",
+            "hyperlinkHint": "Produkta lapas ceļš veikala tīmekļa vietnē bez bāzes adreses. Atstājiet tukšu, lai izmantotu ieteikumu.",
+            "openInShop": "Skatīt veikalā",
+            "breadcrumbs": "Navigācijas ceļš",
+            "breadcrumbsHint": "Veikala navigācijas soļi secībā; katru apstipriniet ar Enter.",
+            "images": "Attēli",
+            "imagesHint": "Failu nosaukumi veikala tīmekļa vietnē; katru apstipriniet ar Enter. Pirmais attēls ir sīktēls.",
+            "thumbnail": "Sīktēls",
+            "technicalData": "Tehniskie dati",
+            "properties": "Īpašības",
+            "downloads": "Lejupielādes",
+            "label": "Nosaukums",
+            "value": "Vērtība",
+            "displayName": "Parādāmais nosaukums",
+            "file": "Fails",
+            "addRow": "Pievienot rindu",
+            "removeRow": "Noņemt rindu",
+            "saveError": "Veikala datus neizdevās saglabāt.",
+            "noPermission": "Jums nav tiesību mainīt veikala datus."
         }
     }
 }
