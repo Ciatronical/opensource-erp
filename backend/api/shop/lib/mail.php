@@ -187,7 +187,7 @@ function shopSendContactMail($db, array $daten): bool {
 
     $empfaenger = shopConfigValue($db, 'shop_withdrawal_mail_to');
     if ('' === $empfaenger) {
-        throw new ApiError('SHOP_CONFIG_MISSING', "Die Shop-Einstellung 'shop_withdrawal_mail_to' ist nicht gesetzt");
+        throw new ApiError('SHOP_CONFIG_MISSING', "Die Shop-Einstellung '".shopConfigLabel('shop_withdrawal_mail_to')."' ist nicht gesetzt");
     }
 
     $mailer = shopMailer($db);

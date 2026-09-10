@@ -76,3 +76,18 @@ dev/carparts-cat-docs/
 
 #Github Verzeichnis ausschließen
 .github/
+
+# Persönliche Shell- und Git-Dateien gehören nie ins Projekt
+/.bash_profile
+/.bashrc
+/.gitconfig
+/.profile
+/.ripgreprc
+/.zprofile
+/.zshrc
+
+# Claude Code: persönliche Einstellungen und Notizen.
+# Gemeinsame Dateien (.claude/settings.json, commands, skills, agents, hooks,
+# .mcp.json) werden bewusst NICHT ausgeschlossen — darüber teilt das Team sie.
+.claude/settings.local.json
+CLAUDE.local.md

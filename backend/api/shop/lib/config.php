@@ -67,11 +67,38 @@ function shopConfigValue($db, string $key, string $default = ''): string {
 }
 
 /**
+ * Die Beschriftung eines Einstellungsfeldes, wie sie im Einstellungen-Tab steht
+ *
+ * Für Fehlermeldungen: mit 'shop_paypal_sandbox_client_id' kann nur ein
+ * Entwickler etwas anfangen, der Benutzer sucht nach dem Feld, das er auf dem
+ * Bildschirm sieht. Die Texte entsprechen crm_fields in
+ * src/core/views/config/locales/de.json — ändert sich dort eine Beschriftung,
+ * gehört sie hier nachgezogen.
+ *
+ * Enthalten sind nur die Schlüssel, die als Pflichtwert abgefragt werden.
+ * Für alle anderen kommt der Schlüssel zurück.
+ *
+ * @param string $key Schlüssel, z.B. 'shop_paypal_sandbox_client_id'
+ * @return string
+ */
+function shopConfigLabel(string $key): string {
+    static $beschriftung = [
+        'shop_paypal_sandbox_client_id' => 'PayPal Client-ID (Testumgebung)',
+        'shop_paypal_sandbox_secret'    => 'PayPal Secret (Testumgebung)',
+        'shop_paypal_live_client_id'    => 'PayPal Client-ID (Echtbetrieb)',
+        'shop_paypal_live_secret'       => 'PayPal Secret (Echtbetrieb)',
+        'shop_base_url'                 => 'Adresse der Shop-Webseite',
+        'shop_withdrawal_mail_to'       => 'E-Mail-Adresse für Widerrufe',
+    ];
+    return $beschriftung[$key] ?? $key;
+}
+
+/**
  * Ein Einstellungswert, der gesetzt sein muss
  *
  * Für Werte, ohne die der Vorgang nicht sinnvoll weiterlaufen kann — die
  * PayPal-Zugangsdaten etwa. Ein leerer Wert ist dort kein Standardfall,
- * sondern eine unfertige Einrichtung, und die Meldung nennt den Schlüssel.
+ * sondern eine unfertige Einrichtung, und die Meldung nennt das Feld.
  *
  * @param object $db Company-Datenbankverbindung
  * @param string $key Schlüssel
@@ -81,9 +108,10 @@ function shopConfigValue($db, string $key, string $default = ''): string {
 function shopConfigRequire($db, string $key): string {
     $wert = shopConfigValue($db, $key);
     if ('' === $wert) {
+        $feld = shopConfigLabel($key);
         throw new ApiError(
             "SHOP_CONFIG_MISSING",
-            "Die Shop-Einstellung '$key' ist nicht gesetzt (Einstellungen -> Erweiterungen -> Shop)"
+            "Die Shop-Einstellung '$feld' ist nicht gesetzt (Einstellungen -> Erweiterungen -> Shop)"
         );
     }
     return $wert;
