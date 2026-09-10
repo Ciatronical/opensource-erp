@@ -56,7 +56,8 @@
         "mechanicCar": "/mekaniker/fordon",
         "privacy": "/integritet",
         "dataDeletion": "/dataradering",
-        "tafel": "/anslagstavla/hantera"
+        "tafel": "/anslagstavla/hantera",
+        "newArticle": "/artikel/ny"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Fel: Losenordsfilen api/config/api.passwd.php hittades inte. Byt namn pa filen api/config/api.passwd.php.example till api/config/api.passwd.php och anpassa installningarna.",
@@ -70,7 +71,8 @@
         "search": "Sok",
         "searchCustomers": "Sok kunder",
         "newVendor": "Skapa ny leverantor",
-        "calendar": "Kalender"
+        "calendar": "Kalender",
+        "newArticle": "Skapa ny artikel"
     },
     "ContactMenu": {
         "title": "Kontakt",

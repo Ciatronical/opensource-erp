@@ -56,7 +56,8 @@
         "mechanicCar": "/mehanikis/transportlidzeklis",
         "privacy": "/privatums",
         "dataDeletion": "/datu-dzesana",
-        "tafel": "/zinojumu-delis/parvaldiba"
+        "tafel": "/zinojumu-delis/parvaldiba",
+        "newArticle": "/prece/jauns"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Kluda: Paroles fails api/config/api.passwd.php nav atrasts. Ludzu pardevejiet failu api/config/api.passwd.php.example par api/config/api.passwd.php un pielagojiet iestatijumus.",
@@ -70,7 +71,8 @@
         "search": "Meklet",
         "searchCustomers": "Meklet klientus",
         "newVendor": "Izveidot jaunu piegadataju",
-        "calendar": "Kalendars"
+        "calendar": "Kalendars",
+        "newArticle": "Izveidot jaunu preci"
     },
     "ContactMenu": {
         "title": "Kontakts",

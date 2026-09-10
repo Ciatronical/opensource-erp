@@ -16,12 +16,20 @@
             "buchungsgruppe": "Muhasebe grubu",
             "sellprice": "Satis fiyati",
             "notes": "Uzun aciklama",
-            "obsolete": "Eski / Kullanilmasin"
+            "obsolete": "Eski / Kullanilmasin",
+            "partnumberHint": "Sonraki boş numaranın atanması için boş bırakın"
         },
         "messages": {
             "loading": "Urun yukleniyor",
             "loadError": "Urun yuklenirken hata",
-            "notFound": "Urun bulunamadi"
-        }
+            "notFound": "Urun bulunamadi",
+            "createError": "Ürün oluşturulamadı.",
+            "noPermission": "Ürün oluşturma yetkiniz yok.",
+            "partnumberExists": "Bu ürün numarası zaten kullanılıyor.",
+            "required": "Zorunlu alan"
+        },
+        "titleNew": "Ürün oluştur",
+        "create": "Oluştur",
+        "cancel": "İptal"
     }
 }

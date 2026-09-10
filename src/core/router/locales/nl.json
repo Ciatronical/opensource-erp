@@ -56,7 +56,8 @@
         "mechanicCar": "/monteur/voertuig",
         "privacy": "/privacy",
         "dataDeletion": "/gegevensverwijdering",
-        "tafel": "/prikbord/beheer"
+        "tafel": "/prikbord/beheer",
+        "newArticle": "/artikel/nieuw"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Fout: Het wachtwoordbestand api/config/api.passwd.php is niet gevonden. Hernoem het bestand api/config/api.passwd.php.example naar api/config/api.passwd.php en pas de instellingen aan.",
@@ -70,7 +71,8 @@
         "search": "Zoeken",
         "searchCustomers": "Klanten zoeken",
         "newVendor": "Nieuwe leverancier aanmaken",
-        "calendar": "Kalender"
+        "calendar": "Kalender",
+        "newArticle": "Nieuw artikel aanmaken"
     },
     "ContactMenu": {
         "title": "Contact",

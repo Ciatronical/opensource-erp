@@ -56,7 +56,8 @@
         "mechanicCar": "/mehaanik/soiduk",
         "privacy": "/privaatsus",
         "dataDeletion": "/andmete-kustutamine",
-        "tafel": "/teadetetahvel/haldus"
+        "tafel": "/teadetetahvel/haldus",
+        "newArticle": "/artikkel/uus"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Viga: Paroolifaili api/config/api.passwd.php ei leitud. Palun nimetage fail api/config/api.passwd.php.example umber api/config/api.passwd.php ja kohandage seadeid vastavalt.",
@@ -70,7 +71,8 @@
         "search": "Otsing",
         "searchCustomers": "Klientide otsimine",
         "newVendor": "Uue tarnija loomine",
-        "calendar": "Kalender"
+        "calendar": "Kalender",
+        "newArticle": "Loo uus artikkel"
     },
     "ContactMenu": {
         "title": "Kontakt",

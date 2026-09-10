@@ -21,6 +21,17 @@
                 <v-btn v-if="hasFilter" variant="text" size="small" prepend-icon="mdi-filter-remove" @click="reset">
                     {{ t('DocumentList.reset') }}
                 </v-btn>
+                <v-btn
+                    v-if="config.create"
+                    color="primary"
+                    variant="tonal"
+                    size="small"
+                    prepend-icon="mdi-plus"
+                    class="ms-2"
+                    :to="{ name: config.create.route }"
+                >
+                    {{ t(config.create.label) }}
+                </v-btn>
             </v-col>
         </v-row>
 
@@ -132,13 +143,15 @@ import NavbarView from '@/core/components/navbar/navbar.view.vue'
 import { formatDate } from '@/core/utils/dateFormatter.js'
 
 // Alles, was sich je Listentyp unterscheidet, steht an genau einer Stelle.
+// create: Schaltfläche zum Anlegen — nur wo es eine eigene Neuanlage gibt.
 const TYPES = {
     invoice:        { title: 'DocumentList.titles.invoice',       icon: 'mdi-file-document-outline',  route: 'faktura-invoice-view' },
     credit_note:    { title: 'DocumentList.titles.creditNote',    icon: 'mdi-file-undo-outline',      route: 'faktura-credit-note-view' },
     order:          { title: 'DocumentList.titles.order',         icon: 'mdi-clipboard-text-outline', route: 'faktura-order-view' },
     quotation:      { title: 'DocumentList.titles.quotation',     icon: 'mdi-file-sign',              route: 'faktura-quotation-view' },
     delivery_order: { title: 'DocumentList.titles.deliveryOrder', icon: 'mdi-truck-outline',          route: 'faktura-delivery-order-view' },
-    part:           { title: 'DocumentList.titles.part',          icon: 'mdi-package-variant-closed', route: 'article-edit' },
+    part:           { title: 'DocumentList.titles.part',          icon: 'mdi-package-variant-closed', route: 'article-edit',
+                      create: { route: 'article-new', label: 'DocumentList.newPart' } },
 }
 
 export default {

@@ -56,7 +56,8 @@
         "mechanicCar": "/mechanik/vozidlo",
         "privacy": "/soukromi",
         "dataDeletion": "/vymaz-dat",
-        "tafel": "/nastenka/sprava"
+        "tafel": "/nastenka/sprava",
+        "newArticle": "/artikl/novy"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Chyba: Soubor s heslem api/config/api.passwd.php nebyl nalezen. Prosim prejmenujte soubor api/config/api.passwd.php.example na api/config/api.passwd.php a upravte nastaveni.",
@@ -70,7 +71,8 @@
         "search": "Hledat",
         "searchCustomers": "Hledat zákazníky",
         "newVendor": "Vytvořit nového dodavatele",
-        "calendar": "Kalendář"
+        "calendar": "Kalendář",
+        "newArticle": "Založit nový artikl"
     },
     "ContactMenu": {
         "title": "Kontakt",

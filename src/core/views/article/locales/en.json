@@ -16,12 +16,17 @@
       "buchungsgruppe": "Posting Group",
       "sellprice": "Selling Price",
       "notes": "Long Description",
-      "obsolete": "Obsolete / Do not use"
+      "obsolete": "Obsolete / Do not use",
+      "partnumberHint": "Leave empty to assign the next free number"
     },
     "messages": {
       "loading": "Loading article",
       "loadError": "Error loading article",
-      "notFound": "Article not found"
+      "notFound": "Article not found",
+      "createError": "The article could not be created.",
+      "noPermission": "You are not allowed to create articles.",
+      "partnumberExists": "This article number is already in use.",
+      "required": "Required"
     },
     "ebay": {
       "title": "eBay article",
@@ -37,6 +42,9 @@
       "busy": "Updating eBay …",
       "uploadError": "Image upload failed.",
       "needImageHint": "Please upload at least one image first."
-    }
+    },
+    "titleNew": "Create article",
+    "create": "Create",
+    "cancel": "Cancel"
   }
 }

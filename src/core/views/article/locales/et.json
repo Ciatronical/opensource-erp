@@ -16,12 +16,20 @@
             "buchungsgruppe": "Konteeringu grupp",
             "sellprice": "Müügihind",
             "notes": "Pikk kirjeldus",
-            "obsolete": "Aegunud / Ei kasutata enam"
+            "obsolete": "Aegunud / Ei kasutata enam",
+            "partnumberHint": "Jäta tühjaks, et määrata järgmine vaba number"
         },
         "messages": {
             "loading": "Artiklit laaditakse",
             "loadError": "Viga artikli laadimisel",
-            "notFound": "Artiklit ei leitud"
-        }
+            "notFound": "Artiklit ei leitud",
+            "createError": "Artiklit ei õnnestunud luua.",
+            "noPermission": "Teil puudub õigus artikleid luua.",
+            "partnumberExists": "See artiklinumber on juba kasutusel.",
+            "required": "Kohustuslik väli"
+        },
+        "titleNew": "Artikli loomine",
+        "create": "Loo",
+        "cancel": "Tühista"
     }
 }

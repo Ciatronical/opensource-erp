@@ -16,12 +16,20 @@
             "buchungsgruppe": "Uctovaci skupina",
             "sellprice": "Prodejni cena",
             "notes": "Dlouhy popis",
-            "obsolete": "Zastarale / Nepouzivat"
+            "obsolete": "Zastarale / Nepouzivat",
+            "partnumberHint": "Ponechte prázdné pro přidělení dalšího volného čísla"
         },
         "messages": {
             "loading": "Artikl se nacita",
             "loadError": "Chyba pri nacitani artiklu",
-            "notFound": "Artikl nenalezen"
-        }
+            "notFound": "Artikl nenalezen",
+            "createError": "Artikl se nepodařilo založit.",
+            "noPermission": "Nemáte oprávnění zakládat artikly.",
+            "partnumberExists": "Toto číslo artiklu je již použito.",
+            "required": "Povinné pole"
+        },
+        "titleNew": "Založení artiklu",
+        "create": "Založit",
+        "cancel": "Zrušit"
     }
 }

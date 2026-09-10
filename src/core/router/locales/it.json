@@ -56,7 +56,8 @@
         "mechanicCar": "/meccanico/veicolo",
         "privacy": "/privacy",
         "dataDeletion": "/cancellazione-dati",
-        "tafel": "/bacheca/gestione"
+        "tafel": "/bacheca/gestione",
+        "newArticle": "/articolo/nuovo"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Errore: Il file della password api/config/api.passwd.php non è stato trovato. Rinominare il file api/config/api.passwd.php.example in api/config/api.passwd.php e regolare le impostazioni.",
@@ -70,7 +71,8 @@
         "search": "Cerca",
         "searchCustomers": "Cerca clienti",
         "newVendor": "Crea nuovo fornitore",
-        "calendar": "Calendario"
+        "calendar": "Calendario",
+        "newArticle": "Crea nuovo articolo"
     },
     "ContactMenu": {
         "title": "Contatto",

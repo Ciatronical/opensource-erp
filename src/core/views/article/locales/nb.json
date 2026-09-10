@@ -16,12 +16,20 @@
             "buchungsgruppe": "Bokfoeringsgruppe",
             "sellprice": "Salgspris",
             "notes": "Langbeskrivelse",
-            "obsolete": "Utdatert / Ikke bruk lenger"
+            "obsolete": "Utdatert / Ikke bruk lenger",
+            "partnumberHint": "La stå tomt for å tildele neste ledige nummer"
         },
         "messages": {
             "loading": "Artikkel lastes",
             "loadError": "Feil ved lasting av artikkel",
-            "notFound": "Artikkel ikke funnet"
-        }
+            "notFound": "Artikkel ikke funnet",
+            "createError": "Varen kunne ikke opprettes.",
+            "noPermission": "Du har ikke tillatelse til å opprette varer.",
+            "partnumberExists": "Dette varenummeret er allerede i bruk.",
+            "required": "Obligatorisk felt"
+        },
+        "titleNew": "Opprett vare",
+        "create": "Opprett",
+        "cancel": "Avbryt"
     }
 }

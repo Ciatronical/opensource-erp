@@ -16,12 +16,17 @@
       "buchungsgruppe": "Buchungsgruppe",
       "sellprice": "Verkaufspreis",
       "notes": "Langbeschreibung",
-      "obsolete": "Veraltet / Nicht mehr verwenden"
+      "obsolete": "Veraltet / Nicht mehr verwenden",
+      "partnumberHint": "Leer lassen, um die nächste freie Nummer zu vergeben"
     },
     "messages": {
       "loading": "Artikel wird geladen",
       "loadError": "Fehler beim Laden des Artikels",
-      "notFound": "Artikel nicht gefunden"
+      "notFound": "Artikel nicht gefunden",
+      "createError": "Der Artikel konnte nicht angelegt werden.",
+      "noPermission": "Keine Berechtigung zum Anlegen von Artikeln.",
+      "partnumberExists": "Diese Artikelnummer ist bereits vergeben.",
+      "required": "Pflichtfeld"
     },
     "ebay": {
       "title": "eBay-Artikel",
@@ -37,6 +42,9 @@
       "busy": "eBay wird aktualisiert …",
       "uploadError": "Bild-Upload fehlgeschlagen.",
       "needImageHint": "Bitte zuerst mindestens ein Bild hochladen."
-    }
+    },
+    "titleNew": "Artikel anlegen",
+    "create": "Anlegen",
+    "cancel": "Abbrechen"
   }
 }

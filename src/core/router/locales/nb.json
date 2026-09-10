@@ -56,7 +56,8 @@
         "mechanicCar": "/mekaniker/kjoretoy",
         "privacy": "/personvern",
         "dataDeletion": "/datasletting",
-        "tafel": "/oppslagstavle/administrasjon"
+        "tafel": "/oppslagstavle/administrasjon",
+        "newArticle": "/vare/ny"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Feil: Passordfilen api/config/api.passwd.php ble ikke funnet. Vennligst gi nytt navn til filen api/config/api.passwd.php.example til api/config/api.passwd.php og tilpass innstillingene.",
@@ -70,7 +71,8 @@
         "search": "Soek",
         "searchCustomers": "Soek kunder",
         "newVendor": "Opprett ny leverandoer",
-        "calendar": "Kalender"
+        "calendar": "Kalender",
+        "newArticle": "Opprett ny vare"
     },
     "ContactMenu": {
         "title": "Kontakt",

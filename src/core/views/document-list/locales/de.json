@@ -31,6 +31,7 @@
         "closed": "Erledigt",
         "obsolete": "Ausgemustert",
         "noData": "Keine Einträge gefunden",
-        "loadError": "Die Liste konnte nicht geladen werden"
+        "loadError": "Die Liste konnte nicht geladen werden",
+        "newPart": "Neuer Artikel"
     }
 }

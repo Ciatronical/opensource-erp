@@ -16,12 +16,20 @@
             "buchungsgruppe": "Gruppo contabile",
             "sellprice": "Prezzo di vendita",
             "notes": "Descrizione lunga",
-            "obsolete": "Obsoleto / Non utilizzare"
+            "obsolete": "Obsoleto / Non utilizzare",
+            "partnumberHint": "Lasciare vuoto per assegnare il prossimo numero libero"
         },
         "messages": {
             "loading": "Caricamento articolo",
             "loadError": "Errore nel caricamento dell'articolo",
-            "notFound": "Articolo non trovato"
-        }
+            "notFound": "Articolo non trovato",
+            "createError": "Impossibile creare l'articolo.",
+            "noPermission": "Non si dispone dell'autorizzazione per creare articoli.",
+            "partnumberExists": "Questo numero di articolo è già in uso.",
+            "required": "Campo obbligatorio"
+        },
+        "titleNew": "Crea articolo",
+        "create": "Crea",
+        "cancel": "Annulla"
     }
 }

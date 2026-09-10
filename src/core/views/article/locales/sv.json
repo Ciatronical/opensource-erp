@@ -16,12 +16,20 @@
             "buchungsgruppe": "Bokforingsgrupp",
             "sellprice": "Forsaljningspris",
             "notes": "Langbeskrivning",
-            "obsolete": "Foraaldrad / Anvand inte langre"
+            "obsolete": "Foraaldrad / Anvand inte langre",
+            "partnumberHint": "Lämna tomt för att tilldela nästa lediga nummer"
         },
         "messages": {
             "loading": "Artikel laddas",
             "loadError": "Fel vid laddning av artikel",
-            "notFound": "Artikel hittades inte"
-        }
+            "notFound": "Artikel hittades inte",
+            "createError": "Artikeln kunde inte skapas.",
+            "noPermission": "Du har inte behörighet att skapa artiklar.",
+            "partnumberExists": "Detta artikelnummer används redan.",
+            "required": "Obligatoriskt fält"
+        },
+        "titleNew": "Skapa artikel",
+        "create": "Skapa",
+        "cancel": "Avbryt"
     }
 }

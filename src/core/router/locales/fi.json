@@ -56,7 +56,8 @@
         "mechanicCar": "/mekaanikko/ajoneuvo",
         "privacy": "/tietosuoja",
         "dataDeletion": "/tietojen-poisto",
-        "tafel": "/ilmoitustaulu/hallinta"
+        "tafel": "/ilmoitustaulu/hallinta",
+        "newArticle": "/tuote/uusi"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Virhe: Salasanatiedostoa api/config/api.passwd.php ei löytynyt. Nimeä tiedosto api/config/api.passwd.php.example uudelleen muotoon api/config/api.passwd.php ja muokkaa asetuksia vastaavasti.",
@@ -70,7 +71,8 @@
         "search": "Haku",
         "searchCustomers": "Hae asiakkaita",
         "newVendor": "Luo uusi toimittaja",
-        "calendar": "Kalenteri"
+        "calendar": "Kalenteri",
+        "newArticle": "Luo uusi tuote"
     },
     "ContactMenu": {
         "title": "Yhteystieto",

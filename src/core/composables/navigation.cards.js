@@ -54,6 +54,7 @@ export function useNavigationCards() {
                     { title: t('MasterDataMenu.newCustomer'), to: { name: 'customer-new' } },
                     { title: t('MasterDataMenu.manageCustomers'), to: { name: 'customer-vendor' } },
                     { title: t('MasterDataMenu.search'), to: { name: 'search' } },
+                    { title: t('MasterDataMenu.newArticle'), to: { name: 'article-new' } },
                     { title: t('MasterDataMenu.manageArticles'), to: { name: 'article-list' } },
                     '-',
                     { title: t('MasterDataMenu.newVendor'), to: { name: 'vendor-new' } },

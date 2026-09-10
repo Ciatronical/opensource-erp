@@ -16,12 +16,17 @@
             "buchungsgruppe": "Grupa księgowania",
             "sellprice": "Cena sprzedaży",
             "notes": "Opis szczegółowy",
-            "obsolete": "Nieaktualny / Nie używać"
+            "obsolete": "Nieaktualny / Nie używać",
+            "partnumberHint": "Pozostaw puste, aby nadać następny wolny numer"
         },
         "messages": {
             "loading": "Ładowanie artykułu",
             "loadError": "Błąd podczas ładowania artykułu",
-            "notFound": "Artykuł nie znaleziony"
+            "notFound": "Artykuł nie znaleziony",
+            "createError": "Nie udało się dodać artykułu.",
+            "noPermission": "Nie masz uprawnień do dodawania artykułów.",
+            "partnumberExists": "Ten numer artykułu jest już zajęty.",
+            "required": "Pole wymagane"
         },
         "ebay": {
             "title": "Artykuł eBay",
@@ -37,6 +42,9 @@
             "busy": "Aktualizowanie eBay …",
             "uploadError": "Przesyłanie zdjęcia nie powiodło się.",
             "needImageHint": "Najpierw prześlij co najmniej jedno zdjęcie."
-        }
+        },
+        "titleNew": "Dodawanie artykułu",
+        "create": "Dodaj",
+        "cancel": "Anuluj"
     }
 }

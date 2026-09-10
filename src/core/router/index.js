@@ -497,6 +497,11 @@ function buildRoutes() {
             props: route => ({ id: route.params.id, src: 'V' }),
         },
         {
+            ...routePath('routes.newArticle'),
+            name: 'article-new',
+            component: ArticleEditView,
+        },
+        {
             ...routePath('routes.manageArticles', '/:id(\\d+)'),
             name: 'article-edit',
             component: ArticleEditView,

@@ -16,12 +16,20 @@
             "buchungsgruppe": "Bogfoeringsgruppe",
             "sellprice": "Salgspris",
             "notes": "Langbeskrivelse",
-            "obsolete": "Forael det / Brug ikke laengere"
+            "obsolete": "Forael det / Brug ikke laengere",
+            "partnumberHint": "Lad feltet stå tomt for at tildele det næste ledige nummer"
         },
         "messages": {
             "loading": "Artikel indlaeses",
             "loadError": "Fejl ved indlaesning af artikel",
-            "notFound": "Artikel ikke fundet"
-        }
+            "notFound": "Artikel ikke fundet",
+            "createError": "Varen kunne ikke oprettes.",
+            "noPermission": "Du har ikke tilladelse til at oprette varer.",
+            "partnumberExists": "Dette varenummer er allerede i brug.",
+            "required": "Påkrævet felt"
+        },
+        "titleNew": "Opret vare",
+        "create": "Opret",
+        "cancel": "Annuller"
     }
 }

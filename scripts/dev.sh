@@ -275,7 +275,17 @@ else
     if command -v gnome-terminal &>/dev/null && [ -n "$DISPLAY" ]; then
         CHILD_ARGS="--run-servers"
         [ "$FORCE_INSTALL" -eq 1 ] && CHILD_ARGS="$CHILD_ARGS --force"
-        gnome-terminal --title="OpensourceERP" --geometry=${TERMINAL_WIDTH}x${TERMINAL_HEIGHT} -- bash -c "cd $(pwd) && bash scripts/dev.sh $CHILD_ARGS; exec bash"
+        # GNOME_TERMINAL_SCREEN verweist in tmux oft auf einen längst geschlossenen Tab
+        # ("Failed to get screen from object path") — deshalb ohne diese Variablen aufrufen
+        GT_OUTPUT=$(env -u GNOME_TERMINAL_SCREEN -u GNOME_TERMINAL_SERVICE \
+            gnome-terminal --title="OpensourceERP" --geometry=${TERMINAL_WIDTH}x${TERMINAL_HEIGHT} -- bash -c "cd $(pwd) && bash scripts/dev.sh $CHILD_ARGS; exec bash" 2>&1)
+        GT_STATUS=$?
+        [ -n "$GT_OUTPUT" ] && echo "$GT_OUTPUT"
+        # gnome-terminal endet auch bei "Error creating terminal" mit Exit-Code 0 — daher die Ausgabe prüfen
+        if [ "$GT_STATUS" -ne 0 ] || [[ "$GT_OUTPUT" == *Error* || "$GT_OUTPUT" == *Fehler* ]]; then
+            echo "WARNUNG: gnome-terminal konnte nicht geöffnet werden — Server starten im aktuellen Terminal."
+            run_servers
+        fi
     else
         run_servers
     fi

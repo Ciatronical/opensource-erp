@@ -16,12 +16,20 @@
             "buchungsgruppe": "Kirjanpitoryhma",
             "sellprice": "Myyntihinta",
             "notes": "Pitka kuvaus",
-            "obsolete": "Vanhentunut / Ei kaytossa"
+            "obsolete": "Vanhentunut / Ei kaytossa",
+            "partnumberHint": "Jätä tyhjäksi, niin seuraava vapaa numero annetaan"
         },
         "messages": {
             "loading": "Tuotetta ladataan",
             "loadError": "Virhe tuotteen lataamisessa",
-            "notFound": "Tuotetta ei loytynyt"
-        }
+            "notFound": "Tuotetta ei loytynyt",
+            "createError": "Tuotetta ei voitu luoda.",
+            "noPermission": "Sinulla ei ole oikeutta luoda tuotteita.",
+            "partnumberExists": "Tämä tuotenumero on jo käytössä.",
+            "required": "Pakollinen kenttä"
+        },
+        "titleNew": "Luo tuote",
+        "create": "Luo",
+        "cancel": "Peruuta"
     }
 }

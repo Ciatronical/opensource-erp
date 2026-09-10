@@ -16,12 +16,20 @@
             "buchungsgruppe": "记账组",
             "sellprice": "销售价格",
             "notes": "详细描述",
-            "obsolete": "已淘汰 / 不再使用"
+            "obsolete": "已淘汰 / 不再使用",
+            "partnumberHint": "留空则自动分配下一个空闲编号"
         },
         "messages": {
             "loading": "正在加载商品",
             "loadError": "加载商品时出错",
-            "notFound": "未找到商品"
-        }
+            "notFound": "未找到商品",
+            "createError": "无法创建商品。",
+            "noPermission": "您没有创建商品的权限。",
+            "partnumberExists": "此商品编号已被使用。",
+            "required": "必填项"
+        },
+        "titleNew": "新建商品",
+        "create": "新建",
+        "cancel": "取消"
     }
 }

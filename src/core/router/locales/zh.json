@@ -56,7 +56,8 @@
         "mechanicCar": "/mechanic/car",
         "privacy": "/privacy",
         "dataDeletion": "/data-deletion",
-        "tafel": "/bulletin-board/manage"
+        "tafel": "/bulletin-board/manage",
+        "newArticle": "/article/new"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "错误：未找到密码文件 api/config/api.passwd.php。请将文件 api/config/api.passwd.php.example 重命名为 api/config/api.passwd.php 并相应调整设置。",
@@ -70,7 +71,8 @@
         "search": "搜索",
         "searchCustomers": "搜索客户",
         "newVendor": "新建供应商",
-        "calendar": "日历"
+        "calendar": "日历",
+        "newArticle": "新建商品"
     },
     "ContactMenu": {
         "title": "联系",

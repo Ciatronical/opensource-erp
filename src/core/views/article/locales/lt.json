@@ -16,12 +16,20 @@
             "buchungsgruppe": "Buhalterinė grupė",
             "sellprice": "Pardavimo kaina",
             "notes": "Ilgas aprašymas",
-            "obsolete": "Pasenusi / Nebenaudojama"
+            "obsolete": "Pasenusi / Nebenaudojama",
+            "partnumberHint": "Palikite tuščią, kad būtų suteiktas kitas laisvas numeris"
         },
         "messages": {
             "loading": "Prekė kraunama",
             "loadError": "Klaida kraunant prekę",
-            "notFound": "Prekė nerasta"
-        }
+            "notFound": "Prekė nerasta",
+            "createError": "Prekės sukurti nepavyko.",
+            "noPermission": "Neturite teisės kurti prekių.",
+            "partnumberExists": "Šis prekės numeris jau naudojamas.",
+            "required": "Privalomas laukas"
+        },
+        "titleNew": "Prekės kūrimas",
+        "create": "Sukurti",
+        "cancel": "Atšaukti"
     }
 }

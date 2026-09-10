@@ -16,12 +16,20 @@
             "buchungsgruppe": "Grāmatvedības grupa",
             "sellprice": "Pārdošanas cena",
             "notes": "Garais apraksts",
-            "obsolete": "Novecojis / Vairs neizmantot"
+            "obsolete": "Novecojis / Vairs neizmantot",
+            "partnumberHint": "Atstājiet tukšu, lai piešķirtu nākamo brīvo numuru"
         },
         "messages": {
             "loading": "Artikuls tiek ielādēts",
             "loadError": "Kļūda ielādējot artikulu",
-            "notFound": "Artikuls nav atrasts"
-        }
+            "notFound": "Artikuls nav atrasts",
+            "createError": "Preci neizdevās izveidot.",
+            "noPermission": "Jums nav tiesību veidot preces.",
+            "partnumberExists": "Šis preces numurs jau tiek izmantots.",
+            "required": "Obligāts lauks"
+        },
+        "titleNew": "Preces izveide",
+        "create": "Izveidot",
+        "cancel": "Atcelt"
     }
 }

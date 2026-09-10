@@ -56,7 +56,8 @@
         "mechanicCar": "/mecanico/veiculo",
         "privacy": "/privacidade",
         "dataDeletion": "/eliminacao-dados",
-        "tafel": "/quadro-avisos/gestao"
+        "tafel": "/quadro-avisos/gestao",
+        "newArticle": "/artigo/novo"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Erro: O ficheiro de senha api/config/api.passwd.php não foi encontrado. Por favor, renomeie o ficheiro api/config/api.passwd.php.example para api/config/api.passwd.php e ajuste as configurações.",
@@ -70,7 +71,8 @@
         "search": "Pesquisar",
         "searchCustomers": "Pesquisar clientes",
         "newVendor": "Criar novo fornecedor",
-        "calendar": "Calendário"
+        "calendar": "Calendário",
+        "newArticle": "Criar novo artigo"
     },
     "ContactMenu": {
         "title": "Contacto",

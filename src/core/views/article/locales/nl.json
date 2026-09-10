@@ -16,12 +16,20 @@
             "buchungsgruppe": "Boekingsgroep",
             "sellprice": "Verkoopprijs",
             "notes": "Lange beschrijving",
-            "obsolete": "Verouderd / Niet meer gebruiken"
+            "obsolete": "Verouderd / Niet meer gebruiken",
+            "partnumberHint": "Leeg laten om het volgende vrije nummer toe te kennen"
         },
         "messages": {
             "loading": "Artikel wordt geladen",
             "loadError": "Fout bij het laden van het artikel",
-            "notFound": "Artikel niet gevonden"
-        }
+            "notFound": "Artikel niet gevonden",
+            "createError": "Het artikel kon niet worden aangemaakt.",
+            "noPermission": "U hebt geen rechten om artikelen aan te maken.",
+            "partnumberExists": "Dit artikelnummer is al in gebruik.",
+            "required": "Verplicht veld"
+        },
+        "titleNew": "Artikel aanmaken",
+        "create": "Aanmaken",
+        "cancel": "Annuleren"
     }
 }

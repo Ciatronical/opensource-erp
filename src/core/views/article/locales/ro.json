@@ -16,12 +16,20 @@
             "buchungsgruppe": "Grup contabil",
             "sellprice": "Pret de vanzare",
             "notes": "Descriere lunga",
-            "obsolete": "Expirat / Nu mai utiliza"
+            "obsolete": "Expirat / Nu mai utiliza",
+            "partnumberHint": "Lăsați gol pentru a atribui următorul număr liber"
         },
         "messages": {
             "loading": "Articolul se incarca",
             "loadError": "Eroare la incarcarea articolului",
-            "notFound": "Articol negasit"
-        }
+            "notFound": "Articol negasit",
+            "createError": "Articolul nu a putut fi creat.",
+            "noPermission": "Nu aveți dreptul să creați articole.",
+            "partnumberExists": "Acest număr de articol este deja folosit.",
+            "required": "Câmp obligatoriu"
+        },
+        "titleNew": "Creare articol",
+        "create": "Creare",
+        "cancel": "Anulare"
     }
 }

@@ -56,7 +56,8 @@
         "mechanicCar": "/mekhanik/avto",
         "privacy": "/konfidentsialnost",
         "dataDeletion": "/udalenie-dannykh",
-        "tafel": "/doska-obyavlenii/upravlenie"
+        "tafel": "/doska-obyavlenii/upravlenie",
+        "newArticle": "/tovar/novyi"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Ошибка: Файл паролей api/config/api.passwd.php не найден. Пожалуйста, переименуйте файл api/config/api.passwd.php.example в api/config/api.passwd.php и настройте параметры соответствующим образом.",
@@ -70,7 +71,8 @@
         "search": "Поиск",
         "searchCustomers": "Поиск клиентов",
         "newVendor": "Создать нового поставщика",
-        "calendar": "Календарь"
+        "calendar": "Календарь",
+        "newArticle": "Создать новый товар"
     },
     "ContactMenu": {
         "title": "Контакт",

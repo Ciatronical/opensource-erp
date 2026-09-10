@@ -56,7 +56,8 @@
         "mechanicCar": "/mecanic/vehicul",
         "privacy": "/confidentialitate",
         "dataDeletion": "/stergere-date",
-        "tafel": "/avizier/administrare"
+        "tafel": "/avizier/administrare",
+        "newArticle": "/articol/nou"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Eroare: Fisierul cu parola api/config/api.passwd.php nu a fost gasit. Va rugam redenumiti fisierul api/config/api.passwd.php.example in api/config/api.passwd.php si ajustati setarile corespunzator.",
@@ -70,7 +71,8 @@
         "search": "Căutare",
         "searchCustomers": "Căutare clienți",
         "newVendor": "Creare furnizor nou",
-        "calendar": "Calendar"
+        "calendar": "Calendar",
+        "newArticle": "Creați un articol nou"
     },
     "ContactMenu": {
         "title": "Contact",

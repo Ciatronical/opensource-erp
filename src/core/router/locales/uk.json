@@ -56,7 +56,8 @@
         "mechanicCar": "/mekhanik/avto",
         "privacy": "/konfidentsiinist",
         "dataDeletion": "/vydalennia-danykh",
-        "tafel": "/doshka-oholoshen/keruvannia"
+        "tafel": "/doshka-oholoshen/keruvannia",
+        "newArticle": "/tovar/novyi"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Помилка: Файл паролів api/config/api.passwd.php не знайдено. Будь ласка, перейменуйте файл api/config/api.passwd.php.example на api/config/api.passwd.php та налаштуйте параметри відповідно.",
@@ -70,7 +71,8 @@
         "search": "Пошук",
         "searchCustomers": "Пошук клієнтів",
         "newVendor": "Створити нового постачальника",
-        "calendar": "Календар"
+        "calendar": "Календар",
+        "newArticle": "Створити новий товар"
     },
     "ContactMenu": {
         "title": "Контакт",

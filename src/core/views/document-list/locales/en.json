@@ -31,6 +31,7 @@
         "closed": "Done",
         "obsolete": "Obsolete",
         "noData": "No entries found",
-        "loadError": "The list could not be loaded"
+        "loadError": "The list could not be loaded",
+        "newPart": "New article"
     }
 }

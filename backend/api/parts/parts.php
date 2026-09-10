@@ -220,7 +220,7 @@ function getPart($data) {
  * @testdata {"parts_id": 1, "description": "Test", "notes": "Langtext", "sellprice": 100.00, "unit": "Stk"}
  */
 function updatePart($data) {
-    permit(['invoice_edit', 'sales_order_edit', 'sales_quotation_edit'], false);
+    permit(['part_service_assembly_edit', 'invoice_edit', 'sales_order_edit', 'sales_quotation_edit'], false);
 
     $company = DbhCompany::begin();
 
@@ -466,11 +466,11 @@ function suggestPartType($data) {
  * @param float $data['sellprice'] Verkaufspreis
  * @param string $data['unit'] Einheit
  * @param string $data['notes'] Langbeschreibung
- * @return void
+ * @return void Fehler PARTNUMBER_EXISTS, wenn eine vorgegebene Artikelnummer vergeben ist
  * @testdata {"description": "Test Artikel", "part_type": "service", "buchungsgruppen_id": 1, "sellprice": 100, "unit": "Stck"}
  */
 function createPart($data) {
-    permit(['invoice_edit', 'sales_order_edit', 'sales_quotation_edit'], false);
+    permit(['part_service_assembly_edit', 'invoice_edit', 'sales_order_edit', 'sales_quotation_edit'], false);
 
     $company = DbhCompany::begin();
 
@@ -519,14 +519,25 @@ function createPart($data) {
         $partsId    = $result['id'];
         $partnumber = $result['partnumber'];
     } else {
-        // Manuelle Artikelnummer
+        // Manuelle Artikelnummer: nur anlegen, wenn sie noch frei ist. Die Prüfung
+        // steckt in derselben Abfrage und hängt nicht an einem eindeutigen Index
+        // auf partnumber. Eigener Platzhalter für die Prüfung, weil PDO ohne
+        // Emulation keinen Namen zweimal erlaubt.
         $query = <<<SQL
             INSERT INTO parts (partnumber, description, part_type, buchungsgruppen_id, sellprice, unit, notes, obsolete)
-            VALUES (:partnumber, :description, :part_type, :buchungsgruppen_id, :sellprice, :unit, :notes, FALSE)
+            SELECT :partnumber, :description, :part_type, :buchungsgruppen_id, :sellprice, :unit, :notes, FALSE
+             WHERE NOT EXISTS (SELECT 1 FROM parts WHERE partnumber = :partnumber_check)
             RETURNING id
         SQL;
 
-        $result  = $company->getOne($query, array_merge($partParams, [':partnumber' => $partnumber]));
+        $result = $company->getOne($query, array_merge($partParams, [
+            ':partnumber'       => $partnumber,
+            ':partnumber_check' => $partnumber,
+        ]));
+        if (!$result) {
+            resultInfo(false, 'PARTNUMBER_EXISTS', ['message' => 'Artikelnummer ist bereits vergeben']);
+            return;
+        }
         $partsId = $result['id'];
     }
 
@@ -664,7 +675,7 @@ function searchParts($data) {
  * @testdata {"part_type": "part"}
  */
 function peekNextPartnumber($data) {
-    permit(['invoice_edit', 'sales_order_edit', 'sales_quotation_edit'], false);
+    permit(['part_service_assembly_edit', 'invoice_edit', 'sales_order_edit', 'sales_quotation_edit'], false);
 
     $company = DbhCompany::begin();
     $numberField = (($data['part_type'] ?? 'part') === 'service') ? 'servicenumber' : 'articlenumber';

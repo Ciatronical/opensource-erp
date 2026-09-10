@@ -56,7 +56,8 @@
         "mechanicCar": "/mekaniker/koeretoej",
         "privacy": "/privatliv",
         "dataDeletion": "/datasletning",
-        "tafel": "/opslagstavle/administration"
+        "tafel": "/opslagstavle/administration",
+        "newArticle": "/vare/ny"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Fejl: Adgangskodefilen api/config/api.passwd.php blev ikke fundet. Omdoeb venligst filen api/config/api.passwd.php.example til api/config/api.passwd.php og tilpas indstillingerne.",
@@ -70,7 +71,8 @@
         "search": "Soeg",
         "searchCustomers": "Soeg kunder",
         "newVendor": "Opret ny leverandoer",
-        "calendar": "Kalender"
+        "calendar": "Kalender",
+        "newArticle": "Opret ny vare"
     },
     "ContactMenu": {
         "title": "Kontakt",
