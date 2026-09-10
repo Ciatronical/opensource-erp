@@ -637,10 +637,11 @@ cmd_demo_up() {
             missing=1
         fi
     done
-    if [[ -z "${DEMO_SCAN_DATA:-}" ]]; then
-        error "DEMO_SCAN_DATA fehlt in docker/.env"
-        missing=1
-    elif [[ ! -d "$DEMO_SCAN_DATA" ]]; then
+    # DEMO_SCAN_DATA ist optional: Das Verzeichnis wird nur von der lxcars-
+    # Erweiterung gelesen. Ist es nicht gesetzt, mountet das Overlay das leere
+    # docker/demo-scan-data-empty/. Nur ein gesetzter, aber falscher Pfad ist
+    # ein Fehler — Docker wuerde dort sonst ein leeres Verzeichnis anlegen.
+    if [[ -n "${DEMO_SCAN_DATA:-}" && ! -d "$DEMO_SCAN_DATA" ]]; then
         error "DEMO_SCAN_DATA zeigt auf ein nicht vorhandenes Verzeichnis: $DEMO_SCAN_DATA"
         missing=1
     fi

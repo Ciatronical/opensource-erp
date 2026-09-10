@@ -40,7 +40,14 @@ services:
       # Demo-Fahrzeugschein-Scans (CSV + Original-Bild + .crops/) read-only einblenden.
       # Liegt ausserhalb des Repos, damit die Bilder nicht ins Image wandern und
       # jeden Rebuild ueberleben.
-      - ${DEMO_SCAN_DATA:?DEMO_SCAN_DATA fehlt in docker/.env}:/var/www/html/backend/api/demo/data:ro
+      #
+      # OPTIONAL: Gelesen wird das Verzeichnis ausschliesslich von der lxcars-
+      # Erweiterung (backend/api/lxcars/cars.php). Instanzen ohne diese
+      # Erweiterung lassen DEMO_SCAN_DATA in docker/.env einfach weg — dann
+      # greift das leere Platzhalter-Verzeichnis aus dem Repo. Frueher war die
+      # Variable per ':?' Pflicht und jede generische Demo-Instanz scheiterte
+      # daran.
+      - ${DEMO_SCAN_DATA:-./demo-scan-data-empty}:/var/www/html/backend/api/demo/data:ro
 
 volumes:
   pg_data:
