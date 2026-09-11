@@ -384,6 +384,8 @@ function shopPublicActions(): array {
         // Auswertung, Kontakt, Widerruf
         'gtmGetProductInfo', 'gtmGetPurchased', 'gtmGetPurchasedProducts',
         'sendContactMail', 'submitWiderruf',
+        // Webseite
+        'resolveRedirect',
     ];
 }
 
@@ -565,4 +567,21 @@ function submitWiderruf($db, string $uuid, array $daten) {
     ]);
 
     resultInfo(true, 'WITHDRAWAL_RECEIVED', ['id' => $widerruf['id']]);
+}
+
+// ============================================================================
+// WEBSEITE
+// ============================================================================
+
+/**
+ * Umleitung für eine entfallene Seite — gefragt von der 404-Seite der Webseite
+ *
+ * Braucht keine Besuchersitzung: die 404-Seite ruft serverseitig auf, und
+ * angelegt wird eine Sitzung ohnehin erst von getContext.
+ *
+ * @param string $daten['url'] Host und Pfad der angefragten Adresse
+ * @testdata {"url": "shop.example.de/alte-seite"}
+ */
+function resolveRedirect($db, string $uuid, array $daten) {
+    resultInfo(true, '', shopResolveRedirect($db, (string)shopVar($daten, 'url', '')));
 }

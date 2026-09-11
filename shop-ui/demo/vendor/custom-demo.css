@@ -1,0 +1,72 @@
+/*
+ * Beispiel für Preset "custom": ein eigenes Stylesheet, das nur die
+ * framework-unabhängigen shop-*-Klassen kennt. Kein Framework beteiligt.
+ * Es wird in jeden ShadowRoot adoptiert.
+ */
+
+.shop-label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  color: #2f5d50;
+}
+
+.shop-input {
+  display: block;
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  border: 2px solid #cfe3dc;
+  border-radius: 0;
+  border-bottom-width: 3px;
+  font: inherit;
+  background: #f7fbf9;
+}
+
+.shop-input:focus {
+  outline: none;
+  border-color: #2f8f6f;
+  background: #fff;
+}
+
+.shop-button-secondary,
+.shop-button-primary {
+  display: inline-block;
+  padding: 0.6rem 1.4rem;
+  border: 0;
+  border-radius: 999px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  color: #fff;
+  background: #2f8f6f;
+}
+
+.shop-button-secondary:hover,
+.shop-button-primary:hover {
+  background: #24705726;
+  background: #247057;
+}
+
+.shop-button-secondary:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.shop-alert-error {
+  padding: 0.75rem 1rem;
+  border: 0;
+  border-left: 4px solid #b3261e;
+  border-radius: 0;
+  background: #fdecea;
+  color: #7f1d1b;
+}
+
+.shop-heading {
+  font-size: 1.1rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #2f5d50;
+}

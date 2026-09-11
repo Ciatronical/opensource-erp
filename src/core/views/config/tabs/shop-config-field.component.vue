@@ -96,16 +96,23 @@ import { oserpStore } from '@/core/stores/oserp.store.js'
 const { t } = useI18n()
 const store = oserpStore()
 
-defineProps({
+const props = defineProps({
     /** Felddefinition aus shopDefaultsConfig.js */
     field: { type: Object, required: true },
     /** Die Einstellungen des Mandanten (defaults_oserp) */
     werte: { type: Object, required: true },
+    /**
+     * Zusätzliche Auswahllisten des Tabs, nach Quelle.
+     *
+     * Für Listen, die nicht in der Firmenkonfiguration stehen — die
+     * Vorlagensätze etwa liegen im Dateisystem und holt der Tab beim Shop.
+     */
+    quellen: { type: Object, default: () => ({}) },
 })
 
-/** Auswahlwerte aus der Firmenkonfiguration, etwa die Mitarbeiterliste */
+/** Auswahlwerte: erst die des Tabs, sonst die der Firmenkonfiguration */
 function auswahl(source) {
-    return store.session?.[source] || store.session?.company_config?.[source] || []
+    return props.quellen?.[source] || store.session?.[source] || store.session?.company_config?.[source] || []
 }
 
 /**

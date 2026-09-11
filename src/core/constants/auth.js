@@ -11,5 +11,7 @@ export const AuthStatus = Object.freeze({
     /** Keine gültige Session vorhanden */
     NOT_AUTHENTICATED: 'NOT_AUTHENTICATED',
     /** Initiales Setup erforderlich */
-    SETUP_REQUIRED: 'SETUP_REQUIRED'
+    SETUP_REQUIRED: 'SETUP_REQUIRED',
+    /** Angemeldet, aber die Upstall-Dateien sind neuer als das Datenbankschema */
+    UPDATE_REQUIRED: 'UPDATE_REQUIRED'
 });

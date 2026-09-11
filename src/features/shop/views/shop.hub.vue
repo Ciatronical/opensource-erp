@@ -86,6 +86,56 @@
             </v-col>
         </v-row>
 
+        <!-- Veröffentlichung: die Anwendung legt nur Aufträge an, geschrieben
+             und gebaut wird von tools/shop-publish.php -->
+        <v-card variant="outlined" class="mb-4">
+            <v-card-item>
+                <template #prepend>
+                    <v-icon icon="mdi-cloud-upload-outline" />
+                </template>
+                <v-card-title class="text-subtitle-1">{{ t('ShopView.publish.title') }}</v-card-title>
+                <v-card-subtitle>{{ t('ShopView.publish.hint') }}</v-card-subtitle>
+                <template #append>
+                    <v-btn
+                        color="primary"
+                        variant="tonal"
+                        size="small"
+                        prepend-icon="mdi-cloud-upload-outline"
+                        :loading="veroeffentlicht"
+                        @click="alleVeroeffentlichen"
+                    >
+                        {{ t('ShopView.publish.all') }}
+                    </v-btn>
+                </template>
+            </v-card-item>
+
+            <v-card-text v-if="auftraege.length">
+                <div class="text-caption text-medium-emphasis mb-1">
+                    {{ t('ShopView.publish.open', { count: offeneAuftraege }) }}
+                </div>
+                <v-table density="compact">
+                    <tbody>
+                        <tr v-for="auftrag in auftraege" :key="auftrag.id">
+                            <td style="width: 1%">
+                                <v-icon
+                                    size="small"
+                                    :color="istOffen(auftrag) ? 'grey' : (fehlgeschlagen(auftrag) ? 'error' : 'success')"
+                                    :icon="istOffen(auftrag) ? 'mdi-clock-outline' : (fehlgeschlagen(auftrag) ? 'mdi-alert-circle-outline' : 'mdi-check')"
+                                />
+                            </td>
+                            <td class="text-caption text-no-wrap">{{ zeitpunkt(auftrag.itime) }}</td>
+                            <td>{{ auftrag.function }}</td>
+                            <td>{{ auftrag.partnumber }}</td>
+                            <td class="text-caption">{{ auftrag.result || t('ShopView.publish.waiting') }}</td>
+                        </tr>
+                    </tbody>
+                </v-table>
+            </v-card-text>
+            <v-card-text v-else class="text-caption text-medium-emphasis">
+                {{ t('ShopView.publish.empty') }}
+            </v-card-text>
+        </v-card>
+
         <!-- Wege -->
         <v-row>
             <v-col cols="12" sm="6" md="4" v-for="ziel in ziele" :key="ziel.name">
@@ -114,12 +164,28 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
 import { useShop } from '@/features/shop/composables/useShop.js'
+import * as toasts from '@/core/utils/toasts.js'
 
-const { t, te } = useI18n()
+const { t, te, locale } = useI18n()
 const router = useRouter()
 const shop = useShop()
 
 const status = ref(null)
+const auftraege = ref([])
+const veroeffentlicht = ref(false)
+
+/** Wahrheitswerte kommen je nach Treiber als true oder 't' */
+const istOffen = (auftrag) => auftrag.open === true || auftrag.open === 't'
+const fehlgeschlagen = (auftrag) => String(auftrag.result || '').startsWith('Fehler')
+
+const offeneAuftraege = computed(() => auftraege.value.filter(istOffen).length)
+
+/** Zeitstempel aus der Datenbank ('2026-09-11 10:23:45.123') für die Anzeige */
+function zeitpunkt(wert) {
+    if (!wert) return ''
+    const datum = new Date(String(wert).replace(' ', 'T'))
+    return isNaN(datum) ? '' : new Intl.DateTimeFormat(locale.value, { dateStyle: 'short', timeStyle: 'short' }).format(datum)
+}
 
 /**
  * Übersetzt einen Einstellungsschlüssel in den Namen des Feldes
@@ -178,6 +244,26 @@ const ziele = computed(() => [
 
 async function laden() {
     status.value = await shop.fetchStatus()
+    auftraege.value = await shop.fetchPublishJobs() || []
+}
+
+/**
+ * Nimmt alle Artikel des Shops in die Veröffentlichung auf
+ *
+ * Legt einen Auftrag an; die Seiten entstehen beim nächsten Lauf des
+ * Veröffentlichungs-Skripts.
+ */
+async function alleVeroeffentlichen() {
+    veroeffentlicht.value = true
+    const ergebnis = await shop.publishAll()
+    veroeffentlicht.value = false
+
+    if (!shop.error.value) {
+        toasts.success(ergebnis?.queued === false
+            ? t('ShopView.publish.already')
+            : t('ShopView.publish.queued'))
+    }
+    auftraege.value = await shop.fetchPublishJobs() || []
 }
 
 onMounted(laden)

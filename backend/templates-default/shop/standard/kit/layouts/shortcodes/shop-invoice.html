@@ -1,0 +1,12 @@
+{{- /*
+  {{< shop-invoice >}}
+
+  Ersetzt invoice.html. Die Seite lebt vom Parameter ?link= in der Adresse —
+  ohne ihn zeigt die Komponente einen Hinweis statt einer leeren Seite.
+*/ -}}
+{{- partial "shop-ui-assets.html" . -}}
+<shop-invoice
+  orders-url="{{ .Get `orders-url` | default `/bestellungen/` }}"
+  continue-url="{{ .Get `continue-url` | default `/kategorien/` }}"
+  {{- with .Get `heading` }} heading="{{ . }}"{{ end }}
+  {{- with .Get `class` }} class="{{ . }}"{{ end }}></shop-invoice>

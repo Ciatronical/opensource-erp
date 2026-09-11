@@ -263,6 +263,10 @@ export const oserpStore = defineStore('oserpStore', () => {
             transformResponseToStoreData(response.data);
             // Login-Zeitstempel fuer Info Bar speichern
             localStorage.setItem(`oserp_infobar_login_ts_${session.user}_${session.client}`, String(Date.now()))
+            // Upstall-Dateien neuer als das Schema: die Login-Ansicht stößt das Update an
+            if (response.data.payload?.schema_update_needed) {
+                return AuthStatus.UPDATE_REQUIRED;
+            }
             return AuthStatus.AUTHENTICATED;
         }
 

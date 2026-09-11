@@ -90,7 +90,20 @@
             "addRow": "Satır ekle",
             "removeRow": "Satırı kaldır",
             "saveError": "Mağaza bilgileri kaydedilemedi.",
-            "noPermission": "Mağaza bilgilerini değiştirme yetkiniz yok."
+            "noPermission": "Mağaza bilgilerini değiştirme yetkiniz yok.",
+            "publish": "Yayımla",
+            "publishQueued": "Görev oluşturuldu.",
+            "publishAlready": "Görev zaten bekliyor."
+        },
+        "publish": {
+            "title": "Yayımlama",
+            "hint": "Mağaza sayfaları, yayımlama betiğinin bir sonraki çalışmasında oluşur.",
+            "all": "Tümünü yayımla",
+            "open": "{count} bekliyor",
+            "empty": "Görev yok.",
+            "waiting": "bekliyor",
+            "queued": "Görev oluşturuldu.",
+            "already": "Görev zaten bekliyor."
         }
     }
 }

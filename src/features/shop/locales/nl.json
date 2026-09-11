@@ -90,7 +90,20 @@
             "addRow": "Regel toevoegen",
             "removeRow": "Regel verwijderen",
             "saveError": "De winkelgegevens konden niet worden opgeslagen.",
-            "noPermission": "U hebt geen rechten om winkelgegevens te wijzigen."
+            "noPermission": "U hebt geen rechten om winkelgegevens te wijzigen.",
+            "publish": "Publiceren",
+            "publishQueued": "Opdracht aangemaakt.",
+            "publishAlready": "Opdracht staat al open."
+        },
+        "publish": {
+            "title": "Publicatie",
+            "hint": "De winkelpagina's ontstaan bij de volgende uitvoering van het publicatiescript.",
+            "all": "Alles publiceren",
+            "open": "{count} open",
+            "empty": "Geen opdrachten.",
+            "waiting": "wacht",
+            "queued": "Opdracht aangemaakt.",
+            "already": "Opdracht staat al open."
         }
     }
 }

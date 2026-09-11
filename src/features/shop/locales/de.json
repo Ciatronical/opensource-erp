@@ -90,7 +90,20 @@
             "addRow": "Zeile hinzufügen",
             "removeRow": "Zeile entfernen",
             "saveError": "Die Shop-Angaben konnten nicht gespeichert werden.",
-            "noPermission": "Keine Berechtigung, Shop-Angaben zu ändern."
+            "noPermission": "Keine Berechtigung, Shop-Angaben zu ändern.",
+            "publish": "Veröffentlichen",
+            "publishQueued": "Auftrag angelegt.",
+            "publishAlready": "Auftrag ist bereits offen."
+        },
+        "publish": {
+            "title": "Veröffentlichung",
+            "hint": "Die Seiten des Shops entstehen beim nächsten Lauf des Veröffentlichungs-Skripts.",
+            "all": "Alle veröffentlichen",
+            "open": "{count} offen",
+            "empty": "Keine Aufträge.",
+            "waiting": "wartet",
+            "queued": "Auftrag angelegt.",
+            "already": "Auftrag ist bereits offen."
         }
     }
 }

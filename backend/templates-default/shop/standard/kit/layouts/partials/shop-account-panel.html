@@ -1,0 +1,35 @@
+{{- /*
+  Waehlt das Panel-Element zur Seite aus. Erwartet ein dict:
+    page   overview | profile | address | order | payment
+    class  Layout-Klassen fuer den Host, optional
+*/ -}}
+{{- /* noAssets: der Aufrufer bindet das Bundle selbst ein. Bewusst
+     negativ benannt — ein fehlender Schluessel ist in Go-Templates
+     falsch, und der sichere Fall ist "Bundle einbinden". */ -}}
+{{- if not .noAssets }}{{ partial "shop-ui-assets.html" . }}{{ end -}}
+{{- $class := .class -}}
+{{- $login := .loginUrl | default "/login/" -}}
+{{- if eq .page "overview" -}}
+<shop-account-overview
+  login-url="{{ $login }}"
+  profile-url="/persönliches-profil/#focus"
+  password-url="/persönliches-profil/#Passwort"
+  address-url="/adressen/#focus"
+  delivery-url="/adressen/#focus"
+  payment-url="/zahlungsarten/#focus"
+  {{- with $class }} class="{{ . }}"{{ end }}></shop-account-overview>
+{{- else if eq .page "profile" -}}
+<shop-account-profile login-url="{{ $login }}"
+  {{- with $class }} class="{{ . }}"{{ end }}></shop-account-profile>
+{{- else if eq .page "address" -}}
+<shop-account-addresses login-url="{{ $login }}"
+  {{- with $class }} class="{{ . }}"{{ end }}></shop-account-addresses>
+{{- else if eq .page "order" -}}
+<shop-account-orders login-url="{{ $login }}"
+  {{- with $class }} class="{{ . }}"{{ end }}></shop-account-orders>
+{{- else if eq .page "payment" -}}
+<shop-account-payment login-url="{{ $login }}"
+  {{- with $class }} class="{{ . }}"{{ end }}></shop-account-payment>
+{{- else -}}
+{{- errorf "shop-account: unbekannte Seite %q (erlaubt: overview, profile, address, order, payment)" .page -}}
+{{- end -}}

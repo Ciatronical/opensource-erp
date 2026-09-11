@@ -1,0 +1,26 @@
+{{- /*
+  Markup der Konto-Navigation. Eigener Partial, weil ihn zwei Shortcodes
+  aufrufen: shop-account-nav (einzeln) und shop-account (mit Layout).
+
+  Erwartet ein dict:
+    current      overview | profile | address | order  (optional)
+    showPayment  "true", um den Eintrag "Zahlungsarten" einzublenden
+    class        Layout-Klassen fuer den Host, optional
+
+  Die #focus-Anker stehen hier und nicht in der Komponente: das ist der
+  Container des mitgelieferten Themes, an den der Browser nach dem Sprung
+  scrollen soll — eine Theme-Eigenheit, keine Eigenschaft des Widgets.
+*/ -}}
+{{- /* noAssets: der Aufrufer bindet das Bundle selbst ein. Bewusst
+     negativ benannt — ein fehlender Schluessel ist in Go-Templates
+     falsch, und der sichere Fall ist "Bundle einbinden". */ -}}
+{{- if not .noAssets }}{{ partial "shop-ui-assets.html" . }}{{ end -}}
+<shop-account-nav
+  current="{{ .current }}"
+  overview-url="/persönliche-daten/#focus"
+  profile-url="/persönliches-profil/#focus"
+  address-url="/adressen/#focus"
+  order-url="/bestellungen/#focus"
+  payment-url="/zahlungsarten/#focus"
+  {{- if eq (.showPayment | default "false") "true" }} show-payment{{ end }}
+  {{- with .class }} class="{{ . }}"{{ end }}></shop-account-nav>

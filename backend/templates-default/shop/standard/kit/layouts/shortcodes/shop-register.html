@@ -1,0 +1,15 @@
+{{- /*
+  {{< shop-register >}}
+  {{< shop-register redirect-url="/registriert/" login-url="/login/" >}}
+
+  mode="guest" ist fuer die Einbettung in <shop-checkout> gedacht und wird
+  dort programmatisch gesetzt — als Shortcode normalerweise nicht noetig.
+*/ -}}
+{{- partial "shop-ui-assets.html" . -}}
+<shop-register
+  redirect-url="{{ .Get `redirect-url` | default `/registriert/` }}"
+  login-url="{{ .Get `login-url` | default `/login/` }}"
+  data-protection-url="{{ .Get `data-protection-url` | default `/datenschutz/` }}"
+  {{- with .Get `mode` }} mode="{{ . }}"{{ end }}
+  {{- with .Get `heading` }} heading="{{ . }}"{{ end }}
+  {{- with .Get `class` }} class="{{ . }}"{{ end }}></shop-register>

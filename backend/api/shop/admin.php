@@ -313,10 +313,157 @@ function deletePartShopData($data) {
     permit(['shop_part_edit', 'edit_shop_config'], false);
     $db = DbhCompany::begin();
 
-    $db->execute(
-        "DELETE FROM parts_ext WHERE parts_id = :parts_id",
-        [':parts_id' => (int)($data['parts_id'] ?? 0)]
+    $partsId = (int)($data['parts_id'] ?? 0);
+
+    // Der Dateiname steht in der Zeile, die gleich verschwindet — deshalb
+    // vorher lesen und den Auftrag zum Entfernen der Seite anlegen.
+    $seite = $db->getOne(
+        "SELECT p.partnumber, pe.hugoshop_hyperlink
+           FROM parts p
+           JOIN parts_ext pe ON pe.parts_id = p.id
+          WHERE p.id = :parts_id",
+        [':parts_id' => $partsId]
     );
 
+    $db->execute("DELETE FROM parts_ext WHERE parts_id = :parts_id", [':parts_id' => $partsId]);
+
+    if ($seite) {
+        $name = '' !== (string)$seite['hugoshop_hyperlink']
+            ? (string)$seite['hugoshop_hyperlink']
+            : (string)$seite['partnumber'];
+        $datei = mb_strtolower(basename($name));
+        shopQueueJob($db, 'remove_part', (string)$seite['partnumber'],
+                     str_ends_with($datei, '.md') ? $datei : $datei.'.md');
+    }
+
     resultInfo(true, 'PART_SHOP_DATA_REMOVED');
+}
+
+/**
+ * Verfügbare Vorlagensätze für die Produktseiten
+ *
+ * Für die Auswahl im Einstellungen-Tab. Kundenkopien unter <templates_dir>/shop/
+ * verdecken gleichnamige mitgelieferte Sätze.
+ *
+ * @return void
+ * @testdata {}
+ */
+function getShopTemplateSets($data) {
+    permit(['shop_part_edit', 'edit_shop_config'], false);
+
+    resultInfo(true, '', ['sets' => shopTemplateSets()]);
+}
+
+/**
+ * Zeigt die Produktseite eines Artikels, ohne sie zu schreiben
+ *
+ * Zum Prüfen eines Vorlagensatzes, auch ohne Schreibrecht im Webseiten-Verzeichnis.
+ *
+ * @param array $data['parts_id'] Artikel
+ * @return void
+ * @testdata {"parts_id": 1}
+ */
+function previewShopPage($data) {
+    permit(['shop_part_edit', 'edit_shop_config'], false);
+    $db = DbhCompany::begin();
+
+    $seite = shopPageData($db, (int)($data['parts_id'] ?? 0));
+
+    resultInfo(true, '', [
+        'filename' => shopPageFileName($seite),
+        'content'  => shopRenderPage($db, $seite),
+    ]);
+}
+
+/**
+ * Schreibt die Produktseite eines Artikels in das eingestellte Verzeichnis
+ *
+ * @param array $data['parts_id'] Artikel
+ * @return void
+ * @testdata {"parts_id": 1}
+ */
+function writeShopPage($data) {
+    permit(['shop_part_edit', 'edit_shop_config'], false);
+    $db = DbhCompany::begin();
+
+    resultInfo(true, 'PAGE_WRITTEN', shopWriteProductPage($db, (int)($data['parts_id'] ?? 0)));
+}
+
+/**
+ * Nimmt einen Artikel in die Veröffentlichung auf
+ *
+ * Schreibt nur den Auftrag; die Seite entsteht beim nächsten Lauf von
+ * tools/shop-publish.php.
+ *
+ * @param array $data['parts_id'] Artikel
+ * @return void
+ * @testdata {"parts_id": 1}
+ */
+function publishShopPart($data) {
+    permit(['shop_part_edit', 'edit_shop_config'], false);
+    $db = DbhCompany::begin();
+
+    $artikel = $db->getOne(
+        "SELECT partnumber FROM parts WHERE id = :parts_id",
+        [':parts_id' => (int)($data['parts_id'] ?? 0)]
+    );
+    if (!$artikel) {
+        resultInfo(false, 'PART_NOT_FOUND', null, 'Artikel nicht gefunden');
+        return;
+    }
+
+    $id = shopQueueJob($db, 'publish_part', (string)$artikel['partnumber']);
+
+    resultInfo(true, 'PUBLISH_QUEUED', ['job_id' => $id, 'queued' => $id > 0]);
+}
+
+/**
+ * Nimmt alle Artikel des Shops in die Veröffentlichung auf
+ *
+ * @return void
+ * @testdata {}
+ */
+function publishShopAll($data) {
+    permit(['shop_part_edit', 'edit_shop_config'], false);
+    $db = DbhCompany::begin();
+
+    $id = shopQueueJob($db, 'publish_all');
+
+    resultInfo(true, 'PUBLISH_QUEUED', ['job_id' => $id, 'queued' => $id > 0]);
+}
+
+/**
+ * Offene und zuletzt erledigte Aufträge
+ *
+ * Nur die der Veröffentlichung — die Tabelle teilt sich OSERP mit der Bridge.
+ *
+ * @return void
+ * @testdata {}
+ */
+function getShopPublishJobs($data) {
+    permit(['shop_order', 'shop_part_edit', 'edit_shop_config'], false);
+    $db = DbhCompany::begin();
+
+    // Die Sortierung der Teilabfragen gilt nur für deren Auswahl — die
+    // Reihenfolge der Vereinigung muss aussen stehen.
+    resultInfo(true, '', $db->getAll(
+        "SELECT * FROM (
+             (SELECT id, itime, function, partnumber, param, result, true AS open
+                FROM batchjob_hugoshop
+               WHERE result IS NULL
+                 AND function = ANY(string_to_array(:funktionen_offen, ','))
+               ORDER BY id LIMIT 50)
+             UNION ALL
+             (SELECT id, itime, function, partnumber, param, result, false AS open
+                FROM batchjob_hugoshop
+               WHERE result IS NOT NULL
+                 AND function = ANY(string_to_array(:funktionen_erledigt, ','))
+               ORDER BY id DESC LIMIT 20)
+         ) auftraege
+         ORDER BY open DESC, id DESC",
+        [
+            ':funktionen_offen'    => implode(',', shopJobFunctions()),
+            ':funktionen_erledigt' => implode(',', shopJobFunctions()),
+        ]
+    ));
 }

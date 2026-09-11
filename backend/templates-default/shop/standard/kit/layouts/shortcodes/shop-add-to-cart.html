@@ -1,0 +1,13 @@
+{{- /*
+  {{< shop-add-to-cart product="1386" button-text="In den Warenkorb" >}}
+
+  `parts_id` wird als Schreibweise weiter akzeptiert, weil die erzeugten
+  Produktseiten sie verwenden (publish/template.php:111).
+*/ -}}
+{{- partial "shop-add-to-cart.html" (dict
+  "product"    (or (.Get "product") (.Get "parts_id"))
+  "buttonText" (.Get "button-text")
+  "cartUrl"    (.Get "cart-url")
+  "max"        (.Get "max")
+  "class"      (.Get "class")
+) -}}

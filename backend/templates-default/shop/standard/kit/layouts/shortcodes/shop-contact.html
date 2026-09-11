@@ -1,0 +1,12 @@
+{{- /*
+  {{< shop-contact >}}
+
+  Ersetzt contact-form.html. redirect-url ist die Seite nach dem Absenden;
+  contact.js sprang fest auf /kontakt-danke/, waehrend im Knopf
+  data-redirect="/abgesendet/" stand — eine Seite, die es nicht gibt.
+*/ -}}
+{{- partial "shop-ui-assets.html" . -}}
+<shop-contact
+  redirect-url="{{ .Get `redirect-url` | default `/kontakt-danke/` }}"
+  {{- with .Get `heading` }} heading="{{ . }}"{{ end }}
+  {{- with .Get `class` }} class="{{ . }}"{{ end }}></shop-contact>

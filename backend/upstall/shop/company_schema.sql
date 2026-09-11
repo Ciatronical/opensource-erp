@@ -276,11 +276,17 @@ CREATE INDEX IF NOT EXISTS ar_link_hugoshop_payment_offen_idx
 CREATE TABLE IF NOT EXISTS batchjob_hugoshop
 (
     id         integer NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    itime      timestamp without time zone DEFAULT now(),
     function   text NOT NULL,
     partnumber text NOT NULL,
     param      text DEFAULT NULL,
     result     text DEFAULT NULL
 );
+
+-- Wann ein Auftrag entstand. Name nach kivitendo-Brauch (itime). Auf einer
+-- bestehenden Datenbank traegt der Upstall die Spalte mit Vorgabewert nach;
+-- die Bridge schreibt mit Spaltenliste und bemerkt sie nicht.
+COMMENT ON COLUMN batchjob_hugoshop.itime IS 'Zeitpunkt, zu dem der Auftrag angelegt wurde';
 
 COMMENT ON TABLE batchjob_hugoshop IS 'Shop: Warteschlange fuer Aufgaben, die auf dem Shop-Server laufen';
 
@@ -462,6 +468,27 @@ INSERT INTO defaults_oserp (key, value) VALUES ('shop_base_url', '') ON CONFLICT
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_products_link', '') ON CONFLICT (key) DO NOTHING;
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_category_link', '') ON CONFLICT (key) DO NOTHING;
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_thumbnails_link', '') ON CONFLICT (key) DO NOTHING;
+
+-- Veroeffentlichung: Vorlagensatz und Verzeichnisse. Die Verzeichnisse gelten
+-- relativ zu shop_sites_dir aus der settings.ini und duerfen nicht darueber
+-- hinausfuehren; ohne diese Wurzel schreibt der Shop keine Dateien.
+INSERT INTO defaults_oserp (key, value) VALUES ('shop_template_set', 'standard') ON CONFLICT (key) DO NOTHING;
+INSERT INTO defaults_oserp (key, value) VALUES ('shop_site_dir', '') ON CONFLICT (key) DO NOTHING;
+INSERT INTO defaults_oserp (key, value) VALUES ('shop_content_dir', 'content/de/produkt') ON CONFLICT (key) DO NOTHING;
+
+-- Bilder und Downloads: Adressmuster mit %s fuer den Dateinamen, Verzeichnisse
+-- relativ zum Verzeichnis der Shop-Webseite. Ohne Verzeichnisse entstehen
+-- keine Vorschaubilder.
+INSERT INTO defaults_oserp (key, value) VALUES ('shop_images_link', '') ON CONFLICT (key) DO NOTHING;
+INSERT INTO defaults_oserp (key, value) VALUES ('shop_downloads_link', '/downloads/%s') ON CONFLICT (key) DO NOTHING;
+INSERT INTO defaults_oserp (key, value) VALUES ('shop_images_dir', '') ON CONFLICT (key) DO NOTHING;
+INSERT INTO defaults_oserp (key, value) VALUES ('shop_thumbnails_dir', '') ON CONFLICT (key) DO NOTHING;
+INSERT INTO defaults_oserp (key, value) VALUES ('shop_thumbnail_size', '200') ON CONFLICT (key) DO NOTHING;
+
+-- Adresse, unter der die Shop-Webseite den Shop-Zugang von OpensourceERP
+-- erreicht. Der Laeufer schreibt sie mit dem Shop-Schluessel in
+-- <webseite>/oserp-shop/config.php, wo der Proxy sie liest.
+INSERT INTO defaults_oserp (key, value) VALUES ('shop_backend_url', '') ON CONFLICT (key) DO NOTHING;
 
 -- Suche: Gewichtung des Preises im Ranking
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_search_weighting', '0.5') ON CONFLICT (key) DO NOTHING;

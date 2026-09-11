@@ -1,0 +1,22 @@
+{{- /*
+  Markup des Warenkorb-Knopfes. Eigener Partial, damit ihn neben dem
+  Shortcode shop-add-to-cart auch eine Instanz aufrufen kann, die ein
+  eigenes Shortcode darauf legt. Bis 09/2026 tat das
+  sonic24.de/layouts/shortcodes/in-cart.html fuer die erzeugten
+  Produktseiten; seit publish/template.php {{< shop-add-to-cart >}} direkt
+  erzeugt, wird die Uebersteuerung nicht mehr gebraucht und ist entfallen.
+
+  Erwartet ein dict:
+    product     Teile-ID (parts_id)
+    buttonText  Beschriftung, optional
+    cartUrl     Ziel des Zweitknopfs, optional
+    max         Hoechstmenge, optional
+    class       Layout-Klassen fuer den Host, optional
+*/ -}}
+{{- partial "shop-ui-assets.html" . -}}
+<shop-add-to-cart
+  product="{{ .product }}"
+  cart-url="{{ .cartUrl | default `/warenkorb/#focus` }}"
+  {{- with .buttonText }} button-text="{{ . }}"{{ end }}
+  {{- with .max }} max="{{ . }}"{{ end }}
+  {{- with .class }} class="{{ . }}"{{ end }}></shop-add-to-cart>

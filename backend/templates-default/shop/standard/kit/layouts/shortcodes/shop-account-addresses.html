@@ -1,0 +1,10 @@
+{{- /*
+  {{< shop-account-addresses >}}
+
+  Nur das Panel, ohne Seitenleiste. Fuer die uebliche Konto-Seite ist
+  shop-account der bequemere Weg.
+*/ -}}
+{{- partial "shop-account-panel.html" (dict
+      "page" "address"
+      "loginUrl" (.Get "login-url")
+      "class" (.Get "class")) -}}

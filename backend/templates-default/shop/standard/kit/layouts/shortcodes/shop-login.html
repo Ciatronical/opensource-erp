@@ -1,0 +1,15 @@
+{{- /*
+  {{< shop-login >}}
+  {{< shop-login redirect-url="/persönliche-daten/" register-url="/registrieren/" >}}
+
+  Aeussere Layout-Klassen gehoeren an den Host — er steht im Light DOM, dort
+  greift das Theme-CSS. Innerhalb der Komponente hat Bootstrap keine Wirkung
+  auf von aussen gesetzte Klassen.
+*/ -}}
+{{- partial "shop-ui-assets.html" . -}}
+<shop-login
+  redirect-url="{{ .Get `redirect-url` | default `/` }}"
+  {{- with .Get `register-url` }} register-url="{{ . }}"{{ end }}
+  {{- with .Get `heading` }} heading="{{ . }}"{{ end }}
+  {{- with .Get `class` }} class="{{ . }}"{{ end }}
+  {{- if eq (.Get `autofocus` | default `false`) `true` }} autofocus{{ end }}></shop-login>

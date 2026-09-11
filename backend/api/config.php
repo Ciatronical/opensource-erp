@@ -136,6 +136,18 @@ class OserpConfig {
         // Relativer Name fuer DB-Eintraege (Kivitendo-Stil: 'templates/setname')
         define('OSERP_TEMPLATES_DIR_NAME', $rawTemplatesDir);
 
+        // Shop: Wurzel der Webseiten-Verzeichnisse. Die Pfade in den
+        // Shop-Einstellungen gelten relativ dazu und duerfen nicht darueber
+        // hinausfuehren — sie sind fuer Mitarbeiter aenderbar, diese Wurzel
+        // nicht. Ohne Eintrag schreibt der Shop keine Dateien.
+        define('OSERP_SHOP_SITES_DIR', $settings['system']['shop_sites_dir'] ?? '');
+
+        // Shop: Befehl, der die Webseite baut (Hugo). Steht bewusst hier und
+        // nicht in den Mandanteneinstellungen — einen Befehl soll niemand
+        // ueber die Oberflaeche setzen koennen. Leer: es werden nur Dateien
+        // geschrieben. Ausgefuehrt wird er nur von tools/shop-publish.php.
+        define('OSERP_SHOP_PUBLISH_COMMAND', $settings['system']['shop_publish_command'] ?? '');
+
         // Telefonie-Konstanten
         define('TELEPHONY_MONITOR_DIR', $settings['telephony']['monitor_dir'] ?? '/var/spool/asterisk/monitor');
 

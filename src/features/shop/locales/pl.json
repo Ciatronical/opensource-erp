@@ -90,7 +90,20 @@
             "addRow": "Dodaj wiersz",
             "removeRow": "Usuń wiersz",
             "saveError": "Nie udało się zapisać danych sklepu.",
-            "noPermission": "Nie masz uprawnień do zmiany danych sklepu."
+            "noPermission": "Nie masz uprawnień do zmiany danych sklepu.",
+            "publish": "Opublikuj",
+            "publishQueued": "Zadanie utworzone.",
+            "publishAlready": "Zadanie już czeka."
+        },
+        "publish": {
+            "title": "Publikowanie",
+            "hint": "Strony sklepu powstają przy następnym uruchomieniu skryptu publikującego.",
+            "all": "Opublikuj wszystko",
+            "open": "{count} otwartych",
+            "empty": "Brak zadań.",
+            "waiting": "czeka",
+            "queued": "Zadanie utworzone.",
+            "already": "Zadanie już czeka."
         }
     }
 }

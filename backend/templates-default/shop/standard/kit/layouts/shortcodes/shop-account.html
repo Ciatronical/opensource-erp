@@ -1,0 +1,32 @@
+{{- /*
+  {{< shop-account page="overview" >}}
+  {{< shop-account page="address" show-payment="true" >}}
+
+  Navigation und Panel in einem Zug, samt Zweispalten-Layout.
+
+  WARUM DAS LAYOUT HIER LIEGT
+  ---------------------------
+  Der alte personal-data-nav.html oeffnete <div class="row"><div class="col-md-3">
+  und liess beides OFFEN; geschlossen wurde es erst vom jeweils folgenden
+  Inhalts-Shortcode (personal-overview.html & Co.). Die beiden Shortcodes
+  waren damit nur zusammen und nur in dieser Reihenfolge benutzbar.
+
+  Hier steht das Raster im Light DOM um zwei vollstaendige Elemente herum.
+  Das ist auch die Regel, an die sich alle Widgets halten: die Shadow-Grenze
+  darf nie zwischen einem Grid-Container und seinen Grid-Kindern liegen —
+  sonst sind die Kinder keine Grid-Kinder mehr.
+
+  Die Klassen sind absichtlich framework-frei (kein row/col), damit die Seite
+  auch ohne Bootstrap steht.
+*/ -}}
+{{- $page := .Get "page" -}}
+{{- $nav := dict "current" $page "showPayment" (.Get "show-payment" | default "false") "noAssets" true -}}
+{{ partial "shop-ui-assets.html" . }}
+<style>
+.shop-account-layout{display:grid;grid-template-columns:minmax(0,16rem) minmax(0,1fr);gap:2rem;align-items:start}
+@media (max-width:48rem){.shop-account-layout{grid-template-columns:minmax(0,1fr)}}
+</style>
+<div class="shop-account-layout">
+{{ partial "shop-account-nav.html" $nav }}
+{{ partial "shop-account-panel.html" (dict "page" $page "loginUrl" (.Get "login-url") "noAssets" true) }}
+</div>

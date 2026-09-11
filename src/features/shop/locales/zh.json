@@ -90,7 +90,20 @@
             "addRow": "添加行",
             "removeRow": "删除行",
             "saveError": "无法保存商店信息。",
-            "noPermission": "您没有修改商店信息的权限。"
+            "noPermission": "您没有修改商店信息的权限。",
+            "publish": "发布",
+            "publishQueued": "任务已创建。",
+            "publishAlready": "任务已在队列中。"
+        },
+        "publish": {
+            "title": "发布",
+            "hint": "商店页面将在发布脚本下次运行时生成。",
+            "all": "全部发布",
+            "open": "{count} 个待处理",
+            "empty": "没有任务。",
+            "waiting": "等待中",
+            "queued": "任务已创建。",
+            "already": "任务已在队列中。"
         }
     }
 }

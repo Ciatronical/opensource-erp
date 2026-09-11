@@ -90,7 +90,20 @@
             "addRow": "Lägg till rad",
             "removeRow": "Ta bort rad",
             "saveError": "Butiksuppgifterna kunde inte sparas.",
-            "noPermission": "Du har inte behörighet att ändra butiksuppgifter."
+            "noPermission": "Du har inte behörighet att ändra butiksuppgifter.",
+            "publish": "Publicera",
+            "publishQueued": "Uppdrag skapat.",
+            "publishAlready": "Uppdraget är redan öppet."
+        },
+        "publish": {
+            "title": "Publicering",
+            "hint": "Butikens sidor skapas vid nästa körning av publiceringsskriptet.",
+            "all": "Publicera alla",
+            "open": "{count} öppna",
+            "empty": "Inga uppdrag.",
+            "waiting": "väntar",
+            "queued": "Uppdrag skapat.",
+            "already": "Uppdraget är redan öppet."
         }
     }
 }

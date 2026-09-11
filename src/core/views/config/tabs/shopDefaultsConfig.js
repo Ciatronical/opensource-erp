@@ -90,6 +90,17 @@ const shopDefaultsConfig = [
     { name: "shop_products_link", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopProductsLink", tooltip: "crm_fields.shopProductsLink_help" },
     { name: "shop_category_link", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopCategoryLink", tooltip: "crm_fields.shopCategoryLink_help" },
     { name: "shop_thumbnails_link", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopThumbnailsLink", tooltip: "crm_fields.shopThumbnailsLink_help" },
+    { name: "shop_images_link", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopImagesLink", tooltip: "crm_fields.shopImagesLink_help" },
+    { name: "shop_downloads_link", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopDownloadsLink", tooltip: "crm_fields.shopDownloadsLink_help" },
+
+    { name: "shop_publish", type: "headline", label: "crm_fields.shopPublish" },
+    { name: "shop_backend_url", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopBackendUrl", tooltip: "crm_fields.shopBackendUrl_help" },
+    { name: "shop_template_set", type: "dynamic-select", source: "shopTemplateSets", itemTitle: "title", itemValue: "name", fieldstyle: "max-width: 60ch", label: "crm_fields.shopTemplateSet", tooltip: "crm_fields.shopTemplateSet_help" },
+    { name: "shop_site_dir", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopSiteDir", tooltip: "crm_fields.shopSiteDir_help" },
+    { name: "shop_content_dir", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopContentDir", tooltip: "crm_fields.shopContentDir_help" },
+    { name: "shop_images_dir", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopImagesDir", tooltip: "crm_fields.shopImagesDir_help" },
+    { name: "shop_thumbnails_dir", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopThumbnailsDir", tooltip: "crm_fields.shopThumbnailsDir_help" },
+    { name: "shop_thumbnail_size", type: "input", inputType: "number", size: 10, fieldstyle: "max-width: 15ch", label: "crm_fields.shopThumbnailSize", tooltip: "crm_fields.shopThumbnailSize_help" },
 
     { name: "shop_search", type: "headline", label: "crm_fields.shopSearch" },
 

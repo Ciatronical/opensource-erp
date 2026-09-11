@@ -161,8 +161,19 @@ export default {
       try {
         const result = await oserp.login(username.value, password.value, clientCode.value, rememberMe.value)
 
-        if (result === AuthStatus.UPDATE_REQUIRED) {
-          router.replace({ name: 'system-update' })
+        // Upstall-Dateien neuer als das Schema (Prüfsumme in defaults_oserp weicht ab):
+        // wie beim Fehler "Spalte/Tabelle fehlt" das Update ausführen und einmal neu
+        // anmelden. Beim zweiten Mal nicht erneut — ein dauerhaft scheiterndes Update
+        // liefe sonst in eine Schleife; dann geht es mit dem alten Stand weiter.
+        if (result === AuthStatus.UPDATE_REQUIRED && isRetry !== true) {
+          loading.value = false
+          const ok = await runUpdate()
+          if (ok) {
+            await login(true)
+            return
+          }
+          errorMessage.value = t('LoginView.updateError')
+          errorType.value    = 'error'
           return
         }
 

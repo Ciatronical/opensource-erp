@@ -170,6 +170,10 @@ function updateSchema($data) {
     // Füge verarbeitete Erweiterungen zu den Ergebnissen hinzu
     $results['processed_extensions'] = $extensionDirs;
 
+    if ($results['success'] && !$dryRun && $updateCompanyDb) {
+        upstallStoreChecksums(DbhCompany::begin(), $extensionDirs);
+    }
+
     if ($results['success']) {
         $message = 'Schema-Update erfolgreich';
         if ($dryRun) {
@@ -1361,6 +1365,9 @@ function updateAllDatabases($data) {
                 $clientResult['update'] = $clientUpdateResult;
                 if (!$clientUpdateResult['success']) {
                     $allResults['success'] = false;
+                } elseif (!$dryRun) {
+                    // Stand festhalten, damit der Login kein Update mehr anstoesst
+                    upstallStoreChecksums($clientDb, $extensionDirs);
                 }
             } else {
                 $clientResult['update'] = [

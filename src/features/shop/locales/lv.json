@@ -90,7 +90,20 @@
             "addRow": "Pievienot rindu",
             "removeRow": "Noņemt rindu",
             "saveError": "Veikala datus neizdevās saglabāt.",
-            "noPermission": "Jums nav tiesību mainīt veikala datus."
+            "noPermission": "Jums nav tiesību mainīt veikala datus.",
+            "publish": "Publicēt",
+            "publishQueued": "Uzdevums izveidots.",
+            "publishAlready": "Uzdevums jau gaida."
+        },
+        "publish": {
+            "title": "Publicēšana",
+            "hint": "Veikala lapas tiek izveidotas nākamajā publicēšanas skripta izpildē.",
+            "all": "Publicēt visu",
+            "open": "{count} gaida",
+            "empty": "Uzdevumu nav.",
+            "waiting": "gaida",
+            "queued": "Uzdevums izveidots.",
+            "already": "Uzdevums jau gaida."
         }
     }
 }

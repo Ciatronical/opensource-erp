@@ -1,0 +1,22 @@
+{{- /*
+  {{< shop-checkout billing-page="/rechnung/" canceled-page="/bezahlung-abgebrochen/" >}}
+
+  Ersetzt checkout.html. billing-page und canceled-page sind die
+  Rueckkehr-Seiten des PayPal-Einstiegs (/shop-api/?action=beginPayment);
+  invoice-url ist das Ziel nach einer erfolgreichen Bestellung.
+
+  Anders als beim alten Shortcode steht hier kein Layout-Markup: das
+  zweispaltige Raster liegt vollstaendig im ShadowRoot der Komponente, weil
+  beide Spalten dort entstehen. Die Shadow-Grenze trennt also keinen
+  Grid-Container von seinen Kindern.
+*/ -}}
+{{- partial "shop-ui-assets.html" . -}}
+<shop-checkout
+  billing-page="{{ .Get `billing-page` }}"
+  canceled-page="{{ .Get `canceled-page` }}"
+  invoice-url="{{ .Get `invoice-url` | default `/rechnung/` }}"
+  login-url="{{ .Get `login-url` | default `/login/` }}"
+  data-protection-url="{{ .Get `data-protection-url` | default `/datenschutz/` }}"
+  {{- with .Get `paypal-image` }} paypal-image="{{ . }}"{{ end }}
+  {{- with .Get `heading` }} heading="{{ . }}"{{ end }}
+  {{- with .Get `class` }} class="{{ . }}"{{ end }}></shop-checkout>

@@ -65,9 +65,21 @@ export function useShop() {
     /** Nimmt den Artikel aus dem Shop */
     const deletePartShopData = (parts_id) => call('deletePartShopData', { parts_id })
 
+    /** Nimmt einen Artikel in die Veröffentlichung auf */
+    const publishPart = (parts_id) => call('publishShopPart', { parts_id })
+
+    /** Nimmt alle Artikel des Shops in die Veröffentlichung auf */
+    const publishAll = () => call('publishShopAll')
+
+    /** Offene und zuletzt erledigte Veröffentlichungs-Aufträge */
+    const fetchPublishJobs = () => call('getShopPublishJobs')
+
     return {
         loading,
         error,
+        publishPart,
+        publishAll,
+        fetchPublishJobs,
         fetchPartShopData,
         savePartShopData,
         deletePartShopData,

@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>shop-ui — Framework-Testseite</title>
+
+<!--
+  Prüfstand für die Widgets unter verschiedenen CSS-Frameworks.
+
+  Liegt bewusst NICHT im Hugo-Theme: Pure und Tailwind sind dort gar nicht
+  vorhanden. Die Seite wird als statische Datei aus dem Docroot ausgeliefert
+  und läuft damit same-origin — /shop-api/ ist also echt, Cookies und
+  Browser-Autofill verhalten sich wie im Shop.
+
+  Umschalten über ?theme=bootstrap5|pure|tailwind|custom|none
+-->
+
+<script>
+  const THEMES = {
+    bootstrap5: { css: '/css/bootstrap/bootstrap.min.css', auto: true,
+                  grid: ['row', 'col-md-6'], label: 'Bootstrap 5' },
+    pure:       { css: './vendor/pure-min.css',
+                  grid: ['pure-g', 'pure-u-1 pure-u-md-1-2'], label: 'Pure.css 3' },
+    tailwind:   { css: './vendor/tailwind.css',
+                  grid: ['grid md:grid-cols-2 gap-8', ''], label: 'Tailwind 3' },
+    custom:     { css: './vendor/custom-demo.css',
+                  grid: ['', ''], label: 'Eigenes CSS' },
+    none:       { css: '',
+                  grid: ['', ''], label: 'ohne Framework' },
+  };
+
+  const wanted = new URLSearchParams(location.search).get('theme') || 'bootstrap5';
+  const name = THEMES[wanted] ? wanted : 'bootstrap5';
+  const theme = THEMES[name];
+
+  // Stylesheet des Frameworks ins Dokument (für die Seite selbst).
+  if (theme.css) {
+    document.write('<link rel="stylesheet" href="' + theme.css + '">');
+  }
+
+  // Konfiguration für die Widgets. Muss stehen, BEVOR das Bundle lädt.
+  // Bei Bootstrap darf die Autoerkennung greifen, sonst geben wir den
+  // Pfad ausdrücklich vor.
+  window.ShopUIConfig = { theme: name };
+  if (theme.css && !theme.auto) window.ShopUIConfig.stylesheet = theme.css;
+</script>
+
+<style>
+  body { font-family: system-ui, sans-serif; margin: 0; padding: 2rem; max-width: 70rem; }
+  .switcher { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 2rem; }
+  .switcher a { padding: .4rem .9rem; border: 1px solid #999; border-radius: .3rem;
+                text-decoration: none; color: inherit; background: #fff; }
+  .switcher a[aria-current] { background: #222; color: #fff; border-color: #222; }
+  section { margin: 2.5rem 0; padding-top: 1.5rem; border-top: 1px solid #ddd; }
+  h1 { font-size: 1.4rem; } h2 { font-size: 1.05rem; color: #555; }
+  #diag { font: .8rem/1.6 ui-monospace, monospace; background: #f4f4f4;
+          padding: 1rem; border-radius: .3rem; white-space: pre-wrap; }
+  .hint { color: #666; font-size: .85rem; }
+</style>
+</head>
+<body>
+
+<h1>shop-ui — Framework-Testseite</h1>
+<style>
+  /* Wie der Shortcode shop-account: Raster im Light DOM, die Widgets sind
+     dessen Kinder. Die Shadow-Grenze liegt darunter, nicht dazwischen. */
+  .account-layout{display:grid;grid-template-columns:minmax(0,16rem) minmax(0,1fr);gap:2rem;align-items:start}
+  @media (max-width:48rem){.account-layout{grid-template-columns:minmax(0,1fr)}}
+</style>
+<nav class="switcher" id="switcher"></nav>
+
+<section>
+  <h2>1 — einzeln</h2>
+  <shop-login heading="Anmelden" register-url="/registrieren/"></shop-login>
+</section>
+
+<section>
+  <h2>2 — als Grid-Kind (prüft die Shadow-Grenze)</h2>
+  <p class="hint">Die Layout-Klassen des Frameworks sitzen am Host, nicht in der Komponente.</p>
+  <div id="grid"></div>
+</section>
+
+<section>
+  <h2>3 — shop-register (Selects, Radios, Fieldsets — fordert das Preset stärker)</h2>
+  <shop-register heading="Kundenkonto anlegen"></shop-register>
+</section>
+
+<section>
+  <h2>4 — shop-register im Gast-Modus (ohne Passwortfelder, ohne eigenen Button)</h2>
+  <p class="hint">So bettet <code>shop-checkout</code> das Formular ein.</p>
+  <shop-register mode="guest" heading="Gast-Bestellung"></shop-register>
+</section>
+
+<section>
+  <h2>5 — shop-add-to-cart (Produktseiten-Knopf)</h2>
+  <p class="hint">Der Klick legt wirklich etwas in den Warenkorb — damit lässt
+     sich der Warenkorb darunter füllen.</p>
+  <shop-add-to-cart product="1386" button-text="In den Warenkorb"></shop-add-to-cart>
+</section>
+
+<section>
+  <h2>6 — shop-cart (Warenkorb der laufenden Sitzung)</h2>
+  <p class="hint">Same-origin: das ist der echte Warenkorb. Leer, solange nichts
+     drin liegt — dann zeigt die Komponente den Leer-Zustand.</p>
+  <shop-cart billing-page="/rechnung/" canceled-page="/bezahlung-abgebrochen/"></shop-cart>
+</section>
+
+<section>
+  <h2>7 — Konto-Seiten (Navigation + Panel im Light-DOM-Raster)</h2>
+  <p class="hint">Ohne Anmeldung zeigen alle Panels den Hinweis „Für diesen Bereich
+     müssen Sie angemeldet sein“ — genau darum geht es hier: das alte account.js
+     sprang in dem Fall wortlos nach <code>/login/</code>. Wer sich in einem
+     zweiten Tab anmeldet und hier neu lädt, sieht die echten Daten.</p>
+  <div class="account-layout">
+    <shop-account-nav current="overview" show-payment></shop-account-nav>
+    <shop-account-overview></shop-account-overview>
+  </div>
+</section>
+
+<section>
+  <h2>8 — shop-account-profile</h2>
+  <shop-account-profile></shop-account-profile>
+</section>
+
+<section>
+  <h2>9 — shop-account-addresses</h2>
+  <shop-account-addresses></shop-account-addresses>
+</section>
+
+<section>
+  <h2>10 — shop-account-payment</h2>
+  <shop-account-payment></shop-account-payment>
+</section>
+
+<section>
+  <h2>11 — shop-account-orders</h2>
+  <shop-account-orders></shop-account-orders>
+</section>
+
+<section>
+  <h2>12 — shop-checkout (zweispaltig, Raster im ShadowRoot)</h2>
+  <p class="hint">Zeigt je nach Sitzung den angemeldeten Zweig oder das Gastformular.</p>
+  <shop-checkout billing-page="/rechnung/" canceled-page="/bezahlung-abgebrochen/"></shop-checkout>
+</section>
+
+<section>
+  <h2>13 — shop-invoice (ohne ?link= — der Hinweis statt einer leeren Seite)</h2>
+  <shop-invoice></shop-invoice>
+</section>
+
+<section>
+  <h2>14 — shop-account-buttons (Seitenkopf)</h2>
+  <p class="hint">Zeigt je nach Sitzung anmelden/registrieren oder abmelden/Konto. Der Warenkorb-Knopf folgt shop:cart-changed.</p>
+  <shop-account-buttons></shop-account-buttons>
+</section>
+
+<section>
+  <h2>15 — shop-search (Suchfeld mit Vorschlagsliste)</h2>
+  <p class="hint">Tippen, dann Pfeiltasten und Eingabetaste. Escape schließt die Liste.</p>
+  <shop-search auto-focus="false"></shop-search>
+</section>
+
+<section>
+  <h2>16 — shop-search-results (ohne ?terms= zeigt es den Hinweis)</h2>
+  <shop-search-results></shop-search-results>
+</section>
+
+<section>
+  <h2>17 — shop-contact (Kontaktformular)</h2>
+  <p class="hint">Angemeldet sind die Stammdaten vorbelegt. Absenden verschickt eine echte E-Mail.</p>
+  <shop-contact></shop-contact>
+</section>
+
+<section>
+  <h2>18 — Diagnose</h2>
+  <div id="diag">…</div>
+</section>
+
+<script type="module">
+  // Cache-Bust: nginx liefert .js mit "immutable" für ein Jahr aus.
+  await import('./dist/shop-widgets.js?t=' + Date.now());
+
+  const params = new URLSearchParams(location.search);
+  const active = params.get('theme') || 'bootstrap5';
+
+  const nav = document.getElementById('switcher');
+  for (const [key, cfg] of Object.entries(THEMES)) {
+    const a = document.createElement('a');
+    a.href = '?theme=' + key;
+    a.textContent = cfg.label;
+    if (key === active || (!THEMES[params.get('theme')] && key === 'bootstrap5')) {
+      a.setAttribute('aria-current', 'page');
+    }
+    nav.appendChild(a);
+  }
+
+  // Zweispaltiges Layout in der Grid-Sprache des jeweiligen Frameworks
+  const [rowClass, colClass] = (THEMES[active] || THEMES.bootstrap5).grid;
+  const grid = document.getElementById('grid');
+  grid.className = rowClass;
+  for (const title of ['Linke Spalte', 'Rechte Spalte']) {
+    const col = document.createElement('div');
+    col.className = colClass;
+    const widget = document.createElement('shop-login');
+    widget.setAttribute('heading', title);
+    col.appendChild(widget);
+    grid.appendChild(col);
+  }
+
+  // Diagnose: erst nach dem ersten Render, damit die Schichten stehen.
+  await customElements.whenDefined('shop-login');
+  await new Promise((r) => setTimeout(r, 250));
+
+  const el = document.querySelector('shop-login');
+  const root = el.shadowRoot;
+  const input = root.getElementById('email');
+  const button = root.querySelector('button');
+  const style = getComputedStyle(input);
+
+  document.getElementById('diag').textContent = [
+    'Preset (konfiguriert) : ' + window.ShopUIConfig.theme,
+    'Stylesheet            : ' + (window.ShopUIConfig.stylesheet || '(Autoerkennung)'),
+    'Bundle-Version        : ' + window.ShopUI.version,
+    'ShadowRoot            : ' + (root ? 'ja (' + root.mode + ')' : 'NEIN'),
+    'adoptedStyleSheets    : ' + root.adoptedStyleSheets.length +
+      '   (erwartet: defaults + Theme + Komponenten-CSS)',
+    'Klassen am Input      : ' + input.className,
+    'Klassen am Button     : ' + button.className,
+    'Input: border         : ' + style.borderTopWidth + ' ' + style.borderTopStyle + ' ' + style.borderTopColor,
+    'Input: padding        : ' + style.paddingTop + ' ' + style.paddingRight,
+    'Input: width          : ' + style.width,
+    'Input: box-sizing     : ' + style.boxSizing + '   (muss border-box sein)',
+    'Host: display         : ' + getComputedStyle(el).display + '   (muss block sein)',
+  ].join('\n');
+</script>
+
+</body>
+</html>

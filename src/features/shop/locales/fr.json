@@ -90,7 +90,20 @@
             "addRow": "Ajouter une ligne",
             "removeRow": "Supprimer la ligne",
             "saveError": "Les données boutique n'ont pas pu être enregistrées.",
-            "noPermission": "Vous n'êtes pas autorisé à modifier les données boutique."
+            "noPermission": "Vous n'êtes pas autorisé à modifier les données boutique.",
+            "publish": "Publier",
+            "publishQueued": "Tâche créée.",
+            "publishAlready": "La tâche est déjà en attente."
+        },
+        "publish": {
+            "title": "Publication",
+            "hint": "Les pages de la boutique sont créées lors de la prochaine exécution du script de publication.",
+            "all": "Tout publier",
+            "open": "{count} en attente",
+            "empty": "Aucune tâche.",
+            "waiting": "en attente",
+            "queued": "Tâche créée.",
+            "already": "La tâche est déjà en attente."
         }
     }
 }

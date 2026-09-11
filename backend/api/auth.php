@@ -179,7 +179,10 @@ function login($data) {
             "auth_groups" => $auth->fetchClientGroups(),
             "is_demo" => defined('DEMO_MODE') && DEMO_MODE,
             "demo_inactivity_minutes" => defined('DEMO_INACTIVITY_MINUTES') ? DEMO_INACTIVITY_MINUTES : 20,
-            "can_create_company" => canUserCreateCompany($context['login'])
+            "can_create_company" => canUserCreateCompany($context['login']),
+            // Upstall-Dateien neuer als das Schema dieser Datenbank? Dann
+            // stoesst das Frontend das Update an und meldet sich neu an.
+            "schema_update_needed" => upstallUpdateNeeded($dbhCompany)
         );
     } else {
         throw new ApiError("WRONG_PASSWORD", "Falsches Passwort");

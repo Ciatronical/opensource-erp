@@ -8,6 +8,7 @@
         "check:api": "php tools/check-api-health.php",
         "check:routes": "node tools/check-routes.mjs",
         "build": "vite build --configLoader native",
+        "build:shop-ui": "npm --prefix shop-ui run build",
         "preview": "vite preview --configLoader native"
     },
     "dependencies": {

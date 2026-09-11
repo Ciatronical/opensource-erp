@@ -90,7 +90,20 @@
             "addRow": "Přidat řádek",
             "removeRow": "Odebrat řádek",
             "saveError": "Údaje pro obchod se nepodařilo uložit.",
-            "noPermission": "Nemáte oprávnění měnit údaje pro obchod."
+            "noPermission": "Nemáte oprávnění měnit údaje pro obchod.",
+            "publish": "Zveřejnit",
+            "publishQueued": "Úloha založena.",
+            "publishAlready": "Úloha už čeká."
+        },
+        "publish": {
+            "title": "Zveřejnění",
+            "hint": "Stránky obchodu vzniknou při dalším běhu skriptu pro zveřejnění.",
+            "all": "Zveřejnit vše",
+            "open": "{count} otevřených",
+            "empty": "Žádné úlohy.",
+            "waiting": "čeká",
+            "queued": "Úloha založena.",
+            "already": "Úloha už čeká."
         }
     }
 }

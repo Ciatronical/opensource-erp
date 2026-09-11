@@ -90,7 +90,20 @@
             "addRow": "Lisää rivi",
             "removeRow": "Poista rivi",
             "saveError": "Kauppatietoja ei voitu tallentaa.",
-            "noPermission": "Sinulla ei ole oikeutta muuttaa kauppatietoja."
+            "noPermission": "Sinulla ei ole oikeutta muuttaa kauppatietoja.",
+            "publish": "Julkaise",
+            "publishQueued": "Työ luotu.",
+            "publishAlready": "Työ on jo avoinna."
+        },
+        "publish": {
+            "title": "Julkaiseminen",
+            "hint": "Kaupan sivut syntyvät julkaisuskriptin seuraavalla ajolla.",
+            "all": "Julkaise kaikki",
+            "open": "{count} avoinna",
+            "empty": "Ei töitä.",
+            "waiting": "odottaa",
+            "queued": "Työ luotu.",
+            "already": "Työ on jo avoinna."
         }
     }
 }

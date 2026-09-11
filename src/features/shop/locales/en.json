@@ -90,7 +90,20 @@
             "addRow": "Add row",
             "removeRow": "Remove row",
             "saveError": "The shop details could not be saved.",
-            "noPermission": "You are not allowed to change shop details."
+            "noPermission": "You are not allowed to change shop details.",
+            "publish": "Publish",
+            "publishQueued": "Job created.",
+            "publishAlready": "Job is already pending."
+        },
+        "publish": {
+            "title": "Publishing",
+            "hint": "The shop pages are created on the next run of the publishing script.",
+            "all": "Publish all",
+            "open": "{count} pending",
+            "empty": "No jobs.",
+            "waiting": "waiting",
+            "queued": "Job created.",
+            "already": "Job is already pending."
         }
     }
 }

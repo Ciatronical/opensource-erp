@@ -90,12 +90,13 @@
                             :key="unterfeld.name"
                             :field="unterfeld"
                             :werte="crmDefaults"
+                            :quellen="quellen"
                         />
                     </v-card-text>
                 </v-card>
 
                 <!-- Einzelfeld -->
-                <ShopConfigField v-else :field="field" :werte="crmDefaults" />
+                <ShopConfigField v-else :field="field" :werte="crmDefaults" :quellen="quellen" />
             </template>
         </template>
     </v-container>
@@ -104,6 +105,7 @@
 <script setup>
 import { ref, onMounted, inject } from 'vue'
 import { useI18n } from 'vue-i18n'
+import axios from 'axios'
 import ShopConfigField from './shop-config-field.component.vue'
 
 const { t } = useI18n()
@@ -118,6 +120,26 @@ const props = defineProps({
 const shopConfig = ref([])
 const configError = ref(null)
 const configLoaded = ref(false)
+
+/**
+ * Auswahllisten, die nicht in der Firmenkonfiguration stehen
+ *
+ * Die Vorlagensätze der Produktseiten liegen im Dateisystem des Servers; sie
+ * kommen deshalb aus der Shop-Erweiterung statt aus getCompanyConfig.
+ */
+const quellen = ref({ shopTemplateSets: [] })
+
+async function ladeVorlagensaetze() {
+    try {
+        const response = await axios.post('/api/shop/', { action: 'getShopTemplateSets' })
+        if (response.data?.success) {
+            quellen.value = { ...quellen.value, shopTemplateSets: response.data.payload?.sets || [] }
+        }
+    } catch (e) {
+        // Ohne Liste bleibt das Feld leer — der gespeicherte Satz gilt weiter
+        console.warn('Vorlagensätze konnten nicht geladen werden:', e)
+    }
+}
 
 /**
  * Gilt diese Gruppe gerade?
@@ -186,6 +208,7 @@ const ohneSpeichern = inject('ohneSpeichern', fn => fn())
 
 onMounted(async () => {
     await loadConfigFile()
+    await ladeVorlagensaetze()
     if (!configError.value) {
         ohneSpeichern(normalizeShopDefaults)
     }

@@ -90,7 +90,20 @@
             "addRow": "Tilføj række",
             "removeRow": "Fjern række",
             "saveError": "Butiksoplysningerne kunne ikke gemmes.",
-            "noPermission": "Du har ikke tilladelse til at ændre butiksoplysninger."
+            "noPermission": "Du har ikke tilladelse til at ændre butiksoplysninger.",
+            "publish": "Offentliggør",
+            "publishQueued": "Opgave oprettet.",
+            "publishAlready": "Opgaven er allerede åben."
+        },
+        "publish": {
+            "title": "Offentliggørelse",
+            "hint": "Butikkens sider oprettes ved næste kørsel af offentliggørelsesskriptet.",
+            "all": "Offentliggør alle",
+            "open": "{count} åbne",
+            "empty": "Ingen opgaver.",
+            "waiting": "venter",
+            "queued": "Opgave oprettet.",
+            "already": "Opgaven er allerede åben."
         }
     }
 }

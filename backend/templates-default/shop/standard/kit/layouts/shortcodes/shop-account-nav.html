@@ -1,0 +1,10 @@
+{{- /*
+  {{< shop-account-nav current="overview" >}}
+
+  Nur die Seitenleiste. Fuer die uebliche Konto-Seite ist shop-account der
+  bequemere Weg — der bringt das Panel und das Layout gleich mit.
+*/ -}}
+{{- partial "shop-account-nav.html" (dict
+      "current" (.Get "current")
+      "showPayment" (.Get "show-payment" | default "false")
+      "class" (.Get "class")) -}}

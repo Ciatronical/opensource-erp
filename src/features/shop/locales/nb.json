@@ -90,7 +90,20 @@
             "addRow": "Legg til rad",
             "removeRow": "Fjern rad",
             "saveError": "Butikkopplysningene kunne ikke lagres.",
-            "noPermission": "Du har ikke tillatelse til å endre butikkopplysninger."
+            "noPermission": "Du har ikke tillatelse til å endre butikkopplysninger.",
+            "publish": "Publiser",
+            "publishQueued": "Oppdrag opprettet.",
+            "publishAlready": "Oppdraget er allerede åpent."
+        },
+        "publish": {
+            "title": "Publisering",
+            "hint": "Butikkens sider lages ved neste kjøring av publiseringsskriptet.",
+            "all": "Publiser alle",
+            "open": "{count} åpne",
+            "empty": "Ingen oppdrag.",
+            "waiting": "venter",
+            "queued": "Oppdrag opprettet.",
+            "already": "Oppdraget er allerede åpent."
         }
     }
 }

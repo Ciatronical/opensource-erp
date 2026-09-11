@@ -90,7 +90,20 @@
             "addRow": "Adaugă rând",
             "removeRow": "Elimină rândul",
             "saveError": "Datele de magazin nu au putut fi salvate.",
-            "noPermission": "Nu aveți dreptul să modificați datele de magazin."
+            "noPermission": "Nu aveți dreptul să modificați datele de magazin.",
+            "publish": "Publică",
+            "publishQueued": "Sarcină creată.",
+            "publishAlready": "Sarcina este deja în așteptare."
+        },
+        "publish": {
+            "title": "Publicare",
+            "hint": "Paginile magazinului apar la următoarea rulare a scriptului de publicare.",
+            "all": "Publică tot",
+            "open": "{count} în așteptare",
+            "empty": "Nicio sarcină.",
+            "waiting": "așteaptă",
+            "queued": "Sarcină creată.",
+            "already": "Sarcina este deja în așteptare."
         }
     }
 }

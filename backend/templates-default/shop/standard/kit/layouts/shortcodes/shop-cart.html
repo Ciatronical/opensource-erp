@@ -1,0 +1,16 @@
+{{- /*
+  {{< shop-cart billing-page="/rechnung/" canceled-page="/bezahlung-abgebrochen/" >}}
+  {{< shop-cart ... invoicing-canceled="true" >}}
+
+  Ersetzt cart.html. billing-page und canceled-page sind die Rueckkehr-Seiten
+  des PayPal-Einstiegs (/shop-api/?action=beginPayment).
+*/ -}}
+{{- partial "shop-ui-assets.html" . -}}
+<shop-cart
+  billing-page="{{ .Get `billing-page` }}"
+  canceled-page="{{ .Get `canceled-page` }}"
+  invoicing-canceled="{{ .Get `invoicing-canceled` | default `false` }}"
+  checkout-url="{{ .Get `checkout-url` | default `/kasse/#focus` }}"
+  continue-url="{{ .Get `continue-url` | default `/kategorien/` }}"
+  {{- with .Get `heading` }} heading="{{ . }}"{{ end }}
+  {{- with .Get `class` }} class="{{ . }}"{{ end }}></shop-cart>

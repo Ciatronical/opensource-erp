@@ -90,7 +90,20 @@
             "addRow": "Lisa rida",
             "removeRow": "Eemalda rida",
             "saveError": "Poeandmeid ei õnnestunud salvestada.",
-            "noPermission": "Teil puudub õigus poeandmeid muuta."
+            "noPermission": "Teil puudub õigus poeandmeid muuta.",
+            "publish": "Avalda",
+            "publishQueued": "Ülesanne loodud.",
+            "publishAlready": "Ülesanne on juba ootel."
+        },
+        "publish": {
+            "title": "Avaldamine",
+            "hint": "Poe lehed tekivad avaldamisskripti järgmisel käivitusel.",
+            "all": "Avalda kõik",
+            "open": "{count} ootel",
+            "empty": "Ülesandeid pole.",
+            "waiting": "ootab",
+            "queued": "Ülesanne loodud.",
+            "already": "Ülesanne on juba ootel."
         }
     }
 }

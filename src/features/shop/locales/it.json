@@ -90,7 +90,20 @@
             "addRow": "Aggiungi riga",
             "removeRow": "Rimuovi riga",
             "saveError": "Impossibile salvare i dati del negozio.",
-            "noPermission": "Non si dispone dell'autorizzazione per modificare i dati del negozio."
+            "noPermission": "Non si dispone dell'autorizzazione per modificare i dati del negozio.",
+            "publish": "Pubblica",
+            "publishQueued": "Incarico creato.",
+            "publishAlready": "L'incarico è già in attesa."
+        },
+        "publish": {
+            "title": "Pubblicazione",
+            "hint": "Le pagine del negozio nascono alla prossima esecuzione dello script di pubblicazione.",
+            "all": "Pubblica tutto",
+            "open": "{count} in attesa",
+            "empty": "Nessun incarico.",
+            "waiting": "in attesa",
+            "queued": "Incarico creato.",
+            "already": "L'incarico è già in attesa."
         }
     }
 }

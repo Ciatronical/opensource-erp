@@ -1,0 +1,8 @@
+node_modules/
+
+# Das Bundle für die Webseiten baut "npm run build" in den Vorlagensatz:
+#   backend/templates-default/shop/standard/kit/assets/shop-ui/shop-widgets.js
+# Dort wird es eingecheckt — der Läufer überträgt es auch auf Server ohne Node.
+#
+# dist/ dient nur noch der Demo-Seite (build:dev, watch; mit Sourcemap).
+dist/

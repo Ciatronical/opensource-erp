@@ -1,0 +1,39 @@
+{{- /*
+  Bindet das Widget-Bundle ein. Wird von jedem Widget-Shortcode aufgerufen —
+  das ist unschaedlich: ein ES-Modul wird pro URL genau einmal geladen und
+  ausgefuehrt, auch wenn das script-Tag mehrfach im Dokument steht.
+
+  Der Fingerprint im Dateinamen ist Pflicht, weil nginx .js-Dateien mit
+  "expires 1y; immutable" ausliefert. Ohne ihn wuerde eine neue Bundle-Version
+  bei wiederkehrenden Besuchern ein Jahr lang nicht ankommen.
+
+  Theming: das Preset bestimmt, welche CSS-Klassen die Widgets vergeben und
+  welches Stylesheet sie in ihren ShadowRoot adoptieren. Konfiguration in der
+  Site-Config, z.B.
+
+      "params": { "shopui": { "theme": "bootstrap5" } }
+      "params": { "shopui": { "theme": "pure" } }
+      "params": { "shopui": { "theme": "tailwind", "stylesheet": "/css/site.css" } }
+      "params": { "shopui": { "theme": "custom",   "stylesheet": "/css/shop-ui.css" } }
+
+  Ohne Angabe gilt "bootstrap5"; das Stylesheet wird dann automatisch aus dem
+  bereits geladenen <link> der Seite ermittelt.
+
+  Einzelne Rollen lassen sich pro Shop ueberschreiben — vor allem bei Tailwind
+  noetig, weil dort die Farben in den Klassen stecken:
+
+      "params": { "shopui": { "theme": "tailwind", "classes": {
+          "buttonSecondary": "inline-block rounded px-4 py-2 bg-teal-700 text-white"
+      }}}
+*/ -}}
+{{- $cfg := site.Params.shopui | default dict -}}
+{{- $theme := $cfg.theme | default "bootstrap5" -}}
+{{- $sheet := $cfg.stylesheet | default "" -}}
+{{- $classes := $cfg.classes | default dict -}}
+{{- $allowUrl := $cfg.allowurltheme | default false -}}
+{{- with resources.Get "shop-ui/shop-widgets.js" -}}
+{{- $js := . | fingerprint "sha256" -}}
+<script type="module" data-shop-ui-theme="{{ $theme }}"{{ with $sheet }} data-shop-ui-stylesheet="{{ . }}"{{ end }}{{ if $classes }} data-shop-ui-classes="{{ jsonify $classes }}"{{ end }}{{ if $allowUrl }} data-shop-ui-allow-url="true"{{ end }} src="{{ $js.RelPermalink }}" integrity="{{ $js.Data.Integrity }}"></script>
+{{- else -}}
+{{- warnf "shop-ui: assets/shop-ui/shop-widgets.js nicht gefunden — ist der Mount oserp-shop/assets/shop-ui → assets/shop-ui gesetzt und hat der Läufer von OpensourceERP (tools/shop-publish.php) das Paket übertragen?" -}}
+{{- end -}}

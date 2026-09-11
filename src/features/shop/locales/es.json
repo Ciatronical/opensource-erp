@@ -90,7 +90,20 @@
             "addRow": "Añadir fila",
             "removeRow": "Quitar fila",
             "saveError": "No se pudieron guardar los datos de tienda.",
-            "noPermission": "No tiene permiso para modificar los datos de tienda."
+            "noPermission": "No tiene permiso para modificar los datos de tienda.",
+            "publish": "Publicar",
+            "publishQueued": "Trabajo creado.",
+            "publishAlready": "El trabajo ya está pendiente."
+        },
+        "publish": {
+            "title": "Publicación",
+            "hint": "Las páginas de la tienda se crean en la próxima ejecución del script de publicación.",
+            "all": "Publicar todo",
+            "open": "{count} pendientes",
+            "empty": "Sin trabajos.",
+            "waiting": "en espera",
+            "queued": "Trabajo creado.",
+            "already": "El trabajo ya está pendiente."
         }
     }
 }

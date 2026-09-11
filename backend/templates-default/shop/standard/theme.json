@@ -1,0 +1,12 @@
+{
+    "name": "standard",
+    "title": "Standard (Hugo)",
+    "hugo_theme": "hugoshop",
+    "description": "Produktseite für das Hugo-Theme hugoshop. Front Matter für die Suchmaschinen, Warenkorb über den Shortcode shop-add-to-cart.",
+    "outputs": {
+        "product": "product.md.php"
+    },
+    "data": {
+        "category_groups": "data/category_groups.json"
+    }
+}

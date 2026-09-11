@@ -90,7 +90,20 @@
             "addRow": "Pridėti eilutę",
             "removeRow": "Pašalinti eilutę",
             "saveError": "Parduotuvės duomenų išsaugoti nepavyko.",
-            "noPermission": "Neturite teisės keisti parduotuvės duomenų."
+            "noPermission": "Neturite teisės keisti parduotuvės duomenų.",
+            "publish": "Paskelbti",
+            "publishQueued": "Užduotis sukurta.",
+            "publishAlready": "Užduotis jau laukia."
+        },
+        "publish": {
+            "title": "Paskelbimas",
+            "hint": "Parduotuvės puslapiai sukuriami kitą kartą paleidus skelbimo skriptą.",
+            "all": "Paskelbti viską",
+            "open": "{count} laukia",
+            "empty": "Užduočių nėra.",
+            "waiting": "laukia",
+            "queued": "Užduotis sukurta.",
+            "already": "Užduotis jau laukia."
         }
     }
 }

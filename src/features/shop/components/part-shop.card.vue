@@ -19,6 +19,17 @@
             <span class="text-subtitle-1 font-weight-medium">{{ t('ShopView.partCard.title') }}</span>
             <v-spacer />
             <v-progress-circular v-if="speichert || laedt" indeterminate size="16" width="2" />
+            <v-btn
+                v-if="partsId && daten.listed && darfBearbeiten"
+                variant="text"
+                size="small"
+                prepend-icon="mdi-cloud-upload-outline"
+                :loading="veroeffentlicht"
+                class="ml-2"
+                @click="veroeffentlichen"
+            >
+                {{ t('ShopView.partCard.publish') }}
+            </v-btn>
         </v-card-title>
         <v-divider />
         <v-card-text class="py-2 px-2 px-sm-3">
@@ -190,6 +201,7 @@ function leer() {
 const daten = ref(leer())
 const laedt = ref(false)
 const speichert = ref(false)
+const veroeffentlicht = ref(false)
 const fehler = ref('')
 
 let bereit = false      // erst nach dem Laden speichern
@@ -346,6 +358,33 @@ onBeforeUnmount(() => {
         speichern(props.partsId)
     }
 })
+
+/**
+ * Nimmt den Artikel in die Veröffentlichung auf
+ *
+ * Legt nur den Auftrag an. Die Seite entsteht beim nächsten Lauf von
+ * tools/shop-publish.php — die Anwendung schreibt selbst keine Dateien.
+ */
+async function veroeffentlichen() {
+    // Ausstehende Änderungen zuerst, sonst entstünde die Seite aus altem Stand
+    if (timer) {
+        clearTimeout(timer)
+        timer = null
+        await speichern(props.partsId)
+    }
+
+    veroeffentlicht.value = true
+    const ergebnis = await shop.publishPart(Number(props.partsId))
+    veroeffentlicht.value = false
+
+    if (shop.error.value) {
+        toasts.error(fehlerText(shop.error.value))
+        return
+    }
+    toasts.success(ergebnis?.queued === false
+        ? t('ShopView.partCard.publishAlready')
+        : t('ShopView.partCard.publishQueued'))
+}
 
 /**
  * Neuanlage: speichert die gesammelten Angaben am eben angelegten Artikel

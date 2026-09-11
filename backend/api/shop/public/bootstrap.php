@@ -45,6 +45,7 @@ require_once __DIR__.'/../lib/mail.php';
 require_once __DIR__.'/../lib/payment.php';
 require_once __DIR__.'/../lib/analytics.php';
 require_once __DIR__.'/../lib/withdrawal.php';
+require_once __DIR__.'/../lib/redirect.php';
 
 /**
  * Verbindung zur Auth-Datenbank

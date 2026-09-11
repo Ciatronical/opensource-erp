@@ -90,7 +90,20 @@
             "addRow": "Adicionar linha",
             "removeRow": "Remover linha",
             "saveError": "Não foi possível guardar os dados da loja.",
-            "noPermission": "Não tem permissão para alterar os dados da loja."
+            "noPermission": "Não tem permissão para alterar os dados da loja.",
+            "publish": "Publicar",
+            "publishQueued": "Tarefa criada.",
+            "publishAlready": "A tarefa já está pendente."
+        },
+        "publish": {
+            "title": "Publicação",
+            "hint": "As páginas da loja são criadas na próxima execução do script de publicação.",
+            "all": "Publicar tudo",
+            "open": "{count} pendentes",
+            "empty": "Sem tarefas.",
+            "waiting": "em espera",
+            "queued": "Tarefa criada.",
+            "already": "A tarefa já está pendente."
         }
     }
 }
