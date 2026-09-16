@@ -1,6 +1,7 @@
 # Shop: Ablösung der Bridge
 
-Stand 2026-09-11. Die Bridge (`dev.hugoshop.dev/kivitendo_bridge`) wird nicht
+Stand 2026-09-16: Die Stufen A bis E sind erledigt, offen ist F (der
+Lieferantenimport). Die Bridge (`dev.hugoshop.dev/kivitendo_bridge`) wird nicht
 mehr gepflegt, auch die Shop-UI nicht. Die Erweiterung Shop übernimmt alle
 Aufgaben, die die Bridge bisher erledigt hat.
 
@@ -25,9 +26,9 @@ Dieses Dokument erfasst, was darüber hinaus in der Bridge steckt.
 | `shop-ui/` | Käuferoberfläche, 17 Web Components (Lit), Build mit esbuild | in OpensourceERP, Bundle im Paket (Stufe B) | — |
 | `sql/install.sql`, `sql/migrations/` | Schema | übernommen (`backend/upstall/shop/`) | — |
 | `sql/dev.sql`, `zufallspreise.sql`, `database_source.sql`, `db_query.sql`, `search.sql` | Entwicklungsdaten und Abfragen | — | entfällt |
-| `test/payment-pending.php` | Prüfung schwebender Zahlungen | — | als Prüfwerkzeug nach `tools/` (optional) |
+| `test/payment-pending.php` | Prüfung schwebender Zahlungen | — | nicht übernommen (Stufe E): prüft Klassen der Bridge; der Abgleich in OpensourceERP ist über den Auftrag `reconcile_payments` geprüft |
 | `test/test.pl`, `test/data.json` | Test des Perl-Drucks | — | entfällt, der Druck läuft in OSERP ohne Perl |
-| `dev/widerruf.md` | Rechtsgrundlage und Stand des Widerrufs | Funktion übernommen (`lib/withdrawal.php`) | Doku nach `dev/` |
+| `dev/widerruf.md` | Rechtsgrundlage und Stand des Widerrufs | Funktion übernommen (`lib/withdrawal.php`), Doku `dev/shop-widerruf.md` (Stufe E) | — |
 | `config.php.template`, `passwd.php.template` | Konfiguration je Instanz | ersetzt durch die Shop-Einstellungen | — |
 
 ### Batchjob-Läufer
@@ -492,3 +493,54 @@ veröffentlicht wird. Gegeneinander gesperrt sind die beiden Bauten nicht.
 
 Nicht geprüft: auf dem Server, über den Proxy gegen OpensourceERP und mit
 PayPal.
+
+## Stufe E — was angelegt wurde
+
+### Hinweis in der Bridge
+
+Die README der Bridge sagt jetzt gleich oben, dass die Erweiterung sie abgelöst
+hat, was wo in OpensourceERP liegt und dass neue Arbeit nicht mehr dorthin
+gehört. Derselbe Hinweis steht in `dev/widerruf.md` der Bridge. Gelöscht wurde
+dort nichts: `framework/` wird gebraucht, solange `publish/run.php` der Instanz
+den Lieferantenimport erledigt (Stufe F).
+
+### Übernommene und verworfene Reste
+
+| Aus der Bridge | Wohin |
+| --- | --- |
+| `dev/widerruf.md` | `dev/shop-widerruf.md`, rechtlicher Teil unverändert, Stand auf OpensourceERP umgeschrieben |
+| `web/oserp/einstellungen-uebernehmen.php` | `tools/shop-bridge-settings.php` (Stufe D) |
+| `web/oserp/README.md` | Umstellung und Reverse-Proxy stehen in Stufe D |
+| `test/payment-pending.php` | nicht übernommen: prüft `KiviShopAccount` und `PayPalConnector` der Bridge. Was es absichert — dass der Regelbetrieb nichts bucht —, gilt in OpensourceERP durch `paymentApplyState()`, das ausschließlich nach `ar_link_hugoshop` schreibt |
+| `test/test.pl`, `test/data.json` | entfallen, der Druck läuft ohne Perl |
+| `sql/`, `batchjob/`, `payment/`, `hugo/`, `web/`, `shop-ui/` | abgelöst (Stufen A bis D) |
+| `chatgpt.*.php` der Instanz | entfallen (Entscheidung 1) |
+
+### Neue Dokumentation
+
+`dev/shop-betrieb.md` beschreibt den laufenden Betrieb: die Teile und wo sie
+liegen, das Einrichten einer Webseite, den Läufer und seine Aufträge, die
+Vorlagensätze mit ihren Schichten, die 40 Einstellungen nach Gruppen, die
+wiederkehrenden Aufgaben und die häufigen Störungen samt Ursache. Die drei
+bisherigen Dokumente bleiben, was sie sind: Migration, Veröffentlichung und
+diese Ablösung.
+
+### Nachgesehen: was in sonic24 noch am alten JavaScript hängt
+
+Seit Stufe D beantwortet OpensourceERP die Aufrufe der Webseite, und die
+Antwort trägt jetzt eine Hülle aus `success`, `text` und `payload`.
+
+- Kopfzeile, Suche und Kontoknöpfe des Themes schalten über `params.shopui` auf
+  die Widgets um; das alte `js/shopwindow.js` ist nur der Rückfall für Shops
+  ohne Shop-UI und wird bei sonic24 nicht geladen.
+- Das Widerrufsformular lädt eigenes JavaScript. Es kommt mit der Hülle
+  zurecht, weil `fetchRequest()` `success` auswertet.
+- Die Shortcodes `checkout`, `invoice` und `personal-order` des Themes rufen
+  `/shop-api/` direkt auf; der Inhalt von sonic24 verwendet sie nicht.
+
+### Geprüft
+
+Nichts Ausführbares — Stufe E ist Dokumentation. Geprüft wurden die Angaben in
+den Dokumenten gegen den Quelltext: Aktionen und Einstellungen des Widerrufs,
+die Liste der 40 Einstellungen, die Auftragsarten, die Reihenfolge im Läufer
+und die Fehlermeldungen von Proxy und öffentlichem Zugang.

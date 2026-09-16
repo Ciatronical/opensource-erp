@@ -1,6 +1,8 @@
 # Erweiterung Shop — Überblick und Migrationsstand
 
-Detailplanung der Fachlogik: `shop-migration-zuschnitt.md`.
+Detailplanung der Fachlogik: `shop-migration-zuschnitt.md`. Laufender Betrieb:
+`shop-betrieb.md`. Produktseiten: `shop-veroeffentlichung.md`. Ablösung der
+Bridge: `shop-bridge-abloesung.md`. Widerruf: `shop-widerruf.md`.
 
 ## Ziel
 
