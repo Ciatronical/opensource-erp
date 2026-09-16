@@ -2,11 +2,12 @@
 
 import { ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 
-export function useCarAutoSave({ car, isEditMode, hasValidationErrors, oserpData, carsStore, router, props, t, orders, validationCleanup, initialLoaded, pendingKbaData, kbaData, pendingScanImages, useSpecialKba, kbaSelectDialog, readonly }) {
+export function useCarAutoSave({ car, isEditMode, hasValidationErrors, oserpData, carsStore, router, props, t, orders, validationCleanup, initialLoaded, pendingKbaData, kbaData, pendingScanImages, useSpecialKba, kbaSelectDialog, readonly, savedCarId: savedCarIdRef }) {
     const saving = ref(false)
     const loading = ref(false)
     const error = ref('')
-    const savedCarId = ref(null)
+    // Optional von der View übergeben, damit sie isEditMode nach dem ersten INSERT umschalten kann
+    const savedCarId = savedCarIdRef || ref(null)
 
     const isReadonly = () => !!(readonly && readonly.value)
 

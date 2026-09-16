@@ -338,6 +338,8 @@ import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick, defineAsync
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { oserpStore } from '@/core/stores/oserp.store.js'
+import { useViewHistory } from '@/core/composables/useViewHistory.js'
+import { entityRoute } from '@/core/constants/routes.js'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
 import MessagesView from '@/core/components/messages/messages.view.vue'
 import BillingTab from './tabs/billing.tab.vue'
@@ -390,6 +392,22 @@ export default {
         const route = useRoute()
         const router = useRouter()
         const displayMessages = ref([])
+        const { saveToHistory } = useViewHistory()
+
+        // Kunde/Lieferant im "Zuletzt besucht"-Verlauf der Schnellsuche merken
+        // (beim Öffnen zum Bearbeiten und direkt nach der Neuanlage).
+        function rememberInHistory() {
+            const profile = oserpData.customer_vendor?.profile
+            if (!profile?.id) return
+            const type = (profile.src || entitySrc.value) === 'V' ? 'vendor' : 'customer'
+            saveToHistory({
+                type,
+                id: profile.id,
+                title: profile.name || '',
+                subtitle: [profile.customernumber || profile.vendornumber, profile.city].filter(Boolean).join(' · '),
+                route: entityRoute(type, profile.id)
+            })
+        }
         const isNewMode = ref(!props.id)
         const entitySrc = ref(props.src)
         const saving = ref(false)
@@ -685,6 +703,7 @@ export default {
                     initialLoaded = false
                     await oserpData.fetchCustomerOrVendor(newId, entitySrc.value)
                     updateLocalData()
+                    rememberInHistory()
                     await nextTick()
                     initialLoaded = true
                 } else {
@@ -914,6 +933,7 @@ export default {
             } else {
                 await oserpData.fetchCustomerOrVendor(id.value, entitySrc.value)
                 updateLocalData()
+                rememberInHistory()
             }
             await nextTick()
             initialLoaded = true

@@ -1116,6 +1116,9 @@
                     <v-icon class="mr-2">mdi-file-image-outline</v-icon>
                     {{ t('CarEditView.scanImages.dialogTitle') }}
                     <v-spacer />
+                    <v-btn v-if="scanOriginalSrc" variant="tonal" size="small" color="blue-darken-2" class="mr-2" prepend-icon="mdi-download" :title="t('CarEditView.scanImages.downloadTooltip')" @click="downloadScanOriginal">
+                        {{ t('CarEditView.scanImages.download') }}
+                    </v-btn>
                     <v-btn icon variant="text" size="small" @click="scanImagesDialog = false">
                         <v-icon>mdi-close</v-icon>
                     </v-btn>
@@ -1136,10 +1139,10 @@
                                 {{ scanOriginalSrc ? t('CarEditView.scanImages.crops') : t('CarEditView.scanImages.noCropsOnly') }}
                             </div>
                             <v-row dense>
-                                <v-col v-for="(src, field) in fieldCrops" :key="field" cols="6" sm="4" md="3">
-                                    <v-card variant="outlined" class="pa-1">
-                                        <img :src="src" class="rounded" style="height:60px; width:100%; object-fit:contain; display:block;" />
-                                        <div class="text-caption text-center mt-1">{{ fieldCropLabels[field] || field }}</div>
+                                <v-col v-for="crop in allScanCrops" :key="crop.field" cols="6" sm="4" md="3">
+                                    <v-card variant="outlined" class="pa-1" :title="crop.label">
+                                        <img :src="crop.src" class="rounded" style="height:60px; width:100%; object-fit:contain; display:block;" />
+                                        <div class="text-caption text-center mt-1 text-truncate">{{ crop.label }}</div>
                                     </v-card>
                                 </v-col>
                             </v-row>
@@ -1306,7 +1309,7 @@ export default {
 
     setup(props) {
         const readonly = computed(() => !!props.readonly)
-        const { t, locale } = useI18n()
+        const { t, te, locale } = useI18n()
         const router = useRouter()
         const route = useRoute()
         const isMechanicMode = computed(() => route.name === 'mechanic-car')
@@ -1332,8 +1335,12 @@ export default {
         const carsStore = lxcarsStore()
         const wikiStoreInstance = wikiStore()
 
-        const isEditMode = computed(() => !!props.id)
-        const carId = computed(() => props.id)
+        // Nach dem ersten Auto-Save einer Neuanlage setzt useCarAutoSave die neue ID hier hinein.
+        // carId/isEditMode hängen daran, damit Buttons (HGS, Rotes Heft, Fahrzeugschein …) und die
+        // Auftrags-Karte sofort erscheinen und nicht erst nach einem Reload der Seite.
+        const savedCarId = ref(null)
+        const carId = computed(() => props.id || savedCarId.value)
+        const isEditMode = computed(() => !!carId.value)
 
         const car = ref({
             c_ln: '', c_2: '', c_3: '', c_d2: '', c_em: '', c_mkb: '', c_t: '',
@@ -1518,25 +1525,35 @@ export default {
         const scanImagesLoading = ref(false)
 
         const {
-            saving, loading, error, savedCarId,
+            saving, loading, error,
             toggleShield, onFocusIn, onFocusOut, triggerSave, markDeleted
-        } = useCarAutoSave({ car, isEditMode, hasValidationErrors, oserpData, carsStore, router, props, t, orders, validationCleanup, initialLoaded, pendingKbaData, kbaData, pendingScanImages, useSpecialKba, kbaSelectDialog, readonly })
+        } = useCarAutoSave({ car, isEditMode, hasValidationErrors, oserpData, carsStore, router, props, t, orders, validationCleanup, initialLoaded, pendingKbaData, kbaData, pendingScanImages, useSpecialKba, kbaSelectDialog, readonly, savedCarId })
 
         // Aufgerufenes Fahrzeug im "Zuletzt besucht"-Verlauf der Schnellsuche merken.
         // Greift bei jedem Öffnen eines Fahrzeugs (nicht nur aus der Fahrzeugsuche),
         // damit auch über Auftrag/Kunde/Direktlink besuchte Fahrzeuge auftauchen.
         const { saveToHistory: saveVehicleToHistory } = useViewHistory()
-        watch(initialLoaded, (loaded) => {
-            if (!loaded || !isEditMode.value || readonly.value) return
+        function rememberVehicleInHistory() {
             const plate = car.value.c_ln
-            if (!plate) return
+            if (!plate || !carId.value) return
             saveVehicleToHistory({
                 type: 'vehicle',
-                id: Number(props.id),
+                id: Number(carId.value),
                 title: plate,
                 subtitle: [kbaData.value?.hersteller, kbaData.value?.name, oserpData.customer_vendor?.profile?.name].filter(Boolean).join(' · '),
-                route: { name: 'car', params: { id: Number(props.id) } }
+                route: { name: 'car', params: { id: Number(carId.value) } }
             })
+        }
+        watch(initialLoaded, (loaded) => {
+            if (!loaded || !isEditMode.value || readonly.value) return
+            rememberVehicleInHistory()
+        })
+        // Neu angelegtes Fahrzeug: nach dem ersten INSERT ebenfalls in den Verlauf
+        // und die Lade-Aktionen nachholen, die sonst nur beim Öffnen laufen.
+        watch(savedCarId, (id) => {
+            if (!id) return
+            rememberVehicleInHistory()
+            loadWikiArticles()
         })
 
         // Scan-Daten übernehmen (von car.scan.view.vue via Store)
@@ -1800,9 +1817,9 @@ export default {
             pendingKbaData.value = kba
 
             // Fahrzeug existiert bereits → direkt Special-KBA speichern
-            const carId = Number(props.id || savedCarId.value)
-            if (carId) {
-                await carsStore.saveSpecialKba(carId, kba)
+            const existingId = Number(carId.value)
+            if (existingId) {
+                await carsStore.saveSpecialKba(existingId, kba)
                 pendingKbaData.value = null
                 return
             }
@@ -1909,7 +1926,7 @@ export default {
         }
 
         function createNewOrder() {
-            router.push({ name: 'order-new', query: { c_id: props.id } })
+            router.push({ name: 'order-new', query: { c_id: carId.value } })
         }
 
         function navigateToCustomer() {
@@ -1920,7 +1937,7 @@ export default {
         }
 
         function openCarRegistration() {
-            router.push({ name: 'car-registration', params: { id: props.id } })
+            router.push({ name: 'car-registration', params: { id: carId.value } })
         }
 
         // ===== AAG-Online per FIN (bei TSN-Platzhalter) =====
@@ -1965,7 +1982,7 @@ export default {
                 (car.value.c_d2 || '').trim() ||
                 (car.value.c_mt || '').trim()
             const title = [plate, model].filter(Boolean).join(' · ') || 'AAG-Online'
-            const name = 'aag-' + (plate.replace(/\s+/g, '') || String(props.id) || 'online')
+            const name = 'aag-' + (plate.replace(/\s+/g, '') || String(carId.value) || 'online')
             return { title, name }
         }
 
@@ -1975,7 +1992,7 @@ export default {
             // neu laden (gewähltes Fahrzeug/Warenkorb weg) und den Beleg neu mit c_mkb
             // seeden. Für eine bewusste Neu-Übertragung (geänderte Daten) das
             // AAG-Fenster vorher schließen.
-            if (aagWindowOpen() && aagWindowCarId() === Number(props.id)) {
+            if (aagWindowOpen() && aagWindowCarId() === Number(carId.value)) {
                 openAppWindow() // bringt das vorhandene Fenster in den Vordergrund
                 return
             }
@@ -1990,7 +2007,7 @@ export default {
             try {
                 const { data } = await axios.post('/api/lxcars/', {
                     action: 'getAagVehicleUrl',
-                    c_id: Number(props.id) || 0,
+                    c_id: Number(carId.value) || 0,
                     vin: (car.value.c_fin || '').trim()
                 })
 
@@ -2007,7 +2024,7 @@ export default {
                 if (aagWindow) {
                     aagWindow.location.href = portalUrl
                     aagWindow.focus()
-                    setAagWindowCarId(Number(props.id))
+                    setAagWindowCarId(Number(carId.value))
                     startAagCloseWatch()
                 } else {
                     window.open(portalUrl, '_blank')
@@ -2097,7 +2114,7 @@ export default {
             try {
                 const { data } = await axios.post('/api/lxcars/', {
                     action: 'getHgsVehicleUrl',
-                    c_id: Number(props.id) || 0
+                    c_id: Number(carId.value) || 0
                 })
                 const portalUrl = data?.success ? data.payload?.portalUrl : null
                 if (!portalUrl) {
@@ -2149,7 +2166,7 @@ export default {
             if (ktypeLoading.value || !isEditMode.value || !aagConfigured.value || !carIsIdentifiable()) return
             ktypeLoading.value = true
             try {
-                const res = await carsStore.resolveKtype(Number(props.id))
+                const res = await carsStore.resolveKtype(Number(carId.value))
                 if (res?.c_ktype) {
                     ktypeNo.value = res.c_ktype
                     ktypeDesc.value = res.c_ktype_desc || ''
@@ -2177,7 +2194,7 @@ export default {
             // Pro Browser-Session nur einmal je Fahrzeug versuchen — sonst würden
             // Fahrzeuge, für die AAG keinen Motorcode kennt, bei jedem Öffnen erneut
             // mehrere AAG-Abfragen auslösen.
-            const triedKey = `aag_eng_tried_${props.id}`
+            const triedKey = `aag_eng_tried_${carId.value}`
             const needEngines = !!(car.value.c_fin || '').trim()
                 && !installedEnginesList.value.length
                 && !sessionStorage.getItem(triedKey)
@@ -2190,7 +2207,7 @@ export default {
         // unterscheidet (sonst ist es nur das Echo, KEINE echte Portal-Auswahl).
         async function syncAagEngine() {
             try {
-                const res = await carsStore.getAagEngine(Number(props.id), aagEngineSeed)
+                const res = await carsStore.getAagEngine(Number(carId.value), aagEngineSeed)
                 if (!res) return
                 if (res.installed_engines !== undefined && res.installed_engines !== null) {
                     car.value.installed_engines = res.installed_engines
@@ -2412,10 +2429,10 @@ export default {
 
         // Crops vom Backend laden wenn Fahrzeug gespeicherte Scan-Daten hat
         async function loadScanCropsFromBackend() {
-            const carId = Number(props.id || savedCarId.value)
-            if (!carId || loadedScanData.value) return
+            const cId = Number(carId.value)
+            if (!cId || loadedScanData.value) return
             try {
-                loadedScanData.value = await carsStore.getScanCrops(carId)
+                loadedScanData.value = await carsStore.getScanCrops(cId)
             } catch (e) {
                 console.error('Error loading scan crops:', e)
             }
@@ -2433,8 +2450,30 @@ export default {
 
         // Ob Crop-Bilder (aus Backend oder Memory) vorhanden sind
         const hasCropsAvailable = computed(() => {
-            return Object.keys(fieldCrops.value).length > 0
+            return allScanCrops.value.length > 0
         })
+
+        // Kompletten Fahrzeugschein (so wie im Dialog angezeigt) herunterladen
+        async function downloadScanOriginal() {
+            const src = scanOriginalSrc.value
+            if (!src) return
+            const isPdf = src.startsWith('data:application/pdf')
+            const plate = String(car.value.c_ln || carId.value || 'fahrzeug').replace(/[^A-Za-z0-9\-]+/g, '_')
+            try {
+                // data-URI → Blob, damit auch große Bilder (mehrere MB) sauber gespeichert werden
+                const blob = await (await fetch(src)).blob()
+                const url = URL.createObjectURL(blob)
+                const a = document.createElement('a')
+                a.href = url
+                a.download = `Fahrzeugschein_${plate}.${isPdf ? 'pdf' : 'jpg'}`
+                document.body.appendChild(a)
+                a.click()
+                a.remove()
+                setTimeout(() => URL.revokeObjectURL(url), 10000)
+            } catch (e) {
+                console.error('Error downloading scan image:', e)
+            }
+        }
 
         // Bild 90° gegen den Uhrzeigersinn drehen (Canvas)
         function rotateImage90CCW(dataUrl) {
@@ -2530,11 +2569,6 @@ export default {
             field_3: 'c_finchk', 'field_3_': 'c_finchk',
         }
 
-        const fieldCropLabels = {
-            c_ln: 'Kennzeichen', c_2: 'HSN', c_3: 'TSN',
-            c_fin: 'FIN', c_finchk: 'FIN-Check', c_d: 'Erstzulassung', c_hu: 'HU', c_em: 'Emissionscode',
-        }
-
         // Computed: verfügbare Crop-Bilder als data-URIs pro Feldname
         // Quellen: 1) In-Memory (lastScanImages) → 2) Backend (loadedScanData)
         const fieldCrops = computed(() => {
@@ -2565,6 +2599,58 @@ export default {
             }
 
             return result
+        })
+
+        // ===== Alle Ausschnitte für den Fahrzeugschein-Dialog =====
+
+        // Reihenfolge wie auf der Zulassungsbescheinigung Teil I; unbekannte Felder hinten
+        const scanCropOrder = [
+            'registrationNumber', 'ez', 'name1', 'name2', 'firstname', 'address1', 'address2',
+            'hsn', 'field_2_2', 'field_2', 'd1', 'field_3', 'vin', 'd2_1', 'd2_2', 'd2_3', 'd2_4', 'd3',
+            'field_4', 'field_5_1', 'field_5_2', 'j', 'field_6', 'k',
+            'field_7_1', 'field_7_2', 'field_7_3', 'field_8_1', 'field_8_2', 'field_8_3', 'field_9',
+            'p1', 'p2_p4', 'p3', 'field_10', 'field_11', 'q', 'r', 'field_12', 'l', 'field_13',
+            'o1', 'o2', 'f1', 'f2', 'g', 's1', 's2', 't', 'u1', 'u2', 'u3', 'v7', 'v9',
+            'field_14', 'field_14_1', 'field_15_1', 'field_15_2', 'field_15_3', 'field_16', 'field_17',
+            'field_18', 'field_19', 'field_20', 'field_21', 'field_22', 'hu',
+        ]
+
+        // Beschriftung: eigene Scan-Labels, sonst KBA-Feldbezeichnungen, sonst der Feldname
+        function scanCropLabel(field) {
+            const own = 'CarEditView.scanImages.cropLabels.' + field
+            if (te(own)) return t(own)
+            const kba = 'CarEditView.kba.' + field
+            if (te(kba)) return t(kba)
+            return field
+        }
+
+        // Alle verfügbaren Ausschnitte (Memory + Backend) als sortierte Liste
+        const allScanCrops = computed(() => {
+            const map = {}
+
+            // Quelle 1: In-Memory (frischer Scan)
+            const memImgs = lastScanImages.value?.images
+            if (memImgs && typeof memImgs === 'object') {
+                for (const [key, b64] of Object.entries(memImgs)) {
+                    if (!b64 || key === 'document_img' || key === 'documentImg') continue
+                    const field = key.replace(/_?[iI]mg$/, '').replace(/_+$/, '')
+                    if (field && !map[field]) map[field] = `data:image/jpeg;base64,${b64}`
+                }
+            }
+
+            // Quelle 2: Backend (Dateisystem)
+            const diskCrops = loadedScanData.value?.crops
+            if (diskCrops && typeof diskCrops === 'object') {
+                for (const [key, data] of Object.entries(diskCrops)) {
+                    const field = key.replace(/_+$/, '')
+                    if (field && data?.image && !map[field]) map[field] = `data:${data.mime};base64,${data.image}`
+                }
+            }
+
+            const rank = f => { const i = scanCropOrder.indexOf(f); return i < 0 ? scanCropOrder.length : i }
+            return Object.keys(map)
+                .sort((a, b) => rank(a) - rank(b) || a.localeCompare(b))
+                .map(field => ({ field, label: scanCropLabel(field), src: map[field] }))
         })
 
         // Crop-Bilder werden als Tooltip direkt am Icon angezeigt
@@ -2772,9 +2858,9 @@ export default {
             kbaSelectDialog, kbaSelectOptions, kbaSelectFiltered, kbaSelectFilter, selectKba,
             skipKbaSelect, showSpecialKbaConfirm, confirmSpecialKba, useSpecialKba, specialKbaForm, specialKbaFormValid,
             kbaFuzzyDialog, kbaFuzzySuggestions, kbaFuzzyOriginal, applyKbaFuzzyCorrection, dismissKbaFuzzy,
-            hasScanImages, hasCropsAvailable, scanImagesDialog, scanImagesLoading, scanOriginalSrc,
+            hasScanImages, hasCropsAvailable, scanImagesDialog, scanImagesLoading, scanOriginalSrc, allScanCrops, downloadScanOriginal,
             openScanImagesDialog,
-            fieldCrops, fieldCropLabels,
+            fieldCrops,
             wikiArticles, createKbaArticle,
             carId,
             exportCarData,

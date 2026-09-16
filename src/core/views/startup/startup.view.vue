@@ -48,6 +48,8 @@ import { ref } from 'vue'
 import { oserpStore } from '@/core/stores/oserp.store.js'
 import { useNavigationCards } from '@/core/composables/navigation.cards.js'
 import { toggleChatPanel } from '@/core/composables/useChat.js'
+import { useViewHistory } from '@/core/composables/useViewHistory.js'
+import { entityRoute } from '@/core/constants/routes.js'
 
 export default {
   name: 'StartupView',
@@ -87,7 +89,20 @@ export default {
     const { cards } = useNavigationCards()
 
     if(null !== id.value) {
-      oserp.fetchCustomerOrVendor(id.value, props.src)
+      const { saveToHistory } = useViewHistory()
+      oserp.fetchCustomerOrVendor(id.value, props.src).then(() => {
+        // Aufgerufenen Kunden/Lieferanten im "Zuletzt besucht"-Verlauf merken
+        const profile = oserp.customer_vendor?.profile
+        if (!profile?.id || Number(profile.id) !== Number(id.value)) return
+        const type = (profile.src || props.src) === 'V' ? 'vendor' : 'customer'
+        saveToHistory({
+          type,
+          id: profile.id,
+          title: profile.name || '',
+          subtitle: [profile.customernumber || profile.vendornumber, profile.city].filter(Boolean).join(' · '),
+          route: entityRoute(type, profile.id)
+        })
+      })
     } else if (props.crmView) {
       // CRM-Ansicht ohne explizite ID (z.B. nach router.back() von Faktura/Fahrzeug):
       // Aktuellen Kunden/Lieferanten neu laden, damit neue Dokumente/Fahrzeuge sichtbar sind.
