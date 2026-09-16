@@ -122,16 +122,16 @@ const props = defineProps({
      */
     quellen: { type: Object, default: () => ({}) },
     /**
-     * Schlüssel der Geheimnisse, die hinterlegt sind.
+     * Geheimnisse: Schlüssel -> hinterlegt ja/nein.
      *
-     * Ihre Werte liefert das Backend nie aus. Ohne diese Liste stünde an jedem
+     * Ihre Werte liefert das Backend nie aus. Ohne diese Angabe stünde an jedem
      * Passwortfeld "hinterlegt", auch wenn nichts gespeichert ist.
      */
-    gesetzt: { type: Array, default: () => [] },
+    gesetzt: { type: Object, default: () => ({}) },
 })
 
 /** Ist zu diesem Feld ein Wert gespeichert? */
-const hinterlegt = computed(() => props.gesetzt.includes(props.field.name))
+const hinterlegt = computed(() => true === props.gesetzt[props.field.name])
 
 /**
  * Zeigt den Wert eines Passwortfeldes im Klartext

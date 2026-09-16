@@ -216,8 +216,9 @@ function getDefaults($data) {
         // Oberflaeche sie ohnehin leer anzeigen wuerde.
         //
         // Damit die Oberflaeche "hinterlegt, leer lassen zum Behalten" von
-        // "noch nichts gesetzt" unterscheiden kann, kommt stattdessen die
-        // Liste der belegten Schluessel mit.
+        // "noch nichts gesetzt" unterscheiden kann, kommt stattdessen je
+        // Geheimnis ein Wahrheitswert mit. Die Liste steht nur hier — die
+        // Oberflaeche muss nicht wissen, welche Felder Geheimnisse sind.
         $result = $db->getOne(
             "SELECT
                 (SELECT row_to_json(d) FROM defaults d LIMIT 1) AS defaults,
@@ -225,20 +226,22 @@ function getDefaults($data) {
                     WHERE key NOT IN ('aag_online_token', 'aag_online_token_exp',
                                       'shop_paypal_live_secret', 'shop_paypal_sandbox_secret',
                                       'shop_public_key')) AS defaults_oserp,
-                (SELECT COALESCE(json_agg(key), '[]') FROM defaults_oserp
-                    WHERE key IN ('shop_paypal_live_secret', 'shop_paypal_sandbox_secret',
-                                  'shop_public_key')
-                      AND btrim(COALESCE(value, '')) <> '') AS defaults_oserp_set"
+                (SELECT json_object_agg(k.key, EXISTS (
+                            SELECT 1 FROM defaults_oserp d
+                             WHERE d.key = k.key AND btrim(COALESCE(d.value, '')) <> ''))
+                   FROM (VALUES ('shop_public_key'),
+                                ('shop_paypal_live_secret'),
+                                ('shop_paypal_sandbox_secret')) AS k(key)) AS defaults_oserp_secrets"
         );
 
         $defaults = json_decode($result['defaults'] ?? '{}', true) ?: [];
         $defaults_oserp = json_decode($result['defaults_oserp'] ?? '{}', true) ?: [];
-        $gesetzt = json_decode($result['defaults_oserp_set'] ?? '[]', true) ?: [];
+        $geheimnisse = json_decode($result['defaults_oserp_secrets'] ?? '{}', true) ?: [];
 
         resultInfo(true, '', ['results' => [
             'defaults' => $defaults,
             'defaults_oserp' => $defaults_oserp,
-            'defaults_oserp_set' => $gesetzt
+            'defaults_oserp_secrets' => $geheimnisse
         ]]);
     } catch (Exception $e) {
         resultInfo(false, 'DATABASE_ERROR', $e->getMessage());

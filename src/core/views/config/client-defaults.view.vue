@@ -400,13 +400,14 @@ const defaults = ref({});
 const crmDefaults = ref({});
 
 /**
- * Welche Geheimnisse hinterlegt sind
+ * Welche Geheimnisse hinterlegt sind: Schlüssel -> true/false
  *
  * Ihre Werte liefert das Backend nicht aus. Die Oberfläche muss aber
  * unterscheiden können zwischen "hinterlegt, leer lassen zum Behalten" und
- * "noch nichts gesetzt" — dafür kommt diese Liste der belegten Schlüssel.
+ * "noch nichts gesetzt". Welche Felder Geheimnisse sind, entscheidet das
+ * Backend — hier steht keine Liste davon.
  */
-const crmSecrets = ref([]);
+const crmSecrets = ref({});
 const saving = ref(false);
 const lastSaved = ref(null); // Zeitpunkt der letzten erfolgreichen Speicherung
 
@@ -797,7 +798,7 @@ async function loadConfig() {
             const result = response.data.payload?.results || {};
             defaults.value = result.defaults || {};
             crmDefaults.value = result.defaults_oserp || {};
-            crmSecrets.value = result.defaults_oserp_set || [];
+            crmSecrets.value = result.defaults_oserp_secrets || {};
         } else {
             console.error('getDefaults fehlgeschlagen:', response.data);
             defaults.value = {};
@@ -850,6 +851,16 @@ async function saveConfig() {
                 store.session.company_config.defaults = { ...defaults.value };
                 store.session.company_config.defaults_oserp = { ...crmDefaults.value };
             }
+
+            // Ein gerade gespeichertes Geheimnis ist ab jetzt hinterlegt.
+            // Ohne das stünde bis zum nächsten Laden der Ansicht weiter
+            // "nicht gesetzt" am Feld — auch nach einem Tabwechsel.
+            Object.keys(crmSecrets.value).forEach((key) => {
+                const wert = cleanedCrmDefaults[key];
+                if (typeof wert === 'string' && wert.trim() !== '') {
+                    crmSecrets.value[key] = true;
+                }
+            });
 
             lastSaved.value = new Date();
             toasts.success(t('saveSuccess'));

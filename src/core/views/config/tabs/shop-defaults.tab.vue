@@ -116,10 +116,10 @@ const props = defineProps({
         type: Object,
         required: true
     },
-    /** Schlüssel der Geheimnisse, die hinterlegt sind — ihre Werte kommen nie mit */
+    /** Geheimnisse: Schlüssel -> hinterlegt ja/nein. Die Werte kommen nie mit */
     crmSecrets: {
-        type: Array,
-        default: () => []
+        type: Object,
+        default: () => ({})
     }
 })
 
