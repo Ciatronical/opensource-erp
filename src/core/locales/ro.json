@@ -19,7 +19,8 @@
         "updateSuccess": "Actualizarea bazei de date a fost efectuată cu succes.",
         "updateError": "Eroare la actualizarea bazei de date. Vă rugăm încercați din nou.",
         "privacy": "Politica de confidențialitate",
-        "dataDeletion": "Ștergere date"
+        "dataDeletion": "Ștergere date",
+        "API_DATABASE_ERROR": "Baza de date nu răspunde conform așteptărilor. Vă rugăm anunțați administratorul."
     },
     "NotFoundView": {
         "title": "Pagina nu a fost găsită",

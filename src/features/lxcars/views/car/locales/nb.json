@@ -420,7 +420,7 @@
             "emailInvalid": "Ugyldige E-post-Adresse"
         },
         "errors": {
-            "noApiKey": "Kein API-Key für den Kjoeretoeyerschein-Scanner konfiguriert. Vennligst in der Firmenkonfiguration hinterlegen.",
+            "noApiKey": "Ingen vognkort-skanner konfigurert. Aktiver enten «Bruk egen vognkort-skanner» i firmakonfigurasjonen under LxCars, eller legg inn en API-nøkkel.",
             "scanFailed": "Scan mislyktes",
             "noImage": "Vennligst laden Sie ein Bilde hoch",
             "loadScans": "Feil ved Laden der Scans"

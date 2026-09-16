@@ -1159,11 +1159,14 @@ export default {
             return dbOwner.includes(scanOwner) || scanOwner.includes(dbOwner)
         })
 
-        // API-Key Check
+        // Scanner verfügbar: externer API-Key ODER eigener lokaler Fahrzeugscheinscanner aktiv
         const hasApiKey = computed(() => {
             if (oserpData.session?.is_demo) return true
             const config = oserpData.session?.company_config?.defaults_oserp
-            return config && config.lxcarsapi && config.lxcarsapi.trim() !== ''
+            if (!config) return false
+            const local = config.lxcars_local_scanner
+            if (local === true || local === 't' || local === 'true' || local === '1') return true
+            return !!(config.lxcarsapi && config.lxcarsapi.trim() !== '')
         })
 
         // Halter-Name formatieren

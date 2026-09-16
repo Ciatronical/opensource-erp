@@ -448,7 +448,7 @@
             "emailInvalid": "Adresse e-mail invalide"
         },
         "errors": {
-            "noApiKey": "Aucune cle API configuree pour le scanner de carte grise. Veuillez la configurer dans la configuration de la societe.",
+            "noApiKey": "Aucun scanner de carte grise configuré. Dans la configuration de l'entreprise, sous LxCars, activez « Utiliser son propre scanner de carte grise » ou saisissez une clé API.",
             "scanFailed": "Echec du scan",
             "noImage": "Veuillez telecharger une image",
             "loadScans": "Erreur lors du chargement des scans"

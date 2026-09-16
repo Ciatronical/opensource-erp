@@ -19,7 +19,8 @@
         "updateSuccess": "Datenbank-Update erfolgreich durchgeführt.",
         "updateError": "Fehler beim Datenbank-Update. Bitte versuchen Sie es erneut.",
         "privacy": "Datenschutzerklärung",
-        "dataDeletion": "Datenlöschung"
+        "dataDeletion": "Datenlöschung",
+        "API_DATABASE_ERROR": "Die Datenbank antwortet nicht wie erwartet. Bitte den Administrator verständigen."
     },
     "NotFoundView": {
         "title": "Seite nicht gefunden",

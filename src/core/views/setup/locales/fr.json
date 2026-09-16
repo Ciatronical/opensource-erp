@@ -1,50 +1,137 @@
 {
     "setup": {
-        "title": "OpensourceERP Setup",
-        "welcome": "Bienvenue sur OpensourceERP ! Veuillez configurer la connexion a la base de donnees d'authentification.",
-        "setupAlreadyDone": "La configuration a deja ete effectuee. Vous allez etre redirige vers la page de connexion...",
-        "configFound": "kivitendo.conf trouve - Le mot de passe n'etait pas chiffre. Le formulaire a ete rempli automatiquement.",
-        "setupCompleteMessage": "Configuration terminee avec succes ! Le mot de passe a ete chiffre et enregistre. Redirection en cours...",
-        "fields": {
-            "host": "Hote",
-            "port": "Port",
-            "database": "Nom de la base de donnees",
-            "login": "Identifiant",
-            "password": "Mot de passe"
+        "title": "Configurer OpensourceERP",
+        "subtitle": "Cinq étapes jusqu'à la première connexion — sans k9o",
+        "setupAlreadyDone": "La configuration a déjà été effectuée. Vous allez être redirigé vers la page de connexion …",
+        "steps": {
+            "server": "Serveur de base de données",
+            "auth": "Base d'authentification",
+            "admin": "Administrateur",
+            "company": "Première société",
+            "summary": "Installation"
         },
-        "placeholders": {
-            "host": "localhost",
-            "port": "5432",
-            "database": "oserp_auth",
-            "login": "postgres"
+        "server": {
+            "intro": "Accès au serveur PostgreSQL. Le rôle doit avoir le droit de créer des bases de données (en général « postgres »).",
+            "configFound": "Une configuration k9o a été trouvée — les identifiants sont préremplis.",
+            "userHint": "Rôle de base de données, par exemple postgres",
+            "connected": "Connecté — PostgreSQL {version}",
+            "superuser": "Superuser",
+            "createdb": "Peut créer des bases de données",
+            "noCreatedb": "Ne peut pas créer de bases de données",
+            "noCreatedbHint": "Ce rôle ne permet pas de créer de nouvelles bases de données. Veuillez utiliser un rôle disposant de CREATEDB ou reprendre des bases de données existantes.",
+            "foundAuth": "{count} base(s) d'authentification trouvée(s)",
+            "foundCompany": "{count} base(s) de données de société trouvée(s)",
+            "stored": "Accès issu de la configuration existante : {user} sur {host}:{port}. Le mot de passe reste sur le serveur.",
+            "enterManually": "Saisir d'autres identifiants"
+        },
+        "auth": {
+            "intro": "La base d'authentification contient les utilisateurs, les groupes et la liste des sociétés. Elle est compatible avec k9o — une base existante peut être reprise directement.",
+            "modeNew": "Créer une nouvelle base d'authentification",
+            "modeNewHint": "Recommandé pour une installation neuve.",
+            "name": "Nom de la base d'authentification",
+            "modeExisting": "Utiliser une base d'authentification existante",
+            "modeExistingHint": "Reprendre les utilisateurs, les groupes et les sociétés d'une installation k9o existante. Les tables OSERP manquantes sont ajoutées.",
+            "noneFound": "Aucune base d'authentification n'a été trouvée sur le serveur.",
+            "select": "Base d'authentification",
+            "dbMeta": "{users} utilisateurs, {clients} sociétés",
+            "dbEmpty": "vide — sera configurée"
+        },
+        "admin": {
+            "intro": "Le premier utilisateur devient administrateur système : il peut gérer les utilisateurs, les groupes et les sociétés et reçoit le groupe « Accès complet ».",
+            "introExisting": "Qui doit être administrateur système ? Saisissez un identifiant existant (le mot de passe est conservé si le champ reste vide) ou créez-en un nouveau.",
+            "login": "Identifiant",
+            "loginHintExisting": "Un identifiant existant ou un nouveau",
+            "name": "Nom complet",
+            "email": "E-mail",
+            "password": "Mot de passe",
+            "passwordConfirm": "Répéter le mot de passe",
+            "passwordHint": "Au moins 8 caractères — ou faites-en générer un",
+            "passwordHintExisting": "Laisser vide pour conserver le mot de passe existant",
+            "generate": "Générer un mot de passe sûr",
+            "modeDefault": "Créer le compte par défaut « {login} »",
+            "modeDefaultHint": "Connexion avec {login} et le même mot comme mot de passe. Prêt à l'emploi, à changer ensuite.",
+            "modeCustom": "Créer votre propre administrateur",
+            "modeCustomHint": "Définir vous-même le nom, l'e-mail et le mot de passe.",
+            "defaultWarning": "Le mot de passe est d'abord identique à l'identifiant. Veuillez le changer après la première connexion sous « Utilisateurs et sociétés ».",
+            "existingUsersHint": "Cette installation comporte déjà des utilisateurs. Veuillez vous connecter avec un administrateur existant pour que l'assistant puisse continuer."
+        },
+        "company": {
+            "intro": "Chaque société reçoit sa propre base de données avec un plan comptable. Vous pourrez créer d'autres sociétés à tout moment.",
+            "createSwitch": "Créer la première société maintenant",
+            "name": "Nom de la société",
+            "dbname": "Nom de la base de données",
+            "dbnameHint": "Proposé à partir du nom de la société — minuscules, chiffres, tiret bas",
+            "chart": "Plan comptable",
+            "charts": {
+                "skr03": "Classement par processus — la norme pour la plupart des entreprises",
+                "skr04": "Classement selon le bilan — habituel pour les GmbH, AG et les grandes entreprises"
+            },
+            "noneWarning": "Sans société, il n'y a rien à voir après la connexion. Une société peut être créée plus tard sous « Utilisateurs et sociétés »."
+        },
+        "summary": {
+            "intro": "Veuillez vérifier. L'installation dure environ une minute.",
+            "server": "Serveur de base de données",
+            "auth": "Base d'authentification",
+            "authNew": "{name} (sera créée)",
+            "authExisting": "{name} (existante, sera complétée)",
+            "admin": "Administrateur",
+            "company": "Première société",
+            "noCompany": "aucune — à créer plus tard",
+            "installing": "Installation en cours …",
+            "installingHint": "Création des bases de données, chargement du schéma et du plan comptable. Veuillez ne pas fermer cette fenêtre.",
+            "done": "Installation terminée",
+            "steps": {
+                "connect": "Connexion au serveur",
+                "auth_db_created": "Base d'authentification créée",
+                "auth_schema": "Schéma d'authentification installé",
+                "admin_user": "Administrateur",
+                "company": "Société créée",
+                "settings": "Configuration écrite"
+            },
+            "loginHint": "Connectez-vous maintenant en tant que « {login} ».",
+            "adminDefault": "Compte par défaut {login}",
+            "loginHintDefault": "Connectez-vous maintenant en tant que « {login} » — le mot de passe est identique à l'identifiant. Veuillez le changer aussitôt après."
+        },
+        "fields": {
+            "host": "Hôte",
+            "port": "Port",
+            "database": "Nom de la base de données",
+            "login": "Utilisateur de la base de données",
+            "password": "Mot de passe"
         },
         "validation": {
             "required": "Champ obligatoire",
-            "portRange": "Le port doit etre compris entre 1 et 65535"
+            "portRange": "Le port doit être compris entre 1 et 65535",
+            "dbname": "Uniquement minuscules, chiffres, tiret bas et trait d'union, en commençant par une lettre",
+            "dbExists": "Une base de données portant ce nom existe déjà",
+            "login": "Pas d'espaces ni de caractères spéciaux comme / \\ : * ? \" < > |",
+            "email": "Adresse e-mail non valide",
+            "passwordLength": "Au moins 8 caractères",
+            "passwordMismatch": "Les mots de passe ne correspondent pas"
         },
         "buttons": {
             "testConnection": "Tester la connexion",
-            "testingConnection": "Test de la connexion...",
-            "saveSetup": "Terminer la configuration",
-            "savingSetup": "Enregistrement en cours...",
-            "finish": "Lancer l'application"
+            "next": "Suivant",
+            "back": "Retour",
+            "install": "Lancer l'installation",
+            "finish": "Aller à la connexion"
         },
         "errors": {
-            "checkStatus": "Erreur lors de la verification du statut de la configuration",
-            "testConnection": "Erreur lors du test de la connexion",
-            "testNetworkError": "Erreur reseau lors du test de la connexion",
-            "saveSetup": "Erreur lors de l'enregistrement de la configuration",
-            "saveNetworkError": "Erreur reseau lors de l'enregistrement de la configuration"
-        },
-        "update": {
-            "title": "Mise a jour de la base de donnees",
-            "running": "Mise a jour de la base de donnees en cours...",
-            "success": "Mise a jour de la base de donnees terminee avec succes.",
-            "failed": "Echec de la mise a jour de la base de donnees.",
-            "networkError": "Erreur reseau lors de la mise a jour de la base de donnees."
+            "testConnection": "Échec de la connexion",
+            "testNetworkError": "Erreur réseau lors du test de la connexion",
+            "install": "Échec de l'installation",
+            "saveNetworkError": "Erreur réseau pendant l'installation",
+            "ADMIN_LOGIN_REQUIRED": "Cette installation comporte déjà des utilisateurs. Veuillez saisir l'identifiant et le mot de passe d'un administrateur existant.",
+            "AUTH_DB_UNREACHABLE": "La base d'authentification n'est pas accessible avec les données de la configuration."
         },
         "footer": {
             "copyright": "OpensourceERP"
+        },
+        "state": {
+            "no_database": "La configuration renvoie à la base de données « {db} », qui n'existe pas encore sur le serveur. L'assistant va la créer.",
+            "no_schema": "La base de données « {db} » existe, mais elle ne contient encore aucune table. L'assistant la configure maintenant.",
+            "no_user": "La base de données « {db} » n'a encore aucun utilisateur. Sans utilisateur, aucune connexion n'est possible.",
+            "no_client": "Aucune société n'a encore été créée. Sans société, la connexion ne mène nulle part."
         }
     }
 }

@@ -1,50 +1,137 @@
 {
     "setup": {
-        "title": "OpensourceERP Setup",
-        "welcome": "Sveiki atvykę į OpensourceERP! Sukonfigūruokite prisijungimą prie autentifikacijos duomenų bazės.",
-        "setupAlreadyDone": "Sąranka jau atlikta. Būsite nukreipti į prisijungimo puslapį...",
-        "configFound": "kivitendo.conf rastas - Slaptažodis buvo neužšifruotas. Forma užpildyta automatiškai.",
-        "setupCompleteMessage": "Sąranka sėkmingai baigta! Slaptažodis išsaugotas užšifruotai. Būsite nukreipti...",
+        "title": "OpensourceERP sąranka",
+        "subtitle": "Penki žingsniai iki pirmojo prisijungimo — visiškai be k9o",
+        "setupAlreadyDone": "Sąranka jau atlikta. Būsite nukreiptas į prisijungimo puslapį …",
+        "steps": {
+            "server": "Duomenų bazės serveris",
+            "auth": "Autentifikacijos duomenų bazė",
+            "admin": "Administratorius",
+            "company": "Pirma įmonė",
+            "summary": "Diegimas"
+        },
+        "server": {
+            "intro": "Prieiga prie PostgreSQL serverio. Rolei reikia teisės kurti duomenų bazes (dažniausiai „postgres“).",
+            "configFound": "Rasta k9o konfigūracija — prisijungimo duomenys užpildyti automatiškai.",
+            "userHint": "Duomenų bazės rolė, pavyzdžiui, postgres",
+            "connected": "Prisijungta — PostgreSQL {version}",
+            "superuser": "Superuser",
+            "createdb": "Gali kurti duomenų bazes",
+            "noCreatedb": "Negali kurti duomenų bazių",
+            "noCreatedbHint": "Su šia role naujų duomenų bazių sukurti negalima. Naudokite rolę su CREATEDB arba perimkite jau esamas duomenų bazes.",
+            "foundAuth": "Rasta autentifikacijos duomenų bazių: {count}",
+            "foundCompany": "Rasta įmonių duomenų bazių: {count}",
+            "stored": "Prisijungimo duomenys iš esamos konfigūracijos: {user} serveryje {host}:{port}. Slaptažodis lieka serveryje.",
+            "enterManually": "Įvesti kitus prisijungimo duomenis"
+        },
+        "auth": {
+            "intro": "Autentifikacijos duomenų bazėje saugomi naudotojai, grupės ir įmonių sąrašas. Ji suderinama su k9o — esamą galima perimti iš karto.",
+            "modeNew": "Sukurti naują autentifikacijos duomenų bazę",
+            "modeNewHint": "Rekomenduojama naujam diegimui.",
+            "name": "Autentifikacijos duomenų bazės pavadinimas",
+            "modeExisting": "Naudoti esamą autentifikacijos duomenų bazę",
+            "modeExistingHint": "Perimti esamo k9o diegimo naudotojus, grupes ir įmones. Trūkstamos OSERP lentelės bus pridėtos.",
+            "noneFound": "Serveryje autentifikacijos duomenų bazės nerasta.",
+            "select": "Autentifikacijos duomenų bazė",
+            "dbMeta": "{users} naudotojai, {clients} įmonės",
+            "dbEmpty": "tuščia — bus parengta"
+        },
+        "admin": {
+            "intro": "Pirmas naudotojas tampa sistemos administratoriumi: jis gali tvarkyti naudotojus, grupes ir įmones ir gauna grupę „Visos teisės“.",
+            "introExisting": "Kas turi būti sistemos administratorius? Įveskite esamą prisijungimo vardą (palikus tuščią, slaptažodis nesikeičia) arba sukurkite naują.",
+            "login": "Prisijungimo vardas",
+            "loginHintExisting": "Esamas prisijungimo vardas arba naujas",
+            "name": "Pilnas vardas",
+            "email": "El. paštas",
+            "password": "Slaptažodis",
+            "passwordConfirm": "Pakartokite slaptažodį",
+            "passwordHint": "Bent 8 simboliai — arba sugeneruokite",
+            "passwordHintExisting": "Palikite tuščią, kad liktų esamas slaptažodis",
+            "generate": "Sugeneruoti saugų slaptažodį",
+            "modeDefault": "Sukurti numatytąją paskyrą „{login}“",
+            "modeDefaultHint": "Prisijungimas su {login} ir tokiu pačiu žodžiu kaip slaptažodžiu. Iš karto parengta naudoti, po to slaptažodį pakeiskite.",
+            "modeCustom": "Sukurti savo administratorių",
+            "modeCustomHint": "Nurodykite vardą, el. paštą ir savo slaptažodį.",
+            "defaultWarning": "Iš pradžių slaptažodis sutampa su prisijungimo vardu. Po pirmojo prisijungimo pakeiskite jį skyriuje „Naudotojai ir įmonės“.",
+            "existingUsersHint": "Šiame diegime jau yra naudotojų. Prisijunkite su esamu administratoriumi, kad vediklis galėtų tęsti darbą."
+        },
+        "company": {
+            "intro": "Kiekviena įmonė gauna savo duomenų bazę su sąskaitų planu. Vėliau bet kada galėsite sukurti daugiau įmonių.",
+            "createSwitch": "Sukurti pirmą įmonę dabar",
+            "name": "Įmonės pavadinimas",
+            "dbname": "Duomenų bazės pavadinimas",
+            "dbnameHint": "Siūlomas pagal įmonės pavadinimą — mažosios raidės, skaitmenys, pabraukimas",
+            "chart": "Sąskaitų planas",
+            "charts": {
+                "skr03": "Procesinis skirstymas — standartas daugumai įmonių",
+                "skr04": "Atskaitomybės skirstymas — įprasta kapitalo bendrovėms ir didesnėms įmonėms"
+            },
+            "noneWarning": "Be įmonės prisijungus nieko nebus matyti. Įmonę vėliau galima sukurti skyriuje „Naudotojai ir įmonės“."
+        },
+        "summary": {
+            "intro": "Patikrinkite duomenis. Diegimas trunka maždaug minutę.",
+            "server": "Duomenų bazės serveris",
+            "auth": "Autentifikacijos duomenų bazė",
+            "authNew": "{name} (bus sukurta nauja)",
+            "authExisting": "{name} (jau yra, bus papildyta)",
+            "admin": "Administratorius",
+            "company": "Pirma įmonė",
+            "noCompany": "nėra — sukurti vėliau",
+            "installing": "Vyksta diegimas …",
+            "installingHint": "Kuriamos duomenų bazės, įkeliama schema ir sąskaitų planas. Neuždarykite lango.",
+            "done": "Diegimas baigtas",
+            "steps": {
+                "connect": "Ryšys su serveriu",
+                "auth_db_created": "Autentifikacijos duomenų bazė sukurta",
+                "auth_schema": "Autentifikacijos schema įkelta",
+                "admin_user": "Administratorius",
+                "company": "Įmonė sukurta",
+                "settings": "Konfigūracija įrašyta"
+            },
+            "loginHint": "Prisijunkite dabar kaip „{login}“.",
+            "adminDefault": "Numatytoji paskyra {login}",
+            "loginHintDefault": "Prisijunkite dabar kaip „{login}“ — slaptažodis sutampa su prisijungimo vardu. Iš karto po to jį pakeiskite."
+        },
         "fields": {
             "host": "Host",
             "port": "Prievadas",
             "database": "Duomenų bazės pavadinimas",
-            "login": "Vartotojo vardas",
+            "login": "Duomenų bazės naudotojas",
             "password": "Slaptažodis"
-        },
-        "placeholders": {
-            "host": "localhost",
-            "port": "5432",
-            "database": "oserp_auth",
-            "login": "postgres"
         },
         "validation": {
             "required": "Privalomas laukas",
-            "portRange": "Prievadas turi būti nuo 1 iki 65535"
+            "portRange": "Prievadas turi būti nuo 1 iki 65535",
+            "dbname": "Tik mažosios raidės, skaitmenys, pabraukimas ir brūkšnelis, pradedant raide",
+            "dbExists": "Duomenų bazė tokiu pavadinimu jau yra",
+            "login": "Be tarpų ir be specialiųjų ženklų, tokių kaip / \\ : * ? \" < > |",
+            "email": "Netinkamas el. pašto adresas",
+            "passwordLength": "Bent 8 simboliai",
+            "passwordMismatch": "Slaptažodžiai nesutampa"
         },
         "buttons": {
-            "testConnection": "Testuoti ryšį",
-            "testingConnection": "Tikrinamas ryšys...",
-            "saveSetup": "Užbaigti sąranką",
-            "savingSetup": "Saugoma...",
-            "finish": "Paleisti programą"
+            "testConnection": "Tikrinti ryšį",
+            "next": "Toliau",
+            "back": "Atgal",
+            "install": "Pradėti diegimą",
+            "finish": "Į prisijungimą"
         },
         "errors": {
-            "checkStatus": "Klaida tikrinant sąrankos būseną",
-            "testConnection": "Klaida testuojant ryšį",
-            "testNetworkError": "Tinklo klaida testuojant ryšį",
-            "saveSetup": "Klaida saugant konfigūraciją",
-            "saveNetworkError": "Tinklo klaida saugant konfigūraciją"
-        },
-        "update": {
-            "title": "Duomenų bazės atnaujinimas",
-            "running": "Duomenų bazė atnaujinama...",
-            "success": "Duomenų bazės atnaujinimas sėkmingai baigtas.",
-            "failed": "Duomenų bazės atnaujinimas nepavyko.",
-            "networkError": "Tinklo klaida atnaujinant duomenų bazę."
+            "testConnection": "Ryšys nepavyko",
+            "testNetworkError": "Tinklo klaida tikrinant ryšį",
+            "install": "Diegimas nepavyko",
+            "saveNetworkError": "Tinklo klaida diegimo metu",
+            "ADMIN_LOGIN_REQUIRED": "Šiame diegime jau yra naudotojų. Įveskite esamo administratoriaus prisijungimo vardą ir slaptažodį.",
+            "AUTH_DB_UNREACHABLE": "Su konfigūracijoje nurodytais duomenimis autentifikacijos duomenų bazė nepasiekiama."
         },
         "footer": {
             "copyright": "OpensourceERP"
+        },
+        "state": {
+            "no_database": "Konfigūracijoje nurodyta duomenų bazė „{db}“, kurios serveryje dar nėra. Vediklis ją sukurs.",
+            "no_schema": "Duomenų bazė „{db}“ jau yra, bet lentelių joje dar nėra. Vediklis ją dabar parengs.",
+            "no_user": "Duomenų bazėje „{db}“ dar nėra nė vieno naudotojo. Be naudotojo prisijungti neįmanoma.",
+            "no_client": "Dar nesukurta nė viena įmonė. Be įmonės prisijungus nieko nebus matyti."
         }
     }
 }

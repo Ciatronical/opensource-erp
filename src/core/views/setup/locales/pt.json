@@ -1,50 +1,137 @@
 {
     "setup": {
-        "title": "OpensourceERP Setup",
-        "welcome": "Bem-vindo ao OpensourceERP! Por favor, configure a ligação à base de dados de autenticação.",
-        "setupAlreadyDone": "A configuração já foi realizada. Será redirecionado para a página de início de sessão...",
-        "configFound": "kivitendo.conf encontrado - A palavra-passe não estava cifrada. O formulário foi preenchido automaticamente.",
-        "setupCompleteMessage": "Configuração concluída com sucesso! A palavra-passe foi guardada de forma cifrada. Será redirecionado...",
+        "title": "Configurar o OpensourceERP",
+        "subtitle": "Cinco passos até ao primeiro início de sessão — sem precisar do k9o",
+        "setupAlreadyDone": "A configuração já foi realizada. Será redirecionado para a página de início de sessão …",
+        "steps": {
+            "server": "Servidor de base de dados",
+            "auth": "Base de dados de autenticação",
+            "admin": "Administrador",
+            "company": "Primeira empresa",
+            "summary": "Instalação"
+        },
+        "server": {
+            "intro": "Acesso ao servidor PostgreSQL. O papel tem de poder criar bases de dados (normalmente «postgres»).",
+            "configFound": "Foi encontrada uma configuração k9o — as credenciais estão preenchidas.",
+            "userHint": "Papel da base de dados, por exemplo postgres",
+            "connected": "Ligado — PostgreSQL {version}",
+            "superuser": "Superuser",
+            "createdb": "Pode criar bases de dados",
+            "noCreatedb": "Não pode criar bases de dados",
+            "noCreatedbHint": "Com este papel não é possível criar novas bases de dados. Utilize um papel com CREATEDB ou adote bases de dados existentes.",
+            "foundAuth": "{count} bases de dados de autenticação encontradas",
+            "foundCompany": "{count} bases de dados de empresa encontradas",
+            "stored": "Acesso a partir da configuração existente: {user} em {host}:{port}. A palavra-passe permanece no servidor.",
+            "enterManually": "Introduzir outras credenciais"
+        },
+        "auth": {
+            "intro": "A base de dados de autenticação contém os utilizadores, os grupos e a lista de empresas. É compatível com k9o — uma base de dados existente pode ser adotada diretamente.",
+            "modeNew": "Criar uma nova base de dados de autenticação",
+            "modeNewHint": "Recomendado para uma instalação nova.",
+            "name": "Nome da base de dados de autenticação",
+            "modeExisting": "Utilizar uma base de dados de autenticação existente",
+            "modeExistingHint": "Adotar os utilizadores, os grupos e as empresas de uma instalação k9o existente. As tabelas OSERP em falta são acrescentadas.",
+            "noneFound": "Não foi encontrada nenhuma base de dados de autenticação no servidor.",
+            "select": "Base de dados de autenticação",
+            "dbMeta": "{users} utilizadores, {clients} empresas",
+            "dbEmpty": "vazia — vai ser configurada"
+        },
+        "admin": {
+            "intro": "O primeiro utilizador torna-se administrador de sistema: pode gerir utilizadores, grupos e empresas e recebe o grupo «Acesso total».",
+            "introExisting": "Quem deve ser administrador de sistema? Introduza um nome de acesso existente (se deixar a palavra-passe vazia, esta mantém-se) ou crie um novo.",
+            "login": "Nome de acesso",
+            "loginHintExisting": "Um nome de acesso existente ou um novo",
+            "name": "Nome completo",
+            "email": "E-mail",
+            "password": "Palavra-passe",
+            "passwordConfirm": "Repetir palavra-passe",
+            "passwordHint": "Pelo menos 8 caracteres — ou mande gerar uma",
+            "passwordHintExisting": "Deixar vazio para manter a palavra-passe existente",
+            "generate": "Gerar uma palavra-passe segura",
+            "modeDefault": "Criar o acesso predefinido «{login}»",
+            "modeDefaultHint": "Início de sessão com {login} e a mesma palavra como palavra-passe. Pronto a usar; altere-a depois.",
+            "modeCustom": "Criar um administrador próprio",
+            "modeCustomHint": "Defina o nome, o e-mail e a palavra-passe.",
+            "defaultWarning": "No início a palavra-passe é igual ao nome de acesso. Altere-a depois do primeiro início de sessão em «Utilizadores e empresas».",
+            "existingUsersHint": "Esta instalação já tem utilizadores. Inicie sessão com um administrador existente para que o assistente possa continuar."
+        },
+        "company": {
+            "intro": "Cada empresa recebe uma base de dados própria com plano de contas. Mais tarde pode criar outras empresas a qualquer momento.",
+            "createSwitch": "Criar já a primeira empresa",
+            "name": "Nome da empresa",
+            "dbname": "Nome da base de dados",
+            "dbnameHint": "É proposto a partir do nome da empresa — letras minúsculas, algarismos, sublinhado",
+            "chart": "Plano de contas",
+            "charts": {
+                "skr03": "Estrutura por processos — o padrão para a maioria das empresas",
+                "skr04": "Estrutura de balanço — habitual em GmbH, AG e empresas maiores"
+            },
+            "noneWarning": "Sem empresa não há nada para ver depois do início de sessão. Uma empresa pode ser criada mais tarde em «Utilizadores e empresas»."
+        },
+        "summary": {
+            "intro": "Verifique os dados. A instalação demora cerca de um minuto.",
+            "server": "Servidor de base de dados",
+            "auth": "Base de dados de autenticação",
+            "authNew": "{name} (vai ser criada)",
+            "authExisting": "{name} (existente, vai ser completada)",
+            "admin": "Administrador",
+            "company": "Primeira empresa",
+            "noCompany": "nenhuma — criar mais tarde",
+            "installing": "Instalação em curso …",
+            "installingHint": "A criar as bases de dados e a carregar o esquema e o plano de contas. Não feche a janela.",
+            "done": "Instalação concluída",
+            "steps": {
+                "connect": "Ligação ao servidor",
+                "auth_db_created": "Base de dados de autenticação criada",
+                "auth_schema": "Esquema de autenticação carregado",
+                "admin_user": "Administrador",
+                "company": "Empresa criada",
+                "settings": "Configuração escrita"
+            },
+            "loginHint": "Inicie sessão agora como «{login}».",
+            "adminDefault": "Acesso predefinido {login}",
+            "loginHintDefault": "Inicie sessão agora como «{login}» — a palavra-passe é igual ao nome de acesso. Altere-a logo a seguir."
+        },
         "fields": {
             "host": "Host",
             "port": "Porta",
             "database": "Nome da base de dados",
-            "login": "Utilizador",
+            "login": "Utilizador da base de dados",
             "password": "Palavra-passe"
-        },
-        "placeholders": {
-            "host": "localhost",
-            "port": "5432",
-            "database": "oserp_auth",
-            "login": "postgres"
         },
         "validation": {
             "required": "Campo obrigatório",
-            "portRange": "A porta deve estar entre 1 e 65535"
+            "portRange": "A porta deve estar entre 1 e 65535",
+            "dbname": "Apenas letras minúsculas, algarismos, sublinhado e hífen, começando por uma letra",
+            "dbExists": "Já existe uma base de dados com este nome",
+            "login": "Sem espaços e sem caracteres especiais como / \\ : * ? \" < > |",
+            "email": "Endereço de e-mail inválido",
+            "passwordLength": "Pelo menos 8 caracteres",
+            "passwordMismatch": "As palavras-passe não coincidem"
         },
         "buttons": {
-            "testConnection": "Testar ligação",
-            "testingConnection": "A testar ligação...",
-            "saveSetup": "Concluir configuração",
-            "savingSetup": "A guardar...",
-            "finish": "Executar aplicação"
+            "testConnection": "Verificar ligação",
+            "next": "Seguinte",
+            "back": "Anterior",
+            "install": "Iniciar a instalação",
+            "finish": "Ir para o início de sessão"
         },
         "errors": {
-            "checkStatus": "Erro ao verificar o estado da configuração",
-            "testConnection": "Erro ao testar a ligação",
-            "testNetworkError": "Erro de rede ao testar a ligação",
-            "saveSetup": "Erro ao guardar a configuração",
-            "saveNetworkError": "Erro de rede ao guardar a configuração"
-        },
-        "update": {
-            "title": "Atualização da base de dados",
-            "running": "A atualizar base de dados...",
-            "success": "Atualização da base de dados concluída com sucesso.",
-            "failed": "Atualização da base de dados falhou.",
-            "networkError": "Erro de rede na atualização da base de dados."
+            "testConnection": "A ligação falhou",
+            "testNetworkError": "Erro de rede ao verificar a ligação",
+            "install": "A instalação falhou",
+            "saveNetworkError": "Erro de rede durante a instalação",
+            "ADMIN_LOGIN_REQUIRED": "Esta instalação já tem utilizadores. Introduza o nome de acesso e a palavra-passe de um administrador existente.",
+            "AUTH_DB_UNREACHABLE": "Não é possível aceder à base de dados de autenticação com os dados da configuração."
         },
         "footer": {
             "copyright": "OpensourceERP"
+        },
+        "state": {
+            "no_database": "A configuração remete para a base de dados «{db}», que ainda não existe no servidor. O assistente vai criá-la.",
+            "no_schema": "A base de dados «{db}» existe, mas ainda não tem tabelas. O assistente vai configurá-la agora.",
+            "no_user": "A base de dados «{db}» ainda não tem nenhum utilizador. Sem utilizador não é possível iniciar sessão.",
+            "no_client": "Ainda não foi criada nenhuma empresa. Sem empresa, o início de sessão não leva a lado nenhum."
         }
     }
 }

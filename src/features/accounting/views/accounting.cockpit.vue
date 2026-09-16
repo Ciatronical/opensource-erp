@@ -467,6 +467,7 @@ const proLinks = computed(() => [
     { key: 'journal', icon: 'mdi-book-open-variant', title: t('AccountingView.bookings.modeJournal'), to: { name: 'accounting-bookings' } },
     { key: 'charts',  icon: 'mdi-format-list-numbered', title: t('AccountingView.menu.chartOfAccounts'), to: { name: 'accounting-chart-of-accounts' } },
     { key: 'manual',  icon: 'mdi-file-document-plus-outline', title: t('AccountingView.menu.invoiceManual'), to: { name: 'accounting-invoice-manual' } },
+    { key: 'artrans', icon: 'mdi-account-cash-outline', title: t('AccountingView.menu.arTransaction'), to: { name: 'accounting-ar-transaction' } },
     { key: 'datev',   icon: 'mdi-file-export-outline', title: t('AccountingView.menu.datevExport'), to: { name: 'accounting-datev-export' } },
     { key: 'vendors', icon: 'mdi-truck-outline', title: t('AccountingView.menu.vendors'), to: { name: 'accounting-vendors' } },
     { key: 'customers', icon: 'mdi-account-group-outline', title: t('AccountingView.menu.customers'), to: { name: 'accounting-customers' } }

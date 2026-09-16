@@ -1,0 +1,7 @@
+# Lokaler Fahrzeugscheinscanner (CPU, kein PyTorch)
+# rapidocr 3.x laedt beim ersten Start das Latin-Erkennungsmodell (PP-OCRv5, ~8 MB)
+# nach <venv>/site-packages/rapidocr/models — install.sh laedt es vor.
+rapidocr>=3.9,<4
+onnxruntime>=1.20
+opencv-python-headless>=4.10
+numpy>=2

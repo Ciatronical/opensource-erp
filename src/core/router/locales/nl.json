@@ -57,7 +57,8 @@
         "privacy": "/privacy",
         "dataDeletion": "/gegevensverwijdering",
         "tafel": "/prikbord/beheer",
-        "newArticle": "/artikel/nieuw"
+        "newArticle": "/artikel/nieuw",
+        "admin": "/systeem/beheer"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Fout: Het wachtwoordbestand api/config/api.passwd.php is niet gevonden. Hernoem het bestand api/config/api.passwd.php.example naar api/config/api.passwd.php en pas de instellingen aan.",
@@ -93,7 +94,8 @@
         "developerTools": "Developer Tools",
         "systemUpdate": "Systeemupdate",
         "about": "Over",
-        "docs": "Documentatie"
+        "docs": "Documentatie",
+        "administration": "Gebruikers en bedrijven"
     },
     "DocsView": {
         "title": "Documentatie",

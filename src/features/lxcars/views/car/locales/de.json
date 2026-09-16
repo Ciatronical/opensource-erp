@@ -451,7 +451,7 @@
             "emailInvalid": "Ungültige E-Mail-Adresse"
         },
         "errors": {
-            "noApiKey": "Kein API-Key für den Fahrzeugschein-Scanner konfiguriert. Bitte in der Firmenkonfiguration hinterlegen.",
+            "noApiKey": "Kein Fahrzeugscheinscanner konfiguriert. Bitte in der Firmenkonfiguration unter LxCars entweder „Eigenen Fahrzeugscheinscanner benutzen“ aktivieren oder einen API-Key hinterlegen.",
             "scanFailed": "Scan fehlgeschlagen",
             "noImage": "Bitte laden Sie ein Bild hoch",
             "loadScans": "Fehler beim Laden der Scans"

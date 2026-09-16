@@ -420,7 +420,7 @@
             "emailInvalid": "Ogiltige E-post-Adresse"
         },
         "errors": {
-            "noApiKey": "Kein API-Key für den Fordonschein-Scanner konfiguriert. Vanligen in der Firmenkonfiguration hinterlegen.",
+            "noApiKey": "Ingen registreringsbevis-skanner konfigurerad. Aktivera i företagskonfigurationen under LxCars antingen ”Använd egen registreringsbevis-skanner” eller ange en API-nyckel.",
             "scanFailed": "Scan misslyckades",
             "noImage": "Vanligen laden Sie ein Bild hoch",
             "loadScans": "Fel vid Laden der Scans"

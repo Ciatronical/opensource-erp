@@ -1,50 +1,137 @@
 {
     "setup": {
-        "title": "OpensourceERP Setup",
-        "welcome": "Velkommen til OpensourceERP! Vennligst konfigurer tilkoblingen til autentiseringsdatabasen.",
-        "setupAlreadyDone": "Setup er allerede gjennomfoert. Du blir videresendt til innloggingssiden...",
-        "configFound": "kivitendo.conf funnet - Passordet var ukryptert. Skjemaet er fylt ut automatisk.",
-        "setupCompleteMessage": "Setup gjennomfoert! Passordet er lagret kryptert. Du blir videresendt...",
+        "title": "Sett opp OpensourceERP",
+        "subtitle": "Fem trinn til den første innloggingen — helt uten k9o",
+        "setupAlreadyDone": "Oppsettet er allerede gjennomført. Du blir sendt videre til innloggingssiden …",
+        "steps": {
+            "server": "Databaseserver",
+            "auth": "Autentiseringsdatabase",
+            "admin": "Administrator",
+            "company": "Første firma",
+            "summary": "Installasjon"
+        },
+        "server": {
+            "intro": "Tilgang til PostgreSQL-serveren. Rollen må ha rett til å opprette databaser (som regel \"postgres\").",
+            "configFound": "Det ble funnet en k9o-konfigurasjon — tilkoblingsdataene er fylt ut på forhånd.",
+            "userHint": "Databaserolle, for eksempel postgres",
+            "connected": "Tilkoblet — PostgreSQL {version}",
+            "superuser": "Superuser",
+            "createdb": "Kan opprette databaser",
+            "noCreatedb": "Kan ikke opprette databaser",
+            "noCreatedbHint": "Med denne rollen kan du ikke opprette nye databaser. Bruk en rolle med CREATEDB, eller ta i bruk databaser som allerede finnes.",
+            "foundAuth": "{count} autentiseringsdatabase(r) funnet",
+            "foundCompany": "{count} firmadatabase(r) funnet",
+            "stored": "Tilgang fra den eksisterende konfigurasjonen: {user} på {host}:{port}. Passordet blir liggende på serveren.",
+            "enterManually": "Oppgi andre tilkoblingsdata"
+        },
+        "auth": {
+            "intro": "I autentiseringsdatabasen ligger brukere, grupper og listen over firmaer. Den er kompatibel med k9o — en database som allerede finnes, kan tas i bruk direkte.",
+            "modeNew": "Opprett ny autentiseringsdatabase",
+            "modeNewHint": "Anbefales for en ny installasjon.",
+            "name": "Navn på autentiseringsdatabasen",
+            "modeExisting": "Bruk en autentiseringsdatabase som finnes",
+            "modeExistingHint": "Ta i bruk brukere, grupper og firmaer fra en eksisterende k9o-installasjon. OSERP-tabeller som mangler, blir lagt til.",
+            "noneFound": "Det ble ikke funnet noen autentiseringsdatabase på serveren.",
+            "select": "Autentiseringsdatabase",
+            "dbMeta": "{users} brukere, {clients} firmaer",
+            "dbEmpty": "tom — blir satt opp"
+        },
+        "admin": {
+            "intro": "Den første brukeren blir systemadministrator: Han kan administrere brukere, grupper og firmaer og får gruppen \"Full tilgang\".",
+            "introExisting": "Hvem skal være systemadministrator? Skriv inn et brukernavn som finnes fra før (passordet beholdes hvis feltet står tomt), eller opprett et nytt.",
+            "login": "Brukernavn",
+            "loginHintExisting": "Et brukernavn som finnes fra før, eller et nytt",
+            "name": "Fullt navn",
+            "email": "E-post",
+            "password": "Passord",
+            "passwordConfirm": "Gjenta passord",
+            "passwordHint": "Minst 8 tegn — eller la det lages automatisk",
+            "passwordHintExisting": "La feltet stå tomt for å beholde passordet som finnes fra før",
+            "generate": "Lag et sikkert passord",
+            "modeDefault": "Opprett standardkontoen \"{login}\"",
+            "modeDefaultHint": "Logg inn med {login} og det samme ordet som passord. Klar til bruk med en gang — husk å endre det etterpå.",
+            "modeCustom": "Opprett din egen administrator",
+            "modeCustomHint": "Velg navn, e-post og passord selv.",
+            "defaultWarning": "Passordet er til å begynne med det samme som brukernavnet. Endre det etter den første innloggingen under \"Brukere og firmaer\".",
+            "existingUsersHint": "Denne installasjonen har allerede brukere. Logg inn med en administrator som finnes fra før, slik at veiviseren kan fortsette."
+        },
+        "company": {
+            "intro": "Hvert firma får sin egen database med kontoplan. Du kan opprette flere firmaer når som helst senere.",
+            "createSwitch": "Opprett det første firmaet nå",
+            "name": "Firmanavn",
+            "dbname": "Databasenavn",
+            "dbnameHint": "Foreslås ut fra firmanavnet — små bokstaver, tall, understrek",
+            "chart": "Kontoplan",
+            "charts": {
+                "skr03": "Prosessinndelt — standarden for de fleste virksomheter",
+                "skr04": "Regnskapsinndelt — vanlig for GmbH, AG og større virksomheter"
+            },
+            "noneWarning": "Uten firma er det ingenting å se etter innlogging. Du kan opprette et firma senere under \"Brukere og firmaer\"."
+        },
+        "summary": {
+            "intro": "Kontroller opplysningene. Installasjonen tar omtrent ett minutt.",
+            "server": "Databaseserver",
+            "auth": "Autentiseringsdatabase",
+            "authNew": "{name} (blir opprettet)",
+            "authExisting": "{name} (finnes, blir utvidet)",
+            "admin": "Administrator",
+            "company": "Første firma",
+            "noCompany": "ingen — opprettes senere",
+            "installing": "Installasjonen kjører …",
+            "installingHint": "Oppretter databaser, laster inn skjema og kontoplan. Ikke lukk vinduet.",
+            "done": "Installasjonen er fullført",
+            "steps": {
+                "connect": "Tilkobling til serveren",
+                "auth_db_created": "Autentiseringsdatabasen er opprettet",
+                "auth_schema": "Auth-skjemaet er lastet inn",
+                "admin_user": "Administrator",
+                "company": "Firmaet er opprettet",
+                "settings": "Konfigurasjonen er skrevet"
+            },
+            "loginHint": "Logg inn nå som \"{login}\".",
+            "adminDefault": "Standardkonto {login}",
+            "loginHintDefault": "Logg inn nå som \"{login}\" — passordet er det samme som brukernavnet. Endre det med en gang etterpå."
+        },
         "fields": {
             "host": "Host",
             "port": "Port",
             "database": "Databasenavn",
-            "login": "Login",
+            "login": "Databasebruker",
             "password": "Passord"
-        },
-        "placeholders": {
-            "host": "localhost",
-            "port": "5432",
-            "database": "oserp_auth",
-            "login": "postgres"
         },
         "validation": {
             "required": "Obligatorisk felt",
-            "portRange": "Port maa vaere mellom 1 og 65535"
+            "portRange": "Porten må være mellom 1 og 65535",
+            "dbname": "Bare små bokstaver, tall, understrek og bindestrek, og det må begynne med en bokstav",
+            "dbExists": "Det finnes allerede en database med dette navnet",
+            "login": "Ingen mellomrom og ingen spesialtegn som / \\ : * ? \" < > |",
+            "email": "Ugyldig e-postadresse",
+            "passwordLength": "Minst 8 tegn",
+            "passwordMismatch": "Passordene er ikke like"
         },
         "buttons": {
             "testConnection": "Test tilkobling",
-            "testingConnection": "Tester tilkobling...",
-            "saveSetup": "Fullfoetr setup",
-            "savingSetup": "Lagrer...",
-            "finish": "Kjoer app"
+            "next": "Neste",
+            "back": "Tilbake",
+            "install": "Start installasjonen",
+            "finish": "Til innlogging"
         },
         "errors": {
-            "checkStatus": "Feil ved kontroll av setup-status",
-            "testConnection": "Feil ved test av tilkobling",
-            "testNetworkError": "Nettverksfeil ved test av tilkobling",
-            "saveSetup": "Feil ved lagring av konfigurasjon",
-            "saveNetworkError": "Nettverksfeil ved lagring av konfigurasjon"
-        },
-        "update": {
-            "title": "Databaseoppdatering",
-            "running": "Database oppdateres...",
-            "success": "Databaseoppdatering gjennomfoert.",
-            "failed": "Databaseoppdatering mislyktes.",
-            "networkError": "Nettverksfeil ved databaseoppdatering."
+            "testConnection": "Tilkoblingen mislyktes",
+            "testNetworkError": "Nettverksfeil under testing av tilkoblingen",
+            "install": "Installasjonen mislyktes",
+            "saveNetworkError": "Nettverksfeil under installasjonen",
+            "ADMIN_LOGIN_REQUIRED": "Denne installasjonen har allerede brukere. Oppgi brukernavn og passord for en administrator som finnes fra før.",
+            "AUTH_DB_UNREACHABLE": "Autentiseringsdatabasen kan ikke nås med opplysningene fra konfigurasjonen."
         },
         "footer": {
             "copyright": "OpensourceERP"
+        },
+        "state": {
+            "no_database": "Konfigurasjonen peker på databasen \"{db}\", som ennå ikke finnes på serveren. Veiviseren oppretter den.",
+            "no_schema": "Databasen \"{db}\" finnes, men har ennå ingen tabeller. Veiviseren setter den opp nå.",
+            "no_user": "Databasen \"{db}\" har ennå ingen bruker. Uten bruker er det ikke mulig å logge inn.",
+            "no_client": "Det er ennå ikke opprettet noe firma. Uten firma fører innloggingen ingen steder."
         }
     }
 }

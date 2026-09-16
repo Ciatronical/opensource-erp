@@ -1,6 +1,6 @@
 # OpensourceERP
 
-**Das moderne Web-Frontend für kivitendo** — gebaut mit dem Ziel, ERP endlich so bedienbar zu machen, wie man es von modernen Webanwendungen erwartet. Keine Kompromisse bei der Benutzerfreundlichkeit — aber 100% kompatibel mit bestehenden kivitendo-Datenbanken.
+**Das moderne Web-ERP** — gebaut mit dem Ziel, ERP endlich so bedienbar zu machen, wie man es von modernen Webanwendungen erwartet. Läuft eigenständig (Setup-Assistent legt Auth-Datenbank, Administrator und Firmen an — siehe `docs/features/benutzerverwaltung.md`) und bleibt 100% kompatibel mit bestehenden kivitendo-Datenbanken.
 
 **Konzept: UX First**
 

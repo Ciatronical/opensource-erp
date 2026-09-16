@@ -57,7 +57,8 @@
         "privacy": "/privatums",
         "dataDeletion": "/datu-dzesana",
         "tafel": "/zinojumu-delis/parvaldiba",
-        "newArticle": "/prece/jauns"
+        "newArticle": "/prece/jauns",
+        "admin": "/sistema/administresana"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Kluda: Paroles fails api/config/api.passwd.php nav atrasts. Ludzu pardevejiet failu api/config/api.passwd.php.example par api/config/api.passwd.php un pielagojiet iestatijumus.",
@@ -93,7 +94,8 @@
         "developerTools": "Developer Tools",
         "systemUpdate": "Sistemas atjauninasana",
         "about": "Par",
-        "docs": "Dokumentācija"
+        "docs": "Dokumentācija",
+        "administration": "Lietotāji un uzņēmumi"
     },
     "DocsView": {
         "title": "Dokumentācija",

@@ -420,7 +420,7 @@
             "emailInvalid": "Ongeldig e-mailadres"
         },
         "errors": {
-            "noApiKey": "Geen API-sleutel geconfigureerd voor de kentekenbewijsscanner. Configureer deze in de bedrijfsconfiguratie.",
+            "noApiKey": "Geen kentekenbewijs-scanner geconfigureerd. Activeer in de bedrijfsconfiguratie onder LxCars „Eigen kentekenbewijs-scanner gebruiken“ of voer een API-sleutel in.",
             "scanFailed": "Scan mislukt",
             "noImage": "Upload een afbeelding",
             "loadScans": "Fout bij het laden van de scans"

@@ -126,14 +126,17 @@
             <v-icon v-if="client.name === oserpData.session.client" size="small" color="primary">mdi-check</v-icon>
           </template>
         </v-list-item>
-        <v-divider class="my-1" />
-        <v-list-item
-          :disabled="!oserpData.session.can_create_company"
-          @click="openCreateCompanyDialog"
-        >
-          <template #prepend><v-icon size="small" class="me-2">mdi-plus-circle-outline</v-icon></template>
-          <v-list-item-title class="text-body-2">{{ t('NavbarView.newCompany') }}</v-list-item-title>
-        </v-list-item>
+        <template v-if="oserpData.session.is_admin">
+          <v-divider class="my-1" />
+          <v-list-item :to="{ name: 'admin', query: { tab: 'companies', new: '1' } }" @click="clientMenuOpen = false">
+            <template #prepend><v-icon size="small" class="me-2">mdi-plus-circle-outline</v-icon></template>
+            <v-list-item-title class="text-body-2">{{ t('NavbarView.newCompany') }}</v-list-item-title>
+          </v-list-item>
+          <v-list-item :to="{ name: 'admin' }" @click="clientMenuOpen = false">
+            <template #prepend><v-icon size="small" class="me-2">mdi-account-cog-outline</v-icon></template>
+            <v-list-item-title class="text-body-2">{{ t('SystemMenu.administration') }}</v-list-item-title>
+          </v-list-item>
+        </template>
         <v-divider class="my-1" />
         <v-list-item :to="{ name: 'client-defaults' }" @click="clientMenuOpen = false">
           <template #prepend><v-icon size="small" class="me-2">mdi-cog</v-icon></template>
@@ -312,59 +315,6 @@
   <!-- Über-Dialog -->
   <AboutDialog v-model="showAboutDialog" :app-title="appTitle" />
 
-  <!-- Neue Firma anlegen -->
-  <v-dialog v-model="showCreateCompanyDialog" max-width="500" persistent>
-    <v-card>
-      <v-card-title class="bg-primary text-white">
-        <v-icon start>mdi-domain-plus</v-icon>
-        {{ t('NavbarView.createCompanyTitle') }}
-      </v-card-title>
-      <v-card-text class="pa-4">
-        <v-text-field
-          ref="createCompanyNameRef"
-          v-model="createCompanyName"
-          :label="t('NavbarView.companyName')"
-          variant="outlined"
-          density="compact"
-          class="mb-3"
-          :error-messages="createCompanyError"
-          @update:model-value="createCompanyError = ''"
-          @keydown.enter="canSubmitCompany && doCreateCompany()"
-        />
-        <v-text-field
-          v-model="createCompanyDbName"
-          :label="t('NavbarView.dbName')"
-          variant="outlined"
-          density="compact"
-          class="mb-3"
-          :hint="t('NavbarView.dbNameHint')"
-          persistent-hint
-          @keydown.enter="canSubmitCompany && doCreateCompany()"
-        />
-        <v-select
-          v-model="createCompanySkr"
-          :items="skrOptions"
-          :label="t('NavbarView.chartOfAccounts')"
-          variant="outlined"
-          density="compact"
-        />
-      </v-card-text>
-      <v-card-actions>
-        <v-btn @click="closeCreateCompanyDialog">{{ t('NavbarView.cancel') }}</v-btn>
-        <v-spacer />
-        <v-btn
-          color="primary"
-          variant="flat"
-          :loading="createCompanyLoading"
-          :disabled="!canSubmitCompany"
-          @click="doCreateCompany"
-        >
-          <v-icon start>mdi-check</v-icon>
-          {{ t('NavbarView.createCompany') }}
-        </v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
 </template>
 
 <script>
@@ -579,67 +529,6 @@ export default {
       }
     }
 
-    // Neue Firma anlegen
-    const showCreateCompanyDialog = ref(false)
-    const createCompanySkr = ref('')
-    const createCompanyName = ref('')
-    const createCompanyDbName = ref('')
-    const createCompanyLoading = ref(false)
-    const createCompanyError = ref('')
-    const createCompanyNameRef = ref(null)
-    const canSubmitCompany = computed(() => createCompanyName.value.trim() !== '' && createCompanyDbName.value.trim() !== '')
-
-    const skrOptions = [
-      { title: 'SKR03', value: 'skr03' },
-      { title: 'SKR04', value: 'skr04' }
-    ]
-
-    function openCreateCompanyDialog() {
-      clientMenuOpen.value = false
-      createCompanySkr.value = 'skr03'
-      createCompanyName.value = ''
-      createCompanyDbName.value = ''
-      createCompanyError.value = ''
-      showCreateCompanyDialog.value = true
-      nextTick(() => createCompanyNameRef.value?.focus())
-    }
-
-    function closeCreateCompanyDialog() {
-      showCreateCompanyDialog.value = false
-      createCompanySkr.value = ''
-      createCompanyName.value = ''
-      createCompanyDbName.value = ''
-      createCompanyError.value = ''
-    }
-
-    async function doCreateCompany() {
-      createCompanyLoading.value = true
-      createCompanyError.value = ''
-      try {
-        const companyName = createCompanyName.value.trim()
-        await oserpData.createCompany(
-          companyName,
-          createCompanyDbName.value.trim(),
-          createCompanySkr.value
-        )
-        closeCreateCompanyDialog()
-        // Firmenliste neu laden und zur neuen Firma wechseln
-        const { clients } = await oserpData.fetchClients()
-        clientList.value = clients
-        const newClient = clients.find(c => c.name === companyName)
-        if (newClient) {
-          await oserpData.switchClient(newClient.code)
-          router.push({ name: 'startup' })
-        }
-      } catch (err) {
-        const errorCode = err.code || err.message || 'UNKNOWN_ERROR'
-        const key = 'NavbarView.createCompanyError.' + errorCode
-        createCompanyError.value = t(key) !== key ? t(key) : t('NavbarView.createCompanyError.UNKNOWN_ERROR')
-      } finally {
-        createCompanyLoading.value = false
-      }
-    }
-
     // Firmenlogo (nur Anzeige, Upload jetzt in Firmenkonfiguration)
     const companyLogo = computed(() => oserpData.getClientDefaultValue('company_logo', null))
 
@@ -697,11 +586,12 @@ export default {
         })
       }
 
+      // Erster Eindruck einer frischen Installation — deshalb uebersetzt und nicht
+      // fest deutsch: hier ist noch kein Kunde angelegt.
       if (!oserpData.customer_vendor) {
         list.push({
-          title: 'Willkommen zu OpensourceERP!',
-          description:
-            'Es scheint, als hätten Sie noch keine Kunden angelegt. Beginnen Sie damit, Ihren ersten Kunden zu erstellen, um die Funktionen von OpenSourceERP zu erkunden.',
+          title: t('NavbarView.welcomeTitle'),
+          description: t('NavbarView.welcomeText'),
           type: 'info',
         })
       }
@@ -737,18 +627,6 @@ export default {
       weroniIcon,
       weroniEnabled,
       weroniPending,
-      showCreateCompanyDialog,
-      createCompanySkr,
-      createCompanyNameRef,
-      canSubmitCompany,
-      createCompanyName,
-      createCompanyDbName,
-      createCompanyLoading,
-      createCompanyError,
-      skrOptions,
-      openCreateCompanyDialog,
-      closeCreateCompanyDialog,
-      doCreateCompany,
       chatUnread,
       toggleChatPanel,
       menuBox,

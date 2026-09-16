@@ -1,50 +1,137 @@
 {
     "setup": {
-        "title": "OpensourceERP Setup",
-        "welcome": "Vítejte v OpensourceERP! Nakonfigurujte prosím připojení k autentizační databázi.",
-        "setupAlreadyDone": "Nastavení již bylo provedeno. Budete přesměrováni na přihlašovací stránku...",
-        "configFound": "kivitendo.conf nalezen - Heslo bylo nezašifrované. Formulář byl automaticky vyplněn.",
-        "setupCompleteMessage": "Nastavení úspěšně dokončeno! Heslo bylo uloženo šifrovaně. Budete přesměrováni...",
+        "title": "Nastavení OpensourceERP",
+        "subtitle": "Pět kroků k prvnímu přihlášení — zcela bez k9o",
+        "setupAlreadyDone": "Nastavení již bylo provedeno. Budete přesměrováni na přihlašovací stránku …",
+        "steps": {
+            "server": "Databázový server",
+            "auth": "Autentizační databáze",
+            "admin": "Správce",
+            "company": "První firma",
+            "summary": "Instalace"
+        },
+        "server": {
+            "intro": "Přístup k serveru PostgreSQL. Role potřebuje oprávnění zakládat databáze (obvykle „postgres“).",
+            "configFound": "Byla nalezena konfigurace k9o — přístupové údaje jsou předvyplněny.",
+            "userHint": "Databázová role, např. postgres",
+            "connected": "Připojeno — PostgreSQL {version}",
+            "superuser": "Superuser",
+            "createdb": "Smí zakládat databáze",
+            "noCreatedb": "Nesmí zakládat databáze",
+            "noCreatedbHint": "S touto rolí nelze zakládat nové databáze. Použijte prosím roli s oprávněním CREATEDB nebo převezměte existující databáze.",
+            "foundAuth": "Nalezeno autentizačních databází: {count}",
+            "foundCompany": "Nalezeno firemních databází: {count}",
+            "stored": "Přístup z existující konfigurace: {user} na {host}:{port}. Heslo zůstává na serveru.",
+            "enterManually": "Zadat jiné přístupové údaje"
+        },
+        "auth": {
+            "intro": "V autentizační databázi jsou uloženi uživatelé, skupiny a seznam firem. Je kompatibilní s k9o — existující databázi lze převzít přímo.",
+            "modeNew": "Založit novou autentizační databázi",
+            "modeNewHint": "Doporučeno pro novou instalaci.",
+            "name": "Název autentizační databáze",
+            "modeExisting": "Použít existující autentizační databázi",
+            "modeExistingHint": "Převzít uživatele, skupiny a firmy z existující instalace k9o. Chybějící tabulky OSERP budou doplněny.",
+            "noneFound": "Na serveru nebyla nalezena žádná autentizační databáze.",
+            "select": "Autentizační databáze",
+            "dbMeta": "{users} uživatelů, {clients} firem",
+            "dbEmpty": "prázdná — bude připravena"
+        },
+        "admin": {
+            "intro": "První uživatel se stane správcem systému: smí spravovat uživatele, skupiny a firmy a získá skupinu „Plný přístup“.",
+            "introExisting": "Kdo má být správcem systému? Zadejte existující přihlašovací jméno (necháte-li pole prázdné, heslo zůstane zachováno), nebo založte nové.",
+            "login": "Přihlašovací jméno",
+            "loginHintExisting": "Existující přihlašovací jméno, nebo nové",
+            "name": "Celé jméno",
+            "email": "E-mail",
+            "password": "Heslo",
+            "passwordConfirm": "Zopakovat heslo",
+            "passwordHint": "Nejméně 8 znaků — nebo je nechte vygenerovat",
+            "passwordHintExisting": "Nechte prázdné, chcete-li zachovat stávající heslo",
+            "generate": "Vygenerovat bezpečné heslo",
+            "modeDefault": "Založit výchozí účet „{login}“",
+            "modeDefaultHint": "Přihlášení pomocí {login} a stejného slova jako hesla. Ihned použitelné, poté je prosím změňte.",
+            "modeCustom": "Založit vlastního správce",
+            "modeCustomHint": "Jméno, e-mail a vlastní heslo si určíte sami.",
+            "defaultWarning": "Heslo je zpočátku stejné jako přihlašovací jméno. Změňte je prosím po prvním přihlášení v části „Uživatelé a firmy“.",
+            "existingUsersHint": "Tato instalace již má uživatele. Přihlaste se prosím existujícím správcem, aby mohl průvodce pokračovat."
+        },
+        "company": {
+            "intro": "Každá firma dostane vlastní databázi s účtovou osnovou. Další firmy můžete kdykoli později přidat.",
+            "createSwitch": "Založit nyní první firmu",
+            "name": "Název firmy",
+            "dbname": "Název databáze",
+            "dbnameHint": "Navrženo podle názvu firmy — malá písmena, číslice, podtržítko",
+            "chart": "Účtová osnova",
+            "charts": {
+                "skr03": "Procesní členění — standard pro většinu podniků",
+                "skr04": "Závěrkové členění — obvyklé u GmbH, AG a větších podniků"
+            },
+            "noneWarning": "Bez firmy nebude po přihlášení nic vidět. Firmu lze založit později v části „Uživatelé a firmy“."
+        },
+        "summary": {
+            "intro": "Zkontrolujte prosím údaje. Instalace trvá přibližně minutu.",
+            "server": "Databázový server",
+            "auth": "Autentizační databáze",
+            "authNew": "{name} (bude založena)",
+            "authExisting": "{name} (existuje, bude doplněna)",
+            "admin": "Správce",
+            "company": "První firma",
+            "noCompany": "žádná — založit později",
+            "installing": "Probíhá instalace …",
+            "installingHint": "Zakládají se databáze, nahrává se schéma, načítá se účtová osnova. Nezavírejte prosím okno.",
+            "done": "Instalace dokončena",
+            "steps": {
+                "connect": "Připojení k serveru",
+                "auth_db_created": "Autentizační databáze založena",
+                "auth_schema": "Autentizační schéma nahráno",
+                "admin_user": "Správce",
+                "company": "Firma založena",
+                "settings": "Konfigurace zapsána"
+            },
+            "loginHint": "Přihlaste se nyní jako „{login}“.",
+            "adminDefault": "Výchozí účet {login}",
+            "loginHintDefault": "Přihlaste se nyní jako „{login}“ — heslo je stejné jako přihlašovací jméno. Změňte je prosím hned poté."
+        },
         "fields": {
             "host": "Host",
             "port": "Port",
             "database": "Název databáze",
-            "login": "Přihlášení",
+            "login": "Uživatel databáze",
             "password": "Heslo"
-        },
-        "placeholders": {
-            "host": "localhost",
-            "port": "5432",
-            "database": "oserp_auth",
-            "login": "postgres"
         },
         "validation": {
             "required": "Povinné pole",
-            "portRange": "Port musí být mezi 1 a 65535"
+            "portRange": "Port musí být mezi 1 a 65535",
+            "dbname": "Jen malá písmena, číslice, podtržítko a pomlčka, na začátku písmeno",
+            "dbExists": "Databáze s tímto názvem již existuje",
+            "login": "Bez mezer a bez zvláštních znaků jako / \\ : * ? \" < > |",
+            "email": "Neplatná e-mailová adresa",
+            "passwordLength": "Nejméně 8 znaků",
+            "passwordMismatch": "Hesla se neshodují"
         },
         "buttons": {
-            "testConnection": "Otestovat připojení",
-            "testingConnection": "Testuji připojení...",
-            "saveSetup": "Dokončit nastavení",
-            "savingSetup": "Ukládám...",
-            "finish": "Spustit aplikaci"
+            "testConnection": "Ověřit připojení",
+            "next": "Další",
+            "back": "Zpět",
+            "install": "Spustit instalaci",
+            "finish": "Na přihlášení"
         },
         "errors": {
-            "checkStatus": "Chyba při kontrole stavu nastavení",
-            "testConnection": "Chyba při testování připojení",
-            "testNetworkError": "Síťová chyba při testování připojení",
-            "saveSetup": "Chyba při ukládání konfigurace",
-            "saveNetworkError": "Síťová chyba při ukládání konfigurace"
-        },
-        "update": {
-            "title": "Aktualizace databáze",
-            "running": "Databáze se aktualizuje...",
-            "success": "Aktualizace databáze úspěšně dokončena.",
-            "failed": "Aktualizace databáze se nezdařila.",
-            "networkError": "Síťová chyba při aktualizaci databáze."
+            "testConnection": "Připojení se nezdařilo",
+            "testNetworkError": "Síťová chyba při ověřování připojení",
+            "install": "Instalace se nezdařila",
+            "saveNetworkError": "Síťová chyba během instalace",
+            "ADMIN_LOGIN_REQUIRED": "Tato instalace již má uživatele. Zadejte prosím přihlašovací jméno a heslo existujícího správce.",
+            "AUTH_DB_UNREACHABLE": "Autentizační databáze není s údaji z konfigurace dostupná."
         },
         "footer": {
             "copyright": "OpensourceERP"
+        },
+        "state": {
+            "no_database": "Konfigurace odkazuje na databázi „{db}“, která na serveru zatím neexistuje. Průvodce ji založí.",
+            "no_schema": "Databáze „{db}“ existuje, ale zatím nemá žádné tabulky. Průvodce ji nyní připraví.",
+            "no_user": "Databáze „{db}“ zatím nemá žádného uživatele. Bez uživatele není přihlášení možné.",
+            "no_client": "Zatím není založena žádná firma. Bez firmy vede přihlášení do prázdna."
         }
     }
 }

@@ -57,7 +57,8 @@
         "privacy": "/personvern",
         "dataDeletion": "/datasletting",
         "tafel": "/oppslagstavle/administrasjon",
-        "newArticle": "/vare/ny"
+        "newArticle": "/vare/ny",
+        "admin": "/system/administrasjon"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Feil: Passordfilen api/config/api.passwd.php ble ikke funnet. Vennligst gi nytt navn til filen api/config/api.passwd.php.example til api/config/api.passwd.php og tilpass innstillingene.",
@@ -93,7 +94,8 @@
         "developerTools": "Developer Tools",
         "systemUpdate": "Systemoppdatering",
         "about": "Om",
-        "docs": "Dokumentasjon"
+        "docs": "Dokumentasjon",
+        "administration": "Brukere og firmaer"
     },
     "DocsView": {
         "title": "Dokumentasjon",

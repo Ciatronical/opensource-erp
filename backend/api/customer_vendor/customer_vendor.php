@@ -98,6 +98,15 @@ function getCV($data, $withConfig = []) {
                                     FROM employee WHERE deleted = false ORDER BY name ASC
                                 ) AS emp
                             ),
+                            -- Persoenliche Einstellungen des Angemeldeten (Sprache, dunkle
+                            -- Darstellung, Startansicht ...). Ohne sie startet die Oberflaeche
+                            -- immer deutsch und hell — und genau dieser Zweig greift in einer
+                            -- frisch eingerichteten Firma, solange es noch keinen Kunden gibt.
+                            'company_employee_config', (
+                                SELECT json_object_agg(key, value)
+                                FROM employee_config_oserp
+                                WHERE employee_id = (SELECT id FROM employee WHERE login = '{$auth->getLogin()}')
+                            ),
                             'business_types', (
                                 SELECT json_agg(b) FROM (SELECT * FROM business) AS b
                             ),

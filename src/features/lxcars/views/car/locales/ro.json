@@ -420,7 +420,7 @@
             "emailInvalid": "Ungültige E-Mail-Adresse"
         },
         "errors": {
-            "noApiKey": "Kein API-Key für den Fahrzeugschein-Scanner konfiguriert. Bitte in der Firmenkonfiguration hinterlegen.",
+            "noApiKey": "Niciun scaner al certificatului de înmatriculare configurat. În configurația firmei, la LxCars, activați „Folosește propriul scaner al certificatului de înmatriculare” sau introduceți o cheie API.",
             "scanFailed": "Scan fehlgeschlagen",
             "noImage": "Bitte laden Sie ein Bild hoch",
             "loadScans": "Fehler beim Laden der Scans"

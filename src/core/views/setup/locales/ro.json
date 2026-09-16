@@ -1,50 +1,137 @@
 {
     "setup": {
-        "title": "OpensourceERP Setup",
-        "welcome": "Bine ați venit la OpensourceERP! Vă rugăm configurați conexiunea la baza de date de autentificare.",
-        "setupAlreadyDone": "Configurarea a fost deja efectuată. Veți fi redirecționat la pagina de autentificare...",
-        "configFound": "kivitendo.conf găsit - Parola era necriptată. Formularul a fost completat automat.",
-        "setupCompleteMessage": "Configurare finalizată cu succes! Parola a fost salvată criptat. Veți fi redirecționat...",
+        "title": "Configurarea OpensourceERP",
+        "subtitle": "În cinci pași până la prima autentificare — complet fără k9o",
+        "setupAlreadyDone": "Configurarea a fost deja efectuată. Veți fi redirecționat către pagina de autentificare …",
+        "steps": {
+            "server": "Server de baze de date",
+            "auth": "Baza de date de autentificare",
+            "admin": "Administrator",
+            "company": "Prima firmă",
+            "summary": "Instalare"
+        },
+        "server": {
+            "intro": "Acces la serverul PostgreSQL. Rolul are nevoie de dreptul de a crea baze de date (de regulă „postgres”).",
+            "configFound": "A fost găsită o configurație k9o — datele de acces sunt precompletate.",
+            "userHint": "Rol de bază de date, de exemplu postgres",
+            "connected": "Conectat — PostgreSQL {version}",
+            "superuser": "Superuser",
+            "createdb": "Poate crea baze de date",
+            "noCreatedb": "Nu poate crea baze de date",
+            "noCreatedbHint": "Cu acest rol nu se pot crea baze de date noi. Vă rugăm să folosiți un rol cu CREATEDB sau să preluați baze de date existente.",
+            "foundAuth": "{count} baze de date de autentificare găsite",
+            "foundCompany": "{count} baze de date de firmă găsite",
+            "stored": "Acces din configurația existentă: {user} pe {host}:{port}. Parola rămâne pe server.",
+            "enterManually": "Introduceți alte date de acces"
+        },
+        "auth": {
+            "intro": "În baza de date de autentificare se află utilizatorii, grupurile și lista firmelor. Este compatibilă cu k9o — una existentă poate fi preluată direct.",
+            "modeNew": "Creare bază de date de autentificare nouă",
+            "modeNewHint": "Recomandat pentru o instalare nouă.",
+            "name": "Numele bazei de date de autentificare",
+            "modeExisting": "Utilizarea unei baze de date de autentificare existente",
+            "modeExistingHint": "Preluarea utilizatorilor, grupurilor și firmelor dintr-o instalare k9o existentă. Tabelele OSERP lipsă sunt adăugate.",
+            "noneFound": "Pe server nu a fost găsită nicio bază de date de autentificare.",
+            "select": "Baza de date de autentificare",
+            "dbMeta": "{users} utilizatori, {clients} firme",
+            "dbEmpty": "goală — va fi configurată"
+        },
+        "admin": {
+            "intro": "Primul utilizator devine administrator de sistem: are voie să administreze utilizatori, grupuri și firme și primește grupul „Acces complet”.",
+            "introExisting": "Cine urmează să fie administrator de sistem? Introduceți un nume de autentificare existent (parola rămâne neschimbată dacă lăsați câmpul gol) sau creați unul nou.",
+            "login": "Nume de autentificare",
+            "loginHintExisting": "Un nume de autentificare existent sau unul nou",
+            "name": "Nume complet",
+            "email": "E-mail",
+            "password": "Parolă",
+            "passwordConfirm": "Repetare parolă",
+            "passwordHint": "Cel puțin 8 caractere — sau generați una",
+            "passwordHintExisting": "Lăsați gol pentru a păstra parola existentă",
+            "generate": "Generare parolă sigură",
+            "modeDefault": "Creare cont implicit „{login}”",
+            "modeDefaultHint": "Autentificare cu {login} și cu același cuvânt ca parolă. Gata de utilizare imediat, vă rugăm să o schimbați ulterior.",
+            "modeCustom": "Creare administrator propriu",
+            "modeCustomHint": "Stabiliți singur numele, e-mailul și propria parolă.",
+            "defaultWarning": "Parola este la început identică cu numele de autentificare. Vă rugăm să o schimbați după prima autentificare la „Utilizatori și firme”.",
+            "existingUsersHint": "Această instalare are deja utilizatori. Vă rugăm să vă autentificați cu un administrator existent, pentru ca asistentul să poată continua."
+        },
+        "company": {
+            "intro": "Fiecare firmă primește o bază de date proprie cu plan de conturi. Puteți crea oricând mai târziu alte firme.",
+            "createSwitch": "Creați acum prima firmă",
+            "name": "Numele firmei",
+            "dbname": "Numele bazei de date",
+            "dbnameHint": "Este propus pornind de la numele firmei — litere mici, cifre, liniuță de subliniere",
+            "chart": "Plan de conturi",
+            "charts": {
+                "skr03": "Structurat pe procese — standardul pentru majoritatea firmelor",
+                "skr04": "Structurat pe bilanț — obișnuit la GmbH, AG și la firmele mai mari"
+            },
+            "noneWarning": "Fără o firmă nu se vede nimic după autentificare. O firmă poate fi creată mai târziu la „Utilizatori și firme”."
+        },
+        "summary": {
+            "intro": "Vă rugăm să verificați. Instalarea durează aproximativ un minut.",
+            "server": "Server de baze de date",
+            "auth": "Baza de date de autentificare",
+            "authNew": "{name} (va fi creată)",
+            "authExisting": "{name} (existentă, va fi completată)",
+            "admin": "Administrator",
+            "company": "Prima firmă",
+            "noCompany": "niciuna — se creează mai târziu",
+            "installing": "Instalarea este în curs …",
+            "installingHint": "Se creează bazele de date, se instalează schema, se încarcă planul de conturi. Vă rugăm să nu închideți fereastra.",
+            "done": "Instalare finalizată",
+            "steps": {
+                "connect": "Conexiune la server",
+                "auth_db_created": "Baza de date de autentificare a fost creată",
+                "auth_schema": "Schema de autentificare a fost instalată",
+                "admin_user": "Administrator",
+                "company": "Firma a fost creată",
+                "settings": "Configurația a fost scrisă"
+            },
+            "loginHint": "Autentificați-vă acum ca „{login}”.",
+            "adminDefault": "Cont implicit {login}",
+            "loginHintDefault": "Autentificați-vă acum ca „{login}” — parola este identică cu numele de autentificare. Vă rugăm să o schimbați imediat după aceea."
+        },
         "fields": {
             "host": "Host",
             "port": "Port",
             "database": "Numele bazei de date",
-            "login": "Login",
+            "login": "Utilizator bază de date",
             "password": "Parolă"
-        },
-        "placeholders": {
-            "host": "localhost",
-            "port": "5432",
-            "database": "oserp_auth",
-            "login": "postgres"
         },
         "validation": {
             "required": "Câmp obligatoriu",
-            "portRange": "Portul trebuie să fie între 1 și 65535"
+            "portRange": "Portul trebuie să fie între 1 și 65535",
+            "dbname": "Numai litere mici, cifre, liniuță de subliniere și cratimă, începând cu o literă",
+            "dbExists": "O bază de date cu acest nume există deja",
+            "login": "Fără spații și fără caractere speciale precum / \\ : * ? \" < > |",
+            "email": "Adresă de e-mail nevalidă",
+            "passwordLength": "Cel puțin 8 caractere",
+            "passwordMismatch": "Parolele nu coincid"
         },
         "buttons": {
             "testConnection": "Testare conexiune",
-            "testingConnection": "Se testează conexiunea...",
-            "saveSetup": "Finalizare configurare",
-            "savingSetup": "Se salvează...",
-            "finish": "Rulare aplicație"
+            "next": "Continuare",
+            "back": "Înapoi",
+            "install": "Pornire instalare",
+            "finish": "Către autentificare"
         },
         "errors": {
-            "checkStatus": "Eroare la verificarea stării configurării",
-            "testConnection": "Eroare la testarea conexiunii",
-            "testNetworkError": "Eroare de rețea la testarea conexiunii",
-            "saveSetup": "Eroare la salvarea configurării",
-            "saveNetworkError": "Eroare de rețea la salvarea configurării"
-        },
-        "update": {
-            "title": "Actualizare bază de date",
-            "running": "Baza de date se actualizează...",
-            "success": "Actualizarea bazei de date s-a finalizat cu succes.",
-            "failed": "Actualizarea bazei de date a eșuat.",
-            "networkError": "Eroare de rețea la actualizarea bazei de date."
+            "testConnection": "Conexiune eșuată",
+            "testNetworkError": "Eroare de rețea la verificarea conexiunii",
+            "install": "Instalare eșuată",
+            "saveNetworkError": "Eroare de rețea în timpul instalării",
+            "ADMIN_LOGIN_REQUIRED": "Această instalare are deja utilizatori. Vă rugăm introduceți numele de autentificare și parola unui administrator existent.",
+            "AUTH_DB_UNREACHABLE": "Baza de date de autentificare nu este accesibilă cu datele din configurație."
         },
         "footer": {
             "copyright": "OpensourceERP"
+        },
+        "state": {
+            "no_database": "Configurația indică baza de date „{db}”, care nu există încă pe server. Asistentul o va crea.",
+            "no_schema": "Baza de date „{db}” există, dar nu are încă tabele. Asistentul o configurează acum.",
+            "no_user": "Baza de date „{db}” nu are încă niciun utilizator. Fără utilizator, autentificarea nu este posibilă.",
+            "no_client": "Nu este configurată încă nicio firmă. Fără firmă, autentificarea nu duce nicăieri."
         }
     }
 }

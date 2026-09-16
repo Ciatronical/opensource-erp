@@ -33,6 +33,7 @@ const WikiCategoriesView = () => import('@/core/views/wiki/wiki.categories.view.
 const OrderSearchView = () => import('@/core/views/order-search/order-search.view.vue')
 const DocumentListView = () => import('@/core/views/document-list/document.list.view.vue')
 const UserConfigView = () => import('@/core/views/user-config/user-config.view.vue')
+const AdminView = () => import('@/core/views/admin/admin.view.vue')
 const WallDisplayView = () => import('@/core/views/wall-display/wall-display.view.vue')
 const AnschlagtafelView = () => import('@/core/views/anschlagtafel/anschlagtafel.view.vue')
 const TafelView = () => import('@/core/views/tafel/tafel.view.vue')
@@ -221,6 +222,7 @@ const AccountingRunView = () => import('@/features/accounting/views/accounting.r
 const AccountingBookingsView = () => import('@/features/accounting/views/accounting.bookings.vue')
 const AccountingInvoiceUploadView = () => import('@/features/accounting/views/accounting.invoice-upload.vue')
 const AccountingInvoiceManualView = () => import('@/features/accounting/views/accounting.invoice-manual.vue')
+const AccountingArTransactionView = () => import('@/features/accounting/views/accounting.ar-transaction.vue')
 const AccountingVendorsView = () => import('@/features/accounting/views/accounting.vendors.vue')
 const AccountingCustomersView = () => import('@/features/accounting/views/accounting.customers.vue')
 const AccountingDatevExportView = () => import('@/features/accounting/views/accounting.datev-export.vue')
@@ -677,6 +679,12 @@ function buildRoutes() {
             meta: { hideCustomerBar: true },
         },
         {
+            ...routePath('AccountingView.routes.accountingArTransaction'),
+            name: 'accounting-ar-transaction',
+            component: AccountingArTransactionView,
+            meta: { hideCustomerBar: true },
+        },
+        {
             ...routePath('AccountingView.routes.accountingVendors'),
             name: 'accounting-vendors',
             component: AccountingVendorsView,
@@ -845,6 +853,13 @@ function buildRoutes() {
             component: UserConfigView,
             meta: { hideCustomerBar: true },
         },
+        // ── Systemadministration: Benutzer, Gruppen, Firmen ──
+        {
+            ...routePath('routes.admin'),
+            name: 'admin',
+            component: AdminView,
+            meta: { hideCustomerBar: true, requiresAdmin: true },
+        },
         {
             ...routePath('routes.lxcarsReports'),
             name: 'lxcars-reports',
@@ -948,6 +963,12 @@ router.beforeEach(async (to) => {
         case AuthStatus.AUTHENTICATED:
             // Nicht zur Setup-, Update- oder Login-Seite wenn authentifiziert
             if (to.name === setupRouteName || to.name === loginRouteName) {
+                return { name: startupRouteName };
+            }
+
+            // Systemadministration nur für Administratoren
+            if (to.meta?.requiresAdmin && !oserpData.isAdmin()) {
+                alerts.error(i18n.global.t('FakturaView.alerts.warning_no_permission'))
                 return { name: startupRouteName };
             }
 

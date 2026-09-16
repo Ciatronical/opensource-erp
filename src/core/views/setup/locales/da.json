@@ -1,50 +1,137 @@
 {
     "setup": {
-        "title": "OpensourceERP Setup",
-        "welcome": "Velkommen til OpensourceERP! Konfigurer venligst forbindelsen til godkendelsesdatabasen.",
-        "setupAlreadyDone": "Setup er allerede gennemfoert. Du omdirigeres til loginsiden...",
-        "configFound": "kivitendo.conf fundet - Adgangskoden var ukrypteret. Formularen er udfyldt automatisk.",
-        "setupCompleteMessage": "Setup gennemfoert! Adgangskoden er gemt krypteret. Du omdirigeres...",
+        "title": "Opsæt OpensourceERP",
+        "subtitle": "Fem trin til det første login — helt uden k9o",
+        "setupAlreadyDone": "Opsætningen er allerede gennemført. Du bliver sendt videre til loginsiden …",
+        "steps": {
+            "server": "Databaseserver",
+            "auth": "Auth-database",
+            "admin": "Administrator",
+            "company": "Første firma",
+            "summary": "Installation"
+        },
+        "server": {
+            "intro": "Adgang til PostgreSQL-serveren. Rollen skal have ret til at oprette databaser (som regel ”postgres”).",
+            "configFound": "Der blev fundet en k9o-konfiguration — adgangsoplysningerne er udfyldt på forhånd.",
+            "userHint": "Databaserolle, f.eks. postgres",
+            "connected": "Forbundet — PostgreSQL {version}",
+            "superuser": "Superuser",
+            "createdb": "Må oprette databaser",
+            "noCreatedb": "Må ikke oprette databaser",
+            "noCreatedbHint": "Med denne rolle kan der ikke oprettes nye databaser. Brug venligst en rolle med CREATEDB, eller overtag eksisterende databaser.",
+            "foundAuth": "{count} auth-database(r) fundet",
+            "foundCompany": "{count} firmadatabase(r) fundet",
+            "stored": "Adgang fra den eksisterende konfiguration: {user} på {host}:{port}. Adgangskoden bliver på serveren.",
+            "enterManually": "Indtast andre adgangsoplysninger"
+        },
+        "auth": {
+            "intro": "I auth-databasen ligger brugere, grupper og listen over firmaer. Den er kompatibel med k9o — en eksisterende kan overtages direkte.",
+            "modeNew": "Opret ny auth-database",
+            "modeNewHint": "Anbefales til en ny installation.",
+            "name": "Navn på auth-databasen",
+            "modeExisting": "Brug eksisterende auth-database",
+            "modeExistingHint": "Overtag brugere, grupper og firmaer fra en eksisterende k9o-installation. Manglende OSERP-tabeller bliver tilføjet.",
+            "noneFound": "Der blev ikke fundet nogen auth-database på serveren.",
+            "select": "Auth-database",
+            "dbMeta": "{users} brugere, {clients} firmaer",
+            "dbEmpty": "tom — bliver sat op"
+        },
+        "admin": {
+            "intro": "Den første bruger bliver systemadministrator: Han må administrere brugere, grupper og firmaer og får gruppen ”Fuld adgang”.",
+            "introExisting": "Hvem skal være systemadministrator? Indtast et eksisterende brugernavn (adgangskoden bevares, hvis feltet er tomt), eller opret et nyt.",
+            "login": "Brugernavn",
+            "loginHintExisting": "Eksisterende brugernavn eller et nyt",
+            "name": "Fulde navn",
+            "email": "E-mail",
+            "password": "Adgangskode",
+            "passwordConfirm": "Gentag adgangskode",
+            "passwordHint": "Mindst 8 tegn — eller lad den generere",
+            "passwordHintExisting": "Lad feltet stå tomt for at beholde den eksisterende adgangskode",
+            "generate": "Generer sikker adgangskode",
+            "modeDefault": "Opret standardkontoen ”{login}”",
+            "modeDefaultHint": "Log ind med {login} og det samme ord som adgangskode. Klar til brug med det samme — husk at ændre den bagefter.",
+            "modeCustom": "Opret din egen administrator",
+            "modeCustomHint": "Vælg selv navn, e-mail og adgangskode.",
+            "defaultWarning": "Adgangskoden er i første omgang den samme som brugernavnet. Ret den efter det første login under ”Brugere og firmaer”.",
+            "existingUsersHint": "Denne installation har allerede brugere. Log ind med en eksisterende administrator, så guiden kan arbejde videre."
+        },
+        "company": {
+            "intro": "Hvert firma får sin egen database med kontoplan. Du kan altid oprette flere firmaer senere.",
+            "createSwitch": "Opret det første firma nu",
+            "name": "Firmanavn",
+            "dbname": "Databasenavn",
+            "dbnameHint": "Foreslås ud fra firmanavnet — små bogstaver, tal, understreg",
+            "chart": "Kontoplan",
+            "charts": {
+                "skr03": "Procesopdelt — standarden for de fleste virksomheder",
+                "skr04": "Regnskabsopdelt — almindelig hos GmbH, AG og større virksomheder"
+            },
+            "noneWarning": "Uden firma er der intet at se efter login. Et firma kan oprettes senere under ”Brugere og firmaer”."
+        },
+        "summary": {
+            "intro": "Kontrollér venligst. Installationen tager cirka et minut.",
+            "server": "Databaseserver",
+            "auth": "Auth-database",
+            "authNew": "{name} (bliver oprettet)",
+            "authExisting": "{name} (findes, bliver udvidet)",
+            "admin": "Administrator",
+            "company": "Første firma",
+            "noCompany": "ingen — opret senere",
+            "installing": "Installationen kører …",
+            "installingHint": "Oprette databaser, indlæse skema, hente kontoplan. Luk ikke vinduet.",
+            "done": "Installationen er afsluttet",
+            "steps": {
+                "connect": "Forbindelse til serveren",
+                "auth_db_created": "Auth-database oprettet",
+                "auth_schema": "Auth-skema indlæst",
+                "admin_user": "Administrator",
+                "company": "Firma oprettet",
+                "settings": "Konfiguration skrevet"
+            },
+            "loginHint": "Log ind nu som ”{login}”.",
+            "adminDefault": "Standardkonto {login}",
+            "loginHintDefault": "Log ind nu som ”{login}” — adgangskoden er den samme som brugernavnet. Ret den med det samme bagefter."
+        },
         "fields": {
             "host": "Host",
             "port": "Port",
             "database": "Databasenavn",
-            "login": "Login",
+            "login": "Databasebruger",
             "password": "Adgangskode"
-        },
-        "placeholders": {
-            "host": "localhost",
-            "port": "5432",
-            "database": "oserp_auth",
-            "login": "postgres"
         },
         "validation": {
             "required": "Obligatorisk felt",
-            "portRange": "Port skal vaere mellem 1 og 65535"
+            "portRange": "Port skal være mellem 1 og 65535",
+            "dbname": "Kun små bogstaver, tal, understreg og bindestreg, og det skal begynde med et bogstav",
+            "dbExists": "Der findes allerede en database med dette navn",
+            "login": "Ingen mellemrum og ingen specialtegn som / \\ : * ? \" < > |",
+            "email": "Ugyldig e-mailadresse",
+            "passwordLength": "Mindst 8 tegn",
+            "passwordMismatch": "Adgangskoderne er ikke ens"
         },
         "buttons": {
             "testConnection": "Test forbindelse",
-            "testingConnection": "Tester forbindelse...",
-            "saveSetup": "Afslut setup",
-            "savingSetup": "Gemmer...",
-            "finish": "Koer app"
+            "next": "Videre",
+            "back": "Tilbage",
+            "install": "Start installation",
+            "finish": "Til login"
         },
         "errors": {
-            "checkStatus": "Fejl ved kontrol af setup-status",
-            "testConnection": "Fejl ved test af forbindelse",
-            "testNetworkError": "Netvaerksfejl ved test af forbindelse",
-            "saveSetup": "Fejl ved lagring af konfiguration",
-            "saveNetworkError": "Netvaerksfejl ved lagring af konfiguration"
-        },
-        "update": {
-            "title": "Databaseopdatering",
-            "running": "Database opdateres...",
-            "success": "Databaseopdatering gennemfoert.",
-            "failed": "Databaseopdatering mislykkedes.",
-            "networkError": "Netvaerksfejl ved databaseopdatering."
+            "testConnection": "Forbindelsen mislykkedes",
+            "testNetworkError": "Netværksfejl ved test af forbindelsen",
+            "install": "Installationen mislykkedes",
+            "saveNetworkError": "Netværksfejl under installationen",
+            "ADMIN_LOGIN_REQUIRED": "Denne installation har allerede brugere. Indtast brugernavn og adgangskode for en eksisterende administrator.",
+            "AUTH_DB_UNREACHABLE": "Auth-databasen kan ikke nås med oplysningerne fra konfigurationen."
         },
         "footer": {
             "copyright": "OpensourceERP"
+        },
+        "state": {
+            "no_database": "Konfigurationen peger på databasen ”{db}”, som endnu ikke findes på serveren. Guiden opretter den.",
+            "no_schema": "Databasen ”{db}” findes, men har endnu ingen tabeller. Guiden sætter den op nu.",
+            "no_user": "Databasen ”{db}” har endnu ingen bruger. Uden bruger er login ikke muligt.",
+            "no_client": "Der er endnu ikke oprettet noget firma. Uden firma fører login ingen steder hen."
         }
     }
 }

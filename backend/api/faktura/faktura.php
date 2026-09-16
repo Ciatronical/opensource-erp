@@ -35,6 +35,21 @@ function getFakturaData($data) {
         ? "(SELECT json_agg(billing_addr) FROM (SELECT addr.* FROM {$mainTable} JOIN additional_billing_addresses addr ON {$mainTable}.customer_id = addr.customer_id WHERE {$mainTable}.id = :fakturaID ORDER BY addr.id ASC) AS billing_addr)"
         : "NULL";
 
+    // Forderungskonto („Buchen auf“) aus der Datenbank, nicht aus der company_config
+    // des Browsers — die kann nach einem Firmenwechsel in einem anderen Tab zur alten
+    // Firma gehören. Vorrang hat das Konto der bestehenden Forderungsbuchung, dann
+    // defaults.ar_chart_id, dann das niedrigste AR-Konto (wie postArInvoiceToLedger).
+    $arTargetSql = ($mainTable === 'ar')
+        ? "COALESCE(
+               (SELECT at.chart_id FROM acc_trans at
+                 WHERE at.trans_id = ar.id
+                   AND POSITION(':AR:' IN ':' || COALESCE(at.chart_link, '') || ':') > 0
+                 ORDER BY at.acc_trans_id ASC LIMIT 1),
+               (SELECT d.ar_chart_id FROM defaults d JOIN chart c ON c.id = d.ar_chart_id AND c.link = 'AR' LIMIT 1),
+               (SELECT id FROM chart WHERE link = 'AR' ORDER BY accno ASC LIMIT 1)
+           )"
+        : "NULL";
+
     $query = <<<SQL
         SELECT json_build_object(
             'success', true,
@@ -43,7 +58,7 @@ function getFakturaData($data) {
                 (
                     SELECT row_to_json(common)
                     FROM (
-                        SELECT *
+                        SELECT {$mainTable}.*, {$arTargetSql} AS "AR_target"
                         FROM {$mainTable}
                         WHERE {$mainTable}.id = :fakturaID
                     ) AS common

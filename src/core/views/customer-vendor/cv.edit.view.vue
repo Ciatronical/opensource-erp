@@ -612,8 +612,9 @@ export default {
         }
 
         // Action Functions
+        // Liefert true, wenn gespeichert wurde (false bei Duplikat-Dialog oder Fehler)
         const saveCV = async () => {
-            if (saving.value) return
+            if (saving.value) return false
 
             // Duplikat-Check vor dem ersten Speichern (Neuanlage)
             const cvId = id.value || savedCvId.value
@@ -628,7 +629,7 @@ export default {
                             duplicateExact.value = result.exact || []
                             duplicatePartial.value = result.partial || []
                             showDuplicateDialog.value = true
-                            return
+                            return false
                         }
                     } catch (e) {
                         console.warn('Duplicate check failed, proceeding with save:', e)
@@ -699,6 +700,7 @@ export default {
                 saving.value = false
                 saved.value = true
                 savedTimer = setTimeout(() => { saved.value = false }, 2000)
+                return true
             } catch (error) {
                 console.error('Error saving Customer/Vendor:', error)
                 saving.value = false
@@ -711,18 +713,37 @@ export default {
                     const idx = displayMessages.value.indexOf(msg)
                     if (idx !== -1) displayMessages.value.splice(idx, 1)
                 }, 8000)
+                return false
             }
         }
 
+        // Workflow-Ziel (Routenname), das nach dem Duplikat-Dialog geöffnet werden soll
+        let pendingWorkflowRoute = null
+
+        // Routenobjekt für ein Workflow-Ziel: Belege holen den Kunden aus dem Store,
+        // die Debitorenbuchung bekommt ihn als customer_id in der Query.
+        const workflowRoute = (routeName) => {
+            const cvId = id.value || savedCvId.value
+            if (routeName === 'accounting-ar-transaction' && entitySrc.value === 'C' && cvId) {
+                return { name: routeName, query: { customer_id: String(cvId) } }
+            }
+            return { name: routeName }
+        }
+
         // Duplikat-Dialog: Trotzdem anlegen
-        const proceedSaveCV = () => {
+        const proceedSaveCV = async () => {
             showDuplicateDialog.value = false
             duplicateCheckDone = true
-            saveCV()
+            const ok = await saveCV()
+            // Wurde ein Workflow-Ziel gewählt, nach dem Speichern dorthin springen
+            const target = pendingWorkflowRoute
+            pendingWorkflowRoute = null
+            if (ok && target) router.push(workflowRoute(target))
         }
 
         // Duplikat-Dialog: Vorhandenen Datensatz oeffnen
         const navigateToDuplicate = (dup) => {
+            pendingWorkflowRoute = null
             showDuplicateDialog.value = false
             const routeName = dup.src === 'V' ? 'vendor-edit' : 'customer-edit'
             router.push({ name: routeName, params: { id: dup.id } })
@@ -731,6 +752,7 @@ export default {
         // Duplikat-Dialog: Abbrechen — bei genau einem Treffer
         // direkt zum vorhandenen Datensatz navigieren
         const cancelDuplicateDialog = () => {
+            pendingWorkflowRoute = null
             const all = [...duplicateExact.value, ...duplicatePartial.value]
             if (all.length === 1) {
                 navigateToDuplicate(all[0])
@@ -770,21 +792,27 @@ export default {
             router.back()
         }
 
-        const saveAndArTransaction = async () => {
-            await saveCV()
+        // Workflow: Speichern und danach neuen Beleg öffnen. Der Kunde liegt
+        // nach dem Speichern im Store (customer_vendor.profile) und wird von
+        // der Faktura-Ansicht im Neu-Modus automatisch übernommen.
+        const saveAndOpen = async (routeName) => {
+            pendingWorkflowRoute = routeName
+            if (await saveCV()) {
+                pendingWorkflowRoute = null
+                router.push(workflowRoute(routeName))
+            } else if (!showDuplicateDialog.value) {
+                pendingWorkflowRoute = null
+            }
         }
 
-        const saveAndInvoice = async () => {
-            await saveCV()
-        }
+        // Die Debitorenbuchung bekommt den Kunden per Query mit (nur bei Kunden sinnvoll)
+        const saveAndArTransaction = () => saveAndOpen('accounting-ar-transaction')
 
-        const saveAndOrder = async () => {
-            await saveCV()
-        }
+        const saveAndInvoice = () => saveAndOpen('invoice-new')
 
-        const saveAndQuotation = async () => {
-            await saveCV()
-        }
+        const saveAndOrder = () => saveAndOpen('order-new')
+
+        const saveAndQuotation = () => saveAndOpen('quotation-new')
 
         const deleteCustomer = async () => {
             if (confirm(t('CustomerVendorEditView.actions.confirmDelete'))) {

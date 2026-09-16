@@ -606,6 +606,19 @@ const route  = useRoute()
 const router = useRouter()
 const API_URL = '/api/banking/'
 
+/**
+ * Fehlermeldung einer API-Antwort: Die lesbare Meldung steht im payload,
+ * text ist nur der Fehlercode (z. B. DATA_ERROR).
+ *
+ * @param {object} res axios-Antwort
+ * @returns {string}
+ */
+function apiErrorText(res) {
+    const payload = res?.data?.payload
+    if (typeof payload === 'string' && payload !== '') return payload
+    return res?.data?.text || t('KasseView.saveError')
+}
+
 // ── State ──────────────────────────────────────────────────────────────────
 
 const loading            = ref(false)
@@ -839,7 +852,7 @@ async function printCashbook() {
             to_date:          toDate.value,
             period_label:     periodMode.value === 'all' ? '' : periodHint.value,
         })
-        if (!res.data?.success) throw new Error(res.data?.text || res.data?.payload)
+        if (!res.data?.success) throw new Error(apiErrorText(res))
         openBase64Pdf(res.data.payload.data, res.data.payload.filename)
     } catch (e) {
         alerts.error(e.message)
@@ -1024,7 +1037,7 @@ async function saveTransaction() {
             await loadRegisters()
             await loadTransactions()
         } else {
-            alerts.error(res.data?.text || t('KasseView.saveError'))
+            alerts.error(apiErrorText(res))
         }
     } finally {
         txSaving.value = false
@@ -1062,7 +1075,7 @@ async function bookInvoiceNow(invoice, kind) {
             transdate:        new Date().toISOString().slice(0, 10),
         })
         if (!res.data?.success) {
-            alerts.error(res.data?.text || t('KasseView.saveError'))
+            alerts.error(apiErrorText(res))
             return
         }
         const p = res.data.payload
@@ -1117,7 +1130,7 @@ async function confirmBookAr() {
             await loadTransactions()
             await loadOpenAr()
         } else {
-            alerts.error(res.data?.text || t('KasseView.saveError'))
+            alerts.error(apiErrorText(res))
         }
     } finally {
         arSaving.value = false
@@ -1153,7 +1166,7 @@ async function confirmBookAp() {
             await loadTransactions()
             await loadOpenAp()
         } else {
-            alerts.error(res.data?.text || t('KasseView.saveError'))
+            alerts.error(apiErrorText(res))
         }
     } finally {
         apSaving.value = false

@@ -420,7 +420,7 @@
             "emailInvalid": "Indirizzo e-mail non valido"
         },
         "errors": {
-            "noApiKey": "Kein API-Key für den Fahrzeugschein-Scanner konfiguriert. Bitte in der Firmenkonfiguration hinterlegen.",
+            "noApiKey": "Nessuno scanner della carta di circolazione configurato. Nella configurazione aziendale, sotto LxCars, attivare «Usa il proprio scanner della carta di circolazione» oppure inserire una chiave API.",
             "scanFailed": "Scan fehlgeschlagen",
             "noImage": "Bitte laden Sie ein Bild hoch",
             "loadScans": "Fehler beim Laden der Scans"

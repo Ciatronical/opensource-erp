@@ -57,7 +57,8 @@
         "privacy": "/integritet",
         "dataDeletion": "/dataradering",
         "tafel": "/anslagstavla/hantera",
-        "newArticle": "/artikel/ny"
+        "newArticle": "/artikel/ny",
+        "admin": "/system/administration"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Fel: Losenordsfilen api/config/api.passwd.php hittades inte. Byt namn pa filen api/config/api.passwd.php.example till api/config/api.passwd.php och anpassa installningarna.",
@@ -93,7 +94,8 @@
         "developerTools": "Developer Tools",
         "systemUpdate": "Systemuppdatering",
         "about": "Om",
-        "docs": "Dokumentation"
+        "docs": "Dokumentation",
+        "administration": "Användare och företag"
     },
     "DocsView": {
         "title": "Dokumentation",

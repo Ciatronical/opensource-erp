@@ -40,7 +40,9 @@
             "VALIDATION_ERROR": "Bitte alle Pflichtfelder korrekt ausfüllen.",
             "SESSION_ERROR": "Sitzungsfehler. Bitte erneut anmelden.",
             "UNKNOWN_ERROR": "Ein unbekannter Fehler ist aufgetreten."
-        }
+        },
+        "welcomeTitle": "OpensourceERP'ye hoş geldiniz!",
+        "welcomeText": "Henüz müşteri oluşturulmamış görünüyor. İlk müşterinizi oluşturarak OpensourceERP'nin işlevlerini keşfedin."
     },
     "GlobalSearch": {
         "placeholder": "Ara...",

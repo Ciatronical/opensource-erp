@@ -40,7 +40,9 @@
             "VALIDATION_ERROR": "Veuillez remplir correctement tous les champs obligatoires.",
             "SESSION_ERROR": "Erreur de session. Veuillez vous reconnecter.",
             "UNKNOWN_ERROR": "Une erreur inconnue est survenue."
-        }
+        },
+        "welcomeTitle": "Bienvenue dans OpensourceERP !",
+        "welcomeText": "Il semble qu'aucun client n'ait encore été créé. Commencez par créer votre premier client pour découvrir les fonctions d'OpensourceERP."
     },
     "GlobalSearch": {
         "placeholder": "Rechercher...",

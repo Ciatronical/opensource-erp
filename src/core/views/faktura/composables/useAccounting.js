@@ -20,7 +20,9 @@ export function useAccounting({ fakturaItems, faktura, fakturaType, paymentList,
             .sort((a, b) => a.accno.localeCompare(b.accno))
     })
 
-    // Watcher: Setze Default-Wert für AR_target sobald arAmountList und faktura.data verfügbar sind
+    // Rückfallebene für AR_target: Rechnungen bringen es aus getFakturaData mit
+    // (bestehende Forderungsbuchung bzw. defaults.ar_chart_id). Nur wenn das fehlt,
+    // das erste AR-Konto aus der company_config nehmen.
     watch([arAmountList, () => faktura.data], ([newList, data]) => {
         if (newList.length > 0 && data?.common && !data.common.AR_target) {
             faktura.data.common.AR_target = newList[0].id

@@ -19,7 +19,8 @@
         "updateSuccess": "Databaseoppdatering gjennomfoert.",
         "updateError": "Feil ved databaseoppdatering. Vennligst proev igjen.",
         "privacy": "Personvernerklaering",
-        "dataDeletion": "Datasletting"
+        "dataDeletion": "Datasletting",
+        "API_DATABASE_ERROR": "Databasen svarer ikke som forventet. Vennligst kontakt administratoren."
     },
     "NotFoundView": {
         "title": "Side ikke funnet",

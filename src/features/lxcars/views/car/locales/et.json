@@ -420,7 +420,7 @@
             "emailInvalid": "Ungültige E-Mail-Adresse"
         },
         "errors": {
-            "noApiKey": "Kein API-Key für den Fahrzeugschein-Scanner konfiguriert. Bitte in der Firmenkonfiguration hinterlegen.",
+            "noApiKey": "Registreerimistunnistuse skannerit pole seadistatud. Lubage ettevõtte seadistuses LxCars all kas „Kasuta oma registreerimistunnistuse skannerit“ või sisestage API võti.",
             "scanFailed": "Scan fehlgeschlagen",
             "noImage": "Bitte laden Sie ein Bild hoch",
             "loadScans": "Fehler beim Laden der Scans"

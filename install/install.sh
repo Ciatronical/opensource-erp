@@ -5,7 +5,13 @@
 #  Richtet den kompletten Stack idempotent ein:
 #    Systempakete · PHP-FPM · Node-Build · PostgreSQL · Apache · SSE · Whisper
 #    · Ollama (lokaler LLM) · ANPR · Kameras (go2rtc + Monitor) · Cronjobs
-#    · Asterisk-Telefonie (Gerüst) · Borg-Backup (Gerüst) · kivitendo
+#    · Asterisk-Telefonie (Gerüst) · Borg-Backup (Gerüst)
+#
+#  OSERP läuft OHNE kivitendo: Auth-Datenbank, Administrator und erste Firma
+#  legt der Setup-Assistent im Browser an (http://<host>/setup) — oder, für
+#  unbeaufsichtigte Installationen, tools/oserp-setup.php über Umgebungs-
+#  variablen (siehe Schritt "database"). kivitendo bleibt optional
+#  (OSERP_WITH_KIVITENDO=1 bzw. --only kivitendo).
 #
 #  GRUNDSÄTZE (siehe CLAUDE.md / feedback):
 #    - KEINE hardcodierten Versionen. PHP-Version/-Socket werden zur Laufzeit
@@ -19,6 +25,9 @@
 #    ./install/install.sh --only apache,sse
 #    ./install/install.sh --skip cameras,anpr,asterisk,borg
 #    OSERP_USER=work OLLAMA_MODEL=qwen2.5:7b ./install/install.sh
+#    # unbeaufsichtigt inkl. Auth-DB, Administrator und erster Firma:
+#    OSERP_DB_PASSWORD=geheim OSERP_ADMIN_LOGIN=admin OSERP_ADMIN_PASSWORD='Start123!' \
+#      OSERP_COMPANY_NAME='Muster GmbH' OSERP_SKR=skr03 ./install/install.sh
 #
 #  Das Script wird als der Benutzer ausgeführt, der OSERP betreibt (NICHT root)
 #  und nutzt für Systemteile `sudo`. In der Test-VM siehe install/test-vm.sh.
@@ -66,19 +75,21 @@ as_user() { sudo -u "$OSERP_USER" -H bash -lc "$*"; }
 # --------------------------------------------------------------------------
 #  Schrittsteuerung
 # --------------------------------------------------------------------------
-ALL_STEPS=(packages php_fpm node_build config permissions apache \
-           sse whisper ollama anpr go2rtc camera_monitor camera_sudoers \
+ALL_STEPS=(packages php_fpm node_build database config permissions apache \
+           sse whisper fsscanner ollama anpr go2rtc camera_monitor camera_sudoers \
            cron dyndns asterisk borg kivitendo healthcheck)
 
 declare -A STEP_DESC=(
   [packages]="Systempakete via apt (Apache, PostgreSQL, PHP, Node, LaTeX, ffmpeg, borg, asterisk ...)"
   [php_fpm]="PHP-FPM-Socket erkennen, FPM aktivieren, Apache-Defines schreiben"
   [node_build]="npm install + Vue-Build + SSE-Deps + Composer"
-  [config]="backend/config/settings.ini anlegen (falls fehlt)"
+  [database]="PostgreSQL-Rolle mit Passwort vorbereiten (Setup-Assistent bzw. unbeaufsichtigtes Setup)"
+  [config]="settings.ini: vorhandene respektieren, sonst per Setup-Assistent/CLI anlegen"
   [permissions]="Verzeichnisrechte für Webserver setzen"
   [apache]="Apache-Module, vHost, Reload"
   [sse]="SSE-Echtzeitserver als systemd-Dienst"
   [whisper]="Whisper-Transkription (venv) als systemd-Dienst"
+  [fsscanner]="Eigener Fahrzeugscheinscanner (venv, RapidOCR) als systemd-Dienst"
   [ollama]="Lokaler LLM (Ollama) + Modell vorladen"
   [anpr]="Kennzeichenerkennung (Python-venv) als systemd-Dienst"
   [go2rtc]="go2rtc Stream-Server als systemd-Dienst"
@@ -88,11 +99,12 @@ declare -A STEP_DESC=(
   [dyndns]="DynDNS-Updater + systemd-Timer (Zugang in /etc/oserp/dyndns.conf)"
   [asterisk]="Asterisk/CRMTI-Telefonie (Paket + Konfig-Gerüst)"
   [borg]="Borg-Backup (Paket + Gerüst, Repo-Secrets manuell)"
-  [kivitendo]="kivitendo via externem Installer"
+  [kivitendo]="kivitendo via externem Installer (optional, nur mit OSERP_WITH_KIVITENDO=1)"
   [healthcheck]="Abschluss-Checks aller Dienste"
 )
 
 SELECTED=("${ALL_STEPS[@]}")
+ONLY_MODE=0
 
 usage() {
     echo "OpensourceERP Installer"
@@ -110,7 +122,7 @@ contains() { local n="$1"; shift; for x in "$@"; do [[ "$x" == "$n" ]] && return
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --list) list_steps; exit 0 ;;
-        --only) IFS=',' read -r -a SELECTED <<< "$2"; shift 2 ;;
+        --only) IFS=',' read -r -a SELECTED <<< "$2"; ONLY_MODE=1; shift 2 ;;
         --skip) IFS=',' read -r -a _sk <<< "$2"; shift 2
                 _new=(); for s in "${ALL_STEPS[@]}"; do contains "$s" "${_sk[@]}" || _new+=("$s"); done
                 SELECTED=("${_new[@]}") ;;
@@ -167,6 +179,7 @@ install_packages() {
         git curl unzip
         python3 python3-venv python3-full
         ffmpeg
+        poppler-utils   # pdftoppm: PDF-Uploads im Fahrzeugscheinscanner
         # Druck (siehe reference_print_latex_dependency): LaTeX inkl. deutsch + CUPS.
         # Pakete explizit, damit die Druckvorlagen (backend/templates/*) alle .sty/.cls
         # finden — nicht auf transitive Abhaengigkeiten des texlive-Metapakets verlassen:
@@ -241,8 +254,49 @@ node_build() {
 }
 
 # =============================================================================
-#  SCHRITT: config
+#  SCHRITT: database  — PostgreSQL-Rolle vorbereiten
 # =============================================================================
+#  Ubuntu-PostgreSQL erlaubt TCP-Anmeldungen nur mit Passwort. OSERP (PHP/PDO)
+#  verbindet sich über TCP — die Rolle "postgres" braucht deshalb eines.
+#  OSERP_DB_PASSWORD  vorgegebenes Passwort, sonst wird eines erzeugt und in
+#                     $OSERP_HOME/.oserp-db-password (0600) hinterlegt, damit
+#                     es im Setup-Assistenten eingegeben werden kann.
+#  OSERP_DB_USER      Rolle (Standard: postgres)
+setup_database() {
+    step "PostgreSQL-Rolle"
+    sudo systemctl enable --now postgresql
+    local role="${OSERP_DB_USER:-postgres}"
+    local pwfile="$OSERP_HOME/.oserp-db-password"
+    if [[ -z "${OSERP_DB_PASSWORD:-}" ]]; then
+        if [[ -f "$pwfile" ]]; then
+            OSERP_DB_PASSWORD="$(cat "$pwfile")"
+            ok "Vorhandenes Datenbank-Passwort aus $pwfile übernommen"
+        else
+            OSERP_DB_PASSWORD="$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 20)"
+            ( umask 077; echo "$OSERP_DB_PASSWORD" > "$pwfile" )
+            sudo chown "$OSERP_USER" "$pwfile"
+            warn "Datenbank-Passwort für '$role' erzeugt und in $pwfile hinterlegt"
+        fi
+    fi
+    export OSERP_DB_PASSWORD
+    if [[ "$role" == "postgres" ]]; then
+        sudo -u postgres psql -qc "ALTER USER postgres PASSWORD '${OSERP_DB_PASSWORD//\'/\'\'}'"
+    else
+        sudo -u postgres psql -qc "DO \$\$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = '$role') THEN CREATE ROLE \"$role\" LOGIN CREATEDB; END IF; END \$\$;"
+        sudo -u postgres psql -qc "ALTER ROLE \"$role\" WITH LOGIN CREATEDB PASSWORD '${OSERP_DB_PASSWORD//\'/\'\'}'"
+    fi
+    ok "Rolle '$role' hat ein Passwort und darf Datenbanken anlegen"
+}
+
+# =============================================================================
+#  SCHRITT: config  — settings.ini
+# =============================================================================
+#  Eine vorhandene settings.ini bleibt unangetastet. Fehlt sie, gibt es zwei Wege:
+#    - Setup-Assistent im Browser (Standard): http://<host>/setup legt Auth-DB,
+#      Administrator und erste Firma an und schreibt die settings.ini.
+#    - Unbeaufsichtigt: sind OSERP_ADMIN_LOGIN und OSERP_ADMIN_PASSWORD gesetzt,
+#      macht tools/oserp-setup.php dasselbe ohne Browser (OSERP_AUTH_DB,
+#      OSERP_COMPANY_NAME, OSERP_COMPANY_DB, OSERP_SKR optional).
 setup_config() {
     step "Konfiguration (settings.ini)"
     local cfg="$OSERP_ROOT/backend/config/settings.ini"
@@ -250,29 +304,23 @@ setup_config() {
         ok "settings.ini existiert bereits — unverändert"
         return
     fi
-    warn "settings.ini fehlt — lege Vorlage an. DB-Zugangsdaten anschließend eintragen!"
-    as_user "cat > '$cfg'" <<EOF
-; OpensourceERP Konfiguration — von install.sh angelegt
-; Passwort verschlüsseln: php tools/encrypt_password.php
-[database]
-host = "localhost"
-port = "5432"
-auth_db = "kivitendo_auth"
-auth_user = "postgres"
-auth_pass = "BITTE_EINTRAGEN"
-
-[session]
-cookie_name = "opensource_erp"
-cookie_same_site = "Strict"
-
-[logging]
-max_log_size = 10485760
-
-[system]
-timezone = "Europe/Berlin"
-debug = false
-EOF
-    todo "backend/config/settings.ini: DB-Passwort eintragen (verschlüsselt via tools/encrypt_password.php)"
+    if [[ -n "${OSERP_ADMIN_LOGIN:-}" && -n "${OSERP_ADMIN_PASSWORD:-}" ]]; then
+        info "Unbeaufsichtigtes Setup: Auth-DB '${OSERP_AUTH_DB:-oserp_auth}', Administrator '$OSERP_ADMIN_LOGIN'"
+        if as_user "cd '$OSERP_ROOT' && OSERP_DB_HOST='${OSERP_DB_HOST:-localhost}' OSERP_DB_PORT='${OSERP_DB_PORT:-5432}' \
+                OSERP_DB_USER='${OSERP_DB_USER:-postgres}' OSERP_DB_PASSWORD='${OSERP_DB_PASSWORD:-}' \
+                OSERP_AUTH_DB='${OSERP_AUTH_DB:-oserp_auth}' OSERP_ADMIN_LOGIN='$OSERP_ADMIN_LOGIN' \
+                OSERP_ADMIN_PASSWORD='$OSERP_ADMIN_PASSWORD' OSERP_ADMIN_NAME='${OSERP_ADMIN_NAME:-}' \
+                OSERP_COMPANY_NAME='${OSERP_COMPANY_NAME:-}' OSERP_COMPANY_DB='${OSERP_COMPANY_DB:-}' OSERP_SKR='${OSERP_SKR:-skr03}' \
+                php tools/oserp-setup.php"; then
+            ok "settings.ini geschrieben, Anmeldung als '$OSERP_ADMIN_LOGIN' möglich"
+        else
+            err "Unbeaufsichtigtes Setup fehlgeschlagen — bitte Setup-Assistent im Browser nutzen"
+        fi
+        return
+    fi
+    warn "settings.ini fehlt — das ist in Ordnung: der Setup-Assistent legt sie an."
+    todo "Im Browser http://<host>/setup öffnen: Datenbank-Passwort aus $OSERP_HOME/.oserp-db-password,"
+    todo "  dann Auth-Datenbank, Administrator und erste Firma anlegen (etwa eine Minute)."
 }
 
 # =============================================================================
@@ -376,6 +424,17 @@ setup_whisper() {
     install_unit "$OSERP_ROOT/install/oserp-whisper.service" "oserp-whisper.service"
     sudo systemctl enable --now oserp-whisper.service
     ok "Whisper-Dienst eingerichtet (Port 3002, Modell lädt beim 1. Start)"
+}
+
+# =============================================================================
+#  SCHRITT: fsscanner  — lokaler Fahrzeugscheinscanner (ersetzt fahrzeugschein-scanner.de)
+# =============================================================================
+setup_fsscanner() {
+    step "Fahrzeugscheinscanner (lokal)"
+    as_user "cd '$OSERP_ROOT/backend/fahrzeugschein-scanner' && ./install.sh"
+    install_unit "$OSERP_ROOT/install/oserp-fahrzeugschein-scanner.service" "oserp-fahrzeugschein-scanner.service"
+    sudo systemctl enable --now oserp-fahrzeugschein-scanner.service
+    ok "Fahrzeugscheinscanner eingerichtet (Port 3003) — in der Firmenkonfiguration unter LxCars aktivieren"
 }
 
 # =============================================================================
@@ -623,7 +682,11 @@ setup_borg() {
 #  SCHRITT: kivitendo  (externer Installer)
 # =============================================================================
 setup_kivitendo() {
-    step "kivitendo (externer Installer)"
+    step "kivitendo (externer Installer, optional)"
+    if [[ "${OSERP_WITH_KIVITENDO:-0}" != "1" && "${ONLY_MODE:-0}" != "1" ]]; then
+        ok "OSERP braucht kein kivitendo mehr — übersprungen (OSERP_WITH_KIVITENDO=1 oder --only kivitendo erzwingt)"
+        return
+    fi
     if [[ -d /var/www/kivitendo-erp || -d "$OSERP_HOME/kivitendo-erp" ]]; then
         ok "kivitendo scheint bereits vorhanden — überspringe"
         return
@@ -669,11 +732,14 @@ healthcheck() {
     echo
     if [[ $ok_all -eq 1 ]]; then
         ok "Grund-Stack läuft. URL: http://localhost"
+        if [[ ! -f "$OSERP_ROOT/backend/config/settings.ini" ]]; then
+            info "Nächster Schritt: Setup-Assistent unter http://localhost/setup (Datenbank-Passwort: $OSERP_HOME/.oserp-db-password)"
+        fi
     else
         warn "Einzelne Checks offen — Details siehe oben / journalctl."
     fi
     echo
-    info "Offene manuelle Schritte oben mit [TODO] markiert (Config, Asterisk, Borg, kivitendo)."
+    info "Offene manuelle Schritte oben mit [TODO] markiert (Setup-Assistent, Asterisk, Borg)."
 }
 
 # =============================================================================
@@ -681,8 +747,8 @@ healthcheck() {
 # =============================================================================
 declare -A STEP_FN=(
   [packages]=install_packages [php_fpm]=setup_php_fpm [node_build]=node_build
-  [config]=setup_config [permissions]=setup_permissions [apache]=setup_apache
-  [sse]=setup_sse [whisper]=setup_whisper [ollama]=setup_ollama [anpr]=setup_anpr
+  [database]=setup_database [config]=setup_config [permissions]=setup_permissions [apache]=setup_apache
+  [sse]=setup_sse [whisper]=setup_whisper [fsscanner]=setup_fsscanner [ollama]=setup_ollama [anpr]=setup_anpr
   [go2rtc]=setup_go2rtc [camera_monitor]=setup_camera_monitor
   [camera_sudoers]=setup_camera_sudoers [cron]=setup_cron [dyndns]=setup_dyndns
   [asterisk]=setup_asterisk

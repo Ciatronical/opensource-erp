@@ -57,7 +57,8 @@
         "privacy": "/prywatnosc",
         "dataDeletion": "/usuwanie-danych",
         "tafel": "/tablica/zarzadzanie",
-        "newArticle": "/artykul/nowy"
+        "newArticle": "/artykul/nowy",
+        "admin": "/system/administracja"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Błąd: Plik hasła api/config/api.passwd.php nie został znaleziony. Proszę zmienić nazwę pliku api/config/api.passwd.php.example na api/config/api.passwd.php i dostosować ustawienia.",
@@ -93,7 +94,8 @@
         "developerTools": "Developer Tools",
         "systemUpdate": "Aktualizacja systemu",
         "about": "O programie",
-        "docs": "Dokumentacja"
+        "docs": "Dokumentacja",
+        "administration": "Użytkownicy i firmy"
     },
     "DocsView": {
         "title": "Dokumentacja",

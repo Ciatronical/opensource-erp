@@ -57,7 +57,8 @@
         "mechanicCar": "/mechaniker/fahrzeug",
         "privacy": "/datenschutz",
         "dataDeletion": "/datenloeschung",
-        "newArticle": "/artikel/neu"
+        "newArticle": "/artikel/neu",
+        "admin": "/system/verwaltung"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Fehler: Die Passwort-Datei api/config/api.passwd.php wurde nicht gefunden. Bitte benennen Sie die Datei api/config/api.passwd.php.example in api/config/api.passwd.php um und passen Sie die Einstellungen entsprechend an.",
@@ -98,7 +99,8 @@
         "developerTools": "Developer Tools",
         "systemUpdate": "Systemaktualisierung",
         "docs": "Dokumentation",
-        "about": "Über"
+        "about": "Über",
+        "administration": "Benutzer und Firmen"
     },
     "DocsView": {
         "title": "Dokumentation",

@@ -19,7 +19,8 @@
         "updateSuccess": "数据库更新成功完成。",
         "updateError": "数据库更新时出错。请重试。",
         "privacy": "隐私政策",
-        "dataDeletion": "数据删除"
+        "dataDeletion": "数据删除",
+        "API_DATABASE_ERROR": "数据库的响应不符合预期。请联系管理员。"
     },
     "NotFoundView": {
         "title": "页面未找到",

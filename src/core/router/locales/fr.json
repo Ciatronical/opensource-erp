@@ -57,7 +57,8 @@
         "privacy": "/confidentialite",
         "dataDeletion": "/suppression-donnees",
         "tafel": "/tableau-affichage/gestion",
-        "newArticle": "/article/nouveau"
+        "newArticle": "/article/nouveau",
+        "admin": "/systeme/administration"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Erreur : Le fichier de mot de passe api/config/api.passwd.php est introuvable. Veuillez renommer le fichier api/config/api.passwd.php.example en api/config/api.passwd.php et ajuster les parametres en consequence.",
@@ -93,7 +94,8 @@
         "developerTools": "Developer Tools",
         "systemUpdate": "Mise a jour du systeme",
         "about": "À propos",
-        "docs": "Documentation"
+        "docs": "Documentation",
+        "administration": "Utilisateurs et sociétés"
     },
     "DocsView": {
         "title": "Documentation",

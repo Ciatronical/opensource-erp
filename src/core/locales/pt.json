@@ -19,7 +19,8 @@
         "updateSuccess": "Atualização da base de dados realizada com sucesso.",
         "updateError": "Erro na atualização da base de dados. Por favor, tente novamente.",
         "privacy": "Política de privacidade",
-        "dataDeletion": "Eliminação de dados"
+        "dataDeletion": "Eliminação de dados",
+        "API_DATABASE_ERROR": "A base de dados não responde como esperado. Por favor, avise o administrador."
     },
     "NotFoundView": {
         "title": "Página não encontrada",

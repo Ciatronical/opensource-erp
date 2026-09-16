@@ -8,6 +8,7 @@ require_once __DIR__.'/../lib/belegablage.php';
 require_once __DIR__.'/bookings.php';
 require_once __DIR__.'/invoice_upload.php';
 require_once __DIR__.'/incoming_invoice_posting.php';
+require_once __DIR__.'/ar_transaction_posting.php';
 require_once __DIR__.'/vendor_matching.php';
 require_once __DIR__.'/customer_matching.php';
 require_once __DIR__.'/datev_export.php';

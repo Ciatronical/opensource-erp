@@ -40,7 +40,9 @@
             "VALIDATION_ERROR": "Please fill in all required fields correctly.",
             "SESSION_ERROR": "Session error. Please log in again.",
             "UNKNOWN_ERROR": "An unknown error occurred."
-        }
+        },
+        "welcomeTitle": "Welcome to OpensourceERP!",
+        "welcomeText": "It looks like no customers have been created yet. Start by creating your first customer to explore what OpensourceERP can do."
     },
     "GlobalSearch": {
         "placeholder": "Search...",

@@ -57,7 +57,8 @@
         "privacy": "/privacidad",
         "dataDeletion": "/eliminacion-datos",
         "tafel": "/tablon-anuncios/gestion",
-        "newArticle": "/articulo/nuevo"
+        "newArticle": "/articulo/nuevo",
+        "admin": "/sistema/administracion"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Error: No se encontró el archivo de contraseña api/config/api.passwd.php. Por favor, renombre el archivo api/config/api.passwd.php.example a api/config/api.passwd.php y ajuste la configuración.",
@@ -93,7 +94,8 @@
         "developerTools": "Herramientas de desarrollo",
         "systemUpdate": "Actualización del sistema",
         "about": "Acerca de",
-        "docs": "Documentación"
+        "docs": "Documentación",
+        "administration": "Usuarios y empresas"
     },
     "DocsView": {
         "title": "Documentación",

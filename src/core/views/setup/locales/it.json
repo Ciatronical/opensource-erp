@@ -1,50 +1,137 @@
 {
     "setup": {
-        "title": "OpensourceERP Setup",
-        "welcome": "Benvenuto in OpensourceERP! Configurare la connessione al database di autenticazione.",
-        "setupAlreadyDone": "La configurazione è già stata effettuata. Verrai reindirizzato alla pagina di accesso...",
-        "configFound": "kivitendo.conf trovato - La password non era cifrata. Il modulo è stato compilato automaticamente.",
-        "setupCompleteMessage": "Configurazione completata con successo! La password è stata salvata in forma cifrata. Verrai reindirizzato...",
+        "title": "Configurare OpensourceERP",
+        "subtitle": "Cinque passi fino al primo accesso — senza bisogno di k9o",
+        "setupAlreadyDone": "La configurazione è già stata eseguita. Verrà reindirizzato alla pagina di accesso …",
+        "steps": {
+            "server": "Server del database",
+            "auth": "Database di autenticazione",
+            "admin": "Amministratore",
+            "company": "Prima azienda",
+            "summary": "Installazione"
+        },
+        "server": {
+            "intro": "Accesso al server PostgreSQL. Il ruolo deve poter creare database (di solito «postgres»).",
+            "configFound": "È stata trovata una configurazione k9o — le credenziali sono precompilate.",
+            "userHint": "Ruolo del database, ad esempio postgres",
+            "connected": "Connesso — PostgreSQL {version}",
+            "superuser": "Superuser",
+            "createdb": "Può creare database",
+            "noCreatedb": "Non può creare database",
+            "noCreatedbHint": "Con questo ruolo non è possibile creare nuovi database. Utilizzi un ruolo con CREATEDB oppure riprenda database esistenti.",
+            "foundAuth": "{count} database di autenticazione trovati",
+            "foundCompany": "{count} database aziendali trovati",
+            "stored": "Accesso dalla configurazione esistente: {user} su {host}:{port}. La password resta sul server.",
+            "enterManually": "Inserire altre credenziali"
+        },
+        "auth": {
+            "intro": "Nel database di autenticazione si trovano utenti, gruppi e l'elenco delle aziende. È compatibile con k9o — uno esistente può essere ripreso direttamente.",
+            "modeNew": "Crea un nuovo database di autenticazione",
+            "modeNewHint": "Consigliato per una nuova installazione.",
+            "name": "Nome del database di autenticazione",
+            "modeExisting": "Usa un database di autenticazione esistente",
+            "modeExistingHint": "Riprendere utenti, gruppi e aziende di un'installazione k9o esistente. Le tabelle OSERP mancanti vengono aggiunte.",
+            "noneFound": "Sul server non è stato trovato alcun database di autenticazione.",
+            "select": "Database di autenticazione",
+            "dbMeta": "{users} utenti, {clients} aziende",
+            "dbEmpty": "vuoto — verrà configurato"
+        },
+        "admin": {
+            "intro": "Il primo utente diventa amministratore di sistema: può gestire utenti, gruppi e aziende e riceve il gruppo «Accesso completo».",
+            "introExisting": "Chi deve essere amministratore di sistema? Inserisca un nome di accesso esistente (se lascia vuota la password, questa resta invariata) oppure ne crei uno nuovo.",
+            "login": "Nome di accesso",
+            "loginHintExisting": "Un nome di accesso esistente oppure uno nuovo",
+            "name": "Nome completo",
+            "email": "E-mail",
+            "password": "Password",
+            "passwordConfirm": "Ripeti password",
+            "passwordHint": "Almeno 8 caratteri — oppure la faccia generare",
+            "passwordHintExisting": "Lasciare vuoto per mantenere la password esistente",
+            "generate": "Genera una password sicura",
+            "modeDefault": "Crea l'accesso predefinito «{login}»",
+            "modeDefaultHint": "Accesso con {login} e la stessa parola come password. Subito pronto all'uso, la cambi poi.",
+            "modeCustom": "Crea un proprio amministratore",
+            "modeCustomHint": "Definisca personalmente nome, e-mail e password.",
+            "defaultWarning": "All'inizio la password è identica al nome di accesso. La cambi dopo il primo accesso in «Utenti e aziende».",
+            "existingUsersHint": "Questa installazione ha già utenti. Acceda con un amministratore esistente affinché l'assistente possa proseguire."
+        },
+        "company": {
+            "intro": "Ogni azienda riceve un proprio database con piano dei conti. In seguito potrà creare altre aziende in qualsiasi momento.",
+            "createSwitch": "Crea subito la prima azienda",
+            "name": "Nome azienda",
+            "dbname": "Nome del database",
+            "dbnameHint": "Viene proposto dal nome azienda — lettere minuscole, cifre, trattino basso",
+            "chart": "Piano dei conti",
+            "charts": {
+                "skr03": "Struttura per processi — lo standard per la maggior parte delle imprese",
+                "skr04": "Struttura di bilancio — usuale per GmbH, AG e imprese più grandi"
+            },
+            "noneWarning": "Senza azienda dopo l'accesso non si vede nulla. Un'azienda può essere creata in seguito in «Utenti e aziende»."
+        },
+        "summary": {
+            "intro": "Controlli i dati. L'installazione dura circa un minuto.",
+            "server": "Server del database",
+            "auth": "Database di autenticazione",
+            "authNew": "{name} (verrà creato)",
+            "authExisting": "{name} (esistente, verrà completato)",
+            "admin": "Amministratore",
+            "company": "Prima azienda",
+            "noCompany": "nessuna — da creare in seguito",
+            "installing": "Installazione in corso …",
+            "installingHint": "Creazione dei database, caricamento dello schema e del piano dei conti. Non chiuda la finestra.",
+            "done": "Installazione completata",
+            "steps": {
+                "connect": "Connessione al server",
+                "auth_db_created": "Database di autenticazione creato",
+                "auth_schema": "Schema di autenticazione caricato",
+                "admin_user": "Amministratore",
+                "company": "Azienda creata",
+                "settings": "Configurazione scritta"
+            },
+            "loginHint": "Acceda ora come «{login}».",
+            "adminDefault": "Accesso predefinito {login}",
+            "loginHintDefault": "Acceda ora come «{login}» — la password è uguale al nome di accesso. La cambi subito dopo."
+        },
         "fields": {
             "host": "Host",
             "port": "Porta",
-            "database": "Nome database",
-            "login": "Login",
+            "database": "Nome del database",
+            "login": "Utente del database",
             "password": "Password"
-        },
-        "placeholders": {
-            "host": "localhost",
-            "port": "5432",
-            "database": "oserp_auth",
-            "login": "postgres"
         },
         "validation": {
             "required": "Campo obbligatorio",
-            "portRange": "La porta deve essere compresa tra 1 e 65535"
+            "portRange": "La porta deve essere compresa tra 1 e 65535",
+            "dbname": "Solo lettere minuscole, cifre, trattino basso e trattino, con una lettera all'inizio",
+            "dbExists": "Esiste già un database con questo nome",
+            "login": "Senza spazi e senza caratteri speciali come / \\ : * ? \" < > |",
+            "email": "Indirizzo e-mail non valido",
+            "passwordLength": "Almeno 8 caratteri",
+            "passwordMismatch": "Le password non coincidono"
         },
         "buttons": {
-            "testConnection": "Testa connessione",
-            "testingConnection": "Test connessione...",
-            "saveSetup": "Completa configurazione",
-            "savingSetup": "Salvataggio...",
-            "finish": "Avvia applicazione"
+            "testConnection": "Verifica connessione",
+            "next": "Avanti",
+            "back": "Indietro",
+            "install": "Avvia l'installazione",
+            "finish": "Vai all'accesso"
         },
         "errors": {
-            "checkStatus": "Errore nella verifica dello stato della configurazione",
-            "testConnection": "Errore nel test della connessione",
-            "testNetworkError": "Errore di rete nel test della connessione",
-            "saveSetup": "Errore nel salvataggio della configurazione",
-            "saveNetworkError": "Errore di rete nel salvataggio della configurazione"
-        },
-        "update": {
-            "title": "Aggiornamento database",
-            "running": "Aggiornamento database in corso...",
-            "success": "Aggiornamento database completato con successo.",
-            "failed": "Aggiornamento database fallito.",
-            "networkError": "Errore di rete nell'aggiornamento del database."
+            "testConnection": "Connessione non riuscita",
+            "testNetworkError": "Errore di rete durante la verifica della connessione",
+            "install": "Installazione non riuscita",
+            "saveNetworkError": "Errore di rete durante l'installazione",
+            "ADMIN_LOGIN_REQUIRED": "Questa installazione ha già utenti. Inserisca il nome di accesso e la password di un amministratore esistente.",
+            "AUTH_DB_UNREACHABLE": "Il database di autenticazione non è raggiungibile con i dati della configurazione."
         },
         "footer": {
             "copyright": "OpensourceERP"
+        },
+        "state": {
+            "no_database": "La configurazione rimanda al database «{db}», che sul server non esiste ancora. L'assistente lo crea.",
+            "no_schema": "Il database «{db}» esiste, ma non contiene ancora tabelle. L'assistente lo configura ora.",
+            "no_user": "Il database «{db}» non ha ancora alcun utente. Senza utente non è possibile accedere.",
+            "no_client": "Non è ancora stata creata alcuna azienda. Senza azienda l'accesso non porta a nulla."
         }
     }
 }

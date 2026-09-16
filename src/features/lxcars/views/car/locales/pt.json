@@ -420,7 +420,7 @@
             "emailInvalid": "Endereço de e-mail inválido"
         },
         "errors": {
-            "noApiKey": "Kein API-Key für den Fahrzeugschein-Scanner konfiguriert. Bitte in der Firmenkonfiguration hinterlegen.",
+            "noApiKey": "Nenhum scanner do documento do veículo configurado. Na configuração da empresa, em LxCars, ative «Usar o próprio scanner do documento do veículo» ou introduza uma chave API.",
             "scanFailed": "Scan fehlgeschlagen",
             "noImage": "Bitte laden Sie ein Bild hoch",
             "loadScans": "Fehler beim Laden der Scans"

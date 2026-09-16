@@ -57,7 +57,8 @@
         "mechanicCar": "/mechanic/car",
         "privacy": "/privacy",
         "dataDeletion": "/data-deletion",
-        "newArticle": "/article/new"
+        "newArticle": "/article/new",
+        "admin": "/system/administration"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Error: The password file api/config/api.passwd.php was not found. Please rename the file api/config/api.passwd.php.example to api/config/api.passwd.php and adjust the settings accordingly.",
@@ -98,7 +99,8 @@
         "developerTools": "Developer Tools",
         "systemUpdate": "System Update",
         "docs": "Documentation",
-        "about": "About"
+        "about": "About",
+        "administration": "Users and Companies"
     },
     "DocsView": {
         "title": "Documentation",

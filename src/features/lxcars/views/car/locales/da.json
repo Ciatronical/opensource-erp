@@ -420,7 +420,7 @@
             "emailInvalid": "Ugyldige E-mail-Adresse"
         },
         "errors": {
-            "noApiKey": "Kein API-Key für den Koeretoejschein-Scanner konfiguriert. Venligst in der Firmenkonfiguration hinterlegen.",
+            "noApiKey": "Ingen registreringsattest-scanner konfigureret. Aktivér i firmakonfigurationen under LxCars enten „Brug egen registreringsattest-scanner“ eller angiv en API-nøgle.",
             "scanFailed": "Scan mislykkedes",
             "noImage": "Venligst laden Sie ein Billede hoch",
             "loadScans": "Fejl ved Laden der Scans"

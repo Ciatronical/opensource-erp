@@ -19,7 +19,8 @@
         "updateSuccess": "Database update completed successfully.",
         "updateError": "Database update failed. Please try again.",
         "privacy": "Privacy Policy",
-        "dataDeletion": "Data Deletion"
+        "dataDeletion": "Data Deletion",
+        "API_DATABASE_ERROR": "The database did not answer as expected. Please contact your administrator."
     },
     "NotFoundView": {
         "title": "Page not found",

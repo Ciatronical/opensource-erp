@@ -10,7 +10,24 @@ OpensourceERP ist eine Vue.js-basierte ERP-Anwendung mit PHP/PostgreSQL-Backend.
 
 Für eine **frische Maschine** richtet `install/install.sh` den kompletten Stack
 idempotent ein (Pakete, PHP-FPM, Build, Apache, SSE, Whisper, Ollama, ANPR,
-Kameras, Cron, Asterisk-Gerüst, Borg-Gerüst, kivitendo).
+Kameras, Cron, Asterisk-Gerüst, Borg-Gerüst). **k9o wird nicht benötigt.**
+
+Nach dem Installer legt der **Setup-Assistent im Browser** (`http://<host>/setup`)
+Auth-Datenbank, Administrator und erste Firma an — das Datenbank-Passwort liegt in
+`~/.oserp-db-password`. Voreingestellt ist der Standardzugang **admin/admin**; die
+Verwaltung erinnert danach so lange ans Ändern, bis ein eigenes Passwort gesetzt ist.
+Ist die Auth-Datenbank noch leer oder fehlt sie ganz, erkennt der Assistent das und
+richtet sie ein, ohne dass Zugangsdaten erneut eingegeben werden müssen. Unbeaufsichtigt geht dasselbe über Umgebungsvariablen:
+
+```bash
+OSERP_DB_PASSWORD=geheim OSERP_ADMIN_LOGIN=admin OSERP_ADMIN_PASSWORD='Start123!' \
+  OSERP_COMPANY_NAME='Muster GmbH' OSERP_SKR=skr03 ./install/install.sh
+# oder nachträglich, ohne Browser:
+php tools/oserp-setup.php --user postgres --pass geheim --admin-login admin \
+  --admin-password 'Start123!' --company 'Muster GmbH' --skr skr03
+```
+
+Details zur Benutzer-, Gruppen- und Firmenverwaltung: `docs/features/benutzerverwaltung.md`.
 
 ```bash
 git clone <repo> opensource-erp && cd opensource-erp

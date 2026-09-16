@@ -57,7 +57,8 @@
         "privacy": "/confidentialitate",
         "dataDeletion": "/stergere-date",
         "tafel": "/avizier/administrare",
-        "newArticle": "/articol/nou"
+        "newArticle": "/articol/nou",
+        "admin": "/sistem/administrare"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Eroare: Fisierul cu parola api/config/api.passwd.php nu a fost gasit. Va rugam redenumiti fisierul api/config/api.passwd.php.example in api/config/api.passwd.php si ajustati setarile corespunzator.",
@@ -93,7 +94,8 @@
         "developerTools": "Developer Tools",
         "systemUpdate": "Actualizare sistem",
         "about": "Despre",
-        "docs": "Documentație"
+        "docs": "Documentație",
+        "administration": "Utilizatori și firme"
     },
     "DocsView": {
         "title": "Documentație",

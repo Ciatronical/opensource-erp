@@ -19,7 +19,8 @@
         "updateSuccess": "Databasuppdatering genomford.",
         "updateError": "Fel vid databasuppdatering. Forsok igen.",
         "privacy": "Integritetspolicy",
-        "dataDeletion": "Dataradering"
+        "dataDeletion": "Dataradering",
+        "API_DATABASE_ERROR": "Databasen svarar inte som väntat. Kontakta administratören."
     },
     "NotFoundView": {
         "title": "Sidan hittades inte",

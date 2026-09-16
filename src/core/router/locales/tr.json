@@ -57,7 +57,8 @@
         "privacy": "/gizlilik",
         "dataDeletion": "/veri-silme",
         "tafel": "/ilan-panosu/yonetim",
-        "newArticle": "/urun/yeni"
+        "newArticle": "/urun/yeni",
+        "admin": "/sistem/yonetim"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Hata: api/config/api.passwd.php parola dosyasi bulunamadi. Lutfen api/config/api.passwd.php.example dosyasini api/config/api.passwd.php olarak yeniden adlandirin ve ayarlari uygun sekilde yapin.",
@@ -93,7 +94,8 @@
         "developerTools": "Developer Tools",
         "systemUpdate": "Sistem güncellemesi",
         "about": "Hakkında",
-        "docs": "Belgeler"
+        "docs": "Belgeler",
+        "administration": "Kullanıcılar ve şirketler"
     },
     "DocsView": {
         "title": "Belgeler",

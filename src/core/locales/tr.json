@@ -19,7 +19,8 @@
         "updateSuccess": "Veritabanı güncellemesi başarıyla tamamlandı.",
         "updateError": "Veritabanı güncellemesinde hata. Lütfen tekrar deneyin.",
         "privacy": "Gizlilik politikası",
-        "dataDeletion": "Veri silme"
+        "dataDeletion": "Veri silme",
+        "API_DATABASE_ERROR": "Veritabanı beklendiği gibi yanıt vermiyor. Lütfen yöneticinize haber verin."
     },
     "NotFoundView": {
         "title": "Sayfa bulunamadı",

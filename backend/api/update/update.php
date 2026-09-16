@@ -1,6 +1,13 @@
 <?php
 // backend/api/update/update.php
 
+// SQL-Bezeichner: einfach (spalte, "right") und qualifiziert (auth."user", public.parts).
+// Als Konstanten, damit alle Parser-Regexe dasselbe Muster nutzen.
+if (!defined('SQL_IDENT')) {
+    define('SQL_IDENT', '(?:"[^"]+"|[a-zA-Z_][a-zA-Z0-9_]*)');
+    define('SQL_QUALIFIED_IDENT', SQL_IDENT . '(?:\\.' . SQL_IDENT . ')?');
+}
+
 /**
  * Aktualisiert das Datenbankschema basierend auf SQL-Dateien
  *
@@ -194,9 +201,13 @@ function updateSchema($data) {
  * @param array $sqlFiles Array mit SQL-Dateipfaden, z.B. ['auth_schema.sql', 'company_schema.sql']
  * @param array $csvFiles Array mit CSV-Dateien nach Schema gruppiert ['auth' => [...], 'company' => [...]]
  * @param bool $dryRun Wenn true, werden keine Änderungen vorgenommen (nur Anzeige)
+ * @param ApiDatabase|null $companyDb Abweichende Firmen-Verbindung (Standard: DbhCompany der Sitzung)
+ * @param ApiDatabase|null $authDb Abweichende Auth-Verbindung (Standard: DbhAuth). Wird beim
+ *                                 Setup gebraucht, wenn die Auth-Datenbank gerade erst angelegt
+ *                                 wurde und noch keine settings.ini existiert.
  * @return array Ergebnis mit Statusmeldungen
  */
-function updateDatabaseSchema($sqlFiles, $csvFiles = [], $dryRun = false, $companyDb = null) {
+function updateDatabaseSchema($sqlFiles, $csvFiles = [], $dryRun = false, $companyDb = null, $authDb = null) {
     $results = [
         'success' => true,
         'messages' => [],
@@ -225,7 +236,7 @@ function updateDatabaseSchema($sqlFiles, $csvFiles = [], $dryRun = false, $compa
 
             // Bestimme Datenbanktyp anhand des Dateinamens
             $isAuthDb = strpos(strtolower($sqlFile), 'auth') !== false;
-            $db = $isAuthDb ? DbhAuth::begin() : ($companyDb ?? DbhCompany::begin());
+            $db = $isAuthDb ? ($authDb ?? DbhAuth::begin()) : ($companyDb ?? DbhCompany::begin());
             $schema = $isAuthDb ? 'auth' : 'public';
 
             writeLog("Verwende Schema: $schema", true, DLOG_INF);
@@ -235,6 +246,14 @@ function updateDatabaseSchema($sqlFiles, $csvFiles = [], $dryRun = false, $compa
                 $db->beginTransaction();
                 $transactionStarted = true;
                 writeLog("Transaktion gestartet für $schema", true, DLOG_DBG);
+
+                // Das Schema "auth" ist Voraussetzung aller auth.*-Tabellen. In einer frisch
+                // angelegten Auth-Datenbank (Setup ohne kivitendo) gibt es es noch nicht, und
+                // die CREATE-TABLE-Statements laufen vor allen anderen Statements der Datei —
+                // ein CREATE SCHEMA in der SQL-Datei käme also zu spät.
+                if ($isAuthDb) {
+                    $db->execute('CREATE SCHEMA IF NOT EXISTS auth', []);
+                }
             }
 
             // Parse CREATE TABLE Statements (mit Spaltendefinitionen)
@@ -382,7 +401,7 @@ function updateDatabaseSchema($sqlFiles, $csvFiles = [], $dryRun = false, $compa
             $schema = $schemaType === 'auth' ? 'auth' : 'public';
 
             try {
-                $db = $schemaType === 'auth' ? DbhAuth::begin() : ($companyDb ?? DbhCompany::begin());
+                $db = $schemaType === 'auth' ? ($authDb ?? DbhAuth::begin()) : ($companyDb ?? DbhCompany::begin());
 
                 if (!$dryRun) {
                     $db->beginTransaction();
@@ -605,7 +624,7 @@ function createTable($db, $createSql, $dryRun = false, &$results = null) {
         // Im Dry-Run Modus nur Statement sammeln
         if ($results !== null) {
             // Extrahiere Tabellenname aus CREATE TABLE Statement
-            preg_match('/CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?([a-zA-Z_][a-zA-Z0-9_.]*)/i', $createSql, $matches);
+            preg_match('/CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?(' . SQL_QUALIFIED_IDENT . ')/i', $createSql, $matches);
             $tableName = isset($matches[1]) ? $matches[1] : 'unknown';
 
             $results['sql_statements'][] = [
@@ -643,18 +662,14 @@ function parseCreateTableStatements($sqlContent) {
     $sqlContent = preg_replace('/\/\*.*?\*\//s', '', $sqlContent);
 
     // Finde alle CREATE TABLE Statements
-    preg_match_all('/CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?([a-zA-Z_][a-zA-Z0-9_.]*)\s*\((.*?)\);/is', $sqlContent, $matches, PREG_SET_ORDER);
+    // Bezeichner dürfen gequotet sein (kivitendo: auth."user", auth."group") — die Quotes
+    // gehören zum SQL, nicht zum Namen, der mit information_schema verglichen wird.
+    preg_match_all('/CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?(' . SQL_QUALIFIED_IDENT . ')\s*\((.*?)\);/is', $sqlContent, $matches, PREG_SET_ORDER);
 
     foreach ($matches as $match) {
-        $tableName = trim($match[1]);
+        $tableName = extractName($match[1]);
         $tableContent = $match[2];
         $originalSql = $match[0];
-
-        // Entferne Schema-Präfix wenn vorhanden (z.B. auth.session_oserp -> session_oserp)
-        if (strpos($tableName, '.') !== false) {
-            $parts = explode('.', $tableName);
-            $tableName = end($parts);
-        }
 
         // Parse Spalten
         $columns = parseColumns($tableContent);
@@ -691,8 +706,9 @@ function parseColumns($tableContent) {
             continue;
         }
 
-        // Parse Spaltenname und Typ
-        if (preg_match('/^([a-zA-Z_][a-zA-Z0-9_]*)\s+(.+)$/i', $line, $colMatch)) {
+        // Parse Spaltenname und Typ. Reservierte Wörter als Spaltenname stehen in
+        // Quotes ("right" in auth.group_rights) — im ALTER TABLE müssen sie gequotet bleiben.
+        if (preg_match('/^(' . SQL_IDENT . ')\s+(.+)$/i', $line, $colMatch)) {
             $columnName = trim($colMatch[1], '"');
             $columnDef = trim($colMatch[2]);
 
@@ -700,7 +716,7 @@ function parseColumns($tableContent) {
             // Behalte aber die komplette Definition für ALTER TABLE
             $columns[] = [
                 'name' => $columnName,
-                'definition' => $columnName . ' ' . $columnDef
+                'definition' => $colMatch[1] . ' ' . $columnDef
             ];
 
             writeLog("  Spalte gefunden: $columnName", true, DLOG_DBG);
@@ -744,7 +760,7 @@ function parseOtherSqlStatements($sqlContent) {
 
         // Überspringe CREATE TABLE mit Spaltendefinitionen (werden separat verarbeitet)
         // Erkenne: CREATE TABLE name ( ... ) - aber nicht CREATE TABLE name AS SELECT
-        if (preg_match('/^CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?[a-zA-Z_][a-zA-Z0-9_.]*\s*\(/is', $sql)) {
+        if (preg_match('/^CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?' . SQL_QUALIFIED_IDENT . '\s*\(/is', $sql)) {
             continue;
         }
 
@@ -853,55 +869,55 @@ function identifyStatement($sql) {
     $sql = trim($sql);
 
     // CREATE TABLE ... AS SELECT
-    if (preg_match('/^CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?([a-zA-Z_][a-zA-Z0-9_.]*)\s+AS\s+/is', $sql, $m)) {
+    if (preg_match('/^CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?(' . SQL_QUALIFIED_IDENT . ')\s+AS\s+/is', $sql, $m)) {
         return ['type' => 'CREATE_TABLE_AS', 'target' => extractName($m[1]), 'sql' => $sql];
     }
     // CREATE INDEX
-    if (preg_match('/^CREATE\s+(?:UNIQUE\s+)?INDEX\s+(?:IF\s+NOT\s+EXISTS\s+)?([a-zA-Z_][a-zA-Z0-9_.]*)/is', $sql, $m)) {
+    if (preg_match('/^CREATE\s+(?:UNIQUE\s+)?INDEX\s+(?:IF\s+NOT\s+EXISTS\s+)?(' . SQL_QUALIFIED_IDENT . ')/is', $sql, $m)) {
         return ['type' => 'CREATE_INDEX', 'target' => extractName($m[1]), 'sql' => $sql];
     }
     // CREATE VIEW
-    if (preg_match('/^CREATE\s+(?:OR\s+REPLACE\s+)?VIEW\s+([a-zA-Z_][a-zA-Z0-9_.]*)/is', $sql, $m)) {
+    if (preg_match('/^CREATE\s+(?:OR\s+REPLACE\s+)?VIEW\s+(' . SQL_QUALIFIED_IDENT . ')/is', $sql, $m)) {
         return ['type' => 'CREATE_VIEW', 'target' => extractName($m[1]), 'sql' => $sql];
     }
     // CREATE FUNCTION
-    if (preg_match('/^CREATE\s+(?:OR\s+REPLACE\s+)?FUNCTION\s+([a-zA-Z_][a-zA-Z0-9_.]*)/is', $sql, $m)) {
+    if (preg_match('/^CREATE\s+(?:OR\s+REPLACE\s+)?FUNCTION\s+(' . SQL_QUALIFIED_IDENT . ')/is', $sql, $m)) {
         return ['type' => 'CREATE_FUNCTION', 'target' => extractName($m[1]), 'sql' => $sql];
     }
     // CREATE TRIGGER
-    if (preg_match('/^CREATE\s+(?:OR\s+REPLACE\s+)?TRIGGER\s+([a-zA-Z_][a-zA-Z0-9_.]*)/is', $sql, $m)) {
+    if (preg_match('/^CREATE\s+(?:OR\s+REPLACE\s+)?TRIGGER\s+(' . SQL_QUALIFIED_IDENT . ')/is', $sql, $m)) {
         return ['type' => 'CREATE_TRIGGER', 'target' => extractName($m[1]), 'sql' => $sql];
     }
     // CREATE SEQUENCE
-    if (preg_match('/^CREATE\s+SEQUENCE\s+(?:IF\s+NOT\s+EXISTS\s+)?([a-zA-Z_][a-zA-Z0-9_.]*)/is', $sql, $m)) {
+    if (preg_match('/^CREATE\s+SEQUENCE\s+(?:IF\s+NOT\s+EXISTS\s+)?(' . SQL_QUALIFIED_IDENT . ')/is', $sql, $m)) {
         return ['type' => 'CREATE_SEQUENCE', 'target' => extractName($m[1]), 'sql' => $sql];
     }
     // CREATE TYPE
-    if (preg_match('/^CREATE\s+TYPE\s+([a-zA-Z_][a-zA-Z0-9_.]*)/is', $sql, $m)) {
+    if (preg_match('/^CREATE\s+TYPE\s+(' . SQL_QUALIFIED_IDENT . ')/is', $sql, $m)) {
         return ['type' => 'CREATE_TYPE', 'target' => extractName($m[1]), 'sql' => $sql];
     }
     // DROP
-    if (preg_match('/^DROP\s+(TABLE|INDEX|VIEW|FUNCTION|TRIGGER|SEQUENCE|TYPE)\s+(?:IF\s+EXISTS\s+)?([a-zA-Z_][a-zA-Z0-9_.]*)/is', $sql, $m)) {
+    if (preg_match('/^DROP\s+(TABLE|INDEX|VIEW|FUNCTION|TRIGGER|SEQUENCE|TYPE)\s+(?:IF\s+EXISTS\s+)?(' . SQL_QUALIFIED_IDENT . ')/is', $sql, $m)) {
         return ['type' => 'DROP_' . strtoupper($m[1]), 'target' => extractName($m[2]), 'sql' => $sql];
     }
     // ALTER TABLE
-    if (preg_match('/^ALTER\s+TABLE\s+(?:IF\s+EXISTS\s+)?([a-zA-Z_][a-zA-Z0-9_.]*)/is', $sql, $m)) {
+    if (preg_match('/^ALTER\s+TABLE\s+(?:IF\s+EXISTS\s+)?(' . SQL_QUALIFIED_IDENT . ')/is', $sql, $m)) {
         return ['type' => 'ALTER_TABLE', 'target' => extractName($m[1]), 'sql' => $sql];
     }
     // INSERT INTO
-    if (preg_match('/^INSERT\s+INTO\s+([a-zA-Z_][a-zA-Z0-9_.]*)/is', $sql, $m)) {
+    if (preg_match('/^INSERT\s+INTO\s+(' . SQL_QUALIFIED_IDENT . ')/is', $sql, $m)) {
         return ['type' => 'INSERT', 'target' => extractName($m[1]), 'sql' => $sql];
     }
     // UPDATE
-    if (preg_match('/^UPDATE\s+([a-zA-Z_][a-zA-Z0-9_.]*)\s+SET/is', $sql, $m)) {
+    if (preg_match('/^UPDATE\s+(' . SQL_QUALIFIED_IDENT . ')\s+SET/is', $sql, $m)) {
         return ['type' => 'UPDATE', 'target' => extractName($m[1]), 'sql' => $sql];
     }
     // DELETE FROM
-    if (preg_match('/^DELETE\s+FROM\s+([a-zA-Z_][a-zA-Z0-9_.]*)/is', $sql, $m)) {
+    if (preg_match('/^DELETE\s+FROM\s+(' . SQL_QUALIFIED_IDENT . ')/is', $sql, $m)) {
         return ['type' => 'DELETE', 'target' => extractName($m[1]), 'sql' => $sql];
     }
     // COMMENT ON
-    if (preg_match('/^COMMENT\s+ON\s+(TABLE|COLUMN|INDEX|VIEW|FUNCTION|TRIGGER|SCHEMA|SEQUENCE|TYPE)\s+([a-zA-Z_][a-zA-Z0-9_.]*)/is', $sql, $m)) {
+    if (preg_match('/^COMMENT\s+ON\s+(TABLE|COLUMN|INDEX|VIEW|FUNCTION|TRIGGER|SCHEMA|SEQUENCE|TYPE)\s+(' . SQL_QUALIFIED_IDENT . ')/is', $sql, $m)) {
         return ['type' => 'COMMENT', 'target' => strtoupper($m[1]) . ' ' . extractName($m[2]), 'sql' => $sql];
     }
     // GRANT / REVOKE
@@ -922,11 +938,11 @@ function identifyStatement($sql) {
  */
 function extractName($name) {
     $name = trim($name);
-    if (strpos($name, '.') !== false) {
-        $parts = explode('.', $name);
-        return end($parts);
+    // Schema-Präfix abtrennen — aber nur am ungequoteten Punkt (auth."user" -> "user")
+    if (preg_match('/\.(' . SQL_IDENT . ')$/', $name, $m)) {
+        $name = $m[1];
     }
-    return $name;
+    return trim($name, '"');
 }
 
 /**
@@ -1147,7 +1163,50 @@ function importCsvToTable($db, $schema, $tableName, $csvFile, $columns) {
     }
     writeLog("$rowCount Zeilen in $schema.$tableName importiert", true, DLOG_INF);
 
+    // Die CSV bringt ihre IDs mit — die zugehörigen Sequenzen wissen davon nichts. Ohne
+    // Resync liefert der nächste INSERT ohne ID einen "duplicate key" (z. B. kivitendo-
+    // Upgradeskripte auf auth.master_rights). Deshalb jede serial/identity-Sequenz der
+    // Tabelle auf MAX(spalte) setzen.
+    resyncTableSequences($db, $schema, $tableName);
+
     return ['rows' => $rowCount, 'skipped' => $skippedCount];
+}
+
+/**
+ * Setzt alle serial-/identity-Sequenzen einer Tabelle auf den höchsten vorhandenen Wert
+ *
+ * Nötig nach jedem Import mit expliziten IDs (CSV-Seed, Klon, Restore). Sonst vergibt
+ * der nächste INSERT ohne ID einen bereits belegten Wert.
+ *
+ * @param ApiDatabase|ApiSession $db Datenbankverbindung
+ * @param string $schema Schema-Name
+ * @param string $tableName Tabellenname
+ * @return int Anzahl der angepassten Sequenzen
+ */
+function resyncTableSequences($db, $schema, $tableName) {
+    $qualified = '"' . str_replace('"', '""', $schema) . '"."' . str_replace('"', '""', $tableName) . '"';
+
+    $rows = $db->getAll(
+        "SELECT a.attname AS col, pg_get_serial_sequence(:tbl, a.attname) AS seq
+         FROM pg_attribute a
+         WHERE a.attrelid = CAST(:tbl AS regclass)
+           AND a.attnum > 0
+           AND NOT a.attisdropped
+           AND pg_get_serial_sequence(:tbl, a.attname) IS NOT NULL",
+        [':tbl' => $qualified]
+    );
+
+    foreach ($rows as $row) {
+        $col = '"' . str_replace('"', '""', $row['col']) . '"';
+        // setval(seq, max, true): nächster Wert = max + 1; leere Tabelle -> Sequenz bei 1 starten
+        $db->execute(
+            "SELECT setval(:seq, COALESCE((SELECT MAX($col) FROM $qualified), 0) + 1, false)",
+            [':seq' => $row['seq']]
+        );
+        writeLog("Sequenz {$row['seq']} für $schema.$tableName.{$row['col']} synchronisiert", true, DLOG_DBG);
+    }
+
+    return count($rows);
 }
 
 /**

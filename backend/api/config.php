@@ -3,7 +3,26 @@
 
 // Setup-Konstanten
 define('SETUP_SETTINGS_DIR', __DIR__.'/../config/');
-define('SETUP_SETTINGS_INI_FILE', 'settings.ini');
+// Dateiname per Umgebungsvariable überschreibbar: eine zweite Instanz (z. B. Test
+// gegen eine frische Auth-DB) läuft so mit eigener Konfiguration neben der Produktion.
+// Nur der Dateiname, kein Pfad — die Datei liegt immer in backend/config/.
+$settingsFileOverride = getenv('OSERP_SETTINGS_INI_FILE');
+define('SETUP_SETTINGS_INI_FILE',
+    ($settingsFileOverride && preg_match('/^[a-zA-Z0-9_.\-]+\.ini$/', $settingsFileOverride)) ? $settingsFileOverride : 'settings.ini');
+
+if (!function_exists('setupExists')) {
+    /**
+     * Prüft ob die Konfigurationsdatei bereits existiert (Setup durchgeführt)
+     *
+     * Steht hier und nicht in inc.php, damit auch Einstiegspunkte, die die
+     * Konfiguration früh brauchen (backend/api/setup/index.php), sie nutzen können.
+     *
+     * @return bool
+     */
+    function setupExists(): bool {
+        return file_exists(SETUP_SETTINGS_DIR . SETUP_SETTINGS_INI_FILE);
+    }
+}
 
 /**
  * OpensourceERP Konfiguration

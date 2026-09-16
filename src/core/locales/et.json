@@ -19,7 +19,8 @@
         "updateSuccess": "Andmebaasi uuendamine õnnestus.",
         "updateError": "Viga andmebaasi uuendamisel. Palun proovige uuesti.",
         "privacy": "Privaatsuspoliitika",
-        "dataDeletion": "Andmete kustutamine"
+        "dataDeletion": "Andmete kustutamine",
+        "API_DATABASE_ERROR": "Andmebaas ei vasta ootuspäraselt. Palun teavitage administraatorit."
     },
     "NotFoundView": {
         "title": "Lehte ei leitud",

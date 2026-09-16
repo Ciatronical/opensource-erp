@@ -116,6 +116,8 @@ const targets = computed(() => [
       title: t('AccountingView.menu.ustva'), to: { name: 'accounting-ustva' } },
     { key: 'manual', icon: 'mdi-file-document-plus-outline',
       title: t('AccountingView.menu.invoiceManual'), to: { name: 'accounting-invoice-manual' } },
+    { key: 'artrans', icon: 'mdi-account-cash-outline',
+      title: t('AccountingView.menu.arTransaction'), to: { name: 'accounting-ar-transaction' } },
     { key: 'reports', icon: 'mdi-chart-box-outline',
       title: t('AccountingView.reports.title'), subtitle: t('AccountingView.palette.reportsHint'),
       to: { name: 'accounting-reports' } },

@@ -1,0 +1,106 @@
+id,position,name,description,category
+1,100,master_data,Master Data,t
+2,200,customer_vendor_edit,Create customers and vendors. Edit all vendors. Edit only customers where salesman equals employee (login),f
+3,300,customer_vendor_all_edit,Create customers and vendors. Edit all vendors. Edit all customers,f
+103,310,customer_report_view,View customer report,f
+104,320,vendor_report_view,View vendor report,f
+105,330,contact_person_report_view,View contact person report,f
+4,400,part_service_assembly_edit,"Create and edit parts, services, assemblies",f
+98,410,part_service_assembly_edit_prices,"Edit prices for parts, services, assemblies",f
+5,500,part_service_assembly_details,"Show details and reports of parts, services, assemblies",f
+70,550,assembly_edit,Always edit assembly items (user can change/delete items even if assemblies are already produced),f
+85,560,assortment_edit,Always edit assortment items (user can change/delete items even if assortments are already used),f
+71,580,shop_part_edit,Create and edit shopparts,f
+6,600,project_edit,Create and edit projects,f
+77,602,project_edit_view_invoices_permission,Projects: edit the list of employees allowed to view invoices,f
+75,610,show_extra_record_tab_customer,Show record tab in customer,f
+76,611,show_extra_record_tab_vendor,Show record tab in vendor,f
+7,700,ar,AR,t
+8,800,requirement_spec_edit,Create and edit requirement specs,f
+9,900,sales_quotation_edit,Create and edit sales quotations,f
+86,910,sales_quotation_view,View sales quotations,f
+72,950,shop_order,Get shoporders,f
+10,1000,sales_order_edit,Create and edit sales orders,f
+87,1010,sales_order_view,View sales orders,f
+101,1015,sales_order_reports_amounts,Show sales order reports with amounts (and links to open documents),f
+11,1100,sales_delivery_order_edit,Create and edit sales delivery orders,f
+88,1110,sales_delivery_order_view,View sales delivery orders,f
+94,1150,sales_reclamation_edit,Create and edit sales reclamation,f
+12,1200,invoice_edit,Create and edit invoices and credit notes,f
+89,1210,sales_invoice_view,View sales invoices and credit notes,f
+13,1300,dunning_edit,Create and edit dunnings,f
+14,1400,sales_letter_edit,Edit sales letters,f
+15,1500,sales_all_edit,View/edit all employees sales documents,f
+16,1600,sales_edit_prices,"Edit prices and discount (if not used, textfield is ONLY set readonly)",f
+17,1700,show_ar_transactions,Show AR transactions as part of AR invoice report,f
+99,1750,sales_order_item_search,Show sales order item search,f
+97,1760,sales_financial_controlling,Show sales financial controlling,f
+100,1770,sales_report,Show sales report,f
+18,1800,delivery_plan,Show delivery plan,f
+19,1900,delivery_value_report,Show delivery value report,f
+20,2000,sales_letter_report,Show sales letters report,f
+65,2050,import_ar,Import AR from Scanner or Email,f
+21,2100,ap,AP,t
+22,2200,request_quotation_edit,Create and edit RFQs,f
+90,2210,request_quotation_view,View RFQs,f
+23,2300,purchase_order_edit,Create and edit purchase orders,f
+91,2310,purchase_order_view,View purchase orders,f
+102,2315,purchase_order_reports_amounts,Show purchase order reports with amounts (and links to open documents),f
+24,2400,purchase_delivery_order_edit,Create and edit purchase delivery orders,f
+92,2410,purchase_delivery_order_view,View purchase delivery orders,f
+95,2450,purchase_reclamation_edit,Create and edit purchase reclamation,f
+25,2500,vendor_invoice_edit,Create and edit vendor invoices,f
+93,2510,purchase_invoice_view,View purchase invoices,f
+59,2550,purchase_letter_edit,Edit purchase letters,f
+78,2560,purchase_all_edit,View/edit all employees purchase documents,f
+79,2570,purchase_edit_prices,"Edit prices and discount (if not used, textfield is ONLY set readonly)",f
+26,2600,show_ap_transactions,Show AP transactions as part of AP invoice report,f
+60,2650,purchase_letter_report,Show purchase letters report,f
+66,2680,import_ap,Import AP from Scanner or Email,f
+27,2700,warehouse,Warehouse management,t
+28,2800,warehouse_contents,View warehouse content,f
+29,2900,warehouse_management,Warehouse management,f
+30,3000,general_ledger_cash,General ledger and cash,t
+31,3100,general_ledger,AP/AR Aging & Journal,f
+67,3130,gl_transactions,General Ledger Transaction,f
+68,3150,ar_transactions,AR Transactions,f
+69,3170,ap_transactions,AP Transactions,f
+32,3200,datev_export,DATEV Export,f
+33,3300,cash,"Receipt, payment, reconciliation",f
+34,3400,bank_transaction,Bank transactions,f
+35,3500,reports,Reports,t
+36,3600,report,All reports,f
+37,3700,advance_turnover_tax_return,Advance turnover tax return,f
+96,3720,custom_data_report,May use Custom Data Report at all,f
+38,3800,batch_printing_category,Batch Printing,t
+39,3900,batch_printing,Batch Printing,f
+80,4000,productivity_category,Productivity,t
+45,4100,productivity,"Productivity (TODO list, Follow-Ups)",f
+63,4200,email_journal,E-Mail-Journal,f
+64,4250,email_employee_readall,Read all employee e-mails,f
+81,4300,time_recording,"Create, edit and list time recordings",f
+82,4320,time_recording_show_all,List time recordings of all staff members,f
+83,4340,time_recording_edit_all,Edit time recordings of all staff members,f
+40,5000,configuration,Configuration,t
+41,5100,config,Change kivitendo installation settings (most entries in the 'System' menu),f
+42,5200,admin,"Client administration: configuration, editing templates, task server control, background jobs (remaining entries in the 'System' menu)",f
+84,5220,developer,See various menu entries intended for developers,f
+73,5250,edit_shop_config,Create and edit webshops,f
+74,5275,custom_data_export_designer,Custom data export,f
+43,5300,others,Others,t
+44,5400,email_bcc,May set the BCC field when sending emails,f
+46,5600,display_admin_link,Show administration link,f
+61,5750,record_links,Linked Records,f
+62,6000,all_drafts_edit,Edit all drafts,f
+47,21000,crm,CRM,t
+48,21100,crm_search,Searchmask,f
+49,21200,crm_new,Add new Addresses,f
+50,21300,crm_sales,"Sales: Opporunity,Catalog, Packlist, ebay",f
+51,21400,crm_other,"Other: Follow Up,E-Mail,Appointment",f
+52,21500,crm_document,Documens,f
+53,21600,crm_finance,Finance,f
+54,21700,crm_parts,"Parts: Edit, Warehouse",f
+55,21800,crm_service,"Service: Contract, Machine",f
+56,21900,crm_master,"Master: Client, Groups",f
+57,22000,crm_admin,"Admin: Label, Category, Messages, Status, KnowHow write",f
+58,22100,crm_user,User,f

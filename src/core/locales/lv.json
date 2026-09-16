@@ -19,7 +19,8 @@
         "updateSuccess": "Datu bāzes atjauninājums veiksmīgi izpildīts.",
         "updateError": "Kļūda datu bāzes atjaunināšanā. Lūdzu mēģiniet vēlreiz.",
         "privacy": "Privātuma politika",
-        "dataDeletion": "Datu dzēšana"
+        "dataDeletion": "Datu dzēšana",
+        "API_DATABASE_ERROR": "Datu bāze neatbild, kā gaidīts. Lūdzu informējiet administratoru."
     },
     "NotFoundView": {
         "title": "Lapa nav atrasta",

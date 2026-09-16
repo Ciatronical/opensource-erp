@@ -57,7 +57,8 @@
         "privacy": "/privacidade",
         "dataDeletion": "/eliminacao-dados",
         "tafel": "/quadro-avisos/gestao",
-        "newArticle": "/artigo/novo"
+        "newArticle": "/artigo/novo",
+        "admin": "/sistema/administracao"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Erro: O ficheiro de senha api/config/api.passwd.php não foi encontrado. Por favor, renomeie o ficheiro api/config/api.passwd.php.example para api/config/api.passwd.php e ajuste as configurações.",
@@ -93,7 +94,8 @@
         "developerTools": "Ferramentas de desenvolvimento",
         "systemUpdate": "Atualização do sistema",
         "about": "Sobre",
-        "docs": "Documentação"
+        "docs": "Documentação",
+        "administration": "Utilizadores e empresas"
     },
     "DocsView": {
         "title": "Documentação",

@@ -1,50 +1,137 @@
 {
     "setup": {
-        "title": "OpensourceERP Setup",
-        "welcome": "Tere tulemast OpensourceERP-i! Palun seadistage ühendus autentimisandmebaasiga.",
-        "setupAlreadyDone": "Seadistamine on juba tehtud. Teid suunatakse sisselogimislehele...",
-        "configFound": "kivitendo.conf leitud - Parool oli krüptimata. Vorm täideti automaatselt.",
-        "setupCompleteMessage": "Seadistamine edukalt lõpetatud! Parool salvestati krüptitult. Teid suunatakse edasi...",
+        "title": "OpensourceERP seadistamine",
+        "subtitle": "Viie sammuga esimese sisselogimiseni — täiesti ilma k9o-ta",
+        "setupAlreadyDone": "Seadistamine on juba tehtud. Teid suunatakse sisselogimislehele …",
+        "steps": {
+            "server": "Andmebaasiserver",
+            "auth": "Autentimisandmebaas",
+            "admin": "Administraator",
+            "company": "Esimene ettevõte",
+            "summary": "Paigaldus"
+        },
+        "server": {
+            "intro": "Ligipääs PostgreSQL-serverile. Rollil peab olema õigus andmebaase luua (enamasti „postgres“).",
+            "configFound": "Leiti k9o seadistus — ühenduse andmed on eeltäidetud.",
+            "userHint": "Andmebaasi roll, näiteks postgres",
+            "connected": "Ühendatud — PostgreSQL {version}",
+            "superuser": "Superuser",
+            "createdb": "Tohib andmebaase luua",
+            "noCreatedb": "Ei tohi andmebaase luua",
+            "noCreatedbHint": "Selle rolliga ei saa uusi andmebaase luua. Palun kasutage rolli õigusega CREATEDB või võtke kasutusele olemasolevad andmebaasid.",
+            "foundAuth": "Leiti {count} autentimisandmebaasi",
+            "foundCompany": "Leiti {count} ettevõtte andmebaasi",
+            "stored": "Ligipääs olemasolevast seadistusest: {user} serveris {host}:{port}. Parool jääb serverisse.",
+            "enterManually": "Sisestage teised ühenduse andmed"
+        },
+        "auth": {
+            "intro": "Autentimisandmebaasis asuvad kasutajad, grupid ja ettevõtete loend. See ühildub k9o-ga — olemasoleva saab otse kasutusele võtta.",
+            "modeNew": "Loo uus autentimisandmebaas",
+            "modeNewHint": "Soovitatav uue paigalduse puhul.",
+            "name": "Autentimisandmebaasi nimi",
+            "modeExisting": "Kasuta olemasolevat autentimisandmebaasi",
+            "modeExistingHint": "Võtke üle olemasoleva k9o paigalduse kasutajad, grupid ja ettevõtted. Puuduvad OSERP-tabelid lisatakse.",
+            "noneFound": "Serverist ei leitud ühtegi autentimisandmebaasi.",
+            "select": "Autentimisandmebaas",
+            "dbMeta": "{users} kasutajat, {clients} ettevõtet",
+            "dbEmpty": "tühi — seadistatakse"
+        },
+        "admin": {
+            "intro": "Esimesest kasutajast saab süsteemiadministraator: ta tohib hallata kasutajaid, gruppe ja ettevõtteid ning saab grupi „Täisõigused“.",
+            "introExisting": "Kes peaks olema süsteemiadministraator? Sisestage olemasolev kasutajanimi (tühjaks jättes jääb parool alles) või looge uus.",
+            "login": "Kasutajanimi",
+            "loginHintExisting": "Olemasolev kasutajanimi või uus",
+            "name": "Täisnimi",
+            "email": "E-post",
+            "password": "Parool",
+            "passwordConfirm": "Korrake parooli",
+            "passwordHint": "Vähemalt 8 märki — või laske parool luua",
+            "passwordHintExisting": "Jätke tühjaks, et säilitada olemasolev parool",
+            "generate": "Loo turvaline parool",
+            "modeDefault": "Loo vaikimisi konto „{login}“",
+            "modeDefaultHint": "Sisselogimine kasutajanimega {login} ja sama sõnaga paroolina. Kohe kasutusvalmis, palun muutke see hiljem ära.",
+            "modeCustom": "Loo oma administraator",
+            "modeCustomHint": "Määrake ise nimi, e-post ja oma parool.",
+            "defaultWarning": "Parool on alguses sama mis kasutajanimi. Palun muutke see pärast esimest sisselogimist jaotises „Kasutajad ja ettevõtted“.",
+            "existingUsersHint": "Sellel paigaldusel on juba kasutajaid. Palun logige sisse olemasoleva administraatorina, et nõustaja saaks tööd jätkata."
+        },
+        "company": {
+            "intro": "Iga ettevõte saab oma andmebaasi koos kontoplaaniga. Täiendavaid ettevõtteid saate hiljem igal ajal lisada.",
+            "createSwitch": "Loo esimene ettevõte kohe",
+            "name": "Ettevõtte nimi",
+            "dbname": "Andmebaasi nimi",
+            "dbnameHint": "Pakutakse ettevõtte nime järgi — väiketähed, numbrid, alakriips",
+            "chart": "Kontoplaan",
+            "charts": {
+                "skr03": "Protsessipõhine liigendus — tavaline valik enamikule ettevõtetele",
+                "skr04": "Aruandepõhine liigendus — tavaline GmbH-le, AG-le ja suurematele ettevõtetele"
+            },
+            "noneWarning": "Ilma ettevõtteta pole pärast sisselogimist midagi näha. Ettevõtte saab hiljem luua jaotises „Kasutajad ja ettevõtted“."
+        },
+        "summary": {
+            "intro": "Palun kontrollige. Paigaldus kestab umbes minuti.",
+            "server": "Andmebaasiserver",
+            "auth": "Autentimisandmebaas",
+            "authNew": "{name} (luuakse uuena)",
+            "authExisting": "{name} (olemas, täiendatakse)",
+            "admin": "Administraator",
+            "company": "Esimene ettevõte",
+            "noCompany": "puudub — luua hiljem",
+            "installing": "Paigaldus käib …",
+            "installingHint": "Andmebaaside loomine, skeemi paigaldamine, kontoplaani laadimine. Palun ärge sulgege akent.",
+            "done": "Paigaldus lõpetatud",
+            "steps": {
+                "connect": "Ühendus serveriga",
+                "auth_db_created": "Autentimisandmebaas loodud",
+                "auth_schema": "Autentimisskeem paigaldatud",
+                "admin_user": "Administraator",
+                "company": "Ettevõte loodud",
+                "settings": "Seadistus kirjutatud"
+            },
+            "loginHint": "Logige nüüd sisse kasutajanimega „{login}“.",
+            "adminDefault": "Vaikimisi konto {login}",
+            "loginHintDefault": "Logige nüüd sisse kasutajanimega „{login}“ — parool on sama mis kasutajanimi. Palun muutke see kohe ära."
+        },
         "fields": {
             "host": "Host",
             "port": "Port",
             "database": "Andmebaasi nimi",
-            "login": "Kasutajanimi",
+            "login": "Andmebaasi kasutaja",
             "password": "Parool"
-        },
-        "placeholders": {
-            "host": "localhost",
-            "port": "5432",
-            "database": "oserp_auth",
-            "login": "postgres"
         },
         "validation": {
             "required": "Kohustuslik väli",
-            "portRange": "Port peab olema vahemikus 1 kuni 65535"
+            "portRange": "Port peab olema vahemikus 1 kuni 65535",
+            "dbname": "Ainult väiketähed, numbrid, alakriips ja sidekriips, alustades tähega",
+            "dbExists": "Selle nimega andmebaas on juba olemas",
+            "login": "Tühikud ja erimärgid nagu / \\ : * ? \" < > | ei ole lubatud",
+            "email": "Vigane e-posti aadress",
+            "passwordLength": "Vähemalt 8 märki",
+            "passwordMismatch": "Paroolid ei kattu"
         },
         "buttons": {
-            "testConnection": "Testi ühendust",
-            "testingConnection": "Ühenduse testimine...",
-            "saveSetup": "Lõpeta seadistamine",
-            "savingSetup": "Salvestamine...",
-            "finish": "Käivita rakendus"
+            "testConnection": "Kontrolli ühendust",
+            "next": "Edasi",
+            "back": "Tagasi",
+            "install": "Alusta paigaldust",
+            "finish": "Sisselogimisse"
         },
         "errors": {
-            "checkStatus": "Viga seadistamise oleku kontrollimisel",
-            "testConnection": "Viga ühenduse testimisel",
-            "testNetworkError": "Võrguviga ühenduse testimisel",
-            "saveSetup": "Viga konfiguratsiooni salvestamisel",
-            "saveNetworkError": "Võrguviga konfiguratsiooni salvestamisel"
-        },
-        "update": {
-            "title": "Andmebaasi uuendamine",
-            "running": "Andmebaasi uuendamine...",
-            "success": "Andmebaasi uuendamine edukalt lõpetatud.",
-            "failed": "Andmebaasi uuendamine ebaõnnestus.",
-            "networkError": "Võrguviga andmebaasi uuendamisel."
+            "testConnection": "Ühendus ebaõnnestus",
+            "testNetworkError": "Võrguviga ühenduse kontrollimisel",
+            "install": "Paigaldus ebaõnnestus",
+            "saveNetworkError": "Võrguviga paigalduse ajal",
+            "ADMIN_LOGIN_REQUIRED": "Sellel paigaldusel on juba kasutajaid. Palun sisestage olemasoleva administraatori kasutajanimi ja parool.",
+            "AUTH_DB_UNREACHABLE": "Autentimisandmebaas ei ole seadistuses olevate andmetega kättesaadav."
         },
         "footer": {
             "copyright": "OpensourceERP"
+        },
+        "state": {
+            "no_database": "Seadistus viitab andmebaasile „{db}“, mida serveris veel ei ole. Nõustaja loob selle.",
+            "no_schema": "Andmebaas „{db}“ on olemas, kuid sellel pole veel tabeleid. Nõustaja seadistab selle nüüd.",
+            "no_user": "Andmebaasis „{db}“ pole veel ühtegi kasutajat. Ilma kasutajata pole sisselogimine võimalik.",
+            "no_client": "Ühtegi ettevõtet pole veel loodud. Ilma ettevõtteta ei vii sisselogimine kuhugi."
         }
     }
 }

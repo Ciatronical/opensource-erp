@@ -19,7 +19,8 @@
         "updateSuccess": "Database-update succesvol uitgevoerd.",
         "updateError": "Fout bij de database-update. Probeer het opnieuw.",
         "privacy": "Privacyverklaring",
-        "dataDeletion": "Gegevensverwijdering"
+        "dataDeletion": "Gegevensverwijdering",
+        "API_DATABASE_ERROR": "De database antwoordt niet zoals verwacht. Waarschuw de beheerder."
     },
     "NotFoundView": {
         "title": "Pagina niet gevonden",

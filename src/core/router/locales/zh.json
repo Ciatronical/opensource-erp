@@ -57,7 +57,8 @@
         "privacy": "/privacy",
         "dataDeletion": "/data-deletion",
         "tafel": "/bulletin-board/manage",
-        "newArticle": "/article/new"
+        "newArticle": "/article/new",
+        "admin": "/system/administration"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "错误：未找到密码文件 api/config/api.passwd.php。请将文件 api/config/api.passwd.php.example 重命名为 api/config/api.passwd.php 并相应调整设置。",
@@ -93,7 +94,8 @@
         "developerTools": "开发者工具",
         "systemUpdate": "系统更新",
         "about": "关于",
-        "docs": "文档"
+        "docs": "文档",
+        "administration": "用户与公司"
     },
     "DocsView": {
         "title": "文档",

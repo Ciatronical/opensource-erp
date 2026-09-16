@@ -1,50 +1,137 @@
 {
     "setup": {
-        "title": "OpensourceERP Kurulumu",
-        "welcome": "OpensourceERP'ye hoş geldiniz! Lütfen kimlik doğrulama veritabanı bağlantısını yapılandırın.",
-        "setupAlreadyDone": "Kurulum zaten yapılmış. Giriş sayfasına yönlendiriliyorsunuz...",
-        "configFound": "kivitendo.conf bulundu - Şifre şifrelenmemiş. Form otomatik olarak dolduruldu.",
-        "setupCompleteMessage": "Kurulum başarıyla tamamlandı! Şifre şifrelenmiş olarak kaydedildi. Yönlendiriliyorsunuz...",
+        "title": "OpensourceERP kurulumu",
+        "subtitle": "Beş adımda ilk girişinize — k9o olmadan",
+        "setupAlreadyDone": "Kurulum zaten yapılmış. Giriş sayfasına yönlendiriliyorsunuz …",
+        "steps": {
+            "server": "Veritabanı sunucusu",
+            "auth": "Kimlik doğrulama veritabanı",
+            "admin": "Yönetici",
+            "company": "İlk firma",
+            "summary": "Kurulum"
+        },
+        "server": {
+            "intro": "PostgreSQL sunucusuna erişim. Rolün veritabanı oluşturma yetkisi olmalıdır (genellikle “postgres”).",
+            "configFound": "Bir k9o yapılandırması bulundu — erişim bilgileri önceden dolduruldu.",
+            "userHint": "Veritabanı rolü, örneğin postgres",
+            "connected": "Bağlandı — PostgreSQL {version}",
+            "superuser": "Superuser",
+            "createdb": "Veritabanı oluşturabilir",
+            "noCreatedb": "Veritabanı oluşturamaz",
+            "noCreatedbHint": "Bu rolle yeni veritabanı oluşturulamaz. Lütfen CREATEDB yetkisi olan bir rol kullanın veya mevcut veritabanlarını devralın.",
+            "foundAuth": "{count} kimlik doğrulama veritabanı bulundu",
+            "foundCompany": "{count} firma veritabanı bulundu",
+            "stored": "Mevcut yapılandırmadaki erişim: {host}:{port} üzerinde {user}. Şifre sunucuda kalır.",
+            "enterManually": "Farklı erişim bilgileri girin"
+        },
+        "auth": {
+            "intro": "Kimlik doğrulama veritabanında kullanıcılar, gruplar ve firma listesi bulunur. k9o ile uyumludur — mevcut bir veritabanı doğrudan devralınabilir.",
+            "modeNew": "Yeni kimlik doğrulama veritabanı oluştur",
+            "modeNewHint": "Yeni bir kurulum için önerilir.",
+            "name": "Kimlik doğrulama veritabanının adı",
+            "modeExisting": "Mevcut kimlik doğrulama veritabanını kullan",
+            "modeExistingHint": "Mevcut bir k9o kurulumunun kullanıcılarını, gruplarını ve firmalarını devral. Eksik OSERP tabloları eklenir.",
+            "noneFound": "Sunucuda kimlik doğrulama veritabanı bulunamadı.",
+            "select": "Kimlik doğrulama veritabanı",
+            "dbMeta": "{users} kullanıcı, {clients} firma",
+            "dbEmpty": "boş — kurulacak"
+        },
+        "admin": {
+            "intro": "İlk kullanıcı sistem yöneticisi olur: kullanıcıları, grupları ve firmaları yönetebilir ve “Tam erişim” grubunu alır.",
+            "introExisting": "Sistem yöneticisi kim olsun? Mevcut bir kullanıcı adı girin (boş bırakırsanız şifre değişmez) veya yeni bir tane oluşturun.",
+            "login": "Kullanıcı adı",
+            "loginHintExisting": "Mevcut bir kullanıcı adı veya yeni bir tane",
+            "name": "Tam ad",
+            "email": "E-posta",
+            "password": "Şifre",
+            "passwordConfirm": "Şifreyi tekrarlayın",
+            "passwordHint": "En az 8 karakter — veya bir şifre oluşturun",
+            "passwordHintExisting": "Mevcut şifreyi korumak için boş bırakın",
+            "generate": "Güvenli şifre oluştur",
+            "modeDefault": "“{login}” varsayılan hesabını oluştur",
+            "modeDefaultHint": "{login} ile ve şifre olarak aynı kelimeyle giriş yapılır. Hemen kullanıma hazır, lütfen sonrasında değiştirin.",
+            "modeCustom": "Kendi yöneticinizi oluşturun",
+            "modeCustomHint": "Ad, e-posta ve kendi şifrenizi siz belirleyin.",
+            "defaultWarning": "Şifre başlangıçta kullanıcı adıyla aynıdır. Lütfen ilk girişten sonra “Kullanıcılar ve firmalar” altında değiştirin.",
+            "existingUsersHint": "Bu kurulumda zaten kullanıcılar var. Sihirbazın devam edebilmesi için lütfen mevcut bir yöneticiyle giriş yapın."
+        },
+        "company": {
+            "intro": "Her firma, hesap planıyla birlikte kendi veritabanını alır. Daha sonra istediğiniz zaman başka firmalar ekleyebilirsiniz.",
+            "createSwitch": "İlk firmayı şimdi oluştur",
+            "name": "Firma adı",
+            "dbname": "Veritabanı adı",
+            "dbnameHint": "Firma adından önerilir — küçük harfler, rakamlar, alt çizgi",
+            "chart": "Hesap planı",
+            "charts": {
+                "skr03": "Süreç yapılı — çoğu işletme için standart",
+                "skr04": "Bilanço yapılı — GmbH, AG ve daha büyük işletmelerde yaygın"
+            },
+            "noneWarning": "Firma olmadan giriş sonrasında görülecek bir şey olmaz. Bir firmayı daha sonra “Kullanıcılar ve firmalar” altında oluşturabilirsiniz."
+        },
+        "summary": {
+            "intro": "Lütfen kontrol edin. Kurulum yaklaşık bir dakika sürer.",
+            "server": "Veritabanı sunucusu",
+            "auth": "Kimlik doğrulama veritabanı",
+            "authNew": "{name} (yeni oluşturulacak)",
+            "authExisting": "{name} (mevcut, tamamlanacak)",
+            "admin": "Yönetici",
+            "company": "İlk firma",
+            "noCompany": "yok — sonra oluşturulacak",
+            "installing": "Kurulum sürüyor …",
+            "installingHint": "Veritabanları oluşturuluyor, şema yükleniyor, hesap planı aktarılıyor. Lütfen pencereyi kapatmayın.",
+            "done": "Kurulum tamamlandı",
+            "steps": {
+                "connect": "Sunucu bağlantısı",
+                "auth_db_created": "Kimlik doğrulama veritabanı oluşturuldu",
+                "auth_schema": "Kimlik doğrulama şeması yüklendi",
+                "admin_user": "Yönetici",
+                "company": "Firma oluşturuldu",
+                "settings": "Yapılandırma yazıldı"
+            },
+            "loginHint": "Şimdi “{login}” olarak giriş yapın.",
+            "adminDefault": "Varsayılan hesap {login}",
+            "loginHintDefault": "Şimdi “{login}” olarak giriş yapın — şifre kullanıcı adıyla aynıdır. Lütfen hemen sonrasında değiştirin."
+        },
         "fields": {
             "host": "Host",
             "port": "Port",
             "database": "Veritabanı adı",
-            "login": "Kullanıcı adı",
+            "login": "Veritabanı kullanıcısı",
             "password": "Şifre"
-        },
-        "placeholders": {
-            "host": "localhost",
-            "port": "5432",
-            "database": "oserp_auth",
-            "login": "postgres"
         },
         "validation": {
             "required": "Zorunlu alan",
-            "portRange": "Port 1 ile 65535 arasında olmalıdır"
+            "portRange": "Port 1 ile 65535 arasında olmalıdır",
+            "dbname": "Yalnızca küçük harfler, rakamlar, alt çizgi ve tire; bir harfle başlamalı",
+            "dbExists": "Bu adda bir veritabanı zaten var",
+            "login": "Boşluk ve / \\ : * ? \" < > | gibi özel karakterler kullanılamaz",
+            "email": "Geçerli bir e-posta adresi değil",
+            "passwordLength": "En az 8 karakter",
+            "passwordMismatch": "Şifreler birbiriyle uyuşmuyor"
         },
         "buttons": {
             "testConnection": "Bağlantıyı test et",
-            "testingConnection": "Bağlantı test ediliyor...",
-            "saveSetup": "Kurulumu tamamla",
-            "savingSetup": "Kaydediliyor...",
-            "finish": "Uygulamayı çalıştır"
+            "next": "İleri",
+            "back": "Geri",
+            "install": "Kurulumu başlat",
+            "finish": "Girişe git"
         },
         "errors": {
-            "checkStatus": "Kurulum durumu kontrol edilirken hata",
-            "testConnection": "Bağlantı test edilirken hata",
-            "testNetworkError": "Bağlantı testi sırasında ağ hatası",
-            "saveSetup": "Yapılandırma kaydedilirken hata",
-            "saveNetworkError": "Yapılandırma kaydedilirken ağ hatası"
-        },
-        "update": {
-            "title": "Veritabanı güncellemesi",
-            "running": "Veritabanı güncelleniyor...",
-            "success": "Veritabanı güncellemesi başarıyla tamamlandı.",
-            "failed": "Veritabanı güncellemesi başarısız oldu.",
-            "networkError": "Veritabanı güncellemesi sırasında ağ hatası."
+            "testConnection": "Bağlantı başarısız",
+            "testNetworkError": "Bağlantı kontrol edilirken ağ hatası",
+            "install": "Kurulum başarısız",
+            "saveNetworkError": "Kurulum sırasında ağ hatası",
+            "ADMIN_LOGIN_REQUIRED": "Bu kurulumda zaten kullanıcılar var. Lütfen mevcut bir yöneticinin kullanıcı adını ve şifresini girin.",
+            "AUTH_DB_UNREACHABLE": "Kimlik doğrulama veritabanına yapılandırmadaki bilgilerle erişilemiyor."
         },
         "footer": {
             "copyright": "OpensourceERP"
+        },
+        "state": {
+            "no_database": "Yapılandırma, sunucuda henüz bulunmayan “{db}” veritabanını gösteriyor. Sihirbaz bu veritabanını oluşturur.",
+            "no_schema": "“{db}” veritabanı var, ancak henüz hiç tablosu yok. Sihirbaz onu şimdi kuruyor.",
+            "no_user": "“{db}” veritabanında henüz kullanıcı yok. Kullanıcı olmadan giriş yapılamaz.",
+            "no_client": "Henüz hiçbir firma kurulmamış. Firma olmadan giriş boşa çıkar."
         }
     }
 }

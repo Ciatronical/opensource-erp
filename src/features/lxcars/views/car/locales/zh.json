@@ -420,7 +420,7 @@
             "emailInvalid": "无效的电子邮件地址"
         },
         "errors": {
-            "noApiKey": "未配置行驶证扫描器的 API 密钥。请在公司配置中设置。",
+            "noApiKey": "未配置行驶证扫描器。请在公司配置的 LxCars 下启用“使用自有行驶证扫描器”或输入 API 密钥。",
             "scanFailed": "扫描失败",
             "noImage": "请上传图片",
             "loadScans": "加载扫描时出错"

@@ -488,7 +488,7 @@
             }
         },
         "errors": {
-            "noApiKey": "No API key configured for the registration document scanner. Please set it in the client configuration.",
+            "noApiKey": "No registration document scanner configured. In the client configuration under LxCars either enable “Use own vehicle registration scanner” or enter an API key.",
             "scanFailed": "Scan failed",
             "noImage": "Please upload an image",
             "loadScans": "Error loading scans"

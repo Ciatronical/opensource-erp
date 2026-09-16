@@ -93,3 +93,8 @@ dev/carparts-cat-docs/
 # .mcp.json) werden bewusst NICHT ausgeschlossen — darüber teilt das Team sie.
 .claude/settings.local.json
 CLAUDE.local.md
+
+# Bootstrap-Vorlage des Fahrzeugscheinscanners enthaelt Kundendaten (Fahrzeug 7947) — nur die anonyme Median-Vorlage wird versioniert
+backend/fahrzeugschein-scanner/reference/zb1_bootstrap.jpg
+backend/fahrzeugschein-scanner/reference/layout_v*.json
+backend/fahrzeugschein-scanner/tessdata/

@@ -1,50 +1,137 @@
 {
     "setup": {
-        "title": "OpensourceERP Setup",
-        "welcome": "Welkom bij OpensourceERP! Configureer de verbinding met de authenticatiedatabase.",
-        "setupAlreadyDone": "Setup is al uitgevoerd. U wordt doorgestuurd naar de inlogpagina...",
-        "configFound": "kivitendo.conf gevonden - Wachtwoord was niet versleuteld. Formulier is automatisch ingevuld.",
-        "setupCompleteMessage": "Setup succesvol afgerond! Wachtwoord is versleuteld opgeslagen. U wordt doorgestuurd...",
+        "title": "OpensourceERP inrichten",
+        "subtitle": "In vijf stappen naar de eerste aanmelding — helemaal zonder k9o",
+        "setupAlreadyDone": "De setup is al uitgevoerd. U wordt doorgestuurd naar de aanmeldpagina …",
+        "steps": {
+            "server": "Databaseserver",
+            "auth": "Auth-database",
+            "admin": "Beheerder",
+            "company": "Eerste bedrijf",
+            "summary": "Installatie"
+        },
+        "server": {
+            "intro": "Toegang tot de PostgreSQL-server. De rol heeft het recht nodig om databases aan te maken (meestal “postgres”).",
+            "configFound": "Er is een k9o-configuratie gevonden — de toegangsgegevens zijn vooraf ingevuld.",
+            "userHint": "Databaserol, bijvoorbeeld postgres",
+            "connected": "Verbonden — PostgreSQL {version}",
+            "superuser": "Superuser",
+            "createdb": "Mag databases aanmaken",
+            "noCreatedb": "Mag geen databases aanmaken",
+            "noCreatedbHint": "Met deze rol kunnen geen nieuwe databases worden aangemaakt. Gebruik een rol met CREATEDB of neem bestaande databases over.",
+            "foundAuth": "{count} auth-database(s) gevonden",
+            "foundCompany": "{count} bedrijfsdatabase(s) gevonden",
+            "stored": "Toegang uit de bestaande configuratie: {user} op {host}:{port}. Het wachtwoord blijft op de server.",
+            "enterManually": "Andere toegangsgegevens invoeren"
+        },
+        "auth": {
+            "intro": "In de auth-database staan gebruikers, groepen en de lijst met bedrijven. Zij is compatibel met k9o — een bestaande kan direct worden overgenomen.",
+            "modeNew": "Nieuwe auth-database aanmaken",
+            "modeNewHint": "Aanbevolen voor een nieuwe installatie.",
+            "name": "Naam van de auth-database",
+            "modeExisting": "Bestaande auth-database gebruiken",
+            "modeExistingHint": "Gebruikers, groepen en bedrijven van een bestaande k9o-installatie overnemen. Ontbrekende OSERP-tabellen worden aangevuld.",
+            "noneFound": "Op de server is geen auth-database gevonden.",
+            "select": "Auth-database",
+            "dbMeta": "{users} gebruikers, {clients} bedrijven",
+            "dbEmpty": "leeg — wordt ingericht"
+        },
+        "admin": {
+            "intro": "De eerste gebruiker wordt systeembeheerder: hij mag gebruikers, groepen en bedrijven beheren en krijgt de groep “Volledige toegang”.",
+            "introExisting": "Wie moet systeembeheerder worden? Voer een bestaande aanmeldnaam in (het wachtwoord blijft ongewijzigd als u het veld leeg laat) of maak een nieuwe aan.",
+            "login": "Aanmeldnaam",
+            "loginHintExisting": "Bestaande aanmeldnaam of een nieuwe",
+            "name": "Volledige naam",
+            "email": "E-mail",
+            "password": "Wachtwoord",
+            "passwordConfirm": "Wachtwoord herhalen",
+            "passwordHint": "Minimaal 8 tekens — of laat er een genereren",
+            "passwordHintExisting": "Leeg laten om het bestaande wachtwoord te behouden",
+            "generate": "Veilig wachtwoord genereren",
+            "modeDefault": "Standaardaccount “{login}” aanmaken",
+            "modeDefaultHint": "Aanmelden met {login} en hetzelfde woord als wachtwoord. Direct te gebruiken, wijzig het daarna.",
+            "modeCustom": "Eigen beheerder aanmaken",
+            "modeCustomHint": "Naam, e-mail en een eigen wachtwoord zelf instellen.",
+            "defaultWarning": "Het wachtwoord is in eerste instantie gelijk aan de aanmeldnaam. Wijzig het na de eerste aanmelding onder “Gebruikers en bedrijven”.",
+            "existingUsersHint": "Deze installatie heeft al gebruikers. Meld u aan met een bestaande beheerder, zodat de wizard verder mag werken."
+        },
+        "company": {
+            "intro": "Elk bedrijf krijgt een eigen database met rekeningschema. U kunt later altijd meer bedrijven aanmaken.",
+            "createSwitch": "Nu het eerste bedrijf aanmaken",
+            "name": "Bedrijfsnaam",
+            "dbname": "Databasenaam",
+            "dbnameHint": "Wordt voorgesteld op basis van de bedrijfsnaam — kleine letters, cijfers, underscore",
+            "chart": "Rekeningschema",
+            "charts": {
+                "skr03": "Procesindeling — de standaard voor de meeste bedrijven",
+                "skr04": "Balansindeling — gebruikelijk bij GmbH, AG en grotere ondernemingen"
+            },
+            "noneWarning": "Zonder bedrijf is er na het aanmelden niets te zien. Een bedrijf kunt u later aanmaken onder “Gebruikers en bedrijven”."
+        },
+        "summary": {
+            "intro": "Controleer de gegevens. De installatie duurt ongeveer een minuut.",
+            "server": "Databaseserver",
+            "auth": "Auth-database",
+            "authNew": "{name} (wordt nieuw aangemaakt)",
+            "authExisting": "{name} (bestaat al, wordt aangevuld)",
+            "admin": "Beheerder",
+            "company": "Eerste bedrijf",
+            "noCompany": "geen — later aanmaken",
+            "installing": "De installatie loopt …",
+            "installingHint": "Databases aanmaken, schema inlezen, rekeningschema laden. Sluit dit venster niet.",
+            "done": "Installatie afgerond",
+            "steps": {
+                "connect": "Verbinding met de server",
+                "auth_db_created": "Auth-database aangemaakt",
+                "auth_schema": "Auth-schema ingelezen",
+                "admin_user": "Beheerder",
+                "company": "Bedrijf aangemaakt",
+                "settings": "Configuratie weggeschreven"
+            },
+            "loginHint": "Meld u nu aan als “{login}”.",
+            "adminDefault": "Standaardaccount {login}",
+            "loginHintDefault": "Meld u nu aan met “{login}” — het wachtwoord is gelijk aan de aanmeldnaam. Wijzig het direct daarna."
+        },
         "fields": {
             "host": "Host",
             "port": "Poort",
             "database": "Databasenaam",
-            "login": "Inlognaam",
+            "login": "Databasegebruiker",
             "password": "Wachtwoord"
-        },
-        "placeholders": {
-            "host": "localhost",
-            "port": "5432",
-            "database": "oserp_auth",
-            "login": "postgres"
         },
         "validation": {
             "required": "Verplicht veld",
-            "portRange": "Poort moet tussen 1 en 65535 liggen"
+            "portRange": "Poort moet tussen 1 en 65535 liggen",
+            "dbname": "Alleen kleine letters, cijfers, underscore en koppelteken, beginnend met een letter",
+            "dbExists": "Er bestaat al een database met deze naam",
+            "login": "Geen spaties en geen speciale tekens zoals / \\ : * ? \" < > |",
+            "email": "Geen geldig e-mailadres",
+            "passwordLength": "Minimaal 8 tekens",
+            "passwordMismatch": "De wachtwoorden komen niet overeen"
         },
         "buttons": {
             "testConnection": "Verbinding testen",
-            "testingConnection": "Verbinding wordt getest...",
-            "saveSetup": "Setup afronden",
-            "savingSetup": "Wordt opgeslagen...",
-            "finish": "App starten"
+            "next": "Verder",
+            "back": "Terug",
+            "install": "Installatie starten",
+            "finish": "Naar de aanmeldpagina"
         },
         "errors": {
-            "checkStatus": "Fout bij het controleren van de setup-status",
-            "testConnection": "Fout bij het testen van de verbinding",
+            "testConnection": "Verbinding mislukt",
             "testNetworkError": "Netwerkfout bij het testen van de verbinding",
-            "saveSetup": "Fout bij het opslaan van de configuratie",
-            "saveNetworkError": "Netwerkfout bij het opslaan van de configuratie"
-        },
-        "update": {
-            "title": "Database-update",
-            "running": "Database wordt bijgewerkt...",
-            "success": "Database-update succesvol afgerond.",
-            "failed": "Database-update mislukt.",
-            "networkError": "Netwerkfout bij de database-update."
+            "install": "Installatie mislukt",
+            "saveNetworkError": "Netwerkfout tijdens de installatie",
+            "ADMIN_LOGIN_REQUIRED": "Deze installatie heeft al gebruikers. Voer de aanmeldnaam en het wachtwoord van een bestaande beheerder in.",
+            "AUTH_DB_UNREACHABLE": "De auth-database is met de gegevens uit de configuratie niet bereikbaar."
         },
         "footer": {
             "copyright": "OpensourceERP"
+        },
+        "state": {
+            "no_database": "De configuratie verwijst naar de database “{db}”, die nog niet op de server bestaat. De wizard maakt deze aan.",
+            "no_schema": "De database “{db}” bestaat, maar heeft nog geen tabellen. De wizard richt deze nu in.",
+            "no_user": "De database “{db}” heeft nog geen gebruiker. Zonder gebruiker is aanmelden niet mogelijk.",
+            "no_client": "Er is nog geen bedrijf ingericht. Zonder bedrijf leidt het aanmelden nergens heen."
         }
     }
 }

@@ -123,7 +123,9 @@ function hash_password(string $password, string $login, string $algorithm = 'PBK
 function verify_password(string $login, string $password, string $stored_hash): bool {
     list($algorithm, $hash_part) = parse_password_hash($stored_hash);
     $hashed_password = hash_password($password, $login, $algorithm, $stored_hash);
-    return $hashed_password === $stored_hash;
+    // Zeitkonstanter Vergleich: kein frueher Abbruch, der ueber die Laufzeit
+    // Rueckschluesse auf Teiltreffer des Hashes zulaesst.
+    return hash_equals($stored_hash, $hashed_password);
 }
 
 /**

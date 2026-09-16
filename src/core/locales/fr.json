@@ -19,7 +19,8 @@
         "updateSuccess": "Mise a jour de la base de donnees effectuee avec succes.",
         "updateError": "Erreur lors de la mise a jour de la base de donnees. Veuillez reessayer.",
         "privacy": "Politique de confidentialite",
-        "dataDeletion": "Suppression des donnees"
+        "dataDeletion": "Suppression des donnees",
+        "API_DATABASE_ERROR": "La base de données ne répond pas comme prévu. Veuillez prévenir l'administrateur."
     },
     "NotFoundView": {
         "title": "Page introuvable",

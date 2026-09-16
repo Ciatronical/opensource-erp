@@ -57,7 +57,8 @@
         "privacy": "/soukromi",
         "dataDeletion": "/vymaz-dat",
         "tafel": "/nastenka/sprava",
-        "newArticle": "/artikl/novy"
+        "newArticle": "/artikl/novy",
+        "admin": "/system/sprava"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Chyba: Soubor s heslem api/config/api.passwd.php nebyl nalezen. Prosim prejmenujte soubor api/config/api.passwd.php.example na api/config/api.passwd.php a upravte nastaveni.",
@@ -93,7 +94,8 @@
         "developerTools": "Developer Tools",
         "systemUpdate": "Aktualizace systému",
         "about": "O aplikaci",
-        "docs": "Dokumentace"
+        "docs": "Dokumentace",
+        "administration": "Uživatelé a firmy"
     },
     "DocsView": {
         "title": "Dokumentace",

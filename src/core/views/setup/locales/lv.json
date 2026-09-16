@@ -1,50 +1,137 @@
 {
     "setup": {
-        "title": "OpensourceERP Setup",
-        "welcome": "Laipni lūdzam OpensourceERP! Lūdzu konfigurējiet savienojumu ar autentifikācijas datu bāzi.",
-        "setupAlreadyDone": "Iestatīšana jau ir veikta. Jūs tiksiet novirzīts uz pieslēgšanās lapu...",
-        "configFound": "kivitendo.conf atrasts - Parole bija nešifrēta. Forma tika aizpildīta automātiski.",
-        "setupCompleteMessage": "Iestatīšana veiksmīgi pabeigta! Parole tika saglabāta šifrēti. Jūs tiksiet novirzīts...",
+        "title": "OpensourceERP iestatīšana",
+        "subtitle": "Piecos soļos līdz pirmajai pieteikšanās reizei — pilnīgi bez k9o",
+        "setupAlreadyDone": "Iestatīšana jau ir veikta. Jūs tiksiet novirzīts uz pieteikšanās lapu …",
+        "steps": {
+            "server": "Datu bāzes serveris",
+            "auth": "Autentifikācijas datu bāze",
+            "admin": "Administrators",
+            "company": "Pirmais uzņēmums",
+            "summary": "Instalācija"
+        },
+        "server": {
+            "intro": "Piekļuve PostgreSQL serverim. Lomai ir nepieciešamas tiesības veidot datu bāzes (parasti „postgres“).",
+            "configFound": "Ir atrasta k9o konfigurācija — piekļuves dati ir aizpildīti automātiski.",
+            "userHint": "Datu bāzes loma, piemēram, postgres",
+            "connected": "Savienots — PostgreSQL {version}",
+            "superuser": "Superuser",
+            "createdb": "Drīkst veidot datu bāzes",
+            "noCreatedb": "Nedrīkst veidot datu bāzes",
+            "noCreatedbHint": "Ar šo lomu jaunas datu bāzes izveidot nevar. Lūdzu, izmantojiet lomu ar CREATEDB vai pārņemiet jau esošas datu bāzes.",
+            "foundAuth": "Atrastas {count} autentifikācijas datu bāzes",
+            "foundCompany": "Atrastas {count} uzņēmumu datu bāzes",
+            "stored": "Piekļuves dati no esošās konfigurācijas: {user} serverī {host}:{port}. Parole paliek serverī.",
+            "enterManually": "Ievadīt citus piekļuves datus"
+        },
+        "auth": {
+            "intro": "Autentifikācijas datu bāzē glabājas lietotāji, grupas un uzņēmumu saraksts. Tā ir saderīga ar k9o — jau esošu var pārņemt tieši.",
+            "modeNew": "Izveidot jaunu autentifikācijas datu bāzi",
+            "modeNewHint": "Ieteicams jaunai instalācijai.",
+            "name": "Autentifikācijas datu bāzes nosaukums",
+            "modeExisting": "Izmantot esošu autentifikācijas datu bāzi",
+            "modeExistingHint": "Pārņemt esošas k9o instalācijas lietotājus, grupas un uzņēmumus. Trūkstošās OSERP tabulas tiks pievienotas.",
+            "noneFound": "Serverī netika atrasta neviena autentifikācijas datu bāze.",
+            "select": "Autentifikācijas datu bāze",
+            "dbMeta": "{users} lietotāji, {clients} uzņēmumi",
+            "dbEmpty": "tukša — tiks iestatīta"
+        },
+        "admin": {
+            "intro": "Pirmais lietotājs kļūst par sistēmas administratoru: viņš drīkst pārvaldīt lietotājus, grupas un uzņēmumus un saņem grupu „Pilna piekļuve“.",
+            "introExisting": "Kam jābūt sistēmas administratoram? Ievadiet esošu lietotājvārdu (ja atstāj tukšu, parole paliek nemainīta) vai izveidojiet jaunu.",
+            "login": "Lietotājvārds",
+            "loginHintExisting": "Esošs lietotājvārds vai jauns",
+            "name": "Pilns vārds",
+            "email": "E-pasts",
+            "password": "Parole",
+            "passwordConfirm": "Atkārtojiet paroli",
+            "passwordHint": "Vismaz 8 zīmes — vai izveidojiet automātiski",
+            "passwordHintExisting": "Atstājiet tukšu, lai paturētu esošo paroli",
+            "generate": "Izveidot drošu paroli",
+            "modeDefault": "Izveidot noklusējuma kontu „{login}“",
+            "modeDefaultHint": "Pieteikšanās ar {login} un to pašu vārdu kā paroli. Uzreiz lietojams, lūdzu, pēc tam nomainiet paroli.",
+            "modeCustom": "Izveidot savu administratoru",
+            "modeCustomHint": "Nosakiet vārdu, e-pastu un savu paroli.",
+            "defaultWarning": "Sākumā parole ir tāda pati kā lietotājvārds. Lūdzu, pēc pirmās pieteikšanās nomainiet to sadaļā „Lietotāji un uzņēmumi“.",
+            "existingUsersHint": "Šajā instalācijā jau ir lietotāji. Lūdzu, piesakieties ar esošu administratoru, lai vednis varētu turpināt darbu."
+        },
+        "company": {
+            "intro": "Katrs uzņēmums saņem savu datu bāzi ar kontu plānu. Vēlāk Jūs jebkurā brīdī varat izveidot vēl citus uzņēmumus.",
+            "createSwitch": "Izveidot pirmo uzņēmumu tagad",
+            "name": "Uzņēmuma nosaukums",
+            "dbname": "Datu bāzes nosaukums",
+            "dbnameHint": "Tiek ieteikts no uzņēmuma nosaukuma — mazie burti, cipari, pasvītrojums",
+            "chart": "Kontu plāns",
+            "charts": {
+                "skr03": "Procesu iedalījums — standarts lielākajai daļai uzņēmumu",
+                "skr04": "Pārskatu iedalījums — parasts kapitālsabiedrībām un lielākiem uzņēmumiem"
+            },
+            "noneWarning": "Bez uzņēmuma pēc pieteikšanās nekas nebūs redzams. Uzņēmumu vēlāk var izveidot sadaļā „Lietotāji un uzņēmumi“."
+        },
+        "summary": {
+            "intro": "Lūdzu, pārbaudiet. Instalācija aizņem aptuveni minūti.",
+            "server": "Datu bāzes serveris",
+            "auth": "Autentifikācijas datu bāze",
+            "authNew": "{name} (tiks izveidota no jauna)",
+            "authExisting": "{name} (jau pastāv, tiks papildināta)",
+            "admin": "Administrators",
+            "company": "Pirmais uzņēmums",
+            "noCompany": "nav — izveidot vēlāk",
+            "installing": "Notiek instalācija …",
+            "installingHint": "Datu bāzu izveide, shēmas ielāde, kontu plāna ielāde. Lūdzu, neaizveriet logu.",
+            "done": "Instalācija pabeigta",
+            "steps": {
+                "connect": "Savienojums ar serveri",
+                "auth_db_created": "Autentifikācijas datu bāze izveidota",
+                "auth_schema": "Autentifikācijas shēma ielādēta",
+                "admin_user": "Administrators",
+                "company": "Uzņēmums izveidots",
+                "settings": "Konfigurācija ierakstīta"
+            },
+            "loginHint": "Piesakieties tagad kā „{login}“.",
+            "adminDefault": "Noklusējuma konts {login}",
+            "loginHintDefault": "Piesakieties tagad kā „{login}“ — parole ir tāda pati kā lietotājvārds. Lūdzu, uzreiz pēc tam nomainiet to."
+        },
         "fields": {
             "host": "Host",
             "port": "Ports",
             "database": "Datu bāzes nosaukums",
-            "login": "Lietotājvārds",
+            "login": "Datu bāzes lietotājs",
             "password": "Parole"
-        },
-        "placeholders": {
-            "host": "localhost",
-            "port": "5432",
-            "database": "oserp_auth",
-            "login": "postgres"
         },
         "validation": {
             "required": "Obligāts lauks",
-            "portRange": "Portam jābūt starp 1 un 65535"
+            "portRange": "Portam jābūt no 1 līdz 65535",
+            "dbname": "Tikai mazie burti, cipari, pasvītrojums un defise, sākot ar burtu",
+            "dbExists": "Datu bāze ar šādu nosaukumu jau pastāv",
+            "login": "Bez atstarpēm un bez īpašajām zīmēm, piemēram, / \\ : * ? \" < > |",
+            "email": "Nederīga e-pasta adrese",
+            "passwordLength": "Vismaz 8 zīmes",
+            "passwordMismatch": "Paroles nesakrīt"
         },
         "buttons": {
-            "testConnection": "Testēt savienojumu",
-            "testingConnection": "Tiek testēts savienojums...",
-            "saveSetup": "Pabeigt iestatīšanu",
-            "savingSetup": "Tiek saglabāts...",
-            "finish": "Palaist lietotni"
+            "testConnection": "Pārbaudīt savienojumu",
+            "next": "Tālāk",
+            "back": "Atpakaļ",
+            "install": "Sākt instalāciju",
+            "finish": "Uz pieteikšanos"
         },
         "errors": {
-            "checkStatus": "Kļūda pārbaudot iestatīšanas statusu",
-            "testConnection": "Kļūda testējot savienojumu",
-            "testNetworkError": "Tīkla kļūda testējot savienojumu",
-            "saveSetup": "Kļūda saglabājot konfigurāciju",
-            "saveNetworkError": "Tīkla kļūda saglabājot konfigurāciju"
-        },
-        "update": {
-            "title": "Datu bāzes atjaunināšana",
-            "running": "Datu bāze tiek atjaunināta...",
-            "success": "Datu bāzes atjaunināšana veiksmīgi pabeigta.",
-            "failed": "Datu bāzes atjaunināšana neizdevās.",
-            "networkError": "Tīkla kļūda datu bāzes atjaunināšanā."
+            "testConnection": "Savienojums neizdevās",
+            "testNetworkError": "Tīkla kļūda, pārbaudot savienojumu",
+            "install": "Instalācija neizdevās",
+            "saveNetworkError": "Tīkla kļūda instalācijas laikā",
+            "ADMIN_LOGIN_REQUIRED": "Šajā instalācijā jau ir lietotāji. Lūdzu, ievadiet esoša administratora lietotājvārdu un paroli.",
+            "AUTH_DB_UNREACHABLE": "Autentifikācijas datu bāze ar konfigurācijā norādītajiem datiem nav sasniedzama."
         },
         "footer": {
             "copyright": "OpensourceERP"
+        },
+        "state": {
+            "no_database": "Konfigurācija norāda uz datu bāzi „{db}“, kuras serverī vēl nav. Vednis to izveidos.",
+            "no_schema": "Datu bāze „{db}“ jau pastāv, taču tajā vēl nav tabulu. Vednis to tagad iestatīs.",
+            "no_user": "Datu bāzē „{db}“ vēl nav neviena lietotāja. Bez lietotāja pieteikšanās nav iespējama.",
+            "no_client": "Vēl nav izveidots neviens uzņēmums. Bez uzņēmuma pēc pieteikšanās nekas nav redzams."
         }
     }
 }

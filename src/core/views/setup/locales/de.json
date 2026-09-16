@@ -1,50 +1,137 @@
 {
     "setup": {
-        "title": "OpensourceERP Setup",
-        "welcome": "Willkommen bei OpensourceERP! Bitte konfigurieren Sie die Verbindung zur Authentifizierungsdatenbank.",
-        "setupAlreadyDone": "Setup wurde bereits durchgeführt. Sie werden zur Anmeldeseite weitergeleitet...",
-        "configFound": "kivitendo.conf gefunden - Passwort war unverschlüsselt. Formular wurde automatisch befüllt.",
-        "setupCompleteMessage": "Setup erfolgreich abgeschlossen! Passwort wurde verschlüsselt gespeichert. Sie werden weitergeleitet...",
+        "title": "OpensourceERP einrichten",
+        "subtitle": "In fünf Schritten zur ersten Anmeldung — ganz ohne k9o",
+        "setupAlreadyDone": "Setup wurde bereits durchgeführt. Sie werden zur Anmeldeseite weitergeleitet …",
+        "steps": {
+            "server": "Datenbankserver",
+            "auth": "Auth-Datenbank",
+            "admin": "Administrator",
+            "company": "Erste Firma",
+            "summary": "Installation"
+        },
+        "server": {
+            "intro": "Zugang zum PostgreSQL-Server. Die Rolle braucht das Recht, Datenbanken anzulegen (meist „postgres“).",
+            "configFound": "Eine k9o-Konfiguration wurde gefunden — Zugangsdaten sind vorausgefüllt.",
+            "userHint": "Datenbank-Rolle, z. B. postgres",
+            "connected": "Verbunden — PostgreSQL {version}",
+            "superuser": "Superuser",
+            "createdb": "Darf Datenbanken anlegen",
+            "noCreatedb": "Darf keine Datenbanken anlegen",
+            "noCreatedbHint": "Mit dieser Rolle lassen sich keine neuen Datenbanken anlegen. Bitte eine Rolle mit CREATEDB verwenden oder vorhandene Datenbanken übernehmen.",
+            "foundAuth": "{count} Auth-Datenbank(en) gefunden",
+            "foundCompany": "{count} Firmen-Datenbank(en) gefunden",
+            "stored": "Zugang aus der vorhandenen Konfiguration: {user} auf {host}:{port}. Das Passwort bleibt auf dem Server.",
+            "enterManually": "Andere Zugangsdaten eingeben"
+        },
+        "auth": {
+            "intro": "In der Auth-Datenbank liegen Benutzer, Gruppen und die Liste der Firmen. Sie ist kompatibel zu k9o — eine vorhandene kann direkt übernommen werden.",
+            "modeNew": "Neue Auth-Datenbank anlegen",
+            "modeNewHint": "Empfohlen für eine frische Installation.",
+            "name": "Name der Auth-Datenbank",
+            "modeExisting": "Vorhandene Auth-Datenbank verwenden",
+            "modeExistingHint": "Benutzer, Gruppen und Firmen einer bestehenden k9o-Installation übernehmen. Fehlende OSERP-Tabellen werden ergänzt.",
+            "noneFound": "Auf dem Server wurde keine Auth-Datenbank gefunden.",
+            "select": "Auth-Datenbank",
+            "dbMeta": "{users} Benutzer, {clients} Firmen",
+            "dbEmpty": "leer — wird eingerichtet"
+        },
+        "admin": {
+            "intro": "Der erste Benutzer wird Systemadministrator: Er darf Benutzer, Gruppen und Firmen verwalten und bekommt die Gruppe „Vollzugriff“.",
+            "introExisting": "Wer soll Systemadministrator sein? Geben Sie einen vorhandenen Anmeldenamen ein (Passwort bleibt, wenn leer) oder legen Sie einen neuen an.",
+            "login": "Anmeldename",
+            "loginHintExisting": "Vorhandener Anmeldename oder ein neuer",
+            "name": "Vollständiger Name",
+            "email": "E-Mail",
+            "password": "Passwort",
+            "passwordConfirm": "Passwort wiederholen",
+            "passwordHint": "Mindestens 8 Zeichen — oder erzeugen lassen",
+            "passwordHintExisting": "Leer lassen, um das vorhandene Passwort zu behalten",
+            "generate": "Sicheres Passwort erzeugen",
+            "modeDefault": "Standardzugang „{login}\" anlegen",
+            "modeDefaultHint": "Anmeldung mit {login} und demselben Wort als Passwort. Sofort einsatzbereit, bitte danach ändern.",
+            "modeCustom": "Eigenen Administrator anlegen",
+            "modeCustomHint": "Name, E-Mail und eigenes Passwort selbst festlegen.",
+            "defaultWarning": "Das Passwort ist zunächst genauso wie der Anmeldename. Bitte nach der ersten Anmeldung unter „Benutzer und Firmen\" ändern.",
+            "existingUsersHint": "Diese Installation hat bereits Benutzer. Bitte mit einem vorhandenen Administrator anmelden, damit der Assistent weiterarbeiten darf."
+        },
+        "company": {
+            "intro": "Jede Firma bekommt eine eigene Datenbank mit Kontenrahmen. Sie können später jederzeit weitere Firmen anlegen.",
+            "createSwitch": "Jetzt die erste Firma anlegen",
+            "name": "Firmenname",
+            "dbname": "Datenbankname",
+            "dbnameHint": "Wird aus dem Firmennamen vorgeschlagen — Kleinbuchstaben, Ziffern, Unterstrich",
+            "chart": "Kontenrahmen",
+            "charts": {
+                "skr03": "Prozessgliederung — der Standard für die meisten Betriebe",
+                "skr04": "Abschlussgliederung — üblich bei GmbH, AG und größeren Unternehmen"
+            },
+            "noneWarning": "Ohne Firma ist nach der Anmeldung nichts zu sehen. Eine Firma lässt sich später unter „Benutzer und Firmen“ anlegen."
+        },
+        "summary": {
+            "intro": "Bitte prüfen. Die Installation dauert etwa eine Minute.",
+            "server": "Datenbankserver",
+            "auth": "Auth-Datenbank",
+            "authNew": "{name} (wird neu angelegt)",
+            "authExisting": "{name} (vorhanden, wird ergänzt)",
+            "admin": "Administrator",
+            "company": "Erste Firma",
+            "noCompany": "keine — später anlegen",
+            "installing": "Installation läuft …",
+            "installingHint": "Datenbanken anlegen, Schema einspielen, Kontenrahmen laden. Bitte das Fenster nicht schließen.",
+            "done": "Installation abgeschlossen",
+            "steps": {
+                "connect": "Verbindung zum Server",
+                "auth_db_created": "Auth-Datenbank angelegt",
+                "auth_schema": "Auth-Schema eingespielt",
+                "admin_user": "Administrator",
+                "company": "Firma angelegt",
+                "settings": "Konfiguration geschrieben"
+            },
+            "loginHint": "Melden Sie sich jetzt als „{login}“ an.",
+            "adminDefault": "Standardzugang {login}",
+            "loginHintDefault": "Melden Sie sich jetzt mit „{login}\" an — das Passwort ist gleich dem Anmeldenamen. Bitte gleich danach ändern."
+        },
         "fields": {
             "host": "Host",
             "port": "Port",
             "database": "Datenbankname",
-            "login": "Login",
+            "login": "Datenbank-Benutzer",
             "password": "Passwort"
-        },
-        "placeholders": {
-            "host": "localhost",
-            "port": "5432",
-            "database": "oserp_auth",
-            "login": "postgres"
         },
         "validation": {
             "required": "Pflichtfeld",
-            "portRange": "Port muss zwischen 1 und 65535 liegen"
+            "portRange": "Port muss zwischen 1 und 65535 liegen",
+            "dbname": "Nur Kleinbuchstaben, Ziffern, Unterstrich und Bindestrich, beginnend mit einem Buchstaben",
+            "dbExists": "Eine Datenbank mit diesem Namen existiert bereits",
+            "login": "Keine Leerzeichen und keine Sonderzeichen wie / \\ : * ? \" < > |",
+            "email": "Keine gültige E-Mail-Adresse",
+            "passwordLength": "Mindestens 8 Zeichen",
+            "passwordMismatch": "Die Passwörter stimmen nicht überein"
         },
         "buttons": {
-            "testConnection": "Verbindung testen",
-            "testingConnection": "Teste Verbindung...",
-            "saveSetup": "Setup abschließen",
-            "savingSetup": "Wird gespeichert...",
-            "finish": "App ausführen"
+            "testConnection": "Verbindung prüfen",
+            "next": "Weiter",
+            "back": "Zurück",
+            "install": "Installation starten",
+            "finish": "Zur Anmeldung"
         },
         "errors": {
-            "checkStatus": "Fehler beim Prüfen des Setup-Status",
-            "testConnection": "Fehler beim Testen der Verbindung",
-            "testNetworkError": "Netzwerkfehler beim Testen der Verbindung",
-            "saveSetup": "Fehler beim Speichern der Konfiguration",
-            "saveNetworkError": "Netzwerkfehler beim Speichern der Konfiguration"
-        },
-        "update": {
-            "title": "Datenbankaktualisierung",
-            "running": "Datenbank wird aktualisiert...",
-            "success": "Datenbankaktualisierung erfolgreich abgeschlossen.",
-            "failed": "Datenbankaktualisierung fehlgeschlagen.",
-            "networkError": "Netzwerkfehler bei der Datenbankaktualisierung."
+            "testConnection": "Verbindung fehlgeschlagen",
+            "testNetworkError": "Netzwerkfehler beim Prüfen der Verbindung",
+            "install": "Installation fehlgeschlagen",
+            "saveNetworkError": "Netzwerkfehler während der Installation",
+            "ADMIN_LOGIN_REQUIRED": "Diese Installation hat bereits Benutzer. Bitte Anmeldename und Passwort eines vorhandenen Administrators eingeben.",
+            "AUTH_DB_UNREACHABLE": "Die Auth-Datenbank ist mit den Angaben aus der Konfiguration nicht erreichbar."
         },
         "footer": {
             "copyright": "OpensourceERP"
+        },
+        "state": {
+            "no_database": "Die Konfiguration verweist auf die Datenbank „{db}\", die es auf dem Server noch nicht gibt. Der Assistent legt sie an.",
+            "no_schema": "Die Datenbank „{db}\" ist vorhanden, hat aber noch keine Tabellen. Der Assistent richtet sie jetzt ein.",
+            "no_user": "Die Datenbank „{db}\" hat noch keinen Benutzer. Ohne Benutzer ist keine Anmeldung möglich.",
+            "no_client": "Es ist noch keine Firma eingerichtet. Ohne Firma führt die Anmeldung ins Leere."
         }
     }
 }

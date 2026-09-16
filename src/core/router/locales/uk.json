@@ -57,7 +57,8 @@
         "privacy": "/konfidentsiinist",
         "dataDeletion": "/vydalennia-danykh",
         "tafel": "/doshka-oholoshen/keruvannia",
-        "newArticle": "/tovar/novyi"
+        "newArticle": "/tovar/novyi",
+        "admin": "/systema/administruvannia"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Помилка: Файл паролів api/config/api.passwd.php не знайдено. Будь ласка, перейменуйте файл api/config/api.passwd.php.example на api/config/api.passwd.php та налаштуйте параметри відповідно.",
@@ -93,7 +94,8 @@
         "developerTools": "Інструменти розробника",
         "systemUpdate": "Оновлення системи",
         "about": "Про програму",
-        "docs": "Документація"
+        "docs": "Документація",
+        "administration": "Користувачі та компанії"
     },
     "DocsView": {
         "title": "Документація",

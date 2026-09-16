@@ -19,7 +19,8 @@
         "updateSuccess": "Aggiornamento del database eseguito con successo.",
         "updateError": "Errore nell'aggiornamento del database. Riprovare.",
         "privacy": "Informativa sulla privacy",
-        "dataDeletion": "Cancellazione dei dati"
+        "dataDeletion": "Cancellazione dei dati",
+        "API_DATABASE_ERROR": "Il database non risponde come previsto. Avvisare l'amministratore."
     },
     "NotFoundView": {
         "title": "Pagina non trovata",

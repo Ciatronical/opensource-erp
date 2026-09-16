@@ -57,6 +57,7 @@ export const oserpStore = defineStore('oserpStore', () => {
         company_config: null,
         is_demo: false,
         demo_inactivity_minutes: 20,
+        is_admin: false,
         can_create_company: false
     });
 
@@ -106,6 +107,13 @@ export const oserpStore = defineStore('oserpStore', () => {
         const v = getClientDefaultValue('feature_nvr', null);
         if (v === null) return true;
         return v === true || v === 'true' || v === '1' || v === 1;
+    }
+
+    /**
+     * Prüft ob der Benutzer Systemadministrator ist (Benutzer, Gruppen, Firmen verwalten)
+     */
+    function isAdmin() {
+        return session.is_admin === true;
     }
 
     /**
@@ -196,6 +204,7 @@ export const oserpStore = defineStore('oserpStore', () => {
         session.company_config = responseData.payload.main.company_config;
         session.is_demo = responseData.payload.is_demo || false;
         session.demo_inactivity_minutes = responseData.payload.demo_inactivity_minutes || 20;
+        session.is_admin = responseData.payload.is_admin || false;
         session.can_create_company = responseData.payload.can_create_company || false;
         extensions.splice(0, extensions.length, ...(responseData.payload.main.company_config?.extensions || []));
         customer_vendor.value = responseData.payload.main.customer_vendor;
@@ -263,6 +272,7 @@ export const oserpStore = defineStore('oserpStore', () => {
             transformResponseToStoreData(response.data);
             // Login-Zeitstempel fuer Info Bar speichern
             localStorage.setItem(`oserp_infobar_login_ts_${session.user}_${session.client}`, String(Date.now()))
+            announceClient();
             // Upstall-Dateien neuer als das Schema: die Login-Ansicht stößt das Update an
             if (response.data.payload?.schema_update_needed) {
                 return AuthStatus.UPDATE_REQUIRED;
@@ -271,6 +281,27 @@ export const oserpStore = defineStore('oserpStore', () => {
         }
 
         throw new ApiError('ApiError', response.data.text, response.data.payload);
+    }
+
+    /**
+     * Mandantenwechsel an die anderen Tabs melden.
+     *
+     * Alle Tabs eines Browsers teilen sich das Session-Cookie: Wechselt ein Tab
+     * die Firma, arbeitet der Server auch für alle anderen Tabs in der neuen
+     * Firma. Die halten aber noch die company_config der alten (Kontenliste,
+     * Konten-IDs …) und würden deren IDs in die neue Datenbank schreiben —
+     * etwa das Forderungskonto einer Rechnung auf ein fremdes Konto. Deshalb
+     * lädt jeder Tab neu, sobald ein anderer eine andere Firma meldet.
+     */
+    const clientChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('oserp-client') : null;
+    clientChannel?.addEventListener('message', (event) => {
+        if (session.client && event.data?.client !== session.client) {
+            window.location.reload();
+        }
+    });
+
+    function announceClient() {
+        clientChannel?.postMessage({ client: session.client });
     }
 
     /**
@@ -287,6 +318,7 @@ export const oserpStore = defineStore('oserpStore', () => {
         if (response.data.success) {
             transformResponseToStoreData(response.data);
             localStorage.setItem(`oserp_infobar_login_ts_${session.user}_${session.client}`, String(Date.now()));
+            announceClient();
             return true;
         }
 
@@ -294,22 +326,55 @@ export const oserpStore = defineStore('oserpStore', () => {
     }
 
     /**
-     * Neue Firma anlegen
+     * Neue Firma inkl. Datenbank anlegen (nur Systemadministrator)
+     *
+     * @param {Object} data - { companyName, dbName, skr, isDefault, userIds, groupIds }
+     * @returns {Object} payload { companyName, dbName, skr, clientId, warnings }
      */
-    async function createCompany(companyName, dbName, skr) {
-        const response = await axios.post('/api/company/', {
-            action: 'createCompany',
-            companyName,
-            dbName,
-            skr
-        });
+    async function createCompany(data) {
+        const response = await axios.post('/api/company/', { action: 'createCompany', ...data });
 
         if (response.data.success) {
-            return response.data;
+            return response.data.payload;
         }
 
-        throw new ApiError('ApiError', response.data.text || 'UNKNOWN_ERROR');
+        throw new ApiError('ApiError', response.data.text || 'UNKNOWN_ERROR', response.data.payload);
     }
+
+    // =========================================================================
+    // ADMINISTRATION - BENUTZER, GRUPPEN, FIRMEN
+    // =========================================================================
+
+    /**
+     * Ruft eine Aktion der Systemadministration auf
+     *
+     * @param {string} action - Aktionsname (backend/api/admin/admin.php)
+     * @param {Object} data - Parameter
+     * @returns {Object} payload
+     * @throws {ApiError} code = Fehlercode des Backends, message = Meldung
+     */
+    async function adminCall(action, data = {}) {
+        const response = await axios.post('/api/admin/', { action, ...data });
+
+        if (response.data.success) {
+            return response.data.payload;
+        }
+
+        const payload = response.data.payload;
+        throw new ApiError('ApiError', response.data.text || 'UNKNOWN_ERROR',
+            typeof payload === 'string' ? payload : (payload?.error || response.data.text));
+    }
+
+    const adminOverview = () => adminCall('getAdminOverview');
+    const adminSaveUser = (user) => adminCall('saveUser', user);
+    const adminDeleteUser = (id) => adminCall('deleteUser', { id });
+    const adminSaveGroup = (group) => adminCall('saveGroup', group);
+    const adminDeleteGroup = (id) => adminCall('deleteGroup', { id });
+    const adminSaveClient = (client) => adminCall('saveClient', client);
+    const adminDeleteClient = (params) => adminCall('deleteClient', params);
+    const adminTestClientConnection = (params) => adminCall('testClientConnection', params);
+    const adminListServerDatabases = (inspect = true) => adminCall('listServerDatabases', { inspect });
+    const adminUpgradeClientSchema = (id) => adminCall('upgradeClientSchema', { id });
 
     /**
      * Login-Zeitstempel aus localStorage lesen
@@ -327,6 +392,7 @@ export const oserpStore = defineStore('oserpStore', () => {
         if (response.data.success) {
             session.user = '';
             session.client = '';
+            announceClient();
         } else {
             throw new ApiError('ApiError', response.data.text);
         }
@@ -772,6 +838,7 @@ export const oserpStore = defineStore('oserpStore', () => {
         isNvrEnabled,
         checkPermission,
         permit,
+        isAdmin,
         isDebugMode,
 
         // Authentication
@@ -780,6 +847,16 @@ export const oserpStore = defineStore('oserpStore', () => {
         logout,
         switchClient,
         createCompany,
+        adminOverview,
+        adminSaveUser,
+        adminDeleteUser,
+        adminSaveGroup,
+        adminDeleteGroup,
+        adminSaveClient,
+        adminDeleteClient,
+        adminTestClientConnection,
+        adminListServerDatabases,
+        adminUpgradeClientSchema,
         getLoginTimestamp,
         restoreSession,
         isAuthenticated,

@@ -1,50 +1,137 @@
 {
     "setup": {
-        "title": "OpensourceERP Setup",
-        "welcome": "Witamy w OpensourceERP! Prosz\u0119 skonfigurowa\u0107 po\u0142\u0105czenie z baz\u0105 danych uwierzytelniania.",
-        "setupAlreadyDone": "Konfiguracja zosta\u0142a ju\u017c przeprowadzona. Nast\u0105pi przekierowanie na stron\u0119 logowania...",
-        "configFound": "Znaleziono kivitendo.conf \u2014 has\u0142o by\u0142o niezaszyfrowane. Formularz zosta\u0142 automatycznie wype\u0142niony.",
-        "setupCompleteMessage": "Konfiguracja zako\u0144czona pomy\u015blnie! Has\u0142o zosta\u0142o zaszyfrowane i zapisane. Nast\u0105pi przekierowanie...",
+        "title": "Konfiguracja OpensourceERP",
+        "subtitle": "Pięć kroków do pierwszego logowania — całkiem bez k9o",
+        "setupAlreadyDone": "Konfiguracja została już przeprowadzona. Nastąpi przekierowanie na stronę logowania …",
+        "steps": {
+            "server": "Serwer bazy danych",
+            "auth": "Baza danych uwierzytelniania",
+            "admin": "Administrator",
+            "company": "Pierwsza firma",
+            "summary": "Instalacja"
+        },
+        "server": {
+            "intro": "Dostęp do serwera PostgreSQL. Rola musi mieć uprawnienie do zakładania baz danych (zwykle „postgres”).",
+            "configFound": "Znaleziono konfigurację k9o — dane dostępowe zostały wstępnie wypełnione.",
+            "userHint": "Rola bazy danych, np. postgres",
+            "connected": "Połączono — PostgreSQL {version}",
+            "superuser": "Superuser",
+            "createdb": "Może zakładać bazy danych",
+            "noCreatedb": "Nie może zakładać baz danych",
+            "noCreatedbHint": "Za pomocą tej roli nie da się zakładać nowych baz danych. Proszę użyć roli z uprawnieniem CREATEDB albo przejąć istniejące bazy danych.",
+            "foundAuth": "Znaleziono baz danych uwierzytelniania: {count}",
+            "foundCompany": "Znaleziono baz danych firm: {count}",
+            "stored": "Dostęp z istniejącej konfiguracji: {user} na {host}:{port}. Hasło pozostaje na serwerze.",
+            "enterManually": "Podaj inne dane dostępowe"
+        },
+        "auth": {
+            "intro": "W bazie danych uwierzytelniania znajdują się użytkownicy, grupy i lista firm. Jest zgodna z k9o — istniejącą bazę można przejąć bezpośrednio.",
+            "modeNew": "Utwórz nową bazę danych uwierzytelniania",
+            "modeNewHint": "Zalecane przy nowej instalacji.",
+            "name": "Nazwa bazy danych uwierzytelniania",
+            "modeExisting": "Użyj istniejącej bazy danych uwierzytelniania",
+            "modeExistingHint": "Przejęcie użytkowników, grup i firm z istniejącej instalacji k9o. Brakujące tabele OSERP zostaną uzupełnione.",
+            "noneFound": "Na serwerze nie znaleziono żadnej bazy danych uwierzytelniania.",
+            "select": "Baza danych uwierzytelniania",
+            "dbMeta": "{users} użytkowników, {clients} firm",
+            "dbEmpty": "pusta — zostanie skonfigurowana"
+        },
+        "admin": {
+            "intro": "Pierwszy użytkownik zostaje administratorem systemu: może zarządzać użytkownikami, grupami i firmami oraz otrzymuje grupę „Pełny dostęp”.",
+            "introExisting": "Kto ma być administratorem systemu? Proszę podać istniejący login (przy pustym polu hasło pozostaje bez zmian) albo utworzyć nowy.",
+            "login": "Login",
+            "loginHintExisting": "Istniejący login albo nowy",
+            "name": "Imię i nazwisko",
+            "email": "E-mail",
+            "password": "Hasło",
+            "passwordConfirm": "Powtórz hasło",
+            "passwordHint": "Co najmniej 8 znaków — albo można je wygenerować",
+            "passwordHintExisting": "Pozostaw puste, aby zachować dotychczasowe hasło",
+            "generate": "Wygeneruj bezpieczne hasło",
+            "modeDefault": "Utwórz konto domyślne „{login}”",
+            "modeDefaultHint": "Logowanie za pomocą {login} i tego samego słowa jako hasła. Gotowe od razu, proszę je potem zmienić.",
+            "modeCustom": "Utwórz własnego administratora",
+            "modeCustomHint": "Proszę samodzielnie podać nazwę, e-mail i własne hasło.",
+            "defaultWarning": "Hasło jest początkowo takie samo jak login. Proszę zmienić je po pierwszym zalogowaniu w „Użytkownicy i firmy”.",
+            "existingUsersHint": "Ta instalacja ma już użytkowników. Proszę zalogować się istniejącym administratorem, aby kreator mógł kontynuować."
+        },
+        "company": {
+            "intro": "Każda firma otrzymuje własną bazę danych z planem kont. Kolejne firmy można dodać w każdej chwili.",
+            "createSwitch": "Utwórz teraz pierwszą firmę",
+            "name": "Nazwa firmy",
+            "dbname": "Nazwa bazy danych",
+            "dbnameHint": "Proponowana na podstawie nazwy firmy — małe litery, cyfry, podkreślenie",
+            "chart": "Plan kont",
+            "charts": {
+                "skr03": "Układ procesowy — standard dla większości firm",
+                "skr04": "Układ bilansowy — typowy dla spółek GmbH, AG i większych przedsiębiorstw"
+            },
+            "noneWarning": "Bez firmy po zalogowaniu nie będzie nic widać. Firmę można utworzyć później w „Użytkownicy i firmy”."
+        },
+        "summary": {
+            "intro": "Proszę sprawdzić dane. Instalacja trwa około minuty.",
+            "server": "Serwer bazy danych",
+            "auth": "Baza danych uwierzytelniania",
+            "authNew": "{name} (zostanie utworzona)",
+            "authExisting": "{name} (istnieje, zostanie uzupełniona)",
+            "admin": "Administrator",
+            "company": "Pierwsza firma",
+            "noCompany": "brak — do utworzenia później",
+            "installing": "Trwa instalacja …",
+            "installingHint": "Zakładanie baz danych, wczytywanie schematu, ładowanie planu kont. Proszę nie zamykać okna.",
+            "done": "Instalacja zakończona",
+            "steps": {
+                "connect": "Połączenie z serwerem",
+                "auth_db_created": "Baza danych uwierzytelniania utworzona",
+                "auth_schema": "Schemat uwierzytelniania wczytany",
+                "admin_user": "Administrator",
+                "company": "Firma utworzona",
+                "settings": "Konfiguracja zapisana"
+            },
+            "loginHint": "Proszę zalogować się teraz jako „{login}”.",
+            "adminDefault": "Konto domyślne {login}",
+            "loginHintDefault": "Proszę zalogować się teraz jako „{login}” — hasło jest takie samo jak login. Proszę zmienić je zaraz potem."
+        },
         "fields": {
             "host": "Host",
             "port": "Port",
             "database": "Nazwa bazy danych",
-            "login": "Login",
-            "password": "Has\u0142o"
-        },
-        "placeholders": {
-            "host": "localhost",
-            "port": "5432",
-            "database": "oserp_auth",
-            "login": "postgres"
+            "login": "Użytkownik bazy danych",
+            "password": "Hasło"
         },
         "validation": {
             "required": "Pole wymagane",
-            "portRange": "Port musi by\u0107 z zakresu od 1 do 65535"
+            "portRange": "Port musi być z zakresu od 1 do 65535",
+            "dbname": "Tylko małe litery, cyfry, podkreślenie i myślnik, na początku litera",
+            "dbExists": "Baza danych o tej nazwie już istnieje",
+            "login": "Bez spacji i bez znaków specjalnych takich jak / \\ : * ? \" < > |",
+            "email": "Nieprawidłowy adres e-mail",
+            "passwordLength": "Co najmniej 8 znaków",
+            "passwordMismatch": "Hasła nie są zgodne"
         },
         "buttons": {
-            "testConnection": "Testuj po\u0142\u0105czenie",
-            "testingConnection": "Testowanie po\u0142\u0105czenia...",
-            "saveSetup": "Zako\u0144cz konfiguracj\u0119",
-            "savingSetup": "Zapisywanie...",
-            "finish": "Uruchom aplikacj\u0119"
+            "testConnection": "Sprawdź połączenie",
+            "next": "Dalej",
+            "back": "Wstecz",
+            "install": "Rozpocznij instalację",
+            "finish": "Przejdź do logowania"
         },
         "errors": {
-            "checkStatus": "B\u0142\u0105d podczas sprawdzania statusu konfiguracji",
-            "testConnection": "B\u0142\u0105d podczas testowania po\u0142\u0105czenia",
-            "testNetworkError": "B\u0142\u0105d sieci podczas testowania po\u0142\u0105czenia",
-            "saveSetup": "B\u0142\u0105d podczas zapisywania konfiguracji",
-            "saveNetworkError": "B\u0142\u0105d sieci podczas zapisywania konfiguracji"
-        },
-        "update": {
-            "title": "Aktualizacja bazy danych",
-            "running": "Trwa aktualizacja bazy danych...",
-            "success": "Aktualizacja bazy danych zako\u0144czona pomy\u015blnie.",
-            "failed": "Aktualizacja bazy danych nie powiod\u0142a si\u0119.",
-            "networkError": "B\u0142\u0105d sieci podczas aktualizacji bazy danych."
+            "testConnection": "Połączenie nieudane",
+            "testNetworkError": "Błąd sieci podczas sprawdzania połączenia",
+            "install": "Instalacja nie powiodła się",
+            "saveNetworkError": "Błąd sieci podczas instalacji",
+            "ADMIN_LOGIN_REQUIRED": "Ta instalacja ma już użytkowników. Proszę podać login i hasło istniejącego administratora.",
+            "AUTH_DB_UNREACHABLE": "Baza danych uwierzytelniania jest nieosiągalna przy danych z konfiguracji."
         },
         "footer": {
             "copyright": "OpensourceERP"
+        },
+        "state": {
+            "no_database": "Konfiguracja wskazuje na bazę danych „{db}”, której jeszcze nie ma na serwerze. Kreator ją utworzy.",
+            "no_schema": "Baza danych „{db}” istnieje, ale nie ma jeszcze żadnych tabel. Kreator skonfiguruje ją teraz.",
+            "no_user": "Baza danych „{db}” nie ma jeszcze żadnego użytkownika. Bez użytkownika logowanie nie jest możliwe.",
+            "no_client": "Nie utworzono jeszcze żadnej firmy. Bez firmy logowanie prowadzi donikąd."
         }
     }
 }

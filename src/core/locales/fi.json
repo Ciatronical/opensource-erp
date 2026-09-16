@@ -19,7 +19,8 @@
         "updateSuccess": "Tietokantapäivitys suoritettu onnistuneesti.",
         "updateError": "Virhe tietokantapäivityksessä. Yritä uudelleen.",
         "privacy": "Tietosuojakäytäntö",
-        "dataDeletion": "Tietojen poisto"
+        "dataDeletion": "Tietojen poisto",
+        "API_DATABASE_ERROR": "Tietokanta ei vastaa odotetusti. Ilmoita asiasta järjestelmänvalvojalle."
     },
     "NotFoundView": {
         "title": "Sivua ei löytynyt",

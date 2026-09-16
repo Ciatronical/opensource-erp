@@ -1,0 +1,23 @@
+[Unit]
+Description=OpensourceERP Fahrzeugscheinscanner (lokal, RapidOCR/ONNX auf CPU)
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/work/opensource-erp/backend/fahrzeugschein-scanner
+# Nutzt das venv aus install.sh. Pfad ggf. an die Installation anpassen.
+ExecStart=/home/work/opensource-erp/backend/fahrzeugschein-scanner/.venv/bin/python fs-scanner-server.py
+Restart=always
+RestartSec=5
+TimeoutStartSec=300
+Environment=FSSCANNER_PORT=3003
+Environment=FSSCANNER_HOST=127.0.0.1
+# Optionales Shared-Secret (Header X-Scanner-Token):
+# Environment=FSSCANNER_TOKEN=geheim
+# ONNX Runtime: Threads begrenzen, damit der Webserver nicht verhungert
+Environment=OMP_NUM_THREADS=6
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

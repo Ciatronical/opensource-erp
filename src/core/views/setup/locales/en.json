@@ -1,50 +1,137 @@
 {
     "setup": {
-        "title": "OpensourceERP Setup",
-        "welcome": "Welcome to OpensourceERP! Please configure the connection to the authentication database.",
-        "setupAlreadyDone": "Setup has already been completed. You will be redirected to the login page...",
-        "configFound": "kivitendo.conf found - password was unencrypted. Form has been auto-filled.",
-        "setupCompleteMessage": "Setup completed successfully! Password has been encrypted and saved. You will be redirected...",
+        "title": "Set up OpensourceERP",
+        "subtitle": "Five steps to your first login — no k9o needed",
+        "setupAlreadyDone": "Setup has already been completed. You will be redirected to the login page …",
+        "steps": {
+            "server": "Database server",
+            "auth": "Auth database",
+            "admin": "Administrator",
+            "company": "First company",
+            "summary": "Installation"
+        },
+        "server": {
+            "intro": "Access to the PostgreSQL server. The role needs the right to create databases (usually \"postgres\").",
+            "configFound": "A k9o configuration was found — credentials are prefilled.",
+            "userHint": "Database role, e.g. postgres",
+            "connected": "Connected — PostgreSQL {version}",
+            "superuser": "Superuser",
+            "createdb": "May create databases",
+            "noCreatedb": "May not create databases",
+            "noCreatedbHint": "This role cannot create new databases. Please use a role with CREATEDB or adopt existing databases.",
+            "foundAuth": "{count} auth database(s) found",
+            "foundCompany": "{count} company database(s) found",
+            "stored": "Credentials from the existing configuration: {user} on {host}:{port}. The password stays on the server.",
+            "enterManually": "Enter different credentials"
+        },
+        "auth": {
+            "intro": "The auth database holds users, groups and the list of companies. It is compatible with k9o — an existing one can be adopted directly.",
+            "modeNew": "Create a new auth database",
+            "modeNewHint": "Recommended for a fresh installation.",
+            "name": "Name of the auth database",
+            "modeExisting": "Use an existing auth database",
+            "modeExistingHint": "Adopt users, groups and companies of an existing k9o installation. Missing OSERP tables are added.",
+            "noneFound": "No auth database was found on the server.",
+            "select": "Auth database",
+            "dbMeta": "{users} users, {clients} companies",
+            "dbEmpty": "empty — will be set up"
+        },
+        "admin": {
+            "intro": "The first user becomes system administrator: may manage users, groups and companies and gets the group \"Full access\".",
+            "introExisting": "Who should be system administrator? Enter an existing login name (password is kept if left empty) or create a new one.",
+            "login": "Login name",
+            "loginHintExisting": "Existing login name or a new one",
+            "name": "Full name",
+            "email": "E-mail",
+            "password": "Password",
+            "passwordConfirm": "Repeat password",
+            "passwordHint": "At least 8 characters — or generate one",
+            "passwordHintExisting": "Leave empty to keep the existing password",
+            "generate": "Generate a secure password",
+            "modeDefault": "Create the default account \"{login}\"",
+            "modeDefaultHint": "Log in with {login} and the same word as the password. Ready at once, please change it afterwards.",
+            "modeCustom": "Create your own administrator",
+            "modeCustomHint": "Choose name, e-mail and your own password.",
+            "defaultWarning": "The password is initially the same as the login name. Please change it after the first login under \"Users and Companies\".",
+            "existingUsersHint": "This installation already has users. Please sign in with an existing administrator so the wizard may continue."
+        },
+        "company": {
+            "intro": "Each company gets its own database with a chart of accounts. You can add more companies at any time later.",
+            "createSwitch": "Create the first company now",
+            "name": "Company name",
+            "dbname": "Database name",
+            "dbnameHint": "Suggested from the company name — lowercase letters, digits, underscore",
+            "chart": "Chart of accounts",
+            "charts": {
+                "skr03": "Process-oriented — the standard for most businesses",
+                "skr04": "Statement-oriented — common for GmbH, AG and larger companies"
+            },
+            "noneWarning": "Without a company there is nothing to see after login. A company can be created later under \"Users and Companies\"."
+        },
+        "summary": {
+            "intro": "Please review. The installation takes about a minute.",
+            "server": "Database server",
+            "auth": "Auth database",
+            "authNew": "{name} (will be created)",
+            "authExisting": "{name} (existing, will be extended)",
+            "admin": "Administrator",
+            "company": "First company",
+            "noCompany": "none — create later",
+            "installing": "Installing …",
+            "installingHint": "Creating databases, loading schema and chart of accounts. Please keep this window open.",
+            "done": "Installation complete",
+            "steps": {
+                "connect": "Connection to server",
+                "auth_db_created": "Auth database created",
+                "auth_schema": "Auth schema installed",
+                "admin_user": "Administrator",
+                "company": "Company created",
+                "settings": "Configuration written"
+            },
+            "loginHint": "Log in now as \"{login}\".",
+            "adminDefault": "Default account {login}",
+            "loginHintDefault": "Log in now as \"{login}\" — the password equals the login name. Please change it right away."
+        },
         "fields": {
             "host": "Host",
             "port": "Port",
-            "database": "Database Name",
-            "login": "Login",
+            "database": "Database name",
+            "login": "Database user",
             "password": "Password"
         },
-        "placeholders": {
-            "host": "localhost",
-            "port": "5432",
-            "database": "oserp_auth",
-            "login": "postgres"
-        },
         "validation": {
-            "required": "Required field",
-            "portRange": "Port must be between 1 and 65535"
+            "required": "Required",
+            "portRange": "Port must be between 1 and 65535",
+            "dbname": "Only lowercase letters, digits, underscore and hyphen, starting with a letter",
+            "dbExists": "A database with this name already exists",
+            "login": "No spaces and none of / \\ : * ? \" < > |",
+            "email": "Not a valid e-mail address",
+            "passwordLength": "At least 8 characters",
+            "passwordMismatch": "The passwords do not match"
         },
         "buttons": {
-            "testConnection": "Test Connection",
-            "testingConnection": "Testing Connection...",
-            "saveSetup": "Complete Setup",
-            "savingSetup": "Saving...",
-            "finish": "App Launch"
+            "testConnection": "Check connection",
+            "next": "Next",
+            "back": "Back",
+            "install": "Start installation",
+            "finish": "Go to login"
         },
         "errors": {
-            "checkStatus": "Error checking setup status",
-            "testConnection": "Error testing connection",
-            "testNetworkError": "Network error testing connection",
-            "saveSetup": "Error saving configuration",
-            "saveNetworkError": "Network error saving configuration"
-        },
-        "update": {
-            "title": "Database Update",
-            "running": "Updating database...",
-            "success": "Database update completed successfully.",
-            "failed": "Database update failed.",
-            "networkError": "Network error during database update."
+            "testConnection": "Connection failed",
+            "testNetworkError": "Network error while checking the connection",
+            "install": "Installation failed",
+            "saveNetworkError": "Network error during installation",
+            "ADMIN_LOGIN_REQUIRED": "This installation already has users. Please enter the login name and password of an existing administrator.",
+            "AUTH_DB_UNREACHABLE": "The auth database cannot be reached with the details from the configuration."
         },
         "footer": {
             "copyright": "OpensourceERP"
+        },
+        "state": {
+            "no_database": "The configuration points to the database \"{db}\", which does not exist on the server yet. The wizard will create it.",
+            "no_schema": "The database \"{db}\" exists but has no tables yet. The wizard will set it up now.",
+            "no_user": "The database \"{db}\" has no user yet. Without a user there is no way to log in.",
+            "no_client": "No company has been set up yet. Without a company, logging in leads nowhere."
         }
     }
 }

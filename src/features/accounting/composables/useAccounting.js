@@ -105,6 +105,38 @@ export function useAccounting() {
         }
     }
 
+    // Debitorenbuchung (Forderung ohne Positionen) buchen → echte ar + acc_trans
+    async function postArTransaction(payload) {
+        try {
+            const response = await axios.post('/api/accounting/', {
+                action: 'postArTransaction',
+                ...payload
+            })
+            return response.data
+        } catch (e) {
+            return { success: false, text: e.message }
+        }
+    }
+
+    // Kunden für die Debitorenbuchung suchen (query) oder gezielt per id laden
+    async function searchArCustomers(query, id = null) {
+        try {
+            const response = await axios.post('/api/accounting/', { action: 'searchArCustomers', query, id })
+            return response.data?.payload?.results ?? []
+        } catch (e) {
+            return []
+        }
+    }
+
+    async function fetchArTransactions(limit = 50) {
+        try {
+            const response = await axios.post('/api/accounting/', { action: 'getArTransactions', limit })
+            return response.data?.payload?.results ?? []
+        } catch (e) {
+            return []
+        }
+    }
+
     async function searchVendors(query) {
         try {
             const response = await axios.post('/api/accounting/', { action: 'searchVendors', query })
@@ -261,6 +293,9 @@ export function useAccounting() {
         searchAccounts,
         searchVendors,
         postIncomingInvoice,
+        postArTransaction,
+        searchArCustomers,
+        fetchArTransactions,
         fetchAccountLedger
     }
 }

@@ -1,50 +1,137 @@
 {
     "setup": {
-        "title": "OpensourceERP-asennus",
-        "welcome": "Tervetuloa OpensourceERP:hen! Määritä yhteys todennustietokantaan.",
-        "setupAlreadyDone": "Asennus on jo tehty. Sinut ohjataan kirjautumissivulle...",
-        "configFound": "kivitendo.conf löytyi - Salasana oli salaamaton. Lomake täytettiin automaattisesti.",
-        "setupCompleteMessage": "Asennus onnistui! Salasana tallennettiin salattuna. Sinut ohjataan eteenpäin...",
+        "title": "OpensourceERP:n käyttöönotto",
+        "subtitle": "Viidessä vaiheessa ensimmäiseen kirjautumiseen — täysin ilman k9o:ta",
+        "setupAlreadyDone": "Käyttöönotto on jo tehty. Sinut ohjataan kirjautumissivulle …",
+        "steps": {
+            "server": "Tietokantapalvelin",
+            "auth": "Todennustietokanta",
+            "admin": "Järjestelmänvalvoja",
+            "company": "Ensimmäinen yritys",
+            "summary": "Asennus"
+        },
+        "server": {
+            "intro": "Yhteys PostgreSQL-palvelimeen. Roolilla on oltava oikeus luoda tietokantoja (yleensä ”postgres”).",
+            "configFound": "k9o-määritykset löytyivät — kirjautumistiedot on täytetty valmiiksi.",
+            "userHint": "Tietokantarooli, esimerkiksi postgres",
+            "connected": "Yhdistetty — PostgreSQL {version}",
+            "superuser": "Superuser",
+            "createdb": "Saa luoda tietokantoja",
+            "noCreatedb": "Ei saa luoda tietokantoja",
+            "noCreatedbHint": "Tällä roolilla ei voi luoda uusia tietokantoja. Käytä roolia, jolla on CREATEDB-oikeus, tai ota käyttöön olemassa olevia tietokantoja.",
+            "foundAuth": "{count} todennustietokantaa löytyi",
+            "foundCompany": "{count} yritystietokantaa löytyi",
+            "stored": "Kirjautumistiedot olemassa olevista määrityksistä: {user} palvelimella {host}:{port}. Salasana pysyy palvelimella.",
+            "enterManually": "Anna toiset kirjautumistiedot"
+        },
+        "auth": {
+            "intro": "Todennustietokannassa ovat käyttäjät, ryhmät ja yritysten luettelo. Se on yhteensopiva k9o:n kanssa — olemassa olevan voi ottaa käyttöön suoraan.",
+            "modeNew": "Luo uusi todennustietokanta",
+            "modeNewHint": "Suositellaan uuteen asennukseen.",
+            "name": "Todennustietokannan nimi",
+            "modeExisting": "Käytä olemassa olevaa todennustietokantaa",
+            "modeExistingHint": "Ota käyttöön olemassa olevan k9o-asennuksen käyttäjät, ryhmät ja yritykset. Puuttuvat OSERP-taulut lisätään.",
+            "noneFound": "Palvelimelta ei löytynyt yhtään todennustietokantaa.",
+            "select": "Todennustietokanta",
+            "dbMeta": "{users} käyttäjää, {clients} yritystä",
+            "dbEmpty": "tyhjä — asennetaan"
+        },
+        "admin": {
+            "intro": "Ensimmäisestä käyttäjästä tulee järjestelmänvalvoja: hän saa hallita käyttäjiä, ryhmiä ja yrityksiä ja saa ryhmän ”Täydet oikeudet”.",
+            "introExisting": "Kuka on järjestelmänvalvoja? Syötä olemassa oleva käyttäjätunnus (salasana säilyy, jos kenttä jää tyhjäksi) tai luo uusi.",
+            "login": "Käyttäjätunnus",
+            "loginHintExisting": "Olemassa oleva käyttäjätunnus tai uusi",
+            "name": "Koko nimi",
+            "email": "Sähköposti",
+            "password": "Salasana",
+            "passwordConfirm": "Toista salasana",
+            "passwordHint": "Vähintään 8 merkkiä — tai luo salasana automaattisesti",
+            "passwordHintExisting": "Jätä tyhjäksi, jos haluat säilyttää nykyisen salasanan",
+            "generate": "Luo vahva salasana",
+            "modeDefault": "Luo oletustunnus ”{login}”",
+            "modeDefaultHint": "Kirjaudu tunnuksella {login} ja käytä salasanana samaa sanaa. Heti käyttövalmis, vaihda salasana heti tämän jälkeen.",
+            "modeCustom": "Luo oma järjestelmänvalvoja",
+            "modeCustomHint": "Määritä nimi, sähköposti ja oma salasana itse.",
+            "defaultWarning": "Salasana on aluksi sama kuin käyttäjätunnus. Vaihda se ensimmäisen kirjautumisen jälkeen kohdassa ”Käyttäjät ja yritykset”.",
+            "existingUsersHint": "Tässä asennuksessa on jo käyttäjiä. Kirjaudu sisään olemassa olevana järjestelmänvalvojana, jotta ohjattu käyttöönotto voi jatkaa."
+        },
+        "company": {
+            "intro": "Jokainen yritys saa oman tietokannan ja tilikartan. Voit luoda lisää yrityksiä myöhemmin milloin tahansa.",
+            "createSwitch": "Luo ensimmäinen yritys nyt",
+            "name": "Yrityksen nimi",
+            "dbname": "Tietokannan nimi",
+            "dbnameHint": "Ehdotetaan yrityksen nimen perusteella — pieniä kirjaimia, numeroita, alaviiva",
+            "chart": "Tilikartta",
+            "charts": {
+                "skr03": "Prosessijaottelu — vakiovalinta useimmille yrityksille",
+                "skr04": "Tilinpäätösjaottelu — tavallinen GmbH- ja AG-yhtiöille sekä suuremmille yrityksille"
+            },
+            "noneWarning": "Ilman yritystä kirjautumisen jälkeen ei näy mitään. Yrityksen voi luoda myöhemmin kohdassa ”Käyttäjät ja yritykset”."
+        },
+        "summary": {
+            "intro": "Tarkista tiedot. Asennus kestää noin minuutin.",
+            "server": "Tietokantapalvelin",
+            "auth": "Todennustietokanta",
+            "authNew": "{name} (luodaan uutena)",
+            "authExisting": "{name} (olemassa, täydennetään)",
+            "admin": "Järjestelmänvalvoja",
+            "company": "Ensimmäinen yritys",
+            "noCompany": "ei yritystä — luodaan myöhemmin",
+            "installing": "Asennus on käynnissä …",
+            "installingHint": "Tietokantojen luonti, skeeman asennus ja tilikartan lataus. Älä sulje ikkunaa.",
+            "done": "Asennus valmis",
+            "steps": {
+                "connect": "Yhteys palvelimeen",
+                "auth_db_created": "Todennustietokanta luotu",
+                "auth_schema": "Todennusskeema asennettu",
+                "admin_user": "Järjestelmänvalvoja",
+                "company": "Yritys luotu",
+                "settings": "Asetukset kirjoitettu"
+            },
+            "loginHint": "Kirjaudu nyt sisään tunnuksella ”{login}”.",
+            "adminDefault": "Oletustunnus {login}",
+            "loginHintDefault": "Kirjaudu nyt sisään tunnuksella ”{login}” — salasana on sama kuin käyttäjätunnus. Vaihda se heti tämän jälkeen."
+        },
         "fields": {
             "host": "Palvelin",
             "port": "Portti",
             "database": "Tietokannan nimi",
-            "login": "Käyttäjätunnus",
+            "login": "Tietokannan käyttäjä",
             "password": "Salasana"
-        },
-        "placeholders": {
-            "host": "localhost",
-            "port": "5432",
-            "database": "oserp_auth",
-            "login": "postgres"
         },
         "validation": {
             "required": "Pakollinen kenttä",
-            "portRange": "Portin on oltava välillä 1 ja 65535"
+            "portRange": "Portin on oltava välillä 1–65535",
+            "dbname": "Vain pieniä kirjaimia, numeroita, alaviiva ja yhdysmerkki, alkaen kirjaimella",
+            "dbExists": "Tämän niminen tietokanta on jo olemassa",
+            "login": "Ei välilyöntejä eikä erikoismerkkejä kuten / \\ : * ? \" < > |",
+            "email": "Sähköpostiosoite ei kelpaa",
+            "passwordLength": "Vähintään 8 merkkiä",
+            "passwordMismatch": "Salasanat eivät täsmää"
         },
         "buttons": {
             "testConnection": "Testaa yhteys",
-            "testingConnection": "Testataan yhteyttä...",
-            "saveSetup": "Viimeistele asennus",
-            "savingSetup": "Tallennetaan...",
-            "finish": "Käynnistä sovellus"
+            "next": "Seuraava",
+            "back": "Takaisin",
+            "install": "Aloita asennus",
+            "finish": "Kirjautumiseen"
         },
         "errors": {
-            "checkStatus": "Virhe asennuksen tilan tarkistamisessa",
-            "testConnection": "Virhe yhteyden testaamisessa",
-            "testNetworkError": "Verkkovirhe yhteyden testaamisessa",
-            "saveSetup": "Virhe asetusten tallentamisessa",
-            "saveNetworkError": "Verkkovirhe asetusten tallentamisessa"
-        },
-        "update": {
-            "title": "Tietokantapäivitys",
-            "running": "Tietokantaa päivitetään...",
-            "success": "Tietokantapäivitys onnistui.",
-            "failed": "Tietokantapäivitys epäonnistui.",
-            "networkError": "Verkkovirhe tietokantapäivityksessä."
+            "testConnection": "Yhteys epäonnistui",
+            "testNetworkError": "Verkkovirhe yhteyttä testattaessa",
+            "install": "Asennus epäonnistui",
+            "saveNetworkError": "Verkkovirhe asennuksen aikana",
+            "ADMIN_LOGIN_REQUIRED": "Tässä asennuksessa on jo käyttäjiä. Anna olemassa olevan järjestelmänvalvojan käyttäjätunnus ja salasana.",
+            "AUTH_DB_UNREACHABLE": "Todennustietokantaan ei saada yhteyttä määrityksissä olevilla tiedoilla."
         },
         "footer": {
             "copyright": "OpensourceERP"
+        },
+        "state": {
+            "no_database": "Määritykset viittaavat tietokantaan ”{db}”, jota ei vielä ole palvelimella. Ohjattu käyttöönotto luo sen.",
+            "no_schema": "Tietokanta ”{db}” on olemassa, mutta siinä ei ole vielä tauluja. Ohjattu käyttöönotto asentaa sen nyt.",
+            "no_user": "Tietokannassa ”{db}” ei ole vielä yhtään käyttäjää. Ilman käyttäjää kirjautuminen ei onnistu.",
+            "no_client": "Yhtään yritystä ei ole vielä perustettu. Ilman yritystä kirjautuminen ei johda mihinkään."
         }
     }
 }

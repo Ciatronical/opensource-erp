@@ -19,7 +19,8 @@
         "updateSuccess": "Aktualizace databáze byla úspěšně provedena.",
         "updateError": "Chyba při aktualizaci databáze. Zkuste to prosím znovu.",
         "privacy": "Zásady ochrany osobních údajů",
-        "dataDeletion": "Smazání dat"
+        "dataDeletion": "Smazání dat",
+        "API_DATABASE_ERROR": "Databáze neodpovídá podle očekávání. Informujte prosím správce."
     },
     "NotFoundView": {
         "title": "Stránka nenalezena",

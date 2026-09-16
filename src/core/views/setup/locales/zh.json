@@ -1,50 +1,137 @@
 {
     "setup": {
-        "title": "OpensourceERP 设置",
-        "welcome": "欢迎使用 OpensourceERP！请配置认证数据库连接。",
-        "setupAlreadyDone": "设置已完成。正在跳转到登录页面...",
-        "configFound": "找到 kivitendo.conf — 密码未加密。表单已自动填充。",
-        "setupCompleteMessage": "设置成功完成！密码已加密保存。正在跳转...",
+        "title": "设置 OpensourceERP",
+        "subtitle": "五个步骤完成首次登录 — 完全不需要 k9o",
+        "setupAlreadyDone": "设置已完成。正在跳转到登录页面……",
+        "steps": {
+            "server": "数据库服务器",
+            "auth": "认证数据库",
+            "admin": "管理员",
+            "company": "第一家公司",
+            "summary": "安装"
+        },
+        "server": {
+            "intro": "连接 PostgreSQL 服务器。该角色需要具备创建数据库的权限（通常是“postgres”）。",
+            "configFound": "已找到 k9o 配置 — 连接信息已自动填入。",
+            "userHint": "数据库角色，例如 postgres",
+            "connected": "已连接 — PostgreSQL {version}",
+            "superuser": "Superuser",
+            "createdb": "可以创建数据库",
+            "noCreatedb": "不能创建数据库",
+            "noCreatedbHint": "使用该角色无法创建新数据库。请改用具有 CREATEDB 权限的角色，或接入现有数据库。",
+            "foundAuth": "找到 {count} 个认证数据库",
+            "foundCompany": "找到 {count} 个公司数据库",
+            "stored": "来自现有配置的连接信息：{user}，位于 {host}:{port}。密码保留在服务器上。",
+            "enterManually": "输入其他连接信息"
+        },
+        "auth": {
+            "intro": "认证数据库中存放用户、用户组和公司列表。它与 k9o 兼容 — 现有的数据库可以直接接入。",
+            "modeNew": "新建认证数据库",
+            "modeNewHint": "全新安装时推荐使用。",
+            "name": "认证数据库名称",
+            "modeExisting": "使用现有的认证数据库",
+            "modeExistingHint": "接入现有 k9o 系统的用户、用户组和公司。缺少的 OSERP 数据表会自动补充。",
+            "noneFound": "服务器上未找到认证数据库。",
+            "select": "认证数据库",
+            "dbMeta": "{users} 名用户，{clients} 家公司",
+            "dbEmpty": "为空 — 将进行设置"
+        },
+        "admin": {
+            "intro": "第一个用户将成为系统管理员：可以管理用户、用户组和公司，并获得“完全访问”用户组。",
+            "introExisting": "谁应成为系统管理员？请输入一个已有的登录名（留空则保留原密码），或创建一个新的。",
+            "login": "登录名",
+            "loginHintExisting": "已有的登录名或一个新的登录名",
+            "name": "全名",
+            "email": "电子邮件",
+            "password": "密码",
+            "passwordConfirm": "再次输入密码",
+            "passwordHint": "至少 8 个字符 — 也可以自动生成",
+            "passwordHintExisting": "留空表示保留现有密码",
+            "generate": "生成安全密码",
+            "modeDefault": "创建默认账号“{login}”",
+            "modeDefaultHint": "使用 {login} 登录，密码与该名称相同。可立即使用，请随后修改密码。",
+            "modeCustom": "创建自己的管理员",
+            "modeCustomHint": "自行设置姓名、电子邮件和密码。",
+            "defaultWarning": "初始密码与登录名完全相同。请在首次登录后在“用户与公司”中修改。",
+            "existingUsersHint": "此系统中已有用户。请使用已有的管理员账号登录，向导才能继续。"
+        },
+        "company": {
+            "intro": "每家公司都会获得一个带会计科目表的独立数据库。之后可以随时创建更多公司。",
+            "createSwitch": "现在创建第一家公司",
+            "name": "公司名称",
+            "dbname": "数据库名称",
+            "dbnameHint": "根据公司名称自动建议 — 小写字母、数字、下划线",
+            "chart": "会计科目表",
+            "charts": {
+                "skr03": "按业务流程编排 — 大多数企业的标准科目表",
+                "skr04": "按报表结构编排 — 常用于有限责任公司（GmbH）、股份公司（AG）和较大企业"
+            },
+            "noneWarning": "没有公司，登录后将看不到任何内容。之后可以在“用户与公司”中创建公司。"
+        },
+        "summary": {
+            "intro": "请检查以下内容。安装大约需要一分钟。",
+            "server": "数据库服务器",
+            "auth": "认证数据库",
+            "authNew": "{name}（将新建）",
+            "authExisting": "{name}（已存在，将补充）",
+            "admin": "管理员",
+            "company": "第一家公司",
+            "noCompany": "无 — 稍后再创建",
+            "installing": "正在安装……",
+            "installingHint": "创建数据库、导入表结构、加载会计科目表。请不要关闭此窗口。",
+            "done": "安装已完成",
+            "steps": {
+                "connect": "连接服务器",
+                "auth_db_created": "认证数据库已创建",
+                "auth_schema": "认证表结构已导入",
+                "admin_user": "管理员",
+                "company": "公司已创建",
+                "settings": "配置已写入"
+            },
+            "loginHint": "现在请以“{login}”登录。",
+            "adminDefault": "默认账号 {login}",
+            "loginHintDefault": "现在请以“{login}”登录 — 密码与登录名相同。请登录后立即修改。"
+        },
         "fields": {
             "host": "主机",
             "port": "端口",
             "database": "数据库名称",
-            "login": "登录名",
+            "login": "数据库用户",
             "password": "密码"
         },
-        "placeholders": {
-            "host": "localhost",
-            "port": "5432",
-            "database": "oserp_auth",
-            "login": "postgres"
-        },
         "validation": {
-            "required": "必填字段",
-            "portRange": "端口必须在 1 到 65535 之间"
+            "required": "必填项",
+            "portRange": "端口必须在 1 到 65535 之间",
+            "dbname": "只能使用小写字母、数字、下划线和连字符，且必须以字母开头",
+            "dbExists": "已存在同名数据库",
+            "login": "不能包含空格，也不能包含 / \\ : * ? \" < > | 等特殊字符",
+            "email": "电子邮件地址无效",
+            "passwordLength": "至少 8 个字符",
+            "passwordMismatch": "两次输入的密码不一致"
         },
         "buttons": {
             "testConnection": "测试连接",
-            "testingConnection": "正在测试连接...",
-            "saveSetup": "完成设置",
-            "savingSetup": "正在保存...",
-            "finish": "运行应用"
+            "next": "下一步",
+            "back": "上一步",
+            "install": "开始安装",
+            "finish": "前往登录"
         },
         "errors": {
-            "checkStatus": "检查设置状态时出错",
-            "testConnection": "测试连接时出错",
-            "testNetworkError": "测试连接时网络错误",
-            "saveSetup": "保存配置时出错",
-            "saveNetworkError": "保存配置时网络错误"
-        },
-        "update": {
-            "title": "数据库更新",
-            "running": "正在更新数据库...",
-            "success": "数据库更新成功完成。",
-            "failed": "数据库更新失败。",
-            "networkError": "数据库更新时网络错误。"
+            "testConnection": "连接失败",
+            "testNetworkError": "测试连接时发生网络错误",
+            "install": "安装失败",
+            "saveNetworkError": "安装过程中发生网络错误",
+            "ADMIN_LOGIN_REQUIRED": "此系统中已有用户。请输入已有管理员的登录名和密码。",
+            "AUTH_DB_UNREACHABLE": "使用配置中的信息无法连接到认证数据库。"
         },
         "footer": {
             "copyright": "OpensourceERP"
+        },
+        "state": {
+            "no_database": "配置中指定的数据库“{db}”在服务器上尚不存在。向导将创建该数据库。",
+            "no_schema": "数据库“{db}”已存在，但其中还没有数据表。向导现在将完成设置。",
+            "no_user": "数据库“{db}”中还没有用户。没有用户就无法登录。",
+            "no_client": "尚未设置公司。没有公司，登录后将看不到任何内容。"
         }
     }
 }

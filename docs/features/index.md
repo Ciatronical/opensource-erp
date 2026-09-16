@@ -9,6 +9,7 @@
 | Feature | Beschreibung |
 |---------|-------------|
 | [CRM](crm.md) | Kunden- und Lieferantenverwaltung, Kontakte, Kommunikation |
+| [Benutzer und Firmen](benutzerverwaltung.md) | Benutzer, Berechtigungsgruppen und Firmen (Mandanten) verwalten — Setup-Assistent ohne k9o |
 | [Faktura](faktura.md) | Angebote, Aufträge, Rechnungen |
 | [Banking](banking.md) | Bankanbindung per FinTS, Kontoumsätze, SEPA-Überweisungen |
 | [UStVA](ustva.md) | Umsatzsteuer-Voranmeldung aus den echten Buchungen, mit Nachweis je Kennzahl |

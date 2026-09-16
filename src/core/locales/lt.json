@@ -19,7 +19,8 @@
         "updateSuccess": "Duomenų bazės atnaujinimas sėkmingai atliktas.",
         "updateError": "Klaida atnaujinant duomenų bazę. Bandykite dar kartą.",
         "privacy": "Privatumo politika",
-        "dataDeletion": "Duomenų trynimas"
+        "dataDeletion": "Duomenų trynimas",
+        "API_DATABASE_ERROR": "Duomenų bazė atsako ne taip, kaip tikėtasi. Praneškite administratoriui."
     },
     "NotFoundView": {
         "title": "Puslapis nerastas",

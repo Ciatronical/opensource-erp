@@ -448,7 +448,7 @@
             "emailInvalid": "Nieprawidłowy adres e-mail"
         },
         "errors": {
-            "noApiKey": "Brak klucza API dla skanera dowodów rejestracyjnych. Proszę skonfigurować go w konfiguracji firmy.",
+            "noApiKey": "Nie skonfigurowano skanera dowodu rejestracyjnego. W konfiguracji firmy w sekcji LxCars włącz „Używaj własnego skanera dowodu rejestracyjnego“ albo podaj klucz API.",
             "scanFailed": "Skanowanie nie powiodło się",
             "noImage": "Proszę przesłać obraz",
             "loadScans": "Błąd podczas ładowania skanów"
