@@ -82,11 +82,18 @@ Die Einstellungen stehen in `defaults_oserp` und sind für jeden Mitarbeiter mit
 Shop-Recht änderbar. Ein frei wählbarer Schreibpfad wäre damit ein
 Schreibzugriff auf jedes Verzeichnis, das PHP erreicht. Deshalb:
 
-- eine Wurzel in der `settings.ini` (`shop_sites_dir`), wie `templates_dir`,
-- jeder eingestellte Pfad muss nach `realpath()` unterhalb dieser Wurzel liegen,
+- jeder eingestellte Pfad muss nach `realpath()` unterhalb des
+  Wurzelverzeichnisses `shop_sites_dir` liegen,
 - der Vorlagensatz ist ein Name; Pfadtrenner und `..` sind nicht erlaubt.
 
 Ohne gesetzte Wurzel schreibt der Erzeuger nichts und meldet das.
+
+**Nachtrag (16.09.2026):** Das Wurzelverzeichnis selbst steht seither ebenfalls
+in `defaults_oserp` und ist in der Firmenkonfiguration unter Shop änderbar —
+jede Firma hat ihre eigene Webseite, und eine Wurzel für alle Mandanten passte
+nicht dazu. Ein gleichnamiger Eintrag in der `settings.ini` wirkt weiterhin als
+Grenze. Der Bau-Befehl bleibt ausschließlich dort: Er wird auf dem Server
+ausgeführt.
 
 ## Wer schreibt und wer baut
 
@@ -95,6 +102,15 @@ Ohne gesetzte Wurzel schreibt der Erzeuger nichts und meldet das.
 | Direkt aus dem Web-Backend, wie die Bridge | PHP-FPM bräuchte Schreibrechte im Webseitenverzeichnis und `exec()` für Hugo; 3.711 Seiten laufen in jedes Zeitlimit |
 | **Auftragstabelle und CLI-Läufer** | gewählt: OSERP schreibt Aufträge nach `batchjob_hugoshop`, ein Skript rendert und baut |
 | Gemischt | eine einzelne Seite sofort, der Vollbau über einen Auftrag |
+
+**Nachtrag (16.09.2026):** Der gemischte Weg ist dazugekommen. In der
+Auftragsliste der Shop-Übersicht lassen sich Aufträge auswählen und sofort
+ausführen; damit kommt eine Instanz auch ohne Cron-Eintrag aus. Dass sich
+Läufer und Oberfläche nicht ins Gehege kommen, sichert eine Beratungssperre in
+der Datenbank des Mandanten (`shopPublishLock()` in `lib/publish.php`): Beide
+Wege gehen durch `shopPublishRun()`, und wer die Sperre nicht bekommt, tut
+nichts. Der Vollbau bleibt Sache des Läufers — dafür reicht die Zeitgrenze
+einer Anfrage nicht. Einzelheiten in `dev/shop-betrieb.md`.
 
 Gegen den ersten Weg spricht nicht nur die Laufzeit: `--cleanDestinationDir`
 löscht das ausgelieferte Verzeichnis. Das gehört nicht an einen Klick im
@@ -130,7 +146,7 @@ kivitendos eigene Oberfläche denselben Stand.
 | `backend/api/shop/lib/publish.php` | Vorlagenauflösung, Pfadprüfung, Werte für die Vorlage, Rendern, Schreiben |
 | `backend/templates-default/shop/standard/` | mitgelieferter Satz: `theme.json`, `product.md.php` |
 | `backend/api/shop/admin.php` | `getShopTemplateSets`, `previewShopPage`, `writeShopPage` |
-| `backend/api/config.php` | `OSERP_SHOP_SITES_DIR` aus `settings.ini` |
+| `backend/api/config.php` | `OSERP_SHOP_SITES_DIR` aus `settings.ini` — seit 16.09.2026 nur noch Grenze; die Wurzel steht in den Shop-Einstellungen |
 | `backend/upstall/shop/company_schema.sql` | `shop_template_set`, `shop_site_dir`, `shop_content_dir` |
 | Einstellungen-Tab | Abschnitt „Veröffentlichung"; der Vorlagensatz ist eine Auswahl, gefüllt aus der Erweiterung |
 
@@ -142,8 +158,8 @@ Vorlage des Beispielshops PHP und lässt sich als Satz fast unverändert
 übernehmen. Eine Vorlage ist damit Code; sie stammt wie die Druckvorlagen vom
 Betreiber, nicht von Benutzern.
 
-**Einrichtung:** In der `settings.ini` unter `[system]` die Wurzel setzen, etwa
-`shop_sites_dir = "/var/www/hugoshops"`. Ohne sie meldet der Shop
+**Einrichtung:** In der Firmenkonfiguration unter Shop das Wurzelverzeichnis
+setzen, etwa `/var/www/hugoshops`. Ohne es meldet der Shop
 `SHOP_SITES_DIR_MISSING` und schreibt nichts.
 
 **Geprüft** mit Ersatz-Datenbank und Wegwerf-Verzeichnissen:

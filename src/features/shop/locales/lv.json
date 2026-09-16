@@ -103,7 +103,19 @@
             "empty": "Uzdevumu nav.",
             "waiting": "gaida",
             "queued": "Uzdevums izveidots.",
-            "already": "Uzdevums jau gaida."
+            "already": "Uzdevums jau gaida.",
+            "run": "Izpildīt tagad",
+            "selectAll": "Atlasīt visus",
+            "running": "Izpilde jau notiek — tā paveiks uzdevumus.",
+            "done": "Paveikti uzdevumi: {jobs}, ierakstītas lapas: {pages}, kļūdas: {errors}.",
+            "built": "Vietne pārbūvēta.",
+            "functions": {
+                "publish_part": "Rakstīt produkta lapu",
+                "publish_all": "Visi produkti",
+                "remove_part": "Noņemt produkta lapu",
+                "sync_kit": "Sinhronizēt pakotni",
+                "reconcile_payments": "Saskaņot maksājumus"
+            }
         }
     }
 }

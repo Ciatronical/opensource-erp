@@ -469,9 +469,16 @@ INSERT INTO defaults_oserp (key, value) VALUES ('shop_products_link', '') ON CON
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_category_link', '') ON CONFLICT (key) DO NOTHING;
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_thumbnails_link', '') ON CONFLICT (key) DO NOTHING;
 
--- Veroeffentlichung: Vorlagensatz und Verzeichnisse. Die Verzeichnisse gelten
--- relativ zu shop_sites_dir aus der settings.ini und duerfen nicht darueber
--- hinausfuehren; ohne diese Wurzel schreibt der Shop keine Dateien.
+-- Veroeffentlichung: Vorlagensatz und Verzeichnisse. Das Wurzelverzeichnis
+-- steht hier, weil jeder Mandant seine eigene Webseite hat; die uebrigen
+-- Verzeichnisse gelten relativ dazu und duerfen nicht darueber hinausfuehren.
+-- Steht in der settings.ini ein shop_sites_dir, muss das eingestellte
+-- Verzeichnis darunter liegen — so kann ein Administrator die Grenze ziehen.
+--
+-- Der Bau-Befehl steht NICHT hier, sondern allein in der settings.ini: er
+-- wird auf dem Server ausgefuehrt, und das soll niemand ueber die Oberflaeche
+-- setzen koennen.
+INSERT INTO defaults_oserp (key, value) VALUES ('shop_sites_dir', '') ON CONFLICT (key) DO NOTHING;
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_template_set', 'standard') ON CONFLICT (key) DO NOTHING;
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_site_dir', '') ON CONFLICT (key) DO NOTHING;
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_content_dir', 'content/de/produkt') ON CONFLICT (key) DO NOTHING;

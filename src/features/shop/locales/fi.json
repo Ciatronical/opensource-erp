@@ -103,7 +103,19 @@
             "empty": "Ei töitä.",
             "waiting": "odottaa",
             "queued": "Työ luotu.",
-            "already": "Työ on jo avoinna."
+            "already": "Työ on jo avoinna.",
+            "run": "Suorita nyt",
+            "selectAll": "Valitse kaikki",
+            "running": "Ajo on jo käynnissä — se hoitaa työt.",
+            "done": "{jobs} työtä valmiina, {pages} sivua kirjoitettu, {errors} virhettä.",
+            "built": "Sivusto rakennettiin uudelleen.",
+            "functions": {
+                "publish_part": "Kirjoita tuotesivu",
+                "publish_all": "Kaikki tuotteet",
+                "remove_part": "Poista tuotesivu",
+                "sync_kit": "Synkronoi paketti",
+                "reconcile_payments": "Täsmäytä maksut"
+            }
         }
     }
 }

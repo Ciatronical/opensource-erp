@@ -103,7 +103,19 @@
             "empty": "Sem tarefas.",
             "waiting": "em espera",
             "queued": "Tarefa criada.",
-            "already": "A tarefa já está pendente."
+            "already": "A tarefa já está pendente.",
+            "run": "Executar agora",
+            "selectAll": "Selecionar tudo",
+            "running": "Já há uma execução em curso: ela tratará das tarefas.",
+            "done": "{jobs} tarefas concluídas, {pages} páginas escritas, {errors} erros.",
+            "built": "Site reconstruído.",
+            "functions": {
+                "publish_part": "Escrever página do produto",
+                "publish_all": "Todos os produtos",
+                "remove_part": "Remover página do produto",
+                "sync_kit": "Sincronizar pacote",
+                "reconcile_payments": "Conciliar pagamentos"
+            }
         }
     }
 }

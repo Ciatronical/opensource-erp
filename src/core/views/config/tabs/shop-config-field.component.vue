@@ -29,9 +29,11 @@
             <v-text-field
                 v-model="werte[field.name]"
                 :label="t(field.label)"
-                :type="field.type === 'password' ? 'password' : (field.inputType || 'text')"
-                :placeholder="field.type === 'password' ? t('crm_fields.shopSecretKeep') : undefined"
+                :type="field.type === 'password' && !sichtbar ? 'password' : (field.inputType || 'text')"
+                :placeholder="field.type === 'password' ? t(hinterlegt ? 'crm_fields.shopSecretKeep' : 'crm_fields.shopSecretEmpty') : undefined"
                 :persistent-placeholder="field.type === 'password'"
+                :hint="sichtbar ? t('crm_fields.shopKeyGeneratedHint') : undefined"
+                :persistent-hint="sichtbar"
                 :style="field.fieldstyle"
                 hide-details="auto"
                 density="compact"
@@ -40,6 +42,17 @@
             >
                 <template v-if="field.tooltip" #append-inner>
                     <FeldHilfe :text="t(field.tooltip)" />
+                </template>
+                <!-- Neuen Schlüssel erzeugen: nur beim Shop-Schlüssel, der frei
+                     wählbar ist. Die PayPal-Geheimnisse vergibt PayPal. -->
+                <template v-if="field.generate" #append>
+                    <v-btn
+                        icon="mdi-key-variant"
+                        variant="text"
+                        size="small"
+                        :title="t('crm_fields.shopKeyGenerate')"
+                        @click="schluesselErzeugen"
+                    />
                 </template>
             </v-text-field>
         </v-col>
@@ -88,7 +101,7 @@
 </template>
 
 <script setup>
-import { h } from 'vue'
+import { computed, h, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { VIcon, VTooltip } from 'vuetify/components'
 import { oserpStore } from '@/core/stores/oserp.store.js'
@@ -108,7 +121,40 @@ const props = defineProps({
      * Vorlagensätze etwa liegen im Dateisystem und holt der Tab beim Shop.
      */
     quellen: { type: Object, default: () => ({}) },
+    /**
+     * Schlüssel der Geheimnisse, die hinterlegt sind.
+     *
+     * Ihre Werte liefert das Backend nie aus. Ohne diese Liste stünde an jedem
+     * Passwortfeld "hinterlegt", auch wenn nichts gespeichert ist.
+     */
+    gesetzt: { type: Array, default: () => [] },
 })
+
+/** Ist zu diesem Feld ein Wert gespeichert? */
+const hinterlegt = computed(() => props.gesetzt.includes(props.field.name))
+
+/**
+ * Zeigt den Wert eines Passwortfeldes im Klartext
+ *
+ * Nur nach dem Erzeugen: Der gespeicherte Wert wird ohnehin nie ausgeliefert,
+ * und den frisch erzeugten Schlüssel muss man ablesen können — er gehört auch
+ * in den Reverse-Proxy, wenn einer die Stelle des mitgelieferten übernimmt.
+ */
+const sichtbar = ref(false)
+
+/**
+ * Erzeugt einen neuen Shop-Schlüssel
+ *
+ * 32 Byte aus dem Zufallsgenerator des Browsers, hexadezimal: 64 Zeichen aus
+ * 0-9a-f, die in nginx-Konfigurationen und auf der Kommandozeile keinen Ärger
+ * machen. Gespeichert wird er wie jede andere Änderung an diesem Tab; der
+ * Läufer trägt ihn beim nächsten Lauf in oserp-shop/config.php ein.
+ */
+function schluesselErzeugen() {
+    const bytes = crypto.getRandomValues(new Uint8Array(32))
+    props.werte[props.field.name] = Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('')
+    sichtbar.value = true
+}
 
 /** Auswahlwerte: erst die des Tabs, sonst die der Firmenkonfiguration */
 function auswahl(source) {

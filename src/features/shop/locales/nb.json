@@ -103,7 +103,19 @@
             "empty": "Ingen oppdrag.",
             "waiting": "venter",
             "queued": "Oppdrag opprettet.",
-            "already": "Oppdraget er allerede åpent."
+            "already": "Oppdraget er allerede åpent.",
+            "run": "Kjør nå",
+            "selectAll": "Velg alle",
+            "running": "En kjøring pågår allerede — den tar oppgavene med.",
+            "done": "{jobs} oppgaver utført, {pages} sider skrevet, {errors} feil.",
+            "built": "Nettstedet er bygd på nytt.",
+            "functions": {
+                "publish_part": "Skriv produktside",
+                "publish_all": "Alle produkter",
+                "remove_part": "Fjern produktside",
+                "sync_kit": "Synkroniser pakke",
+                "reconcile_payments": "Avstem betalinger"
+            }
         }
     }
 }

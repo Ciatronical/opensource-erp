@@ -103,7 +103,19 @@
             "empty": "Ülesandeid pole.",
             "waiting": "ootab",
             "queued": "Ülesanne loodud.",
-            "already": "Ülesanne on juba ootel."
+            "already": "Ülesanne on juba ootel.",
+            "run": "Käivita kohe",
+            "selectAll": "Vali kõik",
+            "running": "Töö juba käib — see võtab ülesanded kaasa.",
+            "done": "Tehtud ülesandeid: {jobs}, kirjutatud lehti: {pages}, vigu: {errors}.",
+            "built": "Veebisait ehitati uuesti.",
+            "functions": {
+                "publish_part": "Kirjuta tootelehekülg",
+                "publish_all": "Kõik tooted",
+                "remove_part": "Eemalda tootelehekülg",
+                "sync_kit": "Sünkrooni pakett",
+                "reconcile_payments": "Võrdle makseid"
+            }
         }
     }
 }

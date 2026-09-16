@@ -128,27 +128,51 @@ function shopPathUnder(string $wurzel, string $relativ, bool $anlegen = false): 
 }
 
 /**
- * Wurzel aller Webseiten-Verzeichnisse (settings.ini, nicht aenderbar im ERP)
+ * Wurzel aller Webseiten-Verzeichnisse
  *
+ * Je Mandant, denn jede Firma hat ihre eigene Webseite: Einstellung
+ * shop_sites_dir, aenderbar in der Firmenkonfiguration unter Shop.
+ *
+ * Steht in der settings.ini ebenfalls ein shop_sites_dir, wirkt es als Riegel:
+ * das eingestellte Verzeichnis muss dann darunter liegen. So kann ein
+ * Administrator die Grenze festlegen, ohne dass die Erweiterung ohne
+ * settings.ini unbrauchbar waere.
+ *
+ * @param object $db Company-Datenbankverbindung
  * @return string
- * @throws ApiError SHOP_SITES_DIR_MISSING
+ * @throws ApiError SHOP_SITES_DIR_MISSING, SHOP_SITES_DIR_OUTSIDE_LIMIT
  */
-function shopSitesRoot(): string {
-    $wurzel = defined('OSERP_SHOP_SITES_DIR') ? (string)OSERP_SHOP_SITES_DIR : '';
-    $echt = '' === $wurzel ? false : realpath($wurzel);
+function shopSitesRoot($db): string {
+    // Der leere Fall muss vor realpath() abgefangen werden: realpath('') gibt
+    // das Arbeitsverzeichnis zurueck, und eine nicht gesetzte Einstellung
+    // waere damit stillschweigend das Verzeichnis des Servers.
+    $eingestellt = shopConfigValue($db, 'shop_sites_dir');
+    $echt = '' === $eingestellt ? false : realpath($eingestellt);
 
     if (false === $echt) {
         throw new ApiError(
             'SHOP_SITES_DIR_MISSING',
-            'In der settings.ini fehlt shop_sites_dir oder das Verzeichnis gibt es nicht'
+            "Die Shop-Einstellung '".shopConfigLabel('shop_sites_dir')."' ist nicht gesetzt oder das Verzeichnis gibt es nicht"
         );
     }
+
+    $riegel = defined('OSERP_SHOP_SITES_DIR') ? (string)OSERP_SHOP_SITES_DIR : '';
+    if ('' !== $riegel) {
+        $riegelEcht = realpath($riegel);
+        if (false === $riegelEcht || ($echt !== $riegelEcht && !str_starts_with($echt.'/', $riegelEcht.'/'))) {
+            throw new ApiError(
+                'SHOP_SITES_DIR_OUTSIDE_LIMIT',
+                'Das eingestellte Verzeichnis liegt nicht unterhalb von shop_sites_dir aus der settings.ini: '.$echt
+            );
+        }
+    }
+
     return $echt;
 }
 
 /** Verzeichnis des Hugo-Projekts dieses Mandanten */
 function shopSiteDir($db, bool $anlegen = false): string {
-    return shopPathUnder(shopSitesRoot(), shopConfigValue($db, 'shop_site_dir'), $anlegen);
+    return shopPathUnder(shopSitesRoot($db), shopConfigValue($db, 'shop_site_dir'), $anlegen);
 }
 
 /** Zielverzeichnis der Inhaltsdateien */
@@ -673,20 +697,31 @@ function shopQueueJob($db, string $funktion, string $partnumber = '', ?string $p
  *
  * @param object $db Company-Datenbankverbindung
  * @param int $limit Hoechstzahl
+ * @param array|null $nurIds nur diese Auftragsnummern, null = alle offenen
  * @return array
  */
-function shopOpenJobs($db, int $limit = 500): array {
+function shopOpenJobs($db, int $limit = 500, ?array $nurIds = null): array {
     // Nur die eigenen Funktionen: die Tabelle teilt sich OSERP mit dem Laeufer
     // der Bridge, und jeder der beiden vermerkt fremde Auftraege sonst als
     // Fehler.
+    // Leere Auswahl heißt "alle offenen". NULLIF haelt den leeren Fall aus
+    // der Umwandlung heraus: string_to_array('', ',')::int[] scheiterte sonst.
+    $ids = null === $nurIds ? '' : implode(',', array_map('intval', $nurIds));
+
     return $db->getAll(
         "SELECT id, function, partnumber, param
            FROM batchjob_hugoshop
           WHERE result IS NULL
             AND function = ANY(string_to_array(:funktionen, ','))
+            AND ('' = :ids_alle OR id = ANY(string_to_array(NULLIF(:ids, ''), ',')::int[]))
           ORDER BY id
           LIMIT :limit",
-        [':limit' => $limit, ':funktionen' => implode(',', shopJobFunctions())]
+        [
+            ':limit'      => $limit,
+            ':funktionen' => implode(',', shopJobFunctions()),
+            ':ids_alle'   => $ids,
+            ':ids'        => $ids,
+        ]
     );
 }
 
@@ -741,13 +776,14 @@ function shopRemovePage($db, string $dateiname): bool {
  * @param object $db Company-Datenbankverbindung
  * @param callable|null $melden Fortschritt, bekommt je eine Zeile Text
  * @param int $limit Hoechstzahl Auftraege
+ * @param array|null $nurIds nur diese Auftragsnummern, null = alle offenen
  * @return array jobs, seiten, entfernt, fehler, kit (Änderungen am Webseiten-Paket)
  */
-function shopRunJobs($db, ?callable $melden = null, int $limit = 500): array {
+function shopRunJobs($db, ?callable $melden = null, int $limit = 500, ?array $nurIds = null): array {
     $sagen = $melden ?? function (string $zeile) {};
     $bilanz = ['jobs' => 0, 'seiten' => 0, 'entfernt' => 0, 'fehler' => 0, 'kit' => 0];
 
-    foreach (shopOpenJobs($db, $limit) as $auftrag) {
+    foreach (shopOpenJobs($db, $limit, $nurIds) as $auftrag) {
         $id = (int)$auftrag['id'];
         $bilanz['jobs']++;
 
@@ -839,6 +875,166 @@ function shopRunJobs($db, ?callable $melden = null, int $limit = 500): array {
             $sagen('Auftrag '.$id.' fehlgeschlagen: '.$e->getMessage());
             shopJobResult($db, $id, 'Fehler: '.$e->getMessage());
         }
+    }
+
+    return $bilanz;
+}
+
+// ── Sperre und Lauf ──
+//
+// Aufträge, Paket und Webseite fasst immer nur einer an: der Läufer im Cron
+// und "Jetzt ausführen" im Admin-Panel. Zwei gleichzeitige Läufe würden
+// denselben Auftrag doppelt erledigen, sich im Paket die Dateien wegräumen
+// und — am teuersten — zweimal bauen: der Bau löscht das ausgelieferte
+// Verzeichnis.
+
+/**
+ * Nimmt die Sperre für die Veröffentlichung
+ *
+ * Eine Beratungssperre (advisory lock) in der Datenbank des Mandanten. Sie
+ * gilt über Prozesse, Benutzer und Rechner hinweg — anders als die Datei in
+ * backend/tmp, die nur zwei Läufer auf demselben Rechner auseinanderhält.
+ * Gesperrt wird dabei weder Tabelle noch Zeile: wer diesen Schlüssel nicht
+ * anfragt, merkt nichts davon.
+ *
+ * Der Schlüssel ist zweiteilig, damit er niemandem sonst in die Quere kommt.
+ * Jeder Mandant hat seine eigene Datenbank, und Beratungssperren gelten je
+ * Datenbank — Mandanten berühren sich also nicht.
+ *
+ * PHP-FPM hält die Verbindung über die Anfrage hinaus offen
+ * (PDO::ATTR_PERSISTENT), und die Sperre hängt an der Verbindung, nicht an
+ * der Anfrage. Deshalb gibt sie ein Aufräumer beim Beenden frei, falls der
+ * reguläre Weg ausfällt.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @return bool false, wenn schon jemand arbeitet
+ */
+function shopPublishLock($db): bool {
+    static $aufraeumerAngemeldet = false;
+
+    $zeile = $db->getOne("SELECT pg_try_advisory_lock(hashtext('oserp'), hashtext('shop_publish')) AS genommen");
+    $genommen = in_array($zeile['genommen'] ?? null, [true, 't', '1', 1], true);
+
+    if ($genommen && !$aufraeumerAngemeldet) {
+        $aufraeumerAngemeldet = true;
+        register_shutdown_function(static function () use ($db) { shopPublishUnlock($db); });
+    }
+
+    return $genommen;
+}
+
+/**
+ * Gibt die Sperre frei
+ *
+ * Mehrfach aufrufbar: hält die Verbindung sie nicht mehr, meldet PostgreSQL
+ * das nur zurück. Ist die Verbindung schon zu, ist die Sperre ohnehin weg.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @return void
+ */
+function shopPublishUnlock($db): void {
+    try {
+        $db->getOne("SELECT pg_advisory_unlock(hashtext('oserp'), hashtext('shop_publish')) AS frei");
+    } catch (Throwable $e) {
+        // Verbindung fort, Sperre fort — nichts zu tun
+    }
+}
+
+/**
+ * Ein vollständiger Lauf: Aufträge, Paket, Kategorieübersicht, Bau
+ *
+ * Dieselbe Reihenfolge für beide Wege, den Läufer und das Admin-Panel. Wer
+ * die Sperre nicht bekommt, tut nichts und meldet das — der laufende Prozess
+ * nimmt die offenen Aufträge ohnehin mit.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param callable|null $melden Fortschritt, bekommt je eine Zeile Text
+ * @param int $limit Höchstzahl Aufträge
+ * @param array|null $nurIds nur diese Auftragsnummern, null = alle offenen
+ * @param bool $bauen Webseite bauen, wenn sich etwas geändert hat
+ * @return array gesperrt, jobs, seiten, entfernt, fehler, kit, kategorien, gebaut, bau_code, bau_ausgabe
+ */
+function shopPublishRun($db, ?callable $melden = null, int $limit = 500, ?array $nurIds = null, bool $bauen = true): array {
+    $sagen = $melden ?? function (string $zeile) {};
+    $bilanz = ['gesperrt' => false, 'jobs' => 0, 'seiten' => 0, 'entfernt' => 0, 'fehler' => 0,
+               'kit' => 0, 'kategorien' => 0, 'gebaut' => false, 'bau_code' => 0, 'bau_ausgabe' => []];
+
+    if (!shopPublishLock($db)) {
+        $bilanz['gesperrt'] = true;
+        $sagen('Ein Lauf ist gerade unterwegs — die offenen Aufträge werden dabei miterledigt.');
+        return $bilanz;
+    }
+
+    try {
+        $bilanz = array_merge($bilanz, shopRunJobs($db, $sagen, $limit, $nurIds));
+
+        // Das Paket bei jedem Lauf abgleichen, nicht nur nach neuen Seiten:
+        // beim ersten Lauf entsteht oserp-shop/ überhaupt erst, und nach einem
+        // Update kommt ein neues Bundle an, ohne dass jemand veröffentlicht.
+        try {
+            $kit = shopSyncKit($db);
+            $bilanz['kit'] += shopKitChanges($kit);
+            if (shopKitChanges($kit) > 0) {
+                $sagen(sprintf('Paket abgeglichen: %d kopiert, %d entfernt%s',
+                    $kit['kopiert'], $kit['entfernt'], $kit['config'] ? ', Konfiguration neu' : ''));
+            }
+        } catch (Throwable $e) {
+            $bilanz['fehler']++;
+            $sagen('Paketabgleich fehlgeschlagen: '.$e->getMessage());
+        }
+
+        // Die Kategorieübersicht nur, wenn sich Seiten geändert haben.
+        if ($bilanz['seiten'] + $bilanz['entfernt'] > 0) {
+            try {
+                $übersicht = shopWriteCategoryGroups($db);
+                if ($übersicht['changed']) {
+                    $bilanz['kategorien'] = 1;
+                    $sagen($übersicht['categories'] > 0
+                        ? sprintf('Kategorieübersicht geschrieben: %d Kategorien in %d Gruppen', $übersicht['categories'], $übersicht['groups'])
+                        : 'Kategorieübersicht entfernt: keine Kategorien');
+                }
+            } catch (Throwable $e) {
+                $bilanz['fehler']++;
+                $sagen('Kategorieübersicht fehlgeschlagen: '.$e->getMessage());
+            }
+        }
+
+        $geaendert = $bilanz['seiten'] + $bilanz['entfernt'] + $bilanz['kit'] + $bilanz['kategorien'];
+        // Der Bau-Befehl kommt aus der settings.ini, nicht aus den
+        // Mandanteneinstellungen: er wird auf dem Server ausgefuehrt, und das
+        // soll niemand ueber die Oberflaeche setzen koennen.
+        $befehl = defined('OSERP_SHOP_PUBLISH_COMMAND') ? (string)OSERP_SHOP_PUBLISH_COMMAND : '';
+
+        if ($bauen && $geaendert > 0 && '' !== $befehl) {
+            if (!function_exists('exec')) {
+                $bilanz['fehler']++;
+                $sagen('exec() ist abgeschaltet — die Webseite wurde nicht gebaut.');
+            } else {
+                $verzeichnis = shopSiteDir($db);
+                $sagen('Baue die Webseite in '.$verzeichnis);
+
+                $ausgabe = [];
+                $code = 0;
+                exec('cd '.escapeshellarg($verzeichnis).' && '.$befehl.' 2>&1', $ausgabe, $code);
+                foreach ($ausgabe as $zeile) {
+                    $sagen('  '.$zeile);
+                }
+
+                $bilanz['bau_ausgabe'] = $ausgabe;
+                $bilanz['bau_code'] = $code;
+                $bilanz['gebaut'] = 0 === $code;
+                if (0 === $code) {
+                    $sagen('Webseite gebaut.');
+                } else {
+                    $bilanz['fehler']++;
+                    $sagen('Der Bau der Webseite ist fehlgeschlagen (Rückgabewert '.$code.').');
+                }
+            }
+        } elseif ($bauen && $geaendert > 0 && '' === $befehl) {
+            $sagen('Kein shop_publish_command in der settings.ini — es wurden nur Dateien geschrieben.');
+        }
+    } finally {
+        shopPublishUnlock($db);
     }
 
     return $bilanz;

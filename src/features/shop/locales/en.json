@@ -103,7 +103,19 @@
             "empty": "No jobs.",
             "waiting": "waiting",
             "queued": "Job created.",
-            "already": "Job is already pending."
+            "already": "Job is already pending.",
+            "run": "Run now",
+            "selectAll": "Select all",
+            "running": "A run is already in progress — it will handle the jobs.",
+            "done": "{jobs} jobs done, {pages} pages written, {errors} errors.",
+            "built": "Website rebuilt.",
+            "functions": {
+                "publish_part": "Write product page",
+                "publish_all": "All products",
+                "remove_part": "Remove product page",
+                "sync_kit": "Sync package",
+                "reconcile_payments": "Reconcile payments"
+            }
         }
     }
 }

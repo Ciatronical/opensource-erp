@@ -134,70 +134,21 @@ if (false === $sperre || !flock($sperre, LOCK_EX | LOCK_NB)) {
 try {
     $melden('Mandant '.$mandant['name'].' ('.$mandant['dbname'].')');
 
-    $bilanz = shopRunJobs($db, $melden, (int)($argumente['limit'] ?? 500));
+    // Aufträge, Paket, Kategorieübersicht und Bau stehen in shopPublishRun():
+    // dieselbe Reihenfolge wie beim Knopf „Jetzt ausführen" im Admin-Panel.
+    // Die Sperre dort hält beide Wege auseinander, auch über Rechner hinweg —
+    // die Sperrdatei oben fängt nur zwei Läufer auf diesem Rechner ab.
+    $bilanz = shopPublishRun($db, $melden, (int)($argumente['limit'] ?? 500), null, !isset($argumente['no-build']));
 
-    // Das Webseiten-Paket bei jedem Lauf abgleichen, nicht nur nach neuen
-    // Seiten: beim ersten Lauf entsteht oserp-shop/ überhaupt erst, und nach
-    // einem Update von OpensourceERP kommt ein neues Bundle an, ohne dass
-    // jemand eine Seite veröffentlicht. Stimmt alles, werden nur Prüfsummen
-    // verglichen.
-    try {
-        $kit = shopSyncKit($db);
-        $bilanz['kit'] += shopKitChanges($kit);
-        if (shopKitChanges($kit) > 0) {
-            $melden(sprintf('Paket abgeglichen: %d kopiert, %d entfernt%s',
-                $kit['kopiert'], $kit['entfernt'], $kit['config'] ? ', Konfiguration neu' : ''));
-        }
-    } catch (Throwable $e) {
-        $bilanz['fehler']++;
-        $melden('Paketabgleich fehlgeschlagen: '.$e->getMessage());
-    }
-
-    // Die Kategorieübersicht nur, wenn sich Seiten geändert haben: jede
-    // geschriebene oder entfernte Seite kann eine Kategorie ändern.
-    $bilanz['kategorien'] = 0;
-    if ($bilanz['seiten'] + $bilanz['entfernt'] > 0) {
-        // Eine missratene Übersicht soll den Bau der neuen Seiten nicht aufhalten.
-        try {
-            $uebersicht = shopWriteCategoryGroups($db);
-            if ($uebersicht['changed']) {
-                $bilanz['kategorien'] = 1;
-                $melden($uebersicht['categories'] > 0
-                    ? sprintf('Kategorieübersicht geschrieben: %d Kategorien in %d Gruppen', $uebersicht['categories'], $uebersicht['groups'])
-                    : 'Kategorieübersicht entfernt: keine Kategorien');
-            }
-        } catch (Throwable $e) {
-            $bilanz['fehler']++;
-            $melden('Kategorieübersicht fehlgeschlagen: '.$e->getMessage());
-        }
+    if ($bilanz['gesperrt']) {
+        exit(0);
     }
 
     $melden(sprintf('%d Aufträge, %d Seiten geschrieben, %d entfernt, %d Änderungen am Paket, %d Fehler',
         $bilanz['jobs'], $bilanz['seiten'], $bilanz['entfernt'], $bilanz['kit'], $bilanz['fehler']));
-    $geaendert = $bilanz['seiten'] + $bilanz['entfernt'] + $bilanz['kit'] + $bilanz['kategorien'];
 
-    // ── Webseite bauen ──
-
-    $befehl = defined('OSERP_SHOP_PUBLISH_COMMAND') ? (string)OSERP_SHOP_PUBLISH_COMMAND : '';
-
-    if ($geaendert > 0 && '' !== $befehl && !isset($argumente['no-build'])) {
-        $verzeichnis = shopSiteDir($db);
-        $melden('Baue die Webseite in '.$verzeichnis);
-
-        $ausgabe = [];
-        $rueckgabe = 0;
-        exec('cd '.escapeshellarg($verzeichnis).' && '.$befehl.' 2>&1', $ausgabe, $rueckgabe);
-
-        foreach ($ausgabe as $zeile) {
-            $melden('  '.$zeile);
-        }
-        if (0 !== $rueckgabe) {
-            fwrite(STDERR, "Der Bau der Webseite ist fehlgeschlagen (Rückgabewert $rueckgabe).\n");
-            exit(1);
-        }
-        $melden('Webseite gebaut.');
-    } elseif ($geaendert > 0 && '' === $befehl) {
-        $melden('Kein shop_publish_command in der settings.ini — es wurden nur Dateien geschrieben.');
+    if (0 !== $bilanz['bau_code']) {
+        fwrite(STDERR, "Der Bau der Webseite ist fehlgeschlagen (Rückgabewert ".$bilanz['bau_code'].").\n");
     }
 
     exit($bilanz['fehler'] > 0 ? 1 : 0);

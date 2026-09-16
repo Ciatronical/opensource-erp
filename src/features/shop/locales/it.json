@@ -103,7 +103,19 @@
             "empty": "Nessun incarico.",
             "waiting": "in attesa",
             "queued": "Incarico creato.",
-            "already": "L'incarico è già in attesa."
+            "already": "L'incarico è già in attesa.",
+            "run": "Esegui ora",
+            "selectAll": "Seleziona tutto",
+            "running": "Un'esecuzione è già in corso: si occuperà dei lavori.",
+            "done": "{jobs} lavori eseguiti, {pages} pagine scritte, {errors} errori.",
+            "built": "Sito ricostruito.",
+            "functions": {
+                "publish_part": "Scrivi pagina prodotto",
+                "publish_all": "Tutti i prodotti",
+                "remove_part": "Rimuovi pagina prodotto",
+                "sync_kit": "Sincronizza pacchetto",
+                "reconcile_payments": "Riconcilia pagamenti"
+            }
         }
     }
 }

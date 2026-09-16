@@ -89,6 +89,7 @@ function shopConfigLabel(string $key): string {
         'shop_paypal_live_secret'       => 'PayPal Secret (Echtbetrieb)',
         'shop_base_url'                 => 'Adresse der Shop-Webseite',
         'shop_withdrawal_mail_to'       => 'E-Mail-Adresse für Widerrufe',
+        'shop_sites_dir'                => 'Wurzelverzeichnis der Webseiten',
     ];
     return $beschriftung[$key] ?? $key;
 }

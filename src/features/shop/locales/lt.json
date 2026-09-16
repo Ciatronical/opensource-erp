@@ -103,7 +103,19 @@
             "empty": "Užduočių nėra.",
             "waiting": "laukia",
             "queued": "Užduotis sukurta.",
-            "already": "Užduotis jau laukia."
+            "already": "Užduotis jau laukia.",
+            "run": "Vykdyti dabar",
+            "selectAll": "Pažymėti visus",
+            "running": "Vykdymas jau vyksta — jis atliks užduotis.",
+            "done": "Atlikta užduočių: {jobs}, įrašyta puslapių: {pages}, klaidų: {errors}.",
+            "built": "Svetainė sukurta iš naujo.",
+            "functions": {
+                "publish_part": "Rašyti produkto puslapį",
+                "publish_all": "Visi produktai",
+                "remove_part": "Šalinti produkto puslapį",
+                "sync_kit": "Sinchronizuoti paketą",
+                "reconcile_payments": "Suderinti mokėjimus"
+            }
         }
     }
 }

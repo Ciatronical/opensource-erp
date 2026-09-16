@@ -103,7 +103,19 @@
             "empty": "Inga uppdrag.",
             "waiting": "väntar",
             "queued": "Uppdrag skapat.",
-            "already": "Uppdraget är redan öppet."
+            "already": "Uppdraget är redan öppet.",
+            "run": "Kör nu",
+            "selectAll": "Markera alla",
+            "running": "En körning pågår redan — den tar hand om jobben.",
+            "done": "{jobs} jobb klara, {pages} sidor skrivna, {errors} fel.",
+            "built": "Webbplatsen byggdes om.",
+            "functions": {
+                "publish_part": "Skriv produktsida",
+                "publish_all": "Alla produkter",
+                "remove_part": "Ta bort produktsida",
+                "sync_kit": "Synkronisera paket",
+                "reconcile_payments": "Stäm av betalningar"
+            }
         }
     }
 }

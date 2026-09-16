@@ -103,7 +103,19 @@
             "empty": "Ingen opgaver.",
             "waiting": "venter",
             "queued": "Opgave oprettet.",
-            "already": "Opgaven er allerede åben."
+            "already": "Opgaven er allerede åben.",
+            "run": "Kør nu",
+            "selectAll": "Vælg alle",
+            "running": "En kørsel er allerede i gang — den tager opgaverne med.",
+            "done": "{jobs} opgaver udført, {pages} sider skrevet, {errors} fejl.",
+            "built": "Websitet er bygget på ny.",
+            "functions": {
+                "publish_part": "Skriv produktside",
+                "publish_all": "Alle produkter",
+                "remove_part": "Fjern produktside",
+                "sync_kit": "Synkroniser pakke",
+                "reconcile_payments": "Afstem betalinger"
+            }
         }
     }
 }

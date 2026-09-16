@@ -433,6 +433,46 @@ function publishShopAll($data) {
 }
 
 /**
+ * Führt Aufträge sofort aus, statt auf den Läufer zu warten
+ *
+ * Damit lässt sich ohne Cron-Eintrag veröffentlichen. Läuft gerade ein anderer
+ * Lauf — der Cron oder ein zweiter Mitarbeiter —, wird nichts getan und
+ * `running` gemeldet: der laufende Prozess nimmt die offenen Aufträge mit.
+ *
+ * Voraussetzung ist, dass der Webserver im Verzeichnis der Webseite schreiben
+ * und den Bau-Befehl ausführen darf. Sonst bleibt es beim Läufer.
+ *
+ * @param array $data['ids'] Auftragsnummern; leer bedeutet alle offenen
+ * @return void
+ * @testdata {"ids": []}
+ */
+function runShopPublishJobs($data) {
+    permit(['shop_part_edit', 'edit_shop_config'], false);
+    $db = DbhCompany::begin();
+
+    $ids = array_values(array_filter(array_map('intval', (array)($data['ids'] ?? [])), fn($id) => $id > 0));
+
+    // Eine Handvoll Aufträge passt in eine Anfrage; ein Vollbau gehört in den
+    // Läufer. Die Grenze schützt vor einer Anfrage, die ewig läuft.
+    set_time_limit(120);
+
+    $meldungen = [];
+    $bilanz = shopPublishRun($db, function (string $zeile) use (&$meldungen) { $meldungen[] = $zeile; },
+        $ids ? count($ids) : 50, $ids ?: null);
+
+    resultInfo(true, '', [
+        'running'  => $bilanz['gesperrt'],
+        'jobs'     => $bilanz['jobs'],
+        'pages'    => $bilanz['seiten'],
+        'removed'  => $bilanz['entfernt'],
+        'errors'   => $bilanz['fehler'],
+        'kit'      => $bilanz['kit'],
+        'built'    => $bilanz['gebaut'],
+        'messages' => $meldungen,
+    ]);
+}
+
+/**
  * Offene und zuletzt erledigte Aufträge
  *
  * Nur die der Veröffentlichung — die Tabelle teilt sich OSERP mit der Bridge.

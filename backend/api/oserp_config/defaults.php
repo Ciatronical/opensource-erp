@@ -209,19 +209,36 @@ function getDefaults($data) {
     try {
         $db = DbhCompany::begin();
 
+        // Zurueckgehaltene Werte: aag_online_token* sind serverseitiger
+        // Token-Cache, die drei Shop-Geheimnisse wuerden ausreichen, um
+        // Zahlungen abzuwickeln oder den oeffentlichen Shop-Zugang zu
+        // uebernehmen. Sie gehen auch dann nicht an den Client, wenn die
+        // Oberflaeche sie ohnehin leer anzeigen wuerde.
+        //
+        // Damit die Oberflaeche "hinterlegt, leer lassen zum Behalten" von
+        // "noch nichts gesetzt" unterscheiden kann, kommt stattdessen die
+        // Liste der belegten Schluessel mit.
         $result = $db->getOne(
             "SELECT
                 (SELECT row_to_json(d) FROM defaults d LIMIT 1) AS defaults,
                 (SELECT COALESCE(json_object_agg(key, value), '{}') FROM defaults_oserp
-                    WHERE key NOT IN ('aag_online_token', 'aag_online_token_exp')) AS defaults_oserp"
+                    WHERE key NOT IN ('aag_online_token', 'aag_online_token_exp',
+                                      'shop_paypal_live_secret', 'shop_paypal_sandbox_secret',
+                                      'shop_public_key')) AS defaults_oserp,
+                (SELECT COALESCE(json_agg(key), '[]') FROM defaults_oserp
+                    WHERE key IN ('shop_paypal_live_secret', 'shop_paypal_sandbox_secret',
+                                  'shop_public_key')
+                      AND btrim(COALESCE(value, '')) <> '') AS defaults_oserp_set"
         );
 
         $defaults = json_decode($result['defaults'] ?? '{}', true) ?: [];
         $defaults_oserp = json_decode($result['defaults_oserp'] ?? '{}', true) ?: [];
+        $gesetzt = json_decode($result['defaults_oserp_set'] ?? '[]', true) ?: [];
 
         resultInfo(true, '', ['results' => [
             'defaults' => $defaults,
-            'defaults_oserp' => $defaults_oserp
+            'defaults_oserp' => $defaults_oserp,
+            'defaults_oserp_set' => $gesetzt
         ]]);
     } catch (Exception $e) {
         resultInfo(false, 'DATABASE_ERROR', $e->getMessage());

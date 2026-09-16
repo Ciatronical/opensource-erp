@@ -103,7 +103,19 @@
             "empty": "Žádné úlohy.",
             "waiting": "čeká",
             "queued": "Úloha založena.",
-            "already": "Úloha už čeká."
+            "already": "Úloha už čeká.",
+            "run": "Spustit nyní",
+            "selectAll": "Vybrat vše",
+            "running": "Běh už probíhá — úlohy vyřídí on.",
+            "done": "Hotovo úloh: {jobs}, zapsáno stránek: {pages}, chyb: {errors}.",
+            "built": "Web byl znovu sestaven.",
+            "functions": {
+                "publish_part": "Zapsat stránku produktu",
+                "publish_all": "Všechny produkty",
+                "remove_part": "Odstranit stránku produktu",
+                "sync_kit": "Synchronizovat balíček",
+                "reconcile_payments": "Srovnat platby"
+            }
         }
     }
 }

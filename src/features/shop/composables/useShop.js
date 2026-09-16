@@ -74,12 +74,21 @@ export function useShop() {
     /** Offene und zuletzt erledigte Veröffentlichungs-Aufträge */
     const fetchPublishJobs = () => call('getShopPublishJobs')
 
+    /**
+     * Führt Aufträge sofort aus, statt auf den Läufer zu warten
+     *
+     * Leere Liste heisst: alle offenen. Läuft gerade ein anderer Lauf, kommt
+     * `running: true` zurück und es wurde nichts getan.
+     */
+    const runPublishJobs = (ids = []) => call('runShopPublishJobs', { ids })
+
     return {
         loading,
         error,
         publishPart,
         publishAll,
         fetchPublishJobs,
+        runPublishJobs,
         fetchPartShopData,
         savePartShopData,
         deletePartShopData,

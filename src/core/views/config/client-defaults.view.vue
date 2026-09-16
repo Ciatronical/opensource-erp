@@ -175,6 +175,7 @@
                             :is="currentTabComponent"
                             :defaults="['crm','lxcars','shop','anpr','ai_health','employees'].includes(activeTab) ? undefined : defaults"
                             :crm-defaults="['crm','lxcars','shop','anpr','bank','features','ai_health'].includes(activeTab) ? crmDefaults : undefined"
+                            :crm-secrets="activeTab === 'shop' ? crmSecrets : undefined"
                             :search-query="searchQuery"
                             :open-panel="activeTab === 'add' ? pendingPanel : undefined"
                             :extensions="activeTab === 'features' ? availableExtensions : undefined"
@@ -397,6 +398,15 @@ const activeTab = ref('overview');
 const searchQuery = ref('');
 const defaults = ref({});
 const crmDefaults = ref({});
+
+/**
+ * Welche Geheimnisse hinterlegt sind
+ *
+ * Ihre Werte liefert das Backend nicht aus. Die Oberfläche muss aber
+ * unterscheiden können zwischen "hinterlegt, leer lassen zum Behalten" und
+ * "noch nichts gesetzt" — dafür kommt diese Liste der belegten Schlüssel.
+ */
+const crmSecrets = ref([]);
 const saving = ref(false);
 const lastSaved = ref(null); // Zeitpunkt der letzten erfolgreichen Speicherung
 
@@ -787,6 +797,7 @@ async function loadConfig() {
             const result = response.data.payload?.results || {};
             defaults.value = result.defaults || {};
             crmDefaults.value = result.defaults_oserp || {};
+            crmSecrets.value = result.defaults_oserp_set || [];
         } else {
             console.error('getDefaults fehlgeschlagen:', response.data);
             defaults.value = {};

@@ -103,7 +103,19 @@
             "empty": "没有任务。",
             "waiting": "等待中",
             "queued": "任务已创建。",
-            "already": "任务已在队列中。"
+            "already": "任务已在队列中。",
+            "run": "立即执行",
+            "selectAll": "全选",
+            "running": "已有一次执行在进行中，任务会由它处理。",
+            "done": "已完成 {jobs} 个任务，写入 {pages} 个页面，{errors} 个错误。",
+            "built": "网站已重新生成。",
+            "functions": {
+                "publish_part": "写入产品页",
+                "publish_all": "全部产品",
+                "remove_part": "删除产品页",
+                "sync_kit": "同步套件",
+                "reconcile_payments": "对账付款"
+            }
         }
     }
 }

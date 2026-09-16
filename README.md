@@ -324,6 +324,8 @@ Danach startet der SSE-Server automatisch beim Systemstart. Status prüfen: `pm2
 Beim ersten Aufruf im Browser wird automatisch der Setup-Wizard gestartet.
 Dort werden die Datenbank-Zugangsdaten eingegeben und eine `settings.ini` angelegt.
 
+Alle Abschnitte und Schlüssel dieser Datei: [docs/settings-ini.md](docs/settings-ini.md).
+
 ---
 
 ## Installation mit Docker

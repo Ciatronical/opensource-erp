@@ -15,8 +15,9 @@
 // angelegt hat.
 //
 // Hervorgegangen aus web/oserp/einstellungen-uebernehmen.php der Bridge,
-// ergänzt um die Einstellungen der Veröffentlichung: Webseiten-Verzeichnis
-// (relativ zu shop_sites_dir aus der settings.ini) und Inhaltsordner.
+// ergänzt um die Einstellungen der Veröffentlichung: Wurzelverzeichnis der
+// Webseiten, Verzeichnis dieser Webseite und Inhaltsordner. Alle drei ergeben
+// sich aus dem Pfad der bridge-config.
 //
 // Die PayPal-Zugangsdaten kommen aus der passwd.php, und zwar BEIDE Paare:
 // dort steht eine Weiche auf $PAYPAL_SANDBOX, in OpensourceERP stehen Test-
@@ -31,8 +32,7 @@
 //
 // Die config.php der Instanz definiert DB_HOST, DB_NAME und weitere
 // Konstanten, die auch OpensourceERP verwendet. Das Skript lädt deshalb die
-// Konfiguration von OpensourceERP nicht, sondern liest aus der settings.ini
-// nur shop_sites_dir.
+// Konfiguration von OpensourceERP gar nicht.
 
 if ('cli' !== PHP_SAPI) {
     fwrite(STDERR, "Nur auf der Kommandozeile.\n");
@@ -125,25 +125,16 @@ function wahrheit(string $name) {
 }
 
 /**
- * Webseiten-Verzeichnis relativ zu shop_sites_dir
+ * Wurzel der Webseiten und Name dieser Webseite
  *
- * Die bridge-config liegt im Verzeichnis der Webseite.
+ * Die bridge-config liegt im Verzeichnis der Webseite, und darüber liegt die
+ * Wurzel — dort, wo auch die übrigen Instanzen liegen.
  *
- * @return array Pfad oder null, dazu der Grund, wenn er fehlt
+ * @return array Wurzel und Name
  */
 function webseitenVerzeichnis(string $bridgeConfig): array {
     $webseite = realpath(dirname(realpath($bridgeConfig)));
-    $ini = @parse_ini_file(__DIR__.'/../backend/config/settings.ini', true) ?: [];
-    $wurzel = (string)($ini['system']['shop_sites_dir'] ?? '');
-    $wurzelEcht = '' === $wurzel ? false : realpath($wurzel);
-
-    if (false === $wurzelEcht) {
-        return [null, 'shop_sites_dir fehlt in der settings.ini oder das Verzeichnis gibt es nicht'];
-    }
-    if (!str_starts_with($webseite.'/', $wurzelEcht.'/') || $webseite === $wurzelEcht) {
-        return [null, "die Webseite $webseite liegt nicht unter shop_sites_dir ($wurzelEcht)"];
-    }
-    return [substr($webseite, strlen($wurzelEcht) + 1), ''];
+    return [dirname($webseite), basename($webseite)];
 }
 
 /**
@@ -167,7 +158,7 @@ function inhaltsordner($pfad, string $bridgeConfig): ?string {
 }
 
 $paypal = paypalPaare($verzeichnis);
-[$siteDir, $siteGrund] = webseitenVerzeichnis($verzeichnis);
+[$sitesDir, $siteDir] = webseitenVerzeichnis($verzeichnis);
 
 $zuordnung = [
     'shop_contact_login'                    => wert('KIVI_SHOP_CONTACT_LOGIN'),
@@ -197,6 +188,7 @@ $zuordnung = [
     'shop_search_weighting'                 => wert('HUGOSHOP_SEARCH_WEIGHTING'),
     'shop_invoice_mail_subject'             => wert('KIVI_INVOICE_MAIL_SUBJECT'),
     'shop_withdrawal_mail_to'               => wert('KIVI_WIDERRUF_MAIL_TO'),
+    'shop_sites_dir'                        => $sitesDir,
     'shop_site_dir'                         => $siteDir,
     'shop_content_dir'                      => inhaltsordner(wert('KIVI_CONTENT_PATH'), $verzeichnis),
 ];
@@ -209,9 +201,7 @@ echo "--   shop_public_key      — neu vergeben; der Läufer trägt ihn in oser
 echo "--   shop_backend_url     — Adresse von OpensourceERP für Proxy und 404-Seite, z.B. https://erp.example/shop/\n";
 echo "--   shop_template_set    — eigener Vorlagensatz der Instanz, falls es einen gibt\n";
 echo "--   shop_allowed_origins — nur ohne Proxy nötig\n";
-if (null === $siteDir) {
-    echo "--   shop_site_dir        — $siteGrund\n";
-}
+echo "--   shop_publish_command — der Hugo-Aufruf, in die settings.ini von OpensourceERP\n";
 echo "\n";
 
 foreach ($zuordnung as $schluessel => $w) {

@@ -103,7 +103,19 @@
             "empty": "Brak zadań.",
             "waiting": "czeka",
             "queued": "Zadanie utworzone.",
-            "already": "Zadanie już czeka."
+            "already": "Zadanie już czeka.",
+            "run": "Uruchom teraz",
+            "selectAll": "Zaznacz wszystko",
+            "running": "Przebieg już trwa — zajmie się zadaniami.",
+            "done": "Wykonano zadań: {jobs}, zapisano stron: {pages}, błędów: {errors}.",
+            "built": "Witryna została przebudowana.",
+            "functions": {
+                "publish_part": "Zapisz stronę produktu",
+                "publish_all": "Wszystkie produkty",
+                "remove_part": "Usuń stronę produktu",
+                "sync_kit": "Zsynchronizuj pakiet",
+                "reconcile_payments": "Uzgodnij płatności"
+            }
         }
     }
 }

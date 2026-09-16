@@ -91,12 +91,13 @@
                             :field="unterfeld"
                             :werte="crmDefaults"
                             :quellen="quellen"
+                            :gesetzt="crmSecrets"
                         />
                     </v-card-text>
                 </v-card>
 
                 <!-- Einzelfeld -->
-                <ShopConfigField v-else :field="field" :werte="crmDefaults" :quellen="quellen" />
+                <ShopConfigField v-else :field="field" :werte="crmDefaults" :quellen="quellen" :gesetzt="crmSecrets" />
             </template>
         </template>
     </v-container>
@@ -114,6 +115,11 @@ const props = defineProps({
     crmDefaults: {
         type: Object,
         required: true
+    },
+    /** Schlüssel der Geheimnisse, die hinterlegt sind — ihre Werte kommen nie mit */
+    crmSecrets: {
+        type: Array,
+        default: () => []
     }
 })
 

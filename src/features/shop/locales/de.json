@@ -103,7 +103,19 @@
             "empty": "Keine Aufträge.",
             "waiting": "wartet",
             "queued": "Auftrag angelegt.",
-            "already": "Auftrag ist bereits offen."
+            "already": "Auftrag ist bereits offen.",
+            "run": "Jetzt ausführen",
+            "selectAll": "Alle auswählen",
+            "running": "Ein Lauf ist gerade unterwegs — die Aufträge werden dabei miterledigt.",
+            "done": "{jobs} Aufträge erledigt, {pages} Seiten geschrieben, {errors} Fehler.",
+            "built": "Webseite neu gebaut.",
+            "functions": {
+                "publish_part": "Produktseite schreiben",
+                "publish_all": "Alle Produkte",
+                "remove_part": "Produktseite entfernen",
+                "sync_kit": "Paket abgleichen",
+                "reconcile_payments": "Zahlungen abgleichen"
+            }
         }
     }
 }

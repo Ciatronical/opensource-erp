@@ -9,7 +9,10 @@ const shopDefaultsConfig = [
 
     // Wird beim Laden bewusst nicht mitgeliefert (siehe getCompanyConfig).
     // Ein leer gelassenes Feld lässt den gespeicherten Wert unangetastet.
-    { name: "shop_public_key", type: "password", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopPublicKey", tooltip: "crm_fields.shopPublicKey_help" },
+    // generate: Knopf, der einen neuen Schlüssel erzeugt und ihn anzeigt —
+    // er gehört auch in den Reverse-Proxy, falls einer den mitgelieferten
+    // ersetzt.
+    { name: "shop_public_key", type: "password", size: 60, fieldstyle: "max-width: 60ch", generate: true, label: "crm_fields.shopPublicKey", tooltip: "crm_fields.shopPublicKey_help" },
     { name: "shop_allowed_origins", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopAllowedOrigins", tooltip: "crm_fields.shopAllowedOrigins_help" },
     { name: "shop_cart_lifetime_hours", type: "input", inputType: "number", size: 5, fieldstyle: "max-width: 15ch", label: "crm_fields.shopCartLifetimeHours", tooltip: "crm_fields.shopCartLifetimeHours_help" },
     { name: "shop_context_lifetime_hours", type: "input", inputType: "number", size: 5, fieldstyle: "max-width: 15ch", label: "crm_fields.shopContextLifetimeHours", tooltip: "crm_fields.shopContextLifetimeHours_help" },
@@ -96,6 +99,13 @@ const shopDefaultsConfig = [
     { name: "shop_publish", type: "headline", label: "crm_fields.shopPublish" },
     { name: "shop_backend_url", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopBackendUrl", tooltip: "crm_fields.shopBackendUrl_help" },
     { name: "shop_template_set", type: "dynamic-select", source: "shopTemplateSets", itemTitle: "title", itemValue: "name", fieldstyle: "max-width: 60ch", label: "crm_fields.shopTemplateSet", tooltip: "crm_fields.shopTemplateSet_help" },
+
+    // Die Wurzel steht hier, weil jede Firma ihre eigene Webseite hat. Trägt
+    // ein Administrator sie zusätzlich in die settings.ini ein, wirkt der
+    // Eintrag dort als Riegel: die eingestellte Wurzel muss darunter liegen.
+    // Der Bau-Befehl steht allein in der settings.ini — er läuft auf dem
+    // Server und gehört nicht in die Oberfläche.
+    { name: "shop_sites_dir", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopSitesDir", tooltip: "crm_fields.shopSitesDir_help" },
     { name: "shop_site_dir", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopSiteDir", tooltip: "crm_fields.shopSiteDir_help" },
     { name: "shop_content_dir", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopContentDir", tooltip: "crm_fields.shopContentDir_help" },
     { name: "shop_images_dir", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopImagesDir", tooltip: "crm_fields.shopImagesDir_help" },

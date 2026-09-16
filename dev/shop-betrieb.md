@@ -27,10 +27,18 @@ OpensourceERP schreibt dort nur in das Verzeichnis der Produktseiten und nach
 Der Ablauf steht ausführlich in `shop-bridge-abloesung.md` unter Stufe D. Kurz:
 
 1. Erweiterung `shop` beim Mandanten aktivieren, Schema-Update laufen lassen.
-2. `settings.ini`: `shop_sites_dir` (Verzeichnis über den Webseiten) und
-   `shop_publish_command` (Bau-Befehl, etwa der Hugo-Aufruf).
-3. Einstellungen im Admin-Panel: Shop-Schlüssel, `shop_backend_url`, Pfade,
-   Vorlagensatz. Die Shop-Übersicht zeigt, was noch fehlt.
+2. Einstellungen in der Firmenkonfiguration unter Shop: Shop-Schlüssel,
+   `shop_backend_url`, Wurzelverzeichnis der Webseiten, Verzeichnis dieser
+   Webseite, Inhaltsordner, Vorlagensatz. Die Shop-Übersicht zeigt, was noch
+   fehlt.
+
+   Den **Shop-Schlüssel** erzeugt der Knopf neben dem Feld: 32 zufällige Byte,
+   hexadezimal. Er wird dabei angezeigt, weil ein Reverse-Proxy im Webserver
+   denselben Wert braucht; der mitgelieferte Proxy bekommt ihn vom Läufer über
+   `oserp-shop/config.php`. Der Schlüssel unterscheidet die Mandanten — zwei
+   Firmen dürfen nicht denselben haben.
+3. `settings.ini`: `shop_publish_command`, der Befehl, der die Webseite baut.
+   Ohne ihn werden nur Dateien geschrieben.
 4. `php tools/shop-publish.php --client=<id>` einmal von Hand — legt
    `<webseite>/oserp-shop/` samt `config.php` an.
 5. In der `config.json` der Instanz die Mounts auf `oserp-shop/` setzen.
@@ -54,8 +62,19 @@ Ein Lauf tut der Reihe nach:
 4. **Bauen**, wenn sich etwas geändert hat und `shop_publish_command` gesetzt
    ist.
 
-Je Mandant läuft nur einer: eine Sperrdatei in `backend/tmp/`. Ein zweiter Lauf
-meldet das und endet ohne Fehler. Der Rückgabewert ist 1, sobald ein Auftrag
+Je Mandant läuft nur einer. Zwei Sperren sichern das:
+
+- eine **Sperrdatei** in `backend/tmp/` — sie fängt zwei Läufer auf demselben
+  Rechner ab, bevor überhaupt eine Verbindung aufgebaut wird;
+- eine **Beratungssperre in der Datenbank** des Mandanten
+  (`pg_try_advisory_lock`) — sie gilt über Prozesse, Benutzer und Rechner
+  hinweg und hält damit auch den Läufer und den Knopf „Jetzt ausführen"
+  auseinander. Gesperrt wird dabei weder Tabelle noch Zeile; der übrige
+  Betrieb merkt nichts davon. Wer sie nicht bekommt, tut nichts und meldet
+  das.
+
+Ein zweiter Lauf endet damit ohne Fehler, nachdem er das gemeldet hat. Der
+Rückgabewert ist 1, sobald ein Auftrag
 fehlgeschlagen ist — so meldet sich der Cron. Beispiel:
 
 ```
@@ -65,9 +84,10 @@ fehlgeschlagen ist — so meldet sich der Cron. Beispiel:
 
 ## Aufträge
 
-Die Anwendung schreibt nur Aufträge; geschrieben und gebaut wird auf der
-Kommandozeile. Sie stehen in `batchjob_hugoshop`, offen ist, was kein Ergebnis
-hat. Die Shop-Übersicht zeigt die offenen und die zuletzt erledigten.
+Die Anwendung legt Aufträge an; abgearbeitet werden sie vom Läufer oder auf
+Knopfdruck in der Shop-Übersicht. Sie stehen in `batchjob_hugoshop`, offen ist,
+was kein Ergebnis hat. Die Übersicht zeigt die offenen und die zuletzt
+erledigten.
 
 | Auftrag | Angelegt von | Wirkung |
 | --- | --- | --- |
@@ -78,6 +98,24 @@ hat. Die Shop-Übersicht zeigt die offenen und die zuletzt erledigten.
 | `reconcile_payments` | Läufer mit `--reconcile-payments` | Schwebende PayPal-Zahlungen nachfragen |
 
 Ein Ergebnis beginnt mit `ok:` oder `Fehler:`; Fehler stehen rot in der Liste.
+
+### Sofort ausführen, ohne Cron
+
+In der Auftragsliste lässt sich jede offene Zeile ankreuzen, „Alle auswählen"
+nimmt alle offenen, und „Jetzt ausführen" arbeitet die Auswahl in derselben
+Reihenfolge ab wie der Läufer: Aufträge, Paket, Kategorieübersicht, Bau. Ein
+Cron-Eintrag ist damit nicht zwingend nötig.
+
+Zwei Voraussetzungen, sonst bleibt es beim Läufer:
+
+- Der Webserver-Benutzer muss im Verzeichnis der Webseite schreiben und den
+  Bau-Befehl ausführen dürfen.
+- Die Anfrage hat eine Zeitgrenze von zwei Minuten. Eine Handvoll Seiten passt
+  hinein, ein Vollbau über alle Artikel nicht — `publish_all` gehört in den
+  Läufer.
+
+Läuft gerade der Cron, meldet die Oberfläche das und tut nichts: Der laufende
+Lauf nimmt die offenen Aufträge ohnehin mit.
 
 ## Vorlagensätze
 
@@ -104,11 +142,20 @@ Oberfläche, nicht den Schlüssel.
 | Verkauf | `shop_contact_login`, `shop_target_account`, `shop_incoming_account`, `shop_standard_taxzone`, `shop_standard_currency`, `shop_tax_included`, `shop_active_price_source`, `shop_shipping_partnumber`, `shop_free_shipping_from` |
 | Zahlung | Bankverbindung (`shop_payment_*`), PayPal (`shop_paypal_*`) |
 | Adressen der Webseite | `shop_base_url`, `shop_products_link`, `shop_category_link`, `shop_images_link`, `shop_thumbnails_link`, `shop_downloads_link` |
-| Veröffentlichung | `shop_template_set`, `shop_site_dir`, `shop_content_dir`, `shop_images_dir`, `shop_thumbnails_dir`, `shop_thumbnail_size` |
+| Veröffentlichung | `shop_template_set`, `shop_sites_dir`, `shop_site_dir`, `shop_content_dir`, `shop_images_dir`, `shop_thumbnails_dir`, `shop_thumbnail_size` |
 | Sonstiges | `shop_search_weighting`, `shop_invoice_mail_subject`, `shop_withdrawal_mail_to` |
 
-Die Pfade sind relativ und müssen unterhalb von `shop_sites_dir` liegen; diese
-Wurzel steht in der `settings.ini` und ist im ERP nicht änderbar.
+Wurzelverzeichnis und Bau-Befehl stehen hier, weil jede Firma ihre eigene
+Webseite hat. Die übrigen Pfade sind relativ und müssen unterhalb von
+`shop_sites_dir` liegen.
+
+**In der `settings.ini`** stehen dagegen zwei Dinge, die nicht über die
+Oberfläche gesetzt werden sollen:
+
+| Eintrag unter `[system]` | Wirkung |
+| --- | --- |
+| `shop_publish_command` | Der Befehl, der die Webseite baut. Er läuft auf dem Server, deshalb allein hier. Ohne ihn werden nur Dateien geschrieben. |
+| `shop_sites_dir` | Nur als Grenze, freiwillig: ist er gesetzt, muss das eingestellte Wurzelverzeichnis darunter liegen, sonst `SHOP_SITES_DIR_OUTSIDE_LIMIT`. |
 
 ## Wiederkehrende Aufgaben
 
@@ -134,5 +181,6 @@ Wurzel steht in der `settings.ini` und ist im ERP nicht änderbar.
 | 403 `SHOP_NOT_AUTHORIZED` | Der Schlüssel im Proxy passt nicht zu `shop_public_key` |
 | Warenkorb bleibt leer | Der Aufruf kommt nicht von derselben Adresse — Proxy einrichten oder `shop_allowed_origins` setzen |
 | Seiten entstehen nicht | `shop_sites_dir` und `shop_site_dir` prüfen, Schreibrechte, Ausgabe des Läufers lesen |
+| `SHOP_SITES_DIR_OUTSIDE_LIMIT` | Die `settings.ini` grenzt das Wurzelverzeichnis ein, die Einstellung liegt außerhalb |
 | „Ein Lauf ist noch unterwegs" | Sperrdatei in `backend/tmp/` — ein vorheriger Lauf hängt |
 | Neue Einstellungen fehlen nach einem Update | Das Schema-Update beim Login prüft Prüfsummen, siehe `shop-veroeffentlichung.md` |

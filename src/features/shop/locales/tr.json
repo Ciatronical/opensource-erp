@@ -103,7 +103,19 @@
             "empty": "Görev yok.",
             "waiting": "bekliyor",
             "queued": "Görev oluşturuldu.",
-            "already": "Görev zaten bekliyor."
+            "already": "Görev zaten bekliyor.",
+            "run": "Şimdi çalıştır",
+            "selectAll": "Tümünü seç",
+            "running": "Zaten bir çalışma sürüyor — işleri o halledecek.",
+            "done": "{jobs} iş tamamlandı, {pages} sayfa yazıldı, {errors} hata.",
+            "built": "Web sitesi yeniden oluşturuldu.",
+            "functions": {
+                "publish_part": "Ürün sayfasını yaz",
+                "publish_all": "Tüm ürünler",
+                "remove_part": "Ürün sayfasını kaldır",
+                "sync_kit": "Paketi eşitle",
+                "reconcile_payments": "Ödemeleri mutabık kıl"
+            }
         }
     }
 }

@@ -103,7 +103,19 @@
             "empty": "Sin trabajos.",
             "waiting": "en espera",
             "queued": "Trabajo creado.",
-            "already": "El trabajo ya está pendiente."
+            "already": "El trabajo ya está pendiente.",
+            "run": "Ejecutar ahora",
+            "selectAll": "Seleccionar todo",
+            "running": "Ya hay una ejecución en curso: se encargará de los trabajos.",
+            "done": "{jobs} trabajos realizados, {pages} páginas escritas, {errors} errores.",
+            "built": "Sitio web reconstruido.",
+            "functions": {
+                "publish_part": "Escribir página de producto",
+                "publish_all": "Todos los productos",
+                "remove_part": "Eliminar página de producto",
+                "sync_kit": "Sincronizar paquete",
+                "reconcile_payments": "Conciliar pagos"
+            }
         }
     }
 }

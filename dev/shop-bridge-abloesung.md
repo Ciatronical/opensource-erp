@@ -422,22 +422,23 @@ mitbringt.
 
 `tools/shop-bridge-settings.php`, hervorgegangen aus
 `web/oserp/einstellungen-uebernehmen.php`, gibt die Einstellungen einer Instanz
-als SQL aus. Neu dabei: `shop_site_dir` (relativ zu `shop_sites_dir` aus der
-settings.ini) und `shop_content_dir` (aus `KIVI_CONTENT_PATH`). Die
+als SQL aus. Neu dabei: `shop_sites_dir` und `shop_site_dir` (aus dem Pfad der
+`bridge-config`) und `shop_content_dir` (aus `KIVI_CONTENT_PATH`). Die
 `config.php` der Instanz definiert `DB_HOST` und weitere Konstanten, die auch
-OpensourceERP verwendet; das Skript lädt deshalb nicht die Konfiguration von
-OpensourceERP, sondern liest aus der settings.ini nur `shop_sites_dir`.
+OpensourceERP verwendet; das Skript lädt deshalb die Konfiguration von
+OpensourceERP gar nicht.
 
 ### Umstellen auf dem Server
 
 1. Erweiterung `shop` beim Mandanten aktiv, Schema-Update gelaufen.
 2. `php tools/shop-bridge-settings.php <webseite>/bridge-config` ausgeben,
    lesen, einspielen. Die Ausgabe enthält die PayPal-Zugangsdaten.
-3. Im Admin-Panel setzen: Shop-Schlüssel, Adresse von OpensourceERP
-   (`shop_backend_url`, die Adresse von `backend/shop/`), Vorlagensatz
-   `sonic24`. Die Shop-Übersicht zeigt, was noch fehlt.
-4. settings.ini: `shop_sites_dir` (Verzeichnis über den Webseiten) und
-   `shop_publish_command` (der Hugo-Aufruf, wie in `publish/run.php`).
+3. In der Firmenkonfiguration unter Shop setzen: Shop-Schlüssel, Adresse von
+   OpensourceERP (`shop_backend_url`, die Adresse von `backend/shop/`),
+   Wurzelverzeichnis und Verzeichnis der Webseite, Vorlagensatz `sonic24`. Die
+   Shop-Übersicht zeigt, was noch fehlt.
+4. `settings.ini`: `shop_publish_command` (der Hugo-Aufruf, wie in
+   `publish/run.php`); auf Wunsch `shop_sites_dir` als Grenze.
 5. `php tools/shop-publish.php --client=<id>` einmal von Hand: legt
    `oserp-shop/` samt `config.php` an. Gebaut wird dabei noch mit den alten
    Mounts.
@@ -489,7 +490,7 @@ veröffentlicht wird. Gegeneinander gesperrt sind die beiden Bauten nicht.
   sonic24
 - Übernahme mit einer erfundenen `bridge-config`: Sandbox- und Live-Paar
   getrennt, Anführungszeichen maskiert, `shop_site_dir` und `shop_content_dir`
-  abgeleitet, ohne `shop_sites_dir` ein Hinweis statt eines Werts
+  abgeleitet
 
 Nicht geprüft: auf dem Server, über den Proxy gegen OpensourceERP und mit
 PayPal.

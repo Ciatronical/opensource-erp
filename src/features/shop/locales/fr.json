@@ -103,7 +103,19 @@
             "empty": "Aucune tâche.",
             "waiting": "en attente",
             "queued": "Tâche créée.",
-            "already": "La tâche est déjà en attente."
+            "already": "La tâche est déjà en attente.",
+            "run": "Exécuter maintenant",
+            "selectAll": "Tout sélectionner",
+            "running": "Une exécution est déjà en cours : elle prendra les tâches en charge.",
+            "done": "{jobs} tâches effectuées, {pages} pages écrites, {errors} erreurs.",
+            "built": "Site reconstruit.",
+            "functions": {
+                "publish_part": "Écrire la page produit",
+                "publish_all": "Tous les produits",
+                "remove_part": "Supprimer la page produit",
+                "sync_kit": "Synchroniser le paquet",
+                "reconcile_payments": "Rapprocher les paiements"
+            }
         }
     }
 }

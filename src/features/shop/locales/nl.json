@@ -103,7 +103,19 @@
             "empty": "Geen opdrachten.",
             "waiting": "wacht",
             "queued": "Opdracht aangemaakt.",
-            "already": "Opdracht staat al open."
+            "already": "Opdracht staat al open.",
+            "run": "Nu uitvoeren",
+            "selectAll": "Alles selecteren",
+            "running": "Er loopt al een uitvoering — die handelt de taken af.",
+            "done": "{jobs} taken uitgevoerd, {pages} pagina's geschreven, {errors} fouten.",
+            "built": "Website opnieuw gebouwd.",
+            "functions": {
+                "publish_part": "Productpagina schrijven",
+                "publish_all": "Alle producten",
+                "remove_part": "Productpagina verwijderen",
+                "sync_kit": "Pakket synchroniseren",
+                "reconcile_payments": "Betalingen afstemmen"
+            }
         }
     }
 }

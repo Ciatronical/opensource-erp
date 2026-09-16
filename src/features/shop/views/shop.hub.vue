@@ -86,9 +86,28 @@
             </v-col>
         </v-row>
 
+        <!-- Wege -->
+        <v-row>
+            <v-col cols="12" sm="6" md="4" v-for="ziel in ziele" :key="ziel.name">
+                <v-card
+                    variant="outlined"
+                    hover
+                    @click="router.push({ name: ziel.name })"
+                >
+                    <v-card-item>
+                        <template #prepend>
+                            <v-icon size="28" :icon="ziel.icon" />
+                        </template>
+                        <v-card-title>{{ ziel.titel }}</v-card-title>
+                        <v-card-subtitle>{{ ziel.text }}</v-card-subtitle>
+                    </v-card-item>
+                </v-card>
+            </v-col>
+        </v-row>
+
         <!-- Veröffentlichung: die Anwendung legt nur Aufträge an, geschrieben
              und gebaut wird von tools/shop-publish.php -->
-        <v-card variant="outlined" class="mb-4">
+        <v-card variant="outlined" class="mt-4">
             <v-card-item>
                 <template #prepend>
                     <v-icon icon="mdi-cloud-upload-outline" />
@@ -110,12 +129,44 @@
             </v-card-item>
 
             <v-card-text v-if="auftraege.length">
-                <div class="text-caption text-medium-emphasis mb-1">
-                    {{ t('ShopView.publish.open', { count: offeneAuftraege }) }}
+                <div class="d-flex align-center ga-4 mb-2">
+                    <v-checkbox-btn
+                        :model-value="alleGewaehlt"
+                        :indeterminate="teilsGewaehlt"
+                        :disabled="!offeneIds.length"
+                        :label="t('ShopView.publish.selectAll')"
+                        density="compact"
+                        hide-details
+                        @update:model-value="alleUmschalten"
+                    />
+                    <div class="text-caption text-medium-emphasis">
+                        {{ t('ShopView.publish.open', { count: offeneAuftraege }) }}
+                    </div>
+                    <v-spacer />
+                    <v-btn
+                        color="primary"
+                        variant="tonal"
+                        size="small"
+                        prepend-icon="mdi-play"
+                        :disabled="!auswahl.length"
+                        :loading="laeuft"
+                        @click="ausgewaehlteAusfuehren"
+                    >
+                        {{ t('ShopView.publish.run') }}
+                    </v-btn>
                 </div>
                 <v-table density="compact">
                     <tbody>
                         <tr v-for="auftrag in auftraege" :key="auftrag.id">
+                            <td style="width: 1%">
+                                <v-checkbox-btn
+                                    v-model="auswahl"
+                                    :value="auftrag.id"
+                                    :disabled="!istOffen(auftrag)"
+                                    density="compact"
+                                    hide-details
+                                />
+                            </td>
                             <td style="width: 1%">
                                 <v-icon
                                     size="small"
@@ -124,7 +175,7 @@
                                 />
                             </td>
                             <td class="text-caption text-no-wrap">{{ zeitpunkt(auftrag.itime) }}</td>
-                            <td>{{ auftrag.function }}</td>
+                            <td>{{ auftragsart(auftrag.function) }}</td>
                             <td>{{ auftrag.partnumber }}</td>
                             <td class="text-caption">{{ auftrag.result || t('ShopView.publish.waiting') }}</td>
                         </tr>
@@ -135,25 +186,6 @@
                 {{ t('ShopView.publish.empty') }}
             </v-card-text>
         </v-card>
-
-        <!-- Wege -->
-        <v-row>
-            <v-col cols="12" sm="6" md="4" v-for="ziel in ziele" :key="ziel.name">
-                <v-card
-                    variant="outlined"
-                    hover
-                    @click="router.push({ name: ziel.name })"
-                >
-                    <v-card-item>
-                        <template #prepend>
-                            <v-icon size="28" :icon="ziel.icon" />
-                        </template>
-                        <v-card-title>{{ ziel.titel }}</v-card-title>
-                        <v-card-subtitle>{{ ziel.text }}</v-card-subtitle>
-                    </v-card-item>
-                </v-card>
-            </v-col>
-        </v-row>
 
     </v-container>
 </template>
@@ -173,12 +205,33 @@ const shop = useShop()
 const status = ref(null)
 const auftraege = ref([])
 const veroeffentlicht = ref(false)
+const auswahl = ref([])
+const laeuft = ref(false)
 
 /** Wahrheitswerte kommen je nach Treiber als true oder 't' */
 const istOffen = (auftrag) => auftrag.open === true || auftrag.open === 't'
 const fehlgeschlagen = (auftrag) => String(auftrag.result || '').startsWith('Fehler')
 
+/**
+ * Name der Auftragsart
+ *
+ * Unbekannte Arten stehen roh da: die Auftragstabelle stammt aus der Bridge
+ * und kann Zeilen enthalten, die nicht aus dieser Erweiterung kommen.
+ */
+const auftragsart = (name) => te(`ShopView.publish.functions.${name}`)
+    ? t(`ShopView.publish.functions.${name}`)
+    : name
+
 const offeneAuftraege = computed(() => auftraege.value.filter(istOffen).length)
+
+/** Auswählen lässt sich nur, was noch offen ist */
+const offeneIds = computed(() => auftraege.value.filter(istOffen).map((auftrag) => auftrag.id))
+const alleGewaehlt = computed(() => offeneIds.value.length > 0 && auswahl.value.length === offeneIds.value.length)
+const teilsGewaehlt = computed(() => auswahl.value.length > 0 && !alleGewaehlt.value)
+
+function alleUmschalten(gewaehlt) {
+    auswahl.value = gewaehlt ? [...offeneIds.value] : []
+}
 
 /** Zeitstempel aus der Datenbank ('2026-09-11 10:23:45.123') für die Anzeige */
 function zeitpunkt(wert) {
@@ -245,6 +298,41 @@ const ziele = computed(() => [
 async function laden() {
     status.value = await shop.fetchStatus()
     auftraege.value = await shop.fetchPublishJobs() || []
+    // Erledigte Aufträge fallen aus der Auswahl
+    auswahl.value = auswahl.value.filter((id) => offeneIds.value.includes(id))
+}
+
+/**
+ * Führt die ausgewählten Aufträge sofort aus
+ *
+ * Damit lässt sich ohne Cron-Eintrag veröffentlichen. Ist gerade ein anderer
+ * Lauf unterwegs — der Cron oder ein zweiter Mitarbeiter —, wird nichts getan;
+ * er nimmt die offenen Aufträge ohnehin mit.
+ */
+async function ausgewaehlteAusfuehren() {
+    laeuft.value = true
+    const ergebnis = await shop.runPublishJobs(auswahl.value)
+    laeuft.value = false
+
+    if (!shop.error.value) {
+        if (ergebnis?.running) {
+            toasts.info(t('ShopView.publish.running'))
+        } else {
+            const text = t('ShopView.publish.done', {
+                jobs: ergebnis?.jobs ?? 0,
+                pages: ergebnis?.pages ?? 0,
+                errors: ergebnis?.errors ?? 0,
+            })
+            if (ergebnis?.errors) {
+                toasts.warning(text)
+            } else {
+                toasts.success(ergebnis?.built ? `${text} ${t('ShopView.publish.built')}` : text)
+            }
+        }
+        auswahl.value = []
+    }
+
+    await laden()
 }
 
 /**

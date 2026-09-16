@@ -103,7 +103,19 @@
             "empty": "Nicio sarcină.",
             "waiting": "așteaptă",
             "queued": "Sarcină creată.",
-            "already": "Sarcina este deja în așteptare."
+            "already": "Sarcina este deja în așteptare.",
+            "run": "Execută acum",
+            "selectAll": "Selectează tot",
+            "running": "O execuție este deja în curs — aceasta va prelua sarcinile.",
+            "done": "{jobs} sarcini finalizate, {pages} pagini scrise, {errors} erori.",
+            "built": "Site reconstruit.",
+            "functions": {
+                "publish_part": "Scrie pagina produsului",
+                "publish_all": "Toate produsele",
+                "remove_part": "Șterge pagina produsului",
+                "sync_kit": "Sincronizează pachetul",
+                "reconcile_payments": "Reconciliază plățile"
+            }
         }
     }
 }
