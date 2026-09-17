@@ -58,7 +58,8 @@
         "privacy": "/privacy",
         "dataDeletion": "/data-deletion",
         "newArticle": "/article/new",
-        "admin": "/system/administration"
+        "admin": "/system/administration",
+        "systemSettings": "/system/settings"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Error: The password file api/config/api.passwd.php was not found. Please rename the file api/config/api.passwd.php.example to api/config/api.passwd.php and adjust the settings accordingly.",
@@ -100,7 +101,8 @@
         "systemUpdate": "System Update",
         "docs": "Documentation",
         "about": "About",
-        "administration": "Users and Companies"
+        "administration": "Users and Companies",
+        "systemSettings": "System settings"
     },
     "DocsView": {
         "title": "Documentation",

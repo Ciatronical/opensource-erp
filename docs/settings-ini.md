@@ -25,10 +25,41 @@ echte Zahlen; Zeichenketten gehören in Anführungszeichen.
 | `install/install.sh` | dieselbe Vorlage mit `auth_pass = "BITTE_EINTRAGEN"`, falls die Datei fehlt |
 | Docker (`docker/web/entrypoint.sh`) | erzeugt sie bei jedem Start aus den Umgebungsvariablen, im Demo-Betrieb zusätzlich `[demo]` |
 
-Alles darüber hinaus wird von Hand eingetragen. Ändert das Backend die Datei
-selbst (`OserpConfig::saveSettings()`), legt es vorher eine Kopie
+Danach wird sie von Hand oder in der Ansicht **Systemeinstellungen** geändert
+(siehe unten). Ändert das Backend die Datei selbst
+(`OserpConfig::saveSettings()`), legt es vorher eine Kopie
 `settings.ini.backup.<Zeitstempel>` daneben — diese Kopien enthalten dieselben
 Zugangsdaten und gehören genauso geschützt.
+
+## Bearbeiten in der Oberfläche
+
+Systemadministratoren finden im Systemmenü (Klick auf Firmenlogo oder
+Firmennamen) den Eintrag **Systemeinstellungen**. Anderen Benutzern wird er
+nicht angezeigt; die Route verlangt `requiresAdmin`, und das Backend
+(`backend/api/admin/system_settings.php`) prüft mit `requireSystemAdmin()`.
+
+- Das Formular entsteht aus `systemSettingsSchema()`: nur die dort bekannten
+  Schlüssel sind bearbeitbar. Andere Einträge der Datei werden nur mit Namen
+  aufgeführt und beim Speichern unverändert übernommen.
+- Fehlt ein Eintrag in der Datei, zeigt das Feld die Vorgabe aus `config.php`
+  als Platzhalter. Ein geleertes Feld entfernt den Eintrag, danach gilt wieder
+  die Vorgabe. Pflichtfelder (`host`, `port`, `auth_db`, `auth_user`) lassen
+  sich nicht leeren.
+- `auth_pass` wird nie ausgeliefert; ein leeres Feld behält das hinterlegte
+  Passwort.
+- Vor dem Speichern zeigt eine Rückfrage alle Änderungen. Das Backend prüft
+  jeden Wert erneut (Zahlen, absolute Pfade, Auswahllisten, Zeitzonen; keine
+  Steuerzeichen, Anführungszeichen, Backslashes und `${`).
+- Geänderter Datenbankzugang wird vorher mit einer Testverbindung
+  (`SELECT 1 FROM auth.clients`) ausprobiert; ohne Verbindung wird nichts
+  gespeichert. Danach PHP-FPM neu laden.
+- Eine neue `admin_users`-Liste, mit der der angemeldete Benutzer kein
+  Systemadministrator mehr wäre, wird abgelehnt.
+- Beim Speichern wird die Datei vollständig neu geschrieben: **Kommentare gehen
+  verloren**, die Sicherungskopie bleibt daneben liegen.
+- Die Datei muss für den Webserver beschreibbar sein, sonst ist Speichern
+  gesperrt. Unter Docker erzeugt der Container sie bei jedem Start neu —
+  dort gehören Änderungen in die Umgebungsvariablen.
 
 ## Wer sie liest
 
@@ -105,7 +136,22 @@ Einzelheiten in `docker/SETUP_DEMO.md`.
 
 | Schlüssel | Vorgabe | Bedeutung |
 | --- | --- | --- |
-| `admin_users` | leer | Logins, die eine neue Firma anlegen dürfen, durch Komma getrennt |
+| `admin_users` | leer | Logins, die Systemadministrator sind — Benutzer, Gruppen und Firmen verwalten —, durch Komma getrennt |
+
+Das ist die zweite von drei Regeln in `tenantAdminStatus()`
+(`backend/api/lib/tenant.php`):
+
+1. Kennzeichen `oserp_admin` in `auth.user_config`, gesetzt in der
+   Benutzerverwaltung — der vorgesehene Weg.
+2. `admin_users` aus dieser Datei — Altbestand, weiterhin gültig.
+3. Übergang für kivitendo-Installationen: Solange **niemand** über 1 oder 2
+   Administrator ist, zählt das kivitendo-Recht „admin“ in einer Gruppe.
+
+Ein einziger Eintrag in `admin_users` beendet damit den Übergang aus Regel 3:
+Wer bis dahin nur über das kivitendo-Recht Administrator war, ist es danach
+nicht mehr. Die Übersicht in der Benutzerverwaltung zeigt, über welche Regel
+der angemeldete Benutzer Administrator ist, und listet die Logins aus dieser
+Datei.
 
 ## Die beiden Shop-Schlüssel
 

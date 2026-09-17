@@ -1,0 +1,82 @@
+{
+    "SystemSettingsView": {
+        "title": "Systeminnstillinger",
+        "subtitle": "Konfigurasjonsfilen for denne installasjonen (settings.ini)",
+        "reload": "Last inn på nytt",
+        "save": "Lagre",
+        "file": "Fil",
+        "notice": "Endringer gjelder fra neste forespørsel. Før lagring lages en sikkerhetskopi; kommentarer i filen går tapt. Under Docker lager containeren filen på nytt ved hver start.",
+        "notWritable": "Webserveren kan ikke skrive filen. Endringer kan ikke lagres her.",
+        "defaultValue": "Standard: {value}",
+        "secretKeep": "lagret – la stå tomt for å beholde",
+        "secretEmpty": "ikke angitt",
+        "extraTitle": "Andre oppføringer",
+        "extraHint": "Skjemaet kjenner ikke disse oppføringene. De beholdes ved lagring.",
+        "confirmTitle": "Lagre endringer?",
+        "confirmIntro": "Disse oppføringene endres:",
+        "removed": "fjernet, standarden gjelder",
+        "warnDatabase": "Den nye databasetilgangen prøves før lagring. Last deretter inn PHP-FPM på nytt, fordi eksisterende tilkoblinger beholder den gamle tilgangen.",
+        "warnCookie": "Et nytt informasjonskapselnavn logger ut alle brukere.",
+        "warnDemo": "I demomodus tilbakestilles demodatabasen regelmessig. Slå den aldri på i en installasjon med ekte data.",
+        "cancel": "Avbryt",
+        "saved": "Systeminnstillinger lagret.",
+        "savedReload": "Lagret. Last inn PHP-FPM på nytt slik at den nye databasetilgangen gjelder.",
+        "required": "Påkrevd",
+        "invalidInteger": "Bare heltall",
+        "invalidPath": "Bare en absolutt sti",
+        "invalidChars": "Ingen linjeskift, anførselstegn eller omvendte skråstreker",
+        "sections": {
+            "database": "Tilgang til auth-databasen",
+            "session": "Påloggingsøkt",
+            "logging": "Logger",
+            "system": "System",
+            "telephony": "Telefoni",
+            "demo": "Demomodus",
+            "company": "Administrasjon"
+        },
+        "fields": {
+            "database": {
+                "host": "Databaseserver",
+                "port": "Port for databaseserveren",
+                "auth_db": "Auth-database med brukere, rettigheter og klienter",
+                "auth_user": "Databasebruker",
+                "auth_pass": "Passordet til databasebrukeren, lagres tilslørt"
+            },
+            "session": {
+                "cookie_name": "Navn på økt-informasjonskapselen",
+                "cookie_same_site": "SameSite-regel for økt-informasjonskapselen"
+            },
+            "logging": {
+                "debug_log_file": "Fil for kjøreloggen",
+                "api_log_file": "Fil for loggen over API-kall",
+                "max_log_size": "Størrelse i byte der loggfilen får nytt navn"
+            },
+            "system": {
+                "timezone": "Tidssone for alle tidsstempler",
+                "debug": "Utførlig logging, av i drift",
+                "templates_dir": "Utskrifts- og butikkmaler, relative stier starter i backend/",
+                "backup_dir": "Mål for databasesikkerhetskopier",
+                "shop_sites_dir": "Grense for katalogene til butikknettstedene",
+                "shop_publish_command_path": "Program som bygger butikknettstedet, reserve for butikkinnstillingen"
+            },
+            "telephony": {
+                "monitor_dir": "Katalog for samtaleopptak"
+            },
+            "demo": {
+                "enabled": "Demomodus, data tilbakestilles regelmessig",
+                "company_db": "Database som tilbakestilles",
+                "inactivity_minutes": "Minutter uten aktivitet før tilbakestilling"
+            },
+            "company": {
+                "admin_users": "Pålogginger med systemadministrasjon, adskilt med komma"
+            }
+        },
+        "errors": {
+            "SETTINGS_NOT_WRITABLE": "settings.ini kan ikke skrives.",
+            "INVALID_VALUE": "Ugyldig inndata.",
+            "DB_CONNECTION_FAILED": "Ingen tilkobling med den nye databasetilgangen. Ingenting lagret.",
+            "WOULD_LOCK_OUT": "Du ville ta fra deg selv systemadministrasjonen. Ingenting lagret.",
+            "NO_PERMISSION": "Bare systemadministratorer kan endre systeminnstillingene."
+        }
+    }
+}

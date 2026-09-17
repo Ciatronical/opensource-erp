@@ -1,0 +1,82 @@
+{
+    "SystemSettingsView": {
+        "title": "Configurações do sistema",
+        "subtitle": "Ficheiro de configuração desta instalação (settings.ini)",
+        "reload": "Recarregar",
+        "save": "Guardar",
+        "file": "Ficheiro",
+        "notice": "As alterações aplicam-se a partir do próximo pedido. Antes de guardar é criada uma cópia de segurança; os comentários do ficheiro perdem-se. No Docker, o contentor recria o ficheiro a cada arranque.",
+        "notWritable": "O servidor web não consegue escrever o ficheiro. Aqui não é possível guardar alterações.",
+        "defaultValue": "Predefinição: {value}",
+        "secretKeep": "guardado – deixar vazio para manter",
+        "secretEmpty": "não definido",
+        "extraTitle": "Outras entradas",
+        "extraHint": "O formulário não conhece estas entradas. São mantidas ao guardar.",
+        "confirmTitle": "Guardar alterações?",
+        "confirmIntro": "Estas entradas serão alteradas:",
+        "removed": "removido, aplica-se a predefinição",
+        "warnDatabase": "O novo acesso à base de dados é testado antes de guardar. Depois recarregue o PHP-FPM, porque as ligações existentes mantêm o acesso antigo.",
+        "warnCookie": "Um novo nome de cookie termina a sessão de todos os utilizadores.",
+        "warnDemo": "No modo de demonstração a base de dados de demonstração é reposta regularmente. Nunca o ative numa instalação com dados reais.",
+        "cancel": "Cancelar",
+        "saved": "Configurações do sistema guardadas.",
+        "savedReload": "Guardado. Recarregue o PHP-FPM para que o novo acesso à base de dados se aplique.",
+        "required": "Obrigatório",
+        "invalidInteger": "Apenas números inteiros",
+        "invalidPath": "Apenas um caminho absoluto",
+        "invalidChars": "Sem quebras de linha, aspas ou barras invertidas",
+        "sections": {
+            "database": "Acesso à base de dados de autenticação",
+            "session": "Sessão de início",
+            "logging": "Registos",
+            "system": "Sistema",
+            "telephony": "Telefonia",
+            "demo": "Modo de demonstração",
+            "company": "Administração"
+        },
+        "fields": {
+            "database": {
+                "host": "Servidor da base de dados",
+                "port": "Porta do servidor da base de dados",
+                "auth_db": "Base de dados de autenticação com utilizadores, permissões e clientes",
+                "auth_user": "Utilizador da base de dados",
+                "auth_pass": "Palavra-passe do utilizador da base de dados, guardada ofuscada"
+            },
+            "session": {
+                "cookie_name": "Nome do cookie de sessão",
+                "cookie_same_site": "Regra SameSite do cookie de sessão"
+            },
+            "logging": {
+                "debug_log_file": "Ficheiro do registo de execução",
+                "api_log_file": "Ficheiro do registo de chamadas à API",
+                "max_log_size": "Tamanho em bytes a partir do qual o ficheiro de registo é renomeado"
+            },
+            "system": {
+                "timezone": "Fuso horário para todas as marcas temporais",
+                "debug": "Registo detalhado, desligado em produção",
+                "templates_dir": "Modelos de impressão e da loja, os caminhos relativos começam em backend/",
+                "backup_dir": "Destino das cópias de segurança da base de dados",
+                "shop_sites_dir": "Limite para os diretórios dos sites da loja",
+                "shop_publish_command_path": "Programa que constrói o site da loja, alternativa para a definição da loja"
+            },
+            "telephony": {
+                "monitor_dir": "Diretório das gravações de chamadas"
+            },
+            "demo": {
+                "enabled": "Modo de demonstração, os dados são repostos regularmente",
+                "company_db": "Base de dados que é reposta",
+                "inactivity_minutes": "Minutos sem atividade até à reposição"
+            },
+            "company": {
+                "admin_users": "Inícios de sessão com administração do sistema, separados por vírgulas"
+            }
+        },
+        "errors": {
+            "SETTINGS_NOT_WRITABLE": "Não é possível escrever settings.ini.",
+            "INVALID_VALUE": "Entrada inválida.",
+            "DB_CONNECTION_FAILED": "Sem ligação com o novo acesso à base de dados. Nada foi guardado.",
+            "WOULD_LOCK_OUT": "Retiraria a si próprio a administração do sistema. Nada foi guardado.",
+            "NO_PERMISSION": "Apenas os administradores do sistema podem alterar as configurações do sistema."
+        }
+    }
+}

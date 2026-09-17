@@ -1,0 +1,82 @@
+{
+    "SystemSettingsView": {
+        "title": "Systeeminstellingen",
+        "subtitle": "Configuratiebestand van deze installatie (settings.ini)",
+        "reload": "Opnieuw laden",
+        "save": "Opslaan",
+        "file": "Bestand",
+        "notice": "Wijzigingen gelden vanaf het volgende verzoek. Voor het opslaan wordt een reservekopie gemaakt; opmerkingen in het bestand gaan verloren. Onder Docker maakt de container het bestand bij elke start opnieuw aan.",
+        "notWritable": "De webserver kan het bestand niet schrijven. Wijzigingen kunnen hier niet worden opgeslagen.",
+        "defaultValue": "Standaard: {value}",
+        "secretKeep": "opgeslagen – leeg laten om te behouden",
+        "secretEmpty": "niet ingesteld",
+        "extraTitle": "Overige vermeldingen",
+        "extraHint": "Het formulier kent deze vermeldingen niet. Ze blijven bij het opslaan behouden.",
+        "confirmTitle": "Wijzigingen opslaan?",
+        "confirmIntro": "Deze vermeldingen worden gewijzigd:",
+        "removed": "verwijderd, de standaard geldt",
+        "warnDatabase": "De nieuwe databasetoegang wordt vóór het opslaan geprobeerd. Laad daarna PHP-FPM opnieuw, omdat bestaande verbindingen de oude toegang behouden.",
+        "warnCookie": "Een nieuwe cookienaam meldt alle gebruikers af.",
+        "warnDemo": "In demomodus wordt de demodatabase regelmatig teruggezet. Schakel deze nooit in op een installatie met echte gegevens.",
+        "cancel": "Annuleren",
+        "saved": "Systeeminstellingen opgeslagen.",
+        "savedReload": "Opgeslagen. Laad PHP-FPM opnieuw zodat de nieuwe databasetoegang geldt.",
+        "required": "Verplicht",
+        "invalidInteger": "Alleen gehele getallen",
+        "invalidPath": "Alleen een absoluut pad",
+        "invalidChars": "Geen regeleinden, aanhalingstekens of backslashes",
+        "sections": {
+            "database": "Toegang tot de auth-database",
+            "session": "Aanmeldsessie",
+            "logging": "Logboeken",
+            "system": "Systeem",
+            "telephony": "Telefonie",
+            "demo": "Demomodus",
+            "company": "Beheer"
+        },
+        "fields": {
+            "database": {
+                "host": "Databaseserver",
+                "port": "Poort van de databaseserver",
+                "auth_db": "Auth-database met gebruikers, rechten en klanten",
+                "auth_user": "Databasegebruiker",
+                "auth_pass": "Wachtwoord van de databasegebruiker, versluierd opgeslagen"
+            },
+            "session": {
+                "cookie_name": "Naam van de sessiecookie",
+                "cookie_same_site": "SameSite-regel van de sessiecookie"
+            },
+            "logging": {
+                "debug_log_file": "Bestand voor het procesverslag",
+                "api_log_file": "Bestand voor het logboek van API-aanroepen",
+                "max_log_size": "Grootte in bytes waarna het logbestand wordt hernoemd"
+            },
+            "system": {
+                "timezone": "Tijdzone voor alle tijdstempels",
+                "debug": "Uitgebreid logboek, uit in productie",
+                "templates_dir": "Afdruk- en winkelsjablonen, relatieve paden beginnen bij backend/",
+                "backup_dir": "Doel van de databaseback-ups",
+                "shop_sites_dir": "Grens voor de mappen van de winkelwebsites",
+                "shop_publish_command_path": "Programma dat de winkelwebsite bouwt, terugval voor de winkelinstelling"
+            },
+            "telephony": {
+                "monitor_dir": "Map met gespreksopnamen"
+            },
+            "demo": {
+                "enabled": "Demomodus, gegevens worden regelmatig teruggezet",
+                "company_db": "Database die wordt teruggezet",
+                "inactivity_minutes": "Minuten zonder activiteit tot terugzetten"
+            },
+            "company": {
+                "admin_users": "Logins met systeembeheer, gescheiden door komma's"
+            }
+        },
+        "errors": {
+            "SETTINGS_NOT_WRITABLE": "settings.ini kan niet worden geschreven.",
+            "INVALID_VALUE": "Ongeldige invoer.",
+            "DB_CONNECTION_FAILED": "Geen verbinding met de nieuwe databasetoegang. Niets opgeslagen.",
+            "WOULD_LOCK_OUT": "U zou uzelf het systeembeheer ontnemen. Niets opgeslagen.",
+            "NO_PERMISSION": "Alleen systeembeheerders mogen de systeeminstellingen wijzigen."
+        }
+    }
+}

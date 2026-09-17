@@ -1,0 +1,82 @@
+{
+    "SystemSettingsView": {
+        "title": "Sistem ayarları",
+        "subtitle": "Bu kurulumun yapılandırma dosyası (settings.ini)",
+        "reload": "Yeniden yükle",
+        "save": "Kaydet",
+        "file": "Dosya",
+        "notice": "Değişiklikler bir sonraki istekten itibaren geçerlidir. Kaydetmeden önce yedek kopya oluşturulur; dosyadaki yorumlar kaybolur. Docker altında konteyner dosyayı her başlangıçta yeniden oluşturur.",
+        "notWritable": "Web sunucusu dosyaya yazamıyor. Değişiklikler burada kaydedilemez.",
+        "defaultValue": "Varsayılan: {value}",
+        "secretKeep": "kayıtlı – korumak için boş bırakın",
+        "secretEmpty": "ayarlanmadı",
+        "extraTitle": "Diğer girdiler",
+        "extraHint": "Form bu girdileri tanımıyor. Kaydederken korunurlar.",
+        "confirmTitle": "Değişiklikler kaydedilsin mi?",
+        "confirmIntro": "Şu girdiler değiştirilecek:",
+        "removed": "kaldırıldı, varsayılan geçerli",
+        "warnDatabase": "Yeni veritabanı erişimi kaydetmeden önce denenir. Ardından PHP-FPM'i yeniden yükleyin, çünkü mevcut bağlantılar eski erişimi korur.",
+        "warnCookie": "Yeni bir çerez adı tüm kullanıcıların oturumunu kapatır.",
+        "warnDemo": "Demo modunda demo veritabanı düzenli olarak sıfırlanır. Gerçek veriler içeren bir kurulumda asla açmayın.",
+        "cancel": "İptal",
+        "saved": "Sistem ayarları kaydedildi.",
+        "savedReload": "Kaydedildi. Yeni veritabanı erişiminin geçerli olması için PHP-FPM'i yeniden yükleyin.",
+        "required": "Zorunlu",
+        "invalidInteger": "Yalnızca tam sayı",
+        "invalidPath": "Yalnızca mutlak yol",
+        "invalidChars": "Satır sonu, tırnak işareti veya ters eğik çizgi olmadan",
+        "sections": {
+            "database": "Kimlik doğrulama veritabanına erişim",
+            "session": "Oturum",
+            "logging": "Günlükler",
+            "system": "Sistem",
+            "telephony": "Telefon",
+            "demo": "Demo modu",
+            "company": "Yönetim"
+        },
+        "fields": {
+            "database": {
+                "host": "Veritabanı sunucusu",
+                "port": "Veritabanı sunucusunun portu",
+                "auth_db": "Kullanıcılar, yetkiler ve müşterilerle kimlik doğrulama veritabanı",
+                "auth_user": "Veritabanı kullanıcısı",
+                "auth_pass": "Veritabanı kullanıcısının parolası, gizlenmiş olarak kaydedilir"
+            },
+            "session": {
+                "cookie_name": "Oturum çerezinin adı",
+                "cookie_same_site": "Oturum çerezinin SameSite kuralı"
+            },
+            "logging": {
+                "debug_log_file": "Çalışma günlüğü dosyası",
+                "api_log_file": "API çağrıları günlüğü dosyası",
+                "max_log_size": "Günlük dosyasının yeniden adlandırıldığı bayt cinsinden boyut"
+            },
+            "system": {
+                "timezone": "Tüm zaman damgaları için saat dilimi",
+                "debug": "Ayrıntılı günlük, üretimde kapalı",
+                "templates_dir": "Yazdırma ve mağaza şablonları, göreli yollar backend/ dizininden başlar",
+                "backup_dir": "Veritabanı yedeklerinin hedefi",
+                "shop_sites_dir": "Mağaza web sitelerinin dizinleri için sınır",
+                "shop_publish_command_path": "Mağaza web sitesini oluşturan program, mağaza ayarı için yedek"
+            },
+            "telephony": {
+                "monitor_dir": "Görüşme kayıtları dizini"
+            },
+            "demo": {
+                "enabled": "Demo modu, veriler düzenli olarak sıfırlanır",
+                "company_db": "Sıfırlanan veritabanı",
+                "inactivity_minutes": "Sıfırlamaya kadar etkinliksiz dakika"
+            },
+            "company": {
+                "admin_users": "Sistem yönetimine sahip oturum adları, virgülle ayrılmış"
+            }
+        },
+        "errors": {
+            "SETTINGS_NOT_WRITABLE": "settings.ini yazılamıyor.",
+            "INVALID_VALUE": "Geçersiz giriş.",
+            "DB_CONNECTION_FAILED": "Yeni veritabanı erişimiyle bağlantı kurulamıyor. Hiçbir şey kaydedilmedi.",
+            "WOULD_LOCK_OUT": "Kendi sistem yönetiminizi kaldırmış olursunuz. Hiçbir şey kaydedilmedi.",
+            "NO_PERMISSION": "Sistem ayarlarını yalnızca sistem yöneticileri değiştirebilir."
+        }
+    }
+}

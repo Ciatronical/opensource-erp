@@ -1,0 +1,82 @@
+{
+    "SystemSettingsView": {
+        "title": "Impostazioni di sistema",
+        "subtitle": "File di configurazione di questa installazione (settings.ini)",
+        "reload": "Ricarica",
+        "save": "Salva",
+        "file": "File",
+        "notice": "Le modifiche valgono dalla richiesta successiva. Prima del salvataggio viene creata una copia di sicurezza; i commenti nel file vanno persi. In Docker il container ricrea il file a ogni avvio.",
+        "notWritable": "Il server web non può scrivere il file. Qui le modifiche non possono essere salvate.",
+        "defaultValue": "Predefinito: {value}",
+        "secretKeep": "salvato – lasciare vuoto per mantenere",
+        "secretEmpty": "non impostato",
+        "extraTitle": "Altre voci",
+        "extraHint": "Il modulo non conosce queste voci. Vengono mantenute al salvataggio.",
+        "confirmTitle": "Salvare le modifiche?",
+        "confirmIntro": "Verranno modificate queste voci:",
+        "removed": "rimosso, vale il valore predefinito",
+        "warnDatabase": "Il nuovo accesso al database viene provato prima del salvataggio. Poi ricaricare PHP-FPM, perché le connessioni esistenti mantengono il vecchio accesso.",
+        "warnCookie": "Un nuovo nome del cookie disconnette tutti gli utenti.",
+        "warnDemo": "In modalità demo il database dimostrativo viene ripristinato regolarmente. Non attivarla mai su un'installazione con dati reali.",
+        "cancel": "Annulla",
+        "saved": "Impostazioni di sistema salvate.",
+        "savedReload": "Salvato. Ricaricare PHP-FPM affinché valga il nuovo accesso al database.",
+        "required": "Obbligatorio",
+        "invalidInteger": "Solo numeri interi",
+        "invalidPath": "Solo un percorso assoluto",
+        "invalidChars": "Niente a capo, virgolette o barre rovesciate",
+        "sections": {
+            "database": "Accesso al database di autenticazione",
+            "session": "Sessione di accesso",
+            "logging": "Log",
+            "system": "Sistema",
+            "telephony": "Telefonia",
+            "demo": "Modalità demo",
+            "company": "Amministrazione"
+        },
+        "fields": {
+            "database": {
+                "host": "Server del database",
+                "port": "Porta del server del database",
+                "auth_db": "Database di autenticazione con utenti, diritti e client",
+                "auth_user": "Utente del database",
+                "auth_pass": "Password dell'utente del database, salvata offuscata"
+            },
+            "session": {
+                "cookie_name": "Nome del cookie di sessione",
+                "cookie_same_site": "Regola SameSite del cookie di sessione"
+            },
+            "logging": {
+                "debug_log_file": "File del log di esecuzione",
+                "api_log_file": "File del log delle chiamate API",
+                "max_log_size": "Dimensione in byte oltre la quale il file di log viene rinominato"
+            },
+            "system": {
+                "timezone": "Fuso orario per tutti i timestamp",
+                "debug": "Log dettagliato, disattivato in produzione",
+                "templates_dir": "Modelli di stampa e del negozio, i percorsi relativi partono da backend/",
+                "backup_dir": "Destinazione dei backup del database",
+                "shop_sites_dir": "Limite per le directory dei siti del negozio",
+                "shop_publish_command_path": "Programma che genera il sito del negozio, ripiego per l'impostazione del negozio"
+            },
+            "telephony": {
+                "monitor_dir": "Directory delle registrazioni delle chiamate"
+            },
+            "demo": {
+                "enabled": "Modalità demo, i dati vengono ripristinati regolarmente",
+                "company_db": "Database che viene ripristinato",
+                "inactivity_minutes": "Minuti di inattività prima del ripristino"
+            },
+            "company": {
+                "admin_users": "Login con amministrazione di sistema, separati da virgole"
+            }
+        },
+        "errors": {
+            "SETTINGS_NOT_WRITABLE": "Impossibile scrivere settings.ini.",
+            "INVALID_VALUE": "Input non valido.",
+            "DB_CONNECTION_FAILED": "Nessuna connessione con il nuovo accesso al database. Non è stato salvato nulla.",
+            "WOULD_LOCK_OUT": "Ti toglieresti l'amministrazione di sistema. Non è stato salvato nulla.",
+            "NO_PERMISSION": "Solo gli amministratori di sistema possono modificare le impostazioni di sistema."
+        }
+    }
+}

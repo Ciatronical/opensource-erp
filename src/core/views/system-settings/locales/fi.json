@@ -1,0 +1,82 @@
+{
+    "SystemSettingsView": {
+        "title": "Järjestelmäasetukset",
+        "subtitle": "Tämän asennuksen määritystiedosto (settings.ini)",
+        "reload": "Lataa uudelleen",
+        "save": "Tallenna",
+        "file": "Tiedosto",
+        "notice": "Muutokset tulevat voimaan seuraavasta pyynnöstä. Ennen tallennusta luodaan varmuuskopio; tiedoston kommentit katoavat. Dockerissa kontti luo tiedoston uudelleen jokaisella käynnistyksellä.",
+        "notWritable": "Verkkopalvelin ei voi kirjoittaa tiedostoa. Muutoksia ei voi tallentaa tässä.",
+        "defaultValue": "Oletus: {value}",
+        "secretKeep": "tallennettu – jätä tyhjäksi säilyttääksesi",
+        "secretEmpty": "ei asetettu",
+        "extraTitle": "Muut merkinnät",
+        "extraHint": "Lomake ei tunne näitä merkintöjä. Ne säilyvät tallennettaessa.",
+        "confirmTitle": "Tallennetaanko muutokset?",
+        "confirmIntro": "Näitä merkintöjä muutetaan:",
+        "removed": "poistettu, oletus on voimassa",
+        "warnDatabase": "Uutta tietokantayhteyttä kokeillaan ennen tallennusta. Lataa sen jälkeen PHP-FPM uudelleen, koska olemassa olevat yhteydet säilyttävät vanhan pääsyn.",
+        "warnCookie": "Uusi evästeen nimi kirjaa kaikki käyttäjät ulos.",
+        "warnDemo": "Demotilassa demotietokanta palautetaan säännöllisesti. Älä koskaan ota sitä käyttöön asennuksessa, jossa on oikeita tietoja.",
+        "cancel": "Peruuta",
+        "saved": "Järjestelmäasetukset tallennettu.",
+        "savedReload": "Tallennettu. Lataa PHP-FPM uudelleen, jotta uusi tietokantapääsy on voimassa.",
+        "required": "Pakollinen",
+        "invalidInteger": "Vain kokonaisluku",
+        "invalidPath": "Vain absoluuttinen polku",
+        "invalidChars": "Ei rivinvaihtoja, lainausmerkkejä tai kenoviivoja",
+        "sections": {
+            "database": "Pääsy tunnistautumistietokantaan",
+            "session": "Kirjautumisistunto",
+            "logging": "Lokit",
+            "system": "Järjestelmä",
+            "telephony": "Puhelinpalvelut",
+            "demo": "Demotila",
+            "company": "Hallinta"
+        },
+        "fields": {
+            "database": {
+                "host": "Tietokantapalvelin",
+                "port": "Tietokantapalvelimen portti",
+                "auth_db": "Tunnistautumistietokanta käyttäjineen, oikeuksineen ja asiakkaineen",
+                "auth_user": "Tietokannan käyttäjä",
+                "auth_pass": "Tietokannan käyttäjän salasana, tallennetaan peitettynä"
+            },
+            "session": {
+                "cookie_name": "Istuntoevästeen nimi",
+                "cookie_same_site": "Istuntoevästeen SameSite-sääntö"
+            },
+            "logging": {
+                "debug_log_file": "Ajolokin tiedosto",
+                "api_log_file": "API-kutsujen lokin tiedosto",
+                "max_log_size": "Koko tavuina, jonka jälkeen lokitiedosto nimetään uudelleen"
+            },
+            "system": {
+                "timezone": "Aikavyöhyke kaikille aikaleimoille",
+                "debug": "Yksityiskohtainen loki, tuotannossa pois päältä",
+                "templates_dir": "Tuloste- ja kauppamallit, suhteelliset polut alkavat hakemistosta backend/",
+                "backup_dir": "Tietokantavarmuuskopioiden kohde",
+                "shop_sites_dir": "Raja kaupan verkkosivustojen hakemistoille",
+                "shop_publish_command_path": "Ohjelma, joka rakentaa kaupan verkkosivuston, varavaihtoehto kaupan asetukselle"
+            },
+            "telephony": {
+                "monitor_dir": "Puhelutallenteiden hakemisto"
+            },
+            "demo": {
+                "enabled": "Demotila, tiedot palautetaan säännöllisesti",
+                "company_db": "Palautettava tietokanta",
+                "inactivity_minutes": "Minuutit ilman toimintaa ennen palautusta"
+            },
+            "company": {
+                "admin_users": "Järjestelmähallinnan käyttäjätunnukset pilkuilla eroteltuina"
+            }
+        },
+        "errors": {
+            "SETTINGS_NOT_WRITABLE": "Tiedostoon settings.ini ei voi kirjoittaa.",
+            "INVALID_VALUE": "Virheellinen syöte.",
+            "DB_CONNECTION_FAILED": "Uudella tietokantapääsyllä ei saada yhteyttä. Mitään ei tallennettu.",
+            "WOULD_LOCK_OUT": "Poistaisit itseltäsi järjestelmähallinnan. Mitään ei tallennettu.",
+            "NO_PERMISSION": "Vain järjestelmänvalvojat saavat muuttaa järjestelmäasetuksia."
+        }
+    }
+}

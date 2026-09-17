@@ -1,0 +1,82 @@
+{
+    "SystemSettingsView": {
+        "title": "Setări de sistem",
+        "subtitle": "Fișierul de configurare al acestei instalări (settings.ini)",
+        "reload": "Reîncarcă",
+        "save": "Salvează",
+        "file": "Fișier",
+        "notice": "Modificările se aplică de la următoarea cerere. Înainte de salvare se creează o copie de siguranță; comentariile din fișier se pierd. În Docker, containerul recreează fișierul la fiecare pornire.",
+        "notWritable": "Serverul web nu poate scrie fișierul. Modificările nu pot fi salvate aici.",
+        "defaultValue": "Implicit: {value}",
+        "secretKeep": "salvat – lăsați gol pentru a păstra",
+        "secretEmpty": "nesetat",
+        "extraTitle": "Alte intrări",
+        "extraHint": "Formularul nu cunoaște aceste intrări. Ele se păstrează la salvare.",
+        "confirmTitle": "Salvați modificările?",
+        "confirmIntro": "Se vor modifica aceste intrări:",
+        "removed": "eliminat, se aplică valoarea implicită",
+        "warnDatabase": "Noul acces la baza de date este încercat înainte de salvare. Apoi reîncărcați PHP-FPM, deoarece conexiunile existente păstrează accesul vechi.",
+        "warnCookie": "Un nume nou de cookie deconectează toți utilizatorii.",
+        "warnDemo": "În modul demo, baza de date demonstrativă este resetată periodic. Nu îl activați niciodată pe o instalare cu date reale.",
+        "cancel": "Anulează",
+        "saved": "Setările de sistem au fost salvate.",
+        "savedReload": "Salvat. Reîncărcați PHP-FPM pentru ca noul acces la baza de date să se aplice.",
+        "required": "Obligatoriu",
+        "invalidInteger": "Doar numere întregi",
+        "invalidPath": "Doar o cale absolută",
+        "invalidChars": "Fără întreruperi de rând, ghilimele sau bare inverse",
+        "sections": {
+            "database": "Acces la baza de date de autentificare",
+            "session": "Sesiune de autentificare",
+            "logging": "Jurnale",
+            "system": "Sistem",
+            "telephony": "Telefonie",
+            "demo": "Mod demo",
+            "company": "Administrare"
+        },
+        "fields": {
+            "database": {
+                "host": "Serverul bazei de date",
+                "port": "Portul serverului bazei de date",
+                "auth_db": "Baza de date de autentificare cu utilizatori, drepturi și clienți",
+                "auth_user": "Utilizatorul bazei de date",
+                "auth_pass": "Parola utilizatorului bazei de date, salvată mascat"
+            },
+            "session": {
+                "cookie_name": "Numele cookie-ului de sesiune",
+                "cookie_same_site": "Regula SameSite a cookie-ului de sesiune"
+            },
+            "logging": {
+                "debug_log_file": "Fișierul jurnalului de execuție",
+                "api_log_file": "Fișierul jurnalului apelurilor API",
+                "max_log_size": "Dimensiunea în octeți de la care fișierul jurnal este redenumit"
+            },
+            "system": {
+                "timezone": "Fusul orar pentru toate marcajele de timp",
+                "debug": "Jurnal detaliat, dezactivat în producție",
+                "templates_dir": "Șabloane de tipărire și magazin, căile relative pornesc din backend/",
+                "backup_dir": "Destinația copiilor de siguranță ale bazei de date",
+                "shop_sites_dir": "Limită pentru directoarele site-urilor magazinului",
+                "shop_publish_command_path": "Programul care construiește site-ul magazinului, alternativă pentru setarea magazinului"
+            },
+            "telephony": {
+                "monitor_dir": "Directorul înregistrărilor apelurilor"
+            },
+            "demo": {
+                "enabled": "Mod demo, datele sunt resetate periodic",
+                "company_db": "Baza de date care este resetată",
+                "inactivity_minutes": "Minute fără activitate până la resetare"
+            },
+            "company": {
+                "admin_users": "Autentificări cu administrare de sistem, separate prin virgule"
+            }
+        },
+        "errors": {
+            "SETTINGS_NOT_WRITABLE": "settings.ini nu poate fi scris.",
+            "INVALID_VALUE": "Date invalide.",
+            "DB_CONNECTION_FAILED": "Nu există conexiune cu noul acces la baza de date. Nimic nu a fost salvat.",
+            "WOULD_LOCK_OUT": "V-ați retrage singur administrarea sistemului. Nimic nu a fost salvat.",
+            "NO_PERMISSION": "Doar administratorii de sistem pot modifica setările de sistem."
+        }
+    }
+}

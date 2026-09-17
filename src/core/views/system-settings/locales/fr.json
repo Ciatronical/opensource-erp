@@ -1,0 +1,82 @@
+{
+    "SystemSettingsView": {
+        "title": "Paramètres système",
+        "subtitle": "Fichier de configuration de cette installation (settings.ini)",
+        "reload": "Recharger",
+        "save": "Enregistrer",
+        "file": "Fichier",
+        "notice": "Les modifications s'appliquent à partir de la prochaine requête. Une copie de sauvegarde est créée avant l'enregistrement ; les commentaires du fichier sont perdus. Sous Docker, le conteneur recrée le fichier à chaque démarrage.",
+        "notWritable": "Le serveur web ne peut pas écrire le fichier. Les modifications ne peuvent pas être enregistrées ici.",
+        "defaultValue": "Par défaut : {value}",
+        "secretKeep": "enregistré – laisser vide pour conserver",
+        "secretEmpty": "non défini",
+        "extraTitle": "Autres entrées",
+        "extraHint": "Le formulaire ne connaît pas ces entrées. Elles sont conservées lors de l'enregistrement.",
+        "confirmTitle": "Enregistrer les modifications ?",
+        "confirmIntro": "Ces entrées seront modifiées :",
+        "removed": "supprimé, la valeur par défaut s'applique",
+        "warnDatabase": "Le nouvel accès à la base de données est testé avant l'enregistrement. Rechargez ensuite PHP-FPM, car les connexions existantes conservent l'ancien accès.",
+        "warnCookie": "Un nouveau nom de cookie déconnecte tous les utilisateurs.",
+        "warnDemo": "En mode démo, la base de démonstration est réinitialisée régulièrement. Ne l'activez jamais sur une installation contenant de vraies données.",
+        "cancel": "Annuler",
+        "saved": "Paramètres système enregistrés.",
+        "savedReload": "Enregistré. Rechargez PHP-FPM pour que le nouvel accès à la base de données s'applique.",
+        "required": "Obligatoire",
+        "invalidInteger": "Nombre entier uniquement",
+        "invalidPath": "Chemin absolu uniquement",
+        "invalidChars": "Pas de retours à la ligne, guillemets ou barres obliques inverses",
+        "sections": {
+            "database": "Accès à la base d'authentification",
+            "session": "Session de connexion",
+            "logging": "Journaux",
+            "system": "Système",
+            "telephony": "Téléphonie",
+            "demo": "Mode démo",
+            "company": "Administration"
+        },
+        "fields": {
+            "database": {
+                "host": "Serveur de base de données",
+                "port": "Port du serveur de base de données",
+                "auth_db": "Base d'authentification avec utilisateurs, droits et clients",
+                "auth_user": "Utilisateur de la base de données",
+                "auth_pass": "Mot de passe de l'utilisateur, enregistré sous forme masquée"
+            },
+            "session": {
+                "cookie_name": "Nom du cookie de session",
+                "cookie_same_site": "Règle SameSite du cookie de session"
+            },
+            "logging": {
+                "debug_log_file": "Fichier du journal d'exécution",
+                "api_log_file": "Fichier du journal des appels API",
+                "max_log_size": "Taille en octets à partir de laquelle le fichier journal est renommé"
+            },
+            "system": {
+                "timezone": "Fuseau horaire de tous les horodatages",
+                "debug": "Journalisation détaillée, désactivée en production",
+                "templates_dir": "Modèles d'impression et de boutique, les chemins relatifs partent de backend/",
+                "backup_dir": "Destination des sauvegardes de la base de données",
+                "shop_sites_dir": "Limite pour les répertoires des sites de la boutique",
+                "shop_publish_command_path": "Programme qui construit le site de la boutique, repli pour le paramètre de la boutique"
+            },
+            "telephony": {
+                "monitor_dir": "Répertoire des enregistrements d'appels"
+            },
+            "demo": {
+                "enabled": "Mode démo, les données sont réinitialisées régulièrement",
+                "company_db": "Base de données réinitialisée",
+                "inactivity_minutes": "Minutes sans activité avant la réinitialisation"
+            },
+            "company": {
+                "admin_users": "Identifiants avec administration système, séparés par des virgules"
+            }
+        },
+        "errors": {
+            "SETTINGS_NOT_WRITABLE": "Impossible d'écrire settings.ini.",
+            "INVALID_VALUE": "Saisie invalide.",
+            "DB_CONNECTION_FAILED": "Aucune connexion avec le nouvel accès à la base de données. Rien n'a été enregistré.",
+            "WOULD_LOCK_OUT": "Vous vous retireriez l'administration système. Rien n'a été enregistré.",
+            "NO_PERMISSION": "Seuls les administrateurs système peuvent modifier les paramètres système."
+        }
+    }
+}

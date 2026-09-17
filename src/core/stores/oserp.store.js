@@ -367,6 +367,10 @@ export const oserpStore = defineStore('oserpStore', () => {
 
     const adminOverview = () => adminCall('getAdminOverview');
     const adminSaveUser = (user) => adminCall('saveUser', user);
+    /** Systemeinstellungen (settings.ini): Formularschema, Werte, Zeitzonen */
+    const adminSystemSettings = () => adminCall('getSystemSettings');
+    /** Speichert geänderte Einträge; values: Abschnitt -> Schlüssel -> Wert */
+    const adminSaveSystemSettings = (values) => adminCall('saveSystemSettings', { values });
     const adminDeleteUser = (id) => adminCall('deleteUser', { id });
     const adminSaveGroup = (group) => adminCall('saveGroup', group);
     const adminDeleteGroup = (id) => adminCall('deleteGroup', { id });
@@ -849,6 +853,8 @@ export const oserpStore = defineStore('oserpStore', () => {
         createCompany,
         adminOverview,
         adminSaveUser,
+        adminSystemSettings,
+        adminSaveSystemSettings,
         adminDeleteUser,
         adminSaveGroup,
         adminDeleteGroup,

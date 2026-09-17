@@ -1,0 +1,82 @@
+{
+    "SystemSettingsView": {
+        "title": "Systeminställningar",
+        "subtitle": "Konfigurationsfilen för den här installationen (settings.ini)",
+        "reload": "Läs in igen",
+        "save": "Spara",
+        "file": "Fil",
+        "notice": "Ändringar gäller från nästa förfrågan. Innan du sparar skapas en säkerhetskopia; kommentarer i filen går förlorade. Under Docker skapar containern filen på nytt vid varje start.",
+        "notWritable": "Webbservern kan inte skriva filen. Ändringar kan inte sparas här.",
+        "defaultValue": "Standard: {value}",
+        "secretKeep": "sparat – lämna tomt för att behålla",
+        "secretEmpty": "inte angiven",
+        "extraTitle": "Övriga poster",
+        "extraHint": "Formuläret känner inte till dessa poster. De behålls när du sparar.",
+        "confirmTitle": "Spara ändringar?",
+        "confirmIntro": "Dessa poster ändras:",
+        "removed": "borttagen, standarden gäller",
+        "warnDatabase": "Den nya databasåtkomsten provas innan den sparas. Läs sedan in PHP-FPM igen, eftersom befintliga anslutningar behåller den gamla åtkomsten.",
+        "warnCookie": "Ett nytt cookienamn loggar ut alla användare.",
+        "warnDemo": "I demoläge återställs demodatabasen regelbundet. Slå aldrig på det i en installation med riktiga data.",
+        "cancel": "Avbryt",
+        "saved": "Systeminställningar sparade.",
+        "savedReload": "Sparat. Läs in PHP-FPM igen så att den nya databasåtkomsten gäller.",
+        "required": "Obligatoriskt",
+        "invalidInteger": "Endast heltal",
+        "invalidPath": "Endast en absolut sökväg",
+        "invalidChars": "Inga radbrytningar, citattecken eller omvända snedstreck",
+        "sections": {
+            "database": "Åtkomst till auth-databasen",
+            "session": "Inloggningssession",
+            "logging": "Loggar",
+            "system": "System",
+            "telephony": "Telefoni",
+            "demo": "Demoläge",
+            "company": "Administration"
+        },
+        "fields": {
+            "database": {
+                "host": "Databasserver",
+                "port": "Port för databasservern",
+                "auth_db": "Auth-databas med användare, rättigheter och klienter",
+                "auth_user": "Databasanvändare",
+                "auth_pass": "Databasanvändarens lösenord, sparas maskerat"
+            },
+            "session": {
+                "cookie_name": "Namn på sessionscookien",
+                "cookie_same_site": "SameSite-regel för sessionscookien"
+            },
+            "logging": {
+                "debug_log_file": "Fil för körloggen",
+                "api_log_file": "Fil för loggen över API-anrop",
+                "max_log_size": "Storlek i byte då loggfilen byter namn"
+            },
+            "system": {
+                "timezone": "Tidszon för alla tidsstämplar",
+                "debug": "Utförlig loggning, avstängd i drift",
+                "templates_dir": "Utskrifts- och butiksmallar, relativa sökvägar börjar i backend/",
+                "backup_dir": "Mål för databasens säkerhetskopior",
+                "shop_sites_dir": "Gräns för butikswebbplatsernas kataloger",
+                "shop_publish_command_path": "Program som bygger butikswebbplatsen, reserv för butiksinställningen"
+            },
+            "telephony": {
+                "monitor_dir": "Katalog för samtalsinspelningar"
+            },
+            "demo": {
+                "enabled": "Demoläge, data återställs regelbundet",
+                "company_db": "Databas som återställs",
+                "inactivity_minutes": "Minuter utan aktivitet till återställning"
+            },
+            "company": {
+                "admin_users": "Inloggningar med systemadministration, kommaseparerade"
+            }
+        },
+        "errors": {
+            "SETTINGS_NOT_WRITABLE": "settings.ini kan inte skrivas.",
+            "INVALID_VALUE": "Ogiltig inmatning.",
+            "DB_CONNECTION_FAILED": "Ingen anslutning med den nya databasåtkomsten. Inget sparades.",
+            "WOULD_LOCK_OUT": "Du skulle ta ifrån dig själv systemadministrationen. Inget sparades.",
+            "NO_PERMISSION": "Endast systemadministratörer får ändra systeminställningarna."
+        }
+    }
+}

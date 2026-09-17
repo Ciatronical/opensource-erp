@@ -58,7 +58,8 @@
         "dataDeletion": "/datasletning",
         "tafel": "/opslagstavle/administration",
         "newArticle": "/vare/ny",
-        "admin": "/system/administration"
+        "admin": "/system/administration",
+        "systemSettings": "/system/indstillinger"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Fejl: Adgangskodefilen api/config/api.passwd.php blev ikke fundet. Omdoeb venligst filen api/config/api.passwd.php.example til api/config/api.passwd.php og tilpas indstillingerne.",
@@ -95,7 +96,8 @@
         "systemUpdate": "Systemopdatering",
         "about": "Om",
         "docs": "Dokumentation",
-        "administration": "Brugere og firmaer"
+        "administration": "Brugere og firmaer",
+        "systemSettings": "Systemindstillinger"
     },
     "DocsView": {
         "title": "Dokumentation",

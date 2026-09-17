@@ -1,0 +1,82 @@
+{
+    "SystemSettingsView": {
+        "title": "Sistēmas iestatījumi",
+        "subtitle": "Šīs instalācijas konfigurācijas fails (settings.ini)",
+        "reload": "Ielādēt vēlreiz",
+        "save": "Saglabāt",
+        "file": "Fails",
+        "notice": "Izmaiņas stājas spēkā ar nākamo pieprasījumu. Pirms saglabāšanas tiek izveidota rezerves kopija; komentāri failā tiek zaudēti. Docker vidē konteiners failu izveido no jauna katrā startā.",
+        "notWritable": "Tīmekļa serveris nevar rakstīt failā. Izmaiņas šeit nevar saglabāt.",
+        "defaultValue": "Noklusējums: {value}",
+        "secretKeep": "saglabāts – atstājiet tukšu, lai paturētu",
+        "secretEmpty": "nav iestatīts",
+        "extraTitle": "Citi ieraksti",
+        "extraHint": "Veidlapa šos ierakstus nepazīst. Saglabājot tie tiek paturēti.",
+        "confirmTitle": "Saglabāt izmaiņas?",
+        "confirmIntro": "Tiks mainīti šie ieraksti:",
+        "removed": "noņemts, spēkā noklusējums",
+        "warnDatabase": "Jaunā piekļuve datubāzei tiek izmēģināta pirms saglabāšanas. Pēc tam pārlādējiet PHP-FPM, jo esošie savienojumi patur veco piekļuvi.",
+        "warnCookie": "Jauns sīkfaila nosaukums izrakstīs visus lietotājus.",
+        "warnDemo": "Demo režīmā demo datubāze tiek regulāri atiestatīta. Nekad neieslēdziet to instalācijā ar reāliem datiem.",
+        "cancel": "Atcelt",
+        "saved": "Sistēmas iestatījumi saglabāti.",
+        "savedReload": "Saglabāts. Pārlādējiet PHP-FPM, lai stātos spēkā jaunā piekļuve datubāzei.",
+        "required": "Obligāts",
+        "invalidInteger": "Tikai vesels skaitlis",
+        "invalidPath": "Tikai absolūtais ceļš",
+        "invalidChars": "Bez rindiņu pārtraukumiem, pēdiņām un atpakaļvērstām slīpsvītrām",
+        "sections": {
+            "database": "Piekļuve autentifikācijas datubāzei",
+            "session": "Pieteikšanās sesija",
+            "logging": "Žurnāli",
+            "system": "Sistēma",
+            "telephony": "Telefonija",
+            "demo": "Demo režīms",
+            "company": "Administrēšana"
+        },
+        "fields": {
+            "database": {
+                "host": "Datubāzes serveris",
+                "port": "Datubāzes servera ports",
+                "auth_db": "Autentifikācijas datubāze ar lietotājiem, tiesībām un klientiem",
+                "auth_user": "Datubāzes lietotājs",
+                "auth_pass": "Datubāzes lietotāja parole, tiek glabāta maskēta"
+            },
+            "session": {
+                "cookie_name": "Sesijas sīkfaila nosaukums",
+                "cookie_same_site": "Sesijas sīkfaila SameSite noteikums"
+            },
+            "logging": {
+                "debug_log_file": "Darbības žurnāla fails",
+                "api_log_file": "API izsaukumu žurnāla fails",
+                "max_log_size": "Izmērs baitos, no kura žurnāla fails tiek pārdēvēts"
+            },
+            "system": {
+                "timezone": "Laika josla visiem laika zīmogiem",
+                "debug": "Detalizēts žurnāls, darbā izslēgts",
+                "templates_dir": "Drukas un veikala veidnes, relatīvie ceļi sākas no backend/",
+                "backup_dir": "Datubāzes rezerves kopiju mērķis",
+                "shop_sites_dir": "Robeža veikala vietņu direktorijām",
+                "shop_publish_command_path": "Programma, kas būvē veikala vietni, rezerves variants veikala iestatījumam"
+            },
+            "telephony": {
+                "monitor_dir": "Sarunu ierakstu direktorija"
+            },
+            "demo": {
+                "enabled": "Demo režīms, dati tiek regulāri atiestatīti",
+                "company_db": "Datubāze, kas tiek atiestatīta",
+                "inactivity_minutes": "Minūtes bez darbības līdz atiestatīšanai"
+            },
+            "company": {
+                "admin_users": "Pieteikumvārdi ar sistēmas administrēšanu, atdalīti ar komatiem"
+            }
+        },
+        "errors": {
+            "SETTINGS_NOT_WRITABLE": "Failu settings.ini nevar ierakstīt.",
+            "INVALID_VALUE": "Nederīga ievade.",
+            "DB_CONNECTION_FAILED": "Ar jauno datubāzes piekļuvi savienojums neizdodas. Nekas netika saglabāts.",
+            "WOULD_LOCK_OUT": "Jūs atņemtu sev sistēmas administrēšanu. Nekas netika saglabāts.",
+            "NO_PERMISSION": "Sistēmas iestatījumus drīkst mainīt tikai sistēmas administratori."
+        }
+    }
+}

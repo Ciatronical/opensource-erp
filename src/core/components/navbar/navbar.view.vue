@@ -100,7 +100,9 @@
     <!-- Rechte Seite: darf nie abgeschnitten werden -->
     <div class="navbar-right">
 
-    <!-- Firmenlogo oder Firmenname — Klick öffnet Firmenliste -->
+    <!-- Firmenlogo oder Firmenname — öffnet das Systemmenü: Firmenwechsel,
+         für Systemadministratoren Verwaltung und Systemeinstellungen, dazu
+         Firmenkonfiguration, Werkzeuge und Hilfe -->
     <v-menu v-if="showCompany" v-model="clientMenuOpen" location="bottom end" :close-on-content-click="true" open-on-hover>
       <template #activator="{ props: menuProps }">
         <div v-bind="menuProps" class="d-flex align-center cursor-pointer">
@@ -149,6 +151,10 @@
         <v-list-item :to="{ name: 'system-update' }" @click="clientMenuOpen = false">
           <template #prepend><v-icon size="small" class="me-2">mdi-update</v-icon></template>
           <v-list-item-title class="text-body-2">{{ t('SystemMenu.systemUpdate') }}</v-list-item-title>
+        </v-list-item>
+        <v-list-item v-if="oserpData.session.is_admin" :to="{ name: 'system-settings' }" @click="clientMenuOpen = false">
+          <template #prepend><v-icon size="small" class="me-2">mdi-file-cog-outline</v-icon></template>
+          <v-list-item-title class="text-body-2">{{ t('SystemMenu.systemSettings') }}</v-list-item-title>
         </v-list-item>
         <v-divider class="my-1" />
         <v-list-item :to="{ name: 'docs' }" @click="clientMenuOpen = false">

@@ -58,7 +58,8 @@
         "dataDeletion": "/andmete-kustutamine",
         "tafel": "/teadetetahvel/haldus",
         "newArticle": "/artikkel/uus",
-        "admin": "/susteem/haldus"
+        "admin": "/susteem/haldus",
+        "systemSettings": "/susteem/seaded"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Viga: Paroolifaili api/config/api.passwd.php ei leitud. Palun nimetage fail api/config/api.passwd.php.example umber api/config/api.passwd.php ja kohandage seadeid vastavalt.",
@@ -95,7 +96,8 @@
         "systemUpdate": "Süsteemi uuendamine",
         "about": "Teave",
         "docs": "Dokumentatsioon",
-        "administration": "Kasutajad ja ettevõtted"
+        "administration": "Kasutajad ja ettevõtted",
+        "systemSettings": "Süsteemi seaded"
     },
     "DocsView": {
         "title": "Dokumentatsioon",

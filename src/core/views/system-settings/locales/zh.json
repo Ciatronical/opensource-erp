@@ -1,0 +1,82 @@
+{
+    "SystemSettingsView": {
+        "title": "系统设置",
+        "subtitle": "本安装的配置文件（settings.ini）",
+        "reload": "重新加载",
+        "save": "保存",
+        "file": "文件",
+        "notice": "更改从下一次请求起生效。保存前会创建备份副本；文件中的注释会丢失。在 Docker 中，容器每次启动时都会重新生成该文件。",
+        "notWritable": "Web 服务器无法写入该文件。无法在此保存更改。",
+        "defaultValue": "默认：{value}",
+        "secretKeep": "已保存——留空则保留",
+        "secretEmpty": "未设置",
+        "extraTitle": "其他条目",
+        "extraHint": "表单不认识这些条目。保存时会保留它们。",
+        "confirmTitle": "保存更改？",
+        "confirmIntro": "将更改以下条目：",
+        "removed": "已删除，使用默认值",
+        "warnDatabase": "保存前会测试新的数据库访问。之后请重新加载 PHP-FPM，因为现有连接会保留旧的访问。",
+        "warnCookie": "新的 Cookie 名称会使所有用户退出登录。",
+        "warnDemo": "在演示模式下，演示数据库会定期重置。切勿在含有真实数据的安装中启用。",
+        "cancel": "取消",
+        "saved": "系统设置已保存。",
+        "savedReload": "已保存。请重新加载 PHP-FPM，使新的数据库访问生效。",
+        "required": "必填",
+        "invalidInteger": "仅限整数",
+        "invalidPath": "仅限绝对路径",
+        "invalidChars": "不能包含换行、引号或反斜杠",
+        "sections": {
+            "database": "认证数据库访问",
+            "session": "登录会话",
+            "logging": "日志",
+            "system": "系统",
+            "telephony": "电话",
+            "demo": "演示模式",
+            "company": "管理"
+        },
+        "fields": {
+            "database": {
+                "host": "数据库服务器",
+                "port": "数据库服务器端口",
+                "auth_db": "包含用户、权限和客户的认证数据库",
+                "auth_user": "数据库用户",
+                "auth_pass": "数据库用户的密码，以混淆形式保存"
+            },
+            "session": {
+                "cookie_name": "会话 Cookie 名称",
+                "cookie_same_site": "会话 Cookie 的 SameSite 规则"
+            },
+            "logging": {
+                "debug_log_file": "运行日志文件",
+                "api_log_file": "API 调用日志文件",
+                "max_log_size": "日志文件被重命名的字节大小"
+            },
+            "system": {
+                "timezone": "所有时间戳使用的时区",
+                "debug": "详细日志，生产环境中关闭",
+                "templates_dir": "打印和商店模板，相对路径从 backend/ 开始",
+                "backup_dir": "数据库备份的目标位置",
+                "shop_sites_dir": "商店网站目录的限制",
+                "shop_publish_command_path": "生成商店网站的程序，商店设置的后备值"
+            },
+            "telephony": {
+                "monitor_dir": "通话录音目录"
+            },
+            "demo": {
+                "enabled": "演示模式，数据会定期重置",
+                "company_db": "被重置的数据库",
+                "inactivity_minutes": "无活动多少分钟后重置"
+            },
+            "company": {
+                "admin_users": "拥有系统管理权限的登录名，用逗号分隔"
+            }
+        },
+        "errors": {
+            "SETTINGS_NOT_WRITABLE": "无法写入 settings.ini。",
+            "INVALID_VALUE": "输入无效。",
+            "DB_CONNECTION_FAILED": "使用新的数据库访问无法连接。未保存任何内容。",
+            "WOULD_LOCK_OUT": "您将取消自己的系统管理权限。未保存任何内容。",
+            "NO_PERMISSION": "只有系统管理员可以更改系统设置。"
+        }
+    }
+}

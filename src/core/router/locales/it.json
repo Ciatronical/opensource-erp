@@ -58,7 +58,8 @@
         "dataDeletion": "/cancellazione-dati",
         "tafel": "/bacheca/gestione",
         "newArticle": "/articolo/nuovo",
-        "admin": "/sistema/amministrazione"
+        "admin": "/sistema/amministrazione",
+        "systemSettings": "/sistema/impostazioni"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Errore: Il file della password api/config/api.passwd.php non è stato trovato. Rinominare il file api/config/api.passwd.php.example in api/config/api.passwd.php e regolare le impostazioni.",
@@ -95,7 +96,8 @@
         "systemUpdate": "Aggiornamento del sistema",
         "about": "Informazioni",
         "docs": "Documentazione",
-        "administration": "Utenti e aziende"
+        "administration": "Utenti e aziende",
+        "systemSettings": "Impostazioni di sistema"
     },
     "DocsView": {
         "title": "Documentazione",

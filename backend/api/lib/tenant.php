@@ -937,9 +937,12 @@ function tenantDropDatabase(PDO $adminPdo, $dbname) {
  * @param ApiDatabase $authDb Auth-Verbindung
  * @param int $userId Benutzer-ID
  * @param string $login Anmeldename
+ * @param array|null $settingsAdmins Logins aus admin_users; null = aus der settings.ini.
+ *        Andere Listen beantworten die Frage "wäre er es mit dieser Liste noch?"
+ *        — die Systemeinstellungen fragen so, bevor sie admin_users ändern.
  * @return array ['is_admin' => bool, 'source' => 'explicit'|'settings'|'legacy_right'|null, 'legacy_mode' => bool]
  */
-function tenantAdminStatus($authDb, $userId, $login) {
+function tenantAdminStatus($authDb, $userId, $login, ?array $settingsAdmins = null) {
     $row = $authDb->getOne(
         'SELECT
             EXISTS (SELECT 1 FROM auth.user_config WHERE user_id = :uid AND cfg_key = \'oserp_admin\' AND cfg_value IN (\'1\', \'true\', \'t\')) AS explicit_admin,
@@ -950,9 +953,11 @@ function tenantAdminStatus($authDb, $userId, $login) {
     );
     $t = fn($v) => in_array($v, [true, 't', '1', 1], true);
 
-    $settingsAdmins = defined('COMPANY_ADMIN_USERS') && COMPANY_ADMIN_USERS !== ''
-        ? array_filter(array_map('trim', explode(',', COMPANY_ADMIN_USERS)))
-        : [];
+    if (null === $settingsAdmins) {
+        $settingsAdmins = defined('COMPANY_ADMIN_USERS') && COMPANY_ADMIN_USERS !== ''
+            ? array_filter(array_map('trim', explode(',', COMPANY_ADMIN_USERS)))
+            : [];
+    }
     $legacyMode = !$t($row['any_explicit']) && empty($settingsAdmins);
 
     if ($t($row['explicit_admin'])) {

@@ -1,0 +1,82 @@
+{
+    "SystemSettingsView": {
+        "title": "Configuración del sistema",
+        "subtitle": "Archivo de configuración de esta instalación (settings.ini)",
+        "reload": "Recargar",
+        "save": "Guardar",
+        "file": "Archivo",
+        "notice": "Los cambios se aplican a partir de la próxima petición. Antes de guardar se crea una copia de seguridad; los comentarios del archivo se pierden. En Docker el contenedor vuelve a generar el archivo en cada inicio.",
+        "notWritable": "El servidor web no puede escribir el archivo. Aquí no se pueden guardar cambios.",
+        "defaultValue": "Predeterminado: {value}",
+        "secretKeep": "guardado – dejar vacío para conservar",
+        "secretEmpty": "sin definir",
+        "extraTitle": "Otras entradas",
+        "extraHint": "El formulario no conoce estas entradas. Se conservan al guardar.",
+        "confirmTitle": "¿Guardar los cambios?",
+        "confirmIntro": "Se modificarán estas entradas:",
+        "removed": "eliminado, se aplica el valor predeterminado",
+        "warnDatabase": "El nuevo acceso a la base de datos se prueba antes de guardar. Después recargue PHP-FPM, porque las conexiones existentes conservan el acceso anterior.",
+        "warnCookie": "Un nuevo nombre de cookie cierra la sesión de todos los usuarios.",
+        "warnDemo": "En modo demo la base de datos de demostración se restablece periódicamente. No lo active nunca en una instalación con datos reales.",
+        "cancel": "Cancelar",
+        "saved": "Configuración del sistema guardada.",
+        "savedReload": "Guardado. Recargue PHP-FPM para que se aplique el nuevo acceso a la base de datos.",
+        "required": "Obligatorio",
+        "invalidInteger": "Solo números enteros",
+        "invalidPath": "Solo una ruta absoluta",
+        "invalidChars": "Sin saltos de línea, comillas ni barras invertidas",
+        "sections": {
+            "database": "Acceso a la base de datos de autenticación",
+            "session": "Sesión de inicio",
+            "logging": "Registros",
+            "system": "Sistema",
+            "telephony": "Telefonía",
+            "demo": "Modo demo",
+            "company": "Administración"
+        },
+        "fields": {
+            "database": {
+                "host": "Servidor de base de datos",
+                "port": "Puerto del servidor de base de datos",
+                "auth_db": "Base de datos de autenticación con usuarios, permisos y clientes",
+                "auth_user": "Usuario de la base de datos",
+                "auth_pass": "Contraseña del usuario de la base de datos, se guarda ofuscada"
+            },
+            "session": {
+                "cookie_name": "Nombre de la cookie de sesión",
+                "cookie_same_site": "Regla SameSite de la cookie de sesión"
+            },
+            "logging": {
+                "debug_log_file": "Archivo del registro de ejecución",
+                "api_log_file": "Archivo del registro de llamadas a la API",
+                "max_log_size": "Tamaño en bytes a partir del cual se renombra el archivo de registro"
+            },
+            "system": {
+                "timezone": "Zona horaria para todas las marcas de tiempo",
+                "debug": "Registro detallado, desactivado en producción",
+                "templates_dir": "Plantillas de impresión y tienda, las rutas relativas parten de backend/",
+                "backup_dir": "Destino de las copias de seguridad de la base de datos",
+                "shop_sites_dir": "Límite para los directorios de los sitios web de la tienda",
+                "shop_publish_command_path": "Programa que construye el sitio web de la tienda, respaldo del ajuste de la tienda"
+            },
+            "telephony": {
+                "monitor_dir": "Directorio de grabaciones de llamadas"
+            },
+            "demo": {
+                "enabled": "Modo demo, los datos se restablecen periódicamente",
+                "company_db": "Base de datos que se restablece",
+                "inactivity_minutes": "Minutos sin actividad hasta el restablecimiento"
+            },
+            "company": {
+                "admin_users": "Inicios de sesión con administración del sistema, separados por comas"
+            }
+        },
+        "errors": {
+            "SETTINGS_NOT_WRITABLE": "No se puede escribir settings.ini.",
+            "INVALID_VALUE": "Entrada no válida.",
+            "DB_CONNECTION_FAILED": "No hay conexión con el nuevo acceso a la base de datos. No se guardó nada.",
+            "WOULD_LOCK_OUT": "Se quitaría a sí mismo la administración del sistema. No se guardó nada.",
+            "NO_PERMISSION": "Solo los administradores del sistema pueden cambiar la configuración del sistema."
+        }
+    }
+}

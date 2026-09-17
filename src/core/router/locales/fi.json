@@ -58,7 +58,8 @@
         "dataDeletion": "/tietojen-poisto",
         "tafel": "/ilmoitustaulu/hallinta",
         "newArticle": "/tuote/uusi",
-        "admin": "/jarjestelma/hallinta"
+        "admin": "/jarjestelma/hallinta",
+        "systemSettings": "/jarjestelma/asetukset"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Virhe: Salasanatiedostoa api/config/api.passwd.php ei löytynyt. Nimeä tiedosto api/config/api.passwd.php.example uudelleen muotoon api/config/api.passwd.php ja muokkaa asetuksia vastaavasti.",
@@ -95,7 +96,8 @@
         "systemUpdate": "Järjestelmäpäivitys",
         "about": "Tietoja",
         "docs": "Dokumentaatio",
-        "administration": "Käyttäjät ja yritykset"
+        "administration": "Käyttäjät ja yritykset",
+        "systemSettings": "Järjestelmäasetukset"
     },
     "DocsView": {
         "title": "Dokumentaatio",

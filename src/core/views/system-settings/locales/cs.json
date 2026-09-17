@@ -1,0 +1,82 @@
+{
+    "SystemSettingsView": {
+        "title": "Nastavení systému",
+        "subtitle": "Konfigurační soubor této instalace (settings.ini)",
+        "reload": "Znovu načíst",
+        "save": "Uložit",
+        "file": "Soubor",
+        "notice": "Změny platí od dalšího požadavku. Před uložením se vytvoří záložní kopie; komentáře v souboru se ztratí. V Dockeru kontejner soubor při každém startu vytvoří znovu.",
+        "notWritable": "Soubor není pro webový server zapisovatelný. Změny zde nelze uložit.",
+        "defaultValue": "Výchozí: {value}",
+        "secretKeep": "uloženo – ponechte prázdné pro zachování",
+        "secretEmpty": "nenastaveno",
+        "extraTitle": "Další položky",
+        "extraHint": "Tyto položky formulář nezná. Při uložení zůstanou zachovány.",
+        "confirmTitle": "Uložit změny?",
+        "confirmIntro": "Změní se tyto položky:",
+        "removed": "odstraněno, platí výchozí hodnota",
+        "warnDatabase": "Nový přístup k databázi se před uložením vyzkouší. Poté znovu načtěte PHP-FPM, protože stávající spojení si ponechávají starý přístup.",
+        "warnCookie": "Nový název cookie odhlásí všechny uživatele.",
+        "warnDemo": "V demo režimu se demo databáze pravidelně obnovuje. Nikdy jej nezapínejte na instalaci se skutečnými daty.",
+        "cancel": "Zrušit",
+        "saved": "Nastavení systému uloženo.",
+        "savedReload": "Uloženo. Znovu načtěte PHP-FPM, aby platil nový přístup k databázi.",
+        "required": "Povinné pole",
+        "invalidInteger": "Pouze celé číslo",
+        "invalidPath": "Pouze absolutní cesta",
+        "invalidChars": "Bez zalomení řádků, uvozovek a zpětných lomítek",
+        "sections": {
+            "database": "Přístup k autentizační databázi",
+            "session": "Přihlašovací relace",
+            "logging": "Protokoly",
+            "system": "Systém",
+            "telephony": "Telefonie",
+            "demo": "Demo režim",
+            "company": "Správa"
+        },
+        "fields": {
+            "database": {
+                "host": "Databázový server",
+                "port": "Port databázového serveru",
+                "auth_db": "Autentizační databáze s uživateli, právy a klienty",
+                "auth_user": "Uživatel databáze",
+                "auth_pass": "Heslo uživatele databáze, ukládá se zakryté"
+            },
+            "session": {
+                "cookie_name": "Název cookie relace",
+                "cookie_same_site": "Pravidlo SameSite pro cookie relace"
+            },
+            "logging": {
+                "debug_log_file": "Soubor pro protokol běhu",
+                "api_log_file": "Soubor pro protokol volání API",
+                "max_log_size": "Velikost v bajtech, od které se soubor protokolu přejmenuje"
+            },
+            "system": {
+                "timezone": "Časové pásmo pro všechna časová razítka",
+                "debug": "Podrobný protokol, v provozu vypnuto",
+                "templates_dir": "Tiskové a obchodní šablony, relativní cesty začínají v backend/",
+                "backup_dir": "Cíl záloh databáze",
+                "shop_sites_dir": "Hranice pro adresáře webů obchodu",
+                "shop_publish_command_path": "Program pro sestavení webu obchodu, záloha pro nastavení obchodu"
+            },
+            "telephony": {
+                "monitor_dir": "Adresář záznamů hovorů"
+            },
+            "demo": {
+                "enabled": "Demo režim, data se pravidelně obnovují",
+                "company_db": "Databáze, která se obnovuje",
+                "inactivity_minutes": "Minuty bez provozu do obnovení"
+            },
+            "company": {
+                "admin_users": "Přihlašovací jména se správou systému, oddělená čárkami"
+            }
+        },
+        "errors": {
+            "SETTINGS_NOT_WRITABLE": "Soubor settings.ini nelze zapsat.",
+            "INVALID_VALUE": "Neplatný vstup.",
+            "DB_CONNECTION_FAILED": "S novým přístupem k databázi se nelze připojit. Nic nebylo uloženo.",
+            "WOULD_LOCK_OUT": "Odebrali byste si vlastní správu systému. Nic nebylo uloženo.",
+            "NO_PERMISSION": "Nastavení systému smí měnit jen správci systému."
+        }
+    }
+}

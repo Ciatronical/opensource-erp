@@ -1,0 +1,82 @@
+{
+    "SystemSettingsView": {
+        "title": "Systemeinstellungen",
+        "subtitle": "Konfigurationsdatei dieser Installation (settings.ini)",
+        "reload": "Neu laden",
+        "save": "Speichern",
+        "file": "Datei",
+        "notice": "Änderungen wirken ab der nächsten Anfrage. Vor dem Speichern wird eine Sicherungskopie angelegt; Kommentare in der Datei gehen dabei verloren. Unter Docker erzeugt der Container die Datei bei jedem Start neu.",
+        "notWritable": "Die Datei ist für den Webserver nicht beschreibbar. Änderungen lassen sich hier nicht speichern.",
+        "defaultValue": "Vorgabe: {value}",
+        "secretKeep": "hinterlegt – leer lassen zum Behalten",
+        "secretEmpty": "nicht gesetzt",
+        "extraTitle": "Weitere Einträge",
+        "extraHint": "Diese Einträge kennt das Formular nicht. Sie bleiben beim Speichern erhalten.",
+        "confirmTitle": "Änderungen speichern?",
+        "confirmIntro": "Diese Einträge werden geändert:",
+        "removed": "entfernt, es gilt die Vorgabe",
+        "warnDatabase": "Der neue Datenbankzugang wird vor dem Speichern ausprobiert. Danach PHP-FPM neu laden, weil bestehende Verbindungen den alten Zugang behalten.",
+        "warnCookie": "Ein neuer Cookie-Name meldet alle Benutzer ab.",
+        "warnDemo": "Im Demo-Betrieb wird die Demo-Datenbank regelmäßig zurückgesetzt. Nie auf einer Installation mit echten Daten einschalten.",
+        "cancel": "Abbrechen",
+        "saved": "Systemeinstellungen gespeichert.",
+        "savedReload": "Gespeichert. Bitte PHP-FPM neu laden, damit der neue Datenbankzugang gilt.",
+        "required": "Pflichtfeld",
+        "invalidInteger": "Nur eine ganze Zahl",
+        "invalidPath": "Nur ein absoluter Pfad",
+        "invalidChars": "Keine Zeilenumbrüche, Anführungszeichen oder Backslashes",
+        "sections": {
+            "database": "Zugang zur Auth-Datenbank",
+            "session": "Anmeldesitzung",
+            "logging": "Protokolle",
+            "system": "System",
+            "telephony": "Telefonie",
+            "demo": "Demo-Betrieb",
+            "company": "Administration"
+        },
+        "fields": {
+            "database": {
+                "host": "Datenbankserver",
+                "port": "Port des Datenbankservers",
+                "auth_db": "Auth-Datenbank mit Benutzern, Rechten und Mandanten",
+                "auth_user": "Datenbankbenutzer",
+                "auth_pass": "Passwort des Datenbankbenutzers, wird verschleiert gespeichert"
+            },
+            "session": {
+                "cookie_name": "Name des Sitzungs-Cookies",
+                "cookie_same_site": "SameSite-Regel des Sitzungs-Cookies"
+            },
+            "logging": {
+                "debug_log_file": "Datei für das Ablaufprotokoll",
+                "api_log_file": "Datei für das Protokoll der API-Aufrufe",
+                "max_log_size": "Größe in Bytes, ab der die Protokolldatei umbenannt wird"
+            },
+            "system": {
+                "timezone": "Zeitzone für alle Zeitstempel",
+                "debug": "Ausführliches Protokoll, im Betrieb aus",
+                "templates_dir": "Druck- und Shop-Vorlagen, relative Pfade gelten ab backend/",
+                "backup_dir": "Ziel der Datenbanksicherungen",
+                "shop_sites_dir": "Grenze für die Verzeichnisse der Shop-Webseiten",
+                "shop_publish_command_path": "Programm zum Bauen der Shop-Webseite, Rückfall für die Shop-Einstellung"
+            },
+            "telephony": {
+                "monitor_dir": "Verzeichnis der Gesprächsaufzeichnungen"
+            },
+            "demo": {
+                "enabled": "Demo-Betrieb, Daten werden regelmäßig zurückgesetzt",
+                "company_db": "Datenbank, die zurückgesetzt wird",
+                "inactivity_minutes": "Minuten ohne Betrieb bis zum Zurücksetzen"
+            },
+            "company": {
+                "admin_users": "Logins mit Systemadministration, durch Komma getrennt"
+            }
+        },
+        "errors": {
+            "SETTINGS_NOT_WRITABLE": "Die settings.ini lässt sich nicht schreiben.",
+            "INVALID_VALUE": "Ungültige Eingabe.",
+            "DB_CONNECTION_FAILED": "Mit dem neuen Datenbankzugang gelingt keine Verbindung. Nichts gespeichert.",
+            "WOULD_LOCK_OUT": "Sie würden sich selbst die Systemadministration entziehen. Nichts gespeichert.",
+            "NO_PERMISSION": "Nur Systemadministratoren dürfen die Systemeinstellungen ändern."
+        }
+    }
+}

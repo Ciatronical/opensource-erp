@@ -1,0 +1,82 @@
+{
+    "SystemSettingsView": {
+        "title": "Systemindstillinger",
+        "subtitle": "Konfigurationsfilen for denne installation (settings.ini)",
+        "reload": "Genindlæs",
+        "save": "Gem",
+        "file": "Fil",
+        "notice": "Ændringer gælder fra næste forespørgsel. Før der gemmes, oprettes en sikkerhedskopi; kommentarer i filen går tabt. Under Docker genskaber containeren filen ved hver start.",
+        "notWritable": "Filen kan ikke skrives af webserveren. Ændringer kan ikke gemmes her.",
+        "defaultValue": "Standard: {value}",
+        "secretKeep": "gemt – lad stå tomt for at beholde",
+        "secretEmpty": "ikke angivet",
+        "extraTitle": "Øvrige poster",
+        "extraHint": "Formularen kender ikke disse poster. De bevares, når der gemmes.",
+        "confirmTitle": "Gem ændringer?",
+        "confirmIntro": "Disse poster ændres:",
+        "removed": "fjernet, standarden gælder",
+        "warnDatabase": "Den nye databaseadgang afprøves, før der gemmes. Genindlæs derefter PHP-FPM, fordi eksisterende forbindelser beholder den gamle adgang.",
+        "warnCookie": "Et nyt cookienavn logger alle brugere ud.",
+        "warnDemo": "I demotilstand nulstilles demodatabasen regelmæssigt. Slå den aldrig til på en installation med rigtige data.",
+        "cancel": "Annuller",
+        "saved": "Systemindstillinger gemt.",
+        "savedReload": "Gemt. Genindlæs PHP-FPM, så den nye databaseadgang gælder.",
+        "required": "Påkrævet",
+        "invalidInteger": "Kun heltal",
+        "invalidPath": "Kun en absolut sti",
+        "invalidChars": "Ingen linjeskift, anførselstegn eller omvendte skråstreger",
+        "sections": {
+            "database": "Adgang til auth-databasen",
+            "session": "Login-session",
+            "logging": "Logfiler",
+            "system": "System",
+            "telephony": "Telefoni",
+            "demo": "Demotilstand",
+            "company": "Administration"
+        },
+        "fields": {
+            "database": {
+                "host": "Databaseserver",
+                "port": "Port for databaseserveren",
+                "auth_db": "Auth-database med brugere, rettigheder og klienter",
+                "auth_user": "Databasebruger",
+                "auth_pass": "Adgangskode for databasebrugeren, gemmes tilsløret"
+            },
+            "session": {
+                "cookie_name": "Navn på sessionscookien",
+                "cookie_same_site": "SameSite-regel for sessionscookien"
+            },
+            "logging": {
+                "debug_log_file": "Fil til forløbsloggen",
+                "api_log_file": "Fil til loggen over API-kald",
+                "max_log_size": "Størrelse i bytes, hvorefter logfilen omdøbes"
+            },
+            "system": {
+                "timezone": "Tidszone for alle tidsstempler",
+                "debug": "Udførlig logning, slået fra i drift",
+                "templates_dir": "Udskrifts- og shopskabeloner, relative stier starter i backend/",
+                "backup_dir": "Mål for databasebackups",
+                "shop_sites_dir": "Grænse for shop-webstedernes mapper",
+                "shop_publish_command_path": "Program der bygger shop-webstedet, reserve for shopindstillingen"
+            },
+            "telephony": {
+                "monitor_dir": "Mappe med samtaleoptagelser"
+            },
+            "demo": {
+                "enabled": "Demotilstand, data nulstilles regelmæssigt",
+                "company_db": "Database der nulstilles",
+                "inactivity_minutes": "Minutter uden aktivitet før nulstilling"
+            },
+            "company": {
+                "admin_users": "Logins med systemadministration, adskilt af kommaer"
+            }
+        },
+        "errors": {
+            "SETTINGS_NOT_WRITABLE": "settings.ini kan ikke skrives.",
+            "INVALID_VALUE": "Ugyldigt input.",
+            "DB_CONNECTION_FAILED": "Ingen forbindelse med den nye databaseadgang. Intet gemt.",
+            "WOULD_LOCK_OUT": "Du ville fratage dig selv systemadministrationen. Intet gemt.",
+            "NO_PERMISSION": "Kun systemadministratorer må ændre systemindstillingerne."
+        }
+    }
+}

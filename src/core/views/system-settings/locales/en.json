@@ -1,0 +1,82 @@
+{
+    "SystemSettingsView": {
+        "title": "System settings",
+        "subtitle": "Configuration file of this installation (settings.ini)",
+        "reload": "Reload",
+        "save": "Save",
+        "file": "File",
+        "notice": "Changes take effect with the next request. A backup copy is created before saving; comments in the file are lost. Under Docker the container recreates the file on every start.",
+        "notWritable": "The file is not writable for the web server. Changes cannot be saved here.",
+        "defaultValue": "Default: {value}",
+        "secretKeep": "stored – leave empty to keep",
+        "secretEmpty": "not set",
+        "extraTitle": "Further entries",
+        "extraHint": "The form does not know these entries. They are kept when saving.",
+        "confirmTitle": "Save changes?",
+        "confirmIntro": "These entries will be changed:",
+        "removed": "removed, the default applies",
+        "warnDatabase": "The new database access is tried before saving. Reload PHP-FPM afterwards, because existing connections keep the old access.",
+        "warnCookie": "A new cookie name logs out all users.",
+        "warnDemo": "In demo mode the demo database is reset regularly. Never enable it on an installation with real data.",
+        "cancel": "Cancel",
+        "saved": "System settings saved.",
+        "savedReload": "Saved. Please reload PHP-FPM so that the new database access applies.",
+        "required": "Required",
+        "invalidInteger": "Whole numbers only",
+        "invalidPath": "Absolute path only",
+        "invalidChars": "No line breaks, quotation marks or backslashes",
+        "sections": {
+            "database": "Access to the auth database",
+            "session": "Login session",
+            "logging": "Logs",
+            "system": "System",
+            "telephony": "Telephony",
+            "demo": "Demo mode",
+            "company": "Administration"
+        },
+        "fields": {
+            "database": {
+                "host": "Database server",
+                "port": "Port of the database server",
+                "auth_db": "Auth database with users, rights and clients",
+                "auth_user": "Database user",
+                "auth_pass": "Password of the database user, stored obfuscated"
+            },
+            "session": {
+                "cookie_name": "Name of the session cookie",
+                "cookie_same_site": "SameSite rule of the session cookie"
+            },
+            "logging": {
+                "debug_log_file": "File for the process log",
+                "api_log_file": "File for the log of API calls",
+                "max_log_size": "Size in bytes after which the log file is renamed"
+            },
+            "system": {
+                "timezone": "Time zone for all timestamps",
+                "debug": "Verbose logging, off in production",
+                "templates_dir": "Print and shop templates, relative paths start at backend/",
+                "backup_dir": "Target of the database backups",
+                "shop_sites_dir": "Limit for the directories of the shop websites",
+                "shop_publish_command_path": "Program that builds the shop website, fallback for the shop setting"
+            },
+            "telephony": {
+                "monitor_dir": "Directory of call recordings"
+            },
+            "demo": {
+                "enabled": "Demo mode, data is reset regularly",
+                "company_db": "Database that is reset",
+                "inactivity_minutes": "Minutes without activity until reset"
+            },
+            "company": {
+                "admin_users": "Logins with system administration, separated by commas"
+            }
+        },
+        "errors": {
+            "SETTINGS_NOT_WRITABLE": "The settings.ini cannot be written.",
+            "INVALID_VALUE": "Invalid input.",
+            "DB_CONNECTION_FAILED": "No connection with the new database access. Nothing saved.",
+            "WOULD_LOCK_OUT": "You would remove your own system administration. Nothing saved.",
+            "NO_PERMISSION": "Only system administrators may change the system settings."
+        }
+    }
+}

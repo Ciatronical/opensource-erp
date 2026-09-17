@@ -1,0 +1,82 @@
+{
+    "SystemSettingsView": {
+        "title": "Süsteemi seaded",
+        "subtitle": "Selle paigalduse konfiguratsioonifail (settings.ini)",
+        "reload": "Laadi uuesti",
+        "save": "Salvesta",
+        "file": "Fail",
+        "notice": "Muudatused kehtivad järgmisest päringust. Enne salvestamist tehakse varukoopia; failis olevad kommentaarid lähevad kaotsi. Dockeris loob konteiner faili igal käivitamisel uuesti.",
+        "notWritable": "Veebiserver ei saa faili kirjutada. Muudatusi ei saa siin salvestada.",
+        "defaultValue": "Vaikimisi: {value}",
+        "secretKeep": "salvestatud – jäta tühjaks, et säilitada",
+        "secretEmpty": "määramata",
+        "extraTitle": "Muud kirjed",
+        "extraHint": "Vorm ei tunne neid kirjeid. Salvestamisel need säilivad.",
+        "confirmTitle": "Salvestada muudatused?",
+        "confirmIntro": "Muudetakse järgmisi kirjeid:",
+        "removed": "eemaldatud, kehtib vaikeväärtus",
+        "warnDatabase": "Uut andmebaasi ligipääsu proovitakse enne salvestamist. Seejärel laadi PHP-FPM uuesti, sest olemasolevad ühendused säilitavad vana ligipääsu.",
+        "warnCookie": "Uus küpsise nimi logib kõik kasutajad välja.",
+        "warnDemo": "Demorežiimis lähtestatakse demoandmebaas regulaarselt. Ära lülita seda kunagi sisse päris andmetega paigaldusel.",
+        "cancel": "Loobu",
+        "saved": "Süsteemi seaded salvestatud.",
+        "savedReload": "Salvestatud. Laadi PHP-FPM uuesti, et uus andmebaasi ligipääs kehtiks.",
+        "required": "Kohustuslik",
+        "invalidInteger": "Ainult täisarv",
+        "invalidPath": "Ainult absoluutne tee",
+        "invalidChars": "Ilma reavahetuste, jutumärkide ja kaldkriipsudeta",
+        "sections": {
+            "database": "Ligipääs autentimise andmebaasile",
+            "session": "Sisselogimise seanss",
+            "logging": "Logid",
+            "system": "Süsteem",
+            "telephony": "Telefonia",
+            "demo": "Demorežiim",
+            "company": "Haldus"
+        },
+        "fields": {
+            "database": {
+                "host": "Andmebaasiserver",
+                "port": "Andmebaasiserveri port",
+                "auth_db": "Autentimise andmebaas kasutajate, õiguste ja klientidega",
+                "auth_user": "Andmebaasi kasutaja",
+                "auth_pass": "Andmebaasi kasutaja parool, salvestatakse varjatult"
+            },
+            "session": {
+                "cookie_name": "Seansiküpsise nimi",
+                "cookie_same_site": "Seansiküpsise SameSite-reegel"
+            },
+            "logging": {
+                "debug_log_file": "Tööprotsessi logi fail",
+                "api_log_file": "API-kutsete logi fail",
+                "max_log_size": "Suurus baitides, millest alates logifail ümber nimetatakse"
+            },
+            "system": {
+                "timezone": "Ajavöönd kõigi ajatemplite jaoks",
+                "debug": "Üksikasjalik logimine, töös välja lülitatud",
+                "templates_dir": "Prindi- ja poemallid, suhtelised teed algavad kataloogist backend/",
+                "backup_dir": "Andmebaasi varukoopiate sihtkoht",
+                "shop_sites_dir": "Piir poe veebisaitide kataloogidele",
+                "shop_publish_command_path": "Programm, mis ehitab poe veebisaidi, varuvariant poe seadele"
+            },
+            "telephony": {
+                "monitor_dir": "Kõnesalvestiste kataloog"
+            },
+            "demo": {
+                "enabled": "Demorežiim, andmed lähtestatakse regulaarselt",
+                "company_db": "Andmebaas, mis lähtestatakse",
+                "inactivity_minutes": "Minutid ilma tegevuseta kuni lähtestamiseni"
+            },
+            "company": {
+                "admin_users": "Süsteemihaldusega kasutajanimed, komadega eraldatud"
+            }
+        },
+        "errors": {
+            "SETTINGS_NOT_WRITABLE": "Faili settings.ini ei saa kirjutada.",
+            "INVALID_VALUE": "Vigane sisend.",
+            "DB_CONNECTION_FAILED": "Uue andmebaasi ligipääsuga ühendus ei õnnestu. Midagi ei salvestatud.",
+            "WOULD_LOCK_OUT": "Võtaksid endalt süsteemihalduse. Midagi ei salvestatud.",
+            "NO_PERMISSION": "Süsteemi seadeid tohivad muuta ainult süsteemiadministraatorid."
+        }
+    }
+}

@@ -34,6 +34,7 @@ const OrderSearchView = () => import('@/core/views/order-search/order-search.vie
 const DocumentListView = () => import('@/core/views/document-list/document.list.view.vue')
 const UserConfigView = () => import('@/core/views/user-config/user-config.view.vue')
 const AdminView = () => import('@/core/views/admin/admin.view.vue')
+const SystemSettingsView = () => import('@/core/views/system-settings/system-settings.view.vue')
 const WallDisplayView = () => import('@/core/views/wall-display/wall-display.view.vue')
 const AnschlagtafelView = () => import('@/core/views/anschlagtafel/anschlagtafel.view.vue')
 const TafelView = () => import('@/core/views/tafel/tafel.view.vue')
@@ -858,6 +859,13 @@ function buildRoutes() {
             ...routePath('routes.admin'),
             name: 'admin',
             component: AdminView,
+            meta: { hideCustomerBar: true, requiresAdmin: true },
+        },
+        // ── Systemeinstellungen: die settings.ini dieser Installation ──
+        {
+            ...routePath('routes.systemSettings'),
+            name: 'system-settings',
+            component: SystemSettingsView,
             meta: { hideCustomerBar: true, requiresAdmin: true },
         },
         {

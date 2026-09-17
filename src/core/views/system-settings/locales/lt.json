@@ -1,0 +1,82 @@
+{
+    "SystemSettingsView": {
+        "title": "Sistemos nustatymai",
+        "subtitle": "Šio diegimo konfigūracijos failas (settings.ini)",
+        "reload": "Įkelti iš naujo",
+        "save": "Išsaugoti",
+        "file": "Failas",
+        "notice": "Pakeitimai galioja nuo kitos užklausos. Prieš išsaugant sukuriama atsarginė kopija; failo komentarai prarandami. Docker aplinkoje konteineris failą sukuria iš naujo kiekvieno paleidimo metu.",
+        "notWritable": "Žiniatinklio serveris negali rašyti į failą. Pakeitimų čia išsaugoti negalima.",
+        "defaultValue": "Numatytoji: {value}",
+        "secretKeep": "išsaugota – palikite tuščią, kad liktų",
+        "secretEmpty": "nenustatyta",
+        "extraTitle": "Kiti įrašai",
+        "extraHint": "Forma šių įrašų nežino. Išsaugant jie išlieka.",
+        "confirmTitle": "Išsaugoti pakeitimus?",
+        "confirmIntro": "Bus pakeisti šie įrašai:",
+        "removed": "pašalinta, galioja numatytoji reikšmė",
+        "warnDatabase": "Nauja prieiga prie duomenų bazės išbandoma prieš išsaugant. Po to iš naujo įkelkite PHP-FPM, nes esami ryšiai išlaiko seną prieigą.",
+        "warnCookie": "Naujas slapuko pavadinimas atjungia visus naudotojus.",
+        "warnDemo": "Demonstraciniu režimu demonstracinė duomenų bazė reguliariai atstatoma. Niekada neįjunkite jo diegime su tikrais duomenimis.",
+        "cancel": "Atšaukti",
+        "saved": "Sistemos nustatymai išsaugoti.",
+        "savedReload": "Išsaugota. Iš naujo įkelkite PHP-FPM, kad galiotų nauja prieiga prie duomenų bazės.",
+        "required": "Privaloma",
+        "invalidInteger": "Tik sveikasis skaičius",
+        "invalidPath": "Tik absoliutus kelias",
+        "invalidChars": "Be eilučių lūžių, kabučių ir atvirkštinių brūkšnių",
+        "sections": {
+            "database": "Prieiga prie autentifikavimo duomenų bazės",
+            "session": "Prisijungimo seansas",
+            "logging": "Žurnalai",
+            "system": "Sistema",
+            "telephony": "Telefonija",
+            "demo": "Demonstracinis režimas",
+            "company": "Administravimas"
+        },
+        "fields": {
+            "database": {
+                "host": "Duomenų bazės serveris",
+                "port": "Duomenų bazės serverio prievadas",
+                "auth_db": "Autentifikavimo duomenų bazė su naudotojais, teisėmis ir klientais",
+                "auth_user": "Duomenų bazės naudotojas",
+                "auth_pass": "Duomenų bazės naudotojo slaptažodis, saugomas užmaskuotas"
+            },
+            "session": {
+                "cookie_name": "Seanso slapuko pavadinimas",
+                "cookie_same_site": "Seanso slapuko SameSite taisyklė"
+            },
+            "logging": {
+                "debug_log_file": "Vykdymo žurnalo failas",
+                "api_log_file": "API iškvietimų žurnalo failas",
+                "max_log_size": "Dydis baitais, nuo kurio žurnalo failas pervadinamas"
+            },
+            "system": {
+                "timezone": "Laiko juosta visoms laiko žymoms",
+                "debug": "Išsamus žurnalas, darbo metu išjungtas",
+                "templates_dir": "Spausdinimo ir parduotuvės šablonai, santykiniai keliai prasideda nuo backend/",
+                "backup_dir": "Duomenų bazės atsarginių kopijų paskirtis",
+                "shop_sites_dir": "Riba parduotuvės svetainių katalogams",
+                "shop_publish_command_path": "Programa, kuri sukuria parduotuvės svetainę, atsarginis variantas parduotuvės nustatymui"
+            },
+            "telephony": {
+                "monitor_dir": "Pokalbių įrašų katalogas"
+            },
+            "demo": {
+                "enabled": "Demonstracinis režimas, duomenys reguliariai atstatomi",
+                "company_db": "Atstatoma duomenų bazė",
+                "inactivity_minutes": "Minutės be veiklos iki atstatymo"
+            },
+            "company": {
+                "admin_users": "Prisijungimo vardai su sistemos administravimu, atskirti kableliais"
+            }
+        },
+        "errors": {
+            "SETTINGS_NOT_WRITABLE": "Nepavyksta įrašyti settings.ini.",
+            "INVALID_VALUE": "Neteisinga įvestis.",
+            "DB_CONNECTION_FAILED": "Su nauja duomenų bazės prieiga prisijungti nepavyksta. Nieko neišsaugota.",
+            "WOULD_LOCK_OUT": "Atimtumėte sau sistemos administravimą. Nieko neišsaugota.",
+            "NO_PERMISSION": "Sistemos nustatymus keisti gali tik sistemos administratoriai."
+        }
+    }
+}

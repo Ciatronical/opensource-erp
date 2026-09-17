@@ -58,7 +58,8 @@
         "dataDeletion": "/duomenu-salinimas",
         "tafel": "/skelbimu-lenta/valdymas",
         "newArticle": "/preke/naujas",
-        "admin": "/sistema/administravimas"
+        "admin": "/sistema/administravimas",
+        "systemSettings": "/sistema/nustatymai"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Klaida: Slaptazodzio failas api/config/api.passwd.php nerastas. Pervadinkite faila api/config/api.passwd.php.example i api/config/api.passwd.php ir pritaikykite nustatymus.",
@@ -95,7 +96,8 @@
         "systemUpdate": "Sistemos atnaujinimas",
         "about": "Apie",
         "docs": "Dokumentacija",
-        "administration": "Vartotojai ir įmonės"
+        "administration": "Vartotojai ir įmonės",
+        "systemSettings": "Sistemos nustatymai"
     },
     "DocsView": {
         "title": "Dokumentacija",

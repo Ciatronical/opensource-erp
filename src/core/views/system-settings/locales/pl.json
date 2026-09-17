@@ -1,0 +1,82 @@
+{
+    "SystemSettingsView": {
+        "title": "Ustawienia systemu",
+        "subtitle": "Plik konfiguracyjny tej instalacji (settings.ini)",
+        "reload": "Wczytaj ponownie",
+        "save": "Zapisz",
+        "file": "Plik",
+        "notice": "Zmiany obowiązują od następnego żądania. Przed zapisem tworzona jest kopia zapasowa; komentarze w pliku zostaną utracone. W Dockerze kontener tworzy plik od nowa przy każdym uruchomieniu.",
+        "notWritable": "Serwer WWW nie może zapisać pliku. Tutaj nie można zapisać zmian.",
+        "defaultValue": "Domyślnie: {value}",
+        "secretKeep": "zapisano – pozostaw puste, aby zachować",
+        "secretEmpty": "nie ustawiono",
+        "extraTitle": "Pozostałe wpisy",
+        "extraHint": "Formularz nie zna tych wpisów. Przy zapisie zostają zachowane.",
+        "confirmTitle": "Zapisać zmiany?",
+        "confirmIntro": "Zostaną zmienione następujące wpisy:",
+        "removed": "usunięto, obowiązuje wartość domyślna",
+        "warnDatabase": "Nowy dostęp do bazy danych jest sprawdzany przed zapisem. Następnie przeładuj PHP-FPM, ponieważ istniejące połączenia zachowują stary dostęp.",
+        "warnCookie": "Nowa nazwa ciasteczka wyloguje wszystkich użytkowników.",
+        "warnDemo": "W trybie demo baza demonstracyjna jest regularnie resetowana. Nigdy nie włączaj go w instalacji z prawdziwymi danymi.",
+        "cancel": "Anuluj",
+        "saved": "Ustawienia systemu zapisane.",
+        "savedReload": "Zapisano. Przeładuj PHP-FPM, aby obowiązywał nowy dostęp do bazy danych.",
+        "required": "Pole wymagane",
+        "invalidInteger": "Tylko liczba całkowita",
+        "invalidPath": "Tylko ścieżka bezwzględna",
+        "invalidChars": "Bez podziałów wiersza, cudzysłowów i ukośników odwrotnych",
+        "sections": {
+            "database": "Dostęp do bazy uwierzytelniania",
+            "session": "Sesja logowania",
+            "logging": "Dzienniki",
+            "system": "System",
+            "telephony": "Telefonia",
+            "demo": "Tryb demo",
+            "company": "Administracja"
+        },
+        "fields": {
+            "database": {
+                "host": "Serwer bazy danych",
+                "port": "Port serwera bazy danych",
+                "auth_db": "Baza uwierzytelniania z użytkownikami, uprawnieniami i klientami",
+                "auth_user": "Użytkownik bazy danych",
+                "auth_pass": "Hasło użytkownika bazy danych, zapisywane w postaci zaciemnionej"
+            },
+            "session": {
+                "cookie_name": "Nazwa ciasteczka sesji",
+                "cookie_same_site": "Reguła SameSite ciasteczka sesji"
+            },
+            "logging": {
+                "debug_log_file": "Plik dziennika przebiegu",
+                "api_log_file": "Plik dziennika wywołań API",
+                "max_log_size": "Rozmiar w bajtach, po przekroczeniu którego plik dziennika zmienia nazwę"
+            },
+            "system": {
+                "timezone": "Strefa czasowa dla wszystkich znaczników czasu",
+                "debug": "Szczegółowy dziennik, w produkcji wyłączony",
+                "templates_dir": "Szablony wydruków i sklepu, ścieżki względne zaczynają się w backend/",
+                "backup_dir": "Miejsce kopii zapasowych bazy danych",
+                "shop_sites_dir": "Granica dla katalogów stron sklepu",
+                "shop_publish_command_path": "Program budujący stronę sklepu, zapasowy dla ustawienia sklepu"
+            },
+            "telephony": {
+                "monitor_dir": "Katalog nagrań rozmów"
+            },
+            "demo": {
+                "enabled": "Tryb demo, dane są regularnie resetowane",
+                "company_db": "Baza danych, która jest resetowana",
+                "inactivity_minutes": "Minuty bez aktywności do resetu"
+            },
+            "company": {
+                "admin_users": "Loginy z administracją systemu, oddzielone przecinkami"
+            }
+        },
+        "errors": {
+            "SETTINGS_NOT_WRITABLE": "Nie można zapisać settings.ini.",
+            "INVALID_VALUE": "Nieprawidłowe dane.",
+            "DB_CONNECTION_FAILED": "Brak połączenia z nowym dostępem do bazy danych. Nic nie zapisano.",
+            "WOULD_LOCK_OUT": "Odebrałbyś sobie administrację systemu. Nic nie zapisano.",
+            "NO_PERMISSION": "Ustawienia systemu mogą zmieniać tylko administratorzy systemu."
+        }
+    }
+}
