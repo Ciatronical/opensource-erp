@@ -1471,6 +1471,7 @@ function syncWhatsAppTemplates($data) {
              VALUES (:name, :display_name, :category, :language, :header, :body, :footer, :status, :meta_id, :rejection, NOW())
              ON CONFLICT (name, language) DO UPDATE
              SET status = EXCLUDED.status, meta_template_id = EXCLUDED.meta_template_id,
+                 category = EXCLUDED.category,
                  rejection_reason = EXCLUDED.rejection_reason, body_text = EXCLUDED.body_text,
                  header_text = EXCLUDED.header_text, footer_text = EXCLUDED.footer_text,
                  mtime = NOW()",
