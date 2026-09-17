@@ -198,7 +198,7 @@ Auftrag, solange `result` leer ist.
 | `backend/api/shop/lib/publish.php` | `shopQueueJob`, `shopOpenJobs`, `shopJobResult`, `shopListedParts`, `shopRemovePage`, `shopRunJobs` |
 | `tools/shop-publish.php` | Läufer für die Kommandozeile |
 | `backend/api/shop/admin.php` | `publishShopPart`, `publishShopAll`, `getShopPublishJobs`; `deletePartShopData` legt jetzt einen Auftrag zum Entfernen der Seite an |
-| `backend/api/config.php` | `OSERP_SHOP_PUBLISH_COMMAND` aus `settings.ini` |
+| `backend/api/config.php` | `OSERP_SHOP_PUBLISH_COMMAND` aus `settings.ini` — seit 17.09.2026 `OSERP_SHOP_PUBLISH_COMMAND_PATH`, nur noch der Pfad zum Programm |
 | Artikelkarte, Shop-Übersicht | „Veröffentlichen" je Artikel, „Alle veröffentlichen" samt Auftragsliste |
 
 **Aufträge:** `publish_part` (ein Artikel), `publish_all` (alle Artikel mit
@@ -215,10 +215,12 @@ php tools/shop-publish.php --list-clients
 
 Als Cron-Eintrag gedacht, etwa alle fünf Minuten. Eine Sperrdatei je Mandant
 unter `backend/tmp/` verhindert zwei gleichzeitige Läufe — der Bau löscht das
-ausgelieferte Verzeichnis. Der Baubefehl steht in der `settings.ini`
-(`shop_publish_command`, ausgeführt im Verzeichnis der Shop-Webseite), nicht in
-den Mandanteneinstellungen: einen Befehl soll niemand über die Oberfläche
-setzen können. Ohne Befehl werden nur Dateien geschrieben.
+ausgelieferte Verzeichnis. Gebaut wird mit dem Programm aus
+`shop_publish_command_path` — Shop-Einstellung des Mandanten; ist sie leer,
+gilt der Eintrag aus der `settings.ini`. Eingestellt wird nur der Pfad; die Befehlszeile
+setzt die Erweiterung selbst zusammen und prüft den Pfad vorher, damit sich
+über die Oberfläche kein Befehl unterschieben lässt. Ohne Programm werden nur
+Dateien geschrieben.
 
 **Fehler halten die Schlange nicht auf.** Jeder Auftrag bekommt sein Ergebnis
 (`ok: …` oder `Fehler: …`), auch `publish_all` zählt fehlgeschlagene Artikel

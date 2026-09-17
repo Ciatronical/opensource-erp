@@ -37,8 +37,9 @@ Der Ablauf steht ausführlich in `shop-bridge-abloesung.md` unter Stufe D. Kurz:
    denselben Wert braucht; der mitgelieferte Proxy bekommt ihn vom Läufer über
    `oserp-shop/config.php`. Der Schlüssel unterscheidet die Mandanten — zwei
    Firmen dürfen nicht denselben haben.
-3. `settings.ini`: `shop_publish_command`, der Befehl, der die Webseite baut.
-   Ohne ihn werden nur Dateien geschrieben.
+3. Programm zum Bauen: Pfad zum Hugo-Programm in der Shop-Einstellung
+   `shop_publish_command_path`, dazu das Kontrollkästchen für
+   `--cleanDestinationDir`. Ohne Programm werden nur Dateien geschrieben.
 4. `php tools/shop-publish.php --client=<id>` einmal von Hand — legt
    `<webseite>/oserp-shop/` samt `config.php` an.
 5. In der `config.json` der Instanz die Mounts auf `oserp-shop/` setzen.
@@ -59,8 +60,9 @@ Ein Lauf tut der Reihe nach:
    nur Geändertes nach `<webseite>/oserp-shop/`.
 3. **Kategorieübersicht** erneuern, wenn Seiten geschrieben oder entfernt
    wurden.
-4. **Bauen**, wenn sich etwas geändert hat und `shop_publish_command` gesetzt
-   ist.
+4. **Bauen**, wenn sich etwas geändert hat und ein gültiges Programm
+   eingestellt ist. Die Befehlszeile setzt die Erweiterung selbst zusammen,
+   siehe unten.
 
 Je Mandant läuft nur einer. Zwei Sperren sichern das:
 
@@ -142,20 +144,32 @@ Oberfläche, nicht den Schlüssel.
 | Verkauf | `shop_contact_login`, `shop_target_account`, `shop_incoming_account`, `shop_standard_taxzone`, `shop_standard_currency`, `shop_tax_included`, `shop_active_price_source`, `shop_shipping_partnumber`, `shop_free_shipping_from` |
 | Zahlung | Bankverbindung (`shop_payment_*`), PayPal (`shop_paypal_*`) |
 | Adressen der Webseite | `shop_base_url`, `shop_products_link`, `shop_category_link`, `shop_images_link`, `shop_thumbnails_link`, `shop_downloads_link` |
-| Veröffentlichung | `shop_template_set`, `shop_sites_dir`, `shop_site_dir`, `shop_content_dir`, `shop_images_dir`, `shop_thumbnails_dir`, `shop_thumbnail_size` |
+| Veröffentlichung | `shop_template_set`, `shop_sites_dir`, `shop_site_dir`, `shop_content_dir`, `shop_publish_command_path`, `shop_publish_clean_destination`, `shop_images_dir`, `shop_thumbnails_dir`, `shop_thumbnail_size` |
 | Sonstiges | `shop_search_weighting`, `shop_invoice_mail_subject`, `shop_withdrawal_mail_to` |
 
-Wurzelverzeichnis und Bau-Befehl stehen hier, weil jede Firma ihre eigene
+Wurzelverzeichnis und Programm stehen hier, weil jede Firma ihre eigene
 Webseite hat. Die übrigen Pfade sind relativ und müssen unterhalb von
 `shop_sites_dir` liegen.
 
-**In der `settings.ini`** stehen dagegen zwei Dinge, die nicht über die
-Oberfläche gesetzt werden sollen:
+**Wie gebaut wird.** Eingestellt wird nur der Pfad zum Programm, nie eine
+Befehlszeile. Die setzt die Erweiterung vor jedem Bau selbst zusammen — für den
+Läufer wie für „Jetzt ausführen“, beide über `shopPublishCommand()`:
+
+```
+cd '<Verzeichnis der Webseite>' && '<Programm>' [--cleanDestinationDir] 2>&1
+```
+
+Der Pfad wird vorher geprüft (absolut, ohne Leerraum, vorhandene und
+ausführbare Datei) und geht maskiert hinein; Argumente lassen sich so nicht
+unterschieben. Ein ungültiger Pfad zählt als Fehler des Laufs und erscheint in
+der Shop-Übersicht als Hinweis.
+
+**In der `settings.ini`** stehen zwei Ergänzungen:
 
 | Eintrag unter `[system]` | Wirkung |
 | --- | --- |
-| `shop_publish_command` | Der Befehl, der die Webseite baut. Er läuft auf dem Server, deshalb allein hier. Ohne ihn werden nur Dateien geschrieben. |
-| `shop_sites_dir` | Nur als Grenze, freiwillig: ist er gesetzt, muss das eingestellte Wurzelverzeichnis darunter liegen, sonst `SHOP_SITES_DIR_OUTSIDE_LIMIT`. |
+| `shop_publish_command_path` | Rückfall: gilt, wenn die Shop-Einstellung leer ist, und erscheint dort als Vorgabe im leeren Feld. Ein ungültiger Wert in der Shop-Einstellung ist ein Fehler, kein Rückfall. |
+| `shop_sites_dir` | Grenze: das eingestellte Wurzelverzeichnis muss darunter liegen, sonst `SHOP_SITES_DIR_OUTSIDE_LIMIT`. |
 
 ## Wiederkehrende Aufgaben
 

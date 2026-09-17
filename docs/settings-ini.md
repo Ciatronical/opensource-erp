@@ -83,7 +83,7 @@ Die Datenbanken der Mandanten stehen **nicht** hier, sondern in `auth.clients`.
 | `templates_dir` | `templates` | Druck- und Shop-Vorlagen. Relative Pfade gelten ab `backend/`, also `backend/templates` |
 | `backup_dir` | `backups/` im Wurzelverzeichnis | Ziel der Datenbanksicherungen |
 | `shop_sites_dir` | leer | Grenze für die Shop-Webseiten, freiwillig — siehe unten |
-| `shop_publish_command` | leer | Befehl, der die Shop-Webseite baut — siehe unten |
+| `shop_publish_command_path` | leer | Pfad zum Programm, das die Shop-Webseite baut — siehe unten |
 
 ### [telephony]
 
@@ -112,14 +112,23 @@ Einzelheiten in `docker/SETUP_DEMO.md`.
 Sie fallen aus dem Rahmen, weil das Übrige der Shop-Erweiterung je Mandant in
 der Firmenkonfiguration steht.
 
-**`shop_publish_command`** ist der Befehl, der die Webseite baut, etwa der
-Hugo-Aufruf. Er steht hier und nirgendwo sonst: Ausgeführt wird er auf dem
-Server, und das soll niemand über die Oberfläche setzen können. Ohne ihn
-schreibt die Erweiterung nur Dateien und baut nicht. Ausgeführt wird er im
-Verzeichnis der Webseite.
+**`shop_publish_command_path`** ist der Pfad zum Programm, das die Webseite
+baut — nur der Pfad, keine Befehlszeile. Die Befehlszeile setzt die Erweiterung
+selbst zusammen: maskierter Pfad, bei Bedarf `--cleanDestinationDir`,
+ausgeführt im Verzeichnis der Webseite, Hugo schreibt dann nach `public/`.
+Vor jedem Bau prüft sie den Pfad: absolut, ohne Leerraum, vorhandene und
+ausführbare Datei.
+
+Derselbe Schlüssel steht auch in den Shop-Einstellungen des Mandanten, und
+**die gelten zuerst**. Der Eintrag hier ist Rückfall: Er greift nur, wenn die
+Shop-Einstellung leer ist, und erscheint dort als Vorgabe im leeren Feld —
+gespeichert wird er dabei nicht. Ein ungültiger Wert in der Shop-Einstellung
+ist ein Fehler, kein Anlass zum Rückfall. Ohne Eintrag hier und dort schreibt
+die Erweiterung nur Dateien und baut nicht. `--cleanDestinationDir` ist nur in
+den Shop-Einstellungen schaltbar.
 
 ```ini
-shop_publish_command = "/var/www/hugoshops/dev.hugoshop.dev/hugo/hugo --cleanDestinationDir -d public"
+shop_publish_command_path = "/var/www/hugoshops/dev.hugoshop.dev/hugo/hugo"
 ```
 
 **`shop_sites_dir`** ist freiwillig und wirkt nur als Grenze. Wo die Webseite
@@ -185,7 +194,7 @@ max_log_size = 10485760
 timezone = "Europe/Berlin"
 debug = false
 templates_dir = "templates"
-shop_publish_command = ""
+shop_publish_command_path = ""
 
 [company]
 admin_users = "admin"

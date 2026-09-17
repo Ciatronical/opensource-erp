@@ -475,10 +475,15 @@ INSERT INTO defaults_oserp (key, value) VALUES ('shop_thumbnails_link', '') ON C
 -- Steht in der settings.ini ein shop_sites_dir, muss das eingestellte
 -- Verzeichnis darunter liegen — so kann ein Administrator die Grenze ziehen.
 --
--- Der Bau-Befehl steht NICHT hier, sondern allein in der settings.ini: er
--- wird auf dem Server ausgefuehrt, und das soll niemand ueber die Oberflaeche
--- setzen koennen.
+-- Gebaut wird mit dem Programm unter shop_publish_command_path. Das ist nur
+-- ein Pfad, keine Befehlszeile: die Argumente setzt OpensourceERP selbst, und
+-- der Pfad wird vor jedem Bau geprueft (absolut, ohne Leerraum, ausfuehrbare
+-- Datei). Ist der Wert hier leer, gilt ein gleichnamiger Eintrag aus der
+-- settings.ini als Rueckfall.
+-- shop_publish_clean_destination: Hugo mit --cleanDestinationDir aufrufen.
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_sites_dir', '') ON CONFLICT (key) DO NOTHING;
+INSERT INTO defaults_oserp (key, value) VALUES ('shop_publish_command_path', '') ON CONFLICT (key) DO NOTHING;
+INSERT INTO defaults_oserp (key, value) VALUES ('shop_publish_clean_destination', '1') ON CONFLICT (key) DO NOTHING;
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_template_set', 'standard') ON CONFLICT (key) DO NOTHING;
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_site_dir', '') ON CONFLICT (key) DO NOTHING;
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_content_dir', 'content/de/produkt') ON CONFLICT (key) DO NOTHING;

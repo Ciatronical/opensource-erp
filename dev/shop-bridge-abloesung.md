@@ -437,8 +437,10 @@ OpensourceERP gar nicht.
    OpensourceERP (`shop_backend_url`, die Adresse von `backend/shop/`),
    Wurzelverzeichnis und Verzeichnis der Webseite, Vorlagensatz `sonic24`. Die
    Shop-Übersicht zeigt, was noch fehlt.
-4. `settings.ini`: `shop_publish_command` (der Hugo-Aufruf, wie in
-   `publish/run.php`); auf Wunsch `shop_sites_dir` als Grenze.
+4. Programm zum Bauen: Pfad zum Hugo-Programm (`shop_publish_command_path`,
+   wie in `publish/run.php`) und `--cleanDestinationDir` in den
+   Shop-Einstellungen; in der `settings.ini` auf Wunsch derselbe Pfad als
+   Rückfall und `shop_sites_dir` als Grenze.
 5. `php tools/shop-publish.php --client=<id>` einmal von Hand: legt
    `oserp-shop/` samt `config.php` an. Gebaut wird dabei noch mit den alten
    Mounts.

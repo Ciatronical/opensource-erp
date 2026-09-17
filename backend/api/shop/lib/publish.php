@@ -941,6 +941,75 @@ function shopPublishUnlock($db): void {
 }
 
 /**
+ * Das Programm, das die Webseite baut
+ *
+ * Nur ein Pfad, keine Befehlszeile: die Argumente setzt shopPublishCommand()
+ * selbst. Es gilt die Shop-Einstellung shop_publish_command_path des
+ * Mandanten. Ist sie leer, springt der gleichnamige Eintrag aus der
+ * settings.ini ein — als Rückfall, nicht als Vorrang.
+ *
+ * Geprüft wird vor jedem Bau: absoluter Pfad, kein Leerraum (der deutete auf
+ * angehängte Argumente hin, die gehören nicht hierher), vorhandene und
+ * ausführbare Datei.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @return array pfad (leer, wenn nichts eingestellt oder ungültig), quelle, fehler (leer, wenn in Ordnung)
+ */
+function shopPublishProgram($db): array {
+    $ausEinstellung = trim(shopConfigValue($db, 'shop_publish_command_path'));
+    $ausIni = defined('OSERP_SHOP_PUBLISH_COMMAND_PATH') ? trim((string)OSERP_SHOP_PUBLISH_COMMAND_PATH) : '';
+    $pfad = '' !== $ausEinstellung ? $ausEinstellung : $ausIni;
+    $quelle = '' !== $ausEinstellung ? shopConfigLabel('shop_publish_command_path') : 'settings.ini';
+    $ergebnis = ['pfad' => '', 'quelle' => $quelle, 'fehler' => ''];
+
+    if ('' === $pfad) {
+        return $ergebnis;
+    }
+
+    if ('/' !== $pfad[0]) {
+        $ergebnis['fehler'] = "Kein absoluter Pfad ($quelle): $pfad";
+    } elseif (1 === preg_match('/\s/', $pfad)) {
+        $ergebnis['fehler'] = "Nur der Pfad zum Programm, ohne Argumente ($quelle): $pfad";
+    } elseif (!is_file($pfad)) {
+        $ergebnis['fehler'] = "Programm nicht gefunden ($quelle): $pfad";
+    } elseif (!is_executable($pfad)) {
+        $ergebnis['fehler'] = "Programm nicht ausführbar ($quelle): $pfad";
+    } else {
+        $ergebnis['pfad'] = $pfad;
+    }
+
+    return $ergebnis;
+}
+
+/**
+ * Die Befehlszeile, die die Webseite baut
+ *
+ * Zusammengesetzt aus dem geprüften Programm und festen Argumenten — nichts
+ * davon ist frei eingegebener Text, und der Pfad geht maskiert hinein.
+ * Ausgeführt wird sie im Verzeichnis der Webseite; Hugo schreibt dann nach
+ * public/ darunter.
+ *
+ * Beide Wege — der Läufer im Cron und "Jetzt ausführen" im Admin-Panel —
+ * bauen über shopPublishRun() und damit über diese Funktion.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @return array befehl (leer, wenn kein Programm eingestellt), fehler (leer, wenn in Ordnung)
+ */
+function shopPublishCommand($db): array {
+    $programm = shopPublishProgram($db);
+    if ('' === $programm['pfad']) {
+        return ['befehl' => '', 'fehler' => $programm['fehler']];
+    }
+
+    $befehl = escapeshellarg($programm['pfad']);
+    if (shopConfigBool($db, 'shop_publish_clean_destination', true)) {
+        $befehl .= ' --cleanDestinationDir';
+    }
+
+    return ['befehl' => $befehl, 'fehler' => ''];
+}
+
+/**
  * Ein vollständiger Lauf: Aufträge, Paket, Kategorieübersicht, Bau
  *
  * Dieselbe Reihenfolge für beide Wege, den Läufer und das Admin-Panel. Wer
@@ -1000,12 +1069,15 @@ function shopPublishRun($db, ?callable $melden = null, int $limit = 500, ?array 
         }
 
         $geaendert = $bilanz['seiten'] + $bilanz['entfernt'] + $bilanz['kit'] + $bilanz['kategorien'];
-        // Der Bau-Befehl kommt aus der settings.ini, nicht aus den
-        // Mandanteneinstellungen: er wird auf dem Server ausgefuehrt, und das
-        // soll niemand ueber die Oberflaeche setzen koennen.
-        $befehl = defined('OSERP_SHOP_PUBLISH_COMMAND') ? (string)OSERP_SHOP_PUBLISH_COMMAND : '';
+        // Die Befehlszeile setzt die Erweiterung selbst zusammen: geprüfter
+        // Pfad zum Programm plus feste Argumente (shopPublishCommand).
+        $bau = shopPublishCommand($db);
+        $befehl = $bau['befehl'];
 
-        if ($bauen && $geaendert > 0 && '' !== $befehl) {
+        if ($bauen && $geaendert > 0 && '' !== $bau['fehler']) {
+            $bilanz['fehler']++;
+            $sagen('Die Webseite wurde nicht gebaut: '.$bau['fehler']);
+        } elseif ($bauen && $geaendert > 0 && '' !== $befehl) {
             if (!function_exists('exec')) {
                 $bilanz['fehler']++;
                 $sagen('exec() ist abgeschaltet — die Webseite wurde nicht gebaut.');
@@ -1031,7 +1103,7 @@ function shopPublishRun($db, ?callable $melden = null, int $limit = 500, ?array 
                 }
             }
         } elseif ($bauen && $geaendert > 0 && '' === $befehl) {
-            $sagen('Kein shop_publish_command in der settings.ini — es wurden nur Dateien geschrieben.');
+            $sagen('Kein Programm zum Bauen eingestellt — es wurden nur Dateien geschrieben.');
         }
     } finally {
         shopPublishUnlock($db);

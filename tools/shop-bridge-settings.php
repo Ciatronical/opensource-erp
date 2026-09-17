@@ -201,7 +201,7 @@ echo "--   shop_public_key      — neu vergeben; der Läufer trägt ihn in oser
 echo "--   shop_backend_url     — Adresse von OpensourceERP für Proxy und 404-Seite, z.B. https://erp.example/shop/\n";
 echo "--   shop_template_set    — eigener Vorlagensatz der Instanz, falls es einen gibt\n";
 echo "--   shop_allowed_origins — nur ohne Proxy nötig\n";
-echo "--   shop_publish_command — der Hugo-Aufruf, in die settings.ini von OpensourceERP\n";
+echo "--   shop_publish_command_path — Pfad zum Hugo-Programm (Shop-Einstellung; leer: Rückfall auf die settings.ini)\n";
 echo "\n";
 
 foreach ($zuordnung as $schluessel => $w) {

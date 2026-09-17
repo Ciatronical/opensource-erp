@@ -162,11 +162,12 @@ class OserpConfig {
         // liegen; ohne Eintrag gilt allein die Einstellung des Mandanten.
         define('OSERP_SHOP_SITES_DIR', $settings['system']['shop_sites_dir'] ?? '');
 
-        // Shop: Befehl, der die Webseite baut (Hugo). Steht bewusst hier und
-        // nicht in den Mandanteneinstellungen — einen Befehl soll niemand
-        // ueber die Oberflaeche setzen koennen. Leer: es werden nur Dateien
-        // geschrieben. Ausgefuehrt wird er im Verzeichnis der Webseite.
-        define('OSERP_SHOP_PUBLISH_COMMAND', $settings['system']['shop_publish_command'] ?? '');
+        // Shop: Pfad zum Programm, das die Webseite baut (Hugo) — nur der Pfad,
+        // keine Befehlszeile. Die Argumente setzt die Erweiterung selbst
+        // (shopPublishCommand), der Pfad wird vor jedem Bau geprüft. Es gilt
+        // die Shop-Einstellung des Mandanten; dieser Eintrag springt nur ein,
+        // wenn sie leer ist, und erscheint dort als Vorgabe im leeren Feld.
+        define('OSERP_SHOP_PUBLISH_COMMAND_PATH', $settings['system']['shop_publish_command_path'] ?? '');
 
         // Telefonie-Konstanten
         define('TELEPHONY_MONITOR_DIR', $settings['telephony']['monitor_dir'] ?? '/var/spool/asterisk/monitor');

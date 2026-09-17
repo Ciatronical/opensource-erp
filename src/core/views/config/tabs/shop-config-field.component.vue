@@ -30,10 +30,11 @@
                 v-model="werte[field.name]"
                 :label="t(field.label)"
                 :type="field.type === 'password' && !sichtbar ? 'password' : (field.inputType || 'text')"
-                :placeholder="field.type === 'password' ? t(hinterlegt ? 'crm_fields.shopSecretKeep' : 'crm_fields.shopSecretEmpty') : undefined"
-                :persistent-placeholder="field.type === 'password'"
-                :hint="sichtbar ? t('crm_fields.shopKeyGeneratedHint') : undefined"
-                :persistent-hint="sichtbar"
+                :placeholder="field.type === 'password' ? t(hinterlegt ? 'crm_fields.shopSecretKeep' : 'crm_fields.shopSecretEmpty') : (vorgabe || undefined)"
+                :persistent-placeholder="field.type === 'password' || !!vorgabe"
+                :hint="sichtbar ? t('crm_fields.shopKeyGeneratedHint') : (vorgabe ? t('crm_fields.shopFallbackFromIni') : undefined)"
+                :rules="regeln(field)"
+                :persistent-hint="sichtbar || !!vorgabe"
                 :style="field.fieldstyle"
                 hide-details="auto"
                 density="compact"
@@ -128,6 +129,21 @@ const props = defineProps({
      * Passwortfeld "hinterlegt", auch wenn nichts gespeichert ist.
      */
     gesetzt: { type: Object, default: () => ({}) },
+    /**
+     * Vorgaben aus der settings.ini für leere Felder: Schlüssel -> Wert.
+     *
+     * Erscheinen als Platzhalter, nicht als Wert: der Tab speichert bei jeder
+     * Änderung alle Felder, und ein eingetragener Rückfall wäre danach keiner
+     * mehr.
+     */
+    vorgaben: { type: Object, default: () => ({}) },
+})
+
+/** Die Vorgabe aus der settings.ini — nur solange das Feld leer ist */
+const vorgabe = computed(() => {
+    const wert = props.werte[props.field.name]
+    const leer = wert === undefined || wert === null || String(wert).trim() === ''
+    return leer ? (props.vorgaben[props.field.name] || '') : ''
 })
 
 /** Ist zu diesem Feld ein Wert gespeichert? */
@@ -154,6 +170,20 @@ function schluesselErzeugen() {
     const bytes = crypto.getRandomValues(new Uint8Array(32))
     props.werte[props.field.name] = Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('')
     sichtbar.value = true
+}
+
+/**
+ * Prüfregeln aus der Felddefinition
+ *
+ * absolutePath: nur ein Pfad — beginnt mit /, ohne Leerraum. Ob die Datei
+ * existiert und ausführbar ist, kann nur der Server prüfen; das tut er vor
+ * jedem Bau und meldet es in der Shop-Übersicht.
+ */
+function regeln(field) {
+    if ('absolutePath' === field.validate) {
+        return [(wert) => !wert || /^\/\S*$/.test(wert) || t('crm_fields.shopPathInvalid')]
+    }
+    return []
 }
 
 /** Auswahlwerte: erst die des Tabs, sonst die der Firmenkonfiguration */

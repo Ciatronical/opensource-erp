@@ -96,6 +96,10 @@ function getShopStatus($data) {
     if (shopConfigBool($db, 'shop_paypal_sandbox', true)) {
         $hinweise[] = 'shop_paypal_sandbox';
     }
+    // Ohne gültiges Programm werden Seiten geschrieben, aber nicht gebaut
+    if ('' === shopPublishProgram($db)['pfad']) {
+        $hinweise[] = 'shop_publish_command_path';
+    }
 
     resultInfo(true, '', [
         'ready'     => empty($blockierend),

@@ -92,12 +92,13 @@
                             :werte="crmDefaults"
                             :quellen="quellen"
                             :gesetzt="crmSecrets"
+                            :vorgaben="crmFallbacks"
                         />
                     </v-card-text>
                 </v-card>
 
                 <!-- Einzelfeld -->
-                <ShopConfigField v-else :field="field" :werte="crmDefaults" :quellen="quellen" :gesetzt="crmSecrets" />
+                <ShopConfigField v-else :field="field" :werte="crmDefaults" :quellen="quellen" :gesetzt="crmSecrets" :vorgaben="crmFallbacks" />
             </template>
         </template>
     </v-container>
@@ -118,6 +119,11 @@ const props = defineProps({
     },
     /** Geheimnisse: Schlüssel -> hinterlegt ja/nein. Die Werte kommen nie mit */
     crmSecrets: {
+        type: Object,
+        default: () => ({})
+    },
+    /** Vorgaben aus der settings.ini für leere Felder: Schlüssel -> Wert */
+    crmFallbacks: {
         type: Object,
         default: () => ({})
     }

@@ -176,6 +176,7 @@
                             :defaults="['crm','lxcars','shop','anpr','ai_health','employees'].includes(activeTab) ? undefined : defaults"
                             :crm-defaults="['crm','lxcars','shop','anpr','bank','features','ai_health'].includes(activeTab) ? crmDefaults : undefined"
                             :crm-secrets="activeTab === 'shop' ? crmSecrets : undefined"
+                            :crm-fallbacks="activeTab === 'shop' ? crmFallbacks : undefined"
                             :search-query="searchQuery"
                             :open-panel="activeTab === 'add' ? pendingPanel : undefined"
                             :extensions="activeTab === 'features' ? availableExtensions : undefined"
@@ -408,6 +409,14 @@ const crmDefaults = ref({});
  * Backend — hier steht keine Liste davon.
  */
 const crmSecrets = ref({});
+
+/**
+ * Vorgaben aus der settings.ini für leere Felder: Schlüssel -> Wert
+ *
+ * Sie erscheinen im leeren Feld als Platzhalter und werden nicht gespeichert —
+ * sonst wären sie nach dem nächsten Speichern kein Rückfall mehr.
+ */
+const crmFallbacks = ref({});
 const saving = ref(false);
 const lastSaved = ref(null); // Zeitpunkt der letzten erfolgreichen Speicherung
 
@@ -799,6 +808,7 @@ async function loadConfig() {
             defaults.value = result.defaults || {};
             crmDefaults.value = result.defaults_oserp || {};
             crmSecrets.value = result.defaults_oserp_secrets || {};
+            crmFallbacks.value = result.defaults_oserp_fallbacks || {};
         } else {
             console.error('getDefaults fehlgeschlagen:', response.data);
             defaults.value = {};
