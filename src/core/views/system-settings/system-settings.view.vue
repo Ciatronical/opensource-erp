@@ -7,7 +7,7 @@
     Das Formular entsteht aus dem Schema, das das Backend mitliefert
     (systemSettingsSchema): Abschnitte, Schlüssel, Arten. Eine eigene Liste
     führt die Ansicht nicht. Beschriftet ist jedes Feld mit seinem Schlüssel
-    aus der Datei, darunter steht die Beschreibung.
+    aus der Datei; die Beschreibung erscheint am i-Symbol.
 
     Gespeichert wird nicht automatisch, sondern nach einer Rückfrage mit allen
     Änderungen: ein falscher Datenbankzugang sperrt alle aus.
@@ -66,12 +66,15 @@
                                     v-if="feld.type === 'bool'"
                                     v-model="werte[abschnitt.name][feld.key]"
                                     :label="feld.key"
-                                    :hint="beschreibung(abschnitt.name, feld)"
-                                    persistent-hint
+                                    hide-details="auto"
                                     color="primary"
                                     density="compact"
                                     inset
-                                />
+                                >
+                                    <template #append>
+                                        <FeldHilfe :text="beschreibung(abschnitt.name, feld)" />
+                                    </template>
+                                </v-switch>
 
                                 <!-- Feste Auswahl -->
                                 <v-select
@@ -81,12 +84,15 @@
                                     :label="feld.key"
                                     :placeholder="platzhalter(feld)"
                                     :persistent-placeholder="!!platzhalter(feld)"
-                                    :hint="beschreibung(abschnitt.name, feld)"
-                                    persistent-hint
+                                    hide-details="auto"
                                     clearable
                                     density="compact"
                                     variant="outlined"
-                                />
+                                >
+                                    <template #append-inner>
+                                        <FeldHilfe :text="beschreibung(abschnitt.name, feld)" />
+                                    </template>
+                                </v-select>
 
                                 <!-- Zeitzone -->
                                 <v-autocomplete
@@ -96,12 +102,15 @@
                                     :label="feld.key"
                                     :placeholder="platzhalter(feld)"
                                     :persistent-placeholder="!!platzhalter(feld)"
-                                    :hint="beschreibung(abschnitt.name, feld)"
-                                    persistent-hint
+                                    hide-details="auto"
                                     clearable
                                     density="compact"
                                     variant="outlined"
-                                />
+                                >
+                                    <template #append-inner>
+                                        <FeldHilfe :text="beschreibung(abschnitt.name, feld)" />
+                                    </template>
+                                </v-autocomplete>
 
                                 <!-- Text, Zahl, Pfad, Passwort -->
                                 <v-text-field
@@ -112,13 +121,16 @@
                                     :autocomplete="feld.type === 'secret' ? 'new-password' : 'off'"
                                     :placeholder="platzhalter(feld)"
                                     :persistent-placeholder="!!platzhalter(feld)"
-                                    :hint="beschreibung(abschnitt.name, feld)"
-                                    persistent-hint
+                                    hide-details="auto"
                                     :rules="regeln(feld)"
                                     :clearable="feld.type !== 'secret'"
                                     density="compact"
                                     variant="outlined"
-                                />
+                                >
+                                    <template #append-inner>
+                                        <FeldHilfe :text="beschreibung(abschnitt.name, feld)" />
+                                    </template>
+                                </v-text-field>
                             </v-col>
                         </v-row>
                     </v-card-text>
@@ -182,8 +194,9 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, h } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { VIcon, VTooltip } from 'vuetify/components'
 import { oserpStore } from '@/core/stores/oserp.store.js'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
 import * as toasts from '@/core/utils/toasts.js'
@@ -347,6 +360,17 @@ async function speichern() {
         speichert.value = false
     }
 }
+
+/**
+ * Das i-Symbol mit der Kurzbeschreibung — wie in den Shop-Einstellungen
+ * der Firmenkonfiguration (shop-config-field.component.vue)
+ */
+const FeldHilfe = (props) => h(VTooltip, { location: 'top', maxWidth: 360 }, {
+    activator: ({ props: aktivator }) =>
+        h(VIcon, { ...aktivator, size: 'small', color: 'grey' }, () => 'mdi-information-outline'),
+    default: () => props.text,
+})
+FeldHilfe.props = { text: String }
 
 onMounted(laden)
 </script>
