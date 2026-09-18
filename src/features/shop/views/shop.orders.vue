@@ -66,6 +66,8 @@
                     :no-data-text="t('ShopView.orders.empty')"
                     density="compact"
                     items-per-page="25"
+                    class="bestellzeilen"
+                    @click:row="(_, { item }) => rechnungOeffnen(item)"
                 >
                     <template #item.transdate="{ item }">
                         {{ datum(item.transdate) }}
@@ -90,7 +92,7 @@
                             variant="text"
                             size="small"
                             :title="t('ShopView.orders.openInvoice')"
-                            @click="rechnungOeffnen(item)"
+                            @click.stop="rechnungOeffnen(item)"
                         />
                     </template>
                 </v-data-table>
@@ -233,6 +235,8 @@ function zahlungText(zeile) {
 }
 
 function rechnungOeffnen(zeile) {
+    if (!zeile?.ar_id) return
+
     router.push({ name: 'faktura-invoice-view', params: { id: zeile.ar_id } })
 }
 
@@ -259,3 +263,10 @@ onMounted(async () => {
     await schwebendeLaden()
 })
 </script>
+
+<style scoped>
+/* Die ganze Zeile öffnet die Rechnung */
+.bestellzeilen :deep(tbody tr) {
+    cursor: pointer;
+}
+</style>
