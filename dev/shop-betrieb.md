@@ -101,6 +101,26 @@ erledigten.
 
 Ein Ergebnis beginnt mit `ok:` oder `Fehler:`; Fehler stehen rot in der Liste.
 
+### Wo Fehler landen
+
+| Art | Wo sie steht |
+| --- | --- |
+| Fehler in einem Auftrag | in dessen Ergebnis, rot in der Auftragsliste |
+| Gescheiterte Artikel in `publish_all` | im Ergebnis des Auftrags: `Fehler: <Zahl> Seiten geschrieben, <Zahl> fehlgeschlagen — <erster Grund>` |
+| Fehler am Lauf selbst (Paket, Kategorien, Bau) | unter der Auftragsliste als „Meldungen des letzten Laufs", Fehlerzeilen rot |
+| Fehlendes Wurzelverzeichnis, ungültiger Hugo-Pfad | als Hinweis über den Kennzahlen, mit dem Grund im Klartext |
+| Läufer im Cron | Standardausgabe, Bau-Fehler zusätzlich auf der Fehlerausgabe, Rückgabewert 1 |
+
+Ein `publish_all` gilt nur dann als erledigt, wenn kein Artikel gescheitert
+ist — sonst stünde ein grüner Haken an einem Lauf, der nichts geschrieben hat.
+Je Auftrag stehen höchstens 20 gescheiterte Artikel im Wortlaut in den
+Meldungen, danach folgt eine Zeile mit der Zahl der übrigen; gezählt werden
+alle.
+
+Der Läufer meldet dasselbe, nur auf der Kommandozeile. In der Übersicht kommen
+die Meldungen aus der Antwort von `runShopPublishJobs`; die Fehlerzeilen liefert
+das Backend getrennt mit, statt sie am Wortlaut zu erraten.
+
 ### Sofort ausführen, ohne Cron
 
 In der Auftragsliste lässt sich jede offene Zeile ankreuzen, „Alle auswählen"
@@ -128,8 +148,19 @@ stammen.
 
 | Weg | Wann | Was |
 | --- | --- | --- |
+| Knopf „Löschen" in der Auftragsliste | auf Zuruf, nach Rückfrage | die ausgewählten Zeilen: erledigte, fehlgeschlagene und noch offene |
 | Knopf „Aufräumen" in der Auftragsliste | auf Zuruf, nach Rückfrage | alle erfolgreichen, ohne Frist |
 | Läufer `tools/shop-publish.php` | nach jedem Lauf | die erfolgreichen, die älter sind als die Frist |
+
+Auswählen lässt sich jede Zeile. „Jetzt ausführen" nimmt davon die offenen,
+„Löschen" die ganze Auswahl — auch einen offenen Auftrag, der danach nicht mehr
+vorgemerkt ist. Steht ein fehlgeschlagener Auftrag in der Auswahl, ist „Jetzt
+ausführen" gesperrt: wer einen Fehlschlag ankreuzt, will aufräumen, und
+ausführen ließe sich ein erledigter Auftrag ohnehin nicht.
+
+Fehlgeschlagene Aufträge verschwinden nur auf diesem Weg: „Aufräumen" und der
+Läufer rühren sie nicht an, damit der Grund lesbar bleibt, bis jemand ihn
+gelesen hat.
 
 Die Frist steht in der Firmenkonfiguration unter Shop: **Erledigte Aufträge
 aufbewahren (Tage)**, gespeichert als `shop_job_retention_days` in

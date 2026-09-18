@@ -645,6 +645,11 @@ function shopKitChanges(array $kit): int {
     return $kit['kopiert'] + $kit['entfernt'] + ($kit['config'] ? 1 : 0);
 }
 
+// Höchstzahl Fehlerzeilen, die ein einzelner Auftrag im Wortlaut meldet. Der
+// Zähler läuft weiter, nur der Text wird nicht wiederholt: ein Grund, der alle
+// Artikel trifft, füllte sonst die Meldungsliste mit Tausenden gleicher Zeilen.
+const SHOP_MELDUNGEN_JE_AUFTRAG = 20;
+
 // ── Auftraege ──
 //
 // Die Auftragsarten dieser Erweiterung. Nur diese nimmt der Laeufer, und nur
@@ -757,6 +762,43 @@ function shopJobRetentionDays($db): int {
 }
 
 /**
+ * Löscht einzelne Aufträge
+ *
+ * Für den Benutzer, der einen fehlgeschlagenen Auftrag gelesen hat und ihn aus
+ * der Liste haben will — und für offene, die niemand mehr ausgeführt haben
+ * will. Gelöscht wird, was ausgewählt war; ein offener Auftrag ist danach
+ * schlicht nicht mehr vorgemerkt.
+ *
+ * Fremde Auftragsarten bleiben unangetastet: die Tabelle stammt aus der
+ * Bridge, und was nicht aus dieser Erweiterung kommt, gehört ihr auch nicht.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param array $ids Auftragsnummern
+ * @return int Zahl der gelöschten Zeilen
+ */
+function shopDeleteJobs($db, array $ids): int {
+    $ids = array_values(array_filter(array_map('intval', $ids), fn($id) => $id > 0));
+    if (!$ids) {
+        return 0;
+    }
+
+    $zeile = $db->getOne(
+        "WITH weg AS (
+             DELETE FROM batchjob_hugoshop
+              WHERE function = ANY(string_to_array(:funktionen, ','))
+                AND id = ANY(string_to_array(:ids, ',')::int[])
+             RETURNING id)
+         SELECT count(*)::int AS anzahl FROM weg",
+        [
+            ':funktionen' => implode(',', shopJobFunctions()),
+            ':ids'        => implode(',', $ids),
+        ]
+    );
+
+    return $zeile ? (int)$zeile['anzahl'] : 0;
+}
+
+/**
  * Löscht erledigte Aufträge
  *
  * Nur erfolgreiche: ihr Ergebnis beginnt mit "ok" (siehe shopJobResult).
@@ -837,7 +879,16 @@ function shopRemovePage($db, string $dateiname): bool {
  */
 function shopRunJobs($db, ?callable $melden = null, int $limit = 500, ?array $nurIds = null): array {
     $sagen = $melden ?? function (string $zeile) {};
-    $bilanz = ['jobs' => 0, 'seiten' => 0, 'entfernt' => 0, 'fehler' => 0, 'kit' => 0];
+    $bilanz = ['jobs' => 0, 'seiten' => 0, 'entfernt' => 0, 'fehler' => 0, 'kit' => 0, 'fehler_texte' => []];
+
+    // Fehler werden nicht nur gezählt, sondern im Wortlaut gesammelt: das
+    // Admin-Panel zeigt sie nach "Jetzt ausführen" an, sonst stünde dort nur
+    // eine Zahl. Der Läufer schreibt sie ohnehin auf die Ausgabe.
+    $fehler = function (string $zeile) use ($sagen, &$bilanz) {
+        $bilanz['fehler']++;
+        $bilanz['fehler_texte'][] = $zeile;
+        $sagen($zeile);
+    };
 
     foreach (shopOpenJobs($db, $limit, $nurIds) as $auftrag) {
         $id = (int)$auftrag['id'];
@@ -861,18 +912,40 @@ function shopRunJobs($db, ?callable $melden = null, int $limit = 500, ?array $nu
 
                 case 'publish_all':
                     $anzahl = 0;
+                    $gescheitert = 0;
+                    $ersterFehler = '';
                     foreach (shopListedParts($db) as $artikel) {
                         try {
                             shopWriteProductPage($db, (int)$artikel['id']);
                             $anzahl++;
                         } catch (ApiError $e) {
-                            $bilanz['fehler']++;
-                            $sagen('Artikel '.$artikel['partnumber'].': '.$e->getMessage());
+                            $gescheitert++;
+                            if ('' === $ersterFehler) {
+                                $ersterFehler = $e->getMessage();
+                            }
+                            // Nur die ersten Fehler im Wortlaut: trifft der
+                            // Grund alle Artikel — ein fehlendes Verzeichnis
+                            // etwa —, kämen sonst Tausende gleicher Zeilen.
+                            if ($gescheitert <= SHOP_MELDUNGEN_JE_AUFTRAG) {
+                                $fehler('Artikel '.$artikel['partnumber'].': '.$e->getMessage());
+                            } else {
+                                $bilanz['fehler']++;
+                            }
                         }
                     }
                     $bilanz['seiten'] += $anzahl;
-                    $sagen('Alle Seiten geschrieben: '.$anzahl);
-                    shopJobResult($db, $id, 'ok: '.$anzahl.' Seiten');
+                    $stand = sprintf('%d Seiten geschrieben, %d fehlgeschlagen', $anzahl, $gescheitert);
+                    if ($gescheitert > SHOP_MELDUNGEN_JE_AUFTRAG) {
+                        $sagen(sprintf('… und %d weitere Artikel, nicht einzeln aufgeführt',
+                            $gescheitert - SHOP_MELDUNGEN_JE_AUFTRAG));
+                    }
+                    $sagen($stand);
+                    // Ein Auftrag, bei dem kein Artikel durchkam, ist kein
+                    // erfolgreicher Auftrag — sonst stünde ein grüner Haken an
+                    // einem Lauf, der nichts zustande gebracht hat.
+                    shopJobResult($db, $id, $gescheitert > 0
+                        ? 'Fehler: '.$stand.' — '.$ersterFehler
+                        : 'ok: '.$anzahl.' Seiten');
                     break;
 
                 case 'remove_part':
@@ -915,7 +988,7 @@ function shopRunJobs($db, ?callable $melden = null, int $limit = 500, ?array $nu
                     $stand = sprintf('%d geprüft, %d bezahlt, %d offen',
                         count($zahlungen), $anzahl['bezahlt'] ?? 0, $anzahl['offen'] ?? 0);
                     if ($auffaellig) {
-                        $bilanz['fehler']++;
+                        $fehler('Zahlungsabgleich: '.$stand.' — '.implode(', ', $auffaellig));
                         shopJobResult($db, $id, 'Fehler: '.$stand.' — '.implode(', ', $auffaellig));
                     } else {
                         shopJobResult($db, $id, 'ok: '.$stand);
@@ -923,12 +996,11 @@ function shopRunJobs($db, ?callable $melden = null, int $limit = 500, ?array $nu
                     break;
 
                 default:
+                    $fehler('Auftrag '.$id.': unbekannte Funktion '.$auftrag['function']);
                     shopJobResult($db, $id, 'Fehler: unbekannte Funktion '.$auftrag['function']);
-                    $bilanz['fehler']++;
             }
         } catch (Throwable $e) {
-            $bilanz['fehler']++;
-            $sagen('Auftrag '.$id.' fehlgeschlagen: '.$e->getMessage());
+            $fehler('Auftrag '.$id.' fehlgeschlagen: '.$e->getMessage());
             shopJobResult($db, $id, 'Fehler: '.$e->getMessage());
         }
     }
@@ -1077,12 +1149,22 @@ function shopPublishCommand($db): array {
  * @param int $limit Höchstzahl Aufträge
  * @param array|null $nurIds nur diese Auftragsnummern, null = alle offenen
  * @param bool $bauen Webseite bauen, wenn sich etwas geändert hat
- * @return array gesperrt, jobs, seiten, entfernt, fehler, kit, kategorien, gebaut, bau_code, bau_ausgabe
+ * @return array gesperrt, jobs, seiten, entfernt, fehler, fehler_texte, kit, kategorien, gebaut, bau_code, bau_ausgabe
  */
 function shopPublishRun($db, ?callable $melden = null, int $limit = 500, ?array $nurIds = null, bool $bauen = true): array {
     $sagen = $melden ?? function (string $zeile) {};
     $bilanz = ['gesperrt' => false, 'jobs' => 0, 'seiten' => 0, 'entfernt' => 0, 'fehler' => 0,
-               'kit' => 0, 'kategorien' => 0, 'gebaut' => false, 'bau_code' => 0, 'bau_ausgabe' => []];
+               'kit' => 0, 'kategorien' => 0, 'gebaut' => false, 'bau_code' => 0, 'bau_ausgabe' => [],
+               'fehler_texte' => []];
+
+    // Fehler werden nicht nur gezählt, sondern im Wortlaut gesammelt: das
+    // Admin-Panel zeigt sie nach "Jetzt ausführen" an, sonst stünde dort nur
+    // eine Zahl. Der Läufer schreibt sie ohnehin auf die Ausgabe.
+    $fehler = function (string $zeile) use ($sagen, &$bilanz) {
+        $bilanz['fehler']++;
+        $bilanz['fehler_texte'][] = $zeile;
+        $sagen($zeile);
+    };
 
     if (!shopPublishLock($db)) {
         $bilanz['gesperrt'] = true;
@@ -1104,8 +1186,7 @@ function shopPublishRun($db, ?callable $melden = null, int $limit = 500, ?array 
                     $kit['kopiert'], $kit['entfernt'], $kit['config'] ? ', Konfiguration neu' : ''));
             }
         } catch (Throwable $e) {
-            $bilanz['fehler']++;
-            $sagen('Paketabgleich fehlgeschlagen: '.$e->getMessage());
+            $fehler('Paketabgleich fehlgeschlagen: '.$e->getMessage());
         }
 
         // Die Kategorieübersicht nur, wenn sich Seiten geändert haben.
@@ -1119,8 +1200,7 @@ function shopPublishRun($db, ?callable $melden = null, int $limit = 500, ?array 
                         : 'Kategorieübersicht entfernt: keine Kategorien');
                 }
             } catch (Throwable $e) {
-                $bilanz['fehler']++;
-                $sagen('Kategorieübersicht fehlgeschlagen: '.$e->getMessage());
+                $fehler('Kategorieübersicht fehlgeschlagen: '.$e->getMessage());
             }
         }
 
@@ -1131,12 +1211,10 @@ function shopPublishRun($db, ?callable $melden = null, int $limit = 500, ?array 
         $befehl = $bau['befehl'];
 
         if ($bauen && $geaendert > 0 && '' !== $bau['fehler']) {
-            $bilanz['fehler']++;
-            $sagen('Die Webseite wurde nicht gebaut: '.$bau['fehler']);
+            $fehler('Die Webseite wurde nicht gebaut: '.$bau['fehler']);
         } elseif ($bauen && $geaendert > 0 && '' !== $befehl) {
             if (!function_exists('exec')) {
-                $bilanz['fehler']++;
-                $sagen('exec() ist abgeschaltet — die Webseite wurde nicht gebaut.');
+                $fehler('exec() ist abgeschaltet — die Webseite wurde nicht gebaut.');
             } else {
                 $verzeichnis = shopSiteDir($db);
                 $sagen('Baue die Webseite in '.$verzeichnis);
@@ -1154,8 +1232,7 @@ function shopPublishRun($db, ?callable $melden = null, int $limit = 500, ?array 
                 if (0 === $code) {
                     $sagen('Webseite gebaut.');
                 } else {
-                    $bilanz['fehler']++;
-                    $sagen('Der Bau der Webseite ist fehlgeschlagen (Rückgabewert '.$code.').');
+                    $fehler('Der Bau der Webseite ist fehlgeschlagen (Rückgabewert '.$code.').');
                 }
             }
         } elseif ($bauen && $geaendert > 0 && '' === $befehl) {

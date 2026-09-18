@@ -69,6 +69,11 @@
                     {{ feldName(punkt) }}
                 </li>
             </ul>
+            <!-- Was genau an der Veröffentlichung hakt: der Feldname allein
+                 sagt nicht, dass der Pfad ins Leere zeigt -->
+            <div v-if="status.publish_problems?.length" class="text-caption mt-2">
+                <div v-for="(grund, index) in status.publish_problems" :key="index">{{ grund }}</div>
+            </div>
         </v-alert>
 
         <!-- Kennzahlen -->
@@ -133,7 +138,7 @@
                     <v-checkbox-btn
                         :model-value="alleGewaehlt"
                         :indeterminate="teilsGewaehlt"
-                        :disabled="!offeneIds.length"
+                        :disabled="!auftraege.length"
                         :label="t('ShopView.publish.selectAll')"
                         density="compact"
                         hide-details
@@ -148,11 +153,24 @@
                         variant="tonal"
                         size="small"
                         prepend-icon="mdi-play"
-                        :disabled="!auswahl.length"
+                        :disabled="!offeneAuswahl.length || gescheiterteAuswahl.length > 0"
                         :loading="laeuft"
+                        :title="gescheiterteAuswahl.length ? t('ShopView.publish.runBlocked') : undefined"
                         @click="ausgewaehlteAusfuehren"
                     >
                         {{ t('ShopView.publish.run') }}
+                    </v-btn>
+                    <v-btn
+                        color="error"
+                        variant="text"
+                        size="small"
+                        prepend-icon="mdi-delete-outline"
+                        :disabled="!auswahl.length"
+                        :loading="loescht"
+                        :title="t('ShopView.publish.deleteHint')"
+                        @click="loeschenGefragt = true"
+                    >
+                        {{ t('ShopView.publish.delete') }}
                     </v-btn>
                     <v-btn
                         variant="text"
@@ -173,7 +191,6 @@
                                 <v-checkbox-btn
                                     v-model="auswahl"
                                     :value="auftrag.id"
-                                    :disabled="!istOffen(auftrag)"
                                     density="compact"
                                     hide-details
                                 />
@@ -188,7 +205,7 @@
                             <td class="text-caption text-no-wrap">{{ zeitpunkt(auftrag.itime) }}</td>
                             <td>{{ auftragsart(auftrag.function) }}</td>
                             <td>{{ auftrag.partnumber }}</td>
-                            <td class="text-caption">{{ auftrag.result || t('ShopView.publish.waiting') }}</td>
+                            <td class="text-caption">{{ auftrag.result || t('ShopView.publish.notExecuted') }}</td>
                         </tr>
                     </tbody>
                 </v-table>
@@ -196,7 +213,50 @@
             <v-card-text v-else class="text-caption text-medium-emphasis">
                 {{ t('ShopView.publish.empty') }}
             </v-card-text>
+
+            <!-- Was der letzte Lauf gemeldet hat. Ohne diese Zeilen stünde nur
+                 die Zahl der Fehler da, nicht der Grund. -->
+            <v-divider v-if="laufMeldungen.length" />
+            <v-card-text v-if="laufMeldungen.length">
+                <div class="d-flex align-center mb-2">
+                    <div class="text-body-2">{{ t('ShopView.publish.messages') }}</div>
+                    <v-spacer />
+                    <v-btn
+                        variant="text"
+                        size="small"
+                        icon="mdi-close"
+                        :title="t('ShopView.publish.messagesClose')"
+                        @click="laufMeldungen = []"
+                    />
+                </div>
+                <div
+                    v-for="(zeile, index) in laufMeldungen"
+                    :key="index"
+                    class="text-caption"
+                    :class="istFehlerzeile(zeile) ? 'text-error font-weight-medium' : 'text-medium-emphasis'"
+                >
+                    {{ zeile }}
+                </div>
+            </v-card-text>
         </v-card>
+
+        <!-- Rückfrage vor dem Löschen der Auswahl -->
+        <v-dialog v-model="loeschenGefragt" max-width="460">
+            <v-card>
+                <v-card-title>{{ t('ShopView.publish.delete') }}</v-card-title>
+                <v-card-text>
+                    <div>{{ t('ShopView.publish.deleteConfirm', { count: auswahl.length }) }}</div>
+                    <div class="text-caption text-medium-emphasis mt-2">{{ t('ShopView.publish.deleteHint') }}</div>
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer />
+                    <v-btn variant="text" @click="loeschenGefragt = false">{{ t('ShopView.publish.cancel') }}</v-btn>
+                    <v-btn color="error" variant="flat" :loading="loescht" @click="ausgewaehlteLoeschen">
+                        {{ t('ShopView.publish.delete') }}
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
 
         <!-- Rückfrage vor dem Aufräumen: gelöscht wird endgültig -->
         <v-dialog v-model="aufraeumenGefragt" max-width="460">
@@ -237,10 +297,23 @@ const veroeffentlicht = ref(false)
 const auswahl = ref([])
 const laeuft = ref(false)
 const raeumtAuf = ref(false)
+/** Meldungen des letzten Laufs, dazu die davon, die Fehler waren */
+const laufMeldungen = ref([])
+const laufFehler = ref([])
 const aufraeumenGefragt = ref(false)
+const loescht = ref(false)
+const loeschenGefragt = ref(false)
 
 /** Wahrheitswerte kommen je nach Treiber als true oder 't' */
 const istOffen = (auftrag) => auftrag.open === true || auftrag.open === 't'
+
+/**
+ * Ist diese Zeile eine Fehlermeldung?
+ *
+ * Das Backend liefert die Fehlerzeilen ein zweites Mal einzeln, statt sie hier
+ * am Wortlaut zu erraten.
+ */
+const istFehlerzeile = (zeile) => laufFehler.value.includes(zeile)
 const fehlgeschlagen = (auftrag) => String(auftrag.result || '').startsWith('Fehler')
 
 /**
@@ -264,13 +337,31 @@ const offeneAuftraege = computed(() => auftraege.value.filter(istOffen).length)
 const erledigteAuftraege = computed(
     () => auftraege.value.filter((auftrag) => !istOffen(auftrag) && !fehlgeschlagen(auftrag)).length)
 
-/** Auswählen lässt sich nur, was noch offen ist */
+/**
+ * Auswählen lässt sich jede Zeile
+ *
+ * Die offenen für „Jetzt ausführen", die erledigten zum Löschen — deshalb
+ * zwei Teilmengen statt einer.
+ */
+const alleIds = computed(() => auftraege.value.map((auftrag) => auftrag.id))
 const offeneIds = computed(() => auftraege.value.filter(istOffen).map((auftrag) => auftrag.id))
-const alleGewaehlt = computed(() => offeneIds.value.length > 0 && auswahl.value.length === offeneIds.value.length)
+const offeneAuswahl = computed(() => auswahl.value.filter((id) => offeneIds.value.includes(id)))
+
+/**
+ * Gescheiterte Aufträge in der Auswahl
+ *
+ * Sie sperren „Jetzt ausführen": wer einen Fehlschlag angekreuzt hat, will
+ * aufräumen, nicht starten — und ausführen ließe sich ein erledigter Auftrag
+ * ohnehin nicht.
+ */
+const gescheiterteAuswahl = computed(
+    () => auftraege.value.filter((auftrag) => auswahl.value.includes(auftrag.id) && fehlgeschlagen(auftrag))
+        .map((auftrag) => auftrag.id))
+const alleGewaehlt = computed(() => alleIds.value.length > 0 && auswahl.value.length === alleIds.value.length)
 const teilsGewaehlt = computed(() => auswahl.value.length > 0 && !alleGewaehlt.value)
 
 function alleUmschalten(gewaehlt) {
-    auswahl.value = gewaehlt ? [...offeneIds.value] : []
+    auswahl.value = gewaehlt ? [...alleIds.value] : []
 }
 
 /** Zeitstempel aus der Datenbank ('2026-09-11 10:23:45.123') für die Anzeige */
@@ -338,8 +429,8 @@ const ziele = computed(() => [
 async function laden() {
     status.value = await shop.fetchStatus()
     auftraege.value = await shop.fetchPublishJobs() || []
-    // Erledigte Aufträge fallen aus der Auswahl
-    auswahl.value = auswahl.value.filter((id) => offeneIds.value.includes(id))
+    // Gelöschte Aufträge fallen aus der Auswahl
+    auswahl.value = auswahl.value.filter((id) => alleIds.value.includes(id))
 }
 
 /**
@@ -351,8 +442,11 @@ async function laden() {
  */
 async function ausgewaehlteAusfuehren() {
     laeuft.value = true
-    const ergebnis = await shop.runPublishJobs(auswahl.value)
+    const ergebnis = await shop.runPublishJobs(offeneAuswahl.value)
     laeuft.value = false
+
+    laufMeldungen.value = ergebnis?.messages || []
+    laufFehler.value = ergebnis?.error_messages || []
 
     if (!shop.error.value) {
         if (ergebnis?.running) {
@@ -370,6 +464,25 @@ async function ausgewaehlteAusfuehren() {
             }
         }
         auswahl.value = []
+    }
+
+    await laden()
+}
+
+/**
+ * Löscht die ausgewählten Aufträge
+ *
+ * Gedacht für fehlgeschlagene: Fehler gelesen, Zeile weg. Offene lassen sich
+ * ebenso löschen — sie sind danach nicht mehr vorgemerkt.
+ */
+async function ausgewaehlteLoeschen() {
+    loescht.value = true
+    const ergebnis = await shop.deletePublishJobs(auswahl.value)
+    loescht.value = false
+    loeschenGefragt.value = false
+
+    if (!shop.error.value) {
+        toasts.success(t('ShopView.publish.deleted', { count: ergebnis?.removed ?? 0 }))
     }
 
     await laden()

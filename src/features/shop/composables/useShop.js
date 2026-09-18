@@ -90,6 +90,14 @@ export function useShop() {
      */
     const cleanupPublishJobs = () => call('cleanupShopPublishJobs')
 
+    /**
+     * Löscht ausgewählte erledigte Aufträge
+     *
+     * Für gelesene Fehlermeldungen. Offene bleiben stehen, auch wenn sie in
+     * der Auswahl sind.
+     */
+    const deletePublishJobs = (ids = []) => call('deleteShopPublishJobs', { ids })
+
     return {
         loading,
         error,
@@ -98,6 +106,7 @@ export function useShop() {
         fetchPublishJobs,
         runPublishJobs,
         cleanupPublishJobs,
+        deletePublishJobs,
         fetchPartShopData,
         savePartShopData,
         deletePartShopData,

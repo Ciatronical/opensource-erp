@@ -96,15 +96,29 @@ function getShopStatus($data) {
     if (shopConfigBool($db, 'shop_paypal_sandbox', true)) {
         $hinweise[] = 'shop_paypal_sandbox';
     }
-    // Ohne gültiges Programm werden Seiten geschrieben, aber nicht gebaut
-    if ('' === shopPublishProgram($db)['pfad']) {
+    // Veröffentlichung: Ohne gültiges Programm werden Seiten geschrieben, aber
+    // nicht gebaut; ohne Wurzelverzeichnis entsteht überhaupt keine Seite. Der
+    // Feldname allein sagt nicht, was daran fehlt — der Grund kommt mit.
+    $veroeffentlichung = [];
+    $programm = shopPublishProgram($db);
+    if ('' === $programm['pfad']) {
         $hinweise[] = 'shop_publish_command_path';
+        if ('' !== $programm['fehler']) {
+            $veroeffentlichung[] = $programm['fehler'];
+        }
+    }
+    try {
+        shopSiteDir($db);
+    } catch (Throwable $e) {
+        $hinweise[] = 'shop_sites_dir';
+        $veroeffentlichung[] = $e->getMessage();
     }
 
     resultInfo(true, '', [
         'ready'     => empty($blockierend),
         'blocking'  => $blockierend,
         'hints'     => $hinweise,
+        'publish_problems' => $veroeffentlichung,
         'counts'    => [
             'parts_with_shop_data' => (int)$stand['artikel_mit_shopdaten'],
             'sessions'             => (int)$stand['sitzungen'],
@@ -473,7 +487,27 @@ function runShopPublishJobs($data) {
         'kit'      => $bilanz['kit'],
         'built'    => $bilanz['gebaut'],
         'messages' => $meldungen,
+        // Die Fehlerzeilen noch einmal einzeln: die Übersicht hebt sie hervor
+        'error_messages' => $bilanz['fehler_texte'],
     ]);
+}
+
+/**
+ * Löscht ausgewählte Aufträge
+ *
+ * Gedacht für fehlgeschlagene Aufträge: der Benutzer liest den Fehler und
+ * nimmt die Zeile dann aus der Liste. Offene lassen sich ebenso löschen, wenn
+ * sie niemand mehr ausgeführt haben will.
+ *
+ * @param array $data['ids'] Auftragsnummern
+ * @return void
+ * @testdata {"ids": []}
+ */
+function deleteShopPublishJobs($data) {
+    permit(['shop_part_edit', 'edit_shop_config'], false);
+    $db = DbhCompany::begin();
+
+    resultInfo(true, '', ['removed' => shopDeleteJobs($db, (array)($data['ids'] ?? []))]);
 }
 
 /**
