@@ -593,6 +593,7 @@
             "noTemplates": "No templates found. Create a new template or load the default templates.",
             "colDisplayName": "Display Name",
             "colType": "Type",
+            "colCategory": "Category",
             "colBody": "Body",
             "colStatus": "Status",
             "colActions": "Actions",
@@ -646,7 +647,9 @@
             "insertCustomerName": "Insert customer name",
             "placeholderPreviewCustomer": "[Customer name]",
             "exampleTitle": "Example values for Meta (required for variables)",
-            "examplePlaceholder": "Example for variable {nr}"
+            "examplePlaceholder": "Example for variable {nr}",
+            "categoryChangedByMeta": "Reclassified by Meta",
+            "categoryChangedHint": "Submitted as {submitted}, Meta classified the template as {current} during review. Marketing messages cost more and are reviewed more strictly. For UTILITY the text must relate to a specific transaction (order, appointment, document)."
         },
         "whatsappTplAssignments": "Template Assignments",
         "whatsappTplChat": "Chat",

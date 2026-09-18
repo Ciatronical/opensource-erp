@@ -483,6 +483,7 @@
             "noTemplates": "Brak szablonów. Utwórz nowy szablon lub załaduj domyślne szablony.",
             "colDisplayName": "Nazwa wyświetlana",
             "colType": "Typ",
+            "colCategory": "Kategoria",
             "colBody": "Treść",
             "colStatus": "Status",
             "colActions": "Akcje",
@@ -536,7 +537,9 @@
             "insertCustomerName": "Wstaw nazwę klienta",
             "placeholderPreviewCustomer": "[Nazwa klienta]",
             "exampleTitle": "Przykładowe wartości dla Meta (wymagane przy zmiennych)",
-            "examplePlaceholder": "Przykład dla zmiennej {nr}"
+            "examplePlaceholder": "Przykład dla zmiennej {nr}",
+            "categoryChangedByMeta": "Zmienione przez Meta",
+            "categoryChangedHint": "Zgłoszono jako {submitted}, Meta zaklasyfikowała szablon jako {current} podczas weryfikacji. Wiadomości marketingowe kosztują więcej i są sprawdzane surowiej. Dla UTILITY tekst musi dotyczyć konkretnej transakcji (zlecenie, termin, dokument)."
         },
         "whatsappTplAssignments": "Przypisanie szablonów",
         "whatsappTplChat": "Chat",

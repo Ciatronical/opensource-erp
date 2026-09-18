@@ -483,6 +483,7 @@
             "noTemplates": "Keine Vorlagen vorhanden. Erstellen Sie eine neue Vorlage oder laden Sie die Standard-Templates.",
             "colDisplayName": "Anzeigename",
             "colType": "Tyyppi",
+            "colCategory": "Luokka",
             "colBody": "Body",
             "colStatus": "Tila",
             "colActions": "Toiminnot",
@@ -536,7 +537,9 @@
             "insertCustomerName": "Kundenname einfügen",
             "placeholderPreviewCustomer": "[Kundenname]",
             "exampleTitle": "Beispielwerte für Meta (Pflicht bei Variablen)",
-            "examplePlaceholder": "Beispiel für Variable {nr}"
+            "examplePlaceholder": "Beispiel für Variable {nr}",
+            "categoryChangedByMeta": "Metan muuttama",
+            "categoryChangedHint": "Lähetetty luokassa {submitted}, Meta luokitteli mallin tarkistuksessa luokkaan {current}. Markkinointiviestit maksavat enemmän ja ne tarkistetaan tiukemmin. UTILITY-luokassa tekstin on liityttävä tiettyyn tapahtumaan (tilaus, aika, asiakirja)."
         },
         "whatsappTplAssignments": "Vorlagen-Zuordnung",
         "whatsappTplChat": "Chat",

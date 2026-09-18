@@ -1213,7 +1213,7 @@ function getWhatsAppTemplates($data) {
     $db = DbhCompany::begin();
 
     $templates = $db->getAll(
-        "SELECT id, name, display_name, category, language, header_type, header_text, body_text,
+        "SELECT id, name, display_name, category, submitted_category, language, header_type, header_text, body_text,
                 footer_text, status, meta_template_id, rejection_reason,
                 is_default, template_type, example_values, itime, mtime
          FROM whatsapp_templates
@@ -1879,8 +1879,10 @@ function _submitTemplateToMeta(int $templateId): array {
     $statusMap = ['approved' => 'approved', 'rejected' => 'rejected'];
     $localStatus = $statusMap[$metaStatus] ?? 'pending';
 
+    // Meta kann die Kategorie bei der Pruefung umstufen (z. B. UTILITY -> MARKETING);
+    // die eingereichte Kategorie wird gemerkt, damit der Sync die Abweichung sichtbar machen kann
     $db->execute(
-        "UPDATE whatsapp_templates SET status = :status, meta_template_id = :meta_id, rejection_reason = NULL, mtime = NOW() WHERE id = :id",
+        "UPDATE whatsapp_templates SET status = :status, meta_template_id = :meta_id, submitted_category = category, rejection_reason = NULL, mtime = NOW() WHERE id = :id",
         [':status' => $localStatus, ':meta_id' => $metaId, ':id' => $templateId]
     );
 

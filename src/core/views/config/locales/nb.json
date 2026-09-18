@@ -483,6 +483,7 @@
             "noTemplates": "ingen Maln vorhanden. Erstellen Sie eine neue Mal oder laden Sie die Standard-Templates.",
             "colDisplayName": "Visame",
             "colType": "Typ",
+            "colCategory": "Kategori",
             "colBody": "Body",
             "colStatus": "Status",
             "colActions": "Aktionen",
@@ -536,7 +537,9 @@
             "insertCustomerName": "Kundername einfügen",
             "placeholderPreviewCustomer": "[Kundername]",
             "exampleTitle": "Beispielwerte für Meta (Pflicht bei Variablen)",
-            "examplePlaceholder": "Beispiel für Variable {nr}"
+            "examplePlaceholder": "Beispiel für Variable {nr}",
+            "categoryChangedByMeta": "Endret av Meta",
+            "categoryChangedHint": "Sendt inn som {submitted}, Meta klassifiserte malen som {current} ved gjennomgangen. Markedsføringsmeldinger koster mer og kontrolleres strengere. For UTILITY må teksten gjelde en konkret transaksjon (ordre, avtale, dokument)."
         },
         "whatsappTplAssignments": "Maln-Zuordnung",
         "whatsappTplChat": "Chat",

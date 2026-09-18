@@ -483,6 +483,7 @@
             "noTemplates": "Ingen Skabelonn tilgaengelig. Erstellen Sie eine neue Skabelon oder laden Sie die Standard-Templates.",
             "colDisplayName": "Visame",
             "colType": "Typ",
+            "colCategory": "Kategori",
             "colBody": "Body",
             "colStatus": "Status",
             "colActions": "Aktionen",
@@ -536,7 +537,9 @@
             "insertCustomerName": "Kundername einfügen",
             "placeholderPreviewCustomer": "[Kundername]",
             "exampleTitle": "Beispielwerte für Meta (Pflicht bei Variablen)",
-            "examplePlaceholder": "Beispiel für Variable {nr}"
+            "examplePlaceholder": "Beispiel für Variable {nr}",
+            "categoryChangedByMeta": "Ændret af Meta",
+            "categoryChangedHint": "Indsendt som {submitted}, Meta har ved gennemgangen klassificeret skabelonen som {current}. Marketingbeskeder koster mere og kontrolleres strengere. For UTILITY skal teksten vedrøre en konkret transaktion (ordre, aftale, dokument)."
         },
         "whatsappTplAssignments": "Skabelonn-Zuordnung",
         "whatsappTplChat": "Chat",

@@ -483,6 +483,7 @@
             "noTemplates": "Keine Vorlagen vorhanden. Erstellen Sie eine neue Vorlage oder laden Sie die Standard-Templates.",
             "colDisplayName": "Anzeigename",
             "colType": "Tüüp",
+            "colCategory": "Kategooria",
             "colBody": "Body",
             "colStatus": "Olek",
             "colActions": "Toimingud",
@@ -536,7 +537,9 @@
             "insertCustomerName": "Kundenname einfügen",
             "placeholderPreviewCustomer": "[Kundenname]",
             "exampleTitle": "Beispielwerte für Meta (Pflicht bei Variablen)",
-            "examplePlaceholder": "Beispiel für Variable {nr}"
+            "examplePlaceholder": "Beispiel für Variable {nr}",
+            "categoryChangedByMeta": "Meta muutis",
+            "categoryChangedHint": "Esitatud kui {submitted}, Meta liigitas malli kontrollimisel kategooriasse {current}. Turundussõnumid on kallimad ja neid kontrollitakse rangemalt. UTILITY puhul peab tekst olema seotud konkreetse toiminguga (tellimus, aeg, dokument)."
         },
         "whatsappTplAssignments": "Vorlagen-Zuordnung",
         "whatsappTplChat": "Chat",

@@ -483,6 +483,7 @@
             "noTemplates": "Keine Vorlagen vorhanden. Erstellen Sie eine neue Vorlage oder laden Sie die Standard-Templates.",
             "colDisplayName": "Anzeigename",
             "colType": "Typ",
+            "colCategory": "Категорія",
             "colBody": "Body",
             "colStatus": "Status",
             "colActions": "Aktionen",
@@ -536,7 +537,9 @@
             "insertCustomerName": "Kundenname einfügen",
             "placeholderPreviewCustomer": "[Kundenname]",
             "exampleTitle": "Beispielwerte für Meta (Pflicht bei Variablen)",
-            "examplePlaceholder": "Beispiel für Variable {nr}"
+            "examplePlaceholder": "Beispiel für Variable {nr}",
+            "categoryChangedByMeta": "Змінено Meta",
+            "categoryChangedHint": "Надіслано як {submitted}, під час перевірки Meta віднесла шаблон до категорії {current}. Маркетингові повідомлення коштують дорожче та перевіряються суворіше. Для UTILITY текст має стосуватися конкретної операції (замовлення, запис, документ)."
         },
         "whatsappTplAssignments": "Vorlagen-Zuordnung",
         "whatsappTplChat": "Chat",

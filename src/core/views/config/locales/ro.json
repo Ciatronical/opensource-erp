@@ -483,6 +483,7 @@
             "noTemplates": "Keine Vorlagen vorhanden. Erstellen Sie eine neue Vorlage oder laden Sie die Standard-Templates.",
             "colDisplayName": "Anzeigename",
             "colType": "Tip",
+            "colCategory": "Categorie",
             "colBody": "Body",
             "colStatus": "Status",
             "colActions": "Acțiuni",
@@ -536,7 +537,9 @@
             "insertCustomerName": "Kundenname einfügen",
             "placeholderPreviewCustomer": "[Kundenname]",
             "exampleTitle": "Beispielwerte für Meta (Pflicht bei Variablen)",
-            "examplePlaceholder": "Beispiel für Variable {nr}"
+            "examplePlaceholder": "Beispiel für Variable {nr}",
+            "categoryChangedByMeta": "Reclasificat de Meta",
+            "categoryChangedHint": "Trimis ca {submitted}, Meta a clasificat șablonul ca {current} la verificare. Mesajele de marketing costă mai mult și sunt verificate mai strict. Pentru UTILITY textul trebuie să se refere la o operațiune concretă (comandă, programare, document)."
         },
         "whatsappTplAssignments": "Vorlagen-Zuordnung",
         "whatsappTplChat": "Chat",

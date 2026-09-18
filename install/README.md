@@ -176,7 +176,8 @@ Automatischer Versand von WhatsApp-Erinnerungen an Kunden. Das Script durchlauft
 - **HU-Erinnerungen**: Fahrzeuge mit faelliger Hauptuntersuchung
 
 **Voraussetzungen:**
-- WhatsApp Business API konfiguriert (Firmenkonfiguration > CRM)
+- WhatsApp Business API konfiguriert (Firmenkonfiguration > CRM) — die komplette
+  Einrichtung bei Meta (Portfolio, Nummer, Token, Webhook, Vorlagen) steht in `docs/whatsapp-setup.md`
 - Templates mit Status "approved" bei Meta (Typ "reminder" fuer Termine, Typ "hu" fuer HU)
 - Terminerinnerungen: aktiviert unter CRM > WhatsApp Erinnerungen
 - HU-Erinnerungen: aktiviert unter LxCars > "HU-Erinnerung per WhatsApp"

@@ -870,6 +870,7 @@ CREATE TABLE IF NOT EXISTS whatsapp_templates (
     name TEXT NOT NULL,
     display_name TEXT,
     category TEXT NOT NULL DEFAULT 'UTILITY',
+    submitted_category TEXT,
     language TEXT NOT NULL DEFAULT 'de',
     header_type TEXT DEFAULT NULL,
     header_text TEXT,
@@ -890,6 +891,7 @@ COMMENT ON TABLE whatsapp_templates IS 'WhatsApp Message Templates (Meta-genehmi
 COMMENT ON COLUMN whatsapp_templates.name IS 'Template-Name (Meta-Kennung, lowercase, underscores)';
 COMMENT ON COLUMN whatsapp_templates.display_name IS 'Anzeigename im ERP';
 COMMENT ON COLUMN whatsapp_templates.category IS 'UTILITY, MARKETING, AUTHENTICATION';
+COMMENT ON COLUMN whatsapp_templates.submitted_category IS 'Kategorie, mit der die Vorlage bei Meta eingereicht wurde — weicht category davon ab, hat Meta die Vorlage umgestuft';
 COMMENT ON COLUMN whatsapp_templates.body_text IS 'Nachrichtentext mit {{1}}, {{2}} Platzhaltern';
 COMMENT ON COLUMN whatsapp_templates.status IS 'draft, pending, approved, rejected';
 COMMENT ON COLUMN whatsapp_templates.meta_template_id IS 'Meta Template-ID nach Einreichung';

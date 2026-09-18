@@ -483,6 +483,7 @@
             "noTemplates": "Keine Vorlagen vorhanden. Erstellen Sie eine neue Vorlage oder laden Sie die Standard-Templates.",
             "colDisplayName": "Anzeigename",
             "colType": "Typ",
+            "colCategory": "Kategorie",
             "colBody": "Body",
             "colStatus": "Stav",
             "colActions": "Akce",
@@ -536,7 +537,9 @@
             "insertCustomerName": "Kundenname einfügen",
             "placeholderPreviewCustomer": "[Kundenname]",
             "exampleTitle": "Beispielwerte für Meta (Pflicht bei Variablen)",
-            "examplePlaceholder": "Beispiel für Variable {nr}"
+            "examplePlaceholder": "Beispiel für Variable {nr}",
+            "categoryChangedByMeta": "Přeřazeno společností Meta",
+            "categoryChangedHint": "Odesláno jako {submitted}, Meta šablonu při kontrole zařadila jako {current}. Marketingové zprávy stojí více a jsou kontrolovány přísněji. Pro UTILITY se text musí vztahovat ke konkrétní transakci (zakázka, termín, doklad)."
         },
         "whatsappTplAssignments": "Vorlagen-Zuordnung",
         "whatsappTplChat": "Chat",

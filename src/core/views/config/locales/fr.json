@@ -483,6 +483,7 @@
             "noTemplates": "Keine Vorlagen vorhanden. Erstellen Sie eine neue Vorlage oder laden Sie die Standard-Templates.",
             "colDisplayName": "Anzeigename",
             "colType": "Typ",
+            "colCategory": "Catégorie",
             "colBody": "Body",
             "colStatus": "Status",
             "colActions": "Aktionen",
@@ -536,7 +537,9 @@
             "insertCustomerName": "Kundenname einfügen",
             "placeholderPreviewCustomer": "[Kundenname]",
             "exampleTitle": "Beispielwerte für Meta (Pflicht bei Variablen)",
-            "examplePlaceholder": "Beispiel für Variable {nr}"
+            "examplePlaceholder": "Beispiel für Variable {nr}",
+            "categoryChangedByMeta": "Reclassé par Meta",
+            "categoryChangedHint": "Soumis en {submitted}, Meta a classé le modèle en {current} lors de la vérification. Les messages marketing coûtent plus cher et sont contrôlés plus strictement. Pour UTILITY, le texte doit se rapporter à une opération précise (commande, rendez-vous, document)."
         },
         "whatsappTplAssignments": "Attribution de modeles",
         "whatsappTplChat": "Chat",

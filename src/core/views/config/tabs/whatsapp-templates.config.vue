@@ -74,6 +74,32 @@
                 </v-chip>
             </template>
 
+            <!-- Kategorie (mit Hinweis, wenn Meta sie umgestuft hat) -->
+            <template #item.category="{ item }">
+                <v-chip
+                    :color="categoryColor(item.category)"
+                    size="small"
+                    variant="tonal"
+                >
+                    {{ item.category }}
+                </v-chip>
+                <v-tooltip v-if="categoryChangedByMeta(item)" location="top" max-width="360">
+                    <template #activator="{ props }">
+                        <v-chip
+                            v-bind="props"
+                            color="warning"
+                            size="x-small"
+                            variant="flat"
+                            prepend-icon="mdi-alert"
+                            class="mt-1"
+                        >
+                            {{ t('crm_fields.whatsappTpl.categoryChangedByMeta') }}
+                        </v-chip>
+                    </template>
+                    {{ t('crm_fields.whatsappTpl.categoryChangedHint', { submitted: item.submitted_category, current: item.category }) }}
+                </v-tooltip>
+            </template>
+
             <!-- Body -->
             <template #item.body_text="{ item }">
                 <span class="text-body-2" style="max-width: 400px; display: inline-block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
@@ -191,6 +217,16 @@
                                 />
                             </v-col>
                         </v-row>
+
+                        <v-alert
+                            v-if="categoryChangedByMeta(editingTemplate)"
+                            type="warning"
+                            variant="tonal"
+                            density="compact"
+                            class="mb-3"
+                        >
+                            {{ t('crm_fields.whatsappTpl.categoryChangedHint', { submitted: editingTemplate.submitted_category, current: editingTemplate.category }) }}
+                        </v-alert>
 
                         <v-select
                             v-model="editingTemplate.header_type"
@@ -451,6 +487,7 @@ const editingTemplate = ref({ ...emptyTemplate });
 const tableHeaders = computed(() => [
     { title: t('crm_fields.whatsappTpl.colDisplayName'), key: 'display_name', sortable: true },
     { title: t('crm_fields.whatsappTpl.colType'), key: 'template_type', sortable: true, width: '120px' },
+    { title: t('crm_fields.whatsappTpl.colCategory'), key: 'category', sortable: true, width: '140px' },
     { title: t('crm_fields.whatsappTpl.colBody'), key: 'body_text', sortable: false },
     { title: t('crm_fields.whatsappTpl.colStatus'), key: 'status', sortable: true, width: '120px' },
     { title: t('crm_fields.whatsappTpl.colActions'), key: 'actions', sortable: false, width: '150px', align: 'end' }
@@ -536,6 +573,21 @@ function statusColor(status) {
         rejected: 'red'
     };
     return colors[status] || 'grey';
+}
+
+function categoryColor(category) {
+    const colors = {
+        UTILITY: 'teal',
+        MARKETING: 'purple',
+        AUTHENTICATION: 'blue-grey'
+    };
+    return colors[category] || 'blue-grey';
+}
+
+// Meta stuft Vorlagen bei der Pruefung ggf. um (z. B. UTILITY -> MARKETING);
+// submitted_category ist die Kategorie, mit der eingereicht wurde
+function categoryChangedByMeta(tpl) {
+    return !!tpl.submitted_category && tpl.submitted_category !== tpl.category;
 }
 
 function templateTypeColor(type) {

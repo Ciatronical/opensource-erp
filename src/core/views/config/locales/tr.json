@@ -483,6 +483,7 @@
             "noTemplates": "Keine Vorlagen vorhanden. Erstellen Sie eine neue Vorlage oder laden Sie die Standard-Templates.",
             "colDisplayName": "Anzeigename",
             "colType": "Tip",
+            "colCategory": "Kategori",
             "colBody": "Body",
             "colStatus": "Durum",
             "colActions": "İşlemler",
@@ -536,7 +537,9 @@
             "insertCustomerName": "Kundenname einfügen",
             "placeholderPreviewCustomer": "[Kundenname]",
             "exampleTitle": "Beispielwerte für Meta (Pflicht bei Variablen)",
-            "examplePlaceholder": "Beispiel für Variable {nr}"
+            "examplePlaceholder": "Beispiel für Variable {nr}",
+            "categoryChangedByMeta": "Meta tarafından değiştirildi",
+            "categoryChangedHint": "{submitted} olarak gönderildi, Meta incelemede şablonu {current} olarak sınıflandırdı. Pazarlama mesajları daha pahalıdır ve daha sıkı denetlenir. UTILITY için metin somut bir işleme (sipariş, randevu, belge) bağlı olmalıdır."
         },
         "whatsappTplAssignments": "Vorlagen-Zuordnung",
         "whatsappTplChat": "Chat",

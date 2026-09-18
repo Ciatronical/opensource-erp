@@ -1302,6 +1302,36 @@ function getScans($data) {
 }
 
 /**
+ * Gleicht neue Scans von fahrzeugschein-scanner.de in fs_scans_lxcars ab, ohne die Liste zu liefern.
+ * Wird von der offenen Scanliste periodisch aufgerufen; neue Zeilen melden sich per
+ * pg_notify (Trigger fs_scans_notify) über SSE bei allen offenen Scanlisten.
+ *
+ * @param int $data['take'] Anzahl der zuletzt abgerufenen Scans (1-50, default 20)
+ * @testdata {"take": 20}
+ */
+function syncScans($data) {
+    $db = DbhCompany::begin();
+
+    // Demo und eigener Scanner: Scans liegen bereits in fs_scans_lxcars
+    if (defined('DEMO_MODE') && DEMO_MODE) {
+        resultInfo(true, 'NOTHING_TO_SYNC');
+        return;
+    }
+
+    $cfg = _scanFahrzeugscheinConfig($db);
+    if ($cfg['local'] || $cfg['api_key'] === '') {
+        resultInfo(true, 'NOTHING_TO_SYNC');
+        return;
+    }
+
+    $take = intval($data['take'] ?? 20);
+    if ($take < 1 || $take > 50) $take = 20;
+
+    syncScansFromApi($db, $cfg['api_key'], $take);
+    resultInfo(true, 'SYNCED');
+}
+
+/**
  * Holt neue Scans von der externen API und speichert sie in fs_scans_lxcars
  *
  * @param object $db DB-Verbindung

@@ -948,6 +948,21 @@ export const lxcarsStore = defineStore('lxcarsStore', () => {
     }
 
     /**
+     * Gleicht neue Scans von der externen API in die DB ab (ohne Liste zu laden).
+     * Neue Scans melden sich per SSE (table = fs_scans_lxcars).
+     *
+     * @param {number} take - Anzahl der zuletzt abgerufenen Scans (default 20)
+     * @return {Promise<void>}
+     */
+    async function syncScans(take = 20) {
+        const response = await axios.post('/api/lxcars/', { action: 'syncScans', take });
+
+        if (!response.data.success) {
+            throw new ApiError('ApiError', response.data.text, 'Error syncing scans: ' + (response.data.payload || response.data.text));
+        }
+    }
+
+    /**
      * Mappt Scan-Rohdaten auf Car-Felder (via Backend-Helper)
      *
      * @param {Object} scanData - Rohdaten eines Scans
@@ -1259,6 +1274,7 @@ export const lxcarsStore = defineStore('lxcarsStore', () => {
     return {
         pendingScanData,
         getScans,
+        syncScans,
         mapScanData,
         scanFahrzeugschein,
         searchCustomerForScan,

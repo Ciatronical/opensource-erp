@@ -483,6 +483,7 @@
             "noTemplates": "Keine Vorlagen vorhanden. Erstellen Sie eine neue Vorlage oder laden Sie die Standard-Templates.",
             "colDisplayName": "Anzeigename",
             "colType": "Tipas",
+            "colCategory": "Kategorija",
             "colBody": "Body",
             "colStatus": "Būsena",
             "colActions": "Veiksmai",
@@ -536,7 +537,9 @@
             "insertCustomerName": "Kundenname einfügen",
             "placeholderPreviewCustomer": "[Kundenname]",
             "exampleTitle": "Beispielwerte für Meta (Pflicht bei Variablen)",
-            "examplePlaceholder": "Beispiel für Variable {nr}"
+            "examplePlaceholder": "Beispiel für Variable {nr}",
+            "categoryChangedByMeta": "Pakeitė Meta",
+            "categoryChangedHint": "Pateikta kaip {submitted}, Meta tikrindama šabloną priskyrė kategorijai {current}. Rinkodaros žinutės kainuoja daugiau ir tikrinamos griežčiau. UTILITY atveju tekstas turi būti susijęs su konkrečia operacija (užsakymas, susitikimas, dokumentas)."
         },
         "whatsappTplAssignments": "Vorlagen-Zuordnung",
         "whatsappTplChat": "Chat",

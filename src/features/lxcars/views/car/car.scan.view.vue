@@ -911,12 +911,13 @@
 </template>
 
 <script>
-import { ref, computed, onMounted, watch, nextTick } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
 import axios from 'axios'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { oserpStore } from '@/core/stores/oserp.store.js'
 import { lxcarsStore } from '@/features/lxcars/stores/lxcars.store.js'
+import { onServerEvent } from '@/core/composables/sseClient.js'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
 import { formatDateDE, parseShortDate, validateLicensePlate } from '@/features/lxcars/utils/validation.js'
 
@@ -1421,9 +1422,10 @@ export default {
             }
         })
 
-        async function loadScans(page) {
+        // silent: Live-Aktualisierung per SSE — Liste ohne Ladeanzeige austauschen
+        async function loadScans(page, silent = false) {
             if (page !== undefined) scanPage.value = page
-            loadingScans.value = true
+            if (!silent) loadingScans.value = true
             scanListError.value = ''
             try {
                 const result = await carsStore.getScans(scanPage.value, scanPerPage, (scanSearch.value || '').trim())
@@ -2476,11 +2478,52 @@ export default {
             kbaFuzzySuggestions.value = []
         }
 
+        // ===== Live-Aktualisierung der Scanliste (SSE) =====
+        // Neue Zeilen in fs_scans_lxcars melden sich per pg_notify (Trigger fs_scans_notify).
+        // Beim externen Scanner landen Scans aber erst durch einen Abgleich in der DB —
+        // den stößt die offene Liste regelmäßig an; das Event erreicht dann alle Arbeitsplätze.
+        const SCAN_SYNC_INTERVAL = 20000
+        let unsubScanEvent = null
+        let scanSyncInterval = null
+        let scanSyncRunning = false
+        let scanReloadTimeout = null
+
+        async function syncScansInBackground() {
+            if (scanSyncRunning || step.value !== 'list' || document.hidden) return
+            scanSyncRunning = true
+            try {
+                await carsStore.syncScans(scanPerPage)
+            } catch { /* Netzwerk-/API-Fehler ignorieren, nächster Lauf versucht es erneut */ }
+            finally {
+                scanSyncRunning = false
+            }
+        }
+
+        function onScanEvent(event) {
+            try {
+                const data = JSON.parse(event.data)
+                if (data.table !== 'fs_scans_lxcars') return
+                // Mehrere neue Scans auf einmal (ein Event je Zeile) zu einem Neuladen bündeln
+                clearTimeout(scanReloadTimeout)
+                scanReloadTimeout = setTimeout(() => {
+                    if (step.value === 'list' && !loadingScans.value) loadScans(undefined, true)
+                }, 500)
+            } catch { /* ignorieren */ }
+        }
+
         // Beim Laden Scans abrufen
         onMounted(() => {
             if (hasApiKey.value) {
                 loadScans()
+                unsubScanEvent = onServerEvent('message', onScanEvent)
+                scanSyncInterval = setInterval(syncScansInBackground, SCAN_SYNC_INTERVAL)
             }
+        })
+
+        onBeforeUnmount(() => {
+            if (unsubScanEvent) { unsubScanEvent(); unsubScanEvent = null }
+            if (scanSyncInterval) { clearInterval(scanSyncInterval); scanSyncInterval = null }
+            clearTimeout(scanReloadTimeout)
         })
 
         return {

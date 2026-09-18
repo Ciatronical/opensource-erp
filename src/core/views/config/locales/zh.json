@@ -483,6 +483,7 @@
             "noTemplates": "暂无模板。创建新模板或加载默认模板。",
             "colDisplayName": "显示名称",
             "colType": "类型",
+            "colCategory": "类别",
             "colBody": "正文",
             "colStatus": "状态",
             "colActions": "操作",
@@ -536,7 +537,9 @@
             "insertCustomerName": "插入客户姓名",
             "placeholderPreviewCustomer": "[客户姓名]",
             "exampleTitle": "Meta 示例值（变量必填）",
-            "examplePlaceholder": "变量 {nr} 的示例"
+            "examplePlaceholder": "变量 {nr} 的示例",
+            "categoryChangedByMeta": "已被 Meta 重新分类",
+            "categoryChangedHint": "以 {submitted} 提交，Meta 在审核时将模板归类为 {current}。营销消息费用更高，审核也更严格。UTILITY 类别的文本必须与具体事务（订单、预约、单据）相关。"
         },
         "whatsappTplAssignments": "模板分配",
         "whatsappTplChat": "聊天",

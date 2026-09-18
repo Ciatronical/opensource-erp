@@ -184,6 +184,28 @@ CREATE TABLE fs_scans_lxcars (
     filename            TEXT
 );
 
+-- Trigger: pg_notify bei neuem Fahrzeugschein-Scan (SSE -> Scanliste live)
+-- Nutzt den gleichen Channel wie Faktura, damit der bestehende SSE-Listener greift
+CREATE OR REPLACE FUNCTION notify_fs_scan() RETURNS trigger AS $$
+BEGIN
+    PERFORM pg_notify('faktura_change', json_build_object(
+        'action', TG_OP,
+        'table', 'fs_scans_lxcars',
+        'id', NEW.scan_id
+    )::TEXT);
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'fs_scans_notify') THEN
+        CREATE TRIGGER fs_scans_notify
+            AFTER INSERT ON fs_scans_lxcars
+            FOR EACH ROW
+            EXECUTE FUNCTION notify_fs_scan();
+    END IF;
+END $$;
+
 CREATE TABLE kba_lxcars (
     id                INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     hsn                TEXT NOT NULL CHECK (hsn ~ '^\d{4}$'),

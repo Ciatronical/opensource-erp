@@ -110,7 +110,7 @@ und die `telegram_*`-Konfigschlüssel je Mandant setzen (siehe Setup-Doku).
 
 - SSE-Echtzeit-Server Port 3001 (`sse-server.js`).
 - KI-Pipeline-Muster aus der Eingangsrechnungs-/Beleg-Verarbeitung.
-- `dev/whatsapp-setup.md` als Referenz für eine ähnliche Messenger-Anbindung.
+- `docs/whatsapp-setup.md` als Referenz für eine ähnliche Messenger-Anbindung.
 
 
 

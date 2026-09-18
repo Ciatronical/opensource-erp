@@ -483,6 +483,7 @@
             "noTemplates": "Keine Vorlagen vorhanden. Erstellen Sie eine neue Vorlage oder laden Sie die Standard-Templates.",
             "colDisplayName": "Anzeigename",
             "colType": "Typ",
+            "colCategory": "Categorie",
             "colBody": "Body",
             "colStatus": "Status",
             "colActions": "Aktionen",
@@ -536,7 +537,9 @@
             "insertCustomerName": "Kundenname einfügen",
             "placeholderPreviewCustomer": "[Kundenname]",
             "exampleTitle": "Beispielwerte für Meta (Pflicht bei Variablen)",
-            "examplePlaceholder": "Beispiel für Variable {nr}"
+            "examplePlaceholder": "Beispiel für Variable {nr}",
+            "categoryChangedByMeta": "Door Meta gewijzigd",
+            "categoryChangedHint": "Ingediend als {submitted}, Meta heeft de sjabloon bij de controle als {current} ingedeeld. Marketingberichten kosten meer en worden strenger gecontroleerd. Voor UTILITY moet de tekst betrekking hebben op een concrete transactie (order, afspraak, document)."
         },
         "whatsappTplAssignments": "Sjabloontoewijzing",
         "whatsappTplChat": "Chat",

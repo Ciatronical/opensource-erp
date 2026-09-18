@@ -483,6 +483,7 @@
             "noTemplates": "Keine Vorlagen vorhanden. Erstellen Sie eine neue Vorlage oder laden Sie die Standard-Templates.",
             "colDisplayName": "Anzeigename",
             "colType": "Tips",
+            "colCategory": "Kategorija",
             "colBody": "Body",
             "colStatus": "Statuss",
             "colActions": "Darbības",
@@ -536,7 +537,9 @@
             "insertCustomerName": "Kundenname einfügen",
             "placeholderPreviewCustomer": "[Kundenname]",
             "exampleTitle": "Beispielwerte für Meta (Pflicht bei Variablen)",
-            "examplePlaceholder": "Beispiel für Variable {nr}"
+            "examplePlaceholder": "Beispiel für Variable {nr}",
+            "categoryChangedByMeta": "Meta mainīja",
+            "categoryChangedHint": "Iesniegts kā {submitted}, Meta pārbaudē veidni klasificēja kā {current}. Mārketinga ziņas maksā vairāk, un tās pārbauda stingrāk. UTILITY gadījumā tekstam jāattiecas uz konkrētu darījumu (pasūtījums, pieraksts, dokuments)."
         },
         "whatsappTplAssignments": "Vorlagen-Zuordnung",
         "whatsappTplChat": "Chat",

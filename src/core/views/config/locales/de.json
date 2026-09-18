@@ -595,6 +595,7 @@
             "noTemplates": "Keine Vorlagen vorhanden. Erstellen Sie eine neue Vorlage oder laden Sie die Standard-Templates.",
             "colDisplayName": "Anzeigename",
             "colType": "Typ",
+            "colCategory": "Kategorie",
             "colBody": "Body",
             "colStatus": "Status",
             "colActions": "Aktionen",
@@ -648,7 +649,9 @@
             "insertCustomerName": "Kundenname einfügen",
             "placeholderPreviewCustomer": "[Kundenname]",
             "exampleTitle": "Beispielwerte für Meta (Pflicht bei Variablen)",
-            "examplePlaceholder": "Beispiel für Variable {nr}"
+            "examplePlaceholder": "Beispiel für Variable {nr}",
+            "categoryChangedByMeta": "Von Meta umgestuft",
+            "categoryChangedHint": "Eingereicht als {submitted}, Meta hat die Vorlage bei der Prüfung als {current} eingestuft. Marketing-Nachrichten kosten mehr und werden strenger geprüft. Für UTILITY muss der Text an einen konkreten Vorgang (Auftrag, Termin, Beleg) gebunden sein."
         },
         "whatsappTplAssignments": "Vorlagen-Zuordnung",
         "whatsappTplChat": "Chat",

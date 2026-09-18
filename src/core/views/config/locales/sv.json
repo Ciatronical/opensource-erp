@@ -483,6 +483,7 @@
             "noTemplates": "inga Malln vorhanden. Erstellen Sie eine neue Mall oder laden Sie die Standard-Templates.",
             "colDisplayName": "Visaame",
             "colType": "Typ",
+            "colCategory": "Kategori",
             "colBody": "Body",
             "colStatus": "Status",
             "colActions": "Aktionen",
@@ -536,7 +537,9 @@
             "insertCustomerName": "Kundnname einfügen",
             "placeholderPreviewCustomer": "[Kundnname]",
             "exampleTitle": "Beispielwerte für Meta (Pflicht bei Variablen)",
-            "examplePlaceholder": "Beispiel für Variable {nr}"
+            "examplePlaceholder": "Beispiel für Variable {nr}",
+            "categoryChangedByMeta": "Ändrad av Meta",
+            "categoryChangedHint": "Skickad som {submitted}, Meta klassade mallen som {current} vid granskningen. Marknadsföringsmeddelanden kostar mer och granskas striktare. För UTILITY måste texten avse en konkret transaktion (order, bokning, dokument)."
         },
         "whatsappTplAssignments": "Malln-Zuordnung",
         "whatsappTplChat": "Chat",
