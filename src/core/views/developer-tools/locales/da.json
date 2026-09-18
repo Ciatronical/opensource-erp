@@ -10,7 +10,32 @@
             "schemaUpdate": "Schema-Update",
             "autoTest": "Automatische Tests",
             "requirementSpecs": "Pflichtenheft",
-            "tickets": "Tickets"
+            "tickets": "Tickets",
+            "logViewer": "Logvisning"
+        },
+        "logViewer": {
+            "title": "Logvisning",
+            "description": "Se poster i logfilerne — nyeste først",
+            "refresh": "Opdater",
+            "file": "Logfil",
+            "level": "Logniveau",
+            "levels": {
+                "error": "Fejl",
+                "warning": "Advarsel",
+                "info": "Information",
+                "debug": "Fejlfinding"
+            },
+            "search": "Søg",
+            "searchPlaceholder": "Søg efter tekst i posten",
+            "entriesPerPage": "Poster pr. side",
+            "empty": "Ingen poster fundet",
+            "emptyHint": "Ændr filteret, eller vælg en anden logfil",
+            "truncated": "Søgningen blev afbrudt efter 12 MB. Ældre poster blev ikke gennemsøgt.",
+            "previous": "Nyere",
+            "next": "Ældre",
+            "showing": "Poster {from}–{to}",
+            "expand": "Vis mere",
+            "collapse": "Vis mindre"
         },
         "backup": {
             "title": "Database sichern",

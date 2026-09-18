@@ -10,7 +10,32 @@
             "schemaUpdate": "Schema-Update",
             "autoTest": "Automatische Tests",
             "requirementSpecs": "Pflichtenheft",
-            "tickets": "Tickets"
+            "tickets": "Tickets",
+            "logViewer": "Log-Viewer"
+        },
+        "logViewer": {
+            "title": "Log-Viewer",
+            "description": "Einträge der Logdateien ansehen — neueste zuerst",
+            "refresh": "Aktualisieren",
+            "file": "Logdatei",
+            "level": "Log-Level",
+            "levels": {
+                "error": "Fehler",
+                "warning": "Warnung",
+                "info": "Information",
+                "debug": "Debug"
+            },
+            "search": "Suche",
+            "searchPlaceholder": "Text im Eintrag suchen",
+            "entriesPerPage": "Einträge je Seite",
+            "empty": "Keine Einträge gefunden",
+            "emptyHint": "Filter ändern oder eine andere Logdatei wählen",
+            "truncated": "Die Suche wurde nach 12 MB abgebrochen. Ältere Einträge wurden nicht durchsucht.",
+            "previous": "Neuere",
+            "next": "Ältere",
+            "showing": "Einträge {from}–{to}",
+            "expand": "Mehr anzeigen",
+            "collapse": "Weniger anzeigen"
         },
         "backup": {
             "title": "Datenbank sichern",

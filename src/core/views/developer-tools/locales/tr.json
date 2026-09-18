@@ -10,7 +10,32 @@
             "schemaUpdate": "Şema güncelleme",
             "autoTest": "Otomatik testler",
             "requirementSpecs": "Gereksinim belirtimi",
-            "tickets": "Biletler"
+            "tickets": "Biletler",
+            "logViewer": "Günlük görüntüleyici"
+        },
+        "logViewer": {
+            "title": "Günlük görüntüleyici",
+            "description": "Günlük dosyalarındaki kayıtları görüntüleyin — en yeniler önce",
+            "refresh": "Yenile",
+            "file": "Günlük dosyası",
+            "level": "Günlük düzeyi",
+            "levels": {
+                "error": "Hata",
+                "warning": "Uyarı",
+                "info": "Bilgi",
+                "debug": "Hata ayıklama"
+            },
+            "search": "Ara",
+            "searchPlaceholder": "Kayıt içinde metin ara",
+            "entriesPerPage": "Sayfa başına kayıt",
+            "empty": "Kayıt bulunamadı",
+            "emptyHint": "Filtreyi değiştirin veya başka bir günlük dosyası seçin",
+            "truncated": "Arama 12 MB sonra durduruldu. Daha eski kayıtlar aranmadı.",
+            "previous": "Daha yeni",
+            "next": "Daha eski",
+            "showing": "Kayıtlar {from}–{to}",
+            "expand": "Daha fazla göster",
+            "collapse": "Daha az göster"
         },
         "backup": {
             "title": "Veritabanını yedekle",

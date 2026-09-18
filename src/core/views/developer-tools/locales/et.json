@@ -10,7 +10,32 @@
             "schemaUpdate": "Schema-Update",
             "autoTest": "Automatische Tests",
             "requirementSpecs": "Pflichtenheft",
-            "tickets": "Tickets"
+            "tickets": "Tickets",
+            "logViewer": "Logivaatur"
+        },
+        "logViewer": {
+            "title": "Logivaatur",
+            "description": "Logifailide kirjete vaatamine — uusimad ees",
+            "refresh": "Värskenda",
+            "file": "Logifail",
+            "level": "Logitase",
+            "levels": {
+                "error": "Viga",
+                "warning": "Hoiatus",
+                "info": "Teave",
+                "debug": "Silumine"
+            },
+            "search": "Otsing",
+            "searchPlaceholder": "Otsi kirjest teksti",
+            "entriesPerPage": "Kirjeid lehel",
+            "empty": "Kirjeid ei leitud",
+            "emptyHint": "Muuda filtrit või vali teine logifail",
+            "truncated": "Otsing katkestati pärast 12 MB. Vanemaid kirjeid ei otsitud.",
+            "previous": "Uuemad",
+            "next": "Vanemad",
+            "showing": "Kirjed {from}–{to}",
+            "expand": "Näita rohkem",
+            "collapse": "Näita vähem"
         },
         "backup": {
             "title": "Datenbank sichern",

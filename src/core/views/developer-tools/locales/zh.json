@@ -10,7 +10,32 @@
             "schemaUpdate": "Schema 更新",
             "autoTest": "自动化测试",
             "requirementSpecs": "需求规格",
-            "tickets": "工单"
+            "tickets": "工单",
+            "logViewer": "日志查看器"
+        },
+        "logViewer": {
+            "title": "日志查看器",
+            "description": "查看日志文件条目 — 最新的在前",
+            "refresh": "刷新",
+            "file": "日志文件",
+            "level": "日志级别",
+            "levels": {
+                "error": "错误",
+                "warning": "警告",
+                "info": "信息",
+                "debug": "调试"
+            },
+            "search": "搜索",
+            "searchPlaceholder": "在条目中搜索文本",
+            "entriesPerPage": "每页条目数",
+            "empty": "未找到条目",
+            "emptyHint": "请更改筛选条件或选择其他日志文件",
+            "truncated": "搜索在 12 MB 后停止，未搜索更早的条目。",
+            "previous": "较新",
+            "next": "较早",
+            "showing": "条目 {from}–{to}",
+            "expand": "显示更多",
+            "collapse": "显示更少"
         },
         "backup": {
             "title": "备份数据库",

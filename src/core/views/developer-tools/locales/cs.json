@@ -10,7 +10,32 @@
             "schemaUpdate": "Aktualizace schématu",
             "autoTest": "Automatické testy",
             "requirementSpecs": "Specifikace požadavků",
-            "tickets": "Tikety"
+            "tickets": "Tikety",
+            "logViewer": "Prohlížeč logů"
+        },
+        "logViewer": {
+            "title": "Prohlížeč logů",
+            "description": "Zobrazení záznamů z logů — nejnovější první",
+            "refresh": "Obnovit",
+            "file": "Soubor logu",
+            "level": "Úroveň logu",
+            "levels": {
+                "error": "Chyba",
+                "warning": "Varování",
+                "info": "Informace",
+                "debug": "Ladění"
+            },
+            "search": "Hledat",
+            "searchPlaceholder": "Hledat text v záznamu",
+            "entriesPerPage": "Záznamů na stránku",
+            "empty": "Nebyly nalezeny žádné záznamy",
+            "emptyHint": "Změňte filtr nebo vyberte jiný soubor logu",
+            "truncated": "Hledání bylo ukončeno po 12 MB. Starší záznamy nebyly prohledány.",
+            "previous": "Novější",
+            "next": "Starší",
+            "showing": "Záznamy {from}–{to}",
+            "expand": "Zobrazit více",
+            "collapse": "Zobrazit méně"
         },
         "backup": {
             "title": "Zálohovat databázi",

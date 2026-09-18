@@ -104,6 +104,10 @@
                                         <v-window-item value="tickets">
                                             <tickets-component />
                                         </v-window-item>
+
+                                        <v-window-item value="log-viewer">
+                                            <log-viewer-component />
+                                        </v-window-item>
                                     </v-window>
                                 </div>
                             </v-col>
@@ -128,6 +132,7 @@ import SchemaUpdateComponent from './components/schema-update.component.vue';
 import AutoTestComponent from './components/auto-test.component.vue';
 import RequirementSpecsComponent from './components/requirement-specs.component.vue';
 import TicketsComponent from './components/tickets.component.vue';
+import LogViewerComponent from './components/log-viewer.component.vue';
 
 const { t } = useI18n();
 
@@ -141,6 +146,7 @@ const tabItems = [
     { value: 'auto-test', icon: 'mdi-test-tube', labelKey: 'DeveloperTools.tabs.autoTest' },
     { value: 'requirement-specs', icon: 'mdi-file-document-check', labelKey: 'DeveloperTools.tabs.requirementSpecs' },
     { value: 'tickets', icon: 'mdi-ticket-outline', labelKey: 'DeveloperTools.tabs.tickets' },
+    { value: 'log-viewer', icon: 'mdi-text-box-search-outline', labelKey: 'DeveloperTools.tabs.logViewer' },
 ];
 
 // Aktiver Tab mit localStorage-Persistenz

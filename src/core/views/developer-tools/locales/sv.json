@@ -10,7 +10,32 @@
             "schemaUpdate": "Schema-Update",
             "autoTest": "Automatische Tests",
             "requirementSpecs": "Pflichtenheft",
-            "tickets": "Tickets"
+            "tickets": "Tickets",
+            "logViewer": "Loggvisare"
+        },
+        "logViewer": {
+            "title": "Loggvisare",
+            "description": "Visa poster i loggfilerna — nyaste först",
+            "refresh": "Uppdatera",
+            "file": "Loggfil",
+            "level": "Loggnivå",
+            "levels": {
+                "error": "Fel",
+                "warning": "Varning",
+                "info": "Information",
+                "debug": "Felsökning"
+            },
+            "search": "Sök",
+            "searchPlaceholder": "Sök text i posten",
+            "entriesPerPage": "Poster per sida",
+            "empty": "Inga poster hittades",
+            "emptyHint": "Ändra filtret eller välj en annan loggfil",
+            "truncated": "Sökningen avbröts efter 12 MB. Äldre poster genomsöktes inte.",
+            "previous": "Nyare",
+            "next": "Äldre",
+            "showing": "Poster {from}–{to}",
+            "expand": "Visa mer",
+            "collapse": "Visa mindre"
         },
         "backup": {
             "title": "Databas sichern",

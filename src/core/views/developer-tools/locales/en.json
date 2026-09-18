@@ -10,7 +10,32 @@
             "schemaUpdate": "Schema Update",
             "autoTest": "Automatic Tests",
             "requirementSpecs": "Requirements",
-            "tickets": "Tickets"
+            "tickets": "Tickets",
+            "logViewer": "Log Viewer"
+        },
+        "logViewer": {
+            "title": "Log Viewer",
+            "description": "View log file entries — newest first",
+            "refresh": "Refresh",
+            "file": "Log file",
+            "level": "Log level",
+            "levels": {
+                "error": "Error",
+                "warning": "Warning",
+                "info": "Info",
+                "debug": "Debug"
+            },
+            "search": "Search",
+            "searchPlaceholder": "Search text in entry",
+            "entriesPerPage": "Entries per page",
+            "empty": "No entries found",
+            "emptyHint": "Change the filter or select another log file",
+            "truncated": "The search stopped after 12 MB. Older entries were not searched.",
+            "previous": "Newer",
+            "next": "Older",
+            "showing": "Entries {from}–{to}",
+            "expand": "Show more",
+            "collapse": "Show less"
         },
         "backup": {
             "title": "Backup Database",

@@ -10,7 +10,32 @@
             "schemaUpdate": "Actualización de esquema",
             "autoTest": "Pruebas automáticas",
             "requirementSpecs": "Pliego de condiciones",
-            "tickets": "Tickets"
+            "tickets": "Tickets",
+            "logViewer": "Visor de registros"
+        },
+        "logViewer": {
+            "title": "Visor de registros",
+            "description": "Consultar las entradas de los archivos de registro — las más recientes primero",
+            "refresh": "Actualizar",
+            "file": "Archivo de registro",
+            "level": "Nivel de registro",
+            "levels": {
+                "error": "Error",
+                "warning": "Advertencia",
+                "info": "Información",
+                "debug": "Depuración"
+            },
+            "search": "Buscar",
+            "searchPlaceholder": "Buscar texto en la entrada",
+            "entriesPerPage": "Entradas por página",
+            "empty": "No se han encontrado entradas",
+            "emptyHint": "Cambie el filtro o seleccione otro archivo de registro",
+            "truncated": "La búsqueda se detuvo tras 12 MB. No se han buscado las entradas más antiguas.",
+            "previous": "Más recientes",
+            "next": "Más antiguas",
+            "showing": "Entradas {from}–{to}",
+            "expand": "Mostrar más",
+            "collapse": "Mostrar menos"
         },
         "backup": {
             "title": "Respaldar base de datos",

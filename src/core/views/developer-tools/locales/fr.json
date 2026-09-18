@@ -10,7 +10,32 @@
             "schemaUpdate": "Mise a jour du schema",
             "autoTest": "Tests automatiques",
             "requirementSpecs": "Cahier des charges",
-            "tickets": "Tickets"
+            "tickets": "Tickets",
+            "logViewer": "Visionneuse de journaux"
+        },
+        "logViewer": {
+            "title": "Visionneuse de journaux",
+            "description": "Consulter les entrées des fichiers journaux — les plus récentes d'abord",
+            "refresh": "Actualiser",
+            "file": "Fichier journal",
+            "level": "Niveau de journal",
+            "levels": {
+                "error": "Erreur",
+                "warning": "Avertissement",
+                "info": "Information",
+                "debug": "Débogage"
+            },
+            "search": "Recherche",
+            "searchPlaceholder": "Rechercher du texte dans l'entrée",
+            "entriesPerPage": "Entrées par page",
+            "empty": "Aucune entrée trouvée",
+            "emptyHint": "Modifiez le filtre ou choisissez un autre fichier journal",
+            "truncated": "La recherche s'est arrêtée après 12 Mo. Les entrées plus anciennes n'ont pas été parcourues.",
+            "previous": "Plus récentes",
+            "next": "Plus anciennes",
+            "showing": "Entrées {from}–{to}",
+            "expand": "Afficher plus",
+            "collapse": "Afficher moins"
         },
         "backup": {
             "title": "Sauvegarder la base de donnees",

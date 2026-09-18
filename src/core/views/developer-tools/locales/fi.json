@@ -10,7 +10,32 @@
             "schemaUpdate": "Skeemapäivitys",
             "autoTest": "Automaattiset testit",
             "requirementSpecs": "Vaatimusmäärittely",
-            "tickets": "Tiketit"
+            "tickets": "Tiketit",
+            "logViewer": "Lokinäkymä"
+        },
+        "logViewer": {
+            "title": "Lokinäkymä",
+            "description": "Tarkastele lokitiedostojen merkintöjä — uusimmat ensin",
+            "refresh": "Päivitä",
+            "file": "Lokitiedosto",
+            "level": "Lokitaso",
+            "levels": {
+                "error": "Virhe",
+                "warning": "Varoitus",
+                "info": "Tiedote",
+                "debug": "Vianjäljitys"
+            },
+            "search": "Haku",
+            "searchPlaceholder": "Hae tekstiä merkinnästä",
+            "entriesPerPage": "Merkintöjä sivulla",
+            "empty": "Merkintöjä ei löytynyt",
+            "emptyHint": "Muuta suodatinta tai valitse toinen lokitiedosto",
+            "truncated": "Haku keskeytettiin 12 megatavun jälkeen. Vanhempia merkintöjä ei haettu.",
+            "previous": "Uudemmat",
+            "next": "Vanhemmat",
+            "showing": "Merkinnät {from}–{to}",
+            "expand": "Näytä enemmän",
+            "collapse": "Näytä vähemmän"
         },
         "backup": {
             "title": "Varmuuskopioi tietokanta",

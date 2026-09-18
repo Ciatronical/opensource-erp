@@ -10,7 +10,32 @@
             "schemaUpdate": "Schema-Update",
             "autoTest": "Automatische Tests",
             "requirementSpecs": "Pflichtenheft",
-            "tickets": "Tickets"
+            "tickets": "Tickets",
+            "logViewer": "Loggviser"
+        },
+        "logViewer": {
+            "title": "Loggviser",
+            "description": "Se oppføringer i loggfilene — nyeste først",
+            "refresh": "Oppdater",
+            "file": "Loggfil",
+            "level": "Loggnivå",
+            "levels": {
+                "error": "Feil",
+                "warning": "Advarsel",
+                "info": "Informasjon",
+                "debug": "Feilsøking"
+            },
+            "search": "Søk",
+            "searchPlaceholder": "Søk etter tekst i oppføringen",
+            "entriesPerPage": "Oppføringer per side",
+            "empty": "Ingen oppføringer funnet",
+            "emptyHint": "Endre filteret eller velg en annen loggfil",
+            "truncated": "Søket ble avbrutt etter 12 MB. Eldre oppføringer ble ikke gjennomsøkt.",
+            "previous": "Nyere",
+            "next": "Eldre",
+            "showing": "Oppføringer {from}–{to}",
+            "expand": "Vis mer",
+            "collapse": "Vis mindre"
         },
         "backup": {
             "title": "Database sichern",

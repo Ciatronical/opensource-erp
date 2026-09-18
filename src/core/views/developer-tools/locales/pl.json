@@ -10,7 +10,32 @@
             "schemaUpdate": "Aktualizacja schematu",
             "autoTest": "Testy automatyczne",
             "requirementSpecs": "Specyfikacja wymagań",
-            "tickets": "Zgłoszenia"
+            "tickets": "Zgłoszenia",
+            "logViewer": "Przeglądarka logów"
+        },
+        "logViewer": {
+            "title": "Przeglądarka logów",
+            "description": "Podgląd wpisów z plików dziennika — najnowsze na początku",
+            "refresh": "Odśwież",
+            "file": "Plik dziennika",
+            "level": "Poziom logowania",
+            "levels": {
+                "error": "Błąd",
+                "warning": "Ostrzeżenie",
+                "info": "Informacja",
+                "debug": "Debugowanie"
+            },
+            "search": "Szukaj",
+            "searchPlaceholder": "Szukaj tekstu we wpisie",
+            "entriesPerPage": "Wpisów na stronę",
+            "empty": "Nie znaleziono wpisów",
+            "emptyHint": "Zmień filtr lub wybierz inny plik dziennika",
+            "truncated": "Wyszukiwanie przerwano po 12 MB. Starsze wpisy nie zostały przeszukane.",
+            "previous": "Nowsze",
+            "next": "Starsze",
+            "showing": "Wpisy {from}–{to}",
+            "expand": "Pokaż więcej",
+            "collapse": "Pokaż mniej"
         },
         "backup": {
             "title": "Kopia zapasowa bazy danych",

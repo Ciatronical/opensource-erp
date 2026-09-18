@@ -10,7 +10,32 @@
             "schemaUpdate": "Schema-Update",
             "autoTest": "Automatische Tests",
             "requirementSpecs": "Pflichtenheft",
-            "tickets": "Tickets"
+            "tickets": "Tickets",
+            "logViewer": "Žurnalų peržiūra"
+        },
+        "logViewer": {
+            "title": "Žurnalų peržiūra",
+            "description": "Peržiūrėti žurnalų failų įrašus — naujausi pirmiausia",
+            "refresh": "Atnaujinti",
+            "file": "Žurnalo failas",
+            "level": "Žurnalo lygis",
+            "levels": {
+                "error": "Klaida",
+                "warning": "Įspėjimas",
+                "info": "Informacija",
+                "debug": "Derinimas"
+            },
+            "search": "Paieška",
+            "searchPlaceholder": "Ieškoti teksto įraše",
+            "entriesPerPage": "Įrašų puslapyje",
+            "empty": "Įrašų nerasta",
+            "emptyHint": "Pakeiskite filtrą arba pasirinkite kitą žurnalo failą",
+            "truncated": "Paieška nutraukta po 12 MB. Senesni įrašai nebuvo peržiūrėti.",
+            "previous": "Naujesni",
+            "next": "Senesni",
+            "showing": "Įrašai {from}–{to}",
+            "expand": "Rodyti daugiau",
+            "collapse": "Rodyti mažiau"
         },
         "backup": {
             "title": "Datenbank sichern",

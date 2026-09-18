@@ -10,7 +10,32 @@
             "schemaUpdate": "Schema-Update",
             "autoTest": "Automatische Tests",
             "requirementSpecs": "Pflichtenheft",
-            "tickets": "Tickets"
+            "tickets": "Tickets",
+            "logViewer": "Žurnālu skatītājs"
+        },
+        "logViewer": {
+            "title": "Žurnālu skatītājs",
+            "description": "Skatīt žurnāla failu ierakstus — jaunākie vispirms",
+            "refresh": "Atsvaidzināt",
+            "file": "Žurnāla fails",
+            "level": "Žurnāla līmenis",
+            "levels": {
+                "error": "Kļūda",
+                "warning": "Brīdinājums",
+                "info": "Informācija",
+                "debug": "Atkļūdošana"
+            },
+            "search": "Meklēšana",
+            "searchPlaceholder": "Meklēt tekstu ierakstā",
+            "entriesPerPage": "Ieraksti lapā",
+            "empty": "Ieraksti nav atrasti",
+            "emptyHint": "Mainiet filtru vai izvēlieties citu žurnāla failu",
+            "truncated": "Meklēšana tika pārtraukta pēc 12 MB. Vecāki ieraksti netika pārmeklēti.",
+            "previous": "Jaunāki",
+            "next": "Vecāki",
+            "showing": "Ieraksti {from}–{to}",
+            "expand": "Rādīt vairāk",
+            "collapse": "Rādīt mazāk"
         },
         "backup": {
             "title": "Datenbank sichern",

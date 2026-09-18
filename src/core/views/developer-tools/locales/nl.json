@@ -10,7 +10,32 @@
             "schemaUpdate": "Schema-update",
             "autoTest": "Automatische tests",
             "requirementSpecs": "Programma van eisen",
-            "tickets": "Tickets"
+            "tickets": "Tickets",
+            "logViewer": "Logviewer"
+        },
+        "logViewer": {
+            "title": "Logviewer",
+            "description": "Logregels bekijken — nieuwste eerst",
+            "refresh": "Vernieuwen",
+            "file": "Logbestand",
+            "level": "Logniveau",
+            "levels": {
+                "error": "Fout",
+                "warning": "Waarschuwing",
+                "info": "Informatie",
+                "debug": "Debug"
+            },
+            "search": "Zoeken",
+            "searchPlaceholder": "Zoek tekst in de regel",
+            "entriesPerPage": "Regels per pagina",
+            "empty": "Geen logregels gevonden",
+            "emptyHint": "Pas het filter aan of kies een ander logbestand",
+            "truncated": "De zoekopdracht is na 12 MB gestopt. Oudere regels zijn niet doorzocht.",
+            "previous": "Nieuwere",
+            "next": "Oudere",
+            "showing": "Regels {from}–{to}",
+            "expand": "Meer tonen",
+            "collapse": "Minder tonen"
         },
         "backup": {
             "title": "Database opslaan",

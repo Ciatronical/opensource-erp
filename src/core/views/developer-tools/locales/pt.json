@@ -10,7 +10,32 @@
             "schemaUpdate": "Atualização de esquema",
             "autoTest": "Testes automáticos",
             "requirementSpecs": "Caderno de encargos",
-            "tickets": "Tickets"
+            "tickets": "Tickets",
+            "logViewer": "Visualizador de registos"
+        },
+        "logViewer": {
+            "title": "Visualizador de registos",
+            "description": "Consultar as entradas dos ficheiros de registo — as mais recentes primeiro",
+            "refresh": "Atualizar",
+            "file": "Ficheiro de registo",
+            "level": "Nível de registo",
+            "levels": {
+                "error": "Erro",
+                "warning": "Aviso",
+                "info": "Informação",
+                "debug": "Depuração"
+            },
+            "search": "Pesquisar",
+            "searchPlaceholder": "Pesquisar texto na entrada",
+            "entriesPerPage": "Entradas por página",
+            "empty": "Não foram encontradas entradas",
+            "emptyHint": "Altere o filtro ou escolha outro ficheiro de registo",
+            "truncated": "A pesquisa parou após 12 MB. As entradas mais antigas não foram pesquisadas.",
+            "previous": "Mais recentes",
+            "next": "Mais antigas",
+            "showing": "Entradas {from}–{to}",
+            "expand": "Mostrar mais",
+            "collapse": "Mostrar menos"
         },
         "backup": {
             "title": "Cópia de segurança da base de dados",

@@ -10,7 +10,32 @@
             "schemaUpdate": "Actualizare schema",
             "autoTest": "Teste automate",
             "requirementSpecs": "Caiet de sarcini",
-            "tickets": "Tichete"
+            "tickets": "Tichete",
+            "logViewer": "Vizualizator jurnale"
+        },
+        "logViewer": {
+            "title": "Vizualizator jurnale",
+            "description": "Vizualizarea înregistrărilor din fișierele jurnal — cele mai noi primele",
+            "refresh": "Actualizează",
+            "file": "Fișier jurnal",
+            "level": "Nivel jurnal",
+            "levels": {
+                "error": "Eroare",
+                "warning": "Avertisment",
+                "info": "Informație",
+                "debug": "Depanare"
+            },
+            "search": "Căutare",
+            "searchPlaceholder": "Caută text în înregistrare",
+            "entriesPerPage": "Înregistrări pe pagină",
+            "empty": "Nu au fost găsite înregistrări",
+            "emptyHint": "Modificați filtrul sau alegeți alt fișier jurnal",
+            "truncated": "Căutarea s-a oprit după 12 MB. Înregistrările mai vechi nu au fost căutate.",
+            "previous": "Mai noi",
+            "next": "Mai vechi",
+            "showing": "Înregistrările {from}–{to}",
+            "expand": "Afișează mai mult",
+            "collapse": "Afișează mai puțin"
         },
         "backup": {
             "title": "Salvare baza de date",

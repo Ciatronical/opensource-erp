@@ -10,7 +10,32 @@
             "schemaUpdate": "Aggiornamento schema",
             "autoTest": "Test automatici",
             "requirementSpecs": "Capitolato",
-            "tickets": "Ticket"
+            "tickets": "Ticket",
+            "logViewer": "Visualizzatore log"
+        },
+        "logViewer": {
+            "title": "Visualizzatore log",
+            "description": "Consultare le voci dei file di log — prima le più recenti",
+            "refresh": "Aggiorna",
+            "file": "File di log",
+            "level": "Livello di log",
+            "levels": {
+                "error": "Errore",
+                "warning": "Avviso",
+                "info": "Informazione",
+                "debug": "Debug"
+            },
+            "search": "Ricerca",
+            "searchPlaceholder": "Cerca testo nella voce",
+            "entriesPerPage": "Voci per pagina",
+            "empty": "Nessuna voce trovata",
+            "emptyHint": "Modificare il filtro o scegliere un altro file di log",
+            "truncated": "La ricerca si è interrotta dopo 12 MB. Le voci più vecchie non sono state esaminate.",
+            "previous": "Più recenti",
+            "next": "Più vecchie",
+            "showing": "Voci {from}–{to}",
+            "expand": "Mostra di più",
+            "collapse": "Mostra di meno"
         },
         "backup": {
             "title": "Backup database",
