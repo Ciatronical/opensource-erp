@@ -75,5 +75,9 @@
             "callTranscript": "Call analysis",
             "banking": "Liquidity forecast"
         }
+    },
+    "passwordField": {
+        "show": "Show password",
+        "hide": "Hide password"
     }
 }

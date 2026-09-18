@@ -75,5 +75,9 @@
             "callTranscript": "Puhelun analyysi",
             "banking": "Maksuvalmiusennuste"
         }
+    },
+    "passwordField": {
+        "show": "Näytä salasana",
+        "hide": "Piilota salasana"
     }
 }

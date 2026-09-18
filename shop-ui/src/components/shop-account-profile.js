@@ -3,6 +3,7 @@ import { ShopElement } from '../core/base.js';
 import { ShopAccountElement } from '../core/account-base.js';
 import { apiRequest } from '../core/api.js';
 import { t } from '../core/i18n.js';
+import { passwordInput, passwordFieldStyles } from '../core/password-field.js';
 
 /**
  * <shop-account-profile></shop-account-profile>
@@ -30,11 +31,13 @@ export class ShopAccountProfile extends ShopAccountElement {
     _salutations: { state: true },
     _busy: { state: true },
     _messages: { state: true },
+    _sichtbar: { state: true },
   };
 
   static styles = [
     ShopElement.baseStyles,
     ShopAccountElement.accountStyles,
+    passwordFieldStyles,
     css`
       form + .section {
         margin-top: 3rem;
@@ -140,15 +143,16 @@ export class ShopAccountProfile extends ShopAccountElement {
     return html`
       <div class="field" part="field">
         <label class=${this.cls('label')} part="label" for=${id}>${label}*</label>
-        <input
-          class=${this.cls('input')}
-          part="input"
-          id=${id}
-          name=${id}
-          type="password"
-          autocomplete=${autocomplete}
-          required
-        />
+        ${passwordInput({
+          cls: this.cls('input'),
+          id,
+          autocomplete,
+          required: true,
+          visible: !!this._sichtbar?.[id],
+          onToggle: () => {
+            this._sichtbar = { ...this._sichtbar, [id]: !this._sichtbar?.[id] };
+          },
+        })}
       </div>
     `;
   }

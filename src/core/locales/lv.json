@@ -75,5 +75,9 @@
             "callTranscript": "Zvana analīze",
             "banking": "Likviditātes prognoze"
         }
+    },
+    "passwordField": {
+        "show": "Rādīt paroli",
+        "hide": "Slēpt paroli"
     }
 }

@@ -75,5 +75,9 @@
             "callTranscript": "Analiza rozmowy",
             "banking": "Prognoza płynności"
         }
+    },
+    "passwordField": {
+        "show": "Pokaż hasło",
+        "hide": "Ukryj hasło"
     }
 }

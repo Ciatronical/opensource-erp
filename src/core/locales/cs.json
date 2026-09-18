@@ -75,5 +75,9 @@
             "callTranscript": "Vyhodnocení hovoru",
             "banking": "Prognóza likvidity"
         }
+    },
+    "passwordField": {
+        "show": "Zobrazit heslo",
+        "hide": "Skrýt heslo"
     }
 }

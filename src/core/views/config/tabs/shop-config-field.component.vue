@@ -26,10 +26,12 @@
     <!-- Eingabefeld / Passwort -->
     <v-row v-else-if="field.type === 'input' || field.type === 'password'" class="my-4" :data-field-name="field.name">
         <v-col cols="12" md="6">
-            <v-text-field
+            <component
+                :is="field.type === 'password' ? PasswordField : VTextField"
                 v-model="werte[field.name]"
+                v-bind="field.type === 'password' ? { visible: sichtbar, 'onUpdate:visible': wert => (sichtbar = wert) } : {}"
                 :label="t(field.label)"
-                :type="field.type === 'password' && !sichtbar ? 'password' : (field.inputType || 'text')"
+                :type="field.inputType || 'text'"
                 :placeholder="field.type === 'password' ? t(hinterlegt ? 'crm_fields.shopSecretKeep' : 'crm_fields.shopSecretEmpty') : (vorgabe || undefined)"
                 :persistent-placeholder="field.type === 'password' || !!vorgabe"
                 :hint="sichtbar ? t('crm_fields.shopKeyGeneratedHint') : (vorgabe ? t('crm_fields.shopFallbackFromIni') : undefined)"
@@ -55,7 +57,7 @@
                         @click="schluesselErzeugen"
                     />
                 </template>
-            </v-text-field>
+            </component>
         </v-col>
     </v-row>
 
@@ -104,7 +106,8 @@
 <script setup>
 import { computed, h, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { VIcon, VTooltip } from 'vuetify/components'
+import { VIcon, VTextField, VTooltip } from 'vuetify/components'
+import PasswordField from '@/core/components/password-field.vue'
 import { oserpStore } from '@/core/stores/oserp.store.js'
 
 const { t } = useI18n()

@@ -75,5 +75,9 @@
             "callTranscript": "Kõne analüüs",
             "banking": "Likviidsusprognoos"
         }
+    },
+    "passwordField": {
+        "show": "Näita parooli",
+        "hide": "Peida parool"
     }
 }

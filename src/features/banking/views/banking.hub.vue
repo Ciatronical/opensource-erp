@@ -1020,7 +1020,7 @@
             <v-divider />
             <v-card-text class="pa-4">
                 <div class="text-body-2 text-disabled mb-3">{{ syncAccount?.name }} — {{ formatIban(syncAccount?.iban) }}</div>
-                <v-text-field v-model="syncPin" :label="t('BankingView.sync.pin')" :hint="t('BankingView.sync.pinHint')" persistent-hint type="password" autocomplete="off" class="mb-3" @keyup.enter="startSync" />
+                <password-field v-model="syncPin" :label="t('BankingView.sync.pin')" :hint="t('BankingView.sync.pinHint')" persistent-hint autocomplete="off" class="mb-3" @keyup.enter="startSync" />
                 <div class="d-flex align-center">
                     <v-checkbox v-model="rememberPin" :label="t('BankingView.sync.rememberPin')" density="compact" hide-details />
                     <v-btn v-if="syncAccount?.has_saved_pin" size="x-small" variant="text" color="error" class="ml-2" @click="deleteSavedPin">{{ t('BankingView.sync.deletePin') }}</v-btn>
@@ -1124,7 +1124,7 @@
                     <span v-if="isBatchSubmit">{{ t('BankingView.transfers.batchSummary', { count: batchSubmitIds.length, total: formatCurrency(batchSubmitTotal) }) }}</span>
                     <span v-else><strong>{{ submitTarget?.remote_name }}</strong> — {{ formatCurrency(submitTarget?.amount) }}</span>
                 </div>
-                <v-text-field v-model="submitPin" :label="t('BankingView.sync.pin')" :hint="t('BankingView.sync.pinHint')" persistent-hint type="password" autocomplete="off" @keyup.enter="executeSubmitTransfer" />
+                <password-field v-model="submitPin" :label="t('BankingView.sync.pin')" :hint="t('BankingView.sync.pinHint')" persistent-hint autocomplete="off" @keyup.enter="executeSubmitTransfer" />
                 <div class="d-flex align-center mt-2">
                     <v-checkbox v-model="rememberTransferPin" :label="t('BankingView.sync.rememberPin')" density="compact" hide-details />
                     <v-btn
@@ -1215,7 +1215,7 @@
                 <div class="mb-3 pa-3 bg-grey-lighten-4 rounded-lg text-body-2">
                     <strong>{{ ddSubmitTarget?.debtor_name }}</strong> — {{ formatCurrency(ddSubmitTarget?.amount) }}
                 </div>
-                <v-text-field v-model="ddPin" :label="t('BankingView.sync.pin')" type="password" autocomplete="off" class="mb-2" @keyup.enter="executeSubmitDD" />
+                <password-field v-model="ddPin" :label="t('BankingView.sync.pin')" autocomplete="off" class="mb-2" @keyup.enter="executeSubmitDD" />
                 <v-text-field v-model="ddCreditorId" :label="t('BankingView.directdebit.creditorId')" :hint="t('BankingView.directdebit.creditorIdHint')" persistent-hint />
             </v-card-text>
             <v-card-actions class="pa-4">
@@ -1436,6 +1436,7 @@
 <script setup>
 import { ref, reactive, computed, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
+import PasswordField from '@/core/components/password-field.vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useBanking, startGlobalKeepAlive } from '../composables/useBanking.js'
 import { useTransfers } from '../composables/useTransfers.js'

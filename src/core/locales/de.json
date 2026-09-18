@@ -75,5 +75,9 @@
             "callTranscript": "Anruf-Auswertung",
             "banking": "Liquiditätsprognose"
         }
+    },
+    "passwordField": {
+        "show": "Passwort anzeigen",
+        "hide": "Passwort verbergen"
     }
 }

@@ -75,5 +75,9 @@
             "callTranscript": "Analiza apelului",
             "banking": "Prognoză de lichiditate"
         }
+    },
+    "passwordField": {
+        "show": "Afișează parola",
+        "hide": "Ascunde parola"
     }
 }

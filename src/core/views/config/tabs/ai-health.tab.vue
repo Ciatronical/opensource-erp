@@ -29,12 +29,11 @@
                 />
             </v-col>
             <v-col cols="12" md="4">
-                <v-text-field
+                <password-field
                     v-model="crmDefaults.whisper_token"
                     :label="t('aiHealth.whisperToken')"
                     :hint="t('aiHealth.whisperToken_help')"
                     persistent-hint
-                    type="password"
                     autocomplete="new-password"
                     variant="outlined"
                     density="compact"
@@ -175,24 +174,22 @@
 
         <v-row>
             <v-col cols="12" md="6">
-                <v-text-field
+                <password-field
                     v-model="crmDefaults.openai_api_key"
                     :label="t('crm_fields.openaiApiKey')"
                     :hint="t('crm_fields.openaiApiKey_help')"
                     persistent-hint
-                    type="password"
                     autocomplete="new-password"
                     variant="outlined"
                     density="compact"
                 />
             </v-col>
             <v-col cols="12" md="6">
-                <v-text-field
+                <password-field
                     v-model="crmDefaults.anthropic_api_key"
                     :label="t('crm_fields.anthropicApiKey')"
                     :hint="t('crm_fields.anthropicApiKey_help')"
                     persistent-hint
-                    type="password"
                     autocomplete="new-password"
                     variant="outlined"
                     density="compact"
@@ -220,6 +217,7 @@ import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import axios from 'axios'
 import * as toasts from '@/core/utils/toasts.js'
+import PasswordField from '@/core/components/password-field.vue'
 import { AI_ASSISTANTS, aiModelsFor } from '@/core/constants/aiModels.js'
 
 const { t } = useI18n()

@@ -6,6 +6,7 @@
  * Die gleiche Liste steht im Backend in backend/api/lib/ai_model.php.
  * Wer hier etwas ändert, ändert sie dort mit — das Backend prüft jede
  * Modellangabe gegen seine eigene Liste und verwirft Unbekanntes.
+ * Hintergrund und Vorgehen: dev/ki-modelle.md
  */
 
 /**

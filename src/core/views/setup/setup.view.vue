@@ -64,7 +64,7 @@
                                                 <v-text-field v-model="server.user" :label="$t('setup.fields.login')" :hint="$t('setup.server.userHint')" persistent-hint :rules="[rules.required]" variant="outlined" density="comfortable" prepend-inner-icon="mdi-account-key-outline" autocomplete="username" />
                                             </v-col>
                                             <v-col cols="12" sm="6">
-                                                <v-text-field v-model="server.pass" :label="$t('setup.fields.password')" :type="showPass ? 'text' : 'password'" :rules="[rules.required]" variant="outlined" density="comfortable" prepend-inner-icon="mdi-lock-outline" :append-inner-icon="showPass ? 'mdi-eye-off-outline' : 'mdi-eye-outline'" autocomplete="current-password" @click:append-inner="showPass = !showPass" @keyup.enter="probeServer" />
+                                                <password-field v-model="server.pass" v-model:visible="showPass" :label="$t('setup.fields.password')" :rules="[rules.required]" variant="outlined" density="comfortable" prepend-inner-icon="mdi-lock-outline" autocomplete="current-password" @keyup.enter="probeServer" />
                                             </v-col>
                                         </v-row>
                                     </v-form>
@@ -168,15 +168,14 @@
                                                 <v-text-field v-model="admin.email" :label="$t('setup.admin.email')" :rules="[rules.email]" type="email" variant="outlined" density="comfortable" prepend-inner-icon="mdi-email-outline" />
                                             </v-col>
                                             <v-col cols="12" sm="6">
-                                                <v-text-field v-model="admin.password" :label="$t('setup.admin.password')" :type="showAdminPass ? 'text' : 'password'" :rules="[rules.adminPassword]" :hint="hasExistingUsers ? $t('setup.admin.passwordHintExisting') : $t('setup.admin.passwordHint')" persistent-hint variant="outlined" density="comfortable" prepend-inner-icon="mdi-lock-outline" autocomplete="new-password">
+                                                <password-field v-model="admin.password" v-model:visible="showAdminPass" :label="$t('setup.admin.password')" :rules="[rules.adminPassword]" :hint="hasExistingUsers ? $t('setup.admin.passwordHintExisting') : $t('setup.admin.passwordHint')" persistent-hint variant="outlined" density="comfortable" prepend-inner-icon="mdi-lock-outline" autocomplete="new-password">
                                                     <template #append-inner>
-                                                        <v-icon class="cursor-pointer" @click="showAdminPass = !showAdminPass">{{ showAdminPass ? 'mdi-eye-off-outline' : 'mdi-eye-outline' }}</v-icon>
-                                                        <v-icon class="cursor-pointer ms-2" :title="$t('setup.admin.generate')" @click="generateAdminPassword">mdi-dice-multiple-outline</v-icon>
+                                                        <v-icon class="cursor-pointer me-2" :title="$t('setup.admin.generate')" @click="generateAdminPassword">mdi-dice-multiple-outline</v-icon>
                                                     </template>
-                                                </v-text-field>
+                                                </password-field>
                                             </v-col>
                                             <v-col cols="12" sm="6">
-                                                <v-text-field v-model="admin.passwordConfirm" :label="$t('setup.admin.passwordConfirm')" :type="showAdminPass ? 'text' : 'password'" :rules="[rules.adminPasswordMatch]" variant="outlined" density="comfortable" prepend-inner-icon="mdi-lock-check-outline" autocomplete="new-password" />
+                                                <password-field v-model="admin.passwordConfirm" v-model:visible="showAdminPass" :label="$t('setup.admin.passwordConfirm')" :rules="[rules.adminPasswordMatch]" variant="outlined" density="comfortable" prepend-inner-icon="mdi-lock-check-outline" autocomplete="new-password" />
                                             </v-col>
                                         </v-row>
                                     </v-form>
@@ -284,9 +283,12 @@
 <script>
 import { useDisplay } from 'vuetify';
 import { generatePassword, isValidDbName, isValidEmail, isValidLogin, suggestDbName } from '@/core/views/admin/adminHelpers.js';
+import PasswordField from '@/core/components/password-field.vue';
 
 export default {
     name: 'SetupView',
+
+    components: { PasswordField },
 
     setup() {
         const { mobile } = useDisplay();

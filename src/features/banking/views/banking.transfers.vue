@@ -286,10 +286,9 @@
                     <div v-else class="mb-3 text-body-2">
                         <strong>{{ submitTarget?.remote_name }}</strong> — {{ formatCurrency(submitTarget?.amount) }}
                     </div>
-                    <v-text-field
+                    <password-field
                         v-model="submitPin"
                         :label="t('BankingView.sync.pin')"
-                        type="password"
                         autocomplete="off"
                         class="mb-2"
                         @keyup.enter="executeSubmitTransfer"
@@ -440,6 +439,7 @@
 <script setup>
 import { ref, reactive, computed, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
+import PasswordField from '@/core/components/password-field.vue'
 import { useRoute } from 'vue-router'
 import { useBanking } from '../composables/useBanking.js'
 import { useTransfers } from '../composables/useTransfers.js'

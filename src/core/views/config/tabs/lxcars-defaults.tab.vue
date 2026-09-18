@@ -77,10 +77,11 @@
             <!-- Input / Password -->
             <v-row v-else-if="field.type === 'input' || field.type === 'password'" class="my-1" :data-field-name="field.name">
                 <v-col cols="12" md="6">
-                    <v-text-field
+                    <component
+                        :is="field.type === 'password' ? PasswordField : VTextField"
                         v-model="crmDefaults[field.name]"
                         :label="t(field.label)"
-                        :type="field.type === 'password' ? 'password' : (field.inputType || 'text')"
+                        :type="field.inputType || 'text'"
                         :style="field.fieldstyle"
                         hide-details="auto"
                         density="compact"
@@ -96,7 +97,7 @@
                                 {{ t(field.tooltip) }}
                             </v-tooltip>
                         </template>
-                    </v-text-field>
+                    </component>
                 </v-col>
             </v-row>
 
@@ -186,7 +187,9 @@
 
 <script setup>
 import { ref, onMounted, inject } from 'vue';
+import { VTextField } from 'vuetify/components';
 import { useI18n } from 'vue-i18n';
+import PasswordField from '@/core/components/password-field.vue';
 import { oserpStore } from '@/core/stores/oserp.store.js';
 
 const { t } = useI18n();

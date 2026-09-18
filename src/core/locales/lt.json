@@ -75,5 +75,9 @@
             "callTranscript": "Skambučio analizė",
             "banking": "Likvidumo prognozė"
         }
+    },
+    "passwordField": {
+        "show": "Rodyti slaptažodį",
+        "hide": "Slėpti slaptažodį"
     }
 }

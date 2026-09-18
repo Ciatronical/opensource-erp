@@ -10,7 +10,8 @@
  * wird nirgends gespeichert — sie gilt nur für die Sitzung im Browser.
  *
  * Die gleiche Liste steht im Frontend in src/core/constants/aiModels.js.
- * Wer hier etwas ändert, ändert sie dort mit.
+ * Wer hier etwas ändert, ändert sie dort mit. Hintergrund, Vertraeglichkeit
+ * einzelner Modelle und die Schritte fuer ein neues Modell: dev/ki-modelle.md
  */
 
 /**

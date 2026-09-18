@@ -15,6 +15,9 @@ const de = {
   'login.register': 'Noch kein Kundenkonto? Jetzt registrieren',
   'login.missing': 'Bitte geben Sie E-Mail-Adresse und Passwort ein.',
 
+  'password.show': 'Passwort anzeigen',
+  'password.hide': 'Passwort verbergen',
+
   'register.heading': 'Kundenkonto anlegen',
   'register.accountType': 'Kontotyp',
   'register.private': 'Privat',
@@ -255,6 +258,9 @@ const en = {
   'login.pending': 'Signing in …',
   'login.register': 'No account yet? Register now',
   'login.missing': 'Please enter your email address and password.',
+
+  'password.show': 'Show password',
+  'password.hide': 'Hide password',
 
   'register.heading': 'Create an account',
   'register.accountType': 'Account type',

@@ -75,5 +75,9 @@
             "callTranscript": "Çağrı değerlendirmesi",
             "banking": "Likidite tahmini"
         }
+    },
+    "passwordField": {
+        "show": "Parolayı göster",
+        "hide": "Parolayı gizle"
     }
 }

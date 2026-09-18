@@ -75,5 +75,9 @@
             "callTranscript": "通话分析",
             "banking": "流动性预测"
         }
+    },
+    "passwordField": {
+        "show": "显示密码",
+        "hide": "隐藏密码"
     }
 }

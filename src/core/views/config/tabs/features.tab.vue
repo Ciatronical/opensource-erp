@@ -201,10 +201,9 @@
             </v-col>
 
             <v-col cols="12" md="6">
-                <v-text-field
+                <password-field
                     v-model="defaults.webdav_sync_extern_pass"
                     :label="$t('webdavSyncExternPass')"
-                    type="password"
                     variant="outlined"
                     density="compact"
                     autocomplete="new-password"
@@ -535,7 +534,8 @@
 
 <script setup>
 import { defineProps } from 'vue';
-import { useI18n } from 'vue-i18n';
+import { useI18n } from 'vue-i18n'
+import PasswordField from '@/core/components/password-field.vue';
 
 const { t } = useI18n();
 

@@ -16,10 +16,9 @@
           />
         </v-col>
         <v-col cols="12" sm="6" class="py-1">
-          <v-text-field
+          <password-field
             :label="t('CustomerVendorEditView.fields.password')"
             v-model="localData.user_password"
-            type="password"
             variant="outlined"
             density="compact"
             hide-details="auto"
@@ -33,9 +32,11 @@
 <script>
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import PasswordField from '@/core/components/password-field.vue'
 
 export default {
   name: 'AccessDataCard',
+  components: { PasswordField },
   props: {
     modelValue: { type: Object, required: true },
   },

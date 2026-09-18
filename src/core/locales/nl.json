@@ -75,5 +75,9 @@
             "callTranscript": "Gespreksanalyse",
             "banking": "Liquiditeitsprognose"
         }
+    },
+    "passwordField": {
+        "show": "Wachtwoord tonen",
+        "hide": "Wachtwoord verbergen"
     }
 }

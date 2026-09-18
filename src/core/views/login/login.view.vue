@@ -19,8 +19,8 @@
                 variant="outlined" density="comfortable" class="mb-3"
                 @focus="clearError" @keydown="clearError" @keyup.enter="login"
               />
-              <v-text-field
-                id="login-password" v-model="password" :label="t('LoginView.password')" type="password" autocomplete="current-password"
+              <password-field
+                id="login-password" v-model="password" :label="t('LoginView.password')" autocomplete="current-password"
                 variant="outlined" density="comfortable"
                 @focus="clearError" @keydown="clearError" @keyup.enter="login"
               />
@@ -72,6 +72,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { oserpStore } from '@/core/stores/oserp.store.js'
+import PasswordField from '@/core/components/password-field.vue'
 import ErrorView from '@/core/components/messages/error.view.vue'
 import { ApiError } from '@/core/utils/error.js';
 import { AuthStatus } from '@/core/constants/auth.js';
@@ -79,7 +80,7 @@ import * as alerts from '@/core/utils/alerts.js';
 
 export default {
   name: 'LoginView',
-  components: { ErrorView },
+  components: { ErrorView, PasswordField },
   setup() {
     const { t } = useI18n()
     const router = useRouter()

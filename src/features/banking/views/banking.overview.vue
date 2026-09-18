@@ -196,12 +196,11 @@
                     <div class="text-body-2 mb-3 text-medium-emphasis">
                         {{ syncAccount?.name }} — {{ formatIban(syncAccount?.iban) }}
                     </div>
-                    <v-text-field
+                    <password-field
                         v-model="syncPin"
                         :label="t('BankingView.sync.pin')"
                         :hint="t('BankingView.sync.pinHint')"
                         persistent-hint
-                        type="password"
                         autocomplete="off"
                         class="mb-3"
                         @keyup.enter="startSync"
@@ -294,6 +293,7 @@
 <script setup>
 import { ref, onMounted, reactive, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import PasswordField from '@/core/components/password-field.vue'
 import { useRouter } from 'vue-router'
 import { useBanking } from '../composables/useBanking.js'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'

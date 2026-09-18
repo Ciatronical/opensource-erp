@@ -4,6 +4,7 @@ import { ShopElement } from '../core/base.js';
 import { apiRequest, ApiError, login } from '../core/api.js';
 import { emit, SHOP_AUTH_CHANGED } from '../core/bus.js';
 import { t } from '../core/i18n.js';
+import { passwordInput, passwordFieldStyles } from '../core/password-field.js';
 
 const EMAIL_PATTERN = /\S+@\S+\.\S+/;
 
@@ -46,10 +47,12 @@ export class ShopRegister extends ShopElement {
     _business: { state: true },
     _otherDelivery: { state: true },
     _dataProtection: { state: true },
+    _sichtbar: { state: true },
   };
 
   static styles = [
     ShopElement.baseStyles,
+    passwordFieldStyles,
     css`
       .block {
         margin-top: 2rem;
@@ -260,6 +263,26 @@ export class ShopRegister extends ShopElement {
   }
 
   #field(field) {
+    if (field.type === 'password') {
+      return html`
+        <div class="field" part="field">
+          <label class=${this.cls('label')} part="label" for=${field.id}>
+            ${field.label}${field.required ? '*' : ''}
+          </label>
+          ${passwordInput({
+            cls: this.cls('input'),
+            id: field.id,
+            autocomplete: field.autocomplete || 'new-password',
+            required: !!field.required,
+            visible: !!this._sichtbar?.[field.id],
+            onToggle: () => {
+              this._sichtbar = { ...this._sichtbar, [field.id]: !this._sichtbar?.[field.id] };
+            },
+          })}
+        </div>
+      `;
+    }
+
     return html`
       <div class="field" part="field">
         <label class=${this.cls('label')} part="label" for=${field.id}>

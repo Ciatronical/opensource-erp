@@ -3,6 +3,7 @@ import { ShopElement } from '../core/base.js';
 import { apiRequest, login } from '../core/api.js';
 import { emit, SHOP_AUTH_CHANGED } from '../core/bus.js';
 import { t } from '../core/i18n.js';
+import { passwordInput, passwordFieldStyles } from '../core/password-field.js';
 
 /**
  * <shop-login redirect-url="/" register-url="/registrieren/"></shop-login>
@@ -27,10 +28,12 @@ export class ShopLogin extends ShopElement {
     heading: { type: String },
     _busy: { state: true },
     _error: { state: true },
+    _passwortSichtbar: { state: true },
   };
 
   static styles = [
     ShopElement.baseStyles,
+    passwordFieldStyles,
     css`
       .shop-message {
         margin-top: 1rem;
@@ -52,6 +55,7 @@ export class ShopLogin extends ShopElement {
     this.heading = '';
     this._busy = false;
     this._error = '';
+    this._passwortSichtbar = false;
   }
 
   render() {
@@ -79,15 +83,16 @@ export class ShopLogin extends ShopElement {
             <label class=${this.cls('label')} part="label" for="password">
               ${t('login.password')}
             </label>
-            <input
-              class=${this.cls('input')}
-              part="input"
-              id="password"
-              name="password"
-              type="password"
-              autocomplete="current-password"
-              required
-            />
+            ${passwordInput({
+              cls: this.cls('input'),
+              id: 'password',
+              autocomplete: 'current-password',
+              required: true,
+              visible: this._passwortSichtbar,
+              onToggle: () => {
+                this._passwortSichtbar = !this._passwortSichtbar;
+              },
+            })}
           </div>
         </div>
 

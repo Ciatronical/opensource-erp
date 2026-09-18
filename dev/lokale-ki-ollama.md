@@ -78,7 +78,8 @@ $antwort = oserpLlmChat([
 `oserpLlmChat()` liest Endpunkt/Modell aus `defaults_oserp` (Fallback auf den lokalen
 Dienst) und spricht den OpenAI-kompatiblen Endpunkt an. Damit lässt sich pro Feature
 zwischen lokalem Modell und Cloud (Claude) umschalten – die bestehenden Claude-Aufrufe
-(`api/lxcars/*`, `api/ebay/*`) bleiben unberührt.
+(`api/lxcars/*`, `api/ebay/*`) bleiben unberührt. Welches Claude-Modell die einzelnen
+Assistenten benutzen und wie es eingestellt wird, steht in `ki-modelle.md`.
 
 **Sinnvolle Einsatzzwecke im ERP:** Zahlungserinnerungen/E-Mail-Entwürfe formulieren,
 Verkaufstexte (Fahrzeuge), Zusammenfassungen von Sprachnotizen/Anrufen, Kategorisierung.

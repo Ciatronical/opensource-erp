@@ -75,5 +75,9 @@
             "callTranscript": "Analyse av samtale",
             "banking": "Likviditetsprognose"
         }
+    },
+    "passwordField": {
+        "show": "Vis passord",
+        "hide": "Skjul passord"
     }
 }

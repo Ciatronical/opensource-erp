@@ -75,5 +75,9 @@
             "callTranscript": "Analisi della chiamata",
             "banking": "Previsione di liquidità"
         }
+    },
+    "passwordField": {
+        "show": "Mostra la password",
+        "hide": "Nascondi la password"
     }
 }
