@@ -45,7 +45,7 @@ const HuSerienbriefView = () => {
     if (oserp.isLxCars()) {
         return import('@/features/lxcars/views/hu-serienbrief/hu-serienbrief.view.vue')
     } else {
-        return import('@/core/views/notfound/notfound.view.vue')
+        return Promise.resolve(NotFoundView)
     }
 }
 
@@ -54,7 +54,7 @@ const MechanicView = () => {
     if (oserp.isLxCars()) {
         return import('@/features/lxcars/views/mechanic/mechanic.view.vue')
     } else {
-        return import('@/core/views/notfound/notfound.view.vue')
+        return Promise.resolve(NotFoundView)
     }
 }
 
@@ -63,7 +63,7 @@ const MechanicOrderView = () => {
     if (oserp.isLxCars()) {
         return import('@/features/lxcars/views/mechanic/mechanic-order.view.vue')
     } else {
-        return import('@/core/views/notfound/notfound.view.vue')
+        return Promise.resolve(NotFoundView)
     }
 }
 import { oserpStore } from '@/core/stores/oserp.store.js'
@@ -156,7 +156,7 @@ const CarEditView = () => {
     if (oserp.isLxCars()) {
         return import('@/features/lxcars/views/car/car.edit.view.vue')
     } else {
-        return import('@/core/views/notfound/notfound.view.vue')
+        return Promise.resolve(NotFoundView)
     }
 }
 
@@ -166,7 +166,7 @@ const CarScanView = () => {
     if (oserp.isLxCars()) {
         return import('@/features/lxcars/views/car/car.scan.view.vue')
     } else {
-        return import('@/core/views/notfound/notfound.view.vue')
+        return Promise.resolve(NotFoundView)
     }
 }
 
@@ -176,7 +176,7 @@ const CarRegView = () => {
     if (oserp.isLxCars()) {
         return import('@/features/lxcars/views/car/carreg.view.vue')
     } else {
-        return import('@/core/views/notfound/notfound.view.vue')
+        return Promise.resolve(NotFoundView)
     }
 }
 
@@ -185,7 +185,7 @@ const LxCarsReportsView = () => {
     if (oserp.isLxCars()) {
         return import('@/features/lxcars/views/reports/reports.view.vue')
     } else {
-        return import('@/core/views/notfound/notfound.view.vue')
+        return Promise.resolve(NotFoundView)
     }
 }
 
@@ -195,19 +195,19 @@ const ShopHubView = () => {
     const oserp = oserpStore()
     return oserp.isExtensionEnabled('shop')
         ? import('@/features/shop/views/shop.hub.vue')
-        : import('@/core/views/notfound/notfound.view.vue')
+        : Promise.resolve(NotFoundView)
 }
 const ShopOrdersView = () => {
     const oserp = oserpStore()
     return oserp.isExtensionEnabled('shop')
         ? import('@/features/shop/views/shop.orders.vue')
-        : import('@/core/views/notfound/notfound.view.vue')
+        : Promise.resolve(NotFoundView)
 }
 const ShopWithdrawalsView = () => {
     const oserp = oserpStore()
     return oserp.isExtensionEnabled('shop')
         ? import('@/features/shop/views/shop.withdrawals.vue')
-        : import('@/core/views/notfound/notfound.view.vue')
+        : Promise.resolve(NotFoundView)
 }
 
 // Banking

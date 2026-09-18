@@ -5,7 +5,6 @@
 
 import { ref } from 'vue'
 import axios from 'axios'
-import * as XLSX from 'xlsx'
 
 const API_URL = '/api/banking/'
 const ACC_URL = '/api/accounting/'
@@ -76,6 +75,10 @@ export function useSettlements() {
             if (rows.length === 0) throw new Error('PARSE_NO_ROWS')
             return rows
         }
+
+        // xlsx ist rund 0,5 MB und wird nur beim Einlesen einer Abrechnung
+        // gebraucht — deshalb erst hier laden statt beim Seitenaufruf.
+        const XLSX = await import('xlsx')
 
         let workbook
         if (ext === 'csv') {

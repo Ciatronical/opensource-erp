@@ -265,7 +265,6 @@ import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import axios from 'axios'
-import * as XLSX from 'xlsx'
 import { oserpStore } from '@/core/stores/oserp.store.js'
 import { formatNumber } from '@/core/utils/numberFormat.js'
 import * as toasts from '@/core/utils/toasts.js'
@@ -510,7 +509,9 @@ async function batchPrintToPrinter() {
 
 // Excel-Export der ausgewaehlten Belege (Verkauf + Einkauf).
 // Betrag als echte Zahl \u2192 Excel rechnet/formatiert korrekt, kein CSV-Trennzeichen-Problem.
-function exportSelected() {
+// xlsx ist rund 0,5 MB und wird nur beim Export gebraucht — deshalb erst dann
+// laden statt in jeden Seitenaufruf packen.
+async function exportSelected() {
     const rows = activeSelection.value;
     if (!rows.length) return;
 
@@ -528,6 +529,8 @@ function exportSelected() {
             r.currency || ''
         ];
     });
+
+    const XLSX = await import('xlsx');
 
     const ws = XLSX.utils.aoa_to_sheet([header, ...data]);
     ws['!cols'] = [{ wch: 12 }, { wch: 12 }, { wch: 42 }, { wch: 12 }, { wch: 10 }];

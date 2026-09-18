@@ -5,7 +5,7 @@ import { createPinia } from 'pinia'
 import { oserpStore } from '@/core/stores/oserp.store'
 
 // i18n
-import i18n from './i18n'
+import i18n, { ensureLocale } from './i18n'
 import { de, en } from 'vuetify/locale'
 
 // Vuetify (Tree-Shaking via vite-plugin-vuetify — kein manueller Import nötig)
@@ -117,4 +117,12 @@ if (!store.isDebugMode()) {
 }
 
 // Mount
-app.mount('#app')
+//
+// Erst wenn die Sprachdateien der aktiven Sprache da sind — sie werden nicht
+// mehr mitgebündelt, sondern als eigener Chunk nachgeladen. Ohne das Warten
+// stünde die Oberfläche einen Moment lang mit blossen Schlüsseln da.
+// Scheitert das Laden, wird trotzdem gemountet: eine Anwendung mit
+// unübersetzten Texten ist besser als eine leere Seite.
+ensureLocale(i18n.global.locale.value).finally(() => {
+  app.mount('#app')
+})
