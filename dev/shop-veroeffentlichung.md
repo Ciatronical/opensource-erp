@@ -217,9 +217,10 @@ Als Cron-Eintrag gedacht, etwa alle fünf Minuten. Eine Sperrdatei je Mandant
 unter `backend/tmp/` verhindert zwei gleichzeitige Läufe — der Bau löscht das
 ausgelieferte Verzeichnis. Gebaut wird mit dem Programm aus
 `shop_publish_command_path` — Shop-Einstellung des Mandanten; ist sie leer,
-gilt der Eintrag aus der `settings.ini`. Eingestellt wird nur der Pfad; die Befehlszeile
-setzt die Erweiterung selbst zusammen und prüft den Pfad vorher, damit sich
-über die Oberfläche kein Befehl unterschieben lässt. Ohne Programm werden nur
+gilt der Eintrag aus der `settings.ini`. Eingestellt wird nur das Verzeichnis;
+den Dateinamen `hugo` und die Argumente hängt die Erweiterung selbst an und
+prüft beides vorher, damit sich über die Oberfläche kein anderes Programm
+unterschieben lässt. Ohne Programm werden nur
 Dateien geschrieben.
 
 **Fehler halten die Schlange nicht auf.** Jeder Auftrag bekommt sein Ergebnis

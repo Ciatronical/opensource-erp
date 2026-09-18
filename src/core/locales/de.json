@@ -79,5 +79,22 @@
     "passwordField": {
         "show": "Passwort anzeigen",
         "hide": "Passwort verbergen"
+    },
+    "directoryPicker": {
+        "titleDir": "Verzeichnis wählen",
+        "titleFile": "Datei wählen",
+        "root": "Einstiegspunkt",
+        "up": "Eine Ebene höher",
+        "refresh": "Neu einlesen",
+        "browse": "Auf dem Server suchen",
+        "apply": "Übernehmen",
+        "selection": "Auswahl",
+        "empty": "Dieses Verzeichnis ist leer",
+        "onlyFiles": "Keine Unterverzeichnisse — enthaltene Dateien: {count}",
+        "truncated": "Es werden nur die ersten 500 Einträge angezeigt.",
+        "writable": "Beschreibbar",
+        "notWritable": "Nicht beschreibbar",
+        "readOnly": "Nur lesbar",
+        "failed": "Verzeichnis konnte nicht gelesen werden"
     }
 }

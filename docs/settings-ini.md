@@ -114,7 +114,8 @@ Die Datenbanken der Mandanten stehen **nicht** hier, sondern in `auth.clients`.
 | `templates_dir` | `templates` | Druck- und Shop-Vorlagen. Relative Pfade gelten ab `backend/`, also `backend/templates` |
 | `backup_dir` | `backups/` im Wurzelverzeichnis | Ziel der Datenbanksicherungen |
 | `shop_sites_dir` | leer | Grenze für die Shop-Webseiten, freiwillig — siehe unten |
-| `shop_publish_command_path` | leer | Pfad zum Programm, das die Shop-Webseite baut — siehe unten |
+| `shop_publish_command_path` | leer | Verzeichnis, in dem `hugo` liegt — siehe unten |
+| `browse_roots` | leer | Einstiegspunkte der Verzeichnisauswahl — siehe unten |
 
 ### [telephony]
 
@@ -158,12 +159,13 @@ Datei.
 Sie fallen aus dem Rahmen, weil das Übrige der Shop-Erweiterung je Mandant in
 der Firmenkonfiguration steht.
 
-**`shop_publish_command_path`** ist der Pfad zum Programm, das die Webseite
-baut — nur der Pfad, keine Befehlszeile. Die Befehlszeile setzt die Erweiterung
-selbst zusammen: maskierter Pfad, bei Bedarf `--cleanDestinationDir`,
+**`shop_publish_command_path`** ist das **Verzeichnis**, in dem das Programm
+liegt, das die Webseite baut — weder Dateiname noch Befehlszeile. Der Dateiname
+steht fest: `hugo`. Die Befehlszeile setzt die Erweiterung selbst zusammen:
+maskierter Pfad aus Verzeichnis und Name, bei Bedarf `--cleanDestinationDir`,
 ausgeführt im Verzeichnis der Webseite, Hugo schreibt dann nach `public/`.
-Vor jedem Bau prüft sie den Pfad: absolut, ohne Leerraum, vorhandene und
-ausführbare Datei.
+Vor jedem Bau prüft sie beides: absolut, ohne Leerraum, vorhandenes
+Verzeichnis, darin eine vorhandene und ausführbare Datei `hugo`.
 
 Derselbe Schlüssel steht auch in den Shop-Einstellungen des Mandanten, und
 **die gelten zuerst**. Der Eintrag hier ist Rückfall: Er greift nur, wenn die
@@ -174,7 +176,7 @@ die Erweiterung nur Dateien und baut nicht. `--cleanDestinationDir` ist nur in
 den Shop-Einstellungen schaltbar.
 
 ```ini
-shop_publish_command_path = "/var/www/hugoshops/dev.hugoshop.dev/hugo/hugo"
+shop_publish_command_path = "/var/www/hugoshops/dev.hugoshop.dev/hugo"
 ```
 
 **`shop_sites_dir`** ist freiwillig und wirkt nur als Grenze. Wo die Webseite
@@ -183,6 +185,39 @@ eigene. Ist hier ein Verzeichnis eingetragen, muss das eingestellte darunter
 liegen, sonst meldet die Erweiterung `SHOP_SITES_DIR_OUTSIDE_LIMIT`.
 
 Alles Weitere zum Shop: `dev/shop-betrieb.md`.
+
+## Die Verzeichnisauswahl
+
+Pfadfelder in den Systemeinstellungen haben rechts ein Ordner-Symbol. Es
+öffnet einen Auswahldialog, der die Verzeichnisse **des Servers** zeigt — der
+Browser selbst kann keinen Serverpfad auswählen, deshalb listet die Anwendung
+sie auf. Sichtbar ist dabei nur, was unterhalb eines freigegebenen
+Einstiegspunktes liegt; alles andere weist der Server ab, auch wenn jemand den
+Pfad von Hand in die Anfrage schreibt.
+
+Ohne Eintrag leitet die Anwendung die Einstiegspunkte ab: das Verzeichnis der
+Installation und dessen übergeordnetes Verzeichnis, die Verzeichnisse der
+bereits eingetragenen Pfade sowie `/srv`, `/var/www`, `/mnt` und `/media`,
+soweit vorhanden. Das reicht in den meisten Fällen und erreicht auch ein
+Programm, das neben der Installation liegt.
+
+Steht `browse_roots` in der Datei, gilt **allein** diese Liste — mehrere
+Verzeichnisse durch Komma getrennt:
+
+```ini
+[system]
+browse_roots = "/srv/oserp,/var/www"
+```
+
+Das ist der Weg, die Sicht auf einem gemeinsam genutzten Server zu
+beschneiden. Der Dialog erreicht dann nichts außerhalb dieser Verzeichnisse.
+Die Felder bleiben unabhängig davon frei beschreibbar: Wer einen Pfad tippt,
+ist nicht auf den Dialog angewiesen.
+
+Die Auswahl steht nur Systemadministratoren offen, weil eine Auflistung die
+Struktur des Servers preisgibt. In der Firmenkonfiguration gibt es sie
+ausschließlich für die relativen Shop-Verzeichnisse, und dort reicht sie nicht
+über das Webseiten-Verzeichnis des jeweiligen Mandanten hinaus.
 
 ## Was hier nicht hingehört
 

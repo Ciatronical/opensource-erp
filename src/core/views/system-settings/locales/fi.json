@@ -57,7 +57,7 @@
                 "templates_dir": "Tuloste- ja kauppamallit, suhteelliset polut alkavat hakemistosta backend/",
                 "backup_dir": "Tietokantavarmuuskopioiden kohde",
                 "shop_sites_dir": "Raja kaupan verkkosivustojen hakemistoille",
-                "shop_publish_command_path": "Ohjelma, joka rakentaa kaupan verkkosivuston, varavaihtoehto kaupan asetukselle"
+                "shop_publish_command_path": "Hakemisto, jossa ohjelma hugo on, varavaihtoehto kaupan asetukselle"
             },
             "telephony": {
                 "monitor_dir": "Puhelutallenteiden hakemisto"

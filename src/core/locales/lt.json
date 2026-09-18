@@ -79,5 +79,22 @@
     "passwordField": {
         "show": "Rodyti slaptažodį",
         "hide": "Slėpti slaptažodį"
+    },
+    "directoryPicker": {
+        "titleDir": "Pasirinkti katalogą",
+        "titleFile": "Pasirinkti failą",
+        "root": "Pradžios taškas",
+        "up": "Vienu lygiu aukštyn",
+        "refresh": "Įkelti iš naujo",
+        "browse": "Naršyti serveryje",
+        "apply": "Taikyti",
+        "selection": "Pasirinkimas",
+        "empty": "Šis katalogas tuščias",
+        "onlyFiles": "Pakatalogių nėra — failų skaičius: {count}",
+        "truncated": "Rodomi tik pirmieji 500 įrašų.",
+        "writable": "Įrašoma",
+        "notWritable": "Neįrašoma",
+        "readOnly": "Tik skaitymui",
+        "failed": "Nepavyko perskaityti katalogo"
     }
 }

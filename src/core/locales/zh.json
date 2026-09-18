@@ -79,5 +79,22 @@
     "passwordField": {
         "show": "显示密码",
         "hide": "隐藏密码"
+    },
+    "directoryPicker": {
+        "titleDir": "选择目录",
+        "titleFile": "选择文件",
+        "root": "起始位置",
+        "up": "上一级",
+        "refresh": "重新载入",
+        "browse": "在服务器上浏览",
+        "apply": "应用",
+        "selection": "所选项",
+        "empty": "此目录为空",
+        "onlyFiles": "没有子目录 — 文件数：{count}",
+        "truncated": "仅显示前 500 个条目。",
+        "writable": "可写入",
+        "notWritable": "不可写入",
+        "readOnly": "只读",
+        "failed": "无法读取目录"
     }
 }

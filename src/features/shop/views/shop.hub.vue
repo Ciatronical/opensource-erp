@@ -186,8 +186,16 @@
                 </div>
                 <v-table density="compact">
                     <tbody>
-                        <tr v-for="auftrag in auftraege" :key="auftrag.id">
-                            <td style="width: 1%">
+                        <!-- Klick auf die Zeile wählt aus; das Ankreuzfeld
+                             behält seinen eigenen Klick (sonst höbe die Zeile
+                             ihn gleich wieder auf) -->
+                        <tr
+                            v-for="auftrag in auftraege"
+                            :key="auftrag.id"
+                            class="auftragszeile"
+                            @click="auswahlUmschalten(auftrag.id)"
+                        >
+                            <td style="width: 1%" @click.stop>
                                 <v-checkbox-btn
                                     v-model="auswahl"
                                     :value="auftrag.id"
@@ -364,6 +372,16 @@ function alleUmschalten(gewaehlt) {
     auswahl.value = gewaehlt ? [...alleIds.value] : []
 }
 
+/** Ein Auftrag mehr oder weniger in der Auswahl */
+function auswahlUmschalten(id) {
+    const stelle = auswahl.value.indexOf(id)
+    if (-1 === stelle) {
+        auswahl.value.push(id)
+    } else {
+        auswahl.value.splice(stelle, 1)
+    }
+}
+
 /** Zeitstempel aus der Datenbank ('2026-09-11 10:23:45.123') für die Anzeige */
 function zeitpunkt(wert) {
     if (!wert) return ''
@@ -529,3 +547,9 @@ async function alleVeroeffentlichen() {
 
 onMounted(laden)
 </script>
+
+<style scoped>
+.auftragszeile {
+    cursor: pointer;
+}
+</style>

@@ -79,5 +79,22 @@
     "passwordField": {
         "show": "Mostrar a palavra-passe",
         "hide": "Ocultar a palavra-passe"
+    },
+    "directoryPicker": {
+        "titleDir": "Escolher pasta",
+        "titleFile": "Escolher ficheiro",
+        "root": "Ponto de partida",
+        "up": "Um nível acima",
+        "refresh": "Recarregar",
+        "browse": "Procurar no servidor",
+        "apply": "Aplicar",
+        "selection": "Seleção",
+        "empty": "Esta pasta está vazia",
+        "onlyFiles": "Sem subpastas — ficheiros existentes: {count}",
+        "truncated": "São apresentadas apenas as primeiras 500 entradas.",
+        "writable": "Gravável",
+        "notWritable": "Não gravável",
+        "readOnly": "Apenas leitura",
+        "failed": "Não foi possível ler a pasta"
     }
 }

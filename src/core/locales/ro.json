@@ -79,5 +79,22 @@
     "passwordField": {
         "show": "Afișează parola",
         "hide": "Ascunde parola"
+    },
+    "directoryPicker": {
+        "titleDir": "Alegeți directorul",
+        "titleFile": "Alegeți fișierul",
+        "root": "Punct de pornire",
+        "up": "Un nivel mai sus",
+        "refresh": "Reîncarcă",
+        "browse": "Răsfoiți pe server",
+        "apply": "Aplică",
+        "selection": "Selecție",
+        "empty": "Acest director este gol",
+        "onlyFiles": "Niciun subdirector — fișiere conținute: {count}",
+        "truncated": "Sunt afișate doar primele 500 de intrări.",
+        "writable": "Se poate scrie",
+        "notWritable": "Nu se poate scrie",
+        "readOnly": "Doar citire",
+        "failed": "Directorul nu a putut fi citit"
     }
 }

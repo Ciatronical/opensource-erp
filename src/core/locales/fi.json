@@ -79,5 +79,22 @@
     "passwordField": {
         "show": "Näytä salasana",
         "hide": "Piilota salasana"
+    },
+    "directoryPicker": {
+        "titleDir": "Valitse hakemisto",
+        "titleFile": "Valitse tiedosto",
+        "root": "Aloituskohta",
+        "up": "Yksi taso ylös",
+        "refresh": "Lataa uudelleen",
+        "browse": "Selaa palvelimella",
+        "apply": "Ota käyttöön",
+        "selection": "Valinta",
+        "empty": "Tämä hakemisto on tyhjä",
+        "onlyFiles": "Ei alihakemistoja — tiedostoja: {count}",
+        "truncated": "Näytetään vain 500 ensimmäistä kohdetta.",
+        "writable": "Kirjoitettavissa",
+        "notWritable": "Ei kirjoitettavissa",
+        "readOnly": "Vain luku",
+        "failed": "Hakemistoa ei voitu lukea"
     }
 }

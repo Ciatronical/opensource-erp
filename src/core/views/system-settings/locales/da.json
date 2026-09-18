@@ -57,7 +57,7 @@
                 "templates_dir": "Udskrifts- og shopskabeloner, relative stier starter i backend/",
                 "backup_dir": "Mål for databasebackups",
                 "shop_sites_dir": "Grænse for shop-webstedernes mapper",
-                "shop_publish_command_path": "Program der bygger shop-webstedet, reserve for shopindstillingen"
+                "shop_publish_command_path": "Mappe med programmet hugo, reserve for shopindstillingen"
             },
             "telephony": {
                 "monitor_dir": "Mappe med samtaleoptagelser"

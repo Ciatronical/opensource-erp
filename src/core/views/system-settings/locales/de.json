@@ -57,7 +57,7 @@
                 "templates_dir": "Druck- und Shop-Vorlagen, relative Pfade gelten ab backend/",
                 "backup_dir": "Ziel der Datenbanksicherungen",
                 "shop_sites_dir": "Grenze für die Verzeichnisse der Shop-Webseiten",
-                "shop_publish_command_path": "Programm zum Bauen der Shop-Webseite, Rückfall für die Shop-Einstellung"
+                "shop_publish_command_path": "Verzeichnis mit dem Programm hugo, Rückfall für die Shop-Einstellung"
             },
             "telephony": {
                 "monitor_dir": "Verzeichnis der Gesprächsaufzeichnungen"

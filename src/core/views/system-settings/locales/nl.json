@@ -57,7 +57,7 @@
                 "templates_dir": "Afdruk- en winkelsjablonen, relatieve paden beginnen bij backend/",
                 "backup_dir": "Doel van de databaseback-ups",
                 "shop_sites_dir": "Grens voor de mappen van de winkelwebsites",
-                "shop_publish_command_path": "Programma dat de winkelwebsite bouwt, terugval voor de winkelinstelling"
+                "shop_publish_command_path": "Map met het programma hugo, terugval voor de winkelinstelling"
             },
             "telephony": {
                 "monitor_dir": "Map met gespreksopnamen"

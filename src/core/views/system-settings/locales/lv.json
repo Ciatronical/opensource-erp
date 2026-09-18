@@ -57,7 +57,7 @@
                 "templates_dir": "Drukas un veikala veidnes, relatīvie ceļi sākas no backend/",
                 "backup_dir": "Datubāzes rezerves kopiju mērķis",
                 "shop_sites_dir": "Robeža veikala vietņu direktorijām",
-                "shop_publish_command_path": "Programma, kas būvē veikala vietni, rezerves variants veikala iestatījumam"
+                "shop_publish_command_path": "Direktorija ar programmu hugo, rezerves variants veikala iestatījumam"
             },
             "telephony": {
                 "monitor_dir": "Sarunu ierakstu direktorija"

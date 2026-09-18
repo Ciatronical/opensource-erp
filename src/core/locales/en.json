@@ -79,5 +79,22 @@
     "passwordField": {
         "show": "Show password",
         "hide": "Hide password"
+    },
+    "directoryPicker": {
+        "titleDir": "Select directory",
+        "titleFile": "Select file",
+        "root": "Starting point",
+        "up": "One level up",
+        "refresh": "Reload",
+        "browse": "Browse on the server",
+        "apply": "Apply",
+        "selection": "Selection",
+        "empty": "This directory is empty",
+        "onlyFiles": "No subdirectories — files inside: {count}",
+        "truncated": "Only the first 500 entries are shown.",
+        "writable": "Writable",
+        "notWritable": "Not writable",
+        "readOnly": "Read-only",
+        "failed": "Directory could not be read"
     }
 }

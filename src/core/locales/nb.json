@@ -79,5 +79,22 @@
     "passwordField": {
         "show": "Vis passord",
         "hide": "Skjul passord"
+    },
+    "directoryPicker": {
+        "titleDir": "Velg mappe",
+        "titleFile": "Velg fil",
+        "root": "Utgangspunkt",
+        "up": "Ett nivå opp",
+        "refresh": "Last inn på nytt",
+        "browse": "Bla gjennom på serveren",
+        "apply": "Bruk",
+        "selection": "Valg",
+        "empty": "Denne mappen er tom",
+        "onlyFiles": "Ingen undermapper — antall filer: {count}",
+        "truncated": "Bare de første 500 oppføringene vises.",
+        "writable": "Skrivbar",
+        "notWritable": "Ikke skrivbar",
+        "readOnly": "Skrivebeskyttet",
+        "failed": "Mappen kunne ikke leses"
     }
 }

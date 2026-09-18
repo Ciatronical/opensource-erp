@@ -57,7 +57,7 @@
                 "templates_dir": "Yazdırma ve mağaza şablonları, göreli yollar backend/ dizininden başlar",
                 "backup_dir": "Veritabanı yedeklerinin hedefi",
                 "shop_sites_dir": "Mağaza web sitelerinin dizinleri için sınır",
-                "shop_publish_command_path": "Mağaza web sitesini oluşturan program, mağaza ayarı için yedek"
+                "shop_publish_command_path": "hugo programının bulunduğu dizin, mağaza ayarı için yedek"
             },
             "telephony": {
                 "monitor_dir": "Görüşme kayıtları dizini"

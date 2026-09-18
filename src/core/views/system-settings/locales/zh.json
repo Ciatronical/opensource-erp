@@ -57,7 +57,7 @@
                 "templates_dir": "打印和商店模板，相对路径从 backend/ 开始",
                 "backup_dir": "数据库备份的目标位置",
                 "shop_sites_dir": "商店网站目录的限制",
-                "shop_publish_command_path": "生成商店网站的程序，商店设置的后备值"
+                "shop_publish_command_path": "存放程序 hugo 的目录，商店设置的后备值"
             },
             "telephony": {
                 "monitor_dir": "通话录音目录"

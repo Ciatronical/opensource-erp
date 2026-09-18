@@ -79,5 +79,22 @@
     "passwordField": {
         "show": "Wachtwoord tonen",
         "hide": "Wachtwoord verbergen"
+    },
+    "directoryPicker": {
+        "titleDir": "Map kiezen",
+        "titleFile": "Bestand kiezen",
+        "root": "Startpunt",
+        "up": "Eén niveau omhoog",
+        "refresh": "Opnieuw laden",
+        "browse": "Op de server bladeren",
+        "apply": "Overnemen",
+        "selection": "Selectie",
+        "empty": "Deze map is leeg",
+        "onlyFiles": "Geen submappen — aantal bestanden: {count}",
+        "truncated": "Alleen de eerste 500 items worden getoond.",
+        "writable": "Beschrijfbaar",
+        "notWritable": "Niet beschrijfbaar",
+        "readOnly": "Alleen lezen",
+        "failed": "De map kon niet worden gelezen"
     }
 }

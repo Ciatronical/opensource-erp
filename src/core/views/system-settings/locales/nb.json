@@ -57,7 +57,7 @@
                 "templates_dir": "Utskrifts- og butikkmaler, relative stier starter i backend/",
                 "backup_dir": "Mål for databasesikkerhetskopier",
                 "shop_sites_dir": "Grense for katalogene til butikknettstedene",
-                "shop_publish_command_path": "Program som bygger butikknettstedet, reserve for butikkinnstillingen"
+                "shop_publish_command_path": "Mappe med programmet hugo, reserve for butikkinnstillingen"
             },
             "telephony": {
                 "monitor_dir": "Katalog for samtaleopptak"

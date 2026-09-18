@@ -79,5 +79,22 @@
     "passwordField": {
         "show": "Afficher le mot de passe",
         "hide": "Masquer le mot de passe"
+    },
+    "directoryPicker": {
+        "titleDir": "Choisir un répertoire",
+        "titleFile": "Choisir un fichier",
+        "root": "Point de départ",
+        "up": "Niveau supérieur",
+        "refresh": "Recharger",
+        "browse": "Parcourir sur le serveur",
+        "apply": "Appliquer",
+        "selection": "Sélection",
+        "empty": "Ce répertoire est vide",
+        "onlyFiles": "Aucun sous-répertoire — fichiers présents : {count}",
+        "truncated": "Seules les 500 premières entrées sont affichées.",
+        "writable": "Accessible en écriture",
+        "notWritable": "Non accessible en écriture",
+        "readOnly": "Lecture seule",
+        "failed": "Le répertoire n’a pas pu être lu"
     }
 }

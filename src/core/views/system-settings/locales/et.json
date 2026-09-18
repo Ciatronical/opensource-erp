@@ -57,7 +57,7 @@
                 "templates_dir": "Prindi- ja poemallid, suhtelised teed algavad kataloogist backend/",
                 "backup_dir": "Andmebaasi varukoopiate sihtkoht",
                 "shop_sites_dir": "Piir poe veebisaitide kataloogidele",
-                "shop_publish_command_path": "Programm, mis ehitab poe veebisaidi, varuvariant poe seadele"
+                "shop_publish_command_path": "Kataloog programmiga hugo, varuvariant poe seadele"
             },
             "telephony": {
                 "monitor_dir": "Kõnesalvestiste kataloog"

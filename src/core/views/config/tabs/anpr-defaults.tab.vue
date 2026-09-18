@@ -1388,12 +1388,10 @@ sudo apt-get install -y libedgetpu1-std</pre>
                 <p class="text-body-2 mb-4">
                     {{ t('anpr.sudoInfo', { pkg: sudoPkg, user: sudoOwner }) }}
                 </p>
-                <v-text-field
+                <password-field
                     v-model="sudoPassword"
+                    v-model:visible="sudoPasswordVisible"
                     :label="t('anpr.sudoPassword')"
-                    :type="sudoPasswordVisible ? 'text' : 'password'"
-                    :append-inner-icon="sudoPasswordVisible ? 'mdi-eye-off' : 'mdi-eye'"
-                    @click:append-inner="sudoPasswordVisible = !sudoPasswordVisible"
                     variant="outlined" density="compact" autofocus
                     @keydown.enter="confirmSudoInstall" />
                 <p class="text-caption text-medium-emphasis mt-1">
@@ -1419,6 +1417,7 @@ sudo apt-get install -y libedgetpu1-std</pre>
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, nextTick, inject } from 'vue'
+import PasswordField from '@/core/components/password-field.vue'
 import { useI18n } from 'vue-i18n'
 import axios from 'axios'
 import * as toasts from '@/core/utils/toasts.js'

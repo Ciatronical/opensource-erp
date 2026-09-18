@@ -79,5 +79,22 @@
     "passwordField": {
         "show": "Rādīt paroli",
         "hide": "Slēpt paroli"
+    },
+    "directoryPicker": {
+        "titleDir": "Izvēlēties direktoriju",
+        "titleFile": "Izvēlēties failu",
+        "root": "Sākumpunkts",
+        "up": "Vienu līmeni augšup",
+        "refresh": "Ielādēt no jauna",
+        "browse": "Pārlūkot serverī",
+        "apply": "Lietot",
+        "selection": "Izvēle",
+        "empty": "Šī direktorija ir tukša",
+        "onlyFiles": "Nav apakšdirektoriju — failu skaits: {count}",
+        "truncated": "Tiek rādīti tikai pirmie 500 ieraksti.",
+        "writable": "Rakstāms",
+        "notWritable": "Nav rakstāms",
+        "readOnly": "Tikai lasāms",
+        "failed": "Neizdevās nolasīt direktoriju"
     }
 }

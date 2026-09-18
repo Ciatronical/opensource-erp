@@ -79,5 +79,22 @@
     "passwordField": {
         "show": "Parolayı göster",
         "hide": "Parolayı gizle"
+    },
+    "directoryPicker": {
+        "titleDir": "Dizin seçin",
+        "titleFile": "Dosya seçin",
+        "root": "Başlangıç noktası",
+        "up": "Bir üst düzey",
+        "refresh": "Yeniden yükle",
+        "browse": "Sunucuda gözat",
+        "apply": "Uygula",
+        "selection": "Seçim",
+        "empty": "Bu dizin boş",
+        "onlyFiles": "Alt dizin yok — dosya sayısı: {count}",
+        "truncated": "Yalnızca ilk 500 kayıt gösteriliyor.",
+        "writable": "Yazılabilir",
+        "notWritable": "Yazılamaz",
+        "readOnly": "Salt okunur",
+        "failed": "Dizin okunamadı"
     }
 }

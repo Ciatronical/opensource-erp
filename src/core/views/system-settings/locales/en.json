@@ -57,7 +57,7 @@
                 "templates_dir": "Print and shop templates, relative paths start at backend/",
                 "backup_dir": "Target of the database backups",
                 "shop_sites_dir": "Limit for the directories of the shop websites",
-                "shop_publish_command_path": "Program that builds the shop website, fallback for the shop setting"
+                "shop_publish_command_path": "Directory containing the program hugo, fallback for the shop setting"
             },
             "telephony": {
                 "monitor_dir": "Directory of call recordings"

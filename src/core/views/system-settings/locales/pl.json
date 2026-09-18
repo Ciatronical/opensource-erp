@@ -57,7 +57,7 @@
                 "templates_dir": "Szablony wydruków i sklepu, ścieżki względne zaczynają się w backend/",
                 "backup_dir": "Miejsce kopii zapasowych bazy danych",
                 "shop_sites_dir": "Granica dla katalogów stron sklepu",
-                "shop_publish_command_path": "Program budujący stronę sklepu, zapasowy dla ustawienia sklepu"
+                "shop_publish_command_path": "Katalog z programem hugo, zapasowy dla ustawienia sklepu"
             },
             "telephony": {
                 "monitor_dir": "Katalog nagrań rozmów"

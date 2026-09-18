@@ -27,9 +27,9 @@
     <v-row v-else-if="field.type === 'input' || field.type === 'password'" class="my-4" :data-field-name="field.name">
         <v-col cols="12" md="6">
             <component
-                :is="field.type === 'password' ? PasswordField : VTextField"
+                :is="feldKomponente(field)"
                 v-model="werte[field.name]"
-                v-bind="field.type === 'password' ? { visible: sichtbar, 'onUpdate:visible': wert => (sichtbar = wert) } : {}"
+                v-bind="zusatz(field)"
                 :label="t(field.label)"
                 :type="field.inputType || 'text'"
                 :placeholder="field.type === 'password' ? t(hinterlegt ? 'crm_fields.shopSecretKeep' : 'crm_fields.shopSecretEmpty') : (vorgabe || undefined)"
@@ -108,6 +108,7 @@ import { computed, h, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { VIcon, VTextField, VTooltip } from 'vuetify/components'
 import PasswordField from '@/core/components/password-field.vue'
+import PathField from '@/core/components/path-field.vue'
 import { oserpStore } from '@/core/stores/oserp.store.js'
 
 const { t } = useI18n()
@@ -162,6 +163,39 @@ const hinterlegt = computed(() => true === props.gesetzt[props.field.name])
 const sichtbar = ref(false)
 
 /**
+ * Welche Komponente ein Feld bekommt
+ *
+ * Geheimnisse mit Auge, relative Verzeichnisse mit Ordner-Symbol, alles
+ * Übrige als Textfeld. Die absoluten Pfade (Webseiten-Wurzel, Hugo-Programm)
+ * bleiben ohne Auswahl: Sie zeigen auf das Dateisystem des Servers, und das
+ * durchblättern nur Systemadministratoren in den Systemeinstellungen.
+ *
+ * @param {object} field Felddefinition aus shopDefaultsConfig.js
+ * @returns {object} Vue-Komponente
+ */
+function feldKomponente(field) {
+    if ('password' === field.type) return PasswordField
+    if (field.browse) return PathField
+    return VTextField
+}
+
+/**
+ * Zusätzliche Eigenschaften je nach Feldart
+ *
+ * @param {object} field Felddefinition
+ * @returns {object}
+ */
+function zusatz(field) {
+    if ('password' === field.type) {
+        return { visible: sichtbar.value, 'onUpdate:visible': (wert) => (sichtbar.value = wert) }
+    }
+    if (field.browse) {
+        return { scope: 'shop', base: field.browse }
+    }
+    return {}
+}
+
+/**
  * Erzeugt einen neuen Shop-Schlüssel
  *
  * 32 Byte aus dem Zufallsgenerator des Browsers, hexadezimal: 64 Zeichen aus
@@ -178,13 +212,21 @@ function schluesselErzeugen() {
 /**
  * Prüfregeln aus der Felddefinition
  *
- * absolutePath: nur ein Pfad — beginnt mit /, ohne Leerraum. Ob die Datei
- * existiert und ausführbar ist, kann nur der Server prüfen; das tut er vor
- * jedem Bau und meldet es in der Shop-Übersicht.
+ * absolutePath: nur ein Pfad — beginnt mit /, ohne Leerraum. Ob es das
+ * Verzeichnis gibt und ein ausführbares Programm darin liegt, kann nur der
+ * Server prüfen; das tut er vor jedem Bau und meldet es in der Shop-Übersicht.
+ *
+ * relativePath: ohne führenden Schrägstrich — der Pfad gilt unterhalb der
+ * Webseite. Dass er dort nicht herausführt, prüft ebenfalls der Server.
  */
 function regeln(field) {
     if ('absolutePath' === field.validate) {
         return [(wert) => !wert || /^\/\S*$/.test(wert) || t('crm_fields.shopPathInvalid')]
+    }
+    // Relative Verzeichnisse gelten unterhalb der Webseite; ein führender
+    // Schrägstrich wäre ein absoluter Pfad und wird abgewiesen.
+    if ('relativePath' === field.validate) {
+        return [(wert) => !wert || !String(wert).startsWith('/') || t('crm_fields.shopPathNotRelative')]
     }
     return []
 }

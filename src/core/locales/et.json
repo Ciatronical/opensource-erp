@@ -79,5 +79,22 @@
     "passwordField": {
         "show": "Näita parooli",
         "hide": "Peida parool"
+    },
+    "directoryPicker": {
+        "titleDir": "Vali kataloog",
+        "titleFile": "Vali fail",
+        "root": "Alguspunkt",
+        "up": "Üks tase üles",
+        "refresh": "Laadi uuesti",
+        "browse": "Sirvi serveris",
+        "apply": "Rakenda",
+        "selection": "Valik",
+        "empty": "See kataloog on tühi",
+        "onlyFiles": "Alamkatalooge ei ole — faile: {count}",
+        "truncated": "Kuvatakse ainult esimesed 500 kirjet.",
+        "writable": "Kirjutatav",
+        "notWritable": "Ei ole kirjutatav",
+        "readOnly": "Ainult lugemiseks",
+        "failed": "Kataloogi ei õnnestunud lugeda"
     }
 }

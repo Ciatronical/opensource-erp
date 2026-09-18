@@ -104,6 +104,17 @@ function shopTemplateDir(string $name): string {
  * @throws ApiError SHOP_PATH_INVALID, SHOP_PATH_MISSING, SHOP_PATH_OUTSIDE_ROOT
  */
 function shopPathUnder(string $wurzel, string $relativ, bool $anlegen = false): string {
+    // Ein absoluter Pfad ist hier ein Missverständnis, kein Sonderfall: früher
+    // fiel der Schrägstrich weg, und aus '/var/www/inhalt' wurde stillschweigend
+    // '<webseite>/var/www/inhalt'. Die Meldung darüber nannte dann ein
+    // Verzeichnis, das niemand eingetragen hat.
+    if (str_starts_with($relativ, '/')) {
+        throw new ApiError(
+            'SHOP_PATH_ABSOLUTE',
+            'Hier gehört ein Pfad relativ zum Webseiten-Verzeichnis hin, ohne führenden Schrägstrich: '.$relativ
+        );
+    }
+
     $relativ = trim($relativ, '/');
 
     if ('' !== $relativ && preg_match('#(^|/)\.\.(/|$)#', $relativ)) {
@@ -650,6 +661,11 @@ function shopKitChanges(array $kit): int {
 // Artikel trifft, füllte sonst die Meldungsliste mit Tausenden gleicher Zeilen.
 const SHOP_MELDUNGEN_JE_AUFTRAG = 20;
 
+// Name des Programms, das die Webseite baut. Fest kodiert: eingestellt wird
+// nur das Verzeichnis, damit sich über die Firmenkonfiguration kein anderes
+// Programm unterschieben lässt.
+const SHOP_PUBLISH_BINARY = 'hugo';
+
 // ── Auftraege ──
 //
 // Die Auftragsarten dieser Erweiterung. Nur diese nimmt der Laeufer, und nur
@@ -1071,14 +1087,15 @@ function shopPublishUnlock($db): void {
 /**
  * Das Programm, das die Webseite baut
  *
- * Nur ein Pfad, keine Befehlszeile: die Argumente setzt shopPublishCommand()
- * selbst. Es gilt die Shop-Einstellung shop_publish_command_path des
- * Mandanten. Ist sie leer, springt der gleichnamige Eintrag aus der
- * settings.ini ein — als Rückfall, nicht als Vorrang.
+ * Eingestellt wird nur das Verzeichnis (shop_publish_command_path); der Name
+ * der Datei steht fest (SHOP_PUBLISH_BINARY) und wird angehängt. So lässt sich
+ * über die Einstellung kein anderes Programm unterschieben. Ist die Einstellung
+ * des Mandanten leer, springt der gleichnamige Eintrag aus der settings.ini
+ * ein — als Rückfall, nicht als Vorrang.
  *
  * Geprüft wird vor jedem Bau: absoluter Pfad, kein Leerraum (der deutete auf
- * angehängte Argumente hin, die gehören nicht hierher), vorhandene und
- * ausführbare Datei.
+ * angehängte Argumente hin, die gehören nicht hierher), vorhandenes
+ * Verzeichnis, darin eine vorhandene und ausführbare Datei.
  *
  * @param object $db Company-Datenbankverbindung
  * @return array pfad (leer, wenn nichts eingestellt oder ungültig), quelle, fehler (leer, wenn in Ordnung)
@@ -1086,20 +1103,26 @@ function shopPublishUnlock($db): void {
 function shopPublishProgram($db): array {
     $ausEinstellung = trim(shopConfigValue($db, 'shop_publish_command_path'));
     $ausIni = defined('OSERP_SHOP_PUBLISH_COMMAND_PATH') ? trim((string)OSERP_SHOP_PUBLISH_COMMAND_PATH) : '';
-    $pfad = '' !== $ausEinstellung ? $ausEinstellung : $ausIni;
+    $verzeichnis = '' !== $ausEinstellung ? $ausEinstellung : $ausIni;
     $quelle = '' !== $ausEinstellung ? shopConfigLabel('shop_publish_command_path') : 'settings.ini';
     $ergebnis = ['pfad' => '', 'quelle' => $quelle, 'fehler' => ''];
 
-    if ('' === $pfad) {
+    if ('' === $verzeichnis) {
         return $ergebnis;
     }
 
-    if ('/' !== $pfad[0]) {
-        $ergebnis['fehler'] = "Kein absoluter Pfad ($quelle): $pfad";
-    } elseif (1 === preg_match('/\s/', $pfad)) {
-        $ergebnis['fehler'] = "Nur der Pfad zum Programm, ohne Argumente ($quelle): $pfad";
+    $pfad = rtrim($verzeichnis, '/').'/'.SHOP_PUBLISH_BINARY;
+
+    if ('/' !== $verzeichnis[0]) {
+        $ergebnis['fehler'] = "Kein absoluter Pfad ($quelle): $verzeichnis";
+    } elseif (1 === preg_match('/\s/', $verzeichnis)) {
+        $ergebnis['fehler'] = "Nur das Verzeichnis, ohne Argumente ($quelle): $verzeichnis";
+    } elseif (!is_dir($verzeichnis)) {
+        $ergebnis['fehler'] = is_file($verzeichnis)
+            ? "Nur das Verzeichnis eintragen, nicht das Programm selbst ($quelle): $verzeichnis"
+            : "Verzeichnis nicht gefunden ($quelle): $verzeichnis";
     } elseif (!is_file($pfad)) {
-        $ergebnis['fehler'] = "Programm nicht gefunden ($quelle): $pfad";
+        $ergebnis['fehler'] = "Im Verzeichnis liegt kein ".SHOP_PUBLISH_BINARY." ($quelle): $verzeichnis";
     } elseif (!is_executable($pfad)) {
         $ergebnis['fehler'] = "Programm nicht ausführbar ($quelle): $pfad";
     } else {

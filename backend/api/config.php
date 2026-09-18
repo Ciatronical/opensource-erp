@@ -162,12 +162,20 @@ class OserpConfig {
         // liegen; ohne Eintrag gilt allein die Einstellung des Mandanten.
         define('OSERP_SHOP_SITES_DIR', $settings['system']['shop_sites_dir'] ?? '');
 
-        // Shop: Pfad zum Programm, das die Webseite baut (Hugo) — nur der Pfad,
-        // keine Befehlszeile. Die Argumente setzt die Erweiterung selbst
-        // (shopPublishCommand), der Pfad wird vor jedem Bau geprüft. Es gilt
+        // Shop: Verzeichnis, in dem das Programm hugo liegt — nur das
+        // Verzeichnis, weder Dateiname noch Befehlszeile. Den Namen hängt die
+        // Erweiterung selbst an, ebenso die Argumente (shopPublishCommand);
+        // geprüft wird vor jedem Bau. Es gilt
         // die Shop-Einstellung des Mandanten; dieser Eintrag springt nur ein,
         // wenn sie leer ist, und erscheint dort als Vorgabe im leeren Feld.
         define('OSERP_SHOP_PUBLISH_COMMAND_PATH', $settings['system']['shop_publish_command_path'] ?? '');
+
+        // Verzeichnisauswahl: Einstiegspunkte des Auswahldialogs, durch
+        // Komma getrennt. Ohne Eintrag leitet browseRootDirs() sie aus der
+        // Installation und den eingetragenen Pfaden ab; mit Eintrag gilt
+        // allein diese Liste — so laesst sich die Sicht auf einem gemeinsam
+        // genutzten Server beschneiden.
+        define('OSERP_BROWSE_ROOTS', $settings['system']['browse_roots'] ?? '');
 
         // Telefonie-Konstanten
         define('TELEPHONY_MONITOR_DIR', $settings['telephony']['monitor_dir'] ?? '/var/spool/asterisk/monitor');

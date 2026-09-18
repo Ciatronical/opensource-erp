@@ -57,7 +57,7 @@
                 "templates_dir": "Modèles d'impression et de boutique, les chemins relatifs partent de backend/",
                 "backup_dir": "Destination des sauvegardes de la base de données",
                 "shop_sites_dir": "Limite pour les répertoires des sites de la boutique",
-                "shop_publish_command_path": "Programme qui construit le site de la boutique, repli pour le paramètre de la boutique"
+                "shop_publish_command_path": "Répertoire contenant le programme hugo, repli pour le paramètre de la boutique"
             },
             "telephony": {
                 "monitor_dir": "Répertoire des enregistrements d'appels"

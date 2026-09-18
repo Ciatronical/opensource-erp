@@ -112,12 +112,14 @@
                                     </template>
                                 </v-autocomplete>
 
-                                <!-- Text, Zahl, Pfad, Passwort -->
-                                <v-text-field
+                                <!-- Text und Zahl als Textfeld, Geheimnisse mit Auge,
+                                     Pfade mit Ordner-Symbol zum Durchblättern -->
+                                <component
+                                    :is="feldKomponente(feld)"
                                     v-else
                                     v-model="werte[abschnitt.name][feld.key]"
+                                    v-bind="feld.type === 'path' ? { pick: feld.select === 'file' ? 'file' : 'dir' } : {}"
                                     :label="feld.key"
-                                    :type="feld.type === 'secret' ? 'password' : 'text'"
                                     :autocomplete="feld.type === 'secret' ? 'new-password' : 'off'"
                                     :placeholder="platzhalter(feld)"
                                     :persistent-placeholder="!!platzhalter(feld)"
@@ -130,7 +132,7 @@
                                     <template #append-inner>
                                         <FeldHilfe :text="beschreibung(abschnitt.name, feld)" />
                                     </template>
-                                </v-text-field>
+                                </component>
                             </v-col>
                         </v-row>
                     </v-card-text>
@@ -196,13 +198,29 @@
 <script setup>
 import { ref, reactive, computed, onMounted, h } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { VIcon, VTooltip } from 'vuetify/components'
+import { VIcon, VTextField, VTooltip } from 'vuetify/components'
 import { oserpStore } from '@/core/stores/oserp.store.js'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
+import PasswordField from '@/core/components/password-field.vue'
+import PathField from '@/core/components/path-field.vue'
 import * as toasts from '@/core/utils/toasts.js'
 
 const { t, te } = useI18n()
 const store = oserpStore()
+
+/**
+ * Welche Komponente ein Eintrag bekommt
+ *
+ * Geheimnisse mit Auge, Pfade mit Ordner-Symbol, alles Übrige als Textfeld.
+ *
+ * @param {object} feld Eintrag aus dem Schema des Backends
+ * @returns {object} Vue-Komponente
+ */
+function feldKomponente(feld) {
+    if (feld.type === 'secret') return PasswordField
+    if (feld.type === 'path') return PathField
+    return VTextField
+}
 
 /** Antwort von getSystemSettings: Datei, Abschnitte, weitere Einträge, Zeitzonen */
 const stand = ref(null)

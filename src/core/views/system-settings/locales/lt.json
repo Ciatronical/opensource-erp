@@ -57,7 +57,7 @@
                 "templates_dir": "Spausdinimo ir parduotuvės šablonai, santykiniai keliai prasideda nuo backend/",
                 "backup_dir": "Duomenų bazės atsarginių kopijų paskirtis",
                 "shop_sites_dir": "Riba parduotuvės svetainių katalogams",
-                "shop_publish_command_path": "Programa, kuri sukuria parduotuvės svetainę, atsarginis variantas parduotuvės nustatymui"
+                "shop_publish_command_path": "Katalogas su programa hugo, atsarginis variantas parduotuvės nustatymui"
             },
             "telephony": {
                 "monitor_dir": "Pokalbių įrašų katalogas"

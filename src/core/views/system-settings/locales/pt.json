@@ -57,7 +57,7 @@
                 "templates_dir": "Modelos de impressão e da loja, os caminhos relativos começam em backend/",
                 "backup_dir": "Destino das cópias de segurança da base de dados",
                 "shop_sites_dir": "Limite para os diretórios dos sites da loja",
-                "shop_publish_command_path": "Programa que constrói o site da loja, alternativa para a definição da loja"
+                "shop_publish_command_path": "Diretório com o programa hugo, alternativa para a definição da loja"
             },
             "telephony": {
                 "monitor_dir": "Diretório das gravações de chamadas"

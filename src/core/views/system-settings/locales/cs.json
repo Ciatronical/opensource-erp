@@ -57,7 +57,7 @@
                 "templates_dir": "Tiskové a obchodní šablony, relativní cesty začínají v backend/",
                 "backup_dir": "Cíl záloh databáze",
                 "shop_sites_dir": "Hranice pro adresáře webů obchodu",
-                "shop_publish_command_path": "Program pro sestavení webu obchodu, záloha pro nastavení obchodu"
+                "shop_publish_command_path": "Adresář s programem hugo, záloha pro nastavení obchodu"
             },
             "telephony": {
                 "monitor_dir": "Adresář záznamů hovorů"

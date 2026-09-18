@@ -57,7 +57,7 @@
                 "templates_dir": "Utskrifts- och butiksmallar, relativa sökvägar börjar i backend/",
                 "backup_dir": "Mål för databasens säkerhetskopior",
                 "shop_sites_dir": "Gräns för butikswebbplatsernas kataloger",
-                "shop_publish_command_path": "Program som bygger butikswebbplatsen, reserv för butiksinställningen"
+                "shop_publish_command_path": "Katalog med programmet hugo, reserv för butiksinställningen"
             },
             "telephony": {
                 "monitor_dir": "Katalog för samtalsinspelningar"

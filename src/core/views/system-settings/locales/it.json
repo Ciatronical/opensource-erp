@@ -57,7 +57,7 @@
                 "templates_dir": "Modelli di stampa e del negozio, i percorsi relativi partono da backend/",
                 "backup_dir": "Destinazione dei backup del database",
                 "shop_sites_dir": "Limite per le directory dei siti del negozio",
-                "shop_publish_command_path": "Programma che genera il sito del negozio, ripiego per l'impostazione del negozio"
+                "shop_publish_command_path": "Directory con il programma hugo, ripiego per l'impostazione del negozio"
             },
             "telephony": {
                 "monitor_dir": "Directory delle registrazioni delle chiamate"

@@ -53,8 +53,8 @@ function systemSettingsSchema(): array {
             'cookie_same_site' => ['type' => 'select', 'const' => 'COOKIE_SAME_SITE', 'options' => ['Strict', 'Lax', 'None']],
         ],
         'logging' => [
-            'debug_log_file' => ['type' => 'path', 'const' => 'OSERP_DEBUG_LOG_FILE'],
-            'api_log_file'   => ['type' => 'path', 'const' => 'OSERP_API_LOG_FILE'],
+            'debug_log_file' => ['type' => 'path', 'const' => 'OSERP_DEBUG_LOG_FILE', 'select' => 'file'],
+            'api_log_file'   => ['type' => 'path', 'const' => 'OSERP_API_LOG_FILE', 'select' => 'file'],
             'max_log_size'   => ['type' => 'int', 'const' => 'OSERP_DEBUG_LOG_MAX_SIZE', 'min' => 0],
         ],
         'system' => [
@@ -63,7 +63,8 @@ function systemSettingsSchema(): array {
             'templates_dir'             => ['type' => 'text', 'const' => 'OSERP_TEMPLATES_DIR_NAME'],
             'backup_dir'                => ['type' => 'path', 'const' => 'BACKUP_BASE_DIR'],
             'shop_sites_dir'            => ['type' => 'path', 'const' => 'OSERP_SHOP_SITES_DIR'],
-            'shop_publish_command_path' => ['type' => 'path', 'const' => 'OSERP_SHOP_PUBLISH_COMMAND_PATH'],
+            'shop_publish_command_path' => ['type' => 'path', 'const' => 'OSERP_SHOP_PUBLISH_COMMAND_PATH', 'select' => 'file'],
+            'browse_roots'              => ['type' => 'text', 'const' => 'OSERP_BROWSE_ROOTS'],
         ],
         'telephony' => [
             'monitor_dir' => ['type' => 'path', 'const' => 'TELEPHONY_MONITOR_DIR'],
@@ -167,7 +168,7 @@ function getSystemSettings($data) {
         foreach ($felder as $schluessel => $art) {
             $vorhanden = is_array($aktuell[$abschnitt] ?? null) && array_key_exists($schluessel, $aktuell[$abschnitt]);
             $eintrag = ['key' => $schluessel, 'type' => $art['type'], 'present' => $vorhanden];
-            foreach (['min', 'max', 'options', 'required'] as $zusatz) {
+            foreach (['min', 'max', 'options', 'required', 'select'] as $zusatz) {
                 if (isset($art[$zusatz])) {
                     $eintrag[$zusatz] = $art[$zusatz];
                 }

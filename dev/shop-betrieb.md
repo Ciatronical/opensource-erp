@@ -37,8 +37,9 @@ Der Ablauf steht ausführlich in `shop-bridge-abloesung.md` unter Stufe D. Kurz:
    denselben Wert braucht; der mitgelieferte Proxy bekommt ihn vom Läufer über
    `oserp-shop/config.php`. Der Schlüssel unterscheidet die Mandanten — zwei
    Firmen dürfen nicht denselben haben.
-3. Programm zum Bauen: Pfad zum Hugo-Programm in der Shop-Einstellung
-   `shop_publish_command_path`, dazu das Kontrollkästchen für
+3. Programm zum Bauen: Verzeichnis, in dem `hugo` liegt, in der
+   Shop-Einstellung `shop_publish_command_path` — nur das Verzeichnis, der
+   Dateiname steht fest. Dazu das Kontrollkästchen für
    `--cleanDestinationDir`. Ohne Programm werden nur Dateien geschrieben.
 4. `php tools/shop-publish.php --client=<id>` einmal von Hand — legt
    `<webseite>/oserp-shop/` samt `config.php` an.
@@ -196,19 +197,33 @@ Oberfläche, nicht den Schlüssel.
 | Sonstiges | `shop_search_weighting`, `shop_invoice_mail_subject`, `shop_withdrawal_mail_to` |
 
 Wurzelverzeichnis und Programm stehen hier, weil jede Firma ihre eigene
-Webseite hat. Die übrigen Pfade sind relativ und müssen unterhalb von
-`shop_sites_dir` liegen.
+Webseite hat. Beide sind **absolut**:
 
-**Wie gebaut wird.** Eingestellt wird nur der Pfad zum Programm, nie eine
-Befehlszeile. Die setzt die Erweiterung vor jedem Bau selbst zusammen — für den
+| Einstellung | Art | Bezug |
+| --- | --- | --- |
+| `shop_sites_dir` | absolut | Wurzelverzeichnis der Webseiten |
+| `shop_publish_command_path` | absolut | Verzeichnis, in dem `hugo` liegt |
+| `shop_site_dir` | relativ | zum Wurzelverzeichnis |
+| `shop_content_dir`, `shop_images_dir`, `shop_thumbnails_dir` | relativ | zum Verzeichnis der Webseite |
+
+Die relativen Pfade laufen durch `shopPathUnder()`: ein führender Schrägstrich
+wird abgewiesen (früher fiel er weg, und der Wert wurde stillschweigend als
+Unterverzeichnis gelesen), `..` ebenso, und das aufgelöste Verzeichnis muss
+unterhalb des übergeordneten liegen — auch über Symlinks hinweg. Liegt die
+Webseite anderswo, gehört das in `shop_sites_dir`, nicht in ein relatives
+Feld. Das Formular weist einen führenden Schrägstrich schon beim Eintippen
+zurück.
+
+**Wie gebaut wird.** Eingestellt wird nur das Verzeichnis des Programms, nie
+eine Befehlszeile; der Dateiname `hugo` steht fest im Quelltext. Die setzt die Erweiterung vor jedem Bau selbst zusammen — für den
 Läufer wie für „Jetzt ausführen“, beide über `shopPublishCommand()`:
 
 ```
 cd '<Verzeichnis der Webseite>' && '<Programm>' [--cleanDestinationDir] 2>&1
 ```
 
-Der Pfad wird vorher geprüft (absolut, ohne Leerraum, vorhandene und
-ausführbare Datei) und geht maskiert hinein; Argumente lassen sich so nicht
+Der Pfad wird vorher geprüft (absolutes, vorhandenes Verzeichnis ohne
+Leerraum, darin eine vorhandene und ausführbare Datei `hugo`) und geht maskiert hinein; Argumente lassen sich so nicht
 unterschieben. Ein ungültiger Pfad zählt als Fehler des Laufs und erscheint in
 der Shop-Übersicht als Hinweis.
 
@@ -216,7 +231,7 @@ der Shop-Übersicht als Hinweis.
 
 | Eintrag unter `[system]` | Wirkung |
 | --- | --- |
-| `shop_publish_command_path` | Rückfall: gilt, wenn die Shop-Einstellung leer ist, und erscheint dort als Vorgabe im leeren Feld. Ein ungültiger Wert in der Shop-Einstellung ist ein Fehler, kein Rückfall. |
+| `shop_publish_command_path` | Verzeichnis, in dem `hugo` liegt. Rückfall: gilt, wenn die Shop-Einstellung leer ist, und erscheint dort als Vorgabe im leeren Feld. Ein ungültiger Wert in der Shop-Einstellung ist ein Fehler, kein Rückfall. |
 | `shop_sites_dir` | Grenze: das eingestellte Wurzelverzeichnis muss darunter liegen, sonst `SHOP_SITES_DIR_OUTSIDE_LIMIT`. |
 
 ## Wiederkehrende Aufgaben

@@ -70,10 +70,11 @@
                         <!-- Input / Password: speichert bei blur -->
                         <v-row v-else-if="field.type === 'input' || field.type === 'password'" class="my-1">
                             <v-col cols="12" md="6">
-                                <v-text-field
+                                <component
+                                    :is="field.type === 'password' ? PasswordField : VTextField"
                                     v-model="configValues[field.name]"
                                     :label="t(field.label)"
-                                    :type="field.type === 'password' ? 'password' : (field.inputType || 'text')"
+                                    :type="field.inputType || 'text'"
                                     :style="field.fieldstyle"
                                     hide-details="auto"
                                     density="compact"
@@ -88,7 +89,7 @@
                                             {{ t(field.tooltip) }}
                                         </v-tooltip>
                                     </template>
-                                </v-text-field>
+                                </component>
                             </v-col>
                         </v-row>
 
@@ -126,6 +127,8 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import { VTextField } from 'vuetify/components';
+import PasswordField from '@/core/components/password-field.vue';
 import { useI18n } from 'vue-i18n';
 import { oserpStore } from '@/core/stores/oserp.store.js';
 import NavbarView from '@/core/components/navbar/navbar.view.vue';

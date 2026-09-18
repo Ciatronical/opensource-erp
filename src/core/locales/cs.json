@@ -79,5 +79,22 @@
     "passwordField": {
         "show": "Zobrazit heslo",
         "hide": "Skrýt heslo"
+    },
+    "directoryPicker": {
+        "titleDir": "Vybrat adresář",
+        "titleFile": "Vybrat soubor",
+        "root": "Výchozí bod",
+        "up": "O úroveň výš",
+        "refresh": "Načíst znovu",
+        "browse": "Procházet na serveru",
+        "apply": "Použít",
+        "selection": "Výběr",
+        "empty": "Tento adresář je prázdný",
+        "onlyFiles": "Žádné podadresáře — počet souborů: {count}",
+        "truncated": "Zobrazuje se pouze prvních 500 položek.",
+        "writable": "Zapisovatelné",
+        "notWritable": "Nelze zapisovat",
+        "readOnly": "Jen pro čtení",
+        "failed": "Adresář se nepodařilo načíst"
     }
 }

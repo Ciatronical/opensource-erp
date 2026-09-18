@@ -79,5 +79,22 @@
     "passwordField": {
         "show": "Visa lösenord",
         "hide": "Dölj lösenord"
+    },
+    "directoryPicker": {
+        "titleDir": "Välj katalog",
+        "titleFile": "Välj fil",
+        "root": "Startpunkt",
+        "up": "En nivå upp",
+        "refresh": "Läs in igen",
+        "browse": "Bläddra på servern",
+        "apply": "Använd",
+        "selection": "Val",
+        "empty": "Den här katalogen är tom",
+        "onlyFiles": "Inga underkataloger — antal filer: {count}",
+        "truncated": "Endast de första 500 posterna visas.",
+        "writable": "Skrivbar",
+        "notWritable": "Inte skrivbar",
+        "readOnly": "Skrivskyddad",
+        "failed": "Katalogen kunde inte läsas"
     }
 }

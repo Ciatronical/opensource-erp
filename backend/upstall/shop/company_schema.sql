@@ -475,7 +475,8 @@ INSERT INTO defaults_oserp (key, value) VALUES ('shop_thumbnails_link', '') ON C
 -- Steht in der settings.ini ein shop_sites_dir, muss das eingestellte
 -- Verzeichnis darunter liegen — so kann ein Administrator die Grenze ziehen.
 --
--- Gebaut wird mit dem Programm unter shop_publish_command_path. Das ist nur
+-- Gebaut wird mit dem Programm hugo aus dem Verzeichnis
+-- shop_publish_command_path. Eingetragen wird nur
 -- ein Pfad, keine Befehlszeile: die Argumente setzt OpensourceERP selbst, und
 -- der Pfad wird vor jedem Bau geprueft (absolut, ohne Leerraum, ausfuehrbare
 -- Datei). Ist der Wert hier leer, gilt ein gleichnamiger Eintrag aus der
