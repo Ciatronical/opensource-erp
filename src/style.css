@@ -356,11 +356,24 @@ body,
     }
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   SweetAlert2 über Vuetify-Overlays legen.
+   SweetAlert2 bringt z-index 1060 mit, ein v-dialog liegt aber bei
+   2400 und mehr. Ein Hinweis- oder Rückfragedialog aus einem offenen
+   v-dialog heraus (z. B. "Änderungen verwerfen?") wäre sonst
+   verdeckt und nicht bedienbar.
+   ═══════════════════════════════════════════════════════════════ */
+.swal2-container {
+    z-index: 99000 !important;
+}
+
 /* SweetAlert2 Toast Positioning */
 .swal2-toast {
     margin-top: 55px !important;
 }
 
+/* Muss nach .swal2-container stehen: gleiche Spezifität, der spätere
+   Wert gewinnt — Einblendungen liegen damit über den Dialogen. */
 .swal2-toast-above-overlay {
     z-index: 100000 !important;
 }
