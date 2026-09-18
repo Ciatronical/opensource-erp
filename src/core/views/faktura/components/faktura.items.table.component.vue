@@ -18,6 +18,7 @@
             >
                 {{ t('FakturaView.dialogs.deleteBulk.button', { count: selectedItems.size }) }}
             </v-btn>
+            <ai-model-button v-if="showAiSuggest" assistant="ai_positions" />
             <v-tooltip v-if="showAiSuggest" location="bottom" :text="t('FakturaView.faktura.aiSuggestPositions')">
                 <template #activator="{ props: tip }">
                     <v-btn v-bind="tip" variant="tonal" color="purple" icon="mdi-creation"
@@ -625,12 +626,14 @@ import { oserpStore } from '@/core/stores/oserp.store.js'
 import { lxcarsStore } from '@/features/lxcars/stores/lxcars.store.js'
 import { VueDraggable } from 'vue-draggable-plus'
 import VoiceInputButton from '@/core/components/voice-input-button.vue'
+import AiModelButton from '@/core/components/ai-model-button.vue'
 
 export default defineComponent({
     name: 'FakturaItemsTableComponent',
     components: {
         VueDraggable,
-        VoiceInputButton
+        VoiceInputButton,
+        AiModelButton
     },
     props: {
         modelValue: {

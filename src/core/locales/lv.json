@@ -45,5 +45,35 @@
     },
     "App": {
         "loading": "Lūdzu uzgaidiet..."
+    },
+    "aiModels": {
+        "configTitle": "Mākslīgā intelekta asistentu modeļi",
+        "configIntro": "Katram asistentam var izvēlēties savu modeli. Tukšs nozīmē sistēmas noklusējumu.",
+        "configHint": "Attiecas uz šo uzņēmumu",
+        "configHintPrompt": "Attiecas uz šo uzņēmumu; maināms pie pieprasījuma",
+        "selectTitle": "Izvēlēties modeli",
+        "tooltip": "Izmantotais mākslīgā intelekta modelis",
+        "clientDefault": "Šī uzņēmuma iestatījums",
+        "useClientDefault": "Izmantot uzņēmuma iestatījumu",
+        "sessionHint": "Izvēle attiecas tikai uz jūsu sesiju un netiek saglabāta.",
+        "serverDefault": "Noklusējums",
+        "hints": {
+            "fable51": "Visjaudīgākais, sarežģītākajiem uzdevumiem — augstākā cena",
+            "opus5": "Visprecīzākais, prasīgām analīzēm",
+            "sonnet5": "Līdzsvarots starp kvalitāti un izmaksām",
+            "haiku45": "Ātrākais un lētākais"
+        },
+        "assistants": {
+            "carChat": "Transportlīdzekļa saruna",
+            "weroni": "Weroni asistents",
+            "salesText": "Pārdošanas teksts",
+            "aiPositions": "Pozīciju ieteikumi",
+            "filemanager": "Dokumenta saruna (failu pārvaldnieks)",
+            "accounting": "Dokumentu atpazīšana",
+            "businessCard": "Vizītkartes skenēšana",
+            "phoneSearch": "Meklēšana pēc tālruņa",
+            "callTranscript": "Zvana analīze",
+            "banking": "Likviditātes prognoze"
+        }
     }
 }

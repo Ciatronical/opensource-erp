@@ -45,5 +45,35 @@
     },
     "App": {
         "loading": "Odota..."
+    },
+    "aiModels": {
+        "configTitle": "Tekoälyavustajien mallit",
+        "configIntro": "Jokaiselle avustajalle voi valita oman mallin. Tyhjä tarkoittaa järjestelmän oletusta.",
+        "configHint": "Koskee tätä yritystä",
+        "configHintPrompt": "Koskee tätä yritystä; vaihdettavissa kyselyn yhteydessä",
+        "selectTitle": "Valitse malli",
+        "tooltip": "Käytössä oleva tekoälymalli",
+        "clientDefault": "Tämän yrityksen asetus",
+        "useClientDefault": "Käytä yrityksen asetusta",
+        "sessionHint": "Valinta koskee vain istuntoasi eikä sitä tallenneta.",
+        "serverDefault": "Oletus",
+        "hints": {
+            "fable51": "Suorituskykyisin, vaikeimpiin tehtäviin — korkein hinta",
+            "opus5": "Tarkin, vaativiin analyyseihin",
+            "sonnet5": "Tasapainoinen laadun ja kustannusten välillä",
+            "haiku45": "Nopein ja edullisin"
+        },
+        "assistants": {
+            "carChat": "Ajoneuvokeskustelu",
+            "weroni": "Weroni-avustaja",
+            "salesText": "Myyntiteksti",
+            "aiPositions": "Riviehdotukset",
+            "filemanager": "Asiakirjakeskustelu (tiedostonhallinta)",
+            "accounting": "Tositteiden tunnistus",
+            "businessCard": "Käyntikortin luku",
+            "phoneSearch": "Puhelinhaku",
+            "callTranscript": "Puhelun analyysi",
+            "banking": "Maksuvalmiusennuste"
+        }
     }
 }

@@ -37,7 +37,8 @@ function getCarChat($data) {
  * @param int    $data['c_id']      Fahrzeug-ID
  * @param string $data['message']   Benutzernachricht
  * @param array  $data['document']  Optional: {data: base64, media_type: string, name: string}
- * @testdata {"c_id": 1, "message": "Haben wir schon mal die Bremsen gewechselt?"}
+ * @param string $data['ai_model']  Optional: Modellwahl des Benutzers, gilt nur fuer diesen Aufruf
+ * @testdata {"c_id": 1, "message": "Haben wir schon mal die Bremsen gewechselt?", "ai_model": "claude-haiku-4-5"}
  */
 function sendCarChatMessage($data) {
     set_time_limit(60);
@@ -52,7 +53,7 @@ function sendCarChatMessage($data) {
 
     // API-Key laden
     $config = $db->fetchKeyValue(
-        "SELECT key, value FROM defaults_oserp WHERE key IN ('anthropic_api_key', 'lxcars_chat_system_prompt')"
+        "SELECT key, value FROM defaults_oserp WHERE key IN ('anthropic_api_key', 'lxcars_chat_system_prompt', '" . aiModelConfigKey('car_chat') . "')"
     );
     $anthropicKey = trim($config['anthropic_api_key'] ?? '');
     if (empty($anthropicKey)) {
@@ -180,7 +181,7 @@ PROMPT;
     $messages[] = ['role' => 'user', 'content' => $userContent];
 
     $requestBody = json_encode([
-        'model' => 'claude-haiku-4-5-20251001',
+        'model' => resolveAiModel($config, 'car_chat', $data['ai_model'] ?? null),
         'max_tokens' => 2048,
         'messages' => $messages,
         'system' => $systemPrompt

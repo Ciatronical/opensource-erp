@@ -17,6 +17,7 @@
                     <div class="text-caption text-medium-emphasis">{{ t('weroni.subtitle') }}</div>
                 </div>
                 <v-spacer />
+                <ai-model-button assistant="weroni" size="x-small" />
                 <v-btn icon size="small" variant="text" @click="store.panelOpen = false">
                     <v-icon>mdi-close</v-icon>
                 </v-btn>
@@ -216,9 +217,12 @@ import { useI18n } from 'vue-i18n'
 import { weroniStore } from '@/features/weroni/stores/weroni.store.js'
 import weroniIcon36 from '@/assets/weroni/weroni-36.png'
 import weroniIcon56 from '@/assets/weroni/weroni-56.png'
+import AiModelButton from '@/core/components/ai-model-button.vue'
 
 export default {
     name: 'WeroniPanel',
+
+    components: { AiModelButton },
 
     setup() {
         const { t } = useI18n()

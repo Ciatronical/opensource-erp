@@ -45,5 +45,35 @@
     },
     "App": {
         "loading": "Por favor, aguarde..."
+    },
+    "aiModels": {
+        "configTitle": "Modelos dos assistentes de IA",
+        "configIntro": "Cada assistente pode usar um modelo próprio. Vazio significa que se aplica a predefinição do sistema.",
+        "configHint": "Aplica-se a esta empresa",
+        "configHintPrompt": "Aplica-se a esta empresa; pode ser alterado no pedido",
+        "selectTitle": "Escolher modelo",
+        "tooltip": "Modelo de IA utilizado",
+        "clientDefault": "Definição desta empresa",
+        "useClientDefault": "Usar a definição da empresa",
+        "sessionHint": "A escolha vale apenas para a sua sessão e não é guardada.",
+        "serverDefault": "Predefinição",
+        "hints": {
+            "fable51": "O mais capaz, para as tarefas mais difíceis — preço mais alto",
+            "opus5": "O mais preciso, para análises exigentes",
+            "sonnet5": "Equilibrado entre qualidade e custo",
+            "haiku45": "O mais rápido e económico"
+        },
+        "assistants": {
+            "carChat": "Conversa do veículo",
+            "weroni": "Assistente Weroni",
+            "salesText": "Texto de venda",
+            "aiPositions": "Sugestões de linhas",
+            "filemanager": "Conversa sobre documento (gestor de ficheiros)",
+            "accounting": "Reconhecimento de documentos",
+            "businessCard": "Leitura de cartão de visita",
+            "phoneSearch": "Pesquisa por telefone",
+            "callTranscript": "Análise de chamada",
+            "banking": "Previsão de liquidez"
+        }
     }
 }

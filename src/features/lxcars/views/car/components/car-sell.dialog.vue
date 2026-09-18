@@ -52,6 +52,7 @@
                         {{ t('CarSellDialog.cancel') }}
                     </v-btn>
                     <v-spacer />
+                    <ai-model-button assistant="sales_text" />
                     <v-btn variant="tonal" color="orange-darken-2" :loading="loading" prepend-icon="mdi-creation" @click="generate">
                         {{ t('CarSellDialog.generate') }}
                     </v-btn>
@@ -88,6 +89,7 @@
                         {{ t('CarSellDialog.back') }}
                     </v-btn>
                     <v-spacer />
+                    <ai-model-button assistant="sales_text" />
                     <v-btn variant="tonal" color="grey-darken-1" :loading="loading" prepend-icon="mdi-refresh" @click="generate">
                         {{ t('CarSellDialog.regenerate') }}
                     </v-btn>
@@ -105,9 +107,12 @@ import { ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { lxcarsStore } from '@/features/lxcars/stores/lxcars.store.js'
 import Swal from 'sweetalert2'
+import AiModelButton from '@/core/components/ai-model-button.vue'
 
 export default {
     name: 'CarSellDialog',
+
+    components: { AiModelButton },
 
     props: {
         modelValue: { type: Boolean, default: false },

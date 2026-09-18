@@ -45,5 +45,35 @@
     },
     "App": {
         "loading": "Proszę czekać..."
+    },
+    "aiModels": {
+        "configTitle": "Modele asystentów SI",
+        "configIntro": "Każdy asystent może mieć własny model. Puste pole oznacza ustawienie domyślne systemu.",
+        "configHint": "Dotyczy tej firmy",
+        "configHintPrompt": "Dotyczy tej firmy; można zmienić przy zapytaniu",
+        "selectTitle": "Wybierz model",
+        "tooltip": "Używany model SI",
+        "clientDefault": "Ustawienie tej firmy",
+        "useClientDefault": "Użyj ustawienia firmy",
+        "sessionHint": "Wybór obowiązuje tylko w tej sesji i nie jest zapisywany.",
+        "serverDefault": "Domyślny",
+        "hints": {
+            "fable51": "Najwydajniejszy, do najtrudniejszych zadań — najwyższa cena",
+            "opus5": "Najdokładniejszy, do wymagających analiz",
+            "sonnet5": "Wyważony między jakością a kosztem",
+            "haiku45": "Najszybszy i najtańszy"
+        },
+        "assistants": {
+            "carChat": "Czat pojazdu",
+            "weroni": "Asystent Weroni",
+            "salesText": "Tekst sprzedażowy",
+            "aiPositions": "Propozycje pozycji",
+            "filemanager": "Czat dokumentu (menedżer plików)",
+            "accounting": "Rozpoznawanie dokumentów",
+            "businessCard": "Skan wizytówki",
+            "phoneSearch": "Wyszukiwanie po telefonie",
+            "callTranscript": "Analiza rozmowy",
+            "banking": "Prognoza płynności"
+        }
     }
 }

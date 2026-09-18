@@ -45,5 +45,35 @@
     },
     "App": {
         "loading": "Lütfen bekleyin..."
+    },
+    "aiModels": {
+        "configTitle": "Yapay zekâ asistanlarının modelleri",
+        "configIntro": "Her asistan için ayrı bir model seçilebilir. Boş bırakıldığında sistemin varsayılanı geçerlidir.",
+        "configHint": "Bu firma için geçerlidir",
+        "configHintPrompt": "Bu firma için geçerlidir; istem üzerinde değiştirilebilir",
+        "selectTitle": "Model seçin",
+        "tooltip": "Kullanılan yapay zekâ modeli",
+        "clientDefault": "Bu firmanın ayarı",
+        "useClientDefault": "Firmanın ayarını kullan",
+        "sessionHint": "Seçim yalnızca oturumunuz için geçerlidir ve kaydedilmez.",
+        "serverDefault": "Varsayılan",
+        "hints": {
+            "fable51": "En yetenekli, en zor görevler için — en yüksek fiyat",
+            "opus5": "En doğru sonuç, zorlu değerlendirmeler için",
+            "sonnet5": "Kalite ve maliyet arasında dengeli",
+            "haiku45": "En hızlı ve en uygun fiyatlı"
+        },
+        "assistants": {
+            "carChat": "Araç sohbeti",
+            "weroni": "Weroni asistanı",
+            "salesText": "Satış metni",
+            "aiPositions": "Kalem önerileri",
+            "filemanager": "Belge sohbeti (dosya yöneticisi)",
+            "accounting": "Belge tanıma",
+            "businessCard": "Kartvizit tarama",
+            "phoneSearch": "Telefonla arama",
+            "callTranscript": "Çağrı değerlendirmesi",
+            "banking": "Likidite tahmini"
+        }
     }
 }

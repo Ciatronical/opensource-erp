@@ -45,5 +45,35 @@
     },
     "App": {
         "loading": "Please wait..."
+    },
+    "aiModels": {
+        "configTitle": "Models of the AI assistants",
+        "configIntro": "Each assistant can use its own model. Empty means the system default applies.",
+        "configHint": "Applies to this company",
+        "configHintPrompt": "Applies to this company; can be changed at the prompt",
+        "selectTitle": "Select model",
+        "tooltip": "AI model in use",
+        "clientDefault": "This company's setting",
+        "useClientDefault": "Use the company's setting",
+        "sessionHint": "The choice applies to your session only and is not saved.",
+        "serverDefault": "Default",
+        "hints": {
+            "fable51": "Most capable, for the hardest tasks — highest price",
+            "opus5": "Most accurate, for demanding analyses",
+            "sonnet5": "Balanced between quality and cost",
+            "haiku45": "Fastest and least expensive"
+        },
+        "assistants": {
+            "carChat": "Vehicle chat",
+            "weroni": "Weroni assistant",
+            "salesText": "Sales text",
+            "aiPositions": "Item suggestions",
+            "filemanager": "Document chat (file manager)",
+            "accounting": "Document recognition",
+            "businessCard": "Business card scan",
+            "phoneSearch": "Phone lookup",
+            "callTranscript": "Call analysis",
+            "banking": "Liquidity forecast"
+        }
     }
 }

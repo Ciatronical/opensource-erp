@@ -91,7 +91,7 @@ function uploadInvoiceDocument($data) {
     } else {
     // API-Key laden
     $config = $db->fetchKeyValue(
-        "SELECT key, value FROM defaults_oserp WHERE key IN ('anthropic_api_key', 'accounting_ai_model', 'accounting_default_tax_rate')"
+        "SELECT key, value FROM defaults_oserp WHERE key IN ('anthropic_api_key', '" . aiModelConfigKey('accounting') . "', 'accounting_default_tax_rate')"
     );
     $anthropicKey = trim($config['anthropic_api_key'] ?? '');
     if (empty($anthropicKey)) {
@@ -100,8 +100,7 @@ function uploadInvoiceDocument($data) {
     }
 
     // Model-IDs tragen KEIN Datums-Suffix — ein solches Suffix liefert HTTP 404.
-    $aiModel = trim($config['accounting_ai_model'] ?? '');
-    if ($aiModel === '') $aiModel = 'claude-opus-4-8';
+    $aiModel = resolveAiModel($config, 'accounting');
 
     // Kontenrahmen laden (fuer KI-Kontext).
     // Bebuchbare Aufwands- und Aktivkonten — KEIN LIMIT: mit "ORDER BY accno

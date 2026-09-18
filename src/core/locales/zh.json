@@ -45,5 +45,35 @@
     },
     "App": {
         "loading": "请稍候..."
+    },
+    "aiModels": {
+        "configTitle": "AI 助手的模型",
+        "configIntro": "每个助手都可以使用各自的模型。留空表示使用系统默认值。",
+        "configHint": "适用于本公司",
+        "configHintPrompt": "适用于本公司；可在提问处更改",
+        "selectTitle": "选择模型",
+        "tooltip": "使用的 AI 模型",
+        "clientDefault": "本公司的设置",
+        "useClientDefault": "使用公司的设置",
+        "sessionHint": "该选择仅在您的会话中有效，不会被保存。",
+        "serverDefault": "默认",
+        "hints": {
+            "fable51": "能力最强，适用于最困难的任务 — 价格最高",
+            "opus5": "最准确，适用于复杂分析",
+            "sonnet5": "在质量与成本之间取得平衡",
+            "haiku45": "最快且最经济"
+        },
+        "assistants": {
+            "carChat": "车辆对话",
+            "weroni": "Weroni 助手",
+            "salesText": "销售文案",
+            "aiPositions": "项目建议",
+            "filemanager": "文档对话（文件管理器）",
+            "accounting": "凭证识别",
+            "businessCard": "名片扫描",
+            "phoneSearch": "电话查询",
+            "callTranscript": "通话分析",
+            "banking": "流动性预测"
+        }
     }
 }

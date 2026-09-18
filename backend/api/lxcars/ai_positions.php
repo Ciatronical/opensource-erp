@@ -9,7 +9,9 @@
 /**
  * Generiert KI-Positionsvorschläge für einen bestehenden Auftrag.
  *
- * @param array $data ['oe_id' => int]
+ * @param int    $data['oe_id']    Auftrags-ID
+ * @param string $data['ai_model'] Optional: Modellwahl des Benutzers, gilt nur fuer diesen Aufruf
+ * @testdata {"oe_id": 1, "ai_model": "claude-haiku-4-5"}
  */
 function suggestPositions($data) {
     set_time_limit(60);
@@ -23,7 +25,7 @@ function suggestPositions($data) {
 
     // API-Key laden
     $config = $db->fetchKeyValue(
-        "SELECT key, value FROM defaults_oserp WHERE key IN ('anthropic_api_key', 'ai_gewicht_rechnungen', 'ai_gewicht_auftraege', 'ai_gewicht_angebote')"
+        "SELECT key, value FROM defaults_oserp WHERE key IN ('anthropic_api_key', 'ai_gewicht_rechnungen', 'ai_gewicht_auftraege', 'ai_gewicht_angebote', '" . aiModelConfigKey('ai_positions') . "')"
     );
     $anthropicKey = trim($config['anthropic_api_key'] ?? '');
     if (empty($anthropicKey)) {
@@ -112,7 +114,8 @@ SQL, [':cid' => $customerId]);
 
     // Claude API aufrufen
     $suggestions = _callClaudeForPositions(
-        $anthropicKey, $instructions, $vehicle,
+        $anthropicKey, resolveAiModel($config, 'ai_positions', $data['ai_model'] ?? null),
+        $instructions, $vehicle,
         $invoiceItems, $orderItems, $quotationItems,
         $wInvoice, $wOrder, $wQuotation
     );
@@ -200,7 +203,9 @@ function _formatVehicleText($vehicle) {
  * KI-gestützte Zeitvorschläge für Arbeitsanweisungen.
  * Ermittelt geplante Zeiten aus historischen actual_minutes, gewichtet nach KBA-Ähnlichkeit und Fahrzeugalter.
  *
- * @param array $data ['oe_id' => int]
+ * @param int    $data['oe_id']    Auftrags-ID
+ * @param string $data['ai_model'] Optional: Modellwahl des Benutzers, gilt nur fuer diesen Aufruf
+ * @testdata {"oe_id": 1, "ai_model": "claude-haiku-4-5"}
  */
 function suggestPlannedTimes($data) {
     set_time_limit(30);
@@ -214,7 +219,7 @@ function suggestPlannedTimes($data) {
 
     // API-Key
     $config = $db->fetchKeyValue(
-        "SELECT key, value FROM defaults_oserp WHERE key = 'anthropic_api_key'"
+        "SELECT key, value FROM defaults_oserp WHERE key IN ('anthropic_api_key', '" . aiModelConfigKey('ai_positions') . "')"
     );
     $anthropicKey = trim($config['anthropic_api_key'] ?? '');
     if (empty($anthropicKey)) {
@@ -280,7 +285,10 @@ SQL, [':oe_id' => $oeId]);
 SQL, array_merge($params, [':current_oe_id' => $oeId]));
 
     // An Claude senden
-    $suggestions = _callClaudeForTimes($anthropicKey, $instructions, $vehicle, $historicalData);
+    $suggestions = _callClaudeForTimes(
+        $anthropicKey, resolveAiModel($config, 'ai_positions', $data['ai_model'] ?? null),
+        $instructions, $vehicle, $historicalData
+    );
 
     resultInfo(true, 'OK', ['suggestions' => $suggestions]);
 }
@@ -288,7 +296,7 @@ SQL, array_merge($params, [':current_oe_id' => $oeId]));
 /**
  * Ruft Claude API auf um Zeitvorschläge zu generieren.
  */
-function _callClaudeForTimes($apiKey, $instructions, $vehicle, $historicalData) {
+function _callClaudeForTimes($apiKey, $model, $instructions, $vehicle, $historicalData) {
     $vehicleText = _formatVehicleText($vehicle);
 
     // Instructions formatieren
@@ -354,7 +362,7 @@ HISTORISCHE IST-ZEITEN (gleiche Arbeiten an verschiedenen Fahrzeugen):
 MSG;
 
     $requestBody = json_encode([
-        'model' => 'claude-haiku-4-5-20251001',
+        'model' => $model,
         'max_tokens' => 2048,
         'messages' => [
             ['role' => 'user', 'content' => $userMessage]
@@ -403,7 +411,7 @@ MSG;
 /**
  * Ruft die Claude API auf um Positionsvorschläge zu generieren.
  */
-function _callClaudeForPositions($apiKey, $instructions, $vehicle, $invoiceItems, $orderItems, $quotationItems, $wInvoice, $wOrder, $wQuotation) {
+function _callClaudeForPositions($apiKey, $model, $instructions, $vehicle, $invoiceItems, $orderItems, $quotationItems, $wInvoice, $wOrder, $wQuotation) {
     // Arbeitsanweisungen formatieren
     $instructionLines = array_map(fn($i) => '- ' . $i['description'], $instructions);
     $instructionText = implode("\n", $instructionLines);
@@ -470,7 +478,7 @@ HISTORISCHE POSITIONEN (Angebote, Gewicht {$wQuotation}):
 MSG;
 
     $requestBody = json_encode([
-        'model' => 'claude-haiku-4-5-20251001',
+        'model' => $model,
         'max_tokens' => 4096,
         'messages' => [
             ['role' => 'user', 'content' => $userMessage]

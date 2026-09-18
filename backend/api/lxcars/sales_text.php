@@ -69,7 +69,8 @@ function saveSalesText($data) {
  *
  * @param int    $data['c_id']            Fahrzeug-ID
  * @param string $data['current_defects'] Aktuelle Maengel (Freitext)
- * @testdata {"c_id": 1, "current_defects": "Klimaanlage kühlt nicht"}
+ * @param string $data['ai_model']        Optional: Modellwahl des Benutzers, gilt nur fuer diesen Aufruf
+ * @testdata {"c_id": 1, "current_defects": "Klimaanlage kühlt nicht", "ai_model": "claude-haiku-4-5"}
  */
 function generateSalesText($data) {
     set_time_limit(60);
@@ -83,7 +84,7 @@ function generateSalesText($data) {
     }
 
     $config = $db->fetchKeyValue(
-        "SELECT key, value FROM defaults_oserp WHERE key IN ('anthropic_api_key', 'lxcars_sell_system_prompt')"
+        "SELECT key, value FROM defaults_oserp WHERE key IN ('anthropic_api_key', 'lxcars_sell_system_prompt', '" . aiModelConfigKey('sales_text') . "')"
     );
     $anthropicKey = trim($config['anthropic_api_key'] ?? '');
     if (empty($anthropicKey)) {
@@ -194,7 +195,7 @@ Erstelle jetzt den Verkaufstext:
 PROMPT;
 
     $requestBody = json_encode([
-        'model'      => 'claude-haiku-4-5-20251001',
+        'model'      => resolveAiModel($config, 'sales_text', $data['ai_model'] ?? null),
         'max_tokens' => 1500,
         'messages'   => [['role' => 'user', 'content' => $prompt]]
     ], JSON_UNESCAPED_UNICODE);

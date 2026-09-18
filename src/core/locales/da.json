@@ -45,5 +45,35 @@
     },
     "App": {
         "loading": "Vent venligst..."
+    },
+    "aiModels": {
+        "configTitle": "Modeller for AI-assistenterne",
+        "configIntro": "Hver assistent kan bruge sin egen model. Tomt betyder, at systemets standard gælder.",
+        "configHint": "Gælder for dette firma",
+        "configHintPrompt": "Gælder for dette firma; kan ændres ved prompten",
+        "selectTitle": "Vælg model",
+        "tooltip": "Anvendt AI-model",
+        "clientDefault": "Dette firmas indstilling",
+        "useClientDefault": "Brug firmaets indstilling",
+        "sessionHint": "Valget gælder kun din session og gemmes ikke.",
+        "serverDefault": "Standard",
+        "hints": {
+            "fable51": "Mest kapabel, til de sværeste opgaver — højeste pris",
+            "opus5": "Mest præcis, til krævende analyser",
+            "sonnet5": "Afbalanceret mellem kvalitet og omkostning",
+            "haiku45": "Hurtigst og billigst"
+        },
+        "assistants": {
+            "carChat": "Køretøjschat",
+            "weroni": "Weroni-assistent",
+            "salesText": "Salgstekst",
+            "aiPositions": "Forslag til varelinjer",
+            "filemanager": "Dokumentchat (filhåndtering)",
+            "accounting": "Bilagsgenkendelse",
+            "businessCard": "Scanning af visitkort",
+            "phoneSearch": "Telefonopslag",
+            "callTranscript": "Analyse af opkald",
+            "banking": "Likviditetsprognose"
+        }
     }
 }

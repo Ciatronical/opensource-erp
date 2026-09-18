@@ -45,5 +45,35 @@
     },
     "App": {
         "loading": "Even geduld..."
+    },
+    "aiModels": {
+        "configTitle": "Modellen van de AI-assistenten",
+        "configIntro": "Elke assistent kan een eigen model gebruiken. Leeg betekent dat de standaard van het systeem geldt.",
+        "configHint": "Geldt voor dit bedrijf",
+        "configHintPrompt": "Geldt voor dit bedrijf; bij de vraag aan te passen",
+        "selectTitle": "Model kiezen",
+        "tooltip": "Gebruikt AI-model",
+        "clientDefault": "Instelling van dit bedrijf",
+        "useClientDefault": "Instelling van het bedrijf gebruiken",
+        "sessionHint": "De keuze geldt alleen voor uw sessie en wordt niet opgeslagen.",
+        "serverDefault": "Standaard",
+        "hints": {
+            "fable51": "Het krachtigst, voor de moeilijkste taken — hoogste prijs",
+            "opus5": "Het nauwkeurigst, voor veeleisende analyses",
+            "sonnet5": "In balans tussen kwaliteit en kosten",
+            "haiku45": "Het snelst en voordeligst"
+        },
+        "assistants": {
+            "carChat": "Voertuigchat",
+            "weroni": "Weroni-assistent",
+            "salesText": "Verkooptekst",
+            "aiPositions": "Regelvoorstellen",
+            "filemanager": "Documentchat (bestandsbeheer)",
+            "accounting": "Bonherkenning",
+            "businessCard": "Visitekaartje scannen",
+            "phoneSearch": "Telefoonzoekopdracht",
+            "callTranscript": "Gespreksanalyse",
+            "banking": "Liquiditeitsprognose"
+        }
     }
 }

@@ -3,6 +3,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import axios from 'axios'
+import { aiModelStore } from '@/core/stores/ai-model.store.js'
 
 export const weroniStore = defineStore('weroniStore', () => {
     const panelOpen = ref(false)
@@ -14,7 +15,9 @@ export const weroniStore = defineStore('weroniStore', () => {
         const response = await axios.post('/api/weroni/', {
             action: 'weroniChat',
             message,
-            session_id: sessionId.value
+            session_id: sessionId.value,
+            // Modellwahl des Benutzers am Prompt, gilt nur fuer seine Sitzung
+            ai_model: aiModelStore().requestModel('weroni')
         })
         if (!response.data.success) throw new Error(response.data.payload || response.data.text)
         return response.data.payload
@@ -104,7 +107,8 @@ export const weroniStore = defineStore('weroniStore', () => {
             filename,
             mime_type: mimeType,
             session_id: sessionId.value,
-            message
+            message,
+            ai_model: aiModelStore().requestModel('weroni')
         })
         if (!response.data.success) throw new Error(response.data.payload || response.data.text)
         return response.data.payload

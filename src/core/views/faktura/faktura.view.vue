@@ -1085,6 +1085,7 @@ import { useI18n } from 'vue-i18n'
 import { oserpStore } from '@/core/stores/oserp.store.js'
 import { fakturaStore } from '@/core/stores/faktura.store.js'
 import { lxcarsStore } from '@/features/lxcars/stores/lxcars.store.js'
+import { aiModelStore } from '@/core/stores/ai-model.store.js'
 import { useAccounting } from './composables/useAccounting.js'
 import { useItemManagement } from './composables/useItemManagement.js'
 import { useVehicleSection } from './composables/useVehicleSection.js'
@@ -3050,6 +3051,7 @@ export default defineComponent({
         }
 
         // KI-Positionsvorschläge
+        const aiModels = aiModelStore()
         const showAiSuggest = computed(() => fakturaType.value === 'order' && !!vehicle)
         const aiLoading = ref(false)
         const aiDialogVisible = ref(false)
@@ -3062,7 +3064,9 @@ export default defineComponent({
             try {
                 const response = await axios.post('/api/lxcars/', {
                     action: 'suggestPositions',
-                    oe_id: oeId
+                    oe_id: oeId,
+                    // Modellwahl des Benutzers am Prompt, gilt nur fuer seine Sitzung
+                    ai_model: aiModels.requestModel('ai_positions')
                 }, { timeout: 60000 })
                 const data = response.data
                 if (!data.success) {

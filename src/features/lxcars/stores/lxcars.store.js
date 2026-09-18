@@ -4,6 +4,7 @@ import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import axios from 'axios';
 import { ApiError } from '@/core/utils/error.js';
+import { aiModelStore } from '@/core/stores/ai-model.store.js';
 
 export const lxcarsStore = defineStore('lxcarsStore', () => {
     const data = ref(false);
@@ -1234,7 +1235,13 @@ export const lxcarsStore = defineStore('lxcarsStore', () => {
     }
 
     async function sendCarChatMessage(cId, message, document = null) {
-        const payload = { action: 'sendCarChatMessage', c_id: cId, message }
+        // ai_model: Modellwahl des Benutzers am Prompt, gilt nur fuer seine Sitzung
+        const payload = {
+            action: 'sendCarChatMessage',
+            c_id: cId,
+            message,
+            ai_model: aiModelStore().requestModel('car_chat')
+        }
         if (document) payload.document = document
         const response = await axios.post('/api/lxcars/', payload)
         if (!response.data.success) throw new ApiError('ApiError', response.data.text, 'Error sending chat message')
@@ -1265,7 +1272,8 @@ export const lxcarsStore = defineStore('lxcarsStore', () => {
         const response = await axios.post('/api/lxcars/', {
             action: 'generateSalesText',
             c_id: cId,
-            current_defects: currentDefects || ''
+            current_defects: currentDefects || '',
+            ai_model: aiModelStore().requestModel('sales_text')
         })
         if (!response.data.success) throw new ApiError('ApiError', response.data.text, 'Error generating sales text')
         return response.data.payload

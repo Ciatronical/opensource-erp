@@ -2,7 +2,8 @@
 // backend/api/banking/banking_ai.php
 
 /**
- * KI-basierte 30-Tage-Liquiditätsprognose via Claude API (claude-opus-4-7).
+ * KI-basierte 30-Tage-Liquiditätsprognose via Claude API.
+ * Das Modell steht in den Firmeneinstellungen unter "KI und Gesundheit".
  * Analysiert Monatsumsätze und wiederkehrende Zahlungsrhythmen aus der
  * Transaktionshistorie und liefert eine tagesweise Prognose zurück.
  *
@@ -18,8 +19,10 @@ function getAILiquidityForecast($data) {
     $days      = intval($data['days'] ?? 30);
     if (!$accountId) { resultInfo(false, 'VALIDATION_ERROR', 'Bankkonto-ID fehlt'); return; }
 
-    $apiKey = getenv('ANTHROPIC_API_KEY')
-        ?: ($db->getOne("SELECT value FROM defaults_oserp WHERE key = 'anthropic_api_key'")['value'] ?? '');
+    $config = $db->fetchKeyValue(
+        "SELECT key, value FROM defaults_oserp WHERE key IN ('anthropic_api_key', '" . aiModelConfigKey('banking') . "')"
+    );
+    $apiKey = getenv('ANTHROPIC_API_KEY') ?: ($config['anthropic_api_key'] ?? '');
     if (!$apiKey) {
         resultInfo(false, 'CONFIG_ERROR', 'Anthropic API Key nicht konfiguriert (ANTHROPIC_API_KEY)');
         return;
@@ -103,7 +106,7 @@ function getAILiquidityForecast($data) {
         "Die meisten Tage haben delta=0. Gib für jeden der {$days} Tage einen Eintrag zurück.";
 
     try {
-        $forecast = _callClaudeForForecast($apiKey, $userPrompt, $days, $today);
+        $forecast = _callClaudeForForecast($apiKey, resolveAiModel($config, 'banking'), $userPrompt, $days, $today);
     } catch (\RuntimeException $e) {
         resultInfo(false, 'AI_ERROR', $e->getMessage());
         return;
@@ -115,7 +118,7 @@ function getAILiquidityForecast($data) {
     ]);
 }
 
-function _callClaudeForForecast(string $apiKey, string $userPrompt, int $days, string $today): array {
+function _callClaudeForForecast(string $apiKey, string $model, string $userPrompt, int $days, string $today): array {
     $systemPrompt =
         "Du bist ein Finanzanalyst für ein deutsches Unternehmen. " .
         "Erstelle eine realistische tagesweise Liquiditätsprognose auf Basis historischer Bankumsätze. " .
@@ -127,7 +130,7 @@ function _callClaudeForForecast(string $apiKey, string $userPrompt, int $days, s
         "Positive Deltas = Einnahmen, negative Deltas = Ausgaben.";
 
     $payload = [
-        'model'      => 'claude-opus-4-7',
+        'model'      => $model,
         'max_tokens' => 8192,
         'system'     => [[
             'type'          => 'text',

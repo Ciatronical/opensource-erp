@@ -602,7 +602,7 @@ const tabGroups = computed(() => [
             ...(store.isLxCars() ? [{ value: 'lxcars', title: 'LxCars', icon: 'mdi-car', keywords: ['lxcars', 'fahrzeug', 'auto', 'werkstatt', 'kfz', 'reifen'] }] : []),
             ...(store.isExtensionEnabled('shop') ? [{ value: 'shop', title: 'Shop', icon: 'mdi-storefront', keywords: ['shop', 'webshop', 'onlineshop', 'warenkorb', 'bestellung', 'paypal', 'versand', 'zahlung'] }] : []),
             ...(store.isAnprEnabled() ? [{ value: 'anpr', title: 'ANPR', icon: 'mdi-car-search', keywords: ['anpr', 'kennzeichen', 'kamera', 'nummernschild'] }] : []),
-            { value: 'ai_health', title: t('aiHealth.tabTitle'), icon: 'mdi-robot-happy-outline', keywords: ['ki', 'ai', 'whisper', 'llm', 'ollama', 'spracheingabe', 'glossar', 'fachbegriffe', 'gesundheit', 'health', 'cloud', 'api-key', 'positionsvorschläge'] },
+            { value: 'ai_health', title: t('aiHealth.tabTitle'), icon: 'mdi-robot-happy-outline', keywords: ['ki', 'ai', 'whisper', 'llm', 'ollama', 'spracheingabe', 'glossar', 'fachbegriffe', 'gesundheit', 'health', 'cloud', 'api-key', 'positionsvorschläge', 'modell', 'model', 'claude', 'opus', 'sonnet', 'haiku', 'assistent'] },
         ]
     },
     {

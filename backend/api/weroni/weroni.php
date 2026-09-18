@@ -14,7 +14,8 @@ require_once __DIR__.'/tools.php';
  *
  * @param string $data['message']    Benutzernachricht
  * @param string $data['session_id'] Session-ID für Konversationskontext
- * @testdata {"message": "Hast du neue Emails?", "session_id": "test-123"}
+ * @param string $data['ai_model']   Optional: Modellwahl des Benutzers, gilt nur fuer diesen Aufruf
+ * @testdata {"message": "Hast du neue Emails?", "session_id": "test-123", "ai_model": "claude-haiku-4-5"}
  */
 function weroniChat($data) {
     set_time_limit(120);
@@ -29,7 +30,7 @@ function weroniChat($data) {
 
     // Konfiguration laden
     $config = $db->fetchKeyValue(
-        "SELECT key, value FROM defaults_oserp WHERE key IN ('anthropic_api_key', 'weroni_enabled', 'weroni_mode', 'weroni_system_prompt')"
+        "SELECT key, value FROM defaults_oserp WHERE key IN ('anthropic_api_key', 'weroni_enabled', 'weroni_mode', 'weroni_system_prompt', '" . aiModelConfigKey('weroni') . "')"
     );
 
     $anthropicKey = trim($config['anthropic_api_key'] ?? '');
@@ -234,7 +235,10 @@ PROMPT;
     $allToolResults = [];
 
     for ($i = 0; $i < $maxIterations; $i++) {
-        $response = _callClaudeWithTools($anthropicKey, $systemPrompt, $messages, $toolDefinitions);
+        $response = _callClaudeWithTools(
+            $anthropicKey, resolveAiModel($config, 'weroni', $data['ai_model'] ?? null),
+            $systemPrompt, $messages, $toolDefinitions
+        );
 
         if (isset($response['error'])) {
             throw new ApiError('CLAUDE_API_ERROR', $response['error']);
@@ -525,7 +529,8 @@ function rejectWeroniTask($data) {
  * @param string $data['mime_type']    MIME-Typ (image/jpeg, image/png, application/pdf)
  * @param string $data['session_id']   Chat-Session
  * @param string $data['message']      Optionale Zusatznachricht vom Benutzer
- * @testdata {"filename": "rechnung.pdf", "mime_type": "application/pdf", "file_base64": "", "session_id": "test"}
+ * @param string $data['ai_model']     Optional: Modellwahl des Benutzers, gilt nur fuer diesen Aufruf
+ * @testdata {"filename": "rechnung.pdf", "mime_type": "application/pdf", "file_base64": "", "session_id": "test", "ai_model": "claude-haiku-4-5"}
  */
 function weroniAnalyzeDocument($data) {
     set_time_limit(120);
@@ -544,7 +549,7 @@ function weroniAnalyzeDocument($data) {
 
     // API-Key laden
     $config = $db->fetchKeyValue(
-        "SELECT key, value FROM defaults_oserp WHERE key = 'anthropic_api_key'"
+        "SELECT key, value FROM defaults_oserp WHERE key IN ('anthropic_api_key', '" . aiModelConfigKey('weroni') . "')"
     );
     $anthropicKey = trim($config['anthropic_api_key'] ?? '');
     if (empty($anthropicKey)) {
@@ -609,7 +614,7 @@ function weroniAnalyzeDocument($data) {
     }
 
     $requestBody = json_encode([
-        'model' => 'claude-haiku-4-5-20251001',
+        'model' => resolveAiModel($config, 'weroni', $data['ai_model'] ?? null),
         'max_tokens' => 2048,
         'messages' => [[
             'role' => 'user',
@@ -709,9 +714,9 @@ function _weroniClaudeErrorMessage($httpCode, $response) {
 /**
  * Ruft die Claude API mit Tool Use auf.
  */
-function _callClaudeWithTools($apiKey, $systemPrompt, $messages, $tools) {
+function _callClaudeWithTools($apiKey, $model, $systemPrompt, $messages, $tools) {
     $requestBody = json_encode([
-        'model' => 'claude-haiku-4-5-20251001',
+        'model' => $model,
         'max_tokens' => 4096,
         'system' => $systemPrompt,
         'messages' => $messages,

@@ -45,5 +45,35 @@
     },
     "App": {
         "loading": "Palun oodake..."
+    },
+    "aiModels": {
+        "configTitle": "Tehisaru assistentide mudelid",
+        "configIntro": "Igal assistendil võib olla oma mudel. Tühi tähendab süsteemi vaikeväärtust.",
+        "configHint": "Kehtib sellele ettevõttele",
+        "configHintPrompt": "Kehtib sellele ettevõttele; saab päringu juures muuta",
+        "selectTitle": "Vali mudel",
+        "tooltip": "Kasutatav tehisaru mudel",
+        "clientDefault": "Selle ettevõtte seadistus",
+        "useClientDefault": "Kasuta ettevõtte seadistust",
+        "sessionHint": "Valik kehtib ainult teie seansi ajal ja seda ei salvestata.",
+        "serverDefault": "Vaikimisi",
+        "hints": {
+            "fable51": "Kõige võimekam, kõige keerukamate ülesannete jaoks — kõrgeim hind",
+            "opus5": "Kõige täpsem, nõudlike analüüside jaoks",
+            "sonnet5": "Tasakaalus kvaliteedi ja kulu vahel",
+            "haiku45": "Kõige kiirem ja soodsam"
+        },
+        "assistants": {
+            "carChat": "Sõiduki vestlus",
+            "weroni": "Weroni assistent",
+            "salesText": "Müügitekst",
+            "aiPositions": "Ridade ettepanekud",
+            "filemanager": "Dokumendivestlus (failihaldur)",
+            "accounting": "Dokumentide tuvastus",
+            "businessCard": "Visiitkaardi skannimine",
+            "phoneSearch": "Telefoniotsing",
+            "callTranscript": "Kõne analüüs",
+            "banking": "Likviidsusprognoos"
+        }
     }
 }

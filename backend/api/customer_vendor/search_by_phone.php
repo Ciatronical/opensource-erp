@@ -25,14 +25,14 @@ function searchByPhone($data) {
     }
 
     $config = $db->fetchKeyValue(
-        "SELECT key, value FROM defaults_oserp WHERE key IN ('anthropic_api_key', 'phone_search_ai_model')"
+        "SELECT key, value FROM defaults_oserp WHERE key IN ('anthropic_api_key', '" . aiModelConfigKey('phone_search') . "')"
     );
     $anthropicKey = trim($config['anthropic_api_key'] ?? '');
     if (empty($anthropicKey)) {
         throw new ApiError('MISSING_API_KEYS', 'Anthropic API-Key nicht konfiguriert');
     }
     // Sonnet liefert zuverlässigere Web-Recherche als Haiku
-    $aiModel = $config['phone_search_ai_model'] ?? 'claude-sonnet-4-5-20250929';
+    $aiModel = resolveAiModel($config, 'phone_search');
 
     $prompt = <<<PROMPT
 Finde per Websuche den Inhaber der folgenden deutschen Telefonnummer und extrahiere die Stammdaten fuer die Anlage eines $cvSrc.

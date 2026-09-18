@@ -237,14 +237,14 @@ function scanBusinessCard($data) {
 
     // API-Key und Modell aus DB laden
     $config = $db->fetchKeyValue(
-        "SELECT key, value FROM defaults_oserp WHERE key IN ('anthropic_api_key', 'business_card_ai_model')"
+        "SELECT key, value FROM defaults_oserp WHERE key IN ('anthropic_api_key', '" . aiModelConfigKey('business_card') . "')"
     );
     // writeLog('Config geladen: ' . json_encode(array_keys($config)));
     $anthropicKey = trim($config['anthropic_api_key'] ?? '');
     if (empty($anthropicKey)) {
         throw new ApiError('MISSING_API_KEYS', 'Anthropic API-Key nicht konfiguriert');
     }
-    $aiModel = $config['business_card_ai_model'] ?? 'claude-haiku-4-5-20251001';
+    $aiModel = resolveAiModel($config, 'business_card');
     // writeLog("AI-Modell=$aiModel");
 
     $prompt = <<<PROMPT

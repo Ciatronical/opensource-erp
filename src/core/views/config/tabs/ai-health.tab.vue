@@ -141,6 +141,33 @@
             </v-col>
         </v-row>
 
+        <!-- ============ Modelle der KI-Assistenten ============ -->
+        <v-divider class="my-6" />
+        <h3 class="text-h6 mb-1">{{ t('aiModels.configTitle') }}</h3>
+        <p class="text-body-2 text-medium-emphasis mb-4">{{ t('aiModels.configIntro') }}</p>
+
+        <v-row>
+            <v-col v-for="assistant in AI_ASSISTANTS" :key="assistant.id" cols="12" md="6" lg="4">
+                <v-select
+                    v-model="crmDefaults[assistant.key]"
+                    :items="modelItems(assistant.id)"
+                    item-title="label"
+                    item-value="value"
+                    :label="t(assistant.labelKey)"
+                    :hint="assistant.prompt ? t('aiModels.configHintPrompt') : t('aiModels.configHint')"
+                    persistent-hint
+                    variant="outlined"
+                    density="compact"
+                >
+                    <!-- `item` ist hier das rohe Objekt aus modelItems, nicht Vuetifys
+                         Wrapper — ein Zugriff auf item.raw laeuft ins Leere. -->
+                    <template #item="{ props: itemProps, item }">
+                        <v-list-item v-bind="itemProps" :subtitle="item.hintKey ? t(item.hintKey) : ''" />
+                    </template>
+                </v-select>
+            </v-col>
+        </v-row>
+
         <!-- ============ Cloud-KI-Schlüssel ============ -->
         <v-divider class="my-6" />
         <h3 class="text-h6 mb-1">{{ t('crm_fields.ai') }}</h3>
@@ -193,8 +220,24 @@ import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import axios from 'axios'
 import * as toasts from '@/core/utils/toasts.js'
+import { AI_ASSISTANTS, aiModelsFor } from '@/core/constants/aiModels.js'
 
 const { t } = useI18n()
+
+/**
+ * Auswahl je Assistent. Der erste Eintrag speichert einen leeren Wert —
+ * dann entscheidet das Backend anhand seiner Vorgabe. Modelle, die ein
+ * Assistent nicht verträgt, stehen bei ihm nicht zur Wahl.
+ *
+ * @param {string} id Kennung aus AI_ASSISTANTS
+ * @returns {Array} Einträge für das Auswahlfeld
+ */
+function modelItems(id) {
+    return [
+        { value: '', label: t('aiModels.serverDefault'), hintKey: '' },
+        ...aiModelsFor(id)
+    ]
+}
 
 // crmDefaults = defaults_oserp (key/value), zwei-Wege-gebunden; Parent speichert
 // per Deep-Watcher automatisch.

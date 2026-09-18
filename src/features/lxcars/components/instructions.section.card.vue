@@ -24,6 +24,7 @@
                 {{ timeDiffLabel }}
             </v-chip>
             <v-spacer />
+            <ai-model-button v-if="instructions.length" assistant="ai_positions" />
             <v-tooltip v-if="instructions.length" location="bottom" :text="t('FakturaView.faktura.instructions.aiSuggestTimes')">
                 <template #activator="{ props: tip }">
                     <v-btn v-bind="tip" icon="mdi-creation" size="small" variant="text" color="purple"
@@ -718,10 +719,12 @@ import { VueDraggable } from 'vue-draggable-plus'
 import axios from 'axios'
 import * as toast from '@/core/utils/toasts.js'
 import VoiceInputButton from '@/core/components/voice-input-button.vue'
+import AiModelButton from '@/core/components/ai-model-button.vue'
+import { aiModelStore } from '@/core/stores/ai-model.store.js'
 
 export default defineComponent({
     name: 'InstructionsSectionCard',
-    components: { VueDraggable, VoiceInputButton },
+    components: { VueDraggable, VoiceInputButton, AiModelButton },
 
     props: {
         oeId: {
@@ -1645,13 +1648,17 @@ export default defineComponent({
             aiTimesDialog.suggestions.forEach(s => { s.selected = val })
         }
 
+        const aiModels = aiModelStore()
+
         async function onAiSuggestTimes() {
             if (!props.oeId) return
             aiTimesLoading.value = true
             try {
                 const response = await axios.post('/api/lxcars/', {
                     action: 'suggestPlannedTimes',
-                    oe_id: props.oeId
+                    oe_id: props.oeId,
+                    // Modellwahl des Benutzers am Prompt, gilt nur fuer seine Sitzung
+                    ai_model: aiModels.requestModel('ai_positions')
                 }, { timeout: 60000 })
 
                 if (!response.data.success) {

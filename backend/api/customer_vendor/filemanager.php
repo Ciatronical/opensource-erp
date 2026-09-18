@@ -1529,7 +1529,8 @@ function ensureCustomerFolder($cvId, $src, $name) {
  * @param int    $data['cv_id']   Kunden-/Lieferanten-ID
  * @param string $data['src']     'C' = Kunde, 'V' = Lieferant
  * @param string $data['message'] Benutzerfrage
- * @testdata {"cv_id": 1, "src": "C", "path": "example.pdf", "message": "Worum geht es in diesem Dokument?"}
+ * @param string $data['ai_model'] Optional: Modellwahl des Benutzers, gilt nur fuer diesen Aufruf
+ * @testdata {"cv_id": 1, "src": "C", "path": "example.pdf", "message": "Worum geht es in diesem Dokument?", "ai_model": "claude-haiku-4-5"}
  */
 function docChatMessage($data) {
     set_time_limit(60);
@@ -1544,9 +1545,9 @@ function docChatMessage($data) {
         throw new ApiError('VALIDATION_ERROR', 'cv_id, path und message sind erforderlich');
     }
 
-    // Anthropic API-Key laden
+    // Anthropic API-Key und Modellwahl laden
     $config = $db->fetchKeyValue(
-        "SELECT key, value FROM defaults_oserp WHERE key = 'anthropic_api_key'"
+        "SELECT key, value FROM defaults_oserp WHERE key IN ('anthropic_api_key', '" . aiModelConfigKey('filemanager') . "')"
     );
     $anthropicKey = trim($config['anthropic_api_key'] ?? '');
     if (empty($anthropicKey)) {
@@ -1627,7 +1628,7 @@ function docChatMessage($data) {
     }
 
     $requestBody = json_encode([
-        'model'      => 'claude-haiku-4-5-20251001',
+        'model'      => resolveAiModel($config, 'filemanager', $data['ai_model'] ?? null),
         'max_tokens' => 2048,
         'system'     => $systemPrompt,
         'messages'   => [['role' => 'user', 'content' => $userContent]],

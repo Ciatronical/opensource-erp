@@ -45,5 +45,35 @@
     },
     "App": {
         "loading": "Palaukite..."
+    },
+    "aiModels": {
+        "configTitle": "Dirbtinio intelekto asistentų modeliai",
+        "configIntro": "Kiekvienam asistentui galima parinkti savo modelį. Tuščia reiškia sistemos numatytąjį.",
+        "configHint": "Galioja šiai įmonei",
+        "configHintPrompt": "Galioja šiai įmonei; keičiama prie užklausos",
+        "selectTitle": "Pasirinkti modelį",
+        "tooltip": "Naudojamas dirbtinio intelekto modelis",
+        "clientDefault": "Šios įmonės nustatymas",
+        "useClientDefault": "Naudoti įmonės nustatymą",
+        "sessionHint": "Pasirinkimas galioja tik jūsų seansui ir nėra išsaugomas.",
+        "serverDefault": "Numatytasis",
+        "hints": {
+            "fable51": "Galingiausias, sudėtingiausioms užduotims — didžiausia kaina",
+            "opus5": "Tiksliausias, sudėtingoms analizėms",
+            "sonnet5": "Subalansuotas tarp kokybės ir kainos",
+            "haiku45": "Greičiausias ir pigiausias"
+        },
+        "assistants": {
+            "carChat": "Transporto priemonės pokalbis",
+            "weroni": "Weroni asistentas",
+            "salesText": "Pardavimo tekstas",
+            "aiPositions": "Eilučių pasiūlymai",
+            "filemanager": "Dokumento pokalbis (failų tvarkyklė)",
+            "accounting": "Dokumentų atpažinimas",
+            "businessCard": "Vizitinės kortelės nuskaitymas",
+            "phoneSearch": "Paieška pagal telefoną",
+            "callTranscript": "Skambučio analizė",
+            "banking": "Likvidumo prognozė"
+        }
     }
 }

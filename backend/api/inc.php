@@ -9,6 +9,7 @@ require_once __DIR__.'/config.php';
 require_once __DIR__.'/logging.php';
 require_once __DIR__.'/password.php';
 require_once __DIR__.'/database.php';
+require_once __DIR__.'/lib/ai_model.php';
 require_once __DIR__.'/lib/extensions.php';
 require_once __DIR__.'/lib/upstall.php';
 require_once __DIR__.'/lib/tenant.php';

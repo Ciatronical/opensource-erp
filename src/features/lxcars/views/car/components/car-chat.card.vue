@@ -7,6 +7,7 @@
             <span class="text-subtitle-1 font-weight-medium text-deep-purple">{{ t('CarEditView.chat.title') }}</span>
             <v-chip v-if="messages.length" size="x-small" variant="tonal" color="deep-purple" class="ml-2">{{ messages.length }}</v-chip>
             <v-spacer />
+            <ai-model-button assistant="car_chat" size="x-small" />
             <v-btn
                 size="x-small"
                 variant="text"
@@ -112,9 +113,12 @@ import { ref, nextTick, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { lxcarsStore } from '@/features/lxcars/stores/lxcars.store.js'
 import Swal from 'sweetalert2'
+import AiModelButton from '@/core/components/ai-model-button.vue'
 
 export default {
     name: 'CarChatCard',
+
+    components: { AiModelButton },
 
     props: {
         carId: {

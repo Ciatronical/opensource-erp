@@ -45,5 +45,35 @@
     },
     "App": {
         "loading": "Bitte warten..."
+    },
+    "aiModels": {
+        "configTitle": "Modelle der KI-Assistenten",
+        "configIntro": "Je Assistent lässt sich ein eigenes Modell wählen. Leer bedeutet: Es gilt die Vorgabe des Systems.",
+        "configHint": "Gilt für diese Firma",
+        "configHintPrompt": "Gilt für diese Firma; am Prompt umstellbar",
+        "selectTitle": "Modell wählen",
+        "tooltip": "Verwendetes KI-Modell",
+        "clientDefault": "Einstellung dieser Firma",
+        "useClientDefault": "Einstellung der Firma verwenden",
+        "sessionHint": "Die Wahl gilt nur für Ihre Sitzung und wird nicht gespeichert.",
+        "serverDefault": "Standard",
+        "hints": {
+            "fable51": "Am leistungsfähigsten, für die schwierigsten Aufgaben — höchster Preis",
+            "opus5": "Am genauesten, für anspruchsvolle Auswertungen",
+            "sonnet5": "Ausgewogen zwischen Güte und Kosten",
+            "haiku45": "Am schnellsten und günstigsten"
+        },
+        "assistants": {
+            "carChat": "Fahrzeug-Chat",
+            "weroni": "Weroni-Assistent",
+            "salesText": "Verkaufstext",
+            "aiPositions": "Positionsvorschläge",
+            "filemanager": "Dokument-Chat (Dateimanager)",
+            "accounting": "Belegerkennung",
+            "businessCard": "Visitenkarten-Scan",
+            "phoneSearch": "Telefonsuche",
+            "callTranscript": "Anruf-Auswertung",
+            "banking": "Liquiditätsprognose"
+        }
     }
 }

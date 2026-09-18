@@ -9,6 +9,7 @@
                     <span class="text-caption text-medium-emphasis">{{ fileName }}</span>
                 </div>
                 <v-spacer />
+                <ai-model-button assistant="filemanager" size="x-small" />
                 <v-btn icon size="small" variant="text" @click="close">
                     <v-icon>mdi-close</v-icon>
                 </v-btn>
@@ -80,11 +81,15 @@
 import { ref, watch, nextTick, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Swal from 'sweetalert2'
+import AiModelButton from '@/core/components/ai-model-button.vue'
+import { aiModelStore } from '@/core/stores/ai-model.store.js'
 
 const API_URL = '/api/customer_vendor/'
 
 export default {
     name: 'DocChatDialog',
+
+    components: { AiModelButton },
 
     props: {
         modelValue: { type: Boolean, default: false },
@@ -97,6 +102,7 @@ export default {
 
     setup(props, { emit }) {
         const { t } = useI18n()
+        const aiModels = aiModelStore()
 
         const open = computed({
             get: () => props.modelValue,
@@ -141,6 +147,8 @@ export default {
                         src: props.src,
                         path: props.filePath,
                         message: text,
+                        // Modellwahl des Benutzers am Prompt, gilt nur fuer seine Sitzung
+                        ai_model: aiModels.requestModel('filemanager'),
                     }),
                 })
                 if (!response.ok) throw new Error(`HTTP ${response.status}`)

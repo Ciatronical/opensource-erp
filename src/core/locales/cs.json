@@ -45,5 +45,35 @@
     },
     "App": {
         "loading": "Čekejte prosím..."
+    },
+    "aiModels": {
+        "configTitle": "Modely asistentů AI",
+        "configIntro": "Pro každého asistenta lze zvolit vlastní model. Prázdné pole znamená výchozí nastavení systému.",
+        "configHint": "Platí pro tuto firmu",
+        "configHintPrompt": "Platí pro tuto firmu; lze změnit u dotazu",
+        "selectTitle": "Vybrat model",
+        "tooltip": "Použitý model AI",
+        "clientDefault": "Nastavení této firmy",
+        "useClientDefault": "Použít nastavení firmy",
+        "sessionHint": "Volba platí jen pro vaši relaci a neukládá se.",
+        "serverDefault": "Výchozí",
+        "hints": {
+            "fable51": "Nejvýkonnější, pro nejnáročnější úlohy — nejvyšší cena",
+            "opus5": "Nejpřesnější, pro náročné analýzy",
+            "sonnet5": "Vyvážený poměr kvality a nákladů",
+            "haiku45": "Nejrychlejší a nejlevnější"
+        },
+        "assistants": {
+            "carChat": "Chat k vozidlu",
+            "weroni": "Asistent Weroni",
+            "salesText": "Prodejní text",
+            "aiPositions": "Návrhy položek",
+            "filemanager": "Chat k dokumentu (správce souborů)",
+            "accounting": "Rozpoznávání dokladů",
+            "businessCard": "Sken vizitky",
+            "phoneSearch": "Vyhledávání podle telefonu",
+            "callTranscript": "Vyhodnocení hovoru",
+            "banking": "Prognóza likvidity"
+        }
     }
 }

@@ -24,7 +24,7 @@ function generateOrderFromCall($data) {
 
     // 1. API-Keys laden
     $config = $db->fetchKeyValue(
-        "SELECT key, value FROM defaults_oserp WHERE key IN ('openai_api_key', 'anthropic_api_key')"
+        "SELECT key, value FROM defaults_oserp WHERE key IN ('openai_api_key', 'anthropic_api_key', '" . aiModelConfigKey('call_transcript') . "')"
     );
     $openaiKey = trim($config['openai_api_key'] ?? '');
     $anthropicKey = trim($config['anthropic_api_key'] ?? '');
@@ -222,7 +222,7 @@ Antworte ausschließlich mit validem JSON in diesem Format:
 PROMPT;
 
     $requestBody = json_encode([
-        'model' => 'claude-haiku-4-5-20251001',
+        'model' => resolveAiModel($config, 'call_transcript'),
         'max_tokens' => 1024,
         'messages' => [
             ['role' => 'user', 'content' => "Transkript des Telefongesprächs:\n\n" . $transcript]

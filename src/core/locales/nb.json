@@ -45,5 +45,35 @@
     },
     "App": {
         "loading": "Vennligst vent..."
+    },
+    "aiModels": {
+        "configTitle": "Modeller for KI-assistentene",
+        "configIntro": "Hver assistent kan bruke sin egen modell. Tomt betyr at systemets standard gjelder.",
+        "configHint": "Gjelder dette firmaet",
+        "configHintPrompt": "Gjelder dette firmaet; kan endres ved forespørselen",
+        "selectTitle": "Velg modell",
+        "tooltip": "KI-modell som brukes",
+        "clientDefault": "Innstillingen til dette firmaet",
+        "useClientDefault": "Bruk firmaets innstilling",
+        "sessionHint": "Valget gjelder bare for økten din og lagres ikke.",
+        "serverDefault": "Standard",
+        "hints": {
+            "fable51": "Mest kapabel, for de vanskeligste oppgavene — høyeste pris",
+            "opus5": "Mest nøyaktig, for krevende analyser",
+            "sonnet5": "Balansert mellom kvalitet og kostnad",
+            "haiku45": "Raskest og rimeligst"
+        },
+        "assistants": {
+            "carChat": "Kjøretøyschat",
+            "weroni": "Weroni-assistent",
+            "salesText": "Salgstekst",
+            "aiPositions": "Forslag til linjer",
+            "filemanager": "Dokumentchat (filbehandler)",
+            "accounting": "Bilagsgjenkjenning",
+            "businessCard": "Skanning av visittkort",
+            "phoneSearch": "Telefonsøk",
+            "callTranscript": "Analyse av samtale",
+            "banking": "Likviditetsprognose"
+        }
     }
 }

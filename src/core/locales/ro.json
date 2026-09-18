@@ -45,5 +45,35 @@
     },
     "App": {
         "loading": "Vă rugăm așteptați..."
+    },
+    "aiModels": {
+        "configTitle": "Modelele asistenților IA",
+        "configIntro": "Fiecare asistent poate folosi un model propriu. Gol înseamnă că se aplică valoarea implicită a sistemului.",
+        "configHint": "Se aplică acestei firme",
+        "configHintPrompt": "Se aplică acestei firme; se poate schimba la solicitare",
+        "selectTitle": "Alegeți modelul",
+        "tooltip": "Modelul IA utilizat",
+        "clientDefault": "Setarea acestei firme",
+        "useClientDefault": "Folosește setarea firmei",
+        "sessionHint": "Alegerea este valabilă doar pentru sesiunea dumneavoastră și nu se salvează.",
+        "serverDefault": "Implicit",
+        "hints": {
+            "fable51": "Cel mai performant, pentru cele mai dificile sarcini — preț maxim",
+            "opus5": "Cel mai precis, pentru analize exigente",
+            "sonnet5": "Echilibrat între calitate și cost",
+            "haiku45": "Cel mai rapid și mai ieftin"
+        },
+        "assistants": {
+            "carChat": "Discuție despre vehicul",
+            "weroni": "Asistentul Weroni",
+            "salesText": "Text de vânzare",
+            "aiPositions": "Propuneri de poziții",
+            "filemanager": "Discuție despre document (manager de fișiere)",
+            "accounting": "Recunoașterea documentelor",
+            "businessCard": "Scanare carte de vizită",
+            "phoneSearch": "Căutare după telefon",
+            "callTranscript": "Analiza apelului",
+            "banking": "Prognoză de lichiditate"
+        }
     }
 }
