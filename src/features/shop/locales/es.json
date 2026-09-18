@@ -109,6 +109,11 @@
             "running": "Ya hay una ejecución en curso: se encargará de los trabajos.",
             "done": "{jobs} trabajos realizados, {pages} páginas escritas, {errors} errores.",
             "built": "Sitio web reconstruido.",
+            "cleanup": "Limpiar",
+            "cleanupHint": "Elimina los trabajos terminados correctamente. Los fallidos y los pendientes se mantienen.",
+            "cleanupConfirm": "Se eliminarán todos los trabajos terminados correctamente; en esta lista hay {count}.",
+            "cleaned": "{count} trabajos eliminados.",
+            "cancel": "Cancelar",
             "functions": {
                 "publish_part": "Escribir página de producto",
                 "publish_all": "Todos los productos",

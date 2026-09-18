@@ -119,6 +119,23 @@ Zwei Voraussetzungen, sonst bleibt es beim Läufer:
 Läuft gerade der Cron, meldet die Oberfläche das und tut nichts: Der laufende
 Lauf nimmt die offenen Aufträge ohnehin mit.
 
+### Aufräumen
+
+Damit `batchjob_hugoshop` nicht vollläuft, werden erledigte Aufträge gelöscht —
+aber nur die erfolgreichen (Ergebnis beginnt mit `ok`). Fehlgeschlagene und
+offene bleiben stehen, ebenso Auftragsarten, die nicht aus dieser Erweiterung
+stammen.
+
+| Weg | Wann | Was |
+| --- | --- | --- |
+| Knopf „Aufräumen" in der Auftragsliste | auf Zuruf, nach Rückfrage | alle erfolgreichen, ohne Frist |
+| Läufer `tools/shop-publish.php` | nach jedem Lauf | die erfolgreichen, die älter sind als die Frist |
+
+Die Frist steht in der Firmenkonfiguration unter Shop: **Erledigte Aufträge
+aufbewahren (Tage)**, gespeichert als `shop_job_retention_days` in
+`defaults_oserp`, Vorgabe 30 Tage. `0` schaltet das Aufräumen im Läufer ab, dann
+bleibt der Knopf. `--no-cleanup` lässt einen einzelnen Lauf nichts löschen.
+
 ## Vorlagensätze
 
 Gesucht wird wie beim Druck: erst `<templates_dir>/shop/<name>/`, dann

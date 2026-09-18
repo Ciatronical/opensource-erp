@@ -109,6 +109,11 @@
             "running": "A run is already in progress — it will handle the jobs.",
             "done": "{jobs} jobs done, {pages} pages written, {errors} errors.",
             "built": "Website rebuilt.",
+            "cleanup": "Clean up",
+            "cleanupHint": "Deletes the successfully completed jobs. Failed and pending ones remain.",
+            "cleanupConfirm": "All successfully completed jobs will be deleted, {count} of them in this list.",
+            "cleaned": "{count} jobs deleted.",
+            "cancel": "Cancel",
             "functions": {
                 "publish_part": "Write product page",
                 "publish_all": "All products",

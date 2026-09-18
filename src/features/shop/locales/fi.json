@@ -109,6 +109,11 @@
             "running": "Ajo on jo käynnissä — se hoitaa työt.",
             "done": "{jobs} työtä valmiina, {pages} sivua kirjoitettu, {errors} virhettä.",
             "built": "Sivusto rakennettiin uudelleen.",
+            "cleanup": "Siivoa",
+            "cleanupHint": "Poistaa onnistuneesti suoritetut tehtävät. Epäonnistuneet ja avoimet säilyvät.",
+            "cleanupConfirm": "Kaikki onnistuneesti suoritetut tehtävät poistetaan, tässä luettelossa niitä on {count}.",
+            "cleaned": "Poistettiin {count} tehtävää.",
+            "cancel": "Peruuta",
             "functions": {
                 "publish_part": "Kirjoita tuotesivu",
                 "publish_all": "Kaikki tuotteet",

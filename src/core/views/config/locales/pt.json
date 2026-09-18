@@ -903,7 +903,9 @@
         "shopThumbnailSize": "Tamanho das miniaturas",
         "shopThumbnailSize_help": "Lado mais longo em píxeis. A proporção é mantida.",
         "shopBackendUrl": "Endereço do OpensourceERP para o site",
-        "shopBackendUrl_help": "Endereço pelo qual o site da loja acede à loja do OpensourceERP, por exemplo https://erp.example.com/shop/. O processo de publicação escreve-o no site juntamente com a chave da loja."
+        "shopBackendUrl_help": "Endereço pelo qual o site da loja acede à loja do OpensourceERP, por exemplo https://erp.example.com/shop/. O processo de publicação escreve-o no site juntamente com a chave da loja.",
+        "shopJobRetentionDays": "Manter tarefas concluídas (dias)",
+        "shopJobRetentionDays_help": "O executor elimina as tarefas de publicação concluídas com êxito assim que atingem esta idade em dias. 0 desativa a limpeza; as tarefas falhadas permanecem sempre."
     },
     "add": "Adicionar",
     "add_fields": {

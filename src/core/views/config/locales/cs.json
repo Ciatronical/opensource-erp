@@ -903,7 +903,9 @@
         "shopThumbnailSize": "Velikost náhledů",
         "shopThumbnailSize_help": "Nejdelší strana v pixelech. Poměr stran zůstane zachován.",
         "shopBackendUrl": "Adresa OpensourceERP pro web",
-        "shopBackendUrl_help": "Adresa, na které web obchodu dosáhne přístup obchodu v OpensourceERP, například https://erp.example.com/shop/. Proces zveřejnění ji spolu s klíčem obchodu zapíše do webu."
+        "shopBackendUrl_help": "Adresa, na které web obchodu dosáhne přístup obchodu v OpensourceERP, například https://erp.example.com/shop/. Proces zveřejnění ji spolu s klíčem obchodu zapíše do webu.",
+        "shopJobRetentionDays": "Uchovávat dokončené úlohy (dny)",
+        "shopJobRetentionDays_help": "Běžec smaže úspěšně dokončené úlohy zveřejnění, jakmile dosáhnou tohoto stáří ve dnech. 0 tuto funkci vypne; neúspěšné úlohy zůstávají vždy."
     },
     "add": "Přidat",
     "add_fields": {

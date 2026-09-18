@@ -109,6 +109,11 @@
             "running": "Töö juba käib — see võtab ülesanded kaasa.",
             "done": "Tehtud ülesandeid: {jobs}, kirjutatud lehti: {pages}, vigu: {errors}.",
             "built": "Veebisait ehitati uuesti.",
+            "cleanup": "Korista",
+            "cleanupHint": "Kustutab edukalt lõpetatud tööd. Ebaõnnestunud ja avatud jäävad alles.",
+            "cleanupConfirm": "Kustutatakse kõik edukalt lõpetatud tööd, selles loendis on neid {count}.",
+            "cleaned": "Kustutatud {count} tööd.",
+            "cancel": "Loobu",
             "functions": {
                 "publish_part": "Kirjuta tootelehekülg",
                 "publish_all": "Kõik tooted",

@@ -109,6 +109,11 @@
             "running": "En körning pågår redan — den tar hand om jobben.",
             "done": "{jobs} jobb klara, {pages} sidor skrivna, {errors} fel.",
             "built": "Webbplatsen byggdes om.",
+            "cleanup": "Rensa",
+            "cleanupHint": "Tar bort de jobb som slutförts utan fel. Misslyckade och öppna står kvar.",
+            "cleanupConfirm": "Alla jobb som slutförts utan fel tas bort; i den här listan är de {count}.",
+            "cleaned": "{count} jobb borttagna.",
+            "cancel": "Avbryt",
             "functions": {
                 "publish_part": "Skriv produktsida",
                 "publish_all": "Alla produkter",

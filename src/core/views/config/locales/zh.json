@@ -903,7 +903,9 @@
         "shopThumbnailSize": "缩略图尺寸",
         "shopThumbnailSize_help": "最长边的像素数，保持宽高比。",
         "shopBackendUrl": "供网站使用的 OpensourceERP 地址",
-        "shopBackendUrl_help": "商店网站访问 OpensourceERP 商店接口所用的地址，例如 https://erp.example.com/shop/。发布进程会将其与商店密钥一起写入网站。"
+        "shopBackendUrl_help": "商店网站访问 OpensourceERP 商店接口所用的地址，例如 https://erp.example.com/shop/。发布进程会将其与商店密钥一起写入网站。",
+        "shopJobRetentionDays": "保留已完成任务（天）",
+        "shopJobRetentionDays_help": "执行程序会在成功完成的发布任务达到该天数后将其删除。填 0 表示关闭；失败的任务始终保留。"
     },
     "add": "添加",
     "add_fields": {

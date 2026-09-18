@@ -903,7 +903,9 @@
         "shopThumbnailSize": "Dimensiunea miniaturilor",
         "shopThumbnailSize_help": "Latura cea mai lungă în pixeli. Proporțiile se păstrează.",
         "shopBackendUrl": "Adresa OpensourceERP pentru site",
-        "shopBackendUrl_help": "Adresa la care site-ul magazinului accesează magazinul din OpensourceERP, de exemplu https://erp.example.com/shop/. Procesul de publicare o scrie în site împreună cu cheia magazinului."
+        "shopBackendUrl_help": "Adresa la care site-ul magazinului accesează magazinul din OpensourceERP, de exemplu https://erp.example.com/shop/. Procesul de publicare o scrie în site împreună cu cheia magazinului.",
+        "shopJobRetentionDays": "Păstrează sarcinile finalizate (zile)",
+        "shopJobRetentionDays_help": "Executorul șterge sarcinile de publicare finalizate cu succes când ating această vechime în zile. 0 dezactivează curățarea; sarcinile eșuate rămân întotdeauna."
     },
     "add": "Adăugare",
     "add_fields": {

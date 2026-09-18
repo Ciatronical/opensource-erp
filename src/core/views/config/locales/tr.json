@@ -903,7 +903,9 @@
         "shopThumbnailSize": "Küçük resim boyutu",
         "shopThumbnailSize_help": "Piksel cinsinden en uzun kenar. En boy oranı korunur.",
         "shopBackendUrl": "Web sitesi için OpensourceERP adresi",
-        "shopBackendUrl_help": "Mağaza web sitesinin OpensourceERP mağaza erişimine ulaştığı adres, örneğin https://erp.example.com/shop/. Yayımlama süreci bunu mağaza anahtarıyla birlikte web sitesine yazar."
+        "shopBackendUrl_help": "Mağaza web sitesinin OpensourceERP mağaza erişimine ulaştığı adres, örneğin https://erp.example.com/shop/. Yayımlama süreci bunu mağaza anahtarıyla birlikte web sitesine yazar.",
+        "shopJobRetentionDays": "Tamamlanan görevleri sakla (gün)",
+        "shopJobRetentionDays_help": "Çalıştırıcı, başarıyla tamamlanan yayımlama görevlerini bu kadar gün eskidiklerinde siler. 0 bunu kapatır; başarısız görevler her zaman kalır."
     },
     "add": "Ekle",
     "add_fields": {

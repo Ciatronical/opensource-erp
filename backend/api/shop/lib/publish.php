@@ -741,6 +741,62 @@ function shopJobResult($db, int $id, string $ergebnis): void {
 }
 
 /**
+ * Aufbewahrungsfrist erledigter Aufträge in Tagen
+ *
+ * Aus der Shop-Einstellung shop_job_retention_days des Mandanten. 0 heißt:
+ * nichts automatisch löschen — dann bleibt nur der Knopf "Aufräumen" im
+ * Admin-Panel.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @return int Tage, 0 fuer "nie"
+ */
+function shopJobRetentionDays($db): int {
+    $tage = shopConfigInt($db, 'shop_job_retention_days', 30);
+
+    return $tage > 0 ? $tage : 0;
+}
+
+/**
+ * Löscht erledigte Aufträge
+ *
+ * Nur erfolgreiche: ihr Ergebnis beginnt mit "ok" (siehe shopJobResult).
+ * Fehlgeschlagene bleiben stehen, sonst wäre die Spur weg, bevor jemand sie
+ * gesehen hat. Offene ebenfalls, und fremde Auftragsarten auch — die Tabelle
+ * stammt aus der Bridge.
+ *
+ * Zeilen ohne itime stammen aus der Zeit vor der Spalte und gelten als alt.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param int|null $tage nur älter als so viele Tage; null = alle erfolgreichen
+ * @return int Zahl der gelöschten Zeilen
+ */
+function shopCleanupJobs($db, ?int $tage = null): int {
+    if (null !== $tage && $tage <= 0) {
+        return 0;
+    }
+
+    $zeile = $db->getOne(
+        "WITH weg AS (
+             DELETE FROM batchjob_hugoshop
+              WHERE result IS NOT NULL
+                AND result LIKE 'ok%'
+                AND function = ANY(string_to_array(:funktionen, ','))
+                AND (1 = :alle
+                     OR itime IS NULL
+                     OR itime < now() - (:tage * interval '1 day'))
+             RETURNING id)
+         SELECT count(*)::int AS anzahl FROM weg",
+        [
+            ':funktionen' => implode(',', shopJobFunctions()),
+            ':alle'       => null === $tage ? 1 : 0,
+            ':tage'       => (int)($tage ?? 0),
+        ]
+    );
+
+    return $zeile ? (int)$zeile['anzahl'] : 0;
+}
+
+/**
  * Artikel, die im Shop stehen
  *
  * @param object $db Company-Datenbankverbindung

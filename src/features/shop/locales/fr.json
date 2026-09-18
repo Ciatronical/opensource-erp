@@ -109,6 +109,11 @@
             "running": "Une exécution est déjà en cours : elle prendra les tâches en charge.",
             "done": "{jobs} tâches effectuées, {pages} pages écrites, {errors} erreurs.",
             "built": "Site reconstruit.",
+            "cleanup": "Nettoyer",
+            "cleanupHint": "Supprime les tâches terminées avec succès. Les tâches en échec et en attente restent.",
+            "cleanupConfirm": "Toutes les tâches terminées avec succès seront supprimées ; cette liste en contient {count}.",
+            "cleaned": "{count} tâches supprimées.",
+            "cancel": "Annuler",
             "functions": {
                 "publish_part": "Écrire la page produit",
                 "publish_all": "Tous les produits",

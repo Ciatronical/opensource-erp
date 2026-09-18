@@ -903,7 +903,9 @@
         "shopThumbnailSize": "Eelvaatepiltide suurus",
         "shopThumbnailSize_help": "Pikim külg pikslites. Kuvasuhe säilib.",
         "shopBackendUrl": "OpensourceERP aadress veebisaidi jaoks",
-        "shopBackendUrl_help": "Aadress, mille kaudu poe veebisait jõuab OpensourceERP poeliidesesse, näiteks https://erp.example.com/shop/. Avaldamisprotsess kirjutab selle koos poe võtmega veebisaiti."
+        "shopBackendUrl_help": "Aadress, mille kaudu poe veebisait jõuab OpensourceERP poeliidesesse, näiteks https://erp.example.com/shop/. Avaldamisprotsess kirjutab selle koos poe võtmega veebisaiti.",
+        "shopJobRetentionDays": "Hoia lõpetatud töid alles (päeva)",
+        "shopJobRetentionDays_help": "Käivitaja kustutab edukalt lõpetatud avaldamistööd, kui need on nii mitu päeva vanad. 0 lülitab selle välja; ebaõnnestunud tööd jäävad alati alles."
     },
     "add": "Lisa",
     "add_fields": {

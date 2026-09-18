@@ -109,6 +109,11 @@
             "running": "Izpilde jau notiek — tā paveiks uzdevumus.",
             "done": "Paveikti uzdevumi: {jobs}, ierakstītas lapas: {pages}, kļūdas: {errors}.",
             "built": "Vietne pārbūvēta.",
+            "cleanup": "Sakārtot",
+            "cleanupHint": "Dzēš veiksmīgi pabeigtos uzdevumus. Neizdevušies un atvērtie paliek.",
+            "cleanupConfirm": "Tiks dzēsti visi veiksmīgi pabeigtie uzdevumi, šajā sarakstā to ir {count}.",
+            "cleaned": "Dzēsti {count} uzdevumi.",
+            "cancel": "Atcelt",
             "functions": {
                 "publish_part": "Rakstīt produkta lapu",
                 "publish_all": "Visi produkti",

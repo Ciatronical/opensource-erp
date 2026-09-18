@@ -14,7 +14,13 @@
 // Aufruf:
 //   php tools/shop-publish.php [--client=<id>] [--db=<name>] [--limit=500]
 //                              [--no-build] [--quiet] [--reconcile-payments]
+//                              [--no-cleanup]
 //   php tools/shop-publish.php --list-clients
+//
+// Nach jedem Lauf räumt das Skript erledigte Aufträge weg: die erfolgreich
+// ausgeführten, die älter sind als die Aufbewahrungsfrist aus der
+// Firmenkonfiguration (Shop, shop_job_retention_days). Steht dort 0, bleibt
+// alles liegen. --no-cleanup lässt es für diesen Lauf bleiben.
 //
 // --reconcile-payments nimmt den Abgleich schwebender PayPal-Zahlungen als
 // Auftrag an und arbeitet ihn im selben Lauf ab. Gedacht für einen eigenen,
@@ -146,6 +152,18 @@ try {
 
     $melden(sprintf('%d Aufträge, %d Seiten geschrieben, %d entfernt, %d Änderungen am Paket, %d Fehler',
         $bilanz['jobs'], $bilanz['seiten'], $bilanz['entfernt'], $bilanz['kit'], $bilanz['fehler']));
+
+    // Aufräumen nach dem Lauf, nicht davor: die eben erledigten Aufträge
+    // stehen dann schon mit Ergebnis da und fallen unter dieselbe Frist.
+    if (!isset($argumente['no-cleanup'])) {
+        $tage = shopJobRetentionDays($db);
+        if ($tage > 0) {
+            $weg = shopCleanupJobs($db, $tage);
+            if ($weg > 0) {
+                $melden(sprintf('%d erledigte Aufträge älter als %d Tage gelöscht', $weg, $tage));
+            }
+        }
+    }
 
     if (0 !== $bilanz['bau_code']) {
         fwrite(STDERR, "Der Bau der Webseite ist fehlgeschlagen (Rückgabewert ".$bilanz['bau_code'].").\n");

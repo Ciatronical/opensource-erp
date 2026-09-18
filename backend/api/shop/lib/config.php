@@ -91,6 +91,7 @@ function shopConfigLabel(string $key): string {
         'shop_withdrawal_mail_to'       => 'E-Mail-Adresse für Widerrufe',
         'shop_sites_dir'                => 'Wurzelverzeichnis der Webseiten',
         'shop_publish_command_path'     => 'Programm zum Bauen der Webseite',
+        'shop_job_retention_days'       => 'Erledigte Aufträge aufbewahren (Tage)',
     ];
     return $beschriftung[$key] ?? $key;
 }

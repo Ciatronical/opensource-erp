@@ -484,6 +484,10 @@ INSERT INTO defaults_oserp (key, value) VALUES ('shop_thumbnails_link', '') ON C
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_sites_dir', '') ON CONFLICT (key) DO NOTHING;
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_publish_command_path', '') ON CONFLICT (key) DO NOTHING;
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_publish_clean_destination', '1') ON CONFLICT (key) DO NOTHING;
+-- shop_job_retention_days: Der Laeufer loescht erfolgreich erledigte Auftraege
+-- aus batchjob_hugoshop, sobald sie so viele Tage alt sind. 0 schaltet das ab;
+-- fehlgeschlagene Auftraege bleiben immer stehen.
+INSERT INTO defaults_oserp (key, value) VALUES ('shop_job_retention_days', '30') ON CONFLICT (key) DO NOTHING;
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_template_set', 'standard') ON CONFLICT (key) DO NOTHING;
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_site_dir', '') ON CONFLICT (key) DO NOTHING;
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_content_dir', 'content/de/produkt') ON CONFLICT (key) DO NOTHING;

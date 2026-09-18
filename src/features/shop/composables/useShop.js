@@ -82,6 +82,14 @@ export function useShop() {
      */
     const runPublishJobs = (ids = []) => call('runShopPublishJobs', { ids })
 
+    /**
+     * Löscht die erfolgreich erledigten Aufträge
+     *
+     * Fehlgeschlagene und offene bleiben stehen. Der Läufer räumt außerdem
+     * regelmäßig nach der eingestellten Aufbewahrungsfrist.
+     */
+    const cleanupPublishJobs = () => call('cleanupShopPublishJobs')
+
     return {
         loading,
         error,
@@ -89,6 +97,7 @@ export function useShop() {
         publishAll,
         fetchPublishJobs,
         runPublishJobs,
+        cleanupPublishJobs,
         fetchPartShopData,
         savePartShopData,
         deletePartShopData,

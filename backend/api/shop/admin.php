@@ -477,6 +477,24 @@ function runShopPublishJobs($data) {
 }
 
 /**
+ * Räumt erledigte Aufträge aus der Warteschlange
+ *
+ * Löscht die erfolgreich ausgeführten, damit die Tabelle nicht vollläuft.
+ * Fehlgeschlagene und offene bleiben stehen. Regelmäßig tut das auch der
+ * Läufer, dort nach der eingestellten Aufbewahrungsfrist
+ * (shop_job_retention_days); dieser Knopf räumt sofort und ohne Frist.
+ *
+ * @return void
+ * @testdata {}
+ */
+function cleanupShopPublishJobs($data) {
+    permit(['shop_part_edit', 'edit_shop_config'], false);
+    $db = DbhCompany::begin();
+
+    resultInfo(true, '', ['removed' => shopCleanupJobs($db)]);
+}
+
+/**
  * Offene und zuletzt erledigte Aufträge
  *
  * Nur die der Veröffentlichung — die Tabelle teilt sich OSERP mit der Bridge.

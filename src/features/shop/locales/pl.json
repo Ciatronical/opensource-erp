@@ -109,6 +109,11 @@
             "running": "Przebieg już trwa — zajmie się zadaniami.",
             "done": "Wykonano zadań: {jobs}, zapisano stron: {pages}, błędów: {errors}.",
             "built": "Witryna została przebudowana.",
+            "cleanup": "Uporządkuj",
+            "cleanupHint": "Usuwa pomyślnie wykonane zadania. Nieudane i otwarte pozostają.",
+            "cleanupConfirm": "Zostaną usunięte wszystkie pomyślnie wykonane zadania, na tej liście jest ich {count}.",
+            "cleaned": "Usunięto zadania: {count}.",
+            "cancel": "Anuluj",
             "functions": {
                 "publish_part": "Zapisz stronę produktu",
                 "publish_all": "Wszystkie produkty",

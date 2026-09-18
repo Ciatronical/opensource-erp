@@ -903,7 +903,9 @@
         "shopThumbnailSize": "Esikatselukuvien koko",
         "shopThumbnailSize_help": "Pisin sivu pikseleinä. Kuvasuhde säilyy.",
         "shopBackendUrl": "OpensourceERP-osoite verkkosivustolle",
-        "shopBackendUrl_help": "Osoite, jolla kaupan verkkosivusto tavoittaa OpensourceERP:n kauppayhteyden, esimerkiksi https://erp.example.com/shop/. Julkaisuprosessi kirjoittaa sen sivustoon yhdessä kauppa-avaimen kanssa."
+        "shopBackendUrl_help": "Osoite, jolla kaupan verkkosivusto tavoittaa OpensourceERP:n kauppayhteyden, esimerkiksi https://erp.example.com/shop/. Julkaisuprosessi kirjoittaa sen sivustoon yhdessä kauppa-avaimen kanssa.",
+        "shopJobRetentionDays": "Säilytä suoritetut tehtävät (päivää)",
+        "shopJobRetentionDays_help": "Suorittaja poistaa onnistuneesti suoritetut julkaisutehtävät, kun ne ovat näin monta päivää vanhoja. 0 poistaa toiminnon käytöstä; epäonnistuneet tehtävät säilyvät aina."
     },
     "add": "Lisää",
     "add_fields": {

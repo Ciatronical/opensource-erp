@@ -109,6 +109,11 @@
             "running": "已有一次执行在进行中，任务会由它处理。",
             "done": "已完成 {jobs} 个任务，写入 {pages} 个页面，{errors} 个错误。",
             "built": "网站已重新生成。",
+            "cleanup": "清理",
+            "cleanupHint": "删除已成功完成的任务。失败的和未完成的会保留。",
+            "cleanupConfirm": "将删除所有已成功完成的任务，本列表中有 {count} 个。",
+            "cleaned": "已删除 {count} 个任务。",
+            "cancel": "取消",
             "functions": {
                 "publish_part": "写入产品页",
                 "publish_all": "全部产品",

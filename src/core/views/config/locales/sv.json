@@ -903,7 +903,9 @@
         "shopThumbnailSize": "Storlek på miniatyrer",
         "shopThumbnailSize_help": "Längsta sida i pixlar. Proportionerna behålls.",
         "shopBackendUrl": "OpensourceERP-adress för webbplatsen",
-        "shopBackendUrl_help": "Adressen där butikens webbplats når butiksåtkomsten i OpensourceERP, till exempel https://erp.example.com/shop/. Publiceringsprocessen skriver in den i webbplatsen tillsammans med butiksnyckeln."
+        "shopBackendUrl_help": "Adressen där butikens webbplats når butiksåtkomsten i OpensourceERP, till exempel https://erp.example.com/shop/. Publiceringsprocessen skriver in den i webbplatsen tillsammans med butiksnyckeln.",
+        "shopJobRetentionDays": "Behåll slutförda jobb (dagar)",
+        "shopJobRetentionDays_help": "Köraren tar bort publiceringsjobb som slutförts utan fel när de är så här många dagar gamla. 0 stänger av det; misslyckade jobb står alltid kvar."
     },
     "add": "Lagg till",
     "add_fields": {

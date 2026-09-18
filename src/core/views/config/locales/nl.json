@@ -903,7 +903,9 @@
         "shopThumbnailSize": "Grootte van de miniaturen",
         "shopThumbnailSize_help": "Langste zijde in pixels. De verhouding blijft behouden.",
         "shopBackendUrl": "Adres van OpensourceERP voor de website",
-        "shopBackendUrl_help": "Adres waaronder de winkelwebsite de winkeltoegang van OpensourceERP bereikt, bijvoorbeeld https://erp.example.com/shop/. Het publicatieproces schrijft het samen met de winkelsleutel in de website."
+        "shopBackendUrl_help": "Adres waaronder de winkelwebsite de winkeltoegang van OpensourceERP bereikt, bijvoorbeeld https://erp.example.com/shop/. Het publicatieproces schrijft het samen met de winkelsleutel in de website.",
+        "shopJobRetentionDays": "Voltooide taken bewaren (dagen)",
+        "shopJobRetentionDays_help": "De uitvoerder verwijdert geslaagde publicatietaken zodra ze zoveel dagen oud zijn. 0 schakelt dit uit; mislukte taken blijven altijd staan."
     },
     "add": "Toevoegen",
     "add_fields": {

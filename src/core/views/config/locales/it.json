@@ -903,7 +903,9 @@
         "shopThumbnailSize": "Dimensione delle anteprime",
         "shopThumbnailSize_help": "Lato più lungo in pixel. Le proporzioni restano invariate.",
         "shopBackendUrl": "Indirizzo di OpensourceERP per il sito",
-        "shopBackendUrl_help": "Indirizzo con cui il sito del negozio raggiunge l'accesso negozio di OpensourceERP, ad esempio https://erp.example.com/shop/. Il processo di pubblicazione lo scrive nel sito insieme alla chiave del negozio."
+        "shopBackendUrl_help": "Indirizzo con cui il sito del negozio raggiunge l'accesso negozio di OpensourceERP, ad esempio https://erp.example.com/shop/. Il processo di pubblicazione lo scrive nel sito insieme alla chiave del negozio.",
+        "shopJobRetentionDays": "Conserva le attività completate (giorni)",
+        "shopJobRetentionDays_help": "L'esecutore elimina le attività di pubblicazione completate con successo quando raggiungono questa età in giorni. 0 disattiva la pulizia; le attività non riuscite restano sempre."
     },
     "add": "Aggiungi",
     "add_fields": {

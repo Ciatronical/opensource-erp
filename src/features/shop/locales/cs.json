@@ -109,6 +109,11 @@
             "running": "Běh už probíhá — úlohy vyřídí on.",
             "done": "Hotovo úloh: {jobs}, zapsáno stránek: {pages}, chyb: {errors}.",
             "built": "Web byl znovu sestaven.",
+            "cleanup": "Uklidit",
+            "cleanupHint": "Smaže úspěšně dokončené úlohy. Neúspěšné a otevřené zůstanou.",
+            "cleanupConfirm": "Budou smazány všechny úspěšně dokončené úlohy, v tomto seznamu jich je {count}.",
+            "cleaned": "Smazáno úloh: {count}.",
+            "cancel": "Zrušit",
             "functions": {
                 "publish_part": "Zapsat stránku produktu",
                 "publish_all": "Všechny produkty",

@@ -903,7 +903,9 @@
         "shopThumbnailSize": "Størrelse på miniatyrbilder",
         "shopThumbnailSize_help": "Lengste side i piksler. Sideforholdet beholdes.",
         "shopBackendUrl": "OpensourceERP-adresse for nettstedet",
-        "shopBackendUrl_help": "Adressen der butikkens nettsted når butikktilgangen i OpensourceERP, for eksempel https://erp.example.com/shop/. Publiseringsprosessen skriver den inn i nettstedet sammen med butikknøkkelen."
+        "shopBackendUrl_help": "Adressen der butikkens nettsted når butikktilgangen i OpensourceERP, for eksempel https://erp.example.com/shop/. Publiseringsprosessen skriver den inn i nettstedet sammen med butikknøkkelen.",
+        "shopJobRetentionDays": "Behold fullførte jobber (dager)",
+        "shopJobRetentionDays_help": "Kjøreren sletter publiseringsjobber som er fullført uten feil, når de er så mange dager gamle. 0 slår det av; feilede jobber blir alltid stående."
     },
     "add": "Legg til",
     "add_fields": {

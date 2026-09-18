@@ -1007,7 +1007,9 @@
         "shopThumbnailSize": "Rozmiar miniatur",
         "shopThumbnailSize_help": "Najdłuższy bok w pikselach. Proporcje zostają zachowane.",
         "shopBackendUrl": "Adres OpensourceERP dla witryny",
-        "shopBackendUrl_help": "Adres, pod którym witryna sklepu łączy się z dostępem sklepu w OpensourceERP, na przykład https://erp.example.com/shop/. Proces publikacji zapisuje go w witrynie razem z kluczem sklepu."
+        "shopBackendUrl_help": "Adres, pod którym witryna sklepu łączy się z dostępem sklepu w OpensourceERP, na przykład https://erp.example.com/shop/. Proces publikacji zapisuje go w witrynie razem z kluczem sklepu.",
+        "shopJobRetentionDays": "Przechowuj wykonane zadania (dni)",
+        "shopJobRetentionDays_help": "Wykonawca usuwa pomyślnie wykonane zadania publikacji, gdy osiągną taki wiek w dniach. 0 wyłącza to; nieudane zadania pozostają zawsze."
     },
     "add": "Dodaj",
     "add_fields": {

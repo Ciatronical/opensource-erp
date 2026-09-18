@@ -903,7 +903,9 @@
         "shopThumbnailSize": "Sīktēlu izmērs",
         "shopThumbnailSize_help": "Garākā mala pikseļos. Proporcijas saglabājas.",
         "shopBackendUrl": "OpensourceERP adrese vietnei",
-        "shopBackendUrl_help": "Adrese, ar kuru veikala vietne sasniedz OpensourceERP veikala piekļuvi, piemēram, https://erp.example.com/shop/. Publicēšanas process to kopā ar veikala atslēgu ieraksta vietnē."
+        "shopBackendUrl_help": "Adrese, ar kuru veikala vietne sasniedz OpensourceERP veikala piekļuvi, piemēram, https://erp.example.com/shop/. Publicēšanas process to kopā ar veikala atslēgu ieraksta vietnē.",
+        "shopJobRetentionDays": "Saglabāt pabeigtos uzdevumus (dienas)",
+        "shopJobRetentionDays_help": "Izpildītājs dzēš veiksmīgi pabeigtos publicēšanas uzdevumus, tiklīdz tie ir tik dienas veci. 0 to izslēdz; neizdevušies uzdevumi paliek vienmēr."
     },
     "add": "Pievienot",
     "add_fields": {

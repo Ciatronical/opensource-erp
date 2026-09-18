@@ -1104,7 +1104,9 @@
         "shopThumbnailSize": "Thumbnail size",
         "shopThumbnailSize_help": "Longest side in pixels. The aspect ratio is kept.",
         "shopBackendUrl": "OpensourceERP address for the website",
-        "shopBackendUrl_help": "The address under which the shop website reaches the shop access of OpensourceERP, for example https://erp.example.com/shop/. The runner writes it into the website together with the shop key."
+        "shopBackendUrl_help": "The address under which the shop website reaches the shop access of OpensourceERP, for example https://erp.example.com/shop/. The runner writes it into the website together with the shop key.",
+        "shopJobRetentionDays": "Keep completed jobs (days)",
+        "shopJobRetentionDays_help": "The runner deletes successfully completed publishing jobs once they are this many days old. 0 switches it off; failed jobs always remain."
     },
     "add": "Add",
     "add_fields": {

@@ -903,7 +903,9 @@
         "shopThumbnailSize": "Miniatiūrų dydis",
         "shopThumbnailSize_help": "Ilgiausia kraštinė pikseliais. Proporcijos išlaikomos.",
         "shopBackendUrl": "OpensourceERP adresas svetainei",
-        "shopBackendUrl_help": "Adresas, kuriuo parduotuvės svetainė pasiekia OpensourceERP parduotuvės prieigą, pavyzdžiui https://erp.example.com/shop/. Skelbimo procesas jį kartu su parduotuvės raktu įrašo į svetainę."
+        "shopBackendUrl_help": "Adresas, kuriuo parduotuvės svetainė pasiekia OpensourceERP parduotuvės prieigą, pavyzdžiui https://erp.example.com/shop/. Skelbimo procesas jį kartu su parduotuvės raktu įrašo į svetainę.",
+        "shopJobRetentionDays": "Saugoti atliktas užduotis (dienos)",
+        "shopJobRetentionDays_help": "Vykdytojas ištrina sėkmingai atliktas skelbimo užduotis, kai joms sueina tiek dienų. 0 tai išjungia; nepavykusios užduotys lieka visada."
     },
     "add": "Pridėti",
     "add_fields": {

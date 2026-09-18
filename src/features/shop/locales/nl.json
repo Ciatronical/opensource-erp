@@ -109,6 +109,11 @@
             "running": "Er loopt al een uitvoering — die handelt de taken af.",
             "done": "{jobs} taken uitgevoerd, {pages} pagina's geschreven, {errors} fouten.",
             "built": "Website opnieuw gebouwd.",
+            "cleanup": "Opruimen",
+            "cleanupHint": "Verwijdert de geslaagde taken. Mislukte en openstaande blijven staan.",
+            "cleanupConfirm": "Alle geslaagde taken worden verwijderd; in deze lijst zijn dat er {count}.",
+            "cleaned": "{count} taken verwijderd.",
+            "cancel": "Annuleren",
             "functions": {
                 "publish_part": "Productpagina schrijven",
                 "publish_all": "Alle producten",

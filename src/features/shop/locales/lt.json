@@ -109,6 +109,11 @@
             "running": "Vykdymas jau vyksta — jis atliks užduotis.",
             "done": "Atlikta užduočių: {jobs}, įrašyta puslapių: {pages}, klaidų: {errors}.",
             "built": "Svetainė sukurta iš naujo.",
+            "cleanup": "Sutvarkyti",
+            "cleanupHint": "Ištrina sėkmingai atliktas užduotis. Nepavykusios ir neatliktos lieka.",
+            "cleanupConfirm": "Bus ištrintos visos sėkmingai atliktos užduotys, šiame sąraše jų yra {count}.",
+            "cleaned": "Ištrinta užduočių: {count}.",
+            "cancel": "Atšaukti",
             "functions": {
                 "publish_part": "Rašyti produkto puslapį",
                 "publish_all": "Visi produktai",

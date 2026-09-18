@@ -109,6 +109,11 @@
             "running": "O execuție este deja în curs — aceasta va prelua sarcinile.",
             "done": "{jobs} sarcini finalizate, {pages} pagini scrise, {errors} erori.",
             "built": "Site reconstruit.",
+            "cleanup": "Curăță",
+            "cleanupHint": "Șterge sarcinile finalizate cu succes. Cele eșuate și cele deschise rămân.",
+            "cleanupConfirm": "Vor fi șterse toate sarcinile finalizate cu succes; în această listă sunt {count}.",
+            "cleaned": "{count} sarcini șterse.",
+            "cancel": "Anulează",
             "functions": {
                 "publish_part": "Scrie pagina produsului",
                 "publish_all": "Toate produsele",

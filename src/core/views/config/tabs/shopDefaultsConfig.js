@@ -109,11 +109,16 @@ const shopDefaultsConfig = [
     // Pfad vor jedem Bau. Ein Eintrag in der settings.ini springt ein, wenn
     // das Feld leer ist, und erscheint dort als Vorgabe.
     // --cleanDestinationDir ist nur hier einstellbar.
+    //
+    // shop_job_retention_days: Nach wie vielen Tagen der Läufer erfolgreich
+    // erledigte Aufträge aus der Warteschlange löscht. 0 schaltet das ab;
+    // fehlgeschlagene Aufträge bleiben immer stehen.
     { name: "shop_sites_dir", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopSitesDir", tooltip: "crm_fields.shopSitesDir_help" },
     { name: "shop_site_dir", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopSiteDir", tooltip: "crm_fields.shopSiteDir_help" },
     { name: "shop_content_dir", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopContentDir", tooltip: "crm_fields.shopContentDir_help" },
     { name: "shop_publish_command_path", type: "input", size: 60, fieldstyle: "max-width: 60ch", validate: "absolutePath", label: "crm_fields.shopPublishCommandPath", tooltip: "crm_fields.shopPublishCommandPath_help" },
     { name: "shop_publish_clean_destination", type: "checkbox", label: "crm_fields.shopPublishCleanDestination", tooltip: "crm_fields.shopPublishCleanDestination_help" },
+    { name: "shop_job_retention_days", type: "input", inputType: "number", size: 10, fieldstyle: "max-width: 15ch", label: "crm_fields.shopJobRetentionDays", tooltip: "crm_fields.shopJobRetentionDays_help" },
     { name: "shop_images_dir", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopImagesDir", tooltip: "crm_fields.shopImagesDir_help" },
     { name: "shop_thumbnails_dir", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopThumbnailsDir", tooltip: "crm_fields.shopThumbnailsDir_help" },
     { name: "shop_thumbnail_size", type: "input", inputType: "number", size: 10, fieldstyle: "max-width: 15ch", label: "crm_fields.shopThumbnailSize", tooltip: "crm_fields.shopThumbnailSize_help" },

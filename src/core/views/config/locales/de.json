@@ -1106,7 +1106,9 @@
         "shopThumbnailSize": "Größe der Vorschaubilder",
         "shopThumbnailSize_help": "Längste Seite in Pixeln. Das Seitenverhältnis bleibt erhalten.",
         "shopBackendUrl": "Adresse von OpensourceERP für die Webseite",
-        "shopBackendUrl_help": "Unter dieser Adresse erreicht die Shop-Webseite den Shop-Zugang von OpensourceERP, zum Beispiel https://erp.example.de/shop/. Der Läufer trägt sie mit dem Shop-Schlüssel in die Webseite ein."
+        "shopBackendUrl_help": "Unter dieser Adresse erreicht die Shop-Webseite den Shop-Zugang von OpensourceERP, zum Beispiel https://erp.example.de/shop/. Der Läufer trägt sie mit dem Shop-Schlüssel in die Webseite ein.",
+        "shopJobRetentionDays": "Erledigte Aufträge aufbewahren (Tage)",
+        "shopJobRetentionDays_help": "Der Läufer löscht erfolgreich erledigte Veröffentlichungs-Aufträge, sobald sie so viele Tage alt sind. 0 schaltet das ab; fehlgeschlagene Aufträge bleiben immer stehen."
     },
     "add": "Hinzufügen",
     "add_fields": {

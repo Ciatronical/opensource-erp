@@ -109,6 +109,11 @@
             "running": "Ein Lauf ist gerade unterwegs — die Aufträge werden dabei miterledigt.",
             "done": "{jobs} Aufträge erledigt, {pages} Seiten geschrieben, {errors} Fehler.",
             "built": "Webseite neu gebaut.",
+            "cleanup": "Aufräumen",
+            "cleanupHint": "Löscht die erfolgreich erledigten Aufträge. Fehlgeschlagene und offene bleiben stehen.",
+            "cleanupConfirm": "Alle erfolgreich erledigten Aufträge werden gelöscht, in dieser Liste sind es {count}.",
+            "cleaned": "{count} Aufträge gelöscht.",
+            "cancel": "Abbrechen",
             "functions": {
                 "publish_part": "Produktseite schreiben",
                 "publish_all": "Alle Produkte",

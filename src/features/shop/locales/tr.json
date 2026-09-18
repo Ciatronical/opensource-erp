@@ -109,6 +109,11 @@
             "running": "Zaten bir çalışma sürüyor — işleri o halledecek.",
             "done": "{jobs} iş tamamlandı, {pages} sayfa yazıldı, {errors} hata.",
             "built": "Web sitesi yeniden oluşturuldu.",
+            "cleanup": "Temizle",
+            "cleanupHint": "Başarıyla tamamlanan görevleri siler. Başarısız ve açık olanlar kalır.",
+            "cleanupConfirm": "Başarıyla tamamlanan tüm görevler silinecek; bu listede {count} tane var.",
+            "cleaned": "{count} görev silindi.",
+            "cancel": "İptal",
             "functions": {
                 "publish_part": "Ürün sayfasını yaz",
                 "publish_all": "Tüm ürünler",

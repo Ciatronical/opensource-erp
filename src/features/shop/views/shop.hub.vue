@@ -154,6 +154,17 @@
                     >
                         {{ t('ShopView.publish.run') }}
                     </v-btn>
+                    <v-btn
+                        variant="text"
+                        size="small"
+                        prepend-icon="mdi-broom"
+                        :disabled="!erledigteAuftraege"
+                        :loading="raeumtAuf"
+                        :title="t('ShopView.publish.cleanupHint')"
+                        @click="aufraeumenGefragt = true"
+                    >
+                        {{ t('ShopView.publish.cleanup') }}
+                    </v-btn>
                 </div>
                 <v-table density="compact">
                     <tbody>
@@ -187,6 +198,24 @@
             </v-card-text>
         </v-card>
 
+        <!-- Rückfrage vor dem Aufräumen: gelöscht wird endgültig -->
+        <v-dialog v-model="aufraeumenGefragt" max-width="460">
+            <v-card>
+                <v-card-title>{{ t('ShopView.publish.cleanup') }}</v-card-title>
+                <v-card-text>
+                    <div>{{ t('ShopView.publish.cleanupConfirm', { count: erledigteAuftraege }) }}</div>
+                    <div class="text-caption text-medium-emphasis mt-2">{{ t('ShopView.publish.cleanupHint') }}</div>
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer />
+                    <v-btn variant="text" @click="aufraeumenGefragt = false">{{ t('ShopView.publish.cancel') }}</v-btn>
+                    <v-btn color="primary" variant="flat" :loading="raeumtAuf" @click="aufraeumen">
+                        {{ t('ShopView.publish.cleanup') }}
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
     </v-container>
 </template>
 
@@ -207,6 +236,8 @@ const auftraege = ref([])
 const veroeffentlicht = ref(false)
 const auswahl = ref([])
 const laeuft = ref(false)
+const raeumtAuf = ref(false)
+const aufraeumenGefragt = ref(false)
 
 /** Wahrheitswerte kommen je nach Treiber als true oder 't' */
 const istOffen = (auftrag) => auftrag.open === true || auftrag.open === 't'
@@ -223,6 +254,15 @@ const auftragsart = (name) => te(`ShopView.publish.functions.${name}`)
     : name
 
 const offeneAuftraege = computed(() => auftraege.value.filter(istOffen).length)
+
+/**
+ * Erfolgreich erledigte Aufträge in der Liste
+ *
+ * Nur sie werden aufgeräumt. Die Liste zeigt die letzten 20 erledigten; in der
+ * Tabelle können mehr stehen, gelöscht werden immer alle erfolgreichen.
+ */
+const erledigteAuftraege = computed(
+    () => auftraege.value.filter((auftrag) => !istOffen(auftrag) && !fehlgeschlagen(auftrag)).length)
 
 /** Auswählen lässt sich nur, was noch offen ist */
 const offeneIds = computed(() => auftraege.value.filter(istOffen).map((auftrag) => auftrag.id))
@@ -330,6 +370,26 @@ async function ausgewaehlteAusfuehren() {
             }
         }
         auswahl.value = []
+    }
+
+    await laden()
+}
+
+/**
+ * Löscht die erfolgreich erledigten Aufträge
+ *
+ * Damit die Auftragstabelle nicht vollläuft. Fehlgeschlagene bleiben stehen,
+ * damit die Ursache sichtbar bleibt; der Läufer räumt zusätzlich regelmäßig
+ * nach der Aufbewahrungsfrist aus der Firmenkonfiguration.
+ */
+async function aufraeumen() {
+    raeumtAuf.value = true
+    const ergebnis = await shop.cleanupPublishJobs()
+    raeumtAuf.value = false
+    aufraeumenGefragt.value = false
+
+    if (!shop.error.value) {
+        toasts.success(t('ShopView.publish.cleaned', { count: ergebnis?.removed ?? 0 }))
     }
 
     await laden()
