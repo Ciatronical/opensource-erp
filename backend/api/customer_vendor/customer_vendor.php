@@ -1204,8 +1204,12 @@ function saveCV($data) {
         );
     }
 
-    // hu_serienbrief_excluded in customer_ext speichern (nur Kunde, LxCars)
-    if ($hasHuExcluded && $cv_id && $src !== 'V') {
+    // hu_serienbrief_excluded in customer_ext speichern (nur Kunde, LxCars).
+    // Die Spalte legt erst upstall/lxcars/company_schema.sql an — ohne aktive
+    // Erweiterung darf sie gar nicht erst in der Abfrage stehen. getCV liefert
+    // das Feld sonst als false zurück und das Frontend schickt es beim
+    // Speichern unverändert wieder mit.
+    if ($hasHuExcluded && $cv_id && $src !== 'V' && isExtensionActive($apiCompanySpace, 'lxcars')) {
         $apiCompanySpace->execute(
             "INSERT INTO customer_ext (customer_id, hu_serienbrief_excluded) VALUES (:cid, :ex)
              ON CONFLICT (customer_id) DO UPDATE SET hu_serienbrief_excluded = :ex, mtime = now()",
