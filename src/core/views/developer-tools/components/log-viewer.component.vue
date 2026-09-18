@@ -118,7 +118,11 @@
             <v-list density="compact" class="py-0">
                 <template v-for="(entry, index) in entries" :key="index">
                     <v-divider v-if="index > 0" />
-                    <v-list-item class="log-entry py-2" @click="toggleEntry(index)">
+                    <v-list-item
+                        class="py-2"
+                        :class="{ 'log-entry': overflowing[index] }"
+                        @click="toggleEntry(index)"
+                    >
                         <div class="d-flex align-start ga-3">
                             <v-chip
                                 :color="levelColor(entry.level)"
@@ -134,8 +138,12 @@
                                     {{ entry.timestamp }}
                                     <span v-if="entry.pid" class="ml-2">pid {{ entry.pid }}</span>
                                 </div>
-                                <pre class="log-message" :class="{ collapsed: !expanded[index] }">{{ entry.message }}</pre>
-                                <div v-if="isLong(entry.message)" class="text-caption text-primary mt-1">
+                                <pre
+                                    :ref="el => setMessageRef(el, index)"
+                                    class="log-message"
+                                    :class="{ collapsed: !expanded[index] }"
+                                >{{ entry.message }}</pre>
+                                <div v-if="overflowing[index]" class="text-caption text-primary mt-1">
                                     {{ expanded[index] ? $t('DeveloperTools.logViewer.collapse') : $t('DeveloperTools.logViewer.expand') }}
                                 </div>
                             </div>
@@ -177,7 +185,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import axios from 'axios';
 
@@ -196,6 +204,7 @@ const offset = ref(0);
 
 const entries = ref([]);
 const expanded = ref({});
+const overflowing = ref({});
 const hasMore = ref(false);
 const truncated = ref(false);
 const loading = ref(false);
@@ -248,17 +257,51 @@ function formatSize(bytes) {
     return `${value.toFixed(unit === 0 ? 0 : 1)} ${units[unit]}`;
 }
 
+// DOM-Knoten der Nachrichten, absichtlich ausserhalb von ref():
+// Elemente muessen nicht reaktiv sein
+const messageEls = {};
+
 /**
- * Prüft, ob ein Eintrag so lang ist, dass er eingeklappt angezeigt wird
+ * Merkt sich den DOM-Knoten einer Nachricht für die Überlaufmessung
  */
-function isLong(message) {
-    return message.includes('\n') || message.length > 200;
+function setMessageRef(el, index) {
+    if (el) {
+        messageEls[index] = el;
+    } else {
+        delete messageEls[index];
+    }
+}
+
+/**
+ * Misst, welche Nachrichten eingeklappt tatsächlich abgeschnitten sind
+ *
+ * Die Zeichenzahl taugt dafür nicht: ob ein Eintrag überläuft, hängt an
+ * der Fensterbreite. Nur wo wirklich etwas verborgen ist, erscheint
+ * "Mehr anzeigen" — sonst bliebe der Klick ohne sichtbare Wirkung.
+ * Aufgeklappte Einträge überlaufen nie und behalten ihren Messwert.
+ */
+function measureOverflow() {
+    const result = { ...overflowing.value };
+
+    for (const [index, el] of Object.entries(messageEls)) {
+        // Aufgeklappt oder gerade nicht sichtbar (anderer Tab): nicht messbar,
+        // der bisherige Wert bleibt stehen
+        if (expanded.value[index] || el.clientHeight === 0) {
+            continue;
+        }
+        result[index] = el.scrollHeight > el.clientHeight + 1;
+    }
+
+    overflowing.value = result;
 }
 
 /**
  * Klappt einen Eintrag auf oder zu
  */
 function toggleEntry(index) {
+    if (!overflowing.value[index]) {
+        return;
+    }
     expanded.value = { ...expanded.value, [index]: !expanded.value[index] };
 }
 
@@ -312,6 +355,7 @@ async function loadEntries() {
             truncated.value = !!payload.truncated;
             fileInfo.value = { size: payload.size, modified: payload.modified };
             expanded.value = {};
+            overflowing.value = {};
         } else {
             entries.value = [];
             hasMore.value = false;
@@ -323,6 +367,10 @@ async function loadEntries() {
     } finally {
         loading.value = false;
     }
+
+    // Erst nach dem Zeichnen lässt sich messen, was abgeschnitten ist
+    await nextTick();
+    measureOverflow();
 }
 
 /**
@@ -372,7 +420,22 @@ watch([selectedFile, selectedLevel], () => {
     loadEntries();
 });
 
+// Bei geänderter Fensterbreite neu messen: aus einem abgeschnittenen
+// Eintrag kann ein vollständig sichtbarer werden und umgekehrt
+let resizeTimer = null;
+function handleResize() {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(measureOverflow, 200);
+}
+
+onBeforeUnmount(() => {
+    clearTimeout(searchTimer);
+    clearTimeout(resizeTimer);
+    window.removeEventListener('resize', handleResize);
+});
+
 onMounted(async () => {
+    window.addEventListener('resize', handleResize);
     await loadFiles();
     await loadEntries();
 });
@@ -386,13 +449,16 @@ onMounted(async () => {
 .log-message {
     font-family: 'Courier New', Courier, monospace;
     font-size: 13px;
+    line-height: 1.5;
     white-space: pre-wrap;
     word-break: break-word;
     margin: 0;
 }
 
+/* Genau drei Zeilen — ein Vielfaches der Zeilenhöhe, damit unten
+   keine halb angeschnittene Zeile stehen bleibt */
 .log-message.collapsed {
-    max-height: 3.4em;
+    max-height: 4.5em;
     overflow: hidden;
 }
 
