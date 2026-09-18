@@ -175,15 +175,29 @@ OUTDATED_RAW=$( (npm outdated --json 2>/dev/null || true) | node -e '
             if (!info || !info.current || !info.latest) continue;
             const d = cmp(info.latest, info.current);
             if (d < 0) traps.push(name + " (" + info.current + " > latest " + info.latest + ")");
-            else if (d > 0) real.push(name);
+            else if (d > 0) real.push({ name, current: info.current, latest: info.latest });
         }
+        real.sort((a, b) => a.name.localeCompare(b.name));
+        const wn = Math.max(0, ...real.map(r => r.name.length));
+        const wc = Math.max(0, ...real.map(r => r.current.length));
         console.log(real.length);
         console.log(traps.join(", "));
+        console.log(real.map(r => r.name + "@latest").join(" "));
+        for (const r of real) {
+            console.log("      " + r.name.padEnd(wn) + "  " + r.current.padStart(wc) + " \u2192 " + r.latest);
+        }
     });
 ' 2>/dev/null )
-{ read -r OUTDATED; read -r TRAPS; } <<< "$OUTDATED_RAW"
+{ read -r OUTDATED; read -r TRAPS; read -r OUTDATED_PKGS; } <<< "$OUTDATED_RAW"
+OUTDATED_LIST=$(printf '%s\n' "$OUTDATED_RAW" | tail -n +4)
 
-[ "${OUTDATED:-0}" -gt 0 ] && echo "  ${Y}ℹ${B} $OUTDATED veraltete npm-Paket(e) — Details: 'npm outdated'"
+if [ "${OUTDATED:-0}" -gt 0 ]; then
+    echo "  ${Y}ℹ${B} $OUTDATED veraltete npm-Paket(e):"
+    printf '%s\n' "$OUTDATED_LIST"
+    echo ""
+    echo "      ${Y}Aktualisieren:${B} npm i $OUTDATED_PKGS"
+fi
+
 [ -n "${TRAPS:-}" ] && echo "  ${Y}ℹ${B} ignoriert, \"latest\"-Tag zeigt rückwärts: $TRAPS"
 
 # Gegenprobe: ist so ein Paket bereits versehentlich heruntergestuft worden?
