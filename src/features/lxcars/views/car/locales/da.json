@@ -381,7 +381,10 @@
             "prevPage": "Zurück",
             "nextPage": "Weiter",
             "pageInfo": "Seite {page} von {totalPages} ({total} Scans)",
-            "searchPlaceholder": "Søg..."
+            "searchPlaceholder": "Søg...",
+            "showPhoto": "Vis foto af registreringsattesten",
+            "delete": "Slet scanning",
+            "deleteConfirm": "Fjern scanningen „{scan}“ fra listen? Allerede oprettede køretøjer og kunder bevares."
         },
         "upload": {
             "title": "Koeretoejschein hochladen",
@@ -420,7 +423,8 @@
             "back": "Zurück",
             "rescan": "Nyer Scan",
             "upload": "Koeretoejschein hochladen",
-            "backToList": "Zurück zur Liste"
+            "backToList": "Zurück zur Liste",
+            "cancel": "Annuller"
         },
         "customerTable": {
             "name": "Name",
@@ -449,7 +453,9 @@
             "noApiKey": "Ingen registreringsattest-scanner konfigureret. Aktivér i firmakonfigurationen under LxCars enten „Brug egen registreringsattest-scanner“ eller angiv en API-nøgle.",
             "scanFailed": "Scan mislykkedes",
             "noImage": "Venligst laden Sie ein Billede hoch",
-            "loadScans": "Fejl ved Laden der Scans"
+            "loadScans": "Fejl ved Laden der Scans",
+            "loadPhoto": "Fotoet kunne ikke indlæses",
+            "deleteScan": "Scanningen kunne ikke slettes"
         },
         "duplicate": {
             "title": "Koeretoej bereits vorhanden!",

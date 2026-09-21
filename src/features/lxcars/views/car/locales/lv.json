@@ -381,7 +381,10 @@
             "prevPage": "Atpakaļ",
             "nextPage": "Tālāk",
             "pageInfo": "Seite {page} von {totalPages} ({total} Scans)",
-            "searchPlaceholder": "Meklēt..."
+            "searchPlaceholder": "Meklēt...",
+            "showPhoto": "Rādīt reģistrācijas apliecības foto",
+            "delete": "Dzēst skenējumu",
+            "deleteConfirm": "Noņemt skenējumu „{scan}“ no saraksta? Jau izveidotie transportlīdzekļi un klienti tiek saglabāti."
         },
         "upload": {
             "title": "Fahrzeugschein hochladen",
@@ -420,7 +423,8 @@
             "back": "Atpakaļ",
             "rescan": "Neuer Scan",
             "upload": "Fahrzeugschein hochladen",
-            "backToList": "Zurück zur Liste"
+            "backToList": "Zurück zur Liste",
+            "cancel": "Atcelt"
         },
         "customerTable": {
             "name": "Nosaukums",
@@ -449,7 +453,9 @@
             "noApiKey": "Reģistrācijas apliecības skeneris nav konfigurēts. Uzņēmuma konfigurācijā sadaļā LxCars vai nu aktivizējiet „Izmantot savu reģistrācijas apliecības skeneri“, vai ievadiet API atslēgu.",
             "scanFailed": "Scan fehlgeschlagen",
             "noImage": "Bitte laden Sie ein Bild hoch",
-            "loadScans": "Fehler beim Laden der Scans"
+            "loadScans": "Fehler beim Laden der Scans",
+            "loadPhoto": "Foto neizdevās ielādēt",
+            "deleteScan": "Skenējumu neizdevās dzēst"
         },
         "duplicate": {
             "title": "Fahrzeug bereits vorhanden!",

@@ -381,7 +381,10 @@
             "prevPage": "Tagasi",
             "nextPage": "Edasi",
             "pageInfo": "Seite {page} von {totalPages} ({total} Scans)",
-            "searchPlaceholder": "Otsi..."
+            "searchPlaceholder": "Otsi...",
+            "showPhoto": "Näita registreerimistunnistuse fotot",
+            "delete": "Kustuta skann",
+            "deleteConfirm": "Eemaldada skann „{scan}“ loendist? Juba loodud sõidukid ja kliendid jäävad alles."
         },
         "upload": {
             "title": "Fahrzeugschein hochladen",
@@ -420,7 +423,8 @@
             "back": "Tagasi",
             "rescan": "Neuer Scan",
             "upload": "Fahrzeugschein hochladen",
-            "backToList": "Zurück zur Liste"
+            "backToList": "Zurück zur Liste",
+            "cancel": "Loobu"
         },
         "customerTable": {
             "name": "Nimi",
@@ -449,7 +453,9 @@
             "noApiKey": "Registreerimistunnistuse skannerit pole seadistatud. Lubage ettevõtte seadistuses LxCars all kas „Kasuta oma registreerimistunnistuse skannerit“ või sisestage API võti.",
             "scanFailed": "Scan fehlgeschlagen",
             "noImage": "Bitte laden Sie ein Bild hoch",
-            "loadScans": "Fehler beim Laden der Scans"
+            "loadScans": "Fehler beim Laden der Scans",
+            "loadPhoto": "Fotot ei õnnestunud laadida",
+            "deleteScan": "Skanni ei õnnestunud kustutada"
         },
         "duplicate": {
             "title": "Fahrzeug bereits vorhanden!",

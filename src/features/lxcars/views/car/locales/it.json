@@ -381,7 +381,10 @@
             "prevPage": "Indietro",
             "nextPage": "Avanti",
             "pageInfo": "Seite {page} von {totalPages} ({total} Scans)",
-            "searchPlaceholder": "Cerca..."
+            "searchPlaceholder": "Cerca...",
+            "showPhoto": "Mostra foto della carta di circolazione",
+            "delete": "Elimina scansione",
+            "deleteConfirm": "Rimuovere la scansione «{scan}» dall'elenco? I veicoli e i clienti già creati vengono mantenuti."
         },
         "upload": {
             "title": "Carica carta di circolazione",
@@ -420,7 +423,8 @@
             "back": "Indietro",
             "rescan": "Nuova scansione",
             "upload": "Carica carta di circolazione",
-            "backToList": "Torna alla lista"
+            "backToList": "Torna alla lista",
+            "cancel": "Annulla"
         },
         "customerTable": {
             "name": "Nome",
@@ -449,7 +453,9 @@
             "noApiKey": "Nessuno scanner della carta di circolazione configurato. Nella configurazione aziendale, sotto LxCars, attivare «Usa il proprio scanner della carta di circolazione» oppure inserire una chiave API.",
             "scanFailed": "Scan fehlgeschlagen",
             "noImage": "Bitte laden Sie ein Bild hoch",
-            "loadScans": "Fehler beim Laden der Scans"
+            "loadScans": "Fehler beim Laden der Scans",
+            "loadPhoto": "Impossibile caricare la foto",
+            "deleteScan": "Impossibile eliminare la scansione"
         },
         "duplicate": {
             "title": "Fahrzeug bereits vorhanden!",

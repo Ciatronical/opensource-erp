@@ -99,6 +99,7 @@ CREATE INDEX IF NOT EXISTS idx_ar_defects_ar_id ON public.ar_defects (ar_id);
 
 CREATE TABLE fs_scans_lxcars (
     itime                 TIMESTAMP WITHOUT TIME ZONE DEFAULT ( NOW() AT TIME ZONE 'utc'),
+    deleted_at            TIMESTAMP WITHOUT TIME ZONE,
     scan_detail_id         TEXT UNIQUE,
     scan_id             TEXT UNIQUE,
     ez                     TEXT,

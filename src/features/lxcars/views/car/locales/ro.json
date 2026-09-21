@@ -381,7 +381,10 @@
             "prevPage": "Zurück",
             "nextPage": "Weiter",
             "pageInfo": "Seite {page} von {totalPages} ({total} Scans)",
-            "searchPlaceholder": "Caută..."
+            "searchPlaceholder": "Caută...",
+            "showPhoto": "Afișează fotografia certificatului de înmatriculare",
+            "delete": "Șterge scanarea",
+            "deleteConfirm": "Eliminați scanarea „{scan}” din listă? Vehiculele și clienții deja creați se păstrează."
         },
         "upload": {
             "title": "Fahrzeugschein hochladen",
@@ -420,7 +423,8 @@
             "back": "Zurück",
             "rescan": "Neuer Scan",
             "upload": "Fahrzeugschein hochladen",
-            "backToList": "Zurück zur Liste"
+            "backToList": "Zurück zur Liste",
+            "cancel": "Anulează"
         },
         "customerTable": {
             "name": "Nume",
@@ -449,7 +453,9 @@
             "noApiKey": "Niciun scaner al certificatului de înmatriculare configurat. În configurația firmei, la LxCars, activați „Folosește propriul scaner al certificatului de înmatriculare” sau introduceți o cheie API.",
             "scanFailed": "Scan fehlgeschlagen",
             "noImage": "Bitte laden Sie ein Bild hoch",
-            "loadScans": "Fehler beim Laden der Scans"
+            "loadScans": "Fehler beim Laden der Scans",
+            "loadPhoto": "Fotografia nu a putut fi încărcată",
+            "deleteScan": "Scanarea nu a putut fi ștearsă"
         },
         "duplicate": {
             "title": "Fahrzeug bereits vorhanden!",

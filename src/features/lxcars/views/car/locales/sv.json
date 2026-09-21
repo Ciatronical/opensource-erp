@@ -381,7 +381,10 @@
             "prevPage": "Zurück",
             "nextPage": "Weiter",
             "pageInfo": "Seite {page} von {totalPages} ({total} Scans)",
-            "searchPlaceholder": "Sök..."
+            "searchPlaceholder": "Sök...",
+            "showPhoto": "Visa foto av registreringsbeviset",
+            "delete": "Ta bort skanning",
+            "deleteConfirm": "Ta bort skanningen ”{scan}” från listan? Redan skapade fordon och kunder behålls."
         },
         "upload": {
             "title": "Fordonschein hochladen",
@@ -420,7 +423,8 @@
             "back": "Zurück",
             "rescan": "Nyr Scan",
             "upload": "Fordonschein hochladen",
-            "backToList": "Zurück zur Liste"
+            "backToList": "Zurück zur Liste",
+            "cancel": "Avbryt"
         },
         "customerTable": {
             "name": "Name",
@@ -449,7 +453,9 @@
             "noApiKey": "Ingen registreringsbevis-skanner konfigurerad. Aktivera i företagskonfigurationen under LxCars antingen ”Använd egen registreringsbevis-skanner” eller ange en API-nyckel.",
             "scanFailed": "Scan misslyckades",
             "noImage": "Vanligen laden Sie ein Bild hoch",
-            "loadScans": "Fel vid Laden der Scans"
+            "loadScans": "Fel vid Laden der Scans",
+            "loadPhoto": "Fotot kunde inte laddas",
+            "deleteScan": "Skanningen kunde inte tas bort"
         },
         "duplicate": {
             "title": "Fordon bereits vorhanden!",

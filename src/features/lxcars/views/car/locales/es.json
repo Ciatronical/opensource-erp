@@ -381,7 +381,10 @@
             "prevPage": "Atrás",
             "nextPage": "Siguiente",
             "pageInfo": "Seite {page} von {totalPages} ({total} Scans)",
-            "searchPlaceholder": "Buscar..."
+            "searchPlaceholder": "Buscar...",
+            "showPhoto": "Mostrar foto del permiso de circulación",
+            "delete": "Eliminar escaneo",
+            "deleteConfirm": "¿Quitar el escaneo «{scan}» de la lista? Los vehículos y clientes ya creados se conservan."
         },
         "upload": {
             "title": "Subir permiso de circulación",
@@ -420,7 +423,8 @@
             "back": "Atrás",
             "rescan": "Nuevo escaneo",
             "upload": "Subir permiso de circulación",
-            "backToList": "Volver a la lista"
+            "backToList": "Volver a la lista",
+            "cancel": "Cancelar"
         },
         "customerTable": {
             "name": "Nombre",
@@ -449,7 +453,9 @@
             "noApiKey": "No hay escáner del permiso de circulación configurado. En la configuración de la empresa, en LxCars, active «Usar escáner propio del permiso de circulación» o introduzca una clave API.",
             "scanFailed": "Scan fehlgeschlagen",
             "noImage": "Bitte laden Sie ein Bild hoch",
-            "loadScans": "Fehler beim Laden der Scans"
+            "loadScans": "Fehler beim Laden der Scans",
+            "loadPhoto": "No se pudo cargar la foto",
+            "deleteScan": "No se pudo eliminar el escaneo"
         },
         "duplicate": {
             "title": "Fahrzeug bereits vorhanden!",

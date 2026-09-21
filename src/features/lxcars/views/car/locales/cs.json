@@ -381,7 +381,10 @@
             "prevPage": "Zurück",
             "nextPage": "Weiter",
             "pageInfo": "Seite {page} von {totalPages} ({total} Scans)",
-            "searchPlaceholder": "Hledat..."
+            "searchPlaceholder": "Hledat...",
+            "showPhoto": "Zobrazit fotografii technického průkazu",
+            "delete": "Smazat sken",
+            "deleteConfirm": "Odstranit sken „{scan}“ ze seznamu? Již vytvořená vozidla a zákazníci zůstanou zachováni."
         },
         "upload": {
             "title": "Fahrzeugschein hochladen",
@@ -420,7 +423,8 @@
             "back": "Zurück",
             "rescan": "Neuer Scan",
             "upload": "Fahrzeugschein hochladen",
-            "backToList": "Zurück zur Liste"
+            "backToList": "Zurück zur Liste",
+            "cancel": "Zrušit"
         },
         "customerTable": {
             "name": "Název",
@@ -449,7 +453,9 @@
             "noApiKey": "Není nakonfigurován žádný skener technického průkazu. V konfiguraci firmy pod LxCars buď aktivujte „Použít vlastní skener technického průkazu“, nebo zadejte API klíč.",
             "scanFailed": "Scan fehlgeschlagen",
             "noImage": "Bitte laden Sie ein Bild hoch",
-            "loadScans": "Fehler beim Laden der Scans"
+            "loadScans": "Fehler beim Laden der Scans",
+            "loadPhoto": "Fotografii se nepodařilo načíst",
+            "deleteScan": "Sken se nepodařilo smazat"
         },
         "duplicate": {
             "title": "Fahrzeug bereits vorhanden!",

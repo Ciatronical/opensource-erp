@@ -344,6 +344,65 @@ function getScanImage($data) {
 }
 
 /**
+ * Liefert das Originalfoto eines Fahrzeugscheins aus der Scanliste als Base64.
+ * Reihenfolge: tmp-Cache → bereits angelegtes Fahrzeug (fahrzeuge/{c_id}/fahrzeugschein) →
+ * Demo-Daten → fahrzeugschein-scanner.de (Document-Endpunkt, wird danach im tmp-Cache abgelegt).
+ *
+ * @param string $data['scan_id'] Scan-ID
+ * @testdata {"scan_id": "1"}
+ */
+function getScanOriginal($data) {
+    $scanId = trim($data['scan_id'] ?? '');
+    $safeScanId = preg_replace('/[^a-zA-Z0-9\-]/', '', $scanId);
+
+    if ($safeScanId === '') {
+        resultInfo(false, 'VALIDATION_ERROR', 'scan_id ist erforderlich');
+        return;
+    }
+
+    $mimeMap = ['jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg', 'png' => 'image/png', 'pdf' => 'application/pdf'];
+    $tmpDir = __DIR__ . '/../../tmp/' . $safeScanId;
+    $candidates = [$tmpDir . '/original.jpg'];
+
+    // Fahrzeug aus diesem Scan angelegt? Dann liegt das Original beim Fahrzeug (tmp wurde dabei geleert)
+    $db = DbhCompany::begin();
+    $car = $db->getOne("SELECT c_id FROM cars_lxcars WHERE scan_id = :scan_id", [':scan_id' => $scanId]);
+    if ($car) {
+        $carDir = fmDataDir() . '/fahrzeuge/' . intval($car['c_id']) . '/fahrzeugschein';
+        $candidates[] = $carDir . '/original.jpg';
+        $candidates[] = $carDir . '/original.pdf';
+    }
+
+    if (defined('DEMO_MODE') && DEMO_MODE) {
+        _cacheDemoScanImages($scanId);
+    }
+
+    foreach ($candidates as $filePath) {
+        if (!is_file($filePath)) continue;
+        $ext = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
+        resultInfo(true, 'OK', [
+            'image' => base64_encode(file_get_contents($filePath)),
+            'mime'  => $mimeMap[$ext] ?? 'application/octet-stream',
+        ]);
+        return;
+    }
+
+    // Letzter Weg: Dokument von der externen API holen und für spätere Aufrufe cachen
+    $cfg = _scanFahrzeugscheinConfig($db);
+    if (!$cfg['local'] && $cfg['api_key'] !== '') {
+        $documentUrl = 'https://fahrzeugschein-scanner.de/api/Scans/Document/' . $cfg['api_key'] . '/' . $safeScanId;
+        $imgData = @file_get_contents($documentUrl);
+        if ($imgData !== false && strlen($imgData) > 100) {
+            cacheScanToTmp($safeScanId, ['document_img' => base64_encode($imgData)]);
+            resultInfo(true, 'OK', ['image' => base64_encode($imgData), 'mime' => 'image/jpeg']);
+            return;
+        }
+    }
+
+    resultInfo(false, 'FILE_NOT_FOUND', 'Kein Foto zu diesem Scan vorhanden');
+}
+
+/**
  * Speichert Scan-Bilder in backend/tmp/{scan_id}/
  * Wird von getScanDetail() aufgerufen.
  *

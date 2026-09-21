@@ -381,7 +381,10 @@
             "prevPage": "Voltar",
             "nextPage": "Seguinte",
             "pageInfo": "Seite {page} von {totalPages} ({total} Scans)",
-            "searchPlaceholder": "Pesquisar..."
+            "searchPlaceholder": "Pesquisar...",
+            "showPhoto": "Mostrar foto do documento de registo",
+            "delete": "Eliminar digitalização",
+            "deleteConfirm": "Remover a digitalização «{scan}» da lista? Os veículos e clientes já criados são mantidos."
         },
         "upload": {
             "title": "Carregar documento de circulação",
@@ -420,7 +423,8 @@
             "back": "Voltar",
             "rescan": "Nova digitalização",
             "upload": "Carregar documento de circulação",
-            "backToList": "Voltar à lista"
+            "backToList": "Voltar à lista",
+            "cancel": "Cancelar"
         },
         "customerTable": {
             "name": "Nome",
@@ -449,7 +453,9 @@
             "noApiKey": "Nenhum scanner do documento do veículo configurado. Na configuração da empresa, em LxCars, ative «Usar o próprio scanner do documento do veículo» ou introduza uma chave API.",
             "scanFailed": "Scan fehlgeschlagen",
             "noImage": "Bitte laden Sie ein Bild hoch",
-            "loadScans": "Fehler beim Laden der Scans"
+            "loadScans": "Fehler beim Laden der Scans",
+            "loadPhoto": "Não foi possível carregar a foto",
+            "deleteScan": "Não foi possível eliminar a digitalização"
         },
         "duplicate": {
             "title": "Fahrzeug bereits vorhanden!",

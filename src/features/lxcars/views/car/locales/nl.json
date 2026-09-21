@@ -381,7 +381,10 @@
             "prevPage": "Vorige",
             "nextPage": "Volgende",
             "pageInfo": "Pagina {page} van {totalPages} ({total} scans)",
-            "searchPlaceholder": "Zoeken..."
+            "searchPlaceholder": "Zoeken...",
+            "showPhoto": "Foto van het kentekenbewijs tonen",
+            "delete": "Scan verwijderen",
+            "deleteConfirm": "Scan „{scan}“ uit de lijst verwijderen? Reeds aangemaakte voertuigen en klanten blijven behouden."
         },
         "upload": {
             "title": "Kentekenbewijs uploaden",
@@ -420,7 +423,8 @@
             "back": "Terug",
             "rescan": "Nieuwe scan",
             "upload": "Kentekenbewijs uploaden",
-            "backToList": "Terug naar lijst"
+            "backToList": "Terug naar lijst",
+            "cancel": "Annuleren"
         },
         "customerTable": {
             "name": "Naam",
@@ -449,7 +453,9 @@
             "noApiKey": "Geen kentekenbewijs-scanner geconfigureerd. Activeer in de bedrijfsconfiguratie onder LxCars „Eigen kentekenbewijs-scanner gebruiken“ of voer een API-sleutel in.",
             "scanFailed": "Scan mislukt",
             "noImage": "Upload een afbeelding",
-            "loadScans": "Fout bij het laden van de scans"
+            "loadScans": "Fout bij het laden van de scans",
+            "loadPhoto": "Foto kon niet worden geladen",
+            "deleteScan": "Scan kon niet worden verwijderd"
         },
         "duplicate": {
             "title": "Voertuig bestaat al!",

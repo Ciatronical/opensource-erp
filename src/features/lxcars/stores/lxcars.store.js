@@ -949,6 +949,33 @@ export const lxcarsStore = defineStore('lxcarsStore', () => {
     }
 
     /**
+     * Entfernt einen Scan aus der Scanliste (Soft-Delete, taucht beim API-Sync nicht wieder auf)
+     *
+     * @param {string} scanId - Scan-ID
+     * @return {Promise<void>}
+     */
+    async function deleteScan(scanId) {
+        const response = await axios.post('/api/lxcars/', { action: 'deleteScan', scan_id: scanId });
+        if (!response.data.success) {
+            throw new ApiError('ApiError', response.data.text, 'Error deleting scan: ' + response.data.text);
+        }
+    }
+
+    /**
+     * Lädt das Originalfoto eines Fahrzeugscheins aus der Scanliste
+     *
+     * @param {string} scanId - Scan-ID
+     * @return {Promise<Object>} { image: '<base64>', mime: 'image/jpeg' | 'application/pdf' }
+     */
+    async function getScanOriginal(scanId) {
+        const response = await axios.post('/api/lxcars/', { action: 'getScanOriginal', scan_id: scanId });
+        if (!response.data.success) {
+            throw new ApiError('ApiError', response.data.text, 'Error loading scan photo: ' + response.data.text);
+        }
+        return response.data.payload;
+    }
+
+    /**
      * Gleicht neue Scans von der externen API in die DB ab (ohne Liste zu laden).
      * Neue Scans melden sich per SSE (table = fs_scans_lxcars).
      *
@@ -1282,6 +1309,8 @@ export const lxcarsStore = defineStore('lxcarsStore', () => {
     return {
         pendingScanData,
         getScans,
+        deleteScan,
+        getScanOriginal,
         syncScans,
         mapScanData,
         scanFahrzeugschein,

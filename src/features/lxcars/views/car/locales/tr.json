@@ -381,7 +381,10 @@
             "prevPage": "Zurück",
             "nextPage": "Weiter",
             "pageInfo": "Seite {page} von {totalPages} ({total} Scans)",
-            "searchPlaceholder": "Ara..."
+            "searchPlaceholder": "Ara...",
+            "showPhoto": "Ruhsat fotoğrafını göster",
+            "delete": "Taramayı sil",
+            "deleteConfirm": "„{scan}“ taraması listeden kaldırılsın mı? Daha önce oluşturulan araçlar ve müşteriler korunur."
         },
         "upload": {
             "title": "Fahrzeugschein hochladen",
@@ -420,7 +423,8 @@
             "back": "Zurück",
             "rescan": "Neuer Scan",
             "upload": "Fahrzeugschein hochladen",
-            "backToList": "Zurück zur Liste"
+            "backToList": "Zurück zur Liste",
+            "cancel": "İptal"
         },
         "customerTable": {
             "name": "Ad",
@@ -449,7 +453,9 @@
             "noApiKey": "Ruhsat tarayıcısı yapılandırılmamış. Firma yapılandırmasında LxCars altında ya „Kendi ruhsat tarayıcısını kullan“ seçeneğini etkinleştirin ya da bir API anahtarı girin.",
             "scanFailed": "Scan fehlgeschlagen",
             "noImage": "Bitte laden Sie ein Bild hoch",
-            "loadScans": "Fehler beim Laden der Scans"
+            "loadScans": "Fehler beim Laden der Scans",
+            "loadPhoto": "Fotoğraf yüklenemedi",
+            "deleteScan": "Tarama silinemedi"
         },
         "duplicate": {
             "title": "Fahrzeug bereits vorhanden!",

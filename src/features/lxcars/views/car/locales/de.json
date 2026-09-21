@@ -412,7 +412,10 @@
             "prevPage": "Zurück",
             "nextPage": "Weiter",
             "pageInfo": "Seite {page} von {totalPages} ({total} Scans)",
-            "searchPlaceholder": "Suchen..."
+            "searchPlaceholder": "Suchen...",
+            "showPhoto": "Foto des Fahrzeugscheins anzeigen",
+            "delete": "Scan löschen",
+            "deleteConfirm": "Scan „{scan}“ aus der Liste entfernen? Bereits angelegte Fahrzeuge und Kunden bleiben erhalten."
         },
         "upload": {
             "title": "Fahrzeugschein hochladen",
@@ -451,7 +454,8 @@
             "back": "Zurück",
             "rescan": "Neuer Scan",
             "upload": "Fahrzeugschein hochladen",
-            "backToList": "Zurück zur Liste"
+            "backToList": "Zurück zur Liste",
+            "cancel": "Abbrechen"
         },
         "customerTable": {
             "name": "Name",
@@ -480,7 +484,9 @@
             "noApiKey": "Kein Fahrzeugscheinscanner konfiguriert. Bitte in der Firmenkonfiguration unter LxCars entweder „Eigenen Fahrzeugscheinscanner benutzen“ aktivieren oder einen API-Key hinterlegen.",
             "scanFailed": "Scan fehlgeschlagen",
             "noImage": "Bitte laden Sie ein Bild hoch",
-            "loadScans": "Fehler beim Laden der Scans"
+            "loadScans": "Fehler beim Laden der Scans",
+            "loadPhoto": "Foto konnte nicht geladen werden",
+            "deleteScan": "Scan konnte nicht gelöscht werden"
         },
         "duplicate": {
             "title": "Fahrzeug bereits vorhanden!",

@@ -409,7 +409,10 @@
             "prevPage": "Precedent",
             "nextPage": "Suivant",
             "pageInfo": "Page {page} sur {totalPages} ({total} scans)",
-            "searchPlaceholder": "Rechercher..."
+            "searchPlaceholder": "Rechercher...",
+            "showPhoto": "Afficher la photo du certificat d'immatriculation",
+            "delete": "Supprimer le scan",
+            "deleteConfirm": "Retirer le scan « {scan} » de la liste ? Les véhicules et clients déjà créés sont conservés."
         },
         "upload": {
             "title": "Telecharger une carte grise",
@@ -448,7 +451,8 @@
             "back": "Retour",
             "rescan": "Nouveau scan",
             "upload": "Telecharger une carte grise",
-            "backToList": "Retour a la liste"
+            "backToList": "Retour a la liste",
+            "cancel": "Annuler"
         },
         "customerTable": {
             "name": "Nom",
@@ -477,7 +481,9 @@
             "noApiKey": "Aucun scanner de carte grise configuré. Dans la configuration de l'entreprise, sous LxCars, activez « Utiliser son propre scanner de carte grise » ou saisissez une clé API.",
             "scanFailed": "Echec du scan",
             "noImage": "Veuillez telecharger une image",
-            "loadScans": "Erreur lors du chargement des scans"
+            "loadScans": "Erreur lors du chargement des scans",
+            "loadPhoto": "La photo n'a pas pu être chargée",
+            "deleteScan": "Le scan n'a pas pu être supprimé"
         },
         "duplicate": {
             "title": "Vehicule deja existant !",

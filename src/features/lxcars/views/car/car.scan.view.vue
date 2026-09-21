@@ -73,7 +73,7 @@
                             <th>{{ t('CarScanView.scanList.licensePlate') }}</th>
                             <th>{{ t('CarScanView.scanList.maker') }}</th>
                             <th>{{ t('CarScanView.scanList.model') }}</th>
-                            <th style="width: 36px"></th>
+                            <th style="width: 100px"></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -101,10 +101,20 @@
                             </td>
                             <td>{{ scan.d1 || '' }}</td>
                             <td>{{ scan.d3 || '' }}</td>
-                            <td class="text-center">
+                            <td class="text-no-wrap text-right">
                                 <v-tooltip v-if="getScanStatus(scan)" location="left" :text="t('CarScanView.buttons.rescan')">
                                     <template #activator="{ props: tip }">
                                         <v-btn v-bind="tip" icon="mdi-refresh" size="x-small" variant="text" color="orange" @click.stop="selectScan(scan)" />
+                                    </template>
+                                </v-tooltip>
+                                <v-tooltip location="left" :text="t('CarScanView.scanList.showPhoto')">
+                                    <template #activator="{ props: tip }">
+                                        <v-btn v-bind="tip" icon="mdi-image-outline" size="x-small" variant="text" color="primary" @click.stop="showScanPhoto(scan)" />
+                                    </template>
+                                </v-tooltip>
+                                <v-tooltip location="left" :text="t('CarScanView.scanList.delete')">
+                                    <template #activator="{ props: tip }">
+                                        <v-btn v-bind="tip" icon="mdi-delete-outline" size="x-small" variant="text" color="error" :loading="deletingScanId === scan.scan_id" @click.stop="deleteScanEntry(scan)" />
                                     </template>
                                 </v-tooltip>
                             </td>
@@ -145,6 +155,29 @@
                     {{ t('CarScanView.buttons.upload') }}
                 </v-btn>
             </div>
+
+            <!-- Foto des Fahrzeugscheins -->
+            <v-dialog v-model="scanPhoto.open" max-width="1000">
+                <v-card>
+                    <v-card-title class="py-2 px-3 d-flex align-center ga-2">
+                        <v-icon size="small">mdi-image-outline</v-icon>
+                        <span class="text-subtitle-1">{{ scanPhoto.title }}</span>
+                        <v-spacer />
+                        <v-btn icon="mdi-close" size="small" variant="text" @click="scanPhoto.open = false" />
+                    </v-card-title>
+                    <v-divider />
+                    <v-card-text class="pa-2 text-center scan-photo__body">
+                        <div v-if="scanPhoto.loading" class="py-12">
+                            <v-progress-circular indeterminate size="32" width="3" />
+                        </div>
+                        <v-alert v-else-if="scanPhoto.error" type="warning" variant="tonal" density="compact" class="ma-2">
+                            {{ scanPhoto.error }}
+                        </v-alert>
+                        <iframe v-else-if="scanPhoto.mime === 'application/pdf'" :src="scanPhoto.src" class="scan-photo__pdf" />
+                        <img v-else :src="scanPhoto.src" class="scan-photo__img" :alt="scanPhoto.title">
+                    </v-card-text>
+                </v-card>
+            </v-dialog>
         </template>
 
         <!-- ========== ANSICHT 2: Upload ========== -->
@@ -918,6 +951,7 @@ import { useRouter } from 'vue-router'
 import { oserpStore } from '@/core/stores/oserp.store.js'
 import { lxcarsStore } from '@/features/lxcars/stores/lxcars.store.js'
 import { onServerEvent } from '@/core/composables/sseClient.js'
+import * as alerts from '@/core/utils/alerts.js'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
 import { formatDateDE, parseShortDate, validateLicensePlate } from '@/features/lxcars/utils/validation.js'
 
@@ -941,6 +975,8 @@ export default {
         const scanTotal = ref(0)
         const scanPerPage = 20
         const scanSearch = ref('')
+        const deletingScanId = ref(null)
+        const scanPhoto = ref({ open: false, loading: false, src: '', mime: '', title: '', error: '' })
 
         // Scan-Listen-Status: Kennzeichen → { exists, c_id, owner_name }
         const scanCarStatus = ref({})
@@ -1545,6 +1581,48 @@ export default {
                 minute: '2-digit',
                 timeZone: 'Europe/Berlin',
             })
+        }
+
+        // Originalfoto des Fahrzeugscheins im Dialog anzeigen
+        async function showScanPhoto(scan) {
+            const plate = scan.registrationNumber || scan.registrationnumber || ''
+            const title = [plate, scan.name1].filter(Boolean).join(' · ') || formatTimestamp(scan.itime)
+            scanPhoto.value = { open: true, loading: true, src: '', mime: '', title, error: '' }
+            try {
+                const data = await carsStore.getScanOriginal(scan.scan_id)
+                scanPhoto.value.mime = data.mime || 'image/jpeg'
+                scanPhoto.value.src = `data:${scanPhoto.value.mime};base64,${data.image}`
+            } catch (err) {
+                scanPhoto.value.error = t('CarScanView.errors.loadPhoto')
+                console.error('Scan-Foto laden fehlgeschlagen:', err)
+            } finally {
+                scanPhoto.value.loading = false
+            }
+        }
+
+        // Scan nach Rückfrage aus der Liste entfernen (Soft-Delete im Backend)
+        async function deleteScanEntry(scan) {
+            const plate = scan.registrationNumber || scan.registrationnumber || ''
+            const label = [plate, scan.firstname, scan.name1].filter(Boolean).join(' ') || formatTimestamp(scan.itime)
+            const res = await alerts.question(
+                t('CarScanView.scanList.deleteConfirm', { scan: label }),
+                '',
+                t('CarScanView.scanList.delete'),
+                t('CarScanView.buttons.cancel')
+            )
+            if (!res.isConfirmed) return
+
+            deletingScanId.value = scan.scan_id
+            try {
+                await carsStore.deleteScan(scan.scan_id)
+                // Seite leer geworden → vorherige Seite laden, sonst Liste ohne Ladeanzeige nachziehen
+                const nextPage = scanList.value.length === 1 && scanPage.value > 1 ? scanPage.value - 1 : undefined
+                await loadScans(nextPage, true)
+            } catch (err) {
+                alerts.error(t('CarScanView.errors.deleteScan'), '', err)
+            } finally {
+                deletingScanId.value = null
+            }
         }
 
         // Scan aus der Liste auswählen → sofort anzeigen, Detail im Hintergrund laden
@@ -2531,6 +2609,7 @@ export default {
             // Scan-Liste
             scanList, loadingScans, scanListError, scanCarStatus, scanPage, scanTotalPages, scanTotal, scanSearch,
             loadScans, formatTimestamp, selectScan, scanRowClass, onScanRowClick, getScanIcon, getScanStatus, openCar, openOwner,
+            scanPhoto, showScanPhoto, deletingScanId, deleteScanEntry,
             // Upload
             selectedFile, selectedFileName, previewUrl, isDragging,
             scanning, scanError,
@@ -2622,6 +2701,23 @@ export default {
 .scan-link--primary {
     font-weight: 600;
     border-bottom-style: solid;
+}
+
+.scan-photo__body {
+    max-height: 80vh;
+    overflow: auto;
+}
+
+.scan-photo__img {
+    max-width: 100%;
+    max-height: 76vh;
+    object-fit: contain;
+}
+
+.scan-photo__pdf {
+    width: 100%;
+    height: 76vh;
+    border: 0;
 }
 
 .scan-list-table__status-cell {

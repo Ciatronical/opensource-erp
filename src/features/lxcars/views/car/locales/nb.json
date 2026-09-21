@@ -381,7 +381,10 @@
             "prevPage": "Zurück",
             "nextPage": "Weiter",
             "pageInfo": "Seite {page} von {totalPages} ({total} Scans)",
-            "searchPlaceholder": "Søk..."
+            "searchPlaceholder": "Søk...",
+            "showPhoto": "Vis bilde av vognkortet",
+            "delete": "Slett skanning",
+            "deleteConfirm": "Fjerne skanningen «{scan}» fra listen? Allerede opprettede kjøretøy og kunder beholdes."
         },
         "upload": {
             "title": "Kjoeretoeyerschein hochladen",
@@ -420,7 +423,8 @@
             "back": "Zurück",
             "rescan": "Nyr Scan",
             "upload": "Kjoeretoeyerschein hochladen",
-            "backToList": "Zurück zur Liste"
+            "backToList": "Zurück zur Liste",
+            "cancel": "Avbryt"
         },
         "customerTable": {
             "name": "Name",
@@ -449,7 +453,9 @@
             "noApiKey": "Ingen vognkort-skanner konfigurert. Aktiver enten «Bruk egen vognkort-skanner» i firmakonfigurasjonen under LxCars, eller legg inn en API-nøkkel.",
             "scanFailed": "Scan mislyktes",
             "noImage": "Vennligst laden Sie ein Bilde hoch",
-            "loadScans": "Feil ved Laden der Scans"
+            "loadScans": "Feil ved Laden der Scans",
+            "loadPhoto": "Bildet kunne ikke lastes",
+            "deleteScan": "Skanningen kunne ikke slettes"
         },
         "duplicate": {
             "title": "Kjoeretoeyer bereits vorhanden!",

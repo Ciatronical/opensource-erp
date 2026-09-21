@@ -410,7 +410,10 @@
             "prevPage": "Previous",
             "nextPage": "Next",
             "pageInfo": "Page {page} of {totalPages} ({total} scans)",
-            "searchPlaceholder": "Search..."
+            "searchPlaceholder": "Search...",
+            "showPhoto": "Show registration document photo",
+            "delete": "Delete scan",
+            "deleteConfirm": "Remove scan “{scan}” from the list? Vehicles and customers already created from it are kept."
         },
         "upload": {
             "title": "Upload registration document",
@@ -449,7 +452,8 @@
             "back": "Back",
             "rescan": "New scan",
             "upload": "Upload registration document",
-            "backToList": "Back to list"
+            "backToList": "Back to list",
+            "cancel": "Cancel"
         },
         "customerTable": {
             "name": "Name",
@@ -517,7 +521,9 @@
             "noApiKey": "No registration document scanner configured. In the client configuration under LxCars either enable “Use own vehicle registration scanner” or enter an API key.",
             "scanFailed": "Scan failed",
             "noImage": "Please upload an image",
-            "loadScans": "Error loading scans"
+            "loadScans": "Error loading scans",
+            "loadPhoto": "Photo could not be loaded",
+            "deleteScan": "Scan could not be deleted"
         },
         "wiki": {
             "title": "Knowledge Articles",

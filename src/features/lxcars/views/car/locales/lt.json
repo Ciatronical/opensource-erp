@@ -381,7 +381,10 @@
             "prevPage": "Atgal",
             "nextPage": "Toliau",
             "pageInfo": "Seite {page} von {totalPages} ({total} Scans)",
-            "searchPlaceholder": "Ieškoti..."
+            "searchPlaceholder": "Ieškoti...",
+            "showPhoto": "Rodyti registracijos liudijimo nuotrauką",
+            "delete": "Ištrinti nuskaitymą",
+            "deleteConfirm": "Pašalinti nuskaitymą „{scan}“ iš sąrašo? Jau sukurtos transporto priemonės ir klientai išlieka."
         },
         "upload": {
             "title": "Fahrzeugschein hochladen",
@@ -420,7 +423,8 @@
             "back": "Atgal",
             "rescan": "Neuer Scan",
             "upload": "Fahrzeugschein hochladen",
-            "backToList": "Zurück zur Liste"
+            "backToList": "Zurück zur Liste",
+            "cancel": "Atšaukti"
         },
         "customerTable": {
             "name": "Vardas",
@@ -449,7 +453,9 @@
             "noApiKey": "Registracijos liudijimo skaitytuvas nesukonfigūruotas. Įmonės konfigūracijoje, skiltyje LxCars, įjunkite „Naudoti savo registracijos liudijimo skaitytuvą“ arba įveskite API raktą.",
             "scanFailed": "Scan fehlgeschlagen",
             "noImage": "Bitte laden Sie ein Bild hoch",
-            "loadScans": "Fehler beim Laden der Scans"
+            "loadScans": "Fehler beim Laden der Scans",
+            "loadPhoto": "Nepavyko įkelti nuotraukos",
+            "deleteScan": "Nepavyko ištrinti nuskaitymo"
         },
         "duplicate": {
             "title": "Fahrzeug bereits vorhanden!",

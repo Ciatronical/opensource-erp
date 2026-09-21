@@ -409,7 +409,10 @@
             "prevPage": "Wstecz",
             "nextPage": "Dalej",
             "pageInfo": "Strona {page} z {totalPages} ({total} skanów)",
-            "searchPlaceholder": "Szukaj..."
+            "searchPlaceholder": "Szukaj...",
+            "showPhoto": "Pokaż zdjęcie dowodu rejestracyjnego",
+            "delete": "Usuń skan",
+            "deleteConfirm": "Usunąć skan „{scan}” z listy? Utworzone już pojazdy i klienci zostaną zachowani."
         },
         "upload": {
             "title": "Prześlij dowód rejestracyjny",
@@ -448,7 +451,8 @@
             "back": "Wstecz",
             "rescan": "Nowy skan",
             "upload": "Prześlij dowód rejestracyjny",
-            "backToList": "Wróć do listy"
+            "backToList": "Wróć do listy",
+            "cancel": "Anuluj"
         },
         "customerTable": {
             "name": "Nazwa",
@@ -477,7 +481,9 @@
             "noApiKey": "Nie skonfigurowano skanera dowodu rejestracyjnego. W konfiguracji firmy w sekcji LxCars włącz „Używaj własnego skanera dowodu rejestracyjnego“ albo podaj klucz API.",
             "scanFailed": "Skanowanie nie powiodło się",
             "noImage": "Proszę przesłać obraz",
-            "loadScans": "Błąd podczas ładowania skanów"
+            "loadScans": "Błąd podczas ładowania skanów",
+            "loadPhoto": "Nie udało się wczytać zdjęcia",
+            "deleteScan": "Nie udało się usunąć skanu"
         },
         "duplicate": {
             "title": "Pojazd już istnieje!",

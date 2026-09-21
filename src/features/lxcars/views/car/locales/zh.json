@@ -381,7 +381,10 @@
             "prevPage": "上一页",
             "nextPage": "下一页",
             "pageInfo": "第 {page} 页，共 {totalPages} 页（{total} 条扫描）",
-            "searchPlaceholder": "搜索..."
+            "searchPlaceholder": "搜索...",
+            "showPhoto": "显示行驶证照片",
+            "delete": "删除扫描",
+            "deleteConfirm": "要从列表中移除扫描“{scan}”吗？已创建的车辆和客户将保留。"
         },
         "upload": {
             "title": "上传行驶证",
@@ -420,7 +423,8 @@
             "back": "返回",
             "rescan": "重新扫描",
             "upload": "上传行驶证",
-            "backToList": "返回列表"
+            "backToList": "返回列表",
+            "cancel": "取消"
         },
         "customerTable": {
             "name": "名称",
@@ -449,7 +453,9 @@
             "noApiKey": "未配置行驶证扫描器。请在公司配置的 LxCars 下启用“使用自有行驶证扫描器”或输入 API 密钥。",
             "scanFailed": "扫描失败",
             "noImage": "请上传图片",
-            "loadScans": "加载扫描时出错"
+            "loadScans": "加载扫描时出错",
+            "loadPhoto": "无法加载照片",
+            "deleteScan": "无法删除扫描"
         },
         "duplicate": {
             "title": "车辆已存在！",

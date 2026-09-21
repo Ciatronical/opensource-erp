@@ -1264,19 +1264,20 @@ function getScans($data) {
     $offset = ($page - 1) * $perPage;
     $search = trim($data['search'] ?? '');
 
-    $whereClause = '';
+    // Gelöschte Scans (deleteScan) bleiben als Zeile erhalten, damit der API-Sync sie nicht erneut importiert
+    $whereClause = 'WHERE deleted_at IS NULL';
     $params = [':per_page' => $perPage, ':offset' => $offset];
 
     if ($search !== '') {
         $likeVal = '%' . mb_strtolower($search) . '%';
-        $whereClause = "WHERE lower(coalesce(itime::text,'')) LIKE :q
+        $whereClause .= " AND (lower(coalesce(itime::text,'')) LIKE :q
             OR lower(coalesce(firstname,'')) LIKE :q
             OR lower(coalesce(name1,'')) LIKE :q
             OR lower(coalesce(registrationnumber,'')) LIKE :q
             OR lower(coalesce(d1,'')) LIKE :q
             OR lower(coalesce(d3,'')) LIKE :q
             OR lower(coalesce(maker,'')) LIKE :q
-            OR lower(coalesce(model,'')) LIKE :q";
+            OR lower(coalesce(model,'')) LIKE :q)";
         $params[':q'] = $likeVal;
     }
 
@@ -1299,6 +1300,37 @@ function getScans($data) {
         'per_page' => $perPage,
         'total_pages' => max(1, ceil($total / $perPage)),
     ]);
+}
+
+/**
+ * Entfernt einen Scan aus der Scanliste (Soft-Delete).
+ * Die Zeile bleibt mit deleted_at erhalten, damit syncScansFromApi den Scan nicht erneut
+ * von fahrzeugschein-scanner.de importiert. Bereits daraus angelegte Fahrzeuge/Kunden
+ * sind nicht betroffen — sie halten ihre Daten und Bilder selbst (fahrzeuge/{c_id}/fahrzeugschein).
+ *
+ * @param string $data['scan_id'] Scan-ID
+ * @testdata {"scan_id": "1"}
+ */
+function deleteScan($data) {
+    $db = DbhCompany::begin();
+    $scanId = trim($data['scan_id'] ?? '');
+
+    if ($scanId === '') {
+        resultInfo(false, 'VALIDATION_ERROR', 'scan_id ist erforderlich');
+        return;
+    }
+
+    $db->execute(
+        "UPDATE fs_scans_lxcars
+         SET deleted_at = NOW() AT TIME ZONE 'utc'
+         WHERE scan_id = :scan_id AND deleted_at IS NULL",
+        [':scan_id' => $scanId]
+    );
+
+    // Zwischengespeicherte Ausschnitte/Original des Scans mit entfernen
+    _removeTmpScanDir(preg_replace('/[^a-zA-Z0-9\-]/', '', $scanId));
+
+    resultInfo(true, 'DELETED');
 }
 
 /**
