@@ -386,12 +386,6 @@
             "delete": "删除扫描",
             "deleteConfirm": "要从列表中移除扫描“{scan}”吗？已创建的车辆和客户将保留。"
         },
-        "upload": {
-            "title": "上传行驶证",
-            "hint": "将图片或 PDF 拖放到此处或点击选择",
-            "button": "开始扫描",
-            "formats": "JPG、PNG、PDF"
-        },
         "scanning": "正在扫描行驶证...",
         "result": {
             "title": "扫描结果",

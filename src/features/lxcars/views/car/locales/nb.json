@@ -386,12 +386,6 @@
             "delete": "Slett skanning",
             "deleteConfirm": "Fjerne skanningen «{scan}» fra listen? Allerede opprettede kjøretøy og kunder beholdes."
         },
-        "upload": {
-            "title": "Kjoeretoeyerschein hochladen",
-            "hint": "Bilde oder PDF hier ablegen oder klicken zum Auswählen",
-            "button": "Scan starten",
-            "formats": "JPG, PNG, PDF"
-        },
         "scanning": "Kjoeretoeyerschein wird gescannt...",
         "result": {
             "title": "Scan-Ergebnis",

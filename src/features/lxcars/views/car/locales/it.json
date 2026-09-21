@@ -386,12 +386,6 @@
             "delete": "Elimina scansione",
             "deleteConfirm": "Rimuovere la scansione «{scan}» dall'elenco? I veicoli e i clienti già creati vengono mantenuti."
         },
-        "upload": {
-            "title": "Carica carta di circolazione",
-            "hint": "Bild oder PDF hier ablegen oder klicken zum Auswählen",
-            "button": "Avvia scansione",
-            "formats": "JPG, PNG, PDF"
-        },
         "scanning": "Scansione in corso...",
         "result": {
             "title": "Risultato scansione",

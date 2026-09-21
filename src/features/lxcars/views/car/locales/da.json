@@ -386,12 +386,6 @@
             "delete": "Slet scanning",
             "deleteConfirm": "Fjern scanningen „{scan}“ fra listen? Allerede oprettede køretøjer og kunder bevares."
         },
-        "upload": {
-            "title": "Koeretoejschein hochladen",
-            "hint": "Billede oder PDF hier ablegen oder klicken zum Auswählen",
-            "button": "Scan starten",
-            "formats": "JPG, PNG, PDF"
-        },
         "scanning": "Koeretoejschein wird gescannt...",
         "result": {
             "title": "Scan-Ergebnis",

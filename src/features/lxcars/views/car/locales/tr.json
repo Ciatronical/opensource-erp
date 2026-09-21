@@ -386,12 +386,6 @@
             "delete": "Taramayı sil",
             "deleteConfirm": "„{scan}“ taraması listeden kaldırılsın mı? Daha önce oluşturulan araçlar ve müşteriler korunur."
         },
-        "upload": {
-            "title": "Fahrzeugschein hochladen",
-            "hint": "Bild oder PDF hier ablegen oder klicken zum Auswählen",
-            "button": "Scan starten",
-            "formats": "JPG, PNG, PDF"
-        },
         "scanning": "Fahrzeugschein wird gescannt...",
         "result": {
             "title": "Scan-Ergebnis",

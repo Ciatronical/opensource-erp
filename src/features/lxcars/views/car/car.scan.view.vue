@@ -17,10 +17,41 @@
 
         <!-- ========== ANSICHT 1: Scan-Liste ========== -->
         <template v-if="step === 'list'">
-            <v-card variant="outlined" elevation="1" :disabled="!hasApiKey">
+            <v-alert v-if="scanError" type="error" variant="tonal" density="compact" class="mb-3" closable @click:close="scanError = ''">
+                {{ t('CarScanView.errors.scanFailed') }}: {{ scanError }}
+            </v-alert>
+
+            <v-card
+                variant="outlined"
+                elevation="1"
+                :disabled="!hasApiKey"
+                :class="{ 'scan-dropzone--active': isDragging }"
+                @dragover.prevent="isDragging = true"
+                @dragleave.prevent="isDragging = false"
+                @drop.prevent="onDrop"
+            >
                 <v-card-title class="py-2 px-3 bg-grey-lighten-4 d-flex align-center ga-2">
                     <v-icon class="mr-2" size="small">mdi-format-list-bulleted</v-icon>
                     <span class="text-subtitle-1 font-weight-medium">{{ t('CarScanView.scanList.title') }}</span>
+                    <!-- Upload: Klick öffnet direkt den Dateidialog, Scan startet nach Auswahl -->
+                    <v-btn
+                        color="primary"
+                        variant="flat"
+                        size="small"
+                        class="ml-3"
+                        :disabled="!hasApiKey || scanning"
+                        @click="$refs.fileInput.click()"
+                    >
+                        <v-icon start size="small">mdi-upload</v-icon>
+                        {{ t('CarScanView.buttons.upload') }}
+                    </v-btn>
+                    <input
+                        ref="fileInput"
+                        type="file"
+                        accept="image/*,.pdf"
+                        class="d-none"
+                        @change="onFileSelect"
+                    />
                     <v-spacer />
                     <v-text-field
                         v-model="scanSearch"
@@ -148,13 +179,15 @@
                 </div>
             </v-card>
 
-            <!-- Upload-Button -->
-            <div class="d-flex mt-3">
-                <v-btn variant="outlined" :disabled="!hasApiKey" @click="step = 'upload'">
-                    <v-icon start>mdi-upload</v-icon>
-                    {{ t('CarScanView.buttons.upload') }}
-                </v-btn>
-            </div>
+            <!-- Scan läuft -->
+            <v-dialog :model-value="scanning" persistent max-width="360">
+                <v-card>
+                    <v-card-text class="text-center py-6">
+                        <v-progress-circular indeterminate size="40" width="3" color="primary" />
+                        <div class="text-body-1 mt-3">{{ t('CarScanView.scanning') }}</div>
+                    </v-card-text>
+                </v-card>
+            </v-dialog>
 
             <!-- Foto des Fahrzeugscheins -->
             <v-dialog v-model="scanPhoto.open" max-width="1000">
@@ -178,64 +211,6 @@
                     </v-card-text>
                 </v-card>
             </v-dialog>
-        </template>
-
-        <!-- ========== ANSICHT 2: Upload ========== -->
-        <template v-if="step === 'upload'">
-            <v-card variant="outlined" elevation="1" :disabled="!hasApiKey">
-                <v-card-title class="py-2 px-3 bg-grey-lighten-4 d-flex align-center">
-                    <v-icon class="mr-2" size="small">mdi-upload</v-icon>
-                    <span class="text-subtitle-1 font-weight-medium">{{ t('CarScanView.upload.title') }}</span>
-                </v-card-title>
-                <v-divider />
-                <v-card-text class="pa-6">
-                    <div
-                        class="scan-dropzone"
-                        :class="{ 'scan-dropzone--active': isDragging }"
-                        @dragover.prevent="isDragging = true"
-                        @dragleave.prevent="isDragging = false"
-                        @drop.prevent="onDrop"
-                        @click="$refs.fileInput.click()"
-                    >
-                        <input
-                            ref="fileInput"
-                            type="file"
-                            accept="image/*,.pdf"
-                            class="d-none"
-                            @change="onFileSelect"
-                        />
-                        <v-icon size="64" color="grey-lighten-1" class="mb-3">mdi-file-image-plus-outline</v-icon>
-                        <div class="text-body-1 text-medium-emphasis">{{ t('CarScanView.upload.hint') }}</div>
-                        <div class="text-caption text-disabled mt-1">{{ t('CarScanView.upload.formats') }}</div>
-
-                        <!-- Preview -->
-                        <div v-if="previewUrl" class="mt-4">
-                            <v-img :src="previewUrl" max-height="200" max-width="300" class="mx-auto rounded" contain />
-                            <div class="text-caption text-medium-emphasis mt-1">{{ selectedFileName }}</div>
-                        </div>
-                    </div>
-
-                    <div class="d-flex justify-center ga-3 mt-4">
-                        <v-btn variant="outlined" @click="resetToList">
-                            <v-icon start>mdi-arrow-left</v-icon>
-                            {{ t('CarScanView.buttons.backToList') }}
-                        </v-btn>
-                        <v-btn
-                            color="primary"
-                            :disabled="!selectedFile"
-                            :loading="scanning"
-                            @click="startUploadScan"
-                        >
-                            <v-icon start>mdi-magnify-scan</v-icon>
-                            {{ scanning ? t('CarScanView.scanning') : t('CarScanView.upload.button') }}
-                        </v-btn>
-                    </div>
-
-                    <v-alert v-if="scanError" type="error" variant="tonal" density="compact" class="mt-4">
-                        {{ t('CarScanView.errors.scanFailed') }}: {{ scanError }}
-                    </v-alert>
-                </v-card-text>
-            </v-card>
         </template>
 
         <!-- ========== ANSICHT 2b: KBA-Auswahl bei unvollständiger TSN ========== -->
@@ -966,7 +941,7 @@ export default {
         const carsStore = lxcarsStore()
 
         // State
-        const step = ref('list') // 'list' | 'upload' | 'result'
+        const step = ref('list') // 'list' | 'kba-select' | 'result'
         const scanList = ref([])
         const loadingScans = ref(false)
         const scanListError = ref('')
@@ -982,9 +957,6 @@ export default {
         const scanCarStatus = ref({})
 
         // Upload State
-        const selectedFile = ref(null)
-        const selectedFileName = ref('')
-        const previewUrl = ref(null)
         const isDragging = ref(false)
         const scanning = ref(false)
         const scanError = ref('')
@@ -1730,38 +1702,29 @@ export default {
 
         // ===== Upload =====
 
+        // Datei gewählt oder abgelegt → Scan startet sofort, kein Zwischenschritt
         function onFileSelect(event) {
             const file = event.target.files[0]
-            if (file) setFile(file)
+            // Wert leeren, damit dieselbe Datei erneut gewählt werden kann
+            event.target.value = ''
+            if (file) startUploadScan(file)
         }
 
         function onDrop(event) {
             isDragging.value = false
             const file = event.dataTransfer.files[0]
-            if (file) setFile(file)
+            if (file) startUploadScan(file)
         }
 
-        function setFile(file) {
-            selectedFile.value = file
-            selectedFileName.value = file.name
-            scanError.value = ''
-
-            if (file.type.startsWith('image/')) {
-                previewUrl.value = URL.createObjectURL(file)
-            } else {
-                previewUrl.value = null
-            }
-        }
-
-        async function startUploadScan() {
-            if (!selectedFile.value) return
+        async function startUploadScan(file) {
+            if (!file || scanning.value) return
 
             scanning.value = true
             scanError.value = ''
 
             try {
-                const base64 = await fileToBase64(selectedFile.value)
-                const isPdf = selectedFile.value.type === 'application/pdf'
+                const base64 = await fileToBase64(file)
+                const isPdf = file.type === 'application/pdf'
 
                 const result = await carsStore.scanFahrzeugschein(base64, isPdf)
                 // Original-Bild: temp_image_id vom Backend (bereits auf Disk gespeichert)
@@ -2529,9 +2492,6 @@ export default {
 
         function resetToList() {
             step.value = 'list'
-            selectedFile.value = null
-            selectedFileName.value = ''
-            previewUrl.value = null
             scanError.value = ''
             scanResult.value = { car: {}, kba: {}, owner: {} }
             selectedCustomer.value = null
@@ -2611,7 +2571,7 @@ export default {
             loadScans, formatTimestamp, selectScan, scanRowClass, onScanRowClick, getScanIcon, getScanStatus, openCar, openOwner,
             scanPhoto, showScanPhoto, deletingScanId, deleteScanEntry,
             // Upload
-            selectedFile, selectedFileName, previewUrl, isDragging,
+            isDragging,
             scanning, scanError,
             onFileSelect, onDrop, startUploadScan,
             // KBA-Auswahl (unvollständige TSN)
@@ -2726,23 +2686,8 @@ export default {
     text-align: center;
 }
 
-.scan-dropzone {
-    border: 2px dashed rgba(0, 0, 0, 0.2);
-    border-radius: 12px;
-    padding: 40px 20px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.scan-dropzone:hover {
-    border-color: rgb(var(--v-theme-primary));
-    background-color: rgba(var(--v-theme-primary), 0.03);
-}
-
 .scan-dropzone--active {
-    border-color: rgb(var(--v-theme-primary));
-    background-color: rgba(var(--v-theme-primary), 0.06);
+    border: 2px dashed rgb(var(--v-theme-primary));
 }
 </style>
 

@@ -417,12 +417,6 @@
             "delete": "Scan löschen",
             "deleteConfirm": "Scan „{scan}“ aus der Liste entfernen? Bereits angelegte Fahrzeuge und Kunden bleiben erhalten."
         },
-        "upload": {
-            "title": "Fahrzeugschein hochladen",
-            "hint": "Bild oder PDF hier ablegen oder klicken zum Auswählen",
-            "button": "Scan starten",
-            "formats": "JPG, PNG, PDF"
-        },
         "scanning": "Fahrzeugschein wird gescannt...",
         "result": {
             "title": "Scan-Ergebnis",

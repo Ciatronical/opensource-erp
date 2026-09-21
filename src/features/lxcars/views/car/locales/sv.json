@@ -386,12 +386,6 @@
             "delete": "Ta bort skanning",
             "deleteConfirm": "Ta bort skanningen ”{scan}” från listan? Redan skapade fordon och kunder behålls."
         },
-        "upload": {
-            "title": "Fordonschein hochladen",
-            "hint": "Bild oder PDF hier ablegen oder klicken zum Auswählen",
-            "button": "Scan starten",
-            "formats": "JPG, PNG, PDF"
-        },
         "scanning": "Fordonschein wird gescannt...",
         "result": {
             "title": "Scan-Ergebnis",

@@ -386,12 +386,6 @@
             "delete": "Poista skannaus",
             "deleteConfirm": "Poistetaanko skannaus ”{scan}” luettelosta? Jo luodut ajoneuvot ja asiakkaat säilyvät."
         },
-        "upload": {
-            "title": "Fahrzeugschein hochladen",
-            "hint": "Bild oder PDF hier ablegen oder klicken zum Auswählen",
-            "button": "Scan starten",
-            "formats": "JPG, PNG, PDF"
-        },
         "scanning": "Fahrzeugschein wird gescannt...",
         "result": {
             "title": "Scan-Ergebnis",

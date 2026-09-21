@@ -414,12 +414,6 @@
             "delete": "Usuń skan",
             "deleteConfirm": "Usunąć skan „{scan}” z listy? Utworzone już pojazdy i klienci zostaną zachowani."
         },
-        "upload": {
-            "title": "Prześlij dowód rejestracyjny",
-            "hint": "Przeciągnij obraz lub PDF tutaj lub kliknij, aby wybrać",
-            "button": "Rozpocznij skanowanie",
-            "formats": "JPG, PNG, PDF"
-        },
         "scanning": "Skanowanie dowodu rejestracyjnego...",
         "result": {
             "title": "Wynik skanu",

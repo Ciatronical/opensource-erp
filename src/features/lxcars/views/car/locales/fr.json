@@ -414,12 +414,6 @@
             "delete": "Supprimer le scan",
             "deleteConfirm": "Retirer le scan « {scan} » de la liste ? Les véhicules et clients déjà créés sont conservés."
         },
-        "upload": {
-            "title": "Telecharger une carte grise",
-            "hint": "Deposez une image ou un PDF ici ou cliquez pour selectionner",
-            "button": "Lancer le scan",
-            "formats": "JPG, PNG, PDF"
-        },
         "scanning": "Scan de la carte grise en cours...",
         "result": {
             "title": "Resultat du scan",

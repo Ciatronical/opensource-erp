@@ -415,12 +415,6 @@
             "delete": "Delete scan",
             "deleteConfirm": "Remove scan “{scan}” from the list? Vehicles and customers already created from it are kept."
         },
-        "upload": {
-            "title": "Upload registration document",
-            "hint": "Drop image or PDF here, or click to select",
-            "button": "Start scan",
-            "formats": "JPG, PNG, PDF"
-        },
         "scanning": "Scanning registration document...",
         "result": {
             "title": "Scan result",

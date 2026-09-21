@@ -386,12 +386,6 @@
             "delete": "Eliminar escaneo",
             "deleteConfirm": "¿Quitar el escaneo «{scan}» de la lista? Los vehículos y clientes ya creados se conservan."
         },
-        "upload": {
-            "title": "Subir permiso de circulación",
-            "hint": "Bild oder PDF hier ablegen oder klicken zum Auswählen",
-            "button": "Iniciar escaneo",
-            "formats": "JPG, PNG, PDF"
-        },
         "scanning": "Escaneando permiso...",
         "result": {
             "title": "Resultado del escaneo",

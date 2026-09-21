@@ -386,12 +386,6 @@
             "delete": "Eliminar digitalização",
             "deleteConfirm": "Remover a digitalização «{scan}» da lista? Os veículos e clientes já criados são mantidos."
         },
-        "upload": {
-            "title": "Carregar documento de circulação",
-            "hint": "Bild oder PDF hier ablegen oder klicken zum Auswählen",
-            "button": "Iniciar digitalização",
-            "formats": "JPG, PNG, PDF"
-        },
         "scanning": "A digitalizar documento...",
         "result": {
             "title": "Resultado da digitalização",

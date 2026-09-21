@@ -386,12 +386,6 @@
             "delete": "Kustuta skann",
             "deleteConfirm": "Eemaldada skann „{scan}“ loendist? Juba loodud sõidukid ja kliendid jäävad alles."
         },
-        "upload": {
-            "title": "Fahrzeugschein hochladen",
-            "hint": "Bild oder PDF hier ablegen oder klicken zum Auswählen",
-            "button": "Scan starten",
-            "formats": "JPG, PNG, PDF"
-        },
         "scanning": "Fahrzeugschein wird gescannt...",
         "result": {
             "title": "Scan-Ergebnis",
