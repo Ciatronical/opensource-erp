@@ -52,7 +52,7 @@
             </v-row>
 
             <!-- Checkbox -->
-            <v-row v-else-if="field.type === 'checkbox'" class="my-1" :data-field-name="field.name">
+            <v-row v-else-if="field.type === 'checkbox'" class="my-4" :data-field-name="field.name">
                 <v-col cols="12" md="6">
                     <v-checkbox
                         v-model="crmDefaults[field.name]"
@@ -75,7 +75,7 @@
             </v-row>
 
             <!-- Input / Password -->
-            <v-row v-else-if="field.type === 'input' || field.type === 'password'" class="my-1" :data-field-name="field.name">
+            <v-row v-else-if="field.type === 'input' || field.type === 'password'" class="my-4" :data-field-name="field.name">
                 <v-col cols="12" md="6">
                     <component
                         :is="field.type === 'password' ? PasswordField : VTextField"
@@ -102,7 +102,7 @@
             </v-row>
 
             <!-- Textarea -->
-            <v-row v-else-if="field.type === 'textarea'" class="my-1" :data-field-name="field.name">
+            <v-row v-else-if="field.type === 'textarea'" class="my-4" :data-field-name="field.name">
                 <v-col cols="12" md="8">
                     <v-textarea
                         v-model="crmDefaults[field.name]"
@@ -128,7 +128,7 @@
             </v-row>
 
             <!-- Select -->
-            <v-row v-else-if="field.type === 'select'" class="my-1" :data-field-name="field.name">
+            <v-row v-else-if="field.type === 'select'" class="my-4" :data-field-name="field.name">
                 <v-col cols="12" md="6">
                     <v-select
                         v-model="crmDefaults[field.name]"
@@ -154,7 +154,7 @@
             </v-row>
 
             <!-- Dynamic Select (Items aus company_config) -->
-            <v-row v-else-if="field.type === 'dynamic-select'" class="my-1" :data-field-name="field.name">
+            <v-row v-else-if="field.type === 'dynamic-select'" class="my-4" :data-field-name="field.name">
                 <v-col cols="12" md="6">
                     <v-select
                         v-model="crmDefaults[field.name]"

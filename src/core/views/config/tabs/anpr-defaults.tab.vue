@@ -404,7 +404,7 @@
                 </v-col>
             </v-row>
 
-            <v-row v-else-if="field.type === 'checkbox'" class="my-1" :data-field-name="field.name">
+            <v-row v-else-if="field.type === 'checkbox'" class="my-4" :data-field-name="field.name">
                 <v-col cols="12" md="6">
                     <v-checkbox v-model="crmDefaults[field.name]" :label="t(field.label)" hide-details="auto" density="compact">
                         <template v-if="field.tooltip" #append>
@@ -419,7 +419,7 @@
                 </v-col>
             </v-row>
 
-            <v-row v-else-if="field.type === 'input'" class="my-1" :data-field-name="field.name">
+            <v-row v-else-if="field.type === 'input'" class="my-4" :data-field-name="field.name">
                 <v-col cols="12" md="6">
                     <v-text-field
                         v-model="crmDefaults[field.name]"
@@ -440,7 +440,7 @@
                 </v-col>
             </v-row>
 
-            <v-row v-else-if="field.type === 'textarea'" class="my-1" :data-field-name="field.name">
+            <v-row v-else-if="field.type === 'textarea'" class="my-4" :data-field-name="field.name">
                 <v-col cols="12" md="6">
                     <v-textarea
                         v-model="crmDefaults[field.name]"
