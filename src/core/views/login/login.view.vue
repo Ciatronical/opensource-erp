@@ -53,6 +53,7 @@
             <v-alert v-if="updateLoading" type="info" variant="tonal" density="compact" class="mt-3">
               <v-progress-linear indeterminate color="info" class="mb-1" />
               {{ t('LoginView.updateButton') }}…
+              <div class="text-body-2 mt-1">{{ t('LoginView.updateHint') }}</div>
             </v-alert>
             <v-alert v-if="updateSuccess" type="success" variant="tonal" density="compact" class="mt-3">
               {{ t('LoginView.updateSuccess') }}
@@ -173,7 +174,7 @@ export default {
             await login(true)
             return
           }
-          errorMessage.value = t('LoginView.updateError')
+          errorMessage.value = updateError.value || t('LoginView.updateError')
           errorType.value    = 'error'
           return
         }
@@ -190,7 +191,7 @@ export default {
             await login(true)
             return
           }
-          errorMessage.value = t('LoginView.updateError')
+          errorMessage.value = updateError.value || t('LoginView.updateError')
           errorType.value    = 'error'
           return
         }
@@ -202,28 +203,25 @@ export default {
       }
     }
 
+    // Aktualisiert die Auth-Datenbank und genau die Firma, in die sich der
+    // Benutzer gerade anmeldet — die übrigen holen ihr Update bei ihrer
+    // eigenen Anmeldung. Der Mandant wird ausdrücklich mitgegeben, damit
+    // nicht die Sitzung entscheidet, welche Datenbank aktualisiert wird: in
+    // einem zweiten Browsertab steht sie womöglich auf einer anderen Firma.
     const runUpdate = async () => {
       updateLoading.value = true
       updateSuccess.value = false
       updateError.value   = ''
 
       try {
-        const response = await fetch('/api/update/', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'updateAllDatabases', dry_run: false })
-        })
-        const data = await response.json()
-
-        if (data.success) {
-          updateSuccess.value = true
-          return true
-        }
-        updateError.value = data.text || t('LoginView.updateError')
-        return false
+        await oserp.updateClientSchema(clientCode.value)
+        updateSuccess.value = true
+        return true
       } catch (error) {
         console.error('Fehler beim Update:', error)
-        updateError.value = t('LoginView.updateError')
+        updateError.value = error?.code === 'SCHEMA_UPDATE_RUNNING'
+          ? t('LoginView.updateRunning')
+          : t('LoginView.updateError')
         return false
       } finally {
         updateLoading.value = false

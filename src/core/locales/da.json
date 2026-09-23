@@ -18,6 +18,8 @@
         "updateButton": "Koer opdatering",
         "updateSuccess": "Databaseopdatering gennemfoert.",
         "updateError": "Fejl ved databaseopdatering. Proev venligst igen.",
+        "updateRunning": "Der kører allerede en opdatering. Log ind igen om et øjeblik.",
+        "updateHint": "Skemaet tilpasses den nye programversion; først oprettes en sikkerhedskopi. Det kan tage et par minutter — luk ikke vinduet.",
         "privacy": "Privatlivspolitik",
         "dataDeletion": "Datasletning",
         "API_DATABASE_ERROR": "Databasen svarer ikke som forventet. Kontakt venligst administratoren."

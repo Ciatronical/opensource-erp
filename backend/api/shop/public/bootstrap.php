@@ -27,6 +27,8 @@ require_once __DIR__.'/../../error.php';
 require_once __DIR__.'/../../config.php';
 require_once __DIR__.'/../../logging.php';
 require_once __DIR__.'/../../database.php';
+require_once __DIR__.'/../../lib/extensions.php';
+require_once __DIR__.'/../../lib/upstall.php';
 // Bausteine des ERP, auf die die Erweiterung aufsetzt. Sie bringen eigene
 // Aktionen mit — erreichbar sind sie trotzdem nicht: darueber entscheidet
 // allein die Liste in shopPublicActions().
@@ -233,6 +235,14 @@ function shopPublicDispatch(array $erlaubteAktionen): void {
     if ('OPTIONS' === ($_SERVER['REQUEST_METHOD'] ?? '')) {
         http_response_code(204);
         return;
+    }
+
+    // Der Shop läuft ohne Mitarbeiter-Sitzung: hier meldet sich niemand an,
+    // der ein fälliges Schema-Update anstoßen würde. Ein anonymer Aufruf
+    // darf keine Migration auslösen — also nur festhalten, dass diese Firma
+    // eine braucht, sonst bliebe ein veralteter Shop unbemerkt.
+    if (upstallUpdateNeeded($db)) {
+        writeLog('Shop-Zugang auf veraltetem Schema: Firmen-Datenbank braucht ein Upstall-Update', true, DLOG_WRN);
     }
 
     $daten = shopPublicInput();

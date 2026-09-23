@@ -18,6 +18,8 @@
         "updateButton": "Esegui aggiornamento",
         "updateSuccess": "Aggiornamento del database eseguito con successo.",
         "updateError": "Errore nell'aggiornamento del database. Riprovare.",
+        "updateRunning": "È già in corso un aggiornamento. Effettuare nuovamente l'accesso tra un istante.",
+        "updateHint": "Lo schema viene adattato alla nuova versione del programma; prima viene creata una copia di sicurezza. L'operazione può richiedere alcuni minuti: non chiudere la finestra.",
         "privacy": "Informativa sulla privacy",
         "dataDeletion": "Cancellazione dei dati",
         "API_DATABASE_ERROR": "Il database non risponde come previsto. Avvisare l'amministratore."

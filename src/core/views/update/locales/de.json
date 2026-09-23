@@ -31,7 +31,8 @@
         "errorMessages": {
             "dryRunFailed": "Vorschau fehlgeschlagen.",
             "updateFailed": "Update fehlgeschlagen.",
-            "networkError": "Netzwerkfehler beim Update."
+            "networkError": "Netzwerkfehler beim Update.",
+            "updateRunning": "Ein Schema-Update läuft bereits. Bitte gleich erneut versuchen."
         },
         "schemaMessages": {
             "dry_run_mode": "Vorschau-Modus - Keine Änderungen werden vorgenommen",

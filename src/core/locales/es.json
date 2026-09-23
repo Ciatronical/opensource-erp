@@ -18,6 +18,8 @@
         "updateButton": "Ejecutar actualización",
         "updateSuccess": "Actualización de base de datos realizada con éxito.",
         "updateError": "Error en la actualización de base de datos. Por favor, inténtelo de nuevo.",
+        "updateRunning": "Ya se está ejecutando una actualización. Vuelva a iniciar sesión en un momento.",
+        "updateHint": "El esquema se adapta a la nueva versión del programa; antes se crea una copia de seguridad. Esto puede tardar unos minutos: no cierre la ventana.",
         "privacy": "Política de privacidad",
         "dataDeletion": "Eliminación de datos",
         "API_DATABASE_ERROR": "La base de datos no responde como se esperaba. Por favor, avise al administrador."

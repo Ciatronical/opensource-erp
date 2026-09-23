@@ -18,6 +18,8 @@
         "updateButton": "Executare actualizare",
         "updateSuccess": "Actualizarea bazei de date a fost efectuată cu succes.",
         "updateError": "Eroare la actualizarea bazei de date. Vă rugăm încercați din nou.",
+        "updateRunning": "O actualizare este deja în curs. Vă rugăm să vă autentificați din nou într-un moment.",
+        "updateHint": "Schema este adaptată la noua versiune a programului; mai întâi se creează o copie de siguranță. Poate dura câteva minute — nu închideți fereastra.",
         "privacy": "Politica de confidențialitate",
         "dataDeletion": "Ștergere date",
         "API_DATABASE_ERROR": "Baza de date nu răspunde conform așteptărilor. Vă rugăm anunțați administratorul."

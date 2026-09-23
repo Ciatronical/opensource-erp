@@ -31,7 +31,8 @@
         "errorMessages": {
             "dryRunFailed": "Podgl\u0105d nie powi\u00f3d\u0142 si\u0119.",
             "updateFailed": "Aktualizacja nie powiod\u0142a si\u0119.",
-            "networkError": "B\u0142\u0105d sieci podczas aktualizacji."
+            "networkError": "B\u0142\u0105d sieci podczas aktualizacji.",
+            "updateRunning": "Aktualizacja schematu jest już w toku. Spróbuj ponownie za chwilę."
         },
         "schemaMessages": {
             "dry_run_mode": "Tryb podgl\u0105du \u2014 Zmiany nie b\u0119d\u0105 wprowadzane",

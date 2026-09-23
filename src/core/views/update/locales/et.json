@@ -31,7 +31,8 @@
         "errorMessages": {
             "dryRunFailed": "Eelvaade ebaõnnestus.",
             "updateFailed": "Uuendamine ebaõnnestus.",
-            "networkError": "Võrguviga uuendamisel."
+            "networkError": "Võrguviga uuendamisel.",
+            "updateRunning": "Skeemi uuendus on juba käimas. Palun proovige hetke pärast uuesti."
         },
         "schemaMessages": {
             "dry_run_mode": "Eelvaate režiim - Muudatusi ei tehta",

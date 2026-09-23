@@ -31,7 +31,8 @@
         "errorMessages": {
             "dryRunFailed": "Peržiūra nepavyko.",
             "updateFailed": "Atnaujinimas nepavyko.",
-            "networkError": "Tinklo klaida atnaujinant."
+            "networkError": "Tinklo klaida atnaujinant.",
+            "updateRunning": "Duomenų bazės atnaujinimas jau vykdomas. Bandykite dar kartą po akimirkos."
         },
         "schemaMessages": {
             "dry_run_mode": "Peržiūros režimas - Pakeitimai nebus atlikti",

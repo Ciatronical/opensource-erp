@@ -391,7 +391,9 @@
                         )
                     } else {
                         this.updateResult = data.payload
-                        this.errorMessage = data.text || this.$t('update.errorMessages.dryRunFailed')
+                        this.errorMessage = data.text === 'SCHEMA_UPDATE_RUNNING'
+                            ? this.$t('update.errorMessages.updateRunning')
+                            : (data.text || this.$t('update.errorMessages.dryRunFailed'))
                     }
                 } catch (error) {
                     console.error('Fehler beim Dry-Run:', error)
@@ -432,7 +434,9 @@
                         )
                     } else {
                         this.updateResult = data.payload
-                        this.errorMessage = data.text || this.$t('update.errorMessages.updateFailed')
+                        this.errorMessage = data.text === 'SCHEMA_UPDATE_RUNNING'
+                            ? this.$t('update.errorMessages.updateRunning')
+                            : (data.text || this.$t('update.errorMessages.updateFailed'))
                     }
                 } catch (error) {
                     console.error('Fehler beim Update:', error)

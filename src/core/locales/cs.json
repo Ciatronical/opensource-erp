@@ -18,6 +18,8 @@
         "updateButton": "Provést aktualizaci",
         "updateSuccess": "Aktualizace databáze byla úspěšně provedena.",
         "updateError": "Chyba při aktualizaci databáze. Zkuste to prosím znovu.",
+        "updateRunning": "Aktualizace již probíhá. Přihlaste se prosím za okamžik znovu.",
+        "updateHint": "Schéma se přizpůsobuje nové verzi programu; nejprve se vytvoří záloha. Může to trvat několik minut — nezavírejte okno.",
         "privacy": "Zásady ochrany osobních údajů",
         "dataDeletion": "Smazání dat",
         "API_DATABASE_ERROR": "Databáze neodpovídá podle očekávání. Informujte prosím správce."

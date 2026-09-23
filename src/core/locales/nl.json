@@ -18,6 +18,8 @@
         "updateButton": "Update uitvoeren",
         "updateSuccess": "Database-update succesvol uitgevoerd.",
         "updateError": "Fout bij de database-update. Probeer het opnieuw.",
+        "updateRunning": "Er wordt al een update uitgevoerd. Meld u zo meteen opnieuw aan.",
+        "updateHint": "Het schema wordt aangepast aan de nieuwe programmaversie; eerst wordt een back-up gemaakt. Dit kan enkele minuten duren — sluit het venster niet.",
         "privacy": "Privacyverklaring",
         "dataDeletion": "Gegevensverwijdering",
         "API_DATABASE_ERROR": "De database antwoordt niet zoals verwacht. Waarschuw de beheerder."

@@ -31,7 +31,8 @@
         "errorMessages": {
             "dryRunFailed": "Voorbeeld mislukt.",
             "updateFailed": "Update mislukt.",
-            "networkError": "Netwerkfout bij de update."
+            "networkError": "Netwerkfout bij de update.",
+            "updateRunning": "Er wordt al een schema-update uitgevoerd. Probeer het zo meteen opnieuw."
         },
         "schemaMessages": {
             "dry_run_mode": "Voorbeeldmodus - Er worden geen wijzigingen aangebracht",

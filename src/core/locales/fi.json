@@ -18,6 +18,8 @@
         "updateButton": "Suorita päivitys",
         "updateSuccess": "Tietokantapäivitys suoritettu onnistuneesti.",
         "updateError": "Virhe tietokantapäivityksessä. Yritä uudelleen.",
+        "updateRunning": "Päivitys on jo käynnissä. Kirjaudu uudelleen hetken kuluttua.",
+        "updateHint": "Skeema päivitetään uuteen ohjelmaversioon; ensin otetaan varmuuskopio. Tämä voi kestää muutaman minuutin — älä sulje ikkunaa.",
         "privacy": "Tietosuojakäytäntö",
         "dataDeletion": "Tietojen poisto",
         "API_DATABASE_ERROR": "Tietokanta ei vastaa odotetusti. Ilmoita asiasta järjestelmänvalvojalle."

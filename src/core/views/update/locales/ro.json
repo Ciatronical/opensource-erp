@@ -31,7 +31,8 @@
         "errorMessages": {
             "dryRunFailed": "Previzualizarea a esuat.",
             "updateFailed": "Actualizarea a esuat.",
-            "networkError": "Eroare de retea la actualizare."
+            "networkError": "Eroare de retea la actualizare.",
+            "updateRunning": "O actualizare a schemei este deja în curs. Încercați din nou într-un moment."
         },
         "schemaMessages": {
             "dry_run_mode": "Mod previzualizare - Nu se efectueaza modificari",

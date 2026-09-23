@@ -18,6 +18,8 @@
         "updateButton": "Uuenda andmebaas",
         "updateSuccess": "Andmebaasi uuendamine õnnestus.",
         "updateError": "Viga andmebaasi uuendamisel. Palun proovige uuesti.",
+        "updateRunning": "Uuendus on juba käimas. Palun logige hetke pärast uuesti sisse.",
+        "updateHint": "Skeem kohandatakse uue programmiversiooniga; enne seda tehakse varukoopia. See võib võtta mõne minuti — ärge sulgege akent.",
         "privacy": "Privaatsuspoliitika",
         "dataDeletion": "Andmete kustutamine",
         "API_DATABASE_ERROR": "Andmebaas ei vasta ootuspäraselt. Palun teavitage administraatorit."

@@ -31,7 +31,8 @@
         "errorMessages": {
             "dryRunFailed": "Forhandsvisning misslyckades.",
             "updateFailed": "Uppdatering misslyckades.",
-            "networkError": "Natverksfel vid uppdatering."
+            "networkError": "Natverksfel vid uppdatering.",
+            "updateRunning": "En schemauppdatering pågår redan. Försök igen om en stund."
         },
         "schemaMessages": {
             "dry_run_mode": "Forhandsvisningslage - Inga andringar gors",

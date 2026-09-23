@@ -31,7 +31,8 @@
         "errorMessages": {
             "dryRunFailed": "预览失败。",
             "updateFailed": "更新失败。",
-            "networkError": "更新时网络错误。"
+            "networkError": "更新时网络错误。",
+            "updateRunning": "架构更新已在进行中。请稍后重试。"
         },
         "schemaMessages": {
             "dry_run_mode": "预览模式 - 不会进行任何更改",

@@ -31,7 +31,8 @@
         "errorMessages": {
             "dryRunFailed": "Esikatselu epaonnistui.",
             "updateFailed": "Paivitys epaonnistui.",
-            "networkError": "Verkkovirhe paivityksessa."
+            "networkError": "Verkkovirhe paivityksessa.",
+            "updateRunning": "Skeeman päivitys on jo käynnissä. Yritä uudelleen hetken kuluttua."
         },
         "schemaMessages": {
             "dry_run_mode": "Esikatselutila - Muutoksia ei tehda",

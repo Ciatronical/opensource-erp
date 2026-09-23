@@ -306,6 +306,10 @@ export const oserpStore = defineStore('oserpStore', () => {
 
     /**
      * Mandant wechseln (ohne erneuten Login)
+     *
+     * @param {number|string} clientCode - Mandant, in den gewechselt wird
+     * @returns {string} AuthStatus.UPDATE_REQUIRED wenn die Firmen-Datenbank
+     *                   älter ist als die Upstall-Dateien, sonst AUTHENTICATED
      */
     async function switchClient(clientCode) {
         // Keine getLastCvParams(): die CV-IDs gehören zum alten Mandanten.
@@ -319,10 +323,47 @@ export const oserpStore = defineStore('oserpStore', () => {
             transformResponseToStoreData(response.data);
             localStorage.setItem(`oserp_infobar_login_ts_${session.user}_${session.client}`, String(Date.now()));
             announceClient();
+            // Wie beim Login: die aufrufende Ansicht stößt das Update an
+            if (response.data.payload?.schema_update_needed) {
+                return AuthStatus.UPDATE_REQUIRED;
+            }
+            return AuthStatus.AUTHENTICATED;
+        }
+
+        throw new ApiError('ApiError', response.data.text, response.data.payload);
+    }
+
+    /**
+     * Schema einer Firmen-Datenbank und der Auth-Datenbank aktualisieren
+     *
+     * Aktualisiert wird genau der genannte Mandant; die übrigen Firmen holen
+     * ihr Update bei ihrer nächsten Anmeldung. Ein Lauf über alle Firmen
+     * steht dem Systemadministrator in der Update-Ansicht offen.
+     *
+     * @param {number|string|null} clientCode - Mandant; ohne Angabe die Firma der Sitzung
+     * @returns {boolean} true wenn das Update durchgelaufen ist
+     */
+    async function updateClientSchema(clientCode = null) {
+        const response = await axios.post('/api/update/', {
+            action: 'updateSchema',
+            client: clientCode,
+            dry_run: false
+        });
+
+        if (response.data.success) {
             return true;
         }
 
-        throw new ApiError('ApiError', response.data.text);
+        // Der Text des Backends ist der Fehlercode, die Einzelheiten stehen im
+        // payload. Als Objekt würde Error() daraus "[object Object]" machen —
+        // deshalb die Fehlerliste als Text, das Rohergebnis daneben.
+        const einzelheiten = typeof response.data.payload === 'string'
+            ? response.data.payload
+            : (response.data.payload?.errors || []).join('\n');
+
+        const fehler = new ApiError('ApiError', response.data.text, einzelheiten);
+        fehler.payload = response.data.payload;
+        throw fehler;
     }
 
     /**
@@ -850,6 +891,7 @@ export const oserpStore = defineStore('oserpStore', () => {
         login,
         logout,
         switchClient,
+        updateClientSchema,
         createCompany,
         adminOverview,
         adminSaveUser,

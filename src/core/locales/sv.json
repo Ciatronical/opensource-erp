@@ -18,6 +18,8 @@
         "updateButton": "Kor uppdatering",
         "updateSuccess": "Databasuppdatering genomford.",
         "updateError": "Fel vid databasuppdatering. Forsok igen.",
+        "updateRunning": "En uppdatering pågår redan. Logga in igen om en stund.",
+        "updateHint": "Schemat anpassas till den nya programversionen; först skapas en säkerhetskopia. Det kan ta några minuter — stäng inte fönstret.",
         "privacy": "Integritetspolicy",
         "dataDeletion": "Dataradering",
         "API_DATABASE_ERROR": "Databasen svarar inte som väntat. Kontakta administratören."

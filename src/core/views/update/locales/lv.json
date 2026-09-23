@@ -31,7 +31,8 @@
         "errorMessages": {
             "dryRunFailed": "Priekšskatījums neizdevās.",
             "updateFailed": "Atjaunināšana neizdevās.",
-            "networkError": "Tīkla kļūda atjaunināšanā."
+            "networkError": "Tīkla kļūda atjaunināšanā.",
+            "updateRunning": "Datubāzes atjaunināšana jau notiek. Lūdzu, mēģiniet vēlreiz pēc brīža."
         },
         "schemaMessages": {
             "dry_run_mode": "Priekšskatījuma režīms - Izmaiņas netiek veiktas",

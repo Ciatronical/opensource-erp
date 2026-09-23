@@ -31,7 +31,8 @@
         "errorMessages": {
             "dryRunFailed": "Nahled selhal.",
             "updateFailed": "Aktualizace selhala.",
-            "networkError": "Sitova chyba pri aktualizaci."
+            "networkError": "Sitova chyba pri aktualizaci.",
+            "updateRunning": "Aktualizace schématu již probíhá. Zkuste to prosím za okamžik znovu."
         },
         "schemaMessages": {
             "dry_run_mode": "Rezim nahledu - Zadne zmeny nebudou provedeny",

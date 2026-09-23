@@ -31,7 +31,8 @@
         "errorMessages": {
             "dryRunFailed": "Onizleme basarisiz.",
             "updateFailed": "Guncelleme basarisiz.",
-            "networkError": "Guncelleme sirasinda ag hatasi."
+            "networkError": "Guncelleme sirasinda ag hatasi.",
+            "updateRunning": "Zaten bir şema güncellemesi çalışıyor. Lütfen birazdan tekrar deneyin."
         },
         "schemaMessages": {
             "dry_run_mode": "Onizleme modu - Degisiklik yapilmayacak",

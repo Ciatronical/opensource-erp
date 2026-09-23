@@ -18,6 +18,8 @@
         "updateButton": "Izpildīt atjauninājumu",
         "updateSuccess": "Datu bāzes atjauninājums veiksmīgi izpildīts.",
         "updateError": "Kļūda datu bāzes atjaunināšanā. Lūdzu mēģiniet vēlreiz.",
+        "updateRunning": "Atjaunināšana jau notiek. Lūdzu, piesakieties vēlreiz pēc brīža.",
+        "updateHint": "Datubāzes struktūra tiek pielāgota jaunajai programmas versijai; vispirms tiek izveidota rezerves kopija. Tas var aizņemt dažas minūtes — lūdzu, neaizveriet logu.",
         "privacy": "Privātuma politika",
         "dataDeletion": "Datu dzēšana",
         "API_DATABASE_ERROR": "Datu bāze neatbild, kā gaidīts. Lūdzu informējiet administratoru."

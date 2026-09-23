@@ -18,6 +18,8 @@
         "updateButton": "Güncellemeyi çalıştır",
         "updateSuccess": "Veritabanı güncellemesi başarıyla tamamlandı.",
         "updateError": "Veritabanı güncellemesinde hata. Lütfen tekrar deneyin.",
+        "updateRunning": "Zaten bir güncelleme çalışıyor. Lütfen birazdan tekrar oturum açın.",
+        "updateHint": "Şema yeni program sürümüne uyarlanıyor; önce bir yedek alınır. Bu birkaç dakika sürebilir — lütfen pencereyi kapatmayın.",
         "privacy": "Gizlilik politikası",
         "dataDeletion": "Veri silme",
         "API_DATABASE_ERROR": "Veritabanı beklendiği gibi yanıt vermiyor. Lütfen yöneticinize haber verin."

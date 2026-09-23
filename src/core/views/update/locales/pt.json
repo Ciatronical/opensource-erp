@@ -31,7 +31,8 @@
         "errorMessages": {
             "dryRunFailed": "Pré-visualização falhou.",
             "updateFailed": "Atualização falhou.",
-            "networkError": "Erro de rede durante a atualização."
+            "networkError": "Erro de rede durante a atualização.",
+            "updateRunning": "Já está em curso uma atualização do esquema. Tente novamente dentro de instantes."
         },
         "schemaMessages": {
             "dry_run_mode": "Modo de pré-visualização - Não serão efetuadas alterações",

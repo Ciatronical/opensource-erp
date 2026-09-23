@@ -31,7 +31,8 @@
         "errorMessages": {
             "dryRunFailed": "Forhaandsvisning mislyktes.",
             "updateFailed": "Oppdatering mislyktes.",
-            "networkError": "Nettverksfeil ved oppdatering."
+            "networkError": "Nettverksfeil ved oppdatering.",
+            "updateRunning": "En skjemaoppdatering kjører allerede. Prøv igjen om et øyeblikk."
         },
         "schemaMessages": {
             "dry_run_mode": "Forhaandsvisningsmodus - Ingen endringer utfoeres",

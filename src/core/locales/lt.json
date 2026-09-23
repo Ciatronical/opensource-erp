@@ -18,6 +18,8 @@
         "updateButton": "Vykdyti atnaujinimą",
         "updateSuccess": "Duomenų bazės atnaujinimas sėkmingai atliktas.",
         "updateError": "Klaida atnaujinant duomenų bazę. Bandykite dar kartą.",
+        "updateRunning": "Atnaujinimas jau vykdomas. Prisijunkite dar kartą po akimirkos.",
+        "updateHint": "Duomenų bazės struktūra pritaikoma naujai programos versijai; pirmiausia sukuriama atsarginė kopija. Tai gali užtrukti kelias minutes — neuždarykite lango.",
         "privacy": "Privatumo politika",
         "dataDeletion": "Duomenų trynimas",
         "API_DATABASE_ERROR": "Duomenų bazė atsako ne taip, kaip tikėtasi. Praneškite administratoriui."

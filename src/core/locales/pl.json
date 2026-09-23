@@ -18,6 +18,8 @@
         "updateButton": "Wykonaj aktualizację",
         "updateSuccess": "Aktualizacja bazy danych zakończona pomyślnie.",
         "updateError": "Błąd podczas aktualizacji bazy danych. Proszę spróbować ponownie.",
+        "updateRunning": "Aktualizacja jest już w toku. Zaloguj się ponownie za chwilę.",
+        "updateHint": "Schemat jest dostosowywany do nowej wersji programu; najpierw tworzona jest kopia zapasowa. Może to potrwać kilka minut — nie zamykaj okna.",
         "privacy": "Polityka prywatności",
         "dataDeletion": "Usuwanie danych",
         "API_DATABASE_ERROR": "Baza danych nie odpowiada zgodnie z oczekiwaniami. Proszę powiadomić administratora."

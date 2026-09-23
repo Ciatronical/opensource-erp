@@ -31,7 +31,8 @@
         "errorMessages": {
             "dryRunFailed": "Forhaandsvisning mislykkedes.",
             "updateFailed": "Opdatering mislykkedes.",
-            "networkError": "Netvaerksfejl ved opdatering."
+            "networkError": "Netvaerksfejl ved opdatering.",
+            "updateRunning": "Der kører allerede en skemaopdatering. Prøv igen om et øjeblik."
         },
         "schemaMessages": {
             "dry_run_mode": "Forhaandsvisningstilstand - Ingen aendringer foretages",

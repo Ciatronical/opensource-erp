@@ -532,7 +532,13 @@ function switchClient($data) {
         'is_demo' => defined('DEMO_MODE') && DEMO_MODE,
         'demo_inactivity_minutes' => defined('DEMO_INACTIVITY_MINUTES') ? DEMO_INACTIVITY_MINUTES : 20,
         'is_admin' => $isAdmin,
-        'can_create_company' => $isAdmin
+        'can_create_company' => $isAdmin,
+        // Wie bei der Anmeldung: sind die Upstall-Dateien neuer als das Schema
+        // dieser Firmen-Datenbank, stößt das Frontend das Update an und
+        // wiederholt den Wechsel. Ohne diese Zeile landete der Benutzer beim
+        // Firmenwechsel in einer veralteten Datenbank, weil die Anmeldung nur
+        // die Datenbank prüft, in die sie selbst hineingeht.
+        'schema_update_needed' => upstallUpdateNeeded($dbhCompany)
     );
 
     require __DIR__ . '/customer_vendor/customer_vendor.php';

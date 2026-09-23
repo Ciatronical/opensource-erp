@@ -55,6 +55,8 @@ function _getHelperFunctions() {
         'getTemplateSet', 'resolveTemplateDir', 'getFakturaTableConfig',
         'getPermissionForFakturaType', 'prepareKba',
         'createAutoBackupForClient', 'updateDatabaseSchema',
+        'schemaUpdateLock', 'schemaUpdateUnlock',
+        '_updateOneDatabase', '_updateAllDatabases', '_updateAllDatabasesLocked',
         'parseK7oConf', 'getK7oConfig', 'mapK7oConfigToSetup',
         'getSetupDefaults', 'setupEnc', 'validateSetupData',
         'testDatabaseConnection', 'createSettingsIni',

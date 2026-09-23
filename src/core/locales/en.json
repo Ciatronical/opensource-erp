@@ -18,6 +18,8 @@
         "updateButton": "Run update",
         "updateSuccess": "Database update completed successfully.",
         "updateError": "Database update failed. Please try again.",
+        "updateRunning": "An update is already running. Please sign in again in a moment.",
+        "updateHint": "The schema is being brought up to date with the new program version; a backup is taken first. This can take a few minutes — please do not close the window.",
         "privacy": "Privacy Policy",
         "dataDeletion": "Data Deletion",
         "API_DATABASE_ERROR": "The database did not answer as expected. Please contact your administrator."

@@ -18,6 +18,8 @@
         "updateButton": "Update ausführen",
         "updateSuccess": "Datenbank-Update erfolgreich durchgeführt.",
         "updateError": "Fehler beim Datenbank-Update. Bitte versuchen Sie es erneut.",
+        "updateRunning": "Es läuft bereits eine Aktualisierung. Bitte melden Sie sich gleich erneut an.",
+        "updateHint": "Das Schema wird an die neue Programmversion angepasst, vorher entsteht eine Sicherung. Das kann einige Minuten dauern — bitte das Fenster nicht schließen.",
         "privacy": "Datenschutzerklärung",
         "dataDeletion": "Datenlöschung",
         "API_DATABASE_ERROR": "Die Datenbank antwortet nicht wie erwartet. Bitte den Administrator verständigen."

@@ -31,7 +31,8 @@
         "errorMessages": {
             "dryRunFailed": "Vista previa fallida.",
             "updateFailed": "Actualización fallida.",
-            "networkError": "Error de red durante la actualización."
+            "networkError": "Error de red durante la actualización.",
+            "updateRunning": "Ya se está ejecutando una actualización del esquema. Vuelva a intentarlo en un momento."
         },
         "schemaMessages": {
             "dry_run_mode": "Modo de vista previa - No se realizarán cambios",

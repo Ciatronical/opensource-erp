@@ -8,6 +8,69 @@ if (!defined('SQL_IDENT')) {
     define('SQL_QUALIFIED_IDENT', SQL_IDENT . '(?:\\.' . SQL_IDENT . ')?');
 }
 
+// Schlüssel der Sperre, die parallele Schema-Updates verhindert. Frei
+// gewählt, aber fest: alle Prozesse müssen denselben Wert nehmen.
+if (!defined('SCHEMA_UPDATE_LOCK_KEY')) {
+    define('SCHEMA_UPDATE_LOCK_KEY', 815263401);
+}
+
+/**
+ * Sperrt das Schema-Update datenbankweit
+ *
+ * Zwei gleichzeitige Läufe legen dieselben Tabellen an und treiben sich
+ * gegenseitig in Deadlocks; die gemeinsame Auth-Datenbank fasst ohnehin jeder
+ * von ihnen an. Die Sperre hängt deshalb an der Auth-Verbindung und gilt
+ * über alle Mandanten hinweg.
+ *
+ * @param int $wartesekunden Wie lange auf einen laufenden Lauf gewartet wird
+ * @return bool true wenn die Sperre jetzt gehalten wird
+ */
+function schemaUpdateLock(int $wartesekunden = 120): bool {
+    $auth = DbhAuth::begin();
+
+    // Die Verbindungen sind persistent (PDO::ATTR_PERSISTENT). Eine Sperre,
+    // die ein abgebrochener Lauf auf genau dieser Verbindung hinterlassen hat,
+    // würde sonst nie wieder freigegeben — ein Sitzungs-Lock überlebt das
+    // Ende des Requests. Freigegeben werden nur Sperren dieser Verbindung,
+    // und die einzige im Projekt ist diese hier.
+    $auth->execute('SELECT pg_advisory_unlock_all()');
+
+    $ende = time() + $wartesekunden;
+    while (true) {
+        $zeile = $auth->getOne(
+            'SELECT pg_try_advisory_lock(:key::bigint)::int AS gesperrt',
+            [':key' => SCHEMA_UPDATE_LOCK_KEY]
+        );
+        if (!empty($zeile['gesperrt'])) {
+            return true;
+        }
+        if (time() >= $ende) {
+            writeLog('Schema-Update: Sperre nach ' . $wartesekunden . 's nicht erhalten', true, DLOG_WRN);
+            return false;
+        }
+        sleep(1);
+    }
+}
+
+/**
+ * Gibt die Sperre des Schema-Updates frei
+ *
+ * Gehört in einen finally-Block: bleibt die Sperre liegen, wartet jeder
+ * weitere Lauf auf dieser Datenbank vergeblich.
+ *
+ * @return void
+ */
+function schemaUpdateUnlock(): void {
+    try {
+        DbhAuth::begin()->execute(
+            'SELECT pg_advisory_unlock(:key::bigint)',
+            [':key' => SCHEMA_UPDATE_LOCK_KEY]
+        );
+    } catch (Throwable $e) {
+        writeLog('Sperre des Schema-Updates nicht freigegeben: ' . $e->getMessage(), true, DLOG_WRN);
+    }
+}
+
 /**
  * Aktualisiert das Datenbankschema basierend auf SQL-Dateien
  *
@@ -28,8 +91,20 @@ if (!defined('SQL_IDENT')) {
  * POST /api/update/
  * {
  *   "action": "updateSchema",
+ *   "client": 1,     // optional, Mandanten-ID
  *   "dry_run": true  // optional
  * }
+ *
+ * Aktualisiert die Auth-Datenbank und genau eine Firmen-Datenbank: ohne
+ * 'client' die der laufenden Sitzung, mit 'client' die des genannten
+ * Mandanten. Die Anmeldung und der Firmenwechsel nennen ihn ausdrücklich,
+ * damit nicht das Sitzungs-Cookie entscheidet, welche Datenbank angefasst
+ * wird — in einem zweiten Browsertab steht es womöglich auf einer anderen
+ * Firma. Zugelassen sind nur Mandanten, denen der Benutzer zugeordnet ist.
+ *
+ * Alle übrigen Mandanten bleiben unberührt — sie holen ihr Update bei der
+ * nächsten Anmeldung. Für einen Lauf über alle Firmen gibt es
+ * updateAllDatabases() in der Update-Ansicht.
  *
  * SQL-Dateien werden aus folgenden Verzeichnissen geladen:
  * - Basis: ../../upstall/crm/ (auth_schema.sql, company_schema.sql)
@@ -40,11 +115,31 @@ if (!defined('SQL_IDENT')) {
  * sein; crm läuft immer zuerst, danach die Erweiterungen alphabetisch.
  *
  * @param array $data Request-Daten
+ * @param int $data['client'] Mandanten-ID, deren Firmen-Datenbank aktualisiert wird (optional)
+ * @param bool $data['dry_run'] Nur anzeigen, nichts ändern (optional)
  * @return void
+ * @testdata {"dry_run": true}
  */
 function updateSchema($data) {
+    $ergebnis = _updateOneDatabase($data);
+    resultInfo($ergebnis['success'], $ergebnis['text'], $ergebnis['payload']);
+}
+
+/**
+ * Kern des Einzel-Updates — gibt zurück, statt zu antworten
+ *
+ * Getrennt von updateSchema(), damit auch Aufrufer ohne HTTP-Antwort das
+ * Ergebnis bekommen: tools/oserp-upstall.php laeuft auf der Kommandozeile.
+ *
+ * @param array $data Wie bei updateSchema(), zusaetzlich:
+ * @param int $data['lock_wait'] Sekunden, die auf einen laufenden Lauf gewartet wird
+ * @return array{success: bool, text: string, payload: mixed}
+ */
+function _updateOneDatabase($data): array {
     // Prüfe Berechtigung (optional - anpassen nach Bedarf)
     // permit('admin'); // Nur Admins dürfen Schema aktualisieren
+
+    set_time_limit(0);
 
     $dryRun = isset($data['dry_run']) && $data['dry_run'] === true;
 
@@ -55,140 +150,208 @@ function updateSchema($data) {
     $updateAuthDb = isset($data['auth_db']) ? $data['auth_db'] === true : true;
     $updateCompanyDb = isset($data['company_db']) ? $data['company_db'] === true : true;
 
-    // Sammle alle zu verarbeitenden Verzeichnisse (crm ist immer dabei)
-    $extensionDirs = ['crm'];
+    // Firmen-Datenbank bestimmen: ohne 'client' die der Sitzung, sonst der
+    // genannte Mandant aus auth.clients. Die zweite Form braucht die
+    // Anmeldung: scheitert sie an einer fehlenden Spalte, steht keine
+    // Sitzung, über die sich die Datenbank auflösen ließe.
+    $companyDb = null;
+    $companyCredentials = null;
 
-    // Aktive Erweiterungen aus der Company-Datenbank lesen
     if ($updateCompanyDb) {
-        try {
+        $clientId = isset($data['client']) ? (int)$data['client'] : 0;
+
+        if ($clientId > 0) {
+            $client = DbhAuth::begin()->getOne(
+                'SELECT name, dbhost, dbport, dbname, dbuser, dbpasswd FROM auth.clients WHERE id = :id',
+                [':id' => $clientId]
+            );
+
+            if (!$client) {
+                return ['success' => false, 'text' => 'UNKNOWN_CLIENT', 'payload' => "Mandant $clientId nicht gefunden"];
+            }
+
+            // Nur Mandanten, denen der angemeldete Benutzer zugeordnet ist —
+            // dieselbe Schranke, die auch den Firmenwechsel begrenzt. Im
+            // Setup-Modus gibt es noch keine Sitzung; dann entfällt sie.
+            $userId = DbhAuth::begin()->getUserId();
+            if ($userId) {
+                $zugeordnet = DbhAuth::begin()->getOne(
+                    'SELECT 1 AS ok FROM auth.clients_users WHERE client_id = :client_id AND user_id = :user_id',
+                    [':client_id' => $clientId, ':user_id' => $userId]
+                );
+
+                if (!$zugeordnet) {
+                    return ['success' => false, 'text' => 'USER_NOT_ASSIGNED_TO_CLIENT', 'payload' => 'Benutzer nicht dem Mandanten zugeordnet'];
+                }
+            }
+
+            $companyCredentials = [
+                'dbhost' => $client['dbhost'],
+                'dbport' => $client['dbport'],
+                'dbname' => $client['dbname'],
+                'dbuser' => $client['dbuser'],
+                'dbpasswd' => $client['dbpasswd']
+            ];
+
+            try {
+                $companyDb = new ApiDatabase(connectPDO(
+                    $client['dbhost'],
+                    $client['dbport'],
+                    $client['dbname'],
+                    $client['dbuser'],
+                    $client['dbpasswd']
+                ));
+            } catch (Exception $e) {
+                writeLog("Verbindung zu '{$client['dbname']}' fehlgeschlagen: " . $e->getMessage(), true, DLOG_ERR);
+                return ['success' => false, 'text' => 'DB_CONNECTION_FAILED', 'payload' => "Verbindung zur Datenbank '{$client['dbname']}' fehlgeschlagen"];
+            }
+        } else {
             $companyDb = DbhCompany::begin();
-            foreach (getActiveExtensions($companyDb) as $extension) {
-                // Der Name wird als Pfadbestandteil verwendet — nur harmlose Zeichen zulassen
-                if (preg_match('/^[a-zA-Z0-9_-]+$/', $extension)) {
-                    $extensionDirs[] = $extension;
-                    writeLog("Aktive Erweiterung aus DB geladen: $extension", true, DLOG_INF);
+        }
+    }
+
+    // Kein zweiter Lauf, solange dieser arbeitet — auch nicht aus einer
+    // anderen Anmeldung heraus, denn die Auth-Datenbank ist allen gemeinsam.
+    if (!schemaUpdateLock(isset($data['lock_wait']) ? (int)$data['lock_wait'] : 120)) {
+        return ['success' => false, 'text' => 'SCHEMA_UPDATE_RUNNING', 'payload' => 'Ein Schema-Update läuft bereits. Bitte gleich erneut versuchen.'];
+    }
+
+    try {
+        // Sammle alle zu verarbeitenden Verzeichnisse (crm ist immer dabei)
+        $extensionDirs = ['crm'];
+
+        // Aktive Erweiterungen aus der Firmen-Datenbank lesen
+        if ($updateCompanyDb) {
+            try {
+                foreach (getActiveExtensions($companyDb) as $extension) {
+                    // Der Name wird als Pfadbestandteil verwendet — nur harmlose Zeichen zulassen
+                    if (preg_match('/^[a-zA-Z0-9_-]+$/', $extension)) {
+                        $extensionDirs[] = $extension;
+                        writeLog("Aktive Erweiterung aus DB geladen: $extension", true, DLOG_INF);
+                    } else {
+                        writeLog("Ungültiger Erweiterungsname in extensions_oserp: $extension", true, DLOG_WRN);
+                    }
+                }
+            } catch (Exception $e) {
+                writeLog("Erweiterungen konnten nicht aus Company-DB geladen werden: " . $e->getMessage(), true, DLOG_WRN);
+            }
+        }
+
+        $sqlFiles = [];
+        $csvFiles = ['auth' => [], 'company' => []];
+
+        // Sammle SQL- und CSV-Dateien aus allen Erweiterungs-Verzeichnissen
+        foreach ($extensionDirs as $extensionDir) {
+            $extensionPath = $upstallBaseDir . $extensionDir . '/';
+
+            if (!is_dir($extensionPath)) {
+                if ($extensionDir === 'crm') {
+                    return ['success' => false, 'text' => "Basis-Verzeichnis nicht gefunden: $extensionPath", 'payload' => null];
+                }
+                writeLog("Erweiterungs-Verzeichnis nicht gefunden: $extensionPath", true, DLOG_WRN);
+                continue;
+            }
+
+            if ($updateAuthDb) {
+                $authFile = $extensionPath . 'auth_schema.sql';
+                if (file_exists($authFile)) {
+                    $sqlFiles[] = $authFile;
+                    writeLog("Auth-Schema gefunden: $authFile", true, DLOG_INF);
+                } elseif ($extensionDir === 'crm') {
+                    return ['success' => false, 'text' => "Basis auth_schema.sql nicht gefunden: $authFile", 'payload' => null];
+                }
+
+                // Suche CSV-Dateien im auth_data-Unterverzeichnis
+                $authCsvDir = $extensionPath . 'auth_data/';
+                if (is_dir($authCsvDir)) {
+                    $csvFilesFound = glob($authCsvDir . '*.csv');
+                    foreach ($csvFilesFound as $csvFile) {
+                        $csvFiles['auth'][] = $csvFile;
+                        writeLog("Auth-CSV gefunden: $csvFile", true, DLOG_INF);
+                    }
+                }
+            }
+
+            if ($updateCompanyDb) {
+                $companyFile = $extensionPath . 'company_schema.sql';
+                if (file_exists($companyFile)) {
+                    $sqlFiles[] = $companyFile;
+                    writeLog("Company-Schema gefunden: $companyFile", true, DLOG_INF);
+                } elseif ($extensionDir === 'crm') {
+                    return ['success' => false, 'text' => "Basis company_schema.sql nicht gefunden: $companyFile", 'payload' => null];
+                }
+
+                // Suche CSV-Dateien im company_data-Unterverzeichnis
+                $companyCsvDir = $extensionPath . 'company_data/';
+                if (is_dir($companyCsvDir)) {
+                    $csvFilesFound = glob($companyCsvDir . '*.csv');
+                    foreach ($csvFilesFound as $csvFile) {
+                        $csvFiles['company'][] = $csvFile;
+                        writeLog("Company-CSV gefunden: $csvFile", true, DLOG_INF);
+                    }
+                }
+            }
+        }
+
+        if (empty($sqlFiles)) {
+            return ['success' => false, 'text' => 'Keine SQL-Dateien zum Verarbeiten gefunden', 'payload' => null];
+        }
+
+        // Automatisches Backup vor dem Update (nur bei echtem Update, nicht bei Dry-Run)
+        $backupResults = [];
+        if (!$dryRun) {
+            require_once __DIR__ . '/../developer-tools/database-backup.php';
+
+            if ($updateAuthDb) {
+                $authBackup = createAutoBackup('auth');
+                $backupResults['auth'] = $authBackup;
+                if ($authBackup['success']) {
+                    writeLog("Auto-Backup Auth-DB erstellt: " . $authBackup['filename'], true, DLOG_INF);
                 } else {
-                    writeLog("Ungültiger Erweiterungsname in extensions_oserp: $extension", true, DLOG_WRN);
+                    writeLog("Auto-Backup Auth-DB fehlgeschlagen: " . $authBackup['error'], true, DLOG_WRN);
                 }
             }
-        } catch (Exception $e) {
-            writeLog("Erweiterungen konnten nicht aus Company-DB geladen werden: " . $e->getMessage(), true, DLOG_WRN);
-        }
-    }
 
-    $sqlFiles = [];
-    $csvFiles = ['auth' => [], 'company' => []];
-
-    // Sammle SQL- und CSV-Dateien aus allen Erweiterungs-Verzeichnissen
-    foreach ($extensionDirs as $extensionDir) {
-        $extensionPath = $upstallBaseDir . $extensionDir . '/';
-
-        if (!is_dir($extensionPath)) {
-            if ($extensionDir === 'crm') {
-                resultInfo(false, "Basis-Verzeichnis nicht gefunden: $extensionPath");
-                return;
-            }
-            writeLog("Erweiterungs-Verzeichnis nicht gefunden: $extensionPath", true, DLOG_WRN);
-            continue;
-        }
-
-        if ($updateAuthDb) {
-            $authFile = $extensionPath . 'auth_schema.sql';
-            if (file_exists($authFile)) {
-                $sqlFiles[] = $authFile;
-                writeLog("Auth-Schema gefunden: $authFile", true, DLOG_INF);
-            } elseif ($extensionDir === 'crm') {
-                resultInfo(false, "Basis auth_schema.sql nicht gefunden: $authFile");
-                return;
-            }
-
-            // Suche CSV-Dateien im auth_data-Unterverzeichnis
-            $authCsvDir = $extensionPath . 'auth_data/';
-            if (is_dir($authCsvDir)) {
-                $csvFilesFound = glob($authCsvDir . '*.csv');
-                foreach ($csvFilesFound as $csvFile) {
-                    $csvFiles['auth'][] = $csvFile;
-                    writeLog("Auth-CSV gefunden: $csvFile", true, DLOG_INF);
+            if ($updateCompanyDb) {
+                // Mit genanntem Mandanten über dessen Zugangsdaten, sonst über die Sitzung
+                $companyBackup = $companyCredentials
+                    ? createAutoBackupForClient($companyCredentials)
+                    : createAutoBackup('company');
+                $backupResults['company'] = $companyBackup;
+                if ($companyBackup['success']) {
+                    writeLog("Auto-Backup Company-DB erstellt: " . $companyBackup['filename'], true, DLOG_INF);
+                } else {
+                    writeLog("Auto-Backup Company-DB fehlgeschlagen: " . $companyBackup['error'], true, DLOG_WRN);
                 }
             }
         }
 
-        if ($updateCompanyDb) {
-            $companyFile = $extensionPath . 'company_schema.sql';
-            if (file_exists($companyFile)) {
-                $sqlFiles[] = $companyFile;
-                writeLog("Company-Schema gefunden: $companyFile", true, DLOG_INF);
-            } elseif ($extensionDir === 'crm') {
-                resultInfo(false, "Basis company_schema.sql nicht gefunden: $companyFile");
-                return;
-            }
+        // Führe Update aus
+        $results = updateDatabaseSchema($sqlFiles, $csvFiles, $dryRun, $companyDb);
 
-            // Suche CSV-Dateien im company_data-Unterverzeichnis
-            $companyCsvDir = $extensionPath . 'company_data/';
-            if (is_dir($companyCsvDir)) {
-                $csvFilesFound = glob($companyCsvDir . '*.csv');
-                foreach ($csvFilesFound as $csvFile) {
-                    $csvFiles['company'][] = $csvFile;
-                    writeLog("Company-CSV gefunden: $csvFile", true, DLOG_INF);
-                }
-            }
-        }
-    }
-
-    if (empty($sqlFiles)) {
-        resultInfo(false, 'Keine SQL-Dateien zum Verarbeiten gefunden');
-        return;
-    }
-
-    // Automatisches Backup vor dem Update (nur bei echtem Update, nicht bei Dry-Run)
-    $backupResults = [];
-    if (!$dryRun) {
-        require_once __DIR__ . '/../developer-tools/database-backup.php';
-
-        if ($updateAuthDb) {
-            $authBackup = createAutoBackup('auth');
-            $backupResults['auth'] = $authBackup;
-            if ($authBackup['success']) {
-                writeLog("Auto-Backup Auth-DB erstellt: " . $authBackup['filename'], true, DLOG_INF);
-            } else {
-                writeLog("Auto-Backup Auth-DB fehlgeschlagen: " . $authBackup['error'], true, DLOG_WRN);
-            }
+        // Backup-Ergebnisse an Results anhängen
+        if (!empty($backupResults)) {
+            $results['backups'] = $backupResults;
         }
 
-        if ($updateCompanyDb) {
-            $companyBackup = createAutoBackup('company');
-            $backupResults['company'] = $companyBackup;
-            if ($companyBackup['success']) {
-                writeLog("Auto-Backup Company-DB erstellt: " . $companyBackup['filename'], true, DLOG_INF);
-            } else {
-                writeLog("Auto-Backup Company-DB fehlgeschlagen: " . $companyBackup['error'], true, DLOG_WRN);
+        // Füge verarbeitete Erweiterungen zu den Ergebnissen hinzu
+        $results['processed_extensions'] = $extensionDirs;
+
+        if ($results['success'] && !$dryRun && $updateCompanyDb) {
+            upstallStoreChecksums($companyDb, $extensionDirs);
+        }
+
+        if ($results['success']) {
+            $message = 'Schema-Update erfolgreich';
+            if ($dryRun) {
+                $message .= ' (Dry-Run)';
             }
+            return ['success' => true, 'text' => $message, 'payload' => $results];
         }
-    }
 
-    // Führe Update aus
-    $results = updateDatabaseSchema($sqlFiles, $csvFiles, $dryRun);
-
-    // Backup-Ergebnisse an Results anhängen
-    if (!empty($backupResults)) {
-        $results['backups'] = $backupResults;
-    }
-
-    // Füge verarbeitete Erweiterungen zu den Ergebnissen hinzu
-    $results['processed_extensions'] = $extensionDirs;
-
-    if ($results['success'] && !$dryRun && $updateCompanyDb) {
-        upstallStoreChecksums(DbhCompany::begin(), $extensionDirs);
-    }
-
-    if ($results['success']) {
-        $message = 'Schema-Update erfolgreich';
-        if ($dryRun) {
-            $message .= ' (Dry-Run)';
-        }
-        resultInfo(true, $message, $results);
-    } else {
-        resultInfo(false, 'Fehler beim Schema-Update', $results);
+        return ['success' => false, 'text' => 'Fehler beim Schema-Update', 'payload' => $results];
+    } finally {
+        schemaUpdateUnlock();
     }
 }
 
@@ -1254,8 +1417,48 @@ function getDatabaseNames($data) {
  * @return void
  */
 function updateAllDatabases($data) {
+    $ergebnis = _updateAllDatabases($data);
+    resultInfo($ergebnis['success'], $ergebnis['text'], $ergebnis['payload']);
+}
+
+/**
+ * Kern des Laufs über alle Datenbanken — gibt zurück, statt zu antworten
+ *
+ * Getrennt von updateAllDatabases(), damit auch Aufrufer ohne HTTP-Antwort
+ * das Ergebnis bekommen: tools/oserp-upstall.php laeuft auf der
+ * Kommandozeile. Die Sperre umschließt hier den ganzen Ablauf, gilt also für
+ * jeden Aufrufer.
+ *
+ * @param array $data Wie bei updateAllDatabases(), zusaetzlich:
+ * @param int $data['lock_wait'] Sekunden, die auf einen laufenden Lauf gewartet wird
+ * @return array{success: bool, text: string, payload: mixed}
+ */
+function _updateAllDatabases($data): array {
     set_time_limit(0);
 
+    // Dieselbe Sperre wie beim Update einzelner Mandanten: beide Wege fassen
+    // die gemeinsame Auth-Datenbank an.
+    if (!schemaUpdateLock(isset($data['lock_wait']) ? (int)$data['lock_wait'] : 120)) {
+        return ['success' => false, 'text' => 'SCHEMA_UPDATE_RUNNING', 'payload' => 'Ein Schema-Update läuft bereits. Bitte gleich erneut versuchen.'];
+    }
+
+    try {
+        return _updateAllDatabasesLocked($data);
+    } finally {
+        schemaUpdateUnlock();
+    }
+}
+
+/**
+ * Der eigentliche Lauf über alle Datenbanken — nur aus _updateAllDatabases()
+ *
+ * Ausgelagert, damit die Sperre den ganzen Ablauf umschließt, ohne ihn
+ * einzurücken.
+ *
+ * @param array $data Request-Daten
+ * @return array{success: bool, text: string, payload: array}
+ */
+function _updateAllDatabasesLocked($data): array {
     $dryRun = isset($data['dry_run']) && $data['dry_run'] === true;
     $upstallBaseDir = __DIR__ . '/../../upstall/';
 
@@ -1453,5 +1656,6 @@ function updateAllDatabases($data) {
     $message = $allResults['success']
         ? ($dryRun ? 'Vorschau erfolgreich (Dry-Run)' : 'Alle Datenbanken erfolgreich aktualisiert')
         : 'Fehler bei der Aktualisierung';
-    resultInfo($allResults['success'], $message, $allResults);
+
+    return ['success' => $allResults['success'], 'text' => $message, 'payload' => $allResults];
 }

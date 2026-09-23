@@ -18,6 +18,8 @@
         "updateButton": "执行更新",
         "updateSuccess": "数据库更新成功完成。",
         "updateError": "数据库更新时出错。请重试。",
+        "updateRunning": "更新已在进行中。请稍后重新登录。",
+        "updateHint": "正在使数据库结构与新程序版本保持一致；此前会先创建备份。这可能需要几分钟 — 请勿关闭窗口。",
         "privacy": "隐私政策",
         "dataDeletion": "数据删除",
         "API_DATABASE_ERROR": "数据库的响应不符合预期。请联系管理员。"

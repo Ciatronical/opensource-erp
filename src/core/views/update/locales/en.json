@@ -31,7 +31,8 @@
         "errorMessages": {
             "dryRunFailed": "Preview failed.",
             "updateFailed": "Update failed.",
-            "networkError": "Network error during update."
+            "networkError": "Network error during update.",
+            "updateRunning": "A schema update is already running. Please try again in a moment."
         },
         "schemaMessages": {
             "dry_run_mode": "Preview mode - No changes will be made",

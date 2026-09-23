@@ -318,6 +318,19 @@
   <!-- MessagesView Integration -->
   <MessagesView :messages="displayMessages" />
 
+  <!-- Firmenwechsel: die Datenbank der neuen Firma wird gerade aktualisiert -->
+  <v-overlay
+    :model-value="schemaUpdateRunning"
+    persistent
+    class="align-center justify-center"
+  >
+    <v-card class="pa-6 text-center" max-width="420">
+      <v-progress-circular indeterminate size="48" color="primary" />
+      <div class="mt-4 text-body-1 font-weight-medium">{{ t('NavbarView.schemaUpdateRunning') }}</div>
+      <div class="mt-2 text-body-2 text-medium-emphasis">{{ t('NavbarView.schemaUpdateHint') }}</div>
+    </v-card>
+  </v-overlay>
+
   <!-- Über-Dialog -->
   <AboutDialog v-model="showAboutDialog" :app-title="appTitle" />
 
@@ -325,6 +338,9 @@
 
 <script>
 import { oserpStore } from '@/core/stores/oserp.store.js'
+import { AuthStatus } from '@/core/constants/auth.js'
+import { ApiError } from '@/core/utils/error.js'
+import * as alerts from '@/core/utils/alerts.js'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { computed, inject, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
@@ -525,10 +541,41 @@ export default {
       .then(({ clients }) => { clientList.value = clients })
       .catch(() => {})
 
+    // Läuft, solange das Schema der neuen Firma aktualisiert wird
+    const schemaUpdateRunning = ref(false)
+
     async function doSwitchClient(clientCode) {
       accountMenuOpen.value = false
       try {
-        await oserpData.switchClient(clientCode)
+        const status = await oserpData.switchClient(clientCode)
+
+        // Die Upstall-Dateien sind neuer als das Schema dieser Firma: erst
+        // aktualisieren, dann den Wechsel einmal wiederholen — sonst arbeitet
+        // der Benutzer in einer veralteten Datenbank. Nur einmal: ein
+        // dauerhaft scheiterndes Update liefe sonst in eine Schleife.
+        if (status === AuthStatus.UPDATE_REQUIRED) {
+          schemaUpdateRunning.value = true
+          try {
+            await oserpData.updateClientSchema(clientCode)
+            await oserpData.switchClient(clientCode)
+          } catch (err) {
+            // Dialog statt Einblendung: der Wechsel ist bereits vollzogen, der
+            // Benutzer arbeitet also gleich in einer Firma mit veraltetem
+            // Schema. Das soll er lesen und wegklicken, nicht übersehen. Die
+            // Einzelmeldungen des Updates stehen aufklappbar darunter.
+            console.error('Schema-Update beim Firmenwechsel fehlgeschlagen:', err)
+            alerts.error(
+              err?.code === 'SCHEMA_UPDATE_RUNNING'
+                ? t('NavbarView.schemaUpdateBusy')
+                : t('NavbarView.schemaUpdateFailed'),
+              t('NavbarView.schemaUpdateFailedTitle'),
+              err instanceof ApiError ? err : false
+            )
+          } finally {
+            schemaUpdateRunning.value = false
+          }
+        }
+
         router.push({ name: 'startup' })
       } catch (err) {
         console.error('Firmenwechsel fehlgeschlagen:', err)
@@ -608,6 +655,7 @@ export default {
     return {
       oserpData,
       route,
+      schemaUpdateRunning,
       appTitle,
       isDemo,
       showDemoWarning,

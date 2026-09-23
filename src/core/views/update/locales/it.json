@@ -31,7 +31,8 @@
         "errorMessages": {
             "dryRunFailed": "Anteprima fallita.",
             "updateFailed": "Aggiornamento fallito.",
-            "networkError": "Errore di rete durante l'aggiornamento."
+            "networkError": "Errore di rete durante l'aggiornamento.",
+            "updateRunning": "È già in corso un aggiornamento dello schema. Riprovare tra un istante."
         },
         "schemaMessages": {
             "dry_run_mode": "Modalità anteprima - Non verranno apportate modifiche",

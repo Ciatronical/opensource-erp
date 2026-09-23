@@ -18,6 +18,8 @@
         "updateButton": "Kjoer oppdatering",
         "updateSuccess": "Databaseoppdatering gjennomfoert.",
         "updateError": "Feil ved databaseoppdatering. Vennligst proev igjen.",
+        "updateRunning": "En oppdatering kjører allerede. Logg inn igjen om et øyeblikk.",
+        "updateHint": "Skjemaet tilpasses den nye programversjonen; først opprettes en sikkerhetskopi. Det kan ta noen minutter — ikke lukk vinduet.",
         "privacy": "Personvernerklaering",
         "dataDeletion": "Datasletting",
         "API_DATABASE_ERROR": "Databasen svarer ikke som forventet. Vennligst kontakt administratoren."

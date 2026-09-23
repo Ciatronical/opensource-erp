@@ -31,7 +31,8 @@
         "errorMessages": {
             "dryRunFailed": "Echec de l'apercu.",
             "updateFailed": "Echec de la mise a jour.",
-            "networkError": "Erreur reseau lors de la mise a jour."
+            "networkError": "Erreur reseau lors de la mise a jour.",
+            "updateRunning": "Une mise à jour du schéma est déjà en cours. Veuillez réessayer dans un instant."
         },
         "schemaMessages": {
             "dry_run_mode": "Mode apercu - Aucune modification ne sera effectuee",
