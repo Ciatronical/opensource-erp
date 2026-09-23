@@ -238,6 +238,37 @@ function shopCategoryGroups(array $kategorien, array $regeln): array {
 }
 
 /**
+ * Zieldatei der Kategorieübersicht
+ *
+ * Wo sie liegt, sagt der Vorlagensatz (data.category_groups in template.json);
+ * nennt er nichts, gibt es keine Übersicht und die Funktion liefert einen
+ * leeren Pfad zurück.
+ *
+ * Herausgelöst, damit ein Lauf nachsehen kann, ob die Datei fehlt, ohne sie
+ * gleich zu schreiben.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param bool $anlegen Fehlende Verzeichnisse anlegen
+ * @return string Pfad, leer wenn der Vorlagensatz keine Übersicht vorsieht
+ * @throws ApiError SHOP_PATH_INVALID, SHOP_PATH_MISSING
+ */
+function shopCategoryGroupsFile($db, bool $anlegen = false): string {
+    $satz = shopConfigValue($db, 'shop_template_set', 'standard');
+    $relativ = trim((string)(shopTemplateInfo(shopTemplateDir($satz))['data']['category_groups'] ?? ''), '/');
+    if ('' === $relativ) {
+        return '';
+    }
+    if (str_starts_with(basename($relativ), '.')) {
+        throw new ApiError('SHOP_PATH_INVALID', 'Unbrauchbarer Dateiname für die Kategorieübersicht: '.$relativ);
+    }
+
+    $unterordner = dirname($relativ);
+
+    return shopPathUnder(shopSiteDir($db, $anlegen), '.' === $unterordner ? '' : $unterordner, $anlegen)
+         .'/'.basename($relativ);
+}
+
+/**
  * Kategorien der Artikel im Shop mit Zahl der Artikel
  *
  * Dieselbe Auswahl wie shopListedParts(): was eine Produktseite hat, zählt.
@@ -287,18 +318,15 @@ function shopCategoryCounts($db): array {
 function shopWriteCategoryGroups($db): array {
     $bilanz = ['file' => '', 'categories' => 0, 'groups' => 0, 'changed' => false];
 
-    $satz = shopConfigValue($db, 'shop_template_set', 'standard');
-    $relativ = trim((string)(shopTemplateInfo(shopTemplateDir($satz))['data']['category_groups'] ?? ''), '/');
-    if ('' === $relativ) {
+    $datei = shopCategoryGroupsFile($db, true);
+    if ('' === $datei) {
         return $bilanz;
     }
-    if (str_starts_with(basename($relativ), '.')) {
-        throw new ApiError('SHOP_PATH_INVALID', 'Unbrauchbarer Dateiname für die Kategorieübersicht: '.$relativ);
-    }
-
-    $unterordner = dirname($relativ);
-    $datei = shopPathUnder(shopSiteDir($db, true), '.' === $unterordner ? '' : $unterordner, true).'/'.basename($relativ);
     $bilanz['file'] = $datei;
+
+    // Derselbe Satz, aus dem shopCategoryGroupsFile() den Pfad nimmt: seine
+    // Regeln bestimmen die Gruppen.
+    $satz = shopConfigValue($db, 'shop_template_set', 'standard');
 
     $kategorien = shopCategoryCounts($db);
     if (!$kategorien) {

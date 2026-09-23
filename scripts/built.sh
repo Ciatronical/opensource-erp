@@ -41,11 +41,25 @@ if ! npm run build; then
 fi
 
 echo ""
-echo "2b. SSE-Server Dependencies..."
+echo "2b. Shop-UI prüfen..."
+# Die Widgets des Shops werden getrennt gebaut (esbuild statt Vite). Ist eines
+# der beiden Bündel älter als sein Quelltext, laufen Paket und Testseite
+# auseinander — dann lädt eine Shop-Seite zwei verschiedene Stände derselben
+# Widgets, und Lit zeigt statt der Knöpfe seine Platzhalter. Deshalb hier ein
+# Halt statt einer Warnung.
+if ! "$SCRIPT_DIR/shop-ui-build.sh" --check; then
+    echo ""
+    echo "❌ Shop-UI ist nicht auf dem Stand des Quelltexts!"
+    echo "   Bauen mit: scripts/shop-ui-build.sh"
+    exit 1
+fi
+
+echo ""
+echo "2c. SSE-Server Dependencies..."
 (cd backend/sse && npm install --omit=dev)
 
 echo ""
-echo "2c. PHP-Dependencies (Composer) für E-Rechnung/FinTS..."
+echo "2d. PHP-Dependencies (Composer) für E-Rechnung/FinTS..."
 if [ -f backend/composer.json ]; then
     if command -v composer &>/dev/null; then
         (cd backend && composer install --no-interaction --no-dev --optimize-autoloader)

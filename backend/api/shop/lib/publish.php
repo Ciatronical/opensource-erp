@@ -1212,8 +1212,22 @@ function shopPublishRun($db, ?callable $melden = null, int $limit = 500, ?array 
             $fehler('Paketabgleich fehlgeschlagen: '.$e->getMessage());
         }
 
-        // Die Kategorieübersicht nur, wenn sich Seiten geändert haben.
-        if ($bilanz['seiten'] + $bilanz['entfernt'] > 0) {
+        // Die Kategorieübersicht, wenn sich Seiten geändert haben — oder wenn
+        // ihre Datei fehlt. Das zweite heilt einen Lauf, in dem der Schritt
+        // ausgefallen ist: sonst bliebe die Übersicht weg, bis zufällig wieder
+        // eine Seite geschrieben wird.
+        $uebersichtFehlt = false;
+        try {
+            $ziel = shopCategoryGroupsFile($db);
+            $uebersichtFehlt = '' !== $ziel && !is_file($ziel);
+        } catch (ApiError $e) {
+            // Nur das Unterverzeichnis fehlt — dann fehlt auch die Datei.
+            // Alles andere (kein Wurzelverzeichnis etwa) meldet schon ein
+            // anderer Schritt; hier bliebe es bei einer zweiten Meldung.
+            $uebersichtFehlt = 'SHOP_PATH_MISSING' === $e->getId();
+        }
+
+        if ($bilanz['seiten'] + $bilanz['entfernt'] > 0 || $uebersichtFehlt) {
             try {
                 $übersicht = shopWriteCategoryGroups($db);
                 if ($übersicht['changed']) {
