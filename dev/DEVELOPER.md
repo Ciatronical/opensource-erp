@@ -212,6 +212,13 @@ psql -U postgres -d kivitendo_auth        # Datenbank öffnen
 \d customer                                # Tabellen-Schema
 ```
 
+```bash
+php tools/oserp-upstall.php --dry-run     # Schema-Update vorab ansehen
+php tools/oserp-upstall.php               # Auth-DB und alle Firmen aktualisieren
+```
+
+Einzelheiten zum Update-System: `backend/upstall/README.md`.
+
 ### Node/npm
 
 ```bash

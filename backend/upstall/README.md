@@ -26,6 +26,47 @@ backend/upstall/
     └── ...
 ```
 
+## Wege, ein Update auszulösen
+
+| Weg | Reichweite | Voraussetzung |
+|-----|------------|---------------|
+| Anmeldung und Firmenwechsel | Auth-Datenbank + die Firma, in die der Benutzer geht | läuft von selbst |
+| Update-Ansicht im Browser | Auth-Datenbank + alle Firmen aus `auth.clients` | Anmeldung |
+| `tools/oserp-upstall.php` | alle Firmen, oder eine einzelne mit `--client` | Zugang zum Server |
+
+Anmeldung und Firmenwechsel vergleichen je Firmen-Datenbank eine Prüfsumme der
+Upstall-Dateien (`defaults_oserp.upstall_checksum_<verzeichnis>`). Weicht sie
+ab, läuft das Update für **genau diese** Firma, und die Anmeldung bzw. der
+Wechsel wird einmal wiederholt. Alle anderen Firmen bleiben unberührt — sie
+holen ihr Update bei ihrer eigenen Anmeldung oder über die Kommandozeile.
+
+## Kommandozeile
+
+`tools/oserp-upstall.php` nutzt dieselben Funktionen wie die Update-Ansicht,
+braucht aber weder Anmeldung noch Sitzung. Es ist der Weg für alles, was über
+den Browser nicht erreichbar ist: ein Auth-Schema, an dem schon die Anmeldung
+scheitert, Firmen, bei denen sich nie ein Mitarbeiter anmeldet (etwa eine reine
+Shop-Firma), und der Regelfall nach einem `git pull` auf dem Server.
+
+```bash
+php tools/oserp-upstall.php --dry-run     # Vorschau, ändert nichts
+php tools/oserp-upstall.php               # Auth-DB und jede Firma aus auth.clients
+php tools/oserp-upstall.php --client 3    # nur dieser Mandant
+php tools/oserp-upstall.php --help        # alle Optionen
+```
+
+Unter dem Benutzer aufrufen, unter dem auch der Webserver läuft — sonst gehören
+die Sicherungen und Logzeilen hinterher `root`:
+
+```bash
+sudo -u www-data php tools/oserp-upstall.php
+```
+
+Exit-Code 0 bei Erfolg, 1 bei Fehlern. `--json` liefert das Rohergebnis für
+weiterverarbeitende Skripte, `--verbose` jede Einzelmeldung statt der Zählung,
+`--wait SEKUNDEN` bestimmt, wie lange auf einen bereits laufenden Lauf gewartet
+wird.
+
 ## API-Verwendung
 
 ### Schema aktualisieren
@@ -36,12 +77,17 @@ Content-Type: application/json
 
 {
     "action": "updateSchema",
-    "features": ["lxcars"],     // Optional: zusätzliche Feature-Module
+    "client": 1,                // Optional: Mandant; ohne Angabe die Firma der Sitzung
     "auth_db": true,            // Optional: Auth-DB aktualisieren (default: true)
     "company_db": true,         // Optional: Company-DB aktualisieren (default: true)
     "dry_run": false            // Optional: Nur Vorschau ohne Änderungen
 }
 ```
+
+Welche Erweiterungsverzeichnisse mitlaufen, steht nicht im Aufruf: sie werden
+aus `extensions_oserp` der jeweiligen Firmen-Datenbank gelesen. `crm` ist immer
+dabei. Für einen Lauf über alle Firmen gibt es `updateAllDatabases` mit
+denselben Parametern ausser `client`.
 
 ### Beispiel-Response
 
@@ -213,3 +259,6 @@ Mit `"dry_run": true` werden keine Änderungen vorgenommen. Stattdessen werden a
 - **Features**: Das `crm`-Verzeichnis wird immer geladen, Features sind optional
 - **Berechtigungen**: COPY benötigt Lesezugriff auf die CSV-Datei vom PostgreSQL-Server
 - **Encoding**: Alle Dateien sollten UTF-8 kodiert sein
+- **Sperre**: Ein PostgreSQL-Advisory-Lock auf der Auth-Verbindung verhindert zwei gleichzeitige Läufe. Wer wartet, tut das standardmäßig bis zu 120 Sekunden, danach kommt `SCHEMA_UPDATE_RUNNING` zurück
+- **Sicherung**: Vor jedem echten Lauf entsteht per `pg_dump` eine Sicherung jeder betroffenen Datenbank; ein Vorschaulauf legt keine an
+- **Prüfsummen**: Sie werden nur nach einem erfolgreichen echten Lauf geschrieben. Nach einem Vorschaulauf oder einem Fehler meldet die Anmeldung also weiterhin Aktualisierungsbedarf
