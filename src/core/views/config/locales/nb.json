@@ -1063,6 +1063,7 @@
         "cooldownMinutes_help": "Ventetid etter en melding før samme skilt rapporteres igjen",
         "customer": "Kunde",
         "detection": "Gjenkjenning",
+        "debug": "Feilsøking",
         "detectionHistory": "Gjenkjenningshistorikk",
         "detectionTtlHours": "Visningstid (timer)",
         "detectionTtlHours_help": "Hvor lenge en gjenkjenning forblir synlig i infobåndet",

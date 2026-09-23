@@ -1063,6 +1063,7 @@
         "cooldownMinutes_help": "Väntetid efter en rapport innan samma skylt rapporteras igen",
         "customer": "Kund",
         "detection": "Igenkänning",
+        "debug": "Felsökning",
         "detectionHistory": "Igenkänningshistorik",
         "detectionTtlHours": "Visningstid (timmar)",
         "detectionTtlHours_help": "Hur länge en igenkänning förblir synlig i infofältet",

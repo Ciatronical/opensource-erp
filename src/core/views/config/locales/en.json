@@ -1265,6 +1265,7 @@
         "cooldownMinutes_help": "Wait time after a report before the same plate is reported again",
         "customer": "Customer",
         "detection": "Detection",
+        "debug": "Debugging",
         "detectionHistory": "Detection history",
         "detectionTtlHours": "Display duration (hours)",
         "detectionTtlHours_help": "How long a detection remains visible in the info bar",

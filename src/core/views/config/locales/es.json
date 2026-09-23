@@ -1063,6 +1063,7 @@
         "cooldownMinutes_help": "Tiempo de espera después de un aviso antes de que se informe de la misma matrícula de nuevo",
         "customer": "Cliente",
         "detection": "Detección",
+        "debug": "Depuración",
         "detectionHistory": "Historial de detecciones",
         "detectionTtlHours": "Duración de visualización (horas)",
         "detectionTtlHours_help": "Cuánto tiempo permanece visible una detección en la barra de información",

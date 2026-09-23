@@ -1239,6 +1239,7 @@
         "servicePort": "Service-Port",
         "servicePort_help": "Port des ANPR-Services (Standard: 8765)",
         "detection": "Erkennung",
+        "debug": "Debug",
         "showUnknownVehicles": "Unbekannte Fahrzeuge anzeigen",
         "showUnknownVehicles_help": "Auch Fahrzeuge anzeigen die nicht in der Datenbank sind",
         "detectionTtlHours": "Anzeigedauer (Stunden)",

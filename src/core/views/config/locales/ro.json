@@ -1063,6 +1063,7 @@
         "cooldownMinutes_help": "Timp de așteptare după un raport înainte ca același număr să fie raportat din nou",
         "customer": "Client",
         "detection": "Detecție",
+        "debug": "Depanare",
         "detectionHistory": "Istoricul detectărilor",
         "detectionTtlHours": "Durată afișare (ore)",
         "detectionTtlHours_help": "Cât timp o detecție rămâne vizibilă în bara de informații",

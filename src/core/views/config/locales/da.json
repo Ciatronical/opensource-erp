@@ -1063,6 +1063,7 @@
         "cooldownMinutes_help": "Ventetid efter en melding, inden samme nummerplade rapporteres igen",
         "customer": "Kunde",
         "detection": "Genkendelse",
+        "debug": "Fejlfinding",
         "detectionHistory": "Genkendelseshistorik",
         "detectionTtlHours": "Visningstid (timer)",
         "detectionTtlHours_help": "Hvor lang tid en genkendelse forbliver synlig i infobåndet",

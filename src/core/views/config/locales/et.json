@@ -1063,6 +1063,7 @@
         "cooldownMinutes_help": "Ooteaeg pärast teatamist, enne kui sama numbrimärki uuesti teatatakse",
         "customer": "Klient",
         "detection": "Tuvastamine",
+        "debug": "Silumine",
         "detectionHistory": "Tuvastamisajalugu",
         "detectionTtlHours": "Kuvamise kestus (tunnid)",
         "detectionTtlHours_help": "Kui kaua tuvastamine on inforibas nähtav",

@@ -1063,6 +1063,7 @@
         "cooldownMinutes_help": "Tempo di attesa dopo un avviso prima che la stessa targa venga segnalata di nuovo",
         "customer": "Cliente",
         "detection": "Rilevamento",
+        "debug": "Debug",
         "detectionHistory": "Cronologia rilevamenti",
         "detectionTtlHours": "Durata visualizzazione (ore)",
         "detectionTtlHours_help": "Per quanto tempo una rilevazione rimane visibile nella barra info",

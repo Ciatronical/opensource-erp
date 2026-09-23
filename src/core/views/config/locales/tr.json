@@ -1063,6 +1063,7 @@
         "cooldownMinutes_help": "Aynı plaka tekrar bildirilmeden önce bir rapordan sonra bekleme süresi",
         "customer": "Müşteri",
         "detection": "Tespit",
+        "debug": "Hata ayıklama",
         "detectionHistory": "Tespit geçmişi",
         "detectionTtlHours": "Görüntüleme süresi (saat)",
         "detectionTtlHours_help": "Bir tespiti bilgi çubuğunda ne kadar süre görünür kalır",

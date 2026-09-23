@@ -1063,6 +1063,7 @@
         "cooldownMinutes_help": "Odotusaika ilmoituksen jälkeen ennen kuin sama rekisterikilpi ilmoitetaan uudelleen",
         "customer": "Asiakas",
         "detection": "Tunnistus",
+        "debug": "Virheenjäljitys",
         "detectionHistory": "Tunnistushistoria",
         "detectionTtlHours": "Näyttöaika (tuntia)",
         "detectionTtlHours_help": "Kuinka kauan tunnistus pysyy näkyvissä infopalkissa",

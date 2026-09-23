@@ -1167,6 +1167,7 @@
         "cooldownMinutes_help": "Czas oczekiwania po zgłoszeniu przed ponownym zgłoszeniem tej samej tablicy",
         "customer": "Klient",
         "detection": "Wykrywanie",
+        "debug": "Debugowanie",
         "detectionHistory": "Historia wykryć",
         "detectionTtlHours": "Czas wyświetlania (godziny)",
         "detectionTtlHours_help": "Jak długo wykryte rozpoznanie pozostaje widoczne na pasku informacyjnym",

@@ -1063,6 +1063,7 @@
         "cooldownMinutes_help": "Délai d'attente après un rapport avant que la même plaque soit signalée à nouveau",
         "customer": "Client",
         "detection": "Détection",
+        "debug": "Débogage",
         "detectionHistory": "Historique des détections",
         "detectionTtlHours": "Durée d'affichage (heures)",
         "detectionTtlHours_help": "Combien de temps une détection reste visible dans la barre d'info",

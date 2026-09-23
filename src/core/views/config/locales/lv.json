@@ -1063,6 +1063,7 @@
         "cooldownMinutes_help": "Gaidīšanas laiks pēc paziņojuma, pirms tas pats numurs tiek ziņots vēlreiz",
         "customer": "Klients",
         "detection": "Atpazīšana",
+        "debug": "Atkļūdošana",
         "detectionHistory": "Atpazīšanas vēsture",
         "detectionTtlHours": "Rādīšanas ilgums (stundas)",
         "detectionTtlHours_help": "Cik ilgi atpazīšana paliek redzama informācijas joslā",

@@ -1063,6 +1063,7 @@
         "cooldownMinutes_help": "Wachttijd na een melding voordat hetzelfde kenteken opnieuw wordt gemeld",
         "customer": "Klant",
         "detection": "Herkenning",
+        "debug": "Foutopsporing",
         "detectionHistory": "Herkenningsgeschiedenis",
         "detectionTtlHours": "Weergaveduur (uren)",
         "detectionTtlHours_help": "Hoe lang een herkenning zichtbaar blijft in de infobalk",

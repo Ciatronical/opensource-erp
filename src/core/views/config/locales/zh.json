@@ -1063,6 +1063,7 @@
         "cooldownMinutes_help": "报告后再次报告同一车牌前的等待时间",
         "customer": "客户",
         "detection": "识别",
+        "debug": "调试",
         "detectionHistory": "识别历史",
         "detectionTtlHours": "显示时长（小时）",
         "detectionTtlHours_help": "识别结果在信息栏中保持可见的时长",

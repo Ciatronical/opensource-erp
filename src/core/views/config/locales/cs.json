@@ -1063,6 +1063,7 @@
         "cooldownMinutes_help": "Čekací doba po hlášení, než bude stejná RZ znovu nahlášena",
         "customer": "Zákazník",
         "detection": "Rozpoznání",
+        "debug": "Ladění",
         "detectionHistory": "Historie rozpoznání",
         "detectionTtlHours": "Doba zobrazení (hodiny)",
         "detectionTtlHours_help": "Jak dlouho zůstane rozpoznání v informačním pruhu viditelné",
