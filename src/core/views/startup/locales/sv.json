@@ -96,7 +96,21 @@
         "statusOpen": "öppen",
         "storno": "Avbrutet",
         "vendorDeliveryOrders": "Varuinleveranser",
-        "vendorReclamations": "Inköpsreklamationer"
+        "vendorReclamations": "Inköpsreklamationer",
+        "infoStatus": "Info & status",
+        "statusActive": "Aktiv",
+        "statusObsolete": "Ogiltig",
+        "businessType": "Kundtyp",
+        "salesman": "Säljare",
+        "language": "Språk",
+        "creditLimit": "Kreditgräns",
+        "createdOn": "Skapad",
+        "internalNotes": "Interna anteckningar",
+        "noNotes": "Inga interna anteckningar",
+        "addNote": "Lägg till anteckning",
+        "editNotes": "Redigera anteckningar",
+        "contactOrigin": "Personuppgifternas ursprung",
+        "showAll": "Visa alla"
     },
     "PhoneActions": {
         "clickToCall": "Ring",

@@ -7,6 +7,17 @@
                 <v-icon start>mdi-account-box</v-icon>
                 {{ t('CrmView.contactData') }}
             </v-tab>
+            <v-tab value="info_status">
+                <v-badge
+                    :model-value="Boolean(cvProfile?.obsolete || hasNotes)"
+                    :color="cvProfile?.obsolete ? 'error' : 'amber-darken-2'"
+                    dot
+                    class="mr-2"
+                >
+                    <v-icon>mdi-information-outline</v-icon>
+                </v-badge>
+                {{ t('CrmView.infoStatus') }}
+            </v-tab>
             <v-tab value="billing_addresses">
                 <v-icon start>mdi-map-marker</v-icon>
                 {{ t('CrmView.billingAddresses') }}
@@ -39,7 +50,31 @@
             <!-- Kontaktdaten -->
             <v-window-item value="contact">
                 <div class="pa-4">
+                    <v-alert
+                        v-if="hasNotes"
+                        color="amber-darken-2"
+                        variant="tonal"
+                        density="compact"
+                        icon="mdi-note-text-outline"
+                        class="note-preview mb-4"
+                        role="button"
+                        :title="t('CrmView.showAll')"
+                        @click="cvContactTab = 'info_status'"
+                    >
+                        <div class="text-caption font-weight-bold">{{ t('CrmView.internalNotes') }}</div>
+                        <div class="note-preview__text">{{ cvNotes }}</div>
+                        <template #append>
+                            <v-icon size="small">mdi-chevron-right</v-icon>
+                        </template>
+                    </v-alert>
                     <CrmContactView />
+                </div>
+            </v-window-item>
+
+            <!-- Info & Status -->
+            <v-window-item value="info_status">
+                <div class="pa-4">
+                    <CrmInfoStatusView />
                 </div>
             </v-window-item>
 
@@ -353,6 +388,7 @@ import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { oserpStore } from '@/core/stores/oserp.store.js'
 import CrmContactView from '@/core/components/crmview/contact.view.vue'
+import CrmInfoStatusView from '@/core/components/crmview/info.status.view.vue'
 import PhoneActionBar from '@/core/components/phone-action-bar.vue'
 const FilesTab = defineAsyncComponent(() => import('@/core/views/customer-vendor/tabs/files.tab.vue'))
 import EmailsTab from '@/core/views/customer-vendor/tabs/emails.tab.vue'
@@ -369,6 +405,8 @@ const custom_vars = computed(() =>
     )
 );
 const cvProfile = computed(() => oserpData.customer_vendor?.profile);
+const cvNotes = computed(() => (cvProfile.value?.notes || '').trim());
+const hasNotes = computed(() => cvNotes.value.length > 0);
 
 const route = useRoute()
 const cvContactTab = ref(route.query.tab || 'contact');
@@ -440,3 +478,19 @@ const formatDate = (dateString) => {
     return date.toLocaleDateString('de-DE');
 };
 </script>
+
+<style scoped>
+.note-preview {
+    cursor: pointer;
+}
+
+.note-preview__text {
+    white-space: pre-wrap;
+    word-break: break-word;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+</style>

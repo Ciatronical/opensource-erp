@@ -96,7 +96,21 @@
         "statusOpen": "открыт",
         "storno": "Отменено",
         "vendorDeliveryOrders": "Поступления товаров",
-        "vendorReclamations": "Рекламации по закупкам"
+        "vendorReclamations": "Рекламации по закупкам",
+        "infoStatus": "Информация и статус",
+        "statusActive": "Активен",
+        "statusObsolete": "Недействителен",
+        "businessType": "Тип клиента",
+        "salesman": "Менеджер",
+        "language": "Язык",
+        "creditLimit": "Кредитный лимит",
+        "createdOn": "Создан",
+        "internalNotes": "Внутренние примечания",
+        "noNotes": "Внутренних примечаний нет",
+        "addNote": "Добавить примечание",
+        "editNotes": "Редактировать примечания",
+        "contactOrigin": "Источник персональных данных",
+        "showAll": "Показать всё"
     },
     "PhoneActions": {
         "clickToCall": "Позвонить",

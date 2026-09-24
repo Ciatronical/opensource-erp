@@ -96,7 +96,21 @@
         "statusOpen": "açık",
         "storno": "İptal edildi",
         "vendorDeliveryOrders": "Mal girişleri",
-        "vendorReclamations": "Satın alma şikayetleri"
+        "vendorReclamations": "Satın alma şikayetleri",
+        "infoStatus": "Bilgi ve Durum",
+        "statusActive": "Aktif",
+        "statusObsolete": "Geçersiz",
+        "businessType": "Müşteri tipi",
+        "salesman": "Satış temsilcisi",
+        "language": "Dil",
+        "creditLimit": "Kredi limiti",
+        "createdOn": "Oluşturulma",
+        "internalNotes": "Dahili notlar",
+        "noNotes": "Dahili not yok",
+        "addNote": "Not ekle",
+        "editNotes": "Notları düzenle",
+        "contactOrigin": "Kişisel verilerin kaynağı",
+        "showAll": "Tümünü göster"
     },
     "PhoneActions": {
         "clickToCall": "Ara",

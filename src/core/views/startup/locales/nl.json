@@ -96,7 +96,21 @@
         "statusOpen": "open",
         "storno": "Geannuleerd",
         "vendorDeliveryOrders": "Goederenontvangsten",
-        "vendorReclamations": "Inkoopklachten"
+        "vendorReclamations": "Inkoopklachten",
+        "infoStatus": "Info & status",
+        "statusActive": "Actief",
+        "statusObsolete": "Ongeldig",
+        "businessType": "Klanttype",
+        "salesman": "Verkoper",
+        "language": "Taal",
+        "creditLimit": "Kredietlimiet",
+        "createdOn": "Aangemaakt op",
+        "internalNotes": "Interne opmerkingen",
+        "noNotes": "Geen interne opmerkingen",
+        "addNote": "Opmerking toevoegen",
+        "editNotes": "Opmerkingen bewerken",
+        "contactOrigin": "Herkomst van persoonsgegevens",
+        "showAll": "Alles tonen"
     },
     "PhoneActions": {
         "clickToCall": "Bellen",

@@ -14,7 +14,26 @@
         "urlLabel": "URL",
         "urlHint": "Strg+Klick zum Öffnen des Links",
         "cancel": "Zrušit",
-        "confirm": "Vložit"
+        "confirm": "Vložit",
+        "textStyle": "Styl textu",
+        "paragraph": "Odstavec",
+        "heading": "Nadpis {level}",
+        "code": "Kód",
+        "taskList": "Kontrolní seznam",
+        "blockquote": "Citace",
+        "codeBlock": "Blok kódu",
+        "horizontalRule": "Vodorovná čára",
+        "table": "Tabulka",
+        "insertTable": "Vložit tabulku (3×3)",
+        "addRowBefore": "Vložit řádek nad",
+        "addRowAfter": "Vložit řádek pod",
+        "deleteRow": "Smazat řádek",
+        "addColumnBefore": "Vložit sloupec vlevo",
+        "addColumnAfter": "Vložit sloupec vpravo",
+        "deleteColumn": "Smazat sloupec",
+        "toggleHeaderRow": "Záhlaví zap./vyp.",
+        "deleteTable": "Smazat tabulku",
+        "clearFormatting": "Odstranit formátování"
     },
     "FakturaView": {
         "common": {

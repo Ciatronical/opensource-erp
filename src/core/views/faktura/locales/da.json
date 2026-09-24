@@ -14,7 +14,26 @@
         "urlLabel": "URL",
         "urlHint": "Strg+Klick zum Öffnen des Links",
         "cancel": "Annuller",
-        "confirm": "Einfügen"
+        "confirm": "Einfügen",
+        "textStyle": "Tekststil",
+        "paragraph": "Afsnit",
+        "heading": "Overskrift {level}",
+        "code": "Kode",
+        "taskList": "Tjekliste",
+        "blockquote": "Citat",
+        "codeBlock": "Kodeblok",
+        "horizontalRule": "Vandret linje",
+        "table": "Tabel",
+        "insertTable": "Indsæt tabel (3×3)",
+        "addRowBefore": "Indsæt række ovenfor",
+        "addRowAfter": "Indsæt række nedenfor",
+        "deleteRow": "Slet række",
+        "addColumnBefore": "Indsæt kolonne til venstre",
+        "addColumnAfter": "Indsæt kolonne til højre",
+        "deleteColumn": "Slet kolonne",
+        "toggleHeaderRow": "Overskriftsrække til/fra",
+        "deleteTable": "Slet tabel",
+        "clearFormatting": "Ryd formatering"
     },
     "FakturaView": {
         "common": {

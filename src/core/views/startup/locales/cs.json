@@ -96,7 +96,21 @@
         "statusOpen": "otevřeno",
         "storno": "Stornováno",
         "vendorDeliveryOrders": "Příjemky zboží",
-        "vendorReclamations": "Nákupní reklamace"
+        "vendorReclamations": "Nákupní reklamace",
+        "infoStatus": "Info a stav",
+        "statusActive": "Aktivní",
+        "statusObsolete": "Neplatný",
+        "businessType": "Typ zákazníka",
+        "salesman": "Prodejce",
+        "language": "Jazyk",
+        "creditLimit": "Úvěrový limit",
+        "createdOn": "Vytvořeno dne",
+        "internalNotes": "Interní poznámky",
+        "noNotes": "Žádné interní poznámky",
+        "addNote": "Přidat poznámku",
+        "editNotes": "Upravit poznámky",
+        "contactOrigin": "Původ osobních údajů",
+        "showAll": "Zobrazit vše"
     },
     "PhoneActions": {
         "clickToCall": "Zavolat",

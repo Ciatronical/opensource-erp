@@ -57,7 +57,8 @@
         "statusError": "Salvestusviga",
         "back": "Tagasi",
         "newCategory": "Uus kategooria",
-        "createCategory": "Loo"
+        "createCategory": "Loo",
+        "contentPlaceholder": "Alusta kirjutamist … Vihje: „# “ pealkirjaks, „- “ loendiks, Ctrl+K lingiks."
     },
     "WikiCategoriesView": {
         "title": "Wiki kategooriad",

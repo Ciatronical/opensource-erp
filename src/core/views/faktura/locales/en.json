@@ -14,7 +14,26 @@
         "urlLabel": "URL",
         "urlHint": "Ctrl+Click to open link",
         "cancel": "Cancel",
-        "confirm": "Insert"
+        "confirm": "Insert",
+        "textStyle": "Text style",
+        "paragraph": "Paragraph",
+        "heading": "Heading {level}",
+        "code": "Code",
+        "taskList": "Checklist",
+        "blockquote": "Quote",
+        "codeBlock": "Code block",
+        "horizontalRule": "Horizontal rule",
+        "table": "Table",
+        "insertTable": "Insert table (3×3)",
+        "addRowBefore": "Insert row above",
+        "addRowAfter": "Insert row below",
+        "deleteRow": "Delete row",
+        "addColumnBefore": "Insert column left",
+        "addColumnAfter": "Insert column right",
+        "deleteColumn": "Delete column",
+        "toggleHeaderRow": "Toggle header row",
+        "deleteTable": "Delete table",
+        "clearFormatting": "Clear formatting"
     },
     "FakturaView": {
         "common": {

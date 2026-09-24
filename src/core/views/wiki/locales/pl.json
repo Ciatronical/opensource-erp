@@ -57,7 +57,8 @@
         "statusError": "Błąd zapisu",
         "back": "Wstecz",
         "newCategory": "Nowa kategoria",
-        "createCategory": "Utwórz"
+        "createCategory": "Utwórz",
+        "contentPlaceholder": "Zacznij pisać … Wskazówka: „# ” dla nagłówka, „- ” dla listy, Ctrl+K dla łącza."
     },
     "WikiCategoriesView": {
         "title": "Kategorie wiki",

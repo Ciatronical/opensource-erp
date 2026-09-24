@@ -63,7 +63,15 @@ function getWikiPages($data) {
                     'updated_by_name', e_updater.name,
                     'itime', wp.itime,
                     'mtime', wp.mtime,
-                    'content_preview', LEFT(wp.content, 200)
+                    'content_preview', LEFT(BTRIM(
+                        regexp_replace(
+                            regexp_replace(
+                                regexp_replace(
+                                    regexp_replace(wp.content, '</(td|th)>', ' ', 'gi'),
+                                    '<br\s*/?>|</(p|div|li|h[1-6]|tr|blockquote|pre)>', E'\n', 'gi'),
+                                '<[^>]+>', '', 'g'),
+                            E'[ \t]*\n[ \t\n]*', E'\n', 'g'),
+                        E' \t\n'), 300)
                 ) ORDER BY wp.mtime DESC NULLS LAST, wp.itime DESC)
                 FROM wiki_pages wp
                 LEFT JOIN wiki_categories wc ON wc.id = wp.category_id

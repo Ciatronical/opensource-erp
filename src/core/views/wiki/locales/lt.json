@@ -57,7 +57,8 @@
         "statusError": "Saugojimo klaida",
         "back": "Atgal",
         "newCategory": "Nauja kategorija",
-        "createCategory": "Sukurti"
+        "createCategory": "Sukurti",
+        "contentPlaceholder": "Pradėkite rašyti … Patarimas: „# “ antraštei, „- “ sąrašui, Ctrl+K nuorodai."
     },
     "WikiCategoriesView": {
         "title": "Wiki kategorijos",

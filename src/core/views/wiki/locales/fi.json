@@ -57,7 +57,8 @@
         "statusError": "Tallennusvirhe",
         "back": "Takaisin",
         "newCategory": "Uusi kategoria",
-        "createCategory": "Luo"
+        "createCategory": "Luo",
+        "contentPlaceholder": "Aloita kirjoittaminen … Vinkki: \"# \" otsikolle, \"- \" luettelolle, Ctrl+K linkille."
     },
     "WikiCategoriesView": {
         "title": "Wiki-kategoriat",

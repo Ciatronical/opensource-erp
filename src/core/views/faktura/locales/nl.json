@@ -14,7 +14,26 @@
         "urlLabel": "URL",
         "urlHint": "Ctrl+Klik om de link te openen",
         "cancel": "Annuleren",
-        "confirm": "Invoegen"
+        "confirm": "Invoegen",
+        "textStyle": "Tekststijl",
+        "paragraph": "Alinea",
+        "heading": "Kop {level}",
+        "code": "Code",
+        "taskList": "Checklist",
+        "blockquote": "Citaat",
+        "codeBlock": "Codeblok",
+        "horizontalRule": "Scheidingslijn",
+        "table": "Tabel",
+        "insertTable": "Tabel invoegen (3×3)",
+        "addRowBefore": "Rij erboven invoegen",
+        "addRowAfter": "Rij eronder invoegen",
+        "deleteRow": "Rij verwijderen",
+        "addColumnBefore": "Kolom links invoegen",
+        "addColumnAfter": "Kolom rechts invoegen",
+        "deleteColumn": "Kolom verwijderen",
+        "toggleHeaderRow": "Koprij aan/uit",
+        "deleteTable": "Tabel verwijderen",
+        "clearFormatting": "Opmaak wissen"
     },
     "FakturaView": {
         "common": {

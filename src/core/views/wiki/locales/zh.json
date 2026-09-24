@@ -57,7 +57,8 @@
         "statusError": "保存错误",
         "back": "返回",
         "newCategory": "新分类",
-        "createCategory": "创建"
+        "createCategory": "创建",
+        "contentPlaceholder": "开始输入 … 提示：输入“# ”创建标题，“- ”创建列表，Ctrl+K 插入链接。"
     },
     "WikiCategoriesView": {
         "title": "Wiki 分类",

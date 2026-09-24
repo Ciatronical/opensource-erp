@@ -14,7 +14,26 @@
         "urlLabel": "URL",
         "urlHint": "Ctrl+клик для открытия ссылки",
         "cancel": "Отмена",
-        "confirm": "Вставить"
+        "confirm": "Вставить",
+        "textStyle": "Стиль текста",
+        "paragraph": "Абзац",
+        "heading": "Заголовок {level}",
+        "code": "Код",
+        "taskList": "Чек-лист",
+        "blockquote": "Цитата",
+        "codeBlock": "Блок кода",
+        "horizontalRule": "Горизонтальная линия",
+        "table": "Таблица",
+        "insertTable": "Вставить таблицу (3×3)",
+        "addRowBefore": "Вставить строку выше",
+        "addRowAfter": "Вставить строку ниже",
+        "deleteRow": "Удалить строку",
+        "addColumnBefore": "Вставить столбец слева",
+        "addColumnAfter": "Вставить столбец справа",
+        "deleteColumn": "Удалить столбец",
+        "toggleHeaderRow": "Строка заголовка вкл./выкл.",
+        "deleteTable": "Удалить таблицу",
+        "clearFormatting": "Очистить форматирование"
     },
     "FakturaView": {
         "common": {

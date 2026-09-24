@@ -111,7 +111,21 @@
         "recipientNoPhone": "Dieser Empfänger hat keine Telefonnummer hinterlegt.",
         "cancel": "Abbrechen",
         "send": "Senden",
-        "noCustomerVendor": "Noch kein Kunde oder Lieferant vorhanden. Legen Sie zuerst einen Kunden oder Lieferanten an."
+        "noCustomerVendor": "Noch kein Kunde oder Lieferant vorhanden. Legen Sie zuerst einen Kunden oder Lieferanten an.",
+        "infoStatus": "Info & Status",
+        "statusActive": "Aktiv",
+        "statusObsolete": "Ungültig",
+        "businessType": "Kundentyp",
+        "salesman": "Verkäufer",
+        "language": "Sprache",
+        "creditLimit": "Kreditlimit",
+        "createdOn": "Angelegt am",
+        "internalNotes": "Interne Bemerkungen",
+        "noNotes": "Keine internen Bemerkungen vorhanden",
+        "addNote": "Bemerkung hinzufügen",
+        "editNotes": "Bemerkungen bearbeiten",
+        "contactOrigin": "Herkunft der personenbezogenen Daten",
+        "showAll": "Alle anzeigen"
     },
     "PhoneActions": {
         "clickToCall": "Anrufen",

@@ -57,7 +57,8 @@
         "statusError": "Eroare la salvare",
         "back": "Inapoi",
         "newCategory": "Categorie noua",
-        "createCategory": "Creare"
+        "createCategory": "Creare",
+        "contentPlaceholder": "Scrieți aici … Sfat: „# ” pentru titlu, „- ” pentru listă, Ctrl+K pentru link."
     },
     "WikiCategoriesView": {
         "title": "Categorii wiki",

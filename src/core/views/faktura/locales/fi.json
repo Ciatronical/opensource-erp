@@ -14,7 +14,26 @@
         "urlLabel": "URL",
         "urlHint": "Strg+Klick zum Öffnen des Links",
         "cancel": "Peruuta",
-        "confirm": "Einfügen"
+        "confirm": "Einfügen",
+        "textStyle": "Tekstityyli",
+        "paragraph": "Kappale",
+        "heading": "Otsikko {level}",
+        "code": "Koodi",
+        "taskList": "Tarkistuslista",
+        "blockquote": "Lainaus",
+        "codeBlock": "Koodilohko",
+        "horizontalRule": "Vaakaviiva",
+        "table": "Taulukko",
+        "insertTable": "Lisää taulukko (3×3)",
+        "addRowBefore": "Lisää rivi yläpuolelle",
+        "addRowAfter": "Lisää rivi alapuolelle",
+        "deleteRow": "Poista rivi",
+        "addColumnBefore": "Lisää sarake vasemmalle",
+        "addColumnAfter": "Lisää sarake oikealle",
+        "deleteColumn": "Poista sarake",
+        "toggleHeaderRow": "Otsikkorivi päälle/pois",
+        "deleteTable": "Poista taulukko",
+        "clearFormatting": "Poista muotoilu"
     },
     "FakturaView": {
         "common": {

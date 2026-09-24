@@ -14,7 +14,26 @@
         "urlLabel": "URL",
         "urlHint": "Ctrl+Clic pour ouvrir le lien",
         "cancel": "Annuler",
-        "confirm": "Inserer"
+        "confirm": "Inserer",
+        "textStyle": "Style de texte",
+        "paragraph": "Paragraphe",
+        "heading": "Titre {level}",
+        "code": "Code",
+        "taskList": "Liste de contrôle",
+        "blockquote": "Citation",
+        "codeBlock": "Bloc de code",
+        "horizontalRule": "Ligne de séparation",
+        "table": "Tableau",
+        "insertTable": "Insérer un tableau (3×3)",
+        "addRowBefore": "Insérer une ligne au-dessus",
+        "addRowAfter": "Insérer une ligne en dessous",
+        "deleteRow": "Supprimer la ligne",
+        "addColumnBefore": "Insérer une colonne à gauche",
+        "addColumnAfter": "Insérer une colonne à droite",
+        "deleteColumn": "Supprimer la colonne",
+        "toggleHeaderRow": "Ligne d’en-tête oui/non",
+        "deleteTable": "Supprimer le tableau",
+        "clearFormatting": "Effacer la mise en forme"
     },
     "FakturaView": {
         "common": {

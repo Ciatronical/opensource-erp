@@ -96,7 +96,21 @@
         "statusOpen": "atvērts",
         "storno": "Atcelts",
         "vendorDeliveryOrders": "Preču saņemšana",
-        "vendorReclamations": "Pirkuma reklamācijas"
+        "vendorReclamations": "Pirkuma reklamācijas",
+        "infoStatus": "Informācija un statuss",
+        "statusActive": "Aktīvs",
+        "statusObsolete": "Nederīgs",
+        "businessType": "Klienta tips",
+        "salesman": "Pārdevējs",
+        "language": "Valoda",
+        "creditLimit": "Kredīta limits",
+        "createdOn": "Izveidots",
+        "internalNotes": "Iekšējās piezīmes",
+        "noNotes": "Nav iekšējo piezīmju",
+        "addNote": "Pievienot piezīmi",
+        "editNotes": "Rediģēt piezīmes",
+        "contactOrigin": "Personas datu izcelsme",
+        "showAll": "Rādīt visu"
     },
     "PhoneActions": {
         "clickToCall": "Zvanīt",

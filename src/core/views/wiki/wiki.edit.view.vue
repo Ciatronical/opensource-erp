@@ -36,7 +36,8 @@
 
         <!-- Formular mit Focus-Tracking -->
         <div v-else @focusin.capture="onFocusIn" @focusout.capture="onFocusOut">
-            <v-card variant="outlined" elevation="1">
+            <!-- overflow: visible, damit die Editor-Toolbar (position: sticky) beim Scrollen oben bleibt -->
+            <v-card variant="outlined" elevation="1" style="overflow: visible;">
                 <v-card-text class="pa-4">
 
                     <!-- Titel -->
@@ -119,6 +120,10 @@
                     <HtmlEditorComponent
                         v-model="form.content"
                         :label="t('WikiEditView.fieldContent')"
+                        :placeholder="t('WikiEditView.contentPlaceholder')"
+                        toolbar="full"
+                        :min-height="400"
+                        :max-height="0"
                     />
                 </v-card-text>
             </v-card>

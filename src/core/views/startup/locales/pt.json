@@ -96,7 +96,21 @@
         "statusOpen": "aberto",
         "storno": "Cancelado",
         "vendorDeliveryOrders": "Recebimentos de mercadorias",
-        "vendorReclamations": "Reclamações de compra"
+        "vendorReclamations": "Reclamações de compra",
+        "infoStatus": "Info e estado",
+        "statusActive": "Ativo",
+        "statusObsolete": "Inválido",
+        "businessType": "Tipo de cliente",
+        "salesman": "Vendedor",
+        "language": "Idioma",
+        "creditLimit": "Limite de crédito",
+        "createdOn": "Criado em",
+        "internalNotes": "Observações internas",
+        "noNotes": "Sem observações internas",
+        "addNote": "Adicionar observação",
+        "editNotes": "Editar observações",
+        "contactOrigin": "Origem dos dados pessoais",
+        "showAll": "Mostrar tudo"
     },
     "PhoneActions": {
         "clickToCall": "Ligar",

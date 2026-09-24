@@ -96,7 +96,21 @@
         "statusOpen": "avoin",
         "storno": "Peruutettu",
         "vendorDeliveryOrders": "Tavaravastaanotot",
-        "vendorReclamations": "Ostoreklamaatiot"
+        "vendorReclamations": "Ostoreklamaatiot",
+        "infoStatus": "Tiedot ja tila",
+        "statusActive": "Aktiivinen",
+        "statusObsolete": "Vanhentunut",
+        "businessType": "Asiakastyyppi",
+        "salesman": "Myyjä",
+        "language": "Kieli",
+        "creditLimit": "Luottoraja",
+        "createdOn": "Luotu",
+        "internalNotes": "Sisäiset huomautukset",
+        "noNotes": "Ei sisäisiä huomautuksia",
+        "addNote": "Lisää huomautus",
+        "editNotes": "Muokkaa huomautuksia",
+        "contactOrigin": "Henkilötietojen alkuperä",
+        "showAll": "Näytä kaikki"
     },
     "PhoneActions": {
         "clickToCall": "Soita",

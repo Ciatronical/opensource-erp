@@ -53,6 +53,7 @@
             density="compact"
             rows="3"
             hide-details="auto"
+            data-field="notes"
           />
         </v-col>
         <v-col cols="12" class="py-1">

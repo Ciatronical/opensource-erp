@@ -96,7 +96,21 @@
         "statusOpen": "atidarytas",
         "storno": "Atšaukta",
         "vendorDeliveryOrders": "Prekių priėmimai",
-        "vendorReclamations": "Pirkimo reklamacijos"
+        "vendorReclamations": "Pirkimo reklamacijos",
+        "infoStatus": "Informacija ir būsena",
+        "statusActive": "Aktyvus",
+        "statusObsolete": "Negaliojantis",
+        "businessType": "Kliento tipas",
+        "salesman": "Pardavėjas",
+        "language": "Kalba",
+        "creditLimit": "Kredito limitas",
+        "createdOn": "Sukurta",
+        "internalNotes": "Vidinės pastabos",
+        "noNotes": "Vidinių pastabų nėra",
+        "addNote": "Pridėti pastabą",
+        "editNotes": "Redaguoti pastabas",
+        "contactOrigin": "Asmens duomenų kilmė",
+        "showAll": "Rodyti viską"
     },
     "PhoneActions": {
         "clickToCall": "Skambinti",

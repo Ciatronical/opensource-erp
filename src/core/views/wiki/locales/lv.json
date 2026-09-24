@@ -57,7 +57,8 @@
         "statusError": "Saglabāšanas kļūda",
         "back": "Atpakaļ",
         "newCategory": "Jauna kategorija",
-        "createCategory": "Izveidot"
+        "createCategory": "Izveidot",
+        "contentPlaceholder": "Sāciet rakstīt … Padoms: “# ” virsrakstam, “- ” sarakstam, Ctrl+K saitei."
     },
     "WikiCategoriesView": {
         "title": "Wiki kategorijas",

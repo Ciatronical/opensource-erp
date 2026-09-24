@@ -14,7 +14,26 @@
         "urlLabel": "URL",
         "urlHint": "Strg+Klick zum Öffnen des Links",
         "cancel": "İptal",
-        "confirm": "Einfügen"
+        "confirm": "Einfügen",
+        "textStyle": "Metin stili",
+        "paragraph": "Paragraf",
+        "heading": "Başlık {level}",
+        "code": "Kod",
+        "taskList": "Kontrol listesi",
+        "blockquote": "Alıntı",
+        "codeBlock": "Kod bloğu",
+        "horizontalRule": "Yatay çizgi",
+        "table": "Tablo",
+        "insertTable": "Tablo ekle (3×3)",
+        "addRowBefore": "Üste satır ekle",
+        "addRowAfter": "Alta satır ekle",
+        "deleteRow": "Satırı sil",
+        "addColumnBefore": "Sola sütun ekle",
+        "addColumnAfter": "Sağa sütun ekle",
+        "deleteColumn": "Sütunu sil",
+        "toggleHeaderRow": "Başlık satırı aç/kapat",
+        "deleteTable": "Tabloyu sil",
+        "clearFormatting": "Biçimlendirmeyi temizle"
     },
     "FakturaView": {
         "common": {

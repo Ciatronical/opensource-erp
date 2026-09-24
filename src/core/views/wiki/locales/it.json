@@ -57,7 +57,8 @@
         "statusError": "Errore di salvataggio",
         "back": "Indietro",
         "newCategory": "Nuova categoria",
-        "createCategory": "Crea"
+        "createCategory": "Crea",
+        "contentPlaceholder": "Scrivi qui … Suggerimento: \"# \" per un titolo, \"- \" per un elenco, Ctrl+K per un link."
     },
     "WikiCategoriesView": {
         "title": "Categorie wiki",

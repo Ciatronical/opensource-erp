@@ -57,7 +57,8 @@
         "statusError": "Opslagfout",
         "back": "Terug",
         "newCategory": "Nieuwe categorie",
-        "createCategory": "Aanmaken"
+        "createCategory": "Aanmaken",
+        "contentPlaceholder": "Begin met schrijven … Tip: \"# \" voor een kop, \"- \" voor een lijst, Ctrl+K voor een link."
     },
     "WikiCategoriesView": {
         "title": "Wiki-categorieen",

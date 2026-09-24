@@ -57,7 +57,8 @@
         "statusError": "Lagringsfeil",
         "back": "Tilbake",
         "newCategory": "Ny kategori",
-        "createCategory": "Opprett"
+        "createCategory": "Opprett",
+        "contentPlaceholder": "Begynn å skrive … Tips: \"# \" for overskrift, \"- \" for liste, Ctrl+K for lenke."
     },
     "WikiCategoriesView": {
         "title": "Wiki-kategorier",

@@ -111,7 +111,21 @@
         "recipientNoPhone": "This recipient has no phone number stored.",
         "cancel": "Cancel",
         "send": "Send",
-        "noCustomerVendor": "No customer or vendor found. Please create a customer or vendor first."
+        "noCustomerVendor": "No customer or vendor found. Please create a customer or vendor first.",
+        "infoStatus": "Info & Status",
+        "statusActive": "Active",
+        "statusObsolete": "Obsolete",
+        "businessType": "Customer type",
+        "salesman": "Salesperson",
+        "language": "Language",
+        "creditLimit": "Credit limit",
+        "createdOn": "Created on",
+        "internalNotes": "Internal notes",
+        "noNotes": "No internal notes available",
+        "addNote": "Add note",
+        "editNotes": "Edit notes",
+        "contactOrigin": "Origin of personal data",
+        "showAll": "Show all"
     },
     "PhoneActions": {
         "clickToCall": "Call",

@@ -14,7 +14,26 @@
         "urlLabel": "URL",
         "urlHint": "Ctrl+клік для відкриття посилання",
         "cancel": "Скасувати",
-        "confirm": "Вставити"
+        "confirm": "Вставити",
+        "textStyle": "Стиль тексту",
+        "paragraph": "Абзац",
+        "heading": "Заголовок {level}",
+        "code": "Код",
+        "taskList": "Чек-лист",
+        "blockquote": "Цитата",
+        "codeBlock": "Блок коду",
+        "horizontalRule": "Горизонтальна лінія",
+        "table": "Таблиця",
+        "insertTable": "Вставити таблицю (3×3)",
+        "addRowBefore": "Вставити рядок вище",
+        "addRowAfter": "Вставити рядок нижче",
+        "deleteRow": "Видалити рядок",
+        "addColumnBefore": "Вставити стовпець ліворуч",
+        "addColumnAfter": "Вставити стовпець праворуч",
+        "deleteColumn": "Видалити стовпець",
+        "toggleHeaderRow": "Рядок заголовка увімк./вимк.",
+        "deleteTable": "Видалити таблицю",
+        "clearFormatting": "Очистити форматування"
     },
     "FakturaView": {
         "common": {

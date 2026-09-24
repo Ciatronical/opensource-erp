@@ -57,7 +57,8 @@
         "statusError": "Kayit hatasi",
         "back": "Geri",
         "newCategory": "Yeni kategori",
-        "createCategory": "Olustur"
+        "createCategory": "Olustur",
+        "contentPlaceholder": "Yazmaya başlayın … İpucu: başlık için \"# \", liste için \"- \", bağlantı için Ctrl+K."
     },
     "WikiCategoriesView": {
         "title": "Wiki kategorileri",

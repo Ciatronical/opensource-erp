@@ -57,7 +57,8 @@
         "statusError": "Sparfel",
         "back": "Tillbaka",
         "newCategory": "Ny kategori",
-        "createCategory": "Skapa"
+        "createCategory": "Skapa",
+        "contentPlaceholder": "Börja skriva … Tips: \"# \" för rubrik, \"- \" för lista, Ctrl+K för länk."
     },
     "WikiCategoriesView": {
         "title": "Wiki-kategorier",

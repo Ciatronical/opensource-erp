@@ -96,7 +96,21 @@
         "statusOpen": "开放",
         "storno": "已取消",
         "vendorDeliveryOrders": "收货记录",
-        "vendorReclamations": "采购投诉"
+        "vendorReclamations": "采购投诉",
+        "infoStatus": "信息与状态",
+        "statusActive": "有效",
+        "statusObsolete": "无效",
+        "businessType": "客户类型",
+        "salesman": "销售员",
+        "language": "语言",
+        "creditLimit": "信用额度",
+        "createdOn": "创建日期",
+        "internalNotes": "内部备注",
+        "noNotes": "暂无内部备注",
+        "addNote": "添加备注",
+        "editNotes": "编辑备注",
+        "contactOrigin": "个人数据来源",
+        "showAll": "显示全部"
     },
     "PhoneActions": {
         "clickToCall": "拨打电话",

@@ -57,7 +57,8 @@
         "statusError": "Chyba ukladani",
         "back": "Zpet",
         "newCategory": "Nova kategorie",
-        "createCategory": "Vytvorit"
+        "createCategory": "Vytvorit",
+        "contentPlaceholder": "Začněte psát … Tip: „# “ pro nadpis, „- “ pro seznam, Ctrl+K pro odkaz."
     },
     "WikiCategoriesView": {
         "title": "Wiki kategorie",

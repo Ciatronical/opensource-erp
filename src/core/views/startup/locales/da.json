@@ -96,7 +96,21 @@
         "statusOpen": "åben",
         "storno": "Annulleret",
         "vendorDeliveryOrders": "Varenota",
-        "vendorReclamations": "Indkøbsreklamationer"
+        "vendorReclamations": "Indkøbsreklamationer",
+        "infoStatus": "Info & status",
+        "statusActive": "Aktiv",
+        "statusObsolete": "Ugyldig",
+        "businessType": "Kundetype",
+        "salesman": "Sælger",
+        "language": "Sprog",
+        "creditLimit": "Kreditgrænse",
+        "createdOn": "Oprettet den",
+        "internalNotes": "Interne bemærkninger",
+        "noNotes": "Ingen interne bemærkninger",
+        "addNote": "Tilføj bemærkning",
+        "editNotes": "Rediger bemærkninger",
+        "contactOrigin": "Personoplysningernes oprindelse",
+        "showAll": "Vis alle"
     },
     "PhoneActions": {
         "clickToCall": "Ring op",

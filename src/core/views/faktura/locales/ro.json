@@ -14,7 +14,26 @@
         "urlLabel": "URL",
         "urlHint": "Strg+Klick zum Öffnen des Links",
         "cancel": "Anulare",
-        "confirm": "Einfügen"
+        "confirm": "Einfügen",
+        "textStyle": "Stil text",
+        "paragraph": "Paragraf",
+        "heading": "Titlu {level}",
+        "code": "Cod",
+        "taskList": "Listă de verificare",
+        "blockquote": "Citat",
+        "codeBlock": "Bloc de cod",
+        "horizontalRule": "Linie orizontală",
+        "table": "Tabel",
+        "insertTable": "Inserare tabel (3×3)",
+        "addRowBefore": "Inserare rând deasupra",
+        "addRowAfter": "Inserare rând dedesubt",
+        "deleteRow": "Ștergere rând",
+        "addColumnBefore": "Inserare coloană la stânga",
+        "addColumnAfter": "Inserare coloană la dreapta",
+        "deleteColumn": "Ștergere coloană",
+        "toggleHeaderRow": "Rând antet da/nu",
+        "deleteTable": "Ștergere tabel",
+        "clearFormatting": "Eliminare formatare"
     },
     "FakturaView": {
         "common": {

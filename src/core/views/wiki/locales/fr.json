@@ -57,7 +57,8 @@
         "statusError": "Erreur d'enregistrement",
         "back": "Retour",
         "newCategory": "Nouvelle categorie",
-        "createCategory": "Creer"
+        "createCategory": "Creer",
+        "contentPlaceholder": "Écrivez ici … Astuce : « # » pour un titre, « - » pour une liste, Ctrl+K pour un lien."
     },
     "WikiCategoriesView": {
         "title": "Categories Wiki",

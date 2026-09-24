@@ -14,7 +14,26 @@
         "urlLabel": "URL",
         "urlHint": "Strg+Klick zum Öffnen des Links",
         "cancel": "Atšaukti",
-        "confirm": "Einfügen"
+        "confirm": "Einfügen",
+        "textStyle": "Teksto stilius",
+        "paragraph": "Pastraipa",
+        "heading": "Antraštė {level}",
+        "code": "Kodas",
+        "taskList": "Kontrolinis sąrašas",
+        "blockquote": "Citata",
+        "codeBlock": "Kodo blokas",
+        "horizontalRule": "Horizontali linija",
+        "table": "Lentelė",
+        "insertTable": "Įterpti lentelę (3×3)",
+        "addRowBefore": "Įterpti eilutę virš",
+        "addRowAfter": "Įterpti eilutę po",
+        "deleteRow": "Ištrinti eilutę",
+        "addColumnBefore": "Įterpti stulpelį kairėje",
+        "addColumnAfter": "Įterpti stulpelį dešinėje",
+        "deleteColumn": "Ištrinti stulpelį",
+        "toggleHeaderRow": "Antraštės eilutė įjungti/išjungti",
+        "deleteTable": "Ištrinti lentelę",
+        "clearFormatting": "Pašalinti formatavimą"
     },
     "FakturaView": {
         "common": {

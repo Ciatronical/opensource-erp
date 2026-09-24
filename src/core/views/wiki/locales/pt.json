@@ -57,7 +57,8 @@
         "statusError": "Erro ao guardar",
         "back": "Voltar",
         "newCategory": "Nova categoria",
-        "createCategory": "Criar"
+        "createCategory": "Criar",
+        "contentPlaceholder": "Escreva aqui … Dica: \"# \" para um título, \"- \" para uma lista, Ctrl+K para um link."
     },
     "WikiCategoriesView": {
         "title": "Categorias wiki",

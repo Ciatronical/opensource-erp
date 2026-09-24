@@ -57,7 +57,8 @@
         "statusError": "Save Error",
         "back": "Back",
         "newCategory": "New Category",
-        "createCategory": "Create"
+        "createCategory": "Create",
+        "contentPlaceholder": "Start writing … Tip: \"# \" for a heading, \"- \" for a list, Ctrl+K for a link."
     },
     "WikiCategoriesView": {
         "title": "Wiki Categories",

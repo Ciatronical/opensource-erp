@@ -16,14 +16,14 @@
             "updated": "Letzte Aktualisierung",
             "kba": "KBA"
         },
-        "confirmDelete": "Soll der Artikel \"{title}\" wirklich gel\u00f6scht werden?",
-        "deleted": "Artikel gel\u00f6scht.",
-        "deleteError": "Fehler beim L\u00f6schen."
+        "confirmDelete": "Soll der Artikel \"{title}\" wirklich gelöscht werden?",
+        "deleted": "Artikel gelöscht.",
+        "deleteError": "Fehler beim Löschen."
     },
     "WikiReadView": {
         "title": "Wiki-Artikel",
         "edit": "Bearbeiten",
-        "back": "Zur\u00fcck zur \u00dcbersicht",
+        "back": "Zurück zur Übersicht",
         "revisions": "Versionen",
         "createdBy": "Erstellt von",
         "updatedBy": "Zuletzt bearbeitet von",
@@ -46,7 +46,7 @@
         "saveError": "Fehler beim Speichern.",
         "missingTitle": "Bitte einen Titel angeben.",
         "revisions": "Versionshistorie",
-        "noRevisions": "Noch keine \u00e4lteren Versionen vorhanden.",
+        "noRevisions": "Noch keine älteren Versionen vorhanden.",
         "restore": "Wiederherstellen",
         "confirmRestore": "Soll die Version vom {date} wiederhergestellt werden?",
         "restored": "Version wiederhergestellt.",
@@ -55,9 +55,10 @@
         "statusSaved": "Gespeichert",
         "statusUnsaved": "Ungespeichert",
         "statusError": "Speicherfehler",
-        "back": "Zur\u00fcck",
+        "back": "Zurück",
         "newCategory": "Neue Kategorie",
-        "createCategory": "Erstellen"
+        "createCategory": "Erstellen",
+        "contentPlaceholder": "Hier schreiben … Tipp: „# “ für eine Überschrift, „- “ für eine Liste, Strg+K für einen Link."
     },
     "WikiCategoriesView": {
         "title": "Wiki-Kategorien",
@@ -68,13 +69,13 @@
         "save": "Speichern",
         "cancel": "Abbrechen",
         "edit": "Bearbeiten",
-        "delete": "L\u00f6schen",
+        "delete": "Löschen",
         "noCategories": "Noch keine Kategorien vorhanden.",
-        "confirmDelete": "Soll die Kategorie \"{name}\" wirklich gel\u00f6scht werden?",
+        "confirmDelete": "Soll die Kategorie \"{name}\" wirklich gelöscht werden?",
         "saved": "Kategorie gespeichert.",
-        "deleted": "Kategorie gel\u00f6scht.",
+        "deleted": "Kategorie gelöscht.",
         "saveError": "Fehler beim Speichern.",
-        "deleteError": "Fehler beim L\u00f6schen.",
+        "deleteError": "Fehler beim Löschen.",
         "sortUpdated": "Reihenfolge aktualisiert."
     }
 }

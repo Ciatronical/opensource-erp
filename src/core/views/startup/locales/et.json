@@ -96,7 +96,21 @@
         "statusOpen": "avatud",
         "storno": "Tühistatud",
         "vendorDeliveryOrders": "Kaubavastuvõtud",
-        "vendorReclamations": "Ostureklamatsioonid"
+        "vendorReclamations": "Ostureklamatsioonid",
+        "infoStatus": "Info ja olek",
+        "statusActive": "Aktiivne",
+        "statusObsolete": "Kehtetu",
+        "businessType": "Kliendi tüüp",
+        "salesman": "Müügiesindaja",
+        "language": "Keel",
+        "creditLimit": "Krediidilimiit",
+        "createdOn": "Loodud",
+        "internalNotes": "Sisemised märkused",
+        "noNotes": "Sisemisi märkusi pole",
+        "addNote": "Lisa märkus",
+        "editNotes": "Muuda märkusi",
+        "contactOrigin": "Isikuandmete päritolu",
+        "showAll": "Näita kõiki"
     },
     "PhoneActions": {
         "clickToCall": "Helista",

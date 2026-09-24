@@ -111,7 +111,21 @@
         "printSent": "Надіслано документів на принтер: {n}",
         "printPartial": "Надруковано: {ok}, не вдалося: {fail}",
         "currency": "Валюта",
-        "notConfirmed": "Прийом замовлення"
+        "notConfirmed": "Прийом замовлення",
+        "infoStatus": "Інформація та статус",
+        "statusActive": "Активний",
+        "statusObsolete": "Недійсний",
+        "businessType": "Тип клієнта",
+        "salesman": "Менеджер",
+        "language": "Мова",
+        "creditLimit": "Кредитний ліміт",
+        "createdOn": "Створено",
+        "internalNotes": "Внутрішні примітки",
+        "noNotes": "Внутрішніх приміток немає",
+        "addNote": "Додати примітку",
+        "editNotes": "Редагувати примітки",
+        "contactOrigin": "Джерело персональних даних",
+        "showAll": "Показати все"
     },
     "PhoneActions": {
         "clickToCall": "Зателефонувати",

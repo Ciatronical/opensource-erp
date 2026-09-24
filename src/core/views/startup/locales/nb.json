@@ -96,7 +96,21 @@
         "statusOpen": "åpen",
         "storno": "Kansellert",
         "vendorDeliveryOrders": "Varemottak",
-        "vendorReclamations": "Innkjøpsreklamasjoner"
+        "vendorReclamations": "Innkjøpsreklamasjoner",
+        "infoStatus": "Info og status",
+        "statusActive": "Aktiv",
+        "statusObsolete": "Ugyldig",
+        "businessType": "Kundetype",
+        "salesman": "Selger",
+        "language": "Språk",
+        "creditLimit": "Kredittgrense",
+        "createdOn": "Opprettet",
+        "internalNotes": "Interne merknader",
+        "noNotes": "Ingen interne merknader",
+        "addNote": "Legg til merknad",
+        "editNotes": "Rediger merknader",
+        "contactOrigin": "Personopplysningenes opprinnelse",
+        "showAll": "Vis alle"
     },
     "PhoneActions": {
         "clickToCall": "Ring",

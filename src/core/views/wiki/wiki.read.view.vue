@@ -215,4 +215,35 @@ export default {
     background: #f5f5f5;
     font-weight: 600;
 }
+.wiki-content :deep(td p),
+.wiki-content :deep(th p) {
+    margin: 0;
+}
+.wiki-content :deep(hr) {
+    border: none;
+    border-top: 1px solid #ddd;
+    margin: 1.5em 0;
+}
+/* Checklisten aus dem Editor: nur Anzeige, Haken nicht klickbar */
+.wiki-content :deep(ul[data-type="taskList"]) {
+    list-style: none;
+    padding-left: 0.25em;
+}
+.wiki-content :deep(ul[data-type="taskList"] li) {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5em;
+}
+.wiki-content :deep(ul[data-type="taskList"] li > label) {
+    flex: 0 0 auto;
+    margin-top: 0.25em;
+    pointer-events: none;
+}
+.wiki-content :deep(ul[data-type="taskList"] li > div) {
+    flex: 1 1 auto;
+}
+.wiki-content :deep(ul[data-type="taskList"] li[data-checked="true"] > div) {
+    text-decoration: line-through;
+    opacity: 0.6;
+}
 </style>

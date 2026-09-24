@@ -111,7 +111,21 @@
         "printSent": "Wysłano dokumenty do drukarki: {n}",
         "printPartial": "Wydrukowano: {ok}, nieudane: {fail}",
         "currency": "Waluta",
-        "notConfirmed": "Przyjęcie zlecenia"
+        "notConfirmed": "Przyjęcie zlecenia",
+        "infoStatus": "Informacje i status",
+        "statusActive": "Aktywny",
+        "statusObsolete": "Nieaktualny",
+        "businessType": "Typ klienta",
+        "salesman": "Sprzedawca",
+        "language": "Język",
+        "creditLimit": "Limit kredytowy",
+        "createdOn": "Utworzono",
+        "internalNotes": "Uwagi wewnętrzne",
+        "noNotes": "Brak uwag wewnętrznych",
+        "addNote": "Dodaj uwagę",
+        "editNotes": "Edytuj uwagi",
+        "contactOrigin": "Pochodzenie danych osobowych",
+        "showAll": "Pokaż wszystko"
     },
     "PhoneActions": {
         "clickToCall": "Zadzwoń",

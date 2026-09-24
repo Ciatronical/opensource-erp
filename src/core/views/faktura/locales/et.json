@@ -14,7 +14,26 @@
         "urlLabel": "URL",
         "urlHint": "Strg+Klick zum Öffnen des Links",
         "cancel": "Tühista",
-        "confirm": "Einfügen"
+        "confirm": "Einfügen",
+        "textStyle": "Tekstistiil",
+        "paragraph": "Lõik",
+        "heading": "Pealkiri {level}",
+        "code": "Kood",
+        "taskList": "Kontroll-loend",
+        "blockquote": "Tsitaat",
+        "codeBlock": "Koodiplokk",
+        "horizontalRule": "Horisontaaljoon",
+        "table": "Tabel",
+        "insertTable": "Lisa tabel (3×3)",
+        "addRowBefore": "Lisa rida üles",
+        "addRowAfter": "Lisa rida alla",
+        "deleteRow": "Kustuta rida",
+        "addColumnBefore": "Lisa veerg vasakule",
+        "addColumnAfter": "Lisa veerg paremale",
+        "deleteColumn": "Kustuta veerg",
+        "toggleHeaderRow": "Päiserida sisse/välja",
+        "deleteTable": "Kustuta tabel",
+        "clearFormatting": "Eemalda vorming"
     },
     "FakturaView": {
         "common": {

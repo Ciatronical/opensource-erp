@@ -14,7 +14,26 @@
         "urlLabel": "URL",
         "urlHint": "Strg+Klick zum Öffnen des Links",
         "cancel": "Avbryt",
-        "confirm": "Einfügen"
+        "confirm": "Einfügen",
+        "textStyle": "Textstil",
+        "paragraph": "Stycke",
+        "heading": "Rubrik {level}",
+        "code": "Kod",
+        "taskList": "Checklista",
+        "blockquote": "Citat",
+        "codeBlock": "Kodblock",
+        "horizontalRule": "Horisontell linje",
+        "table": "Tabell",
+        "insertTable": "Infoga tabell (3×3)",
+        "addRowBefore": "Infoga rad ovanför",
+        "addRowAfter": "Infoga rad nedanför",
+        "deleteRow": "Ta bort rad",
+        "addColumnBefore": "Infoga kolumn till vänster",
+        "addColumnAfter": "Infoga kolumn till höger",
+        "deleteColumn": "Ta bort kolumn",
+        "toggleHeaderRow": "Rubrikrad på/av",
+        "deleteTable": "Ta bort tabell",
+        "clearFormatting": "Rensa formatering"
     },
     "FakturaView": {
         "common": {

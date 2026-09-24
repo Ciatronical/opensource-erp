@@ -57,7 +57,8 @@
         "statusError": "Ошибка сохранения",
         "back": "Назад",
         "newCategory": "Новая категория",
-        "createCategory": "Создать"
+        "createCategory": "Создать",
+        "contentPlaceholder": "Начните писать … Совет: «# » для заголовка, «- » для списка, Ctrl+K для ссылки."
     },
     "WikiCategoriesView": {
         "title": "Wiki-категории",

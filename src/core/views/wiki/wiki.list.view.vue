@@ -105,7 +105,7 @@
                             {{ page.kba_hsn }}/{{ page.kba_tsn }}
                         </v-chip>
                     </v-card-subtitle>
-                    <v-card-text class="text-body-2 text-medium-emphasis pt-0 flex-grow-1" style="min-height: 48px;">
+                    <v-card-text class="text-body-2 text-medium-emphasis pt-0 flex-grow-1 wiki-teaser" style="min-height: 48px;">
                         {{ getSnippet(page.content_preview) }}
                     </v-card-text>
                     <v-divider />
@@ -194,18 +194,22 @@ export default {
                 result = result.filter(p =>
                     p.title.toLowerCase().includes(s) ||
                     (p.category_name || '').toLowerCase().includes(s) ||
-                    (p.content_preview || '').replace(/<[^>]*>/g, '').toLowerCase().includes(s)
+                    (p.content_preview || '').toLowerCase().includes(s)
                 )
             }
             return result
         })
 
-        function getSnippet(html, maxLen = 120) {
-            if (!html) return ''
-            const tmp = document.createElement('div')
-            tmp.innerHTML = html
-            const text = tmp.textContent || tmp.innerText || ''
-            return text.length > maxLen ? text.substring(0, maxLen) + '...' : text
+        // content_preview kommt aus der DB bereits als Klartext (Tags entfernt,
+        // Blockenden als Zeilenumbruch). Hier nur noch HTML-Entities aufloesen
+        // (&amp; &nbsp; ...) und auf Laenge kuerzen; die Anzeige erfolgt mit
+        // white-space: pre-line, damit die Zeilenumbrueche sichtbar bleiben.
+        function getSnippet(preview, maxLen = 180) {
+            if (!preview) return ''
+            const tmp = document.createElement('textarea')
+            tmp.innerHTML = preview
+            const text = tmp.value.replace(/\u00a0/g, ' ').trim()
+            return text.length > maxLen ? text.substring(0, maxLen).trimEnd() + '\u2026' : text
         }
 
         function formatDate(dateStr) {
@@ -306,5 +310,16 @@ export default {
 <style scoped>
 .cursor-pointer {
     cursor: pointer;
+}
+
+/* Teaser: Zeilenumbrueche aus dem Artikel beibehalten, auf 4 Zeilen kuerzen */
+.wiki-teaser {
+    white-space: pre-line;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.5;
 }
 </style>

@@ -14,7 +14,26 @@
         "urlLabel": "URL",
         "urlHint": "Strg+Klick zum Öffnen des Links",
         "cancel": "Atcelt",
-        "confirm": "Einfügen"
+        "confirm": "Einfügen",
+        "textStyle": "Teksta stils",
+        "paragraph": "Rindkopa",
+        "heading": "Virsraksts {level}",
+        "code": "Kods",
+        "taskList": "Kontrolsaraksts",
+        "blockquote": "Citāts",
+        "codeBlock": "Koda bloks",
+        "horizontalRule": "Horizontāla līnija",
+        "table": "Tabula",
+        "insertTable": "Ievietot tabulu (3×3)",
+        "addRowBefore": "Ievietot rindu augšpusē",
+        "addRowAfter": "Ievietot rindu apakšpusē",
+        "deleteRow": "Dzēst rindu",
+        "addColumnBefore": "Ievietot kolonnu pa kreisi",
+        "addColumnAfter": "Ievietot kolonnu pa labi",
+        "deleteColumn": "Dzēst kolonnu",
+        "toggleHeaderRow": "Galvenes rinda ieslēgt/izslēgt",
+        "deleteTable": "Dzēst tabulu",
+        "clearFormatting": "Notīrīt formatējumu"
     },
     "FakturaView": {
         "common": {

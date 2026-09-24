@@ -96,7 +96,21 @@
         "statusOpen": "deschis",
         "storno": "Anulat",
         "vendorDeliveryOrders": "Recepții de marfă",
-        "vendorReclamations": "Reclamații de achiziție"
+        "vendorReclamations": "Reclamații de achiziție",
+        "infoStatus": "Informații și stare",
+        "statusActive": "Activ",
+        "statusObsolete": "Invalid",
+        "businessType": "Tip client",
+        "salesman": "Vânzător",
+        "language": "Limbă",
+        "creditLimit": "Limită de credit",
+        "createdOn": "Creat la",
+        "internalNotes": "Observații interne",
+        "noNotes": "Nu există observații interne",
+        "addNote": "Adaugă observație",
+        "editNotes": "Editează observațiile",
+        "contactOrigin": "Originea datelor personale",
+        "showAll": "Afișează tot"
     },
     "PhoneActions": {
         "clickToCall": "Apelare",
