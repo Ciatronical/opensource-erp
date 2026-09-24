@@ -145,7 +145,8 @@ darüber.
 
 ### Konfiguration statt `bridge-config`
 
-Der Läufer schreibt `<webseite>/oserp-shop/config.php` mit der Adresse von
+Der Läufer schreibt `<webseite>/oserp-shop/config.json` (bis 2026-09-24
+`config.php`, siehe `dev/shop-hugocms-trennung.md`, E9) mit der Adresse von
 OpensourceERP (neue Einstellung `shop_backend_url`) und dem Shop-Schlüssel. Die
 Datei liegt außerhalb des Docroots und wird von Hugo nicht eingehängt; sie wird
 nur neu geschrieben, wenn sich ihr Inhalt ändert. Webserver und Läufer müssen

@@ -66,7 +66,7 @@
         <v-col cols="12" md="6">
             <v-select
                 v-model="werte[field.name]"
-                :items="field.items"
+                :items="auswahlwerte(field.items)"
                 :label="t(field.label)"
                 :style="field.fieldstyle"
                 hide-details="auto"
@@ -111,7 +111,7 @@ import PasswordField from '@/core/components/password-field.vue'
 import PathField from '@/core/components/path-field.vue'
 import { oserpStore } from '@/core/stores/oserp.store.js'
 
-const { t } = useI18n()
+const { t, te } = useI18n()
 const store = oserpStore()
 
 const props = defineProps({
@@ -229,6 +229,16 @@ function regeln(field) {
         return [(wert) => !wert || !String(wert).startsWith('/') || t('crm_fields.shopPathNotRelative')]
     }
     return []
+}
+
+/**
+ * Feste Auswahlwerte für die Anzeige
+ *
+ * Ist die Beschriftung ein Übersetzungsschlüssel, wird sie übersetzt; sonst
+ * bleibt sie stehen — etwa die PayPal-Werte, die als Fachbegriff gelten.
+ */
+function auswahlwerte(items) {
+    return (items || []).map(item => ({ ...item, title: te(item.title) ? t(item.title) : item.title }))
 }
 
 /** Auswahlwerte: erst die des Tabs, sonst die der Firmenkonfiguration */

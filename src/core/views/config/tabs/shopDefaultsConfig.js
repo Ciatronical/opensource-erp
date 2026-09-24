@@ -114,12 +114,40 @@ const shopDefaultsConfig = [
     // shop_job_retention_days: Nach wie vielen Tagen der Läufer erfolgreich
     // erledigte Aufträge aus der Warteschlange löscht. 0 schaltet das ab;
     // fehlgeschlagene Aufträge bleiben immer stehen.
+    // Betriebsart (dev/shop-hugocms-trennung.md, E8): lokal schreibt OSERP in
+    // die Webseite und baut selbst; HugoCMS überträgt an HugoCMS und lässt dort
+    // bauen — dann gelten die Verzeichnis- und Programmfelder darunter nicht.
+    {
+        name: "shop_publish_mode", type: "select", fieldstyle: "max-width: 45ch",
+        items: [
+            { title: "crm_fields.shopPublishModeLocal", value: "local" },
+            { title: "crm_fields.shopPublishModeHugoCms", value: "hugocms" },
+        ],
+        label: "crm_fields.shopPublishMode", tooltip: "crm_fields.shopPublishMode_help"
+    },
     { name: "shop_sites_dir", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopSitesDir", tooltip: "crm_fields.shopSitesDir_help" },
     { name: "shop_site_dir", type: "input", size: 60, fieldstyle: "max-width: 60ch", validate: "relativePath", browse: "sites", label: "crm_fields.shopSiteDir", tooltip: "crm_fields.shopSiteDir_help" },
     { name: "shop_content_dir", type: "input", size: 60, fieldstyle: "max-width: 60ch", validate: "relativePath", browse: "site", label: "crm_fields.shopContentDir", tooltip: "crm_fields.shopContentDir_help" },
     { name: "shop_publish_command_path", type: "input", size: 60, fieldstyle: "max-width: 60ch", validate: "absolutePath", label: "crm_fields.shopPublishCommandPath", tooltip: "crm_fields.shopPublishCommandPath_help" },
     { name: "shop_publish_clean_destination", type: "checkbox", label: "crm_fields.shopPublishCleanDestination", tooltip: "crm_fields.shopPublishCleanDestination_help" },
     { name: "shop_job_retention_days", type: "input", inputType: "number", size: 10, fieldstyle: "max-width: 15ch", label: "crm_fields.shopJobRetentionDays", tooltip: "crm_fields.shopJobRetentionDays_help" },
+
+    // Anbindung an HugoCMS (dev/shop-hugocms-trennung.md): Adresse des
+    // cms-api-Endpunkts der Shop-Webseite und der Schlüssel, den HugoCMS dort in
+    // den Projekteinstellungen erzeugt — deshalb kein Knopf zum Erzeugen hier.
+    // action: der Tab zeigt unter den Feldern „Verbindung prüfen“.
+    {
+        name: "shop_hugocms",
+        type: "group",
+        icon: "mdi-web-sync",
+        label: "crm_fields.shopHugoCms",
+        tooltip: "crm_fields.shopHugoCms_help",
+        action: "hugocmsTest",
+        fields: [
+            { name: "shop_hugocms_url", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopHugoCmsUrl", tooltip: "crm_fields.shopHugoCmsUrl_help" },
+            { name: "shop_hugocms_key", type: "password", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopHugoCmsKey", tooltip: "crm_fields.shopHugoCmsKey_help" },
+        ],
+    },
     { name: "shop_images_dir", type: "input", size: 60, fieldstyle: "max-width: 60ch", validate: "relativePath", browse: "site", label: "crm_fields.shopImagesDir", tooltip: "crm_fields.shopImagesDir_help" },
     { name: "shop_thumbnails_dir", type: "input", size: 60, fieldstyle: "max-width: 60ch", validate: "relativePath", browse: "site", label: "crm_fields.shopThumbnailsDir", tooltip: "crm_fields.shopThumbnailsDir_help" },
     { name: "shop_thumbnail_size", type: "input", inputType: "number", size: 10, fieldstyle: "max-width: 15ch", label: "crm_fields.shopThumbnailSize", tooltip: "crm_fields.shopThumbnailSize_help" },

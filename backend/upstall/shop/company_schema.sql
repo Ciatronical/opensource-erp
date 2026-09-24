@@ -489,6 +489,16 @@ INSERT INTO defaults_oserp (key, value) VALUES ('shop_publish_clean_destination'
 -- aus batchjob_hugoshop, sobald sie so viele Tage alt sind. 0 schaltet das ab;
 -- fehlgeschlagene Auftraege bleiben immer stehen.
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_job_retention_days', '30') ON CONFLICT (key) DO NOTHING;
+-- Anbindung an HugoCMS (dev/shop-hugocms-trennung.md): Adresse des
+-- cms-api-Endpunkts der Webseite und der Schluessel, den HugoCMS dort in den
+-- Projekteinstellungen erzeugt. Der Schluessel ist ein Geheimnis und geht nie an
+-- den Browser (oserp_config/defaults.php).
+-- shop_publish_mode: local = OSERP schreibt in die Webseite und baut selbst
+-- (Webseite auf demselben Server); hugocms = Bereitstellung, Übertragung an
+-- HugoCMS, Bau dort.
+INSERT INTO defaults_oserp (key, value) VALUES ('shop_publish_mode', 'local') ON CONFLICT (key) DO NOTHING;
+INSERT INTO defaults_oserp (key, value) VALUES ('shop_hugocms_url', '') ON CONFLICT (key) DO NOTHING;
+INSERT INTO defaults_oserp (key, value) VALUES ('shop_hugocms_key', '') ON CONFLICT (key) DO NOTHING;
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_template_set', 'standard') ON CONFLICT (key) DO NOTHING;
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_site_dir', '') ON CONFLICT (key) DO NOTHING;
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_content_dir', 'content/de/produkt') ON CONFLICT (key) DO NOTHING;

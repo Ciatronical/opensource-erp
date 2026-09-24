@@ -7,7 +7,10 @@
 //
 // Die Umleitungen stehen in OpensourceERP (redirect_pages_hugoshop). Abgefragt
 // werden sie über die öffentliche Aktion resolveRedirect — mit Adresse und
-// Schlüssel aus <webseite>/oserp-shop/config.php, wie beim Proxy.
+// Schlüssel aus <webseite>/oserp-shop/config.json, wie beim Proxy.
+//
+// Betriebsart „HugoCMS": HugoCMS nimmt kein PHP an — diese Datei einmal von
+// Hand nach <webseite>/oserp-shop/static/not_found.php legen.
 //
 // Anders als die Bridge leitet die Seite bei 301 und 302 wirklich um: sie
 // sendet einen Location-Kopf, statt das Ziel selbst abzurufen und seinen
@@ -52,8 +55,8 @@ function seiteNichtGefunden(int $code, string $ziel = '', string $linktext = '')
  * @return array|null code, current_link, link_text — oder null
  */
 function umleitungSuchen(string $adresse): ?array {
-    $konfiguration = __DIR__.'/../oserp-shop/config.php';
-    $cfg = is_file($konfiguration) ? require $konfiguration : [];
+    $konfiguration = __DIR__.'/../oserp-shop/config.json';
+    $cfg = is_file($konfiguration) ? json_decode((string)file_get_contents($konfiguration), true) : [];
     $url = is_array($cfg) ? (string)($cfg['url'] ?? '') : '';
     $schluessel = is_array($cfg) ? (string)($cfg['key'] ?? '') : '';
     if ('' === $url || '' === $schluessel) {

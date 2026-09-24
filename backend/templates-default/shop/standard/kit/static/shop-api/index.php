@@ -17,12 +17,17 @@
 // steht — er kostet keinen PHP-Prozess je Anfrage.
 //
 // EINRICHTUNG
-// Keine. Adresse und Schlüssel schreibt der Läufer nach
-// <webseite>/oserp-shop/config.php — außerhalb des Docroots, und Hugo hängt
+// Adresse und Schlüssel schreibt der Läufer nach
+// <webseite>/oserp-shop/config.json — außerhalb des Docroots, und Hugo hängt
 // die Datei nicht ein.
+//
+// Betriebsart „lokal": nichts weiter, der Läufer legt auch diese Datei ab.
+// Betriebsart „HugoCMS": HugoCMS nimmt kein PHP an. Diese Datei einmal von
+// Hand nach <webseite>/oserp-shop/static/shop-api/index.php legen; die
+// config.json kommt über die Übertragung (dev/shop-hugocms-trennung.md, E9).
 
-$konfiguration = __DIR__.'/../../oserp-shop/config.php';
-$cfg = is_file($konfiguration) ? require $konfiguration : [];
+$konfiguration = __DIR__.'/../../oserp-shop/config.json';
+$cfg = is_file($konfiguration) ? json_decode((string)file_get_contents($konfiguration), true) : [];
 $adresse   = is_array($cfg) ? (string)($cfg['url'] ?? '') : '';
 $schluessel = is_array($cfg) ? (string)($cfg['key'] ?? '') : '';
 
@@ -32,7 +37,7 @@ if ('' === $adresse || '' === $schluessel) {
     echo json_encode([
         'success' => false,
         'text'    => 'SHOP_PROXY_NOT_CONFIGURED',
-        'debug'   => 'oserp-shop/config.php fehlt oder ist unvollständig — in den Shop-Einstellungen die Adresse von OpensourceERP und den Shop-Schlüssel setzen, dann den Läufer laufen lassen',
+        'debug'   => 'oserp-shop/config.json fehlt oder ist unvollständig — in den Shop-Einstellungen die Adresse von OpensourceERP und den Shop-Schlüssel setzen, dann den Läufer laufen lassen',
     ]);
     exit;
 }

@@ -49,6 +49,7 @@ require_once __DIR__.'/../backend/api/shop/lib/config.php';
 require_once __DIR__.'/../backend/api/shop/lib/payment.php';
 require_once __DIR__.'/../backend/api/shop/lib/publish.php';
 require_once __DIR__.'/../backend/api/shop/lib/categories.php';
+require_once __DIR__.'/../backend/api/shop/lib/hugocms.php';
 
 set_time_limit(0);
 

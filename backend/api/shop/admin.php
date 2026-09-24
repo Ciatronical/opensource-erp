@@ -100,18 +100,32 @@ function getShopStatus($data) {
     // nicht gebaut; ohne Wurzelverzeichnis entsteht überhaupt keine Seite. Der
     // Feldname allein sagt nicht, was daran fehlt — der Grund kommt mit.
     $veroeffentlichung = [];
-    $programm = shopPublishProgram($db);
-    if ('' === $programm['pfad']) {
-        $hinweise[] = 'shop_publish_command_path';
-        if ('' !== $programm['fehler']) {
-            $veroeffentlichung[] = $programm['fehler'];
+    if ('hugocms' === shopPublishMode($db)) {
+        // Betriebsart HugoCMS: gebaut wird dort. Hier zählt nur, ob Adresse
+        // und Schlüssel gesetzt sind — ob sie stimmen, prüft der Knopf in den
+        // Einstellungen; ein Aufruf bei jedem Öffnen der Übersicht wäre zu teuer.
+        $adresse = shopHugoCmsUrl(shopConfigValue($db, 'shop_hugocms_url'));
+        if ('' !== $adresse['fehler']) {
+            $hinweise[] = 'shop_hugocms_url';
+            $veroeffentlichung[] = $adresse['fehler'];
         }
-    }
-    try {
-        shopSiteDir($db);
-    } catch (Throwable $e) {
-        $hinweise[] = 'shop_sites_dir';
-        $veroeffentlichung[] = $e->getMessage();
+        if ('' === shopConfigValue($db, 'shop_hugocms_key')) {
+            $hinweise[] = 'shop_hugocms_key';
+        }
+    } else {
+        $programm = shopPublishProgram($db);
+        if ('' === $programm['pfad']) {
+            $hinweise[] = 'shop_publish_command_path';
+            if ('' !== $programm['fehler']) {
+                $veroeffentlichung[] = $programm['fehler'];
+            }
+        }
+        try {
+            shopSiteDir($db);
+        } catch (Throwable $e) {
+            $hinweise[] = 'shop_sites_dir';
+            $veroeffentlichung[] = $e->getMessage();
+        }
     }
 
     resultInfo(true, '', [
@@ -486,6 +500,39 @@ function runShopPublishJobs($data) {
     }
 
     resultInfo(true, '', ['started' => true, 'running' => true]);
+}
+
+/**
+ * Prüft die Verbindung zu HugoCMS
+ *
+ * Fragt dort den Baustand der Webseite ab. Gelingt das, stimmen Adresse,
+ * Schlüssel und Zuordnung zur Webseite; die Antwort zeigt zugleich, ob HugoCMS
+ * bauen kann und wie der letzte Lauf ausging.
+ *
+ * Adresse und Schlüssel dürfen aus dem Formular kommen: Die Firmenkonfiguration
+ * speichert verzögert, und ein Test direkt nach der Eingabe prüfte sonst noch
+ * die alten Werte. Leere Angaben fallen auf das Gespeicherte zurück — das
+ * Schlüsselfeld ist nach dem Laden immer leer.
+ *
+ * @param string $data['url'] Adresse aus dem Formular (optional)
+ * @param string $data['key'] Schlüssel aus dem Formular (optional)
+ * @return void
+ * @testdata {}
+ */
+function testShopHugoCms($data) {
+    permit(['edit_shop_config'], false);
+    $db = DbhCompany::begin();
+
+    $antwort = shopHugoCmsCall($db, 'shopbuildstatus', 'GET', 20, [
+        'url' => (string)($data['url'] ?? ''),
+        'key' => (string)($data['key'] ?? ''),
+    ]);
+    if (!$antwort['ok']) {
+        resultInfo(false, 'SHOP_HUGOCMS_FAILED', null, $antwort['fehler']);
+        return;
+    }
+
+    resultInfo(true, '', $antwort['data']);
 }
 
 /**

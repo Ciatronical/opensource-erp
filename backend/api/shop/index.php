@@ -38,6 +38,7 @@ require_once __DIR__.'/lib/withdrawal.php';
 require_once __DIR__.'/lib/redirect.php';
 require_once __DIR__.'/lib/publish.php';
 require_once __DIR__.'/lib/categories.php';
+require_once __DIR__.'/lib/hugocms.php';
 require_once __DIR__.'/admin.php';
 
 require_once __DIR__.'/../inc.php'; // muss immer unten stehen

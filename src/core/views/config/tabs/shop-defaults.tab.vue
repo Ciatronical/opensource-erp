@@ -94,6 +94,29 @@
                             :gesetzt="crmSecrets"
                             :vorgaben="crmFallbacks"
                         />
+
+                        <!-- Verbindung zu HugoCMS prüfen: mit den Werten im
+                             Formular, auch wenn sie noch nicht gespeichert sind -->
+                        <template v-if="field.action === 'hugocmsTest'">
+                            <v-btn
+                                variant="tonal"
+                                size="small"
+                                prepend-icon="mdi-lan-connect"
+                                :loading="hugocmsPrueft"
+                                @click="hugocmsPruefen"
+                            >
+                                {{ t('crm_fields.shopHugoCmsTest') }}
+                            </v-btn>
+                            <v-alert
+                                v-if="hugocmsErgebnis"
+                                :type="hugocmsErgebnis.art"
+                                variant="tonal"
+                                density="compact"
+                                class="mt-3"
+                            >
+                                <div v-for="(zeile, index) in hugocmsErgebnis.zeilen" :key="index">{{ zeile }}</div>
+                            </v-alert>
+                        </template>
                     </v-card-text>
                 </v-card>
 
@@ -140,6 +163,68 @@ const configLoaded = ref(false)
  * kommen deshalb aus der Shop-Erweiterung statt aus getCompanyConfig.
  */
 const quellen = ref({ shopTemplateSets: [] })
+
+/** Verbindungstest zu HugoCMS: läuft gerade, und was kam heraus */
+const hugocmsPrueft = ref(false)
+const hugocmsErgebnis = ref(null)
+
+/**
+ * Prüft die Verbindung zu HugoCMS
+ *
+ * Schickt Adresse und — falls eingetippt — Schlüssel aus dem Formular mit.
+ * Die Firmenkonfiguration speichert verzögert; ohne das prüfte ein Klick direkt
+ * nach der Eingabe noch den alten Stand. Ein leeres Schlüsselfeld heißt: der
+ * gespeicherte gilt.
+ */
+async function hugocmsPruefen() {
+    hugocmsPrueft.value = true
+    hugocmsErgebnis.value = null
+    try {
+        const response = await axios.post('/api/shop/', {
+            action: 'testShopHugoCms',
+            url: props.crmDefaults.shop_hugocms_url || '',
+            key: props.crmDefaults.shop_hugocms_key || '',
+        })
+        if (!response.data?.success) {
+            hugocmsErgebnis.value = { art: 'error', zeilen: [response.data?.debug || response.data?.text || t('crm_fields.shopHugoCmsFailed')] }
+            return
+        }
+        hugocmsErgebnis.value = hugocmsBericht(response.data.payload || {})
+    } catch (e) {
+        hugocmsErgebnis.value = { art: 'error', zeilen: [e?.message || t('crm_fields.shopHugoCmsFailed')] }
+    } finally {
+        hugocmsPrueft.value = false
+    }
+}
+
+/** Baustand von HugoCMS als Meldung: verbunden, kann bauen, letzter Lauf */
+function hugocmsBericht(stand) {
+    const zeilen = [t('crm_fields.shopHugoCmsOk')]
+    let art = 'success'
+
+    if (!stand.buildable) {
+        zeilen.push(t('crm_fields.shopHugoCmsNotBuildable'))
+        art = 'warning'
+    } else if (stand.paused) {
+        zeilen.push(t('crm_fields.shopHugoCmsPaused'))
+        art = 'warning'
+    }
+    if (stand.running) {
+        zeilen.push(t('crm_fields.shopHugoCmsRunning'))
+    }
+
+    const letzter = stand.last
+    if (letzter?.finishedAt) {
+        const wann = new Date(letzter.finishedAt).toLocaleString()
+        zeilen.push(letzter.success
+            ? t('crm_fields.shopHugoCmsLastOk', { when: wann, seconds: letzter.seconds })
+            : t('crm_fields.shopHugoCmsLastFailed', { when: wann, code: letzter.exitCode }))
+    } else if (stand.buildable) {
+        zeilen.push(t('crm_fields.shopHugoCmsNoBuild'))
+    }
+
+    return { art, zeilen }
+}
 
 async function ladeVorlagensaetze() {
     try {

@@ -35,7 +35,7 @@ Der Ablauf steht ausführlich in `shop-bridge-abloesung.md` unter Stufe D. Kurz:
    Den **Shop-Schlüssel** erzeugt der Knopf neben dem Feld: 32 zufällige Byte,
    hexadezimal. Er wird dabei angezeigt, weil ein Reverse-Proxy im Webserver
    denselben Wert braucht; der mitgelieferte Proxy bekommt ihn vom Läufer über
-   `oserp-shop/config.php`. Der Schlüssel unterscheidet die Mandanten — zwei
+   `oserp-shop/config.json`. Der Schlüssel unterscheidet die Mandanten — zwei
    Firmen dürfen nicht denselben haben.
 3. Programm zum Bauen: Verzeichnis, in dem `hugo` liegt, in der
    Shop-Einstellung `shop_publish_command_path` — nur das Verzeichnis, der
@@ -231,7 +231,27 @@ Oberfläche, nicht den Schlüssel.
 | Zahlung | Bankverbindung (`shop_payment_*`), PayPal (`shop_paypal_*`) |
 | Adressen der Webseite | `shop_base_url`, `shop_products_link`, `shop_category_link`, `shop_images_link`, `shop_thumbnails_link`, `shop_downloads_link` |
 | Veröffentlichung | `shop_template_set`, `shop_sites_dir`, `shop_site_dir`, `shop_content_dir`, `shop_publish_command_path`, `shop_publish_clean_destination`, `shop_images_dir`, `shop_thumbnails_dir`, `shop_thumbnail_size` |
+| HugoCMS (`dev/shop-hugocms-trennung.md`) | `shop_publish_mode` (`local`/`hugocms`), `shop_hugocms_url`, `shop_hugocms_key` (Geheimnis) |
 | Sonstiges | `shop_search_weighting`, `shop_invoice_mail_subject`, `shop_withdrawal_mail_to` |
+
+**Betriebsart.** `local` (Vorgabe): Die Webseite liegt auf diesem Server,
+OSERP schreibt hinein und baut selbst — alles in diesem Abschnitt gilt so.
+`hugocms`: Die Webseite liegt bei HugoCMS auf einem eigenen Webserver. OSERP
+schreibt dann in die Bereitstellung `backend/tmp/shop-publish-<db>-staging/`,
+überträgt an HugoCMS und lässt dort bauen; Verzeichnis- und Programmfelder
+gelten nicht. Die Vorschaubilder erzeugt HugoCMS aus den Produktbildern auf
+dem Webserver, nach jeder Übertragung; Größe weiter über
+`shop_thumbnail_size`, die Verzeichnisse stehen in der Mount-Datei von HugoCMS
+(`[shop] images`, `[shop] thumbnails`). Fehlende Produktbilder nennt der Lauf.
+Einzelheiten in `dev/shop-hugocms-trennung.md`.
+
+In dieser Betriebsart **zwei Dateien einmal von Hand** auf den Webserver legen,
+weil HugoCMS kein PHP annimmt: aus `backend/templates-default/shop/standard/kit/static/`
+die `shop-api/index.php` nach `<webseite>/oserp-shop/static/shop-api/index.php`
+und die `not_found.php` nach `<webseite>/oserp-shop/static/not_found.php`. Ihre
+Konfiguration (`oserp-shop/config.json`) kommt über die Übertragung. Nach einem
+OSERP-Update, das eine der beiden ändert, gehören sie erneut kopiert; der Lauf
+erinnert daran, sobald er etwas überträgt.
 
 Wurzelverzeichnis und Programm stehen hier, weil jede Firma ihre eigene
 Webseite hat. Beide sind **absolut**:
@@ -291,7 +311,7 @@ der Shop-Übersicht als Hinweis.
 | Zeichen | Ursache |
 | --- | --- |
 | Hugo: `template for shortcode "shop-…" not found` | `oserp-shop/` fehlt — Läufer laufen lassen |
-| Proxy antwortet 503 `SHOP_PROXY_NOT_CONFIGURED` | `oserp-shop/config.php` fehlt oder ist für den Webserver nicht lesbar |
+| Proxy antwortet 503 `SHOP_PROXY_NOT_CONFIGURED` | `oserp-shop/config.json` fehlt oder ist für den Webserver nicht lesbar |
 | 403 `SHOP_NOT_AUTHORIZED` | Der Schlüssel im Proxy passt nicht zu `shop_public_key` |
 | Warenkorb bleibt leer | Der Aufruf kommt nicht von derselben Adresse — Proxy einrichten oder `shop_allowed_origins` setzen |
 | Seiten entstehen nicht | `shop_sites_dir` und `shop_site_dir` prüfen, Schreibrechte, Ausgabe des Läufers lesen |

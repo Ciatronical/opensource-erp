@@ -183,7 +183,47 @@ function shopSitesRoot($db): string {
 
 /** Verzeichnis des Hugo-Projekts dieses Mandanten */
 function shopSiteDir($db, bool $anlegen = false): string {
+    // Betriebsart HugoCMS: Die Webseite liegt auf einem anderen Server. Alles,
+    // was OSERP erzeugt, landet zuerst in der Bereitstellung und geht von dort
+    // an HugoCMS — Seiten, Paket und Kategorieübersicht merken davon nichts.
+    if ('hugocms' === shopPublishMode($db)) {
+        return shopStagingDir($db);
+    }
     return shopPathUnder(shopSitesRoot($db), shopConfigValue($db, 'shop_site_dir'), $anlegen);
+}
+
+/**
+ * Betriebsart der Veröffentlichung (dev/shop-hugocms-trennung.md, E8)
+ *
+ * local: OSERP schreibt in die Webseite und baut selbst — die Webseite liegt
+ * auf demselben Server. hugocms: OSERP schreibt in die Bereitstellung,
+ * überträgt an HugoCMS und lässt dort bauen.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @return string local oder hugocms
+ */
+function shopPublishMode($db): string {
+    return 'hugocms' === shopConfigValue($db, 'shop_publish_mode', 'local') ? 'hugocms' : 'local';
+}
+
+/**
+ * Bereitstellungsverzeichnis der Betriebsart HugoCMS
+ *
+ * Unter backend/tmp/, je Mandant — neben Sperre und Stand der Veröffentlichung.
+ * Es bleibt zwischen den Läufen erhalten: Es ist das Abbild dessen, was die
+ * Webseite von OSERP haben soll, und die Übertragung vergleicht es jedes Mal
+ * mit HugoCMS.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @return string absoluter Pfad
+ */
+function shopStagingDir($db): string {
+    $dateien = shopPublishStateFiles($db);
+    $verzeichnis = substr($dateien['status'], 0, -strlen('.json')).'-staging';
+    if (!is_dir($verzeichnis) && !@mkdir($verzeichnis, 0775, true) && !is_dir($verzeichnis)) {
+        throw new ApiError('SHOP_STAGING_UNAVAILABLE', 'Bereitstellungsverzeichnis lässt sich nicht anlegen: '.$verzeichnis);
+    }
+    return realpath($verzeichnis) ?: $verzeichnis;
 }
 
 /** Zielverzeichnis der Inhaltsdateien */
@@ -410,6 +450,10 @@ function shopThumbnailFor($db, array $seite): string {
     if (!$seite['shop']['images']) {
         return 'keine Bilder';
     }
+    // Die Bilder liegen auf dem Webserver bei HugoCMS (E6), nicht hier
+    if ('hugocms' === shopPublishMode($db)) {
+        return 'bei HugoCMS';
+    }
     if ('' === shopConfigValue($db, 'shop_images_dir') || '' === shopConfigValue($db, 'shop_thumbnails_dir')) {
         return 'nicht eingerichtet';
     }
@@ -530,20 +574,24 @@ function shopKitDir($db, bool $anlegen = false): string {
 }
 
 /**
- * Inhalt von oserp-shop/config.php
+ * Inhalt von oserp-shop/config.json
  *
- * Adresse und Schluessel fuer Proxy und 404-Seite. Die Datei liegt ausserhalb
- * des Docroots, und Hugo haengt sie nicht ein.
+ * Adresse und Schlüssel für Weiterleiter und 404-Seite. Die Datei liegt
+ * außerhalb des Docroots, und Hugo hängt sie nicht ein.
+ *
+ * JSON statt PHP (dev/shop-hugocms-trennung.md, E9): In der Betriebsart
+ * HugoCMS geht das Paket über die HugoCMS-API, und HugoCMS schreibt bewusst
+ * kein PHP. Eine Konfiguration, die sich mit jedem neuen Shop-Schlüssel
+ * ändert, muss aber übertragen werden können — anders als die beiden
+ * PHP-Einstiegspunkte, die man einmal von Hand ablegt.
  */
 function shopKitConfig($db): string {
     $werte = [
-        'url' => shopConfigValue($db, 'shop_backend_url'),
-        'key' => shopConfigValue($db, 'shop_public_key'),
+        '_hinweis' => 'Von OpensourceERP geschrieben (tools/shop-publish.php) — nicht von Hand ändern.',
+        'url'      => shopConfigValue($db, 'shop_backend_url'),
+        'key'      => shopConfigValue($db, 'shop_public_key'),
     ];
-    return "<?php\n"
-         . "// Von OpensourceERP geschrieben (tools/shop-publish.php) — nicht von Hand aendern.\n"
-         . "// Liegt ausserhalb des Docroots und wird von Hugo nicht eingehaengt.\n"
-         . 'return '.var_export($werte, true).";\n";
+    return json_encode($werte, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)."\n";
 }
 
 /**
@@ -585,7 +633,7 @@ function shopKitFiles(string $satz): array {
  * Spiegelt das Paket des Vorlagensatzes in die Webseite
  *
  * Kopiert nur, was sich geaendert hat, und entfernt, was das Paket nicht mehr
- * enthaelt — beides nur innerhalb von oserp-shop/. Die config.php bleibt dabei
+ * enthaelt — beides nur innerhalb von oserp-shop/. Die config.json bleibt dabei
  * stehen und wird nur neu geschrieben, wenn sich ihr Inhalt aendert. Woraus
  * das Paket besteht, sagt shopKitFiles().
  *
@@ -624,7 +672,9 @@ function shopSyncKit($db): array {
     );
     foreach ($eintraege as $eintrag) {
         $relativ = substr($eintrag->getPathname(), strlen($ziel) + 1);
-        if ('config.php' === $relativ) {
+        // Die Konfiguration schreibt der Abgleich unten selbst. Eine alte
+        // config.php (vor E9) steht nicht im Paket und fällt hier weg.
+        if ('config.json' === $relativ) {
             continue;
         }
         if ($eintrag->isDir() && !$eintrag->isLink()) {
@@ -640,7 +690,7 @@ function shopSyncKit($db): array {
     }
 
     $inhalt = shopKitConfig($db);
-    $konfiguration = $ziel.'/config.php';
+    $konfiguration = $ziel.'/config.json';
     if (!is_file($konfiguration) || file_get_contents($konfiguration) !== $inhalt) {
         if (false === file_put_contents($konfiguration, $inhalt, LOCK_EX)) {
             throw new ApiError('SHOP_WRITE_FAILED', 'Datei nicht schreibbar: '.$konfiguration);
@@ -1534,6 +1584,15 @@ function shopPublishRun($db, ?callable $melden = null, int $limit = 500, ?array 
             } catch (Throwable $e) {
                 $fehler('Kategorieübersicht fehlgeschlagen: '.$e->getMessage());
             }
+        }
+
+        // Betriebsart HugoCMS: übertragen und dort bauen lassen. Übertragen
+        // wird auch ohne Änderung in diesem Lauf — HugoCMS könnte hinterher
+        // sein (neue Webseite, gescheiterter Lauf); was unverändert ist,
+        // erkennt die Übertragung selbst.
+        if ('hugocms' === shopPublishMode($db)) {
+            $bilanz['gebaut'] = shopHugoCmsPublish($db, $sagen, $fehler, $bauen);
+            return $bilanz;
         }
 
         $geaendert = $bilanz['seiten'] + $bilanz['entfernt'] + $bilanz['kit'] + $bilanz['kategorien'];
