@@ -6,16 +6,23 @@
 // batchjob_hugoshop ab, schreibt die Inhaltsdateien und baut anschließend die
 // Webseite, wenn in der settings.ini ein Befehl steht.
 //
-// Gedacht für einen Cron-Eintrag, etwa alle fünf Minuten. Die Anwendung selbst
-// schreibt nur Aufträge: sie braucht dadurch weder Schreibrechte im
-// Webseiten-Verzeichnis noch führt sie Befehle aus. Derselbe Schnitt wie beim
-// Demo-Reset.
+// Gedacht für einen Cron-Eintrag, etwa alle fünf Minuten. Ohne Cron genügt
+// „Jetzt ausführen" im Admin-Panel, das diesen Läufer startet; dann braucht
+// der Webserver-Benutzer Schreibrechte im Webseiten-Verzeichnis.
 //
 // Aufruf:
 //   php tools/shop-publish.php [--client=<id>] [--db=<name>] [--limit=500]
 //                              [--no-build] [--quiet] [--reconcile-payments]
-//                              [--no-cleanup]
+//                              [--no-cleanup] [--ids=<nr>,<nr>,...]
 //   php tools/shop-publish.php --list-clients
+//
+// --ids= arbeitet nur diese Aufträge ab statt aller offenen.
+//
+// Denselben Läufer startet auch „Jetzt ausführen" im Admin-Panel, dort als
+// eigenen Prozess im Hintergrund (shopPublishStartBackground). Jeder Lauf —
+// ob aus dem Cron oder aus dem Panel — schreibt deshalb seine Meldungen und
+// seinen Stand nach backend/tmp/shop-publish-<db>.log und .json; die
+// Oberfläche liest sie von dort.
 //
 // Nach jedem Lauf räumt das Skript erledigte Aufträge weg: die erfolgreich
 // ausgeführten, die älter sind als die Aufbewahrungsfrist aus der
@@ -53,11 +60,26 @@ foreach (array_slice($argv, 1) as $arg) {
 }
 
 $leise = isset($argumente['quiet']);
-$melden = function (string $zeile) use ($leise) {
+
+// Das Protokoll öffnet erst der Beginn des Laufs (unten): ein Prozess, der die
+// Sperre nicht bekommt, darf das Protokoll des laufenden nicht leeren.
+$protokoll = null;
+$melden = function (string $zeile) use ($leise, &$protokoll) {
+    $text = date('H:i:s').'  '.$zeile."\n";
     if (!$leise) {
-        echo date('H:i:s').'  '.$zeile."\n";
+        echo $text;
+    }
+    if (is_resource($protokoll)) {
+        fwrite($protokoll, $text);
+        fflush($protokoll);
     }
 };
+
+// Nur diese Aufträge — kommt vom Panel, das die ausgewählten Zeilen schickt
+$nurIds = null;
+if (isset($argumente['ids']) && is_string($argumente['ids'])) {
+    $nurIds = array_values(array_filter(array_map('intval', explode(',', $argumente['ids'])), fn($id) => $id > 0));
+}
 
 // ── Mandant bestimmen ──
 
@@ -129,51 +151,97 @@ $sperrVerzeichnis = __DIR__.'/../backend/tmp';
 if (!is_dir($sperrVerzeichnis)) {
     mkdir($sperrVerzeichnis, 0775, true);
 }
+$dateien = shopPublishStateFiles($db);
+
 $sperre = fopen($sperrVerzeichnis.'/shop-publish-'.$mandant['dbname'].'.lock', 'c');
 if (false === $sperre || !flock($sperre, LOCK_EX | LOCK_NB)) {
     $melden('Ein Lauf für '.$mandant['dbname'].' ist noch unterwegs — nichts zu tun.');
+    // Hatte das Panel diesen Prozess angefordert, gilt der Start als erledigt:
+    // der laufende Lauf nimmt die Aufträge mit
+    shopPublishWriteState($dateien['status'], ['requested' => null]);
     exit(0);
 }
 
 // ── Aufträge abarbeiten ──
+//
+// exit() steht erst am Ende: PHP führt finally-Blöcke bei exit() nicht aus,
+// und der Stand muss in jedem Fall geschrieben werden.
 
-try {
+$beginn = function () use (&$protokoll, $dateien, $mandant, $melden) {
+    // 'w' leert das Protokoll des vorigen Laufs
+    $protokoll = @fopen($dateien['log'], 'w') ?: null;
+    if ($protokoll) {
+        @chmod($dateien['log'], 0664);
+    }
+    shopPublishWriteState($dateien['status'], [
+        'started'  => date(DATE_ATOM),
+        'pid'      => getmypid(),
+        'finished' => null,
+        'summary'  => null,
+    ]);
     $melden('Mandant '.$mandant['name'].' ('.$mandant['dbname'].')');
+};
 
-    // Aufträge, Paket, Kategorieübersicht und Bau stehen in shopPublishRun():
-    // dieselbe Reihenfolge wie beim Knopf „Jetzt ausführen" im Admin-Panel.
-    // Die Sperre dort hält beide Wege auseinander, auch über Rechner hinweg —
-    // die Sperrdatei oben fängt nur zwei Läufer auf diesem Rechner ab.
-    $bilanz = shopPublishRun($db, $melden, (int)($argumente['limit'] ?? 500), null, !isset($argumente['no-build']));
+$code = 0;
+try {
+    // Aufträge, Paket, Kategorieübersicht und Bau stehen in shopPublishRun().
+    // Die Sperre dort hält Cron und Panel auseinander, auch über Rechner
+    // hinweg — die Sperrdatei oben fängt nur zwei Läufer auf diesem Rechner ab.
+    $bilanz = shopPublishRun($db, $melden, (int)($argumente['limit'] ?? 500), $nurIds, !isset($argumente['no-build']), $beginn);
 
     if ($bilanz['gesperrt']) {
-        exit(0);
-    }
+        shopPublishWriteState($dateien['status'], ['requested' => null]);
+    } else {
+        $melden(sprintf('%d Aufträge, %d Seiten geschrieben, %d entfernt, %d Änderungen am Paket, %d Fehler',
+            $bilanz['jobs'], $bilanz['seiten'], $bilanz['entfernt'], $bilanz['kit'], $bilanz['fehler']));
 
-    $melden(sprintf('%d Aufträge, %d Seiten geschrieben, %d entfernt, %d Änderungen am Paket, %d Fehler',
-        $bilanz['jobs'], $bilanz['seiten'], $bilanz['entfernt'], $bilanz['kit'], $bilanz['fehler']));
-
-    // Aufräumen nach dem Lauf, nicht davor: die eben erledigten Aufträge
-    // stehen dann schon mit Ergebnis da und fallen unter dieselbe Frist.
-    if (!isset($argumente['no-cleanup'])) {
-        $tage = shopJobRetentionDays($db);
-        if ($tage > 0) {
-            $weg = shopCleanupJobs($db, $tage);
-            if ($weg > 0) {
-                $melden(sprintf('%d erledigte Aufträge älter als %d Tage gelöscht', $weg, $tage));
+        // Aufräumen nach dem Lauf, nicht davor: die eben erledigten Aufträge
+        // stehen dann schon mit Ergebnis da und fallen unter dieselbe Frist.
+        if (!isset($argumente['no-cleanup'])) {
+            $tage = shopJobRetentionDays($db);
+            if ($tage > 0) {
+                $weg = shopCleanupJobs($db, $tage);
+                if ($weg > 0) {
+                    $melden(sprintf('%d erledigte Aufträge älter als %d Tage gelöscht', $weg, $tage));
+                }
             }
         }
-    }
 
-    if (0 !== $bilanz['bau_code']) {
-        fwrite(STDERR, "Der Bau der Webseite ist fehlgeschlagen (Rückgabewert ".$bilanz['bau_code'].").\n");
-    }
+        if (0 !== $bilanz['bau_code']) {
+            fwrite(STDERR, "Der Bau der Webseite ist fehlgeschlagen (Rückgabewert ".$bilanz['bau_code'].").\n");
+        }
 
-    exit($bilanz['fehler'] > 0 ? 1 : 0);
+        shopPublishWriteState($dateien['status'], [
+            'finished' => date(DATE_ATOM),
+            'summary'  => [
+                'jobs'        => $bilanz['jobs'],
+                'pages'       => $bilanz['seiten'],
+                'removed'     => $bilanz['entfernt'],
+                'kit'         => $bilanz['kit'],
+                'errors'      => $bilanz['fehler'],
+                'built'       => $bilanz['gebaut'],
+                'error_lines' => $bilanz['fehler_texte'],
+            ],
+        ]);
+
+        $code = $bilanz['fehler'] > 0 ? 1 : 0;
+    }
 } catch (Throwable $e) {
-    fwrite(STDERR, get_class($e).': '.$e->getMessage()."\n");
-    exit(1);
-} finally {
-    flock($sperre, LOCK_UN);
-    fclose($sperre);
+    $text = get_class($e).': '.$e->getMessage();
+    fwrite(STDERR, $text."\n");
+    $melden('Abgebrochen: '.$text);
+    shopPublishWriteState($dateien['status'], [
+        'finished' => date(DATE_ATOM),
+        'summary'  => ['jobs' => 0, 'pages' => 0, 'removed' => 0, 'kit' => 0, 'errors' => 1,
+                       'built' => false, 'error_lines' => ['Abgebrochen: '.$text]],
+    ]);
+    $code = 1;
 }
+
+if (is_resource($protokoll)) {
+    fclose($protokoll);
+}
+flock($sperre, LOCK_UN);
+fclose($sperre);
+
+exit($code);

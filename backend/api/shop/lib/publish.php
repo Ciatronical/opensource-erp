@@ -1160,6 +1160,294 @@ function shopPublishCommand($db): array {
     return ['befehl' => $befehl, 'fehler' => ''];
 }
 
+// ── Lauf im Hintergrund ──
+//
+// "Jetzt ausführen" im Admin-Panel wartet nicht mehr auf den Lauf. Es startet
+// den Läufer (tools/shop-publish.php) als eigenen Prozess und antwortet sofort;
+// die Oberfläche fragt danach den Stand ab. So hängt keine Anfrage minutenlang,
+// und kein Proxy bricht sie nach 60 Sekunden ab.
+//
+// Der Stand liegt in drei Dateien je Mandant unter backend/tmp/ — dort, wo der
+// Läufer auch seine Sperrdatei hat:
+//
+//   shop-publish-<db>.json   angefordert, begonnen, beendet, Bilanz
+//   shop-publish-<db>.log    Meldungen des letzten Laufs
+//   shop-publish-<db>.out    Ausgabe des zuletzt vom Panel gestarteten Prozesses
+//                            (nur Fehlerausgabe; hilft, wenn er abstürzt)
+//
+// Ob gerade ein Lauf arbeitet, sagt allein die Beratungssperre in der
+// Datenbank. Die Dateien erzählen nur, was war.
+
+/** Sekunden, die ein gestarteter Prozess hat, um die Sperre zu nehmen */
+const SHOP_PUBLISH_START_FRIST = 30;
+
+/** Zeilen des Protokolls, die die Oberfläche höchstens bekommt */
+const SHOP_PUBLISH_PROTOKOLL_ZEILEN = 300;
+
+/**
+ * Dateien, in denen der Stand der Veröffentlichung liegt
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @return array status, log, out, lock — absolute Pfade
+ */
+function shopPublishStateFiles($db): array {
+    $verzeichnis = __DIR__.'/../../../tmp';
+    if (!is_dir($verzeichnis)) {
+        @mkdir($verzeichnis, 0775, true);
+    }
+    $verzeichnis = realpath($verzeichnis) ?: $verzeichnis;
+
+    // Der Name der Datenbank unterscheidet die Mandanten — wie bei der
+    // Sperrdatei des Läufers
+    $zeile = $db->getOne("SELECT current_database() AS name");
+    $name = preg_replace('/[^A-Za-z0-9_.-]/', '_', (string)($zeile['name'] ?? 'oserp'));
+    $basis = $verzeichnis.'/shop-publish-'.$name;
+
+    return [
+        'status' => $basis.'.json',
+        'log'    => $basis.'.log',
+        'out'    => $basis.'.out',
+        'lock'   => $basis.'.lock',
+    ];
+}
+
+/**
+ * Liest den gespeicherten Stand
+ *
+ * @param string $datei Pfad der Statusdatei
+ * @return array leer, wenn es sie nicht gibt oder sie unlesbar ist
+ */
+function shopPublishReadState(string $datei): array {
+    $inhalt = is_file($datei) ? @file_get_contents($datei) : false;
+    $werte = false === $inhalt ? null : json_decode($inhalt, true);
+    return is_array($werte) ? $werte : [];
+}
+
+/**
+ * Schreibt den Stand, indem die neuen Werte über die alten gelegt werden
+ *
+ * Über eine Zwischendatei und rename(): wer gerade liest, sieht entweder den
+ * alten oder den neuen Stand, nie eine halbe Datei.
+ *
+ * @param string $datei Pfad der Statusdatei
+ * @param array $werte zu setzende Felder; null entfernt ein Feld
+ * @param bool $neu alten Stand verwerfen statt zu ergänzen
+ * @return void
+ */
+function shopPublishWriteState(string $datei, array $werte, bool $neu = false): void {
+    $stand = $neu ? [] : shopPublishReadState($datei);
+    foreach ($werte as $schluessel => $wert) {
+        if (null === $wert) {
+            unset($stand[$schluessel]);
+        } else {
+            $stand[$schluessel] = $wert;
+        }
+    }
+
+    $zwischen = $datei.'.'.getmypid().'.tmp';
+    if (false !== @file_put_contents($zwischen, json_encode($stand, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES))) {
+        @chmod($zwischen, 0664);
+        @rename($zwischen, $datei);
+    }
+}
+
+/**
+ * Arbeitet gerade ein Lauf — egal, wer ihn gestartet hat?
+ *
+ * Schaut in pg_locks nach, ob jemand die Beratungssperre hält, ohne sie selbst
+ * anzufassen. pg_try_advisory_lock() mit sofortiger Freigabe wäre einfacher,
+ * nähme einem gerade startenden Läufer aber für einen Augenblick die Sperre
+ * weg — er gäbe dann auf, und die Aufträge blieben liegen.
+ *
+ * Die Schlüssel sind int4 und stehen in pg_locks als oid; der Umweg über
+ * ::oid macht auch negative hashtext()-Werte vergleichbar.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @return bool
+ */
+function shopPublishRunning($db): bool {
+    $zeile = $db->getOne(
+        "SELECT EXISTS (
+             SELECT 1 FROM pg_locks
+              WHERE locktype = 'advisory'
+                AND database = (SELECT oid FROM pg_database WHERE datname = current_database())
+                AND classid = hashtext('oserp')::oid
+                AND objid = hashtext('shop_publish')::oid
+                AND objsubid = 2
+                AND granted
+         ) AS laeuft"
+    );
+
+    return in_array($zeile['laeuft'] ?? null, [true, 't', '1', 1], true);
+}
+
+/**
+ * Das Kommandozeilen-PHP für den Läufer
+ *
+ * Unter PHP-FPM zeigt PHP_BINARY auf php-fpm, nicht auf das PHP für die
+ * Kommandozeile. Gesucht wird deshalb neben PHP_BINDIR nach php<Version> und
+ * php; im eingebauten Entwicklungsserver ist PHP_BINARY bereits das richtige.
+ *
+ * @return array pfad (leer, wenn keines gefunden), fehler
+ */
+function shopPhpCli(): array {
+    $kandidaten = [];
+    if (in_array(PHP_SAPI, ['cli', 'cli-server'], true)) {
+        $kandidaten[] = PHP_BINARY;
+    }
+    $kandidaten[] = PHP_BINDIR.'/php'.PHP_MAJOR_VERSION.'.'.PHP_MINOR_VERSION;
+    $kandidaten[] = PHP_BINDIR.'/php';
+    $kandidaten[] = '/usr/bin/php'.PHP_MAJOR_VERSION.'.'.PHP_MINOR_VERSION;
+    $kandidaten[] = '/usr/bin/php';
+
+    foreach (array_unique(array_filter($kandidaten)) as $pfad) {
+        if (is_file($pfad) && is_executable($pfad)) {
+            return ['pfad' => $pfad, 'fehler' => ''];
+        }
+    }
+
+    return ['pfad' => '', 'fehler' => 'Kein Kommandozeilen-PHP gefunden (gesucht: '.implode(', ', array_unique(array_filter($kandidaten))).')'];
+}
+
+/**
+ * Startet den Läufer als eigenen Prozess und kehrt sofort zurück
+ *
+ * Die Befehlszeile besteht nur aus festen Teilen und Zahlen: Pfad zum PHP,
+ * Pfad zum Läufer, Name der Datenbank, Auftragsnummern — alles maskiert.
+ * setsid löst den Prozess von PHP-FPM, damit er weiterläuft, wenn der
+ * Arbeitsprozess der Anfrage beendet oder neu gestartet wird.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param array $ids Auftragsnummern; leer bedeutet alle offenen
+ * @return array pid (0, wenn unbekannt), fehler (leer, wenn gestartet)
+ */
+function shopPublishStartBackground($db, array $ids): array {
+    if (!function_exists('shell_exec')) {
+        return ['pid' => 0, 'fehler' => 'shell_exec() ist abgeschaltet — der Läufer lässt sich nicht aus dem Panel starten.'];
+    }
+
+    $php = shopPhpCli();
+    if ('' !== $php['fehler']) {
+        return ['pid' => 0, 'fehler' => $php['fehler']];
+    }
+
+    $laeufer = realpath(__DIR__.'/../../../../tools/shop-publish.php');
+    if (false === $laeufer) {
+        return ['pid' => 0, 'fehler' => 'Läufer nicht gefunden: tools/shop-publish.php'];
+    }
+
+    $dateien = shopPublishStateFiles($db);
+    $datenbank = (string)($db->getOne("SELECT current_database() AS name")['name'] ?? '');
+    $ids = array_values(array_filter(array_map('intval', $ids), fn($id) => $id > 0));
+
+    $befehl = escapeshellarg($php['pfad']).' '.escapeshellarg($laeufer)
+            .' --db='.escapeshellarg($datenbank)
+            .($ids ? ' --ids='.escapeshellarg(implode(',', $ids)) : '')
+            .' --quiet';
+
+    // Vor dem Start vermerken: bis der Läufer die Sperre hat, vergehen einige
+    // hundert Millisekunden. Ohne diesen Vermerk sähe die erste Abfrage keinen
+    // Lauf und meldete ihn als beendet.
+    shopPublishWriteState($dateien['status'], ['requested' => date(DATE_ATOM), 'pid' => null]);
+
+    $setsid = trim((string)@shell_exec('command -v setsid 2>/dev/null'));
+    $bash   = trim((string)@shell_exec('command -v bash 2>/dev/null'));
+    $start  = ('' !== $setsid ? 'exec '.escapeshellarg($setsid).' ' : 'exec nohup ')
+            .$befehl.' > '.escapeshellarg($dateien['out']).' 2>&1 < /dev/null';
+
+    // Geerbte Deskriptoren schließen. Ein Kindprozess erbt sonst die Sockets
+    // des Webservers — den Horch-Socket des Entwicklungsservers oder den von
+    // PHP-FPM — und hielte sie fest, solange der Lauf dauert: der Port bliebe
+    // belegt, ein Neustart des Servers schlüge fehl. /bin/sh (dash) kann nur
+    // Deskriptoren bis 9 schließen, deshalb bash, wenn vorhanden.
+    if ('' !== $bash) {
+        $start = escapeshellarg($bash).' -c '.escapeshellarg(
+            'for d in /proc/$$/fd/*; do n=${d##*/}; '
+            .'[ "$n" -gt 2 ] 2>/dev/null && eval "exec $n>&-" 2>/dev/null; done; '
+            .$start
+        );
+    }
+
+    $zeile = 'cd '.escapeshellarg(dirname($laeufer, 2)).' && '.$start.' & echo $!';
+
+    $pid = (int)trim((string)@shell_exec($zeile));
+    if ($pid <= 0) {
+        shopPublishWriteState($dateien['status'], ['requested' => null]);
+        return ['pid' => 0, 'fehler' => 'Der Läufer ließ sich nicht starten.'];
+    }
+
+    shopPublishWriteState($dateien['status'], ['pid' => $pid]);
+    return ['pid' => $pid, 'fehler' => ''];
+}
+
+/**
+ * Stand der Veröffentlichung für die Oberfläche
+ *
+ * running: ein Lauf arbeitet (Sperre gehalten) oder ein eben gestarteter
+ * Prozess ist noch dabei, sie zu nehmen. aborted: ein Lauf hat begonnen und
+ * nicht zu Ende gefunden, oder ein gestarteter Prozess kam nie an — dann
+ * steht die Ausgabe des Prozesses dabei.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @return array
+ */
+function shopPublishStatus($db): array {
+    $dateien = shopPublishStateFiles($db);
+    $stand = shopPublishReadState($dateien['status']);
+    $jetzt = time();
+
+    $zeit = fn($schluessel) => isset($stand[$schluessel]) ? (strtotime((string)$stand[$schluessel]) ?: 0) : 0;
+    $angefordert = $zeit('requested');
+    $begonnen    = $zeit('started');
+    $beendet     = $zeit('finished');
+
+    $sperre = shopPublishRunning($db);
+
+    // Angefordert, aber noch nicht begonnen — innerhalb der Frist gilt das als
+    // "startet", danach als gescheitert
+    $wartetAufStart = $angefordert > 0 && $begonnen < $angefordert;
+    $startet = !$sperre && $wartetAufStart && ($jetzt - $angefordert) < SHOP_PUBLISH_START_FRIST;
+
+    $abgebrochen = !$sperre && !$startet && (
+        ($begonnen > 0 && $beendet < $begonnen)
+        || $wartetAufStart
+    );
+
+    // Solange ein angeforderter Lauf noch nicht begonnen hat, gehören Protokoll
+    // und Bilanz dem vorigen — die Oberfläche soll sie dann nicht zeigen
+    if ($startet) {
+        return [
+            'running' => true, 'starting' => true, 'aborted' => false,
+            'requested' => $stand['requested'] ?? null, 'started' => null, 'finished' => null,
+            'summary' => null, 'lines' => [], 'error_lines' => [], 'output' => [],
+        ];
+    }
+
+    $zeilen = [];
+    if (is_file($dateien['log'])) {
+        $zeilen = @file($dateien['log'], FILE_IGNORE_NEW_LINES) ?: [];
+        $zeilen = array_slice($zeilen, -SHOP_PUBLISH_PROTOKOLL_ZEILEN);
+    }
+
+    $ausgabe = [];
+    if ($abgebrochen && is_file($dateien['out'])) {
+        $ausgabe = array_slice(@file($dateien['out'], FILE_IGNORE_NEW_LINES) ?: [], -30);
+    }
+
+    return [
+        'running'     => $sperre || $startet,
+        'starting'    => $startet,
+        'aborted'     => $abgebrochen,
+        'requested'   => $stand['requested'] ?? null,
+        'started'     => $stand['started'] ?? null,
+        'finished'    => $stand['finished'] ?? null,
+        'summary'     => $stand['summary'] ?? null,
+        'lines'       => $zeilen,
+        'error_lines' => $stand['summary']['error_lines'] ?? [],
+        'output'      => $ausgabe,
+    ];
+}
+
 /**
  * Ein vollständiger Lauf: Aufträge, Paket, Kategorieübersicht, Bau
  *
@@ -1172,9 +1460,12 @@ function shopPublishCommand($db): array {
  * @param int $limit Höchstzahl Aufträge
  * @param array|null $nurIds nur diese Auftragsnummern, null = alle offenen
  * @param bool $bauen Webseite bauen, wenn sich etwas geändert hat
+ * @param callable|null $beginn wird gerufen, sobald die Sperre genommen ist —
+ *                              erst dann gehört der Lauf wirklich diesem Prozess
+ *                              (der Läufer legt dort sein Protokoll an)
  * @return array gesperrt, jobs, seiten, entfernt, fehler, fehler_texte, kit, kategorien, gebaut, bau_code, bau_ausgabe
  */
-function shopPublishRun($db, ?callable $melden = null, int $limit = 500, ?array $nurIds = null, bool $bauen = true): array {
+function shopPublishRun($db, ?callable $melden = null, int $limit = 500, ?array $nurIds = null, bool $bauen = true, ?callable $beginn = null): array {
     $sagen = $melden ?? function (string $zeile) {};
     $bilanz = ['gesperrt' => false, 'jobs' => 0, 'seiten' => 0, 'entfernt' => 0, 'fehler' => 0,
                'kit' => 0, 'kategorien' => 0, 'gebaut' => false, 'bau_code' => 0, 'bau_ausgabe' => [],
@@ -1193,6 +1484,10 @@ function shopPublishRun($db, ?callable $melden = null, int $limit = 500, ?array 
         $bilanz['gesperrt'] = true;
         $sagen('Ein Lauf ist gerade unterwegs — die offenen Aufträge werden dabei miterledigt.');
         return $bilanz;
+    }
+
+    if (null !== $beginn) {
+        $beginn();
     }
 
     try {

@@ -120,18 +120,45 @@
                 <v-card-title class="text-subtitle-1">{{ t('ShopView.publish.title') }}</v-card-title>
                 <v-card-subtitle>{{ t('ShopView.publish.hint') }}</v-card-subtitle>
                 <template #append>
-                    <v-btn
-                        color="primary"
-                        variant="tonal"
-                        size="small"
-                        prepend-icon="mdi-cloud-upload-outline"
-                        :loading="veroeffentlicht"
-                        @click="alleVeroeffentlichen"
-                    >
-                        {{ t('ShopView.publish.all') }}
-                    </v-btn>
+                    <div class="d-flex flex-wrap ga-2">
+                        <v-btn
+                            color="primary"
+                            variant="flat"
+                            size="small"
+                            prepend-icon="mdi-cloud-upload-outline"
+                            :loading="veroeffentlicht"
+                            :disabled="sofort || laeuft"
+                            @click="alleVeroeffentlichen"
+                        >
+                            {{ t('ShopView.publish.all') }}
+                        </v-btn>
+                        <!-- Abkürzung: Auftrag anlegen, auswählen, sofort ausführen -->
+                        <v-btn
+                            color="primary"
+                            variant="tonal"
+                            size="small"
+                            prepend-icon="mdi-flash"
+                            :loading="sofort"
+                            :disabled="veroeffentlicht || laeuft"
+                            :title="t('ShopView.publish.allNowHint')"
+                            @click="alleSofortVeroeffentlichen"
+                        >
+                            {{ t('ShopView.publish.allNow') }}
+                        </v-btn>
+                    </div>
                 </template>
             </v-card-item>
+
+            <!-- Ein Lauf arbeitet im Hintergrund; die Seite bleibt bedienbar -->
+            <template v-if="laeuft">
+                <v-progress-linear indeterminate color="primary" />
+                <v-card-text class="py-2 text-body-2">
+                    {{ t('ShopView.publish.inProgress') }}
+                </v-card-text>
+            </template>
+            <v-alert v-if="zuLange" type="info" variant="tonal" density="compact" class="mx-4 my-2">
+                {{ t('ShopView.publish.tooLong') }}
+            </v-alert>
 
             <v-card-text v-if="auftraege.length">
                 <div class="d-flex align-center ga-4 mb-2">
@@ -165,7 +192,7 @@
                         variant="text"
                         size="small"
                         prepend-icon="mdi-delete-outline"
-                        :disabled="!auswahl.length"
+                        :disabled="!auswahl.length || laeuft"
                         :loading="loescht"
                         :title="t('ShopView.publish.deleteHint')"
                         @click="loeschenGefragt = true"
@@ -224,8 +251,8 @@
 
             <!-- Was der letzte Lauf gemeldet hat. Ohne diese Zeilen stünde nur
                  die Zahl der Fehler da, nicht der Grund. -->
-            <v-divider v-if="laufMeldungen.length" />
-            <v-card-text v-if="laufMeldungen.length">
+            <v-divider v-if="laufMeldungen.length || laufAbgebrochen" />
+            <v-card-text v-if="laufMeldungen.length || laufAbgebrochen">
                 <div class="d-flex align-center mb-2">
                     <div class="text-body-2">{{ t('ShopView.publish.messages') }}</div>
                     <v-spacer />
@@ -234,9 +261,14 @@
                         size="small"
                         icon="mdi-close"
                         :title="t('ShopView.publish.messagesClose')"
-                        @click="laufMeldungen = []"
+                        @click="meldungenAusblenden"
                     />
                 </div>
+                <!-- Der Lauf kam nicht zu Ende: Grund aus der Ausgabe des Prozesses -->
+                <v-alert v-if="laufAbgebrochen" type="error" variant="tonal" density="compact" class="mb-2">
+                    <div>{{ t('ShopView.publish.aborted') }}</div>
+                    <pre v-if="laufAusgabe.length" class="text-caption mt-1 mb-0 laufausgabe">{{ laufAusgabe.join('\n') }}</pre>
+                </v-alert>
                 <div
                     v-for="(zeile, index) in laufMeldungen"
                     :key="index"
@@ -288,7 +320,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
@@ -302,12 +334,36 @@ const shop = useShop()
 const status = ref(null)
 const auftraege = ref([])
 const veroeffentlicht = ref(false)
+const sofort = ref(false)
 const auswahl = ref([])
 const laeuft = ref(false)
 const raeumtAuf = ref(false)
 /** Meldungen des letzten Laufs, dazu die davon, die Fehler waren */
 const laufMeldungen = ref([])
 const laufFehler = ref([])
+const laufAbgebrochen = ref(false)
+const laufAusgabe = ref([])
+/** Die Abfrageschleife hat ihre Obergrenze erreicht, der Lauf arbeitet vermutlich weiter */
+const zuLange = ref(false)
+
+/**
+ * Eigene Instanz für die Abfrageschleife
+ *
+ * useShop() setzt bei jedem Aufruf loading und error zurück. Liefe die
+ * Schleife über `shop`, verschwände alle zwei Sekunden eine Fehlermeldung, die
+ * gerade angezeigt wird.
+ */
+const beobachter = useShop()
+
+// Abfragetakt wie bei der Live-Analyse in HugoCMS: rekursives setTimeout statt
+// setInterval, damit sich Abfragen bei langsamer Antwort nicht überlappen;
+// 2 s, nach einer Minute 5 s, nach 15 Minuten Schluss.
+const ABFRAGE_SCHNELL_MS = 2000
+const ABFRAGE_LANGSAM_MS = 5000
+const ABFRAGE_LANGSAM_NACH_MS = 60000
+const ABFRAGE_HOECHSTENS_MS = 15 * 60000
+let abfrageTimer = null
+let abfrageBeginn = 0
 const aufraeumenGefragt = ref(false)
 const loescht = ref(false)
 const loeschenGefragt = ref(false)
@@ -321,7 +377,7 @@ const istOffen = (auftrag) => auftrag.open === true || auftrag.open === 't'
  * Das Backend liefert die Fehlerzeilen ein zweites Mal einzeln, statt sie hier
  * am Wortlaut zu erraten.
  */
-const istFehlerzeile = (zeile) => laufFehler.value.includes(zeile)
+const istFehlerzeile = (zeile) => laufFehler.value.includes(String(zeile).replace(/^\d{2}:\d{2}:\d{2}\s+/, ''))
 const fehlgeschlagen = (auftrag) => String(auftrag.result || '').startsWith('Fehler')
 
 /**
@@ -459,32 +515,116 @@ async function laden() {
  * er nimmt die offenen Aufträge ohnehin mit.
  */
 async function ausgewaehlteAusfuehren() {
-    laeuft.value = true
-    const ergebnis = await shop.runPublishJobs(offeneAuswahl.value)
-    laeuft.value = false
+    await ausfuehren(offeneAuswahl.value)
+}
 
-    laufMeldungen.value = ergebnis?.messages || []
-    laufFehler.value = ergebnis?.error_messages || []
-
-    if (!shop.error.value) {
-        if (ergebnis?.running) {
-            toasts.info(t('ShopView.publish.running'))
-        } else {
-            const text = t('ShopView.publish.done', {
-                jobs: ergebnis?.jobs ?? 0,
-                pages: ergebnis?.pages ?? 0,
-                errors: ergebnis?.errors ?? 0,
-            })
-            if (ergebnis?.errors) {
-                toasts.warning(text)
-            } else {
-                toasts.success(ergebnis?.built ? `${text} ${t('ShopView.publish.built')}` : text)
-            }
-        }
-        auswahl.value = []
+/**
+ * Führt Aufträge aus und meldet das Ergebnis
+ *
+ * Gemeinsam für „Jetzt ausführen" und „Alle sofort veröffentlichen".
+ *
+ * @param {number[]} ids Auftragsnummern
+ */
+async function ausfuehren(ids) {
+    const antwort = await shop.runPublishJobs(ids)
+    if (shop.error.value) {
+        return
     }
 
+    // Der Läufer arbeitet jetzt im Hintergrund; die Antwort kommt sofort.
+    // Lief schon einer, nimmt der die Aufträge mit — beobachtet wird so oder so.
+    toasts.info(antwort?.started === false ? t('ShopView.publish.running') : t('ShopView.publish.started'))
+    laufMeldungen.value = []
+    laufFehler.value = []
+    laufAbgebrochen.value = false
+    laufAusgabe.value = []
+    beobachten()
+}
+
+/** Übernimmt den Stand aus getShopPublishStatus in die Anzeige */
+function standUebernehmen(stand) {
+    laufMeldungen.value = stand.lines || []
+    laufFehler.value = stand.error_lines || []
+    laufAbgebrochen.value = !!stand.aborted
+    laufAusgabe.value = stand.output || []
+}
+
+/** Startet die Abfrageschleife — nach einem Start oder wenn beim Öffnen schon ein Lauf arbeitet */
+function beobachten() {
+    beobachtenBeenden()
+    laeuft.value = true
+    zuLange.value = false
+    abfrageBeginn = Date.now()
+    abfrageTimer = setTimeout(abfragen, 500)
+}
+
+/** Beendet nur die Schleife; der Lauf im Hintergrund bleibt davon unberührt */
+function beobachtenBeenden() {
+    if (abfrageTimer) {
+        clearTimeout(abfrageTimer)
+        abfrageTimer = null
+    }
+}
+
+async function abfragen() {
+    abfrageTimer = null
+    const stand = await beobachter.fetchPublishStatus()
+    if (!stand) {
+        // Abfrage gescheitert (Netz, Anmeldung abgelaufen): Schleife beenden,
+        // der Grund steht in der Fehlerzeile oben
+        shop.error.value = beobachter.error.value
+        laeuft.value = false
+        return
+    }
+
+    standUebernehmen(stand)
+    // Die Liste gleich mit — jede Zeile wechselt von „nicht ausgeführt" zu
+    // ihrem Ergebnis, sobald der Läufer sie erledigt hat
+    auftraege.value = await beobachter.fetchPublishJobs() || auftraege.value
+
+    if (!stand.running) {
+        await laufBeendet(stand)
+        return
+    }
+
+    const vergangen = Date.now() - abfrageBeginn
+    if (vergangen > ABFRAGE_HOECHSTENS_MS) {
+        zuLange.value = true
+        laeuft.value = false
+        return
+    }
+    abfrageTimer = setTimeout(abfragen, vergangen > ABFRAGE_LANGSAM_NACH_MS ? ABFRAGE_LANGSAM_MS : ABFRAGE_SCHNELL_MS)
+}
+
+/** Der Lauf ist fertig oder abgebrochen: Bilanz melden, Übersicht neu laden */
+async function laufBeendet(stand) {
+    laeuft.value = false
+
+    if (stand.aborted) {
+        toasts.error(t('ShopView.publish.aborted'))
+    } else if (stand.summary) {
+        const bilanz = stand.summary
+        const text = t('ShopView.publish.done', {
+            jobs: bilanz.jobs ?? 0,
+            pages: bilanz.pages ?? 0,
+            errors: bilanz.errors ?? 0,
+        })
+        if (bilanz.errors) {
+            toasts.warning(text)
+        } else {
+            toasts.success(bilanz.built ? `${text} ${t('ShopView.publish.built')}` : text)
+        }
+    }
+
+    auswahl.value = []
     await laden()
+}
+
+function meldungenAusblenden() {
+    laufMeldungen.value = []
+    laufFehler.value = []
+    laufAbgebrochen.value = false
+    laufAusgabe.value = []
 }
 
 /**
@@ -527,6 +667,43 @@ async function aufraeumen() {
 }
 
 /**
+ * Alle Artikel veröffentlichen, ohne Umweg über die Liste
+ *
+ * Kürzt die drei Schritte „Alle veröffentlichen", den neuen Auftrag ankreuzen
+ * und „Jetzt ausführen" ab. Steht schon ein offener Auftrag „Alle Produkte" in
+ * der Warteschlange, legt das Backend keinen zweiten an — dann wird dieser
+ * ausgeführt. Ist er inzwischen weg, hat ihn ein anderer Lauf (der Cron)
+ * übernommen; das wird gemeldet wie bei „Jetzt ausführen".
+ */
+async function alleSofortVeroeffentlichen() {
+    sofort.value = true
+    try {
+        const angelegt = await shop.publishAll()
+        if (shop.error.value) {
+            return
+        }
+
+        let id = angelegt?.job_id || 0
+        if (!id) {
+            auftraege.value = await shop.fetchPublishJobs() || []
+            id = auftraege.value.find((auftrag) => istOffen(auftrag) && auftrag.function === 'publish_all')?.id || 0
+        }
+
+        if (!id) {
+            toasts.info(t('ShopView.publish.running'))
+            await laden()
+            return
+        }
+
+        // Ausgewählt wie von Hand — die Zeile ist während des Laufs markiert
+        auswahl.value = [id]
+        await ausfuehren([id])
+    } finally {
+        sofort.value = false
+    }
+}
+
+/**
  * Nimmt alle Artikel des Shops in die Veröffentlichung auf
  *
  * Legt einen Auftrag an; die Seiten entstehen beim nächsten Lauf des
@@ -545,11 +722,38 @@ async function alleVeroeffentlichen() {
     auftraege.value = await shop.fetchPublishJobs() || []
 }
 
-onMounted(laden)
+/**
+ * Beim Öffnen den Stand holen
+ *
+ * Die Meldungen des letzten Laufs stehen so auch nach dem Neuladen da, und ein
+ * Lauf, der gerade arbeitet — auch einer aus dem Cron —, wird gleich verfolgt.
+ */
+async function standBeimOeffnen() {
+    const stand = await beobachter.fetchPublishStatus()
+    if (!stand) {
+        return
+    }
+    standUebernehmen(stand)
+    if (stand.running) {
+        beobachten()
+    }
+}
+
+onMounted(async () => {
+    await laden()
+    await standBeimOeffnen()
+})
+
+onBeforeUnmount(beobachtenBeenden)
 </script>
 
 <style scoped>
 .auftragszeile {
     cursor: pointer;
+}
+
+.laufausgabe {
+    white-space: pre-wrap;
+    word-break: break-word;
 }
 </style>

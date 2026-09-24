@@ -75,12 +75,22 @@ export function useShop() {
     const fetchPublishJobs = () => call('getShopPublishJobs')
 
     /**
-     * Führt Aufträge sofort aus, statt auf den Läufer zu warten
+     * Startet den Läufer im Hintergrund und kehrt sofort zurück
      *
-     * Leere Liste heisst: alle offenen. Läuft gerade ein anderer Lauf, kommt
-     * `running: true` zurück und es wurde nichts getan.
+     * Leere Liste heißt: alle offenen. Den Fortschritt liefert danach
+     * fetchPublishStatus(). Läuft schon ein anderer Lauf, kommt
+     * `started: false` zurück — er nimmt die Aufträge ohnehin mit.
      */
     const runPublishJobs = (ids = []) => call('runShopPublishJobs', { ids })
+
+    /**
+     * Stand der Veröffentlichung
+     *
+     * running, starting, aborted, die Meldungen des laufenden oder letzten
+     * Laufs und seine Bilanz — gleich, ob ihn der Cron oder das Panel
+     * gestartet hat.
+     */
+    const fetchPublishStatus = () => call('getShopPublishStatus')
 
     /**
      * Löscht die erfolgreich erledigten Aufträge
@@ -105,6 +115,7 @@ export function useShop() {
         publishAll,
         fetchPublishJobs,
         runPublishJobs,
+        fetchPublishStatus,
         cleanupPublishJobs,
         deletePublishJobs,
         fetchPartShopData,

@@ -124,21 +124,58 @@ das Backend getrennt mit, statt sie am Wortlaut zu erraten.
 
 ### Sofort ausführen, ohne Cron
 
-In der Auftragsliste lässt sich jede offene Zeile ankreuzen, „Alle auswählen"
-nimmt alle offenen, und „Jetzt ausführen" arbeitet die Auswahl in derselben
-Reihenfolge ab wie der Läufer: Aufträge, Paket, Kategorieübersicht, Bau. Ein
-Cron-Eintrag ist damit nicht zwingend nötig.
+In der Auftragsliste lässt sich jede Zeile ankreuzen, „Alle auswählen" nimmt
+alle, und „Jetzt ausführen" arbeitet die offenen davon ab — in derselben
+Reihenfolge wie der Cron: Aufträge, Paket, Kategorieübersicht, Bau. „Alle
+sofort veröffentlichen" legt den Auftrag „Alle Produkte" an und führt ihn im
+selben Zug aus. Ein Cron-Eintrag ist damit nicht zwingend nötig.
 
-Zwei Voraussetzungen, sonst bleibt es beim Läufer:
+**Der Lauf arbeitet im Hintergrund.** Beide Knöpfe starten den Läufer
+`tools/shop-publish.php` als eigenen Prozess (`shopPublishStartBackground()`)
+und kehren sofort zurück. Die Karte fragt danach den Stand ab
+(`getShopPublishStatus`) — alle 2 Sekunden, nach einer Minute alle 5, nach 15
+Minuten nicht mehr; das Muster stammt aus der Live-Analyse von HugoCMS. Die
+Auftragsliste färbt sich dabei Zeile für Zeile um, und „Meldungen des letzten
+Laufs" füllt sich, während der Lauf arbeitet. Das übrige ERP bleibt bedienbar,
+und kein Proxy bricht eine minutenlange Anfrage ab.
+
+| Datei unter `backend/tmp/` | Inhalt |
+| --- | --- |
+| `shop-publish-<db>.json` | angefordert, begonnen, beendet, Bilanz |
+| `shop-publish-<db>.log` | Meldungen des laufenden oder letzten Laufs |
+| `shop-publish-<db>.out` | Fehlerausgabe des zuletzt vom Panel gestarteten Prozesses |
+
+Diese Dateien schreibt jeder Lauf, auch der aus dem Cron — die Karte zeigt
+also auch dessen Meldungen, und ein Lauf, der beim Öffnen der Seite gerade
+arbeitet, wird gleich verfolgt. Ob ein Lauf arbeitet, entscheidet allein die
+Beratungssperre in der Datenbank (abgelesen aus `pg_locks`); die Dateien
+erzählen nur, was war. Kommt ein gestarteter Prozess nicht binnen 30 Sekunden
+an der Sperre an, oder bricht ein Lauf mittendrin ab, zeigt die Karte das mit
+der Fehlerausgabe des Prozesses an.
+
+Beim Start schließt die Befehlszeile alle geerbten Deskriptoren oberhalb von 2
+und löst den Prozess mit `setsid` ab. Ohne das erbte er die Sockets des
+Webservers und hielte etwa den Port des Entwicklungsservers fest, solange der
+Lauf dauert.
+
+Voraussetzungen, sonst bleibt es beim Cron:
 
 - Der Webserver-Benutzer muss im Verzeichnis der Webseite schreiben und den
-  Bau-Befehl ausführen dürfen.
-- Die Anfrage hat eine Zeitgrenze von zwei Minuten. Eine Handvoll Seiten passt
-  hinein, ein Vollbau über alle Artikel nicht — `publish_all` gehört in den
-  Läufer.
+  Bau-Befehl ausführen dürfen, und `shell_exec()` darf nicht abgeschaltet
+  sein.
+- Ein Kommandozeilen-PHP muss auffindbar sein. Unter PHP-FPM zeigt
+  `PHP_BINARY` auf `php-fpm`; gesucht wird deshalb `php<Version>` und `php`
+  neben `PHP_BINDIR` und unter `/usr/bin` (`shopPhpCli()`).
+- Läuft der Cron unter einem anderen Benutzer als der Webserver, müssen beide
+  die Dateien in `backend/tmp/` schreiben dürfen — am einfachsten läuft der
+  Cron als Webserver-Benutzer.
 
-Läuft gerade der Cron, meldet die Oberfläche das und tut nichts: Der laufende
-Lauf nimmt die offenen Aufträge ohnehin mit.
+Läuft gerade ein Lauf, startet ein Klick keinen zweiten: Der laufende nimmt die
+offenen Aufträge ohnehin mit, und die Karte verfolgt ihn.
+
+Im Entwicklungsserver (`scripts/dev.sh`) arbeitet PHP mit vier Prozessen
+(`PHP_CLI_SERVER_WORKERS=4`). Mit nur einem hielte jede lange Anfrage das
+ganze ERP an.
 
 ### Aufräumen
 

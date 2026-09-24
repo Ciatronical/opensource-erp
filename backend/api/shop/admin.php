@@ -451,14 +451,18 @@ function publishShopAll($data) {
 }
 
 /**
- * Führt Aufträge sofort aus, statt auf den Läufer zu warten
+ * Führt Aufträge sofort aus, statt auf den Cron zu warten
  *
- * Damit lässt sich ohne Cron-Eintrag veröffentlichen. Läuft gerade ein anderer
- * Lauf — der Cron oder ein zweiter Mitarbeiter —, wird nichts getan und
- * `running` gemeldet: der laufende Prozess nimmt die offenen Aufträge mit.
+ * Startet den Läufer (tools/shop-publish.php) als eigenen Prozess und
+ * antwortet sofort — die Oberfläche fragt den Stand danach über
+ * getShopPublishStatus ab. Früher lief der ganze Lauf in dieser Anfrage; ein
+ * Vollbau hielt sie dann minutenlang fest, und ein Proxy brach sie ab.
  *
- * Voraussetzung ist, dass der Webserver im Verzeichnis der Webseite schreiben
- * und den Bau-Befehl ausführen darf. Sonst bleibt es beim Läufer.
+ * Arbeitet gerade ein Lauf — der Cron oder ein zweiter Mitarbeiter —, wird
+ * nichts gestartet: der laufende nimmt die offenen Aufträge ohnehin mit.
+ *
+ * Voraussetzung ist, dass der Webserver-Benutzer im Verzeichnis der Webseite
+ * schreiben und den Bau-Befehl ausführen darf.
  *
  * @param array $data['ids'] Auftragsnummern; leer bedeutet alle offenen
  * @return void
@@ -470,26 +474,35 @@ function runShopPublishJobs($data) {
 
     $ids = array_values(array_filter(array_map('intval', (array)($data['ids'] ?? [])), fn($id) => $id > 0));
 
-    // Eine Handvoll Aufträge passt in eine Anfrage; ein Vollbau gehört in den
-    // Läufer. Die Grenze schützt vor einer Anfrage, die ewig läuft.
-    set_time_limit(120);
+    if (shopPublishStatus($db)['running']) {
+        resultInfo(true, '', ['started' => false, 'running' => true]);
+        return;
+    }
 
-    $meldungen = [];
-    $bilanz = shopPublishRun($db, function (string $zeile) use (&$meldungen) { $meldungen[] = $zeile; },
-        $ids ? count($ids) : 50, $ids ?: null);
+    $start = shopPublishStartBackground($db, $ids);
+    if ('' !== $start['fehler']) {
+        resultInfo(false, 'SHOP_PUBLISH_START_FAILED', null, $start['fehler']);
+        return;
+    }
 
-    resultInfo(true, '', [
-        'running'  => $bilanz['gesperrt'],
-        'jobs'     => $bilanz['jobs'],
-        'pages'    => $bilanz['seiten'],
-        'removed'  => $bilanz['entfernt'],
-        'errors'   => $bilanz['fehler'],
-        'kit'      => $bilanz['kit'],
-        'built'    => $bilanz['gebaut'],
-        'messages' => $meldungen,
-        // Die Fehlerzeilen noch einmal einzeln: die Übersicht hebt sie hervor
-        'error_messages' => $bilanz['fehler_texte'],
-    ]);
+    resultInfo(true, '', ['started' => true, 'running' => true]);
+}
+
+/**
+ * Stand der Veröffentlichung
+ *
+ * Ob ein Lauf arbeitet, die Meldungen des laufenden oder letzten Laufs, seine
+ * Bilanz — gleich, ob ihn der Cron oder das Panel gestartet hat. Die
+ * Oberfläche fragt das während eines Laufs regelmäßig ab.
+ *
+ * @return void
+ * @testdata {}
+ */
+function getShopPublishStatus($data) {
+    permit(['shop_order', 'shop_part_edit', 'edit_shop_config'], false);
+    $db = DbhCompany::begin();
+
+    resultInfo(true, '', shopPublishStatus($db));
 }
 
 /**

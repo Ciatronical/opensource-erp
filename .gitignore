@@ -49,6 +49,8 @@ backend/api/special
 backend/templates/
 
 backend/tmp/*/
+# Sperre und Stand der Shop-Veröffentlichung (tools/shop-publish.php)
+backend/tmp/shop-publish-*
 
 # Demo-Daten (lokal generiert, nicht im Repo)
 backend/api/demo/data/

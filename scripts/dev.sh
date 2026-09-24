@@ -199,8 +199,13 @@ run_servers() {
     }
 
     # Starte PHP-Server im Hintergrund
+    #
+    # PHP_CLI_SERVER_WORKERS: Der eingebaute Server bearbeitet sonst nur eine
+    # Anfrage nach der anderen. Eine lange Anfrage (etwa eine Veröffentlichung
+    # im Shop) hielte dann jede andere Anfrage des ERP an. Mit mehreren
+    # Arbeitsprozessen bleibt das Frontend bedienbar.
     echo "Starting PHP Server on localhost:8000..."
-    php -S localhost:8000 -t ./backend/ -d post_max_size=32M -d upload_max_filesize=32M 2>&1 | while read line; do
+    PHP_CLI_SERVER_WORKERS=4 php -S localhost:8000 -t ./backend/ -d post_max_size=32M -d upload_max_filesize=32M 2>&1 | while read line; do
         echo "[PHP] $line"
     done &
     PHP_PID=$!
