@@ -1029,7 +1029,21 @@
         "shopPublishMode": "Tryb działania",
         "shopPublishMode_help": "Lokalny: strona jest na tym serwerze, OpensourceERP zapisuje w niej pliki i sam ją buduje. HugoCMS: strona działa na własnym serwerze WWW, OpensourceERP przesyła pliki do HugoCMS, który ją tam buduje. Pola katalogów i programu poniżej wtedy nie obowiązują.",
         "shopPublishModeLocal": "Lokalny — strona na tym serwerze",
-        "shopPublishModeHugoCms": "HugoCMS — strona na własnym serwerze WWW"
+        "shopPublishModeHugoCms": "HugoCMS — strona na własnym serwerze WWW",
+        "shopAutoPublish": "Automatycznie przepisuj strony produktów przy zmianie cen",
+        "shopAutoPublish_help": "Tworzy zadanie publikacji, gdy zmienia się cena sprzedaży, grupa księgowa, narzut, opis lub długi opis artykułu w HugoShop, a także przy zmianie wartości domyślnych kanału lub ustawienia brutto/netto. Bez tego ustawienia strony pokazują starą cenę, dopóki nie zostaną opublikowane ręcznie.",
+        "shopChannelOffPages": "Strony po wyłączeniu HugoShop",
+        "shopChannelOffPages_help": "Co dzieje się ze stronami produktów po wyłączeniu HugoShop w sekcji „Kanały sprzedaży”. Po ponownym włączeniu wszystkie strony są publikowane od nowa.",
+        "shopChannelOffPagesDraft": "Zachowaj jako szkic (nie jest już publikowany)",
+        "shopChannelOffPagesRemove": "Usuń",
+        "shopEbay": "eBay",
+        "shopEbay_help": "Dostęp, wartości domyślne ofert i import zamówień kanału eBay. eBay włącza się i wyłącza powyżej w sekcji „Kanały sprzedaży”.",
+        "ebayPublicHost": "Publiczny adres zdjęć",
+        "ebayPublicHost_help": "Adres tego serwera, z którego eBay pobiera zdjęcia artykułów (https, bez ścieżki), np. erp.example.pl. Wymagany, ponieważ oferty są wystawiane w tle.",
+        "ebayEnvironmentProduction": "Produkcja",
+        "ebayEnvironmentSandbox": "Sandbox (test)",
+        "ebayMoved": "eBay jest teraz kanałem sprzedaży rozszerzenia sklepu. Ustawienia znajdują się na karcie Sklep w sekcji „eBay”, oferty w karcie sklepu artykułu.",
+        "ebayNeedsShop": "eBay jest włączony, ale rozszerzenie sklepu nie. Bez niego oferty nie są wystawiane, a zamówienia nie są pobierane — aktywuj rozszerzenie sklepu."
     },
     "add": "Dodaj",
     "add_fields": {

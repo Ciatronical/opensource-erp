@@ -95,6 +95,9 @@
                             :vorgaben="crmFallbacks"
                         />
 
+                        <!-- eBay-Kanal: Verbindungstest, Bestellabruf, Stand -->
+                        <EbayStatusConfig v-if="field.action === 'ebayPanel'" class="mt-2" />
+
                         <!-- Verbindung zu HugoCMS prüfen: mit den Werten im
                              Formular, auch wenn sie noch nicht gespeichert sind -->
                         <template v-if="field.action === 'hugocmsTest'">
@@ -120,6 +123,13 @@
                     </v-card-text>
                 </v-card>
 
+                <!-- Verkaufskanäle: Komponente der Shop-Erweiterung, lädt und
+                     speichert selbst (eigene Tabelle statt defaults_oserp) -->
+                <ShopChannelsConfig
+                    v-else-if="field.type === 'component' && field.component === 'sales-channels'"
+                    :tax-included="crmDefaults.shop_tax_included ?? null"
+                />
+
                 <!-- Einzelfeld -->
                 <ShopConfigField v-else :field="field" :werte="crmDefaults" :quellen="quellen" :gesetzt="crmSecrets" :vorgaben="crmFallbacks" />
             </template>
@@ -128,10 +138,13 @@
 </template>
 
 <script setup>
-import { ref, onMounted, inject } from 'vue'
+import { ref, onMounted, inject, defineAsyncComponent } from 'vue'
 import { useI18n } from 'vue-i18n'
 import axios from 'axios'
 import ShopConfigField from './shop-config-field.component.vue'
+
+const ShopChannelsConfig = defineAsyncComponent(() => import('@/features/shop/components/shop-channels.config.vue'))
+const EbayStatusConfig = defineAsyncComponent(() => import('@/features/shop/components/shop-ebay-status.vue'))
 
 const { t } = useI18n()
 

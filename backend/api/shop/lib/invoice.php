@@ -28,7 +28,7 @@
  *                             leer = Lieferung an die Rechnungsadresse
  * @param array|null $paypal Zahlungsstand aus paypalPaymentState(), oder null
  * @return array{ar_id: int, ar_link: string, invnumber: string}
- * @throws ApiError CART_NOT_FOUND, CART_EMPTY, SHOP_DATABASE_ERROR, LEDGER_ERROR
+ * @throws ApiError CART_NOT_FOUND, CART_EMPTY, CART_NOT_OFFERED, SHOP_DATABASE_ERROR, LEDGER_ERROR
  */
 function createShopInvoice($db, string $uuid, array $lieferadresse = [], ?array $paypal = null): array {
     $context    = shopContextCustomer($db, $uuid);
@@ -44,6 +44,13 @@ function createShopInvoice($db, string $uuid, array $lieferadresse = [], ?array 
     $korb = cartRead($db, $cartUuid, $customerId, false);
     if (empty($korb['positions'])) {
         throw new ApiError("CART_EMPTY", 'Der Warenkorb ist leer');
+    }
+
+    // Kauf auf Rechnung: nur Angebotenes (O2). Nach einer PayPal-Zahlung wird
+    // nicht geprüft — das Geld ist da, die Rechnung muss entstehen; geprüft
+    // wurde vor der Zahlung (paymentBegin).
+    if (null === $paypal) {
+        cartRequireOffered($korb);
     }
 
     // Jede Position braucht ein Erloeskonto, sonst kann die Rechnung nicht
@@ -92,16 +99,25 @@ function createShopInvoice($db, string $uuid, array $lieferadresse = [], ?array 
 
         // Die Positionen stehen bereits in der Datenbank — sie muessen nicht
         // durch PHP. Ein Vorgang statt einer Schleife ueber INSERTs.
+        //
+        // Preis, Bezeichnung und Beschreibung des Kanals — wie im Warenkorb.
+        // Weicht der Kanalpreis vom Stammdatenpreis ab, bleibt die Preisquelle
+        // leer (in kivitendo "manuell", V2c): master_data/sellprice nennte
+        // sonst eine Quelle, deren Preis nicht auf der Position steht.
         $db->execute(
             "INSERT INTO invoice (trans_id, parts_id, description, qty, sellprice, fxsellprice,
                                   discount, unit, position, lastcost, base_qty, allocated,
                                   marge_total, marge_percent, serialnumber, active_price_source,
                                   longdescription, mtime)
-             SELECT :ar_id, p.id, p.description, c.amount, p.sellprice, p.sellprice,
+             SELECT :ar_id, p.id, COALESCE(NULLIF(pc.title, ''), p.description), c.amount, k.preis, k.preis,
                     0, p.unit, ROW_NUMBER() OVER (ORDER BY c.id), COALESCE(p.lastcost, 0), 1, 0,
-                    0, 0, '', :preisquelle, COALESCE(p.notes, ''), NOW()
+                    0, 0, '', CASE WHEN k.preis = p.sellprice THEN :preisquelle ELSE '' END,
+                    COALESCE(NULLIF(pc.description, ''), p.notes, ''), NOW()
                FROM cart_parts_hugoshop c
                JOIN parts p ON p.id = c.parts_id
+               CROSS JOIN LATERAL (SELECT shop_channel_price(p.id) AS preis) k
+               LEFT JOIN parts_channel_shop pc ON pc.parts_id = p.id
+                                              AND pc.channel_id = shop_channel_id('hugoshop')
               WHERE c.cart_uuid = :cart_uuid",
             [
                 ':ar_id'       => $arId,

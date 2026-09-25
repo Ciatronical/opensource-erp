@@ -19,7 +19,11 @@
             "hints": "Mancano ancora questi dati. Il negozio funziona, ma in modo limitato:",
             "partsWithShopData": "Articoli con dati del negozio",
             "carts": "Carrelli",
-            "sessions": "Sessioni"
+            "sessions": "Sessioni",
+            "recommendations": "Consigli:",
+            "recommendation": {
+                "channel_round_99_net": "L'arrotondamento a ,99 è attivo, ma i prezzi di vendita sono salvati al netto. Con prezzi di vendita lordi, carrello e fattura coincidono sempre al centesimo."
+            }
         },
         "orders": {
             "title": "Ordini",
@@ -70,7 +74,7 @@
         "partCard": {
             "title": "Negozio",
             "listed": "Offrire nel negozio",
-            "listedHint": "Solo gli articoli con dati del negozio compaiono nella ricerca del negozio.",
+            "listedHint": "Nel negozio compaiono solo gli articoli offerti in almeno un canale di vendita.",
             "category": "Categoria",
             "hyperlink": "Pagina prodotto",
             "hyperlinkHint": "Percorso della pagina prodotto sul sito del negozio, senza l'indirizzo di base. Lasciare vuoto per usare il suggerimento.",
@@ -93,7 +97,50 @@
             "noPermission": "Non si dispone dell'autorizzazione per modificare i dati del negozio.",
             "publish": "Pubblica",
             "publishQueued": "Incarico creato.",
-            "publishAlready": "L'incarico è già in attesa."
+            "publishAlready": "L'incarico è già in attesa.",
+            "channels": "Canali di vendita",
+            "markup": "Maggiorazione",
+            "markupDefault": "Predefinito del canale ({vorgabe})",
+            "markupNone": "Nessuna maggiorazione",
+            "markupPercent": "Maggiorazione in percentuale",
+            "markupAmount": "Maggiorazione fissa",
+            "markupValue": "Valore",
+            "markupAmountNet": "Importo netto, come il prezzo di vendita",
+            "markupAmountGross": "Importo lordo, come il prezzo di vendita",
+            "defaultNone": "senza maggiorazione",
+            "basePrice": "Prezzo base",
+            "channelPrice": "Prezzo nel canale",
+            "net": "netto",
+            "gross": "lordo",
+            "rounded99": "Prezzo lordo arrotondato a ,99",
+            "pricePreview": "Anteprima con prezzo di vendita e gruppo contabile di questo modulo.",
+            "channelTitle": "Descrizione nel canale",
+            "channelTitleHint": "Lasciare vuoto per la descrizione dell'articolo.",
+            "channelDescription": "Descrizione estesa nel canale",
+            "channelDescriptionHint": "Lasciare vuoto per la descrizione estesa dell'articolo.",
+            "serviceNotOnMarketplace": "I servizi non vengono offerti sui marketplace.",
+            "channelImages": "Immagini per {kanal}",
+            "imagesAfterCreate": "Le immagini si possono aggiungere dopo aver creato l'articolo.",
+            "moveLeft": "Sposta avanti",
+            "moveRight": "Sposta indietro",
+            "removeImage": "Rimuovi immagine",
+            "addImage": "Aggiungi immagine",
+            "copyImagesFrom": "Riprendi le immagini da {kanal}",
+            "imagesCopied": "{anzahl} immagini riprese.",
+            "imageError": "Impossibile elaborare l'immagine.",
+            "syncStatus": "Stato su {kanal}",
+            "listingId": "Inserzione {id}",
+            "ebayCategory": "Categoria eBay",
+            "ebayCondition": "Condizione",
+            "channelDefault": "Predefinito dalle impostazioni",
+            "channelDefaultHint": "Lasciare vuoto per il valore predefinito delle impostazioni.",
+            "sync": {
+                "active": "pubblicata",
+                "ended": "terminata",
+                "error": "errore",
+                "pending": "in trasferimento",
+                "none": "non ancora trasferita"
+            }
         },
         "publish": {
             "title": "Pubblicazione",
@@ -131,9 +178,44 @@
                 "publish_part": "Scrivi pagina prodotto",
                 "publish_all": "Tutti i prodotti",
                 "remove_part": "Rimuovi pagina prodotto",
+                "remove_all": "Rimuovi tutte le pagine prodotto",
                 "sync_kit": "Sincronizza pacchetto",
                 "reconcile_payments": "Riconcilia pagamenti"
             }
+        },
+        "channels": {
+            "hugoshop": "HugoShop",
+            "ebay": "eBay",
+            "amazon": "Amazon"
+        },
+        "channelConfig": {
+            "title": "Canali di vendita",
+            "intro": "Valori predefiniti per canale per tutti gli articoli senza maggiorazione propria. Il prezzo base è il prezzo di vendita dell'articolo.",
+            "parts": "{anzahl} articoli",
+            "active": "Canale attivato",
+            "activeLast": "Almeno un canale di vendita deve essere attivo.",
+            "round99": "Arrotonda il prezzo lordo per eccesso a ,99",
+            "round99Hint": "12,30 diventa 12,99 e 13,00 diventa 13,99. Un prezzo che termina in ,99 resta invariato.",
+            "round99NetWarning": "I prezzi di vendita sono salvati al netto. Il prezzo netto viene ricavato dal prezzo lordo arrotondato; le fatture possono differire dal carrello di un centesimo. Consigliato: gestire i prezzi di vendita al lordo (impostazione più sopra).",
+            "invalidPercent": "Uno sconto del 100 % o più non è possibile.",
+            "saved": "Salvato.",
+            "republishQueued": "Salvato. Le pagine prodotto verranno riscritte con i nuovi prezzi.",
+            "saveError": "Impossibile salvare le impostazioni del canale.",
+            "loadError": "Impossibile caricare i canali di vendita."
+        },
+        "ebayCondition": {
+            "NEW": "Nuovo",
+            "USED_EXCELLENT": "Usato – ottimo",
+            "USED_GOOD": "Usato – buono",
+            "USED_ACCEPTABLE": "Usato – accettabile",
+            "FOR_PARTS_OR_NOT_WORKING": "Difettoso / per ricambi"
+        },
+        "errors": {
+            "API_ERROR": "L'azione non è riuscita.",
+            "NETWORK_ERROR": "Il server non è raggiungibile. Controllare la connessione e riprovare.",
+            "API_DATABASE_ERROR": "Il database non risponde come previsto. Avvisare l'amministratore.",
+            "API_INTERNAL_ERROR": "Si è verificato un errore imprevisto sul server. Avvisare l'amministratore.",
+            "NO_PERMISSION": "Non si dispone dell'autorizzazione per questa azione."
         }
     }
 }

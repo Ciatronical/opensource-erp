@@ -19,7 +19,11 @@
             "hints": "Dessa uppgifter saknas fortfarande. Butiken fungerar, men begränsat:",
             "partsWithShopData": "Artiklar med butiksuppgifter",
             "carts": "Varukorgar",
-            "sessions": "Sessioner"
+            "sessions": "Sessioner",
+            "recommendations": "Rekommendationer:",
+            "recommendation": {
+                "channel_round_99_net": "Avrundning till ,99 är påslagen, men försäljningspriserna är sparade netto. Med bruttopriser stämmer varukorg och faktura alltid på öret."
+            }
         },
         "orders": {
             "title": "Beställningar",
@@ -70,7 +74,7 @@
         "partCard": {
             "title": "Butik",
             "listed": "Erbjud i butiken",
-            "listedHint": "Endast artiklar med butiksuppgifter visas i butikens sökning.",
+            "listedHint": "Endast artiklar som erbjuds i minst en försäljningskanal visas i butiken.",
             "category": "Kategori",
             "hyperlink": "Produktsida",
             "hyperlinkHint": "Sökväg till produktsidan på butikens webbplats, utan basadress. Lämna tomt för att använda förslaget.",
@@ -93,7 +97,50 @@
             "noPermission": "Du har inte behörighet att ändra butiksuppgifter.",
             "publish": "Publicera",
             "publishQueued": "Uppdrag skapat.",
-            "publishAlready": "Uppdraget är redan öppet."
+            "publishAlready": "Uppdraget är redan öppet.",
+            "channels": "Försäljningskanaler",
+            "markup": "Påslag",
+            "markupDefault": "Kanalens standard ({vorgabe})",
+            "markupNone": "Inget påslag",
+            "markupPercent": "Påslag i procent",
+            "markupAmount": "Fast påslag",
+            "markupValue": "Värde",
+            "markupAmountNet": "Nettobelopp, som försäljningspriset",
+            "markupAmountGross": "Bruttobelopp, som försäljningspriset",
+            "defaultNone": "utan påslag",
+            "basePrice": "Grundpris",
+            "channelPrice": "Pris i kanalen",
+            "net": "netto",
+            "gross": "brutto",
+            "rounded99": "Bruttopris avrundat till ,99",
+            "pricePreview": "Förhandsvisning med försäljningspris och bokföringsgrupp från detta formulär.",
+            "channelTitle": "Beskrivning i kanalen",
+            "channelTitleHint": "Lämna tomt för artikelns beskrivning.",
+            "channelDescription": "Lång beskrivning i kanalen",
+            "channelDescriptionHint": "Lämna tomt för artikelns långa beskrivning.",
+            "serviceNotOnMarketplace": "Tjänster erbjuds inte på marknadsplatser.",
+            "channelImages": "Bilder för {kanal}",
+            "imagesAfterCreate": "Bilder kan läggas till när artikeln har skapats.",
+            "moveLeft": "Flytta fram",
+            "moveRight": "Flytta bak",
+            "removeImage": "Ta bort bild",
+            "addImage": "Lägg till bild",
+            "copyImagesFrom": "Hämta bilder från {kanal}",
+            "imagesCopied": "{anzahl} bilder hämtade.",
+            "imageError": "Bilden kunde inte behandlas.",
+            "syncStatus": "Status hos {kanal}",
+            "listingId": "Annons {id}",
+            "ebayCategory": "eBay-kategori",
+            "ebayCondition": "Skick",
+            "channelDefault": "Standard från inställningarna",
+            "channelDefaultHint": "Lämna tomt för standarden från inställningarna.",
+            "sync": {
+                "active": "upplagd",
+                "ended": "avslutad",
+                "error": "fel",
+                "pending": "överförs",
+                "none": "inte överförd ännu"
+            }
         },
         "publish": {
             "title": "Publicering",
@@ -131,9 +178,44 @@
                 "publish_part": "Skriv produktsida",
                 "publish_all": "Alla produkter",
                 "remove_part": "Ta bort produktsida",
+                "remove_all": "Ta bort alla produktsidor",
                 "sync_kit": "Synkronisera paket",
                 "reconcile_payments": "Stäm av betalningar"
             }
+        },
+        "channels": {
+            "hugoshop": "HugoShop",
+            "ebay": "eBay",
+            "amazon": "Amazon"
+        },
+        "channelConfig": {
+            "title": "Försäljningskanaler",
+            "intro": "Standardvärden per kanal för alla artiklar utan eget påslag. Grundpriset är artikelns försäljningspris.",
+            "parts": "{anzahl} artiklar",
+            "active": "Kanal påslagen",
+            "activeLast": "Minst en försäljningskanal måste vara påslagen.",
+            "round99": "Avrunda bruttopriset uppåt till ,99",
+            "round99Hint": "12,30 blir 12,99 och 13,00 blir 13,99. Ett pris på ,99 behålls.",
+            "round99NetWarning": "Försäljningspriserna är sparade netto. Nettopriset räknas fram ur det avrundade bruttopriset; fakturor kan avvika från varukorgen med ett öre. Rekommenderat: för försäljningspriser brutto (inställning längre upp).",
+            "invalidPercent": "En rabatt på 100 % eller mer är inte möjlig.",
+            "saved": "Sparat.",
+            "republishQueued": "Sparat. Produktsidorna skrivs om med de nya priserna.",
+            "saveError": "Kanalinställningarna kunde inte sparas.",
+            "loadError": "Försäljningskanalerna kunde inte läsas in."
+        },
+        "ebayCondition": {
+            "NEW": "Ny",
+            "USED_EXCELLENT": "Begagnad – utmärkt",
+            "USED_GOOD": "Begagnad – bra",
+            "USED_ACCEPTABLE": "Begagnad – godtagbar",
+            "FOR_PARTS_OR_NOT_WORKING": "Defekt / för reservdelar"
+        },
+        "errors": {
+            "API_ERROR": "Åtgärden misslyckades.",
+            "NETWORK_ERROR": "Servern kan inte nås. Kontrollera anslutningen och försök igen.",
+            "API_DATABASE_ERROR": "Databasen svarar inte som väntat. Kontakta administratören.",
+            "API_INTERNAL_ERROR": "Ett oväntat fel uppstod på servern. Kontakta administratören.",
+            "NO_PERMISSION": "Du saknar behörighet för den här åtgärden."
         }
     }
 }

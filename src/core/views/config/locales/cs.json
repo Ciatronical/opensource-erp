@@ -925,7 +925,21 @@
         "shopPublishMode": "Režim provozu",
         "shopPublishMode_help": "Místní: web je na tomto serveru, OpensourceERP do něj zapisuje soubory a sám ho sestavuje. HugoCMS: web běží na vlastním webovém serveru, OpensourceERP přenáší soubory do HugoCMS, který ho tam sestaví. Pole adresářů a programu níže pak neplatí.",
         "shopPublishModeLocal": "Místní — web na tomto serveru",
-        "shopPublishModeHugoCms": "HugoCMS — web na vlastním webovém serveru"
+        "shopPublishModeHugoCms": "HugoCMS — web na vlastním webovém serveru",
+        "shopAutoPublish": "Při změně cen automaticky přepsat stránky produktů",
+        "shopAutoPublish_help": "Vytvoří úlohu publikování, když se u položky v HugoShopu změní prodejní cena, účetní skupina, přirážka, popis nebo dlouhý popis, a také při změně výchozích hodnot kanálu nebo cen s/bez DPH. Bez tohoto nastavení ukazují stránky starou cenu, dokud nejsou publikovány ručně.",
+        "shopChannelOffPages": "Stránky při vypnutí HugoShopu",
+        "shopChannelOffPages_help": "Co se stane se stránkami produktů, když se HugoShop vypne v části „Prodejní kanály“. Po opětovném zapnutí se všechny stránky znovu publikují.",
+        "shopChannelOffPagesDraft": "Ponechat jako koncept (již nepublikováno)",
+        "shopChannelOffPagesRemove": "Odstranit",
+        "shopEbay": "eBay",
+        "shopEbay_help": "Přístup, výchozí hodnoty nabídek a import objednávek kanálu eBay. eBay se zapíná a vypíná výše v části „Prodejní kanály“.",
+        "ebayPublicHost": "Veřejná adresa pro obrázky",
+        "ebayPublicHost_help": "Adresa tohoto serveru, ze které eBay stahuje obrázky položek (https, bez cesty), např. erp.example.cz. Povinné, protože nabídky se vystavují na pozadí.",
+        "ebayEnvironmentProduction": "Produkční",
+        "ebayEnvironmentSandbox": "Sandbox (test)",
+        "ebayMoved": "eBay je nyní prodejním kanálem rozšíření obchodu. Nastavení najdete na kartě Obchod v části „eBay“, nabídky v kartě obchodu u položky.",
+        "ebayNeedsShop": "eBay je zapnutý, ale rozšíření obchodu ne. Bez něj se nevystavují nabídky ani nestahují objednávky — aktivujte prosím rozšíření obchodu."
     },
     "add": "Přidat",
     "add_fields": {

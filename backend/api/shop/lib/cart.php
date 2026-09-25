@@ -79,11 +79,19 @@ function cartTotals($db, string $cartUuid, float $precision, int $taxzoneId): ar
     // Bridge schrieb ROUND(x / precision, 2) * precision — das rundet eine
     // bereits ganze Zahl auf zwei Stellen und laesst den Schritt wirkungslos.
     // Richtig ist ROUND(x / precision) * precision.
+    //
+    // Der Preis kommt aus shop_channel_price() und ist netto oder brutto wie
+    // parts.sellprice laut shop_tax_included. Frueher wurde hier immer die
+    // Steuer aufgeschlagen, bei Bruttopreisen also doppelt — so auch im
+    // Betrag, den PayPal abbuchte.
     $zeile = $db->getOne(
         "WITH letzte_steuerschluessel AS (
-             -- je Konto der zuletzt gueltige Steuerschluessel
+             -- je Konto der heute gueltige Steuerschluessel — ein im Voraus
+             -- eingetragener Satzwechsel greift erst ab seinem Datum (V24),
+             -- wie auf der Produktseite und in der Buchung
              SELECT DISTINCT ON (tk.chart_id) tk.tax_id, tk.chart_id
                FROM taxkeys tk
+              WHERE tk.startdate <= current_date
               ORDER BY tk.chart_id, tk.startdate DESC
          ), versand AS (
              -- der Versandartikel mit seinem eigenen Steuersatz, nicht mit
@@ -96,10 +104,13 @@ function cartTotals($db, string $cartUuid, float $precision, int $taxzoneId): ar
                LEFT JOIN tax t ON t.id = tk.tax_id
               WHERE p.partnumber = :versand_nr
          ), positionen AS (
-             SELECT ROUND(ps.sellprice * cps.amount * (1 + COALESCE(tax.rate, 0)) / :precision) * :precision AS brutto,
-                    ROUND(ps.sellprice * cps.amount / :precision) * :precision AS netto
+             SELECT ROUND(CASE WHEN :brutto = 1 THEN k.preis ELSE k.preis * (1 + COALESCE(tax.rate, 0)) END
+                          * cps.amount / :precision) * :precision AS brutto,
+                    ROUND(CASE WHEN :brutto = 1 THEN k.preis / (1 + COALESCE(tax.rate, 0)) ELSE k.preis END
+                          * cps.amount / :precision) * :precision AS netto
                FROM cart_parts_hugoshop cps
                JOIN parts ps ON ps.id = cps.parts_id
+               CROSS JOIN LATERAL (SELECT shop_channel_price(ps.id) AS preis) k
                JOIN taxzone_charts tc ON tc.buchungsgruppen_id = ps.buchungsgruppen_id
                                      AND tc.taxzone_id = :taxzone_id
                LEFT JOIN letzte_steuerschluessel tk ON tk.chart_id = tc.income_accno_id
@@ -115,10 +126,16 @@ function cartTotals($db, string $cartUuid, float $precision, int $taxzoneId): ar
                 s.netto_total_sum,
                 COALESCE((SELECT sellprice FROM versand), 0) AS shipping_costs,
                 (s.anzahl > 0 AND s.total_sum <= :frei_ab) AS inc_shipping_costs,
-                s.total_sum + COALESCE(
-                    (SELECT ROUND(sellprice * (1 + rate) / :precision) * :precision FROM versand), 0
+                s.total_sum + COALESCE((
+                    SELECT ROUND(CASE WHEN :brutto = 1 THEN sellprice ELSE sellprice * (1 + rate) END
+                                 / :precision) * :precision
+                      FROM versand), 0
                 ) AS total_sum_inc_shipping,
-                s.netto_total_sum + COALESCE((SELECT sellprice FROM versand), 0) AS netto_total_sum_inc_shipping
+                s.netto_total_sum + COALESCE((
+                    SELECT ROUND(CASE WHEN :brutto = 1 THEN sellprice / (1 + rate) ELSE sellprice END
+                                 / :precision) * :precision
+                      FROM versand), 0
+                ) AS netto_total_sum_inc_shipping
            FROM summen s",
         [
             ':cart_uuid'  => $cartUuid,
@@ -126,6 +143,7 @@ function cartTotals($db, string $cartUuid, float $precision, int $taxzoneId): ar
             ':frei_ab'    => $freiAb,
             ':precision'  => $precision,
             ':taxzone_id' => $taxzoneId,
+            ':brutto'     => shopConfigBool($db, 'shop_tax_included') ? 1 : 0,
         ]
     );
 
@@ -159,13 +177,20 @@ function cartRead($db, string $cartUuid, ?int $customerId, bool $simple = true):
 
     if ($simple) {
         $positionen = $db->getAll(
-            "SELECT cps.id AS pos_id, ps.id AS parts_id, ps.description, ps.unit, cps.amount,
-                    ROUND(ps.sellprice / :precision) * :precision AS unit_price,
-                    ROUND(ps.sellprice * cps.amount / :precision) * :precision AS total_price,
+            "SELECT cps.id AS pos_id, ps.id AS parts_id,
+                    COALESCE(NULLIF(pc.title, ''), ps.description) AS description, ps.unit, cps.amount,
+                    ROUND(k.preis / :precision) * :precision AS unit_price,
+                    ROUND(k.preis * cps.amount / :precision) * :precision AS total_price,
                     ps.buchungsgruppen_id,
-                    psh.hugoshop_images ->> 0 AS thumbnail
+                    psh.hugoshop_images ->> 0 AS thumbnail,
+                    (pc.active AND pc.channel_id = shop_active_channel_id('hugoshop')
+                     OR ps.partnumber = (SELECT value FROM defaults_oserp
+                                          WHERE key = 'shop_shipping_partnumber')) IS TRUE AS offered
                FROM cart_parts_hugoshop cps
                JOIN parts ps ON ps.id = cps.parts_id
+               CROSS JOIN LATERAL (SELECT shop_channel_price(ps.id) AS preis) k
+               LEFT JOIN parts_channel_shop pc ON pc.parts_id = ps.id
+                                              AND pc.channel_id = shop_channel_id('hugoshop')
                LEFT JOIN parts_ext psh ON psh.parts_id = ps.id
               WHERE cps.cart_uuid = :cart_uuid
               ORDER BY cps.id",
@@ -176,19 +201,27 @@ function cartRead($db, string $cartUuid, ?int $customerId, bool $simple = true):
             "WITH letzte_steuerschluessel AS (
                  SELECT DISTINCT ON (tk.chart_id) tk.tax_id, tk.chart_id
                    FROM taxkeys tk
+                  WHERE tk.startdate <= current_date
                   ORDER BY tk.chart_id, tk.startdate DESC
              )
-             SELECT cps.id AS pos_id, ps.id AS parts_id, ps.description, ps.unit, cps.amount,
-                    ROUND(ps.sellprice / :precision) * :precision AS unit_price,
-                    ROUND(ps.sellprice * cps.amount / :precision) * :precision AS total_price,
+             SELECT cps.id AS pos_id, ps.id AS parts_id,
+                    COALESCE(NULLIF(pc.title, ''), ps.description) AS description, ps.unit, cps.amount,
+                    ROUND(k.preis / :precision) * :precision AS unit_price,
+                    ROUND(k.preis * cps.amount / :precision) * :precision AS total_price,
                     ps.buchungsgruppen_id,
                     tc.income_accno_id, tk.tax_id,
                     ch_income.taxkey_id AS income_taxkey, ch_income.link AS income_link,
                     tax.chart_id AS taxservice_accno_id, tax.rate AS tax_rate,
                     ch_tax.link AS taxservice_link,
-                    psh.hugoshop_images ->> 0 AS thumbnail
+                    psh.hugoshop_images ->> 0 AS thumbnail,
+                    (pc.active AND pc.channel_id = shop_active_channel_id('hugoshop')
+                     OR ps.partnumber = (SELECT value FROM defaults_oserp
+                                          WHERE key = 'shop_shipping_partnumber')) IS TRUE AS offered
                FROM cart_parts_hugoshop cps
                JOIN parts ps ON ps.id = cps.parts_id
+               CROSS JOIN LATERAL (SELECT shop_channel_price(ps.id) AS preis) k
+               LEFT JOIN parts_channel_shop pc ON pc.parts_id = ps.id
+                                              AND pc.channel_id = shop_channel_id('hugoshop')
                JOIN taxzone_charts tc ON tc.buchungsgruppen_id = ps.buchungsgruppen_id
                                      AND tc.taxzone_id = :taxzone_id
                LEFT JOIN letzte_steuerschluessel tk ON tk.chart_id = tc.income_accno_id
@@ -246,6 +279,9 @@ function cartPositionShape(array $p, bool $simple): array {
         'totalPrice'         => (float)$p['total_price'],
         'buchungsgruppen_id' => $p['buchungsgruppen_id'],
         'thumbnail'          => $p['thumbnail'],
+        // false: nicht mehr im Shop angeboten (O2) — der Kauf wird abgelehnt,
+        // bis die Position entfernt ist
+        'offered'            => in_array($p['offered'] ?? true, [true, 't', 1, '1'], true),
     ];
 
     if (!$simple) {
@@ -285,19 +321,29 @@ function cartAdd($db, string $uuid, int $partsId, int $menge): array {
 
     $cartUuid = cartOfContext($db, $uuid);
 
+    // Nur Artikel, die der HugoShop anbietet (O2): aktive Kanalzeile bei
+    // eingeschaltetem Kanal. Sonst liesse sich jeder Artikel bestellen, dessen
+    // Kennung jemand kennt — auch abgewählte oder nie angebotene.
     $eingefuegt = $db->getOne(
         "INSERT INTO cart_parts_hugoshop (cart_uuid, parts_id, amount)
-         SELECT :cart_uuid, p.id, :menge FROM parts p WHERE p.id = :parts_id
+         SELECT :cart_uuid, p.id, :menge
+           FROM parts p
+           JOIN parts_channel_shop pc ON pc.parts_id = p.id
+                                     AND pc.channel_id = shop_active_channel_id('hugoshop')
+                                     AND pc.active
+          WHERE p.id = :parts_id
          ON CONFLICT (cart_uuid, parts_id)
          DO UPDATE SET amount = cart_parts_hugoshop.amount + EXCLUDED.amount
          RETURNING id",
         [':cart_uuid' => $cartUuid, ':parts_id' => $partsId, ':menge' => $menge]
     );
 
-    // Ohne Treffer in parts bleibt das INSERT wirkungslos — den Artikel gibt
-    // es nicht. Stillschweigend nichts zu tun waere die schlechtere Antwort.
+    // Ohne Treffer bleibt das INSERT wirkungslos — den Artikel gibt es nicht
+    // oder nicht im Shop. Stillschweigend nichts zu tun waere die schlechtere
+    // Antwort. Der Code bleibt PART_NOT_FOUND: für den Besucher ist beides
+    // dasselbe.
     if (!$eingefuegt) {
-        throw new ApiError("PART_NOT_FOUND", 'Diesen Artikel gibt es nicht');
+        throw new ApiError("PART_NOT_FOUND", 'Diesen Artikel gibt es im Shop nicht');
     }
 
     // Getrennte Abfrage, nicht im selben CTE: alle Zweige einer Anweisung
@@ -366,9 +412,10 @@ function cartSetQuantity($db, string $cartUuid, ?int $customerId, int $posId, in
              RETURNING id, parts_id, amount
          )
          SELECT g.id, g.amount,
-                ROUND(ps.sellprice / :precision) * :precision AS unit_price,
-                ROUND(ps.sellprice * g.amount / :precision) * :precision AS total_price
-           FROM geaendert g JOIN parts ps ON ps.id = g.parts_id",
+                ROUND(k.preis / :precision) * :precision AS unit_price,
+                ROUND(k.preis * g.amount / :precision) * :precision AS total_price
+           FROM geaendert g
+           CROSS JOIN LATERAL (SELECT shop_channel_price(g.parts_id) AS preis) k",
         [':menge' => $menge, ':pos_id' => $posId, ':cart_uuid' => $cartUuid, ':precision' => $precision]
     );
 
@@ -568,4 +615,24 @@ function cartMergeIntoCustomerCart($db, string $uuid, int $customerId): void {
         "DELETE FROM carts_hugoshop WHERE uuid = :gast_korb",
         [':gast_korb' => $gastKorb]
     );
+}
+
+/**
+ * Lehnt einen Warenkorb mit Artikeln ab, die der Shop nicht mehr anbietet
+ *
+ * O2: ein Artikel kann abgewählt werden, während er in einem Warenkorb liegt.
+ * Geprüft wird vor dem Kauf — beim Kauf auf Rechnung und vor der Zahlung bei
+ * PayPal, nicht nach ihr: dann ist das Geld schon unterwegs und die Rechnung
+ * muss entstehen.
+ *
+ * @param array $korb Ergebnis von cartRead()
+ * @return void
+ * @throws ApiError CART_NOT_OFFERED mit den Bezeichnungen der Positionen
+ */
+function cartRequireOffered(array $korb): void {
+    $weg = array_values(array_filter($korb['positions'] ?? [], fn($p) => empty($p['offered'])));
+    if ($weg) {
+        throw new ApiError('CART_NOT_OFFERED',
+            'Nicht mehr im Shop: '.implode(', ', array_column($weg, 'label')).'. Bitte aus dem Warenkorb entfernen.');
+    }
 }

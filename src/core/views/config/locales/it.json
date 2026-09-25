@@ -925,7 +925,21 @@
         "shopPublishMode": "Modalità di funzionamento",
         "shopPublishMode_help": "Locale: il sito è su questo server; OpensourceERP vi scrive i file e lo genera da sé. HugoCMS: il sito funziona su un proprio server web; OpensourceERP trasferisce i file a HugoCMS, che lo genera lì. I campi di directory e programma qui sotto non valgono in quel caso.",
         "shopPublishModeLocal": "Locale — sito su questo server",
-        "shopPublishModeHugoCms": "HugoCMS — sito su un proprio server web"
+        "shopPublishModeHugoCms": "HugoCMS — sito su un proprio server web",
+        "shopAutoPublish": "Riscrivi automaticamente le pagine prodotto al variare dei prezzi",
+        "shopAutoPublish_help": "Crea un'attività di pubblicazione quando cambiano prezzo di vendita, gruppo contabile, maggiorazione, descrizione o descrizione estesa di un articolo in HugoShop, e quando cambiano i valori predefiniti del canale o l'impostazione lordo/netto. Senza questa impostazione le pagine mostrano il vecchio prezzo finché non vengono pubblicate manualmente.",
+        "shopChannelOffPages": "Pagine alla disattivazione di HugoShop",
+        "shopChannelOffPages_help": "Cosa succede alle pagine prodotto quando HugoShop viene disattivato in «Canali di vendita». Alla riattivazione tutte le pagine vengono ripubblicate.",
+        "shopChannelOffPagesDraft": "Mantieni come bozza (non più pubblicata)",
+        "shopChannelOffPagesRemove": "Rimuovi",
+        "shopEbay": "eBay",
+        "shopEbay_help": "Accesso, valori predefiniti delle inserzioni e importazione ordini del canale eBay. eBay si attiva e disattiva sopra in «Canali di vendita».",
+        "ebayPublicHost": "Indirizzo pubblico per le immagini",
+        "ebayPublicHost_help": "Indirizzo di questo server da cui eBay preleva le immagini degli articoli (https, senza percorso), ad es. erp.example.it. Obbligatorio, perché le inserzioni vengono pubblicate in background.",
+        "ebayEnvironmentProduction": "Produzione",
+        "ebayEnvironmentSandbox": "Sandbox (test)",
+        "ebayMoved": "eBay è ora un canale di vendita dell'estensione negozio. Le impostazioni sono nella scheda Negozio alla voce «eBay», le inserzioni nella scheda negozio dell'articolo.",
+        "ebayNeedsShop": "eBay è attivo, ma l'estensione negozio no. Senza di essa non vengono pubblicate inserzioni né recuperati ordini: attivare l'estensione negozio."
     },
     "add": "Aggiungi",
     "add_fields": {

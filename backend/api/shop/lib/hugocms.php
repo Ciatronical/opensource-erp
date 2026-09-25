@@ -362,6 +362,9 @@ function shopThumbnailSources($db): array {
     $zeilen = $db->getAll(
         "SELECT DISTINCT regexp_replace(pe.hugoshop_images ->> 0, '^.*/', '') AS name
            FROM parts p
+           JOIN parts_channel_shop pc ON pc.parts_id = p.id
+                                     AND pc.channel_id = shop_active_channel_id('hugoshop')
+                                     AND pc.active
            JOIN parts_ext pe ON pe.parts_id = p.id
           WHERE jsonb_typeof(pe.hugoshop_images) = 'array'
             AND COALESCE(pe.hugoshop_images ->> 0, '') <> ''

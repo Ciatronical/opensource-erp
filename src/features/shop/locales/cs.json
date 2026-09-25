@@ -19,7 +19,11 @@
             "hints": "Tyto údaje ještě chybí. Obchod běží, ale omezeně:",
             "partsWithShopData": "Položky s údaji pro obchod",
             "carts": "Košíky",
-            "sessions": "Relace"
+            "sessions": "Relace",
+            "recommendations": "Doporučení:",
+            "recommendation": {
+                "channel_round_99_net": "Zaokrouhlení na ,99 je zapnuté, ale prodejní ceny jsou uloženy bez DPH. S cenami s DPH se košík a faktura vždy shodují na haléř."
+            }
         },
         "orders": {
             "title": "Objednávky",
@@ -70,7 +74,7 @@
         "partCard": {
             "title": "Obchod",
             "listed": "Nabízet v obchodě",
-            "listedHint": "Ve vyhledávání obchodu se zobrazují jen artikly s údaji pro obchod.",
+            "listedHint": "V obchodě se zobrazí jen položky nabízené alespoň v jednom prodejním kanálu.",
             "category": "Kategorie",
             "hyperlink": "Stránka produktu",
             "hyperlinkHint": "Cesta ke stránce produktu na webu obchodu, bez základní adresy. Ponechte prázdné pro použití návrhu.",
@@ -93,7 +97,50 @@
             "noPermission": "Nemáte oprávnění měnit údaje pro obchod.",
             "publish": "Zveřejnit",
             "publishQueued": "Úloha založena.",
-            "publishAlready": "Úloha už čeká."
+            "publishAlready": "Úloha už čeká.",
+            "channels": "Prodejní kanály",
+            "markup": "Přirážka",
+            "markupDefault": "Výchozí hodnota kanálu ({vorgabe})",
+            "markupNone": "Bez přirážky",
+            "markupPercent": "Přirážka v procentech",
+            "markupAmount": "Pevná přirážka",
+            "markupValue": "Hodnota",
+            "markupAmountNet": "Částka bez DPH, stejně jako prodejní cena",
+            "markupAmountGross": "Částka s DPH, stejně jako prodejní cena",
+            "defaultNone": "bez přirážky",
+            "basePrice": "Základní cena",
+            "channelPrice": "Cena v kanálu",
+            "net": "bez DPH",
+            "gross": "s DPH",
+            "rounded99": "Cena s DPH zaokrouhlena na ,99",
+            "pricePreview": "Náhled s prodejní cenou a účetní skupinou tohoto formuláře.",
+            "channelTitle": "Popis v kanálu",
+            "channelTitleHint": "Ponechte prázdné pro popis položky.",
+            "channelDescription": "Dlouhý popis v kanálu",
+            "channelDescriptionHint": "Ponechte prázdné pro dlouhý popis položky.",
+            "serviceNotOnMarketplace": "Služby se na tržištích nenabízejí.",
+            "channelImages": "Obrázky pro {kanal}",
+            "imagesAfterCreate": "Obrázky lze přidat, jakmile je položka založena.",
+            "moveLeft": "Posunout dopředu",
+            "moveRight": "Posunout dozadu",
+            "removeImage": "Odstranit obrázek",
+            "addImage": "Přidat obrázek",
+            "copyImagesFrom": "Převzít obrázky z {kanal}",
+            "imagesCopied": "Převzato obrázků: {anzahl}.",
+            "imageError": "Obrázek nelze zpracovat.",
+            "syncStatus": "Stav v {kanal}",
+            "listingId": "Nabídka {id}",
+            "ebayCategory": "Kategorie eBay",
+            "ebayCondition": "Stav zboží",
+            "channelDefault": "Výchozí hodnota z nastavení",
+            "channelDefaultHint": "Ponechte prázdné pro výchozí hodnotu z nastavení.",
+            "sync": {
+                "active": "vystaveno",
+                "ended": "ukončeno",
+                "error": "chyba",
+                "pending": "přenáší se",
+                "none": "dosud nepřeneseno"
+            }
         },
         "publish": {
             "title": "Zveřejnění",
@@ -131,9 +178,44 @@
                 "publish_part": "Zapsat stránku produktu",
                 "publish_all": "Všechny produkty",
                 "remove_part": "Odstranit stránku produktu",
+                "remove_all": "Odstranit všechny stránky produktů",
                 "sync_kit": "Synchronizovat balíček",
                 "reconcile_payments": "Srovnat platby"
             }
+        },
+        "channels": {
+            "hugoshop": "HugoShop",
+            "ebay": "eBay",
+            "amazon": "Amazon"
+        },
+        "channelConfig": {
+            "title": "Prodejní kanály",
+            "intro": "Výchozí hodnoty kanálu pro všechny položky bez vlastní přirážky. Základní cenou je prodejní cena položky.",
+            "parts": "{anzahl} položek",
+            "active": "Kanál zapnut",
+            "activeLast": "Alespoň jeden prodejní kanál musí být zapnutý.",
+            "round99": "Zaokrouhlit cenu s DPH nahoru na ,99",
+            "round99Hint": "12,30 se změní na 12,99 a 13,00 na 13,99. Cena končící na ,99 zůstane.",
+            "round99NetWarning": "Prodejní ceny jsou uloženy bez DPH. Cena bez DPH se dopočítá ze zaokrouhlené ceny s DPH; faktury se mohou od košíku lišit o haléř. Doporučeno: vést prodejní ceny s DPH (nastavení výše).",
+            "invalidPercent": "Sleva 100 % nebo více není možná.",
+            "saved": "Uloženo.",
+            "republishQueued": "Uloženo. Stránky produktů budou přepsány s novými cenami.",
+            "saveError": "Nastavení kanálu se nepodařilo uložit.",
+            "loadError": "Prodejní kanály se nepodařilo načíst."
+        },
+        "ebayCondition": {
+            "NEW": "Nové",
+            "USED_EXCELLENT": "Použité – velmi dobré",
+            "USED_GOOD": "Použité – dobré",
+            "USED_ACCEPTABLE": "Použité – přijatelné",
+            "FOR_PARTS_OR_NOT_WORKING": "Vadné / na díly"
+        },
+        "errors": {
+            "API_ERROR": "Akce se nezdařila.",
+            "NETWORK_ERROR": "Server není dostupný. Zkontrolujte připojení a zkuste to znovu.",
+            "API_DATABASE_ERROR": "Databáze neodpovídá podle očekávání. Informujte prosím správce.",
+            "API_INTERNAL_ERROR": "Na serveru došlo k neočekávané chybě. Informujte prosím správce.",
+            "NO_PERMISSION": "K této akci nemáte oprávnění."
         }
     }
 }

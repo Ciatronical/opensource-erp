@@ -242,12 +242,21 @@ const de = {
   SHOP_NETWORK_ERROR: 'Die Verbindung zum Shop ist fehlgeschlagen. Bitte versuchen Sie es erneut.',
   SHOP_API_ERROR: 'Entschuldigung, es ist ein Fehler aufgetreten!',
   SHOP_DATABASE_ERROR: 'Entschuldigung, es ist ein Fehler aufgetreten!',
+  // Zentraler Fehlerabfang in backend/api/shop/public/bootstrap.php
+  API_DATABASE_ERROR: 'Entschuldigung, es ist ein Fehler aufgetreten! Bitte versuchen Sie es später erneut.',
+  API_INTERNAL_ERROR: 'Entschuldigung, es ist ein Fehler aufgetreten! Bitte versuchen Sie es später erneut.',
   CUSTOMER_NOT_FOUND: 'Das Kundenkonto wurde nicht gefunden.',
   EMAIL_EXISTS: 'Die E-Mail-Adresse ist bereits in Verwendung!',
   INVOICE_LINK_NOT_FOUND: 'Zu diesem Link wurde keine Rechnung gefunden.',
   CART_NOT_FOUND: 'Der Warenkorb wurde nicht gefunden.',
   CART_POS_NOT_FOUND: 'Diese Warenkorbposition gibt es nicht mehr. Bitte laden Sie die Seite neu.',
   ADDRESS_NOT_FOUND: 'Diese Adresse gibt es nicht. Bitte laden Sie die Seite neu.',
+  // Verkaufskanäle (dev/shop-verkaufskanaele.md, V16, V23)
+  PART_NOT_FOUND: 'Diesen Artikel gibt es im Shop nicht.',
+  SHOP_CLOSED: 'Der Shop nimmt derzeit keine Bestellungen an.',
+  CART_NOT_OFFERED:
+    'Einige Artikel in Ihrem Warenkorb werden nicht mehr angeboten. Bitte entfernen Sie die markierten Positionen.',
+  'cart.notOffered': 'Nicht mehr erhältlich',
 };
 
 const en = {
@@ -485,12 +494,19 @@ const en = {
   SHOP_NETWORK_ERROR: 'Could not reach the shop. Please try again.',
   SHOP_API_ERROR: 'Sorry, something went wrong!',
   SHOP_DATABASE_ERROR: 'Sorry, something went wrong!',
+  API_DATABASE_ERROR: 'Sorry, something went wrong! Please try again later.',
+  API_INTERNAL_ERROR: 'Sorry, something went wrong! Please try again later.',
   CUSTOMER_NOT_FOUND: 'The account could not be found.',
   EMAIL_EXISTS: 'This email address is already in use.',
   INVOICE_LINK_NOT_FOUND: 'No invoice was found for this link.',
   CART_NOT_FOUND: 'The cart could not be found.',
   CART_POS_NOT_FOUND: 'This cart item no longer exists. Please reload the page.',
   ADDRESS_NOT_FOUND: 'This address does not exist. Please reload the page.',
+  PART_NOT_FOUND: 'This article is not available in the shop.',
+  SHOP_CLOSED: 'The shop is currently not accepting orders.',
+  CART_NOT_OFFERED:
+    'Some articles in your cart are no longer offered. Please remove the marked items.',
+  'cart.notOffered': 'No longer available',
 };
 
 const catalogs = { de, en };

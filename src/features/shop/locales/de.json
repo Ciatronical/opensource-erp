@@ -19,7 +19,11 @@
             "hints": "Diese Angaben fehlen noch. Der Shop läuft, aber eingeschränkt:",
             "partsWithShopData": "Artikel mit Shop-Angaben",
             "carts": "Warenkörbe",
-            "sessions": "Sitzungen"
+            "sessions": "Sitzungen",
+            "recommendations": "Empfehlungen:",
+            "recommendation": {
+                "channel_round_99_net": "Die Rundung auf ,99 ist eingeschaltet, die Verkaufspreise sind aber netto hinterlegt. Mit Brutto-Verkaufspreisen stimmen Warenkorb und Rechnung immer auf den Cent überein."
+            }
         },
         "orders": {
             "title": "Bestellungen",
@@ -70,7 +74,7 @@
         "partCard": {
             "title": "Shop",
             "listed": "Im Shop anbieten",
-            "listedHint": "Nur Artikel mit Shop-Angaben erscheinen in der Suche des Shops.",
+            "listedHint": "Nur Artikel, die in mindestens einem Verkaufskanal angeboten werden, erscheinen im Shop.",
             "category": "Kategorie",
             "hyperlink": "Produktseite",
             "hyperlinkHint": "Pfad der Produktseite auf der Shop-Webseite, ohne Basisadresse. Leer lassen für den Vorschlag.",
@@ -93,7 +97,50 @@
             "noPermission": "Keine Berechtigung, Shop-Angaben zu ändern.",
             "publish": "Veröffentlichen",
             "publishQueued": "Auftrag angelegt.",
-            "publishAlready": "Auftrag ist bereits offen."
+            "publishAlready": "Auftrag ist bereits offen.",
+            "channels": "Verkaufskanäle",
+            "markup": "Aufschlag",
+            "markupDefault": "Vorgabe des Kanals ({vorgabe})",
+            "markupNone": "Kein Aufschlag",
+            "markupPercent": "Aufschlag in Prozent",
+            "markupAmount": "Fester Aufschlag",
+            "markupValue": "Wert",
+            "markupAmountNet": "Betrag netto, wie der Verkaufspreis",
+            "markupAmountGross": "Betrag brutto, wie der Verkaufspreis",
+            "defaultNone": "ohne Aufschlag",
+            "basePrice": "Grundpreis",
+            "channelPrice": "Preis im Kanal",
+            "net": "netto",
+            "gross": "brutto",
+            "rounded99": "Bruttopreis auf ,99 gerundet",
+            "pricePreview": "Vorschau mit Verkaufspreis und Buchungsgruppe dieser Maske.",
+            "channelTitle": "Beschreibung im Kanal",
+            "channelTitleHint": "Leer lassen für die Beschreibung des Artikels.",
+            "channelDescription": "Langbeschreibung im Kanal",
+            "channelDescriptionHint": "Leer lassen für die Langbeschreibung des Artikels.",
+            "serviceNotOnMarketplace": "Dienstleistungen werden nicht über Marktplätze angeboten.",
+            "channelImages": "Bilder für {kanal}",
+            "imagesAfterCreate": "Bilder lassen sich hinzufügen, sobald der Artikel angelegt ist.",
+            "moveLeft": "Nach vorn",
+            "moveRight": "Nach hinten",
+            "removeImage": "Bild entfernen",
+            "addImage": "Bild hinzufügen",
+            "copyImagesFrom": "Bilder aus {kanal} übernehmen",
+            "imagesCopied": "{anzahl} Bilder übernommen.",
+            "imageError": "Das Bild konnte nicht verarbeitet werden.",
+            "syncStatus": "Stand bei {kanal}",
+            "listingId": "Angebot {id}",
+            "ebayCategory": "eBay-Kategorie",
+            "ebayCondition": "Zustand",
+            "channelDefault": "Vorgabe aus den Einstellungen",
+            "channelDefaultHint": "Leer lassen für die Vorgabe aus den Einstellungen.",
+            "sync": {
+                "active": "eingestellt",
+                "ended": "beendet",
+                "error": "Fehler",
+                "pending": "wird übertragen",
+                "none": "noch nicht übertragen"
+            }
         },
         "publish": {
             "title": "Veröffentlichung",
@@ -131,9 +178,44 @@
                 "publish_part": "Produktseite schreiben",
                 "publish_all": "Alle Produkte",
                 "remove_part": "Produktseite entfernen",
+                "remove_all": "Alle Produktseiten entfernen",
                 "sync_kit": "Paket abgleichen",
                 "reconcile_payments": "Zahlungen abgleichen"
             }
+        },
+        "channels": {
+            "hugoshop": "HugoShop",
+            "ebay": "eBay",
+            "amazon": "Amazon"
+        },
+        "channelConfig": {
+            "title": "Verkaufskanäle",
+            "intro": "Vorgaben je Kanal für alle Artikel ohne eigenen Aufschlag. Grundpreis ist der Verkaufspreis des Artikels.",
+            "parts": "{anzahl} Artikel",
+            "active": "Kanal eingeschaltet",
+            "activeLast": "Mindestens ein Verkaufskanal muss eingeschaltet sein.",
+            "round99": "Bruttopreis auf ,99 aufrunden",
+            "round99Hint": "12,30 wird zu 12,99 und 13,00 zu 13,99. Ein Preis auf ,99 bleibt.",
+            "round99NetWarning": "Die Verkaufspreise sind netto hinterlegt. Der Nettopreis wird aus dem gerundeten Bruttopreis zurückgerechnet; Rechnungen können um einen Cent vom Warenkorb abweichen. Empfohlen: Verkaufspreise brutto führen (Einstellung weiter oben).",
+            "invalidPercent": "Ein Abschlag von 100 % oder mehr ist nicht möglich.",
+            "saved": "Gespeichert.",
+            "republishQueued": "Gespeichert. Die Produktseiten werden mit den neuen Preisen neu geschrieben.",
+            "saveError": "Die Kanaleinstellungen konnten nicht gespeichert werden.",
+            "loadError": "Die Verkaufskanäle konnten nicht geladen werden."
+        },
+        "ebayCondition": {
+            "NEW": "Neu",
+            "USED_EXCELLENT": "Gebraucht – sehr gut",
+            "USED_GOOD": "Gebraucht – gut",
+            "USED_ACCEPTABLE": "Gebraucht – akzeptabel",
+            "FOR_PARTS_OR_NOT_WORKING": "Defekt / als Ersatzteil"
+        },
+        "errors": {
+            "API_ERROR": "Die Aktion ist fehlgeschlagen.",
+            "NETWORK_ERROR": "Der Server ist nicht erreichbar. Bitte die Verbindung prüfen und erneut versuchen.",
+            "API_DATABASE_ERROR": "Die Datenbank antwortet nicht wie erwartet. Bitte den Administrator verständigen.",
+            "API_INTERNAL_ERROR": "Im Server ist ein unerwarteter Fehler aufgetreten. Bitte den Administrator verständigen.",
+            "NO_PERMISSION": "Für diese Aktion fehlt die Berechtigung."
         }
     }
 }

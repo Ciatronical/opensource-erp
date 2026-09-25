@@ -19,7 +19,11 @@
             "hints": "Need andmed on veel puudu. Pood töötab, kuid piiratult:",
             "partsWithShopData": "Poeandmetega artiklid",
             "carts": "Ostukorvid",
-            "sessions": "Seansid"
+            "sessions": "Seansid",
+            "recommendations": "Soovitused:",
+            "recommendation": {
+                "channel_round_99_net": "Ümardamine ,99-ni on sisse lülitatud, kuid müügihinnad on salvestatud netona. Brutohindadega ühtivad ostukorv ja arve alati sendi täpsusega."
+            }
         },
         "orders": {
             "title": "Tellimused",
@@ -70,7 +74,7 @@
         "partCard": {
             "title": "Pood",
             "listed": "Paku poes",
-            "listedHint": "Poe otsingus kuvatakse ainult poeandmetega artikleid.",
+            "listedHint": "Poes kuvatakse ainult tooteid, mida pakutakse vähemalt ühes müügikanalis.",
             "category": "Kategooria",
             "hyperlink": "Tooteleht",
             "hyperlinkHint": "Tootelehe tee poe veebisaidil ilma baasaadressita. Soovituse kasutamiseks jäta tühjaks.",
@@ -93,7 +97,50 @@
             "noPermission": "Teil puudub õigus poeandmeid muuta.",
             "publish": "Avalda",
             "publishQueued": "Ülesanne loodud.",
-            "publishAlready": "Ülesanne on juba ootel."
+            "publishAlready": "Ülesanne on juba ootel.",
+            "channels": "Müügikanalid",
+            "markup": "Juurdehindlus",
+            "markupDefault": "Kanali vaikeväärtus ({vorgabe})",
+            "markupNone": "Juurdehindluseta",
+            "markupPercent": "Juurdehindlus protsentides",
+            "markupAmount": "Fikseeritud juurdehindlus",
+            "markupValue": "Väärtus",
+            "markupAmountNet": "Netosumma, nagu müügihind",
+            "markupAmountGross": "Brutosumma, nagu müügihind",
+            "defaultNone": "juurdehindluseta",
+            "basePrice": "Baashind",
+            "channelPrice": "Hind kanalis",
+            "net": "neto",
+            "gross": "bruto",
+            "rounded99": "Brutohind ümardatud ,99-ni",
+            "pricePreview": "Eelvaade selle vormi müügihinna ja kirjendusrühmaga.",
+            "channelTitle": "Kirjeldus kanalis",
+            "channelTitleHint": "Jäta tühjaks, et kasutada toote kirjeldust.",
+            "channelDescription": "Pikk kirjeldus kanalis",
+            "channelDescriptionHint": "Jäta tühjaks, et kasutada toote pikka kirjeldust.",
+            "serviceNotOnMarketplace": "Teenuseid turuplatsidel ei pakuta.",
+            "channelImages": "Pildid kanalile {kanal}",
+            "imagesAfterCreate": "Pilte saab lisada pärast toote loomist.",
+            "moveLeft": "Liiguta ettepoole",
+            "moveRight": "Liiguta tahapoole",
+            "removeImage": "Eemalda pilt",
+            "addImage": "Lisa pilt",
+            "copyImagesFrom": "Võta pildid üle kanalist {kanal}",
+            "imagesCopied": "Üle võetud pilte: {anzahl}.",
+            "imageError": "Pilti ei õnnestunud töödelda.",
+            "syncStatus": "Seis kanalis {kanal}",
+            "listingId": "Kuulutus {id}",
+            "ebayCategory": "eBay kategooria",
+            "ebayCondition": "Seisukord",
+            "channelDefault": "Vaikeväärtus seadetest",
+            "channelDefaultHint": "Jäta tühjaks, et kasutada seadete vaikeväärtust.",
+            "sync": {
+                "active": "avaldatud",
+                "ended": "lõpetatud",
+                "error": "viga",
+                "pending": "edastatakse",
+                "none": "veel edastamata"
+            }
         },
         "publish": {
             "title": "Avaldamine",
@@ -131,9 +178,44 @@
                 "publish_part": "Kirjuta tootelehekülg",
                 "publish_all": "Kõik tooted",
                 "remove_part": "Eemalda tootelehekülg",
+                "remove_all": "Eemalda kõik tootelehed",
                 "sync_kit": "Sünkrooni pakett",
                 "reconcile_payments": "Võrdle makseid"
             }
+        },
+        "channels": {
+            "hugoshop": "HugoShop",
+            "ebay": "eBay",
+            "amazon": "Amazon"
+        },
+        "channelConfig": {
+            "title": "Müügikanalid",
+            "intro": "Kanali vaikeväärtused kõigile toodetele, millel pole oma juurdehindlust. Baashind on toote müügihind.",
+            "parts": "{anzahl} toodet",
+            "active": "Kanal sisse lülitatud",
+            "activeLast": "Vähemalt üks müügikanal peab olema sisse lülitatud.",
+            "round99": "Ümarda brutohind üles ,99-ni",
+            "round99Hint": "12,30 muutub 12,99-ks ja 13,00 13,99-ks. Hind ,99-ga jääb samaks.",
+            "round99NetWarning": "Müügihinnad on salvestatud netona. Netohind arvutatakse ümardatud brutohinnast; arved võivad ostukorvist erineda ühe sendi võrra. Soovitus: pidage müügihindu brutona (seade eespool).",
+            "invalidPercent": "100 % või suurem allahindlus pole võimalik.",
+            "saved": "Salvestatud.",
+            "republishQueued": "Salvestatud. Tootelehed kirjutatakse uute hindadega üle.",
+            "saveError": "Kanali seadeid ei õnnestunud salvestada.",
+            "loadError": "Müügikanaleid ei õnnestunud laadida."
+        },
+        "ebayCondition": {
+            "NEW": "Uus",
+            "USED_EXCELLENT": "Kasutatud – väga hea",
+            "USED_GOOD": "Kasutatud – hea",
+            "USED_ACCEPTABLE": "Kasutatud – rahuldav",
+            "FOR_PARTS_OR_NOT_WORKING": "Defektne / varuosadeks"
+        },
+        "errors": {
+            "API_ERROR": "Toiming ebaõnnestus.",
+            "NETWORK_ERROR": "Server pole kättesaadav. Kontrollige ühendust ja proovige uuesti.",
+            "API_DATABASE_ERROR": "Andmebaas ei vasta ootuspäraselt. Palun teavitage administraatorit.",
+            "API_INTERNAL_ERROR": "Serveris tekkis ootamatu viga. Palun teavitage administraatorit.",
+            "NO_PERMISSION": "Teil puudub selle toimingu jaoks õigus."
         }
     }
 }

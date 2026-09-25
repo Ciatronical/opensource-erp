@@ -264,6 +264,14 @@ function shopPublicDispatch(array $erlaubteAktionen): void {
     $uuid = shopPublicContextUuid($fremdeHerkunft);
 
     try {
+        // Abgeschalteter HugoShop (V16): nichts Neues verkaufen. Was schon
+        // läuft — eine begonnene PayPal-Zahlung, Konto, Rechnungen, Widerruf —
+        // bleibt erreichbar.
+        if (in_array($aktion, shopClosedActions(), true) && !shopIsOpen($db)) {
+            resultInfo(false, 'SHOP_CLOSED', null, 'Der Shop nimmt derzeit keine Bestellungen an');
+            return;
+        }
+
         $aktion($db, $uuid, $daten);
     } catch (ApiError $e) {
         resultInfo(false, $e->getId(), null, $e->getMessage());

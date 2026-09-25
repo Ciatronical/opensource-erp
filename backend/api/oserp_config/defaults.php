@@ -36,10 +36,16 @@ function getCompanyConfig($data) {
                         -- in HugoCMS. Der Einstellungen-Tab zeigt sie deshalb leer an;
                         -- cleanData() im Frontend uebergeht leere Felder, ein leer
                         -- gelassenes Feld laesst den gespeicherten Wert also unangetastet.
+                        --
+                        -- ebay_client_secret und ebay_refresh_token geben Zugriff auf das
+                        -- eBay-Verkaeuferkonto, ebay_access_token* ist der Token-Cache
+                        -- dazu (dev/shop-verkaufskanaele.md, Schritt 5).
                         SELECT json_object_agg(key, value) FROM defaults_oserp
                         WHERE key NOT IN ('aag_online_token', 'aag_online_token_exp',
                                           'shop_paypal_live_secret', 'shop_paypal_sandbox_secret',
-                                          'shop_public_key', 'shop_hugocms_key')
+                                          'shop_public_key', 'shop_hugocms_key',
+                                          'ebay_client_secret', 'ebay_refresh_token',
+                                          'ebay_access_token', 'ebay_access_token_exp')
                     ),
                     'business_types', (
                         SELECT json_agg(business) FROM (SELECT * FROM business) AS business
@@ -210,10 +216,11 @@ function getDefaults($data) {
     try {
         $db = DbhCompany::begin();
 
-        // Zurueckgehaltene Werte: aag_online_token* sind serverseitiger
-        // Token-Cache, die drei Shop-Geheimnisse wuerden ausreichen, um
-        // Zahlungen abzuwickeln oder den oeffentlichen Shop-Zugang zu
-        // uebernehmen. Sie gehen auch dann nicht an den Client, wenn die
+        // Zurueckgehaltene Werte: aag_online_token* und ebay_access_token*
+        // sind serverseitiger Token-Cache, die Shop-Geheimnisse wuerden
+        // ausreichen, um Zahlungen abzuwickeln oder den oeffentlichen
+        // Shop-Zugang zu uebernehmen, die eBay-Geheimnisse das
+        // Verkaeuferkonto. Sie gehen auch dann nicht an den Client, wenn die
         // Oberflaeche sie ohnehin leer anzeigen wuerde.
         //
         // Damit die Oberflaeche "hinterlegt, leer lassen zum Behalten" von
@@ -226,14 +233,18 @@ function getDefaults($data) {
                 (SELECT COALESCE(json_object_agg(key, value), '{}') FROM defaults_oserp
                     WHERE key NOT IN ('aag_online_token', 'aag_online_token_exp',
                                       'shop_paypal_live_secret', 'shop_paypal_sandbox_secret',
-                                      'shop_public_key', 'shop_hugocms_key')) AS defaults_oserp,
+                                      'shop_public_key', 'shop_hugocms_key',
+                                      'ebay_client_secret', 'ebay_refresh_token',
+                                      'ebay_access_token', 'ebay_access_token_exp')) AS defaults_oserp,
                 (SELECT json_object_agg(k.key, EXISTS (
                             SELECT 1 FROM defaults_oserp d
                              WHERE d.key = k.key AND btrim(COALESCE(d.value, '')) <> ''))
                    FROM (VALUES ('shop_public_key'),
                                 ('shop_paypal_live_secret'),
                                 ('shop_paypal_sandbox_secret'),
-                                ('shop_hugocms_key')) AS k(key)) AS defaults_oserp_secrets"
+                                ('shop_hugocms_key'),
+                                ('ebay_client_secret'),
+                                ('ebay_refresh_token')) AS k(key)) AS defaults_oserp_secrets"
         );
 
         $defaults = json_decode($result['defaults'] ?? '{}', true) ?: [];

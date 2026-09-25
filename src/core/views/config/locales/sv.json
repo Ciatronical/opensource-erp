@@ -925,7 +925,21 @@
         "shopPublishMode": "Driftläge",
         "shopPublishMode_help": "Lokalt: webbplatsen ligger på den här servern; OpensourceERP skriver in filerna och bygger den själv. HugoCMS: webbplatsen körs på en egen webbserver; OpensourceERP överför filerna till HugoCMS, som bygger den där. Katalog- och programfälten nedan gäller då inte.",
         "shopPublishModeLocal": "Lokalt — webbplats på den här servern",
-        "shopPublishModeHugoCms": "HugoCMS — webbplats på egen webbserver"
+        "shopPublishModeHugoCms": "HugoCMS — webbplats på egen webbserver",
+        "shopAutoPublish": "Skriv om produktsidor automatiskt vid prisändringar",
+        "shopAutoPublish_help": "Skapar ett publiceringsjobb när försäljningspris, bokföringsgrupp, påslag, beskrivning eller lång beskrivning för en artikel i HugoShop ändras, samt när kanalens standardvärden eller brutto/netto-inställningen ändras. Utan den här inställningen visar sidorna det gamla priset tills de publiceras manuellt.",
+        "shopChannelOffPages": "Sidor när HugoShop stängs av",
+        "shopChannelOffPages_help": "Vad som händer med produktsidorna när HugoShop stängs av under ”Försäljningskanaler”. När den slås på igen publiceras alla sidor på nytt.",
+        "shopChannelOffPagesDraft": "Behåll som utkast (publiceras inte längre)",
+        "shopChannelOffPagesRemove": "Ta bort",
+        "shopEbay": "eBay",
+        "shopEbay_help": "Åtkomst, standardvärden för annonser och orderimport för eBay-kanalen. eBay slås på och av ovan under ”Försäljningskanaler”.",
+        "ebayPublicHost": "Offentlig adress för bilder",
+        "ebayPublicHost_help": "Adressen till den här servern som eBay hämtar artikelbilderna från (https, utan sökväg), t.ex. erp.example.se. Krävs eftersom annonser läggs upp i bakgrunden.",
+        "ebayEnvironmentProduction": "Produktion",
+        "ebayEnvironmentSandbox": "Sandlåda (test)",
+        "ebayMoved": "eBay är nu en försäljningskanal i butikstillägget. Inställningarna finns på fliken Butik under ”eBay”, annonserna i artikelns butikskort.",
+        "ebayNeedsShop": "eBay är påslaget, men butikstillägget är det inte. Utan det läggs inga annonser upp och inga ordrar hämtas — aktivera butikstillägget."
     },
     "add": "Lagg till",
     "add_fields": {

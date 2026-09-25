@@ -280,11 +280,14 @@ function shopCategoryGroupsFile($db, bool $anlegen = false): string {
  */
 function shopCategoryCounts($db): array {
     $zeilen = $db->getAll(
-        "SELECT btrim(hugoshop_category) AS name, count(*) AS product_count
-           FROM parts_ext
-          WHERE btrim(COALESCE(hugoshop_category, '')) <> ''
-          GROUP BY btrim(hugoshop_category)
-          ORDER BY btrim(hugoshop_category)"
+        "SELECT btrim(pe.hugoshop_category) AS name, count(*) AS product_count
+           FROM parts_ext pe
+           JOIN parts_channel_shop pc ON pc.parts_id = pe.parts_id
+                                     AND pc.channel_id = shop_active_channel_id('hugoshop')
+                                     AND pc.active
+          WHERE btrim(COALESCE(pe.hugoshop_category, '')) <> ''
+          GROUP BY btrim(pe.hugoshop_category)
+          ORDER BY btrim(pe.hugoshop_category)"
     );
 
     $kategorien = [];

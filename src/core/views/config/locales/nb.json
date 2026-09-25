@@ -925,7 +925,21 @@
         "shopPublishMode": "Driftsmodus",
         "shopPublishMode_help": "Lokal: Nettstedet ligger på denne serveren; OpensourceERP skriver filene inn og bygger det selv. HugoCMS: Nettstedet kjører på sin egen webserver; OpensourceERP overfører filene til HugoCMS, som bygger det der. Katalog- og programfeltene nedenfor gjelder da ikke.",
         "shopPublishModeLocal": "Lokal — nettsted på denne serveren",
-        "shopPublishModeHugoCms": "HugoCMS — nettsted på egen webserver"
+        "shopPublishModeHugoCms": "HugoCMS — nettsted på egen webserver",
+        "shopAutoPublish": "Skriv produktsider automatisk på nytt ved prisendringer",
+        "shopAutoPublish_help": "Oppretter en publiseringsjobb når salgspris, posteringsgruppe, påslag, beskrivelse eller lang beskrivelse for en vare i HugoShop endres, samt når kanalens standardverdier eller brutto/netto-innstillingen endres. Uten denne innstillingen viser sidene den gamle prisen til de publiseres manuelt.",
+        "shopChannelOffPages": "Sider når HugoShop slås av",
+        "shopChannelOffPages_help": "Hva som skjer med produktsidene når HugoShop slås av under «Salgskanaler». Når den slås på igjen, publiseres alle sider på nytt.",
+        "shopChannelOffPagesDraft": "Behold som utkast (publiseres ikke lenger)",
+        "shopChannelOffPagesRemove": "Fjern",
+        "shopEbay": "eBay",
+        "shopEbay_help": "Tilgang, standardverdier for annonser og ordreimport for eBay-kanalen. eBay slås på og av ovenfor under «Salgskanaler».",
+        "ebayPublicHost": "Offentlig adresse for bilder",
+        "ebayPublicHost_help": "Adressen til denne serveren som eBay henter varebildene fra (https, uten sti), f.eks. erp.example.no. Påkrevd fordi annonser legges ut i bakgrunnen.",
+        "ebayEnvironmentProduction": "Produksjon",
+        "ebayEnvironmentSandbox": "Sandkasse (test)",
+        "ebayMoved": "eBay er nå en salgskanal i butikkutvidelsen. Innstillingene finnes i fanen Butikk under «eBay», annonsene i varens butikkort.",
+        "ebayNeedsShop": "eBay er slått på, men butikkutvidelsen er ikke. Uten den legges ingen annonser ut og ingen ordrer hentes — aktiver butikkutvidelsen."
     },
     "add": "Legg til",
     "add_fields": {

@@ -78,6 +78,12 @@ export class ShopCart extends ShopElement {
           grid-template-columns: minmax(0, 1fr);
         }
       }
+      /* Nicht mehr angeboten (V23): Kauf erst nach dem Entfernen */
+      .not-offered {
+        display: inline-block;
+        margin: 0.25rem 0;
+        font-size: 0.85em;
+      }
       .thumb {
         display: block;
         width: 100%;
@@ -396,6 +402,9 @@ export class ShopCart extends ShopElement {
           <h3 class="title">
             <button type="button" @click=${() => this.#openProduct(pos)}>${pos.label}</button>
           </h3>
+          ${pos.offered === false
+            ? html`<div class="not-offered ${this.cls('alertError')}" role="status">${t('cart.notOffered')}</div>`
+            : ''}
 
           <div class="line">
             <span class="line-label">${t('cart.quantity')}:</span>

@@ -97,10 +97,22 @@ erledigten.
 | `publish_part` | Artikelkarte „Veröffentlichen" | Eine Produktseite schreiben |
 | `publish_all` | Shop-Übersicht | Alle Seiten der Artikel im Shop |
 | `remove_part` | Artikel aus dem Shop nehmen | Inhaltsdatei entfernen |
+| `remove_all` | Abschalten des HugoShop-Kanals bei `shop_channel_off_pages` = `remove` | Seiten aller im HugoShop angebotenen Artikel entfernen; beim Einschalten folgt `publish_all` |
+| `draft_all` | Abschalten des HugoShop-Kanals bei `shop_channel_off_pages` = `draft` (Vorgabe) | Seiten aller im HugoShop angebotenen Artikel als Entwurf (`draft: true`) neu schreiben; Hugo veröffentlicht sie nicht mehr |
 | `sync_kit` | von Hand | Paket abgleichen |
 | `reconcile_payments` | Läufer mit `--reconcile-payments` | Schwebende PayPal-Zahlungen nachfragen |
 
 Ein Ergebnis beginnt mit `ok:` oder `Fehler:`; Fehler stehen rot in der Liste.
+
+Jeder Auftrag gehört einem Verkaufskanal (`batchjob_hugoshop.channel_id`,
+`NULL` = HugoShop) und wird vom Modul dieses Kanals unter
+`backend/api/shop/channels/` abgearbeitet (dev/shop-verkaufskanaele.md,
+Schritt 4). Ist der HugoShop abgeschaltet und steht kein HugoShop-Auftrag an,
+lässt der Lauf Paket, Kategorieübersicht und Bau aus.
+
+`publish_part` und `publish_all` entstehen auch von selbst, wenn sich Preis
+oder Texte ändern (Trigger, dev/shop-verkaufskanaele.md V22) — abschaltbar
+mit `shop_auto_publish`.
 
 ### Wo Fehler landen
 

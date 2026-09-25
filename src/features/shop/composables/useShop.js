@@ -5,32 +5,74 @@
 // /shop/ ist ein anderer Einstiegspunkt und von hier nicht erreichbar.
 
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import axios from 'axios'
 
 const API_URL = '/api/shop/'
 
+/**
+ * Code und lesbare Meldung aus einer Fehlerantwort des Backends
+ *
+ * Im Fehlerfall steht in `text` nur der Code (etwa API_DATABASE_ERROR), die
+ * Einzelheiten in `payload` oder `debug`. Ist der Code übersetzt, steht die
+ * Übersetzung vorn und die Einzelheit dahinter — Mitarbeiter brauchen sie, um
+ * den Fehler weiterzugeben. Sonst bleibt nur die Einzelheit, im Notfall ein
+ * allgemeiner Satz; der blanke Code nie.
+ *
+ * @param {object} antwort response.data einer Anfrage an /api/shop/
+ * @param {object} i18n    { t, te } aus useI18n()
+ * @param {string} ersatz  Übersetzungsschlüssel, wenn nichts Lesbares vorliegt
+ * @returns {{code: string, text: string}}
+ */
+export function shopFehler(antwort, { t, te }, ersatz = 'ShopView.errors.API_ERROR') {
+    // Keine JSON-Antwort: Netz weg oder der Server kam nicht bis zur Ausgabe
+    if (!antwort || typeof antwort !== 'object') {
+        return { code: 'NETWORK_ERROR', text: t('ShopView.errors.NETWORK_ERROR') }
+    }
+    // api.call.php hängt bei unerwarteten Fehlern die Meldung an den Code an
+    const [code, ...rest] = String(antwort.text || 'API_ERROR').split(':')
+    const detail = [antwort.debug, antwort.payload, rest.join(':')]
+        .find(wert => typeof wert === 'string' && wert.trim() && wert !== code)
+        ?.trim()
+    const schluessel = `ShopView.errors.${code.trim()}`
+    if (te(schluessel)) {
+        return { code: code.trim(), text: detail ? `${t(schluessel)} (${detail})` : t(schluessel) }
+    }
+    return { code: code.trim(), text: detail || t(ersatz) }
+}
+
 export function useShop() {
+    const i18n = useI18n()
     const loading = ref(false)
     const error = ref(null)
+    const errorCode = ref(null)
+
+    function fehlerSetzen(antwort) {
+        const { code, text } = shopFehler(antwort, i18n)
+        errorCode.value = code
+        error.value = text
+    }
 
     /**
      * Ruft eine Aktion des Shop-Backends auf
      *
      * Fehler landen in error und werden nicht geworfen: die Ansichten zeigen
-     * sie an, statt mit einer leeren Seite abzubrechen.
+     * sie an, statt mit einer leeren Seite abzubrechen. error ist schon der
+     * lesbare Satz, errorCode der Code des Backends für Abfragen.
      */
     async function call(action, params = {}) {
         loading.value = true
         error.value = null
+        errorCode.value = null
         try {
             const response = await axios.post(API_URL, { action, ...params })
             if (response.data?.success === false) {
-                error.value = response.data.debug || response.data.text || 'FEHLER'
+                fehlerSetzen(response.data)
                 return null
             }
             return response.data?.payload ?? null
         } catch (e) {
-            error.value = e?.message || 'NETZWERKFEHLER'
+            fehlerSetzen(e?.response?.data)
             return null
         } finally {
             loading.value = false
@@ -64,6 +106,19 @@ export function useShop() {
 
     /** Nimmt den Artikel aus dem Shop */
     const deletePartShopData = (parts_id) => call('deletePartShopData', { parts_id })
+
+    /** Bild für einen Marktplatz-Kanal hochladen (inhalt als data:-Adresse) */
+    const uploadChannelImage = (parts_id, channel, filename, data) =>
+        call('uploadShopChannelImage', { parts_id, channel, filename, data })
+
+    /** Bild aus einem Marktplatz-Kanal entfernen */
+    const deleteChannelImage = (image_id) => call('deleteShopChannelImage', { image_id })
+
+    /** Reihenfolge der Bilder eines Marktplatz-Kanals setzen; das erste ist das Hauptbild */
+    const sortChannelImages = (parts_id, channel, ids) => call('sortShopChannelImages', { parts_id, channel, ids })
+
+    /** Bilder aus einem anderen Kanal übernehmen */
+    const copyChannelImages = (parts_id, from, to) => call('copyShopChannelImages', { parts_id, from, to })
 
     /** Nimmt einen Artikel in die Veröffentlichung auf */
     const publishPart = (parts_id) => call('publishShopPart', { parts_id })
@@ -111,6 +166,7 @@ export function useShop() {
     return {
         loading,
         error,
+        errorCode,
         publishPart,
         publishAll,
         fetchPublishJobs,
@@ -121,6 +177,10 @@ export function useShop() {
         fetchPartShopData,
         savePartShopData,
         deletePartShopData,
+        uploadChannelImage,
+        deleteChannelImage,
+        sortChannelImages,
+        copyChannelImages,
         fetchStatus,
         fetchOrders,
         fetchPendingPayments,

@@ -19,7 +19,11 @@
             "hints": "Aceste date lipsesc încă. Magazinul funcționează, dar limitat:",
             "partsWithShopData": "Articole cu date de magazin",
             "carts": "Coșuri",
-            "sessions": "Sesiuni"
+            "sessions": "Sesiuni",
+            "recommendations": "Recomandări:",
+            "recommendation": {
+                "channel_round_99_net": "Rotunjirea la ,99 este activată, dar prețurile de vânzare sunt salvate net. Cu prețuri de vânzare brute, coșul și factura coincid întotdeauna la ban."
+            }
         },
         "orders": {
             "title": "Comenzi",
@@ -70,7 +74,7 @@
         "partCard": {
             "title": "Magazin",
             "listed": "Oferă în magazin",
-            "listedHint": "Doar articolele cu date de magazin apar în căutarea magazinului.",
+            "listedHint": "În magazin apar doar articolele oferite în cel puțin un canal de vânzare.",
             "category": "Categorie",
             "hyperlink": "Pagina produsului",
             "hyperlinkHint": "Calea paginii produsului pe site-ul magazinului, fără adresa de bază. Lăsați gol pentru a folosi sugestia.",
@@ -93,7 +97,50 @@
             "noPermission": "Nu aveți dreptul să modificați datele de magazin.",
             "publish": "Publică",
             "publishQueued": "Sarcină creată.",
-            "publishAlready": "Sarcina este deja în așteptare."
+            "publishAlready": "Sarcina este deja în așteptare.",
+            "channels": "Canale de vânzare",
+            "markup": "Adaos",
+            "markupDefault": "Valoarea implicită a canalului ({vorgabe})",
+            "markupNone": "Fără adaos",
+            "markupPercent": "Adaos procentual",
+            "markupAmount": "Adaos fix",
+            "markupValue": "Valoare",
+            "markupAmountNet": "Sumă netă, ca prețul de vânzare",
+            "markupAmountGross": "Sumă brută, ca prețul de vânzare",
+            "defaultNone": "fără adaos",
+            "basePrice": "Preț de bază",
+            "channelPrice": "Preț în canal",
+            "net": "net",
+            "gross": "brut",
+            "rounded99": "Preț brut rotunjit la ,99",
+            "pricePreview": "Previzualizare cu prețul de vânzare și grupa contabilă din acest formular.",
+            "channelTitle": "Descriere în canal",
+            "channelTitleHint": "Lăsați gol pentru descrierea articolului.",
+            "channelDescription": "Descriere lungă în canal",
+            "channelDescriptionHint": "Lăsați gol pentru descrierea lungă a articolului.",
+            "serviceNotOnMarketplace": "Serviciile nu sunt oferite pe marketplace-uri.",
+            "channelImages": "Imagini pentru {kanal}",
+            "imagesAfterCreate": "Imaginile pot fi adăugate după crearea articolului.",
+            "moveLeft": "Mută în față",
+            "moveRight": "Mută în spate",
+            "removeImage": "Elimină imaginea",
+            "addImage": "Adaugă imagine",
+            "copyImagesFrom": "Preia imaginile din {kanal}",
+            "imagesCopied": "{anzahl} imagini preluate.",
+            "imageError": "Imaginea nu a putut fi procesată.",
+            "syncStatus": "Stare la {kanal}",
+            "listingId": "Anunț {id}",
+            "ebayCategory": "Categorie eBay",
+            "ebayCondition": "Stare",
+            "channelDefault": "Implicit din setări",
+            "channelDefaultHint": "Lăsați gol pentru valoarea implicită din setări.",
+            "sync": {
+                "active": "publicat",
+                "ended": "încheiat",
+                "error": "eroare",
+                "pending": "în transfer",
+                "none": "netransferat încă"
+            }
         },
         "publish": {
             "title": "Publicare",
@@ -131,9 +178,44 @@
                 "publish_part": "Scrie pagina produsului",
                 "publish_all": "Toate produsele",
                 "remove_part": "Șterge pagina produsului",
+                "remove_all": "Eliminați toate paginile de produs",
                 "sync_kit": "Sincronizează pachetul",
                 "reconcile_payments": "Reconciliază plățile"
             }
+        },
+        "channels": {
+            "hugoshop": "HugoShop",
+            "ebay": "eBay",
+            "amazon": "Amazon"
+        },
+        "channelConfig": {
+            "title": "Canale de vânzare",
+            "intro": "Valori implicite pe canal pentru toate articolele fără adaos propriu. Prețul de bază este prețul de vânzare al articolului.",
+            "parts": "{anzahl} articole",
+            "active": "Canal activat",
+            "activeLast": "Cel puțin un canal de vânzare trebuie să fie activat.",
+            "round99": "Rotunjire în sus a prețului brut la ,99",
+            "round99Hint": "12,30 devine 12,99, iar 13,00 devine 13,99. Un preț terminat în ,99 rămâne.",
+            "round99NetWarning": "Prețurile de vânzare sunt salvate net. Prețul net este calculat din prețul brut rotunjit; facturile pot diferi de coș cu un ban. Recomandat: gestionați prețurile de vânzare brut (setarea de mai sus).",
+            "invalidPercent": "O reducere de 100 % sau mai mare nu este posibilă.",
+            "saved": "Salvat.",
+            "republishQueued": "Salvat. Paginile de produs vor fi rescrise cu noile prețuri.",
+            "saveError": "Setările canalului nu au putut fi salvate.",
+            "loadError": "Canalele de vânzare nu au putut fi încărcate."
+        },
+        "ebayCondition": {
+            "NEW": "Nou",
+            "USED_EXCELLENT": "Folosit – excelent",
+            "USED_GOOD": "Folosit – bun",
+            "USED_ACCEPTABLE": "Folosit – acceptabil",
+            "FOR_PARTS_OR_NOT_WORKING": "Defect / pentru piese"
+        },
+        "errors": {
+            "API_ERROR": "Acțiunea a eșuat.",
+            "NETWORK_ERROR": "Serverul nu poate fi accesat. Verificați conexiunea și încercați din nou.",
+            "API_DATABASE_ERROR": "Baza de date nu răspunde conform așteptărilor. Vă rugăm anunțați administratorul.",
+            "API_INTERNAL_ERROR": "A apărut o eroare neașteptată pe server. Vă rugăm anunțați administratorul.",
+            "NO_PERMISSION": "Nu aveți permisiunea pentru această acțiune."
         }
     }
 }

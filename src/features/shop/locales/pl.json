@@ -19,7 +19,11 @@
             "hints": "Tych danych wciąż brakuje. Sklep działa, ale w ograniczonym zakresie:",
             "partsWithShopData": "Artykuły z danymi sklepu",
             "carts": "Koszyki",
-            "sessions": "Sesje"
+            "sessions": "Sesje",
+            "recommendations": "Zalecenia:",
+            "recommendation": {
+                "channel_round_99_net": "Zaokrąglanie do ,99 jest włączone, ale ceny sprzedaży są zapisane netto. Przy cenach brutto koszyk i faktura zawsze zgadzają się co do grosza."
+            }
         },
         "orders": {
             "title": "Zamówienia",
@@ -70,7 +74,7 @@
         "partCard": {
             "title": "Sklep",
             "listed": "Oferuj w sklepie",
-            "listedHint": "W wyszukiwarce sklepu pojawiają się tylko artykuły z danymi sklepu.",
+            "listedHint": "W sklepie pojawiają się tylko artykuły oferowane w co najmniej jednym kanale sprzedaży.",
             "category": "Kategoria",
             "hyperlink": "Strona produktu",
             "hyperlinkHint": "Ścieżka strony produktu w witrynie sklepu, bez adresu bazowego. Pozostaw puste, aby użyć propozycji.",
@@ -93,7 +97,50 @@
             "noPermission": "Nie masz uprawnień do zmiany danych sklepu.",
             "publish": "Opublikuj",
             "publishQueued": "Zadanie utworzone.",
-            "publishAlready": "Zadanie już czeka."
+            "publishAlready": "Zadanie już czeka.",
+            "channels": "Kanały sprzedaży",
+            "markup": "Narzut",
+            "markupDefault": "Domyślny narzut kanału ({vorgabe})",
+            "markupNone": "Bez narzutu",
+            "markupPercent": "Narzut procentowy",
+            "markupAmount": "Stały narzut",
+            "markupValue": "Wartość",
+            "markupAmountNet": "Kwota netto, jak cena sprzedaży",
+            "markupAmountGross": "Kwota brutto, jak cena sprzedaży",
+            "defaultNone": "bez narzutu",
+            "basePrice": "Cena bazowa",
+            "channelPrice": "Cena w kanale",
+            "net": "netto",
+            "gross": "brutto",
+            "rounded99": "Cena brutto zaokrąglona do ,99",
+            "pricePreview": "Podgląd z ceną sprzedaży i grupą księgową z tego formularza.",
+            "channelTitle": "Opis w kanale",
+            "channelTitleHint": "Pozostaw puste, aby użyć opisu artykułu.",
+            "channelDescription": "Długi opis w kanale",
+            "channelDescriptionHint": "Pozostaw puste, aby użyć długiego opisu artykułu.",
+            "serviceNotOnMarketplace": "Usługi nie są oferowane na platformach sprzedażowych.",
+            "channelImages": "Zdjęcia dla {kanal}",
+            "imagesAfterCreate": "Zdjęcia można dodać po utworzeniu artykułu.",
+            "moveLeft": "Przesuń do przodu",
+            "moveRight": "Przesuń do tyłu",
+            "removeImage": "Usuń zdjęcie",
+            "addImage": "Dodaj zdjęcie",
+            "copyImagesFrom": "Przejmij zdjęcia z {kanal}",
+            "imagesCopied": "Przejęto zdjęć: {anzahl}.",
+            "imageError": "Nie udało się przetworzyć zdjęcia.",
+            "syncStatus": "Stan w {kanal}",
+            "listingId": "Oferta {id}",
+            "ebayCategory": "Kategoria eBay",
+            "ebayCondition": "Stan",
+            "channelDefault": "Wartość domyślna z ustawień",
+            "channelDefaultHint": "Pozostaw puste, aby użyć wartości domyślnej z ustawień.",
+            "sync": {
+                "active": "wystawiona",
+                "ended": "zakończona",
+                "error": "błąd",
+                "pending": "przesyłanie",
+                "none": "jeszcze nie przesłano"
+            }
         },
         "publish": {
             "title": "Publikowanie",
@@ -131,9 +178,44 @@
                 "publish_part": "Zapisz stronę produktu",
                 "publish_all": "Wszystkie produkty",
                 "remove_part": "Usuń stronę produktu",
+                "remove_all": "Usuń wszystkie strony produktów",
                 "sync_kit": "Zsynchronizuj pakiet",
                 "reconcile_payments": "Uzgodnij płatności"
             }
+        },
+        "channels": {
+            "hugoshop": "HugoShop",
+            "ebay": "eBay",
+            "amazon": "Amazon"
+        },
+        "channelConfig": {
+            "title": "Kanały sprzedaży",
+            "intro": "Wartości domyślne kanału dla wszystkich artykułów bez własnego narzutu. Ceną bazową jest cena sprzedaży artykułu.",
+            "parts": "{anzahl} artykułów",
+            "active": "Kanał włączony",
+            "activeLast": "Co najmniej jeden kanał sprzedaży musi być włączony.",
+            "round99": "Zaokrąglij cenę brutto w górę do ,99",
+            "round99Hint": "12,30 zmienia się w 12,99, a 13,00 w 13,99. Cena kończąca się na ,99 pozostaje.",
+            "round99NetWarning": "Ceny sprzedaży są zapisane netto. Cena netto jest wyliczana z zaokrąglonej ceny brutto; faktury mogą różnić się od koszyka o grosz. Zalecane: prowadzić ceny sprzedaży brutto (ustawienie wyżej).",
+            "invalidPercent": "Rabat 100 % lub większy nie jest możliwy.",
+            "saved": "Zapisano.",
+            "republishQueued": "Zapisano. Strony produktów zostaną przepisane z nowymi cenami.",
+            "saveError": "Nie udało się zapisać ustawień kanału.",
+            "loadError": "Nie udało się wczytać kanałów sprzedaży."
+        },
+        "ebayCondition": {
+            "NEW": "Nowy",
+            "USED_EXCELLENT": "Używany – bardzo dobry",
+            "USED_GOOD": "Używany – dobry",
+            "USED_ACCEPTABLE": "Używany – dostateczny",
+            "FOR_PARTS_OR_NOT_WORKING": "Uszkodzony / na części"
+        },
+        "errors": {
+            "API_ERROR": "Akcja nie powiodła się.",
+            "NETWORK_ERROR": "Serwer jest nieosiągalny. Sprawdź połączenie i spróbuj ponownie.",
+            "API_DATABASE_ERROR": "Baza danych nie odpowiada zgodnie z oczekiwaniami. Proszę powiadomić administratora.",
+            "API_INTERNAL_ERROR": "Na serwerze wystąpił nieoczekiwany błąd. Proszę powiadomić administratora.",
+            "NO_PERMISSION": "Brak uprawnień do tej akcji."
         }
     }
 }

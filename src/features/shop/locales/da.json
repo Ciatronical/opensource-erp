@@ -19,7 +19,11 @@
             "hints": "Disse oplysninger mangler stadig. Butikken kører, men begrænset:",
             "partsWithShopData": "Varer med butiksdata",
             "carts": "Kurve",
-            "sessions": "Sessioner"
+            "sessions": "Sessioner",
+            "recommendations": "Anbefalinger:",
+            "recommendation": {
+                "channel_round_99_net": "Afrunding til ,99 er slået til, men salgspriserne er gemt netto. Med bruttosalgspriser stemmer kurv og faktura altid på øren."
+            }
         },
         "orders": {
             "title": "Ordrer",
@@ -70,7 +74,7 @@
         "partCard": {
             "title": "Butik",
             "listed": "Udbyd i butikken",
-            "listedHint": "Kun varer med butiksoplysninger vises i butikkens søgning.",
+            "listedHint": "Kun varer, der udbydes i mindst én salgskanal, vises i shoppen.",
             "category": "Kategori",
             "hyperlink": "Produktside",
             "hyperlinkHint": "Sti til produktsiden på butikkens websted, uden basisadresse. Lad feltet stå tomt for at bruge forslaget.",
@@ -93,7 +97,50 @@
             "noPermission": "Du har ikke tilladelse til at ændre butiksoplysninger.",
             "publish": "Offentliggør",
             "publishQueued": "Opgave oprettet.",
-            "publishAlready": "Opgaven er allerede åben."
+            "publishAlready": "Opgaven er allerede åben.",
+            "channels": "Salgskanaler",
+            "markup": "Tillæg",
+            "markupDefault": "Kanalens standard ({vorgabe})",
+            "markupNone": "Intet tillæg",
+            "markupPercent": "Tillæg i procent",
+            "markupAmount": "Fast tillæg",
+            "markupValue": "Værdi",
+            "markupAmountNet": "Nettobeløb, som salgsprisen",
+            "markupAmountGross": "Bruttobeløb, som salgsprisen",
+            "defaultNone": "uden tillæg",
+            "basePrice": "Grundpris",
+            "channelPrice": "Pris i kanalen",
+            "net": "netto",
+            "gross": "brutto",
+            "rounded99": "Bruttopris afrundet til ,99",
+            "pricePreview": "Forhåndsvisning med salgspris og bogføringsgruppe fra denne formular.",
+            "channelTitle": "Beskrivelse i kanalen",
+            "channelTitleHint": "Lad stå tomt for varens beskrivelse.",
+            "channelDescription": "Lang beskrivelse i kanalen",
+            "channelDescriptionHint": "Lad stå tomt for varens lange beskrivelse.",
+            "serviceNotOnMarketplace": "Tjenesteydelser udbydes ikke på markedspladser.",
+            "channelImages": "Billeder til {kanal}",
+            "imagesAfterCreate": "Billeder kan tilføjes, når varen er oprettet.",
+            "moveLeft": "Flyt frem",
+            "moveRight": "Flyt tilbage",
+            "removeImage": "Fjern billede",
+            "addImage": "Tilføj billede",
+            "copyImagesFrom": "Overtag billeder fra {kanal}",
+            "imagesCopied": "{anzahl} billeder overtaget.",
+            "imageError": "Billedet kunne ikke behandles.",
+            "syncStatus": "Status hos {kanal}",
+            "listingId": "Annonce {id}",
+            "ebayCategory": "eBay-kategori",
+            "ebayCondition": "Stand",
+            "channelDefault": "Standard fra indstillingerne",
+            "channelDefaultHint": "Lad stå tomt for standarden fra indstillingerne.",
+            "sync": {
+                "active": "udbudt",
+                "ended": "afsluttet",
+                "error": "fejl",
+                "pending": "overføres",
+                "none": "endnu ikke overført"
+            }
         },
         "publish": {
             "title": "Offentliggørelse",
@@ -131,9 +178,44 @@
                 "publish_part": "Skriv produktside",
                 "publish_all": "Alle produkter",
                 "remove_part": "Fjern produktside",
+                "remove_all": "Fjern alle produktsider",
                 "sync_kit": "Synkroniser pakke",
                 "reconcile_payments": "Afstem betalinger"
             }
+        },
+        "channels": {
+            "hugoshop": "HugoShop",
+            "ebay": "eBay",
+            "amazon": "Amazon"
+        },
+        "channelConfig": {
+            "title": "Salgskanaler",
+            "intro": "Standardværdier pr. kanal for alle varer uden eget tillæg. Grundprisen er varens salgspris.",
+            "parts": "{anzahl} varer",
+            "active": "Kanal slået til",
+            "activeLast": "Mindst én salgskanal skal være slået til.",
+            "round99": "Rund bruttopris op til ,99",
+            "round99Hint": "12,30 bliver til 12,99 og 13,00 til 13,99. En pris på ,99 forbliver.",
+            "round99NetWarning": "Salgspriserne er gemt netto. Nettoprisen beregnes ud fra den afrundede bruttopris; fakturaer kan afvige en øre fra kurven. Anbefalet: før salgspriser brutto (indstilling ovenfor).",
+            "invalidPercent": "En rabat på 100 % eller mere er ikke mulig.",
+            "saved": "Gemt.",
+            "republishQueued": "Gemt. Produktsiderne skrives igen med de nye priser.",
+            "saveError": "Kanalindstillingerne kunne ikke gemmes.",
+            "loadError": "Salgskanalerne kunne ikke indlæses."
+        },
+        "ebayCondition": {
+            "NEW": "Ny",
+            "USED_EXCELLENT": "Brugt – meget god",
+            "USED_GOOD": "Brugt – god",
+            "USED_ACCEPTABLE": "Brugt – acceptabel",
+            "FOR_PARTS_OR_NOT_WORKING": "Defekt / til reservedele"
+        },
+        "errors": {
+            "API_ERROR": "Handlingen mislykkedes.",
+            "NETWORK_ERROR": "Serveren kan ikke nås. Kontroller forbindelsen, og prøv igen.",
+            "API_DATABASE_ERROR": "Databasen svarer ikke som forventet. Kontakt venligst administratoren.",
+            "API_INTERNAL_ERROR": "Der opstod en uventet fejl på serveren. Kontakt venligst administratoren.",
+            "NO_PERMISSION": "Du har ikke tilladelse til denne handling."
         }
     }
 }

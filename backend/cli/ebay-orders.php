@@ -5,6 +5,8 @@
  *
  * Durchlaeuft alle Mandanten und importiert neue eBay-Bestellungen als
  * Ausgangsrechnungen (Kunde dublettenfrei, Rechnung + Hauptbuch-Buchung).
+ * Beruecksichtigt werden Mandanten mit aktiver Shop-Erweiterung und
+ * eingeschaltetem eBay-Kanal (Einstellungen → Shop → Verkaufskanaele).
  * Idempotent: bereits importierte Bestellungen werden uebersprungen
  * (ebay_orders.ebay_order_id UNIQUE).
  *
@@ -29,8 +31,12 @@ ob_start();
 require_once $baseDir.'/inc.php';
 ob_get_clean();
 
-// eBay-Import (zieht ebay.php + faktura.php nach)
-require_once $baseDir.'/ebay/import.php';
+// eBay-Import: der eBay-Kanal der Shop-Erweiterung (dev/shop-verkaufskanaele.md,
+// V15). publish.php bindet die Kanalmodule ein, darunter channels/ebay.php mit
+// dem Bestellimport; faktura.php liefert Rechnung und Buchung.
+require_once $baseDir.'/faktura/faktura.php';
+require_once $baseDir.'/shop/lib/config.php';
+require_once $baseDir.'/shop/lib/publish.php';
 
 // Eigene Namen (ebayCron*), da inc.php via auth.php bereits ein getClients()
 // fuer den HTTP-Kontext definiert.
@@ -92,13 +98,13 @@ foreach ($clients as $client) {
         ebayCronInitCompanyDb($pdo);
         $db = DbhCompany::begin();
 
-        $cfg = ebayLoadConfig($db);
-        if (!ebayIsEnabled($cfg)) {
-            // eBay fuer diesen Mandanten nicht aktiv -> still ueberspringen
+        // Nur Mandanten mit Shop-Erweiterung und eingeschaltetem eBay-Kanal
+        // (V14) — die uebrigen still ueberspringen
+        if (!isExtensionActive($db, 'shop') || !shopEbayActive($db)) {
             continue;
         }
 
-        $summary = ebayImportOrders($db, $cfg);
+        $summary = shopEbayImportOrders($db);
         $imported = intval($summary['imported'] ?? 0);
         $skipped  = intval($summary['skipped'] ?? 0);
         $totalImported += $imported;

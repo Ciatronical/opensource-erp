@@ -167,3 +167,18 @@ function shopConfigFloat($db, string $key, float $default = 0.0): float {
     $wert = filter_var(shopConfigValue($db, $key), FILTER_VALIDATE_FLOAT);
     return false === $wert ? $default : $wert;
 }
+
+/**
+ * Verkauft der HugoShop gerade?
+ *
+ * Nein, wenn sein Verkaufskanal abgeschaltet ist (dev/shop-verkaufskanaele.md,
+ * V8, V16). Der öffentliche Zugang lehnt dann alles ab, was einen neuen Kauf
+ * beginnt (shopClosedActions).
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @return bool
+ */
+function shopIsOpen($db): bool {
+    $zeile = $db->getOne("SELECT shop_active_channel_id('hugoshop') IS NOT NULL AS offen");
+    return in_array($zeile['offen'] ?? false, [true, 't', 1, '1'], true);
+}

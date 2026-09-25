@@ -925,7 +925,21 @@
         "shopPublishMode": "Veikimo režimas",
         "shopPublishMode_help": "Vietinis: svetainė yra šiame serveryje, OpensourceERP įrašo failus ir pats ją kuria. HugoCMS: svetainė veikia savo žiniatinklio serveryje, OpensourceERP perduoda failus į HugoCMS, kuris ją ten sukuria. Tada toliau esantys katalogų ir programos laukai negalioja.",
         "shopPublishModeLocal": "Vietinis — svetainė šiame serveryje",
-        "shopPublishModeHugoCms": "HugoCMS — svetainė savo žiniatinklio serveryje"
+        "shopPublishModeHugoCms": "HugoCMS — svetainė savo žiniatinklio serveryje",
+        "shopAutoPublish": "Keičiantis kainoms automatiškai perrašyti prekių puslapius",
+        "shopAutoPublish_help": "Sukuria publikavimo užduotį, kai HugoShop prekės pardavimo kaina, apskaitos grupė, antkainis, aprašymas ar išsamus aprašymas pasikeičia, taip pat pasikeitus kanalo numatytosioms reikšmėms ar nustatymui su/be PVM. Be šio nustatymo puslapiai rodo seną kainą, kol bus paskelbti rankiniu būdu.",
+        "shopChannelOffPages": "Puslapiai išjungus HugoShop",
+        "shopChannelOffPages_help": "Kas nutinka prekių puslapiams, kai HugoShop išjungiamas skiltyje „Pardavimo kanalai“. Vėl įjungus visi puslapiai paskelbiami iš naujo.",
+        "shopChannelOffPagesDraft": "Palikti kaip juodraštį (nebeskelbiama)",
+        "shopChannelOffPagesRemove": "Pašalinti",
+        "shopEbay": "eBay",
+        "shopEbay_help": "eBay kanalo prieiga, skelbimų numatytosios reikšmės ir užsakymų importas. eBay įjungiamas ir išjungiamas aukščiau skiltyje „Pardavimo kanalai“.",
+        "ebayPublicHost": "Viešas nuotraukų adresas",
+        "ebayPublicHost_help": "Šio serverio adresas, iš kurio eBay parsisiunčia prekių nuotraukas (https, be kelio), pvz., erp.example.lt. Privaloma, nes skelbimai dedami fone.",
+        "ebayEnvironmentProduction": "Gamyba",
+        "ebayEnvironmentSandbox": "Smėlio dėžė (testas)",
+        "ebayMoved": "eBay dabar yra parduotuvės plėtinio pardavimo kanalas. Nustatymai yra skirtuke Parduotuvė, skiltyje „eBay“, skelbimai – prekės parduotuvės kortelėje.",
+        "ebayNeedsShop": "eBay įjungtas, bet parduotuvės plėtinys ne. Be jo skelbimai nededami ir užsakymai negaunami – aktyvuokite parduotuvės plėtinį."
     },
     "add": "Pridėti",
     "add_fields": {

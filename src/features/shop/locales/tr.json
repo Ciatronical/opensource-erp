@@ -19,7 +19,11 @@
             "hints": "Bu bilgiler hâlâ eksik. Mağaza çalışıyor, ancak sınırlı:",
             "partsWithShopData": "Mağaza bilgisi olan ürünler",
             "carts": "Sepetler",
-            "sessions": "Oturumlar"
+            "sessions": "Oturumlar",
+            "recommendations": "Öneriler:",
+            "recommendation": {
+                "channel_round_99_net": "Yuvarlama ,99 etkin, ancak satış fiyatları net olarak kayıtlı. Brüt satış fiyatlarıyla sepet ve fatura her zaman kuruşu kuruşuna eşleşir."
+            }
         },
         "orders": {
             "title": "Siparişler",
@@ -70,7 +74,7 @@
         "partCard": {
             "title": "Mağaza",
             "listed": "Mağazada sun",
-            "listedHint": "Mağaza aramasında yalnızca mağaza bilgileri olan ürünler görünür.",
+            "listedHint": "Mağazada yalnızca en az bir satış kanalında sunulan ürünler görünür.",
             "category": "Kategori",
             "hyperlink": "Ürün sayfası",
             "hyperlinkHint": "Mağaza web sitesindeki ürün sayfasının yolu, temel adres olmadan. Öneriyi kullanmak için boş bırakın.",
@@ -93,7 +97,50 @@
             "noPermission": "Mağaza bilgilerini değiştirme yetkiniz yok.",
             "publish": "Yayımla",
             "publishQueued": "Görev oluşturuldu.",
-            "publishAlready": "Görev zaten bekliyor."
+            "publishAlready": "Görev zaten bekliyor.",
+            "channels": "Satış kanalları",
+            "markup": "Fiyat farkı",
+            "markupDefault": "Kanal varsayılanı ({vorgabe})",
+            "markupNone": "Fiyat farkı yok",
+            "markupPercent": "Yüzde olarak fiyat farkı",
+            "markupAmount": "Sabit fiyat farkı",
+            "markupValue": "Değer",
+            "markupAmountNet": "Net tutar, satış fiyatı gibi",
+            "markupAmountGross": "Brüt tutar, satış fiyatı gibi",
+            "defaultNone": "fiyat farkı yok",
+            "basePrice": "Temel fiyat",
+            "channelPrice": "Kanaldaki fiyat",
+            "net": "net",
+            "gross": "brüt",
+            "rounded99": "Brüt fiyat ,99'a yuvarlandı",
+            "pricePreview": "Bu formdaki satış fiyatı ve muhasebe grubuyla önizleme.",
+            "channelTitle": "Kanaldaki açıklama",
+            "channelTitleHint": "Ürün açıklamasını kullanmak için boş bırakın.",
+            "channelDescription": "Kanaldaki uzun açıklama",
+            "channelDescriptionHint": "Ürünün uzun açıklamasını kullanmak için boş bırakın.",
+            "serviceNotOnMarketplace": "Hizmetler pazaryerlerinde sunulmaz.",
+            "channelImages": "{kanal} için görseller",
+            "imagesAfterCreate": "Görseller, ürün oluşturulduktan sonra eklenebilir.",
+            "moveLeft": "Öne taşı",
+            "moveRight": "Geriye taşı",
+            "removeImage": "Görseli kaldır",
+            "addImage": "Görsel ekle",
+            "copyImagesFrom": "Görselleri {kanal} kanalından al",
+            "imagesCopied": "{anzahl} görsel alındı.",
+            "imageError": "Görsel işlenemedi.",
+            "syncStatus": "{kanal} durumu",
+            "listingId": "İlan {id}",
+            "ebayCategory": "eBay kategorisi",
+            "ebayCondition": "Durum",
+            "channelDefault": "Ayarlardaki varsayılan",
+            "channelDefaultHint": "Ayarlardaki varsayılanı kullanmak için boş bırakın.",
+            "sync": {
+                "active": "yayında",
+                "ended": "sonlandırıldı",
+                "error": "hata",
+                "pending": "aktarılıyor",
+                "none": "henüz aktarılmadı"
+            }
         },
         "publish": {
             "title": "Yayımlama",
@@ -131,9 +178,44 @@
                 "publish_part": "Ürün sayfasını yaz",
                 "publish_all": "Tüm ürünler",
                 "remove_part": "Ürün sayfasını kaldır",
+                "remove_all": "Tüm ürün sayfalarını kaldır",
                 "sync_kit": "Paketi eşitle",
                 "reconcile_payments": "Ödemeleri mutabık kıl"
             }
+        },
+        "channels": {
+            "hugoshop": "HugoShop",
+            "ebay": "eBay",
+            "amazon": "Amazon"
+        },
+        "channelConfig": {
+            "title": "Satış kanalları",
+            "intro": "Kendi fiyat farkı olmayan tüm ürünler için kanal varsayılanları. Temel fiyat, ürünün satış fiyatıdır.",
+            "parts": "{anzahl} ürün",
+            "active": "Kanal etkin",
+            "activeLast": "En az bir satış kanalı etkin olmalıdır.",
+            "round99": "Brüt fiyatı ,99'a yukarı yuvarla",
+            "round99Hint": "12,30, 12,99 olur ve 13,00, 13,99 olur. ,99 ile biten fiyat aynı kalır.",
+            "round99NetWarning": "Satış fiyatları net olarak kayıtlı. Net fiyat, yuvarlanmış brüt fiyattan hesaplanır; faturalar sepetten bir kuruş farklı olabilir. Önerilen: satış fiyatlarını brüt tutun (yukarıdaki ayar).",
+            "invalidPercent": "%100 veya daha fazla indirim mümkün değildir.",
+            "saved": "Kaydedildi.",
+            "republishQueued": "Kaydedildi. Ürün sayfaları yeni fiyatlarla yeniden yazılacak.",
+            "saveError": "Kanal ayarları kaydedilemedi.",
+            "loadError": "Satış kanalları yüklenemedi."
+        },
+        "ebayCondition": {
+            "NEW": "Yeni",
+            "USED_EXCELLENT": "İkinci el – mükemmel",
+            "USED_GOOD": "İkinci el – iyi",
+            "USED_ACCEPTABLE": "İkinci el – kabul edilebilir",
+            "FOR_PARTS_OR_NOT_WORKING": "Arızalı / yedek parça için"
+        },
+        "errors": {
+            "API_ERROR": "İşlem başarısız oldu.",
+            "NETWORK_ERROR": "Sunucuya ulaşılamıyor. Lütfen bağlantıyı kontrol edip tekrar deneyin.",
+            "API_DATABASE_ERROR": "Veritabanı beklendiği gibi yanıt vermiyor. Lütfen yöneticinize haber verin.",
+            "API_INTERNAL_ERROR": "Sunucuda beklenmeyen bir hata oluştu. Lütfen yöneticinize haber verin.",
+            "NO_PERMISSION": "Bu işlem için yetkiniz yok."
         }
     }
 }

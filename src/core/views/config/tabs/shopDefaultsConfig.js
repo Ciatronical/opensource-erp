@@ -27,6 +27,61 @@ const shopDefaultsConfig = [
     { name: "shop_tax_included", type: "checkbox", label: "crm_fields.shopTaxIncluded", tooltip: "crm_fields.shopTaxIncluded_help" },
     { name: "shop_active_price_source", type: "input", size: 40, fieldstyle: "max-width: 40ch", label: "crm_fields.shopActivePriceSource", tooltip: "crm_fields.shopActivePriceSource_help" },
 
+    // Verkaufskanäle (dev/shop-verkaufskanaele.md): eigene Tabelle statt
+    // defaults_oserp, deshalb eine Komponente der Shop-Erweiterung mit eigener
+    // Überschrift, die selbst lädt und speichert. Sie steht nach
+    // shop_tax_included, weil ein fester Aufschlag netto oder brutto gilt wie
+    // der Verkaufspreis.
+    { name: "shop_sales_channels", type: "component", component: "sales-channels" },
+
+    // eBay-Kanal (dev/shop-verkaufskanaele.md, Schritt 5): die Einstellungen
+    // der bisherigen eBay-Anbindung, unter ihren alten Schlüsseln. Ein- und
+    // ausgeschaltet wird der Kanal oben unter „Verkaufskanäle".
+    // action ebayPanel: Verbindungstest, Bestellabruf und Stand darunter.
+    {
+        name: "shop_ebay",
+        type: "group",
+        icon: "mdi-shopping",
+        label: "crm_fields.shopEbay",
+        tooltip: "crm_fields.shopEbay_help",
+        action: "ebayPanel",
+        fields: [
+            {
+                name: "ebay_environment", type: "select", fieldstyle: "max-width: 30ch",
+                items: [
+                    { title: "crm_fields.ebayEnvironmentProduction", value: "production" },
+                    { title: "crm_fields.ebayEnvironmentSandbox", value: "sandbox" },
+                ],
+                label: "crm_fields.ebayEnvironment", tooltip: "crm_fields.ebayEnvironment_help"
+            },
+            { name: "ebay_marketplace_id", type: "input", size: 20, fieldstyle: "max-width: 20ch", label: "crm_fields.ebayMarketplaceId", tooltip: "crm_fields.ebayMarketplaceId_help" },
+            { name: "ebay_client_id", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.ebayClientId", tooltip: "crm_fields.ebayClientId_help" },
+            // Geheimnisse: werden nicht ausgeliefert, leer lassen behält den Wert
+            { name: "ebay_client_secret", type: "password", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.ebayClientSecret", tooltip: "crm_fields.ebayClientSecret_help" },
+            { name: "ebay_refresh_token", type: "password", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.ebayRefreshToken", tooltip: "crm_fields.ebayRefreshToken_help" },
+            { name: "ebay_public_host", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.ebayPublicHost", tooltip: "crm_fields.ebayPublicHost_help" },
+            { name: "ebay_default_category_id", type: "input", size: 20, fieldstyle: "max-width: 30ch", label: "crm_fields.ebayCategoryId", tooltip: "crm_fields.ebayCategoryId_help" },
+            {
+                name: "ebay_default_condition", type: "select", fieldstyle: "max-width: 40ch",
+                items: [
+                    { title: "ShopView.ebayCondition.NEW", value: "NEW" },
+                    { title: "ShopView.ebayCondition.USED_EXCELLENT", value: "USED_EXCELLENT" },
+                    { title: "ShopView.ebayCondition.USED_GOOD", value: "USED_GOOD" },
+                    { title: "ShopView.ebayCondition.USED_ACCEPTABLE", value: "USED_ACCEPTABLE" },
+                    { title: "ShopView.ebayCondition.FOR_PARTS_OR_NOT_WORKING", value: "FOR_PARTS_OR_NOT_WORKING" },
+                ],
+                label: "crm_fields.ebayCondition", tooltip: "crm_fields.ebayCondition_help"
+            },
+            { name: "ebay_payment_policy_id", type: "input", size: 30, fieldstyle: "max-width: 40ch", label: "crm_fields.ebayPaymentPolicy", tooltip: "crm_fields.ebayPaymentPolicy_help" },
+            { name: "ebay_return_policy_id", type: "input", size: 30, fieldstyle: "max-width: 40ch", label: "crm_fields.ebayReturnPolicy", tooltip: "crm_fields.ebayReturnPolicy_help" },
+            { name: "ebay_fulfillment_policy_id", type: "input", size: 30, fieldstyle: "max-width: 40ch", label: "crm_fields.ebayFulfillmentPolicy", tooltip: "crm_fields.ebayFulfillmentPolicy_help" },
+            { name: "ebay_merchant_location_key", type: "input", size: 30, fieldstyle: "max-width: 40ch", label: "crm_fields.ebayLocationKey", tooltip: "crm_fields.ebayLocationKey_help" },
+            // Bestellimport
+            { name: "ebay_default_parts_id", type: "input", inputType: "number", size: 10, fieldstyle: "max-width: 20ch", label: "crm_fields.ebayDefaultPartsId", tooltip: "crm_fields.ebayDefaultPartsId_help" },
+            { name: "ebay_employee_login", type: "input", size: 30, fieldstyle: "max-width: 30ch", label: "crm_fields.ebayEmployeeLogin", tooltip: "crm_fields.ebayEmployeeLogin_help" },
+        ],
+    },
+
     { name: "shop_shipping", type: "headline", label: "crm_fields.shopShipping" },
 
     { name: "shop_shipping_partnumber", type: "input", size: 20, fieldstyle: "max-width: 25ch", label: "crm_fields.shopShippingPartnumber", tooltip: "crm_fields.shopShippingPartnumber_help" },
@@ -131,6 +186,19 @@ const shopDefaultsConfig = [
     { name: "shop_publish_command_path", type: "input", size: 60, fieldstyle: "max-width: 60ch", validate: "absolutePath", label: "crm_fields.shopPublishCommandPath", tooltip: "crm_fields.shopPublishCommandPath_help" },
     { name: "shop_publish_clean_destination", type: "checkbox", label: "crm_fields.shopPublishCleanDestination", tooltip: "crm_fields.shopPublishCleanDestination_help" },
     { name: "shop_job_retention_days", type: "input", inputType: "number", size: 10, fieldstyle: "max-width: 15ch", label: "crm_fields.shopJobRetentionDays", tooltip: "crm_fields.shopJobRetentionDays_help" },
+
+    // Verkaufskanäle (dev/shop-verkaufskanaele.md): Seiten bei Preisänderungen
+    // automatisch neu schreiben (V22) und was beim Abschalten des HugoShops mit
+    // den Seiten geschieht (V16) — Entwurf oder entfernen.
+    { name: "shop_auto_publish", type: "checkbox", label: "crm_fields.shopAutoPublish", tooltip: "crm_fields.shopAutoPublish_help" },
+    {
+        name: "shop_channel_off_pages", type: "select", fieldstyle: "max-width: 60ch",
+        items: [
+            { title: "crm_fields.shopChannelOffPagesDraft", value: "draft" },
+            { title: "crm_fields.shopChannelOffPagesRemove", value: "remove" },
+        ],
+        label: "crm_fields.shopChannelOffPages", tooltip: "crm_fields.shopChannelOffPages_help"
+    },
 
     // Anbindung an HugoCMS (dev/shop-hugocms-trennung.md): Adresse des
     // cms-api-Endpunkts der Shop-Webseite und der Schlüssel, den HugoCMS dort in

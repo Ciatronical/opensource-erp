@@ -925,7 +925,21 @@
         "shopPublishMode": "Töörežiim",
         "shopPublishMode_help": "Kohalik: veebisait asub selles serveris, OpensourceERP kirjutab failid sinna ja ehitab ise. HugoCMS: veebisait töötab oma veebiserveris, OpensourceERP kannab failid HugoCMS-i, mis selle seal ehitab. Allolevad kataloogi- ja programmiväljad siis ei kehti.",
         "shopPublishModeLocal": "Kohalik — veebisait selles serveris",
-        "shopPublishModeHugoCms": "HugoCMS — veebisait oma veebiserveris"
+        "shopPublishModeHugoCms": "HugoCMS — veebisait oma veebiserveris",
+        "shopAutoPublish": "Kirjuta tootelehed hinnamuutuste korral automaatselt üle",
+        "shopAutoPublish_help": "Loob avaldamistöö, kui HugoShopi toote müügihind, kirjendusrühm, juurdehindlus, kirjeldus või pikk kirjeldus muutub, samuti kanali vaikeväärtuste või bruto/neto seade muutumisel. Ilma selle seadeta näitavad lehed vana hinda, kuni need käsitsi avaldatakse.",
+        "shopChannelOffPages": "Lehed HugoShopi väljalülitamisel",
+        "shopChannelOffPages_help": "Mis juhtub tootelehtedega, kui HugoShop lülitatakse jaotises „Müügikanalid“ välja. Uuesti sisselülitamisel avaldatakse kõik lehed uuesti.",
+        "shopChannelOffPagesDraft": "Jäta mustandiks (enam ei avaldata)",
+        "shopChannelOffPagesRemove": "Eemalda",
+        "shopEbay": "eBay",
+        "shopEbay_help": "eBay kanali ligipääs, kuulutuste vaikeväärtused ja tellimuste import. eBay lülitatakse sisse ja välja ülal jaotises „Müügikanalid“.",
+        "ebayPublicHost": "Piltide avalik aadress",
+        "ebayPublicHost_help": "Selle serveri aadress, kust eBay tootepildid alla laadib (https, ilma teeta), nt erp.example.ee. Kohustuslik, sest kuulutused avaldatakse taustal.",
+        "ebayEnvironmentProduction": "Tootmine",
+        "ebayEnvironmentSandbox": "Liivakast (test)",
+        "ebayMoved": "eBay on nüüd poe laienduse müügikanal. Seaded on vahekaardil Pood jaotises „eBay“, kuulutused toote poekaardil.",
+        "ebayNeedsShop": "eBay on sisse lülitatud, poe laiendus aga mitte. Ilma selleta kuulutusi ei avaldata ega tellimusi ei laadita — palun aktiveeri poe laiendus."
     },
     "add": "Lisa",
     "add_fields": {

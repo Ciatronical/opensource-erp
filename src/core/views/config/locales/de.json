@@ -1128,7 +1128,21 @@
         "shopPublishMode": "Betriebsart",
         "shopPublishMode_help": "Lokal: Die Webseite liegt auf diesem Server, OpensourceERP schreibt die Dateien hinein und baut sie selbst. HugoCMS: Die Webseite liegt auf einem eigenen Webserver; OpensourceERP überträgt die Dateien an HugoCMS, das dort baut. Dann gelten die Verzeichnis- und Programmfelder darunter nicht.",
         "shopPublishModeLocal": "Lokal — Webseite auf diesem Server",
-        "shopPublishModeHugoCms": "HugoCMS — Webseite auf eigenem Webserver"
+        "shopPublishModeHugoCms": "HugoCMS — Webseite auf eigenem Webserver",
+        "shopAutoPublish": "Produktseiten bei Preisänderungen automatisch neu schreiben",
+        "shopAutoPublish_help": "Legt einen Auftrag zur Veröffentlichung an, wenn sich bei einem Artikel im HugoShop Verkaufspreis, Buchungsgruppe, Aufschlag, Beschreibung oder Langbeschreibung ändert, außerdem bei Änderung der Kanalvorgaben oder der Brutto-/Nettopreise. Ohne diese Einstellung zeigen die Seiten den alten Preis, bis sie von Hand veröffentlicht werden.",
+        "shopChannelOffPages": "Seiten beim Abschalten des HugoShops",
+        "shopChannelOffPages_help": "Was mit den Produktseiten geschieht, wenn der HugoShop unter „Verkaufskanäle“ abgeschaltet wird. Beim Wiedereinschalten werden alle Seiten neu veröffentlicht.",
+        "shopChannelOffPagesDraft": "Als Entwurf behalten (nicht mehr veröffentlicht)",
+        "shopChannelOffPagesRemove": "Entfernen",
+        "shopEbay": "eBay",
+        "shopEbay_help": "Zugang, Angebotsvorgaben und Bestellimport des eBay-Kanals. Ein- und ausgeschaltet wird eBay oben unter „Verkaufskanäle“.",
+        "ebayPublicHost": "Öffentliche Adresse für Bilder",
+        "ebayPublicHost_help": "Adresse dieses Servers, unter der eBay die Artikelbilder abholt (https, ohne Pfad), etwa erp.example.de. Pflicht, weil die Angebote im Hintergrund eingestellt werden.",
+        "ebayEnvironmentProduction": "Produktiv",
+        "ebayEnvironmentSandbox": "Sandbox (Test)",
+        "ebayMoved": "eBay ist jetzt ein Verkaufskanal der Shop-Erweiterung. Die Einstellungen stehen im Reiter Shop unter „eBay“, die Angebote in der Shop-Karte des Artikels.",
+        "ebayNeedsShop": "eBay ist eingeschaltet, die Shop-Erweiterung aber nicht. Ohne sie werden keine Angebote eingestellt und keine Bestellungen abgerufen — bitte die Shop-Erweiterung aktivieren."
     },
     "add": "Hinzufügen",
     "add_fields": {

@@ -19,7 +19,11 @@
             "hints": "Ces informations manquent encore. La boutique fonctionne, mais de façon limitée :",
             "partsWithShopData": "Articles avec données boutique",
             "carts": "Paniers",
-            "sessions": "Sessions"
+            "sessions": "Sessions",
+            "recommendations": "Recommandations :",
+            "recommendation": {
+                "channel_round_99_net": "L'arrondi à ,99 est activé, mais les prix de vente sont enregistrés HT. Avec des prix de vente TTC, le panier et la facture concordent toujours au centime près."
+            }
         },
         "orders": {
             "title": "Commandes",
@@ -70,7 +74,7 @@
         "partCard": {
             "title": "Boutique",
             "listed": "Proposer dans la boutique",
-            "listedHint": "Seuls les articles avec des données boutique apparaissent dans la recherche de la boutique.",
+            "listedHint": "Seuls les articles proposés dans au moins un canal de vente apparaissent dans la boutique.",
             "category": "Catégorie",
             "hyperlink": "Page produit",
             "hyperlinkHint": "Chemin de la page produit sur le site de la boutique, sans l'adresse de base. Laisser vide pour utiliser la suggestion.",
@@ -93,7 +97,50 @@
             "noPermission": "Vous n'êtes pas autorisé à modifier les données boutique.",
             "publish": "Publier",
             "publishQueued": "Tâche créée.",
-            "publishAlready": "La tâche est déjà en attente."
+            "publishAlready": "La tâche est déjà en attente.",
+            "channels": "Canaux de vente",
+            "markup": "Majoration",
+            "markupDefault": "Valeur par défaut du canal ({vorgabe})",
+            "markupNone": "Aucune majoration",
+            "markupPercent": "Majoration en pourcentage",
+            "markupAmount": "Majoration fixe",
+            "markupValue": "Valeur",
+            "markupAmountNet": "Montant HT, comme le prix de vente",
+            "markupAmountGross": "Montant TTC, comme le prix de vente",
+            "defaultNone": "sans majoration",
+            "basePrice": "Prix de base",
+            "channelPrice": "Prix dans le canal",
+            "net": "HT",
+            "gross": "TTC",
+            "rounded99": "Prix TTC arrondi à ,99",
+            "pricePreview": "Aperçu avec le prix de vente et le groupe comptable de ce formulaire.",
+            "channelTitle": "Description dans le canal",
+            "channelTitleHint": "Laisser vide pour la description de l'article.",
+            "channelDescription": "Description longue dans le canal",
+            "channelDescriptionHint": "Laisser vide pour la description longue de l'article.",
+            "serviceNotOnMarketplace": "Les prestations de service ne sont pas proposées sur les places de marché.",
+            "channelImages": "Images pour {kanal}",
+            "imagesAfterCreate": "Les images peuvent être ajoutées une fois l'article créé.",
+            "moveLeft": "Avancer",
+            "moveRight": "Reculer",
+            "removeImage": "Supprimer l'image",
+            "addImage": "Ajouter une image",
+            "copyImagesFrom": "Reprendre les images de {kanal}",
+            "imagesCopied": "{anzahl} images reprises.",
+            "imageError": "L'image n'a pas pu être traitée.",
+            "syncStatus": "État chez {kanal}",
+            "listingId": "Annonce {id}",
+            "ebayCategory": "Catégorie eBay",
+            "ebayCondition": "État",
+            "channelDefault": "Valeur par défaut des réglages",
+            "channelDefaultHint": "Laisser vide pour la valeur par défaut des réglages.",
+            "sync": {
+                "active": "en ligne",
+                "ended": "terminée",
+                "error": "erreur",
+                "pending": "en cours de transfert",
+                "none": "pas encore transférée"
+            }
         },
         "publish": {
             "title": "Publication",
@@ -131,9 +178,44 @@
                 "publish_part": "Écrire la page produit",
                 "publish_all": "Tous les produits",
                 "remove_part": "Supprimer la page produit",
+                "remove_all": "Supprimer toutes les pages produit",
                 "sync_kit": "Synchroniser le paquet",
                 "reconcile_payments": "Rapprocher les paiements"
             }
+        },
+        "channels": {
+            "hugoshop": "HugoShop",
+            "ebay": "eBay",
+            "amazon": "Amazon"
+        },
+        "channelConfig": {
+            "title": "Canaux de vente",
+            "intro": "Valeurs par défaut du canal pour tous les articles sans majoration propre. Le prix de base est le prix de vente de l'article.",
+            "parts": "{anzahl} articles",
+            "active": "Canal activé",
+            "activeLast": "Au moins un canal de vente doit être activé.",
+            "round99": "Arrondir le prix TTC à ,99 supérieur",
+            "round99Hint": "12,30 devient 12,99 et 13,00 devient 13,99. Un prix en ,99 reste inchangé.",
+            "round99NetWarning": "Les prix de vente sont enregistrés HT. Le prix HT est recalculé à partir du prix TTC arrondi ; les factures peuvent différer du panier d'un centime. Recommandé : gérer les prix de vente TTC (réglage plus haut).",
+            "invalidPercent": "Une remise de 100 % ou plus n'est pas possible.",
+            "saved": "Enregistré.",
+            "republishQueued": "Enregistré. Les pages produit seront réécrites avec les nouveaux prix.",
+            "saveError": "Les réglages du canal n'ont pas pu être enregistrés.",
+            "loadError": "Les canaux de vente n'ont pas pu être chargés."
+        },
+        "ebayCondition": {
+            "NEW": "Neuf",
+            "USED_EXCELLENT": "Occasion – excellent état",
+            "USED_GOOD": "Occasion – bon état",
+            "USED_ACCEPTABLE": "Occasion – état correct",
+            "FOR_PARTS_OR_NOT_WORKING": "Défectueux / pour pièces"
+        },
+        "errors": {
+            "API_ERROR": "L'action a échoué.",
+            "NETWORK_ERROR": "Le serveur est injoignable. Vérifiez la connexion et réessayez.",
+            "API_DATABASE_ERROR": "La base de données ne répond pas comme prévu. Veuillez prévenir l'administrateur.",
+            "API_INTERNAL_ERROR": "Une erreur inattendue s'est produite sur le serveur. Veuillez prévenir l'administrateur.",
+            "NO_PERMISSION": "Vous n'avez pas l'autorisation pour cette action."
         }
     }
 }

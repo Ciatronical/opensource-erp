@@ -19,7 +19,11 @@
             "hints": "Nämä tiedot puuttuvat vielä. Kauppa toimii, mutta rajoitetusti:",
             "partsWithShopData": "Tuotteet, joilla on kauppatiedot",
             "carts": "Ostoskorit",
-            "sessions": "Istunnot"
+            "sessions": "Istunnot",
+            "recommendations": "Suositukset:",
+            "recommendation": {
+                "channel_round_99_net": "Pyöristys ,99:ään on käytössä, mutta myyntihinnat on tallennettu netto. Bruttomyyntihinnoilla ostoskori ja lasku täsmäävät aina sentilleen."
+            }
         },
         "orders": {
             "title": "Tilaukset",
@@ -70,7 +74,7 @@
         "partCard": {
             "title": "Kauppa",
             "listed": "Tarjoa kaupassa",
-            "listedHint": "Vain tuotteet, joilla on kauppatiedot, näkyvät kaupan haussa.",
+            "listedHint": "Kaupassa näkyvät vain tuotteet, joita tarjotaan vähintään yhdessä myyntikanavassa.",
             "category": "Luokka",
             "hyperlink": "Tuotesivu",
             "hyperlinkHint": "Tuotesivun polku kaupan verkkosivustolla ilman perusosoitetta. Jätä tyhjäksi, niin ehdotusta käytetään.",
@@ -93,7 +97,50 @@
             "noPermission": "Sinulla ei ole oikeutta muuttaa kauppatietoja.",
             "publish": "Julkaise",
             "publishQueued": "Työ luotu.",
-            "publishAlready": "Työ on jo avoinna."
+            "publishAlready": "Työ on jo avoinna.",
+            "channels": "Myyntikanavat",
+            "markup": "Lisä",
+            "markupDefault": "Kanavan oletus ({vorgabe})",
+            "markupNone": "Ei lisää",
+            "markupPercent": "Prosenttilisä",
+            "markupAmount": "Kiinteä lisä",
+            "markupValue": "Arvo",
+            "markupAmountNet": "Nettosumma, kuten myyntihinta",
+            "markupAmountGross": "Bruttosumma, kuten myyntihinta",
+            "defaultNone": "ilman lisää",
+            "basePrice": "Perushinta",
+            "channelPrice": "Hinta kanavassa",
+            "net": "netto",
+            "gross": "brutto",
+            "rounded99": "Bruttohinta pyöristetty ,99:ään",
+            "pricePreview": "Esikatselu tämän lomakkeen myyntihinnalla ja kirjausryhmällä.",
+            "channelTitle": "Kuvaus kanavassa",
+            "channelTitleHint": "Jätä tyhjäksi, niin käytetään tuotteen kuvausta.",
+            "channelDescription": "Pitkä kuvaus kanavassa",
+            "channelDescriptionHint": "Jätä tyhjäksi, niin käytetään tuotteen pitkää kuvausta.",
+            "serviceNotOnMarketplace": "Palveluja ei tarjota kauppapaikoilla.",
+            "channelImages": "Kuvat kanavalle {kanal}",
+            "imagesAfterCreate": "Kuvia voi lisätä, kun tuote on luotu.",
+            "moveLeft": "Siirrä eteen",
+            "moveRight": "Siirrä taakse",
+            "removeImage": "Poista kuva",
+            "addImage": "Lisää kuva",
+            "copyImagesFrom": "Ota kuvat kanavasta {kanal}",
+            "imagesCopied": "{anzahl} kuvaa otettu.",
+            "imageError": "Kuvaa ei voitu käsitellä.",
+            "syncStatus": "Tila kanavassa {kanal}",
+            "listingId": "Ilmoitus {id}",
+            "ebayCategory": "eBay-luokka",
+            "ebayCondition": "Kunto",
+            "channelDefault": "Oletus asetuksista",
+            "channelDefaultHint": "Jätä tyhjäksi, niin käytetään asetusten oletusta.",
+            "sync": {
+                "active": "julkaistu",
+                "ended": "päättynyt",
+                "error": "virhe",
+                "pending": "siirretään",
+                "none": "ei vielä siirretty"
+            }
         },
         "publish": {
             "title": "Julkaiseminen",
@@ -131,9 +178,44 @@
                 "publish_part": "Kirjoita tuotesivu",
                 "publish_all": "Kaikki tuotteet",
                 "remove_part": "Poista tuotesivu",
+                "remove_all": "Poista kaikki tuotesivut",
                 "sync_kit": "Synkronoi paketti",
                 "reconcile_payments": "Täsmäytä maksut"
             }
+        },
+        "channels": {
+            "hugoshop": "HugoShop",
+            "ebay": "eBay",
+            "amazon": "Amazon"
+        },
+        "channelConfig": {
+            "title": "Myyntikanavat",
+            "intro": "Kanavan oletukset kaikille tuotteille, joilla ei ole omaa lisää. Perushinta on tuotteen myyntihinta.",
+            "parts": "{anzahl} tuotetta",
+            "active": "Kanava käytössä",
+            "activeLast": "Vähintään yhden myyntikanavan on oltava käytössä.",
+            "round99": "Pyöristä bruttohinta ylöspäin ,99:ään",
+            "round99Hint": "12,30:sta tulee 12,99 ja 13,00:sta 13,99. ,99:ään päättyvä hinta säilyy.",
+            "round99NetWarning": "Myyntihinnat on tallennettu netto. Nettohinta lasketaan pyöristetystä bruttohinnasta; laskut voivat poiketa ostoskorista sentillä. Suositus: pidä myyntihinnat bruttona (asetus ylempänä).",
+            "invalidPercent": "100 %:n tai suurempi alennus ei ole mahdollinen.",
+            "saved": "Tallennettu.",
+            "republishQueued": "Tallennettu. Tuotesivut kirjoitetaan uudelleen uusilla hinnoilla.",
+            "saveError": "Kanava-asetuksia ei voitu tallentaa.",
+            "loadError": "Myyntikanavia ei voitu ladata."
+        },
+        "ebayCondition": {
+            "NEW": "Uusi",
+            "USED_EXCELLENT": "Käytetty – erinomainen",
+            "USED_GOOD": "Käytetty – hyvä",
+            "USED_ACCEPTABLE": "Käytetty – tyydyttävä",
+            "FOR_PARTS_OR_NOT_WORKING": "Viallinen / varaosiksi"
+        },
+        "errors": {
+            "API_ERROR": "Toiminto epäonnistui.",
+            "NETWORK_ERROR": "Palvelimeen ei saada yhteyttä. Tarkista yhteys ja yritä uudelleen.",
+            "API_DATABASE_ERROR": "Tietokanta ei vastaa odotetusti. Ilmoita asiasta järjestelmänvalvojalle.",
+            "API_INTERNAL_ERROR": "Palvelimella tapahtui odottamaton virhe. Ilmoita asiasta järjestelmänvalvojalle.",
+            "NO_PERMISSION": "Sinulla ei ole oikeutta tähän toimintoon."
         }
     }
 }

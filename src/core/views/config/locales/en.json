@@ -1126,7 +1126,21 @@
         "shopPublishMode": "Operating mode",
         "shopPublishMode_help": "Local: the website is on this server; OpensourceERP writes the files into it and builds it itself. HugoCMS: the website runs on its own web server; OpensourceERP transfers the files to HugoCMS, which builds it there. The directory and program fields below then do not apply.",
         "shopPublishModeLocal": "Local — website on this server",
-        "shopPublishModeHugoCms": "HugoCMS — website on its own web server"
+        "shopPublishModeHugoCms": "HugoCMS — website on its own web server",
+        "shopAutoPublish": "Rewrite product pages automatically when prices change",
+        "shopAutoPublish_help": "Queues a publishing job when the sales price, posting group, markup, description or long description of an article in the HugoShop changes, and when the channel defaults or the gross/net setting change. Without this setting the pages show the old price until they are published manually.",
+        "shopChannelOffPages": "Pages when the HugoShop is disabled",
+        "shopChannelOffPages_help": "What happens to the product pages when the HugoShop is disabled under “Sales channels”. When it is enabled again, all pages are published anew.",
+        "shopChannelOffPagesDraft": "Keep as draft (no longer published)",
+        "shopChannelOffPagesRemove": "Remove",
+        "shopEbay": "eBay",
+        "shopEbay_help": "Access, listing defaults and order import of the eBay channel. eBay is enabled and disabled above under “Sales channels”.",
+        "ebayPublicHost": "Public address for images",
+        "ebayPublicHost_help": "Address of this server from which eBay fetches the article images (https, without path), e.g. erp.example.com. Required because listings are created in the background.",
+        "ebayEnvironmentProduction": "Production",
+        "ebayEnvironmentSandbox": "Sandbox (test)",
+        "ebayMoved": "eBay is now a sales channel of the shop extension. The settings are in the Shop tab under “eBay”, the listings in the article's shop card.",
+        "ebayNeedsShop": "eBay is enabled, but the shop extension is not. Without it no listings are created and no orders are fetched — please activate the shop extension."
     },
     "add": "Add",
     "add_fields": {

@@ -19,7 +19,11 @@
             "hints": "Šių duomenų dar trūksta. Parduotuvė veikia, bet ribotai:",
             "partsWithShopData": "Prekės su parduotuvės duomenimis",
             "carts": "Krepšeliai",
-            "sessions": "Seansai"
+            "sessions": "Seansai",
+            "recommendations": "Rekomendacijos:",
+            "recommendation": {
+                "channel_round_99_net": "Apvalinimas iki ,99 įjungtas, bet pardavimo kainos saugomos be PVM. Su kainomis su PVM krepšelis ir sąskaita visada sutampa iki cento."
+            }
         },
         "orders": {
             "title": "Užsakymai",
@@ -70,7 +74,7 @@
         "partCard": {
             "title": "Parduotuvė",
             "listed": "Siūlyti parduotuvėje",
-            "listedHint": "Parduotuvės paieškoje rodomos tik prekės su parduotuvės duomenimis.",
+            "listedHint": "Parduotuvėje rodomos tik prekės, siūlomos bent viename pardavimo kanale.",
             "category": "Kategorija",
             "hyperlink": "Prekės puslapis",
             "hyperlinkHint": "Prekės puslapio kelias parduotuvės svetainėje be bazinio adreso. Palikite tuščią, kad būtų naudojamas pasiūlymas.",
@@ -93,7 +97,50 @@
             "noPermission": "Neturite teisės keisti parduotuvės duomenų.",
             "publish": "Paskelbti",
             "publishQueued": "Užduotis sukurta.",
-            "publishAlready": "Užduotis jau laukia."
+            "publishAlready": "Užduotis jau laukia.",
+            "channels": "Pardavimo kanalai",
+            "markup": "Antkainis",
+            "markupDefault": "Kanalo numatytoji reikšmė ({vorgabe})",
+            "markupNone": "Be antkainio",
+            "markupPercent": "Antkainis procentais",
+            "markupAmount": "Fiksuotas antkainis",
+            "markupValue": "Reikšmė",
+            "markupAmountNet": "Suma be PVM, kaip pardavimo kaina",
+            "markupAmountGross": "Suma su PVM, kaip pardavimo kaina",
+            "defaultNone": "be antkainio",
+            "basePrice": "Bazinė kaina",
+            "channelPrice": "Kaina kanale",
+            "net": "be PVM",
+            "gross": "su PVM",
+            "rounded99": "Kaina su PVM suapvalinta iki ,99",
+            "pricePreview": "Peržiūra su šios formos pardavimo kaina ir apskaitos grupe.",
+            "channelTitle": "Aprašymas kanale",
+            "channelTitleHint": "Palikite tuščią, kad būtų naudojamas prekės aprašymas.",
+            "channelDescription": "Išsamus aprašymas kanale",
+            "channelDescriptionHint": "Palikite tuščią, kad būtų naudojamas išsamus prekės aprašymas.",
+            "serviceNotOnMarketplace": "Paslaugos prekyvietėse nesiūlomos.",
+            "channelImages": "Nuotraukos kanalui {kanal}",
+            "imagesAfterCreate": "Nuotraukas galima pridėti sukūrus prekę.",
+            "moveLeft": "Perkelti į priekį",
+            "moveRight": "Perkelti atgal",
+            "removeImage": "Pašalinti nuotrauką",
+            "addImage": "Pridėti nuotrauką",
+            "copyImagesFrom": "Perimti nuotraukas iš {kanal}",
+            "imagesCopied": "Perimta nuotraukų: {anzahl}.",
+            "imageError": "Nuotraukos nepavyko apdoroti.",
+            "syncStatus": "Būsena kanale {kanal}",
+            "listingId": "Skelbimas {id}",
+            "ebayCategory": "eBay kategorija",
+            "ebayCondition": "Būklė",
+            "channelDefault": "Numatytoji reikšmė iš nustatymų",
+            "channelDefaultHint": "Palikite tuščią, kad būtų naudojama numatytoji reikšmė.",
+            "sync": {
+                "active": "įdėta",
+                "ended": "baigta",
+                "error": "klaida",
+                "pending": "perduodama",
+                "none": "dar neperduota"
+            }
         },
         "publish": {
             "title": "Paskelbimas",
@@ -131,9 +178,44 @@
                 "publish_part": "Rašyti produkto puslapį",
                 "publish_all": "Visi produktai",
                 "remove_part": "Šalinti produkto puslapį",
+                "remove_all": "Pašalinti visus prekių puslapius",
                 "sync_kit": "Sinchronizuoti paketą",
                 "reconcile_payments": "Suderinti mokėjimus"
             }
+        },
+        "channels": {
+            "hugoshop": "HugoShop",
+            "ebay": "eBay",
+            "amazon": "Amazon"
+        },
+        "channelConfig": {
+            "title": "Pardavimo kanalai",
+            "intro": "Kanalo numatytosios reikšmės visoms prekėms be savo antkainio. Bazinė kaina yra prekės pardavimo kaina.",
+            "parts": "{anzahl} prekės",
+            "active": "Kanalas įjungtas",
+            "activeLast": "Turi būti įjungtas bent vienas pardavimo kanalas.",
+            "round99": "Suapvalinti kainą su PVM aukštyn iki ,99",
+            "round99Hint": "12,30 tampa 12,99, o 13,00 – 13,99. Kaina, kuri baigiasi ,99, lieka.",
+            "round99NetWarning": "Pardavimo kainos saugomos be PVM. Kaina be PVM apskaičiuojama iš suapvalintos kainos su PVM; sąskaitos gali skirtis nuo krepšelio vienu centu. Rekomenduojama: pardavimo kainas laikyti su PVM (nustatymas aukščiau).",
+            "invalidPercent": "100 % ar didesnė nuolaida negalima.",
+            "saved": "Išsaugota.",
+            "republishQueued": "Išsaugota. Prekių puslapiai bus perrašyti su naujomis kainomis.",
+            "saveError": "Nepavyko išsaugoti kanalo nustatymų.",
+            "loadError": "Nepavyko įkelti pardavimo kanalų."
+        },
+        "ebayCondition": {
+            "NEW": "Nauja",
+            "USED_EXCELLENT": "Naudota – puiki",
+            "USED_GOOD": "Naudota – gera",
+            "USED_ACCEPTABLE": "Naudota – priimtina",
+            "FOR_PARTS_OR_NOT_WORKING": "Sugedusi / dalims"
+        },
+        "errors": {
+            "API_ERROR": "Veiksmas nepavyko.",
+            "NETWORK_ERROR": "Serveris nepasiekiamas. Patikrinkite ryšį ir bandykite dar kartą.",
+            "API_DATABASE_ERROR": "Duomenų bazė atsako ne taip, kaip tikėtasi. Praneškite administratoriui.",
+            "API_INTERNAL_ERROR": "Serveryje įvyko netikėta klaida. Praneškite administratoriui.",
+            "NO_PERMISSION": "Neturite teisės atlikti šio veiksmo."
         }
     }
 }

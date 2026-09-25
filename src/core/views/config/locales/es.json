@@ -925,7 +925,21 @@
         "shopPublishMode": "Modo de funcionamiento",
         "shopPublishMode_help": "Local: el sitio web está en este servidor; OpensourceERP escribe los archivos en él y lo genera. HugoCMS: el sitio web funciona en su propio servidor web; OpensourceERP transfiere los archivos a HugoCMS, que lo genera allí. Los campos de directorios y programa de abajo no se aplican entonces.",
         "shopPublishModeLocal": "Local — sitio web en este servidor",
-        "shopPublishModeHugoCms": "HugoCMS — sitio web en su propio servidor web"
+        "shopPublishModeHugoCms": "HugoCMS — sitio web en su propio servidor web",
+        "shopAutoPublish": "Reescribir automáticamente las páginas de producto al cambiar precios",
+        "shopAutoPublish_help": "Crea una tarea de publicación cuando cambian el precio de venta, el grupo contable, el recargo, la descripción o la descripción larga de un artículo en HugoShop, así como al cambiar los valores predeterminados del canal o el ajuste bruto/neto. Sin este ajuste, las páginas muestran el precio antiguo hasta que se publican manualmente.",
+        "shopChannelOffPages": "Páginas al desactivar HugoShop",
+        "shopChannelOffPages_help": "Qué ocurre con las páginas de producto cuando HugoShop se desactiva en «Canales de venta». Al volver a activarlo, todas las páginas se publican de nuevo.",
+        "shopChannelOffPagesDraft": "Conservar como borrador (ya no se publica)",
+        "shopChannelOffPagesRemove": "Eliminar",
+        "shopEbay": "eBay",
+        "shopEbay_help": "Acceso, valores predeterminados de anuncios e importación de pedidos del canal eBay. eBay se activa y desactiva arriba en «Canales de venta».",
+        "ebayPublicHost": "Dirección pública para imágenes",
+        "ebayPublicHost_help": "Dirección de este servidor desde la que eBay obtiene las imágenes de los artículos (https, sin ruta), p. ej. erp.example.es. Obligatoria porque los anuncios se publican en segundo plano.",
+        "ebayEnvironmentProduction": "Producción",
+        "ebayEnvironmentSandbox": "Sandbox (prueba)",
+        "ebayMoved": "eBay es ahora un canal de venta de la extensión de tienda. Los ajustes están en la pestaña Tienda, en «eBay»; los anuncios, en la tarjeta de tienda del artículo.",
+        "ebayNeedsShop": "eBay está activado, pero la extensión de tienda no. Sin ella no se publican anuncios ni se obtienen pedidos; active la extensión de tienda."
     },
     "add": "Añadir",
     "add_fields": {

@@ -19,7 +19,11 @@
             "hints": "Aún faltan estos datos. La tienda funciona, pero con limitaciones:",
             "partsWithShopData": "Artículos con datos de tienda",
             "carts": "Cestas",
-            "sessions": "Sesiones"
+            "sessions": "Sesiones",
+            "recommendations": "Recomendaciones:",
+            "recommendation": {
+                "channel_round_99_net": "El redondeo a ,99 está activado, pero los precios de venta están guardados en neto. Con precios de venta brutos, el carrito y la factura siempre coinciden al céntimo."
+            }
         },
         "orders": {
             "title": "Pedidos",
@@ -70,7 +74,7 @@
         "partCard": {
             "title": "Tienda",
             "listed": "Ofrecer en la tienda",
-            "listedHint": "Solo los artículos con datos de tienda aparecen en la búsqueda de la tienda.",
+            "listedHint": "Solo aparecen en la tienda los artículos ofrecidos en al menos un canal de venta.",
             "category": "Categoría",
             "hyperlink": "Página del producto",
             "hyperlinkHint": "Ruta de la página del producto en el sitio web de la tienda, sin la dirección base. Déjelo vacío para usar la sugerencia.",
@@ -93,7 +97,50 @@
             "noPermission": "No tiene permiso para modificar los datos de tienda.",
             "publish": "Publicar",
             "publishQueued": "Trabajo creado.",
-            "publishAlready": "El trabajo ya está pendiente."
+            "publishAlready": "El trabajo ya está pendiente.",
+            "channels": "Canales de venta",
+            "markup": "Recargo",
+            "markupDefault": "Valor predeterminado del canal ({vorgabe})",
+            "markupNone": "Sin recargo",
+            "markupPercent": "Recargo en porcentaje",
+            "markupAmount": "Recargo fijo",
+            "markupValue": "Valor",
+            "markupAmountNet": "Importe neto, como el precio de venta",
+            "markupAmountGross": "Importe bruto, como el precio de venta",
+            "defaultNone": "sin recargo",
+            "basePrice": "Precio base",
+            "channelPrice": "Precio en el canal",
+            "net": "neto",
+            "gross": "bruto",
+            "rounded99": "Precio bruto redondeado a ,99",
+            "pricePreview": "Vista previa con el precio de venta y el grupo contable de este formulario.",
+            "channelTitle": "Descripción en el canal",
+            "channelTitleHint": "Dejar vacío para usar la descripción del artículo.",
+            "channelDescription": "Descripción larga en el canal",
+            "channelDescriptionHint": "Dejar vacío para usar la descripción larga del artículo.",
+            "serviceNotOnMarketplace": "Los servicios no se ofrecen en los marketplaces.",
+            "channelImages": "Imágenes para {kanal}",
+            "imagesAfterCreate": "Las imágenes se pueden añadir una vez creado el artículo.",
+            "moveLeft": "Mover adelante",
+            "moveRight": "Mover atrás",
+            "removeImage": "Eliminar imagen",
+            "addImage": "Añadir imagen",
+            "copyImagesFrom": "Tomar imágenes de {kanal}",
+            "imagesCopied": "{anzahl} imágenes tomadas.",
+            "imageError": "No se pudo procesar la imagen.",
+            "syncStatus": "Estado en {kanal}",
+            "listingId": "Anuncio {id}",
+            "ebayCategory": "Categoría de eBay",
+            "ebayCondition": "Estado del artículo",
+            "channelDefault": "Valor predeterminado de los ajustes",
+            "channelDefaultHint": "Dejar vacío para usar el valor predeterminado de los ajustes.",
+            "sync": {
+                "active": "publicado",
+                "ended": "finalizado",
+                "error": "error",
+                "pending": "transfiriéndose",
+                "none": "aún no transferido"
+            }
         },
         "publish": {
             "title": "Publicación",
@@ -131,9 +178,44 @@
                 "publish_part": "Escribir página de producto",
                 "publish_all": "Todos los productos",
                 "remove_part": "Eliminar página de producto",
+                "remove_all": "Eliminar todas las páginas de producto",
                 "sync_kit": "Sincronizar paquete",
                 "reconcile_payments": "Conciliar pagos"
             }
+        },
+        "channels": {
+            "hugoshop": "HugoShop",
+            "ebay": "eBay",
+            "amazon": "Amazon"
+        },
+        "channelConfig": {
+            "title": "Canales de venta",
+            "intro": "Valores predeterminados por canal para todos los artículos sin recargo propio. El precio base es el precio de venta del artículo.",
+            "parts": "{anzahl} artículos",
+            "active": "Canal activado",
+            "activeLast": "Al menos un canal de venta debe estar activado.",
+            "round99": "Redondear el precio bruto hacia arriba a ,99",
+            "round99Hint": "12,30 pasa a 12,99 y 13,00 a 13,99. Un precio terminado en ,99 se mantiene.",
+            "round99NetWarning": "Los precios de venta están guardados en neto. El precio neto se calcula a partir del precio bruto redondeado; las facturas pueden diferir del carrito en un céntimo. Recomendado: llevar los precios de venta en bruto (ajuste más arriba).",
+            "invalidPercent": "No es posible un descuento del 100 % o más.",
+            "saved": "Guardado.",
+            "republishQueued": "Guardado. Las páginas de producto se reescribirán con los nuevos precios.",
+            "saveError": "No se pudieron guardar los ajustes del canal.",
+            "loadError": "No se pudieron cargar los canales de venta."
+        },
+        "ebayCondition": {
+            "NEW": "Nuevo",
+            "USED_EXCELLENT": "Usado – excelente",
+            "USED_GOOD": "Usado – bueno",
+            "USED_ACCEPTABLE": "Usado – aceptable",
+            "FOR_PARTS_OR_NOT_WORKING": "Defectuoso / para piezas"
+        },
+        "errors": {
+            "API_ERROR": "La acción ha fallado.",
+            "NETWORK_ERROR": "No se puede acceder al servidor. Compruebe la conexión e inténtelo de nuevo.",
+            "API_DATABASE_ERROR": "La base de datos no responde como se esperaba. Por favor, avise al administrador.",
+            "API_INTERNAL_ERROR": "Se ha producido un error inesperado en el servidor. Por favor, avise al administrador.",
+            "NO_PERMISSION": "No tiene permiso para esta acción."
         }
     }
 }

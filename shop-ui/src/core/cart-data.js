@@ -38,6 +38,8 @@ export function cartPosition(pos) {
     unitPrice: toNumber(pos.unitPrice),
     totalPrice: toNumber(pos.totalPrice),
     thumbnail: pos.thumbnail || null,
+    // false: nicht mehr im Shop angeboten (V23) — ältere Backends liefern nichts
+    offered: pos.offered !== false,
   };
 }
 

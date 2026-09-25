@@ -925,7 +925,21 @@
         "shopPublishMode": "Toimintatila",
         "shopPublishMode_help": "Paikallinen: sivusto on tällä palvelimella; OpensourceERP kirjoittaa tiedostot sinne ja rakentaa sen itse. HugoCMS: sivusto toimii omalla verkkopalvelimellaan; OpensourceERP siirtää tiedostot HugoCMS:ään, joka rakentaa sen siellä. Alla olevat hakemisto- ja ohjelmakentät eivät silloin ole voimassa.",
         "shopPublishModeLocal": "Paikallinen — sivusto tällä palvelimella",
-        "shopPublishModeHugoCms": "HugoCMS — sivusto omalla verkkopalvelimella"
+        "shopPublishModeHugoCms": "HugoCMS — sivusto omalla verkkopalvelimella",
+        "shopAutoPublish": "Kirjoita tuotesivut automaattisesti uudelleen hintojen muuttuessa",
+        "shopAutoPublish_help": "Luo julkaisutehtävän, kun HugoShopin tuotteen myyntihinta, kirjausryhmä, lisä, kuvaus tai pitkä kuvaus muuttuu, sekä kanavan oletusten tai brutto-/nettoasetuksen muuttuessa. Ilman tätä asetusta sivut näyttävät vanhan hinnan, kunnes ne julkaistaan käsin.",
+        "shopChannelOffPages": "Sivut, kun HugoShop poistetaan käytöstä",
+        "shopChannelOffPages_help": "Mitä tuotesivuille tapahtuu, kun HugoShop poistetaan käytöstä kohdassa ”Myyntikanavat”. Kun se otetaan uudelleen käyttöön, kaikki sivut julkaistaan uudelleen.",
+        "shopChannelOffPagesDraft": "Säilytä luonnoksena (ei enää julkaista)",
+        "shopChannelOffPagesRemove": "Poista",
+        "shopEbay": "eBay",
+        "shopEbay_help": "eBay-kanavan pääsy, ilmoitusten oletukset ja tilausten tuonti. eBay otetaan käyttöön ja pois ylhäällä kohdassa ”Myyntikanavat”.",
+        "ebayPublicHost": "Kuvien julkinen osoite",
+        "ebayPublicHost_help": "Tämän palvelimen osoite, josta eBay hakee tuotekuvat (https, ilman polkua), esim. erp.example.fi. Pakollinen, koska ilmoitukset julkaistaan taustalla.",
+        "ebayEnvironmentProduction": "Tuotanto",
+        "ebayEnvironmentSandbox": "Hiekkalaatikko (testi)",
+        "ebayMoved": "eBay on nyt kauppalaajennuksen myyntikanava. Asetukset ovat Kauppa-välilehdellä kohdassa ”eBay”, ilmoitukset tuotteen kauppakortissa.",
+        "ebayNeedsShop": "eBay on käytössä, mutta kauppalaajennus ei. Ilman sitä ilmoituksia ei julkaista eikä tilauksia haeta — ota kauppalaajennus käyttöön."
     },
     "add": "Lisää",
     "add_fields": {

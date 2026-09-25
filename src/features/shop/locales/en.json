@@ -19,7 +19,11 @@
             "hints": "These entries are still missing. The shop runs, but with limitations:",
             "partsWithShopData": "Products with shop data",
             "carts": "Carts",
-            "sessions": "Sessions"
+            "sessions": "Sessions",
+            "recommendations": "Recommendations:",
+            "recommendation": {
+                "channel_round_99_net": "Rounding to .99 is enabled, but sales prices are stored net. With gross sales prices, cart and invoice always match to the cent."
+            }
         },
         "orders": {
             "title": "Orders",
@@ -70,7 +74,7 @@
         "partCard": {
             "title": "Shop",
             "listed": "List in shop",
-            "listedHint": "Only articles with shop details appear in the shop search.",
+            "listedHint": "Only articles offered in at least one sales channel appear in the shop.",
             "category": "Category",
             "hyperlink": "Product page",
             "hyperlinkHint": "Path of the product page on the shop website, without the base address. Leave empty to use the suggestion.",
@@ -93,7 +97,50 @@
             "noPermission": "You are not allowed to change shop details.",
             "publish": "Publish",
             "publishQueued": "Job created.",
-            "publishAlready": "Job is already pending."
+            "publishAlready": "Job is already pending.",
+            "channels": "Sales channels",
+            "markup": "Markup",
+            "markupDefault": "Channel default ({vorgabe})",
+            "markupNone": "No markup",
+            "markupPercent": "Markup in percent",
+            "markupAmount": "Fixed markup",
+            "markupValue": "Value",
+            "markupAmountNet": "Net amount, like the sales price",
+            "markupAmountGross": "Gross amount, like the sales price",
+            "defaultNone": "no markup",
+            "basePrice": "Base price",
+            "channelPrice": "Channel price",
+            "net": "net",
+            "gross": "gross",
+            "rounded99": "Gross price rounded to .99",
+            "pricePreview": "Preview using the sales price and posting group of this form.",
+            "channelTitle": "Description in channel",
+            "channelTitleHint": "Leave empty to use the article description.",
+            "channelDescription": "Long description in channel",
+            "channelDescriptionHint": "Leave empty to use the article's long description.",
+            "serviceNotOnMarketplace": "Services are not offered on marketplaces.",
+            "channelImages": "Images for {kanal}",
+            "imagesAfterCreate": "Images can be added once the article has been created.",
+            "moveLeft": "Move forward",
+            "moveRight": "Move back",
+            "removeImage": "Remove image",
+            "addImage": "Add image",
+            "copyImagesFrom": "Copy images from {kanal}",
+            "imagesCopied": "{anzahl} images copied.",
+            "imageError": "The image could not be processed.",
+            "syncStatus": "Status at {kanal}",
+            "listingId": "Listing {id}",
+            "ebayCategory": "eBay category",
+            "ebayCondition": "Condition",
+            "channelDefault": "Default from settings",
+            "channelDefaultHint": "Leave empty to use the default from the settings.",
+            "sync": {
+                "active": "listed",
+                "ended": "ended",
+                "error": "error",
+                "pending": "being transferred",
+                "none": "not yet transferred"
+            }
         },
         "publish": {
             "title": "Publishing",
@@ -131,9 +178,44 @@
                 "publish_part": "Write product page",
                 "publish_all": "All products",
                 "remove_part": "Remove product page",
+                "remove_all": "Remove all product pages",
                 "sync_kit": "Sync package",
                 "reconcile_payments": "Reconcile payments"
             }
+        },
+        "channels": {
+            "hugoshop": "HugoShop",
+            "ebay": "eBay",
+            "amazon": "Amazon"
+        },
+        "channelConfig": {
+            "title": "Sales channels",
+            "intro": "Defaults per channel for all articles without their own markup. The base price is the article's sales price.",
+            "parts": "{anzahl} articles",
+            "active": "Channel enabled",
+            "activeLast": "At least one sales channel must be enabled.",
+            "round99": "Round gross price up to .99",
+            "round99Hint": "12.30 becomes 12.99 and 13.00 becomes 13.99. A price ending in .99 stays.",
+            "round99NetWarning": "Sales prices are stored net. The net price is derived from the rounded gross price; invoices may differ from the cart by one cent. Recommended: keep sales prices gross (setting above).",
+            "invalidPercent": "A discount of 100 % or more is not possible.",
+            "saved": "Saved.",
+            "republishQueued": "Saved. The product pages will be rewritten with the new prices.",
+            "saveError": "The channel settings could not be saved.",
+            "loadError": "The sales channels could not be loaded."
+        },
+        "ebayCondition": {
+            "NEW": "New",
+            "USED_EXCELLENT": "Used – excellent",
+            "USED_GOOD": "Used – good",
+            "USED_ACCEPTABLE": "Used – acceptable",
+            "FOR_PARTS_OR_NOT_WORKING": "Defective / for parts"
+        },
+        "errors": {
+            "API_ERROR": "The action failed.",
+            "NETWORK_ERROR": "The server cannot be reached. Please check the connection and try again.",
+            "API_DATABASE_ERROR": "The database did not answer as expected. Please contact your administrator.",
+            "API_INTERNAL_ERROR": "An unexpected server error occurred. Please contact your administrator.",
+            "NO_PERMISSION": "You do not have permission for this action."
         }
     }
 }

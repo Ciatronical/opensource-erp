@@ -191,10 +191,21 @@
                 </v-col>
             </v-row>
 
-            <!-- eBay: Verbindung testen / Bestellungen abrufen / Status -->
-            <v-row v-else-if="field.type === 'component' && field.component === 'ebay-status'" class="my-4">
+            <!-- eBay: jetzt ein Verkaufskanal der Shop-Erweiterung (V15, V18) -->
+            <v-row v-else-if="field.type === 'component' && field.component === 'ebay-moved'" class="my-4">
                 <v-col cols="12">
-                    <EbayStatusConfig />
+                    <v-alert
+                        v-if="ebayOhneShop"
+                        type="warning"
+                        variant="tonal"
+                        density="compact"
+                        class="mb-2"
+                    >
+                        {{ t('crm_fields.ebayNeedsShop') }}
+                    </v-alert>
+                    <v-alert type="info" variant="tonal" density="compact">
+                        {{ t('crm_fields.ebayMoved') }}
+                    </v-alert>
                 </v-col>
             </v-row>
 
@@ -231,7 +242,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, inject } from 'vue';
+import { ref, reactive, computed, onMounted, inject } from 'vue';
 import { VTextField } from 'vuetify/components';
 import { useI18n } from 'vue-i18n';
 import PasswordField from '@/core/components/password-field.vue';
@@ -239,9 +250,10 @@ import axios from 'axios';
 import WhatsAppTemplatesConfig from './whatsapp-templates.config.vue';
 import WhatsAppProfilePictureConfig from './whatsapp-profile-picture.config.vue';
 import SumupReaderPairingConfig from './sumup-reader-pairing.config.vue';
-import EbayStatusConfig from './ebay-status.config.vue';
+import { oserpStore } from '@/core/stores/oserp.store.js';
 
 const { t } = useI18n();
+const oserp = oserpStore();
 
 // Cache für dynamisch geladene Select-Items (z.B. WhatsApp-Templates)
 const dynamicItemsCache = reactive({ whatsapp_templates: [] });
@@ -273,6 +285,10 @@ const props = defineProps({
         required: true
     }
 });
+
+/** eBay eingeschaltet, aber ohne Shop-Erweiterung: dann arbeitet der Kanal nicht (V14, V18) */
+const ebayOhneShop = computed(() =>
+    ['1', 't', 'true', 'on', true].includes(props.crmDefaults.ebay_enabled) && !oserp.isExtensionEnabled('shop'));
 
 // State für Config und Fehler
 const crmDefaultsConfig = ref([]);

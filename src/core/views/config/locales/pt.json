@@ -925,7 +925,21 @@
         "shopPublishMode": "Modo de funcionamento",
         "shopPublishMode_help": "Local: o site está neste servidor; o OpensourceERP escreve lá os ficheiros e constrói-o. HugoCMS: o site funciona no seu próprio servidor web; o OpensourceERP transfere os ficheiros para o HugoCMS, que o constrói lá. Os campos de diretórios e programa abaixo não se aplicam nesse caso.",
         "shopPublishModeLocal": "Local — site neste servidor",
-        "shopPublishModeHugoCms": "HugoCMS — site no seu próprio servidor web"
+        "shopPublishModeHugoCms": "HugoCMS — site no seu próprio servidor web",
+        "shopAutoPublish": "Reescrever automaticamente as páginas de produto quando os preços mudam",
+        "shopAutoPublish_help": "Cria uma tarefa de publicação quando o preço de venda, o grupo contabilístico, o acréscimo, a descrição ou a descrição longa de um artigo na HugoShop mudam, e quando mudam os valores padrão do canal ou a definição bruto/líquido. Sem esta definição, as páginas mostram o preço antigo até serem publicadas manualmente.",
+        "shopChannelOffPages": "Páginas ao desativar a HugoShop",
+        "shopChannelOffPages_help": "O que acontece às páginas de produto quando a HugoShop é desativada em «Canais de venda». Ao reativar, todas as páginas são publicadas de novo.",
+        "shopChannelOffPagesDraft": "Manter como rascunho (já não publicado)",
+        "shopChannelOffPagesRemove": "Remover",
+        "shopEbay": "eBay",
+        "shopEbay_help": "Acesso, predefinições de anúncios e importação de encomendas do canal eBay. O eBay é ativado e desativado acima em «Canais de venda».",
+        "ebayPublicHost": "Endereço público das imagens",
+        "ebayPublicHost_help": "Endereço deste servidor a partir do qual o eBay obtém as imagens dos artigos (https, sem caminho), p. ex. erp.example.pt. Obrigatório, porque os anúncios são publicados em segundo plano.",
+        "ebayEnvironmentProduction": "Produção",
+        "ebayEnvironmentSandbox": "Sandbox (teste)",
+        "ebayMoved": "O eBay é agora um canal de venda da extensão de loja. As definições estão no separador Loja em «eBay», os anúncios no cartão de loja do artigo.",
+        "ebayNeedsShop": "O eBay está ativado, mas a extensão de loja não. Sem ela não são publicados anúncios nem obtidas encomendas — ative a extensão de loja."
     },
     "add": "Adicionar",
     "add_fields": {

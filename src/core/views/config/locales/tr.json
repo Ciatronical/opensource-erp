@@ -925,7 +925,21 @@
         "shopPublishMode": "Çalışma modu",
         "shopPublishMode_help": "Yerel: web sitesi bu sunucudadır; OpensourceERP dosyaları buraya yazar ve siteyi kendisi oluşturur. HugoCMS: web sitesi kendi web sunucusunda çalışır; OpensourceERP dosyaları HugoCMS'e aktarır, site orada oluşturulur. Aşağıdaki dizin ve program alanları bu durumda geçerli değildir.",
         "shopPublishModeLocal": "Yerel — site bu sunucuda",
-        "shopPublishModeHugoCms": "HugoCMS — site kendi web sunucusunda"
+        "shopPublishModeHugoCms": "HugoCMS — site kendi web sunucusunda",
+        "shopAutoPublish": "Fiyat değişikliklerinde ürün sayfalarını otomatik olarak yeniden yaz",
+        "shopAutoPublish_help": "HugoShop'taki bir ürünün satış fiyatı, muhasebe grubu, fiyat farkı, açıklaması veya uzun açıklaması değiştiğinde ve kanal varsayılanları ya da brüt/net ayarı değiştiğinde bir yayınlama görevi oluşturur. Bu ayar olmadan sayfalar, elle yayınlanana kadar eski fiyatı gösterir.",
+        "shopChannelOffPages": "HugoShop kapatıldığında sayfalar",
+        "shopChannelOffPages_help": "HugoShop “Satış kanalları” altında kapatıldığında ürün sayfalarına ne olacağı. Yeniden açıldığında tüm sayfalar yeniden yayınlanır.",
+        "shopChannelOffPagesDraft": "Taslak olarak tut (artık yayınlanmaz)",
+        "shopChannelOffPagesRemove": "Kaldır",
+        "shopEbay": "eBay",
+        "shopEbay_help": "eBay kanalının erişimi, ilan varsayılanları ve sipariş aktarımı. eBay yukarıda “Satış kanalları” altında açılıp kapatılır.",
+        "ebayPublicHost": "Görseller için genel adres",
+        "ebayPublicHost_help": "eBay'in ürün görsellerini aldığı bu sunucunun adresi (https, yol olmadan), ör. erp.example.com.tr. İlanlar arka planda yayınlandığı için zorunludur.",
+        "ebayEnvironmentProduction": "Canlı",
+        "ebayEnvironmentSandbox": "Sandbox (test)",
+        "ebayMoved": "eBay artık mağaza eklentisinin bir satış kanalıdır. Ayarlar Mağaza sekmesinde “eBay” altında, ilanlar ürünün mağaza kartındadır.",
+        "ebayNeedsShop": "eBay açık, ancak mağaza eklentisi değil. Eklenti olmadan ilan yayınlanmaz ve sipariş alınmaz — lütfen mağaza eklentisini etkinleştirin."
     },
     "add": "Ekle",
     "add_fields": {

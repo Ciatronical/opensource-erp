@@ -19,7 +19,11 @@
             "hints": "这些信息仍然缺失。商店可以运行，但功能受限：",
             "partsWithShopData": "含商店信息的商品",
             "carts": "购物车",
-            "sessions": "会话"
+            "sessions": "会话",
+            "recommendations": "建议：",
+            "recommendation": {
+                "channel_round_99_net": "已启用 ,99 取整，但销售价格以净价保存。使用含税销售价格时，购物车和发票始终精确到分一致。"
+            }
         },
         "orders": {
             "title": "订单",
@@ -70,7 +74,7 @@
         "partCard": {
             "title": "商店",
             "listed": "在商店中上架",
-            "listedHint": "只有带商店信息的商品才会出现在商店搜索中。",
+            "listedHint": "只有至少在一个销售渠道中提供的商品才会显示在商店中。",
             "category": "类别",
             "hyperlink": "商品页面",
             "hyperlinkHint": "商品页面在商店网站上的路径，不含基础地址。留空则使用建议值。",
@@ -93,7 +97,50 @@
             "noPermission": "您没有修改商店信息的权限。",
             "publish": "发布",
             "publishQueued": "任务已创建。",
-            "publishAlready": "任务已在队列中。"
+            "publishAlready": "任务已在队列中。",
+            "channels": "销售渠道",
+            "markup": "加价",
+            "markupDefault": "渠道默认值（{vorgabe}）",
+            "markupNone": "不加价",
+            "markupPercent": "按百分比加价",
+            "markupAmount": "固定加价",
+            "markupValue": "数值",
+            "markupAmountNet": "净额，与销售价格一致",
+            "markupAmountGross": "含税金额，与销售价格一致",
+            "defaultNone": "不加价",
+            "basePrice": "基础价格",
+            "channelPrice": "渠道价格",
+            "net": "净价",
+            "gross": "含税价",
+            "rounded99": "含税价格已取整至 ,99",
+            "pricePreview": "使用本表单中的销售价格和记账组进行预览。",
+            "channelTitle": "渠道中的描述",
+            "channelTitleHint": "留空则使用商品描述。",
+            "channelDescription": "渠道中的详细描述",
+            "channelDescriptionHint": "留空则使用商品的详细描述。",
+            "serviceNotOnMarketplace": "服务类商品不在电商平台上架。",
+            "channelImages": "{kanal} 的图片",
+            "imagesAfterCreate": "商品创建后即可添加图片。",
+            "moveLeft": "前移",
+            "moveRight": "后移",
+            "removeImage": "删除图片",
+            "addImage": "添加图片",
+            "copyImagesFrom": "从 {kanal} 获取图片",
+            "imagesCopied": "已获取 {anzahl} 张图片。",
+            "imageError": "无法处理该图片。",
+            "syncStatus": "{kanal} 状态",
+            "listingId": "刊登 {id}",
+            "ebayCategory": "eBay 类目",
+            "ebayCondition": "成色",
+            "channelDefault": "设置中的默认值",
+            "channelDefaultHint": "留空则使用设置中的默认值。",
+            "sync": {
+                "active": "已上架",
+                "ended": "已结束",
+                "error": "错误",
+                "pending": "传输中",
+                "none": "尚未传输"
+            }
         },
         "publish": {
             "title": "发布",
@@ -131,9 +178,44 @@
                 "publish_part": "写入产品页",
                 "publish_all": "全部产品",
                 "remove_part": "删除产品页",
+                "remove_all": "删除所有商品页面",
                 "sync_kit": "同步套件",
                 "reconcile_payments": "对账付款"
             }
+        },
+        "channels": {
+            "hugoshop": "HugoShop",
+            "ebay": "eBay",
+            "amazon": "Amazon"
+        },
+        "channelConfig": {
+            "title": "销售渠道",
+            "intro": "渠道默认值，适用于所有没有自定义加价的商品。基础价格为商品的销售价格。",
+            "parts": "{anzahl} 件商品",
+            "active": "渠道已启用",
+            "activeLast": "必须至少启用一个销售渠道。",
+            "round99": "将含税价格向上取整至 ,99",
+            "round99Hint": "12,30 变为 12,99，13,00 变为 13,99。以 ,99 结尾的价格保持不变。",
+            "round99NetWarning": "销售价格以净价保存。净价由取整后的含税价格倒算得出；发票可能与购物车相差一分钱。建议：以含税价保存销售价格（见上方设置）。",
+            "invalidPercent": "不能设置 100 % 或以上的折扣。",
+            "saved": "已保存。",
+            "republishQueued": "已保存。商品页面将以新价格重新生成。",
+            "saveError": "无法保存渠道设置。",
+            "loadError": "无法加载销售渠道。"
+        },
+        "ebayCondition": {
+            "NEW": "全新",
+            "USED_EXCELLENT": "二手 – 极好",
+            "USED_GOOD": "二手 – 良好",
+            "USED_ACCEPTABLE": "二手 – 尚可",
+            "FOR_PARTS_OR_NOT_WORKING": "有缺陷 / 仅作配件"
+        },
+        "errors": {
+            "API_ERROR": "操作失败。",
+            "NETWORK_ERROR": "无法连接服务器。请检查连接后重试。",
+            "API_DATABASE_ERROR": "数据库的响应不符合预期。请联系管理员。",
+            "API_INTERNAL_ERROR": "服务器发生意外错误。请联系管理员。",
+            "NO_PERMISSION": "您没有执行此操作的权限。"
         }
     }
 }

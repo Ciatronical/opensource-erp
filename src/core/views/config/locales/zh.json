@@ -925,7 +925,21 @@
         "shopPublishMode": "运行模式",
         "shopPublishMode_help": "本地：网站位于本服务器，由 OpensourceERP 写入文件并自行构建。HugoCMS：网站运行在自己的 Web 服务器上，OpensourceERP 将文件传给 HugoCMS，由其在那里构建。此时下方的目录和程序字段不适用。",
         "shopPublishModeLocal": "本地——网站在本服务器",
-        "shopPublishModeHugoCms": "HugoCMS——网站在自己的 Web 服务器"
+        "shopPublishModeHugoCms": "HugoCMS——网站在自己的 Web 服务器",
+        "shopAutoPublish": "价格变动时自动重新生成商品页面",
+        "shopAutoPublish_help": "当 HugoShop 中商品的销售价格、记账组、加价、描述或详细描述发生变化时，以及渠道默认值或含税/净价设置变化时，创建发布任务。未启用此设置时，页面会一直显示旧价格，直到手动发布。",
+        "shopChannelOffPages": "停用 HugoShop 时的页面",
+        "shopChannelOffPages_help": "在“销售渠道”中停用 HugoShop 时商品页面的处理方式。重新启用时，所有页面将重新发布。",
+        "shopChannelOffPagesDraft": "保留为草稿（不再发布）",
+        "shopChannelOffPagesRemove": "删除",
+        "shopEbay": "eBay",
+        "shopEbay_help": "eBay 渠道的访问、刊登默认值和订单导入。eBay 在上方“销售渠道”中启用和停用。",
+        "ebayPublicHost": "图片公开地址",
+        "ebayPublicHost_help": "eBay 获取商品图片的本服务器地址（https，不含路径），例如 erp.example.cn。必填，因为刊登在后台进行。",
+        "ebayEnvironmentProduction": "正式环境",
+        "ebayEnvironmentSandbox": "沙盒（测试）",
+        "ebayMoved": "eBay 现在是商店扩展的一个销售渠道。设置位于“商店”选项卡的“eBay”下，刊登位于商品的商店卡片中。",
+        "ebayNeedsShop": "eBay 已启用，但商店扩展未启用。没有它就不会刊登商品，也不会获取订单——请启用商店扩展。"
     },
     "add": "添加",
     "add_fields": {

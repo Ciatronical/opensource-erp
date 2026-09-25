@@ -389,6 +389,20 @@ function shopPublicActions(): array {
     ];
 }
 
+/**
+ * Aktionen, die ein abgeschalteter HugoShop ablehnt (V16)
+ *
+ * Nur, was einen neuen Kauf beginnt. endPayment bleibt offen: eine bei PayPal
+ * schon begonnene Zahlung muss abgeschlossen werden können, sonst wäre Geld
+ * unterwegs ohne Rechnung. Konto, Rechnungen und Widerruf ebenso — den
+ * Widerruf schuldet der Betreiber auch nach dem Schließen.
+ *
+ * @return array
+ */
+function shopClosedActions(): array {
+    return ['inCart', 'changeQuantity', 'checkout', 'invoicing', 'beginPayment'];
+}
+
 // ============================================================================
 // BESTELLUNG UND RECHNUNG
 // ============================================================================

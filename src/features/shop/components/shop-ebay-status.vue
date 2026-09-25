@@ -1,4 +1,11 @@
-<!-- src/core/views/config/tabs/ebay-status.config.vue -->
+<!-- src/features/shop/components/shop-ebay-status.vue -->
+<!--
+    Stand des eBay-Kanals in den Einstellungen (Reiter Shop, Gruppe „eBay“):
+    Verbindungstest, Bestellungen jetzt abrufen, letzter Abruf und die zuletzt
+    importierten Bestellungen. Früher src/core/views/config/tabs/
+    ebay-status.config.vue gegen /api/ebay/; jetzt der eBay-Kanal der
+    Shop-Erweiterung (dev/shop-verkaufskanaele.md, V15).
+-->
 <template>
     <v-card variant="outlined" class="pa-4" style="max-width: 720px">
         <div class="d-flex align-center mb-3">
@@ -114,8 +121,10 @@
 import { reactive, ref, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import axios from 'axios';
+import { shopFehler } from '../composables/useShop.js';
 
-const { t } = useI18n();
+const i18n = useI18n();
+const { t } = i18n;
 
 const status = reactive({ enabled: false, lastCheck: null, counts: {}, recent: [] });
 const syncing = ref(false);
@@ -131,7 +140,7 @@ function formatMoney(v) {
 async function loadStatus() {
     loading.value = true;
     try {
-        const resp = await axios.post('/api/ebay/', { action: 'ebayGetStatus' });
+        const resp = await axios.post('/api/shop/', { action: 'getShopEbayStatus' });
         if (resp.data.success) {
             Object.assign(status, resp.data.payload || {});
         }
@@ -146,17 +155,17 @@ async function testConnection() {
     testing.value = true;
     message.text = '';
     try {
-        const resp = await axios.post('/api/ebay/', { action: 'ebayTestConnection' });
+        const resp = await axios.post('/api/shop/', { action: 'testShopEbay' });
         if (resp.data.success) {
             message.type = 'success';
             message.text = t('crm_fields.ebayPanelUi.testOk', { count: resp.data.payload?.orderTotal ?? 0 });
         } else {
             message.type = 'error';
-            message.text = resp.data.text || t('crm_fields.ebayPanelUi.testFail');
+            message.text = shopFehler(resp.data, i18n, 'crm_fields.ebayPanelUi.testFail').text;
         }
     } catch (err) {
         message.type = 'error';
-        message.text = err.response?.data?.text || t('crm_fields.ebayPanelUi.testFail');
+        message.text = shopFehler(err.response?.data, i18n, 'crm_fields.ebayPanelUi.testFail').text;
     } finally {
         testing.value = false;
     }
@@ -166,7 +175,7 @@ async function syncOrders() {
     syncing.value = true;
     message.text = '';
     try {
-        const resp = await axios.post('/api/ebay/', { action: 'ebaySyncOrders' });
+        const resp = await axios.post('/api/shop/', { action: 'syncShopEbayOrders' });
         if (resp.data.success) {
             const p = resp.data.payload || {};
             message.type = (p.errors && p.errors.length) ? 'warning' : 'success';
@@ -177,11 +186,11 @@ async function syncOrders() {
             await loadStatus();
         } else {
             message.type = 'error';
-            message.text = resp.data.text || t('crm_fields.ebayPanelUi.syncFail');
+            message.text = shopFehler(resp.data, i18n, 'crm_fields.ebayPanelUi.syncFail').text;
         }
     } catch (err) {
         message.type = 'error';
-        message.text = err.response?.data?.text || t('crm_fields.ebayPanelUi.syncFail');
+        message.text = shopFehler(err.response?.data, i18n, 'crm_fields.ebayPanelUi.syncFail').text;
     } finally {
         syncing.value = false;
     }

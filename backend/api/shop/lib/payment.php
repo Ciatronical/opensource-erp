@@ -224,7 +224,7 @@ function paypalAccessToken($db): string {
  * @param string $erfolgSeite Adresse der Rechnungsseite im Shop
  * @param string $abbruchSeite Adresse der Abbruchseite im Shop
  * @return array{approval_url: string, order_id: string}
- * @throws ShopPaymentError, ApiError CART_EMPTY
+ * @throws ShopPaymentError, ApiError CART_EMPTY, CART_NOT_OFFERED
  */
 function paymentBegin($db, string $uuid, string $erfolgSeite, string $abbruchSeite): array {
     $context    = shopContextCustomer($db, $uuid);
@@ -242,6 +242,9 @@ function paymentBegin($db, string $uuid, string $erfolgSeite, string $abbruchSei
     if (empty($korb['positions']) || 0 >= (float)$korb['totalSum']) {
         throw new ApiError('CART_EMPTY', 'Der Warenkorb ist leer');
     }
+    // Vor der Zahlung, nicht danach (O2): nach der Zahlung muss die Rechnung
+    // entstehen, gleich was im Warenkorb liegt
+    cartRequireOffered($korb);
 
     $rueckweg = rtrim(shopConfigRequire($db, 'shop_base_url'), '/').'/shop-api/';
 

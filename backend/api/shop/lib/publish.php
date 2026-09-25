@@ -253,23 +253,33 @@ function shopPageData($db, int $partsId): array {
     // Erloeskonto -> Steuerschluessel. Anders als dort nur Schluessel, die
     // schon gelten — ein kuenftiger Satz gehoert noch nicht auf die Seite.
     // Ohne Schluessel ist der Satz 0 und brutto gleich netto.
+    //
+    // Preis, Bezeichnung und Beschreibung sind die des HugoShop-Kanals
+    // (dev/shop-verkaufskanaele.md); ob der Artikel angeboten wird, sagt
+    // seine aktive Kanalzeile.
     $zeile = $db->getOne(
-        "SELECT p.id, p.partnumber, p.description, p.notes, p.unit, p.ean,
+        "SELECT p.id, p.partnumber,
+                COALESCE(NULLIF(pc.title, ''), p.description) AS description,
+                COALESCE(NULLIF(pc.description, ''), p.notes) AS notes,
+                p.unit, p.ean,
                 TRUNC(p.onhand) AS onhand, p.obsolete,
                 COALESCE(p.mtime, p.itime) AS mtime,
                 COALESCE(st.rate, 0) AS taxrate,
                 CASE WHEN :inklusive_netto = 1
-                     THEN ROUND(p.sellprice / (1 + COALESCE(st.rate, 0)), 2)
-                     ELSE ROUND(p.sellprice, 2) END AS price_net,
+                     THEN ROUND(k.preis / (1 + COALESCE(st.rate, 0)), 2)
+                     ELSE ROUND(k.preis, 2) END AS price_net,
                 CASE WHEN :inklusive_brutto = 1
-                     THEN ROUND(p.sellprice, 2)
-                     ELSE ROUND(p.sellprice * (1 + COALESCE(st.rate, 0)), 2) END AS price_gross,
-                (pe.id IS NOT NULL) AS listed,
+                     THEN ROUND(k.preis, 2)
+                     ELSE ROUND(k.preis * (1 + COALESCE(st.rate, 0)), 2) END AS price_gross,
+                (COALESCE(pc.active, false) AND shop_active_channel_id('hugoshop') IS NOT NULL) AS listed,
                 pe.hugoshop_category, pe.hugoshop_hyperlink, pe.hugoshop_breadcrumbs,
                 pe.hugoshop_images, pe.hugoshop_technical_data,
                 pe.hugoshop_properties, pe.hugoshop_downloads,
                 (SELECT company FROM defaults LIMIT 1) AS firma
            FROM parts p
+           CROSS JOIN LATERAL (SELECT shop_channel_price(p.id) AS preis) k
+           LEFT JOIN parts_channel_shop pc ON pc.parts_id = p.id
+                                          AND pc.channel_id = shop_channel_id('hugoshop')
            LEFT JOIN parts_ext pe ON pe.parts_id = p.id
            LEFT JOIN LATERAL (
                 SELECT tx.rate
@@ -544,9 +554,12 @@ function shopRenderPage($db, array $seite, string $ausgabe = 'product'): string 
  * @return array file, bytes, thumbnail
  * @throws ApiError SHOP_WRITE_FAILED
  */
-function shopWriteProductPage($db, int $partsId): array {
+function shopWriteProductPage($db, int $partsId, bool $entwurf = false): array {
     $seite = shopPageData($db, $partsId);
     $inhalt = shopRenderPage($db, $seite);
+    if ($entwurf) {
+        $inhalt = shopPageAsDraft($inhalt);
+    }
     $datei = shopContentDir($db, true).'/'.shopPageFileName($seite);
 
     $geschrieben = file_put_contents($datei, $inhalt, LOCK_EX);
@@ -555,6 +568,33 @@ function shopWriteProductPage($db, int $partsId): array {
     }
 
     return ['file' => $datei, 'bytes' => $geschrieben, 'thumbnail' => shopThumbnailFor($db, $seite)];
+}
+
+/**
+ * Macht aus einer gerenderten Seite einen Entwurf
+ *
+ * Setzt im Front Matter draft: true. Hugo veröffentlicht Entwürfe nicht —
+ * weder der lokale Bau noch HugoCMS bauen mit --buildDrafts. Die Datei bleibt
+ * stehen und wird beim Einschalten des HugoShops durch publish_all ersetzt
+ * (V16).
+ *
+ * Geändert wird hier statt in der Vorlage: so gilt es für jeden Vorlagensatz,
+ * auch für Kundenkopien, die draft gar nicht kennen.
+ *
+ * @param string $inhalt Seite mit YAML-Front-Matter zwischen zwei ---
+ * @return string
+ * @throws ApiError SHOP_PAGE_NO_FRONT_MATTER wenn die Seite keines hat
+ */
+function shopPageAsDraft(string $inhalt): string {
+    if (!preg_match('/\A(\s*---\R)(.*?)(\R---)/s', $inhalt, $treffer, PREG_OFFSET_CAPTURE)) {
+        throw new ApiError('SHOP_PAGE_NO_FRONT_MATTER', 'Die Seite hat kein Front Matter — als Entwurf nicht markierbar');
+    }
+    $kopf = $treffer[2][0];
+    $neu = preg_match('/^draft\s*:.*$/m', $kopf)
+        ? preg_replace('/^draft\s*:.*$/m', 'draft: true', $kopf)
+        : "draft: true\n".$kopf;
+
+    return substr($inhalt, 0, $treffer[2][1]).$neu.substr($inhalt, $treffer[2][1] + strlen($kopf));
 }
 
 // ── Webseiten-Paket ──
@@ -721,7 +761,7 @@ const SHOP_PUBLISH_BINARY = 'hugo';
 // Die Auftragsarten dieser Erweiterung. Nur diese nimmt der Laeufer, und nur
 // diese zeigt die Auftragsliste — die Tabelle stammt aus der Bridge.
 function shopJobFunctions(): array {
-    return ['publish_part', 'publish_all', 'remove_part', 'sync_kit', 'reconcile_payments'];
+    return ['publish_part', 'publish_all', 'remove_part', 'remove_all', 'draft_all', 'sync_kit', 'reconcile_payments'];
 }
 //
 // Die Tabelle batchjob_hugoshop stammt aus der Bridge und bleibt unveraendert:
@@ -735,28 +775,26 @@ function shopJobFunctions(): array {
  * Doppelte offene Auftraege waeren sinnlose Arbeit: der Laeufer erzeugt die
  * Seite ohnehin aus dem aktuellen Stand.
  *
+ * Der Auftrag gehört einem Verkaufskanal (channels/channels.php); gleiche
+ * Aufträge verschiedener Kanäle sind keine Doppel.
+ *
  * @param object $db Company-Datenbankverbindung
- * @param string $funktion eine aus shopJobFunctions()
+ * @param string $funktion eine Auftragsart des Kanals
  * @param string $partnumber Artikelnummer, leer bei publish_all
  * @param string|null $param Zusatzangabe, etwa der zu loeschende Dateiname
+ * @param string $kanal Art des Kanals
  * @return int Auftragsnummer, 0 wenn schon offen
  */
-function shopQueueJob($db, string $funktion, string $partnumber = '', ?string $param = null): int {
+function shopQueueJob($db, string $funktion, string $partnumber = '', ?string $param = null, string $kanal = 'hugoshop'): int {
+    // Die Regel steht in der Datenbank (shop_queue_job), weil die Trigger für
+    // das automatische Neuschreiben (V22) dieselbe brauchen.
     $zeile = $db->getOne(
-        "INSERT INTO batchjob_hugoshop (function, partnumber, param)
-         SELECT :function, :partnumber, :param
-          WHERE NOT EXISTS (
-                SELECT 1 FROM batchjob_hugoshop
-                 WHERE function = :function_offen
-                   AND partnumber = :partnumber_offen
-                   AND result IS NULL)
-         RETURNING id",
+        "SELECT shop_queue_job(:function, :partnumber, :param, :kanal) AS id",
         [
-            ':function'          => $funktion,
-            ':partnumber'        => $partnumber,
-            ':param'             => $param,
-            ':function_offen'    => $funktion,
-            ':partnumber_offen'  => $partnumber,
+            ':function'   => $funktion,
+            ':partnumber' => $partnumber,
+            ':param'      => $param,
+            ':kanal'      => $kanal,
         ]
     );
 
@@ -779,17 +817,21 @@ function shopOpenJobs($db, int $limit = 500, ?array $nurIds = null): array {
     // der Umwandlung heraus: string_to_array('', ',')::int[] scheiterte sonst.
     $ids = null === $nurIds ? '' : implode(',', array_map('intval', $nurIds));
 
+    //
+    // Ausgewählt wird nach Kanal und Auftragsart (shopChannelJobPairs); channel
+    // nennt dem Läufer das zuständige Modul.
     return $db->getAll(
-        "SELECT id, function, partnumber, param
-           FROM batchjob_hugoshop
-          WHERE result IS NULL
-            AND function = ANY(string_to_array(:funktionen, ','))
-            AND ('' = :ids_alle OR id = ANY(string_to_array(NULLIF(:ids, ''), ',')::int[]))
-          ORDER BY id
+        "SELECT b.id, b.function, b.partnumber, b.param, c.type AS channel
+           FROM batchjob_hugoshop b
+           JOIN sales_channel_shop c ON c.id = COALESCE(b.channel_id, shop_channel_id('hugoshop'))
+          WHERE b.result IS NULL
+            AND (c.type || ':' || b.function) = ANY(string_to_array(:paare, ','))
+            AND ('' = :ids_alle OR b.id = ANY(string_to_array(NULLIF(:ids, ''), ',')::int[]))
+          ORDER BY b.id
           LIMIT :limit",
         [
             ':limit'      => $limit,
-            ':funktionen' => implode(',', shopJobFunctions()),
+            ':paare'      => shopChannelJobPairs(),
             ':ids_alle'   => $ids,
             ':ids'        => $ids,
         ]
@@ -850,13 +892,15 @@ function shopDeleteJobs($db, array $ids): int {
 
     $zeile = $db->getOne(
         "WITH weg AS (
-             DELETE FROM batchjob_hugoshop
-              WHERE function = ANY(string_to_array(:funktionen, ','))
-                AND id = ANY(string_to_array(:ids, ',')::int[])
-             RETURNING id)
+             DELETE FROM batchjob_hugoshop b
+              USING sales_channel_shop c
+              WHERE c.id = COALESCE(b.channel_id, shop_channel_id('hugoshop'))
+                AND (c.type || ':' || b.function) = ANY(string_to_array(:paare, ','))
+                AND b.id = ANY(string_to_array(:ids, ',')::int[])
+             RETURNING b.id)
          SELECT count(*)::int AS anzahl FROM weg",
         [
-            ':funktionen' => implode(',', shopJobFunctions()),
+            ':paare'      => shopChannelJobPairs(),
             ':ids'        => implode(',', $ids),
         ]
     );
@@ -885,17 +929,19 @@ function shopCleanupJobs($db, ?int $tage = null): int {
 
     $zeile = $db->getOne(
         "WITH weg AS (
-             DELETE FROM batchjob_hugoshop
-              WHERE result IS NOT NULL
-                AND result LIKE 'ok%'
-                AND function = ANY(string_to_array(:funktionen, ','))
+             DELETE FROM batchjob_hugoshop b
+              USING sales_channel_shop c
+              WHERE c.id = COALESCE(b.channel_id, shop_channel_id('hugoshop'))
+                AND b.result IS NOT NULL
+                AND b.result LIKE 'ok%'
+                AND (c.type || ':' || b.function) = ANY(string_to_array(:paare, ','))
                 AND (1 = :alle
-                     OR itime IS NULL
-                     OR itime < now() - (:tage * interval '1 day'))
-             RETURNING id)
+                     OR b.itime IS NULL
+                     OR b.itime < now() - (:tage * interval '1 day'))
+             RETURNING b.id)
          SELECT count(*)::int AS anzahl FROM weg",
         [
-            ':funktionen' => implode(',', shopJobFunctions()),
+            ':paare'      => shopChannelJobPairs(),
             ':alle'       => null === $tage ? 1 : 0,
             ':tage'       => (int)($tage ?? 0),
         ]
@@ -907,6 +953,9 @@ function shopCleanupJobs($db, ?int $tage = null): int {
 /**
  * Artikel, die im Shop stehen
  *
+ * Maßgeblich ist die aktive Zeile des HugoShop-Kanals, nicht mehr die
+ * parts_ext-Zeile: die bleibt beim Abwählen erhalten (V5).
+ *
  * @param object $db Company-Datenbankverbindung
  * @return array Liste aus id und partnumber
  */
@@ -914,7 +963,9 @@ function shopListedParts($db): array {
     return $db->getAll(
         "SELECT p.id, p.partnumber
            FROM parts p
-           JOIN parts_ext pe ON pe.parts_id = p.id
+           JOIN parts_channel_shop pc ON pc.parts_id = p.id
+                                     AND pc.channel_id = shop_active_channel_id('hugoshop')
+                                     AND pc.active
           ORDER BY p.id"
     );
 }
@@ -941,11 +992,12 @@ function shopRemovePage($db, string $dateiname): bool {
  * @param callable|null $melden Fortschritt, bekommt je eine Zeile Text
  * @param int $limit Hoechstzahl Auftraege
  * @param array|null $nurIds nur diese Auftragsnummern, null = alle offenen
- * @return array jobs, seiten, entfernt, fehler, kit (Änderungen am Webseiten-Paket)
+ * @return array jobs, jobs_hugoshop, seiten, entfernt, fehler, kit (Änderungen am Webseiten-Paket)
  */
 function shopRunJobs($db, ?callable $melden = null, int $limit = 500, ?array $nurIds = null): array {
     $sagen = $melden ?? function (string $zeile) {};
-    $bilanz = ['jobs' => 0, 'seiten' => 0, 'entfernt' => 0, 'fehler' => 0, 'kit' => 0, 'fehler_texte' => []];
+    $bilanz = ['jobs' => 0, 'jobs_hugoshop' => 0, 'seiten' => 0, 'entfernt' => 0, 'fehler' => 0, 'kit' => 0,
+               'fehler_texte' => []];
 
     // Fehler werden nicht nur gezählt, sondern im Wortlaut gesammelt: das
     // Admin-Panel zeigt sie nach "Jetzt ausführen" an, sonst stünde dort nur
@@ -961,110 +1013,13 @@ function shopRunJobs($db, ?callable $melden = null, int $limit = 500, ?array $nu
         $bilanz['jobs']++;
 
         try {
-            switch ($auftrag['function']) {
-                case 'publish_part':
-                    $artikel = $db->getOne(
-                        "SELECT id FROM parts WHERE partnumber = :partnumber",
-                        [':partnumber' => $auftrag['partnumber']]
-                    );
-                    if (!$artikel) {
-                        throw new ApiError('PART_NOT_FOUND', 'Artikel nicht gefunden: '.$auftrag['partnumber']);
-                    }
-                    $ergebnis = shopWriteProductPage($db, (int)$artikel['id']);
-                    $bilanz['seiten']++;
-                    $sagen('Seite geschrieben: '.basename($ergebnis['file']).' (Vorschaubild: '.$ergebnis['thumbnail'].')');
-                    shopJobResult($db, $id, 'ok: '.basename($ergebnis['file']));
-                    break;
-
-                case 'publish_all':
-                    $anzahl = 0;
-                    $gescheitert = 0;
-                    $ersterFehler = '';
-                    foreach (shopListedParts($db) as $artikel) {
-                        try {
-                            shopWriteProductPage($db, (int)$artikel['id']);
-                            $anzahl++;
-                        } catch (ApiError $e) {
-                            $gescheitert++;
-                            if ('' === $ersterFehler) {
-                                $ersterFehler = $e->getMessage();
-                            }
-                            // Nur die ersten Fehler im Wortlaut: trifft der
-                            // Grund alle Artikel — ein fehlendes Verzeichnis
-                            // etwa —, kämen sonst Tausende gleicher Zeilen.
-                            if ($gescheitert <= SHOP_MELDUNGEN_JE_AUFTRAG) {
-                                $fehler('Artikel '.$artikel['partnumber'].': '.$e->getMessage());
-                            } else {
-                                $bilanz['fehler']++;
-                            }
-                        }
-                    }
-                    $bilanz['seiten'] += $anzahl;
-                    $stand = sprintf('%d Seiten geschrieben, %d fehlgeschlagen', $anzahl, $gescheitert);
-                    if ($gescheitert > SHOP_MELDUNGEN_JE_AUFTRAG) {
-                        $sagen(sprintf('… und %d weitere Artikel, nicht einzeln aufgeführt',
-                            $gescheitert - SHOP_MELDUNGEN_JE_AUFTRAG));
-                    }
-                    $sagen($stand);
-                    // Ein Auftrag, bei dem kein Artikel durchkam, ist kein
-                    // erfolgreicher Auftrag — sonst stünde ein grüner Haken an
-                    // einem Lauf, der nichts zustande gebracht hat.
-                    shopJobResult($db, $id, $gescheitert > 0
-                        ? 'Fehler: '.$stand.' — '.$ersterFehler
-                        : 'ok: '.$anzahl.' Seiten');
-                    break;
-
-                case 'remove_part':
-                    $weg = shopRemovePage($db, (string)($auftrag['param'] ?? ''));
-                    if ($weg) {
-                        $bilanz['entfernt']++;
-                    }
-                    $sagen('Seite entfernt: '.$auftrag['param'].($weg ? '' : ' (gab es nicht)'));
-                    shopJobResult($db, $id, $weg ? 'ok: entfernt' : 'ok: gab es nicht');
-                    break;
-
-                case 'sync_kit':
-                    $kit = shopSyncKit($db);
-                    $bilanz['kit'] += shopKitChanges($kit);
-                    $sagen(sprintf('Paket abgeglichen: %d kopiert, %d entfernt%s',
-                        $kit['kopiert'], $kit['entfernt'], $kit['config'] ? ', Konfiguration neu' : ''));
-                    shopJobResult($db, $id, sprintf('ok: %d kopiert, %d entfernt', $kit['kopiert'], $kit['entfernt']));
-                    break;
-
-                case 'reconcile_payments':
-                    // Gebucht wird nichts (lib/payment.php). Eine gescheiterte
-                    // Zahlung zählt als Fehler: die Rechnung ist unbezahlt, die
-                    // Ware vielleicht schon unterwegs — das soll jemand sehen.
-                    $zahlungen = paymentsReconcile($db);
-                    $anzahl = array_count_values(array_column($zahlungen, 'result'));
-                    $auffaellig = [];
-                    foreach ($zahlungen as $zahlung) {
-                        $zeile = 'Rechnung '.$zahlung['invnumber'].': '.$zahlung['result'];
-                        if ('bezahlt' === $zahlung['result']) {
-                            $zeile .= ' — Zahlungseingang von Hand buchen';
-                        } elseif ('offen' !== $zahlung['result']) {
-                            $auffaellig[] = 'Rechnung '.$zahlung['invnumber'].' '.$zahlung['result'];
-                            $zeile .= isset($zahlung['detail']) ? ' ('.$zahlung['detail'].')' : '';
-                        }
-                        if ('gescheitert' === $zahlung['result']) {
-                            writeLog('[SHOP] PayPal-Zahlung gescheitert: Rechnung '.$zahlung['invnumber'], true, DLOG_ERR);
-                        }
-                        $sagen($zeile);
-                    }
-                    $stand = sprintf('%d geprüft, %d bezahlt, %d offen',
-                        count($zahlungen), $anzahl['bezahlt'] ?? 0, $anzahl['offen'] ?? 0);
-                    if ($auffaellig) {
-                        $fehler('Zahlungsabgleich: '.$stand.' — '.implode(', ', $auffaellig));
-                        shopJobResult($db, $id, 'Fehler: '.$stand.' — '.implode(', ', $auffaellig));
-                    } else {
-                        shopJobResult($db, $id, 'ok: '.$stand);
-                    }
-                    break;
-
-                default:
-                    $fehler('Auftrag '.$id.': unbekannte Funktion '.$auftrag['function']);
-                    shopJobResult($db, $id, 'Fehler: unbekannte Funktion '.$auftrag['function']);
+            // Jeder Kanal arbeitet seine Aufträge selbst ab (channels/). Ein
+            // Fehler trifft nur diesen Auftrag, die übrigen Kanäle laufen
+            // weiter (V13).
+            if ('hugoshop' === $auftrag['channel']) {
+                $bilanz['jobs_hugoshop']++;
             }
+            shopChannelRunJob($db, $auftrag, $sagen, $fehler, $bilanz);
         } catch (Throwable $e) {
             $fehler('Auftrag '.$id.' fehlgeschlagen: '.$e->getMessage());
             shopJobResult($db, $id, 'Fehler: '.$e->getMessage());
@@ -1543,6 +1498,15 @@ function shopPublishRun($db, ?callable $melden = null, int $limit = 500, ?array 
     try {
         $bilanz = array_merge($bilanz, shopRunJobs($db, $sagen, $limit, $nurIds));
 
+        // Abgeschalteter HugoShop (V8, V16): Paket, Kategorieübersicht und Bau
+        // nur, wenn in diesem Lauf HugoShop-Aufträge liefen — etwa remove_all
+        // gleich nach dem Abschalten. Sonst bleibt die Webseite unberührt; ein
+        // Mandant, der nur eBay nutzt, hat womöglich gar keine.
+        if (0 === $bilanz['jobs_hugoshop'] && !shopChannelHugoshopActive($db)) {
+            $sagen('HugoShop abgeschaltet — Webseite unverändert.');
+            return $bilanz;
+        }
+
         // Das Paket bei jedem Lauf abgleichen, nicht nur nach neuen Seiten:
         // beim ersten Lauf entsteht oserp-shop/ überhaupt erst, und nach einem
         // Update kommt ein neues Bundle an, ohne dass jemand veröffentlicht.
@@ -1635,3 +1599,7 @@ function shopPublishRun($db, ?callable $melden = null, int $limit = 500, ?array 
 
     return $bilanz;
 }
+
+// Die Verkaufskanäle: Modulrahmen und Module, darunter der HugoShop mit der
+// Abarbeitung der Aufträge dieser Datei (dev/shop-verkaufskanaele.md, Schritt 4)
+require_once __DIR__.'/../channels/channels.php';

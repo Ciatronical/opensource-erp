@@ -18,11 +18,13 @@
  */
 function analyticsProduct($db, int $partsId): ?array {
     $zeile = $db->getOne(
-        "SELECT p.partnumber AS id, p.description AS name,
-                TRUNC(p.sellprice, 2) AS price,
+        "SELECT p.partnumber AS id, COALESCE(NULLIF(pc.title, ''), p.description) AS name,
+                TRUNC(shop_channel_price(p.id), 2) AS price,
                 pe.hugoshop_category AS category,
                 (SELECT c.name FROM currencies c CROSS JOIN defaults d WHERE c.id = d.currency_id) AS currency
            FROM parts p
+           LEFT JOIN parts_channel_shop pc ON pc.parts_id = p.id
+                                          AND pc.channel_id = shop_channel_id('hugoshop')
            LEFT JOIN parts_ext pe ON pe.parts_id = p.id
           WHERE p.id = :parts_id",
         [':parts_id' => $partsId]

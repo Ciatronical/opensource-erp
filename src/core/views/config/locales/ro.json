@@ -925,7 +925,21 @@
         "shopPublishMode": "Mod de funcționare",
         "shopPublishMode_help": "Local: site-ul este pe acest server; OpensourceERP scrie fișierele în el și îl construiește singur. HugoCMS: site-ul rulează pe propriul server web; OpensourceERP transferă fișierele către HugoCMS, care îl construiește acolo. Câmpurile de directoare și program de mai jos nu se aplică atunci.",
         "shopPublishModeLocal": "Local — site pe acest server",
-        "shopPublishModeHugoCms": "HugoCMS — site pe propriul server web"
+        "shopPublishModeHugoCms": "HugoCMS — site pe propriul server web",
+        "shopAutoPublish": "Rescrie automat paginile de produs la modificarea prețurilor",
+        "shopAutoPublish_help": "Creează o sarcină de publicare când se modifică prețul de vânzare, grupa contabilă, adaosul, descrierea sau descrierea lungă a unui articol din HugoShop, precum și la modificarea valorilor implicite ale canalului sau a setării brut/net. Fără această setare, paginile afișează prețul vechi până la publicarea manuală.",
+        "shopChannelOffPages": "Pagini la dezactivarea HugoShop",
+        "shopChannelOffPages_help": "Ce se întâmplă cu paginile de produs când HugoShop este dezactivat în „Canale de vânzare”. La reactivare, toate paginile sunt publicate din nou.",
+        "shopChannelOffPagesDraft": "Păstrare ca ciornă (nu mai este publicată)",
+        "shopChannelOffPagesRemove": "Eliminare",
+        "shopEbay": "eBay",
+        "shopEbay_help": "Acces, valori implicite pentru anunțuri și importul comenzilor canalului eBay. eBay se activează și se dezactivează mai sus, la „Canale de vânzare”.",
+        "ebayPublicHost": "Adresă publică pentru imagini",
+        "ebayPublicHost_help": "Adresa acestui server de la care eBay preia imaginile articolelor (https, fără cale), de ex. erp.example.ro. Obligatorie, deoarece anunțurile sunt publicate în fundal.",
+        "ebayEnvironmentProduction": "Producție",
+        "ebayEnvironmentSandbox": "Sandbox (test)",
+        "ebayMoved": "eBay este acum un canal de vânzare al extensiei magazin. Setările sunt în fila Magazin, la „eBay”, anunțurile în cardul magazinului articolului.",
+        "ebayNeedsShop": "eBay este activat, dar extensia magazin nu. Fără ea nu se publică anunțuri și nu se preiau comenzi — activați extensia magazin."
     },
     "add": "Adăugare",
     "add_fields": {

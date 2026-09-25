@@ -19,7 +19,11 @@
             "hints": "Deze gegevens ontbreken nog. De winkel werkt, maar beperkt:",
             "partsWithShopData": "Artikelen met winkelgegevens",
             "carts": "Winkelwagens",
-            "sessions": "Sessies"
+            "sessions": "Sessies",
+            "recommendations": "Aanbevelingen:",
+            "recommendation": {
+                "channel_round_99_net": "Afronden op ,99 is ingeschakeld, maar de verkoopprijzen zijn netto opgeslagen. Met bruto verkoopprijzen komen winkelwagen en factuur altijd op de cent overeen."
+            }
         },
         "orders": {
             "title": "Bestellingen",
@@ -70,7 +74,7 @@
         "partCard": {
             "title": "Winkel",
             "listed": "In de winkel aanbieden",
-            "listedHint": "Alleen artikelen met winkelgegevens verschijnen in de zoekfunctie van de winkel.",
+            "listedHint": "Alleen artikelen die in ten minste één verkoopkanaal worden aangeboden, verschijnen in de shop.",
             "category": "Categorie",
             "hyperlink": "Productpagina",
             "hyperlinkHint": "Pad van de productpagina op de winkelwebsite, zonder basisadres. Leeg laten voor het voorstel.",
@@ -93,7 +97,50 @@
             "noPermission": "U hebt geen rechten om winkelgegevens te wijzigen.",
             "publish": "Publiceren",
             "publishQueued": "Opdracht aangemaakt.",
-            "publishAlready": "Opdracht staat al open."
+            "publishAlready": "Opdracht staat al open.",
+            "channels": "Verkoopkanalen",
+            "markup": "Opslag",
+            "markupDefault": "Standaard van het kanaal ({vorgabe})",
+            "markupNone": "Geen opslag",
+            "markupPercent": "Opslag in procent",
+            "markupAmount": "Vaste opslag",
+            "markupValue": "Waarde",
+            "markupAmountNet": "Nettobedrag, zoals de verkoopprijs",
+            "markupAmountGross": "Brutobedrag, zoals de verkoopprijs",
+            "defaultNone": "zonder opslag",
+            "basePrice": "Basisprijs",
+            "channelPrice": "Prijs in het kanaal",
+            "net": "netto",
+            "gross": "bruto",
+            "rounded99": "Brutoprijs afgerond op ,99",
+            "pricePreview": "Voorbeeld met verkoopprijs en boekingsgroep van dit formulier.",
+            "channelTitle": "Omschrijving in het kanaal",
+            "channelTitleHint": "Leeg laten voor de omschrijving van het artikel.",
+            "channelDescription": "Lange omschrijving in het kanaal",
+            "channelDescriptionHint": "Leeg laten voor de lange omschrijving van het artikel.",
+            "serviceNotOnMarketplace": "Diensten worden niet op marktplaatsen aangeboden.",
+            "channelImages": "Afbeeldingen voor {kanal}",
+            "imagesAfterCreate": "Afbeeldingen kunnen worden toegevoegd zodra het artikel is aangemaakt.",
+            "moveLeft": "Naar voren",
+            "moveRight": "Naar achteren",
+            "removeImage": "Afbeelding verwijderen",
+            "addImage": "Afbeelding toevoegen",
+            "copyImagesFrom": "Afbeeldingen overnemen uit {kanal}",
+            "imagesCopied": "{anzahl} afbeeldingen overgenomen.",
+            "imageError": "De afbeelding kon niet worden verwerkt.",
+            "syncStatus": "Status bij {kanal}",
+            "listingId": "Advertentie {id}",
+            "ebayCategory": "eBay-categorie",
+            "ebayCondition": "Staat",
+            "channelDefault": "Standaard uit de instellingen",
+            "channelDefaultHint": "Leeg laten voor de standaard uit de instellingen.",
+            "sync": {
+                "active": "geplaatst",
+                "ended": "beëindigd",
+                "error": "fout",
+                "pending": "wordt overgedragen",
+                "none": "nog niet overgedragen"
+            }
         },
         "publish": {
             "title": "Publicatie",
@@ -131,9 +178,44 @@
                 "publish_part": "Productpagina schrijven",
                 "publish_all": "Alle producten",
                 "remove_part": "Productpagina verwijderen",
+                "remove_all": "Alle productpagina's verwijderen",
                 "sync_kit": "Pakket synchroniseren",
                 "reconcile_payments": "Betalingen afstemmen"
             }
+        },
+        "channels": {
+            "hugoshop": "HugoShop",
+            "ebay": "eBay",
+            "amazon": "Amazon"
+        },
+        "channelConfig": {
+            "title": "Verkoopkanalen",
+            "intro": "Standaardwaarden per kanaal voor alle artikelen zonder eigen opslag. De basisprijs is de verkoopprijs van het artikel.",
+            "parts": "{anzahl} artikelen",
+            "active": "Kanaal ingeschakeld",
+            "activeLast": "Er moet ten minste één verkoopkanaal ingeschakeld zijn.",
+            "round99": "Brutoprijs naar boven afronden op ,99",
+            "round99Hint": "12,30 wordt 12,99 en 13,00 wordt 13,99. Een prijs op ,99 blijft staan.",
+            "round99NetWarning": "De verkoopprijzen zijn netto opgeslagen. De nettoprijs wordt teruggerekend uit de afgeronde brutoprijs; facturen kunnen een cent van de winkelwagen afwijken. Aanbevolen: verkoopprijzen bruto voeren (instelling hierboven).",
+            "invalidPercent": "Een korting van 100 % of meer is niet mogelijk.",
+            "saved": "Opgeslagen.",
+            "republishQueued": "Opgeslagen. De productpagina's worden met de nieuwe prijzen opnieuw geschreven.",
+            "saveError": "De kanaalinstellingen konden niet worden opgeslagen.",
+            "loadError": "De verkoopkanalen konden niet worden geladen."
+        },
+        "ebayCondition": {
+            "NEW": "Nieuw",
+            "USED_EXCELLENT": "Gebruikt – uitstekend",
+            "USED_GOOD": "Gebruikt – goed",
+            "USED_ACCEPTABLE": "Gebruikt – redelijk",
+            "FOR_PARTS_OR_NOT_WORKING": "Defect / voor onderdelen"
+        },
+        "errors": {
+            "API_ERROR": "De actie is mislukt.",
+            "NETWORK_ERROR": "De server is niet bereikbaar. Controleer de verbinding en probeer het opnieuw.",
+            "API_DATABASE_ERROR": "De database antwoordt niet zoals verwacht. Waarschuw de beheerder.",
+            "API_INTERNAL_ERROR": "Er is een onverwachte fout op de server opgetreden. Waarschuw de beheerder.",
+            "NO_PERMISSION": "U hebt geen toestemming voor deze actie."
         }
     }
 }

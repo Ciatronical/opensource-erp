@@ -43,31 +43,43 @@ function shopSearch($db, string $begriffe, int $limit = 5, int $offset = 0): arr
     $artikelLink  = shopConfigValue($db, 'shop_products_link');
     $bildLink     = shopConfigValue($db, 'shop_thumbnails_link');
 
+    // Gesucht wird unter den Artikeln mit aktiver HugoShop-Zeile, mit deren
+    // Bezeichnung; gewichtet wird mit dem Kanalpreis.
     $treffer = $db->getAll(
-        "WITH gefunden AS (
-             SELECT p.id, p.partnumber, p.description, p.sellprice,
-                    psh.hugoshop_breadcrumbs AS breadcrumbs,
-                    psh.hugoshop_category    AS category,
-                    psh.hugoshop_hyperlink   AS hyperlink,
-                    psh.hugoshop_images ->> 0 AS image,
+        "WITH im_shop AS (
+             SELECT p.id, p.partnumber,
+                    COALESCE(NULLIF(pc.title, ''), p.description) AS description,
+                    psh.hugoshop_breadcrumbs, psh.hugoshop_category,
+                    psh.hugoshop_hyperlink, psh.hugoshop_images
+               FROM parts p
+               JOIN parts_channel_shop pc ON pc.parts_id = p.id
+                                         AND pc.channel_id = shop_active_channel_id('hugoshop')
+                                         AND pc.active
+               LEFT JOIN parts_ext psh ON psh.parts_id = p.id
+         ), gefunden AS (
+             SELECT s.id, s.partnumber, s.description,
+                    s.hugoshop_breadcrumbs AS breadcrumbs,
+                    s.hugoshop_category    AS category,
+                    s.hugoshop_hyperlink   AS hyperlink,
+                    s.hugoshop_images ->> 0 AS image,
                     ts_rank(
                         to_tsvector('simple',
-                            p.description || ' ' || p.partnumber || ' ' ||
-                            COALESCE(psh.hugoshop_breadcrumbs::text, '') || ' ' ||
-                            COALESCE(psh.hugoshop_category, '')),
+                            s.description || ' ' || s.partnumber || ' ' ||
+                            COALESCE(s.hugoshop_breadcrumbs::text, '') || ' ' ||
+                            COALESCE(s.hugoshop_category, '')),
                         to_tsquery('simple', :begriffe)
                     ) AS rang
-               FROM parts p
-               JOIN parts_ext psh ON psh.parts_id = p.id
+               FROM im_shop s
               WHERE to_tsvector('simple',
-                        p.description || ' ' || p.partnumber || ' ' ||
-                        COALESCE(psh.hugoshop_breadcrumbs::text, '') || ' ' ||
-                        COALESCE(psh.hugoshop_category, ''))
+                        s.description || ' ' || s.partnumber || ' ' ||
+                        COALESCE(s.hugoshop_breadcrumbs::text, '') || ' ' ||
+                        COALESCE(s.hugoshop_category, ''))
                     @@ to_tsquery('simple', :begriffe)
          )
-         SELECT id, partnumber, description, sellprice, breadcrumbs, category, hyperlink, image
-           FROM gefunden
-          ORDER BY rang * POWER(LOG(sellprice + 1), :gewicht) DESC, description
+         SELECT g.id, g.partnumber, g.description, g.breadcrumbs, g.category, g.hyperlink, g.image
+           FROM gefunden g
+           CROSS JOIN LATERAL (SELECT shop_channel_price(g.id) AS preis) k
+          ORDER BY g.rang * POWER(LOG(GREATEST(k.preis, 0) + 1), :gewicht) DESC, g.description
           LIMIT :limit OFFSET :offset",
         [
             ':begriffe' => $tsquery,

@@ -137,7 +137,11 @@ function getFakturaData($data) {
                                     LEFT JOIN chart c1 ON bg.inventory_accno_id = c1.id
                                     LEFT JOIN chart c2 ON tc.income_accno_id = c2.id
                                     LEFT JOIN chart c3 ON tc.expense_accno_id = c3.id
+                                    -- nur Schlüssel, die am Belegdatum gelten — ein
+                                    -- im Voraus eingetragener Satzwechsel greift erst ab
+                                    -- seinem Datum (dev/shop-verkaufskanaele.md, V24)
                                     LEFT JOIN taxkeys tk ON tk.chart_id = c2.id
+                                        AND tk.startdate <= COALESCE((SELECT transdate FROM {$mainTable} WHERE id = :fakturaID), current_date)
                                     LEFT JOIN tax tx ON tx.id = tk.tax_id
                                     WHERE tc.taxzone_id = (SELECT taxzone_id FROM {$mainTable} WHERE id = :fakturaID)
                                         AND p.id = parts.id
@@ -639,7 +643,9 @@ function createFakturaItem($data) {
                                 LEFT JOIN buchungsgruppen bg ON p.buchungsgruppen_id = bg.id
                                 LEFT JOIN taxzone_charts tc ON bg.id = tc.buchungsgruppen_id
                                 LEFT JOIN chart c2 ON tc.income_accno_id = c2.id
+                                -- nur am Belegdatum gültige Schlüssel (V24)
                                 LEFT JOIN taxkeys tk ON tk.chart_id = c2.id
+                                    AND tk.startdate <= COALESCE((SELECT transdate FROM {$mainTable} WHERE id = {$itemsTable}.trans_id), current_date)
                                 LEFT JOIN tax tx ON tx.id = tk.tax_id
                                 WHERE tc.taxzone_id = (SELECT taxzone_id FROM {$mainTable} WHERE id = {$itemsTable}.trans_id)
                                     AND p.id = parts.id
@@ -1389,7 +1395,8 @@ function postArInvoiceToLedger($db, $arId, $dryRun = false) {
             FROM buchungsgruppen bg
             JOIN taxzone_charts tc ON tc.buchungsgruppen_id = bg.id AND tc.taxzone_id = :tz
             JOIN chart c2 ON c2.id = tc.income_accno_id
-            LEFT JOIN taxkeys tk ON tk.chart_id = c2.id
+            -- nur am Belegdatum gültige Schlüssel (V24)
+            LEFT JOIN taxkeys tk ON tk.chart_id = c2.id AND tk.startdate <= :td
             LEFT JOIN tax tx ON tx.id = tk.tax_id
             WHERE bg.id = p.buchungsgruppen_id
             ORDER BY tk.startdate DESC NULLS LAST
@@ -1397,7 +1404,7 @@ function postArInvoiceToLedger($db, $arId, $dryRun = false) {
         ) bz ON true
         WHERE i.trans_id = :id
         ORDER BY i.position
-    SQL, ['id' => $arId, 'tz' => $ar['taxzone_id']]);
+    SQL, ['id' => $arId, 'tz' => $ar['taxzone_id'], 'td' => $transdate ?: date('Y-m-d')]);
 
     if (empty($items)) {
         return ['posted' => false, 'reason' => 'NO_ITEMS'];
@@ -1534,7 +1541,8 @@ function postApInvoiceToLedger($db, $apId, $dryRun = false) {
             FROM buchungsgruppen bg
             JOIN taxzone_charts tc ON tc.buchungsgruppen_id = bg.id AND tc.taxzone_id = :tz
             JOIN chart c2 ON c2.id = tc.expense_accno_id
-            LEFT JOIN taxkeys tk ON tk.chart_id = c2.id
+            -- nur am Belegdatum gültige Schlüssel (V24)
+            LEFT JOIN taxkeys tk ON tk.chart_id = c2.id AND tk.startdate <= :td
             LEFT JOIN tax tx ON tx.id = tk.tax_id
             WHERE bg.id = p.buchungsgruppen_id
             ORDER BY tk.startdate DESC NULLS LAST
@@ -1542,7 +1550,7 @@ function postApInvoiceToLedger($db, $apId, $dryRun = false) {
         ) bz ON true
         WHERE i.trans_id = :id
         ORDER BY i.position
-    SQL, ['id' => $apId, 'tz' => $ap['taxzone_id']]);
+    SQL, ['id' => $apId, 'tz' => $ap['taxzone_id'], 'td' => $transdate ?: date('Y-m-d')]);
 
     if (empty($items)) {
         return ['posted' => false, 'reason' => 'NO_ITEMS'];

@@ -19,7 +19,11 @@
             "hints": "Šo datu vēl trūkst. Veikals darbojas, bet ierobežoti:",
             "partsWithShopData": "Preces ar veikala datiem",
             "carts": "Grozi",
-            "sessions": "Sesijas"
+            "sessions": "Sesijas",
+            "recommendations": "Ieteikumi:",
+            "recommendation": {
+                "channel_round_99_net": "Noapaļošana līdz ,99 ir ieslēgta, bet pārdošanas cenas ir saglabātas bez PVN. Ar cenām ar PVN grozs un rēķins vienmēr sakrīt līdz centam."
+            }
         },
         "orders": {
             "title": "Pasūtījumi",
@@ -70,7 +74,7 @@
         "partCard": {
             "title": "Veikals",
             "listed": "Piedāvāt veikalā",
-            "listedHint": "Veikala meklēšanā tiek rādītas tikai preces ar veikala datiem.",
+            "listedHint": "Veikalā tiek rādītas tikai preces, kas tiek piedāvātas vismaz vienā pārdošanas kanālā.",
             "category": "Kategorija",
             "hyperlink": "Produkta lapa",
             "hyperlinkHint": "Produkta lapas ceļš veikala tīmekļa vietnē bez bāzes adreses. Atstājiet tukšu, lai izmantotu ieteikumu.",
@@ -93,7 +97,50 @@
             "noPermission": "Jums nav tiesību mainīt veikala datus.",
             "publish": "Publicēt",
             "publishQueued": "Uzdevums izveidots.",
-            "publishAlready": "Uzdevums jau gaida."
+            "publishAlready": "Uzdevums jau gaida.",
+            "channels": "Pārdošanas kanāli",
+            "markup": "Uzcenojums",
+            "markupDefault": "Kanāla noklusējums ({vorgabe})",
+            "markupNone": "Bez uzcenojuma",
+            "markupPercent": "Uzcenojums procentos",
+            "markupAmount": "Fiksēts uzcenojums",
+            "markupValue": "Vērtība",
+            "markupAmountNet": "Summa bez PVN, kā pārdošanas cena",
+            "markupAmountGross": "Summa ar PVN, kā pārdošanas cena",
+            "defaultNone": "bez uzcenojuma",
+            "basePrice": "Pamatcena",
+            "channelPrice": "Cena kanālā",
+            "net": "bez PVN",
+            "gross": "ar PVN",
+            "rounded99": "Cena ar PVN noapaļota līdz ,99",
+            "pricePreview": "Priekšskatījums ar šīs formas pārdošanas cenu un grāmatošanas grupu.",
+            "channelTitle": "Apraksts kanālā",
+            "channelTitleHint": "Atstājiet tukšu, lai izmantotu preces aprakstu.",
+            "channelDescription": "Garais apraksts kanālā",
+            "channelDescriptionHint": "Atstājiet tukšu, lai izmantotu preces garo aprakstu.",
+            "serviceNotOnMarketplace": "Pakalpojumi tirdzniecības platformās netiek piedāvāti.",
+            "channelImages": "Attēli kanālam {kanal}",
+            "imagesAfterCreate": "Attēlus var pievienot, kad prece ir izveidota.",
+            "moveLeft": "Pārvietot uz priekšu",
+            "moveRight": "Pārvietot atpakaļ",
+            "removeImage": "Noņemt attēlu",
+            "addImage": "Pievienot attēlu",
+            "copyImagesFrom": "Pārņemt attēlus no {kanal}",
+            "imagesCopied": "Pārņemti attēli: {anzahl}.",
+            "imageError": "Attēlu neizdevās apstrādāt.",
+            "syncStatus": "Statuss kanālā {kanal}",
+            "listingId": "Sludinājums {id}",
+            "ebayCategory": "eBay kategorija",
+            "ebayCondition": "Stāvoklis",
+            "channelDefault": "Noklusējums no iestatījumiem",
+            "channelDefaultHint": "Atstājiet tukšu, lai izmantotu iestatījumu noklusējumu.",
+            "sync": {
+                "active": "ievietots",
+                "ended": "beigts",
+                "error": "kļūda",
+                "pending": "tiek pārsūtīts",
+                "none": "vēl nav pārsūtīts"
+            }
         },
         "publish": {
             "title": "Publicēšana",
@@ -131,9 +178,44 @@
                 "publish_part": "Rakstīt produkta lapu",
                 "publish_all": "Visi produkti",
                 "remove_part": "Noņemt produkta lapu",
+                "remove_all": "Noņemt visas produktu lapas",
                 "sync_kit": "Sinhronizēt pakotni",
                 "reconcile_payments": "Saskaņot maksājumus"
             }
+        },
+        "channels": {
+            "hugoshop": "HugoShop",
+            "ebay": "eBay",
+            "amazon": "Amazon"
+        },
+        "channelConfig": {
+            "title": "Pārdošanas kanāli",
+            "intro": "Kanāla noklusējumi visām precēm bez sava uzcenojuma. Pamatcena ir preces pārdošanas cena.",
+            "parts": "{anzahl} preces",
+            "active": "Kanāls ieslēgts",
+            "activeLast": "Jābūt ieslēgtam vismaz vienam pārdošanas kanālam.",
+            "round99": "Noapaļot cenu ar PVN uz augšu līdz ,99",
+            "round99Hint": "12,30 kļūst par 12,99 un 13,00 par 13,99. Cena, kas beidzas ar ,99, paliek.",
+            "round99NetWarning": "Pārdošanas cenas ir saglabātas bez PVN. Cena bez PVN tiek aprēķināta no noapaļotās cenas ar PVN; rēķini var atšķirties no groza par vienu centu. Ieteicams: pārdošanas cenas glabāt ar PVN (iestatījums augstāk).",
+            "invalidPercent": "100 % vai lielāka atlaide nav iespējama.",
+            "saved": "Saglabāts.",
+            "republishQueued": "Saglabāts. Produktu lapas tiks pārrakstītas ar jaunajām cenām.",
+            "saveError": "Kanāla iestatījumus neizdevās saglabāt.",
+            "loadError": "Pārdošanas kanālus neizdevās ielādēt."
+        },
+        "ebayCondition": {
+            "NEW": "Jauns",
+            "USED_EXCELLENT": "Lietots – teicams",
+            "USED_GOOD": "Lietots – labs",
+            "USED_ACCEPTABLE": "Lietots – pieņemams",
+            "FOR_PARTS_OR_NOT_WORKING": "Bojāts / rezerves daļām"
+        },
+        "errors": {
+            "API_ERROR": "Darbība neizdevās.",
+            "NETWORK_ERROR": "Serveris nav sasniedzams. Pārbaudiet savienojumu un mēģiniet vēlreiz.",
+            "API_DATABASE_ERROR": "Datu bāze neatbild, kā gaidīts. Lūdzu informējiet administratoru.",
+            "API_INTERNAL_ERROR": "Serverī radās neparedzēta kļūda. Lūdzu informējiet administratoru.",
+            "NO_PERMISSION": "Jums nav tiesību veikt šo darbību."
         }
     }
 }

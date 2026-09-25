@@ -925,7 +925,21 @@
         "shopPublishMode": "Darbības režīms",
         "shopPublishMode_help": "Lokāls: vietne atrodas šajā serverī, OpensourceERP ieraksta tajā failus un pats to būvē. HugoCMS: vietne darbojas savā tīmekļa serverī, OpensourceERP pārsūta failus uz HugoCMS, kas to tur būvē. Tad zemāk esošie direktoriju un programmas lauki nav spēkā.",
         "shopPublishModeLocal": "Lokāls — vietne šajā serverī",
-        "shopPublishModeHugoCms": "HugoCMS — vietne savā tīmekļa serverī"
+        "shopPublishModeHugoCms": "HugoCMS — vietne savā tīmekļa serverī",
+        "shopAutoPublish": "Mainoties cenām, automātiski pārrakstīt produktu lapas",
+        "shopAutoPublish_help": "Izveido publicēšanas uzdevumu, kad HugoShop preces pārdošanas cena, grāmatošanas grupa, uzcenojums, apraksts vai garais apraksts mainās, kā arī mainoties kanāla noklusējumiem vai iestatījumam ar/bez PVN. Bez šī iestatījuma lapās redzama vecā cena, līdz tās tiek publicētas manuāli.",
+        "shopChannelOffPages": "Lapas, izslēdzot HugoShop",
+        "shopChannelOffPages_help": "Kas notiek ar produktu lapām, kad HugoShop tiek izslēgts sadaļā “Pārdošanas kanāli”. Atkal ieslēdzot, visas lapas tiek publicētas no jauna.",
+        "shopChannelOffPagesDraft": "Saglabāt kā melnrakstu (vairs netiek publicēts)",
+        "shopChannelOffPagesRemove": "Noņemt",
+        "shopEbay": "eBay",
+        "shopEbay_help": "eBay kanāla piekļuve, sludinājumu noklusējumi un pasūtījumu imports. eBay ieslēdz un izslēdz augstāk sadaļā “Pārdošanas kanāli”.",
+        "ebayPublicHost": "Publiskā adrese attēliem",
+        "ebayPublicHost_help": "Šī servera adrese, no kuras eBay ielādē preču attēlus (https, bez ceļa), piem., erp.example.lv. Obligāta, jo sludinājumi tiek ievietoti fonā.",
+        "ebayEnvironmentProduction": "Ražošana",
+        "ebayEnvironmentSandbox": "Smilškaste (tests)",
+        "ebayMoved": "eBay tagad ir veikala paplašinājuma pārdošanas kanāls. Iestatījumi ir cilnē Veikals sadaļā “eBay”, sludinājumi preces veikala kartītē.",
+        "ebayNeedsShop": "eBay ir ieslēgts, bet veikala paplašinājums nav. Bez tā sludinājumi netiek ievietoti un pasūtījumi netiek ielādēti — lūdzu, aktivizējiet veikala paplašinājumu."
     },
     "add": "Pievienot",
     "add_fields": {

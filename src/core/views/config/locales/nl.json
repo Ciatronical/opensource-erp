@@ -925,7 +925,21 @@
         "shopPublishMode": "Bedrijfsmodus",
         "shopPublishMode_help": "Lokaal: de website staat op deze server; OpensourceERP schrijft de bestanden erin en bouwt hem zelf. HugoCMS: de website draait op een eigen webserver; OpensourceERP draagt de bestanden over aan HugoCMS, dat hem daar bouwt. De map- en programmavelden hieronder gelden dan niet.",
         "shopPublishModeLocal": "Lokaal — website op deze server",
-        "shopPublishModeHugoCms": "HugoCMS — website op een eigen webserver"
+        "shopPublishModeHugoCms": "HugoCMS — website op een eigen webserver",
+        "shopAutoPublish": "Productpagina's bij prijswijzigingen automatisch opnieuw schrijven",
+        "shopAutoPublish_help": "Maakt een publicatietaak aan wanneer verkoopprijs, boekingsgroep, opslag, omschrijving of lange omschrijving van een artikel in de HugoShop wijzigen, en bij wijziging van de kanaalstandaarden of de bruto/netto-instelling. Zonder deze instelling tonen de pagina's de oude prijs tot ze handmatig worden gepubliceerd.",
+        "shopChannelOffPages": "Pagina's bij uitschakelen van de HugoShop",
+        "shopChannelOffPages_help": "Wat er met de productpagina's gebeurt wanneer de HugoShop onder „Verkoopkanalen” wordt uitgeschakeld. Bij opnieuw inschakelen worden alle pagina's opnieuw gepubliceerd.",
+        "shopChannelOffPagesDraft": "Als concept behouden (niet meer gepubliceerd)",
+        "shopChannelOffPagesRemove": "Verwijderen",
+        "shopEbay": "eBay",
+        "shopEbay_help": "Toegang, standaardwaarden voor advertenties en orderimport van het eBay-kanaal. eBay wordt hierboven onder „Verkoopkanalen” in- en uitgeschakeld.",
+        "ebayPublicHost": "Openbaar adres voor afbeeldingen",
+        "ebayPublicHost_help": "Adres van deze server waar eBay de artikelafbeeldingen ophaalt (https, zonder pad), bijv. erp.example.nl. Verplicht, omdat advertenties op de achtergrond worden geplaatst.",
+        "ebayEnvironmentProduction": "Productie",
+        "ebayEnvironmentSandbox": "Sandbox (test)",
+        "ebayMoved": "eBay is nu een verkoopkanaal van de shop-uitbreiding. De instellingen staan op het tabblad Shop onder „eBay”, de advertenties in de shopkaart van het artikel.",
+        "ebayNeedsShop": "eBay is ingeschakeld, maar de shop-uitbreiding niet. Zonder die uitbreiding worden geen advertenties geplaatst en geen orders opgehaald — activeer de shop-uitbreiding."
     },
     "add": "Toevoegen",
     "add_fields": {

@@ -76,6 +76,23 @@
             </div>
         </v-alert>
 
+        <!-- Empfehlungen: nichts fehlt, aber eine andere Einstellung wäre besser -->
+        <v-alert
+            v-if="status && status.recommendations?.length"
+            type="info"
+            variant="tonal"
+            density="compact"
+            icon="mdi-lightbulb-outline"
+            class="mb-4"
+        >
+            <div class="text-body-2">{{ t('ShopView.status.recommendations') }}</div>
+            <ul class="mt-1">
+                <li v-for="punkt in status.recommendations" :key="punkt">
+                    {{ te(`ShopView.status.recommendation.${punkt}`) ? t(`ShopView.status.recommendation.${punkt}`) : punkt }}
+                </li>
+            </ul>
+        </v-alert>
+
         <!-- Kennzahlen -->
         <v-row v-if="status" class="mb-2">
             <v-col cols="12" sm="4" v-for="kachel in kennzahlen" :key="kachel.key">
@@ -238,7 +255,13 @@
                                 />
                             </td>
                             <td class="text-caption text-no-wrap">{{ zeitpunkt(auftrag.itime) }}</td>
-                            <td>{{ auftragsart(auftrag.function) }}</td>
+                            <td>
+                                {{ auftragsart(auftrag.function) }}
+                                <!-- Kanal des Auftrags (channels/): gleiche Auftragsart gibt es je Kanal -->
+                                <span v-if="auftrag.channel" class="text-medium-emphasis">
+                                    · {{ te(`ShopView.channels.${auftrag.channel}`) ? t(`ShopView.channels.${auftrag.channel}`) : auftrag.channel }}
+                                </span>
+                            </td>
                             <td>{{ auftrag.partnumber }}</td>
                             <td class="text-caption">{{ auftrag.result || t('ShopView.publish.notExecuted') }}</td>
                         </tr>

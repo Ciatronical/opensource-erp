@@ -925,7 +925,21 @@
         "shopPublishMode": "Driftstilstand",
         "shopPublishMode_help": "Lokal: Webstedet ligger på denne server; OpensourceERP skriver filerne ind og bygger det selv. HugoCMS: Webstedet kører på sin egen webserver; OpensourceERP overfører filerne til HugoCMS, som bygger det der. Mappe- og programfelterne nedenfor gælder så ikke.",
         "shopPublishModeLocal": "Lokal — websted på denne server",
-        "shopPublishModeHugoCms": "HugoCMS — websted på egen webserver"
+        "shopPublishModeHugoCms": "HugoCMS — websted på egen webserver",
+        "shopAutoPublish": "Skriv produktsider automatisk igen ved prisændringer",
+        "shopAutoPublish_help": "Opretter et publiceringsjob, når salgspris, bogføringsgruppe, tillæg, beskrivelse eller lang beskrivelse for en vare i HugoShop ændres, samt når kanalens standardværdier eller brutto/netto-indstillingen ændres. Uden denne indstilling viser siderne den gamle pris, indtil de publiceres manuelt.",
+        "shopChannelOffPages": "Sider når HugoShop slås fra",
+        "shopChannelOffPages_help": "Hvad der sker med produktsiderne, når HugoShop slås fra under „Salgskanaler“. Når den slås til igen, publiceres alle sider på ny.",
+        "shopChannelOffPagesDraft": "Behold som kladde (publiceres ikke længere)",
+        "shopChannelOffPagesRemove": "Fjern",
+        "shopEbay": "eBay",
+        "shopEbay_help": "Adgang, standardværdier for annoncer og ordreimport for eBay-kanalen. eBay slås til og fra ovenfor under „Salgskanaler“.",
+        "ebayPublicHost": "Offentlig adresse til billeder",
+        "ebayPublicHost_help": "Adressen på denne server, hvorfra eBay henter varebillederne (https, uden sti), fx erp.example.dk. Påkrævet, fordi annoncer oprettes i baggrunden.",
+        "ebayEnvironmentProduction": "Produktion",
+        "ebayEnvironmentSandbox": "Sandbox (test)",
+        "ebayMoved": "eBay er nu en salgskanal i shop-udvidelsen. Indstillingerne findes under fanen Shop under „eBay“, annoncerne i varens shopkort.",
+        "ebayNeedsShop": "eBay er slået til, men shop-udvidelsen er ikke. Uden den oprettes ingen annoncer og hentes ingen ordrer — aktivér venligst shop-udvidelsen."
     },
     "add": "Tilfoej",
     "add_fields": {
