@@ -337,6 +337,7 @@ function getPartShopData($data) {
                        c.round_99,
                        COALESCE(pc.active, false) AS active,
                        pc.markup_type, pc.markup_value, pc.title, pc.description,
+                       COALESCE(pc.unavailable, false) AS unavailable,
                        COALESCE(pc.settings, '{}'::jsonb) AS settings,
                        pc.sync_status, pc.sync_error, pc.sync_mtime, pc.external_id,
                        -- Bilder der Marktplätze; der HugoShop führt seine in parts_ext
@@ -389,10 +390,11 @@ function getPartShopData($data) {
  * @param array $data['downloads'] JSON-Objekt: Anzeigename => Dateiname
  * @param array $data['channels'] Liste aus channel_id, active, markup_type
  *              (null = Vorgabe des Kanals, none, percent, amount), markup_value,
- *              title, description, settings (kanaleigene Angaben, etwa
+ *              title, description, unavailable (vorübergehend nicht
+ *              verfügbar), settings (kanaleigene Angaben, etwa
  *              category_id und condition bei eBay)
  * @return void
- * @testdata {"parts_id": 1, "category": "Bremsen", "hyperlink": "bremsscheibe", "channels": [{"channel_id": 1, "active": true, "markup_type": "percent", "markup_value": 10, "title": "", "description": ""}]}
+ * @testdata {"parts_id": 1, "category": "Bremsen", "hyperlink": "bremsscheibe", "channels": [{"channel_id": 1, "active": true, "markup_type": "percent", "markup_value": 10, "title": "", "description": "", "unavailable": false}]}
  */
 function savePartShopData($data) {
     permit(['shop_part_edit', 'edit_shop_config'], false);
@@ -446,18 +448,19 @@ function savePartShopData($data) {
                     CASE WHEN e.markup_type IN ('percent', 'amount') THEN COALESCE(e.markup_value, 0) END AS markup_value,
                     NULLIF(btrim(e.title), '') AS title,
                     NULLIF(btrim(e.description), '') AS description,
+                    COALESCE(e.unavailable, false) AS unavailable,
                     -- leere Angaben fallen weg: sie hießen „Vorgabe des Kanals“
                     (SELECT jsonb_object_agg(a.key, a.value)
                        FROM jsonb_each(CASE WHEN jsonb_typeof(e.settings) = 'object' THEN e.settings END) a
                       WHERE a.value NOT IN ('null'::jsonb, to_jsonb(''::text))) AS settings
                FROM jsonb_to_recordset(:kanaele::jsonb)
                     AS e(channel_id integer, active boolean, markup_type text, markup_value numeric,
-                         title text, description text, settings jsonb)
+                         title text, description text, unavailable boolean, settings jsonb)
          ), geschrieben AS (
              INSERT INTO parts_channel_shop (parts_id, channel_id, active, markup_type, markup_value,
-                                             title, description, settings)
+                                             title, description, unavailable, settings)
              SELECT ext.parts_id, e.channel_id, e.active, e.markup_type, e.markup_value,
-                    e.title, e.description, e.settings
+                    e.title, e.description, e.unavailable, e.settings
                FROM ext
                JOIN eingabe e ON true
                JOIN sales_channel_shop c ON c.id = e.channel_id
@@ -467,6 +470,7 @@ function savePartShopData($data) {
                     markup_value = CASE WHEN :vollstaendig = 1 THEN EXCLUDED.markup_value ELSE parts_channel_shop.markup_value END,
                     title        = CASE WHEN :vollstaendig = 1 THEN EXCLUDED.title        ELSE parts_channel_shop.title END,
                     description  = CASE WHEN :vollstaendig = 1 THEN EXCLUDED.description  ELSE parts_channel_shop.description END,
+                    unavailable  = CASE WHEN :vollstaendig = 1 THEN EXCLUDED.unavailable  ELSE parts_channel_shop.unavailable END,
                     settings     = CASE WHEN :vollstaendig = 1 THEN EXCLUDED.settings     ELSE parts_channel_shop.settings END,
                     mtime        = now()
              RETURNING channel_id, active
@@ -951,6 +955,62 @@ function runShopPublishJobs($data) {
     }
 
     resultInfo(true, '', ['started' => true, 'running' => true]);
+}
+
+/**
+ * Installiert die Shop-Benutzerschnittstelle in der Webseite
+ *
+ * Übernimmt aus dem Panel, was sonst tools/shop-publish.php im Cron erledigt:
+ * das Paket des Vorlagensatzes (Widget-Bündel, Shortcodes, Einstiegspunkte,
+ * config.json) nach <webseite>/oserp-shop/ spiegeln — in der Betriebsart
+ * HugoCMS dorthin übertragen — und die Webseite bauen. Gebaut wird auch, wenn
+ * das Paket schon aktuell war (SHOP_KIT_INSTALL). Fehlende Mounts oder
+ * params.shopui meldet der Lauf als Hinweis.
+ *
+ * Dazu wird ein Auftrag sync_kit angelegt und allein ausgeführt. Ist schon
+ * einer offen, wird er dafür übernommen: shop_queue_job legt keinen zweiten
+ * an. Arbeitet gerade ein Lauf, wird nichts gestartet — der Auftrag bleibt
+ * offen und wird beim nächsten Lauf erledigt.
+ *
+ * @return void
+ * @testdata {}
+ */
+function installShopUi($data) {
+    permit(['edit_shop_config'], false);
+    $db = DbhCompany::begin();
+
+    $id = shopQueueJob($db, 'sync_kit', '', SHOP_KIT_INSTALL);
+    if (0 === $id) {
+        $offen = $db->getOne(
+            "UPDATE batchjob_hugoshop b SET param = :param
+               FROM sales_channel_shop c
+              WHERE c.id = COALESCE(b.channel_id, shop_channel_id('hugoshop'))
+                AND c.type = 'hugoshop'
+                AND b.function = 'sync_kit'
+                AND b.partnumber = ''
+                AND b.result IS NULL
+          RETURNING b.id",
+            [':param' => SHOP_KIT_INSTALL]
+        );
+        $id = (int)($offen['id'] ?? 0);
+    }
+    if (0 === $id) {
+        resultInfo(false, 'SHOP_PUBLISH_START_FAILED', null, 'Der Auftrag ließ sich nicht anlegen.');
+        return;
+    }
+
+    if (shopPublishStatus($db)['running']) {
+        resultInfo(true, '', ['job_id' => $id, 'started' => false, 'running' => true]);
+        return;
+    }
+
+    $start = shopPublishStartBackground($db, [$id]);
+    if ('' !== $start['fehler']) {
+        resultInfo(false, 'SHOP_PUBLISH_START_FAILED', null, $start['fehler']);
+        return;
+    }
+
+    resultInfo(true, '', ['job_id' => $id, 'started' => true, 'running' => true]);
 }
 
 /**

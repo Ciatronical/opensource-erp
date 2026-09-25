@@ -6,7 +6,8 @@
   "license": "UNLICENSED",
   "main": "../backend/templates-default/shop/standard/kit/assets/shop-ui/shop-widgets.js",
   "scripts": {
-    "build": "esbuild src/index.js --bundle --format=esm --minify --outfile=../backend/templates-default/shop/standard/kit/assets/shop-ui/shop-widgets.js",
+    "build": "node scripts/build.mjs && node scripts/check-bundle.mjs",
+    "check": "node scripts/check-bundle.mjs",
     "build:dev": "esbuild src/index.js --bundle --format=esm --minify --sourcemap --outfile=dist/shop-widgets.js",
     "watch": "esbuild src/index.js --bundle --format=esm --sourcemap --outfile=dist/shop-widgets.js --watch",
     "size": "esbuild src/index.js --bundle --format=esm --minify --outfile=/dev/null --analyze",

@@ -203,6 +203,7 @@
                         :description="article.description"
                         :notes="article.notes"
                         :part-type="article.part_type"
+                        :obsolete="!!article.obsolete"
                     />
 
                     <!-- eBay: früher eine eigene Karte hier, jetzt ein Verkaufskanal in

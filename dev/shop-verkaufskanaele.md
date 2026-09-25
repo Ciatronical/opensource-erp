@@ -1,7 +1,7 @@
 # Shop: Verkaufskanäle
 
 Stand 2026-09-25. Status: **Schritte 1 bis 5 umgesetzt**, dazu die
-Lagerbuchung bei Verkäufen (V28). Entschieden sind V1 bis V28. Was noch fehlt
+Lagerbuchung bei Verkäufen (V28) und die Verfügbarkeit je Kanal (V29). Entschieden sind V1 bis V29. Was noch fehlt
 — offene Entscheidungen O15 bis O25, Aufgaben, Prüfungen vor der
 Inbetriebnahme und die Einrichtung — steht gesammelt unter „Offener Stand
 nach Schritt 5“.
@@ -44,6 +44,7 @@ Verwandte Dokumente: `dev/shop-veroeffentlichung.md` (Seitenerzeugung),
 | V26 | (O6) Abschalten eines Marktplatz-Kanals (eBay, Amazon) beendet dessen laufende Angebote über die Warteschlange; Wiedereinschalten stellt sie neu ein. Umsetzung mit dem jeweiligen Kanal | 2026-09-25 |
 | V27 | (O7) Amazon folgt nach eBay. Vorher wird geklärt, ob ein Amazon-Verkäuferkonto mit API-Zugang (SP-API, Registrierung als Entwickler) besteht | 2026-09-25 |
 | V28 | (O14) Rechnungen aus HugoShop und eBay buchen je Warenposition eine Ausbuchung vom Lagerplatz aus `shop_stock_bin_id`. Ohne Lagerplatz keine Buchung, mit Hinweis in der Einrichtungsprüfung. Die Faktura im Kern bleibt unberührt | 2026-09-25 |
+| V29 | Verfügbarkeit: Ein Artikel ist in einem Kanal bestellbar, wenn er nicht „Veraltet“ (`parts.obsolete`, gilt für alle Kanäle) und im Kanal nicht als „Momentan nicht verfügbar“ markiert ist (neue Spalte `parts_channel_shop.unavailable`). Eine Änderung an beidem stellt Aufträge ein wie eine Preisänderung | 2026-09-25 |
 
 Daraus abgeleitete Festlegungen (unten begründet):
 
@@ -749,6 +750,40 @@ Platz bucht nicht; Prüfläufe der Schritte 1 bis 5; Build. **Nicht geprüft:**
 gegen die echte kivitendo-Datenbank (weitere Trigger auf `inventory`, etwa
 `check_bin_wh_inventory`), die Auswahl im Browser.
 
+## Umsetzung V29: Verfügbarkeit je Kanal
+
+Anlass: Bei sonic24 zeigte die Produktseite „Verfügbar / Auf Lager“, solange
+der Artikel nicht „Veraltet“ war. Um das zu ändern, musste der Artikel im
+ganzen ERP als veraltet markiert und die Seite von Hand neu veröffentlicht
+werden.
+
+**Datenbank (Upstall):**
+- Spalte `parts_channel_shop.unavailable boolean NOT NULL DEFAULT false`, in
+  bestehenden Datenbanken per `ADD COLUMN IF NOT EXISTS`.
+- `shop_part_available(parts_id, type)`: `NOT parts.obsolete AND NOT
+  parts_channel_shop.unavailable`. Ob der Artikel im Kanal angeboten wird
+  (`active`), fragt sie nicht.
+- Trigger auf `parts`: `obsolete` zählt wie der Preis — HugoShop-Seite neu
+  bei `shop_auto_publish`, Marktplätze immer.
+- Trigger auf `parts_channel_shop`: `unavailable` zählt wie Aufschlag und
+  Texte.
+
+**Wirkung:**
+- Produktseite: `shopPageData()` liefert `available`. sonic24 zeigt damit
+  „Momentan nicht verfügbar“ ohne Warenkorb-Knopf; die Vorlage `standard`
+  meldet `OutOfStock`, wenn der Artikel nicht verfügbar ist oder kein Bestand
+  da ist.
+- Warenkorb: `cartAdd` nimmt nicht verfügbare Artikel nicht an
+  (`PART_NOT_FOUND`), `cartRead` meldet sie als nicht angeboten — die Kasse
+  verlangt dann das Entfernen (`CART_NOT_OFFERED`, V23).
+- eBay: Menge 0 statt Lagerbestand; das Angebot bleibt bestehen.
+- Artikelkarte: Schalter „Momentan nicht verfügbar“ je Kanal; ist der Artikel
+  „Veraltet“, weist die Karte darauf hin.
+
+**Geprüft** gegen die Testdatenbank: Funktion, beide Trigger (Aufträge für
+HugoShop und eBay), `shopPageData()`, beide Warenkorb-Abfragen. **Nicht
+geprüft:** Artikelkarte im Browser, eBay mit Menge 0.
+
 ## Probleme und anstehende Entscheidungen
 
 | Nr. | Thema | Stand | Vorschlag |
@@ -795,7 +830,7 @@ beginnen die neuen bei O15.
 | Nr. | Aufgabe |
 | --- | --- |
 | A1 | Text `crm_fields.ebayPanelUi.disabled` (21 Sprachen) sagt noch „Oben aktivieren und Zugangsdaten speichern“ — eingeschaltet wird eBay jetzt unter „Verkaufskanäle“ |
-| A2 | `dev/lokale-ki-ollama.md` erwähnt `api/ebay/*`, das es nicht mehr gibt |
+| A2 | ~~`dev/lokale-ki-ollama.md` erwähnt `api/ebay/*`, das es nicht mehr gibt~~ **Erledigt 2026-09-25**; der Verweis war schon vorher falsch — die eBay-Anbindung enthielt keine KI-Aufrufe |
 | A3 | Kommentare, die auf die alte Anbindung zeigen (Herkunftsangaben in `channels/ebay.php`, `channels/ebay_orders.php`, `shop-ebay-status.vue`) sind als Herkunft gewollt; bei O20 mit aufräumen |
 | A4 | Die Prüfprogramme dieser Umsetzung liegen nur im Scratchpad der Sitzung. Für dauerhafte Tests bräuchte es eine Testumgebung mit kivitendo-Schema; die Nachbildung reichte für Logik und SQL, nicht für Faktura und Buchung |
 

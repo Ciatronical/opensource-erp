@@ -37,7 +37,7 @@ price: <?= shopYaml(shopNumber($artikel['sellprice'])) ?>
 
 priceCurrency: <?= shopYaml($betrieb['currency']) ?>
 
-availability: "https://schema.org/<?= $artikel['onhand'] > 0 ? 'InStock' : 'OutOfStock' ?>"
+availability: "https://schema.org/<?= $artikel['available'] && $artikel['onhand'] > 0 ? 'InStock' : 'OutOfStock' ?>"
 schemaBusinessType: "Product"
 type: "produkt"
 draft: false

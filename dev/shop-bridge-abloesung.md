@@ -339,7 +339,8 @@ alphabetische Liste.
 | Zieldatei | `theme.json` des Satzes, Eintrag `data.category_groups` |
 
 - Gezählt wird mit einer Abfrage über `parts_ext`, dieselbe Auswahl wie die
-  Seiten.
+  Seiten — seit den Verkaufskanälen (2026-09-25) nur Artikel mit aktiver
+  HugoShop-Zeile bei eingeschaltetem HugoShop (`dev/shop-verkaufskanaele.md`).
 - Der Läufer erneuert die Datei, wenn Seiten geschrieben oder entfernt wurden,
   und schreibt nur bei geändertem Inhalt. Ohne Kategorien entfernt er sie.
   Scheitert die Übersicht, wird trotzdem gebaut.
@@ -415,7 +416,10 @@ scheitert.
 `backend/templates/shop/sonic24/` im Repository der Kundensätze: `theme.json`
 und `category_groups.php` mit den 68 Wortteilen und 4 Topsellern aus
 `publish/category_groups.php`, samt Kommentaren. Stoppwörter, Schwellen,
-Produktseite und Paket kommen aus `standard` — `shopRenderPage()` greift jetzt
+Produktseite und Paket kommen aus `standard` (Nachtrag 2026-09-25: die
+Produktseite inzwischen nicht mehr — der Satz hat eine eigene im alten
+Bootstrap-Aussehen, siehe `dev/shop-veroeffentlichung.md`, „Produktseite
+sonic24“) — `shopRenderPage()` greift jetzt
 wie Paket und Regeln auf `standard` zurück, wenn der Satz eine Vorlage nicht
 mitbringt.
 
@@ -470,6 +474,12 @@ location /shop-api/ {
 ```
 
 ### Bis Stufe F an der Bridge
+
+Nachtrag 2026-09-25: Seit den Verkaufskanälen entscheidet die HugoShop-Zeile
+in `parts_channel_shop`, ob ein Artikel im Shop steht. Damit Artikel, die
+`run.php` nur über `parts_ext` anlegt, weiter erscheinen, legen Trigger auf
+`parts_ext` die Kanalzeile an bzw. schalten sie ab (V7 in
+`dev/shop-verkaufskanaele.md`). Sie werden mit Stufe F entfernt (V25).
 
 `publish/run.php` und `publish/category_groups.php` von sonic24 laden
 `kivitendo_bridge/framework/inc.php` — für den Lieferantenimport, die

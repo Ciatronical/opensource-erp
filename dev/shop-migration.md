@@ -653,6 +653,12 @@ Die Shop-Angaben stehen in einer Karte der Erweiterung
 per `defineAsyncComponent` nur bei aktiver Shop-Erweiterung — wie der Router die
 Shop-Ansichten.
 
+> **Überholt seit 2026-09-25** (`dev/shop-verkaufskanaele.md`): „Im Shop
+> anbieten" heißt jetzt „in mindestens einem Verkaufskanal aktiv“ und wird in
+> `parts_channel_shop` geführt; Ausschalten schaltet die Kanalzeilen ab und
+> lässt `parts_ext` stehen. Die Karte zeigt je Kanal Aufschlag, Texte, Bilder
+> und den Stand beim Kanal. Der folgende Stand gilt für die erste Fassung.
+
 - **„Im Shop anbieten"** entscheidet über die `parts_ext`-Zeile. Nur Artikel
   mit Zeile findet die Shop-Suche (`JOIN`). Ohne diesen Schalter hätte jede
   Bearbeitung bei aktivem Shop eine Zeile angelegt. Ausschalten löscht die

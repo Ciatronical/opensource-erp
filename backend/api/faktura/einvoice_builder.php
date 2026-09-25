@@ -147,11 +147,25 @@ class EInvoiceBuilder {
             $this->toCountryCode($company['address_country'] ?? '')
         );
 
-        $email = $company['seller_contact_email'] ?? $company['co_ustid_email'] ?? null;
+        $email = $company['seller_email'] ?? null;
         if ($email) {
             $builder->setDocumentSellerCommunication(
                 ZugferdElectronicAddressScheme::UNECE3155_EM,
                 $email
+            );
+        }
+
+        // Verkäufer-Kontakt (XRechnung BR-DE-2 bis BR-DE-7): Bearbeiter der Rechnung,
+        // ohne eigene E-Mail-Adresse die Rechnungs-Absenderadresse des Mandanten
+        $contactEmail = ($company['seller_contact_email'] ?? null) ?: $email;
+        $contactTel   = ($company['seller_contact_tel'] ?? null) ?: null;
+        if ($contactEmail || $contactTel) {
+            $builder->setDocumentSellerContact(
+                ($company['seller_contact_name'] ?? null) ?: ($company['company'] ?? null),
+                null,
+                $contactTel,
+                null,
+                $contactEmail
             );
         }
     }

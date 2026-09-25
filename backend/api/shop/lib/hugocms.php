@@ -432,9 +432,11 @@ function shopHugoCmsThumbnails($db): array {
  * @param callable $sagen Meldung
  * @param callable $fehler Fehlermeldung (zählt mit)
  * @param bool $bauen nach der Übertragung bauen lassen
+ * @param bool $erzwingen auch bauen, wenn HugoCMS nichts Neues hat
+ *                        („Shop-Benutzerschnittstelle installieren“)
  * @return bool gebaut
  */
-function shopHugoCmsPublish($db, callable $sagen, callable $fehler, bool $bauen): bool {
+function shopHugoCmsPublish($db, callable $sagen, callable $fehler, bool $bauen, bool $erzwingen = false): bool {
     $abgleich = shopHugoCmsSync($db);
 
     // Nur melden, wenn wirklich übertragen wurde — sonst stünde dieselbe
@@ -486,7 +488,7 @@ function shopHugoCmsPublish($db, callable $sagen, callable $fehler, bool $bauen)
         }
     }
 
-    if (!$bauen || !$bauNoetig) {
+    if (!$bauen || (!$bauNoetig && !$erzwingen)) {
         return false;
     }
 

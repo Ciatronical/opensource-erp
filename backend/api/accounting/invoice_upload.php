@@ -88,6 +88,10 @@ function uploadInvoiceDocument($data) {
                 ':id'   => $docId
             ]
         );
+    } elseif (str_contains($mimeType, 'xml')) {
+        // Reines XML ohne lesbare E-Rechnung (z. B. UBL) — die KI verarbeitet nur PDF und Bilder
+        $db->execute("UPDATE accounting_documents SET status = 'error' WHERE id = :id", [':id' => $docId]);
+        throw new ApiError('EINVOICE_UNREADABLE', 'Die XML-Datei enthält keine lesbare E-Rechnung (ZUGFeRD / XRechnung im CII-Format)');
     } else {
     // API-Key laden
     $config = $db->fetchKeyValue(

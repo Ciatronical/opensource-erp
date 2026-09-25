@@ -7,7 +7,9 @@
 //
 //   Preis          shop_channel_price(…, 'ebay'), brutto (eBay rechnet brutto)
 //   Titel, Text    Beschreibung und Langbeschreibung im Kanal, sonst Stammdaten
-//   Menge          Lagerbestand parts.onhand (V4, V19) statt fester Menge
+//   Menge          Lagerbestand parts.onhand (V4, V19) statt fester Menge;
+//                  0, wenn nicht verfügbar (shop_part_available: veraltet
+//                  oder im Kanal als nicht verfügbar markiert)
 //   Bilder         Bilder des eBay-Kanals (parts_channel_image_shop, V12)
 //   Kategorie,     je Artikel im Kanal (parts_channel_shop.settings), sonst
 //   Zustand        die Vorgaben ebay_default_category_id / ebay_default_condition
@@ -443,7 +445,9 @@ function shopEbayPublishPartNow($db, int $partsId): string {
     // Eine Abfrage für alles, was das Angebot braucht. Der Preis kommt in der
     // Art von parts.sellprice; eBay rechnet brutto.
     $artikel = $db->getOne(
-        "SELECT p.partnumber, p.part_type, GREATEST(FLOOR(COALESCE(p.onhand, 0)), 0)::int AS menge,
+        "SELECT p.partnumber, p.part_type,
+                CASE WHEN shop_part_available(p.id, 'ebay')
+                     THEN GREATEST(FLOOR(COALESCE(p.onhand, 0)), 0)::int ELSE 0 END AS menge,
                 COALESCE(NULLIF(pc.title, ''), p.description) AS titel,
                 COALESCE(NULLIF(pc.description, ''), p.notes, '') AS text,
                 COALESCE(pc.active, false) AND c.active AS angeboten,

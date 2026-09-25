@@ -252,7 +252,7 @@
             "goToBookings": "До проводок",
             "uploadAnother": "Завантажити ще один рахунок",
             "maxFileSize": "Максимальний розмір файлу: 20 МБ",
-            "allowedFormats": "Дозволені формати: PDF, JPG, PNG",
+            "allowedFormats": "Дозволені формати: PDF, JPG, PNG, XML (е-рахунок)",
             "bookedTitle": "Уже проведені вхідні рахунки",
             "colInvNumber": "Номер рахунка",
             "colVendor": "Постачальник",

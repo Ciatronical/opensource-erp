@@ -305,18 +305,45 @@ der Shop-Übersicht als Hinweis.
 
 ## Wiederkehrende Aufgaben
 
-- **Artikel veröffentlichen:** In der Artikelkarte „Im Shop anbieten" und
-  „Veröffentlichen"; die Seite entsteht beim nächsten Lauf.
-- **Alles neu schreiben:** „Alle veröffentlichen" in der Shop-Übersicht.
-- **Artikel aus dem Shop nehmen:** Die Shop-Angaben löschen; der Auftrag
-  `remove_part` entfernt die Seite. Für die alte Adresse gehört eine Zeile in
+- **Artikel veröffentlichen:** In der Artikelkarte „Im Shop anbieten“, den
+  HugoShop als Kanal wählen und „Veröffentlichen“; die Seite entsteht beim
+  nächsten Lauf. Ändern sich danach Verkaufspreis, Buchungsgruppe, Aufschlag
+  oder Texte, legt OSERP den Auftrag selbst an (`shop_auto_publish`, V22 in
+  `dev/shop-verkaufskanaele.md`).
+- **Alles neu schreiben:** „Alle veröffentlichen“ in der Shop-Übersicht —
+  nötig nach einem neuen Steuersatz oder einem anderen Vorlagensatz, die keinen
+  Auftrag von selbst auslösen.
+- **Artikel aus dem Shop nehmen:** „Im Shop anbieten“ ausschalten oder den
+  HugoShop in der Karte abwählen; der Auftrag `remove_part` entfernt die Seite.
+  Die Shop-Angaben bleiben für ein späteres Wiedereinschalten stehen. Für die alte Adresse gehört eine Zeile in
   `redirect_pages_hugoshop` — die 404-Seite fragt sie über `resolveRedirect`
   ab.
 - **Zahlungen abgleichen:** Knopf in der Bestellansicht oder der Auftrag aus
   dem Cron. Gebucht wird nie automatisch.
 - **Widerrufe:** Ansicht „Widerrufe" im Admin-Panel, siehe `shop-widerruf.md`.
+- **Lager:** Verkäufe aus HugoShop und eBay buchen die Waren vom „Lagerplatz
+  für Verkäufe“ aus (V28). Stornos und Widerrufe buchen nicht zurück (O17) —
+  dafür eine Einlagerung in der Lagerverwaltung.
+- **eBay:** Angebote und Bestellabruf, siehe `dev/shop-verkaufskanaele.md`;
+  der Abruf läuft über `backend/cli/ebay-orders.php`.
 - **Shop-UI ändern:** `npm run build:shop-ui`, das Bundle mit committen; der
-  Läufer verteilt es beim nächsten Lauf.
+  Läufer verteilt es beim nächsten Lauf. Der Build prüft das Bündel selbst;
+  nach dem Commit zeigt `npm --prefix shop-ui run check`, ob es unverändert
+  geblieben ist.
+- **Shop-UI sofort in die Webseite bringen:** Übersicht der Shop-Erweiterung,
+  Karte „Veröffentlichung“, Knopf „Shop-Benutzerschnittstelle installieren“
+  (Recht `edit_shop_config`, Aktion `installShopUi`). Er legt einen Auftrag
+  „Paket abgleichen“ mit `param = install` an und startet den Läufer nur für
+  diesen Auftrag: Paket nach `oserp-shop/` (bzw. an HugoCMS), danach wird die
+  Webseite **in jedem Fall** gebaut, auch wenn das Paket schon aktuell war.
+  Fehlen in der Site-Konfiguration die Mounts `oserp-shop/static`,
+  `oserp-shop/layouts`, `oserp-shop/assets/shop-ui` oder `params.shopui`,
+  steht das als Hinweis in den Meldungen des Laufs; geändert wird die
+  Konfiguration der Webseite nicht.
+- **Widgets zeigen `lit$…$`, Klassennamen oder Quelltext als Text:** Das
+  Bündel ist beschädigt (früher durch `tools/fix-ws.sh`, siehe
+  `shop-ui/README.md`, „Warum `build` ein eigenes Skript ist“).
+  `npm --prefix shop-ui run check` meldet es; neu bauen und übertragen.
 
 ## Wenn etwas klemmt
 

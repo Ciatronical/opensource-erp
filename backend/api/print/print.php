@@ -798,6 +798,39 @@ function mapFormname(string $fakturaType): string {
 }
 
 /**
+ * Ergaenzt Name, Telefon und E-Mail eines aktiven Mitarbeiters aus auth.user_config.
+ * Aktive Benutzer pflegen diese Daten in der Auth-Datenbank; die deleted_*-Spalten
+ * der employee-Tabelle werden erst beim Loeschen des Mitarbeiters gefuellt.
+ * Erwartet in $row die Schluessel {prefix}login und {prefix}deleted; leere Werte aus
+ * der Auth-Datenbank ueberschreiben nichts.
+ *
+ * @param array  $row    Datensatz mit {prefix}login, {prefix}deleted, {prefix}name/tel/email
+ * @param string $prefix Schluessel-Praefix, z. B. 'employee_'
+ * @return array Datensatz mit ergaenzten Kontaktdaten
+ */
+function mergeEmployeeContact(array $row, string $prefix): array {
+    // Der oeffentliche Shop laedt session.php nicht — dort gibt es keine Auth-Verbindung.
+    if (empty($row[$prefix . 'login']) || !empty($row[$prefix . 'deleted']) || !class_exists('DbhAuth')) {
+        return $row;
+    }
+    $contact = DbhAuth::begin()->getOne(
+        "SELECT MAX(c.cfg_value) FILTER (WHERE c.cfg_key = 'name')  AS name,
+                MAX(c.cfg_value) FILTER (WHERE c.cfg_key = 'tel')   AS tel,
+                MAX(c.cfg_value) FILTER (WHERE c.cfg_key = 'email') AS email
+         FROM auth.user_config c
+         JOIN auth.\"user\" u ON u.id = c.user_id
+         WHERE u.login = :login",
+        [':login' => $row[$prefix . 'login']]
+    );
+    foreach (['name', 'tel', 'email'] as $key) {
+        if (!empty($contact[$key])) {
+            $row[$prefix . $key] = $contact[$key];
+        }
+    }
+    return $row;
+}
+
+/**
  * Laedt alle Druckdaten fuer ein Dokument und mappt sie auf Template-Variablen
  *
  * @return array|false ['variables' => [...], 'arrays' => [...]]
@@ -890,6 +923,8 @@ function loadPrintData($db, int $fakturaID, string $fakturaType, bool $lxCarsEna
             e.name AS employee_name,
             e.deleted_tel AS employee_tel,
             e.deleted_email AS employee_email,
+            e.login AS employee_login,
+            e.deleted AS employee_deleted,
             pt.description_long AS payment_terms
         FROM {$mainTable} m
         LEFT JOIN customer c ON c.id = m.customer_id
@@ -901,6 +936,9 @@ function loadPrintData($db, int $fakturaID, string $fakturaType, bool $lxCarsEna
     ";
     $head = $db->getOne($headQuery, [':id' => $fakturaID]);
     if (!$head) return false;
+
+    // === Bearbeiter-Kontakt ===
+    $head = mergeEmployeeContact($head, 'employee_');
 
     // === Kontaktperson ===
     $cp = null;

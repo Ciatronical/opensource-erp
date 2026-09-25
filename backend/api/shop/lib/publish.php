@@ -263,6 +263,7 @@ function shopPageData($db, int $partsId): array {
                 COALESCE(NULLIF(pc.description, ''), p.notes) AS notes,
                 p.unit, p.ean,
                 TRUNC(p.onhand) AS onhand, p.obsolete,
+                shop_part_available(p.id) AS available,
                 COALESCE(p.mtime, p.itime) AS mtime,
                 COALESCE(st.rate, 0) AS taxrate,
                 CASE WHEN :inklusive_netto = 1
@@ -329,6 +330,9 @@ function shopPageData($db, int $partsId): array {
             'taxrate'     => (float)$zeile['taxrate'],
             'onhand'      => (float)($zeile['onhand'] ?? 0),
             'obsolete'    => $wahr($zeile['obsolete']),
+            // bestellbar: nicht veraltet und im HugoShop nicht als nicht
+            // verfügbar markiert (shop_part_available)
+            'available'   => $wahr($zeile['available']),
             // Für lastmod im Front Matter — Hugo übernimmt es in die Sitemap
             'mtime'       => empty($zeile['mtime']) ? '' : (new DateTimeImmutable($zeile['mtime']))->format(DATE_ATOM),
         ],
@@ -746,6 +750,60 @@ function shopKitChanges(array $kit): int {
     return $kit['kopiert'] + $kit['entfernt'] + ($kit['config'] ? 1 : 0);
 }
 
+// Zusatzangabe (param) eines sync_kit-Auftrags aus „Shop-Benutzerschnittstelle
+// installieren“: Paket abgleichen und die Webseite in jedem Fall bauen.
+const SHOP_KIT_INSTALL = 'install';
+
+// Mounts, ohne die das Paket in der Webseite nicht ankommt (shop-ui/README.md,
+// „Einbindung“): Einstiegspunkte wie /shop-api/, Shortcodes und Partials,
+// das Widget-Bündel.
+const SHOP_KIT_MOUNTS = ['oserp-shop/static', 'oserp-shop/layouts', 'oserp-shop/assets/shop-ui'];
+
+/**
+ * Was an der Einrichtung der Webseite für die Shop-UI noch fehlt
+ *
+ * Das Paket liegt nach dem Abgleich in oserp-shop/, wirkt aber erst, wenn die
+ * Site-Konfiguration es einhängt und params.shopui setzt — sonst baut Hugo
+ * fehlerfrei eine Webseite ohne Widgets. Die Konfiguration gehört der
+ * Webseite; hier wird nur nachgesehen, nichts geschrieben. Gesucht wird
+ * textuell, das genügt für JSON, TOML und YAML gleichermaßen.
+ *
+ * In der Betriebsart HugoCMS liegt die Webseite nicht auf diesem Rechner —
+ * dann gibt es nichts nachzusehen.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @return array Hinweise im Wortlaut, leer wenn alles da ist
+ */
+function shopKitSetupHints($db): array {
+    if ('hugocms' === shopPublishMode($db)) {
+        return [];
+    }
+
+    $verzeichnis = shopSiteDir($db);
+    $konfiguration = null;
+    foreach (['hugo.json', 'hugo.toml', 'hugo.yaml', 'hugo.yml', 'config.json', 'config.toml', 'config.yaml', 'config.yml'] as $name) {
+        if (is_file($verzeichnis.'/'.$name)) {
+            $konfiguration = $verzeichnis.'/'.$name;
+            break;
+        }
+    }
+    if (null === $konfiguration) {
+        return ['Keine Site-Konfiguration (hugo.* oder config.*) in '.$verzeichnis.' gefunden.'];
+    }
+
+    $inhalt = (string)@file_get_contents($konfiguration);
+    $hinweise = [];
+    $fehlend = array_values(array_filter(SHOP_KIT_MOUNTS, fn($quelle) => !str_contains($inhalt, $quelle)));
+    if ($fehlend) {
+        $hinweise[] = 'In '.basename($konfiguration).' fehlen unter module.mounts: '.implode(', ', $fehlend)
+                     .' — ohne sie kommt das Paket nicht in der Webseite an.';
+    }
+    if (!preg_match('/\bshopui\b/i', $inhalt)) {
+        $hinweise[] = 'In '.basename($konfiguration).' fehlt params.shopui — der Seitenkopf zeigt dann die alten Knöpfe statt der Widgets.';
+    }
+    return $hinweise;
+}
+
 // Höchstzahl Fehlerzeilen, die ein einzelner Auftrag im Wortlaut meldet. Der
 // Zähler läuft weiter, nur der Text wird nicht wiederholt: ein Grund, der alle
 // Artikel trifft, füllte sonst die Meldungsliste mit Tausenden gleicher Zeilen.
@@ -997,7 +1055,7 @@ function shopRemovePage($db, string $dateiname): bool {
 function shopRunJobs($db, ?callable $melden = null, int $limit = 500, ?array $nurIds = null): array {
     $sagen = $melden ?? function (string $zeile) {};
     $bilanz = ['jobs' => 0, 'jobs_hugoshop' => 0, 'seiten' => 0, 'entfernt' => 0, 'fehler' => 0, 'kit' => 0,
-               'fehler_texte' => []];
+               'bauen' => false, 'fehler_texte' => []];
 
     // Fehler werden nicht nur gezählt, sondern im Wortlaut gesammelt: das
     // Admin-Panel zeigt sie nach "Jetzt ausführen" an, sonst stünde dort nur
@@ -1468,12 +1526,12 @@ function shopPublishStatus($db): array {
  * @param callable|null $beginn wird gerufen, sobald die Sperre genommen ist —
  *                              erst dann gehört der Lauf wirklich diesem Prozess
  *                              (der Läufer legt dort sein Protokoll an)
- * @return array gesperrt, jobs, seiten, entfernt, fehler, fehler_texte, kit, kategorien, gebaut, bau_code, bau_ausgabe
+ * @return array gesperrt, jobs, seiten, entfernt, fehler, fehler_texte, kit, kategorien, bauen, gebaut, bau_code, bau_ausgabe
  */
 function shopPublishRun($db, ?callable $melden = null, int $limit = 500, ?array $nurIds = null, bool $bauen = true, ?callable $beginn = null): array {
     $sagen = $melden ?? function (string $zeile) {};
     $bilanz = ['gesperrt' => false, 'jobs' => 0, 'seiten' => 0, 'entfernt' => 0, 'fehler' => 0,
-               'kit' => 0, 'kategorien' => 0, 'gebaut' => false, 'bau_code' => 0, 'bau_ausgabe' => [],
+               'kit' => 0, 'kategorien' => 0, 'bauen' => false, 'gebaut' => false, 'bau_code' => 0, 'bau_ausgabe' => [],
                'fehler_texte' => []];
 
     // Fehler werden nicht nur gezählt, sondern im Wortlaut gesammelt: das
@@ -1555,11 +1613,13 @@ function shopPublishRun($db, ?callable $melden = null, int $limit = 500, ?array 
         // sein (neue Webseite, gescheiterter Lauf); was unverändert ist,
         // erkennt die Übertragung selbst.
         if ('hugocms' === shopPublishMode($db)) {
-            $bilanz['gebaut'] = shopHugoCmsPublish($db, $sagen, $fehler, $bauen);
+            $bilanz['gebaut'] = shopHugoCmsPublish($db, $sagen, $fehler, $bauen, $bilanz['bauen']);
             return $bilanz;
         }
 
-        $geaendert = $bilanz['seiten'] + $bilanz['entfernt'] + $bilanz['kit'] + $bilanz['kategorien'];
+        // bauen: ein Auftrag verlangt den Bau auch ohne Änderung (SHOP_KIT_INSTALL)
+        $geaendert = $bilanz['seiten'] + $bilanz['entfernt'] + $bilanz['kit'] + $bilanz['kategorien']
+                   + ($bilanz['bauen'] ? 1 : 0);
         // Die Befehlszeile setzt die Erweiterung selbst zusammen: geprüfter
         // Pfad zum Programm plus feste Argumente (shopPublishCommand).
         $bau = shopPublishCommand($db);

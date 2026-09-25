@@ -23,7 +23,7 @@
                             @drop.prevent="onDrop"
                             @click="$refs.fileInput.click()"
                         >
-                            <input ref="fileInput" type="file" accept=".pdf,.jpg,.jpeg,.png"
+                            <input ref="fileInput" type="file" accept=".pdf,.jpg,.jpeg,.png,.xml"
                                    style="display: none" @change="onFileSelect" />
 
                             <template v-if="uploading">
@@ -295,8 +295,10 @@ function onFileSelect(event) {
 
 async function processFile(file) {
     // Dateityp pruefen
-    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png']
-    if (!allowedTypes.includes(file.type)) {
+    // XML-Dateien liefern je nach Betriebssystem 'application/xml', 'text/xml' oder einen leeren Typ
+    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'application/xml', 'text/xml']
+    const isXml = !file.type && /\.xml$/i.test(file.name)
+    if (!allowedTypes.includes(file.type) && !isXml) {
         error.value = t('AccountingView.upload.allowedFormats')
         return
     }

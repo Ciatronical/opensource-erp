@@ -228,6 +228,17 @@ function shopChannelHugoshopRunJob($db, array $auftrag, callable $sagen, callabl
             $bilanz['kit'] += shopKitChanges($kit);
             $sagen(sprintf('Paket abgeglichen: %d kopiert, %d entfernt%s',
                 $kit['kopiert'], $kit['entfernt'], $kit['config'] ? ', Konfiguration neu' : ''));
+
+            // „Shop-Benutzerschnittstelle installieren“ (installShopUi): die
+            // Webseite wird auch gebaut, wenn das Paket schon aktuell war —
+            // etwa weil ein früherer Bau fehlschlug oder die Mounts erst
+            // danach eingetragen wurden.
+            if (SHOP_KIT_INSTALL === ($auftrag['param'] ?? null)) {
+                $bilanz['bauen'] = true;
+                foreach (shopKitSetupHints($db) as $hinweis) {
+                    $sagen('Hinweis: '.$hinweis);
+                }
+            }
             shopJobResult($db, $id, sprintf('ok: %d kopiert, %d entfernt', $kit['kopiert'], $kit['entfernt']));
             break;
 

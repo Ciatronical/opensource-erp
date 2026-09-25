@@ -2,6 +2,7 @@
 // backend/api/faktura/einvoice.php
 
 require_once __DIR__.'/einvoice_builder.php';
+require_once __DIR__.'/../print/print.php';
 
 use horstoeko\zugferd\ZugferdDocumentPdfBuilder;
 use horstoeko\zugferd\ZugferdDocumentValidator;
@@ -90,7 +91,6 @@ function generateEInvoice($data) {
     }
 
     // Factur-X: bestehendes LaTeX-PDF rendern und XML einbetten
-    require_once __DIR__.'/../print/print.php';
     require_once __DIR__.'/../print/template_engine.php';
 
     $lxCars = isLxCarsEnabled($db);
@@ -226,10 +226,20 @@ function loadEInvoiceData($db, int $fakturaID): ?array {
             ),
             'company', (
                 SELECT row_to_json(c) FROM (
-                    SELECT company, taxnumber, co_ustid, gln,
-                           address_street1, address_street2, address_zipcode,
-                           address_city, address_country, templates
-                    FROM defaults LIMIT 1
+                    SELECT d.company, d.taxnumber, d.co_ustid, d.gln,
+                           d.address_street1, d.address_street2, d.address_zipcode,
+                           d.address_city, d.address_country, d.templates,
+                           -- Absender kann als "Name <adresse>" gepflegt sein: nur die Adresse
+                           substring(d.email_sender_invoice from '[^<>[:space:]]+@[^<>[:space:]]+') AS seller_email,
+                           e.name AS seller_contact_name,
+                           e.deleted_tel AS seller_contact_tel,
+                           e.deleted_email AS seller_contact_email,
+                           e.login AS seller_contact_login,
+                           e.deleted AS seller_contact_deleted
+                    FROM defaults d
+                    LEFT JOIN ar ON ar.id = :fakturaID
+                    LEFT JOIN employee e ON e.id = ar.employee_id
+                    LIMIT 1
                 ) c
             ),
             'customer', (
@@ -293,6 +303,9 @@ SQL;
 
     $decoded = json_decode($row['result'], true);
     if (!$decoded || empty($decoded['ar'])) return null;
+
+    // Kontaktdaten des Bearbeiters liegen fuer aktive Benutzer in der Auth-Datenbank
+    $decoded['company'] = mergeEmployeeContact($decoded['company'] ?? [], 'seller_contact_');
 
     return $decoded;
 }

@@ -139,6 +139,15 @@ export function useShop() {
     const runPublishJobs = (ids = []) => call('runShopPublishJobs', { ids })
 
     /**
+     * Installiert die Shop-Benutzerschnittstelle in der Webseite
+     *
+     * Paket abgleichen und die Webseite bauen — was sonst der Läufer im Cron
+     * tut. Kehrt sofort zurück wie runPublishJobs(); `job_id` ist der
+     * Auftrag, der dafür läuft.
+     */
+    const installShopUi = () => call('installShopUi')
+
+    /**
      * Stand der Veröffentlichung
      *
      * running, starting, aborted, die Meldungen des laufenden oder letzten
@@ -171,6 +180,7 @@ export function useShop() {
         publishAll,
         fetchPublishJobs,
         runPublishJobs,
+        installShopUi,
         fetchPublishStatus,
         cleanupPublishJobs,
         deletePublishJobs,

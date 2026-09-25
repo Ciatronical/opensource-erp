@@ -184,6 +184,7 @@ function cartRead($db, string $cartUuid, ?int $customerId, bool $simple = true):
                     ps.buchungsgruppen_id,
                     psh.hugoshop_images ->> 0 AS thumbnail,
                     (pc.active AND pc.channel_id = shop_active_channel_id('hugoshop')
+                         AND shop_part_available(ps.id)
                      OR ps.partnumber = (SELECT value FROM defaults_oserp
                                           WHERE key = 'shop_shipping_partnumber')) IS TRUE AS offered
                FROM cart_parts_hugoshop cps
@@ -215,6 +216,7 @@ function cartRead($db, string $cartUuid, ?int $customerId, bool $simple = true):
                     ch_tax.link AS taxservice_link,
                     psh.hugoshop_images ->> 0 AS thumbnail,
                     (pc.active AND pc.channel_id = shop_active_channel_id('hugoshop')
+                         AND shop_part_available(ps.id)
                      OR ps.partnumber = (SELECT value FROM defaults_oserp
                                           WHERE key = 'shop_shipping_partnumber')) IS TRUE AS offered
                FROM cart_parts_hugoshop cps
@@ -323,7 +325,10 @@ function cartAdd($db, string $uuid, int $partsId, int $menge): array {
 
     // Nur Artikel, die der HugoShop anbietet (O2): aktive Kanalzeile bei
     // eingeschaltetem Kanal. Sonst liesse sich jeder Artikel bestellen, dessen
-    // Kennung jemand kennt — auch abgewählte oder nie angebotene.
+    // Kennung jemand kennt — auch abgewählte oder nie angebotene. Dazu muss er
+    // verfügbar sein (shop_part_available: nicht veraltet, nicht als nicht
+    // verfügbar markiert); die Produktseite zeigt dann keinen Warenkorb-Knopf,
+    // eine ältere Seite im Browser-Cache aber noch.
     $eingefuegt = $db->getOne(
         "INSERT INTO cart_parts_hugoshop (cart_uuid, parts_id, amount)
          SELECT :cart_uuid, p.id, :menge
@@ -332,6 +337,7 @@ function cartAdd($db, string $uuid, int $partsId, int $menge): array {
                                      AND pc.channel_id = shop_active_channel_id('hugoshop')
                                      AND pc.active
           WHERE p.id = :parts_id
+            AND shop_part_available(p.id)
          ON CONFLICT (cart_uuid, parts_id)
          DO UPDATE SET amount = cart_parts_hugoshop.amount + EXCLUDED.amount
          RETURNING id",

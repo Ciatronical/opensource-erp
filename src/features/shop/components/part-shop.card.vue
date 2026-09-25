@@ -139,6 +139,29 @@
                                     <div class="text-caption text-medium-emphasis">{{ t('ShopView.partCard.pricePreview') }}</div>
                                 </v-col>
 
+                                <!-- Verfügbarkeit: angeboten, aber vorübergehend nicht
+                                     bestellbar (parts_channel_shop.unavailable) -->
+                                <v-col cols="12" class="py-1">
+                                    <v-switch
+                                        v-model="kanal.unavailable"
+                                        :label="t('ShopView.partCard.unavailable')"
+                                        :hint="t('ShopView.partCard.unavailableHint')"
+                                        persistent-hint
+                                        :readonly="!darfBearbeiten"
+                                        color="error"
+                                        density="compact"
+                                        inset
+                                    />
+                                    <v-alert
+                                        v-if="obsolete"
+                                        type="warning"
+                                        variant="tonal"
+                                        density="compact"
+                                        class="mt-2"
+                                        :text="t('ShopView.partCard.obsoleteHint')"
+                                    />
+                                </v-col>
+
                                 <!-- Texte: leer = Stammdaten -->
                                 <v-col cols="12" class="py-1">
                                     <v-text-field
@@ -453,6 +476,8 @@ const props = defineProps({
     notes: { type: String, default: '' },
     /** Artikeltyp aus der Maske — Dienstleistungen gehen nicht an Marktplätze (V19) */
     partType: { type: String, default: '' },
+    /** „Veraltet“ aus der Maske — dann ist der Artikel in keinem Kanal verfügbar */
+    obsolete: { type: Boolean, default: false },
 })
 
 const { t, te, locale } = useI18n()
@@ -521,6 +546,7 @@ function alsKanal(zeile) {
         markup_value: zeile.markup_value == null ? null : Number(zeile.markup_value),
         title: zeile.title || '',
         description: zeile.description || '',
+        unavailable: zeile.unavailable === true || zeile.unavailable === 't',
         // kanaleigene Angaben (KANAL_FELDER) und, nur zum Lesen, der Stand beim Kanal
         settings: lies(zeile.settings) && typeof lies(zeile.settings) === 'object' ? { ...lies(zeile.settings) } : {},
         sync_status: zeile.sync_status || '',
@@ -752,6 +778,7 @@ function nutzdaten(partsId) {
             markup_value: mitWert(k.markup_mode) ? Number(k.markup_value) || 0 : null,
             title: k.title.trim(),
             description: k.description.trim(),
+            unavailable: !!k.unavailable,
             settings: Object.fromEntries(Object.entries(k.settings || {})
                 .filter(([, wert]) => wert !== undefined && wert !== null && String(wert).trim() !== '')
                 .map(([name, wert]) => [name, String(wert).trim()])),

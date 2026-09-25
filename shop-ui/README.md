@@ -13,7 +13,8 @@ OSERP-Oberfläche.
 ```bash
 cd shop-ui
 npm install
-npm run build      # -> ../backend/templates-default/shop/standard/kit/assets/shop-ui/shop-widgets.js
+npm run build      # -> ../backend/templates-default/shop/standard/kit/assets/shop-ui/shop-widgets.js, danach check
+npm run check      # prüft das eingecheckte Bündel (übersteht fix-ws, Lit-Regex vollständig)
 npm run build:dev  # -> dist/shop-widgets.js (+ .map), für die Testseite
 npm run watch      # wie build:dev, baut bei jeder Änderung neu
 npm run size       # Bundle-Analyse
@@ -27,6 +28,25 @@ spiegelt das Kit bei jedem Lauf nach `<webseite>/oserp-shop/`, auch auf
 Servern ohne Node. Hugo versieht das Bundle beim Site-Build mit einem
 Fingerprint. Nach jeder Quelländerung also **bauen und mit committen**.
 `dist/` dient nur der Entwicklung und wird nicht versioniert.
+
+### Warum `build` ein eigenes Skript ist
+
+`npm run build` ruft esbuild nicht direkt auf, sondern über
+`scripts/build.mjs`. Das eingecheckte Bündel läuft beim Commit durch
+`tools/fix-ws.sh`, das Leerzeichen am Zeilenende entfernt und Tabulatoren
+ersetzt. Ein gewöhnlicher esbuild-Build übersteht das nicht: esbuild schreibt
+`\t` und `\n` als echte Zeichen, aus Lits Attribut-Regex `"[ \t\n\f\r]"`
+wurde nach fix-ws `[\n\f\r]`. Lit erkannte danach keine Attribut-Bindungen
+mehr — die Widgets zeigten `lit$…$`, Klassennamen und Funktionsquelltext als
+Text (so geschehen von Commit `322e683` bis September 2026).
+
+`scripts/build.mjs` baut deshalb ohne Template-Literale
+(`supported: { 'template-literal': false }`) und schreibt die verbliebenen
+Tabulatoren als `\t`. `scripts/check-bundle.mjs` prüft anschließend, dass
+fix-ws nichts mehr zu ändern findet und die Lit-Regex vollständig ist; bei
+einem Fehler endet `npm run build` mit Status 1. `build:dev` und `watch`
+schreiben nach `dist/`, das nicht eingecheckt wird und daher nicht betroffen
+ist.
 
 Eigene Vorlagensätze unter `<templates_dir>/shop/<name>/` bekommen das Bundle
 ohne eigene Kopie: Der Läufer legt ihr `kit/` dateiweise über das Kit von

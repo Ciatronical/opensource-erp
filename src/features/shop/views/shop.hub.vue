@@ -162,6 +162,18 @@
                         >
                             {{ t('ShopView.publish.allNow') }}
                         </v-btn>
+                        <!-- Paket in die Webseite und bauen — ohne auf den Cron zu warten -->
+                        <v-btn
+                            variant="tonal"
+                            size="small"
+                            prepend-icon="mdi-package-down"
+                            :loading="installiert"
+                            :disabled="veroeffentlicht || sofort || laeuft"
+                            :title="t('ShopView.publish.installUiHint')"
+                            @click="shopUiInstallieren"
+                        >
+                            {{ t('ShopView.publish.installUi') }}
+                        </v-btn>
                     </div>
                 </template>
             </v-card-item>
@@ -358,6 +370,7 @@ const status = ref(null)
 const auftraege = ref([])
 const veroeffentlicht = ref(false)
 const sofort = ref(false)
+const installiert = ref(false)
 const auswahl = ref([])
 const laeuft = ref(false)
 const raeumtAuf = ref(false)
@@ -553,7 +566,38 @@ async function ausfuehren(ids) {
     if (shop.error.value) {
         return
     }
+    gestartet(antwort)
+}
 
+/**
+ * Installiert die Shop-Benutzerschnittstelle in der Webseite
+ *
+ * Das Backend legt einen Auftrag „Paket abgleichen“ an, der auch dann baut,
+ * wenn das Paket schon aktuell war, und startet ihn sofort. Fehlende Mounts
+ * oder params.shopui stehen danach als Hinweis in den Meldungen des Laufs.
+ */
+async function shopUiInstallieren() {
+    installiert.value = true
+    try {
+        const antwort = await shop.installShopUi()
+        if (shop.error.value) {
+            return
+        }
+        if (antwort?.job_id) {
+            auswahl.value = [antwort.job_id]
+        }
+        gestartet(antwort)
+    } finally {
+        installiert.value = false
+    }
+}
+
+/**
+ * Ein Lauf wurde angestoßen: melden und beobachten
+ *
+ * @param {object|null} antwort Antwort von runShopPublishJobs bzw. installShopUi
+ */
+function gestartet(antwort) {
     // Der Läufer arbeitet jetzt im Hintergrund; die Antwort kommt sofort.
     // Lief schon einer, nimmt der die Aufträge mit — beobachtet wird so oder so.
     toasts.info(antwort?.started === false ? t('ShopView.publish.running') : t('ShopView.publish.started'))

@@ -252,7 +252,7 @@
             "goToBookings": "Do księgowań",
             "uploadAnother": "Wgraj kolejną fakturę",
             "maxFileSize": "Maksymalny rozmiar pliku: 20 MB",
-            "allowedFormats": "Dozwolone formaty: PDF, JPG, PNG",
+            "allowedFormats": "Dozwolone formaty: PDF, JPG, PNG, XML (e-faktura)",
             "bookedTitle": "Już zaksięgowane faktury zakupu",
             "colInvNumber": "Numer faktury",
             "colVendor": "Dostawca",

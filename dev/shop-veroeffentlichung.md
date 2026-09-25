@@ -3,6 +3,13 @@
 Plan für den Erzeuger der Produktseiten. Grundlage ist die Analyse vom
 2026-09-11; der Bestand ist in `dev/shop-migration.md` beschrieben.
 
+Nachgeführt am 2026-09-25: Seit den Verkaufskanälen
+(`dev/shop-verkaufskanaele.md`) ist der HugoShop ein Kanal. Ob ein Artikel
+eine Seite bekommt, entscheidet seine aktive HugoShop-Zeile in
+`parts_channel_shop`, nicht mehr die `parts_ext`-Zeile; Preis, Bezeichnung und
+Beschreibung der Seite kommen aus dem Kanal. Die Abschnitte unten beschreiben
+den Stand ihrer Entstehung; wo er sich geändert hat, steht ein Hinweis.
+
 ## Ausgangslage
 
 Die Produktseiten des Shops entstehen bisher ausschließlich im Bridge-Projekt,
@@ -22,7 +29,8 @@ Warenkorb-Schaltfläche fehlt — sie steht im Seiteninhalt, nicht im Theme.
 
 ## Ziel
 
-OSERP erzeugt die Inhaltsdateien aus `parts` und `parts_ext`, mit
+OSERP erzeugt die Inhaltsdateien aus `parts` und `parts_ext` — seit den
+Verkaufskanälen zusammen mit der HugoShop-Zeile aus `parts_channel_shop` —, mit
 austauschbaren Vorlagensätzen und einstellbaren Pfaden. Das Aussehen der
 Webseite bleibt beim Hugo-Projekt.
 
@@ -120,15 +128,19 @@ Browser.
 
 | Angabe | Stand |
 | --- | --- |
-| EAN | `parts.ean` vorhanden, von OSERP bisher nicht gelesen |
-| Bestand | `parts.onhand` vorhanden, ebenfalls nicht gelesen |
-| Marketingtexte | fehlen — neues Feld in `parts_ext` oder `parts.notes` |
-| Bilder, Downloads | liegen auf der Webseite, nicht in OSERP |
-| Marke, Versandkosten, Rückgabefrist | in der Bridge fest verdrahtet, gehören in die Einstellungen |
+Stand 2026-09-25:
 
-Nebenbefund: kivitendo führt in `parts` ein eigenes Feld `shop`, das weder die
-Bridge noch unsere Erweiterung nutzt. Wenn „Im Shop anbieten" es mitführt, zeigt
-kivitendos eigene Oberfläche denselben Stand.
+| Angabe | Stand |
+| --- | --- |
+| EAN | **gelesen:** `shopPageData()` liefert `parts.ean`, die Vorlage `standard` setzt sie als `productModel` |
+| Bestand | **gelesen:** `parts.onhand` bestimmt `availability` (auf Lager / nicht auf Lager). Eine Bestandsänderung schreibt die Seite aber nicht neu — offen als O18 in `dev/shop-verkaufskanaele.md` |
+| Marketingtexte | **gelöst über die Verkaufskanäle:** Bezeichnung und Beschreibung je Kanal (`parts_channel_shop.title`, `.description`) ersetzen auf der Seite `parts.description` und `parts.notes` |
+| Bilder, Downloads | liegen auf der Webseite, nicht in OSERP (E6 in `dev/shop-hugocms-trennung.md`) — unverändert |
+| Marke, Versandkosten, Rückgabefrist | **offen:** in der Bridge fest verdrahtet, gehören in die Einstellungen |
+
+Nebenbefund, **offen**: kivitendo führt in `parts` ein eigenes Feld `shop`, das
+weder die Bridge noch unsere Erweiterung nutzt. Wenn „Im Shop anbieten" es
+mitführt, zeigt kivitendos eigene Oberfläche denselben Stand.
 
 ## Stufen
 
@@ -137,7 +149,44 @@ kivitendos eigene Oberfläche denselben Stand.
 | 1 | Vorlagenauflösung, Satzauswahl, Rendern einer Produktseite in eine Datei, Pfadeinstellungen mit Wurzelgrenze, mitgelieferter Satz `standard` | **erledigt** |
 | 2 | Auftragstabelle, CLI-Läufer, „Veröffentlichen" im Admin-Panel und in der Artikelkarte | **erledigt** |
 | 3 | Bilder, Vorschaubilder, Downloads, Kategorieseiten, Sprachen, Preise inkl. Steuer, Bildadressen aus den Einstellungen | **begonnen:** Preise, Adressen, Vorschaubilder, Downloads, Kategorieübersicht erledigt; Sprachen offen |
-| 4 | Voller Seiteninhalt aus `template.php` (Karussell, Reiter), Umstieg von sonic24, Doku | offen |
+| 4 | Voller Seiteninhalt aus `template.php` (Karussell, Reiter), Umstieg von sonic24, Doku | **erledigt 2026-09-25:** Umstieg von sonic24 (`dev/shop-bridge-abloesung.md`, Stufe D), Doku in `dev/shop-betrieb.md`; Karussell und Reiter in der Produktseite des Satzes `sonic24` — siehe „Produktseite sonic24“ unten. Der Satz `standard` bleibt bei der schlichten Seite |
+
+## Produktseite sonic24 (2026-09-25)
+
+`backend/templates/shop/sonic24/product.md.php` (Repository der Kundensätze)
+ist ein Nachbau von `sonic24.de/publish/template.php` in der letzten Fassung
+vom 2026-09-02: dasselbe **Bootstrap**-Markup — Bildkarussell mit Vor- und
+Zurück-Knopf, Preisblock netto und brutto, Verfügbarkeitsabzeichen,
+Warenkorb (`shop-add-to-cart`), Anfrage-Knopf, Reiter Beschreibung,
+Technische Daten, Eigenschaften, Downloads als `nav-tabs` mit
+`table table-striped` — und dieselben Front-Matter-Felder, einschließlich
+`description` in der Form von `run.php` (Artikelnummer, Navigationspfad ohne
+die letzte Station, diese nur, wenn sie vom Titel abweicht).
+
+**Warum:** Eine erste Fassung vom 2026-09-23 verwendete Tailwind-Klassen. Die
+Webseite von sonic24 lädt aber Bootstrap
+(`themes/hugoshop/layouts/partials/head.html`, `script.html`), kein Tailwind —
+die Produktseiten erschienen ungestaltet.
+
+**Unterschiede zur alten Vorlage, ohne sichtbare Wirkung:** Werte aus
+`shopPageData()` (Preis, Bezeichnung, Beschreibung aus dem Verkaufskanal,
+Adressen aus der Firmenkonfiguration); Werte maskiert; Beschreibung aus der
+Beschreibung im Kanal bzw. der Langbeschreibung statt der Marketingtexte der
+Bridge, die Zusammenfassung unter „Produkteigenschaften“ entfällt mit ihnen;
+Downloads ohne Prüfung auf eine lokale Datei (in der Betriebsart HugoCMS liegt
+sie nicht hier); `lastmod` für die Sitemap; `availability` richtet sich nach
+„veraltet“ statt immer „InStock“.
+
+**Geprüft:** gerendert mit den Werten des Artikels 47581 und verglichen mit der
+alten Seite aus `~/backups/sonic24.de_deaktiviert` — Unterschiede nur bei
+`lastmod`, bei `product-image` (absolut oder relativ, je nach
+`shop_images_link`), beim Warenkorb-Shortcode (die Sicherung ist älter als
+`shop-add-to-cart`) und bei Zeilenumbrüchen zwischen den Karussell-Elementen;
+dazu die Fälle ein Bild, kein Bild, veraltet, mit technischen Daten und
+Downloads. **Nicht geprüft:** Bau mit Hugo und Ansicht im Browser.
+
+**Nach dem Einspielen:** Die vorhandenen Seiten tragen noch das Tailwind-Markup.
+„Alle veröffentlichen“ in der Shop-Übersicht schreibt sie neu.
 
 ## Stufe 1 — was angelegt wurde
 
@@ -206,6 +255,14 @@ Shop-Angaben), `remove_part` (Seite eines Artikels löschen, der aus dem Shop
 genommen wurde). Ein gleicher, noch offener Auftrag wird nicht doppelt
 angenommen.
 
+Seit den Verkaufskanälen (2026-09-25): `publish_all` schreibt die Seiten der
+im HugoShop angebotenen Artikel; dazu kommen `remove_all` und `draft_all` für
+das Abschalten des HugoShops, jeder Auftrag trägt seinen Kanal
+(`channel_id`), und Preis- oder Textänderungen legen Aufträge selbst an
+(Trigger, abschaltbar mit `shop_auto_publish`). Die Regel für das Anlegen
+steht in der Datenbank (`shop_queue_job()`). Übersicht in
+`dev/shop-betrieb.md`.
+
 **Der Läufer** arbeitet die Schlange ab und baut danach die Webseite:
 
 ```
@@ -260,11 +317,12 @@ Fehler. Unser Läufer tat bis Stufe 3 dasselbe umgekehrt. Auf einer gemeinsamen
 Datenbank hätten sich beide gegenseitig die Aufträge verdorben.
 
 Behoben auf unserer Seite: `shopOpenJobs()` und die Auftragsliste nehmen nur
-`publish_part`, `publish_all` und `remove_part`. **Offen auf Seiten der
-Bridge:** Solange ihr Läufer auf derselben Datenbank läuft, markiert er unsere
-Aufträge als Fehler, bevor unser Läufer sie sieht. Entweder läuft nur einer der
-beiden, oder `run.php` überspringt fremde Funktionen, statt sie als Fehler zu
-vermerken.
+die eigenen Auftragsarten — seit den Verkaufskanälen je Kanal
+(`shopChannelJobPairs()`, Paare aus Kanal und Auftragsart).
+
+Die Seite der Bridge ist **erledigt**: Ihr Läufer war nie in Betrieb
+(`dev/shop-bridge-abloesung.md`, „Batchjob-Läufer“) und wird nicht mehr
+gestartet.
 
 ## Stufe 3 — erster Teil
 

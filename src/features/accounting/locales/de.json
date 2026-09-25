@@ -440,7 +440,7 @@
             "goToBookings": "Zu den Buchungen",
             "uploadAnother": "Weitere Rechnung hochladen",
             "maxFileSize": "Maximale Dateigröße: 20 MB",
-            "allowedFormats": "Erlaubte Formate: PDF, JPG, PNG",
+            "allowedFormats": "Erlaubte Formate: PDF, JPG, PNG, XML (E-Rechnung)",
             "bookedTitle": "Bereits gebuchte Eingangsrechnungen",
             "colInvNumber": "Rechnungsnr.",
             "colVendor": "Lieferant",

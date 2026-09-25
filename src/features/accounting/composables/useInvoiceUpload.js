@@ -29,7 +29,7 @@ export function useInvoiceUpload() {
                 action: 'uploadInvoiceDocument',
                 file_base64: base64,
                 filename: file.name,
-                mime_type: file.type || 'application/pdf'
+                mime_type: file.type || (/\.xml$/i.test(file.name) ? 'application/xml' : 'application/pdf')
             })
 
             uploadProgress.value = 100

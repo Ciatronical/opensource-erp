@@ -169,6 +169,7 @@ CREATE TABLE IF NOT EXISTS parts_channel_shop
     sync_mtime   timestamp without time zone,
     sync_error   text,
     sync_data    jsonb,
+    unavailable  boolean NOT NULL DEFAULT false,
     itime        timestamp without time zone DEFAULT now(),
     mtime        timestamp without time zone,
     CONSTRAINT parts_channel_shop_key UNIQUE (parts_id, channel_id),
@@ -187,6 +188,10 @@ COMMENT ON COLUMN parts_channel_shop.description  IS 'Beschreibung im Kanal, NUL
 COMMENT ON COLUMN parts_channel_shop.external_id  IS 'Kennung beim Kanal (eBay-Angebot, Amazon-SKU/ASIN)';
 COMMENT ON COLUMN parts_channel_shop.settings     IS 'Kanaleigene Angaben des Benutzers (eBay: category_id, condition)';
 COMMENT ON COLUMN parts_channel_shop.sync_data    IS 'Angaben, die der Kanal beim Abgleich selbst schreibt (eBay: offer_id) — getrennt von settings, damit das Speichern der Artikelkarte sie nicht überschreibt';
+
+-- Nachgetragen: in bestehenden Datenbanken gibt es die Tabelle schon.
+ALTER TABLE parts_channel_shop ADD COLUMN IF NOT EXISTS unavailable boolean NOT NULL DEFAULT false;
+COMMENT ON COLUMN parts_channel_shop.unavailable  IS 'Im Kanal vorübergehend nicht verfügbar: bleibt angeboten, ist aber nicht bestellbar (HugoShop: „Momentan nicht verfügbar“, eBay: Menge 0). Anders als parts.obsolete bleibt der Artikel im ERP nutzbar';
 
 -- Bilder je Kanal (V12). Der HugoShop führt seine Bilder weiter in
 -- parts_ext.hugoshop_images (Dateinamen auf der Webseite, E6); diese Tabelle
@@ -376,6 +381,19 @@ $$;
 -- (veröffentlichen gegen entfernen) wird vorher gelöscht: sonst hinterließe
 -- an-aus-an das Angebot beendet, weil das zweite Veröffentlichen als Doppel
 -- des ersten nicht angelegt würde.
+-- Ist der Artikel im Kanal bestellbar? Nicht bei parts.obsolete („Veraltet /
+-- Nicht mehr verwenden“, gilt für alle Kanäle) und nicht, wenn er im Kanal als
+-- nicht verfügbar markiert ist (parts_channel_shop.unavailable). Ob er dort
+-- überhaupt angeboten wird, fragt diese Funktion nicht — das bleibt Sache der
+-- Kanalzeile (active). Eine Regel für Produktseite, Warenkorb und Marktplätze.
+CREATE OR REPLACE FUNCTION shop_part_available(p_parts_id integer, p_type text DEFAULT 'hugoshop') RETURNS boolean
+    LANGUAGE sql STABLE AS $$
+    SELECT NOT COALESCE(p.obsolete, false) AND NOT COALESCE(pc.unavailable, false)
+      FROM parts p
+      LEFT JOIN parts_channel_shop pc ON pc.parts_id = p.id AND pc.channel_id = shop_channel_id(p_type)
+     WHERE p.id = p_parts_id
+$$;
+
 CREATE OR REPLACE FUNCTION shop_queue_job(p_function text, p_partnumber text DEFAULT '',
                                           p_param text DEFAULT NULL, p_type text DEFAULT 'hugoshop')
     RETURNS integer LANGUAGE sql AS $$
@@ -429,12 +447,14 @@ $$;
 -- dazu, die Tabelle selbst bleibt unverändert). Je eingeschaltetem Kanal, in
 -- dem der Artikel angeboten wird:
 --   HugoShop  Verkaufspreis oder Buchungsgruppe (Steuersatz) — die Seite
---             trägt den Preis; nur bei shop_auto_publish
+--             trägt den Preis —, dazu „Veraltet“ (obsolete): die Seite zeigt
+--             die Verfügbarkeit; nur bei shop_auto_publish
 --   Marktplatz zusätzlich Bestand, Beschreibung und Langbeschreibung
 CREATE OR REPLACE FUNCTION parts_shop_auto_publish() RETURNS trigger AS $$
 DECLARE
     preis   boolean := OLD.sellprice IS DISTINCT FROM NEW.sellprice
-                       OR OLD.buchungsgruppen_id IS DISTINCT FROM NEW.buchungsgruppen_id;
+                       OR OLD.buchungsgruppen_id IS DISTINCT FROM NEW.buchungsgruppen_id
+                       OR OLD.obsolete IS DISTINCT FROM NEW.obsolete;
     sonst   boolean := OLD.onhand IS DISTINCT FROM NEW.onhand
                        OR OLD.description IS DISTINCT FROM NEW.description
                        OR OLD.notes IS DISTINCT FROM NEW.notes;
@@ -456,7 +476,8 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Änderung an der Kanalzeile eines Artikels.
---   HugoShop   Aufschlag, Bezeichnung oder Langbeschreibung: Seite neu, nur
+--   HugoShop   Aufschlag, Bezeichnung, Langbeschreibung oder Verfügbarkeit
+--              (unavailable): Seite neu, nur
 --              bei shop_auto_publish. Ein- und Abwählen regelt die
 --              Artikelkarte (Seite entfernen) bzw. der Benutzer
 --              (Veröffentlichen).
@@ -482,7 +503,8 @@ BEGIN
         OR OLD.markup_value IS DISTINCT FROM NEW.markup_value
         OR OLD.title IS DISTINCT FROM NEW.title
         OR OLD.description IS DISTINCT FROM NEW.description
-        OR OLD.settings IS DISTINCT FROM NEW.settings;
+        OR OLD.settings IS DISTINCT FROM NEW.settings
+        OR OLD.unavailable IS DISTINCT FROM NEW.unavailable;
 
     IF art = 'hugoshop' THEN
         IF TG_OP = 'UPDATE' AND NEW.active AND OLD.active AND geaendert AND shop_auto_publish_enabled() THEN
@@ -610,10 +632,11 @@ $$ LANGUAGE plpgsql;
 DO $$ BEGIN
     DROP TRIGGER IF EXISTS trigger_parts_shop_auto_publish ON parts;
     CREATE TRIGGER trigger_parts_shop_auto_publish
-        AFTER UPDATE OF sellprice, buchungsgruppen_id, onhand, description, notes ON parts
+        AFTER UPDATE OF sellprice, buchungsgruppen_id, obsolete, onhand, description, notes ON parts
         FOR EACH ROW
         WHEN (OLD.sellprice IS DISTINCT FROM NEW.sellprice
               OR OLD.buchungsgruppen_id IS DISTINCT FROM NEW.buchungsgruppen_id
+              OR OLD.obsolete IS DISTINCT FROM NEW.obsolete
               OR OLD.onhand IS DISTINCT FROM NEW.onhand
               OR OLD.description IS DISTINCT FROM NEW.description
               OR OLD.notes IS DISTINCT FROM NEW.notes)

@@ -440,7 +440,7 @@
             "goToBookings": "Go to Bookings",
             "uploadAnother": "Upload Another Invoice",
             "maxFileSize": "Maximum file size: 20 MB",
-            "allowedFormats": "Allowed formats: PDF, JPG, PNG",
+            "allowedFormats": "Allowed formats: PDF, JPG, PNG, XML (e-invoice)",
             "bookedTitle": "Already booked incoming invoices",
             "colInvNumber": "Invoice No.",
             "colVendor": "Vendor",

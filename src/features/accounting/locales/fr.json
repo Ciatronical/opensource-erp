@@ -252,7 +252,7 @@
             "goToBookings": "Vers les écritures",
             "uploadAnother": "Téléverser une autre facture",
             "maxFileSize": "Taille maximale du fichier : 20 Mo",
-            "allowedFormats": "Formats autorisés : PDF, JPG, PNG",
+            "allowedFormats": "Formats autorisés : PDF, JPG, PNG, XML (facture électronique)",
             "bookedTitle": "Factures fournisseurs déjà comptabilisées",
             "colInvNumber": "N° de facture",
             "colVendor": "Fournisseur",

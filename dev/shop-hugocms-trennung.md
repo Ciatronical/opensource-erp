@@ -290,7 +290,7 @@ die Anmeldung und braucht laut CLAUDE.md vorher die Zustimmung des Inhabers.
 
 ## Offene Fragen
 
-- R1 und R2 bestätigen.
+- ~~R1 und R2 bestätigen.~~ Entschieden als E7 und E8 (2026-09-24).
 - Unter welchem Benutzer läuft der HugoCMS-Cron, und darf er in die Shop-Mounts
   schreiben?
 - Wie kommen Produktbilder aus dem Lieferantenimport auf den Webserver — über
