@@ -483,7 +483,7 @@ Aus einem Beleg heraus erzeugen:
 - Einheiten aus der Datenbank (nicht hartkodiert)
 - Kundenspezifische Preise und Preisgruppen
 - Benutzerdefinierte Variablen
-- **Artikelbilder** (u. a. für eBay-Listings): hochladen, listen, löschen
+- **Artikelbilder** je Verkaufskanal (eBay): hochladen, umsortieren, löschen, aus einem anderen Kanal übernehmen — in der Shop-Karte des Artikels
 
 ---
 
@@ -708,15 +708,20 @@ Siehe [Abschnitt 16.13](#1613-anpr--kennzeichenerkennung).
 - Kopplungsstatus in der Konfiguration
 - **Karten-Checkout**: Betrag direkt an den gekoppelten Reader senden
 
-### 13.3 eBay *(extern)*
+### 13.3 eBay *(extern, Verkaufskanal der Shop-Erweiterung)*
+
+eBay ist ein Verkaufskanal der Shop-Erweiterung und setzt sie voraus
+(`dev/shop-verkaufskanaele.md`). Einstellungen im Reiter Shop, Angebote in der
+Shop-Karte des Artikels.
 
 - **Verbindungstest** (Token + Probeabruf), Sandbox und Produktion
-- **Bestellimport**: neue Bestellungen seit dem letzten Lauf, idempotent — Kunde wird ohne Dubletten ermittelt oder angelegt, Positionen werden per SKU auf Artikel gemappt, Rechnung wird erzeugt
-- Manueller Sync und automatischer Cronjob
+- **Bestellimport**: neue Bestellungen seit dem letzten Lauf, idempotent — Kunde wird ohne Dubletten ermittelt oder angelegt, Positionen werden per SKU auf Artikel gemappt, Rechnung wird erzeugt und gebucht, Waren werden vom eingestellten Lagerplatz ausgebucht
+- Manueller Abruf und automatischer Cronjob
 - **Status**: letzter Lauf, zuletzt importierte Bestellungen
-- **Listings**: Artikel bei eBay einstellen (Inventory Item → Offer → Publish), Listing beenden (withdraw), Status je Artikel
-- **Artikelbilder** hochladen, listen, löschen; öffentliche Bild-URLs (https) für eBay
-- Kennzeichen „eBay-Artikel" je Artikel
+- **Angebote** über die Warteschlange: einstellen, aktualisieren, beenden; Preis mit Kanalaufschlag und Rundung auf ,99, Titel und Beschreibung je Kanal, Menge = Lagerbestand, Kategorie und Zustand je Artikel
+- **Automatischer Abgleich** bei Änderung von Preis, Bestand, Texten, Bildern oder Kanalauswahl
+- **Bilder** je Kanal, öffentliche Bild-URLs (https) für eBay
+- Stand des Angebots je Artikel mit Fehlermeldung
 
 ### 13.4 eLetter / Briefversand *(extern)*
 

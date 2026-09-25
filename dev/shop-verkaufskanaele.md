@@ -1,9 +1,10 @@
 # Shop: Verkaufskanäle
 
 Stand 2026-09-25. Status: **Schritte 1 bis 5 umgesetzt**, dazu die
-Lagerbuchung bei Verkäufen (O14, V28). Entschieden sind V1 bis V28; keine
-Frage ist offen. Nächster Schritt: Amazon (V27), nach Klärung des
-Verkäuferkontos mit API-Zugang.
+Lagerbuchung bei Verkäufen (V28). Entschieden sind V1 bis V28. Was noch fehlt
+— offene Entscheidungen O15 bis O25, Aufgaben, Prüfungen vor der
+Inbetriebnahme und die Einrichtung — steht gesammelt unter „Offener Stand
+nach Schritt 5“.
 
 Ein Artikel, für den „Im Shop anbieten" aktiviert ist, wird über einen oder
 mehrere Verkaufskanäle angeboten. Der erste Kanal ist der HugoShop
@@ -767,6 +768,78 @@ gegen die echte kivitendo-Datenbank (weitere Trigger auf `inventory`, etwa
 | O7 | **Amazon.** SP-API verlangt eine Registrierung als Entwickler, Listings nach produkttypabhängigem Schema und Bestandsmeldungen | **entschieden 2026-09-25**: Vorschlag gilt (V27) | Erst nach eBay angehen; vorher klären, ob ein Amazon-Verkäuferkonto mit API-Zugang besteht |
 | O14 | **Lagerbuchung bei Verkäufen** (Ergebnis zu V20). Rechnungen aus HugoShop und eBay buchen kein Lager; der gemeinsame Bestand (V4) sinkt erst, wenn jemand die Ware ausbucht. Bis dahin meldet eBay den alten Bestand, und die Produktseite zeigt „auf Lager" — Überverkauf ist möglich. Eine automatische Ausbuchung braucht Lager, Lagerplatz und Buchungsart (`inventory`: `warehouse_id`, `bin_id`, `trans_type_id`), wie `bookStock` in `backend/api/warehouse/transfer.php` | **entschieden 2026-09-25**: Vorschlag gilt (V28), umgesetzt | Einstellungen „Lager und Lagerplatz für Verkäufe" im Reiter Shop; beim Anlegen einer Rechnung aus HugoShop oder eBay je Warenposition (nicht Dienstleistung, nicht Versand) eine Ausbuchung. Ohne Einstellung wie bisher keine Buchung, mit Hinweis in der Einrichtungsprüfung. Die Faktura selbst bleibt unberührt |
 
+## Offener Stand nach Schritt 5
+
+Zusammenfassung dessen, was nach Schritt 5 noch fehlt. Die Punkte O1 bis O14
+sind entschieden (siehe „Probleme und anstehende Entscheidungen“); hier
+beginnen die neuen bei O15.
+
+### Anstehende Entscheidungen
+
+| Nr. | Thema | Stand heute | Vorschlag |
+| --- | --- | --- | --- |
+| O15 | **Amazon** (V27) | Nicht begonnen. Voraussetzung ist ein Amazon-Verkäuferkonto mit Zugang zur Selling Partner API (Registrierung als Entwickler, Anmeldung über Login with Amazon). Angebote verlangen je Produkttyp eigene Pflichtangaben (Product Type Definitions) | Vor Beginn klären: (a) Konto und API-Zugang vorhanden? (b) Versand durch den Händler oder durch Amazon (FBA — dann führt Amazon den Bestand, und V4 gilt dort nicht)? (c) welche Marktplätze? (d) Zuordnung über EAN oder vorhandene ASIN? Danach wie eBay: Modul `channels/amazon.php`, Kanalzeile, Bestellimport |
+| O16 | **Zahlungen und Gebühren bei eBay** | Der Import legt die Rechnung an und bucht sie, aber keinen Zahlungseingang. eBay zahlt gesammelt aus und behält Gebühren ein; beides wird nicht gebucht | Auszahlungen über die eBay Finances API abrufen und wie die Kartenabrechnungen (`payment_settlement_lines`) den Rechnungen zuordnen; Gebühren auf ein einstellbares Aufwandskonto. Alternative: bleibt von Hand über den Kontoauszug |
+| O17 | **Stornos, Rücksendungen, Abbrüche** | Wird eine Rechnung storniert oder ein Widerruf bearbeitet, bucht niemand das Lager zurück (V28 bucht nur aus). Von eBay abgebrochene oder erstattete Bestellungen werden nicht abgeholt; die Rechnung bleibt stehen | Rückbuchung des Lagers beim Storno einer Shop- oder eBay-Rechnung (Gegenstück zu `shop_book_stock`); abgebrochene eBay-Bestellungen beim Abruf erkennen und in der Übersicht als „zu stornieren“ melden, statt selbst zu stornieren |
+| O18 | **Verfügbarkeit auf der Produktseite** | Die Seite trägt „auf Lager“ oder „nicht auf Lager“ fest im Inhalt. Bestandsänderungen schreiben HugoShop-Seiten nicht neu (nur Preis, V22) | Neu schreiben nur beim Wechsel zwischen 0 und mehr als 0, nicht bei jeder Änderung — sonst baute jeder Verkauf die Webseite neu |
+| O19 | **Lagerbuchung für Verkäufe außerhalb der Kanäle** | Rechnungen aus der Faktura des Kerns buchen kein Lager (V28 gilt nur für HugoShop und eBay). Wer auch im Laden oder auf Rechnung verkauft, hat einen gemeinsamen Bestand, der nur die Kanalverkäufe kennt | Entweder die Faktura bucht beim Buchen der Rechnung ebenfalls aus (Änderung am Kern), oder es bleibt beim Ausbuchen über Lieferscheine bzw. die Lagerverwaltung — dann in der Betriebsdokumentation festhalten |
+| O20 | **Aufräumen der alten eBay-Anbindung** | Stehen geblieben: Tabellen `ebay_listings`, `ebay_part_images` (V21: bis alle Mandanten übernommen sind), Einstellungen `ebay_enabled`, `ebay_listing_enabled`, `ebay_listing_quantity` in `defaults_oserp`, ungenutzte Übersetzungen `ArticleEditView.ebay.*` und `crm_fields.ebayEnabled*`, `ebayListing*`, `ebayPanel`, `ebayArticle`. `ebay_enabled` liest noch der Hinweis im CRM-Reiter (Mandanten ohne Shop-Erweiterung) | Nach der Übernahme aller Mandanten: alte Tabellen und die beiden Listing-Einstellungen im CRM-Upstall entfernen, ungenutzte Übersetzungen löschen. `ebay_enabled` erst entfernen, wenn kein Mandant ohne Shop-Erweiterung es mehr gesetzt hat |
+| O21 | **Sprachen der Shop-UI** | Die Shop-UI kennt Deutsch und Englisch; OSERP 21 Sprachen. Die neuen Meldungen (`SHOP_CLOSED`, `CART_NOT_OFFERED`, „Nicht mehr erhältlich“) gibt es nur in diesen beiden | Bleibt so, bis die Shop-UI grundsätzlich mehrsprachig wird — eigene Entscheidung außerhalb der Verkaufskanäle |
+| O22 | **Aufrufgrenzen bei eBay** | Jede Änderung an Preis, Bestand oder Text erzeugt einen Auftrag; einer kostet drei bis vier API-Aufrufe (Inventory Item, Offer, Publish). Bei großem Sortiment und vielen Bestandsänderungen kann das Tageskontingent der Inventory API knapp werden | Beobachten. Bei Bedarf Bestandsänderungen über `bulkUpdatePriceQuantity` bündeln (bis 25 Artikel je Aufruf) statt über den vollen Abgleich |
+| O23 | **Überverkauf zwischen zwei Abgleichen** | Der Bestand geht erst beim nächsten Lauf des Läufers (Cron, etwa alle 5 Minuten) an eBay. Wird das letzte Stück in dieser Zeit im HugoShop und bei eBay verkauft, ist es zweimal verkauft | Einstellbarer Sicherheitsbestand je Kanal (an eBay geht Bestand minus Sicherheitsbestand) oder kürzeres Cron-Intervall |
+| O24 | **Öffentliche Bildadressen** | `backend/webhook/part-image.php?db=<Datenbank>&id=<Artikel>&f=<Prüfsumme>` — ohne Anmeldung abrufbar (eBay braucht das) und mit dem Namen der Mandantendatenbank in der Adresse. Übernommen aus der bisherigen Anbindung | Die Datenbank über ein Kürzel statt ihres Namens adressieren, oder als bekannt hinnehmen. Die Dateinamen sind Prüfsummen und nicht zu erraten |
+| O25 | **Rechte für eBay** | Bestellabruf und Stand verlangen jetzt `shop_order` oder `edit_shop_config`, der Verbindungstest `edit_shop_config`. Vorher genügte für den Abruf `invoice_edit`, Test und Stand waren ohne Prüfung | Bestätigen oder zusätzlich `invoice_edit` für den Abruf zulassen, falls Mitarbeiter ohne Shop-Rechte eBay-Bestellungen abrufen sollen |
+
+### Aufgaben ohne Entscheidung
+
+| Nr. | Aufgabe |
+| --- | --- |
+| A1 | Text `crm_fields.ebayPanelUi.disabled` (21 Sprachen) sagt noch „Oben aktivieren und Zugangsdaten speichern“ — eingeschaltet wird eBay jetzt unter „Verkaufskanäle“ |
+| A2 | `dev/lokale-ki-ollama.md` erwähnt `api/ebay/*`, das es nicht mehr gibt |
+| A3 | Kommentare, die auf die alte Anbindung zeigen (Herkunftsangaben in `channels/ebay.php`, `channels/ebay_orders.php`, `shop-ebay-status.vue`) sind als Herkunft gewollt; bei O20 mit aufräumen |
+| A4 | Die Prüfprogramme dieser Umsetzung liegen nur im Scratchpad der Sitzung. Für dauerhafte Tests bräuchte es eine Testumgebung mit kivitendo-Schema; die Nachbildung reichte für Logik und SQL, nicht für Faktura und Buchung |
+
+### Prüfungen vor der Inbetriebnahme
+
+Nicht geprüft, weil ohne echten Mandanten, eBay-Zugang oder Browser nicht
+möglich:
+
+| Nr. | Prüfung | Betrifft |
+| --- | --- | --- |
+| P1 | Upstall der Shop-Erweiterung auf einer Kopie eines echten Mandanten, zweimal hintereinander | Schema, Übernahmen V6 und V21, Trigger |
+| P2 | eBay-Sandbox: Artikel einstellen, Preis und Bestand ändern, abwählen, Kanal aus- und einschalten, Bilder ändern | eBay-Modul, Trigger, Warteschlange |
+| P3 | eBay-Sandbox: Bestellung abrufen — Kunde, Rechnung, Buchung, Lagerbuchung, Bestandsabgleich | Import, V28 |
+| P4 | Cron `backend/cli/ebay-orders.php` über mehrere Mandanten | Cron |
+| P5 | Faktura: Beleg öffnen, Position hinzufügen, buchen — mit und ohne im Voraus eingetragenen Steuersatz | V24 |
+| P6 | Lagerbuchung gegen die echte Datenbank (weitere Trigger auf `inventory`, etwa `check_bin_wh_inventory`) | V28 |
+| P7 | Artikelkarte im Browser: Kanäle, Aufschlag, Vorschau, Texte, Bilder hochladen, umsortieren, übernehmen | Schritt 2, Schritt 5 |
+| P8 | Firmenkonfiguration im Browser: Verkaufskanäle, eBay-Gruppe, Geheimnisse bleiben leer und erhalten, Lagerplatz | Schritt 3, Schritt 5 |
+| P9 | HugoShop abschalten und einschalten, je einmal mit „Entwurf“ und „Entfernen“, in beiden Betriebsarten (lokal, HugoCMS) | V16 |
+| P10 | Shop-UI nach dem Abgleich des Webseiten-Pakets: „Shop geschlossen“, „Nicht mehr erhältlich“, Kauf eines abgewählten Artikels | V16, V23 |
+| P11 | PayPal-Sandbox: Kauf mit Kanalaufschlag und Rundung auf ,99, Bruttopreise und Nettopreise in den Stammdaten | V2, Befund Warenkorb |
+| P12 | Bridge (`run.php`), falls noch in Betrieb: neue Artikel erscheinen im HugoShop | V7, V25 |
+
+### Einrichtung für den Betrieb
+
+1. Upstall der Shop-Erweiterung ausführen (legt Tabellen, Funktionen,
+   Trigger an und übernimmt HugoShop-Artikel und alte eBay-Daten).
+2. Reiter Shop → Rechnungsstellung: „Lagerplatz für Verkäufe“ wählen (V28).
+3. Reiter Shop → Verkaufskanäle: Aufschlag und Rundung je Kanal; eBay
+   einschalten.
+4. Reiter Shop → eBay: Zugangsdaten, **öffentliche Adresse für Bilder**
+   (Pflicht, https, von eBay erreichbar), Kategorie, Zustand, Lagerort und
+   die drei Policies; „Verbindung testen“.
+5. Im eBay-Verkäuferkonto „Out-of-Stock Control“ einschalten — sonst beendet
+   eBay Angebote bei Bestand 0 (V19).
+6. Cron für den Läufer (`tools/shop-publish.php`) und den Bestellabruf
+   (`backend/cli/ebay-orders.php`) prüfen; `install/install.sh` legt den
+   zweiten an.
+7. Bei Nettopreisen in den Stammdaten und Rundung auf ,99 die Empfehlung der
+   Shop-Übersicht beachten (V2d).
+8. Refresh-Token bei eBay erneuern, falls die Firmenkonfiguration vor der
+   Behebung der Lücke (Schritt 5, Teil 1) von Personen geöffnet wurde, die
+   keinen Zugriff auf das eBay-Konto haben sollten.
+
 ## Plan Schritt 5: eBay-Kanal
 
 Grundlage: V12 bis V15. Der eBay-Kanal ersetzt `backend/api/ebay/` und
@@ -804,4 +877,7 @@ Reihenfolge:
 3. **Kanalvorgaben** mit Aufschlag und Rundung in der Firmenkonfiguration. Umgesetzt, siehe oben.
 4. **Gemeinsamer Aufbau der Kanäle** und Warteschlange mit Kanalbezug. Umgesetzt, siehe oben.
 5. **eBay** mit Bestandsabgleich und Bestellimport. Umgesetzt, siehe oben.
-6. **Amazon** (V27), nach Klärung des Verkäuferkontos mit API-Zugang.
+6. **Amazon** (V27), nach Klärung von O15.
+7. **Prüfungen P1 bis P12** vor der Inbetriebnahme, Einrichtung nach
+   „Einrichtung für den Betrieb“.
+8. **Folgepunkte** nach Entscheidung: O16 bis O25, Aufgaben A1 bis A4.
