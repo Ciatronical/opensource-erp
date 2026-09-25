@@ -98,5 +98,15 @@
         "notWritable": "Não gravável",
         "readOnly": "Apenas leitura",
         "failed": "Não foi possível ler a pasta"
+    },
+    "SchemaUpdate": {
+        "title": "É necessária uma atualização da base de dados",
+        "text": "A base de dados da empresa não corresponde à versão do programa, por isso a última ação falhou. A atualização ajusta o esquema; antes é criada uma cópia de segurança.",
+        "confirm": "Executar atualização",
+        "cancel": "Mais tarde",
+        "running": "A base de dados da empresa está a ser atualizada …",
+        "success": "A base de dados foi atualizada. Repita a última ação.",
+        "failed": "A atualização da base de dados falhou.",
+        "alreadyRunning": "Já está a decorrer uma atualização da base de dados. Tente novamente dentro de alguns minutos."
     }
 }

@@ -98,5 +98,15 @@
         "notWritable": "Non scrivibile",
         "readOnly": "Sola lettura",
         "failed": "Impossibile leggere la cartella"
+    },
+    "SchemaUpdate": {
+        "title": "Aggiornamento del database necessario",
+        "text": "Il database dell'azienda non corrisponde alla versione del programma, per questo l'ultima azione non è riuscita. L'aggiornamento adatta lo schema; prima viene creato un backup.",
+        "confirm": "Esegui aggiornamento",
+        "cancel": "Più tardi",
+        "running": "La banca dati dell'azienda è in fase di aggiornamento …",
+        "success": "Il database è stato aggiornato. Ripetere l'ultima azione.",
+        "failed": "L'aggiornamento del database non è riuscito.",
+        "alreadyRunning": "È già in corso un aggiornamento del database. Riprovare tra qualche minuto."
     }
 }

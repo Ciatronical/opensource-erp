@@ -98,5 +98,15 @@
         "notWritable": "Nav rakstāms",
         "readOnly": "Tikai lasāms",
         "failed": "Neizdevās nolasīt direktoriju"
+    },
+    "SchemaUpdate": {
+        "title": "Nepieciešams datu bāzes atjauninājums",
+        "text": "Uzņēmuma datu bāze neatbilst programmas versijai, tāpēc pēdējā darbība neizdevās. Atjauninājums pielāgo shēmu, pirms tam tiek izveidota rezerves kopija.",
+        "confirm": "Palaist atjauninājumu",
+        "cancel": "Vēlāk",
+        "running": "Uzņēmuma datu bāze tiek atjaunināta …",
+        "success": "Datu bāze ir atjaunināta. Lūdzu, atkārtojiet pēdējo darbību.",
+        "failed": "Datu bāzes atjaunināšana neizdevās.",
+        "alreadyRunning": "Datu bāzes atjaunināšana jau notiek. Lūdzu, mēģiniet vēlreiz pēc dažām minūtēm."
     }
 }

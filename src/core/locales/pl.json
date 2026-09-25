@@ -98,5 +98,15 @@
         "notWritable": "Niezapisywalny",
         "readOnly": "Tylko do odczytu",
         "failed": "Nie udało się odczytać katalogu"
+    },
+    "SchemaUpdate": {
+        "title": "Wymagana aktualizacja bazy danych",
+        "text": "Baza danych firmy nie odpowiada wersji programu, dlatego ostatnia akcja nie powiodła się. Aktualizacja dostosuje schemat, wcześniej zostanie utworzona kopia zapasowa.",
+        "confirm": "Uruchom aktualizację",
+        "cancel": "Później",
+        "running": "Baza danych firmy jest aktualizowana …",
+        "success": "Baza danych została zaktualizowana. Powtórz ostatnią akcję.",
+        "failed": "Aktualizacja bazy danych nie powiodła się.",
+        "alreadyRunning": "Aktualizacja bazy danych już trwa. Spróbuj ponownie za kilka minut."
     }
 }

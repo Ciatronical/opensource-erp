@@ -98,5 +98,15 @@
         "notWritable": "Nicht beschreibbar",
         "readOnly": "Nur lesbar",
         "failed": "Verzeichnis konnte nicht gelesen werden"
+    },
+    "SchemaUpdate": {
+        "title": "Datenbank-Update erforderlich",
+        "text": "Die Datenbank der Firma ist nicht auf dem Stand der Programmversion, deshalb ist die letzte Aktion gescheitert. Das Update passt das Schema an, vorher entsteht eine Sicherung.",
+        "confirm": "Update ausführen",
+        "cancel": "Später",
+        "running": "Die Datenbank der Firma wird aktualisiert …",
+        "success": "Die Datenbank wurde aktualisiert. Bitte die letzte Aktion wiederholen.",
+        "failed": "Das Datenbank-Update ist fehlgeschlagen.",
+        "alreadyRunning": "Es läuft bereits ein Datenbank-Update. Bitte in einigen Minuten erneut versuchen."
     }
 }

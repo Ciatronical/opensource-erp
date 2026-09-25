@@ -98,5 +98,15 @@
         "notWritable": "Inte skrivbar",
         "readOnly": "Skrivskyddad",
         "failed": "Katalogen kunde inte läsas"
+    },
+    "SchemaUpdate": {
+        "title": "Databasuppdatering krävs",
+        "text": "Företagets databas motsvarar inte programversionen, därför misslyckades den senaste åtgärden. Uppdateringen anpassar schemat; först skapas en säkerhetskopia.",
+        "confirm": "Kör uppdatering",
+        "cancel": "Senare",
+        "running": "Företagets databas uppdateras …",
+        "success": "Databasen har uppdaterats. Upprepa den senaste åtgärden.",
+        "failed": "Databasuppdateringen misslyckades.",
+        "alreadyRunning": "En databasuppdatering pågår redan. Försök igen om några minuter."
     }
 }

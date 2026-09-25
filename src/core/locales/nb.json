@@ -98,5 +98,15 @@
         "notWritable": "Ikke skrivbar",
         "readOnly": "Skrivebeskyttet",
         "failed": "Mappen kunne ikke leses"
+    },
+    "SchemaUpdate": {
+        "title": "Databaseoppdatering kreves",
+        "text": "Firmaets database samsvarer ikke med programversjonen, derfor mislyktes den siste handlingen. Oppdateringen tilpasser skjemaet; først lages en sikkerhetskopi.",
+        "confirm": "Kjør oppdatering",
+        "cancel": "Senere",
+        "running": "Firmaets database oppdateres …",
+        "success": "Databasen er oppdatert. Gjenta den siste handlingen.",
+        "failed": "Databaseoppdateringen mislyktes.",
+        "alreadyRunning": "En databaseoppdatering kjører allerede. Prøv igjen om noen minutter."
     }
 }

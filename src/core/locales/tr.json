@@ -98,5 +98,15 @@
         "notWritable": "Yazılamaz",
         "readOnly": "Salt okunur",
         "failed": "Dizin okunamadı"
+    },
+    "SchemaUpdate": {
+        "title": "Veritabanı güncellemesi gerekli",
+        "text": "Şirket veritabanı program sürümüyle uyumlu değil, bu yüzden son işlem başarısız oldu. Güncelleme şemayı uyarlar; önce bir yedek oluşturulur.",
+        "confirm": "Güncellemeyi çalıştır",
+        "cancel": "Daha sonra",
+        "running": "Şirket veritabanı güncelleniyor …",
+        "success": "Veritabanı güncellendi. Lütfen son işlemi tekrarlayın.",
+        "failed": "Veritabanı güncellemesi başarısız oldu.",
+        "alreadyRunning": "Zaten bir veritabanı güncellemesi çalışıyor. Lütfen birkaç dakika sonra tekrar deneyin."
     }
 }

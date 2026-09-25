@@ -126,6 +126,22 @@ function updateSchema($data) {
 }
 
 /**
+ * Prüft, ob die Firmen-Datenbank der Sitzung ein Update braucht
+ *
+ * Vergleicht die Prüfsummen der Upstall-Dateien mit dem Stand in
+ * defaults_oserp. Das Frontend fragt nach, wenn eine Anfrage mit fehlender
+ * Spalte oder Tabelle scheitert, und bietet dem Benutzer dann das Update an —
+ * ausgeführt wird hier nichts.
+ *
+ * @param array $data Request-Daten (keine Parameter)
+ * @return void
+ * @testdata {}
+ */
+function schemaUpdateNeeded($data) {
+    resultInfo(true, '', ['update_needed' => upstallUpdateNeeded(DbhCompany::begin())]);
+}
+
+/**
  * Kern des Einzel-Updates — gibt zurück, statt zu antworten
  *
  * Getrennt von updateSchema(), damit auch Aufrufer ohne HTTP-Antwort das

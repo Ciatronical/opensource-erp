@@ -98,5 +98,15 @@
         "notWritable": "Nu se poate scrie",
         "readOnly": "Doar citire",
         "failed": "Directorul nu a putut fi citit"
+    },
+    "SchemaUpdate": {
+        "title": "Este necesară actualizarea bazei de date",
+        "text": "Baza de date a firmei nu corespunde versiunii programului, de aceea ultima acțiune a eșuat. Actualizarea adaptează schema; înainte se creează o copie de siguranță.",
+        "confirm": "Rulează actualizarea",
+        "cancel": "Mai târziu",
+        "running": "Baza de date a firmei se actualizează …",
+        "success": "Baza de date a fost actualizată. Repetați ultima acțiune.",
+        "failed": "Actualizarea bazei de date a eșuat.",
+        "alreadyRunning": "O actualizare a bazei de date rulează deja. Încercați din nou peste câteva minute."
     }
 }

@@ -98,5 +98,15 @@
         "notWritable": "Not writable",
         "readOnly": "Read-only",
         "failed": "Directory could not be read"
+    },
+    "SchemaUpdate": {
+        "title": "Database update required",
+        "text": "The company database does not match the program version, which is why the last action failed. The update adjusts the schema; a backup is created first.",
+        "confirm": "Run update",
+        "cancel": "Later",
+        "running": "The company database is being updated …",
+        "success": "The database has been updated. Please repeat the last action.",
+        "failed": "The database update failed.",
+        "alreadyRunning": "A database update is already running. Please try again in a few minutes."
     }
 }

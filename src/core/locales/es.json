@@ -98,5 +98,15 @@
         "notWritable": "Sin permiso de escritura",
         "readOnly": "Solo lectura",
         "failed": "No se pudo leer el directorio"
+    },
+    "SchemaUpdate": {
+        "title": "Se requiere actualizar la base de datos",
+        "text": "La base de datos de la empresa no corresponde a la versión del programa; por eso ha fallado la última acción. La actualización adapta el esquema; antes se crea una copia de seguridad.",
+        "confirm": "Ejecutar actualización",
+        "cancel": "Más tarde",
+        "running": "Se está actualizando la base de datos de la empresa …",
+        "success": "La base de datos se ha actualizado. Repita la última acción.",
+        "failed": "La actualización de la base de datos ha fallado.",
+        "alreadyRunning": "Ya hay una actualización de la base de datos en curso. Inténtelo de nuevo en unos minutos."
     }
 }

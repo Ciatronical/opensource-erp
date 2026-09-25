@@ -98,5 +98,15 @@
         "notWritable": "Neįrašoma",
         "readOnly": "Tik skaitymui",
         "failed": "Nepavyko perskaityti katalogo"
+    },
+    "SchemaUpdate": {
+        "title": "Reikia atnaujinti duomenų bazę",
+        "text": "Įmonės duomenų bazė neatitinka programos versijos, todėl paskutinis veiksmas nepavyko. Atnaujinimas pritaiko schemą, prieš tai sukuriama atsarginė kopija.",
+        "confirm": "Vykdyti atnaujinimą",
+        "cancel": "Vėliau",
+        "running": "Įmonės duomenų bazė atnaujinama …",
+        "success": "Duomenų bazė atnaujinta. Pakartokite paskutinį veiksmą.",
+        "failed": "Duomenų bazės atnaujinti nepavyko.",
+        "alreadyRunning": "Duomenų bazės atnaujinimas jau vyksta. Bandykite dar kartą po kelių minučių."
     }
 }

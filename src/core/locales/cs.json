@@ -98,5 +98,15 @@
         "notWritable": "Nelze zapisovat",
         "readOnly": "Jen pro čtení",
         "failed": "Adresář se nepodařilo načíst"
+    },
+    "SchemaUpdate": {
+        "title": "Je nutná aktualizace databáze",
+        "text": "Databáze firmy neodpovídá verzi programu, proto poslední akce selhala. Aktualizace upraví schéma, předtím se vytvoří záloha.",
+        "confirm": "Spustit aktualizaci",
+        "cancel": "Později",
+        "running": "Databáze firmy se aktualizuje …",
+        "success": "Databáze byla aktualizována. Zopakujte prosím poslední akci.",
+        "failed": "Aktualizace databáze se nezdařila.",
+        "alreadyRunning": "Aktualizace databáze již probíhá. Zkuste to prosím znovu za několik minut."
     }
 }

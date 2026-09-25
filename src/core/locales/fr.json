@@ -98,5 +98,15 @@
         "notWritable": "Non accessible en écriture",
         "readOnly": "Lecture seule",
         "failed": "Le répertoire n’a pas pu être lu"
+    },
+    "SchemaUpdate": {
+        "title": "Mise à jour de la base de données requise",
+        "text": "La base de données de l'entreprise ne correspond pas à la version du programme, c'est pourquoi la dernière action a échoué. La mise à jour adapte le schéma ; une sauvegarde est créée auparavant.",
+        "confirm": "Lancer la mise à jour",
+        "cancel": "Plus tard",
+        "running": "La base de données de l'entreprise est en cours de mise à jour …",
+        "success": "La base de données a été mise à jour. Veuillez répéter la dernière action.",
+        "failed": "La mise à jour de la base de données a échoué.",
+        "alreadyRunning": "Une mise à jour de la base de données est déjà en cours. Veuillez réessayer dans quelques minutes."
     }
 }

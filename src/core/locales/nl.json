@@ -98,5 +98,15 @@
         "notWritable": "Niet beschrijfbaar",
         "readOnly": "Alleen lezen",
         "failed": "De map kon niet worden gelezen"
+    },
+    "SchemaUpdate": {
+        "title": "Database-update vereist",
+        "text": "De database van het bedrijf komt niet overeen met de programmaversie; daarom is de laatste actie mislukt. De update past het schema aan; eerst wordt een back-up gemaakt.",
+        "confirm": "Update uitvoeren",
+        "cancel": "Later",
+        "running": "De bedrijfsdatabase wordt bijgewerkt …",
+        "success": "De database is bijgewerkt. Herhaal de laatste actie.",
+        "failed": "De database-update is mislukt.",
+        "alreadyRunning": "Er loopt al een database-update. Probeer het over enkele minuten opnieuw."
     }
 }

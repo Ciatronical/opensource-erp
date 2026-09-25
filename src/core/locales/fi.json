@@ -98,5 +98,15 @@
         "notWritable": "Ei kirjoitettavissa",
         "readOnly": "Vain luku",
         "failed": "Hakemistoa ei voitu lukea"
+    },
+    "SchemaUpdate": {
+        "title": "Tietokannan päivitys tarvitaan",
+        "text": "Yrityksen tietokanta ei vastaa ohjelmaversiota, siksi viimeisin toiminto epäonnistui. Päivitys mukauttaa skeeman; ensin luodaan varmuuskopio.",
+        "confirm": "Suorita päivitys",
+        "cancel": "Myöhemmin",
+        "running": "Yrityksen tietokantaa päivitetään …",
+        "success": "Tietokanta on päivitetty. Toista viimeisin toiminto.",
+        "failed": "Tietokannan päivitys epäonnistui.",
+        "alreadyRunning": "Tietokannan päivitys on jo käynnissä. Yritä uudelleen muutaman minuutin kuluttua."
     }
 }

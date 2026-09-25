@@ -15,6 +15,7 @@ import '@mdi/font/css/materialdesignicons.css'
 import './style.css'
 import preserveCursor from '@/core/directives/preserveCursor'
 import axios from 'axios'
+import { isSchemaMismatch, offerSchemaUpdate } from '@/core/utils/schemaUpdate.js'
 
 // App & Plugins
 const pinia = createPinia()
@@ -107,6 +108,31 @@ axios.interceptors.request.use(config => {
     if (id) daten.employee_id = id
     return config
 })
+
+/**
+ * Fehlende Spalte oder Tabelle: Datenbank-Update anbieten.
+ *
+ * Nur für angemeldete Benutzer — die Anmeldung selbst führt das Update ohne
+ * Rückfrage aus (login.view.vue). Anfragen an /api/update/ lösen keinen
+ * Hinweis aus, sonst fragte ein scheiterndes Update sich selbst nach. Die
+ * Antwort geht unverändert weiter; die Ansicht zeigt ihren Fehler wie bisher.
+ */
+function schemaPruefen(antwort, config) {
+    if (!store.session?.logged_in_employee?.id) return
+    if (String(config?.url || '').includes('/api/update/')) return
+    if (isSchemaMismatch(antwort)) offerSchemaUpdate()
+}
+
+axios.interceptors.response.use(
+    response => {
+        schemaPruefen(response.data, response.config)
+        return response
+    },
+    error => {
+        schemaPruefen(error?.response?.data, error?.config)
+        return Promise.reject(error)
+    }
+)
 
 // Debug-Modus prüfen
 if (!store.isDebugMode()) {

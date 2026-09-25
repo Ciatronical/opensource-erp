@@ -98,5 +98,15 @@
         "notWritable": "Ei ole kirjutatav",
         "readOnly": "Ainult lugemiseks",
         "failed": "Kataloogi ei õnnestunud lugeda"
+    },
+    "SchemaUpdate": {
+        "title": "Andmebaasi uuendamine on vajalik",
+        "text": "Ettevõtte andmebaas ei vasta programmi versioonile, seetõttu viimane toiming ebaõnnestus. Uuendus kohandab skeemi, enne luuakse varukoopia.",
+        "confirm": "Käivita uuendus",
+        "cancel": "Hiljem",
+        "running": "Ettevõtte andmebaasi uuendatakse …",
+        "success": "Andmebaas on uuendatud. Palun korrake viimast toimingut.",
+        "failed": "Andmebaasi uuendamine ebaõnnestus.",
+        "alreadyRunning": "Andmebaasi uuendus juba käib. Palun proovige mõne minuti pärast uuesti."
     }
 }
