@@ -939,7 +939,9 @@
         "ebayEnvironmentProduction": "Produksjon",
         "ebayEnvironmentSandbox": "Sandkasse (test)",
         "ebayMoved": "eBay er nå en salgskanal i butikkutvidelsen. Innstillingene finnes i fanen Butikk under «eBay», annonsene i varens butikkort.",
-        "ebayNeedsShop": "eBay er slått på, men butikkutvidelsen er ikke. Uten den legges ingen annonser ut og ingen ordrer hentes — aktiver butikkutvidelsen."
+        "ebayNeedsShop": "eBay er slått på, men butikkutvidelsen er ikke. Uten den legges ingen annonser ut og ingen ordrer hentes — aktiver butikkutvidelsen.",
+        "shopStockBinId": "Lagerplass for salg",
+        "shopStockBinId_help": "Varene bokføres ut fra denne lagerplassen så snart det opprettes en faktura fra HugoShop eller eBay. Beholdningen gjelder for alle salgskanaler. La stå tomt hvis uttak bokføres manuelt."
     },
     "add": "Legg til",
     "add_fields": {

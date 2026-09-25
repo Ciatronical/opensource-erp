@@ -939,7 +939,9 @@
         "ebayEnvironmentProduction": "Produktion",
         "ebayEnvironmentSandbox": "Sandbox (test)",
         "ebayMoved": "eBay er nu en salgskanal i shop-udvidelsen. Indstillingerne findes under fanen Shop under „eBay“, annoncerne i varens shopkort.",
-        "ebayNeedsShop": "eBay er slået til, men shop-udvidelsen er ikke. Uden den oprettes ingen annoncer og hentes ingen ordrer — aktivér venligst shop-udvidelsen."
+        "ebayNeedsShop": "eBay er slået til, men shop-udvidelsen er ikke. Uden den oprettes ingen annoncer og hentes ingen ordrer — aktivér venligst shop-udvidelsen.",
+        "shopStockBinId": "Lagerplads til salg",
+        "shopStockBinId_help": "Varerne bogføres ud fra denne lagerplads, så snart der oprettes en faktura fra HugoShop eller eBay. Beholdningen gælder for alle salgskanaler. Lad stå tomt, hvis der bogføres ud manuelt."
     },
     "add": "Tilfoej",
     "add_fields": {

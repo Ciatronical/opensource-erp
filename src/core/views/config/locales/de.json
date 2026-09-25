@@ -1142,7 +1142,9 @@
         "ebayEnvironmentProduction": "Produktiv",
         "ebayEnvironmentSandbox": "Sandbox (Test)",
         "ebayMoved": "eBay ist jetzt ein Verkaufskanal der Shop-Erweiterung. Die Einstellungen stehen im Reiter Shop unter „eBay“, die Angebote in der Shop-Karte des Artikels.",
-        "ebayNeedsShop": "eBay ist eingeschaltet, die Shop-Erweiterung aber nicht. Ohne sie werden keine Angebote eingestellt und keine Bestellungen abgerufen — bitte die Shop-Erweiterung aktivieren."
+        "ebayNeedsShop": "eBay ist eingeschaltet, die Shop-Erweiterung aber nicht. Ohne sie werden keine Angebote eingestellt und keine Bestellungen abgerufen — bitte die Shop-Erweiterung aktivieren.",
+        "shopStockBinId": "Lagerplatz für Verkäufe",
+        "shopStockBinId_help": "Von diesem Lagerplatz werden die Waren ausgebucht, sobald eine Rechnung aus dem HugoShop oder von eBay entsteht. Der Bestand gilt für alle Verkaufskanäle. Leer lassen, wenn von Hand ausgebucht wird."
     },
     "add": "Hinzufügen",
     "add_fields": {

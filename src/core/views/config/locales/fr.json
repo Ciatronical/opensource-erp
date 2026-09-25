@@ -939,7 +939,9 @@
         "ebayEnvironmentProduction": "Production",
         "ebayEnvironmentSandbox": "Sandbox (test)",
         "ebayMoved": "eBay est désormais un canal de vente de l'extension boutique. Les réglages se trouvent dans l'onglet Boutique sous « eBay », les annonces dans la carte boutique de l'article.",
-        "ebayNeedsShop": "eBay est activé, mais pas l'extension boutique. Sans elle, aucune annonce n'est publiée et aucune commande n'est récupérée — veuillez activer l'extension boutique."
+        "ebayNeedsShop": "eBay est activé, mais pas l'extension boutique. Sans elle, aucune annonce n'est publiée et aucune commande n'est récupérée — veuillez activer l'extension boutique.",
+        "shopStockBinId": "Emplacement de stock pour les ventes",
+        "shopStockBinId_help": "Les marchandises sont sorties de cet emplacement dès qu'une facture est créée depuis HugoShop ou eBay. Le stock vaut pour tous les canaux de vente. Laisser vide si les sorties sont saisies manuellement."
     },
     "add": "Ajouter",
     "add_fields": {

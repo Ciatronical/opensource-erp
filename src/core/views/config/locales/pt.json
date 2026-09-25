@@ -939,7 +939,9 @@
         "ebayEnvironmentProduction": "Produção",
         "ebayEnvironmentSandbox": "Sandbox (teste)",
         "ebayMoved": "O eBay é agora um canal de venda da extensão de loja. As definições estão no separador Loja em «eBay», os anúncios no cartão de loja do artigo.",
-        "ebayNeedsShop": "O eBay está ativado, mas a extensão de loja não. Sem ela não são publicados anúncios nem obtidas encomendas — ative a extensão de loja."
+        "ebayNeedsShop": "O eBay está ativado, mas a extensão de loja não. Sem ela não são publicados anúncios nem obtidas encomendas — ative a extensão de loja.",
+        "shopStockBinId": "Localização de armazém para vendas",
+        "shopStockBinId_help": "As mercadorias saem desta localização assim que é criada uma fatura da HugoShop ou do eBay. O stock vale para todos os canais de venda. Deixe vazio se as saídas forem registadas manualmente."
     },
     "add": "Adicionar",
     "add_fields": {

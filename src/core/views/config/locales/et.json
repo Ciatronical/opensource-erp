@@ -939,7 +939,9 @@
         "ebayEnvironmentProduction": "Tootmine",
         "ebayEnvironmentSandbox": "Liivakast (test)",
         "ebayMoved": "eBay on nüüd poe laienduse müügikanal. Seaded on vahekaardil Pood jaotises „eBay“, kuulutused toote poekaardil.",
-        "ebayNeedsShop": "eBay on sisse lülitatud, poe laiendus aga mitte. Ilma selleta kuulutusi ei avaldata ega tellimusi ei laadita — palun aktiveeri poe laiendus."
+        "ebayNeedsShop": "eBay on sisse lülitatud, poe laiendus aga mitte. Ilma selleta kuulutusi ei avaldata ega tellimusi ei laadita — palun aktiveeri poe laiendus.",
+        "shopStockBinId": "Laokoht müügi jaoks",
+        "shopStockBinId_help": "Sellest laokohast kantakse kaup maha kohe, kui HugoShopist või eBayst tekib arve. Laoseis kehtib kõigile müügikanalitele. Jäta tühjaks, kui maha kantakse käsitsi."
     },
     "add": "Lisa",
     "add_fields": {

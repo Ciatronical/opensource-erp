@@ -939,7 +939,9 @@
         "ebayEnvironmentProduction": "Producție",
         "ebayEnvironmentSandbox": "Sandbox (test)",
         "ebayMoved": "eBay este acum un canal de vânzare al extensiei magazin. Setările sunt în fila Magazin, la „eBay”, anunțurile în cardul magazinului articolului.",
-        "ebayNeedsShop": "eBay este activat, dar extensia magazin nu. Fără ea nu se publică anunțuri și nu se preiau comenzi — activați extensia magazin."
+        "ebayNeedsShop": "eBay este activat, dar extensia magazin nu. Fără ea nu se publică anunțuri și nu se preiau comenzi — activați extensia magazin.",
+        "shopStockBinId": "Locație de depozit pentru vânzări",
+        "shopStockBinId_help": "Mărfurile se scot din această locație de îndată ce se creează o factură din HugoShop sau eBay. Stocul este comun tuturor canalelor de vânzare. Lăsați gol dacă ieșirile se înregistrează manual."
     },
     "add": "Adăugare",
     "add_fields": {

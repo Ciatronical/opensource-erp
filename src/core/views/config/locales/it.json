@@ -939,7 +939,9 @@
         "ebayEnvironmentProduction": "Produzione",
         "ebayEnvironmentSandbox": "Sandbox (test)",
         "ebayMoved": "eBay è ora un canale di vendita dell'estensione negozio. Le impostazioni sono nella scheda Negozio alla voce «eBay», le inserzioni nella scheda negozio dell'articolo.",
-        "ebayNeedsShop": "eBay è attivo, ma l'estensione negozio no. Senza di essa non vengono pubblicate inserzioni né recuperati ordini: attivare l'estensione negozio."
+        "ebayNeedsShop": "eBay è attivo, ma l'estensione negozio no. Senza di essa non vengono pubblicate inserzioni né recuperati ordini: attivare l'estensione negozio.",
+        "shopStockBinId": "Ubicazione di magazzino per le vendite",
+        "shopStockBinId_help": "La merce viene scaricata da questa ubicazione non appena viene creata una fattura da HugoShop o eBay. La giacenza vale per tutti i canali di vendita. Lasciare vuoto se lo scarico avviene manualmente."
     },
     "add": "Aggiungi",
     "add_fields": {

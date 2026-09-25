@@ -1043,7 +1043,9 @@
         "ebayEnvironmentProduction": "Produkcja",
         "ebayEnvironmentSandbox": "Sandbox (test)",
         "ebayMoved": "eBay jest teraz kanałem sprzedaży rozszerzenia sklepu. Ustawienia znajdują się na karcie Sklep w sekcji „eBay”, oferty w karcie sklepu artykułu.",
-        "ebayNeedsShop": "eBay jest włączony, ale rozszerzenie sklepu nie. Bez niego oferty nie są wystawiane, a zamówienia nie są pobierane — aktywuj rozszerzenie sklepu."
+        "ebayNeedsShop": "eBay jest włączony, ale rozszerzenie sklepu nie. Bez niego oferty nie są wystawiane, a zamówienia nie są pobierane — aktywuj rozszerzenie sklepu.",
+        "shopStockBinId": "Miejsce magazynowe dla sprzedaży",
+        "shopStockBinId_help": "Towary są wydawane z tego miejsca magazynowego, gdy tylko powstanie faktura z HugoShop lub eBay. Stan dotyczy wszystkich kanałów sprzedaży. Pozostaw puste, jeśli wydanie jest księgowane ręcznie."
     },
     "add": "Dodaj",
     "add_fields": {

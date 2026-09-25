@@ -939,7 +939,9 @@
         "ebayEnvironmentProduction": "Canlı",
         "ebayEnvironmentSandbox": "Sandbox (test)",
         "ebayMoved": "eBay artık mağaza eklentisinin bir satış kanalıdır. Ayarlar Mağaza sekmesinde “eBay” altında, ilanlar ürünün mağaza kartındadır.",
-        "ebayNeedsShop": "eBay açık, ancak mağaza eklentisi değil. Eklenti olmadan ilan yayınlanmaz ve sipariş alınmaz — lütfen mağaza eklentisini etkinleştirin."
+        "ebayNeedsShop": "eBay açık, ancak mağaza eklentisi değil. Eklenti olmadan ilan yayınlanmaz ve sipariş alınmaz — lütfen mağaza eklentisini etkinleştirin.",
+        "shopStockBinId": "Satışlar için depo yeri",
+        "shopStockBinId_help": "HugoShop veya eBay'den fatura oluşturulur oluşturulmaz mallar bu depo yerinden düşülür. Stok tüm satış kanalları için geçerlidir. Çıkış elle yapılıyorsa boş bırakın."
     },
     "add": "Ekle",
     "add_fields": {

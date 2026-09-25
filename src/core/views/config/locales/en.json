@@ -1140,7 +1140,9 @@
         "ebayEnvironmentProduction": "Production",
         "ebayEnvironmentSandbox": "Sandbox (test)",
         "ebayMoved": "eBay is now a sales channel of the shop extension. The settings are in the Shop tab under “eBay”, the listings in the article's shop card.",
-        "ebayNeedsShop": "eBay is enabled, but the shop extension is not. Without it no listings are created and no orders are fetched — please activate the shop extension."
+        "ebayNeedsShop": "eBay is enabled, but the shop extension is not. Without it no listings are created and no orders are fetched — please activate the shop extension.",
+        "shopStockBinId": "Storage bin for sales",
+        "shopStockBinId_help": "Goods are booked out of this storage bin as soon as an invoice is created from the HugoShop or eBay. The stock applies to all sales channels. Leave empty if stock is booked out manually."
     },
     "add": "Add",
     "add_fields": {

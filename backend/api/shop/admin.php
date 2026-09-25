@@ -44,6 +44,9 @@ function getShopStatus($data) {
             EXISTS (SELECT 1 FROM sales_channel_shop WHERE active AND round_99) AS rundung_99,
             shop_active_channel_id('hugoshop') IS NOT NULL AS hugoshop_an,
             shop_active_channel_id('ebay') IS NOT NULL AS ebay_an,
+            EXISTS (SELECT 1 FROM bin
+                     WHERE id::text = btrim((SELECT value FROM defaults_oserp
+                                              WHERE key = 'shop_stock_bin_id'))) AS lagerplatz,
             (SELECT COUNT(*) FROM context_hugoshop) AS sitzungen,
             (SELECT COUNT(*) FROM carts_hugoshop) AS warenkoerbe",
         [
@@ -157,6 +160,12 @@ function getShopStatus($data) {
                 $hinweise[] = $punkt;
             }
         }
+    }
+
+    // O14: Ohne Lagerplatz buchen Verkäufe kein Lager aus — der gemeinsame
+    // Bestand stimmt dann nicht, und eBay meldet den alten
+    if (($wahr($stand['hugoshop_an']) || $wahr($stand['ebay_an'])) && !$wahr($stand['lagerplatz'])) {
+        $hinweise[] = 'shop_stock_bin_id';
     }
 
     // Empfehlungen: nichts fehlt, aber eine andere Einstellung wäre besser.

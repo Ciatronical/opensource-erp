@@ -939,7 +939,9 @@
         "ebayEnvironmentProduction": "Tuotanto",
         "ebayEnvironmentSandbox": "Hiekkalaatikko (testi)",
         "ebayMoved": "eBay on nyt kauppalaajennuksen myyntikanava. Asetukset ovat Kauppa-välilehdellä kohdassa ”eBay”, ilmoitukset tuotteen kauppakortissa.",
-        "ebayNeedsShop": "eBay on käytössä, mutta kauppalaajennus ei. Ilman sitä ilmoituksia ei julkaista eikä tilauksia haeta — ota kauppalaajennus käyttöön."
+        "ebayNeedsShop": "eBay on käytössä, mutta kauppalaajennus ei. Ilman sitä ilmoituksia ei julkaista eikä tilauksia haeta — ota kauppalaajennus käyttöön.",
+        "shopStockBinId": "Myynnin varastopaikka",
+        "shopStockBinId_help": "Tuotteet kirjataan ulos tästä varastopaikasta heti, kun HugoShopista tai eBaysta syntyy lasku. Saldo koskee kaikkia myyntikanavia. Jätä tyhjäksi, jos uloskirjaus tehdään käsin."
     },
     "add": "Lisää",
     "add_fields": {

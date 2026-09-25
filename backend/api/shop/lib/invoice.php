@@ -133,6 +133,8 @@ function createShopInvoice($db, string $uuid, array $lieferadresse = [], ?array 
     }
 
     shopInvoicePostToLedger($db, $arId);
+    // Waren aus dem Lager ausbuchen (O14) — der Bestand gilt für alle Kanäle
+    shopBookStock($db, $arId);
 
     $arLink = shopNewContextUuid();
     $db->execute(

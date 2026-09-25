@@ -939,7 +939,9 @@
         "ebayEnvironmentProduction": "Produktion",
         "ebayEnvironmentSandbox": "Sandlåda (test)",
         "ebayMoved": "eBay är nu en försäljningskanal i butikstillägget. Inställningarna finns på fliken Butik under ”eBay”, annonserna i artikelns butikskort.",
-        "ebayNeedsShop": "eBay är påslaget, men butikstillägget är det inte. Utan det läggs inga annonser upp och inga ordrar hämtas — aktivera butikstillägget."
+        "ebayNeedsShop": "eBay är påslaget, men butikstillägget är det inte. Utan det läggs inga annonser upp och inga ordrar hämtas — aktivera butikstillägget.",
+        "shopStockBinId": "Lagerplats för försäljning",
+        "shopStockBinId_help": "Varorna bokas ut från den här lagerplatsen så snart en faktura skapas från HugoShop eller eBay. Lagersaldot gäller för alla försäljningskanaler. Lämna tomt om uttag bokas manuellt."
     },
     "add": "Lagg till",
     "add_fields": {

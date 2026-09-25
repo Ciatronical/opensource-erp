@@ -939,7 +939,9 @@
         "ebayEnvironmentProduction": "Gamyba",
         "ebayEnvironmentSandbox": "Smėlio dėžė (testas)",
         "ebayMoved": "eBay dabar yra parduotuvės plėtinio pardavimo kanalas. Nustatymai yra skirtuke Parduotuvė, skiltyje „eBay“, skelbimai – prekės parduotuvės kortelėje.",
-        "ebayNeedsShop": "eBay įjungtas, bet parduotuvės plėtinys ne. Be jo skelbimai nededami ir užsakymai negaunami – aktyvuokite parduotuvės plėtinį."
+        "ebayNeedsShop": "eBay įjungtas, bet parduotuvės plėtinys ne. Be jo skelbimai nededami ir užsakymai negaunami – aktyvuokite parduotuvės plėtinį.",
+        "shopStockBinId": "Sandėlio vieta pardavimams",
+        "shopStockBinId_help": "Prekės nurašomos iš šios sandėlio vietos, kai tik sukuriama sąskaita iš HugoShop arba eBay. Likutis galioja visiems pardavimo kanalams. Palikite tuščią, jei nurašoma rankiniu būdu."
     },
     "add": "Pridėti",
     "add_fields": {

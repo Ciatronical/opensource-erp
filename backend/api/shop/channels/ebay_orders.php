@@ -14,9 +14,9 @@
 // Geändert: eingeschaltet ist der Import über den Kanalschalter
 // (sales_channel_shop.active) statt ebay_enabled.
 //
-// Lagerbestand: Der Import bucht keinen — wie die Faktura und die Rechnungen
-// des HugoShops (V20). Bestand entsteht in kivitendo nur über Lagerbewegungen
-// (Tabelle inventory). Siehe O14.
+// Lagerbestand: Nach dem Import bucht shopBookStock() die Waren vom
+// eingestellten Lagerplatz aus (O14, V28) — wie bei den Rechnungen des
+// HugoShops. Die Faktura im Kern bucht weiterhin kein Lager.
 //
 // Braucht faktura/faktura.php (createFakturaCore, createFakturaItemCore,
 // postArInvoiceToLedger) und database.php (nextFreeNumber).
@@ -230,6 +230,10 @@ function shopEbayImportOrder($db, array $bestellung, array $cfg): string {
         "UPDATE ebay_orders SET posting_reason = :grund, mtime = now() WHERE ebay_order_id = :id",
         [':grund' => $grund, ':id' => $bestellId]
     );
+
+    // Waren aus dem Lager ausbuchen (O14) — auch bei ungebuchter Rechnung:
+    // verkauft ist die Ware in jedem Fall
+    shopBookStock($db, $arId);
 
     return 'imported';
 }

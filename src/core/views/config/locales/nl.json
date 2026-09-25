@@ -939,7 +939,9 @@
         "ebayEnvironmentProduction": "Productie",
         "ebayEnvironmentSandbox": "Sandbox (test)",
         "ebayMoved": "eBay is nu een verkoopkanaal van de shop-uitbreiding. De instellingen staan op het tabblad Shop onder „eBay”, de advertenties in de shopkaart van het artikel.",
-        "ebayNeedsShop": "eBay is ingeschakeld, maar de shop-uitbreiding niet. Zonder die uitbreiding worden geen advertenties geplaatst en geen orders opgehaald — activeer de shop-uitbreiding."
+        "ebayNeedsShop": "eBay is ingeschakeld, maar de shop-uitbreiding niet. Zonder die uitbreiding worden geen advertenties geplaatst en geen orders opgehaald — activeer de shop-uitbreiding.",
+        "shopStockBinId": "Opslaglocatie voor verkoop",
+        "shopStockBinId_help": "De goederen worden van deze opslaglocatie afgeboekt zodra er een factuur uit de HugoShop of van eBay ontstaat. De voorraad geldt voor alle verkoopkanalen. Leeg laten als handmatig wordt afgeboekt."
     },
     "add": "Toevoegen",
     "add_fields": {

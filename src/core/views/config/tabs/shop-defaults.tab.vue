@@ -175,7 +175,7 @@ const configLoaded = ref(false)
  * Die Vorlagensätze der Produktseiten liegen im Dateisystem des Servers; sie
  * kommen deshalb aus der Shop-Erweiterung statt aus getCompanyConfig.
  */
-const quellen = ref({ shopTemplateSets: [] })
+const quellen = ref({ shopTemplateSets: [], shopStockBins: [] })
 
 /** Verbindungstest zu HugoCMS: läuft gerade, und was kam heraus */
 const hugocmsPrueft = ref(false)
@@ -252,6 +252,30 @@ async function ladeVorlagensaetze() {
 }
 
 /**
+ * Lagerplätze für die Einstellung shop_stock_bin_id
+ *
+ * Aus der Lagerverwaltung (getWarehouseOptions), als „Lager – Platz“. Die
+ * Werte sind Zeichenketten, weil defaults_oserp Text speichert — sonst fände
+ * die Auswahl den gespeicherten Platz nicht wieder.
+ */
+async function ladeLagerplaetze() {
+    try {
+        const response = await axios.post('/api/warehouse/', { action: 'getWarehouseOptions' })
+        const lager = response.data?.success ? (response.data.payload?.results?.warehouses || []) : []
+        quellen.value = {
+            ...quellen.value,
+            shopStockBins: lager.flatMap(l => (l.bins || []).map(p => ({
+                value: String(p.id),
+                title: `${l.description} – ${p.description}`,
+            }))),
+        }
+    } catch (e) {
+        // Ohne Liste bleibt das Feld leer — der gespeicherte Platz gilt weiter
+        console.warn('Lagerplätze konnten nicht geladen werden:', e)
+    }
+}
+
+/**
  * Gilt diese Gruppe gerade?
  *
  * activeWhen nennt ein Feld und den Wert, bei dem die Gruppe zählt — für die
@@ -318,7 +342,7 @@ const ohneSpeichern = inject('ohneSpeichern', fn => fn())
 
 onMounted(async () => {
     await loadConfigFile()
-    await ladeVorlagensaetze()
+    await Promise.all([ladeVorlagensaetze(), ladeLagerplaetze()])
     if (!configError.value) {
         ohneSpeichern(normalizeShopDefaults)
     }

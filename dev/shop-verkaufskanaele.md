@@ -1,8 +1,9 @@
 # Shop: Verkaufskanäle
 
-Stand 2026-09-25. Status: **Schritte 1 bis 5 umgesetzt** — der eBay-Kanal
-ersetzt die bisherige Anbindung vollständig (Teil 1 und 2). Entschieden sind
-V1 bis V27. Offen ist O14 (Lagerbuchung bei Verkäufen); danach Amazon (V27).
+Stand 2026-09-25. Status: **Schritte 1 bis 5 umgesetzt**, dazu die
+Lagerbuchung bei Verkäufen (O14, V28). Entschieden sind V1 bis V28; keine
+Frage ist offen. Nächster Schritt: Amazon (V27), nach Klärung des
+Verkäuferkontos mit API-Zugang.
 
 Ein Artikel, für den „Im Shop anbieten" aktiviert ist, wird über einen oder
 mehrere Verkaufskanäle angeboten. Der erste Kanal ist der HugoShop
@@ -41,6 +42,7 @@ Verwandte Dokumente: `dev/shop-veroeffentlichung.md` (Seitenerzeugung),
 | V25 | (O5) Der Grenzfall der Bridge (gelöschte und neu angelegte `parts_ext`-Zeile) wird nicht eigens behandelt; er erledigt sich mit dem Lieferantenimport in OSERP (Stufe F), der Kanalzeilen ausdrücklich schreibt. Danach werden die Trigger aus V7 entfernt | 2026-09-25 |
 | V26 | (O6) Abschalten eines Marktplatz-Kanals (eBay, Amazon) beendet dessen laufende Angebote über die Warteschlange; Wiedereinschalten stellt sie neu ein. Umsetzung mit dem jeweiligen Kanal | 2026-09-25 |
 | V27 | (O7) Amazon folgt nach eBay. Vorher wird geklärt, ob ein Amazon-Verkäuferkonto mit API-Zugang (SP-API, Registrierung als Entwickler) besteht | 2026-09-25 |
+| V28 | (O14) Rechnungen aus HugoShop und eBay buchen je Warenposition eine Ausbuchung vom Lagerplatz aus `shop_stock_bin_id`. Ohne Lagerplatz keine Buchung, mit Hinweis in der Einrichtungsprüfung. Die Faktura im Kern bleibt unberührt | 2026-09-25 |
 
 Daraus abgeleitete Festlegungen (unten begründet):
 
@@ -703,6 +705,49 @@ bis 5; Build von OSERP und Shop-UI. **Nicht geprüft:** Abruf und Import
 gegen eBay (Sandbox) mit Rechnung und Buchung, der Cron-Lauf, die Anzeige in
 Browser und Shop-UI.
 
+## Umsetzung O14: Lagerbuchung bei Verkäufen (V28)
+
+**Datenbank:** `shop_book_stock(ar_id)` im Upstall. Bucht je Warenposition
+der Rechnung eine Zeile in `inventory` — wie `bookStock` der
+Lagerverwaltung, `parts.onhand` schreibt der kivitendo-Trigger
+`trig_update_onhand` fort:
+
+| Angabe | Wert |
+| --- | --- |
+| Lager, Lagerplatz | `shop_stock_bin_id`, Lager über `bin.warehouse_id` |
+| Menge | minus Rechnungsmenge |
+| Buchungsart | Ausgang „shipped“, ersatzweise „used“ |
+| Mitarbeiter | der Rechnung, sonst der erste aktive |
+| Beleg | `invoice_id` = Rechnungsposition — die Lagerverwaltung nimmt solche Buchungen nicht einzeln zurück |
+| Bemerkung | „Verkauf, Rechnung <Nummer>“ |
+
+Nur Waren (`part_type = 'part'`) mit positiver Menge; nicht der
+Versandartikel und nicht der eBay-Sammelartikel. Höchstens einmal je
+Rechnung. Der Bestand darf negativ werden (verkauft ist verkauft). Gebuchte
+Artikel werden lagerfähig (`stockable`), wie bei `bookStock`.
+
+**Aufruf:** `shopBookStock()` in `lib/config.php`, nach dem Buchen der
+Rechnung — in `createShopInvoice()` (HugoShop, Rechnung und PayPal) und in
+`shopEbayImportOrder()` (auch bei ungebuchter Rechnung). Ein Fehler lässt die
+Bestellung nicht scheitern, er wird protokolliert.
+
+**Folge:** Die Ausbuchung senkt `parts.onhand`; der Trigger aus V22 legt
+daraufhin den Bestandsabgleich für eBay an.
+
+**Einstellung:** „Lagerplatz für Verkäufe“ im Reiter Shop (Abschnitt
+Rechnungsstellung), Auswahl „Lager – Platz“ aus `getWarehouseOptions`;
+übersetzt in 21 Sprachen. **Einrichtungsprüfung:** Hinweis
+`shop_stock_bin_id`, solange HugoShop oder eBay eingeschaltet und kein
+gültiger Lagerplatz eingestellt ist.
+
+**Geprüft** gegen die Testinstanz mit nachgebildetem Lager und
+kivitendo-Trigger: ohne Lagerplatz keine Buchung; mit Lagerplatz nur die
+Ware, richtige Menge, Buchungsart, Mitarbeiter, Beleg; Bestand sinkt,
+`stockable` gesetzt, eBay-Auftrag entsteht; kein zweites Mal; ungültiger
+Platz bucht nicht; Prüfläufe der Schritte 1 bis 5; Build. **Nicht geprüft:**
+gegen die echte kivitendo-Datenbank (weitere Trigger auf `inventory`, etwa
+`check_bin_wh_inventory`), die Auswahl im Browser.
+
 ## Probleme und anstehende Entscheidungen
 
 | Nr. | Thema | Stand | Vorschlag |
@@ -720,7 +765,7 @@ Browser und Shop-UI.
 | O12 | **Bestand nach eBay-Verkauf.** Der Bestellimport legt eine Rechnung an. Ob er den Lagerbestand mindert (Lagerbuchung), ist nicht geprüft — ohne das stimmt der gemeinsame Bestand (V4) nicht | **entschieden 2026-09-25**: Vorschlag gilt (V20) | Beim Bau des eBay-Kanals prüfen, wie die Faktura den Bestand bucht, und den Import gleich behandeln |
 | O13 | **Übergang der Daten.** `ebay_listings` (Angebots- und Listing-Kennung, Stand) und `ebay_part_images` gehören dem CRM-Schema. Werden sie in `parts_channel_shop` und die neue Bildverwaltung übernommen, bleiben die alten Tabellen stehen oder werden gelöscht? `ebay_orders` bleibt als Sperre gegen doppelte Rechnungen und wird von der Kundenzusammenführung (`accounting/customer_matching.php`) gelesen | **entschieden 2026-09-25**: Vorschlag gilt (V21) | Übernehmen, alte Tabellen `ebay_listings` und `ebay_part_images` stehen lassen, bis alle Mandanten übernommen sind, dann in einem eigenen Schritt entfernen; `ebay_orders` bleibt unverändert |
 | O7 | **Amazon.** SP-API verlangt eine Registrierung als Entwickler, Listings nach produkttypabhängigem Schema und Bestandsmeldungen | **entschieden 2026-09-25**: Vorschlag gilt (V27) | Erst nach eBay angehen; vorher klären, ob ein Amazon-Verkäuferkonto mit API-Zugang besteht |
-| O14 | **Lagerbuchung bei Verkäufen** (Ergebnis zu V20). Rechnungen aus HugoShop und eBay buchen kein Lager; der gemeinsame Bestand (V4) sinkt erst, wenn jemand die Ware ausbucht. Bis dahin meldet eBay den alten Bestand, und die Produktseite zeigt „auf Lager" — Überverkauf ist möglich. Eine automatische Ausbuchung braucht Lager, Lagerplatz und Buchungsart (`inventory`: `warehouse_id`, `bin_id`, `trans_type_id`), wie `bookStock` in `backend/api/warehouse/transfer.php` | offen, Entscheidung nötig | Einstellungen „Lager und Lagerplatz für Verkäufe" im Reiter Shop; beim Anlegen einer Rechnung aus HugoShop oder eBay je Warenposition (nicht Dienstleistung, nicht Versand) eine Ausbuchung. Ohne Einstellung wie bisher keine Buchung, mit Hinweis in der Einrichtungsprüfung. Die Faktura selbst bleibt unberührt |
+| O14 | **Lagerbuchung bei Verkäufen** (Ergebnis zu V20). Rechnungen aus HugoShop und eBay buchen kein Lager; der gemeinsame Bestand (V4) sinkt erst, wenn jemand die Ware ausbucht. Bis dahin meldet eBay den alten Bestand, und die Produktseite zeigt „auf Lager" — Überverkauf ist möglich. Eine automatische Ausbuchung braucht Lager, Lagerplatz und Buchungsart (`inventory`: `warehouse_id`, `bin_id`, `trans_type_id`), wie `bookStock` in `backend/api/warehouse/transfer.php` | **entschieden 2026-09-25**: Vorschlag gilt (V28), umgesetzt | Einstellungen „Lager und Lagerplatz für Verkäufe" im Reiter Shop; beim Anlegen einer Rechnung aus HugoShop oder eBay je Warenposition (nicht Dienstleistung, nicht Versand) eine Ausbuchung. Ohne Einstellung wie bisher keine Buchung, mit Hinweis in der Einrichtungsprüfung. Die Faktura selbst bleibt unberührt |
 
 ## Plan Schritt 5: eBay-Kanal
 

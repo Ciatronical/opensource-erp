@@ -531,6 +531,79 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Lagerbuchung bei Verkäufen (O14, V28). Rechnungen aus HugoShop und eBay
+-- buchen je Warenposition eine Ausbuchung vom Lagerplatz shop_stock_bin_id —
+-- sonst sänke der gemeinsame Bestand (V4) erst, wenn jemand von Hand
+-- ausbucht, und eBay meldete bis dahin den alten Bestand.
+--
+-- Gebucht wird wie in der Lagerverwaltung (bookStock): Zeile in inventory,
+-- parts.onhand fortgeschrieben vom kivitendo-Trigger trig_update_onhand.
+-- invoice_id verweist auf die Rechnungsposition: die Buchung gehört zum
+-- Beleg und lässt sich in der Lagerverwaltung nicht einzeln zurücknehmen.
+--
+-- Nur Waren (part_type part) mit positiver Menge; nicht der Versandartikel
+-- (shop_shipping_partnumber) und nicht der eBay-Sammelartikel
+-- (ebay_default_parts_id). Der Bestand darf negativ werden — verkauft ist
+-- verkauft; die Differenz zeigt die Inventur.
+--
+-- Ohne Lagerplatz keine Buchung (0), wie vor O14; die Einrichtungsprüfung
+-- weist darauf hin. Eine Rechnung wird höchstens einmal gebucht.
+CREATE OR REPLACE FUNCTION shop_book_stock(p_ar_id integer) RETURNS integer AS $$
+DECLARE
+    platz       integer;
+    lager       integer;
+    art         integer;
+    mitarbeiter integer;
+    vorgang     integer;
+    anzahl      integer;
+BEGIN
+    platz := NULLIF(btrim((SELECT value FROM defaults_oserp WHERE key = 'shop_stock_bin_id')), '')::integer;
+    SELECT warehouse_id INTO lager FROM bin WHERE id = platz;
+    IF lager IS NULL THEN
+        RETURN 0;
+    END IF;
+
+    IF EXISTS (SELECT 1 FROM inventory inv JOIN invoice i ON i.id = inv.invoice_id
+                WHERE i.trans_id = p_ar_id) THEN
+        RETURN 0;
+    END IF;
+
+    SELECT id INTO art FROM transfer_type
+     WHERE direction = 'out'
+     ORDER BY (description = 'shipped') DESC, (description = 'used') DESC, sortkey
+     LIMIT 1;
+    mitarbeiter := COALESCE(
+        (SELECT employee_id FROM ar WHERE id = p_ar_id),
+        (SELECT id FROM employee WHERE NOT COALESCE(deleted, false) ORDER BY id LIMIT 1));
+    IF art IS NULL OR mitarbeiter IS NULL THEN
+        RETURN 0;
+    END IF;
+
+    vorgang := nextval('id');
+    INSERT INTO inventory (parts_id, warehouse_id, bin_id, qty, chargenumber, comment,
+                           shippingdate, employee_id, trans_id, trans_type_id, invoice_id)
+    SELECT i.parts_id, lager, platz, -i.qty, '', 'Verkauf, Rechnung ' || a.invnumber,
+           COALESCE(a.transdate, current_date), mitarbeiter, vorgang, art, i.id
+      FROM invoice i
+      JOIN parts p ON p.id = i.parts_id
+      JOIN ar a ON a.id = i.trans_id
+     WHERE i.trans_id = p_ar_id
+       AND p.part_type = 'part'
+       AND i.qty > 0
+       AND p.partnumber IS DISTINCT FROM (SELECT value FROM defaults_oserp WHERE key = 'shop_shipping_partnumber')
+       AND p.id IS DISTINCT FROM NULLIF(btrim((SELECT value FROM defaults_oserp WHERE key = 'ebay_default_parts_id')), '')::integer;
+    GET DIAGNOSTICS anzahl = ROW_COUNT;
+
+    -- Wie bookStock: ein bebuchter Artikel ist lagerfähig, sonst blendet
+    -- kivitendo ihn in den Lagermasken aus
+    UPDATE parts SET stockable = true
+     WHERE NOT COALESCE(stockable, false)
+       AND id IN (SELECT parts_id FROM inventory WHERE trans_id = vorgang);
+
+    RETURN anzahl;
+END;
+$$ LANGUAGE plpgsql;
+
 -- Die Trigger werden bei jedem Lauf neu angelegt: ihre Bedingungen ändern
 -- sich mit den Kanälen, und ein nur bei Fehlen angelegter Trigger behielte
 -- die alte Fassung.
@@ -1006,6 +1079,9 @@ INSERT INTO defaults_oserp (key, value) VALUES ('shop_channel_off_pages', 'draft
 -- (backend/webhook/part-image.php, https). Der Läufer arbeitet ohne
 -- Webanfrage und kennt die eigene Adresse sonst nicht.
 INSERT INTO defaults_oserp (key, value) VALUES ('ebay_public_host', '') ON CONFLICT (key) DO NOTHING;
+-- Lagerplatz, von dem Verkäufe aus HugoShop und eBay ausgebucht werden
+-- (O14, V28). Leer = keine Lagerbuchung.
+INSERT INTO defaults_oserp (key, value) VALUES ('shop_stock_bin_id', '') ON CONFLICT (key) DO NOTHING;
 -- Anbindung an HugoCMS (dev/shop-hugocms-trennung.md): Adresse des
 -- cms-api-Endpunkts der Webseite und der Schluessel, den HugoCMS dort in den
 -- Projekteinstellungen erzeugt. Der Schluessel ist ein Geheimnis und geht nie an

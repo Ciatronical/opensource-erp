@@ -182,3 +182,30 @@ function shopIsOpen($db): bool {
     $zeile = $db->getOne("SELECT shop_active_channel_id('hugoshop') IS NOT NULL AS offen");
     return in_array($zeile['offen'] ?? false, [true, 't', 1, '1'], true);
 }
+
+/**
+ * Bucht die Waren einer Verkaufsrechnung aus dem Lager (O14, V28)
+ *
+ * Für Rechnungen aus HugoShop und eBay, nach dem Buchen ins Hauptbuch. Die
+ * Regeln stehen in shop_book_stock(): Lagerplatz aus shop_stock_bin_id, nur
+ * Waren, höchstens einmal je Rechnung, ohne Lagerplatz keine Buchung.
+ *
+ * Ein Fehler hier lässt die Bestellung nicht scheitern — Rechnung und
+ * Zahlung stehen schon. Er wird protokolliert; die Ware ist dann von Hand
+ * auszubuchen.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param int $arId Rechnung
+ * @return int Zahl der gebuchten Positionen
+ */
+function shopBookStock($db, int $arId): int {
+    try {
+        $zeile = $db->getOne("SELECT shop_book_stock(:ar_id) AS anzahl", [':ar_id' => $arId]);
+        return (int)($zeile['anzahl'] ?? 0);
+    } catch (\Throwable $e) {
+        if (function_exists('writeLog')) {
+            writeLog('[SHOP] Lagerbuchung für Rechnung '.$arId.' fehlgeschlagen: '.$e->getMessage(), true, DLOG_ERR);
+        }
+        return 0;
+    }
+}

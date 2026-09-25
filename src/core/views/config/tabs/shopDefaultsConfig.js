@@ -26,6 +26,10 @@ const shopDefaultsConfig = [
     { name: "shop_standard_currency", type: "input", size: 10, fieldstyle: "max-width: 15ch", label: "crm_fields.shopStandardCurrency", tooltip: "crm_fields.shopStandardCurrency_help" },
     { name: "shop_tax_included", type: "checkbox", label: "crm_fields.shopTaxIncluded", tooltip: "crm_fields.shopTaxIncluded_help" },
     { name: "shop_active_price_source", type: "input", size: 40, fieldstyle: "max-width: 40ch", label: "crm_fields.shopActivePriceSource", tooltip: "crm_fields.shopActivePriceSource_help" },
+    // Lagerplatz für Verkäufe (dev/shop-verkaufskanaele.md, O14): Rechnungen aus
+    // HugoShop und eBay buchen die Waren von hier aus. Leer = keine Buchung.
+    // Die Auswahl „Lager – Platz" lädt der Tab (quellen.shopStockBins).
+    { name: "shop_stock_bin_id", type: "dynamic-select", source: "shopStockBins", itemTitle: "title", itemValue: "value", fieldstyle: "max-width: 60ch", label: "crm_fields.shopStockBinId", tooltip: "crm_fields.shopStockBinId_help" },
 
     // Verkaufskanäle (dev/shop-verkaufskanaele.md): eigene Tabelle statt
     // defaults_oserp, deshalb eine Komponente der Shop-Erweiterung mit eigener

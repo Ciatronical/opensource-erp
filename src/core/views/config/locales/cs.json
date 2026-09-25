@@ -939,7 +939,9 @@
         "ebayEnvironmentProduction": "Produkční",
         "ebayEnvironmentSandbox": "Sandbox (test)",
         "ebayMoved": "eBay je nyní prodejním kanálem rozšíření obchodu. Nastavení najdete na kartě Obchod v části „eBay“, nabídky v kartě obchodu u položky.",
-        "ebayNeedsShop": "eBay je zapnutý, ale rozšíření obchodu ne. Bez něj se nevystavují nabídky ani nestahují objednávky — aktivujte prosím rozšíření obchodu."
+        "ebayNeedsShop": "eBay je zapnutý, ale rozšíření obchodu ne. Bez něj se nevystavují nabídky ani nestahují objednávky — aktivujte prosím rozšíření obchodu.",
+        "shopStockBinId": "Skladové místo pro prodej",
+        "shopStockBinId_help": "Z tohoto skladového místa se zboží vyskladní, jakmile vznikne faktura z HugoShopu nebo z eBay. Zásoba platí pro všechny prodejní kanály. Ponechte prázdné, pokud se vyskladňuje ručně."
     },
     "add": "Přidat",
     "add_fields": {

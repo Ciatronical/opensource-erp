@@ -939,7 +939,9 @@
         "ebayEnvironmentProduction": "正式环境",
         "ebayEnvironmentSandbox": "沙盒（测试）",
         "ebayMoved": "eBay 现在是商店扩展的一个销售渠道。设置位于“商店”选项卡的“eBay”下，刊登位于商品的商店卡片中。",
-        "ebayNeedsShop": "eBay 已启用，但商店扩展未启用。没有它就不会刊登商品，也不会获取订单——请启用商店扩展。"
+        "ebayNeedsShop": "eBay 已启用，但商店扩展未启用。没有它就不会刊登商品，也不会获取订单——请启用商店扩展。",
+        "shopStockBinId": "销售出库库位",
+        "shopStockBinId_help": "一旦由 HugoShop 或 eBay 生成发票，商品即从此库位出库。库存适用于所有销售渠道。如手动出库，请留空。"
     },
     "add": "添加",
     "add_fields": {

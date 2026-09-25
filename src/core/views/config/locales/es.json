@@ -939,7 +939,9 @@
         "ebayEnvironmentProduction": "Producción",
         "ebayEnvironmentSandbox": "Sandbox (prueba)",
         "ebayMoved": "eBay es ahora un canal de venta de la extensión de tienda. Los ajustes están en la pestaña Tienda, en «eBay»; los anuncios, en la tarjeta de tienda del artículo.",
-        "ebayNeedsShop": "eBay está activado, pero la extensión de tienda no. Sin ella no se publican anuncios ni se obtienen pedidos; active la extensión de tienda."
+        "ebayNeedsShop": "eBay está activado, pero la extensión de tienda no. Sin ella no se publican anuncios ni se obtienen pedidos; active la extensión de tienda.",
+        "shopStockBinId": "Ubicación de almacén para ventas",
+        "shopStockBinId_help": "Las mercancías se dan de baja de esta ubicación en cuanto se crea una factura desde HugoShop o eBay. El stock vale para todos los canales de venta. Dejar vacío si la baja se hace manualmente."
     },
     "add": "Añadir",
     "add_fields": {

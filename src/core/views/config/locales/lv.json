@@ -939,7 +939,9 @@
         "ebayEnvironmentProduction": "Ražošana",
         "ebayEnvironmentSandbox": "Smilškaste (tests)",
         "ebayMoved": "eBay tagad ir veikala paplašinājuma pārdošanas kanāls. Iestatījumi ir cilnē Veikals sadaļā “eBay”, sludinājumi preces veikala kartītē.",
-        "ebayNeedsShop": "eBay ir ieslēgts, bet veikala paplašinājums nav. Bez tā sludinājumi netiek ievietoti un pasūtījumi netiek ielādēti — lūdzu, aktivizējiet veikala paplašinājumu."
+        "ebayNeedsShop": "eBay ir ieslēgts, bet veikala paplašinājums nav. Bez tā sludinājumi netiek ievietoti un pasūtījumi netiek ielādēti — lūdzu, aktivizējiet veikala paplašinājumu.",
+        "shopStockBinId": "Noliktavas vieta pārdošanai",
+        "shopStockBinId_help": "Preces tiek norakstītas no šīs noliktavas vietas, tiklīdz no HugoShop vai eBay rodas rēķins. Krājums attiecas uz visiem pārdošanas kanāliem. Atstājiet tukšu, ja norakstīšana notiek manuāli."
     },
     "add": "Pievienot",
     "add_fields": {
