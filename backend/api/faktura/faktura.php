@@ -2642,6 +2642,57 @@ SQL;
         $createdIds[] = intval($insertResult['id']);
     }
 
+    // Kopfbeträge (oe.netamount/amount) aus den Positionen neu berechnen —
+    // sonst bleibt in der Auftragsübersicht der alte Betrag stehen, bis der
+    // Beleg im Editor erneut gespeichert wird. Gleiche Regeln wie
+    // useAccounting.calculateTotals: Zeilensumme auf 2 Stellen runden, je
+    // Steuersatz Netto summieren, Steuer auf der Gruppensumme runden.
+    // Steuersatz wie in postArInvoiceToLedger aus Buchungsgruppe →
+    // taxzone_charts (Steuerzone des Belegs) → taxkeys (gültig am Belegdatum).
+    // Rechnungen bleiben außen vor: dort gehören auch acc_trans-Buchungen dazu,
+    // die der Editor beim Speichern erzeugt.
+    if (in_array($fakturaType, ['order', 'purchase_order', 'quotation', 'request_quotation'])) {
+        $totalsQuery = <<<SQL
+            WITH pos AS (
+                SELECT COALESCE(o.taxincluded, FALSE) AS taxincluded, COALESCE(bz.rate, 0) AS rate,
+                       ROUND((i.qty * i.sellprice * (1 - COALESCE(i.discount, 0)))::numeric, 2) AS total
+                FROM orderitems i
+                JOIN oe o ON o.id = i.trans_id
+                JOIN parts p ON p.id = i.parts_id
+                LEFT JOIN LATERAL (
+                    SELECT tx.rate
+                    FROM buchungsgruppen bg
+                    JOIN taxzone_charts tc ON tc.buchungsgruppen_id = bg.id AND tc.taxzone_id = o.taxzone_id
+                    JOIN chart c2 ON c2.id = tc.income_accno_id
+                    LEFT JOIN taxkeys tk ON tk.chart_id = c2.id AND tk.startdate <= o.transdate
+                    LEFT JOIN tax tx ON tx.id = tk.tax_id
+                    WHERE bg.id = p.buchungsgruppen_id
+                    ORDER BY tk.startdate DESC NULLS LAST
+                    LIMIT 1
+                ) bz ON TRUE
+                WHERE i.trans_id = :fakturaID
+            ), grp AS (
+                SELECT taxincluded, rate,
+                       SUM(total) AS gross_base,
+                       SUM(CASE WHEN taxincluded AND rate <> 0 THEN ROUND(total / (1 + rate), 2) ELSE total END) AS net_base
+                FROM pos
+                GROUP BY taxincluded, rate
+            ), sums AS (
+                SELECT bool_or(taxincluded) AS taxincluded,
+                       COALESCE(SUM(gross_base), 0) AS gross_base,
+                       COALESCE(SUM(net_base), 0) AS net_base,
+                       COALESCE(SUM(ROUND(net_base * rate, 2)), 0) AS tax
+                FROM grp
+            )
+            UPDATE oe SET
+                netamount = CASE WHEN sums.taxincluded THEN sums.gross_base - sums.tax ELSE sums.net_base END,
+                amount    = CASE WHEN sums.taxincluded THEN sums.gross_base ELSE sums.net_base + sums.tax END
+            FROM sums
+            WHERE oe.id = :oeID
+SQL;
+        $company->execute($totalsQuery, ['fakturaID' => $fakturaID, 'oeID' => $fakturaID]);
+    }
+
         $company->commit();
     } catch (\Throwable $e) {
         $company->rollBack();
