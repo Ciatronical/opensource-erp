@@ -25,6 +25,7 @@ function getAccountingCockpit($data) {
     $db = DbhCompany::begin();
 
     $kassenkonto = kassenkontoBedingung('c');
+    $dunningCtes = dunningCandidateCtes();
 
     $row = $db->getOne(<<<SQL
         WITH p AS (
@@ -33,6 +34,19 @@ function getAccountingCockpit($data) {
                    (DATE_TRUNC('month', CURRENT_DATE) - INTERVAL '1 month')::date AS prev_from,
                    DATE_TRUNC('month', CURRENT_DATE)::date                        AS prev_to,
                    DATE_TRUNC('year',  CURRENT_DATE)::date                        AS year_from
+        ),
+        {$dunningCtes},
+        dunn AS (
+            -- Mahnreife Rechnungen — dieselbe Regel wie der Mahnvorschlag
+            -- (dunningCandidateCtes), damit Kachel und Vorschlag eine Zahl zeigen.
+            SELECT COUNT(*) FILTER (WHERE state = 'ready')                        AS cnt,
+                   COALESCE(SUM(open_amount) FILTER (WHERE state = 'ready'), 0)  AS sum_open,
+                   COUNT(DISTINCT customer_id) FILTER (WHERE state = 'ready')     AS customers,
+                   COUNT(*) FILTER (WHERE state = 'waiting')                      AS waiting,
+                   COUNT(*) FILTER (WHERE state = 'max_level')                    AS max_level,
+                   COUNT(*) FILTER (WHERE current_config_id IS NOT NULL)          AS in_dunning,
+                   (SELECT COUNT(*) > 0 FROM cfg WHERE active)                    AS configured
+            FROM cand
         ),
         geld AS (
             -- Jedes Geldkonto einzeln, eingeteilt in drei Gruppen:
@@ -220,10 +234,18 @@ function getAccountingCockpit($data) {
             checks.cnt                                          AS checks_count,
             ROUND(checks.sum_diff, 2)                           AS checks_sum,
 
+            dunn.cnt                                            AS dunning_count,
+            ROUND(dunn.sum_open, 2)                             AS dunning_sum,
+            dunn.customers                                      AS dunning_customers,
+            dunn.waiting                                        AS dunning_waiting,
+            dunn.max_level                                      AS dunning_max_level,
+            dunn.in_dunning                                     AS dunning_in_dunning,
+            dunn.configured                                     AS dunning_configured,
+
             (SELECT COUNT(*) FROM accounting_account_rules WHERE active) AS rules_count
         FROM p CROSS JOIN money CROSS JOIN recv CROSS JOIN pay
                CROSS JOIN docs CROSS JOIN book CROSS JOIN bank CROSS JOIN closing
-               CROSS JOIN checks
+               CROSS JOIN checks CROSS JOIN dunn
     SQL, []);
 
     // Abschluss-Fortschritt: Anteil der bereits zugeordneten Bankumsaetze des
@@ -283,6 +305,15 @@ function getAccountingCockpit($data) {
             'checks' => [
                 'count' => intval($row['checks_count']),
                 'sum'   => floatval($row['checks_sum']),
+            ],
+            'dunning' => [
+                'count'      => intval($row['dunning_count']),
+                'sum'        => floatval($row['dunning_sum']),
+                'customers'  => intval($row['dunning_customers']),
+                'waiting'    => intval($row['dunning_waiting']),
+                'max_level'  => intval($row['dunning_max_level']),
+                'in_dunning' => intval($row['dunning_in_dunning']),
+                'configured' => $row['dunning_configured'] === true || $row['dunning_configured'] === 't',
             ],
             'closing' => [
                 'percent'    => $percent,

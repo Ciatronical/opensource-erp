@@ -24,18 +24,26 @@
         @focus="onFocus"
         @keydown.enter="onEnter"
     >
-        <template #item="{ props: itemProps, item }">
-            <!-- Gruppen-Header -->
-            <v-list-subheader
-                v-if="item._groupHeader"
-                class="text-caption font-weight-bold"
-            >
-                {{ item._groupLabel }}
+        <!-- Gruppen-Header. Die Items tragen type: 'subheader', damit Vuetify
+             sie selbst als Zwischenüberschrift erkennt und die Pfeiltasten-
+             Navigation sie überspringt. Als gewöhnliche Items im #item-Slot
+             gerendert, hielt Vuetify sie für den ersten anwählbaren Eintrag,
+             fand aber kein fokussierbares Element dazu — Pfeil nach unten lief
+             ins Leere, nur Pfeil nach oben (letzter Treffer) funktionierte. -->
+        <template #subheader="{ props: header }">
+            <v-list-subheader class="text-caption font-weight-bold">
+                {{ header.title }}
             </v-list-subheader>
+        </template>
 
-            <!-- Verlauf löschen -->
+        <template #item="{ props: itemProps, item }">
+            <!-- Verlauf löschen. Bekommt die Vuetify-Item-Props (aria-posinset,
+                 tabindex), damit er per Pfeiltaste und Enter erreichbar ist;
+                 nur der Klick bleibt lokal, sonst würde er als Auswahl gelten -->
             <v-list-item
-                v-else-if="item._clearHistory"
+                v-if="item._clearHistory"
+                v-bind="withoutClick(itemProps)"
+                :title="null"
                 class="text-center"
                 @click.stop="clearHistory"
             >
@@ -183,11 +191,10 @@ export default defineComponent({
             for (const item of items) {
                 if (item.type !== lastType) {
                     grouped.push({
-                        _groupHeader: true,
-                        _groupLabel: t(typeLabels[item.type] || item.type),
+                        type: 'subheader',
+                        title: t(typeLabels[item.type] || item.type),
                         _key: '_header_' + item.type,
-                        id: '_header_' + item.type,
-                        type: item.type
+                        id: '_header_' + item.type
                     })
                     lastType = item.type
                 }
@@ -202,15 +209,28 @@ export default defineComponent({
             return item.title || ''
         }
 
+        /**
+         * Vuetify-Item-Props ohne den Klick-Handler
+         *
+         * Der Klick-Handler würde das Item als Auswahl an v-autocomplete melden.
+         *
+         * @param {Object} itemProps - Props aus dem #item-Slot
+         * @return {Object} dieselben Props ohne onClick
+         */
+        function withoutClick(itemProps) {
+            const { onClick, ...rest } = itemProps
+            return rest
+        }
+
         function onEnter() {
-            const selectable = searchResults.value.filter(i => !i._groupHeader && !i._clearHistory)
+            const selectable = searchResults.value.filter(i => i.type !== 'subheader' && !i._clearHistory)
             if (selectable.length === 1) {
                 onSelect(selectable[0])
             }
         }
 
         function onSelect(item) {
-            if (!item || item._groupHeader || item._clearHistory) {
+            if (!item || item.type === 'subheader' || item._clearHistory) {
                 selected.value = null
                 return
             }
@@ -251,6 +271,7 @@ export default defineComponent({
             onFocus,
             onEnter,
             formatItem,
+            withoutClick,
             clearHistory
         }
     }

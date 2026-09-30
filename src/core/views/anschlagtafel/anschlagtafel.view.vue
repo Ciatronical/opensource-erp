@@ -2,7 +2,8 @@
 <!--
     Anschlagtafel: zeigt per Telegram eingesprochene und via Whisper
     transkribierte Sprachnotizen live auf einem Firmenbildschirm an.
-    Hochformat (Samsung QM50, 1080x1920), neueste Notiz oben, Echtzeit ueber
+    Hochformat (Samsung QM50, 1080x1920), neueste Notiz oben, je Karte zuerst
+    der Text, darunter kleiner der Absender. Echtzeit ueber
     SSE (Named Event 'voicenote_change' mit action: new | removed | cleared).
     Design an Apple orientiert: dunkel, Frosted-Glass-Karten, grosse Typo.
     Neue Notizen loesen einen Signalton aus (Web Audio, kein Sound-Asset noetig).
@@ -75,6 +76,10 @@
                     }"
                     :style="{ '--accent': avatarColor(note.sender_name) }"
                 >
+                    <p class="atafel__text">
+                        <template v-if="note.status === 'failed'">⚠️ {{ t('Anschlagtafel.failed') }}</template>
+                        <template v-else>{{ note.transcript }}</template>
+                    </p>
                     <div class="atafel__card-head">
                         <span class="atafel__avatar" :style="{ background: avatarColor(note.sender_name) }">
                             {{ initials(note.sender_name) }}
@@ -84,10 +89,6 @@
                         <span class="atafel__time">{{ formatTime(note.itime) }}</span>
                         <button class="atafel__done" :title="t('Anschlagtafel.dismiss')" @click="dismiss(note.id)">✓</button>
                     </div>
-                    <p class="atafel__text">
-                        <template v-if="note.status === 'failed'">⚠️ {{ t('Anschlagtafel.failed') }}</template>
-                        <template v-else>{{ note.transcript }}</template>
-                    </p>
                 </article>
             </transition-group>
         </main>
@@ -558,21 +559,22 @@ export default defineComponent({
     color: #d70015;
 }
 
+/* Kopfzeile (Absender, Zeit, Erledigt) steht unter dem Text, dezent kleiner */
 .atafel__card-head {
     display: flex;
     align-items: center;
-    gap: 1.2vh;
-    margin-bottom: 0.8vh;
+    gap: 1vh;
+    margin-top: 0.9vh;
 }
 
 .atafel__avatar {
     flex: 0 0 auto;
     display: grid;
     place-items: center;
-    width: 3.6vh;
-    height: 3.6vh;
+    width: 3vh;
+    height: 3vh;
     border-radius: 50%;
-    font-size: 1.6vh;
+    font-size: 1.35vh;
     font-weight: 700;
     color: #fff;
     text-transform: uppercase;
@@ -580,9 +582,9 @@ export default defineComponent({
 }
 
 .atafel__sender {
-    font-size: 1.9vh;
+    font-size: 1.6vh;
     font-weight: 600;
-    color: #1d1d1f;
+    color: #6e6e73;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;

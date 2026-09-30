@@ -2266,6 +2266,69 @@ CREATE TABLE IF NOT EXISTS accounting_account_rules (
 
 CREATE INDEX IF NOT EXISTS idx_accounting_rules_vendor ON accounting_account_rules(vendor_id);
 
+-- -----------------------------------------------------------------------------
+-- MAHNWESEN
+--
+-- Die kivitendo-Tabellen bleiben unverändert und werden wie in kivitendo
+-- genutzt: dunning_config (Mahnstufen), dunning (eine Zeile je gemahnter
+-- Rechnung, dunning_id = Nummer des Mahnbriefs), ar.dunning_config_id
+-- (aktuelle Mahnstufe der Rechnung), customer.dunning_lock / dunning_mail
+-- und defaults.dunning_ar_amount_fee / dunning_ar_amount_interest / dunning_ar
+-- (Konten der Gebührenrechnung). Was OS-ERP darüber hinaus braucht, liegt in
+-- den beiden _ext-Tabellen daneben.
+-- -----------------------------------------------------------------------------
+
+-- Je Mahnstufe der Brieftext, den der Benutzer in der Oberfläche pflegt.
+-- kivitendo kennt nur E-Mail-Betreff und -Text; der Brieftext steckte dort in
+-- der LaTeX-Vorlage und war ohne Vorlagenkenntnisse nicht änderbar.
+CREATE TABLE IF NOT EXISTS dunning_config_ext (
+    id integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    dunning_config_id integer NOT NULL,
+    letter_text text,
+    itime timestamp without time zone DEFAULT now(),
+    mtime timestamp without time zone,
+    CONSTRAINT dunning_config_ext_dunning_config_id_unique UNIQUE (dunning_config_id)
+);
+
+COMMENT ON TABLE dunning_config_ext IS 'Zusatzfelder je Mahnstufe (dunning_config)';
+COMMENT ON COLUMN dunning_config_ext.dunning_config_id IS 'Referenz auf dunning_config.id';
+COMMENT ON COLUMN dunning_config_ext.letter_text IS 'Einleitungstext des Mahnbriefs dieser Stufe';
+
+-- Ein Mahnbrief (alle Rechnungen eines Kunden auf derselben Stufe in einem
+-- Lauf). dunning_id ist die Briefnummer aus dunning.dunning_id.
+CREATE TABLE IF NOT EXISTS dunning_ext (
+    id integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    dunning_id integer NOT NULL,
+    customer_id integer,
+    employee_id integer,
+    channel text,
+    email_to text,
+    sent_at timestamp without time zone,
+    document_id integer,
+    open_total numeric(15,2),
+    fee_total numeric(15,2),
+    interest_total numeric(15,2),
+    error text,
+    itime timestamp without time zone DEFAULT now(),
+    mtime timestamp without time zone,
+    CONSTRAINT dunning_ext_dunning_id_unique UNIQUE (dunning_id)
+);
+
+COMMENT ON TABLE dunning_ext IS 'Mahnbrief: Versand, Ablage und Summen je dunning.dunning_id';
+COMMENT ON COLUMN dunning_ext.dunning_id IS 'Briefnummer (dunning.dunning_id)';
+COMMENT ON COLUMN dunning_ext.customer_id IS 'Gemahnter Kunde';
+COMMENT ON COLUMN dunning_ext.employee_id IS 'Mitarbeiter, der den Mahnlauf gestartet hat';
+COMMENT ON COLUMN dunning_ext.channel IS 'Versandweg: email, print oder none';
+COMMENT ON COLUMN dunning_ext.email_to IS 'Empfängeradresse beim Versand per E-Mail';
+COMMENT ON COLUMN dunning_ext.sent_at IS 'Zeitpunkt des Versands (E-Mail) bzw. der PDF-Erzeugung (Druck)';
+COMMENT ON COLUMN dunning_ext.document_id IS 'Archiviertes Versandexemplar in accounting_documents';
+COMMENT ON COLUMN dunning_ext.open_total IS 'Summe der offenen Beträge der gemahnten Rechnungen zum Mahnzeitpunkt';
+COMMENT ON COLUMN dunning_ext.fee_total IS 'Mahngebühr des Briefs';
+COMMENT ON COLUMN dunning_ext.interest_total IS 'Verzugszinsen des Briefs';
+COMMENT ON COLUMN dunning_ext.error IS 'Letzter Fehler bei PDF-Erzeugung oder Versand';
+
+CREATE INDEX IF NOT EXISTS idx_dunning_ext_customer_id ON dunning_ext(customer_id);
+
 -- PostgreSQL-Funktion: Fuzzy-Lieferantensuche
 CREATE OR REPLACE FUNCTION find_vendor_fuzzy(
     p_name TEXT,

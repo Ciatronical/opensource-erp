@@ -208,6 +208,16 @@ Zwei Modi in einer Ansicht:
 - Filter: nur laufendes Jahr, Kleinbeträge unter 1 € ausblenden
 - Direktsprung zum Beleg
 
+### 2.5a Mahnwesen
+
+- **Mahnstufen** frei konfigurierbar (Bezeichnung, Frist, Zahlungsziel, Gebühr, Verzugszinsen, Brief- und E-Mail-Text) — kivitendo-kompatibel auf `dunning_config`/`dunning`
+- **Kachel im Cockpit**: mahnreife Rechnungen mit Summe und Kundenzahl
+- **Mahnvorschlag** je Kunde und Stufe gebündelt, mahnreife Rechnungen vorausgewählt, Versandweg vorbelegt (E-Mail oder Druck)
+- **Mahnsperre** und eigene Mahn-Adresse am Kunden, Lastschriften und Kleinbeträge automatisch ausgenommen
+- **Vorschau** des Briefs als PDF vor dem Lauf
+- **Mahnlauf**: Rechnungen hochstufen, Gebühr und Zinsen als Debitorenbuchung buchen, PDF archivieren (GoBD), E-Mail sofort verschicken, Sammel-PDF für den Drucker
+- **Verlauf** mit Rücknahme (Rechnungen fallen auf die vorige Stufe zurück), erneutem Versand und archiviertem Versandexemplar
+
 ### 2.6 Lieferanten (Kreditoren)
 
 - Lieferantenliste mit **Dublettenprüfer**

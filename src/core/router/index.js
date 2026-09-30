@@ -234,6 +234,7 @@ const AccountingReportsView = () => import('@/features/accounting/views/accounti
 const AccountingDocumentCheckView = () => import('@/features/accounting/views/accounting.document-check.vue')
 const AccountingOpenItemsView = () => import('@/features/accounting/views/accounting.open-items.vue')
 const AccountingUstvaView = () => import('@/features/accounting/views/accounting.ustva.vue')
+const AccountingDunningView = () => import('@/features/accounting/views/accounting.dunning.vue')
 
 // Lager
 const WarehouseHubView = () => import('@/features/warehouse/views/warehouse.hub.vue')
@@ -743,6 +744,12 @@ function buildRoutes() {
             ...routePath('AccountingView.routes.accountingUstva'),
             name: 'accounting-ustva',
             component: AccountingUstvaView,
+            meta: { hideCustomerBar: true },
+        },
+        {
+            ...routePath('AccountingView.routes.accountingDunning'),
+            name: 'accounting-dunning',
+            component: AccountingDunningView,
             meta: { hideCustomerBar: true },
         },
         // ── Lager ──

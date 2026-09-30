@@ -1,0 +1,145 @@
+\input{inheaders.tex}
+
+% Mahnbrief des Mahnwesens (alle Stufen, eine Vorlage).
+%
+% Die Überschrift ist die Bezeichnung der Mahnstufe (<%dunning%>), der
+% Einleitungstext kommt aus der Stufe (<%dunning_text%>) — beides pflegt der
+% Benutzer in der Buchhaltung unter Mahnwesen, ohne diese Datei anzufassen.
+% Fehlt der Text, greift der Standardsatz \mahnungsformel aus deutsch.tex.
+%
+% Variablen:      dunning, dunning_id, dunning_level, dunning_date, dunning_duedate,
+%                 dunning_text, open_total, fee, interest, total, has_fee, has_interest
+% Rechnungszeilen: dn_invnumber, dn_transdate, dn_duedate, dn_days, dn_amount, dn_open_amount
+
+% Variablen, die in settings verwendet werden
+\newcommand{\lxlangcode} {<%template_meta.language.template_code%>}
+\newcommand{\lxmedia} {<%media%>}
+\newcommand{\lxcurrency} {<%currency%>}
+\newcommand{\kivicompany} {<%employee_company%>}
+
+% settings: Einstellungen, Logo, Briefpapier, Kopfzeile, Fusszeile
+\input{insettings.tex}
+
+
+% laufende Kopfzeile:
+\ourhead{\kundennummer}{<%customernumber%>}{<%dunning%>}{<%dunning_id%>}{<%dunning_date%>}
+
+
+\begin{document}
+
+\ourfont
+\begin{minipage}[t]{8cm}
+  \scriptsize
+
+  {\color{gray}\underline{\firma\ $\cdot$ \strasse\ $\cdot$ \ort}}
+  \normalsize
+
+  \vspace*{0.3cm}
+
+  <%name%>
+
+  <%if department_1%><%department_1%><%end if%>
+
+  <%if department_2%><%department_2%><%end if%>
+
+  <%cp_givenname%> <%cp_name%>
+
+  <%street%>
+
+  ~
+
+  <%zipcode%> <%city%>
+
+  <%country%>
+\end{minipage}
+\hfill
+\begin{minipage}[t]{6cm}
+  \hfill{\LARGE\textbf{<%dunning%>}}
+
+  \vspace*{0.2cm}
+
+  <%if dunning_id%>\hfill{\large\textbf{\nr ~<%dunning_id%>}}<%end if%>
+  <%if preview%>\hfill{\large\textbf{\color{gray}VORSCHAU}}<%end if%>
+
+  \vspace*{0.2cm}
+
+  \datum:\hfill <%dunning_date%>
+
+  \kundennummer:\hfill <%customernumber%>
+
+  \ansprechpartner:\hfill <%employee_name%>
+
+  <%if employee_tel%>\textTelefon \hfill <%employee_tel%><%end if%>
+
+  <%if employee_email%>\textEmail \hfill <%employee_email%><%end if%>
+\end{minipage}
+
+\vspace*{1.5cm}
+
+\hfill
+
+% Bei Kontaktperson Anrede nach Geschlecht unterscheiden.
+% Bei natürlichen Personen persönliche Anrede, sonst allgemeine Anrede.
+\ifthenelse{\equal{<%cp_name%>}{}}{
+  <%if natural_person%><%greeting%> <%name%>,<%else%>\anrede<%end if%>}{
+  \ifthenelse{\equal{<%cp_gender%>}{f}}
+    {\anredefrau}{\anredeherr} <%cp_title%> <%cp_name%>,}\\
+
+<%if dunning_text%><%dunning_text%><%else%>\mahnungsformel<%end if%>\\
+
+\vspace{0.5cm}
+
+
+\setlength\LTleft\parindent     % Tabelle beginnt am linken Textrand
+\setlength\LTright{0pt}         % Tabelle endet am rechten Textrand
+\begin{longtable}{@{}lrrr@{\extracolsep{\fill}}rr@{}}
+% Tabellenkopf
+\hline
+\textbf{\rechnung~\nr} & \textbf{\datum} & \textbf{\faellig} & \textbf{Tage} & \textbf{\betrag} & \textbf{Offen} \\
+\hline\\
+\endhead
+
+% Tabellenkopf erste Seite
+\hline
+\textbf{\rechnung~\nr} & \textbf{\datum} & \textbf{\faellig} & \textbf{Tage} & \textbf{\betrag} & \textbf{Offen} \\
+\hline\\[-0.5em]
+\endfirsthead
+
+% Tabellenende
+\\
+\multicolumn{6}{@{}r@{}}{\weiteraufnaechsterseite}
+\endfoot
+
+% Tabellenende letzte Seite
+\hline\\[-0.5em]
+\multicolumn{5}{@{}l}{\zwischensumme} & <%open_total%> \currency \\
+<%if has_fee%>\multicolumn{5}{@{}l}{Mahngebühr} & <%fee%> \currency \\<%end if%>
+<%if has_interest%>\multicolumn{5}{@{}l}{Verzugszinsen} & <%interest%> \currency \\<%end if%>
+\hline
+\multicolumn{5}{@{}l}{\textbf{\schlussbetrag}} & \textbf{<%total%> \currency} \\
+\hline\hline\\
+\endlastfoot
+
+% eigentliche Tabelle
+<%foreach dn_invnumber%>
+    <%dn_invnumber%> & <%dn_transdate%> & <%dn_duedate%> & <%dn_days%> & <%dn_amount%> \currency & <%dn_open_amount%> \currency \\[0.1cm]
+<%end dn_invnumber%>
+
+\end{longtable}
+
+\vspace{0.2cm}
+
+\bitteZahlenBis~<%dunning_duedate%>.
+
+
+\beruecksichtigtBis~<%dunning_date%>.
+
+
+\schonGezahlt
+
+\vspace*{0.5cm}
+
+\gruesse \\ \\ \\
+  <%employee_name%>
+
+\end{document}

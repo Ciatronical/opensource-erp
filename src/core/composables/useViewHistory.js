@@ -85,12 +85,13 @@ export function useViewHistory() {
         if (!history.length) return []
 
         return [
+            // type 'subheader': Vuetify rendert den Eintrag als Zwischen-
+            // überschrift und überspringt ihn bei der Pfeiltasten-Navigation
             {
-                _groupHeader: true,
-                _groupLabel: t('GlobalSearch.recentlyVisited'),
+                type: 'subheader',
+                title: t('GlobalSearch.recentlyVisited'),
                 _key: '_header_history',
-                id: '_header_history',
-                type: 'history'
+                id: '_header_history'
             },
             ...history.map(h => ({ ...h, _fromHistory: true, _key: h.type + '_' + h.id })),
             {

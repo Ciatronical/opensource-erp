@@ -238,6 +238,36 @@ Zuordnung geschieht meist automatisch — über Rechnungsnummer im
 Verwendungszweck, IBAN, Betrag oder eine gelernte Regel. Was nicht sicher
 zuzuordnen ist, landet im Durchlauf und wird per Hand entschieden.
 
+### Mahnwesen — wenn der Kunde nicht zahlt
+
+Überfällige Forderungen mahnt die Buchhaltung in **Stufen**, wie in kivitendo:
+erst eine Zahlungserinnerung, dann eine oder zwei Mahnungen mit Gebühr und
+Verzugszinsen. Die Stufen, ihre Fristen, Gebühren und Texte legen Sie unter
+*Buchhaltung → Mahnwesen → Mahnstufen* fest; beim ersten Aufruf steht ein
+Vorschlag mit drei Stufen schon ausgefüllt da.
+
+Eine Rechnung ist **mahnreif**, wenn sie überfällig und offen ist und seit ihrer
+Fälligkeit (bzw. seit der Frist der letzten Mahnung) die Frist der nächsten
+Stufe verstrichen ist. Das Cockpit zeigt die mahnreifen Rechnungen als Kachel
+*Mahnen*; der Mahnlauf bündelt sie je Kunde und Stufe zu einem Brief:
+
+| Schritt | Was passiert |
+|---|---|
+| **Vorschlag** | Alle mahnreifen Rechnungen sind vorausgewählt, Stufe und Versandweg vorbelegt (E-Mail, wenn die Stufe es erlaubt und eine Adresse da ist — sonst Druck). Kunden mit Mahnsperre bleiben aussen vor, Lastschriften und Kleinbeträge ebenso. |
+| **Vorschau** | Jeder Brief lässt sich vor dem Lauf als PDF ansehen — mit Wasserzeichen, ohne etwas zu speichern. |
+| **Mahnlauf** | Je Brief: Rechnungen auf die Stufe setzen, Gebühr und Zinsen buchen (wenn die Stufe das vorsieht), PDF erzeugen und **archivieren**, per E-Mail verschicken. Alles, was gedruckt werden soll, kommt als ein Sammel-PDF zurück. |
+| **Verlauf** | Jeder Brief mit Datum, Stufe, damals und heute offenem Betrag, Versandweg und Versandexemplar. Ein Brief lässt sich zurücknehmen, solange keine spätere Mahnung folgt — die Rechnungen fallen dann auf die vorige Stufe, eine unbezahlte Gebührenrechnung wird gelöscht, das Archiv bleibt. |
+
+Gebühr und Zinsen werden als eigene Debitorenbuchung ohne Positionen auf die
+konfigurierten Erlöskonten gebucht — steuerfrei, denn Mahngebühren und
+Verzugszinsen sind kein Entgelt. Die Zinsen rechnen taggenau:
+offener Betrag × Verzugstage × Jahreszins / 360.
+
+Was kivitendo-kompatibel bleibt: die Tabellen `dunning_config` und `dunning`,
+die Mahnstufe an der Rechnung (`ar.dunning_config_id`), Mahnsperre und
+Mahn-Adresse am Kunden sowie die Konten in `defaults`. Hinzu kommen der
+Brieftext je Stufe und je Brief Versandweg, Zeitpunkt und Ablage.
+
 ---
 
 ## 7. Umsatzsteuer
@@ -348,6 +378,7 @@ beiden Modi, nicht nur im fachlichen. Über `Strg+K` genügt auch die Eingabe
 | **Summen- und Saldenliste** | Berichte → *Drucken* | alle Konten mit Anfangssaldo, Soll, Haben, Endsaldo |
 | **Kontoblatt** | Kontoblatt → *Kontoblatt drucken* | alle Buchungen eines Kontos mit Eröffnungssaldo und laufendem Saldo |
 | **DATEV-Export** | Fachbereich → DATEV Export | Buchungsstapel und Belege für den Steuerberater |
+| **Mahnbrief** | Mahnwesen → Mahnlauf bzw. Verlauf | ein Brief je Kunde und Stufe: Rechnungen mit Fälligkeit, Verzugstagen, Betrag und offenem Rest, dazu Gebühr, Zinsen und Zahlungsfrist |
 
 Alle Ausdrucke öffnen sich als PDF in einem neuen Tab — von dort geht es zum
 Drucker oder in den Ordner.

@@ -18,4 +18,5 @@ require_once __DIR__.'/cockpit.php';
 require_once __DIR__.'/ustva.php';
 require_once __DIR__.'/reports.php';
 require_once __DIR__.'/document_check.php';
+require_once __DIR__.'/dunning.php';
 require_once __DIR__.'/../inc.php';

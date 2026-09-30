@@ -356,6 +356,7 @@ const tiles = computed(() => {
     const documents = stacks.value.documents || {}
     const bank      = stacks.value.bank || {}
     const overdue   = stacks.value.overdue || {}
+    const dunning   = stacks.value.dunning || {}
     const closing   = stacks.value.closing || {}
     const checks    = stacks.value.checks || {}
     const vat       = vatPeriod.value
@@ -400,6 +401,21 @@ const tiles = computed(() => {
             }),
             cta: t('AccountingView.cockpit.tiles.showList'),
             action: () => router.push({ name: 'accounting-open-items', query: { type: 'receivables', overdue: '1' } })
+        },
+        {
+            // Mahnreif heisst: überfällig UND die Frist der nächsten Mahnstufe ist
+            // um. Die Zahl kommt aus derselben Regel wie der Mahnvorschlag.
+            key: 'dunning',
+            active: (dunning.count || 0) > 0,
+            tone: 'warning',
+            icon: 'mdi-email-alert-outline',
+            label: label('AccountingView.cockpit.tiles.dunning'),
+            value: dunning.count || 0,
+            sub: t('AccountingView.cockpit.tiles.dunningSub', {
+                amount: money(dunning.sum), customers: dunning.customers || 0
+            }),
+            cta: t('AccountingView.cockpit.tiles.startDunning'),
+            action: () => router.push({ name: 'accounting-dunning' })
         },
         {
             key: 'vat',
@@ -459,6 +475,8 @@ const lookupLinks = computed(() => [
       to: { name: 'banking-overview' } },
     { key: 'kasse',   icon: 'mdi-cash-register', title: t('KasseView.title'),
       to: { name: 'kasse' } },
+    { key: 'dunning', icon: 'mdi-email-alert-outline', title: t('AccountingView.menu.dunning'),
+      to: { name: 'accounting-dunning' } },
     { key: 'belege',  icon: 'mdi-shield-check-outline', title: t('AccountingView.documentCheck.title'),
       to: { name: 'accounting-document-check' } }
 ])

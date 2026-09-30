@@ -110,6 +110,8 @@ const targets = computed(() => [
       to: { name: 'accounting-run', params: { kind: 'bank' } } },
     { key: 'overdue', icon: 'mdi-alarm-light-outline', color: 'error',
       title: t('AccountingView.cockpit.tiles.overdue'), to: { name: 'accounting-open-items', query: { type: 'receivables' } } },
+    { key: 'dunning', icon: 'mdi-email-alert-outline', color: 'warning',
+      title: t('AccountingView.menu.dunning'), to: { name: 'accounting-dunning' } },
     { key: 'payables', icon: 'mdi-cash-clock',
       title: t('AccountingView.cockpit.pulse.payables'), to: { name: 'accounting-open-items', query: { type: 'payables' } } },
     { key: 'ustva', icon: 'mdi-file-percent-outline',
