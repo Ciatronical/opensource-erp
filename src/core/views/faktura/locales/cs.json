@@ -264,7 +264,7 @@
                 "title": "Arbeitsanweisungen",
                 "done": "erledigt",
                 "empty": "Noch keine Arbeitsanweisungen. Neue Anweisung unten eingeben.",
-                "addPlaceholder": "Neue Anweisung eingeben...",
+                "addPlaceholder": "Zadejte nový pokyn. Potvrďte klávesou ENTER",
                 "masterTitle": "Arbeitsanweisungen verwalten",
                 "number": "Nr.",
                 "description": "Popis",

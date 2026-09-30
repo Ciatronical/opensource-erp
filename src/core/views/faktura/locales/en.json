@@ -313,7 +313,7 @@
                 "title": "Work Instructions",
                 "done": "done",
                 "empty": "No work instructions yet. Add a new instruction below.",
-                "addPlaceholder": "Enter new instruction...",
+                "addPlaceholder": "Enter new instruction. Confirm with ENTER",
                 "masterTitle": "Manage Work Instructions",
                 "number": "No.",
                 "description": "Description",

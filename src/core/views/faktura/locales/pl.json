@@ -264,7 +264,7 @@
                 "title": "Instrukcje pracy",
                 "done": "wykonane",
                 "empty": "Brak instrukcji pracy. Wprowadź nową instrukcję poniżej.",
-                "addPlaceholder": "Wprowadź nową instrukcję...",
+                "addPlaceholder": "Wprowadź nową instrukcję. Zatwierdź klawiszem ENTER",
                 "masterTitle": "Zarządzaj instrukcjami pracy",
                 "number": "Nr",
                 "description": "Opis",

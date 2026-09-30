@@ -264,7 +264,7 @@
                 "title": "Arbeitsanweisungen",
                 "done": "erledigt",
                 "empty": "Noch keine Arbeitsanweisungen. Neue Anweisung unten eingeben.",
-                "addPlaceholder": "Neue Anweisung eingeben...",
+                "addPlaceholder": "Introduzir nova instrução. Confirmar com ENTER",
                 "masterTitle": "Arbeitsanweisungen verwalten",
                 "number": "Nr.",
                 "description": "Descrição",

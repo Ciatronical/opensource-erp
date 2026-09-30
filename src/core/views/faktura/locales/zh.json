@@ -264,7 +264,7 @@
                 "title": "工作指令",
                 "done": "已完成",
                 "empty": "暂无工作指令。在下方输入新指令。",
-                "addPlaceholder": "输入新指令...",
+                "addPlaceholder": "输入新指令。按 ENTER 确认",
                 "masterTitle": "管理工作指令",
                 "number": "编号",
                 "description": "描述",

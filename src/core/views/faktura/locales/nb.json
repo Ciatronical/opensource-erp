@@ -264,7 +264,7 @@
                 "title": "Arbeitsanweisungen",
                 "done": "erledigt",
                 "empty": "Noch ingen Arbeitsanweisungen. Ny Anweisung unten eingeben.",
-                "addPlaceholder": "Ny Anweisung eingeben...",
+                "addPlaceholder": "Skriv inn ny instruksjon. Bekreft med ENTER",
                 "masterTitle": "Arbeitsanweisungen verwalten",
                 "number": "Nr.",
                 "description": "Beskrivelse",

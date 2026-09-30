@@ -264,7 +264,7 @@
                 "title": "Arbeitsanweisungen",
                 "done": "erledigt",
                 "empty": "Noch keine Arbeitsanweisungen. Neue Anweisung unten eingeben.",
-                "addPlaceholder": "Neue Anweisung eingeben...",
+                "addPlaceholder": "Introduceți o instrucțiune nouă. Confirmați cu ENTER",
                 "masterTitle": "Arbeitsanweisungen verwalten",
                 "number": "Nr.",
                 "description": "Descriere",

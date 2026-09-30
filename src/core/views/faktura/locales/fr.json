@@ -264,7 +264,7 @@
                 "title": "Instructions de travail",
                 "done": "termine",
                 "empty": "Pas encore d'instructions. Saisir une nouvelle instruction ci-dessous.",
-                "addPlaceholder": "Saisir une nouvelle instruction...",
+                "addPlaceholder": "Saisir une nouvelle instruction. Valider avec ENTRÉE",
                 "masterTitle": "Gerer les instructions de travail",
                 "number": "N.",
                 "description": "Description",

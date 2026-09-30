@@ -264,7 +264,7 @@
                 "title": "Werkinstructies",
                 "done": "afgerond",
                 "empty": "Nog geen werkinstructies. Voer hieronder een nieuwe instructie in.",
-                "addPlaceholder": "Nieuwe instructie invoeren...",
+                "addPlaceholder": "Nieuwe instructie invoeren. Bevestigen met ENTER",
                 "masterTitle": "Werkinstructies beheren",
                 "number": "Nr.",
                 "description": "Beschrijving",

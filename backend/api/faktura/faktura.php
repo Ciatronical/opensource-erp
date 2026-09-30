@@ -2475,7 +2475,8 @@ SQL;
  * @param int    $data['buchungsgruppeTeile']  Buchungsgruppen-ID für Ersatzteile
  * @param int    $data['buchungsgruppeArbeit'] Buchungsgruppen-ID für Dienstleistungen
  * @param array  $data['items']                Array mit Items {description, partnumber, qty, sellprice, unit, part_type, longdescription}
- * @return void Gibt JSON mit allen angelegten Positionen zurück
+ * @return void Gibt JSON mit der Anzahl der angelegten Positionen zurück
+ * @testdata {"fakturaID": 1, "fakturaType": "order", "buchungsgruppeTeile": 1, "buchungsgruppeArbeit": 1, "items": [{"description": "Stoßfänger vorn", "partnumber": "SD-TEST-1", "qty": 1, "sellprice": 120, "unit": "Stck", "part_type": "part", "longdescription": ""}, {"description": "Stoßfänger aus- und einbauen", "partnumber": "", "qty": 4, "sellprice": 12.5, "unit": "AW", "part_type": "service", "longdescription": ""}]}
  */
 function importSilverDATItems($data) {
     $fakturaID = intval($data['fakturaID'] ?? 0);
@@ -2515,6 +2516,37 @@ function importSilverDATItems($data) {
     // angelegt (kein Teil-Import, der den Beleg inkonsistent zuruecklaesst).
     $company->beginTransaction();
     try {
+
+    // Fehlende Einheiten anlegen: SilverDAT liefert Lohn und Lackierung in
+    // 'AW' (Arbeitswert), das in einer frischen kivitendo-Datenbank fehlt.
+    // parts.unit und orderitems.unit haben einen Fremdschlüssel auf units —
+    // ohne die Zeile scheitert der gesamte Import. Eine Abfrage für alle
+    // Einheiten des Imports, nur wirklich neue werden eingefügt.
+    $unitNames = [];
+    $unitTypes = [];
+    foreach ($items as $item) {
+        $unit = trim($item['unit'] ?? '');
+        if ($unit === '' || isset($unitNames[$unit])) continue;
+        $unitNames[$unit] = $unit;
+        $unitTypes[$unit] = (($item['part_type'] ?? 'service') === 'part') ? 'dimension' : 'service';
+    }
+    if (!empty($unitNames)) {
+        $unitQuery = <<<SQL
+            INSERT INTO units (name, type, sortkey)
+            SELECT u.name, u.type,
+                   (SELECT COALESCE(MAX(sortkey), 0) FROM units) + ROW_NUMBER() OVER ()
+            FROM UNNEST(CAST(:names AS text[]), CAST(:types AS text[])) AS u(name, type)
+            WHERE NOT EXISTS (SELECT 1 FROM units WHERE units.name = u.name)
+SQL;
+        // execute() bindet Arrays nicht selbst → als PostgreSQL-Array-Literal übergeben
+        $pgArray = fn(array $values) => '{' . implode(',', array_map(
+            fn($v) => '"' . str_replace(['\\', '"'], ['\\\\', '\\"'], $v) . '"', $values
+        )) . '}';
+        $company->execute($unitQuery, [
+            'names' => $pgArray(array_values($unitNames)),
+            'types' => $pgArray(array_values($unitTypes))
+        ]);
+    }
 
     foreach ($items as $item) {
         $nextPosition++;

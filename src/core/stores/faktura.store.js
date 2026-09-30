@@ -196,7 +196,8 @@ export const fakturaStore = defineStore('fakturaStore', () => {
         if (response.data.success) {
             return response.data.payload
         } else {
-            throw new ApiError('ApiError', response.data.text, 'Error importing SilverDAT items: ' + response.data.text)
+            // Backend liefert den Grund (z. B. DB-Fehler) in payload.message – für den Dialog durchreichen
+            throw new ApiError('ApiError', response.data.text, response.data.payload?.message || response.data.text)
         }
     }
 

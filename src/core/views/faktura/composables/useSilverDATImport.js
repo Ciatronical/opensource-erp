@@ -313,7 +313,8 @@ export function useSilverDATImport({ t }) {
             return result
         } catch (e) {
             console.error('SilverDAT import error:', e)
-            importError.value = t('FakturaView.faktura.silverdat.error')
+            // Grund aus dem Backend anzeigen, sonst bleibt nur "Fehler beim Import"
+            importError.value = t('FakturaView.faktura.silverdat.error') + (e?.message ? ': ' + e.message : '')
             return null
         } finally {
             importing.value = false

@@ -264,7 +264,7 @@
                 "title": "Arbeitsanweisungen",
                 "done": "erledigt",
                 "empty": "Noch keine Arbeitsanweisungen. Neue Anweisung unten eingeben.",
-                "addPlaceholder": "Neue Anweisung eingeben...",
+                "addPlaceholder": "Inserire nuova istruzione. Confermare con INVIO",
                 "masterTitle": "Arbeitsanweisungen verwalten",
                 "number": "Nr.",
                 "description": "Descrizione",
