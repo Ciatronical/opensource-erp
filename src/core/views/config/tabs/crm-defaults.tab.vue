@@ -42,7 +42,7 @@
         <!-- Dynamische Felder - NUR wenn Config geladen ist! -->
         <template v-else v-for="field in crmDefaultsConfig" :key="field.name">
             <!-- Überschrift -->
-            <v-row v-if="field.type === 'headline'" class="mt-6 mb-2">
+            <v-row v-if="field.type === 'headline'" class="mt-6 mb-2" :data-panel="field.name">
                 <v-col cols="12">
                     <h3 class="text-h6 text-primary">
                         {{ t(field.label) }}
@@ -242,7 +242,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, inject } from 'vue';
+import { ref, reactive, computed, onMounted, inject, watch, nextTick } from 'vue';
 import { VTextField } from 'vuetify/components';
 import { useI18n } from 'vue-i18n';
 import PasswordField from '@/core/components/password-field.vue';
@@ -283,6 +283,11 @@ const props = defineProps({
     crmDefaults: {
         type: Object,
         required: true
+    },
+    // openPanel: von der Suche gesetzt, um direkt zu einer Überschrift zu springen
+    openPanel: {
+        type: String,
+        default: ''
     }
 });
 
@@ -295,6 +300,17 @@ const crmDefaultsConfig = ref([]);
 const configError = ref(null);
 const configLoaded = ref(false);
 
+// Bei Deep-Link aus der Suche zur gewünschten Überschrift scrollen.
+// Erst wenn die Config geladen ist, sonst gibt es das Element noch nicht.
+function scrollToPanel(panel) {
+    if (!panel || !configLoaded.value) return;
+    nextTick(() => {
+        const el = document.querySelector(`[data-panel="${panel}"]`);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+}
+watch(() => props.openPanel, scrollToPanel);
+
 /**
  * Lädt die Config-Datei mit Error Handling
  */
@@ -304,6 +320,7 @@ async function loadConfigFile() {
         crmDefaultsConfig.value = config.default || config.crmDefaultsConfig || [];
         configError.value = null;
         configLoaded.value = true;
+        scrollToPanel(props.openPanel);
     } catch (error) {
         console.error('Error loading crmDefaultsConfig.js:', error);
         configError.value = error.message;

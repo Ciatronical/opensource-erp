@@ -78,9 +78,10 @@
                                 >
                                     <v-list-item-title>{{ tab.title }}</v-list-item-title>
                                 </v-list-item>
-                                <!-- Unterbereiche direkt anspringbar -->
+                                <!-- Unterbereiche direkt anspringbar — nur beim aktiven Tab,
+                                     sonst wird die Liste mit den vielen CRM-Abschnitten zu lang -->
                                 <v-list-item
-                                    v-for="sub in (tab.subsections || [])"
+                                    v-for="sub in (activeTab === tab.value ? (tab.subsections || []) : [])"
                                     :key="tab.value + '/' + sub.key"
                                     class="subsection-item"
                                     :active="activeTab === tab.value && pendingPanel === sub.panel"
@@ -178,7 +179,7 @@
                             :crm-secrets="activeTab === 'shop' ? crmSecrets : undefined"
                             :crm-fallbacks="activeTab === 'shop' ? crmFallbacks : undefined"
                             :search-query="searchQuery"
-                            :open-panel="activeTab === 'add' ? pendingPanel : undefined"
+                            :open-panel="['add', 'crm'].includes(activeTab) ? pendingPanel : undefined"
                             :extensions="activeTab === 'features' ? availableExtensions : undefined"
                             @toggle-extension="onToggleExtension"
                         />
@@ -570,7 +571,28 @@ const tabGroups = computed(() => [
             { value: 'company',   title: t('company'),   icon: 'mdi-domain',           keywords: ['firma', 'company', 'stammdaten', 'adresse', 'address', 'logo', 'ust', 'ust-idnr', 'umsatzsteuer', 'steuernummer', 'währung', 'currency', 'sprache', 'language', 'drucker', 'printer', 'druckvorlage', 'template', 'gewicht', 'weight', 'signatur', 'gläubiger', 'creditor'] },
             { value: 'employees', title: t('employeesTab.title'), icon: 'mdi-account-tie', keywords: ['mitarbeiter', 'employee', 'personal', 'obsolet', 'obsolete', 'verkäufer', 'benutzer', 'user', 'staff'] },
             { value: 'warehouse', title: t('warehouse'), icon: 'mdi-warehouse',        keywords: ['lager', 'warehouse', 'bestand', 'stock', 'lagerort', 'ort'] },
-            { value: 'crm',       title: t('crm'),       icon: 'mdi-account-multiple', keywords: ['crm', 'kunde', 'customer', 'kontakt', 'contact'] },
+            {
+                value: 'crm', title: t('crm'), icon: 'mdi-account-multiple',
+                keywords: ['crm', 'kunde', 'customer', 'kontakt', 'contact'],
+                // Abschnitte des CRM-Tabs (Überschriften in crmDefaultsConfig.js) — direkt anspringbar via Suche.
+                subsections: [
+                    { key: 'brevo',            title: t('crm_fields.brevo'),              panel: 'brevo',            keywords: ['brevo', 'newsletter', 'marketing'] },
+                    { key: 'phoneintegration', title: t('crm_fields.phoneIntegration'),   panel: 'phoneintegration', keywords: ['telefon', 'phone', 'anruf', 'tapi'] },
+                    { key: 'whatsapp',         title: t('crm_fields.whatsapp'),           panel: 'whatsapp',         keywords: ['whatsapp', 'messenger'] },
+                    { key: 'telegram',         title: t('crm_fields.telegram'),           panel: 'telegram',         keywords: ['telegram', 'bot', 'messenger'] },
+                    { key: 'payment',          title: t('crm_fields.payment'),            panel: 'payment',          keywords: ['zahlung', 'payment', 'bezahlen'] },
+                    { key: 'sumup',            title: t('crm_fields.sumup'),              panel: 'sumup',            keywords: ['sumup', 'kartenleser', 'kartenzahlung', 'ec'] },
+                    { key: 'eletter',          title: t('crm_fields.eletter'),            panel: 'eletter',          keywords: ['eletter', 'brief', 'briefe', 'post'] },
+                    { key: 'email_client',     title: t('crm_fields.emailClient'),        panel: 'email_client',     keywords: ['email', 'e-mail', 'mail', 'imap', 'smtp', 'mailserver', 'postausgang', 'posteingang', 'postausgangsserver', 'posteingangsserver'] },
+                    { key: 'filemanager',      title: t('crm_fields.filemanager'),        panel: 'filemanager',      keywords: ['datei', 'dateien', 'filemanager', 'dokumente', 'upload'] },
+                    { key: 'infobar',          title: t('crm_fields.infoBar'),            panel: 'infobar',          keywords: ['infoleiste', 'infobar', 'chips'] },
+                    { key: 'calendar',         title: t('crm_fields.calendar'),           panel: 'calendar',         keywords: ['kalender', 'calendar', 'termin', 'termine'] },
+                    { key: 'wall_display',     title: t('crm_fields.wallDisplay'),        panel: 'wall_display',     keywords: ['wanddisplay', 'display', 'anzeige', 'monitor'] },
+                    { key: 'dhl',              title: t('crm_fields.dhl'),                panel: 'dhl',              keywords: ['dhl', 'versand', 'paket', 'pakete', 'shipping', 'label'] },
+                    { key: 'accounting',       title: t('crm_fields.accountingHeadline'), panel: 'accounting',       keywords: ['buchhaltung', 'accounting', 'fibu'] },
+                    { key: 'ebay',             title: t('crm_fields.ebayHeadline'),       panel: 'ebay',             keywords: ['ebay', 'marktplatz'] },
+                ],
+            },
         ]
     },
     {
