@@ -67,6 +67,10 @@ const lxcarsDefaultsConfig = [
 
     { name: "lxcars_wartung", type: "headline", label: "crm_fields.lxcarsWartung" },
     { name: "lxcars_wartung_enabled", type: "checkbox", label: "crm_fields.lxcarsWartungEnabled", tooltip: "crm_fields.lxcarsWartungEnabled_help" },
+
+    { name: "lxcars_rechnung", type: "headline", label: "crm_fields.lxcarsRechnung" },
+    // Rechnung aus Auftrag auch ohne km-Stand, Mechaniker und Ist-Zeit der Anweisungen zulassen
+    { name: "lxcars_invoice_incomplete_order", type: "checkbox", label: "crm_fields.lxcarsInvoiceIncompleteOrder", tooltip: "crm_fields.lxcarsInvoiceIncompleteOrder_help" },
 ];
 
 export default lxcarsDefaultsConfig;

@@ -1311,6 +1311,14 @@ export default defineComponent({
             return val === true || val === 'true' || val === 't' || val === '1'
         })
 
+        // Config-Schalter "Rechnung bei ungefülltem Auftrag": Rechnung darf auch ohne
+        // km-Stand, Mechaniker und Ist-Zeit der Arbeitsanweisungen erstellt werden
+        const invoiceIncompleteOrderAllowed = computed(() => {
+            if (!oserp.isLxCars()) return false
+            const val = oserp.getClientDefaultValue('lxcars_invoice_incomplete_order', false)
+            return val === true || val === 'true' || val === 't' || val === '1'
+        })
+
         // Ersatzteil-Bestellstatus pro Position
         const partsRequestsList = ref([])
 
@@ -1971,8 +1979,8 @@ export default defineComponent({
         async function toggleClosed() {
             if (!faktura.data?.common) return
             const newVal = !faktura.data.common.closed
-            // Beim Schließen: Anweisungen validieren (nur lxcars)
-            if (newVal && vehicle) {
+            // Beim Schließen: Anweisungen validieren (nur lxcars) – entfällt bei "Rechnung bei ungefülltem Auftrag"
+            if (newVal && vehicle && !invoiceIncompleteOrderAllowed.value) {
                 const valid = await validateInstructionsComplete()
                 if (!valid) return
             }
@@ -2314,8 +2322,8 @@ export default defineComponent({
         })
 
         async function createInvoiceFromFaktura() {
-            // Anweisungen validieren (nur lxcars)
-            if (vehicle) {
+            // Anweisungen validieren (nur lxcars) – entfällt bei "Rechnung bei ungefülltem Auftrag"
+            if (vehicle && !invoiceIncompleteOrderAllowed.value) {
                 const valid = await validateInstructionsComplete()
                 if (!valid) return
                 // km_stand ist Pflicht für Autos und Motorräder (nicht Anhänger)
