@@ -1050,12 +1050,13 @@ function shopRemovePage($db, string $dateiname): bool {
  * @param callable|null $melden Fortschritt, bekommt je eine Zeile Text
  * @param int $limit Hoechstzahl Auftraege
  * @param array|null $nurIds nur diese Auftragsnummern, null = alle offenen
- * @return array jobs, jobs_hugoshop, seiten, entfernt, fehler, kit (Änderungen am Webseiten-Paket)
+ * @return array jobs, jobs_hugoshop, seiten, entfernt, fehler, kit (Änderungen am Webseiten-Paket),
+ *               ids (bearbeitete Aufträge)
  */
 function shopRunJobs($db, ?callable $melden = null, int $limit = 500, ?array $nurIds = null): array {
     $sagen = $melden ?? function (string $zeile) {};
     $bilanz = ['jobs' => 0, 'jobs_hugoshop' => 0, 'seiten' => 0, 'entfernt' => 0, 'fehler' => 0, 'kit' => 0,
-               'bauen' => false, 'fehler_texte' => []];
+               'bauen' => false, 'fehler_texte' => [], 'ids' => []];
 
     // Fehler werden nicht nur gezählt, sondern im Wortlaut gesammelt: das
     // Admin-Panel zeigt sie nach "Jetzt ausführen" an, sonst stünde dort nur
@@ -1069,6 +1070,7 @@ function shopRunJobs($db, ?callable $melden = null, int $limit = 500, ?array $nu
     foreach (shopOpenJobs($db, $limit, $nurIds) as $auftrag) {
         $id = (int)$auftrag['id'];
         $bilanz['jobs']++;
+        $bilanz['ids'][] = $id;
 
         try {
             // Jeder Kanal arbeitet seine Aufträge selbst ab (channels/). Ein
@@ -1529,7 +1531,16 @@ function shopPublishStatus($db): array {
  * @return array gesperrt, jobs, seiten, entfernt, fehler, fehler_texte, kit, kategorien, bauen, gebaut, bau_code, bau_ausgabe
  */
 function shopPublishRun($db, ?callable $melden = null, int $limit = 500, ?array $nurIds = null, bool $bauen = true, ?callable $beginn = null): array {
-    $sagen = $melden ?? function (string $zeile) {};
+    // Jede Meldung geht an den Aufrufer und in die Ausgabe des Laufs, die am
+    // Ende bei den erledigten Aufträgen landet (shopSaveRun)
+    $ausgabe = [];
+    $laufBeginn = date('Y-m-d H:i:s');
+    $sagen = function (string $zeile) use ($melden, &$ausgabe) {
+        $ausgabe[] = $zeile;
+        if (null !== $melden) {
+            $melden($zeile);
+        }
+    };
     $bilanz = ['gesperrt' => false, 'jobs' => 0, 'seiten' => 0, 'entfernt' => 0, 'fehler' => 0,
                'kit' => 0, 'kategorien' => 0, 'bauen' => false, 'gebaut' => false, 'bau_code' => 0, 'bau_ausgabe' => [],
                'fehler_texte' => []];
@@ -1654,10 +1665,71 @@ function shopPublishRun($db, ?callable $melden = null, int $limit = 500, ?array 
             $sagen('Kein Programm zum Bauen eingestellt — es wurden nur Dateien geschrieben.');
         }
     } finally {
+        // Vor dem Freigeben der Sperre: die Aufträge stehen erst mit ihrer
+        // Ausgabe als erledigt da, wenn der nächste Lauf beginnen kann
+        try {
+            shopSaveRun($db, $laufBeginn, $ausgabe, $bilanz['ids'] ?? []);
+        } catch (Throwable $e) {
+            if (null !== $melden) {
+                $melden('Ausgabe des Laufs nicht gespeichert: '.$e->getMessage());
+            }
+        }
         shopPublishUnlock($db);
     }
 
     return $bilanz;
+}
+
+// Höchstzahl gespeicherter Zeilen je Lauf. „Alle Produkte“ meldet eine Zeile
+// je Seite; darüber hinaus bleiben Anfang und Ende stehen, dazwischen ein
+// Hinweis — dort stehen der Bau und das Ergebnis.
+const SHOP_RUN_OUTPUT_LINES = 20000;
+
+/**
+ * Speichert die Ausgabe eines Laufs bei seinen Aufträgen
+ *
+ * Nur, wenn der Lauf Aufträge erledigt hat, die es noch gibt — sonst hätte
+ * niemand einen Status, über den er die Ausgabe öffnen könnte. Lauf und
+ * Verweise entstehen in einer Anweisung.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param string $beginn Beginn des Laufs (Y-m-d H:i:s)
+ * @param array $zeilen Meldungen des Laufs
+ * @param array $ids bearbeitete Aufträge
+ * @return void
+ */
+function shopSaveRun($db, string $beginn, array $zeilen, array $ids): void {
+    $ids = array_values(array_filter(array_map('intval', $ids), fn($id) => $id > 0));
+    if (!$ids) {
+        return;
+    }
+    if (count($zeilen) > SHOP_RUN_OUTPUT_LINES) {
+        $haelfte = intdiv(SHOP_RUN_OUTPUT_LINES, 2);
+        $zeilen = array_merge(
+            array_slice($zeilen, 0, $haelfte),
+            [sprintf('… %d Zeilen ausgelassen …', count($zeilen) - 2 * $haelfte)],
+            array_slice($zeilen, -$haelfte)
+        );
+    }
+
+    $db->execute(
+        "WITH lauf AS (
+             INSERT INTO batchjob_run_hugoshop (itime, finished, output)
+             SELECT CAST(:beginn AS timestamp), localtimestamp(0), :output
+              WHERE EXISTS (SELECT 1 FROM batchjob_hugoshop
+                             WHERE id = ANY(string_to_array(:ids_pruefen, ',')::int[]))
+             RETURNING id)
+         UPDATE batchjob_hugoshop b
+            SET run_id = lauf.id
+           FROM lauf
+          WHERE b.id = ANY(string_to_array(:ids, ',')::int[])",
+        [
+            ':beginn'      => $beginn,
+            ':output'      => implode("\n", $zeilen),
+            ':ids_pruefen' => implode(',', $ids),
+            ':ids'         => implode(',', $ids),
+        ]
+    );
 }
 
 // Die Verkaufskanäle: Modulrahmen und Module, darunter der HugoShop mit der

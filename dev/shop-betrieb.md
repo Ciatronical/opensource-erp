@@ -120,7 +120,8 @@ mit `shop_auto_publish`.
 | --- | --- |
 | Fehler in einem Auftrag | in dessen Ergebnis, rot in der Auftragsliste |
 | Gescheiterte Artikel in `publish_all` | im Ergebnis des Auftrags: `Fehler: <Zahl> Seiten geschrieben, <Zahl> fehlgeschlagen — <erster Grund>` |
-| Fehler am Lauf selbst (Paket, Kategorien, Bau) | unter der Auftragsliste als „Meldungen des letzten Laufs", Fehlerzeilen rot |
+| Fehler am Lauf selbst (Paket, Kategorien, Bau) und seine übrigen Meldungen | Klick auf den Status eines erledigten Auftrags: die vollständige Ausgabe des Laufs, in dem er erledigt wurde, Fehlerzeilen rot |
+| Abgebrochener Lauf | als Hinweis unter der Auftragsliste, mit der Ausgabe des Prozesses |
 | Fehlendes Wurzelverzeichnis, ungültiger Hugo-Pfad | als Hinweis über den Kennzahlen, mit dem Grund im Klartext |
 | Läufer im Cron | Standardausgabe, Bau-Fehler zusätzlich auf der Fehlerausgabe, Rückgabewert 1 |
 
@@ -130,9 +131,19 @@ Je Auftrag stehen höchstens 20 gescheiterte Artikel im Wortlaut in den
 Meldungen, danach folgt eine Zeile mit der Zahl der übrigen; gezählt werden
 alle.
 
-Der Läufer meldet dasselbe, nur auf der Kommandozeile. In der Übersicht kommen
-die Meldungen aus der Antwort von `runShopPublishJobs`; die Fehlerzeilen liefert
-das Backend getrennt mit, statt sie am Wortlaut zu erraten.
+Der Läufer meldet dasselbe, nur auf der Kommandozeile. In der Übersicht stehen
+die Meldungen in der gespeicherten Ausgabe des Laufs; Fehlerzeilen erkennt der
+Dialog am Wortlaut („Fehler", „fehlgeschlagen").
+
+**Ausgabe je Lauf.** Am Ende jedes Laufs, der Aufträge erledigt hat, landen
+seine Meldungen in `batchjob_run_hugoshop`; die Aufträge verweisen über
+`batchjob_hugoshop.run_id` darauf. Das gilt für Läufe aus dem Cron wie aus dem
+Admin-Panel. Gespeichert werden höchstens 20 000 Zeilen, bei mehr Anfang und
+Ende. Die Ausgabe bleibt, solange einer ihrer Aufträge besteht: Löschen,
+Aufräumen und die Aufbewahrungsfrist nehmen sie mit (Trigger
+`trigger_cleanup_batchjob_run_hugoshop`). Ein Lauf, der abbricht, bevor er
+endet, hinterlässt keine gespeicherte Ausgabe — dann gilt die Meldung
+„abgebrochen" mit der Ausgabe des Prozesses.
 
 ### Sofort ausführen, ohne Cron
 

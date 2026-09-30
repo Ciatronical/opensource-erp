@@ -865,6 +865,24 @@ CREATE INDEX IF NOT EXISTS ar_link_hugoshop_payment_offen_idx
 -- diese Datei laeuft bei jedem Schema-Update, und ein DROP haette jedes Mal
 -- die Weiterleitungen und die Warteschlange gekostet.
 
+-- Ausgabe eines Laufs der Veröffentlichung (tools/shop-publish.php, „Jetzt
+-- ausführen“). Angelegt am Ende eines Laufs, der Aufträge erledigt hat; die
+-- Aufträge verweisen über run_id darauf. Das Admin-Panel zeigt die Ausgabe
+-- beim Klick auf den Status eines Auftrags. Verweist kein Auftrag mehr auf
+-- einen Lauf, entfernt ihn der Trigger unten.
+CREATE TABLE IF NOT EXISTS batchjob_run_hugoshop
+(
+    id       integer NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    itime    timestamp without time zone DEFAULT now(),
+    finished timestamp without time zone DEFAULT now(),
+    output   text NOT NULL DEFAULT ''
+);
+
+COMMENT ON TABLE  batchjob_run_hugoshop          IS 'Shop: Ausgabe eines Laufs der Veröffentlichung';
+COMMENT ON COLUMN batchjob_run_hugoshop.itime    IS 'Beginn des Laufs';
+COMMENT ON COLUMN batchjob_run_hugoshop.finished IS 'Ende des Laufs';
+COMMENT ON COLUMN batchjob_run_hugoshop.output   IS 'Meldungen des Laufs, eine je Zeile';
+
 CREATE TABLE IF NOT EXISTS batchjob_hugoshop
 (
     id         integer NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -873,8 +891,13 @@ CREATE TABLE IF NOT EXISTS batchjob_hugoshop
     partnumber text NOT NULL,
     param      text DEFAULT NULL,
     result     text DEFAULT NULL,
-    channel_id integer DEFAULT NULL
+    channel_id integer DEFAULT NULL,
+    run_id     integer DEFAULT NULL REFERENCES batchjob_run_hugoshop (id) ON DELETE SET NULL
 );
+
+-- Auf einer bestehenden Datenbank (wie parts_channel_shop.unavailable)
+ALTER TABLE batchjob_hugoshop ADD COLUMN IF NOT EXISTS run_id integer DEFAULT NULL
+    REFERENCES batchjob_run_hugoshop (id) ON DELETE SET NULL;
 
 -- Wann ein Auftrag entstand. Name nach kivitendo-Brauch (itime). Auf einer
 -- bestehenden Datenbank traegt der Upstall die Spalte mit Vorgabewert nach;
@@ -889,6 +912,30 @@ COMMENT ON TABLE batchjob_hugoshop IS 'Shop: Warteschlange fuer Aufgaben, die au
 -- bestehenden Datenbank nur die Spalte an, und Kanalzeilen werden nie
 -- gelöscht.
 COMMENT ON COLUMN batchjob_hugoshop.channel_id IS 'Verkaufskanal (sales_channel_shop.id), NULL = HugoShop';
+COMMENT ON COLUMN batchjob_hugoshop.run_id IS 'Lauf, in dem der Auftrag erledigt wurde (batchjob_run_hugoshop.id)';
+
+CREATE INDEX IF NOT EXISTS batchjob_hugoshop_run_id_idx ON batchjob_hugoshop (run_id);
+
+-- Ein Lauf lebt so lange wie seine Aufträge: sind alle gelöscht (Aufräumen,
+-- Löschen im Admin-Panel, Aufbewahrungsfrist im Cron), geht seine Ausgabe
+-- mit. Je Anweisung statt je Zeile — Aufräumen löscht viele Aufträge auf
+-- einmal. Ein Lauf entsteht erst an seinem Ende, zusammen mit dem Verweis
+-- der Aufträge; einen laufenden kann der Trigger also nicht treffen.
+CREATE OR REPLACE FUNCTION cleanup_batchjob_run_hugoshop() RETURNS trigger AS $$
+BEGIN
+    DELETE FROM batchjob_run_hugoshop r
+     WHERE NOT EXISTS (SELECT 1 FROM batchjob_hugoshop b WHERE b.run_id = r.id);
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'trigger_cleanup_batchjob_run_hugoshop') THEN
+        CREATE TRIGGER trigger_cleanup_batchjob_run_hugoshop
+            AFTER DELETE ON batchjob_hugoshop
+            FOR EACH STATEMENT EXECUTE FUNCTION cleanup_batchjob_run_hugoshop();
+    END IF;
+END $$;
 
 CREATE TABLE IF NOT EXISTS redirect_pages_hugoshop
 (

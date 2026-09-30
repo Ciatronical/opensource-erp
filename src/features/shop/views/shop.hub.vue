@@ -138,6 +138,19 @@
                 <v-card-subtitle>{{ t('ShopView.publish.hint') }}</v-card-subtitle>
                 <template #append>
                     <div class="d-flex flex-wrap ga-2">
+                        <!-- Alle offenen Aufträge sofort, ohne sie einzeln auszuwählen -->
+                        <v-btn
+                            color="primary"
+                            variant="tonal"
+                            size="small"
+                            prepend-icon="mdi-play-circle-outline"
+                            :loading="offeneStarten"
+                            :disabled="!offeneAuftraege || veroeffentlicht || sofort || laeuft"
+                            :title="t('ShopView.publish.runOpenHint')"
+                            @click="offeneAusfuehren"
+                        >
+                            {{ t('ShopView.publish.runOpen') }}
+                        </v-btn>
                         <v-btn
                             color="primary"
                             variant="flat"
@@ -274,8 +287,26 @@
                                     · {{ te(`ShopView.channels.${auftrag.channel}`) ? t(`ShopView.channels.${auftrag.channel}`) : auftrag.channel }}
                                 </span>
                             </td>
-                            <td>{{ auftrag.partnumber }}</td>
-                            <td class="text-caption">{{ auftrag.result || t('ShopView.publish.notExecuted') }}</td>
+                            <!-- Zum Artikel, sofern es ihn (noch) gibt -->
+                            <td v-if="auftrag.parts_id" @click.stop>
+                                <router-link
+                                    :to="entityRoute('article', auftrag.parts_id)"
+                                    class="artikelverweis"
+                                    :title="t('ShopView.publish.openArticle')"
+                                >{{ auftrag.partnumber }}</router-link>
+                            </td>
+                            <td v-else>{{ auftrag.partnumber }}</td>
+                            <!-- Mit gespeicherter Ausgabe öffnet der Status den Lauf -->
+                            <td v-if="auftrag.run_id" class="text-caption" @click.stop>
+                                <a
+                                    href="#"
+                                    class="laufverweis"
+                                    :class="fehlgeschlagen(auftrag) ? 'text-error' : ''"
+                                    :title="t('ShopView.publish.outputHint')"
+                                    @click.prevent="ausgabeZeigen(auftrag)"
+                                >{{ auftrag.result }}</a>
+                            </td>
+                            <td v-else class="text-caption">{{ auftrag.result || t('ShopView.publish.notExecuted') }}</td>
                         </tr>
                     </tbody>
                 </v-table>
@@ -284,36 +315,62 @@
                 {{ t('ShopView.publish.empty') }}
             </v-card-text>
 
-            <!-- Was der letzte Lauf gemeldet hat. Ohne diese Zeilen stünde nur
-                 die Zahl der Fehler da, nicht der Grund. -->
-            <v-divider v-if="laufMeldungen.length || laufAbgebrochen" />
-            <v-card-text v-if="laufMeldungen.length || laufAbgebrochen">
-                <div class="d-flex align-center mb-2">
-                    <div class="text-body-2">{{ t('ShopView.publish.messages') }}</div>
+            <!-- Die Meldungen eines Laufs öffnet der Status seiner Aufträge.
+                 Ein abgebrochener Lauf hat keine gespeicherte Ausgabe — sein
+                 Grund steht deshalb hier, aus der Ausgabe des Prozesses. -->
+            <v-alert
+                v-if="laufAbgebrochen"
+                type="error"
+                variant="tonal"
+                density="compact"
+                class="mx-4 mb-4"
+                closable
+                :close-label="t('ShopView.publish.messagesClose')"
+                @click:close="laufAbgebrochen = false"
+            >
+                <div>{{ t('ShopView.publish.aborted') }}</div>
+                <pre v-if="laufAusgabe.length" class="text-caption mt-1 mb-0 laufausgabe">{{ laufAusgabe.join('\n') }}</pre>
+            </v-alert>
+        </v-card>
+
+        <!-- Ausgabe des Laufs, in dem ein Auftrag erledigt wurde -->
+        <v-dialog v-model="ausgabeOffen" max-width="1000" scrollable>
+            <v-card>
+                <v-card-title class="d-flex align-center">
+                    <span>{{ t('ShopView.publish.output') }}</span>
                     <v-spacer />
                     <v-btn
                         variant="text"
                         size="small"
-                        icon="mdi-close"
-                        :title="t('ShopView.publish.messagesClose')"
-                        @click="meldungenAusblenden"
+                        icon="mdi-content-copy"
+                        :disabled="!ausgabe"
+                        :title="t('ShopView.publish.outputCopy')"
+                        @click="ausgabeKopieren"
                     />
-                </div>
-                <!-- Der Lauf kam nicht zu Ende: Grund aus der Ausgabe des Prozesses -->
-                <v-alert v-if="laufAbgebrochen" type="error" variant="tonal" density="compact" class="mb-2">
-                    <div>{{ t('ShopView.publish.aborted') }}</div>
-                    <pre v-if="laufAusgabe.length" class="text-caption mt-1 mb-0 laufausgabe">{{ laufAusgabe.join('\n') }}</pre>
-                </v-alert>
-                <div
-                    v-for="(zeile, index) in laufMeldungen"
-                    :key="index"
-                    class="text-caption"
-                    :class="istFehlerzeile(zeile) ? 'text-error font-weight-medium' : 'text-medium-emphasis'"
-                >
-                    {{ zeile }}
-                </div>
-            </v-card-text>
-        </v-card>
+                    <v-btn variant="text" size="small" icon="mdi-close" @click="ausgabeOffen = false" />
+                </v-card-title>
+                <v-card-subtitle v-if="ausgabe">
+                    {{ ausgabeAuftrag ? auftragsart(ausgabeAuftrag.function) : '' }}
+                    {{ ausgabeAuftrag?.partnumber ? '· ' + ausgabeAuftrag.partnumber : '' }}
+                    · {{ t('ShopView.publish.outputTime', { start: zeitpunkt(ausgabe.itime), end: zeitpunkt(ausgabe.finished) }) }}
+                </v-card-subtitle>
+                <v-card-text>
+                    <v-progress-linear v-if="ausgabeLaedt" indeterminate color="primary" />
+                    <div v-else-if="!ausgabeZeilen.length" class="text-caption text-medium-emphasis">
+                        {{ t('ShopView.publish.outputEmpty') }}
+                    </div>
+                    <!-- „Alle Produkte“ hat eine Zeile je Seite: nur sichtbare Zeilen zeichnen -->
+                    <v-virtual-scroll v-else :items="ausgabeZeilen" max-height="60vh" item-height="20">
+                        <template #default="{ item }">
+                            <div
+                                class="text-caption laufausgabe"
+                                :class="istFehlerText(item) ? 'text-error font-weight-medium' : 'text-medium-emphasis'"
+                            >{{ item }}</div>
+                        </template>
+                    </v-virtual-scroll>
+                </v-card-text>
+            </v-card>
+        </v-dialog>
 
         <!-- Rückfrage vor dem Löschen der Auswahl -->
         <v-dialog v-model="loeschenGefragt" max-width="460">
@@ -361,6 +418,7 @@ import { useRouter } from 'vue-router'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
 import { useShop } from '@/features/shop/composables/useShop.js'
 import * as toasts from '@/core/utils/toasts.js'
+import { entityRoute } from '@/core/constants/routes.js'
 
 const { t, te, locale } = useI18n()
 const router = useRouter()
@@ -370,13 +428,18 @@ const status = ref(null)
 const auftraege = ref([])
 const veroeffentlicht = ref(false)
 const sofort = ref(false)
+const offeneStarten = ref(false)
+/** Ausgabe eines Laufs im Dialog */
+const ausgabeOffen = ref(false)
+const ausgabeLaedt = ref(false)
+const ausgabe = ref(null)
+const ausgabeAuftrag = ref(null)
+const ausgabeZeilen = computed(() => ausgabe.value?.output ? ausgabe.value.output.split('\n') : [])
 const installiert = ref(false)
 const auswahl = ref([])
 const laeuft = ref(false)
 const raeumtAuf = ref(false)
-/** Meldungen des letzten Laufs, dazu die davon, die Fehler waren */
-const laufMeldungen = ref([])
-const laufFehler = ref([])
+/** Der letzte Lauf kam nicht zu Ende, dazu die Ausgabe des Prozesses */
 const laufAbgebrochen = ref(false)
 const laufAusgabe = ref([])
 /** Die Abfrageschleife hat ihre Obergrenze erreicht, der Lauf arbeitet vermutlich weiter */
@@ -408,12 +471,12 @@ const loeschenGefragt = ref(false)
 const istOffen = (auftrag) => auftrag.open === true || auftrag.open === 't'
 
 /**
- * Ist diese Zeile eine Fehlermeldung?
+ * Fehlerzeile in einer gespeicherten Ausgabe
  *
- * Das Backend liefert die Fehlerzeilen ein zweites Mal einzeln, statt sie hier
- * am Wortlaut zu erraten.
+ * Anders als beim laufenden Lauf gibt es dazu keine Liste der Fehler; die
+ * Meldungen der Erweiterung nennen sie aber beim Namen.
  */
-const istFehlerzeile = (zeile) => laufFehler.value.includes(String(zeile).replace(/^\d{2}:\d{2}:\d{2}\s+/, ''))
+const istFehlerText = (zeile) => /fehlgeschlagen|fehler|nicht gebaut|nicht erzeugt/i.test(zeile)
 const fehlgeschlagen = (auftrag) => String(auftrag.result || '').startsWith('Fehler')
 
 /**
@@ -555,6 +618,51 @@ async function ausgewaehlteAusfuehren() {
 }
 
 /**
+ * Zeigt die Ausgabe des Laufs, in dem ein Auftrag erledigt wurde
+ *
+ * @param {object} auftrag Zeile der Liste
+ */
+async function ausgabeZeigen(auftrag) {
+    ausgabeAuftrag.value = auftrag
+    ausgabe.value = null
+    ausgabeOffen.value = true
+    ausgabeLaedt.value = true
+    try {
+        ausgabe.value = await shop.fetchPublishRunOutput(auftrag.id)
+        if (shop.error.value) {
+            ausgabeOffen.value = false
+        }
+    } finally {
+        ausgabeLaedt.value = false
+    }
+}
+
+async function ausgabeKopieren() {
+    try {
+        await navigator.clipboard.writeText(ausgabe.value?.output || '')
+        toasts.success(t('ShopView.publish.outputCopied'))
+    } catch {
+        toasts.error(t('ShopView.publish.outputCopyFailed'))
+    }
+}
+
+/**
+ * Führt alle offenen Aufträge sofort aus
+ *
+ * Ohne Auftragsnummern arbeitet der Läufer alle offenen ab — auch solche, die
+ * nach dem letzten Laden der Liste hinzugekommen sind.
+ */
+async function offeneAusfuehren() {
+    offeneStarten.value = true
+    try {
+        auswahl.value = [...offeneIds.value]
+        await ausfuehren([])
+    } finally {
+        offeneStarten.value = false
+    }
+}
+
+/**
  * Führt Aufträge aus und meldet das Ergebnis
  *
  * Gemeinsam für „Jetzt ausführen" und „Alle sofort veröffentlichen".
@@ -574,7 +682,7 @@ async function ausfuehren(ids) {
  *
  * Das Backend legt einen Auftrag „Paket abgleichen“ an, der auch dann baut,
  * wenn das Paket schon aktuell war, und startet ihn sofort. Fehlende Mounts
- * oder params.shopui stehen danach als Hinweis in den Meldungen des Laufs.
+ * oder params.shopui stehen danach als Hinweis in der Ausgabe des Laufs.
  */
 async function shopUiInstallieren() {
     installiert.value = true
@@ -601,8 +709,6 @@ function gestartet(antwort) {
     // Der Läufer arbeitet jetzt im Hintergrund; die Antwort kommt sofort.
     // Lief schon einer, nimmt der die Aufträge mit — beobachtet wird so oder so.
     toasts.info(antwort?.started === false ? t('ShopView.publish.running') : t('ShopView.publish.started'))
-    laufMeldungen.value = []
-    laufFehler.value = []
     laufAbgebrochen.value = false
     laufAusgabe.value = []
     beobachten()
@@ -610,8 +716,6 @@ function gestartet(antwort) {
 
 /** Übernimmt den Stand aus getShopPublishStatus in die Anzeige */
 function standUebernehmen(stand) {
-    laufMeldungen.value = stand.lines || []
-    laufFehler.value = stand.error_lines || []
     laufAbgebrochen.value = !!stand.aborted
     laufAusgabe.value = stand.output || []
 }
@@ -685,13 +789,6 @@ async function laufBeendet(stand) {
 
     auswahl.value = []
     await laden()
-}
-
-function meldungenAusblenden() {
-    laufMeldungen.value = []
-    laufFehler.value = []
-    laufAbgebrochen.value = false
-    laufAusgabe.value = []
 }
 
 /**
@@ -792,8 +889,8 @@ async function alleVeroeffentlichen() {
 /**
  * Beim Öffnen den Stand holen
  *
- * Die Meldungen des letzten Laufs stehen so auch nach dem Neuladen da, und ein
- * Lauf, der gerade arbeitet — auch einer aus dem Cron —, wird gleich verfolgt.
+ * Ein abgebrochener Lauf steht so auch nach dem Neuladen da, und ein Lauf,
+ * der gerade arbeitet — auch einer aus dem Cron —, wird gleich verfolgt.
  */
 async function standBeimOeffnen() {
     const stand = await beobachter.fetchPublishStatus()
@@ -816,6 +913,17 @@ onBeforeUnmount(beobachtenBeenden)
 
 <style scoped>
 .auftragszeile {
+    cursor: pointer;
+}
+
+.artikelverweis {
+    color: inherit;
+    text-decoration: underline dotted;
+}
+
+.laufverweis {
+    color: inherit;
+    text-decoration: underline dotted;
     cursor: pointer;
 }
 

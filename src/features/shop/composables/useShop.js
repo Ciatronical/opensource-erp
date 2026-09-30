@@ -157,6 +157,13 @@ export function useShop() {
     const fetchPublishStatus = () => call('getShopPublishStatus')
 
     /**
+     * Ausgabe des Laufs, in dem ein Auftrag erledigt wurde
+     *
+     * id, itime, finished und output (Zeilen, getrennt durch Zeilenumbruch).
+     */
+    const fetchPublishRunOutput = (id) => call('getShopPublishRunOutput', { id })
+
+    /**
      * Löscht die erfolgreich erledigten Aufträge
      *
      * Fehlgeschlagene und offene bleiben stehen. Der Läufer räumt außerdem
@@ -182,6 +189,7 @@ export function useShop() {
         runPublishJobs,
         installShopUi,
         fetchPublishStatus,
+        fetchPublishRunOutput,
         cleanupPublishJobs,
         deletePublishJobs,
         fetchPartShopData,

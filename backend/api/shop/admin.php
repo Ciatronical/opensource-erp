@@ -1115,8 +1115,15 @@ function getShopPublishJobs($data) {
     // Reihenfolge der Vereinigung muss aussen stehen.
     resultInfo(true, '', $db->getAll(
         "WITH eigene AS (
-             SELECT b.id, b.itime, b.function, b.partnumber, b.param, b.result,
-                    c.type AS channel
+             SELECT b.id, b.itime, b.function, b.partnumber, b.param, b.result, b.run_id,
+                    c.type AS channel,
+                    -- Für den Verweis auf den Artikel. Die Artikelnummer ist in
+                    -- parts nicht eindeutig erzwungen: der aktive vor dem
+                    -- veralteten, sonst der älteste.
+                    (SELECT p.id FROM parts p
+                      WHERE b.partnumber <> '' AND p.partnumber = b.partnumber
+                      ORDER BY COALESCE(p.obsolete, false), p.id
+                      LIMIT 1) AS parts_id
                FROM batchjob_hugoshop b
                JOIN sales_channel_shop c ON c.id = COALESCE(b.channel_id, shop_channel_id('hugoshop'))
               WHERE (c.type || ':' || b.function) = ANY(string_to_array(:paare, ','))
@@ -1133,4 +1140,33 @@ function getShopPublishJobs($data) {
             ':paare' => shopChannelJobPairs(),
         ]
     ));
+}
+
+/**
+ * Ausgabe des Laufs, in dem ein Auftrag erledigt wurde
+ *
+ * Solange der Auftrag besteht; mit dem letzten Auftrag eines Laufs geht auch
+ * seine Ausgabe (Trigger auf batchjob_hugoshop).
+ *
+ * @param int $data['id'] Auftragsnummer
+ * @return void
+ * @testdata {"id": 1}
+ */
+function getShopPublishRunOutput($data) {
+    permit(['shop_order', 'shop_part_edit', 'edit_shop_config'], false);
+    $db = DbhCompany::begin();
+
+    $lauf = $db->getOne(
+        "SELECT r.id, r.itime, r.finished, r.output
+           FROM batchjob_hugoshop b
+           JOIN batchjob_run_hugoshop r ON r.id = b.run_id
+          WHERE b.id = :id",
+        [':id' => (int)($data['id'] ?? 0)]
+    );
+    if (!$lauf) {
+        resultInfo(false, 'SHOP_RUN_OUTPUT_MISSING', null, 'Zu diesem Auftrag ist keine Ausgabe gespeichert.');
+        return;
+    }
+
+    resultInfo(true, '', $lauf);
 }
