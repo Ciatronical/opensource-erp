@@ -41,17 +41,29 @@ if ! npm run build; then
 fi
 
 echo ""
-echo "2b. Shop-UI prüfen..."
-# Die Widgets des Shops werden getrennt gebaut (esbuild statt Vite). Ist eines
-# der beiden Bündel älter als sein Quelltext, laufen Paket und Testseite
-# auseinander — dann lädt eine Shop-Seite zwei verschiedene Stände derselben
-# Widgets, und Lit zeigt statt der Knöpfe seine Platzhalter. Deshalb hier ein
-# Halt statt einer Warnung.
-if ! "$SCRIPT_DIR/shop-ui-build.sh" --check; then
+echo "2b. Shop-UI bauen..."
+# Die Widgets des Shops werden getrennt gebaut (esbuild statt Vite). Beide
+# Bündel — Paket und Demo — entstehen hier immer neu aus dem Quelltext, damit
+# sie nicht auseinanderlaufen: sonst lädt eine Shop-Seite zwei verschiedene
+# Stände derselben Widgets, und Lit zeigt statt der Knöpfe seine Platzhalter.
+# Ein reiner Zeitvergleich taugt dafür nicht, weil git pull die Änderungszeit
+# jeder geänderten Quelldatei auf „jetzt“ setzt.
+if ! "$SCRIPT_DIR/shop-ui-build.sh"; then
     echo ""
-    echo "❌ Shop-UI ist nicht auf dem Stand des Quelltexts!"
-    echo "   Bauen mit: scripts/shop-ui-build.sh"
+    echo "❌ Shop-UI-Build fehlgeschlagen!"
     exit 1
+fi
+
+# Das Paket-Bündel ist eingecheckt. Weicht der frische Build vom eingecheckten
+# Stand ab, wurde vor dem Commit nicht gebaut — die Datei ist jetzt lokal
+# geändert und kann den nächsten git pull blockieren.
+SHOP_UI_KIT="backend/templates-default/shop/standard/kit/assets/shop-ui/shop-widgets.js"
+if ! git diff --quiet -- "$SHOP_UI_KIT"; then
+    echo ""
+    echo "⚠  Das eingecheckte Shop-UI-Bündel war nicht auf dem Stand des Quelltexts."
+    echo "   Neu gebaut, aber jetzt lokal geändert: $SHOP_UI_KIT"
+    echo "   Im Repository mit scripts/shop-ui-build.sh bauen und committen,"
+    echo "   hier danach: git checkout -- $SHOP_UI_KIT"
 fi
 
 echo ""
