@@ -53,6 +53,10 @@
             "failed": "gescheitert",
             "open": "offen"
         },
+        "parts": {
+            "title": "Artikel im Shop",
+            "subtitle": "Artikel, die in einem Verkaufskanal angeboten werden"
+        },
         "withdrawals": {
             "title": "Widerrufe",
             "subtitle": "Eingegangene Widerrufserklärungen",

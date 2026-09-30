@@ -53,6 +53,10 @@
             "failed": "mislykket",
             "open": "åben"
         },
+        "parts": {
+            "title": "Varer i butikken",
+            "subtitle": "Varer, der tilbydes i en salgskanal"
+        },
         "withdrawals": {
             "title": "Fortrydelser",
             "subtitle": "Modtagne fortrydelseserklæringer",

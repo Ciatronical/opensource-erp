@@ -53,6 +53,10 @@
             "failed": "失败",
             "open": "未付款"
         },
+        "parts": {
+            "title": "商店中的商品",
+            "subtitle": "在销售渠道中提供的商品"
+        },
         "withdrawals": {
             "title": "撤回",
             "subtitle": "收到的撤回声明",

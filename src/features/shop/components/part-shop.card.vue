@@ -84,10 +84,11 @@
                 </div>
 
                 <!-- Preis und Texte je gewähltem Kanal -->
-                <v-expansion-panels variant="accordion" multiple class="mb-3">
+                <v-expansion-panels v-model="offeneKanaele" variant="accordion" multiple class="mb-3">
                     <v-expansion-panel
                         v-for="kanal in aktiveKanaele"
                         :key="kanal.channel_id"
+                        :value="kanal.channel_id"
                         elevation="0"
                         class="border"
                     >
@@ -678,6 +679,20 @@ const kanalName = typ => (te(`ShopView.channels.${typ}`) ? t(`ShopView.channels.
 const aktiveKanaele = computed(() => daten.value.channels.filter(k => k.active))
 const hugoshopAktiv = computed(() => aktiveKanaele.value.some(k => k.type === 'hugoshop'))
 
+/** Aufgeklappte Kanäle (channel_id); beim Laden der erste aktive (ersterKanalOffen) */
+const offeneKanaele = ref([])
+
+/**
+ * Klappt den ersten aktiven Kanal auf
+ *
+ * Beim Öffnen der Artikelmaske stehen Preis und Texte des ersten Kanals so
+ * gleich da, statt hinter einem Klick zu liegen.
+ */
+function ersterKanalOffen() {
+    const erster = aktiveKanaele.value[0]
+    offeneKanaele.value = erster ? [erster.channel_id] : []
+}
+
 /** Auswahl der Kanäle als Liste von channel_id — für die Chip-Gruppe */
 const ausgewaehlt = computed({
     get: () => aktiveKanaele.value.map(k => k.channel_id),
@@ -841,6 +856,7 @@ async function laden() {
         // gedacht. Vorhandene Artikel zeigen dagegen den gespeicherten Stand.
         daten.value = { ...leer(), listed: true, channels: kanaele.map(alsKanal) }
         mindestensEinKanal()
+        ersterKanalOffen()
         return
     }
 
@@ -857,6 +873,7 @@ async function laden() {
         channels: kanaele.map(alsKanal),
     }
     zuletzt = stand(props.partsId)
+    ersterKanalOffen()
 
     // Der Watcher auf daten läuft erst vor dem nächsten Rendern — sonst hielte
     // er das Laden für eine Eingabe.

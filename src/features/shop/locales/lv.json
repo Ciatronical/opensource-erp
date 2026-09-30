@@ -53,6 +53,10 @@
             "failed": "neizdevās",
             "open": "atvērts"
         },
+        "parts": {
+            "title": "Preces veikalā",
+            "subtitle": "Preces, kas tiek piedāvātas pārdošanas kanālā"
+        },
         "withdrawals": {
             "title": "Atteikumi",
             "subtitle": "Saņemtie atteikuma paziņojumi",

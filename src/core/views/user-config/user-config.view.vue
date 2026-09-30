@@ -193,6 +193,7 @@ function saveField(key, value) {
 /**
  * Liefert Items fuer Select-Felder.
  * Unterstuetzt statische (field.items) und dynamische (field.storeItems) Quellen.
+ * Statische Items mit `extension` erscheinen nur bei aktiver Erweiterung.
  */
 function getFieldItems(field) {
     if (field.storeItems) {
@@ -202,7 +203,7 @@ function getFieldItems(field) {
             title: item[field.itemTitle || 'name'] || String(item[field.itemValue || 'id'])
         }));
     }
-    return field.items || [];
+    return (field.items || []).filter(item => !item.extension || store.isExtensionEnabled(item.extension));
 }
 
 onMounted(async () => {

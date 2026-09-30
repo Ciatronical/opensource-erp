@@ -53,6 +53,10 @@
             "failed": "fallido",
             "open": "abierto"
         },
+        "parts": {
+            "title": "Artículos en la tienda",
+            "subtitle": "Artículos ofrecidos en un canal de venta"
+        },
         "withdrawals": {
             "title": "Desistimientos",
             "subtitle": "Declaraciones de desistimiento recibidas",

@@ -53,6 +53,10 @@
             "failed": "selhalo",
             "open": "otevřeno"
         },
+        "parts": {
+            "title": "Artikly v obchodě",
+            "subtitle": "Artikly nabízené v prodejním kanálu"
+        },
         "withdrawals": {
             "title": "Odstoupení",
             "subtitle": "Přijatá odstoupení od smlouvy",

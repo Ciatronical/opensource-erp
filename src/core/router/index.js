@@ -271,6 +271,8 @@ function buildRoutes() {
                 if (startupView === 'wall-display') return { name: 'wall-display' }
                 if (startupView === 'anschlagtafel') return { name: 'anschlagtafel' }
                 if (startupView === 'mechanic') return { name: 'mechanic' }
+                // Ohne aktive Erweiterung bleibt es beim Hauptmenü
+                if (startupView === 'shop-overview' && oserp.isExtensionEnabled('shop')) return { name: 'shop-overview' }
                 return true
             },
             props: () => {

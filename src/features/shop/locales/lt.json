@@ -53,6 +53,10 @@
             "failed": "nepavyko",
             "open": "neapmokėta"
         },
+        "parts": {
+            "title": "Prekės parduotuvėje",
+            "subtitle": "Prekės, siūlomos pardavimo kanale"
+        },
         "withdrawals": {
             "title": "Atsisakymai",
             "subtitle": "Gauti pranešimai apie sutarties atsisakymą",

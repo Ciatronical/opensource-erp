@@ -18,7 +18,8 @@
                 </h1>
             </v-col>
             <v-col cols="auto">
-                <v-btn v-if="hasFilter" variant="text" size="small" prepend-icon="mdi-filter-remove" @click="reset">
+                <!-- In der Artikelansicht steht er zwischen Suchfeld und Filtern -->
+                <v-btn v-if="hasFilter && !isParts" variant="text" size="small" prepend-icon="mdi-filter-remove" @click="reset">
                     {{ t('DocumentList.reset') }}
                 </v-btn>
                 <v-btn
@@ -36,7 +37,7 @@
         </v-row>
 
         <!-- Filter -->
-        <v-row dense class="mb-1">
+        <v-row dense class="mb-5">
             <v-col cols="12" :md="isParts ? 8 : 5">
                 <v-text-field
                     v-model="search"
@@ -48,6 +49,11 @@
                     clearable
                     autofocus
                 />
+            </v-col>
+            <v-col v-if="isParts && hasFilter" cols="auto" class="d-flex align-center">
+                <v-btn variant="text" size="small" prepend-icon="mdi-filter-remove" @click="reset">
+                    {{ t('DocumentList.reset') }}
+                </v-btn>
             </v-col>
             <template v-if="!isParts">
                 <v-col cols="6" md="2">
@@ -81,14 +87,56 @@
                     />
                 </v-col>
             </template>
-            <v-col v-else cols="12" md="4" class="d-flex align-center">
+            <!-- Zwei Schalter, ein Zustand (partsScope): es ist immer nur
+                 einer an; beide aus heißt „nur aktive Artikel“ -->
+            <v-col v-else cols="12" md="6" class="d-flex align-center flex-wrap mt-2">
                 <v-switch
-                    v-model="withObsolete"
-                    :label="t('DocumentList.withObsolete')"
+                    v-model="obsoleteOnly"
+                    :label="t('DocumentList.obsoleteOnly')"
                     color="primary"
                     density="compact"
                     hide-details
-                    class="ms-1"
+                    class="ms-1 me-4"
+                />
+                <v-switch
+                    v-model="showAll"
+                    :label="t('DocumentList.showAll')"
+                    color="primary"
+                    density="compact"
+                    hide-details
+                    class="ms-1 me-4"
+                />
+                <!-- Nur mit Shop-Erweiterung; ein Zustand (shopFilter) für beide,
+                     keiner zusammen mit „Alle anzeigen“ -->
+                <v-switch
+                    v-if="shopEnabled"
+                    v-model="notInShop"
+                    :label="t('DocumentList.notInShop')"
+                    color="primary"
+                    density="compact"
+                    hide-details
+                    class="ms-1 me-4"
+                />
+                <v-switch
+                    v-if="shopEnabled"
+                    v-model="shopOnly"
+                    :label="t('DocumentList.shopOnly')"
+                    color="primary"
+                    density="compact"
+                    hide-details
+                    class="ms-1 me-4"
+                />
+            </v-col>
+            <!-- Verfeinert „Nur im Shop angebotene“ auf einen Kanal — deshalb
+                 nur sichtbar, solange dieser Filter an ist -->
+            <v-col v-if="isParts && shopOnly && channels.length" cols="12" md="3" class="mt-2">
+                <v-select
+                    v-model="channelId"
+                    :items="channelItems"
+                    :label="t('DocumentList.channel')"
+                    variant="outlined"
+                    density="compact"
+                    hide-details
                 />
             </v-col>
         </v-row>
@@ -141,6 +189,7 @@ import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
 import { formatDate } from '@/core/utils/dateFormatter.js'
+import { oserpStore } from '@/core/stores/oserp.store.js'
 
 // Alles, was sich je Listentyp unterscheidet, steht an genau einer Stelle.
 // create: Schaltfläche zum Anlegen — nur wo es eine eigene Neuanlage gibt.
@@ -158,7 +207,7 @@ export default {
     name: 'DocumentListView',
     components: { NavbarView },
     setup() {
-        const { t, locale } = useI18n()
+        const { t, te, locale } = useI18n()
         const route = useRoute()
         const router = useRouter()
 
@@ -173,12 +222,77 @@ export default {
         const from = ref('')
         const to = ref('')
         const openOnly = ref(false)
-        const withObsolete = ref(false)
+        // Welche Artikel: 'active' (Vorgabe), 'obsolete' oder 'all'
+        const partsScope = ref('active')
+        const obsoleteOnly = computed({
+            get: () => partsScope.value === 'obsolete',
+            set: (an) => { partsScope.value = an ? 'obsolete' : 'active' },
+        })
+        const showAll = computed({
+            get: () => partsScope.value === 'all',
+            set: (an) => {
+                partsScope.value = an ? 'all' : 'active'
+                if (an) {
+                    shopFilter.value = ''
+                    channelIdState.value = 0
+                }
+            },
+        })
+
+        // Im Shop angeboten oder nicht — zusätzlich zu aktiv/ausgemustert,
+        // nicht zusammen mit „Alle anzeigen“. '' = egal, 'offered', 'not_offered'
+        const shopEnabled = computed(() => oserpStore().isExtensionEnabled('shop'))
+        // Vorbelegung aus der URL (?shop=offered): so öffnet die Übersicht des
+        // Shops die Liste gleich gefiltert
+        const shopFilterState = ref(['offered', 'not_offered'].includes(route.query.shop) ? route.query.shop : '')
+        const shopFilter = computed({
+            get: () => (shopEnabled.value ? shopFilterState.value : ''),
+            set: (wert) => {
+                shopFilterState.value = wert
+                if (wert && partsScope.value === 'all') partsScope.value = 'active'
+                // Die Kanalauswahl gehört zu „angeboten“ — sonst wirkte eine unsichtbare Auswahl
+                if (wert !== 'offered') channelIdState.value = 0
+            },
+        })
+        const shopOnly = computed({
+            get: () => shopFilter.value === 'offered',
+            set: (an) => { shopFilter.value = an ? 'offered' : '' },
+        })
+        const notInShop = computed({
+            get: () => shopFilter.value === 'not_offered',
+            set: (an) => { shopFilter.value = an ? 'not_offered' : '' },
+        })
+
+        // Kanal innerhalb von „Nur im Shop angebotene“: 0 = alle Kanäle. Die
+        // Kanäle kommen einmal beim Öffnen, nur bei aktiver Shop-Erweiterung
+        const channels = ref([])
+        const channelIdState = ref(0)
+        const channelId = computed({
+            get: () => (shopOnly.value ? channelIdState.value : 0),
+            set: (id) => { channelIdState.value = Number(id) || 0 },
+        })
+        const channelItems = computed(() => [
+            { value: 0, title: t('DocumentList.allChannels') },
+            ...channels.value.map(kanal => ({
+                value: Number(kanal.channel_id),
+                title: te(`ShopView.channels.${kanal.type}`) ? t(`ShopView.channels.${kanal.type}`) : kanal.type,
+            })),
+        ])
+
+        async function loadChannels() {
+            if (!shopEnabled.value) return
+            try {
+                const res = await axios.post('/api/faktura/', { action: 'getPartsSalesChannels' })
+                channels.value = res.data?.success ? (res.data.payload.channels || []) : []
+            } catch {
+                channels.value = []
+            }
+        }
 
         const LIMIT = 500
         const atLimit = computed(() => rows.value.length >= LIMIT)
         const hasFilter = computed(() =>
-            !!search.value || !!from.value || !!to.value || openOnly.value || withObsolete.value
+            !!search.value || !!from.value || !!to.value || openOnly.value || partsScope.value !== 'active' || !!shopFilter.value
         )
 
         const headers = computed(() => isParts.value
@@ -224,7 +338,8 @@ export default {
             error.value = ''
             try {
                 const payload = isParts.value
-                    ? { action: 'searchParts', q: search.value || '', all: withObsolete.value, limit: LIMIT }
+                    ? { action: 'searchParts', q: search.value || '', scope: partsScope.value, shop: shopFilter.value,
+                        channel_id: channelId.value, limit: LIMIT }
                     : { action: 'searchDocuments', documentType: listType.value, q: search.value || '',
                         from: from.value || '', to: to.value || '', limit: LIMIT }
                 const res = await axios.post('/api/faktura/', payload)
@@ -244,19 +359,24 @@ export default {
 
         // Tippen laedt nach kurzer Pause nach — kein Suchknopf noetig
         let debounce = null
-        watch([search, from, to, withObsolete], () => {
+        watch([search, from, to, partsScope, shopFilter, channelId], () => {
             clearTimeout(debounce)
             debounce = setTimeout(load, 350)
         })
         watch(listType, load)
-        onMounted(load)
+        onMounted(() => {
+            load()
+            loadChannels()
+        })
 
         function reset() {
             search.value = ''
             from.value = ''
             to.value = ''
             openOnly.value = false
-            withObsolete.value = false
+            partsScope.value = 'active'
+            shopFilterState.value = ''
+            channelIdState.value = 0
         }
 
         function openRow(_event, row) {
@@ -265,7 +385,7 @@ export default {
 
         return {
             t, locale, config, isParts, rows, visibleRows, headers, loading, error,
-            search, from, to, openOnly, withObsolete, hasFilter, atLimit,
+            search, from, to, openOnly, obsoleteOnly, showAll, shopOnly, notInShop, shopEnabled, channels, channelId, channelItems, hasFilter, atLimit,
             formatDate, formatCurrency, formatQty, reset, openRow,
         }
     },

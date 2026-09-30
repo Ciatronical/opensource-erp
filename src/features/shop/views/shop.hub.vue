@@ -114,7 +114,7 @@
                 <v-card
                     variant="outlined"
                     hover
-                    @click="router.push({ name: ziel.name })"
+                    @click="router.push({ name: ziel.name, query: ziel.query })"
                 >
                     <v-card-item>
                         <template #prepend>
@@ -596,6 +596,15 @@ const ziele = computed(() => [
         icon: 'mdi-undo-variant',
         titel: t('ShopView.withdrawals.title'),
         text: t('ShopView.withdrawals.subtitle'),
+    },
+    // Die Artikelliste des Kerns, vorgefiltert auf „Nur im Shop angebotene“
+    // mit „Alle Verkaufskanäle“ (Vorgabe der Kanalauswahl)
+    {
+        name: 'article-list',
+        query: { shop: 'offered' },
+        icon: 'mdi-package-variant-closed',
+        titel: t('ShopView.parts.title'),
+        text: t('ShopView.parts.subtitle'),
     },
 ])
 

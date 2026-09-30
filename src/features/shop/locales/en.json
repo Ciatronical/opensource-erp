@@ -53,6 +53,10 @@
             "failed": "failed",
             "open": "open"
         },
+        "parts": {
+            "title": "Articles in the shop",
+            "subtitle": "Articles offered in a sales channel"
+        },
         "withdrawals": {
             "title": "Withdrawals",
             "subtitle": "Received withdrawal declarations",

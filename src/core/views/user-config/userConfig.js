@@ -52,6 +52,8 @@ const userConfig = [
             { value: "wall-display", title: "Wandanzeige" },
             { value: "anschlagtafel", title: "Tafel" },
             { value: "mechanic", title: "Mechaniker-Modus" },
+            // extension: nur anbieten, wenn die Erweiterung aktiv ist (getFieldItems)
+            { value: "shop-overview", title: "Shop-Übersicht", extension: "shop" },
         ],
         label: "user_fields.startupView",
         tooltip: "user_fields.startupView_help",

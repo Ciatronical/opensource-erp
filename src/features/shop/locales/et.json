@@ -53,6 +53,10 @@
             "failed": "ebaõnnestus",
             "open": "avatud"
         },
+        "parts": {
+            "title": "Artiklid poes",
+            "subtitle": "Artiklid, mida pakutakse müügikanalis"
+        },
         "withdrawals": {
             "title": "Taganemised",
             "subtitle": "Saabunud taganemisavaldused",

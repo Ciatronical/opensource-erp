@@ -53,6 +53,10 @@
             "failed": "epäonnistui",
             "open": "avoin"
         },
+        "parts": {
+            "title": "Nimikkeet kaupassa",
+            "subtitle": "Myyntikanavassa tarjottavat nimikkeet"
+        },
         "withdrawals": {
             "title": "Peruutukset",
             "subtitle": "Saapuneet peruutusilmoitukset",

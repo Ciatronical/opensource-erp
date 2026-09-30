@@ -53,6 +53,10 @@
             "failed": "nieudane",
             "open": "otwarte"
         },
+        "parts": {
+            "title": "Artykuły w sklepie",
+            "subtitle": "Artykuły oferowane w kanale sprzedaży"
+        },
         "withdrawals": {
             "title": "Odstąpienia",
             "subtitle": "Otrzymane oświadczenia o odstąpieniu",

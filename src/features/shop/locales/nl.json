@@ -53,6 +53,10 @@
             "failed": "mislukt",
             "open": "open"
         },
+        "parts": {
+            "title": "Artikelen in de shop",
+            "subtitle": "Artikelen die in een verkoopkanaal worden aangeboden"
+        },
         "withdrawals": {
             "title": "Herroepingen",
             "subtitle": "Ontvangen herroepingsverklaringen",

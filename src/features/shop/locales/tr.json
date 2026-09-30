@@ -53,6 +53,10 @@
             "failed": "başarısız",
             "open": "açık"
         },
+        "parts": {
+            "title": "Mağazadaki ürünler",
+            "subtitle": "Bir satış kanalında sunulan ürünler"
+        },
         "withdrawals": {
             "title": "Cayma bildirimleri",
             "subtitle": "Gelen cayma beyanları",

@@ -141,10 +141,20 @@ function searchDocuments($data) {
 /**
  * Artikelliste fuer /artikel (Klick fuehrt in die Artikelbearbeitung).
  *
- * @param string $data['q']     Volltext ueber Artikelnummer und Bezeichnung
- * @param bool   $data['all']   true = auch ausgemusterte Artikel zeigen
- * @param int    $data['limit'] Maximale Trefferzahl (Standard 200, max 1000)
- * @testdata {"action": "searchParts", "q": "Bremse", "limit": 50}
+ * Welche Artikel, bestimmt scope: nur aktive (Vorgabe), nur ausgemusterte
+ * (parts.obsolete) oder alle. Die Volltextsuche laeuft ueber genau diese.
+ *
+ * shop schraenkt zusaetzlich nach den Verkaufskanaelen ein (Shop-Erweiterung):
+ * offered = in einem eingeschalteten Kanal aktiv angeboten, not_offered = in
+ * keinem. Mit scope all zusammen nicht moeglich — die Oberflaeche schaltet das
+ * eine beim anderen ab. channel_id verfeinert offered auf einen Kanal.
+ *
+ * @param string $data['q']          Volltext ueber Artikelnummer und Bezeichnung
+ * @param string $data['scope']      active (Vorgabe), obsolete oder all
+ * @param string $data['shop']       leer, offered oder not_offered
+ * @param int    $data['channel_id'] mit shop offered: nur in diesem Kanal (0 = alle Kanaele)
+ * @param int    $data['limit']      Maximale Trefferzahl (Standard 200, max 1000)
+ * @testdata {"action": "searchParts", "q": "Bremse", "scope": "active", "shop": "", "channel_id": 0, "limit": 50}
  */
 function searchParts($data) {
     $db    = DbhCompany::begin();
@@ -153,10 +163,28 @@ function searchParts($data) {
     if ($limit > 1000) $limit = 1000;
 
     $q   = trim((string)($data['q'] ?? ''));
-    $all = !empty($data['all']);
+    $scope = in_array($data['scope'] ?? '', ['obsolete', 'all'], true) ? $data['scope'] : 'active';
 
-    $params = [':limit' => $limit];
-    $where  = [$all ? '1=1' : 'NOT COALESCE(p.obsolete, FALSE)'];
+    $params = [':limit' => $limit, ':scope_all' => $scope, ':scope_obsolete' => $scope];
+    $where  = ["(:scope_all = 'all' OR COALESCE(p.obsolete, FALSE) = (:scope_obsolete = 'obsolete'))"];
+
+    // Die Kanaltabellen gibt es nur mit der Shop-Erweiterung — ohne sie waere
+    // die Abfrage ungueltig, nicht nur leer
+    $shop = in_array($data['shop'] ?? '', ['offered', 'not_offered'], true) ? $data['shop'] : '';
+    if ('' !== $shop) {
+        if ('all' === $scope || !isExtensionActive($db, 'shop')) {
+            resultInfo(false, 'INVALID_FILTER', null, 'Der Filter nach Verkaufskanal ist hier nicht moeglich');
+            return;
+        }
+        // Angeboten: in einem eingeschalteten Kanal aktiv; channel_id 0 = in
+        // irgendeinem. Nicht angeboten: in keinem — ein Kanal gilt dann nicht.
+        $params[':channel_id'] = 'offered' === $shop ? (int)($data['channel_id'] ?? 0) : 0;
+        $where[] = ('offered' === $shop ? 'EXISTS' : 'NOT EXISTS').' (SELECT 1
+                              FROM parts_channel_shop pc
+                              JOIN sales_channel_shop c ON c.id = pc.channel_id AND c.active
+                             WHERE pc.parts_id = p.id AND pc.active
+                               AND (CAST(:channel_id AS integer) = 0 OR pc.channel_id = CAST(:channel_id AS integer)))';
+    }
 
     if ($q !== '') {
         $params[':q'] = '%' . $q . '%';
@@ -181,4 +209,29 @@ function searchParts($data) {
     );
 
     resultInfo(true, '', ['parts' => $parts]);
+}
+
+/**
+ * Eingeschaltete Verkaufskanaele fuer den Kanalfilter der Artikelliste
+ *
+ * Nur mit Shop-Erweiterung; ohne sie eine leere Liste (die Kanaltabellen
+ * fehlen dann). Die Oberflaeche uebersetzt den Namen aus type.
+ *
+ * @return void
+ * @testdata {"action": "getPartsSalesChannels"}
+ */
+function getPartsSalesChannels($data) {
+    $db = DbhCompany::begin();
+
+    if (!isExtensionActive($db, 'shop')) {
+        resultInfo(true, '', ['channels' => []]);
+        return;
+    }
+
+    resultInfo(true, '', ['channels' => $db->getAll(
+        "SELECT c.id AS channel_id, c.type
+           FROM sales_channel_shop c
+          WHERE c.active
+          ORDER BY c.sortkey NULLS LAST, c.id"
+    )]);
 }

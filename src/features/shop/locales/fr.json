@@ -53,6 +53,10 @@
             "failed": "échoué",
             "open": "ouvert"
         },
+        "parts": {
+            "title": "Articles dans la boutique",
+            "subtitle": "Articles proposés dans un canal de vente"
+        },
         "withdrawals": {
             "title": "Rétractations",
             "subtitle": "Déclarations de rétractation reçues",

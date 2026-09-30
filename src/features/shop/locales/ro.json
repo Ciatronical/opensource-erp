@@ -53,6 +53,10 @@
             "failed": "eșuat",
             "open": "deschis"
         },
+        "parts": {
+            "title": "Articole în magazin",
+            "subtitle": "Articole oferite într-un canal de vânzare"
+        },
         "withdrawals": {
             "title": "Retrageri",
             "subtitle": "Declarații de retragere primite",

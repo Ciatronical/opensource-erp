@@ -53,6 +53,10 @@
             "failed": "misslyckad",
             "open": "öppen"
         },
+        "parts": {
+            "title": "Artiklar i butiken",
+            "subtitle": "Artiklar som erbjuds i en försäljningskanal"
+        },
         "withdrawals": {
             "title": "Ångerrätt",
             "subtitle": "Mottagna ångeranmälningar",
