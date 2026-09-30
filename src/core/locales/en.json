@@ -22,7 +22,9 @@
         "updateHint": "The schema is being brought up to date with the new program version; a backup is taken first. This can take a few minutes — please do not close the window.",
         "privacy": "Privacy Policy",
         "dataDeletion": "Data Deletion",
-        "API_DATABASE_ERROR": "The database did not answer as expected. Please contact your administrator."
+        "API_DATABASE_ERROR": "The database did not answer as expected. Please contact your administrator.",
+        "INVALID_CREDENTIALS": "The username or password is incorrect.",
+        "TOO_MANY_ATTEMPTS": "Too many failed attempts. Please try again in a few minutes."
     },
     "NotFoundView": {
         "title": "Page not found",

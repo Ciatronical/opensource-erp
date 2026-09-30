@@ -83,7 +83,14 @@ export default {
   name: 'LoginView',
   components: { ErrorView, PasswordField },
   setup() {
-    const { t } = useI18n()
+    const { t, te } = useI18n()
+
+    // Fehlercode des Backends übersetzen; unbekannte Codes bekommen den
+    // allgemeinen Satz statt des blanken Schlüssels
+    const loginError = (code) => {
+      const key = `LoginView.${code}`
+      return code && te(key) ? t(key) : t('LoginView.ERROR')
+    }
     const router = useRouter()
     const route  = useRoute()
     const oserp  = oserpStore()
@@ -131,7 +138,7 @@ export default {
         clientItems.value = []
         clientCode.value  = null
         if( e instanceof ApiError ) {
-          alerts.error(t(`LoginView.${e.code}`))
+          alerts.error(loginError(e.code))
             .then(async (result) => {
                 if (result.isConfirmed) {
                     window.location.reload();
@@ -195,8 +202,7 @@ export default {
           errorType.value    = 'error'
           return
         }
-        const i18nKey = `LoginView.${err?.code || 'ERROR'}`
-        errorMessage.value = t(i18nKey)
+        errorMessage.value = loginError(err?.code)
         errorType.value    = 'error'
       } finally {
         loading.value = false

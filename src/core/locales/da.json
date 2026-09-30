@@ -22,7 +22,9 @@
         "updateHint": "Skemaet tilpasses den nye programversion; først oprettes en sikkerhedskopi. Det kan tage et par minutter — luk ikke vinduet.",
         "privacy": "Privatlivspolitik",
         "dataDeletion": "Datasletning",
-        "API_DATABASE_ERROR": "Databasen svarer ikke som forventet. Kontakt venligst administratoren."
+        "API_DATABASE_ERROR": "Databasen svarer ikke som forventet. Kontakt venligst administratoren.",
+        "INVALID_CREDENTIALS": "Brugernavn eller adgangskode er forkert.",
+        "TOO_MANY_ATTEMPTS": "For mange mislykkede forsøg. Prøv igen om et par minutter."
     },
     "NotFoundView": {
         "title": "Side ikke fundet",

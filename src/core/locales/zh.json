@@ -22,7 +22,9 @@
         "updateHint": "正在使数据库结构与新程序版本保持一致；此前会先创建备份。这可能需要几分钟 — 请勿关闭窗口。",
         "privacy": "隐私政策",
         "dataDeletion": "数据删除",
-        "API_DATABASE_ERROR": "数据库的响应不符合预期。请联系管理员。"
+        "API_DATABASE_ERROR": "数据库的响应不符合预期。请联系管理员。",
+        "INVALID_CREDENTIALS": "用户名或密码错误。",
+        "TOO_MANY_ATTEMPTS": "失败尝试次数过多。请几分钟后重试。"
     },
     "NotFoundView": {
         "title": "页面未找到",

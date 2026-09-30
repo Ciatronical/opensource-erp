@@ -22,7 +22,9 @@
         "updateHint": "Lo schema viene adattato alla nuova versione del programma; prima viene creata una copia di sicurezza. L'operazione può richiedere alcuni minuti: non chiudere la finestra.",
         "privacy": "Informativa sulla privacy",
         "dataDeletion": "Cancellazione dei dati",
-        "API_DATABASE_ERROR": "Il database non risponde come previsto. Avvisare l'amministratore."
+        "API_DATABASE_ERROR": "Il database non risponde come previsto. Avvisare l'amministratore.",
+        "INVALID_CREDENTIALS": "Nome utente o password errati.",
+        "TOO_MANY_ATTEMPTS": "Troppi tentativi non riusciti. Riprovare tra qualche minuto."
     },
     "NotFoundView": {
         "title": "Pagina non trovata",

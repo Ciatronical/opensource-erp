@@ -22,7 +22,9 @@
         "updateHint": "Datubāzes struktūra tiek pielāgota jaunajai programmas versijai; vispirms tiek izveidota rezerves kopija. Tas var aizņemt dažas minūtes — lūdzu, neaizveriet logu.",
         "privacy": "Privātuma politika",
         "dataDeletion": "Datu dzēšana",
-        "API_DATABASE_ERROR": "Datu bāze neatbild, kā gaidīts. Lūdzu informējiet administratoru."
+        "API_DATABASE_ERROR": "Datu bāze neatbild, kā gaidīts. Lūdzu informējiet administratoru.",
+        "INVALID_CREDENTIALS": "Lietotājvārds vai parole ir nepareiza.",
+        "TOO_MANY_ATTEMPTS": "Pārāk daudz neveiksmīgu mēģinājumu. Lūdzu, mēģiniet vēlreiz pēc dažām minūtēm."
     },
     "NotFoundView": {
         "title": "Lapa nav atrasta",

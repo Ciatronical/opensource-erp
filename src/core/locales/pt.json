@@ -22,7 +22,9 @@
         "updateHint": "O esquema está a ser adaptado à nova versão do programa; primeiro é criada uma cópia de segurança. Pode demorar alguns minutos — não feche a janela.",
         "privacy": "Política de privacidade",
         "dataDeletion": "Eliminação de dados",
-        "API_DATABASE_ERROR": "A base de dados não responde como esperado. Por favor, avise o administrador."
+        "API_DATABASE_ERROR": "A base de dados não responde como esperado. Por favor, avise o administrador.",
+        "INVALID_CREDENTIALS": "O nome de utilizador ou a palavra-passe estão incorretos.",
+        "TOO_MANY_ATTEMPTS": "Demasiadas tentativas falhadas. Tente novamente dentro de alguns minutos."
     },
     "NotFoundView": {
         "title": "Página não encontrada",

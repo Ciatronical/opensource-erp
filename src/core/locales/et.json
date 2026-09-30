@@ -22,7 +22,9 @@
         "updateHint": "Skeem kohandatakse uue programmiversiooniga; enne seda tehakse varukoopia. See võib võtta mõne minuti — ärge sulgege akent.",
         "privacy": "Privaatsuspoliitika",
         "dataDeletion": "Andmete kustutamine",
-        "API_DATABASE_ERROR": "Andmebaas ei vasta ootuspäraselt. Palun teavitage administraatorit."
+        "API_DATABASE_ERROR": "Andmebaas ei vasta ootuspäraselt. Palun teavitage administraatorit.",
+        "INVALID_CREDENTIALS": "Kasutajanimi või parool on vale.",
+        "TOO_MANY_ATTEMPTS": "Liiga palju ebaõnnestunud katseid. Palun proovige mõne minuti pärast uuesti."
     },
     "NotFoundView": {
         "title": "Lehte ei leitud",

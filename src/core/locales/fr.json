@@ -22,7 +22,9 @@
         "updateHint": "Le schéma est adapté à la nouvelle version du programme ; une sauvegarde est créée au préalable. Cela peut prendre quelques minutes — veuillez ne pas fermer la fenêtre.",
         "privacy": "Politique de confidentialite",
         "dataDeletion": "Suppression des donnees",
-        "API_DATABASE_ERROR": "La base de données ne répond pas comme prévu. Veuillez prévenir l'administrateur."
+        "API_DATABASE_ERROR": "La base de données ne répond pas comme prévu. Veuillez prévenir l'administrateur.",
+        "INVALID_CREDENTIALS": "Le nom d'utilisateur ou le mot de passe est incorrect.",
+        "TOO_MANY_ATTEMPTS": "Trop de tentatives échouées. Veuillez réessayer dans quelques minutes."
     },
     "NotFoundView": {
         "title": "Page introuvable",

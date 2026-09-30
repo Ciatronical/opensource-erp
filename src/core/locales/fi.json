@@ -22,7 +22,9 @@
         "updateHint": "Skeema päivitetään uuteen ohjelmaversioon; ensin otetaan varmuuskopio. Tämä voi kestää muutaman minuutin — älä sulje ikkunaa.",
         "privacy": "Tietosuojakäytäntö",
         "dataDeletion": "Tietojen poisto",
-        "API_DATABASE_ERROR": "Tietokanta ei vastaa odotetusti. Ilmoita asiasta järjestelmänvalvojalle."
+        "API_DATABASE_ERROR": "Tietokanta ei vastaa odotetusti. Ilmoita asiasta järjestelmänvalvojalle.",
+        "INVALID_CREDENTIALS": "Käyttäjätunnus tai salasana on virheellinen.",
+        "TOO_MANY_ATTEMPTS": "Liian monta epäonnistunutta yritystä. Yritä uudelleen muutaman minuutin kuluttua."
     },
     "NotFoundView": {
         "title": "Sivua ei löytynyt",

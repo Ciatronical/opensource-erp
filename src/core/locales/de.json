@@ -22,7 +22,9 @@
         "updateHint": "Das Schema wird an die neue Programmversion angepasst, vorher entsteht eine Sicherung. Das kann einige Minuten dauern — bitte das Fenster nicht schließen.",
         "privacy": "Datenschutzerklärung",
         "dataDeletion": "Datenlöschung",
-        "API_DATABASE_ERROR": "Die Datenbank antwortet nicht wie erwartet. Bitte den Administrator verständigen."
+        "API_DATABASE_ERROR": "Die Datenbank antwortet nicht wie erwartet. Bitte den Administrator verständigen.",
+        "INVALID_CREDENTIALS": "Benutzername oder Passwort ist falsch.",
+        "TOO_MANY_ATTEMPTS": "Zu viele Fehlversuche. Bitte versuchen Sie es in einigen Minuten erneut."
     },
     "NotFoundView": {
         "title": "Seite nicht gefunden",

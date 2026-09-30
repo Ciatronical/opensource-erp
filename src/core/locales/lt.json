@@ -22,7 +22,9 @@
         "updateHint": "Duomenų bazės struktūra pritaikoma naujai programos versijai; pirmiausia sukuriama atsarginė kopija. Tai gali užtrukti kelias minutes — neuždarykite lango.",
         "privacy": "Privatumo politika",
         "dataDeletion": "Duomenų trynimas",
-        "API_DATABASE_ERROR": "Duomenų bazė atsako ne taip, kaip tikėtasi. Praneškite administratoriui."
+        "API_DATABASE_ERROR": "Duomenų bazė atsako ne taip, kaip tikėtasi. Praneškite administratoriui.",
+        "INVALID_CREDENTIALS": "Neteisingas naudotojo vardas arba slaptažodis.",
+        "TOO_MANY_ATTEMPTS": "Per daug nesėkmingų bandymų. Bandykite dar kartą po kelių minučių."
     },
     "NotFoundView": {
         "title": "Puslapis nerastas",

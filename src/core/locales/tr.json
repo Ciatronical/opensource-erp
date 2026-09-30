@@ -22,7 +22,9 @@
         "updateHint": "Şema yeni program sürümüne uyarlanıyor; önce bir yedek alınır. Bu birkaç dakika sürebilir — lütfen pencereyi kapatmayın.",
         "privacy": "Gizlilik politikası",
         "dataDeletion": "Veri silme",
-        "API_DATABASE_ERROR": "Veritabanı beklendiği gibi yanıt vermiyor. Lütfen yöneticinize haber verin."
+        "API_DATABASE_ERROR": "Veritabanı beklendiği gibi yanıt vermiyor. Lütfen yöneticinize haber verin.",
+        "INVALID_CREDENTIALS": "Kullanıcı adı veya şifre yanlış.",
+        "TOO_MANY_ATTEMPTS": "Çok fazla başarısız deneme. Lütfen birkaç dakika sonra tekrar deneyin."
     },
     "NotFoundView": {
         "title": "Sayfa bulunamadı",

@@ -22,7 +22,9 @@
         "updateHint": "Schema este adaptată la noua versiune a programului; mai întâi se creează o copie de siguranță. Poate dura câteva minute — nu închideți fereastra.",
         "privacy": "Politica de confidențialitate",
         "dataDeletion": "Ștergere date",
-        "API_DATABASE_ERROR": "Baza de date nu răspunde conform așteptărilor. Vă rugăm anunțați administratorul."
+        "API_DATABASE_ERROR": "Baza de date nu răspunde conform așteptărilor. Vă rugăm anunțați administratorul.",
+        "INVALID_CREDENTIALS": "Numele de utilizator sau parola sunt incorecte.",
+        "TOO_MANY_ATTEMPTS": "Prea multe încercări eșuate. Încercați din nou peste câteva minute."
     },
     "NotFoundView": {
         "title": "Pagina nu a fost găsită",
