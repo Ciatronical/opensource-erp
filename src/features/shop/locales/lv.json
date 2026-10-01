@@ -300,6 +300,10 @@
             "delete": "Dzēst"
         },
         "channelConfig": {
+            "countries": "Piegādes valstis",
+            "countriesHint": "Piegādā tikai uz šīm valstīm. Tukšs = visas valstis.",
+            "excludedDeliveryTerms": "Nepiedāvāt eBay ar piegādes nosacījumu",
+            "excludedDeliveryTermsHint": "eBay nespēj attēlot ilgus piegādes laikus. Preces ar kādu no šiem nosacījumiem eBay netiek piedāvātas, esošie sludinājumi tiek beigti.",
             "freeShippingFrom": "Bezmaksas piegāde no",
             "freeShippingFromHint": "Preču bruto vērtība, no kuras piegāde ir bezmaksas — piegādes veidiem ar „Bezmaksas piegādes slieksnis ir spēkā“. Tukšs = bez sliekšņa.",
             "freeShippingFromInvalid": "Summa no 0 vai tukšs",

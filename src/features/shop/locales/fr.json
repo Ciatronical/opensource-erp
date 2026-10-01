@@ -300,6 +300,10 @@
             "delete": "Supprimer"
         },
         "channelConfig": {
+            "countries": "Pays de livraison",
+            "countriesHint": "Livraison uniquement dans ces pays. Vide = tous les pays.",
+            "excludedDeliveryTerms": "Ne pas proposer sur eBay avec la condition de livraison",
+            "excludedDeliveryTermsHint": "eBay ne peut pas représenter de longs délais de livraison. Les articles avec l'une de ces conditions ne sont pas proposés sur eBay ; les annonces existantes sont clôturées.",
             "freeShippingFrom": "Livraison gratuite à partir de",
             "freeShippingFromHint": "Valeur brute de la commande à partir de laquelle l'expédition est gratuite — pour les modes avec « Le seuil de gratuité s'applique ». Vide = pas de seuil.",
             "freeShippingFromInvalid": "Montant à partir de 0 ou vide",

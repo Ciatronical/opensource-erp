@@ -300,6 +300,10 @@
             "delete": "Poista"
         },
         "channelConfig": {
+            "countries": "Toimitusmaat",
+            "countriesHint": "Toimitetaan vain näihin maihin. Tyhjä = kaikki maat.",
+            "excludedDeliveryTerms": "Älä tarjoa eBayssa toimitusehdolla",
+            "excludedDeliveryTermsHint": "eBay ei pysty esittämään pitkiä toimitusaikoja. Nimikkeitä, joilla on jokin näistä ehdoista, ei tarjota eBayssa; nykyiset ilmoitukset päätetään.",
             "freeShippingFrom": "Ilmainen toimitus alkaen",
             "freeShippingFromHint": "Tilauksen bruttoarvo, josta alkaen toimitus on ilmainen — toimitustavoille, joilla on ”Ilmaisen toimituksen raja koskee”. Tyhjä = ei rajaa.",
             "freeShippingFromInvalid": "Summa 0:sta tai tyhjä",

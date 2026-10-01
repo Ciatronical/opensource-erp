@@ -300,6 +300,10 @@
             "delete": "Usuń"
         },
         "channelConfig": {
+            "countries": "Kraje dostawy",
+            "countriesHint": "Dostawa tylko do tych krajów. Puste = wszystkie kraje.",
+            "excludedDeliveryTerms": "Nie oferuj w eBay z warunkiem dostawy",
+            "excludedDeliveryTermsHint": "eBay nie potrafi odwzorować długich terminów dostawy. Artykuły z jednym z tych warunków nie są oferowane w eBay; istniejące oferty są kończone.",
             "freeShippingFrom": "Darmowa wysyłka od",
             "freeShippingFromHint": "Wartość brutto zamówienia, od której wysyłka jest darmowa — dla metod z „Obowiązuje próg darmowej wysyłki”. Puste = brak progu.",
             "freeShippingFromInvalid": "Kwota od 0 lub puste",

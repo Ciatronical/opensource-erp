@@ -7,6 +7,7 @@
  */
 
 const de = {
+  'invoice.deliveryTerms': "Lieferzeiten",
   'cart.shippingMethod': "Versand:",
   'cart.shippingFree': "versandkostenfrei",
   'cart.minQuantity': "Mindestabnahme:",
@@ -274,6 +275,7 @@ const de = {
 };
 
 const en = {
+  'invoice.deliveryTerms': "Delivery times",
   'cart.shippingMethod': "Shipping:",
   'cart.shippingFree': "free shipping",
   'cart.minQuantity': "Minimum order quantity:",

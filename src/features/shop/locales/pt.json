@@ -300,6 +300,10 @@
             "delete": "Eliminar"
         },
         "channelConfig": {
+            "countries": "Países de entrega",
+            "countriesHint": "Só se entrega nestes países. Vazio = todos os países.",
+            "excludedDeliveryTerms": "Não oferecer no eBay com a condição de entrega",
+            "excludedDeliveryTermsHint": "O eBay não consegue representar prazos de entrega longos. Artigos com uma destas condições não são oferecidos no eBay; os anúncios existentes são terminados.",
             "freeShippingFrom": "Envio grátis a partir de",
             "freeShippingFromHint": "Valor bruto da encomenda a partir do qual o envio é grátis — para métodos com «Aplica-se o limite de envio grátis». Vazio = sem limite.",
             "freeShippingFromInvalid": "Montante a partir de 0 ou vazio",

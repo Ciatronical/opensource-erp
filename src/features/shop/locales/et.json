@@ -300,6 +300,10 @@
             "delete": "Kustuta"
         },
         "channelConfig": {
+            "countries": "Tarneriigid",
+            "countriesHint": "Tarnitakse ainult nendesse riikidesse. Tühi = kõik riigid.",
+            "excludedDeliveryTerms": "Ära paku eBays tarnetingimusega",
+            "excludedDeliveryTermsHint": "eBay ei suuda kujutada pikki tarneaegu. Nende tingimustega artikleid eBays ei pakuta, olemasolevad pakkumised lõpetatakse.",
             "freeShippingFrom": "Tasuta saatmine alates",
             "freeShippingFromHint": "Kauba brutoväärtus, millest alates on saatmine tasuta — tarneviisidele, millel on „Tasuta saatmise piir kehtib“. Tühi = piirita.",
             "freeShippingFromInvalid": "Summa alates 0 või tühi",

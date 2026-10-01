@@ -1126,6 +1126,23 @@ BEGIN
 END;
 $$;
 
+-- Lieferbedingung einer Rechnungsposition, wie sie verschickt wurde
+-- (dev/shop-versand.md, Punkt 7, Weg a): Die Rechnung traegt sie im Langtext
+-- der Position. Gezeigt wird der Text der Lieferbedingung des Artikels nur,
+-- wenn er dort steht — sonst sagte die Rechnungsseite nach einer spaeteren
+-- Aenderung etwas anderes als die Rechnung. NULL = keine.
+CREATE OR REPLACE FUNCTION shop_invoice_delivery_term(p_invoice_id integer) RETURNS text
+    LANGUAGE sql STABLE AS $$
+    SELECT t.text
+      FROM invoice i
+      JOIN parts_shipping_shop ps ON ps.parts_id = i.parts_id
+      JOIN delivery_terms d ON d.id = ps.delivery_term_id
+      CROSS JOIN LATERAL (SELECT COALESCE(NULLIF(btrim(d.description_long), ''), d.description) AS text) t
+     WHERE i.id = p_invoice_id
+       AND COALESCE(t.text, '') <> ''
+       AND strpos(COALESCE(i.longdescription, ''), t.text) > 0
+$$;
+
 -- Die bisherige Pauschale wird zur Versandart „Standard" (W9): ihr
 -- Versandartikel, eine Preisstufe für alle Kanäle und Länder, ohne
 -- Gewichtsgrenze — sie braucht kein Gewicht. Nur solange es keine

@@ -356,10 +356,33 @@ function shopInvoicePositions($db, int $arId): array {
                 TRUNC(i.discount * 100) AS p_discount,
                 TRUNC(i.fxsellprice, 2) AS sellprice,
                 TRUNC(i.qty * i.sellprice, 2) AS linetotal,
-                pe.hugoshop_images ->> 0 AS thumbnail
+                pe.hugoshop_images ->> 0 AS thumbnail,
+                shop_invoice_delivery_term(i.id) AS delivery_term
            FROM invoice i
            JOIN parts p ON p.id = i.parts_id
            LEFT JOIN parts_ext pe ON pe.parts_id = i.parts_id
+          WHERE i.trans_id = :ar_id
+          ORDER BY i.position",
+        [':ar_id' => $arId]
+    );
+}
+
+/**
+ * Positionen einer Rechnung mit ihrer Lieferbedingung
+ *
+ * Fuer Rechnungsmail und Rechnungsseite (dev/shop-versand.md, Punkt 7):
+ * Bezeichnung, Menge, Einheit und Lieferbedingung je Position — so wie sie in
+ * der Rechnung steht (shop_invoice_delivery_term).
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param int $arId Rechnung
+ * @return array Liste aus description, qty, unit, delivery_term (leer = keine)
+ */
+function shopInvoiceDeliveryTerms($db, int $arId): array {
+    return $db->getAll(
+        "SELECT i.description, TRUNC(i.qty) AS qty, COALESCE(i.unit, '') AS unit,
+                COALESCE(shop_invoice_delivery_term(i.id), '') AS delivery_term
+           FROM invoice i
           WHERE i.trans_id = :ar_id
           ORDER BY i.position",
         [':ar_id' => $arId]
@@ -472,6 +495,11 @@ function invoiceSummaryByLink($db, string $arLink): array {
         'payment_term_amount'        => $zeile['amount'],
         'payment_term_currency'      => $zeile['currency'],
         'shipping'                   => shopInvoiceShippingAddress($db, (int)$zeile['ar_id']),
+        // Lieferzeiten je Position (dev/shop-versand.md, Punkt 7)
+        'delivery_terms'             => array_values(array_filter(
+            shopInvoiceDeliveryTerms($db, (int)$zeile['ar_id']),
+            fn($position) => '' !== $position['delivery_term']
+        )),
     ];
 }
 

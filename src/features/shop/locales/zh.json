@@ -300,6 +300,10 @@
             "delete": "删除"
         },
         "channelConfig": {
+            "countries": "送货国家",
+            "countriesHint": "只送往这些国家。为空 = 所有国家。",
+            "excludedDeliveryTerms": "在 eBay 上不提供以下交货条件的商品",
+            "excludedDeliveryTermsHint": "eBay 无法显示较长的交货时间。具有这些交货条件之一的商品不会在 eBay 上提供，现有刊登将被结束。",
             "freeShippingFrom": "免运费起点",
             "freeShippingFromHint": "达到此含税订单金额后免运费——适用于“适用免运费门槛”的配送方式。为空 = 无门槛。",
             "freeShippingFromInvalid": "金额不低于 0 或为空",

@@ -300,6 +300,10 @@
             "delete": "Ta bort"
         },
         "channelConfig": {
+            "countries": "Leveransländer",
+            "countriesHint": "Leverans endast till dessa länder. Tom = alla länder.",
+            "excludedDeliveryTerms": "Erbjud inte på eBay med leveransvillkor",
+            "excludedDeliveryTermsHint": "eBay kan inte visa långa leveranstider. Artiklar med något av dessa villkor erbjuds inte på eBay; befintliga annonser avslutas.",
             "freeShippingFrom": "Fri frakt från",
             "freeShippingFromHint": "Bruttoordervärde från vilket frakten är fri — för fraktsätt med ”Fraktfri gräns gäller”. Tom = ingen gräns.",
             "freeShippingFromInvalid": "Belopp från 0 eller tom",

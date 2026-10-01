@@ -300,6 +300,10 @@
             "delete": "Șterge"
         },
         "channelConfig": {
+            "countries": "Țări de livrare",
+            "countriesHint": "Se livrează doar în aceste țări. Gol = toate țările.",
+            "excludedDeliveryTerms": "Nu oferi pe eBay cu condiția de livrare",
+            "excludedDeliveryTermsHint": "eBay nu poate reprezenta termene lungi de livrare. Articolele cu una dintre aceste condiții nu sunt oferite pe eBay; anunțurile existente sunt încheiate.",
             "freeShippingFrom": "Livrare gratuită de la",
             "freeShippingFromHint": "Valoarea brută a comenzii de la care livrarea este gratuită — pentru metodele cu „Se aplică pragul de livrare gratuită”. Gol = fără prag.",
             "freeShippingFromInvalid": "Sumă de la 0 sau gol",

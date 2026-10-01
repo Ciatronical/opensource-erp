@@ -300,6 +300,10 @@
             "delete": "Sil"
         },
         "channelConfig": {
+            "countries": "Teslimat ülkeleri",
+            "countriesHint": "Yalnızca bu ülkelere teslimat yapılır. Boş = tüm ülkeler.",
+            "excludedDeliveryTerms": "Bu teslim koşuluyla eBay'de sunma",
+            "excludedDeliveryTermsHint": "eBay uzun teslim sürelerini gösteremez. Bu koşullardan birine sahip ürünler eBay'de sunulmaz, mevcut ilanlar sonlandırılır.",
             "freeShippingFrom": "Ücretsiz gönderim",
             "freeShippingFromHint": "Gönderimin ücretsiz olduğu brüt sipariş değeri — “Ücretsiz gönderim sınırı geçerli” olan yöntemler için. Boş = sınır yok.",
             "freeShippingFromInvalid": "0 veya üzeri tutar ya da boş",

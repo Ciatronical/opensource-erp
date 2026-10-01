@@ -300,6 +300,10 @@
             "delete": "Ištrinti"
         },
         "channelConfig": {
+            "countries": "Pristatymo šalys",
+            "countriesHint": "Pristatoma tik į šias šalis. Tuščia = visos šalys.",
+            "excludedDeliveryTerms": "Nesiūlyti eBay su pristatymo sąlyga",
+            "excludedDeliveryTermsHint": "eBay negali parodyti ilgų pristatymo terminų. Prekės su viena iš šių sąlygų eBay nesiūlomos, esami skelbimai baigiami.",
             "freeShippingFrom": "Nemokamas siuntimas nuo",
             "freeShippingFromHint": "Bruto prekių vertė, nuo kurios siuntimas nemokamas — siuntimo būdams su „Taikoma nemokamo siuntimo riba“. Tuščia = ribos nėra.",
             "freeShippingFromInvalid": "Suma nuo 0 arba tuščia",

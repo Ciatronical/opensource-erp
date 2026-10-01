@@ -304,6 +304,9 @@ export class ShopAccountOrders extends ShopAccountElement {
               <div class="order-line">
                 <strong>${t('orders.quantity')}:</strong> ${position.qty}
               </div>
+              ${position.delivery_term
+                ? html`<div class="order-line ${this.cls('muted')}">${position.delivery_term}</div>`
+                : nothing}
               <div class="order-line">
                 <strong>${t('orders.price')}:</strong>
                 ${formatPrice(position.linetotal)} ${invoice.currency}*

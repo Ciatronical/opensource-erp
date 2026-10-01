@@ -154,7 +154,27 @@ export class ShopInvoice extends ShopElement {
         <button class=${this.cls('button')} type="submit">${t('invoice.download')}</button>
       </form>
 
+      ${this.#renderDeliveryTerms(summary)}
       ${this.#renderPayment(summary)} ${this.#renderShipping(summary)}
+    `;
+  }
+
+  /**
+   * Lieferzeiten der bestellten Artikel (dev/shop-versand.md, Punkt 7) —
+   * nur Positionen mit Lieferbedingung, so wie sie in der Rechnung steht.
+   */
+  #renderDeliveryTerms(summary) {
+    const positionen = summary.delivery_terms || [];
+    if (!positionen.length) return nothing;
+    return html`
+      <h3 class=${this.cls('heading')}>${t('invoice.deliveryTerms')}</h3>
+      <ul class="delivery-terms" part="delivery-terms">
+        ${positionen.map(
+          (position) => html`<li>
+            <strong>${position.description}</strong>: ${position.delivery_term}
+          </li>`,
+        )}
+      </ul>
     `;
   }
 

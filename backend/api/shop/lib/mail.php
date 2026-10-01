@@ -135,6 +135,9 @@ function shopSendInvoiceMailOrFail($db, int $arId): bool {
         'amount'    => $rechnung['amount'],
         'currency'  => $rechnung['currency'],
         'signatur'  => shopConfigValue($db, 'shop_base_url'),
+        // Bestellte Artikel mit Lieferbedingung, wie in einer Bestellbestätigung
+        // (dev/shop-versand.md, Punkt 7)
+        'positionen' => shopInvoiceDeliveryTerms($db, $arId),
     ]);
 
     $betreff = sprintf(

@@ -300,6 +300,10 @@
             "delete": "Verwijderen"
         },
         "channelConfig": {
+            "countries": "Leveringslanden",
+            "countriesHint": "Alleen naar deze landen wordt geleverd. Leeg = alle landen.",
+            "excludedDeliveryTerms": "Niet op eBay aanbieden met leveringsvoorwaarde",
+            "excludedDeliveryTermsHint": "eBay kan lange levertijden niet weergeven. Artikelen met een van deze voorwaarden worden niet op eBay aangeboden; bestaande aanbiedingen worden beëindigd.",
             "freeShippingFrom": "Gratis verzending vanaf",
             "freeShippingFromHint": "Bruto bestelwaarde vanaf welke de verzending gratis is — voor verzendmethoden met „Grens voor gratis verzending geldt”. Leeg = geen grens.",
             "freeShippingFromInvalid": "Bedrag vanaf 0 of leeg",

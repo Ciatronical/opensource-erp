@@ -300,6 +300,10 @@
             "delete": "Slett"
         },
         "channelConfig": {
+            "countries": "Leveringsland",
+            "countriesHint": "Det leveres bare til disse landene. Tom = alle land.",
+            "excludedDeliveryTerms": "Ikke tilby på eBay med leveringsbetingelse",
+            "excludedDeliveryTermsHint": "eBay kan ikke vise lange leveringstider. Varer med en av disse betingelsene tilbys ikke på eBay; eksisterende annonser avsluttes.",
             "freeShippingFrom": "Fri frakt fra",
             "freeShippingFromHint": "Brutto ordreverdi fra hvilken frakten er gratis — for fraktmåter med «Fraktfri grense gjelder». Tom = ingen grense.",
             "freeShippingFromInvalid": "Beløp fra 0 eller tom",

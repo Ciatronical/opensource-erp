@@ -300,6 +300,10 @@
             "delete": "Smazat"
         },
         "channelConfig": {
+            "countries": "Země dodání",
+            "countriesHint": "Dodává se jen do těchto zemí. Prázdné = všechny země.",
+            "excludedDeliveryTerms": "Nenabízet na eBay s dodacími podmínkami",
+            "excludedDeliveryTermsHint": "eBay nedokáže zobrazit dlouhé dodací lhůty. Položky s některou z těchto podmínek se na eBay nenabízejí, stávající nabídky se ukončí.",
             "freeShippingFrom": "Doprava zdarma od",
             "freeShippingFromHint": "Hrubá hodnota zboží, od které je doprava zdarma — pro způsoby dopravy s „Platí hranice dopravy zdarma“. Prázdné = bez hranice.",
             "freeShippingFromInvalid": "Částka od 0 nebo prázdné",

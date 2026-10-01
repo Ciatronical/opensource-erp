@@ -1251,12 +1251,22 @@ function getShopChannels($data) {
         'channels' => $db->getAll(
             "SELECT c.id AS channel_id, c.type, c.active, c.sortkey,
                     c.markup_type, c.markup_value, c.round_99, c.free_shipping_from,
+                    COALESCE(c.settings, '{}'::jsonb) AS settings,
+                    -- Lieferländer (dev/shop-versand.md, Schritt 7); leer = alle
+                    (SELECT COALESCE(json_agg(cc.iso_code ORDER BY cc.iso_code), '[]')
+                       FROM sales_channel_country_shop cc WHERE cc.channel_id = c.id) AS countries,
                     (SELECT COUNT(*) FROM parts_channel_shop pc
                       WHERE pc.channel_id = c.id AND pc.active) AS parts
                FROM sales_channel_shop c
               ORDER BY c.sortkey NULLS LAST, c.id"
         ),
         'tax_included' => shopConfigBool($db, 'shop_tax_included'),
+        // Auswahllisten: Länder für die Lieferländer, Lieferbedingungen für
+        // den Ausschluss langer Lieferzeiten bei eBay (W11)
+        'all_countries'  => array_column($db->getAll("SELECT iso_code FROM country_shop ORDER BY iso_code"), 'iso_code'),
+        'delivery_terms' => $db->getAll(
+            "SELECT id, description, description_long, obsolete FROM delivery_terms ORDER BY sortkey, id"
+        ),
     ]);
 }
 
@@ -1279,6 +1289,9 @@ function getShopChannels($data) {
  * @param array $data['markup_value'] Prozent oder Betrag (netto/brutto wie parts.sellprice)
  * @param array $data['round_99'] Bruttopreis auf ,99 aufrunden
  * @param float|null $data['free_shipping_from'] Versandfrei ab diesem Bruttowarenwert, leer = keine Freigrenze, fehlt = unverändert
+ * @param array $data['countries'] Lieferländer (ISO-Codes), leer = alle; fehlt = unverändert (Schritt 7)
+ * @param array $data['excluded_delivery_terms'] eBay: Lieferbedingungen, bei denen nicht angeboten
+ *              wird (W11); fehlt = unverändert
  * @return void
  * @testdata {"channel_id": 1, "active": true, "markup_type": "percent", "markup_value": 10, "round_99": true, "free_shipping_from": 150}
  */
@@ -1308,12 +1321,35 @@ function saveShopChannel($data) {
         return;
     }
 
+    // Lieferländer und ausgeschlossene Lieferbedingungen: nur, wenn mitgeschickt
+    $laenderSetzen = isset($data['countries']) && is_array($data['countries']);
+    $laender = $laenderSetzen ? array_values(array_unique(array_filter(
+        array_map(fn($code) => strtoupper(trim((string)$code)), $data['countries']),
+        fn($code) => 1 === preg_match('/^[A-Z]{2}$/', $code)))) : [];
+    $ausschlussSetzen = isset($data['excluded_delivery_terms']) && is_array($data['excluded_delivery_terms']);
+    $ausschluss = $ausschlussSetzen
+        ? array_values(array_unique(array_filter(array_map('intval', $data['excluded_delivery_terms']), fn($id) => $id > 0)))
+        : [];
+    sort($ausschluss);
+
     // vorher liest den Stand vor der Änderung: daraus ergibt sich, ob sich
     // der Preis der HugoShop-Seiten ändert.
     $zeile = $db->getOne(
         "WITH vorher AS (
-             SELECT id, active, markup_type, markup_value, round_99
+             SELECT id, active, markup_type, markup_value, round_99,
+                    COALESCE(settings -> 'excluded_delivery_terms', '[]'::jsonb) AS ausschluss
                FROM sales_channel_shop WHERE id = :channel_id
+         ), laender_weg AS (
+             DELETE FROM sales_channel_country_shop
+              WHERE channel_id = :channel_id_laender_weg AND :laender_setzen_weg = 1
+                AND iso_code <> ALL(CAST(:laender_weg AS text[]))
+         ), laender_neu AS (
+             INSERT INTO sales_channel_country_shop (channel_id, iso_code)
+             SELECT :channel_id_laender_neu, c.iso_code
+               FROM country_shop c
+              WHERE :laender_setzen_neu = 1 AND c.iso_code = ANY(CAST(:laender_neu AS text[]))
+                AND EXISTS (SELECT 1 FROM sales_channel_shop WHERE id = :channel_id_laender_pruefen)
+             ON CONFLICT DO NOTHING
          ), geaendert AS (
              UPDATE sales_channel_shop
                 SET active       = :active OR NOT EXISTS (
@@ -1325,15 +1361,21 @@ function saveShopChannel($data) {
                     free_shipping_from = CASE WHEN :freigrenze_setzen = 1
                                               THEN CAST(:free_shipping_from AS numeric)
                                               ELSE free_shipping_from END,
+                    settings     = CASE WHEN :ausschluss_setzen = 1
+                                        THEN COALESCE(settings, '{}'::jsonb)
+                                             || jsonb_build_object('excluded_delivery_terms', CAST(:ausschluss AS jsonb))
+                                        ELSE settings END,
                     mtime        = now()
               WHERE id = :channel_id
-             RETURNING id, type, active, markup_type, markup_value, round_99
+             RETURNING id, type, active, markup_type, markup_value, round_99,
+                       COALESCE(settings -> 'excluded_delivery_terms', '[]'::jsonb) AS ausschluss
          )
          SELECT g.type, g.active,
                 (g.active IS DISTINCT FROM v.active) AS geschaltet,
                 (g.markup_type IS DISTINCT FROM v.markup_type
                  OR g.markup_value IS DISTINCT FROM v.markup_value
-                 OR g.round_99 IS DISTINCT FROM v.round_99) AS preis_geaendert
+                 OR g.round_99 IS DISTINCT FROM v.round_99) AS preis_geaendert,
+                (g.ausschluss IS DISTINCT FROM v.ausschluss) AS ausschluss_geaendert
            FROM geaendert g JOIN vorher v ON v.id = g.id",
         [
             ':channel_id'   => (int)($data['channel_id'] ?? 0),
@@ -1344,6 +1386,15 @@ function saveShopChannel($data) {
             ':round_99'     => !empty($data['round_99']),
             ':free_shipping_from' => null === $freigrenze ? null : (string)$freigrenze,
             ':freigrenze_setzen'  => $freigrenzeSetzen ? 1 : 0,
+            ':channel_id_laender_weg'    => (int)($data['channel_id'] ?? 0),
+            ':channel_id_laender_neu'    => (int)($data['channel_id'] ?? 0),
+            ':channel_id_laender_pruefen' => (int)($data['channel_id'] ?? 0),
+            ':laender_setzen_weg' => $laenderSetzen ? 1 : 0,
+            ':laender_setzen_neu' => $laenderSetzen ? 1 : 0,
+            ':laender_weg'        => '{'.implode(',', $laender).'}',
+            ':laender_neu'        => '{'.implode(',', $laender).'}',
+            ':ausschluss_setzen'  => $ausschlussSetzen ? 1 : 0,
+            ':ausschluss'         => json_encode($ausschluss),
         ]
     );
 
@@ -1366,6 +1417,12 @@ function saveShopChannel($data) {
         $neuVeroeffentlichen = 'hugoshop' === $zeile['type'] && $an && $wahr($zeile['preis_geaendert'])
             && shopConfigBool($db, 'shop_auto_publish', true);
         $auftrag = $neuVeroeffentlichen ? shopQueueJob($db, 'publish_all') : 0;
+
+        // eBay: andere Lieferbedingungen ausgeschlossen (W11) — alle Angebote
+        // neu abgleichen; betroffene werden beendet oder wieder eingestellt
+        if ('ebay' === $zeile['type'] && $an && $wahr($zeile['ausschluss_geaendert'])) {
+            shopQueueJob($db, 'publish_all', '', null, 'ebay');
+        }
     }
 
     resultInfo(true, 'CHANNEL_SAVED', [

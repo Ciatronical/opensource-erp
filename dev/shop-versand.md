@@ -1,8 +1,8 @@
 # Shop: Versandarten und Versandkosten
 
 Stand 2026-10-01. Status: **in Umsetzung** — alle Entscheidungen getroffen
-(1–8, W1–W13, Punkt 7 Weg a, P1), Tabellenentwurf freigegeben. Schritte
-1 und 3 bis 6 erledigt, Schritt 9 zum Teil.
+(1–8, W1–W13, Punkt 7 Weg a, P1), Tabellenentwurf freigegeben. Alle Schritte
+erledigt; offen sind nur Prüfungen gegen die echten Dienste (PayPal, eBay).
 
 Bisher gibt es einen Pauschalbetrag (Versandartikel `shop_shipping_partnumber`,
 bei Werkzeug24 Artikel 8 zu 7,90 € netto), der ab einem Warenwert
@@ -189,12 +189,13 @@ sehen.
    W2/W3/W8; Mindestabnahme im Warenkorb — **erledigt 2026-10-01**, siehe
    unten. Dazu P1 (Lieferadresse bei PayPal) und die Lieferländer-Prüfung aus
    Schritt 7.
-7. Lieferländer je Kanal (Freigrenze: erledigt in Schritt 4).
+7. Lieferländer je Kanal (Freigrenze: erledigt in Schritt 4) —
+   **erledigt 2026-10-01**, siehe unten.
 8. eBay: Versandrichtlinie je Versandart, Lose, lange Lieferzeiten (W4, W5,
-   W10, W11).
-9. Lieferbedingung in Rechnung (Weg a oder b), Rechnungsmail und
-   Rechnungsseite (Punkt 7). **Rechnung (Weg a), Warenkorb und Kasse
-   erledigt** mit Schritt 6; offen: Rechnungsmail und Rechnungsseite.
+   W10, W11) — **erledigt 2026-10-01**, siehe unten.
+9. Lieferbedingung in Rechnung (Weg a), Rechnungsmail und Rechnungsseite
+   (Punkt 7) — **erledigt 2026-10-01**; Rechnung, Warenkorb und Kasse mit
+   Schritt 6, der Rest siehe unten.
 
 ## Stand der Umsetzung
 
@@ -425,3 +426,61 @@ Versandposition, Lieferbedingung im Langtext, gebucht, Warenkorb geleert;
 Sperren bei unbekanntem Land und unter Mindestabnahme; ab Freigrenze keine
 Versandposition. Nicht getestet: ein echter Durchlauf mit PayPal, das Widget im
 Browser.
+
+### Schritt 7: Lieferländer je Kanal (2026-10-01)
+
+Kanalkarte (Firmenkonfiguration, Reiter Shop): Auswahlliste „Lieferländer"
+je Kanal außer eBay (eBay regelt Lieferländer über seine Versandrichtlinien).
+Leer heißt: alle Länder, die einer Versandzone angehören. Gespeichert in
+`sales_channel_country_shop`; `saveShopChannel` lässt die Liste unverändert,
+wenn `countries` fehlt, unbekannte Codes werden übergangen. Geprüft wird in
+`shop_cart_shipping` (Status `country_not_delivered`, Sperre seit Schritt 6).
+
+### Schritt 8: eBay (2026-10-01)
+
+- **Versandrichtlinie je Versandart** (W4): Hat der Artikel eine Versandart mit
+  `ebay_fulfillment_policy_id`, gilt deren Richtlinie, sonst die allgemeine
+  aus der eBay-Konfiguration. eBay rechnet den Versand selbst.
+- **Lose** (W10): Mindestabnahme > 1 → eBay-Angebot als Los
+  (`lotSize` = aufgerundete Mindestabnahme), Titel mit „– 10 Stck", Preis je
+  Los, Menge = ganze Lose aus dem Bestand. Der Bestellimport rechnet Lose in
+  Stück zurück; die Losgröße kommt aus der Mindestabnahme **zum Zeitpunkt des
+  Imports**, nicht aus dem Angebot.
+- **Lange Lieferzeiten** (W11, Entscheidung „nicht bei eBay anbieten"): In
+  der eBay-Kanalkarte werden Lieferbedingungen ausgeschlossen
+  (`sales_channel_shop.settings.excluded_delivery_terms`). Artikel mit einer
+  solchen Lieferbedingung werden nicht eingestellt, ein vorhandenes Angebot
+  wird beendet; der Auftrag meldet den Grund. Eine Änderung der Liste stellt
+  einen Auftrag `publish_all` für eBay ein.
+
+**Behoben nebenbei:**
+
+- Der Bestellimport schrieb `lineItemCost` (Betrag der ganzen Zeile) als
+  Stückpreis in die Rechnung — bei Menge > 1 war die Position zu hoch. Jetzt
+  Zeilenbetrag ÷ Stück.
+- Neue eBay-Kunden wurden ohne Steuerzone und Währung angelegt; beide Spalten
+  sind Pflicht, der Import scheiterte damit bei jedem unbekannten Käufer.
+  Jetzt wie bei der Kontoanlage im Shop (`shop_standard_taxzone`,
+  `shop_standard_currency`), dazu das Land aus der Lieferadresse.
+
+### Schritt 9: Rechnungsmail und Rechnungsseite (2026-10-01)
+
+- `shop_invoice_delivery_term(invoice_id)`: Lieferbedingung einer
+  Rechnungsposition — nur, wenn ihr Text im Langtext der Position steht. So
+  zeigen Seite und Mail, was bei der Bestellung galt; ändert sich die
+  Lieferbedingung später, erscheint keine abweichende Angabe.
+- Rechnungsmail: Tabelle „Ihre Bestellung" mit Menge, Einheit, Bezeichnung und
+  Lieferbedingung.
+- Rechnungsseite (`invoiceSummaryByLink`, Widget `shop-invoice`): Liste
+  „Lieferzeiten"; Bestellübersicht im Konto: Lieferbedingung je Position.
+  Bündel neu gebaut.
+
+**Getestet** in einer zurückgerollten Transaktion an Werkzeug24: Lieferländer
+setzen, unverändert lassen, leeren, mit Wirkung auf die Versandberechnung
+(DE `ok`, AT `country_not_delivered`, nach Leeren `ok`); eBay-Abfrage mit
+Los (35 Stück, Los 10 → 3 Lose), Versandrichtlinie der Versandart,
+Ausschluss der Lieferbedingung mit Abbruch vor jedem API-Aufruf und
+eingestelltem `publish_all`; Bestellimport 2 Lose → 20 Stück zu 5,95 €
+(Summe = eBay-Betrag 119,00 €); Rechnungsseite, Bestellübersicht, Mailvorlage.
+Nicht getestet: Angebote und Bestellungen gegen die echte eBay-API, das
+Widget im Browser.

@@ -455,10 +455,21 @@ function shopEbayPublishPartNow($db, int $partsId): string {
                 COALESCE(pc.settings ->> 'condition', '') AS zustand,
                 COALESCE(pc.sync_data ->> 'offer_id', '') AS offer_id,
                 ROUND(CASE WHEN :brutto = 1 THEN k.preis
-                           ELSE k.preis * (1 + shop_tax_rate(p.buchungsgruppen_id, :zone)) END, 2) AS preis
+                           ELSE k.preis * (1 + shop_tax_rate(p.buchungsgruppen_id, :zone)) END, 2) AS preis,
+                -- Versand (dev/shop-versand.md, Schritt 8): Mindestabnahme als
+                -- Los (W5, W10), Versandrichtlinie der zugeordneten Versandart
+                -- (W4), ausgeschlossene Lieferbedingung (W11)
+                p.unit, ps.min_qty,
+                (SELECT NULLIF(btrim(m.ebay_fulfillment_policy_id), '')
+                   FROM shipping_method_shop m
+                  WHERE m.id = ps.shipping_method_id AND m.active) AS versandrichtlinie,
+                (ps.delivery_term_id IS NOT NULL
+                 AND COALESCE(c.settings -> 'excluded_delivery_terms', '[]'::jsonb) @> to_jsonb(ps.delivery_term_id))
+                    AS lieferzeit_zu_lang
            FROM parts p
            JOIN sales_channel_shop c ON c.type = 'ebay'
            LEFT JOIN parts_channel_shop pc ON pc.parts_id = p.id AND pc.channel_id = c.id
+           LEFT JOIN parts_shipping_shop ps ON ps.parts_id = p.id
            CROSS JOIN LATERAL (SELECT shop_channel_price(p.id, 'ebay') AS preis) k
           WHERE p.id = :parts_id",
         [
@@ -483,6 +494,15 @@ function shopEbayPublishPartNow($db, int $partsId): string {
         shopEbayFail($db, $partsId, 'Dienstleistungen werden nicht über eBay angeboten.');
     }
 
+    // W11: eine Lieferzeit, die eBay nicht abbilden kann — nicht anbieten,
+    // ein bestehendes Angebot beenden
+    if (in_array($artikel['lieferzeit_zu_lang'], [true, 't', 1, '1'], true)) {
+        if ('' !== $artikel['offer_id']) {
+            shopEbayEndPartNow($db, $partsId);
+        }
+        shopEbayFail($db, $partsId, 'Lieferzeit zu lang für eBay (Lieferbedingung in der eBay-Kanalkarte ausgeschlossen) — nicht angeboten.');
+    }
+
     try {
         $bilder = shopEbayImageUrls($db, $partsId, $cfg);
     } catch (ApiError $e) {
@@ -497,7 +517,8 @@ function shopEbayPublishPartNow($db, int $partsId): string {
     $lagerort  = trim($cfg['ebay_merchant_location_key'] ?? '');
     $zahlung   = trim($cfg['ebay_payment_policy_id'] ?? '');
     $rueckgabe = trim($cfg['ebay_return_policy_id'] ?? '');
-    $versand   = trim($cfg['ebay_fulfillment_policy_id'] ?? '');
+    // W4: die Versandrichtlinie der zugeordneten Versandart, sonst die allgemeine
+    $versand   = trim((string)($artikel['versandrichtlinie'] ?? '')) ?: trim($cfg['ebay_fulfillment_policy_id'] ?? '');
     $markt     = trim($cfg['ebay_marketplace_id'] ?? 'EBAY_DE') ?: 'EBAY_DE';
     $waehrung  = trim($cfg['ebay_currency'] ?? 'EUR') ?: 'EUR';
 
@@ -512,14 +533,23 @@ function shopEbayPublishPartNow($db, int $partsId): string {
     // V19: Menge = Bestand. Ein neues Angebot ohne Bestand nimmt eBay nicht
     // an; ein bestehendes bleibt bei 0 als „ausverkauft" stehen, wenn im
     // eBay-Konto die Einstellung „Out-of-Stock Control" gesetzt ist.
-    $menge = (int)$artikel['menge'];
+    //
+    // W5, W10: Mit Mindestabnahme wird ein Los angeboten — eBay kennt keine
+    // Mindestmenge je Käufer. Preis je Los, Menge in Losen (abgerundet), der
+    // Titel nennt die Losgröße; die Bestellung rechnet in Stück zurück
+    // (shopEbayImportOrder).
+    $los   = null !== $artikel['min_qty'] && (float)$artikel['min_qty'] > 1 ? (int)ceil((float)$artikel['min_qty']) : 1;
+    $menge = intdiv((int)$artikel['menge'], $los);
     if (0 === $menge && '' === $artikel['offer_id']) {
-        shopEbayFail($db, $partsId, 'Kein Bestand — ein neues eBay-Angebot braucht mindestens 1 Stück.');
+        shopEbayFail($db, $partsId, 1 === $los
+            ? 'Kein Bestand — ein neues eBay-Angebot braucht mindestens 1 Stück.'
+            : 'Zu wenig Bestand — ein neues eBay-Angebot braucht mindestens ein Los ('.$los.' Stück).');
     }
 
-    $titel = mb_substr(trim((string)$artikel['titel']) ?: $sku, 0, 80);
+    $zusatz = $los > 1 ? ' – '.$los.' '.(trim((string)$artikel['unit']) ?: 'Stück') : '';
+    $titel = mb_substr(trim((string)$artikel['titel']) ?: $sku, 0, 80 - mb_strlen($zusatz)).$zusatz;
     $text  = trim((string)$artikel['text']) ?: $titel;
-    $preis = number_format((float)$artikel['preis'], 2, '.', '');
+    $preis = number_format((float)$artikel['preis'] * $los, 2, '.', '');
     $skuPfad = rawurlencode($sku);
 
     // 1. Inventory Item
@@ -548,6 +578,9 @@ function shopEbayPublishPartNow($db, int $partsId): string {
         'pricingSummary'      => ['price' => ['currency' => $waehrung, 'value' => $preis]],
         'merchantLocationKey' => $lagerort,
     ];
+    if ($los > 1) {
+        $angebot['lotSize'] = $los;
+    }
     $offerId = $artikel['offer_id'];
     if ('' === $offerId) {
         $vorhanden = shopEbayApi($db, 'GET', '/sell/inventory/v1/offer', null,
@@ -579,7 +612,9 @@ function shopEbayPublishPartNow($db, int $partsId): string {
     $listing = (string)($antwort['body']['listingId'] ?? '');
     shopEbayRecord($db, $partsId, 'active', '', [], '' !== $listing ? $listing : null);
 
-    return sprintf('eingestellt (%s EUR, %d Stück)', $preis, $menge);
+    return 1 === $los
+        ? sprintf('eingestellt (%s EUR, %d Stück)', $preis, $menge)
+        : sprintf('eingestellt (%s EUR je Los zu %d, %d Lose)', $preis, $los, $menge);
 }
 
 /**

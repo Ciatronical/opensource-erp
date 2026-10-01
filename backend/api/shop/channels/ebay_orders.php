@@ -96,18 +96,28 @@ function shopEbayResolveCustomer($db, array $bestellung): int {
         }
     }
 
-    // Die E-Mail ist bei eBay oft maskiert — nur zur Information
+    // Die E-Mail ist bei eBay oft maskiert — nur zur Information.
+    // Steuerzone und Währung wie bei der Kontoanlage im Shop (accountCreate):
+    // beide Spalten sind Pflicht, ohne sie scheitert die Anlage.
     $zeile = $db->getOne(
-        "INSERT INTO customer (customernumber, name, street, zipcode, city, email)
-         VALUES (:nummer, :name, :strasse, :plz, :ort, :email)
+        "INSERT INTO customer (customernumber, name, street, zipcode, city, country, email,
+                               taxzone_id, currency_id)
+         SELECT :nummer, :name, :strasse, :plz, :ort, :land, :email,
+                COALESCE((SELECT id FROM tax_zones WHERE description ILIKE :taxzone ORDER BY sortkey LIMIT 1),
+                         (SELECT id FROM tax_zones ORDER BY sortkey LIMIT 1)),
+                COALESCE((SELECT id FROM currencies WHERE name ILIKE :currency LIMIT 1),
+                         (SELECT currency_id FROM defaults))
          RETURNING id",
         [
-            ':nummer'  => nextFreeNumber($db, 'customernumber', 'customer', 'customernumber'),
-            ':name'    => $name,
-            ':strasse' => $strasse,
-            ':plz'     => $plz,
-            ':ort'     => $ort,
-            ':email'   => trim($empfaenger['email'] ?? ''),
+            ':nummer'   => nextFreeNumber($db, 'customernumber', 'customer', 'customernumber'),
+            ':name'     => $name,
+            ':strasse'  => $strasse,
+            ':plz'      => $plz,
+            ':ort'      => $ort,
+            ':land'     => trim($adresse['countryCode'] ?? ''),
+            ':email'    => trim($empfaenger['email'] ?? ''),
+            ':taxzone'  => shopConfigValue($db, 'shop_standard_taxzone', 'Inland'),
+            ':currency' => shopConfigValue($db, 'shop_standard_currency', 'EUR'),
         ]
     );
     return (int)$zeile['id'];
@@ -171,12 +181,31 @@ function shopEbayImportOrder($db, array $bestellung, array $cfg): string {
         $arId = (int)$rechnung['id'];
 
         foreach ($bestellung['lineItems'] ?? [] as $position) {
+            $partsId = shopEbayResolvePart($db, $position, $sammelartikel);
+
+            // Lose (dev/shop-versand.md, W10): eBay zählt Lose, die Rechnung
+            // Stück — Losgröße aus der Mindestabnahme des Artikels, wie beim
+            // Einstellen (shopEbayPublishPartNow). Der Sammelartikel hat keine.
+            $los = 1;
+            if ($partsId !== $sammelartikel) {
+                $zeile = $db->getOne(
+                    "SELECT CASE WHEN min_qty > 1 THEN CEIL(min_qty)::integer ELSE 1 END AS los
+                       FROM parts_shipping_shop WHERE parts_id = :id",
+                    [':id' => $partsId]
+                );
+                $los = max(1, (int)($zeile['los'] ?? 1));
+            }
+            $stueck = max(1, (int)($position['quantity'] ?? 1)) * $los;
+
+            // lineItemCost ist der Betrag der ganzen Zeile (Preis × Menge),
+            // nicht der Stückpreis — früher stand er als Stückpreis in der
+            // Position, und die Position war bei Menge > 1 zu hoch
             createFakturaItemCore($db, 'invoice', $arId, [
-                'parts_id'        => shopEbayResolvePart($db, $position, $sammelartikel),
+                'parts_id'        => $partsId,
                 'description'     => $position['title'] ?? ('eBay-Artikel '.($position['sku'] ?? '')),
                 'longdescription' => '',
-                'qty'             => (float)($position['quantity'] ?? 1),
-                'sellprice'       => (float)($position['lineItemCost']['value'] ?? 0),
+                'qty'             => $stueck,
+                'sellprice'       => round((float)($position['lineItemCost']['value'] ?? 0) / $stueck, 5),
                 'discount'        => 0,
                 'unit'            => 'Stck',
             ]);

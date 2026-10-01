@@ -130,6 +130,44 @@
                             autocomplete="off"
                         />
                     </v-col>
+                    <!-- Lieferländer (dev/shop-versand.md, Schritt 7): leer = alle -->
+                    <v-col cols="12" sm="6" md="8" class="py-1">
+                        <v-autocomplete
+                            v-model="kanal.countries"
+                            :items="landAuswahl"
+                            :label="t('ShopView.channelConfig.countries')"
+                            :hint="t('ShopView.channelConfig.countriesHint')"
+                            persistent-hint
+                            multiple
+                            chips
+                            closable-chips
+                            clearable
+                            variant="outlined"
+                            density="compact"
+                            hide-details="auto"
+                        />
+                    </v-col>
+                </v-row>
+
+                <!-- eBay: Lieferbedingungen mit einer Lieferzeit, die eBay nicht
+                     abbilden kann (W11) — solche Artikel werden dort nicht angeboten -->
+                <v-row v-if="kanal.type === 'ebay'" dense class="mt-2">
+                    <v-col cols="12" md="8" class="py-1">
+                        <v-autocomplete
+                            v-model="kanal.excluded_delivery_terms"
+                            :items="lieferbedingungAuswahl"
+                            :label="t('ShopView.channelConfig.excludedDeliveryTerms')"
+                            :hint="t('ShopView.channelConfig.excludedDeliveryTermsHint')"
+                            persistent-hint
+                            multiple
+                            chips
+                            closable-chips
+                            clearable
+                            variant="outlined"
+                            density="compact"
+                            hide-details="auto"
+                        />
+                    </v-col>
                 </v-row>
             </v-card-text>
         </v-card>
@@ -154,6 +192,9 @@ const { t, te } = i18n
 const oserp = oserpStore()
 
 const kanaele = ref([])
+/** Auswahllisten aus getShopChannels */
+const alleLaender = ref([])
+const lieferbedingungen = ref([])
 const laedt = ref(false)
 const fehler = ref('')
 const speichert = ref({})
@@ -179,6 +220,21 @@ const kanalName = typ => (te(`ShopView.channels.${typ}`) ? t(`ShopView.channels.
 
 /** Der letzte eingeschaltete Kanal lässt sich nicht abschalten (V8) */
 const letzterAktiver = kanal => kanal.active && kanaele.value.filter(k => k.active).length === 1
+
+const landAnzeige = computed(() => {
+    try {
+        return new Intl.DisplayNames([i18n.locale.value], { type: 'region' })
+    } catch {
+        return null
+    }
+})
+const landAuswahl = computed(() => alleLaender.value
+    .map(code => ({ value: code, title: `${landAnzeige.value?.of(code) || code} (${code})` }))
+    .sort((a, b) => a.title.localeCompare(b.title, i18n.locale.value)))
+const lieferbedingungAuswahl = computed(() => lieferbedingungen.value.map(d => ({
+    value: Number(d.id),
+    title: d.description_long ? `${d.description} – ${d.description_long}` : d.description,
+})))
 
 /** Leer heißt „keine Freigrenze"; sonst ein Betrag ab 0 */
 const freigrenzeWert = wert => (wert === '' || wert === null || wert === undefined ? null : Number(wert))
@@ -209,6 +265,8 @@ function alsKanal(zeile) {
         round_99: WAHR.includes(zeile.round_99),
         free_shipping_from: zeile.free_shipping_from === null || zeile.free_shipping_from === undefined
             ? '' : String(Number(zeile.free_shipping_from)),
+        countries: alsListe(zeile.countries).map(String),
+        excluded_delivery_terms: alsListe(alsObjekt(zeile.settings).excluded_delivery_terms).map(Number),
         parts: Number(zeile.parts) || 0,
     }
 }
@@ -222,7 +280,20 @@ function nutzdaten(kanal) {
         markup_value: kanal.markup_type === 'none' ? 0 : Number(kanal.markup_value) || 0,
         round_99: kanal.round_99,
         free_shipping_from: freigrenzeWert(kanal.free_shipping_from),
+        countries: [...kanal.countries].sort(),
+        // nur eBay kennt den Ausschluss; andere Kanäle lassen ihn unberührt
+        ...(kanal.type === 'ebay' ? { excluded_delivery_terms: [...kanal.excluded_delivery_terms].sort((a, b) => a - b) } : {}),
     }
+}
+
+/** JSON-Spalten kommen je nach Treiber als Text oder schon gelesen */
+function alsObjekt(wert) {
+    if (wert && typeof wert === 'object') return wert
+    try { return JSON.parse(wert || '{}') || {} } catch { return {} }
+}
+function alsListe(wert) {
+    if (Array.isArray(wert)) return wert
+    try { const liste = JSON.parse(wert || '[]'); return Array.isArray(liste) ? liste : [] } catch { return [] }
 }
 
 async function laden() {
@@ -235,6 +306,8 @@ async function laden() {
             fehler.value = shopFehler(antwort.data, i18n, 'ShopView.channelConfig.loadError').text
             return
         }
+        alleLaender.value = antwort.data.payload?.all_countries || []
+        lieferbedingungen.value = antwort.data.payload?.delivery_terms || []
         kanaele.value = (antwort.data.payload?.channels || []).map(alsKanal)
         ausBackend.value = WAHR.includes(antwort.data.payload?.tax_included)
         kanaele.value.forEach(k => { zuletzt[k.channel_id] = JSON.stringify(nutzdaten(k)) })

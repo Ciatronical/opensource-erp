@@ -300,6 +300,10 @@
             "delete": "Delete"
         },
         "channelConfig": {
+            "countries": "Delivery countries",
+            "countriesHint": "Delivery only to these countries. Empty = all countries.",
+            "excludedDeliveryTerms": "Do not offer on eBay with delivery terms",
+            "excludedDeliveryTermsHint": "eBay cannot represent long delivery times. Items with one of these delivery terms are not offered on eBay; existing listings are ended.",
             "freeShippingFrom": "Free shipping from",
             "freeShippingFromHint": "Gross order value from which shipping is free — for shipping methods with “free shipping threshold applies”. Empty = no threshold.",
             "freeShippingFromInvalid": "Amount from 0 or empty",

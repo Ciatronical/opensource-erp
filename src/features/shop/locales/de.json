@@ -300,6 +300,10 @@
             "delete": "Löschen"
         },
         "channelConfig": {
+            "countries": "Lieferländer",
+            "countriesHint": "Nur in diese Länder wird geliefert. Leer = alle Länder.",
+            "excludedDeliveryTerms": "Bei eBay nicht anbieten mit Lieferbedingung",
+            "excludedDeliveryTermsHint": "eBay kann lange Lieferzeiten nicht abbilden. Artikel mit einer dieser Lieferbedingungen werden bei eBay nicht angeboten, bestehende Angebote beendet.",
             "freeShippingFrom": "Versandkostenfrei ab",
             "freeShippingFromHint": "Bruttowarenwert, ab dem der Versand frei ist — für Versandarten mit „Freigrenze gilt“. Leer = keine Freigrenze.",
             "freeShippingFromInvalid": "Betrag ab 0 oder leer",
