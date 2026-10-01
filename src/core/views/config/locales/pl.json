@@ -935,8 +935,6 @@
         "shopShipping": "Koszty wysyłki",
         "shopShippingPartnumber": "Numer artykułu wysyłki",
         "shopShippingPartnumber_help": "Artykuł naliczany jako koszt wysyłki. Artykuł musi istnieć.",
-        "shopFreeShippingFrom": "Darmowa wysyłka od",
-        "shopFreeShippingFrom_help": "Powyżej tej wartości zamówienia koszty wysyłki nie są naliczane.",
         "shopPayment": "Dane bankowe do przelewów",
         "shopPaymentAccountOwner": "Właściciel rachunku",
         "shopPaymentAccountOwner_help": "Wyświetlane na stronie faktury, dopóki klient nie zapłacił.",

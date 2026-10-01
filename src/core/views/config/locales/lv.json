@@ -828,8 +828,6 @@
         "shopShipping": "Piegādes izmaksas",
         "shopShippingPartnumber": "Piegādes preces numurs",
         "shopShippingPartnumber_help": "Prece, ko aprēķina kā piegādes izmaksas. Precei jāpastāv.",
-        "shopFreeShippingFrom": "Bezmaksas piegāde no",
-        "shopFreeShippingFrom_help": "Virs šīs pasūtījuma vērtības piegādes izmaksas netiek aprēķinātas.",
         "shopPayment": "Bankas rekvizīti pārskaitījumiem",
         "shopPaymentAccountOwner": "Konta īpašnieks",
         "shopPaymentAccountOwner_help": "Tiek rādīts rēķina lapā, kamēr klients nav samaksājis.",

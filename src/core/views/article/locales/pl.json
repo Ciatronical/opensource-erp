@@ -14,6 +14,7 @@
             "typeService": "Usługa",
             "unit": "Jednostka",
             "buchungsgruppe": "Grupa księgowania",
+            "weight": "Waga",
             "sellprice": "Cena sprzedaży",
             "notes": "Opis szczegółowy",
             "obsolete": "Nieaktualny / Nie używać",
@@ -26,6 +27,7 @@
             "createError": "Nie udało się dodać artykułu.",
             "noPermission": "Nie masz uprawnień do dodawania artykułów.",
             "partnumberExists": "Ten numer artykułu jest już zajęty.",
+            "weightInvalid": "Puste lub liczba od 0",
             "required": "Pole wymagane"
         },
         "ebay": {

@@ -40,6 +40,9 @@ export class ShopCart extends ShopElement {
     productUrl: { type: String, attribute: 'product-url' },
     paypalImage: { type: String, attribute: 'paypal-image' },
     heading: { type: String },
+    // Lieferadresse der Kasse ({shipping: …} wie bei invoicing) — der Versand
+    // haengt am Lieferland. Nur im Modus checkout; <shop-checkout> setzt sie.
+    addresses: { attribute: false },
     _cart: { state: true },
     _loading: { state: true },
     _error: { state: true },
@@ -190,11 +193,20 @@ export class ShopCart extends ShopElement {
     this._error = '';
     this._message = '';
     this._busy = new Set();
+    this.addresses = null;
   }
 
   connectedCallback() {
     super.connectedCallback();
     this.#load();
+  }
+
+  /** Neue Lieferadresse in der Kasse: Versand neu rechnen (verzoegert, beim Tippen) */
+  updated(changed) {
+    if (changed.has('addresses') && changed.get('addresses') !== undefined && this.#isCheckout) {
+      clearTimeout(this.#timers.get('adresse'));
+      this.#timers.set('adresse', setTimeout(() => this.#load(), 400));
+    }
   }
 
   disconnectedCallback() {
@@ -213,7 +225,7 @@ export class ShopCart extends ShopElement {
       // ausschliesslich invoicingCanceled. Die Aktion `checkout` ist
       // getCart(true) ohne Parameter (shop.payment.php:4).
       const data = this.#isCheckout
-        ? await apiRequest('checkout')
+        ? await apiRequest('checkout', this.addresses ? { adresses: this.addresses } : {})
         : await apiRequest('getCart', { invoicingCanceled: this.invoicingCanceled === 'true' });
       this._cart = normalizeCart(data);
       this.#announce();
@@ -255,7 +267,9 @@ export class ShopCart extends ShopElement {
    * nicht, Lit rendert also nicht neu, und im Feld staende weiter 200.
    */
   #setQuantity(pos, quantity) {
-    const value = Math.max(1, Math.min(100, Math.round(Number(quantity) || 1)));
+    // Nicht unter die Mindestabnahme — das Backend hebt sonst selbst an
+    const minimum = Math.max(1, Math.ceil(pos.minQuantity || 1));
+    const value = Math.max(minimum, Math.min(100, Math.round(Number(quantity) || minimum)));
     if (value === pos.quantity) return value;
     this._cart = {
       ...this._cart,
@@ -405,6 +419,12 @@ export class ShopCart extends ShopElement {
           ${pos.offered === false
             ? html`<div class="not-offered ${this.cls('alertError')}" role="status">${t('cart.notOffered')}</div>`
             : ''}
+          ${pos.deliveryTerm
+            ? html`<div class="line ${this.cls('muted')}">${pos.deliveryTerm}</div>`
+            : ''}
+          ${pos.minQuantity
+            ? html`<div class="line ${this.cls('muted')}">${t('cart.minQuantity')} ${pos.minQuantity}</div>`
+            : ''}
 
           <div class="line">
             <span class="line-label">${t('cart.quantity')}:</span>
@@ -418,7 +438,7 @@ export class ShopCart extends ShopElement {
               >−</button>
               <input
                 type="number"
-                min="1"
+                min=${String(Math.max(1, Math.ceil(pos.minQuantity || 1)))}
                 max="100"
                 step="1"
                 class=${this.cls('input')}
@@ -463,7 +483,8 @@ export class ShopCart extends ShopElement {
    * Position auf (cart.js:170).
    */
   #step(pos, delta) {
-    if (delta < 0 && pos.quantity <= 1) {
+    // An der Mindestabnahme (sonst bei 1) loescht "-" die Position
+    if (delta < 0 && pos.quantity <= Math.max(1, Math.ceil(pos.minQuantity || 1))) {
       this.#remove(pos);
       return;
     }
@@ -471,13 +492,19 @@ export class ShopCart extends ShopElement {
   }
 
   #renderTotals() {
-    const { shipping, netto, total } = this._cart.totals;
+    const { shipping, netto, total, shippingStatus, shippingMethod, shippingFree } = this._cart.totals;
     const currency = this._cart.currency;
     return html`
       <div class="totals">
-        <p class="line-label">
-          ${t('cart.shipping')}: ${formatPrice(shipping)} ${currency}*
-        </p>
+        ${shippingStatus !== 'ok' && shippingStatus !== 'no_goods'
+          ? html`<div class="shop-message ${this.cls('alertError')}" role="alert">
+              ${t(`shipping.${shippingStatus}`)}
+            </div>`
+          : html`<p class="line-label">
+              ${shippingMethod ? html`${t('cart.shippingMethod')} ${shippingMethod} — ` : nothing}${shippingFree
+                ? t('cart.shippingFree')
+                : html`${t('cart.shipping')}: ${formatPrice(shipping)} ${currency}*`}
+            </p>`}
         <p class="note ${this.cls('muted')}">${t('cart.netNote')}</p>
         <p>
           ${t('cart.netTotal')}: ${formatPrice(netto)} ${currency}
@@ -493,12 +520,17 @@ export class ShopCart extends ShopElement {
 
   #renderActions() {
     if (this.#isCheckout) return nothing;
+    // Ohne passende Versandart kein PayPal von hier — in der Kasse laesst sich
+    // die Lieferadresse noch aendern, deshalb bleibt der Weg dorthin offen
+    const versandOk = this._cart.totals.shippingStatus === 'ok';
     return html`
       <div class="actions">
         <a class=${this.cls('buttonPrimary')} href=${this.checkoutUrl}>${t('cart.checkout')}</a>
-        <a class="paypal" href=${this.#paypalUrl()} aria-label=${t('cart.paypal')}>
-          <img src=${this.paypalImage} alt=${t('cart.paypal')}>
-        </a>
+        ${versandOk
+          ? html`<a class="paypal" href=${this.#paypalUrl()} aria-label=${t('cart.paypal')}>
+              <img src=${this.paypalImage} alt=${t('cart.paypal')}>
+            </a>`
+          : nothing}
       </div>
     `;
   }

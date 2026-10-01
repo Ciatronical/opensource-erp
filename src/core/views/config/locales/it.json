@@ -828,8 +828,6 @@
         "shopShipping": "Spese di spedizione",
         "shopShippingPartnumber": "Codice articolo spedizione",
         "shopShippingPartnumber_help": "Articolo addebitato come spese di spedizione. L'articolo deve esistere.",
-        "shopFreeShippingFrom": "Spedizione gratuita da",
-        "shopFreeShippingFrom_help": "Oltre questo importo non vengono addebitate spese di spedizione.",
         "shopPayment": "Coordinate bancarie per i bonifici",
         "shopPaymentAccountOwner": "Intestatario del conto",
         "shopPaymentAccountOwner_help": "Mostrato sulla pagina della fattura finché il cliente non ha pagato.",

@@ -14,6 +14,7 @@
             "typeService": "Sluzba",
             "unit": "Jednotka",
             "buchungsgruppe": "Uctovaci skupina",
+            "weight": "Hmotnost",
             "sellprice": "Prodejni cena",
             "notes": "Dlouhy popis",
             "obsolete": "Zastarale / Nepouzivat",
@@ -26,6 +27,7 @@
             "createError": "Artikl se nepodařilo založit.",
             "noPermission": "Nemáte oprávnění zakládat artikly.",
             "partnumberExists": "Toto číslo artiklu je již použito.",
+            "weightInvalid": "Prázdné nebo číslo od 0",
             "required": "Povinné pole"
         },
         "titleNew": "Založení artiklu",

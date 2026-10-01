@@ -27,6 +27,7 @@
         "openOnly": "Open only",
         "obsoleteOnly": "Show obsolete only",
         "showAll": "Show all",
+        "weightMissing": "Without weight only",
         "shopOnly": "Offered in shop only",
         "notInShop": "Not offered in shop",
         "channel": "Sales channel",

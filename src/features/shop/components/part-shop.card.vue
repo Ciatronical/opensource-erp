@@ -449,6 +449,75 @@
                         :readonly="!darfBearbeiten"
                     />
                 </v-col>
+
+                <!-- Versand (dev/shop-versand.md, Schritt 5). Das Gewicht steht
+                     in den Stammdaten der Artikelmaske (parts.weight) -->
+                <v-col cols="12" class="pt-4 pb-1">
+                    <div class="text-subtitle-2">{{ t('ShopView.partCard.shipping') }}</div>
+                    <div class="text-caption" :class="gewicht === null ? 'text-warning' : 'text-medium-emphasis'">
+                        {{ gewicht === null
+                            ? t('ShopView.partCard.weightMissing')
+                            : t('ShopView.partCard.weightInfo', { weight: gewicht, unit: gewichtseinheit }) }}
+                    </div>
+                </v-col>
+                <v-col cols="12" sm="6" class="py-1">
+                    <v-select
+                        v-model="daten.shipping.shipping_method_id"
+                        :items="versandartAuswahl"
+                        :label="t('ShopView.partCard.shippingMethod')"
+                        :hint="t('ShopView.partCard.shippingMethodHint')"
+                        persistent-hint
+                        :readonly="!darfBearbeiten"
+                        variant="outlined"
+                        density="compact"
+                        hide-details="auto"
+                    />
+                </v-col>
+                <v-col cols="12" sm="6" class="py-1">
+                    <v-select
+                        v-model="daten.shipping.delivery_term_id"
+                        :items="lieferbedingungAuswahl"
+                        :label="t('ShopView.partCard.deliveryTerm')"
+                        :hint="lieferbedingungText || t('ShopView.partCard.deliveryTermHint')"
+                        persistent-hint
+                        clearable
+                        :readonly="!darfBearbeiten"
+                        variant="outlined"
+                        density="compact"
+                        hide-details="auto"
+                    />
+                </v-col>
+                <v-col v-for="feld in ['length', 'width', 'height']" :key="feld" cols="4" sm="2" class="py-1">
+                    <v-text-field
+                        v-model="daten.shipping[feld]"
+                        type="number"
+                        step="0.1"
+                        min="0"
+                        suffix="cm"
+                        :label="t(`ShopView.partCard.${feld}`)"
+                        :rules="[groesserNull]"
+                        :readonly="!darfBearbeiten"
+                        variant="outlined"
+                        density="compact"
+                        hide-details="auto"
+                    />
+                </v-col>
+                <v-col cols="12" sm="6" class="py-1">
+                    <v-text-field
+                        v-model="daten.shipping.min_qty"
+                        type="number"
+                        step="1"
+                        min="0"
+                        :label="t('ShopView.partCard.minQty')"
+                        :hint="t('ShopView.partCard.minQtyHint')"
+                        persistent-hint
+                        :rules="[groesserNull]"
+                        :readonly="!darfBearbeiten"
+                        variant="outlined"
+                        density="compact"
+                        hide-details="auto"
+                    />
+                </v-col>
             </v-row>
         </v-card-text>
     </v-card>
@@ -499,8 +568,40 @@ function leer() {
         properties: [],
         downloads: [],
         channels: [],
+        shipping: leererVersand(),
     }
 }
+
+const WAHR_WERTE = [true, 't', 'true', 1, '1']
+
+/** Versandangaben (parts_shipping_shop); leer = nicht gepflegt */
+function leererVersand() {
+    return { shipping_method_id: null, length: '', width: '', height: '', min_qty: '', delivery_term_id: null }
+}
+const zahlText = wert => (wert === null || wert === undefined || wert === '' ? '' : String(Number(wert)))
+const zahlOderNull = wert => (wert === null || wert === undefined || String(wert).trim() === '' ? null : Number(wert))
+const groesserNull = wert => zahlOderNull(wert) === null || zahlOderNull(wert) > 0 || t('ShopView.partCard.greaterZero')
+const versandGueltig = () => ['length', 'width', 'height', 'min_qty']
+    .every(feld => groesserNull(daten.value.shipping?.[feld]) === true)
+
+/** Auswahllisten und Gewicht, kommen mit getPartShopData */
+const versandarten = ref([])
+const lieferbedingungen = ref([])
+const gewichtseinheit = ref('')
+const gewicht = ref(null)
+
+const versandartAuswahl = computed(() => [
+    { value: null, title: t('ShopView.partCard.shippingMethodCheapest') },
+    ...versandarten.value
+        .filter(m => m.active || m.id === daten.value.shipping.shipping_method_id)
+        .map(m => ({ value: Number(m.id), title: m.active ? m.description : `${m.description} (${t('ShopView.partCard.inactive')})` })),
+])
+/** Ungültige Lieferbedingungen nur, wenn sie gerade gewählt ist */
+const lieferbedingungAuswahl = computed(() => lieferbedingungen.value
+    .filter(d => !d.obsolete || d.id === daten.value.shipping.delivery_term_id)
+    .map(d => ({ value: Number(d.id), title: d.description })))
+const lieferbedingungText = computed(() =>
+    lieferbedingungen.value.find(d => d.id === daten.value.shipping.delivery_term_id)?.description_long || '')
 
 const daten = ref(leer())
 /** Vorgaben der Kanäle (Aufschlag, Rundung) je channel_id — nur zum Lesen */
@@ -786,6 +887,14 @@ function nutzdaten(partsId) {
         technical_data: zuObjekt(d.technical_data),
         properties: zuObjekt(d.properties),
         downloads: zuObjekt(d.downloads),
+        shipping: {
+            shipping_method_id: d.shipping.shipping_method_id || null,
+            length: zahlOderNull(d.shipping.length),
+            width: zahlOderNull(d.shipping.width),
+            height: zahlOderNull(d.shipping.height),
+            min_qty: zahlOderNull(d.shipping.min_qty),
+            delivery_term_id: d.shipping.delivery_term_id || null,
+        },
         channels: d.channels.map(k => ({
             channel_id: k.channel_id,
             active: k.active,
@@ -850,6 +959,11 @@ async function laden() {
     const kanaele = antwort?.channels || []
     vorgaben.value = Object.fromEntries(kanaele.map(k => [Number(k.channel_id), alsVorgabe(k)]))
     steuersaetze.value = antwort?.tax_rates || {}
+    const versand = antwort?.shipping || {}
+    versandarten.value = (versand.methods || []).map(m => ({ ...m, id: Number(m.id), active: WAHR_WERTE.includes(m.active) }))
+    lieferbedingungen.value = (versand.delivery_terms || []).map(d => ({ ...d, id: Number(d.id), obsolete: WAHR_WERTE.includes(d.obsolete) }))
+    gewichtseinheit.value = versand.weightunit || ''
+    gewicht.value = antwort?.part?.weight === null || antwort?.part?.weight === undefined ? null : Number(antwort.part.weight)
 
     if (!props.partsId) {
         // Neuanlage bei aktivem Shop: der Artikel ist in der Regel für den Shop
@@ -871,6 +985,14 @@ async function laden() {
         properties: zuPaaren(lies(zeile?.hugoshop_properties)),
         downloads: zuPaaren(lies(zeile?.hugoshop_downloads)),
         channels: kanaele.map(alsKanal),
+        shipping: versand.part ? {
+            shipping_method_id: versand.part.shipping_method_id ? Number(versand.part.shipping_method_id) : null,
+            length: zahlText(versand.part.length),
+            width: zahlText(versand.part.width),
+            height: zahlText(versand.part.height),
+            min_qty: zahlText(versand.part.min_qty),
+            delivery_term_id: versand.part.delivery_term_id ? Number(versand.part.delivery_term_id) : null,
+        } : leererVersand(),
     }
     zuletzt = stand(props.partsId)
     ersterKanalOffen()
@@ -884,6 +1006,8 @@ async function laden() {
 /** Speichert für einen bestimmten Artikel — die id wird beim Planen festgehalten */
 async function speichern(partsId) {
     if (!partsId || !darfBearbeiten.value) return
+    // Ungültige Versandangaben: nicht senden, das Feld zeigt den Fehler
+    if (!versandGueltig()) return
 
     const neuerStand = stand(partsId)
     if (neuerStand === zuletzt) return

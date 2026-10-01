@@ -109,6 +109,28 @@
                 >
                     {{ t('ShopView.channelConfig.round99NetWarning') }}
                 </v-alert>
+
+                <!-- Freigrenze (dev/shop-versand.md, Entscheidung 4). eBay
+                     rechnet den Versand selbst (W4) — dort ohne Wirkung -->
+                <v-row v-if="kanal.type !== 'ebay'" dense class="mt-2">
+                    <v-col cols="12" sm="6" md="4" class="py-1">
+                        <v-text-field
+                            v-model="kanal.free_shipping_from"
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            :label="t('ShopView.channelConfig.freeShippingFrom')"
+                            :hint="t('ShopView.channelConfig.freeShippingFromHint')"
+                            :suffix="waehrung"
+                            :rules="[freigrenzePruefen]"
+                            persistent-hint
+                            variant="outlined"
+                            density="compact"
+                            hide-details="auto"
+                            autocomplete="off"
+                        />
+                    </v-col>
+                </v-row>
             </v-card-text>
         </v-card>
     </div>
@@ -158,6 +180,13 @@ const kanalName = typ => (te(`ShopView.channels.${typ}`) ? t(`ShopView.channels.
 /** Der letzte eingeschaltete Kanal lässt sich nicht abschalten (V8) */
 const letzterAktiver = kanal => kanal.active && kanaele.value.filter(k => k.active).length === 1
 
+/** Leer heißt „keine Freigrenze"; sonst ein Betrag ab 0 */
+const freigrenzeWert = wert => (wert === '' || wert === null || wert === undefined ? null : Number(wert))
+function freigrenzePruefen(wert) {
+    const zahl = freigrenzeWert(wert)
+    return zahl === null || (Number.isFinite(zahl) && zahl >= 0) || t('ShopView.channelConfig.freeShippingFromInvalid')
+}
+
 /** Ein Abschlag von 100 % oder mehr ergäbe keinen Preis */
 function wertPruefen(kanal) {
     return () => kanal.markup_type !== 'percent' || Number(kanal.markup_value) > -100
@@ -178,6 +207,8 @@ function alsKanal(zeile) {
         markup_type: zeile.markup_type || 'none',
         markup_value: Number(zeile.markup_value) || 0,
         round_99: WAHR.includes(zeile.round_99),
+        free_shipping_from: zeile.free_shipping_from === null || zeile.free_shipping_from === undefined
+            ? '' : String(Number(zeile.free_shipping_from)),
         parts: Number(zeile.parts) || 0,
     }
 }
@@ -190,6 +221,7 @@ function nutzdaten(kanal) {
         markup_type: kanal.markup_type,
         markup_value: kanal.markup_type === 'none' ? 0 : Number(kanal.markup_value) || 0,
         round_99: kanal.round_99,
+        free_shipping_from: freigrenzeWert(kanal.free_shipping_from),
     }
 }
 
@@ -222,6 +254,7 @@ async function speichern(kanal) {
     const stand = JSON.stringify(daten)
     if (stand === zuletzt[kanal.channel_id]) return
     if (daten.markup_type === 'percent' && daten.markup_value <= -100) return
+    if (freigrenzePruefen(kanal.free_shipping_from) !== true) return
 
     speichert.value = { ...speichert.value, [kanal.channel_id]: true }
     try {

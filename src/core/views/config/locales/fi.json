@@ -828,8 +828,6 @@
         "shopShipping": "Toimituskulut",
         "shopShippingPartnumber": "Toimituksen tuotenumero",
         "shopShippingPartnumber_help": "Tuote, joka veloitetaan toimituskuluina. Tuotteen on oltava olemassa.",
-        "shopFreeShippingFrom": "Ilmainen toimitus alkaen",
-        "shopFreeShippingFrom_help": "Tämän tilausarvon ylittyessä toimituskuluja ei veloiteta.",
         "shopPayment": "Pankkiyhteys tilisiirtoja varten",
         "shopPaymentAccountOwner": "Tilinomistaja",
         "shopPaymentAccountOwner_help": "Näytetään laskusivulla, kunnes asiakas on maksanut.",

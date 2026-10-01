@@ -5,7 +5,7 @@
 // selbst — Nummernkreis, Positionen, Buchungssaetze. Hier bleibt ein Ablauf,
 // der die vorhandenen Bausteine aneinanderreiht:
 //
-//   Versandkosten   cartApplyShipping()
+//   Versandkosten   cartRead() mit Lieferland -> shop_cart_shipping()
 //   Lieferadresse   shiptoCreate()
 //   ar + invoice    hier, aus den Warenkorbzeilen
 //   acc_trans       postArInvoiceToLedger()   (faktura.php)
@@ -28,9 +28,11 @@
  *                             leer = Lieferung an die Rechnungsadresse
  * @param array|null $paypal Zahlungsstand aus paypalPaymentState(), oder null
  * @return array{ar_id: int, ar_link: string, invnumber: string}
- * @throws ApiError CART_NOT_FOUND, CART_EMPTY, CART_NOT_OFFERED, SHOP_DATABASE_ERROR, LEDGER_ERROR
+ * @throws ApiError CART_NOT_FOUND, CART_EMPTY, CART_NOT_OFFERED, SHIPPING_*, SHOP_DATABASE_ERROR, LEDGER_ERROR
  */
 function createShopInvoice($db, string $uuid, array $lieferadresse = [], ?array $paypal = null): array {
+    // adresses.shipping der Kasse oder schon vereinheitlicht (PayPal)
+    $lieferadresse = shopDeliveryAddress($lieferadresse);
     $context    = shopContextCustomer($db, $uuid);
     $customerId = (int)$context['customer_id'];
 
@@ -39,9 +41,9 @@ function createShopInvoice($db, string $uuid, array $lieferadresse = [], ?array 
     }
     $cartUuid = $context['cart_uuid'];
 
-    cartApplyShipping($db, $cartUuid, $customerId);
-
-    $korb = cartRead($db, $cartUuid, $customerId, false);
+    // Versand nach dem Land der Lieferadresse (dev/shop-versand.md, Schritt 6)
+    $korb = cartRead($db, $cartUuid, $customerId, false,
+                     shopShippingCountry($db, $customerId, $lieferadresse));
     if (empty($korb['positions'])) {
         throw new ApiError("CART_EMPTY", 'Der Warenkorb ist leer');
     }
@@ -51,6 +53,7 @@ function createShopInvoice($db, string $uuid, array $lieferadresse = [], ?array 
     // wurde vor der Zahlung (paymentBegin).
     if (null === $paypal) {
         cartRequireOffered($korb);
+        cartRequireShipping($korb);
     }
 
     // Jede Position braucht ein Erloeskonto, sonst kann die Rechnung nicht
@@ -63,6 +66,15 @@ function createShopInvoice($db, string $uuid, array $lieferadresse = [], ?array 
                 'Artikel "'.$position['label'].'" hat in dieser Steuerzone kein Erloeskonto'
             );
         }
+    }
+    // Die Versandposition entsteht nur bei Status ok und einem Preis ueber 0
+    $versand = $korb['shipping'];
+    $mitVersand = 'ok' === $versand['status'] && $versand['price'] > 0 && $versand['parts_id'];
+    if ($mitVersand && !$versand['account']) {
+        throw new ApiError(
+            "NO_INCOME_ACCOUNT",
+            'Der Versandartikel von "'.$versand['method'].'" hat in dieser Steuerzone kein Erloeskonto'
+        );
     }
 
     $shiptoId = shopInvoiceShiptoId($db, $customerId, $lieferadresse);
@@ -109,18 +121,46 @@ function createShopInvoice($db, string $uuid, array $lieferadresse = [], ?array 
                                   discount, unit, position, lastcost, base_qty, allocated,
                                   marge_total, marge_percent, serialnumber, active_price_source,
                                   longdescription, mtime)
-             SELECT :ar_id, p.id, COALESCE(NULLIF(pc.title, ''), p.description), c.amount, k.preis, k.preis,
-                    0, p.unit, ROW_NUMBER() OVER (ORDER BY c.id), COALESCE(p.lastcost, 0), 1, 0,
-                    0, 0, '', CASE WHEN k.preis = p.sellprice THEN :preisquelle ELSE '' END,
-                    COALESCE(NULLIF(pc.description, ''), p.notes, ''), NOW()
-               FROM cart_parts_hugoshop c
-               JOIN parts p ON p.id = c.parts_id
-               CROSS JOIN LATERAL (SELECT shop_channel_price(p.id) AS preis) k
-               LEFT JOIN parts_channel_shop pc ON pc.parts_id = p.id
-                                              AND pc.channel_id = shop_channel_id('hugoshop')
-              WHERE c.cart_uuid = :cart_uuid",
+             WITH ware AS (
+                 SELECT CAST(:ar_id AS integer) AS trans_id, p.id AS parts_id, COALESCE(NULLIF(pc.title, ''), p.description) AS description,
+                        c.amount AS qty, k.preis, p.unit, ROW_NUMBER() OVER (ORDER BY c.id) AS position,
+                        COALESCE(p.lastcost, 0) AS lastcost,
+                        CASE WHEN k.preis = p.sellprice THEN :preisquelle ELSE '' END AS preisquelle,
+                        -- Lieferbedingung je Artikel in den Langtext (Punkt 7, Weg a):
+                        -- jede Druckvorlage zeigt ihn, und er bleibt, wie verschickt
+                        concat_ws(E'\n\n', NULLIF(COALESCE(NULLIF(pc.description, ''), p.notes, ''), ''),
+                                  NULLIF(COALESCE(NULLIF(btrim(dt.description_long), ''), dt.description), ''))
+                            AS longdescription
+                   FROM cart_parts_hugoshop c
+                   JOIN parts p ON p.id = c.parts_id
+                   CROSS JOIN LATERAL (SELECT shop_channel_price(p.id) AS preis) k
+                   LEFT JOIN parts_channel_shop pc ON pc.parts_id = p.id
+                                                  AND pc.channel_id = shop_channel_id('hugoshop')
+                   LEFT JOIN parts_shipping_shop pss ON pss.parts_id = p.id
+                   LEFT JOIN delivery_terms dt ON dt.id = pss.delivery_term_id
+                  WHERE c.cart_uuid = :cart_uuid
+                    AND NOT shop_is_shipping_part(c.parts_id)
+             )
+             SELECT trans_id, parts_id, description, qty, preis, preis,
+                    0, unit, position, lastcost, 1, 0,
+                    0, 0, '', preisquelle, longdescription, NOW()
+               FROM ware
+             UNION ALL
+             -- Versand: Versandartikel der Versandart, ihre Bezeichnung und
+             -- der berechnete Preis (dev/shop-versand.md, Schritt 6)
+             SELECT CAST(:ar_id_versand AS integer), p.id, CAST(:versand_bezeichnung AS text), 1, CAST(:versand_preis AS numeric),
+                    CAST(:versand_preis_fx AS numeric), 0, p.unit, (SELECT count(*) FROM ware) + 1,
+                    COALESCE(p.lastcost, 0), 1, 0, 0, 0, '', '', '', NOW()
+               FROM parts p
+              WHERE p.id = :versand_teil AND :mit_versand = 1",
             [
                 ':ar_id'       => $arId,
+                ':ar_id_versand' => $arId,
+                ':versand_bezeichnung' => $versand['method'],
+                ':versand_preis'    => (string)$versand['price'],
+                ':versand_preis_fx' => (string)$versand['price'],
+                ':versand_teil'     => (int)($versand['parts_id'] ?? 0),
+                ':mit_versand'      => $mitVersand ? 1 : 0,
                 ':cart_uuid'   => $cartUuid,
                 ':preisquelle' => shopConfigValue($db, 'shop_active_price_source', 'master_data/sellprice'),
             ]

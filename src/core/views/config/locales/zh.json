@@ -828,8 +828,6 @@
         "shopShipping": "运费",
         "shopShippingPartnumber": "运费物料号",
         "shopShippingPartnumber_help": "作为运费计算的物料。该物料必须存在。",
-        "shopFreeShippingFrom": "免运费门槛",
-        "shopFreeShippingFrom_help": "超过该订单金额不收取运费。",
         "shopPayment": "转账银行信息",
         "shopPaymentAccountOwner": "账户持有人",
         "shopPaymentAccountOwner_help": "在客户尚未付款期间显示在发票页面上。",

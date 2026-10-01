@@ -223,10 +223,11 @@ function paypalAccessToken($db): string {
  * @param string $uuid Wert des Kontext-Cookies
  * @param string $erfolgSeite Adresse der Rechnungsseite im Shop
  * @param string $abbruchSeite Adresse der Abbruchseite im Shop
+ * @param array $lieferadresse aus der Kasse (shopDeliveryAddress): ['shipto_id' => …] oder [] = Rechnungsadresse
  * @return array{approval_url: string, order_id: string}
- * @throws ShopPaymentError, ApiError CART_EMPTY, CART_NOT_OFFERED
+ * @throws ShopPaymentError, ApiError CART_EMPTY, CART_NOT_OFFERED, SHIPPING_*
  */
-function paymentBegin($db, string $uuid, string $erfolgSeite, string $abbruchSeite): array {
+function paymentBegin($db, string $uuid, string $erfolgSeite, string $abbruchSeite, array $lieferadresse = []): array {
     $context    = shopContextCustomer($db, $uuid);
     $customerId = (int)$context['customer_id'];
 
@@ -234,17 +235,25 @@ function paymentBegin($db, string $uuid, string $erfolgSeite, string $abbruchSei
         throw new ApiError('CART_NOT_FOUND', 'Zu dieser Sitzung gibt es keinen Warenkorb');
     }
 
-    cartApplyShipping($db, $context['cart_uuid'], $customerId);
-    $korb = cartRead($db, $context['cart_uuid'], $customerId, true);
+    // Der Versand wird hier nur gerechnet, nicht in den Korb gelegt: als
+    // Position entsteht er erst mit der Rechnung (createShopInvoice). Er gilt
+    // fuer die Lieferadresse aus der Kasse; dieselbe Adresse geht fest an
+    // PayPal, damit Betrag, Rechnung und Lieferung zusammenpassen
+    // (dev/shop-versand.md, Schritt 6).
+    $adresse = paymentDeliveryAddress($db, $customerId, $lieferadresse);
+    $korb = cartRead($db, $context['cart_uuid'], $customerId, true, $adresse['land']);
+    $betrag = (float)($korb['incShippingCosts'] ? $korb['totalSumIncShipping'] : $korb['totalSum']);
 
     // Ohne Betrag gibt es nichts zu bezahlen. Die Bridge schickte hier eine
     // Bestellung über 0,00 los und bekam von PayPal MISSING_REQUIRED_PARAMETER.
-    if (empty($korb['positions']) || 0 >= (float)$korb['totalSum']) {
+    // positions enthält nur Ware — ein Korb mit nichts als Versand ist leer.
+    if (empty($korb['positions']) || 0 >= $betrag) {
         throw new ApiError('CART_EMPTY', 'Der Warenkorb ist leer');
     }
     // Vor der Zahlung, nicht danach (O2): nach der Zahlung muss die Rechnung
     // entstehen, gleich was im Warenkorb liegt
     cartRequireOffered($korb);
+    cartRequireShipping($korb);
 
     $rueckweg = rtrim(shopConfigRequire($db, 'shop_base_url'), '/').'/shop-api/';
 
@@ -252,9 +261,13 @@ function paymentBegin($db, string $uuid, string $erfolgSeite, string $abbruchSei
         'intent' => 'CAPTURE',
         'purchase_units' => [[
             'reference_id' => $uuid,
+            // Die gewaehlte Lieferadresse kommt so mit der Zahlung zurueck
+            // (paymentEnd); 0 = Rechnungsadresse
+            'custom_id'    => (string)(int)($adresse['shipto_id'] ?? 0),
+            'shipping'     => $adresse['paypal'],
             'amount' => [
                 'currency_code' => $korb['currency'],
-                'value'         => number_format((float)$korb['totalSum'], 2, '.', ''),
+                'value'         => number_format($betrag, 2, '.', ''),
             ],
         ]],
         'payment_source' => ['paypal' => ['experience_context' => [
@@ -263,6 +276,9 @@ function paymentBegin($db, string $uuid, string $erfolgSeite, string $abbruchSei
             'locale'       => 'de-DE',
             'landing_page' => 'LOGIN',
             'user_action'  => 'PAY_NOW',
+            // Die Adresse steht fest — bei PayPal laesst sie sich nicht
+            // aendern, sonst stimmte der Versand je Land nicht mehr
+            'shipping_preference' => 'SET_PROVIDED_ADDRESS',
             // failed: wohin, wenn die Zahlung zwar zurückkommt, aber scheitert.
             // Ohne dieses Ziel kannte der Rückweg nur die Erfolgsseite und
             // endete im Fehlerfall auf einer leeren Antwort.
@@ -362,7 +378,11 @@ function paymentEnd($db, string $token): array {
                                    'PayPal hat keine Sitzungskennung zurückgegeben', $bestellung);
     }
 
-    $rechnung = createShopInvoice($db, $uuid, paymentShippingAddress($bestellung), $zahlung);
+    // Lieferadresse wie in der Kasse gewaehlt (custom_id, paymentBegin) —
+    // PayPal hat sie fest bekommen, die Rechnung nimmt dieselbe
+    $einheit = $bestellung['purchase_units'][0] ?? [];
+    $shiptoId = (int)($einheit['custom_id'] ?? $einheit['payments']['captures'][0]['custom_id'] ?? 0);
+    $rechnung = createShopInvoice($db, $uuid, $shiptoId > 0 ? ['shipto_id' => $shiptoId] : [], $zahlung);
     shopSendInvoiceMail($db, (int)$rechnung['ar_id']);
 
     return [
@@ -373,27 +393,52 @@ function paymentEnd($db, string $token): array {
 }
 
 /**
- * Liest die Lieferanschrift aus der PayPal-Antwort
+ * Lieferadresse fuer PayPal und den Versand
  *
- * PayPal liefert die Anschrift, die der Kunde dort hinterlegt hat. Fehlt sie,
- * geht die Lieferung an die Rechnungsadresse.
+ * Die in der Kasse gewaehlte gespeicherte Adresse oder die Rechnungsadresse
+ * des Kunden, aufbereitet als PayPal-Versandadresse (shipping_preference
+ * SET_PROVIDED_ADDRESS) und mit dem Land fuer den Versand.
  *
- * @param array $bestellung Antwort von PayPal
- * @return array Adressfelder oder leeres Array
+ * @param object $db Company-Datenbankverbindung
+ * @param int $customerId Kunde
+ * @param array $lieferadresse ['shipto_id' => …] oder []
+ * @return array{shipto_id: ?int, land: string, paypal: array}
+ * @throws ApiError ADDRESS_NOT_FOUND
  */
-function paymentShippingAddress(array $bestellung): array {
-    $versand = $bestellung['purchase_units'][0]['shipping'] ?? null;
-    if (empty($versand['address']['address_line_1'])) {
-        return [];
+function paymentDeliveryAddress($db, int $customerId, array $lieferadresse): array {
+    $shiptoId = (int)($lieferadresse['shipto_id'] ?? 0);
+    if ($shiptoId > 0) {
+        $zeile = shiptoRead($db, $customerId, $shiptoId);   // prueft die Zugehoerigkeit
+        $adresse = [
+            'name'    => $zeile['name'] ?? $zeile['shiptoname'] ?? '',
+            'street'  => $zeile['street'] ?? $zeile['shiptostreet'] ?? '',
+            'zipcode' => $zeile['zipcode'] ?? $zeile['shiptozipcode'] ?? '',
+            'city'    => $zeile['city'] ?? $zeile['shiptocity'] ?? '',
+            'country' => $zeile['country'] ?? $zeile['shiptocountry'] ?? '',
+        ];
+    } else {
+        $adresse = $db->getOne(
+            "SELECT name, street, zipcode, city, country FROM customer WHERE id = :id",
+            [':id' => $customerId]
+        ) ?: [];
     }
 
+    $land = trim((string)($adresse['country'] ?? ''));
+    $code = $db->getOne("SELECT shop_country_code(:land) AS code", [':land' => $land]);
+
     return [
-        'name'    => $versand['name']['full_name']            ?? '',
-        'street'  => $versand['address']['address_line_1']    ?? '',
-        'zipcode' => $versand['address']['postal_code']       ?? '',
-        'city'    => $versand['address']['admin_area_2']      ?? '',
-        'country' => $versand['address']['country_code']      ?? '',
-        'email'   => $bestellung['payer']['email_address']    ?? '',
+        'shipto_id' => $shiptoId ?: null,
+        'land'      => $land,
+        'paypal'    => [
+            'name'    => ['full_name' => mb_substr((string)($adresse['name'] ?? ''), 0, 300)],
+            'address' => [
+                'address_line_1' => mb_substr((string)($adresse['street'] ?? ''), 0, 300),
+                'postal_code'    => mb_substr((string)($adresse['zipcode'] ?? ''), 0, 60),
+                'admin_area_2'   => mb_substr((string)($adresse['city'] ?? ''), 0, 120),
+                // Unbekanntes Land: der Versand sperrt vorher (cartRequireShipping)
+                'country_code'   => (string)($code['code'] ?? ''),
+            ],
+        ],
     ];
 }
 

@@ -14,6 +14,7 @@
             "typeService": "Pakalpojums",
             "unit": "Vienība",
             "buchungsgruppe": "Grāmatvedības grupa",
+            "weight": "Svars",
             "sellprice": "Pārdošanas cena",
             "notes": "Garais apraksts",
             "obsolete": "Novecojis / Vairs neizmantot",
@@ -26,6 +27,7 @@
             "createError": "Preci neizdevās izveidot.",
             "noPermission": "Jums nav tiesību veidot preces.",
             "partnumberExists": "Šis preces numurs jau tiek izmantots.",
+            "weightInvalid": "Tukšs vai skaitlis no 0",
             "required": "Obligāts lauks"
         },
         "titleNew": "Preces izveide",

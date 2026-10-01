@@ -38,6 +38,14 @@ price: <?= shopYaml(shopNumber($artikel['sellprice'])) ?>
 priceCurrency: <?= shopYaml($betrieb['currency']) ?>
 
 availability: "https://schema.org/<?= $artikel['available'] && $artikel['onhand'] > 0 ? 'InStock' : 'OutOfStock' ?>"
+<?php if ($artikel['delivery_term'] !== ''): ?>
+deliveryTerm: <?= shopYaml($artikel['delivery_term']) ?>
+
+<?php endif; ?>
+<?php if ($artikel['min_qty'] !== null): ?>
+minQuantity: <?= shopYaml(shopNumber($artikel['min_qty'], 3)) ?>
+
+<?php endif; ?>
 schemaBusinessType: "Product"
 type: "produkt"
 draft: false
@@ -95,6 +103,15 @@ if ($artikel['taxrate'] > 0) {
     $bloecke[] = '**'.shopMoney($artikel['price_gross']).' '.$betrieb['currency'].'**'.$einheit.' inkl. MwSt.';
 } else {
     $bloecke[] = '**'.shopMoney($artikel['price_net']).' '.$betrieb['currency'].'**'.$einheit;
+}
+
+// Lieferbedingung und Mindestabnahme (dev/shop-versand.md, Schritt 5) —
+// vor dem Kauf zu nennen, deshalb über dem Warenkorb-Knopf
+if ($artikel['delivery_term'] !== '') {
+    $bloecke[] = '*'.$artikel['delivery_term'].'*';
+}
+if ($artikel['min_qty'] !== null) {
+    $bloecke[] = 'Mindestabnahme: '.shopQuantity($artikel['min_qty']).($artikel['unit'] !== '' ? ' '.$artikel['unit'] : '');
 }
 
 $bloecke[] = '{{< shop-add-to-cart product="'.$artikel['id'].'" button-text="In den Warenkorb" >}}';

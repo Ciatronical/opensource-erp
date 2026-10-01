@@ -27,6 +27,7 @@
         "openOnly": "Nur offene",
         "obsoleteOnly": "Nur ausgemusterte anzeigen",
         "showAll": "Alle anzeigen",
+        "weightMissing": "Nur ohne Gewicht",
         "shopOnly": "Nur im Shop angebotene",
         "notInShop": "Alle nicht im Shop angebotenen",
         "channel": "Verkaufskanal",

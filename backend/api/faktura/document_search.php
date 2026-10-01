@@ -153,8 +153,9 @@ function searchDocuments($data) {
  * @param string $data['scope']      active (Vorgabe), obsolete oder all
  * @param string $data['shop']       leer, offered oder not_offered
  * @param int    $data['channel_id'] mit shop offered: nur in diesem Kanal (0 = alle Kanaele)
+ * @param bool   $data['weight_missing'] true = nur Waren ohne Gewicht (zum Nachpflegen fuer den Versand)
  * @param int    $data['limit']      Maximale Trefferzahl (Standard 200, max 1000)
- * @testdata {"action": "searchParts", "q": "Bremse", "scope": "active", "shop": "", "channel_id": 0, "limit": 50}
+ * @testdata {"action": "searchParts", "q": "Bremse", "scope": "active", "shop": "", "channel_id": 0, "weight_missing": false, "limit": 50}
  */
 function searchParts($data) {
     $db    = DbhCompany::begin();
@@ -184,6 +185,12 @@ function searchParts($data) {
                               JOIN sales_channel_shop c ON c.id = pc.channel_id AND c.active
                              WHERE pc.parts_id = p.id AND pc.active
                                AND (CAST(:channel_id AS integer) = 0 OR pc.channel_id = CAST(:channel_id AS integer)))';
+    }
+
+    // Waren ohne Gewicht (dev/shop-versand.md, W8): Dienstleistungen werden
+    // nicht verschickt und zaehlen nicht
+    if (!empty($data['weight_missing'])) {
+        $where[] = "p.part_type <> 'service' AND COALESCE(p.weight, 0) <= 0";
     }
 
     if ($q !== '') {

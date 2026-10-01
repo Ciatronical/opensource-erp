@@ -126,6 +126,16 @@
                     hide-details
                     class="ms-1 me-4"
                 />
+                <!-- Waren ohne Gewicht zum Nachpflegen (Versandkosten im Shop) -->
+                <v-switch
+                    v-if="shopEnabled"
+                    v-model="weightMissing"
+                    :label="t('DocumentList.weightMissing')"
+                    color="primary"
+                    density="compact"
+                    hide-details
+                    class="ms-1 me-4"
+                />
             </v-col>
             <!-- Verfeinert „Nur im Shop angebotene“ auf einen Kanal — deshalb
                  nur sichtbar, solange dieser Filter an ist -->
@@ -245,6 +255,8 @@ export default {
         // Vorbelegung aus der URL (?shop=offered): so öffnet die Übersicht des
         // Shops die Liste gleich gefiltert
         const shopFilterState = ref(['offered', 'not_offered'].includes(route.query.shop) ? route.query.shop : '')
+        // Nur Waren ohne Gewicht (?weight=missing) — zum Nachpflegen für den Versand
+        const weightMissingState = ref(route.query.weight === 'missing')
         const shopFilter = computed({
             get: () => (shopEnabled.value ? shopFilterState.value : ''),
             set: (wert) => {
@@ -253,6 +265,10 @@ export default {
                 // Die Kanalauswahl gehört zu „angeboten“ — sonst wirkte eine unsichtbare Auswahl
                 if (wert !== 'offered') channelIdState.value = 0
             },
+        })
+        const weightMissing = computed({
+            get: () => shopEnabled.value && weightMissingState.value,
+            set: (an) => { weightMissingState.value = an },
         })
         const shopOnly = computed({
             get: () => shopFilter.value === 'offered',
@@ -293,6 +309,7 @@ export default {
         const atLimit = computed(() => rows.value.length >= LIMIT)
         const hasFilter = computed(() =>
             !!search.value || !!from.value || !!to.value || openOnly.value || partsScope.value !== 'active' || !!shopFilter.value
+            || weightMissing.value
         )
 
         const headers = computed(() => isParts.value
@@ -338,7 +355,7 @@ export default {
             error.value = ''
             try {
                 const payload = isParts.value
-                    ? { action: 'searchParts', q: search.value || '', scope: partsScope.value, shop: shopFilter.value,
+                    ? { action: 'searchParts', q: search.value || '', scope: partsScope.value, shop: shopFilter.value, weight_missing: weightMissing.value,
                         channel_id: channelId.value, limit: LIMIT }
                     : { action: 'searchDocuments', documentType: listType.value, q: search.value || '',
                         from: from.value || '', to: to.value || '', limit: LIMIT }
@@ -359,7 +376,7 @@ export default {
 
         // Tippen laedt nach kurzer Pause nach — kein Suchknopf noetig
         let debounce = null
-        watch([search, from, to, partsScope, shopFilter, channelId], () => {
+        watch([search, from, to, partsScope, shopFilter, channelId, weightMissing], () => {
             clearTimeout(debounce)
             debounce = setTimeout(load, 350)
         })
@@ -377,6 +394,7 @@ export default {
             partsScope.value = 'active'
             shopFilterState.value = ''
             channelIdState.value = 0
+            weightMissingState.value = false
         }
 
         function openRow(_event, row) {
@@ -385,7 +403,7 @@ export default {
 
         return {
             t, locale, config, isParts, rows, visibleRows, headers, loading, error,
-            search, from, to, openOnly, obsoleteOnly, showAll, shopOnly, notInShop, shopEnabled, channels, channelId, channelItems, hasFilter, atLimit,
+            search, from, to, openOnly, obsoleteOnly, showAll, shopOnly, notInShop, weightMissing, shopEnabled, channels, channelId, channelItems, hasFilter, atLimit,
             formatDate, formatCurrency, formatQty, reset, openRow,
         }
     },

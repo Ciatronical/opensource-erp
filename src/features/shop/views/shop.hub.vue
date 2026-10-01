@@ -110,7 +110,7 @@
 
         <!-- Wege -->
         <v-row>
-            <v-col cols="12" sm="6" md="4" v-for="ziel in ziele" :key="ziel.name">
+            <v-col cols="12" sm="6" md="4" v-for="ziel in ziele" :key="ziel.titel">
                 <v-card
                     variant="outlined"
                     hover
@@ -605,6 +605,15 @@ const ziele = computed(() => [
         icon: 'mdi-package-variant-closed',
         titel: t('ShopView.parts.title'),
         text: t('ShopView.parts.subtitle'),
+    },
+    // Angebotene Waren ohne Gewicht — zum Nachpflegen für die Versandkosten
+    // (dev/shop-versand.md, W8)
+    {
+        name: 'article-list',
+        query: { shop: 'offered', weight: 'missing' },
+        icon: 'mdi-weight-kilogram',
+        titel: t('ShopView.partsNoWeight.title'),
+        text: t('ShopView.partsNoWeight.subtitle'),
     },
 ])
 

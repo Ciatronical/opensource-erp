@@ -828,8 +828,6 @@
         "shopShipping": "Kargo ücreti",
         "shopShippingPartnumber": "Kargo ürün numarası",
         "shopShippingPartnumber_help": "Kargo ücreti olarak hesaplanan ürün. Ürünün mevcut olması gerekir.",
-        "shopFreeShippingFrom": "Ücretsiz kargo alt sınırı",
-        "shopFreeShippingFrom_help": "Bu sipariş tutarının üzerinde kargo ücreti alınmaz.",
         "shopPayment": "Havale için banka bilgileri",
         "shopPaymentAccountOwner": "Hesap sahibi",
         "shopPaymentAccountOwner_help": "Müşteri ödeme yapmadığı sürece fatura sayfasında gösterilir.",

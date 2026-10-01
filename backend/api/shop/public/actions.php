@@ -128,13 +128,17 @@ function getCart($db, string $uuid, array $daten) {
         return;
     }
 
-    // Nach einem Abbruch bei der Bezahlung sollen die Versandkosten neu
-    // bestimmt werden, statt aus dem vorigen Anlauf stehen zu bleiben.
-    if (filter_var(shopVar($daten, 'invoicingCanceled', false), FILTER_VALIDATE_BOOLEAN)) {
-        cartRemoveShipping($db, $context['cart_uuid']);
-    }
+    // Versand nach der Lieferadresse, die die Kasse gerade gewaehlt hat
+    // (adresses.shipping wie bei invoicing); ohne Angabe die
+    // Standard-Lieferadresse des Kontos (dev/shop-versand.md, Schritt 6).
+    // invoicingCanceled kommt von der Abbruchseite und hat keine Wirkung mehr:
+    // der Versand liegt nicht mehr als Zeile im Warenkorb.
+    $adressen = shopVar($daten, 'adresses', null);
+    $land = is_array($adressen) && isset($adressen['shipping'])
+        ? shopShippingCountry($db, $customerId, shopDeliveryAddress($adressen['shipping']))
+        : null;
 
-    resultInfo(true, '', cartRead($db, $context['cart_uuid'], $customerId, true));
+    resultInfo(true, '', cartRead($db, $context['cart_uuid'], $customerId, true, $land));
 }
 
 /** Legt einen Artikel in den Warenkorb */
@@ -419,15 +423,12 @@ function checkout($db, string $uuid, array $daten) {
  */
 function invoicing($db, string $uuid, array $daten) {
     $adressen = shopVar($daten, 'adresses', []);
+    // Gespeicherte Adresse (id), neue Felder oder die Rechnungsadresse —
+    // vereinheitlicht in createShopInvoice (shopDeliveryAddress). Frueher hiess
+    // default hier immer „an die Rechnungsadresse", auch mit gewaehlter id.
     $lieferadresse = is_array($adressen) ? ($adressen['shipping'] ?? []) : [];
 
-    // Die Oberfläche schickt entweder eine vorhandene Adresse oder die Felder
-    // einer neuen; "default" heisst: an die Rechnungsadresse.
-    if (!empty($lieferadresse['default'])) {
-        $lieferadresse = [];
-    }
-
-    $rechnung = createShopInvoice($db, $uuid, $lieferadresse);
+    $rechnung = createShopInvoice($db, $uuid, is_array($lieferadresse) ? $lieferadresse : []);
     $versendet = shopSendInvoiceMail($db, (int)$rechnung['ar_id']);
 
     resultInfo(true, '', [
@@ -490,10 +491,27 @@ function shopSendPdf($db, int $arId) {
 
 /** Beginnt die Bezahlung und schickt den Kunden zu PayPal */
 function beginPayment($db, string $uuid, array $daten) {
+    // Lieferadresse (dev/shop-versand.md, Schritt 6). Aus der Kasse: shipto =
+    // gespeicherte Adresse, 0 = Rechnungsadresse; eine neue Adresse legt die
+    // Kasse vorher an (newDeliveryAddress) und schickt deren Id. Vom Knopf im
+    // Warenkorb ohne shipto: die Standard-Lieferadresse des Kontos — mit ihr
+    // rechnet der Warenkorb auch.
+    $shipto = shopVar($daten, 'shipto', null);
+    if (null === $shipto || '' === $shipto) {
+        $standard = $db->getOne(
+            "SELECT ce.hugoshop_shipto_id AS id
+               FROM context_hugoshop k
+               JOIN customer_ext ce ON ce.customer_id = k.customer_id
+              WHERE k.uuid = :uuid",
+            [':uuid' => $uuid]
+        );
+        $shipto = (int)($standard['id'] ?? 0);
+    }
     $bezahlt = paymentBegin(
         $db, $uuid,
         (string)shopVar($daten, 'bill', ''),
-        (string)shopVar($daten, 'canceled', '')
+        (string)shopVar($daten, 'canceled', ''),
+        shopDeliveryAddress(['shipto_id' => (int)$shipto])
     );
     shopRedirect($bezahlt['approval_url']);
 }

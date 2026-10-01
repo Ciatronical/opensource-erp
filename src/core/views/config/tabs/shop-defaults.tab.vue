@@ -130,6 +130,15 @@
                     :tax-included="crmDefaults.shop_tax_included ?? null"
                 />
 
+                <!-- Länder: Zuordnung der Freitexte, lädt und speichert selbst -->
+                <ShopCountriesConfig v-else-if="field.type === 'component' && field.component === 'countries'" />
+
+                <!-- Versandarten, Zonen und Preise: lädt und speichert selbst -->
+                <ShopShippingConfig
+                    v-else-if="field.type === 'component' && field.component === 'shipping-methods'"
+                    :tax-included="crmDefaults.shop_tax_included ?? null"
+                />
+
                 <!-- Einzelfeld -->
                 <ShopConfigField v-else :field="field" :werte="crmDefaults" :quellen="quellen" :gesetzt="crmSecrets" :vorgaben="crmFallbacks" />
             </template>
@@ -144,6 +153,8 @@ import axios from 'axios'
 import ShopConfigField from './shop-config-field.component.vue'
 
 const ShopChannelsConfig = defineAsyncComponent(() => import('@/features/shop/components/shop-channels.config.vue'))
+const ShopCountriesConfig = defineAsyncComponent(() => import('@/features/shop/components/shop-countries.config.vue'))
+const ShopShippingConfig = defineAsyncComponent(() => import('@/features/shop/components/shop-shipping.config.vue'))
 const EbayStatusConfig = defineAsyncComponent(() => import('@/features/shop/components/shop-ebay-status.vue'))
 
 const { t } = useI18n()

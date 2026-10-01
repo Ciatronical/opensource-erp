@@ -307,6 +307,9 @@ function setShopWithdrawalProcessed($data) {
  *   tax_rates  Steuersatz der Standard-Steuerzone je Buchungsgruppe — für die
  *              Preisvorschau, die in der Oberfläche gerechnet wird, auch wenn
  *              in der Maske eine andere Buchungsgruppe gewählt wird
+ *   shipping   Versandangaben des Artikels (parts_shipping_shop) und die
+ *              Auswahllisten dafür: Versandarten, Lieferbedingungen,
+ *              Gewichtseinheit (dev/shop-versand.md, Schritt 5)
  *
  * Die Shop-Angaben aus parts_ext bleiben auch nach dem Abwählen erhalten (V5).
  *
@@ -327,10 +330,26 @@ function getPartShopData($data) {
                                 WHERE x.parts_id = p.id AND x.active) AS listed,
                        pe.hugoshop_breadcrumbs, pe.hugoshop_technical_data, pe.hugoshop_properties,
                        pe.hugoshop_downloads, pe.hugoshop_images, pe.hugoshop_hyperlink,
-                       pe.hugoshop_category
+                       pe.hugoshop_category, p.weight
                   FROM parts p
                   LEFT JOIN parts_ext pe ON pe.parts_id = p.id
                  WHERE p.id = :parts_id) a) AS part,
+            (SELECT json_build_object(
+                 'part', (SELECT row_to_json(v) FROM (
+                             SELECT ps.shipping_method_id, ps.length, ps.width, ps.height,
+                                    ps.min_qty, ps.delivery_term_id
+                               FROM parts_shipping_shop ps WHERE ps.parts_id = :parts_id_versand) v),
+                 'methods', (SELECT COALESCE(json_agg(json_build_object(
+                                        'id', m.id, 'description', m.description, 'active', m.active)
+                                        ORDER BY m.rank DESC, m.description), '[]')
+                               FROM shipping_method_shop m),
+                 'delivery_terms', (SELECT COALESCE(json_agg(json_build_object(
+                                               'id', d.id, 'description', d.description,
+                                               'description_long', d.description_long, 'obsolete', d.obsolete)
+                                               ORDER BY d.sortkey, d.id), '[]')
+                                      FROM delivery_terms d),
+                 'weightunit', (SELECT weightunit FROM defaults LIMIT 1)
+             )) AS shipping,
             (SELECT COALESCE(json_agg(k ORDER BY k.sortkey NULLS LAST, k.channel_id), '[]'::json) FROM (
                 SELECT c.id AS channel_id, c.type, c.sortkey,
                        c.markup_type AS channel_markup_type, c.markup_value AS channel_markup_value,
@@ -356,6 +375,7 @@ function getPartShopData($data) {
         [
             ':parts_id'        => (int)($data['parts_id'] ?? 0),
             ':parts_id_bilder' => (int)($data['parts_id'] ?? 0),
+            ':parts_id_versand' => (int)($data['parts_id'] ?? 0),
             ':taxzone'         => shopConfigValue($db, 'shop_standard_taxzone', 'Inland'),
         ]
     );
@@ -364,6 +384,7 @@ function getPartShopData($data) {
         'part'      => json_decode((string)($zeile['part'] ?? 'null'), true),
         'channels'  => json_decode((string)($zeile['channels'] ?? '[]'), true) ?: [],
         'tax_rates' => json_decode((string)($zeile['tax_rates'] ?? '{}'), true) ?: (object)[],
+        'shipping'  => json_decode((string)($zeile['shipping'] ?? '{}'), true) ?: (object)[],
     ]);
 }
 
@@ -393,8 +414,13 @@ function getPartShopData($data) {
  *              title, description, unavailable (vorübergehend nicht
  *              verfügbar), settings (kanaleigene Angaben, etwa
  *              category_id und condition bei eBay)
+ * @param array $data['shipping'] Versandangaben (dev/shop-versand.md, Schritt 5):
+ *              shipping_method_id (leer = die günstigste passende), length,
+ *              width, height (cm), min_qty (Mindestabnahme, bei eBay die
+ *              Losgröße), delivery_term_id (Lieferbedingung). Fehlt das Feld,
+ *              bleiben die Angaben unverändert
  * @return void
- * @testdata {"parts_id": 1, "category": "Bremsen", "hyperlink": "bremsscheibe", "channels": [{"channel_id": 1, "active": true, "markup_type": "percent", "markup_value": 10, "title": "", "description": "", "unavailable": false}]}
+ * @testdata {"parts_id": 1, "category": "Bremsen", "hyperlink": "bremsscheibe", "channels": [{"channel_id": 1, "active": true, "markup_type": "percent", "markup_value": 10, "title": "", "description": "", "unavailable": false}], "shipping": {"shipping_method_id": null, "length": 40, "width": 30, "height": 20, "min_qty": null, "delivery_term_id": null}}
  */
 function savePartShopData($data) {
     permit(['shop_part_edit', 'edit_shop_config'], false);
@@ -415,86 +441,135 @@ function savePartShopData($data) {
     $vollstaendig = isset($data['channels']) && is_array($data['channels']);
     $kanaele = $vollstaendig ? array_values($data['channels']) : [['channel_id' => null, 'active' => true]];
 
+    // Versandangaben: Zahlen größer 0 oder leer. Fehlt das Feld, bleiben sie.
+    $versandSetzen = isset($data['shipping']) && is_array($data['shipping']);
+    $versand = $versandSetzen ? $data['shipping'] : [];
+    $mass = [];
+    foreach (['length', 'width', 'height', 'min_qty'] as $feld) {
+        $wert = $versand[$feld] ?? null;
+        if (null === $wert || '' === trim((string)$wert)) {
+            $mass[$feld] = null;
+        } elseif (is_numeric($wert) && (float)$wert > 0) {
+            $mass[$feld] = (string)(float)$wert;
+        } else {
+            resultInfo(false, 'VALIDATION_ERROR', null, 'Abmessungen und Mindestabnahme müssen leer oder größer als 0 sein');
+            return;
+        }
+    }
+
     // vorher liest den Stand vor der Anweisung — alle Teile einer Anweisung
     // sehen denselben Ausgangsstand. Daraus ergibt sich, ob der HugoShop
     // gerade abgewählt wird.
-    $seite = $db->getOne(
-        "WITH vorher AS (
-             SELECT active FROM parts_channel_shop
-              WHERE parts_id = :parts_id AND channel_id = shop_channel_id('hugoshop')
-         ), ext AS (
-             INSERT INTO parts_ext (parts_id, hugoshop_category, hugoshop_hyperlink,
-                                    hugoshop_breadcrumbs, hugoshop_images,
-                                    hugoshop_technical_data, hugoshop_properties, hugoshop_downloads)
-             SELECT p.id, :category, :hyperlink, :breadcrumbs::jsonb, :images::jsonb,
-                    :technical::jsonb, :properties::jsonb, :downloads::jsonb
-               FROM parts p WHERE p.id = :parts_id
-             ON CONFLICT (parts_id) DO UPDATE SET
-                    hugoshop_category       = EXCLUDED.hugoshop_category,
-                    hugoshop_hyperlink      = EXCLUDED.hugoshop_hyperlink,
-                    hugoshop_breadcrumbs    = EXCLUDED.hugoshop_breadcrumbs,
-                    hugoshop_images         = EXCLUDED.hugoshop_images,
-                    hugoshop_technical_data = EXCLUDED.hugoshop_technical_data,
-                    hugoshop_properties     = EXCLUDED.hugoshop_properties,
-                    hugoshop_downloads      = EXCLUDED.hugoshop_downloads
-             RETURNING parts_id
-         ), eingabe AS (
-             -- je Kanal eine Zeile: ein doppelter Eintrag ließe ON CONFLICT
-             -- dieselbe Zeile zweimal ändern, und die Anweisung bräche ab
-             SELECT DISTINCT ON (COALESCE(e.channel_id, shop_channel_id('hugoshop')))
-                    COALESCE(e.channel_id, shop_channel_id('hugoshop')) AS channel_id,
-                    COALESCE(e.active, false) AS active,
-                    CASE WHEN e.markup_type IN ('none', 'percent', 'amount') THEN e.markup_type END AS markup_type,
-                    CASE WHEN e.markup_type IN ('percent', 'amount') THEN COALESCE(e.markup_value, 0) END AS markup_value,
-                    NULLIF(btrim(e.title), '') AS title,
-                    NULLIF(btrim(e.description), '') AS description,
-                    COALESCE(e.unavailable, false) AS unavailable,
-                    -- leere Angaben fallen weg: sie hießen „Vorgabe des Kanals“
-                    (SELECT jsonb_object_agg(a.key, a.value)
-                       FROM jsonb_each(CASE WHEN jsonb_typeof(e.settings) = 'object' THEN e.settings END) a
-                      WHERE a.value NOT IN ('null'::jsonb, to_jsonb(''::text))) AS settings
-               FROM jsonb_to_recordset(:kanaele::jsonb)
-                    AS e(channel_id integer, active boolean, markup_type text, markup_value numeric,
-                         title text, description text, unavailable boolean, settings jsonb)
-         ), geschrieben AS (
-             INSERT INTO parts_channel_shop (parts_id, channel_id, active, markup_type, markup_value,
-                                             title, description, unavailable, settings)
-             SELECT ext.parts_id, e.channel_id, e.active, e.markup_type, e.markup_value,
-                    e.title, e.description, e.unavailable, e.settings
-               FROM ext
-               JOIN eingabe e ON true
-               JOIN sales_channel_shop c ON c.id = e.channel_id
-             ON CONFLICT (parts_id, channel_id) DO UPDATE SET
-                    active       = EXCLUDED.active,
-                    markup_type  = CASE WHEN :vollstaendig = 1 THEN EXCLUDED.markup_type  ELSE parts_channel_shop.markup_type END,
-                    markup_value = CASE WHEN :vollstaendig = 1 THEN EXCLUDED.markup_value ELSE parts_channel_shop.markup_value END,
-                    title        = CASE WHEN :vollstaendig = 1 THEN EXCLUDED.title        ELSE parts_channel_shop.title END,
-                    description  = CASE WHEN :vollstaendig = 1 THEN EXCLUDED.description  ELSE parts_channel_shop.description END,
-                    unavailable  = CASE WHEN :vollstaendig = 1 THEN EXCLUDED.unavailable  ELSE parts_channel_shop.unavailable END,
-                    settings     = CASE WHEN :vollstaendig = 1 THEN EXCLUDED.settings     ELSE parts_channel_shop.settings END,
-                    mtime        = now()
-             RETURNING channel_id, active
-         )
-         SELECT p.partnumber, pe.hugoshop_hyperlink
-           FROM parts p
-           LEFT JOIN parts_ext pe ON pe.parts_id = p.id
-          WHERE p.id = :parts_id
-            AND EXISTS (SELECT 1 FROM vorher WHERE vorher.active)
-            AND EXISTS (SELECT 1 FROM geschrieben g
-                         WHERE g.channel_id = shop_channel_id('hugoshop') AND NOT g.active)",
-        [
-            ':parts_id'     => $partsId,
-            ':category'     => $data['category']  ?? null,
-            ':hyperlink'    => $data['hyperlink'] ?? null,
-            ':breadcrumbs'  => json_encode($data['breadcrumbs']    ?? []),
-            ':images'       => json_encode($data['images']         ?? []),
-            ':technical'    => $objekt($data['technical_data'] ?? null),
-            ':properties'   => $objekt($data['properties']     ?? null),
-            ':downloads'    => $objekt($data['downloads']      ?? null),
-            ':kanaele'      => json_encode($kanaele),
-            ':vollstaendig' => $vollstaendig ? 1 : 0,
-        ]
-    );
+    try {
+        $seite = $db->getOne(
+            "WITH vorher AS (
+                 SELECT active FROM parts_channel_shop
+                  WHERE parts_id = :parts_id AND channel_id = shop_channel_id('hugoshop')
+             ), ext AS (
+                 INSERT INTO parts_ext (parts_id, hugoshop_category, hugoshop_hyperlink,
+                                        hugoshop_breadcrumbs, hugoshop_images,
+                                        hugoshop_technical_data, hugoshop_properties, hugoshop_downloads)
+                 SELECT p.id, :category, :hyperlink, :breadcrumbs::jsonb, :images::jsonb,
+                        :technical::jsonb, :properties::jsonb, :downloads::jsonb
+                   FROM parts p WHERE p.id = :parts_id
+                 ON CONFLICT (parts_id) DO UPDATE SET
+                        hugoshop_category       = EXCLUDED.hugoshop_category,
+                        hugoshop_hyperlink      = EXCLUDED.hugoshop_hyperlink,
+                        hugoshop_breadcrumbs    = EXCLUDED.hugoshop_breadcrumbs,
+                        hugoshop_images         = EXCLUDED.hugoshop_images,
+                        hugoshop_technical_data = EXCLUDED.hugoshop_technical_data,
+                        hugoshop_properties     = EXCLUDED.hugoshop_properties,
+                        hugoshop_downloads      = EXCLUDED.hugoshop_downloads
+                 RETURNING parts_id
+             ), eingabe AS (
+                 -- je Kanal eine Zeile: ein doppelter Eintrag ließe ON CONFLICT
+                 -- dieselbe Zeile zweimal ändern, und die Anweisung bräche ab
+                 SELECT DISTINCT ON (COALESCE(e.channel_id, shop_channel_id('hugoshop')))
+                        COALESCE(e.channel_id, shop_channel_id('hugoshop')) AS channel_id,
+                        COALESCE(e.active, false) AS active,
+                        CASE WHEN e.markup_type IN ('none', 'percent', 'amount') THEN e.markup_type END AS markup_type,
+                        CASE WHEN e.markup_type IN ('percent', 'amount') THEN COALESCE(e.markup_value, 0) END AS markup_value,
+                        NULLIF(btrim(e.title), '') AS title,
+                        NULLIF(btrim(e.description), '') AS description,
+                        COALESCE(e.unavailable, false) AS unavailable,
+                        -- leere Angaben fallen weg: sie hießen „Vorgabe des Kanals“
+                        (SELECT jsonb_object_agg(a.key, a.value)
+                           FROM jsonb_each(CASE WHEN jsonb_typeof(e.settings) = 'object' THEN e.settings END) a
+                          WHERE a.value NOT IN ('null'::jsonb, to_jsonb(''::text))) AS settings
+                   FROM jsonb_to_recordset(:kanaele::jsonb)
+                        AS e(channel_id integer, active boolean, markup_type text, markup_value numeric,
+                             title text, description text, unavailable boolean, settings jsonb)
+             ), geschrieben AS (
+                 INSERT INTO parts_channel_shop (parts_id, channel_id, active, markup_type, markup_value,
+                                                 title, description, unavailable, settings)
+                 SELECT ext.parts_id, e.channel_id, e.active, e.markup_type, e.markup_value,
+                        e.title, e.description, e.unavailable, e.settings
+                   FROM ext
+                   JOIN eingabe e ON true
+                   JOIN sales_channel_shop c ON c.id = e.channel_id
+                 ON CONFLICT (parts_id, channel_id) DO UPDATE SET
+                        active       = EXCLUDED.active,
+                        markup_type  = CASE WHEN :vollstaendig = 1 THEN EXCLUDED.markup_type  ELSE parts_channel_shop.markup_type END,
+                        markup_value = CASE WHEN :vollstaendig = 1 THEN EXCLUDED.markup_value ELSE parts_channel_shop.markup_value END,
+                        title        = CASE WHEN :vollstaendig = 1 THEN EXCLUDED.title        ELSE parts_channel_shop.title END,
+                        description  = CASE WHEN :vollstaendig = 1 THEN EXCLUDED.description  ELSE parts_channel_shop.description END,
+                        unavailable  = CASE WHEN :vollstaendig = 1 THEN EXCLUDED.unavailable  ELSE parts_channel_shop.unavailable END,
+                        settings     = CASE WHEN :vollstaendig = 1 THEN EXCLUDED.settings     ELSE parts_channel_shop.settings END,
+                        mtime        = now()
+                 RETURNING channel_id, active
+             ), versand AS (
+                 -- Versandangaben (Schritt 5); unbekannte Versandart oder
+                 -- Lieferbedingung scheitern am Fremdschlüssel
+                 INSERT INTO parts_shipping_shop (parts_id, shipping_method_id, length, width, height,
+                                                  min_qty, delivery_term_id)
+                 SELECT ext.parts_id, CAST(NULLIF(:versandart, 0) AS integer),
+                        CAST(:laenge AS numeric), CAST(:breite AS numeric), CAST(:hoehe AS numeric),
+                        CAST(:mindestmenge AS numeric), CAST(NULLIF(:lieferbedingung, 0) AS integer)
+                   FROM ext
+                  WHERE :versand_setzen = 1
+                 ON CONFLICT (parts_id) DO UPDATE SET
+                        shipping_method_id = EXCLUDED.shipping_method_id,
+                        length             = EXCLUDED.length,
+                        width              = EXCLUDED.width,
+                        height             = EXCLUDED.height,
+                        min_qty            = EXCLUDED.min_qty,
+                        delivery_term_id   = EXCLUDED.delivery_term_id
+             )
+             SELECT p.partnumber, pe.hugoshop_hyperlink
+               FROM parts p
+               LEFT JOIN parts_ext pe ON pe.parts_id = p.id
+              WHERE p.id = :parts_id
+                AND EXISTS (SELECT 1 FROM vorher WHERE vorher.active)
+                AND EXISTS (SELECT 1 FROM geschrieben g
+                             WHERE g.channel_id = shop_channel_id('hugoshop') AND NOT g.active)",
+            [
+                ':parts_id'     => $partsId,
+                ':category'     => $data['category']  ?? null,
+                ':hyperlink'    => $data['hyperlink'] ?? null,
+                ':breadcrumbs'  => json_encode($data['breadcrumbs']    ?? []),
+                ':images'       => json_encode($data['images']         ?? []),
+                ':technical'    => $objekt($data['technical_data'] ?? null),
+                ':properties'   => $objekt($data['properties']     ?? null),
+                ':downloads'    => $objekt($data['downloads']      ?? null),
+                ':kanaele'      => json_encode($kanaele),
+                ':vollstaendig' => $vollstaendig ? 1 : 0,
+                ':versand_setzen'  => $versandSetzen ? 1 : 0,
+                ':versandart'      => (int)($versand['shipping_method_id'] ?? 0),
+                ':laenge'          => $mass['length'],
+                ':breite'          => $mass['width'],
+                ':hoehe'           => $mass['height'],
+                ':mindestmenge'    => $mass['min_qty'],
+                ':lieferbedingung' => (int)($versand['delivery_term_id'] ?? 0),
+            ]
+        );
+    } catch (PDOException $e) {
+        // Fremdschlüssel: Versandart oder Lieferbedingung gibt es nicht (mehr)
+        if ('23503' === $e->getCode()) {
+            resultInfo(false, 'VALIDATION_ERROR', null, 'Versandart oder Lieferbedingung gibt es nicht (mehr)');
+            return;
+        }
+        throw $e;
+    }
 
     // Die abschließende Abfrage liest parts_ext im Stand vor der Anweisung,
     // also die Zielseite, unter der die Seite tatsächlich liegt — auch wenn
@@ -702,6 +777,463 @@ function getShopEbayStatus($data) {
 }
 
 /**
+ * Länder der Adressen und ihre Zuordnung (dev/shop-versand.md, Schritt 3)
+ *
+ * Jeder Freitext, der als Land in Kundenadressen, Lieferadressen oder
+ * weiteren Rechnungsadressen vorkommt — bereinigt zusammengefasst, mit der
+ * Zahl der Adressen und dem zugeordneten Land (leer = nicht zugeordnet).
+ * Leere Freitexte stehen als eigene Zeile: sie meinen das Land des
+ * Mandanten. Dazu die Länderliste für die Auswahl; die Namen übersetzt die
+ * Oberfläche aus dem Code.
+ *
+ * @return void
+ * @testdata {}
+ */
+function getShopCountryMapping($data) {
+    permit(['edit_shop_config'], false);
+    $db = DbhCompany::begin();
+
+    $zeile = $db->getOne(
+        "WITH texte AS (
+             SELECT country AS text FROM customer
+             UNION ALL SELECT shiptocountry FROM shipto
+             UNION ALL SELECT country FROM additional_billing_addresses
+         ), gruppen AS (
+             SELECT COALESCE(shop_country_key(text), '') AS alias,
+                    min(btrim(text)) AS beispiel,
+                    count(*) AS anzahl
+               FROM texte
+              GROUP BY 1
+         )
+         SELECT
+             (SELECT COALESCE(json_agg(json_build_object(
+                         'alias',    g.alias,
+                         'beispiel', COALESCE(g.beispiel, ''),
+                         'anzahl',   g.anzahl,
+                         'iso_code', CASE WHEN g.alias = '' THEN shop_country_code(NULL) ELSE a.iso_code END,
+                         'manual',   COALESCE(a.manual, false)
+                     ) ORDER BY (a.iso_code IS NULL AND g.alias <> '') DESC, g.anzahl DESC, g.alias), '[]')
+                FROM gruppen g
+                LEFT JOIN country_alias_shop a ON a.alias = g.alias) AS texte,
+             (SELECT COALESCE(json_agg(json_build_object('iso_code', c.iso_code, 'eu', c.eu)
+                                       ORDER BY c.iso_code), '[]')
+                FROM country_shop c) AS laender,
+             (SELECT address_country FROM defaults LIMIT 1) AS mandantenland,
+             shop_country_code(NULL) AS mandantenland_code"
+    );
+
+    resultInfo(true, '', [
+        'texts'               => json_decode((string)$zeile['texte'], true),
+        'countries'           => json_decode((string)$zeile['laender'], true),
+        'company_country'     => (string)($zeile['mandantenland'] ?? ''),
+        'company_country_code' => $zeile['mandantenland_code'],
+    ]);
+}
+
+/**
+ * Ordnet einen Freitext einem Land zu oder hebt die Zuordnung auf
+ *
+ * Die Zuordnung gilt für jede Schreibweise mit demselben bereinigten Text
+ * (shop_country_key). Sie wird als „von Hand" vermerkt; ohne Land wird sie
+ * entfernt — auch eine aus der Länderliste, dann ist der Text nicht mehr
+ * zugeordnet.
+ *
+ * @param string $data['alias'] Freitext (wird bereinigt)
+ * @param string $data['iso_code'] Land, leer = Zuordnung entfernen
+ * @return void
+ * @testdata {"alias": "Brandenburg", "iso_code": "DE"}
+ */
+function saveShopCountryAlias($data) {
+    permit(['edit_shop_config'], false);
+    $db = DbhCompany::begin();
+
+    $alias = trim((string)($data['alias'] ?? ''));
+    $land  = strtoupper(trim((string)($data['iso_code'] ?? '')));
+    if ('' === $alias) {
+        resultInfo(false, 'VALIDATION_ERROR', null, 'Ein leerer Text meint das Land des Mandanten und lässt sich nicht zuordnen');
+        return;
+    }
+
+    // Ein Vorgang: ohne Land löschen, sonst setzen. Ein unbekannter Code
+    // scheitert am Fremdschlüssel spätestens beim Abschluss der Anweisung —
+    // vorher geprüft, damit die Meldung verständlich bleibt.
+    $zeile = $db->getOne(
+        "WITH geloescht AS (
+             DELETE FROM country_alias_shop
+              WHERE alias = shop_country_key(:alias_weg) AND :land_weg = ''
+             RETURNING alias
+         ), gesetzt AS (
+             INSERT INTO country_alias_shop (alias, iso_code, manual)
+             SELECT shop_country_key(:alias), c.iso_code, true
+               FROM country_shop c
+              WHERE c.iso_code = :land
+             ON CONFLICT (alias) DO UPDATE SET iso_code = EXCLUDED.iso_code, manual = true
+             RETURNING alias, iso_code
+         )
+         SELECT (SELECT count(*) FROM geloescht) AS geloescht,
+                (SELECT iso_code FROM gesetzt) AS iso_code",
+        [':alias' => $alias, ':alias_weg' => $alias, ':land' => $land, ':land_weg' => $land]
+    );
+
+    if ('' !== $land && empty($zeile['iso_code'])) {
+        resultInfo(false, 'VALIDATION_ERROR', null, 'Unbekannter Ländercode: '.$land);
+        return;
+    }
+
+    resultInfo(true, '', ['alias' => $alias, 'iso_code' => $zeile['iso_code'] ?: null]);
+}
+
+/**
+ * Versandarten, Zonen und Preise für die Firmenkonfiguration
+ *
+ * dev/shop-versand.md, Schritt 4. Alles, was die Karte „Versandarten" braucht,
+ * in einer Abfrage: Versandarten mit ihren Preisstufen, Zonen mit ihren
+ * Ländern, die Kanäle, die Lieferanten als mögliche Anbieter, die Länderliste
+ * und die Gewichtseinheit der Artikel.
+ *
+ * @return void
+ * @testdata {}
+ */
+function getShopShipping($data) {
+    permit(['edit_shop_config'], false);
+    $db = DbhCompany::begin();
+
+    $zeile = $db->getOne(
+        "SELECT
+             (SELECT COALESCE(json_agg(json_build_object(
+                         'id', m.id, 'description', m.description, 'vendor_id', m.vendor_id,
+                         'parts_id', m.parts_id, 'partnumber', p.partnumber, 'part_description', p.description,
+                         'rank', m.rank, 'max_weight', m.max_weight, 'max_length', m.max_length,
+                         'max_girth', m.max_girth, 'free_shipping_applies', m.free_shipping_applies,
+                         'ebay_fulfillment_policy_id', m.ebay_fulfillment_policy_id, 'active', m.active,
+                         'parts', (SELECT count(*) FROM parts_shipping_shop ps WHERE ps.shipping_method_id = m.id),
+                         'rates', (SELECT COALESCE(json_agg(json_build_object(
+                                          'channel_id', r.channel_id, 'zone_id', r.zone_id,
+                                          'weight_from', r.weight_from, 'qty_from', r.qty_from, 'price', r.price)
+                                          ORDER BY r.channel_id NULLS FIRST, r.zone_id NULLS FIRST,
+                                                   r.weight_from, r.qty_from), '[]')
+                                     FROM shipping_rate_shop r WHERE r.shipping_method_id = m.id)
+                     ) ORDER BY m.rank DESC, m.description), '[]')
+                FROM shipping_method_shop m
+                JOIN parts p ON p.id = m.parts_id) AS versandarten,
+             (SELECT COALESCE(json_agg(json_build_object(
+                         'id', z.id, 'description', z.description, 'sortkey', z.sortkey,
+                         'countries', (SELECT COALESCE(json_agg(zc.iso_code ORDER BY zc.iso_code), '[]')
+                                         FROM shipping_zone_country_shop zc WHERE zc.zone_id = z.id)
+                     ) ORDER BY z.sortkey, z.description), '[]')
+                FROM shipping_zone_shop z) AS zonen,
+             (SELECT COALESCE(json_agg(json_build_object('channel_id', c.id, 'type', c.type, 'active', c.active)
+                                       ORDER BY c.sortkey NULLS LAST, c.id), '[]')
+                FROM sales_channel_shop c) AS kanaele,
+             (SELECT COALESCE(json_agg(json_build_object('id', v.id, 'name', v.name, 'vendornumber', v.vendornumber)
+                                       ORDER BY v.name), '[]')
+                FROM vendor v
+               WHERE NOT COALESCE(v.obsolete, false)
+                  OR v.id IN (SELECT vendor_id FROM shipping_method_shop)) AS anbieter,
+             (SELECT COALESCE(json_agg(c.iso_code ORDER BY c.iso_code), '[]') FROM country_shop c) AS laender,
+             (SELECT weightunit FROM defaults LIMIT 1) AS gewichtseinheit"
+    );
+
+    resultInfo(true, '', [
+        'methods'    => json_decode((string)$zeile['versandarten'], true),
+        'zones'      => json_decode((string)$zeile['zonen'], true),
+        'channels'   => json_decode((string)$zeile['kanaele'], true),
+        'vendors'    => json_decode((string)$zeile['anbieter'], true),
+        'countries'  => json_decode((string)$zeile['laender'], true),
+        'weightunit' => (string)($zeile['gewichtseinheit'] ?? ''),
+    ]);
+}
+
+/**
+ * Legt eine Versandart an oder ändert sie, samt ihren Preisstufen
+ *
+ * Eine Anweisung. Die Preisstufen werden ersetzt: gleiche Stufen
+ * (Kanal, Zone, ab Gewicht, ab Stückzahl) bekommen den neuen Preis, neue
+ * kommen hinzu, nicht mehr genannte entfallen. Löschen und Neuanlegen
+ * derselben Stufe in einer Anweisung lehnt PostgreSQL ab (eindeutiger
+ * Schlüssel), deshalb dieser Weg.
+ *
+ * @param int $data['id'] Versandart, 0 = neu
+ * @param string $data['description'] Bezeichnung
+ * @param int|null $data['vendor_id'] Anbieter (Lieferant), leer = allgemein
+ * @param int $data['parts_id'] Versandartikel
+ * @param int $data['rank'] Rang (höher gewinnt)
+ * @param float|null $data['max_weight'] Höchstgewicht, leer = ohne
+ * @param float|null $data['max_length'] längste Kante in cm, leer = ohne
+ * @param float|null $data['max_girth'] Gurtmaß in cm, leer = ohne
+ * @param bool $data['free_shipping_applies'] Freigrenze gilt
+ * @param string $data['ebay_fulfillment_policy_id'] eBay-Versandrichtlinie, leer = die allgemeine
+ * @param bool $data['active'] aktiv
+ * @param array $data['rates'] Liste aus channel_id, zone_id (leer = alle), weight_from, qty_from, price
+ * @testdata {"id": 0, "description": "DHL Paket", "vendor_id": null, "parts_id": 3606, "rank": 10, "max_weight": 31.5, "max_length": 120, "max_girth": 300, "free_shipping_applies": true, "ebay_fulfillment_policy_id": "", "active": true, "rates": [{"channel_id": null, "zone_id": null, "weight_from": 0, "qty_from": 0, "price": 5.99}]}
+ */
+function saveShopShippingMethod($data) {
+    permit(['edit_shop_config'], false);
+    $db = DbhCompany::begin();
+
+    $zahl = function ($wert) {
+        if (null === $wert || '' === trim((string)$wert)) {
+            return null;
+        }
+        return is_numeric($wert) ? (float)$wert : false;
+    };
+
+    $bezeichnung = trim((string)($data['description'] ?? ''));
+    $partsId     = (int)($data['parts_id'] ?? 0);
+    if ('' === $bezeichnung || $partsId <= 0) {
+        resultInfo(false, 'VALIDATION_ERROR', null, 'Bezeichnung und Versandartikel sind Pflicht');
+        return;
+    }
+    $grenzen = [];
+    foreach (['max_weight', 'max_length', 'max_girth'] as $feld) {
+        $grenzen[$feld] = $zahl($data[$feld] ?? null);
+        if (false === $grenzen[$feld] || (null !== $grenzen[$feld] && $grenzen[$feld] <= 0)) {
+            resultInfo(false, 'VALIDATION_ERROR', null, 'Grenzen müssen leer oder größer als 0 sein');
+            return;
+        }
+    }
+
+    // Preisstufen prüfen und vereinheitlichen; doppelte Stufen meldet die
+    // Datenbank (eindeutiger Schlüssel), hier vorab mit verständlicher Meldung
+    $stufen = [];
+    $gesehen = [];
+    foreach ((array)($data['rates'] ?? []) as $stufe) {
+        $gewicht = $zahl($stufe['weight_from'] ?? 0) ?? 0.0;
+        $menge   = $zahl($stufe['qty_from'] ?? 0) ?? 0.0;
+        $preis   = $zahl($stufe['price'] ?? null);
+        if (false === $gewicht || false === $menge || $gewicht < 0 || $menge < 0
+            || null === $preis || false === $preis || $preis < 0) {
+            resultInfo(false, 'VALIDATION_ERROR', null, 'Jede Preisstufe braucht einen Preis ab 0; Gewicht und Stückzahl ab 0');
+            return;
+        }
+        $kanal = (int)($stufe['channel_id'] ?? 0) ?: null;
+        $zone  = (int)($stufe['zone_id'] ?? 0) ?: null;
+        $schluessel = implode('|', [$kanal, $zone, $gewicht, $menge]);
+        if (isset($gesehen[$schluessel])) {
+            resultInfo(false, 'VALIDATION_ERROR', null, 'Eine Preisstufe steht doppelt (gleicher Kanal, gleiche Zone, gleiche Stufe)');
+            return;
+        }
+        $gesehen[$schluessel] = true;
+        $stufen[] = ['channel_id' => $kanal, 'zone_id' => $zone, 'weight_from' => $gewicht,
+                     'qty_from' => $menge, 'price' => $preis];
+    }
+
+    try {
+        $zeile = $db->getOne(
+            "WITH methode AS (
+                 INSERT INTO shipping_method_shop AS m
+                        (id, description, vendor_id, parts_id, rank, max_weight, max_length, max_girth,
+                         free_shipping_applies, ebay_fulfillment_policy_id, active)
+                 OVERRIDING SYSTEM VALUE
+                 SELECT COALESCE(NULLIF(:id, 0), nextval(pg_get_serial_sequence('shipping_method_shop', 'id'))),
+                        :description, CAST(NULLIF(:vendor_id, 0) AS integer), :parts_id, :rank,
+                        CAST(:max_weight AS numeric), CAST(:max_length AS numeric), CAST(:max_girth AS numeric),
+                        :free_shipping_applies, NULLIF(btrim(:ebay_policy), ''), :active
+                  WHERE NULLIF(:id_neu, 0) IS NULL
+                     OR EXISTS (SELECT 1 FROM shipping_method_shop WHERE id = :id_vorhanden)
+                 ON CONFLICT (id) DO UPDATE SET
+                        description = EXCLUDED.description, vendor_id = EXCLUDED.vendor_id,
+                        parts_id = EXCLUDED.parts_id, rank = EXCLUDED.rank,
+                        max_weight = EXCLUDED.max_weight, max_length = EXCLUDED.max_length,
+                        max_girth = EXCLUDED.max_girth, free_shipping_applies = EXCLUDED.free_shipping_applies,
+                        ebay_fulfillment_policy_id = EXCLUDED.ebay_fulfillment_policy_id,
+                        active = EXCLUDED.active, mtime = now()
+                 RETURNING m.id
+             ), neu AS (
+                 SELECT s.*
+                   FROM jsonb_to_recordset(CAST(:stufen AS jsonb))
+                        AS s(channel_id integer, zone_id integer, weight_from numeric, qty_from numeric, price numeric)
+             ), weg AS (
+                 DELETE FROM shipping_rate_shop r
+                  USING methode
+                  WHERE r.shipping_method_id = methode.id
+                    AND NOT EXISTS (SELECT 1 FROM neu
+                                     WHERE COALESCE(neu.channel_id, 0) = COALESCE(r.channel_id, 0)
+                                       AND COALESCE(neu.zone_id, 0)    = COALESCE(r.zone_id, 0)
+                                       AND neu.weight_from = r.weight_from
+                                       AND neu.qty_from    = r.qty_from)
+             ), gesetzt AS (
+                 INSERT INTO shipping_rate_shop (shipping_method_id, channel_id, zone_id, weight_from, qty_from, price)
+                 SELECT methode.id, neu.channel_id, neu.zone_id, neu.weight_from, neu.qty_from, neu.price
+                   FROM methode CROSS JOIN neu
+                 ON CONFLICT (shipping_method_id, (COALESCE(channel_id, 0)), (COALESCE(zone_id, 0)), weight_from, qty_from)
+                 DO UPDATE SET price = EXCLUDED.price
+                 RETURNING 1
+             )
+             SELECT (SELECT id FROM methode) AS id, (SELECT count(*) FROM gesetzt) AS stufen",
+            [
+                ':id'                    => (int)($data['id'] ?? 0),
+                ':id_neu'                => (int)($data['id'] ?? 0),
+                ':id_vorhanden'          => (int)($data['id'] ?? 0),
+                ':description'           => $bezeichnung,
+                ':vendor_id'             => (int)($data['vendor_id'] ?? 0),
+                ':parts_id'              => $partsId,
+                ':rank'                  => (int)($data['rank'] ?? 0),
+                ':max_weight'            => null === $grenzen['max_weight'] ? null : (string)$grenzen['max_weight'],
+                ':max_length'            => null === $grenzen['max_length'] ? null : (string)$grenzen['max_length'],
+                ':max_girth'             => null === $grenzen['max_girth'] ? null : (string)$grenzen['max_girth'],
+                ':free_shipping_applies' => !empty($data['free_shipping_applies']),
+                ':ebay_policy'           => (string)($data['ebay_fulfillment_policy_id'] ?? ''),
+                ':active'                => !empty($data['active']),
+                ':stufen'                => json_encode($stufen),
+            ]
+        );
+    } catch (PDOException $e) {
+        // Fremdschlüssel: Versandartikel, Anbieter, Kanal oder Zone gibt es nicht
+        resultInfo(false, 'VALIDATION_ERROR', null, '23503' === $e->getCode()
+            ? 'Versandartikel, Anbieter, Kanal oder Zone gibt es nicht (mehr)'
+            : $e->getMessage());
+        return;
+    }
+
+    if (empty($zeile['id'])) {
+        resultInfo(false, 'SHIPPING_METHOD_NOT_FOUND', null, 'Diese Versandart gibt es nicht');
+        return;
+    }
+
+    resultInfo(true, '', ['id' => (int)$zeile['id']]);
+}
+
+/**
+ * Löscht eine Versandart
+ *
+ * Ihre Preisstufen gehen mit; Artikel, denen sie zugeordnet war, bekommen
+ * wieder die günstigste passende (parts_shipping_shop, ON DELETE SET NULL).
+ *
+ * @param int $data['id'] Versandart
+ * @testdata {"id": 1}
+ */
+function deleteShopShippingMethod($data) {
+    permit(['edit_shop_config'], false);
+    $db = DbhCompany::begin();
+
+    $zeile = $db->getOne(
+        "DELETE FROM shipping_method_shop WHERE id = :id RETURNING id",
+        [':id' => (int)($data['id'] ?? 0)]
+    );
+    if (!$zeile) {
+        resultInfo(false, 'SHIPPING_METHOD_NOT_FOUND', null, 'Diese Versandart gibt es nicht');
+        return;
+    }
+    resultInfo(true, '', ['id' => (int)$zeile['id']]);
+}
+
+/**
+ * Legt eine Versandzone an oder ändert sie, samt ihren Ländern
+ *
+ * Ein Land gehört höchstens zu einer Zone: steht es schon in einer anderen,
+ * wechselt es hierher. Länder, die nicht mehr genannt sind, verlassen die
+ * Zone.
+ *
+ * @param int $data['id'] Zone, 0 = neu
+ * @param string $data['description'] Bezeichnung
+ * @param int $data['sortkey'] Reihenfolge
+ * @param array $data['countries'] ISO-Codes
+ * @testdata {"id": 0, "description": "EU", "sortkey": 1, "countries": ["AT", "FR", "NL"]}
+ */
+function saveShopShippingZone($data) {
+    permit(['edit_shop_config'], false);
+    $db = DbhCompany::begin();
+
+    $bezeichnung = trim((string)($data['description'] ?? ''));
+    if ('' === $bezeichnung) {
+        resultInfo(false, 'VALIDATION_ERROR', null, 'Die Zone braucht eine Bezeichnung');
+        return;
+    }
+    $laender = array_values(array_unique(array_filter(
+        array_map(fn($code) => strtoupper(trim((string)$code)), (array)($data['countries'] ?? [])),
+        fn($code) => 1 === preg_match('/^[A-Z]{2}$/', $code)
+    )));
+
+    $zeile = $db->getOne(
+        "WITH zone AS (
+             INSERT INTO shipping_zone_shop AS z (id, description, sortkey)
+             OVERRIDING SYSTEM VALUE
+             SELECT COALESCE(NULLIF(:id, 0), nextval(pg_get_serial_sequence('shipping_zone_shop', 'id'))),
+                    :description, :sortkey
+              WHERE NULLIF(:id_neu, 0) IS NULL
+                 OR EXISTS (SELECT 1 FROM shipping_zone_shop WHERE id = :id_vorhanden)
+             ON CONFLICT (id) DO UPDATE SET description = EXCLUDED.description, sortkey = EXCLUDED.sortkey
+             RETURNING z.id
+         ), neu AS (
+             SELECT code FROM unnest(CAST(:laender AS text[])) AS code
+              WHERE code IN (SELECT iso_code FROM country_shop)
+         ), weg AS (
+             DELETE FROM shipping_zone_country_shop zc
+              USING zone
+              WHERE zc.zone_id = zone.id AND zc.iso_code NOT IN (SELECT code FROM neu)
+         ), gesetzt AS (
+             INSERT INTO shipping_zone_country_shop (iso_code, zone_id)
+             SELECT neu.code, zone.id FROM neu CROSS JOIN zone
+             ON CONFLICT (iso_code) DO UPDATE SET zone_id = EXCLUDED.zone_id
+             RETURNING 1
+         )
+         SELECT (SELECT id FROM zone) AS id, (SELECT count(*) FROM gesetzt) AS laender",
+        [
+            ':id'           => (int)($data['id'] ?? 0),
+            ':id_neu'       => (int)($data['id'] ?? 0),
+            ':id_vorhanden' => (int)($data['id'] ?? 0),
+            ':description'  => $bezeichnung,
+            ':sortkey'      => (int)($data['sortkey'] ?? 0),
+            ':laender'      => '{'.implode(',', $laender).'}',
+        ]
+    );
+
+    if (empty($zeile['id'])) {
+        resultInfo(false, 'SHIPPING_ZONE_NOT_FOUND', null, 'Diese Zone gibt es nicht');
+        return;
+    }
+    resultInfo(true, '', ['id' => (int)$zeile['id'], 'countries' => (int)$zeile['laender']]);
+}
+
+/**
+ * Löscht eine Versandzone
+ *
+ * Ihre Länder und die Preisstufen dieser Zone gehen mit.
+ *
+ * @param int $data['id'] Zone
+ * @testdata {"id": 1}
+ */
+function deleteShopShippingZone($data) {
+    permit(['edit_shop_config'], false);
+    $db = DbhCompany::begin();
+
+    $zeile = $db->getOne(
+        "DELETE FROM shipping_zone_shop WHERE id = :id RETURNING id",
+        [':id' => (int)($data['id'] ?? 0)]
+    );
+    if (!$zeile) {
+        resultInfo(false, 'SHIPPING_ZONE_NOT_FOUND', null, 'Diese Zone gibt es nicht');
+        return;
+    }
+    resultInfo(true, '', ['id' => (int)$zeile['id']]);
+}
+
+/**
+ * Artikel als Versandartikel zur Auswahl
+ *
+ * Suche über Nummer und Bezeichnung. Ausgemusterte stehen hinten, aber in der
+ * Liste: Versandartikel sind oft ausgemustert, damit niemand sie von Hand in
+ * einen Beleg setzt (bei Werkzeug24 Artikel 8 „Versand").
+ *
+ * @param string $data['q'] Suchtext
+ * @testdata {"q": "Versand"}
+ */
+function searchShopShippingParts($data) {
+    permit(['edit_shop_config'], false);
+    $db = DbhCompany::begin();
+
+    resultInfo(true, '', $db->getAll(
+        "SELECT p.id, p.partnumber, p.description, COALESCE(p.obsolete, false) AS obsolete
+           FROM parts p
+          WHERE p.partnumber ILIKE :q OR p.description ILIKE :q
+          ORDER BY COALESCE(p.obsolete, false), (p.part_type = 'service') DESC, p.partnumber
+          LIMIT 20",
+        [':q' => '%'.trim((string)($data['q'] ?? '')).'%']
+    ));
+}
+
+/**
  * Verkaufskanäle mit ihren Vorgaben für die Firmenkonfiguration
  *
  * Alle eingerichteten Kanäle, auch abgeschaltete, mit der Zahl der Artikel,
@@ -718,7 +1250,7 @@ function getShopChannels($data) {
     resultInfo(true, '', [
         'channels' => $db->getAll(
             "SELECT c.id AS channel_id, c.type, c.active, c.sortkey,
-                    c.markup_type, c.markup_value, c.round_99,
+                    c.markup_type, c.markup_value, c.round_99, c.free_shipping_from,
                     (SELECT COUNT(*) FROM parts_channel_shop pc
                       WHERE pc.channel_id = c.id AND pc.active) AS parts
                FROM sales_channel_shop c
@@ -746,8 +1278,9 @@ function getShopChannels($data) {
  * @param array $data['markup_type'] none, percent oder amount
  * @param array $data['markup_value'] Prozent oder Betrag (netto/brutto wie parts.sellprice)
  * @param array $data['round_99'] Bruttopreis auf ,99 aufrunden
+ * @param float|null $data['free_shipping_from'] Versandfrei ab diesem Bruttowarenwert, leer = keine Freigrenze, fehlt = unverändert
  * @return void
- * @testdata {"channel_id": 1, "active": true, "markup_type": "percent", "markup_value": 10, "round_99": true}
+ * @testdata {"channel_id": 1, "active": true, "markup_type": "percent", "markup_value": 10, "round_99": true, "free_shipping_from": 150}
  */
 function saveShopChannel($data) {
     permit(['edit_shop_config'], false);
@@ -759,6 +1292,17 @@ function saveShopChannel($data) {
         return;
     }
     $wert = 'none' === $art ? 0.0 : (float)($data['markup_value'] ?? 0);
+
+    // Freigrenze: leer = keine (dev/shop-versand.md, Entscheidung 4). Fehlt
+    // das Feld ganz, bleibt sie, wie sie ist — sonst löschte ein Aufruf ohne
+    // das Feld die Freigrenze.
+    $freigrenzeSetzen = array_key_exists('free_shipping_from', $data);
+    $freigrenze = $data['free_shipping_from'] ?? null;
+    $freigrenze = (null === $freigrenze || '' === trim((string)$freigrenze)) ? null : (float)$freigrenze;
+    if (null !== $freigrenze && $freigrenze < 0) {
+        resultInfo(false, 'VALIDATION_ERROR', null, 'Die Freigrenze kann nicht negativ sein');
+        return;
+    }
     if ('percent' === $art && $wert <= -100) {
         resultInfo(false, 'VALIDATION_ERROR', null, 'Ein Abschlag von 100 % oder mehr ergibt keinen Preis');
         return;
@@ -778,6 +1322,9 @@ function saveShopChannel($data) {
                     markup_type  = :markup_type,
                     markup_value = :markup_value,
                     round_99     = :round_99,
+                    free_shipping_from = CASE WHEN :freigrenze_setzen = 1
+                                              THEN CAST(:free_shipping_from AS numeric)
+                                              ELSE free_shipping_from END,
                     mtime        = now()
               WHERE id = :channel_id
              RETURNING id, type, active, markup_type, markup_value, round_99
@@ -795,6 +1342,8 @@ function saveShopChannel($data) {
             ':markup_type'  => $art,
             ':markup_value' => $wert,
             ':round_99'     => !empty($data['round_99']),
+            ':free_shipping_from' => null === $freigrenze ? null : (string)$freigrenze,
+            ':freigrenze_setzen'  => $freigrenzeSetzen ? 1 : 0,
         ]
     );
 

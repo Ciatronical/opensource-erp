@@ -276,8 +276,15 @@ function shopPageData($db, int $partsId): array {
                 pe.hugoshop_category, pe.hugoshop_hyperlink, pe.hugoshop_breadcrumbs,
                 pe.hugoshop_images, pe.hugoshop_technical_data,
                 pe.hugoshop_properties, pe.hugoshop_downloads,
-                (SELECT company FROM defaults LIMIT 1) AS firma
+                (SELECT company FROM defaults LIMIT 1) AS firma,
+                (SELECT free_shipping_from FROM sales_channel_shop WHERE type = 'hugoshop') AS free_shipping_from,
+                -- Versandangaben (dev/shop-versand.md, Schritt 5): Lieferbedingung
+                -- als Text für Seite und Kunden, Mindestabnahme
+                COALESCE(NULLIF(btrim(dt.description_long), ''), dt.description) AS delivery_term,
+                ps.min_qty
            FROM parts p
+           LEFT JOIN parts_shipping_shop ps ON ps.parts_id = p.id
+           LEFT JOIN delivery_terms dt ON dt.id = ps.delivery_term_id
            CROSS JOIN LATERAL (SELECT shop_channel_price(p.id) AS preis) k
            LEFT JOIN parts_channel_shop pc ON pc.parts_id = p.id
                                           AND pc.channel_id = shop_channel_id('hugoshop')
@@ -333,6 +340,10 @@ function shopPageData($db, int $partsId): array {
             // bestellbar: nicht veraltet und im HugoShop nicht als nicht
             // verfügbar markiert (shop_part_available)
             'available'   => $wahr($zeile['available']),
+            // Lieferbedingung („Versandfertig in 4–8 Wochen"), leer = keine
+            'delivery_term' => trim((string)($zeile['delivery_term'] ?? '')),
+            // Mindestabnahme, null = keine
+            'min_qty'     => null === $zeile['min_qty'] ? null : (float)$zeile['min_qty'],
             // Für lastmod im Front Matter — Hugo übernimmt es in die Sitemap
             'mtime'       => empty($zeile['mtime']) ? '' : (new DateTimeImmutable($zeile['mtime']))->format(DATE_ATOM),
         ],
@@ -355,7 +366,7 @@ function shopPageData($db, int $partsId): array {
             'base_url'         => shopConfigValue($db, 'shop_base_url'),
             'products_link'    => shopConfigValue($db, 'shop_products_link'),
             'thumbnails_link'  => shopConfigValue($db, 'shop_thumbnails_link'),
-            'free_shipping_from' => shopConfigFloat($db, 'shop_free_shipping_from', 0),
+            'free_shipping_from' => (float)($zeile['free_shipping_from'] ?? 0),
             'tax_included'     => shopConfigBool($db, 'shop_tax_included', false),
         ],
     ];
@@ -390,6 +401,11 @@ function shopLink(string $muster, string $wert): string {
 /** Geldbetrag fuer die Anzeige: deutsches Zahlenformat */
 function shopMoney($wert): string {
     return number_format((float)$wert, 2, ',', '.');
+}
+
+/** Menge für die Anzeige: deutsches Zahlenformat, ohne überflüssige Nullen (10, 2,5) */
+function shopQuantity($wert): string {
+    return rtrim(rtrim(number_format((float)$wert, 3, ',', '.'), '0'), ',');
 }
 
 /** Zahl mit Punkt als Dezimaltrenner — Front Matter ist keine Anzeige */

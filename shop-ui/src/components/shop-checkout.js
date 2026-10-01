@@ -60,6 +60,10 @@ export class ShopCheckout extends ShopElement {
     _account: { state: true },
     _mode: { state: true },
     _selectedId: { state: true },
+    // Versandstand aus dem Warenkorb ({status, method}); null = noch unbekannt
+    _shipping: { state: true },
+    // Gast: Lieferadresse aus dem Formular, fuer den Versand je Land
+    _guestShipping: { state: true },
     _form: { state: true },
     _createAccount: { state: true },
     _busy: { state: true },
@@ -140,6 +144,10 @@ export class ShopCheckout extends ShopElement {
 
   #unsubscribe = [];
   #checkoutReported = false;
+  // Zuletzt an <shop-cart> gegebene Lieferadresse — nur bei inhaltlicher
+  // Aenderung ein neues Objekt, sonst laede der Warenkorb bei jedem Rendern neu
+  #cartAddresses = null;
+  #cartAddressesKey = '';
 
   constructor() {
     super();
@@ -162,6 +170,8 @@ export class ShopCheckout extends ShopElement {
     // null heisst "noch nicht bekannt" — der Kaufen-Knopf bleibt so lange
     // gesperrt. 0 heisst nachweislich leer.
     this._count = null;
+    this._shipping = null;
+    this._guestShipping = null;
   }
 
   connectedCallback() {
@@ -187,6 +197,12 @@ export class ShopCheckout extends ShopElement {
   #cartChanged(detail) {
     if (!detail || typeof detail.count !== 'number') return;
     this._count = detail.count;
+    if (detail.cart) {
+      this._shipping = {
+        status: detail.cart.totals.shippingStatus,
+        method: detail.cart.totals.shippingMethod,
+      };
+    }
     if (detail.cart && !this.#checkoutReported) {
       this.#checkoutReported = true;
       gtmBeginCheckout(detail.cart);
@@ -233,6 +249,78 @@ export class ShopCheckout extends ShopElement {
     this._form = { ...this._form, [field]: value };
   }
 
+  /**
+   * Lieferadresse fuer den Versand im Warenkorb — dieselbe Form wie bei
+   * invoicing (adresses.shipping). Der Versandpreis haengt am Lieferland
+   * (dev/shop-versand.md, Schritt 6).
+   */
+  #addressesForCart() {
+    let shipping = null;
+    if (!this._account) {
+      shipping = null;
+    } else if (!this._account.registered) {
+      shipping = this._guestShipping;
+    } else if (this._mode === 'new') {
+      shipping = shippingPayload({ mode: 'new', address: this._form });
+    } else {
+      shipping = shippingPayload({ mode: 'saved', addressId: this._selectedId });
+    }
+    const key = JSON.stringify(shipping);
+    if (key !== this.#cartAddressesKey) {
+      this.#cartAddressesKey = key;
+      this.#cartAddresses = shipping ? { shipping } : null;
+    }
+    return this.#cartAddresses;
+  }
+
+  /** Gast: Lieferadresse aus dem Formular lesen (abweichend oder Rechnungsadresse) */
+  #guestInput() {
+    const register = this.$('guest');
+    if (!register || typeof register.values !== 'function') return;
+    const adressen = guestPayload(register.values());
+    const quelle = adressen.shipping || adressen.billing || {};
+    this._guestShipping = {
+      default: false,
+      id: null,
+      name: quelle.name || '',
+      street: quelle.street || '',
+      country: quelle.country || '',
+    };
+  }
+
+  /** Bestellen nur mit passender Versandart (Status ok) */
+  get #shippingBlocked() {
+    return !!this._shipping && this._shipping.status !== 'ok' && this._shipping.status !== 'no_goods';
+  }
+
+  /**
+   * PayPal mit der gewaehlten Lieferadresse: die Adresse geht fest an PayPal.
+   * Eine neue Adresse wird vorher angelegt (newDeliveryAddress).
+   */
+  async #payWithPaypal(event) {
+    event.preventDefault();
+    if (this._busy || this.#shippingBlocked) return;
+    this._error = '';
+    let shipto = this._selectedId || '0';
+    if (this._account && this._account.registered && this._mode === 'new') {
+      const missing = this.#missing();
+      if (missing) {
+        this._error = t('register.required') + missing;
+        return;
+      }
+      this._busy = true;
+      try {
+        const angelegt = await apiRequest('newDeliveryAddress', { ...this._form });
+        shipto = String((angelegt && angelegt.shipto_id) || '0');
+      } catch (error) {
+        this._busy = false;
+        this._error = t(error.code || 'SHOP_API_ERROR');
+        return;
+      }
+    }
+    window.location.href = this.#paypalUrl(shipto);
+  }
+
   /** Erstes fehlendes Pflichtfeld der neuen Lieferadresse, sonst ''. */
   #missing() {
     const form = this._form;
@@ -245,7 +333,7 @@ export class ShopCheckout extends ShopElement {
   }
 
   async #buy() {
-    if (this._busy || this._count === 0) return;
+    if (this._busy || this._count === 0 || this.#shippingBlocked) return;
     this._error = '';
     this._accountExists = false;
 
@@ -313,11 +401,13 @@ export class ShopCheckout extends ShopElement {
     return `${this.invoiceUrl}?${params}#focus`;
   }
 
-  #paypalUrl() {
+  /** @param {string} shipto gespeicherte Lieferadresse, '0' = Rechnungsadresse */
+  #paypalUrl(shipto = '0') {
     const query = new URLSearchParams({
       action: 'beginPayment',
       bill: this.billingPage,
       canceled: this.canceledPage,
+      shipto,
     });
     return `/shop-api/?${query}`;
   }
@@ -348,7 +438,7 @@ export class ShopCheckout extends ShopElement {
         </section>
         <section part="cart">
           <h2 class="section-title ${this.cls('heading')}">${t('checkout.cart')}</h2>
-          <shop-cart mode="checkout" continue-url="/"></shop-cart>
+          <shop-cart mode="checkout" continue-url="/" .addresses=${this.#addressesForCart()}></shop-cart>
           ${this.#renderBuy()}
         </section>
       </div>
@@ -520,6 +610,8 @@ export class ShopCheckout extends ShopElement {
       </div>
 
       <shop-register
+        @input=${() => this.#guestInput()}
+        @change=${() => this.#guestInput()}
         id="guest"
         mode=${this._createAccount ? 'account' : 'guest'}
         login-url=${this.loginUrl}
@@ -554,18 +646,30 @@ export class ShopCheckout extends ShopElement {
         ${this._count === 0
           ? html`<p>${t('checkout.emptyCart')}</p>`
           : html`
+              ${this.#shippingBlocked
+                ? html`<div class="shop-message ${this.cls('alertError')}" role="alert">
+                    ${t(`shipping.${this._shipping.status}`)}
+                  </div>`
+                : nothing}
               <div class="actions">
                 <button
                   type="button"
                   class=${this.cls('buttonPrimary')}
-                  ?disabled=${this._busy || this._count === null}
+                  ?disabled=${this._busy || this._count === null || this.#shippingBlocked}
                   @click=${() => this.#buy()}
                 >
                   ${this._busy ? t('checkout.buying') : t('checkout.buy')}
                 </button>
-                <a class="paypal" href=${this.#paypalUrl()} aria-label=${t('cart.paypal')}>
-                  <img src=${this.paypalImage} alt=${t('cart.paypal')} />
-                </a>
+                ${this.#shippingBlocked
+                  ? nothing
+                  : html`<a
+                      class="paypal"
+                      href=${this.#paypalUrl(this._selectedId || '0')}
+                      aria-label=${t('cart.paypal')}
+                      @click=${(event) => this.#payWithPaypal(event)}
+                    >
+                      <img src=${this.paypalImage} alt=${t('cart.paypal')} />
+                    </a>`}
               </div>
               <p class="note ${this.cls('muted')}">${t('checkout.buyNote')}</p>
             `}

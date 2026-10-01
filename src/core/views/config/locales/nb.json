@@ -828,8 +828,6 @@
         "shopShipping": "Fraktkostnader",
         "shopShippingPartnumber": "Varenummer for frakt",
         "shopShippingPartnumber_help": "Vare som faktureres som frakt. Varen må finnes.",
-        "shopFreeShippingFrom": "Fri frakt fra",
-        "shopFreeShippingFrom_help": "Over denne ordreverdien beregnes ingen frakt.",
         "shopPayment": "Bankopplysninger for overføringer",
         "shopPaymentAccountOwner": "Kontoinnehaver",
         "shopPaymentAccountOwner_help": "Vises på fakturasiden så lenge kunden ikke har betalt.",

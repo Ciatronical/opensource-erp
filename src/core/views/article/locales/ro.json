@@ -14,6 +14,7 @@
             "typeService": "Serviciu",
             "unit": "Unitate",
             "buchungsgruppe": "Grup contabil",
+            "weight": "Greutate",
             "sellprice": "Pret de vanzare",
             "notes": "Descriere lunga",
             "obsolete": "Expirat / Nu mai utiliza",
@@ -26,6 +27,7 @@
             "createError": "Articolul nu a putut fi creat.",
             "noPermission": "Nu aveți dreptul să creați articole.",
             "partnumberExists": "Acest număr de articol este deja folosit.",
+            "weightInvalid": "Gol sau un număr de la 0",
             "required": "Câmp obligatoriu"
         },
         "titleNew": "Creare articol",

@@ -828,8 +828,6 @@
         "shopShipping": "Fraktkostnader",
         "shopShippingPartnumber": "Artikelnummer för frakt",
         "shopShippingPartnumber_help": "Artikel som debiteras som fraktkostnad. Artikeln måste finnas.",
-        "shopFreeShippingFrom": "Fri frakt från",
-        "shopFreeShippingFrom_help": "Över detta ordervärde debiteras ingen frakt.",
         "shopPayment": "Bankuppgifter för överföringar",
         "shopPaymentAccountOwner": "Kontoinnehavare",
         "shopPaymentAccountOwner_help": "Visas på fakturasidan så länge kunden inte har betalat.",

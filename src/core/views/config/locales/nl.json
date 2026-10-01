@@ -828,8 +828,6 @@
         "shopShipping": "Verzendkosten",
         "shopShippingPartnumber": "Artikelnummer verzending",
         "shopShippingPartnumber_help": "Artikel dat als verzendkosten wordt berekend. Het artikel moet bestaan.",
-        "shopFreeShippingFrom": "Gratis verzending vanaf",
-        "shopFreeShippingFrom_help": "Boven dit orderbedrag worden geen verzendkosten berekend.",
         "shopPayment": "Bankgegevens voor overboekingen",
         "shopPaymentAccountOwner": "Rekeninghouder",
         "shopPaymentAccountOwner_help": "Wordt op de factuurpagina getoond zolang de klant niet betaald heeft.",

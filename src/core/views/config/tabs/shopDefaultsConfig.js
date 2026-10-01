@@ -38,6 +38,11 @@ const shopDefaultsConfig = [
     // der Verkaufspreis.
     { name: "shop_sales_channels", type: "component", component: "sales-channels" },
 
+    // Länder (dev/shop-versand.md, Schritt 3): Zuordnung der Freitexte aus den
+    // Adressen zu ISO-Codes — Grundlage für Versandkosten und Lieferländer.
+    // Eigene Tabellen, deshalb wie die Verkaufskanäle eine Komponente.
+    { name: "shop_countries", type: "component", component: "countries" },
+
     // eBay-Kanal (dev/shop-verkaufskanaele.md, Schritt 5): die Einstellungen
     // der bisherigen eBay-Anbindung, unter ihren alten Schlüsseln. Ein- und
     // ausgeschaltet wird der Kanal oben unter „Verkaufskanäle".
@@ -89,7 +94,12 @@ const shopDefaultsConfig = [
     { name: "shop_shipping", type: "headline", label: "crm_fields.shopShipping" },
 
     { name: "shop_shipping_partnumber", type: "input", size: 20, fieldstyle: "max-width: 25ch", label: "crm_fields.shopShippingPartnumber", tooltip: "crm_fields.shopShippingPartnumber_help" },
-    { name: "shop_free_shipping_from", type: "input", inputType: "number", size: 10, fieldstyle: "max-width: 20ch", label: "crm_fields.shopFreeShippingFrom", tooltip: "crm_fields.shopFreeShippingFrom_help" },
+    // Die Freigrenze steht je Kanal in der Karte „Verkaufskanäle"
+    // (dev/shop-versand.md, Entscheidung 4)
+
+    // Versandarten, Länderzonen und Preise (dev/shop-versand.md, Schritt 4):
+    // eigene Tabellen, deshalb eine Komponente wie die Verkaufskanäle
+    { name: "shop_shipping_methods", type: "component", component: "shipping-methods" },
 
     { name: "shop_payment", type: "headline", label: "crm_fields.shopPayment" },
 

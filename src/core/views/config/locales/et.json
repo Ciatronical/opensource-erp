@@ -828,8 +828,6 @@
         "shopShipping": "Saatekulud",
         "shopShippingPartnumber": "Saatmise artiklinumber",
         "shopShippingPartnumber_help": "Artikkel, mis arvestatakse saatekuluna. Artikkel peab olemas olema.",
-        "shopFreeShippingFrom": "Tasuta saatmine alates",
-        "shopFreeShippingFrom_help": "Sellest tellimuse väärtusest alates saatekulusid ei arvestata.",
         "shopPayment": "Pangaandmed ülekanneteks",
         "shopPaymentAccountOwner": "Konto omanik",
         "shopPaymentAccountOwner_help": "Kuvatakse arve lehel, kuni klient ei ole maksnud.",

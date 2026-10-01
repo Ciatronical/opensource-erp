@@ -707,6 +707,448 @@ BEGIN
 END $$;
 
 -- ============================================================================
+-- LÄNDER (dev/shop-versand.md, Schritt 3)
+-- ============================================================================
+--
+-- Länder stehen in kivitendo als Freitext (customer.country,
+-- shipto.shiptocountry …): „Deutschland", „DE", „Deutschland " mit
+-- Leerzeichen. Versandkosten und Lieferländer brauchen ein eindeutiges Land.
+-- Die Freitextspalten bleiben unverändert; abgebildet wird über eine
+-- Zuordnungstabelle.
+--
+-- Gefüllt aus den ICU-Daten: die Länder unten per SQL, die Zuordnungen
+-- (ISO-Codes und die Ländernamen in den 21 Sprachen der Anwendung) aus
+-- company_data/country_alias_shop.csv. Was dort fehlt oder doppeldeutig ist, ordnet der Betreiber in
+-- der Firmenkonfiguration zu (manual). Die Ländernamen der Oberfläche kommen
+-- aus dem Code (Intl.DisplayNames), nicht aus der Datenbank.
+
+CREATE TABLE IF NOT EXISTS country_shop
+(
+    iso_code text NOT NULL PRIMARY KEY CHECK (iso_code ~ '^[A-Z]{2}$'),
+    eu       boolean NOT NULL DEFAULT false
+);
+
+COMMENT ON TABLE  country_shop          IS 'Shop: Länder nach ISO 3166-1 alpha-2';
+COMMENT ON COLUMN country_shop.iso_code IS 'Ländercode, zwei Großbuchstaben';
+COMMENT ON COLUMN country_shop.eu       IS 'Mitglied der Europäischen Union';
+
+-- Die Länderliste (ISO 3166-1 alpha-2, aus den ICU-Daten). Per SQL statt als
+-- CSV: der CSV-Import leert die Tabelle vorher mit TRUNCATE, und das geht bei
+-- einer Tabelle nicht, auf die ein Fremdschlüssel zeigt. ON CONFLICT: neue
+-- Länder kommen bei einem späteren Update hinzu, vorhandene bleiben.
+INSERT INTO country_shop (iso_code, eu) VALUES
+    ('AD', false), ('AE', false), ('AF', false), ('AG', false), ('AI', false), ('AL', false), ('AM', false), ('AO', false),
+    ('AQ', false), ('AR', false), ('AS', false), ('AT', true), ('AU', false), ('AW', false), ('AX', false), ('AZ', false),
+    ('BA', false), ('BB', false), ('BD', false), ('BE', true), ('BF', false), ('BG', true), ('BH', false), ('BI', false),
+    ('BJ', false), ('BL', false), ('BM', false), ('BN', false), ('BO', false), ('BQ', false), ('BR', false), ('BS', false),
+    ('BT', false), ('BV', false), ('BW', false), ('BY', false), ('BZ', false), ('CA', false), ('CC', false), ('CD', false),
+    ('CF', false), ('CG', false), ('CH', false), ('CI', false), ('CK', false), ('CL', false), ('CM', false), ('CN', false),
+    ('CO', false), ('CR', false), ('CU', false), ('CV', false), ('CW', false), ('CX', false), ('CY', true), ('CZ', true),
+    ('DE', true), ('DJ', false), ('DK', true), ('DM', false), ('DO', false), ('DZ', false), ('EC', false), ('EE', true),
+    ('EG', false), ('EH', false), ('ER', false), ('ES', true), ('ET', false), ('FI', true), ('FJ', false), ('FK', false),
+    ('FM', false), ('FO', false), ('FR', true), ('GA', false), ('GB', false), ('GD', false), ('GE', false), ('GF', false),
+    ('GG', false), ('GH', false), ('GI', false), ('GL', false), ('GM', false), ('GN', false), ('GP', false), ('GQ', false),
+    ('GR', true), ('GS', false), ('GT', false), ('GU', false), ('GW', false), ('GY', false), ('HK', false), ('HM', false),
+    ('HN', false), ('HR', true), ('HT', false), ('HU', true), ('ID', false), ('IE', true), ('IL', false), ('IM', false),
+    ('IN', false), ('IO', false), ('IQ', false), ('IR', false), ('IS', false), ('IT', true), ('JE', false), ('JM', false),
+    ('JO', false), ('JP', false), ('KE', false), ('KG', false), ('KH', false), ('KI', false), ('KM', false), ('KN', false),
+    ('KP', false), ('KR', false), ('KW', false), ('KY', false), ('KZ', false), ('LA', false), ('LB', false), ('LC', false),
+    ('LI', false), ('LK', false), ('LR', false), ('LS', false), ('LT', true), ('LU', true), ('LV', true), ('LY', false),
+    ('MA', false), ('MC', false), ('MD', false), ('ME', false), ('MF', false), ('MG', false), ('MH', false), ('MK', false),
+    ('ML', false), ('MM', false), ('MN', false), ('MO', false), ('MP', false), ('MQ', false), ('MR', false), ('MS', false),
+    ('MT', true), ('MU', false), ('MV', false), ('MW', false), ('MX', false), ('MY', false), ('MZ', false), ('NA', false),
+    ('NC', false), ('NE', false), ('NF', false), ('NG', false), ('NI', false), ('NL', true), ('NO', false), ('NP', false),
+    ('NR', false), ('NU', false), ('NZ', false), ('OM', false), ('PA', false), ('PE', false), ('PF', false), ('PG', false),
+    ('PH', false), ('PK', false), ('PL', true), ('PM', false), ('PN', false), ('PR', false), ('PS', false), ('PT', true),
+    ('PW', false), ('PY', false), ('QA', false), ('RE', false), ('RO', true), ('RS', false), ('RU', false), ('RW', false),
+    ('SA', false), ('SB', false), ('SC', false), ('SD', false), ('SE', true), ('SG', false), ('SH', false), ('SI', true),
+    ('SJ', false), ('SK', true), ('SL', false), ('SM', false), ('SN', false), ('SO', false), ('SR', false), ('SS', false),
+    ('ST', false), ('SV', false), ('SX', false), ('SY', false), ('SZ', false), ('TC', false), ('TD', false), ('TF', false),
+    ('TG', false), ('TH', false), ('TJ', false), ('TK', false), ('TL', false), ('TM', false), ('TN', false), ('TO', false),
+    ('TR', false), ('TT', false), ('TV', false), ('TW', false), ('TZ', false), ('UA', false), ('UG', false), ('UM', false),
+    ('US', false), ('UY', false), ('UZ', false), ('VA', false), ('VC', false), ('VE', false), ('VG', false), ('VI', false),
+    ('VN', false), ('VU', false), ('WF', false), ('WS', false), ('YE', false), ('YT', false), ('ZA', false), ('ZM', false),
+    ('ZW', false)
+ON CONFLICT (iso_code) DO NOTHING;
+
+-- Die Zuordnungen lädt der Upstall einmalig aus company_data/ — nach den
+-- SQL-Anweisungen, die Länder stehen dann schon.
+CREATE TABLE IF NOT EXISTS country_alias_shop
+(
+    alias    text NOT NULL PRIMARY KEY,
+    iso_code text NOT NULL,
+    manual   boolean NOT NULL DEFAULT false,
+    CONSTRAINT country_alias_shop_iso_code_fk FOREIGN KEY (iso_code)
+        REFERENCES country_shop (iso_code) ON DELETE CASCADE
+);
+
+COMMENT ON TABLE  country_alias_shop          IS 'Shop: Freitext eines Landes -> ISO-Code';
+COMMENT ON COLUMN country_alias_shop.alias    IS 'Freitext, bereinigt mit shop_country_key()';
+COMMENT ON COLUMN country_alias_shop.iso_code IS 'Land (country_shop.iso_code)';
+COMMENT ON COLUMN country_alias_shop.manual   IS 'vom Betreiber zugeordnet, nicht aus der Länderliste';
+
+-- Bereinigt einen Freitext für den Vergleich: getrimmt, Leerräume
+-- zusammengefasst, klein. „Deutschland " und „deutschland" sind dasselbe.
+CREATE OR REPLACE FUNCTION shop_country_key(p_text text) RETURNS text
+    LANGUAGE sql IMMUTABLE AS $$
+    SELECT lower(regexp_replace(btrim(p_text), '\s+', ' ', 'g'))
+$$;
+
+-- Land zu einem Freitext, NULL wenn er keinem zugeordnet ist. Ein leerer
+-- Freitext meint das Land des Mandanten (defaults.address_country), wie bei
+-- Adressen ohne Land üblich.
+CREATE OR REPLACE FUNCTION shop_country_code(p_text text) RETURNS text
+    LANGUAGE sql STABLE AS $$
+    SELECT a.iso_code
+      FROM country_alias_shop a
+     WHERE a.alias = shop_country_key(COALESCE(NULLIF(btrim(p_text), ''),
+                                               (SELECT address_country FROM defaults LIMIT 1)))
+$$;
+
+-- ============================================================================
+-- VERSAND (dev/shop-versand.md, Schritt 4)
+-- ============================================================================
+--
+-- Versandarten mit Anbieter, Rang und Grenzen; Preise je Versandart, Kanal,
+-- Länderzone, Gewichts- und Stückzahlstufe. Gewichte in der Einheit von
+-- parts.weight (defaults.weightunit), Abmessungen in Zentimetern. Preise netto
+-- oder brutto wie parts.sellprice laut shop_tax_included; gebucht wird über
+-- den Versandartikel der Versandart (Erlöskonto, Steuer).
+--
+-- Gilt nur in den Verkaufskanälen, und dort nur, wo OSERP rechnet: eBay
+-- rechnet den Versand selbst über die Versandrichtlinie (W4).
+
+-- Freigrenze je Kanal (Entscheidung 4): ab diesem Warenwert (brutto, wie der
+-- Kunde ihn sieht) ist der Versand frei — für Versandarten mit
+-- free_shipping_applies. NULL = keine Freigrenze.
+ALTER TABLE sales_channel_shop ADD COLUMN IF NOT EXISTS free_shipping_from numeric(15,5);
+COMMENT ON COLUMN sales_channel_shop.free_shipping_from IS 'Versandfrei ab diesem Bruttowarenwert, NULL = keine Freigrenze';
+
+-- Übernahme der bisherigen Einstellung in den HugoShop, einmalig: danach ist
+-- der Schlüssel weg, ein zweiter Lauf findet nichts mehr.
+UPDATE sales_channel_shop c
+   SET free_shipping_from = replace(btrim(d.value), ',', '.')::numeric
+  FROM defaults_oserp d
+ WHERE d.key = 'shop_free_shipping_from'
+   AND c.type = 'hugoshop'
+   AND btrim(d.value) ~ '^[0-9]+([.,][0-9]+)?$';
+DELETE FROM defaults_oserp WHERE key = 'shop_free_shipping_from';
+
+CREATE TABLE IF NOT EXISTS shipping_method_shop
+(
+    id                         integer NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    description                text NOT NULL,
+    vendor_id                  integer REFERENCES vendor (id) ON DELETE SET NULL,
+    parts_id                   integer NOT NULL REFERENCES parts (id),
+    rank                       integer NOT NULL DEFAULT 0,
+    max_weight                 numeric(15,5),
+    max_length                 numeric(15,5),
+    max_girth                  numeric(15,5),
+    free_shipping_applies      boolean NOT NULL DEFAULT true,
+    ebay_fulfillment_policy_id text,
+    active                     boolean NOT NULL DEFAULT true,
+    itime                      timestamp without time zone DEFAULT now(),
+    mtime                      timestamp without time zone
+);
+
+COMMENT ON TABLE  shipping_method_shop             IS 'Shop: Versandart';
+COMMENT ON COLUMN shipping_method_shop.vendor_id   IS 'Anbieter (Lieferant), NULL = allgemeine Versandart';
+COMMENT ON COLUMN shipping_method_shop.parts_id    IS 'Versandartikel: Bezeichnung, Erlöskonto und Steuer der Versandposition';
+COMMENT ON COLUMN shipping_method_shop.rank        IS 'Rang: bei verschiedenen zugeordneten Versandarten gilt die ranghöchste (W1)';
+COMMENT ON COLUMN shipping_method_shop.max_weight  IS 'Höchstgewicht der Sendung in der Einheit von parts.weight, NULL = ohne Grenze';
+COMMENT ON COLUMN shipping_method_shop.max_length  IS 'Längste Kante des größten Artikels in cm, NULL = ohne Grenze';
+COMMENT ON COLUMN shipping_method_shop.max_girth   IS 'Gurtmaß des größten Artikels in cm (Länge + 2 × Breite + 2 × Höhe), NULL = ohne Grenze';
+COMMENT ON COLUMN shipping_method_shop.free_shipping_applies IS 'Freigrenze des Kanals gilt für diese Versandart (W6)';
+COMMENT ON COLUMN shipping_method_shop.ebay_fulfillment_policy_id IS 'eBay-Versandrichtlinie für Angebote mit dieser Versandart, NULL = die allgemeine';
+
+CREATE TABLE IF NOT EXISTS shipping_zone_shop
+(
+    id          integer NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    description text NOT NULL,
+    sortkey     integer NOT NULL DEFAULT 0
+);
+
+COMMENT ON TABLE shipping_zone_shop IS 'Shop: Länderzone für Versandpreise';
+
+-- Ein Land gehört höchstens zu einer Zone (Schlüssel iso_code)
+CREATE TABLE IF NOT EXISTS shipping_zone_country_shop
+(
+    iso_code text NOT NULL PRIMARY KEY REFERENCES country_shop (iso_code) ON DELETE CASCADE,
+    zone_id  integer NOT NULL REFERENCES shipping_zone_shop (id) ON DELETE CASCADE
+);
+
+COMMENT ON TABLE shipping_zone_country_shop IS 'Shop: Land einer Versandzone, jedes Land höchstens einmal';
+
+-- Preisstufen. Es gilt die Zeile mit dem genauesten Treffer: eigener Kanal vor
+-- allen Kanälen, eigene Zone vor allen übrigen Ländern, dann die höchste
+-- erreichte Gewichts- und Stückzahlstufe. Ohne passende Zeile liefert die
+-- Versandart nicht dorthin.
+CREATE TABLE IF NOT EXISTS shipping_rate_shop
+(
+    id                 integer NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    shipping_method_id integer NOT NULL REFERENCES shipping_method_shop (id) ON DELETE CASCADE,
+    channel_id         integer REFERENCES sales_channel_shop (id) ON DELETE CASCADE,
+    zone_id            integer REFERENCES shipping_zone_shop (id) ON DELETE CASCADE,
+    weight_from        numeric(15,5) NOT NULL DEFAULT 0,
+    qty_from           numeric(15,5) NOT NULL DEFAULT 0,
+    price              numeric(15,5) NOT NULL
+);
+
+COMMENT ON TABLE  shipping_rate_shop             IS 'Shop: Versandpreis je Versandart, Kanal, Zone und Stufe';
+COMMENT ON COLUMN shipping_rate_shop.channel_id  IS 'Verkaufskanal, NULL = alle';
+COMMENT ON COLUMN shipping_rate_shop.zone_id     IS 'Länderzone, NULL = alle Länder ohne eigene Zeile';
+COMMENT ON COLUMN shipping_rate_shop.weight_from IS 'gilt ab diesem Gesamtgewicht (Einheit von parts.weight)';
+COMMENT ON COLUMN shipping_rate_shop.qty_from    IS 'gilt ab dieser Gesamtstückzahl';
+COMMENT ON COLUMN shipping_rate_shop.price       IS 'Versandpreis, netto oder brutto wie parts.sellprice';
+
+CREATE UNIQUE INDEX IF NOT EXISTS shipping_rate_shop_stufe_key
+    ON shipping_rate_shop (shipping_method_id, COALESCE(channel_id, 0), COALESCE(zone_id, 0), weight_from, qty_from);
+
+-- Lieferländer je Kanal (Entscheidung, Lieferländer begrenzen). Keine Zeile
+-- für einen Kanal = keine Begrenzung. Bei eBay ohne Wirkung (W12).
+CREATE TABLE IF NOT EXISTS sales_channel_country_shop
+(
+    channel_id integer NOT NULL REFERENCES sales_channel_shop (id) ON DELETE CASCADE,
+    iso_code   text NOT NULL REFERENCES country_shop (iso_code) ON DELETE CASCADE,
+    PRIMARY KEY (channel_id, iso_code)
+);
+
+COMMENT ON TABLE sales_channel_country_shop IS 'Shop: Lieferländer je Verkaufskanal, keine Zeile = alle';
+
+-- Versandangaben je Artikel (Schritt 5). Das Gewicht bleibt in parts.weight.
+CREATE TABLE IF NOT EXISTS parts_shipping_shop
+(
+    parts_id           integer NOT NULL PRIMARY KEY REFERENCES parts (id) ON DELETE CASCADE,
+    shipping_method_id integer REFERENCES shipping_method_shop (id) ON DELETE SET NULL,
+    length             numeric(15,5),
+    width              numeric(15,5),
+    height             numeric(15,5),
+    min_qty            numeric(15,5),
+    delivery_term_id   integer REFERENCES delivery_terms (id) ON DELETE SET NULL
+);
+
+COMMENT ON TABLE  parts_shipping_shop                    IS 'Shop: Versandangaben eines Artikels';
+COMMENT ON COLUMN parts_shipping_shop.shipping_method_id IS 'Zugeordnete Versandart, NULL = die günstigste passende';
+COMMENT ON COLUMN parts_shipping_shop.length             IS 'Länge in cm';
+COMMENT ON COLUMN parts_shipping_shop.width              IS 'Breite in cm';
+COMMENT ON COLUMN parts_shipping_shop.height             IS 'Höhe in cm';
+COMMENT ON COLUMN parts_shipping_shop.min_qty            IS 'Mindestabnahme; bei eBay die Losgröße (W5, W10)';
+COMMENT ON COLUMN parts_shipping_shop.delivery_term_id   IS 'Lieferbedingung (kivitendo delivery_terms), steht in Shop und Rechnung (Punkt 7)';
+
+-- Lieferbedingung und Mindestabnahme stehen auf der Produktseite (HugoShop)
+-- und bestimmen bei eBay Los und Angebot (W5, W11): ändern sie sich, wird
+-- neu veröffentlicht — im HugoShop nur bei shop_auto_publish, wie bei Preis
+-- und Texten (V22). Abmessungen und Versandart erscheinen auf keiner Seite.
+CREATE OR REPLACE FUNCTION parts_shipping_shop_auto_publish() RETURNS trigger AS $$
+BEGIN
+    IF NOT shop_extension_active() THEN
+        RETURN NULL;
+    END IF;
+    IF TG_OP = 'UPDATE'
+       AND OLD.delivery_term_id IS NOT DISTINCT FROM NEW.delivery_term_id
+       AND OLD.min_qty IS NOT DISTINCT FROM NEW.min_qty THEN
+        RETURN NULL;
+    END IF;
+
+    PERFORM shop_queue_job('publish_part', p.partnumber, NULL, c.type)
+       FROM parts p
+       JOIN parts_channel_shop pc ON pc.parts_id = p.id AND pc.active
+       JOIN sales_channel_shop c ON c.id = pc.channel_id AND c.active
+      WHERE p.id = NEW.parts_id
+        AND (c.type <> 'hugoshop' OR shop_auto_publish_enabled());
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+DO $$ BEGIN
+    DROP TRIGGER IF EXISTS trigger_parts_shipping_shop_auto_publish ON parts_shipping_shop;
+    CREATE TRIGGER trigger_parts_shipping_shop_auto_publish
+        AFTER INSERT OR UPDATE OF delivery_term_id, min_qty ON parts_shipping_shop
+        FOR EACH ROW
+        EXECUTE FUNCTION parts_shipping_shop_auto_publish();
+END $$;
+
+-- Ist der Artikel ein Versandartikel? Der einer Versandart oder der bisherige
+-- aus shop_shipping_partnumber. Versandartikel sind keine Ware: sie zählen
+-- nicht im Warenkorb, nicht zum Warenwert und nicht beim Versandgewicht.
+CREATE OR REPLACE FUNCTION shop_is_shipping_part(p_parts_id integer) RETURNS boolean
+    LANGUAGE sql STABLE AS $$
+    SELECT EXISTS (SELECT 1 FROM shipping_method_shop m WHERE m.parts_id = p_parts_id)
+        OR EXISTS (SELECT 1 FROM parts p
+                    WHERE p.id = p_parts_id
+                      AND p.partnumber = (SELECT value FROM defaults_oserp WHERE key = 'shop_shipping_partnumber'))
+$$;
+
+-- ── Berechnung (dev/shop-versand.md, Schritt 6) ──
+--
+-- Versandart und Preis eines HugoShop-Warenkorbs. Eine Stelle für Warenkorb,
+-- PayPal und Rechnung — alle sehen denselben Betrag.
+--
+--   p_cart_uuid    Warenkorb
+--   p_country      Land der Lieferadresse als Freitext oder Code; leer =
+--                  Mandantenland (shop_country_code)
+--   p_goods_value  Bruttowarenwert für die Freigrenze (wie der Kunde ihn sieht)
+--
+-- Regeln:
+--   - Ware: alle Zeilen außer Versandartikeln (die einer Versandart und der
+--     bisherige aus shop_shipping_partnumber).
+--   - Haben Artikel eine aktive Versandart zugeordnet, gilt die ranghöchste
+--     davon (W1) — passt sie nicht, ist keine Bestellung möglich (W2). Ohne
+--     Zuordnung gilt die günstigste passende aktive (Entscheidung 2).
+--   - Eine Versandart passt, wenn Gewicht, längste Kante und Gurtmaß des
+--     größten Artikels in ihre Grenzen fallen und es eine Preisstufe für Kanal
+--     und Land gibt. Fehlende Abmessungen gelten als passend; fehlt einer
+--     Ware das Gewicht, passen nur Versandarten, die keins brauchen (keine
+--     Gewichtsgrenze, keine Stufe ab einem Gewicht > 0) — sonst „Versand auf
+--     Anfrage" (W8, W9).
+--   - Preisstufe: eigener Kanal vor allen, eigene Zone vor allen übrigen
+--     Ländern, dann die höchste erreichte Gewichts- und Stückzahlstufe.
+--   - Freigrenze des Kanals: ab dem Wert ist der Versand frei, wenn die
+--     Versandart sie gelten lässt (W6, W13).
+--   - Lieferländer des Kanals: ist das Land nicht darunter, keine Lieferung.
+--
+-- status: ok, no_goods, country_unknown, country_not_delivered,
+-- weight_missing (Versand auf Anfrage), assigned_unfit, no_method.
+CREATE OR REPLACE FUNCTION shop_cart_shipping(p_cart_uuid text, p_country text, p_goods_value numeric)
+RETURNS TABLE (status text, shipping_method_id integer, description text, parts_id integer,
+               price numeric, free boolean)
+LANGUAGE plpgsql STABLE AS $$
+#variable_conflict use_column
+DECLARE
+    kanal        integer := shop_channel_id('hugoshop');
+    land         text    := shop_country_code(p_country);
+    zone         integer;
+    menge        numeric;
+    gewicht      numeric;
+    ohne_gewicht boolean;
+    kante        numeric;
+    gurt         numeric;
+    zugeordnet   integer;
+    gewaehlt     record;
+BEGIN
+    -- Ware und ihre Kennzahlen
+    SELECT COALESCE(sum(c.amount), 0),
+           COALESCE(sum(c.amount * COALESCE(p.weight, 0)), 0),
+           bool_or(p.part_type <> 'service' AND COALESCE(p.weight, 0) <= 0),
+           max(GREATEST(ps.length, ps.width, ps.height)),
+           max(GREATEST(ps.length, ps.width, ps.height)
+               + 2 * (COALESCE(ps.length, 0) + COALESCE(ps.width, 0) + COALESCE(ps.height, 0)
+                      - GREATEST(ps.length, ps.width, ps.height))),
+           (SELECT m.id
+              FROM cart_parts_hugoshop c2
+              JOIN parts_shipping_shop ps2 ON ps2.parts_id = c2.parts_id
+              JOIN shipping_method_shop m ON m.id = ps2.shipping_method_id AND m.active
+             WHERE c2.cart_uuid = p_cart_uuid
+             ORDER BY m.rank DESC, m.id
+             LIMIT 1)
+      INTO menge, gewicht, ohne_gewicht, kante, gurt, zugeordnet
+      FROM cart_parts_hugoshop c
+      JOIN parts p ON p.id = c.parts_id
+      LEFT JOIN parts_shipping_shop ps ON ps.parts_id = p.id
+     WHERE c.cart_uuid = p_cart_uuid
+       AND NOT shop_is_shipping_part(c.parts_id);
+
+    IF menge <= 0 THEN
+        RETURN QUERY SELECT 'no_goods'::text, NULL::integer, NULL::text, NULL::integer, 0::numeric, false;
+        RETURN;
+    END IF;
+    IF land IS NULL THEN
+        RETURN QUERY SELECT 'country_unknown'::text, NULL::integer, NULL::text, NULL::integer, 0::numeric, false;
+        RETURN;
+    END IF;
+    IF EXISTS (SELECT 1 FROM sales_channel_country_shop cc WHERE cc.channel_id = kanal)
+       AND NOT EXISTS (SELECT 1 FROM sales_channel_country_shop cc
+                        WHERE cc.channel_id = kanal AND cc.iso_code = land) THEN
+        RETURN QUERY SELECT 'country_not_delivered'::text, NULL::integer, NULL::text, NULL::integer, 0::numeric, false;
+        RETURN;
+    END IF;
+    SELECT zc.zone_id INTO zone FROM shipping_zone_country_shop zc WHERE zc.iso_code = land;
+
+    -- Je Versandart (die zugeordnete oder alle aktiven): passt sie, und zu
+    -- welchem Preis
+    SELECT m.id, m.description, m.parts_id, m.rank, m.free_shipping_applies, stufe.price,
+           (ohne_gewicht AND (m.max_weight IS NOT NULL
+                              OR EXISTS (SELECT 1 FROM shipping_rate_shop r
+                                          WHERE r.shipping_method_id = m.id AND r.weight_from > 0))) AS braucht_gewicht
+      INTO gewaehlt
+      FROM shipping_method_shop m
+      LEFT JOIN LATERAL (
+           SELECT r.price
+             FROM shipping_rate_shop r
+            WHERE r.shipping_method_id = m.id
+              AND (r.channel_id IS NULL OR r.channel_id = kanal)
+              AND (r.zone_id IS NULL OR r.zone_id = zone)
+              AND r.weight_from <= gewicht
+              AND r.qty_from <= menge
+            ORDER BY (r.channel_id IS NOT NULL) DESC, (r.zone_id IS NOT NULL) DESC,
+                     r.weight_from DESC, r.qty_from DESC
+            LIMIT 1
+      ) stufe ON true
+     WHERE m.active
+       AND (zugeordnet IS NULL OR m.id = zugeordnet)
+       AND stufe.price IS NOT NULL
+       AND (m.max_weight IS NULL OR gewicht <= m.max_weight)
+       AND (m.max_length IS NULL OR kante IS NULL OR kante <= m.max_length)
+       AND (m.max_girth IS NULL OR gurt IS NULL OR gurt <= m.max_girth)
+       AND NOT (ohne_gewicht AND (m.max_weight IS NOT NULL
+                                  OR EXISTS (SELECT 1 FROM shipping_rate_shop r
+                                              WHERE r.shipping_method_id = m.id AND r.weight_from > 0)))
+     ORDER BY stufe.price, m.rank DESC, m.id
+     LIMIT 1;
+
+    IF gewaehlt.id IS NULL THEN
+        -- Warum keine passt: fehlendes Gewicht hat Vorrang (Versand auf
+        -- Anfrage), dann die feste Zuordnung
+        IF ohne_gewicht AND EXISTS (
+               SELECT 1 FROM shipping_method_shop m
+                WHERE m.active AND (zugeordnet IS NULL OR m.id = zugeordnet)
+                  AND (m.max_weight IS NOT NULL
+                       OR EXISTS (SELECT 1 FROM shipping_rate_shop r
+                                   WHERE r.shipping_method_id = m.id AND r.weight_from > 0))) THEN
+            RETURN QUERY SELECT 'weight_missing'::text, NULL::integer, NULL::text, NULL::integer, 0::numeric, false;
+        ELSIF zugeordnet IS NOT NULL THEN
+            RETURN QUERY SELECT 'assigned_unfit'::text, zugeordnet,
+                                (SELECT m.description FROM shipping_method_shop m WHERE m.id = zugeordnet),
+                                NULL::integer, 0::numeric, false;
+        ELSE
+            RETURN QUERY SELECT 'no_method'::text, NULL::integer, NULL::text, NULL::integer, 0::numeric, false;
+        END IF;
+        RETURN;
+    END IF;
+
+    RETURN QUERY
+    SELECT 'ok'::text, gewaehlt.id, gewaehlt.description, gewaehlt.parts_id,
+           CASE WHEN frei THEN 0::numeric ELSE gewaehlt.price END, frei
+      FROM (SELECT gewaehlt.free_shipping_applies
+                   AND (SELECT c.free_shipping_from FROM sales_channel_shop c WHERE c.id = kanal) IS NOT NULL
+                   AND p_goods_value >= (SELECT c.free_shipping_from FROM sales_channel_shop c WHERE c.id = kanal)
+                   AS frei) f;
+END;
+$$;
+
+-- Die bisherige Pauschale wird zur Versandart „Standard" (W9): ihr
+-- Versandartikel, eine Preisstufe für alle Kanäle und Länder, ohne
+-- Gewichtsgrenze — sie braucht kein Gewicht. Nur solange es keine
+-- Versandart gibt; ein zweiter Lauf legt nichts mehr an.
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM shipping_method_shop) THEN
+        WITH versand AS (
+            SELECT p.id, p.sellprice
+              FROM parts p
+              JOIN defaults_oserp d ON d.key = 'shop_shipping_partnumber' AND p.partnumber = d.value
+             ORDER BY p.id
+             LIMIT 1
+        ), methode AS (
+            INSERT INTO shipping_method_shop (description, parts_id, rank, free_shipping_applies)
+            SELECT 'Standard', id, 0, true FROM versand
+            RETURNING id
+        )
+        INSERT INTO shipping_rate_shop (shipping_method_id, price)
+        SELECT m.id, COALESCE(v.sellprice, 0) FROM methode m CROSS JOIN versand v;
+    END IF;
+END $$;
+
+-- ============================================================================
 -- WARENKORB
 -- ============================================================================
 --
@@ -1072,7 +1514,8 @@ INSERT INTO defaults_oserp (key, value) VALUES ('shop_active_price_source', 'mas
 
 -- Versand
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_shipping_partnumber', '8') ON CONFLICT (key) DO NOTHING;
-INSERT INTO defaults_oserp (key, value) VALUES ('shop_free_shipping_from', '150') ON CONFLICT (key) DO NOTHING;
+-- shop_free_shipping_from gibt es nicht mehr: die Freigrenze steht je Kanal in
+-- sales_channel_shop.free_shipping_from (Abschnitt VERSAND)
 
 -- Bankverbindung fuer die Zahlungsaufforderung auf der Rechnungsseite
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_payment_account_owner', '') ON CONFLICT (key) DO NOTHING;

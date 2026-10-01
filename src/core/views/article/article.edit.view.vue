@@ -147,6 +147,24 @@
                                     />
                                 </v-col>
 
+                                <!-- Gewicht (parts.weight) — Grundlage der Versandkosten im Shop.
+                                     Erst am angelegten Artikel: createPart übernimmt kein Gewicht -->
+                                <v-col v-if="!isNewMode" cols="12" sm="4" class="py-1">
+                                    <v-text-field
+                                        v-model="article.weight"
+                                        :label="t('ArticleEditView.fields.weight')"
+                                        :suffix="weightunit"
+                                        :rules="[weightRule]"
+                                        variant="outlined"
+                                        density="compact"
+                                        hide-details="auto"
+                                        autocomplete="off"
+                                        type="number"
+                                        step="0.001"
+                                        min="0"
+                                    />
+                                </v-col>
+
                                 <!-- Buchungsgruppe -->
                                 <v-col cols="12" sm="4" class="py-1">
                                     <v-autocomplete
@@ -271,8 +289,11 @@ export default defineComponent({
             sellprice: 0,
             buchungsgruppen_id: null,
             notes: '',
-            obsolete: false
+            obsolete: false,
+            weight: ''
         })
+        /** Gewichtseinheit des Mandanten (defaults.weightunit), kommt mit getPart */
+        const weightunit = ref('')
 
         const saving = ref(false)
         const loading = ref(false)
@@ -359,7 +380,8 @@ export default defineComponent({
                     sellprice: article.value.sellprice,
                     buchungsgruppen_id: article.value.buchungsgruppen_id,
                     notes: article.value.notes,
-                    obsolete: article.value.obsolete
+                    obsolete: article.value.obsolete,
+                    weight: weightValue()
                 })
             } catch (e) {
                 console.error('Save article error:', e)
@@ -391,8 +413,10 @@ export default defineComponent({
                         sellprice: parseFloat(data.sellprice) || 0,
                         buchungsgruppen_id: data.buchungsgruppen_id ? parseInt(data.buchungsgruppen_id) : null,
                         notes: data.notes || '',
-                        obsolete: data.obsolete === true || data.obsolete === 't'
+                        obsolete: data.obsolete === true || data.obsolete === 't',
+                        weight: data.weight === null || data.weight === undefined ? '' : String(Number(data.weight))
                     }
+                    weightunit.value = data.weightunit || ''
                 } else {
                     error.value = t('ArticleEditView.messages.notFound')
                 }
@@ -422,7 +446,8 @@ export default defineComponent({
                 sellprice: article.value.sellprice,
                 buchungsgruppen_id: article.value.buchungsgruppen_id,
                 notes: article.value.notes,
-                obsolete: article.value.obsolete
+                obsolete: article.value.obsolete,
+                weight: weightValue()
             }
             navigator.sendBeacon('/api/parts/', new Blob([JSON.stringify(payload)], { type: 'application/json' }))
         }
@@ -459,6 +484,17 @@ export default defineComponent({
         const requiredRule = v =>
             (v !== null && v !== undefined && String(v).trim() !== '') || t('ArticleEditView.messages.required')
 
+        /** Gewicht: leer = nicht gepflegt, sonst eine Zahl ab 0 */
+        const weightRule = v =>
+            v === null || v === undefined || String(v).trim() === '' || Number(v) >= 0 || t('ArticleEditView.messages.weightInvalid')
+        function weightValue() {
+            const wert = article.value.weight
+            if (wert === null || wert === undefined || String(wert).trim() === '') return null
+            const zahl = Number(wert)
+            // Ungültiges nicht senden — das Backend lehnte die ganze Speicherung ab
+            return Number.isFinite(zahl) && zahl >= 0 ? zahl : undefined
+        }
+
         const canCreate = computed(() =>
             String(article.value.description || '').trim() !== '' &&
             !!article.value.buchungsgruppen_id &&
@@ -482,7 +518,8 @@ export default defineComponent({
                 sellprice: 0,
                 buchungsgruppen_id: gruppe ? gruppe.id : null,
                 notes: '',
-                obsolete: false
+                obsolete: false,
+                weight: ''
             }
             loading.value = false
             error.value = ''
@@ -604,6 +641,8 @@ export default defineComponent({
             canCreate,
             createArticle,
             requiredRule,
+            weightRule,
+            weightunit,
             // Shop
             shopEnabled,
             shopCard,

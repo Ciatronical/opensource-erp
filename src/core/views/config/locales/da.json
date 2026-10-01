@@ -828,8 +828,6 @@
         "shopShipping": "Fragtomkostninger",
         "shopShippingPartnumber": "Varenummer for fragt",
         "shopShippingPartnumber_help": "Vare, der faktureres som fragt. Varen skal findes.",
-        "shopFreeShippingFrom": "Fri fragt fra",
-        "shopFreeShippingFrom_help": "Over dette ordrebeløb opkræves ingen fragt.",
         "shopPayment": "Bankoplysninger til overførsler",
         "shopPaymentAccountOwner": "Kontohaver",
         "shopPaymentAccountOwner_help": "Vises på fakturasiden, så længe kunden ikke har betalt.",
