@@ -319,7 +319,24 @@
             "saved": "Lagret.",
             "republishQueued": "Lagret. Produktsidene skrives på nytt med de nye prisene.",
             "saveError": "Kanalinnstillingene kunne ikke lagres.",
-            "loadError": "Salgskanalene kunne ikke lastes."
+            "loadError": "Salgskanalene kunne ikke lastes.",
+            "name": "Navn",
+            "nameRequired": "Kanalen trenger et navn.",
+            "autoAddParts": "Legg til nye butikkvarer automatisk",
+            "autoAddPartsHint": "Når en vare legges til i butikken, tilbys den også i denne kanalen.",
+            "settings": "Innstillinger for {name}",
+            "settingsSaved": "Innstillinger lagret.",
+            "settingsSaveError": "Innstillingene kunne ikke lagres.",
+            "newChannel": "Ny salgskanal:",
+            "newChannelType": "Type",
+            "create": "Opprett",
+            "created": "Salgskanal opprettet. Den forblir avslått til den er satt opp.",
+            "createError": "Salgskanalen kunne ikke opprettes.",
+            "delete": "Slett salgskanal",
+            "deleteConfirm": "Slette «{name}» med varelinjer, bilder, leveringsland og prisnivåer? Dette kan ikke angres.",
+            "deleted": "Salgskanal slettet.",
+            "deleteError": "Salgskanalen kunne ikke slettes.",
+            "cancel": "Avbryt"
         },
         "ebayCondition": {
             "NEW": "Ny",
@@ -333,7 +350,11 @@
             "NETWORK_ERROR": "Serveren kan ikke nås. Kontroller tilkoblingen og prøv igjen.",
             "API_DATABASE_ERROR": "Databasen svarer ikke som forventet. Vennligst kontakt administratoren.",
             "API_INTERNAL_ERROR": "Det oppstod en uventet feil på serveren. Vennligst kontakt administratoren.",
-            "NO_PERMISSION": "Du har ikke tillatelse til denne handlingen."
+            "NO_PERMISSION": "Du har ikke tillatelse til denne handlingen.",
+            "CHANNEL_NAME_TAKEN": "En annen salgskanal har allerede dette navnet.",
+            "CHANNEL_KEY_TAKEN": "Denne butikknøkkelen tilhører allerede en annen HugoShop.",
+            "CHANNEL_IN_USE": "Fakturaer, angrer eller eBay-ordrer viser til denne kanalen. Den kan bare slås av.",
+            "CHANNEL_NOT_DELETABLE": "Bare en avslått kanal uten åpne oppdrag kan slettes."
         }
     }
 }

@@ -319,7 +319,24 @@
             "saved": "Saved.",
             "republishQueued": "Saved. The product pages will be rewritten with the new prices.",
             "saveError": "The channel settings could not be saved.",
-            "loadError": "The sales channels could not be loaded."
+            "loadError": "The sales channels could not be loaded.",
+            "name": "Name",
+            "nameRequired": "The channel needs a name.",
+            "autoAddParts": "Add new shop items automatically",
+            "autoAddPartsHint": "When an item is newly added to the shop, it is offered in this channel as well.",
+            "settings": "Settings of {name}",
+            "settingsSaved": "Settings saved.",
+            "settingsSaveError": "The settings could not be saved.",
+            "newChannel": "New sales channel:",
+            "newChannelType": "Type",
+            "create": "Create",
+            "created": "Sales channel created. It stays switched off until it is set up.",
+            "createError": "The sales channel could not be created.",
+            "delete": "Delete sales channel",
+            "deleteConfirm": "Delete “{name}” with its item rows, images, delivery countries and price tiers? This cannot be undone.",
+            "deleted": "Sales channel deleted.",
+            "deleteError": "The sales channel could not be deleted.",
+            "cancel": "Cancel"
         },
         "ebayCondition": {
             "NEW": "New",
@@ -333,7 +350,11 @@
             "NETWORK_ERROR": "The server cannot be reached. Please check the connection and try again.",
             "API_DATABASE_ERROR": "The database did not answer as expected. Please contact your administrator.",
             "API_INTERNAL_ERROR": "An unexpected server error occurred. Please contact your administrator.",
-            "NO_PERMISSION": "You do not have permission for this action."
+            "NO_PERMISSION": "You do not have permission for this action.",
+            "CHANNEL_NAME_TAKEN": "Another sales channel already has this name.",
+            "CHANNEL_KEY_TAKEN": "This shop key already belongs to another HugoShop.",
+            "CHANNEL_IN_USE": "Invoices, withdrawals or eBay orders refer to this channel. It can only be switched off.",
+            "CHANNEL_NOT_DELETABLE": "Only a switched-off channel without open jobs can be deleted."
         }
     }
 }

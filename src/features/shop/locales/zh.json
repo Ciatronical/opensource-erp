@@ -319,7 +319,24 @@
             "saved": "已保存。",
             "republishQueued": "已保存。商品页面将以新价格重新生成。",
             "saveError": "无法保存渠道设置。",
-            "loadError": "无法加载销售渠道。"
+            "loadError": "无法加载销售渠道。",
+            "name": "名称",
+            "nameRequired": "渠道需要一个名称。",
+            "autoAddParts": "自动加入新的商店商品",
+            "autoAddPartsHint": "商品新加入商店时，也会在此渠道中上架。",
+            "settings": "{name} 的设置",
+            "settingsSaved": "设置已保存。",
+            "settingsSaveError": "无法保存设置。",
+            "newChannel": "新销售渠道：",
+            "newChannelType": "类型",
+            "create": "创建",
+            "created": "销售渠道已创建。在完成设置前保持关闭。",
+            "createError": "无法创建销售渠道。",
+            "delete": "删除销售渠道",
+            "deleteConfirm": "删除“{name}”及其商品行、图片、配送国家和价格阶梯？此操作无法撤销。",
+            "deleted": "销售渠道已删除。",
+            "deleteError": "无法删除销售渠道。",
+            "cancel": "取消"
         },
         "ebayCondition": {
             "NEW": "全新",
@@ -333,7 +350,11 @@
             "NETWORK_ERROR": "无法连接服务器。请检查连接后重试。",
             "API_DATABASE_ERROR": "数据库的响应不符合预期。请联系管理员。",
             "API_INTERNAL_ERROR": "服务器发生意外错误。请联系管理员。",
-            "NO_PERMISSION": "您没有执行此操作的权限。"
+            "NO_PERMISSION": "您没有执行此操作的权限。",
+            "CHANNEL_NAME_TAKEN": "已有其他销售渠道使用此名称。",
+            "CHANNEL_KEY_TAKEN": "此商店密钥已属于另一个 HugoShop。",
+            "CHANNEL_IN_USE": "此渠道关联有发票、撤回或 eBay 订单，只能关闭。",
+            "CHANNEL_NOT_DELETABLE": "只有已关闭且没有未完成任务的渠道才能删除。"
         }
     }
 }

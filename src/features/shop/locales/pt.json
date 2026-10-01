@@ -319,7 +319,24 @@
             "saved": "Guardado.",
             "republishQueued": "Guardado. As páginas de produto serão reescritas com os novos preços.",
             "saveError": "Não foi possível guardar as definições do canal.",
-            "loadError": "Não foi possível carregar os canais de venda."
+            "loadError": "Não foi possível carregar os canais de venda.",
+            "name": "Nome",
+            "nameRequired": "O canal precisa de um nome.",
+            "autoAddParts": "Adicionar automaticamente novos artigos da loja",
+            "autoAddPartsHint": "Quando um artigo é adicionado à loja, também é oferecido neste canal.",
+            "settings": "Definições de {name}",
+            "settingsSaved": "Definições guardadas.",
+            "settingsSaveError": "Não foi possível guardar as definições.",
+            "newChannel": "Novo canal de venda:",
+            "newChannelType": "Tipo",
+            "create": "Criar",
+            "created": "Canal de venda criado. Fica desligado até estar configurado.",
+            "createError": "Não foi possível criar o canal de venda.",
+            "delete": "Eliminar canal de venda",
+            "deleteConfirm": "Eliminar «{name}» com as linhas de artigos, imagens, países de entrega e escalões de preço? Não é possível anular.",
+            "deleted": "Canal de venda eliminado.",
+            "deleteError": "Não foi possível eliminar o canal de venda.",
+            "cancel": "Cancelar"
         },
         "ebayCondition": {
             "NEW": "Novo",
@@ -333,7 +350,11 @@
             "NETWORK_ERROR": "O servidor não está acessível. Verifique a ligação e tente novamente.",
             "API_DATABASE_ERROR": "A base de dados não responde como esperado. Por favor, avise o administrador.",
             "API_INTERNAL_ERROR": "Ocorreu um erro inesperado no servidor. Por favor, avise o administrador.",
-            "NO_PERMISSION": "Não tem permissão para esta ação."
+            "NO_PERMISSION": "Não tem permissão para esta ação.",
+            "CHANNEL_NAME_TAKEN": "Outro canal de venda já tem este nome.",
+            "CHANNEL_KEY_TAKEN": "Esta chave de loja já pertence a outra HugoShop.",
+            "CHANNEL_IN_USE": "Faturas, desistências ou encomendas eBay estão associadas a este canal. Só pode ser desligado.",
+            "CHANNEL_NOT_DELETABLE": "Só é possível eliminar um canal desligado sem tarefas pendentes."
         }
     }
 }

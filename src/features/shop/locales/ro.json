@@ -319,7 +319,24 @@
             "saved": "Salvat.",
             "republishQueued": "Salvat. Paginile de produs vor fi rescrise cu noile prețuri.",
             "saveError": "Setările canalului nu au putut fi salvate.",
-            "loadError": "Canalele de vânzare nu au putut fi încărcate."
+            "loadError": "Canalele de vânzare nu au putut fi încărcate.",
+            "name": "Nume",
+            "nameRequired": "Canalul are nevoie de un nume.",
+            "autoAddParts": "Adaugă automat articolele noi ale magazinului",
+            "autoAddPartsHint": "Când un articol este adăugat în magazin, este oferit imediat și în acest canal.",
+            "settings": "Setări pentru {name}",
+            "settingsSaved": "Setări salvate.",
+            "settingsSaveError": "Setările nu au putut fi salvate.",
+            "newChannel": "Canal de vânzare nou:",
+            "newChannelType": "Tip",
+            "create": "Creează",
+            "created": "Canal de vânzare creat. Rămâne dezactivat până este configurat.",
+            "createError": "Canalul de vânzare nu a putut fi creat.",
+            "delete": "Șterge canalul de vânzare",
+            "deleteConfirm": "Ștergeți „{name}” cu rândurile de articole, imaginile, țările de livrare și treptele de preț? Acțiunea nu poate fi anulată.",
+            "deleted": "Canal de vânzare șters.",
+            "deleteError": "Canalul de vânzare nu a putut fi șters.",
+            "cancel": "Anulează"
         },
         "ebayCondition": {
             "NEW": "Nou",
@@ -333,7 +350,11 @@
             "NETWORK_ERROR": "Serverul nu poate fi accesat. Verificați conexiunea și încercați din nou.",
             "API_DATABASE_ERROR": "Baza de date nu răspunde conform așteptărilor. Vă rugăm anunțați administratorul.",
             "API_INTERNAL_ERROR": "A apărut o eroare neașteptată pe server. Vă rugăm anunțați administratorul.",
-            "NO_PERMISSION": "Nu aveți permisiunea pentru această acțiune."
+            "NO_PERMISSION": "Nu aveți permisiunea pentru această acțiune.",
+            "CHANNEL_NAME_TAKEN": "Un alt canal de vânzare are deja acest nume.",
+            "CHANNEL_KEY_TAKEN": "Această cheie de magazin aparține deja altui HugoShop.",
+            "CHANNEL_IN_USE": "De acest canal depind facturi, retrageri sau comenzi eBay. Poate fi doar dezactivat.",
+            "CHANNEL_NOT_DELETABLE": "Poate fi șters doar un canal dezactivat, fără sarcini deschise."
         }
     }
 }

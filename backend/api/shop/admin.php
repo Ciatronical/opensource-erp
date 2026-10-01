@@ -39,11 +39,12 @@ function getShopStatus($data) {
             (SELECT COUNT(*) FROM chart WHERE description ILIKE :forderungskonto) > 0 AS forderungskonto,
             (SELECT COUNT(*) FROM tax_zones WHERE description ILIKE :taxzone) > 0 AS taxzone,
             (SELECT COUNT(*) FROM currencies WHERE name ILIKE :currency) > 0 AS currency,
-            (SELECT COUNT(*) FROM parts_channel_shop
-              WHERE channel_id = shop_active_channel_id('hugoshop') AND active) AS artikel_mit_shopdaten,
+            (SELECT COUNT(DISTINCT pc.parts_id) FROM parts_channel_shop pc
+               JOIN sales_channel_shop hc ON hc.id = pc.channel_id AND hc.active AND hc.type = 'hugoshop'
+              WHERE pc.active) AS artikel_mit_shopdaten,
             EXISTS (SELECT 1 FROM sales_channel_shop WHERE active AND round_99) AS rundung_99,
-            shop_active_channel_id('hugoshop') IS NOT NULL AS hugoshop_an,
-            shop_active_channel_id('ebay') IS NOT NULL AS ebay_an,
+            EXISTS (SELECT 1 FROM sales_channel_shop WHERE type = 'hugoshop' AND active) AS hugoshop_an,
+            EXISTS (SELECT 1 FROM sales_channel_shop WHERE type = 'ebay' AND active) AS ebay_an,
             EXISTS (SELECT 1 FROM bin
                      WHERE id::text = btrim((SELECT value FROM defaults_oserp
                                               WHERE key = 'shop_stock_bin_id'))) AS lagerplatz,
@@ -62,9 +63,6 @@ function getShopStatus($data) {
 
     // Ohne diese Punkte nimmt der oeffentliche Zugang keine Bestellung an
     $blockierend = [];
-    if ('' === shopConfigValue($db, 'shop_public_key')) {
-        $blockierend[] = 'shop_public_key';
-    }
     if ('' === $versandNr || !$wahr($stand['versandartikel'])) {
         $blockierend[] = 'shop_shipping_partnumber';
     }
@@ -83,84 +81,109 @@ function getShopStatus($data) {
     if ('' === shopConfigValue($db, 'shop_contact_login') || !$wahr($stand['kontakt'])) {
         $hinweise[] = 'shop_contact_login';
     }
-    // Geprueft wird das Paar, das gerade gilt — im Testbetrieb nuetzen die
-    // Echtbetrieb-Zugangsdaten nichts und umgekehrt.
-    $paypalVorsilbe = shopConfigBool($db, 'shop_paypal_sandbox', true)
-        ? 'shop_paypal_sandbox_' : 'shop_paypal_live_';
-    if ('' === shopConfigValue($db, $paypalVorsilbe.'client_id')
-        || '' === shopConfigValue($db, $paypalVorsilbe.'secret')) {
-        $hinweise[] = $paypalVorsilbe.'client_id';
-    }
     if ('' === shopConfigValue($db, 'shop_payment_iban')) {
         $hinweise[] = 'shop_payment_iban';
-    }
-    if ('' === shopConfigValue($db, 'shop_base_url')) {
-        $hinweise[] = 'shop_base_url';
     }
     if (0 == (int)$stand['artikel_mit_shopdaten']) {
         $hinweise[] = 'parts_ext';
     }
-    if (shopConfigBool($db, 'shop_paypal_sandbox', true)) {
-        $hinweise[] = 'shop_paypal_sandbox';
-    }
-    // Veröffentlichung: Ohne gültiges Programm werden Seiten geschrieben, aber
-    // nicht gebaut; ohne Wurzelverzeichnis entsteht überhaupt keine Seite. Der
-    // Feldname allein sagt nicht, was daran fehlt — der Grund kommt mit.
+
+    // Je eingeschaltetem Kanal seine Einstellungen (dev/shop-mehrere-kanaele.md).
+    // Die Schlüssel bleiben die bisherigen Feldnamen — die Übersicht übersetzt
+    // sie; welcher Kanal betroffen ist, steht bei mehreren in den Details.
+    $kanaele = $db->getAll(
+        "SELECT id, type, name FROM sales_channel_shop WHERE active ORDER BY sortkey NULLS LAST, id"
+    ) ?: [];
+    $hugoshops = array_values(array_filter($kanaele, fn($k) => 'hugoshop' === $k['type']));
+    $mehrere = count($hugoshops) > 1;
     $veroeffentlichung = [];
-    if ('hugocms' === shopPublishMode($db)) {
-        // Betriebsart HugoCMS: gebaut wird dort. Hier zählt nur, ob Adresse
-        // und Schlüssel gesetzt sind — ob sie stimmen, prüft der Knopf in den
-        // Einstellungen; ein Aufruf bei jedem Öffnen der Übersicht wäre zu teuer.
-        $adresse = shopHugoCmsUrl(shopConfigValue($db, 'shop_hugocms_url'));
-        if ('' !== $adresse['fehler']) {
-            $hinweise[] = 'shop_hugocms_url';
-            $veroeffentlichung[] = $adresse['fehler'];
-        }
-        if ('' === shopConfigValue($db, 'shop_hugocms_key')) {
-            $hinweise[] = 'shop_hugocms_key';
-        }
-    } else {
-        $programm = shopPublishProgram($db);
-        if ('' === $programm['pfad']) {
-            $hinweise[] = 'shop_publish_command_path';
-            if ('' !== $programm['fehler']) {
-                $veroeffentlichung[] = $programm['fehler'];
+    $programm = null;
+
+    foreach ($hugoshops as $kanal) {
+        $id = (int)$kanal['id'];
+        $vorsilbe = $mehrere ? $kanal['name'].': ' : '';
+        $leer = fn(string $key) => '' === shopChannelValue($db, $id, $key);
+
+        if ($leer('public_key')) {
+            $blockierend[] = 'shop_public_key';
+            if ($mehrere) {
+                $veroeffentlichung[] = $vorsilbe.shopConfigLabel('shop_public_key');
             }
         }
-        try {
-            shopSiteDir($db);
-        } catch (Throwable $e) {
-            $hinweise[] = 'shop_sites_dir';
-            $veroeffentlichung[] = $e->getMessage();
+        // Geprueft wird das Paar, das gerade gilt — im Testbetrieb nuetzen die
+        // Echtbetrieb-Zugangsdaten nichts und umgekehrt.
+        $paypal = shopChannelBool($db, $id, 'paypal_sandbox', true) ? 'paypal_sandbox_' : 'paypal_live_';
+        if ($leer($paypal.'client_id') || $leer($paypal.'secret')) {
+            $hinweise[] = 'shop_'.$paypal.'client_id';
+        }
+        if ($leer('base_url')) {
+            $hinweise[] = 'shop_base_url';
+        }
+        if (shopChannelBool($db, $id, 'paypal_sandbox', true)) {
+            $hinweise[] = 'shop_paypal_sandbox';
+        }
+
+        // Veröffentlichung: Ohne gültiges Programm werden Seiten geschrieben,
+        // aber nicht gebaut; ohne Verzeichnis entsteht überhaupt keine Seite.
+        // Der Feldname allein sagt nicht, was daran fehlt — der Grund kommt mit.
+        if ('hugocms' === shopPublishMode($db, $id)) {
+            // Gebaut wird dort. Hier zählt nur, ob Adresse und Schlüssel
+            // gesetzt sind — ob sie stimmen, prüft der Knopf in der Kanalkarte;
+            // ein Aufruf bei jedem Öffnen der Übersicht wäre zu teuer.
+            $adresse = shopHugoCmsUrl(shopChannelValue($db, $id, 'hugocms_url'));
+            if ('' !== $adresse['fehler']) {
+                $hinweise[] = 'shop_hugocms_url';
+                $veroeffentlichung[] = $vorsilbe.$adresse['fehler'];
+            }
+            if ($leer('hugocms_key')) {
+                $hinweise[] = 'shop_hugocms_key';
+            }
+        } else {
+            $programm ??= shopPublishProgram($db);
+            if ('' === $programm['pfad']) {
+                $hinweise[] = 'shop_publish_command_path';
+                if ('' !== $programm['fehler']) {
+                    $veroeffentlichung[] = $programm['fehler'];
+                }
+            }
+            try {
+                shopSiteDir($db, $id);
+            } catch (Throwable $e) {
+                $hinweise[] = 'shop_sites_dir';
+                $veroeffentlichung[] = $vorsilbe.$e->getMessage();
+            }
         }
     }
 
-    // V18: Die Punkte oben betreffen den HugoShop. Ist er abgeschaltet — etwa
-    // bei einem Mandanten, der nur über eBay verkauft —, fehlt nichts davon.
-    if (!$wahr($stand['hugoshop_an'])) {
+    // V18: Die HugoShop-Punkte gelten nur mit eingeschaltetem HugoShop — etwa
+    // bei einem Mandanten, der nur über eBay verkauft, fehlt nichts davon.
+    if (!$hugoshops) {
         $blockierend = [];
         $hinweise = [];
         $veroeffentlichung = [];
     }
 
-    // eBay-Kanal: ohne diese Angaben lehnt eBay jedes Angebot ab
-    if ($wahr($stand['ebay_an'])) {
-        $ebay = function_exists('shopEbayConfig') ? shopEbayConfig($db) : [];
+    // eBay-Kanäle: ohne diese Angaben lehnt eBay jedes Angebot ab
+    foreach (array_filter($kanaele, fn($k) => 'ebay' === $k['type']) as $kanal) {
+        $ebay = function_exists('shopEbayConfig') ? shopEbayConfig($db, (int)$kanal['id']) : [];
         $leer = fn(string $key) => '' === trim((string)($ebay[$key] ?? ''));
         foreach ([
-            'ebay_client_id'          => $leer('ebay_client_id') || $leer('ebay_client_secret') || $leer('ebay_refresh_token'),
-            'ebay_public_host'        => $leer('ebay_public_host'),
-            'ebay_category_id'        => $leer('ebay_default_category_id'),
-            'ebay_location_key'       => $leer('ebay_merchant_location_key'),
-            'ebay_payment_policy'     => $leer('ebay_payment_policy_id'),
-            'ebay_return_policy'      => $leer('ebay_return_policy_id'),
-            'ebay_fulfillment_policy' => $leer('ebay_fulfillment_policy_id'),
+            'ebay_client_id'          => $leer('client_id') || $leer('client_secret') || $leer('refresh_token'),
+            'ebay_public_host'        => $leer('public_host'),
+            'ebay_category_id'        => $leer('default_category_id'),
+            'ebay_location_key'       => $leer('merchant_location_key'),
+            'ebay_payment_policy'     => $leer('payment_policy_id'),
+            'ebay_return_policy'      => $leer('return_policy_id'),
+            'ebay_fulfillment_policy' => $leer('fulfillment_policy_id'),
         ] as $punkt => $fehlt) {
             if ($fehlt) {
                 $hinweise[] = $punkt;
             }
         }
     }
+    $blockierend = array_values(array_unique($blockierend));
+    $hinweise = array_values(array_unique($hinweise));
+    $veroeffentlichung = array_values(array_unique($veroeffentlichung));
 
     // O14: Ohne Lagerplatz buchen Verkäufe kein Lager aus — der gemeinsame
     // Bestand stimmt dann nicht, und eBay meldet den alten
@@ -351,7 +374,13 @@ function getPartShopData($data) {
                  'weightunit', (SELECT weightunit FROM defaults LIMIT 1)
              )) AS shipping,
             (SELECT COALESCE(json_agg(k ORDER BY k.sortkey NULLS LAST, k.channel_id), '[]'::json) FROM (
-                SELECT c.id AS channel_id, c.type, c.sortkey,
+                SELECT c.id AS channel_id, c.type, c.name, c.sortkey,
+                       -- Betriebsart der Webseite (HugoShop): Bilder aus einem
+                       -- Marktplatz lassen sich nur lokal übernehmen (V17)
+                       COALESCE(c.settings ->> 'publish_mode', 'local') AS publish_mode,
+                       -- Adressmuster des HugoShops: Link zur Produktseite, Vorschaubilder
+                       COALESCE(c.settings ->> 'products_link', '') AS products_link,
+                       COALESCE(c.settings ->> 'thumbnails_link', '') AS thumbnails_link,
                        c.markup_type AS channel_markup_type, c.markup_value AS channel_markup_value,
                        c.round_99,
                        COALESCE(pc.active, false) AS active,
@@ -458,13 +487,15 @@ function savePartShopData($data) {
     }
 
     // vorher liest den Stand vor der Anweisung — alle Teile einer Anweisung
-    // sehen denselben Ausgangsstand. Daraus ergibt sich, ob der HugoShop
-    // gerade abgewählt wird.
+    // sehen denselben Ausgangsstand. Daraus ergibt sich, in welchen HugoShops
+    // der Artikel gerade abgewählt wird.
     try {
-        $seite = $db->getOne(
+        $seiten = $db->getAll(
             "WITH vorher AS (
-                 SELECT active FROM parts_channel_shop
-                  WHERE parts_id = :parts_id AND channel_id = shop_channel_id('hugoshop')
+                 SELECT pc.channel_id, pc.active
+                   FROM parts_channel_shop pc
+                   JOIN sales_channel_shop c ON c.id = pc.channel_id AND c.type = 'hugoshop'
+                  WHERE pc.parts_id = :parts_id
              ), ext AS (
                  INSERT INTO parts_ext (parts_id, hugoshop_category, hugoshop_hyperlink,
                                         hugoshop_breadcrumbs, hugoshop_images,
@@ -484,8 +515,8 @@ function savePartShopData($data) {
              ), eingabe AS (
                  -- je Kanal eine Zeile: ein doppelter Eintrag ließe ON CONFLICT
                  -- dieselbe Zeile zweimal ändern, und die Anweisung bräche ab
-                 SELECT DISTINCT ON (COALESCE(e.channel_id, shop_channel_id('hugoshop')))
-                        COALESCE(e.channel_id, shop_channel_id('hugoshop')) AS channel_id,
+                 SELECT DISTINCT ON (COALESCE(e.channel_id, shop_first_channel_id('hugoshop')))
+                        COALESCE(e.channel_id, shop_first_channel_id('hugoshop')) AS channel_id,
                         COALESCE(e.active, false) AS active,
                         CASE WHEN e.markup_type IN ('none', 'percent', 'amount') THEN e.markup_type END AS markup_type,
                         CASE WHEN e.markup_type IN ('percent', 'amount') THEN COALESCE(e.markup_value, 0) END AS markup_value,
@@ -535,13 +566,12 @@ function savePartShopData($data) {
                         min_qty            = EXCLUDED.min_qty,
                         delivery_term_id   = EXCLUDED.delivery_term_id
              )
-             SELECT p.partnumber, pe.hugoshop_hyperlink
-               FROM parts p
+             SELECT v.channel_id, p.partnumber, pe.hugoshop_hyperlink
+               FROM vorher v
+               JOIN geschrieben g ON g.channel_id = v.channel_id AND NOT g.active
+               JOIN parts p ON p.id = :parts_id
                LEFT JOIN parts_ext pe ON pe.parts_id = p.id
-              WHERE p.id = :parts_id
-                AND EXISTS (SELECT 1 FROM vorher WHERE vorher.active)
-                AND EXISTS (SELECT 1 FROM geschrieben g
-                             WHERE g.channel_id = shop_channel_id('hugoshop') AND NOT g.active)",
+              WHERE v.active",
             [
                 ':parts_id'     => $partsId,
                 ':category'     => $data['category']  ?? null,
@@ -573,9 +603,11 @@ function savePartShopData($data) {
 
     // Die abschließende Abfrage liest parts_ext im Stand vor der Anweisung,
     // also die Zielseite, unter der die Seite tatsächlich liegt — auch wenn
-    // dieselbe Speicherung die Adresse ändert.
-    if ($seite) {
-        shopQueueRemovePage($db, (string)$seite['partnumber'], (string)($seite['hugoshop_hyperlink'] ?? ''));
+    // dieselbe Speicherung die Adresse ändert. Je HugoShop, in dem der Artikel
+    // abgewählt wurde, ein Auftrag.
+    foreach ($seiten ?: [] as $seite) {
+        shopQueueRemovePage($db, (int)$seite['channel_id'], (string)$seite['partnumber'],
+                            (string)($seite['hugoshop_hyperlink'] ?? ''));
     }
 
     resultInfo(true, 'PART_SHOP_DATA_SAVED');
@@ -599,25 +631,26 @@ function deletePartShopData($data) {
 
     $partsId = (int)($data['parts_id'] ?? 0);
 
-    // Abschalten und den Dateinamen der Seite lesen in einem Vorgang. Nur
-    // wenn der Artikel im HugoShop angeboten wurde, kommt eine Zeile zurück —
-    // dann entsteht der Auftrag zum Entfernen der Seite.
-    $seite = $db->getOne(
+    // Abschalten und den Dateinamen der Seite lesen in einem Vorgang. Je
+    // HugoShop, in dem der Artikel angeboten wurde, kommt eine Zeile zurück —
+    // dort entsteht der Auftrag zum Entfernen der Seite.
+    $seiten = $db->getAll(
         "WITH aus AS (
              UPDATE parts_channel_shop SET active = false, mtime = now()
               WHERE parts_id = :parts_id AND active
              RETURNING parts_id, channel_id
          )
-         SELECT p.partnumber, pe.hugoshop_hyperlink
+         SELECT aus.channel_id, p.partnumber, pe.hugoshop_hyperlink
            FROM aus
+           JOIN sales_channel_shop c ON c.id = aus.channel_id AND c.type = 'hugoshop'
            JOIN parts p ON p.id = aus.parts_id
-           LEFT JOIN parts_ext pe ON pe.parts_id = p.id
-          WHERE aus.channel_id = shop_channel_id('hugoshop')",
+           LEFT JOIN parts_ext pe ON pe.parts_id = p.id",
         [':parts_id' => $partsId]
     );
 
-    if ($seite) {
-        shopQueueRemovePage($db, (string)$seite['partnumber'], (string)($seite['hugoshop_hyperlink'] ?? ''));
+    foreach ($seiten ?: [] as $seite) {
+        shopQueueRemovePage($db, (int)$seite['channel_id'], (string)$seite['partnumber'],
+                            (string)($seite['hugoshop_hyperlink'] ?? ''));
     }
 
     resultInfo(true, 'PART_SHOP_DATA_REMOVED');
@@ -630,20 +663,21 @@ function deletePartShopData($data) {
  * beim Schreiben der Seite.
  *
  * @param object $db Company-Datenbankverbindung
+ * @param int $kanal HugoShop, aus dessen Webseite die Seite verschwindet
  * @param string $partnumber Artikelnummer
  * @param string $hyperlink Zielseite aus parts_ext, leer = Artikelnummer
  * @return void
  */
-function shopQueueRemovePage($db, string $partnumber, string $hyperlink): void {
+function shopQueueRemovePage($db, int $kanal, string $partnumber, string $hyperlink): void {
     $datei = shopPageFileName(['shop' => ['hyperlink' => $hyperlink], 'artikel' => ['partnumber' => $partnumber]]);
-    shopQueueJob($db, 'remove_part', $partnumber, $datei);
+    shopQueueJob($db, 'remove_part', $partnumber, $datei, $kanal);
 }
 
 /**
  * Lädt ein Bild für einen Marktplatz-Kanal hoch
  *
  * @param array $data['parts_id'] Artikel
- * @param array $data['channel'] Art des Kanals, etwa ebay
+ * @param array $data['channel'] Kennung des Kanals; die Art (etwa ebay) meint den Standardkanal der Art
  * @param array $data['filename'] ursprünglicher Dateiname
  * @param array $data['data'] Bilddaten Base64, auch als data:-Adresse
  * @return void Bilder des Kanals nach dem Hochladen
@@ -654,7 +688,7 @@ function uploadShopChannelImage($data) {
     $db = DbhCompany::begin();
 
     $partsId = (int)($data['parts_id'] ?? 0);
-    $kanal = shopChannelIdOf($db, (string)($data['channel'] ?? ''));
+    $kanal = shopChannelParam($db, $data['channel'] ?? '')['id'];
     $roh = (string)($data['data'] ?? '');
     if (false !== ($stelle = strpos($roh, 'base64,'))) {
         $roh = substr($roh, $stelle + 7);
@@ -688,7 +722,7 @@ function deleteShopChannelImage($data) {
  * Setzt die Reihenfolge der Bilder eines Marktplatz-Kanals
  *
  * @param array $data['parts_id'] Artikel
- * @param array $data['channel'] Art des Kanals
+ * @param array $data['channel'] Kennung des Kanals oder seine Art
  * @param array $data['ids'] Bildkennungen in der neuen Reihenfolge, das erste ist das Hauptbild
  * @return void Bilder des Kanals danach
  * @testdata {"parts_id": 1, "channel": "ebay", "ids": [2, 1]}
@@ -698,7 +732,7 @@ function sortShopChannelImages($data) {
     $db = DbhCompany::begin();
 
     $partsId = (int)($data['parts_id'] ?? 0);
-    $kanal = shopChannelIdOf($db, (string)($data['channel'] ?? ''));
+    $kanal = shopChannelParam($db, $data['channel'] ?? '')['id'];
     shopChannelImageSort($db, $partsId, $kanal, (array)($data['ids'] ?? []));
     resultInfo(true, '', ['images' => shopChannelImages($db, $partsId, $kanal)]);
 }
@@ -710,8 +744,8 @@ function sortShopChannelImages($data) {
  * HugoShop nur in der Betriebsart lokal.
  *
  * @param array $data['parts_id'] Artikel
- * @param array $data['from'] Art des Quellkanals
- * @param array $data['to'] Art des Zielkanals
+ * @param array $data['from'] Quellkanal: Kennung oder Art
+ * @param array $data['to'] Zielkanal: Kennung oder Art
  * @return void Zahl der übernommenen Bilder
  * @testdata {"parts_id": 1, "from": "hugoshop", "to": "ebay"}
  */
@@ -719,8 +753,7 @@ function copyShopChannelImages($data) {
     permit(['shop_part_edit', 'edit_shop_config'], false);
     $db = DbhCompany::begin();
 
-    $anzahl = shopChannelImageCopy($db, (int)($data['parts_id'] ?? 0),
-        (string)($data['from'] ?? ''), (string)($data['to'] ?? ''));
+    $anzahl = shopChannelImageCopy($db, (int)($data['parts_id'] ?? 0), $data['from'] ?? '', $data['to'] ?? '');
     resultInfo(true, 'CHANNEL_IMAGES_COPIED', ['copied' => $anzahl]);
 }
 
@@ -737,15 +770,20 @@ function testShopEbay($data) {
     permit(['edit_shop_config'], false);
     $db = DbhCompany::begin();
 
-    shopEbayToken($db, true);
-    $antwort = shopEbayApi($db, 'GET', '/sell/fulfillment/v1/order', null, ['limit' => 1]);
+    $kanal = shopChannelOfRequest($db, $data, 'ebay');
+    // Frisches Token: prüft dabei das Konto (M4, shopEbayAccountCheck)
+    shopEbayToken($db, $kanal, true);
+    $antwort = shopEbayApi($db, $kanal, 'GET', '/sell/fulfillment/v1/order', null, ['limit' => 1]);
     if ($antwort['status'] >= 400) {
         resultInfo(false, 'EBAY_API_ERROR', null, 'eBay-API-Fehler: '.shopEbayErrorMessage($antwort));
         return;
     }
+    $cfg = shopEbayConfig($db, $kanal);
     resultInfo(true, '', [
         'connected'   => true,
-        'environment' => shopEbayConfig($db)['ebay_environment'] ?? 'production',
+        'environment' => $cfg['environment'] ?? 'production',
+        // leer: Konto nicht feststellbar (kein Identity-Scope, keine Bestellung)
+        'account'     => $cfg['account_id'] ?? '',
         'orderTotal'  => (int)($antwort['body']['total'] ?? 0),
     ]);
 }
@@ -753,6 +791,7 @@ function testShopEbay($data) {
 /**
  * Ruft die eBay-Bestellungen jetzt ab, statt auf den Cron zu warten
  *
+ * @param array $data['channel_id'] eBay-Kanal, leer = Standard-eBay-Kanal
  * @return void imported, skipped, fetched, errors
  * @testdata {}
  */
@@ -760,20 +799,21 @@ function syncShopEbayOrders($data) {
     permit(['shop_order', 'edit_shop_config'], false);
     $db = DbhCompany::begin();
 
-    resultInfo(true, '', shopEbayImportOrders($db));
+    resultInfo(true, '', shopEbayImportOrders($db, shopChannelOfRequest($db, $data, 'ebay')));
 }
 
 /**
- * Stand des eBay-Kanals: letzter Abruf und zuletzt importierte Bestellungen
+ * Stand eines eBay-Kanals: letzter Abruf, Konto und zuletzt importierte Bestellungen
  *
- * @return void enabled, lastCheck, counts, recent
+ * @param array $data['channel_id'] eBay-Kanal, leer = Standard-eBay-Kanal
+ * @return void channel_id, account, enabled, lastCheck, counts, recent
  * @testdata {}
  */
 function getShopEbayStatus($data) {
     permit(['shop_order', 'edit_shop_config'], false);
     $db = DbhCompany::begin();
 
-    resultInfo(true, '', shopEbayStatus($db));
+    resultInfo(true, '', shopEbayStatus($db, shopChannelOfRequest($db, $data, 'ebay')));
 }
 
 /**
@@ -922,7 +962,7 @@ function getShopShipping($data) {
                                          FROM shipping_zone_country_shop zc WHERE zc.zone_id = z.id)
                      ) ORDER BY z.sortkey, z.description), '[]')
                 FROM shipping_zone_shop z) AS zonen,
-             (SELECT COALESCE(json_agg(json_build_object('channel_id', c.id, 'type', c.type, 'active', c.active)
+             (SELECT COALESCE(json_agg(json_build_object('channel_id', c.id, 'type', c.type, 'name', c.name, 'active', c.active)
                                        ORDER BY c.sortkey NULLS LAST, c.id), '[]')
                 FROM sales_channel_shop c) AS kanaele,
              (SELECT COALESCE(json_agg(json_build_object('id', v.id, 'name', v.name, 'vendornumber', v.vendornumber)
@@ -1249,9 +1289,20 @@ function getShopChannels($data) {
 
     resultInfo(true, '', [
         'channels' => $db->getAll(
-            "SELECT c.id AS channel_id, c.type, c.active, c.sortkey,
+            "SELECT c.id AS channel_id, c.type, c.name, c.active, c.sortkey, c.auto_add_parts,
                     c.markup_type, c.markup_value, c.round_99, c.free_shipping_from,
                     COALESCE(c.settings, '{}'::jsonb) AS settings,
+                    -- Geheimnisse: nur ob hinterlegt, nie der Wert
+                    (SELECT COALESCE(json_object_agg(s.key, true), '{}')
+                       FROM sales_channel_secret_shop s
+                      WHERE s.channel_id = c.id AND s.value <> '') AS secrets_set,
+                    -- Löschen (M5): nur abgeschaltet, ohne offene Aufträge und
+                    -- ohne Belege (Rechnungslinks, Widerrufe, eBay-Bestellungen)
+                    (NOT c.active
+                     AND NOT EXISTS (SELECT 1 FROM batchjob_hugoshop b WHERE b.channel_id = c.id AND b.result IS NULL)
+                     AND NOT EXISTS (SELECT 1 FROM ar_link_hugoshop a WHERE a.channel_id = c.id)
+                     AND NOT EXISTS (SELECT 1 FROM withdrawals_hugoshop w WHERE w.channel_id = c.id)
+                     AND NOT EXISTS (SELECT 1 FROM ebay_orders e WHERE e.channel_id = c.id)) AS deletable,
                     -- Lieferländer (dev/shop-versand.md, Schritt 7); leer = alle
                     (SELECT COALESCE(json_agg(cc.iso_code ORDER BY cc.iso_code), '[]')
                        FROM sales_channel_country_shop cc WHERE cc.channel_id = c.id) AS countries,
@@ -1261,6 +1312,8 @@ function getShopChannels($data) {
               ORDER BY c.sortkey NULLS LAST, c.id"
         ),
         'tax_included' => shopConfigBool($db, 'shop_tax_included'),
+        // Arten, von denen sich Kanäle anlegen lassen (channels/channels.php)
+        'types'        => SHOP_CHANNEL_TYPES,
         // Auswahllisten: Länder für die Lieferländer, Lieferbedingungen für
         // den Ausschluss langer Lieferzeiten bei eBay (W11)
         'all_countries'  => array_column($db->getAll("SELECT iso_code FROM country_shop ORDER BY iso_code"), 'iso_code'),
@@ -1292,8 +1345,10 @@ function getShopChannels($data) {
  * @param array $data['countries'] Lieferländer (ISO-Codes), leer = alle; fehlt = unverändert (Schritt 7)
  * @param array $data['excluded_delivery_terms'] eBay: Lieferbedingungen, bei denen nicht angeboten
  *              wird (W11); fehlt = unverändert
+ * @param string $data['name'] Name des Kanals, eindeutig; fehlt = unverändert
+ * @param bool $data['auto_add_parts'] neue Shop-Artikel automatisch aufnehmen (M3); fehlt = unverändert
  * @return void
- * @testdata {"channel_id": 1, "active": true, "markup_type": "percent", "markup_value": 10, "round_99": true, "free_shipping_from": 150}
+ * @testdata {"channel_id": 1, "active": true, "markup_type": "percent", "markup_value": 10, "round_99": true, "free_shipping_from": 150, "name": "HugoShop"}
  */
 function saveShopChannel($data) {
     permit(['edit_shop_config'], false);
@@ -1332,71 +1387,97 @@ function saveShopChannel($data) {
         : [];
     sort($ausschluss);
 
+    // Name und automatische Aufnahme: nur, wenn mitgeschickt
+    $nameSetzen = array_key_exists('name', $data);
+    $name = trim((string)($data['name'] ?? ''));
+    if ($nameSetzen && '' === $name) {
+        resultInfo(false, 'VALIDATION_ERROR', null, 'Der Kanal braucht einen Namen');
+        return;
+    }
+    $aufnahmeSetzen = array_key_exists('auto_add_parts', $data);
+
     // vorher liest den Stand vor der Änderung: daraus ergibt sich, ob sich
     // der Preis der HugoShop-Seiten ändert.
-    $zeile = $db->getOne(
-        "WITH vorher AS (
-             SELECT id, active, markup_type, markup_value, round_99,
-                    COALESCE(settings -> 'excluded_delivery_terms', '[]'::jsonb) AS ausschluss
-               FROM sales_channel_shop WHERE id = :channel_id
-         ), laender_weg AS (
-             DELETE FROM sales_channel_country_shop
-              WHERE channel_id = :channel_id_laender_weg AND :laender_setzen_weg = 1
-                AND iso_code <> ALL(CAST(:laender_weg AS text[]))
-         ), laender_neu AS (
-             INSERT INTO sales_channel_country_shop (channel_id, iso_code)
-             SELECT :channel_id_laender_neu, c.iso_code
-               FROM country_shop c
-              WHERE :laender_setzen_neu = 1 AND c.iso_code = ANY(CAST(:laender_neu AS text[]))
-                AND EXISTS (SELECT 1 FROM sales_channel_shop WHERE id = :channel_id_laender_pruefen)
-             ON CONFLICT DO NOTHING
-         ), geaendert AS (
-             UPDATE sales_channel_shop
-                SET active       = :active OR NOT EXISTS (
-                                       SELECT 1 FROM sales_channel_shop andere
-                                        WHERE andere.id <> :channel_id_andere AND andere.active),
-                    markup_type  = :markup_type,
-                    markup_value = :markup_value,
-                    round_99     = :round_99,
-                    free_shipping_from = CASE WHEN :freigrenze_setzen = 1
-                                              THEN CAST(:free_shipping_from AS numeric)
-                                              ELSE free_shipping_from END,
-                    settings     = CASE WHEN :ausschluss_setzen = 1
-                                        THEN COALESCE(settings, '{}'::jsonb)
-                                             || jsonb_build_object('excluded_delivery_terms', CAST(:ausschluss AS jsonb))
-                                        ELSE settings END,
-                    mtime        = now()
-              WHERE id = :channel_id
-             RETURNING id, type, active, markup_type, markup_value, round_99,
-                       COALESCE(settings -> 'excluded_delivery_terms', '[]'::jsonb) AS ausschluss
-         )
-         SELECT g.type, g.active,
-                (g.active IS DISTINCT FROM v.active) AS geschaltet,
-                (g.markup_type IS DISTINCT FROM v.markup_type
-                 OR g.markup_value IS DISTINCT FROM v.markup_value
-                 OR g.round_99 IS DISTINCT FROM v.round_99) AS preis_geaendert,
-                (g.ausschluss IS DISTINCT FROM v.ausschluss) AS ausschluss_geaendert
-           FROM geaendert g JOIN vorher v ON v.id = g.id",
-        [
-            ':channel_id'   => (int)($data['channel_id'] ?? 0),
-            ':channel_id_andere' => (int)($data['channel_id'] ?? 0),
-            ':active'       => !empty($data['active']),
-            ':markup_type'  => $art,
-            ':markup_value' => $wert,
-            ':round_99'     => !empty($data['round_99']),
-            ':free_shipping_from' => null === $freigrenze ? null : (string)$freigrenze,
-            ':freigrenze_setzen'  => $freigrenzeSetzen ? 1 : 0,
-            ':channel_id_laender_weg'    => (int)($data['channel_id'] ?? 0),
-            ':channel_id_laender_neu'    => (int)($data['channel_id'] ?? 0),
-            ':channel_id_laender_pruefen' => (int)($data['channel_id'] ?? 0),
-            ':laender_setzen_weg' => $laenderSetzen ? 1 : 0,
-            ':laender_setzen_neu' => $laenderSetzen ? 1 : 0,
-            ':laender_weg'        => '{'.implode(',', $laender).'}',
-            ':laender_neu'        => '{'.implode(',', $laender).'}',
-            ':ausschluss_setzen'  => $ausschlussSetzen ? 1 : 0,
-            ':ausschluss'         => json_encode($ausschluss),
-        ]
-    );
+    try {
+        $zeile = $db->getOne(
+            "WITH vorher AS (
+                 SELECT id, active, markup_type, markup_value, round_99,
+                        COALESCE(settings -> 'excluded_delivery_terms', '[]'::jsonb) AS ausschluss
+                   FROM sales_channel_shop WHERE id = :channel_id
+             ), laender_weg AS (
+                 DELETE FROM sales_channel_country_shop
+                  WHERE channel_id = :channel_id_laender_weg AND :laender_setzen_weg = 1
+                    AND iso_code <> ALL(CAST(:laender_weg AS text[]))
+             ), laender_neu AS (
+                 INSERT INTO sales_channel_country_shop (channel_id, iso_code)
+                 SELECT :channel_id_laender_neu, c.iso_code
+                   FROM country_shop c
+                  WHERE :laender_setzen_neu = 1 AND c.iso_code = ANY(CAST(:laender_neu AS text[]))
+                    AND EXISTS (SELECT 1 FROM sales_channel_shop WHERE id = :channel_id_laender_pruefen)
+                 ON CONFLICT DO NOTHING
+             ), geaendert AS (
+                 UPDATE sales_channel_shop
+                    SET active       = :active OR NOT EXISTS (
+                                           SELECT 1 FROM sales_channel_shop andere
+                                            WHERE andere.id <> :channel_id_andere AND andere.active),
+                        markup_type  = :markup_type,
+                        markup_value = :markup_value,
+                        round_99     = :round_99,
+                        free_shipping_from = CASE WHEN :freigrenze_setzen = 1
+                                                  THEN CAST(:free_shipping_from AS numeric)
+                                                  ELSE free_shipping_from END,
+                        settings     = CASE WHEN :ausschluss_setzen = 1
+                                            THEN COALESCE(settings, '{}'::jsonb)
+                                                 || jsonb_build_object('excluded_delivery_terms', CAST(:ausschluss AS jsonb))
+                                            ELSE settings END,
+                        name         = CASE WHEN :name_setzen = 1 THEN CAST(:name AS text) ELSE name END,
+                        auto_add_parts = CASE WHEN :aufnahme_setzen = 1 THEN CAST(:auto_add_parts AS boolean)
+                                              ELSE auto_add_parts END,
+                        mtime        = now()
+                  WHERE id = :channel_id
+                 RETURNING id, type, active, markup_type, markup_value, round_99,
+                           COALESCE(settings -> 'excluded_delivery_terms', '[]'::jsonb) AS ausschluss
+             )
+             SELECT g.type, g.active,
+                    (g.active IS DISTINCT FROM v.active) AS geschaltet,
+                    (g.markup_type IS DISTINCT FROM v.markup_type
+                     OR g.markup_value IS DISTINCT FROM v.markup_value
+                     OR g.round_99 IS DISTINCT FROM v.round_99) AS preis_geaendert,
+                    (g.ausschluss IS DISTINCT FROM v.ausschluss) AS ausschluss_geaendert
+               FROM geaendert g JOIN vorher v ON v.id = g.id",
+            [
+                ':channel_id'   => (int)($data['channel_id'] ?? 0),
+                ':channel_id_andere' => (int)($data['channel_id'] ?? 0),
+                ':active'       => !empty($data['active']),
+                ':markup_type'  => $art,
+                ':markup_value' => $wert,
+                ':round_99'     => !empty($data['round_99']),
+                ':free_shipping_from' => null === $freigrenze ? null : (string)$freigrenze,
+                ':freigrenze_setzen'  => $freigrenzeSetzen ? 1 : 0,
+                ':channel_id_laender_weg'    => (int)($data['channel_id'] ?? 0),
+                ':channel_id_laender_neu'    => (int)($data['channel_id'] ?? 0),
+                ':channel_id_laender_pruefen' => (int)($data['channel_id'] ?? 0),
+                ':laender_setzen_weg' => $laenderSetzen ? 1 : 0,
+                ':laender_setzen_neu' => $laenderSetzen ? 1 : 0,
+                ':laender_weg'        => '{'.implode(',', $laender).'}',
+                ':laender_neu'        => '{'.implode(',', $laender).'}',
+                ':ausschluss_setzen'  => $ausschlussSetzen ? 1 : 0,
+                ':ausschluss'         => json_encode($ausschluss),
+                ':name_setzen'        => $nameSetzen ? 1 : 0,
+                ':name'               => $name,
+                ':aufnahme_setzen'    => $aufnahmeSetzen ? 1 : 0,
+                ':auto_add_parts'     => !empty($data['auto_add_parts']) ? 'true' : 'false',
+            ]
+        );
+    } catch (PDOException $e) {
+        // Der Name ist eindeutig (sales_channel_shop_name_key)
+        if ('23505' === $e->getCode()) {
+            // Text in der Oberfläche (ShopView.errors.CHANNEL_NAME_TAKEN)
+            resultInfo(false, 'CHANNEL_NAME_TAKEN', null, null);
+            return;
+        }
+        throw $e;
+    }
 
     if (!$zeile) {
         resultInfo(false, 'CHANNEL_NOT_FOUND', null, 'Diesen Verkaufskanal gibt es nicht');
@@ -1409,19 +1490,20 @@ function saveShopChannel($data) {
     // Ein- oder ausgeschaltet: das Modul des Kanals entscheidet, was folgt —
     // beim HugoShop Seiten entfernen oder alle neu schreiben (V16). Sonst bei
     // geändertem Preis die Seiten des eingeschalteten HugoShops (V9).
+    $kanal = (int)($data['channel_id'] ?? 0);
     if ($wahr($zeile['geschaltet'])) {
-        shopChannelSwitched($db, (string)$zeile['type'], $an);
+        shopChannelSwitched($db, (string)$zeile['type'], $kanal, $an);
         $neuVeroeffentlichen = 'hugoshop' === $zeile['type'] && $an;
         $auftrag = 0;
     } else {
         $neuVeroeffentlichen = 'hugoshop' === $zeile['type'] && $an && $wahr($zeile['preis_geaendert'])
-            && shopConfigBool($db, 'shop_auto_publish', true);
-        $auftrag = $neuVeroeffentlichen ? shopQueueJob($db, 'publish_all') : 0;
+            && shopChannelBool($db, $kanal, 'auto_publish', true);
+        $auftrag = $neuVeroeffentlichen ? shopQueueJob($db, 'publish_all', '', null, $kanal) : 0;
 
         // eBay: andere Lieferbedingungen ausgeschlossen (W11) — alle Angebote
         // neu abgleichen; betroffene werden beendet oder wieder eingestellt
         if ('ebay' === $zeile['type'] && $an && $wahr($zeile['ausschluss_geaendert'])) {
-            shopQueueJob($db, 'publish_all', '', null, 'ebay');
+            shopQueueJob($db, 'publish_all', '', null, $kanal);
         }
     }
 
@@ -1430,6 +1512,187 @@ function saveShopChannel($data) {
         'job_id'    => $auftrag,
         'active'    => $an,
     ]);
+}
+
+/**
+ * Speichert die Einstellungen einer Instanz (Kanalkarte, dev/shop-mehrere-kanaele.md)
+ *
+ * Angenommen werden nur die Schlüssel, die shop_channel_setting_keys() für die
+ * Art des Kanals nennt — nicht geheime nach settings, geheime nach
+ * sales_channel_secret_shop. Ein leer geschicktes Geheimnis bleibt, wie es
+ * ist: die Oberfläche bekommt Geheimnisse nie zu sehen und schickt nur, was
+ * neu eingegeben wurde. Ein Vorgang; die Antwort nennt, welche Geheimnisse
+ * danach hinterlegt sind.
+ *
+ * @param int $data['channel_id'] Kanal
+ * @param array $data['settings'] Schlüssel ohne Präfix => Wert, etwa base_url
+ * @param array $data['secrets'] Geheimnisse => neuer Wert, etwa public_key
+ * @return void secrets_set (Schlüssel => true)
+ * @testdata {"channel_id": 1, "settings": {"base_url": "https://shop.example"}, "secrets": {}}
+ */
+function saveShopChannelSettings($data) {
+    permit(['edit_shop_config'], false);
+    $db = DbhCompany::begin();
+
+    $objekt = fn($wert) => json_encode(
+        array_map(fn($v) => is_bool($v) ? ($v ? '1' : '0') : (string)($v ?? ''), is_array($wert) ? $wert : []),
+        JSON_FORCE_OBJECT | JSON_UNESCAPED_UNICODE
+    );
+
+    try {
+        $zeile = $db->getOne(
+            "WITH kanal AS (
+                 SELECT id, type FROM sales_channel_shop WHERE id = CAST(:kanal AS integer)
+             ), erlaubt AS (
+                 SELECT k.key, k.secret FROM shop_channel_setting_keys() k JOIN kanal ON kanal.type = k.type
+             ), werte AS (
+                 SELECT e.key, e.value
+                   FROM jsonb_each_text(CAST(:settings AS jsonb)) e
+                   JOIN erlaubt a ON a.key = e.key AND NOT a.secret
+             ), geheim AS (
+                 INSERT INTO sales_channel_secret_shop (channel_id, key, value)
+                 SELECT kanal.id, e.key, e.value
+                   FROM kanal
+                   CROSS JOIN jsonb_each_text(CAST(:secrets AS jsonb)) e
+                   JOIN erlaubt a ON a.key = e.key AND a.secret
+                  WHERE btrim(e.value) <> ''
+                 ON CONFLICT (channel_id, key) DO UPDATE SET value = EXCLUDED.value, mtime = now()
+                 RETURNING key
+             ), geaendert AS (
+                 UPDATE sales_channel_shop c
+                    SET settings = COALESCE(c.settings, '{}'::jsonb)
+                                   || COALESCE((SELECT jsonb_object_agg(key, value) FROM werte), '{}'::jsonb),
+                        mtime = now()
+                   FROM kanal
+                  WHERE c.id = kanal.id
+                 RETURNING c.id
+             )
+             SELECT (SELECT id FROM geaendert) AS id,
+                    (SELECT COALESCE(json_object_agg(x.key, true), '{}')
+                       FROM (SELECT s.key FROM sales_channel_secret_shop s, kanal
+                              WHERE s.channel_id = kanal.id AND s.value <> ''
+                             UNION
+                             SELECT key FROM geheim) x) AS secrets_set",
+            [
+                ':kanal'    => (int)($data['channel_id'] ?? 0),
+                ':settings' => $objekt($data['settings'] ?? []),
+                ':secrets'  => $objekt($data['secrets'] ?? []),
+            ]
+        );
+    } catch (PDOException $e) {
+        // Der Shop-Schlüssel bestimmt Mandant und HugoShop — eindeutig
+        // (sales_channel_secret_shop_public_key)
+        if ('23505' === $e->getCode()) {
+            // Text in der Oberfläche (ShopView.errors.CHANNEL_KEY_TAKEN)
+            resultInfo(false, 'CHANNEL_KEY_TAKEN', null, null);
+            return;
+        }
+        throw $e;
+    }
+
+    if (empty($zeile['id'])) {
+        resultInfo(false, 'CHANNEL_NOT_FOUND', null, 'Diesen Verkaufskanal gibt es nicht');
+        return;
+    }
+    resultInfo(true, 'CHANNEL_SETTINGS_SAVED', [
+        'secrets_set' => json_decode((string)($zeile['secrets_set'] ?? '{}'), true) ?: (object)[],
+    ]);
+}
+
+/**
+ * Legt einen Verkaufskanal an (dev/shop-mehrere-kanaele.md)
+ *
+ * Eine weitere Instanz einer Art — ein HugoShop mit eigener Webseite, ein
+ * eBay-Kanal mit eigenem Konto. Neue Kanäle sind abgeschaltet, nehmen keine
+ * Artikel automatisch auf und bekommen die Vorgaben ihrer Art
+ * (shop_channel_default_settings): eingeschaltet wird, wenn eingerichtet ist.
+ *
+ * @param string $data['type'] Art: hugoshop oder ebay
+ * @param string $data['name'] Name, eindeutig
+ * @return void channel_id
+ * @testdata {"type": "hugoshop", "name": "Zweitshop"}
+ */
+function createShopChannel($data) {
+    permit(['edit_shop_config'], false);
+    $db = DbhCompany::begin();
+
+    $art = (string)($data['type'] ?? '');
+    $name = trim((string)($data['name'] ?? ''));
+    if (!in_array($art, SHOP_CHANNEL_TYPES, true)) {
+        resultInfo(false, 'VALIDATION_ERROR', null, 'Unbekannte Kanalart: '.$art);
+        return;
+    }
+    if ('' === $name) {
+        resultInfo(false, 'VALIDATION_ERROR', null, 'Der Kanal braucht einen Namen');
+        return;
+    }
+
+    try {
+        $zeile = $db->getOne(
+            "INSERT INTO sales_channel_shop (type, name, active, auto_add_parts, sortkey, settings)
+             SELECT :art, :name, false, false,
+                    COALESCE((SELECT max(sortkey) FROM sales_channel_shop), 0) + 1,
+                    shop_channel_default_settings(:art_vorgabe)
+             RETURNING id",
+            [':art' => $art, ':name' => $name, ':art_vorgabe' => $art]
+        );
+    } catch (PDOException $e) {
+        if ('23505' === $e->getCode()) {
+            // Text in der Oberfläche (ShopView.errors.CHANNEL_NAME_TAKEN)
+            resultInfo(false, 'CHANNEL_NAME_TAKEN', null, null);
+            return;
+        }
+        throw $e;
+    }
+
+    resultInfo(true, 'CHANNEL_CREATED', ['channel_id' => (int)$zeile['id']]);
+}
+
+/**
+ * Löscht einen Verkaufskanal (M5)
+ *
+ * Nur abgeschaltet und ohne offene Aufträge — beim Abschalten entstehen die
+ * Aufträge, die Seiten oder Angebote zurücknehmen; sie müssen gelaufen sein,
+ * sonst blieben Seiten stehen und eBay-Angebote aktiv. Mit Belegen
+ * (Rechnungslinks, Widerrufe, eBay-Bestellungen) verhindert die Datenbank das
+ * Löschen; dann bleibt der Kanal abgeschaltet stehen. Mit dem Kanal gehen
+ * seine Artikelzeilen, Bilder, Lieferländer, Preisstufen, Warenkörbe und
+ * erledigten Aufträge.
+ *
+ * @param int $data['channel_id'] Kanal
+ * @return void
+ * @testdata {"channel_id": 0}
+ */
+function deleteShopChannel($data) {
+    permit(['edit_shop_config'], false);
+    $db = DbhCompany::begin();
+
+    try {
+        $zeile = $db->getOne(
+            "DELETE FROM sales_channel_shop c
+              WHERE c.id = CAST(:kanal AS integer)
+                AND NOT c.active
+                AND NOT EXISTS (SELECT 1 FROM batchjob_hugoshop b WHERE b.channel_id = c.id AND b.result IS NULL)
+             RETURNING c.id",
+            [':kanal' => (int)($data['channel_id'] ?? 0)]
+        );
+    } catch (PDOException $e) {
+        if ('23503' === $e->getCode()) {
+            // Text in der Oberfläche (ShopView.errors.CHANNEL_IN_USE): Rechnungen,
+            // Widerrufe oder eBay-Bestellungen hängen daran — nur abschalten
+            resultInfo(false, 'CHANNEL_IN_USE', null, null);
+            return;
+        }
+        throw $e;
+    }
+
+    if (!$zeile) {
+        // Text in der Oberfläche (ShopView.errors.CHANNEL_NOT_DELETABLE): nur
+        // abgeschaltet und ohne offene Aufträge
+        resultInfo(false, 'CHANNEL_NOT_DELETABLE', null, null);
+        return;
+    }
+    resultInfo(true, 'CHANNEL_DELETED');
 }
 
 /**
@@ -1448,11 +1711,60 @@ function getShopTemplateSets($data) {
 }
 
 /**
+ * Kanal einer Anfrage aus der Verwaltung
+ *
+ * channel_id nennt ihn; ohne Angabe gilt der Standardkanal der Art — so
+ * arbeitet die Oberfläche bis zur Kanalauswahl (Schritt 5,
+ * dev/shop-mehrere-kanaele.md) unverändert weiter.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param array $data Eingabedaten
+ * @param string $art verlangte Art: hugoshop oder ebay
+ * @return int Kennung des Kanals
+ * @throws ApiError SHOP_CHANNEL_UNKNOWN
+ */
+function shopChannelOfRequest($db, array $data, string $art): int {
+    $angabe = $data['channel_id'] ?? '';
+    $kanal = shopChannelParam($db, '' === (string)$angabe || null === $angabe ? $art : $angabe);
+    if ($art !== $kanal['type']) {
+        throw new ApiError('SHOP_CHANNEL_UNKNOWN', ('hugoshop' === $art ? 'Kein HugoShop: ' : 'Kein eBay-Kanal: ').$angabe);
+    }
+    return $kanal['id'];
+}
+
+/** HugoShop einer Anfrage, siehe shopChannelOfRequest() */
+function shopHugoshopOfRequest($db, array $data): int {
+    return shopChannelOfRequest($db, $data, 'hugoshop');
+}
+
+/**
+ * HugoShops einer Anfrage, die alle Webseiten betreffen kann
+ *
+ * Mit channel_id dieser eine, sonst alle eingeschalteten — für „Alle
+ * veröffentlichen" und „Shop-Benutzerschnittstelle installieren" in der
+ * Shop-Übersicht, die keinen einzelnen Shop auswählt.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param array $data Eingabedaten
+ * @return int[] Kennungen
+ * @throws ApiError SHOP_CHANNEL_UNKNOWN
+ */
+function shopHugoshopsOfRequest($db, array $data): array {
+    if ('' !== (string)($data['channel_id'] ?? '')) {
+        return [shopHugoshopOfRequest($db, $data)];
+    }
+    return array_map('intval', array_column($db->getAll(
+        "SELECT id FROM sales_channel_shop WHERE type = 'hugoshop' AND active ORDER BY sortkey NULLS LAST, id"
+    ) ?: [], 'id'));
+}
+
+/**
  * Zeigt die Produktseite eines Artikels, ohne sie zu schreiben
  *
  * Zum Prüfen eines Vorlagensatzes, auch ohne Schreibrecht im Webseiten-Verzeichnis.
  *
  * @param array $data['parts_id'] Artikel
+ * @param array $data['channel_id'] HugoShop, leer = Standard-HugoShop
  * @return void
  * @testdata {"parts_id": 1}
  */
@@ -1460,11 +1772,12 @@ function previewShopPage($data) {
     permit(['shop_part_edit', 'edit_shop_config'], false);
     $db = DbhCompany::begin();
 
-    $seite = shopPageData($db, (int)($data['parts_id'] ?? 0));
+    $kanal = shopHugoshopOfRequest($db, $data);
+    $seite = shopPageData($db, $kanal, (int)($data['parts_id'] ?? 0));
 
     resultInfo(true, '', [
         'filename' => shopPageFileName($seite),
-        'content'  => shopRenderPage($db, $seite),
+        'content'  => shopRenderPage($db, $kanal, $seite),
     ]);
 }
 
@@ -1472,6 +1785,7 @@ function previewShopPage($data) {
  * Schreibt die Produktseite eines Artikels in das eingestellte Verzeichnis
  *
  * @param array $data['parts_id'] Artikel
+ * @param array $data['channel_id'] HugoShop, leer = Standard-HugoShop
  * @return void
  * @testdata {"parts_id": 1}
  */
@@ -1479,7 +1793,7 @@ function writeShopPage($data) {
     permit(['shop_part_edit', 'edit_shop_config'], false);
     $db = DbhCompany::begin();
 
-    resultInfo(true, 'PAGE_WRITTEN', shopWriteProductPage($db, (int)($data['parts_id'] ?? 0)));
+    resultInfo(true, 'PAGE_WRITTEN', shopWriteProductPage($db, shopHugoshopOfRequest($db, $data), (int)($data['parts_id'] ?? 0)));
 }
 
 /**
@@ -1489,12 +1803,14 @@ function writeShopPage($data) {
  * tools/shop-publish.php.
  *
  * @param array $data['parts_id'] Artikel
+ * @param array $data['channel_id'] HugoShop, leer = Standard-HugoShop
  * @return void
  * @testdata {"parts_id": 1}
  */
 function publishShopPart($data) {
     permit(['shop_part_edit', 'edit_shop_config'], false);
     $db = DbhCompany::begin();
+    $kanal = shopHugoshopOfRequest($db, $data);
 
     $artikel = $db->getOne(
         "SELECT partnumber FROM parts WHERE id = :parts_id",
@@ -1505,24 +1821,34 @@ function publishShopPart($data) {
         return;
     }
 
-    $id = shopQueueJob($db, 'publish_part', (string)$artikel['partnumber']);
+    $id = shopQueueJob($db, 'publish_part', (string)$artikel['partnumber'], null, $kanal);
 
     resultInfo(true, 'PUBLISH_QUEUED', ['job_id' => $id, 'queued' => $id > 0]);
 }
 
 /**
- * Nimmt alle Artikel des Shops in die Veröffentlichung auf
+ * Nimmt alle Artikel in die Veröffentlichung auf — eines HugoShops oder aller
  *
- * @return void
+ * job_ids nennt die neu angelegten Aufträge, job_id den ersten davon (für
+ * Aufrufer, die nur einen erwarten).
+ *
+ * @param array $data['channel_id'] HugoShop, leer = alle eingeschalteten
+ * @return void job_id, job_ids, queued
  * @testdata {}
  */
 function publishShopAll($data) {
     permit(['shop_part_edit', 'edit_shop_config'], false);
     $db = DbhCompany::begin();
 
-    $id = shopQueueJob($db, 'publish_all');
+    $ids = [];
+    foreach (shopHugoshopsOfRequest($db, $data) as $kanal) {
+        $id = shopQueueJob($db, 'publish_all', '', null, $kanal);
+        if ($id > 0) {
+            $ids[] = $id;
+        }
+    }
 
-    resultInfo(true, 'PUBLISH_QUEUED', ['job_id' => $id, 'queued' => $id > 0]);
+    resultInfo(true, 'PUBLISH_QUEUED', ['job_id' => $ids[0] ?? 0, 'job_ids' => $ids, 'queued' => (bool)$ids]);
 }
 
 /**
@@ -1578,45 +1904,50 @@ function runShopPublishJobs($data) {
  * an. Arbeitet gerade ein Lauf, wird nichts gestartet — der Auftrag bleibt
  * offen und wird beim nächsten Lauf erledigt.
  *
- * @return void
+ * @param array $data['channel_id'] HugoShop, leer = alle eingeschalteten
+ * @return void job_id, job_ids, started, running
  * @testdata {}
  */
 function installShopUi($data) {
     permit(['edit_shop_config'], false);
     $db = DbhCompany::begin();
 
-    $id = shopQueueJob($db, 'sync_kit', '', SHOP_KIT_INSTALL);
-    if (0 === $id) {
-        $offen = $db->getOne(
-            "UPDATE batchjob_hugoshop b SET param = :param
-               FROM sales_channel_shop c
-              WHERE c.id = COALESCE(b.channel_id, shop_channel_id('hugoshop'))
-                AND c.type = 'hugoshop'
-                AND b.function = 'sync_kit'
-                AND b.partnumber = ''
-                AND b.result IS NULL
-          RETURNING b.id",
-            [':param' => SHOP_KIT_INSTALL]
-        );
-        $id = (int)($offen['id'] ?? 0);
+    $ids = [];
+    foreach (shopHugoshopsOfRequest($db, $data) as $kanal) {
+        $id = shopQueueJob($db, 'sync_kit', '', SHOP_KIT_INSTALL, $kanal);
+        if (0 === $id) {
+            $offen = $db->getOne(
+                "UPDATE batchjob_hugoshop b SET param = :param
+                  WHERE b.channel_id = CAST(:kanal AS integer)
+                    AND b.function = 'sync_kit'
+                    AND b.partnumber = ''
+                    AND b.result IS NULL
+              RETURNING b.id",
+                [':param' => SHOP_KIT_INSTALL, ':kanal' => $kanal]
+            );
+            $id = (int)($offen['id'] ?? 0);
+        }
+        if ($id > 0) {
+            $ids[] = $id;
+        }
     }
-    if (0 === $id) {
+    if (!$ids) {
         resultInfo(false, 'SHOP_PUBLISH_START_FAILED', null, 'Der Auftrag ließ sich nicht anlegen.');
         return;
     }
 
     if (shopPublishStatus($db)['running']) {
-        resultInfo(true, '', ['job_id' => $id, 'started' => false, 'running' => true]);
+        resultInfo(true, '', ['job_id' => $ids[0], 'job_ids' => $ids, 'started' => false, 'running' => true]);
         return;
     }
 
-    $start = shopPublishStartBackground($db, [$id]);
+    $start = shopPublishStartBackground($db, $ids);
     if ('' !== $start['fehler']) {
         resultInfo(false, 'SHOP_PUBLISH_START_FAILED', null, $start['fehler']);
         return;
     }
 
-    resultInfo(true, '', ['job_id' => $id, 'started' => true, 'running' => true]);
+    resultInfo(true, '', ['job_id' => $ids[0], 'job_ids' => $ids, 'started' => true, 'running' => true]);
 }
 
 /**
@@ -1633,6 +1964,7 @@ function installShopUi($data) {
  *
  * @param string $data['url'] Adresse aus dem Formular (optional)
  * @param string $data['key'] Schlüssel aus dem Formular (optional)
+ * @param array $data['channel_id'] HugoShop, leer = Standard-HugoShop
  * @return void
  * @testdata {}
  */
@@ -1640,7 +1972,7 @@ function testShopHugoCms($data) {
     permit(['edit_shop_config'], false);
     $db = DbhCompany::begin();
 
-    $antwort = shopHugoCmsCall($db, 'shopbuildstatus', 'GET', 20, [
+    $antwort = shopHugoCmsCall($db, shopHugoshopOfRequest($db, $data), 'shopbuildstatus', 'GET', 20, [
         'url' => (string)($data['url'] ?? ''),
         'key' => (string)($data['key'] ?? ''),
     ]);
@@ -1708,7 +2040,7 @@ function cleanupShopPublishJobs($data) {
 /**
  * Offene und zuletzt erledigte Aufträge
  *
- * Nur die der Veröffentlichung — die Tabelle teilt sich OSERP mit der Bridge.
+ * Nur Auftragsarten der Kanalmodule (shopChannelJobPairs), mit Kanal.
  *
  * @return void
  * @testdata {}
@@ -1722,7 +2054,7 @@ function getShopPublishJobs($data) {
     resultInfo(true, '', $db->getAll(
         "WITH eigene AS (
              SELECT b.id, b.itime, b.function, b.partnumber, b.param, b.result, b.run_id,
-                    c.type AS channel,
+                    c.type AS channel, b.channel_id, c.name AS channel_name,
                     -- Für den Verweis auf den Artikel. Die Artikelnummer ist in
                     -- parts nicht eindeutig erzwungen: der aktive vor dem
                     -- veralteten, sonst der älteste.
@@ -1731,7 +2063,7 @@ function getShopPublishJobs($data) {
                       ORDER BY COALESCE(p.obsolete, false), p.id
                       LIMIT 1) AS parts_id
                FROM batchjob_hugoshop b
-               JOIN sales_channel_shop c ON c.id = COALESCE(b.channel_id, shop_channel_id('hugoshop'))
+               JOIN sales_channel_shop c ON c.id = b.channel_id
               WHERE (c.type || ':' || b.function) = ANY(string_to_array(:paare, ','))
          )
          SELECT * FROM (

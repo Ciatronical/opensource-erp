@@ -12,12 +12,14 @@
 //       arbeitet einen Auftrag ab und vermerkt das Ergebnis (shopJobResult);
 //       wirft bei Fehlern — der Läufer vermerkt den Auftrag dann als
 //       fehlgeschlagen und macht mit dem nächsten weiter (V13)
-//   shopChannel<Art>Switched($db, bool $an): void
+//   shopChannel<Art>Switched($db, int $kanal, bool $an): void
 //       wird gerufen, wenn der Kanal ein- oder ausgeschaltet wurde
 //
-// Aufträge tragen ihren Kanal in batchjob_hugoshop.channel_id; NULL heißt
-// HugoShop. Welche Kanäle es gibt, sagt SHOP_CHANNEL_TYPES: eine Art ohne
-// Modul gibt es für OSERP nicht, auch wenn sie in sales_channel_shop steht.
+// Aufträge tragen ihren Kanal in batchjob_hugoshop.channel_id; der Auftrag,
+// den RunJob bekommt, nennt ihn als channel_id — ein Modul arbeitet für jede
+// Instanz seiner Art (dev/shop-mehrere-kanaele.md). Welche Arten es gibt, sagt
+// SHOP_CHANNEL_TYPES: eine Art ohne Modul gibt es für OSERP nicht, auch wenn
+// sie in sales_channel_shop steht.
 
 /** Kanäle mit Modul, in der Reihenfolge der Umsetzung */
 const SHOP_CHANNEL_TYPES = ['hugoshop', 'ebay'];
@@ -42,8 +44,7 @@ function shopChannelFunction(string $art, string $teil): string {
  * Alle Paare aus Kanal und Auftragsart, als Liste für die Abfragen
  *
  * Die Auftragsabfragen filtern damit auf das, was ein Modul abarbeitet —
- * dieselbe Auftragsart kann es in zwei Kanälen geben, und fremde Aufträge
- * (die Tabelle stammt aus der Bridge) bleiben unberührt.
+ * dieselbe Auftragsart kann es in mehreren Kanälen geben.
  *
  * @return string kommagetrennt, etwa "hugoshop:publish_part,hugoshop:publish_all"
  */
@@ -83,12 +84,13 @@ function shopChannelRunJob($db, array $auftrag, callable $sagen, callable $fehle
  *
  * @param object $db Company-Datenbankverbindung
  * @param string $art Art des Kanals
+ * @param int $kanal Kennung des Kanals
  * @param bool $an eingeschaltet
  * @return void
  */
-function shopChannelSwitched($db, string $art, bool $an): void {
+function shopChannelSwitched($db, string $art, int $kanal, bool $an): void {
     $melden = shopChannelFunction($art, 'Switched');
     if (in_array($art, SHOP_CHANNEL_TYPES, true) && function_exists($melden)) {
-        $melden($db, $an);
+        $melden($db, $kanal, $an);
     }
 }

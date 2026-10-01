@@ -181,15 +181,33 @@ function shopSitesRoot($db): string {
     return $echt;
 }
 
-/** Verzeichnis des Hugo-Projekts dieses Mandanten */
-function shopSiteDir($db, bool $anlegen = false): string {
+// ── Webseite eines HugoShops (dev/shop-mehrere-kanaele.md, Schritt 3) ──
+//
+// Jeder HugoShop ist eine eigene Webseite: Verzeichnis, Betriebsart,
+// Vorlagensatz, Adressen und HugoCMS-Zugang stehen in den Einstellungen seines
+// Kanals. Alle Funktionen, die eine Webseite anfassen, bekommen deshalb die
+// Kennung des Kanals ($kanal). Für den ganzen Mandanten gelten nur das
+// Wurzelverzeichnis aller Webseiten (shop_sites_dir), das Bau-Programm und
+// die Größe der Vorschaubilder.
+
+/**
+ * Verzeichnis des Hugo-Projekts eines HugoShops
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param int $kanal HugoShop
+ * @param bool $anlegen fehlendes Verzeichnis anlegen
+ * @return string
+ */
+function shopSiteDir($db, int $kanal, bool $anlegen = false): string {
     // Betriebsart HugoCMS: Die Webseite liegt auf einem anderen Server. Alles,
     // was OSERP erzeugt, landet zuerst in der Bereitstellung und geht von dort
     // an HugoCMS — Seiten, Paket und Kategorieübersicht merken davon nichts.
-    if ('hugocms' === shopPublishMode($db)) {
-        return shopStagingDir($db);
+    if ('hugocms' === shopPublishMode($db, $kanal)) {
+        return shopStagingDir($db, $kanal);
     }
-    return shopPathUnder(shopSitesRoot($db), shopConfigValue($db, 'shop_site_dir'), $anlegen);
+    // Leer heißt wie bisher: die Wurzel aller Webseiten selbst. Bei mehreren
+    // HugoShops braucht jeder sein eigenes Verzeichnis darunter.
+    return shopPathUnder(shopSitesRoot($db), shopChannelValue($db, $kanal, 'site_dir'), $anlegen);
 }
 
 /**
@@ -200,37 +218,67 @@ function shopSiteDir($db, bool $anlegen = false): string {
  * überträgt an HugoCMS und lässt dort bauen.
  *
  * @param object $db Company-Datenbankverbindung
+ * @param int $kanal HugoShop
  * @return string local oder hugocms
  */
-function shopPublishMode($db): string {
-    return 'hugocms' === shopConfigValue($db, 'shop_publish_mode', 'local') ? 'hugocms' : 'local';
+function shopPublishMode($db, int $kanal): string {
+    return 'hugocms' === shopChannelValue($db, $kanal, 'publish_mode', 'local') ? 'hugocms' : 'local';
+}
+
+/**
+ * Grundname der Dateien, die eine Webseite unter backend/tmp/ hat
+ *
+ * Bereitstellung und Stand der HugoCMS-Übertragung gehören zur Webseite, nicht
+ * zum Lauf — je HugoShop eigene. Vor Schritt 3 gab es sie einmal je Mandant
+ * (ohne Kanal im Namen). Der älteste HugoShop übernimmt sie beim ersten Zugriff:
+ * die Übertragung an HugoCMS gleicht die Bereitstellung als Abbild ab und
+ * entfernt dort, was fehlt — eine neue, leere Bereitstellung räumte sonst die
+ * Webseite leer.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param int $kanal HugoShop
+ * @param string $endung Namensteil nach dem Kanal, etwa '-staging'
+ * @return string absoluter Pfad
+ */
+function shopSiteStateFile($db, int $kanal, string $endung): string {
+    $basis = substr(shopPublishStateFiles($db)['status'], 0, -strlen('.json'));
+    $pfad = $basis.'-'.$kanal.$endung;
+
+    if (!file_exists($pfad) && file_exists($basis.$endung)) {
+        $aeltester = $db->getOne("SELECT min(id) AS id FROM sales_channel_shop WHERE type = 'hugoshop'");
+        if ((int)($aeltester['id'] ?? 0) === $kanal) {
+            @rename($basis.$endung, $pfad);
+        }
+    }
+    return $pfad;
 }
 
 /**
  * Bereitstellungsverzeichnis der Betriebsart HugoCMS
  *
- * Unter backend/tmp/, je Mandant — neben Sperre und Stand der Veröffentlichung.
- * Es bleibt zwischen den Läufen erhalten: Es ist das Abbild dessen, was die
- * Webseite von OSERP haben soll, und die Übertragung vergleicht es jedes Mal
- * mit HugoCMS.
+ * Unter backend/tmp/, je Mandant und HugoShop — neben Sperre und Stand der
+ * Veröffentlichung. Es bleibt zwischen den Läufen erhalten: Es ist das Abbild
+ * dessen, was die Webseite von OSERP haben soll, und die Übertragung
+ * vergleicht es jedes Mal mit HugoCMS.
  *
  * @param object $db Company-Datenbankverbindung
+ * @param int $kanal HugoShop
  * @return string absoluter Pfad
  */
-function shopStagingDir($db): string {
-    $dateien = shopPublishStateFiles($db);
-    $verzeichnis = substr($dateien['status'], 0, -strlen('.json')).'-staging';
+function shopStagingDir($db, int $kanal): string {
+    $verzeichnis = shopSiteStateFile($db, $kanal, '-staging');
     if (!is_dir($verzeichnis) && !@mkdir($verzeichnis, 0775, true) && !is_dir($verzeichnis)) {
         throw new ApiError('SHOP_STAGING_UNAVAILABLE', 'Bereitstellungsverzeichnis lässt sich nicht anlegen: '.$verzeichnis);
     }
     return realpath($verzeichnis) ?: $verzeichnis;
 }
 
-/** Zielverzeichnis der Inhaltsdateien */
-function shopContentDir($db, bool $anlegen = false): string {
+/** Zielverzeichnis der Inhaltsdateien eines HugoShops */
+function shopContentDir($db, int $kanal, bool $anlegen = false): string {
     // Vorgabe wie im Schema — fehlt die Zeile noch, landeten die Seiten sonst
     // direkt im Verzeichnis der Webseite
-    return shopPathUnder(shopSiteDir($db, $anlegen), shopConfigValue($db, 'shop_content_dir', 'content/de/produkt'), $anlegen);
+    return shopPathUnder(shopSiteDir($db, $kanal, $anlegen),
+                         shopChannelValue($db, $kanal, 'content_dir', 'content/de/produkt'), $anlegen);
 }
 
 // ── Werte fuer die Vorlage ──
@@ -242,11 +290,12 @@ function shopContentDir($db, bool $anlegen = false): string {
  * von Einzelvariablen.
  *
  * @param object $db Company-Datenbankverbindung
+ * @param int $kanal HugoShop — Preis, Texte, Angebot und Adressen des Kanals
  * @param int $partsId Artikel
  * @return array artikel, shop, betrieb
  * @throws ApiError PART_NOT_FOUND
  */
-function shopPageData($db, int $partsId): array {
+function shopPageData($db, int $kanal, int $partsId): array {
     $inklusive = shopConfigBool($db, 'shop_tax_included', false) ? 1 : 0;
 
     // Steuersatz wie in der Faktura: Buchungsgruppe -> Steuerzone ->
@@ -254,7 +303,7 @@ function shopPageData($db, int $partsId): array {
     // schon gelten — ein kuenftiger Satz gehoert noch nicht auf die Seite.
     // Ohne Schluessel ist der Satz 0 und brutto gleich netto.
     //
-    // Preis, Bezeichnung und Beschreibung sind die des HugoShop-Kanals
+    // Preis, Bezeichnung und Beschreibung sind die des HugoShops
     // (dev/shop-verkaufskanaele.md); ob der Artikel angeboten wird, sagt
     // seine aktive Kanalzeile.
     $zeile = $db->getOne(
@@ -263,7 +312,7 @@ function shopPageData($db, int $partsId): array {
                 COALESCE(NULLIF(pc.description, ''), p.notes) AS notes,
                 p.unit, p.ean,
                 TRUNC(p.onhand) AS onhand, p.obsolete,
-                shop_part_available(p.id) AS available,
+                shop_part_available(p.id, CAST(:kanal_verfuegbar AS integer)) AS available,
                 COALESCE(p.mtime, p.itime) AS mtime,
                 COALESCE(st.rate, 0) AS taxrate,
                 CASE WHEN :inklusive_netto = 1
@@ -272,12 +321,12 @@ function shopPageData($db, int $partsId): array {
                 CASE WHEN :inklusive_brutto = 1
                      THEN ROUND(k.preis, 2)
                      ELSE ROUND(k.preis * (1 + COALESCE(st.rate, 0)), 2) END AS price_gross,
-                (COALESCE(pc.active, false) AND shop_active_channel_id('hugoshop') IS NOT NULL) AS listed,
+                (COALESCE(pc.active, false) AND shop_active_channel_id(CAST(:kanal_aktiv AS integer)) IS NOT NULL) AS listed,
                 pe.hugoshop_category, pe.hugoshop_hyperlink, pe.hugoshop_breadcrumbs,
                 pe.hugoshop_images, pe.hugoshop_technical_data,
                 pe.hugoshop_properties, pe.hugoshop_downloads,
                 (SELECT company FROM defaults LIMIT 1) AS firma,
-                (SELECT free_shipping_from FROM sales_channel_shop WHERE type = 'hugoshop') AS free_shipping_from,
+                (SELECT free_shipping_from FROM sales_channel_shop WHERE id = CAST(:kanal_frei AS integer)) AS free_shipping_from,
                 -- Versandangaben (dev/shop-versand.md, Schritt 5): Lieferbedingung
                 -- als Text für Seite und Kunden, Mindestabnahme
                 COALESCE(NULLIF(btrim(dt.description_long), ''), dt.description) AS delivery_term,
@@ -285,9 +334,9 @@ function shopPageData($db, int $partsId): array {
            FROM parts p
            LEFT JOIN parts_shipping_shop ps ON ps.parts_id = p.id
            LEFT JOIN delivery_terms dt ON dt.id = ps.delivery_term_id
-           CROSS JOIN LATERAL (SELECT shop_channel_price(p.id) AS preis) k
+           CROSS JOIN LATERAL (SELECT shop_channel_price(p.id, CAST(:kanal_preis AS integer)) AS preis) k
            LEFT JOIN parts_channel_shop pc ON pc.parts_id = p.id
-                                          AND pc.channel_id = shop_channel_id('hugoshop')
+                                          AND pc.channel_id = CAST(:kanal_zeile AS integer)
            LEFT JOIN parts_ext pe ON pe.parts_id = p.id
            LEFT JOIN LATERAL (
                 SELECT tx.rate
@@ -307,6 +356,11 @@ function shopPageData($db, int $partsId): array {
             ':taxzone'          => shopConfigValue($db, 'shop_standard_taxzone', 'Inland'),
             ':inklusive_netto'  => $inklusive,
             ':inklusive_brutto' => $inklusive,
+            ':kanal_verfuegbar' => $kanal,
+            ':kanal_aktiv'      => $kanal,
+            ':kanal_frei'       => $kanal,
+            ':kanal_preis'      => $kanal,
+            ':kanal_zeile'      => $kanal,
         ]
     );
 
@@ -319,9 +373,9 @@ function shopPageData($db, int $partsId): array {
 
     $bilder         = $liste($zeile['hugoshop_images']);
     $downloads      = $liste($zeile['hugoshop_downloads']);
-    $bildMuster     = shopConfigValue($db, 'shop_images_link');
-    $vorschauMuster = shopConfigValue($db, 'shop_thumbnails_link');
-    $downloadMuster = shopConfigValue($db, 'shop_downloads_link', '/downloads/%s');
+    $bildMuster     = shopChannelValue($db, $kanal, 'images_link');
+    $vorschauMuster = shopChannelValue($db, $kanal, 'thumbnails_link');
+    $downloadMuster = shopChannelValue($db, $kanal, 'downloads_link', '/downloads/%s');
 
     return [
         'artikel' => [
@@ -363,9 +417,9 @@ function shopPageData($db, int $partsId): array {
         'betrieb' => [
             'firma'            => (string)($zeile['firma'] ?? ''),
             'currency'         => shopConfigValue($db, 'shop_standard_currency', 'EUR'),
-            'base_url'         => shopConfigValue($db, 'shop_base_url'),
-            'products_link'    => shopConfigValue($db, 'shop_products_link'),
-            'thumbnails_link'  => shopConfigValue($db, 'shop_thumbnails_link'),
+            'base_url'         => shopChannelValue($db, $kanal, 'base_url'),
+            'products_link'    => shopChannelValue($db, $kanal, 'products_link'),
+            'thumbnails_link'  => shopChannelValue($db, $kanal, 'thumbnails_link'),
             'free_shipping_from' => (float)($zeile['free_shipping_from'] ?? 0),
             'tax_included'     => shopConfigBool($db, 'shop_tax_included', false),
         ],
@@ -473,31 +527,32 @@ function shopThumbnail(string $quelle, string $ziel, int $groesse): bool {
  * Bilder neu. Scheitert etwas, bleibt die Seite trotzdem geschrieben.
  *
  * @param object $db Company-Datenbankverbindung
+ * @param int $kanal HugoShop
  * @param array $seite Werte aus shopPageData()
  * @return string erzeugt, aktuell, keine Bilder, nicht eingerichtet, Quelle fehlt, Fehler: …
  */
-function shopThumbnailFor($db, array $seite): string {
+function shopThumbnailFor($db, int $kanal, array $seite): string {
     if (!$seite['shop']['images']) {
         return 'keine Bilder';
     }
     // Die Bilder liegen auf dem Webserver bei HugoCMS (E6), nicht hier
-    if ('hugocms' === shopPublishMode($db)) {
+    if ('hugocms' === shopPublishMode($db, $kanal)) {
         return 'bei HugoCMS';
     }
-    if ('' === shopConfigValue($db, 'shop_images_dir') || '' === shopConfigValue($db, 'shop_thumbnails_dir')) {
+    if ('' === shopChannelValue($db, $kanal, 'images_dir') || '' === shopChannelValue($db, $kanal, 'thumbnails_dir')) {
         return 'nicht eingerichtet';
     }
 
     try {
-        $webseite = shopSiteDir($db);
+        $webseite = shopSiteDir($db, $kanal);
         $name = basename((string)$seite['shop']['images'][0]);
 
-        $quelle = shopPathUnder($webseite, shopConfigValue($db, 'shop_images_dir')).'/'.$name;
+        $quelle = shopPathUnder($webseite, shopChannelValue($db, $kanal, 'images_dir')).'/'.$name;
         if (!is_file($quelle)) {
             return 'Quelle fehlt';
         }
 
-        $ziel = shopPathUnder($webseite, shopConfigValue($db, 'shop_thumbnails_dir'), true).'/'.$name;
+        $ziel = shopPathUnder($webseite, shopChannelValue($db, $kanal, 'thumbnails_dir'), true).'/'.$name;
         if (is_file($ziel) && filemtime($ziel) >= filemtime($quelle)) {
             return 'aktuell';
         }
@@ -538,13 +593,14 @@ function shopPageFileName(array $seite): string {
  * Ein eigener Satz besteht so nur aus dem, was er ändert.
  *
  * @param object $db Company-Datenbankverbindung
+ * @param int $kanal HugoShop — sein Vorlagensatz
  * @param array $seite Werte aus shopPageData()
  * @param string $ausgabe Vorlage ohne Endung, z.B. 'product'
  * @return string
  * @throws ApiError SHOP_TEMPLATE_MISSING
  */
-function shopRenderPage($db, array $seite, string $ausgabe = 'product'): string {
-    $verzeichnis = shopTemplateDir(shopConfigValue($db, 'shop_template_set', 'standard'));
+function shopRenderPage($db, int $kanal, array $seite, string $ausgabe = 'product'): string {
+    $verzeichnis = shopTemplateDir(shopChannelValue($db, $kanal, 'template_set', 'standard'));
     $name = basename($ausgabe).'.md.php';
 
     $vorlage = $verzeichnis.'/'.$name;
@@ -570,24 +626,26 @@ function shopRenderPage($db, array $seite, string $ausgabe = 'product'): string 
  * Schreibt die Produktseite eines Artikels
  *
  * @param object $db Company-Datenbankverbindung
+ * @param int $kanal HugoShop, in dessen Webseite die Seite kommt
  * @param int $partsId Artikel
+ * @param bool $entwurf als Entwurf schreiben (V16)
  * @return array file, bytes, thumbnail
  * @throws ApiError SHOP_WRITE_FAILED
  */
-function shopWriteProductPage($db, int $partsId, bool $entwurf = false): array {
-    $seite = shopPageData($db, $partsId);
-    $inhalt = shopRenderPage($db, $seite);
+function shopWriteProductPage($db, int $kanal, int $partsId, bool $entwurf = false): array {
+    $seite = shopPageData($db, $kanal, $partsId);
+    $inhalt = shopRenderPage($db, $kanal, $seite);
     if ($entwurf) {
         $inhalt = shopPageAsDraft($inhalt);
     }
-    $datei = shopContentDir($db, true).'/'.shopPageFileName($seite);
+    $datei = shopContentDir($db, $kanal, true).'/'.shopPageFileName($seite);
 
     $geschrieben = file_put_contents($datei, $inhalt, LOCK_EX);
     if (false === $geschrieben) {
         throw new ApiError('SHOP_WRITE_FAILED', 'Datei nicht schreibbar: '.$datei);
     }
 
-    return ['file' => $datei, 'bytes' => $geschrieben, 'thumbnail' => shopThumbnailFor($db, $seite)];
+    return ['file' => $datei, 'bytes' => $geschrieben, 'thumbnail' => shopThumbnailFor($db, $kanal, $seite)];
 }
 
 /**
@@ -628,9 +686,9 @@ function shopPageAsDraft(string $inhalt): string {
 //
 // Der Name ist fest: der Proxy findet seine Konfiguration darueber.
 
-/** Verzeichnis des Pakets in der Webseite */
-function shopKitDir($db, bool $anlegen = false): string {
-    return shopPathUnder(shopSiteDir($db, $anlegen), 'oserp-shop', $anlegen);
+/** Verzeichnis des Pakets in der Webseite eines HugoShops */
+function shopKitDir($db, int $kanal, bool $anlegen = false): string {
+    return shopPathUnder(shopSiteDir($db, $kanal, $anlegen), 'oserp-shop', $anlegen);
 }
 
 /**
@@ -644,12 +702,19 @@ function shopKitDir($db, bool $anlegen = false): string {
  * kein PHP. Eine Konfiguration, die sich mit jedem neuen Shop-Schlüssel
  * ändert, muss aber übertragen werden können — anders als die beiden
  * PHP-Einstiegspunkte, die man einmal von Hand ablegt.
+ *
+ * Der Schlüssel ist der des HugoShops: über ihn erkennt der öffentliche
+ * Zugang Mandant und Kanal (dev/shop-mehrere-kanaele.md).
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param int $kanal HugoShop
+ * @return string
  */
-function shopKitConfig($db): string {
+function shopKitConfig($db, int $kanal): string {
     $werte = [
         '_hinweis' => 'Von OpensourceERP geschrieben (tools/shop-publish.php) — nicht von Hand ändern.',
-        'url'      => shopConfigValue($db, 'shop_backend_url'),
-        'key'      => shopConfigValue($db, 'shop_public_key'),
+        'url'      => shopChannelValue($db, $kanal, 'backend_url'),
+        'key'      => shopChannelValue($db, $kanal, 'public_key'),
     ];
     return json_encode($werte, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)."\n";
 }
@@ -698,17 +763,18 @@ function shopKitFiles(string $satz): array {
  * das Paket besteht, sagt shopKitFiles().
  *
  * @param object $db Company-Datenbankverbindung
+ * @param int $kanal HugoShop
  * @return array kopiert, entfernt, config (true wenn neu geschrieben)
  * @throws ApiError SHOP_WRITE_FAILED
  */
-function shopSyncKit($db): array {
+function shopSyncKit($db, int $kanal): array {
     $bilanz = ['kopiert' => 0, 'entfernt' => 0, 'config' => false];
 
-    $imPaket = shopKitFiles(shopConfigValue($db, 'shop_template_set', 'standard'));
+    $imPaket = shopKitFiles(shopChannelValue($db, $kanal, 'template_set', 'standard'));
     if (!$imPaket) {
         return $bilanz;
     }
-    $ziel = shopKitDir($db, true);
+    $ziel = shopKitDir($db, $kanal, true);
 
     foreach ($imPaket as $relativ => $quelle) {
         $zielDatei = $ziel.'/'.$relativ;
@@ -749,7 +815,7 @@ function shopSyncKit($db): array {
         }
     }
 
-    $inhalt = shopKitConfig($db);
+    $inhalt = shopKitConfig($db, $kanal);
     $konfiguration = $ziel.'/config.json';
     if (!is_file($konfiguration) || file_get_contents($konfiguration) !== $inhalt) {
         if (false === file_put_contents($konfiguration, $inhalt, LOCK_EX)) {
@@ -788,14 +854,15 @@ const SHOP_KIT_MOUNTS = ['oserp-shop/static', 'oserp-shop/layouts', 'oserp-shop/
  * dann gibt es nichts nachzusehen.
  *
  * @param object $db Company-Datenbankverbindung
+ * @param int $kanal HugoShop
  * @return array Hinweise im Wortlaut, leer wenn alles da ist
  */
-function shopKitSetupHints($db): array {
-    if ('hugocms' === shopPublishMode($db)) {
+function shopKitSetupHints($db, int $kanal): array {
+    if ('hugocms' === shopPublishMode($db, $kanal)) {
         return [];
     }
 
-    $verzeichnis = shopSiteDir($db);
+    $verzeichnis = shopSiteDir($db, $kanal);
     $konfiguration = null;
     foreach (['hugo.json', 'hugo.toml', 'hugo.yaml', 'hugo.yml', 'config.json', 'config.toml', 'config.yaml', 'config.yml'] as $name) {
         if (is_file($verzeichnis.'/'.$name)) {
@@ -833,15 +900,15 @@ const SHOP_PUBLISH_BINARY = 'hugo';
 // ── Auftraege ──
 //
 // Die Auftragsarten dieser Erweiterung. Nur diese nimmt der Laeufer, und nur
-// diese zeigt die Auftragsliste — die Tabelle stammt aus der Bridge.
+// diese zeigt die Auftragsliste.
 function shopJobFunctions(): array {
     return ['publish_part', 'publish_all', 'remove_part', 'remove_all', 'draft_all', 'sync_kit', 'reconcile_payments'];
 }
 //
-// Die Tabelle batchjob_hugoshop stammt aus der Bridge und bleibt unveraendert:
-// id, function, partnumber, param, result. Ein Auftrag ist offen, solange
-// result NULL ist. Die Anwendung schreibt nur Auftraege; geschrieben und
-// gebaut wird auf der Kommandozeile (tools/shop-publish.php).
+// Die Tabelle batchjob_hugoshop stammt aus der Bridge, ergaenzt um Kanal,
+// Zeitpunkt und Lauf. Ein Auftrag ist offen, solange result NULL ist. Die
+// Anwendung schreibt nur Auftraege; geschrieben und gebaut wird auf der
+// Kommandozeile (tools/shop-publish.php).
 
 /**
  * Nimmt einen Auftrag an, wenn er nicht schon offen ist
@@ -856,14 +923,14 @@ function shopJobFunctions(): array {
  * @param string $funktion eine Auftragsart des Kanals
  * @param string $partnumber Artikelnummer, leer bei publish_all
  * @param string|null $param Zusatzangabe, etwa der zu loeschende Dateiname
- * @param string $kanal Art des Kanals
- * @return int Auftragsnummer, 0 wenn schon offen
+ * @param int $kanal Kennung des Kanals (dev/shop-mehrere-kanaele.md)
+ * @return int Auftragsnummer, 0 wenn schon offen oder den Kanal nicht gibt
  */
-function shopQueueJob($db, string $funktion, string $partnumber = '', ?string $param = null, string $kanal = 'hugoshop'): int {
+function shopQueueJob($db, string $funktion, string $partnumber, ?string $param, int $kanal): int {
     // Die Regel steht in der Datenbank (shop_queue_job), weil die Trigger für
     // das automatische Neuschreiben (V22) dieselbe brauchen.
     $zeile = $db->getOne(
-        "SELECT shop_queue_job(:function, :partnumber, :param, :kanal) AS id",
+        "SELECT shop_queue_job(:function, :partnumber, :param, CAST(:kanal AS integer)) AS id",
         [
             ':function'   => $funktion,
             ':partnumber' => $partnumber,
@@ -884,9 +951,8 @@ function shopQueueJob($db, string $funktion, string $partnumber = '', ?string $p
  * @return array
  */
 function shopOpenJobs($db, int $limit = 500, ?array $nurIds = null): array {
-    // Nur die eigenen Funktionen: die Tabelle teilt sich OSERP mit dem Laeufer
-    // der Bridge, und jeder der beiden vermerkt fremde Auftraege sonst als
-    // Fehler.
+    // Nur Auftragsarten, die ein Kanalmodul abarbeitet — eine unbekannte
+    // bliebe sonst bei jedem Lauf als Fehler stehen.
     // Leere Auswahl heißt "alle offenen". NULLIF haelt den leeren Fall aus
     // der Umwandlung heraus: string_to_array('', ',')::int[] scheiterte sonst.
     $ids = null === $nurIds ? '' : implode(',', array_map('intval', $nurIds));
@@ -895,9 +961,9 @@ function shopOpenJobs($db, int $limit = 500, ?array $nurIds = null): array {
     // Ausgewählt wird nach Kanal und Auftragsart (shopChannelJobPairs); channel
     // nennt dem Läufer das zuständige Modul.
     return $db->getAll(
-        "SELECT b.id, b.function, b.partnumber, b.param, c.type AS channel
+        "SELECT b.id, b.function, b.partnumber, b.param, c.type AS channel, b.channel_id
            FROM batchjob_hugoshop b
-           JOIN sales_channel_shop c ON c.id = COALESCE(b.channel_id, shop_channel_id('hugoshop'))
+           JOIN sales_channel_shop c ON c.id = b.channel_id
           WHERE b.result IS NULL
             AND (c.type || ':' || b.function) = ANY(string_to_array(:paare, ','))
             AND ('' = :ids_alle OR b.id = ANY(string_to_array(NULLIF(:ids, ''), ',')::int[]))
@@ -951,8 +1017,7 @@ function shopJobRetentionDays($db): int {
  * will. Gelöscht wird, was ausgewählt war; ein offener Auftrag ist danach
  * schlicht nicht mehr vorgemerkt.
  *
- * Fremde Auftragsarten bleiben unangetastet: die Tabelle stammt aus der
- * Bridge, und was nicht aus dieser Erweiterung kommt, gehört ihr auch nicht.
+ * Nur Auftragsarten der Kanalmodule (shopChannelJobPairs).
  *
  * @param object $db Company-Datenbankverbindung
  * @param array $ids Auftragsnummern
@@ -968,7 +1033,7 @@ function shopDeleteJobs($db, array $ids): int {
         "WITH weg AS (
              DELETE FROM batchjob_hugoshop b
               USING sales_channel_shop c
-              WHERE c.id = COALESCE(b.channel_id, shop_channel_id('hugoshop'))
+              WHERE c.id = b.channel_id
                 AND (c.type || ':' || b.function) = ANY(string_to_array(:paare, ','))
                 AND b.id = ANY(string_to_array(:ids, ',')::int[])
              RETURNING b.id)
@@ -987,8 +1052,7 @@ function shopDeleteJobs($db, array $ids): int {
  *
  * Nur erfolgreiche: ihr Ergebnis beginnt mit "ok" (siehe shopJobResult).
  * Fehlgeschlagene bleiben stehen, sonst wäre die Spur weg, bevor jemand sie
- * gesehen hat. Offene ebenfalls, und fremde Auftragsarten auch — die Tabelle
- * stammt aus der Bridge.
+ * gesehen hat. Offene ebenfalls; nur Auftragsarten der Kanalmodule.
  *
  * Zeilen ohne itime stammen aus der Zeit vor der Spalte und gelten als alt.
  *
@@ -1005,7 +1069,7 @@ function shopCleanupJobs($db, ?int $tage = null): int {
         "WITH weg AS (
              DELETE FROM batchjob_hugoshop b
               USING sales_channel_shop c
-              WHERE c.id = COALESCE(b.channel_id, shop_channel_id('hugoshop'))
+              WHERE c.id = b.channel_id
                 AND b.result IS NOT NULL
                 AND b.result LIKE 'ok%'
                 AND (c.type || ':' || b.function) = ANY(string_to_array(:paare, ','))
@@ -1025,22 +1089,24 @@ function shopCleanupJobs($db, ?int $tage = null): int {
 }
 
 /**
- * Artikel, die im Shop stehen
+ * Artikel, die in einem HugoShop stehen
  *
- * Maßgeblich ist die aktive Zeile des HugoShop-Kanals, nicht mehr die
+ * Maßgeblich ist die aktive Zeile des Kanals, nicht mehr die
  * parts_ext-Zeile: die bleibt beim Abwählen erhalten (V5).
  *
  * @param object $db Company-Datenbankverbindung
+ * @param int $kanal HugoShop; abgeschaltet = keine Artikel
  * @return array Liste aus id und partnumber
  */
-function shopListedParts($db): array {
+function shopListedParts($db, int $kanal): array {
     return $db->getAll(
         "SELECT p.id, p.partnumber
            FROM parts p
            JOIN parts_channel_shop pc ON pc.parts_id = p.id
-                                     AND pc.channel_id = shop_active_channel_id('hugoshop')
+                                     AND pc.channel_id = shop_active_channel_id(CAST(:kanal AS integer))
                                      AND pc.active
-          ORDER BY p.id"
+          ORDER BY p.id",
+        [':kanal' => $kanal]
     );
 }
 
@@ -1048,11 +1114,12 @@ function shopListedParts($db): array {
  * Loescht die Seite eines Artikels
  *
  * @param object $db Company-Datenbankverbindung
+ * @param int $kanal HugoShop
  * @param string $dateiname Dateiname ohne Pfad
  * @return bool true, wenn es die Datei gab
  */
-function shopRemovePage($db, string $dateiname): bool {
-    $datei = shopContentDir($db).'/'.basename($dateiname);
+function shopRemovePage($db, int $kanal, string $dateiname): bool {
+    $datei = shopContentDir($db, $kanal).'/'.basename($dateiname);
     return is_file($datei) ? unlink($datei) : false;
 }
 
@@ -1066,13 +1133,14 @@ function shopRemovePage($db, string $dateiname): bool {
  * @param callable|null $melden Fortschritt, bekommt je eine Zeile Text
  * @param int $limit Hoechstzahl Auftraege
  * @param array|null $nurIds nur diese Auftragsnummern, null = alle offenen
- * @return array jobs, jobs_hugoshop, seiten, entfernt, fehler, kit (Änderungen am Webseiten-Paket),
- *               ids (bearbeitete Aufträge)
+ * @return array jobs, seiten, entfernt, fehler, kit (Änderungen am Webseiten-Paket),
+ *               ids (bearbeitete Aufträge), webseiten (je HugoShop mit Aufträgen:
+ *               jobs, seiten, entfernt, kit, bauen — siehe shopSiteTally)
  */
 function shopRunJobs($db, ?callable $melden = null, int $limit = 500, ?array $nurIds = null): array {
     $sagen = $melden ?? function (string $zeile) {};
-    $bilanz = ['jobs' => 0, 'jobs_hugoshop' => 0, 'seiten' => 0, 'entfernt' => 0, 'fehler' => 0, 'kit' => 0,
-               'bauen' => false, 'fehler_texte' => [], 'ids' => []];
+    $bilanz = ['jobs' => 0, 'seiten' => 0, 'entfernt' => 0, 'fehler' => 0, 'kit' => 0,
+               'fehler_texte' => [], 'ids' => [], 'webseiten' => []];
 
     // Fehler werden nicht nur gezählt, sondern im Wortlaut gesammelt: das
     // Admin-Panel zeigt sie nach "Jetzt ausführen" an, sonst stünde dort nur
@@ -1093,7 +1161,7 @@ function shopRunJobs($db, ?callable $melden = null, int $limit = 500, ?array $nu
             // Fehler trifft nur diesen Auftrag, die übrigen Kanäle laufen
             // weiter (V13).
             if ('hugoshop' === $auftrag['channel']) {
-                $bilanz['jobs_hugoshop']++;
+                shopSiteTally($bilanz, (int)$auftrag['channel_id'], 'jobs');
             }
             shopChannelRunJob($db, $auftrag, $sagen, $fehler, $bilanz);
         } catch (Throwable $e) {
@@ -1103,6 +1171,33 @@ function shopRunJobs($db, ?callable $melden = null, int $limit = 500, ?array $nu
     }
 
     return $bilanz;
+}
+
+/**
+ * Zählt in der Bilanz eines Laufs — gesamt und je Webseite
+ *
+ * Nach den Aufträgen entscheidet der Lauf je HugoShop, ob Paket,
+ * Kategorieübersicht und Bau nötig sind; dafür braucht er die Zahlen je
+ * Webseite. 'bauen' ist ein Merker: der Bau ist verlangt, auch ohne Änderung.
+ *
+ * @param array $bilanz Bilanz des Laufs
+ * @param int $kanal HugoShop
+ * @param string $feld jobs, seiten, entfernt, kit oder bauen
+ * @param int $anzahl Zuwachs
+ * @return void
+ */
+function shopSiteTally(array &$bilanz, int $kanal, string $feld, int $anzahl = 1): void {
+    if (!isset($bilanz['webseiten'][$kanal])) {
+        $bilanz['webseiten'][$kanal] = ['jobs' => 0, 'seiten' => 0, 'entfernt' => 0, 'kit' => 0, 'bauen' => false];
+    }
+    if ('bauen' === $feld) {
+        $bilanz['webseiten'][$kanal]['bauen'] = true;
+        return;
+    }
+    $bilanz['webseiten'][$kanal][$feld] += $anzahl;
+    if ('jobs' !== $feld) {
+        $bilanz[$feld] = ($bilanz[$feld] ?? 0) + $anzahl;
+    }
 }
 
 // ── Sperre und Lauf ──
@@ -1225,16 +1320,17 @@ function shopPublishProgram($db): array {
  * bauen über shopPublishRun() und damit über diese Funktion.
  *
  * @param object $db Company-Datenbankverbindung
+ * @param int $kanal HugoShop
  * @return array befehl (leer, wenn kein Programm eingestellt), fehler (leer, wenn in Ordnung)
  */
-function shopPublishCommand($db): array {
+function shopPublishCommand($db, int $kanal): array {
     $programm = shopPublishProgram($db);
     if ('' === $programm['pfad']) {
         return ['befehl' => '', 'fehler' => $programm['fehler']];
     }
 
     $befehl = escapeshellarg($programm['pfad']);
-    if (shopConfigBool($db, 'shop_publish_clean_destination', true)) {
+    if (shopChannelBool($db, $kanal, 'publish_clean_destination', true)) {
         $befehl .= ' --cleanDestinationDir';
     }
 
@@ -1583,102 +1679,40 @@ function shopPublishRun($db, ?callable $melden = null, int $limit = 500, ?array 
     try {
         $bilanz = array_merge($bilanz, shopRunJobs($db, $sagen, $limit, $nurIds));
 
-        // Abgeschalteter HugoShop (V8, V16): Paket, Kategorieübersicht und Bau
-        // nur, wenn in diesem Lauf HugoShop-Aufträge liefen — etwa remove_all
-        // gleich nach dem Abschalten. Sonst bleibt die Webseite unberührt; ein
-        // Mandant, der nur eBay nutzt, hat womöglich gar keine.
-        if (0 === $bilanz['jobs_hugoshop'] && !shopChannelHugoshopActive($db)) {
-            $sagen('HugoShop abgeschaltet — Webseite unverändert.');
-            return $bilanz;
-        }
+        // Je HugoShop seine Webseite: Paket, Kategorieübersicht, Bau
+        // (dev/shop-mehrere-kanaele.md, Schritt 3). Betroffen ist jeder
+        // eingeschaltete HugoShop und jeder, für den in diesem Lauf Aufträge
+        // liefen — etwa remove_all gleich nach dem Abschalten (V8, V16). Ein
+        // abgeschalteter ohne Aufträge bleibt unberührt; ein Mandant, der nur
+        // eBay nutzt, hat womöglich gar keine Webseite. Ein Fehler bei einer
+        // Webseite hält die übrigen nicht auf.
+        $kanaele = $db->getAll(
+            "SELECT id, name FROM sales_channel_shop WHERE type = 'hugoshop' ORDER BY sortkey NULLS LAST, id"
+        );
+        $mehrere = count($kanaele) > 1;
+        foreach ($kanaele as $eintrag) {
+            $kanal = (int)$eintrag['id'];
+            $zahlen = $bilanz['webseiten'][$kanal] ?? null;
+            // Bei mehreren Webseiten steht vor jeder Meldung, welche gemeint ist
+            $vorsilbe = $mehrere ? '['.$eintrag['name'].'] ' : '';
 
-        // Das Paket bei jedem Lauf abgleichen, nicht nur nach neuen Seiten:
-        // beim ersten Lauf entsteht oserp-shop/ überhaupt erst, und nach einem
-        // Update kommt ein neues Bundle an, ohne dass jemand veröffentlicht.
-        try {
-            $kit = shopSyncKit($db);
-            $bilanz['kit'] += shopKitChanges($kit);
-            if (shopKitChanges($kit) > 0) {
-                $sagen(sprintf('Paket abgeglichen: %d kopiert, %d entfernt%s',
-                    $kit['kopiert'], $kit['entfernt'], $kit['config'] ? ', Konfiguration neu' : ''));
+            if (null === $zahlen && !shopChannelHugoshopActive($db, $kanal)) {
+                $sagen($vorsilbe.'HugoShop abgeschaltet — Webseite unverändert.');
+                continue;
             }
-        } catch (Throwable $e) {
-            $fehler('Paketabgleich fehlgeschlagen: '.$e->getMessage());
-        }
 
-        // Die Kategorieübersicht, wenn sich Seiten geändert haben — oder wenn
-        // ihre Datei fehlt. Das zweite heilt einen Lauf, in dem der Schritt
-        // ausgefallen ist: sonst bliebe die Übersicht weg, bis zufällig wieder
-        // eine Seite geschrieben wird.
-        $uebersichtFehlt = false;
-        try {
-            $ziel = shopCategoryGroupsFile($db);
-            $uebersichtFehlt = '' !== $ziel && !is_file($ziel);
-        } catch (ApiError $e) {
-            // Nur das Unterverzeichnis fehlt — dann fehlt auch die Datei.
-            // Alles andere (kein Wurzelverzeichnis etwa) meldet schon ein
-            // anderer Schritt; hier bliebe es bei einer zweiten Meldung.
-            $uebersichtFehlt = 'SHOP_PATH_MISSING' === $e->getId();
-        }
-
-        if ($bilanz['seiten'] + $bilanz['entfernt'] > 0 || $uebersichtFehlt) {
             try {
-                $übersicht = shopWriteCategoryGroups($db);
-                if ($übersicht['changed']) {
-                    $bilanz['kategorien'] = 1;
-                    $sagen($übersicht['categories'] > 0
-                        ? sprintf('Kategorieübersicht geschrieben: %d Kategorien in %d Gruppen', $übersicht['categories'], $übersicht['groups'])
-                        : 'Kategorieübersicht entfernt: keine Kategorien');
-                }
+                shopPublishSite(
+                    $db, $kanal,
+                    $zahlen ?? ['jobs' => 0, 'seiten' => 0, 'entfernt' => 0, 'kit' => 0, 'bauen' => false],
+                    $bauen,
+                    fn(string $zeile) => $sagen($vorsilbe.$zeile),
+                    fn(string $zeile) => $fehler($vorsilbe.$zeile),
+                    $bilanz
+                );
             } catch (Throwable $e) {
-                $fehler('Kategorieübersicht fehlgeschlagen: '.$e->getMessage());
+                $fehler($vorsilbe.'Webseite nicht bearbeitet: '.$e->getMessage());
             }
-        }
-
-        // Betriebsart HugoCMS: übertragen und dort bauen lassen. Übertragen
-        // wird auch ohne Änderung in diesem Lauf — HugoCMS könnte hinterher
-        // sein (neue Webseite, gescheiterter Lauf); was unverändert ist,
-        // erkennt die Übertragung selbst.
-        if ('hugocms' === shopPublishMode($db)) {
-            $bilanz['gebaut'] = shopHugoCmsPublish($db, $sagen, $fehler, $bauen, $bilanz['bauen']);
-            return $bilanz;
-        }
-
-        // bauen: ein Auftrag verlangt den Bau auch ohne Änderung (SHOP_KIT_INSTALL)
-        $geaendert = $bilanz['seiten'] + $bilanz['entfernt'] + $bilanz['kit'] + $bilanz['kategorien']
-                   + ($bilanz['bauen'] ? 1 : 0);
-        // Die Befehlszeile setzt die Erweiterung selbst zusammen: geprüfter
-        // Pfad zum Programm plus feste Argumente (shopPublishCommand).
-        $bau = shopPublishCommand($db);
-        $befehl = $bau['befehl'];
-
-        if ($bauen && $geaendert > 0 && '' !== $bau['fehler']) {
-            $fehler('Die Webseite wurde nicht gebaut: '.$bau['fehler']);
-        } elseif ($bauen && $geaendert > 0 && '' !== $befehl) {
-            if (!function_exists('exec')) {
-                $fehler('exec() ist abgeschaltet — die Webseite wurde nicht gebaut.');
-            } else {
-                $verzeichnis = shopSiteDir($db);
-                $sagen('Baue die Webseite in '.$verzeichnis);
-
-                $ausgabe = [];
-                $code = 0;
-                exec('cd '.escapeshellarg($verzeichnis).' && '.$befehl.' 2>&1', $ausgabe, $code);
-                foreach ($ausgabe as $zeile) {
-                    $sagen('  '.$zeile);
-                }
-
-                $bilanz['bau_ausgabe'] = $ausgabe;
-                $bilanz['bau_code'] = $code;
-                $bilanz['gebaut'] = 0 === $code;
-                if (0 === $code) {
-                    $sagen('Webseite gebaut.');
-                } else {
-                    $fehler('Der Bau der Webseite ist fehlgeschlagen (Rückgabewert '.$code.').');
-                }
-            }
-        } elseif ($bauen && $geaendert > 0 && '' === $befehl) {
-            $sagen('Kein Programm zum Bauen eingestellt — es wurden nur Dateien geschrieben.');
         }
     } finally {
         // Vor dem Freigeben der Sperre: die Aufträge stehen erst mit ihrer
@@ -1694,6 +1728,124 @@ function shopPublishRun($db, ?callable $melden = null, int $limit = 500, ?array 
     }
 
     return $bilanz;
+}
+
+/**
+ * Der Teil eines Laufs, der eine Webseite betrifft: Paket, Kategorieübersicht,
+ * Bau bzw. Übertragung an HugoCMS
+ *
+ * Gerufen von shopPublishRun() nach den Aufträgen, je betroffenem HugoShop.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param int $kanal HugoShop
+ * @param array $zahlen Zahlen dieser Webseite aus den Aufträgen (shopSiteTally)
+ * @param bool $bauen Webseite bauen, wenn sich etwas geändert hat
+ * @param callable $sagen Fortschritt
+ * @param callable $fehler Fehlermeldung, wird gezählt
+ * @param array $bilanz Bilanz des Laufs: kit, kategorien, gebaut, bau_code, bau_ausgabe
+ * @return void
+ */
+function shopPublishSite($db, int $kanal, array $zahlen, bool $bauen, callable $sagen, callable $fehler, array &$bilanz): void {
+    $kit = 0;
+    $kategorien = 0;
+
+    // Das Paket bei jedem Lauf abgleichen, nicht nur nach neuen Seiten:
+    // beim ersten Lauf entsteht oserp-shop/ überhaupt erst, und nach einem
+    // Update kommt ein neues Bundle an, ohne dass jemand veröffentlicht.
+    try {
+        $abgleich = shopSyncKit($db, $kanal);
+        $kit = shopKitChanges($abgleich);
+        $bilanz['kit'] += $kit;
+        if ($kit > 0) {
+            $sagen(sprintf('Paket abgeglichen: %d kopiert, %d entfernt%s',
+                $abgleich['kopiert'], $abgleich['entfernt'], $abgleich['config'] ? ', Konfiguration neu' : ''));
+        }
+    } catch (Throwable $e) {
+        $fehler('Paketabgleich fehlgeschlagen: '.$e->getMessage());
+    }
+
+    // Die Kategorieübersicht, wenn sich Seiten geändert haben — oder wenn
+    // ihre Datei fehlt. Das zweite heilt einen Lauf, in dem der Schritt
+    // ausgefallen ist: sonst bliebe die Übersicht weg, bis zufällig wieder
+    // eine Seite geschrieben wird.
+    $uebersichtFehlt = false;
+    try {
+        $ziel = shopCategoryGroupsFile($db, $kanal);
+        $uebersichtFehlt = '' !== $ziel && !is_file($ziel);
+    } catch (ApiError $e) {
+        // Nur das Unterverzeichnis fehlt — dann fehlt auch die Datei.
+        // Alles andere (kein Wurzelverzeichnis etwa) meldet schon ein
+        // anderer Schritt; hier bliebe es bei einer zweiten Meldung.
+        $uebersichtFehlt = 'SHOP_PATH_MISSING' === $e->getId();
+    }
+
+    if ($zahlen['seiten'] + $zahlen['entfernt'] > 0 || $uebersichtFehlt) {
+        try {
+            $übersicht = shopWriteCategoryGroups($db, $kanal);
+            if ($übersicht['changed']) {
+                $kategorien = 1;
+                $bilanz['kategorien'] += 1;
+                $sagen($übersicht['categories'] > 0
+                    ? sprintf('Kategorieübersicht geschrieben: %d Kategorien in %d Gruppen', $übersicht['categories'], $übersicht['groups'])
+                    : 'Kategorieübersicht entfernt: keine Kategorien');
+            }
+        } catch (Throwable $e) {
+            $fehler('Kategorieübersicht fehlgeschlagen: '.$e->getMessage());
+        }
+    }
+
+    // Betriebsart HugoCMS: übertragen und dort bauen lassen. Übertragen
+    // wird auch ohne Änderung in diesem Lauf — HugoCMS könnte hinterher
+    // sein (neue Webseite, gescheiterter Lauf); was unverändert ist,
+    // erkennt die Übertragung selbst.
+    if ('hugocms' === shopPublishMode($db, $kanal)) {
+        if (shopHugoCmsPublish($db, $kanal, $sagen, $fehler, $bauen, $zahlen['bauen'])) {
+            $bilanz['gebaut'] = true;
+        }
+        return;
+    }
+
+    // bauen: ein Auftrag verlangt den Bau auch ohne Änderung (SHOP_KIT_INSTALL)
+    $geaendert = $zahlen['seiten'] + $zahlen['entfernt'] + $zahlen['kit'] + $kit + $kategorien
+               + ($zahlen['bauen'] ? 1 : 0);
+    if (!$bauen || 0 === $geaendert) {
+        return;
+    }
+
+    // Die Befehlszeile setzt die Erweiterung selbst zusammen: geprüfter
+    // Pfad zum Programm plus feste Argumente (shopPublishCommand).
+    $bau = shopPublishCommand($db, $kanal);
+    if ('' !== $bau['fehler']) {
+        $fehler('Die Webseite wurde nicht gebaut: '.$bau['fehler']);
+        return;
+    }
+    if ('' === $bau['befehl']) {
+        $sagen('Kein Programm zum Bauen eingestellt — es wurden nur Dateien geschrieben.');
+        return;
+    }
+    if (!function_exists('exec')) {
+        $fehler('exec() ist abgeschaltet — die Webseite wurde nicht gebaut.');
+        return;
+    }
+
+    $verzeichnis = shopSiteDir($db, $kanal);
+    $sagen('Baue die Webseite in '.$verzeichnis);
+
+    $ausgabe = [];
+    $code = 0;
+    exec('cd '.escapeshellarg($verzeichnis).' && '.$bau['befehl'].' 2>&1', $ausgabe, $code);
+    foreach ($ausgabe as $zeile) {
+        $sagen('  '.$zeile);
+    }
+
+    $bilanz['bau_ausgabe'] = array_merge($bilanz['bau_ausgabe'], $ausgabe);
+    if (0 === $code) {
+        $bilanz['gebaut'] = true;
+        $sagen('Webseite gebaut.');
+    } else {
+        $bilanz['bau_code'] = $code;
+        $fehler('Der Bau der Webseite ist fehlgeschlagen (Rückgabewert '.$code.').');
+    }
 }
 
 // Höchstzahl gespeicherter Zeilen je Lauf. „Alle Produkte“ meldet eine Zeile

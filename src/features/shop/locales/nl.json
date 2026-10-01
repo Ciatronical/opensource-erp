@@ -319,7 +319,24 @@
             "saved": "Opgeslagen.",
             "republishQueued": "Opgeslagen. De productpagina's worden met de nieuwe prijzen opnieuw geschreven.",
             "saveError": "De kanaalinstellingen konden niet worden opgeslagen.",
-            "loadError": "De verkoopkanalen konden niet worden geladen."
+            "loadError": "De verkoopkanalen konden niet worden geladen.",
+            "name": "Naam",
+            "nameRequired": "Het kanaal heeft een naam nodig.",
+            "autoAddParts": "Nieuwe winkelartikelen automatisch opnemen",
+            "autoAddPartsHint": "Wordt een artikel nieuw in de winkel opgenomen, dan wordt het ook in dit kanaal aangeboden.",
+            "settings": "Instellingen van {name}",
+            "settingsSaved": "Instellingen opgeslagen.",
+            "settingsSaveError": "De instellingen konden niet worden opgeslagen.",
+            "newChannel": "Nieuw verkoopkanaal:",
+            "newChannelType": "Soort",
+            "create": "Aanmaken",
+            "created": "Verkoopkanaal aangemaakt. Het blijft uitgeschakeld tot het is ingericht.",
+            "createError": "Het verkoopkanaal kon niet worden aangemaakt.",
+            "delete": "Verkoopkanaal verwijderen",
+            "deleteConfirm": "„{name}” met artikelregels, afbeeldingen, leveringslanden en prijsstaffels verwijderen? Dit kan niet ongedaan worden gemaakt.",
+            "deleted": "Verkoopkanaal verwijderd.",
+            "deleteError": "Het verkoopkanaal kon niet worden verwijderd.",
+            "cancel": "Annuleren"
         },
         "ebayCondition": {
             "NEW": "Nieuw",
@@ -333,7 +350,11 @@
             "NETWORK_ERROR": "De server is niet bereikbaar. Controleer de verbinding en probeer het opnieuw.",
             "API_DATABASE_ERROR": "De database antwoordt niet zoals verwacht. Waarschuw de beheerder.",
             "API_INTERNAL_ERROR": "Er is een onverwachte fout op de server opgetreden. Waarschuw de beheerder.",
-            "NO_PERMISSION": "U hebt geen toestemming voor deze actie."
+            "NO_PERMISSION": "U hebt geen toestemming voor deze actie.",
+            "CHANNEL_NAME_TAKEN": "Een ander verkoopkanaal heeft deze naam al.",
+            "CHANNEL_KEY_TAKEN": "Deze winkelsleutel hoort al bij een andere HugoShop.",
+            "CHANNEL_IN_USE": "Aan dit kanaal zijn facturen, herroepingen of eBay-bestellingen gekoppeld. Het kan alleen worden uitgeschakeld.",
+            "CHANNEL_NOT_DELETABLE": "Alleen een uitgeschakeld kanaal zonder openstaande opdrachten kan worden verwijderd."
         }
     }
 }

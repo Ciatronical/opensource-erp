@@ -319,7 +319,24 @@
             "saved": "Gespeichert.",
             "republishQueued": "Gespeichert. Die Produktseiten werden mit den neuen Preisen neu geschrieben.",
             "saveError": "Die Kanaleinstellungen konnten nicht gespeichert werden.",
-            "loadError": "Die Verkaufskanäle konnten nicht geladen werden."
+            "loadError": "Die Verkaufskanäle konnten nicht geladen werden.",
+            "name": "Name",
+            "nameRequired": "Der Kanal braucht einen Namen.",
+            "autoAddParts": "Neue Shop-Artikel automatisch aufnehmen",
+            "autoAddPartsHint": "Wird ein Artikel neu in den Shop aufgenommen, wird er in diesem Kanal gleich mit angeboten.",
+            "settings": "Einstellungen von {name}",
+            "settingsSaved": "Einstellungen gespeichert.",
+            "settingsSaveError": "Die Einstellungen konnten nicht gespeichert werden.",
+            "newChannel": "Neuer Verkaufskanal:",
+            "newChannelType": "Art",
+            "create": "Anlegen",
+            "created": "Verkaufskanal angelegt. Er bleibt abgeschaltet, bis er eingerichtet ist.",
+            "createError": "Der Verkaufskanal konnte nicht angelegt werden.",
+            "delete": "Verkaufskanal löschen",
+            "deleteConfirm": "„{name}“ mit seinen Artikelzeilen, Bildern, Lieferländern und Preisstufen löschen? Das lässt sich nicht rückgängig machen.",
+            "deleted": "Verkaufskanal gelöscht.",
+            "deleteError": "Der Verkaufskanal konnte nicht gelöscht werden.",
+            "cancel": "Abbrechen"
         },
         "ebayCondition": {
             "NEW": "Neu",
@@ -333,7 +350,11 @@
             "NETWORK_ERROR": "Der Server ist nicht erreichbar. Bitte die Verbindung prüfen und erneut versuchen.",
             "API_DATABASE_ERROR": "Die Datenbank antwortet nicht wie erwartet. Bitte den Administrator verständigen.",
             "API_INTERNAL_ERROR": "Im Server ist ein unerwarteter Fehler aufgetreten. Bitte den Administrator verständigen.",
-            "NO_PERMISSION": "Für diese Aktion fehlt die Berechtigung."
+            "NO_PERMISSION": "Für diese Aktion fehlt die Berechtigung.",
+            "CHANNEL_NAME_TAKEN": "Diesen Namen trägt schon ein anderer Verkaufskanal.",
+            "CHANNEL_KEY_TAKEN": "Dieser Shop-Schlüssel gehört schon einem anderen HugoShop.",
+            "CHANNEL_IN_USE": "An diesem Kanal hängen Rechnungen, Widerrufe oder eBay-Bestellungen. Er lässt sich nur abschalten.",
+            "CHANNEL_NOT_DELETABLE": "Nur ein abgeschalteter Kanal ohne offene Aufträge lässt sich löschen."
         }
     }
 }

@@ -319,7 +319,24 @@
             "saved": "Saglabāts.",
             "republishQueued": "Saglabāts. Produktu lapas tiks pārrakstītas ar jaunajām cenām.",
             "saveError": "Kanāla iestatījumus neizdevās saglabāt.",
-            "loadError": "Pārdošanas kanālus neizdevās ielādēt."
+            "loadError": "Pārdošanas kanālus neizdevās ielādēt.",
+            "name": "Nosaukums",
+            "nameRequired": "Kanālam vajadzīgs nosaukums.",
+            "autoAddParts": "Jaunās veikala preces pievienot automātiski",
+            "autoAddPartsHint": "Kad prece tiek pievienota veikalam, tā uzreiz tiek piedāvāta arī šajā kanālā.",
+            "settings": "{name} iestatījumi",
+            "settingsSaved": "Iestatījumi saglabāti.",
+            "settingsSaveError": "Iestatījumus neizdevās saglabāt.",
+            "newChannel": "Jauns pārdošanas kanāls:",
+            "newChannelType": "Veids",
+            "create": "Izveidot",
+            "created": "Pārdošanas kanāls izveidots. Tas paliek izslēgts, līdz tiek iestatīts.",
+            "createError": "Pārdošanas kanālu neizdevās izveidot.",
+            "delete": "Dzēst pārdošanas kanālu",
+            "deleteConfirm": "Dzēst “{name}” kopā ar preču rindām, attēliem, piegādes valstīm un cenu pakāpēm? To nevar atsaukt.",
+            "deleted": "Pārdošanas kanāls izdzēsts.",
+            "deleteError": "Pārdošanas kanālu neizdevās izdzēst.",
+            "cancel": "Atcelt"
         },
         "ebayCondition": {
             "NEW": "Jauns",
@@ -333,7 +350,11 @@
             "NETWORK_ERROR": "Serveris nav sasniedzams. Pārbaudiet savienojumu un mēģiniet vēlreiz.",
             "API_DATABASE_ERROR": "Datu bāze neatbild, kā gaidīts. Lūdzu informējiet administratoru.",
             "API_INTERNAL_ERROR": "Serverī radās neparedzēta kļūda. Lūdzu informējiet administratoru.",
-            "NO_PERMISSION": "Jums nav tiesību veikt šo darbību."
+            "NO_PERMISSION": "Jums nav tiesību veikt šo darbību.",
+            "CHANNEL_NAME_TAKEN": "Šāds nosaukums jau ir citam pārdošanas kanālam.",
+            "CHANNEL_KEY_TAKEN": "Šī veikala atslēga jau pieder citam HugoShop.",
+            "CHANNEL_IN_USE": "Ar šo kanālu saistīti rēķini, atteikumi vai eBay pasūtījumi. To var tikai izslēgt.",
+            "CHANNEL_NOT_DELETABLE": "Dzēst var tikai izslēgtu kanālu bez atvērtiem uzdevumiem."
         }
     }
 }

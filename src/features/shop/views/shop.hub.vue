@@ -284,7 +284,7 @@
                                 {{ auftragsart(auftrag.function) }}
                                 <!-- Kanal des Auftrags (channels/): gleiche Auftragsart gibt es je Kanal -->
                                 <span v-if="auftrag.channel" class="text-medium-emphasis">
-                                    · {{ te(`ShopView.channels.${auftrag.channel}`) ? t(`ShopView.channels.${auftrag.channel}`) : auftrag.channel }}
+                                    · {{ auftrag.channel_name || (te(`ShopView.channels.${auftrag.channel}`) ? t(`ShopView.channels.${auftrag.channel}`) : auftrag.channel) }}
                                 </span>
                             </td>
                             <!-- Zum Artikel, sofern es ihn (noch) gibt -->
@@ -709,7 +709,10 @@ async function shopUiInstallieren() {
         if (shop.error.value) {
             return
         }
-        if (antwort?.job_id) {
+        // Je eingeschaltetem HugoShop ein Auftrag (dev/shop-mehrere-kanaele.md)
+        if (antwort?.job_ids?.length) {
+            auswahl.value = [...antwort.job_ids]
+        } else if (antwort?.job_id) {
             auswahl.value = [antwort.job_id]
         }
         gestartet(antwort)
@@ -865,21 +868,25 @@ async function alleSofortVeroeffentlichen() {
             return
         }
 
-        let id = angelegt?.job_id || 0
-        if (!id) {
+        // Je eingeschaltetem HugoShop ein Auftrag „Alle Produkte"; schon offene
+        // legt das Backend nicht doppelt an — dann werden die offenen ausgeführt
+        let ids = angelegt?.job_ids?.length ? [...angelegt.job_ids] : (angelegt?.job_id ? [angelegt.job_id] : [])
+        if (!ids.length) {
             auftraege.value = await shop.fetchPublishJobs() || []
-            id = auftraege.value.find((auftrag) => istOffen(auftrag) && auftrag.function === 'publish_all')?.id || 0
+            ids = auftraege.value
+                .filter((auftrag) => istOffen(auftrag) && auftrag.function === 'publish_all' && auftrag.channel === 'hugoshop')
+                .map((auftrag) => auftrag.id)
         }
 
-        if (!id) {
+        if (!ids.length) {
             toasts.info(t('ShopView.publish.running'))
             await laden()
             return
         }
 
-        // Ausgewählt wie von Hand — die Zeile ist während des Laufs markiert
-        auswahl.value = [id]
-        await ausfuehren([id])
+        // Ausgewählt wie von Hand — die Zeilen sind während des Laufs markiert
+        auswahl.value = ids
+        await ausfuehren(ids)
     } finally {
         sofort.value = false
     }

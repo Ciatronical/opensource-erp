@@ -291,7 +291,8 @@ export default {
             { value: 0, title: t('DocumentList.allChannels') },
             ...channels.value.map(kanal => ({
                 value: Number(kanal.channel_id),
-                title: te(`ShopView.channels.${kanal.type}`) ? t(`ShopView.channels.${kanal.type}`) : kanal.type,
+                // Name des Kanals (mehrere je Art), sonst die Bezeichnung der Art
+                title: kanal.name || (te(`ShopView.channels.${kanal.type}`) ? t(`ShopView.channels.${kanal.type}`) : kanal.type),
             })),
         ])
 

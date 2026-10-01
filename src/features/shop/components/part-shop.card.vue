@@ -78,7 +78,7 @@
                             variant="outlined"
                             size="small"
                         >
-                            {{ kanalName(kanal.type) }}
+                            {{ kanalName(kanal) }}
                         </v-chip>
                     </v-chip-group>
                 </div>
@@ -93,7 +93,7 @@
                         class="border"
                     >
                         <v-expansion-panel-title class="py-2">
-                            <span class="font-weight-medium">{{ kanalName(kanal.type) }}</span>
+                            <span class="font-weight-medium">{{ kanalName(kanal) }}</span>
                             <v-spacer />
                             <span class="text-body-2 mr-2">
                                 {{ geld(kanalPreis(kanal).brutto) }} {{ t('ShopView.partCard.gross') }}
@@ -228,7 +228,7 @@
                                 <!-- Bilder eines Marktplatzes (V12); der HugoShop führt seine unten -->
                                 <v-col v-if="kanal.type !== 'hugoshop'" cols="12" class="py-1">
                                     <div class="text-caption text-medium-emphasis mb-1">
-                                        {{ t('ShopView.partCard.channelImages', { kanal: kanalName(kanal.type) }) }}
+                                        {{ t('ShopView.partCard.channelImages', { kanal: kanalName(kanal) }) }}
                                     </div>
                                     <div v-if="!partsId" class="text-caption">{{ t('ShopView.partCard.imagesAfterCreate') }}</div>
                                     <template v-else>
@@ -283,15 +283,15 @@
                                             </v-btn>
                                             <v-btn
                                                 v-for="quelle in bildQuellen(kanal)"
-                                                :key="quelle.type"
+                                                :key="quelle.channel_id"
                                                 size="small"
                                                 variant="text"
                                                 prepend-icon="mdi-image-move"
                                                 :loading="bildLaedt"
                                                 :disabled="!darfBearbeiten"
-                                                @click="bilderUebernehmen(quelle.type, kanal.type)"
+                                                @click="bilderUebernehmen(quelle, kanal)"
                                             >
-                                                {{ t('ShopView.partCard.copyImagesFrom', { kanal: kanalName(quelle.type) }) }}
+                                                {{ t('ShopView.partCard.copyImagesFrom', { kanal: kanalName(quelle) }) }}
                                             </v-btn>
                                         </div>
                                     </template>
@@ -300,21 +300,21 @@
                                 <!-- HugoShop: Bilder eines Marktplatzes übernehmen — nur, wenn
                                      OSERP die Webseite selbst beschreibt (V17) -->
                                 <v-col
-                                    v-if="kanal.type === 'hugoshop' && partsId && lokaleWebseite && bildQuellen(kanal).length"
+                                    v-if="kanal.type === 'hugoshop' && partsId && lokaleWebseite(kanal) && bildQuellen(kanal).length"
                                     cols="12"
                                     class="py-1"
                                 >
                                     <v-btn
                                         v-for="quelle in bildQuellen(kanal)"
-                                        :key="quelle.type"
+                                        :key="quelle.channel_id"
                                         size="small"
                                         variant="text"
                                         prepend-icon="mdi-image-move"
                                         :loading="bildLaedt"
                                         :disabled="!darfBearbeiten"
-                                        @click="bilderUebernehmen(quelle.type, 'hugoshop')"
+                                        @click="bilderUebernehmen(quelle, kanal)"
                                     >
-                                        {{ t('ShopView.partCard.copyImagesFrom', { kanal: kanalName(quelle.type) }) }}
+                                        {{ t('ShopView.partCard.copyImagesFrom', { kanal: kanalName(quelle) }) }}
                                     </v-btn>
                                 </v-col>
 
@@ -325,7 +325,7 @@
                                         variant="tonal"
                                         density="compact"
                                     >
-                                        {{ t('ShopView.partCard.syncStatus', { kanal: kanalName(kanal.type) }) }}:
+                                        {{ t('ShopView.partCard.syncStatus', { kanal: kanalName(kanal) }) }}:
                                         {{ te(`ShopView.partCard.sync.${kanal.sync_status}`)
                                             ? t(`ShopView.partCard.sync.${kanal.sync_status}`)
                                             : t('ShopView.partCard.sync.none') }}
@@ -643,6 +643,10 @@ function alsKanal(zeile) {
     return {
         channel_id: Number(zeile.channel_id),
         type: String(zeile.type),
+        name: String(zeile.name || ''),
+        publish_mode: String(zeile.publish_mode || 'local'),
+        products_link: String(zeile.products_link || ''),
+        thumbnails_link: String(zeile.thumbnails_link || ''),
         active: zeile.active === true || zeile.active === 't',
         markup_mode: zeile.markup_type || 'default',
         markup_value: zeile.markup_value == null ? null : Number(zeile.markup_value),
@@ -682,10 +686,15 @@ const gesperrt = kanal => kanal.type !== 'hugoshop' && props.partType === 'servi
 // ── Bilder der Marktplätze ──
 
 const bildLaedt = ref(false)
-const lokaleWebseite = computed(() => oserp.getClientDefaultValue('shop_publish_mode', 'local') !== 'hugocms')
+/** Beschreibt OSERP die Webseite dieses HugoShops selbst? (Betriebsart lokal) */
+const lokaleWebseite = kanal => kanal.publish_mode !== 'hugocms'
 
-/** Kanäle, aus denen sich Bilder übernehmen lassen: die anderen gewählten */
+/**
+ * Kanäle, aus denen sich Bilder übernehmen lassen: die anderen gewählten —
+ * nicht von HugoShop zu HugoShop, deren Bildnamen sind ohnehin dieselben (M6)
+ */
 const bildQuellen = kanal => aktiveKanaele.value.filter(k => k.channel_id !== kanal.channel_id
+    && !(k.type === 'hugoshop' && kanal.type === 'hugoshop')
     && (k.type === 'hugoshop' ? daten.value.images.length > 0 : k.images.length > 0))
 
 /** Neue Bilderliste eines Kanals aus der Antwort übernehmen */
@@ -712,7 +721,7 @@ async function bilderHochladen(kanal, dateien) {
             leser.readAsDataURL(datei)
         }).catch(() => null)
         if (!inhalt) continue
-        const antwort = await shop.uploadChannelImage(Number(props.partsId), kanal.type, datei.name, inhalt)
+        const antwort = await shop.uploadChannelImage(Number(props.partsId), kanal.channel_id, datei.name, inhalt)
         if (shop.error.value) {
             toasts.error(shop.error.value || t('ShopView.partCard.imageError'))
             continue
@@ -735,7 +744,7 @@ async function bildVerschieben(kanal, index, richtung) {
     if (ziel < 0 || ziel >= ids.length) return
     ;[ids[index], ids[ziel]] = [ids[ziel], ids[index]]
     bildLaedt.value = true
-    bilderSetzen(kanal, await shop.sortChannelImages(Number(props.partsId), kanal.type, ids))
+    bilderSetzen(kanal, await shop.sortChannelImages(Number(props.partsId), kanal.channel_id, ids))
     bildLaedt.value = false
     if (shop.error.value) toasts.error(shop.error.value)
 }
@@ -743,10 +752,13 @@ async function bildVerschieben(kanal, index, richtung) {
 /**
  * Übernimmt Bilder aus einem anderen Kanal und lädt danach die Bilderlisten
  * neu — beim HugoShop ändert sich parts_ext.hugoshop_images
+ *
+ * @param {object} von Quellkanal
+ * @param {object} nach Zielkanal
  */
 async function bilderUebernehmen(von, nach) {
     bildLaedt.value = true
-    const ergebnis = await shop.copyChannelImages(Number(props.partsId), von, nach)
+    const ergebnis = await shop.copyChannelImages(Number(props.partsId), von.channel_id, nach.channel_id)
     if (shop.error.value) {
         bildLaedt.value = false
         toasts.error(shop.error.value)
@@ -759,7 +771,7 @@ async function bilderUebernehmen(von, nach) {
         const kanal = daten.value.channels.find(k => k.channel_id === Number(zeile.channel_id))
         if (kanal) kanal.images = Array.isArray(lies(zeile.images)) ? lies(zeile.images) : []
     }
-    if (nach === 'hugoshop') {
+    if (nach.type === 'hugoshop') {
         daten.value.images = alsListe(lies(antwort.part?.hugoshop_images))
     }
     toasts.success(t('ShopView.partCard.imagesCopied', { anzahl: ergebnis?.copied ?? 0 }))
@@ -775,7 +787,9 @@ function alsVorgabe(zeile) {
 
 const vorgabe = kanal => vorgaben.value[kanal.channel_id] || { markup_type: 'none', markup_value: 0, round_99: false }
 
-const kanalName = typ => (te(`ShopView.channels.${typ}`) ? t(`ShopView.channels.${typ}`) : typ)
+/** Name des Kanals (dev/shop-mehrere-kanaele.md), sonst die Bezeichnung seiner Art */
+const kanalName = kanal => kanal.name
+    || (te(`ShopView.channels.${kanal.type}`) ? t(`ShopView.channels.${kanal.type}`) : kanal.type)
 
 const aktiveKanaele = computed(() => daten.value.channels.filter(k => k.active))
 const hugoshopAktiv = computed(() => aktiveKanaele.value.some(k => k.type === 'hugoshop'))
@@ -921,20 +935,27 @@ function fehlerText() {
         : shop.error.value || t('ShopView.partCard.saveError')
 }
 
-// ── Links auf die Shop-Webseite (Muster mit %s aus den Shop-Einstellungen) ──
+// ── Links auf die Shop-Webseite (Muster mit %s aus den Einstellungen des HugoShops) ──
 
 function formatLink(muster, wert) {
     return muster && muster.includes('%s') ? muster.replace('%s', wert) : ''
 }
 
+/**
+ * HugoShop, dessen Webseite die Links meinen: der erste, in dem der Artikel
+ * angeboten wird, sonst der erste überhaupt (dev/shop-mehrere-kanaele.md)
+ */
+const linkKanal = computed(() => aktiveKanaele.value.find(k => k.type === 'hugoshop')
+    || daten.value.channels.find(k => k.type === 'hugoshop') || null)
+
 const shopLink = computed(() => {
     const ziel = daten.value.hyperlink.trim() || props.suggestedLink
     if (!props.partsId || !ziel) return ''
-    return formatLink(oserp.getClientDefaultValue('shop_products_link', ''), ziel.toLowerCase())
+    return formatLink(linkKanal.value?.products_link || '', ziel.toLowerCase())
 })
 
 const vorschau = computed(() => {
-    const muster = oserp.getClientDefaultValue('shop_thumbnails_link', '')
+    const muster = linkKanal.value?.thumbnails_link || ''
     return ohneLeere(daten.value.images)
         .map(name => ({ name, url: formatLink(muster, name) }))
         .filter(bild => bild.url)

@@ -29,11 +29,12 @@ function cartOfContext($db, string $uuid): string {
     }
 
     // Anlegen und anhaengen in einem Vorgang: der neue Korb uebernimmt den
-    // Kunden des Kontextes, damit er beim Abmelden nicht aufgeraeumt wird.
+    // Kunden des Kontextes, damit er beim Abmelden nicht aufgeraeumt wird,
+    // und seinen HugoShop — Preise, Angebot und Versand gelten je Kanal.
     $zeile = $db->getOne(
         "WITH neu AS (
-             INSERT INTO carts_hugoshop (uuid, customer_id, active)
-             SELECT :cart_uuid, con.customer_id, NOW()
+             INSERT INTO carts_hugoshop (uuid, customer_id, active, channel_id)
+             SELECT :cart_uuid, con.customer_id, NOW(), con.channel_id
                FROM context_hugoshop con WHERE con.uuid = :uuid
              RETURNING uuid
          )
@@ -86,8 +87,8 @@ function cartTotals($db, string $cartUuid, float $precision, int $taxzoneId, str
     // bereits ganze Zahl auf zwei Stellen und laesst den Schritt wirkungslos.
     // Richtig ist ROUND(x / precision) * precision.
     //
-    // Der Preis kommt aus shop_channel_price() und ist netto oder brutto wie
-    // parts.sellprice laut shop_tax_included. Frueher wurde hier immer die
+    // Der Preis kommt aus shop_channel_price() im Kanal des Warenkorbs und ist
+    // netto oder brutto wie parts.sellprice laut shop_tax_included. Frueher wurde hier immer die
     // Steuer aufgeschlagen, bei Bruttopreisen also doppelt — so auch im
     // Betrag, den PayPal abbuchte. Der Versandpreis folgt derselben Regel.
     $zeile = $db->getOne(
@@ -105,8 +106,9 @@ function cartTotals($db, string $cartUuid, float $precision, int $taxzoneId, str
                     ROUND(CASE WHEN :brutto = 1 THEN k.preis / (1 + COALESCE(tax.rate, 0)) ELSE k.preis END
                           * cps.amount / :precision) * :precision AS netto
                FROM cart_parts_hugoshop cps
+               JOIN carts_hugoshop kb ON kb.uuid = cps.cart_uuid
                JOIN parts ps ON ps.id = cps.parts_id
-               CROSS JOIN LATERAL (SELECT shop_channel_price(ps.id) AS preis) k
+               CROSS JOIN LATERAL (SELECT shop_channel_price(ps.id, kb.channel_id) AS preis) k
                JOIN taxzone_charts tc ON tc.buchungsgruppen_id = ps.buchungsgruppen_id
                                      AND tc.taxzone_id = :taxzone_id
                LEFT JOIN letzte_steuerschluessel tk ON tk.chart_id = tc.income_accno_id
@@ -207,15 +209,16 @@ function cartRead($db, string $cartUuid, ?int $customerId, bool $simple = true, 
                     ROUND(k.preis * cps.amount / :precision) * :precision AS total_price,
                     ps.buchungsgruppen_id,
                     psh.hugoshop_images ->> 0 AS thumbnail,
-                    (pc.active AND pc.channel_id = shop_active_channel_id('hugoshop')
-                         AND shop_part_available(ps.id)) IS TRUE AS offered,
+                    (pc.active AND shop_active_channel_id(kb.channel_id) IS NOT NULL
+                         AND shop_part_available(ps.id, kb.channel_id)) IS TRUE AS offered,
                     pss.min_qty,
                     COALESCE(NULLIF(btrim(dt.description_long), ''), dt.description) AS delivery_term
                FROM cart_parts_hugoshop cps
+               JOIN carts_hugoshop kb ON kb.uuid = cps.cart_uuid
                JOIN parts ps ON ps.id = cps.parts_id
-               CROSS JOIN LATERAL (SELECT shop_channel_price(ps.id) AS preis) k
+               CROSS JOIN LATERAL (SELECT shop_channel_price(ps.id, kb.channel_id) AS preis) k
                LEFT JOIN parts_channel_shop pc ON pc.parts_id = ps.id
-                                              AND pc.channel_id = shop_channel_id('hugoshop')
+                                              AND pc.channel_id = kb.channel_id
                LEFT JOIN parts_ext psh ON psh.parts_id = ps.id
                LEFT JOIN parts_shipping_shop pss ON pss.parts_id = ps.id
                LEFT JOIN delivery_terms dt ON dt.id = pss.delivery_term_id
@@ -244,15 +247,16 @@ function cartRead($db, string $cartUuid, ?int $customerId, bool $simple = true, 
                     tax.chart_id AS taxservice_accno_id, tax.rate AS tax_rate,
                     ch_tax.link AS taxservice_link,
                     psh.hugoshop_images ->> 0 AS thumbnail,
-                    (pc.active AND pc.channel_id = shop_active_channel_id('hugoshop')
-                         AND shop_part_available(ps.id)) IS TRUE AS offered,
+                    (pc.active AND shop_active_channel_id(kb.channel_id) IS NOT NULL
+                         AND shop_part_available(ps.id, kb.channel_id)) IS TRUE AS offered,
                     pss.min_qty,
                     COALESCE(NULLIF(btrim(dt.description_long), ''), dt.description) AS delivery_term
                FROM cart_parts_hugoshop cps
+               JOIN carts_hugoshop kb ON kb.uuid = cps.cart_uuid
                JOIN parts ps ON ps.id = cps.parts_id
-               CROSS JOIN LATERAL (SELECT shop_channel_price(ps.id) AS preis) k
+               CROSS JOIN LATERAL (SELECT shop_channel_price(ps.id, kb.channel_id) AS preis) k
                LEFT JOIN parts_channel_shop pc ON pc.parts_id = ps.id
-                                              AND pc.channel_id = shop_channel_id('hugoshop')
+                                              AND pc.channel_id = kb.channel_id
                JOIN taxzone_charts tc ON tc.buchungsgruppen_id = ps.buchungsgruppen_id
                                      AND tc.taxzone_id = :taxzone_id
                LEFT JOIN letzte_steuerschluessel tk ON tk.chart_id = tc.income_accno_id
@@ -372,8 +376,8 @@ function cartAdd($db, string $uuid, int $partsId, int $menge): array {
 
     $cartUuid = cartOfContext($db, $uuid);
 
-    // Nur Artikel, die der HugoShop anbietet (O2): aktive Kanalzeile bei
-    // eingeschaltetem Kanal. Sonst liesse sich jeder Artikel bestellen, dessen
+    // Nur Artikel, die der HugoShop des Warenkorbs anbietet (O2): aktive
+    // Kanalzeile bei eingeschaltetem Kanal. Sonst liesse sich jeder Artikel bestellen, dessen
     // Kennung jemand kennt — auch abgewählte oder nie angebotene. Dazu muss er
     // verfügbar sein (shop_part_available: nicht veraltet, nicht als nicht
     // verfügbar markiert); die Produktseite zeigt dann keinen Warenkorb-Knopf,
@@ -382,19 +386,21 @@ function cartAdd($db, string $uuid, int $partsId, int $menge): array {
         "INSERT INTO cart_parts_hugoshop (cart_uuid, parts_id, amount)
          SELECT :cart_uuid, p.id, GREATEST(:menge, COALESCE(CEIL(ps.min_qty)::integer, 0))
            FROM parts p
+           JOIN carts_hugoshop kb ON kb.uuid = :korb
            JOIN parts_channel_shop pc ON pc.parts_id = p.id
-                                     AND pc.channel_id = shop_active_channel_id('hugoshop')
+                                     AND pc.channel_id = shop_active_channel_id(kb.channel_id)
                                      AND pc.active
            LEFT JOIN parts_shipping_shop ps ON ps.parts_id = p.id
           WHERE p.id = :parts_id
-            AND shop_part_available(p.id)
+            AND shop_part_available(p.id, kb.channel_id)
          -- Mindestabnahme (dev/shop-versand.md, Entscheidung 5): wer weniger
          -- hineinlegt, bekommt die Mindestmenge; liegt der Artikel schon
          -- darin, kommt die gewuenschte Menge hinzu
          ON CONFLICT (cart_uuid, parts_id)
          DO UPDATE SET amount = GREATEST(cart_parts_hugoshop.amount + :menge_dazu, EXCLUDED.amount)
          RETURNING id",
-        [':cart_uuid' => $cartUuid, ':parts_id' => $partsId, ':menge' => $menge, ':menge_dazu' => $menge]
+        [':cart_uuid' => $cartUuid, ':korb' => $cartUuid, ':parts_id' => $partsId,
+         ':menge' => $menge, ':menge_dazu' => $menge]
     );
 
     // Ohne Treffer bleibt das INSERT wirkungslos — den Artikel gibt es nicht
@@ -483,8 +489,10 @@ function cartSetQuantity($db, string $cartUuid, ?int $customerId, int $posId, in
                 ROUND(k.preis / :precision) * :precision AS unit_price,
                 ROUND(k.preis * g.amount / :precision) * :precision AS total_price
            FROM geaendert g
-           CROSS JOIN LATERAL (SELECT shop_channel_price(g.parts_id) AS preis) k",
-        [':menge' => $menge, ':pos_id' => $posId, ':cart_uuid' => $cartUuid, ':precision' => $precision]
+           JOIN carts_hugoshop kb ON kb.uuid = :korb
+           CROSS JOIN LATERAL (SELECT shop_channel_price(g.parts_id, kb.channel_id) AS preis) k",
+        [':menge' => $menge, ':pos_id' => $posId, ':cart_uuid' => $cartUuid, ':korb' => $cartUuid,
+         ':precision' => $precision]
     );
 
     // Gehoert die Position nicht zu diesem Warenkorb, ist die Antwort sonst
@@ -686,6 +694,10 @@ function cartClear($db, string $cartUuid): void {
  * Beim Zusammenfuehren entscheidet der eindeutige Index ueber
  * (cart_uuid, parts_id), ob eine Position addiert oder angelegt wird.
  *
+ * Nur Warenkoerbe desselben HugoShops: Kundenkonten gelten fuer alle
+ * HugoShops des Mandanten (M1), Warenkoerbe nicht — Preise und Angebot
+ * gehoeren zum Kanal.
+ *
  * @param object $db Company-Datenbankverbindung
  * @param string $uuid Wert des Kontext-Cookies
  * @param int $customerId Angemeldeter Kunde
@@ -698,8 +710,9 @@ function cartMergeIntoCustomerCart($db, string $uuid, int $customerId): void {
     $kundenKorb = $db->getOne(
         "SELECT uuid FROM carts_hugoshop
           WHERE customer_id = :customer_id AND (:gast_korb::text IS NULL OR uuid <> :gast_korb)
+            AND channel_id = CAST(:kanal AS integer)
           ORDER BY active DESC LIMIT 1",
-        [':customer_id' => $customerId, ':gast_korb' => $gastKorb]
+        [':customer_id' => $customerId, ':gast_korb' => $gastKorb, ':kanal' => (int)$context['channel_id']]
     );
     $kundenKorb = $kundenKorb['uuid'] ?? null;
 

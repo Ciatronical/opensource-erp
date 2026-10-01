@@ -4,6 +4,11 @@
 // Zahlung über PayPal. Portiert aus payment.paypal.php der Bridge; die
 // Zugangsdaten kommen jetzt aus den Shop-Einstellungen statt aus passwd.php.
 //
+// Je HugoShop ein eigener PayPal-Zugang (dev/shop-mehrere-kanaele.md, M2):
+// Zugangsdaten, Test- oder Echtbetrieb und Rücksprungadresse stehen in den
+// Einstellungen des Kanals (paypal_*, base_url). Jede Funktion bekommt den
+// Kanal deshalb übergeben.
+//
 // ABLAUF
 //   paymentBegin   legt bei PayPal eine Bestellung an und liefert die Adresse,
 //                  zu der der Kunde geschickt wird
@@ -47,10 +52,11 @@ class ShopPaymentError extends ApiError {
  * Adresse der PayPal-Schnittstelle
  *
  * @param object $db Company-Datenbankverbindung
+ * @param int $kanal HugoShop
  * @return string
  */
-function paypalBaseUrl($db): string {
-    return shopConfigBool($db, 'shop_paypal_sandbox', true) ? SHOP_PAYPAL_SANDBOX : SHOP_PAYPAL_LIVE;
+function paypalBaseUrl($db, int $kanal): string {
+    return shopChannelBool($db, $kanal, 'paypal_sandbox', true) ? SHOP_PAYPAL_SANDBOX : SHOP_PAYPAL_LIVE;
 }
 
 /**
@@ -58,7 +64,7 @@ function paypalBaseUrl($db): string {
  *
  * Für Fehlertests: PayPal beantwortet einen Aufruf auf Wunsch mit einem
  * bestimmten Fehler. Gesteuert wird das über die Einstellung
- * shop_paypal_mock_response, zum Beispiel
+ * paypal_mock_response des HugoShops, zum Beispiel
  *
  *     capture:TRANSACTION_REFUSED
  *
@@ -84,15 +90,16 @@ function paypalBaseUrl($db): string {
  * eigentliche Absicherung, statt sie später irgendwo wieder herauszunehmen.
  *
  * @param object $db Company-Datenbankverbindung
+ * @param int $kanal HugoShop
  * @param string $aufruf 'create', 'capture' oder 'read'
  * @return array Kopfzeilen, leer wenn kein Fehler erzwungen wird
  */
-function paypalMockHeader($db, string $aufruf): array {
-    if (!shopConfigBool($db, 'shop_paypal_sandbox', true)) {
+function paypalMockHeader($db, int $kanal, string $aufruf): array {
+    if (!shopChannelBool($db, $kanal, 'paypal_sandbox', true)) {
         return [];
     }
 
-    $wert = trim(shopConfigValue($db, 'shop_paypal_mock_response'));
+    $wert = trim(shopChannelValue($db, $kanal, 'paypal_mock_response'));
     if ('' === $wert) {
         return [];
     }
@@ -126,6 +133,7 @@ function paypalMockHeader($db, string $aufruf): array {
  * Ruft die PayPal-Schnittstelle auf
  *
  * @param object $db Company-Datenbankverbindung
+ * @param int $kanal HugoShop, dessen PayPal-Zugang gilt
  * @param string $pfad Pfad ab /v1 bzw. /v2
  * @param string $methode GET oder POST
  * @param array|string|null $rumpf Anfragedaten
@@ -135,11 +143,11 @@ function paypalMockHeader($db, string $aufruf): array {
  * @return array{status: int, daten: array, roh: string}
  * @throws ShopPaymentError PAYMENT_UNREACHABLE
  */
-function paypalRequest($db, string $pfad, string $methode = 'GET', $rumpf = null,
+function paypalRequest($db, int $kanal, string $pfad, string $methode = 'GET', $rumpf = null,
                        array $kopfzeilen = [], ?string $aufruf = null): array {
-    $mock = null === $aufruf ? [] : paypalMockHeader($db, $aufruf);
+    $mock = null === $aufruf ? [] : paypalMockHeader($db, $kanal, $aufruf);
 
-    $ch = curl_init(paypalBaseUrl($db).$pfad);
+    $ch = curl_init(paypalBaseUrl($db, $kanal).$pfad);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_TIMEOUT, 30);
 
@@ -182,21 +190,22 @@ function paypalRequest($db, string $pfad, string $methode = 'GET', $rumpf = null
  * Holt ein Zugangsmerkmal bei PayPal
  *
  * @param object $db Company-Datenbankverbindung
+ * @param int $kanal HugoShop
  * @return string
  * @throws ShopPaymentError, ApiError SHOP_CONFIG_MISSING
  */
-function paypalAccessToken($db): string {
+function paypalAccessToken($db, int $kanal): string {
     // PayPal vergibt fuer Test- und Echtbetrieb getrennte Zugangsdaten. Beide
     // stehen nebeneinander in den Einstellungen; welches Paar gilt, entscheidet
     // derselbe Schalter, der auch die Adresse bestimmt — so koennen die beiden
     // nicht auseinanderlaufen.
-    $vorsilbe = shopConfigBool($db, 'shop_paypal_sandbox', true)
-        ? 'shop_paypal_sandbox_' : 'shop_paypal_live_';
+    $vorsilbe = shopChannelBool($db, $kanal, 'paypal_sandbox', true)
+        ? 'paypal_sandbox_' : 'paypal_live_';
 
-    $clientId = shopConfigRequire($db, $vorsilbe.'client_id');
-    $secret   = shopConfigRequire($db, $vorsilbe.'secret');
+    $clientId = shopChannelRequire($db, $kanal, $vorsilbe.'client_id');
+    $secret   = shopChannelRequire($db, $kanal, $vorsilbe.'secret');
 
-    $antwort = paypalRequest($db, '/v1/oauth2/token', 'POST', 'grant_type=client_credentials', [
+    $antwort = paypalRequest($db, $kanal, '/v1/oauth2/token', 'POST', 'grant_type=client_credentials', [
         'Accept: application/json',
         'Content-Type: application/x-www-form-urlencoded',
         'Authorization: Basic '.base64_encode($clientId.':'.$secret),
@@ -230,6 +239,8 @@ function paypalAccessToken($db): string {
 function paymentBegin($db, string $uuid, string $erfolgSeite, string $abbruchSeite, array $lieferadresse = []): array {
     $context    = shopContextCustomer($db, $uuid);
     $customerId = (int)$context['customer_id'];
+    // HugoShop der Sitzung: sein PayPal-Zugang, seine Rücksprungadresse
+    $kanal      = (int)$context['channel_id'];
 
     if (empty($context['cart_uuid'])) {
         throw new ApiError('CART_NOT_FOUND', 'Zu dieser Sitzung gibt es keinen Warenkorb');
@@ -255,9 +266,9 @@ function paymentBegin($db, string $uuid, string $erfolgSeite, string $abbruchSei
     cartRequireOffered($korb);
     cartRequireShipping($korb);
 
-    $rueckweg = rtrim(shopConfigRequire($db, 'shop_base_url'), '/').'/shop-api/';
+    $rueckweg = rtrim(shopChannelRequire($db, $kanal, 'base_url'), '/').'/shop-api/';
 
-    $antwort = paypalRequest($db, '/v2/checkout/orders', 'POST', [
+    $antwort = paypalRequest($db, $kanal, '/v2/checkout/orders', 'POST', [
         'intent' => 'CAPTURE',
         'purchase_units' => [[
             'reference_id' => $uuid,
@@ -271,7 +282,7 @@ function paymentBegin($db, string $uuid, string $erfolgSeite, string $abbruchSei
             ],
         ]],
         'payment_source' => ['paypal' => ['experience_context' => [
-            'payment_method_preference' => shopConfigValue($db, 'shop_paypal_payment_method_preference', 'IMMEDIATE_PAYMENT_REQUIRED'),
+            'payment_method_preference' => shopChannelValue($db, $kanal, 'paypal_payment_method_preference', 'IMMEDIATE_PAYMENT_REQUIRED'),
             'brand_name'   => shopConfigValue($db, 'shop_payment_account_owner'),
             'locale'       => 'de-DE',
             'landing_page' => 'LOGIN',
@@ -288,7 +299,7 @@ function paymentBegin($db, string $uuid, string $erfolgSeite, string $abbruchSei
         ]]],
     ], [
         'Content-Type: application/json',
-        'Authorization: Bearer '.paypalAccessToken($db),
+        'Authorization: Bearer '.paypalAccessToken($db, $kanal),
     ], 'create');
 
     if (($antwort['daten']['status'] ?? '') !== 'PAYER_ACTION_REQUIRED') {
@@ -340,17 +351,20 @@ function paypalPaymentState(array $bestellung): array {
  * Zieht die Zahlung ein und legt die Rechnung an
  *
  * Läuft ohne Kontext-Cookie: die Sitzungskennung kommt als reference_id von
- * PayPal zurück.
+ * PayPal zurück. Der HugoShop kommt vom Einstieg (Shop-Schlüssel der
+ * Webseite, über die PayPal zurückschickt) — sein Zugang zieht ein, bevor die
+ * Sitzung bekannt ist.
  *
  * @param object $db Company-Datenbankverbindung
+ * @param int $kanal HugoShop der Anfrage
  * @param string $token Bestellkennung von PayPal (Parameter "token")
  * @return array{ar_link: string, invnumber: string, payment: array}
  * @throws ShopPaymentError, ApiError
  */
-function paymentEnd($db, string $token): array {
-    $antwort = paypalRequest($db, '/v2/checkout/orders/'.rawurlencode($token).'/capture', 'POST', '{}', [
+function paymentEnd($db, int $kanal, string $token): array {
+    $antwort = paypalRequest($db, $kanal, '/v2/checkout/orders/'.rawurlencode($token).'/capture', 'POST', '{}', [
         'Content-Type: application/json',
-        'Authorization: Bearer '.paypalAccessToken($db),
+        'Authorization: Bearer '.paypalAccessToken($db, $kanal),
     ], 'capture');
 
     $bestellung = $antwort['daten'];
@@ -454,7 +468,7 @@ function paymentDeliveryAddress($db, int $customerId, array $lieferadresse): arr
  */
 function paymentsPending($db, int $limit = 100): array {
     return $db->getAll(
-        "SELECT al.uuid, al.ar_id, al.paypal_order_id, al.payment_reason, al.payment_mtime,
+        "SELECT al.uuid, al.ar_id, al.channel_id, al.paypal_order_id, al.payment_reason, al.payment_mtime,
                 ar.invnumber, TRUNC(ar.amount, 2) AS amount,
                 c.name AS customer
            FROM ar_link_hugoshop al
@@ -509,7 +523,7 @@ function paymentApplyState($db, string $arLink, array $zahlung): string {
  * Fragt alle schwebenden Zahlungen bei PayPal nach und trägt das Ergebnis ein
  *
  * Vorgänge, die sich nicht abfragen lassen, bleiben unangetastet auf PENDING
- * — geraten wird nichts.
+ * — geraten wird nichts. Jeder Vorgang mit dem PayPal-Zugang seines HugoShops.
  *
  * @param object $db Company-Datenbankverbindung
  * @param int $limit Höchstzahl der Vorgänge
@@ -520,9 +534,10 @@ function paymentsReconcile($db, int $limit = 100): array {
 
     foreach (paymentsPending($db, $limit) as $vorgang) {
         try {
-            $antwort = paypalRequest($db, '/v2/checkout/orders/'.rawurlencode($vorgang['paypal_order_id']), 'GET', null, [
+            $kanal = (int)$vorgang['channel_id'];
+            $antwort = paypalRequest($db, $kanal, '/v2/checkout/orders/'.rawurlencode($vorgang['paypal_order_id']), 'GET', null, [
                 'Content-Type: application/json',
-                'Authorization: Bearer '.paypalAccessToken($db),
+                'Authorization: Bearer '.paypalAccessToken($db, $kanal),
             ], 'read');
 
             if (200 !== $antwort['status']) {

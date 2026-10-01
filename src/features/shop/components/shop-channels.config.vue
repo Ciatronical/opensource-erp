@@ -13,6 +13,12 @@
     Mindestens ein Kanal bleibt eingeschaltet (V8) — solange es nur den
     HugoShop gibt, ist er gesperrt. Ändert sich sein Preis, legt das Backend
     den Auftrag an, alle Produktseiten neu zu schreiben (V9).
+
+    Mehrere Kanäle je Art (dev/shop-mehrere-kanaele.md, Schritt 5): Jede Karte
+    ist eine Instanz mit eigenem Namen und eigenen Einstellungen (Webseite,
+    Shop-Schlüssel, PayPal, eBay-Zugang …) im aufklappbaren Bereich
+    darunter (shop-channel-settings.vue). Unter den Karten lassen sich Kanäle
+    anlegen; löschen lässt sich ein abgeschalteter Kanal ohne Belege (M5).
 -->
 <template>
     <div>
@@ -41,21 +47,56 @@
                     <v-icon :icon="kanalIcon(kanal.type)" />
                 </template>
                 <v-card-title class="text-subtitle-1 d-flex align-center">
-                    {{ kanalName(kanal.type) }}
+                    {{ kanal.name || artName(kanal.type) }}
+                    <v-chip size="x-small" variant="outlined" class="ml-2">{{ artName(kanal.type) }}</v-chip>
                     <v-chip size="x-small" variant="flat" class="ml-2" :color="kanal.active ? 'success' : 'grey'">
                         {{ t('ShopView.channelConfig.parts', { anzahl: kanal.parts }) }}
                     </v-chip>
                     <v-spacer />
                     <v-progress-circular v-if="speichert[kanal.channel_id]" indeterminate size="16" width="2" />
+                    <!-- Löschen (M5): nur abgeschaltet, ohne offene Aufträge und Belege -->
+                    <v-btn
+                        v-if="kanal.deletable"
+                        icon="mdi-delete-outline"
+                        variant="text"
+                        size="small"
+                        color="error"
+                        :title="t('ShopView.channelConfig.delete')"
+                        @click="loeschenFragen(kanal)"
+                    />
                 </v-card-title>
             </v-card-item>
 
             <v-card-text class="pt-0">
+                <v-row dense>
+                    <v-col cols="12" sm="6" md="4" class="py-1">
+                        <v-text-field
+                            v-model="kanal.name"
+                            :label="t('ShopView.channelConfig.name')"
+                            :rules="[wert => !!String(wert || '').trim() || t('ShopView.channelConfig.nameRequired')]"
+                            variant="outlined"
+                            density="compact"
+                            hide-details="auto"
+                            autocomplete="off"
+                        />
+                    </v-col>
+                </v-row>
+
                 <v-switch
                     v-model="kanal.active"
                     :label="t('ShopView.channelConfig.active')"
                     :disabled="letzterAktiver(kanal)"
                     :hint="letzterAktiver(kanal) ? t('ShopView.channelConfig.activeLast') : ''"
+                    persistent-hint
+                    color="primary"
+                    density="compact"
+                    class="mb-2"
+                />
+                <!-- M3: neue Shop-Artikel automatisch in diesen Kanal aufnehmen -->
+                <v-switch
+                    v-model="kanal.auto_add_parts"
+                    :label="t('ShopView.channelConfig.autoAddParts')"
+                    :hint="t('ShopView.channelConfig.autoAddPartsHint')"
                     persistent-hint
                     color="primary"
                     density="compact"
@@ -169,16 +210,86 @@
                         />
                     </v-col>
                 </v-row>
+
+                <!-- Einstellungen der Instanz: erst beim Aufklappen geladen -->
+                <v-expansion-panels variant="accordion" class="mt-4">
+                    <v-expansion-panel>
+                        <v-expansion-panel-title>
+                            <v-icon start size="small">mdi-cog-outline</v-icon>
+                            {{ t('ShopView.channelConfig.settings', { name: kanal.name || artName(kanal.type) }) }}
+                        </v-expansion-panel-title>
+                        <v-expansion-panel-text>
+                            <ShopChannelSettings
+                                :channel-id="kanal.channel_id"
+                                :type="kanal.type"
+                                :settings="kanal.settings"
+                                :secrets-set="kanal.secrets_set"
+                                :quellen="quellen"
+                            />
+                        </v-expansion-panel-text>
+                    </v-expansion-panel>
+                </v-expansion-panels>
             </v-card-text>
         </v-card>
+
+        <!-- Kanal anlegen: eine weitere Instanz einer Art, abgeschaltet -->
+        <v-card v-if="!laedt && !fehler && arten.length" variant="outlined" class="my-3">
+            <v-card-text class="d-flex flex-wrap align-center ga-2">
+                <span class="text-body-2 mr-2">{{ t('ShopView.channelConfig.newChannel') }}</span>
+                <v-select
+                    v-model="neu.type"
+                    :items="artAuswahl"
+                    :label="t('ShopView.channelConfig.newChannelType')"
+                    variant="outlined"
+                    density="compact"
+                    hide-details
+                    style="max-width: 20ch"
+                />
+                <v-text-field
+                    v-model="neu.name"
+                    :label="t('ShopView.channelConfig.name')"
+                    variant="outlined"
+                    density="compact"
+                    hide-details
+                    autocomplete="off"
+                    style="max-width: 40ch"
+                    @keyup.enter="anlegen"
+                />
+                <v-btn
+                    color="primary"
+                    variant="tonal"
+                    prepend-icon="mdi-plus"
+                    :disabled="!neu.type || !neu.name.trim()"
+                    :loading="legtAn"
+                    @click="anlegen"
+                >
+                    {{ t('ShopView.channelConfig.create') }}
+                </v-btn>
+            </v-card-text>
+        </v-card>
+
+        <v-dialog v-model="loeschDialog" max-width="480">
+            <v-card>
+                <v-card-title>{{ t('ShopView.channelConfig.delete') }}</v-card-title>
+                <v-card-text>{{ t('ShopView.channelConfig.deleteConfirm', { name: zuLoeschen?.name || '' }) }}</v-card-text>
+                <v-card-actions>
+                    <v-spacer />
+                    <v-btn variant="text" @click="loeschDialog = false">{{ t('ShopView.channelConfig.cancel') }}</v-btn>
+                    <v-btn color="error" variant="tonal" :loading="loescht" @click="loeschen">
+                        {{ t('ShopView.channelConfig.delete') }}
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
     </div>
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { ref, reactive, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import axios from 'axios'
 import { shopFehler } from '../composables/useShop.js'
+import ShopChannelSettings from './shop-channel-settings.vue'
 import { oserpStore } from '@/core/stores/oserp.store.js'
 import * as toasts from '@/core/utils/toasts.js'
 
@@ -216,7 +327,15 @@ const aufschlagArten = computed(() => [
 
 const KANAL_ICONS = { hugoshop: 'mdi-storefront', ebay: 'mdi-shopping', amazon: 'mdi-package-variant' }
 const kanalIcon = typ => KANAL_ICONS[typ] || 'mdi-store'
-const kanalName = typ => (te(`ShopView.channels.${typ}`) ? t(`ShopView.channels.${typ}`) : typ)
+/** Bezeichnung der Art (HugoShop, eBay) — der Kanal selbst trägt seinen Namen */
+const artName = typ => (te(`ShopView.channels.${typ}`) ? t(`ShopView.channels.${typ}`) : typ)
+
+/** Arten, von denen sich Kanäle anlegen lassen (getShopChannels) */
+const arten = ref([])
+const artAuswahl = computed(() => arten.value.map(art => ({ value: art, title: artName(art) })))
+
+/** Vorlagensätze für die Einstellungen der HugoShops — einmal geladen */
+const quellen = ref({ shopTemplateSets: [] })
 
 /** Der letzte eingeschaltete Kanal lässt sich nicht abschalten (V8) */
 const letzterAktiver = kanal => kanal.active && kanaele.value.filter(k => k.active).length === 1
@@ -268,6 +387,12 @@ function alsKanal(zeile) {
         countries: alsListe(zeile.countries).map(String),
         excluded_delivery_terms: alsListe(alsObjekt(zeile.settings).excluded_delivery_terms).map(Number),
         parts: Number(zeile.parts) || 0,
+        name: String(zeile.name || ''),
+        auto_add_parts: WAHR.includes(zeile.auto_add_parts),
+        // Für den Einstellungsbereich; ändert sich hier nicht mit
+        settings: alsObjekt(zeile.settings),
+        secrets_set: alsObjekt(zeile.secrets_set),
+        deletable: WAHR.includes(zeile.deletable),
     }
 }
 
@@ -281,6 +406,8 @@ function nutzdaten(kanal) {
         round_99: kanal.round_99,
         free_shipping_from: freigrenzeWert(kanal.free_shipping_from),
         countries: [...kanal.countries].sort(),
+        name: kanal.name.trim(),
+        auto_add_parts: kanal.auto_add_parts,
         // nur eBay kennt den Ausschluss; andere Kanäle lassen ihn unberührt
         ...(kanal.type === 'ebay' ? { excluded_delivery_terms: [...kanal.excluded_delivery_terms].sort((a, b) => a - b) } : {}),
     }
@@ -307,6 +434,7 @@ async function laden() {
             return
         }
         alleLaender.value = antwort.data.payload?.all_countries || []
+        arten.value = antwort.data.payload?.types || []
         lieferbedingungen.value = antwort.data.payload?.delivery_terms || []
         kanaele.value = (antwort.data.payload?.channels || []).map(alsKanal)
         ausBackend.value = WAHR.includes(antwort.data.payload?.tax_included)
@@ -328,6 +456,8 @@ async function speichern(kanal) {
     if (stand === zuletzt[kanal.channel_id]) return
     if (daten.markup_type === 'percent' && daten.markup_value <= -100) return
     if (freigrenzePruefen(kanal.free_shipping_from) !== true) return
+    if (!daten.name) return
+    const geschaltet = JSON.parse(zuletzt[kanal.channel_id] || '{}').active !== daten.active
 
     speichert.value = { ...speichert.value, [kanal.channel_id]: true }
     try {
@@ -346,6 +476,11 @@ async function speichern(kanal) {
         toasts.success(antwort.data.payload?.republish
             ? t('ShopView.channelConfig.republishQueued')
             : t('ShopView.channelConfig.saved'))
+        // Ob sich der Kanal löschen lässt, hängt am Schalter und an den
+        // Aufträgen, die das Abschalten anlegt — dafür neu laden
+        if (geschaltet) {
+            await laden()
+        }
     } catch (e) {
         toasts.error(shopFehler(e?.response?.data, i18n, 'ShopView.channelConfig.saveError').text)
     } finally {
@@ -365,7 +500,73 @@ watch(kanaele, liste => {
     })
 }, { deep: true })
 
-onMounted(laden)
+// ── Anlegen und Löschen ──
+
+const neu = reactive({ type: 'hugoshop', name: '' })
+const legtAn = ref(false)
+
+async function anlegen() {
+    if (!neu.type || !neu.name.trim()) return
+    legtAn.value = true
+    try {
+        const antwort = await axios.post('/api/shop/', { action: 'createShopChannel', type: neu.type, name: neu.name.trim() })
+        if (!antwort.data?.success) {
+            toasts.error(shopFehler(antwort.data, i18n, 'ShopView.channelConfig.createError').text)
+            return
+        }
+        toasts.success(t('ShopView.channelConfig.created'))
+        neu.name = ''
+        await laden()
+    } catch (e) {
+        toasts.error(shopFehler(e?.response?.data, i18n, 'ShopView.channelConfig.createError').text)
+    } finally {
+        legtAn.value = false
+    }
+}
+
+const loeschDialog = ref(false)
+const zuLoeschen = ref(null)
+const loescht = ref(false)
+
+function loeschenFragen(kanal) {
+    zuLoeschen.value = kanal
+    loeschDialog.value = true
+}
+
+async function loeschen() {
+    if (!zuLoeschen.value) return
+    loescht.value = true
+    try {
+        const antwort = await axios.post('/api/shop/', { action: 'deleteShopChannel', channel_id: zuLoeschen.value.channel_id })
+        if (!antwort.data?.success) {
+            toasts.error(shopFehler(antwort.data, i18n, 'ShopView.channelConfig.deleteError').text)
+            return
+        }
+        toasts.success(t('ShopView.channelConfig.deleted'))
+        loeschDialog.value = false
+        await laden()
+    } catch (e) {
+        toasts.error(shopFehler(e?.response?.data, i18n, 'ShopView.channelConfig.deleteError').text)
+    } finally {
+        loescht.value = false
+    }
+}
+
+async function ladeVorlagensaetze() {
+    try {
+        const antwort = await axios.post('/api/shop/', { action: 'getShopTemplateSets' })
+        if (antwort.data?.success) {
+            quellen.value = { ...quellen.value, shopTemplateSets: antwort.data.payload?.sets || [] }
+        }
+    } catch {
+        // Ohne Liste bleibt die Auswahl leer — der gespeicherte Satz gilt weiter
+    }
+}
+
+onMounted(() => {
+    laden()
+    ladeVorlagensaetze()
+})
 
 // Ausstehende Änderungen nicht verlieren, wenn der Reiter gewechselt wird
 onBeforeUnmount(() => {

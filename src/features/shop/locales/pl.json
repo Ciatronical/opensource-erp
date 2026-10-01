@@ -319,7 +319,24 @@
             "saved": "Zapisano.",
             "republishQueued": "Zapisano. Strony produktów zostaną przepisane z nowymi cenami.",
             "saveError": "Nie udało się zapisać ustawień kanału.",
-            "loadError": "Nie udało się wczytać kanałów sprzedaży."
+            "loadError": "Nie udało się wczytać kanałów sprzedaży.",
+            "name": "Nazwa",
+            "nameRequired": "Kanał potrzebuje nazwy.",
+            "autoAddParts": "Automatycznie dodawaj nowe artykuły sklepu",
+            "autoAddPartsHint": "Gdy artykuł zostanie dodany do sklepu, jest od razu oferowany także w tym kanale.",
+            "settings": "Ustawienia: {name}",
+            "settingsSaved": "Ustawienia zapisane.",
+            "settingsSaveError": "Nie udało się zapisać ustawień.",
+            "newChannel": "Nowy kanał sprzedaży:",
+            "newChannelType": "Rodzaj",
+            "create": "Utwórz",
+            "created": "Kanał sprzedaży utworzony. Pozostaje wyłączony, dopóki nie zostanie skonfigurowany.",
+            "createError": "Nie udało się utworzyć kanału sprzedaży.",
+            "delete": "Usuń kanał sprzedaży",
+            "deleteConfirm": "Usunąć „{name}” wraz z wierszami artykułów, obrazami, krajami dostawy i progami cenowymi? Tej operacji nie można cofnąć.",
+            "deleted": "Kanał sprzedaży usunięty.",
+            "deleteError": "Nie udało się usunąć kanału sprzedaży.",
+            "cancel": "Anuluj"
         },
         "ebayCondition": {
             "NEW": "Nowy",
@@ -333,7 +350,11 @@
             "NETWORK_ERROR": "Serwer jest nieosiągalny. Sprawdź połączenie i spróbuj ponownie.",
             "API_DATABASE_ERROR": "Baza danych nie odpowiada zgodnie z oczekiwaniami. Proszę powiadomić administratora.",
             "API_INTERNAL_ERROR": "Na serwerze wystąpił nieoczekiwany błąd. Proszę powiadomić administratora.",
-            "NO_PERMISSION": "Brak uprawnień do tej akcji."
+            "NO_PERMISSION": "Brak uprawnień do tej akcji.",
+            "CHANNEL_NAME_TAKEN": "Inny kanał sprzedaży ma już tę nazwę.",
+            "CHANNEL_KEY_TAKEN": "Ten klucz sklepu należy już do innego HugoShop.",
+            "CHANNEL_IN_USE": "Do tego kanału odnoszą się faktury, odstąpienia lub zamówienia eBay. Można go tylko wyłączyć.",
+            "CHANNEL_NOT_DELETABLE": "Usunąć można tylko wyłączony kanał bez otwartych zadań."
         }
     }
 }

@@ -34,12 +34,6 @@
         </div>
 
         <template v-else>
-            <!-- Geheimnisse werden aus Sicherheitsgründen nicht geladen -->
-            <v-alert type="info" variant="tonal" density="compact" class="mb-4">
-                <v-icon start size="small">mdi-shield-key-outline</v-icon>
-                {{ t('crm_fields.shopSecretsNotice') }}
-            </v-alert>
-
             <template v-for="(field, i) in shopConfig" :key="field.name + '-' + i">
                 <!-- Überschrift -->
                 <v-row v-if="field.type === 'headline'" class="mt-6 mb-2">
@@ -50,13 +44,11 @@
                 </v-row>
 
                 <!--
-                    Gruppe: fasst zusammengehörige Felder in einer Karte.
-
-                    Die PayPal-Zugangsdaten gibt es zweimal — für Test- und für
-                    Echtbetrieb. Ohne diese Trennung stünden vier fast gleich
-                    benannte Felder untereinander, und welches Paar gerade gilt,
-                    stünde nirgends. Die Karte des aktiven Paars ist deshalb
-                    hervorgehoben, die andere zurückgenommen.
+                    Gruppe: fasst zusammengehörige Felder in einer Karte. Mit
+                    activeWhen ist die Karte hervorgehoben, wenn ihr Schalter
+                    gilt. Die Gruppen der Instanzen (PayPal, HugoCMS, eBay)
+                    stehen seit dev/shop-mehrere-kanaele.md, Schritt 5, in der
+                    Kanalkarte (shop-channel-settings.vue).
                 -->
                 <v-card
                     v-else-if="field.type === 'group'"
@@ -94,32 +86,6 @@
                             :gesetzt="crmSecrets"
                             :vorgaben="crmFallbacks"
                         />
-
-                        <!-- eBay-Kanal: Verbindungstest, Bestellabruf, Stand -->
-                        <EbayStatusConfig v-if="field.action === 'ebayPanel'" class="mt-2" />
-
-                        <!-- Verbindung zu HugoCMS prüfen: mit den Werten im
-                             Formular, auch wenn sie noch nicht gespeichert sind -->
-                        <template v-if="field.action === 'hugocmsTest'">
-                            <v-btn
-                                variant="tonal"
-                                size="small"
-                                prepend-icon="mdi-lan-connect"
-                                :loading="hugocmsPrueft"
-                                @click="hugocmsPruefen"
-                            >
-                                {{ t('crm_fields.shopHugoCmsTest') }}
-                            </v-btn>
-                            <v-alert
-                                v-if="hugocmsErgebnis"
-                                :type="hugocmsErgebnis.art"
-                                variant="tonal"
-                                density="compact"
-                                class="mt-3"
-                            >
-                                <div v-for="(zeile, index) in hugocmsErgebnis.zeilen" :key="index">{{ zeile }}</div>
-                            </v-alert>
-                        </template>
                     </v-card-text>
                 </v-card>
 
@@ -155,7 +121,6 @@ import ShopConfigField from './shop-config-field.component.vue'
 const ShopChannelsConfig = defineAsyncComponent(() => import('@/features/shop/components/shop-channels.config.vue'))
 const ShopCountriesConfig = defineAsyncComponent(() => import('@/features/shop/components/shop-countries.config.vue'))
 const ShopShippingConfig = defineAsyncComponent(() => import('@/features/shop/components/shop-shipping.config.vue'))
-const EbayStatusConfig = defineAsyncComponent(() => import('@/features/shop/components/shop-ebay-status.vue'))
 
 const { t } = useI18n()
 
@@ -181,86 +146,11 @@ const configError = ref(null)
 const configLoaded = ref(false)
 
 /**
- * Auswahllisten, die nicht in der Firmenkonfiguration stehen
- *
- * Die Vorlagensätze der Produktseiten liegen im Dateisystem des Servers; sie
- * kommen deshalb aus der Shop-Erweiterung statt aus getCompanyConfig.
+ * Auswahllisten, die nicht in der Firmenkonfiguration stehen — die Lagerplätze
+ * kommen aus der Lagerverwaltung. Die Vorlagensätze lädt seit
+ * dev/shop-mehrere-kanaele.md die Kanalkarte selbst.
  */
-const quellen = ref({ shopTemplateSets: [], shopStockBins: [] })
-
-/** Verbindungstest zu HugoCMS: läuft gerade, und was kam heraus */
-const hugocmsPrueft = ref(false)
-const hugocmsErgebnis = ref(null)
-
-/**
- * Prüft die Verbindung zu HugoCMS
- *
- * Schickt Adresse und — falls eingetippt — Schlüssel aus dem Formular mit.
- * Die Firmenkonfiguration speichert verzögert; ohne das prüfte ein Klick direkt
- * nach der Eingabe noch den alten Stand. Ein leeres Schlüsselfeld heißt: der
- * gespeicherte gilt.
- */
-async function hugocmsPruefen() {
-    hugocmsPrueft.value = true
-    hugocmsErgebnis.value = null
-    try {
-        const response = await axios.post('/api/shop/', {
-            action: 'testShopHugoCms',
-            url: props.crmDefaults.shop_hugocms_url || '',
-            key: props.crmDefaults.shop_hugocms_key || '',
-        })
-        if (!response.data?.success) {
-            hugocmsErgebnis.value = { art: 'error', zeilen: [response.data?.debug || response.data?.text || t('crm_fields.shopHugoCmsFailed')] }
-            return
-        }
-        hugocmsErgebnis.value = hugocmsBericht(response.data.payload || {})
-    } catch (e) {
-        hugocmsErgebnis.value = { art: 'error', zeilen: [e?.message || t('crm_fields.shopHugoCmsFailed')] }
-    } finally {
-        hugocmsPrueft.value = false
-    }
-}
-
-/** Baustand von HugoCMS als Meldung: verbunden, kann bauen, letzter Lauf */
-function hugocmsBericht(stand) {
-    const zeilen = [t('crm_fields.shopHugoCmsOk')]
-    let art = 'success'
-
-    if (!stand.buildable) {
-        zeilen.push(t('crm_fields.shopHugoCmsNotBuildable'))
-        art = 'warning'
-    } else if (stand.paused) {
-        zeilen.push(t('crm_fields.shopHugoCmsPaused'))
-        art = 'warning'
-    }
-    if (stand.running) {
-        zeilen.push(t('crm_fields.shopHugoCmsRunning'))
-    }
-
-    const letzter = stand.last
-    if (letzter?.finishedAt) {
-        const wann = new Date(letzter.finishedAt).toLocaleString()
-        zeilen.push(letzter.success
-            ? t('crm_fields.shopHugoCmsLastOk', { when: wann, seconds: letzter.seconds })
-            : t('crm_fields.shopHugoCmsLastFailed', { when: wann, code: letzter.exitCode }))
-    } else if (stand.buildable) {
-        zeilen.push(t('crm_fields.shopHugoCmsNoBuild'))
-    }
-
-    return { art, zeilen }
-}
-
-async function ladeVorlagensaetze() {
-    try {
-        const response = await axios.post('/api/shop/', { action: 'getShopTemplateSets' })
-        if (response.data?.success) {
-            quellen.value = { ...quellen.value, shopTemplateSets: response.data.payload?.sets || [] }
-        }
-    } catch (e) {
-        // Ohne Liste bleibt das Feld leer — der gespeicherte Satz gilt weiter
-        console.warn('Vorlagensätze konnten nicht geladen werden:', e)
-    }
-}
+const quellen = ref({ shopStockBins: [] })
 
 /**
  * Lagerplätze für die Einstellung shop_stock_bin_id
@@ -289,8 +179,7 @@ async function ladeLagerplaetze() {
 /**
  * Gilt diese Gruppe gerade?
  *
- * activeWhen nennt ein Feld und den Wert, bei dem die Gruppe zählt — für die
- * PayPal-Zugangsdaten ist das der Schalter shop_paypal_sandbox. Ohne
+ * activeWhen nennt ein Feld und den Wert, bei dem die Gruppe zählt. Ohne
  * activeWhen ist eine Gruppe immer aktiv.
  */
 function istAktiv(gruppe) {
@@ -322,8 +211,7 @@ async function loadConfigFile() {
  * werden von getCompanyConfig bewusst nicht ausgeliefert, und cleanData()
  * übergeht leere Felder beim Speichern.
  *
- * Läuft auch über die Felder in Gruppen: sonst blieben die PayPal-Zugangsdaten
- * unbehandelt.
+ * Läuft auch über die Felder in Gruppen.
  */
 function normalizeShopDefaults() {
     const alleFelder = shopConfig.value.flatMap(f => f.type === 'group' ? (f.fields || []) : [f])
@@ -353,7 +241,7 @@ const ohneSpeichern = inject('ohneSpeichern', fn => fn())
 
 onMounted(async () => {
     await loadConfigFile()
-    await Promise.all([ladeVorlagensaetze(), ladeLagerplaetze()])
+    await ladeLagerplaetze()
     if (!configError.value) {
         ohneSpeichern(normalizeShopDefaults)
     }

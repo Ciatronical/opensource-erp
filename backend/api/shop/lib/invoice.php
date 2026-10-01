@@ -40,6 +40,9 @@ function createShopInvoice($db, string $uuid, array $lieferadresse = [], ?array 
         throw new ApiError("CART_NOT_FOUND", 'Zu dieser Sitzung gibt es keinen Warenkorb');
     }
     $cartUuid = $context['cart_uuid'];
+    // HugoShop der Sitzung: Preise und Bezeichnungen des Kanals, und der
+    // Rechnungslink merkt ihn sich für Mail, Rechnungsseite und PayPal
+    $kanal = (int)$context['channel_id'];
 
     // Versand nach dem Land der Lieferadresse (dev/shop-versand.md, Schritt 6)
     $korb = cartRead($db, $cartUuid, $customerId, false,
@@ -133,9 +136,9 @@ function createShopInvoice($db, string $uuid, array $lieferadresse = [], ?array 
                             AS longdescription
                    FROM cart_parts_hugoshop c
                    JOIN parts p ON p.id = c.parts_id
-                   CROSS JOIN LATERAL (SELECT shop_channel_price(p.id) AS preis) k
+                   CROSS JOIN LATERAL (SELECT shop_channel_price(p.id, CAST(:kanal AS integer)) AS preis) k
                    LEFT JOIN parts_channel_shop pc ON pc.parts_id = p.id
-                                                  AND pc.channel_id = shop_channel_id('hugoshop')
+                                                  AND pc.channel_id = CAST(:kanal_zeile AS integer)
                    LEFT JOIN parts_shipping_shop pss ON pss.parts_id = p.id
                    LEFT JOIN delivery_terms dt ON dt.id = pss.delivery_term_id
                   WHERE c.cart_uuid = :cart_uuid
@@ -162,6 +165,8 @@ function createShopInvoice($db, string $uuid, array $lieferadresse = [], ?array 
                 ':versand_teil'     => (int)($versand['parts_id'] ?? 0),
                 ':mit_versand'      => $mitVersand ? 1 : 0,
                 ':cart_uuid'   => $cartUuid,
+                ':kanal'       => $kanal,
+                ':kanal_zeile' => $kanal,
                 ':preisquelle' => shopConfigValue($db, 'shop_active_price_source', 'master_data/sellprice'),
             ]
         );
@@ -179,9 +184,11 @@ function createShopInvoice($db, string $uuid, array $lieferadresse = [], ?array 
     $arLink = shopNewContextUuid();
     $db->execute(
         "INSERT INTO ar_link_hugoshop (ar_id, uuid, paypal, paypal_order_id, paypal_capture_id,
-                                       payment_status, payment_reason, payment_mtime)
-         VALUES (:ar_id, :uuid, :payer, :order_id, :capture_id, :status, :reason, :mtime)",
+                                       payment_status, payment_reason, payment_mtime, channel_id)
+         VALUES (:ar_id, :uuid, :payer, :order_id, :capture_id, :status, :reason, :mtime,
+                 CAST(:kanal AS integer))",
         [
+            ':kanal'      => $kanal,
             ':ar_id'      => $arId,
             ':uuid'       => $arLink,
             ':payer'      => $paypal['payer_id']   ?? null,
@@ -444,12 +451,15 @@ function shopInvoiceShippingAddress($db, int $arId) {
  *           keine Aufforderung zur Ueberweisung sehen
  *   keines  offene Rechnung, Bankverbindung anzeigen
  *
+ * Der Link gilt nur im HugoShop, aus dem die Rechnung stammt.
+ *
  * @param object $db Company-Datenbankverbindung
  * @param string $arLink Kennung aus ar_link_hugoshop
+ * @param int $kanal HugoShop der Anfrage
  * @return array
  * @throws ApiError INVOICE_LINK_NOT_FOUND
  */
-function invoiceSummaryByLink($db, string $arLink): array {
+function invoiceSummaryByLink($db, string $arLink, int $kanal): array {
     $zeile = $db->getOne(
         "SELECT al.ar_id, al.paypal, al.payment_status, al.payment_reason,
                 ar.invnumber, TRUNC(ar.amount, 2) AS amount,
@@ -458,8 +468,8 @@ function invoiceSummaryByLink($db, string $arLink): array {
            FROM ar_link_hugoshop al
            JOIN ar ON ar.id = al.ar_id
            JOIN customer c ON c.id = ar.customer_id
-          WHERE al.uuid = :ar_link",
-        [':ar_link' => $arLink]
+          WHERE al.uuid = :ar_link AND al.channel_id = CAST(:kanal AS integer)",
+        [':ar_link' => $arLink, ':kanal' => $kanal]
     );
 
     if (!$zeile) {
@@ -531,13 +541,15 @@ function shopInvoicePdf($db, int $arId): array {
  *
  * @param object $db Company-Datenbankverbindung
  * @param string $arLink Kennung aus ar_link_hugoshop
+ * @param int $kanal HugoShop der Anfrage — der Link gilt nur dort
  * @return int Rechnungs-Kennung
  * @throws ApiError INVOICE_LINK_NOT_FOUND
  */
-function shopInvoiceIdByLink($db, string $arLink): int {
+function shopInvoiceIdByLink($db, string $arLink, int $kanal): int {
     $zeile = $db->getOne(
-        "SELECT ar_id FROM ar_link_hugoshop WHERE uuid = :ar_link",
-        [':ar_link' => $arLink]
+        "SELECT ar_id FROM ar_link_hugoshop
+          WHERE uuid = :ar_link AND channel_id = CAST(:kanal AS integer)",
+        [':ar_link' => $arLink, ':kanal' => $kanal]
     );
 
     if (!$zeile) {

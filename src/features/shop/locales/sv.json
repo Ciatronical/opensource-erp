@@ -319,7 +319,24 @@
             "saved": "Sparat.",
             "republishQueued": "Sparat. Produktsidorna skrivs om med de nya priserna.",
             "saveError": "Kanalinställningarna kunde inte sparas.",
-            "loadError": "Försäljningskanalerna kunde inte läsas in."
+            "loadError": "Försäljningskanalerna kunde inte läsas in.",
+            "name": "Namn",
+            "nameRequired": "Kanalen behöver ett namn.",
+            "autoAddParts": "Lägg till nya butiksartiklar automatiskt",
+            "autoAddPartsHint": "När en artikel läggs till i butiken erbjuds den även i den här kanalen.",
+            "settings": "Inställningar för {name}",
+            "settingsSaved": "Inställningar sparade.",
+            "settingsSaveError": "Inställningarna kunde inte sparas.",
+            "newChannel": "Ny försäljningskanal:",
+            "newChannelType": "Typ",
+            "create": "Skapa",
+            "created": "Försäljningskanal skapad. Den förblir avstängd tills den är konfigurerad.",
+            "createError": "Försäljningskanalen kunde inte skapas.",
+            "delete": "Ta bort försäljningskanal",
+            "deleteConfirm": "Ta bort ”{name}” med artikelrader, bilder, leveransländer och prisnivåer? Det kan inte ångras.",
+            "deleted": "Försäljningskanal borttagen.",
+            "deleteError": "Försäljningskanalen kunde inte tas bort.",
+            "cancel": "Avbryt"
         },
         "ebayCondition": {
             "NEW": "Ny",
@@ -333,7 +350,11 @@
             "NETWORK_ERROR": "Servern kan inte nås. Kontrollera anslutningen och försök igen.",
             "API_DATABASE_ERROR": "Databasen svarar inte som väntat. Kontakta administratören.",
             "API_INTERNAL_ERROR": "Ett oväntat fel uppstod på servern. Kontakta administratören.",
-            "NO_PERMISSION": "Du saknar behörighet för den här åtgärden."
+            "NO_PERMISSION": "Du saknar behörighet för den här åtgärden.",
+            "CHANNEL_NAME_TAKEN": "En annan försäljningskanal har redan det här namnet.",
+            "CHANNEL_KEY_TAKEN": "Den här butiksnyckeln tillhör redan en annan HugoShop.",
+            "CHANNEL_IN_USE": "Fakturor, ångerrätter eller eBay-beställningar hänvisar till den här kanalen. Den kan bara stängas av.",
+            "CHANNEL_NOT_DELETABLE": "Endast en avstängd kanal utan öppna uppdrag kan tas bort."
         }
     }
 }

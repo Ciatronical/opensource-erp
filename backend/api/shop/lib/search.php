@@ -19,19 +19,23 @@
  * oder einem Operatorzeichen zum Scheitern bringen.
  *
  * Laesst sich ersetzen: ist eine Funktion shopSearchImplementation()
- * definiert, wird sie anstelle der eingebauten Suche gerufen. Die Bridge
- * loeste das ueber eine Schnittstelle und eine Konstante in der
- * Instanz-Konfiguration.
+ * definiert, wird sie anstelle der eingebauten Suche gerufen, mit dem Kanal
+ * als fuenftem Argument. Die Bridge loeste das ueber eine Schnittstelle und
+ * eine Konstante in der Instanz-Konfiguration.
+ *
+ * Gesucht wird im Sortiment des HugoShops der Anfrage, mit seinen Preisen
+ * und Adressmustern.
  *
  * @param object $db Company-Datenbankverbindung
+ * @param int $kanal HugoShop der Anfrage
  * @param string $begriffe Sucheingabe des Besuchers
  * @param int $limit Hoechstzahl der Treffer
  * @param int $offset Zu ueberspringende Treffer
  * @return array Liste aus partnumber, description, image, hyperlink, breadcrumbs
  */
-function shopSearch($db, string $begriffe, int $limit = 5, int $offset = 0): array {
+function shopSearch($db, int $kanal, string $begriffe, int $limit = 5, int $offset = 0): array {
     if (function_exists('shopSearchImplementation')) {
-        return shopSearchImplementation($db, $begriffe, $limit, $offset);
+        return shopSearchImplementation($db, $begriffe, $limit, $offset, $kanal);
     }
 
     $tsquery = shopSearchQuery($begriffe);
@@ -40,10 +44,10 @@ function shopSearch($db, string $begriffe, int $limit = 5, int $offset = 0): arr
     }
 
     $gewicht      = shopConfigFloat($db, 'shop_search_weighting', 0.5);
-    $artikelLink  = shopConfigValue($db, 'shop_products_link');
-    $bildLink     = shopConfigValue($db, 'shop_thumbnails_link');
+    $artikelLink  = shopChannelValue($db, $kanal, 'products_link');
+    $bildLink     = shopChannelValue($db, $kanal, 'thumbnails_link');
 
-    // Gesucht wird unter den Artikeln mit aktiver HugoShop-Zeile, mit deren
+    // Gesucht wird unter den Artikeln mit aktiver Zeile im HugoShop, mit deren
     // Bezeichnung; gewichtet wird mit dem Kanalpreis.
     $treffer = $db->getAll(
         "WITH im_shop AS (
@@ -53,7 +57,7 @@ function shopSearch($db, string $begriffe, int $limit = 5, int $offset = 0): arr
                     psh.hugoshop_hyperlink, psh.hugoshop_images
                FROM parts p
                JOIN parts_channel_shop pc ON pc.parts_id = p.id
-                                         AND pc.channel_id = shop_active_channel_id('hugoshop')
+                                         AND pc.channel_id = shop_active_channel_id(CAST(:kanal AS integer))
                                          AND pc.active
                LEFT JOIN parts_ext psh ON psh.parts_id = p.id
          ), gefunden AS (
@@ -78,11 +82,13 @@ function shopSearch($db, string $begriffe, int $limit = 5, int $offset = 0): arr
          )
          SELECT g.id, g.partnumber, g.description, g.breadcrumbs, g.category, g.hyperlink, g.image
            FROM gefunden g
-           CROSS JOIN LATERAL (SELECT shop_channel_price(g.id) AS preis) k
+           CROSS JOIN LATERAL (SELECT shop_channel_price(g.id, CAST(:kanal_preis AS integer)) AS preis) k
           ORDER BY g.rang * POWER(LOG(GREATEST(k.preis, 0) + 1), :gewicht) DESC, g.description
           LIMIT :limit OFFSET :offset",
         [
             ':begriffe' => $tsquery,
+            ':kanal'       => $kanal,
+            ':kanal_preis' => $kanal,
             ':gewicht'  => $gewicht,
             ':limit'    => $limit,
             ':offset'   => $offset,

@@ -5,20 +5,32 @@
 // bisherige Anbindung unter backend/api/ebay/ (V15). Zugang und API-Aufrufe
 // sind von dort übernommen, das Einstellen liest jetzt den Kanal:
 //
-//   Preis          shop_channel_price(…, 'ebay'), brutto (eBay rechnet brutto)
+//   Preis          shop_channel_price(…, Kanal), brutto (eBay rechnet brutto)
 //   Titel, Text    Beschreibung und Langbeschreibung im Kanal, sonst Stammdaten
 //   Menge          Lagerbestand parts.onhand (V4, V19) statt fester Menge;
 //                  0, wenn nicht verfügbar (shop_part_available: veraltet
 //                  oder im Kanal als nicht verfügbar markiert)
 //   Bilder         Bilder des eBay-Kanals (parts_channel_image_shop, V12)
 //   Kategorie,     je Artikel im Kanal (parts_channel_shop.settings), sonst
-//   Zustand        die Vorgaben ebay_default_category_id / ebay_default_condition
+//   Zustand        die Vorgaben default_category_id / default_condition
 //
-// Eingestellt und beendet wird über die Warteschlange (Aufträge mit Kanal
-// ebay); die Trigger im Shop-Schema legen die Aufträge an, wenn sich Preis,
-// Texte, Bestand oder die Auswahl ändern. Die Einstellungen bleiben unter
-// ihren bisherigen Schlüsseln ebay_* in defaults_oserp; eingeschaltet ist
-// der Kanal über sales_channel_shop.active.
+// Eingestellt und beendet wird über die Warteschlange (Aufträge mit Kanal);
+// die Trigger im Shop-Schema legen die Aufträge an, wenn sich Preis, Texte,
+// Bestand oder die Auswahl ändern. Eingeschaltet ist der Kanal über
+// sales_channel_shop.active.
+//
+// Mehrere eBay-Kanäle (dev/shop-mehrere-kanaele.md, Schritt 4): jeder Kanal
+// ist ein eBay-Konto mit eigenem Zugang, eigenen Richtlinien und eigenem
+// Bestellabruf. Alle Funktionen bekommen den Kanal ($kanal). Die
+// Einstellungen stehen in den Einstellungen des Kanals (Schlüssel ohne
+// Präfix: client_id, marketplace_id …), Zugang und Token in
+// sales_channel_secret_shop. Für den ganzen Mandanten gilt nur
+// ebay_public_host — die Adresse von OSERP, unter der eBay die Bilder abholt.
+//
+// M4: ein Kanal je eBay-Konto. Der Inventareintrag (Menge, Titel, Los)
+// gehört bei eBay dem Konto; zwei Kanäle mit demselben Konto überschrieben
+// sich. Das Konto wird nach jedem neuen Token bestimmt (shopEbayAccountCheck)
+// und im Kanal gemerkt; ein eindeutiger Index lässt es nur einmal zu.
 //
 // Der Bestellimport steht in channels/ebay_orders.php.
 
@@ -26,6 +38,10 @@ const SHOP_EBAY_OAUTH_PROD     = 'https://api.ebay.com/identity/v1/oauth2/token'
 const SHOP_EBAY_OAUTH_SANDBOX  = 'https://api.sandbox.ebay.com/identity/v1/oauth2/token';
 const SHOP_EBAY_API_PROD       = 'https://api.ebay.com';
 const SHOP_EBAY_API_SANDBOX    = 'https://api.sandbox.ebay.com';
+// Kontokennung (M4): Identity-API — braucht den Scope commerce.identity.readonly.
+// Ohne ihn hilft die Verkäuferkennung der letzten Bestellung.
+const SHOP_EBAY_IDENTITY_PROD    = 'https://apiz.ebay.com/commerce/identity/v1/user/';
+const SHOP_EBAY_IDENTITY_SANDBOX = 'https://apiz.sandbox.ebay.com/commerce/identity/v1/user/';
 // Bestellungen lesen (Import) und Inventar schreiben (Angebote)
 const SHOP_EBAY_SCOPES         = 'https://api.ebay.com/oauth/api_scope/sell.fulfillment.readonly'
                                .' https://api.ebay.com/oauth/api_scope/sell.inventory';
@@ -35,30 +51,53 @@ const SHOP_EBAY_TOKEN_SKEW     = 300;  // Puffer vor Ablauf
 // ── Einstellungen und Zugang ──
 
 /**
- * Alle ebay_*-Einstellungen
+ * Einstellungen eines eBay-Kanals, Zugang und Token eingeschlossen
+ *
+ * Schlüssel ohne Präfix (shopChannelConfig), dazu public_host aus
+ * defaults_oserp (ebay_public_host, für den ganzen Mandanten).
  *
  * @param object $db Company-Datenbankverbindung
+ * @param int $kanal eBay-Kanal
  * @return array Schlüssel => Wert
  */
-function shopEbayConfig($db): array {
-    $zeilen = $db->getAll("SELECT key, value FROM defaults_oserp WHERE key LIKE 'ebay\\_%' ESCAPE '\\'") ?: [];
-    return array_column($zeilen, 'value', 'key');
+function shopEbayConfig($db, int $kanal): array {
+    $zeile = $db->getOne("SELECT value FROM defaults_oserp WHERE key = 'ebay_public_host'");
+    return shopChannelConfig($db, $kanal) + ['public_host' => (string)($zeile['value'] ?? '')];
 }
 
+/** Laufzeitwerte, die als Geheimnis gespeichert werden */
+const SHOP_EBAY_SECRET_KEYS = ['access_token', 'access_token_exp', 'client_secret', 'refresh_token'];
+
 /**
- * Schreibt einen Laufzeitwert (Token-Cache, letzter Abruf)
+ * Schreibt einen Laufzeitwert in den Kanal (Token-Cache, letzter Abruf, Konto)
+ *
+ * Token in sales_channel_secret_shop, alles andere in settings. Danach liest
+ * der Zwischenspeicher neu — ein zweiter Aufruf im selben Request holte sonst
+ * das Token erneut.
  *
  * @param object $db Company-Datenbankverbindung
- * @param string $key Schlüssel
+ * @param int $kanal eBay-Kanal
+ * @param string $key Schlüssel ohne Präfix
  * @param string $value Wert
  * @return void
  */
-function shopEbaySetConfig($db, string $key, string $value): void {
-    $db->execute(
-        "INSERT INTO defaults_oserp (key, value, mtime) VALUES (:key, :value, now())
-         ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, mtime = now()",
-        [':key' => $key, ':value' => $value]
-    );
+function shopEbaySetConfig($db, int $kanal, string $key, string $value): void {
+    if (in_array($key, SHOP_EBAY_SECRET_KEYS, true)) {
+        $db->execute(
+            "INSERT INTO sales_channel_secret_shop (channel_id, key, value)
+             VALUES (CAST(:kanal AS integer), :key, :value)
+             ON CONFLICT (channel_id, key) DO UPDATE SET value = EXCLUDED.value, mtime = now()",
+            [':kanal' => $kanal, ':key' => $key, ':value' => $value]
+        );
+    } else {
+        $db->execute(
+            "UPDATE sales_channel_shop
+                SET settings = COALESCE(settings, '{}'::jsonb) || jsonb_build_object(CAST(:key AS text), CAST(:value AS text))
+              WHERE id = CAST(:kanal AS integer)",
+            [':kanal' => $kanal, ':key' => $key, ':value' => $value]
+        );
+    }
+    shopChannelConfig($db, $kanal, true);
 }
 
 /**
@@ -68,37 +107,43 @@ function shopEbaySetConfig($db, string $key, string $value): void {
  * @return string
  */
 function shopEbayApiBase(array $cfg): string {
-    return 'sandbox' === ($cfg['ebay_environment'] ?? 'production') ? SHOP_EBAY_API_SANDBOX : SHOP_EBAY_API_PROD;
+    return 'sandbox' === ($cfg['environment'] ?? 'production') ? SHOP_EBAY_API_SANDBOX : SHOP_EBAY_API_PROD;
 }
 
 /**
  * Gültiges Zugriffstoken, notfalls über das Refresh-Token neu geholt
  *
- * Zwischengespeichert in ebay_access_token / ebay_access_token_exp — beide
- * gehen nie an den Browser (oserp_config/defaults.php).
+ * Zwischengespeichert als access_token / access_token_exp in den Geheimnissen
+ * des Kanals — sie gehen nie an den Browser.
+ *
+ * Nach einem neuen Token wird das eBay-Konto geprüft (M4,
+ * shopEbayAccountCheck): steht es schon in einem anderen Kanal, bricht der
+ * Aufruf ab, bevor etwas bei eBay geschieht.
  *
  * @param object $db Company-Datenbankverbindung
+ * @param int $kanal eBay-Kanal
  * @param bool $erneuern Zwischenspeicher übergehen
  * @return string
- * @throws ApiError EBAY_NO_CREDENTIALS, EBAY_AUTH_FAILED
+ * @throws ApiError EBAY_NO_CREDENTIALS, EBAY_AUTH_FAILED, EBAY_ACCOUNT_IN_USE
  */
-function shopEbayToken($db, bool $erneuern = false): string {
-    $cfg = shopEbayConfig($db);
+function shopEbayToken($db, int $kanal, bool $erneuern = false): string {
+    $cfg = shopEbayConfig($db, $kanal);
 
     if (!$erneuern
-        && !empty($cfg['ebay_access_token'])
-        && (int)($cfg['ebay_access_token_exp'] ?? 0) > time() + SHOP_EBAY_TOKEN_SKEW) {
-        return $cfg['ebay_access_token'];
+        && !empty($cfg['access_token'])
+        && (int)($cfg['access_token_exp'] ?? 0) > time() + SHOP_EBAY_TOKEN_SKEW) {
+        return $cfg['access_token'];
     }
 
-    $clientId = trim($cfg['ebay_client_id'] ?? '');
-    $secret   = trim($cfg['ebay_client_secret'] ?? '');
-    $refresh  = trim($cfg['ebay_refresh_token'] ?? '');
+    $clientId = trim($cfg['client_id'] ?? '');
+    $secret   = trim($cfg['client_secret'] ?? '');
+    $refresh  = trim($cfg['refresh_token'] ?? '');
     if ('' === $clientId || '' === $secret || '' === $refresh) {
-        throw new ApiError('EBAY_NO_CREDENTIALS', 'eBay-Zugangsdaten sind nicht eingerichtet (Einstellungen → Shop → eBay)');
+        throw new ApiError('EBAY_NO_CREDENTIALS', "eBay-Zugangsdaten des Kanals '".($cfg['name'] ?? $kanal)."' sind nicht eingerichtet");
     }
+    shopEbayRefreshTokenCheck($db, $kanal);
 
-    $curl = curl_init('sandbox' === ($cfg['ebay_environment'] ?? 'production') ? SHOP_EBAY_OAUTH_SANDBOX : SHOP_EBAY_OAUTH_PROD);
+    $curl = curl_init('sandbox' === ($cfg['environment'] ?? 'production') ? SHOP_EBAY_OAUTH_SANDBOX : SHOP_EBAY_OAUTH_PROD);
     curl_setopt_array($curl, [
         CURLOPT_HTTPHEADER     => [
             'Content-Type: application/x-www-form-urlencoded',
@@ -128,10 +173,120 @@ function shopEbayToken($db, bool $erneuern = false): string {
     }
 
     $dauer = (int)($daten['expires_in'] ?? 0);
-    shopEbaySetConfig($db, 'ebay_access_token', $daten['access_token']);
-    shopEbaySetConfig($db, 'ebay_access_token_exp', (string)(time() + ($dauer > 0 ? $dauer : SHOP_EBAY_TOKEN_TTL)));
+    shopEbaySetConfig($db, $kanal, 'access_token', $daten['access_token']);
+    shopEbaySetConfig($db, $kanal, 'access_token_exp', (string)(time() + ($dauer > 0 ? $dauer : SHOP_EBAY_TOKEN_TTL)));
+
+    shopEbayAccountCheck($db, $kanal, $daten['access_token']);
 
     return $daten['access_token'];
+}
+
+/**
+ * Derselbe Zugang in zwei eBay-Kanälen? (M4)
+ *
+ * Ein Refresh-Token gehört genau einem eBay-Konto. Steht derselbe schon in
+ * einem anderen eBay-Kanal, ist es dasselbe Konto — ohne einen Aufruf bei
+ * eBay erkennbar.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param int $kanal eBay-Kanal
+ * @return void
+ * @throws ApiError EBAY_ACCOUNT_IN_USE
+ */
+function shopEbayRefreshTokenCheck($db, int $kanal): void {
+    $andere = $db->getOne(
+        "SELECT c.name
+           FROM sales_channel_secret_shop eigen
+           JOIN sales_channel_secret_shop s ON s.key = 'refresh_token' AND s.value = eigen.value
+                                           AND s.channel_id <> eigen.channel_id
+           JOIN sales_channel_shop c ON c.id = s.channel_id AND c.type = 'ebay'
+          WHERE eigen.channel_id = CAST(:kanal AS integer) AND eigen.key = 'refresh_token'
+          LIMIT 1",
+        [':kanal' => $kanal]
+    );
+    if ($andere) {
+        throw new ApiError('EBAY_ACCOUNT_IN_USE',
+            "Dieser eBay-Zugang ist schon im Verkaufskanal '".$andere['name']."' eingerichtet — je eBay-Konto ein Kanal");
+    }
+}
+
+/**
+ * Bestimmt das eBay-Konto des Kanals und lässt es nur einmal zu (M4)
+ *
+ * Erst über die Identity-API (Scope commerce.identity.readonly), sonst über
+ * die Verkäuferkennung der letzten Bestellung. Gemerkt wird sie in
+ * settings.account_id; ein eindeutiger Index auf diesem Wert lässt dasselbe
+ * Konto in einem zweiten eBay-Kanal nicht zu. Lässt sich das Konto nicht
+ * bestimmen (kein Scope, noch keine Bestellung), bleibt es offen — dann
+ * schützt nur der Vergleich der Refresh-Tokens.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param int $kanal eBay-Kanal
+ * @param string $token gültiges Zugriffstoken
+ * @return string Kontokennung, leer wenn nicht bestimmbar
+ * @throws ApiError EBAY_ACCOUNT_IN_USE
+ */
+function shopEbayAccountCheck($db, int $kanal, string $token): string {
+    $cfg = shopEbayConfig($db, $kanal);
+    $konto = shopEbayAccountLookup($cfg, $token);
+    if ('' === $konto) {
+        return trim((string)($cfg['account_id'] ?? ''));
+    }
+
+    $andere = $db->getOne(
+        "SELECT name FROM sales_channel_shop
+          WHERE type = 'ebay' AND id <> CAST(:kanal AS integer) AND settings ->> 'account_id' = :konto
+          LIMIT 1",
+        [':kanal' => $kanal, ':konto' => $konto]
+    );
+    if ($andere) {
+        // Das eben geholte Token verwerfen: sonst arbeitete der nächste
+        // Aufruf mit dem zwischengespeicherten, ohne erneut zu prüfen
+        shopEbaySetConfig($db, $kanal, 'access_token_exp', '0');
+        throw new ApiError('EBAY_ACCOUNT_IN_USE',
+            "Das eBay-Konto '".$konto."' ist schon im Verkaufskanal '".$andere['name']."' eingerichtet — je eBay-Konto ein Kanal");
+    }
+    if (($cfg['account_id'] ?? '') !== $konto) {
+        shopEbaySetConfig($db, $kanal, 'account_id', $konto);
+    }
+    return $konto;
+}
+
+/**
+ * Fragt eBay nach dem Konto hinter einem Token
+ *
+ * @param array $cfg Ergebnis von shopEbayConfig()
+ * @param string $token Zugriffstoken
+ * @return string Benutzername bzw. Verkäuferkennung, leer wenn nicht bestimmbar
+ */
+function shopEbayAccountLookup(array $cfg, string $token): string {
+    $holen = function (string $url) use ($token, $cfg): array {
+        $curl = curl_init($url);
+        curl_setopt_array($curl, [
+            CURLOPT_HTTPHEADER     => array_filter([
+                'Authorization: Bearer '.$token,
+                'Accept: application/json',
+                !empty($cfg['marketplace_id']) ? 'X-EBAY-C-MARKETPLACE-ID: '.$cfg['marketplace_id'] : null,
+            ]),
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_CONNECTTIMEOUT => 10,
+            CURLOPT_TIMEOUT        => 20,
+        ]);
+        $antwort = curl_exec($curl);
+        $status  = (int)curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        curl_close($curl);
+        return $status >= 200 && $status < 300 ? (json_decode((string)$antwort, true) ?: []) : [];
+    };
+
+    $sandbox = 'sandbox' === ($cfg['environment'] ?? 'production');
+    $ich = $holen($sandbox ? SHOP_EBAY_IDENTITY_SANDBOX : SHOP_EBAY_IDENTITY_PROD);
+    $konto = trim((string)($ich['username'] ?? $ich['userId'] ?? ''));
+    if ('' !== $konto) {
+        return $konto;
+    }
+
+    $bestellungen = $holen(shopEbayApiBase($cfg).'/sell/fulfillment/v1/order?limit=1');
+    return trim((string)($bestellungen['orders'][0]['sellerId'] ?? ''));
 }
 
 /**
@@ -142,6 +297,7 @@ function shopEbayToken($db, bool $erneuern = false): string {
  * 401 wird das Token einmal erneuert und der Aufruf wiederholt.
  *
  * @param object $db Company-Datenbankverbindung
+ * @param int $kanal eBay-Kanal
  * @param string $methode GET, POST, PUT oder DELETE
  * @param string $pfad etwa /sell/inventory/v1/offer
  * @param array|null $inhalt JSON-Inhalt
@@ -150,19 +306,19 @@ function shopEbayToken($db, bool $erneuern = false): string {
  * @return array ['status' => int, 'body' => array]
  * @throws ApiError EBAY_API_ERROR bei Transportfehlern
  */
-function shopEbayApi($db, string $methode, string $pfad, ?array $inhalt = null, array $abfrage = [], bool $nochmal = true): array {
-    $cfg   = shopEbayConfig($db);
-    $token = shopEbayToken($db);
+function shopEbayApi($db, int $kanal, string $methode, string $pfad, ?array $inhalt = null, array $abfrage = [], bool $nochmal = true): array {
+    $token = shopEbayToken($db, $kanal);
+    $cfg   = shopEbayConfig($db, $kanal);
     $url   = shopEbayApiBase($cfg).$pfad.($abfrage ? '?'.http_build_query($abfrage) : '');
 
     $kopf = [
         'Authorization: Bearer '.$token,
         'Content-Type: application/json',
         'Accept: application/json',
-        'Content-Language: '.($cfg['ebay_content_language'] ?? 'de-DE'),
+        'Content-Language: '.(trim((string)($cfg['content_language'] ?? '')) ?: 'de-DE'),
     ];
-    if (!empty($cfg['ebay_marketplace_id'])) {
-        $kopf[] = 'X-EBAY-C-MARKETPLACE-ID: '.$cfg['ebay_marketplace_id'];
+    if (!empty($cfg['marketplace_id'])) {
+        $kopf[] = 'X-EBAY-C-MARKETPLACE-ID: '.$cfg['marketplace_id'];
     }
 
     $optionen = [
@@ -187,8 +343,8 @@ function shopEbayApi($db, string $methode, string $pfad, ?array $inhalt = null, 
         throw new ApiError('EBAY_API_ERROR', 'eBay-API nicht erreichbar: '.$fehler);
     }
     if (401 === $status && $nochmal) {
-        shopEbayToken($db, true);
-        return shopEbayApi($db, $methode, $pfad, $inhalt, $abfrage, false);
+        shopEbayToken($db, $kanal, true);
+        return shopEbayApi($db, $kanal, $methode, $pfad, $inhalt, $abfrage, false);
     }
 
     $daten = ('' === $antwort || false === $antwort) ? [] : json_decode($antwort, true);
@@ -229,18 +385,19 @@ function shopChannelEbayJobFunctions(): array {
  * Bestellimport fragt den Schalter selbst ab (shopEbayActive).
  *
  * @param object $db Company-Datenbankverbindung
+ * @param int $kanal eBay-Kanal
  * @param bool $an eingeschaltet
  * @return void
  */
-function shopChannelEbaySwitched($db, bool $an): void {
+function shopChannelEbaySwitched($db, int $kanal, bool $an): void {
     $db->execute(
         "DELETE FROM batchjob_hugoshop
           WHERE result IS NULL
-            AND channel_id = shop_channel_id('ebay')
+            AND channel_id = CAST(:kanal AS integer)
             AND function = ANY(string_to_array(:gegenrichtung, ','))",
-        [':gegenrichtung' => $an ? 'remove_all,remove_part' : 'publish_all,publish_part']
+        [':kanal' => $kanal, ':gegenrichtung' => $an ? 'remove_all,remove_part' : 'publish_all,publish_part']
     );
-    shopQueueJob($db, $an ? 'publish_all' : 'remove_all', '', null, 'ebay');
+    shopQueueJob($db, $an ? 'publish_all' : 'remove_all', '', null, $kanal);
 }
 
 /**
@@ -256,6 +413,7 @@ function shopChannelEbaySwitched($db, bool $an): void {
  */
 function shopChannelEbayRunJob($db, array $auftrag, callable $sagen, callable $fehler, array &$bilanz): void {
     $id = (int)$auftrag['id'];
+    $kanal = (int)$auftrag['channel_id'];
 
     switch ($auftrag['function']) {
         case 'publish_part':
@@ -265,8 +423,8 @@ function shopChannelEbayRunJob($db, array $auftrag, callable $sagen, callable $f
                 throw new ApiError('PART_NOT_FOUND', 'Artikel nicht gefunden: '.$auftrag['partnumber']);
             }
             $ergebnis = 'publish_part' === $auftrag['function']
-                ? shopEbayPublishPart($db, (int)$artikel['id'])
-                : shopEbayEndPart($db, (int)$artikel['id']);
+                ? shopEbayPublishPart($db, $kanal, (int)$artikel['id'])
+                : shopEbayEndPart($db, $kanal, (int)$artikel['id']);
             $sagen('eBay '.$auftrag['partnumber'].': '.$ergebnis);
             shopJobResult($db, $id, 'ok: '.$ergebnis);
             break;
@@ -280,18 +438,18 @@ function shopChannelEbayRunJob($db, array $auftrag, callable $sagen, callable $f
                 "SELECT p.id, p.partnumber
                    FROM parts_channel_shop pc
                    JOIN parts p ON p.id = pc.parts_id
-                  WHERE pc.channel_id = shop_channel_id('ebay')
+                  WHERE pc.channel_id = CAST(:kanal AS integer)
                     AND CASE WHEN :einstellen = 1 THEN pc.active
                              ELSE COALESCE(pc.sync_data ->> 'offer_id', '') <> ''
                                   AND COALESCE(pc.sync_status, '') <> 'ended' END
                   ORDER BY p.id",
-                [':einstellen' => $einstellen ? 1 : 0]
+                [':einstellen' => $einstellen ? 1 : 0, ':kanal' => $kanal]
             );
             $gut = 0;
             $gescheitert = 0;
             foreach ($artikelListe as $artikel) {
                 try {
-                    $einstellen ? shopEbayPublishPart($db, (int)$artikel['id']) : shopEbayEndPart($db, (int)$artikel['id']);
+                    $einstellen ? shopEbayPublishPart($db, $kanal, (int)$artikel['id']) : shopEbayEndPart($db, $kanal, (int)$artikel['id']);
                     $gut++;
                 } catch (ApiError $e) {
                     $gescheitert++;
@@ -321,13 +479,14 @@ function shopChannelEbayRunJob($db, array $auftrag, callable $sagen, callable $f
  * deshalb ist die Einstellung Pflicht.
  *
  * @param object $db Company-Datenbankverbindung
+ * @param int $kanal eBay-Kanal — seine Bilder
  * @param int $partsId Artikel
  * @param array $cfg Ergebnis von shopEbayConfig()
  * @return array Adressen, Hauptbild zuerst
  * @throws ApiError EBAY_NO_PUBLIC_HOST
  */
-function shopEbayImageUrls($db, int $partsId, array $cfg): array {
-    $host = trim((string)($cfg['ebay_public_host'] ?? ''));
+function shopEbayImageUrls($db, int $kanal, int $partsId, array $cfg): array {
+    $host = trim((string)($cfg['public_host'] ?? ''));
     $host = preg_replace('#^https?://#i', '', rtrim($host, '/'));
     if ('' === $host) {
         throw new ApiError('EBAY_NO_PUBLIC_HOST',
@@ -338,9 +497,9 @@ function shopEbayImageUrls($db, int $partsId, array $cfg): array {
         "SELECT '/webhook/part-image.php?db=' || current_database() || '&id=' || i.parts_id
                 || '&f=' || i.filename AS pfad
            FROM parts_channel_image_shop i
-          WHERE i.parts_id = :parts_id AND i.channel_id = shop_channel_id('ebay')
+          WHERE i.parts_id = :parts_id AND i.channel_id = CAST(:kanal AS integer)
           ORDER BY i.sort, i.id",
-        [':parts_id' => $partsId]
+        [':parts_id' => $partsId, ':kanal' => $kanal]
     );
     return array_map(fn($zeile) => 'https://'.$host.$zeile['pfad'], $zeilen);
 }
@@ -352,6 +511,7 @@ function shopEbayImageUrls($db, int $partsId, array $cfg): array {
  * neuen Auftrag aus.
  *
  * @param object $db Company-Datenbankverbindung
+ * @param int $kanal eBay-Kanal
  * @param int $partsId Artikel
  * @param string $stand active, ended oder error
  * @param string $meldung Fehlertext, leer bei Erfolg
@@ -359,7 +519,7 @@ function shopEbayImageUrls($db, int $partsId, array $cfg): array {
  * @param string|null $listing Listing-Kennung, null = unverändert
  * @return void
  */
-function shopEbayRecord($db, int $partsId, string $stand, string $meldung, array $daten = [], ?string $listing = null): void {
+function shopEbayRecord($db, int $kanal, int $partsId, string $stand, string $meldung, array $daten = [], ?string $listing = null): void {
     $db->execute(
         "UPDATE parts_channel_shop
             SET sync_status = :stand,
@@ -367,8 +527,9 @@ function shopEbayRecord($db, int $partsId, string $stand, string $meldung, array
                 sync_mtime  = now(),
                 sync_data   = jsonb_strip_nulls(COALESCE(sync_data, '{}'::jsonb) || :daten::jsonb),
                 external_id = CASE WHEN :listing_setzen = 1 THEN :listing ELSE external_id END
-          WHERE parts_id = :parts_id AND channel_id = shop_channel_id('ebay')",
+          WHERE parts_id = :parts_id AND channel_id = CAST(:kanal AS integer)",
         [
+            ':kanal'          => $kanal,
             ':stand'          => $stand,
             ':meldung'        => $meldung,
             ':daten'          => json_encode((object)$daten),
@@ -383,13 +544,14 @@ function shopEbayRecord($db, int $partsId, string $stand, string $meldung, array
  * Fehler festhalten und werfen
  *
  * @param object $db Company-Datenbankverbindung
+ * @param int $kanal eBay-Kanal
  * @param int $partsId Artikel
  * @param string $meldung Fehlertext
  * @return never
  * @throws ApiError EBAY_LISTING_FAILED
  */
-function shopEbayFail($db, int $partsId, string $meldung): void {
-    shopEbayRecord($db, $partsId, 'error', $meldung);
+function shopEbayFail($db, int $kanal, int $partsId, string $meldung): void {
+    shopEbayRecord($db, $kanal, $partsId, 'error', $meldung);
     throw new ApiError('EBAY_LISTING_FAILED', $meldung);
 }
 
@@ -400,12 +562,13 @@ function shopEbayFail($db, int $partsId, string $meldung): void {
  * Artikel im Kanal nicht (mehr) angeboten, wird das Angebot beendet.
  *
  * @param object $db Company-Datenbankverbindung
+ * @param int $kanal eBay-Kanal
  * @param int $partsId Artikel
  * @return string kurzer Stand für das Auftragsergebnis
  * @throws ApiError EBAY_LISTING_FAILED mit der Meldung von eBay
  */
-function shopEbayPublishPart($db, int $partsId): string {
-    return shopEbayRecordErrors($db, $partsId, fn() => shopEbayPublishPartNow($db, $partsId));
+function shopEbayPublishPart($db, int $kanal, int $partsId): string {
+    return shopEbayRecordErrors($db, $kanal, $partsId, fn() => shopEbayPublishPartNow($db, $kanal, $partsId));
 }
 
 /**
@@ -416,17 +579,18 @@ function shopEbayPublishPart($db, int $partsId): string {
  * Artikelkarte sie zeigt.
  *
  * @param object $db Company-Datenbankverbindung
+ * @param int $kanal eBay-Kanal
  * @param int $partsId Artikel
  * @param callable $abgleich Einstellen oder Beenden
  * @return string Stand
  * @throws ApiError weitergereicht
  */
-function shopEbayRecordErrors($db, int $partsId, callable $abgleich): string {
+function shopEbayRecordErrors($db, int $kanal, int $partsId, callable $abgleich): string {
     try {
         return $abgleich();
     } catch (ApiError $e) {
         if ('EBAY_LISTING_FAILED' !== $e->getId()) {
-            shopEbayRecord($db, $partsId, 'error', $e->getMessage());
+            shopEbayRecord($db, $kanal, $partsId, 'error', $e->getMessage());
         }
         throw $e;
     }
@@ -436,17 +600,18 @@ function shopEbayRecordErrors($db, int $partsId, callable $abgleich): string {
  * Einstellen ohne Fehlerbuchführung — siehe shopEbayPublishPart()
  *
  * @param object $db Company-Datenbankverbindung
+ * @param int $kanal eBay-Kanal
  * @param int $partsId Artikel
  * @return string
  */
-function shopEbayPublishPartNow($db, int $partsId): string {
-    $cfg = shopEbayConfig($db);
+function shopEbayPublishPartNow($db, int $kanal, int $partsId): string {
+    $cfg = shopEbayConfig($db, $kanal);
 
     // Eine Abfrage für alles, was das Angebot braucht. Der Preis kommt in der
     // Art von parts.sellprice; eBay rechnet brutto.
     $artikel = $db->getOne(
         "SELECT p.partnumber, p.part_type,
-                CASE WHEN shop_part_available(p.id, 'ebay')
+                CASE WHEN shop_part_available(p.id, c.id)
                      THEN GREATEST(FLOOR(COALESCE(p.onhand, 0)), 0)::int ELSE 0 END AS menge,
                 COALESCE(NULLIF(pc.title, ''), p.description) AS titel,
                 COALESCE(NULLIF(pc.description, ''), p.notes, '') AS text,
@@ -467,13 +632,14 @@ function shopEbayPublishPartNow($db, int $partsId): string {
                  AND COALESCE(c.settings -> 'excluded_delivery_terms', '[]'::jsonb) @> to_jsonb(ps.delivery_term_id))
                     AS lieferzeit_zu_lang
            FROM parts p
-           JOIN sales_channel_shop c ON c.type = 'ebay'
+           JOIN sales_channel_shop c ON c.id = CAST(:kanal AS integer)
            LEFT JOIN parts_channel_shop pc ON pc.parts_id = p.id AND pc.channel_id = c.id
            LEFT JOIN parts_shipping_shop ps ON ps.parts_id = p.id
-           CROSS JOIN LATERAL (SELECT shop_channel_price(p.id, 'ebay') AS preis) k
+           CROSS JOIN LATERAL (SELECT shop_channel_price(p.id, c.id) AS preis) k
           WHERE p.id = :parts_id",
         [
             ':parts_id' => $partsId,
+            ':kanal'    => $kanal,
             ':brutto'   => shopConfigBool($db, 'shop_tax_included') ? 1 : 0,
             ':zone'     => shopConfigValue($db, 'shop_standard_taxzone', 'Inland'),
         ]
@@ -482,52 +648,53 @@ function shopEbayPublishPartNow($db, int $partsId): string {
         throw new ApiError('PART_NOT_FOUND', 'Artikel nicht gefunden: '.$partsId);
     }
     if (!in_array($artikel['angeboten'], [true, 't', 1, '1'], true)) {
-        return shopEbayEndPartNow($db, $partsId);
+        return shopEbayEndPartNow($db, $kanal, $partsId);
     }
 
     $sku = trim((string)$artikel['partnumber']);
     if ('' === $sku) {
-        shopEbayFail($db, $partsId, 'Artikel hat keine Artikelnummer (SKU erforderlich).');
+        shopEbayFail($db, $kanal, $partsId, 'Artikel hat keine Artikelnummer (SKU erforderlich).');
     }
     // V19: Dienstleistungen haben keinen Bestand und gehören nicht zu eBay
     if ('service' === $artikel['part_type']) {
-        shopEbayFail($db, $partsId, 'Dienstleistungen werden nicht über eBay angeboten.');
+        shopEbayFail($db, $kanal, $partsId, 'Dienstleistungen werden nicht über eBay angeboten.');
     }
 
     // W11: eine Lieferzeit, die eBay nicht abbilden kann — nicht anbieten,
     // ein bestehendes Angebot beenden
     if (in_array($artikel['lieferzeit_zu_lang'], [true, 't', 1, '1'], true)) {
         if ('' !== $artikel['offer_id']) {
-            shopEbayEndPartNow($db, $partsId);
+            shopEbayEndPartNow($db, $kanal, $partsId);
         }
-        shopEbayFail($db, $partsId, 'Lieferzeit zu lang für eBay (Lieferbedingung in der eBay-Kanalkarte ausgeschlossen) — nicht angeboten.');
+        shopEbayFail($db, $kanal, $partsId, 'Lieferzeit zu lang für eBay (Lieferbedingung in der eBay-Kanalkarte ausgeschlossen) — nicht angeboten.');
     }
 
     try {
-        $bilder = shopEbayImageUrls($db, $partsId, $cfg);
+        $bilder = shopEbayImageUrls($db, $kanal, $partsId, $cfg);
     } catch (ApiError $e) {
-        shopEbayFail($db, $partsId, $e->getMessage());
+        shopEbayFail($db, $kanal, $partsId, $e->getMessage());
     }
     if (!$bilder) {
-        shopEbayFail($db, $partsId, 'Mindestens ein eBay-Bild ist erforderlich.');
+        shopEbayFail($db, $kanal, $partsId, 'Mindestens ein eBay-Bild ist erforderlich.');
     }
 
-    $kategorie = '' !== $artikel['kategorie'] ? $artikel['kategorie'] : trim($cfg['ebay_default_category_id'] ?? '');
-    $zustand   = '' !== $artikel['zustand'] ? $artikel['zustand'] : trim($cfg['ebay_default_condition'] ?? 'NEW');
-    $lagerort  = trim($cfg['ebay_merchant_location_key'] ?? '');
-    $zahlung   = trim($cfg['ebay_payment_policy_id'] ?? '');
-    $rueckgabe = trim($cfg['ebay_return_policy_id'] ?? '');
+    $kategorie = '' !== $artikel['kategorie'] ? $artikel['kategorie'] : trim((string)($cfg['default_category_id'] ?? ''));
+    $zustand   = '' !== $artikel['zustand'] ? $artikel['zustand'] : (trim((string)($cfg['default_condition'] ?? '')) ?: 'NEW');
+    $lagerort  = trim((string)($cfg['merchant_location_key'] ?? ''));
+    $zahlung   = trim((string)($cfg['payment_policy_id'] ?? ''));
+    $rueckgabe = trim((string)($cfg['return_policy_id'] ?? ''));
     // W4: die Versandrichtlinie der zugeordneten Versandart, sonst die allgemeine
-    $versand   = trim((string)($artikel['versandrichtlinie'] ?? '')) ?: trim($cfg['ebay_fulfillment_policy_id'] ?? '');
-    $markt     = trim($cfg['ebay_marketplace_id'] ?? 'EBAY_DE') ?: 'EBAY_DE';
-    $waehrung  = trim($cfg['ebay_currency'] ?? 'EUR') ?: 'EUR';
+    $versand   = trim((string)($artikel['versandrichtlinie'] ?? '')) ?: trim((string)($cfg['fulfillment_policy_id'] ?? ''));
+    $markt     = trim((string)($cfg['marketplace_id'] ?? '')) ?: 'EBAY_DE';
+    $waehrung  = trim((string)($cfg['currency'] ?? '')) ?: 'EUR';
 
     $fehlt = array_keys(array_filter([
         'Kategorie' => '' === $kategorie, 'Lagerort' => '' === $lagerort, 'Zahlungs-Policy' => '' === $zahlung,
         'Rücknahme-Policy' => '' === $rueckgabe, 'Versand-Policy' => '' === $versand,
     ]));
     if ($fehlt) {
-        shopEbayFail($db, $partsId, 'eBay-Einstellungen unvollständig: '.implode(', ', $fehlt).' (Einstellungen → Shop → eBay).');
+        shopEbayFail($db, $kanal, $partsId, 'eBay-Einstellungen unvollständig: '.implode(', ', $fehlt)
+            ." (Verkaufskanal '".($cfg['name'] ?? $kanal)."').");
     }
 
     // V19: Menge = Bestand. Ein neues Angebot ohne Bestand nimmt eBay nicht
@@ -541,7 +708,7 @@ function shopEbayPublishPartNow($db, int $partsId): string {
     $los   = null !== $artikel['min_qty'] && (float)$artikel['min_qty'] > 1 ? (int)ceil((float)$artikel['min_qty']) : 1;
     $menge = intdiv((int)$artikel['menge'], $los);
     if (0 === $menge && '' === $artikel['offer_id']) {
-        shopEbayFail($db, $partsId, 1 === $los
+        shopEbayFail($db, $kanal, $partsId, 1 === $los
             ? 'Kein Bestand — ein neues eBay-Angebot braucht mindestens 1 Stück.'
             : 'Zu wenig Bestand — ein neues eBay-Angebot braucht mindestens ein Los ('.$los.' Stück).');
     }
@@ -553,13 +720,13 @@ function shopEbayPublishPartNow($db, int $partsId): string {
     $skuPfad = rawurlencode($sku);
 
     // 1. Inventory Item
-    $antwort = shopEbayApi($db, 'PUT', '/sell/inventory/v1/inventory_item/'.$skuPfad, [
+    $antwort = shopEbayApi($db, $kanal, 'PUT', '/sell/inventory/v1/inventory_item/'.$skuPfad, [
         'availability' => ['shipToLocationAvailability' => ['quantity' => $menge]],
         'condition'    => $zustand,
         'product'      => ['title' => $titel, 'description' => $text, 'imageUrls' => $bilder],
     ]);
     if ($antwort['status'] >= 400) {
-        shopEbayFail($db, $partsId, 'Produktdaten abgelehnt: '.shopEbayErrorMessage($antwort));
+        shopEbayFail($db, $kanal, $partsId, 'Produktdaten abgelehnt: '.shopEbayErrorMessage($antwort));
     }
 
     // 2. Offer — gemerktes wiederverwenden, sonst bei eBay nachsehen, sonst neu
@@ -583,34 +750,34 @@ function shopEbayPublishPartNow($db, int $partsId): string {
     }
     $offerId = $artikel['offer_id'];
     if ('' === $offerId) {
-        $vorhanden = shopEbayApi($db, 'GET', '/sell/inventory/v1/offer', null,
+        $vorhanden = shopEbayApi($db, $kanal, 'GET', '/sell/inventory/v1/offer', null,
             ['sku' => $sku, 'marketplace_id' => $markt, 'limit' => 1]);
         if ($vorhanden['status'] < 400 && !empty($vorhanden['body']['offers'][0]['offerId'])) {
             $offerId = (string)$vorhanden['body']['offers'][0]['offerId'];
         }
     }
     if ('' !== $offerId) {
-        $antwort = shopEbayApi($db, 'PUT', '/sell/inventory/v1/offer/'.rawurlencode($offerId), $angebot);
+        $antwort = shopEbayApi($db, $kanal, 'PUT', '/sell/inventory/v1/offer/'.rawurlencode($offerId), $angebot);
         if ($antwort['status'] >= 400) {
-            shopEbayFail($db, $partsId, 'Angebot (Aktualisierung) abgelehnt: '.shopEbayErrorMessage($antwort));
+            shopEbayFail($db, $kanal, $partsId, 'Angebot (Aktualisierung) abgelehnt: '.shopEbayErrorMessage($antwort));
         }
     } else {
-        $antwort = shopEbayApi($db, 'POST', '/sell/inventory/v1/offer', $angebot);
+        $antwort = shopEbayApi($db, $kanal, 'POST', '/sell/inventory/v1/offer', $angebot);
         if ($antwort['status'] >= 400 || empty($antwort['body']['offerId'])) {
-            shopEbayFail($db, $partsId, 'Angebot abgelehnt: '.shopEbayErrorMessage($antwort));
+            shopEbayFail($db, $kanal, $partsId, 'Angebot abgelehnt: '.shopEbayErrorMessage($antwort));
         }
         $offerId = (string)$antwort['body']['offerId'];
     }
-    shopEbayRecord($db, $partsId, 'pending', '', ['offer_id' => $offerId]);
+    shopEbayRecord($db, $kanal, $partsId, 'pending', '', ['offer_id' => $offerId]);
 
     // 3. Publish — bei einem schon veröffentlichten Angebot wirkt die
     // Aktualisierung oben sofort, eBay bestätigt das Publish dann erneut
-    $antwort = shopEbayApi($db, 'POST', '/sell/inventory/v1/offer/'.rawurlencode($offerId).'/publish');
+    $antwort = shopEbayApi($db, $kanal, 'POST', '/sell/inventory/v1/offer/'.rawurlencode($offerId).'/publish');
     if ($antwort['status'] >= 400) {
-        shopEbayFail($db, $partsId, 'Veröffentlichen abgelehnt: '.shopEbayErrorMessage($antwort));
+        shopEbayFail($db, $kanal, $partsId, 'Veröffentlichen abgelehnt: '.shopEbayErrorMessage($antwort));
     }
     $listing = (string)($antwort['body']['listingId'] ?? '');
-    shopEbayRecord($db, $partsId, 'active', '', [], '' !== $listing ? $listing : null);
+    shopEbayRecord($db, $kanal, $partsId, 'active', '', [], '' !== $listing ? $listing : null);
 
     return 1 === $los
         ? sprintf('eingestellt (%s EUR, %d Stück)', $preis, $menge)
@@ -623,39 +790,41 @@ function shopEbayPublishPartNow($db, int $partsId): string {
  * Ein bei eBay schon beendetes Angebot (404) gilt als beendet.
  *
  * @param object $db Company-Datenbankverbindung
+ * @param int $kanal eBay-Kanal
  * @param int $partsId Artikel
  * @return string kurzer Stand
  * @throws ApiError EBAY_LISTING_FAILED
  */
-function shopEbayEndPart($db, int $partsId): string {
-    return shopEbayRecordErrors($db, $partsId, fn() => shopEbayEndPartNow($db, $partsId));
+function shopEbayEndPart($db, int $kanal, int $partsId): string {
+    return shopEbayRecordErrors($db, $kanal, $partsId, fn() => shopEbayEndPartNow($db, $kanal, $partsId));
 }
 
 /**
  * Beenden ohne Fehlerbuchführung — siehe shopEbayEndPart()
  *
  * @param object $db Company-Datenbankverbindung
+ * @param int $kanal eBay-Kanal
  * @param int $partsId Artikel
  * @return string
  */
-function shopEbayEndPartNow($db, int $partsId): string {
+function shopEbayEndPartNow($db, int $kanal, int $partsId): string {
     $zeile = $db->getOne(
         "SELECT COALESCE(sync_data ->> 'offer_id', '') AS offer_id
            FROM parts_channel_shop
-          WHERE parts_id = :parts_id AND channel_id = shop_channel_id('ebay')",
-        [':parts_id' => $partsId]
+          WHERE parts_id = :parts_id AND channel_id = CAST(:kanal AS integer)",
+        [':parts_id' => $partsId, ':kanal' => $kanal]
     );
     $offerId = (string)($zeile['offer_id'] ?? '');
     if ('' === $offerId) {
         return 'kein Angebot';
     }
 
-    $antwort = shopEbayApi($db, 'POST', '/sell/inventory/v1/offer/'.rawurlencode($offerId).'/withdraw');
+    $antwort = shopEbayApi($db, $kanal, 'POST', '/sell/inventory/v1/offer/'.rawurlencode($offerId).'/withdraw');
     if ($antwort['status'] >= 400 && 404 !== $antwort['status']) {
-        shopEbayFail($db, $partsId, 'Beenden abgelehnt: '.shopEbayErrorMessage($antwort));
+        shopEbayFail($db, $kanal, $partsId, 'Beenden abgelehnt: '.shopEbayErrorMessage($antwort));
     }
     // Die Angebotskennung bleibt: ein Wiedereinstellen verwendet sie weiter
-    shopEbayRecord($db, $partsId, 'ended', '');
+    shopEbayRecord($db, $kanal, $partsId, 'ended', '');
     return 'beendet';
 }
 

@@ -319,7 +319,24 @@
             "saved": "Enregistré.",
             "republishQueued": "Enregistré. Les pages produit seront réécrites avec les nouveaux prix.",
             "saveError": "Les réglages du canal n'ont pas pu être enregistrés.",
-            "loadError": "Les canaux de vente n'ont pas pu être chargés."
+            "loadError": "Les canaux de vente n'ont pas pu être chargés.",
+            "name": "Nom",
+            "nameRequired": "Le canal a besoin d’un nom.",
+            "autoAddParts": "Ajouter automatiquement les nouveaux articles de la boutique",
+            "autoAddPartsHint": "Lorsqu’un article est ajouté à la boutique, il est aussi proposé dans ce canal.",
+            "settings": "Paramètres de {name}",
+            "settingsSaved": "Paramètres enregistrés.",
+            "settingsSaveError": "Les paramètres n’ont pas pu être enregistrés.",
+            "newChannel": "Nouveau canal de vente :",
+            "newChannelType": "Type",
+            "create": "Créer",
+            "created": "Canal de vente créé. Il reste désactivé jusqu’à ce qu’il soit configuré.",
+            "createError": "Le canal de vente n’a pas pu être créé.",
+            "delete": "Supprimer le canal de vente",
+            "deleteConfirm": "Supprimer « {name} » avec ses lignes d’articles, images, pays de livraison et paliers de prix ? Cette action est irréversible.",
+            "deleted": "Canal de vente supprimé.",
+            "deleteError": "Le canal de vente n’a pas pu être supprimé.",
+            "cancel": "Annuler"
         },
         "ebayCondition": {
             "NEW": "Neuf",
@@ -333,7 +350,11 @@
             "NETWORK_ERROR": "Le serveur est injoignable. Vérifiez la connexion et réessayez.",
             "API_DATABASE_ERROR": "La base de données ne répond pas comme prévu. Veuillez prévenir l'administrateur.",
             "API_INTERNAL_ERROR": "Une erreur inattendue s'est produite sur le serveur. Veuillez prévenir l'administrateur.",
-            "NO_PERMISSION": "Vous n'avez pas l'autorisation pour cette action."
+            "NO_PERMISSION": "Vous n'avez pas l'autorisation pour cette action.",
+            "CHANNEL_NAME_TAKEN": "Un autre canal de vente porte déjà ce nom.",
+            "CHANNEL_KEY_TAKEN": "Cette clé de boutique appartient déjà à une autre HugoShop.",
+            "CHANNEL_IN_USE": "Des factures, rétractations ou commandes eBay sont liées à ce canal. Il ne peut qu’être désactivé.",
+            "CHANNEL_NOT_DELETABLE": "Seul un canal désactivé sans tâches en attente peut être supprimé."
         }
     }
 }

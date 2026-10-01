@@ -236,7 +236,7 @@ function getPartsSalesChannels($data) {
     }
 
     resultInfo(true, '', ['channels' => $db->getAll(
-        "SELECT c.id AS channel_id, c.type
+        "SELECT c.id AS channel_id, c.type, c.name
            FROM sales_channel_shop c
           WHERE c.active
           ORDER BY c.sortkey NULLS LAST, c.id"

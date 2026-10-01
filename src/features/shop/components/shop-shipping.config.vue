@@ -405,11 +405,13 @@ const anbieterAuswahl = computed(() => anbieter.value.map(v => ({
     value: Number(v.id), title: v.vendornumber ? `${v.name} (${v.vendornumber})` : v.name,
 })))
 
-const kanalName = typ => (te(`ShopView.channels.${typ}`) ? t(`ShopView.channels.${typ}`) : typ)
+/** Name des Kanals, sonst die Bezeichnung seiner Art */
+const kanalName = kanal => kanal.name
+    || (te(`ShopView.channels.${kanal.type}`) ? t(`ShopView.channels.${kanal.type}`) : kanal.type)
 /** eBay rechnet den Versand selbst (W4) — dort gibt es keine Preisstufen */
 const kanalAuswahl = computed(() => [
     { value: null, title: t('ShopView.shippingConfig.allChannels') },
-    ...kanaele.value.filter(k => k.type !== 'ebay').map(k => ({ value: Number(k.channel_id), title: kanalName(k.type) })),
+    ...kanaele.value.filter(k => k.type !== 'ebay').map(k => ({ value: Number(k.channel_id), title: kanalName(k) })),
 ])
 const zonenAuswahl = computed(() => [
     { value: null, title: t('ShopView.shippingConfig.otherCountries') },

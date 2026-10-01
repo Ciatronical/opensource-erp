@@ -9,6 +9,9 @@
 // Webseiten-Paket ab und fragen PayPal nach schwebenden Zahlungen. Paket,
 // Kategorieübersicht und Bau nach den Aufträgen erledigt shopPublishRun() in
 // lib/publish.php.
+//
+// Mehrere HugoShops (dev/shop-mehrere-kanaele.md): jeder Auftrag trägt seinen
+// Kanal (channel_id) und wirkt nur auf dessen Webseite.
 
 /**
  * Auftragsarten des HugoShops
@@ -23,10 +26,14 @@ function shopChannelHugoshopJobFunctions(): array {
  * Ist der HugoShop eingeschaltet?
  *
  * @param object $db Company-Datenbankverbindung
+ * @param int $kanal HugoShop
  * @return bool
  */
-function shopChannelHugoshopActive($db): bool {
-    $zeile = $db->getOne("SELECT shop_active_channel_id('hugoshop') IS NOT NULL AS an");
+function shopChannelHugoshopActive($db, int $kanal): bool {
+    $zeile = $db->getOne(
+        "SELECT shop_active_channel_id(CAST(:kanal AS integer)) IS NOT NULL AS an",
+        [':kanal' => $kanal]
+    );
     return in_array($zeile['an'] ?? false, [true, 't', 1, '1'], true);
 }
 
@@ -37,17 +44,19 @@ function shopChannelHugoshopActive($db): bool {
  * gerade abgeschaltet wurde.
  *
  * @param object $db Company-Datenbankverbindung
+ * @param int $kanal HugoShop
  * @return array Dateinamen ohne Pfad
  */
-function shopChannelHugoshopPages($db): array {
+function shopChannelHugoshopPages($db, int $kanal): array {
     $zeilen = $db->getAll(
         "SELECT p.partnumber, COALESCE(pe.hugoshop_hyperlink, '') AS hyperlink
            FROM parts_channel_shop pc
            JOIN parts p ON p.id = pc.parts_id
            LEFT JOIN parts_ext pe ON pe.parts_id = p.id
-          WHERE pc.channel_id = shop_channel_id('hugoshop')
+          WHERE pc.channel_id = CAST(:kanal AS integer)
             AND pc.active
-          ORDER BY p.id"
+          ORDER BY p.id",
+        [':kanal' => $kanal]
     );
 
     $namen = [];
@@ -65,30 +74,33 @@ function shopChannelHugoshopPages($db): array {
 /**
  * Reagiert auf Ein- und Ausschalten des HugoShops (V16)
  *
- * Aus: je nach shop_channel_off_pages die Seiten als Entwurf stehen lassen
+ * Aus: je nach channel_off_pages des Kanals die Seiten als Entwurf stehen lassen
  * (draft_all, Vorgabe) oder entfernen (remove_all). An: alle Seiten neu
  * schreiben. Ein noch offener Auftrag der Gegenrichtung wird vorher gelöscht —
  * sonst hinterließe aus-an-aus die Seiten veröffentlicht, weil der zweite
  * Auftrag als Doppel des ersten nicht angelegt würde.
  *
  * @param object $db Company-Datenbankverbindung
+ * @param int $kanal HugoShop
  * @param bool $an eingeschaltet
  * @return void
  */
-function shopChannelHugoshopSwitched($db, bool $an): void {
+function shopChannelHugoshopSwitched($db, int $kanal, bool $an): void {
     $db->execute(
         "DELETE FROM batchjob_hugoshop
           WHERE result IS NULL
-            AND COALESCE(channel_id, shop_channel_id('hugoshop')) = shop_channel_id('hugoshop')
+            AND channel_id = CAST(:kanal AS integer)
             AND function = ANY(string_to_array(:gegenrichtung, ','))",
-        [':gegenrichtung' => $an ? 'remove_all,draft_all' : 'publish_all,publish_part,remove_all,draft_all']
+        [':kanal' => $kanal,
+         ':gegenrichtung' => $an ? 'remove_all,draft_all' : 'publish_all,publish_part,remove_all,draft_all']
     );
 
     if ($an) {
-        shopQueueJob($db, 'publish_all');
+        shopQueueJob($db, 'publish_all', '', null, $kanal);
         return;
     }
-    shopQueueJob($db, 'remove' === shopConfigValue($db, 'shop_channel_off_pages', 'draft') ? 'remove_all' : 'draft_all');
+    shopQueueJob($db, 'remove' === shopChannelValue($db, $kanal, 'channel_off_pages', 'draft') ? 'remove_all' : 'draft_all',
+                 '', null, $kanal);
 }
 
 /**
@@ -101,18 +113,19 @@ function shopChannelHugoshopSwitched($db, bool $an): void {
  * @param array $auftrag Zeile aus shopOpenJobs()
  * @param callable $sagen Fortschritt
  * @param callable $fehler Fehlermeldung, wird gezählt
- * @param array $bilanz Zähler des Laufs (seiten, entfernt, kit)
+ * @param array $bilanz Zähler des Laufs (seiten, entfernt, kit — je Webseite über shopSiteTally)
  * @return void
  */
 function shopChannelHugoshopRunJob($db, array $auftrag, callable $sagen, callable $fehler, array &$bilanz): void {
     $id = (int)$auftrag['id'];
+    $kanal = (int)$auftrag['channel_id'];
 
     switch ($auftrag['function']) {
         case 'publish_part':
             // Abgeschaltet schreibt der HugoShop keine Seiten (V16): ein
             // Auftrag von vor dem Abschalten brächte sonst eine Seite zurück,
             // die remove_all gerade entfernt hat.
-            if (!shopChannelHugoshopActive($db)) {
+            if (!shopChannelHugoshopActive($db, $kanal)) {
                 $sagen('HugoShop abgeschaltet — Seite nicht geschrieben: '.$auftrag['partnumber']);
                 shopJobResult($db, $id, 'ok: HugoShop abgeschaltet, nicht geschrieben');
                 break;
@@ -124,8 +137,8 @@ function shopChannelHugoshopRunJob($db, array $auftrag, callable $sagen, callabl
             if (!$artikel) {
                 throw new ApiError('PART_NOT_FOUND', 'Artikel nicht gefunden: '.$auftrag['partnumber']);
             }
-            $ergebnis = shopWriteProductPage($db, (int)$artikel['id']);
-            $bilanz['seiten']++;
+            $ergebnis = shopWriteProductPage($db, $kanal, (int)$artikel['id']);
+            shopSiteTally($bilanz, $kanal, 'seiten');
             $sagen('Seite geschrieben: '.basename($ergebnis['file']).' (Vorschaubild: '.$ergebnis['thumbnail'].')');
             shopJobResult($db, $id, 'ok: '.basename($ergebnis['file']));
             break;
@@ -134,9 +147,9 @@ function shopChannelHugoshopRunJob($db, array $auftrag, callable $sagen, callabl
             $anzahl = 0;
             $gescheitert = 0;
             $ersterFehler = '';
-            foreach (shopListedParts($db) as $artikel) {
+            foreach (shopListedParts($db, $kanal) as $artikel) {
                 try {
-                    shopWriteProductPage($db, (int)$artikel['id']);
+                    shopWriteProductPage($db, $kanal, (int)$artikel['id']);
                     $anzahl++;
                 } catch (ApiError $e) {
                     $gescheitert++;
@@ -153,7 +166,7 @@ function shopChannelHugoshopRunJob($db, array $auftrag, callable $sagen, callabl
                     }
                 }
             }
-            $bilanz['seiten'] += $anzahl;
+            shopSiteTally($bilanz, $kanal, 'seiten', $anzahl);
             $stand = sprintf('%d Seiten geschrieben, %d fehlgeschlagen', $anzahl, $gescheitert);
             if ($gescheitert > SHOP_MELDUNGEN_JE_AUFTRAG) {
                 $sagen(sprintf('… und %d weitere Artikel, nicht einzeln aufgeführt',
@@ -169,9 +182,9 @@ function shopChannelHugoshopRunJob($db, array $auftrag, callable $sagen, callabl
             break;
 
         case 'remove_part':
-            $weg = shopRemovePage($db, (string)($auftrag['param'] ?? ''));
+            $weg = shopRemovePage($db, $kanal, (string)($auftrag['param'] ?? ''));
             if ($weg) {
-                $bilanz['entfernt']++;
+                shopSiteTally($bilanz, $kanal, 'entfernt');
             }
             $sagen('Seite entfernt: '.$auftrag['param'].($weg ? '' : ' (gab es nicht)'));
             shopJobResult($db, $id, $weg ? 'ok: entfernt' : 'ok: gab es nicht');
@@ -183,12 +196,12 @@ function shopChannelHugoshopRunJob($db, array $auftrag, callable $sagen, callabl
             // einzelner. Die Artikelzeilen bleiben stehen; beim Einschalten
             // schreibt publish_all die Seiten neu.
             $entfernt = 0;
-            foreach (shopChannelHugoshopPages($db) as $datei) {
-                if (shopRemovePage($db, $datei)) {
+            foreach (shopChannelHugoshopPages($db, $kanal) as $datei) {
+                if (shopRemovePage($db, $kanal, $datei)) {
                     $entfernt++;
                 }
             }
-            $bilanz['entfernt'] += $entfernt;
+            shopSiteTally($bilanz, $kanal, 'entfernt', $entfernt);
             $sagen(sprintf('Alle Seiten entfernt: %d Dateien', $entfernt));
             shopJobResult($db, $id, 'ok: '.$entfernt.' entfernt');
             break;
@@ -204,11 +217,12 @@ function shopChannelHugoshopRunJob($db, array $auftrag, callable $sagen, callabl
                 "SELECT p.id, p.partnumber
                    FROM parts_channel_shop pc
                    JOIN parts p ON p.id = pc.parts_id
-                  WHERE pc.channel_id = shop_channel_id('hugoshop') AND pc.active
-                  ORDER BY p.id"
+                  WHERE pc.channel_id = CAST(:kanal AS integer) AND pc.active
+                  ORDER BY p.id",
+                [':kanal' => $kanal]
             ) as $artikel) {
                 try {
-                    shopWriteProductPage($db, (int)$artikel['id'], true);
+                    shopWriteProductPage($db, $kanal, (int)$artikel['id'], true);
                     $anzahl++;
                 } catch (ApiError $e) {
                     $gescheitert++;
@@ -217,15 +231,15 @@ function shopChannelHugoshopRunJob($db, array $auftrag, callable $sagen, callabl
                     }
                 }
             }
-            $bilanz['seiten'] += $anzahl;
+            shopSiteTally($bilanz, $kanal, 'seiten', $anzahl);
             $stand = sprintf('%d Seiten als Entwurf, %d fehlgeschlagen', $anzahl, $gescheitert);
             $sagen($stand);
             shopJobResult($db, $id, ($gescheitert > 0 ? 'Fehler: ' : 'ok: ').$stand);
             break;
 
         case 'sync_kit':
-            $kit = shopSyncKit($db);
-            $bilanz['kit'] += shopKitChanges($kit);
+            $kit = shopSyncKit($db, $kanal);
+            shopSiteTally($bilanz, $kanal, 'kit', shopKitChanges($kit));
             $sagen(sprintf('Paket abgeglichen: %d kopiert, %d entfernt%s',
                 $kit['kopiert'], $kit['entfernt'], $kit['config'] ? ', Konfiguration neu' : ''));
 
@@ -234,8 +248,8 @@ function shopChannelHugoshopRunJob($db, array $auftrag, callable $sagen, callabl
             // etwa weil ein früherer Bau fehlschlug oder die Mounts erst
             // danach eingetragen wurden.
             if (SHOP_KIT_INSTALL === ($auftrag['param'] ?? null)) {
-                $bilanz['bauen'] = true;
-                foreach (shopKitSetupHints($db) as $hinweis) {
+                shopSiteTally($bilanz, $kanal, 'bauen');
+                foreach (shopKitSetupHints($db, $kanal) as $hinweis) {
                     $sagen('Hinweis: '.$hinweis);
                 }
             }

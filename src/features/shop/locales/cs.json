@@ -319,7 +319,24 @@
             "saved": "Uloženo.",
             "republishQueued": "Uloženo. Stránky produktů budou přepsány s novými cenami.",
             "saveError": "Nastavení kanálu se nepodařilo uložit.",
-            "loadError": "Prodejní kanály se nepodařilo načíst."
+            "loadError": "Prodejní kanály se nepodařilo načíst.",
+            "name": "Název",
+            "nameRequired": "Kanál potřebuje název.",
+            "autoAddParts": "Nové položky obchodu přidávat automaticky",
+            "autoAddPartsHint": "Je-li položka nově zařazena do obchodu, nabízí se rovnou i v tomto kanálu.",
+            "settings": "Nastavení – {name}",
+            "settingsSaved": "Nastavení uloženo.",
+            "settingsSaveError": "Nastavení se nepodařilo uložit.",
+            "newChannel": "Nový prodejní kanál:",
+            "newChannelType": "Druh",
+            "create": "Vytvořit",
+            "created": "Prodejní kanál vytvořen. Zůstane vypnutý, dokud nebude nastaven.",
+            "createError": "Prodejní kanál se nepodařilo vytvořit.",
+            "delete": "Smazat prodejní kanál",
+            "deleteConfirm": "Smazat „{name}“ včetně řádků položek, obrázků, zemí dodání a cenových stupňů? Tuto akci nelze vrátit.",
+            "deleted": "Prodejní kanál smazán.",
+            "deleteError": "Prodejní kanál se nepodařilo smazat.",
+            "cancel": "Zrušit"
         },
         "ebayCondition": {
             "NEW": "Nové",
@@ -333,7 +350,11 @@
             "NETWORK_ERROR": "Server není dostupný. Zkontrolujte připojení a zkuste to znovu.",
             "API_DATABASE_ERROR": "Databáze neodpovídá podle očekávání. Informujte prosím správce.",
             "API_INTERNAL_ERROR": "Na serveru došlo k neočekávané chybě. Informujte prosím správce.",
-            "NO_PERMISSION": "K této akci nemáte oprávnění."
+            "NO_PERMISSION": "K této akci nemáte oprávnění.",
+            "CHANNEL_NAME_TAKEN": "Tento název už má jiný prodejní kanál.",
+            "CHANNEL_KEY_TAKEN": "Tento klíč obchodu už patří jinému HugoShopu.",
+            "CHANNEL_IN_USE": "Na tento kanál odkazují faktury, odstoupení nebo objednávky z eBay. Lze ho pouze vypnout.",
+            "CHANNEL_NOT_DELETABLE": "Smazat lze jen vypnutý kanál bez otevřených úloh."
         }
     }
 }

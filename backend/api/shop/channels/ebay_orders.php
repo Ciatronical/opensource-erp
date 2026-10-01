@@ -4,7 +4,7 @@
 // Bestellimport des eBay-Kanals (dev/shop-verkaufskanaele.md, Schritt 5,
 // Teil 2). Übernommen aus backend/api/ebay/import.php, Verhalten gleich:
 //
-//   neue Bestellungen seit dem letzten Abruf (ebay_order_last_check)
+//   neue Bestellungen seit dem letzten Abruf (order_last_check des Kanals)
 //   → Kunde ohne Dubletten (bekannter eBay-Käufer, dann Adressvergleich,
 //     sonst neu)
 //   → eine Ausgangsrechnung je Bestellung, brutto wie bei eBay
@@ -12,7 +12,9 @@
 //   → ebay_orders als Sperre gegen doppelte Rechnungen und als Nachweis
 //
 // Geändert: eingeschaltet ist der Import über den Kanalschalter
-// (sales_channel_shop.active) statt ebay_enabled.
+// (sales_channel_shop.active) statt ebay_enabled. Jeder eBay-Kanal ruft seine
+// eigenen Bestellungen ab und merkt sich seinen Abruf; ebay_orders trägt den
+// Kanal (dev/shop-mehrere-kanaele.md, Schritt 4).
 //
 // Lagerbestand: Nach dem Import bucht shopBookStock() die Waren vom
 // eingestellten Lagerplatz aus (O14, V28) — wie bei den Rechnungen des
@@ -25,15 +27,31 @@
  * Ist der eBay-Kanal eingeschaltet?
  *
  * @param object $db Company-Datenbankverbindung
+ * @param int $kanal eBay-Kanal
  * @return bool
  */
-function shopEbayActive($db): bool {
-    $zeile = $db->getOne("SELECT shop_active_channel_id('ebay') IS NOT NULL AS an");
+function shopEbayActive($db, int $kanal): bool {
+    $zeile = $db->getOne(
+        "SELECT shop_active_channel_id(CAST(:kanal AS integer)) IS NOT NULL AS an",
+        [':kanal' => $kanal]
+    );
     return in_array($zeile['an'] ?? false, [true, 't', 1, '1'], true);
 }
 
 /**
- * Mitarbeiter für eBay-Rechnungen: ebay_employee_login, sonst der erste
+ * Eingeschaltete eBay-Kanäle — für den Bestellabruf im Cron
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @return array Liste aus id und name
+ */
+function shopEbayActiveChannels($db): array {
+    return $db->getAll(
+        "SELECT id, name FROM sales_channel_shop WHERE type = 'ebay' AND active ORDER BY sortkey NULLS LAST, id"
+    ) ?: [];
+}
+
+/**
+ * Mitarbeiter für eBay-Rechnungen: employee_login des Kanals, sonst der erste
  *
  * @param object $db Company-Datenbankverbindung
  * @param array $cfg Ergebnis von shopEbayConfig()
@@ -44,7 +62,7 @@ function shopEbayEmployeeId($db, array $cfg): ?int {
         "SELECT COALESCE(
                     (SELECT id FROM employee WHERE login = :login AND :login_gesetzt = 1 LIMIT 1),
                     (SELECT id FROM employee ORDER BY id LIMIT 1)) AS id",
-        [':login' => trim($cfg['ebay_employee_login'] ?? ''), ':login_gesetzt' => '' !== trim($cfg['ebay_employee_login'] ?? '') ? 1 : 0]
+        [':login' => trim((string)($cfg['employee_login'] ?? '')), ':login_gesetzt' => '' !== trim((string)($cfg['employee_login'] ?? '')) ? 1 : 0]
     );
     return isset($zeile['id']) ? (int)$zeile['id'] : null;
 }
@@ -52,7 +70,9 @@ function shopEbayEmployeeId($db, array $cfg): ?int {
 /**
  * Kunde zu einer eBay-Bestellung, ohne Dubletten
  *
- * Reihenfolge: bekannter eBay-Käufer → Adressvergleich wie checkDuplicateCV
+ * Reihenfolge: bekannter eBay-Käufer (aus allen eBay-Kanälen — der
+ * Benutzername gilt bei eBay weltweit, der Kunde ist derselbe) →
+ * Adressvergleich wie checkDuplicateCV
  * (Name > 0,7, Straße > 0,9, PLZ gleich) → neu anlegen.
  *
  * @param object $db Company-Datenbankverbindung
@@ -125,11 +145,11 @@ function shopEbayResolveCustomer($db, array $bestellung): int {
 
 /**
  * Artikel zu einer eBay-Position: über die SKU (= Artikelnummer), sonst der
- * Sammelartikel aus ebay_default_parts_id
+ * Sammelartikel des Kanals (default_parts_id)
  *
  * @param object $db Company-Datenbankverbindung
  * @param array $position Position der Bestellung
- * @param int $sammelartikel ebay_default_parts_id, 0 = keiner
+ * @param int $sammelartikel default_parts_id des Kanals, 0 = keiner
  * @return int parts.id
  * @throws ApiError EBAY_NO_PART
  */
@@ -147,7 +167,7 @@ function shopEbayResolvePart($db, array $position, int $sammelartikel): int {
     if ($sammelartikel > 0) {
         return $sammelartikel;
     }
-    throw new ApiError('EBAY_NO_PART', 'Kein Artikel für SKU "'.$sku.'" und kein Sammelartikel (ebay_default_parts_id) eingestellt');
+    throw new ApiError('EBAY_NO_PART', 'Kein Artikel für SKU "'.$sku.'" und kein Sammelartikel (default_parts_id) eingestellt');
 }
 
 /**
@@ -158,18 +178,19 @@ function shopEbayResolvePart($db, array $position, int $sammelartikel): int {
  * Buchung, bleibt die Rechnung ungebucht und posting_reason nennt den Grund.
  *
  * @param object $db Company-Datenbankverbindung
+ * @param int $kanal eBay-Kanal, von dem die Bestellung stammt
  * @param array $bestellung Bestellung von eBay
  * @param array $cfg Ergebnis von shopEbayConfig()
  * @return string imported oder skipped
  */
-function shopEbayImportOrder($db, array $bestellung, array $cfg): string {
+function shopEbayImportOrder($db, int $kanal, array $bestellung, array $cfg): string {
     $bestellId = trim($bestellung['orderId'] ?? '');
     if ('' === $bestellId
         || $db->getOne("SELECT 1 FROM ebay_orders WHERE ebay_order_id = :id", [':id' => $bestellId])) {
         return 'skipped';
     }
 
-    $sammelartikel = (int)($cfg['ebay_default_parts_id'] ?? 0);
+    $sammelartikel = (int)($cfg['default_parts_id'] ?? 0);
     $gesamt = (float)($bestellung['pricingSummary']['total']['value'] ?? 0);
 
     $db->beginTransaction();
@@ -230,9 +251,10 @@ function shopEbayImportOrder($db, array $bestellung, array $cfg): string {
 
         $db->execute(
             "INSERT INTO ebay_orders (ebay_order_id, ar_id, customer_id, buyer_username, order_status,
-                                      total, posting_reason, raw)
-             VALUES (:id, :ar, :kunde, :kaeufer, :stand, :gesamt, 'PENDING', :roh)",
+                                      total, posting_reason, raw, channel_id)
+             VALUES (:id, :ar, :kunde, :kaeufer, :stand, :gesamt, 'PENDING', :roh, CAST(:kanal AS integer))",
             [
+                ':kanal'   => $kanal,
                 ':id'      => $bestellId,
                 ':ar'      => $arId,
                 ':kunde'   => $kunde,
@@ -275,17 +297,18 @@ function shopEbayImportOrder($db, array $bestellung, array $cfg): string {
  * übrigen überspringt ebay_orders.
  *
  * @param object $db Company-Datenbankverbindung
+ * @param int $kanal eBay-Kanal
  * @return array imported, skipped, fetched, errors
- * @throws ApiError EBAY_DISABLED, EBAY_API_ERROR
+ * @throws ApiError EBAY_DISABLED, EBAY_API_ERROR, EBAY_ACCOUNT_IN_USE
  */
-function shopEbayImportOrders($db): array {
-    if (!shopEbayActive($db)) {
+function shopEbayImportOrders($db, int $kanal): array {
+    if (!shopEbayActive($db, $kanal)) {
         throw new ApiError('EBAY_DISABLED', 'Der eBay-Kanal ist abgeschaltet (Einstellungen → Shop → Verkaufskanäle)');
     }
-    $cfg = shopEbayConfig($db);
+    $cfg = shopEbayConfig($db, $kanal);
 
-    $von = !empty($cfg['ebay_order_last_check'])
-        ? $cfg['ebay_order_last_check']
+    $von = !empty($cfg['order_last_check'])
+        ? $cfg['order_last_check']
         : gmdate('Y-m-d\TH:i:s.000\Z', time() - 86400);
     $bis = gmdate('Y-m-d\TH:i:s.000\Z');
 
@@ -294,7 +317,7 @@ function shopEbayImportOrders($db): array {
     $versatz = 0;
 
     do {
-        $antwort = shopEbayApi($db, 'GET', '/sell/fulfillment/v1/order', null, [
+        $antwort = shopEbayApi($db, $kanal, 'GET', '/sell/fulfillment/v1/order', null, [
             'filter' => 'creationdate:['.$von.'..'.$bis.']',
             'limit'  => $grenze,
             'offset' => $versatz,
@@ -308,7 +331,7 @@ function shopEbayImportOrders($db): array {
 
         foreach ($bestellungen as $bestellung) {
             try {
-                'imported' === shopEbayImportOrder($db, $bestellung, $cfg) ? $bilanz['imported']++ : $bilanz['skipped']++;
+                'imported' === shopEbayImportOrder($db, $kanal, $bestellung, $cfg) ? $bilanz['imported']++ : $bilanz['skipped']++;
             } catch (\Throwable $e) {
                 $bilanz['errors'][] = ($bestellung['orderId'] ?? '?').': '.$e->getMessage();
             }
@@ -317,37 +340,45 @@ function shopEbayImportOrders($db): array {
     } while ($versatz < $gesamt && $bestellungen);
 
     if (!$bilanz['errors']) {
-        shopEbaySetConfig($db, 'ebay_order_last_check', $bis);
+        shopEbaySetConfig($db, $kanal, 'order_last_check', $bis);
     }
     return $bilanz;
 }
 
 /**
- * Stand des eBay-Kanals für die Einstellungen: letzter Abruf, Zahlen, die
- * zuletzt importierten Bestellungen
+ * Stand eines eBay-Kanals für die Einstellungen: letzter Abruf, Konto, Zahlen,
+ * die zuletzt importierten Bestellungen
  *
  * @param object $db Company-Datenbankverbindung
+ * @param int $kanal eBay-Kanal
  * @return array
  */
-function shopEbayStatus($db): array {
+function shopEbayStatus($db, int $kanal): array {
     $zeile = $db->getOne(
-        "SELECT shop_active_channel_id('ebay') IS NOT NULL AS enabled,
-                (SELECT value FROM defaults_oserp WHERE key = 'ebay_order_last_check') AS last_check,
+        "SELECT shop_active_channel_id(CAST(:kanal AS integer)) IS NOT NULL AS enabled,
+                c.settings ->> 'order_last_check' AS last_check,
+                c.settings ->> 'account_id' AS account,
                 (SELECT row_to_json(z) FROM (
                     SELECT COUNT(*) AS total,
                            COUNT(*) FILTER (WHERE posting_reason = 'posted') AS posted,
                            COUNT(*) FILTER (WHERE posting_reason <> 'posted') AS unposted
-                      FROM ebay_orders) z) AS counts,
+                      FROM ebay_orders WHERE channel_id = c.id) z) AS counts,
                 (SELECT COALESCE(json_agg(r ORDER BY r.id DESC), '[]'::json) FROM (
                     SELECT e.id, e.ebay_order_id, e.buyer_username, e.total, e.posting_reason, e.itime,
-                           a.invnumber, c.name AS customer_name
+                           a.invnumber, cu.name AS customer_name
                       FROM ebay_orders e
                       LEFT JOIN ar a ON a.id = e.ar_id
-                      LEFT JOIN customer c ON c.id = e.customer_id
-                     ORDER BY e.id DESC LIMIT 20) r) AS recent"
+                      LEFT JOIN customer cu ON cu.id = e.customer_id
+                     WHERE e.channel_id = c.id
+                     ORDER BY e.id DESC LIMIT 20) r) AS recent
+           FROM sales_channel_shop c
+          WHERE c.id = CAST(:kanal_zeile AS integer)",
+        [':kanal' => $kanal, ':kanal_zeile' => $kanal]
     );
 
     return [
+        'channel_id' => $kanal,
+        'account'   => $zeile['account'] ?? null,
         'enabled'   => in_array($zeile['enabled'] ?? false, [true, 't', 1, '1'], true),
         'lastCheck' => $zeile['last_check'] ?? null,
         'counts'    => json_decode((string)($zeile['counts'] ?? '{}'), true) ?: [],

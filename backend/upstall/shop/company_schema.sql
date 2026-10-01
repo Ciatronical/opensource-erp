@@ -119,8 +119,13 @@ END $$;
 -- ============================================================================
 --
 -- dev/shop-verkaufskanaele.md. Ein Artikel wird über einen oder mehrere
--- Kanäle angeboten: HugoShop, später eBay und Amazon. Je Mandant höchstens
--- ein Kanal je Art (V3), deshalb der eindeutige Index auf type.
+-- Kanäle angeboten: HugoShop, eBay, später Amazon.
+--
+-- Ein Kanal ist eine Instanz seiner Art (dev/shop-mehrere-kanaele.md): je
+-- Mandant beliebig viele HugoShops und eBay-Anbindungen. V3 („höchstens einer
+-- je Art") ist aufgehoben, der eindeutige Index auf type entfällt. Die
+-- Einstellungen einer Instanz stehen in settings, ihre Geheimnisse in
+-- sales_channel_secret_shop.
 --
 -- Die kivitendo-Tabellen shops/shop_parts bleiben unberührt (V1): sie gehören
 -- zu kivitendos Shopware- und WooCommerce-Anbindung.
@@ -131,27 +136,45 @@ END $$;
 
 CREATE TABLE IF NOT EXISTS sales_channel_shop
 (
-    id           integer NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    type         text NOT NULL,
-    active       boolean NOT NULL DEFAULT true,
-    sortkey      integer,
-    markup_type  text NOT NULL DEFAULT 'none',
-    markup_value numeric(15,5) NOT NULL DEFAULT 0,
-    round_99     boolean NOT NULL DEFAULT false,
-    settings     jsonb,
-    itime        timestamp without time zone DEFAULT now(),
-    mtime        timestamp without time zone,
-    CONSTRAINT sales_channel_shop_type_key UNIQUE (type),
+    id             integer NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    type           text NOT NULL,
+    name           text,
+    active         boolean NOT NULL DEFAULT true,
+    sortkey        integer,
+    markup_type    text NOT NULL DEFAULT 'none',
+    markup_value   numeric(15,5) NOT NULL DEFAULT 0,
+    round_99       boolean NOT NULL DEFAULT false,
+    auto_add_parts boolean NOT NULL DEFAULT false,
+    settings       jsonb,
+    itime          timestamp without time zone DEFAULT now(),
+    mtime          timestamp without time zone,
     CONSTRAINT sales_channel_shop_type_check CHECK (type IN ('hugoshop', 'ebay', 'amazon')),
     CONSTRAINT sales_channel_shop_markup_check CHECK (markup_type IN ('none', 'percent', 'amount'))
 );
 
-COMMENT ON TABLE  sales_channel_shop              IS 'Shop: Verkaufskanal, höchstens einer je Art';
-COMMENT ON COLUMN sales_channel_shop.type         IS 'hugoshop, ebay oder amazon';
+COMMENT ON TABLE  sales_channel_shop                IS 'Shop: Verkaufskanal, eine Instanz seiner Art';
+COMMENT ON COLUMN sales_channel_shop.type           IS 'Art: hugoshop, ebay oder amazon';
+COMMENT ON COLUMN sales_channel_shop.name           IS 'Name der Instanz, eindeutig je Mandant; Pflicht (nachgezogen im Abschnitt INSTANZEN)';
+COMMENT ON COLUMN sales_channel_shop.auto_add_parts IS 'Neue Shop-Artikel (neue parts_ext-Zeile) automatisch in diesen Kanal aufnehmen (M3)';
 COMMENT ON COLUMN sales_channel_shop.markup_type  IS 'Vorgabe für alle Artikel des Kanals: none, percent (Prozent) oder amount (fester Betrag)';
 COMMENT ON COLUMN sales_channel_shop.markup_value IS 'Aufschlag in Prozent oder als Betrag — netto oder brutto wie parts.sellprice laut shop_tax_included';
 COMMENT ON COLUMN sales_channel_shop.round_99     IS 'Bruttopreis auf die nächste ,99 aufrunden';
 COMMENT ON COLUMN sales_channel_shop.settings     IS 'Kanaleigene Einstellungen, ohne Geheimnisse — geht an die Oberfläche';
+
+-- Geheimnisse einer Instanz: Shop-Schlüssel, HugoCMS-Schlüssel,
+-- PayPal-Geheimnisse, eBay-Zugang und Token. Getrennt von settings, weil
+-- settings an die Oberfläche geht — diese Tabelle nie.
+CREATE TABLE IF NOT EXISTS sales_channel_secret_shop
+(
+    channel_id integer NOT NULL REFERENCES sales_channel_shop (id) ON DELETE CASCADE,
+    key        text NOT NULL,
+    value      text NOT NULL DEFAULT '',
+    mtime      timestamp without time zone DEFAULT now(),
+    PRIMARY KEY (channel_id, key)
+);
+
+COMMENT ON TABLE  sales_channel_secret_shop     IS 'Shop: Geheimnisse eines Verkaufskanals — geht nie an die Oberfläche';
+COMMENT ON COLUMN sales_channel_secret_shop.key IS 'Name ohne Präfix, etwa public_key, hugocms_key, client_secret';
 
 CREATE TABLE IF NOT EXISTS parts_channel_shop
 (
@@ -217,15 +240,86 @@ COMMENT ON TABLE  parts_channel_image_shop          IS 'Shop: Bilder eines Artik
 COMMENT ON COLUMN parts_channel_image_shop.filename IS 'Dateiname im Artikelordner (SHA-1 des Inhalts plus Endung)';
 COMMENT ON COLUMN parts_channel_image_shop.sort     IS 'Reihenfolge, 0 = Hauptbild';
 
--- Den HugoShop gibt es immer. eBay und Amazon kommen mit ihrer Umsetzung.
-INSERT INTO sales_channel_shop (type, sortkey) VALUES ('hugoshop', 1) ON CONFLICT (type) DO NOTHING;
+-- Mehrere Kanäle je Art: der eindeutige Index auf type entfällt
+-- (dev/shop-mehrere-kanaele.md).
+ALTER TABLE sales_channel_shop DROP CONSTRAINT IF EXISTS sales_channel_shop_type_key;
 
--- eBay (Schritt 5). Eingeschaltet, wenn die bisherige eBay-Anbindung es war
+-- Vorgaben für die Einstellungen eines neuen Kanals (Grundausstattung und
+-- „Kanal anlegen" in der Kanalkarte). Was hier fehlt, ist leer; die Leser
+-- haben für fehlende Werte dieselben Vorgaben.
+CREATE OR REPLACE FUNCTION shop_channel_default_settings(p_type text) RETURNS jsonb
+    LANGUAGE sql IMMUTABLE AS $$
+    SELECT CASE p_type
+        WHEN 'hugoshop' THEN jsonb_build_object(
+            'content_dir',                      'content/de/produkt',
+            'downloads_link',                   '/downloads/%s',
+            'template_set',                     'standard',
+            'publish_mode',                     'local',
+            'publish_clean_destination',        '1',
+            'auto_publish',                     '1',
+            'channel_off_pages',                'draft',
+            'invoice_mail_subject',             'Ihre Rechnung (%s) vom %s',
+            'paypal_sandbox',                   '1',
+            'paypal_payment_method_preference', 'IMMEDIATE_PAYMENT_REQUIRED')
+        WHEN 'ebay' THEN jsonb_build_object(
+            'environment',                      'production',
+            'marketplace_id',                   'EBAY_DE',
+            'content_language',                 'de-DE',
+            'currency',                         'EUR',
+            'default_condition',                'NEW')
+        ELSE '{}'::jsonb END
+$$;
+
+-- Grundausstattung, einmal je Mandant: ein HugoShop und ein eBay-Kanal. Der
+-- Merker verhindert, dass ein später gelöschter Kanal (M5) beim nächsten
+-- Schema-Update wiederkommt; eine bestehende Datenbank hat beide schon.
+-- eBay ist eingeschaltet, wenn die bisherige eBay-Anbindung es war
 -- (ebay_enabled); danach gilt der Schalter unter „Verkaufskanäle".
-INSERT INTO sales_channel_shop (type, sortkey, active)
-SELECT 'ebay', 2, COALESCE((SELECT lower(btrim(value)) IN ('1', 't', 'true', 'on')
-                              FROM defaults_oserp WHERE key = 'ebay_enabled'), false)
-ON CONFLICT (type) DO NOTHING;
+INSERT INTO sales_channel_shop (type, name, sortkey, auto_add_parts, settings)
+SELECT 'hugoshop', 'HugoShop', 1, true, shop_channel_default_settings('hugoshop')
+ WHERE NOT EXISTS (SELECT 1 FROM defaults_oserp WHERE key = 'shop_channels_seeded')
+   AND NOT EXISTS (SELECT 1 FROM sales_channel_shop WHERE type = 'hugoshop');
+
+INSERT INTO sales_channel_shop (type, name, sortkey, active, settings)
+SELECT 'ebay', 'eBay', 2, COALESCE((SELECT lower(btrim(value)) IN ('1', 't', 'true', 'on')
+                                     FROM defaults_oserp WHERE key = 'ebay_enabled'), false),
+       shop_channel_default_settings('ebay')
+ WHERE NOT EXISTS (SELECT 1 FROM defaults_oserp WHERE key = 'shop_channels_seeded')
+   AND NOT EXISTS (SELECT 1 FROM sales_channel_shop WHERE type = 'ebay');
+
+INSERT INTO defaults_oserp (key, value) VALUES ('shop_channels_seeded', '1') ON CONFLICT (key) DO NOTHING;
+
+-- Name ist Pflicht und eindeutig. Bestehende Kanäle heißen nach ihrer Art;
+-- gibt es eine Art mehrfach, bekommen die weiteren ihre Kennung angehängt.
+-- Danach erst NOT NULL: der Upstall legt die Spalte auf einer bestehenden
+-- Datenbank ohne Vorgabewert an, ein NOT NULL dort scheiterte an den Zeilen.
+UPDATE sales_channel_shop c
+   SET name = CASE c.type WHEN 'hugoshop' THEN 'HugoShop' WHEN 'ebay' THEN 'eBay' ELSE initcap(c.type) END
+              || CASE WHEN EXISTS (SELECT 1 FROM sales_channel_shop v
+                                    WHERE v.type = c.type AND v.id < c.id) THEN ' ' || c.id ELSE '' END
+ WHERE NULLIF(btrim(c.name), '') IS NULL;
+
+ALTER TABLE sales_channel_shop ALTER COLUMN name SET NOT NULL;
+
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint
+                    WHERE conrelid = 'sales_channel_shop'::regclass
+                      AND conname = 'sales_channel_shop_name_check') THEN
+        ALTER TABLE sales_channel_shop
+            ADD CONSTRAINT sales_channel_shop_name_check CHECK (btrim(name) <> '');
+    END IF;
+END $$;
+
+CREATE UNIQUE INDEX IF NOT EXISTS sales_channel_shop_name_key
+    ON sales_channel_shop (lower(btrim(name)));
+
+-- Bisher nahm der Trigger auf parts_ext neue Artikel immer in den HugoShop
+-- auf. Das gilt jetzt je Kanal (auto_add_parts); der bestehende HugoShop
+-- behält es — einmal gesetzt, danach entscheidet der Benutzer.
+UPDATE sales_channel_shop SET auto_add_parts = true
+ WHERE type = 'hugoshop'
+   AND NOT EXISTS (SELECT 1 FROM defaults_oserp WHERE key = 'shop_auto_add_migrated');
+INSERT INTO defaults_oserp (key, value) VALUES ('shop_auto_add_migrated', '1') ON CONFLICT (key) DO NOTHING;
 
 -- Übernahme (V6): Bisher stand ein Artikel im Shop, wenn es seine
 -- parts_ext-Zeile gab. Jede erhält einmalig eine aktive HugoShop-Zeile ohne
@@ -242,20 +336,21 @@ SELECT DISTINCT pe.parts_id, c.id, true
 ON CONFLICT (parts_id, channel_id) DO NOTHING;
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_channels_migrated', '1') ON CONFLICT (key) DO NOTHING;
 
--- Übergang für Schreiber, die nur parts_ext kennen (V7): der Lieferantenimport
--- der Bridge (run.php, bis Stufe F in dev/shop-bridge-abloesung.md) legt
--- Shop-Artikel an, indem er eine parts_ext-Zeile schreibt. Ohne diese Trigger
--- stünden solche Artikel nach der Umstellung nicht mehr im Shop.
+-- Automatische Aufnahme neuer Shop-Artikel (M3, dev/shop-mehrere-kanaele.md).
+-- Entstanden als Übergang für Schreiber, die nur parts_ext kennen (V7); die
+-- Bridge arbeitet nicht mit dieser Datenbank, geblieben ist die Regel für
+-- jeden, der einen Artikel neu in den Shop aufnimmt (savePartShopData).
 --
--- Neue parts_ext-Zeile: HugoShop-Zeile anlegen, falls es keine gibt. Eine
--- vorhandene — auch eine abgeschaltete — bleibt, wie sie ist: wer
--- Kanalzeilen ausdrücklich schreibt, hat Vorrang.
--- Gelöschte parts_ext-Zeile: HugoShop-Zeile abschalten, wie früher das
--- Löschen den Artikel aus dem Shop nahm.
+-- Neue parts_ext-Zeile: Kanalzeile in jedem Kanal mit auto_add_parts anlegen
+-- (M3), falls es keine gibt. Eine vorhandene — auch eine abgeschaltete —
+-- bleibt, wie sie ist: wer Kanalzeilen ausdrücklich schreibt, hat Vorrang.
+-- Gelöschte parts_ext-Zeile: die Zeilen aller HugoShops abschalten, wie
+-- früher das Löschen den Artikel aus dem Shop nahm. parts_ext sind die
+-- Artikeltexte aller HugoShops (M6); Marktplätze bleiben unberührt.
 CREATE OR REPLACE FUNCTION parts_ext_channel_insert() RETURNS trigger AS $$
 BEGIN
     INSERT INTO parts_channel_shop (parts_id, channel_id, active)
-    SELECT NEW.parts_id, c.id, true FROM sales_channel_shop c WHERE c.type = 'hugoshop'
+    SELECT NEW.parts_id, c.id, true FROM sales_channel_shop c WHERE c.auto_add_parts
     ON CONFLICT (parts_id, channel_id) DO NOTHING;
     RETURN NULL;
 END;
@@ -265,7 +360,7 @@ CREATE OR REPLACE FUNCTION parts_ext_channel_delete() RETURNS trigger AS $$
 BEGIN
     UPDATE parts_channel_shop SET active = false, mtime = now()
      WHERE parts_id = OLD.parts_id
-       AND channel_id = shop_channel_id('hugoshop')
+       AND channel_id IN (SELECT id FROM sales_channel_shop WHERE type = 'hugoshop')
        AND active;
     RETURN NULL;
 END;
@@ -287,20 +382,33 @@ DO $$ BEGIN
     END IF;
 END $$;
 
--- Kennung eines Kanals über seine Art. Kurzform für die Verknüpfungen in den
--- Abfragen: pc.channel_id = shop_channel_id('hugoshop').
-CREATE OR REPLACE FUNCTION shop_channel_id(p_type text) RETURNS integer
+-- ── Kanal über die Kennung (dev/shop-mehrere-kanaele.md) ──
+--
+-- Ein Kanal ist eine Instanz seiner Art; alle Funktionen nehmen seine
+-- Kennung. Die Fassungen mit der Art als Text (Übergang bis Schritt 6) sind
+-- entfernt (Abschnitt INSTANZEN) — sie trugen denselben Namen, und ein
+-- Platzhalter ohne Typ traf dort die falsche Fassung.
+
+-- Der erste Kanal einer Art (kleinster sortkey, dann kleinste Kennung), NULL
+-- wenn es keinen gibt. Nur für Stellen, die bewusst „irgendeinen" Kanal der
+-- Art meinen: Übernahmen im Schema, Verwaltungsaufrufe ohne Kanalangabe, den
+-- Zahlungsabgleich, der für alle HugoShops gilt. Eigener Name, keine
+-- Überladung.
+CREATE OR REPLACE FUNCTION shop_first_channel_id(p_type text) RETURNS integer
     LANGUAGE sql STABLE AS $$
-    SELECT id FROM sales_channel_shop WHERE type = p_type
+    SELECT id FROM sales_channel_shop
+     WHERE type = p_type
+     ORDER BY sortkey NULLS LAST, id
+     LIMIT 1
 $$;
 
 -- Kennung eines Kanals nur, wenn er eingeschaltet ist, sonst NULL. Für alle
 -- Abfragen, die fragen, was ein Kanal anbietet: pc.channel_id = NULL trifft
 -- nichts, ein abgeschalteter Kanal bietet also nichts an. Seine Artikelzeilen
 -- bleiben stehen und gelten wieder, sobald er eingeschaltet wird.
-CREATE OR REPLACE FUNCTION shop_active_channel_id(p_type text) RETURNS integer
+CREATE OR REPLACE FUNCTION shop_active_channel_id(p_channel_id integer) RETURNS integer
     LANGUAGE sql STABLE AS $$
-    SELECT id FROM sales_channel_shop WHERE type = p_type AND active
+    SELECT id FROM sales_channel_shop WHERE id = p_channel_id AND active
 $$;
 
 -- Steuersatz eines Artikels in einer Steuerzone, wie auf der Produktseite:
@@ -334,7 +442,7 @@ $$;
 --      ,99 aufrunden (V2b); ein Preis auf ,99 bleibt. Bei Nettopreisen wird
 --      der Nettopreis daraus mit fünf Stellen zurückgerechnet (V2d), damit
 --      netto mal Steuersatz wieder genau den Bruttopreis ergibt.
-CREATE OR REPLACE FUNCTION shop_channel_price(p_parts_id integer, p_type text DEFAULT 'hugoshop') RETURNS numeric
+CREATE OR REPLACE FUNCTION shop_channel_price(p_parts_id integer, p_channel_id integer) RETURNS numeric
     LANGUAGE sql STABLE AS $$
     WITH einstellung AS (
         SELECT COALESCE((SELECT lower(btrim(value)) FROM defaults_oserp WHERE key = 'shop_tax_included'), '')
@@ -348,7 +456,7 @@ CREATE OR REPLACE FUNCTION shop_channel_price(p_parts_id integer, p_type text DE
                     ELSE COALESCE(c.markup_value, 0) END AS wert,
                COALESCE(c.round_99, false) AS runden
           FROM parts p
-          LEFT JOIN sales_channel_shop c ON c.type = p_type
+          LEFT JOIN sales_channel_shop c ON c.id = p_channel_id
           LEFT JOIN parts_channel_shop pc ON pc.parts_id = p.id AND pc.channel_id = c.id
          WHERE p.id = p_parts_id
     ), aufschlag AS (
@@ -371,40 +479,40 @@ CREATE OR REPLACE FUNCTION shop_channel_price(p_parts_id integer, p_type text DE
       FROM rundung
 $$;
 
--- Auftrag in die Warteschlange (batchjob_hugoshop), sofern nicht schon ein
--- gleicher offen ist. Gleiche Aufträge verschiedener Kanäle sind keine
--- Doppel; channel_id NULL steht für den HugoShop. Liefert die Auftragsnummer,
--- 0 wenn schon offen. Genutzt von shopQueueJob() und den Triggern unten —
--- eine Stelle für die Regel.
---
--- Ein offener Auftrag der Gegenrichtung für denselben Artikel und Kanal
--- (veröffentlichen gegen entfernen) wird vorher gelöscht: sonst hinterließe
--- an-aus-an das Angebot beendet, weil das zweite Veröffentlichen als Doppel
--- des ersten nicht angelegt würde.
 -- Ist der Artikel im Kanal bestellbar? Nicht bei parts.obsolete („Veraltet /
 -- Nicht mehr verwenden“, gilt für alle Kanäle) und nicht, wenn er im Kanal als
 -- nicht verfügbar markiert ist (parts_channel_shop.unavailable). Ob er dort
 -- überhaupt angeboten wird, fragt diese Funktion nicht — das bleibt Sache der
 -- Kanalzeile (active). Eine Regel für Produktseite, Warenkorb und Marktplätze.
-CREATE OR REPLACE FUNCTION shop_part_available(p_parts_id integer, p_type text DEFAULT 'hugoshop') RETURNS boolean
+CREATE OR REPLACE FUNCTION shop_part_available(p_parts_id integer, p_channel_id integer) RETURNS boolean
     LANGUAGE sql STABLE AS $$
     SELECT NOT COALESCE(p.obsolete, false) AND NOT COALESCE(pc.unavailable, false)
       FROM parts p
-      LEFT JOIN parts_channel_shop pc ON pc.parts_id = p.id AND pc.channel_id = shop_channel_id(p_type)
+      LEFT JOIN parts_channel_shop pc ON pc.parts_id = p.id AND pc.channel_id = p_channel_id
      WHERE p.id = p_parts_id
 $$;
 
-CREATE OR REPLACE FUNCTION shop_queue_job(p_function text, p_partnumber text DEFAULT '',
-                                          p_param text DEFAULT NULL, p_type text DEFAULT 'hugoshop')
+-- Auftrag in die Warteschlange (batchjob_hugoshop), sofern nicht schon ein
+-- gleicher offen ist. Gleiche Aufträge verschiedener Kanäle sind keine
+-- Doppel. Liefert die Auftragsnummer, 0 wenn schon offen oder den Kanal nicht
+-- gibt. Genutzt von shopQueueJob() und den Triggern unten — eine Stelle für
+-- die Regel.
+--
+-- Ein offener Auftrag der Gegenrichtung für denselben Artikel und Kanal
+-- (veröffentlichen gegen entfernen) wird vorher gelöscht: sonst hinterließe
+-- an-aus-an das Angebot beendet, weil das zweite Veröffentlichen als Doppel
+-- des ersten nicht angelegt würde.
+CREATE OR REPLACE FUNCTION shop_queue_job(p_function text, p_partnumber text,
+                                          p_param text, p_channel_id integer)
     RETURNS integer LANGUAGE sql AS $$
     WITH kanal AS (
-        SELECT id FROM sales_channel_shop WHERE type = p_type
+        SELECT id FROM sales_channel_shop WHERE id = p_channel_id
     ), gegenrichtung AS (
         DELETE FROM batchjob_hugoshop b
          USING kanal
          WHERE b.result IS NULL
            AND b.partnumber = p_partnumber
-           AND COALESCE(b.channel_id, shop_channel_id('hugoshop')) = kanal.id
+           AND b.channel_id = kanal.id
            AND b.function = CASE p_function WHEN 'publish_part' THEN 'remove_part'
                                             WHEN 'remove_part'  THEN 'publish_part' END
     ), neu AS (
@@ -416,7 +524,7 @@ CREATE OR REPLACE FUNCTION shop_queue_job(p_function text, p_partnumber text DEF
                 WHERE b.function = p_function
                   AND b.partnumber = p_partnumber
                   AND b.result IS NULL
-                  AND COALESCE(b.channel_id, shop_channel_id('hugoshop')) = kanal.id)
+                  AND b.channel_id = kanal.id)
         RETURNING id
     )
     SELECT COALESCE((SELECT id FROM neu), 0)
@@ -436,10 +544,19 @@ $$;
 -- HugoShops und ist über shop_auto_publish abschaltbar. Die Marktplätze
 -- gleichen Preis, Texte und Bestand immer ab — das ist ihre Aufgabe, und ein
 -- veralteter Bestand dort hieße Überverkauf (V4).
-CREATE OR REPLACE FUNCTION shop_auto_publish_enabled() RETURNS boolean
+-- Die Fassung ohne Kanal (shop_auto_publish aus defaults_oserp) gibt es
+-- seit Schritt 5 nicht mehr: die Einstellung gehört dem HugoShop.
+DROP FUNCTION IF EXISTS shop_auto_publish_enabled();
+
+-- Automatisch neu veröffentlichen je HugoShop: settings.auto_publish des
+-- Kanals, gepflegt in der Kanalkarte.
+CREATE OR REPLACE FUNCTION shop_auto_publish_enabled(p_channel_id integer) RETURNS boolean
     LANGUAGE sql STABLE AS $$
-    SELECT COALESCE((SELECT lower(btrim(value)) IN ('1', 't', 'true', 'y', 'yes')
-                       FROM defaults_oserp WHERE key = 'shop_auto_publish'), true)
+    -- ohne Schlüssel NULL, dann gilt die Vorgabe (kein ?-Operator: PDO hielte
+    -- ihn für einen Platzhalter)
+    SELECT COALESCE((SELECT lower(btrim(settings ->> 'auto_publish')) IN ('1', 't', 'true', 'y', 'yes')
+                       FROM sales_channel_shop WHERE id = p_channel_id),
+                    true)
        AND shop_extension_active()
 $$;
 
@@ -458,19 +575,18 @@ DECLARE
     sonst   boolean := OLD.onhand IS DISTINCT FROM NEW.onhand
                        OR OLD.description IS DISTINCT FROM NEW.description
                        OR OLD.notes IS DISTINCT FROM NEW.notes;
-    seiten  boolean;
 BEGIN
     IF NOT shop_extension_active() THEN
         RETURN NULL;
     END IF;
-    seiten := preis AND shop_auto_publish_enabled();
 
-    PERFORM shop_queue_job('publish_part', NEW.partnumber, NULL, c.type)
+    PERFORM shop_queue_job('publish_part', NEW.partnumber, NULL, c.id)
        FROM parts_channel_shop pc
        JOIN sales_channel_shop c ON c.id = pc.channel_id AND c.active
       WHERE pc.parts_id = NEW.id
         AND pc.active
-        AND CASE WHEN c.type = 'hugoshop' THEN seiten ELSE preis OR sonst END;
+        AND CASE WHEN c.type = 'hugoshop' THEN preis AND shop_auto_publish_enabled(c.id)
+                 ELSE preis OR sonst END;
     RETURN NULL;
 END;
 $$ LANGUAGE plpgsql;
@@ -507,13 +623,14 @@ BEGIN
         OR OLD.unavailable IS DISTINCT FROM NEW.unavailable;
 
     IF art = 'hugoshop' THEN
-        IF TG_OP = 'UPDATE' AND NEW.active AND OLD.active AND geaendert AND shop_auto_publish_enabled() THEN
-            PERFORM shop_queue_job('publish_part', nummer);
+        IF TG_OP = 'UPDATE' AND NEW.active AND OLD.active AND geaendert
+           AND shop_auto_publish_enabled(NEW.channel_id) THEN
+            PERFORM shop_queue_job('publish_part', nummer, NULL, NEW.channel_id);
         END IF;
     ELSIF NEW.active AND (geaendert OR NOT OLD.active) THEN
-        PERFORM shop_queue_job('publish_part', nummer, NULL, art);
+        PERFORM shop_queue_job('publish_part', nummer, NULL, NEW.channel_id);
     ELSIF TG_OP = 'UPDATE' AND OLD.active AND NOT NEW.active THEN
-        PERFORM shop_queue_job('remove_part', nummer, NULL, art);
+        PERFORM shop_queue_job('remove_part', nummer, NULL, NEW.channel_id);
     END IF;
     RETURN NULL;
 END;
@@ -529,7 +646,7 @@ BEGIN
         RETURN NULL;
     END IF;
     bild := CASE WHEN TG_OP = 'DELETE' THEN OLD ELSE NEW END;
-    PERFORM shop_queue_job('publish_part', p.partnumber, NULL, c.type)
+    PERFORM shop_queue_job('publish_part', p.partnumber, NULL, c.id)
        FROM parts_channel_shop pc
        JOIN sales_channel_shop c ON c.id = pc.channel_id AND c.active AND c.type <> 'hugoshop'
        JOIN parts p ON p.id = pc.parts_id
@@ -545,10 +662,10 @@ BEGIN
     IF NOT shop_extension_active() THEN
         RETURN NULL;
     END IF;
-    PERFORM shop_queue_job('publish_all', '', NULL, c.type)
+    PERFORM shop_queue_job('publish_all', '', NULL, c.id)
        FROM sales_channel_shop c
       WHERE c.active
-        AND (c.type <> 'hugoshop' OR shop_auto_publish_enabled());
+        AND (c.type <> 'hugoshop' OR shop_auto_publish_enabled(c.id));
     RETURN NULL;
 END;
 $$ LANGUAGE plpgsql;
@@ -613,7 +730,12 @@ BEGIN
        AND p.part_type = 'part'
        AND i.qty > 0
        AND p.partnumber IS DISTINCT FROM (SELECT value FROM defaults_oserp WHERE key = 'shop_shipping_partnumber')
-       AND p.id IS DISTINCT FROM NULLIF(btrim((SELECT value FROM defaults_oserp WHERE key = 'ebay_default_parts_id')), '')::integer;
+       -- Sammelartikel jedes eBay-Kanals; ebay_default_parts_id nur bis
+       -- zum Umzug in settings (Schritt 4)
+       AND p.id IS DISTINCT FROM NULLIF(btrim((SELECT value FROM defaults_oserp WHERE key = 'ebay_default_parts_id')), '')::integer
+       AND NOT EXISTS (SELECT 1 FROM sales_channel_shop c
+                        WHERE c.type = 'ebay'
+                          AND btrim(c.settings ->> 'default_parts_id') = p.id::text);
     GET DIAGNOSTICS anzahl = ROW_COUNT;
 
     -- Wie bookStock: ein bebuchter Artikel ist lagerfähig, sonst blendet
@@ -830,7 +952,7 @@ UPDATE sales_channel_shop c
    SET free_shipping_from = replace(btrim(d.value), ',', '.')::numeric
   FROM defaults_oserp d
  WHERE d.key = 'shop_free_shipping_from'
-   AND c.type = 'hugoshop'
+   AND c.id = shop_first_channel_id('hugoshop')
    AND btrim(d.value) ~ '^[0-9]+([.,][0-9]+)?$';
 DELETE FROM defaults_oserp WHERE key = 'shop_free_shipping_from';
 
@@ -950,12 +1072,12 @@ BEGIN
         RETURN NULL;
     END IF;
 
-    PERFORM shop_queue_job('publish_part', p.partnumber, NULL, c.type)
+    PERFORM shop_queue_job('publish_part', p.partnumber, NULL, c.id)
        FROM parts p
        JOIN parts_channel_shop pc ON pc.parts_id = p.id AND pc.active
        JOIN sales_channel_shop c ON c.id = pc.channel_id AND c.active
       WHERE p.id = NEW.parts_id
-        AND (c.type <> 'hugoshop' OR shop_auto_publish_enabled());
+        AND (c.type <> 'hugoshop' OR shop_auto_publish_enabled(c.id));
     RETURN NULL;
 END;
 $$ LANGUAGE plpgsql;
@@ -982,7 +1104,8 @@ $$;
 -- ── Berechnung (dev/shop-versand.md, Schritt 6) ──
 --
 -- Versandart und Preis eines HugoShop-Warenkorbs. Eine Stelle für Warenkorb,
--- PayPal und Rechnung — alle sehen denselben Betrag.
+-- PayPal und Rechnung — alle sehen denselben Betrag. Kanal ist der HugoShop
+-- des Warenkorbs: Preisstufen, Lieferländer und Freigrenze gelten je Kanal.
 --
 --   p_cart_uuid    Warenkorb
 --   p_country      Land der Lieferadresse als Freitext oder Code; leer =
@@ -1015,7 +1138,8 @@ RETURNS TABLE (status text, shipping_method_id integer, description text, parts_
 LANGUAGE plpgsql STABLE AS $$
 #variable_conflict use_column
 DECLARE
-    kanal        integer := shop_channel_id('hugoshop');
+    -- Der Warenkorb gehört einem HugoShop (carts_hugoshop.channel_id)
+    kanal        integer := (SELECT k.channel_id FROM carts_hugoshop k WHERE k.uuid = p_cart_uuid);
     land         text    := shop_country_code(p_country);
     zone         integer;
     menge        numeric;
@@ -1359,18 +1483,15 @@ ALTER TABLE batchjob_hugoshop ADD COLUMN IF NOT EXISTS run_id integer DEFAULT NU
     REFERENCES batchjob_run_hugoshop (id) ON DELETE SET NULL;
 
 -- Wann ein Auftrag entstand. Name nach kivitendo-Brauch (itime). Auf einer
--- bestehenden Datenbank traegt der Upstall die Spalte mit Vorgabewert nach;
--- die Bridge schreibt mit Spaltenliste und bemerkt sie nicht.
+-- bestehenden Datenbank traegt der Upstall die Spalte mit Vorgabewert nach.
 COMMENT ON COLUMN batchjob_hugoshop.itime IS 'Zeitpunkt, zu dem der Auftrag angelegt wurde';
 
 COMMENT ON TABLE batchjob_hugoshop IS 'Shop: Warteschlange fuer Aufgaben, die auf dem Shop-Server laufen';
 
--- Verkaufskanal des Auftrags (dev/shop-verkaufskanaele.md, Schritt 4). NULL
--- heißt HugoShop: so bleiben Aufträge von vor dieser Spalte und Schreiber, die
--- sie nicht kennen, gültig. Kein Fremdschlüssel — der Upstall legt auf einer
--- bestehenden Datenbank nur die Spalte an, und Kanalzeilen werden nie
--- gelöscht.
-COMMENT ON COLUMN batchjob_hugoshop.channel_id IS 'Verkaufskanal (sales_channel_shop.id), NULL = HugoShop';
+-- Verkaufskanal des Auftrags (dev/shop-verkaufskanaele.md, Schritt 4).
+-- Früher hieß NULL „HugoShop"; mit mehreren HugoShops ist das nicht mehr
+-- eindeutig. Der Abschnitt INSTANZEN am Ende trägt den Kanal nach, setzt die
+-- Vorgabe für Schreiber ohne Kanal und legt Fremdschlüssel und NOT NULL an.
 COMMENT ON COLUMN batchjob_hugoshop.run_id IS 'Lauf, in dem der Auftrag erledigt wurde (batchjob_run_hugoshop.id)';
 
 CREATE INDEX IF NOT EXISTS batchjob_hugoshop_run_id_idx ON batchjob_hugoshop (run_id);
@@ -1508,13 +1629,12 @@ END $$;
 -- — ON CONFLICT DO NOTHING, damit ein Schema-Update keine gepflegten Werte
 -- zuruecksetzt.
 --
--- shop_public_key und die PayPal-Zugangsdaten bleiben leer: sie gehoeren in das
--- Admin-Panel, nicht in eine Datei im Repository. Ohne shop_public_key nimmt
--- der oeffentliche Einstiegspunkt keine Anfrage an.
-
--- Zugang
-INSERT INTO defaults_oserp (key, value) VALUES ('shop_public_key', '') ON CONFLICT (key) DO NOTHING;
-INSERT INTO defaults_oserp (key, value) VALUES ('shop_allowed_origins', '') ON CONFLICT (key) DO NOTHING;
+-- Hier stehen nur Einstellungen fuer den ganzen Mandanten. Was einer Instanz
+-- gehoert — Shop-Schluessel, Adressen und Verzeichnisse der Webseite,
+-- Vorlagensatz, HugoCMS, PayPal, Mails, eBay-Zugang —, steht seit Schritt 5
+-- (dev/shop-mehrere-kanaele.md) in den Einstellungen des Kanals und wird in
+-- der Kanalkarte gepflegt; Vorgaben fuer neue Kanaele liefert
+-- shop_channel_default_settings().
 
 -- Sitzung
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_cart_lifetime_hours', '24') ON CONFLICT (key) DO NOTHING;
@@ -1540,22 +1660,11 @@ INSERT INTO defaults_oserp (key, value) VALUES ('shop_payment_bank', '') ON CONF
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_payment_iban', '') ON CONFLICT (key) DO NOTHING;
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_payment_bic', '') ON CONFLICT (key) DO NOTHING;
 
--- PayPal. Sandbox bleibt an, bis jemand bewusst umschaltet.
---
--- Zwei Zugangsdatenpaare, wie es die Bridge in ihrer passwd.php ebenfalls
--- hielt: PayPal vergibt fuer Test- und Echtbetrieb getrennte Kennungen. Wer
--- nur eines vorhaelt, muesste sie beim Umschalten jedesmal austauschen — und
--- beim Zurueckschalten wieder. Welches Paar gilt, entscheidet
--- shop_paypal_sandbox.
-INSERT INTO defaults_oserp (key, value) VALUES ('shop_paypal_sandbox', '1') ON CONFLICT (key) DO NOTHING;
-INSERT INTO defaults_oserp (key, value) VALUES ('shop_paypal_live_client_id', '') ON CONFLICT (key) DO NOTHING;
-INSERT INTO defaults_oserp (key, value) VALUES ('shop_paypal_live_secret', '') ON CONFLICT (key) DO NOTHING;
-INSERT INTO defaults_oserp (key, value) VALUES ('shop_paypal_sandbox_client_id', '') ON CONFLICT (key) DO NOTHING;
-INSERT INTO defaults_oserp (key, value) VALUES ('shop_paypal_sandbox_secret', '') ON CONFLICT (key) DO NOTHING;
-
--- Uebergang: die erste Fassung dieser Erweiterung kannte nur ein Paar. Wo es
--- gefuellt ist, wandert es in die Echtbetrieb-Schluessel und der Altbestand
--- verschwindet. Laeuft auch dann durch, wenn es die alten Zeilen nie gab.
+-- PayPal, Uebergang: die erste Fassung dieser Erweiterung kannte nur ein
+-- Zugangsdatenpaar. Wo es gefuellt ist, wandert es in die
+-- Echtbetrieb-Schluessel — von dort uebernimmt es die Abschrift in den
+-- HugoShop (Abschnitt INSTANZEN). Laeuft auch dann durch, wenn es die
+-- Zeilen nie gab.
 UPDATE defaults_oserp z SET value = a.value, mtime = now()
   FROM defaults_oserp a
  WHERE a.key = 'shop_paypal_client_id' AND COALESCE(a.value, '') <> ''
@@ -1565,87 +1674,36 @@ UPDATE defaults_oserp z SET value = a.value, mtime = now()
  WHERE a.key = 'shop_paypal_secret' AND COALESCE(a.value, '') <> ''
    AND z.key = 'shop_paypal_live_secret' AND COALESCE(z.value, '') = '';
 DELETE FROM defaults_oserp WHERE key IN ('shop_paypal_client_id', 'shop_paypal_secret');
-INSERT INTO defaults_oserp (key, value) VALUES ('shop_paypal_payment_method_preference', 'IMMEDIATE_PAYMENT_REQUIRED') ON CONFLICT (key) DO NOTHING;
--- Fehlertest: erzwingt eine bestimmte Fehlerantwort von PayPal, statt den
--- Aufruf auszufuehren. Wirkt nur in der Testumgebung; siehe paypalMockHeader().
-INSERT INTO defaults_oserp (key, value) VALUES ('shop_paypal_mock_response', '') ON CONFLICT (key) DO NOTHING;
 
--- Adressen der Shop-Webseite (fuer Links in Suche, Mails und Auswertung)
-INSERT INTO defaults_oserp (key, value) VALUES ('shop_base_url', '') ON CONFLICT (key) DO NOTHING;
-INSERT INTO defaults_oserp (key, value) VALUES ('shop_products_link', '') ON CONFLICT (key) DO NOTHING;
-INSERT INTO defaults_oserp (key, value) VALUES ('shop_category_link', '') ON CONFLICT (key) DO NOTHING;
-INSERT INTO defaults_oserp (key, value) VALUES ('shop_thumbnails_link', '') ON CONFLICT (key) DO NOTHING;
-
--- Veroeffentlichung: Vorlagensatz und Verzeichnisse. Das Wurzelverzeichnis
--- steht hier, weil jeder Mandant seine eigene Webseite hat; die uebrigen
--- Verzeichnisse gelten relativ dazu und duerfen nicht darueber hinausfuehren.
--- Steht in der settings.ini ein shop_sites_dir, muss das eingestellte
--- Verzeichnis darunter liegen — so kann ein Administrator die Grenze ziehen.
+-- Veroeffentlichung: Wurzel aller Webseiten. Die Webseiten-Verzeichnisse der
+-- HugoShops gelten relativ dazu und duerfen nicht darueber hinausfuehren.
+-- Steht in der settings.ini ein shop_sites_dir, muss die eingestellte Wurzel
+-- darunter liegen — so kann ein Administrator die Grenze ziehen.
 --
 -- Gebaut wird mit dem Programm hugo aus dem Verzeichnis
--- shop_publish_command_path. Eingetragen wird nur
--- ein Pfad, keine Befehlszeile: die Argumente setzt OpensourceERP selbst, und
--- der Pfad wird vor jedem Bau geprueft (absolut, ohne Leerraum, ausfuehrbare
--- Datei). Ist der Wert hier leer, gilt ein gleichnamiger Eintrag aus der
--- settings.ini als Rueckfall.
--- shop_publish_clean_destination: Hugo mit --cleanDestinationDir aufrufen.
+-- shop_publish_command_path. Eingetragen wird nur ein Pfad, keine
+-- Befehlszeile: die Argumente setzt OpensourceERP selbst, und der Pfad wird
+-- vor jedem Bau geprueft (absolut, ohne Leerraum, ausfuehrbare Datei). Ist der
+-- Wert hier leer, gilt ein gleichnamiger Eintrag aus der settings.ini als
+-- Rueckfall.
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_sites_dir', '') ON CONFLICT (key) DO NOTHING;
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_publish_command_path', '') ON CONFLICT (key) DO NOTHING;
-INSERT INTO defaults_oserp (key, value) VALUES ('shop_publish_clean_destination', '1') ON CONFLICT (key) DO NOTHING;
 -- shop_job_retention_days: Der Laeufer loescht erfolgreich erledigte Auftraege
 -- aus batchjob_hugoshop, sobald sie so viele Tage alt sind. 0 schaltet das ab;
 -- fehlgeschlagene Auftraege bleiben immer stehen.
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_job_retention_days', '30') ON CONFLICT (key) DO NOTHING;
--- Verkaufskanäle (dev/shop-verkaufskanaele.md):
--- shop_auto_publish: Produktseiten bei Preisänderungen automatisch neu
--- schreiben (V22) — Verkaufspreis, Buchungsgruppe, Aufschlag und Texte im
--- HugoShop, Brutto-/Nettopreise, Kanalvorgaben.
--- shop_channel_off_pages: was beim Abschalten des HugoShops mit den Seiten
--- geschieht (V16) — draft: bleiben als Entwurf stehen und werden nicht mehr
--- veröffentlicht; remove: werden entfernt.
-INSERT INTO defaults_oserp (key, value) VALUES ('shop_auto_publish', '1') ON CONFLICT (key) DO NOTHING;
-INSERT INTO defaults_oserp (key, value) VALUES ('shop_channel_off_pages', 'draft') ON CONFLICT (key) DO NOTHING;
--- eBay-Kanal: Adresse, unter der eBay die Artikelbilder abholt
--- (backend/webhook/part-image.php, https). Der Läufer arbeitet ohne
--- Webanfrage und kennt die eigene Adresse sonst nicht.
+-- Groesse der Vorschaubilder (laengste Seite in Pixeln), fuer alle HugoShops
+INSERT INTO defaults_oserp (key, value) VALUES ('shop_thumbnail_size', '200') ON CONFLICT (key) DO NOTHING;
+-- eBay: Adresse von OpensourceERP, unter der eBay die Artikelbilder abholt
+-- (backend/webhook/part-image.php, https) — fuer alle eBay-Kanaele dieselbe.
+-- Der Laeufer arbeitet ohne Webanfrage und kennt die eigene Adresse sonst nicht.
 INSERT INTO defaults_oserp (key, value) VALUES ('ebay_public_host', '') ON CONFLICT (key) DO NOTHING;
 -- Lagerplatz, von dem Verkäufe aus HugoShop und eBay ausgebucht werden
 -- (O14, V28). Leer = keine Lagerbuchung.
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_stock_bin_id', '') ON CONFLICT (key) DO NOTHING;
--- Anbindung an HugoCMS (dev/shop-hugocms-trennung.md): Adresse des
--- cms-api-Endpunkts der Webseite und der Schluessel, den HugoCMS dort in den
--- Projekteinstellungen erzeugt. Der Schluessel ist ein Geheimnis und geht nie an
--- den Browser (oserp_config/defaults.php).
--- shop_publish_mode: local = OSERP schreibt in die Webseite und baut selbst
--- (Webseite auf demselben Server); hugocms = Bereitstellung, Übertragung an
--- HugoCMS, Bau dort.
-INSERT INTO defaults_oserp (key, value) VALUES ('shop_publish_mode', 'local') ON CONFLICT (key) DO NOTHING;
-INSERT INTO defaults_oserp (key, value) VALUES ('shop_hugocms_url', '') ON CONFLICT (key) DO NOTHING;
-INSERT INTO defaults_oserp (key, value) VALUES ('shop_hugocms_key', '') ON CONFLICT (key) DO NOTHING;
-INSERT INTO defaults_oserp (key, value) VALUES ('shop_template_set', 'standard') ON CONFLICT (key) DO NOTHING;
-INSERT INTO defaults_oserp (key, value) VALUES ('shop_site_dir', '') ON CONFLICT (key) DO NOTHING;
-INSERT INTO defaults_oserp (key, value) VALUES ('shop_content_dir', 'content/de/produkt') ON CONFLICT (key) DO NOTHING;
-
--- Bilder und Downloads: Adressmuster mit %s fuer den Dateinamen, Verzeichnisse
--- relativ zum Verzeichnis der Shop-Webseite. Ohne Verzeichnisse entstehen
--- keine Vorschaubilder.
-INSERT INTO defaults_oserp (key, value) VALUES ('shop_images_link', '') ON CONFLICT (key) DO NOTHING;
-INSERT INTO defaults_oserp (key, value) VALUES ('shop_downloads_link', '/downloads/%s') ON CONFLICT (key) DO NOTHING;
-INSERT INTO defaults_oserp (key, value) VALUES ('shop_images_dir', '') ON CONFLICT (key) DO NOTHING;
-INSERT INTO defaults_oserp (key, value) VALUES ('shop_thumbnails_dir', '') ON CONFLICT (key) DO NOTHING;
-INSERT INTO defaults_oserp (key, value) VALUES ('shop_thumbnail_size', '200') ON CONFLICT (key) DO NOTHING;
-
--- Adresse, unter der die Shop-Webseite den Shop-Zugang von OpensourceERP
--- erreicht. Der Laeufer schreibt sie mit dem Shop-Schluessel in
--- <webseite>/oserp-shop/config.php, wo der Proxy sie liest.
-INSERT INTO defaults_oserp (key, value) VALUES ('shop_backend_url', '') ON CONFLICT (key) DO NOTHING;
 
 -- Suche: Gewichtung des Preises im Ranking
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_search_weighting', '0.5') ON CONFLICT (key) DO NOTHING;
-
--- Mail
-INSERT INTO defaults_oserp (key, value) VALUES ('shop_invoice_mail_subject', 'Ihre Rechnung (%s) vom %s') ON CONFLICT (key) DO NOTHING;
-INSERT INTO defaults_oserp (key, value) VALUES ('shop_withdrawal_mail_to', '') ON CONFLICT (key) DO NOTHING;
 
 -- ============================================================================
 -- VERSANDARTIKEL
@@ -1665,3 +1723,208 @@ INSERT INTO defaults_oserp (key, value) VALUES ('shop_withdrawal_mail_to', '') O
 --
 -- Anzulegen ist ein gewoehnlicher Artikel mit der Nummer aus der Einstellung
 -- shop_shipping_partnumber (Vorgabe: 8).
+
+-- ============================================================================
+-- INSTANZEN (dev/shop-mehrere-kanaele.md, Schritt 1)
+-- ============================================================================
+--
+-- Tabellen, die einer Instanz gehören, tragen ihren Kanal. Am Ende dieser
+-- Datei, weil der Nachtrag shop_first_channel_id() braucht und die
+-- Einstellungen unten aus dem Abschnitt EINSTELLUNGEN stammen.
+--
+-- Löschen eines Kanals (M5): Warenkörbe, Sitzungen, Weiterleitungen und
+-- Aufträge gehen mit (CASCADE); Rechnungslinks, Widerrufe und
+-- eBay-Bestellungen verhindern es (NO ACTION) — ein Kanal mit Belegen wird
+-- nur abgeschaltet.
+--
+-- Jeder Schreiber setzt den Kanal selbst; eine Vorgabe gibt es nicht (mehr —
+-- bis Schritt 6 stand dort shop_channel_id('<art>') als Übergang). Zeilen
+-- ohne Kanal aus der Zeit davor bekommen den ersten Kanal ihrer Art.
+DO $$
+DECLARE
+    t     record;
+    offen bigint;
+BEGIN
+    FOR t IN SELECT * FROM (VALUES
+            ('carts_hugoshop',          'hugoshop', 'CASCADE',   'HugoShop des Warenkorbs'),
+            ('context_hugoshop',        'hugoshop', 'CASCADE',   'HugoShop der Sitzung'),
+            ('redirect_pages_hugoshop', 'hugoshop', 'CASCADE',   'Webseite (HugoShop) der Weiterleitung'),
+            ('batchjob_hugoshop',       'hugoshop', 'CASCADE',   'Verkaufskanal des Auftrags'),
+            ('ar_link_hugoshop',        'hugoshop', 'NO ACTION', 'HugoShop, aus dem die Rechnung stammt: Mail, Rechnungsseite, PayPal-Rücksprung'),
+            ('withdrawals_hugoshop',    'hugoshop', 'NO ACTION', 'HugoShop, über den widerrufen wurde'),
+            ('ebay_orders',             'ebay',     'NO ACTION', 'eBay-Kanal, von dem die Bestellung stammt')
+         ) AS v(tabelle, art, loeschen, beschreibung)
+    LOOP
+        -- ebay_orders gehört der CRM-Basis und fehlt, wenn sie älter ist
+        CONTINUE WHEN to_regclass(t.tabelle) IS NULL;
+
+        EXECUTE format('ALTER TABLE %I ADD COLUMN IF NOT EXISTS channel_id integer', t.tabelle);
+        EXECUTE format('ALTER TABLE %I ALTER COLUMN channel_id DROP DEFAULT', t.tabelle);
+        EXECUTE format('UPDATE %I SET channel_id = shop_first_channel_id(%L) WHERE channel_id IS NULL', t.tabelle, t.art);
+        EXECUTE format('COMMENT ON COLUMN %I.channel_id IS %L', t.tabelle,
+                       t.beschreibung || ' (sales_channel_shop.id)');
+        EXECUTE format('CREATE INDEX IF NOT EXISTS %I ON %I (channel_id)', t.tabelle || '_channel_id_idx', t.tabelle);
+
+        -- Verweise auf Kanäle, die es nicht gibt, werden nur gemeldet: das
+        -- Schema-Update soll daran nicht scheitern, aufräumen muss ein Mensch
+        IF NOT EXISTS (SELECT 1 FROM pg_constraint
+                        WHERE conrelid = t.tabelle::regclass
+                          AND conname = t.tabelle || '_channel_id_fk') THEN
+            EXECUTE format('SELECT count(*) FROM %I x
+                             WHERE x.channel_id IS NOT NULL
+                               AND NOT EXISTS (SELECT 1 FROM sales_channel_shop c WHERE c.id = x.channel_id)',
+                           t.tabelle) INTO offen;
+            IF offen > 0 THEN
+                RAISE NOTICE '%: % Zeilen verweisen auf keinen Kanal — Fremdschlüssel nicht angelegt. Bitte bereinigen.',
+                    t.tabelle, offen;
+            ELSE
+                EXECUTE format('ALTER TABLE %I ADD CONSTRAINT %I FOREIGN KEY (channel_id)
+                                REFERENCES sales_channel_shop (id) ON DELETE %s',
+                               t.tabelle, t.tabelle || '_channel_id_fk', t.loeschen);
+            END IF;
+        END IF;
+
+        -- Ohne Kanal der Art (gelöscht) bleiben Zeilen leer — dann kein NOT NULL
+        EXECUTE format('SELECT count(*) FROM %I WHERE channel_id IS NULL', t.tabelle) INTO offen;
+        IF offen = 0 THEN
+            EXECUTE format('ALTER TABLE %I ALTER COLUMN channel_id SET NOT NULL', t.tabelle);
+        ELSE
+            RAISE NOTICE '%: % Zeilen ohne Kanal — channel_id bleibt ohne NOT NULL.', t.tabelle, offen;
+        END IF;
+    END LOOP;
+END $$;
+
+-- Die Fassungen mit der Art als Text (Übergang bis Schritt 6) entfernen —
+-- erst hier: bis zum Block oben hingen die Spaltenvorgaben an
+-- shop_channel_id(text).
+DROP FUNCTION IF EXISTS shop_queue_job(text, text, text, text);
+DROP FUNCTION IF EXISTS shop_part_available(integer, text);
+DROP FUNCTION IF EXISTS shop_channel_price(integer, text);
+DROP FUNCTION IF EXISTS shop_active_channel_id(text);
+DROP FUNCTION IF EXISTS shop_channel_id(text);
+DROP FUNCTION IF EXISTS shop_channel_type_check(text);
+
+-- Einstellungen einer Instanz: welcher Schlüssel aus defaults_oserp wohin
+-- gehört. key ist der Name in settings bzw. sales_channel_secret_shop (ohne
+-- Präfix), secret entscheidet zwischen beiden. Was hier fehlt, gilt für den
+-- ganzen Mandanten und bleibt in defaults_oserp (Liste in
+-- dev/shop-mehrere-kanaele.md).
+CREATE OR REPLACE FUNCTION shop_channel_setting_keys()
+RETURNS TABLE (type text, old_key text, key text, secret boolean)
+    LANGUAGE sql IMMUTABLE AS $$
+    VALUES
+        -- HugoShop: Zugang und Webseite
+        ('hugoshop', 'shop_public_key',                       'public_key',                       true),
+        ('hugoshop', 'shop_allowed_origins',                  'allowed_origins',                  false),
+        ('hugoshop', 'shop_base_url',                         'base_url',                         false),
+        ('hugoshop', 'shop_backend_url',                      'backend_url',                      false),
+        ('hugoshop', 'shop_products_link',                    'products_link',                    false),
+        ('hugoshop', 'shop_category_link',                    'category_link',                    false),
+        ('hugoshop', 'shop_images_link',                      'images_link',                      false),
+        ('hugoshop', 'shop_thumbnails_link',                  'thumbnails_link',                  false),
+        ('hugoshop', 'shop_downloads_link',                   'downloads_link',                   false),
+        -- HugoShop: Veröffentlichung
+        ('hugoshop', 'shop_site_dir',                         'site_dir',                         false),
+        ('hugoshop', 'shop_content_dir',                      'content_dir',                      false),
+        ('hugoshop', 'shop_images_dir',                       'images_dir',                       false),
+        ('hugoshop', 'shop_thumbnails_dir',                   'thumbnails_dir',                   false),
+        ('hugoshop', 'shop_template_set',                     'template_set',                     false),
+        ('hugoshop', 'shop_publish_mode',                     'publish_mode',                     false),
+        ('hugoshop', 'shop_publish_clean_destination',        'publish_clean_destination',        false),
+        ('hugoshop', 'shop_hugocms_url',                      'hugocms_url',                      false),
+        ('hugoshop', 'shop_hugocms_key',                      'hugocms_key',                      true),
+        ('hugoshop', 'shop_auto_publish',                     'auto_publish',                     false),
+        ('hugoshop', 'shop_channel_off_pages',                'channel_off_pages',                false),
+        -- HugoShop: Mail und PayPal (M2)
+        ('hugoshop', 'shop_invoice_mail_subject',             'invoice_mail_subject',             false),
+        ('hugoshop', 'shop_withdrawal_mail_to',               'withdrawal_mail_to',               false),
+        ('hugoshop', 'shop_paypal_sandbox',                   'paypal_sandbox',                   false),
+        ('hugoshop', 'shop_paypal_live_client_id',            'paypal_live_client_id',            false),
+        ('hugoshop', 'shop_paypal_live_secret',               'paypal_live_secret',               true),
+        ('hugoshop', 'shop_paypal_sandbox_client_id',         'paypal_sandbox_client_id',         false),
+        ('hugoshop', 'shop_paypal_sandbox_secret',            'paypal_sandbox_secret',            true),
+        ('hugoshop', 'shop_paypal_payment_method_preference', 'paypal_payment_method_preference', false),
+        ('hugoshop', 'shop_paypal_mock_response',             'paypal_mock_response',             false),
+        -- eBay: Zugang. Token-Cache (access_token, access_token_exp) und
+        -- letzter Abruf (order_last_check) schreibt der Kanal seit Schritt 4
+        -- selbst — eine Abschrift aus defaults_oserp überschriebe sie mit
+        -- alten Werten.
+        ('ebay',     'ebay_client_id',                        'client_id',                        false),
+        ('ebay',     'ebay_client_secret',                    'client_secret',                    true),
+        ('ebay',     'ebay_refresh_token',                    'refresh_token',                    true),
+        ('ebay',     'ebay_environment',                      'environment',                      false),
+        -- eBay: Angebote und Bestellungen
+        ('ebay',     'ebay_marketplace_id',                   'marketplace_id',                   false),
+        ('ebay',     'ebay_content_language',                 'content_language',                 false),
+        ('ebay',     'ebay_currency',                         'currency',                         false),
+        ('ebay',     'ebay_default_category_id',              'default_category_id',              false),
+        ('ebay',     'ebay_default_condition',                'default_condition',                false),
+        ('ebay',     'ebay_fulfillment_policy_id',            'fulfillment_policy_id',            false),
+        ('ebay',     'ebay_payment_policy_id',                'payment_policy_id',                false),
+        ('ebay',     'ebay_return_policy_id',                 'return_policy_id',                 false),
+        ('ebay',     'ebay_merchant_location_key',            'merchant_location_key',            false),
+        ('ebay',     'ebay_default_parts_id',                 'default_parts_id',                 false),
+        ('ebay',     'ebay_employee_login',                   'employee_login',                   false)
+$$;
+
+-- Abschrift in den Standardkanal der Art: übernimmt die Werte, die bis
+-- Schritt 5 im Reiter „Shop" unter den alten Schlüsseln gepflegt wurden.
+-- Danach löscht der Abschnitt unten die Schlüssel — jedes weitere
+-- Schema-Update findet hier nichts mehr. Bleibt für Datenbanken, die von
+-- einem älteren Stand direkt hierher aktualisiert werden.
+UPDATE sales_channel_shop c
+   SET settings = COALESCE(c.settings, '{}'::jsonb) || w.werte
+  FROM (SELECT shop_first_channel_id(m.type) AS kanal,
+               jsonb_object_agg(m.key, COALESCE(d.value, '')) AS werte
+          FROM shop_channel_setting_keys() m
+          JOIN defaults_oserp d ON d.key = m.old_key
+         WHERE NOT m.secret
+         GROUP BY 1) w
+ WHERE c.id = w.kanal;
+
+INSERT INTO sales_channel_secret_shop (channel_id, key, value)
+SELECT shop_first_channel_id(m.type), m.key, d.value
+  FROM shop_channel_setting_keys() m
+  JOIN defaults_oserp d ON d.key = m.old_key
+ WHERE m.secret
+   AND COALESCE(d.value, '') <> ''
+   AND shop_first_channel_id(m.type) IS NOT NULL
+ON CONFLICT (channel_id, key) DO UPDATE
+   SET value = EXCLUDED.value, mtime = now()
+ WHERE sales_channel_secret_shop.value IS DISTINCT FROM EXCLUDED.value;
+
+-- Ein in defaults_oserp geleertes Geheimnis ist auch hier keins mehr
+DELETE FROM sales_channel_secret_shop s
+ USING shop_channel_setting_keys() m, defaults_oserp d
+ WHERE m.secret
+   AND d.key = m.old_key
+   AND COALESCE(d.value, '') = ''
+   AND s.channel_id = shop_first_channel_id(m.type)
+   AND s.key = m.key;
+
+-- Schritt 5 (dev/shop-mehrere-kanaele.md): Die Instanz-Einstellungen werden
+-- in der Kanalkarte gepflegt. Die Abschrift oben hat die letzten Werte aus
+-- defaults_oserp übernommen; danach verschwinden die alten Schlüssel — auch
+-- die Laufzeitwerte des eBay-Kanals, die seit Schritt 4 im Kanal stehen —
+-- und mit ihnen der Übergangs-Trigger aus Schritt 2.
+DELETE FROM defaults_oserp
+ WHERE key IN (SELECT old_key FROM shop_channel_setting_keys())
+    OR key IN ('ebay_access_token', 'ebay_access_token_exp', 'ebay_order_last_check');
+
+DROP TRIGGER IF EXISTS trigger_defaults_oserp_shop_channel_sync ON defaults_oserp;
+DROP FUNCTION IF EXISTS defaults_oserp_shop_channel_sync();
+
+-- Der Shop-Schlüssel bestimmt Mandant und HugoShop (öffentlicher Zugang,
+-- shopPublicFindCompany) — zwei Kanäle mit demselben Schlüssel wären nicht
+-- zu unterscheiden.
+CREATE UNIQUE INDEX IF NOT EXISTS sales_channel_secret_shop_public_key
+    ON sales_channel_secret_shop (value)
+ WHERE key = 'public_key';
+
+-- Ein Kanal je eBay-Konto (M4, dev/shop-mehrere-kanaele.md, Schritt 4): der
+-- Inventareintrag gehört bei eBay dem Konto, zwei Kanäle mit demselben Konto
+-- überschrieben sich. account_id bestimmt der Kanal selbst nach jedem neuen
+-- Token (shopEbayAccountCheck).
+CREATE UNIQUE INDEX IF NOT EXISTS sales_channel_shop_ebay_account_key
+    ON sales_channel_shop ((settings ->> 'account_id'))
+ WHERE type = 'ebay' AND COALESCE(settings ->> 'account_id', '') <> '';

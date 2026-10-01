@@ -319,7 +319,24 @@
             "saved": "Išsaugota.",
             "republishQueued": "Išsaugota. Prekių puslapiai bus perrašyti su naujomis kainomis.",
             "saveError": "Nepavyko išsaugoti kanalo nustatymų.",
-            "loadError": "Nepavyko įkelti pardavimo kanalų."
+            "loadError": "Nepavyko įkelti pardavimo kanalų.",
+            "name": "Pavadinimas",
+            "nameRequired": "Kanalui reikia pavadinimo.",
+            "autoAddParts": "Naujas parduotuvės prekes įtraukti automatiškai",
+            "autoAddPartsHint": "Kai prekė įtraukiama į parduotuvę, ji iškart siūloma ir šiame kanale.",
+            "settings": "{name} nustatymai",
+            "settingsSaved": "Nustatymai išsaugoti.",
+            "settingsSaveError": "Nustatymų išsaugoti nepavyko.",
+            "newChannel": "Naujas pardavimo kanalas:",
+            "newChannelType": "Rūšis",
+            "create": "Sukurti",
+            "created": "Pardavimo kanalas sukurtas. Jis lieka išjungtas, kol bus sukonfigūruotas.",
+            "createError": "Pardavimo kanalo sukurti nepavyko.",
+            "delete": "Ištrinti pardavimo kanalą",
+            "deleteConfirm": "Ištrinti „{name}“ su prekių eilutėmis, paveikslėliais, pristatymo šalimis ir kainų pakopomis? To atšaukti negalima.",
+            "deleted": "Pardavimo kanalas ištrintas.",
+            "deleteError": "Pardavimo kanalo ištrinti nepavyko.",
+            "cancel": "Atšaukti"
         },
         "ebayCondition": {
             "NEW": "Nauja",
@@ -333,7 +350,11 @@
             "NETWORK_ERROR": "Serveris nepasiekiamas. Patikrinkite ryšį ir bandykite dar kartą.",
             "API_DATABASE_ERROR": "Duomenų bazė atsako ne taip, kaip tikėtasi. Praneškite administratoriui.",
             "API_INTERNAL_ERROR": "Serveryje įvyko netikėta klaida. Praneškite administratoriui.",
-            "NO_PERMISSION": "Neturite teisės atlikti šio veiksmo."
+            "NO_PERMISSION": "Neturite teisės atlikti šio veiksmo.",
+            "CHANNEL_NAME_TAKEN": "Šį pavadinimą jau turi kitas pardavimo kanalas.",
+            "CHANNEL_KEY_TAKEN": "Šis parduotuvės raktas jau priklauso kitai HugoShop.",
+            "CHANNEL_IN_USE": "Su šiuo kanalu susietos sąskaitos, atsisakymai arba eBay užsakymai. Jį galima tik išjungti.",
+            "CHANNEL_NOT_DELETABLE": "Ištrinti galima tik išjungtą kanalą be atvirų užduočių."
         }
     }
 }

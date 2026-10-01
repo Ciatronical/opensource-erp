@@ -319,7 +319,24 @@
             "saved": "Tallennettu.",
             "republishQueued": "Tallennettu. Tuotesivut kirjoitetaan uudelleen uusilla hinnoilla.",
             "saveError": "Kanava-asetuksia ei voitu tallentaa.",
-            "loadError": "Myyntikanavia ei voitu ladata."
+            "loadError": "Myyntikanavia ei voitu ladata.",
+            "name": "Nimi",
+            "nameRequired": "Kanava tarvitsee nimen.",
+            "autoAddParts": "Lisää uudet kaupan tuotteet automaattisesti",
+            "autoAddPartsHint": "Kun tuote lisätään kauppaan, sitä tarjotaan heti myös tässä kanavassa.",
+            "settings": "Kanavan {name} asetukset",
+            "settingsSaved": "Asetukset tallennettu.",
+            "settingsSaveError": "Asetuksia ei voitu tallentaa.",
+            "newChannel": "Uusi myyntikanava:",
+            "newChannelType": "Tyyppi",
+            "create": "Luo",
+            "created": "Myyntikanava luotu. Se pysyy pois päältä, kunnes se on määritetty.",
+            "createError": "Myyntikanavaa ei voitu luoda.",
+            "delete": "Poista myyntikanava",
+            "deleteConfirm": "Poistetaanko ”{name}” tuoterivien, kuvien, toimitusmaiden ja hintaportaiden kanssa? Tätä ei voi perua.",
+            "deleted": "Myyntikanava poistettu.",
+            "deleteError": "Myyntikanavaa ei voitu poistaa.",
+            "cancel": "Peruuta"
         },
         "ebayCondition": {
             "NEW": "Uusi",
@@ -333,7 +350,11 @@
             "NETWORK_ERROR": "Palvelimeen ei saada yhteyttä. Tarkista yhteys ja yritä uudelleen.",
             "API_DATABASE_ERROR": "Tietokanta ei vastaa odotetusti. Ilmoita asiasta järjestelmänvalvojalle.",
             "API_INTERNAL_ERROR": "Palvelimella tapahtui odottamaton virhe. Ilmoita asiasta järjestelmänvalvojalle.",
-            "NO_PERMISSION": "Sinulla ei ole oikeutta tähän toimintoon."
+            "NO_PERMISSION": "Sinulla ei ole oikeutta tähän toimintoon.",
+            "CHANNEL_NAME_TAKEN": "Toisella myyntikanavalla on jo tämä nimi.",
+            "CHANNEL_KEY_TAKEN": "Tämä kauppa-avain kuuluu jo toiselle HugoShopille.",
+            "CHANNEL_IN_USE": "Tähän kanavaan liittyy laskuja, peruutuksia tai eBay-tilauksia. Sen voi vain kytkeä pois päältä.",
+            "CHANNEL_NOT_DELETABLE": "Vain pois päältä kytketyn kanavan, jolla ei ole avoimia tehtäviä, voi poistaa."
         }
     }
 }

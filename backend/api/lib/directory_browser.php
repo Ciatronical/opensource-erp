@@ -103,22 +103,29 @@ function browseRootDirs(): array {
 /**
  * Wurzeln des Shop-Bereichs
  *
- * `sites` ist die Wurzel aller Webseiten (Basis von shop_site_dir), `site`
- * das Verzeichnis der Webseite dieses Mandanten (Basis der übrigen
- * relativen Einstellungen).
+ * `sites` ist die Wurzel aller Webseiten (Basis von site_dir), `site`
+ * das Verzeichnis der Webseite eines HugoShops (Basis der übrigen
+ * relativen Einstellungen, dev/shop-mehrere-kanaele.md).
  *
  * @param string $basis 'sites' oder 'site'
+ * @param int $kanal HugoShop; 0 = der erste HugoShop
  * @return string Absolutes Verzeichnis
  * @throws ApiError wenn die Shop-Einstellungen nicht stehen
  */
-function browseShopRoot(string $basis): string {
+function browseShopRoot(string $basis, int $kanal = 0): string {
     // publish.php nutzt shopConfigValue() aus config.php — beide laden, sonst
     // fehlt die Funktion erst beim Aufruf
     require_once __DIR__.'/../shop/lib/config.php';
     require_once __DIR__.'/../shop/lib/publish.php';
 
     $db = DbhCompany::begin();
-    return 'site' === $basis ? shopSiteDir($db) : shopSitesRoot($db);
+    if ('site' !== $basis) {
+        return shopSitesRoot($db);
+    }
+    if ($kanal <= 0) {
+        $kanal = shopFirstChannelId($db, 'hugoshop');
+    }
+    return shopSiteDir($db, $kanal);
 }
 
 /**
@@ -174,6 +181,7 @@ function browseRelativePath(string $pfad, string $wurzel): string {
  *
  * @param string $scope 'system' für die Pfade der settings.ini, 'shop' für die relativen Shop-Verzeichnisse
  * @param string $base Nur bei scope 'shop': 'sites' oder 'site'
+ * @param int $channel_id Nur bei base 'site': HugoShop, leer = Standard-HugoShop
  * @param string $path Verzeichnis, das gezeigt werden soll; leer für die erste Wurzel
  * @param bool $files true listet auch Dateien auf (für Felder, die eine Datei meinen)
  * @testdata {"scope": "system", "path": "", "files": false}
@@ -186,7 +194,7 @@ function browseDirectories($data) {
     if ('shop' === $scope) {
         // Der Shop-Bereich zeigt nur das Webseiten-Verzeichnis des eigenen
         // Mandanten — dafür genügt, wer die Firmenkonfiguration bearbeiten darf.
-        $wurzeln = [browseShopRoot($basis)];
+        $wurzeln = [browseShopRoot($basis, (int)($data['channel_id'] ?? 0))];
     } else {
         requireSystemAdmin();
         $wurzeln = browseRootDirs();

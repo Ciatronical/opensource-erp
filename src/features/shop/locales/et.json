@@ -319,7 +319,24 @@
             "saved": "Salvestatud.",
             "republishQueued": "Salvestatud. Tootelehed kirjutatakse uute hindadega üle.",
             "saveError": "Kanali seadeid ei õnnestunud salvestada.",
-            "loadError": "Müügikanaleid ei õnnestunud laadida."
+            "loadError": "Müügikanaleid ei õnnestunud laadida.",
+            "name": "Nimi",
+            "nameRequired": "Kanalil peab olema nimi.",
+            "autoAddParts": "Lisa uued poe tooted automaatselt",
+            "autoAddPartsHint": "Kui toode lisatakse poodi, pakutakse seda kohe ka selles kanalis.",
+            "settings": "{name} seaded",
+            "settingsSaved": "Seaded salvestatud.",
+            "settingsSaveError": "Seadeid ei õnnestunud salvestada.",
+            "newChannel": "Uus müügikanal:",
+            "newChannelType": "Liik",
+            "create": "Loo",
+            "created": "Müügikanal loodud. See jääb välja lülitatuks, kuni see on seadistatud.",
+            "createError": "Müügikanalit ei õnnestunud luua.",
+            "delete": "Kustuta müügikanal",
+            "deleteConfirm": "Kas kustutada „{name}“ koos tooteridade, piltide, tarneriikide ja hinnaastmetega? Seda ei saa tagasi võtta.",
+            "deleted": "Müügikanal kustutatud.",
+            "deleteError": "Müügikanalit ei õnnestunud kustutada.",
+            "cancel": "Loobu"
         },
         "ebayCondition": {
             "NEW": "Uus",
@@ -333,7 +350,11 @@
             "NETWORK_ERROR": "Server pole kättesaadav. Kontrollige ühendust ja proovige uuesti.",
             "API_DATABASE_ERROR": "Andmebaas ei vasta ootuspäraselt. Palun teavitage administraatorit.",
             "API_INTERNAL_ERROR": "Serveris tekkis ootamatu viga. Palun teavitage administraatorit.",
-            "NO_PERMISSION": "Teil puudub selle toimingu jaoks õigus."
+            "NO_PERMISSION": "Teil puudub selle toimingu jaoks õigus.",
+            "CHANNEL_NAME_TAKEN": "Selle nimega müügikanal on juba olemas.",
+            "CHANNEL_KEY_TAKEN": "See poe võti kuulub juba teisele HugoShopile.",
+            "CHANNEL_IN_USE": "Selle kanaliga on seotud arved, taganemised või eBay tellimused. Selle saab ainult välja lülitada.",
+            "CHANNEL_NOT_DELETABLE": "Kustutada saab ainult välja lülitatud kanalit, millel pole avatud ülesandeid."
         }
     }
 }

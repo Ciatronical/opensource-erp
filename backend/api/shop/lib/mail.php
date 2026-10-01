@@ -10,6 +10,11 @@
 //
 // Die Vorlagen liegen unter templates/ als PHP-Dateien, damit sie sich ohne
 // Codeänderung anpassen lassen.
+//
+// Signatur, Betreff der Rechnungsmail und Empfänger von Kontakt- und
+// Widerrufsmails gehören zum HugoShop (dev/shop-mehrere-kanaele.md): die
+// Rechnungsmail nimmt den Kanal ihres Rechnungslinks, Kontakt und Widerruf den
+// der Anfrage.
 
 /**
  * Baut den SMTP-Client aus den Firmeneinstellungen
@@ -110,7 +115,8 @@ function shopSendInvoiceMailOrFail($db, int $arId): bool {
     $rechnung = $db->getOne(
         "SELECT ar.invnumber, ar.transdate, TRUNC(ar.amount, 2) AS amount,
                 c.name, c.email, c.greeting,
-                (SELECT name FROM currencies WHERE id = ar.currency_id) AS currency
+                (SELECT name FROM currencies WHERE id = ar.currency_id) AS currency,
+                (SELECT al.channel_id FROM ar_link_hugoshop al WHERE al.ar_id = ar.id LIMIT 1) AS kanal
            FROM ar JOIN customer c ON c.id = ar.customer_id
           WHERE ar.id = :ar_id",
         [':ar_id' => $arId]
@@ -125,6 +131,10 @@ function shopSendInvoiceMailOrFail($db, int $arId): bool {
         return false;
     }
 
+    // Ohne Rechnungslink (keine Shop-Rechnung) gibt es keinen Kanal: dann
+    // ohne Signatur und mit dem vorgegebenen Betreff
+    $kanal = (int)($rechnung['kanal'] ?? 0);
+
     $pdf = shopInvoicePdf($db, $arId);
     $mailer = shopMailer($db);
 
@@ -134,14 +144,14 @@ function shopSendInvoiceMailOrFail($db, int $arId): bool {
         'invnumber' => $rechnung['invnumber'],
         'amount'    => $rechnung['amount'],
         'currency'  => $rechnung['currency'],
-        'signatur'  => shopConfigValue($db, 'shop_base_url'),
+        'signatur'  => shopChannelValue($db, $kanal, 'base_url'),
         // Bestellte Artikel mit Lieferbedingung, wie in einer Bestellbestätigung
         // (dev/shop-versand.md, Punkt 7)
         'positionen' => shopInvoiceDeliveryTerms($db, $arId),
     ]);
 
     $betreff = sprintf(
-        shopConfigValue($db, 'shop_invoice_mail_subject', 'Ihre Rechnung (%s) vom %s'),
+        shopChannelValue($db, $kanal, 'invoice_mail_subject', 'Ihre Rechnung (%s) vom %s'),
         $rechnung['invnumber'],
         date('d.m.Y')
     );
@@ -173,11 +183,12 @@ function shopSendInvoiceMailOrFail($db, int $arId): bool {
  * versendenden Domain passt. Die Bridge setzte den Kunden als Absender.
  *
  * @param object $db Company-Datenbankverbindung
+ * @param int $kanal HugoShop der Anfrage — sein Empfänger (withdrawal_mail_to)
  * @param array $daten name, email, phone, term (Nachricht)
  * @return bool true wenn versendet
- * @throws ApiError EMAIL_NOT_CONFIGURED, MISSING_MESSAGE
+ * @throws ApiError EMAIL_NOT_CONFIGURED, MISSING_MESSAGE, SHOP_CONFIG_MISSING
  */
-function shopSendContactMail($db, array $daten): bool {
+function shopSendContactMail($db, int $kanal, array $daten): bool {
     $nachricht = trim((string)($daten['term'] ?? ''));
     $absender  = trim((string)($daten['email'] ?? ''));
 
@@ -188,10 +199,7 @@ function shopSendContactMail($db, array $daten): bool {
         throw new ApiError('INVALID_EMAIL', 'Die Absenderadresse ist unbrauchbar');
     }
 
-    $empfaenger = shopConfigValue($db, 'shop_withdrawal_mail_to');
-    if ('' === $empfaenger) {
-        throw new ApiError('SHOP_CONFIG_MISSING', "Die Shop-Einstellung '".shopConfigLabel('shop_withdrawal_mail_to')."' ist nicht gesetzt");
-    }
+    $empfaenger = shopChannelRequire($db, $kanal, 'withdrawal_mail_to');
 
     $mailer = shopMailer($db);
     $html = shopMailTemplate('contact.de', [
@@ -220,7 +228,7 @@ function shopSendContactMail($db, array $daten): bool {
  * Wirksamkeit (§ 356a BGB), und an den Betreiber die Angaben zur Bearbeitung.
  *
  * @param object $db Company-Datenbankverbindung
- * @param array $widerruf Zeile aus withdrawals_hugoshop
+ * @param array $widerruf Zeile aus withdrawals_hugoshop, mit channel_id
  * @return array{customer: bool, operator: bool}
  */
 function shopSendWithdrawalMails($db, array $widerruf): array {
@@ -256,7 +264,7 @@ function shopSendWithdrawalMails($db, array $widerruf): array {
         }
     }
 
-    $betreiber = shopConfigValue($db, 'shop_withdrawal_mail_to');
+    $betreiber = shopChannelValue($db, (int)($widerruf['channel_id'] ?? 0), 'withdrawal_mail_to');
     if ('' !== $betreiber) {
         try {
             $mailer['client']->send(

@@ -141,10 +141,15 @@ const props = defineProps({
         type: String,
         default: 'system',
     },
-    /** Nur bei scope 'shop': 'sites' (Wurzel aller Webseiten) oder 'site' (Webseite des Mandanten) */
+    /** Nur bei scope 'shop': 'sites' (Wurzel aller Webseiten) oder 'site' (Webseite eines HugoShops) */
     base: {
         type: String,
         default: 'sites',
+    },
+    /** Nur bei base 'site': HugoShop, dessen Webseite gemeint ist; 0 = Standard-HugoShop */
+    channelId: {
+        type: Number,
+        default: 0,
     },
     /** 'dir' wählt ein Verzeichnis, 'file' eine Datei darin */
     pick: {
@@ -208,6 +213,7 @@ async function laden(pfad = '') {
             action: 'browseDirectories',
             scope: props.scope,
             base: props.base,
+            channel_id: props.channelId || undefined,
             path: pfad || '',
             files: props.pick === 'file',
         });

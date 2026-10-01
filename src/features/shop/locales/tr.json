@@ -319,7 +319,24 @@
             "saved": "Kaydedildi.",
             "republishQueued": "Kaydedildi. Ürün sayfaları yeni fiyatlarla yeniden yazılacak.",
             "saveError": "Kanal ayarları kaydedilemedi.",
-            "loadError": "Satış kanalları yüklenemedi."
+            "loadError": "Satış kanalları yüklenemedi.",
+            "name": "Ad",
+            "nameRequired": "Kanalın bir adı olmalı.",
+            "autoAddParts": "Yeni mağaza ürünlerini otomatik ekle",
+            "autoAddPartsHint": "Bir ürün mağazaya eklendiğinde bu kanalda da sunulur.",
+            "settings": "{name} ayarları",
+            "settingsSaved": "Ayarlar kaydedildi.",
+            "settingsSaveError": "Ayarlar kaydedilemedi.",
+            "newChannel": "Yeni satış kanalı:",
+            "newChannelType": "Tür",
+            "create": "Oluştur",
+            "created": "Satış kanalı oluşturuldu. Kurulana kadar kapalı kalır.",
+            "createError": "Satış kanalı oluşturulamadı.",
+            "delete": "Satış kanalını sil",
+            "deleteConfirm": "“{name}” ürün satırları, görselleri, teslimat ülkeleri ve fiyat kademeleriyle silinsin mi? Bu işlem geri alınamaz.",
+            "deleted": "Satış kanalı silindi.",
+            "deleteError": "Satış kanalı silinemedi.",
+            "cancel": "İptal"
         },
         "ebayCondition": {
             "NEW": "Yeni",
@@ -333,7 +350,11 @@
             "NETWORK_ERROR": "Sunucuya ulaşılamıyor. Lütfen bağlantıyı kontrol edip tekrar deneyin.",
             "API_DATABASE_ERROR": "Veritabanı beklendiği gibi yanıt vermiyor. Lütfen yöneticinize haber verin.",
             "API_INTERNAL_ERROR": "Sunucuda beklenmeyen bir hata oluştu. Lütfen yöneticinize haber verin.",
-            "NO_PERMISSION": "Bu işlem için yetkiniz yok."
+            "NO_PERMISSION": "Bu işlem için yetkiniz yok.",
+            "CHANNEL_NAME_TAKEN": "Bu ad başka bir satış kanalında zaten kullanılıyor.",
+            "CHANNEL_KEY_TAKEN": "Bu mağaza anahtarı zaten başka bir HugoShop'a ait.",
+            "CHANNEL_IN_USE": "Bu kanala bağlı faturalar, cayma bildirimleri veya eBay siparişleri var. Yalnızca kapatılabilir.",
+            "CHANNEL_NOT_DELETABLE": "Yalnızca açık görevi olmayan kapalı bir kanal silinebilir."
         }
     }
 }
