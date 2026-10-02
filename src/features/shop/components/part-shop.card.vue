@@ -119,6 +119,7 @@
                                 </v-col>
                                 <v-col v-if="mitWert(kanal.markup_mode)" cols="12" sm="6" class="py-1">
                                     <v-text-field
+                                        persistent-placeholder
                                         v-model.number="kanal.markup_value"
                                         type="number"
                                         step="0.01"
@@ -502,6 +503,7 @@
                 </v-col>
                 <v-col v-for="feld in ['length', 'width', 'height']" :key="feld" cols="4" sm="2" class="py-1">
                     <v-text-field
+                        persistent-placeholder
                         v-model="daten.shipping[feld]"
                         type="number"
                         step="0.1"

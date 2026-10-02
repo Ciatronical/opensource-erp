@@ -438,7 +438,7 @@ function shopPageData($db, int $kanal, int $partsId): array {
  * Werten, an denen gemessen wurde.
  *
  * @param array $pruefung Zeile aus shop_part_shipping_check(): status, method,
- *              weight, length, girth, weightunit
+ *              weight, length, width, height, size, girth, weightunit
  * @return string leer bei status ok
  */
 function shopShippingCheckText(array $pruefung): string {
@@ -450,6 +450,15 @@ function shopShippingCheckText(array $pruefung): string {
     }
     if (null !== ($pruefung['length'] ?? null)) {
         $werte[] = 'längste Kante '.$zahl($pruefung['length']).' cm';
+    }
+    if (null !== ($pruefung['width'] ?? null)) {
+        $werte[] = 'Breite '.$zahl($pruefung['width']).' cm';
+    }
+    if (null !== ($pruefung['height'] ?? null)) {
+        $werte[] = 'Höhe '.$zahl($pruefung['height']).' cm';
+    }
+    if (null !== ($pruefung['size'] ?? null)) {
+        $werte[] = 'Größe '.$zahl($pruefung['size']).' cm';
     }
     if (null !== ($pruefung['girth'] ?? null)) {
         $werte[] = 'Gurtmaß '.$zahl($pruefung['girth']).' cm';

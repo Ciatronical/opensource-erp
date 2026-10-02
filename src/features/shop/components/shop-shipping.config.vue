@@ -169,6 +169,7 @@
                         </v-col>
                         <v-col cols="6" sm="3" md="2" class="py-1">
                             <v-text-field
+                                persistent-placeholder
                                 v-model="methode.max_weight"
                                 type="number"
                                 step="0.001"
@@ -183,6 +184,7 @@
                         </v-col>
                         <v-col cols="6" sm="3" md="2" class="py-1">
                             <v-text-field
+                                persistent-placeholder
                                 v-model="methode.max_length"
                                 type="number"
                                 step="0.1"
@@ -197,12 +199,63 @@
                         </v-col>
                         <v-col cols="6" sm="3" md="2" class="py-1">
                             <v-text-field
+                                persistent-placeholder
                                 v-model="methode.max_girth"
                                 type="number"
                                 step="0.1"
                                 min="0"
                                 :label="t('ShopView.shippingConfig.maxGirth')"
                                 :title="t('ShopView.shippingConfig.maxGirthHint')"
+                                suffix="cm"
+                                :rules="[grenzePruefen]"
+                                variant="outlined"
+                                density="compact"
+                                hide-details="auto"
+                            />
+                        </v-col>
+                        <!-- Einzelgrenzen und Größe nach Hermes: die Maße des Artikels
+                             sortiert — Breite = mittlere, Höhe = kürzeste Seite -->
+                        <v-col cols="6" sm="3" md="2" class="py-1">
+                            <v-text-field
+                                persistent-placeholder
+                                v-model="methode.max_width"
+                                type="number"
+                                step="0.1"
+                                min="0"
+                                :label="t('ShopView.shippingConfig.maxWidth')"
+                                :title="t('ShopView.shippingConfig.maxWidthHint')"
+                                suffix="cm"
+                                :rules="[grenzePruefen]"
+                                variant="outlined"
+                                density="compact"
+                                hide-details="auto"
+                            />
+                        </v-col>
+                        <v-col cols="6" sm="3" md="2" class="py-1">
+                            <v-text-field
+                                persistent-placeholder
+                                v-model="methode.max_height"
+                                type="number"
+                                step="0.1"
+                                min="0"
+                                :label="t('ShopView.shippingConfig.maxHeight')"
+                                :title="t('ShopView.shippingConfig.maxHeightHint')"
+                                suffix="cm"
+                                :rules="[grenzePruefen]"
+                                variant="outlined"
+                                density="compact"
+                                hide-details="auto"
+                            />
+                        </v-col>
+                        <v-col cols="6" sm="3" md="2" class="py-1">
+                            <v-text-field
+                                persistent-placeholder
+                                v-model="methode.max_size"
+                                type="number"
+                                step="0.1"
+                                min="0"
+                                :label="t('ShopView.shippingConfig.maxSize')"
+                                :title="t('ShopView.shippingConfig.maxSizeHint')"
                                 suffix="cm"
                                 :rules="[grenzePruefen]"
                                 variant="outlined"
@@ -320,6 +373,7 @@
                         </v-col>
                         <v-col cols="4" md="2" class="py-1">
                             <v-text-field
+                                persistent-placeholder
                                 v-model="stufe.weight_from"
                                 type="number"
                                 step="0.001"
@@ -345,6 +399,7 @@
                         </v-col>
                         <v-col cols="3" md="2" class="py-1">
                             <v-text-field
+                                persistent-placeholder
                                 v-model="stufe.price"
                                 type="number"
                                 step="0.01"
@@ -477,7 +532,7 @@ function methodeGueltig(m) {
     // Die Nummer darf bei einer neuen Versandart leer sein: dann vergibt das Backend die nächste freie
     return !leer(m.description) && !leer(m.part.description) && m.part.buchungsgruppen_id
         && (!m.id || !leer(m.part.partnumber))
-        && [m.max_weight, m.max_length, m.max_girth].every(w => grenzePruefen(w) === true)
+        && [m.max_weight, m.max_length, m.max_girth, m.max_width, m.max_height, m.max_size].every(w => grenzePruefen(w) === true)
         && m.rates.every(s => preisPruefen(s.price) === true && Number(s.weight_from || 0) >= 0 && Number(s.qty_from || 0) >= 0)
         && !doppelteStufe(m)
 }
@@ -506,6 +561,9 @@ function alsMethode(m) {
         max_weight: zahlOderLeer(m.max_weight),
         max_length: zahlOderLeer(m.max_length),
         max_girth: zahlOderLeer(m.max_girth),
+        max_width: zahlOderLeer(m.max_width),
+        max_height: zahlOderLeer(m.max_height),
+        max_size: zahlOderLeer(m.max_size),
         free_shipping_applies: WAHR.includes(m.free_shipping_applies),
         ebay_fulfillment_policy_id: m.ebay_fulfillment_policy_id || '',
         active: WAHR.includes(m.active),
@@ -588,6 +646,9 @@ function methodeNutzdaten(m) {
         max_weight: zahl(m.max_weight),
         max_length: zahl(m.max_length),
         max_girth: zahl(m.max_girth),
+        max_width: zahl(m.max_width),
+        max_height: zahl(m.max_height),
+        max_size: zahl(m.max_size),
         free_shipping_applies: m.free_shipping_applies,
         ebay_fulfillment_policy_id: m.ebay_fulfillment_policy_id.trim(),
         active: m.active,

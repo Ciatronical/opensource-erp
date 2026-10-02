@@ -151,6 +151,7 @@
                                      Erst am angelegten Artikel: createPart übernimmt kein Gewicht -->
                                 <v-col v-if="!isNewMode" cols="12" sm="4" class="py-1">
                                     <v-text-field
+                                        persistent-placeholder
                                         v-model="article.weight"
                                         :label="t('ArticleEditView.fields.weight')"
                                         :suffix="weightunit"

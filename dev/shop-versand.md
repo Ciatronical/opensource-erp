@@ -686,6 +686,31 @@ Warenkorb und Kasse nennen weiter die Versandart.
 Index nicht an und meldet es (`WARNING`); die Zuordnung ist dann von Hand zu
 trennen.
 
+### Weitere Grenzen: Breite, Höhe, Größe nach Hermes
+
+Preise nach Größe entstehen weiter über mehrere Versandarten mit Grenzen —
+die günstigste passende gewinnt (Entscheidung 1: Abmessungen schließen aus,
+statt den Preis zu bestimmen). Neben längster Kante und Gurtmaß kennt eine
+Versandart jetzt drei weitere Grenzen in `shipping_method_shop`:
+
+| Spalte | Grenze |
+| --- | --- |
+| `max_width` | Breite = mittlere Seite des Artikels |
+| `max_height` | Höhe = kürzeste Seite, etwa Warensendung oder Brief (bis 5 cm) |
+| `max_size` | Größe nach Hermes: längste + kürzeste Seite |
+
+Die Maße eines Artikels (`parts_shipping_shop.length`, `width`, `height`)
+werden sortiert verglichen, wie die Versanddienstleister messen — gleich, wie
+er im Paket liegt. Breite, Höhe und Größe brauchen alle drei Maße; fehlt
+eines, gilt der Artikel dafür als passend. Im Warenkorb zählt je Grenze der
+größte Artikel.
+
+Geändert: `shop_cart_shipping`, `shop_part_shipping_check` (neue
+Ergebnisspalten `width`, `height`, `size` — die alte Fassung wird beim
+Upstall entfernt, weil `CREATE OR REPLACE` andere Spalten nicht zulässt),
+`getShopShipping`, `saveShopShippingMethod`, die Meldung
+`shopShippingCheckText` und die Maske (drei Felder neben dem Gurtmaß).
+
 **Nicht getestet:** Die SQL-Funktionen sind nicht gegen eine Datenbank
 gelaufen (kein Zugriff aus der Entwicklungsumgebung), die Oberfläche nicht im
 Browser. Geprüft sind PHP-Syntax, Vue-Übersetzung und JSON der Sprachdateien.

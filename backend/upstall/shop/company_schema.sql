@@ -970,6 +970,9 @@ CREATE TABLE IF NOT EXISTS shipping_method_shop
     max_weight                 numeric(15,5),
     max_length                 numeric(15,5),
     max_girth                  numeric(15,5),
+    max_width                  numeric(15,5),
+    max_height                 numeric(15,5),
+    max_size                   numeric(15,5),
     free_shipping_applies      boolean NOT NULL DEFAULT true,
     ebay_fulfillment_policy_id text,
     active                     boolean NOT NULL DEFAULT true,
@@ -984,6 +987,19 @@ COMMENT ON COLUMN shipping_method_shop.rank        IS 'Rang: bei verschiedenen z
 COMMENT ON COLUMN shipping_method_shop.max_weight  IS 'Höchstgewicht der Sendung in der Einheit von parts.weight, NULL = ohne Grenze';
 COMMENT ON COLUMN shipping_method_shop.max_length  IS 'Längste Kante des größten Artikels in cm, NULL = ohne Grenze';
 COMMENT ON COLUMN shipping_method_shop.max_girth   IS 'Gurtmaß des größten Artikels in cm (Länge + 2 × Breite + 2 × Höhe), NULL = ohne Grenze';
+
+-- Einzelgrenzen und Größe nach Hermes (2026-10-02). Die Maße eines Artikels
+-- werden sortiert verglichen, wie die Versanddienstleister messen: längste
+-- Seite = Länge, mittlere = Breite, kürzeste = Höhe — gleich, wie der Artikel
+-- im Paket liegt. Breite, Höhe und Größe brauchen alle drei Maße; fehlt
+-- eines, gilt der Artikel dafür als passend, wie bei fehlenden Abmessungen
+-- überhaupt.
+ALTER TABLE shipping_method_shop ADD COLUMN IF NOT EXISTS max_width  numeric(15,5);
+ALTER TABLE shipping_method_shop ADD COLUMN IF NOT EXISTS max_height numeric(15,5);
+ALTER TABLE shipping_method_shop ADD COLUMN IF NOT EXISTS max_size   numeric(15,5);
+COMMENT ON COLUMN shipping_method_shop.max_width  IS 'Breite (mittlere Seite) des größten Artikels in cm, NULL = ohne Grenze';
+COMMENT ON COLUMN shipping_method_shop.max_height IS 'Höhe (kürzeste Seite) des größten Artikels in cm, NULL = ohne Grenze — etwa Warensendung, Brief';
+COMMENT ON COLUMN shipping_method_shop.max_size   IS 'Größe nach Hermes: längste + kürzeste Seite in cm, NULL = ohne Grenze';
 COMMENT ON COLUMN shipping_method_shop.free_shipping_applies IS 'Freigrenze des Kanals gilt für diese Versandart (W6)';
 COMMENT ON COLUMN shipping_method_shop.ebay_fulfillment_policy_id IS 'eBay-Versandrichtlinie für Angebote mit dieser Versandart, NULL = die allgemeine';
 
@@ -1155,9 +1171,11 @@ $$;
 --   - Haben Artikel eine aktive Versandart zugeordnet, gilt die ranghöchste
 --     davon (W1) — passt sie nicht, ist keine Bestellung möglich (W2). Ohne
 --     Zuordnung gilt die günstigste passende aktive (Entscheidung 2).
---   - Eine Versandart passt, wenn Gewicht, längste Kante und Gurtmaß des
---     größten Artikels in ihre Grenzen fallen und es eine Preisstufe für Kanal
---     und Land gibt. Fehlende Abmessungen gelten als passend; fehlt einer
+--   - Eine Versandart passt, wenn Gewicht, längste Kante, Breite (mittlere
+--     Seite), Höhe (kürzeste Seite), Größe (längste + kürzeste Seite) und
+--     Gurtmaß des größten Artikels in ihre Grenzen fallen und es eine
+--     Preisstufe für Kanal und Land gibt. Fehlende Abmessungen gelten als
+--     passend; fehlt einer
 --     Ware das Gewicht, passen nur Versandarten, die keins brauchen (keine
 --     Gewichtsgrenze, keine Stufe ab einem Gewicht > 0) — sonst „Versand auf
 --     Anfrage" (W8, W9).
@@ -1183,6 +1201,9 @@ DECLARE
     gewicht      numeric;
     ohne_gewicht boolean;
     kante        numeric;
+    breite       numeric;
+    hoehe        numeric;
+    groesse      numeric;
     gurt         numeric;
     zugeordnet   integer;
     gewaehlt     record;
@@ -1192,6 +1213,15 @@ BEGIN
            COALESCE(sum(c.amount * COALESCE(p.weight, 0)), 0),
            bool_or(p.part_type <> 'service' AND COALESCE(p.weight, 0) <= 0),
            max(GREATEST(ps.length, ps.width, ps.height)),
+           -- Sortiert, nur mit allen drei Maßen: mittlere Seite (Breite),
+           -- kürzeste (Höhe), längste + kürzeste (Größe nach Hermes). Die
+           -- Summe ist NULL, sobald ein Maß fehlt.
+           max(ps.length + ps.width + ps.height
+               - GREATEST(ps.length, ps.width, ps.height) - LEAST(ps.length, ps.width, ps.height)),
+           max(CASE WHEN ps.length + ps.width + ps.height IS NOT NULL
+                    THEN LEAST(ps.length, ps.width, ps.height) END),
+           max(CASE WHEN ps.length + ps.width + ps.height IS NOT NULL
+                    THEN GREATEST(ps.length, ps.width, ps.height) + LEAST(ps.length, ps.width, ps.height) END),
            max(GREATEST(ps.length, ps.width, ps.height)
                + 2 * (COALESCE(ps.length, 0) + COALESCE(ps.width, 0) + COALESCE(ps.height, 0)
                       - GREATEST(ps.length, ps.width, ps.height))),
@@ -1202,7 +1232,7 @@ BEGIN
              WHERE c2.cart_uuid = p_cart_uuid
              ORDER BY m.rank DESC, m.id
              LIMIT 1)
-      INTO menge, gewicht, ohne_gewicht, kante, gurt, zugeordnet
+      INTO menge, gewicht, ohne_gewicht, kante, breite, hoehe, groesse, gurt, zugeordnet
       FROM cart_parts_hugoshop c
       JOIN parts p ON p.id = c.parts_id
       LEFT JOIN parts_shipping_shop ps ON ps.parts_id = p.id
@@ -1254,6 +1284,9 @@ BEGIN
        AND stufe.price IS NOT NULL
        AND (m.max_weight IS NULL OR gewicht <= m.max_weight)
        AND (m.max_length IS NULL OR kante IS NULL OR kante <= m.max_length)
+       AND (m.max_width IS NULL OR breite IS NULL OR breite <= m.max_width)
+       AND (m.max_height IS NULL OR hoehe IS NULL OR hoehe <= m.max_height)
+       AND (m.max_size IS NULL OR groesse IS NULL OR groesse <= m.max_size)
        AND (m.max_girth IS NULL OR gurt IS NULL OR gurt <= m.max_girth)
        AND NOT (ohne_gewicht AND (m.max_weight IS NOT NULL
                                   OR EXISTS (SELECT 1 FROM shipping_rate_shop r
@@ -1320,10 +1353,16 @@ $$;
 --
 -- status: ok, weight_missing, assigned_unfit, no_method. Ohne eingerichtete
 -- Versandart ok (Versand „Standard" ohne Kosten). method nennt die
--- zugeordnete Versandart; weight, length, girth und weightunit die Werte, an
--- denen gemessen wurde — für die Meldung.
-CREATE OR REPLACE FUNCTION shop_part_shipping_check(p_parts_id integer, p_channel_id integer)
-RETURNS TABLE (status text, method text, weight numeric, length numeric, girth numeric, weightunit text)
+-- zugeordnete Versandart; weight, length (längste Seite), width (mittlere),
+-- height (kürzeste), size (längste + kürzeste), girth und weightunit die
+-- Werte, an denen gemessen wurde — für die Meldung.
+--
+-- Die Ergebnisspalten haben sich geändert (width, height, size) — das lässt
+-- CREATE OR REPLACE nicht zu, deshalb erst entfernen.
+DROP FUNCTION IF EXISTS shop_part_shipping_check(integer, integer);
+CREATE FUNCTION shop_part_shipping_check(p_parts_id integer, p_channel_id integer)
+RETURNS TABLE (status text, method text, weight numeric, length numeric, width numeric, height numeric,
+               size numeric, girth numeric, weightunit text)
 LANGUAGE plpgsql STABLE AS $$
 #variable_conflict use_column
 DECLARE
@@ -1331,6 +1370,9 @@ DECLARE
     gewicht      numeric;
     ohne_gewicht boolean;
     kante        numeric;
+    breite       numeric;
+    hoehe        numeric;
+    groesse      numeric;
     gurt         numeric;
     zugeordnet   integer;
     einheit      text := (SELECT d.weightunit FROM defaults d LIMIT 1);
@@ -1339,11 +1381,18 @@ BEGIN
            GREATEST(COALESCE(ps.min_qty, 1), 1) * COALESCE(p.weight, 0),
            p.part_type <> 'service' AND COALESCE(p.weight, 0) <= 0,
            GREATEST(ps.length, ps.width, ps.height),
+           -- Sortiert wie in shop_cart_shipping, nur mit allen drei Maßen
+           ps.length + ps.width + ps.height
+               - GREATEST(ps.length, ps.width, ps.height) - LEAST(ps.length, ps.width, ps.height),
+           CASE WHEN ps.length + ps.width + ps.height IS NOT NULL
+                THEN LEAST(ps.length, ps.width, ps.height) END,
+           CASE WHEN ps.length + ps.width + ps.height IS NOT NULL
+                THEN GREATEST(ps.length, ps.width, ps.height) + LEAST(ps.length, ps.width, ps.height) END,
            GREATEST(ps.length, ps.width, ps.height)
                + 2 * (COALESCE(ps.length, 0) + COALESCE(ps.width, 0) + COALESCE(ps.height, 0)
                       - GREATEST(ps.length, ps.width, ps.height)),
            (SELECT m.id FROM shipping_method_shop m WHERE m.id = ps.shipping_method_id AND m.active)
-      INTO menge, gewicht, ohne_gewicht, kante, gurt, zugeordnet
+      INTO menge, gewicht, ohne_gewicht, kante, breite, hoehe, groesse, gurt, zugeordnet
       FROM parts p
       LEFT JOIN parts_shipping_shop ps ON ps.parts_id = p.id
      WHERE p.id = p_parts_id;
@@ -1351,7 +1400,7 @@ BEGIN
     -- Unbekannter Artikel, Versandartikel oder Versand nicht eingerichtet:
     -- nichts zu prüfen
     IF menge IS NULL OR shop_is_shipping_part(p_parts_id) OR NOT shop_shipping_configured() THEN
-        RETURN QUERY SELECT 'ok'::text, NULL::text, gewicht, kante, gurt, einheit;
+        RETURN QUERY SELECT 'ok'::text, NULL::text, gewicht, kante, breite, hoehe, groesse, gurt, einheit;
         RETURN;
     END IF;
 
@@ -1362,6 +1411,9 @@ BEGIN
            AND (zugeordnet IS NULL OR m.id = zugeordnet)
            AND (m.max_weight IS NULL OR gewicht <= m.max_weight)
            AND (m.max_length IS NULL OR kante IS NULL OR kante <= m.max_length)
+           AND (m.max_width IS NULL OR breite IS NULL OR breite <= m.max_width)
+           AND (m.max_height IS NULL OR hoehe IS NULL OR hoehe <= m.max_height)
+           AND (m.max_size IS NULL OR groesse IS NULL OR groesse <= m.max_size)
            AND (m.max_girth IS NULL OR gurt IS NULL OR gurt <= m.max_girth)
            AND EXISTS (SELECT 1 FROM shipping_rate_shop r
                         WHERE r.shipping_method_id = m.id
@@ -1372,7 +1424,7 @@ BEGIN
                                       OR EXISTS (SELECT 1 FROM shipping_rate_shop r
                                                   WHERE r.shipping_method_id = m.id AND r.weight_from > 0)))
     ) THEN
-        RETURN QUERY SELECT 'ok'::text, NULL::text, gewicht, kante, gurt, einheit;
+        RETURN QUERY SELECT 'ok'::text, NULL::text, gewicht, kante, breite, hoehe, groesse, gurt, einheit;
         RETURN;
     END IF;
 
@@ -1383,13 +1435,13 @@ BEGIN
               AND (m.max_weight IS NOT NULL
                    OR EXISTS (SELECT 1 FROM shipping_rate_shop r
                                WHERE r.shipping_method_id = m.id AND r.weight_from > 0))) THEN
-        RETURN QUERY SELECT 'weight_missing'::text, NULL::text, gewicht, kante, gurt, einheit;
+        RETURN QUERY SELECT 'weight_missing'::text, NULL::text, gewicht, kante, breite, hoehe, groesse, gurt, einheit;
     ELSIF zugeordnet IS NOT NULL THEN
         RETURN QUERY SELECT 'assigned_unfit'::text,
                             (SELECT m.description FROM shipping_method_shop m WHERE m.id = zugeordnet),
-                            gewicht, kante, gurt, einheit;
+                            gewicht, kante, breite, hoehe, groesse, gurt, einheit;
     ELSE
-        RETURN QUERY SELECT 'no_method'::text, NULL::text, gewicht, kante, gurt, einheit;
+        RETURN QUERY SELECT 'no_method'::text, NULL::text, gewicht, kante, breite, hoehe, groesse, gurt, einheit;
     END IF;
 END;
 $$;

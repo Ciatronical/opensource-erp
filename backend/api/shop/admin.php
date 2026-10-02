@@ -1000,7 +1000,8 @@ function getShopShipping($data) {
                          'part_buchungsgruppen_id', p.buchungsgruppen_id, 'part_type', p.part_type,
                          'part_used', EXISTS (SELECT 1 FROM invoice i WHERE i.parts_id = p.id),
                          'rank', m.rank, 'max_weight', m.max_weight, 'max_length', m.max_length,
-                         'max_girth', m.max_girth, 'free_shipping_applies', m.free_shipping_applies,
+                         'max_girth', m.max_girth, 'max_width', m.max_width, 'max_height', m.max_height,
+                         'max_size', m.max_size, 'free_shipping_applies', m.free_shipping_applies,
                          'ebay_fulfillment_policy_id', m.ebay_fulfillment_policy_id, 'active', m.active,
                          'parts', (SELECT count(*) FROM parts_shipping_shop ps WHERE ps.shipping_method_id = m.id),
                          'rates', (SELECT COALESCE(json_agg(json_build_object(
@@ -1099,11 +1100,14 @@ function getShopShipping($data) {
  * @param float|null $data['max_weight'] Höchstgewicht, leer = ohne
  * @param float|null $data['max_length'] längste Kante in cm, leer = ohne
  * @param float|null $data['max_girth'] Gurtmaß in cm, leer = ohne
+ * @param float|null $data['max_width'] Breite (mittlere Seite) in cm, leer = ohne
+ * @param float|null $data['max_height'] Höhe (kürzeste Seite) in cm, leer = ohne
+ * @param float|null $data['max_size'] Größe nach Hermes (längste + kürzeste Seite) in cm, leer = ohne
  * @param bool $data['free_shipping_applies'] Freigrenze gilt
  * @param string $data['ebay_fulfillment_policy_id'] eBay-Versandrichtlinie, leer = die allgemeine
  * @param bool $data['active'] aktiv
  * @param array $data['rates'] Liste aus channel_id, zone_id (leer = alle), weight_from, qty_from, price
- * @testdata {"id": 0, "description": "DHL Paket", "vendor_id": null, "part": {"partnumber": "", "description": "Versand", "buchungsgruppen_id": 1, "suggested": true}, "rank": 10, "max_weight": 31.5, "max_length": 120, "max_girth": 300, "free_shipping_applies": true, "ebay_fulfillment_policy_id": "", "active": true, "rates": [{"channel_id": null, "zone_id": null, "weight_from": 0, "qty_from": 0, "price": 5.99}]}
+ * @testdata {"id": 0, "description": "DHL Paket", "vendor_id": null, "part": {"partnumber": "", "description": "Versand", "buchungsgruppen_id": 1, "suggested": true}, "rank": 10, "max_weight": 31.5, "max_length": 120, "max_girth": 300, "max_width": null, "max_height": null, "max_size": null, "free_shipping_applies": true, "ebay_fulfillment_policy_id": "", "active": true, "rates": [{"channel_id": null, "zone_id": null, "weight_from": 0, "qty_from": 0, "price": 5.99}]}
  */
 function saveShopShippingMethod($data) {
     permit(['edit_shop_config'], false);
@@ -1133,7 +1137,7 @@ function saveShopShippingMethod($data) {
         return;
     }
     $grenzen = [];
-    foreach (['max_weight', 'max_length', 'max_girth'] as $feld) {
+    foreach (['max_weight', 'max_length', 'max_girth', 'max_width', 'max_height', 'max_size'] as $feld) {
         $grenzen[$feld] = $zahl($data[$feld] ?? null);
         if (false === $grenzen[$feld] || (null !== $grenzen[$feld] && $grenzen[$feld] <= 0)) {
             resultInfo(false, 'VALIDATION_ERROR', null, 'Grenzen müssen leer oder größer als 0 sein');
@@ -1175,11 +1179,13 @@ function saveShopShippingMethod($data) {
             "WITH methode AS (
                  INSERT INTO shipping_method_shop AS m
                         (id, description, vendor_id, parts_id, rank, max_weight, max_length, max_girth,
+                         max_width, max_height, max_size,
                          free_shipping_applies, ebay_fulfillment_policy_id, active)
                  OVERRIDING SYSTEM VALUE
                  SELECT COALESCE(NULLIF(:id, 0), nextval(pg_get_serial_sequence('shipping_method_shop', 'id'))),
                         :description, CAST(NULLIF(:vendor_id, 0) AS integer), :parts_id, :rank,
                         CAST(:max_weight AS numeric), CAST(:max_length AS numeric), CAST(:max_girth AS numeric),
+                        CAST(:max_width AS numeric), CAST(:max_height AS numeric), CAST(:max_size AS numeric),
                         :free_shipping_applies, NULLIF(btrim(:ebay_policy), ''), :active
                   WHERE NULLIF(:id_neu, 0) IS NULL
                      OR EXISTS (SELECT 1 FROM shipping_method_shop WHERE id = :id_vorhanden)
@@ -1187,7 +1193,9 @@ function saveShopShippingMethod($data) {
                         description = EXCLUDED.description, vendor_id = EXCLUDED.vendor_id,
                         parts_id = EXCLUDED.parts_id, rank = EXCLUDED.rank,
                         max_weight = EXCLUDED.max_weight, max_length = EXCLUDED.max_length,
-                        max_girth = EXCLUDED.max_girth, free_shipping_applies = EXCLUDED.free_shipping_applies,
+                        max_girth = EXCLUDED.max_girth, max_width = EXCLUDED.max_width,
+                        max_height = EXCLUDED.max_height, max_size = EXCLUDED.max_size,
+                        free_shipping_applies = EXCLUDED.free_shipping_applies,
                         ebay_fulfillment_policy_id = EXCLUDED.ebay_fulfillment_policy_id,
                         active = EXCLUDED.active, mtime = now()
                  RETURNING m.id
@@ -1224,6 +1232,9 @@ function saveShopShippingMethod($data) {
                 ':max_weight'            => null === $grenzen['max_weight'] ? null : (string)$grenzen['max_weight'],
                 ':max_length'            => null === $grenzen['max_length'] ? null : (string)$grenzen['max_length'],
                 ':max_girth'             => null === $grenzen['max_girth'] ? null : (string)$grenzen['max_girth'],
+                ':max_width'             => null === $grenzen['max_width'] ? null : (string)$grenzen['max_width'],
+                ':max_height'            => null === $grenzen['max_height'] ? null : (string)$grenzen['max_height'],
+                ':max_size'              => null === $grenzen['max_size'] ? null : (string)$grenzen['max_size'],
                 ':free_shipping_applies' => !empty($data['free_shipping_applies']),
                 ':ebay_policy'           => (string)($data['ebay_fulfillment_policy_id'] ?? ''),
                 ':active'                => !empty($data['active']),

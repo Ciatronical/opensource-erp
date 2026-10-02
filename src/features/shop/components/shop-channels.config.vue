@@ -118,6 +118,7 @@
                     </v-col>
                     <v-col v-if="kanal.markup_type !== 'none'" cols="12" sm="6" md="4" class="py-1">
                         <v-text-field
+                            persistent-placeholder
                             v-model.number="kanal.markup_value"
                             type="number"
                             step="0.01"
@@ -158,6 +159,7 @@
                 <v-row v-if="kanal.type !== 'ebay'" dense class="mt-2">
                     <v-col cols="12" sm="6" md="4" class="py-1">
                         <v-text-field
+                            persistent-placeholder
                             v-model="kanal.free_shipping_from"
                             type="number"
                             step="0.01"
