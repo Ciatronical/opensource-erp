@@ -711,6 +711,54 @@ Upstall entfernt, weil `CREATE OR REPLACE` andere Spalten nicht zulässt),
 `getShopShipping`, `saveShopShippingMethod`, die Meldung
 `shopShippingCheckText` und die Maske (drei Felder neben dem Gurtmaß).
 
+### Versandpreise unter „Artikel bearbeiten"
+
+Die Shop-Karte zeigt je HugoShop, in dem der Artikel angeboten wird, eine
+Tabelle „Versand je Zone": je Länderzone und für alle übrigen Länder die
+Versandart, die der Warenkorb wählen würde, und ihr Preis — für den Artikel
+allein in seiner Mindestabnahme (sonst 1 Stück), netto oder brutto wie die
+Verkaufspreise. Dazu „versandkostenfrei", wenn schon der Artikel die
+Freigrenze erreicht, sonst „frei ab …", wenn sie für die Versandart gilt;
+statt eines Preises der Grund, wenn nichts passt (keine Lieferung in die
+Zone, Gewicht fehlt, zugeordnete Versandart passt nicht, keine passende).
+
+- `shop_shipping_select(...)`: Versandart und Preis aus den Kennzahlen einer
+  Sendung. Die eine Regel für Warenkorb und Anzeige — `shop_cart_shipping`
+  ruft sie nach den Prüfungen von Ware und Lieferland auf; am Ergebnis des
+  Warenkorbs ändert sich nichts.
+- `shop_part_shipping_prices(parts_id, channel_id)`: die Zeilen der Tabelle.
+  Bruttowarenwert für die Freigrenze aus Kanalpreis und Steuersatz der
+  Standard-Steuerzone; Lieferländer des Kanals ohne Land der Zone ergeben
+  „keine Lieferung".
+- `getPartShopData` liefert die Zeilen je HugoShop (`shipping_prices`),
+  `savePartShopData` nach jedem Speichern neu (`shipping_messages[].prices`).
+
+Grenze: im Warenkorb mit weiteren Artikeln können eine andere Versandart, ein
+höherer Preis oder die Freigrenze greifen.
+
+### Kosten des Versanddienstleisters
+
+Entscheidung 2026-10-02: Je Preisstufe lassen sich die Kosten hinterlegen,
+die der Versand den Betreiber kostet (`shipping_rate_shop.cost`, netto,
+optional; Feld „Kosten" in der Maske neben dem Preis). Sie dienen nur der
+Anzeige: „Versand je Zone" in der Artikelkarte zeigt, sobald für den Kanal
+Kosten gepflegt sind, zusätzlich Kosten und Differenz (Kundenpreis netto,
+bei Versandfreiheit 0, minus Kosten), negative Differenz rot.
+
+- `shop_shipping_select` liefert die Kosten der gewählten Stufe mit (`cost`);
+  der Warenkorb liest sie nicht.
+- `shop_part_shipping_prices` liefert dazu `price_net` — bei Bruttopreisen mit
+  dem Steuersatz des Versandartikels in der Standard-Steuerzone
+  zurückgerechnet.
+- Beide Funktionen haben neue Ergebnisspalten; der Upstall entfernt die alten
+  Fassungen vorher (`CREATE OR REPLACE` lässt andere Spalten nicht zu).
+
+**Nicht übernommen:** Die Rechnung trägt die Kosten nicht als Einkaufspreis
+der Versandposition ein. Der Ertrag von Shop-Rechnungen ist in kivitendo
+ohnehin unvollständig: `marge_total` und `marge_percent` stehen für alle
+Positionen auf 0. Das gehört in ein eigenes Thema (Ertrag der
+Shop-Rechnungen vollständig schreiben).
+
 **Nicht getestet:** Die SQL-Funktionen sind nicht gegen eine Datenbank
 gelaufen (kein Zugriff aus der Entwicklungsumgebung), die Oberfläche nicht im
 Browser. Geprüft sind PHP-Syntax, Vue-Übersetzung und JSON der Sprachdateien.

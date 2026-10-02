@@ -336,7 +336,9 @@ function setShopWithdrawalProcessed($data) {
  *              Gewichtseinheit (dev/shop-versand.md, Schritt 5)
  *
  * Je HugoShop steht in shipping_message, warum keine Versandart passt (leer =
- * passt) — ohne passende wird die Seite nicht veröffentlicht.
+ * passt) — ohne passende wird die Seite nicht veröffentlicht —, und in
+ * shipping_prices je Zone die Versandart und ihr Preis für diesen Artikel
+ * allein in seiner Mindestabnahme (shop_part_shipping_prices).
  *
  * Die Shop-Angaben aus parts_ext bleiben auch nach dem Abwählen erhalten (V5).
  *
@@ -399,6 +401,10 @@ function getPartShopData($data) {
                        CASE WHEN c.type = 'hugoshop'
                             THEN (SELECT row_to_json(v)
                                     FROM shop_part_shipping_check(CAST(:parts_id_pruefung AS integer), c.id) v) END AS shipping_check,
+                       -- HugoShop: Versandart und Preis je Zone für diesen Artikel allein
+                       CASE WHEN c.type = 'hugoshop'
+                            THEN (SELECT COALESCE(json_agg(row_to_json(v)), '[]'::json)
+                                    FROM shop_part_shipping_prices(CAST(:parts_id_preise AS integer), c.id) v) END AS shipping_prices,
                        -- Bilder der Marktplätze; der HugoShop führt seine in parts_ext
                        (SELECT COALESCE(json_agg(json_build_object(
                                    'id', i.id, 'filename', i.filename,
@@ -417,6 +423,7 @@ function getPartShopData($data) {
             ':parts_id_bilder' => (int)($data['parts_id'] ?? 0),
             ':parts_id_versand' => (int)($data['parts_id'] ?? 0),
             ':parts_id_pruefung' => (int)($data['parts_id'] ?? 0),
+            ':parts_id_preise'   => (int)($data['parts_id'] ?? 0),
             ':taxzone'         => shopConfigValue($db, 'shop_standard_taxzone', 'Inland'),
         ]
     );
@@ -646,18 +653,22 @@ function savePartShopData($data) {
 
     // Passt nach dem Speichern eine Versandart? Eine eigene Abfrage: die
     // Anweisung oben sieht ihre eigenen Änderungen nicht (Momentaufnahme).
+    // Mit den Versandpreisen je Zone, die von denselben Angaben abhängen.
     $pruefungen = $db->getAll(
-        "SELECT c.id AS channel_id, row_to_json(v) AS pruefung
+        "SELECT c.id AS channel_id, row_to_json(v) AS pruefung,
+                (SELECT COALESCE(json_agg(row_to_json(x)), '[]'::json)
+                   FROM shop_part_shipping_prices(CAST(:parts_id_preise AS integer), c.id) x) AS preise
            FROM sales_channel_shop c
            CROSS JOIN LATERAL shop_part_shipping_check(CAST(:parts_id AS integer), c.id) v
           WHERE c.active AND c.type = 'hugoshop'",
-        [':parts_id' => $partsId]
+        [':parts_id' => $partsId, ':parts_id_preise' => $partsId]
     ) ?: [];
 
     resultInfo(true, 'PART_SHOP_DATA_SAVED', [
         'shipping_messages' => array_map(fn($z) => [
             'channel_id' => (int)$z['channel_id'],
             'message'    => shopShippingCheckText(json_decode((string)$z['pruefung'], true) ?: []),
+            'prices'     => json_decode((string)$z['preise'], true) ?: [],
         ], $pruefungen),
     ]);
 }
@@ -1006,7 +1017,8 @@ function getShopShipping($data) {
                          'parts', (SELECT count(*) FROM parts_shipping_shop ps WHERE ps.shipping_method_id = m.id),
                          'rates', (SELECT COALESCE(json_agg(json_build_object(
                                           'channel_id', r.channel_id, 'zone_id', r.zone_id,
-                                          'weight_from', r.weight_from, 'qty_from', r.qty_from, 'price', r.price)
+                                          'weight_from', r.weight_from, 'qty_from', r.qty_from, 'price', r.price,
+                                          'cost', r.cost)
                                           ORDER BY r.channel_id NULLS FIRST, r.zone_id NULLS FIRST,
                                                    r.weight_from, r.qty_from), '[]')
                                      FROM shipping_rate_shop r WHERE r.shipping_method_id = m.id)
@@ -1107,7 +1119,8 @@ function getShopShipping($data) {
  * @param string $data['ebay_fulfillment_policy_id'] eBay-Versandrichtlinie, leer = die allgemeine
  * @param bool $data['active'] aktiv
  * @param array $data['rates'] Liste aus channel_id, zone_id (leer = alle), weight_from, qty_from, price
- * @testdata {"id": 0, "description": "DHL Paket", "vendor_id": null, "part": {"partnumber": "", "description": "Versand", "buchungsgruppen_id": 1, "suggested": true}, "rank": 10, "max_weight": 31.5, "max_length": 120, "max_girth": 300, "max_width": null, "max_height": null, "max_size": null, "free_shipping_applies": true, "ebay_fulfillment_policy_id": "", "active": true, "rates": [{"channel_id": null, "zone_id": null, "weight_from": 0, "qty_from": 0, "price": 5.99}]}
+ *              und cost (Kosten des Versanddienstleisters, netto, leer = nicht gepflegt)
+ * @testdata {"id": 0, "description": "DHL Paket", "vendor_id": null, "part": {"partnumber": "", "description": "Versand", "buchungsgruppen_id": 1, "suggested": true}, "rank": 10, "max_weight": 31.5, "max_length": 120, "max_girth": 300, "max_width": null, "max_height": null, "max_size": null, "free_shipping_applies": true, "ebay_fulfillment_policy_id": "", "active": true, "rates": [{"channel_id": null, "zone_id": null, "weight_from": 0, "qty_from": 0, "price": 5.99, "cost": 4.49}]}
  */
 function saveShopShippingMethod($data) {
     permit(['edit_shop_config'], false);
@@ -1153,9 +1166,11 @@ function saveShopShippingMethod($data) {
         $gewicht = $zahl($stufe['weight_from'] ?? 0) ?? 0.0;
         $menge   = $zahl($stufe['qty_from'] ?? 0) ?? 0.0;
         $preis   = $zahl($stufe['price'] ?? null);
+        $kosten  = $zahl($stufe['cost'] ?? null);
         if (false === $gewicht || false === $menge || $gewicht < 0 || $menge < 0
-            || null === $preis || false === $preis || $preis < 0) {
-            resultInfo(false, 'VALIDATION_ERROR', null, 'Jede Preisstufe braucht einen Preis ab 0; Gewicht und Stückzahl ab 0');
+            || null === $preis || false === $preis || $preis < 0
+            || false === $kosten || (null !== $kosten && $kosten < 0)) {
+            resultInfo(false, 'VALIDATION_ERROR', null, 'Jede Preisstufe braucht einen Preis ab 0; Gewicht, Stückzahl und Kosten ab 0');
             return;
         }
         $kanal = (int)($stufe['channel_id'] ?? 0) ?: null;
@@ -1167,7 +1182,7 @@ function saveShopShippingMethod($data) {
         }
         $gesehen[$schluessel] = true;
         $stufen[] = ['channel_id' => $kanal, 'zone_id' => $zone, 'weight_from' => $gewicht,
-                     'qty_from' => $menge, 'price' => $preis];
+                     'qty_from' => $menge, 'price' => $preis, 'cost' => $kosten];
     }
 
     $db->beginTransaction();
@@ -1202,7 +1217,8 @@ function saveShopShippingMethod($data) {
              ), neu AS (
                  SELECT s.*
                    FROM jsonb_to_recordset(CAST(:stufen AS jsonb))
-                        AS s(channel_id integer, zone_id integer, weight_from numeric, qty_from numeric, price numeric)
+                        AS s(channel_id integer, zone_id integer, weight_from numeric, qty_from numeric, price numeric,
+                             cost numeric)
              ), weg AS (
                  DELETE FROM shipping_rate_shop r
                   USING methode
@@ -1213,11 +1229,11 @@ function saveShopShippingMethod($data) {
                                        AND neu.weight_from = r.weight_from
                                        AND neu.qty_from    = r.qty_from)
              ), gesetzt AS (
-                 INSERT INTO shipping_rate_shop (shipping_method_id, channel_id, zone_id, weight_from, qty_from, price)
-                 SELECT methode.id, neu.channel_id, neu.zone_id, neu.weight_from, neu.qty_from, neu.price
+                 INSERT INTO shipping_rate_shop (shipping_method_id, channel_id, zone_id, weight_from, qty_from, price, cost)
+                 SELECT methode.id, neu.channel_id, neu.zone_id, neu.weight_from, neu.qty_from, neu.price, neu.cost
                    FROM methode CROSS JOIN neu
                  ON CONFLICT (shipping_method_id, (COALESCE(channel_id, 0)), (COALESCE(zone_id, 0)), weight_from, qty_from)
-                 DO UPDATE SET price = EXCLUDED.price
+                 DO UPDATE SET price = EXCLUDED.price, cost = EXCLUDED.cost
                  RETURNING 1
              )
              SELECT (SELECT id FROM methode) AS id, (SELECT count(*) FROM gesetzt) AS stufen",

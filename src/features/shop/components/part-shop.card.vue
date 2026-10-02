@@ -146,6 +146,53 @@
                                     <div class="text-caption text-medium-emphasis">{{ t('ShopView.partCard.pricePreview') }}</div>
                                 </v-col>
 
+                                <!-- HugoShop: Versand je Zone für diesen Artikel allein, in seiner
+                                     Mindestabnahme — im Warenkorb mit weiteren Artikeln kann es anders kommen -->
+                                <v-col v-if="kanal.type === 'hugoshop' && kanal.active && kanal.shipping_prices.length" cols="12" class="py-1">
+                                    <div class="text-body-2 font-weight-medium">{{ t('ShopView.partCard.shippingPrices') }}</div>
+                                    <div class="text-caption text-medium-emphasis mb-1">
+                                        {{ t('ShopView.partCard.shippingPricesHint', { menge: mindestmenge, art: grundpreisArt }) }}
+                                    </div>
+                                    <v-table density="compact">
+                                        <!-- Kosten und Differenz nur, wenn Kosten gepflegt sind — netto -->
+                                        <thead v-if="mitKosten(kanal)">
+                                            <tr>
+                                                <th>{{ t('ShopView.partCard.shippingZone') }}</th>
+                                                <th>{{ t('ShopView.partCard.shippingMethod') }}</th>
+                                                <th class="text-right">{{ t('ShopView.partCard.shippingPrice') }}</th>
+                                                <th class="text-right">{{ t('ShopView.partCard.shippingCost') }}</th>
+                                                <th class="text-right">{{ t('ShopView.partCard.shippingDifference') }}</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="zeile in kanal.shipping_prices" :key="zeile.zone_id ?? 'rest'">
+                                                <td>{{ zeile.zone || t('ShopView.shippingConfig.otherCountries') }}</td>
+                                                <td>{{ zeile.status === 'ok' ? zeile.method : versandStatusText(zeile.status) }}</td>
+                                                <td class="text-right text-no-wrap">
+                                                    <template v-if="zeile.status === 'ok'">
+                                                        {{ WAHR_WERTE.includes(zeile.free) ? t('ShopView.partCard.shippingFree') : geld(Number(zeile.price)) }}
+                                                        <span
+                                                            v-if="!WAHR_WERTE.includes(zeile.free) && WAHR_WERTE.includes(zeile.free_applies) && zeile.free_from !== null"
+                                                            class="text-caption text-medium-emphasis"
+                                                        >· {{ t('ShopView.partCard.shippingFreeFrom', { betrag: geld(Number(zeile.free_from)) }) }}</span>
+                                                    </template>
+                                                </td>
+                                                <template v-if="mitKosten(kanal)">
+                                                    <td class="text-right text-no-wrap">
+                                                        {{ zeile.cost !== null && zeile.cost !== undefined ? geld(Number(zeile.cost)) : '' }}
+                                                    </td>
+                                                    <td
+                                                        class="text-right text-no-wrap"
+                                                        :class="differenz(zeile) !== null && differenz(zeile) < 0 ? 'text-error' : ''"
+                                                    >
+                                                        {{ differenz(zeile) === null ? '' : (differenz(zeile) > 0 ? '+' : '') + geld(differenz(zeile)) }}
+                                                    </td>
+                                                </template>
+                                            </tr>
+                                        </tbody>
+                                    </v-table>
+                                </v-col>
+
                                 <!-- Verfügbarkeit: angeboten, aber vorübergehend nicht
                                      bestellbar (parts_channel_shop.unavailable) -->
                                 <v-col cols="12" class="py-1">
@@ -677,6 +724,8 @@ function alsKanal(zeile) {
         sync_error: zeile.sync_error || '',
         // HugoShop: warum keine Versandart passt, leer = passt (nur zum Lesen)
         shipping_message: zeile.shipping_message || '',
+        // HugoShop: Versandart und Preis je Zone (nur zum Lesen)
+        shipping_prices: Array.isArray(lies(zeile.shipping_prices)) ? lies(zeile.shipping_prices) : [],
         external_id: zeile.external_id || '',
         images: Array.isArray(lies(zeile.images)) ? lies(zeile.images) : [],
     }
@@ -857,6 +906,28 @@ const betragHinweis = computed(() =>
 const steuersatz = computed(() => Number(steuersaetze.value[props.buchungsgruppenId] ?? 0) || 0)
 
 const rund2 = x => Math.round((x + Number.EPSILON) * 100) / 100
+
+/** Stückzahl der Preisanzeige: Mindestabnahme, sonst 1 */
+const mindestmenge = computed(() => Number(daten.value.shipping?.min_qty) > 0 ? Number(daten.value.shipping.min_qty) : 1)
+
+/** Hat eine Zeile des Kanals Kosten? Dann zeigt die Tabelle Kosten und Differenz */
+const mitKosten = kanal => kanal.shipping_prices.some(z => z.cost !== null && z.cost !== undefined)
+
+/**
+ * Was der Versand einbringt oder kostet, netto: Kundenpreis (frei = 0) minus
+ * Kosten. null, wenn es keinen Preis oder keine Kosten gibt.
+ */
+function differenz(zeile) {
+    if (zeile.status !== 'ok' || zeile.cost === null || zeile.cost === undefined) return null
+    const preis = WAHR_WERTE.includes(zeile.free) ? 0 : Number(zeile.price_net ?? 0)
+    return rund2(preis - Number(zeile.cost))
+}
+
+/** Warum es für eine Zone keinen Versandpreis gibt */
+function versandStatusText(status) {
+    const schluessel = `ShopView.partCard.shippingStatus.${status}`
+    return te(schluessel) ? t(schluessel) : status
+}
 
 function geld(betrag) {
     try {
@@ -1084,7 +1155,10 @@ function versandMeldungen(meldungen) {
     if (!Array.isArray(meldungen)) return
     for (const meldung of meldungen) {
         const kanal = daten.value.channels.find(k => k.channel_id === Number(meldung.channel_id))
-        if (kanal) kanal.shipping_message = meldung.message || ''
+        if (kanal) {
+            kanal.shipping_message = meldung.message || ''
+            kanal.shipping_prices = Array.isArray(meldung.prices) ? meldung.prices : []
+        }
     }
 }
 

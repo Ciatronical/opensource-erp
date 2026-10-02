@@ -351,7 +351,7 @@
                         {{ t('ShopView.shippingConfig.duplicateRate') }}
                     </v-alert>
                     <v-row v-for="(stufe, index) in methode.rates" :key="index" dense align="center">
-                        <v-col cols="6" md="3" class="py-1">
+                        <v-col cols="6" md="2" class="py-1">
                             <v-select
                                 v-model="stufe.channel_id"
                                 :items="kanalAuswahl"
@@ -361,7 +361,7 @@
                                 hide-details
                             />
                         </v-col>
-                        <v-col cols="6" md="3" class="py-1">
+                        <v-col cols="6" md="2" class="py-1">
                             <v-select
                                 v-model="stufe.zone_id"
                                 :items="zonenAuswahl"
@@ -397,7 +397,7 @@
                                 hide-details
                             />
                         </v-col>
-                        <v-col cols="3" md="2" class="py-1">
+                        <v-col cols="4" md="2" class="py-1">
                             <v-text-field
                                 persistent-placeholder
                                 v-model="stufe.price"
@@ -407,6 +407,23 @@
                                 :label="t('ShopView.shippingConfig.price')"
                                 :suffix="waehrung"
                                 :rules="[preisPruefen]"
+                                variant="outlined"
+                                density="compact"
+                                hide-details="auto"
+                            />
+                        </v-col>
+                        <!-- Kosten des Versanddienstleisters, netto — nur zur Anzeige in der Artikelkarte -->
+                        <v-col cols="4" md="2" class="py-1">
+                            <v-text-field
+                                persistent-placeholder
+                                v-model="stufe.cost"
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                :label="t('ShopView.shippingConfig.cost')"
+                                :title="t('ShopView.shippingConfig.costHint')"
+                                :suffix="waehrung"
+                                :rules="[kostenPruefen]"
                                 variant="outlined"
                                 density="compact"
                                 hide-details="auto"
@@ -523,6 +540,7 @@ const leer = wert => wert === null || wert === undefined || String(wert).trim() 
 const pflicht = wert => !leer(wert) || t('ShopView.shippingConfig.required')
 const grenzePruefen = wert => leer(wert) || Number(wert) > 0 || t('ShopView.shippingConfig.limitInvalid')
 const preisPruefen = wert => (!leer(wert) && Number(wert) >= 0) || t('ShopView.shippingConfig.priceInvalid')
+const kostenPruefen = wert => leer(wert) || Number(wert) >= 0 || t('ShopView.shippingConfig.priceInvalid')
 const stufenSchluessel = s => [s.channel_id ?? 0, s.zone_id ?? 0, Number(s.weight_from) || 0, Number(s.qty_from) || 0].join('|')
 function doppelteStufe(methode) {
     const schluessel = methode.rates.map(stufenSchluessel)
@@ -533,7 +551,8 @@ function methodeGueltig(m) {
     return !leer(m.description) && !leer(m.part.description) && m.part.buchungsgruppen_id
         && (!m.id || !leer(m.part.partnumber))
         && [m.max_weight, m.max_length, m.max_girth, m.max_width, m.max_height, m.max_size].every(w => grenzePruefen(w) === true)
-        && m.rates.every(s => preisPruefen(s.price) === true && Number(s.weight_from || 0) >= 0 && Number(s.qty_from || 0) >= 0)
+        && m.rates.every(s => preisPruefen(s.price) === true && kostenPruefen(s.cost) === true
+            && Number(s.weight_from || 0) >= 0 && Number(s.qty_from || 0) >= 0)
         && !doppelteStufe(m)
 }
 
@@ -574,6 +593,7 @@ function alsMethode(m) {
             weight_from: zahlOderLeer(s.weight_from),
             qty_from: zahlOderLeer(s.qty_from),
             price: zahlOderLeer(s.price),
+            cost: zahlOderLeer(s.cost),
         })),
         speichert: false,
     }
@@ -658,6 +678,7 @@ function methodeNutzdaten(m) {
             weight_from: Number(s.weight_from) || 0,
             qty_from: Number(s.qty_from) || 0,
             price: zahl(s.price),
+            cost: zahl(s.cost),
         })),
     }
 }
@@ -743,7 +764,7 @@ function methodeNeu() {
         id: 0, description: '', rank: 0, free_shipping_applies: true, active: true,
         partnumber: naechsteNummer.value,
         part_buchungsgruppen_id: buchungsgruppen.value[0]?.id ?? null,
-        rates: [{ channel_id: null, zone_id: null, weight_from: 0, qty_from: 0, price: null }],
+        rates: [{ channel_id: null, zone_id: null, weight_from: 0, qty_from: 0, price: null, cost: null }],
     }))
     methoden.value[methoden.value.length - 1].schluessel = `neu-m${laufend}`
 }
@@ -761,6 +782,7 @@ function stufeNeu(methode) {
         weight_from: '',
         qty_from: '',
         price: '',
+        cost: '',
     })
 }
 
