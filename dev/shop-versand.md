@@ -639,6 +639,53 @@ SELECT c.name AS hugoshop, p.partnumber, p.description,
  ORDER BY c.name, v.status, p.partnumber;
 ```
 
+### Versandartikel in der Maske der Versandart
+
+Entscheidungen 2026-10-02: Die Versandart verwaltet ihren Versandartikel
+selbst, statt einen vorhandenen Artikel auszuwählen.
+
+| Frage | Entscheidung |
+| --- | --- |
+| Ein Artikel für mehrere Versandarten? | Nein — je Versandart ein eigener (eindeutiger Index `shipping_method_shop_parts_id_key`) |
+| Artikeltyp | immer Dienstleistung: nie im Lager, nie im Shop angeboten |
+| Nummer | neu: nächste freie aus `servicenumber` vorgeschlagen; änderbar, solange der Artikel auf keiner Rechnung steht |
+| Bezeichnung | steht auf der Rechnung (wie bei jeder Position im Kern); Vorgabe „Versand" |
+| Einheit, Preis, Buchungsgruppe | Stck, Verkaufspreis 0 (der Preis kommt aus den Preisstufen), erste Buchungsgruppe vorbelegt |
+| Recht | `edit_shop_config` genügt |
+| Versandart löschen | Artikel bleibt (Rechnungen verweisen auf ihn), wird ausgemustert |
+
+**Maske** (`shop-shipping.config.vue`): Abschnitt „Versandartikel" mit
+Artikelnummer, Bezeichnung auf der Rechnung und Buchungsgruppe statt der
+Artikelsuche (`searchShopShippingParts` entfällt). Bei einer neuen Versandart
+steht die nächste freie Nummer im Feld; leer heißt „wird vergeben".
+
+**Speichern** (`saveShopShippingMethod`, eine Transaktion):
+
+- `shopShippingPartSave`: neu — vorgeschlagene oder leere Nummer über
+  `nextFreeNumber` (ist der Vorschlag inzwischen vergeben, die nächste
+  freie), eine eingegebene nur, wenn sie frei ist. Vorhanden — Bezeichnung
+  und Buchungsgruppe, die Nummer nur ohne Rechnungsposition; ein Artikel, der
+  noch keine Dienstleistung ist, wird umgestellt, nicht aber bei
+  Lagerbuchungen oder in einer Stückliste. Ein ausgemusterter wird wieder
+  aufgenommen.
+- `shopShippingPartWithdraw` — vor der Änderung des Artikels: Kanalzeilen
+  aus; Marktplätze beenden ihr Angebot (Trigger), HugoShop-Seiten werden nach
+  der Transaktion entfernt.
+- Antwort mit `parts_id` und der vergebenen `partnumber`.
+
+**Nie im Shop:** `savePartShopData` lehnt das Anbieten eines Versandartikels
+ab (`SHIPPING_PART_NOT_OFFERED`). Die Artikelkarte zeigt „Versandartikel der
+Versandart „…" — wird nicht im Shop angeboten" und sperrt den Schalter
+„Im Shop anbieten" (`getPartShopData` → `part.shipping_method_of`).
+
+**Rechnung:** Die Versandposition trägt Bezeichnung und Langtext
+(`parts.notes`) des Versandartikels, nicht mehr den Namen der Versandart.
+Warenkorb und Kasse nennen weiter die Versandart.
+
+**Upstall:** Teilen sich schon zwei Versandarten einen Artikel, legt er den
+Index nicht an und meldet es (`WARNING`); die Zuordnung ist dann von Hand zu
+trennen.
+
 **Nicht getestet:** Die SQL-Funktionen sind nicht gegen eine Datenbank
 gelaufen (kein Zugriff aus der Entwicklungsumgebung), die Oberfläche nicht im
 Browser. Geprüft sind PHP-Syntax, Vue-Übersetzung und JSON der Sprachdateien.

@@ -159,6 +159,7 @@
             "imageError": "Görsel işlenemedi.",
             "syncStatus": "{kanal} durumu",
             "shippingUnfit": "Uygun gönderim yöntemi yok — sayfa yayımlanmayacak.",
+            "shippingPart": "„{name}“ gönderim yönteminin kargo ürünü — mağazada sunulmaz.",
             "listingId": "İlan {id}",
             "ebayCategory": "eBay kategorisi",
             "ebayCondition": "Durum",
@@ -271,8 +272,15 @@
             "deleteMethodConfirm": "“{name}” gönderim yöntemi silinsin mi? Fiyat kademeleri de silinecek; atandığı ürünler yeniden en ucuz uygun yöntemi alır.",
             "vendor": "Taşıyıcı",
             "vendorGeneric": "genel (taşıyıcısız)",
-            "part": "Gönderim ürünü",
-            "partHint": "Gönderim satırının tanımı, gelir hesabı ve vergisi",
+            "partSection": "Kargo ürünü",
+            "partSectionHint": "Yalnızca bu gönderim yöntemine ait bir hizmet: adı faturada yer alır, muhasebe grubu gelir hesabını ve vergiyi belirler. Mağazada asla sunulmaz.",
+            "partnumber": "Ürün numarası",
+            "partnumberAuto": "otomatik atanır",
+            "partnumberSuggested": "Sonraki boş numara",
+            "partnumberLocked": "Faturalarda yer alıyor — artık değiştirilemez",
+            "partDescription": "Faturadaki ad",
+            "partDefaultName": "Kargo",
+            "buchungsgruppe": "Muhasebe grubu",
             "rank": "Sıra",
             "rankHint": "yüksek olan kazanır",
             "maxWeight": "Azami ağırlık",
@@ -296,7 +304,6 @@
             "qtyFrom": "adetten itibaren",
             "price": "Fiyat",
             "deleteRate": "Kademeyi kaldır",
-            "obsolete": "kullanım dışı",
             "required": "Zorunlu alan",
             "limitInvalid": "boş veya 0'dan büyük",
             "priceInvalid": "fiyat 0'dan itibaren",
@@ -366,7 +373,8 @@
             "CHANNEL_KEY_TAKEN": "Bu mağaza anahtarı zaten başka bir HugoShop'a ait.",
             "CHANNEL_IN_USE": "Bu kanala bağlı faturalar, cayma bildirimleri veya eBay siparişleri var. Yalnızca kapatılabilir.",
             "CHANNEL_NOT_DELETABLE": "Yalnızca açık görevi olmayan kapalı bir kanal silinebilir.",
-            "SHIPPING_UNFIT": "Yayımlanmayacak"
+            "SHIPPING_UNFIT": "Yayımlanmayacak",
+            "SHIPPING_PART_NOT_OFFERED": "Kargo ürünleri sunulmaz"
         }
     }
 }

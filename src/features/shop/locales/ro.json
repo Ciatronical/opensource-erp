@@ -159,6 +159,7 @@
             "imageError": "Imaginea nu a putut fi procesată.",
             "syncStatus": "Stare la {kanal}",
             "shippingUnfit": "Nicio metodă de livrare potrivită — pagina nu va fi publicată.",
+            "shippingPart": "Articol de livrare al metodei „{name}” — nu se oferă în magazin.",
             "listingId": "Anunț {id}",
             "ebayCategory": "Categorie eBay",
             "ebayCondition": "Stare",
@@ -271,8 +272,15 @@
             "deleteMethodConfirm": "Ștergeți metoda de livrare „{name}”? Treptele ei de preț vor fi șterse; articolele cărora le era atribuită primesc din nou cea mai ieftină potrivită.",
             "vendor": "Transportator",
             "vendorGeneric": "generală (fără transportator)",
-            "part": "Articol de livrare",
-            "partHint": "Denumirea, contul de venituri și taxa poziției de livrare",
+            "partSection": "Articol de livrare",
+            "partSectionHint": "Un serviciu doar pentru această metodă de livrare: denumirea sa apare pe factură, grupa contabilă stabilește contul de venituri și taxa. Nu se oferă niciodată în magazin.",
+            "partnumber": "Cod articol",
+            "partnumberAuto": "se atribuie automat",
+            "partnumberSuggested": "Următorul număr liber",
+            "partnumberLocked": "Apare pe facturi — nu mai poate fi modificat",
+            "partDescription": "Denumire pe factură",
+            "partDefaultName": "Livrare",
+            "buchungsgruppe": "Grupă contabilă",
             "rank": "Rang",
             "rankHint": "mai mare câștigă",
             "maxWeight": "Greutate maximă",
@@ -296,7 +304,6 @@
             "qtyFrom": "de la buc.",
             "price": "Preț",
             "deleteRate": "Elimină treapta",
-            "obsolete": "scos din uz",
             "required": "Câmp obligatoriu",
             "limitInvalid": "gol sau mai mare decât 0",
             "priceInvalid": "preț de la 0",
@@ -366,7 +373,8 @@
             "CHANNEL_KEY_TAKEN": "Această cheie de magazin aparține deja altui HugoShop.",
             "CHANNEL_IN_USE": "De acest canal depind facturi, retrageri sau comenzi eBay. Poate fi doar dezactivat.",
             "CHANNEL_NOT_DELETABLE": "Poate fi șters doar un canal dezactivat, fără sarcini deschise.",
-            "SHIPPING_UNFIT": "Nu va fi publicat"
+            "SHIPPING_UNFIT": "Nu va fi publicat",
+            "SHIPPING_PART_NOT_OFFERED": "Articolele de livrare nu se oferă"
         }
     }
 }

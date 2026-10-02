@@ -159,6 +159,7 @@
             "imageError": "Bilden kunde inte behandlas.",
             "syncStatus": "Status hos {kanal}",
             "shippingUnfit": "Inget passande fraktsätt — sidan publiceras inte.",
+            "shippingPart": "Fraktartikel för fraktsättet ”{name}” — erbjuds inte i butiken.",
             "listingId": "Annons {id}",
             "ebayCategory": "eBay-kategori",
             "ebayCondition": "Skick",
@@ -271,8 +272,15 @@
             "deleteMethodConfirm": "Ta bort fraktsättet ”{name}”? Dess prissteg tas också bort; varor det var tilldelat får åter det billigaste lämpliga.",
             "vendor": "Transportör",
             "vendorGeneric": "allmänt (utan transportör)",
-            "part": "Fraktartikel",
-            "partHint": "Benämning, intäktskonto och moms för fraktraden",
+            "partSection": "Fraktartikel",
+            "partSectionHint": "En tjänst endast för detta fraktsätt: benämningen står på fakturan, bokföringsgruppen bestämmer intäktskonto och moms. Erbjuds aldrig i butiken.",
+            "partnumber": "Artikelnummer",
+            "partnumberAuto": "tilldelas automatiskt",
+            "partnumberSuggested": "Nästa lediga nummer",
+            "partnumberLocked": "Står på fakturor — kan inte längre ändras",
+            "partDescription": "Benämning på fakturan",
+            "partDefaultName": "Frakt",
+            "buchungsgruppe": "Bokföringsgrupp",
             "rank": "Rang",
             "rankHint": "högre vinner",
             "maxWeight": "Maxvikt",
@@ -296,7 +304,6 @@
             "qtyFrom": "från st.",
             "price": "Pris",
             "deleteRate": "Ta bort steg",
-            "obsolete": "utgången",
             "required": "Obligatoriskt fält",
             "limitInvalid": "tom eller större än 0",
             "priceInvalid": "pris från 0",
@@ -366,7 +373,8 @@
             "CHANNEL_KEY_TAKEN": "Den här butiksnyckeln tillhör redan en annan HugoShop.",
             "CHANNEL_IN_USE": "Fakturor, ångerrätter eller eBay-beställningar hänvisar till den här kanalen. Den kan bara stängas av.",
             "CHANNEL_NOT_DELETABLE": "Endast en avstängd kanal utan öppna uppdrag kan tas bort.",
-            "SHIPPING_UNFIT": "Publiceras inte"
+            "SHIPPING_UNFIT": "Publiceras inte",
+            "SHIPPING_PART_NOT_OFFERED": "Fraktartiklar erbjuds inte"
         }
     }
 }

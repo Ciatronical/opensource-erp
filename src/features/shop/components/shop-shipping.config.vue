@@ -5,7 +5,9 @@
     bis dahin stand die Karte in der Firmenkonfiguration (Reiter Shop).
 
     Eine Versandart hat einen Anbieter (Lieferant, oder allgemein), einen
-    Versandartikel (Bezeichnung, Erlöskonto und Steuer der Versandposition),
+    eigenen Versandartikel, den sie verwaltet (Nummer, Bezeichnung auf der
+    Rechnung, Buchungsgruppe für Erlöskonto und Steuer; immer eine
+    Dienstleistung, nie im Shop angeboten),
     einen Rang (bei verschiedenen zugeordneten Versandarten gilt die
     ranghöchste), Grenzen für Gewicht und Abmessungen und Preisstufen je
     Kanal, Zone, Gewicht und Stückzahl.
@@ -152,23 +154,6 @@
                                 hide-details
                             />
                         </v-col>
-                        <v-col cols="12" sm="6" md="4" class="py-1">
-                            <v-autocomplete
-                                v-model="methode.parts_id"
-                                :items="artikelAuswahl(methode)"
-                                :label="t('ShopView.shippingConfig.part')"
-                                :hint="t('ShopView.shippingConfig.partHint')"
-                                :rules="[pflicht]"
-                                :loading="artikelSucheLaeuft"
-                                no-filter
-                                persistent-hint
-                                variant="outlined"
-                                density="compact"
-                                hide-details="auto"
-                                @update:search="text => artikelSuchen(text)"
-                                @update:model-value="id => artikelGewaehlt(methode, id)"
-                            />
-                        </v-col>
                         <v-col cols="6" sm="3" md="2" class="py-1">
                             <v-text-field
                                 v-model="methode.rank"
@@ -235,6 +220,52 @@
                                 density="compact"
                                 hide-details="auto"
                                 autocomplete="off"
+                            />
+                        </v-col>
+                    </v-row>
+
+                    <!-- Versandartikel: gehört dieser Versandart, hier verwaltet -->
+                    <div class="text-body-2 font-weight-medium mt-3">{{ t('ShopView.shippingConfig.partSection') }}</div>
+                    <div class="text-caption text-medium-emphasis mb-1">{{ t('ShopView.shippingConfig.partSectionHint') }}</div>
+                    <v-row dense>
+                        <v-col cols="12" sm="3" class="py-1">
+                            <v-text-field
+                                v-model="methode.part.partnumber"
+                                :label="t('ShopView.shippingConfig.partnumber')"
+                                :placeholder="methode.id ? '' : t('ShopView.shippingConfig.partnumberAuto')"
+                                :hint="methode.part.used
+                                    ? t('ShopView.shippingConfig.partnumberLocked')
+                                    : (!methode.id && methode.part.partnumber === naechsteNummer ? t('ShopView.shippingConfig.partnumberSuggested') : '')"
+                                :readonly="methode.part.used"
+                                :rules="methode.id ? [pflicht] : []"
+                                persistent-hint
+                                persistent-placeholder
+                                variant="outlined"
+                                density="compact"
+                                hide-details="auto"
+                                autocomplete="off"
+                            />
+                        </v-col>
+                        <v-col cols="12" sm="5" class="py-1">
+                            <v-text-field
+                                v-model="methode.part.description"
+                                :label="t('ShopView.shippingConfig.partDescription')"
+                                :rules="[pflicht]"
+                                variant="outlined"
+                                density="compact"
+                                hide-details="auto"
+                                autocomplete="off"
+                            />
+                        </v-col>
+                        <v-col cols="12" sm="4" class="py-1">
+                            <v-select
+                                v-model="methode.part.buchungsgruppen_id"
+                                :items="buchungsgruppenAuswahl"
+                                :label="t('ShopView.shippingConfig.buchungsgruppe')"
+                                :rules="[pflicht]"
+                                variant="outlined"
+                                density="compact"
+                                hide-details="auto"
                             />
                         </v-col>
                     </v-row>
@@ -425,42 +456,11 @@ const zonenAuswahl = computed(() => [
     ...zonen.value.filter(z => z.id).map(z => ({ value: z.id, title: z.description })),
 ])
 
-// Versandartikel: gesucht wird im Backend; der gewählte bleibt in der Liste
-const artikelTreffer = ref([])
-const artikelSucheLaeuft = ref(false)
-let artikelTimer = null
-function artikelAuswahl(methode) {
-    const liste = [...artikelTreffer.value]
-    if (methode.parts_id && !liste.some(a => a.id === methode.parts_id)) {
-        liste.unshift({ id: methode.parts_id, partnumber: methode.partnumber, description: methode.part_description })
-    }
-    return liste.map(a => ({
-        value: a.id,
-        title: `${a.partnumber} – ${a.description}${WAHR.includes(a.obsolete) ? ` (${t('ShopView.shippingConfig.obsolete')})` : ''}`,
-    }))
-}
-function artikelSuchen(text) {
-    clearTimeout(artikelTimer)
-    if (!text || text.length < 2 || text.includes(' – ')) return
-    artikelTimer = setTimeout(async () => {
-        artikelSucheLaeuft.value = true
-        try {
-            const antwort = await axios.post('/api/shop/', { action: 'searchShopShippingParts', q: text })
-            artikelTreffer.value = (antwort.data?.payload || []).map(a => ({ ...a, id: Number(a.id) }))
-        } catch {
-            artikelTreffer.value = []
-        } finally {
-            artikelSucheLaeuft.value = false
-        }
-    }, 300)
-}
-function artikelGewaehlt(methode, id) {
-    const treffer = artikelTreffer.value.find(a => a.id === id)
-    if (treffer) {
-        methode.partnumber = treffer.partnumber
-        methode.part_description = treffer.description
-    }
-}
+// Versandartikel: Buchungsgruppen zur Auswahl, Vorschlag für die Nummer
+const buchungsgruppen = ref([])
+const buchungsgruppenAuswahl = computed(() => buchungsgruppen.value.map(b => ({ value: Number(b.id), title: b.description })))
+/** Nächste freie Dienstleistungsnummer — verbraucht, sobald eine neue Versandart sie bekommen hat */
+const naechsteNummer = ref('')
 
 // ── Prüfungen ──
 
@@ -474,7 +474,9 @@ function doppelteStufe(methode) {
     return new Set(schluessel).size !== schluessel.length
 }
 function methodeGueltig(m) {
-    return !leer(m.description) && m.parts_id
+    // Die Nummer darf bei einer neuen Versandart leer sein: dann vergibt das Backend die nächste freie
+    return !leer(m.description) && !leer(m.part.description) && m.part.buchungsgruppen_id
+        && (!m.id || !leer(m.part.partnumber))
         && [m.max_weight, m.max_length, m.max_girth].every(w => grenzePruefen(w) === true)
         && m.rates.every(s => preisPruefen(s.price) === true && Number(s.weight_from || 0) >= 0 && Number(s.qty_from || 0) >= 0)
         && !doppelteStufe(m)
@@ -493,8 +495,13 @@ function alsMethode(m) {
         description: m.description || '',
         vendor_id: m.vendor_id ? Number(m.vendor_id) : null,
         parts_id: m.parts_id ? Number(m.parts_id) : null,
-        partnumber: m.partnumber || '',
-        part_description: m.part_description || '',
+        // Versandartikel; used = steht auf Rechnungen, die Nummer bleibt dann
+        part: {
+            partnumber: m.partnumber || '',
+            description: m.part_description || t('ShopView.shippingConfig.partDefaultName'),
+            buchungsgruppen_id: m.part_buchungsgruppen_id ? Number(m.part_buchungsgruppen_id) : null,
+            used: WAHR.includes(m.part_used),
+        },
         rank: String(m.rank ?? 0),
         max_weight: zahlOderLeer(m.max_weight),
         max_length: zahlOderLeer(m.max_length),
@@ -543,6 +550,8 @@ async function laden() {
         laender.value = daten.countries || []
         gewichtseinheit.value = daten.weightunit || ''
         ausBackend.value = WAHR.includes(daten.tax_included)
+        buchungsgruppen.value = daten.buchungsgruppen || []
+        naechsteNummer.value = daten.next_partnumber || ''
         methoden.value.forEach(m => { zuletzt[m.schluessel] = JSON.stringify(methodeNutzdaten(m)) })
         zonen.value.forEach(z => { zuletzt[z.schluessel] = JSON.stringify(zoneNutzdaten(z)) })
     } catch (e) {
@@ -567,7 +576,14 @@ function methodeNutzdaten(m) {
         id: m.id || 0,
         description: m.description.trim(),
         vendor_id: m.vendor_id || null,
-        parts_id: m.parts_id || 0,
+        part: {
+            partnumber: m.part.partnumber.trim(),
+            description: m.part.description.trim(),
+            buchungsgruppen_id: m.part.buchungsgruppen_id || 0,
+            // Der Vorschlag wird beim Anlegen erst verbraucht — ist er
+            // inzwischen vergeben, nimmt das Backend die nächste freie
+            suggested: !m.id && (!m.part.partnumber.trim() || m.part.partnumber.trim() === naechsteNummer.value),
+        },
         rank: Number(m.rank) || 0,
         max_weight: zahl(m.max_weight),
         max_length: zahl(m.max_length),
@@ -610,6 +626,17 @@ async function speichern(eintrag, art) {
             return
         }
         eintrag.id = Number(antwort.data.payload?.id) || eintrag.id
+        if (art !== 'zone') {
+            const antwortDaten = antwort.data.payload || {}
+            eintrag.parts_id = Number(antwortDaten.parts_id) || eintrag.parts_id
+            // Neu angelegt: die vergebene Nummer zeigen; der Vorschlag ist verbraucht
+            if (antwortDaten.partnumber && eintrag.part.partnumber !== antwortDaten.partnumber) {
+                if (eintrag.part.partnumber === naechsteNummer.value || !eintrag.part.partnumber) naechsteNummer.value = ''
+                eintrag.part.partnumber = antwortDaten.partnumber
+            } else if (antwortDaten.partnumber === naechsteNummer.value) {
+                naechsteNummer.value = ''
+            }
+        }
         zuletzt[eintrag.schluessel] = JSON.stringify(art === 'zone' ? zoneNutzdaten(eintrag) : methodeNutzdaten(eintrag))
         // Ein Land wechselt die Zone: die andere Zone zeigt es nicht mehr
         if (art === 'zone') {
@@ -650,8 +677,11 @@ watch(zonen, liste => planen(liste, 'zone'), { deep: true })
 
 function methodeNeu() {
     laufend += 1
+    // Versandartikel vorbelegt: nächste freie Nummer, „Versand“, erste Buchungsgruppe
     methoden.value.push(alsMethode({
         id: 0, description: '', rank: 0, free_shipping_applies: true, active: true,
+        partnumber: naechsteNummer.value,
+        part_buchungsgruppen_id: buchungsgruppen.value[0]?.id ?? null,
         rates: [{ channel_id: null, zone_id: null, weight_from: 0, qty_from: 0, price: null }],
     }))
     methoden.value[methoden.value.length - 1].schluessel = `neu-m${laufend}`

@@ -159,6 +159,7 @@
             "imageError": "Das Bild konnte nicht verarbeitet werden.",
             "syncStatus": "Stand bei {kanal}",
             "shippingUnfit": "Keine passende Versandart — die Seite wird nicht veröffentlicht.",
+            "shippingPart": "Versandartikel der Versandart „{name}“ — wird nicht im Shop angeboten.",
             "listingId": "Angebot {id}",
             "ebayCategory": "eBay-Kategorie",
             "ebayCondition": "Zustand",
@@ -271,8 +272,15 @@
             "deleteMethodConfirm": "Versandart „{name}“ löschen? Ihre Preisstufen werden mitgelöscht; Artikel, denen sie zugeordnet war, bekommen wieder die günstigste passende.",
             "vendor": "Anbieter",
             "vendorGeneric": "allgemein (ohne Anbieter)",
-            "part": "Versandartikel",
-            "partHint": "Bezeichnung, Erlöskonto und Steuer der Versandposition",
+            "partSection": "Versandartikel",
+            "partSectionHint": "Eine Dienstleistung nur für diese Versandart: Ihre Bezeichnung steht auf der Rechnung, die Buchungsgruppe bestimmt Erlöskonto und Steuer. Wird nie im Shop angeboten.",
+            "partnumber": "Artikelnummer",
+            "partnumberAuto": "wird vergeben",
+            "partnumberSuggested": "Nächste freie Nummer",
+            "partnumberLocked": "Steht auf Rechnungen — nicht mehr änderbar",
+            "partDescription": "Bezeichnung auf der Rechnung",
+            "partDefaultName": "Versand",
+            "buchungsgruppe": "Buchungsgruppe",
             "rank": "Rang",
             "rankHint": "höher gewinnt",
             "maxWeight": "Höchstgewicht",
@@ -296,7 +304,6 @@
             "qtyFrom": "ab Stück",
             "price": "Preis",
             "deleteRate": "Stufe entfernen",
-            "obsolete": "ausgemustert",
             "required": "Pflichtfeld",
             "limitInvalid": "leer oder größer als 0",
             "priceInvalid": "Preis ab 0",
@@ -366,7 +373,8 @@
             "CHANNEL_KEY_TAKEN": "Dieser Shop-Schlüssel gehört schon einem anderen HugoShop.",
             "CHANNEL_IN_USE": "An diesem Kanal hängen Rechnungen, Widerrufe oder eBay-Bestellungen. Er lässt sich nur abschalten.",
             "CHANNEL_NOT_DELETABLE": "Nur ein abgeschalteter Kanal ohne offene Aufträge lässt sich löschen.",
-            "SHIPPING_UNFIT": "Wird nicht veröffentlicht"
+            "SHIPPING_UNFIT": "Wird nicht veröffentlicht",
+            "SHIPPING_PART_NOT_OFFERED": "Versandartikel werden nicht angeboten"
         }
     }
 }

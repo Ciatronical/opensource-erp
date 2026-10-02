@@ -159,6 +159,7 @@
             "imageError": "Nie udało się przetworzyć zdjęcia.",
             "syncStatus": "Stan w {kanal}",
             "shippingUnfit": "Brak pasującej metody wysyłki — strona nie zostanie opublikowana.",
+            "shippingPart": "Artykuł wysyłki metody „{name}” — nie jest oferowany w sklepie.",
             "listingId": "Oferta {id}",
             "ebayCategory": "Kategoria eBay",
             "ebayCondition": "Stan",
@@ -271,8 +272,15 @@
             "deleteMethodConfirm": "Usunąć metodę wysyłki „{name}”? Jej progi cenowe też zostaną usunięte; artykuły, do których była przypisana, znów otrzymają najtańszą pasującą.",
             "vendor": "Przewoźnik",
             "vendorGeneric": "ogólna (bez przewoźnika)",
-            "part": "Artykuł wysyłki",
-            "partHint": "Nazwa, konto przychodów i podatek pozycji wysyłki",
+            "partSection": "Artykuł wysyłki",
+            "partSectionHint": "Usługa tylko dla tej metody wysyłki: jej nazwa widnieje na fakturze, grupa księgowa określa konto przychodów i podatek. Nigdy nie jest oferowana w sklepie.",
+            "partnumber": "Numer artykułu",
+            "partnumberAuto": "zostanie nadany automatycznie",
+            "partnumberSuggested": "Następny wolny numer",
+            "partnumberLocked": "Jest na fakturach — nie można już zmienić",
+            "partDescription": "Nazwa na fakturze",
+            "partDefaultName": "Wysyłka",
+            "buchungsgruppe": "Grupa księgowa",
             "rank": "Ranga",
             "rankHint": "wyższa wygrywa",
             "maxWeight": "Maksymalna waga",
@@ -296,7 +304,6 @@
             "qtyFrom": "od szt.",
             "price": "Cena",
             "deleteRate": "Usuń próg",
-            "obsolete": "wycofany",
             "required": "Pole obowiązkowe",
             "limitInvalid": "puste lub większe od 0",
             "priceInvalid": "cena od 0",
@@ -366,7 +373,8 @@
             "CHANNEL_KEY_TAKEN": "Ten klucz sklepu należy już do innego HugoShop.",
             "CHANNEL_IN_USE": "Do tego kanału odnoszą się faktury, odstąpienia lub zamówienia eBay. Można go tylko wyłączyć.",
             "CHANNEL_NOT_DELETABLE": "Usunąć można tylko wyłączony kanał bez otwartych zadań.",
-            "SHIPPING_UNFIT": "Nie zostanie opublikowane"
+            "SHIPPING_UNFIT": "Nie zostanie opublikowane",
+            "SHIPPING_PART_NOT_OFFERED": "Artykuły wysyłki nie są oferowane"
         }
     }
 }

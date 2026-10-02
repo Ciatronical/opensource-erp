@@ -159,6 +159,7 @@
             "imageError": "Pilti ei õnnestunud töödelda.",
             "syncStatus": "Seis kanalis {kanal}",
             "shippingUnfit": "Sobivat tarneviisi pole — lehte ei avaldata.",
+            "shippingPart": "Tarneviisi „{name}“ saatmisartikkel — poes ei pakuta.",
             "listingId": "Kuulutus {id}",
             "ebayCategory": "eBay kategooria",
             "ebayCondition": "Seisukord",
@@ -271,8 +272,15 @@
             "deleteMethodConfirm": "Kustutada tarneviis „{name}“? Ka selle hinnaastmed kustutatakse; artiklid, millele see oli määratud, saavad taas odavaima sobiva.",
             "vendor": "Vedaja",
             "vendorGeneric": "üldine (vedajata)",
-            "part": "Saateartikkel",
-            "partHint": "Saaterea nimetus, tulukonto ja maks",
+            "partSection": "Saatmisartikkel",
+            "partSectionHint": "Teenus ainult selle tarneviisi jaoks: selle nimetus on arvel, kontogrupp määrab tulukonto ja maksu. Poes seda kunagi ei pakuta.",
+            "partnumber": "Artiklinumber",
+            "partnumberAuto": "määratakse automaatselt",
+            "partnumberSuggested": "Järgmine vaba number",
+            "partnumberLocked": "On arvetel — enam ei saa muuta",
+            "partDescription": "Nimetus arvel",
+            "partDefaultName": "Saatmine",
+            "buchungsgruppe": "Kontogrupp",
             "rank": "Järjekoht",
             "rankHint": "kõrgem võidab",
             "maxWeight": "Maksimaalne kaal",
@@ -296,7 +304,6 @@
             "qtyFrom": "alates tk",
             "price": "Hind",
             "deleteRate": "Eemalda aste",
-            "obsolete": "kasutusest kõrvaldatud",
             "required": "Kohustuslik väli",
             "limitInvalid": "tühi või suurem kui 0",
             "priceInvalid": "hind alates 0",
@@ -366,7 +373,8 @@
             "CHANNEL_KEY_TAKEN": "See poe võti kuulub juba teisele HugoShopile.",
             "CHANNEL_IN_USE": "Selle kanaliga on seotud arved, taganemised või eBay tellimused. Selle saab ainult välja lülitada.",
             "CHANNEL_NOT_DELETABLE": "Kustutada saab ainult välja lülitatud kanalit, millel pole avatud ülesandeid.",
-            "SHIPPING_UNFIT": "Ei avaldata"
+            "SHIPPING_UNFIT": "Ei avaldata",
+            "SHIPPING_PART_NOT_OFFERED": "Saatmisartikleid ei pakuta"
         }
     }
 }

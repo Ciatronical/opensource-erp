@@ -159,6 +159,7 @@
             "imageError": "Não foi possível processar a imagem.",
             "syncStatus": "Estado em {kanal}",
             "shippingUnfit": "Nenhum método de envio adequado — a página não será publicada.",
+            "shippingPart": "Artigo de portes do método «{name}» — não é oferecido na loja.",
             "listingId": "Anúncio {id}",
             "ebayCategory": "Categoria eBay",
             "ebayCondition": "Estado do artigo",
@@ -271,8 +272,15 @@
             "deleteMethodConfirm": "Eliminar o método de envio «{name}»? Os seus escalões também serão eliminados; os artigos a que estava atribuído voltam a receber o mais barato adequado.",
             "vendor": "Transportadora",
             "vendorGeneric": "genérico (sem transportadora)",
-            "part": "Artigo de envio",
-            "partHint": "Designação, conta de proveitos e imposto da linha de envio",
+            "partSection": "Artigo de portes",
+            "partSectionHint": "Um serviço apenas para este método de envio: a sua designação consta da fatura, o grupo contabilístico determina a conta de proveitos e o imposto. Nunca é oferecido na loja.",
+            "partnumber": "Número de artigo",
+            "partnumberAuto": "atribuído automaticamente",
+            "partnumberSuggested": "Próximo número livre",
+            "partnumberLocked": "Consta de faturas — já não pode ser alterado",
+            "partDescription": "Designação na fatura",
+            "partDefaultName": "Envio",
+            "buchungsgruppe": "Grupo contabilístico",
             "rank": "Posição",
             "rankHint": "mais alta ganha",
             "maxWeight": "Peso máximo",
@@ -296,7 +304,6 @@
             "qtyFrom": "a partir de unid.",
             "price": "Preço",
             "deleteRate": "Remover escalão",
-            "obsolete": "obsoleto",
             "required": "Campo obrigatório",
             "limitInvalid": "vazio ou maior que 0",
             "priceInvalid": "preço a partir de 0",
@@ -366,7 +373,8 @@
             "CHANNEL_KEY_TAKEN": "Esta chave de loja já pertence a outra HugoShop.",
             "CHANNEL_IN_USE": "Faturas, desistências ou encomendas eBay estão associadas a este canal. Só pode ser desligado.",
             "CHANNEL_NOT_DELETABLE": "Só é possível eliminar um canal desligado sem tarefas pendentes.",
-            "SHIPPING_UNFIT": "Não será publicado"
+            "SHIPPING_UNFIT": "Não será publicado",
+            "SHIPPING_PART_NOT_OFFERED": "Os artigos de portes não são oferecidos"
         }
     }
 }

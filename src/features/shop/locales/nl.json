@@ -159,6 +159,7 @@
             "imageError": "De afbeelding kon niet worden verwerkt.",
             "syncStatus": "Status bij {kanal}",
             "shippingUnfit": "Geen passende verzendmethode — de pagina wordt niet gepubliceerd.",
+            "shippingPart": "Verzendartikel van verzendmethode „{name}” — wordt niet in de winkel aangeboden.",
             "listingId": "Advertentie {id}",
             "ebayCategory": "eBay-categorie",
             "ebayCondition": "Staat",
@@ -271,8 +272,15 @@
             "deleteMethodConfirm": "Verzendmethode „{name}” verwijderen? Haar prijsstaffels worden ook verwijderd; artikelen waaraan ze was toegewezen, krijgen weer de goedkoopste geschikte.",
             "vendor": "Vervoerder",
             "vendorGeneric": "algemeen (zonder vervoerder)",
-            "part": "Verzendartikel",
-            "partHint": "Omschrijving, opbrengstrekening en btw van de verzendregel",
+            "partSection": "Verzendartikel",
+            "partSectionHint": "Een dienst alleen voor deze verzendmethode: de omschrijving staat op de factuur, de boekingsgroep bepaalt opbrengstrekening en btw. Wordt nooit in de winkel aangeboden.",
+            "partnumber": "Artikelnummer",
+            "partnumberAuto": "wordt automatisch toegekend",
+            "partnumberSuggested": "Volgend vrij nummer",
+            "partnumberLocked": "Staat op facturen — niet meer te wijzigen",
+            "partDescription": "Omschrijving op de factuur",
+            "partDefaultName": "Verzending",
+            "buchungsgruppe": "Boekingsgroep",
             "rank": "Rang",
             "rankHint": "hoger wint",
             "maxWeight": "Maximaal gewicht",
@@ -296,7 +304,6 @@
             "qtyFrom": "vanaf st.",
             "price": "Prijs",
             "deleteRate": "Staffel verwijderen",
-            "obsolete": "vervallen",
             "required": "Verplicht veld",
             "limitInvalid": "leeg of groter dan 0",
             "priceInvalid": "prijs vanaf 0",
@@ -366,7 +373,8 @@
             "CHANNEL_KEY_TAKEN": "Deze winkelsleutel hoort al bij een andere HugoShop.",
             "CHANNEL_IN_USE": "Aan dit kanaal zijn facturen, herroepingen of eBay-bestellingen gekoppeld. Het kan alleen worden uitgeschakeld.",
             "CHANNEL_NOT_DELETABLE": "Alleen een uitgeschakeld kanaal zonder openstaande opdrachten kan worden verwijderd.",
-            "SHIPPING_UNFIT": "Wordt niet gepubliceerd"
+            "SHIPPING_UNFIT": "Wordt niet gepubliceerd",
+            "SHIPPING_PART_NOT_OFFERED": "Verzendartikelen worden niet aangeboden"
         }
     }
 }

@@ -159,6 +159,7 @@
             "imageError": "Billedet kunne ikke behandles.",
             "syncStatus": "Status hos {kanal}",
             "shippingUnfit": "Ingen passende forsendelsesmåde — siden bliver ikke offentliggjort.",
+            "shippingPart": "Fragtvare for forsendelsesmåden „{name}“ — udbydes ikke i butikken.",
             "listingId": "Annonce {id}",
             "ebayCategory": "eBay-kategori",
             "ebayCondition": "Stand",
@@ -271,8 +272,15 @@
             "deleteMethodConfirm": "Slet forsendelsesmåden „{name}“? Dens pristrin slettes også; varer, den var tildelt, får igen den billigste egnede.",
             "vendor": "Fragtfirma",
             "vendorGeneric": "generel (uden fragtfirma)",
-            "part": "Forsendelsesvare",
-            "partHint": "Betegnelse, indtægtskonto og moms for forsendelseslinjen",
+            "partSection": "Fragtvare",
+            "partSectionHint": "En ydelse kun til denne forsendelsesmåde: dens betegnelse står på fakturaen, bogføringsgruppen bestemmer indtægtskonto og moms. Udbydes aldrig i butikken.",
+            "partnumber": "Varenummer",
+            "partnumberAuto": "tildeles automatisk",
+            "partnumberSuggested": "Næste ledige nummer",
+            "partnumberLocked": "Står på fakturaer — kan ikke længere ændres",
+            "partDescription": "Betegnelse på fakturaen",
+            "partDefaultName": "Fragt",
+            "buchungsgruppe": "Bogføringsgruppe",
             "rank": "Rang",
             "rankHint": "højere vinder",
             "maxWeight": "Maksimal vægt",
@@ -296,7 +304,6 @@
             "qtyFrom": "fra stk.",
             "price": "Pris",
             "deleteRate": "Fjern trin",
-            "obsolete": "udgået",
             "required": "Obligatorisk felt",
             "limitInvalid": "tom eller større end 0",
             "priceInvalid": "pris fra 0",
@@ -366,7 +373,8 @@
             "CHANNEL_KEY_TAKEN": "Denne shopnøgle tilhører allerede en anden HugoShop.",
             "CHANNEL_IN_USE": "Fakturaer, fortrydelser eller eBay-ordrer henviser til denne kanal. Den kan kun slås fra.",
             "CHANNEL_NOT_DELETABLE": "Kun en slået-fra kanal uden åbne opgaver kan slettes.",
-            "SHIPPING_UNFIT": "Bliver ikke offentliggjort"
+            "SHIPPING_UNFIT": "Bliver ikke offentliggjort",
+            "SHIPPING_PART_NOT_OFFERED": "Fragtvarer udbydes ikke"
         }
     }
 }

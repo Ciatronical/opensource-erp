@@ -159,6 +159,7 @@
             "imageError": "Nuotraukos nepavyko apdoroti.",
             "syncStatus": "Būsena kanale {kanal}",
             "shippingUnfit": "Nėra tinkamo siuntimo būdo — puslapis nebus paskelbtas.",
+            "shippingPart": "Siuntimo būdo „{name}“ siuntimo prekė — parduotuvėje nesiūloma.",
             "listingId": "Skelbimas {id}",
             "ebayCategory": "eBay kategorija",
             "ebayCondition": "Būklė",
@@ -271,8 +272,15 @@
             "deleteMethodConfirm": "Ištrinti siuntimo būdą „{name}“? Bus ištrintos ir jo kainų pakopos; prekės, kurioms jis buvo priskirtas, vėl gaus pigiausią tinkamą.",
             "vendor": "Vežėjas",
             "vendorGeneric": "bendras (be vežėjo)",
-            "part": "Siuntimo prekė",
-            "partHint": "Siuntimo eilutės pavadinimas, pajamų sąskaita ir mokestis",
+            "partSection": "Siuntimo prekė",
+            "partSectionHint": "Paslauga tik šiam siuntimo būdui: jos pavadinimas rodomas sąskaitoje, apskaitos grupė nustato pajamų sąskaitą ir mokestį. Parduotuvėje niekada nesiūloma.",
+            "partnumber": "Prekės numeris",
+            "partnumberAuto": "bus suteiktas automatiškai",
+            "partnumberSuggested": "Kitas laisvas numeris",
+            "partnumberLocked": "Yra sąskaitose — nebegalima keisti",
+            "partDescription": "Pavadinimas sąskaitoje",
+            "partDefaultName": "Siuntimas",
+            "buchungsgruppe": "Apskaitos grupė",
             "rank": "Rangas",
             "rankHint": "didesnis laimi",
             "maxWeight": "Didžiausias svoris",
@@ -296,7 +304,6 @@
             "qtyFrom": "nuo vnt.",
             "price": "Kaina",
             "deleteRate": "Pašalinti pakopą",
-            "obsolete": "nebenaudojamas",
             "required": "Privalomas laukas",
             "limitInvalid": "tuščia arba didesnė nei 0",
             "priceInvalid": "kaina nuo 0",
@@ -366,7 +373,8 @@
             "CHANNEL_KEY_TAKEN": "Šis parduotuvės raktas jau priklauso kitai HugoShop.",
             "CHANNEL_IN_USE": "Su šiuo kanalu susietos sąskaitos, atsisakymai arba eBay užsakymai. Jį galima tik išjungti.",
             "CHANNEL_NOT_DELETABLE": "Ištrinti galima tik išjungtą kanalą be atvirų užduočių.",
-            "SHIPPING_UNFIT": "Nebus paskelbta"
+            "SHIPPING_UNFIT": "Nebus paskelbta",
+            "SHIPPING_PART_NOT_OFFERED": "Siuntimo prekės nesiūlomos"
         }
     }
 }

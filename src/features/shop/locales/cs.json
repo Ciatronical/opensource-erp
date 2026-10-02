@@ -159,6 +159,7 @@
             "imageError": "Obrázek nelze zpracovat.",
             "syncStatus": "Stav v {kanal}",
             "shippingUnfit": "Není vhodný způsob dopravy — stránka se nezveřejní.",
+            "shippingPart": "Položka dopravy způsobu dopravy „{name}“ — v obchodě se nenabízí.",
             "listingId": "Nabídka {id}",
             "ebayCategory": "Kategorie eBay",
             "ebayCondition": "Stav zboží",
@@ -271,8 +272,15 @@
             "deleteMethodConfirm": "Smazat způsob dopravy „{name}“? Jeho cenové stupně budou také smazány; položky, ke kterým byl přiřazen, dostanou opět nejlevnější vhodný.",
             "vendor": "Dopravce",
             "vendorGeneric": "obecný (bez dopravce)",
-            "part": "Položka dopravy",
-            "partHint": "Název, výnosový účet a daň položky dopravy",
+            "partSection": "Položka dopravy",
+            "partSectionHint": "Služba pouze pro tento způsob dopravy: její název je na faktuře, účtovací skupina určuje výnosový účet a daň. V obchodě se nikdy nenabízí.",
+            "partnumber": "Číslo položky",
+            "partnumberAuto": "bude přiděleno",
+            "partnumberSuggested": "Další volné číslo",
+            "partnumberLocked": "Je na fakturách — již nelze změnit",
+            "partDescription": "Název na faktuře",
+            "partDefaultName": "Doprava",
+            "buchungsgruppe": "Účtovací skupina",
             "rank": "Pořadí",
             "rankHint": "vyšší vyhrává",
             "maxWeight": "Maximální hmotnost",
@@ -296,7 +304,6 @@
             "qtyFrom": "od kusů",
             "price": "Cena",
             "deleteRate": "Odebrat stupeň",
-            "obsolete": "vyřazeno",
             "required": "Povinné pole",
             "limitInvalid": "prázdné nebo větší než 0",
             "priceInvalid": "cena od 0",
@@ -366,7 +373,8 @@
             "CHANNEL_KEY_TAKEN": "Tento klíč obchodu už patří jinému HugoShopu.",
             "CHANNEL_IN_USE": "Na tento kanál odkazují faktury, odstoupení nebo objednávky z eBay. Lze ho pouze vypnout.",
             "CHANNEL_NOT_DELETABLE": "Smazat lze jen vypnutý kanál bez otevřených úloh.",
-            "SHIPPING_UNFIT": "Nezveřejní se"
+            "SHIPPING_UNFIT": "Nezveřejní se",
+            "SHIPPING_PART_NOT_OFFERED": "Položky dopravy se nenabízejí"
         }
     }
 }

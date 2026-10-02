@@ -979,13 +979,28 @@ CREATE TABLE IF NOT EXISTS shipping_method_shop
 
 COMMENT ON TABLE  shipping_method_shop             IS 'Shop: Versandart';
 COMMENT ON COLUMN shipping_method_shop.vendor_id   IS 'Anbieter (Lieferant), NULL = allgemeine Versandart';
-COMMENT ON COLUMN shipping_method_shop.parts_id    IS 'Versandartikel: Bezeichnung, Erlöskonto und Steuer der Versandposition';
+COMMENT ON COLUMN shipping_method_shop.parts_id    IS 'Versandartikel (Dienstleistung, je Versandart ein eigener): Bezeichnung, Erlöskonto und Steuer der Versandposition';
 COMMENT ON COLUMN shipping_method_shop.rank        IS 'Rang: bei verschiedenen zugeordneten Versandarten gilt die ranghöchste (W1)';
 COMMENT ON COLUMN shipping_method_shop.max_weight  IS 'Höchstgewicht der Sendung in der Einheit von parts.weight, NULL = ohne Grenze';
 COMMENT ON COLUMN shipping_method_shop.max_length  IS 'Längste Kante des größten Artikels in cm, NULL = ohne Grenze';
 COMMENT ON COLUMN shipping_method_shop.max_girth   IS 'Gurtmaß des größten Artikels in cm (Länge + 2 × Breite + 2 × Höhe), NULL = ohne Grenze';
 COMMENT ON COLUMN shipping_method_shop.free_shipping_applies IS 'Freigrenze des Kanals gilt für diese Versandart (W6)';
 COMMENT ON COLUMN shipping_method_shop.ebay_fulfillment_policy_id IS 'eBay-Versandrichtlinie für Angebote mit dieser Versandart, NULL = die allgemeine';
+
+-- Ein Versandartikel je Versandart (2026-10-02): die Maske der Versandart
+-- verwaltet ihren Artikel — Nummer, Bezeichnung, Buchungsgruppe. Teilten sich
+-- zwei Versandarten einen, änderte die eine die Rechnungsposition der anderen.
+-- Teilen sich schon welche einen Artikel, scheitert der Index; dann bleibt er
+-- weg, der Upstall meldet es, und die Zuordnung ist von Hand zu trennen.
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE indexname = 'shipping_method_shop_parts_id_key') THEN
+        IF EXISTS (SELECT parts_id FROM shipping_method_shop GROUP BY parts_id HAVING count(*) > 1) THEN
+            RAISE WARNING 'shipping_method_shop: mehrere Versandarten teilen sich einen Versandartikel — Index shipping_method_shop_parts_id_key nicht angelegt';
+        ELSE
+            CREATE UNIQUE INDEX shipping_method_shop_parts_id_key ON shipping_method_shop (parts_id);
+        END IF;
+    END IF;
+END $$;
 
 CREATE TABLE IF NOT EXISTS shipping_zone_shop
 (

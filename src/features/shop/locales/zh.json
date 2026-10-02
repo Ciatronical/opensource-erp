@@ -159,6 +159,7 @@
             "imageError": "无法处理该图片。",
             "syncStatus": "{kanal} 状态",
             "shippingUnfit": "没有合适的配送方式——页面不会发布。",
+            "shippingPart": "配送方式“{name}”的运费物料——不在商店中上架。",
             "listingId": "刊登 {id}",
             "ebayCategory": "eBay 类目",
             "ebayCondition": "成色",
@@ -271,8 +272,15 @@
             "deleteMethodConfirm": "删除配送方式“{name}”？其价格档位也将被删除；原先分配了该方式的商品将重新使用最便宜的合适方式。",
             "vendor": "承运商",
             "vendorGeneric": "通用（无承运商）",
-            "part": "运费商品",
-            "partHint": "运费行的名称、收入科目和税",
+            "partSection": "运费物料",
+            "partSectionHint": "仅用于此配送方式的服务：其名称显示在发票上，记账组决定收入科目和税。从不在商店中上架。",
+            "partnumber": "物料号",
+            "partnumberAuto": "自动分配",
+            "partnumberSuggested": "下一个可用编号",
+            "partnumberLocked": "已在发票上——不能再修改",
+            "partDescription": "发票上的名称",
+            "partDefaultName": "运费",
+            "buchungsgruppe": "记账组",
             "rank": "优先级",
             "rankHint": "较高者优先",
             "maxWeight": "最大重量",
@@ -296,7 +304,6 @@
             "qtyFrom": "起始件数",
             "price": "价格",
             "deleteRate": "删除档位",
-            "obsolete": "已停用",
             "required": "必填字段",
             "limitInvalid": "为空或大于 0",
             "priceInvalid": "价格不低于 0",
@@ -366,7 +373,8 @@
             "CHANNEL_KEY_TAKEN": "此商店密钥已属于另一个 HugoShop。",
             "CHANNEL_IN_USE": "此渠道关联有发票、撤回或 eBay 订单，只能关闭。",
             "CHANNEL_NOT_DELETABLE": "只有已关闭且没有未完成任务的渠道才能删除。",
-            "SHIPPING_UNFIT": "不会发布"
+            "SHIPPING_UNFIT": "不会发布",
+            "SHIPPING_PART_NOT_OFFERED": "运费物料不上架"
         }
     }
 }

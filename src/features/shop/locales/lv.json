@@ -159,6 +159,7 @@
             "imageError": "Attēlu neizdevās apstrādāt.",
             "syncStatus": "Statuss kanālā {kanal}",
             "shippingUnfit": "Nav piemērota piegādes veida — lapa netiks publicēta.",
+            "shippingPart": "Piegādes veida “{name}” piegādes prece — veikalā netiek piedāvāta.",
             "listingId": "Sludinājums {id}",
             "ebayCategory": "eBay kategorija",
             "ebayCondition": "Stāvoklis",
@@ -271,8 +272,15 @@
             "deleteMethodConfirm": "Dzēst piegādes veidu „{name}“? Tiks dzēstas arī tā cenu pakāpes; precēm, kurām tas bija piesaistīts, atkal piešķirs lētāko piemēroto.",
             "vendor": "Pārvadātājs",
             "vendorGeneric": "vispārīgs (bez pārvadātāja)",
-            "part": "Piegādes prece",
-            "partHint": "Piegādes rindas nosaukums, ieņēmumu konts un nodoklis",
+            "partSection": "Piegādes prece",
+            "partSectionHint": "Pakalpojums tikai šim piegādes veidam: tā nosaukums ir rēķinā, grāmatošanas grupa nosaka ieņēmumu kontu un nodokli. Veikalā nekad netiek piedāvāts.",
+            "partnumber": "Preces numurs",
+            "partnumberAuto": "tiks piešķirts automātiski",
+            "partnumberSuggested": "Nākamais brīvais numurs",
+            "partnumberLocked": "Ir rēķinos — vairs nevar mainīt",
+            "partDescription": "Nosaukums rēķinā",
+            "partDefaultName": "Piegāde",
+            "buchungsgruppe": "Grāmatošanas grupa",
             "rank": "Rangs",
             "rankHint": "augstāks uzvar",
             "maxWeight": "Maksimālais svars",
@@ -296,7 +304,6 @@
             "qtyFrom": "no gab.",
             "price": "Cena",
             "deleteRate": "Noņemt pakāpi",
-            "obsolete": "novecojis",
             "required": "Obligāts lauks",
             "limitInvalid": "tukšs vai lielāks par 0",
             "priceInvalid": "cena no 0",
@@ -366,7 +373,8 @@
             "CHANNEL_KEY_TAKEN": "Šī veikala atslēga jau pieder citam HugoShop.",
             "CHANNEL_IN_USE": "Ar šo kanālu saistīti rēķini, atteikumi vai eBay pasūtījumi. To var tikai izslēgt.",
             "CHANNEL_NOT_DELETABLE": "Dzēst var tikai izslēgtu kanālu bez atvērtiem uzdevumiem.",
-            "SHIPPING_UNFIT": "Netiks publicēts"
+            "SHIPPING_UNFIT": "Netiks publicēts",
+            "SHIPPING_PART_NOT_OFFERED": "Piegādes preces netiek piedāvātas"
         }
     }
 }

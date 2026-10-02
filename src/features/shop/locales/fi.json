@@ -159,6 +159,7 @@
             "imageError": "Kuvaa ei voitu käsitellä.",
             "syncStatus": "Tila kanavassa {kanal}",
             "shippingUnfit": "Ei sopivaa toimitustapaa — sivua ei julkaista.",
+            "shippingPart": "Toimitustavan ”{name}” toimitustuote — ei tarjolla kaupassa.",
             "listingId": "Ilmoitus {id}",
             "ebayCategory": "eBay-luokka",
             "ebayCondition": "Kunto",
@@ -271,8 +272,15 @@
             "deleteMethodConfirm": "Poistetaanko toimitustapa ”{name}”? Myös sen hintaportaat poistetaan; nimikkeet, joihin se oli kohdistettu, saavat taas halvimman sopivan.",
             "vendor": "Kuljetusliike",
             "vendorGeneric": "yleinen (ei kuljetusliikettä)",
-            "part": "Toimitusnimike",
-            "partHint": "Toimitusrivin nimitys, tulotili ja vero",
+            "partSection": "Toimitustuote",
+            "partSectionHint": "Palvelu vain tälle toimitustavalle: sen nimi näkyy laskussa, kirjausryhmä määrää tuottotilin ja veron. Ei koskaan tarjolla kaupassa.",
+            "partnumber": "Tuotenumero",
+            "partnumberAuto": "annetaan automaattisesti",
+            "partnumberSuggested": "Seuraava vapaa numero",
+            "partnumberLocked": "On laskuilla — ei voi enää muuttaa",
+            "partDescription": "Nimi laskussa",
+            "partDefaultName": "Toimitus",
+            "buchungsgruppe": "Kirjausryhmä",
             "rank": "Järjestys",
             "rankHint": "korkeampi voittaa",
             "maxWeight": "Enimmäispaino",
@@ -296,7 +304,6 @@
             "qtyFrom": "kpl alkaen",
             "price": "Hinta",
             "deleteRate": "Poista porras",
-            "obsolete": "poistettu käytöstä",
             "required": "Pakollinen kenttä",
             "limitInvalid": "tyhjä tai suurempi kuin 0",
             "priceInvalid": "hinta 0:sta",
@@ -366,7 +373,8 @@
             "CHANNEL_KEY_TAKEN": "Tämä kauppa-avain kuuluu jo toiselle HugoShopille.",
             "CHANNEL_IN_USE": "Tähän kanavaan liittyy laskuja, peruutuksia tai eBay-tilauksia. Sen voi vain kytkeä pois päältä.",
             "CHANNEL_NOT_DELETABLE": "Vain pois päältä kytketyn kanavan, jolla ei ole avoimia tehtäviä, voi poistaa.",
-            "SHIPPING_UNFIT": "Ei julkaista"
+            "SHIPPING_UNFIT": "Ei julkaista",
+            "SHIPPING_PART_NOT_OFFERED": "Toimitustuotteita ei tarjota"
         }
     }
 }

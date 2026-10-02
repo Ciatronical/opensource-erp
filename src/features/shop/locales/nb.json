@@ -159,6 +159,7 @@
             "imageError": "Bildet kunne ikke behandles.",
             "syncStatus": "Status hos {kanal}",
             "shippingUnfit": "Ingen passende fraktmåte — siden blir ikke publisert.",
+            "shippingPart": "Fraktvare for fraktmåten «{name}» — tilbys ikke i butikken.",
             "listingId": "Annonse {id}",
             "ebayCategory": "eBay-kategori",
             "ebayCondition": "Tilstand",
@@ -271,8 +272,15 @@
             "deleteMethodConfirm": "Slette fraktmåten «{name}»? Pristrinnene slettes også; varer den var tilordnet, får igjen den billigste egnede.",
             "vendor": "Transportør",
             "vendorGeneric": "generell (uten transportør)",
-            "part": "Fraktvare",
-            "partHint": "Betegnelse, inntektskonto og avgift for fraktlinjen",
+            "partSection": "Fraktvare",
+            "partSectionHint": "En tjeneste kun for denne fraktmåten: betegnelsen står på fakturaen, bokføringsgruppen bestemmer inntektskonto og mva. Tilbys aldri i butikken.",
+            "partnumber": "Varenummer",
+            "partnumberAuto": "tildeles automatisk",
+            "partnumberSuggested": "Neste ledige nummer",
+            "partnumberLocked": "Står på fakturaer — kan ikke lenger endres",
+            "partDescription": "Betegnelse på fakturaen",
+            "partDefaultName": "Frakt",
+            "buchungsgruppe": "Bokføringsgruppe",
             "rank": "Rang",
             "rankHint": "høyere vinner",
             "maxWeight": "Maksimal vekt",
@@ -296,7 +304,6 @@
             "qtyFrom": "fra stk.",
             "price": "Pris",
             "deleteRate": "Fjern trinn",
-            "obsolete": "utgått",
             "required": "Obligatorisk felt",
             "limitInvalid": "tom eller større enn 0",
             "priceInvalid": "pris fra 0",
@@ -366,7 +373,8 @@
             "CHANNEL_KEY_TAKEN": "Denne butikknøkkelen tilhører allerede en annen HugoShop.",
             "CHANNEL_IN_USE": "Fakturaer, angrer eller eBay-ordrer viser til denne kanalen. Den kan bare slås av.",
             "CHANNEL_NOT_DELETABLE": "Bare en avslått kanal uten åpne oppdrag kan slettes.",
-            "SHIPPING_UNFIT": "Blir ikke publisert"
+            "SHIPPING_UNFIT": "Blir ikke publisert",
+            "SHIPPING_PART_NOT_OFFERED": "Fraktvarer tilbys ikke"
         }
     }
 }

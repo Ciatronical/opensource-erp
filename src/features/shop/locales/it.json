@@ -159,6 +159,7 @@
             "imageError": "Impossibile elaborare l'immagine.",
             "syncStatus": "Stato su {kanal}",
             "shippingUnfit": "Nessun metodo di spedizione adatto — la pagina non verrà pubblicata.",
+            "shippingPart": "Articolo di spedizione del metodo «{name}» — non offerto nel negozio.",
             "listingId": "Inserzione {id}",
             "ebayCategory": "Categoria eBay",
             "ebayCondition": "Condizione",
@@ -271,8 +272,15 @@
             "deleteMethodConfirm": "Eliminare il metodo di spedizione «{name}»? Anche i suoi scaglioni verranno eliminati; gli articoli a cui era assegnato ricevono di nuovo il più economico adatto.",
             "vendor": "Corriere",
             "vendorGeneric": "generico (senza corriere)",
-            "part": "Articolo di spedizione",
-            "partHint": "Descrizione, conto ricavi e imposta della riga di spedizione",
+            "partSection": "Articolo di spedizione",
+            "partSectionHint": "Un servizio solo per questo metodo di spedizione: la sua descrizione compare in fattura, il gruppo contabile determina conto ricavi e imposta. Mai offerto nel negozio.",
+            "partnumber": "Codice articolo",
+            "partnumberAuto": "assegnato automaticamente",
+            "partnumberSuggested": "Prossimo numero libero",
+            "partnumberLocked": "Compare in fatture — non più modificabile",
+            "partDescription": "Descrizione in fattura",
+            "partDefaultName": "Spedizione",
+            "buchungsgruppe": "Gruppo contabile",
             "rank": "Rango",
             "rankHint": "più alto vince",
             "maxWeight": "Peso massimo",
@@ -296,7 +304,6 @@
             "qtyFrom": "da pz.",
             "price": "Prezzo",
             "deleteRate": "Rimuovi scaglione",
-            "obsolete": "obsoleto",
             "required": "Campo obbligatorio",
             "limitInvalid": "vuoto o maggiore di 0",
             "priceInvalid": "prezzo da 0",
@@ -366,7 +373,8 @@
             "CHANNEL_KEY_TAKEN": "Questa chiave del negozio appartiene già a un altro HugoShop.",
             "CHANNEL_IN_USE": "A questo canale sono collegate fatture, recessi od ordini eBay. Può solo essere disattivato.",
             "CHANNEL_NOT_DELETABLE": "Si può eliminare solo un canale disattivato senza attività aperte.",
-            "SHIPPING_UNFIT": "Non verrà pubblicato"
+            "SHIPPING_UNFIT": "Non verrà pubblicato",
+            "SHIPPING_PART_NOT_OFFERED": "Gli articoli di spedizione non vengono offerti"
         }
     }
 }

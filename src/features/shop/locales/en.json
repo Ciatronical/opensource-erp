@@ -159,6 +159,7 @@
             "imageError": "The image could not be processed.",
             "syncStatus": "Status at {kanal}",
             "shippingUnfit": "No suitable shipping method — the page will not be published.",
+            "shippingPart": "Shipping item of the shipping method “{name}” — not offered in the shop.",
             "listingId": "Listing {id}",
             "ebayCategory": "eBay category",
             "ebayCondition": "Condition",
@@ -271,8 +272,15 @@
             "deleteMethodConfirm": "Delete shipping method “{name}”? Its price tiers will be deleted too; items it was assigned to get the cheapest suitable one again.",
             "vendor": "Carrier",
             "vendorGeneric": "generic (no carrier)",
-            "part": "Shipping item",
-            "partHint": "Description, revenue account and tax of the shipping line",
+            "partSection": "Shipping item",
+            "partSectionHint": "A service used only by this shipping method: its description appears on the invoice, its posting group determines revenue account and tax. Never offered in the shop.",
+            "partnumber": "Item number",
+            "partnumberAuto": "assigned automatically",
+            "partnumberSuggested": "Next free number",
+            "partnumberLocked": "Appears on invoices — can no longer be changed",
+            "partDescription": "Description on the invoice",
+            "partDefaultName": "Shipping",
+            "buchungsgruppe": "Posting group",
             "rank": "Rank",
             "rankHint": "higher wins",
             "maxWeight": "Maximum weight",
@@ -296,7 +304,6 @@
             "qtyFrom": "from qty",
             "price": "Price",
             "deleteRate": "Remove tier",
-            "obsolete": "obsolete",
             "required": "Required",
             "limitInvalid": "empty or greater than 0",
             "priceInvalid": "price from 0",
@@ -366,7 +373,8 @@
             "CHANNEL_KEY_TAKEN": "This shop key already belongs to another HugoShop.",
             "CHANNEL_IN_USE": "Invoices, withdrawals or eBay orders refer to this channel. It can only be switched off.",
             "CHANNEL_NOT_DELETABLE": "Only a switched-off channel without open jobs can be deleted.",
-            "SHIPPING_UNFIT": "Will not be published"
+            "SHIPPING_UNFIT": "Will not be published",
+            "SHIPPING_PART_NOT_OFFERED": "Shipping items are not offered"
         }
     }
 }

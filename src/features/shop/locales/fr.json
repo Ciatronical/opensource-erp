@@ -159,6 +159,7 @@
             "imageError": "L'image n'a pas pu être traitée.",
             "syncStatus": "État chez {kanal}",
             "shippingUnfit": "Aucun mode d'expédition adapté — la page ne sera pas publiée.",
+            "shippingPart": "Article de frais de port du mode « {name} » — non proposé dans la boutique.",
             "listingId": "Annonce {id}",
             "ebayCategory": "Catégorie eBay",
             "ebayCondition": "État",
@@ -271,8 +272,15 @@
             "deleteMethodConfirm": "Supprimer le mode d'expédition « {name} » ? Ses paliers de prix seront aussi supprimés ; les articles auxquels il était affecté reçoivent de nouveau le moins cher adapté.",
             "vendor": "Transporteur",
             "vendorGeneric": "générique (sans transporteur)",
-            "part": "Article d'expédition",
-            "partHint": "Désignation, compte de produits et taxe de la ligne d'expédition",
+            "partSection": "Article de frais de port",
+            "partSectionHint": "Une prestation réservée à ce mode d'expédition : sa désignation figure sur la facture, le groupe comptable détermine le compte de produits et la taxe. Jamais proposé dans la boutique.",
+            "partnumber": "Référence article",
+            "partnumberAuto": "attribuée automatiquement",
+            "partnumberSuggested": "Prochain numéro libre",
+            "partnumberLocked": "Figure sur des factures — ne peut plus être modifiée",
+            "partDescription": "Désignation sur la facture",
+            "partDefaultName": "Expédition",
+            "buchungsgruppe": "Groupe comptable",
             "rank": "Rang",
             "rankHint": "le plus élevé l'emporte",
             "maxWeight": "Poids maximal",
@@ -296,7 +304,6 @@
             "qtyFrom": "à partir de qté",
             "price": "Prix",
             "deleteRate": "Retirer le palier",
-            "obsolete": "obsolète",
             "required": "Champ obligatoire",
             "limitInvalid": "vide ou supérieur à 0",
             "priceInvalid": "prix à partir de 0",
@@ -366,7 +373,8 @@
             "CHANNEL_KEY_TAKEN": "Cette clé de boutique appartient déjà à une autre HugoShop.",
             "CHANNEL_IN_USE": "Des factures, rétractations ou commandes eBay sont liées à ce canal. Il ne peut qu’être désactivé.",
             "CHANNEL_NOT_DELETABLE": "Seul un canal désactivé sans tâches en attente peut être supprimé.",
-            "SHIPPING_UNFIT": "Ne sera pas publié"
+            "SHIPPING_UNFIT": "Ne sera pas publié",
+            "SHIPPING_PART_NOT_OFFERED": "Les articles de frais de port ne sont pas proposés"
         }
     }
 }

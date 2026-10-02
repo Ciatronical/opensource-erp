@@ -46,10 +46,15 @@
                 {{ t('ShopView.partCard.noPermission') }}
             </v-alert>
 
+            <!-- Versandartikel: gehört seiner Versandart und wird nie angeboten -->
+            <v-alert v-if="versandartikelVon" type="info" variant="tonal" density="compact" class="mb-2">
+                {{ t('ShopView.partCard.shippingPart', { name: versandartikelVon }) }}
+            </v-alert>
+
             <v-switch
                 v-model="daten.listed"
                 :label="t('ShopView.partCard.listed')"
-                :disabled="!darfBearbeiten || laedt"
+                :disabled="!darfBearbeiten || laedt || (!!versandartikelVon && !daten.listed)"
                 color="primary"
                 density="compact"
                 hide-details
@@ -592,6 +597,9 @@ const groesserNull = wert => zahlOderNull(wert) === null || zahlOderNull(wert) >
 const versandGueltig = () => ['length', 'width', 'height', 'min_qty']
     .every(feld => groesserNull(daten.value.shipping?.[feld]) === true)
 
+/** Versandart, der dieser Artikel als Versandartikel gehört — leer = keiner */
+const versandartikelVon = ref('')
+
 /** Auswahllisten und Gewicht, kommen mit getPartShopData */
 const versandarten = ref([])
 const lieferbedingungen = ref([])
@@ -995,6 +1003,7 @@ async function laden() {
     lieferbedingungen.value = (versand.delivery_terms || []).map(d => ({ ...d, id: Number(d.id), obsolete: WAHR_WERTE.includes(d.obsolete) }))
     gewichtseinheit.value = versand.weightunit || ''
     gewicht.value = antwort?.part?.weight === null || antwort?.part?.weight === undefined ? null : Number(antwort.part.weight)
+    versandartikelVon.value = antwort?.part?.shipping_method_of || ''
 
     if (!props.partsId) {
         // Neuanlage bei aktivem Shop: der Artikel ist in der Regel für den Shop

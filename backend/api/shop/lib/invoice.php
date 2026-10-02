@@ -149,17 +149,18 @@ function createShopInvoice($db, string $uuid, array $lieferadresse = [], ?array 
                     0, 0, '', preisquelle, longdescription, NOW()
                FROM ware
              UNION ALL
-             -- Versand: Versandartikel der Versandart, ihre Bezeichnung und
-             -- der berechnete Preis (dev/shop-versand.md, Schritt 6)
-             SELECT CAST(:ar_id_versand AS integer), p.id, CAST(:versand_bezeichnung AS text), 1, CAST(:versand_preis AS numeric),
+             -- Versand: Versandartikel der Versandart mit dem berechneten
+             -- Preis (dev/shop-versand.md, Schritt 6). Bezeichnung und
+             -- Langtext die des Artikels, wie bei jeder Position im Kern
+             -- (Nachtrag 2026-10-02) — gepflegt in der Maske der Versandart
+             SELECT CAST(:ar_id_versand AS integer), p.id, p.description, 1, CAST(:versand_preis AS numeric),
                     CAST(:versand_preis_fx AS numeric), 0, p.unit, (SELECT count(*) FROM ware) + 1,
-                    COALESCE(p.lastcost, 0), 1, 0, 0, 0, '', '', '', NOW()
+                    COALESCE(p.lastcost, 0), 1, 0, 0, 0, '', '', COALESCE(p.notes, ''), NOW()
                FROM parts p
               WHERE p.id = :versand_teil AND :mit_versand = 1",
             [
                 ':ar_id'       => $arId,
                 ':ar_id_versand' => $arId,
-                ':versand_bezeichnung' => $versand['method'],
                 ':versand_preis'    => (string)$versand['price'],
                 ':versand_preis_fx' => (string)$versand['price'],
                 ':versand_teil'     => (int)($versand['parts_id'] ?? 0),

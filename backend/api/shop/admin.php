@@ -357,7 +357,9 @@ function getPartShopData($data) {
                                 WHERE x.parts_id = p.id AND x.active) AS listed,
                        pe.hugoshop_breadcrumbs, pe.hugoshop_technical_data, pe.hugoshop_properties,
                        pe.hugoshop_downloads, pe.hugoshop_images, pe.hugoshop_hyperlink,
-                       pe.hugoshop_category, p.weight
+                       pe.hugoshop_category, p.weight,
+                       -- Versandartikel: gehört dieser Versandart, wird nie angeboten
+                       (SELECT m.description FROM shipping_method_shop m WHERE m.parts_id = p.id) AS shipping_method_of
                   FROM parts p
                   LEFT JOIN parts_ext pe ON pe.parts_id = p.id
                  WHERE p.id = :parts_id) a) AS part,
@@ -487,6 +489,20 @@ function savePartShopData($data) {
     // in der Abfrage für ihn), gepflegte Werte nicht anfassen.
     $vollstaendig = isset($data['channels']) && is_array($data['channels']);
     $kanaele = $vollstaendig ? array_values($data['channels']) : [['channel_id' => null, 'active' => true]];
+
+    // Ein Versandartikel wird nie angeboten (dev/shop-versand.md, Nachtrag
+    // 2026-10-02): er gehört seiner Versandart, die ihn verwaltet
+    if (array_filter($kanaele, fn($k) => !empty($k['active']))) {
+        $versandart = $db->getOne(
+            "SELECT description FROM shipping_method_shop WHERE parts_id = :parts_id",
+            [':parts_id' => $partsId]
+        );
+        if ($versandart) {
+            resultInfo(false, 'SHIPPING_PART_NOT_OFFERED', null,
+                'Versandartikel der Versandart „'.$versandart['description'].'“ — wird nicht im Shop angeboten');
+            return;
+        }
+    }
 
     // Versandangaben: Zahlen größer 0 oder leer. Fehlt das Feld, bleiben sie.
     $versandSetzen = isset($data['shipping']) && is_array($data['shipping']);
@@ -960,9 +976,14 @@ function saveShopCountryAlias($data) {
  * Versandarten, Zonen und Preise für die Ansicht „Versandarten“
  *
  * dev/shop-versand.md, Schritt 4. Alles, was die Karte „Versandarten" braucht,
- * in einer Abfrage: Versandarten mit ihren Preisstufen, Zonen mit ihren
- * Ländern, die Kanäle, die Lieferanten als mögliche Anbieter, die Länderliste,
- * die Gewichtseinheit der Artikel und ob die Preise brutto gelten.
+ * in einer Abfrage: Versandarten mit ihren Preisstufen und ihrem
+ * Versandartikel, Zonen mit ihren Ländern, die Kanäle, die Lieferanten als
+ * mögliche Anbieter, die Länderliste, die Gewichtseinheit der Artikel, ob die
+ * Preise brutto gelten, die Buchungsgruppen und die nächste freie
+ * Dienstleistungsnummer als Vorschlag für einen neuen Versandartikel.
+ *
+ * part_used: der Versandartikel steht auf einer Rechnung — seine Nummer
+ * lässt sich dann nicht mehr ändern.
  *
  * @return void
  * @testdata {}
@@ -976,6 +997,8 @@ function getShopShipping($data) {
              (SELECT COALESCE(json_agg(json_build_object(
                          'id', m.id, 'description', m.description, 'vendor_id', m.vendor_id,
                          'parts_id', m.parts_id, 'partnumber', p.partnumber, 'part_description', p.description,
+                         'part_buchungsgruppen_id', p.buchungsgruppen_id, 'part_type', p.part_type,
+                         'part_used', EXISTS (SELECT 1 FROM invoice i WHERE i.parts_id = p.id),
                          'rank', m.rank, 'max_weight', m.max_weight, 'max_length', m.max_length,
                          'max_girth', m.max_girth, 'free_shipping_applies', m.free_shipping_applies,
                          'ebay_fulfillment_policy_id', m.ebay_fulfillment_policy_id, 'active', m.active,
@@ -1006,11 +1029,27 @@ function getShopShipping($data) {
              (SELECT COALESCE(json_agg(c.iso_code ORDER BY c.iso_code), '[]') FROM country_shop c) AS laender,
              (SELECT weightunit FROM defaults LIMIT 1) AS gewichtseinheit,
              COALESCE((SELECT lower(trim(value)) IN ('t', 'true', '1', 'y', 'yes')
-                         FROM defaults_oserp WHERE key = 'shop_tax_included'), false) AS brutto"
+                         FROM defaults_oserp WHERE key = 'shop_tax_included'), false) AS brutto,
+             (SELECT COALESCE(json_agg(json_build_object('id', b.id, 'description', b.description)
+                                       ORDER BY b.sortkey, b.id), '[]')
+                FROM buchungsgruppen b) AS buchungsgruppen,
+             -- Nächste freie Dienstleistungsnummer, ohne den Zähler zu
+             -- verbrauchen (wie peekNextPartnumber). Ein Nummernkreis mit
+             -- Buchstaben lässt keinen Vorschlag zu — dann leer statt Fehler
+             (WITH RECURSIVE c(n) AS (
+                  SELECT COALESCE(NULLIF(btrim(servicenumber), ''), '0')::BIGINT + 1
+                    FROM defaults
+                   WHERE COALESCE(NULLIF(btrim(servicenumber), ''), '0') ~ '^[0-9]+$'
+                  UNION ALL
+                  SELECT n + 1 FROM c WHERE EXISTS (SELECT 1 FROM parts WHERE partnumber = c.n::TEXT)
+              )
+              SELECT MAX(n)::TEXT FROM c) AS naechste_nummer"
     );
 
     resultInfo(true, '', [
         'methods'    => json_decode((string)$zeile['versandarten'], true),
+        'buchungsgruppen' => json_decode((string)$zeile['buchungsgruppen'], true),
+        'next_partnumber' => (string)($zeile['naechste_nummer'] ?? ''),
         'zones'      => json_decode((string)$zeile['zonen'], true),
         'channels'   => json_decode((string)$zeile['kanaele'], true),
         'vendors'    => json_decode((string)$zeile['anbieter'], true),
@@ -1025,16 +1064,37 @@ function getShopShipping($data) {
 /**
  * Legt eine Versandart an oder ändert sie, samt ihren Preisstufen
  *
- * Eine Anweisung. Die Preisstufen werden ersetzt: gleiche Stufen
- * (Kanal, Zone, ab Gewicht, ab Stückzahl) bekommen den neuen Preis, neue
- * kommen hinzu, nicht mehr genannte entfallen. Löschen und Neuanlegen
- * derselben Stufe in einer Anweisung lehnt PostgreSQL ab (eindeutiger
- * Schlüssel), deshalb dieser Weg.
+ * Die Versandart verwaltet ihren Versandartikel (2026-10-02): eine
+ * Dienstleistung — nie im Lager, nie im Shop angeboten — mit Nummer,
+ * Bezeichnung und Buchungsgruppe aus der Maske. Die Bezeichnung steht auf der
+ * Rechnung, die Buchungsgruppe bestimmt Erlöskonto und Steuer. Je Versandart
+ * ein eigener Artikel (Index shipping_method_shop_parts_id_key).
+ *
+ *   neu        Nummer vorgeschlagen (part.suggested) oder leer: die nächste
+ *              freie aus dem Nummernkreis servicenumber — ist der Vorschlag
+ *              inzwischen vergeben, die danach. Sonst die eingegebene, wenn
+ *              sie frei ist. Einheit Stck, Verkaufspreis 0 (der Preis kommt
+ *              aus den Preisstufen).
+ *   vorhanden  Bezeichnung und Buchungsgruppe ändern sich; die Nummer nur,
+ *              solange der Artikel auf keiner Rechnung steht. Ist er noch
+ *              keine Dienstleistung, wird er umgestellt — nicht bei
+ *              Lagerbuchungen oder in einer Stückliste.
+ *
+ * Danach wird der Artikel in keinem Kanal mehr angeboten: Kanalzeilen aus,
+ * Produktseite im HugoShop entfernt, Marktplätze beenden ihr Angebot
+ * (Trigger).
+ *
+ * Eine Transaktion: Artikel, Versandart mit Preisstufen, Kanalzeilen. Die
+ * Preisstufen werden ersetzt: gleiche Stufen (Kanal, Zone, ab Gewicht, ab
+ * Stückzahl) bekommen den neuen Preis, neue kommen hinzu, nicht mehr genannte
+ * entfallen. Löschen und Neuanlegen derselben Stufe in einer Anweisung lehnt
+ * PostgreSQL ab (eindeutiger Schlüssel), deshalb dieser Weg.
  *
  * @param int $data['id'] Versandart, 0 = neu
  * @param string $data['description'] Bezeichnung
  * @param int|null $data['vendor_id'] Anbieter (Lieferant), leer = allgemein
- * @param int $data['parts_id'] Versandartikel
+ * @param array $data['part'] Versandartikel: partnumber, description,
+ *              buchungsgruppen_id, suggested (Nummer ist der Vorschlag)
  * @param int $data['rank'] Rang (höher gewinnt)
  * @param float|null $data['max_weight'] Höchstgewicht, leer = ohne
  * @param float|null $data['max_length'] längste Kante in cm, leer = ohne
@@ -1043,7 +1103,7 @@ function getShopShipping($data) {
  * @param string $data['ebay_fulfillment_policy_id'] eBay-Versandrichtlinie, leer = die allgemeine
  * @param bool $data['active'] aktiv
  * @param array $data['rates'] Liste aus channel_id, zone_id (leer = alle), weight_from, qty_from, price
- * @testdata {"id": 0, "description": "DHL Paket", "vendor_id": null, "parts_id": 3606, "rank": 10, "max_weight": 31.5, "max_length": 120, "max_girth": 300, "free_shipping_applies": true, "ebay_fulfillment_policy_id": "", "active": true, "rates": [{"channel_id": null, "zone_id": null, "weight_from": 0, "qty_from": 0, "price": 5.99}]}
+ * @testdata {"id": 0, "description": "DHL Paket", "vendor_id": null, "part": {"partnumber": "", "description": "Versand", "buchungsgruppen_id": 1, "suggested": true}, "rank": 10, "max_weight": 31.5, "max_length": 120, "max_girth": 300, "free_shipping_applies": true, "ebay_fulfillment_policy_id": "", "active": true, "rates": [{"channel_id": null, "zone_id": null, "weight_from": 0, "qty_from": 0, "price": 5.99}]}
  */
 function saveShopShippingMethod($data) {
     permit(['edit_shop_config'], false);
@@ -1057,9 +1117,19 @@ function saveShopShippingMethod($data) {
     };
 
     $bezeichnung = trim((string)($data['description'] ?? ''));
-    $partsId     = (int)($data['parts_id'] ?? 0);
-    if ('' === $bezeichnung || $partsId <= 0) {
-        resultInfo(false, 'VALIDATION_ERROR', null, 'Bezeichnung und Versandartikel sind Pflicht');
+    $artikel = [
+        'partnumber'         => trim((string)($data['part']['partnumber'] ?? '')),
+        'description'        => trim((string)($data['part']['description'] ?? '')),
+        'buchungsgruppen_id' => (int)($data['part']['buchungsgruppen_id'] ?? 0),
+        'suggested'          => !empty($data['part']['suggested']),
+    ];
+    if ('' === $bezeichnung) {
+        resultInfo(false, 'VALIDATION_ERROR', null, 'Die Versandart braucht eine Bezeichnung');
+        return;
+    }
+    if ('' === $artikel['description'] || $artikel['buchungsgruppen_id'] <= 0
+        || ('' === $artikel['partnumber'] && !$artikel['suggested'])) {
+        resultInfo(false, 'VALIDATION_ERROR', null, 'Der Versandartikel braucht Artikelnummer, Bezeichnung und Buchungsgruppe');
         return;
     }
     $grenzen = [];
@@ -1096,7 +1166,11 @@ function saveShopShippingMethod($data) {
                      'qty_from' => $menge, 'price' => $preis];
     }
 
+    $db->beginTransaction();
     try {
+        $teil = shopShippingPartSave($db, (int)($data['id'] ?? 0), $artikel);
+        $partsId = $teil['id'];
+
         $zeile = $db->getOne(
             "WITH methode AS (
                  INSERT INTO shipping_method_shop AS m
@@ -1156,20 +1230,149 @@ function saveShopShippingMethod($data) {
                 ':stufen'                => json_encode($stufen),
             ]
         );
+        if (empty($zeile['id'])) {
+            throw new ApiError('SHIPPING_METHOD_NOT_FOUND', 'Diese Versandart gibt es nicht');
+        }
+
+        $seiten = $teil['seiten'];
+        $db->commit();
+    } catch (ApiError $e) {
+        $db->rollBack();
+        resultInfo(false, $e->getId(), null, $e->getMessage());
+        return;
     } catch (PDOException $e) {
-        // Fremdschlüssel: Versandartikel, Anbieter, Kanal oder Zone gibt es nicht
-        resultInfo(false, 'VALIDATION_ERROR', null, '23503' === $e->getCode()
-            ? 'Versandartikel, Anbieter, Kanal oder Zone gibt es nicht (mehr)'
-            : $e->getMessage());
+        $db->rollBack();
+        // Eindeutig: der Artikel gehört schon einer anderen Versandart;
+        // Fremdschlüssel: Buchungsgruppe, Anbieter, Kanal oder Zone fehlt
+        $meldung = [
+            '23505' => 'Der Versandartikel gehört schon zu einer anderen Versandart',
+            '23503' => 'Buchungsgruppe, Anbieter, Kanal oder Zone gibt es nicht (mehr)',
+        ][$e->getCode()] ?? $e->getMessage();
+        resultInfo(false, 'VALIDATION_ERROR', null, $meldung);
         return;
     }
 
-    if (empty($zeile['id'])) {
-        resultInfo(false, 'SHIPPING_METHOD_NOT_FOUND', null, 'Diese Versandart gibt es nicht');
-        return;
+    // Produktseiten des Artikels entfernen — er wird nicht mehr angeboten
+    foreach ($seiten as $seite) {
+        shopQueueRemovePage($db, (int)$seite['channel_id'], (string)$seite['partnumber'],
+                            (string)($seite['hugoshop_hyperlink'] ?? ''));
     }
 
-    resultInfo(true, '', ['id' => (int)$zeile['id']]);
+    resultInfo(true, '', ['id' => (int)$zeile['id'], 'parts_id' => $partsId, 'partnumber' => $teil['partnumber']]);
+}
+
+/**
+ * Legt den Versandartikel einer Versandart an oder ändert ihn
+ *
+ * Teil von saveShopShippingMethod, in dessen Transaktion. Regeln dort.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param int $methodeId Versandart, 0 = neu
+ * @param array $artikel partnumber, description, buchungsgruppen_id, suggested
+ * @return array id, partnumber, seiten (HugoShop-Seiten zum Entfernen, aus
+ *               shopShippingPartWithdraw)
+ * @throws ApiError SHIPPING_METHOD_NOT_FOUND, VALIDATION_ERROR
+ */
+function shopShippingPartSave($db, int $methodeId, array $artikel): array {
+    $werte = [
+        ':description'        => $artikel['description'],
+        ':buchungsgruppen_id' => $artikel['buchungsgruppen_id'],
+    ];
+
+    if ($methodeId > 0) {
+        $vorhanden = $db->getOne(
+            "SELECT p.id, p.partnumber, p.part_type,
+                    EXISTS (SELECT 1 FROM invoice i WHERE i.parts_id = p.id) AS benutzt,
+                    EXISTS (SELECT 1 FROM inventory iv WHERE iv.parts_id = p.id)
+                        OR EXISTS (SELECT 1 FROM assembly a WHERE a.parts_id = p.id OR a.id = p.id) AS gebunden
+               FROM shipping_method_shop m
+               JOIN parts p ON p.id = m.parts_id
+              WHERE m.id = :id
+                FOR UPDATE OF m",
+            [':id' => $methodeId]
+        );
+        if (!$vorhanden) {
+            throw new ApiError('SHIPPING_METHOD_NOT_FOUND', 'Diese Versandart gibt es nicht');
+        }
+        $wahr = fn($wert) => in_array($wert, [true, 't', 1, '1'], true);
+
+        $nummer = '' === $artikel['partnumber'] ? (string)$vorhanden['partnumber'] : $artikel['partnumber'];
+        if ($nummer !== (string)$vorhanden['partnumber'] && $wahr($vorhanden['benutzt'])) {
+            throw new ApiError('VALIDATION_ERROR', 'Die Artikelnummer lässt sich nicht mehr ändern: der Versandartikel steht auf Rechnungen');
+        }
+        if ('service' !== $vorhanden['part_type'] && $wahr($vorhanden['gebunden'])) {
+            throw new ApiError('VALIDATION_ERROR', 'Der Versandartikel hat Lagerbuchungen oder gehört zu einer Stückliste — als Dienstleistung nicht umstellbar');
+        }
+
+        // Erst aus den Kanälen nehmen, dann ändern: sonst stieße eine neue
+        // Bezeichnung noch eine Veröffentlichung an, und die Seite trüge den
+        // alten Namen
+        $seiten = shopShippingPartWithdraw($db, (int)$vorhanden['id']);
+
+        // Ausgemustert war er nur als Kniff (Bridge): er wird gebraucht
+        $zeile = $db->getOne(
+            "UPDATE parts
+                SET partnumber = :partnumber, description = :description,
+                    buchungsgruppen_id = :buchungsgruppen_id, part_type = 'service',
+                    obsolete = false, mtime = now()
+              WHERE id = :id
+                AND NOT EXISTS (SELECT 1 FROM parts x WHERE x.partnumber = :partnumber_pruefung AND x.id <> :id_pruefung)
+             RETURNING id, partnumber",
+            $werte + [
+                ':partnumber' => $nummer, ':partnumber_pruefung' => $nummer,
+                ':id' => (int)$vorhanden['id'], ':id_pruefung' => (int)$vorhanden['id'],
+            ]
+        );
+    } else {
+        $seiten = [];
+        // Vorgeschlagen: die nächste freie Nummer — zählt den Nummernkreis
+        // hoch und überspringt Vergebenes, auch wenn der Vorschlag inzwischen
+        // weg ist
+        $nummer = $artikel['suggested'] || '' === $artikel['partnumber']
+            ? nextFreeNumber($db, 'servicenumber', 'parts', 'partnumber')
+            : $artikel['partnumber'];
+
+        $zeile = $db->getOne(
+            "INSERT INTO parts (partnumber, description, part_type, buchungsgruppen_id, sellprice, unit, notes, obsolete)
+             SELECT :partnumber, :description, 'service', :buchungsgruppen_id, 0, 'Stck', '', false
+              WHERE NOT EXISTS (SELECT 1 FROM parts WHERE partnumber = :partnumber_pruefung)
+             RETURNING id, partnumber",
+            $werte + [':partnumber' => $nummer, ':partnumber_pruefung' => $nummer]
+        );
+    }
+
+    if (!$zeile) {
+        throw new ApiError('VALIDATION_ERROR', 'Die Artikelnummer '.$nummer.' ist bereits vergeben');
+    }
+    return ['id' => (int)$zeile['id'], 'partnumber' => (string)$zeile['partnumber'], 'seiten' => $seiten];
+}
+
+/**
+ * Nimmt einen Versandartikel aus allen Kanälen
+ *
+ * Kanalzeilen aus; bei Marktplätzen beendet der Trigger das Angebot. Für den
+ * HugoShop kommen die Seiten zurück, die der Aufrufer entfernen lässt
+ * (shopQueueRemovePage) — nach der Transaktion.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param int $partsId Versandartikel
+ * @return array channel_id, partnumber, hugoshop_hyperlink je HugoShop
+ */
+function shopShippingPartWithdraw($db, int $partsId): array {
+    return $db->getAll(
+        "WITH aus AS (
+             UPDATE parts_channel_shop pc
+                SET active = false, mtime = now()
+              WHERE pc.parts_id = :parts_id AND pc.active
+             RETURNING pc.channel_id, pc.parts_id
+         )
+         SELECT aus.channel_id, p.partnumber, pe.hugoshop_hyperlink
+           FROM aus
+           JOIN sales_channel_shop c ON c.id = aus.channel_id AND c.type = 'hugoshop'
+           JOIN parts p ON p.id = aus.parts_id
+           LEFT JOIN parts_ext pe ON pe.parts_id = p.id",
+        [':parts_id' => $partsId]
+    ) ?: [];
 }
 
 /**
@@ -1177,6 +1380,8 @@ function saveShopShippingMethod($data) {
  *
  * Ihre Preisstufen gehen mit; Artikel, denen sie zugeordnet war, bekommen
  * wieder die günstigste passende (parts_shipping_shop, ON DELETE SET NULL).
+ * Der Versandartikel bleibt — Rechnungen verweisen auf ihn —, wird aber
+ * ausgemustert und ist damit kein Versandartikel mehr.
  *
  * @param int $data['id'] Versandart
  * @testdata {"id": 1}
@@ -1186,7 +1391,15 @@ function deleteShopShippingMethod($data) {
     $db = DbhCompany::begin();
 
     $zeile = $db->getOne(
-        "DELETE FROM shipping_method_shop WHERE id = :id RETURNING id",
+        "WITH weg AS (
+             DELETE FROM shipping_method_shop WHERE id = :id RETURNING id, parts_id
+         ), ausgemustert AS (
+             UPDATE parts p SET obsolete = true, mtime = now()
+               FROM weg
+              WHERE p.id = weg.parts_id
+             RETURNING p.id
+         )
+         SELECT id FROM weg",
         [':id' => (int)($data['id'] ?? 0)]
     );
     if (!$zeile) {
@@ -1285,30 +1498,6 @@ function deleteShopShippingZone($data) {
         return;
     }
     resultInfo(true, '', ['id' => (int)$zeile['id']]);
-}
-
-/**
- * Artikel als Versandartikel zur Auswahl
- *
- * Suche über Nummer und Bezeichnung. Ausgemusterte stehen hinten, aber in der
- * Liste: Versandartikel sind oft ausgemustert, damit niemand sie von Hand in
- * einen Beleg setzt (bei Werkzeug24 Artikel 8 „Versand").
- *
- * @param string $data['q'] Suchtext
- * @testdata {"q": "Versand"}
- */
-function searchShopShippingParts($data) {
-    permit(['edit_shop_config'], false);
-    $db = DbhCompany::begin();
-
-    resultInfo(true, '', $db->getAll(
-        "SELECT p.id, p.partnumber, p.description, COALESCE(p.obsolete, false) AS obsolete
-           FROM parts p
-          WHERE p.partnumber ILIKE :q OR p.description ILIKE :q
-          ORDER BY COALESCE(p.obsolete, false), (p.part_type = 'service') DESC, p.partnumber
-          LIMIT 20",
-        [':q' => '%'.trim((string)($data['q'] ?? '')).'%']
-    ));
 }
 
 /**
