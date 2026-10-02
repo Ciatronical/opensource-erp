@@ -142,6 +142,7 @@
         </v-alert>
 
         <!-- Kennzahlen -->
+        <h2 v-if="status" class="text-subtitle-1 font-weight-medium mb-2">{{ t('ShopView.sections.figures') }}</h2>
         <v-row v-if="status" class="mb-2">
             <v-col cols="12" sm="4" v-for="kachel in kennzahlen" :key="kachel.key">
                 <v-card variant="tonal" density="compact">
@@ -157,6 +158,7 @@
         </v-row>
 
         <!-- Wege -->
+        <h2 class="text-subtitle-1 font-weight-medium mb-2">{{ t('ShopView.sections.links') }}</h2>
         <v-row>
             <v-col cols="12" sm="6" md="4" v-for="ziel in ziele" :key="ziel.titel">
                 <v-card
@@ -177,7 +179,8 @@
 
         <!-- Veröffentlichung: die Anwendung legt nur Aufträge an, geschrieben
              und gebaut wird von tools/shop-publish.php -->
-        <v-card variant="outlined" class="mt-4">
+        <h2 class="text-subtitle-1 font-weight-medium mt-4 mb-2">{{ t('ShopView.sections.jobs') }}</h2>
+        <v-card variant="outlined">
             <v-card-item>
                 <template #prepend>
                     <v-icon icon="mdi-cloud-upload-outline" />

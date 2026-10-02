@@ -29,6 +29,11 @@
                 "channel_round_99_net": "Zaokrąglanie do ,99 jest włączone, ale ceny sprzedaży są zapisane netto. Przy cenach brutto koszyk i faktura zawsze zgadzają się co do grosza."
             }
         },
+        "sections": {
+            "figures": "Wskaźniki",
+            "links": "Skróty",
+            "jobs": "Zaplanowane zadania"
+        },
         "orders": {
             "title": "Zamówienia",
             "subtitle": "Co zamówiono przez sklep",

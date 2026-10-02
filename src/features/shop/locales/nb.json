@@ -29,6 +29,11 @@
                 "channel_round_99_net": "Avrunding til ,99 er slått på, men salgsprisene er lagret netto. Med bruttosalgspriser stemmer handlekurv og faktura alltid på øret."
             }
         },
+        "sections": {
+            "figures": "Nøkkeltall",
+            "links": "Snarveier",
+            "jobs": "Planlagte oppgaver"
+        },
         "orders": {
             "title": "Bestillinger",
             "subtitle": "Hva som er bestilt via butikken",

@@ -29,6 +29,11 @@
                 "channel_round_99_net": "O arredondamento para ,99 está ativado, mas os preços de venda estão guardados em líquido. Com preços de venda brutos, o carrinho e a fatura coincidem sempre ao cêntimo."
             }
         },
+        "sections": {
+            "figures": "Indicadores",
+            "links": "Ligações",
+            "jobs": "Tarefas agendadas"
+        },
         "orders": {
             "title": "Encomendas",
             "subtitle": "O que foi encomendado através da loja",

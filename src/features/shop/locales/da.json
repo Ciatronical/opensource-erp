@@ -29,6 +29,11 @@
                 "channel_round_99_net": "Afrunding til ,99 er slået til, men salgspriserne er gemt netto. Med bruttosalgspriser stemmer kurv og faktura altid på øren."
             }
         },
+        "sections": {
+            "figures": "Nøgletal",
+            "links": "Genveje",
+            "jobs": "Planlagte opgaver"
+        },
         "orders": {
             "title": "Ordrer",
             "subtitle": "Hvad der er bestilt via butikken",

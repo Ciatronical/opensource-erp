@@ -29,6 +29,11 @@
                 "channel_round_99_net": "Ümardamine ,99-ni on sisse lülitatud, kuid müügihinnad on salvestatud netona. Brutohindadega ühtivad ostukorv ja arve alati sendi täpsusega."
             }
         },
+        "sections": {
+            "figures": "Näitajad",
+            "links": "Lingid",
+            "jobs": "Plaanitud ülesanded"
+        },
         "orders": {
             "title": "Tellimused",
             "subtitle": "Mida poe kaudu on tellitud",

@@ -29,6 +29,11 @@
                 "channel_round_99_net": "Rounding to .99 is enabled, but sales prices are stored net. With gross sales prices, cart and invoice always match to the cent."
             }
         },
+        "sections": {
+            "figures": "Key figures",
+            "links": "Links",
+            "jobs": "Scheduled tasks"
+        },
         "orders": {
             "title": "Orders",
             "subtitle": "What has been ordered through the shop",

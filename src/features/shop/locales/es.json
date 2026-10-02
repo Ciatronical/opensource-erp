@@ -29,6 +29,11 @@
                 "channel_round_99_net": "El redondeo a ,99 está activado, pero los precios de venta están guardados en neto. Con precios de venta brutos, el carrito y la factura siempre coinciden al céntimo."
             }
         },
+        "sections": {
+            "figures": "Indicadores",
+            "links": "Enlaces",
+            "jobs": "Tareas programadas"
+        },
         "orders": {
             "title": "Pedidos",
             "subtitle": "Lo que se ha pedido a través de la tienda",

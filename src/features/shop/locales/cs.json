@@ -29,6 +29,11 @@
                 "channel_round_99_net": "Zaokrouhlení na ,99 je zapnuté, ale prodejní ceny jsou uloženy bez DPH. S cenami s DPH se košík a faktura vždy shodují na haléř."
             }
         },
+        "sections": {
+            "figures": "Ukazatele",
+            "links": "Odkazy",
+            "jobs": "Plánované úlohy"
+        },
         "orders": {
             "title": "Objednávky",
             "subtitle": "Co bylo objednáno přes obchod",

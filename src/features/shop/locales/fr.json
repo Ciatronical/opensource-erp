@@ -29,6 +29,11 @@
                 "channel_round_99_net": "L'arrondi à ,99 est activé, mais les prix de vente sont enregistrés HT. Avec des prix de vente TTC, le panier et la facture concordent toujours au centime près."
             }
         },
+        "sections": {
+            "figures": "Indicateurs",
+            "links": "Liens",
+            "jobs": "Tâches planifiées"
+        },
         "orders": {
             "title": "Commandes",
             "subtitle": "Ce qui a été commandé via la boutique",

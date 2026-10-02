@@ -29,6 +29,11 @@
                 "channel_round_99_net": "Noapaļošana līdz ,99 ir ieslēgta, bet pārdošanas cenas ir saglabātas bez PVN. Ar cenām ar PVN grozs un rēķins vienmēr sakrīt līdz centam."
             }
         },
+        "sections": {
+            "figures": "Rādītāji",
+            "links": "Saites",
+            "jobs": "Plānotie uzdevumi"
+        },
         "orders": {
             "title": "Pasūtījumi",
             "subtitle": "Kas pasūtīts caur veikalu",

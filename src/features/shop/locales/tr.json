@@ -29,6 +29,11 @@
                 "channel_round_99_net": "Yuvarlama ,99 etkin, ancak satış fiyatları net olarak kayıtlı. Brüt satış fiyatlarıyla sepet ve fatura her zaman kuruşu kuruşuna eşleşir."
             }
         },
+        "sections": {
+            "figures": "Göstergeler",
+            "links": "Bağlantılar",
+            "jobs": "Planlanmış görevler"
+        },
         "orders": {
             "title": "Siparişler",
             "subtitle": "Mağaza üzerinden ne sipariş edildi",

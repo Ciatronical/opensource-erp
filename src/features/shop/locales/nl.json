@@ -29,6 +29,11 @@
                 "channel_round_99_net": "Afronden op ,99 is ingeschakeld, maar de verkoopprijzen zijn netto opgeslagen. Met bruto verkoopprijzen komen winkelwagen en factuur altijd op de cent overeen."
             }
         },
+        "sections": {
+            "figures": "Kengetallen",
+            "links": "Koppelingen",
+            "jobs": "Geplande taken"
+        },
         "orders": {
             "title": "Bestellingen",
             "subtitle": "Wat er via de winkel is besteld",

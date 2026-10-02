@@ -29,6 +29,11 @@
                 "channel_round_99_net": "Pyöristys ,99:ään on käytössä, mutta myyntihinnat on tallennettu netto. Bruttomyyntihinnoilla ostoskori ja lasku täsmäävät aina sentilleen."
             }
         },
+        "sections": {
+            "figures": "Tunnusluvut",
+            "links": "Linkit",
+            "jobs": "Ajastetut tehtävät"
+        },
         "orders": {
             "title": "Tilaukset",
             "subtitle": "Mitä kaupan kautta on tilattu",

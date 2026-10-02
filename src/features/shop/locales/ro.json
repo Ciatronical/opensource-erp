@@ -29,6 +29,11 @@
                 "channel_round_99_net": "Rotunjirea la ,99 este activată, dar prețurile de vânzare sunt salvate net. Cu prețuri de vânzare brute, coșul și factura coincid întotdeauna la ban."
             }
         },
+        "sections": {
+            "figures": "Indicatori",
+            "links": "Legături",
+            "jobs": "Sarcini planificate"
+        },
         "orders": {
             "title": "Comenzi",
             "subtitle": "Ce s-a comandat prin magazin",

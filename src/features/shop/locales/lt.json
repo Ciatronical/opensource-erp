@@ -29,6 +29,11 @@
                 "channel_round_99_net": "Apvalinimas iki ,99 įjungtas, bet pardavimo kainos saugomos be PVM. Su kainomis su PVM krepšelis ir sąskaita visada sutampa iki cento."
             }
         },
+        "sections": {
+            "figures": "Rodikliai",
+            "links": "Nuorodos",
+            "jobs": "Suplanuotos užduotys"
+        },
         "orders": {
             "title": "Užsakymai",
             "subtitle": "Kas užsakyta per parduotuvę",

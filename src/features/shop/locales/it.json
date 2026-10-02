@@ -29,6 +29,11 @@
                 "channel_round_99_net": "L'arrotondamento a ,99 è attivo, ma i prezzi di vendita sono salvati al netto. Con prezzi di vendita lordi, carrello e fattura coincidono sempre al centesimo."
             }
         },
+        "sections": {
+            "figures": "Indicatori",
+            "links": "Collegamenti",
+            "jobs": "Attività pianificate"
+        },
         "orders": {
             "title": "Ordini",
             "subtitle": "Cosa è stato ordinato tramite il negozio",
