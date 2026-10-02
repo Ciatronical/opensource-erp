@@ -6,7 +6,7 @@
  * Durchlaeuft alle Mandanten und importiert neue eBay-Bestellungen als
  * Ausgangsrechnungen (Kunde dublettenfrei, Rechnung + Hauptbuch-Buchung).
  * Beruecksichtigt werden Mandanten mit aktiver Shop-Erweiterung, dort jeder
- * eingeschaltete eBay-Kanal (Einstellungen → Shop → Verkaufskanaele) — je
+ * eingeschaltete eBay-Kanal (Shop-Menue → Verkaufskanaele) — je
  * Kanal ein eBay-Konto (dev/shop-mehrere-kanaele.md). Ein Fehler in einem
  * Kanal haelt die uebrigen nicht auf.
  * Idempotent: bereits importierte Bestellungen werden uebersprungen

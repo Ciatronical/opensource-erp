@@ -565,13 +565,16 @@ $$;
 -- dem der Artikel angeboten wird:
 --   HugoShop  Verkaufspreis oder Buchungsgruppe (Steuersatz) — die Seite
 --             trägt den Preis —, dazu „Veraltet“ (obsolete): die Seite zeigt
---             die Verfügbarkeit; nur bei shop_auto_publish
+--             die Verfügbarkeit, und das Gewicht: es entscheidet, ob eine
+--             Versandart passt (shop_part_shipping_check), sonst wird die
+--             Seite zum Entwurf; nur bei shop_auto_publish
 --   Marktplatz zusätzlich Bestand, Beschreibung und Langbeschreibung
 CREATE OR REPLACE FUNCTION parts_shop_auto_publish() RETURNS trigger AS $$
 DECLARE
     preis   boolean := OLD.sellprice IS DISTINCT FROM NEW.sellprice
                        OR OLD.buchungsgruppen_id IS DISTINCT FROM NEW.buchungsgruppen_id
-                       OR OLD.obsolete IS DISTINCT FROM NEW.obsolete;
+                       OR OLD.obsolete IS DISTINCT FROM NEW.obsolete
+                       OR OLD.weight IS DISTINCT FROM NEW.weight;
     sonst   boolean := OLD.onhand IS DISTINCT FROM NEW.onhand
                        OR OLD.description IS DISTINCT FROM NEW.description
                        OR OLD.notes IS DISTINCT FROM NEW.notes;
@@ -680,9 +683,10 @@ $$ LANGUAGE plpgsql;
 -- invoice_id verweist auf die Rechnungsposition: die Buchung gehört zum
 -- Beleg und lässt sich in der Lagerverwaltung nicht einzeln zurücknehmen.
 --
--- Nur Waren (part_type part) mit positiver Menge; nicht der Versandartikel
--- (shop_shipping_partnumber) und nicht der eBay-Sammelartikel
--- (ebay_default_parts_id). Der Bestand darf negativ werden — verkauft ist
+-- Nur Waren (part_type part) mit positiver Menge; keine Versandartikel
+-- (shop_is_shipping_part: der jeder Versandart) und nicht der eBay-Sammelartikel
+-- (ebay_default_parts_id). shop_is_shipping_part steht weiter unten; PL/pgSQL
+-- löst den Namen erst beim Aufruf auf. Der Bestand darf negativ werden — verkauft ist
 -- verkauft; die Differenz zeigt die Inventur.
 --
 -- Ohne Lagerplatz keine Buchung (0), wie vor O14; die Einrichtungsprüfung
@@ -729,7 +733,7 @@ BEGIN
      WHERE i.trans_id = p_ar_id
        AND p.part_type = 'part'
        AND i.qty > 0
-       AND p.partnumber IS DISTINCT FROM (SELECT value FROM defaults_oserp WHERE key = 'shop_shipping_partnumber')
+       AND NOT shop_is_shipping_part(i.parts_id)
        -- Sammelartikel jedes eBay-Kanals; ebay_default_parts_id nur bis
        -- zum Umzug in settings (Schritt 4)
        AND p.id IS DISTINCT FROM NULLIF(btrim((SELECT value FROM defaults_oserp WHERE key = 'ebay_default_parts_id')), '')::integer
@@ -754,7 +758,7 @@ $$ LANGUAGE plpgsql;
 DO $$ BEGIN
     DROP TRIGGER IF EXISTS trigger_parts_shop_auto_publish ON parts;
     CREATE TRIGGER trigger_parts_shop_auto_publish
-        AFTER UPDATE OF sellprice, buchungsgruppen_id, obsolete, onhand, description, notes ON parts
+        AFTER UPDATE OF sellprice, buchungsgruppen_id, obsolete, weight, onhand, description, notes ON parts
         FOR EACH ROW
         WHEN (OLD.sellprice IS DISTINCT FROM NEW.sellprice
               OR OLD.buchungsgruppen_id IS DISTINCT FROM NEW.buchungsgruppen_id
@@ -1060,7 +1064,10 @@ COMMENT ON COLUMN parts_shipping_shop.delivery_term_id   IS 'Lieferbedingung (ki
 -- Lieferbedingung und Mindestabnahme stehen auf der Produktseite (HugoShop)
 -- und bestimmen bei eBay Los und Angebot (W5, W11): ändern sie sich, wird
 -- neu veröffentlicht — im HugoShop nur bei shop_auto_publish, wie bei Preis
--- und Texten (V22). Abmessungen und Versandart erscheinen auf keiner Seite.
+-- und Texten (V22). Versandart und Abmessungen stehen auf keiner Seite, sie
+-- entscheiden aber, ob eine Versandart passt (shop_part_shipping_check):
+-- ohne passende wird die Seite zum Entwurf. Bei eBay bestimmt die Versandart
+-- die Versandrichtlinie (W4).
 CREATE OR REPLACE FUNCTION parts_shipping_shop_auto_publish() RETURNS trigger AS $$
 BEGIN
     IF NOT shop_extension_active() THEN
@@ -1068,7 +1075,11 @@ BEGIN
     END IF;
     IF TG_OP = 'UPDATE'
        AND OLD.delivery_term_id IS NOT DISTINCT FROM NEW.delivery_term_id
-       AND OLD.min_qty IS NOT DISTINCT FROM NEW.min_qty THEN
+       AND OLD.min_qty IS NOT DISTINCT FROM NEW.min_qty
+       AND OLD.shipping_method_id IS NOT DISTINCT FROM NEW.shipping_method_id
+       AND OLD.length IS NOT DISTINCT FROM NEW.length
+       AND OLD.width IS NOT DISTINCT FROM NEW.width
+       AND OLD.height IS NOT DISTINCT FROM NEW.height THEN
         RETURN NULL;
     END IF;
 
@@ -1085,20 +1096,28 @@ $$ LANGUAGE plpgsql;
 DO $$ BEGIN
     DROP TRIGGER IF EXISTS trigger_parts_shipping_shop_auto_publish ON parts_shipping_shop;
     CREATE TRIGGER trigger_parts_shipping_shop_auto_publish
-        AFTER INSERT OR UPDATE OF delivery_term_id, min_qty ON parts_shipping_shop
+        AFTER INSERT OR UPDATE OF delivery_term_id, min_qty, shipping_method_id, length, width, height
+        ON parts_shipping_shop
         FOR EACH ROW
         EXECUTE FUNCTION parts_shipping_shop_auto_publish();
 END $$;
 
--- Ist der Artikel ein Versandartikel? Der einer Versandart oder der bisherige
--- aus shop_shipping_partnumber. Versandartikel sind keine Ware: sie zählen
--- nicht im Warenkorb, nicht zum Warenwert und nicht beim Versandgewicht.
+-- Ist der Artikel ein Versandartikel — der einer Versandart? Versandartikel
+-- sind keine Ware: sie zählen nicht im Warenkorb, nicht zum Warenwert und
+-- nicht beim Versandgewicht.
 CREATE OR REPLACE FUNCTION shop_is_shipping_part(p_parts_id integer) RETURNS boolean
     LANGUAGE sql STABLE AS $$
     SELECT EXISTS (SELECT 1 FROM shipping_method_shop m WHERE m.parts_id = p_parts_id)
-        OR EXISTS (SELECT 1 FROM parts p
-                    WHERE p.id = p_parts_id
-                      AND p.partnumber = (SELECT value FROM defaults_oserp WHERE key = 'shop_shipping_partnumber'))
+$$;
+
+-- Ist der Versand eingerichtet: eine aktive Versandart mit Preisstufe?
+-- Ohne sie läuft jede Bestellung als „Standard" ohne Versandkosten, und die
+-- Übersicht warnt (getShopStatus).
+CREATE OR REPLACE FUNCTION shop_shipping_configured() RETURNS boolean
+    LANGUAGE sql STABLE AS $$
+    SELECT EXISTS (SELECT 1 FROM shipping_method_shop m
+                    WHERE m.active
+                      AND EXISTS (SELECT 1 FROM shipping_rate_shop r WHERE r.shipping_method_id = m.id))
 $$;
 
 -- ── Berechnung (dev/shop-versand.md, Schritt 6) ──
@@ -1113,8 +1132,11 @@ $$;
 --   p_goods_value  Bruttowarenwert für die Freigrenze (wie der Kunde ihn sieht)
 --
 -- Regeln:
---   - Ware: alle Zeilen außer Versandartikeln (die einer Versandart und der
---     bisherige aus shop_shipping_partnumber).
+--   - Ware: alle Zeilen außer Versandartikeln (die der Versandarten).
+--   - Keine aktive Versandart mit Preisstufe (shop_shipping_configured): die
+--     Bestellung läuft als „Standard" ohne Versandkosten, ohne Versandartikel
+--     — die Rechnung bekommt keine Versandposition. Lieferländer gelten
+--     trotzdem.
 --   - Haben Artikel eine aktive Versandart zugeordnet, gilt die ranghöchste
 --     davon (W1) — passt sie nicht, ist keine Bestellung möglich (W2). Ohne
 --     Zuordnung gilt die günstigste passende aktive (Entscheidung 2).
@@ -1184,6 +1206,10 @@ BEGIN
        AND NOT EXISTS (SELECT 1 FROM sales_channel_country_shop cc
                         WHERE cc.channel_id = kanal AND cc.iso_code = land) THEN
         RETURN QUERY SELECT 'country_not_delivered'::text, NULL::integer, NULL::text, NULL::integer, 0::numeric, false;
+        RETURN;
+    END IF;
+    IF NOT shop_shipping_configured() THEN
+        RETURN QUERY SELECT 'ok'::text, NULL::integer, 'Standard'::text, NULL::integer, 0::numeric, true;
         RETURN;
     END IF;
     SELECT zc.zone_id INTO zone FROM shipping_zone_country_shop zc WHERE zc.iso_code = land;
@@ -1267,27 +1293,91 @@ CREATE OR REPLACE FUNCTION shop_invoice_delivery_term(p_invoice_id integer) RETU
        AND strpos(COALESCE(i.longdescription, ''), t.text) > 0
 $$;
 
--- Die bisherige Pauschale wird zur Versandart „Standard" (W9): ihr
--- Versandartikel, eine Preisstufe für alle Kanäle und Länder, ohne
--- Gewichtsgrenze — sie braucht kein Gewicht. Nur solange es keine
--- Versandart gibt; ein zweiter Lauf legt nichts mehr an.
-DO $$ BEGIN
-    IF NOT EXISTS (SELECT 1 FROM shipping_method_shop) THEN
-        WITH versand AS (
-            SELECT p.id, p.sellprice
-              FROM parts p
-              JOIN defaults_oserp d ON d.key = 'shop_shipping_partnumber' AND p.partnumber = d.value
-             ORDER BY p.id
-             LIMIT 1
-        ), methode AS (
-            INSERT INTO shipping_method_shop (description, parts_id, rank, free_shipping_applies)
-            SELECT 'Standard', id, 0, true FROM versand
-            RETURNING id
-        )
-        INSERT INTO shipping_rate_shop (shipping_method_id, price)
-        SELECT m.id, COALESCE(v.sellprice, 0) FROM methode m CROSS JOIN versand v;
+-- Passt eine Versandart zum Artikel? Für die Veröffentlichung im HugoShop
+-- (dev/shop-versand.md): ohne passende Versandart scheitert der Auftrag, und
+-- eine schon veröffentlichte Seite wird zum Entwurf.
+--
+-- Die Regeln von shop_cart_shipping() für einen Warenkorb aus nur diesem
+-- Artikel in seiner Mindestabnahme (sonst 1 Stück). Das Lieferland ist noch
+-- unbekannt: es genügt eine Preisstufe für den Kanal in irgendeiner Zone.
+-- Ein Warenkorb aus mehreren Artikeln kann trotzdem eine Grenze
+-- überschreiten — das meldet erst der Warenkorb.
+--
+-- status: ok, weight_missing, assigned_unfit, no_method. Ohne eingerichtete
+-- Versandart ok (Versand „Standard" ohne Kosten). method nennt die
+-- zugeordnete Versandart; weight, length, girth und weightunit die Werte, an
+-- denen gemessen wurde — für die Meldung.
+CREATE OR REPLACE FUNCTION shop_part_shipping_check(p_parts_id integer, p_channel_id integer)
+RETURNS TABLE (status text, method text, weight numeric, length numeric, girth numeric, weightunit text)
+LANGUAGE plpgsql STABLE AS $$
+#variable_conflict use_column
+DECLARE
+    menge        numeric;
+    gewicht      numeric;
+    ohne_gewicht boolean;
+    kante        numeric;
+    gurt         numeric;
+    zugeordnet   integer;
+    einheit      text := (SELECT d.weightunit FROM defaults d LIMIT 1);
+BEGIN
+    SELECT GREATEST(COALESCE(ps.min_qty, 1), 1),
+           GREATEST(COALESCE(ps.min_qty, 1), 1) * COALESCE(p.weight, 0),
+           p.part_type <> 'service' AND COALESCE(p.weight, 0) <= 0,
+           GREATEST(ps.length, ps.width, ps.height),
+           GREATEST(ps.length, ps.width, ps.height)
+               + 2 * (COALESCE(ps.length, 0) + COALESCE(ps.width, 0) + COALESCE(ps.height, 0)
+                      - GREATEST(ps.length, ps.width, ps.height)),
+           (SELECT m.id FROM shipping_method_shop m WHERE m.id = ps.shipping_method_id AND m.active)
+      INTO menge, gewicht, ohne_gewicht, kante, gurt, zugeordnet
+      FROM parts p
+      LEFT JOIN parts_shipping_shop ps ON ps.parts_id = p.id
+     WHERE p.id = p_parts_id;
+
+    -- Unbekannter Artikel, Versandartikel oder Versand nicht eingerichtet:
+    -- nichts zu prüfen
+    IF menge IS NULL OR shop_is_shipping_part(p_parts_id) OR NOT shop_shipping_configured() THEN
+        RETURN QUERY SELECT 'ok'::text, NULL::text, gewicht, kante, gurt, einheit;
+        RETURN;
     END IF;
-END $$;
+
+    IF EXISTS (
+        SELECT 1
+          FROM shipping_method_shop m
+         WHERE m.active
+           AND (zugeordnet IS NULL OR m.id = zugeordnet)
+           AND (m.max_weight IS NULL OR gewicht <= m.max_weight)
+           AND (m.max_length IS NULL OR kante IS NULL OR kante <= m.max_length)
+           AND (m.max_girth IS NULL OR gurt IS NULL OR gurt <= m.max_girth)
+           AND EXISTS (SELECT 1 FROM shipping_rate_shop r
+                        WHERE r.shipping_method_id = m.id
+                          AND (r.channel_id IS NULL OR r.channel_id = p_channel_id)
+                          AND r.weight_from <= gewicht
+                          AND r.qty_from <= menge)
+           AND NOT (ohne_gewicht AND (m.max_weight IS NOT NULL
+                                      OR EXISTS (SELECT 1 FROM shipping_rate_shop r
+                                                  WHERE r.shipping_method_id = m.id AND r.weight_from > 0)))
+    ) THEN
+        RETURN QUERY SELECT 'ok'::text, NULL::text, gewicht, kante, gurt, einheit;
+        RETURN;
+    END IF;
+
+    -- Warum keine passt — in derselben Reihenfolge wie im Warenkorb
+    IF ohne_gewicht AND EXISTS (
+           SELECT 1 FROM shipping_method_shop m
+            WHERE m.active AND (zugeordnet IS NULL OR m.id = zugeordnet)
+              AND (m.max_weight IS NOT NULL
+                   OR EXISTS (SELECT 1 FROM shipping_rate_shop r
+                               WHERE r.shipping_method_id = m.id AND r.weight_from > 0))) THEN
+        RETURN QUERY SELECT 'weight_missing'::text, NULL::text, gewicht, kante, gurt, einheit;
+    ELSIF zugeordnet IS NOT NULL THEN
+        RETURN QUERY SELECT 'assigned_unfit'::text,
+                            (SELECT m.description FROM shipping_method_shop m WHERE m.id = zugeordnet),
+                            gewicht, kante, gurt, einheit;
+    ELSE
+        RETURN QUERY SELECT 'no_method'::text, NULL::text, gewicht, kante, gurt, einheit;
+    END IF;
+END;
+$$;
 
 -- ============================================================================
 -- WARENKORB
@@ -1650,7 +1740,10 @@ INSERT INTO defaults_oserp (key, value) VALUES ('shop_tax_included', '0') ON CON
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_active_price_source', 'master_data/sellprice') ON CONFLICT (key) DO NOTHING;
 
 -- Versand
-INSERT INTO defaults_oserp (key, value) VALUES ('shop_shipping_partnumber', '8') ON CONFLICT (key) DO NOTHING;
+-- shop_shipping_partnumber gibt es nicht mehr: jede Versandart hat ihren
+-- eigenen Versandartikel; ohne Versandart läuft der Versand als „Standard"
+-- ohne Kosten (shop_cart_shipping)
+DELETE FROM defaults_oserp WHERE key = 'shop_shipping_partnumber';
 -- shop_free_shipping_from gibt es nicht mehr: die Freigrenze steht je Kanal in
 -- sales_channel_shop.free_shipping_from (Abschnitt VERSAND)
 
@@ -1717,12 +1810,10 @@ INSERT INTO defaults_oserp (key, value) VALUES ('shop_search_weighting', '0.5') 
 -- daran nicht scheitern.
 --
 -- Sachlich gehoert der Artikel ohnehin dem Betreiber: Preis, Buchungsgruppe
--- und damit der Steuersatz sind seine Entscheidung. Fehlt er, meldet
--- getShopStatus() das als blockierenden Punkt, und das Admin-Panel zeigt es
--- vor der ersten Bestellung an.
---
--- Anzulegen ist ein gewoehnlicher Artikel mit der Nummer aus der Einstellung
--- shop_shipping_partnumber (Vorgabe: 8).
+-- und damit der Steuersatz sind seine Entscheidung. Er wird in der Ansicht
+-- „Versandarten" je Versandart gewaehlt (dev/shop-versand.md). Ohne
+-- Versandart braucht der Shop keinen: der Versand laeuft dann als „Standard"
+-- ohne Kosten, und getShopStatus() warnt.
 
 -- ============================================================================
 -- INSTANZEN (dev/shop-mehrere-kanaele.md, Schritt 1)

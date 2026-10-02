@@ -292,7 +292,8 @@ function shopContentDir($db, int $kanal, bool $anlegen = false): string {
  * @param object $db Company-Datenbankverbindung
  * @param int $kanal HugoShop — Preis, Texte, Angebot und Adressen des Kanals
  * @param int $partsId Artikel
- * @return array artikel, shop, betrieb
+ * @return array artikel, shop, betrieb, versand (shop_part_shipping_check:
+ *               passt eine Versandart in diesem HugoShop)
  * @throws ApiError PART_NOT_FOUND
  */
 function shopPageData($db, int $kanal, int $partsId): array {
@@ -330,7 +331,9 @@ function shopPageData($db, int $kanal, int $partsId): array {
                 -- Versandangaben (dev/shop-versand.md, Schritt 5): Lieferbedingung
                 -- als Text für Seite und Kunden, Mindestabnahme
                 COALESCE(NULLIF(btrim(dt.description_long), ''), dt.description) AS delivery_term,
-                ps.min_qty
+                ps.min_qty,
+                -- Passt eine Versandart? Ohne passende wird nicht veröffentlicht
+                (SELECT row_to_json(v) FROM shop_part_shipping_check(p.id, CAST(:kanal_versand AS integer)) v) AS versand
            FROM parts p
            LEFT JOIN parts_shipping_shop ps ON ps.parts_id = p.id
            LEFT JOIN delivery_terms dt ON dt.id = ps.delivery_term_id
@@ -361,6 +364,7 @@ function shopPageData($db, int $kanal, int $partsId): array {
             ':kanal_frei'       => $kanal,
             ':kanal_preis'      => $kanal,
             ':kanal_zeile'      => $kanal,
+            ':kanal_versand'    => $kanal,
         ]
     );
 
@@ -423,7 +427,47 @@ function shopPageData($db, int $kanal, int $partsId): array {
             'free_shipping_from' => (float)($zeile['free_shipping_from'] ?? 0),
             'tax_included'     => shopConfigBool($db, 'shop_tax_included', false),
         ],
+        'versand' => json_decode((string)($zeile['versand'] ?? ''), true) ?: ['status' => 'ok'],
     ];
+}
+
+/**
+ * Meldung zur Prüfung der Versandart eines Artikels
+ *
+ * Für Lauf, Auftragsliste und Artikelkarte: sagt, woran es liegt, mit den
+ * Werten, an denen gemessen wurde.
+ *
+ * @param array $pruefung Zeile aus shop_part_shipping_check(): status, method,
+ *              weight, length, girth, weightunit
+ * @return string leer bei status ok
+ */
+function shopShippingCheckText(array $pruefung): string {
+    $zahl = fn($wert) => str_replace('.', ',', rtrim(rtrim(number_format((float)$wert, 3, '.', ''), '0'), '.'));
+
+    $werte = [];
+    if ((float)($pruefung['weight'] ?? 0) > 0) {
+        $werte[] = 'Gewicht '.$zahl($pruefung['weight']).' '.trim((string)($pruefung['weightunit'] ?? ''));
+    }
+    if (null !== ($pruefung['length'] ?? null)) {
+        $werte[] = 'längste Kante '.$zahl($pruefung['length']).' cm';
+    }
+    if (null !== ($pruefung['girth'] ?? null)) {
+        $werte[] = 'Gurtmaß '.$zahl($pruefung['girth']).' cm';
+    }
+    $gemessen = $werte ? ' ('.implode(', ', array_map('trim', $werte)).')' : '';
+
+    switch ($pruefung['status'] ?? 'ok') {
+        case 'ok':
+            return '';
+        case 'weight_missing':
+            return 'Keine passende Versandart: Der Artikel hat kein Gewicht, die Versandarten brauchen eins';
+        case 'assigned_unfit':
+            return 'Die zugeordnete Versandart „'.($pruefung['method'] ?? '').'“ passt nicht'.$gemessen
+                .' oder hat für diesen HugoShop keine Preisstufe';
+        default:
+            return 'Keine passende Versandart'.$gemessen
+                .': Grenzen und Preisstufen der Versandarten für diesen HugoShop prüfen';
+    }
 }
 
 // ── Hilfen fuer die Vorlagen ──
@@ -628,21 +672,38 @@ function shopRenderPage($db, int $kanal, array $seite, string $ausgabe = 'produc
  * @param object $db Company-Datenbankverbindung
  * @param int $kanal HugoShop, in dessen Webseite die Seite kommt
  * @param int $partsId Artikel
- * @param bool $entwurf als Entwurf schreiben (V16)
+ * Ohne passende Versandart (shop_part_shipping_check) wird nicht
+ * veröffentlicht: Gibt es die Seite schon, wird sie als Entwurf neu
+ * geschrieben — Hugo nimmt sie dann aus der Webseite, und kein Kunde legt den
+ * Artikel mehr in einen Warenkorb, der an der Kasse scheitert. Danach scheitert
+ * der Auftrag mit der Meldung: SHIPPING_UNFIT_DRAFT, wenn eine Seite zum
+ * Entwurf wurde (der Lauf muss dann bauen), sonst SHIPPING_UNFIT.
+ *
+ * @param bool $entwurf als Entwurf schreiben (V16) — ohne Prüfung der Versandart
  * @return array file, bytes, thumbnail
- * @throws ApiError SHOP_WRITE_FAILED
+ * @throws ApiError SHOP_WRITE_FAILED, SHIPPING_UNFIT, SHIPPING_UNFIT_DRAFT
  */
 function shopWriteProductPage($db, int $kanal, int $partsId, bool $entwurf = false): array {
     $seite = shopPageData($db, $kanal, $partsId);
+    $versandFehler = $entwurf ? '' : shopShippingCheckText($seite['versand']);
+    $datei = shopContentDir($db, $kanal, true).'/'.shopPageFileName($seite);
+
+    if ('' !== $versandFehler && !is_file($datei)) {
+        throw new ApiError('SHIPPING_UNFIT', $versandFehler);
+    }
+
     $inhalt = shopRenderPage($db, $kanal, $seite);
-    if ($entwurf) {
+    if ($entwurf || '' !== $versandFehler) {
         $inhalt = shopPageAsDraft($inhalt);
     }
-    $datei = shopContentDir($db, $kanal, true).'/'.shopPageFileName($seite);
 
     $geschrieben = file_put_contents($datei, $inhalt, LOCK_EX);
     if (false === $geschrieben) {
         throw new ApiError('SHOP_WRITE_FAILED', 'Datei nicht schreibbar: '.$datei);
+    }
+
+    if ('' !== $versandFehler) {
+        throw new ApiError('SHIPPING_UNFIT_DRAFT', $versandFehler.' — die bisherige Seite ist jetzt ein Entwurf');
     }
 
     return ['file' => $datei, 'bytes' => $geschrieben, 'thumbnail' => shopThumbnailFor($db, $kanal, $seite)];

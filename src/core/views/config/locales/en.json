@@ -1030,8 +1030,6 @@
         "shopActivePriceSource": "Price source",
         "shopActivePriceSource_help": "Origin of the selling price used for shop invoices.",
         "shopShipping": "Shipping cost",
-        "shopShippingPartnumber": "Shipping part number",
-        "shopShippingPartnumber_help": "Part charged as shipping cost. The part has to exist.",
         "shopPayment": "Bank details for transfers",
         "shopPaymentAccountOwner": "Account holder",
         "shopPaymentAccountOwner_help": "Shown on the invoice page while the customer has not paid yet.",

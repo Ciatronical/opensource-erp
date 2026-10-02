@@ -3,7 +3,9 @@
         "routes": {
             "shopOverview": "/winkel",
             "shopOrders": "/winkel/bestellingen",
-            "shopWithdrawals": "/winkel/herroepingen"
+            "shopWithdrawals": "/winkel/herroepingen",
+            "shopChannels": "/winkel/verkoopkanalen",
+            "shopShipping": "/winkel/verzendmethoden"
         },
         "menu": {
             "title": "Winkel",
@@ -15,7 +17,8 @@
         "status": {
             "ready": "De winkel is klaar voor gebruik.",
             "notReady": "De winkel neemt nog geen bestellingen aan",
-            "notReadyHint": "Deze gegevens ontbreken. Ze staan bij de instellingen onder Uitbreidingen → Winkel.",
+            "notReadyHint": "Deze gegevens ontbreken. Ze staan bij de instellingen onder Uitbreidingen → Winkel of in het winkelmenu onder Verkoopkanalen.",
+            "shippingMissing": "Er is geen verzendmethode ingesteld: bestellingen worden verwerkt als „Standard” zonder verzendkosten.",
             "hints": "Deze gegevens ontbreken nog. De winkel werkt, maar beperkt:",
             "partsWithShopData": "Artikelen met winkelgegevens",
             "carts": "Winkelwagens",
@@ -57,9 +60,9 @@
             "title": "Artikelen in de shop",
             "subtitle": "Artikelen die in een verkoopkanaal worden aangeboden"
         },
-        "partsNoWeight": {
-            "title": "Artikelen zonder gewicht",
-            "subtitle": "Aangeboden goederen zonder gewicht — aanvullen voor de verzendkosten"
+        "partsShippingUnfit": {
+            "title": "Artikelen zonder passende verzendmethode",
+            "subtitle": "Aangeboden artikelen waarvoor geen verzendmethode past — hun pagina wordt niet gepubliceerd"
         },
         "withdrawals": {
             "title": "Herroepingen",
@@ -155,6 +158,7 @@
             "imagesCopied": "{anzahl} afbeeldingen overgenomen.",
             "imageError": "De afbeelding kon niet worden verwerkt.",
             "syncStatus": "Status bij {kanal}",
+            "shippingUnfit": "Geen passende verzendmethode — de pagina wordt niet gepubliceerd.",
             "listingId": "Advertentie {id}",
             "ebayCategory": "eBay-categorie",
             "ebayCondition": "Staat",
@@ -210,6 +214,7 @@
             "started": "Publicatie gestart.",
             "inProgress": "De publicatie loopt op de achtergrond — de pagina blijft bruikbaar.",
             "aborted": "De uitvoering is onderbroken voordat die klaar was.",
+            "errorsTitle": "Fouten in de laatste run ({count}):",
             "tooLong": "De uitvoering duurt langer dan verwacht. De weergave wordt niet meer bijgewerkt – laad de pagina later opnieuw.",
             "functions": {
                 "publish_part": "Productpagina schrijven",
@@ -244,6 +249,9 @@
         },
         "shippingConfig": {
             "title": "Verzendmethoden",
+            "subtitle": "Zones, verzendmethoden en verzendtarieven",
+            "movedHint": "De verzendmethoden met zones en tarieven hebben een eigen weergave in het winkelmenu.",
+            "open": "Verzendmethoden openen",
             "intro": "Verzendmethoden met vervoerder, rang, grenzen en prijsstaffels. Hebben de artikelen van een bestelling verschillende verzendmethoden, dan geldt de hoogst gerangschikte; artikelen zonder toewijzing krijgen de goedkoopste geschikte. eBay berekent de verzending zelf via het verzendbeleid.",
             "zones": "Landenzones",
             "zonesHint": "Prijzen gelden per zone. Een land hoort bij hoogstens één zone; landen zonder zone vallen onder „Alle overige landen”.",
@@ -336,7 +344,10 @@
             "deleteConfirm": "„{name}” met artikelregels, afbeeldingen, leveringslanden en prijsstaffels verwijderen? Dit kan niet ongedaan worden gemaakt.",
             "deleted": "Verkoopkanaal verwijderd.",
             "deleteError": "Het verkoopkanaal kon niet worden verwijderd.",
-            "cancel": "Annuleren"
+            "cancel": "Annuleren",
+            "subtitle": "HugoShops en eBay-kanalen aanmaken en inrichten",
+            "movedHint": "De verkoopkanalen en hun instellingen (website, winkelsleutel, PayPal, eBay-toegang) hebben een eigen weergave in het winkelmenu.",
+            "open": "Verkoopkanalen openen"
         },
         "ebayCondition": {
             "NEW": "Nieuw",
@@ -354,7 +365,8 @@
             "CHANNEL_NAME_TAKEN": "Een ander verkoopkanaal heeft deze naam al.",
             "CHANNEL_KEY_TAKEN": "Deze winkelsleutel hoort al bij een andere HugoShop.",
             "CHANNEL_IN_USE": "Aan dit kanaal zijn facturen, herroepingen of eBay-bestellingen gekoppeld. Het kan alleen worden uitgeschakeld.",
-            "CHANNEL_NOT_DELETABLE": "Alleen een uitgeschakeld kanaal zonder openstaande opdrachten kan worden verwijderd."
+            "CHANNEL_NOT_DELETABLE": "Alleen een uitgeschakeld kanaal zonder openstaande opdrachten kan worden verwijderd.",
+            "SHIPPING_UNFIT": "Wordt niet gepubliceerd"
         }
     }
 }

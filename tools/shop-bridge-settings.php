@@ -176,7 +176,6 @@ $zuordnung = [
     'shop_standard_currency'                => wert('KIVI_STANDARD_CURRENCY'),
     'shop_tax_included'                     => wahrheit('KIVI_TAX_INCLUDED'),
     'shop_active_price_source'              => wert('KIVI_ACTIVE_PRICE_SOURCE'),
-    'shop_shipping_partnumber'              => wert('KIVI_SIPPING_COST_PARTNUMBER'),
     'shop_free_shipping_from'               => wert('KIVI_ZERO_SIPPING_COSTS_FROM'),
     'shop_payment_account_owner'            => wert('KIVI_PAYMENT_TERMS_ACCOUNT_OWNER'),
     'shop_payment_bank'                     => wert('KIVI_PAYMENT_TERMS_BANK'),
@@ -259,10 +258,5 @@ foreach ($zuordnung as $schluessel => $w) {
     }
 }
 
-// Der Versandartikel muss vorhanden sein — das Schema legt ihn bewusst nicht an
-$versand = wert('KIVI_SIPPING_COST_PARTNUMBER');
-if (null !== $versand) {
-    echo "\n-- Prüfen, ob der Versandartikel existiert (das Schema legt ihn nicht an):\n";
-    echo "-- SELECT id, partnumber, description, sellprice FROM parts WHERE partnumber = '".
-         str_replace("'", "''", (string)$versand)."';\n";
-}
+// KIVI_SIPPING_COST_PARTNUMBER wird nicht übernommen: jede Versandart hat
+// ihren eigenen Versandartikel (Ansicht „Versandarten", dev/shop-versand.md)

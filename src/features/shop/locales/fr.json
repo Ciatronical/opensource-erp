@@ -3,7 +3,9 @@
         "routes": {
             "shopOverview": "/boutique",
             "shopOrders": "/boutique/commandes",
-            "shopWithdrawals": "/boutique/retractations"
+            "shopWithdrawals": "/boutique/retractations",
+            "shopChannels": "/boutique/canaux-de-vente",
+            "shopShipping": "/boutique/modes-d-expedition"
         },
         "menu": {
             "title": "Boutique",
@@ -15,7 +17,8 @@
         "status": {
             "ready": "La boutique est prête à fonctionner.",
             "notReady": "La boutique n'accepte pas encore de commandes",
-            "notReadyHint": "Ces informations manquent. Elles se trouvent dans les paramètres, sous Extensions → Boutique.",
+            "notReadyHint": "Ces informations manquent. Elles se trouvent dans les paramètres, sous Extensions → Boutique, ou dans le menu Boutique, sous Canaux de vente.",
+            "shippingMissing": "Aucun mode d'expédition n'est configuré : les commandes sont traitées comme « Standard » sans frais de port.",
             "hints": "Ces informations manquent encore. La boutique fonctionne, mais de façon limitée :",
             "partsWithShopData": "Articles avec données boutique",
             "carts": "Paniers",
@@ -57,9 +60,9 @@
             "title": "Articles dans la boutique",
             "subtitle": "Articles proposés dans un canal de vente"
         },
-        "partsNoWeight": {
-            "title": "Articles sans poids",
-            "subtitle": "Marchandises proposées sans poids — à compléter pour les frais de port"
+        "partsShippingUnfit": {
+            "title": "Articles sans mode d'expédition adapté",
+            "subtitle": "Articles proposés auxquels aucun mode d'expédition ne convient — leur page ne sera pas publiée"
         },
         "withdrawals": {
             "title": "Rétractations",
@@ -155,6 +158,7 @@
             "imagesCopied": "{anzahl} images reprises.",
             "imageError": "L'image n'a pas pu être traitée.",
             "syncStatus": "État chez {kanal}",
+            "shippingUnfit": "Aucun mode d'expédition adapté — la page ne sera pas publiée.",
             "listingId": "Annonce {id}",
             "ebayCategory": "Catégorie eBay",
             "ebayCondition": "État",
@@ -210,6 +214,7 @@
             "started": "Publication lancée.",
             "inProgress": "La publication s'exécute en arrière-plan — la page reste utilisable.",
             "aborted": "L'exécution a été interrompue avant la fin.",
+            "errorsTitle": "Erreurs de la dernière exécution ({count}) :",
             "tooLong": "L'exécution prend plus de temps que prévu. L'affichage n'est plus mis à jour – veuillez recharger la page plus tard.",
             "functions": {
                 "publish_part": "Écrire la page produit",
@@ -244,6 +249,9 @@
         },
         "shippingConfig": {
             "title": "Modes d'expédition",
+            "subtitle": "Zones, modes d'expédition et tarifs d'expédition",
+            "movedHint": "Les modes d'expédition avec leurs zones et tarifs ont leur propre vue dans le menu de la boutique.",
+            "open": "Ouvrir les modes d'expédition",
             "intro": "Modes d'expédition avec transporteur, rang, limites et paliers de prix. Si les articles d'une commande ont des modes différents, le mieux classé s'applique ; les articles sans affectation reçoivent le moins cher adapté. eBay calcule lui-même l'expédition via la politique d'expédition.",
             "zones": "Zones de pays",
             "zonesHint": "Les prix s'appliquent par zone. Un pays appartient au plus à une zone ; les pays sans zone relèvent de « Tous les autres pays ».",
@@ -336,7 +344,10 @@
             "deleteConfirm": "Supprimer « {name} » avec ses lignes d’articles, images, pays de livraison et paliers de prix ? Cette action est irréversible.",
             "deleted": "Canal de vente supprimé.",
             "deleteError": "Le canal de vente n’a pas pu être supprimé.",
-            "cancel": "Annuler"
+            "cancel": "Annuler",
+            "subtitle": "Créer et configurer les HugoShops et les canaux eBay",
+            "movedHint": "Les canaux de vente et leurs paramètres (site web, clé de boutique, PayPal, accès eBay) ont leur propre vue dans le menu Boutique.",
+            "open": "Ouvrir les canaux de vente"
         },
         "ebayCondition": {
             "NEW": "Neuf",
@@ -354,7 +365,8 @@
             "CHANNEL_NAME_TAKEN": "Un autre canal de vente porte déjà ce nom.",
             "CHANNEL_KEY_TAKEN": "Cette clé de boutique appartient déjà à une autre HugoShop.",
             "CHANNEL_IN_USE": "Des factures, rétractations ou commandes eBay sont liées à ce canal. Il ne peut qu’être désactivé.",
-            "CHANNEL_NOT_DELETABLE": "Seul un canal désactivé sans tâches en attente peut être supprimé."
+            "CHANNEL_NOT_DELETABLE": "Seul un canal désactivé sans tâches en attente peut être supprimé.",
+            "SHIPPING_UNFIT": "Ne sera pas publié"
         }
     }
 }

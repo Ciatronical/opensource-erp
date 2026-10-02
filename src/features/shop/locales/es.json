@@ -3,7 +3,9 @@
         "routes": {
             "shopOverview": "/tienda",
             "shopOrders": "/tienda/pedidos",
-            "shopWithdrawals": "/tienda/desistimientos"
+            "shopWithdrawals": "/tienda/desistimientos",
+            "shopChannels": "/tienda/canales-de-venta",
+            "shopShipping": "/tienda/metodos-de-envio"
         },
         "menu": {
             "title": "Tienda",
@@ -15,7 +17,8 @@
         "status": {
             "ready": "La tienda está lista para funcionar.",
             "notReady": "La tienda todavía no acepta pedidos",
-            "notReadyHint": "Faltan estos datos. Están en los ajustes, en Extensiones → Tienda.",
+            "notReadyHint": "Faltan estos datos. Están en los ajustes, en Extensiones → Tienda, o en el menú de la tienda, en Canales de venta.",
+            "shippingMissing": "No hay ningún método de envío configurado: los pedidos se tramitan como «Standard» sin gastos de envío.",
             "hints": "Aún faltan estos datos. La tienda funciona, pero con limitaciones:",
             "partsWithShopData": "Artículos con datos de tienda",
             "carts": "Cestas",
@@ -57,9 +60,9 @@
             "title": "Artículos en la tienda",
             "subtitle": "Artículos ofrecidos en un canal de venta"
         },
-        "partsNoWeight": {
-            "title": "Artículos sin peso",
-            "subtitle": "Mercancías ofrecidas sin peso: complételas para los gastos de envío"
+        "partsShippingUnfit": {
+            "title": "Artículos sin método de envío adecuado",
+            "subtitle": "Artículos ofrecidos a los que no se ajusta ningún método de envío: su página no se publicará"
         },
         "withdrawals": {
             "title": "Desistimientos",
@@ -155,6 +158,7 @@
             "imagesCopied": "{anzahl} imágenes tomadas.",
             "imageError": "No se pudo procesar la imagen.",
             "syncStatus": "Estado en {kanal}",
+            "shippingUnfit": "Ningún método de envío adecuado: la página no se publicará.",
             "listingId": "Anuncio {id}",
             "ebayCategory": "Categoría de eBay",
             "ebayCondition": "Estado del artículo",
@@ -210,6 +214,7 @@
             "started": "Publicación iniciada.",
             "inProgress": "La publicación se ejecuta en segundo plano: la página sigue utilizable.",
             "aborted": "La ejecución se interrumpió antes de terminar.",
+            "errorsTitle": "Errores en la última ejecución ({count}):",
             "tooLong": "La ejecución tarda más de lo previsto. La vista ya no se actualiza: vuelva a cargar la página más tarde.",
             "functions": {
                 "publish_part": "Escribir página de producto",
@@ -244,6 +249,9 @@
         },
         "shippingConfig": {
             "title": "Métodos de envío",
+            "subtitle": "Zonas, métodos de envío y tarifas de envío",
+            "movedHint": "Los métodos de envío con sus zonas y tarifas tienen su propia vista en el menú de la tienda.",
+            "open": "Abrir métodos de envío",
             "intro": "Métodos de envío con transportista, rango, límites y tramos de precio. Si los artículos de un pedido tienen métodos distintos, se aplica el de mayor rango; los artículos sin asignación reciben el más barato adecuado. eBay calcula el envío por sí mismo mediante la política de envío.",
             "zones": "Zonas de países",
             "zonesHint": "Los precios se aplican por zona. Un país pertenece como máximo a una zona; los países sin zona entran en «Todos los demás países».",
@@ -336,7 +344,10 @@
             "deleteConfirm": "¿Eliminar «{name}» con sus filas de artículos, imágenes, países de entrega y escalas de precios? No se puede deshacer.",
             "deleted": "Canal de venta eliminado.",
             "deleteError": "No se pudo eliminar el canal de venta.",
-            "cancel": "Cancelar"
+            "cancel": "Cancelar",
+            "subtitle": "Crear y configurar HugoShops y canales de eBay",
+            "movedHint": "Los canales de venta y sus ajustes (sitio web, clave de la tienda, PayPal, acceso a eBay) tienen su propia vista en el menú de la tienda.",
+            "open": "Abrir canales de venta"
         },
         "ebayCondition": {
             "NEW": "Nuevo",
@@ -354,7 +365,8 @@
             "CHANNEL_NAME_TAKEN": "Otro canal de venta ya tiene este nombre.",
             "CHANNEL_KEY_TAKEN": "Esta clave de tienda ya pertenece a otra HugoShop.",
             "CHANNEL_IN_USE": "Hay facturas, desistimientos o pedidos de eBay vinculados a este canal. Solo se puede desactivar.",
-            "CHANNEL_NOT_DELETABLE": "Solo se puede eliminar un canal desactivado sin tareas pendientes."
+            "CHANNEL_NOT_DELETABLE": "Solo se puede eliminar un canal desactivado sin tareas pendientes.",
+            "SHIPPING_UNFIT": "No se publicará"
         }
     }
 }

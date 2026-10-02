@@ -826,8 +826,6 @@
         "shopActivePriceSource": "Hinnan lähde",
         "shopActivePriceSource_help": "Kaupan laskuissa käytettävän myyntihinnan alkuperä.",
         "shopShipping": "Toimituskulut",
-        "shopShippingPartnumber": "Toimituksen tuotenumero",
-        "shopShippingPartnumber_help": "Tuote, joka veloitetaan toimituskuluina. Tuotteen on oltava olemassa.",
         "shopPayment": "Pankkiyhteys tilisiirtoja varten",
         "shopPaymentAccountOwner": "Tilinomistaja",
         "shopPaymentAccountOwner_help": "Näytetään laskusivulla, kunnes asiakas on maksanut.",

@@ -29,12 +29,12 @@ function getShopStatus($data) {
     permit(['shop_order', 'edit_shop_config'], false);
     $db = DbhCompany::begin();
 
-    $versandNr = shopConfigValue($db, 'shop_shipping_partnumber');
-
     // Eine Abfrage für alles, was in der Datenbank nachzuschlagen ist
     $stand = $db->getOne(
         "SELECT
-            (SELECT COUNT(*) FROM parts WHERE partnumber = :versand_nr) > 0 AS versandartikel,
+            -- Versand (dev/shop-versand.md): ohne aktive Versandart mit
+            -- Preisstufe läuft jede Bestellung als „Standard“ ohne Kosten
+            shop_shipping_configured() AS versandart,
             (SELECT COUNT(*) FROM employee WHERE login = :kontakt AND NOT deleted) > 0 AS kontakt,
             (SELECT COUNT(*) FROM chart WHERE description ILIKE :forderungskonto) > 0 AS forderungskonto,
             (SELECT COUNT(*) FROM tax_zones WHERE description ILIKE :taxzone) > 0 AS taxzone,
@@ -51,7 +51,6 @@ function getShopStatus($data) {
             (SELECT COUNT(*) FROM context_hugoshop) AS sitzungen,
             (SELECT COUNT(*) FROM carts_hugoshop) AS warenkoerbe",
         [
-            ':versand_nr'      => $versandNr,
             ':kontakt'         => shopConfigValue($db, 'shop_contact_login'),
             ':forderungskonto' => '%'.shopConfigValue($db, 'shop_target_account').'%',
             ':taxzone'         => shopConfigValue($db, 'shop_standard_taxzone', 'Inland'),
@@ -63,9 +62,6 @@ function getShopStatus($data) {
 
     // Ohne diese Punkte nimmt der oeffentliche Zugang keine Bestellung an
     $blockierend = [];
-    if ('' === $versandNr || !$wahr($stand['versandartikel'])) {
-        $blockierend[] = 'shop_shipping_partnumber';
-    }
     if (!$wahr($stand['forderungskonto'])) {
         $blockierend[] = 'shop_target_account';
     }
@@ -163,6 +159,10 @@ function getShopStatus($data) {
         $veroeffentlichung = [];
     }
 
+    // Ohne Versandart nimmt der HugoShop Bestellungen an, berechnet aber
+    // keinen Versand — kein fehlender Punkt, aber eine eigene Warnung
+    $versandFehlt = $hugoshops && !$wahr($stand['versandart']);
+
     // eBay-Kanäle: ohne diese Angaben lehnt eBay jedes Angebot ab
     foreach (array_filter($kanaele, fn($k) => 'ebay' === $k['type']) as $kanal) {
         $ebay = function_exists('shopEbayConfig') ? shopEbayConfig($db, (int)$kanal['id']) : [];
@@ -203,6 +203,7 @@ function getShopStatus($data) {
     resultInfo(true, '', [
         'ready'     => empty($blockierend),
         'blocking'  => $blockierend,
+        'shipping_missing' => $versandFehlt,
         'hints'     => $hinweise,
         'recommendations' => $empfehlungen,
         'publish_problems' => $veroeffentlichung,
@@ -334,6 +335,9 @@ function setShopWithdrawalProcessed($data) {
  *              Auswahllisten dafür: Versandarten, Lieferbedingungen,
  *              Gewichtseinheit (dev/shop-versand.md, Schritt 5)
  *
+ * Je HugoShop steht in shipping_message, warum keine Versandart passt (leer =
+ * passt) — ohne passende wird die Seite nicht veröffentlicht.
+ *
  * Die Shop-Angaben aus parts_ext bleiben auch nach dem Abwählen erhalten (V5).
  *
  * @param array $data['parts_id'] Artikel; leer oder 0 bei der Neuanlage
@@ -388,6 +392,11 @@ function getPartShopData($data) {
                        COALESCE(pc.unavailable, false) AS unavailable,
                        COALESCE(pc.settings, '{}'::jsonb) AS settings,
                        pc.sync_status, pc.sync_error, pc.sync_mtime, pc.external_id,
+                       -- HugoShop: passt eine Versandart? Sonst wird die Seite
+                       -- nicht veröffentlicht (shop_part_shipping_check)
+                       CASE WHEN c.type = 'hugoshop'
+                            THEN (SELECT row_to_json(v)
+                                    FROM shop_part_shipping_check(CAST(:parts_id_pruefung AS integer), c.id) v) END AS shipping_check,
                        -- Bilder der Marktplätze; der HugoShop führt seine in parts_ext
                        (SELECT COALESCE(json_agg(json_build_object(
                                    'id', i.id, 'filename', i.filename,
@@ -405,13 +414,22 @@ function getPartShopData($data) {
             ':parts_id'        => (int)($data['parts_id'] ?? 0),
             ':parts_id_bilder' => (int)($data['parts_id'] ?? 0),
             ':parts_id_versand' => (int)($data['parts_id'] ?? 0),
+            ':parts_id_pruefung' => (int)($data['parts_id'] ?? 0),
             ':taxzone'         => shopConfigValue($db, 'shop_standard_taxzone', 'Inland'),
         ]
     );
 
+    // Die Meldung zur Versandart je HugoShop, leer = passt
+    $kanaele = json_decode((string)($zeile['channels'] ?? '[]'), true) ?: [];
+    foreach ($kanaele as &$kanal) {
+        $kanal['shipping_message'] = shopShippingCheckText((array)($kanal['shipping_check'] ?? []));
+        unset($kanal['shipping_check']);
+    }
+    unset($kanal);
+
     resultInfo(true, '', [
         'part'      => json_decode((string)($zeile['part'] ?? 'null'), true),
-        'channels'  => json_decode((string)($zeile['channels'] ?? '[]'), true) ?: [],
+        'channels'  => $kanaele,
         'tax_rates' => json_decode((string)($zeile['tax_rates'] ?? '{}'), true) ?: (object)[],
         'shipping'  => json_decode((string)($zeile['shipping'] ?? '{}'), true) ?: (object)[],
     ]);
@@ -610,7 +628,22 @@ function savePartShopData($data) {
                             (string)($seite['hugoshop_hyperlink'] ?? ''));
     }
 
-    resultInfo(true, 'PART_SHOP_DATA_SAVED');
+    // Passt nach dem Speichern eine Versandart? Eine eigene Abfrage: die
+    // Anweisung oben sieht ihre eigenen Änderungen nicht (Momentaufnahme).
+    $pruefungen = $db->getAll(
+        "SELECT c.id AS channel_id, row_to_json(v) AS pruefung
+           FROM sales_channel_shop c
+           CROSS JOIN LATERAL shop_part_shipping_check(CAST(:parts_id AS integer), c.id) v
+          WHERE c.active AND c.type = 'hugoshop'",
+        [':parts_id' => $partsId]
+    ) ?: [];
+
+    resultInfo(true, 'PART_SHOP_DATA_SAVED', [
+        'shipping_messages' => array_map(fn($z) => [
+            'channel_id' => (int)$z['channel_id'],
+            'message'    => shopShippingCheckText(json_decode((string)$z['pruefung'], true) ?: []),
+        ], $pruefungen),
+    ]);
 }
 
 /**
@@ -924,12 +957,12 @@ function saveShopCountryAlias($data) {
 }
 
 /**
- * Versandarten, Zonen und Preise für die Firmenkonfiguration
+ * Versandarten, Zonen und Preise für die Ansicht „Versandarten“
  *
  * dev/shop-versand.md, Schritt 4. Alles, was die Karte „Versandarten" braucht,
  * in einer Abfrage: Versandarten mit ihren Preisstufen, Zonen mit ihren
- * Ländern, die Kanäle, die Lieferanten als mögliche Anbieter, die Länderliste
- * und die Gewichtseinheit der Artikel.
+ * Ländern, die Kanäle, die Lieferanten als mögliche Anbieter, die Länderliste,
+ * die Gewichtseinheit der Artikel und ob die Preise brutto gelten.
  *
  * @return void
  * @testdata {}
@@ -971,7 +1004,9 @@ function getShopShipping($data) {
                WHERE NOT COALESCE(v.obsolete, false)
                   OR v.id IN (SELECT vendor_id FROM shipping_method_shop)) AS anbieter,
              (SELECT COALESCE(json_agg(c.iso_code ORDER BY c.iso_code), '[]') FROM country_shop c) AS laender,
-             (SELECT weightunit FROM defaults LIMIT 1) AS gewichtseinheit"
+             (SELECT weightunit FROM defaults LIMIT 1) AS gewichtseinheit,
+             COALESCE((SELECT lower(trim(value)) IN ('t', 'true', '1', 'y', 'yes')
+                         FROM defaults_oserp WHERE key = 'shop_tax_included'), false) AS brutto"
     );
 
     resultInfo(true, '', [
@@ -981,6 +1016,9 @@ function getShopShipping($data) {
         'vendors'    => json_decode((string)$zeile['anbieter'], true),
         'countries'  => json_decode((string)$zeile['laender'], true),
         'weightunit' => (string)($zeile['gewichtseinheit'] ?? ''),
+        // Preise netto oder brutto wie parts.sellprice — für die eigene
+        // Ansicht „Versandarten“, die kein Formular mit shop_tax_included hat
+        'tax_included' => in_array($zeile['brutto'] ?? false, [true, 't', 'true', 1, '1'], true),
     ]);
 }
 
@@ -1800,7 +1838,8 @@ function writeShopPage($data) {
  * Nimmt einen Artikel in die Veröffentlichung auf
  *
  * Schreibt nur den Auftrag; die Seite entsteht beim nächsten Lauf von
- * tools/shop-publish.php.
+ * tools/shop-publish.php. Passt keine Versandart, entsteht kein Auftrag:
+ * SHIPPING_UNFIT mit dem Grund.
  *
  * @param array $data['parts_id'] Artikel
  * @param array $data['channel_id'] HugoShop, leer = Standard-HugoShop
@@ -1813,11 +1852,20 @@ function publishShopPart($data) {
     $kanal = shopHugoshopOfRequest($db, $data);
 
     $artikel = $db->getOne(
-        "SELECT partnumber FROM parts WHERE id = :parts_id",
-        [':parts_id' => (int)($data['parts_id'] ?? 0)]
+        "SELECT p.partnumber,
+                (SELECT row_to_json(v) FROM shop_part_shipping_check(p.id, CAST(:kanal AS integer)) v) AS versand
+           FROM parts p WHERE p.id = :parts_id",
+        [':parts_id' => (int)($data['parts_id'] ?? 0), ':kanal' => $kanal]
     );
     if (!$artikel) {
         resultInfo(false, 'PART_NOT_FOUND', null, 'Artikel nicht gefunden');
+        return;
+    }
+
+    // Ohne passende Versandart wird nicht veröffentlicht (dev/shop-versand.md)
+    $versandFehler = shopShippingCheckText(json_decode((string)$artikel['versand'], true) ?: []);
+    if ('' !== $versandFehler) {
+        resultInfo(false, 'SHIPPING_UNFIT', null, $versandFehler);
         return;
     }
 

@@ -250,7 +250,7 @@ Oberfläche, nicht den Schlüssel.
 | --- | --- |
 | Zugang | `shop_public_key`, `shop_allowed_origins`, `shop_backend_url` |
 | Sitzung | `shop_cart_lifetime_hours`, `shop_context_lifetime_hours` |
-| Verkauf | `shop_contact_login`, `shop_target_account`, `shop_incoming_account`, `shop_standard_taxzone`, `shop_standard_currency`, `shop_tax_included`, `shop_active_price_source`, `shop_shipping_partnumber`, `shop_free_shipping_from` |
+| Verkauf | `shop_contact_login`, `shop_target_account`, `shop_incoming_account`, `shop_standard_taxzone`, `shop_standard_currency`, `shop_tax_included`, `shop_active_price_source`, `shop_free_shipping_from` (`shop_shipping_partnumber` entfiel 2026-10-02, siehe dev/shop-versand.md) |
 | Zahlung | Bankverbindung (`shop_payment_*`), PayPal (`shop_paypal_*`) |
 | Adressen der Webseite | `shop_base_url`, `shop_products_link`, `shop_category_link`, `shop_images_link`, `shop_thumbnails_link`, `shop_downloads_link` |
 | Veröffentlichung | `shop_template_set`, `shop_sites_dir`, `shop_site_dir`, `shop_content_dir`, `shop_publish_command_path`, `shop_publish_clean_destination`, `shop_images_dir`, `shop_thumbnails_dir`, `shop_thumbnail_size` |

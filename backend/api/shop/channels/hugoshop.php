@@ -137,7 +137,18 @@ function shopChannelHugoshopRunJob($db, array $auftrag, callable $sagen, callabl
             if (!$artikel) {
                 throw new ApiError('PART_NOT_FOUND', 'Artikel nicht gefunden: '.$auftrag['partnumber']);
             }
-            $ergebnis = shopWriteProductPage($db, $kanal, (int)$artikel['id']);
+            try {
+                $ergebnis = shopWriteProductPage($db, $kanal, (int)$artikel['id']);
+            } catch (ApiError $e) {
+                // Ohne passende Versandart ist die Seite zum Entwurf geworden —
+                // gebaut werden muss trotzdem, sonst bliebe sie online
+                if ('SHIPPING_UNFIT_DRAFT' === $e->getId()) {
+                    shopSiteTally($bilanz, $kanal, 'seiten');
+                }
+                // Die Artikelnummer gehört in die Meldung: im Lauf steht sonst
+                // nur die Nummer des Auftrags
+                throw new ApiError($e->getId(), 'Artikel '.$auftrag['partnumber'].': '.$e->getMessage());
+            }
             shopSiteTally($bilanz, $kanal, 'seiten');
             $sagen('Seite geschrieben: '.basename($ergebnis['file']).' (Vorschaubild: '.$ergebnis['thumbnail'].')');
             shopJobResult($db, $id, 'ok: '.basename($ergebnis['file']));
@@ -146,6 +157,7 @@ function shopChannelHugoshopRunJob($db, array $auftrag, callable $sagen, callabl
         case 'publish_all':
             $anzahl = 0;
             $gescheitert = 0;
+            $entwuerfe = 0;
             $ersterFehler = '';
             foreach (shopListedParts($db, $kanal) as $artikel) {
                 try {
@@ -153,6 +165,10 @@ function shopChannelHugoshopRunJob($db, array $auftrag, callable $sagen, callabl
                     $anzahl++;
                 } catch (ApiError $e) {
                     $gescheitert++;
+                    // Zum Entwurf gewordene Seite: der Bau muss sie entfernen
+                    if ('SHIPPING_UNFIT_DRAFT' === $e->getId()) {
+                        $entwuerfe++;
+                    }
                     if ('' === $ersterFehler) {
                         $ersterFehler = $e->getMessage();
                     }
@@ -166,7 +182,7 @@ function shopChannelHugoshopRunJob($db, array $auftrag, callable $sagen, callabl
                     }
                 }
             }
-            shopSiteTally($bilanz, $kanal, 'seiten', $anzahl);
+            shopSiteTally($bilanz, $kanal, 'seiten', $anzahl + $entwuerfe);
             $stand = sprintf('%d Seiten geschrieben, %d fehlgeschlagen', $anzahl, $gescheitert);
             if ($gescheitert > SHOP_MELDUNGEN_JE_AUFTRAG) {
                 $sagen(sprintf('… und %d weitere Artikel, nicht einzeln aufgeführt',

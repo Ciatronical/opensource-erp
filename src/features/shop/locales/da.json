@@ -3,7 +3,9 @@
         "routes": {
             "shopOverview": "/butik",
             "shopOrders": "/butik/ordrer",
-            "shopWithdrawals": "/butik/fortrydelser"
+            "shopWithdrawals": "/butik/fortrydelser",
+            "shopChannels": "/butik/salgskanaler",
+            "shopShipping": "/butik/forsendelsesmaader"
         },
         "menu": {
             "title": "Butik",
@@ -15,7 +17,8 @@
         "status": {
             "ready": "Butikken er klar til brug.",
             "notReady": "Butikken tager endnu ikke imod ordrer",
-            "notReadyHint": "Disse oplysninger mangler. De findes i indstillingerne under Udvidelser → Butik.",
+            "notReadyHint": "Disse oplysninger mangler. De findes i indstillingerne under Udvidelser → Butik eller i butiksmenuen under Salgskanaler.",
+            "shippingMissing": "Der er ikke oprettet nogen forsendelsesmåde: ordrer behandles som „Standard“ uden fragtomkostninger.",
             "hints": "Disse oplysninger mangler stadig. Butikken kører, men begrænset:",
             "partsWithShopData": "Varer med butiksdata",
             "carts": "Kurve",
@@ -57,9 +60,9 @@
             "title": "Varer i butikken",
             "subtitle": "Varer, der tilbydes i en salgskanal"
         },
-        "partsNoWeight": {
-            "title": "Varer uden vægt",
-            "subtitle": "Tilbudte varer uden vægt — udfyld dem til fragtomkostningerne"
+        "partsShippingUnfit": {
+            "title": "Varer uden passende forsendelsesmåde",
+            "subtitle": "Udbudte varer, som ingen forsendelsesmåde passer til — deres side bliver ikke offentliggjort"
         },
         "withdrawals": {
             "title": "Fortrydelser",
@@ -155,6 +158,7 @@
             "imagesCopied": "{anzahl} billeder overtaget.",
             "imageError": "Billedet kunne ikke behandles.",
             "syncStatus": "Status hos {kanal}",
+            "shippingUnfit": "Ingen passende forsendelsesmåde — siden bliver ikke offentliggjort.",
             "listingId": "Annonce {id}",
             "ebayCategory": "eBay-kategori",
             "ebayCondition": "Stand",
@@ -210,6 +214,7 @@
             "started": "Udgivelsen er startet.",
             "inProgress": "Udgivelsen kører i baggrunden — siden kan fortsat bruges.",
             "aborted": "Kørslen blev afbrudt, før den var færdig.",
+            "errorsTitle": "Fejl i seneste kørsel ({count}):",
             "tooLong": "Kørslen tager længere tid end forventet. Visningen opdateres ikke længere – genindlæs siden senere.",
             "functions": {
                 "publish_part": "Skriv produktside",
@@ -244,6 +249,9 @@
         },
         "shippingConfig": {
             "title": "Forsendelsesmåder",
+            "subtitle": "Zoner, forsendelsesmåder og fragtpriser",
+            "movedHint": "Forsendelsesmåderne med zoner og priser har deres egen visning i butiksmenuen.",
+            "open": "Åbn forsendelsesmåder",
             "intro": "Forsendelsesmåder med fragtfirma, rang, grænser og pristrin. Har varerne i en ordre forskellige forsendelsesmåder, gælder den med højest rang; varer uden tildeling får den billigste egnede. eBay beregner selv forsendelsen via forsendelsespolitikken.",
             "zones": "Landezoner",
             "zonesHint": "Priser gælder pr. zone. Et land hører til højst én zone; lande uden zone falder under „Alle øvrige lande“.",
@@ -336,7 +344,10 @@
             "deleteConfirm": "Slet „{name}“ med varelinjer, billeder, leveringslande og prisniveauer? Det kan ikke fortrydes.",
             "deleted": "Salgskanal slettet.",
             "deleteError": "Salgskanalen kunne ikke slettes.",
-            "cancel": "Annuller"
+            "cancel": "Annuller",
+            "subtitle": "Opret og konfigurer HugoShops og eBay-kanaler",
+            "movedHint": "Salgskanalerne og deres indstillinger (websted, shopnøgle, PayPal, eBay-adgang) har deres egen visning i butiksmenuen.",
+            "open": "Åbn salgskanaler"
         },
         "ebayCondition": {
             "NEW": "Ny",
@@ -354,7 +365,8 @@
             "CHANNEL_NAME_TAKEN": "En anden salgskanal har allerede dette navn.",
             "CHANNEL_KEY_TAKEN": "Denne shopnøgle tilhører allerede en anden HugoShop.",
             "CHANNEL_IN_USE": "Fakturaer, fortrydelser eller eBay-ordrer henviser til denne kanal. Den kan kun slås fra.",
-            "CHANNEL_NOT_DELETABLE": "Kun en slået-fra kanal uden åbne opgaver kan slettes."
+            "CHANNEL_NOT_DELETABLE": "Kun en slået-fra kanal uden åbne opgaver kan slettes.",
+            "SHIPPING_UNFIT": "Bliver ikke offentliggjort"
         }
     }
 }

@@ -826,8 +826,6 @@
         "shopActivePriceSource": "Джерело ціни",
         "shopActivePriceSource_help": "Походження ціни продажу, що використовується в рахунках магазину.",
         "shopShipping": "Вартість доставки",
-        "shopShippingPartnumber": "Номер товару доставки",
-        "shopShippingPartnumber_help": "Товар, що нараховується як вартість доставки. Товар має існувати.",
         "shopPayment": "Банківські реквізити для переказів",
         "shopPaymentAccountOwner": "Власник рахунку",
         "shopPaymentAccountOwner_help": "Показується на сторінці рахунку, доки клієнт не сплатив.",

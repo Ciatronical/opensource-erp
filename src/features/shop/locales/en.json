@@ -3,7 +3,9 @@
         "routes": {
             "shopOverview": "/shop",
             "shopOrders": "/shop/orders",
-            "shopWithdrawals": "/shop/withdrawals"
+            "shopWithdrawals": "/shop/withdrawals",
+            "shopChannels": "/shop/sales-channels",
+            "shopShipping": "/shop/shipping-methods"
         },
         "menu": {
             "title": "Shop",
@@ -15,7 +17,8 @@
         "status": {
             "ready": "The shop is fully set up.",
             "notReady": "The shop does not accept orders yet",
-            "notReadyHint": "These entries are missing. They are in the settings under Extensions → Shop.",
+            "notReadyHint": "These entries are missing. They are in the settings under Extensions → Shop or in the shop menu under Sales channels.",
+            "shippingMissing": "No shipping method is set up: orders are processed as “Standard” without shipping costs.",
             "hints": "These entries are still missing. The shop runs, but with limitations:",
             "partsWithShopData": "Products with shop data",
             "carts": "Carts",
@@ -57,9 +60,9 @@
             "title": "Articles in the shop",
             "subtitle": "Articles offered in a sales channel"
         },
-        "partsNoWeight": {
-            "title": "Items without weight",
-            "subtitle": "Offered goods without weight — complete them for shipping costs"
+        "partsShippingUnfit": {
+            "title": "Items without a suitable shipping method",
+            "subtitle": "Offered items no shipping method fits — their page will not be published"
         },
         "withdrawals": {
             "title": "Withdrawals",
@@ -155,6 +158,7 @@
             "imagesCopied": "{anzahl} images copied.",
             "imageError": "The image could not be processed.",
             "syncStatus": "Status at {kanal}",
+            "shippingUnfit": "No suitable shipping method — the page will not be published.",
             "listingId": "Listing {id}",
             "ebayCategory": "eBay category",
             "ebayCondition": "Condition",
@@ -210,6 +214,7 @@
             "started": "Publishing started.",
             "inProgress": "Publishing is running in the background — the page stays usable.",
             "aborted": "The run was interrupted before it finished.",
+            "errorsTitle": "Errors in the last run ({count}):",
             "tooLong": "The run is taking longer than expected. The display is no longer updated – please reload the page later.",
             "functions": {
                 "publish_part": "Write product page",
@@ -244,6 +249,9 @@
         },
         "shippingConfig": {
             "title": "Shipping methods",
+            "subtitle": "Zones, shipping methods and shipping rates",
+            "movedHint": "The shipping methods with their zones and rates have their own view in the shop menu.",
+            "open": "Open shipping methods",
             "intro": "Shipping methods with carrier, rank, limits and price tiers. If the items of an order have different shipping methods, the highest-ranked applies; items without an assignment get the cheapest suitable one. eBay calculates shipping itself via the shipping policy.",
             "zones": "Country zones",
             "zonesHint": "Prices apply per zone. A country belongs to at most one zone; countries without a zone fall under “All other countries”.",
@@ -336,7 +344,10 @@
             "deleteConfirm": "Delete “{name}” with its item rows, images, delivery countries and price tiers? This cannot be undone.",
             "deleted": "Sales channel deleted.",
             "deleteError": "The sales channel could not be deleted.",
-            "cancel": "Cancel"
+            "cancel": "Cancel",
+            "subtitle": "Create and set up HugoShops and eBay channels",
+            "movedHint": "The sales channels and their settings (website, shop key, PayPal, eBay access) have their own view in the shop menu.",
+            "open": "Open sales channels"
         },
         "ebayCondition": {
             "NEW": "New",
@@ -354,7 +365,8 @@
             "CHANNEL_NAME_TAKEN": "Another sales channel already has this name.",
             "CHANNEL_KEY_TAKEN": "This shop key already belongs to another HugoShop.",
             "CHANNEL_IN_USE": "Invoices, withdrawals or eBay orders refer to this channel. It can only be switched off.",
-            "CHANNEL_NOT_DELETABLE": "Only a switched-off channel without open jobs can be deleted."
+            "CHANNEL_NOT_DELETABLE": "Only a switched-off channel without open jobs can be deleted.",
+            "SHIPPING_UNFIT": "Will not be published"
         }
     }
 }

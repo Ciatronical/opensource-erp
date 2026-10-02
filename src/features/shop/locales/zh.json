@@ -3,7 +3,9 @@
         "routes": {
             "shopOverview": "/shop",
             "shopOrders": "/shop/orders",
-            "shopWithdrawals": "/shop/withdrawals"
+            "shopWithdrawals": "/shop/withdrawals",
+            "shopChannels": "/shop/sales-channels",
+            "shopShipping": "/shop/shipping-methods"
         },
         "menu": {
             "title": "商店",
@@ -15,7 +17,8 @@
         "status": {
             "ready": "商店已配置完毕，可以使用。",
             "notReady": "商店尚未接受订单",
-            "notReadyHint": "缺少这些信息。可在设置的“扩展 → 商店”中填写。",
+            "notReadyHint": "缺少这些信息。可在设置的“扩展 → 商店”或商店菜单的“销售渠道”中填写。",
+            "shippingMissing": "尚未设置任何配送方式：订单将按“Standard”处理，不收取运费。",
             "hints": "这些信息仍然缺失。商店可以运行，但功能受限：",
             "partsWithShopData": "含商店信息的商品",
             "carts": "购物车",
@@ -57,9 +60,9 @@
             "title": "商店中的商品",
             "subtitle": "在销售渠道中提供的商品"
         },
-        "partsNoWeight": {
-            "title": "无重量商品",
-            "subtitle": "已上架但无重量的货物——请为运费补充"
+        "partsShippingUnfit": {
+            "title": "没有合适配送方式的物料",
+            "subtitle": "已上架但没有合适配送方式的物料——其页面不会发布"
         },
         "withdrawals": {
             "title": "撤回",
@@ -155,6 +158,7 @@
             "imagesCopied": "已获取 {anzahl} 张图片。",
             "imageError": "无法处理该图片。",
             "syncStatus": "{kanal} 状态",
+            "shippingUnfit": "没有合适的配送方式——页面不会发布。",
             "listingId": "刊登 {id}",
             "ebayCategory": "eBay 类目",
             "ebayCondition": "成色",
@@ -210,6 +214,7 @@
             "started": "发布已开始。",
             "inProgress": "发布正在后台运行，页面仍可正常使用。",
             "aborted": "运行在完成之前被中断。",
+            "errorsTitle": "上次运行的错误（{count}）：",
             "tooLong": "运行时间超出预期。显示不再更新，请稍后重新加载页面。",
             "functions": {
                 "publish_part": "写入产品页",
@@ -244,6 +249,9 @@
         },
         "shippingConfig": {
             "title": "配送方式",
+            "subtitle": "区域、配送方式和运费",
+            "movedHint": "配送方式及其区域和价格在商店菜单中有单独的视图。",
+            "open": "打开配送方式",
             "intro": "配送方式包含承运商、优先级、限制和价格档位。如果订单中的商品有不同的配送方式，则采用优先级最高的；未分配的商品使用最便宜的合适方式。eBay 通过运费政策自行计算运费。",
             "zones": "国家区域",
             "zonesHint": "价格按区域生效。一个国家最多属于一个区域；没有区域的国家归入“其他所有国家”。",
@@ -336,7 +344,10 @@
             "deleteConfirm": "删除“{name}”及其商品行、图片、配送国家和价格阶梯？此操作无法撤销。",
             "deleted": "销售渠道已删除。",
             "deleteError": "无法删除销售渠道。",
-            "cancel": "取消"
+            "cancel": "取消",
+            "subtitle": "创建并设置 HugoShop 和 eBay 渠道",
+            "movedHint": "销售渠道及其设置（网站、商店密钥、PayPal、eBay 访问）在商店菜单中有单独的视图。",
+            "open": "打开销售渠道"
         },
         "ebayCondition": {
             "NEW": "全新",
@@ -354,7 +365,8 @@
             "CHANNEL_NAME_TAKEN": "已有其他销售渠道使用此名称。",
             "CHANNEL_KEY_TAKEN": "此商店密钥已属于另一个 HugoShop。",
             "CHANNEL_IN_USE": "此渠道关联有发票、撤回或 eBay 订单，只能关闭。",
-            "CHANNEL_NOT_DELETABLE": "只有已关闭且没有未完成任务的渠道才能删除。"
+            "CHANNEL_NOT_DELETABLE": "只有已关闭且没有未完成任务的渠道才能删除。",
+            "SHIPPING_UNFIT": "不会发布"
         }
     }
 }

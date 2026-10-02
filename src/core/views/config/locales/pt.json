@@ -826,8 +826,6 @@
         "shopActivePriceSource": "Origem do preço",
         "shopActivePriceSource_help": "Origem do preço de venda usado nas faturas da loja.",
         "shopShipping": "Portes de envio",
-        "shopShippingPartnumber": "Número de artigo dos portes",
-        "shopShippingPartnumber_help": "Artigo cobrado como portes de envio. O artigo tem de existir.",
         "shopPayment": "Dados bancários para transferências",
         "shopPaymentAccountOwner": "Titular da conta",
         "shopPaymentAccountOwner_help": "Apresentado na página da fatura enquanto o cliente não tiver pago.",

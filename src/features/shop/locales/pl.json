@@ -3,7 +3,9 @@
         "routes": {
             "shopOverview": "/sklep",
             "shopOrders": "/sklep/zamowienia",
-            "shopWithdrawals": "/sklep/odstapienia"
+            "shopWithdrawals": "/sklep/odstapienia",
+            "shopChannels": "/sklep/kanaly-sprzedazy",
+            "shopShipping": "/sklep/metody-wysylki"
         },
         "menu": {
             "title": "Sklep",
@@ -15,7 +17,8 @@
         "status": {
             "ready": "Sklep jest gotowy do pracy.",
             "notReady": "Sklep nie przyjmuje jeszcze zamówień",
-            "notReadyHint": "Brakuje tych danych. Znajdują się w ustawieniach w sekcji Rozszerzenia → Sklep.",
+            "notReadyHint": "Brakuje tych danych. Znajdują się w ustawieniach w sekcji Rozszerzenia → Sklep lub w menu Sklep w sekcji Kanały sprzedaży.",
+            "shippingMissing": "Nie skonfigurowano żadnej metody wysyłki: zamówienia są realizowane jako „Standard” bez kosztów wysyłki.",
             "hints": "Tych danych wciąż brakuje. Sklep działa, ale w ograniczonym zakresie:",
             "partsWithShopData": "Artykuły z danymi sklepu",
             "carts": "Koszyki",
@@ -57,9 +60,9 @@
             "title": "Artykuły w sklepie",
             "subtitle": "Artykuły oferowane w kanale sprzedaży"
         },
-        "partsNoWeight": {
-            "title": "Artykuły bez wagi",
-            "subtitle": "Oferowane towary bez wagi — uzupełnij dla kosztów wysyłki"
+        "partsShippingUnfit": {
+            "title": "Artykuły bez pasującej metody wysyłki",
+            "subtitle": "Oferowane artykuły, do których nie pasuje żadna metoda wysyłki — ich strona nie zostanie opublikowana"
         },
         "withdrawals": {
             "title": "Odstąpienia",
@@ -155,6 +158,7 @@
             "imagesCopied": "Przejęto zdjęć: {anzahl}.",
             "imageError": "Nie udało się przetworzyć zdjęcia.",
             "syncStatus": "Stan w {kanal}",
+            "shippingUnfit": "Brak pasującej metody wysyłki — strona nie zostanie opublikowana.",
             "listingId": "Oferta {id}",
             "ebayCategory": "Kategoria eBay",
             "ebayCondition": "Stan",
@@ -210,6 +214,7 @@
             "started": "Publikowanie rozpoczęte.",
             "inProgress": "Publikowanie działa w tle — ze strony można dalej korzystać.",
             "aborted": "Przebieg został przerwany przed zakończeniem.",
+            "errorsTitle": "Błędy ostatniego przebiegu ({count}):",
             "tooLong": "Przebieg trwa dłużej niż oczekiwano. Widok nie jest już aktualizowany – odśwież stronę później.",
             "functions": {
                 "publish_part": "Zapisz stronę produktu",
@@ -244,6 +249,9 @@
         },
         "shippingConfig": {
             "title": "Metody wysyłki",
+            "subtitle": "Strefy, metody wysyłki i ceny wysyłki",
+            "movedHint": "Metody wysyłki wraz ze strefami i cenami mają własny widok w menu sklepu.",
+            "open": "Otwórz metody wysyłki",
             "intro": "Metody wysyłki z przewoźnikiem, rangą, limitami i progami cenowymi. Jeśli artykuły zamówienia mają różne metody, obowiązuje ta o najwyższej randze; artykuły bez przypisania otrzymują najtańszą pasującą. eBay sam oblicza wysyłkę według zasad wysyłki.",
             "zones": "Strefy krajów",
             "zonesHint": "Ceny obowiązują dla strefy. Kraj należy co najwyżej do jednej strefy; kraje bez strefy należą do „Wszystkie pozostałe kraje”.",
@@ -336,7 +344,10 @@
             "deleteConfirm": "Usunąć „{name}” wraz z wierszami artykułów, obrazami, krajami dostawy i progami cenowymi? Tej operacji nie można cofnąć.",
             "deleted": "Kanał sprzedaży usunięty.",
             "deleteError": "Nie udało się usunąć kanału sprzedaży.",
-            "cancel": "Anuluj"
+            "cancel": "Anuluj",
+            "subtitle": "Tworzenie i konfiguracja HugoShopów i kanałów eBay",
+            "movedHint": "Kanały sprzedaży i ich ustawienia (strona, klucz sklepu, PayPal, dostęp do eBay) mają własny widok w menu Sklep.",
+            "open": "Otwórz kanały sprzedaży"
         },
         "ebayCondition": {
             "NEW": "Nowy",
@@ -354,7 +365,8 @@
             "CHANNEL_NAME_TAKEN": "Inny kanał sprzedaży ma już tę nazwę.",
             "CHANNEL_KEY_TAKEN": "Ten klucz sklepu należy już do innego HugoShop.",
             "CHANNEL_IN_USE": "Do tego kanału odnoszą się faktury, odstąpienia lub zamówienia eBay. Można go tylko wyłączyć.",
-            "CHANNEL_NOT_DELETABLE": "Usunąć można tylko wyłączony kanał bez otwartych zadań."
+            "CHANNEL_NOT_DELETABLE": "Usunąć można tylko wyłączony kanał bez otwartych zadań.",
+            "SHIPPING_UNFIT": "Nie zostanie opublikowane"
         }
     }
 }

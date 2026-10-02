@@ -1,7 +1,8 @@
 <!-- src/features/shop/components/shop-shipping.config.vue -->
 <!--
-    Versandarten, Länderzonen und Preise in der Firmenkonfiguration (Reiter
-    Shop) — dev/shop-versand.md, Schritt 4.
+    Versandarten, Länderzonen und Preise — dev/shop-versand.md, Schritt 4.
+    Eigene Ansicht im Shop-Menü (src/features/shop/views/shop.shipping.vue);
+    bis dahin stand die Karte in der Firmenkonfiguration (Reiter Shop).
 
     Eine Versandart hat einen Anbieter (Lieferant, oder allgemein), einen
     Versandartikel (Bezeichnung, Erlöskonto und Steuer der Versandposition),
@@ -15,7 +16,7 @@
 -->
 <template>
     <div>
-        <v-row class="mt-6 mb-2">
+        <v-row v-if="mitUeberschrift" class="mt-6 mb-2">
             <v-col cols="12">
                 <h3 class="text-h6 text-primary">{{ t('ShopView.shippingConfig.title') }}</h3>
                 <v-divider class="mt-2" />
@@ -367,8 +368,13 @@ import { oserpStore } from '@/core/stores/oserp.store.js'
 import * as toasts from '@/core/utils/toasts.js'
 
 const props = defineProps({
-    /** shop_tax_included aus dem Formular — Preise netto oder brutto wie parts.sellprice */
+    /**
+     * shop_tax_included aus einem Formular — Preise netto oder brutto wie
+     * parts.sellprice. null = der gespeicherte Wert aus getShopShipping.
+     */
     taxIncluded: { type: [Boolean, String, Number], default: null },
+    /** Eigene Überschrift — in der eigenen Ansicht steht sie schon oben */
+    mitUeberschrift: { type: Boolean, default: true },
 })
 
 const i18n = useI18n()
@@ -376,7 +382,8 @@ const { t, te, locale } = i18n
 const oserp = oserpStore()
 
 const WAHR = [true, 't', 'true', '1', 1]
-const bruttoPreise = computed(() => WAHR.includes(props.taxIncluded))
+const ausBackend = ref(false)
+const bruttoPreise = computed(() => (props.taxIncluded === null ? ausBackend.value : WAHR.includes(props.taxIncluded)))
 const waehrung = computed(() => oserp.getClientDefaultValue('shop_standard_currency', 'EUR') || 'EUR')
 
 const methoden = ref([])
@@ -535,6 +542,7 @@ async function laden() {
         anbieter.value = daten.vendors || []
         laender.value = daten.countries || []
         gewichtseinheit.value = daten.weightunit || ''
+        ausBackend.value = WAHR.includes(daten.tax_included)
         methoden.value.forEach(m => { zuletzt[m.schluessel] = JSON.stringify(methodeNutzdaten(m)) })
         zonen.value.forEach(z => { zuletzt[z.schluessel] = JSON.stringify(zoneNutzdaten(z)) })
     } catch (e) {

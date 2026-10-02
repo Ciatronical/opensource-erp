@@ -3,7 +3,9 @@
         "routes": {
             "shopOverview": "/parduotuve",
             "shopOrders": "/parduotuve/uzsakymai",
-            "shopWithdrawals": "/parduotuve/atsisakymai"
+            "shopWithdrawals": "/parduotuve/atsisakymai",
+            "shopChannels": "/parduotuve/pardavimo-kanalai",
+            "shopShipping": "/parduotuve/siuntimo-budai"
         },
         "menu": {
             "title": "Parduotuvė",
@@ -15,7 +17,8 @@
         "status": {
             "ready": "Parduotuvė paruošta darbui.",
             "notReady": "Parduotuvė dar nepriima užsakymų",
-            "notReadyHint": "Trūksta šių duomenų. Jie yra nustatymuose, skiltyje Plėtiniai → Parduotuvė.",
+            "notReadyHint": "Trūksta šių duomenų. Jie yra nustatymuose, skiltyje Plėtiniai → Parduotuvė, arba parduotuvės meniu skiltyje Pardavimo kanalai.",
+            "shippingMissing": "Nenustatytas joks siuntimo būdas: užsakymai vykdomi kaip „Standard“ be siuntimo išlaidų.",
             "hints": "Šių duomenų dar trūksta. Parduotuvė veikia, bet ribotai:",
             "partsWithShopData": "Prekės su parduotuvės duomenimis",
             "carts": "Krepšeliai",
@@ -57,9 +60,9 @@
             "title": "Prekės parduotuvėje",
             "subtitle": "Prekės, siūlomos pardavimo kanale"
         },
-        "partsNoWeight": {
-            "title": "Prekės be svorio",
-            "subtitle": "Siūlomos prekės be svorio — papildykite dėl siuntimo išlaidų"
+        "partsShippingUnfit": {
+            "title": "Prekės be tinkamo siuntimo būdo",
+            "subtitle": "Siūlomos prekės, kurioms netinka joks siuntimo būdas — jų puslapis nebus paskelbtas"
         },
         "withdrawals": {
             "title": "Atsisakymai",
@@ -155,6 +158,7 @@
             "imagesCopied": "Perimta nuotraukų: {anzahl}.",
             "imageError": "Nuotraukos nepavyko apdoroti.",
             "syncStatus": "Būsena kanale {kanal}",
+            "shippingUnfit": "Nėra tinkamo siuntimo būdo — puslapis nebus paskelbtas.",
             "listingId": "Skelbimas {id}",
             "ebayCategory": "eBay kategorija",
             "ebayCondition": "Būklė",
@@ -210,6 +214,7 @@
             "started": "Skelbimas pradėtas.",
             "inProgress": "Skelbimas vyksta fone — puslapiu galima naudotis toliau.",
             "aborted": "Vykdymas nutrūko nepasibaigęs.",
+            "errorsTitle": "Paskutinio vykdymo klaidos ({count}):",
             "tooLong": "Vykdymas trunka ilgiau nei tikėtasi. Rodinys nebeatnaujinamas – vėliau įkelkite puslapį iš naujo.",
             "functions": {
                 "publish_part": "Rašyti produkto puslapį",
@@ -244,6 +249,9 @@
         },
         "shippingConfig": {
             "title": "Siuntimo būdai",
+            "subtitle": "Zonos, siuntimo būdai ir siuntimo kainos",
+            "movedHint": "Siuntimo būdai su zonomis ir kainomis turi atskirą rodinį parduotuvės meniu.",
+            "open": "Atidaryti siuntimo būdus",
             "intro": "Siuntimo būdai su vežėju, rangu, ribomis ir kainų pakopomis. Jei užsakymo prekės turi skirtingus siuntimo būdus, taikomas aukščiausio rango; prekės be priskyrimo gauna pigiausią tinkamą. eBay siuntimą skaičiuoja pats pagal siuntimo politiką.",
             "zones": "Šalių zonos",
             "zonesHint": "Kainos taikomos pagal zoną. Šalis priklauso ne daugiau kaip vienai zonai; šalys be zonos patenka į „Visos kitos šalys“.",
@@ -336,7 +344,10 @@
             "deleteConfirm": "Ištrinti „{name}“ su prekių eilutėmis, paveikslėliais, pristatymo šalimis ir kainų pakopomis? To atšaukti negalima.",
             "deleted": "Pardavimo kanalas ištrintas.",
             "deleteError": "Pardavimo kanalo ištrinti nepavyko.",
-            "cancel": "Atšaukti"
+            "cancel": "Atšaukti",
+            "subtitle": "Kurti ir nustatyti HugoShop ir eBay kanalus",
+            "movedHint": "Pardavimo kanalai ir jų nustatymai (svetainė, parduotuvės raktas, PayPal, eBay prieiga) turi atskirą rodinį parduotuvės meniu.",
+            "open": "Atidaryti pardavimo kanalus"
         },
         "ebayCondition": {
             "NEW": "Nauja",
@@ -354,7 +365,8 @@
             "CHANNEL_NAME_TAKEN": "Šį pavadinimą jau turi kitas pardavimo kanalas.",
             "CHANNEL_KEY_TAKEN": "Šis parduotuvės raktas jau priklauso kitai HugoShop.",
             "CHANNEL_IN_USE": "Su šiuo kanalu susietos sąskaitos, atsisakymai arba eBay užsakymai. Jį galima tik išjungti.",
-            "CHANNEL_NOT_DELETABLE": "Ištrinti galima tik išjungtą kanalą be atvirų užduočių."
+            "CHANNEL_NOT_DELETABLE": "Ištrinti galima tik išjungtą kanalą be atvirų užduočių.",
+            "SHIPPING_UNFIT": "Nebus paskelbta"
         }
     }
 }

@@ -3,7 +3,9 @@
         "routes": {
             "shopOverview": "/shop",
             "shopOrders": "/shop/bestellungen",
-            "shopWithdrawals": "/shop/widerrufe"
+            "shopWithdrawals": "/shop/widerrufe",
+            "shopChannels": "/shop/verkaufskanaele",
+            "shopShipping": "/shop/versandarten"
         },
         "menu": {
             "title": "Shop",
@@ -15,7 +17,8 @@
         "status": {
             "ready": "Der Shop ist einsatzbereit eingerichtet.",
             "notReady": "Der Shop nimmt noch keine Bestellungen an",
-            "notReadyHint": "Diese Angaben fehlen. Sie stehen in den Einstellungen unter Erweiterungen → Shop.",
+            "notReadyHint": "Diese Angaben fehlen. Sie stehen in den Einstellungen unter Erweiterungen → Shop oder im Shop-Menü unter Verkaufskanäle.",
+            "shippingMissing": "Es ist keine Versandart eingerichtet: Bestellungen laufen als „Standard“ ohne Versandkosten.",
             "hints": "Diese Angaben fehlen noch. Der Shop läuft, aber eingeschränkt:",
             "partsWithShopData": "Artikel mit Shop-Angaben",
             "carts": "Warenkörbe",
@@ -57,9 +60,9 @@
             "title": "Artikel im Shop",
             "subtitle": "Artikel, die in einem Verkaufskanal angeboten werden"
         },
-        "partsNoWeight": {
-            "title": "Artikel ohne Gewicht",
-            "subtitle": "Angebotene Waren ohne Gewicht — für die Versandkosten nachpflegen"
+        "partsShippingUnfit": {
+            "title": "Artikel ohne passende Versandart",
+            "subtitle": "Angebotene Artikel, zu denen keine Versandart passt — ihre Seite wird nicht veröffentlicht"
         },
         "withdrawals": {
             "title": "Widerrufe",
@@ -155,6 +158,7 @@
             "imagesCopied": "{anzahl} Bilder übernommen.",
             "imageError": "Das Bild konnte nicht verarbeitet werden.",
             "syncStatus": "Stand bei {kanal}",
+            "shippingUnfit": "Keine passende Versandart — die Seite wird nicht veröffentlicht.",
             "listingId": "Angebot {id}",
             "ebayCategory": "eBay-Kategorie",
             "ebayCondition": "Zustand",
@@ -210,6 +214,7 @@
             "started": "Veröffentlichung gestartet.",
             "inProgress": "Veröffentlichung läuft im Hintergrund — die Seite bleibt bedienbar.",
             "aborted": "Der Lauf wurde unterbrochen, bevor er fertig war.",
+            "errorsTitle": "Fehler im letzten Lauf ({count}):",
             "tooLong": "Der Lauf dauert länger als erwartet. Die Anzeige wird nicht mehr aktualisiert – bitte die Seite später neu laden.",
             "functions": {
                 "publish_part": "Produktseite schreiben",
@@ -244,6 +249,9 @@
         },
         "shippingConfig": {
             "title": "Versandarten",
+            "subtitle": "Zonen, Versandarten und Versandpreise",
+            "movedHint": "Die Versandarten mit Zonen und Preisen stehen in einer eigenen Ansicht im Shop-Menü.",
+            "open": "Versandarten öffnen",
             "intro": "Versandarten mit Anbieter, Rang, Grenzen und Preisstufen. Haben die Artikel einer Bestellung verschiedene Versandarten, gilt die ranghöchste; Artikel ohne Zuordnung bekommen die günstigste passende. eBay rechnet den Versand selbst über die Versandrichtlinie.",
             "zones": "Länderzonen",
             "zonesHint": "Preise gelten je Zone. Ein Land gehört höchstens zu einer Zone; Länder ohne Zone fallen unter „Alle übrigen Länder“.",
@@ -336,7 +344,10 @@
             "deleteConfirm": "„{name}“ mit seinen Artikelzeilen, Bildern, Lieferländern und Preisstufen löschen? Das lässt sich nicht rückgängig machen.",
             "deleted": "Verkaufskanal gelöscht.",
             "deleteError": "Der Verkaufskanal konnte nicht gelöscht werden.",
-            "cancel": "Abbrechen"
+            "cancel": "Abbrechen",
+            "subtitle": "HugoShops und eBay-Kanäle anlegen und einrichten",
+            "movedHint": "Die Verkaufskanäle mit ihren Einstellungen (Webseite, Shop-Schlüssel, PayPal, eBay-Zugang) stehen in einer eigenen Ansicht im Shop-Menü.",
+            "open": "Verkaufskanäle öffnen"
         },
         "ebayCondition": {
             "NEW": "Neu",
@@ -354,7 +365,8 @@
             "CHANNEL_NAME_TAKEN": "Diesen Namen trägt schon ein anderer Verkaufskanal.",
             "CHANNEL_KEY_TAKEN": "Dieser Shop-Schlüssel gehört schon einem anderen HugoShop.",
             "CHANNEL_IN_USE": "An diesem Kanal hängen Rechnungen, Widerrufe oder eBay-Bestellungen. Er lässt sich nur abschalten.",
-            "CHANNEL_NOT_DELETABLE": "Nur ein abgeschalteter Kanal ohne offene Aufträge lässt sich löschen."
+            "CHANNEL_NOT_DELETABLE": "Nur ein abgeschalteter Kanal ohne offene Aufträge lässt sich löschen.",
+            "SHIPPING_UNFIT": "Wird nicht veröffentlicht"
         }
     }
 }

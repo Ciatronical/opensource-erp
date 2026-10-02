@@ -303,7 +303,7 @@ function shopEbayImportOrder($db, int $kanal, array $bestellung, array $cfg): st
  */
 function shopEbayImportOrders($db, int $kanal): array {
     if (!shopEbayActive($db, $kanal)) {
-        throw new ApiError('EBAY_DISABLED', 'Der eBay-Kanal ist abgeschaltet (Einstellungen → Shop → Verkaufskanäle)');
+        throw new ApiError('EBAY_DISABLED', 'Der eBay-Kanal ist abgeschaltet (Shop → Verkaufskanäle)');
     }
     $cfg = shopEbayConfig($db, $kanal);
 

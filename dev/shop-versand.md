@@ -1,12 +1,16 @@
 # Shop: Versandarten und Versandkosten
 
-Stand 2026-10-01. Status: **in Umsetzung** — alle Entscheidungen getroffen
+Stand 2026-10-02. Status: **in Umsetzung** — alle Entscheidungen getroffen
 (1–8, W1–W13, Punkt 7 Weg a, P1), Tabellenentwurf freigegeben. Alle Schritte
 erledigt; offen sind nur Prüfungen gegen die echten Dienste (PayPal, eBay).
+Nachtrag 2026-10-02 (eigene Ansicht, Wegfall von `shop_shipping_partnumber`,
+Versand „Standard" ohne Versandart, Prüfung vor dem Veröffentlichen): siehe
+Abschnitt „Nachtrag" am Ende.
 
-Bisher gibt es einen Pauschalbetrag (Versandartikel `shop_shipping_partnumber`,
-bei Werkzeug24 Artikel 8 zu 7,90 € netto), der ab einem Warenwert
-(`shop_free_shipping_from`, 150 €) entfällt. Kivitendo selbst kennt keine
+Vor diesem Umbau gab es einen Pauschalbetrag (Versandartikel
+`shop_shipping_partnumber`, bei Werkzeug24 Artikel 8 zu 7,90 € netto), der ab
+einem Warenwert (`shop_free_shipping_from`, 150 €) entfiel. Beide Schlüssel
+gibt es nicht mehr. Kivitendo selbst kennt keine
 Versandkosten: nur Lieferbedingungen als Text (`delivery_terms`), Versandart
 und Versandort als Freitext am Beleg und das Gewicht für den Druck.
 
@@ -255,7 +259,9 @@ und `sales_channel_shop.free_shipping_from`. `parts_shipping_shop` und
 
 - Die Pauschale wird zur Versandart „Standard" (W9): Versandartikel aus
   `shop_shipping_partnumber`, Rang 0, „Freigrenze gilt", eine Preisstufe für
-  alle Kanäle und Länder zum Preis des Versandartikels.
+  alle Kanäle und Länder zum Preis des Versandartikels. **Entfallen
+  2026-10-02** (siehe Nachtrag): Eine schon angelegte „Standard" bleibt eine
+  gewöhnliche Versandart.
 - `shop_free_shipping_from` wird zur Freigrenze des HugoShop-Kanals; der
   Schlüssel entfällt.
 
@@ -265,8 +271,9 @@ frei **ab** dem Grenzwert, verglichen mit dem Bruttowarenwert wie bisher. Leer
 = keine Freigrenze. Die Produktseiten bekommen sie wie bisher als
 `free_shipping_from`.
 
-**Pflege:** Firmenkonfiguration → Shop → Versand → „Versandarten"
-(`shop-shipping.config.vue`; API `getShopShipping`, `saveShopShippingMethod`,
+**Pflege:** seit 2026-10-02 eigene Ansicht Shop-Menü → „Versandarten"
+(Route `shop-shipping`, `shop.shipping.vue` mit `shop-shipping.config.vue`;
+bis dahin Firmenkonfiguration → Shop → Versand; API `getShopShipping`, `saveShopShippingMethod`,
 `deleteShopShippingMethod`, `saveShopShippingZone`, `deleteShopShippingZone`,
 `searchShopShippingParts`). Speichern nach jeder Änderung; eine Versandart samt
 ihren Preisstufen ist eine Anweisung. Stufen werden per `ON CONFLICT`
@@ -325,7 +332,9 @@ Warenkorb-Knopf; die Standardvorlage schreibt sie zusätzlich ins Front Matter
 **Neu veröffentlichen:** Trigger `trigger_parts_shipping_shop_auto_publish` —
 ändern sich Lieferbedingung oder Mindestabnahme, entsteht `publish_part` für
 jeden aktiven Kanal des Artikels (HugoShop nur bei `shop_auto_publish`).
-Versandart und Abmessungen stehen auf keiner Seite und lösen nichts aus.
+Versandart und Abmessungen stehen auf keiner Seite und lösten zunächst nichts
+aus; seit 2026-10-02 lösen sie und das Gewicht ebenfalls aus, weil sie über
+die Veröffentlichung entscheiden (siehe Nachtrag).
 Ändert jemand den **Text** einer Lieferbedingung in Kivitendo, wird nicht
 neu veröffentlicht (kein Trigger auf der Kivitendo-Tabelle) — dann „Alle
 veröffentlichen".
@@ -333,9 +342,10 @@ veröffentlichen".
 **Liste „ohne Gewicht"** (W8): Filter „Nur ohne Gewicht" in der
 Artikelliste (`searchParts`, `weight_missing`; Dienstleistungen zählen nicht,
 sie werden nicht verschickt), sichtbar mit Shop-Erweiterung, vorbelegbar mit
-`?weight=missing`. Die Shop-Übersicht hat dafür den Weg „Artikel ohne
-Gewicht" (angeboten und ohne Gewicht). Bei Werkzeug24: 3711 angebotene Waren
-ohne Gewicht.
+`?weight=missing`. Die Shop-Übersicht hatte dafür den Weg „Artikel ohne
+Gewicht" (angeboten und ohne Gewicht); seit 2026-10-02 ersetzt durch „Artikel
+ohne passende Versandart" (siehe Nachtrag), der Filter in der Artikelliste
+bleibt. Bei Werkzeug24: 3711 angebotene Waren ohne Gewicht.
 
 **Noch nicht:** Lieferbedingung in Warenkorb, Kasse und Rechnung (Schritte 6
 und 9), Mindestabnahme im Warenkorb (Schritt 6), Lose bei eBay (Schritt 8).
@@ -368,8 +378,8 @@ mit der Zahlung zurück; die Rechnung nimmt dieselbe Adresse.
   Prüfung schon hier). Status: `ok`, `no_goods`, `country_unknown`,
   `country_not_delivered`, `weight_missing` (Versand auf Anfrage),
   `assigned_unfit`, `no_method`. Fehlende Abmessungen gelten als passend.
-- `shop_is_shipping_part(parts_id)`: Versandartikel (einer Versandart oder
-  der bisherige) sind nie Ware.
+- `shop_is_shipping_part(parts_id)`: Versandartikel (einer Versandart; bis
+  2026-10-02 auch der bisherige aus `shop_shipping_partnumber`) sind nie Ware.
 
 **Kein Versand mehr im Warenkorb.** Der Versand ist keine Zeile in
 `cart_parts_hugoshop` mehr, auch nicht während der Rechnungsstellung:
@@ -414,8 +424,9 @@ vorher angelegt). Texte Deutsch und Englisch.
 - Ob PayPal `custom_id` auf Ebene der Bestellung oder nur in den Buchungen
   zurückgibt, ist nicht gegen PayPal geprüft — gelesen werden beide; fehlt
   sie, gilt die Rechnungsadresse.
-- `shop_shipping_partnumber` bleibt nur noch, um den bisherigen
-  Versandartikel als Nicht-Ware zu erkennen.
+- ~~`shop_shipping_partnumber` bleibt nur noch, um den bisherigen
+  Versandartikel als Nicht-Ware zu erkennen.~~ Entfallen 2026-10-02 (siehe
+  Nachtrag).
 
 **Getestet** in einer zurückgerollten Transaktion an Werkzeug24 (mit
 Sicherungspunkten statt innerer Transaktionen): Regeln der Funktion an 13
@@ -429,7 +440,8 @@ Browser.
 
 ### Schritt 7: Lieferländer je Kanal (2026-10-01)
 
-Kanalkarte (Firmenkonfiguration, Reiter Shop): Auswahlliste „Lieferländer"
+Kanalkarte (seit 2026-10-02 eigene Ansicht Shop-Menü → „Verkaufskanäle",
+vorher Firmenkonfiguration, Reiter Shop): Auswahlliste „Lieferländer"
 je Kanal außer eBay (eBay regelt Lieferländer über seine Versandrichtlinien).
 Leer heißt: alle Länder, die einer Versandzone angehören. Gespeichert in
 `sales_channel_country_shop`; `saveShopChannel` lässt die Liste unverändert,
@@ -484,3 +496,150 @@ eingestelltem `publish_all`; Bestellimport 2 Lose → 20 Stück zu 5,95 €
 (Summe = eBay-Betrag 119,00 €); Rechnungsseite, Bestellübersicht, Mailvorlage.
 Nicht getestet: Angebote und Bestellungen gegen die echte eBay-API, das
 Widget im Browser.
+
+## Nachtrag (2026-10-02)
+
+### Eigene Ansicht „Versandarten"
+
+Zonen, Versandarten und Preisstufen stehen nicht mehr in der
+Firmenkonfiguration, sondern in einer eigenen Ansicht: Shop-Menü →
+„Versandarten" (Route `shop-shipping`, `src/features/shop/views/shop.shipping.vue`,
+Pfade `ShopView.routes.shopShipping` in 21 Sprachen, z. B.
+`/shop/versandarten`). Menüpunkt und Kachel der Shop-Übersicht nur mit dem
+Recht `edit_shop_config`, das auch die Versand-API verlangt. Im Reiter „Shop"
+der Firmenkonfiguration steht an der alten Stelle ein Hinweis mit Knopf zur
+Ansicht; die Länderzuordnung bleibt dort.
+
+Ob die Preise brutto oder netto gelten, kam bisher aus dem Formular des
+Reiters. Die Ansicht hat keines: `getShopShipping` liefert dafür
+`tax_included` in derselben Abfrage.
+
+### `shop_shipping_partnumber` entfällt
+
+Jede Versandart hat ihren eigenen Versandartikel; einen für alle gibt es nicht
+mehr. Entfernt:
+
+- Feld „Artikelnummer Versand" in der Firmenkonfiguration samt Übersetzungen,
+- Vorgabe `8` im Schema; der Upstall löscht den Schlüssel aus `defaults_oserp`,
+- Übernahme der Pauschale als Versandart „Standard" beim Upstall,
+- Sonderfall in `shop_is_shipping_part` — Versandartikel sind nur noch die der
+  Versandarten,
+- Übernahme von `KIVI_SIPPING_COST_PARTNUMBER` in
+  `tools/shop-bridge-settings.php`.
+
+Lagerbuchung (`shop_book_stock`) und Kaufdaten der Webseiten-Analyse
+(`analyticsPurchaseItems`) erkennen den Versand jetzt über
+`shop_is_shipping_part`, nicht mehr über die eine Artikelnummer. Vorher wäre
+der Versandartikel einer anderen Versandart als Ware ausgebucht bzw. als
+gekaufter Artikel gemeldet worden.
+
+Auf alte Rechnungen wirkt das nicht: Lagerbuchung und Analyse laufen nur beim
+Anlegen der Rechnung bzw. direkt nach dem Kauf. Eine schon angelegte
+Versandart „Standard" mit Artikel 8 bleibt eine gewöhnliche Versandart.
+
+### Ohne Versandart: „Standard" ohne Versandkosten
+
+`shop_shipping_configured()`: gibt es eine aktive Versandart mit mindestens
+einer Preisstufe? Wenn nicht, liefert `shop_cart_shipping` den Status `ok`
+mit der Bezeichnung „Standard", Preis 0 und „versandkostenfrei", ohne
+Versandartikel. Die Rechnung bekommt keine Versandposition (sie entsteht nur
+bei Preis > 0 und Versandartikel), PayPal keinen Versandbetrag. Lieferländer
+des Kanals gelten weiter. Das Widget braucht keine Änderung: es zeigt
+„Versand: Standard — versandkostenfrei".
+
+Gibt es aktive Versandarten, aber keine passt, bleibt es bei `no_method` und
+der Sperre (W3) — ein Ausweichen auf „Standard" verdeckte einen
+Einrichtungsfehler und verschickte Ware ohne Versandkosten.
+
+Shop-Übersicht: `getShopStatus` liefert `shipping_missing` (nur bei
+eingeschaltetem HugoShop); die Übersicht zeigt eine gelbe Warnung mit Knopf
+zur Ansicht „Versandarten". Kein blockierender Punkt: der Shop gilt als
+einsatzbereit. Der bisherige blockierende Punkt „Versandartikel fehlt"
+entfällt.
+
+### Keine Veröffentlichung ohne passende Versandart (HugoShop)
+
+`shop_part_shipping_check(parts_id, channel_id)`: die Regeln von
+`shop_cart_shipping` für einen Warenkorb aus nur diesem Artikel in seiner
+Mindestabnahme (sonst 1 Stück). Das Lieferland ist unbekannt — es genügt eine
+Preisstufe für den Kanal in irgendeiner Zone. Hat der Artikel eine aktive
+Versandart zugeordnet, zählt nur diese. Status `ok`, `weight_missing`,
+`assigned_unfit`, `no_method`, dazu die gemessenen Werte für die Meldung.
+`ok` auch ohne eingerichtete Versandart und für Versandartikel.
+
+Grenze: geprüft wird ein einzelner Artikel. Ein Warenkorb aus mehreren
+Artikeln kann zusammen trotzdem eine Grenze überschreiten (Gesamtgewicht) —
+das meldet weiterhin erst der Warenkorb.
+
+**Seite schreiben** (`shopWriteProductPage`, Ergebnis über `shopPageData` →
+`versand`, Meldung aus `shopShippingCheckText`):
+
+- Passt keine Versandart und gibt es noch keine Seite: nichts schreiben,
+  Fehler `SHIPPING_UNFIT`.
+- Gibt es die Seite schon: als Entwurf neu schreiben (wie beim Abschalten
+  eines HugoShops, V16), Fehler `SHIPPING_UNFIT_DRAFT`. Der Lauf zählt die
+  Seite trotzdem mit, damit gebaut wird und sie aus der Webseite verschwindet.
+  Passt wieder eine Versandart, schreibt der nächste Lauf sie normal.
+- Entwürfe (`draft_all`) werden nicht geprüft.
+- Meldung z. B. „Artikel 4711: Keine passende Versandart (Gewicht 38 kg,
+  längste Kante 120 cm): Grenzen und Preisstufen der Versandarten für diesen
+  HugoShop prüfen".
+
+**Aufträge:**
+
+- `publish_part` scheitert mit der Meldung.
+- `publish_all` schreibt die übrigen Artikel, der Auftrag gilt als
+  gescheitert („Fehler: n Seiten geschrieben, m fehlgeschlagen — …"), wie bei
+  jedem anderen Fehler einer Seite.
+- Knopf „Veröffentlichen" der Artikelkarte (`publishShopPart`): ohne passende
+  Versandart entsteht kein Auftrag, Fehler `SHIPPING_UNFIT` mit dem Grund.
+
+**Anzeige:**
+
+- Shop-Übersicht: Nach einem Lauf, der dort gestartet wurde, steht über der
+  Auftragsliste eine rote Meldung „Fehler im letzten Lauf (n):" mit den
+  Fehlerzeilen (`error_lines`), bis sie geschlossen wird. Die „Ausgabe des
+  Laufs" bleibt wie bisher. Nach einem Lauf des Cron erscheint sie nicht.
+- Artikelkarte: je HugoShop der Hinweis „Keine passende Versandart — die Seite
+  wird nicht veröffentlicht" mit dem Grund. `getPartShopData` liefert ihn je
+  Kanal (`shipping_message`), `savePartShopData` nach jedem Speichern neu
+  (`shipping_messages`; eine zweite Abfrage, weil die speichernde Anweisung
+  ihre eigenen Änderungen nicht sieht).
+
+**Neu veröffentlichen:** Damit eine veröffentlichte Seite rechtzeitig zum
+Entwurf wird, entsteht bei `shop_auto_publish` ein Auftrag auch, wenn sich
+Versandart oder Abmessungen (`trigger_parts_shipping_shop_auto_publish`) oder
+das Gewicht des Artikels (`trigger_parts_shop_auto_publish`, Spalte `weight`;
+die Kivitendo-Tabelle bleibt unverändert) ändern. Bei eBay bestimmt die
+Versandart ohnehin die Versandrichtlinie (W4).
+
+eBay ist von der Prüfung nicht betroffen: dort rechnet eBay den Versand über
+die Versandrichtlinie.
+
+**Liste „ohne passende Versandart":** Filter „Nur ohne passende Versandart" in
+der Artikelliste (`searchParts`, `shipping_unfit`; vorbelegbar mit
+`?shipping=unfit`, mit der Kanalauswahl von „Nur im Shop angebotene" auf einen
+HugoShop eingeschränkt). Trifft Artikel, die in einem eingeschalteten HugoShop
+angeboten werden und für die dort `shop_part_shipping_check` nicht `ok`
+liefert. Die Shop-Übersicht führt mit dem Weg „Artikel ohne passende
+Versandart" (`?shop=offered&shipping=unfit`) dorthin; er ersetzt den Weg
+„Artikel ohne Gewicht". Die Prüfung läuft je Artikel und Kanal — bei
+Tausenden angebotener Artikel dauert die Liste einige Sekunden.
+
+Direkt in der Datenbank:
+
+```sql
+SELECT c.name AS hugoshop, p.partnumber, p.description,
+       v.status, v.method, v.weight, v.weightunit, v.length, v.girth
+  FROM parts_channel_shop pc
+  JOIN sales_channel_shop c ON c.id = pc.channel_id AND c.active AND c.type = 'hugoshop'
+  JOIN parts p ON p.id = pc.parts_id
+ CROSS JOIN LATERAL shop_part_shipping_check(p.id, c.id) v
+ WHERE pc.active AND v.status <> 'ok'
+ ORDER BY c.name, v.status, p.partnumber;
+```
+
+**Nicht getestet:** Die SQL-Funktionen sind nicht gegen eine Datenbank
+gelaufen (kein Zugriff aus der Entwicklungsumgebung), die Oberfläche nicht im
+Browser. Geprüft sind PHP-Syntax, Vue-Übersetzung und JSON der Sprachdateien.
+Wirksam erst nach dem Upstall der Shop-Erweiterung.

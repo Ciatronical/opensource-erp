@@ -826,8 +826,6 @@
         "shopActivePriceSource": "价格来源",
         "shopActivePriceSource_help": "商店发票所用销售价格的来源。",
         "shopShipping": "运费",
-        "shopShippingPartnumber": "运费物料号",
-        "shopShippingPartnumber_help": "作为运费计算的物料。该物料必须存在。",
         "shopPayment": "转账银行信息",
         "shopPaymentAccountOwner": "账户持有人",
         "shopPaymentAccountOwner_help": "在客户尚未付款期间显示在发票页面上。",

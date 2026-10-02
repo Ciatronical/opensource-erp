@@ -3,7 +3,9 @@
         "routes": {
             "shopOverview": "/butik",
             "shopOrders": "/butik/bestallningar",
-            "shopWithdrawals": "/butik/angerratt"
+            "shopWithdrawals": "/butik/angerratt",
+            "shopChannels": "/butik/forsaljningskanaler",
+            "shopShipping": "/butik/fraktsatt"
         },
         "menu": {
             "title": "Butik",
@@ -15,7 +17,8 @@
         "status": {
             "ready": "Butiken är klar att användas.",
             "notReady": "Butiken tar ännu inte emot beställningar",
-            "notReadyHint": "Dessa uppgifter saknas. De finns i inställningarna under Tillägg → Butik.",
+            "notReadyHint": "Dessa uppgifter saknas. De finns i inställningarna under Tillägg → Butik eller i butiksmenyn under Försäljningskanaler.",
+            "shippingMissing": "Inget fraktsätt är inrättat: beställningar hanteras som ”Standard” utan fraktkostnader.",
             "hints": "Dessa uppgifter saknas fortfarande. Butiken fungerar, men begränsat:",
             "partsWithShopData": "Artiklar med butiksuppgifter",
             "carts": "Varukorgar",
@@ -57,9 +60,9 @@
             "title": "Artiklar i butiken",
             "subtitle": "Artiklar som erbjuds i en försäljningskanal"
         },
-        "partsNoWeight": {
-            "title": "Artiklar utan vikt",
-            "subtitle": "Erbjudna varor utan vikt — komplettera för fraktkostnaderna"
+        "partsShippingUnfit": {
+            "title": "Artiklar utan passande fraktsätt",
+            "subtitle": "Erbjudna artiklar som inget fraktsätt passar — deras sida publiceras inte"
         },
         "withdrawals": {
             "title": "Ångerrätt",
@@ -155,6 +158,7 @@
             "imagesCopied": "{anzahl} bilder hämtade.",
             "imageError": "Bilden kunde inte behandlas.",
             "syncStatus": "Status hos {kanal}",
+            "shippingUnfit": "Inget passande fraktsätt — sidan publiceras inte.",
             "listingId": "Annons {id}",
             "ebayCategory": "eBay-kategori",
             "ebayCondition": "Skick",
@@ -210,6 +214,7 @@
             "started": "Publiceringen har startat.",
             "inProgress": "Publiceringen körs i bakgrunden — sidan kan fortfarande användas.",
             "aborted": "Körningen avbröts innan den var klar.",
+            "errorsTitle": "Fel i senaste körningen ({count}):",
             "tooLong": "Körningen tar längre tid än väntat. Visningen uppdateras inte längre – ladda om sidan senare.",
             "functions": {
                 "publish_part": "Skriv produktsida",
@@ -244,6 +249,9 @@
         },
         "shippingConfig": {
             "title": "Fraktsätt",
+            "subtitle": "Zoner, fraktsätt och fraktpriser",
+            "movedHint": "Fraktsätten med zoner och priser har en egen vy i butiksmenyn.",
+            "open": "Öppna fraktsätt",
             "intro": "Fraktsätt med transportör, rang, gränser och prissteg. Har varorna i en order olika fraktsätt gäller det med högst rang; varor utan tilldelning får det billigaste lämpliga. eBay beräknar frakten själv via fraktpolicyn.",
             "zones": "Landszoner",
             "zonesHint": "Priser gäller per zon. Ett land hör till högst en zon; länder utan zon faller under ”Alla övriga länder”.",
@@ -336,7 +344,10 @@
             "deleteConfirm": "Ta bort ”{name}” med artikelrader, bilder, leveransländer och prisnivåer? Det kan inte ångras.",
             "deleted": "Försäljningskanal borttagen.",
             "deleteError": "Försäljningskanalen kunde inte tas bort.",
-            "cancel": "Avbryt"
+            "cancel": "Avbryt",
+            "subtitle": "Skapa och konfigurera HugoShops och eBay-kanaler",
+            "movedHint": "Försäljningskanalerna och deras inställningar (webbplats, butiksnyckel, PayPal, eBay-åtkomst) har en egen vy i butiksmenyn.",
+            "open": "Öppna försäljningskanaler"
         },
         "ebayCondition": {
             "NEW": "Ny",
@@ -354,7 +365,8 @@
             "CHANNEL_NAME_TAKEN": "En annan försäljningskanal har redan det här namnet.",
             "CHANNEL_KEY_TAKEN": "Den här butiksnyckeln tillhör redan en annan HugoShop.",
             "CHANNEL_IN_USE": "Fakturor, ångerrätter eller eBay-beställningar hänvisar till den här kanalen. Den kan bara stängas av.",
-            "CHANNEL_NOT_DELETABLE": "Endast en avstängd kanal utan öppna uppdrag kan tas bort."
+            "CHANNEL_NOT_DELETABLE": "Endast en avstängd kanal utan öppna uppdrag kan tas bort.",
+            "SHIPPING_UNFIT": "Publiceras inte"
         }
     }
 }

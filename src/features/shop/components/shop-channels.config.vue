@@ -1,14 +1,15 @@
 <!-- src/features/shop/components/shop-channels.config.vue -->
 <!--
-    Verkaufskanäle in der Firmenkonfiguration (Reiter Shop) —
+    Verkaufskanäle — eigene Ansicht im Shop-Menü (views/shop.channels.vue),
+    früher Teil der Firmenkonfiguration (Reiter Shop);
     dev/shop-verkaufskanaele.md, Schritt 3.
 
     Je Kanal die Vorgaben für alle Artikel ohne eigenen Aufschlag: Aufschlag
     in Prozent oder als fester Betrag, Rundung des Bruttopreises auf ,99.
 
     Die Kanäle liegen in sales_channel_shop, nicht in defaults_oserp. Die
-    Karte lädt und speichert deshalb selbst über die Shop-API, verzögert wie
-    die übrigen Felder der Firmenkonfiguration.
+    Karte lädt und speichert deshalb selbst über die Shop-API, verzögert nach
+    jeder Änderung.
 
     Mindestens ein Kanal bleibt eingeschaltet (V8) — solange es nur den
     HugoShop gibt, ist er gesperrt. Ändert sich sein Preis, legt das Backend
@@ -22,7 +23,8 @@
 -->
 <template>
     <div>
-        <v-row class="mt-6 mb-2">
+        <!-- Eigene Überschrift nur, wenn die Seite keine trägt -->
+        <v-row v-if="mitUeberschrift" class="mt-6 mb-2">
             <v-col cols="12">
                 <h3 class="text-h6 text-primary">{{ t('ShopView.channelConfig.title') }}</h3>
                 <v-divider class="mt-2" />
@@ -294,8 +296,13 @@ import { oserpStore } from '@/core/stores/oserp.store.js'
 import * as toasts from '@/core/utils/toasts.js'
 
 const props = defineProps({
-    /** shop_tax_included aus dem Formular — gilt sofort, auch vor dem Speichern */
+    /**
+     * shop_tax_included aus einem Formular — gilt sofort, auch vor dem
+     * Speichern; null = der gespeicherte Wert aus getShopChannels
+     */
     taxIncluded: { type: [Boolean, String, Number], default: null },
+    /** Überschrift „Verkaufskanäle" zeigen — in der eigenen Ansicht trägt sie die Seite */
+    mitUeberschrift: { type: Boolean, default: true },
 })
 
 const i18n = useI18n()

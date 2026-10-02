@@ -61,8 +61,10 @@ function analyticsPurchase($db, int $kanal, string $arLink): ?array {
  * Gekaufte Artikel und Kaufangaben
  *
  * Die Versandkosten stehen als eigener Betrag daneben, nicht als Artikel —
- * so erwarten es die Auswertungswerkzeuge. Die Bridge las dafür zweimal und
- * filterte in PHP; hier erledigt das eine Abfrage.
+ * so erwarten es die Auswertungswerkzeuge. Versandposition ist jede Zeile
+ * mit dem Versandartikel einer Versandart (shop_is_shipping_part). Die
+ * Bridge las dafür zweimal und filterte in PHP; hier erledigt das eine
+ * Abfrage.
  *
  * @param object $db Company-Datenbankverbindung
  * @param int $kanal HugoShop der Anfrage — der Link gilt nur dort
@@ -70,14 +72,12 @@ function analyticsPurchase($db, int $kanal, string $arLink): ?array {
  * @return array{purchased: array|null, products: array}
  */
 function analyticsPurchaseItems($db, int $kanal, string $arLink): array {
-    $versandNr = shopConfigValue($db, 'shop_shipping_partnumber');
-
     $zeilen = $db->getAll(
         "SELECT p.partnumber AS id, i.description AS name,
                 pe.hugoshop_category AS category,
                 TRUNC(i.qty) AS quantity, TRUNC(i.sellprice, 2) AS price,
                 (SELECT name FROM currencies WHERE id = ar.currency_id) AS currency,
-                (p.partnumber = :versand_nr) AS ist_versand
+                shop_is_shipping_part(p.id) AS ist_versand
            FROM ar_link_hugoshop al
            JOIN ar ON ar.id = al.ar_id
            JOIN invoice i ON i.trans_id = ar.id
@@ -85,7 +85,7 @@ function analyticsPurchaseItems($db, int $kanal, string $arLink): array {
            LEFT JOIN parts_ext pe ON pe.parts_id = i.parts_id
           WHERE al.uuid = :ar_link AND al.channel_id = CAST(:kanal AS integer)
           ORDER BY i.position",
-        [':ar_link' => $arLink, ':versand_nr' => $versandNr, ':kanal' => $kanal]
+        [':ar_link' => $arLink, ':kanal' => $kanal]
     );
 
     $artikel = [];

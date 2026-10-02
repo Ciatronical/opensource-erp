@@ -826,8 +826,6 @@
         "shopActivePriceSource": "Zdroj ceny",
         "shopActivePriceSource_help": "Původ prodejní ceny použité na fakturách obchodu.",
         "shopShipping": "Náklady na dopravu",
-        "shopShippingPartnumber": "Číslo položky dopravy",
-        "shopShippingPartnumber_help": "Položka účtovaná jako doprava. Položka musí existovat.",
         "shopPayment": "Bankovní spojení pro převody",
         "shopPaymentAccountOwner": "Majitel účtu",
         "shopPaymentAccountOwner_help": "Zobrazuje se na stránce faktury, dokud zákazník nezaplatil.",

@@ -89,21 +89,52 @@
                     </v-card-text>
                 </v-card>
 
-                <!-- Verkaufskanäle: Komponente der Shop-Erweiterung, lädt und
-                     speichert selbst (eigene Tabelle statt defaults_oserp) -->
-                <ShopChannelsConfig
-                    v-else-if="field.type === 'component' && field.component === 'sales-channels'"
-                    :tax-included="crmDefaults.shop_tax_included ?? null"
-                />
+                <!-- Verkaufskanäle: eigene Ansicht im Shop-Menü, hier der Weg dorthin -->
+                <v-alert
+                    v-else-if="field.type === 'component' && field.component === 'sales-channels-link'"
+                    type="info"
+                    variant="tonal"
+                    density="compact"
+                    class="my-4"
+                >
+                    <div class="d-flex flex-wrap align-center ga-2">
+                        <span>{{ t('ShopView.channelConfig.movedHint') }}</span>
+                        <v-spacer />
+                        <v-btn
+                            size="small"
+                            variant="tonal"
+                            prepend-icon="mdi-store-cog"
+                            :to="{ name: 'shop-channels' }"
+                        >
+                            {{ t('ShopView.channelConfig.open') }}
+                        </v-btn>
+                    </div>
+                </v-alert>
 
                 <!-- Länder: Zuordnung der Freitexte, lädt und speichert selbst -->
                 <ShopCountriesConfig v-else-if="field.type === 'component' && field.component === 'countries'" />
 
-                <!-- Versandarten, Zonen und Preise: lädt und speichert selbst -->
-                <ShopShippingConfig
-                    v-else-if="field.type === 'component' && field.component === 'shipping-methods'"
-                    :tax-included="crmDefaults.shop_tax_included ?? null"
-                />
+                <!-- Versandarten, Zonen und Preise: eigene Ansicht im Shop-Menü, hier der Weg dorthin -->
+                <v-alert
+                    v-else-if="field.type === 'component' && field.component === 'shipping-methods-link'"
+                    type="info"
+                    variant="tonal"
+                    density="compact"
+                    class="my-4"
+                >
+                    <div class="d-flex flex-wrap align-center ga-2">
+                        <span>{{ t('ShopView.shippingConfig.movedHint') }}</span>
+                        <v-spacer />
+                        <v-btn
+                            size="small"
+                            variant="tonal"
+                            prepend-icon="mdi-truck-delivery-outline"
+                            :to="{ name: 'shop-shipping' }"
+                        >
+                            {{ t('ShopView.shippingConfig.open') }}
+                        </v-btn>
+                    </div>
+                </v-alert>
 
                 <!-- Einzelfeld -->
                 <ShopConfigField v-else :field="field" :werte="crmDefaults" :quellen="quellen" :gesetzt="crmSecrets" :vorgaben="crmFallbacks" />
@@ -118,9 +149,7 @@ import { useI18n } from 'vue-i18n'
 import axios from 'axios'
 import ShopConfigField from './shop-config-field.component.vue'
 
-const ShopChannelsConfig = defineAsyncComponent(() => import('@/features/shop/components/shop-channels.config.vue'))
 const ShopCountriesConfig = defineAsyncComponent(() => import('@/features/shop/components/shop-countries.config.vue'))
-const ShopShippingConfig = defineAsyncComponent(() => import('@/features/shop/components/shop-shipping.config.vue'))
 
 const { t } = useI18n()
 

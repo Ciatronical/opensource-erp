@@ -33,14 +33,21 @@ export function useNavigationCards() {
 
         // Shop-Erweiterung
         if (oserp.isExtensionEnabled('shop')) {
+            const shopItems = [
+                { title: t('ShopView.menu.overview'), to: { name: 'shop-overview' } },
+                { title: t('ShopView.orders.title'), to: { name: 'shop-orders' } },
+                { title: t('ShopView.withdrawals.title'), to: { name: 'shop-withdrawals' } }
+            ]
+            // Verkaufskanäle einrichten: nur mit dem Recht, das die Kanal-API verlangt
+            if (oserp.checkPermission('edit_shop_config')) {
+                shopItems.push('-')
+                shopItems.push({ title: t('ShopView.channelConfig.title'), to: { name: 'shop-channels' } })
+                shopItems.push({ title: t('ShopView.shippingConfig.title'), to: { name: 'shop-shipping' } })
+            }
             result.push({
                 title: t('ShopView.menu.title'),
                 icon: 'mdi-storefront',
-                items: [
-                    { title: t('ShopView.menu.overview'), to: { name: 'shop-overview' } },
-                    { title: t('ShopView.orders.title'), to: { name: 'shop-orders' } },
-                    { title: t('ShopView.withdrawals.title'), to: { name: 'shop-withdrawals' } }
-                ]
+                items: shopItems
             })
         }
 

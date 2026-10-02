@@ -28,6 +28,7 @@
         "obsoleteOnly": "Show obsolete only",
         "showAll": "Show all",
         "weightMissing": "Without weight only",
+        "shippingUnfit": "Only without a suitable shipping method",
         "shopOnly": "Offered in shop only",
         "notInShop": "Not offered in shop",
         "channel": "Sales channel",

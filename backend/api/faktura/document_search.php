@@ -154,8 +154,11 @@ function searchDocuments($data) {
  * @param string $data['shop']       leer, offered oder not_offered
  * @param int    $data['channel_id'] mit shop offered: nur in diesem Kanal (0 = alle Kanaele)
  * @param bool   $data['weight_missing'] true = nur Waren ohne Gewicht (zum Nachpflegen fuer den Versand)
+ * @param bool   $data['shipping_unfit'] true = nur Artikel, die in einem HugoShop angeboten werden und
+ *                                   fuer die dort keine Versandart passt (shop_part_shipping_check) —
+ *                                   sie werden nicht veroeffentlicht; mit channel_id nur in diesem Kanal
  * @param int    $data['limit']      Maximale Trefferzahl (Standard 200, max 1000)
- * @testdata {"action": "searchParts", "q": "Bremse", "scope": "active", "shop": "", "channel_id": 0, "weight_missing": false, "limit": 50}
+ * @testdata {"action": "searchParts", "q": "Bremse", "scope": "active", "shop": "", "channel_id": 0, "weight_missing": false, "shipping_unfit": false, "limit": 50}
  */
 function searchParts($data) {
     $db    = DbhCompany::begin();
@@ -191,6 +194,27 @@ function searchParts($data) {
     // nicht verschickt und zaehlen nicht
     if (!empty($data['weight_missing'])) {
         $where[] = "p.part_type <> 'service' AND COALESCE(p.weight, 0) <= 0";
+    }
+
+    // Ohne passende Versandart (dev/shop-versand.md, Nachtrag 2026-10-02):
+    // angeboten in einem eingeschalteten HugoShop, dort passt keine
+    // Versandart — die Seite wird nicht veroeffentlicht
+    if (!empty($data['shipping_unfit'])) {
+        if (!isExtensionActive($db, 'shop')) {
+            resultInfo(false, 'INVALID_FILTER', null, 'Der Filter nach Versandart ist hier nicht moeglich');
+            return;
+        }
+        $params[':versand_kanal'] = (int)($data['channel_id'] ?? 0);
+        // shop_part_shipping_check liefert eine Tabelle — sie gehört in FROM,
+        // in WHERE lehnt PostgreSQL sie ab
+        $where[] = "EXISTS (SELECT 1
+                              FROM parts_channel_shop vc
+                              JOIN sales_channel_shop vk ON vk.id = vc.channel_id
+                                                        AND vk.active AND vk.type = 'hugoshop'
+                             CROSS JOIN LATERAL shop_part_shipping_check(p.id, vk.id) vp
+                             WHERE vc.parts_id = p.id AND vc.active
+                               AND (CAST(:versand_kanal AS integer) = 0 OR vc.channel_id = CAST(:versand_kanal AS integer))
+                               AND vp.status <> 'ok')";
     }
 
     if ($q !== '') {

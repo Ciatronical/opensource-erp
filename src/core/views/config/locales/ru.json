@@ -826,8 +826,6 @@
         "shopActivePriceSource": "Источник цены",
         "shopActivePriceSource_help": "Происхождение цены продажи, используемой в счетах магазина.",
         "shopShipping": "Стоимость доставки",
-        "shopShippingPartnumber": "Номер товара для доставки",
-        "shopShippingPartnumber_help": "Товар, начисляемый как стоимость доставки. Товар должен существовать.",
         "shopPayment": "Банковские реквизиты для переводов",
         "shopPaymentAccountOwner": "Владелец счёта",
         "shopPaymentAccountOwner_help": "Отображается на странице счёта, пока клиент не оплатил.",

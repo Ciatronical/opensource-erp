@@ -28,6 +28,7 @@
         "obsoleteOnly": "Nur ausgemusterte anzeigen",
         "showAll": "Alle anzeigen",
         "weightMissing": "Nur ohne Gewicht",
+        "shippingUnfit": "Nur ohne passende Versandart",
         "shopOnly": "Nur im Shop angebotene",
         "notInShop": "Alle nicht im Shop angebotenen",
         "channel": "Verkaufskanal",

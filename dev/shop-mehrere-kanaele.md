@@ -58,7 +58,8 @@ Schon je Kanal-Kennung gespeichert und damit ohne Umbau tragfähig:
    `shop_cart_lifetime_hours`, `shop_context_lifetime_hours`,
    `shop_job_retention_days`, `shop_search_weighting`,
    `shop_active_price_source`, `shop_thumbnail_size`, `shop_sites_dir`
-   (Wurzel und Riegel aller Webseiten), `shop_shipping_partnumber`.
+   (Wurzel und Riegel aller Webseiten). (`shop_shipping_partnumber` entfiel
+   2026-10-02: jede Versandart hat ihren Versandartikel, dev/shop-versand.md.)
 4. **Tabellen ohne Kanalbezug:** `carts_hugoshop`, `context_hugoshop`,
    `ar_link_hugoshop` (welcher Shop die Rechnung erzeugt hat: Mail-Signatur,
    Rechnungsseite, PayPal-Rücksprung), `withdrawals_hugoshop`,
@@ -521,3 +522,24 @@ und eine Art ohne Kanal; Auftrag mit Kennung; Preisänderung legt den Auftrag
 im HugoShop an; `publishShopAll`, `getPartShopData`, `savePartShopData` ohne
 Kanalliste, `getShopStatus`, `getShopChannels`, `getShopPublishJobs`;
 öffentlicher Zugang: Sitzung, Warenkorb mit Versand, Suche.
+
+### Nachtrag: eigene Ansicht „Verkaufskanäle" (2026-10-01)
+
+Die Kanalkarte steht nicht mehr in der Firmenkonfiguration, sondern in einer
+eigenen Ansicht mit Menüpunkt: Hauptmenü → Shop → Verkaufskanäle (Route
+`shop-channels`, `src/features/shop/views/shop.channels.vue`; Pfade
+`ShopView.routes.shopChannels` in 21 Sprachen, z. B. `/shop/verkaufskanaele`,
+`/shop/sales-channels`).
+
+- Menüpunkt und Kachel „Verkaufskanäle" in der Shop-Übersicht nur mit dem
+  Recht `edit_shop_config` — dasselbe verlangt die Kanal-API. Ohne das Recht
+  zeigt die Ansicht einen Hinweis.
+- Die Ansicht bettet `shop-channels.config.vue` ohne eigene Überschrift ein
+  (`mitUeberschrift`); ob Verkaufspreise brutto oder netto stehen, liest die
+  Karte aus `getShopChannels`.
+- Im Reiter „Shop" steht an der alten Stelle ein Hinweis mit Knopf zur
+  Ansicht. Der Einrichtungshinweis der Übersicht nennt beide Orte.
+- `npm run check:routes`: die neue Route besteht alle Kreuzproben. Die Prüfung
+  meldet weiter einen Fehlalarm, der schon vorher bestand — die Felddefinition
+  `{ name: 'condition' }` in `part-shop.card.vue` hält sie für einen
+  Routennamen.

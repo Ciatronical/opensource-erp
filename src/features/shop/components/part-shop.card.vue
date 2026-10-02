@@ -318,6 +318,14 @@
                                     </v-btn>
                                 </v-col>
 
+                                <!-- HugoShop: ohne passende Versandart keine Seite -->
+                                <v-col v-if="kanal.type === 'hugoshop' && kanal.active && kanal.shipping_message" cols="12" class="py-1">
+                                    <v-alert type="warning" variant="tonal" density="compact">
+                                        {{ t('ShopView.partCard.shippingUnfit') }}
+                                        <div class="text-caption">{{ kanal.shipping_message }}</div>
+                                    </v-alert>
+                                </v-col>
+
                                 <!-- Stand des Abgleichs mit dem Marktplatz -->
                                 <v-col v-if="kanal.type !== 'hugoshop' && partsId" cols="12" class="py-1">
                                     <v-alert
@@ -657,6 +665,8 @@ function alsKanal(zeile) {
         settings: lies(zeile.settings) && typeof lies(zeile.settings) === 'object' ? { ...lies(zeile.settings) } : {},
         sync_status: zeile.sync_status || '',
         sync_error: zeile.sync_error || '',
+        // HugoShop: warum keine Versandart passt, leer = passt (nur zum Lesen)
+        shipping_message: zeile.shipping_message || '',
         external_id: zeile.external_id || '',
         images: Array.isArray(lies(zeile.images)) ? lies(zeile.images) : [],
     }
@@ -1038,7 +1048,8 @@ async function speichern(partsId) {
     speichert.value = true
     fehler.value = ''
     if (liste) {
-        await shop.savePartShopData(nutz)
+        const ergebnis = await shop.savePartShopData(nutz)
+        versandMeldungen(ergebnis?.shipping_messages)
     } else {
         await shop.deletePartShopData(Number(partsId))
     }
@@ -1048,6 +1059,21 @@ async function speichern(partsId) {
         fehler.value = fehlerText()
     } else {
         zuletzt = neuerStand
+    }
+}
+
+/**
+ * Übernimmt die Prüfung der Versandart nach dem Speichern
+ *
+ * Gewicht, Maße und Versandart ändern, ob eine Versandart passt — die Antwort
+ * von savePartShopData sagt es je HugoShop. Nur ein Anzeigewert: der Watcher
+ * auf daten sieht die Änderung, stand() aber nicht.
+ */
+function versandMeldungen(meldungen) {
+    if (!Array.isArray(meldungen)) return
+    for (const meldung of meldungen) {
+        const kanal = daten.value.channels.find(k => k.channel_id === Number(meldung.channel_id))
+        if (kanal) kanal.shipping_message = meldung.message || ''
     }
 }
 

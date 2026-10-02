@@ -136,6 +136,16 @@
                     hide-details
                     class="ms-1 me-4"
                 />
+                <!-- Im HugoShop angeboten, aber keine Versandart passt — wird nicht veröffentlicht -->
+                <v-switch
+                    v-if="shopEnabled"
+                    v-model="shippingUnfit"
+                    :label="t('DocumentList.shippingUnfit')"
+                    color="primary"
+                    density="compact"
+                    hide-details
+                    class="ms-1 me-4"
+                />
             </v-col>
             <!-- Verfeinert „Nur im Shop angebotene“ auf einen Kanal — deshalb
                  nur sichtbar, solange dieser Filter an ist -->
@@ -257,6 +267,8 @@ export default {
         const shopFilterState = ref(['offered', 'not_offered'].includes(route.query.shop) ? route.query.shop : '')
         // Nur Waren ohne Gewicht (?weight=missing) — zum Nachpflegen für den Versand
         const weightMissingState = ref(route.query.weight === 'missing')
+        // Ohne passende Versandart (?shipping=unfit) — diese Seiten werden nicht veröffentlicht
+        const shippingUnfitState = ref(route.query.shipping === 'unfit')
         const shopFilter = computed({
             get: () => (shopEnabled.value ? shopFilterState.value : ''),
             set: (wert) => {
@@ -269,6 +281,10 @@ export default {
         const weightMissing = computed({
             get: () => shopEnabled.value && weightMissingState.value,
             set: (an) => { weightMissingState.value = an },
+        })
+        const shippingUnfit = computed({
+            get: () => shopEnabled.value && shippingUnfitState.value,
+            set: (an) => { shippingUnfitState.value = an },
         })
         const shopOnly = computed({
             get: () => shopFilter.value === 'offered',
@@ -310,7 +326,7 @@ export default {
         const atLimit = computed(() => rows.value.length >= LIMIT)
         const hasFilter = computed(() =>
             !!search.value || !!from.value || !!to.value || openOnly.value || partsScope.value !== 'active' || !!shopFilter.value
-            || weightMissing.value
+            || weightMissing.value || shippingUnfit.value
         )
 
         const headers = computed(() => isParts.value
@@ -357,7 +373,7 @@ export default {
             try {
                 const payload = isParts.value
                     ? { action: 'searchParts', q: search.value || '', scope: partsScope.value, shop: shopFilter.value, weight_missing: weightMissing.value,
-                        channel_id: channelId.value, limit: LIMIT }
+                        shipping_unfit: shippingUnfit.value, channel_id: channelId.value, limit: LIMIT }
                     : { action: 'searchDocuments', documentType: listType.value, q: search.value || '',
                         from: from.value || '', to: to.value || '', limit: LIMIT }
                 const res = await axios.post('/api/faktura/', payload)
@@ -377,7 +393,7 @@ export default {
 
         // Tippen laedt nach kurzer Pause nach — kein Suchknopf noetig
         let debounce = null
-        watch([search, from, to, partsScope, shopFilter, channelId, weightMissing], () => {
+        watch([search, from, to, partsScope, shopFilter, channelId, weightMissing, shippingUnfit], () => {
             clearTimeout(debounce)
             debounce = setTimeout(load, 350)
         })
@@ -396,6 +412,7 @@ export default {
             shopFilterState.value = ''
             channelIdState.value = 0
             weightMissingState.value = false
+            shippingUnfitState.value = false
         }
 
         function openRow(_event, row) {
@@ -404,7 +421,7 @@ export default {
 
         return {
             t, locale, config, isParts, rows, visibleRows, headers, loading, error,
-            search, from, to, openOnly, obsoleteOnly, showAll, shopOnly, notInShop, weightMissing, shopEnabled, channels, channelId, channelItems, hasFilter, atLimit,
+            search, from, to, openOnly, obsoleteOnly, showAll, shopOnly, notInShop, weightMissing, shippingUnfit, shopEnabled, channels, channelId, channelItems, hasFilter, atLimit,
             formatDate, formatCurrency, formatQty, reset, openRow,
         }
     },

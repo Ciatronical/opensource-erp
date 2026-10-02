@@ -826,8 +826,6 @@
         "shopActivePriceSource": "Hinna allikas",
         "shopActivePriceSource_help": "Poe arvetel kasutatava müügihinna päritolu.",
         "shopShipping": "Saatekulud",
-        "shopShippingPartnumber": "Saatmise artiklinumber",
-        "shopShippingPartnumber_help": "Artikkel, mis arvestatakse saatekuluna. Artikkel peab olemas olema.",
         "shopPayment": "Pangaandmed ülekanneteks",
         "shopPaymentAccountOwner": "Konto omanik",
         "shopPaymentAccountOwner_help": "Kuvatakse arve lehel, kuni klient ei ole maksnud.",

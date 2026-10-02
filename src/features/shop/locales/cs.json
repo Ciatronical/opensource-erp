@@ -3,7 +3,9 @@
         "routes": {
             "shopOverview": "/obchod",
             "shopOrders": "/obchod/objednavky",
-            "shopWithdrawals": "/obchod/odstoupeni"
+            "shopWithdrawals": "/obchod/odstoupeni",
+            "shopChannels": "/obchod/prodejni-kanaly",
+            "shopShipping": "/obchod/zpusoby-dopravy"
         },
         "menu": {
             "title": "Obchod",
@@ -15,7 +17,8 @@
         "status": {
             "ready": "Obchod je připraven k provozu.",
             "notReady": "Obchod zatím nepřijímá objednávky",
-            "notReadyHint": "Tyto údaje chybí. Najdete je v nastavení pod Rozšíření → Obchod.",
+            "notReadyHint": "Tyto údaje chybí. Najdete je v nastavení pod Rozšíření → Obchod nebo v nabídce Obchod pod Prodejní kanály.",
+            "shippingMissing": "Není nastaven žádný způsob dopravy: objednávky probíhají jako „Standard“ bez nákladů na dopravu.",
             "hints": "Tyto údaje ještě chybí. Obchod běží, ale omezeně:",
             "partsWithShopData": "Položky s údaji pro obchod",
             "carts": "Košíky",
@@ -57,9 +60,9 @@
             "title": "Artikly v obchodě",
             "subtitle": "Artikly nabízené v prodejním kanálu"
         },
-        "partsNoWeight": {
-            "title": "Položky bez hmotnosti",
-            "subtitle": "Nabízené zboží bez hmotnosti — doplňte kvůli nákladům na dopravu"
+        "partsShippingUnfit": {
+            "title": "Položky bez vhodného způsobu dopravy",
+            "subtitle": "Nabízené položky, pro které nepasuje žádný způsob dopravy — jejich stránka se nezveřejní"
         },
         "withdrawals": {
             "title": "Odstoupení",
@@ -155,6 +158,7 @@
             "imagesCopied": "Převzato obrázků: {anzahl}.",
             "imageError": "Obrázek nelze zpracovat.",
             "syncStatus": "Stav v {kanal}",
+            "shippingUnfit": "Není vhodný způsob dopravy — stránka se nezveřejní.",
             "listingId": "Nabídka {id}",
             "ebayCategory": "Kategorie eBay",
             "ebayCondition": "Stav zboží",
@@ -210,6 +214,7 @@
             "started": "Zveřejňování spuštěno.",
             "inProgress": "Zveřejňování běží na pozadí — stránku lze dál používat.",
             "aborted": "Běh byl přerušen dříve, než skončil.",
+            "errorsTitle": "Chyby posledního běhu ({count}):",
             "tooLong": "Běh trvá déle, než se čekalo. Zobrazení se už neaktualizuje – načtěte prosím stránku později znovu.",
             "functions": {
                 "publish_part": "Zapsat stránku produktu",
@@ -244,6 +249,9 @@
         },
         "shippingConfig": {
             "title": "Způsoby dopravy",
+            "subtitle": "Zóny, způsoby dopravy a ceny dopravy",
+            "movedHint": "Způsoby dopravy se zónami a cenami mají vlastní zobrazení v nabídce obchodu.",
+            "open": "Otevřít způsoby dopravy",
             "intro": "Způsoby dopravy s dopravcem, pořadím, limity a cenovými stupni. Mají-li položky objednávky různé způsoby dopravy, platí ten s nejvyšším pořadím; položky bez přiřazení dostanou nejlevnější vhodný. eBay počítá dopravu sám podle zásad dopravy.",
             "zones": "Zóny zemí",
             "zonesHint": "Ceny platí pro zónu. Země patří nejvýše do jedné zóny; země bez zóny spadají pod „Všechny ostatní země“.",
@@ -336,7 +344,10 @@
             "deleteConfirm": "Smazat „{name}“ včetně řádků položek, obrázků, zemí dodání a cenových stupňů? Tuto akci nelze vrátit.",
             "deleted": "Prodejní kanál smazán.",
             "deleteError": "Prodejní kanál se nepodařilo smazat.",
-            "cancel": "Zrušit"
+            "cancel": "Zrušit",
+            "subtitle": "Vytvářet a nastavovat HugoShopy a kanály eBay",
+            "movedHint": "Prodejní kanály a jejich nastavení (web, klíč obchodu, PayPal, přístup k eBay) mají vlastní zobrazení v nabídce Obchod.",
+            "open": "Otevřít prodejní kanály"
         },
         "ebayCondition": {
             "NEW": "Nové",
@@ -354,7 +365,8 @@
             "CHANNEL_NAME_TAKEN": "Tento název už má jiný prodejní kanál.",
             "CHANNEL_KEY_TAKEN": "Tento klíč obchodu už patří jinému HugoShopu.",
             "CHANNEL_IN_USE": "Na tento kanál odkazují faktury, odstoupení nebo objednávky z eBay. Lze ho pouze vypnout.",
-            "CHANNEL_NOT_DELETABLE": "Smazat lze jen vypnutý kanál bez otevřených úloh."
+            "CHANNEL_NOT_DELETABLE": "Smazat lze jen vypnutý kanál bez otevřených úloh.",
+            "SHIPPING_UNFIT": "Nezveřejní se"
         }
     }
 }

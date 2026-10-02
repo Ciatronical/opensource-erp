@@ -56,6 +56,29 @@
             :text="t('ShopView.status.ready')"
         />
 
+        <!-- Ohne Versandart: Bestellungen laufen als „Standard“ ohne Versandkosten -->
+        <v-alert
+            v-if="status?.shipping_missing"
+            type="warning"
+            variant="tonal"
+            density="compact"
+            class="mb-4"
+        >
+            <div class="d-flex flex-wrap align-center ga-2">
+                <span>{{ t('ShopView.status.shippingMissing') }}</span>
+                <v-spacer />
+                <v-btn
+                    v-if="oserp.checkPermission('edit_shop_config')"
+                    size="small"
+                    variant="tonal"
+                    prepend-icon="mdi-truck-delivery-outline"
+                    :to="{ name: 'shop-shipping' }"
+                >
+                    {{ t('ShopView.shippingConfig.open') }}
+                </v-btn>
+            </div>
+        </v-alert>
+
         <v-alert
             v-if="status && status.hints.length"
             type="info"
@@ -331,6 +354,22 @@
                 <div>{{ t('ShopView.publish.aborted') }}</div>
                 <pre v-if="laufAusgabe.length" class="text-caption mt-1 mb-0 laufausgabe">{{ laufAusgabe.join('\n') }}</pre>
             </v-alert>
+
+            <!-- Fehler des letzten Laufs im Wortlaut — etwa Artikel ohne
+                 passende Versandart. Bleibt stehen, bis es geschlossen wird. -->
+            <v-alert
+                v-else-if="laufFehler.length"
+                type="error"
+                variant="tonal"
+                density="compact"
+                class="mx-4 mb-4"
+                closable
+                :close-label="t('ShopView.publish.messagesClose')"
+                @click:close="laufFehler = []"
+            >
+                <div>{{ t('ShopView.publish.errorsTitle', { count: laufFehler.length }) }}</div>
+                <pre class="text-caption mt-1 mb-0 laufausgabe">{{ laufFehler.join('\n') }}</pre>
+            </v-alert>
         </v-card>
 
         <!-- Ausgabe des Laufs, in dem ein Auftrag erledigt wurde -->
@@ -419,9 +458,11 @@ import NavbarView from '@/core/components/navbar/navbar.view.vue'
 import { useShop } from '@/features/shop/composables/useShop.js'
 import * as toasts from '@/core/utils/toasts.js'
 import { entityRoute } from '@/core/constants/routes.js'
+import { oserpStore } from '@/core/stores/oserp.store.js'
 
 const { t, te, locale } = useI18n()
 const router = useRouter()
+const oserp = oserpStore()
 const shop = useShop()
 
 const status = ref(null)
@@ -442,6 +483,8 @@ const raeumtAuf = ref(false)
 /** Der letzte Lauf kam nicht zu Ende, dazu die Ausgabe des Prozesses */
 const laufAbgebrochen = ref(false)
 const laufAusgabe = ref([])
+/** Fehlerzeilen des zuletzt beendeten Laufs (summary.error_lines) */
+const laufFehler = ref([])
 /** Die Abfrageschleife hat ihre Obergrenze erreicht, der Lauf arbeitet vermutlich weiter */
 const zuLange = ref(false)
 
@@ -606,15 +649,29 @@ const ziele = computed(() => [
         titel: t('ShopView.parts.title'),
         text: t('ShopView.parts.subtitle'),
     },
-    // Angebotene Waren ohne Gewicht — zum Nachpflegen für die Versandkosten
-    // (dev/shop-versand.md, W8)
+    // Angebotene Artikel ohne passende Versandart — ihre Seite wird nicht
+    // veröffentlicht (dev/shop-versand.md, Nachtrag 2026-10-02)
     {
         name: 'article-list',
-        query: { shop: 'offered', weight: 'missing' },
-        icon: 'mdi-weight-kilogram',
-        titel: t('ShopView.partsNoWeight.title'),
-        text: t('ShopView.partsNoWeight.subtitle'),
+        query: { shop: 'offered', shipping: 'unfit' },
+        icon: 'mdi-truck-alert-outline',
+        titel: t('ShopView.partsShippingUnfit.title'),
+        text: t('ShopView.partsShippingUnfit.subtitle'),
     },
+    // Verkaufskanäle (dev/shop-mehrere-kanaele.md) und Versandarten
+    // (dev/shop-versand.md) einrichten — nur mit dem Recht, das ihre API
+    // verlangt
+    ...(oserp.checkPermission('edit_shop_config') ? [{
+        name: 'shop-channels',
+        icon: 'mdi-store-cog',
+        titel: t('ShopView.channelConfig.title'),
+        text: t('ShopView.channelConfig.subtitle'),
+    }, {
+        name: 'shop-shipping',
+        icon: 'mdi-truck-delivery-outline',
+        titel: t('ShopView.shippingConfig.title'),
+        text: t('ShopView.shippingConfig.subtitle'),
+    }] : []),
 ])
 
 async function laden() {
@@ -732,6 +789,7 @@ function gestartet(antwort) {
     toasts.info(antwort?.started === false ? t('ShopView.publish.running') : t('ShopView.publish.started'))
     laufAbgebrochen.value = false
     laufAusgabe.value = []
+    laufFehler.value = []
     beobachten()
 }
 
@@ -796,6 +854,7 @@ async function laufBeendet(stand) {
         toasts.error(t('ShopView.publish.aborted'))
     } else if (stand.summary) {
         const bilanz = stand.summary
+        laufFehler.value = stand.error_lines || bilanz.error_lines || []
         const text = t('ShopView.publish.done', {
             jobs: bilanz.jobs ?? 0,
             pages: bilanz.pages ?? 0,

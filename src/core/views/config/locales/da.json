@@ -826,8 +826,6 @@
         "shopActivePriceSource": "Priskilde",
         "shopActivePriceSource_help": "Oprindelse af salgsprisen til butiksfakturaer.",
         "shopShipping": "Fragtomkostninger",
-        "shopShippingPartnumber": "Varenummer for fragt",
-        "shopShippingPartnumber_help": "Vare, der faktureres som fragt. Varen skal findes.",
         "shopPayment": "Bankoplysninger til overførsler",
         "shopPaymentAccountOwner": "Kontohaver",
         "shopPaymentAccountOwner_help": "Vises på fakturasiden, så længe kunden ikke har betalt.",

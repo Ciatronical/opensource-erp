@@ -3,7 +3,9 @@
         "routes": {
             "shopOverview": "/magazin",
             "shopOrders": "/magazin/comenzi",
-            "shopWithdrawals": "/magazin/retrageri"
+            "shopWithdrawals": "/magazin/retrageri",
+            "shopChannels": "/magazin/canale-de-vanzare",
+            "shopShipping": "/magazin/metode-de-livrare"
         },
         "menu": {
             "title": "Magazin",
@@ -15,7 +17,8 @@
         "status": {
             "ready": "Magazinul este gata de utilizare.",
             "notReady": "Magazinul nu preia încă comenzi",
-            "notReadyHint": "Lipsesc aceste date. Se află în setări, la Extensii → Magazin.",
+            "notReadyHint": "Lipsesc aceste date. Se află în setări, la Extensii → Magazin, sau în meniul Magazin, la Canale de vânzare.",
+            "shippingMissing": "Nu este configurată nicio metodă de livrare: comenzile sunt procesate ca „Standard” fără costuri de livrare.",
             "hints": "Aceste date lipsesc încă. Magazinul funcționează, dar limitat:",
             "partsWithShopData": "Articole cu date de magazin",
             "carts": "Coșuri",
@@ -57,9 +60,9 @@
             "title": "Articole în magazin",
             "subtitle": "Articole oferite într-un canal de vânzare"
         },
-        "partsNoWeight": {
-            "title": "Articole fără greutate",
-            "subtitle": "Mărfuri oferite fără greutate — completați pentru costurile de livrare"
+        "partsShippingUnfit": {
+            "title": "Articole fără metodă de livrare potrivită",
+            "subtitle": "Articole oferite pentru care nu se potrivește nicio metodă de livrare — pagina lor nu va fi publicată"
         },
         "withdrawals": {
             "title": "Retrageri",
@@ -155,6 +158,7 @@
             "imagesCopied": "{anzahl} imagini preluate.",
             "imageError": "Imaginea nu a putut fi procesată.",
             "syncStatus": "Stare la {kanal}",
+            "shippingUnfit": "Nicio metodă de livrare potrivită — pagina nu va fi publicată.",
             "listingId": "Anunț {id}",
             "ebayCategory": "Categorie eBay",
             "ebayCondition": "Stare",
@@ -210,6 +214,7 @@
             "started": "Publicarea a început.",
             "inProgress": "Publicarea rulează în fundal — pagina rămâne utilizabilă.",
             "aborted": "Execuția a fost întreruptă înainte de a se termina.",
+            "errorsTitle": "Erori la ultima rulare ({count}):",
             "tooLong": "Execuția durează mai mult decât era de așteptat. Afișarea nu se mai actualizează – reîncărcați pagina mai târziu.",
             "functions": {
                 "publish_part": "Scrie pagina produsului",
@@ -244,6 +249,9 @@
         },
         "shippingConfig": {
             "title": "Metode de livrare",
+            "subtitle": "Zone, metode de livrare și tarife de livrare",
+            "movedHint": "Metodele de livrare cu zone și tarife au o vizualizare proprie în meniul magazinului.",
+            "open": "Deschide metodele de livrare",
             "intro": "Metode de livrare cu transportator, rang, limite și trepte de preț. Dacă articolele unei comenzi au metode diferite, se aplică cea cu rangul cel mai mare; articolele fără atribuire primesc cea mai ieftină potrivită. eBay calculează singur livrarea prin politica de livrare.",
             "zones": "Zone de țări",
             "zonesHint": "Prețurile se aplică pe zonă. O țară aparține cel mult unei zone; țările fără zonă intră la „Toate celelalte țări”.",
@@ -336,7 +344,10 @@
             "deleteConfirm": "Ștergeți „{name}” cu rândurile de articole, imaginile, țările de livrare și treptele de preț? Acțiunea nu poate fi anulată.",
             "deleted": "Canal de vânzare șters.",
             "deleteError": "Canalul de vânzare nu a putut fi șters.",
-            "cancel": "Anulează"
+            "cancel": "Anulează",
+            "subtitle": "Crearea și configurarea HugoShop-urilor și a canalelor eBay",
+            "movedHint": "Canalele de vânzare și setările lor (site, cheia magazinului, PayPal, acces eBay) au o vizualizare proprie în meniul Magazin.",
+            "open": "Deschide canalele de vânzare"
         },
         "ebayCondition": {
             "NEW": "Nou",
@@ -354,7 +365,8 @@
             "CHANNEL_NAME_TAKEN": "Un alt canal de vânzare are deja acest nume.",
             "CHANNEL_KEY_TAKEN": "Această cheie de magazin aparține deja altui HugoShop.",
             "CHANNEL_IN_USE": "De acest canal depind facturi, retrageri sau comenzi eBay. Poate fi doar dezactivat.",
-            "CHANNEL_NOT_DELETABLE": "Poate fi șters doar un canal dezactivat, fără sarcini deschise."
+            "CHANNEL_NOT_DELETABLE": "Poate fi șters doar un canal dezactivat, fără sarcini deschise.",
+            "SHIPPING_UNFIT": "Nu va fi publicat"
         }
     }
 }

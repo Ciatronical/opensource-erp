@@ -826,8 +826,6 @@
         "shopActivePriceSource": "Origine del prezzo",
         "shopActivePriceSource_help": "Origine del prezzo di vendita usato per le fatture del negozio.",
         "shopShipping": "Spese di spedizione",
-        "shopShippingPartnumber": "Codice articolo spedizione",
-        "shopShippingPartnumber_help": "Articolo addebitato come spese di spedizione. L'articolo deve esistere.",
         "shopPayment": "Coordinate bancarie per i bonifici",
         "shopPaymentAccountOwner": "Intestatario del conto",
         "shopPaymentAccountOwner_help": "Mostrato sulla pagina della fattura finché il cliente non ha pagato.",

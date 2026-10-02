@@ -3,7 +3,9 @@
         "routes": {
             "shopOverview": "/pood",
             "shopOrders": "/pood/tellimused",
-            "shopWithdrawals": "/pood/taganemised"
+            "shopWithdrawals": "/pood/taganemised",
+            "shopChannels": "/pood/muugikanalid",
+            "shopShipping": "/pood/tarneviisid"
         },
         "menu": {
             "title": "Pood",
@@ -15,7 +17,8 @@
         "status": {
             "ready": "Pood on kasutusvalmis.",
             "notReady": "Pood ei võta veel tellimusi vastu",
-            "notReadyHint": "Need andmed puuduvad. Need on seadetes jaotises Laiendused → Pood.",
+            "notReadyHint": "Need andmed puuduvad. Need on seadetes jaotises Laiendused → Pood või poe menüüs jaotises Müügikanalid.",
+            "shippingMissing": "Ühtegi tarneviisi pole seadistatud: tellimused töödeldakse kui „Standard“ ilma saatmiskuludeta.",
             "hints": "Need andmed on veel puudu. Pood töötab, kuid piiratult:",
             "partsWithShopData": "Poeandmetega artiklid",
             "carts": "Ostukorvid",
@@ -57,9 +60,9 @@
             "title": "Artiklid poes",
             "subtitle": "Artiklid, mida pakutakse müügikanalis"
         },
-        "partsNoWeight": {
-            "title": "Kaaluta artiklid",
-            "subtitle": "Pakutavad kaubad ilma kaaluta — täiendage saatekulude jaoks"
+        "partsShippingUnfit": {
+            "title": "Sobiva tarneviisita artiklid",
+            "subtitle": "Pakutavad artiklid, millele ükski tarneviis ei sobi — nende lehte ei avaldata"
         },
         "withdrawals": {
             "title": "Taganemised",
@@ -155,6 +158,7 @@
             "imagesCopied": "Üle võetud pilte: {anzahl}.",
             "imageError": "Pilti ei õnnestunud töödelda.",
             "syncStatus": "Seis kanalis {kanal}",
+            "shippingUnfit": "Sobivat tarneviisi pole — lehte ei avaldata.",
             "listingId": "Kuulutus {id}",
             "ebayCategory": "eBay kategooria",
             "ebayCondition": "Seisukord",
@@ -210,6 +214,7 @@
             "started": "Avaldamine käivitatud.",
             "inProgress": "Avaldamine töötab taustal — lehte saab edasi kasutada.",
             "aborted": "Käivitus katkes enne lõppu.",
+            "errorsTitle": "Viimase käivituse vead ({count}):",
             "tooLong": "Käivitus kestab oodatust kauem. Kuva enam ei uuene – laadi leht hiljem uuesti.",
             "functions": {
                 "publish_part": "Kirjuta tootelehekülg",
@@ -244,6 +249,9 @@
         },
         "shippingConfig": {
             "title": "Tarneviisid",
+            "subtitle": "Tsoonid, tarneviisid ja tarnehinnad",
+            "movedHint": "Tarneviisidel koos tsoonide ja hindadega on poe menüüs oma vaade.",
+            "open": "Ava tarneviisid",
             "intro": "Tarneviisid koos vedaja, järjekoha, piirangute ja hinnaastmetega. Kui tellimuse artiklitel on erinevad tarneviisid, kehtib kõrgeima järjekohaga; määramata artiklid saavad odavaima sobiva. eBay arvutab saatekulu ise saatmispoliitika järgi.",
             "zones": "Riigitsoonid",
             "zonesHint": "Hinnad kehtivad tsooniti. Riik kuulub kõige rohkem ühte tsooni; tsoonita riigid kuuluvad alla „Kõik ülejäänud riigid“.",
@@ -336,7 +344,10 @@
             "deleteConfirm": "Kas kustutada „{name}“ koos tooteridade, piltide, tarneriikide ja hinnaastmetega? Seda ei saa tagasi võtta.",
             "deleted": "Müügikanal kustutatud.",
             "deleteError": "Müügikanalit ei õnnestunud kustutada.",
-            "cancel": "Loobu"
+            "cancel": "Loobu",
+            "subtitle": "HugoShopide ja eBay kanalite loomine ja seadistamine",
+            "movedHint": "Müügikanalitel ja nende seadetel (veebileht, poe võti, PayPal, eBay ligipääs) on poe menüüs oma vaade.",
+            "open": "Ava müügikanalid"
         },
         "ebayCondition": {
             "NEW": "Uus",
@@ -354,7 +365,8 @@
             "CHANNEL_NAME_TAKEN": "Selle nimega müügikanal on juba olemas.",
             "CHANNEL_KEY_TAKEN": "See poe võti kuulub juba teisele HugoShopile.",
             "CHANNEL_IN_USE": "Selle kanaliga on seotud arved, taganemised või eBay tellimused. Selle saab ainult välja lülitada.",
-            "CHANNEL_NOT_DELETABLE": "Kustutada saab ainult välja lülitatud kanalit, millel pole avatud ülesandeid."
+            "CHANNEL_NOT_DELETABLE": "Kustutada saab ainult välja lülitatud kanalit, millel pole avatud ülesandeid.",
+            "SHIPPING_UNFIT": "Ei avaldata"
         }
     }
 }

@@ -3,7 +3,9 @@
         "routes": {
             "shopOverview": "/veikals",
             "shopOrders": "/veikals/pasutijumi",
-            "shopWithdrawals": "/veikals/atteikumi"
+            "shopWithdrawals": "/veikals/atteikumi",
+            "shopChannels": "/veikals/pardosanas-kanali",
+            "shopShipping": "/veikals/piegades-veidi"
         },
         "menu": {
             "title": "Veikals",
@@ -15,7 +17,8 @@
         "status": {
             "ready": "Veikals ir gatavs darbam.",
             "notReady": "Veikals vēl nepieņem pasūtījumus",
-            "notReadyHint": "Trūkst šo datu. Tie ir iestatījumos sadaļā Paplašinājumi → Veikals.",
+            "notReadyHint": "Trūkst šo datu. Tie ir iestatījumos sadaļā Paplašinājumi → Veikals vai veikala izvēlnē sadaļā Pārdošanas kanāli.",
+            "shippingMissing": "Nav iestatīts neviens piegādes veids: pasūtījumi tiek apstrādāti kā “Standard” bez piegādes izmaksām.",
             "hints": "Šo datu vēl trūkst. Veikals darbojas, bet ierobežoti:",
             "partsWithShopData": "Preces ar veikala datiem",
             "carts": "Grozi",
@@ -57,9 +60,9 @@
             "title": "Preces veikalā",
             "subtitle": "Preces, kas tiek piedāvātas pārdošanas kanālā"
         },
-        "partsNoWeight": {
-            "title": "Preces bez svara",
-            "subtitle": "Piedāvātās preces bez svara — papildiniet piegādes izmaksām"
+        "partsShippingUnfit": {
+            "title": "Preces bez piemērota piegādes veida",
+            "subtitle": "Piedāvātās preces, kurām neatbilst neviens piegādes veids — to lapa netiks publicēta"
         },
         "withdrawals": {
             "title": "Atteikumi",
@@ -155,6 +158,7 @@
             "imagesCopied": "Pārņemti attēli: {anzahl}.",
             "imageError": "Attēlu neizdevās apstrādāt.",
             "syncStatus": "Statuss kanālā {kanal}",
+            "shippingUnfit": "Nav piemērota piegādes veida — lapa netiks publicēta.",
             "listingId": "Sludinājums {id}",
             "ebayCategory": "eBay kategorija",
             "ebayCondition": "Stāvoklis",
@@ -210,6 +214,7 @@
             "started": "Publicēšana sākta.",
             "inProgress": "Publicēšana notiek fonā — lapu var turpināt lietot.",
             "aborted": "Izpilde tika pārtraukta, pirms tā bija pabeigta.",
+            "errorsTitle": "Pēdējās palaišanas kļūdas ({count}):",
             "tooLong": "Izpilde ilgst ilgāk, nekā gaidīts. Skats vairs netiek atjaunināts – lūdzu, vēlāk pārlādējiet lapu.",
             "functions": {
                 "publish_part": "Rakstīt produkta lapu",
@@ -244,6 +249,9 @@
         },
         "shippingConfig": {
             "title": "Piegādes veidi",
+            "subtitle": "Zonas, piegādes veidi un piegādes cenas",
+            "movedHint": "Piegādes veidiem ar zonām un cenām ir atsevišķs skats veikala izvēlnē.",
+            "open": "Atvērt piegādes veidus",
             "intro": "Piegādes veidi ar pārvadātāju, rangu, ierobežojumiem un cenu pakāpēm. Ja pasūtījuma precēm ir dažādi piegādes veidi, piemēro augstākā ranga veidu; precēm bez piesaistes piešķir lētāko piemēroto. eBay piegādi aprēķina pats pēc piegādes politikas.",
             "zones": "Valstu zonas",
             "zonesHint": "Cenas attiecas uz zonu. Valsts pieder ne vairāk kā vienai zonai; valstis bez zonas ietilpst „Visas pārējās valstis“.",
@@ -336,7 +344,10 @@
             "deleteConfirm": "Dzēst “{name}” kopā ar preču rindām, attēliem, piegādes valstīm un cenu pakāpēm? To nevar atsaukt.",
             "deleted": "Pārdošanas kanāls izdzēsts.",
             "deleteError": "Pārdošanas kanālu neizdevās izdzēst.",
-            "cancel": "Atcelt"
+            "cancel": "Atcelt",
+            "subtitle": "Izveidot un iestatīt HugoShop un eBay kanālus",
+            "movedHint": "Pārdošanas kanāliem un to iestatījumiem (tīmekļa vietne, veikala atslēga, PayPal, eBay piekļuve) ir savs skats veikala izvēlnē.",
+            "open": "Atvērt pārdošanas kanālus"
         },
         "ebayCondition": {
             "NEW": "Jauns",
@@ -354,7 +365,8 @@
             "CHANNEL_NAME_TAKEN": "Šāds nosaukums jau ir citam pārdošanas kanālam.",
             "CHANNEL_KEY_TAKEN": "Šī veikala atslēga jau pieder citam HugoShop.",
             "CHANNEL_IN_USE": "Ar šo kanālu saistīti rēķini, atteikumi vai eBay pasūtījumi. To var tikai izslēgt.",
-            "CHANNEL_NOT_DELETABLE": "Dzēst var tikai izslēgtu kanālu bez atvērtiem uzdevumiem."
+            "CHANNEL_NOT_DELETABLE": "Dzēst var tikai izslēgtu kanālu bez atvērtiem uzdevumiem.",
+            "SHIPPING_UNFIT": "Netiks publicēts"
         }
     }
 }

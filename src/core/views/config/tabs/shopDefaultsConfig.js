@@ -7,8 +7,8 @@
 // Hier stehen nur Einstellungen für den ganzen Mandanten. Was einer Instanz
 // gehört — Shop-Schlüssel, Adressen und Verzeichnisse der Webseite,
 // Vorlagensatz, HugoCMS, PayPal, Mails, eBay-Zugang —, steht seit
-// dev/shop-mehrere-kanaele.md, Schritt 5, in der Karte des Verkaufskanals
-// (src/features/shop/components/shopChannelSettingsConfig.js).
+// dev/shop-mehrere-kanaele.md in der Karte des Verkaufskanals, in der eigenen
+// Ansicht „Verkaufskanäle" (src/features/shop/views/shop.channels.vue).
 
 const shopDefaultsConfig = [
     { name: "shop_access", type: "headline", label: "crm_fields.shopAccess" },
@@ -30,28 +30,26 @@ const shopDefaultsConfig = [
     // Die Auswahl „Lager – Platz" lädt der Tab (quellen.shopStockBins).
     { name: "shop_stock_bin_id", type: "dynamic-select", source: "shopStockBins", itemTitle: "title", itemValue: "value", fieldstyle: "max-width: 60ch", label: "crm_fields.shopStockBinId", tooltip: "crm_fields.shopStockBinId_help" },
 
-    // Verkaufskanäle (dev/shop-verkaufskanaele.md, dev/shop-mehrere-kanaele.md):
-    // eigene Tabellen statt defaults_oserp, deshalb eine Komponente der
-    // Shop-Erweiterung mit eigener Überschrift, die selbst lädt und speichert —
-    // je Kanal Preisvorgaben und, aufklappbar, die Einstellungen der Instanz.
-    // Sie steht nach shop_tax_included, weil ein fester Aufschlag netto oder
-    // brutto gilt wie der Verkaufspreis.
-    { name: "shop_sales_channels", type: "component", component: "sales-channels" },
+    // Verkaufskanäle (dev/shop-mehrere-kanaele.md): eigene Ansicht im
+    // Shop-Menü (shop-channels); hier nur der Verweis dorthin.
+    { name: "shop_sales_channels", type: "component", component: "sales-channels-link" },
 
     // Länder (dev/shop-versand.md, Schritt 3): Zuordnung der Freitexte aus den
     // Adressen zu ISO-Codes — Grundlage für Versandkosten und Lieferländer.
-    // Eigene Tabellen, deshalb wie die Verkaufskanäle eine Komponente.
+    // Eigene Tabellen, deshalb eine Komponente.
     { name: "shop_countries", type: "component", component: "countries" },
 
     { name: "shop_shipping", type: "headline", label: "crm_fields.shopShipping" },
 
-    { name: "shop_shipping_partnumber", type: "input", size: 20, fieldstyle: "max-width: 25ch", label: "crm_fields.shopShippingPartnumber", tooltip: "crm_fields.shopShippingPartnumber_help" },
-    // Die Freigrenze steht je Kanal in der Karte „Verkaufskanäle"
+    // Einen Versandartikel für alle gibt es nicht mehr: jede Versandart hat
+    // ihren eigenen. Ohne Versandart läuft der Versand als „Standard" ohne
+    // Kosten, und die Shop-Übersicht warnt.
+    // Die Freigrenze steht je Kanal in der Ansicht „Verkaufskanäle"
     // (dev/shop-versand.md, Entscheidung 4)
 
     // Versandarten, Länderzonen und Preise (dev/shop-versand.md, Schritt 4):
-    // eigene Tabellen, deshalb eine Komponente wie die Verkaufskanäle
-    { name: "shop_shipping_methods", type: "component", component: "shipping-methods" },
+    // eigene Ansicht im Shop-Menü (shop-shipping); hier nur der Verweis dorthin
+    { name: "shop_shipping_methods", type: "component", component: "shipping-methods-link" },
 
     { name: "shop_payment", type: "headline", label: "crm_fields.shopPayment" },
 

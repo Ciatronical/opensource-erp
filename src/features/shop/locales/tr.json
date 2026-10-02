@@ -3,7 +3,9 @@
         "routes": {
             "shopOverview": "/magaza",
             "shopOrders": "/magaza/siparisler",
-            "shopWithdrawals": "/magaza/cayma"
+            "shopWithdrawals": "/magaza/cayma",
+            "shopChannels": "/magaza/satis-kanallari",
+            "shopShipping": "/magaza/gonderim-yontemleri"
         },
         "menu": {
             "title": "Mağaza",
@@ -15,7 +17,8 @@
         "status": {
             "ready": "Mağaza kullanıma hazır.",
             "notReady": "Mağaza henüz sipariş almıyor",
-            "notReadyHint": "Bu bilgiler eksik. Ayarlarda Uzantılar → Mağaza altında bulunur.",
+            "notReadyHint": "Bu bilgiler eksik. Ayarlarda Uzantılar → Mağaza altında veya mağaza menüsünde Satış kanalları altında bulunur.",
+            "shippingMissing": "Hiçbir gönderim yöntemi ayarlanmamış: siparişler kargo ücreti olmadan „Standard“ olarak işlenir.",
             "hints": "Bu bilgiler hâlâ eksik. Mağaza çalışıyor, ancak sınırlı:",
             "partsWithShopData": "Mağaza bilgisi olan ürünler",
             "carts": "Sepetler",
@@ -57,9 +60,9 @@
             "title": "Mağazadaki ürünler",
             "subtitle": "Bir satış kanalında sunulan ürünler"
         },
-        "partsNoWeight": {
-            "title": "Ağırlığı olmayan ürünler",
-            "subtitle": "Ağırlığı olmayan sunulan mallar — gönderim ücretleri için tamamlayın"
+        "partsShippingUnfit": {
+            "title": "Uygun gönderim yöntemi olmayan ürünler",
+            "subtitle": "Hiçbir gönderim yönteminin uymadığı sunulan ürünler — sayfaları yayımlanmayacak"
         },
         "withdrawals": {
             "title": "Cayma bildirimleri",
@@ -155,6 +158,7 @@
             "imagesCopied": "{anzahl} görsel alındı.",
             "imageError": "Görsel işlenemedi.",
             "syncStatus": "{kanal} durumu",
+            "shippingUnfit": "Uygun gönderim yöntemi yok — sayfa yayımlanmayacak.",
             "listingId": "İlan {id}",
             "ebayCategory": "eBay kategorisi",
             "ebayCondition": "Durum",
@@ -210,6 +214,7 @@
             "started": "Yayımlama başlatıldı.",
             "inProgress": "Yayımlama arka planda çalışıyor — sayfa kullanılmaya devam edebilir.",
             "aborted": "Çalıştırma bitmeden kesildi.",
+            "errorsTitle": "Son çalıştırmadaki hatalar ({count}):",
             "tooLong": "Çalıştırma beklenenden uzun sürüyor. Görünüm artık güncellenmiyor – lütfen sayfayı daha sonra yeniden yükleyin.",
             "functions": {
                 "publish_part": "Ürün sayfasını yaz",
@@ -244,6 +249,9 @@
         },
         "shippingConfig": {
             "title": "Gönderim yöntemleri",
+            "subtitle": "Bölgeler, gönderim yöntemleri ve gönderim ücretleri",
+            "movedHint": "Bölgeleri ve ücretleriyle gönderim yöntemlerinin mağaza menüsünde kendi görünümü vardır.",
+            "open": "Gönderim yöntemlerini aç",
             "intro": "Taşıyıcı, sıra, sınırlar ve fiyat kademeleriyle gönderim yöntemleri. Bir siparişin ürünlerinin farklı yöntemleri varsa en yüksek sıradaki geçerlidir; atanmamış ürünler en ucuz uygun yöntemi alır. eBay gönderimi gönderim politikasıyla kendisi hesaplar.",
             "zones": "Ülke bölgeleri",
             "zonesHint": "Fiyatlar bölge bazında geçerlidir. Bir ülke en fazla bir bölgeye aittir; bölgesi olmayan ülkeler “Diğer tüm ülkeler” altına girer.",
@@ -336,7 +344,10 @@
             "deleteConfirm": "“{name}” ürün satırları, görselleri, teslimat ülkeleri ve fiyat kademeleriyle silinsin mi? Bu işlem geri alınamaz.",
             "deleted": "Satış kanalı silindi.",
             "deleteError": "Satış kanalı silinemedi.",
-            "cancel": "İptal"
+            "cancel": "İptal",
+            "subtitle": "HugoShop ve eBay kanalları oluşturma ve ayarlama",
+            "movedHint": "Satış kanalları ve ayarları (web sitesi, mağaza anahtarı, PayPal, eBay erişimi) mağaza menüsünde kendi görünümüne sahiptir.",
+            "open": "Satış kanallarını aç"
         },
         "ebayCondition": {
             "NEW": "Yeni",
@@ -354,7 +365,8 @@
             "CHANNEL_NAME_TAKEN": "Bu ad başka bir satış kanalında zaten kullanılıyor.",
             "CHANNEL_KEY_TAKEN": "Bu mağaza anahtarı zaten başka bir HugoShop'a ait.",
             "CHANNEL_IN_USE": "Bu kanala bağlı faturalar, cayma bildirimleri veya eBay siparişleri var. Yalnızca kapatılabilir.",
-            "CHANNEL_NOT_DELETABLE": "Yalnızca açık görevi olmayan kapalı bir kanal silinebilir."
+            "CHANNEL_NOT_DELETABLE": "Yalnızca açık görevi olmayan kapalı bir kanal silinebilir.",
+            "SHIPPING_UNFIT": "Yayımlanmayacak"
         }
     }
 }

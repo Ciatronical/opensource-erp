@@ -3,7 +3,9 @@
         "routes": {
             "shopOverview": "/kauppa",
             "shopOrders": "/kauppa/tilaukset",
-            "shopWithdrawals": "/kauppa/peruutukset"
+            "shopWithdrawals": "/kauppa/peruutukset",
+            "shopChannels": "/kauppa/myyntikanavat",
+            "shopShipping": "/kauppa/toimitustavat"
         },
         "menu": {
             "title": "Kauppa",
@@ -15,7 +17,8 @@
         "status": {
             "ready": "Kauppa on käyttövalmis.",
             "notReady": "Kauppa ei vielä ota vastaan tilauksia",
-            "notReadyHint": "Nämä tiedot puuttuvat. Ne löytyvät asetuksista kohdasta Laajennukset → Kauppa.",
+            "notReadyHint": "Nämä tiedot puuttuvat. Ne löytyvät asetuksista kohdasta Laajennukset → Kauppa tai kauppavalikosta kohdasta Myyntikanavat.",
+            "shippingMissing": "Toimitustapaa ei ole määritetty: tilaukset käsitellään nimellä ”Standard” ilman toimituskuluja.",
             "hints": "Nämä tiedot puuttuvat vielä. Kauppa toimii, mutta rajoitetusti:",
             "partsWithShopData": "Tuotteet, joilla on kauppatiedot",
             "carts": "Ostoskorit",
@@ -57,9 +60,9 @@
             "title": "Nimikkeet kaupassa",
             "subtitle": "Myyntikanavassa tarjottavat nimikkeet"
         },
-        "partsNoWeight": {
-            "title": "Nimikkeet ilman painoa",
-            "subtitle": "Tarjotut tuotteet ilman painoa — täydennä toimituskuluja varten"
+        "partsShippingUnfit": {
+            "title": "Tuotteet ilman sopivaa toimitustapaa",
+            "subtitle": "Tarjotut tuotteet, joihin mikään toimitustapa ei sovi — niiden sivua ei julkaista"
         },
         "withdrawals": {
             "title": "Peruutukset",
@@ -155,6 +158,7 @@
             "imagesCopied": "{anzahl} kuvaa otettu.",
             "imageError": "Kuvaa ei voitu käsitellä.",
             "syncStatus": "Tila kanavassa {kanal}",
+            "shippingUnfit": "Ei sopivaa toimitustapaa — sivua ei julkaista.",
             "listingId": "Ilmoitus {id}",
             "ebayCategory": "eBay-luokka",
             "ebayCondition": "Kunto",
@@ -210,6 +214,7 @@
             "started": "Julkaisu käynnistetty.",
             "inProgress": "Julkaisu on käynnissä taustalla — sivua voi käyttää edelleen.",
             "aborted": "Ajo keskeytyi ennen kuin se valmistui.",
+            "errorsTitle": "Viimeisimmän ajon virheet ({count}):",
             "tooLong": "Ajo kestää odotettua kauemmin. Näkymää ei enää päivitetä – lataa sivu myöhemmin uudelleen.",
             "functions": {
                 "publish_part": "Kirjoita tuotesivu",
@@ -244,6 +249,9 @@
         },
         "shippingConfig": {
             "title": "Toimitustavat",
+            "subtitle": "Vyöhykkeet, toimitustavat ja toimitushinnat",
+            "movedHint": "Toimitustavoilla vyöhykkeineen ja hintoineen on oma näkymä kaupan valikossa.",
+            "open": "Avaa toimitustavat",
             "intro": "Toimitustavat kuljetusliikkeen, järjestyksen, rajojen ja hintaportaiden kanssa. Jos tilauksen nimikkeillä on eri toimitustavat, käytetään korkeimman järjestyksen tapaa; nimikkeet ilman kohdistusta saavat halvimman sopivan. eBay laskee toimituksen itse toimituskäytännön mukaan.",
             "zones": "Maavyöhykkeet",
             "zonesHint": "Hinnat ovat vyöhykekohtaisia. Maa kuuluu enintään yhteen vyöhykkeeseen; maat ilman vyöhykettä kuuluvat kohtaan ”Kaikki muut maat”.",
@@ -336,7 +344,10 @@
             "deleteConfirm": "Poistetaanko ”{name}” tuoterivien, kuvien, toimitusmaiden ja hintaportaiden kanssa? Tätä ei voi perua.",
             "deleted": "Myyntikanava poistettu.",
             "deleteError": "Myyntikanavaa ei voitu poistaa.",
-            "cancel": "Peruuta"
+            "cancel": "Peruuta",
+            "subtitle": "HugoShopien ja eBay-kanavien luonti ja määritys",
+            "movedHint": "Myyntikanavilla ja niiden asetuksilla (verkkosivusto, kauppa-avain, PayPal, eBay-yhteys) on oma näkymä kauppavalikossa.",
+            "open": "Avaa myyntikanavat"
         },
         "ebayCondition": {
             "NEW": "Uusi",
@@ -354,7 +365,8 @@
             "CHANNEL_NAME_TAKEN": "Toisella myyntikanavalla on jo tämä nimi.",
             "CHANNEL_KEY_TAKEN": "Tämä kauppa-avain kuuluu jo toiselle HugoShopille.",
             "CHANNEL_IN_USE": "Tähän kanavaan liittyy laskuja, peruutuksia tai eBay-tilauksia. Sen voi vain kytkeä pois päältä.",
-            "CHANNEL_NOT_DELETABLE": "Vain pois päältä kytketyn kanavan, jolla ei ole avoimia tehtäviä, voi poistaa."
+            "CHANNEL_NOT_DELETABLE": "Vain pois päältä kytketyn kanavan, jolla ei ole avoimia tehtäviä, voi poistaa.",
+            "SHIPPING_UNFIT": "Ei julkaista"
         }
     }
 }
