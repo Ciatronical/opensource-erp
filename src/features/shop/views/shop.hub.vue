@@ -30,22 +30,26 @@
             {{ shop.error.value }}
         </v-alert>
 
-        <!-- Einrichtung -->
-        <v-alert
-            v-if="status && !status.ready"
-            type="warning"
-            variant="tonal"
-            border="start"
-            class="mb-4"
-        >
-            <v-alert-title>{{ t('ShopView.status.notReady') }}</v-alert-title>
-            <div class="text-body-2 mt-2">{{ t('ShopView.status.notReadyHint') }}</div>
-            <ul class="mt-2">
-                <li v-for="punkt in status.blocking" :key="punkt">
-                    {{ feldName(punkt) }}
-                </li>
-            </ul>
-        </v-alert>
+        <!-- Einrichtung: je Verkaufskanal, der noch keine Bestellungen annimmt,
+             eine Meldung mit seinem Namen und dem, was ihm fehlt -->
+        <template v-if="status && !status.ready">
+            <v-alert
+                v-for="kanal in status.blocking_channels || []"
+                :key="kanal.channel_id"
+                type="warning"
+                variant="tonal"
+                border="start"
+                class="mb-4"
+            >
+                <v-alert-title>{{ t('ShopView.status.notReadyChannel', { name: kanal.name }) }}</v-alert-title>
+                <div class="text-body-2 mt-2">{{ t('ShopView.status.notReadyHint') }}</div>
+                <ul class="mt-2">
+                    <li v-for="punkt in kanal.missing" :key="punkt">
+                        {{ feldName(punkt) }}
+                    </li>
+                </ul>
+            </v-alert>
+        </template>
 
         <v-alert
             v-else-if="status"
@@ -79,14 +83,15 @@
             </div>
         </v-alert>
 
+        <!-- Hinweise des Mandanten: gelten für alle Verkaufskanäle -->
         <v-alert
-            v-if="status && status.hints.length"
+            v-if="status && (status.hints.length || status.publish_problems?.length)"
             type="info"
             variant="tonal"
             density="compact"
             class="mb-4"
         >
-            <div class="text-body-2">{{ t('ShopView.status.hints') }}</div>
+            <div class="text-body-2">{{ t('ShopView.status.hintsAll') }}</div>
             <ul class="mt-1">
                 <li v-for="punkt in status.hints" :key="punkt">
                     {{ feldName(punkt) }}
@@ -96,6 +101,26 @@
                  sagt nicht, dass der Pfad ins Leere zeigt -->
             <div v-if="status.publish_problems?.length" class="text-caption mt-2">
                 <div v-for="(grund, index) in status.publish_problems" :key="index">{{ grund }}</div>
+            </div>
+        </v-alert>
+
+        <!-- Hinweise je Verkaufskanal, mit seinem Namen -->
+        <v-alert
+            v-for="kanal in status?.hint_channels || []"
+            :key="kanal.channel_id"
+            type="info"
+            variant="tonal"
+            density="compact"
+            class="mb-4"
+        >
+            <div class="text-body-2">{{ t('ShopView.status.hintsChannel', { name: kanal.name }) }}</div>
+            <ul class="mt-1">
+                <li v-for="punkt in kanal.hints" :key="punkt">
+                    {{ feldName(punkt) }}
+                </li>
+            </ul>
+            <div v-if="kanal.publish_problems.length" class="text-caption mt-2">
+                <div v-for="(grund, index) in kanal.publish_problems" :key="index">{{ grund }}</div>
             </div>
         </v-alert>
 

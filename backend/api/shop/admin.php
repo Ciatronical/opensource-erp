@@ -86,37 +86,45 @@ function getShopStatus($data) {
 
     // Je eingeschaltetem Kanal seine Einstellungen (dev/shop-mehrere-kanaele.md).
     // Die Schlüssel bleiben die bisherigen Feldnamen — die Übersicht übersetzt
-    // sie; welcher Kanal betroffen ist, steht bei mehreren in den Details.
+    // sie und zeigt sie unter dem Namen des Kanals (blocking_channels,
+    // hint_channels).
     $kanaele = $db->getAll(
         "SELECT id, type, name FROM sales_channel_shop WHERE active ORDER BY sortkey NULLS LAST, id"
     ) ?: [];
     $hugoshops = array_values(array_filter($kanaele, fn($k) => 'hugoshop' === $k['type']));
-    $mehrere = count($hugoshops) > 1;
     $veroeffentlichung = [];
     $programm = null;
 
+    // Bestellungen nimmt jeder HugoShop für sich an: je Kanal, was ihm fehlt —
+    // die Angaben des Mandanten (oben) fehlen jedem, der Shop-Schlüssel nur ihm
+    $mandantFehlt = $blockierend;
+    $kanalFehlt = [];
+    // Hinweise je Kanal (Name und Art), damit klar ist, wo etwas fehlt; in
+    // $hinweise und $veroeffentlichung bleibt, was den Mandanten betrifft
+    $kanalHinweise = [];
+
     foreach ($hugoshops as $kanal) {
         $id = (int)$kanal['id'];
-        $vorsilbe = $mehrere ? $kanal['name'].': ' : '';
         $leer = fn(string $key) => '' === shopChannelValue($db, $id, $key);
+        $fehlt = $mandantFehlt;
+        $hin = [];
+        $probleme = [];
 
         if ($leer('public_key')) {
             $blockierend[] = 'shop_public_key';
-            if ($mehrere) {
-                $veroeffentlichung[] = $vorsilbe.shopConfigLabel('shop_public_key');
-            }
+            $fehlt[] = 'shop_public_key';
         }
         // Geprueft wird das Paar, das gerade gilt — im Testbetrieb nuetzen die
         // Echtbetrieb-Zugangsdaten nichts und umgekehrt.
         $paypal = shopChannelBool($db, $id, 'paypal_sandbox', true) ? 'paypal_sandbox_' : 'paypal_live_';
         if ($leer($paypal.'client_id') || $leer($paypal.'secret')) {
-            $hinweise[] = 'shop_'.$paypal.'client_id';
+            $hin[] = 'shop_'.$paypal.'client_id';
         }
         if ($leer('base_url')) {
-            $hinweise[] = 'shop_base_url';
+            $hin[] = 'shop_base_url';
         }
         if (shopChannelBool($db, $id, 'paypal_sandbox', true)) {
-            $hinweise[] = 'shop_paypal_sandbox';
+            $hin[] = 'shop_paypal_sandbox';
         }
 
         // Veröffentlichung: Ohne gültiges Programm werden Seiten geschrieben,
@@ -128,13 +136,14 @@ function getShopStatus($data) {
             // ein Aufruf bei jedem Öffnen der Übersicht wäre zu teuer.
             $adresse = shopHugoCmsUrl(shopChannelValue($db, $id, 'hugocms_url'));
             if ('' !== $adresse['fehler']) {
-                $hinweise[] = 'shop_hugocms_url';
-                $veroeffentlichung[] = $vorsilbe.$adresse['fehler'];
+                $hin[] = 'shop_hugocms_url';
+                $probleme[] = $adresse['fehler'];
             }
             if ($leer('hugocms_key')) {
-                $hinweise[] = 'shop_hugocms_key';
+                $hin[] = 'shop_hugocms_key';
             }
         } else {
+            // Das Programm gilt für alle lokal gebauten Webseiten: Mandant
             $programm ??= shopPublishProgram($db);
             if ('' === $programm['pfad']) {
                 $hinweise[] = 'shop_publish_command_path';
@@ -145,9 +154,18 @@ function getShopStatus($data) {
             try {
                 shopSiteDir($db, $id);
             } catch (Throwable $e) {
-                $hinweise[] = 'shop_sites_dir';
-                $veroeffentlichung[] = $vorsilbe.$e->getMessage();
+                $hin[] = 'shop_sites_dir';
+                $probleme[] = $e->getMessage();
             }
+        }
+
+        if ($fehlt) {
+            $kanalFehlt[] = ['channel_id' => $id, 'name' => (string)$kanal['name'], 'missing' => $fehlt];
+        }
+        if ($hin || $probleme) {
+            $kanalHinweise[] = ['channel_id' => $id, 'name' => (string)$kanal['name'], 'type' => 'hugoshop',
+                                'hints' => array_values(array_unique($hin)),
+                                'publish_problems' => array_values(array_unique($probleme))];
         }
     }
 
@@ -167,6 +185,7 @@ function getShopStatus($data) {
     foreach (array_filter($kanaele, fn($k) => 'ebay' === $k['type']) as $kanal) {
         $ebay = function_exists('shopEbayConfig') ? shopEbayConfig($db, (int)$kanal['id']) : [];
         $leer = fn(string $key) => '' === trim((string)($ebay[$key] ?? ''));
+        $hin = [];
         foreach ([
             'ebay_client_id'          => $leer('client_id') || $leer('client_secret') || $leer('refresh_token'),
             'ebay_public_host'        => $leer('public_host'),
@@ -177,8 +196,12 @@ function getShopStatus($data) {
             'ebay_fulfillment_policy' => $leer('fulfillment_policy_id'),
         ] as $punkt => $fehlt) {
             if ($fehlt) {
-                $hinweise[] = $punkt;
+                $hin[] = $punkt;
             }
+        }
+        if ($hin) {
+            $kanalHinweise[] = ['channel_id' => (int)$kanal['id'], 'name' => (string)$kanal['name'], 'type' => 'ebay',
+                                'hints' => $hin, 'publish_problems' => []];
         }
     }
     $blockierend = array_values(array_unique($blockierend));
@@ -203,8 +226,12 @@ function getShopStatus($data) {
     resultInfo(true, '', [
         'ready'     => empty($blockierend),
         'blocking'  => $blockierend,
+        // Je HugoShop, der noch keine Bestellungen annimmt: Name und was fehlt
+        'blocking_channels' => $kanalFehlt,
         'shipping_missing' => $versandFehlt,
+        // Mandant: gilt für alle Kanäle; je Kanal: hint_channels
         'hints'     => $hinweise,
+        'hint_channels' => $kanalHinweise,
         'recommendations' => $empfehlungen,
         'publish_problems' => $veroeffentlichung,
         'counts'    => [
