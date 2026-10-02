@@ -217,9 +217,22 @@ function searchParts($data) {
                                AND vp.status <> 'ok')";
     }
 
+    // Treffergüte: genaue Artikelnummer zuerst, dann Nummern, die mit dem
+    // Suchtext beginnen, dann solche, die ihn enthalten, zuletzt Treffer nur
+    // in der Bezeichnung. Sortiert wird vor dem LIMIT — „8" steht so oben,
+    // auch wenn hunderte Nummern und Bezeichnungen eine 8 enthalten.
+    $rang = '';
     if ($q !== '') {
         $params[':q'] = '%' . $q . '%';
         $where[] = '(p.partnumber ILIKE :q OR p.description ILIKE :q)';
+
+        $params[':q_genau']  = $q;
+        $params[':q_anfang'] = $q . '%';
+        $params[':q_teil']   = '%' . $q . '%';
+        $rang = "CASE WHEN lower(p.partnumber) = lower(:q_genau) THEN 0
+                      WHEN p.partnumber ILIKE :q_anfang THEN 1
+                      WHEN p.partnumber ILIKE :q_teil THEN 2
+                      ELSE 3 END, ";
     }
 
     $whereSql = implode(' AND ', $where);
@@ -234,7 +247,7 @@ function searchParts($data) {
                 COALESCE(p.obsolete, FALSE) AS obsolete
            FROM parts p
           WHERE $whereSql
-          ORDER BY p.partnumber
+          ORDER BY {$rang}p.partnumber
           LIMIT :limit",
         $params
     );
