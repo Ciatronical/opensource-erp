@@ -182,6 +182,10 @@
             <template #item.sellprice="{ item }">
                 <span class="text-no-wrap">{{ formatCurrency(item.sellprice) }}</span>
             </template>
+            <!-- Artikelart aus kivitendo: part, service, assembly, assortment -->
+            <template #item.part_type="{ item }">
+                {{ te(`DocumentList.partTypes.${item.part_type}`) ? t(`DocumentList.partTypes.${item.part_type}`) : item.part_type }}
+            </template>
             <template #item.onhand="{ item }">
                 <span class="text-no-wrap">{{ formatQty(item.onhand) }}</span>
             </template>
@@ -333,6 +337,7 @@ export default {
             ? [
                 { title: t('DocumentList.columns.partnumber'), key: 'partnumber' },
                 { title: t('DocumentList.columns.description'), key: 'description' },
+                { title: t('DocumentList.columns.partType'), key: 'part_type' },
                 { title: t('DocumentList.columns.unit'), key: 'unit' },
                 { title: t('DocumentList.columns.sellprice'), key: 'sellprice', align: 'end' },
                 { title: t('DocumentList.columns.onhand'), key: 'onhand', align: 'end' },
@@ -420,7 +425,7 @@ export default {
         }
 
         return {
-            t, locale, config, isParts, rows, visibleRows, headers, loading, error,
+            t, te, locale, config, isParts, rows, visibleRows, headers, loading, error,
             search, from, to, openOnly, obsoleteOnly, showAll, shopOnly, notInShop, weightMissing, shippingUnfit, shopEnabled, channels, channelId, channelItems, hasFilter, atLimit,
             formatDate, formatCurrency, formatQty, reset, openRow,
         }

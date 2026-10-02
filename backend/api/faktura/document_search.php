@@ -241,6 +241,7 @@ function searchParts($data) {
         "SELECT p.id,
                 p.partnumber,
                 p.description,
+                p.part_type,
                 p.unit,
                 p.sellprice,
                 p.onhand,

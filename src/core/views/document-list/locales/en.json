@@ -13,6 +13,7 @@
             "date": "Date",
             "customer": "Customer",
             "description": "Description",
+            "partType": "Type",
             "amount": "Amount",
             "status": "Status",
             "partnumber": "Article number",
@@ -39,6 +40,12 @@
         "obsolete": "Obsolete",
         "noData": "No entries found",
         "loadError": "The list could not be loaded",
-        "newPart": "New article"
+        "newPart": "New article",
+        "partTypes": {
+            "part": "Part",
+            "service": "Service",
+            "assembly": "Assembly",
+            "assortment": "Assortment"
+        }
     }
 }

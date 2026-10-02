@@ -13,6 +13,7 @@
             "date": "Datum",
             "customer": "Kunde",
             "description": "Bezeichnung",
+            "partType": "Art",
             "amount": "Betrag",
             "status": "Status",
             "partnumber": "Artikelnummer",
@@ -39,6 +40,12 @@
         "obsolete": "Ausgemustert",
         "noData": "Keine Einträge gefunden",
         "loadError": "Die Liste konnte nicht geladen werden",
-        "newPart": "Neuer Artikel"
+        "newPart": "Neuer Artikel",
+        "partTypes": {
+            "part": "Ware",
+            "service": "Dienstleistung",
+            "assembly": "Erzeugnis",
+            "assortment": "Sortiment"
+        }
     }
 }
