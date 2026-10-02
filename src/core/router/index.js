@@ -209,6 +209,18 @@ const ShopWithdrawalsView = () => {
         ? import('@/features/shop/views/shop.withdrawals.vue')
         : Promise.resolve(NotFoundView)
 }
+const ShopChannelsView = () => {
+    const oserp = oserpStore()
+    return oserp.isExtensionEnabled('shop')
+        ? import('@/features/shop/views/shop.channels.vue')
+        : Promise.resolve(NotFoundView)
+}
+const ShopShippingView = () => {
+    const oserp = oserpStore()
+    return oserp.isExtensionEnabled('shop')
+        ? import('@/features/shop/views/shop.shipping.vue')
+        : Promise.resolve(NotFoundView)
+}
 
 // Banking
 const BankingHubView = () => import('@/features/banking/views/banking.hub.vue')
@@ -800,6 +812,18 @@ function buildRoutes() {
             ...routePath('ShopView.routes.shopWithdrawals'),
             name: 'shop-withdrawals',
             component: ShopWithdrawalsView,
+            meta: { hideCustomerBar: true },
+        },
+        {
+            ...routePath('ShopView.routes.shopChannels'),
+            name: 'shop-channels',
+            component: ShopChannelsView,
+            meta: { hideCustomerBar: true },
+        },
+        {
+            ...routePath('ShopView.routes.shopShipping'),
+            name: 'shop-shipping',
+            component: ShopShippingView,
             meta: { hideCustomerBar: true },
         },
         // ── Banking ── (alle Funktionen in einem Hub zusammengefasst)

@@ -3,11 +3,18 @@
 // tools/shop-bridge-settings.php
 //
 // Übernimmt die Einstellungen einer Shop-Instanz aus der Bridge: liest deren
-// bridge-config (config.php, passwd.php) und gibt die passenden
-// shop_*-Einstellungen für OpensourceERP als SQL aus.
+// bridge-config (config.php, passwd.php) und gibt die passenden Einstellungen
+// für OpensourceERP als SQL aus.
 //
-//   php tools/shop-bridge-settings.php <webseite>/bridge-config
+//   php tools/shop-bridge-settings.php <webseite>/bridge-config ["<Name des HugoShops>"]
 //   php tools/shop-bridge-settings.php <webseite>/bridge-config | psql -d <mandant>
+//
+// Seit es mehrere HugoShops gibt (dev/shop-mehrere-kanaele.md), gehen die
+// Einstellungen der Instanz — Adressen, Verzeichnisse, PayPal, Mails,
+// Freigrenze — in den Verkaufskanal: ohne Namen in den ersten HugoShop,
+// mit Namen in den HugoShop dieses Namens. Was für den ganzen Mandanten gilt
+// (Konten, Steuerzone, Bankverbindung, Wurzel der Webseiten …), bleibt in
+// defaults_oserp.
 //
 // Gibt nur aus, schreibt nichts — das Ergebnis gehört gelesen, bevor es in
 // eine Datenbank geht. Es enthält die PayPal-Zugangsdaten im Klartext. Werte,
@@ -44,6 +51,7 @@ if ($argc < 2) {
 }
 
 $verzeichnis = rtrim($argv[1], '/');
+$kanalName   = trim((string)($argv[2] ?? ''));
 $konfig      = $verzeichnis.'/config.php';
 
 if (!is_file($konfig)) {
@@ -168,7 +176,6 @@ $zuordnung = [
     'shop_standard_currency'                => wert('KIVI_STANDARD_CURRENCY'),
     'shop_tax_included'                     => wahrheit('KIVI_TAX_INCLUDED'),
     'shop_active_price_source'              => wert('KIVI_ACTIVE_PRICE_SOURCE'),
-    'shop_shipping_partnumber'              => wert('KIVI_SIPPING_COST_PARTNUMBER'),
     'shop_free_shipping_from'               => wert('KIVI_ZERO_SIPPING_COSTS_FROM'),
     'shop_payment_account_owner'            => wert('KIVI_PAYMENT_TERMS_ACCOUNT_OWNER'),
     'shop_payment_bank'                     => wert('KIVI_PAYMENT_TERMS_BANK'),
@@ -196,30 +203,60 @@ $zuordnung = [
 echo "-- Aus $konfig übernommen am ".date('Y-m-d H:i')."\n";
 echo "-- Vor dem Einspielen lesen: die Werte überschreiben, was im Admin-Panel steht.\n";
 echo "--\n";
-echo "-- NOCH ZU SETZEN, hier nicht enthalten:\n";
-echo "--   shop_public_key      — neu vergeben; der Läufer trägt ihn in oserp-shop/config.php ein\n";
-echo "--   shop_backend_url     — Adresse von OpensourceERP für Proxy und 404-Seite, z.B. https://erp.example/shop/\n";
-echo "--   shop_template_set    — eigener Vorlagensatz der Instanz, falls es einen gibt\n";
-echo "--   shop_allowed_origins — nur ohne Proxy nötig\n";
-echo "--   shop_publish_command_path — Pfad zum Hugo-Programm (Shop-Einstellung; leer: Rückfall auf die settings.ini)\n";
+echo "-- NOCH ZU SETZEN, hier nicht enthalten (Kanalkarte des HugoShops):\n";
+echo "--   Shop-Schlüssel       — neu vergeben; der Läufer trägt ihn in oserp-shop/config.json ein\n";
+echo "--   Adresse von OSERP    — für Proxy und 404-Seite, z.B. https://erp.example/shop/\n";
+echo "--   Vorlagensatz         — eigener Vorlagensatz der Instanz, falls es einen gibt\n";
+echo "--   Erlaubte Herkunft    — nur ohne Proxy nötig\n";
+echo "-- und im Reiter Shop: shop_publish_command_path — Pfad zum Hugo-Programm (leer: Rückfall auf die settings.ini)\n";
 echo "\n";
+
+// Einstellungen der Instanz: Schlüssel im Kanal (ohne Präfix) und ob geheim —
+// wie shop_channel_setting_keys() im Schema
+const INSTANZ = [
+    'shop_paypal_live_client_id'            => ['paypal_live_client_id', false],
+    'shop_paypal_live_secret'               => ['paypal_live_secret', true],
+    'shop_paypal_sandbox_client_id'         => ['paypal_sandbox_client_id', false],
+    'shop_paypal_sandbox_secret'            => ['paypal_sandbox_secret', true],
+    'shop_paypal_sandbox'                   => ['paypal_sandbox', false],
+    'shop_paypal_payment_method_preference' => ['paypal_payment_method_preference', false],
+    'shop_paypal_mock_response'             => ['paypal_mock_response', false],
+    'shop_base_url'                         => ['base_url', false],
+    'shop_products_link'                    => ['products_link', false],
+    'shop_category_link'                    => ['category_link', false],
+    'shop_thumbnails_link'                  => ['thumbnails_link', false],
+    'shop_invoice_mail_subject'             => ['invoice_mail_subject', false],
+    'shop_withdrawal_mail_to'               => ['withdrawal_mail_to', false],
+    'shop_site_dir'                         => ['site_dir', false],
+    'shop_content_dir'                      => ['content_dir', false],
+];
+
+$text = fn($wert) => "'".str_replace("'", "''", (string)$wert)."'";
+$kanal = '' === $kanalName
+    ? "shop_first_channel_id('hugoshop')"
+    : "(SELECT id FROM sales_channel_shop WHERE type = 'hugoshop' AND name = ".$text($kanalName).")";
+echo "-- Einstellungen der Instanz gehen in den HugoShop ".('' === $kanalName ? '(erster HugoShop)' : '„'.$kanalName.'"')."\n\n";
 
 foreach ($zuordnung as $schluessel => $w) {
     if (null === $w || '' === (string)$w) {
         echo "-- $schluessel: in der Instanz nicht gesetzt, Vorgabe bleibt\n";
         continue;
     }
-    printf(
-        "UPDATE defaults_oserp SET value = %s, mtime = now() WHERE key = %s;\n",
-        "'".str_replace("'", "''", (string)$w)."'",
-        "'".$schluessel."'"
-    );
+    if ('shop_free_shipping_from' === $schluessel) {
+        // Freigrenze je Kanal (dev/shop-versand.md, Entscheidung 4)
+        printf("UPDATE sales_channel_shop SET free_shipping_from = %s WHERE id = %s;\n",
+               $text(str_replace(',', '.', (string)$w)), $kanal);
+    } elseif (isset(INSTANZ[$schluessel]) && INSTANZ[$schluessel][1]) {
+        printf("INSERT INTO sales_channel_secret_shop (channel_id, key, value) VALUES (%s, %s, %s)\n"
+               ."    ON CONFLICT (channel_id, key) DO UPDATE SET value = EXCLUDED.value, mtime = now();\n",
+               $kanal, $text(INSTANZ[$schluessel][0]), $text($w));
+    } elseif (isset(INSTANZ[$schluessel])) {
+        printf("UPDATE sales_channel_shop SET settings = COALESCE(settings, '{}'::jsonb) || jsonb_build_object(%s, %s) WHERE id = %s;\n",
+               $text(INSTANZ[$schluessel][0]), $text($w), $kanal);
+    } else {
+        printf("UPDATE defaults_oserp SET value = %s, mtime = now() WHERE key = %s;\n", $text($w), $text($schluessel));
+    }
 }
 
-// Der Versandartikel muss vorhanden sein — das Schema legt ihn bewusst nicht an
-$versand = wert('KIVI_SIPPING_COST_PARTNUMBER');
-if (null !== $versand) {
-    echo "\n-- Prüfen, ob der Versandartikel existiert (das Schema legt ihn nicht an):\n";
-    echo "-- SELECT id, partnumber, description, sellprice FROM parts WHERE partnumber = '".
-         str_replace("'", "''", (string)$versand)."';\n";
-}
+// KIVI_SIPPING_COST_PARTNUMBER wird nicht übernommen: jede Versandart hat
+// ihren eigenen Versandartikel (Ansicht „Versandarten", dev/shop-versand.md)

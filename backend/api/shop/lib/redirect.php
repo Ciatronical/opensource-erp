@@ -14,11 +14,14 @@
  * wurde — und gebunden statt in den SQL-Text gesetzt: die Bridge baute die
  * angefragte Adresse ungeprüft in die Abfrage ein.
  *
+ * Jede Webseite hat ihre eigenen Umleitungen (channel_id).
+ *
  * @param object $db Company-Datenbankverbindung
+ * @param int $kanal HugoShop der Anfrage
  * @param string $adresse Host und Pfad, mit oder ohne Schema
  * @return array|null code, current_link, link_text
  */
-function shopResolveRedirect($db, string $adresse): ?array {
+function shopResolveRedirect($db, int $kanal, string $adresse): ?array {
     $adresse = rtrim((string)preg_replace('#^https?://#i', '', trim($adresse)), '/');
     if ('' === $adresse) {
         return null;
@@ -31,9 +34,10 @@ function shopResolveRedirect($db, string $adresse): ?array {
         "SELECT code, current_link, link_text
            FROM redirect_pages_hugoshop
           WHERE regexp_replace(previous_link, '^https?://', '', 'i') ILIKE :muster
+            AND channel_id = CAST(:kanal AS integer)
           ORDER BY length(previous_link)
           LIMIT 1",
-        [':muster' => $muster]
+        [':muster' => $muster, ':kanal' => $kanal]
     );
 
     return $treffer ?: null;

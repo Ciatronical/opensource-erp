@@ -14,6 +14,7 @@
       "typeService": "Service",
       "unit": "Unit",
       "buchungsgruppe": "Posting Group",
+      "weight": "Weight",
       "sellprice": "Selling Price",
       "notes": "Long Description",
       "obsolete": "Obsolete / Do not use",
@@ -26,6 +27,7 @@
       "createError": "The article could not be created.",
       "noPermission": "You are not allowed to create articles.",
       "partnumberExists": "This article number is already in use.",
+      "weightInvalid": "Empty or a number from 0",
       "required": "Required"
     },
     "ebay": {

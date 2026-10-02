@@ -9,6 +9,10 @@
 // der Webseite erzeugt (Authorization: Bearer). Die Adresse ist der
 // cms-api-Endpunkt genau dieser Webseite: HugoCMS erkennt die Webseite an Host
 // und Endpunkt, ein Schlüssel gilt nur für seine.
+//
+// Jeder HugoShop hat seine eigene Webseite und damit eigene Adresse, eigenen
+// Schlüssel, eigene Bereitstellung und eigenen Übertragungsstand
+// (dev/shop-mehrere-kanaele.md) — die Funktionen bekommen den Kanal.
 
 /**
  * Prüft die eingestellte Adresse von HugoCMS
@@ -96,6 +100,7 @@ function shopHugoCmsErrorText(array $fehler): string {
  * Ruft einen Befehl von HugoCMS auf
  *
  * @param object $db Company-Datenbankverbindung
+ * @param int $kanal HugoShop, dessen Adresse und Schlüssel gelten
  * @param string $befehl etwa shopbuildstatus oder shopbuild
  * @param string $methode GET oder POST
  * @param int $zeitgrenze Sekunden bis zur Antwort; ein Bau braucht mehr als eine Abfrage
@@ -105,19 +110,19 @@ function shopHugoCmsErrorText(array $fehler): string {
  * @param array $daten weitere Felder im Rumpf eines POST, neben cmd
  * @return array ok, status (HTTP), data (Antwort bei Erfolg), fehler (Text, leer bei Erfolg)
  */
-function shopHugoCmsCall($db, string $befehl, string $methode = 'GET', int $zeitgrenze = 20, array $zugang = [], array $daten = []): array {
+function shopHugoCmsCall($db, int $kanal, string $befehl, string $methode = 'GET', int $zeitgrenze = 20, array $zugang = [], array $daten = []): array {
     $ergebnis = ['ok' => false, 'status' => 0, 'data' => null, 'fehler' => ''];
 
     $eingabe = fn(string $feld, string $schluessel) => '' !== trim((string)($zugang[$feld] ?? ''))
         ? trim((string)$zugang[$feld])
-        : shopConfigValue($db, $schluessel);
+        : shopChannelValue($db, $kanal, $schluessel);
 
-    $url = shopHugoCmsUrl($eingabe('url', 'shop_hugocms_url'));
+    $url = shopHugoCmsUrl($eingabe('url', 'hugocms_url'));
     if ('' !== $url['fehler']) {
         $ergebnis['fehler'] = $url['fehler'];
         return $ergebnis;
     }
-    $schluessel = $eingabe('key', 'shop_hugocms_key');
+    $schluessel = $eingabe('key', 'hugocms_key');
     if ('' === $schluessel) {
         $ergebnis['fehler'] = "Die Shop-Einstellung '".shopConfigLabel('shop_hugocms_key')."' ist nicht gesetzt";
         return $ergebnis;
@@ -241,9 +246,9 @@ function shopHugoCmsManifest(string $wurzel, array $bereiche, array $endungen): 
     return $ergebnis;
 }
 
-/** Stand der letzten Übertragung: Fingerabdruck und Zeitpunkt */
-function shopHugoCmsStateFile($db): string {
-    return substr(shopPublishStateFiles($db)['status'], 0, -strlen('.json')).'-hugocms.json';
+/** Stand der letzten Übertragung eines HugoShops: Fingerabdruck und Zeitpunkt */
+function shopHugoCmsStateFile($db, int $kanal): string {
+    return shopSiteStateFile($db, $kanal, '-hugocms.json');
 }
 
 /**
@@ -254,25 +259,26 @@ function shopHugoCmsStateFile($db): string {
  * trotzdem abgeglichen, falls HugoCMS inzwischen etwas verloren hat.
  *
  * @param object $db Company-Datenbankverbindung
+ * @param int $kanal HugoShop
  * @return array ok, uebertragen, written, deleted, unchanged, buildPending, uebersprungen, fehler
  */
-function shopHugoCmsSync($db): array {
+function shopHugoCmsSync($db, int $kanal): array {
     $ergebnis = ['ok' => false, 'uebertragen' => false, 'written' => 0, 'deleted' => 0, 'unchanged' => 0,
                  'buildPending' => false, 'uebersprungen' => [], 'fehler' => ''];
 
-    $stand = shopHugoCmsCall($db, 'shopbuildstatus');
+    $stand = shopHugoCmsCall($db, $kanal, 'shopbuildstatus');
     if (!$stand['ok']) {
         $ergebnis['fehler'] = $stand['fehler'];
         return $ergebnis;
     }
     $ergebnis['buildPending'] = !empty($stand['data']['buildPending']);
 
-    $wurzel = shopStagingDir($db);
+    $wurzel = shopStagingDir($db, $kanal);
     $liste = shopHugoCmsManifest($wurzel, (array)($stand['data']['areas'] ?? []), (array)($stand['data']['accept'] ?? []));
     $ergebnis['uebersprungen'] = $liste['uebersprungen'];
 
-    $fingerabdruck = hash('sha256', json_encode($liste['dateien']).'|'.shopConfigValue($db, 'shop_hugocms_url'));
-    $zustand = shopPublishReadState(shopHugoCmsStateFile($db));
+    $fingerabdruck = hash('sha256', json_encode($liste['dateien']).'|'.shopChannelValue($db, $kanal, 'hugocms_url'));
+    $zustand = shopPublishReadState(shopHugoCmsStateFile($db, $kanal));
     $zuletzt = strtotime((string)($zustand['syncedAt'] ?? '')) ?: 0;
     if (($zustand['fingerprint'] ?? '') === $fingerabdruck && time() - $zuletzt < SHOP_HUGOCMS_RESYNC_SECONDS) {
         $ergebnis['ok'] = true;
@@ -285,7 +291,7 @@ function shopHugoCmsSync($db): array {
     foreach ($liste['dateien'] as $pfad => $pruefsumme) {
         $eintraege[] = ['path' => $pfad, 'sha256' => $pruefsumme];
     }
-    $abgleich = shopHugoCmsCall($db, 'shopmanifest', 'POST', 120, [], ['files' => $eintraege]);
+    $abgleich = shopHugoCmsCall($db, $kanal, 'shopmanifest', 'POST', 120, [], ['files' => $eintraege]);
     if (!$abgleich['ok']) {
         $ergebnis['fehler'] = 'Abgleich: '.$abgleich['fehler'];
         return $ergebnis;
@@ -295,11 +301,11 @@ function shopHugoCmsSync($db): array {
     // 2. Übertragung in Portionen
     $portion = [];
     $groesse = 0;
-    $senden = function () use ($db, $syncId, &$portion, &$groesse): string {
+    $senden = function () use ($db, $kanal, $syncId, &$portion, &$groesse): string {
         if (!$portion) {
             return '';
         }
-        $antwort = shopHugoCmsCall($db, 'shopupload', 'POST', 120, [], ['syncId' => $syncId, 'files' => $portion]);
+        $antwort = shopHugoCmsCall($db, $kanal, 'shopupload', 'POST', 120, [], ['syncId' => $syncId, 'files' => $portion]);
         $portion = [];
         $groesse = 0;
         return $antwort['ok'] ? '' : 'Übertragung: '.$antwort['fehler'];
@@ -321,13 +327,13 @@ function shopHugoCmsSync($db): array {
     }
 
     // 3. Übernahme
-    $uebernahme = shopHugoCmsCall($db, 'shopcommit', 'POST', 300, [], ['syncId' => $syncId]);
+    $uebernahme = shopHugoCmsCall($db, $kanal, 'shopcommit', 'POST', 300, [], ['syncId' => $syncId]);
     if (!$uebernahme['ok']) {
         $ergebnis['fehler'] = 'Übernahme: '.$uebernahme['fehler'];
         return $ergebnis;
     }
 
-    shopPublishWriteState(shopHugoCmsStateFile($db), [
+    shopPublishWriteState(shopHugoCmsStateFile($db, $kanal), [
         'fingerprint' => $fingerabdruck,
         'syncedAt'    => date(DATE_ATOM),
     ], true);
@@ -356,19 +362,21 @@ const SHOP_HUGOCMS_THUMBNAIL_ROUNDS = 500;
  * Wie im lokalen Bau: das erste Bild jedes Artikels im Shop, ohne Verzeichnis.
  *
  * @param object $db Company-Datenbankverbindung
+ * @param int $kanal HugoShop
  * @return array Dateinamen, ohne doppelte
  */
-function shopThumbnailSources($db): array {
+function shopThumbnailSources($db, int $kanal): array {
     $zeilen = $db->getAll(
         "SELECT DISTINCT regexp_replace(pe.hugoshop_images ->> 0, '^.*/', '') AS name
            FROM parts p
            JOIN parts_channel_shop pc ON pc.parts_id = p.id
-                                     AND pc.channel_id = shop_active_channel_id('hugoshop')
+                                     AND pc.channel_id = shop_active_channel_id(CAST(:kanal AS integer))
                                      AND pc.active
            JOIN parts_ext pe ON pe.parts_id = p.id
           WHERE jsonb_typeof(pe.hugoshop_images) = 'array'
             AND COALESCE(pe.hugoshop_images ->> 0, '') <> ''
-          ORDER BY 1"
+          ORDER BY 1",
+        [':kanal' => $kanal]
     );
     return array_values(array_filter(array_column($zeilen ?: [], 'name'), fn($name) => '' !== (string)$name));
 }
@@ -380,13 +388,14 @@ function shopThumbnailSources($db): array {
  * weitergeht; hier wird aufgerufen, bis alles bearbeitet ist.
  *
  * @param object $db Company-Datenbankverbindung
+ * @param int $kanal HugoShop
  * @return array ok, created, current, missing, failed, buildPending, fehler
  */
-function shopHugoCmsThumbnails($db): array {
+function shopHugoCmsThumbnails($db, int $kanal): array {
     $ergebnis = ['ok' => false, 'created' => 0, 'current' => 0, 'missing' => [], 'failed' => [],
                  'buildPending' => false, 'fehler' => ''];
 
-    $namen = shopThumbnailSources($db);
+    $namen = shopThumbnailSources($db, $kanal);
     if (!$namen) {
         $ergebnis['ok'] = true;
         return $ergebnis;
@@ -395,7 +404,7 @@ function shopHugoCmsThumbnails($db): array {
     $groesse = shopConfigInt($db, 'shop_thumbnail_size', 200);
     $weiter = 0;
     for ($runde = 0; $runde < SHOP_HUGOCMS_THUMBNAIL_ROUNDS; $runde++) {
-        $antwort = shopHugoCmsCall($db, 'shopthumbnails', 'POST', 120, [],
+        $antwort = shopHugoCmsCall($db, $kanal, 'shopthumbnails', 'POST', 120, [],
             ['names' => $namen, 'size' => $groesse, 'offset' => $weiter]);
         if (!$antwort['ok']) {
             $ergebnis['fehler'] = $antwort['fehler'];
@@ -429,6 +438,7 @@ function shopHugoCmsThumbnails($db): array {
  * Betriebsart HugoCMS an die Stelle des lokalen Baus tritt
  *
  * @param object $db Company-Datenbankverbindung
+ * @param int $kanal HugoShop
  * @param callable $sagen Meldung
  * @param callable $fehler Fehlermeldung (zählt mit)
  * @param bool $bauen nach der Übertragung bauen lassen
@@ -436,8 +446,8 @@ function shopHugoCmsThumbnails($db): array {
  *                        („Shop-Benutzerschnittstelle installieren“)
  * @return bool gebaut
  */
-function shopHugoCmsPublish($db, callable $sagen, callable $fehler, bool $bauen, bool $erzwingen = false): bool {
-    $abgleich = shopHugoCmsSync($db);
+function shopHugoCmsPublish($db, int $kanal, callable $sagen, callable $fehler, bool $bauen, bool $erzwingen = false): bool {
+    $abgleich = shopHugoCmsSync($db, $kanal);
 
     // Nur melden, wenn wirklich übertragen wurde — sonst stünde dieselbe
     // Zeile in jedem Lauf. Die PHP-Einstiegspunkte des Pakets sind der
@@ -471,7 +481,7 @@ function shopHugoCmsPublish($db, callable $sagen, callable $fehler, bool $bauen,
     // inzwischen auf dem Webserver abgelegt wurden.
     $bauNoetig = $abgleich['buildPending'];
     if ($abgleich['uebertragen']) {
-        $vorschau = shopHugoCmsThumbnails($db);
+        $vorschau = shopHugoCmsThumbnails($db, $kanal);
         $liste = fn(array $namen) => implode(', ', array_slice($namen, 0, 5)).(count($namen) > 5 ? ' …' : '');
         if (!$vorschau['ok']) {
             $fehler('Vorschaubilder in HugoCMS fehlgeschlagen: '.$vorschau['fehler']);
@@ -493,7 +503,7 @@ function shopHugoCmsPublish($db, callable $sagen, callable $fehler, bool $bauen,
     }
 
     $sagen('HugoCMS baut die Webseite …');
-    $bau = shopHugoCmsCall($db, 'shopbuild', 'POST', 600);
+    $bau = shopHugoCmsCall($db, $kanal, 'shopbuild', 'POST', 600);
     if (!$bau['ok']) {
         $fehler('Bau in HugoCMS fehlgeschlagen: '.$bau['fehler']);
         return false;

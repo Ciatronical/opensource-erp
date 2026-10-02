@@ -7,6 +7,21 @@
  */
 
 const de = {
+  'invoice.deliveryTerms': "Lieferzeiten",
+  'cart.shippingMethod': "Versand:",
+  'cart.shippingFree': "versandkostenfrei",
+  'cart.minQuantity': "Mindestabnahme:",
+  'shipping.country_unknown': "Das Land der Lieferadresse ist unbekannt. Bitte prüfen Sie die Adresse oder wenden Sie sich an uns.",
+  'shipping.country_not_delivered': "In dieses Land liefern wir leider nicht.",
+  'shipping.weight_missing': "Versand auf Anfrage: Für diese Bestellung können wir die Versandkosten nicht berechnen. Bitte fragen Sie bei uns an.",
+  'shipping.assigned_unfit': "Diese Bestellung lässt sich nicht mit der vorgesehenen Versandart verschicken. Bitte fragen Sie bei uns an.",
+  'shipping.no_method': "Für diese Bestellung gibt es keine passende Versandart. Bitte fragen Sie bei uns an.",
+  'SHIPPING_COUNTRY_UNKNOWN': "Das Land der Lieferadresse ist unbekannt.",
+  'SHIPPING_COUNTRY_NOT_DELIVERED': "In dieses Land liefern wir leider nicht.",
+  'SHIPPING_ON_REQUEST': "Versand auf Anfrage — bitte fragen Sie bei uns an.",
+  'SHIPPING_ASSIGNED_UNFIT': "Diese Bestellung lässt sich nicht mit der vorgesehenen Versandart verschicken.",
+  'SHIPPING_NO_METHOD': "Für diese Bestellung gibt es keine passende Versandart.",
+  'CART_MIN_QUANTITY': "Bei einem Artikel ist die Mindestabnahme nicht erreicht.",
   'login.heading': 'Anmelden',
   'login.email': 'E-Mail',
   'login.password': 'Passwort',
@@ -260,6 +275,21 @@ const de = {
 };
 
 const en = {
+  'invoice.deliveryTerms': "Delivery times",
+  'cart.shippingMethod': "Shipping:",
+  'cart.shippingFree': "free shipping",
+  'cart.minQuantity': "Minimum order quantity:",
+  'shipping.country_unknown': "The country of the delivery address is unknown. Please check the address or contact us.",
+  'shipping.country_not_delivered': "Unfortunately we do not deliver to this country.",
+  'shipping.weight_missing': "Shipping on request: we cannot calculate the shipping costs for this order. Please contact us.",
+  'shipping.assigned_unfit': "This order cannot be shipped with the intended shipping method. Please contact us.",
+  'shipping.no_method': "There is no suitable shipping method for this order. Please contact us.",
+  'SHIPPING_COUNTRY_UNKNOWN': "The country of the delivery address is unknown.",
+  'SHIPPING_COUNTRY_NOT_DELIVERED': "Unfortunately we do not deliver to this country.",
+  'SHIPPING_ON_REQUEST': "Shipping on request — please contact us.",
+  'SHIPPING_ASSIGNED_UNFIT': "This order cannot be shipped with the intended shipping method.",
+  'SHIPPING_NO_METHOD': "There is no suitable shipping method for this order.",
+  'CART_MIN_QUANTITY': "The minimum order quantity of an item has not been reached.",
   'login.heading': 'Sign in',
   'login.email': 'Email',
   'login.password': 'Password',

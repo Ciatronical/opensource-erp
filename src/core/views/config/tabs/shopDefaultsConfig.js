@@ -3,17 +3,16 @@
 // Felder des Einstellungen-Tabs der Shop-Erweiterung. Die Namen entsprechen
 // den shop_*-Schlüsseln in defaults_oserp, angelegt von
 // backend/upstall/shop/company_schema.sql.
+//
+// Hier stehen nur Einstellungen für den ganzen Mandanten. Was einer Instanz
+// gehört — Shop-Schlüssel, Adressen und Verzeichnisse der Webseite,
+// Vorlagensatz, HugoCMS, PayPal, Mails, eBay-Zugang —, steht seit
+// dev/shop-mehrere-kanaele.md in der Karte des Verkaufskanals, in der eigenen
+// Ansicht „Verkaufskanäle" (src/features/shop/views/shop.channels.vue).
 
 const shopDefaultsConfig = [
     { name: "shop_access", type: "headline", label: "crm_fields.shopAccess" },
 
-    // Wird beim Laden bewusst nicht mitgeliefert (siehe getCompanyConfig).
-    // Ein leer gelassenes Feld lässt den gespeicherten Wert unangetastet.
-    // generate: Knopf, der einen neuen Schlüssel erzeugt und ihn anzeigt —
-    // er gehört auch in den Reverse-Proxy, falls einer den mitgelieferten
-    // ersetzt.
-    { name: "shop_public_key", type: "password", size: 60, fieldstyle: "max-width: 60ch", generate: true, label: "crm_fields.shopPublicKey", tooltip: "crm_fields.shopPublicKey_help" },
-    { name: "shop_allowed_origins", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopAllowedOrigins", tooltip: "crm_fields.shopAllowedOrigins_help" },
     { name: "shop_cart_lifetime_hours", type: "input", inputType: "number", size: 5, fieldstyle: "max-width: 15ch", label: "crm_fields.shopCartLifetimeHours", tooltip: "crm_fields.shopCartLifetimeHours_help" },
     { name: "shop_context_lifetime_hours", type: "input", inputType: "number", size: 5, fieldstyle: "max-width: 15ch", label: "crm_fields.shopContextLifetimeHours", tooltip: "crm_fields.shopContextLifetimeHours_help" },
 
@@ -31,65 +30,26 @@ const shopDefaultsConfig = [
     // Die Auswahl „Lager – Platz" lädt der Tab (quellen.shopStockBins).
     { name: "shop_stock_bin_id", type: "dynamic-select", source: "shopStockBins", itemTitle: "title", itemValue: "value", fieldstyle: "max-width: 60ch", label: "crm_fields.shopStockBinId", tooltip: "crm_fields.shopStockBinId_help" },
 
-    // Verkaufskanäle (dev/shop-verkaufskanaele.md): eigene Tabelle statt
-    // defaults_oserp, deshalb eine Komponente der Shop-Erweiterung mit eigener
-    // Überschrift, die selbst lädt und speichert. Sie steht nach
-    // shop_tax_included, weil ein fester Aufschlag netto oder brutto gilt wie
-    // der Verkaufspreis.
-    { name: "shop_sales_channels", type: "component", component: "sales-channels" },
+    // Verkaufskanäle (dev/shop-mehrere-kanaele.md): eigene Ansicht im
+    // Shop-Menü (shop-channels); hier nur der Verweis dorthin.
+    { name: "shop_sales_channels", type: "component", component: "sales-channels-link" },
 
-    // eBay-Kanal (dev/shop-verkaufskanaele.md, Schritt 5): die Einstellungen
-    // der bisherigen eBay-Anbindung, unter ihren alten Schlüsseln. Ein- und
-    // ausgeschaltet wird der Kanal oben unter „Verkaufskanäle".
-    // action ebayPanel: Verbindungstest, Bestellabruf und Stand darunter.
-    {
-        name: "shop_ebay",
-        type: "group",
-        icon: "mdi-shopping",
-        label: "crm_fields.shopEbay",
-        tooltip: "crm_fields.shopEbay_help",
-        action: "ebayPanel",
-        fields: [
-            {
-                name: "ebay_environment", type: "select", fieldstyle: "max-width: 30ch",
-                items: [
-                    { title: "crm_fields.ebayEnvironmentProduction", value: "production" },
-                    { title: "crm_fields.ebayEnvironmentSandbox", value: "sandbox" },
-                ],
-                label: "crm_fields.ebayEnvironment", tooltip: "crm_fields.ebayEnvironment_help"
-            },
-            { name: "ebay_marketplace_id", type: "input", size: 20, fieldstyle: "max-width: 20ch", label: "crm_fields.ebayMarketplaceId", tooltip: "crm_fields.ebayMarketplaceId_help" },
-            { name: "ebay_client_id", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.ebayClientId", tooltip: "crm_fields.ebayClientId_help" },
-            // Geheimnisse: werden nicht ausgeliefert, leer lassen behält den Wert
-            { name: "ebay_client_secret", type: "password", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.ebayClientSecret", tooltip: "crm_fields.ebayClientSecret_help" },
-            { name: "ebay_refresh_token", type: "password", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.ebayRefreshToken", tooltip: "crm_fields.ebayRefreshToken_help" },
-            { name: "ebay_public_host", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.ebayPublicHost", tooltip: "crm_fields.ebayPublicHost_help" },
-            { name: "ebay_default_category_id", type: "input", size: 20, fieldstyle: "max-width: 30ch", label: "crm_fields.ebayCategoryId", tooltip: "crm_fields.ebayCategoryId_help" },
-            {
-                name: "ebay_default_condition", type: "select", fieldstyle: "max-width: 40ch",
-                items: [
-                    { title: "ShopView.ebayCondition.NEW", value: "NEW" },
-                    { title: "ShopView.ebayCondition.USED_EXCELLENT", value: "USED_EXCELLENT" },
-                    { title: "ShopView.ebayCondition.USED_GOOD", value: "USED_GOOD" },
-                    { title: "ShopView.ebayCondition.USED_ACCEPTABLE", value: "USED_ACCEPTABLE" },
-                    { title: "ShopView.ebayCondition.FOR_PARTS_OR_NOT_WORKING", value: "FOR_PARTS_OR_NOT_WORKING" },
-                ],
-                label: "crm_fields.ebayCondition", tooltip: "crm_fields.ebayCondition_help"
-            },
-            { name: "ebay_payment_policy_id", type: "input", size: 30, fieldstyle: "max-width: 40ch", label: "crm_fields.ebayPaymentPolicy", tooltip: "crm_fields.ebayPaymentPolicy_help" },
-            { name: "ebay_return_policy_id", type: "input", size: 30, fieldstyle: "max-width: 40ch", label: "crm_fields.ebayReturnPolicy", tooltip: "crm_fields.ebayReturnPolicy_help" },
-            { name: "ebay_fulfillment_policy_id", type: "input", size: 30, fieldstyle: "max-width: 40ch", label: "crm_fields.ebayFulfillmentPolicy", tooltip: "crm_fields.ebayFulfillmentPolicy_help" },
-            { name: "ebay_merchant_location_key", type: "input", size: 30, fieldstyle: "max-width: 40ch", label: "crm_fields.ebayLocationKey", tooltip: "crm_fields.ebayLocationKey_help" },
-            // Bestellimport
-            { name: "ebay_default_parts_id", type: "input", inputType: "number", size: 10, fieldstyle: "max-width: 20ch", label: "crm_fields.ebayDefaultPartsId", tooltip: "crm_fields.ebayDefaultPartsId_help" },
-            { name: "ebay_employee_login", type: "input", size: 30, fieldstyle: "max-width: 30ch", label: "crm_fields.ebayEmployeeLogin", tooltip: "crm_fields.ebayEmployeeLogin_help" },
-        ],
-    },
+    // Länder (dev/shop-versand.md, Schritt 3): Zuordnung der Freitexte aus den
+    // Adressen zu ISO-Codes — Grundlage für Versandkosten und Lieferländer.
+    // Eigene Tabellen, deshalb eine Komponente.
+    { name: "shop_countries", type: "component", component: "countries" },
 
     { name: "shop_shipping", type: "headline", label: "crm_fields.shopShipping" },
 
-    { name: "shop_shipping_partnumber", type: "input", size: 20, fieldstyle: "max-width: 25ch", label: "crm_fields.shopShippingPartnumber", tooltip: "crm_fields.shopShippingPartnumber_help" },
-    { name: "shop_free_shipping_from", type: "input", inputType: "number", size: 10, fieldstyle: "max-width: 20ch", label: "crm_fields.shopFreeShippingFrom", tooltip: "crm_fields.shopFreeShippingFrom_help" },
+    // Einen Versandartikel für alle gibt es nicht mehr: jede Versandart hat
+    // ihren eigenen. Ohne Versandart läuft der Versand als „Standard" ohne
+    // Kosten, und die Shop-Übersicht warnt.
+    // Die Freigrenze steht je Kanal in der Ansicht „Verkaufskanäle"
+    // (dev/shop-versand.md, Entscheidung 4)
+
+    // Versandarten, Länderzonen und Preise (dev/shop-versand.md, Schritt 4):
+    // eigene Ansicht im Shop-Menü (shop-shipping); hier nur der Verweis dorthin
+    { name: "shop_shipping_methods", type: "component", component: "shipping-methods-link" },
 
     { name: "shop_payment", type: "headline", label: "crm_fields.shopPayment" },
 
@@ -98,140 +58,34 @@ const shopDefaultsConfig = [
     { name: "shop_payment_iban", type: "input", size: 34, fieldstyle: "max-width: 35ch", label: "crm_fields.shopPaymentIban", tooltip: "crm_fields.shopPaymentIban_help" },
     { name: "shop_payment_bic", type: "input", size: 11, fieldstyle: "max-width: 20ch", label: "crm_fields.shopPaymentBic", tooltip: "crm_fields.shopPaymentBic_help" },
 
-    { name: "shop_paypal", type: "headline", label: "crm_fields.shopPaypal" },
-
-    // Der Schalter steht vor den beiden Gruppen: er entscheidet, welche gilt,
-    // und die Oberfläche zeigt das dann an der Karte an.
-    { name: "shop_paypal_sandbox", type: "checkbox", label: "crm_fields.shopPaypalSandbox", tooltip: "crm_fields.shopPaypalSandbox_help" },
-    {
-        name: "shop_paypal_payment_method_preference", type: "select", fieldstyle: "max-width: 45ch",
-        items: [
-            { title: "IMMEDIATE_PAYMENT_REQUIRED", value: "IMMEDIATE_PAYMENT_REQUIRED" },
-            { title: "UNRESTRICTED", value: "UNRESTRICTED" },
-        ],
-        label: "crm_fields.shopPaypalPaymentMethodPreference", tooltip: "crm_fields.shopPaypalPaymentMethodPreference_help"
-    },
-
-    // PayPal vergibt für Test- und Echtbetrieb getrennte Zugangsdaten. Zwei
-    // Karten, damit die vier ähnlich benannten Felder nicht ineinander
-    // übergehen und sichtbar ist, welches Paar gerade gilt.
-    //
-    // Die Geheimnisse werden wie shop_public_key nicht ausgeliefert; ein leer
-    // gelassenes Feld behält den gespeicherten Wert.
-    {
-        type: "group",
-        name: "shop_paypal_sandbox_group",
-        icon: "mdi-test-tube",
-        label: "crm_fields.shopPaypalSandboxGroup",
-        tooltip: "crm_fields.shopPaypalSandboxGroup_help",
-        activeWhen: { field: "shop_paypal_sandbox", value: true },
-        fields: [
-            { name: "shop_paypal_sandbox_client_id", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopPaypalSandboxClientId", tooltip: "crm_fields.shopPaypalSandboxClientId_help" },
-            { name: "shop_paypal_sandbox_secret", type: "password", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopPaypalSandboxSecret", tooltip: "crm_fields.shopPaypalSandboxSecret_help" },
-            // Erzwingt Fehlerantworten von PayPal — wirkt nur in der Testumgebung
-            // und steht deshalb hier und nicht bei den allgemeinen Angaben.
-            { name: "shop_paypal_mock_response", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopPaypalMockResponse", tooltip: "crm_fields.shopPaypalMockResponse_help" },
-        ],
-    },
-    {
-        type: "group",
-        name: "shop_paypal_live_group",
-        icon: "mdi-cash-multiple",
-        label: "crm_fields.shopPaypalLiveGroup",
-        tooltip: "crm_fields.shopPaypalLiveGroup_help",
-        activeWhen: { field: "shop_paypal_sandbox", value: false },
-        fields: [
-            { name: "shop_paypal_live_client_id", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopPaypalLiveClientId", tooltip: "crm_fields.shopPaypalLiveClientId_help" },
-            { name: "shop_paypal_live_secret", type: "password", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopPaypalLiveSecret", tooltip: "crm_fields.shopPaypalLiveSecret_help" },
-        ],
-    },
-
-    { name: "shop_links", type: "headline", label: "crm_fields.shopLinks" },
-
-    { name: "shop_base_url", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopBaseUrl", tooltip: "crm_fields.shopBaseUrl_help" },
-    { name: "shop_products_link", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopProductsLink", tooltip: "crm_fields.shopProductsLink_help" },
-    { name: "shop_category_link", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopCategoryLink", tooltip: "crm_fields.shopCategoryLink_help" },
-    { name: "shop_thumbnails_link", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopThumbnailsLink", tooltip: "crm_fields.shopThumbnailsLink_help" },
-    { name: "shop_images_link", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopImagesLink", tooltip: "crm_fields.shopImagesLink_help" },
-    { name: "shop_downloads_link", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopDownloadsLink", tooltip: "crm_fields.shopDownloadsLink_help" },
-
     { name: "shop_publish", type: "headline", label: "crm_fields.shopPublish" },
-    { name: "shop_backend_url", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopBackendUrl", tooltip: "crm_fields.shopBackendUrl_help" },
-    { name: "shop_template_set", type: "dynamic-select", source: "shopTemplateSets", itemTitle: "title", itemValue: "name", fieldstyle: "max-width: 60ch", label: "crm_fields.shopTemplateSet", tooltip: "crm_fields.shopTemplateSet_help" },
 
-    // Die Wurzel steht hier, weil jede Firma ihre eigene Webseite hat. Trägt
-    // ein Administrator sie zusätzlich in die settings.ini ein, wirkt der
-    // Eintrag dort als Riegel: die eingestellte Wurzel muss darunter liegen.
+    // Wurzel aller Webseiten: die Verzeichnisse der HugoShops gelten relativ
+    // dazu. Trägt ein Administrator sie zusätzlich in die settings.ini ein,
+    // wirkt der Eintrag dort als Riegel: die eingestellte Wurzel muss darunter
+    // liegen.
     //
     // Gebaut wird mit dem Programm hugo aus dem Verzeichnis
     // shop_publish_command_path — nur das Verzeichnis, den Dateinamen und die
     // Argumente setzt das Backend selbst zusammen und prüft beides vor jedem
     // Bau. Ein Eintrag in der settings.ini springt ein, wenn das Feld leer
     // ist, und erscheint dort als Vorgabe.
-    // --cleanDestinationDir ist nur hier einstellbar.
     //
     // shop_job_retention_days: Nach wie vielen Tagen der Läufer erfolgreich
     // erledigte Aufträge aus der Warteschlange löscht. 0 schaltet das ab;
     // fehlgeschlagene Aufträge bleiben immer stehen.
-    // Betriebsart (dev/shop-hugocms-trennung.md, E8): lokal schreibt OSERP in
-    // die Webseite und baut selbst; HugoCMS überträgt an HugoCMS und lässt dort
-    // bauen — dann gelten die Verzeichnis- und Programmfelder darunter nicht.
-    {
-        name: "shop_publish_mode", type: "select", fieldstyle: "max-width: 45ch",
-        items: [
-            { title: "crm_fields.shopPublishModeLocal", value: "local" },
-            { title: "crm_fields.shopPublishModeHugoCms", value: "hugocms" },
-        ],
-        label: "crm_fields.shopPublishMode", tooltip: "crm_fields.shopPublishMode_help"
-    },
     { name: "shop_sites_dir", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopSitesDir", tooltip: "crm_fields.shopSitesDir_help" },
-    { name: "shop_site_dir", type: "input", size: 60, fieldstyle: "max-width: 60ch", validate: "relativePath", browse: "sites", label: "crm_fields.shopSiteDir", tooltip: "crm_fields.shopSiteDir_help" },
-    { name: "shop_content_dir", type: "input", size: 60, fieldstyle: "max-width: 60ch", validate: "relativePath", browse: "site", label: "crm_fields.shopContentDir", tooltip: "crm_fields.shopContentDir_help" },
     { name: "shop_publish_command_path", type: "input", size: 60, fieldstyle: "max-width: 60ch", validate: "absolutePath", label: "crm_fields.shopPublishCommandPath", tooltip: "crm_fields.shopPublishCommandPath_help" },
-    { name: "shop_publish_clean_destination", type: "checkbox", label: "crm_fields.shopPublishCleanDestination", tooltip: "crm_fields.shopPublishCleanDestination_help" },
     { name: "shop_job_retention_days", type: "input", inputType: "number", size: 10, fieldstyle: "max-width: 15ch", label: "crm_fields.shopJobRetentionDays", tooltip: "crm_fields.shopJobRetentionDays_help" },
-
-    // Verkaufskanäle (dev/shop-verkaufskanaele.md): Seiten bei Preisänderungen
-    // automatisch neu schreiben (V22) und was beim Abschalten des HugoShops mit
-    // den Seiten geschieht (V16) — Entwurf oder entfernen.
-    { name: "shop_auto_publish", type: "checkbox", label: "crm_fields.shopAutoPublish", tooltip: "crm_fields.shopAutoPublish_help" },
-    {
-        name: "shop_channel_off_pages", type: "select", fieldstyle: "max-width: 60ch",
-        items: [
-            { title: "crm_fields.shopChannelOffPagesDraft", value: "draft" },
-            { title: "crm_fields.shopChannelOffPagesRemove", value: "remove" },
-        ],
-        label: "crm_fields.shopChannelOffPages", tooltip: "crm_fields.shopChannelOffPages_help"
-    },
-
-    // Anbindung an HugoCMS (dev/shop-hugocms-trennung.md): Adresse des
-    // cms-api-Endpunkts der Shop-Webseite und der Schlüssel, den HugoCMS dort in
-    // den Projekteinstellungen erzeugt — deshalb kein Knopf zum Erzeugen hier.
-    // action: der Tab zeigt unter den Feldern „Verbindung prüfen“.
-    {
-        name: "shop_hugocms",
-        type: "group",
-        icon: "mdi-web-sync",
-        label: "crm_fields.shopHugoCms",
-        tooltip: "crm_fields.shopHugoCms_help",
-        action: "hugocmsTest",
-        fields: [
-            { name: "shop_hugocms_url", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopHugoCmsUrl", tooltip: "crm_fields.shopHugoCmsUrl_help" },
-            { name: "shop_hugocms_key", type: "password", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopHugoCmsKey", tooltip: "crm_fields.shopHugoCmsKey_help" },
-        ],
-    },
-    { name: "shop_images_dir", type: "input", size: 60, fieldstyle: "max-width: 60ch", validate: "relativePath", browse: "site", label: "crm_fields.shopImagesDir", tooltip: "crm_fields.shopImagesDir_help" },
-    { name: "shop_thumbnails_dir", type: "input", size: 60, fieldstyle: "max-width: 60ch", validate: "relativePath", browse: "site", label: "crm_fields.shopThumbnailsDir", tooltip: "crm_fields.shopThumbnailsDir_help" },
     { name: "shop_thumbnail_size", type: "input", inputType: "number", size: 10, fieldstyle: "max-width: 15ch", label: "crm_fields.shopThumbnailSize", tooltip: "crm_fields.shopThumbnailSize_help" },
+    // Adresse von OpensourceERP, unter der eBay die Artikelbilder abholt —
+    // für alle eBay-Kanäle dieselbe; Zugang und Richtlinien stehen je
+    // eBay-Kanal in seiner Karte
+    { name: "ebay_public_host", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.ebayPublicHost", tooltip: "crm_fields.ebayPublicHost_help" },
 
     { name: "shop_search", type: "headline", label: "crm_fields.shopSearch" },
 
     { name: "shop_search_weighting", type: "input", size: 10, fieldstyle: "max-width: 20ch", label: "crm_fields.shopSearchWeighting", tooltip: "crm_fields.shopSearchWeighting_help" },
-
-    { name: "shop_mail", type: "headline", label: "crm_fields.shopMail" },
-
-    { name: "shop_invoice_mail_subject", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopInvoiceMailSubject", tooltip: "crm_fields.shopInvoiceMailSubject_help" },
-    { name: "shop_withdrawal_mail_to", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopWithdrawalMailTo", tooltip: "crm_fields.shopWithdrawalMailTo_help" },
 ];
 
 export default shopDefaultsConfig;

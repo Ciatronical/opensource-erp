@@ -14,6 +14,7 @@
             "typeService": "Teenus",
             "unit": "Ühik",
             "buchungsgruppe": "Konteeringu grupp",
+            "weight": "Kaal",
             "sellprice": "Müügihind",
             "notes": "Pikk kirjeldus",
             "obsolete": "Aegunud / Ei kasutata enam",
@@ -26,6 +27,7 @@
             "createError": "Artiklit ei õnnestunud luua.",
             "noPermission": "Teil puudub õigus artikleid luua.",
             "partnumberExists": "See artiklinumber on juba kasutusel.",
+            "weightInvalid": "Tühi või arv alates 0",
             "required": "Kohustuslik väli"
         },
         "titleNew": "Artikli loomine",

@@ -14,6 +14,7 @@
             "typeService": "Paslauga",
             "unit": "Vienetas",
             "buchungsgruppe": "Buhalterinė grupė",
+            "weight": "Svoris",
             "sellprice": "Pardavimo kaina",
             "notes": "Ilgas aprašymas",
             "obsolete": "Pasenusi / Nebenaudojama",
@@ -26,6 +27,7 @@
             "createError": "Prekės sukurti nepavyko.",
             "noPermission": "Neturite teisės kurti prekių.",
             "partnumberExists": "Šis prekės numeris jau naudojamas.",
+            "weightInvalid": "Tuščia arba skaičius nuo 0",
             "required": "Privalomas laukas"
         },
         "titleNew": "Prekės kūrimas",

@@ -41,19 +41,29 @@ function shopChannelImageDir($db, int $partsId, bool $anlegen = false): string {
 }
 
 /**
- * Kennung eines Kanals, geprüft
+ * Kanal aus einer Angabe der Oberfläche: Kennung oder Art
+ *
+ * Eine Zahl ist die Kennung und wird geprüft. Die Art („hugoshop", „ebay")
+ * meint den ersten Kanal der Art — für Verwaltungsaufrufe ohne Kanalangabe
+ * (dev/shop-mehrere-kanaele.md).
  *
  * @param object $db Company-Datenbankverbindung
- * @param string $art Art des Kanals
- * @return int
+ * @param mixed $angabe Kennung oder Art
+ * @return array{id: int, type: string}
  * @throws ApiError SHOP_CHANNEL_UNKNOWN
  */
-function shopChannelIdOf($db, string $art): int {
-    $zeile = $db->getOne("SELECT shop_channel_id(:art) AS id", [':art' => $art]);
-    if (empty($zeile['id'])) {
-        throw new ApiError('SHOP_CHANNEL_UNKNOWN', 'Unbekannter Verkaufskanal: '.$art);
+function shopChannelParam($db, $angabe): array {
+    $angabe = trim((string)$angabe);
+    $zeile = null;
+    if (ctype_digit($angabe)) {
+        $zeile = $db->getOne("SELECT id, type FROM sales_channel_shop WHERE id = CAST(:id AS integer)", [':id' => $angabe]);
+    } elseif (in_array($angabe, ['hugoshop', 'ebay', 'amazon'], true)) {
+        $zeile = $db->getOne("SELECT id, type FROM sales_channel_shop WHERE id = shop_first_channel_id(:art)", [':art' => $angabe]);
     }
-    return (int)$zeile['id'];
+    if (!$zeile) {
+        throw new ApiError('SHOP_CHANNEL_UNKNOWN', 'Unbekannter Verkaufskanal: '.$angabe);
+    }
+    return ['id' => (int)$zeile['id'], 'type' => (string)$zeile['type']];
 }
 
 /**
@@ -184,31 +194,32 @@ function shopChannelImageSort($db, int $partsId, int $kanalId, array $ids): void
 }
 
 /**
- * Lädt ein Bild der Webseite des HugoShops
+ * Lädt ein Bild der Webseite eines HugoShops
  *
  * In der Betriebsart lokal aus dem Bildverzeichnis, sonst über die Adresse
- * aus shop_images_link (relative Muster gelten zur shop_base_url).
+ * aus images_link (relative Muster gelten zur base_url des Kanals).
  *
  * @param object $db Company-Datenbankverbindung
+ * @param int $kanal HugoShop, von dessen Webseite das Bild kommt
  * @param string $name Dateiname aus parts_ext.hugoshop_images
  * @return string Bilddaten
  * @throws ApiError SHOP_IMAGE_SOURCE
  */
-function shopHugoshopImageContent($db, string $name): string {
+function shopHugoshopImageContent($db, int $kanal, string $name): string {
     $name = basename($name);
 
-    if ('local' === shopPublishMode($db) && '' !== shopConfigValue($db, 'shop_images_dir')) {
-        $pfad = shopPathUnder(shopSiteDir($db), shopConfigValue($db, 'shop_images_dir')).'/'.$name;
+    if ('local' === shopPublishMode($db, $kanal) && '' !== shopChannelValue($db, $kanal, 'images_dir')) {
+        $pfad = shopPathUnder(shopSiteDir($db, $kanal), shopChannelValue($db, $kanal, 'images_dir')).'/'.$name;
         if (is_file($pfad)) {
             return (string)file_get_contents($pfad);
         }
     }
 
-    $adresse = shopLink(shopConfigValue($db, 'shop_images_link'), $name);
+    $adresse = shopLink(shopChannelValue($db, $kanal, 'images_link'), $name);
     if (!preg_match('#^https?://#i', $adresse)) {
-        $basis = rtrim(shopConfigValue($db, 'shop_base_url'), '/');
+        $basis = rtrim(shopChannelValue($db, $kanal, 'base_url'), '/');
         if ('' === $basis) {
-            throw new ApiError('SHOP_IMAGE_SOURCE', 'Bild '.$name.': weder Datei noch vollständige Adresse (shop_images_link, shop_base_url)');
+            throw new ApiError('SHOP_IMAGE_SOURCE', 'Bild '.$name.': weder Datei noch vollständige Adresse (images_link, base_url)');
         }
         $adresse = $basis.'/'.ltrim($adresse, '/');
     }
@@ -237,41 +248,49 @@ function shopHugoshopImageContent($db, string $name): string {
  * Vorhandene Bilder des Ziels bleiben; hinzu kommen die fehlenden, hinten
  * angehängt.
  *
+ * Die Bildnamen des HugoShops (parts_ext.hugoshop_images) gelten für alle
+ * HugoShops (M6), die Dateien liegen aber auf der Webseite des jeweiligen
+ * Kanals: gelesen wird von der Webseite der Quelle, geschrieben auf die des
+ * Ziels. Zwischen zwei HugoShops wird nichts kopiert.
+ *
  * @param object $db Company-Datenbankverbindung
  * @param int $partsId Artikel
- * @param string $von Art des Quellkanals
- * @param string $nach Art des Zielkanals
+ * @param mixed $von Quellkanal: Kennung oder Art (shopChannelParam)
+ * @param mixed $nach Zielkanal: Kennung oder Art
  * @return int Zahl der übernommenen Bilder
- * @throws ApiError SHOP_IMAGE_COPY_UNAVAILABLE, SHOP_IMAGE_SOURCE und die Fehler von shopChannelImageStore()
+ * @throws ApiError SHOP_CHANNEL_UNKNOWN, SHOP_IMAGE_COPY_UNAVAILABLE, SHOP_IMAGE_SOURCE und die Fehler von shopChannelImageStore()
  */
-function shopChannelImageCopy($db, int $partsId, string $von, string $nach): int {
-    if ($von === $nach) {
+function shopChannelImageCopy($db, int $partsId, $von, $nach): int {
+    $von = shopChannelParam($db, $von);
+    $nach = shopChannelParam($db, $nach);
+    if ($von['id'] === $nach['id'] || ('hugoshop' === $von['type'] && 'hugoshop' === $nach['type'])) {
         return 0;
     }
 
     // HugoShop → Marktplatz
-    if ('hugoshop' === $von) {
+    if ('hugoshop' === $von['type']) {
         $zeile = $db->getOne("SELECT hugoshop_images FROM parts_ext WHERE parts_id = :id", [':id' => $partsId]);
         $namen = json_decode((string)($zeile['hugoshop_images'] ?? '[]'), true) ?: [];
-        $ziel = shopChannelIdOf($db, $nach);
         foreach ($namen as $name) {
-            shopChannelImageStore($db, $partsId, $ziel, shopHugoshopImageContent($db, (string)$name), (string)$name);
+            shopChannelImageStore($db, $partsId, $nach['id'],
+                                  shopHugoshopImageContent($db, $von['id'], (string)$name), (string)$name);
         }
         return count($namen);
     }
 
-    $quelle = shopChannelImages($db, $partsId, shopChannelIdOf($db, $von));
+    $quelle = shopChannelImages($db, $partsId, $von['id']);
 
     // Marktplatz → HugoShop: nur, wenn OSERP die Webseite selbst beschreibt
-    if ('hugoshop' === $nach) {
-        if ('local' !== shopPublishMode($db)) {
+    if ('hugoshop' === $nach['type']) {
+        $kanal = $nach['id'];
+        if ('local' !== shopPublishMode($db, $kanal)) {
             throw new ApiError('SHOP_IMAGE_COPY_UNAVAILABLE',
                 'In der Betriebsart HugoCMS liegen die Bilder der Webseite bei HugoCMS — dorthin kann OSERP nichts übertragen.');
         }
-        if ('' === shopConfigValue($db, 'shop_images_dir')) {
-            throw new ApiError('SHOP_IMAGE_COPY_UNAVAILABLE', 'Das Bildverzeichnis der Webseite ist nicht eingestellt (shop_images_dir).');
+        if ('' === shopChannelValue($db, $kanal, 'images_dir')) {
+            throw new ApiError('SHOP_IMAGE_COPY_UNAVAILABLE', 'Das Bildverzeichnis der Webseite ist nicht eingestellt (images_dir).');
         }
-        $zielDir = shopPathUnder(shopSiteDir($db), shopConfigValue($db, 'shop_images_dir'), true);
+        $zielDir = shopPathUnder(shopSiteDir($db, $kanal), shopChannelValue($db, $kanal, 'images_dir'), true);
         $quellDir = shopChannelImageDir($db, $partsId);
         $namen = [];
         foreach ($quelle as $bild) {
@@ -298,7 +317,7 @@ function shopChannelImageCopy($db, int $partsId, string $von, string $nach): int
     }
 
     // Marktplatz → Marktplatz: dieselben Dateien im selben Ordner
-    $ziel = shopChannelIdOf($db, $nach);
+    $ziel = $nach['id'];
     $db->execute(
         "INSERT INTO parts_channel_image_shop (parts_id, channel_id, filename, sort)
          SELECT q.parts_id, :ziel, q.filename,
@@ -307,7 +326,7 @@ function shopChannelImageCopy($db, int $partsId, string $von, string $nach): int
            FROM parts_channel_image_shop q
           WHERE q.parts_id = :parts_id AND q.channel_id = :quelle
          ON CONFLICT (parts_id, channel_id, filename) DO NOTHING",
-        [':ziel' => $ziel, ':parts_id' => $partsId, ':quelle' => shopChannelIdOf($db, $von),
+        [':ziel' => $ziel, ':parts_id' => $partsId, ':quelle' => $von['id'],
          ':parts_id_sort' => $partsId, ':ziel_sort' => $ziel]
     );
     return count($quelle);

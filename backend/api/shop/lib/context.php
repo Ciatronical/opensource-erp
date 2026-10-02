@@ -12,6 +12,10 @@
 //
 // Die UUID stammt vom Aufrufer und ist damit frei waehlbar. Sie gehoert
 // deshalb ausnahmslos gebunden — nie in den SQL-Text.
+//
+// Eine Sitzung gehoert einem HugoShop (channel_id). Dass die Kennung zum
+// Kanal der Anfrage passt, prueft der Einstieg (shopPublicContextUuid); der
+// Warenkorb erbt den Kanal der Sitzung (cartOfContext).
 
 /**
  * Erzeugt eine neue Kontext-UUID
@@ -27,11 +31,11 @@ function shopNewContextUuid(): string {
  *
  * @param object $db Company-Datenbankverbindung
  * @param string $uuid Wert des Kontext-Cookies
- * @return array|false Zeile mit uuid, cart_uuid, customer_id, guest, shipto_id
+ * @return array|false Zeile mit uuid, cart_uuid, customer_id, channel_id, guest, shipto_id
  */
 function shopContext($db, string $uuid) {
     return $db->getOne(
-        "SELECT con.uuid, con.cart_uuid, con.customer_id, con.active,
+        "SELECT con.uuid, con.cart_uuid, con.customer_id, con.channel_id, con.active,
                 COALESCE(cust.hugoshop_guest, true)  AS guest,
                 cust.hugoshop_shipto_id              AS shipto_id
            FROM context_hugoshop con
@@ -90,12 +94,14 @@ function shopContextCustomer($db, string $uuid): array {
  *
  * @param object $db Company-Datenbankverbindung
  * @param string $uuid Wert des Kontext-Cookies
+ * @param int $kanal HugoShop der Anfrage — gilt nur fuer eine neue Sitzung
  * @return array{cart_pos_count: int, account: bool, context: string}
  */
-function shopContextStatus($db, string $uuid): array {
+function shopContextStatus($db, string $uuid, int $kanal): array {
     $zeile = $db->getOne(
         "WITH gestempelt AS (
-             INSERT INTO context_hugoshop (uuid, active) VALUES (:uuid, NOW())
+             INSERT INTO context_hugoshop (uuid, active, channel_id)
+             VALUES (:uuid, NOW(), CAST(:kanal AS integer))
              ON CONFLICT (uuid) DO UPDATE SET active = NOW()
              RETURNING uuid, cart_uuid, customer_id
          ), korb AS (
@@ -108,7 +114,7 @@ function shopContextStatus($db, string $uuid): array {
                 (g.customer_id IS NOT NULL AND COALESCE(cust.hugoshop_guest, true) = false) AS account
            FROM gestempelt g
            LEFT JOIN customer_ext cust ON cust.customer_id = g.customer_id",
-        [':uuid' => $uuid]
+        [':uuid' => $uuid, ':kanal' => $kanal]
     );
 
     return [

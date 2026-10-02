@@ -14,6 +14,7 @@
             "typeService": "Tjenesteydelse",
             "unit": "Enhed",
             "buchungsgruppe": "Bogfoeringsgruppe",
+            "weight": "Vægt",
             "sellprice": "Salgspris",
             "notes": "Langbeskrivelse",
             "obsolete": "Forael det / Brug ikke laengere",
@@ -26,6 +27,7 @@
             "createError": "Varen kunne ikke oprettes.",
             "noPermission": "Du har ikke tilladelse til at oprette varer.",
             "partnumberExists": "Dette varenummer er allerede i brug.",
+            "weightInvalid": "Tom eller et tal fra 0",
             "required": "Påkrævet felt"
         },
         "titleNew": "Opret vare",

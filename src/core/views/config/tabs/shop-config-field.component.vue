@@ -117,7 +117,7 @@ const store = oserpStore()
 const props = defineProps({
     /** Felddefinition aus shopDefaultsConfig.js */
     field: { type: Object, required: true },
-    /** Die Einstellungen des Mandanten (defaults_oserp) */
+    /** Die Werte: Einstellungen des Mandanten (defaults_oserp) oder eines Kanals */
     werte: { type: Object, required: true },
     /**
      * Zusätzliche Auswahllisten des Tabs, nach Quelle.
@@ -133,6 +133,11 @@ const props = defineProps({
      * Passwortfeld "hinterlegt", auch wenn nichts gespeichert ist.
      */
     gesetzt: { type: Object, default: () => ({}) },
+    /**
+     * Verkaufskanal, dem die Werte gehören (Kanalkarte); 0 = Einstellungen des
+     * Mandanten. Für die Verzeichnisauswahl: die Webseite eines HugoShops.
+     */
+    kanal: { type: Number, default: 0 },
     /**
      * Vorgaben aus der settings.ini für leere Felder: Schlüssel -> Wert.
      *
@@ -190,7 +195,7 @@ function zusatz(field) {
         return { visible: sichtbar.value, 'onUpdate:visible': (wert) => (sichtbar.value = wert) }
     }
     if (field.browse) {
-        return { scope: 'shop', base: field.browse }
+        return { scope: 'shop', base: field.browse, channelId: props.kanal }
     }
     return {}
 }
@@ -200,8 +205,8 @@ function zusatz(field) {
  *
  * 32 Byte aus dem Zufallsgenerator des Browsers, hexadezimal: 64 Zeichen aus
  * 0-9a-f, die in nginx-Konfigurationen und auf der Kommandozeile keinen Ärger
- * machen. Gespeichert wird er wie jede andere Änderung an diesem Tab; der
- * Läufer trägt ihn beim nächsten Lauf in oserp-shop/config.php ein.
+ * machen. Gespeichert wird er wie jede andere Änderung; der Läufer trägt ihn
+ * beim nächsten Lauf in oserp-shop/config.json ein.
  */
 function schluesselErzeugen() {
     const bytes = crypto.getRandomValues(new Uint8Array(32))

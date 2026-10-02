@@ -14,6 +14,7 @@
             "typeService": "Tjanst",
             "unit": "Enhet",
             "buchungsgruppe": "Bokforingsgrupp",
+            "weight": "Vikt",
             "sellprice": "Forsaljningspris",
             "notes": "Langbeskrivning",
             "obsolete": "Foraaldrad / Anvand inte langre",
@@ -26,6 +27,7 @@
             "createError": "Artikeln kunde inte skapas.",
             "noPermission": "Du har inte behörighet att skapa artiklar.",
             "partnumberExists": "Detta artikelnummer används redan.",
+            "weightInvalid": "Tom eller ett tal från 0",
             "required": "Obligatoriskt fält"
         },
         "titleNew": "Skapa artikel",

@@ -51,6 +51,7 @@
         v-model="offen"
         :scope="scope"
         :base="base"
+        :channel-id="channelId"
         :pick="pick"
         :start="startPfad"
         @select="uebernehmen"
@@ -75,6 +76,11 @@ const props = defineProps({
     base: {
         type: String,
         default: 'sites',
+    },
+    /** Nur bei base 'site': HugoShop, dessen Webseite gemeint ist; 0 = Standard-HugoShop */
+    channelId: {
+        type: Number,
+        default: 0,
     },
     /** 'dir' wählt ein Verzeichnis, 'file' eine Datei */
     pick: {

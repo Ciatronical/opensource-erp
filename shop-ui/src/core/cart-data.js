@@ -25,6 +25,12 @@ export function cartTotals(data) {
     shipping: incShipping ? toNumber(data.shippingCosts) : 0,
     netto: toNumber(incShipping ? data.nettoTotalSumIncShipping : data.nettoTotalSum),
     total: toNumber(incShipping ? data.totalSumIncShipping : data.totalSum),
+    // Versand nach Versandarten (dev/shop-versand.md, Schritt 6): ok heisst
+    // bestellbar; sonst nennt der Status den Grund, und die Kasse sperrt.
+    // Aeltere Backends liefern nichts — dann gilt ok.
+    shippingStatus: data.shippingStatus || 'ok',
+    shippingMethod: data.shippingMethod || '',
+    shippingFree: !!data.shippingFree,
   };
 }
 
@@ -40,6 +46,9 @@ export function cartPosition(pos) {
     thumbnail: pos.thumbnail || null,
     // false: nicht mehr im Shop angeboten (V23) — ältere Backends liefern nichts
     offered: pos.offered !== false,
+    // Lieferbedingung ("Versandfertig in 4-8 Wochen") und Mindestabnahme
+    deliveryTerm: pos.deliveryTerm || '',
+    minQuantity: pos.minQuantity === null || pos.minQuantity === undefined ? null : Number(pos.minQuantity),
   };
 }
 

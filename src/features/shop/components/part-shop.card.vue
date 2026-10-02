@@ -46,10 +46,15 @@
                 {{ t('ShopView.partCard.noPermission') }}
             </v-alert>
 
+            <!-- Versandartikel: gehört seiner Versandart und wird nie angeboten -->
+            <v-alert v-if="versandartikelVon" type="info" variant="tonal" density="compact" class="mb-2">
+                {{ t('ShopView.partCard.shippingPart', { name: versandartikelVon }) }}
+            </v-alert>
+
             <v-switch
                 v-model="daten.listed"
                 :label="t('ShopView.partCard.listed')"
-                :disabled="!darfBearbeiten || laedt"
+                :disabled="!darfBearbeiten || laedt || (!!versandartikelVon && !daten.listed)"
                 color="primary"
                 density="compact"
                 hide-details
@@ -78,7 +83,7 @@
                             variant="outlined"
                             size="small"
                         >
-                            {{ kanalName(kanal.type) }}
+                            {{ kanalName(kanal) }}
                         </v-chip>
                     </v-chip-group>
                 </div>
@@ -93,7 +98,7 @@
                         class="border"
                     >
                         <v-expansion-panel-title class="py-2">
-                            <span class="font-weight-medium">{{ kanalName(kanal.type) }}</span>
+                            <span class="font-weight-medium">{{ kanalName(kanal) }}</span>
                             <v-spacer />
                             <span class="text-body-2 mr-2">
                                 {{ geld(kanalPreis(kanal).brutto) }} {{ t('ShopView.partCard.gross') }}
@@ -114,6 +119,7 @@
                                 </v-col>
                                 <v-col v-if="mitWert(kanal.markup_mode)" cols="12" sm="6" class="py-1">
                                     <v-text-field
+                                        persistent-placeholder
                                         v-model.number="kanal.markup_value"
                                         type="number"
                                         step="0.01"
@@ -138,6 +144,53 @@
                                     {{ geld(kanalPreis(kanal).brutto) }} {{ t('ShopView.partCard.gross') }}
                                     <span v-if="vorgabe(kanal).round_99">· {{ t('ShopView.partCard.rounded99') }}</span>
                                     <div class="text-caption text-medium-emphasis">{{ t('ShopView.partCard.pricePreview') }}</div>
+                                </v-col>
+
+                                <!-- HugoShop: Versand je Zone für diesen Artikel allein, in seiner
+                                     Mindestabnahme — im Warenkorb mit weiteren Artikeln kann es anders kommen -->
+                                <v-col v-if="kanal.type === 'hugoshop' && kanal.active && kanal.shipping_prices.length" cols="12" class="py-1">
+                                    <div class="text-body-2 font-weight-medium">{{ t('ShopView.partCard.shippingPrices') }}</div>
+                                    <div class="text-caption text-medium-emphasis mb-1">
+                                        {{ t('ShopView.partCard.shippingPricesHint', { menge: mindestmenge, art: grundpreisArt }) }}
+                                    </div>
+                                    <v-table density="compact">
+                                        <!-- Kosten und Differenz nur, wenn Kosten gepflegt sind — netto -->
+                                        <thead v-if="mitKosten(kanal)">
+                                            <tr>
+                                                <th>{{ t('ShopView.partCard.shippingZone') }}</th>
+                                                <th>{{ t('ShopView.partCard.shippingMethod') }}</th>
+                                                <th class="text-right">{{ t('ShopView.partCard.shippingPrice') }}</th>
+                                                <th class="text-right">{{ t('ShopView.partCard.shippingCost') }}</th>
+                                                <th class="text-right">{{ t('ShopView.partCard.shippingDifference') }}</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="zeile in kanal.shipping_prices" :key="zeile.zone_id ?? 'rest'">
+                                                <td>{{ zeile.zone || t('ShopView.shippingConfig.otherCountries') }}</td>
+                                                <td>{{ zeile.status === 'ok' ? zeile.method : versandStatusText(zeile.status) }}</td>
+                                                <td class="text-right text-no-wrap">
+                                                    <template v-if="zeile.status === 'ok'">
+                                                        {{ WAHR_WERTE.includes(zeile.free) ? t('ShopView.partCard.shippingFree') : geld(Number(zeile.price)) }}
+                                                        <span
+                                                            v-if="!WAHR_WERTE.includes(zeile.free) && WAHR_WERTE.includes(zeile.free_applies) && zeile.free_from !== null"
+                                                            class="text-caption text-medium-emphasis"
+                                                        >· {{ t('ShopView.partCard.shippingFreeFrom', { betrag: geld(Number(zeile.free_from)) }) }}</span>
+                                                    </template>
+                                                </td>
+                                                <template v-if="mitKosten(kanal)">
+                                                    <td class="text-right text-no-wrap">
+                                                        {{ zeile.cost !== null && zeile.cost !== undefined ? geld(Number(zeile.cost)) : '' }}
+                                                    </td>
+                                                    <td
+                                                        class="text-right text-no-wrap"
+                                                        :class="differenz(zeile) !== null && differenz(zeile) < 0 ? 'text-error' : ''"
+                                                    >
+                                                        {{ differenz(zeile) === null ? '' : (differenz(zeile) > 0 ? '+' : '') + geld(differenz(zeile)) }}
+                                                    </td>
+                                                </template>
+                                            </tr>
+                                        </tbody>
+                                    </v-table>
                                 </v-col>
 
                                 <!-- Verfügbarkeit: angeboten, aber vorübergehend nicht
@@ -228,7 +281,7 @@
                                 <!-- Bilder eines Marktplatzes (V12); der HugoShop führt seine unten -->
                                 <v-col v-if="kanal.type !== 'hugoshop'" cols="12" class="py-1">
                                     <div class="text-caption text-medium-emphasis mb-1">
-                                        {{ t('ShopView.partCard.channelImages', { kanal: kanalName(kanal.type) }) }}
+                                        {{ t('ShopView.partCard.channelImages', { kanal: kanalName(kanal) }) }}
                                     </div>
                                     <div v-if="!partsId" class="text-caption">{{ t('ShopView.partCard.imagesAfterCreate') }}</div>
                                     <template v-else>
@@ -283,15 +336,15 @@
                                             </v-btn>
                                             <v-btn
                                                 v-for="quelle in bildQuellen(kanal)"
-                                                :key="quelle.type"
+                                                :key="quelle.channel_id"
                                                 size="small"
                                                 variant="text"
                                                 prepend-icon="mdi-image-move"
                                                 :loading="bildLaedt"
                                                 :disabled="!darfBearbeiten"
-                                                @click="bilderUebernehmen(quelle.type, kanal.type)"
+                                                @click="bilderUebernehmen(quelle, kanal)"
                                             >
-                                                {{ t('ShopView.partCard.copyImagesFrom', { kanal: kanalName(quelle.type) }) }}
+                                                {{ t('ShopView.partCard.copyImagesFrom', { kanal: kanalName(quelle) }) }}
                                             </v-btn>
                                         </div>
                                     </template>
@@ -300,22 +353,30 @@
                                 <!-- HugoShop: Bilder eines Marktplatzes übernehmen — nur, wenn
                                      OSERP die Webseite selbst beschreibt (V17) -->
                                 <v-col
-                                    v-if="kanal.type === 'hugoshop' && partsId && lokaleWebseite && bildQuellen(kanal).length"
+                                    v-if="kanal.type === 'hugoshop' && partsId && lokaleWebseite(kanal) && bildQuellen(kanal).length"
                                     cols="12"
                                     class="py-1"
                                 >
                                     <v-btn
                                         v-for="quelle in bildQuellen(kanal)"
-                                        :key="quelle.type"
+                                        :key="quelle.channel_id"
                                         size="small"
                                         variant="text"
                                         prepend-icon="mdi-image-move"
                                         :loading="bildLaedt"
                                         :disabled="!darfBearbeiten"
-                                        @click="bilderUebernehmen(quelle.type, 'hugoshop')"
+                                        @click="bilderUebernehmen(quelle, kanal)"
                                     >
-                                        {{ t('ShopView.partCard.copyImagesFrom', { kanal: kanalName(quelle.type) }) }}
+                                        {{ t('ShopView.partCard.copyImagesFrom', { kanal: kanalName(quelle) }) }}
                                     </v-btn>
+                                </v-col>
+
+                                <!-- HugoShop: ohne passende Versandart keine Seite -->
+                                <v-col v-if="kanal.type === 'hugoshop' && kanal.active && kanal.shipping_message" cols="12" class="py-1">
+                                    <v-alert type="warning" variant="tonal" density="compact">
+                                        {{ t('ShopView.partCard.shippingUnfit') }}
+                                        <div class="text-caption">{{ kanal.shipping_message }}</div>
+                                    </v-alert>
                                 </v-col>
 
                                 <!-- Stand des Abgleichs mit dem Marktplatz -->
@@ -325,7 +386,7 @@
                                         variant="tonal"
                                         density="compact"
                                     >
-                                        {{ t('ShopView.partCard.syncStatus', { kanal: kanalName(kanal.type) }) }}:
+                                        {{ t('ShopView.partCard.syncStatus', { kanal: kanalName(kanal) }) }}:
                                         {{ te(`ShopView.partCard.sync.${kanal.sync_status}`)
                                             ? t(`ShopView.partCard.sync.${kanal.sync_status}`)
                                             : t('ShopView.partCard.sync.none') }}
@@ -449,6 +510,76 @@
                         :readonly="!darfBearbeiten"
                     />
                 </v-col>
+
+                <!-- Versand (dev/shop-versand.md, Schritt 5). Das Gewicht steht
+                     in den Stammdaten der Artikelmaske (parts.weight) -->
+                <v-col cols="12" class="pt-4 pb-1">
+                    <div class="text-subtitle-2">{{ t('ShopView.partCard.shipping') }}</div>
+                    <div class="text-caption" :class="gewicht === null ? 'text-warning' : 'text-medium-emphasis'">
+                        {{ gewicht === null
+                            ? t('ShopView.partCard.weightMissing')
+                            : t('ShopView.partCard.weightInfo', { weight: gewicht, unit: gewichtseinheit }) }}
+                    </div>
+                </v-col>
+                <v-col cols="12" sm="6" class="py-1">
+                    <v-select
+                        v-model="daten.shipping.shipping_method_id"
+                        :items="versandartAuswahl"
+                        :label="t('ShopView.partCard.shippingMethod')"
+                        :hint="t('ShopView.partCard.shippingMethodHint')"
+                        persistent-hint
+                        :readonly="!darfBearbeiten"
+                        variant="outlined"
+                        density="compact"
+                        hide-details="auto"
+                    />
+                </v-col>
+                <v-col cols="12" sm="6" class="py-1">
+                    <v-select
+                        v-model="daten.shipping.delivery_term_id"
+                        :items="lieferbedingungAuswahl"
+                        :label="t('ShopView.partCard.deliveryTerm')"
+                        :hint="lieferbedingungText || t('ShopView.partCard.deliveryTermHint')"
+                        persistent-hint
+                        clearable
+                        :readonly="!darfBearbeiten"
+                        variant="outlined"
+                        density="compact"
+                        hide-details="auto"
+                    />
+                </v-col>
+                <v-col v-for="feld in ['length', 'width', 'height']" :key="feld" cols="4" sm="2" class="py-1">
+                    <v-text-field
+                        persistent-placeholder
+                        v-model="daten.shipping[feld]"
+                        type="number"
+                        step="0.1"
+                        min="0"
+                        suffix="cm"
+                        :label="t(`ShopView.partCard.${feld}`)"
+                        :rules="[groesserNull]"
+                        :readonly="!darfBearbeiten"
+                        variant="outlined"
+                        density="compact"
+                        hide-details="auto"
+                    />
+                </v-col>
+                <v-col cols="12" sm="6" class="py-1">
+                    <v-text-field
+                        v-model="daten.shipping.min_qty"
+                        type="number"
+                        step="1"
+                        min="0"
+                        :label="t('ShopView.partCard.minQty')"
+                        :hint="t('ShopView.partCard.minQtyHint')"
+                        persistent-hint
+                        :rules="[groesserNull]"
+                        :readonly="!darfBearbeiten"
+                        variant="outlined"
+                        density="compact"
+                        hide-details="auto"
+                    />
+                </v-col>
             </v-row>
         </v-card-text>
     </v-card>
@@ -499,8 +630,43 @@ function leer() {
         properties: [],
         downloads: [],
         channels: [],
+        shipping: leererVersand(),
     }
 }
+
+const WAHR_WERTE = [true, 't', 'true', 1, '1']
+
+/** Versandangaben (parts_shipping_shop); leer = nicht gepflegt */
+function leererVersand() {
+    return { shipping_method_id: null, length: '', width: '', height: '', min_qty: '', delivery_term_id: null }
+}
+const zahlText = wert => (wert === null || wert === undefined || wert === '' ? '' : String(Number(wert)))
+const zahlOderNull = wert => (wert === null || wert === undefined || String(wert).trim() === '' ? null : Number(wert))
+const groesserNull = wert => zahlOderNull(wert) === null || zahlOderNull(wert) > 0 || t('ShopView.partCard.greaterZero')
+const versandGueltig = () => ['length', 'width', 'height', 'min_qty']
+    .every(feld => groesserNull(daten.value.shipping?.[feld]) === true)
+
+/** Versandart, der dieser Artikel als Versandartikel gehört — leer = keiner */
+const versandartikelVon = ref('')
+
+/** Auswahllisten und Gewicht, kommen mit getPartShopData */
+const versandarten = ref([])
+const lieferbedingungen = ref([])
+const gewichtseinheit = ref('')
+const gewicht = ref(null)
+
+const versandartAuswahl = computed(() => [
+    { value: null, title: t('ShopView.partCard.shippingMethodCheapest') },
+    ...versandarten.value
+        .filter(m => m.active || m.id === daten.value.shipping.shipping_method_id)
+        .map(m => ({ value: Number(m.id), title: m.active ? m.description : `${m.description} (${t('ShopView.partCard.inactive')})` })),
+])
+/** Ungültige Lieferbedingungen nur, wenn sie gerade gewählt ist */
+const lieferbedingungAuswahl = computed(() => lieferbedingungen.value
+    .filter(d => !d.obsolete || d.id === daten.value.shipping.delivery_term_id)
+    .map(d => ({ value: Number(d.id), title: d.description })))
+const lieferbedingungText = computed(() =>
+    lieferbedingungen.value.find(d => d.id === daten.value.shipping.delivery_term_id)?.description_long || '')
 
 const daten = ref(leer())
 /** Vorgaben der Kanäle (Aufschlag, Rundung) je channel_id — nur zum Lesen */
@@ -542,6 +708,10 @@ function alsKanal(zeile) {
     return {
         channel_id: Number(zeile.channel_id),
         type: String(zeile.type),
+        name: String(zeile.name || ''),
+        publish_mode: String(zeile.publish_mode || 'local'),
+        products_link: String(zeile.products_link || ''),
+        thumbnails_link: String(zeile.thumbnails_link || ''),
         active: zeile.active === true || zeile.active === 't',
         markup_mode: zeile.markup_type || 'default',
         markup_value: zeile.markup_value == null ? null : Number(zeile.markup_value),
@@ -552,6 +722,10 @@ function alsKanal(zeile) {
         settings: lies(zeile.settings) && typeof lies(zeile.settings) === 'object' ? { ...lies(zeile.settings) } : {},
         sync_status: zeile.sync_status || '',
         sync_error: zeile.sync_error || '',
+        // HugoShop: warum keine Versandart passt, leer = passt (nur zum Lesen)
+        shipping_message: zeile.shipping_message || '',
+        // HugoShop: Versandart und Preis je Zone (nur zum Lesen)
+        shipping_prices: Array.isArray(lies(zeile.shipping_prices)) ? lies(zeile.shipping_prices) : [],
         external_id: zeile.external_id || '',
         images: Array.isArray(lies(zeile.images)) ? lies(zeile.images) : [],
     }
@@ -581,10 +755,15 @@ const gesperrt = kanal => kanal.type !== 'hugoshop' && props.partType === 'servi
 // ── Bilder der Marktplätze ──
 
 const bildLaedt = ref(false)
-const lokaleWebseite = computed(() => oserp.getClientDefaultValue('shop_publish_mode', 'local') !== 'hugocms')
+/** Beschreibt OSERP die Webseite dieses HugoShops selbst? (Betriebsart lokal) */
+const lokaleWebseite = kanal => kanal.publish_mode !== 'hugocms'
 
-/** Kanäle, aus denen sich Bilder übernehmen lassen: die anderen gewählten */
+/**
+ * Kanäle, aus denen sich Bilder übernehmen lassen: die anderen gewählten —
+ * nicht von HugoShop zu HugoShop, deren Bildnamen sind ohnehin dieselben (M6)
+ */
 const bildQuellen = kanal => aktiveKanaele.value.filter(k => k.channel_id !== kanal.channel_id
+    && !(k.type === 'hugoshop' && kanal.type === 'hugoshop')
     && (k.type === 'hugoshop' ? daten.value.images.length > 0 : k.images.length > 0))
 
 /** Neue Bilderliste eines Kanals aus der Antwort übernehmen */
@@ -611,7 +790,7 @@ async function bilderHochladen(kanal, dateien) {
             leser.readAsDataURL(datei)
         }).catch(() => null)
         if (!inhalt) continue
-        const antwort = await shop.uploadChannelImage(Number(props.partsId), kanal.type, datei.name, inhalt)
+        const antwort = await shop.uploadChannelImage(Number(props.partsId), kanal.channel_id, datei.name, inhalt)
         if (shop.error.value) {
             toasts.error(shop.error.value || t('ShopView.partCard.imageError'))
             continue
@@ -634,7 +813,7 @@ async function bildVerschieben(kanal, index, richtung) {
     if (ziel < 0 || ziel >= ids.length) return
     ;[ids[index], ids[ziel]] = [ids[ziel], ids[index]]
     bildLaedt.value = true
-    bilderSetzen(kanal, await shop.sortChannelImages(Number(props.partsId), kanal.type, ids))
+    bilderSetzen(kanal, await shop.sortChannelImages(Number(props.partsId), kanal.channel_id, ids))
     bildLaedt.value = false
     if (shop.error.value) toasts.error(shop.error.value)
 }
@@ -642,10 +821,13 @@ async function bildVerschieben(kanal, index, richtung) {
 /**
  * Übernimmt Bilder aus einem anderen Kanal und lädt danach die Bilderlisten
  * neu — beim HugoShop ändert sich parts_ext.hugoshop_images
+ *
+ * @param {object} von Quellkanal
+ * @param {object} nach Zielkanal
  */
 async function bilderUebernehmen(von, nach) {
     bildLaedt.value = true
-    const ergebnis = await shop.copyChannelImages(Number(props.partsId), von, nach)
+    const ergebnis = await shop.copyChannelImages(Number(props.partsId), von.channel_id, nach.channel_id)
     if (shop.error.value) {
         bildLaedt.value = false
         toasts.error(shop.error.value)
@@ -658,7 +840,7 @@ async function bilderUebernehmen(von, nach) {
         const kanal = daten.value.channels.find(k => k.channel_id === Number(zeile.channel_id))
         if (kanal) kanal.images = Array.isArray(lies(zeile.images)) ? lies(zeile.images) : []
     }
-    if (nach === 'hugoshop') {
+    if (nach.type === 'hugoshop') {
         daten.value.images = alsListe(lies(antwort.part?.hugoshop_images))
     }
     toasts.success(t('ShopView.partCard.imagesCopied', { anzahl: ergebnis?.copied ?? 0 }))
@@ -674,7 +856,9 @@ function alsVorgabe(zeile) {
 
 const vorgabe = kanal => vorgaben.value[kanal.channel_id] || { markup_type: 'none', markup_value: 0, round_99: false }
 
-const kanalName = typ => (te(`ShopView.channels.${typ}`) ? t(`ShopView.channels.${typ}`) : typ)
+/** Name des Kanals (dev/shop-mehrere-kanaele.md), sonst die Bezeichnung seiner Art */
+const kanalName = kanal => kanal.name
+    || (te(`ShopView.channels.${kanal.type}`) ? t(`ShopView.channels.${kanal.type}`) : kanal.type)
 
 const aktiveKanaele = computed(() => daten.value.channels.filter(k => k.active))
 const hugoshopAktiv = computed(() => aktiveKanaele.value.some(k => k.type === 'hugoshop'))
@@ -722,6 +906,28 @@ const betragHinweis = computed(() =>
 const steuersatz = computed(() => Number(steuersaetze.value[props.buchungsgruppenId] ?? 0) || 0)
 
 const rund2 = x => Math.round((x + Number.EPSILON) * 100) / 100
+
+/** Stückzahl der Preisanzeige: Mindestabnahme, sonst 1 */
+const mindestmenge = computed(() => Number(daten.value.shipping?.min_qty) > 0 ? Number(daten.value.shipping.min_qty) : 1)
+
+/** Hat eine Zeile des Kanals Kosten? Dann zeigt die Tabelle Kosten und Differenz */
+const mitKosten = kanal => kanal.shipping_prices.some(z => z.cost !== null && z.cost !== undefined)
+
+/**
+ * Was der Versand einbringt oder kostet, netto: Kundenpreis (frei = 0) minus
+ * Kosten. null, wenn es keinen Preis oder keine Kosten gibt.
+ */
+function differenz(zeile) {
+    if (zeile.status !== 'ok' || zeile.cost === null || zeile.cost === undefined) return null
+    const preis = WAHR_WERTE.includes(zeile.free) ? 0 : Number(zeile.price_net ?? 0)
+    return rund2(preis - Number(zeile.cost))
+}
+
+/** Warum es für eine Zone keinen Versandpreis gibt */
+function versandStatusText(status) {
+    const schluessel = `ShopView.partCard.shippingStatus.${status}`
+    return te(schluessel) ? t(schluessel) : status
+}
 
 function geld(betrag) {
     try {
@@ -786,6 +992,14 @@ function nutzdaten(partsId) {
         technical_data: zuObjekt(d.technical_data),
         properties: zuObjekt(d.properties),
         downloads: zuObjekt(d.downloads),
+        shipping: {
+            shipping_method_id: d.shipping.shipping_method_id || null,
+            length: zahlOderNull(d.shipping.length),
+            width: zahlOderNull(d.shipping.width),
+            height: zahlOderNull(d.shipping.height),
+            min_qty: zahlOderNull(d.shipping.min_qty),
+            delivery_term_id: d.shipping.delivery_term_id || null,
+        },
         channels: d.channels.map(k => ({
             channel_id: k.channel_id,
             active: k.active,
@@ -812,20 +1026,27 @@ function fehlerText() {
         : shop.error.value || t('ShopView.partCard.saveError')
 }
 
-// ── Links auf die Shop-Webseite (Muster mit %s aus den Shop-Einstellungen) ──
+// ── Links auf die Shop-Webseite (Muster mit %s aus den Einstellungen des HugoShops) ──
 
 function formatLink(muster, wert) {
     return muster && muster.includes('%s') ? muster.replace('%s', wert) : ''
 }
 
+/**
+ * HugoShop, dessen Webseite die Links meinen: der erste, in dem der Artikel
+ * angeboten wird, sonst der erste überhaupt (dev/shop-mehrere-kanaele.md)
+ */
+const linkKanal = computed(() => aktiveKanaele.value.find(k => k.type === 'hugoshop')
+    || daten.value.channels.find(k => k.type === 'hugoshop') || null)
+
 const shopLink = computed(() => {
     const ziel = daten.value.hyperlink.trim() || props.suggestedLink
     if (!props.partsId || !ziel) return ''
-    return formatLink(oserp.getClientDefaultValue('shop_products_link', ''), ziel.toLowerCase())
+    return formatLink(linkKanal.value?.products_link || '', ziel.toLowerCase())
 })
 
 const vorschau = computed(() => {
-    const muster = oserp.getClientDefaultValue('shop_thumbnails_link', '')
+    const muster = linkKanal.value?.thumbnails_link || ''
     return ohneLeere(daten.value.images)
         .map(name => ({ name, url: formatLink(muster, name) }))
         .filter(bild => bild.url)
@@ -850,6 +1071,12 @@ async function laden() {
     const kanaele = antwort?.channels || []
     vorgaben.value = Object.fromEntries(kanaele.map(k => [Number(k.channel_id), alsVorgabe(k)]))
     steuersaetze.value = antwort?.tax_rates || {}
+    const versand = antwort?.shipping || {}
+    versandarten.value = (versand.methods || []).map(m => ({ ...m, id: Number(m.id), active: WAHR_WERTE.includes(m.active) }))
+    lieferbedingungen.value = (versand.delivery_terms || []).map(d => ({ ...d, id: Number(d.id), obsolete: WAHR_WERTE.includes(d.obsolete) }))
+    gewichtseinheit.value = versand.weightunit || ''
+    gewicht.value = antwort?.part?.weight === null || antwort?.part?.weight === undefined ? null : Number(antwort.part.weight)
+    versandartikelVon.value = antwort?.part?.shipping_method_of || ''
 
     if (!props.partsId) {
         // Neuanlage bei aktivem Shop: der Artikel ist in der Regel für den Shop
@@ -871,6 +1098,14 @@ async function laden() {
         properties: zuPaaren(lies(zeile?.hugoshop_properties)),
         downloads: zuPaaren(lies(zeile?.hugoshop_downloads)),
         channels: kanaele.map(alsKanal),
+        shipping: versand.part ? {
+            shipping_method_id: versand.part.shipping_method_id ? Number(versand.part.shipping_method_id) : null,
+            length: zahlText(versand.part.length),
+            width: zahlText(versand.part.width),
+            height: zahlText(versand.part.height),
+            min_qty: zahlText(versand.part.min_qty),
+            delivery_term_id: versand.part.delivery_term_id ? Number(versand.part.delivery_term_id) : null,
+        } : leererVersand(),
     }
     zuletzt = stand(props.partsId)
     ersterKanalOffen()
@@ -884,6 +1119,8 @@ async function laden() {
 /** Speichert für einen bestimmten Artikel — die id wird beim Planen festgehalten */
 async function speichern(partsId) {
     if (!partsId || !darfBearbeiten.value) return
+    // Ungültige Versandangaben: nicht senden, das Feld zeigt den Fehler
+    if (!versandGueltig()) return
 
     const neuerStand = stand(partsId)
     if (neuerStand === zuletzt) return
@@ -893,7 +1130,8 @@ async function speichern(partsId) {
     speichert.value = true
     fehler.value = ''
     if (liste) {
-        await shop.savePartShopData(nutz)
+        const ergebnis = await shop.savePartShopData(nutz)
+        versandMeldungen(ergebnis?.shipping_messages)
     } else {
         await shop.deletePartShopData(Number(partsId))
     }
@@ -903,6 +1141,24 @@ async function speichern(partsId) {
         fehler.value = fehlerText()
     } else {
         zuletzt = neuerStand
+    }
+}
+
+/**
+ * Übernimmt die Prüfung der Versandart nach dem Speichern
+ *
+ * Gewicht, Maße und Versandart ändern, ob eine Versandart passt — die Antwort
+ * von savePartShopData sagt es je HugoShop. Nur ein Anzeigewert: der Watcher
+ * auf daten sieht die Änderung, stand() aber nicht.
+ */
+function versandMeldungen(meldungen) {
+    if (!Array.isArray(meldungen)) return
+    for (const meldung of meldungen) {
+        const kanal = daten.value.channels.find(k => k.channel_id === Number(meldung.channel_id))
+        if (kanal) {
+            kanal.shipping_message = meldung.message || ''
+            kanal.shipping_prices = Array.isArray(meldung.prices) ? meldung.prices : []
+        }
     }
 }
 

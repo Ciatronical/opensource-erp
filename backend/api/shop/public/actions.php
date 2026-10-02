@@ -6,11 +6,14 @@
 // ../lib/ und kennt weder Cookie noch Zugang.
 //
 // SIGNATUR
-// Anders als im uebrigen Backend bekommen diese Aktionen drei Parameter:
-//   ($db, $uuid, $daten)
+// Anders als im uebrigen Backend bekommen diese Aktionen vier Parameter:
+//   ($db, $uuid, $daten, $kanal)
 // Die Verbindung, weil es hier keine Mitarbeiter-Sitzung gibt, ueber die sich
 // DbhCompany fuellen liesse; die Sitzungskennung des Besuchers, weil sie
-// nirgends aus dem Cookie gelesen wird.
+// nirgends aus dem Cookie gelesen wird; den HugoShop der Anfrage, den der
+// Shop-Schluessel bestimmt (dev/shop-mehrere-kanaele.md). Aktionen, die ihn
+// nicht brauchen, lassen den vierten Parameter weg — die Sitzung und ihr
+// Warenkorb tragen den Kanal ohnehin.
 //
 // Deshalb tragen sie kein @testdata: der API-Tester ruft Aktionen mit einem
 // einzigen $data-Parameter und ohne Shop-Schluessel, er kann sie nicht
@@ -70,12 +73,12 @@ function shopCartAndCustomer($db, string $uuid): array {
 // ============================================================================
 
 /** Status der Sitzung; legt sie an, wenn es sie noch nicht gibt */
-function getContext($db, string $uuid, array $daten) {
-    resultInfo(true, '', shopContextStatus($db, $uuid));
+function getContext($db, string $uuid, array $daten, int $kanal) {
+    resultInfo(true, '', shopContextStatus($db, $uuid, $kanal));
 }
 
 /** Meldet einen Shop-Kunden an */
-function shopLogin($db, string $uuid, array $daten) {
+function shopLogin($db, string $uuid, array $daten, int $kanal) {
     $email    = trim((string)shopVar($daten, 'email', ''));
     $password = (string)shopVar($daten, 'password', '');
 
@@ -84,7 +87,7 @@ function shopLogin($db, string $uuid, array $daten) {
     }
 
     shopLoginCustomer($db, $uuid, $email, $password);
-    resultInfo(true, '', shopContextStatus($db, $uuid));
+    resultInfo(true, '', shopContextStatus($db, $uuid, $kanal));
 }
 
 /** Meldet den Shop-Kunden ab und vergibt eine neue Sitzungskennung */
@@ -128,13 +131,17 @@ function getCart($db, string $uuid, array $daten) {
         return;
     }
 
-    // Nach einem Abbruch bei der Bezahlung sollen die Versandkosten neu
-    // bestimmt werden, statt aus dem vorigen Anlauf stehen zu bleiben.
-    if (filter_var(shopVar($daten, 'invoicingCanceled', false), FILTER_VALIDATE_BOOLEAN)) {
-        cartRemoveShipping($db, $context['cart_uuid']);
-    }
+    // Versand nach der Lieferadresse, die die Kasse gerade gewaehlt hat
+    // (adresses.shipping wie bei invoicing); ohne Angabe die
+    // Standard-Lieferadresse des Kontos (dev/shop-versand.md, Schritt 6).
+    // invoicingCanceled kommt von der Abbruchseite und hat keine Wirkung mehr:
+    // der Versand liegt nicht mehr als Zeile im Warenkorb.
+    $adressen = shopVar($daten, 'adresses', null);
+    $land = is_array($adressen) && isset($adressen['shipping'])
+        ? shopShippingCountry($db, $customerId, shopDeliveryAddress($adressen['shipping']))
+        : null;
 
-    resultInfo(true, '', cartRead($db, $context['cart_uuid'], $customerId, true));
+    resultInfo(true, '', cartRead($db, $context['cart_uuid'], $customerId, true, $land));
 }
 
 /** Legt einen Artikel in den Warenkorb */
@@ -337,18 +344,18 @@ function contactInit($db, string $uuid, array $daten) {
 // ============================================================================
 
 /** Sofortsuche waehrend der Eingabe */
-function fastSearch($db, string $uuid, array $daten) {
-    resultInfo(true, '', shopSearch($db, (string)shopVar($daten, 'terms', ''), 5, 0));
+function fastSearch($db, string $uuid, array $daten, int $kanal) {
+    resultInfo(true, '', shopSearch($db, $kanal, (string)shopVar($daten, 'terms', ''), 5, 0));
 }
 
 /** Weitere Treffer zur laufenden Suche */
-function moreSearchResults($db, string $uuid, array $daten) {
-    resultInfo(true, '', shopSearch($db, (string)shopVar($daten, 'terms', ''), 11, 0));
+function moreSearchResults($db, string $uuid, array $daten, int $kanal) {
+    resultInfo(true, '', shopSearch($db, $kanal, (string)shopVar($daten, 'terms', ''), 11, 0));
 }
 
 /** Vollstaendige Trefferliste */
-function fullSearch($db, string $uuid, array $daten) {
-    resultInfo(true, '', shopSearch($db, (string)shopVar($daten, 'terms', ''), 30, 11));
+function fullSearch($db, string $uuid, array $daten, int $kanal) {
+    resultInfo(true, '', shopSearch($db, $kanal, (string)shopVar($daten, 'terms', ''), 30, 11));
 }
 
 /**
@@ -419,15 +426,12 @@ function checkout($db, string $uuid, array $daten) {
  */
 function invoicing($db, string $uuid, array $daten) {
     $adressen = shopVar($daten, 'adresses', []);
+    // Gespeicherte Adresse (id), neue Felder oder die Rechnungsadresse —
+    // vereinheitlicht in createShopInvoice (shopDeliveryAddress). Frueher hiess
+    // default hier immer „an die Rechnungsadresse", auch mit gewaehlter id.
     $lieferadresse = is_array($adressen) ? ($adressen['shipping'] ?? []) : [];
 
-    // Die Oberfläche schickt entweder eine vorhandene Adresse oder die Felder
-    // einer neuen; "default" heisst: an die Rechnungsadresse.
-    if (!empty($lieferadresse['default'])) {
-        $lieferadresse = [];
-    }
-
-    $rechnung = createShopInvoice($db, $uuid, $lieferadresse);
+    $rechnung = createShopInvoice($db, $uuid, is_array($lieferadresse) ? $lieferadresse : []);
     $versendet = shopSendInvoiceMail($db, (int)$rechnung['ar_id']);
 
     resultInfo(true, '', [
@@ -448,8 +452,8 @@ function personalOrder($db, string $uuid, array $daten) {
 }
 
 /** Zusammenfassung zum Rechnungslink — auch für Gäste ohne Anmeldung */
-function getInvoiceSummary($db, string $uuid, array $daten) {
-    resultInfo(true, '', invoiceSummaryByLink($db, (string)shopVar($daten, 'ar_link', '')));
+function getInvoiceSummary($db, string $uuid, array $daten, int $kanal) {
+    resultInfo(true, '', invoiceSummaryByLink($db, (string)shopVar($daten, 'ar_link', ''), $kanal));
 }
 
 /** Rechnungs-PDF einer eigenen Bestellung */
@@ -458,8 +462,8 @@ function downloadInvoice($db, string $uuid, array $daten) {
 }
 
 /** Rechnungs-PDF über den Rechnungslink */
-function downloadInvoiceLink($db, string $uuid, array $daten) {
-    shopSendPdf($db, shopInvoiceIdByLink($db, (string)shopVar($daten, 'ar-link', '')));
+function downloadInvoiceLink($db, string $uuid, array $daten, int $kanal) {
+    shopSendPdf($db, shopInvoiceIdByLink($db, (string)shopVar($daten, 'ar-link', ''), $kanal));
 }
 
 /**
@@ -490,17 +494,34 @@ function shopSendPdf($db, int $arId) {
 
 /** Beginnt die Bezahlung und schickt den Kunden zu PayPal */
 function beginPayment($db, string $uuid, array $daten) {
+    // Lieferadresse (dev/shop-versand.md, Schritt 6). Aus der Kasse: shipto =
+    // gespeicherte Adresse, 0 = Rechnungsadresse; eine neue Adresse legt die
+    // Kasse vorher an (newDeliveryAddress) und schickt deren Id. Vom Knopf im
+    // Warenkorb ohne shipto: die Standard-Lieferadresse des Kontos — mit ihr
+    // rechnet der Warenkorb auch.
+    $shipto = shopVar($daten, 'shipto', null);
+    if (null === $shipto || '' === $shipto) {
+        $standard = $db->getOne(
+            "SELECT ce.hugoshop_shipto_id AS id
+               FROM context_hugoshop k
+               JOIN customer_ext ce ON ce.customer_id = k.customer_id
+              WHERE k.uuid = :uuid",
+            [':uuid' => $uuid]
+        );
+        $shipto = (int)($standard['id'] ?? 0);
+    }
     $bezahlt = paymentBegin(
         $db, $uuid,
         (string)shopVar($daten, 'bill', ''),
-        (string)shopVar($daten, 'canceled', '')
+        (string)shopVar($daten, 'canceled', ''),
+        shopDeliveryAddress(['shipto_id' => (int)$shipto])
     );
     shopRedirect($bezahlt['approval_url']);
 }
 
 /** Rückweg von PayPal: einziehen, Rechnung anlegen, zur Rechnungsseite */
-function endPayment($db, string $uuid, array $daten) {
-    $ergebnis = paymentEnd($db, (string)shopVar($daten, 'token', ''));
+function endPayment($db, string $uuid, array $daten, int $kanal) {
+    $ergebnis = paymentEnd($db, $kanal, (string)shopVar($daten, 'token', ''));
     shopRedirect((string)shopVar($daten, 'page', '/').'?link='.$ergebnis['ar_link'].'#focus');
 }
 
@@ -531,23 +552,23 @@ function shopRedirect(string $ziel) {
 // ============================================================================
 
 /** Angaben zu einem Artikel für die Reichweitenmessung */
-function gtmGetProductInfo($db, string $uuid, array $daten) {
-    resultInfo(true, '', ['product' => analyticsProduct($db, shopVarInt($daten, 'product_id'))]);
+function gtmGetProductInfo($db, string $uuid, array $daten, int $kanal) {
+    resultInfo(true, '', ['product' => analyticsProduct($db, $kanal, shopVarInt($daten, 'product_id'))]);
 }
 
 /** Angaben zu einem Kauf */
-function gtmGetPurchased($db, string $uuid, array $daten) {
-    resultInfo(true, '', ['purchased' => analyticsPurchase($db, (string)shopVar($daten, 'ar_link', ''))]);
+function gtmGetPurchased($db, string $uuid, array $daten, int $kanal) {
+    resultInfo(true, '', ['purchased' => analyticsPurchase($db, $kanal, (string)shopVar($daten, 'ar_link', ''))]);
 }
 
 /** Gekaufte Artikel und Kaufangaben */
-function gtmGetPurchasedProducts($db, string $uuid, array $daten) {
-    resultInfo(true, '', analyticsPurchaseItems($db, (string)shopVar($daten, 'ar_link', '')));
+function gtmGetPurchasedProducts($db, string $uuid, array $daten, int $kanal) {
+    resultInfo(true, '', analyticsPurchaseItems($db, $kanal, (string)shopVar($daten, 'ar_link', '')));
 }
 
 /** Anfrage aus dem Kontaktformular */
-function sendContactMail($db, string $uuid, array $daten) {
-    $versendet = shopSendContactMail($db, [
+function sendContactMail($db, string $uuid, array $daten, int $kanal) {
+    $versendet = shopSendContactMail($db, $kanal, [
         'name'  => shopVar($daten, 'name', ''),
         'email' => shopVar($daten, 'email', ''),
         'phone' => shopVar($daten, 'phone', ''),
@@ -560,7 +581,7 @@ function sendContactMail($db, string $uuid, array $daten) {
 }
 
 /** Widerruf entgegennehmen */
-function submitWiderruf($db, string $uuid, array $daten) {
+function submitWiderruf($db, string $uuid, array $daten, int $kanal) {
     // Für Menschen unsichtbares Feld: ist es ausgefüllt, war ein Programm am
     // Werk. Wir tun so, als sei alles in Ordnung, halten aber nichts fest.
     if ('' !== trim((string)shopVar($daten, 'website', ''))) {
@@ -571,7 +592,7 @@ function submitWiderruf($db, string $uuid, array $daten) {
     $context = shopContext($db, $uuid);
     $customerId = empty($context['customer_id']) ? null : (int)$context['customer_id'];
 
-    $widerruf = submitWithdrawal($db, $customerId, [
+    $widerruf = submitWithdrawal($db, $kanal, $customerId, [
         'name'        => shopVar($daten, 'name', ''),
         'ordernumber' => shopVar($daten, 'ordernumber', ''),
         'email'       => shopVar($daten, 'email', ''),
@@ -596,6 +617,6 @@ function submitWiderruf($db, string $uuid, array $daten) {
  * @param string $daten['url'] Host und Pfad der angefragten Adresse
  * @testdata {"url": "shop.example.de/alte-seite"}
  */
-function resolveRedirect($db, string $uuid, array $daten) {
-    resultInfo(true, '', shopResolveRedirect($db, (string)shopVar($daten, 'url', '')));
+function resolveRedirect($db, string $uuid, array $daten, int $kanal) {
+    resultInfo(true, '', shopResolveRedirect($db, $kanal, (string)shopVar($daten, 'url', '')));
 }

@@ -14,6 +14,7 @@
             "typeService": "服务",
             "unit": "单位",
             "buchungsgruppe": "记账组",
+            "weight": "重量",
             "sellprice": "销售价格",
             "notes": "详细描述",
             "obsolete": "已淘汰 / 不再使用",
@@ -26,6 +27,7 @@
             "createError": "无法创建商品。",
             "noPermission": "您没有创建商品的权限。",
             "partnumberExists": "此商品编号已被使用。",
+            "weightInvalid": "为空或不小于 0 的数字",
             "required": "必填项"
         },
         "titleNew": "新建商品",

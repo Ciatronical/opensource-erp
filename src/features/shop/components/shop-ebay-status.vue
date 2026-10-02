@@ -126,6 +126,14 @@ import { shopFehler } from '../composables/useShop.js';
 const i18n = useI18n();
 const { t } = i18n;
 
+const props = defineProps({
+    /** eBay-Kanal (dev/shop-mehrere-kanaele.md); 0 = Standard-eBay-Kanal */
+    channelId: { type: Number, default: 0 },
+});
+
+/** Kanal für jeden Aufruf — ohne Angabe wählt das Backend den Standardkanal */
+const kanal = () => (props.channelId ? { channel_id: props.channelId } : {});
+
 const status = reactive({ enabled: false, lastCheck: null, counts: {}, recent: [] });
 const syncing = ref(false);
 const testing = ref(false);
@@ -140,7 +148,7 @@ function formatMoney(v) {
 async function loadStatus() {
     loading.value = true;
     try {
-        const resp = await axios.post('/api/shop/', { action: 'getShopEbayStatus' });
+        const resp = await axios.post('/api/shop/', { action: 'getShopEbayStatus', ...kanal() });
         if (resp.data.success) {
             Object.assign(status, resp.data.payload || {});
         }
@@ -155,7 +163,7 @@ async function testConnection() {
     testing.value = true;
     message.text = '';
     try {
-        const resp = await axios.post('/api/shop/', { action: 'testShopEbay' });
+        const resp = await axios.post('/api/shop/', { action: 'testShopEbay', ...kanal() });
         if (resp.data.success) {
             message.type = 'success';
             message.text = t('crm_fields.ebayPanelUi.testOk', { count: resp.data.payload?.orderTotal ?? 0 });
@@ -175,7 +183,7 @@ async function syncOrders() {
     syncing.value = true;
     message.text = '';
     try {
-        const resp = await axios.post('/api/shop/', { action: 'syncShopEbayOrders' });
+        const resp = await axios.post('/api/shop/', { action: 'syncShopEbayOrders', ...kanal() });
         if (resp.data.success) {
             const p = resp.data.payload || {};
             message.type = (p.errors && p.errors.length) ? 'warning' : 'success';

@@ -14,6 +14,7 @@
             "typeService": "Hizmet",
             "unit": "Birim",
             "buchungsgruppe": "Muhasebe grubu",
+            "weight": "Ağırlık",
             "sellprice": "Satis fiyati",
             "notes": "Uzun aciklama",
             "obsolete": "Eski / Kullanilmasin",
@@ -26,6 +27,7 @@
             "createError": "Ürün oluşturulamadı.",
             "noPermission": "Ürün oluşturma yetkiniz yok.",
             "partnumberExists": "Bu ürün numarası zaten kullanılıyor.",
+            "weightInvalid": "Boş veya 0'dan itibaren bir sayı",
             "required": "Zorunlu alan"
         },
         "titleNew": "Ürün oluştur",

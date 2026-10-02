@@ -153,8 +153,12 @@ function searchDocuments($data) {
  * @param string $data['scope']      active (Vorgabe), obsolete oder all
  * @param string $data['shop']       leer, offered oder not_offered
  * @param int    $data['channel_id'] mit shop offered: nur in diesem Kanal (0 = alle Kanaele)
+ * @param bool   $data['weight_missing'] true = nur Waren ohne Gewicht (zum Nachpflegen fuer den Versand)
+ * @param bool   $data['shipping_unfit'] true = nur Artikel, die in einem HugoShop angeboten werden und
+ *                                   fuer die dort keine Versandart passt (shop_part_shipping_check) —
+ *                                   sie werden nicht veroeffentlicht; mit channel_id nur in diesem Kanal
  * @param int    $data['limit']      Maximale Trefferzahl (Standard 200, max 1000)
- * @testdata {"action": "searchParts", "q": "Bremse", "scope": "active", "shop": "", "channel_id": 0, "limit": 50}
+ * @testdata {"action": "searchParts", "q": "Bremse", "scope": "active", "shop": "", "channel_id": 0, "weight_missing": false, "shipping_unfit": false, "limit": 50}
  */
 function searchParts($data) {
     $db    = DbhCompany::begin();
@@ -186,9 +190,49 @@ function searchParts($data) {
                                AND (CAST(:channel_id AS integer) = 0 OR pc.channel_id = CAST(:channel_id AS integer)))';
     }
 
+    // Waren ohne Gewicht (dev/shop-versand.md, W8): Dienstleistungen werden
+    // nicht verschickt und zaehlen nicht
+    if (!empty($data['weight_missing'])) {
+        $where[] = "p.part_type <> 'service' AND COALESCE(p.weight, 0) <= 0";
+    }
+
+    // Ohne passende Versandart (dev/shop-versand.md, Nachtrag 2026-10-02):
+    // angeboten in einem eingeschalteten HugoShop, dort passt keine
+    // Versandart — die Seite wird nicht veroeffentlicht
+    if (!empty($data['shipping_unfit'])) {
+        if (!isExtensionActive($db, 'shop')) {
+            resultInfo(false, 'INVALID_FILTER', null, 'Der Filter nach Versandart ist hier nicht moeglich');
+            return;
+        }
+        $params[':versand_kanal'] = (int)($data['channel_id'] ?? 0);
+        // shop_part_shipping_check liefert eine Tabelle — sie gehört in FROM,
+        // in WHERE lehnt PostgreSQL sie ab
+        $where[] = "EXISTS (SELECT 1
+                              FROM parts_channel_shop vc
+                              JOIN sales_channel_shop vk ON vk.id = vc.channel_id
+                                                        AND vk.active AND vk.type = 'hugoshop'
+                             CROSS JOIN LATERAL shop_part_shipping_check(p.id, vk.id) vp
+                             WHERE vc.parts_id = p.id AND vc.active
+                               AND (CAST(:versand_kanal AS integer) = 0 OR vc.channel_id = CAST(:versand_kanal AS integer))
+                               AND vp.status <> 'ok')";
+    }
+
+    // Treffergüte: genaue Artikelnummer zuerst, dann Nummern, die mit dem
+    // Suchtext beginnen, dann solche, die ihn enthalten, zuletzt Treffer nur
+    // in der Bezeichnung. Sortiert wird vor dem LIMIT — „8" steht so oben,
+    // auch wenn hunderte Nummern und Bezeichnungen eine 8 enthalten.
+    $rang = '';
     if ($q !== '') {
         $params[':q'] = '%' . $q . '%';
         $where[] = '(p.partnumber ILIKE :q OR p.description ILIKE :q)';
+
+        $params[':q_genau']  = $q;
+        $params[':q_anfang'] = $q . '%';
+        $params[':q_teil']   = '%' . $q . '%';
+        $rang = "CASE WHEN lower(p.partnumber) = lower(:q_genau) THEN 0
+                      WHEN p.partnumber ILIKE :q_anfang THEN 1
+                      WHEN p.partnumber ILIKE :q_teil THEN 2
+                      ELSE 3 END, ";
     }
 
     $whereSql = implode(' AND ', $where);
@@ -197,13 +241,14 @@ function searchParts($data) {
         "SELECT p.id,
                 p.partnumber,
                 p.description,
+                p.part_type,
                 p.unit,
                 p.sellprice,
                 p.onhand,
                 COALESCE(p.obsolete, FALSE) AS obsolete
            FROM parts p
           WHERE $whereSql
-          ORDER BY p.partnumber
+          ORDER BY {$rang}p.partnumber
           LIMIT :limit",
         $params
     );
@@ -229,7 +274,7 @@ function getPartsSalesChannels($data) {
     }
 
     resultInfo(true, '', ['channels' => $db->getAll(
-        "SELECT c.id AS channel_id, c.type
+        "SELECT c.id AS channel_id, c.type, c.name
            FROM sales_channel_shop c
           WHERE c.active
           ORDER BY c.sortkey NULLS LAST, c.id"

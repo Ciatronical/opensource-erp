@@ -17,12 +17,13 @@
  * Vorgang trotzdem festgehalten. Andersherum ginge er verloren.
  *
  * @param object $db Company-Datenbankverbindung
+ * @param int $kanal HugoShop, über den widerrufen wird — seine Betreiberadresse
  * @param int|null $customerId Kunde, falls angemeldet
  * @param array $daten name, ordernumber, email, reason, remote_addr, user_agent
  * @return array{id: int, mails: array}
  * @throws ApiError MISSING_NAME, INVALID_EMAIL
  */
-function submitWithdrawal($db, ?int $customerId, array $daten): array {
+function submitWithdrawal($db, int $kanal, ?int $customerId, array $daten): array {
     $name  = trim((string)($daten['name'] ?? ''));
     $email = trim((string)($daten['email'] ?? ''));
 
@@ -37,14 +38,14 @@ function submitWithdrawal($db, ?int $customerId, array $daten): array {
 
     $zeile = $db->getOne(
         "INSERT INTO withdrawals_hugoshop
-                (name, ordernumber, email, reason, customer_id, ar_id, remote_addr, user_agent)
+                (name, ordernumber, email, reason, customer_id, ar_id, remote_addr, user_agent, channel_id)
          SELECT :name, :ordernumber, :email, :reason, :customer_id,
                 (SELECT id FROM ar
                   WHERE invnumber = :ordernumber
                     AND (:customer_id::int IS NULL OR customer_id = :customer_id)
                   ORDER BY id DESC LIMIT 1),
-                :remote_addr, :user_agent
-         RETURNING id, name, ordernumber, email, reason, itime, remote_addr, user_agent",
+                :remote_addr, :user_agent, CAST(:kanal AS integer)
+         RETURNING id, name, ordernumber, email, reason, itime, remote_addr, user_agent, channel_id",
         [
             ':name'        => $name,
             ':ordernumber' => $bestellnummer,
@@ -53,6 +54,7 @@ function submitWithdrawal($db, ?int $customerId, array $daten): array {
             ':customer_id' => $customerId,
             ':remote_addr' => (string)($daten['remote_addr'] ?? ''),
             ':user_agent'  => mb_substr((string)($daten['user_agent'] ?? ''), 0, 500),
+            ':kanal'       => $kanal,
         ]
     );
 

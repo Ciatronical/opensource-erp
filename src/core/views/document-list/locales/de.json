@@ -13,6 +13,7 @@
             "date": "Datum",
             "customer": "Kunde",
             "description": "Bezeichnung",
+            "partType": "Art",
             "amount": "Betrag",
             "status": "Status",
             "partnumber": "Artikelnummer",
@@ -27,6 +28,8 @@
         "openOnly": "Nur offene",
         "obsoleteOnly": "Nur ausgemusterte anzeigen",
         "showAll": "Alle anzeigen",
+        "weightMissing": "Nur ohne Gewicht",
+        "shippingUnfit": "Nur ohne passende Versandart",
         "shopOnly": "Nur im Shop angebotene",
         "notInShop": "Alle nicht im Shop angebotenen",
         "channel": "Verkaufskanal",
@@ -37,6 +40,12 @@
         "obsolete": "Ausgemustert",
         "noData": "Keine Einträge gefunden",
         "loadError": "Die Liste konnte nicht geladen werden",
-        "newPart": "Neuer Artikel"
+        "newPart": "Neuer Artikel",
+        "partTypes": {
+            "part": "Ware",
+            "service": "Dienstleistung",
+            "assembly": "Erzeugnis",
+            "assortment": "Sortiment"
+        }
     }
 }

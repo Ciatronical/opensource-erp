@@ -15,7 +15,8 @@
 // MANDANT
 // Ohne Mitarbeiter-Sitzung gibt es keine auth.session_oserp, ueber die sich
 // die Firmen-Datenbank ermitteln liesse. Stattdessen weist sich die
-// Shop-Webseite mit dem Shop-Schluessel aus (defaults_oserp.shop_public_key).
+// Shop-Webseite mit dem Shop-Schluessel ihres HugoShops aus
+// (sales_channel_secret_shop, public_key). Er bestimmt Mandant und Kanal.
 // Das Muster stammt von backend/webhook/telegram.php.
 //
 // Der Schluessel gehoert in den Kopf X-Shop-Key und wird sinnvollerweise vom
@@ -67,17 +68,22 @@ function shopPublicAuthPdo(): PDO {
 }
 
 /**
- * Sucht die Firmen-Datenbank zum Shop-Schluessel
+ * Sucht Firmen-Datenbank und HugoShop zum Shop-Schluessel
  *
- * Geht die Mandanten durch und vergleicht deren shop_public_key. Der
- * Vergleich laeuft ueber hash_equals, damit die Laufzeit nichts verraet; ein
- * leerer Schluessel wird nie angenommen, sonst passte ein nicht
- * eingerichteter Mandant auf jede Anfrage.
+ * Geht die Mandanten durch und vergleicht die Schluessel ihrer HugoShops
+ * (sales_channel_secret_shop, public_key) — jede Webseite hat ihren eigenen,
+ * der Schluessel bestimmt damit Mandant und Kanal
+ * (dev/shop-mehrere-kanaele.md). Der Vergleich laeuft ueber hash_equals,
+ * damit die Laufzeit nichts verraet; ein leerer Schluessel wird nie
+ * angenommen, sonst passte ein nicht eingerichteter Kanal auf jede Anfrage.
+ *
+ * Auch ein abgeschalteter HugoShop wird gefunden: Konto, Rechnungen und
+ * Widerruf bleiben erreichbar, neue Kaeufe sperrt shopIsOpen().
  *
  * @param string $schluessel Wert aus dem Kopf X-Shop-Key
- * @return PDO|null Verbindung zur Firmen-Datenbank, oder null
+ * @return array{pdo: PDO, kanal: int}|null Verbindung und Kanal, oder null
  */
-function shopPublicFindCompany(string $schluessel): ?PDO {
+function shopPublicFindCompany(string $schluessel): ?array {
     if ('' === $schluessel) {
         return null;
     }
@@ -100,17 +106,28 @@ function shopPublicFindCompany(string $schluessel): ?PDO {
             );
             $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-            $stmt = $pdo->prepare("SELECT value FROM defaults_oserp WHERE key = 'shop_public_key'");
+            $stmt = $pdo->prepare(
+                "SELECT s.channel_id, s.value
+                   FROM sales_channel_secret_shop s
+                   JOIN sales_channel_shop c ON c.id = s.channel_id AND c.type = 'hugoshop'
+                  WHERE s.key = 'public_key' AND s.value <> ''"
+            );
             $stmt->execute();
-            $zeile = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            if ($zeile && '' !== (string)$zeile['value']
-                && hash_equals((string)$zeile['value'], $schluessel)) {
-                return $pdo;
+            foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $zeile) {
+                if (hash_equals((string)$zeile['value'], $schluessel)) {
+                    return ['pdo' => $pdo, 'kanal' => (int)$zeile['channel_id']];
+                }
             }
         } catch (Exception $e) {
-            // Ein Mandant ohne defaults_oserp ist noch nicht eingerichtet —
-            // kein Grund, die Suche abzubrechen.
+            // Ein Mandant ohne Shop-Erweiterung oder mit altem Schema
+            // (sales_channel_secret_shop fehlt) — kein Grund, die Suche
+            // abzubrechen. Ein altes Schema muss aber auffallen: sein Shop
+            // antwortet bis zum Schema-Update mit SHOP_NOT_AUTHORIZED.
+            if (str_contains($e->getMessage(), 'sales_channel_secret_shop')) {
+                writeLog('[SHOP] Mandant '.$mandant['dbname'].': Schema ohne sales_channel_secret_shop — '
+                         .'Schema-Update nötig (Anmeldung eines Mitarbeiters)', true, DLOG_WRN);
+            }
             continue;
         }
     }
@@ -121,16 +138,17 @@ function shopPublicFindCompany(string $schluessel): ?PDO {
 /**
  * Setzt die Kopfzeilen fuer den Zugriff von der Shop-Webseite
  *
- * Ohne Eintrag in shop_allowed_origins wird nichts gesetzt: dann laeuft der
- * Shop ueber einen Reverse-Proxy unter derselben Adresse, und
+ * Ohne Eintrag in allowed_origins des HugoShops wird nichts gesetzt: dann
+ * laeuft der Shop ueber einen Reverse-Proxy unter derselben Adresse, und
  * Herkunftspruefung erübrigt sich.
  *
  * @param object $db Firmen-Datenbankverbindung
+ * @param int $kanal HugoShop der Anfrage
  * @return bool true wenn die Anfrage von einer fremden, erlaubten Adresse kommt
  */
-function shopPublicCors($db): bool {
+function shopPublicCors($db, int $kanal): bool {
     $erlaubt = array_filter(array_map('trim',
-        explode(',', shopConfigValue($db, 'shop_allowed_origins'))));
+        explode(',', shopChannelValue($db, $kanal, 'allowed_origins'))));
     $herkunft = $_SERVER['HTTP_ORIGIN'] ?? '';
 
     if (empty($erlaubt) || '' === $herkunft) {
@@ -162,16 +180,31 @@ function shopPublicCors($db): bool {
  * andere Aktion zuerst ruft, bekommt SHOP_CONTEXT_ERROR — der Shop-Client
  * holt daraufhin den Kontext und wiederholt.
  *
+ * Eine Sitzung gehoert genau einem HugoShop (context_hugoshop.channel_id).
+ * Kommt das Cookie mit der Sitzung eines anderen — zwei HugoShops unter
+ * demselben Host teilen sich das Cookie —, gibt es eine neue Kennung. Danach
+ * gilt: jede Kennung, mit der eine Aktion gerufen wird, gehoert zum Kanal der
+ * Anfrage, und die Fachfunktionen muessen das nicht mehr pruefen.
+ *
+ * @param object $db Firmen-Datenbankverbindung
+ * @param int $kanal HugoShop der Anfrage
  * @param bool $fremdeHerkunft true wenn die Anfrage von einer anderen Adresse kommt
  * @return string Sitzungskennung
  */
-function shopPublicContextUuid(bool $fremdeHerkunft): string {
+function shopPublicContextUuid($db, int $kanal, bool $fremdeHerkunft): string {
     $vorhanden = $_COOKIE[SHOP_CONTEXT_COOKIE] ?? '';
 
     // Nur die selbst vergebene Form annehmen. Ein Cookie aus fremder Hand
     // landet sonst als Kennung in der Tabelle und bläht sie auf.
     if (is_string($vorhanden) && preg_match('/^[0-9a-f]{32}$/', $vorhanden)) {
-        return $vorhanden;
+        $fremd = $db->getOne(
+            "SELECT 1 AS fremd FROM context_hugoshop
+              WHERE uuid = :uuid AND channel_id <> CAST(:kanal AS integer)",
+            [':uuid' => $vorhanden, ':kanal' => $kanal]
+        );
+        if (!$fremd) {
+            return $vorhanden;
+        }
     }
 
     $uuid = shopNewContextUuid();
@@ -220,16 +253,19 @@ function shopPublicDispatch(array $erlaubteAktionen): void {
 
     OserpConfig::init();
 
-    $pdo = shopPublicFindCompany((string)($_SERVER['HTTP_X_SHOP_KEY'] ?? ''));
-    if (null === $pdo) {
+    $treffer = shopPublicFindCompany((string)($_SERVER['HTTP_X_SHOP_KEY'] ?? ''));
+    if (null === $treffer) {
         // Aus der Antwort darf nicht hervorgehen, ob es den Mandanten gibt.
         http_response_code(403);
         resultInfo(false, 'SHOP_NOT_AUTHORIZED', null, 'Kein gueltiger Shop-Schluessel');
         return;
     }
 
-    $db = DbhCompany::begin($pdo);
-    $fremdeHerkunft = shopPublicCors($db);
+    $db = DbhCompany::begin($treffer['pdo']);
+    // Der HugoShop dieser Anfrage — jede Aktion bekommt ihn als vierten
+    // Parameter (actions.php)
+    $kanal = $treffer['kanal'];
+    $fremdeHerkunft = shopPublicCors($db, $kanal);
 
     // Vorabanfrage des Browsers: die Kopfzeilen stehen, mehr ist nicht noetig.
     if ('OPTIONS' === ($_SERVER['REQUEST_METHOD'] ?? '')) {
@@ -261,18 +297,18 @@ function shopPublicDispatch(array $erlaubteAktionen): void {
         return;
     }
 
-    $uuid = shopPublicContextUuid($fremdeHerkunft);
-
     try {
+        $uuid = shopPublicContextUuid($db, $kanal, $fremdeHerkunft);
+
         // Abgeschalteter HugoShop (V16): nichts Neues verkaufen. Was schon
         // läuft — eine begonnene PayPal-Zahlung, Konto, Rechnungen, Widerruf —
         // bleibt erreichbar.
-        if (in_array($aktion, shopClosedActions(), true) && !shopIsOpen($db)) {
+        if (in_array($aktion, shopClosedActions(), true) && !shopIsOpen($db, $kanal)) {
             resultInfo(false, 'SHOP_CLOSED', null, 'Der Shop nimmt derzeit keine Bestellungen an');
             return;
         }
 
-        $aktion($db, $uuid, $daten);
+        $aktion($db, $uuid, $daten, $kanal);
     } catch (ApiError $e) {
         resultInfo(false, $e->getId(), null, $e->getMessage());
         if (null !== $e->getQuery()) {

@@ -186,8 +186,9 @@ function getPart($data) {
 
     $row = $company->getOne(
         "SELECT p.id, p.partnumber, p.description, p.part_type, p.unit,
-                p.sellprice, p.notes, p.buchungsgruppen_id, p.obsolete,
-                bg.description AS buchungsgruppen_name
+                p.sellprice, p.notes, p.buchungsgruppen_id, p.obsolete, p.weight,
+                bg.description AS buchungsgruppen_name,
+                (SELECT weightunit FROM defaults LIMIT 1) AS weightunit
          FROM parts p
          LEFT JOIN buchungsgruppen bg ON bg.id = p.buchungsgruppen_id
          WHERE p.id = :id",
@@ -260,6 +261,20 @@ function updatePart($data) {
 
     if (isset($data['obsolete'])) {
         $updateData['obsolete'] = (bool) $data['obsolete'];
+    }
+
+    // Gewicht in der Einheit von defaults.weightunit; leer = nicht gepflegt.
+    // array_key_exists statt isset: null soll das Gewicht leeren können.
+    if (array_key_exists('weight', $data)) {
+        $gewicht = $data['weight'];
+        if (null === $gewicht || '' === trim((string)$gewicht)) {
+            $updateData['weight'] = null;
+        } elseif (is_numeric($gewicht) && (float)$gewicht >= 0) {
+            $updateData['weight'] = (float)$gewicht;
+        } else {
+            resultInfo(false, 'VALIDATION_ERROR', ['message' => 'Das Gewicht muss leer oder eine Zahl ab 0 sein']);
+            return;
+        }
     }
 
     if (empty($updateData)) {

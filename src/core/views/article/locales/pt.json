@@ -14,6 +14,7 @@
             "typeService": "Serviço",
             "unit": "Unidade",
             "buchungsgruppe": "Grupo contabilístico",
+            "weight": "Peso",
             "sellprice": "Preço de venda",
             "notes": "Descrição longa",
             "obsolete": "Obsoleto / Não utilizar",
@@ -26,6 +27,7 @@
             "createError": "Não foi possível criar o artigo.",
             "noPermission": "Não tem permissão para criar artigos.",
             "partnumberExists": "Este número de artigo já está em uso.",
+            "weightInvalid": "Vazio ou um número a partir de 0",
             "required": "Campo obrigatório"
         },
         "titleNew": "Criar artigo",

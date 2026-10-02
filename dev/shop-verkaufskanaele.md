@@ -6,6 +6,10 @@ Lagerbuchung bei Verkäufen (V28) und die Verfügbarkeit je Kanal (V29). Entschi
 Inbetriebnahme und die Einrichtung — steht gesammelt unter „Offener Stand
 nach Schritt 5“.
 
+**Seit 2026-10-01 gilt zusätzlich `dev/shop-mehrere-kanaele.md`:** mehrere
+Kanäle je Art (V3 und V3a aufgehoben). Wo dieses Dokument von „dem HugoShop"
+oder „dem eBay-Kanal" spricht, ist seither jede Instanz der Art gemeint.
+
 Ein Artikel, für den „Im Shop anbieten" aktiviert ist, wird über einen oder
 mehrere Verkaufskanäle angeboten. Der erste Kanal ist der HugoShop
 (`dev/shop-hugocms-trennung.md`), später folgen eBay und Amazon über deren
@@ -22,7 +26,7 @@ Verwandte Dokumente: `dev/shop-veroeffentlichung.md` (Seitenerzeugung),
 | --- | --- | --- |
 | V1 | Eigene Tabellen der Erweiterung, angelegt über `backend/upstall/shop/company_schema.sql`. Die kivitendo-Tabellen `shops`/`shop_parts` werden weder benutzt noch verändert | 2026-09-25 |
 | V2 | Grundpreis ist `parts.sellprice`. Je Kanal ein Aufschlag in Prozent oder als fester Betrag, wahlweise mit Rundung auf ,99. Der Aufschlag gilt auf den Netto- oder Bruttopreis, je nachdem, was `sellprice` laut `shop_tax_included` enthält | 2026-09-25 |
-| V3 | Je Mandant höchstens ein Kanal je Art: ein HugoShop, ein eBay-Zugang, ein Amazon-Zugang | 2026-09-25 |
+| V3 | ~~Je Mandant höchstens ein Kanal je Art: ein HugoShop, ein eBay-Zugang, ein Amazon-Zugang~~ — **aufgehoben 2026-10-01**: beliebig viele Kanäle je Art, jeder eine Instanz (`dev/shop-mehrere-kanaele.md`) | 2026-09-25 |
 | V4 | Ein gemeinsamer Lagerbestand (`parts.onhand`) für alle Kanäle, keine Kontingente | 2026-09-25 |
 | V8 | Mindestens ein Kanal bleibt eingeschaltet. Der HugoShop lässt sich abschalten, sobald ein weiterer Kanal (etwa eBay) eingeschaltet ist; solange es nur den HugoShop gibt, ist er gesperrt. Ein abgeschalteter Kanal bietet nichts an, seine Artikelzeilen bleiben für das Wiedereinschalten stehen. (Erste Fassung „HugoShop nie abschaltbar" am selben Tag ersetzt) | 2026-09-25 |
 | V10 | Ist „Im Shop anbieten" eingeschaltet und hat der Benutzer noch keinen Kanal gewählt, ist der HugoShop vorgewählt — ist er abgeschaltet, der erste eingeschaltete Kanal | 2026-09-25 |
@@ -54,7 +58,7 @@ Daraus abgeleitete Festlegungen (unten begründet):
 | V2b | Gerundet wird immer der **Bruttopreis**, den der Kunde sieht: aufrunden auf die nächste ,99. Ein Preis, der schon auf ,99 endet, bleibt; nie unter dem berechneten Preis (12,00 → 12,99; 12,30 → 12,99; 12,99 → 12,99) |
 | V2c | Eine Rechnungsposition mit Aufschlag trägt eine leere Preisquelle (`active_price_source = ''`, in kivitendo „manuell"), sonst weiter `shop_active_price_source` |
 | V2d | Bei `shop_tax_included = 0` wird der Nettopreis aus dem gerundeten Bruttopreis zurückgerechnet und mit fünf Nachkommastellen gespeichert. Für Kanäle mit Rundung auf ,99 wird Brutto in den Stammdaten empfohlen; `getShopStatus()` weist darauf hin |
-| V3a | Die HugoShop-Einstellungen bleiben als `shop_*`-Schlüssel in `defaults_oserp`; die Kanaltabelle hält nur Kanal-Angaben (aktiv, Aufschlag, Rundung) |
+| V3a | ~~Die HugoShop-Einstellungen bleiben als `shop_*`-Schlüssel in `defaults_oserp`; die Kanaltabelle hält nur Kanal-Angaben (aktiv, Aufschlag, Rundung)~~ — **aufgehoben 2026-10-01**: Einstellungen der Instanz in `sales_channel_shop.settings` bzw. `sales_channel_secret_shop` (`dev/shop-mehrere-kanaele.md`) |
 | V5 | Abwählen eines Kanals für einen Artikel setzt `active = false` statt zu löschen; Titel, Beschreibung und Aufschlag bleiben erhalten |
 | V6 | Jede vorhandene `parts_ext`-Zeile erhält einmalig eine aktive HugoShop-Kanalzeile ohne eigenen Aufschlag; ein Merker in `defaults_oserp` (`shop_channels_migrated`) verhindert eine Wiederholung bei späteren Schema-Updates |
 | V7 | Übergang für Schreiber, die nur `parts_ext` kennen (Lieferantenimport der Bridge bis Stufe F): Trigger auf `parts_ext` legen beim Anlegen eine aktive HugoShop-Zeile an, sofern es keine gibt, und schalten sie beim Löschen ab. Eine vorhandene Kanalzeile — auch eine abgeschaltete — hat Vorrang |

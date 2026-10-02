@@ -5,7 +5,7 @@
 // selbst — Nummernkreis, Positionen, Buchungssaetze. Hier bleibt ein Ablauf,
 // der die vorhandenen Bausteine aneinanderreiht:
 //
-//   Versandkosten   cartApplyShipping()
+//   Versandkosten   cartRead() mit Lieferland -> shop_cart_shipping()
 //   Lieferadresse   shiptoCreate()
 //   ar + invoice    hier, aus den Warenkorbzeilen
 //   acc_trans       postArInvoiceToLedger()   (faktura.php)
@@ -28,9 +28,11 @@
  *                             leer = Lieferung an die Rechnungsadresse
  * @param array|null $paypal Zahlungsstand aus paypalPaymentState(), oder null
  * @return array{ar_id: int, ar_link: string, invnumber: string}
- * @throws ApiError CART_NOT_FOUND, CART_EMPTY, CART_NOT_OFFERED, SHOP_DATABASE_ERROR, LEDGER_ERROR
+ * @throws ApiError CART_NOT_FOUND, CART_EMPTY, CART_NOT_OFFERED, SHIPPING_*, SHOP_DATABASE_ERROR, LEDGER_ERROR
  */
 function createShopInvoice($db, string $uuid, array $lieferadresse = [], ?array $paypal = null): array {
+    // adresses.shipping der Kasse oder schon vereinheitlicht (PayPal)
+    $lieferadresse = shopDeliveryAddress($lieferadresse);
     $context    = shopContextCustomer($db, $uuid);
     $customerId = (int)$context['customer_id'];
 
@@ -38,10 +40,13 @@ function createShopInvoice($db, string $uuid, array $lieferadresse = [], ?array 
         throw new ApiError("CART_NOT_FOUND", 'Zu dieser Sitzung gibt es keinen Warenkorb');
     }
     $cartUuid = $context['cart_uuid'];
+    // HugoShop der Sitzung: Preise und Bezeichnungen des Kanals, und der
+    // Rechnungslink merkt ihn sich für Mail, Rechnungsseite und PayPal
+    $kanal = (int)$context['channel_id'];
 
-    cartApplyShipping($db, $cartUuid, $customerId);
-
-    $korb = cartRead($db, $cartUuid, $customerId, false);
+    // Versand nach dem Land der Lieferadresse (dev/shop-versand.md, Schritt 6)
+    $korb = cartRead($db, $cartUuid, $customerId, false,
+                     shopShippingCountry($db, $customerId, $lieferadresse));
     if (empty($korb['positions'])) {
         throw new ApiError("CART_EMPTY", 'Der Warenkorb ist leer');
     }
@@ -51,6 +56,7 @@ function createShopInvoice($db, string $uuid, array $lieferadresse = [], ?array 
     // wurde vor der Zahlung (paymentBegin).
     if (null === $paypal) {
         cartRequireOffered($korb);
+        cartRequireShipping($korb);
     }
 
     // Jede Position braucht ein Erloeskonto, sonst kann die Rechnung nicht
@@ -63,6 +69,15 @@ function createShopInvoice($db, string $uuid, array $lieferadresse = [], ?array 
                 'Artikel "'.$position['label'].'" hat in dieser Steuerzone kein Erloeskonto'
             );
         }
+    }
+    // Die Versandposition entsteht nur bei Status ok und einem Preis ueber 0
+    $versand = $korb['shipping'];
+    $mitVersand = 'ok' === $versand['status'] && $versand['price'] > 0 && $versand['parts_id'];
+    if ($mitVersand && !$versand['account']) {
+        throw new ApiError(
+            "NO_INCOME_ACCOUNT",
+            'Der Versandartikel von "'.$versand['method'].'" hat in dieser Steuerzone kein Erloeskonto'
+        );
     }
 
     $shiptoId = shopInvoiceShiptoId($db, $customerId, $lieferadresse);
@@ -109,19 +124,50 @@ function createShopInvoice($db, string $uuid, array $lieferadresse = [], ?array 
                                   discount, unit, position, lastcost, base_qty, allocated,
                                   marge_total, marge_percent, serialnumber, active_price_source,
                                   longdescription, mtime)
-             SELECT :ar_id, p.id, COALESCE(NULLIF(pc.title, ''), p.description), c.amount, k.preis, k.preis,
-                    0, p.unit, ROW_NUMBER() OVER (ORDER BY c.id), COALESCE(p.lastcost, 0), 1, 0,
-                    0, 0, '', CASE WHEN k.preis = p.sellprice THEN :preisquelle ELSE '' END,
-                    COALESCE(NULLIF(pc.description, ''), p.notes, ''), NOW()
-               FROM cart_parts_hugoshop c
-               JOIN parts p ON p.id = c.parts_id
-               CROSS JOIN LATERAL (SELECT shop_channel_price(p.id) AS preis) k
-               LEFT JOIN parts_channel_shop pc ON pc.parts_id = p.id
-                                              AND pc.channel_id = shop_channel_id('hugoshop')
-              WHERE c.cart_uuid = :cart_uuid",
+             WITH ware AS (
+                 SELECT CAST(:ar_id AS integer) AS trans_id, p.id AS parts_id, COALESCE(NULLIF(pc.title, ''), p.description) AS description,
+                        c.amount AS qty, k.preis, p.unit, ROW_NUMBER() OVER (ORDER BY c.id) AS position,
+                        COALESCE(p.lastcost, 0) AS lastcost,
+                        CASE WHEN k.preis = p.sellprice THEN :preisquelle ELSE '' END AS preisquelle,
+                        -- Lieferbedingung je Artikel in den Langtext (Punkt 7, Weg a):
+                        -- jede Druckvorlage zeigt ihn, und er bleibt, wie verschickt
+                        concat_ws(E'\n\n', NULLIF(COALESCE(NULLIF(pc.description, ''), p.notes, ''), ''),
+                                  NULLIF(COALESCE(NULLIF(btrim(dt.description_long), ''), dt.description), ''))
+                            AS longdescription
+                   FROM cart_parts_hugoshop c
+                   JOIN parts p ON p.id = c.parts_id
+                   CROSS JOIN LATERAL (SELECT shop_channel_price(p.id, CAST(:kanal AS integer)) AS preis) k
+                   LEFT JOIN parts_channel_shop pc ON pc.parts_id = p.id
+                                                  AND pc.channel_id = CAST(:kanal_zeile AS integer)
+                   LEFT JOIN parts_shipping_shop pss ON pss.parts_id = p.id
+                   LEFT JOIN delivery_terms dt ON dt.id = pss.delivery_term_id
+                  WHERE c.cart_uuid = :cart_uuid
+                    AND NOT shop_is_shipping_part(c.parts_id)
+             )
+             SELECT trans_id, parts_id, description, qty, preis, preis,
+                    0, unit, position, lastcost, 1, 0,
+                    0, 0, '', preisquelle, longdescription, NOW()
+               FROM ware
+             UNION ALL
+             -- Versand: Versandartikel der Versandart mit dem berechneten
+             -- Preis (dev/shop-versand.md, Schritt 6). Bezeichnung und
+             -- Langtext die des Artikels, wie bei jeder Position im Kern
+             -- (Nachtrag 2026-10-02) — gepflegt in der Maske der Versandart
+             SELECT CAST(:ar_id_versand AS integer), p.id, p.description, 1, CAST(:versand_preis AS numeric),
+                    CAST(:versand_preis_fx AS numeric), 0, p.unit, (SELECT count(*) FROM ware) + 1,
+                    COALESCE(p.lastcost, 0), 1, 0, 0, 0, '', '', COALESCE(p.notes, ''), NOW()
+               FROM parts p
+              WHERE p.id = :versand_teil AND :mit_versand = 1",
             [
                 ':ar_id'       => $arId,
+                ':ar_id_versand' => $arId,
+                ':versand_preis'    => (string)$versand['price'],
+                ':versand_preis_fx' => (string)$versand['price'],
+                ':versand_teil'     => (int)($versand['parts_id'] ?? 0),
+                ':mit_versand'      => $mitVersand ? 1 : 0,
                 ':cart_uuid'   => $cartUuid,
+                ':kanal'       => $kanal,
+                ':kanal_zeile' => $kanal,
                 ':preisquelle' => shopConfigValue($db, 'shop_active_price_source', 'master_data/sellprice'),
             ]
         );
@@ -139,9 +185,11 @@ function createShopInvoice($db, string $uuid, array $lieferadresse = [], ?array 
     $arLink = shopNewContextUuid();
     $db->execute(
         "INSERT INTO ar_link_hugoshop (ar_id, uuid, paypal, paypal_order_id, paypal_capture_id,
-                                       payment_status, payment_reason, payment_mtime)
-         VALUES (:ar_id, :uuid, :payer, :order_id, :capture_id, :status, :reason, :mtime)",
+                                       payment_status, payment_reason, payment_mtime, channel_id)
+         VALUES (:ar_id, :uuid, :payer, :order_id, :capture_id, :status, :reason, :mtime,
+                 CAST(:kanal AS integer))",
         [
+            ':kanal'      => $kanal,
             ':ar_id'      => $arId,
             ':uuid'       => $arLink,
             ':payer'      => $paypal['payer_id']   ?? null,
@@ -316,10 +364,33 @@ function shopInvoicePositions($db, int $arId): array {
                 TRUNC(i.discount * 100) AS p_discount,
                 TRUNC(i.fxsellprice, 2) AS sellprice,
                 TRUNC(i.qty * i.sellprice, 2) AS linetotal,
-                pe.hugoshop_images ->> 0 AS thumbnail
+                pe.hugoshop_images ->> 0 AS thumbnail,
+                shop_invoice_delivery_term(i.id) AS delivery_term
            FROM invoice i
            JOIN parts p ON p.id = i.parts_id
            LEFT JOIN parts_ext pe ON pe.parts_id = i.parts_id
+          WHERE i.trans_id = :ar_id
+          ORDER BY i.position",
+        [':ar_id' => $arId]
+    );
+}
+
+/**
+ * Positionen einer Rechnung mit ihrer Lieferbedingung
+ *
+ * Fuer Rechnungsmail und Rechnungsseite (dev/shop-versand.md, Punkt 7):
+ * Bezeichnung, Menge, Einheit und Lieferbedingung je Position — so wie sie in
+ * der Rechnung steht (shop_invoice_delivery_term).
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param int $arId Rechnung
+ * @return array Liste aus description, qty, unit, delivery_term (leer = keine)
+ */
+function shopInvoiceDeliveryTerms($db, int $arId): array {
+    return $db->getAll(
+        "SELECT i.description, TRUNC(i.qty) AS qty, COALESCE(i.unit, '') AS unit,
+                COALESCE(shop_invoice_delivery_term(i.id), '') AS delivery_term
+           FROM invoice i
           WHERE i.trans_id = :ar_id
           ORDER BY i.position",
         [':ar_id' => $arId]
@@ -381,12 +452,15 @@ function shopInvoiceShippingAddress($db, int $arId) {
  *           keine Aufforderung zur Ueberweisung sehen
  *   keines  offene Rechnung, Bankverbindung anzeigen
  *
+ * Der Link gilt nur im HugoShop, aus dem die Rechnung stammt.
+ *
  * @param object $db Company-Datenbankverbindung
  * @param string $arLink Kennung aus ar_link_hugoshop
+ * @param int $kanal HugoShop der Anfrage
  * @return array
  * @throws ApiError INVOICE_LINK_NOT_FOUND
  */
-function invoiceSummaryByLink($db, string $arLink): array {
+function invoiceSummaryByLink($db, string $arLink, int $kanal): array {
     $zeile = $db->getOne(
         "SELECT al.ar_id, al.paypal, al.payment_status, al.payment_reason,
                 ar.invnumber, TRUNC(ar.amount, 2) AS amount,
@@ -395,8 +469,8 @@ function invoiceSummaryByLink($db, string $arLink): array {
            FROM ar_link_hugoshop al
            JOIN ar ON ar.id = al.ar_id
            JOIN customer c ON c.id = ar.customer_id
-          WHERE al.uuid = :ar_link",
-        [':ar_link' => $arLink]
+          WHERE al.uuid = :ar_link AND al.channel_id = CAST(:kanal AS integer)",
+        [':ar_link' => $arLink, ':kanal' => $kanal]
     );
 
     if (!$zeile) {
@@ -432,6 +506,11 @@ function invoiceSummaryByLink($db, string $arLink): array {
         'payment_term_amount'        => $zeile['amount'],
         'payment_term_currency'      => $zeile['currency'],
         'shipping'                   => shopInvoiceShippingAddress($db, (int)$zeile['ar_id']),
+        // Lieferzeiten je Position (dev/shop-versand.md, Punkt 7)
+        'delivery_terms'             => array_values(array_filter(
+            shopInvoiceDeliveryTerms($db, (int)$zeile['ar_id']),
+            fn($position) => '' !== $position['delivery_term']
+        )),
     ];
 }
 
@@ -463,13 +542,15 @@ function shopInvoicePdf($db, int $arId): array {
  *
  * @param object $db Company-Datenbankverbindung
  * @param string $arLink Kennung aus ar_link_hugoshop
+ * @param int $kanal HugoShop der Anfrage — der Link gilt nur dort
  * @return int Rechnungs-Kennung
  * @throws ApiError INVOICE_LINK_NOT_FOUND
  */
-function shopInvoiceIdByLink($db, string $arLink): int {
+function shopInvoiceIdByLink($db, string $arLink, int $kanal): int {
     $zeile = $db->getOne(
-        "SELECT ar_id FROM ar_link_hugoshop WHERE uuid = :ar_link",
-        [':ar_link' => $arLink]
+        "SELECT ar_id FROM ar_link_hugoshop
+          WHERE uuid = :ar_link AND channel_id = CAST(:kanal AS integer)",
+        [':ar_link' => $arLink, ':kanal' => $kanal]
     );
 
     if (!$zeile) {

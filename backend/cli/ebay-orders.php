@@ -5,8 +5,10 @@
  *
  * Durchlaeuft alle Mandanten und importiert neue eBay-Bestellungen als
  * Ausgangsrechnungen (Kunde dublettenfrei, Rechnung + Hauptbuch-Buchung).
- * Beruecksichtigt werden Mandanten mit aktiver Shop-Erweiterung und
- * eingeschaltetem eBay-Kanal (Einstellungen → Shop → Verkaufskanaele).
+ * Beruecksichtigt werden Mandanten mit aktiver Shop-Erweiterung, dort jeder
+ * eingeschaltete eBay-Kanal (Shop-Menue → Verkaufskanaele) — je
+ * Kanal ein eBay-Konto (dev/shop-mehrere-kanaele.md). Ein Fehler in einem
+ * Kanal haelt die uebrigen nicht auf.
  * Idempotent: bereits importierte Bestellungen werden uebersprungen
  * (ebay_orders.ebay_order_id UNIQUE).
  *
@@ -98,23 +100,31 @@ foreach ($clients as $client) {
         ebayCronInitCompanyDb($pdo);
         $db = DbhCompany::begin();
 
-        // Nur Mandanten mit Shop-Erweiterung und eingeschaltetem eBay-Kanal
-        // (V14) — die uebrigen still ueberspringen
-        if (!isExtensionActive($db, 'shop') || !shopEbayActive($db)) {
+        // Nur Mandanten mit Shop-Erweiterung, dort die eingeschalteten
+        // eBay-Kanaele (V14) — die uebrigen still ueberspringen
+        if (!isExtensionActive($db, 'shop')) {
             continue;
         }
 
-        $summary = shopEbayImportOrders($db);
-        $imported = intval($summary['imported'] ?? 0);
-        $skipped  = intval($summary['skipped'] ?? 0);
-        $totalImported += $imported;
+        foreach (shopEbayActiveChannels($db) as $kanal) {
+            $name = $clientName.' / '.$kanal['name'];
+            try {
+                $summary = shopEbayImportOrders($db, (int)$kanal['id']);
+            } catch (Exception $e) {
+                echo "[{$name}] Fehler: " . $e->getMessage() . "\n";
+                continue;
+            }
+            $imported = intval($summary['imported'] ?? 0);
+            $skipped  = intval($summary['skipped'] ?? 0);
+            $totalImported += $imported;
 
-        if ($imported > 0 || $skipped > 0 || !empty($summary['errors'])) {
-            echo "[{$clientName}] eBay: {$imported} importiert, {$skipped} uebersprungen, "
-               . intval($summary['fetched'] ?? 0) . " abgerufen\n";
-        }
-        foreach (($summary['errors'] ?? []) as $err) {
-            echo "[{$clientName}] eBay-Fehler: {$err}\n";
+            if ($imported > 0 || $skipped > 0 || !empty($summary['errors'])) {
+                echo "[{$name}] eBay: {$imported} importiert, {$skipped} uebersprungen, "
+                   . intval($summary['fetched'] ?? 0) . " abgerufen\n";
+            }
+            foreach (($summary['errors'] ?? []) as $err) {
+                echo "[{$name}] eBay-Fehler: {$err}\n";
+            }
         }
     } catch (Exception $e) {
         echo "[{$clientName}] Fehler: " . $e->getMessage() . "\n";

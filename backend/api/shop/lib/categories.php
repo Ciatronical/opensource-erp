@@ -248,12 +248,13 @@ function shopCategoryGroups(array $kategorien, array $regeln): array {
  * gleich zu schreiben.
  *
  * @param object $db Company-Datenbankverbindung
+ * @param int $kanal HugoShop — sein Vorlagensatz, seine Webseite
  * @param bool $anlegen Fehlende Verzeichnisse anlegen
  * @return string Pfad, leer wenn der Vorlagensatz keine Übersicht vorsieht
  * @throws ApiError SHOP_PATH_INVALID, SHOP_PATH_MISSING
  */
-function shopCategoryGroupsFile($db, bool $anlegen = false): string {
-    $satz = shopConfigValue($db, 'shop_template_set', 'standard');
+function shopCategoryGroupsFile($db, int $kanal, bool $anlegen = false): string {
+    $satz = shopChannelValue($db, $kanal, 'template_set', 'standard');
     $relativ = trim((string)(shopTemplateInfo(shopTemplateDir($satz))['data']['category_groups'] ?? ''), '/');
     if ('' === $relativ) {
         return '';
@@ -264,7 +265,7 @@ function shopCategoryGroupsFile($db, bool $anlegen = false): string {
 
     $unterordner = dirname($relativ);
 
-    return shopPathUnder(shopSiteDir($db, $anlegen), '.' === $unterordner ? '' : $unterordner, $anlegen)
+    return shopPathUnder(shopSiteDir($db, $kanal, $anlegen), '.' === $unterordner ? '' : $unterordner, $anlegen)
          .'/'.basename($relativ);
 }
 
@@ -276,18 +277,20 @@ function shopCategoryGroupsFile($db, bool $anlegen = false): string {
  * sonst stünde dieselbe Kategorie zweimal in der Übersicht.
  *
  * @param object $db Company-Datenbankverbindung
+ * @param int $kanal HugoShop
  * @return array Liste aus name und productCount
  */
-function shopCategoryCounts($db): array {
+function shopCategoryCounts($db, int $kanal): array {
     $zeilen = $db->getAll(
         "SELECT btrim(pe.hugoshop_category) AS name, count(*) AS product_count
            FROM parts_ext pe
            JOIN parts_channel_shop pc ON pc.parts_id = pe.parts_id
-                                     AND pc.channel_id = shop_active_channel_id('hugoshop')
+                                     AND pc.channel_id = shop_active_channel_id(CAST(:kanal AS integer))
                                      AND pc.active
           WHERE btrim(COALESCE(pe.hugoshop_category, '')) <> ''
           GROUP BY btrim(pe.hugoshop_category)
-          ORDER BY btrim(pe.hugoshop_category)"
+          ORDER BY btrim(pe.hugoshop_category)",
+        [':kanal' => $kanal]
     );
 
     $kategorien = [];
@@ -315,13 +318,14 @@ function shopCategoryCounts($db): array {
  * alphabetische Liste aus der Taxonomie statt einer leeren Übersicht.
  *
  * @param object $db Company-Datenbankverbindung
+ * @param int $kanal HugoShop
  * @return array file (leer, wenn der Satz keine vorsieht), categories, groups, changed
  * @throws ApiError SHOP_PATH_INVALID, SHOP_WRITE_FAILED
  */
-function shopWriteCategoryGroups($db): array {
+function shopWriteCategoryGroups($db, int $kanal): array {
     $bilanz = ['file' => '', 'categories' => 0, 'groups' => 0, 'changed' => false];
 
-    $datei = shopCategoryGroupsFile($db, true);
+    $datei = shopCategoryGroupsFile($db, $kanal, true);
     if ('' === $datei) {
         return $bilanz;
     }
@@ -329,9 +333,9 @@ function shopWriteCategoryGroups($db): array {
 
     // Derselbe Satz, aus dem shopCategoryGroupsFile() den Pfad nimmt: seine
     // Regeln bestimmen die Gruppen.
-    $satz = shopConfigValue($db, 'shop_template_set', 'standard');
+    $satz = shopChannelValue($db, $kanal, 'template_set', 'standard');
 
-    $kategorien = shopCategoryCounts($db);
+    $kategorien = shopCategoryCounts($db, $kanal);
     if (!$kategorien) {
         if (is_file($datei)) {
             unlink($datei);

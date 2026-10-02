@@ -135,8 +135,13 @@ try {
 
     // Vor der Sperre: läuft gerade ein anderer Lauf, erledigt er den Auftrag
     // oder spätestens der nächste. Doppelt angenommen wird er nicht.
+    // Der Abgleich gilt für alle HugoShops (jeder Vorgang mit dem
+    // PayPal-Zugang seines Shops); der Auftrag steht beim ersten.
     if (isset($argumente['reconcile-payments'])) {
-        shopQueueJob($db, 'reconcile_payments');
+        $kanal = shopFirstChannelId($db, 'hugoshop');
+        if ($kanal > 0) {
+            shopQueueJob($db, 'reconcile_payments', '', null, $kanal);
+        }
     }
 } catch (Throwable $e) {
     fwrite(STDERR, 'Mandant '.$mandant['dbname'].': '.get_class($e).': '.$e->getMessage()."\n");
