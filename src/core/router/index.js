@@ -236,6 +236,9 @@ const AccountingOpenItemsView = () => import('@/features/accounting/views/accoun
 const AccountingUstvaView = () => import('@/features/accounting/views/accounting.ustva.vue')
 const AccountingDunningView = () => import('@/features/accounting/views/accounting.dunning.vue')
 
+// Wiederkehrende Rechnungen
+const RecurringInvoicesView = () => import('@/core/views/recurring-invoices/recurring.invoices.view.vue')
+
 // Lager
 const WarehouseHubView = () => import('@/features/warehouse/views/warehouse.hub.vue')
 const WarehouseScannerView = () => import('@/features/warehouse/views/warehouse.scanner.vue')
@@ -566,6 +569,12 @@ function buildRoutes() {
             name: 'order-list',
             component: DocumentListView,
             meta: { permission: 'sales_order_edit', listType: 'order' }
+        },
+        {
+            ...routePath('RecurringInvoices.routes.recurringInvoices'),
+            name: 'recurring-invoices',
+            component: RecurringInvoicesView,
+            meta: { permission: 'sales_order_edit' }
         },
         {
             ...routePath('routes.manageQuotations'),

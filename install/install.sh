@@ -536,6 +536,8 @@ MAILTO=""
 7 * * * * $OSERP_USER cd $OSERP_ROOT && php backend/cli/ebay-orders.php >> log/ebay-orders.log 2>&1
 # Nicht gebuchte Rechnungen nachbuchen (nachts)
 30 2 * * * $OSERP_USER cd $OSERP_ROOT && php backend/cli/post-unbooked-invoices.php >> log/post-unbooked.log 2>&1
+# Wiederkehrende Rechnungen erzeugen (täglich morgens)
+30 5 * * * $OSERP_USER cd $OSERP_ROOT && php backend/cli/recurring-invoices.php >> log/recurring-invoices.log 2>&1
 EOF
     sudo chmod 644 "$frag"
     ok "Cron-Fragment: $frag"

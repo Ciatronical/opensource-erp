@@ -26,6 +26,8 @@ function getAccountingCockpit($data) {
 
     $kassenkonto = kassenkontoBedingung('c');
     $dunningCtes = dunningCandidateCtes();
+    $recurringCtes = recurringConfigCte();
+    $recurringDueCte = recurringDueCte();
 
     $row = $db->getOne(<<<SQL
         WITH p AS (
@@ -36,6 +38,8 @@ function getAccountingCockpit($data) {
                    DATE_TRUNC('year',  CURRENT_DATE)::date                        AS year_from
         ),
         {$dunningCtes},
+        {$recurringCtes},
+        {$recurringDueCte},
         dunn AS (
             -- Mahnreife Rechnungen — dieselbe Regel wie der Mahnvorschlag
             -- (dunningCandidateCtes), damit Kachel und Vorschlag eine Zahl zeigen.
@@ -47,6 +51,15 @@ function getAccountingCockpit($data) {
                    COUNT(*) FILTER (WHERE current_config_id IS NOT NULL)          AS in_dunning,
                    (SELECT COUNT(*) > 0 FROM cfg WHERE active)                    AS configured
             FROM cand
+        ),
+        recur AS (
+            -- Fällige wiederkehrende Rechnungen — dieselbe Regel wie die Übersicht
+            -- (recurringDueCte), damit Kachel und Übersicht eine Zahl zeigen.
+            SELECT COUNT(*)                         AS cnt,
+                   COALESCE(SUM(amount), 0)         AS sum_due,
+                   COUNT(DISTINCT customer_id)      AS customers,
+                   COUNT(*) FILTER (WHERE blocked)  AS blocked
+            FROM due
         ),
         geld AS (
             -- Jedes Geldkonto einzeln, eingeteilt in drei Gruppen:
@@ -242,10 +255,15 @@ function getAccountingCockpit($data) {
             dunn.in_dunning                                     AS dunning_in_dunning,
             dunn.configured                                     AS dunning_configured,
 
+            recur.cnt                                           AS recurring_count,
+            ROUND(recur.sum_due, 2)                             AS recurring_sum,
+            recur.customers                                     AS recurring_customers,
+            recur.blocked                                       AS recurring_blocked,
+
             (SELECT COUNT(*) FROM accounting_account_rules WHERE active) AS rules_count
         FROM p CROSS JOIN money CROSS JOIN recv CROSS JOIN pay
                CROSS JOIN docs CROSS JOIN book CROSS JOIN bank CROSS JOIN closing
-               CROSS JOIN checks CROSS JOIN dunn
+               CROSS JOIN checks CROSS JOIN dunn CROSS JOIN recur
     SQL, []);
 
     // Abschluss-Fortschritt: Anteil der bereits zugeordneten Bankumsaetze des
@@ -314,6 +332,12 @@ function getAccountingCockpit($data) {
                 'max_level'  => intval($row['dunning_max_level']),
                 'in_dunning' => intval($row['dunning_in_dunning']),
                 'configured' => $row['dunning_configured'] === true || $row['dunning_configured'] === 't',
+            ],
+            'recurring' => [
+                'count'     => intval($row['recurring_count']),
+                'sum'       => floatval($row['recurring_sum']),
+                'customers' => intval($row['recurring_customers']),
+                'blocked'   => intval($row['recurring_blocked']),
             ],
             'closing' => [
                 'percent'    => $percent,

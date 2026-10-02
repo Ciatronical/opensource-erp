@@ -44,6 +44,7 @@ function saveCar($data) {
         // KBA-Daten verarbeiten (INSERT/UPDATE in kba_lxcars, kba_id zurück)
         $useSpecialKbaFallback = false;
         if (!empty($kbaData)) {
+            $kbaData = alignKbaWithCar($kbaData, $car, $d2);
             $kbaId = prepareKba($kbaData);
             if ($kbaId) {
                 $car['kba_id'] = $kbaId;
@@ -135,6 +136,7 @@ function updateCar($data) {
     try {
         // KBA-Daten verarbeiten: Special-KBA hat Vorrang, sonst normale kba_lxcars
         if (!empty($kbaData)) {
+            $kbaData = alignKbaWithCar($kbaData, $car, $d2);
             $hasSpecialKba = $db->getOne(
                 "SELECT id FROM special_kba_lxcars WHERE c_id = :c_id",
                 [':c_id' => $carId]
@@ -1528,6 +1530,16 @@ function detectPassengerTransport($scanData) {
     return false;
 }
 
+/**
+ * Zweistelliges Jahr aus dem Scan auflösen. Liegt 20JJ mehr als 5 Jahre in der
+ * Zukunft (HU-Termine reichen max. ~3 Jahre voraus), ist 19JJ gemeint (alte Scheine).
+ */
+function _scanYear2($yy) {
+    $year = 2000 + intval($yy);
+    if ($year > intval(date('Y')) + 5) $year -= 100;
+    return $year;
+}
+
 function parseScanDate($dateStr) {
     if (empty($dateStr)) return null;
     $dateStr = trim($dateStr);
@@ -1540,7 +1552,7 @@ function parseScanDate($dateStr) {
     // MM.JJ (z.B. "03.26")
     if (count($parts) === 2 && strlen($parts[0]) <= 2 && strlen($parts[1]) === 2) {
         $month = intval($parts[0]);
-        $year = 2000 + intval($parts[1]);
+        $year = _scanYear2($parts[1]);
         if ($month >= 1 && $month <= 12) {
             return sprintf('%04d-%02d-01', $year, $month);
         }
@@ -1565,11 +1577,11 @@ function parseScanDate($dateStr) {
         }
     }
 
-    // TT.MM.JJ (z.B. "15.03.20")
+    // TT.MM.JJ (z.B. "15.03.20", "06.04.84" → 1984)
     if (count($parts) === 3 && strlen($parts[2]) === 2) {
         $day = intval($parts[0]);
         $month = intval($parts[1]);
-        $year = 2000 + intval($parts[2]);
+        $year = _scanYear2($parts[2]);
         if (checkdate($month, $day, $year)) {
             return sprintf('%04d-%02d-%02d', $year, $month, $day);
         }
@@ -1578,7 +1590,7 @@ function parseScanDate($dateStr) {
     // MMJJ (z.B. "0326" → 03/26)
     if (strlen($dateStr) === 4 && ctype_digit($dateStr)) {
         $month = intval(substr($dateStr, 0, 2));
-        $year = 2000 + intval(substr($dateStr, 2, 2));
+        $year = _scanYear2(substr($dateStr, 2, 2));
         if ($month >= 1 && $month <= 12) {
             return sprintf('%04d-%02d-01', $year, $month);
         }
@@ -2009,6 +2021,26 @@ function resolveKbaWithD2($db, $hsn, $tsn, $d2) {
 }
 
 /**
+ * Gleicht die KBA-Schlüssel an die Fahrzeugfelder an.
+ * HSN/TSN/D2 im Fahrzeug sind das, was der Benutzer sieht und korrigiert
+ * (Scan-Formular, Edit-View). Die vom Scan gelieferten KBA-Rohdaten dürfen
+ * davon nicht abweichen, sonst landet der Datensatz unter der falschen HSN.
+ *
+ * @param array  $kbaData KBA-Felder aus dem Scan
+ * @param array  $car     Fahrzeugfelder (c_2, c_3)
+ * @param string $d2      Typschlüssel D.2 aus dem Fahrzeugformular
+ * @return array
+ */
+function alignKbaWithCar($kbaData, $car, $d2 = '') {
+    $hsn = strtoupper(trim($car['c_2'] ?? ''));
+    $tsn = strtoupper(trim($car['c_3'] ?? ''));
+    if ($hsn !== '') $kbaData['hsn'] = $hsn;
+    if ($tsn !== '') $kbaData['tsn'] = mb_substr($tsn, 0, 3);
+    if (trim($d2) !== '') $kbaData['d2'] = trim($d2);
+    return $kbaData;
+}
+
+/**
  * KBA-Datensatz anlegen oder aktualisieren (Scan-Daten).
  * Lookup über HSN + TSN (erste 3 Zeichen) + D2.
  *
@@ -2130,22 +2162,40 @@ function prepareKba($kbaData) {
     }
 
     // 3. kba_lxcars ist Stammdaten — neue HSN dürfen nicht per Scan angelegt werden.
-    // Nur bekannte HSN mit einem neuen D2 bekommen eine Klonvariante.
+    //    Bekannte HSN+TSN mit neuem D2 → Klonvariante desselben Modells.
     $template = $db->getOne(
-        "SELECT * FROM kba_lxcars WHERE hsn = :hsn ORDER BY id LIMIT 1",
-        [':hsn' => $hsn]
+        "SELECT * FROM kba_lxcars WHERE hsn = :hsn AND tsn = :tsn ORDER BY id LIMIT 1",
+        [':hsn' => $hsn, ':tsn' => $tsn]
     );
-    if (!$template) {
-        // Unbekannte HSN → kein Eintrag anlegen, Aufrufer fällt auf special_kba_lxcars zurück
-        return null;
-    }
-
-    // Bekannte HSN aber neue TSN+D2-Kombination: Klon aus Template (Stammdaten übernehmen)
-    $masterFields = ['fhzart', 'klasse', 'aufbau', 'antrieb', 'sitze', 'datum', 'achsen', 'masse', 'j'];
-    foreach ($masterFields as $field) {
-        if (!isset($kbaData[$field]) && !empty($template[$field])) {
-            $kbaData[$field] = $template[$field];
+    if ($template) {
+        $masterFields = ['fhzart', 'klasse', 'aufbau', 'antrieb', 'sitze', 'datum', 'achsen', 'masse', 'j'];
+        foreach ($masterFields as $field) {
+            if (!isset($kbaData[$field]) && !empty($template[$field])) {
+                $kbaData[$field] = $template[$field];
+            }
         }
+    } else {
+        // Bekannte HSN, aber unbekannte TSN: ein anderes Modell desselben Herstellers
+        // taugt NICHT als Vorlage (Masse, Klasse, Datum, Fahrzeugart wären falsch).
+        // Fahrzeugart aus der gescannten Klasse (Feld J bzw. Feld 1 alt) ableiten,
+        // ersatzweise aus der HSN, wenn der Hersteller nur eine Fahrzeugart baut.
+        $klasse = trim($kbaData['klasse'] ?? ($kbaData['j'] ?? ''));
+        $stats = $db->getOne(
+            "SELECT
+                (SELECT count(*) FROM kba_lxcars WHERE hsn = :hsn) AS hsn_count,
+                (SELECT fhzart FROM kba_lxcars WHERE klasse = :klasse AND klasse <> '' AND fhzart <> ''
+                  GROUP BY fhzart ORDER BY count(*) DESC LIMIT 1) AS by_class,
+                (SELECT CASE WHEN count(DISTINCT fhzart) = 1 THEN min(fhzart) END
+                   FROM kba_lxcars WHERE hsn = :hsn AND fhzart <> '') AS by_hsn",
+            [':hsn' => $hsn, ':klasse' => $klasse]
+        );
+        if (empty($stats['hsn_count'])) {
+            // Unbekannte HSN → kein Eintrag anlegen, Aufrufer fällt auf special_kba_lxcars zurück
+            return null;
+        }
+        $fhzart = $stats['by_class'] ?: ($stats['by_hsn'] ?: '');
+        if ($fhzart !== '') $kbaData['fhzart'] = $fhzart;
+        if (!empty($stats['by_class']) && empty($kbaData['klasse'])) $kbaData['klasse'] = $klasse;
     }
     $fields = array_keys($kbaData);
     $values = array_values($kbaData);

@@ -776,7 +776,10 @@
                 "checksSub": "Differenz {amount} zwischen Rechnung und Konto",
                 "dunning": "Mahnen",
                 "dunningSub": "{amount} bei {customers} Kunden mahnreif",
-                "startDunning": "Mahnlauf starten"
+                "startDunning": "Mahnlauf starten",
+                "recurring": "Wiederkehrende Rechnungen",
+                "recurringSub": "{amount} bei {customers} Kunden fällig",
+                "createRecurring": "Rechnungen erzeugen"
             },
             "lookupTitle": "Nachschlagen und drucken",
             "checks": {

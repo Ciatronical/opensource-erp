@@ -216,6 +216,15 @@
                 />
             </section>
 
+            <!-- Wiederkehrende Abrechnung (nur bei gespeicherten Verkaufsaufträgen) -->
+            <section class="faktura-section" v-if="fakturaType === 'order' && faktura.data && fakturaId">
+                <recurring-section-card
+                    :oe-id="Number(fakturaId)"
+                    :has-customer="hasCustomer"
+                    @invoices-created="onRecurringInvoicesCreated"
+                />
+            </section>
+
             <!-- Positionen -->
             <section class="faktura-section" v-if="faktura.data" :class="{ 'section-disabled': !hasCustomer }">
                 <faktura-items-table-component
@@ -1074,6 +1083,7 @@ import CreatePartDialog from './dialogs/create.part.dialog.vue'
 import SendEmailDialog from './dialogs/send.email.dialog.vue'
 import SilverdatImportDialog from './dialogs/silverdat.import.dialog.vue'
 import PaymentSectionCard from './cards/payment.section.card.vue'
+import RecurringSectionCard from './cards/recurring.section.card.vue'
 import HtmlEditorComponent from '@/core/components/html.editor.component.vue'
 import InstructionsSectionCard from '@/features/lxcars/components/instructions.section.card.vue'
 import MaengelSectionCard from '@/features/lxcars/components/maengel.section.card.vue'
@@ -1118,6 +1128,7 @@ export default defineComponent({
         SendEmailDialog,
         SilverdatImportDialog,
         PaymentSectionCard,
+        RecurringSectionCard,
         HtmlEditorComponent,
         InstructionsSectionCard,
         MaengelSectionCard,
@@ -2296,6 +2307,13 @@ export default defineComponent({
             }
         }
 
+        // Aus der Karte „Wiederkehrende Abrechnung" erzeugte Rechnungen:
+        // Beleg neu laden, damit Verknüpfungen und Verlauf sie zeigen
+        async function onRecurringInvoicesCreated() {
+            if (!fakturaId.value) return
+            await faktura.fetchFakturaData(fakturaId.value, fakturaType.value)
+        }
+
         function reuseFaktura() {
             convertAndNavigate(fakturaType.value)
         }
@@ -3128,6 +3146,7 @@ export default defineComponent({
         }
 
         return {
+            onRecurringInvoicesCreated,
             t,
             oserp,
             faktura,

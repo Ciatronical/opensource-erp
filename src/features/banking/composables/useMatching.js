@@ -98,11 +98,13 @@ export function useMatching() {
         }
     }
 
-    async function bookTransactionMultiple(transactionId, targetIds, bankAccountId) {
+    // Sammelbuchung: ein Umsatz gegen mehrere Belege (Rechnungen und
+    // Gutschriften, AR und/oder AP). targets = [{target_type, target_id}]
+    async function bookTransactionMultiple(transactionId, targets, bankAccountId) {
         const response = await axios.post(API_URL, {
             action: 'bookTransactionMultipleInvoices',
             transaction_id: transactionId,
-            target_ids: targetIds,
+            targets: targets,
             bank_account_id: bankAccountId
         })
         if (!response.data.success) {

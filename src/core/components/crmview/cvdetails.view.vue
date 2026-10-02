@@ -394,6 +394,7 @@ const FilesTab = defineAsyncComponent(() => import('@/core/views/customer-vendor
 import EmailsTab from '@/core/views/customer-vendor/tabs/emails.tab.vue'
 import WhatsappTab from '@/core/views/customer-vendor/tabs/whatsapp.tab.vue'
 import { formatPhone } from '@/core/utils/phoneFormat.js'
+import { collectEmailAddresses } from '@/core/utils/cvContactAddresses.js'
 
 const { t } = useI18n();
 const oserpData = oserpStore();
@@ -439,25 +440,7 @@ const cvPhoneNumbers = computed(() => {
     return nums
 });
 
-const cvEmailAddresses = computed(() => {
-    const addrs = []
-    const profileEmail = cvProfile.value?.email
-    if (profileEmail) {
-        profileEmail.split(/[;,]/).forEach(e => {
-            const trimmed = e.trim()
-            if (trimmed) addrs.push(trimmed)
-        })
-    }
-    contacts.value.forEach(c => {
-        if (c.cp_email) {
-            c.cp_email.split(/[;,]/).forEach(e => {
-                const trimmed = e.trim()
-                if (trimmed && !addrs.includes(trimmed)) addrs.push(trimmed)
-            })
-        }
-    })
-    return addrs
-});
+const cvEmailAddresses = computed(() => collectEmailAddresses(cvProfile.value, contacts.value));
 
 const customVarHeaders = [
     { title: t('CrmView.description'), key: 'description', sortable: true },

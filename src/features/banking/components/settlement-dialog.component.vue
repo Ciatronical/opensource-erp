@@ -26,6 +26,50 @@
             <v-card-text v-if="step === 'upload'">
                 <p class="text-body-2 mb-4">{{ t('BankingView.settlement.uploadHint') }}</p>
 
+                <v-btn
+                    v-if="isSumupTransaction"
+                    color="primary"
+                    variant="tonal"
+                    class="mb-4"
+                    prepend-icon="mdi-cloud-download-outline"
+                    :loading="sumupSyncing"
+                    @click="syncFromSumup"
+                >
+                    {{ t('BankingView.settlement.sumupFetch') }}
+                </v-btn>
+
+                <!-- Bereits hochgeladene, noch offene Abrechnungen: eine falsche
+                     Datei lässt sich hier wieder löschen, sonst würde sie bei
+                     jedem Öffnen erneut als Treffer vorgeschlagen. -->
+                <v-card v-if="uploaded.length > 0" variant="outlined" rounded="lg" class="mb-4">
+                    <div class="text-overline px-3 pt-2">{{ t('BankingView.settlement.uploadedTitle') }}</div>
+                    <v-list density="compact" class="py-0">
+                        <v-list-item v-for="u in uploaded" :key="u.id">
+                            <v-list-item-title class="text-body-2">
+                                <v-icon v-if="u.document_id" size="x-small" class="mr-1" :title="t('BankingView.settlement.hasFile')">mdi-paperclip</v-icon>
+                                <span class="font-weight-medium">{{ u.provider }}</span>
+                                <span v-if="u.vendor_name" class="text-medium-emphasis"> · {{ u.vendor_name }}</span>
+                            </v-list-item-title>
+                            <v-list-item-subtitle class="text-caption">
+                                {{ formatDate(u.period_from) }} – {{ formatDate(u.period_to) }}
+                                · {{ t('BankingView.settlement.uploadedLines', { open: openLineCount(u), total: (u.lines || []).length }) }}
+                                · {{ formatCurrency(u.total_net) }}
+                            </v-list-item-subtitle>
+                            <template #append>
+                                <v-btn
+                                    icon="mdi-delete-outline"
+                                    size="small"
+                                    variant="text"
+                                    color="error"
+                                    :disabled="openLineCount(u) !== (u.lines || []).length"
+                                    :title="t('BankingView.settlement.deleteSettlement')"
+                                    @click="removeUploaded(u)"
+                                />
+                            </template>
+                        </v-list-item>
+                    </v-list>
+                </v-card>
+
                 <v-text-field
                     v-model="provider"
                     :label="t('BankingView.settlement.provider')"
@@ -75,7 +119,10 @@
                                 :key="i"
                                 :class="{ 'bg-green-lighten-5': isBankRow(r) }"
                             >
-                                <td>{{ formatDate(r.payout_date) }}</td>
+                                <td>
+                                    {{ formatDate(r.payout_date) }}
+                                    <span v-if="r.reference" class="text-medium-emphasis ml-1">{{ r.reference }}</span>
+                                </td>
                                 <td class="text-right">{{ formatCurrency(r.gross) }}</td>
                                 <td class="text-right text-error">{{ formatCurrency(-r.fee) }}</td>
                                 <td class="text-right font-weight-medium">{{ formatCurrency(r.net) }}</td>
@@ -92,6 +139,7 @@
             <v-card-text v-else-if="step === 'book'">
                 <v-alert type="success" variant="tonal" density="compact" class="mb-4">
                     {{ t('BankingView.settlement.matchFound', { provider: match?.provider }) }}
+                    <span v-if="match?.reference" class="text-medium-emphasis">· {{ match.reference }}</span>
                 </v-alert>
 
                 <v-table density="compact" class="mb-4">
@@ -114,6 +162,48 @@
                 <!-- Zugehörige Ausgangsrechnungen (automatischer Ausgleich) -->
                 <div class="text-overline mb-1">{{ t('BankingView.settlement.invoicesTitle') }}</div>
                 <v-progress-linear v-if="invoicesLoading" indeterminate class="mb-2" />
+
+                <!-- Je Kartenzahlung: Betrag → zugeordnete Rechnung (vorbelegt) -->
+                <template v-else-if="paymentRows.length > 0">
+                    <v-alert v-if="invoiceInfo.unmatched > 0" type="warning" variant="tonal" density="compact" class="mb-2">
+                        {{ t('BankingView.settlement.paymentsUnmatched', { count: invoiceInfo.unmatched }) }}
+                    </v-alert>
+                    <v-table density="compact" class="text-caption mb-1">
+                        <tbody>
+                            <tr v-for="(p, i) in paymentRows" :key="p.code || i" :class="{ 'bg-orange-lighten-5': !p.invoice }">
+                                <td style="width:34px">
+                                    <v-checkbox-btn
+                                        v-if="p.invoice"
+                                        v-model="selectedArIds"
+                                        :value="p.invoice.ar_id"
+                                        density="compact"
+                                        hide-details
+                                    />
+                                    <v-icon v-else size="small" color="warning">mdi-help-circle-outline</v-icon>
+                                </td>
+                                <td class="text-no-wrap text-medium-emphasis">
+                                    {{ t('BankingView.settlement.cardPayment') }} {{ formatDateTime(p.timestamp) }}
+                                </td>
+                                <td class="text-right text-no-wrap font-weight-medium">{{ formatCurrency(p.gross) }}</td>
+                                <td class="text-medium-emphasis px-1">→</td>
+                                <td v-if="p.invoice">
+                                    <span class="font-weight-medium">{{ p.invoice.invnumber }}</span>
+                                    <span class="text-medium-emphasis"> · {{ p.invoice.customer_name }}</span>
+                                    <span v-if="p.invoice.transdate" class="text-medium-emphasis"> · {{ formatDate(p.invoice.transdate) }}</span>
+                                </td>
+                                <td v-else class="text-warning">{{ t('BankingView.settlement.paymentNoInvoice') }}</td>
+                            </tr>
+                        </tbody>
+                    </v-table>
+                    <!-- Weitere offene Rechnungen nur, wenn eine Zahlung ohne Treffer ist -->
+                    <template v-if="otherCandidates.length > 0 && (invoiceInfo.unmatched > 0 || showOthers)">
+                        <div class="text-caption text-medium-emphasis mt-2 mb-1">{{ t('BankingView.settlement.otherInvoices') }}</div>
+                    </template>
+                    <v-btn v-else-if="otherCandidates.length > 0" variant="text" size="x-small" class="px-1" @click="showOthers = true">
+                        {{ t('BankingView.settlement.showOtherInvoices', { count: otherCandidates.length }) }}
+                    </v-btn>
+                </template>
+
                 <v-alert v-else-if="invoiceInfo.ambiguous" type="info" variant="tonal" density="compact" class="mb-2">
                     {{ t('BankingView.settlement.invoicesAmbiguous') }}
                 </v-alert>
@@ -124,9 +214,9 @@
                     {{ t('BankingView.settlement.invoicesNone') }}
                 </v-alert>
 
-                <v-table v-if="invoiceCandidates.length > 0" density="compact" class="text-caption mb-1">
+                <v-table v-if="manualCandidates.length > 0" density="compact" class="text-caption mb-1">
                     <tbody>
-                        <tr v-for="inv in invoiceCandidates" :key="inv.ar_id">
+                        <tr v-for="inv in manualCandidates" :key="inv.ar_id">
                             <td style="width:34px">
                                 <v-checkbox-btn v-model="selectedArIds" :value="inv.ar_id" density="compact" hide-details />
                             </td>
@@ -170,13 +260,69 @@
                     density="compact"
                     :menu-props="{ maxHeight: 400, class: 'oserp-scroll-menu' }"
                 />
+
+                <!-- Buchungsvorschau: exakt die Hauptbuch-Zeilen, die „Buchen" schreibt
+                     (kommt aus derselben Backend-Logik wie die Buchung selbst). -->
+                <div class="text-overline mt-4 mb-1">{{ t('BankingView.settlement.previewTitle') }}</div>
+                <v-progress-linear v-if="previewLoading" indeterminate class="mb-2" />
+                <template v-else-if="preview">
+                    <div class="text-caption text-medium-emphasis mb-1">
+                        {{ formatDate(preview.transdate) }} · {{ preview.description }}
+                    </div>
+                    <v-table density="compact" class="text-caption mb-1">
+                        <thead>
+                            <tr>
+                                <th>{{ t('BankingView.settlement.previewAccount') }}</th>
+                                <th>{{ t('BankingView.settlement.previewText') }}</th>
+                                <th class="text-right">{{ t('BankingView.settlement.previewDebit') }}</th>
+                                <th class="text-right">{{ t('BankingView.settlement.previewCredit') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(l, i) in preview.legs" :key="i">
+                                <td class="text-truncate preview-account" :title="l.accno + ' ' + l.description">
+                                    <span class="font-weight-medium">{{ l.accno }}</span> {{ l.description }}
+                                </td>
+                                <td class="text-medium-emphasis text-truncate preview-memo" :title="l.memo">{{ l.memo }}</td>
+                                <td class="text-right text-no-wrap">{{ l.debit ? formatCurrency(l.debit) : '' }}</td>
+                                <td class="text-right text-no-wrap">{{ l.credit ? formatCurrency(l.credit) : '' }}</td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr class="font-weight-bold">
+                                <td colspan="2">
+                                    <v-icon size="x-small" :color="preview.balanced ? 'success' : 'error'" class="mr-1">
+                                        {{ preview.balanced ? 'mdi-check-circle' : 'mdi-alert-circle' }}
+                                    </v-icon>{{ t('BankingView.settlement.previewTotal') }}
+                                </td>
+                                <td class="text-right text-no-wrap">{{ formatCurrency(previewDebitSum) }}</td>
+                                <td class="text-right text-no-wrap">{{ formatCurrency(previewCreditSum) }}</td>
+                            </tr>
+                        </tfoot>
+                    </v-table>
+                </template>
+                <v-alert v-else-if="previewError" type="warning" variant="tonal" density="compact" class="text-caption">
+                    {{ previewError }}
+                </v-alert>
+                <div v-else class="text-caption text-medium-emphasis">{{ t('BankingView.settlement.previewPending') }}</div>
             </v-card-text>
 
             <!-- Schritt: kein Match -->
             <v-card-text v-else-if="step === 'nomatch'">
-                <v-alert type="warning" variant="tonal" density="compact">
+                <v-alert type="warning" variant="tonal" density="compact" :class="{ 'mb-3': isSumupTransaction }">
                     {{ t('BankingView.settlement.noMatch') }}
                 </v-alert>
+                <v-btn
+                    v-if="isSumupTransaction"
+                    color="primary"
+                    variant="tonal"
+                    size="small"
+                    prepend-icon="mdi-cloud-download-outline"
+                    :loading="sumupSyncing"
+                    @click="syncFromSumup"
+                >
+                    {{ t('BankingView.settlement.sumupFetch') }}
+                </v-btn>
             </v-card-text>
 
             <v-divider />
@@ -196,7 +342,16 @@
                 </v-btn>
 
                 <v-btn
-                    v-else-if="step === 'book'"
+                    v-if="step === 'book' || step === 'nomatch'"
+                    variant="text"
+                    prepend-icon="mdi-file-upload-outline"
+                    @click="backToUpload"
+                >
+                    {{ t('BankingView.settlement.otherFile') }}
+                </v-btn>
+
+                <v-btn
+                    v-if="step === 'book'"
                     color="success"
                     variant="tonal"
                     :disabled="!canBook"
@@ -212,7 +367,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useSettlements } from '../composables/useSettlements.js'
 import * as alerts from '@/core/utils/alerts.js'
@@ -248,8 +403,97 @@ const clearingChartId = ref(null)
 
 const invoiceCandidates = ref([])
 const selectedArIds = ref([])
-const invoiceInfo = ref({ found: false, ambiguous: false, gross: 0 })
+const invoiceInfo = ref({ found: false, ambiguous: false, gross: 0, unmatched: 0 })
 const invoicesLoading = ref(false)
+// Je Kartenzahlung die zugeordnete Rechnung (API / Transaktionsbericht)
+const paymentRows = ref([])
+const showOthers = ref(false)
+// Offene Rechnungen ohne zugeordnete Zahlung (manuelle Wahl)
+const otherCandidates = computed(() => {
+    const matched = new Set(paymentRows.value.map(p => p.invoice?.ar_id).filter(Boolean))
+    return invoiceCandidates.value.filter(inv => !matched.has(inv.ar_id))
+})
+// Liste mit Checkboxen: ohne Einzelzahlungen alle Kandidaten, sonst nur die
+// uebrigen (und die auch nur, wenn eine Zahlung keinen Treffer hat oder auf Wunsch)
+const manualCandidates = computed(() => {
+    if (paymentRows.value.length === 0) return invoiceCandidates.value
+    return (invoiceInfo.value.unmatched > 0 || showOthers.value) ? otherCandidates.value : []
+})
+const preview = ref(null)          // Buchungsvorschau (Hauptbuch-Zeilen)
+const previewLoading = ref(false)
+const previewError = ref('')
+const previewDebitSum = computed(() => (preview.value?.legs || []).reduce((s, l) => s + Number(l.debit || 0), 0))
+const previewCreditSum = computed(() => (preview.value?.legs || []).reduce((s, l) => s + Number(l.credit || 0), 0))
+
+// Vorschau neu laden, sobald sich im Buchen-Schritt Konten oder Rechnungs-
+// auswahl aendern (kurz entprellt, Checkboxen loesen schnell hintereinander aus).
+let previewTimer = null
+watch([step, feeChartId, clearingChartId, selectedArIds, match], () => {
+    clearTimeout(previewTimer)
+    if (step.value !== 'book' || !match.value) { preview.value = null; previewError.value = ''; return }
+    previewTimer = setTimeout(loadPreview, 250)
+}, { deep: true })
+
+async function loadPreview() {
+    if (!feeChartId.value) { preview.value = null; previewError.value = ''; return }
+    previewLoading.value = true
+    try {
+        preview.value = await settlements.previewBooking({
+            bankTransactionId: props.transaction.id,
+            settlementLineId: match.value.line_id,
+            feeChartId: feeChartId.value,
+            clearingChartId: clearingChartId.value,
+            arIds: selectedArIds.value,
+        })
+        previewError.value = ''
+    } catch (e) {
+        preview.value = null
+        previewError.value = e.message
+    } finally {
+        previewLoading.value = false
+    }
+}
+const uploaded = ref([])   // bereits hochgeladene Abrechnungen mit offenen Zeilen
+
+function openLineCount(u) {
+    return (u.lines || []).filter(l => l.status === 'open').length
+}
+
+async function loadUploaded() {
+    try {
+        uploaded.value = await settlements.fetchSettlements({ onlyOpen: true })
+    } catch (e) {
+        uploaded.value = []
+    }
+}
+
+// Falsche Datei entfernen — gebuchte Abrechnungen lehnt das Backend ab. Die
+// hochgeladene Datei wird mitgelöscht, wenn sie nur zu dieser Abrechnung gehört.
+async function removeUploaded(u) {
+    const res = await alerts.warning(
+        t(u.document_id ? 'BankingView.settlement.deleteConfirmFile' : 'BankingView.settlement.deleteConfirm', { provider: u.provider }),
+        t('BankingView.settlement.deleteSettlement'),
+        t('BankingView.settlement.deleteSettlement'),
+        t('BankingView.settlement.cancel')
+    )
+    if (!res.isConfirmed) return
+    try {
+        await settlements.deleteSettlement(u.id)
+        alerts.success(t('BankingView.settlement.deleteSuccess'))
+        await loadUploaded()
+    } catch (e) {
+        alerts.error(e.message)
+    }
+}
+
+// Aus Buchen/Kein-Treffer zurück zum Upload (z. B. falsche Datei erwischt).
+async function backToUpload() {
+    match.value = null
+    rows.value = []
+    selectedFile.value = null
+    step.value = 'upload'
+    await loadUploaded()
+}
 
 function mapAccounts(list) {
     return list.map(a => ({ title: `${a.accno} – ${a.description}`, value: a.id }))
@@ -299,13 +543,41 @@ async function onOpen() {
             settlements.fetchAccounts(),
         ])
         accounts.value = accs
-        await searchVendors('')
+        await Promise.all([searchVendors(''), loadUploaded()])
         if (m) {
             if (m.vendor_id) vendorId.value = m.vendor_id
             await enterBookStep(m)
+        } else if (isSumupTransaction.value) {
+            // SumUp-Gutschrift ohne gespeicherte Auszahlung: direkt per API holen
+            await syncFromSumup()
         }
     } catch (e) {
         alerts.error(e.message)
+    }
+}
+
+// Verwendungszweck "SUMUP PID1314750 PAYOUT 310726" → Auszahlung per API abrufbar
+const isSumupTransaction = computed(() =>
+    /SUMUP/i.test(String(props.transaction?.purpose || '') + ' ' + String(props.transaction?.remote_name || ''))
+)
+const sumupSyncing = ref(false)
+
+async function syncFromSumup() {
+    sumupSyncing.value = true
+    try {
+        const r = await settlements.syncSumupPayouts(props.transaction.id)
+        if (r.match) {
+            if (r.match.vendor_id) vendorId.value = r.match.vendor_id
+            alerts.success(t('BankingView.settlement.sumupSynced', { inserted: r.inserted, skipped: r.skipped }))
+            await enterBookStep(r.match)
+        } else {
+            alerts.warning(t('BankingView.settlement.sumupNoPayout', { from: formatDate(r.window?.from), to: formatDate(r.window?.to) }))
+            await loadUploaded()
+        }
+    } catch (e) {
+        alerts.error(e.message)
+    } finally {
+        sumupSyncing.value = false
     }
 }
 
@@ -319,12 +591,16 @@ async function enterBookStep(m) {
     try {
         const res = await settlements.findInvoices(m.line_id)
         invoiceCandidates.value = res.all_candidates || []
+        paymentRows.value = res.transactions || []
+        showOthers.value = false
+        // Vorbelegung: alle gefundenen Rechnungen sind angehakt — bestätigen reicht
         selectedArIds.value = (res.invoices || []).map(i => i.ar_id)
-        invoiceInfo.value = { found: !!res.found, ambiguous: !!res.ambiguous, gross: res.gross }
+        invoiceInfo.value = { found: !!res.found, ambiguous: !!res.ambiguous, gross: res.gross, unmatched: res.unmatched_count || 0 }
     } catch (e) {
         invoiceCandidates.value = []
+        paymentRows.value = []
         selectedArIds.value = []
-        invoiceInfo.value = { found: false, ambiguous: false, gross: m.gross }
+        invoiceInfo.value = { found: false, ambiguous: false, gross: m.gross, unmatched: 0 }
     } finally {
         invoicesLoading.value = false
     }
@@ -362,16 +638,21 @@ async function onFileSelected(file) {
 
 async function saveAndMatch() {
     try {
-        await settlements.uploadSettlement({
+        const up = await settlements.uploadSettlement({
             provider: provider.value,
             vendorId: vendorId.value,
             file: selectedFile.value,
             rows: rows.value,
         })
+        // Überlappende Berichte: bereits bekannte Auszahlungen wurden übersprungen
+        if (up?.skipped > 0) {
+            alerts.info(t('BankingView.settlement.uploadSkipped', { inserted: up.inserted || 0, skipped: up.skipped }))
+        }
         const m = await settlements.suggestMatch(props.transaction.id)
         if (m) {
             await enterBookStep(m)
         } else {
+            await loadUploaded()
             step.value = 'nomatch'
         }
     } catch (e) {
@@ -408,7 +689,12 @@ function reset() {
     clearingChartId.value = null
     invoiceCandidates.value = []
     selectedArIds.value = []
-    invoiceInfo.value = { found: false, ambiguous: false, gross: 0 }
+    invoiceInfo.value = { found: false, ambiguous: false, gross: 0, unmatched: 0 }
+    paymentRows.value = []
+    showOthers.value = false
+    uploaded.value = []
+    preview.value = null
+    previewError.value = ''
 }
 
 function formatCurrency(value) {
@@ -418,4 +704,16 @@ function formatDate(dateStr) {
     if (!dateStr) return '—'
     return new Date(dateStr).toLocaleDateString('de-DE')
 }
+function formatDateTime(ts) {
+    if (!ts) return ''
+    const d = new Date(String(ts).replace(' ', 'T'))
+    if (isNaN(d.getTime())) return String(ts)
+    return d.toLocaleDateString('de-DE') + ' ' + d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })
+}
 </script>
+
+<style scoped>
+/* Buchungsvorschau: Konto und Text kürzen, damit Soll/Haben im 680px-Dialog sichtbar bleiben */
+.preview-account { max-width: 230px; }
+.preview-memo    { max-width: 190px; }
+</style>

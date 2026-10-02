@@ -92,7 +92,8 @@
         "manageQuotations": "Quotations",
         "manageOrders": "Orders",
         "manageInvoices": "Invoices",
-        "manageDeliveryOrders": "Delivery notes"
+        "manageDeliveryOrders": "Delivery notes",
+        "recurringInvoices": "Recurring Invoices"
     },
     "SystemMenu": {
         "title": "System",

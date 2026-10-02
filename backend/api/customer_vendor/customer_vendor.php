@@ -647,12 +647,69 @@ function getCV($data, $withConfig = []) {
                                         SELECT * FROM additional_billing_addresses WHERE customer_id = $cv_id ORDER BY id ASC
                                     ) AS additional_billing_addresses
                                 ),
+                            -- Kontakthistorie: Anrufe (crmti) und WhatsApp-Nachrichten in einer
+                            -- chronologischen Liste (neueste zuerst). E-Mails kommen live per IMAP
+                            -- (Frontend, getEmails) dazu, da eingehende Mails nicht in der DB liegen.
+                            -- Anrufe: direkt dem Kunden/Lieferanten (typ C/V) oder einer seiner
+                            -- Ansprechpersonen (typ K, crmti_caller_id = cp_id) zugeordnet.
+                            -- WhatsApp: über customer_id oder über die normalisierten Rufnummern
+                            -- des Kunden und seiner Ansprechpersonen (wie getWhatsAppMessages).
                             'contact_history',
                                 (
-                                    SELECT json_agg(contact_history)
+                                    WITH cv_phones AS (
+                                        SELECT DISTINCT
+                                            CASE WHEN d LIKE '00%' THEN substr(d, 3)
+                                                 WHEN d LIKE '0%'  THEN cc || substr(d, 2)
+                                                 ELSE d END AS digits
+                                        FROM (
+                                            SELECT regexp_replace(COALESCE(n, ''), '[^0-9]', '', 'g') AS d,
+                                                   COALESCE((SELECT value FROM defaults_oserp WHERE key = 'whatsapp_country_code'), '49') AS cc
+                                            FROM (
+                                                SELECT phone AS n FROM $cvTable WHERE id = $cv_id
+                                                UNION ALL SELECT cp_phone1 FROM contacts WHERE cp_cv_id = $cv_id
+                                                UNION ALL SELECT cp_phone2 FROM contacts WHERE cp_cv_id = $cv_id
+                                                UNION ALL SELECT cp_mobile1 FROM contacts WHERE cp_cv_id = $cv_id
+                                                UNION ALL SELECT cp_mobile2 FROM contacts WHERE cp_cv_id = $cv_id
+                                                UNION ALL SELECT e.elem->>'number' FROM {$extTable} x
+                                                    CROSS JOIN LATERAL jsonb_array_elements(x.phone_numbers) AS e(elem)
+                                                    WHERE x.{$extFk} = $cv_id AND jsonb_typeof(x.phone_numbers) = 'array'
+                                            ) AS raw
+                                        ) AS cleaned
+                                        WHERE d <> ''
+                                    )
+                                    SELECT json_agg(h ORDER BY h.ts DESC)
                                     FROM (
-                                        SELECT  EXTRACT( EPOCH FROM TIMESTAMPTZ( crmti_init_time ) ) * 1000 AS call_date, crmti_status, crmti_src, crmti_dst, crmti_caller_id, crmti_caller_typ, crmti_direction, crmti_number, unique_call_id FROM crmti WHERE crmti_caller_id = $cv_id AND crmti_init_time > NOW() - INTERVAL '1.5 WEEK' ORDER BY crmti_init_time DESC LIMIT 12
-                                    ) AS contact_history
+                                        SELECT 'call' AS kind,
+                                               crmti_id AS id,
+                                               EXTRACT(EPOCH FROM crmti_init_time) * 1000 AS ts,
+                                               CASE WHEN crmti_direction = 'E' THEN 'I' ELSE 'O' END AS direction,
+                                               crmti_number AS number,
+                                               CASE WHEN crmti_direction = 'E' THEN crmti_src ELSE crmti_dst END AS name,
+                                               CASE WHEN crmti_direction = 'E' THEN crmti_dst ELSE crmti_src END AS extension,
+                                               crmti_status AS status,
+                                               NULL::text AS text,
+                                               unique_call_id
+                                        FROM crmti
+                                        WHERE (crmti_caller_typ = '$cvSrcLiteral' AND crmti_caller_id = $cv_id)
+                                           OR (crmti_caller_typ = 'K' AND crmti_caller_id IN (SELECT cp_id FROM contacts WHERE cp_cv_id = $cv_id))
+                                        UNION ALL
+                                        SELECT 'whatsapp',
+                                               id,
+                                               EXTRACT(EPOCH FROM itime) * 1000,
+                                               direction,
+                                               phone_number,
+                                               contact_name,
+                                               NULL,
+                                               status,
+                                               LEFT(COALESCE(NULLIF(message_text, ''), NULLIF(media_caption, ''), message_type), 200),
+                                               NULL
+                                        FROM whatsapp_messages
+                                        WHERE hidden = FALSE
+                                          AND (customer_id = $cv_id
+                                               OR regexp_replace(phone_number, '[^0-9]', '', 'g') IN (SELECT digits FROM cv_phones))
+                                        ORDER BY ts DESC
+                                        LIMIT 100
+                                    ) AS h
                                 ),
                             'turnover_statistics',
                                 (

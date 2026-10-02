@@ -776,7 +776,10 @@
                 "checksSub": "Difference of {amount} between invoice and account",
                 "dunning": "Dun",
                 "dunningSub": "{amount} from {customers} customers ready",
-                "startDunning": "Start dunning run"
+                "startDunning": "Start dunning run",
+                "recurring": "Recurring invoices",
+                "recurringSub": "{amount} due for {customers} customers",
+                "createRecurring": "Create invoices"
             },
             "lookupTitle": "Look up and print",
             "checks": {

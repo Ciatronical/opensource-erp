@@ -362,7 +362,10 @@ AS $BODY$
 
         PERFORM pg_notify('crmti_change', to_json(new_row)::TEXT);
 
-        DELETE FROM crmti WHERE crmti_id  < new_row.crmti_id - 512;
+        -- Hinweis: Früher wurde hier die Anrufhistorie auf die letzten 512
+        -- Zeilen gekürzt (DELETE FROM crmti WHERE crmti_id < new_row.crmti_id - 512).
+        -- Das löschte bei jedem ausgehenden Anruf ältere Anrufe aller Kunden —
+        -- die Historie bleibt jetzt vollständig erhalten.
         IF result.typ != 'X' THEN
             INSERT INTO telcall ( calldate, bezug, cause, caller_id, kontakt, inout ) values ( CURRENT_TIMESTAMP, 0, 'Ausgehender Anruf vo[n|m] '||src, result.id, 'T', 'o' );
         END IF;
@@ -2648,7 +2651,7 @@ CREATE TABLE IF NOT EXISTS payment_settlements (
 
 CREATE INDEX IF NOT EXISTS idx_payment_settlements_vendor ON payment_settlements(vendor_id);
 
-COMMENT ON TABLE payment_settlements IS 'Hochgeladene Sammelabrechnungen von Kartendienstleistern (Flatpay/Rapyd). Datei liegt als accounting_documents beim Kreditor.';
+COMMENT ON TABLE payment_settlements IS 'Hochgeladene Sammelabrechnungen von Kartendienstleistern (Flatpay/Rapyd, SumUp). Datei liegt als accounting_documents beim Kreditor.';
 
 CREATE TABLE IF NOT EXISTS payment_settlement_lines (
     id                          SERIAL PRIMARY KEY,
@@ -2659,6 +2662,8 @@ CREATE TABLE IF NOT EXISTS payment_settlement_lines (
     gross                       NUMERIC(15,2) NOT NULL DEFAULT 0,  -- Gesamteinnahmen (brutto)
     fee                         NUMERIC(15,2) NOT NULL DEFAULT 0,  -- Transaktionskosten (positiv)
     net                         NUMERIC(15,2) NOT NULL DEFAULT 0,  -- Nettoauszahlung (= erwarteter Bankbetrag)
+    reference                   TEXT,                           -- Auszahlungs-Kennung des Dienstleisters (SumUp "PID1283966"), steht im Bank-Verwendungszweck
+    transactions                JSONB,                          -- einzelne Kartenzahlungen der Auszahlung [{code, timestamp, gross, fee, net, description}] fuer die Rechnungszuordnung je Zahlung
     matched_bank_transaction_id INTEGER,                        -- FK zu bank_transactions (nach Match)
     gl_id                       INTEGER,                        -- gebuchter Vorgang (gl.id), nach Buchung
     settled_ar_ids              JSONB,                          -- ausgeglichene Ausgangsrechnungen (ar.id-Array), fuer Storno
@@ -3027,3 +3032,391 @@ DO $$ BEGIN
             EXECUTE FUNCTION notify_chat_read();
     END IF;
 END $$;
+
+-- -----------------------------------------------------------------------------
+-- WIEDERKEHRENDE RECHNUNGEN (Abos, Mieten, Wartungsverträge)
+--
+-- Die kivitendo-Tabellen bleiben unverändert und bedeuten dasselbe wie dort:
+-- periodic_invoices_configs (eine Zeile je Auftrag: Rhythmus, Laufzeit,
+-- Versand) und periodic_invoices (eine Zeile je erzeugter Rechnung mit dem
+-- Periodenbeginn als Merkposten, was schon abgerechnet ist). Was OS-ERP darüber
+-- hinaus kann — freie Intervalle, Kalender-Ausrichtung, anteilige Perioden,
+-- nachschüssige Abrechnung, Preisanpassung, Kündigungsfristen, Mahnsperre —
+-- liegt in den _ext-Tabellen daneben. kivitendo-Spalten werden dabei so
+-- gefüllt, dass kivitendo die Konfiguration weiterhin versteht.
+-- -----------------------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS periodic_invoices_configs_ext (
+    id integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    config_id integer NOT NULL REFERENCES periodic_invoices_configs(id) ON DELETE CASCADE,
+    interval_unit text NOT NULL DEFAULT 'month',
+    interval_count integer NOT NULL DEFAULT 1,
+    align_to_calendar boolean NOT NULL DEFAULT false,
+    prorate_partial boolean NOT NULL DEFAULT true,
+    billing_timing text NOT NULL DEFAULT 'advance',
+    billing_offset_days integer NOT NULL DEFAULT 0,
+    price_mode text NOT NULL DEFAULT 'fixed',
+    price_increase_percent numeric(6,3),
+    price_increase_month integer,
+    hold_on_overdue_days integer,
+    notice_period_months integer,
+    min_term_months integer,
+    paused_until date,
+    post_to_ledger boolean NOT NULL DEFAULT true,
+    notes text,
+    created_by integer,
+    itime timestamp without time zone DEFAULT now(),
+    mtime timestamp without time zone,
+    CONSTRAINT periodic_invoices_configs_ext_config_id_unique UNIQUE (config_id)
+);
+
+COMMENT ON TABLE periodic_invoices_configs_ext IS 'Zusatzfelder je wiederkehrender Abrechnung (periodic_invoices_configs)';
+COMMENT ON COLUMN periodic_invoices_configs_ext.config_id IS 'Referenz auf periodic_invoices_configs.id';
+COMMENT ON COLUMN periodic_invoices_configs_ext.interval_unit IS 'Einheit des Abrechnungsintervalls: day, week, month, year oder once';
+COMMENT ON COLUMN periodic_invoices_configs_ext.interval_count IS 'Anzahl Einheiten je Intervall (alle 2 Wochen = week/2)';
+COMMENT ON COLUMN periodic_invoices_configs_ext.align_to_calendar IS 'Perioden an Kalendergrenzen ausrichten (Monatserster, Montag, 1. Januar)';
+COMMENT ON COLUMN periodic_invoices_configs_ext.prorate_partial IS 'Angebrochene erste/letzte Periode anteilig nach Tagen berechnen';
+COMMENT ON COLUMN periodic_invoices_configs_ext.billing_timing IS 'advance = vorschüssig (Rechnung zu Periodenbeginn), arrears = nachschüssig (zum Periodenende)';
+COMMENT ON COLUMN periodic_invoices_configs_ext.billing_offset_days IS 'Rechnungsdatum relativ zum Periodenbeginn bzw. -ende in Tagen (negativ = früher)';
+COMMENT ON COLUMN periodic_invoices_configs_ext.price_mode IS 'fixed = Preise aus dem Auftrag, current = aktuelle Listen-/Preisgruppenpreise bei Erzeugung';
+COMMENT ON COLUMN periodic_invoices_configs_ext.price_increase_percent IS 'Jährliche Preisanpassung in Prozent (Indexierung), NULL = keine';
+COMMENT ON COLUMN periodic_invoices_configs_ext.price_increase_month IS 'Monat (1-12), ab dem die jährliche Preisanpassung greift';
+COMMENT ON COLUMN periodic_invoices_configs_ext.hold_on_overdue_days IS 'Erzeugung anhalten, wenn der Kunde Rechnungen hat, die länger als n Tage überfällig sind; NULL = aus';
+COMMENT ON COLUMN periodic_invoices_configs_ext.notice_period_months IS 'Kündigungsfrist in Monaten vor Laufzeitende';
+COMMENT ON COLUMN periodic_invoices_configs_ext.min_term_months IS 'Mindestlaufzeit in Monaten ab Startdatum';
+COMMENT ON COLUMN periodic_invoices_configs_ext.paused_until IS 'Pausiert bis zu diesem Datum; danach wird die Abrechnung automatisch wieder aktiv';
+COMMENT ON COLUMN periodic_invoices_configs_ext.post_to_ledger IS 'Erzeugte Rechnung sofort ins Hauptbuch buchen (acc_trans)';
+COMMENT ON COLUMN periodic_invoices_configs_ext.notes IS 'Interne Bemerkung zur Abrechnung (Vertragsnummer, Absprachen)';
+COMMENT ON COLUMN periodic_invoices_configs_ext.created_by IS 'Mitarbeiter, der die Abrechnung eingerichtet hat';
+
+-- Je erzeugter Rechnung: abgerechnete Periode, Faktoren und Zustellung.
+CREATE TABLE IF NOT EXISTS periodic_invoices_ext (
+    id integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    periodic_invoice_id integer NOT NULL REFERENCES periodic_invoices(id) ON DELETE CASCADE,
+    period_end_date date,
+    billing_date date,
+    factor numeric(12,6) NOT NULL DEFAULT 1,
+    posted boolean NOT NULL DEFAULT false,
+    post_error text,
+    email_to text,
+    email_sent_at timestamp without time zone,
+    email_error text,
+    printed_at timestamp without time zone,
+    print_error text,
+    created_by integer,
+    source text NOT NULL DEFAULT 'manual',
+    itime timestamp without time zone DEFAULT now(),
+    mtime timestamp without time zone,
+    CONSTRAINT periodic_invoices_ext_periodic_invoice_id_unique UNIQUE (periodic_invoice_id)
+);
+
+COMMENT ON TABLE periodic_invoices_ext IS 'Zusatzfelder je erzeugter wiederkehrender Rechnung (periodic_invoices)';
+COMMENT ON COLUMN periodic_invoices_ext.periodic_invoice_id IS 'Referenz auf periodic_invoices.id';
+COMMENT ON COLUMN periodic_invoices_ext.period_end_date IS 'Ende der abgerechneten Periode';
+COMMENT ON COLUMN periodic_invoices_ext.billing_date IS 'Planmäßiges Rechnungsdatum laut Rhythmus';
+COMMENT ON COLUMN periodic_invoices_ext.factor IS 'Preisfaktor der Periode (anteilige Tage × Auftragswert-Umrechnung × Preisanpassung)';
+COMMENT ON COLUMN periodic_invoices_ext.posted IS 'Rechnung wurde ins Hauptbuch gebucht';
+COMMENT ON COLUMN periodic_invoices_ext.post_error IS 'Grund, warum die Buchung nicht möglich war';
+COMMENT ON COLUMN periodic_invoices_ext.email_to IS 'Empfänger des E-Mail-Versands';
+COMMENT ON COLUMN periodic_invoices_ext.email_sent_at IS 'Zeitpunkt des E-Mail-Versands';
+COMMENT ON COLUMN periodic_invoices_ext.email_error IS 'Letzter Fehler beim E-Mail-Versand';
+COMMENT ON COLUMN periodic_invoices_ext.printed_at IS 'Zeitpunkt des automatischen Drucks';
+COMMENT ON COLUMN periodic_invoices_ext.print_error IS 'Letzter Fehler beim Druck';
+COMMENT ON COLUMN periodic_invoices_ext.created_by IS 'Mitarbeiter, der die Rechnung erzeugt hat (NULL = Zeitsteuerung)';
+COMMENT ON COLUMN periodic_invoices_ext.source IS 'manual = aus der Oberfläche, cron = Zeitsteuerung';
+
+-- Bewusst ausgelassene Perioden (z. B. Kulanzmonat). Eine übersprungene
+-- Periode gilt als erledigt und wird nicht nachgeholt.
+CREATE TABLE IF NOT EXISTS periodic_invoices_skips (
+    id integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    config_id integer NOT NULL REFERENCES periodic_invoices_configs(id) ON DELETE CASCADE,
+    period_start_date date NOT NULL,
+    reason text,
+    employee_id integer,
+    itime timestamp without time zone DEFAULT now(),
+    CONSTRAINT periodic_invoices_skips_config_period_unique UNIQUE (config_id, period_start_date)
+);
+
+COMMENT ON TABLE periodic_invoices_skips IS 'Bewusst übersprungene Perioden einer wiederkehrenden Abrechnung';
+COMMENT ON COLUMN periodic_invoices_skips.config_id IS 'Referenz auf periodic_invoices_configs.id';
+COMMENT ON COLUMN periodic_invoices_skips.period_start_date IS 'Beginn der übersprungenen Periode';
+COMMENT ON COLUMN periodic_invoices_skips.reason IS 'Grund (frei)';
+COMMENT ON COLUMN periodic_invoices_skips.employee_id IS 'Mitarbeiter, der die Periode übersprungen hat';
+
+CREATE INDEX IF NOT EXISTS idx_periodic_invoices_configs_oe_id ON periodic_invoices_configs(oe_id);
+CREATE INDEX IF NOT EXISTS idx_periodic_invoices_config_period ON periodic_invoices(config_id, period_start_date);
+
+-- Vorbelegung für E-Mail-Betreff und -Text neuer Abrechnungen. Platzhalter
+-- wie in den Positionstexten, zusätzlich alle Spalten der Rechnung
+-- (<%invnumber%>, <%amount%>, <%duedate%>).
+INSERT INTO defaults_oserp (key, value) VALUES
+    ('recurring_email_subject', 'Ihre Rechnung <%invnumber%> für <%period_month%>')
+ON CONFLICT (key) DO NOTHING;
+INSERT INTO defaults_oserp (key, value) VALUES
+    ('recurring_email_body', '<p>Sehr geehrte Damen und Herren,</p><p>anbei erhalten Sie Ihre Rechnung <%invnumber%> für den Zeitraum <%period_start_date%> bis <%period_end_date%>.</p><p>Mit freundlichen Grüßen</p>')
+ON CONFLICT (key) DO NOTHING;
+
+-- Perioden eines Abrechnungsrhythmus — rein rechnerisch, ohne Tabellenzugriff.
+-- Alle Perioden werden vom Anker aus bestimmt (anchor + i × Intervall), nicht
+-- iterativ: sonst wandert ein 31. nach dem Februar dauerhaft auf den 28.
+-- Mit Kalender-Ausrichtung ist der Anker die Kalendergrenze vor dem Start, die
+-- erste (und bei Enddatum die letzte) Periode ist dann angebrochen und wird
+-- auf Wunsch anteilig nach Tagen berechnet (factor < 1).
+CREATE OR REPLACE FUNCTION recurring_invoice_periods(
+    p_start_date          date,
+    p_end_date            date,
+    p_interval_unit       text,
+    p_interval_count      integer,
+    p_align_to_calendar   boolean,
+    p_prorate_partial     boolean,
+    p_billing_timing      text,
+    p_billing_offset_days integer,
+    p_until               date,
+    p_max                 integer DEFAULT 1000
+) RETURNS TABLE(n integer, period_start date, period_end date, billing_date date, factor numeric, is_partial boolean)
+-- ROWS: realistische Schätzung (zwei Jahre monatlich ≈ 24). Mit der Vorgabe
+-- von 1000 Zeilen je Aufruf schätzt der Planer die Übersicht so teuer, dass
+-- er JIT-Kompilierung anwirft — die kostete mehr als die ganze Abfrage.
+LANGUAGE plpgsql IMMUTABLE ROWS 40 AS $$
+DECLARE
+    v_step       interval;
+    v_anchor     date;
+    v_full_start date;
+    v_full_end   date;
+    v_i          integer := 0;
+BEGIN
+    IF p_start_date IS NULL THEN RETURN; END IF;
+    p_interval_count      := GREATEST(COALESCE(p_interval_count, 1), 1);
+    p_billing_offset_days := COALESCE(p_billing_offset_days, 0);
+    p_until               := COALESCE(p_until, DATE '2999-12-31');
+    p_max                 := COALESCE(p_max, 1000);
+
+    -- Einmalige Abrechnung: genau eine Periode von Start bis Ende (oder Start)
+    IF p_interval_unit = 'once' THEN
+        n := 1; period_start := p_start_date; period_end := COALESCE(p_end_date, p_start_date);
+        billing_date := (CASE WHEN p_billing_timing = 'arrears' THEN period_end ELSE period_start END) + p_billing_offset_days;
+        factor := 1; is_partial := false;
+        IF billing_date <= p_until THEN RETURN NEXT; END IF;
+        RETURN;
+    END IF;
+
+    v_step := CASE p_interval_unit
+        WHEN 'day'  THEN make_interval(days  => p_interval_count)
+        WHEN 'week' THEN make_interval(weeks => p_interval_count)
+        WHEN 'year' THEN make_interval(years => p_interval_count)
+        ELSE             make_interval(months => p_interval_count)
+    END;
+
+    v_anchor := CASE
+        WHEN p_align_to_calendar AND p_interval_unit = 'month' THEN date_trunc('month', p_start_date)::date
+        WHEN p_align_to_calendar AND p_interval_unit = 'year'  THEN date_trunc('year',  p_start_date)::date
+        WHEN p_align_to_calendar AND p_interval_unit = 'week'  THEN date_trunc('week',  p_start_date)::date
+        ELSE p_start_date
+    END;
+
+    LOOP
+        EXIT WHEN v_i >= p_max;
+        v_full_start := (v_anchor + v_step * v_i)::date;
+        v_full_end   := (v_anchor + v_step * (v_i + 1))::date - 1;
+        EXIT WHEN p_end_date IS NOT NULL AND v_full_start > p_end_date;
+
+        n            := v_i + 1;
+        period_start := GREATEST(v_full_start, p_start_date);
+        period_end   := LEAST(v_full_end, COALESCE(p_end_date, v_full_end));
+        is_partial   := (period_start <> v_full_start) OR (period_end <> v_full_end);
+        factor       := CASE WHEN is_partial AND p_prorate_partial
+                             THEN ROUND((period_end - period_start + 1)::numeric / (v_full_end - v_full_start + 1), 6)
+                             ELSE 1 END;
+        billing_date := (CASE WHEN p_billing_timing = 'arrears' THEN period_end ELSE period_start END) + p_billing_offset_days;
+
+        EXIT WHEN billing_date > p_until;
+        RETURN NEXT;
+        v_i := v_i + 1;
+    END LOOP;
+END;
+$$;
+
+-- Platzhalter in Texten einer wiederkehrenden Rechnung ersetzen.
+--
+-- Syntax wie kivitendo: <%period_start_date%>, <%current_month_long%>,
+-- <%previous_year%>, optional mit strftime-Format <%period_start_date FORMAT=%m/%Y%>.
+-- In HTML-Texten (Editor) stehen die Klammern maskiert als &lt;% … %&gt; — auch
+-- die werden erkannt. Zusätzlich zu kivitendo: <%period%> (von–bis),
+-- <%period_month%> (Monat Jahr) und <%period_days%>.
+--
+-- p_lang ist der template_code der Belegsprache ('de', 'en', …); er bestimmt
+-- Datumsformat und Monatsnamen.
+CREATE OR REPLACE FUNCTION recurring_fill_placeholders(
+    p_text         text,
+    p_period_start date,
+    p_period_end   date,
+    p_lang         text DEFAULT 'de'
+) RETURNS text
+LANGUAGE plpgsql IMMUTABLE AS $$
+DECLARE
+    v_result   text := p_text;
+    v_match    text[];
+    v_key      text;
+    v_fmt      text;
+    v_date     date;
+    v_value    text;
+    v_lang     text := lower(COALESCE(NULLIF(p_lang, ''), 'de'));
+    v_datefmt  text;
+    v_tok      text;
+    v_pattern  text;
+    v_months_de text[] := ARRAY['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+    v_months_en text[] := ARRAY['January','February','March','April','May','June','July','August','September','October','November','December'];
+BEGIN
+    IF p_text IS NULL OR p_text = '' OR p_period_start IS NULL THEN RETURN p_text; END IF;
+    p_period_end := COALESCE(p_period_end, p_period_start);
+    v_datefmt := CASE WHEN v_lang LIKE 'en%' THEN 'MM/DD/YYYY' ELSE 'DD.MM.YYYY' END;
+
+    FOR v_match IN
+        SELECT m FROM regexp_matches(p_text,
+            '((?:<%|&lt;%)\s*([a-z_]+)(?:\s+format\s*=\s*((?:[^%>&]|%[^>&]|&(?!gt;))*))?\s*(?:%>|%&gt;))', 'gi') AS m
+    LOOP
+        v_key := lower(v_match[2]);
+        v_fmt := v_match[3];
+
+        -- Bezugsdatum des Platzhalters
+        v_date := CASE
+            WHEN v_key IN ('period_end_date') THEN p_period_end
+            WHEN v_key LIKE 'previous_quarter%' THEN (p_period_start - INTERVAL '3 months')::date
+            WHEN v_key LIKE 'next_quarter%'     THEN (p_period_start + INTERVAL '3 months')::date
+            WHEN v_key LIKE 'previous_month%'   THEN (p_period_start - INTERVAL '1 month')::date
+            WHEN v_key LIKE 'next_month%'       THEN (p_period_start + INTERVAL '1 month')::date
+            WHEN v_key LIKE 'previous_year%'    THEN (p_period_start - INTERVAL '1 year')::date
+            WHEN v_key LIKE 'next_year%'        THEN (p_period_start + INTERVAL '1 year')::date
+            ELSE p_period_start
+        END;
+
+        IF v_key NOT IN ('period_start_date','period_end_date','period','period_month','period_days',
+                         'current_month','previous_month','next_month',
+                         'current_month_long','previous_month_long','next_month_long',
+                         'current_year','previous_year','next_year',
+                         'current_quarter','previous_quarter','next_quarter') THEN
+            CONTINUE;
+        END IF;
+
+        IF v_fmt IS NOT NULL AND v_fmt <> '' THEN
+            -- strftime → to_char: Literale in Anführungszeichen, damit to_char sie
+            -- nicht als Muster liest ("KW %V" → "KW" IW)
+            v_pattern := '';
+            FOR v_tok IN SELECT t[1] FROM regexp_matches(v_fmt, '(%.|[^%]+)', 'g') AS t LOOP
+                v_pattern := v_pattern || CASE v_tok
+                    WHEN '%Y' THEN 'YYYY'  WHEN '%y' THEN 'YY'    WHEN '%C' THEN 'CC'
+                    WHEN '%m' THEN 'MM'    WHEN '%d' THEN 'DD'    WHEN '%e' THEN 'FMDD'
+                    WHEN '%j' THEN 'DDD'   WHEN '%F' THEN 'YYYY-MM-DD' WHEN '%D' THEN 'MM/DD/YY'
+                    WHEN '%u' THEN 'ID'    WHEN '%w' THEN 'D'     WHEN '%U' THEN 'WW'
+                    WHEN '%W' THEN 'WW'    WHEN '%V' THEN 'IW'    WHEN '%A' THEN 'TMDay'
+                    WHEN '%a' THEN 'TMDy'  WHEN '%%' THEN '"%"'
+                    WHEN '%B' THEN '"' || (CASE WHEN v_lang LIKE 'en%' THEN v_months_en ELSE v_months_de END)[EXTRACT(MONTH FROM v_date)::int] || '"'
+                    WHEN '%b' THEN '"' || left((CASE WHEN v_lang LIKE 'en%' THEN v_months_en ELSE v_months_de END)[EXTRACT(MONTH FROM v_date)::int], 3) || '"'
+                    ELSE '"' || replace(v_tok, '"', '') || '"'
+                END;
+            END LOOP;
+            v_value := to_char(v_date, v_pattern);
+        ELSE
+            v_value := CASE
+                WHEN v_key IN ('period_start_date','period_end_date') THEN to_char(v_date, v_datefmt)
+                WHEN v_key = 'period' THEN to_char(p_period_start, v_datefmt) || ' – ' || to_char(p_period_end, v_datefmt)
+                WHEN v_key = 'period_days' THEN (p_period_end - p_period_start + 1)::text
+                WHEN v_key = 'period_month' THEN
+                    (CASE WHEN v_lang LIKE 'en%' THEN v_months_en ELSE v_months_de END)[EXTRACT(MONTH FROM v_date)::int]
+                    || ' ' || to_char(v_date, 'YYYY')
+                WHEN v_key LIKE '%_month_long' THEN
+                    (CASE WHEN v_lang LIKE 'en%' THEN v_months_en ELSE v_months_de END)[EXTRACT(MONTH FROM v_date)::int]
+                WHEN v_key LIKE '%_month'   THEN to_char(v_date, 'FMMM')
+                WHEN v_key LIKE '%_year'    THEN to_char(v_date, 'YYYY')
+                WHEN v_key LIKE '%_quarter' THEN to_char(v_date, 'Q')
+                ELSE ''
+            END;
+        END IF;
+
+        v_result := replace(v_result, v_match[1], v_value);
+    END LOOP;
+
+    RETURN v_result;
+END;
+$$;
+
+-- Perioden einer gespeicherten Abrechnung mit ihrem Zustand:
+--   created  Rechnung liegt vor (periodic_invoices)
+--   skipped  bewusst übersprungen (periodic_invoices_skips)
+--   due      Rechnungsdatum erreicht, noch nicht erzeugt
+--   planned  liegt in der Zukunft
+-- Eine Rechnung zählt zur Periode, wenn ihr gemerkter Periodenbeginn in die
+-- Periode fällt — so bleibt nach einer Änderung des Rhythmus nichts doppelt.
+-- Ohne _ext-Zeile (von kivitendo angelegt) gelten kivitendos Regeln: Anker ist
+-- first_billing_date bzw. start_date, Intervall aus periodicity, keine Anteile.
+-- Mit automatischer Verlängerung ist das Enddatum offen, solange nicht gekündigt.
+CREATE OR REPLACE FUNCTION recurring_config_periods(
+    p_config_id integer,
+    p_until     date DEFAULT NULL,
+    p_max       integer DEFAULT 1000
+) RETURNS TABLE(
+    n integer, period_start date, period_end date, billing_date date, factor numeric, is_partial boolean,
+    periodic_invoice_id integer, ar_id integer, invnumber text, ar_transdate date, ar_amount numeric, ar_paid numeric,
+    skipped boolean, skip_reason text, state text
+)
+-- Bewusst PL/pgSQL statt SQL: eine SQL-Funktion würde der Planer in die
+-- aufrufende Abfrage einbetten, und dort kostete der Aufruf je Abrechnung
+-- Hunderte Millisekunden. So bleibt es ein eigener, kleiner Plan je Aufruf.
+LANGUAGE plpgsql STABLE ROWS 40 AS $$
+BEGIN
+    RETURN QUERY
+    SELECT p.n, p.period_start, p.period_end, p.billing_date, p.factor, p.is_partial,
+           pi.id, pi.ar_id, ar.invnumber, ar.transdate, ar.amount, ar.paid,
+           (sk.id IS NOT NULL), sk.reason,
+           CASE WHEN pi.id IS NOT NULL THEN 'created'
+                WHEN sk.id IS NOT NULL THEN 'skipped'
+                WHEN p.billing_date <= CURRENT_DATE THEN 'due'
+                ELSE 'planned' END
+    FROM periodic_invoices_configs c
+    LEFT JOIN periodic_invoices_configs_ext e ON e.config_id = c.id
+    CROSS JOIN LATERAL recurring_invoice_periods(
+        CASE WHEN e.id IS NULL THEN COALESCE(c.first_billing_date, c.start_date) ELSE c.start_date END,
+        CASE WHEN NOT COALESCE(c.terminated, false) AND COALESCE(c.extend_automatically_by, 0) > 0 THEN NULL ELSE c.end_date END,
+        COALESCE(e.interval_unit, CASE c.periodicity WHEN 'o' THEN 'once' ELSE 'month' END),
+        COALESCE(e.interval_count, CASE c.periodicity WHEN 'q' THEN 3 WHEN 'b' THEN 6 WHEN 'y' THEN 12 ELSE 1 END),
+        COALESCE(e.align_to_calendar, false),
+        COALESCE(e.prorate_partial, false),
+        COALESCE(e.billing_timing, 'advance'),
+        COALESCE(e.billing_offset_days, 0),
+        COALESCE(p_until, DATE '2999-12-31'),
+        COALESCE(p_max, 1000)
+    ) p
+    LEFT JOIN LATERAL (
+        SELECT pi.id, pi.ar_id FROM periodic_invoices pi
+        WHERE pi.config_id = c.id AND pi.period_start_date BETWEEN p.period_start AND p.period_end
+        ORDER BY pi.period_start_date LIMIT 1
+    ) pi ON true
+    LEFT JOIN ar ON ar.id = pi.ar_id
+    LEFT JOIN LATERAL (
+        SELECT sk.id, sk.reason FROM periodic_invoices_skips sk
+        WHERE sk.config_id = c.id AND sk.period_start_date BETWEEN p.period_start AND p.period_end
+        LIMIT 1
+    ) sk ON true
+    WHERE c.id = p_config_id
+    ORDER BY p.n;
+END;
+$$;
+
+-- Faktor der jährlichen Preisanpassung für eine Periode. Eine Anpassung greift
+-- zu jedem 1. des Anpassungsmonats, frühestens zwölf Monate nach dem Start,
+-- jede weitere ein Jahr später (Zinseszins). Vorschau, Fälligkeit und
+-- Erzeugung rechnen damit identisch.
+CREATE OR REPLACE FUNCTION recurring_index_factor(
+    p_percent      numeric,
+    p_month        integer,
+    p_start        date,
+    p_period_start date
+) RETURNS numeric
+LANGUAGE sql IMMUTABLE AS $$
+    SELECT CASE WHEN p_percent IS NULL OR p_percent = 0 OR p_month IS NULL OR p_start IS NULL OR p_period_start IS NULL THEN 1
+           ELSE POWER(1 + p_percent / 100, (
+                SELECT COUNT(*) FROM generate_series(EXTRACT(YEAR FROM p_start)::int, EXTRACT(YEAR FROM p_period_start)::int) y
+                WHERE make_date(y, p_month, 1) >= (p_start + INTERVAL '1 year')::date
+                  AND make_date(y, p_month, 1) <= p_period_start
+           ))::numeric END
+$$;

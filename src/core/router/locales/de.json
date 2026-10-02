@@ -92,7 +92,8 @@
         "manageQuotations": "Angebote",
         "manageOrders": "Aufträge",
         "manageInvoices": "Rechnungen",
-        "manageDeliveryOrders": "Lieferscheine"
+        "manageDeliveryOrders": "Lieferscheine",
+        "recurringInvoices": "Wiederkehrende Rechnungen"
     },
     "SystemMenu": {
         "title": "System",

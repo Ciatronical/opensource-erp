@@ -48,7 +48,9 @@ function _sumupTruthy($value): bool {
  * @throws ApiError bei Verbindungsfehlern
  */
 function _sumupRequest($method, $path, $apiKey, $body = null) {
-    $curl = curl_init(SUMUP_API_BASE . $path);
+    // Absolute URL erlaubt (z. B. v1.0-Auszahlungen), sonst relativ zur v0.1-Basis.
+    $url  = str_starts_with($path, 'https://') ? $path : SUMUP_API_BASE . $path;
+    $curl = curl_init($url);
     $headers = ['Accept: application/json', 'Authorization: Bearer ' . $apiKey];
     $opts = [
         CURLOPT_RETURNTRANSFER => true,

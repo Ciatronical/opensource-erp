@@ -357,6 +357,7 @@ const tiles = computed(() => {
     const bank      = stacks.value.bank || {}
     const overdue   = stacks.value.overdue || {}
     const dunning   = stacks.value.dunning || {}
+    const recurring = stacks.value.recurring || {}
     const closing   = stacks.value.closing || {}
     const checks    = stacks.value.checks || {}
     const vat       = vatPeriod.value
@@ -416,6 +417,21 @@ const tiles = computed(() => {
             }),
             cta: t('AccountingView.cockpit.tiles.startDunning'),
             action: () => router.push({ name: 'accounting-dunning' })
+        },
+        {
+            // Fällige wiederkehrende Rechnungen (Abos, Mieten) — dieselbe Zahl
+            // wie die Übersicht der wiederkehrenden Rechnungen.
+            key: 'recurring',
+            active: (recurring.count || 0) > 0,
+            tone: 'primary',
+            icon: 'mdi-autorenew',
+            label: label('AccountingView.cockpit.tiles.recurring'),
+            value: recurring.count || 0,
+            sub: t('AccountingView.cockpit.tiles.recurringSub', {
+                amount: money(recurring.sum), customers: recurring.customers || 0
+            }),
+            cta: t('AccountingView.cockpit.tiles.createRecurring'),
+            action: () => router.push({ name: 'recurring-invoices' })
         },
         {
             key: 'vat',

@@ -106,7 +106,9 @@ export function useNavigationCards() {
                     { title: t('SalesMenu.manageOrders'), to: { name: 'order-list' } },
                     { title: t('SalesMenu.manageInvoices'), to: { name: 'invoice-list' } },
                     { title: t('SalesMenu.manageDeliveryOrders'), to: { name: 'delivery-order-list' } },
-                    { title: t('SalesMenu.manageCreditNotes'), to: { name: 'credit-note-list' } }
+                    { title: t('SalesMenu.manageCreditNotes'), to: { name: 'credit-note-list' } },
+                    '-',
+                    { title: t('SalesMenu.recurringInvoices'), to: { name: 'recurring-invoices' } }
                 ]
             }
         )

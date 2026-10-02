@@ -36,6 +36,16 @@
                 </v-btn>
                 <v-btn
                     color="primary"
+                    variant="tonal"
+                    :disabled="!selectedContext || !selectedPhone"
+                    prepend-icon="mdi-content-save"
+                    @click="onSave"
+                >
+                    {{ t('PhoneActions.save') }}
+                </v-btn>
+                <v-btn
+                    v-if="phone"
+                    color="primary"
                     variant="flat"
                     :disabled="!selectedContext || !selectedPhone"
                     prepend-icon="mdi-phone"
@@ -51,6 +61,7 @@
 <script setup>
 import { ref, watch, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import * as toast from '@/core/utils/toasts.js'
 import { usePhoneActions } from '@/core/composables/usePhoneActions.js'
 
 const props = defineProps({
@@ -89,8 +100,16 @@ watch(() => props.modelValue, async (visible) => {
     selectedPhone.value = config.user_internal_phone || phoneItems.value[0] || ''
 })
 
+async function onSave() {
+    const ok = await savePhoneConfig(selectedContext.value, selectedPhone.value)
+    if (!ok) return
+    toast.success(t('PhoneActions.configSaved'))
+    dialogVisible.value = false
+}
+
 async function onCall() {
-    await savePhoneConfig(selectedContext.value, selectedPhone.value)
+    const ok = await savePhoneConfig(selectedContext.value, selectedPhone.value)
+    if (!ok) return
     dialogVisible.value = false
     clickToCall(props.phone, props.name)
 }

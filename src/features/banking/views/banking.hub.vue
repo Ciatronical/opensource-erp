@@ -198,8 +198,31 @@
                         prepend-icon="mdi-cash-multiple"
                     >{{ txSearchHint }}</v-chip>
                     <v-spacer />
-                    <v-text-field v-model="fromDate" :label="t('BankingView.transactions.fromDate')" type="date" density="compact" hide-details style="max-width:140px" />
-                    <v-text-field v-model="toDate" :label="t('BankingView.transactions.toDate')" type="date" density="compact" hide-details style="max-width:140px" />
+                    <!-- Zeitraum wie im Kassenbuch: Monat/Jahr/Gesamt mit Blätterpfeilen.
+                         Die Datumsfelder rechts bleiben für freie Zeiträume; passt ein
+                         frei eingegebener Zeitraum auf einen Monat oder ein Jahr, springt
+                         der Wähler mit. -->
+                    <PeriodPicker v-model:mode="txPeriodMode" v-model:year="txPeriodYear" v-model:month="txPeriodMonth" />
+                    <v-text-field
+                        v-model="fromDate"
+                        :label="t('BankingView.transactions.fromDate')"
+                        type="date"
+                        density="compact"
+                        variant="outlined"
+                        rounded="lg"
+                        hide-details
+                        class="tx-date"
+                    />
+                    <v-text-field
+                        v-model="toDate"
+                        :label="t('BankingView.transactions.toDate')"
+                        type="date"
+                        density="compact"
+                        variant="outlined"
+                        rounded="lg"
+                        hide-details
+                        class="tx-date"
+                    />
                 </div>
 
                 <div class="d-flex justify-end ga-2 mb-2">
@@ -294,6 +317,15 @@
                                 />
                                 <v-btn
                                     v-if="item.match_status === 'unmatched' && item.amount < 0"
+                                    icon="mdi-bank-transfer-out"
+                                    size="x-small"
+                                    variant="text"
+                                    color="error"
+                                    :title="t('BankingView.booking.titleShort')"
+                                    @click="openBookingDialog(item)"
+                                />
+                                <v-btn
+                                    v-if="item.match_status === 'unmatched' && item.amount < 0"
                                     icon="mdi-file-document-plus"
                                     size="x-small"
                                     variant="text"
@@ -338,6 +370,7 @@
                     @done="onBookingDone"
                     @ignore="onIgnoreFromDialog"
                     @settlement="onSettlementFromBooking"
+                    @create-ap="onCreateApFromBooking"
                 />
 
                 <!-- Kartenabrechnung zuordnen -->
@@ -1451,6 +1484,7 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip,
 import RecipientAutocomplete from '../components/recipient-autocomplete.component.vue'
 import BookingDialog from '../components/booking-dialog.component.vue'
 import SettlementDialog from '../components/settlement-dialog.component.vue'
+import PeriodPicker from '../components/kasse.period-picker.component.vue'
 import { validateIban, validateBic, normalizeIban } from '@/core/utils/iban.js'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
 import * as alerts from '@/core/utils/alerts.js'
@@ -2111,6 +2145,44 @@ const matchFilter = ref('all')
 const fromDate    = ref(FY_START)
 const toDate      = ref(FY_END)
 
+// Zeitraumwähler (Monat/Jahr/Gesamt + Blättern) — steuert fromDate/toDate.
+// Startet im Jahresmodus, weil der Standardzeitraum das laufende Jahr ist.
+const txPeriodMode  = ref('year')          // 'month' | 'year' | 'all'
+const txPeriodYear  = ref(new Date().getFullYear())
+const txPeriodMonth = ref(new Date().getMonth())   // 0-basiert
+
+function periodRange(mode, year, month) {
+    if (mode === 'all') return ['', '']
+    if (mode === 'year') return [`${year}-01-01`, `${year}-12-31`]
+    const m = String(month + 1).padStart(2, '0')
+    const last = new Date(year, month + 1, 0).getDate()
+    return [`${year}-${m}-01`, `${year}-${m}-${String(last).padStart(2, '0')}`]
+}
+
+// Wähler → Datumsfelder (nur schreiben, wenn sich wirklich etwas ändert, sonst
+// löst der Datums-Watcher die Liste doppelt aus).
+watch([txPeriodMode, txPeriodYear, txPeriodMonth], ([mode, year, month]) => {
+    const [from, to] = periodRange(mode, year, month)
+    if (fromDate.value !== from) fromDate.value = from
+    if (toDate.value !== to) toDate.value = to
+})
+
+// Datumsfelder → Wähler: ein frei eingegebener Zeitraum, der genau einem Monat
+// oder Jahr entspricht, stellt den Wähler darauf; sonst bleibt er, wie er ist.
+watch([fromDate, toDate], ([from, to]) => {
+    if (!from && !to) { txPeriodMode.value = 'all'; return }
+    const m = String(from || '').match(/^(\d{4})-(\d{2})-01$/)
+    if (!m) return
+    const year = parseInt(m[1], 10), month = parseInt(m[2], 10) - 1
+    const [yFrom, yTo] = periodRange('year', year, 0)
+    const [mFrom, mTo] = periodRange('month', year, month)
+    if (from === yFrom && to === yTo) {
+        txPeriodMode.value = 'year'; txPeriodYear.value = year
+    } else if (from === mFrom && to === mTo) {
+        txPeriodMode.value = 'month'; txPeriodYear.value = year; txPeriodMonth.value = month
+    }
+})
+
 // true, während ein Sprung aus einer Rechnung angewandt wird — verhindert, dass
 // der Konto-Watcher den (bewusst geleerten) Datumsfilter überschreibt.
 let applyingJump = false
@@ -2287,8 +2359,10 @@ async function resetTransaction(item) {
 const showBookingDialog      = ref(false)
 const bookingDialogTransaction = ref(null)
 
+// Geldeingänge UND Geldausgänge öffnen den Buchungsdialog — Lieferanten-
+// Lastschriften werden dort gegen offene Eingangsrechnungen/Gutschriften gebucht.
 function isBookable(item) {
-    return (item.match_status === 'unmatched' || item.match_status === 'matched') && item.amount > 0
+    return item.match_status === 'unmatched' || item.match_status === 'matched'
 }
 
 function getTxRowProps({ item }) {
@@ -2297,8 +2371,17 @@ function getTxRowProps({ item }) {
     return {}
 }
 
+// Gutschrift eines Kartendienstleisters mit API-Anbindung (SumUp): der Klick
+// führt direkt zur Kartenabrechnung, die Auszahlung wird dort per API geholt
+// und die Buchung nur noch bestätigt.
+function isCardProviderCredit(item) {
+    return item.amount > 0 && /SUMUP/i.test(String(item.purpose || '') + ' ' + String(item.remote_name || ''))
+}
+
 function onTxRowClick(_e, { item }) {
-    if (isBookable(item)) openBookingDialog(item)
+    if (!isBookable(item)) return
+    if (item.match_status === 'unmatched' && isCardProviderCredit(item)) openSettlement(item)
+    else openBookingDialog(item)
 }
 
 function openBookingDialog(item) {
@@ -2318,6 +2401,12 @@ function openSettlement(item) {
 function onSettlementFromBooking(item) {
     showBookingDialog.value = false
     openSettlement(item)
+}
+
+// Aus dem "Zahlung buchen"-Dialog heraus eine neue Eingangsrechnung anlegen.
+function onCreateApFromBooking(item) {
+    showBookingDialog.value = false
+    openApDialog(item)
 }
 
 // ── Ausgehende Zahlung → Eingangsrechnung anlegen + sofort bezahlen ──────────
@@ -3194,6 +3283,12 @@ watch(activeTab, async (tab) => {
     gap: 8px;
     margin-bottom: 12px;
     flex-wrap: wrap;
+}
+/* Datumsfelder: feste Breite statt max-width, sonst quetscht Flex das native
+   Datumsfeld unter die Breite von "tt.mm.jjjj" + Kalender-Icon */
+.tab-toolbar .tx-date {
+    flex: 0 0 170px;
+    max-width: 170px;
 }
 .recon-list {
     max-height: 480px;

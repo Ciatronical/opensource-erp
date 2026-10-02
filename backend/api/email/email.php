@@ -1,6 +1,8 @@
 <?php
 // backend/api/email/email.php
 
+require_once __DIR__.'/mailer.php';
+
 /**
  * RuntimeException in ApiError umwandeln (für saubere JSON-Responses)
  */
@@ -16,75 +18,6 @@ function _emailApiCall(callable $fn, array $data): void {
         error_log('[EMAIL] Error: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
         resultInfo(false, 'EMAIL_ERROR', $e->getMessage());
     }
-}
-
-/**
- * Email-Config laden (Kaskade: Employee → Company)
- */
-function _getEmailConfig(): array {
-    $db = DbhCompany::begin();
-
-    // 1. Firmenweite Config aus defaults_oserp
-    $rows = $db->getAll("SELECT key, value FROM defaults_oserp WHERE key LIKE 'email_%'");
-    $config = [];
-    foreach ($rows as $row) {
-        $config[$row['key']] = $row['value'];
-    }
-
-    // 2. Benutzerspezifische Config (überschreibt Firmen-Config)
-    if (isset($_SESSION['employee_id']) && $_SESSION['employee_id']) {
-        $empRows = $db->getAll(
-            "SELECT key, value FROM employee_config_oserp WHERE employee_id = :eid AND key LIKE 'email_%'",
-            [':eid' => $_SESSION['employee_id']]
-        );
-        foreach ($empRows as $row) {
-            if (!empty($row['value'])) {
-                $config[$row['key']] = $row['value'];
-            }
-        }
-    }
-
-    return $config;
-}
-
-/**
- * IMAP-Client erstellen und verbinden
- */
-function _createImapClient(array $config = null): ImapClient {
-    if (!$config) $config = _getEmailConfig();
-
-    $host = $config['email_imap_host'] ?? '';
-    $port = (int)($config['email_imap_port'] ?? 993);
-    $encryption = $config['email_imap_encryption'] ?? 'ssl';
-    $username = $config['email_username'] ?? '';
-    $password = $config['email_password'] ?? '';
-
-    if (empty($host) || empty($username) || empty($password)) {
-        throw new ApiError('EMAIL_NOT_CONFIGURED', 'E-Mail-Client ist nicht konfiguriert. Bitte IMAP-Einstellungen in der Firmenkonfiguration hinterlegen.');
-    }
-
-    $imap = new ImapClient($host, $port, $encryption, $username, $password);
-    $imap->connect();
-    return $imap;
-}
-
-/**
- * SMTP-Client erstellen
- */
-function _createSmtpClient(array $config = null): SmtpClient {
-    if (!$config) $config = _getEmailConfig();
-
-    $host = $config['email_smtp_host'] ?? '';
-    $port = (int)($config['email_smtp_port'] ?? 465);
-    $encryption = $config['email_smtp_encryption'] ?? 'ssl';
-    $username = $config['email_username'] ?? '';
-    $password = $config['email_password'] ?? '';
-
-    if (empty($host) || empty($username) || empty($password)) {
-        throw new ApiError('EMAIL_NOT_CONFIGURED', 'E-Mail-Client ist nicht konfiguriert. Bitte SMTP-Einstellungen in der Firmenkonfiguration hinterlegen.');
-    }
-
-    return new SmtpClient($host, $port, $encryption, $username, $password);
 }
 
 // ==================== API-Funktionen ====================
@@ -409,65 +342,6 @@ function sendEmail($data) {
 
         resultInfo(true, 'E-Mail erfolgreich gesendet');
     }, $data);
-}
-
-/**
- * Email-Journal-Eintrag erstellen (interne Hilfsfunktion)
- */
-function _logToEmailJournal(string $from, array $to, array $cc, string $subject, string $body, array $attachments, ?string $recordType): void {
-    $db = DbhCompany::begin();
-
-    // Empfaenger als kommaseparierte Liste
-    $recipientList = [];
-    foreach ($to as $r) {
-        $recipientList[] = is_array($r) ? ($r['email'] ?? '') : $r;
-    }
-    foreach ($cc as $r) {
-        $recipientList[] = is_array($r) ? ($r['email'] ?? '') : $r;
-    }
-    $recipients = implode(', ', array_filter($recipientList));
-
-    // Sender-ID (aktueller Mitarbeiter)
-    $senderId = null;
-    if (isset($_SESSION['employee_id']) && $_SESSION['employee_id']) {
-        $senderId = (int)$_SESSION['employee_id'];
-    }
-
-    $db->execute(
-        "INSERT INTO email_journal (sender_id, \"from\", recipients, subject, body, headers, extended_status, status, record_type)
-         VALUES (:sender_id, :from, :recipients, :subject, :body, '', '', 'sent', :record_type)",
-        [
-            ':sender_id' => $senderId,
-            ':from' => $from,
-            ':recipients' => $recipients,
-            ':subject' => $subject,
-            ':body' => $body,
-            ':record_type' => $recordType
-        ]
-    );
-
-    // Anhaenge im Journal speichern
-    if (!empty($attachments)) {
-        $journalRow = $db->getOne("SELECT currval(pg_get_serial_sequence('email_journal', 'id')) AS id");
-        if ($journalRow) {
-            $jid = (int)$journalRow['id'];
-            $pos = 0;
-            foreach ($attachments as $att) {
-                $content = base64_decode($att['content_base64'] ?? '');
-                $db->execute(
-                    "INSERT INTO email_journal_attachments (\"position\", email_journal_id, name, mime_type, content)
-                     VALUES (:pos, :jid, :name, :mime_type, :content)",
-                    [
-                        ':pos' => $pos++,
-                        ':jid' => $jid,
-                        ':name' => $att['filename'] ?? 'attachment',
-                        ':mime_type' => $att['content_type'] ?? 'application/octet-stream',
-                        ':content' => $content
-                    ]
-                );
-            }
-        }
-    }
 }
 
 /**

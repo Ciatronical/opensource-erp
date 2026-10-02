@@ -121,8 +121,10 @@ export function usePhoneActions() {
                 user_external_context: externalContext,
                 user_internal_phone: internalPhone
             })
+            return true
         } catch {
             toast.error(t('PhoneActions.configSaveError'))
+            return false
         }
     }
 
