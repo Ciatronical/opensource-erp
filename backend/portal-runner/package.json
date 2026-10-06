@@ -1,0 +1,10 @@
+{
+  "name": "oserp-portal-runner",
+  "private": true,
+  "description": "Belegsuche: Lieferanten-Portale per aufgezeichnetem Ablauf (Chrome Recorder) abspielen und Rechnungen herunterladen",
+  "type": "module",
+  "dependencies": {
+    "@puppeteer/replay": "^3.1.1",
+    "puppeteer": "^24.0.0"
+  }
+}

@@ -10,7 +10,8 @@
             "accountingChartOfAccounts": "/buhalterija/saskaitu-planas",
             "accountingOpenItems": "/buhalterija/neapmoketos-saskaitos",
             "accountingUstva": "/buhalterija/pvm",
-            "accountingRun": "/buhalterija/perziura"
+            "accountingRun": "/buhalterija/perziura",
+            "accountingMagic": "/buhalterija/magiskas-apskaitymas"
         },
         "easymode": {
             "label": "Buhalterijos veiksena",

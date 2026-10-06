@@ -63,11 +63,14 @@ export function useRecurringInvoices() {
     function sendEmail(periodicInvoiceId) {
         return call('sendRecurringInvoiceEmail', { periodic_invoice_id: periodicInvoiceId })
     }
+    function sendWhatsApp(periodicInvoiceId) {
+        return call('sendRecurringInvoiceWhatsApp', { periodic_invoice_id: periodicInvoiceId })
+    }
 
     return {
         loading,
         fetchOverview, fetchConfig, preview, saveConfig, setStatus, deleteConfig,
-        createInvoices, skipPeriod, sendEmail
+        createInvoices, skipPeriod, sendEmail, sendWhatsApp
     }
 }
 

@@ -131,7 +131,8 @@
         "addNote": "Add note",
         "editNotes": "Edit notes",
         "contactOrigin": "Origin of personal data",
-        "showAll": "Show all"
+        "showAll": "Show all",
+        "documentFetch": "Document fetch"
     },
     "PhoneActions": {
         "clickToCall": "Call",

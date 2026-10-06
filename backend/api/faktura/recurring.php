@@ -258,8 +258,27 @@ function getRecurringConfig($data) {
                 'email_subject', (SELECT value FROM defaults_oserp WHERE key = 'recurring_email_subject'),
                 'email_body',    (SELECT value FROM defaults_oserp WHERE key = 'recurring_email_body'),
                 'email_configured', EXISTS (SELECT 1 FROM defaults_oserp WHERE key = 'email_smtp_host' AND COALESCE(value, '') <> ''),
-                'email_from', (SELECT value FROM defaults_oserp WHERE key = 'email_address')
+                'email_from', (SELECT value FROM defaults_oserp WHERE key = 'email_address'),
+                -- WhatsApp: Business-API eingerichtet, Vorgabe-Template fuer Belege, genehmigte Dokument-Templates
+                'whatsapp_configured', EXISTS (SELECT 1 FROM defaults_oserp WHERE key = 'whatsapp_access_token' AND COALESCE(value, '') <> '')
+                                        AND EXISTS (SELECT 1 FROM defaults_oserp WHERE key = 'whatsapp_phone_number_id' AND COALESCE(value, '') <> ''),
+                'whatsapp_template_id', NULLIF((SELECT value FROM defaults_oserp WHERE key = 'whatsapp_tpl_faktura'), '')::int,
+                'whatsapp_templates', COALESCE((SELECT json_agg(json_build_object('id', wt.id, 'name', COALESCE(wt.display_name, wt.name)) ORDER BY wt.display_name)
+                    FROM whatsapp_templates wt WHERE wt.status = 'approved' AND wt.template_type = 'document'), '[]'::json)
             ),
+            -- Rufnummern des Kunden fuer den WhatsApp-Versand (Mobil zuerst)
+            'phones', COALESCE((SELECT json_agg(json_build_object('number', p.number, 'label', p.label) ORDER BY p.prio, p.number)
+                FROM (
+                    SELECT pn->>'number' AS number, COALESCE(pn->>'label', pn->>'type', '') AS label,
+                           CASE WHEN LOWER(COALESCE(pn->>'type', pn->>'label', '')) LIKE '%mobil%' OR LOWER(COALESCE(pn->>'type', '')) LIKE '%handy%' THEN 0 ELSE 2 END AS prio
+                    FROM o JOIN customer_ext ce ON ce.customer_id = o.customer_id
+                    CROSS JOIN LATERAL jsonb_array_elements(COALESCE(ce.phone_numbers, '[]'::jsonb)) pn
+                    WHERE COALESCE(pn->>'number', '') <> ''
+                    UNION ALL
+                    SELECT ct.cp_mobile1, TRIM(CONCAT_WS(' ', ct.cp_givenname, ct.cp_name)), 1 FROM contacts ct JOIN o ON ct.cp_cv_id = o.customer_id WHERE COALESCE(ct.cp_mobile1, '') <> ''
+                    UNION ALL
+                    SELECT cu.phone, 'Telefon', 3 FROM o JOIN customer cu ON cu.id = o.customer_id WHERE COALESCE(cu.phone, '') <> ''
+                ) p), '[]'::json),
             'periods', COALESCE((SELECT json_agg(row_to_json(p) ORDER BY p.n)
                 FROM x CROSS JOIN LATERAL recurring_config_periods(x.id, (CURRENT_DATE + INTERVAL '18 months')::date, 2000) p), '[]'::json),
             'stats', (SELECT json_build_object(
@@ -549,11 +568,13 @@ function saveRecurringConfig($data) {
             INSERT INTO periodic_invoices_configs_ext (
                 config_id, interval_unit, interval_count, align_to_calendar, prorate_partial, billing_timing,
                 billing_offset_days, price_mode, price_increase_percent, price_increase_month, hold_on_overdue_days,
-                notice_period_months, min_term_months, paused_until, post_to_ledger, notes, created_by
+                notice_period_months, min_term_months, paused_until, post_to_ledger, notes, created_by,
+                send_whatsapp, whatsapp_phone, whatsapp_template_id
             ) VALUES (
                 :config_id, :interval_unit, :interval_count, :align, :prorate, :timing,
                 :offset, :price_mode, :pct, :pct_month, :hold_days,
-                :notice, :min_term, :paused_until, :post, :notes, :employee_id
+                :notice, :min_term, :paused_until, :post, :notes, :employee_id,
+                :send_whatsapp, :whatsapp_phone, :whatsapp_template_id
             )
             ON CONFLICT (config_id) DO UPDATE SET
                 interval_unit = EXCLUDED.interval_unit, interval_count = EXCLUDED.interval_count,
@@ -563,8 +584,14 @@ function saveRecurringConfig($data) {
                 price_increase_month = EXCLUDED.price_increase_month, hold_on_overdue_days = EXCLUDED.hold_on_overdue_days,
                 notice_period_months = EXCLUDED.notice_period_months, min_term_months = EXCLUDED.min_term_months,
                 paused_until = EXCLUDED.paused_until, post_to_ledger = EXCLUDED.post_to_ledger,
-                notes = EXCLUDED.notes, mtime = now()
-        SQL, $extParams + [':config_id' => $configId, ':employee_id' => $employeeId]);
+                notes = EXCLUDED.notes, send_whatsapp = EXCLUDED.send_whatsapp, whatsapp_phone = EXCLUDED.whatsapp_phone,
+                whatsapp_template_id = EXCLUDED.whatsapp_template_id, mtime = now()
+        SQL, $extParams + [
+            ':config_id' => $configId, ':employee_id' => $employeeId,
+            ':send_whatsapp' => $bool($c['send_whatsapp'] ?? false),
+            ':whatsapp_phone' => trim((string)($c['whatsapp_phone'] ?? '')) ?: null,
+            ':whatsapp_template_id' => $intOrNull($c['whatsapp_template_id'] ?? null),
+        ]);
 
         // Abrechnungsart je Position (kivitendo-Spalte orderitems.recurring_billing_mode)
         $items = is_array($data['items'] ?? null) ? $data['items'] : [];
@@ -974,6 +1001,13 @@ function recurringCreateInvoice($db, int $configId, string $periodStart, ?int $e
         if ($err !== null) $result['email_error'] = $err;
     }
 
+    // 8b. WhatsApp
+    if ($cfg['send_whatsapp'] === true || $cfg['send_whatsapp'] === 't') {
+        $err = recurringSendInvoiceWhatsApp($db, $piId, $employeeId);
+        $result['whatsapped'] = $err === null;
+        if ($err !== null) $result['whatsapp_error'] = $err;
+    }
+
     // 9. Druck
     if (($cfg['print'] === true || $cfg['print'] === 't') && !empty($cfg['printer_id'])) {
         $err = recurringPrintInvoice($db, $piId, $employeeId);
@@ -1024,6 +1058,13 @@ function recurringInvoiceInfo($db, int $periodicInvoiceId): ?array {
                COALESCE(pe.period_end_date, pi.period_start_date) AS period_end_date,
                c.send_email, c.email_recipient_contact_id, c.email_recipient_address, c.email_sender,
                c.email_subject, c.email_body, c.print, c.printer_id, c.copies,
+               COALESCE(ce.send_whatsapp, false) AS send_whatsapp, ce.whatsapp_phone, ce.whatsapp_template_id,
+               (SELECT value FROM defaults_oserp WHERE key = 'whatsapp_tpl_faktura') AS default_whatsapp_template_id,
+               cu.id AS customer_id, cu.greeting AS customer_greeting, cu.phone AS customer_phone,
+               ct.cp_mobile1 AS contact_mobile,
+               (SELECT pn->>'number' FROM customer_ext cex CROSS JOIN LATERAL jsonb_array_elements(COALESCE(cex.phone_numbers, '[]'::jsonb)) pn
+                 WHERE cex.customer_id = cu.id AND COALESCE(pn->>'number', '') <> ''
+                 ORDER BY CASE WHEN LOWER(COALESCE(pn->>'type', pn->>'label', '')) LIKE '%mobil%' OR LOWER(COALESCE(pn->>'type', '')) LIKE '%handy%' THEN 0 ELSE 1 END LIMIT 1) AS customer_mobile,
                ct.cp_email AS contact_email, cu.invoice_mail, cu.email AS customer_email, cu.name AS customer_name,
                l.template_code AS language_code,
                (SELECT value FROM defaults_oserp WHERE key = 'recurring_email_subject') AS default_subject,
@@ -1034,6 +1075,7 @@ function recurringInvoiceInfo($db, int $periodicInvoiceId): ?array {
                row_to_json(a) AS ar_json
         FROM periodic_invoices pi
         JOIN periodic_invoices_configs c ON c.id = pi.config_id
+        LEFT JOIN periodic_invoices_configs_ext ce ON ce.config_id = c.id
         LEFT JOIN periodic_invoices_ext pe ON pe.periodic_invoice_id = pi.id
         JOIN ar a ON a.id = pi.ar_id
         LEFT JOIN customer cu ON cu.id = a.customer_id
@@ -1127,6 +1169,74 @@ function recurringSendInvoiceEmail($db, int $periodicInvoiceId, ?int $employeeId
             [':err' => $e->getMessage(), ':pi' => $periodicInvoiceId]);
         return $e->getMessage();
     }
+}
+
+/**
+ * Schickt die Rechnung einer Periode per WhatsApp: PDF aus der Rechnungsvorlage
+ * als Dokument-Template (whatsapp_tpl_faktura oder Template der Abrechnung) an
+ * die Nummer der Abrechnung, sonst an die Mobilnummer des Kunden bzw. des
+ * Ansprechpartners. Platzhalter wie im Rechnungsdialog: Anrede, "Ihre Rechnung
+ * Nr. …", Betrag. Nutzt denselben Versandweg wie der manuelle Versand
+ * (sendWhatsAppDocument), Ergebnis in periodic_invoices_ext.
+ *
+ * @return string|null Fehlertext oder null bei Erfolg
+ */
+function recurringSendInvoiceWhatsApp($db, int $periodicInvoiceId, ?int $employeeId = null): ?string {
+    $info = recurringInvoiceInfo($db, $periodicInvoiceId);
+    if (!$info) return 'Rechnung nicht gefunden';
+    $fail = function (string $msg) use ($db, $periodicInvoiceId) {
+        $db->execute("UPDATE periodic_invoices_ext SET whatsapp_error = :err, mtime = now() WHERE periodic_invoice_id = :pi", [':err' => $msg, ':pi' => $periodicInvoiceId]);
+        return $msg;
+    };
+
+    $to = trim((string)($info['whatsapp_phone'] ?? '')) ?: trim((string)($info['customer_mobile'] ?? ''))
+        ?: trim((string)($info['contact_mobile'] ?? '')) ?: trim((string)($info['customer_phone'] ?? ''));
+    if ($to === '') return $fail('Keine Mobilnummer (Abrechnung, Kunde oder Ansprechpartner)');
+
+    $templateId = intval($info['whatsapp_template_id'] ?? 0) ?: intval($info['default_whatsapp_template_id'] ?? 0);
+    if ($templateId <= 0) {
+        $t = $db->getOne("SELECT id FROM whatsapp_templates WHERE status = 'approved' AND template_type = 'document' ORDER BY id LIMIT 1");
+        $templateId = intval($t['id'] ?? 0);
+    }
+    if ($templateId <= 0) return $fail('Kein genehmigtes WhatsApp-Dokument-Template (Firmenkonfiguration → WhatsApp)');
+
+    $pdfError = null;
+    $rendered = renderDocumentPdfFile($db, intval($info['ar_id']), 'invoice', null, isLxCarsEnabled($db), $pdfError);
+    if ($rendered === false) return $fail('PDF: ' . ($pdfError ?: 'Erzeugung fehlgeschlagen'));
+    $pdf = (string)@file_get_contents($rendered['path']);
+    $rendered['engine']->cleanup($rendered['path']);
+    $invnumber = (string)($info['ar']['invnumber'] ?? '');
+    $company   = preg_replace('/\s+/', '_', (string)($info['company'] ?? 'Rechnung'));
+    $filename  = $company . '-Rechnung-' . $invnumber . '.pdf';
+
+    // Platzhalter wie im Rechnungsdialog: {{1}} Anrede, {{2}} Beleg, {{3}} Betrag
+    $greeting   = trim((string)($info['customer_greeting'] ?? ''));
+    $salutation = trim($greeting . ' ' . (string)($info['customer_name'] ?? ''));
+    $amount     = number_format(floatval($info['ar']['amount'] ?? 0), 2, ',', '.');
+    $tpl = $db->getOne("SELECT body_text FROM whatsapp_templates WHERE id = :id", [':id' => $templateId]);
+    preg_match_all('/\{\{\d+\}\}/', (string)($tpl['body_text'] ?? ''), $m);
+    $placeholders = array_values(array_unique($m[0] ?? []));
+    $values = ['{{1}}' => $salutation, '{{2}}' => 'Ihre Rechnung Nr. ' . $invnumber, '{{3}}' => $amount];
+    $parameters = array_map(fn($ph) => $values[$ph] ?? '', $placeholders);
+
+    require_once __DIR__ . '/../whatsapp/whatsapp.php';
+    ob_start();
+    try {
+        sendWhatsAppDocument([
+            'to' => $to, 'customer_id' => intval($info['customer_id'] ?? 0), 'document_base64' => base64_encode($pdf),
+            'filename' => $filename, 'template_id' => $templateId, 'parameters' => $parameters, 'employee_id' => $employeeId,
+        ]);
+        $res = json_decode(ob_get_clean(), true);
+    } catch (\Throwable $e) {
+        ob_end_clean();
+        return $fail($e->getMessage());
+    }
+    if (empty($res['success'])) return $fail((string)($res['text'] ?? 'WhatsApp-Versand fehlgeschlagen'));
+
+    try { ausgangsrechnungArchivieren($db, intval($info['ar_id']), 'invoice', $pdf, $filename, $employeeId); } catch (\Throwable $e) {}
+    $db->execute("UPDATE periodic_invoices_ext SET whatsapp_to = :to, whatsapp_sent_at = now(), whatsapp_error = NULL, mtime = now() WHERE periodic_invoice_id = :pi",
+        [':to' => $to, ':pi' => $periodicInvoiceId]);
+    return null;
 }
 
 /**
@@ -1258,6 +1368,22 @@ function createRecurringInvoices($data) {
  * Schickt eine bereits erzeugte wiederkehrende Rechnung (erneut) per E-Mail.
  *
  * @param int $data['periodic_invoice_id'] periodic_invoices.id
+ * @testdata {"periodic_invoice_id": 1}
+ */
+function sendRecurringInvoiceWhatsApp($data) {
+    permit('sales_order_edit');
+    $db = DbhCompany::begin();
+    $id = intval($data['periodic_invoice_id'] ?? 0);
+    if ($id <= 0) throw new ApiError('VALIDATION_ERROR', 'periodic_invoice_id erforderlich');
+    $err = recurringSendInvoiceWhatsApp($db, $id, mitarbeiterId($data));
+    if ($err !== null) throw new ApiError('WHATSAPP_FAILED', $err);
+    resultInfo(true, 'Per WhatsApp gesendet');
+}
+
+/**
+ * Rechnung einer Periode erneut per E-Mail senden.
+ *
+ * @param int $data['periodic_invoice_id']
  * @testdata {"periodic_invoice_id": 1}
  */
 function sendRecurringInvoiceEmail($data) {

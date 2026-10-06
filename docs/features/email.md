@@ -1,3 +1,12 @@
+---
+title: E-Mail
+summary: IMAP/SMTP-Integration mit automatischer Kundenzuordnung
+group: core
+category: Kommunikation
+order: 50
+status: stable
+---
+
 # E-Mail — Integration
 
 OpensourceERP kann E-Mails über IMAP abrufen und über SMTP versenden. E-Mails werden automatisch Kunden zugeordnet.

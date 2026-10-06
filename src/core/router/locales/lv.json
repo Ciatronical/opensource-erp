@@ -59,7 +59,8 @@
         "tafel": "/zinojumu-delis/parvaldiba",
         "newArticle": "/prece/jauns",
         "admin": "/sistema/administresana",
-        "systemSettings": "/sistema/iestatijumi"
+        "systemSettings": "/sistema/iestatijumi",
+        "templateDesigner": "/sistema/veidnu-redaktors"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Kluda: Paroles fails api/config/api.passwd.php nav atrasts. Ludzu pardevejiet failu api/config/api.passwd.php.example par api/config/api.passwd.php un pielagojiet iestatijumus.",
@@ -90,6 +91,7 @@
         "manageCreditNotes": "Kreditreini"
     },
     "SystemMenu": {
+        "templateDesigner": "Veidņu redaktors",
         "title": "Sistema",
         "clientConfig": "Uznemuma konfiguracija",
         "developerTools": "Developer Tools",

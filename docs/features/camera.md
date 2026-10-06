@@ -1,3 +1,13 @@
+---
+title: Videoüberwachung
+summary: IP-Kameras, Objekterkennung, Ereignisse und Regeln — ohne Fremdsoftware
+group: core
+category: Kamera
+order: 85
+status: stable
+flag: feature_nvr
+---
+
 # Videoüberwachung
 
 Das Kamera-Modul verbindet IP-Kameras mit dem ERP. Erkannte Objekte (Personen, Fahrzeuge, Tiere) erscheinen als Ereignisse mit Snapshot und Videoclip und können Regeln auslösen (Browser-Benachrichtigung, WhatsApp, E-Mail).

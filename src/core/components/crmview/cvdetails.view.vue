@@ -42,6 +42,12 @@
                 <v-icon start>mdi-whatsapp</v-icon>
                 {{ t('CrmView.whatsapp') }}
             </v-tab>
+            <!-- Belegabruf: Lieferanten-Portal einmal vormachen, danach holt die
+                 Belegsuche die Rechnungen automatisch (nur bei Lieferanten) -->
+            <v-tab v-if="cvProfile?.id && cvProfile?.src === 'V'" value="belegabruf">
+                <v-icon start>mdi-cloud-download-outline</v-icon>
+                {{ t('CrmView.documentFetch') }}
+            </v-tab>
         </v-tabs>
 
         <v-divider vertical />
@@ -378,6 +384,13 @@
                     :customer-name="cvProfile.name || ''"
                 />
             </v-window-item>
+
+            <!-- Belegabruf (Lieferanten-Portal) -->
+            <v-window-item v-if="cvProfile?.id && cvProfile?.src === 'V'" value="belegabruf">
+                <div class="pa-3">
+                    <beleg-quellen-config :vendor-id="Number(cvProfile.id)" :vendor-name="cvProfile.name || ''" />
+                </div>
+            </v-window-item>
         </v-window>
     </v-sheet>
 </template>
@@ -393,6 +406,7 @@ import PhoneActionBar from '@/core/components/phone-action-bar.vue'
 const FilesTab = defineAsyncComponent(() => import('@/core/views/customer-vendor/tabs/files.tab.vue'))
 import EmailsTab from '@/core/views/customer-vendor/tabs/emails.tab.vue'
 import WhatsappTab from '@/core/views/customer-vendor/tabs/whatsapp.tab.vue'
+import BelegQuellenConfig from '@/core/views/config/tabs/beleg-quellen.config.vue'
 import { formatPhone } from '@/core/utils/phoneFormat.js'
 import { collectEmailAddresses } from '@/core/utils/cvContactAddresses.js'
 

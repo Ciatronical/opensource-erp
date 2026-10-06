@@ -10,7 +10,8 @@
             "accountingChartOfAccounts": "/ucetnictvi/uctova-osnova",
             "accountingOpenItems": "/ucetnictvi/otevrene-polozky",
             "accountingUstva": "/ucetnictvi/dph",
-            "accountingRun": "/ucetnictvi/prubeh"
+            "accountingRun": "/ucetnictvi/prubeh",
+            "accountingMagic": "/ucetnictvi/magicke-uctovani"
         },
         "easymode": {
             "label": "Režim účetnictví",

@@ -1,3 +1,12 @@
+---
+title: Telegram
+summary: Sprachnotizen und Nachrichten per Telegram-Bot, Anschlagtafel
+group: core
+category: Kommunikation
+order: 52
+status: stable
+---
+
 # Telegram — Bot-Messaging
 
 OpensourceERP kann über einen Telegram-Bot Nachrichten an Kunden und Lieferanten senden und empfangen. Im Gegensatz zu WhatsApp ist die Telegram-Bot-API komplett kostenlos und benötigt keinen Drittanbieter.

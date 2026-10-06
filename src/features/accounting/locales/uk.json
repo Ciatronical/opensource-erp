@@ -10,7 +10,8 @@
             "accountingChartOfAccounts": "/bukhhalteriia/plan-rakhunkiv",
             "accountingOpenItems": "/bukhhalteriia/vidkryti-pozytsii",
             "accountingUstva": "/bukhhalteriia/pdv",
-            "accountingRun": "/bukhhalteriia/prokhid"
+            "accountingRun": "/bukhhalteriia/prokhid",
+            "accountingMagic": "/bukhhalteriia/mahichna-provodka"
         },
         "openItems": {
             "titleReceivables": "Відкрита дебіторська заборгованість",

@@ -149,6 +149,9 @@
                             <v-chip v-if="r.emailed" size="x-small" color="success" variant="tonal" prepend-icon="mdi-email-check-outline">{{ t('RecurringInvoices.run.emailed') }}</v-chip>
                             <v-chip v-else-if="r.email_error" size="x-small" color="error" variant="tonal" prepend-icon="mdi-email-alert-outline"
                                     @click="retryEmail(r)">{{ t('RecurringInvoices.run.emailFailed') }}: {{ r.email_error }}</v-chip>
+                            <v-chip v-if="r.whatsapped" size="x-small" color="success" variant="tonal" prepend-icon="mdi-whatsapp">{{ t('RecurringInvoices.run.whatsapped') }}</v-chip>
+                            <v-chip v-else-if="r.whatsapp_error" size="x-small" color="error" variant="tonal" prepend-icon="mdi-whatsapp"
+                                    @click="retryWhatsApp(r)">{{ t('RecurringInvoices.run.whatsappFailed') }}: {{ r.whatsapp_error }}</v-chip>
                             <v-chip v-if="r.printed" size="x-small" color="success" variant="tonal" prepend-icon="mdi-printer-check">{{ t('RecurringInvoices.run.printed') }}</v-chip>
                             <v-chip v-else-if="r.print_error" size="x-small" color="error" variant="tonal">{{ r.print_error }}</v-chip>
                         </div>
@@ -393,6 +396,17 @@ async function skip(item) {
         await api.skipPeriod(item.config_id, item.period_start)
         toasts.success(t('RecurringInvoices.due.skipped'))
         await reload()
+    } catch (e) {
+        alerts.error(e.message)
+    }
+}
+
+async function retryWhatsApp(r) {
+    try {
+        await api.sendWhatsApp(r.periodic_invoice_id)
+        r.whatsapped = true
+        r.whatsapp_error = null
+        toasts.success(t('RecurringInvoices.run.whatsapped'))
     } catch (e) {
         alerts.error(e.message)
     }

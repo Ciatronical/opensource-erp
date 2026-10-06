@@ -34,6 +34,7 @@ const OrderSearchView = () => import('@/core/views/order-search/order-search.vie
 const DocumentListView = () => import('@/core/views/document-list/document.list.view.vue')
 const UserConfigView = () => import('@/core/views/user-config/user-config.view.vue')
 const AdminView = () => import('@/core/views/admin/admin.view.vue')
+const TemplateDesignerView = () => import('@/core/views/template-designer/template-designer.view.vue')
 const SystemSettingsView = () => import('@/core/views/system-settings/system-settings.view.vue')
 const WallDisplayView = () => import('@/core/views/wall-display/wall-display.view.vue')
 const AnschlagtafelView = () => import('@/core/views/anschlagtafel/anschlagtafel.view.vue')
@@ -232,6 +233,7 @@ const HrHubView = () => import('@/core/views/hr/hr.hub.vue')
 // Buchhaltung
 const AccountingCockpitView = () => import('@/features/accounting/views/accounting.cockpit.vue')
 const AccountingRunView = () => import('@/features/accounting/views/accounting.run.vue')
+const AccountingMagicView = () => import('@/features/accounting/views/accounting.magic.vue')
 const AccountingBookingsView = () => import('@/features/accounting/views/accounting.bookings.vue')
 const AccountingInvoiceUploadView = () => import('@/features/accounting/views/accounting.invoice-upload.vue')
 const AccountingInvoiceManualView = () => import('@/features/accounting/views/accounting.invoice-manual.vue')
@@ -253,6 +255,13 @@ const RecurringInvoicesView = () => import('@/core/views/recurring-invoices/recu
 
 // Lager
 const WarehouseHubView = () => import('@/features/warehouse/views/warehouse.hub.vue')
+// Spezialwerkzeug (Lager, braucht die Fahrzeuge der LxCars-Erweiterung)
+const SpecialToolsView = () => {
+    const oserp = oserpStore()
+    return oserp.isLxCars()
+        ? import('@/features/lxcars/views/special-tools/special-tools.view.vue')
+        : Promise.resolve(NotFoundView)
+}
 const WarehouseScannerView = () => import('@/features/warehouse/views/warehouse.scanner.vue')
 const WarehouseStocktakingView = () => import('@/features/warehouse/views/warehouse.stocktaking.vue')
 
@@ -686,6 +695,13 @@ function buildRoutes() {
             meta: { hideCustomerBar: true },
         },
         {
+            // Magisch Buchen: automatisch gefundene Belege pruefen und gesammelt buchen
+            ...routePath('AccountingView.routes.accountingMagic'),
+            name: 'accounting-magic',
+            component: AccountingMagicView,
+            meta: { hideCustomerBar: true },
+        },
+        {
             ...routePath('AccountingView.routes.accountingBookings'),
             name: 'accounting-bookings',
             component: AccountingBookingsView,
@@ -793,6 +809,12 @@ function buildRoutes() {
             name: 'warehouse-stocktaking',
             component: WarehouseStocktakingView,
             props: true,
+            meta: { hideCustomerBar: true },
+        },
+        {
+            ...routePath('SpecialToolsView.routes.specialTools'),
+            name: 'special-tools',
+            component: SpecialToolsView,
             meta: { hideCustomerBar: true },
         },
         // ── Shop ──
@@ -908,6 +930,13 @@ function buildRoutes() {
             ...routePath('routes.systemSettings'),
             name: 'system-settings',
             component: SystemSettingsView,
+            meta: { hideCustomerBar: true, requiresAdmin: true },
+        },
+        // ── Vorlageneditor: Druckvorlagen per Drag & Drop gestalten ──
+        {
+            ...routePath('routes.templateDesigner'),
+            name: 'template-designer',
+            component: TemplateDesignerView,
             meta: { hideCustomerBar: true, requiresAdmin: true },
         },
         {

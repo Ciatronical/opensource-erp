@@ -1,0 +1,34 @@
+code,name,fuel_group
+0000,Unbekannt,Sonstige
+0001,Benzin,Benzin
+0002,Diesel,Diesel
+0003,Vielstoff,Diesel
+0004,Elektro,Elektro
+0005,Flüssiggas (LPG),Benzin
+0006,Bivalent Benzin/Flüssiggas (LPG),Benzin
+0007,Bivalent Benzin/Erdgas (CNG),Benzin
+0008,Hybrid Benzin/Elektro,Benzin
+0009,Erdgas (CNG),Benzin
+0010,Hybrid Diesel/Elektro,Diesel
+0011,Wasserstoff,Wasserstoff
+0012,Hybrid Wasserstoff/Elektro,Wasserstoff
+0013,Bivalent Wasserstoff/Benzin,Benzin
+0014,Bivalent Wasserstoff/Benzin mit Elektromotor,Benzin
+0015,Brennstoffzelle (Wasserstoff),Wasserstoff
+0016,Brennstoffzelle (Benzin),Sonstige
+0017,Brennstoffzelle (Methanol),Sonstige
+0018,Brennstoffzelle (Ethanol),Sonstige
+0019,Hybrid Vielstoff/Elektro,Diesel
+0020,Hybrid Flüssiggas/Elektro,Benzin
+0021,Hybrid Erdgas/Elektro,Benzin
+0022,Bivalent Benzin/Ethanol (E85),Benzin
+0023,Hybrid Bivalent Benzin/Ethanol mit Elektromotor,Benzin
+0024,Hybrid Bivalent Benzin/Flüssiggas mit Elektromotor,Benzin
+0025,Plug-in-Hybrid Benzin/Elektro,Benzin
+0026,Plug-in-Hybrid Diesel/Elektro,Diesel
+0027,Plug-in-Hybrid Flüssiggas/Elektro,Benzin
+0028,Plug-in-Hybrid Erdgas/Elektro,Benzin
+0029,Plug-in-Hybrid Wasserstoff/Elektro,Wasserstoff
+0030,Plug-in-Hybrid Vielstoff/Elektro,Diesel
+0031,Plug-in-Hybrid Bivalent Benzin/Ethanol,Benzin
+0032,Plug-in-Hybrid Bivalent Benzin/Flüssiggas,Benzin

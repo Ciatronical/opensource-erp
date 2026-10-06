@@ -59,7 +59,8 @@
         "tafel": "/ilan-panosu/yonetim",
         "newArticle": "/urun/yeni",
         "admin": "/sistem/yonetim",
-        "systemSettings": "/sistem/ayarlar"
+        "systemSettings": "/sistem/ayarlar",
+        "templateDesigner": "/sistem/sablon-duzenleyici"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Hata: api/config/api.passwd.php parola dosyasi bulunamadi. Lutfen api/config/api.passwd.php.example dosyasini api/config/api.passwd.php olarak yeniden adlandirin ve ayarlari uygun sekilde yapin.",
@@ -90,6 +91,7 @@
         "manageCreditNotes": "Alacak dekontları"
     },
     "SystemMenu": {
+        "templateDesigner": "Şablon düzenleyici",
         "title": "Sistem",
         "clientConfig": "Firma yapılandırması",
         "developerTools": "Developer Tools",

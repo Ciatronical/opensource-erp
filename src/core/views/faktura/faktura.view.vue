@@ -1218,6 +1218,39 @@ export default defineComponent({
         const creditLimit = ref(0)
         const customerNotes = ref('')
 
+        /**
+         * Kontaktdaten (Telefon, E-Mail, Name, Notizen, Kreditlimit) aus einem
+         * Kunden-/Lieferanten-Datensatz übernehmen. Wird beim Laden, beim
+         * SSE-Reload, im Neu-Modus und beim Kundenwechsel genutzt – damit die
+         * Versand-Dialoge (E-Mail/WhatsApp) immer vorbelegte Daten haben.
+         */
+        function applyCustomerData(customer) {
+            const c = customer || {}
+            // E-Mail: Stammfeld, sonst erste Adresse aus customer_ext.emails (JSONB-Array)
+            let emails = c.emails
+            if (typeof emails === 'string') {
+                try { emails = JSON.parse(emails) } catch { emails = [] }
+            }
+            const firstExtEmail = Array.isArray(emails)
+                ? (emails.find(e => typeof e === 'string' && e.trim()) || '')
+                : ''
+            contactEmail.value = (c.email || '').trim() || firstExtEmail.trim()
+            contactPhone1.value = c.phone || ''
+            contactPhone2.value = c.fax || ''
+            contactLabel.value = c.contact || ''
+            customerName.value = c.name || ''
+            const pn = c.phone_numbers
+            let parsed = []
+            if (typeof pn === 'string') {
+                try { parsed = JSON.parse(pn) } catch { parsed = [] }
+            } else if (Array.isArray(pn)) {
+                parsed = pn
+            }
+            phoneNumbers.value = parsed
+            customerNotes.value = c.notes || ''
+            creditLimit.value = c.creditlimit || 0
+        }
+
         // Kompaktansicht (gespeichert in employee_config_oserp)
         const rawCompact = oserp.getConfigValue('faktura_compact_view', false)
         const compactView = ref(rawCompact === true || rawCompact === 'true' || rawCompact === 't' || rawCompact === '1')
@@ -1535,9 +1568,18 @@ export default defineComponent({
         async function ensureFakturaExists() {
             if (fakturaId.value) return
 
+            // Im Beleg gewählter Kunde/Lieferant hat Vorrang vor dem Hintergrund-Kunden
+            const common = faktura.data?.common || {}
             const cvProfile = oserp.customer_vendor?.profile || {}
-            const cvId = cvProfile.id || null
-            const cvSrc = cvProfile.src || null
+            let cvId = cvProfile.id || null
+            let cvSrc = cvProfile.src || null
+            if (common.vendor_id) {
+                cvId = common.vendor_id
+                cvSrc = 'V'
+            } else if (common.customer_id) {
+                cvId = common.customer_id
+                cvSrc = 'C'
+            }
             const result = await faktura.createFaktura(fakturaType.value, cvId, cvSrc)
             fakturaId.value = result.id
             faktura.data.common.id = result.id
@@ -1631,14 +1673,9 @@ export default defineComponent({
                     fakturaItems.value.push(items.createEmptyItem())
                 }
 
-                contactEmail.value = faktura.data.customer.email || ''
-                contactPhone1.value = faktura.data.customer.phone || ''
-                contactPhone2.value = faktura.data.customer.fax || ''
-                contactLabel.value = faktura.data.customer.contact || ''
-                customerName.value = faktura.data.customer.name || ''
-                const pn = faktura.data.customer.phone_numbers
-                phoneNumbers.value = typeof pn === 'string' ? JSON.parse(pn) : (pn || [])
-                customerNotes.value = faktura.data.customer.notes || ''
+                applyCustomerData(faktura.data.customer)
+                deliveryAddressList.value = faktura.data.shiptos || []
+                billingAddressList.value = faktura.data.billing_addresses || []
 
                 if (fakturaType.value === 'invoice') {
                     const defaultChartId = paymentAccList.value.length > 0 ? paymentAccList.value[0].id : null
@@ -1754,6 +1791,9 @@ export default defineComponent({
                     }
                     customerList.value = faktura.data.customers || []
                     loadDropdownLists()
+                    // Telefon/E-Mail des vorbelegten Kunden sofort übernehmen –
+                    // ein neuer Beleg lädt sonst nie Kontaktdaten (kein Remount nach Anlage)
+                    if (cvProfile.id) applyCustomerData(cvProfile)
                     fakturaItems.value.push(items.createEmptyItem())
 
                     // lxcars: Fahrzeuge des Kunden laden bzw. vorauswählen
@@ -1845,14 +1885,7 @@ export default defineComponent({
                         })) : []
                     }
 
-                    contactEmail.value = faktura.data.customer.email || ''
-                    contactPhone1.value = faktura.data.customer.phone || ''
-                    contactPhone2.value = faktura.data.customer.fax || ''
-                    contactLabel.value = faktura.data.customer.contact || ''
-                    customerName.value = faktura.data.customer.name || ''
-                    const pn = faktura.data.customer.phone_numbers
-                    phoneNumbers.value = typeof pn === 'string' ? JSON.parse(pn) : (pn || [])
-                    customerNotes.value = faktura.data.customer.notes || ''
+                    applyCustomerData(faktura.data.customer)
 
                     // lxcars: Fahrzeuge + Ersatzteile + Lieferanten aus dem zusammengeführten Call
                     if (needsLxCars) {
@@ -1891,6 +1924,7 @@ export default defineComponent({
                     }
                 }
             } catch (e) {
+                console.error('Faktura-Initialisierung fehlgeschlagen:', e)
                 alerts.error(t('FakturaView.faktura.loadError'))
             }
 
@@ -2008,6 +2042,32 @@ export default defineComponent({
 
             // In DB speichern
             await onFakturaFieldChange(field, newCvId)
+
+            // Kontaktdaten (Telefon/E-Mail), Liefer- und Rechnungsadressen des
+            // neuen Kunden nachladen – sonst bleiben die Versand-Dialoge leer.
+            const cvSrc = isVendor.value ? 'V' : 'C'
+            if (newCvId) {
+                if (fakturaId.value) {
+                    // Beleg existiert: ein getFakturaData-Call liefert Kunde + Adressen
+                    suppressSSEReloadUntil = 0
+                    await reloadFakturaData()
+                    // Hintergrund-Kunde synchronisieren (Navbar, ensureFakturaExists)
+                    oserp.fetchCustomerOrVendor(newCvId, cvSrc).catch(() => {})
+                } else {
+                    // Noch kein Beleg: Kunde über den Store laden und übernehmen
+                    try {
+                        await oserp.fetchCustomerOrVendor(newCvId, cvSrc)
+                        const profile = oserp.customer_vendor?.profile || {}
+                        faktura.data.customer = profile
+                        applyCustomerData(profile)
+                    } catch (e) {
+                        console.error('Fehler beim Laden der Kundendaten:', e)
+                    }
+                }
+            } else {
+                faktura.data.customer = {}
+                applyCustomerData({})
+            }
 
             // Vehicle-Daten aktualisieren (lxcars)
             if (vehicle && (fakturaType.value === 'order' || fakturaType.value === 'quotation' || fakturaType.value === 'invoice')) {

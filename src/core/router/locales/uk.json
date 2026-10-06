@@ -59,7 +59,8 @@
         "tafel": "/doshka-oholoshen/keruvannia",
         "newArticle": "/tovar/novyi",
         "admin": "/systema/administruvannia",
-        "systemSettings": "/systema/nalashtuvannia"
+        "systemSettings": "/systema/nalashtuvannia",
+        "templateDesigner": "/systema/redaktor-shabloniv"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Помилка: Файл паролів api/config/api.passwd.php не знайдено. Будь ласка, перейменуйте файл api/config/api.passwd.php.example на api/config/api.passwd.php та налаштуйте параметри відповідно.",
@@ -90,6 +91,7 @@
         "manageCreditNotes": "Кредитні ноти"
     },
     "SystemMenu": {
+        "templateDesigner": "Редактор шаблонів",
         "title": "Система",
         "clientConfig": "Конфігурація компанії",
         "developerTools": "Інструменти розробника",

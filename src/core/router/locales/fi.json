@@ -59,7 +59,8 @@
         "tafel": "/ilmoitustaulu/hallinta",
         "newArticle": "/tuote/uusi",
         "admin": "/jarjestelma/hallinta",
-        "systemSettings": "/jarjestelma/asetukset"
+        "systemSettings": "/jarjestelma/asetukset",
+        "templateDesigner": "/jarjestelma/mallieditori"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Virhe: Salasanatiedostoa api/config/api.passwd.php ei löytynyt. Nimeä tiedosto api/config/api.passwd.php.example uudelleen muotoon api/config/api.passwd.php ja muokkaa asetuksia vastaavasti.",
@@ -90,6 +91,7 @@
         "manageCreditNotes": "Hyvityslaskut"
     },
     "SystemMenu": {
+        "templateDesigner": "Mallieditori",
         "title": "Järjestelmä",
         "clientConfig": "Yrityksen asetukset",
         "developerTools": "Developer Tools",

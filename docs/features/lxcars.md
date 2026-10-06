@@ -1,3 +1,13 @@
+---
+title: LxCars
+summary: Werkstattverwaltung: Fahrzeuge, Werkstattaufträge, Mechaniker-Modus, KI-Chat, Etiketten
+group: extension
+extension: lxcars
+category: Werkstatt
+order: 100
+status: stable
+---
+
 # LxCars — Werkstattverwaltung
 
 LxCars ist das Werkstattmodul für Kfz-Betriebe. Es verwaltet Fahrzeuge, Werkstattaufträge, Arbeitsanweisungen, Ersatzteilanforderungen, Mängelerfassung und bietet einen Mechaniker-Modus für die direkte Arbeit am Fahrzeug.
@@ -170,3 +180,11 @@ Alle LxCars-Einstellungen finden sich unter **Einstellungen > LxCars**:
 | Zeiterfassung | Arbeitsbeginn, -ende, Pausen |
 | Mechaniker-Modus | Aktivierung, Mitarbeiter-Gruppe |
 | Etikettendrucker | Zuordnung gelbes Etikett / Reifenetikett |
+
+## Spezialwerkzeug
+
+Spezialwerkzeuge werden unter **Lager → Spezialwerkzeug** eingelagert und per KI den passenden Fahrzeugen zugeordnet; Fahrzeugansicht und Werkstattauftrag zeigen, welches Werkzeug passt und wo es liegt. Mit der Shop-Erweiterung lassen sich die Werkzeuge verleihen und verkaufen. Eigene Seite: [Spezialwerkzeug](spezialwerkzeug.md).
+
+## Eigener Fahrzeugscheinscanner
+
+Statt der externen API fahrzeugschein-scanner.de kann ein Dienst auf dem eigenen Server die Fahrzeugscheine auslesen (RapidOCR, nur CPU, Port 3003 lokal). Umschalter: Firmenkonfiguration → LxCars → „Eigenen Fahrzeugscheinscanner benutzen". Installation: `install/install.sh --only fsscanner`, Beschreibung in `backend/fahrzeugschein-scanner/README.md`.

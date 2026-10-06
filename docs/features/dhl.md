@@ -1,3 +1,13 @@
+---
+title: DHL
+summary: Versandintegration mit Label-Druck
+group: core
+category: Versand
+order: 60
+status: stable
+external: true
+---
+
 # DHL — Versandintegration
 
 Automatisierte Paketerstellung und Labeldruck über die DHL Geschäftskunden-API.

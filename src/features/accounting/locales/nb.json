@@ -10,7 +10,8 @@
             "accountingChartOfAccounts": "/regnskap/kontoplan",
             "accountingOpenItems": "/regnskap/apne-poster",
             "accountingUstva": "/regnskap/mva",
-            "accountingRun": "/regnskap/gjennomgang"
+            "accountingRun": "/regnskap/gjennomgang",
+            "accountingMagic": "/regnskap/magisk-bokfoering"
         },
         "easymode": {
             "label": "Regnskapets modus",

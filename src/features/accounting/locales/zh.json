@@ -10,7 +10,8 @@
             "accountingChartOfAccounts": "/accounting/chart-of-accounts",
             "accountingOpenItems": "/accounting/open-items",
             "accountingUstva": "/accounting/vat-return",
-            "accountingRun": "/accounting/run"
+            "accountingRun": "/accounting/run",
+            "accountingMagic": "/accounting/magic-booking"
         },
         "easymode": {
             "label": "会计模式",

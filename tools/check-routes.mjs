@@ -111,6 +111,11 @@ for (const file of walk(path.join(ROOT, 'src'))) {
     if (rel.endsWith('core/router/index.js')) continue
     const src = fs.readFileSync(file, 'utf8')
     for (const m of src.matchAll(/name:\s*'([a-z0-9-]+)'/g)) {
+        // Nur Routen-Objekte zaehlen: { name, params?, query?, hash? }. Feld-
+        // definitionen wie { name: 'condition', label: ..., items: ... } tragen
+        // andere Schluessel und sind keine Navigationsziele.
+        const rest = src.slice(m.index + m[0].length, src.indexOf('}', m.index + m[0].length))
+        if (/\b(label|items|type|hint|prefix|icon|title|value|key|component|tooltip)\s*:/.test(rest)) continue
         const line = src.slice(0, m.index).split('\n').length
         if (!used.has(m[1])) used.set(m[1], [])
         used.get(m[1]).push(`${rel}:${line}`)

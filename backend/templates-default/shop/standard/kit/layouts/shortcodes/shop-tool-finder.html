@@ -1,0 +1,16 @@
+{{- /*
+  {{< shop-tool-finder >}}
+
+  Werkzeugsuche: Spezialwerkzeuge der Werkstatt zum Fahrzeug des Besuchers
+  (HSN/TSN aus dem Fahrzeugschein oder Fahrgestellnummer), jeweils zum Mieten
+  und/oder Kaufen mit Warenkorb-Knopf. Gehört auf eine eigene Seite, etwa
+  content/de/werkzeugverleih.md:
+
+      {{< shop-tool-finder heading="Werkzeugverleih" cart-url="/warenkorb/" >}}
+*/ -}}
+{{- partial "shop-ui-assets.html" . -}}
+<shop-tool-finder
+  cart-url="{{ .Get `cart-url` | default `/warenkorb/#focus` }}"
+  {{- with .Get `heading` }} heading="{{ . }}"{{ end }}
+  {{- with .Get `intro` }} intro="{{ . }}"{{ end }}
+  {{- with .Get `class` }} class="{{ . }}"{{ end }}></shop-tool-finder>

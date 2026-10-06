@@ -59,7 +59,8 @@
         "tafel": "/opslagstavle/administration",
         "newArticle": "/vare/ny",
         "admin": "/system/administration",
-        "systemSettings": "/system/indstillinger"
+        "systemSettings": "/system/indstillinger",
+        "templateDesigner": "/system/skabeloneditor"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Fejl: Adgangskodefilen api/config/api.passwd.php blev ikke fundet. Omdoeb venligst filen api/config/api.passwd.php.example til api/config/api.passwd.php og tilpas indstillingerne.",
@@ -90,6 +91,7 @@
         "manageCreditNotes": "Kreditnotaer"
     },
     "SystemMenu": {
+        "templateDesigner": "Skabeloneditor",
         "title": "System",
         "clientConfig": "Firmakonfiguration",
         "developerTools": "Developer Tools",

@@ -1,3 +1,12 @@
+---
+title: Buchhaltung
+summary: Belege, Buchungen, offene Posten, Mahnwesen, Belegquellen und „Magisch Buchen“, DATEV-Export
+group: core
+category: Finanzen
+order: 31
+status: stable
+---
+
 # Buchhaltung — das Konzept
 
 Diese Seite erklärt, wie die Buchhaltung in OS-ERP gedacht ist: was wohin läuft,
@@ -420,3 +429,18 @@ erst überlegen musste, wo man hin will, bevor man arbeiten konnte. Heute gilt:
 - [Banking](banking.md) — FinTS, Überweisungen, Lastschriften, Bankabstimmung
 - [Umsatzsteuer-Voranmeldung](ustva.md) — Kennzahlen, Fristen, ELSTER
 - [Faktura](faktura.md) — Angebot, Auftrag, Rechnung
+
+## Belegquellen und „Magisch Buchen"
+
+Eingangsbelege müssen nicht von Hand hochgeladen werden. Die **Belegsuche** holt sie aus den Quellen des Betriebs:
+
+| Quelle | Was geholt wird |
+|--------|-----------------|
+| Postfach (IMAP) | Anhänge eingehender E-Mails — PDF und Belegfotos; Banner und Signaturen bleiben außen vor. Das eingerichtete Firmenpostfach ist beim ersten Aufruf schon angelegt |
+| WhatsApp-Eingang | Belegfotos, die Kunden oder Mitarbeiter schicken |
+| Server-Ordner | ein Ablageordner (Vorgabe `<projekt>/belege`), etwa das Ziel eines Scanners |
+| Lieferanten-Portale | Rechnungen aus Portalen, je Lieferant mit Zugangsdaten |
+
+Jede Quelle lässt sich testen, ein Zeitplan steuert den automatischen Lauf, ein Protokoll zeigt je Datei, was daraus wurde. Gefundene Belege laufen durch dieselbe Pipeline wie hochgeladene: Ablage, KI-Auslesen (Lieferant, Beträge, Steuern, Positionen) und Buchungsvorschlag.
+
+**Magisch Buchen** zeigt alle offenen Vorschläge mit Herkunft, Kreditor, Konto und Sicherheit der Erkennung. Was ohne Nacharbeit buchbar ist, ist markiert; per Klick wird gebucht, was ausgewählt ist — nichts wird ohne Bestätigung gebucht. Was scheitert, bleibt als Vorschlag liegen. Aufruf: Buchhaltung → Kachel „Magisch Buchen".

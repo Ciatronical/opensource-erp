@@ -130,13 +130,17 @@ class ImapClient {
     /**
      * Einzelne Email komplett abrufen (Header + Body)
      */
-    public function fetchMessage(int $uid): array {
+    /**
+     * @param bool $peek true = BODY.PEEK[] — die Mail bleibt im Postfach ungelesen
+     *                   (Belegsuche im Hintergrund soll den Lesestatus nicht anfassen)
+     */
+    public function fetchMessage(int $uid, bool $peek = false): array {
         // Header + Struktur
         $headers = $this->fetchHeaders([$uid]);
         $header = $headers[$uid] ?? [];
 
         // Body abrufen
-        $resp = $this->command('UID FETCH ' . $uid . ' (BODY[])');
+        $resp = $this->command('UID FETCH ' . $uid . ' (' . ($peek ? 'BODY.PEEK[]' : 'BODY[]') . ')');
         $raw = $this->extractBodyContent($resp);
 
         $parsed = $this->parseRawMessage($raw);
@@ -489,6 +493,9 @@ class ImapClient {
                     'content_type' => preg_replace('/;.*/', '', $partContentType),
                     'size' => strlen($decoded),
                     'content_base64' => base64_encode($decoded),
+                    // inline = im HTML eingebettet (Signaturbilder, Logos) — die
+                    // Belegsuche ueberspringt solche Teile
+                    'inline' => str_contains(strtolower($disposition), 'inline'),
                 ];
                 continue;
             }

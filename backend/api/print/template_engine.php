@@ -552,6 +552,20 @@ class LaTeXTemplateEngine {
             return false;
         }
 
+        return $this->parseString($content);
+    }
+
+    /**
+     * Verarbeitet einen Template-Inhalt, der nicht als Datei vorliegt
+     *
+     * Der Vorlageneditor erzeugt die Vorlage aus einem Design und kompiliert
+     * sie fuer die Vorschau direkt, ohne sie erst in den Vorlagensatz zu
+     * schreiben. Ressourcen (Bilder, .sty) kommen weiterhin aus templateDir.
+     *
+     * @param string $content Vollstaendiger Template-Text mit <%...%>-Tags
+     * @return string|false Verarbeiteter LaTeX-String oder false bei Fehler
+     */
+    public function parseString(string $content) {
         // Erste Zeile pruefen auf tag-style config (wie in kivitendo)
         $firstLine = strtok($content, "\n");
         if (preg_match('/([^\s]+)set-tag-style([^\s]+)/', $firstLine, $m)) {

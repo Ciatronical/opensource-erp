@@ -59,7 +59,8 @@
         "tafel": "/bacheca/gestione",
         "newArticle": "/articolo/nuovo",
         "admin": "/sistema/amministrazione",
-        "systemSettings": "/sistema/impostazioni"
+        "systemSettings": "/sistema/impostazioni",
+        "templateDesigner": "/sistema/editor-modelli"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Errore: Il file della password api/config/api.passwd.php non è stato trovato. Rinominare il file api/config/api.passwd.php.example in api/config/api.passwd.php e regolare le impostazioni.",
@@ -90,6 +91,7 @@
         "manageCreditNotes": "Note di credito"
     },
     "SystemMenu": {
+        "templateDesigner": "Editor modelli",
         "title": "Sistema",
         "clientConfig": "Configurazione azienda",
         "developerTools": "Strumenti di sviluppo",

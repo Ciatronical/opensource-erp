@@ -359,6 +359,21 @@ function fullSearch($db, string $uuid, array $daten, int $kanal) {
 }
 
 /**
+ * Werkzeugsuche: Spezialwerkzeuge zum Fahrzeug des Besuchers (HSN/TSN oder FIN)
+ *
+ * Verleih und Verkauf — lib/special_tools.php
+ */
+function findSpecialTools($db, string $uuid, array $daten, int $kanal) {
+    resultInfo(true, '', shopFindSpecialTools($db, $kanal, [
+        'hsn'         => (string)shopVar($daten, 'hsn', ''),
+        'tsn'         => (string)shopVar($daten, 'tsn', ''),
+        'fin'         => (string)shopVar($daten, 'fin', ''),
+        'engine_code' => (string)shopVar($daten, 'engine_code', ''),
+        'year'        => shopVarInt($daten, 'year', 0),
+    ]));
+}
+
+/**
  * Die Aktionen, die dieser Zugang zulaesst
  *
  * Diese Liste ist die Grenze des oeffentlichen Zugangs. Was hier nicht steht,
@@ -382,7 +397,7 @@ function shopPublicActions(): array {
         'personalPayment', 'changePaymentMethod', 'updateEmail', 'updatePassword',
         'billingAndShipping', 'contactInit',
         // Suche
-        'fastSearch', 'moreSearchResults', 'fullSearch',
+        'fastSearch', 'moreSearchResults', 'fullSearch', 'findSpecialTools',
         // Bestellung und Rechnung
         'checkout', 'invoicing', 'personalOrders', 'personalOrder',
         'getInvoiceSummary', 'downloadInvoice', 'downloadInvoiceLink',

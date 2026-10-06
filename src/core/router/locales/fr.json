@@ -59,7 +59,8 @@
         "tafel": "/tableau-affichage/gestion",
         "newArticle": "/article/nouveau",
         "admin": "/systeme/administration",
-        "systemSettings": "/systeme/parametres"
+        "systemSettings": "/systeme/parametres",
+        "templateDesigner": "/systeme/editeur-de-modeles"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Erreur : Le fichier de mot de passe api/config/api.passwd.php est introuvable. Veuillez renommer le fichier api/config/api.passwd.php.example en api/config/api.passwd.php et ajuster les parametres en consequence.",
@@ -90,6 +91,7 @@
         "manageCreditNotes": "Avoirs"
     },
     "SystemMenu": {
+        "templateDesigner": "Éditeur de modèles",
         "title": "Systeme",
         "clientConfig": "Configuration de la societe",
         "developerTools": "Developer Tools",

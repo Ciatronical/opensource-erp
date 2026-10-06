@@ -20,6 +20,7 @@ import './components/shop-account-buttons.js';
 import './components/shop-search.js';
 import './components/shop-search-results.js';
 import './components/shop-contact.js';
+import './components/shop-tool-finder.js';
 
 // Uebergangsloesung fuer den Header des mitgelieferten Themes.
 import './legacy/header-cart.js';
@@ -62,5 +63,6 @@ window.ShopUI = Object.freeze({
     'shop-search',
     'shop-search-results',
     'shop-contact',
+    'shop-tool-finder',
   ],
 });

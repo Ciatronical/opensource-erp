@@ -10,7 +10,8 @@
             "accountingChartOfAccounts": "/boekhouding/rekeningschema",
             "accountingOpenItems": "/boekhouding/openstaande-posten",
             "accountingUstva": "/boekhouding/btw-aangifte",
-            "accountingRun": "/boekhouding/doorloop"
+            "accountingRun": "/boekhouding/doorloop",
+            "accountingMagic": "/boekhouding/magisch-boeken"
         },
         "easymode": {
             "label": "Modus van de boekhouding",

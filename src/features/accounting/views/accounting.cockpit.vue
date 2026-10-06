@@ -378,6 +378,21 @@ const tiles = computed(() => {
             action: () => router.push({ name: 'accounting-run', params: { kind: 'belege' } })
         },
         {
+            // Magisch Buchen: alles, was die Belegsuche sicher erkannt hat, mit
+            // einem Klick buchen — der Stapel ist derselbe wie "Belege pruefen".
+            key: 'magic',
+            active: (documents.count || 0) > 0,
+            tone: 'primary',
+            icon: 'mdi-auto-fix',
+            label: label('AccountingView.magic.tile'),
+            value: documents.sure || 0,
+            sub: t('AccountingView.magic.tileSub', {
+                ready: documents.sure || 0, unclear: Math.max((documents.pending || 0) - (documents.sure || 0), 0)
+            }),
+            cta: t('AccountingView.magic.tileCta'),
+            action: () => router.push({ name: 'accounting-magic' })
+        },
+        {
             key: 'bank',
             active: (bank.count || 0) > 0,
             tone: 'primary',

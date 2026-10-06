@@ -69,7 +69,8 @@ function getFakturaData($data) {
                     FROM (
                         SELECT
                             {$cvTable}.*,
-                            (SELECT phone_numbers FROM {$extTable} WHERE {$extFk} = {$cvTable}.id) AS phone_numbers
+                            (SELECT phone_numbers FROM {$extTable} WHERE {$extFk} = {$cvTable}.id) AS phone_numbers,
+                            (SELECT emails FROM {$extTable} WHERE {$extFk} = {$cvTable}.id) AS emails
                         FROM {$mainTable}
                         INNER JOIN {$cvTable} ON {$cvTable}.id = {$mainTable}.{$cvColumn}
                         WHERE {$mainTable}.id = :fakturaID

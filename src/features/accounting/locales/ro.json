@@ -10,7 +10,8 @@
             "accountingChartOfAccounts": "/contabilitate/plan-conturi",
             "accountingOpenItems": "/contabilitate/pozitii-deschise",
             "accountingUstva": "/contabilitate/tva",
-            "accountingRun": "/contabilitate/parcurgere"
+            "accountingRun": "/contabilitate/parcurgere",
+            "accountingMagic": "/contabilitate/contabilizare-magica"
         },
         "easymode": {
             "label": "Modul contabilității",

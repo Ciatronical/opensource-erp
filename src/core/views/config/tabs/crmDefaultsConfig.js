@@ -96,6 +96,12 @@ const crmDefaultsConfig = [
     { name: "sumup_merchant_code", type: "input", size: 30, fieldstyle: "max-width: 40ch", label: "crm_fields.sumupMerchantCode", tooltip: "crm_fields.sumupMerchantCode_help" },
     { name: "sumup_reader_pairing", type: "component", component: "sumup-reader-pairing" },
 
+    { name: "belegsuche", type: "headline", label: "crm_fields.belegsuche" },
+
+    { name: "belegsuche_enabled", type: "checkbox", label: "crm_fields.belegsucheEnabled", tooltip: "crm_fields.belegsucheEnabled_help" },
+    { name: "belegsuche_time", type: "input", inputType: "time", size: 10, fieldstyle: "max-width: 20ch", label: "crm_fields.belegsucheTime", tooltip: "crm_fields.belegsucheTime_help" },
+    { name: "belegsuche_quellen", type: "component", component: "beleg-quellen" },
+
     { name: "eletter", type: "headline", label: "crm_fields.eletter" },
 
     { name: "eletter_hostname", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.eletterHostname", tooltip: "crm_fields.eletterHostname_help" },

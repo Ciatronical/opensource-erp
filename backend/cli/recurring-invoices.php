@@ -126,8 +126,9 @@ foreach ($clients as $client) {
 
         foreach ($summary['created'] as $r) {
             echo "[{$clientName}] Rechnung {$r['invnumber']} für {$r['customer_name']} (Auftrag {$r['ordnumber']}, {$r['period_start']}–{$r['period_end']})"
-               . ($r['posted'] ? ', gebucht' : '') . ($r['emailed'] ? ', gemailt' : '') . ($r['printed'] ? ', gedruckt' : '')
+               . ($r['posted'] ? ', gebucht' : '') . ($r['emailed'] ? ', gemailt' : '') . (!empty($r['whatsapped']) ? ', per WhatsApp' : '') . ($r['printed'] ? ', gedruckt' : '')
                . (!empty($r['email_error']) ? ", E-Mail-Fehler: {$r['email_error']}" : '')
+               . (!empty($r['whatsapp_error']) ? ", WhatsApp-Fehler: {$r['whatsapp_error']}" : '')
                . (!empty($r['print_error']) ? ", Druckfehler: {$r['print_error']}" : '') . "\n";
         }
         foreach ($summary['blocked'] as $b) {

@@ -2144,6 +2144,9 @@ CREATE TABLE IF NOT EXISTS accounting_documents (
     employee_id     INTEGER,                     -- wer den Beleg abgelegt hat (GoBD: Nachvollziehbarkeit)
     notes           TEXT,
     retention_until DATE,                        -- Ende der Aufbewahrungsfrist (AO §147)
+    source_id       INTEGER,                     -- Belegsuche: Quelle (beleg_quellen.id), NULL = manueller Upload
+    origin          TEXT,                        -- Belegsuche: Kennung in der Quelle (Mail-UID, Dateipfad, WhatsApp-Nachricht)
+    origin_info     JSONB,                       -- Belegsuche: Absender, Betreff, Empfangszeit ...
     itime           TIMESTAMP DEFAULT NOW(),
     mtime           TIMESTAMP DEFAULT NOW()
 );
@@ -2680,6 +2683,49 @@ CREATE INDEX IF NOT EXISTS idx_payment_settlement_lines_matched ON payment_settl
 
 COMMENT ON TABLE payment_settlement_lines IS 'Einzelne Auszahlungszeilen einer Kartenabrechnung; net = erwarteter Bankbetrag fuer Auto-Match.';
 
+-- Belegsuche ("Magisch Buchen"): Quellen, aus denen Eingangsbelege automatisch
+-- geholt werden (Postfach per IMAP, WhatsApp-Eingang, Server-Ordner, Lieferanten-
+-- Portal mit Login). Passwoerter liegen verschluesselt in secret (lib/secrets.php).
+CREATE TABLE IF NOT EXISTS beleg_quellen (
+    id              SERIAL PRIMARY KEY,
+    type            VARCHAR(20) NOT NULL CHECK (type IN ('imap', 'folder', 'whatsapp', 'portal')),
+    name            TEXT NOT NULL,
+    active          BOOLEAN DEFAULT TRUE,
+    config          JSONB DEFAULT '{}'::jsonb,    -- imap: host, port, encryption, username, folder, use_company_mailbox; folder: path, move_processed; portal: url, adapter, username
+    secret          TEXT,                         -- verschluesseltes Passwort (AES-256-GCM, lib/secrets.php)
+    vendor_id       INTEGER REFERENCES vendor(id), -- Portal: zugehoeriger Lieferant
+    last_run_at     TIMESTAMP,
+    last_status     VARCHAR(20),                  -- ok | error | unsupported
+    last_message    TEXT,
+    last_found      INTEGER DEFAULT 0,            -- beim letzten Lauf importierte Belege
+    employee_id     INTEGER,
+    itime           TIMESTAMP DEFAULT NOW(),
+    mtime           TIMESTAMP DEFAULT NOW()
+);
+
+COMMENT ON TABLE beleg_quellen IS 'Belegsuche: Quellen fuer den automatischen Belegimport (Magisch Buchen).';
+
+-- Je gefundenem Element (Mail-Anhang, Datei, WhatsApp-Medium) ein Eintrag, damit
+-- nichts zweimal verarbeitet wird und Uebersprungenes nachvollziehbar bleibt.
+CREATE TABLE IF NOT EXISTS beleg_quellen_log (
+    id              SERIAL PRIMARY KEY,
+    source_id       INTEGER NOT NULL REFERENCES beleg_quellen(id) ON DELETE CASCADE,
+    origin          TEXT NOT NULL,                -- Kennung in der Quelle (z. B. "INBOX#4711#2:rechnung.pdf")
+    result          VARCHAR(20) NOT NULL          -- imported | duplicate | not_invoice | skipped | error
+                    CHECK (result IN ('imported', 'duplicate', 'not_invoice', 'skipped', 'error')),
+    filename        TEXT,
+    document_id     INTEGER REFERENCES accounting_documents(id) ON DELETE SET NULL,
+    booking_id      INTEGER,
+    message         TEXT,
+    info            JSONB,                        -- Absender, Betreff, Datum ...
+    itime           TIMESTAMP DEFAULT NOW(),
+    UNIQUE (source_id, origin)
+);
+
+CREATE INDEX IF NOT EXISTS idx_beleg_quellen_log_source ON beleg_quellen_log(source_id, itime DESC);
+
+COMMENT ON TABLE beleg_quellen_log IS 'Belegsuche: verarbeitete Elemente je Quelle (Idempotenz + Nachvollziehbarkeit).';
+
 -- eBay-Bestellimport: Idempotenz, Audit und Kaeufer->Kunde-Verknuepfung.
 -- UNIQUE(ebay_order_id) ist die zentrale Sperre gegen doppelte Rechnungen.
 -- buyer_username dient als schnellster Dubletten-Treffer fuer wiederkehrende Kaeufer.
@@ -3064,6 +3110,9 @@ CREATE TABLE IF NOT EXISTS periodic_invoices_configs_ext (
     paused_until date,
     post_to_ledger boolean NOT NULL DEFAULT true,
     notes text,
+    send_whatsapp boolean NOT NULL DEFAULT false,
+    whatsapp_phone text,
+    whatsapp_template_id integer,
     created_by integer,
     itime timestamp without time zone DEFAULT now(),
     mtime timestamp without time zone,
@@ -3087,6 +3136,9 @@ COMMENT ON COLUMN periodic_invoices_configs_ext.min_term_months IS 'Mindestlaufz
 COMMENT ON COLUMN periodic_invoices_configs_ext.paused_until IS 'Pausiert bis zu diesem Datum; danach wird die Abrechnung automatisch wieder aktiv';
 COMMENT ON COLUMN periodic_invoices_configs_ext.post_to_ledger IS 'Erzeugte Rechnung sofort ins Hauptbuch buchen (acc_trans)';
 COMMENT ON COLUMN periodic_invoices_configs_ext.notes IS 'Interne Bemerkung zur Abrechnung (Vertragsnummer, Absprachen)';
+COMMENT ON COLUMN periodic_invoices_configs_ext.send_whatsapp IS 'Rechnung automatisch per WhatsApp (Dokument-Template) senden';
+COMMENT ON COLUMN periodic_invoices_configs_ext.whatsapp_phone IS 'Empfängernummer; NULL = Mobilnummer des Kunden';
+COMMENT ON COLUMN periodic_invoices_configs_ext.whatsapp_template_id IS 'WhatsApp-Dokument-Template (whatsapp_templates.id); NULL = Vorgabe whatsapp_tpl_faktura';
 COMMENT ON COLUMN periodic_invoices_configs_ext.created_by IS 'Mitarbeiter, der die Abrechnung eingerichtet hat';
 
 -- Je erzeugter Rechnung: abgerechnete Periode, Faktoren und Zustellung.
@@ -3103,6 +3155,9 @@ CREATE TABLE IF NOT EXISTS periodic_invoices_ext (
     email_error text,
     printed_at timestamp without time zone,
     print_error text,
+    whatsapp_to text,
+    whatsapp_sent_at timestamp without time zone,
+    whatsapp_error text,
     created_by integer,
     source text NOT NULL DEFAULT 'manual',
     itime timestamp without time zone DEFAULT now(),
@@ -3420,3 +3475,34 @@ LANGUAGE sql IMMUTABLE AS $$
                   AND make_date(y, p_month, 1) <= p_period_start
            ))::numeric END
 $$;
+
+-- ============================================================================
+-- DRUCKVORLAGEN-DESIGNS (Vorlageneditor)
+-- ============================================================================
+-- Der Vorlageneditor beschreibt eine Druckvorlage als JSON (Seite, frei
+-- platzierte Bausteine, Fließbereich mit Positionstabelle). Beim Speichern
+-- übersetzt das Backend das Design in eine kivitendo-kompatible .tex-Datei im
+-- Vorlagensatz. Jede Speicherung ist eine neue Version; nur die aktuelle Zeile
+-- trägt is_current, die älteren bleiben zum Zurückholen stehen.
+
+CREATE TABLE IF NOT EXISTS print_template_designs (
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    template_set text NOT NULL,
+    document_type text NOT NULL,
+    design jsonb NOT NULL,
+    version integer NOT NULL DEFAULT 1,
+    is_current boolean NOT NULL DEFAULT true,
+    employee_id integer,
+    itime timestamp without time zone NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_print_template_designs_set_type
+    ON print_template_designs (template_set, document_type, is_current);
+
+COMMENT ON TABLE print_template_designs IS 'Vorlageneditor: Designs der Druckvorlagen als JSON, versioniert je Vorlagensatz und Belegart';
+COMMENT ON COLUMN print_template_designs.template_set IS 'Vorlagensatz wie in defaults.templates, z. B. templates/firma';
+COMMENT ON COLUMN print_template_designs.document_type IS 'Belegart (fakturaType), z. B. invoice, quotation, order';
+COMMENT ON COLUMN print_template_designs.design IS 'Design-JSON (page, blocks, body) — Quelle der erzeugten .tex-Datei';
+COMMENT ON COLUMN print_template_designs.version IS 'Laufende Versionsnummer je Vorlagensatz und Belegart';
+COMMENT ON COLUMN print_template_designs.is_current IS 'Genau eine aktuelle Version je Vorlagensatz und Belegart';
+COMMENT ON COLUMN print_template_designs.employee_id IS 'Mitarbeiter, der diese Version gespeichert hat';

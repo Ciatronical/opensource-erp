@@ -10,7 +10,8 @@
             "accountingChartOfAccounts": "/kirjanpito/tilikartta",
             "accountingOpenItems": "/kirjanpito/avoimet-erat",
             "accountingUstva": "/kirjanpito/alv",
-            "accountingRun": "/kirjanpito/lapikaynti"
+            "accountingRun": "/kirjanpito/lapikaynti",
+            "accountingMagic": "/kirjanpito/taikakirjaus"
         },
         "easymode": {
             "label": "Kirjanpidon tila",

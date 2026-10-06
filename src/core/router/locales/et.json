@@ -59,7 +59,8 @@
         "tafel": "/teadetetahvel/haldus",
         "newArticle": "/artikkel/uus",
         "admin": "/susteem/haldus",
-        "systemSettings": "/susteem/seaded"
+        "systemSettings": "/susteem/seaded",
+        "templateDesigner": "/susteem/mallide-redaktor"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Viga: Paroolifaili api/config/api.passwd.php ei leitud. Palun nimetage fail api/config/api.passwd.php.example umber api/config/api.passwd.php ja kohandage seadeid vastavalt.",
@@ -90,6 +91,7 @@
         "manageCreditNotes": "Kreeditarved"
     },
     "SystemMenu": {
+        "templateDesigner": "Mallide redaktor",
         "title": "Süsteem",
         "clientConfig": "Ettevõtte seadistus",
         "developerTools": "Developer Tools",

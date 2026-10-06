@@ -1,3 +1,12 @@
+---
+title: Benutzer und Firmen
+summary: Benutzer, Berechtigungsgruppen und Firmen (Mandanten) verwalten — Setup-Assistent ohne kivitendo
+group: core
+category: System
+order: 90
+status: stable
+---
+
 # Benutzer und Firmen — Systemadministration
 
 OSERP verwaltet Benutzer, Berechtigungsgruppen und Firmen (Mandanten) selbst. Ein k9o-`admin.pl` ist nicht mehr nötig — die Datenstruktur bleibt aber vollständig k9o-kompatibel, sodass eine bestehende Installation weiter parallel genutzt werden kann.

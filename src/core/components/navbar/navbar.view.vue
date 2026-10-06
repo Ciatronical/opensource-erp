@@ -156,6 +156,10 @@
           <template #prepend><v-icon size="small" class="me-2">mdi-file-cog-outline</v-icon></template>
           <v-list-item-title class="text-body-2">{{ t('SystemMenu.systemSettings') }}</v-list-item-title>
         </v-list-item>
+        <v-list-item v-if="oserpData.session.is_admin" :to="{ name: 'template-designer' }" @click="clientMenuOpen = false">
+          <template #prepend><v-icon size="small" class="me-2">mdi-drawing-box</v-icon></template>
+          <v-list-item-title class="text-body-2">{{ t('SystemMenu.templateDesigner') }}</v-list-item-title>
+        </v-list-item>
         <v-divider class="my-1" />
         <v-list-item :to="{ name: 'docs' }" @click="clientMenuOpen = false">
           <template #prepend><v-icon size="small" class="me-2">mdi-book-open-variant</v-icon></template>

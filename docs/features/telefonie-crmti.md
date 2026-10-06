@@ -1,3 +1,13 @@
+---
+title: Telefonie (CRMTI)
+summary: CTI-Anbindung über Asterisk: Anruferkennung in Echtzeit, Mitschnitt, Transkription
+group: core
+category: Kommunikation
+order: 53
+status: stable
+external: true
+---
+
 # Telefonie (CRMTI) — CTI-Anbindung über Asterisk
 
 CRMTI verbindet die Telefonanlage (Asterisk) mit OpensourceERP: Bei ein- und

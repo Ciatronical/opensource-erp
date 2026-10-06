@@ -59,7 +59,8 @@
         "tafel": "/quadro-avisos/gestao",
         "newArticle": "/artigo/novo",
         "admin": "/sistema/administracao",
-        "systemSettings": "/sistema/configuracoes"
+        "systemSettings": "/sistema/configuracoes",
+        "templateDesigner": "/sistema/editor-de-modelos"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Erro: O ficheiro de senha api/config/api.passwd.php não foi encontrado. Por favor, renomeie o ficheiro api/config/api.passwd.php.example para api/config/api.passwd.php e ajuste as configurações.",
@@ -90,6 +91,7 @@
         "manageCreditNotes": "Notas de crédito"
     },
     "SystemMenu": {
+        "templateDesigner": "Editor de modelos",
         "title": "Sistema",
         "clientConfig": "Configuração da empresa",
         "developerTools": "Ferramentas de desenvolvimento",

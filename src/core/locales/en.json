@@ -73,6 +73,7 @@
             "salesText": "Sales text",
             "aiPositions": "Item suggestions",
             "filemanager": "Document chat (file manager)",
+            "specialTools": "Special tool matching",
             "accounting": "Document recognition",
             "businessCard": "Business card scan",
             "phoneSearch": "Phone lookup",

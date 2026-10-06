@@ -116,7 +116,9 @@
             "emailFailed": "email failed – click to retry",
             "printed": "printed",
             "blockedRow": "{customer}, period from {period}: on hold (overdue invoices)",
-            "errors": "{count} errors while creating"
+            "errors": "{count} errors while creating",
+            "whatsapped": "sent via WhatsApp",
+            "whatsappFailed": "WhatsApp failed – click to retry"
         },
         "list": {
             "search": "Customer, order, description …",
@@ -275,7 +277,14 @@
             "dueNowTitle": "Invoices due",
             "dueNowText": "{count} periods are already due. Create the invoices now?",
             "createNow": "Create now",
-            "later": "Later"
+            "later": "Later",
+            "sendWhatsapp": "Send invoice automatically via WhatsApp",
+            "whatsappNotConfigured": "WhatsApp Business API not set up (company configuration → WhatsApp).",
+            "whatsappNoPhone": "The customer has no phone number. Please enter one.",
+            "whatsappPhone": "Recipient number",
+            "whatsappPhoneHint": "Empty = mobile number of the customer or contact person.",
+            "whatsappTemplate": "WhatsApp template",
+            "whatsappTemplateHint": "Empty = default from the company configuration (document template for invoices)."
         }
     }
 }

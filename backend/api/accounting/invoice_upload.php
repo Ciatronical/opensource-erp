@@ -13,8 +13,6 @@
 function uploadInvoiceDocument($data) {
     set_time_limit(180);
 
-    $db = DbhCompany::begin();
-
     $fileBase64 = $data['file_base64'] ?? '';
     $filename = $data['filename'] ?? 'dokument.pdf';
     $mimeType = $data['mime_type'] ?? 'application/pdf';
@@ -28,13 +26,52 @@ function uploadInvoiceDocument($data) {
         throw new ApiError('VALIDATION_ERROR', 'Ungueltige Base64-Daten');
     }
 
+    $result = _iv_importDocument(DbhCompany::begin(), $fileContent, $filename, $mimeType, [
+        'employee_id' => mitarbeiterId($data),
+    ]);
+    resultInfo(true, 'OK', $result);
+}
+
+/**
+ * Beleg importieren: ablegen, extrahieren (E-Rechnung oder KI), Kreditor
+ * aufloesen, Buchungsvorschlag anlegen. Gemeinsamer Kern von
+ * uploadInvoiceDocument (manueller Upload) und der Belegsuche (Postfach,
+ * WhatsApp, Ordner — beleg_quellen.php).
+ *
+ * @param string $fileContent Dateiinhalt (binaer)
+ * @param array  $opts  employee_id      Wer importiert (CLI: null)
+ *                      on_duplicate     'throw' (Default) | 'return' → {duplicate:true, document_id}
+ *                      auto_book        true (Default): bei hoher Sicherheit sofort ins Hauptbuch;
+ *                                       false: immer als Vorschlag liegen lassen (Magisch Buchen)
+ *                      require_invoice  true: ohne Betrag UND Rechnungsnummer keinen
+ *                                       Vorschlag anlegen → {not_invoice:true}
+ *                      source_id/origin/origin_info  Herkunft (Quelle, Kennung, Mailbetreff ...)
+ * @return array Ergebnis wie das Payload von uploadInvoiceDocument
+ * @throws ApiError bei fatalen Fehlern (Ablage, KI, Duplikat je nach on_duplicate)
+ */
+function _iv_importDocument($db, string $fileContent, string $filename, string $mimeType, array $opts = []) {
+    $employeeId = $opts['employee_id'] ?? null;
+    $fileBase64 = base64_encode($fileContent);   // fuer den KI-Aufruf (document/image-Block)
+
     // Duplikaterkennung per SHA-256
     $fileHash = hash('sha256', $fileContent);
     $existing = $db->getOne(
-        "SELECT id, original_name, status FROM accounting_documents WHERE file_hash = :hash",
+        "SELECT id, original_name, status, booking_id FROM accounting_documents WHERE file_hash = :hash",
         [':hash' => $fileHash]
     );
+    // Fehlgeschlagene Extraktion (z. B. KI nicht erreichbar) blockiert den
+    // Beleg nicht dauerhaft: der alte Eintrag ohne Buchung wird ersetzt.
+    if ($existing && $existing['status'] === 'error' && empty($existing['booking_id'])) {
+        $old = $db->getOne("SELECT stored_path FROM accounting_documents WHERE id = :id", [':id' => $existing['id']]);
+        $db->execute("DELETE FROM accounting_documents WHERE id = :id", [':id' => $existing['id']]);
+        if (!empty($old['stored_path'])) { $abs = fmDataDir() . '/' . $old['stored_path']; if (is_file($abs)) { @chmod($abs, 0644); @unlink($abs); } }
+        $existing = null;
+    }
     if ($existing) {
+        if (($opts['on_duplicate'] ?? 'throw') === 'return') {
+            return ['duplicate' => true, 'document_id' => intval($existing['id']), 'booking_id' => $existing['booking_id'] ? intval($existing['booking_id']) : null,
+                    'original_name' => $existing['original_name'], 'needs_review' => false, 'auto_booked' => false];
+        }
         throw new ApiError('DUPLICATE_DOCUMENT', 'Dieses Dokument wurde bereits hochgeladen (ID: ' . $existing['id'] . ', ' . $existing['original_name'] . ')');
     }
 
@@ -44,17 +81,22 @@ function uploadInvoiceDocument($data) {
         fmMkdir($accountingDir);
     }
 
-    // Dokument in DB anlegen
+    // Dokument in DB anlegen (Herkunft nur, wenn das Schema die Spalten schon hat)
+    $originCols = _iv_hasOriginColumns($db);
     $db->execute(
-        "INSERT INTO accounting_documents (original_name, mime_type, file_size, file_hash, status, employee_id)
-         VALUES (:name, :mime, :size, :hash, 'processing', :eid)",
-        [
+        "INSERT INTO accounting_documents (original_name, mime_type, file_size, file_hash, status, employee_id" . ($originCols ? ', source_id, origin, origin_info' : '') . ")
+         VALUES (:name, :mime, :size, :hash, 'processing', :eid" . ($originCols ? ', :src, :origin, :oinfo::jsonb' : '') . ")",
+        array_merge([
             ':name' => $filename,
             ':mime' => $mimeType,
             ':size' => strlen($fileContent),
             ':hash' => $fileHash,
-            ':eid'  => mitarbeiterId($data)
-        ]
+            ':eid'  => $employeeId
+        ], $originCols ? [
+            ':src'    => isset($opts['source_id']) ? intval($opts['source_id']) : null,
+            ':origin' => $opts['origin'] ?? null,
+            ':oinfo'  => isset($opts['origin_info']) ? json_encode($opts['origin_info'], JSON_UNESCAPED_UNICODE) : null,
+        ] : [])
     );
     $doc = $db->getOne(
         "SELECT id FROM accounting_documents WHERE file_hash = :hash ORDER BY id DESC LIMIT 1",
@@ -70,7 +112,7 @@ function uploadInvoiceDocument($data) {
     }
 
     belegAblageEintragen($db, $docId, 'accounting/' . $safeFilename);
-    belegProtokoll($db, $docId, mitarbeiterId($data), 'ablage', null, $filename);
+    belegProtokoll($db, $docId, $employeeId, 'ablage', null, $filename);
 
     // E-Rechnung-Fast-Path: wenn das Dokument ZUGFeRD/XRechnung-XML enthält,
     // strukturierte Daten direkt extrahieren und den KI-Call überspringen.
@@ -358,6 +400,15 @@ PROMPT;
     $invoice = $extracted['invoice'] ?? [];
     $gross   = floatval($amounts['gross'] ?? 0);
 
+    // Automatische Quellen liefern auch Nicht-Belege (Logos, Lieferscheine,
+    // Werbung). Ohne Betrag und ohne Rechnungsnummer entsteht kein Vorschlag —
+    // das Dokument bleibt abgelegt und wird in der Belegsuche als uebersprungen
+    // gezeigt, statt den Stapel mit Leerbuchungen zu fuellen.
+    if (!empty($opts['require_invoice']) && $gross <= 0 && trim((string)($invoice['number'] ?? '')) === '') {
+        return ['not_invoice' => true, 'document_id' => $docId, 'booking_id' => null, 'extracted' => $extracted,
+                'needs_review' => false, 'auto_booked' => false];
+    }
+
     // Lieferanten-Auflösung (neue Regeln): IBAN/USt-ID exakt oder Name ≥90 % → auto;
     // 60–90 % → Freigabe mit Kandidaten; sonst echter Kreditor (mit IBAN/USt) bzw.
     // Sammelkreditor „Diverse" (Kleinbeleg/Tankstelle), echter Name im Buchungstext.
@@ -443,7 +494,7 @@ PROMPT;
             ':docid'  => $docId,
             ':conf'   => $confidence,
             ':notes'  => $extracted['notes'] ?? null,
-            ':eid'    => mitarbeiterId($data)
+            ':eid'    => $employeeId
         ]
     );
 
@@ -480,7 +531,8 @@ PROMPT;
          WHERE accno = :a AND NOT invalid AND charttype = 'A' AND category IN ('E', 'A')",
         [':a' => $debitAccno]
     );
-    $canAutoBook = floatval($confidence) >= 0.85
+    $canAutoBook = ($opts['auto_book'] ?? true)
+        && floatval($confidence) >= 0.85
         && $vendorId > 0
         && $vres['status'] !== 'ambiguous'
         && $debitChart
@@ -515,7 +567,7 @@ PROMPT;
         );
     }
 
-    resultInfo(true, 'OK', [
+    return [
         'document_id'  => $docId,
         'booking_id'   => $bookingId,
         'extracted'    => $extracted,
@@ -526,7 +578,23 @@ PROMPT;
         'needs_review' => !$autoBooked,          // false = fertig; true = Freigabe nötig
         'vendor_status' => $vres['status'],      // matched | collective | new | ambiguous
         'vendor_candidates' => $vres['candidates'],
-    ]);
+        'gross'        => $gross,
+        'invnumber'    => $invoice['number'] ?? null,
+        'confidence'   => floatval($confidence),
+    ];
+}
+
+/**
+ * Hat accounting_documents schon die Herkunftsspalten (source_id, origin,
+ * origin_info)? Kommen mit dem Schema-Update der Belegsuche.
+ */
+function _iv_hasOriginColumns($db): bool {
+    static $has = null;
+    if ($has === null) {
+        $r = $db->getOne("SELECT 1 AS ok FROM information_schema.columns WHERE table_name = 'accounting_documents' AND column_name = 'origin' LIMIT 1");
+        $has = (bool)$r;
+    }
+    return $has;
 }
 
 /**

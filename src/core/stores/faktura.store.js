@@ -634,6 +634,133 @@ export const fakturaStore = defineStore('fakturaStore', () => {
         }
     }
 
+    // =========================================================================
+    // VORLAGENEDITOR (backend/api/print/template_designer.php, nur Administrator)
+    // =========================================================================
+
+    /**
+     * Ruft eine Aktion des Vorlageneditors auf
+     *
+     * @param {string} action - Aktionsname
+     * @param {Object} data - Parameter
+     * @returns {Object} payload
+     * @throws {ApiError} code = Fehlercode des Backends, message = Meldung, debug = Details
+     */
+    async function designerCall(action, data = {}) {
+        const response = await axios.post('/api/print/', { action, ...data });
+        if (response.data.success) {
+            return response.data.payload;
+        }
+        // resultInfo(false, CODE, Meldung, Details): text = Code, payload = lesbare Meldung
+        const payload = response.data.payload;
+        const err = new ApiError('ApiError', response.data.text || 'UNKNOWN_ERROR',
+            typeof payload === 'string' && payload ? payload : (response.data.text || 'UNKNOWN_ERROR'));
+        err.debug = response.data.debug || '';
+        throw err;
+    }
+
+    /** Designs, Versionen, Belegarten, Bilder und Beispieldaten eines Vorlagensatzes */
+    const designerLoad = (params = {}) => designerCall('getTemplateDesigner', params);
+    /** Speichert Designs und schreibt die .tex-Dateien; designs: [{documentType, design}] */
+    const designerSave = (templateSet, designs, alsoKfz = false) =>
+        designerCall('saveTemplateDesigns', { templateSet, designs, alsoKfz });
+    /** Design-JSON einer älteren Version */
+    const designerVersion = (id) => designerCall('getTemplateDesignVersion', { id });
+    /** Entfernt das Design einer Belegart und holt die gesicherte Handvorlage zurück */
+    const designerRemove = (templateSet, documentType) =>
+        designerCall('removeTemplateDesign', { templateSet, documentType });
+    /** Legt ein Bild im Vorlagensatz ab; dataUrl = data:image/png;base64,... */
+    const designerUploadImage = (templateSet, filename, dataUrl) =>
+        designerCall('uploadTemplateDesignImage', { templateSet, filename, dataUrl });
+
+    /**
+     * Rendert ein Design als PDF-Vorschau und gibt eine Blob-URL zurück
+     *
+     * @param {string} templateSet - Vorlagensatz
+     * @param {string} documentType - Belegart
+     * @param {Object} design - Design-JSON (auch ungespeichert)
+     * @param {number|null} documentId - Beleg für die Vorschau, sonst der neueste
+     * @return {Promise<string>} Blob-URL für iframe/window.open()
+     */
+    async function designerPreview(templateSet, documentType, design, documentId = null) {
+        const response = await axios.post('/api/print/', {
+            action: 'previewTemplateDesign',
+            templateSet,
+            documentType,
+            design,
+            documentId,
+            'content-type': 'application/pdf'
+        }, { responseType: 'blob' });
+
+        if (response.data.type === 'application/json') {
+            const errorData = JSON.parse(await response.data.text());
+            const err = new ApiError('ApiError', errorData.text || 'PDF_ERROR',
+                typeof errorData.payload === 'string' && errorData.payload ? errorData.payload : (errorData.text || 'PDF_ERROR'));
+            err.debug = errorData.debug || '';
+            throw err;
+        }
+        return URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+    }
+
+    /**
+     * Vorschau als gerasterte Seiten (Browser ohne PDF-Anzeige)
+     *
+     * @return {Promise<string[]>} data:-URLs der Seiten
+     */
+    async function designerPreviewPages(templateSet, documentType, design, documentId = null) {
+        const r = await designerCall('previewTemplateDesign', { templateSet, documentType, design, documentId, format: 'png' });
+        return (r.pages || []).map(p => 'data:image/png;base64,' + p);
+    }
+
+    // Quelltext: vorhandene Vorlagendateien des Satzes
+    /** Dateien des Vorlagensatzes mit Art und Belegart */
+    const designerFiles = (templateSet) => designerCall('getTemplateFiles', { templateSet });
+    /** Inhalt und \\newcommand-Werte einer Datei */
+    const designerFile = (templateSet, path) => designerCall('getTemplateFile', { templateSet, path });
+    /** Speichert eine Datei (Sicherung .bak-<Zeit> des alten Stands) */
+    const designerSaveFile = (templateSet, path, content) => designerCall('saveTemplateFile', { templateSet, path, content });
+
+    /**
+     * Rendert eine (ungespeicherte) Vorlagendatei als PDF-Vorschau (Blob-URL)
+     */
+    async function designerPreviewFile(templateSet, path, content, documentType = null, documentId = null) {
+        const response = await axios.post('/api/print/', {
+            action: 'previewTemplateFile', templateSet, path, content, documentType, documentId,
+            'content-type': 'application/pdf'
+        }, { responseType: 'blob' });
+        if (response.data.type === 'application/json') {
+            const errorData = JSON.parse(await response.data.text());
+            const err = new ApiError('ApiError', errorData.text || 'PDF_ERROR',
+                typeof errorData.payload === 'string' && errorData.payload ? errorData.payload : (errorData.text || 'PDF_ERROR'));
+            err.debug = errorData.debug || '';
+            throw err;
+        }
+        return URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+    }
+
+    /** Vorschau einer Vorlagendatei als gerasterte Seiten */
+    async function designerPreviewFilePages(templateSet, path, content, documentType = null, documentId = null) {
+        const r = await designerCall('previewTemplateFile', { templateSet, path, content, documentType, documentId, format: 'png' });
+        return (r.pages || []).map(p => 'data:image/png;base64,' + p);
+    }
+
+    /**
+     * Holt ein Bild des Vorlagensatzes als Blob-URL (für die Anzeige im Editor)
+     *
+     * @param {string} templateSet - Vorlagensatz
+     * @param {string} path - Relativer Pfad im Set
+     * @return {Promise<string|null>} Blob-URL oder null, wenn das Bild nicht lesbar ist
+     */
+    async function designerImageUrl(templateSet, path) {
+        const response = await axios.post('/api/print/', {
+            action: 'getTemplateDesignImage',
+            templateSet,
+            path
+        }, { responseType: 'blob' });
+        if (response.data.type === 'application/json') return null;
+        return URL.createObjectURL(response.data);
+    }
+
     return {
         fetchFakturaData,
         fetchParts,
@@ -655,6 +782,19 @@ export const fakturaStore = defineStore('fakturaStore', () => {
         getTemplateList,
         createTemplateSet,
         saveTemplateSet,
+        designerLoad,
+        designerSave,
+        designerVersion,
+        designerRemove,
+        designerUploadImage,
+        designerPreview,
+        designerPreviewPages,
+        designerFiles,
+        designerFile,
+        designerSaveFile,
+        designerPreviewFile,
+        designerPreviewFilePages,
+        designerImageUrl,
         generatePDFPreview,
         generatePDFBase64,
         printToPrinter,

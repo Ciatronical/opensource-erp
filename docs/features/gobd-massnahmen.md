@@ -1,3 +1,12 @@
+---
+title: GoBD: Maßnahmen
+summary: Verfahrensdokumentation der GoBD-Maßnahmen in OpensourceERP
+group: core
+category: Finanzen
+order: 34
+status: stable
+---
+
 # GoBD-Maßnahmenplan
 
 Konzept für die offenen Punkte aus der

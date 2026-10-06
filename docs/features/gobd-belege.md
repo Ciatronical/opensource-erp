@@ -1,3 +1,12 @@
+---
+title: GoBD: Belege
+summary: Wie Belege revisionssicher abgelegt und mit Buchungen verknüpft werden
+group: core
+category: Finanzen
+order: 33
+status: stable
+---
+
 # Belegablage — Verfahrensdokumentation
 
 Die GoBD verlangen eine Beschreibung des Verfahrens: wie ein Beleg ins System

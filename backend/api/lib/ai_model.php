@@ -46,6 +46,8 @@ function aiAssistants() {
         'sales_text'       => ['key' => 'sales_text_ai_model',       'default' => 'claude-haiku-4-5'],
         'ai_positions'     => ['key' => 'ai_positions_ai_model',     'default' => 'claude-haiku-4-5'],
         'filemanager'      => ['key' => 'filemanager_ai_model',      'default' => 'claude-haiku-4-5'],
+        // Motorfamilien über Marken hinweg erkennen braucht Fachwissen — daher Opus
+        'special_tools'    => ['key' => 'special_tools_ai_model',    'default' => 'claude-opus-5'],
 
         // Hintergrundverarbeitung ohne Prompt — nur Mandanteneinstellung
         'accounting'       => ['key' => 'accounting_ai_model',       'default' => 'claude-opus-5'],

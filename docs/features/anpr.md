@@ -1,3 +1,14 @@
+---
+title: ANPR
+summary: Automatische Kennzeichenerkennung an der Werkstattzufahrt
+group: extension
+extension: lxcars
+category: Werkstatt
+order: 102
+status: stable
+flag: feature_anpr
+---
+
 # ANPR — Automatische Kennzeichenerkennung
 
 ANPR (Automatic Number Plate Recognition) erkennt Fahrzeuge an der Werkstattzufahrt automatisch per Kamera. Erkannte Kennzeichen erscheinen in der Infoleiste — aber nur wenn kein offener Auftrag für das Fahrzeug existiert. Optional können Tore, Schranken oder andere Aktoren angesteuert werden.

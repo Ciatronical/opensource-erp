@@ -10,7 +10,8 @@
             "accountingChartOfAccounts": "/muhasebe/hesap-plani",
             "accountingOpenItems": "/muhasebe/acik-kalemler",
             "accountingUstva": "/muhasebe/kdv",
-            "accountingRun": "/muhasebe/gecis"
+            "accountingRun": "/muhasebe/gecis",
+            "accountingMagic": "/muhasebe/sihirli-kayit"
         },
         "easymode": {
             "label": "Muhasebe kipi",

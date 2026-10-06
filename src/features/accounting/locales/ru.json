@@ -10,7 +10,8 @@
             "accountingChartOfAccounts": "/bukhgalteriya/plan-schetov",
             "accountingOpenItems": "/bukhgalteriya/otkrytye-pozitsii",
             "accountingUstva": "/bukhgalteriya/nds",
-            "accountingRun": "/bukhgalteriya/prokhod"
+            "accountingRun": "/bukhgalteriya/prokhod",
+            "accountingMagic": "/bukhgalteriya/magicheskaya-provodka"
         },
         "easymode": {
             "label": "Режим бухгалтерии",

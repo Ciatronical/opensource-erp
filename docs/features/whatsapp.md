@@ -1,3 +1,13 @@
+---
+title: WhatsApp
+summary: Business-Messaging über die WhatsApp Business API
+group: core
+category: Kommunikation
+order: 51
+status: stable
+external: true
+---
+
 # WhatsApp — Business-Messaging
 
 OpensourceERP kann über die WhatsApp Business API Nachrichten an Kunden senden und empfangen.

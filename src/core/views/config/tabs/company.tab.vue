@@ -268,7 +268,20 @@
             <!-- Druckvorlagen -->
             <v-col cols="12">
                 <v-divider class="my-4" />
-                <h3 class="text-h6 mb-4">{{ $t('printTemplates') }}</h3>
+                <div class="d-flex align-center flex-wrap ga-3 mb-4">
+                    <h3 class="text-h6 mb-0">{{ $t('printTemplates') }}</h3>
+                    <v-spacer />
+                    <!-- Vorlageneditor: nur Systemadministratoren (Route verlangt requiresAdmin) -->
+                    <v-btn
+                        v-if="store.session.is_admin"
+                        color="primary"
+                        variant="tonal"
+                        prepend-icon="mdi-drawing-box"
+                        :to="{ name: 'template-designer' }"
+                    >
+                        {{ $t('openTemplateDesigner') }}
+                    </v-btn>
+                </div>
             </v-col>
 
             <v-col cols="12">

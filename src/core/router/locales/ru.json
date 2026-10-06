@@ -59,7 +59,8 @@
         "tafel": "/doska-obyavlenii/upravlenie",
         "newArticle": "/tovar/novyi",
         "admin": "/sistema/administrirovanie",
-        "systemSettings": "/sistema/nastroiki"
+        "systemSettings": "/sistema/nastroiki",
+        "templateDesigner": "/sistema/redaktor-shablonov"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Ошибка: Файл паролей api/config/api.passwd.php не найден. Пожалуйста, переименуйте файл api/config/api.passwd.php.example в api/config/api.passwd.php и настройте параметры соответствующим образом.",
@@ -90,6 +91,7 @@
         "manageCreditNotes": "Кредитовые авизо"
     },
     "SystemMenu": {
+        "templateDesigner": "Редактор шаблонов",
         "title": "Система",
         "clientConfig": "Конфигурация компании",
         "developerTools": "Инструменты разработчика",

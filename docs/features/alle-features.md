@@ -1,3 +1,13 @@
+---
+title: Gesamtübersicht aller Features
+summary: Vollständige Aufstellung von Kernsystem und Erweiterungen in einem Dokument — die maschinenlesbare Feature-Liste
+group: core
+category: Übersicht
+order: 0
+status: stable
+kind: overview
+---
+
 # OpensourceERP — Gesamtübersicht aller Features
 
 Vollständige Aufstellung dessen, was OpensourceERP kann — Kernsystem und die Zusatzfunktionen, die erst mit eingeschaltetem **LxCars** erscheinen.
@@ -7,7 +17,8 @@ Vollständige Aufstellung dessen, was OpensourceERP kann — Kernsystem und die 
 | Kennzeichnung | Bedeutung |
 |---|---|
 | *(Kern)* | immer verfügbar |
-| *(LxCars)* | nur bei aktiviertem Feature `lxcars` |
+| *(LxCars)* | nur bei aktivierter Erweiterung `lxcars` |
+| *(Shop)* | nur bei aktivierter Erweiterung `shop` |
 | *(Schalter)* | eigener Feature-Schalter in der Firmenkonfiguration |
 | *(extern)* | benötigt Zugangsdaten/Vertrag eines Drittanbieters |
 
@@ -35,6 +46,11 @@ Vollständige Aufstellung dessen, was OpensourceERP kann — Kernsystem und die 
 **Teil B — LxCars**
 
 16. [Was LxCars zusätzlich freischaltet](#16-lxcars--was-zusätzlich-dazukommt)
+17. [Spezialwerkzeug](#17-spezialwerkzeug-lxcars)
+
+**Teil C — Shop**
+
+18. [Was die Shop-Erweiterung freischaltet](#18-shop--webshop-anbindung-shop)
 
 **Anhang**
 
@@ -128,6 +144,12 @@ Alle Bankfunktionen liegen in einem Hub mit neun Reitern: **Umsätze · Überwei
 - **Storno** — Buchung eines Bankumsatzes rückgängig machen
 - **Sammelzahlung**: ein Bankumsatz gegen mehrere Rechnungen, jede Rechnung erhält ihren Anteil als eigene Buchungszeile
 
+### 1.7a Sammelbuchung
+
+- **Ein Umsatz gegen mehrere Belege**: Rechnungen, Eingangsrechnungen und Gutschriften zur Sammelbuchung hinzufügen, Summe gegen den Umsatz geprüft
+- Rest als Skonto, Gebühr oder Teilzahlung
+- Dialog für Geldeingänge und Geldausgänge
+
 ### 1.8 Kartenabrechnungen / Settlements
 
 Für Sammelauszahlungen von Kartendienstleistern (z. B. Flatpay, Rapyd, SumUp):
@@ -139,6 +161,12 @@ Für Sammelauszahlungen von Kartendienstleistern (z. B. Flatpay, Rapyd, SumUp):
 - **Teilmengen-Suche (Subset-Sum)**: findet die Kombination offener Ausgangsrechnungen, die in Summe dem Bruttobetrag der Abrechnungszeile entspricht
 - **Split-Buchung**: Erlöse, Gebühren und Auszahlung in einem Vorgang; Konten je Kreditor merkbar
 - **Storno** der Settlement-Buchung
+
+### 1.8a SumUp-Auszahlungen ohne Datei *(extern)*
+
+- Auszahlungen direkt über die **SumUp-API** holen (Händlercode, API-Schlüssel mit Scope `payouts.read`)
+- Je Auszahlung die zugehörigen Kartenzahlungen und Gebühren, gebucht wie ein hochgeladener Bericht
+- Automatisches Buchen der SumUp-Überweisungen beim Abgleich
 
 ### 1.9 Liquidität & Warnungen
 
@@ -177,6 +205,13 @@ Eigener Menübereich mit neun Ansichten.
 - Dokument jederzeit als PDF abrufbar (Vorschau am Buchungssatz)
 - Liste bereits gebuchter Eingangsrechnungen
 - **Buchen der Eingangsrechnung** inkl. Lieferanten-Auflösung in einem Schritt
+
+### 2.2a Belegquellen und „Magisch Buchen"
+
+- **Belegsuche** holt Eingangsbelege aus Postfächern (IMAP, Anhänge), dem WhatsApp-Eingang, Server-Ordnern und Lieferanten-Portalen
+- Quellen testen, Zeitplan, Protokoll je Datei; Belegfotos von Bannern und Signaturen unterschieden
+- Gefundene Belege laufen durch Ablage, KI-Auslesen und Buchungsvorschlag
+- **Magisch Buchen**: offene Vorschläge mit Herkunft, Kreditor, Konto und Sicherheit — Buchung nur per Klick, nie automatisch
 
 ### 2.3 Buchungen
 
@@ -439,6 +474,15 @@ Aus einem Beleg heraus erzeugen:
 
 ---
 
+### 5.7 Wiederkehrende Rechnungen
+
+- Abos, Mieten, Wartungsverträge aus einem Auftrag in festem Rhythmus abrechnen — kivitendo-kompatibel (`periodic_invoices_configs`)
+- Beliebige Intervalle, Kalender-Ausrichtung mit anteiliger erster Periode, vor-/nachschüssig mit Datumsversatz
+- Eingefrorene oder aktuelle Preise, jährliche Preisanpassung, Positionen „immer / einmal / nie"
+- Kündigungsfristen mit nächstmöglichem Termin, Pausieren mit Enddatum, Perioden überspringen, Stopp bei überfälligen Kundenrechnungen
+- **Vorschau** vor dem Speichern; Übersicht mit Kennzahlen (fällig, aktiv, monatlicher Umsatz, Kündigungsfristen)
+- Erzeugung per Klick oder Cron, Versand per E-Mail aus Vorlage, Ablage der PDFs
+
 ## 6. CRM — Kunden & Lieferanten
 
 ### 6.1 Stammdaten
@@ -469,6 +513,11 @@ Aus einem Beleg heraus erzeugen:
 - **CRM-Dashboard** je Kunde: Kontaktdaten, letzte Vorgänge, Umsatzhistorie, Dokumente auf einen Blick
 - **E-Mail-Tab** und **WhatsApp-Tab** je Kunde
 - **Anrufhistorie** je Kunde
+
+### 6.3a Kontakthistorie
+
+- Karte im Kunden: **Anrufe, WhatsApp und E-Mails chronologisch** in einer Liste, mit Richtung, Mitarbeiter und Kurztext
+- Klick öffnet den Vorgang
 
 ### 6.4 Dateimanager
 
@@ -733,6 +782,10 @@ Shop-Karte des Artikels.
 - **Bilder** je Kanal, öffentliche Bild-URLs (https) für eBay
 - Stand des Angebots je Artikel mit Fehlermeldung
 
+### 13.3a HugoShop & Verkaufskanäle *(Shop)*
+
+Siehe Teil C.
+
 ### 13.4 eLetter / Briefversand *(extern)*
 
 - Versand generierter PDFs per **SFTP an einen Briefdienstleister** (genutzt für den HU-Serienbrief)
@@ -798,6 +851,14 @@ Zwei sauber getrennte Typen:
 - Anzeige der Git-Commit-Hashes (lokal und Remote) zur Versionskontrolle
 
 ---
+
+### 14.8 Systemeinstellungen und Einstellungssuche
+
+- **Systemeinstellungen**: `settings.ini` über die Oberfläche bearbeiten (nur Systemadministratoren), Datenbankzugang wird vor dem Speichern geprüft, Sicherungskopie
+- **Einstellungssuche** über alle Reiter der Firmenkonfiguration, Treffer springt zum Abschnitt
+- **Verzeichnis- und Dateibrowser** für Pfadeinstellungen
+- **KI-Modellwahl** je Assistent und je Firma, am Prompt für die Sitzung umschaltbar
+- **Dokumentation im System** mit Metadaten je Seite, Gliederung nach Kern und Erweiterungen, **Veröffentlichung des Feature-Katalogs** auf opensource-erp.dev
 
 ## 15. Developer- & Admin-Werkzeuge
 
@@ -1072,6 +1133,32 @@ Automatische Kennzeichenerkennung an der Werkstattzufahrt.
 | Wartung | Wartungsprüfung aktivieren |
 
 ---
+### 16.22 Eigener Fahrzeugscheinscanner
+
+- Fahrzeugscheine auf dem eigenen Server auslesen (RapidOCR, CPU) statt über die externe API
+- Umschalter in der LxCars-Konfiguration, Installation über `install.sh --only fsscanner`
+
+## 17. Spezialwerkzeug *(LxCars)*
+
+- Spezialwerkzeuge unter **Lager → Spezialwerkzeug** einlagern: Lagerort, Lagerplatz, Status (verfügbar, verliehen, defekt)
+- **KI-Zuordnung**: die KI erkennt aus Bezeichnung und Flottenprofil, zu welchen Motoren und Fahrzeugen das Werkzeug passt — über Marken hinweg (Konzernmotoren), mit Motorcodes, Hersteller/HSN, Kraftstoff, Hubraum, Leistung, Baujahr
+- Regeln vom Menschen änderbar: ein-/ausschalten, bearbeiten mit Live-Vorschau, Ausschlussregeln, Fahrzeuge fest zuordnen oder ausschließen
+- Karte **Spezialwerkzeug** in Fahrzeugansicht und Werkstattauftrag: was passt, wo liegt es
+- Treffer-Cache in der Datenbank, Trigger je Fahrzeug, „Neu berechnen" nach Datenimporten
+- **Verleih und Verkauf im Shop** *(Shop)*: je Angebot ein Artikel, Miete als Vorgabe ein Drittel des Einkaufspreises, Werkzeugsuche nach HSN/TSN oder Fahrgestellnummer auf der Webseite
+
+# Teil C — Shop
+
+## 18. Shop — Webshop-Anbindung *(Shop)*
+
+- **Verkaufskanäle**: beliebig viele HugoShops und eBay-Zugänge je Firma, je Kanal Aufschlag, Rundung auf ,99, Titel/Beschreibung/Bilder je Artikel, „nicht verfügbar"
+- **HugoShop**: Produktseiten aus Vorlagensätzen, Aufträge für den Läufer (Cron oder Knopfdruck), Bau lokal mit Hugo oder über HugoCMS, Paket mit Shortcodes und Widget-Bundle
+- **Widgets** (Web Components): Suche, Warenkorb, Login/Registrierung, Kundenkonto, Kasse, Rechnung, Kontakt, Werkzeugsuche
+- **Öffentliche Shop-API** mit Schlüssel und Aktions-Whitelist; Warenkorb, Bestellung mit Rechnung, PayPal, Rechnungsdownload, Weiterleitungen
+- **Versand**: Versandarten mit Zonen und Staffeln, Maße und Mindestabnahme je Artikel, Prüfung vor dem Veröffentlichen
+- **Widerruf** (§ 356a BGB) mit Nachweis und Mails
+- **Lagerbuchung** je Verkauf vom Shop-Lagerplatz
+- Shop-Übersicht im ERP: Kennzahlen, Bestellungen, offene Zahlungen, Widerrufe, Aufträge, Einrichtungsprüfung
 
 # Anhang
 

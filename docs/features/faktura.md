@@ -1,3 +1,12 @@
+---
+title: Faktura
+summary: Angebote, Aufträge, Rechnungen, Lieferscheine, Gutschriften, E-Rechnung
+group: core
+category: Verkauf
+order: 20
+status: stable
+---
+
 # Faktura — Angebote, Aufträge, Rechnungen
 
 Das Faktura-Modul deckt den gesamten Belegfluss ab: Von der Anfrage über das Angebot bis zur Rechnung.

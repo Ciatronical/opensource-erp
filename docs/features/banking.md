@@ -1,3 +1,12 @@
+---
+title: Banking
+summary: Bankanbindung per FinTS, Kontoumsätze, SEPA-Überweisungen, Zuordnung, Sammelbuchung, Kartenabrechnungen
+group: core
+category: Finanzen
+order: 30
+status: stable
+---
+
 # Banking — Bankanbindung und Zahlungsverkehr
 
 Das Banking-Modul verbindet OpensourceERP direkt mit Bankkonten über den FinTS-Standard (früherer Name: HBCI). Kontoumsätze werden automatisch abgerufen und können Rechnungen und Eingangsrechnungen zugeordnet werden.
@@ -106,3 +115,16 @@ Die Banking-Übersicht zeigt pro Konto:
 - Anzahl nicht zugeordneter Buchungen
 - Letzter Abruf-Zeitpunkt
 - Monatliche Einnahmen/Ausgaben-Statistik
+
+## Sammelbuchung — ein Umsatz, mehrere Belege
+
+Ein Bankumsatz kann gegen **mehrere Belege** gebucht werden: eine Sammelüberweisung des Kunden über drei Rechnungen, eine Zahlung an den Lieferanten über zwei Eingangsrechnungen abzüglich einer Gutschrift. In der Zuordnung werden Belege „zur Sammelbuchung hinzugefügt"; die Summe wird gegen den Umsatz geprüft, ein Rest lässt sich als Skonto, Gebühr oder Teilzahlung behandeln. Der Dialog steht für Geldeingänge und Geldausgänge zur Verfügung.
+
+## Kartenabrechnungen (Settlements)
+
+Kartendienstleister (Flatpay, Rapyd, SumUp) zahlen gesammelt aus — ein Bankumsatz steht für viele Kartenzahlungen abzüglich Gebühren. Der Reiter **Abgleich** löst das auf:
+
+- Abrechnungsbericht als PDF oder CSV hochladen; der Parser erkennt die Einzelzahlungen und Gebühren
+- **SumUp ohne Datei**: Auszahlungen werden direkt über die SumUp-API geholt (API-Schlüssel und Händlercode in den CRM-Vorgaben) und wie ein Bericht gespeichert
+- Je Auszahlung werden die passenden Rechnungen vorgeschlagen (Betrag, Datum, Teilsummen) und gebucht: Zahlungseingang auf die Rechnung, Gebühr auf das Gebührenkonto, Rest gegen das Bankkonto
+- Buchungen lassen sich stornieren; der Vorschau-Modus zeigt den Buchungsplan vorher

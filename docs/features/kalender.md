@@ -1,3 +1,12 @@
+---
+title: Kalender
+summary: Terminplanung mit Echtzeit-Updates und Wall-Display
+group: core
+category: Organisation
+order: 70
+status: stable
+---
+
 # Kalender — Terminverwaltung
 
 Zentrale Terminplanung mit Tages-, Wochen- und Monatsansicht.

@@ -59,7 +59,8 @@
         "tafel": "/anslagstavla/hantera",
         "newArticle": "/artikel/ny",
         "admin": "/system/administration",
-        "systemSettings": "/system/installningar"
+        "systemSettings": "/system/installningar",
+        "templateDesigner": "/system/mallredigerare"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Fel: Losenordsfilen api/config/api.passwd.php hittades inte. Byt namn pa filen api/config/api.passwd.php.example till api/config/api.passwd.php och anpassa installningarna.",
@@ -90,6 +91,7 @@
         "manageCreditNotes": "Kreditnotor"
     },
     "SystemMenu": {
+        "templateDesigner": "Mallredigerare",
         "title": "System",
         "clientConfig": "Foretagskonfiguration",
         "developerTools": "Developer Tools",

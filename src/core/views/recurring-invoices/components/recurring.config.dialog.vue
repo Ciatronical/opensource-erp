@@ -268,6 +268,36 @@
                                 </div>
                             </v-expand-transition>
 
+                            <!-- WhatsApp: Rechnung als Dokument-Template an die Mobilnummer -->
+                            <v-row dense class="mt-2">
+                                <v-col cols="12" sm="6">
+                                    <v-switch v-model="config.send_whatsapp" color="primary" density="compact" hide-details inset
+                                              :disabled="!defaults.whatsapp_configured"
+                                              :label="t('RecurringInvoices.dialog.sendWhatsapp')" />
+                                    <div class="hint" v-if="!defaults.whatsapp_configured">{{ t('RecurringInvoices.dialog.whatsappNotConfigured') }}</div>
+                                    <div class="hint" v-else-if="config.send_whatsapp && !phones.length && !config.whatsapp_phone">{{ t('RecurringInvoices.dialog.whatsappNoPhone') }}</div>
+                                </v-col>
+                            </v-row>
+                            <v-expand-transition>
+                                <div v-if="config.send_whatsapp" class="mt-2">
+                                    <v-row dense>
+                                        <v-col cols="12" sm="6">
+                                            <v-combobox v-model="config.whatsapp_phone" :items="phoneItems" density="compact" variant="outlined" hide-details clearable
+                                                        :label="t('RecurringInvoices.dialog.whatsappPhone')"
+                                                        :placeholder="phones[0]?.number || ''" persistent-placeholder />
+                                            <div class="hint">{{ t('RecurringInvoices.dialog.whatsappPhoneHint') }}</div>
+                                        </v-col>
+                                        <v-col cols="12" sm="6">
+                                            <v-select v-model="config.whatsapp_template_id" :items="defaults.whatsapp_templates || []" item-title="name" item-value="id"
+                                                      density="compact" variant="outlined" hide-details clearable
+                                                      :label="t('RecurringInvoices.dialog.whatsappTemplate')"
+                                                      :placeholder="defaultWhatsappTemplateName" persistent-placeholder />
+                                            <div class="hint">{{ t('RecurringInvoices.dialog.whatsappTemplateHint') }}</div>
+                                        </v-col>
+                                    </v-row>
+                                </div>
+                            </v-expand-transition>
+
                             <v-row dense class="mt-2" v-if="printers.length">
                                 <v-col cols="12" sm="4">
                                     <v-switch v-model="config.print" color="primary" density="compact" hide-details inset :label="t('RecurringInvoices.dialog.print')" />
@@ -425,6 +455,12 @@ const existing = ref(false)
 const items = ref([])
 const contacts = ref([])
 const printers = ref([])
+const phones = ref([])   // Rufnummern des Kunden (Mobil zuerst) fuer den WhatsApp-Versand
+const phoneItems = computed(() => phones.value.map(p => ({ value: p.number, title: p.label ? `${p.number} · ${p.label}` : p.number })))
+const defaultWhatsappTemplateName = computed(() => {
+    const id = Number(defaults.value.whatsapp_template_id || 0)
+    return (defaults.value.whatsapp_templates || []).find(x => x.id === id)?.name || ''
+})
 const defaults = ref({})
 const stats = ref(null)
 const savedPeriods = ref([])
@@ -442,6 +478,7 @@ const emptyConfig = () => ({
     order_value_periodicity: 'p', price_mode: 'fixed', price_increase_percent: null, price_increase_month: null,
     send_email: false, email_recipient_contact_id: null, email_recipient_address: '', email_sender: '', email_subject: '', email_body: '',
     direct_debit: false, post_to_ledger: true, print: false, printer_id: null, copies: 1, ar_chart_id: null,
+    send_whatsapp: false, whatsapp_phone: '', whatsapp_template_id: null,
     hold_on_overdue_days: null, notes: ''
 })
 const config = reactive(emptyConfig())
@@ -501,6 +538,7 @@ async function load() {
         existing.value = !!r.exists
         items.value = (r.items || []).map(i => ({ ...i }))
         contacts.value = r.contacts || []
+        phones.value = r.phones || []
         printers.value = r.printers || []
         defaults.value = r.defaults || {}
         stats.value = r.stats || null
@@ -531,6 +569,9 @@ function normalizeConfig(c) {
         email_subject: c.email_subject || '',
         email_body: c.email_body || '',
         copies: Number(c.copies) || 1,
+        send_whatsapp: c.send_whatsapp === true || c.send_whatsapp === 't',
+        whatsapp_phone: c.whatsapp_phone || '',
+        whatsapp_template_id: c.whatsapp_template_id != null ? Number(c.whatsapp_template_id) : null,
         notes: c.notes || ''
     }
 }

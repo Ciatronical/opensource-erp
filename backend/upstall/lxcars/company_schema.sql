@@ -844,3 +844,433 @@ DO $$ BEGIN
             EXECUTE FUNCTION notify_missing_order();
     END IF;
 END $$;
+
+-- ============================================================================
+-- SPEZIALWERKZEUG
+-- ============================================================================
+-- Spezialwerkzeuge (Absteckwerkzeug, Injektor-Auszieher, ...) werden eingelagert
+-- und per KI den passenden Fahrzeugen zugeordnet. Die Zuordnung besteht aus
+-- Regeln (special_tool_rules_lxcars): jede Regel beschreibt in `criteria` ein
+-- Fahrzeugprofil als JSON — Hersteller/HSN, Modelle, Motorkennbuchstaben,
+-- Kraftstoff, Hubraum-, Leistungs- und Baujahrbereich. Innerhalb einer Regel
+-- gelten alle gesetzten Kriterien zugleich (UND), Listen sind Alternativen
+-- (ODER). Mehrere Regeln je Werkzeug sind Alternativen.
+--
+-- Der Mensch behält das letzte Wort: Regeln lassen sich ändern, abschalten
+-- oder löschen, und einzelne Fahrzeuge werden in special_tool_vehicles_lxcars
+-- fest zugeordnet (include) oder ausgeschlossen (exclude).
+
+-- KBA-Schlüssel der Kraftstoffart → lesbarer Name und Motorgruppe. Hybride und
+-- Gasfahrzeuge zählen zur Gruppe ihres Verbrennungsmotors, denn darauf kommt
+-- es beim Werkzeug an. Daten: company_data/kba_fuel_codes_lxcars.csv
+CREATE TABLE IF NOT EXISTS kba_fuel_codes_lxcars (
+    code        text PRIMARY KEY,
+    name        text NOT NULL,
+    fuel_group  text NOT NULL
+);
+COMMENT ON TABLE kba_fuel_codes_lxcars IS 'KBA-Kraftstoffschlüssel (Feld P.3) mit Motorgruppe für die Werkzeugzuordnung';
+
+CREATE TABLE IF NOT EXISTS special_tools_lxcars (
+    id              SERIAL PRIMARY KEY,
+    name            text NOT NULL,
+    tool_number     text,                       -- Inventar-/Werkzeugnummer
+    manufacturer    text,
+    category        text,                       -- z. B. Zahnriemen, Injektoren, Steuerkette
+    description     text,
+    location        text,                       -- Lagerort als Freitext (Schrank, Schublade ...)
+    bin_id          integer REFERENCES bin(id) ON DELETE SET NULL,
+    parts_id        integer REFERENCES parts(id) ON DELETE SET NULL,          -- Verkaufsartikel im Shop
+    rental_parts_id integer REFERENCES parts(id) ON DELETE SET NULL,          -- Mietartikel (Dienstleistung) im Shop
+    purchase_price  numeric(15,2),              -- Einkaufspreis des Werkzeugs
+    sale_price      numeric(15,2),              -- Verkaufspreis im Shop (Vorgabe: Einkaufspreis)
+    rental_price    numeric(15,2),              -- Miete je Mietvorgang (Vorgabe: ein Drittel des Einkaufspreises)
+    rental_days     integer NOT NULL DEFAULT 7, -- Mietdauer in Tagen, die die Miete abdeckt
+    shop_sell       boolean NOT NULL DEFAULT false,  -- im HugoShop zum Kauf anbieten
+    shop_rent       boolean NOT NULL DEFAULT false,  -- im HugoShop zum Verleih anbieten
+    status          text NOT NULL DEFAULT 'available',   -- available | lent | defective
+    lent_to         text,
+    ai_hint         text,                       -- Hinweis des Benutzers an die KI
+    ai_summary      text,                       -- Einschätzung der KI zur Zuordnung
+    ai_model        text,
+    ai_analyzed_at  timestamp,
+    created_by      integer,
+    created_at      timestamp NOT NULL DEFAULT now(),
+    updated_at      timestamp NOT NULL DEFAULT now()
+);
+COMMENT ON TABLE special_tools_lxcars IS 'Spezialwerkzeuge der Werkstatt mit Lagerort und KI-Einschätzung';
+
+CREATE TABLE IF NOT EXISTS special_tool_rules_lxcars (
+    id              SERIAL PRIMARY KEY,
+    tool_id         integer NOT NULL REFERENCES special_tools_lxcars(id) ON DELETE CASCADE,
+    label           text NOT NULL,              -- z. B. "VW-Konzern 1.9/2.0 TDI Pumpe-Düse"
+    criteria        jsonb NOT NULL DEFAULT '{}'::jsonb,
+    reason          text,                       -- Begründung (KI oder Mensch)
+    mode            text NOT NULL DEFAULT 'include', -- include | exclude (zieht Treffer wieder ab)
+    source          text NOT NULL DEFAULT 'ai', -- ai | manual
+    confidence      numeric(3,2),
+    active          boolean NOT NULL DEFAULT true,
+    sort_order      integer NOT NULL DEFAULT 0,
+    created_at      timestamp NOT NULL DEFAULT now(),
+    updated_at      timestamp NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_special_tool_rules_lxcars_tool_id ON special_tool_rules_lxcars(tool_id);
+COMMENT ON TABLE special_tool_rules_lxcars IS 'Zuordnungsregeln eines Spezialwerkzeugs (Fahrzeugprofil als JSON)';
+COMMENT ON COLUMN special_tool_rules_lxcars.criteria IS 'JSON: makes[], hsn[], models[], engine_codes[], fuel[], vehicle_types[], ccm_from, ccm_to, kw_from, kw_to, year_from, year_to';
+
+CREATE TABLE IF NOT EXISTS special_tool_vehicles_lxcars (
+    id          SERIAL PRIMARY KEY,
+    tool_id     integer NOT NULL REFERENCES special_tools_lxcars(id) ON DELETE CASCADE,
+    c_id        integer NOT NULL REFERENCES cars_lxcars(c_id) ON DELETE CASCADE,
+    mode        text NOT NULL DEFAULT 'include',   -- include | exclude
+    note        text,
+    created_by  integer,
+    created_at  timestamp NOT NULL DEFAULT now(),
+    CONSTRAINT special_tool_vehicles_lxcars_tool_car_unique UNIQUE (tool_id, c_id)
+);
+CREATE INDEX IF NOT EXISTS idx_special_tool_vehicles_lxcars_c_id ON special_tool_vehicles_lxcars(c_id);
+COMMENT ON TABLE special_tool_vehicles_lxcars IS 'Manuelle Fahrzeugzuordnung je Werkzeug: fest zugeordnet oder ausgeschlossen';
+
+-- Fahrzeugprofil für die Regelprüfung: Fahrzeug- und KBA-Daten normalisiert
+-- (Motorcode ohne Leer- und Sonderzeichen, Kraftstoff als Gruppe, Hubraum/kW/
+-- Baujahr als Zahl). Eine echte Tabelle, die ein Trigger auf cars_lxcars
+-- aktuell hält — so kostet die Regelprüfung keine Neuberechnung je Aufruf.
+CREATE TABLE IF NOT EXISTS special_tool_vehicle_profiles_lxcars (
+    c_id             integer PRIMARY KEY REFERENCES cars_lxcars(c_id) ON DELETE CASCADE,
+    c_ln             text,
+    c_ow             integer,
+    hsn              text,
+    tsn              text,
+    make             text,
+    model            text,
+    make_model_text  text,
+    engine_code      text,
+    engine_code_norm text,
+    fuel             text,
+    fuel_name        text,
+    vehicle_type     text,
+    ccm              integer,
+    kw               integer,
+    year             integer,
+    first_reg        date,
+    updated_at       timestamp NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_special_tool_vehicle_profiles_lxcars_fuel ON special_tool_vehicle_profiles_lxcars(fuel);
+CREATE INDEX IF NOT EXISTS idx_special_tool_vehicle_profiles_lxcars_year ON special_tool_vehicle_profiles_lxcars(year);
+COMMENT ON TABLE special_tool_vehicle_profiles_lxcars IS 'Normalisiertes Fahrzeugprofil für die Spezialwerkzeug-Zuordnung (per Trigger aus cars_lxcars + kba_lxcars)';
+
+-- Treffer Werkzeug ↔ Fahrzeug als Cache. Wird je Werkzeug neu berechnet, wenn
+-- sich Regeln oder Zuordnungen ändern, und je Fahrzeug, wenn sich das
+-- Fahrzeug ändert. Lesen (Werkzeugliste, Fahrzeugkarte) kostet damit nichts.
+CREATE TABLE IF NOT EXISTS special_tool_vehicle_matches_lxcars (
+    tool_id     integer NOT NULL REFERENCES special_tools_lxcars(id) ON DELETE CASCADE,
+    c_id        integer NOT NULL REFERENCES cars_lxcars(c_id) ON DELETE CASCADE,
+    rule_id     integer REFERENCES special_tool_rules_lxcars(id) ON DELETE CASCADE,
+    source      text NOT NULL,              -- rule | manual
+    note        text
+);
+CREATE INDEX IF NOT EXISTS idx_special_tool_vehicle_matches_lxcars_tool_id ON special_tool_vehicle_matches_lxcars(tool_id);
+CREATE INDEX IF NOT EXISTS idx_special_tool_vehicle_matches_lxcars_c_id ON special_tool_vehicle_matches_lxcars(c_id);
+COMMENT ON TABLE special_tool_vehicle_matches_lxcars IS 'Cache der Spezialwerkzeug-Treffer je Fahrzeug (siehe special_tool_refresh_matches_lxcars)';
+
+-- Profile aufbauen bzw. auffrischen — für ein Fahrzeug oder (NULL) für alle
+CREATE OR REPLACE FUNCTION special_tool_build_profiles_lxcars(p_c_id integer DEFAULT NULL)
+RETURNS integer
+LANGUAGE sql VOLATILE AS $$
+    WITH src AS (
+        SELECT
+            c.c_id,
+            c.c_ln::text                                                                     AS c_ln,
+            c.c_ow,
+            NULLIF(trim(c.c_2), '')::text                                                    AS hsn,
+            NULLIF(trim(c.c_3), '')::text                                                    AS tsn,
+            COALESCE(NULLIF(trim(k.marke), ''), NULLIF(trim(k.hersteller), ''), NULLIF(trim(c.c_m), ''))::text AS make,
+            COALESCE(NULLIF(trim(k.d3), ''), NULLIF(trim(k.name), ''), NULLIF(trim(c.c_mt), ''))::text         AS model,
+            concat_ws(' ', k.hersteller, k.marke, k.name, k.d3, c.c_m, c.c_mt)::text         AS make_model_text,
+            NULLIF(trim(c.c_mkb), '')::text                                                  AS engine_code,
+            upper(regexp_replace(COALESCE(c.c_mkb, ''), '[^A-Za-z0-9]', '', 'g'))::text      AS engine_code_norm,
+            COALESCE(
+                f.fuel_group,
+                CASE
+                    WHEN k.kraftstoff ILIKE '%diesel%'                                  THEN 'Diesel'
+                    WHEN k.kraftstoff ILIKE '%benzin%' OR k.kraftstoff ILIKE '%otto%'  THEN 'Benzin'
+                    WHEN k.kraftstoff ILIKE '%elektro%'                                 THEN 'Elektro'
+                    WHEN NULLIF(trim(k.kraftstoff), '') IS NULL                         THEN NULL
+                    ELSE 'Sonstige'
+                END
+            )::text                                                                          AS fuel,
+            COALESCE(f.name, NULLIF(trim(k.kraftstoff), ''))::text                           AS fuel_name,
+            NULLIF(trim(k.fhzart), '')::text                                                 AS vehicle_type,
+            NULLIF(regexp_replace(COALESCE(k.hubraum, ''), '\D', '', 'g'), '')::integer      AS ccm,
+            (SELECT (m[1])::integer
+               FROM regexp_matches(COALESCE(k.leistung, ''), '(\d+)', 'g') m
+              WHERE (m[1])::integer BETWEEN 1 AND 999
+              LIMIT 1)                                                                       AS kw,
+            EXTRACT(YEAR FROM c.c_d)::integer                                                AS year,
+            c.c_d                                                                            AS first_reg
+        FROM cars_lxcars c
+        LEFT JOIN kba_lxcars k            ON k.id = c.kba_id
+        LEFT JOIN kba_fuel_codes_lxcars f ON f.code = trim(k.kraftstoff)
+        WHERE p_c_id IS NULL OR c.c_id = p_c_id
+    ),
+    up AS (
+        INSERT INTO special_tool_vehicle_profiles_lxcars AS t
+            (c_id, c_ln, c_ow, hsn, tsn, make, model, make_model_text, engine_code, engine_code_norm,
+             fuel, fuel_name, vehicle_type, ccm, kw, year, first_reg, updated_at)
+        SELECT c_id, c_ln, c_ow, hsn, tsn, make, model, make_model_text, engine_code, engine_code_norm,
+               fuel, fuel_name, vehicle_type, ccm, kw, year, first_reg, now()
+        FROM src
+        ON CONFLICT (c_id) DO UPDATE SET
+            c_ln = EXCLUDED.c_ln, c_ow = EXCLUDED.c_ow, hsn = EXCLUDED.hsn, tsn = EXCLUDED.tsn,
+            make = EXCLUDED.make, model = EXCLUDED.model, make_model_text = EXCLUDED.make_model_text,
+            engine_code = EXCLUDED.engine_code, engine_code_norm = EXCLUDED.engine_code_norm,
+            fuel = EXCLUDED.fuel, fuel_name = EXCLUDED.fuel_name, vehicle_type = EXCLUDED.vehicle_type,
+            ccm = EXCLUDED.ccm, kw = EXCLUDED.kw, year = EXCLUDED.year, first_reg = EXCLUDED.first_reg,
+            updated_at = now()
+        RETURNING 1
+    )
+    SELECT COUNT(*)::integer FROM up
+$$;
+
+-- Übersetzt die Kriterien einer Regel in vorbereitete Arrays und reguläre
+-- Ausdrücke. So wird die Prüfung gegen die ganze Flotte zu einem einfachen
+-- Join ohne Funktionsaufruf je Fahrzeug. Leere oder fehlende Kriterien
+-- ergeben NULL und gelten als "egal".
+CREATE OR REPLACE FUNCTION special_tool_compile_criteria_lxcars(crit jsonb)
+RETURNS TABLE (
+    fuel            text[],
+    vehicle_types   text[],
+    hsn             text[],
+    make_regex      text,
+    model_regex     text,
+    engine_regex    text,
+    ccm_from        integer,
+    ccm_to          integer,
+    kw_from         integer,
+    kw_to           integer,
+    year_from       integer,
+    year_to         integer
+)
+LANGUAGE sql IMMUTABLE AS $$
+    WITH c AS (SELECT COALESCE(crit, '{}'::jsonb) AS j),
+    lists AS (
+        SELECT key, array_agg(trim(x)) FILTER (WHERE trim(x) <> '') AS vals
+        FROM c, jsonb_each(c.j) e(key, val), jsonb_array_elements_text(val) x
+        WHERE jsonb_typeof(val) = 'array'
+        GROUP BY key
+    )
+    SELECT
+        (SELECT array_agg(lower(v)) FROM lists, unnest(vals) v WHERE key = 'fuel'),
+        (SELECT array_agg(lower(v)) FROM lists, unnest(vals) v WHERE key = 'vehicle_types'),
+        (SELECT array_agg(lpad(v, 4, '0')) FROM lists, unnest(vals) v WHERE key = 'hsn'),
+        (SELECT '\m(' || string_agg(regexp_replace(v, '([.^$|()\[\]{}*+?\\])', '\\\1', 'g'), '|') || ')\M'
+           FROM lists, unnest(vals) v WHERE key = 'makes'),
+        (SELECT '\m(' || string_agg(regexp_replace(v, '([.^$|()\[\]{}*+?\\])', '\\\1', 'g'), '|') || ')\M'
+           FROM lists, unnest(vals) v WHERE key = 'models'),
+        -- Motorcodes normalisiert (nur A-Z/0-9), Teilstring-Suche, * als Platzhalter
+        (SELECT '(' || string_agg(replace(n, '*', '.*'), '|') || ')'
+           FROM (SELECT upper(regexp_replace(v, '[^A-Za-z0-9*]', '', 'g')) AS n
+                   FROM lists, unnest(vals) v WHERE key = 'engine_codes') q
+          WHERE n <> '' AND n <> '*'),
+        (SELECT CASE WHEN j->>'ccm_from'  ~ '^\d+$' THEN (j->>'ccm_from')::integer  END FROM c),
+        (SELECT CASE WHEN j->>'ccm_to'    ~ '^\d+$' THEN (j->>'ccm_to')::integer    END FROM c),
+        (SELECT CASE WHEN j->>'kw_from'   ~ '^\d+$' THEN (j->>'kw_from')::integer   END FROM c),
+        (SELECT CASE WHEN j->>'kw_to'     ~ '^\d+$' THEN (j->>'kw_to')::integer     END FROM c),
+        (SELECT CASE WHEN j->>'year_from' ~ '^\d+$' THEN (j->>'year_from')::integer END FROM c),
+        (SELECT CASE WHEN j->>'year_to'   ~ '^\d+$' THEN (j->>'year_to')::integer   END FROM c)
+$$;
+
+-- Berechnet die Treffer Werkzeug ↔ Fahrzeug: Treffer der Einschlussregeln
+-- abzüglich der Ausschlussregeln, plus fest zugeordnete Fahrzeuge, abzüglich
+-- der von Hand ausgeschlossenen. Entscheidungsreihenfolge: manueller
+-- Ausschluss > feste Zuordnung > Ausschlussregel > Einschlussregel.
+-- Alle Parameter optional:
+--   p_tool_id   nur dieses Werkzeug
+--   p_c_id      nur dieses Fahrzeug
+--   p_criteria  statt der gespeicherten Regeln diese Kriterien prüfen
+--               (Vorschau im Regel-Editor; tool_id/rule_id sind dann NULL)
+--   p_profile   statt der Fahrzeuge im Bestand dieses eine Fahrzeugprofil
+--               prüfen (Shop-Suche nach HSN/TSN; c_id ist dann 0, feste
+--               Zuordnungen und Ausschlüsse je Fahrzeug greifen nicht)
+-- Innerhalb einer Regel gelten alle gesetzten Kriterien zugleich; Hersteller
+-- und HSN sind eine gemeinsame Alternative. Ist ein Zahlenbereich gesetzt,
+-- muss der Fahrzeugwert bekannt sein (NULL trifft nie).
+DROP FUNCTION IF EXISTS special_tool_compute_matches_lxcars(integer, integer, jsonb);
+CREATE OR REPLACE FUNCTION special_tool_compute_matches_lxcars(
+    p_tool_id   integer DEFAULT NULL,
+    p_c_id      integer DEFAULT NULL,
+    p_criteria  jsonb   DEFAULT NULL,
+    p_profile   jsonb   DEFAULT NULL
+)
+RETURNS TABLE (
+    tool_id     integer,
+    c_id        integer,
+    rule_id     integer,
+    source      text,
+    note        text
+)
+LANGUAGE sql STABLE AS $$
+    WITH profiles AS (
+        SELECT c_id, make_model_text, hsn, engine_code_norm, fuel, vehicle_type, ccm, kw, year
+        FROM special_tool_vehicle_profiles_lxcars
+        WHERE p_profile IS NULL AND (p_c_id IS NULL OR c_id = p_c_id)
+        UNION ALL
+        SELECT 0, x.make_model_text, x.hsn,
+               upper(regexp_replace(COALESCE(x.engine_code, ''), '[^A-Za-z0-9]', '', 'g')),
+               x.fuel, x.vehicle_type, x.ccm, x.kw, x.year
+        FROM jsonb_to_record(p_profile)
+             AS x(make_model_text text, hsn text, engine_code text, fuel text,
+                  vehicle_type text, ccm integer, kw integer, year integer)
+        WHERE p_profile IS NOT NULL
+    ),
+    rules AS (
+        SELECT r.id, r.tool_id, r.label, r.mode, cc.*
+        FROM special_tool_rules_lxcars r
+        CROSS JOIN LATERAL special_tool_compile_criteria_lxcars(r.criteria) cc
+        WHERE p_criteria IS NULL
+          AND r.active
+          AND (p_tool_id IS NULL OR r.tool_id = p_tool_id)
+        UNION ALL
+        SELECT NULL::integer, NULL::integer, NULL::text, 'include'::text, cc.*
+        FROM special_tool_compile_criteria_lxcars(p_criteria) cc
+        WHERE p_criteria IS NOT NULL
+    ),
+    -- Stufe 1 (billig): Kraftstoff, Fahrzeugart, Zahlenbereiche, Motorcode vorhanden.
+    -- MATERIALIZED, damit die regulären Ausdrücke in Stufe 2 nur noch die
+    -- verbliebenen Kandidaten sehen und nicht die ganze Flotte je Regel.
+    cand AS MATERIALIZED (
+        SELECT r.id AS rule_id, r.tool_id, r.label, r.mode,
+               r.hsn, r.make_regex, r.model_regex, r.engine_regex,
+               p.c_id, p.make_model_text, p.engine_code_norm, p.hsn AS p_hsn
+        FROM rules r
+        JOIN profiles p ON
+                (r.fuel          IS NULL OR lower(COALESCE(p.fuel, ''))         = ANY(r.fuel))
+            AND (r.vehicle_types IS NULL OR lower(COALESCE(p.vehicle_type, '')) = ANY(r.vehicle_types))
+            AND (r.ccm_from  IS NULL OR p.ccm  >= r.ccm_from)
+            AND (r.ccm_to    IS NULL OR p.ccm  <= r.ccm_to)
+            AND (r.kw_from   IS NULL OR p.kw   >= r.kw_from)
+            AND (r.kw_to     IS NULL OR p.kw   <= r.kw_to)
+            AND (r.year_from IS NULL OR p.year >= r.year_from)
+            AND (r.year_to   IS NULL OR p.year <= r.year_to)
+            AND (r.engine_regex IS NULL OR p.engine_code_norm <> '')
+    ),
+    -- Stufe 2: Hersteller/HSN, Modell und Motorcode (reguläre Ausdrücke)
+    rule_hits AS MATERIALIZED (
+        SELECT c.tool_id, c.c_id, c.rule_id, c.mode, c.label
+        FROM cand c
+        WHERE (   (c.hsn IS NULL AND c.make_regex IS NULL)
+               OR lpad(COALESCE(c.p_hsn, ''), 4, '0') = ANY(c.hsn)
+               OR c.make_model_text ~* c.make_regex)
+          AND (c.model_regex  IS NULL OR c.make_model_text ~* c.model_regex)
+          AND (c.engine_regex IS NULL OR c.engine_code_norm ~ c.engine_regex)
+    ),
+    -- Ausschlussregeln ziehen Treffer desselben Werkzeugs ab (Hash-Join über
+    -- COALESCE, weil tool_id in der Vorschau NULL ist)
+    excl AS MATERIALIZED (
+        SELECT DISTINCT COALESCE(x.tool_id, 0) AS tool_key, x.c_id
+        FROM rule_hits x WHERE x.mode = 'exclude'
+    ),
+    hits AS (
+        SELECT i.tool_id, i.c_id, i.rule_id, 'rule'::text AS source, i.label AS note
+        FROM rule_hits i
+        LEFT JOIN excl e ON e.tool_key = COALESCE(i.tool_id, 0) AND e.c_id = i.c_id
+        WHERE i.mode = 'include' AND e.c_id IS NULL
+        UNION ALL
+        SELECT v.tool_id, v.c_id, NULL::integer, 'manual'::text, v.note
+        FROM special_tool_vehicles_lxcars v
+        WHERE p_criteria IS NULL AND p_profile IS NULL
+          AND v.mode = 'include'
+          AND (p_tool_id IS NULL OR v.tool_id = p_tool_id)
+          AND (p_c_id IS NULL OR v.c_id = p_c_id)
+    )
+    SELECT h.tool_id, h.c_id, h.rule_id, h.source, h.note
+    FROM hits h
+    WHERE p_criteria IS NOT NULL OR p_profile IS NOT NULL OR NOT EXISTS (
+        SELECT 1 FROM special_tool_vehicles_lxcars x
+        WHERE x.tool_id = h.tool_id AND x.c_id = h.c_id AND x.mode = 'exclude'
+    )
+$$;
+
+-- Fahrzeugprofil aus den KBA-Schlüsselnummern, wie es die Shop-Suche braucht:
+-- HSN (4-stellig) und TSN (die ersten drei Stellen genügen) finden den
+-- KBA-Datensatz; Motorcode und Erstzulassungsjahr kommen vom Besucher dazu.
+-- Liefert NULL, wenn die Schlüsselnummern unbekannt sind. Die Felder
+-- entsprechen den Spalten von special_tool_vehicle_profiles_lxcars, dazu
+-- `label` als Anzeigetext.
+CREATE OR REPLACE FUNCTION special_tool_profile_from_kba_lxcars(
+    p_hsn text, p_tsn text, p_engine_code text DEFAULT NULL, p_year integer DEFAULT NULL
+) RETURNS jsonb
+LANGUAGE sql STABLE AS $$
+    SELECT jsonb_build_object(
+        'hsn',             k.hsn,
+        'tsn',             upper(left(regexp_replace(COALESCE(p_tsn, ''), '\s', '', 'g'), 3)),
+        'make',            COALESCE(NULLIF(trim(k.marke), ''), NULLIF(trim(k.hersteller), '')),
+        'model',           COALESCE(NULLIF(trim(k.d3), ''), NULLIF(trim(k.name), '')),
+        'make_model_text', concat_ws(' ', k.hersteller, k.marke, k.name, k.d3),
+        'engine_code',     NULLIF(trim(COALESCE(p_engine_code, '')), ''),
+        'fuel',            COALESCE(f.fuel_group,
+                               CASE WHEN k.kraftstoff ILIKE '%diesel%' THEN 'Diesel'
+                                    WHEN k.kraftstoff ILIKE '%benzin%' OR k.kraftstoff ILIKE '%otto%' THEN 'Benzin'
+                                    WHEN k.kraftstoff ILIKE '%elektro%' THEN 'Elektro'
+                                    WHEN NULLIF(trim(k.kraftstoff), '') IS NULL THEN NULL
+                                    ELSE 'Sonstige' END),
+        'fuel_name',       COALESCE(f.name, NULLIF(trim(k.kraftstoff), '')),
+        'vehicle_type',    NULLIF(trim(k.fhzart), ''),
+        'ccm',             NULLIF(regexp_replace(COALESCE(k.hubraum, ''), '\D', '', 'g'), '')::integer,
+        'kw',              (SELECT (m[1])::integer FROM regexp_matches(COALESCE(k.leistung, ''), '(\d+)', 'g') m
+                             WHERE (m[1])::integer BETWEEN 1 AND 999 LIMIT 1),
+        'year',            p_year,
+        'label',           concat_ws(' ',
+                               COALESCE(NULLIF(trim(k.marke), ''), NULLIF(trim(k.hersteller), '')),
+                               COALESCE(NULLIF(trim(k.d3), ''), NULLIF(trim(k.name), '')))
+    )
+    FROM kba_lxcars k
+    LEFT JOIN kba_fuel_codes_lxcars f ON f.code = trim(k.kraftstoff)
+    WHERE k.hsn = lpad(regexp_replace(COALESCE(p_hsn, ''), '\D', '', 'g'), 4, '0')
+      AND upper(k.tsn) = upper(left(regexp_replace(COALESCE(p_tsn, ''), '\s', '', 'g'), 3))
+    ORDER BY (k.d2 IS NULL OR k.d2 = '') DESC, k.id
+    LIMIT 1
+$$;
+
+-- Cache neu berechnen: für ein Werkzeug, ein Fahrzeug oder (beides NULL) alles.
+-- Liefert die Zahl der eingetragenen Treffer.
+CREATE OR REPLACE FUNCTION special_tool_refresh_matches_lxcars(p_tool_id integer DEFAULT NULL, p_c_id integer DEFAULT NULL)
+RETURNS integer
+LANGUAGE sql VOLATILE AS $$
+    WITH del AS (
+        DELETE FROM special_tool_vehicle_matches_lxcars m
+        WHERE (p_tool_id IS NULL OR m.tool_id = p_tool_id)
+          AND (p_c_id IS NULL OR m.c_id = p_c_id)
+    ),
+    ins AS (
+        INSERT INTO special_tool_vehicle_matches_lxcars (tool_id, c_id, rule_id, source, note)
+        SELECT tool_id, c_id, rule_id, source, note
+        FROM special_tool_compute_matches_lxcars(p_tool_id, p_c_id)
+        RETURNING 1
+    )
+    SELECT COUNT(*)::integer FROM ins
+$$;
+
+-- Trigger: Fahrzeug angelegt oder geändert → Profil und Treffer dieses
+-- Fahrzeugs auffrischen. Löschen räumt die Fremdschlüssel-Kaskade auf.
+CREATE OR REPLACE FUNCTION special_tool_profile_sync_lxcars() RETURNS trigger AS $$
+BEGIN
+    PERFORM special_tool_build_profiles_lxcars(NEW.c_id);
+    PERFORM special_tool_refresh_matches_lxcars(NULL, NEW.c_id);
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'special_tool_profile_sync') THEN
+        CREATE TRIGGER special_tool_profile_sync
+            AFTER INSERT OR UPDATE OF kba_id, c_mkb, c_2, c_3, c_d, c_m, c_mt, c_ln, c_ow
+            ON cars_lxcars
+            FOR EACH ROW
+            EXECUTE FUNCTION special_tool_profile_sync_lxcars();
+    END IF;
+END $$;
+
+-- Beim Update alle Profile und Treffer auffrischen (idempotent, ~0,1 s je
+-- 10.000 Fahrzeuge). Bringt nach KBA-Importen und Schemaänderungen alles auf Stand.
+SELECT special_tool_build_profiles_lxcars(NULL);
+SELECT special_tool_refresh_matches_lxcars(NULL, NULL);

@@ -59,7 +59,8 @@
         "tafel": "/tablica/zarzadzanie",
         "newArticle": "/artykul/nowy",
         "admin": "/system/administracja",
-        "systemSettings": "/system/ustawienia"
+        "systemSettings": "/system/ustawienia",
+        "templateDesigner": "/system/edytor-szablonow"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Błąd: Plik hasła api/config/api.passwd.php nie został znaleziony. Proszę zmienić nazwę pliku api/config/api.passwd.php.example na api/config/api.passwd.php i dostosować ustawienia.",
@@ -90,6 +91,7 @@
         "manageCreditNotes": "Korekty"
     },
     "SystemMenu": {
+        "templateDesigner": "Edytor szablonów",
         "title": "System",
         "clientConfig": "Konfiguracja firmy",
         "developerTools": "Developer Tools",

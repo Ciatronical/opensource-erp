@@ -1,3 +1,12 @@
+---
+title: Wiki
+summary: Internes Wissenssystem mit Kategorien und Versionierung
+group: core
+category: Organisation
+order: 71
+status: stable
+---
+
 # Wiki — Internes Wissenssystem
 
 Das eingebaute Wiki dient als zentrale Wissensdatenbank für interne Dokumentation, Anleitungen und Notizen.

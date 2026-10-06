@@ -21,6 +21,11 @@ require_once __DIR__.'/mechanic.php';
 require_once __DIR__.'/reports.php';
 require_once __DIR__.'/anpr.php';
 require_once __DIR__.'/sales_text.php';
+require_once __DIR__.'/special_tools.php';
+// Spezialwerkzeug im Shop: Aufträge einstellen (shopQueueJob) und Seitennamen
+// bilden (shopQueueRemovePage) — die Fachschicht der Shop-Erweiterung
+require_once __DIR__.'/../shop/lib/config.php';
+require_once __DIR__.'/../shop/lib/publish.php';
 require_once __DIR__.'/../aag_online.php';
 require_once __DIR__.'/../hgs_data.php';
 require_once __DIR__.'/../customer_vendor/filemanager.php';

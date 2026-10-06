@@ -10,7 +10,8 @@
             "accountingChartOfAccounts": "/ksiegowosc/plan-kont",
             "accountingOpenItems": "/ksiegowosc/rozrachunki",
             "accountingUstva": "/ksiegowosc/vat",
-            "accountingRun": "/ksiegowosc/przebieg"
+            "accountingRun": "/ksiegowosc/przebieg",
+            "accountingMagic": "/ksiegowosc/magiczne-ksiegowanie"
         },
         "openItems": {
             "titleReceivables": "Otwarte należności",

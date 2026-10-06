@@ -169,6 +169,30 @@ sudo systemctl restart apache2
 
 ## 3. Cronjobs einrichten
 
+### Belegsuche (Magisch Buchen)
+
+Holt neue Eingangsbelege aus den eingerichteten Quellen (Firmenpostfach per IMAP,
+WhatsApp-Eingang, Server-Ordner) und legt sie als Buchungsvorschlag ab. Gebucht
+wird erst per Klick auf "Magisch Buchen" in der Buchhaltung. Die Uhrzeit je
+Mandant steht in den Einstellungen (CRM-Vorgaben > Belegsuche); der Cron prueft
+alle 10 Minuten, ob sie erreicht ist:
+
+```
+0,10,20,30,40,50 * * * * cd /home/work/opensource-erp && php backend/cli/belegsuche.php >> log/belegsuche.log 2>&1
+```
+
+Sofort fuer alle Mandanten: `php backend/cli/belegsuche.php --force`, nur ein Mandant: `--client <id>`.
+
+Fuer Lieferanten-Portale (aufgezeichneter Ablauf) braucht der Server einmalig den
+Portal-Runner mit eigenem Chrome (ca. 400 MB):
+
+```
+cd backend/portal-runner && npm install && npx puppeteer browsers install chrome
+```
+
+Alles Weitere (Quellen, Aufnahme mit dem Chrome-Recorder, Grenzen) steht in `docs/belegsuche.md`.
+
+
 ### WhatsApp-Erinnerungen (Termine + HU)
 
 Automatischer Versand von WhatsApp-Erinnerungen an Kunden. Das Script durchlauft alle Mandanten und versendet:

@@ -116,7 +116,9 @@
             "emailFailed": "E-Mail fehlgeschlagen – zum Wiederholen klicken",
             "printed": "gedruckt",
             "blockedRow": "{customer}, Periode ab {period}: angehalten (überfällige Rechnungen)",
-            "errors": "{count} Fehler beim Erzeugen"
+            "errors": "{count} Fehler beim Erzeugen",
+            "whatsapped": "per WhatsApp verschickt",
+            "whatsappFailed": "WhatsApp fehlgeschlagen – zum Wiederholen klicken"
         },
         "list": {
             "search": "Kunde, Auftrag, Beschreibung …",
@@ -275,7 +277,14 @@
             "dueNowTitle": "Rechnungen fällig",
             "dueNowText": "{count} Perioden sind bereits fällig. Rechnungen jetzt erzeugen?",
             "createNow": "Jetzt erzeugen",
-            "later": "Später"
+            "later": "Später",
+            "sendWhatsapp": "Rechnung automatisch per WhatsApp senden",
+            "whatsappNotConfigured": "WhatsApp Business API nicht eingerichtet (Firmenkonfiguration → WhatsApp).",
+            "whatsappNoPhone": "Der Kunde hat keine Rufnummer. Bitte eine Nummer eintragen.",
+            "whatsappPhone": "Empfängernummer",
+            "whatsappPhoneHint": "Leer = Mobilnummer des Kunden bzw. des Ansprechpartners.",
+            "whatsappTemplate": "WhatsApp-Vorlage",
+            "whatsappTemplateHint": "Leer = Vorgabe aus der Firmenkonfiguration (Dokument-Template für Belege)."
         }
     }
 }

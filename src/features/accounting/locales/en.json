@@ -17,7 +17,8 @@
             "accountingUstva": "/accounting/vat-return",
             "accountingCustomers": "/accounting/customers",
             "accountingRun": "/accounting/run",
-            "accountingDunning": "/accounting/dunning"
+            "accountingDunning": "/accounting/dunning",
+            "accountingMagic": "/accounting/magic-booking"
         },
         "openItems": {
             "titleReceivables": "Open Receivables",
@@ -1076,6 +1077,46 @@
                     }
                 }
             }
+        },
+        "magic": {
+            "title": "Magic Booking",
+            "lastRun": "Last document search: {when}",
+            "neverRun": "The document search has not run yet.",
+            "scheduleOff": "schedule is off",
+            "sources": "Set up sources",
+            "searchNow": "Search now",
+            "searchDone": "Document search finished: {imported} new documents.",
+            "sourceStats": "{imported} new, {duplicate} duplicates, {not_invoice} not invoices, {error} errors",
+            "booked": "{count} documents booked.",
+            "proposals": "{count} proposals",
+            "selectedSum": "{count} selected · {sum}",
+            "bookSelected": "Book {count} documents",
+            "empty": "No open documents. Everything is booked.",
+            "colSource": "Source",
+            "colVendor": "Vendor",
+            "colInvoice": "Invoice",
+            "colAmount": "Gross",
+            "colAccount": "Account",
+            "colStatus": "Status",
+            "sourceUpload": "Manual upload",
+            "ready": "Ready",
+            "openDocument": "Open document",
+            "edit": "Edit in review",
+            "reason_vendor_missing": "Vendor missing",
+            "reason_vendor_ambiguous": "Vendor unclear",
+            "reason_account_missing": "Account missing",
+            "reason_amount_missing": "Amount missing",
+            "reason_invnumber_missing": "Invoice no. missing",
+            "reason_already_posted": "Already booked",
+            "skipped": "{count} skipped (not an invoice, duplicate, error)",
+            "result_not_invoice": "not an invoice",
+            "result_duplicate": "duplicate",
+            "result_error": "error",
+            "result_skipped": "skipped",
+            "result_imported": "imported",
+            "tile": "Magic Booking",
+            "tileSub": "{ready} ready · {unclear} to check",
+            "tileCta": "Show proposals"
         }
     }
 }

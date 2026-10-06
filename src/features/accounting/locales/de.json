@@ -17,7 +17,8 @@
             "accountingUstva": "/buchhaltung/umsatzsteuer-voranmeldung",
             "accountingCustomers": "/buchhaltung/kunden",
             "accountingRun": "/buchhaltung/durchlauf",
-            "accountingDunning": "/buchhaltung/mahnwesen"
+            "accountingDunning": "/buchhaltung/mahnwesen",
+            "accountingMagic": "/buchhaltung/magisch-buchen"
         },
         "openItems": {
             "titleReceivables": "Offene Forderungen",
@@ -1076,6 +1077,46 @@
                     }
                 }
             }
+        },
+        "magic": {
+            "title": "Magisch Buchen",
+            "lastRun": "Letzte Belegsuche: {when}",
+            "neverRun": "Die Belegsuche ist noch nie gelaufen.",
+            "scheduleOff": "Zeitplan ist ausgeschaltet",
+            "sources": "Quellen einrichten",
+            "searchNow": "Jetzt suchen",
+            "searchDone": "Belegsuche abgeschlossen: {imported} neue Belege.",
+            "sourceStats": "{imported} neu, {duplicate} Duplikate, {not_invoice} keine Belege, {error} Fehler",
+            "booked": "{count} Belege gebucht.",
+            "proposals": "{count} Vorschläge",
+            "selectedSum": "{count} ausgewählt · {sum}",
+            "bookSelected": "{count} Belege buchen",
+            "empty": "Keine offenen Belege. Alles gebucht.",
+            "colSource": "Quelle",
+            "colVendor": "Lieferant",
+            "colInvoice": "Rechnung",
+            "colAmount": "Brutto",
+            "colAccount": "Konto",
+            "colStatus": "Status",
+            "sourceUpload": "Manueller Upload",
+            "ready": "Buchbar",
+            "openDocument": "Beleg öffnen",
+            "edit": "Im Durchlauf bearbeiten",
+            "reason_vendor_missing": "Lieferant fehlt",
+            "reason_vendor_ambiguous": "Lieferant unklar",
+            "reason_account_missing": "Konto fehlt",
+            "reason_amount_missing": "Betrag fehlt",
+            "reason_invnumber_missing": "Rechnungsnr. fehlt",
+            "reason_already_posted": "Bereits gebucht",
+            "skipped": "{count} übersprungen (kein Beleg, Duplikat, Fehler)",
+            "result_not_invoice": "kein Beleg",
+            "result_duplicate": "Duplikat",
+            "result_error": "Fehler",
+            "result_skipped": "übersprungen",
+            "result_imported": "importiert",
+            "tile": "Magisch Buchen",
+            "tileSub": "{ready} buchbar · {unclear} zu prüfen",
+            "tileCta": "Vorschläge ansehen"
         }
     }
 }

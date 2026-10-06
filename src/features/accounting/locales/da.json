@@ -10,7 +10,8 @@
             "accountingChartOfAccounts": "/bogfoering/kontoplan",
             "accountingOpenItems": "/bogfoering/aabne-poster",
             "accountingUstva": "/bogfoering/moms",
-            "accountingRun": "/bogfoering/gennemgang"
+            "accountingRun": "/bogfoering/gennemgang",
+            "accountingMagic": "/bogfoering/magisk-bogfoering"
         },
         "easymode": {
             "label": "Bogføringens tilstand",

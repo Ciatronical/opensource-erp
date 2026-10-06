@@ -123,6 +123,17 @@ function getTemplateDir(string $templateSet): string {
  */
 function getTemplateList($data) {
     $db = DbhCompany::begin();
+    resultInfo(true, 'OK', scanTemplateSets($db));
+}
+
+/**
+ * Scannt die Vorlagensaetze (User-Kopien, Master-Sets, Symlinks)
+ *
+ * Gemeinsame Grundlage fuer getTemplateList() und den Vorlageneditor.
+ *
+ * @return array ['activeSet' => string, 'templateSets' => [...], 'masterSets' => [...]]
+ */
+function scanTemplateSets($db): array {
     $activeSet = getTemplateSet($db);
 
     $templateSets = [];
@@ -132,7 +143,8 @@ function getTemplateList($data) {
     $baseDir = OSERP_TEMPLATES_DIR;
     if (is_dir($baseDir)) {
         foreach (scandir($baseDir) as $entry) {
-            if ($entry === '.' || $entry === '..') continue;
+            // Versteckte Verzeichnisse (.git) sind keine Vorlagensaetze
+            if ($entry === '.' || $entry === '..' || $entry[0] === '.') continue;
             $fullPath = $baseDir . '/' . $entry;
             if (!is_dir($fullPath)) continue;
 
@@ -175,11 +187,11 @@ function getTemplateList($data) {
         }
     }
 
-    resultInfo(true, 'OK', [
+    return [
         'activeSet' => $activeSet,
         'templateSets' => $templateSets,
         'masterSets' => $masterSets,
-    ]);
+    ];
 }
 
 /**

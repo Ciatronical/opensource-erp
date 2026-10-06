@@ -10,7 +10,8 @@
             "accountingChartOfAccounts": "/contabilidad/plan-cuentas",
             "accountingOpenItems": "/contabilidad/partidas-abiertas",
             "accountingUstva": "/contabilidad/iva",
-            "accountingRun": "/contabilidad/recorrido"
+            "accountingRun": "/contabilidad/recorrido",
+            "accountingMagic": "/contabilidad/contabilizacion-magica"
         },
         "easymode": {
             "label": "Modo de la contabilidad",

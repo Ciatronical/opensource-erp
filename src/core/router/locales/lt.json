@@ -59,7 +59,8 @@
         "tafel": "/skelbimu-lenta/valdymas",
         "newArticle": "/preke/naujas",
         "admin": "/sistema/administravimas",
-        "systemSettings": "/sistema/nustatymai"
+        "systemSettings": "/sistema/nustatymai",
+        "templateDesigner": "/sistema/sablonu-redaktorius"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Klaida: Slaptazodzio failas api/config/api.passwd.php nerastas. Pervadinkite faila api/config/api.passwd.php.example i api/config/api.passwd.php ir pritaikykite nustatymus.",
@@ -90,6 +91,7 @@
         "manageCreditNotes": "Kreditines saskaitos"
     },
     "SystemMenu": {
+        "templateDesigner": "Šablonų redaktorius",
         "title": "Sistema",
         "clientConfig": "Imones konfiguracija",
         "developerTools": "Developer Tools",

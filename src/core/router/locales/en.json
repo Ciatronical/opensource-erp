@@ -59,7 +59,8 @@
         "dataDeletion": "/data-deletion",
         "newArticle": "/article/new",
         "admin": "/system/administration",
-        "systemSettings": "/system/settings"
+        "systemSettings": "/system/settings",
+        "templateDesigner": "/system/template-designer"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Error: The password file api/config/api.passwd.php was not found. Please rename the file api/config/api.passwd.php.example to api/config/api.passwd.php and adjust the settings accordingly.",
@@ -96,6 +97,7 @@
         "recurringInvoices": "Recurring Invoices"
     },
     "SystemMenu": {
+        "templateDesigner": "Template designer",
         "title": "System",
         "clientConfig": "Client Configuration",
         "developerTools": "Developer Tools",
@@ -107,6 +109,28 @@
     },
     "DocsView": {
         "title": "Documentation",
-        "selectDoc": "Select a document from the list"
+        "selectDoc": "Select a document from the list",
+        "search": "Search pages …",
+        "noMatch": "No page matches your search",
+        "core": "Core system",
+        "extensionChip": "Extension {name}",
+        "external": "Third-party service required",
+        "flag": "Switch {flag}",
+        "publish": {
+            "button": "Publish on the website",
+            "title": "Publish the feature catalogue on the website",
+            "intro": "The catalogue contains every page of this documentation with its metadata, sections and full text. The website opensource-erp.dev builds its feature pages from it. Everything is always transferred; the key stays stored.",
+            "pages": "Pages",
+            "extensions": "Extensions",
+            "core": "Core system",
+            "url": "Website endpoint URL",
+            "token": "Access token",
+            "tokenKept": "A token is stored; leave empty to keep it.",
+            "last": "Last published on {at}: {pages} pages, version {version}",
+            "export": "Download JSON",
+            "cancel": "Cancel",
+            "send": "Publish now",
+            "done": "{pages} pages published"
+        }
     }
 }

@@ -91,6 +91,11 @@
                     />
                 </section>
 
+                <!-- Spezialwerkzeug: was passt zu diesem Fahrzeug und wo liegt es -->
+                <section v-if="vehicle && vehicle.selectedCarId.value && !vehicle.isTrailer.value" class="mb-4">
+                    <special-tools-section-card :c-id="vehicle.selectedCarId.value" />
+                </section>
+
                 <!-- Arbeitsanweisungen -->
                 <section v-if="vehicle" class="mb-4">
                     <instructions-section-card
@@ -412,6 +417,7 @@ import CreatePartDialog from '@/core/views/faktura/dialogs/create.part.dialog.vu
 import InstructionsSectionCard from '@/features/lxcars/components/instructions.section.card.vue'
 import MaengelSectionCard from '@/features/lxcars/components/maengel.section.card.vue'
 import MaintenanceSectionCard from '@/features/lxcars/components/maintenance.section.card.vue'
+import SpecialToolsSectionCard from '@/features/lxcars/components/special-tools.section.card.vue'
 import * as alerts from '@/core/utils/alerts.js'
 
 const props = defineProps({

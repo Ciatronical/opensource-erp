@@ -131,7 +131,8 @@
         "addNote": "Bemerkung hinzufügen",
         "editNotes": "Bemerkungen bearbeiten",
         "contactOrigin": "Herkunft der personenbezogenen Daten",
-        "showAll": "Alle anzeigen"
+        "showAll": "Alle anzeigen",
+        "documentFetch": "Belegabruf"
     },
     "PhoneActions": {
         "clickToCall": "Anrufen",

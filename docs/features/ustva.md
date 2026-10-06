@@ -1,3 +1,12 @@
+---
+title: UStVA
+summary: Umsatzsteuer-Voranmeldung aus den echten Buchungen, mit Nachweis je Kennzahl
+group: core
+category: Finanzen
+order: 32
+status: stable
+---
+
 # Umsatzsteuer-Voranmeldung (UStVA)
 
 Ermittelt die Kennzahlen der Umsatzsteuer-Voranmeldung aus den tatsächlich gebuchten Geschäftsvorfällen — mit Nachweis bis zur einzelnen Buchung.

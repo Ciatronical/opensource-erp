@@ -59,7 +59,8 @@
         "tafel": "/bulletin-board/manage",
         "newArticle": "/article/new",
         "admin": "/system/administration",
-        "systemSettings": "/system/settings"
+        "systemSettings": "/system/settings",
+        "templateDesigner": "/system/template-designer"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "错误：未找到密码文件 api/config/api.passwd.php。请将文件 api/config/api.passwd.php.example 重命名为 api/config/api.passwd.php 并相应调整设置。",
@@ -90,6 +91,7 @@
         "manageCreditNotes": "贷项通知单"
     },
     "SystemMenu": {
+        "templateDesigner": "模板编辑器",
         "title": "系统",
         "clientConfig": "公司配置",
         "developerTools": "开发者工具",

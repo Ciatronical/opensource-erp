@@ -10,7 +10,8 @@
             "accountingChartOfAccounts": "/comptabilite/plan-comptable",
             "accountingOpenItems": "/comptabilite/postes-ouverts",
             "accountingUstva": "/comptabilite/tva",
-            "accountingRun": "/comptabilite/traitement"
+            "accountingRun": "/comptabilite/traitement",
+            "accountingMagic": "/comptabilite/comptabilisation-magique"
         },
         "openItems": {
             "titleReceivables": "Créances ouvertes",

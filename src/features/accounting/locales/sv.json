@@ -10,7 +10,8 @@
             "accountingChartOfAccounts": "/bokforing/kontoplan",
             "accountingOpenItems": "/bokforing/oppna-poster",
             "accountingUstva": "/bokforing/moms",
-            "accountingRun": "/bokforing/genomgang"
+            "accountingRun": "/bokforing/genomgang",
+            "accountingMagic": "/bokforing/magisk-bokforing"
         },
         "easymode": {
             "label": "Bokföringens läge",

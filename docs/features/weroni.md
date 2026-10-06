@@ -1,3 +1,12 @@
+---
+title: Weroni
+summary: KI-Assistentin für Datenanalyse, Belegerkennung und Aufgaben
+group: core
+category: KI
+order: 80
+status: stable
+---
+
 # Weroni — KI-Assistent
 
 Weroni ist der integrierte KI-Assistent von OpensourceERP. Er hilft bei Fragen zum System, analysiert Daten und kann Aufgaben ausführen.

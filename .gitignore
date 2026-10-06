@@ -100,3 +100,4 @@ CLAUDE.local.md
 backend/fahrzeugschein-scanner/reference/zb1_bootstrap.jpg
 backend/fahrzeugschein-scanner/reference/layout_v*.json
 backend/fahrzeugschein-scanner/tessdata/
+tools/.tts/

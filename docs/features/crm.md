@@ -1,3 +1,12 @@
+---
+title: CRM
+summary: Kunden- und Lieferantenverwaltung, Kontakte, Kontakthistorie, Kommunikation
+group: core
+category: Stammdaten
+order: 10
+status: stable
+---
+
 # CRM — Kunden- und Lieferantenverwaltung
 
 Das CRM-System verwaltet Kunden, Lieferanten, Kontakte und die gesamte Kommunikationshistorie an einem zentralen Ort.
@@ -75,3 +84,7 @@ Unter **Einstellungen > CRM**:
 - Telefonie-Einstellungen
 - E-Mail-Konten
 - WhatsApp Business API-Zugangsdaten
+
+## Kontakthistorie
+
+Die Karte **Kontakthistorie** im Kunden zeigt alle Berührungspunkte chronologisch in einer Liste: Anrufe (ein- und ausgehend, verpasst, mit Mitschnitt und Transkript), WhatsApp-Nachrichten und E-Mails — jeweils mit Datum, Richtung, Mitarbeiter und Kurztext. Ein Klick öffnet den Vorgang. So ist auf einen Blick klar, wann zuletzt Kontakt bestand und worum es ging.

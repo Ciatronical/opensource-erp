@@ -59,7 +59,8 @@
         "dataDeletion": "/datenloeschung",
         "newArticle": "/artikel/neu",
         "admin": "/system/verwaltung",
-        "systemSettings": "/system/einstellungen"
+        "systemSettings": "/system/einstellungen",
+        "templateDesigner": "/system/vorlageneditor"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Fehler: Die Passwort-Datei api/config/api.passwd.php wurde nicht gefunden. Bitte benennen Sie die Datei api/config/api.passwd.php.example in api/config/api.passwd.php um und passen Sie die Einstellungen entsprechend an.",
@@ -96,6 +97,7 @@
         "recurringInvoices": "Wiederkehrende Rechnungen"
     },
     "SystemMenu": {
+        "templateDesigner": "Vorlageneditor",
         "title": "System",
         "clientConfig": "Firmenkonfiguration",
         "developerTools": "Developer Tools",
@@ -107,6 +109,28 @@
     },
     "DocsView": {
         "title": "Dokumentation",
-        "selectDoc": "Dokument aus der Liste auswählen"
+        "selectDoc": "Dokument aus der Liste auswählen",
+        "search": "Seite suchen …",
+        "noMatch": "Keine Seite passt zur Suche",
+        "core": "Kernsystem",
+        "extensionChip": "Erweiterung {name}",
+        "external": "Drittanbieter nötig",
+        "flag": "Schalter {flag}",
+        "publish": {
+            "button": "Auf der Website veröffentlichen",
+            "title": "Feature-Katalog auf der Website veröffentlichen",
+            "intro": "Der Katalog enthält alle Seiten dieser Dokumentation mit ihren Metadaten, Abschnitten und dem vollständigen Text. Die Website opensource-erp.dev baut daraus ihre Feature-Seiten. Übertragen wird immer alles; der Schlüssel bleibt gespeichert.",
+            "pages": "Seiten",
+            "extensions": "Erweiterungen",
+            "core": "Kernsystem",
+            "url": "Adresse der Website-Schnittstelle",
+            "token": "Zugangsschlüssel",
+            "tokenKept": "Ein Schlüssel ist gespeichert; leer lassen, um ihn zu behalten.",
+            "last": "Zuletzt veröffentlicht am {at}: {pages} Seiten, Version {version}",
+            "export": "JSON herunterladen",
+            "cancel": "Abbrechen",
+            "send": "Jetzt veröffentlichen",
+            "done": "{pages} Seiten veröffentlicht"
+        }
     }
 }

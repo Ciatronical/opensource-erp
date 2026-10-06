@@ -39,6 +39,7 @@ function recurringConfigCte(): string {
                    e.price_increase_percent, e.price_increase_month,
                    e.hold_on_overdue_days, e.notice_period_months, e.min_term_months,
                    e.paused_until, COALESCE(e.post_to_ledger, true) AS post_to_ledger, e.notes,
+                   COALESCE(e.send_whatsapp, false) AS send_whatsapp, e.whatsapp_phone, e.whatsapp_template_id,
                    o.ordnumber, o.transdate AS order_date, o.customer_id, o.amount AS order_amount,
                    o.netamount AS order_netamount, COALESCE(o.taxincluded, false) AS taxincluded,
                    o.closed AS order_closed, o.transaction_description, o.currency_id,

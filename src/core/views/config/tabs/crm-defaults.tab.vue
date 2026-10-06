@@ -191,6 +191,13 @@
                 </v-col>
             </v-row>
 
+            <!-- Belegsuche: Quellen (Postfach, WhatsApp, Ordner, Portal) -->
+            <v-row v-else-if="field.type === 'component' && field.component === 'beleg-quellen'" class="my-4">
+                <v-col cols="12">
+                    <BelegQuellenConfig />
+                </v-col>
+            </v-row>
+
             <!-- eBay: jetzt ein Verkaufskanal der Shop-Erweiterung (V15, V18) -->
             <v-row v-else-if="field.type === 'component' && field.component === 'ebay-moved'" class="my-4">
                 <v-col cols="12">
@@ -250,6 +257,7 @@ import axios from 'axios';
 import WhatsAppTemplatesConfig from './whatsapp-templates.config.vue';
 import WhatsAppProfilePictureConfig from './whatsapp-profile-picture.config.vue';
 import SumupReaderPairingConfig from './sumup-reader-pairing.config.vue';
+import BelegQuellenConfig from './beleg-quellen.config.vue';
 import { oserpStore } from '@/core/stores/oserp.store.js';
 
 const { t } = useI18n();

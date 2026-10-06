@@ -1,3 +1,12 @@
+---
+title: Lager
+summary: Bestandsführung auf kivitendo-Tabellen, Scanner-Modus und geführte Inventur
+group: core
+category: Lager
+order: 40
+status: stable
+---
+
 # Lager — Bestandsführung, Scanner und Inventur
 
 Das Lagermodul führt Bestände auf Lager-, Lagerplatz- und Chargenebene. Es arbeitet direkt auf den kivitendo-Tabellen `warehouse`, `bin` und `inventory` — es gibt keine Parallelhaltung und keine Synchronisation: was hier gebucht wird, sieht kivitendo sofort, und umgekehrt.

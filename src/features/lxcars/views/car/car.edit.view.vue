@@ -957,6 +957,8 @@
                     <v-form :readonly="false" autocomplete="off" @submit.prevent>
                         <CarChatCard :car-id="Number(carId)" />
                     </v-form>
+                    <!-- Passendes Spezialwerkzeug samt Lagerort -->
+                    <SpecialToolsSectionCard :c-id="Number(carId)" class="mt-3" />
                 </v-col>
             </v-row>
 
@@ -1289,12 +1291,13 @@ import CarChatCard from './components/car-chat.card.vue'
 import SendEmailDialog from './components/send-email.dialog.vue'
 import CarFilesDialog from './components/car-files.dialog.vue'
 import CarSellDialog from './components/car-sell.dialog.vue'
+import SpecialToolsSectionCard from '@/features/lxcars/components/special-tools.section.card.vue'
 
 // const SpecialDialog = defineAsyncComponent(() => import('@special/special.dialog.vue'))
 
 export default {
     name: 'CarEditView',
-    components: { NavbarView, RotesHeftDialog, CarChatCard, SendEmailDialog, CarFilesDialog, CarSellDialog /*, SpecialDialog */ },
+    components: { NavbarView, RotesHeftDialog, CarChatCard, SendEmailDialog, CarFilesDialog, CarSellDialog, SpecialToolsSectionCard /*, SpecialDialog */ },
 
     props: {
         id: {

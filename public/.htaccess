@@ -1,0 +1,8 @@
+# index.html nie aus dem Browser-Cache bedienen: Sie verweist auf die
+# gehashten Bundles. Ohne diese Angabe darf der Browser sie heuristisch
+# zwischenspeichern und lädt nach einem Build weiter die alten Skripte.
+<IfModule mod_headers.c>
+    <Files "index.html">
+        Header set Cache-Control "no-cache, must-revalidate"
+    </Files>
+</IfModule>

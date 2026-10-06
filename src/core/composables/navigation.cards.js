@@ -121,15 +121,21 @@ export function useNavigationCards() {
         )
 
         // Lager-Menü
+        const warehouseItems = [
+            { title: t('WarehouseView.tabs.stock'), to: { name: 'warehouse' } },
+            '-',
+            { title: t('WarehouseView.scanner.title'), to: { name: 'warehouse-scanner' } }
+        ]
+        // Spezialwerkzeug ordnet Werkzeuge Fahrzeugen zu — nur mit LxCars sinnvoll
+        if (oserp.isLxCars()) {
+            warehouseItems.push('-')
+            warehouseItems.push({ title: t('SpecialToolsView.title'), to: { name: 'special-tools' } })
+        }
         result.push(
             {
                 title: t('WarehouseView.title'),
                 icon: 'mdi-warehouse',
-                items: [
-                    { title: t('WarehouseView.tabs.stock'), to: { name: 'warehouse' } },
-                    '-',
-                    { title: t('WarehouseView.scanner.title'), to: { name: 'warehouse-scanner' } }
-                ]
+                items: warehouseItems
             }
         )
 
