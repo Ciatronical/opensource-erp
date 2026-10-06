@@ -16,10 +16,11 @@
         },
         "status": {
             "ready": "Il negozio è pronto all'uso.",
-            "notReady": "Il negozio non accetta ancora ordini",
+            "notReadyChannel": "Il canale di vendita «{name}» non accetta ancora ordini",
             "notReadyHint": "Mancano questi dati. Si trovano nelle impostazioni, in Estensioni → Negozio, oppure nel menu Negozio, in Canali di vendita.",
             "shippingMissing": "Nessun metodo di spedizione configurato: gli ordini vengono gestiti come «Standard» senza spese di spedizione.",
-            "hints": "Mancano ancora questi dati. Il negozio funziona, ma in modo limitato:",
+            "hintsAll": "Questi dati mancano ancora e riguardano tutti i canali di vendita:",
+            "hintsChannel": "Il canale di vendita «{name}» funziona, ma con limitazioni — manca ancora:",
             "partsWithShopData": "Articoli con dati del negozio",
             "carts": "Carrelli",
             "sessions": "Sessioni",
@@ -27,6 +28,11 @@
             "recommendation": {
                 "channel_round_99_net": "L'arrotondamento a ,99 è attivo, ma i prezzi di vendita sono salvati al netto. Con prezzi di vendita lordi, carrello e fattura coincidono sempre al centesimo."
             }
+        },
+        "sections": {
+            "figures": "Indicatori",
+            "links": "Collegamenti",
+            "jobs": "Attività pianificate"
         },
         "orders": {
             "title": "Ordini",
@@ -124,6 +130,7 @@
             "publishQueued": "Incarico creato.",
             "publishAlready": "L'incarico è già in attesa.",
             "channels": "Canali di vendita",
+            "chooseChannel": "Selezionare almeno un canale di vendita, altrimenti l'articolo non può essere creato.",
             "markup": "Maggiorazione",
             "markupDefault": "Predefinito del canale ({vorgabe})",
             "markupNone": "Nessuna maggiorazione",

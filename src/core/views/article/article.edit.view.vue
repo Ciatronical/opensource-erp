@@ -500,7 +500,9 @@ export default defineComponent({
             String(article.value.description || '').trim() !== '' &&
             !!article.value.buchungsgruppen_id &&
             !!article.value.unit &&
-            ['part', 'service'].includes(article.value.part_type)
+            ['part', 'service'].includes(article.value.part_type) &&
+            // Shop-Karte: bei mehreren Verkaufskanälen muss der Benutzer einen wählen
+            !shopCard.value?.kanalFehlt
         )
 
         /** Bevorzugte Einheit je Typ — nur wenn es sie in units gibt (FK parts_unit_fkey) */

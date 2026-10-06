@@ -16,10 +16,11 @@
         },
         "status": {
             "ready": "Kauppa on käyttövalmis.",
-            "notReady": "Kauppa ei vielä ota vastaan tilauksia",
+            "notReadyChannel": "Myyntikanava ”{name}” ei vielä ota vastaan tilauksia",
             "notReadyHint": "Nämä tiedot puuttuvat. Ne löytyvät asetuksista kohdasta Laajennukset → Kauppa tai kauppavalikosta kohdasta Myyntikanavat.",
             "shippingMissing": "Toimitustapaa ei ole määritetty: tilaukset käsitellään nimellä ”Standard” ilman toimituskuluja.",
-            "hints": "Nämä tiedot puuttuvat vielä. Kauppa toimii, mutta rajoitetusti:",
+            "hintsAll": "Nämä tiedot puuttuvat vielä ja koskevat kaikkia myyntikanavia:",
+            "hintsChannel": "Myyntikanava ”{name}” toimii, mutta rajoitetusti — vielä puuttuu:",
             "partsWithShopData": "Tuotteet, joilla on kauppatiedot",
             "carts": "Ostoskorit",
             "sessions": "Istunnot",
@@ -27,6 +28,11 @@
             "recommendation": {
                 "channel_round_99_net": "Pyöristys ,99:ään on käytössä, mutta myyntihinnat on tallennettu netto. Bruttomyyntihinnoilla ostoskori ja lasku täsmäävät aina sentilleen."
             }
+        },
+        "sections": {
+            "figures": "Tunnusluvut",
+            "links": "Linkit",
+            "jobs": "Ajastetut tehtävät"
         },
         "orders": {
             "title": "Tilaukset",
@@ -124,6 +130,7 @@
             "publishQueued": "Työ luotu.",
             "publishAlready": "Työ on jo avoinna.",
             "channels": "Myyntikanavat",
+            "chooseChannel": "Valitse vähintään yksi myyntikanava — muuten tuotetta ei voi luoda.",
             "markup": "Lisä",
             "markupDefault": "Kanavan oletus ({vorgabe})",
             "markupNone": "Ei lisää",

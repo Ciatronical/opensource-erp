@@ -16,10 +16,11 @@
         },
         "status": {
             "ready": "La boutique est prête à fonctionner.",
-            "notReady": "La boutique n'accepte pas encore de commandes",
+            "notReadyChannel": "Le canal de vente « {name} » n'accepte pas encore de commandes",
             "notReadyHint": "Ces informations manquent. Elles se trouvent dans les paramètres, sous Extensions → Boutique, ou dans le menu Boutique, sous Canaux de vente.",
             "shippingMissing": "Aucun mode d'expédition n'est configuré : les commandes sont traitées comme « Standard » sans frais de port.",
-            "hints": "Ces informations manquent encore. La boutique fonctionne, mais de façon limitée :",
+            "hintsAll": "Ces informations manquent encore et concernent tous les canaux de vente :",
+            "hintsChannel": "Le canal de vente « {name} » fonctionne, mais de façon limitée — il manque encore :",
             "partsWithShopData": "Articles avec données boutique",
             "carts": "Paniers",
             "sessions": "Sessions",
@@ -27,6 +28,11 @@
             "recommendation": {
                 "channel_round_99_net": "L'arrondi à ,99 est activé, mais les prix de vente sont enregistrés HT. Avec des prix de vente TTC, le panier et la facture concordent toujours au centime près."
             }
+        },
+        "sections": {
+            "figures": "Indicateurs",
+            "links": "Liens",
+            "jobs": "Tâches planifiées"
         },
         "orders": {
             "title": "Commandes",
@@ -124,6 +130,7 @@
             "publishQueued": "Tâche créée.",
             "publishAlready": "La tâche est déjà en attente.",
             "channels": "Canaux de vente",
+            "chooseChannel": "Veuillez choisir au moins un canal de vente — sinon l'article ne peut pas être créé.",
             "markup": "Majoration",
             "markupDefault": "Valeur par défaut du canal ({vorgabe})",
             "markupNone": "Aucune majoration",

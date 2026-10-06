@@ -16,10 +16,11 @@
         },
         "status": {
             "ready": "Obchod je připraven k provozu.",
-            "notReady": "Obchod zatím nepřijímá objednávky",
+            "notReadyChannel": "Prodejní kanál „{name}“ zatím nepřijímá objednávky",
             "notReadyHint": "Tyto údaje chybí. Najdete je v nastavení pod Rozšíření → Obchod nebo v nabídce Obchod pod Prodejní kanály.",
             "shippingMissing": "Není nastaven žádný způsob dopravy: objednávky probíhají jako „Standard“ bez nákladů na dopravu.",
-            "hints": "Tyto údaje ještě chybí. Obchod běží, ale omezeně:",
+            "hintsAll": "Tyto údaje ještě chybí a týkají se všech prodejních kanálů:",
+            "hintsChannel": "Prodejní kanál „{name}“ běží, ale omezeně — ještě chybí:",
             "partsWithShopData": "Položky s údaji pro obchod",
             "carts": "Košíky",
             "sessions": "Relace",
@@ -27,6 +28,11 @@
             "recommendation": {
                 "channel_round_99_net": "Zaokrouhlení na ,99 je zapnuté, ale prodejní ceny jsou uloženy bez DPH. S cenami s DPH se košík a faktura vždy shodují na haléř."
             }
+        },
+        "sections": {
+            "figures": "Ukazatele",
+            "links": "Odkazy",
+            "jobs": "Plánované úlohy"
         },
         "orders": {
             "title": "Objednávky",
@@ -124,6 +130,7 @@
             "publishQueued": "Úloha založena.",
             "publishAlready": "Úloha už čeká.",
             "channels": "Prodejní kanály",
+            "chooseChannel": "Vyberte alespoň jeden prodejní kanál — jinak položku nelze založit.",
             "markup": "Přirážka",
             "markupDefault": "Výchozí hodnota kanálu ({vorgabe})",
             "markupNone": "Bez přirážky",

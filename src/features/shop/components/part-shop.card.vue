@@ -61,51 +61,260 @@
             />
             <div class="text-caption text-medium-emphasis mb-2">{{ t('ShopView.partCard.listedHint') }}</div>
 
-            <template v-if="daten.listed && daten.channels.length">
-                <!-- Kanalauswahl: entfällt, solange es nur einen Kanal gibt -->
-                <div v-if="daten.channels.length > 1" class="mb-2">
-                    <div class="text-caption text-medium-emphasis">{{ t('ShopView.partCard.channels') }}</div>
-                    <v-chip-group
-                        v-model="ausgewaehlt"
-                        multiple
-                        mandatory
-                        column
-                        selected-class="text-primary"
-                        :disabled="!darfBearbeiten"
-                    >
-                        <v-chip
-                            v-for="kanal in daten.channels"
-                            :key="kanal.channel_id"
-                            :value="kanal.channel_id"
-                            :disabled="gesperrt(kanal)"
-                            :title="gesperrt(kanal) ? t('ShopView.partCard.serviceNotOnMarketplace') : ''"
-                            filter
-                            variant="outlined"
-                            size="small"
-                        >
-                            {{ kanalName(kanal) }}
-                        </v-chip>
-                    </v-chip-group>
-                </div>
+            <v-row v-if="daten.listed" dense>
+                <!-- Kategorie -->
+                <v-col cols="12" sm="6" class="py-1">
+                    <v-text-field
+                        v-model="daten.category"
+                        :label="t('ShopView.partCard.category')"
+                        :readonly="!darfBearbeiten"
+                        variant="outlined"
+                        density="compact"
+                        hide-details="auto"
+                        autocomplete="off"
+                    />
+                </v-col>
 
-                <!-- Preis und Texte je gewähltem Kanal -->
-                <v-expansion-panels v-model="offeneKanaele" variant="accordion" multiple class="mb-3">
+                <!-- Produktseite: leer = Vorschlag der Maske -->
+                <v-col cols="12" sm="6" class="py-1">
+                    <v-text-field
+                        v-model="daten.hyperlink"
+                        :label="t('ShopView.partCard.hyperlink')"
+                        :hint="t('ShopView.partCard.hyperlinkHint')"
+                        :placeholder="suggestedLink"
+                        persistent-placeholder
+                        :readonly="!darfBearbeiten"
+                        variant="outlined"
+                        density="compact"
+                        hide-details="auto"
+                        autocomplete="off"
+                    >
+                        <template v-if="shopLink" #append-inner>
+                            <v-btn
+                                icon="mdi-open-in-new"
+                                size="x-small"
+                                variant="text"
+                                :href="shopLink"
+                                target="_blank"
+                                rel="noopener"
+                                :title="t('ShopView.partCard.openInShop')"
+                            />
+                        </template>
+                    </v-text-field>
+                </v-col>
+
+                <!-- Navigationspfad -->
+                <v-col cols="12" class="py-1">
+                    <v-combobox
+                        v-model="daten.breadcrumbs"
+                        :label="t('ShopView.partCard.breadcrumbs')"
+                        :hint="t('ShopView.partCard.breadcrumbsHint')"
+                        :readonly="!darfBearbeiten"
+                        multiple
+                        chips
+                        closable-chips
+                        variant="outlined"
+                        density="compact"
+                        hide-details="auto"
+                    />
+                </v-col>
+
+                <!-- Bilder: das erste ist das Vorschaubild in Suche, Warenkorb und Rechnung -->
+                <v-col cols="12" class="py-1">
+                    <v-combobox
+                        v-model="daten.images"
+                        :label="t('ShopView.partCard.images')"
+                        :hint="t('ShopView.partCard.imagesHint')"
+                        :readonly="!darfBearbeiten"
+                        multiple
+                        chips
+                        closable-chips
+                        variant="outlined"
+                        density="compact"
+                        hide-details="auto"
+                    />
+                    <div v-if="vorschau.length" class="d-flex flex-wrap ga-2 mt-2">
+                        <div v-for="(bild, i) in vorschau" :key="bild.name" class="text-center" style="width: 96px;">
+                            <v-img :src="bild.url" width="96" height="96" cover class="rounded border" />
+                            <div v-if="i === 0" class="text-caption">{{ t('ShopView.partCard.thumbnail') }}</div>
+                        </div>
+                    </div>
+                </v-col>
+
+                <!-- Technische Daten, Eigenschaften, Downloads -->
+                <v-col cols="12" class="py-1">
+                    <ShopKeyValueEditor
+                        v-model="daten.technical_data"
+                        :title="t('ShopView.partCard.technicalData')"
+                        :key-label="t('ShopView.partCard.label')"
+                        :value-label="t('ShopView.partCard.value')"
+                        :readonly="!darfBearbeiten"
+                    />
+                </v-col>
+                <v-col cols="12" class="py-1">
+                    <ShopKeyValueEditor
+                        v-model="daten.properties"
+                        :title="t('ShopView.partCard.properties')"
+                        :key-label="t('ShopView.partCard.label')"
+                        :value-label="t('ShopView.partCard.value')"
+                        :readonly="!darfBearbeiten"
+                    />
+                </v-col>
+                <v-col cols="12" class="py-1">
+                    <ShopKeyValueEditor
+                        v-model="daten.downloads"
+                        :title="t('ShopView.partCard.downloads')"
+                        :key-label="t('ShopView.partCard.displayName')"
+                        :value-label="t('ShopView.partCard.file')"
+                        :readonly="!darfBearbeiten"
+                    />
+                </v-col>
+
+                <!-- Versand (dev/shop-versand.md, Schritt 5). Das Gewicht steht
+                     in den Stammdaten der Artikelmaske (parts.weight) -->
+                <v-col cols="12" class="pt-4 pb-1">
+                    <div class="text-subtitle-2">{{ t('ShopView.partCard.shipping') }}</div>
+                    <div class="text-caption" :class="gewicht === null ? 'text-warning' : 'text-medium-emphasis'">
+                        {{ gewicht === null
+                            ? t('ShopView.partCard.weightMissing')
+                            : t('ShopView.partCard.weightInfo', { weight: gewicht, unit: gewichtseinheit }) }}
+                    </div>
+                </v-col>
+                <v-col cols="12" sm="6" class="py-1">
+                    <v-select
+                        v-model="daten.shipping.shipping_method_id"
+                        :items="versandartAuswahl"
+                        :label="t('ShopView.partCard.shippingMethod')"
+                        :hint="t('ShopView.partCard.shippingMethodHint')"
+                        persistent-hint
+                        :readonly="!darfBearbeiten"
+                        variant="outlined"
+                        density="compact"
+                        hide-details="auto"
+                    />
+                </v-col>
+                <v-col cols="12" sm="6" class="py-1">
+                    <v-select
+                        v-model="daten.shipping.delivery_term_id"
+                        :items="lieferbedingungAuswahl"
+                        :label="t('ShopView.partCard.deliveryTerm')"
+                        :hint="lieferbedingungText || t('ShopView.partCard.deliveryTermHint')"
+                        persistent-hint
+                        clearable
+                        :readonly="!darfBearbeiten"
+                        variant="outlined"
+                        density="compact"
+                        hide-details="auto"
+                    />
+                </v-col>
+                <v-col v-for="feld in ['length', 'width', 'height']" :key="feld" cols="4" sm="2" class="py-1">
+                    <v-text-field
+                        persistent-placeholder
+                        v-model="daten.shipping[feld]"
+                        type="number"
+                        step="0.1"
+                        min="0"
+                        suffix="cm"
+                        :label="t(`ShopView.partCard.${feld}`)"
+                        :rules="[groesserNull]"
+                        :readonly="!darfBearbeiten"
+                        variant="outlined"
+                        density="compact"
+                        hide-details="auto"
+                    />
+                </v-col>
+                <v-col cols="12" sm="6" class="py-1">
+                    <v-text-field
+                        v-model="daten.shipping.min_qty"
+                        type="number"
+                        step="1"
+                        min="0"
+                        :label="t('ShopView.partCard.minQty')"
+                        :hint="t('ShopView.partCard.minQtyHint')"
+                        persistent-hint
+                        :rules="[groesserNull]"
+                        :readonly="!darfBearbeiten"
+                        variant="outlined"
+                        density="compact"
+                        hide-details="auto"
+                    />
+                </v-col>
+            </v-row>
+
+            <!-- Verkaufskanäle zuletzt, unter dem Versand -->
+            <template v-if="daten.listed && daten.channels.length">
+                <!-- Alle Kanäle als Panels; das Häkchen ordnet den Artikel dem Kanal
+                     zu. Aufklappbar nur mit Häkchen. Das Häkchen steht neben der
+                     Kopfzeile, nicht darin: die ist ein <button>, und Firefox gibt
+                     Klicks auf Felder darin nicht weiter. -->
+                <div class="text-subtitle-2 mt-4 mb-2">{{ t('ShopView.partCard.channels') }}</div>
+                <v-alert v-if="kanalFehlt" type="warning" variant="tonal" density="compact" class="my-1">
+                    {{ t('ShopView.partCard.chooseChannel') }}
+                </v-alert>
+                <!-- Abstand zwischen den Panels (ga-2); im Accordion sind die inneren
+                     Ecken sonst eckig — die Variable rundet sie wie die äußeren -->
+                <v-expansion-panels
+                    v-model="offeneKanaele"
+                    variant="accordion"
+                    multiple
+                    class="mb-1 ga-1"
+                    style="--v-expansion-panels-inner-radius: 4px"
+                >
                     <v-expansion-panel
-                        v-for="kanal in aktiveKanaele"
+                        v-for="kanal in daten.channels"
                         :key="kanal.channel_id"
                         :value="kanal.channel_id"
                         elevation="0"
                         class="border"
                     >
-                        <v-expansion-panel-title class="py-2">
-                            <span class="font-weight-medium">{{ kanalName(kanal) }}</span>
-                            <v-spacer />
-                            <span class="text-body-2 mr-2">
-                                {{ geld(kanalPreis(kanal).brutto) }} {{ t('ShopView.partCard.gross') }}
-                            </span>
-                        </v-expansion-panel-title>
+                        <div class="d-flex align-center">
+                            <v-checkbox-btn
+                                :model-value="kanal.active"
+                                :disabled="!darfBearbeiten || gesperrt(kanal) || letzterKanal(kanal)"
+                                :title="gesperrt(kanal) ? t('ShopView.partCard.serviceNotOnMarketplace') : ''"
+                                density="compact"
+                                class="flex-grow-0 ml-2"
+                                @update:model-value="an => kanalSetzen(kanal, an)"
+                            />
+                            <v-expansion-panel-title
+                                class="py-2"
+                                :readonly="!kanal.active"
+                                :hide-actions="!kanal.active"
+                            >
+                                <span class="font-weight-medium" :class="kanal.active ? '' : 'text-medium-emphasis'">
+                                    {{ kanalName(kanal) }}
+                                </span>
+                                <v-spacer />
+                                <span v-if="kanal.active" class="text-body-2 mr-2">
+                                    {{ geld(kanalPreis(kanal).brutto) }} {{ t('ShopView.partCard.gross') }}
+                                </span>
+                            </v-expansion-panel-title>
+                        </div>
                         <v-expansion-panel-text>
                             <v-row dense>
+                                <!-- Verfügbarkeit: angeboten, aber vorübergehend nicht
+                                     bestellbar (parts_channel_shop.unavailable) -->
+                                <v-col cols="12" class="pb-5">
+                                    <v-switch
+                                        v-model="kanal.unavailable"
+                                        :label="t('ShopView.partCard.unavailable')"
+                                        :hint="t('ShopView.partCard.unavailableHint')"
+                                        persistent-hint
+                                        :readonly="!darfBearbeiten"
+                                        color="error"
+                                        density="compact"
+                                        inset
+                                    />
+                                    <v-alert
+                                        v-if="obsolete"
+                                        type="warning"
+                                        variant="tonal"
+                                        density="compact"
+                                        class="mt-2"
+                                        :text="t('ShopView.partCard.obsoleteHint')"
+                                    />
+                                </v-col>
+
                                 <v-col cols="12" sm="6" class="py-1">
                                     <v-select
                                         v-model="kanal.markup_mode"
@@ -191,29 +400,6 @@
                                             </tr>
                                         </tbody>
                                     </v-table>
-                                </v-col>
-
-                                <!-- Verfügbarkeit: angeboten, aber vorübergehend nicht
-                                     bestellbar (parts_channel_shop.unavailable) -->
-                                <v-col cols="12" class="py-1">
-                                    <v-switch
-                                        v-model="kanal.unavailable"
-                                        :label="t('ShopView.partCard.unavailable')"
-                                        :hint="t('ShopView.partCard.unavailableHint')"
-                                        persistent-hint
-                                        :readonly="!darfBearbeiten"
-                                        color="error"
-                                        density="compact"
-                                        inset
-                                    />
-                                    <v-alert
-                                        v-if="obsolete"
-                                        type="warning"
-                                        variant="tonal"
-                                        density="compact"
-                                        class="mt-2"
-                                        :text="t('ShopView.partCard.obsoleteHint')"
-                                    />
                                 </v-col>
 
                                 <!-- Texte: leer = Stammdaten -->
@@ -401,186 +587,6 @@
                     </v-expansion-panel>
                 </v-expansion-panels>
             </template>
-
-            <v-row v-if="daten.listed" dense>
-                <!-- Kategorie -->
-                <v-col cols="12" sm="6" class="py-1">
-                    <v-text-field
-                        v-model="daten.category"
-                        :label="t('ShopView.partCard.category')"
-                        :readonly="!darfBearbeiten"
-                        variant="outlined"
-                        density="compact"
-                        hide-details="auto"
-                        autocomplete="off"
-                    />
-                </v-col>
-
-                <!-- Produktseite: leer = Vorschlag der Maske -->
-                <v-col cols="12" sm="6" class="py-1">
-                    <v-text-field
-                        v-model="daten.hyperlink"
-                        :label="t('ShopView.partCard.hyperlink')"
-                        :hint="t('ShopView.partCard.hyperlinkHint')"
-                        :placeholder="suggestedLink"
-                        persistent-placeholder
-                        :readonly="!darfBearbeiten"
-                        variant="outlined"
-                        density="compact"
-                        hide-details="auto"
-                        autocomplete="off"
-                    >
-                        <template v-if="shopLink" #append-inner>
-                            <v-btn
-                                icon="mdi-open-in-new"
-                                size="x-small"
-                                variant="text"
-                                :href="shopLink"
-                                target="_blank"
-                                rel="noopener"
-                                :title="t('ShopView.partCard.openInShop')"
-                            />
-                        </template>
-                    </v-text-field>
-                </v-col>
-
-                <!-- Navigationspfad -->
-                <v-col cols="12" class="py-1">
-                    <v-combobox
-                        v-model="daten.breadcrumbs"
-                        :label="t('ShopView.partCard.breadcrumbs')"
-                        :hint="t('ShopView.partCard.breadcrumbsHint')"
-                        :readonly="!darfBearbeiten"
-                        multiple
-                        chips
-                        closable-chips
-                        variant="outlined"
-                        density="compact"
-                        hide-details="auto"
-                    />
-                </v-col>
-
-                <!-- Bilder: das erste ist das Vorschaubild in Suche, Warenkorb und Rechnung -->
-                <v-col cols="12" class="py-1">
-                    <v-combobox
-                        v-model="daten.images"
-                        :label="t('ShopView.partCard.images')"
-                        :hint="t('ShopView.partCard.imagesHint')"
-                        :readonly="!darfBearbeiten"
-                        multiple
-                        chips
-                        closable-chips
-                        variant="outlined"
-                        density="compact"
-                        hide-details="auto"
-                    />
-                    <div v-if="vorschau.length" class="d-flex flex-wrap ga-2 mt-2">
-                        <div v-for="(bild, i) in vorschau" :key="bild.name" class="text-center" style="width: 96px;">
-                            <v-img :src="bild.url" width="96" height="96" cover class="rounded border" />
-                            <div v-if="i === 0" class="text-caption">{{ t('ShopView.partCard.thumbnail') }}</div>
-                        </div>
-                    </div>
-                </v-col>
-
-                <!-- Technische Daten, Eigenschaften, Downloads -->
-                <v-col cols="12" class="py-1">
-                    <ShopKeyValueEditor
-                        v-model="daten.technical_data"
-                        :title="t('ShopView.partCard.technicalData')"
-                        :key-label="t('ShopView.partCard.label')"
-                        :value-label="t('ShopView.partCard.value')"
-                        :readonly="!darfBearbeiten"
-                    />
-                </v-col>
-                <v-col cols="12" class="py-1">
-                    <ShopKeyValueEditor
-                        v-model="daten.properties"
-                        :title="t('ShopView.partCard.properties')"
-                        :key-label="t('ShopView.partCard.label')"
-                        :value-label="t('ShopView.partCard.value')"
-                        :readonly="!darfBearbeiten"
-                    />
-                </v-col>
-                <v-col cols="12" class="py-1">
-                    <ShopKeyValueEditor
-                        v-model="daten.downloads"
-                        :title="t('ShopView.partCard.downloads')"
-                        :key-label="t('ShopView.partCard.displayName')"
-                        :value-label="t('ShopView.partCard.file')"
-                        :readonly="!darfBearbeiten"
-                    />
-                </v-col>
-
-                <!-- Versand (dev/shop-versand.md, Schritt 5). Das Gewicht steht
-                     in den Stammdaten der Artikelmaske (parts.weight) -->
-                <v-col cols="12" class="pt-4 pb-1">
-                    <div class="text-subtitle-2">{{ t('ShopView.partCard.shipping') }}</div>
-                    <div class="text-caption" :class="gewicht === null ? 'text-warning' : 'text-medium-emphasis'">
-                        {{ gewicht === null
-                            ? t('ShopView.partCard.weightMissing')
-                            : t('ShopView.partCard.weightInfo', { weight: gewicht, unit: gewichtseinheit }) }}
-                    </div>
-                </v-col>
-                <v-col cols="12" sm="6" class="py-1">
-                    <v-select
-                        v-model="daten.shipping.shipping_method_id"
-                        :items="versandartAuswahl"
-                        :label="t('ShopView.partCard.shippingMethod')"
-                        :hint="t('ShopView.partCard.shippingMethodHint')"
-                        persistent-hint
-                        :readonly="!darfBearbeiten"
-                        variant="outlined"
-                        density="compact"
-                        hide-details="auto"
-                    />
-                </v-col>
-                <v-col cols="12" sm="6" class="py-1">
-                    <v-select
-                        v-model="daten.shipping.delivery_term_id"
-                        :items="lieferbedingungAuswahl"
-                        :label="t('ShopView.partCard.deliveryTerm')"
-                        :hint="lieferbedingungText || t('ShopView.partCard.deliveryTermHint')"
-                        persistent-hint
-                        clearable
-                        :readonly="!darfBearbeiten"
-                        variant="outlined"
-                        density="compact"
-                        hide-details="auto"
-                    />
-                </v-col>
-                <v-col v-for="feld in ['length', 'width', 'height']" :key="feld" cols="4" sm="2" class="py-1">
-                    <v-text-field
-                        persistent-placeholder
-                        v-model="daten.shipping[feld]"
-                        type="number"
-                        step="0.1"
-                        min="0"
-                        suffix="cm"
-                        :label="t(`ShopView.partCard.${feld}`)"
-                        :rules="[groesserNull]"
-                        :readonly="!darfBearbeiten"
-                        variant="outlined"
-                        density="compact"
-                        hide-details="auto"
-                    />
-                </v-col>
-                <v-col cols="12" sm="6" class="py-1">
-                    <v-text-field
-                        v-model="daten.shipping.min_qty"
-                        type="number"
-                        step="1"
-                        min="0"
-                        :label="t('ShopView.partCard.minQty')"
-                        :hint="t('ShopView.partCard.minQtyHint')"
-                        persistent-hint
-                        :rules="[groesserNull]"
-                        :readonly="!darfBearbeiten"
-                        variant="outlined"
-                        density="compact"
-                        hide-details="auto"
-                    />
-                </v-col>
-            </v-row>
         </v-card-text>
     </v-card>
 </template>
@@ -863,30 +869,47 @@ const kanalName = kanal => kanal.name
 const aktiveKanaele = computed(() => daten.value.channels.filter(k => k.active))
 const hugoshopAktiv = computed(() => aktiveKanaele.value.some(k => k.type === 'hugoshop'))
 
-/** Aufgeklappte Kanäle (channel_id); beim Laden der erste aktive (ersterKanalOffen) */
+/** Aufgeklappte Kanäle (channel_id); beim Laden alle zu (alleKanaeleZu) */
 const offeneKanaele = ref([])
 
-/**
- * Klappt den ersten aktiven Kanal auf
- *
- * Beim Öffnen der Artikelmaske stehen Preis und Texte des ersten Kanals so
- * gleich da, statt hinter einem Klick zu liegen.
- */
-function ersterKanalOffen() {
-    const erster = aktiveKanaele.value[0]
-    offeneKanaele.value = erster ? [erster.channel_id] : []
+/** Beim Öffnen der Artikelmaske stehen alle Kanäle eingeklappt da */
+function alleKanaeleZu() {
+    offeneKanaele.value = []
 }
 
-/** Auswahl der Kanäle als Liste von channel_id — für die Chip-Gruppe */
-const ausgewaehlt = computed({
-    get: () => aktiveKanaele.value.map(k => k.channel_id),
-    set: ids => daten.value.channels.forEach(k => { k.active = ids.includes(k.channel_id) }),
-})
+/**
+ * Häkchen eines Kanals: zuordnen klappt das Panel auf, abwählen klappt es zu
+ * — ohne Zuordnung gibt es dort nichts zu bearbeiten
+ */
+function kanalSetzen(kanal, an) {
+    kanal.active = !!an
+    offeneKanaele.value = an
+        ? [...new Set([...offeneKanaele.value, kanal.channel_id])]
+        : offeneKanaele.value.filter(id => id !== kanal.channel_id)
+}
+
+/**
+ * Der letzte zugeordnete Kanal lässt sich nicht abwählen — außer bei der
+ * Neuanlage mit Auswahl (dort darf es leer sein, dann wird nicht angelegt).
+ * Ganz aus dem Shop nimmt den Artikel der Schalter „Im Shop anbieten".
+ */
+const letzterKanal = kanal => kanal.active && aktiveKanaele.value.length === 1 && !auswahlNoetig.value
+
+/**
+ * Neuanlage mit mehr als einem wählbaren Kanal: keine Vorgabe — der Benutzer
+ * wählt selbst. Mit nur einem wählbaren bleibt es bei der Vorgabe.
+ */
+const auswahlNoetig = computed(() =>
+    !props.partsId && daten.value.channels.filter(k => !gesperrt(k)).length > 1)
+
+/** Im Shop anbieten, aber noch kein Kanal gewählt — die Artikelmaske legt dann nicht an */
+const kanalFehlt = computed(() =>
+    auswahlNoetig.value && daten.value.listed && !aktiveKanaele.value.length)
 
 /** Wer „Im Shop anbieten" einschaltet, bietet mindestens im ersten Kanal an (HugoShop) */
 function mindestensEinKanal() {
     const kanaele = daten.value.channels
-    if (!kanaele.length || kanaele.some(k => k.active)) return
+    if (!kanaele.length || kanaele.some(k => k.active) || auswahlNoetig.value) return
     const erster = kanaele.find(k => k.type === 'hugoshop') || kanaele[0]
     erster.active = true
 }
@@ -1083,7 +1106,7 @@ async function laden() {
         // gedacht. Vorhandene Artikel zeigen dagegen den gespeicherten Stand.
         daten.value = { ...leer(), listed: true, channels: kanaele.map(alsKanal) }
         mindestensEinKanal()
-        ersterKanalOffen()
+        alleKanaeleZu()
         return
     }
 
@@ -1108,7 +1131,7 @@ async function laden() {
         } : leererVersand(),
     }
     zuletzt = stand(props.partsId)
-    ersterKanalOffen()
+    alleKanaeleZu()
 
     // Der Watcher auf daten läuft erst vor dem nächsten Rendern — sonst hielte
     // er das Laden für eine Eingabe.
@@ -1232,5 +1255,5 @@ async function saveFor(partsId) {
     return true
 }
 
-defineExpose({ saveFor })
+defineExpose({ saveFor, kanalFehlt })
 </script>

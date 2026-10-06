@@ -16,10 +16,11 @@
         },
         "status": {
             "ready": "Butikken er klar til brug.",
-            "notReady": "Butikken tager endnu ikke imod ordrer",
+            "notReadyChannel": "Salgskanalen „{name}“ modtager endnu ikke ordrer",
             "notReadyHint": "Disse oplysninger mangler. De findes i indstillingerne under Udvidelser → Butik eller i butiksmenuen under Salgskanaler.",
             "shippingMissing": "Der er ikke oprettet nogen forsendelsesmåde: ordrer behandles som „Standard“ uden fragtomkostninger.",
-            "hints": "Disse oplysninger mangler stadig. Butikken kører, men begrænset:",
+            "hintsAll": "Disse oplysninger mangler stadig og gælder alle salgskanaler:",
+            "hintsChannel": "Salgskanalen „{name}“ kører, men begrænset — der mangler stadig:",
             "partsWithShopData": "Varer med butiksdata",
             "carts": "Kurve",
             "sessions": "Sessioner",
@@ -27,6 +28,11 @@
             "recommendation": {
                 "channel_round_99_net": "Afrunding til ,99 er slået til, men salgspriserne er gemt netto. Med bruttosalgspriser stemmer kurv og faktura altid på øren."
             }
+        },
+        "sections": {
+            "figures": "Nøgletal",
+            "links": "Genveje",
+            "jobs": "Planlagte opgaver"
         },
         "orders": {
             "title": "Ordrer",
@@ -124,6 +130,7 @@
             "publishQueued": "Opgave oprettet.",
             "publishAlready": "Opgaven er allerede åben.",
             "channels": "Salgskanaler",
+            "chooseChannel": "Vælg mindst én salgskanal — ellers kan varen ikke oprettes.",
             "markup": "Tillæg",
             "markupDefault": "Kanalens standard ({vorgabe})",
             "markupNone": "Intet tillæg",

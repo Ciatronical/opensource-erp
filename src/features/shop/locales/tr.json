@@ -16,10 +16,11 @@
         },
         "status": {
             "ready": "Mağaza kullanıma hazır.",
-            "notReady": "Mağaza henüz sipariş almıyor",
+            "notReadyChannel": "„{name}“ satış kanalı henüz sipariş kabul etmiyor",
             "notReadyHint": "Bu bilgiler eksik. Ayarlarda Uzantılar → Mağaza altında veya mağaza menüsünde Satış kanalları altında bulunur.",
             "shippingMissing": "Hiçbir gönderim yöntemi ayarlanmamış: siparişler kargo ücreti olmadan „Standard“ olarak işlenir.",
-            "hints": "Bu bilgiler hâlâ eksik. Mağaza çalışıyor, ancak sınırlı:",
+            "hintsAll": "Bu bilgiler hâlâ eksik ve tüm satış kanallarını etkiliyor:",
+            "hintsChannel": "„{name}“ satış kanalı çalışıyor, ancak kısıtlı — hâlâ eksik:",
             "partsWithShopData": "Mağaza bilgisi olan ürünler",
             "carts": "Sepetler",
             "sessions": "Oturumlar",
@@ -27,6 +28,11 @@
             "recommendation": {
                 "channel_round_99_net": "Yuvarlama ,99 etkin, ancak satış fiyatları net olarak kayıtlı. Brüt satış fiyatlarıyla sepet ve fatura her zaman kuruşu kuruşuna eşleşir."
             }
+        },
+        "sections": {
+            "figures": "Göstergeler",
+            "links": "Bağlantılar",
+            "jobs": "Planlanmış görevler"
         },
         "orders": {
             "title": "Siparişler",
@@ -124,6 +130,7 @@
             "publishQueued": "Görev oluşturuldu.",
             "publishAlready": "Görev zaten bekliyor.",
             "channels": "Satış kanalları",
+            "chooseChannel": "Lütfen en az bir satış kanalı seçin — aksi takdirde ürün oluşturulamaz.",
             "markup": "Fiyat farkı",
             "markupDefault": "Kanal varsayılanı ({vorgabe})",
             "markupNone": "Fiyat farkı yok",

@@ -16,10 +16,11 @@
         },
         "status": {
             "ready": "A loja está pronta a funcionar.",
-            "notReady": "A loja ainda não aceita encomendas",
+            "notReadyChannel": "O canal de venda «{name}» ainda não aceita encomendas",
             "notReadyHint": "Faltam estes dados. Estão nas definições, em Extensões → Loja, ou no menu Loja, em Canais de venda.",
             "shippingMissing": "Não há nenhum método de envio configurado: as encomendas são processadas como «Standard» sem portes.",
-            "hints": "Ainda faltam estes dados. A loja funciona, mas de forma limitada:",
+            "hintsAll": "Estes dados ainda faltam e afetam todos os canais de venda:",
+            "hintsChannel": "O canal de venda «{name}» funciona, mas com limitações — ainda falta:",
             "partsWithShopData": "Artigos com dados de loja",
             "carts": "Carrinhos",
             "sessions": "Sessões",
@@ -27,6 +28,11 @@
             "recommendation": {
                 "channel_round_99_net": "O arredondamento para ,99 está ativado, mas os preços de venda estão guardados em líquido. Com preços de venda brutos, o carrinho e a fatura coincidem sempre ao cêntimo."
             }
+        },
+        "sections": {
+            "figures": "Indicadores",
+            "links": "Ligações",
+            "jobs": "Tarefas agendadas"
         },
         "orders": {
             "title": "Encomendas",
@@ -124,6 +130,7 @@
             "publishQueued": "Tarefa criada.",
             "publishAlready": "A tarefa já está pendente.",
             "channels": "Canais de venda",
+            "chooseChannel": "Selecione pelo menos um canal de venda — caso contrário, o artigo não pode ser criado.",
             "markup": "Acréscimo",
             "markupDefault": "Padrão do canal ({vorgabe})",
             "markupNone": "Sem acréscimo",

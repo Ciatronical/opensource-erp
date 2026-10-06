@@ -16,10 +16,11 @@
         },
         "status": {
             "ready": "Butiken är klar att användas.",
-            "notReady": "Butiken tar ännu inte emot beställningar",
+            "notReadyChannel": "Försäljningskanalen ”{name}” tar ännu inte emot beställningar",
             "notReadyHint": "Dessa uppgifter saknas. De finns i inställningarna under Tillägg → Butik eller i butiksmenyn under Försäljningskanaler.",
             "shippingMissing": "Inget fraktsätt är inrättat: beställningar hanteras som ”Standard” utan fraktkostnader.",
-            "hints": "Dessa uppgifter saknas fortfarande. Butiken fungerar, men begränsat:",
+            "hintsAll": "Dessa uppgifter saknas fortfarande och gäller alla försäljningskanaler:",
+            "hintsChannel": "Försäljningskanalen ”{name}” fungerar, men begränsat — saknas fortfarande:",
             "partsWithShopData": "Artiklar med butiksuppgifter",
             "carts": "Varukorgar",
             "sessions": "Sessioner",
@@ -27,6 +28,11 @@
             "recommendation": {
                 "channel_round_99_net": "Avrundning till ,99 är påslagen, men försäljningspriserna är sparade netto. Med bruttopriser stämmer varukorg och faktura alltid på öret."
             }
+        },
+        "sections": {
+            "figures": "Nyckeltal",
+            "links": "Genvägar",
+            "jobs": "Schemalagda uppgifter"
         },
         "orders": {
             "title": "Beställningar",
@@ -124,6 +130,7 @@
             "publishQueued": "Uppdrag skapat.",
             "publishAlready": "Uppdraget är redan öppet.",
             "channels": "Försäljningskanaler",
+            "chooseChannel": "Välj minst en försäljningskanal — annars kan artikeln inte skapas.",
             "markup": "Påslag",
             "markupDefault": "Kanalens standard ({vorgabe})",
             "markupNone": "Inget påslag",

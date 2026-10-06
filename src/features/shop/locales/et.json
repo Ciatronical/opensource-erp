@@ -16,10 +16,11 @@
         },
         "status": {
             "ready": "Pood on kasutusvalmis.",
-            "notReady": "Pood ei võta veel tellimusi vastu",
+            "notReadyChannel": "Müügikanal „{name}“ ei võta veel tellimusi vastu",
             "notReadyHint": "Need andmed puuduvad. Need on seadetes jaotises Laiendused → Pood või poe menüüs jaotises Müügikanalid.",
             "shippingMissing": "Ühtegi tarneviisi pole seadistatud: tellimused töödeldakse kui „Standard“ ilma saatmiskuludeta.",
-            "hints": "Need andmed on veel puudu. Pood töötab, kuid piiratult:",
+            "hintsAll": "Need andmed puuduvad veel ja puudutavad kõiki müügikanaleid:",
+            "hintsChannel": "Müügikanal „{name}“ töötab, kuid piiratult — veel puudub:",
             "partsWithShopData": "Poeandmetega artiklid",
             "carts": "Ostukorvid",
             "sessions": "Seansid",
@@ -27,6 +28,11 @@
             "recommendation": {
                 "channel_round_99_net": "Ümardamine ,99-ni on sisse lülitatud, kuid müügihinnad on salvestatud netona. Brutohindadega ühtivad ostukorv ja arve alati sendi täpsusega."
             }
+        },
+        "sections": {
+            "figures": "Näitajad",
+            "links": "Lingid",
+            "jobs": "Plaanitud ülesanded"
         },
         "orders": {
             "title": "Tellimused",
@@ -124,6 +130,7 @@
             "publishQueued": "Ülesanne loodud.",
             "publishAlready": "Ülesanne on juba ootel.",
             "channels": "Müügikanalid",
+            "chooseChannel": "Valige vähemalt üks müügikanal — muidu artiklit luua ei saa.",
             "markup": "Juurdehindlus",
             "markupDefault": "Kanali vaikeväärtus ({vorgabe})",
             "markupNone": "Juurdehindluseta",
