@@ -208,10 +208,20 @@ function getCashCounterCharts($data) {
 
     $invalidClause = _kasse_invalidClause($db, 'ch');
 
+    // Steuersatz des Kontos (heute gültiger Steuerschlüssel), damit der Dialog
+    // anzeigen kann, wie viel Umsatz-/Vorsteuer im Bruttobetrag steckt.
     $result = $db->getAll("
-        SELECT id, accno, description, category
+        SELECT ch.id, ch.accno, ch.description, ch.category,
+               COALESCE(tk.rate, 0) AS tax_rate
         FROM chart ch
-        WHERE charttype = 'A'
+        LEFT JOIN LATERAL (
+            SELECT t.rate
+            FROM taxkeys k JOIN tax t ON t.id = k.tax_id
+            WHERE k.chart_id = ch.id AND k.startdate <= CURRENT_DATE AND t.chart_id IS NOT NULL
+            ORDER BY k.startdate DESC
+            LIMIT 1
+        ) tk ON true
+        WHERE ch.charttype = 'A'
           {$invalidClause}
           {$where}
         ORDER BY
@@ -220,6 +230,35 @@ function getCashCounterCharts($data) {
     ", $params);
 
     resultInfo(true, '', ['charts' => $result ?: []]);
+}
+
+/**
+ * Steuerschlüssel eines Gegenkontos am Buchungstag (kivitendo: taxkeys).
+ *
+ * Liefert null, wenn für das Konto keine Steuer hinterlegt ist (Schlüssel 0,
+ * z. B. Nebenkosten des Geldverkehrs) oder der Schlüssel kein Steuerkonto hat.
+ *
+ * @return array|null {taxkey, tax_id, rate, tax_chart_id, tax_chart_link}
+ */
+function _kasse_taxForChart($db, $chartId, $transdate) {
+    $row = $db->getOne("
+        SELECT k.taxkey_id AS taxkey, t.id AS tax_id, t.rate, t.chart_id AS tax_chart_id, tc.link AS tax_chart_link
+        FROM taxkeys k
+        JOIN tax t ON t.id = k.tax_id
+        LEFT JOIN chart tc ON tc.id = t.chart_id
+        WHERE k.chart_id = :chart_id AND k.startdate <= :transdate::date
+        ORDER BY k.startdate DESC
+        LIMIT 1
+    ", ['chart_id' => $chartId, 'transdate' => $transdate]);
+
+    if (!$row || floatval($row['rate']) <= 0 || empty($row['tax_chart_id'])) return null;
+    return [
+        'taxkey'         => intval($row['taxkey']),
+        'tax_id'         => intval($row['tax_id']),
+        'rate'           => floatval($row['rate']),
+        'tax_chart_id'   => intval($row['tax_chart_id']),
+        'tax_chart_link' => (string)($row['tax_chart_link'] ?? ''),
+    ];
 }
 
 /**
@@ -979,6 +1018,23 @@ function createCashTransaction($data) {
     $kasseAmount   = $type === 'expense' ? $amount : -$amount;
     $counterAmount = -$kasseAmount;
 
+    // Umsatz-/Vorsteuer aus dem Bruttobetrag herausrechnen — nach dem
+    // Steuerschlüssel des Gegenkontos am Buchungstag, genau wie kivitendos
+    // Dialogbuchung (Netto auf das Gegenkonto, Steuer auf das Steuerkonto,
+    // beide mit Steuerschlüssel; die Kasse trägt den Bruttobetrag). Bisher
+    // ging der Bruttobetrag komplett auf das Erlös-/Aufwandskonto: keine
+    // Umsatzsteuer auf Bareinnahmen, keine Vorsteuer aus Barausgaben — und in
+    // der UStVA fehlten diese Buchungen vollständig.
+    $tax       = _kasse_taxForChart($db, $counterChartId, $transdate);
+    $netAmount = $counterAmount;
+    $taxAmount = 0.0;
+    if ($tax) {
+        $netAmount = round($counterAmount / (1 + $tax['rate']), 2);
+        $taxAmount = round($counterAmount - $netAmount, 2);
+    }
+    $taxkey = $tax['taxkey'] ?? 0;
+    $taxId  = $tax['tax_id'] ?? 0;
+
     // GL-Kopf
     $glRow = $db->getOne(
         "INSERT INTO gl (reference, description, transdate, gldate, employee_id)
@@ -1007,19 +1063,40 @@ function createCashTransaction($data) {
         ]
     );
 
-    // acc_trans: Gegenkonto
+    // acc_trans: Gegenkonto (Netto) — vor dem Steuerbein, weil das Kassenbuch
+    // das erste Nicht-Kassen-Bein als Gegenkonto anzeigt
     $db->execute(
         "INSERT INTO acc_trans (trans_id, chart_id, amount, transdate, gldate, source, chart_link, tax_id, taxkey)
-         VALUES (:trans_id, :chart_id, :amount, :transdate, :transdate, :source, :chart_link, 0, 0)",
+         VALUES (:trans_id, :chart_id, :amount, :transdate, :transdate, :source, :chart_link, :tax_id, :taxkey)",
         [
             'trans_id'   => $glId,
             'chart_id'   => $counterChartId,
-            'amount'     => $counterAmount,
+            'amount'     => $netAmount,
             'transdate'  => $transdate,
             'source'     => $reference ?? 'Kasse',
             'chart_link' => $counterChart['link'] ?? '',
+            'tax_id'     => $taxId,
+            'taxkey'     => $taxkey,
         ]
     );
+
+    // acc_trans: Steuerkonto (Umsatzsteuer bei Einnahmen, Vorsteuer bei Ausgaben)
+    if (abs($taxAmount) > 0.004) {
+        $db->execute(
+            "INSERT INTO acc_trans (trans_id, chart_id, amount, transdate, gldate, source, chart_link, tax_id, taxkey)
+             VALUES (:trans_id, :chart_id, :amount, :transdate, :transdate, :source, :chart_link, :tax_id, :taxkey)",
+            [
+                'trans_id'   => $glId,
+                'chart_id'   => $tax['tax_chart_id'],
+                'amount'     => $taxAmount,
+                'transdate'  => $transdate,
+                'source'     => $reference ?? 'Kasse',
+                'chart_link' => $tax['tax_chart_link'],
+                'tax_id'     => $taxId,
+                'taxkey'     => $taxkey,
+            ]
+        );
+    }
 
     // Beleg verknüpfen (nur falls Beleg-Tabellen vorhanden)
     if ($documentId && _kasse_documentsEnabled($db)) {
@@ -1029,7 +1106,13 @@ function createCashTransaction($data) {
         );
     }
 
-    resultInfo(true, '', ['gl_id' => $glId]);
+    resultInfo(true, '', [
+        'gl_id'    => $glId,
+        'gross'    => $amount,
+        'net'      => abs($netAmount),
+        'tax'      => abs($taxAmount),
+        'tax_rate' => $tax['rate'] ?? 0,
+    ]);
 }
 
 /**

@@ -332,6 +332,10 @@
     "KasseView": {
         "routes": {
             "kasse": "/kassa"
-        }
+        },
+        "taxIncluded": "Brutosumma · sisaldab {rate} % {kind}: {tax} €, neto {net} €",
+        "taxKindOut": "käibemaks",
+        "taxKindIn": "sisendkäibemaks",
+        "taxNone": "Konto ilma maksukoodita – maksu ei eraldata"
     }
 }

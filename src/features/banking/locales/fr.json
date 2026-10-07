@@ -72,7 +72,8 @@
             "payables": "Dettes",
             "openAmount": "Montant ouvert",
             "dueDate": "Date d'échéance",
-            "matchManually": "Rapprocher manuellement"
+            "matchManually": "Rapprocher manuellement",
+            "vendorRecognized": "Prérempli – reconnu via {source}"
         },
         "transfers": {
             "title": "Virements",
@@ -401,7 +402,17 @@
             "actionCreateAp": "Nouvelle facture d'achat",
             "matchType_iban_contact": "IBAN connu",
             "matchType_name_contact": "Nom correspondant",
-            "selectionExceeds": "{amount} de trop"
+            "selectionExceeds": "{amount} de trop",
+            "contactVendor": "Fournisseur",
+            "contactCustomer": "Client",
+            "contactSource_iban": "IBAN de la fiche",
+            "contactSource_rule": "règle d'affectation",
+            "contactSource_history_iban": "écritures précédentes de cet IBAN",
+            "contactSource_history_name": "écritures précédentes de ce nom",
+            "contactSource_name": "correspondance du nom",
+            "contactRecognized": "reconnu via {source}",
+            "contactNoOpenDocs": "Aucune pièce ouverte pour ce contact.",
+            "actionCreateApFor": "Créer une facture d'achat pour {name}"
         },
         "settlement": {
             "title": "Affecter le décompte carte",
@@ -456,6 +467,10 @@
             "sumupNoPayout": "SumUp n'a renvoyé aucun versement du {from} au {to} correspondant à ce montant bancaire. Vérifiez dans SumUp ou importez un rapport de transactions.",
             "cardPayment": "Paiement par carte",
             "paymentNoInvoice": "aucune facture ouverte avec ce montant",
+            "manualPaymentReplaced": "déjà comptabilisée manuellement le {date} ({amount}) – sera remplacée",
+            "paymentDiff": "facture {open} · écart {diff} sur le compte de frais",
+            "previewReplacedTitle": "Cette écriture remplace les paiements saisis manuellement suivants (banque sans opération bancaire) :",
+            "previewReplacedLine": "Fact. {invnumber} · {date} · {amount}",
             "paymentsUnmatched": "{count} paiement(s) par carte sans facture correspondante – veuillez sélectionner ci-dessous.",
             "otherInvoices": "Autres factures ouvertes",
             "showOtherInvoices": "Afficher {count} autres factures ouvertes"
@@ -560,6 +575,10 @@
         "chartAccount": "Compte",
         "noCharts": "Aucun compte trouvé",
         "sourceAR": "Paiement client",
-        "sourceAP": "Paiement fournisseur"
+        "sourceAP": "Paiement fournisseur",
+        "taxIncluded": "Montant TTC · dont {rate} % {kind} : {tax} €, HT {net} €",
+        "taxKindOut": "TVA collectée",
+        "taxKindIn": "TVA déductible",
+        "taxNone": "Compte sans code TVA – aucune taxe n’est extraite"
     }
 }

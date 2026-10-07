@@ -332,6 +332,10 @@
     "KasseView": {
         "routes": {
             "kasse": "/kasa"
-        }
+        },
+        "taxIncluded": "Brüt tutar · {rate} % {kind} dahil: {tax} €, net {net} €",
+        "taxKindOut": "KDV",
+        "taxKindIn": "indirilecek KDV",
+        "taxNone": "Vergi anahtarı olmayan hesap – vergi ayrıştırılmaz"
     }
 }

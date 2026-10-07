@@ -72,7 +72,8 @@
             "payables": "Кредиторська заборгованість",
             "openAmount": "Відкрита сума",
             "dueDate": "Термін оплати",
-            "matchManually": "Зіставити вручну"
+            "matchManually": "Зіставити вручну",
+            "vendorRecognized": "Заповнено – розпізнано за {source}"
         },
         "transfers": {
             "title": "Перекази",
@@ -401,7 +402,17 @@
             "actionCreateAp": "Новий вхідний рахунок",
             "matchType_iban_contact": "IBAN відомий",
             "matchType_name_contact": "Назва збігається",
-            "selectionExceeds": "{amount} забагато"
+            "selectionExceeds": "{amount} забагато",
+            "contactVendor": "Постачальник",
+            "contactCustomer": "Клієнт",
+            "contactSource_iban": "IBAN у картці",
+            "contactSource_rule": "правило зіставлення",
+            "contactSource_history_iban": "попередні проводки цього IBAN",
+            "contactSource_history_name": "попередні проводки цієї назви",
+            "contactSource_name": "збіг назви",
+            "contactRecognized": "розпізнано за {source}",
+            "contactNoOpenDocs": "Для цього контакту немає відкритого документа.",
+            "actionCreateApFor": "Створити вхідний рахунок для {name}"
         },
         "settlement": {
             "title": "Призначити карткову виписку",
@@ -456,6 +467,10 @@
             "sumupNoPayout": "SumUp не повернув виплату за {from} – {to}, що відповідає цій сумі з банку. Перевірте в SumUp або завантажте звіт транзакцій.",
             "cardPayment": "Карткова оплата",
             "paymentNoInvoice": "немає відкритого рахунку на цю суму",
+            "manualPaymentReplaced": "вже проведено вручну {date} ({amount}) – буде замінено",
+            "paymentDiff": "рахунок {open} · різниця {diff} на рахунок комісій",
+            "previewReplacedTitle": "Ця проводка замінює такі вручну введені платежі (банк без банківської операції):",
+            "previewReplacedLine": "Рах. {invnumber} · {date} · {amount}",
             "paymentsUnmatched": "{count} карткова(і) оплата(и) без відповідного рахунку – оберіть нижче.",
             "otherInvoices": "Інші відкриті рахунки",
             "showOtherInvoices": "Показати ще {count} відкритих рахунків"
@@ -560,6 +575,10 @@
         "chartAccount": "Рахунок",
         "noCharts": "Рахунків не знайдено",
         "sourceAR": "Платіж клієнта",
-        "sourceAP": "Платіж постачальнику"
+        "sourceAP": "Платіж постачальнику",
+        "taxIncluded": "Сума брутто · містить {rate} % {kind}: {tax} €, нетто {net} €",
+        "taxKindOut": "ПДВ",
+        "taxKindIn": "вхідний ПДВ",
+        "taxNone": "Рахунок без податкового ключа – податок не виділяється"
     }
 }

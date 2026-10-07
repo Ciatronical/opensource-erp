@@ -332,6 +332,10 @@
     "KasseView": {
         "routes": {
             "kasse": "/kasse"
-        }
+        },
+        "taxIncluded": "Bruttobeløb · inkl. {rate} % {kind}: {tax} €, netto {net} €",
+        "taxKindOut": "salgsmoms",
+        "taxKindIn": "købsmoms",
+        "taxNone": "Konto uden momskode – der udskilles ingen moms"
     }
 }

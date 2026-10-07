@@ -332,6 +332,10 @@
     "KasseView": {
         "routes": {
             "kasse": "/kasse"
-        }
+        },
+        "taxIncluded": "Bruttobeløp · inkl. {rate} % {kind}: {tax} €, netto {net} €",
+        "taxKindOut": "utgående mva",
+        "taxKindIn": "inngående mva",
+        "taxNone": "Konto uten mva-kode – ingen avgift skilles ut"
     }
 }

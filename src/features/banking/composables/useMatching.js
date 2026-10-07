@@ -151,6 +151,16 @@ export function useMatching() {
 
     // Aufwandskonto + Steuersatz fuer einen Lieferanten vorschlagen (gelernte
     // Regel > zuletzt benutztes Konto > Hausstandard aus den Einstellungen)
+    // Lieferant/Kunde zu einem Umsatz (für den direkt geöffneten AP-Dialog;
+    // der Buchungsdialog bekommt den Kontakt schon mit den Kandidaten)
+    async function suggestTransactionContact(transactionId) {
+        const response = await axios.post(API_URL, {
+            action: 'suggestTransactionContact',
+            transaction_id: transactionId
+        })
+        return response.data.success ? (response.data.payload.contact ?? null) : null
+    }
+
     async function suggestExpenseAccount(vendorId) {
         const response = await axios.post(API_URL, {
             action: 'suggestExpenseAccount',
@@ -212,6 +222,7 @@ export function useMatching() {
         bookMatchedTransactions,
         createApFromBankTransaction,
         suggestExpenseAccount,
+        suggestTransactionContact,
 
         fetchMatchingRules,
         saveMatchingRule,

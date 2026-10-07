@@ -332,6 +332,10 @@
     "KasseView": {
         "routes": {
             "kasse": "/kassa"
-        }
+        },
+        "taxIncluded": "Brutobedrag · inclusief {rate} % {kind}: {tax} €, netto {net} €",
+        "taxKindOut": "btw",
+        "taxKindIn": "voorbelasting",
+        "taxNone": "Rekening zonder btw-code – er wordt geen belasting afgesplitst"
     }
 }

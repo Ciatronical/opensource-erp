@@ -348,7 +348,7 @@ export function useSettlements() {
     }
 
     // Buchungsvorschau: dieselben Parameter wie bookLine, veraendert nichts
-    async function previewBooking({ bankTransactionId, settlementLineId, feeChartId, clearingChartId, arIds }) {
+    async function previewBooking({ bankTransactionId, settlementLineId, feeChartId, clearingChartId, arIds, arDiffs }) {
         const res = await axios.post(API_URL, {
             action: 'previewCardSettlementBooking',
             bank_transaction_id: bankTransactionId,
@@ -356,12 +356,13 @@ export function useSettlements() {
             fee_chart_id: feeChartId,
             clearing_chart_id: clearingChartId,
             ar_ids: arIds || [],
+            ar_diffs: arDiffs || {},
         })
         if (!res.data.success) throw new Error(res.data.payload || res.data.text)
         return res.data.payload
     }
 
-    async function bookLine({ bankTransactionId, settlementLineId, feeChartId, clearingChartId, arIds }) {
+    async function bookLine({ bankTransactionId, settlementLineId, feeChartId, clearingChartId, arIds, arDiffs }) {
         loading.value = true
         try {
             const res = await axios.post(API_URL, {
@@ -371,6 +372,7 @@ export function useSettlements() {
                 fee_chart_id: feeChartId,
                 clearing_chart_id: clearingChartId,
                 ar_ids: arIds || [],
+            ar_diffs: arDiffs || {},
             })
             if (!res.data.success) throw new Error(res.data.payload || res.data.text)
             return res.data.payload

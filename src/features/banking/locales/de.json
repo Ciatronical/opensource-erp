@@ -64,7 +64,8 @@
       "searchExampleInvoice": "Rechnungsnr., Name oder Zweck",
       "searchHintExact": "Betrag {amount} oder Text",
       "searchHintCompare": "Betrag {op} {amount}",
-      "searchHintRange": "Betrag {from} bis {to}"
+      "searchHintRange": "Betrag {from} bis {to}",
+      "documentNone": "Kein Beleg – hier anhängen"
     },
     "booking": {
       "title": "Zahlung buchen",
@@ -126,7 +127,17 @@
       "actionCreateAp": "Neue Eingangsrechnung",
       "matchType_iban_contact": "IBAN bekannt",
       "matchType_name_contact": "Name passt",
-      "selectionExceeds": "{amount} zu viel"
+      "selectionExceeds": "{amount} zu viel",
+      "contactVendor": "Lieferant",
+      "contactCustomer": "Kunde",
+      "contactSource_iban": "IBAN im Stammsatz",
+      "contactSource_rule": "Zuordnungsregel",
+      "contactSource_history_iban": "frühere Buchungen dieser IBAN",
+      "contactSource_history_name": "frühere Buchungen dieses Namens",
+      "contactSource_name": "Namensübereinstimmung",
+      "contactRecognized": "erkannt über {source}",
+      "contactNoOpenDocs": "Zu diesem Kontakt gibt es keinen offenen Beleg.",
+      "actionCreateApFor": "Eingangsrechnung für {name} anlegen"
     },
     "reconciliation": {
       "title": "Bankabstimmung",
@@ -156,9 +167,9 @@
       "taxRate": "Steuersatz",
       "invnumber": "Rechnungsnummer (optional)",
       "cancel": "Abbrechen",
-      "document": "Beleg (Rechnung, Quittung)",
-      "documentHint": "PDF oder Foto. Wird fest an die Eingangsrechnung gehängt und im DATEV-Export mitgeliefert.",
-      "documentAttached": "Beleg wird an die Buchung gehängt.",
+      "document": "Belege (Rechnung, Quittung, Lieferschein)",
+      "documentHint": "PDF oder Fotos, mehrere Dateien möglich. Werden fest an die Eingangsrechnung gehängt und im DATEV-Export mitgeliefert.",
+      "documentAttached": "Ein Beleg wird an die Buchung gehängt.",
       "documentMissing": "Ohne Beleg keine ordnungsgemäße Buchung — bitte Rechnung oder Quittung anhängen.",
       "documentFailed": "Buchung steht, aber der Beleg konnte nicht gespeichert werden: {reason}",
       "noDocumentTitle": "Ohne Beleg buchen?",
@@ -166,7 +177,9 @@
       "noDocumentContinue": "Ohne Beleg buchen",
       "accountSource_rule": "Zuletzt für diesen Lieferanten verwendet",
       "accountSource_history": "Aus der letzten Eingangsrechnung dieses Lieferanten",
-      "accountSource_default": "Standardkonto aus den Einstellungen"
+      "accountSource_default": "Standardkonto aus den Einstellungen",
+      "vendorRecognized": "Vorbelegt – erkannt über {source}",
+      "documentsAttached": "{count} Belege werden an die Buchung gehängt."
     },
     "settlement": {
       "title": "Kartenabrechnung zuordnen",
@@ -221,6 +234,10 @@
       "sumupNoPayout": "SumUp hat für {from} bis {to} keine Auszahlung geliefert, die zu diesem Bankbetrag passt. Bitte in SumUp prüfen oder einen Transaktionsbericht hochladen.",
       "cardPayment": "Kartenzahlung",
       "paymentNoInvoice": "keine offene Rechnung mit diesem Betrag",
+      "manualPaymentReplaced": "bereits am {date} von Hand gebucht ({amount}) – wird ersetzt",
+      "paymentDiff": "Rechnung {open} · Differenz {diff} geht aufs Gebührenkonto",
+      "previewReplacedTitle": "Diese Buchung ersetzt folgende von Hand erfasste Zahlungen (Bank ohne Bankumsatz):",
+      "previewReplacedLine": "Rg {invnumber} · {date} · {amount}",
       "paymentsUnmatched": "{count} Kartenzahlung(en) ohne passende Rechnung – bitte unten auswählen.",
       "otherInvoices": "Weitere offene Rechnungen",
       "showOtherInvoices": "{count} weitere offene Rechnungen anzeigen"
@@ -489,6 +506,24 @@
       "ruleDeleted": "Regel gelöscht",
       "error": "Ein Fehler ist aufgetreten",
       "warning_no_permission": "Sie haben keine Berechtigung für diese Aktion"
+    },
+    "documents": {
+      "title": "Belege",
+      "add": "Hinzufügen",
+      "empty": "Noch kein Beleg. Dateien hierher ziehen oder „Hinzufügen“ wählen.",
+      "dropHere": "Dateien hier ablegen",
+      "preview": "Beleg anzeigen",
+      "noPreview": "Für diesen Dateityp gibt es keine Vorschau.",
+      "unlink": "Vom Umsatz lösen",
+      "unlinkTitle": "Beleg vom Umsatz lösen?",
+      "unlinkConfirm": "„{name}“ bleibt in der Belegablage, wird aber nicht mehr bei diesem Umsatz angezeigt.",
+      "unlinkDo": "Lösen",
+      "sourceAp": "Eingangsrechnung {invnumber}",
+      "sourceAr": "Ausgangsrechnung {invnumber}",
+      "uploadedOne": "Beleg angehängt",
+      "uploadedMany": "{count} Belege angehängt",
+      "uploadFailed": "Nicht gespeichert: {reason}",
+      "dialogTitle": "Belege zum Umsatz"
     }
   },
   "KasseView": {
@@ -597,6 +632,10 @@
     "bookedOutSuccess": "Rechnung {invnumber} bar bezahlt: {amount} — Beleg {beleg}",
     "searchAllPeriods": "Die Suche geht über alle Zeiträume, nicht nur über den eingestellten.",
     "previousPeriod": "Vorheriger Zeitraum",
-    "nextPeriod": "Nächster Zeitraum"
+    "nextPeriod": "Nächster Zeitraum",
+    "taxIncluded": "Bruttobetrag · enthält {rate} % {kind}: {tax} €, netto {net} €",
+    "taxKindOut": "Umsatzsteuer",
+    "taxKindIn": "Vorsteuer",
+    "taxNone": "Konto ohne Steuerschlüssel – es wird keine Steuer herausgerechnet"
   }
 }

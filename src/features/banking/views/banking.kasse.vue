@@ -430,6 +430,8 @@
                         class="mb-3"
                         clearable
                         :no-data-text="t('KasseView.noCharts')"
+                        :hint="taxHint"
+                        :persistent-hint="!!taxHint"
                         @update:model-value="suggestFromCounter"
                     />
 
@@ -951,6 +953,26 @@ function openNewTransaction() {
     showTransactionDialog.value = true
     loadNextBeleg()
 }
+
+// Steuerhinweis zum gewählten Gegenkonto: Der Betrag im Dialog ist brutto, das
+// Backend rechnet nach dem Steuerschlüssel des Kontos Umsatz-/Vorsteuer heraus
+// (wie kivitendos Dialogbuchung). Hier sieht man vorab, was auf dem Steuerkonto
+// landet — und ob das Konto überhaupt einen Steuerschlüssel hat.
+const taxHint = computed(() => {
+    const c = counterCharts.value.find(x => x.id === txData.counterChartId)
+    if (!c) return ''
+    const rate = Number(c.tax_rate || 0)
+    if (rate <= 0) return t('KasseView.taxNone')
+    const gross = Number(txData.amount) || 0
+    const net   = Math.round(gross / (1 + rate) * 100) / 100
+    const tax   = Math.round((gross - net) * 100) / 100
+    return t('KasseView.taxIncluded', {
+        rate: Math.round(rate * 100),
+        kind: t(txData.type === 'expense' ? 'KasseView.taxKindIn' : 'KasseView.taxKindOut'),
+        tax:  tax.toFixed(2).replace('.', ','),
+        net:  net.toFixed(2).replace('.', ','),
+    })
+})
 
 // Nächste fortlaufende Belegnummer vom Server holen und ins (gesperrte) Feld setzen
 async function loadNextBeleg() {

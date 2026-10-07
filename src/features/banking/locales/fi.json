@@ -332,6 +332,10 @@
     "KasseView": {
         "routes": {
             "kasse": "/kassa"
-        }
+        },
+        "taxIncluded": "Bruttosumma · sisältää {rate} % {kind}: {tax} €, netto {net} €",
+        "taxKindOut": "myynnin ALV",
+        "taxKindIn": "ostojen ALV",
+        "taxNone": "Tilillä ei ole verokoodia – veroa ei eroteta"
     }
 }

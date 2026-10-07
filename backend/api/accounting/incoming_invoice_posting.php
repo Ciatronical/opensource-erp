@@ -115,7 +115,7 @@ function _iv_postAp($db, array $p) {
     if ($gross === null) $gross = round($net + $tax, 2);
 
     // Bei vorhandener Steuer aber rate=0 (nicht übergeben): Satz aus net/tax rückrechnen
-    if ($tax > 0 && $taxInfo['rate_pct'] == 0 && $net > 0) {
+    if (abs($tax) > 0.004 && $taxInfo['rate_pct'] == 0 && abs($net) > 0.004) {
         $taxInfo = _iv_resolveTax($db, round($tax / $net * 100));
     }
 
@@ -166,8 +166,11 @@ function _iv_postAp($db, array $p) {
     // Aufwand (Soll, negativ) – trägt taxkey/tax_id
     $insTrans($expenseId, -$net, $expense['link'] ?: 'AP_amount', $taxInfo['taxkey'], $taxInfo['tax_id']);
 
-    // Vorsteuer (Soll, negativ) – nur falls Steuer > 0
-    if ($tax > 0 && $taxInfo['vorsteuer_chart_id']) {
+    // Vorsteuer (Soll, negativ) – nur falls Steuer anfällt. Betrag, nicht
+    // Vorzeichen prüfen: eine Gutschrift (negativer Netto) hat negative
+    // Vorsteuer, und ohne dieses Bein war der Buchungssatz um die Steuer
+    // unausgeglichen (Aufwand + Verbindlichkeit standen, die Vorsteuer fehlte).
+    if (abs($tax) > 0.004 && $taxInfo['vorsteuer_chart_id']) {
         $insTrans($taxInfo['vorsteuer_chart_id'], -$tax, $taxInfo['vorsteuer_link'], $taxInfo['taxkey'], $taxInfo['tax_id']);
     }
 

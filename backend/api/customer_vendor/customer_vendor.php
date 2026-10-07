@@ -1041,6 +1041,16 @@ function saveCV($data) {
         unset($data['profile']['phone_numbers']);
     }
 
+    // emails vor dem Loop extrahieren und aus profile entfernen — liegt wie
+    // phone_numbers in customer_ext/vendor_ext, nicht in der customer-Tabelle.
+    $emails = null;
+    $hasEmails = false;
+    if (array_key_exists('emails', $data['profile'])) {
+        $hasEmails = true;
+        $emails = $data['profile']['emails'];
+        unset($data['profile']['emails']);
+    }
+
     // keywords vor dem Loop extrahieren und aus profile entfernen
     $keywords = null;
     $hasKeywords = false;
@@ -1247,6 +1257,18 @@ function saveCV($data) {
             "INSERT INTO $extTable ($extFk, phone_numbers) VALUES (:cid, :pn)
              ON CONFLICT ($extFk) DO UPDATE SET phone_numbers = :pn, mtime = now()",
             [':cid' => $cv_id, ':pn' => $jsonValue]
+        );
+    }
+
+    // emails in customer_ext/vendor_ext speichern
+    if ($hasEmails && $cv_id) {
+        $emailsJson = (!empty($emails) && is_array($emails)) ? json_encode($emails) : null;
+        $extTable = ($src === 'V') ? 'vendor_ext' : 'customer_ext';
+        $extFk    = ($src === 'V') ? 'vendor_id'  : 'customer_id';
+        $apiCompanySpace->execute(
+            "INSERT INTO $extTable ($extFk, emails) VALUES (:cid, :em)
+             ON CONFLICT ($extFk) DO UPDATE SET emails = :em, mtime = now()",
+            [':cid' => $cv_id, ':em' => $emailsJson]
         );
     }
 

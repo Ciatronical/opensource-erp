@@ -332,6 +332,10 @@
     "KasseView": {
         "routes": {
             "kasse": "/cash-register"
-        }
+        },
+        "taxIncluded": "含税金额 · 含 {rate} % {kind}：{tax} €，净额 {net} €",
+        "taxKindOut": "销项税",
+        "taxKindIn": "进项税",
+        "taxNone": "科目无税码 – 不拆分税额"
     }
 }

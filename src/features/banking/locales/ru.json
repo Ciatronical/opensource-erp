@@ -332,6 +332,10 @@
     "KasseView": {
         "routes": {
             "kasse": "/kassa"
-        }
+        },
+        "taxIncluded": "Сумма брутто · включает {rate} % {kind}: {tax} €, нетто {net} €",
+        "taxKindOut": "НДС",
+        "taxKindIn": "входной НДС",
+        "taxNone": "Счёт без налогового ключа – налог не выделяется"
     }
 }

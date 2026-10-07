@@ -332,6 +332,10 @@
     "KasseView": {
         "routes": {
             "kasse": "/casa"
-        }
+        },
+        "taxIncluded": "Sumă brută · include {rate} % {kind}: {tax} €, net {net} €",
+        "taxKindOut": "TVA colectată",
+        "taxKindIn": "TVA deductibilă",
+        "taxNone": "Cont fără cod fiscal – nu se separă nicio taxă"
     }
 }

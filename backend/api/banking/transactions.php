@@ -238,15 +238,21 @@ HAY;
                         WHERE bta.bank_transaction_id = bt.id
                     ) a
                 ) as assignments,
-                -- Belegnachweis: hängt an mindestens einer zugeordneten
-                -- Eingangsrechnung ein Beleg? Für die GoBD muss sichtbar sein,
+                -- Belegnachweis: hängt ein Beleg direkt am Umsatz oder an einer
+                -- zugeordneten Eingangsrechnung? Für die GoBD muss sichtbar sein,
                 -- wo einer fehlt — die Oberfläche zeigt das als Symbol an.
-                EXISTS (
-                    SELECT 1
-                    FROM bank_transaction_acc_trans bta2
-                    JOIN accounting_documents ad ON ad.ap_id = bta2.ap_id
-                    WHERE bta2.bank_transaction_id = bt.id
-                      AND bta2.ap_id IS NOT NULL
+                (
+                    EXISTS (
+                        SELECT 1 FROM bank_transaction_documents btd
+                        WHERE btd.bank_transaction_id = bt.id
+                    )
+                    OR EXISTS (
+                        SELECT 1
+                        FROM bank_transaction_acc_trans bta2
+                        JOIN accounting_documents ad ON ad.ap_id = bta2.ap_id
+                        WHERE bta2.bank_transaction_id = bt.id
+                          AND bta2.ap_id IS NOT NULL
+                    )
                 ) AS has_document
             FROM bank_transactions bt
             LEFT JOIN bank_transactions_ext bte ON bte.bank_transaction_id = bt.id

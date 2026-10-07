@@ -137,6 +137,22 @@ function _ustva_linesSql($method) {
             JOIN payments p ON p.trans_id = m.trans_id
             JOIN gross gr   ON gr.id      = m.trans_id
             WHERE gr.amount IS NOT NULL
+
+            UNION ALL
+
+            -- Dialog-/Kassenbuchungen (gl) haben keine Rechnung, die bezahlt
+            -- wuerde: Bareinnahme und Barausgabe SIND die Zahlung. Sie zaehlen
+            -- deshalb am Buchungstag voll — vorher fehlten sie in der
+            -- Ist-Versteuerung komplett (weder Umsatz noch Vorsteuer).
+            SELECT
+                m.kz, m.role, m.direction, m.taxkey, m.rate, m.chart_id, m.accno, m.chart_name,
+                m.trans_id, m.transdate, m.doctype, m.reference,
+                ROUND(CASE WHEN m.direction = 'revenue' THEN m.amount ELSE -m.amount END, 2) AS signed,
+                NULL::numeric AS paid,
+                NULL::numeric AS gross
+            FROM mapped m
+            WHERE m.doctype = 'gl'
+              AND m.transdate BETWEEN :date_from::date AND :date_to::date
         SQL;
     }
 

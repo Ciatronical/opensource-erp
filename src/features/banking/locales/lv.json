@@ -332,6 +332,10 @@
     "KasseView": {
         "routes": {
             "kasse": "/kase"
-        }
+        },
+        "taxIncluded": "Bruto summa · ieskaitot {rate} % {kind}: {tax} €, neto {net} €",
+        "taxKindOut": "PVN",
+        "taxKindIn": "priekšnodoklis",
+        "taxNone": "Konts bez nodokļa koda – nodoklis netiek atdalīts"
     }
 }

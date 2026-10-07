@@ -190,6 +190,21 @@
                                     <span class="font-weight-medium">{{ p.invoice.invnumber }}</span>
                                     <span class="text-medium-emphasis"> · {{ p.invoice.customer_name }}</span>
                                     <span v-if="p.invoice.transdate" class="text-medium-emphasis"> · {{ formatDate(p.invoice.transdate) }}</span>
+                                    <!-- Rechnung wurde schon von Hand gegen Bank gebucht (ohne Bankumsatz):
+                                         die Kartenabrechnung ersetzt diese Handbuchung -->
+                                    <!-- Betrag weicht ab (Tippfehler am Terminal): Differenz geht aufs Gebührenkonto -->
+                                    <div v-if="Math.abs(p.invoice.diff || 0) >= 0.005" class="text-warning">
+                                        <v-icon size="x-small" class="mr-1">mdi-not-equal-variant</v-icon>{{ t('BankingView.settlement.paymentDiff', {
+                                            open: formatCurrency(p.invoice.open_amount),
+                                            diff: formatCurrency(p.invoice.diff),
+                                        }) }}
+                                    </div>
+                                    <div v-if="p.invoice.already_paid && p.invoice.manual_payment" class="text-info">
+                                        <v-icon size="x-small" class="mr-1">mdi-swap-horizontal</v-icon>{{ t('BankingView.settlement.manualPaymentReplaced', {
+                                            date: formatDate(p.invoice.manual_payment.date),
+                                            amount: formatCurrency(p.invoice.manual_payment.amount),
+                                        }) }}
+                                    </div>
                                 </td>
                                 <td v-else class="text-warning">{{ t('BankingView.settlement.paymentNoInvoice') }}</td>
                             </tr>
@@ -300,6 +315,12 @@
                             </tr>
                         </tfoot>
                     </v-table>
+                    <v-alert v-if="preview.replaced_payments?.length" type="info" variant="tonal" density="compact" class="text-caption mt-2">
+                        <div class="font-weight-medium">{{ t('BankingView.settlement.previewReplacedTitle') }}</div>
+                        <div v-for="r in preview.replaced_payments" :key="r.ar_id">
+                            {{ t('BankingView.settlement.previewReplacedLine', { invnumber: r.invnumber, date: formatDate(r.date), amount: formatCurrency(r.amount) }) }}
+                        </div>
+                    </v-alert>
                 </template>
                 <v-alert v-else-if="previewError" type="warning" variant="tonal" density="compact" class="text-caption">
                     {{ previewError }}
@@ -444,6 +465,7 @@ async function loadPreview() {
             feeChartId: feeChartId.value,
             clearingChartId: clearingChartId.value,
             arIds: selectedArIds.value,
+            arDiffs: selectedDiffs.value,
         })
         previewError.value = ''
     } catch (e) {
@@ -510,11 +532,21 @@ const feeAccountItems = computed(() => {
     return mapAccounts(list)
 })
 
+// Summe der gewaehlten Rechnungen als Kartenbetrag: offener Betrag abzueglich
+// der Abweichung zur Kartenzahlung (die wird separat ausgebucht).
 const selectedSum = computed(() =>
     invoiceCandidates.value
         .filter(inv => selectedArIds.value.includes(inv.ar_id))
-        .reduce((s, inv) => s + Number(inv.open_amount || 0), 0)
+        .reduce((s, inv) => s + Number(inv.open_amount || 0) - Number(inv.diff || 0), 0)
 )
+// Abweichungen je gewaehlter Rechnung {ar_id: diff} fuer Vorschau + Buchung
+const selectedDiffs = computed(() => {
+    const out = {}
+    for (const inv of invoiceCandidates.value) {
+        if (selectedArIds.value.includes(inv.ar_id) && Math.abs(Number(inv.diff || 0)) >= 0.005) out[inv.ar_id] = Number(inv.diff)
+    }
+    return out
+})
 
 const sumMatches = computed(() =>
     Math.abs(selectedSum.value - Number(invoiceInfo.value.gross || 0)) < 0.005
@@ -668,6 +700,7 @@ async function book() {
             feeChartId: feeChartId.value,
             clearingChartId: clearingChartId.value,
             arIds: selectedArIds.value,
+            arDiffs: selectedDiffs.value,
         })
         alerts.success(t('BankingView.settlement.bookSuccess'))
         emit('booked')

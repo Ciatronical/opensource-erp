@@ -2624,6 +2624,23 @@ COMMENT ON TABLE accounting_document_log IS 'Protokoll aller Zugriffe auf Buchha
 
 CREATE INDEX IF NOT EXISTS idx_cash_gl_documents_gl ON cash_gl_documents(gl_id);
 
+-- Belege direkt an einem Bankumsatz. Belege zu Eingangs-/Ausgangsrechnungen
+-- haengen ueber accounting_documents.ap_id/ar_id an der Rechnung; hier liegen
+-- die Belege, die es ohne Rechnung gibt (Gebuehrenabrechnung, Kontoauszug-
+-- seite, Vertrag, Lieferschein, Mahnung) — beliebig viele je Umsatz, auch
+-- nachtraeglich zu einem bereits gebuchten Umsatz.
+CREATE TABLE IF NOT EXISTS bank_transaction_documents (
+    id                  INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    bank_transaction_id INTEGER NOT NULL REFERENCES bank_transactions(id) ON DELETE CASCADE,
+    document_id         INTEGER NOT NULL REFERENCES accounting_documents(id) ON DELETE CASCADE,
+    itime               TIMESTAMP DEFAULT NOW(),
+    CONSTRAINT bank_transaction_documents_uniq UNIQUE (bank_transaction_id, document_id)
+);
+
+COMMENT ON TABLE bank_transaction_documents IS 'Verbindet hochgeladene Belege (accounting_documents) direkt mit Bankumsaetzen; mehrere Belege je Umsatz';
+
+CREATE INDEX IF NOT EXISTS idx_bank_transaction_documents_bt ON bank_transaction_documents(bank_transaction_id);
+
 -- ============================================================
 -- Zahlungsabrechnungen von Kartendienstleistern (Flatpay/Rapyd o.ae.)
 --

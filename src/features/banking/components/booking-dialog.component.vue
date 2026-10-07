@@ -29,6 +29,16 @@
                     <div v-if="transaction.purpose" class="text-body-2 mt-1 text-medium-emphasis">
                         {{ transaction.purpose }}
                     </div>
+                    <!-- Erkannter Kontakt: auch ohne offenen Beleg weiß der Dialog, wer zahlt -->
+                    <div v-if="contact" class="d-flex align-center flex-wrap ga-2 mt-2">
+                        <v-chip size="small" color="primary" variant="tonal" :title="contactTitle">
+                            <v-icon start size="small">{{ contact.type === 'vendor' ? 'mdi-domain' : 'mdi-account' }}</v-icon>
+                            {{ contact.name }}<span v-if="contact.number" class="text-medium-emphasis ml-1">({{ contact.number }})</span>
+                        </v-chip>
+                        <span class="text-caption text-medium-emphasis">
+                            {{ t('BankingView.booking.contactRecognized', { source: contactSourceLabel(contact) }) }}
+                        </span>
+                    </div>
                 </v-sheet>
 
                 <!-- Sammelbuchung: vom Nutzer zusammengestellte Belege -->
@@ -249,7 +259,10 @@
                     <template v-else-if="!suggestedGroup && candidates.length === 0">
                         <v-alert type="warning" variant="tonal" class="mb-4" rounded="lg">
                             <div class="font-weight-bold">{{ t('BankingView.booking.noCandidates') }}</div>
-                            <div class="text-body-2 mt-1">{{ t('BankingView.booking.noCandidatesHint') }}</div>
+                            <div class="text-body-2 mt-1">
+                                <template v-if="contact">{{ t('BankingView.booking.contactNoOpenDocs') }} </template>
+                                {{ t('BankingView.booking.noCandidatesHint') }}
+                            </div>
                             <div class="d-flex ga-2 flex-wrap mt-3">
                                 <v-btn
                                     v-if="isOutgoing"
@@ -259,7 +272,7 @@
                                     prepend-icon="mdi-file-document-plus"
                                     @click="createAp"
                                 >
-                                    {{ t('BankingView.booking.actionCreateAp') }}
+                                    {{ createApLabel }}
                                 </v-btn>
                                 <v-btn
                                     v-else
@@ -342,6 +355,13 @@
                         </v-card>
                     </template>
                 </template>
+
+                <!-- Belege direkt am Umsatz: Gebühren, Verträge, Kontoauszugsseiten —
+                     mehrere, unabhängig von der Zuordnung -->
+                <TransactionDocuments
+                    :transaction-id="transaction.id"
+                    @changed="n => emit('documents', transaction.id, n)"
+                />
 
                 <!-- Manuelle Suche -->
                 <div class="d-flex align-center mb-2">
@@ -442,7 +462,7 @@
                     size="small"
                     @click="createAp"
                 >
-                    {{ t('BankingView.booking.actionCreateAp') }}
+                    {{ createApLabel }}
                 </v-btn>
                 <v-btn
                     v-else
@@ -473,6 +493,7 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useMatching } from '../composables/useMatching.js'
+import TransactionDocuments from './transaction-documents.component.vue'
 import * as alerts from '@/core/utils/alerts.js'
 
 const props = defineProps({
@@ -481,7 +502,7 @@ const props = defineProps({
     accountId: { type: Number, required: true }
 })
 
-const emit = defineEmits(['update:modelValue', 'done', 'ignore', 'settlement', 'createAp'])
+const emit = defineEmits(['update:modelValue', 'done', 'ignore', 'settlement', 'createAp', 'documents'])
 
 const { t } = useI18n()
 const matching = useMatching()
@@ -491,6 +512,9 @@ const booking = ref(false)
 const candidates = ref([])
 const currentMatch = ref(null)
 const suggestedGroup = ref(null)
+// Erkannter Lieferant/Kunde ({type, id, name, number, iban, source, hits}) —
+// unabhängig von offenen Belegen, siehe _bt_contactSuggestion im Backend
+const contact = ref(null)
 const changingAssignment = ref(false)
 const manualSearch = ref('')
 const searchResults = ref([])
@@ -508,6 +532,19 @@ const show = computed({
 
 // Geldausgang → Eingangsrechnungen des Lieferanten, Geldeingang → Ausgangsrechnungen
 const isOutgoing = computed(() => parseFloat(props.transaction.amount) < 0)
+
+// „Eingangsrechnung für XYZ anlegen", sobald der Lieferant erkannt ist
+const createApLabel = computed(() =>
+    contact.value?.type === 'vendor'
+        ? t('BankingView.booking.actionCreateApFor', { name: contact.value.name })
+        : t('BankingView.booking.actionCreateAp')
+)
+
+const contactTitle = computed(() => {
+    if (!contact.value) return ''
+    const role = t(contact.value.type === 'vendor' ? 'BankingView.booking.contactVendor' : 'BankingView.booking.contactCustomer')
+    return `${role} · ${t('BankingView.booking.contactRecognized', { source: contactSourceLabel(contact.value) })}`
+})
 
 const topRecommendation = computed(() => {
     return candidates.value.find(c => c.confidence >= 0.88) ?? null
@@ -581,6 +618,7 @@ async function loadCandidates() {
         candidates.value = payload.candidates || []
         currentMatch.value = payload.current_match || null
         suggestedGroup.value = payload.suggested_group || null
+        contact.value = payload.contact || null
     } catch (e) {
         alerts.error(e.message)
     } finally {
@@ -771,9 +809,9 @@ function openSettlement() {
 }
 
 // Geldausgang ohne passenden Beleg: Eingangsrechnung direkt aus dem Umsatz
-// anlegen (Hub öffnet den AP-Dialog).
+// anlegen (Hub öffnet den AP-Dialog, der erkannte Lieferant wird vorbelegt).
 function createAp() {
-    emit('createAp', props.transaction)
+    emit('createAp', props.transaction, contact.value)
     show.value = false
 }
 
@@ -785,10 +823,17 @@ function onClosed() {
     candidates.value = []
     currentMatch.value = null
     suggestedGroup.value = null
+    contact.value = null
     manualSearch.value = ''
     searchResults.value = []
     selected.value = []
     changingAssignment.value = false
+}
+
+function contactSourceLabel(c) {
+    const key = `BankingView.booking.contactSource_${c.source}`
+    const label = t(key)
+    return label === key ? c.source : label
 }
 
 function matchTypeLabel(type) {

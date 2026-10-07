@@ -34,8 +34,14 @@ function nextBelegnummer($db, $chartId, $transdate) {
 
     $row = $db->getOne("
         SELECT GREATEST(
-            -- GL-Kassenbuchungen: kivitendo legt die Belegnummer in gl.reference ab
+            -- GL-Kassenbuchungen: kivitendo legt die Belegnummer in gl.reference ab.
+            -- Aber OHNE Rechnungsnummern: eine kivitendo-Dialogbuchung mit der
+            -- Rechnungsnummer als Referenz (z. B. Zahlung zu 252401) hat die
+            -- Bank-Belegnummernfolge sonst in den Rechnungsnummernbereich gezogen
+            -- (Beleg 252402 statt 6).
             COALESCE(MAX(CASE WHEN gl.reference ~ '^[0-9]+$'
+                              AND NOT EXISTS (SELECT 1 FROM ar WHERE invnumber = gl.reference)
+                              AND NOT EXISTS (SELECT 1 FROM ap WHERE invnumber = gl.reference)
                               THEN gl.reference::bigint END), 0),
             -- acc_trans.source, aber OHNE native Rechnungsnummern (source = ar/ap-invnumber)
             COALESCE(MAX(CASE WHEN at.source ~ '^[0-9]+$'
@@ -119,7 +125,7 @@ function lookupBicFromIban($data) {
  */
 function getBankingAlerts($data) {
     $db        = DbhCompany::begin();
-    $accountId = $data['bank_account_id'] ? intval($data['bank_account_id']) : null;
+    $accountId = !empty($data['bank_account_id']) ? intval($data['bank_account_id']) : null;
     $threshold = floatval($data['balance_threshold'] ?? 500);
     $alerts    = [];
 
@@ -148,7 +154,10 @@ function getBankingAlerts($data) {
 
     // 2) Überfällige Daueraufträge
     $params2 = array_merge(['today' => date('Y-m-d')], $accParams);
-    $overdueWhere = $accountId ? 'AND bank_account_id = :aid' : '';
+    // Tabellenalias nötig: bank_account_id gibt es in standing_orders UND
+    // (als Spalte des Joins) in bank_accounts nicht, aber Postgres meldete die
+    // Spalte als mehrdeutig, sobald ein Konto gewählt war → Abfrage scheiterte.
+    $overdueWhere = $accountId ? 'AND so.bank_account_id = :aid' : '';
     $overdue = $db->getAll(<<<SQL
         SELECT so.remote_name, so.amount, so.next_execution_date,
                ba.name AS account_name

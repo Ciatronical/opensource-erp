@@ -72,7 +72,8 @@
             "payables": "Zobowiązania",
             "openAmount": "Kwota otwarta",
             "dueDate": "Termin płatności",
-            "matchManually": "Przypisz ręcznie"
+            "matchManually": "Przypisz ręcznie",
+            "vendorRecognized": "Wstępnie wypełnione – rozpoznano przez {source}"
         },
         "transfers": {
             "title": "Przelewy",
@@ -401,7 +402,17 @@
             "actionCreateAp": "Nowa faktura zakupu",
             "matchType_iban_contact": "IBAN znany",
             "matchType_name_contact": "Nazwa pasuje",
-            "selectionExceeds": "{amount} za dużo"
+            "selectionExceeds": "{amount} za dużo",
+            "contactVendor": "Dostawca",
+            "contactCustomer": "Klient",
+            "contactSource_iban": "IBAN w kartotece",
+            "contactSource_rule": "reguła przypisania",
+            "contactSource_history_iban": "wcześniejsze księgowania tego IBAN",
+            "contactSource_history_name": "wcześniejsze księgowania tej nazwy",
+            "contactSource_name": "zgodność nazwy",
+            "contactRecognized": "rozpoznano przez {source}",
+            "contactNoOpenDocs": "Brak otwartego dokumentu dla tego kontaktu.",
+            "actionCreateApFor": "Utwórz fakturę zakupu dla {name}"
         },
         "settlement": {
             "title": "Przypisz rozliczenie kartowe",
@@ -456,6 +467,10 @@
             "sumupNoPayout": "SumUp nie zwrócił wypłaty od {from} do {to} pasującej do tej kwoty bankowej. Sprawdź w SumUp lub wgraj raport transakcji.",
             "cardPayment": "Płatność kartą",
             "paymentNoInvoice": "brak otwartej faktury na tę kwotę",
+            "manualPaymentReplaced": "już zaksięgowana ręcznie {date} ({amount}) – zostanie zastąpiona",
+            "paymentDiff": "faktura {open} · różnica {diff} na konto opłat",
+            "previewReplacedTitle": "To księgowanie zastępuje następujące ręcznie wprowadzone płatności (bank bez transakcji bankowej):",
+            "previewReplacedLine": "Fakt. {invnumber} · {date} · {amount}",
             "paymentsUnmatched": "{count} płatność(i) kartą bez pasującej faktury – wybierz poniżej.",
             "otherInvoices": "Pozostałe otwarte faktury",
             "showOtherInvoices": "Pokaż {count} pozostałych otwartych faktur"
@@ -560,6 +575,10 @@
         "chartAccount": "Konto",
         "noCharts": "Nie znaleziono kont",
         "sourceAR": "Płatność klienta",
-        "sourceAP": "Płatność do dostawcy"
+        "sourceAP": "Płatność do dostawcy",
+        "taxIncluded": "Kwota brutto · zawiera {rate} % {kind}: {tax} €, netto {net} €",
+        "taxKindOut": "VAT należny",
+        "taxKindIn": "VAT naliczony",
+        "taxNone": "Konto bez klucza podatkowego – podatek nie jest wydzielany"
     }
 }

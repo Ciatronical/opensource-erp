@@ -64,7 +64,8 @@
             "searchExampleInvoice": "Invoice no., name or reference",
             "searchHintExact": "Amount {amount} or text",
             "searchHintCompare": "Amount {op} {amount}",
-            "searchHintRange": "Amount {from} to {to}"
+            "searchHintRange": "Amount {from} to {to}",
+            "documentNone": "No receipt – attach here"
         },
         "booking": {
             "title": "Book Payment",
@@ -126,7 +127,17 @@
             "actionCreateAp": "New purchase invoice",
             "matchType_iban_contact": "IBAN known",
             "matchType_name_contact": "Name matches",
-            "selectionExceeds": "{amount} too much"
+            "selectionExceeds": "{amount} too much",
+            "contactVendor": "Vendor",
+            "contactCustomer": "Customer",
+            "contactSource_iban": "IBAN on master record",
+            "contactSource_rule": "matching rule",
+            "contactSource_history_iban": "previous bookings of this IBAN",
+            "contactSource_history_name": "previous bookings of this name",
+            "contactSource_name": "name match",
+            "contactRecognized": "recognized via {source}",
+            "contactNoOpenDocs": "There is no open document for this contact.",
+            "actionCreateApFor": "Create purchase invoice for {name}"
         },
         "reconciliation": {
             "title": "Bank Reconciliation",
@@ -156,9 +167,9 @@
             "taxRate": "Tax rate",
             "invnumber": "Invoice no. (optional)",
             "cancel": "Cancel",
-            "document": "Receipt (invoice, voucher)",
-            "documentHint": "PDF or photo. Permanently attached to the purchase invoice and included in the DATEV export.",
-            "documentAttached": "Receipt will be attached to the booking.",
+            "document": "Receipts (invoice, voucher, delivery note)",
+            "documentHint": "PDF or photos, several files allowed. Permanently attached to the purchase invoice and included in the DATEV export.",
+            "documentAttached": "One receipt will be attached to the booking.",
             "documentMissing": "A booking without a receipt is not compliant — please attach the invoice or voucher.",
             "documentFailed": "Booking succeeded, but the receipt could not be stored: {reason}",
             "noDocumentTitle": "Book without a receipt?",
@@ -166,7 +177,9 @@
             "noDocumentContinue": "Book without receipt",
             "accountSource_rule": "Last used for this vendor",
             "accountSource_history": "From this vendor's most recent purchase invoice",
-            "accountSource_default": "Default account from settings"
+            "accountSource_default": "Default account from settings",
+            "vendorRecognized": "Prefilled – recognized via {source}",
+            "documentsAttached": "{count} receipts will be attached to the booking."
         },
         "settlement": {
             "title": "Assign card settlement",
@@ -221,6 +234,10 @@
             "sumupNoPayout": "SumUp returned no payout for {from} to {to} that matches this bank amount. Please check in SumUp or upload a transactions report.",
             "cardPayment": "Card payment",
             "paymentNoInvoice": "no open invoice with this amount",
+            "manualPaymentReplaced": "already booked manually on {date} ({amount}) – will be replaced",
+            "paymentDiff": "invoice {open} · difference {diff} goes to the fee account",
+            "previewReplacedTitle": "This posting replaces the following manually entered payments (bank without bank transaction):",
+            "previewReplacedLine": "Inv. {invnumber} · {date} · {amount}",
             "paymentsUnmatched": "{count} card payment(s) without a matching invoice – please select below.",
             "otherInvoices": "Other open invoices",
             "showOtherInvoices": "Show {count} other open invoices"
@@ -489,6 +506,24 @@
             "ruleDeleted": "Rule deleted",
             "error": "An error occurred",
             "warning_no_permission": "You do not have permission for this action"
+        },
+        "documents": {
+            "title": "Receipts",
+            "add": "Add",
+            "empty": "No receipt yet. Drop files here or choose “Add”.",
+            "dropHere": "Drop files here",
+            "preview": "View receipt",
+            "noPreview": "No preview available for this file type.",
+            "unlink": "Detach from transaction",
+            "unlinkTitle": "Detach receipt from transaction?",
+            "unlinkConfirm": "“{name}” stays in the document archive but will no longer be shown with this transaction.",
+            "unlinkDo": "Detach",
+            "sourceAp": "Purchase invoice {invnumber}",
+            "sourceAr": "Sales invoice {invnumber}",
+            "uploadedOne": "Receipt attached",
+            "uploadedMany": "{count} receipts attached",
+            "uploadFailed": "Not stored: {reason}",
+            "dialogTitle": "Receipts for this transaction"
         }
     },
     "KasseView": {
@@ -597,6 +632,10 @@
         "bookedOutSuccess": "Invoice {invnumber} paid in cash: {amount} — voucher {beleg}",
         "searchAllPeriods": "The search covers all periods, not just the selected one.",
         "previousPeriod": "Previous period",
-        "nextPeriod": "Next period"
+        "nextPeriod": "Next period",
+        "taxIncluded": "Gross amount · includes {rate} % {kind}: {tax} €, net {net} €",
+        "taxKindOut": "VAT",
+        "taxKindIn": "input tax",
+        "taxNone": "Account without tax key – no tax is split off"
     }
 }

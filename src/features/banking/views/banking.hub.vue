@@ -277,22 +277,30 @@
                                         :title="t('BankingView.transactions.openInvoice')"
                                         @click.stop.prevent="goToInvoice(a)"
                                     >{{ a.invnumber }}</a>
-                                    <span v-else class="d-block">{{ a.invnumber }}</span>
+                                    <!-- Nur Zuordnungen mit Belegnummer; die reine gl-Verknüpfung
+                                         (z. B. Bank-Bein einer Kartenabrechnung) bleibt unsichtbar -->
+                                    <span v-else-if="a.invnumber" class="d-block">{{ a.invnumber }}</span>
                                 </template>
                             </div>
                             <div v-else-if="item.pending_invnumber" class="text-caption text-medium-emphasis">
                                 {{ item.pending_invnumber }}
                             </div>
-                            <!-- Belegnachweis: bei gebuchten Eingangsrechnungen sichtbar
-                                 machen, ob ein Beleg hinterlegt ist (GoBD) -->
-                            <v-icon
-                                v-if="hasApAssignment(item)"
+                            <!-- Belegnachweis: grün = Beleg da, orange = Eingangsrechnung
+                                 ohne Beleg (GoBD-Lücke), grau = nichts hinterlegt.
+                                 Klick öffnet die Belege zum Umsatz — auch bei
+                                 gebuchten und ignorierten Umsätzen. -->
+                            <v-btn
                                 :icon="item.has_document ? 'mdi-paperclip' : 'mdi-paperclip-off'"
-                                :color="item.has_document ? 'success' : 'warning'"
+                                :color="item.has_document ? 'success' : (hasApAssignment(item) ? 'warning' : undefined)"
                                 size="x-small"
+                                variant="text"
+                                density="comfortable"
                                 :title="item.has_document
                                     ? t('BankingView.transactions.documentPresent')
-                                    : t('BankingView.transactions.documentMissing')"
+                                    : (hasApAssignment(item)
+                                        ? t('BankingView.transactions.documentMissing')
+                                        : t('BankingView.transactions.documentNone'))"
+                                @click.stop="openDocuments(item)"
                             />
                         </template>
                         <template #item.actions="{ item }">
@@ -368,10 +376,44 @@
                     :transaction="bookingDialogTransaction"
                     :account-id="selectedAccountId"
                     @done="onBookingDone"
+                    @documents="onDocumentsChanged"
                     @ignore="onIgnoreFromDialog"
                     @settlement="onSettlementFromBooking"
                     @create-ap="onCreateApFromBooking"
                 />
+
+                <!-- Belege zum Umsatz (aus der Liste, für jeden Status) -->
+                <v-dialog v-model="showDocsDialog" max-width="720" scrollable>
+                    <v-card v-if="docsTransaction">
+                        <v-card-title class="d-flex align-center py-3">
+                            <v-icon start>mdi-paperclip</v-icon>
+                            {{ t('BankingView.documents.dialogTitle') }}
+                            <v-spacer />
+                            <v-btn icon="mdi-close" variant="text" density="compact" @click="showDocsDialog = false" />
+                        </v-card-title>
+                        <v-card-text class="pb-0">
+                            <v-sheet color="grey-lighten-4" rounded="lg" class="pa-3 mb-4">
+                                <div class="d-flex align-center">
+                                    <span class="text-h6 font-weight-bold" :class="docsTransaction.amount >= 0 ? 'text-success' : 'text-error'">
+                                        {{ formatCurrency(docsTransaction.amount) }}
+                                    </span>
+                                    <v-spacer />
+                                    <span class="text-body-2 text-medium-emphasis">{{ formatDate(docsTransaction.transdate) }}</span>
+                                </div>
+                                <div class="font-weight-medium">{{ docsTransaction.remote_name || '—' }}</div>
+                                <div v-if="docsTransaction.purpose" class="text-body-2 text-medium-emphasis">{{ docsTransaction.purpose }}</div>
+                            </v-sheet>
+                            <TransactionDocuments
+                                :transaction-id="docsTransaction.id"
+                                @changed="n => onDocumentsChanged(docsTransaction.id, n)"
+                            />
+                        </v-card-text>
+                        <v-card-actions class="pa-3">
+                            <v-spacer />
+                            <v-btn variant="text" @click="showDocsDialog = false">{{ t('BankingView.booking.cancel') }}</v-btn>
+                        </v-card-actions>
+                    </v-card>
+                </v-dialog>
 
                 <!-- Kartenabrechnung zuordnen -->
                 <SettlementDialog
@@ -395,8 +437,10 @@
                                 item-value="id"
                                 :label="t('BankingView.reconciliation.vendor') + ' *'"
                                 density="comfortable" variant="outlined"
-                                :loading="apVendorLoading" no-filter clearable
+                                :loading="apVendorLoading || apVendorSuggesting" no-filter clearable
                                 prepend-inner-icon="mdi-domain"
+                                :hint="apVendorSource ? t('BankingView.reconciliation.vendorRecognized', { source: apVendorSourceLabel }) : ''"
+                                persistent-hint
                                 @update:search="onApVendorSearch" />
                             <v-autocomplete
                                 v-model="apForm.account"
@@ -420,20 +464,23 @@
                                     density="comfortable" variant="outlined" />
                             </div>
                             <v-file-input
-                                v-model="apForm.document"
+                                v-model="apForm.documents"
                                 :label="t('BankingView.reconciliation.document')"
                                 :hint="t('BankingView.reconciliation.documentHint')"
                                 persistent-hint
+                                multiple chips
                                 accept=".pdf,.jpg,.jpeg,.png,.webp,.tif,.tiff"
                                 density="comfortable" variant="outlined"
                                 prepend-icon="" prepend-inner-icon="mdi-paperclip"
                                 show-size clearable class="mt-3" />
                             <v-alert
-                                :type="apForm.document ? 'success' : 'warning'"
+                                :type="apDocCount ? 'success' : 'warning'"
                                 variant="tonal" density="compact" class="mt-3">
-                                {{ apForm.document
-                                    ? t('BankingView.reconciliation.documentAttached')
-                                    : t('BankingView.reconciliation.documentMissing') }}
+                                {{ apDocCount === 0
+                                    ? t('BankingView.reconciliation.documentMissing')
+                                    : (apDocCount === 1
+                                        ? t('BankingView.reconciliation.documentAttached')
+                                        : t('BankingView.reconciliation.documentsAttached', { count: apDocCount })) }}
                             </v-alert>
                             <v-alert type="info" variant="tonal" density="compact" class="mt-3">
                                 {{ t('BankingView.reconciliation.createApHint') }}
@@ -1483,6 +1530,7 @@ import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Filler)
 import RecipientAutocomplete from '../components/recipient-autocomplete.component.vue'
 import BookingDialog from '../components/booking-dialog.component.vue'
+import TransactionDocuments from '../components/transaction-documents.component.vue'
 import SettlementDialog from '../components/settlement-dialog.component.vue'
 import PeriodPicker from '../components/kasse.period-picker.component.vue'
 import { validateIban, validateBic, normalizeIban } from '@/core/utils/iban.js'
@@ -2389,6 +2437,21 @@ function openBookingDialog(item) {
     showBookingDialog.value = true
 }
 
+// ── Belege zum Umsatz ─────────────────────────────────────────────────────
+const showDocsDialog  = ref(false)
+const docsTransaction = ref(null)
+
+function openDocuments(item) {
+    docsTransaction.value = item
+    showDocsDialog.value = true
+}
+
+// Büroklammer in der Liste nachführen, ohne alle Umsätze neu zu laden.
+function onDocumentsChanged(transactionId, count) {
+    const row = banking.transactions.value.find(tx => tx.id === transactionId)
+    if (row) row.has_document = count > 0
+}
+
 const showSettlementDialog = ref(false)
 const settlementTransaction = ref(null)
 
@@ -2403,17 +2466,20 @@ function onSettlementFromBooking(item) {
     openSettlement(item)
 }
 
-// Aus dem "Zahlung buchen"-Dialog heraus eine neue Eingangsrechnung anlegen.
-function onCreateApFromBooking(item) {
+// Aus dem "Zahlung buchen"-Dialog heraus eine neue Eingangsrechnung anlegen —
+// der dort erkannte Lieferant kommt mit und wird vorbelegt.
+function onCreateApFromBooking(item, contact = null) {
     showBookingDialog.value = false
-    openApDialog(item)
+    openApDialog(item, contact)
 }
 
 // ── Ausgehende Zahlung → Eingangsrechnung anlegen + sofort bezahlen ──────────
 const showApDialog     = ref(false)
 const apSource         = ref(null)
 const apSaving         = ref(false)
-const apForm           = ref({ vendor_id: null, account: null, rate: 19, invnumber: '' })
+const apForm           = ref({ vendor_id: null, account: null, rate: 19, invnumber: '', documents: [] })
+// v-file-input liefert je nach Vuetify-Version Array oder einzelne Datei
+const apDocCount       = computed(() => apDocFiles().length)
 const apVendorOptions  = ref([])
 const apVendorLoading  = ref(false)
 const apAccountOptions = ref([])
@@ -2426,13 +2492,44 @@ const apTaxRateOptions = [
     { title: '0 % (steuerfrei)', value: 0 }
 ]
 
-function openApDialog(bt) {
+// Woher der vorbelegte Lieferant stammt (iban | rule | history_iban |
+// history_name | name) — als Hinweis unter dem Feld, damit nachvollziehbar ist,
+// warum dort jemand steht.
+const apVendorSource      = ref(null)
+const apVendorSuggestedId = ref(null)
+const apVendorSuggesting  = ref(false)
+const apVendorSourceLabel = computed(() => {
+    if (!apVendorSource.value) return ''
+    const key = `BankingView.booking.contactSource_${apVendorSource.value}`
+    const label = t(key)
+    return label === key ? apVendorSource.value : label
+})
+
+async function openApDialog(bt, contact = null) {
     apSource.value = bt
-    apForm.value = { vendor_id: null, account: null, rate: 19, invnumber: '', document: null }
+    apForm.value = { vendor_id: null, account: null, rate: 19, invnumber: '', documents: [] }
     apVendorOptions.value = []
     apAccountOptions.value = []
     apAccountSource.value = null
+    apVendorSource.value = null
+    apVendorSuggestedId.value = null
     showApDialog.value = true
+
+    // Lieferant vorbelegen: aus dem Buchungsdialog mitgegeben oder jetzt
+    // ermitteln (Direktaufruf aus der Umsatzliste). Bisher blieb das Feld
+    // immer leer, obwohl derselbe Empfänger längst bekannt war.
+    if (!contact) {
+        apVendorSuggesting.value = true
+        try { contact = await matching.suggestTransactionContact(bt.id) }
+        catch (e) { contact = null }
+        finally { apVendorSuggesting.value = false }
+    }
+    if (contact?.type === 'vendor' && apSource.value?.id === bt.id) {
+        apVendorOptions.value = [{ id: contact.id, name: contact.name, vendornumber: contact.number }]
+        apVendorSuggestedId.value = contact.id
+        apVendorSource.value = contact.source
+        apForm.value.vendor_id = contact.id
+    }
 }
 
 // Woher der Kontovorschlag stammt — wird als Hinweis unter dem Feld gezeigt,
@@ -2444,6 +2541,8 @@ const apSuggesting = ref(false)
 // Eine bereits getroffene Auswahl wird nicht überschrieben.
 watch(() => apForm.value.vendor_id, async (vendorId) => {
     apAccountSource.value = null
+    // Manuell gewählter Lieferant: der Erkennungs-Hinweis gilt nicht mehr
+    if (vendorId !== apVendorSuggestedId.value) apVendorSource.value = null
     if (!vendorId) return
     apSuggesting.value = true
     try {
@@ -2460,6 +2559,12 @@ watch(() => apForm.value.vendor_id, async (vendorId) => {
 })
 
 /** Datei als reines Base64 (ohne data:-Präfix) lesen */
+function apDocFiles() {
+    const d = apForm.value.documents
+    if (!d) return []
+    return Array.isArray(d) ? d.filter(Boolean) : [d]
+}
+
 function fileToBase64(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader()
@@ -2495,8 +2600,8 @@ async function submitAp() {
 
     // Ohne Beleg ist die Buchung für eine Betriebsprüfung angreifbar — einmal
     // nachfragen, aber nicht blockieren (Bankgebühren u. Ä. haben keinen).
-    const beleg = apForm.value.document
-    if (!beleg) {
+    const belege = apDocFiles()
+    if (!belege.length) {
         const res = await alerts.question(
             t('BankingView.reconciliation.noDocumentConfirm'),
             t('BankingView.reconciliation.noDocumentTitle'),
@@ -2516,12 +2621,12 @@ async function submitAp() {
             rate: apForm.value.rate,
             invnumber: apForm.value.invnumber || undefined
         }
-        if (beleg) {
-            payload.document = {
-                filename:    beleg.name,
-                mime_type:   beleg.type || 'application/octet-stream',
-                file_base64: await fileToBase64(beleg)
-            }
+        if (belege.length) {
+            payload.documents = await Promise.all(belege.map(async f => ({
+                filename:    f.name,
+                mime_type:   f.type || 'application/octet-stream',
+                file_base64: await fileToBase64(f)
+            })))
         }
         const res = await matching.createApFromBankTransaction(payload)
         alerts.success(t('BankingView.reconciliation.createApSuccess', { gross: formatCurrency(res.gross) }))

@@ -211,6 +211,17 @@ function matchTransaction($data) {
         return;
     }
 
+    // Richtung schon bei der Zuordnung prüfen, nicht erst beim Buchen: ein
+    // Geldeingang gleicht eine Ausgangsrechnung aus, ein Geldausgang eine
+    // Eingangsrechnung — Gutschriften (negativer Betrag) entsprechend
+    // umgekehrt. Vorher blieb der Umsatz nach dem abgewiesenen Buchungsversuch
+    // als „zugeordnet" mit einer unbuchbaren Zuordnung stehen.
+    $expectIncoming = ($targetType === 'ar') === (floatval($invoice['amount']) >= 0);
+    if ($expectIncoming !== (floatval($bt['amount']) > 0)) {
+        resultInfo(false, 'DIRECTION_MISMATCH', 'Zahlungsrichtung passt nicht zum Beleg (Geldeingang ↔ Ausgangsrechnung, Geldausgang ↔ Eingangsrechnung)');
+        return;
+    }
+
     // Mapping persistieren (UPSERT — User darf Zuordnung aendern bevor gebucht wird)
     $db->execute(<<<SQL
         INSERT INTO bank_transaction_matches (bank_transaction_id, target_type, target_id, matched_by, matched_at)
@@ -614,7 +625,8 @@ function suggestExpenseAccount($data) {
  * @param float  $data['rate']                Steuersatz 19/7/0 (Default 19)
  * @param string $data['invnumber']           Rechnungsnummer (optional)
  * @param string $data['notes']               Buchungstext (optional)
- * @param array  $data['document']            Beleg {filename, mime_type, file_base64} (optional)
+ * @param array  $data['documents']           Belege [{filename, mime_type, file_base64}, ...] (optional)
+ * @param array  $data['document']            ein einzelner Beleg, ältere Form von documents (optional)
  * @param int    $data['document_id']         bereits hochgeladener Beleg (Alternative)
  * @testdata {"bank_transaction_id": 1, "vendor_id": 1000, "debit_account": "5400", "rate": 19}
  */
@@ -685,29 +697,35 @@ function createApFromBankTransaction($data) {
     $res = _bookBankPaymentAgainstInvoice($db, $bt, 'ap', intval($apId), $bankAccount);
     if (!$res['ok']) { resultInfo(false, 'BOOK_FAILED', $res['error']); return; }
 
-    // 3) Beleg an die Eingangsrechnung hängen. Ohne Beleg keine ordnungsgemäße
-    //    Buchung — das Ergebnis geht deshalb zurück an die Oberfläche, damit
+    // 3) Belege an die Eingangsrechnung hängen — mehrere sind erlaubt (Rechnung
+    //    plus Lieferschein, mehrseitige Fotos). Ohne Beleg keine ordnungsgemäße
+    //    Buchung — Fehler gehen deshalb zurück an die Oberfläche, damit
     //    fehlende Belege sichtbar bleiben.
-    $documentId = intval($data['document_id'] ?? 0);
-    $docWarning = null;
-    if ($documentId <= 0 && !empty($data['document']['file_base64'])) {
+    $uploads = is_array($data['documents'] ?? null) ? $data['documents'] : [];
+    if (!empty($data['document']['file_base64'])) $uploads[] = $data['document'];
+
+    $documentIds = [];
+    $docWarnings = [];
+    if (intval($data['document_id'] ?? 0) > 0) $documentIds[] = intval($data['document_id']);
+    foreach ($uploads as $up) {
+        if (empty($up['file_base64'])) continue;
         $stored = storeAccountingDocument(
             $db,
-            $data['document']['filename']  ?? 'beleg.pdf',
-            $data['document']['mime_type'] ?? 'application/octet-stream',
-            $data['document']['file_base64'],
+            $up['filename']  ?? 'beleg.pdf',
+            $up['mime_type'] ?? 'application/octet-stream',
+            $up['file_base64'],
             $vendorId,
             mitarbeiterId($data)
         );
         if ($stored['ok']) {
-            $documentId = $stored['document_id'];
+            $documentIds[] = $stored['document_id'];
         } else {
             // Die Buchung steht bereits — ein Beleg-Fehler darf sie nicht kippen.
-            $docWarning = $stored['error'];
+            $docWarnings[] = ($up['filename'] ?? '?') . ': ' . $stored['error'];
             writeLog("createApFromBankTransaction: Beleg zu ap #{$apId} nicht gespeichert — " . $stored['error'], true, DLOG_ERR);
         }
     }
-    if ($documentId > 0) {
+    foreach ($documentIds as $documentId) {
         $db->execute(
             "UPDATE accounting_documents
                 SET ap_id = :ap_id, vendor_id = COALESCE(vendor_id, :vendor_id),
@@ -716,6 +734,7 @@ function createApFromBankTransaction($data) {
             ['ap_id' => $apId, 'vendor_id' => $vendorId, 'id' => $documentId]
         );
     }
+    $docWarning = $docWarnings ? implode('; ', $docWarnings) : null;
 
     // 4) Aufwandskonto für diesen Lieferanten merken, damit der Dialog es beim
     //    nächsten Mal vorbelegt (siehe suggestExpenseAccount).
@@ -742,8 +761,8 @@ function createApFromBankTransaction($data) {
         'ap_id'       => $apId,
         'vendor_id'   => $vendorId,
         'gross'       => $gross,
-        'document_id' => $documentId ?: null,
-        'doc_warning' => $docWarning,
+        'document_ids' => $documentIds,
+        'doc_warning'  => $docWarning,
     ]);
 }
 
@@ -1083,6 +1102,137 @@ function saveMatchingRule($data) {
 }
 
 /**
+ * Kontakt (Lieferant bzw. Kunde) zu einem Bankumsatz erkennen — unabhängig
+ * davon, ob ein offener Beleg existiert.
+ *
+ * Hintergrund: Nur wenige Lieferanten tragen eine IBAN im Stammsatz, und zu
+ * den meisten Geldausgängen gibt es keine vorerfasste Eingangsrechnung. Der
+ * Buchungsdialog zeigte dann „Kein passender Beleg" und der Dialog „Neue
+ * Eingangsrechnung" blieb beim Lieferanten leer, obwohl derselbe Zahlungs-
+ * empfänger schon dutzendfach gebucht wurde. Reihenfolge (eine Abfrage):
+ *   1. IBAN im Kontakt-Stammsatz
+ *   2. aktive Zuordnungsregel (bank_matching_rules: IBAN oder Name)
+ *   3. frühere Buchungen derselben IBAN (bank_transaction_acc_trans → ap/ar);
+ *      nur wenn ein Kontakt mindestens die Hälfte dieser Buchungen trägt —
+ *      Sammelauszahler (SumUp, PayPal) liefern sonst einen zufälligen Kunden
+ *   4. frühere Buchungen desselben Gegennamens (Kartenzahlungen ohne IBAN)
+ *   5. Name im Stammsatz, nur bei genau einem Treffer
+ * Nichts wird in den Stammsatz zurückgeschrieben: eine falsch gewählte IBAN
+ * im Lieferanten würde spätere Überweisungen fehlleiten. Das System lernt
+ * stattdessen aus den Buchungen selbst — Storno vergisst automatisch mit.
+ *
+ * @param ApiDatabase $db
+ * @param int         $btId Bankumsatz
+ * @return array|null {type: vendor|customer, id, name, number, iban, source, hits}
+ */
+function _bt_contactSuggestion($db, $btId) {
+    $bt = $db->getOne("SELECT amount FROM bank_transactions WHERE id = :id", ['id' => $btId]);
+    if (!$bt) return null;
+
+    $isIncoming = floatval($bt['amount']) > 0;
+    $T    = $isIncoming ? 'ar' : 'ap';
+    $C    = $isIncoming ? 'customer' : 'vendor';
+    $CID  = $isIncoming ? 'customer_id' : 'vendor_id';
+    $NUM  = $isIncoming ? 'customernumber' : 'vendornumber';
+    $RULE = $isIncoming ? 'action_customer_id' : 'action_vendor_id';
+
+    $nameMatch = "bt.remote_name <> '' AND length(bt.remote_name) >= 3 AND length(c.name) >= 4
+                  AND (c.name ILIKE '%' || bt.remote_name || '%' OR bt.remote_name ILIKE '%' || c.name || '%')";
+
+    $row = $db->getOne(<<<SQL
+        WITH bt AS (
+            SELECT id,
+                   COALESCE(NULLIF(trim(remote_account_number), ''), '') AS remote_iban,
+                   COALESCE(trim(remote_name), '')                       AS remote_name
+            FROM bank_transactions WHERE id = :bt_id
+        ),
+        -- gebuchte Umsätze, die zu einem Beleg dieses Kontakttyps gehören
+        historie AS (
+            SELECT b2.id AS bt_id, b2.remote_account_number AS iban, lower(trim(b2.remote_name)) AS name, d.{$CID} AS contact_id
+            FROM bt
+            JOIN bank_transactions b2 ON b2.id <> bt.id
+                 AND ((bt.remote_iban <> '' AND b2.remote_account_number = bt.remote_iban)
+                   OR (bt.remote_name <> '' AND lower(trim(b2.remote_name)) = lower(bt.remote_name)))
+            JOIN bank_transaction_acc_trans bta ON bta.bank_transaction_id = b2.id AND bta.{$T}_id IS NOT NULL
+            JOIN {$T} d ON d.id = bta.{$T}_id
+            GROUP BY b2.id, b2.remote_account_number, b2.remote_name, d.{$CID}
+        ),
+        kandidaten AS (
+            -- 1. IBAN im Stammsatz
+            SELECT c.id AS contact_id, 'iban'::text AS source, 1 AS prio, 1::bigint AS hits
+            FROM bt JOIN {$C} c ON bt.remote_iban <> '' AND c.iban = bt.remote_iban
+
+            UNION ALL
+
+            -- 2. Zuordnungsregel
+            SELECT r.{$RULE}, 'rule', 2, 1
+            FROM bt JOIN bank_matching_rules r ON r.active IS NOT FALSE AND r.{$RULE} IS NOT NULL
+                 AND ((r.match_remote_iban IS NOT NULL AND r.match_remote_iban = bt.remote_iban)
+                   OR (r.match_remote_name IS NOT NULL AND bt.remote_name ILIKE '%' || r.match_remote_name || '%'))
+
+            UNION ALL
+
+            -- 3. frühere Buchungen derselben IBAN (dominanter Kontakt)
+            SELECT h.contact_id, 'history_iban', 3, count(DISTINCT h.bt_id)
+            FROM bt JOIN historie h ON bt.remote_iban <> '' AND h.iban = bt.remote_iban
+            GROUP BY h.contact_id
+            HAVING count(DISTINCT h.bt_id) * 2 >= (SELECT count(DISTINCT h2.bt_id) FROM historie h2, bt WHERE h2.iban = bt.remote_iban)
+
+            UNION ALL
+
+            -- 4. frühere Buchungen desselben Gegennamens
+            SELECT h.contact_id, 'history_name', 4, count(DISTINCT h.bt_id)
+            FROM bt JOIN historie h ON bt.remote_name <> '' AND h.name = lower(bt.remote_name)
+            GROUP BY h.contact_id
+            HAVING count(DISTINCT h.bt_id) * 2 >= (SELECT count(DISTINCT h2.bt_id) FROM historie h2, bt WHERE h2.name = lower(bt.remote_name))
+
+            UNION ALL
+
+            -- 5. Name im Stammsatz — nur eindeutig
+            SELECT max(c.id), 'name', 5, 1
+            FROM bt JOIN {$C} c ON c.obsolete IS NOT TRUE AND {$nameMatch}
+            HAVING count(*) = 1
+        )
+        SELECT c.id, c.name, c.{$NUM} AS number, c.iban, k.source, k.hits
+        FROM kandidaten k
+        JOIN {$C} c ON c.id = k.contact_id
+        ORDER BY k.prio ASC, k.hits DESC, c.id ASC
+        LIMIT 1
+    SQL, ['bt_id' => $btId]);
+
+    if (!$row) return null;
+
+    return [
+        'type'   => $C,
+        'id'     => intval($row['id']),
+        'name'   => $row['name'],
+        'number' => $row['number'],
+        'iban'   => $row['iban'],
+        'source' => $row['source'],
+        'hits'   => intval($row['hits']),
+    ];
+}
+
+/**
+ * Lieferant bzw. Kunde zu einem Bankumsatz vorschlagen (für den Dialog
+ * „Als Eingangsrechnung buchen", der direkt aus der Umsatzliste geöffnet wird).
+ *
+ * @param int $data['transaction_id'] Bankumsatz-ID
+ * @testdata {"transaction_id": 1}
+ */
+function suggestTransactionContact($data) {
+    $db = DbhCompany::begin();
+
+    $btId = intval($data['transaction_id'] ?? 0);
+    if ($btId <= 0) {
+        resultInfo(false, 'VALIDATION_ERROR', 'Umsatz-ID fehlt');
+        return;
+    }
+
+    resultInfo(true, '', ['contact' => _bt_contactSuggestion($db, $btId)]);
+}
+
+/**
  * Zuordnungs-Kandidaten für einen Bankumsatz ermitteln.
  *
  * Geldeingang → offene Ausgangsrechnungen (ar/customer), Geldausgang → offene
@@ -1091,7 +1241,10 @@ function saveMatchingRule($data) {
  * nach Konfidenz, je Beleg nur der beste Treffer. Zusätzlich zwei
  * Sammel-Vorschläge: (a) mehrere Belegnummern im Verwendungszweck, deren
  * Summe den Umsatz ergibt; (b) sonst eine eindeutige Teilsumme aus den offenen
- * Belegen des per IBAN/Name erkannten Kontakts (Subset-Sum).
+ * Belegen des per IBAN/Name erkannten Kontakts (Subset-Sum). Unabhängig von
+ * den Belegen wird der Kontakt selbst erkannt (contact, siehe
+ * _bt_contactSuggestion), damit der Dialog auch ohne offenen Beleg weiß, wer
+ * der Zahlungsempfänger ist, und die neue Eingangsrechnung vorbelegen kann.
  *
  * @param int $data['transaction_id'] Bankumsatz-ID
  * @testdata {"transaction_id": 1}
@@ -1355,6 +1508,7 @@ function getMatchCandidatesForTransaction($data) {
         'candidates'       => $candidates,
         'current_match'    => $currentMatch,
         'suggested_group'  => $suggestedGroup,
+        'contact'          => _bt_contactSuggestion($db, $btId),
         'has_candidates'   => count($candidates) > 0 || $suggestedGroup !== null
     ]);
 }

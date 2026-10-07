@@ -332,6 +332,10 @@
     "KasseView": {
         "routes": {
             "kasse": "/cassa"
-        }
+        },
+        "taxIncluded": "Importo lordo · include {rate} % di {kind}: {tax} €, netto {net} €",
+        "taxKindOut": "IVA a debito",
+        "taxKindIn": "IVA a credito",
+        "taxNone": "Conto senza codice IVA: nessuna imposta viene scorporata"
     }
 }

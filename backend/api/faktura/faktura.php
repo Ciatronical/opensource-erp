@@ -1086,13 +1086,33 @@ SQL, ['fakturaID' => $fakturaID]);
         }
     }
 
+    // Gegenbein einer Zahlung erkennen: zu jedem Zahlungs-Bein (Geldkonto,
+    // chart_link '…_paid') gehört ein Bein auf dem Forderungs-/Verbindlichkeits-
+    // konto mit gleichem Datum und umgekehrtem Vorzeichen. Es trägt chart_link
+    // 'AR' bzw. 'AP' — genau wie die Erstbuchung der Rechnung — und war deshalb
+    // von der Positions-Löschung (2b) nicht zu unterscheiden. Folge: Wer nach
+    // einer Bar- oder Editor-Zahlung nur noch eine Position änderte, verlor die
+    // Gegenbuchung; das Geldkonto-Bein blieb stehen und der Buchungssatz war
+    // unausgeglichen (Rechnungen 251955 und 252267). Die Bedingung wird in 2b
+    // zum Schutz und in 2c zum gezielten Löschen vor dem Neuschreiben genutzt.
+    $counterLegCond = <<<SQL
+        EXISTS (
+            SELECT 1 FROM acc_trans p
+            WHERE p.trans_id = acc_trans.trans_id
+              AND p.acc_trans_id <> acc_trans.acc_trans_id
+              AND p.chart_link LIKE '{$paymentLink}'
+              AND p.transdate = acc_trans.transdate
+              AND p.amount = -acc_trans.amount
+        )
+SQL;
+
     // 2b. Bei Rechnungen: Positions-Buchungen verarbeiten
     if ($isInvoiceType && !empty($accTransEntries)) {
-        // Alte Buchungen löschen (NICHT die existierenden Zahlungen!).
-        // Geschützte Bank-Buchungen (gebuchte Bankzuordnung) NICHT anfassen — deren
-        // Forderungs-Gegenbuchung (chart_link='AR') würde sonst mitgelöscht und die
-        // FK bank_transaction_acc_trans_acc_trans_id_fkey verletzen.
-        $deleteQuery = "DELETE FROM acc_trans WHERE trans_id = :fakturaID AND chart_link NOT LIKE '{$paymentLink}'{$protectExclusion}";
+        // Alte Buchungen löschen (NICHT die existierenden Zahlungen und NICHT
+        // deren Gegenbeine!). Geschützte Bank-Buchungen (gebuchte Bankzuordnung)
+        // ebenfalls nicht anfassen — deren Forderungs-Gegenbuchung würde sonst
+        // mitgelöscht und die FK bank_transaction_acc_trans_acc_trans_id_fkey verletzt.
+        $deleteQuery = "DELETE FROM acc_trans WHERE trans_id = :fakturaID AND chart_link NOT LIKE '{$paymentLink}' AND NOT {$counterLegCond}{$protectExclusion}";
         $company->execute($deleteQuery, array_merge(['fakturaID' => $fakturaID], $protectParams));
 
         // Neue Positions-Buchungen einfügen
@@ -1259,10 +1279,12 @@ SQL, [
             }
         }
 
-        // Alte Zahlungsbuchungen löschen — aber NICHT die geschützten Bank-Zahlungen
-        // (noch gebuchte Bankzuordnung). Verwaiste/stornierte BANK-Einträge sind nicht
-        // geschützt und werden hier mit aufgeräumt.
-        $deletePaymentsQuery = "DELETE FROM acc_trans WHERE trans_id = :fakturaID AND chart_link LIKE '{$paymentLink}'{$protectExclusion}";
+        // Alte Zahlungsbuchungen samt Gegenbeinen löschen — aber NICHT die
+        // geschützten Bank-Zahlungen (noch gebuchte Bankzuordnung). Verwaiste/
+        // stornierte BANK-Einträge sind nicht geschützt und werden hier mit
+        // aufgeräumt. Die Gegenbeine müssen mit weg, weil sie unten mit jeder
+        // Zahlung neu geschrieben werden — sonst stünden sie doppelt da.
+        $deletePaymentsQuery = "DELETE FROM acc_trans WHERE trans_id = :fakturaID AND (chart_link LIKE '{$paymentLink}' OR {$counterLegCond}){$protectExclusion}";
         $company->execute($deletePaymentsQuery, array_merge(['fakturaID' => $fakturaID], $protectParams));
 
         // Neue Zahlungsbuchungen einfügen

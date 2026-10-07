@@ -332,6 +332,10 @@
     "KasseView": {
         "routes": {
             "kasse": "/caixa"
-        }
+        },
+        "taxIncluded": "Valor bruto · inclui {rate} % de {kind}: {tax} €, líquido {net} €",
+        "taxKindOut": "IVA liquidado",
+        "taxKindIn": "IVA dedutível",
+        "taxNone": "Conta sem código fiscal – não é separado nenhum imposto"
     }
 }

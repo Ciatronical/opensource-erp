@@ -332,6 +332,10 @@
     "KasseView": {
         "routes": {
             "kasse": "/caja"
-        }
+        },
+        "taxIncluded": "Importe bruto · incluye {rate} % de {kind}: {tax} €, neto {net} €",
+        "taxKindOut": "IVA repercutido",
+        "taxKindIn": "IVA soportado",
+        "taxNone": "Cuenta sin clave fiscal: no se desglosa ningún impuesto"
     }
 }

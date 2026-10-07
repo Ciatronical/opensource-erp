@@ -1,6 +1,6 @@
 ---
 title: Banking
-summary: Bankanbindung per FinTS, Kontoumsätze, SEPA-Überweisungen, Zuordnung, Sammelbuchung, Kartenabrechnungen
+summary: Bankanbindung per FinTS, Kontoumsätze, SEPA-Überweisungen, Zuordnung, Sammelbuchung, Belege je Umsatz, Kartenabrechnungen
 group: core
 category: Finanzen
 order: 30
@@ -91,6 +91,28 @@ Regeln definieren die automatisch Bankbuchungen zu Rechnungen zuordnen:
 3. Zuordnen
 4. Verbuchen (erzeugt Buchungssatz in der Finanzbuchhaltung)
 
+Die Zuordnung prüft die Zahlungsrichtung sofort: Ein Geldeingang lässt sich nur einer Ausgangsrechnung zuordnen, ein Geldausgang nur einer Eingangsrechnung (Gutschriften entsprechend umgekehrt). Beim Verbuchen gelten drei weitere Sperren: keine Zahlung vor dem Rechnungsdatum, nie mehr als der offene Betrag, keine Doppelbuchung derselben Zahlung.
+
+### Lieferant oder Kunde erkennen — auch ohne offenen Beleg
+
+Zu den meisten Geldausgängen gibt es keine vorerfasste Eingangsrechnung, und nur wenige Lieferanten tragen eine IBAN im Stammsatz. Der Dialog „Zahlung buchen" erkennt den Zahlungsempfänger deshalb unabhängig von den Belegen und zeigt ihn als Chip unter dem Umsatz an, mit Angabe der Quelle:
+
+| Quelle | Bedeutung |
+|--------|-----------|
+| IBAN im Stammsatz | Die IBAN des Umsatzes steht am Kunden/Lieferanten |
+| Zuordnungsregel | Eine aktive Regel nennt diesen Kontakt (IBAN oder Name) |
+| frühere Buchungen dieser IBAN | Umsätze derselben IBAN wurden schon auf Belege dieses Kontakts gebucht |
+| frühere Buchungen dieses Namens | wie oben, über den Gegennamen (Kartenzahlungen ohne IBAN) |
+| Namensübereinstimmung | Der Gegenname passt zu genau einem Kontakt |
+
+Bei Sammelauszahlern (SumUp, PayPal) wird die Historie nur gewertet, wenn ein Kontakt mindestens die Hälfte der bisherigen Buchungen trägt – sonst käme ein zufälliger Kunde heraus. In den Stammsatz wird nichts zurückgeschrieben: eine falsch gelernte IBAN würde spätere Überweisungen fehlleiten. Das System lernt aus den Buchungen selbst, ein Storno vergisst automatisch mit.
+
+Der erkannte Lieferant ist im Dialog **Neue Eingangsrechnung** vorbelegt (Knopf „Eingangsrechnung für … anlegen"), zusammen mit dem zuletzt für ihn verwendeten Aufwandskonto und Steuersatz. Das gilt auch, wenn der Dialog direkt aus der Umsatzliste geöffnet wird.
+
+### Belegnummern
+
+Jede Bankbuchung erhält eine fortlaufende Belegnummer je Geldkonto und Jahr (`Beleg N` im Buchungstext, Nummer im Belegfeld). Die nächste Nummer wird aus dem Hauptbuch abgeleitet; Rechnungsnummern, die als Zahlungsreferenz oder in kivitendo-Dialogbuchungen stehen, zählen dabei nicht mit, damit die Folge nicht in den Rechnungsnummernkreis springt.
+
 ### Status einer Buchung
 
 | Status | Bedeutung |
@@ -116,6 +138,18 @@ Die Banking-Übersicht zeigt pro Konto:
 - Letzter Abruf-Zeitpunkt
 - Monatliche Einnahmen/Ausgaben-Statistik
 
+## Belege zu einem Bankumsatz
+
+Zu jedem Bankumsatz lassen sich **beliebig viele Belege** ablegen — Gebührenabrechnung der Bank, Kontoauszugsseite, Vertrag, Mahnung, Lieferschein — unabhängig davon, ob der Umsatz schon gebucht, nur zugeordnet oder ignoriert ist. Die Büroklammer in der Umsatzliste öffnet die Belege zum Umsatz; derselbe Bereich steht im Dialog „Zahlung buchen". Dateien werden per Drag-and-drop oder über „Hinzufügen" hochgeladen, mehrere auf einmal (PDF, JPG, PNG, WEBP, TIFF, bis 20 MB je Datei).
+
+Angezeigt wird alles, was zum Umsatz gehört: direkt angehängte Belege sowie die Belege der zugeordneten Eingangs- und Ausgangsrechnungen (mit Rechnungsnummer gekennzeichnet). Letztere hängen an der Rechnung und werden hier nur mit angezeigt; direkt angehängte Belege lassen sich vom Umsatz **lösen**, bleiben dabei aber in der Belegablage — Belege werden nie gelöscht (GoBD). Jede Ablage, Verknüpfung und Ansicht wird im Belegprotokoll festgehalten.
+
+Die Büroklammer in der Liste zeigt den Belegstand: grün = Beleg vorhanden, orange = Eingangsrechnung ohne Beleg (Lücke für die Betriebsprüfung), grau = nichts hinterlegt.
+
+Beim Anlegen einer Eingangsrechnung aus dem Bankumsatz („Als Eingangsrechnung buchen") können ebenfalls mehrere Dateien gewählt werden; sie werden alle an die Eingangsrechnung gehängt und im DATEV-Export mitgeliefert.
+
+Technik: Tabelle `bank_transaction_documents` (Umsatz ↔ `accounting_documents`), API `getBankTransactionDocuments`, `uploadBankTransactionDocuments`, `unlinkBankTransactionDocument`, `getBankDocumentContent` in `backend/api/banking/bank_documents.php`.
+
 ## Sammelbuchung — ein Umsatz, mehrere Belege
 
 Ein Bankumsatz kann gegen **mehrere Belege** gebucht werden: eine Sammelüberweisung des Kunden über drei Rechnungen, eine Zahlung an den Lieferanten über zwei Eingangsrechnungen abzüglich einer Gutschrift. In der Zuordnung werden Belege „zur Sammelbuchung hinzugefügt"; die Summe wird gegen den Umsatz geprüft, ein Rest lässt sich als Skonto, Gebühr oder Teilzahlung behandeln. Der Dialog steht für Geldeingänge und Geldausgänge zur Verfügung.
@@ -128,3 +162,6 @@ Kartendienstleister (Flatpay, Rapyd, SumUp) zahlen gesammelt aus — ein Bankums
 - **SumUp ohne Datei**: Auszahlungen werden direkt über die SumUp-API geholt (API-Schlüssel und Händlercode in den CRM-Vorgaben) und wie ein Bericht gespeichert
 - Je Auszahlung werden die passenden Rechnungen vorgeschlagen (Betrag, Datum, Teilsummen) und gebucht: Zahlungseingang auf die Rechnung, Gebühr auf das Gebührenkonto, Rest gegen das Bankkonto
 - Buchungen lassen sich stornieren; der Vorschau-Modus zeigt den Buchungsplan vorher
+- Wurde eine Kartenzahlung schon von Hand als bezahlt gegen das Bankkonto gebucht (ohne verknüpften Bankumsatz), erkennt der Dialog das, schlägt die Rechnung trotzdem vor und ersetzt die Handbuchung beim Buchen durch die Kartenabrechnung – der Betrag steht so nicht doppelt auf dem Bankkonto
+- Weicht eine Kartenzahlung geringfügig vom Rechnungsbetrag ab (bis 2 €, z. B. Tippfehler am Terminal), wird die Rechnung trotzdem zugeordnet; die Differenz wird als eigene Zeile auf das Gebührenkonto gebucht und die Rechnung vollständig ausgeglichen
+- Nach dem Buchen zeigt der Umsatz die ausgeglichenen Rechnungsnummern an; ein Klick öffnet die Rechnung, wie bei jeder anderen Rechnungszahlung

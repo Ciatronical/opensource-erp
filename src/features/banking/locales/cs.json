@@ -332,6 +332,10 @@
     "KasseView": {
         "routes": {
             "kasse": "/pokladna"
-        }
+        },
+        "taxIncluded": "Hrubá částka · obsahuje {rate} % {kind}: {tax} €, netto {net} €",
+        "taxKindOut": "DPH na výstupu",
+        "taxKindIn": "DPH na vstupu",
+        "taxNone": "Účet bez daňového klíče – daň se nevyčleňuje"
     }
 }

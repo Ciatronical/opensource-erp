@@ -332,6 +332,10 @@
     "KasseView": {
         "routes": {
             "kasse": "/kasa"
-        }
+        },
+        "taxIncluded": "Bruto suma · įskaitant {rate} % {kind}: {tax} €, neto {net} €",
+        "taxKindOut": "pardavimo PVM",
+        "taxKindIn": "pirkimo PVM",
+        "taxNone": "Sąskaita be mokesčio kodo – mokestis neišskiriamas"
     }
 }

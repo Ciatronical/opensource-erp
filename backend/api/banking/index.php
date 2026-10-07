@@ -16,6 +16,7 @@ require_once __DIR__.'/direct_debit.php';
 require_once __DIR__.'/fints.php';
 require_once __DIR__.'/kasse.php';
 require_once __DIR__.'/settlements.php';
+require_once __DIR__.'/bank_documents.php';
 // SumUp-Auszahlungen per API (nutzt _sumupConfig/_sumupRequest aus dem Zahlungsmodul)
 require_once __DIR__.'/../payment/sumup.php';
 require_once __DIR__.'/sumup_payouts.php';

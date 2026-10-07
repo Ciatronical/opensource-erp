@@ -233,6 +233,18 @@ mehrere hundert Zeilen und die Seite baut sich spürbar langsamer auf; Jahr und
 Gesamtzeitraum sind einen Klick daneben. Anfangsbestand und laufender Saldo
 stimmen in jedem Zeitraum, weil der Bestand davor als Übertrag mitgeliefert wird.
 
+**Steuer in der Kasse.** Der Betrag einer Bareinnahme oder Barausgabe ist immer
+brutto. Beim Buchen wird nach dem Steuerschlüssel des Gegenkontos die
+Umsatzsteuer (Einnahme) bzw. Vorsteuer (Ausgabe) herausgerechnet und auf das
+Steuerkonto gebucht – genau wie bei einer kivitendo-Dialogbuchung: Netto auf
+Erlös oder Aufwand, Steuer auf 3806/1406, Brutto auf die Kasse. Der Dialog zeigt
+unter dem Gegenkonto vorab, was im Betrag steckt („enthält 19 % Umsatzsteuer:
+19,00 €, netto 100,00 €"). Konten ohne Steuerschlüssel (etwa Nebenkosten des
+Geldverkehrs) werden brutto gebucht, der Dialog sagt das dazu.
+
+Die Kasse darf nie ins Minus: Eine Ausgabe wird nur gebucht, wenn der Bestand am
+Buchungstag reicht – geprüft wird chronologisch, nicht gegen den heutigen Saldo.
+
 ---
 
 ## 6. Offene Posten — wer schuldet wem
@@ -316,7 +328,13 @@ Brieftext je Stufe und je Brief Versandweg, Zeitpunkt und Ablage.
 
 Voraussetzung ist, dass die Steuerschlüssel an den Konten stimmen. Fehlt einem
 Konto der gültige Schlüssel, taucht es in der Voranmeldung nicht auf — das ist
-der häufigste Grund für eine Abweichung.
+der häufigste Grund für eine Abweichung. Die Voranmeldung weist solche
+Buchungen ohne Steuerschlüssel gesondert aus.
+
+Bei **Ist-Versteuerung** zählt die Zahlung: Je Zahlungseingang im Zeitraum wird
+der Anteil am Rechnungsbetrag mit der Steuerstruktur der Rechnung angesetzt.
+Kassen- und Dialogbuchungen ohne Rechnung (Bareinnahme, Barausgabe) sind selbst
+die Zahlung und zählen am Buchungstag voll.
 
 ---
 
