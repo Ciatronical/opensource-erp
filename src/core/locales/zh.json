@@ -99,7 +99,16 @@
         "writable": "可写入",
         "notWritable": "不可写入",
         "readOnly": "只读",
-        "failed": "无法读取目录"
+        "failed": "无法读取目录",
+        "errors": {
+            "BROWSE_NO_ROOTS": "没有可供选择的目录",
+            "BROWSE_PATH_RELATIVE": "只能浏览绝对路径",
+            "BROWSE_NOT_READABLE": "无法读取目录"
+        },
+        "notice": {
+            "missing": "“{pfad}”不存在——显示最近的现有上级目录。",
+            "outside": "“{pfad}”位于允许的目录之外——显示第一个入口点。"
+        }
     },
     "SchemaUpdate": {
         "title": "需要更新数据库",

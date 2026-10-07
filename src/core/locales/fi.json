@@ -99,7 +99,16 @@
         "writable": "Kirjoitettavissa",
         "notWritable": "Ei kirjoitettavissa",
         "readOnly": "Vain luku",
-        "failed": "Hakemistoa ei voitu lukea"
+        "failed": "Hakemistoa ei voitu lukea",
+        "errors": {
+            "BROWSE_NO_ROOTS": "Yhtään hakemistoa ei ole sallittu valittavaksi",
+            "BROWSE_PATH_RELATIVE": "Vain absoluuttisia polkuja voi selata",
+            "BROWSE_NOT_READABLE": "Hakemistoa ei voi lukea"
+        },
+        "notice": {
+            "missing": "”{pfad}” ei ole olemassa — näytetään lähin olemassa oleva ylähakemisto.",
+            "outside": "”{pfad}” on sallittujen hakemistojen ulkopuolella — näytetään ensimmäinen aloituskohta."
+        }
     },
     "SchemaUpdate": {
         "title": "Tietokannan päivitys tarvitaan",

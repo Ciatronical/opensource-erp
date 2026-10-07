@@ -99,7 +99,16 @@
         "writable": "Gravável",
         "notWritable": "Não gravável",
         "readOnly": "Apenas leitura",
-        "failed": "Não foi possível ler a pasta"
+        "failed": "Não foi possível ler a pasta",
+        "errors": {
+            "BROWSE_NO_ROOTS": "Nenhum diretório está liberado para seleção",
+            "BROWSE_PATH_RELATIVE": "Só é possível percorrer caminhos absolutos",
+            "BROWSE_NOT_READABLE": "Diretório não legível"
+        },
+        "notice": {
+            "missing": "«{pfad}» não existe — é mostrado o diretório superior existente mais próximo.",
+            "outside": "«{pfad}» está fora dos diretórios liberados — é mostrado o primeiro ponto de entrada."
+        }
     },
     "SchemaUpdate": {
         "title": "É necessária uma atualização da base de dados",

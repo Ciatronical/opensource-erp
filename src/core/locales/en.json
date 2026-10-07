@@ -100,7 +100,16 @@
         "writable": "Writable",
         "notWritable": "Not writable",
         "readOnly": "Read-only",
-        "failed": "Directory could not be read"
+        "failed": "Directory could not be read",
+        "errors": {
+            "BROWSE_NO_ROOTS": "No directory is enabled for selection",
+            "BROWSE_PATH_RELATIVE": "Only absolute paths can be browsed",
+            "BROWSE_NOT_READABLE": "Directory not readable"
+        },
+        "notice": {
+            "missing": "“{pfad}” does not exist — showing the nearest existing parent directory.",
+            "outside": "“{pfad}” is outside the enabled directories — showing the first entry point."
+        }
     },
     "SchemaUpdate": {
         "title": "Database update required",

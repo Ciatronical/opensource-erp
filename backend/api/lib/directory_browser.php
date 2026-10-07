@@ -98,35 +98,56 @@ function browseRootDirs(): array {
 /**
  * Löst einen angefragten Pfad auf und prüft ihn gegen die Wurzeln
  *
+ * Der Dialog öffnet dort, wo das Feld steht — das ist nicht immer ein
+ * vorhandenes Verzeichnis. Statt dann abzubrechen, zeigt er das Nächstliegende
+ * und sagt, warum (notice):
+ *
+ *   Datei            ihr Verzeichnis (Logdatei, Programm) — ohne Hinweis
+ *   gibt es nicht    das nächste vorhandene übergeordnete Verzeichnis
+ *                    (missing), etwa für eine Logdatei, die erst entsteht
+ *   außerhalb        die erste Wurzel (outside)
+ *
  * realpath() folgt Symlinks; ein Symlink aus dem erlaubten Bereich heraus
- * scheitert deshalb an der Wurzelprüfung.
+ * landet deshalb ebenfalls bei outside.
  *
  * @param string $pfad Angefragter Pfad, leer für die erste Wurzel
  * @param array $wurzeln Erlaubte Wurzeln
- * @return string Aufgelöster Pfad
- * @throws ApiError BROWSE_NO_ROOTS, BROWSE_PATH_NOT_FOUND, BROWSE_PATH_DENIED
+ * @return array path (aufgelöst), notice (null oder ['type' => …, 'path' => …])
+ * @throws ApiError BROWSE_NO_ROOTS, BROWSE_PATH_RELATIVE
  */
-function browseResolvePath(string $pfad, array $wurzeln): string {
+function browseResolvePath(string $pfad, array $wurzeln): array {
     if (empty($wurzeln)) {
-        throw new ApiError('BROWSE_NO_ROOTS', 'Es ist kein Verzeichnis zur Auswahl freigegeben');
+        throw new ApiError('BROWSE_NO_ROOTS',
+            'Kein Verzeichnis zur Auswahl freigegeben — die Einstiegspunkte (browse_roots in der settings.ini oder die abgeleiteten) gibt es auf diesem Server nicht');
     }
 
-    if ('' === trim($pfad)) {
-        return $wurzeln[0];
+    $pfad = trim($pfad);
+    if ('' === $pfad) {
+        return ['path' => $wurzeln[0], 'notice' => null];
+    }
+    if (!str_starts_with($pfad, '/')) {
+        throw new ApiError('BROWSE_PATH_RELATIVE', 'Kein absoluter Pfad: '.$pfad);
     }
 
-    $echt = realpath($pfad);
-    if (false === $echt || !is_dir($echt)) {
-        throw new ApiError('BROWSE_PATH_NOT_FOUND', 'Verzeichnis nicht gefunden: '.$pfad);
+    // Datei: ihr Verzeichnis. Gibt es den Pfad nicht, das nächste vorhandene
+    // darüber — nur bis zur Wurzel des Dateisystems
+    $hinweis = null;
+    $kandidat = is_file($pfad) ? dirname($pfad) : $pfad;
+    while (!is_dir($kandidat) && '/' !== $kandidat && '' !== $kandidat) {
+        $kandidat = dirname($kandidat);
+        $hinweis = ['type' => 'missing', 'path' => $pfad];
     }
 
-    foreach ($wurzeln as $wurzel) {
-        if ($echt === $wurzel || str_starts_with($echt.'/', $wurzel.'/')) {
-            return $echt;
+    $echt = realpath($kandidat);
+    if (false !== $echt) {
+        foreach ($wurzeln as $wurzel) {
+            if ($echt === $wurzel || str_starts_with($echt.'/', $wurzel.'/')) {
+                return ['path' => $echt, 'notice' => $hinweis];
+            }
         }
     }
 
-    throw new ApiError('BROWSE_PATH_DENIED', 'Dieses Verzeichnis steht nicht zur Auswahl: '.$echt);
+    return ['path' => $wurzeln[0], 'notice' => ['type' => 'outside', 'path' => $pfad]];
 }
 
 /**
@@ -156,7 +177,8 @@ function browseDirectories($data) {
     requireSystemAdmin();
     $wurzeln = browseRootDirs();
 
-    $aktuell = browseResolvePath((string)($data['path'] ?? ''), $wurzeln);
+    $aufgeloest = browseResolvePath((string)($data['path'] ?? ''), $wurzeln);
+    $aktuell = $aufgeloest['path'];
 
     // Wurzel, unter der der aktuelle Pfad liegt — für den relativen Wert und
     // um den Weg nach oben an der Wurzel enden zu lassen
@@ -174,7 +196,11 @@ function browseDirectories($data) {
     $namen = @scandir($aktuell);
 
     if (false === $namen) {
-        throw new ApiError('BROWSE_NOT_READABLE', 'Verzeichnis nicht lesbar: '.$aktuell);
+        // Meist fehlen dem Benutzer des Webservers die Rechte
+        $benutzer = function_exists('posix_geteuid') && function_exists('posix_getpwuid')
+            ? (posix_getpwuid(posix_geteuid())['name'] ?? '') : '';
+        throw new ApiError('BROWSE_NOT_READABLE', 'Verzeichnis nicht lesbar'
+            .('' !== $benutzer ? ' für den Benutzer '.$benutzer : '').': '.$aktuell);
     }
 
     natcasesort($namen);
@@ -229,5 +255,7 @@ function browseDirectories($data) {
         'entries'    => $eintraege,
         'file_count' => $dateien,
         'truncated'  => $abgeschnitten,
+        // Warum ein anderes Verzeichnis gezeigt wird als angefragt
+        'notice'     => $aufgeloest['notice'],
     ]);
 }

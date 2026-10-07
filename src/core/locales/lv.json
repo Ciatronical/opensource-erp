@@ -99,7 +99,16 @@
         "writable": "Rakstāms",
         "notWritable": "Nav rakstāms",
         "readOnly": "Tikai lasāms",
-        "failed": "Neizdevās nolasīt direktoriju"
+        "failed": "Neizdevās nolasīt direktoriju",
+        "errors": {
+            "BROWSE_NO_ROOTS": "Izvēlei nav atļauta neviena mape",
+            "BROWSE_PATH_RELATIVE": "Pārlūkot var tikai absolūtos ceļus",
+            "BROWSE_NOT_READABLE": "Mapi nevar nolasīt"
+        },
+        "notice": {
+            "missing": "“{pfad}” neeksistē — tiek rādīta tuvākā esošā augstākā mape.",
+            "outside": "“{pfad}” atrodas ārpus atļautajām mapēm — tiek rādīts pirmais ieejas punkts."
+        }
     },
     "SchemaUpdate": {
         "title": "Nepieciešams datu bāzes atjauninājums",

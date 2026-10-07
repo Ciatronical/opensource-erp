@@ -99,7 +99,16 @@
         "writable": "Zapisywalny",
         "notWritable": "Niezapisywalny",
         "readOnly": "Tylko do odczytu",
-        "failed": "Nie udało się odczytać katalogu"
+        "failed": "Nie udało się odczytać katalogu",
+        "errors": {
+            "BROWSE_NO_ROOTS": "Żaden katalog nie jest udostępniony do wyboru",
+            "BROWSE_PATH_RELATIVE": "Przeglądać można tylko ścieżki bezwzględne",
+            "BROWSE_NOT_READABLE": "Nie można odczytać katalogu"
+        },
+        "notice": {
+            "missing": "„{pfad}” nie istnieje — wyświetlany jest najbliższy istniejący katalog nadrzędny.",
+            "outside": "„{pfad}” leży poza udostępnionymi katalogami — wyświetlany jest pierwszy punkt wejścia."
+        }
     },
     "SchemaUpdate": {
         "title": "Wymagana aktualizacja bazy danych",

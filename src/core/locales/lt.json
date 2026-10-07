@@ -99,7 +99,16 @@
         "writable": "Įrašoma",
         "notWritable": "Neįrašoma",
         "readOnly": "Tik skaitymui",
-        "failed": "Nepavyko perskaityti katalogo"
+        "failed": "Nepavyko perskaityti katalogo",
+        "errors": {
+            "BROWSE_NO_ROOTS": "Pasirinkimui neleidžiamas joks katalogas",
+            "BROWSE_PATH_RELATIVE": "Naršyti galima tik absoliučius kelius",
+            "BROWSE_NOT_READABLE": "Katalogo nepavyksta perskaityti"
+        },
+        "notice": {
+            "missing": "„{pfad}“ neegzistuoja — rodomas artimiausias esamas aukštesnis katalogas.",
+            "outside": "„{pfad}“ yra už leidžiamų katalogų ribų — rodomas pirmasis įėjimo taškas."
+        }
     },
     "SchemaUpdate": {
         "title": "Reikia atnaujinti duomenų bazę",

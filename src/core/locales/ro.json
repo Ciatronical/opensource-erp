@@ -99,7 +99,16 @@
         "writable": "Se poate scrie",
         "notWritable": "Nu se poate scrie",
         "readOnly": "Doar citire",
-        "failed": "Directorul nu a putut fi citit"
+        "failed": "Directorul nu a putut fi citit",
+        "errors": {
+            "BROWSE_NO_ROOTS": "Niciun director nu este permis pentru selecție",
+            "BROWSE_PATH_RELATIVE": "Se pot răsfoi doar căi absolute",
+            "BROWSE_NOT_READABLE": "Directorul nu poate fi citit"
+        },
+        "notice": {
+            "missing": "„{pfad}” nu există — este afișat cel mai apropiat director părinte existent.",
+            "outside": "„{pfad}” se află în afara directoarelor permise — este afișat primul punct de intrare."
+        }
     },
     "SchemaUpdate": {
         "title": "Este necesară actualizarea bazei de date",

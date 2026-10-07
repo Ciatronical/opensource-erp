@@ -46,7 +46,9 @@
                         :title="t('directoryPicker.up')"
                         @click="laden(stand.parent)"
                     />
-                    <div class="text-body-2 text-medium-emphasis flex-grow-1 text-truncate">{{ stand.path }}</div>
+                    <!-- Schriftgröße wie in den Eingabefeldern; lange Pfade brechen um,
+                         auch mitten im Namen (text-break), statt abgeschnitten zu werden -->
+                    <div class="text-body-1 text-high-emphasis flex-grow-1 text-break" style="min-width: 0">{{ stand.path }}</div>
                     <v-btn
                         size="small"
                         variant="text"
@@ -64,6 +66,16 @@
                     density="compact"
                     class="mb-2"
                     :text="fehler"
+                />
+
+                <!-- Angefragter Pfad nicht anzeigbar: was stattdessen zu sehen ist -->
+                <v-alert
+                    v-if="!fehler && stand.notice"
+                    type="info"
+                    variant="tonal"
+                    density="compact"
+                    class="mb-2"
+                    :text="t(`directoryPicker.notice.${stand.notice.type}`, { pfad: stand.notice.path })"
                 />
 
                 <v-alert
@@ -115,10 +127,11 @@
             <v-divider />
 
             <v-card-actions class="pa-3">
-                <div class="text-caption text-truncate">
+                <!-- Lange Pfade brechen um (text-break), statt abgeschnitten zu werden;
+                     min-width: 0 lässt die Zeile neben den Knöpfen schrumpfen -->
+                <div class="text-caption text-break flex-grow-1 mr-2" style="min-width: 0">
                     {{ t('directoryPicker.selection') }}: {{ anzeige || '—' }}
                 </div>
-                <v-spacer />
                 <v-btn variant="text" @click="offen = false">{{ t('cancel') }}</v-btn>
                 <v-btn color="primary" variant="tonal" :disabled="!anzeige" @click="uebernehmen">
                     {{ t('directoryPicker.apply') }}
@@ -133,7 +146,7 @@ import { ref, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import axios from 'axios';
 
-const { t } = useI18n();
+const { t, te } = useI18n();
 
 const props = defineProps({
     /** 'dir' wählt ein Verzeichnis, 'file' eine Datei darin */
@@ -167,7 +180,23 @@ const stand = ref({
     file_count: 0,
     writable: false,
     truncated: false,
+    notice: null,
 });
+
+/**
+ * Lesbare Fehlermeldung aus der Antwort des Backends
+ *
+ * text ist der Code (BROWSE_NOT_READABLE …), payload die Meldung mit Pfad und
+ * Grund. Ist der Code übersetzt, steht die Übersetzung vorn und die Meldung
+ * dahinter; sonst die Meldung allein, im Notfall ein allgemeiner Satz.
+ */
+function fehlerText(antwort) {
+    const code = String(antwort?.text || '');
+    const detail = typeof antwort?.payload === 'string' ? antwort.payload : '';
+    const schluessel = `directoryPicker.errors.${code}`;
+    if (code && te(schluessel)) return detail ? `${t(schluessel)} (${detail})` : t(schluessel);
+    return detail || t('directoryPicker.failed');
+}
 
 /**
  * Meldung für ein Verzeichnis ohne anzeigbare Einträge
@@ -201,7 +230,7 @@ async function laden(pfad = '') {
         });
 
         if (!data.success) {
-            fehler.value = data.text || t('directoryPicker.failed');
+            fehler.value = fehlerText(data);
             return;
         }
 
@@ -219,7 +248,7 @@ async function laden(pfad = '') {
             auswahlRelativ.value = '';
         }
     } catch (error) {
-        fehler.value = error?.response?.data?.text || t('directoryPicker.failed');
+        fehler.value = fehlerText(error?.response?.data);
     } finally {
         laedt.value = false;
     }

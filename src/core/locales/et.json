@@ -99,7 +99,16 @@
         "writable": "Kirjutatav",
         "notWritable": "Ei ole kirjutatav",
         "readOnly": "Ainult lugemiseks",
-        "failed": "Kataloogi ei õnnestunud lugeda"
+        "failed": "Kataloogi ei õnnestunud lugeda",
+        "errors": {
+            "BROWSE_NO_ROOTS": "Valikuks pole ühtegi kausta lubatud",
+            "BROWSE_PATH_RELATIVE": "Sirvida saab ainult absoluutseid teid",
+            "BROWSE_NOT_READABLE": "Kausta ei saa lugeda"
+        },
+        "notice": {
+            "missing": "„{pfad}“ ei ole olemas — kuvatakse lähim olemasolev ülemkaust.",
+            "outside": "„{pfad}“ asub väljaspool lubatud kaustu — kuvatakse esimene sisenemispunkt."
+        }
     },
     "SchemaUpdate": {
         "title": "Andmebaasi uuendamine on vajalik",

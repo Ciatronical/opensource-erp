@@ -99,7 +99,16 @@
         "writable": "Zapisovatelné",
         "notWritable": "Nelze zapisovat",
         "readOnly": "Jen pro čtení",
-        "failed": "Adresář se nepodařilo načíst"
+        "failed": "Adresář se nepodařilo načíst",
+        "errors": {
+            "BROWSE_NO_ROOTS": "Žádný adresář není povolen k výběru",
+            "BROWSE_PATH_RELATIVE": "Procházet lze jen absolutní cesty",
+            "BROWSE_NOT_READABLE": "Adresář nelze číst"
+        },
+        "notice": {
+            "missing": "„{pfad}“ neexistuje — zobrazen je nejbližší existující nadřazený adresář.",
+            "outside": "„{pfad}“ leží mimo povolené adresáře — zobrazen je první vstupní bod."
+        }
     },
     "SchemaUpdate": {
         "title": "Je nutná aktualizace databáze",

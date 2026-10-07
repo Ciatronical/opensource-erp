@@ -99,7 +99,16 @@
         "writable": "Beschrijfbaar",
         "notWritable": "Niet beschrijfbaar",
         "readOnly": "Alleen lezen",
-        "failed": "De map kon niet worden gelezen"
+        "failed": "De map kon niet worden gelezen",
+        "errors": {
+            "BROWSE_NO_ROOTS": "Geen map vrijgegeven voor selectie",
+            "BROWSE_PATH_RELATIVE": "Alleen absolute paden kunnen worden doorzocht",
+            "BROWSE_NOT_READABLE": "Map niet leesbaar"
+        },
+        "notice": {
+            "missing": "„{pfad}” bestaat niet — de dichtstbijzijnde bestaande bovenliggende map wordt getoond.",
+            "outside": "„{pfad}” ligt buiten de vrijgegeven mappen — het eerste startpunt wordt getoond."
+        }
     },
     "SchemaUpdate": {
         "title": "Database-update vereist",

@@ -99,7 +99,16 @@
         "writable": "Skrivbar",
         "notWritable": "Inte skrivbar",
         "readOnly": "Skrivskyddad",
-        "failed": "Katalogen kunde inte läsas"
+        "failed": "Katalogen kunde inte läsas",
+        "errors": {
+            "BROWSE_NO_ROOTS": "Ingen katalog är frigiven för val",
+            "BROWSE_PATH_RELATIVE": "Endast absoluta sökvägar kan bläddras",
+            "BROWSE_NOT_READABLE": "Katalogen kan inte läsas"
+        },
+        "notice": {
+            "missing": "”{pfad}” finns inte — närmaste befintliga överordnade katalog visas.",
+            "outside": "”{pfad}” ligger utanför de frigivna katalogerna — den första startpunkten visas."
+        }
     },
     "SchemaUpdate": {
         "title": "Databasuppdatering krävs",

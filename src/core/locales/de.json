@@ -100,7 +100,16 @@
         "writable": "Beschreibbar",
         "notWritable": "Nicht beschreibbar",
         "readOnly": "Nur lesbar",
-        "failed": "Verzeichnis konnte nicht gelesen werden"
+        "failed": "Verzeichnis konnte nicht gelesen werden",
+        "errors": {
+            "BROWSE_NO_ROOTS": "Kein Verzeichnis zur Auswahl freigegeben",
+            "BROWSE_PATH_RELATIVE": "Nur absolute Pfade lassen sich durchsuchen",
+            "BROWSE_NOT_READABLE": "Verzeichnis nicht lesbar"
+        },
+        "notice": {
+            "missing": "„{pfad}“ gibt es nicht — angezeigt wird das nächste vorhandene Verzeichnis darüber.",
+            "outside": "„{pfad}“ liegt außerhalb der freigegebenen Verzeichnisse — angezeigt wird der erste Einstiegspunkt."
+        }
     },
     "SchemaUpdate": {
         "title": "Datenbank-Update erforderlich",

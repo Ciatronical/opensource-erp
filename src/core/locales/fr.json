@@ -99,7 +99,16 @@
         "writable": "Accessible en écriture",
         "notWritable": "Non accessible en écriture",
         "readOnly": "Lecture seule",
-        "failed": "Le répertoire n’a pas pu être lu"
+        "failed": "Le répertoire n’a pas pu être lu",
+        "errors": {
+            "BROWSE_NO_ROOTS": "Aucun répertoire n'est autorisé à la sélection",
+            "BROWSE_PATH_RELATIVE": "Seuls les chemins absolus peuvent être parcourus",
+            "BROWSE_NOT_READABLE": "Répertoire illisible"
+        },
+        "notice": {
+            "missing": "« {pfad} » n'existe pas — le répertoire parent existant le plus proche est affiché.",
+            "outside": "« {pfad} » se trouve hors des répertoires autorisés — le premier point d'entrée est affiché."
+        }
     },
     "SchemaUpdate": {
         "title": "Mise à jour de la base de données requise",

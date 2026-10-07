@@ -62,7 +62,10 @@ function systemSettingsSchema(): array {
             'debug'                     => ['type' => 'bool'],
             'templates_dir'             => ['type' => 'text', 'const' => 'OSERP_TEMPLATES_DIR_NAME'],
             'backup_dir'                => ['type' => 'path', 'const' => 'BACKUP_BASE_DIR'],
-            'browse_roots'              => ['type' => 'text', 'const' => 'OSERP_BROWSE_ROOTS'],
+            // browse_roots steht bewusst nicht hier: es begrenzt die
+            // Verzeichnisauswahl auch für Systemadministratoren — die dürften
+            // es sonst selbst aufheben. Gepflegt wird es nur in der
+            // settings.ini (Speichern lässt Einträge ohne Feld unberührt).
         ],
         'telephony' => [
             'monitor_dir' => ['type' => 'path', 'const' => 'TELEPHONY_MONITOR_DIR'],

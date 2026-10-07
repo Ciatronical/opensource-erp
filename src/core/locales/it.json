@@ -99,7 +99,16 @@
         "writable": "Scrivibile",
         "notWritable": "Non scrivibile",
         "readOnly": "Sola lettura",
-        "failed": "Impossibile leggere la cartella"
+        "failed": "Impossibile leggere la cartella",
+        "errors": {
+            "BROWSE_NO_ROOTS": "Nessuna directory abilitata alla selezione",
+            "BROWSE_PATH_RELATIVE": "Si possono sfogliare solo percorsi assoluti",
+            "BROWSE_NOT_READABLE": "Directory non leggibile"
+        },
+        "notice": {
+            "missing": "«{pfad}» non esiste — viene mostrata la directory superiore esistente più vicina.",
+            "outside": "«{pfad}» è fuori dalle directory abilitate — viene mostrato il primo punto di accesso."
+        }
     },
     "SchemaUpdate": {
         "title": "Aggiornamento del database necessario",

@@ -99,7 +99,16 @@
         "writable": "Con permiso de escritura",
         "notWritable": "Sin permiso de escritura",
         "readOnly": "Solo lectura",
-        "failed": "No se pudo leer el directorio"
+        "failed": "No se pudo leer el directorio",
+        "errors": {
+            "BROWSE_NO_ROOTS": "No hay ningún directorio habilitado para seleccionar",
+            "BROWSE_PATH_RELATIVE": "Solo se pueden explorar rutas absolutas",
+            "BROWSE_NOT_READABLE": "No se puede leer el directorio"
+        },
+        "notice": {
+            "missing": "«{pfad}» no existe: se muestra el directorio superior existente más cercano.",
+            "outside": "«{pfad}» está fuera de los directorios habilitados: se muestra el primer punto de entrada."
+        }
     },
     "SchemaUpdate": {
         "title": "Se requiere actualizar la base de datos",

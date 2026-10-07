@@ -99,7 +99,16 @@
         "writable": "Skrivbar",
         "notWritable": "Ikke skrivbar",
         "readOnly": "Skrivebeskyttet",
-        "failed": "Mappen kunne ikke læses"
+        "failed": "Mappen kunne ikke læses",
+        "errors": {
+            "BROWSE_NO_ROOTS": "Ingen mappe er frigivet til valg",
+            "BROWSE_PATH_RELATIVE": "Kun absolutte stier kan gennemses",
+            "BROWSE_NOT_READABLE": "Mappen kan ikke læses"
+        },
+        "notice": {
+            "missing": "„{pfad}“ findes ikke — den nærmeste eksisterende overordnede mappe vises.",
+            "outside": "„{pfad}“ ligger uden for de frigivne mapper — det første indgangspunkt vises."
+        }
     },
     "SchemaUpdate": {
         "title": "Databaseopdatering påkrævet",

@@ -113,7 +113,7 @@ Die Datenbanken der Mandanten stehen **nicht** hier, sondern in `auth.clients`.
 | `debug` | `false` | Ausführliches Protokoll; im Betrieb aus |
 | `templates_dir` | `templates` | Druck- und Shop-Vorlagen. Relative Pfade gelten ab `backend/`, also `backend/templates` |
 | `backup_dir` | `backups/` im Wurzelverzeichnis | Ziel der Datenbanksicherungen |
-| `browse_roots` | leer | Einstiegspunkte der Verzeichnisauswahl — siehe unten |
+| `browse_roots` | leer | Einstiegspunkte der Verzeichnisauswahl, nur in der Datei — siehe unten |
 
 ### [telephony]
 
@@ -185,14 +185,15 @@ browse_roots = "/srv/oserp,/var/www"
 ```
 
 Das ist der Weg, die Sicht auf einem gemeinsam genutzten Server zu
-beschneiden. Der Dialog erreicht dann nichts außerhalb dieser Verzeichnisse.
-Die Felder bleiben unabhängig davon frei beschreibbar: Wer einen Pfad tippt,
-ist nicht auf den Dialog angewiesen.
+beschneiden — auch für Systemadministratoren. Der Dialog erreicht dann nichts
+außerhalb dieser Verzeichnisse. Deshalb gibt es für `browse_roots` kein Feld in
+den Systemeinstellungen: Wer die Grenze dort ändern könnte, wäre nicht
+begrenzt. Gepflegt wird der Eintrag nur in der Datei; das Speichern der
+Systemeinstellungen lässt ihn unberührt. Die Felder bleiben unabhängig davon
+frei beschreibbar: Wer einen Pfad tippt, ist nicht auf den Dialog angewiesen.
 
 Die Auswahl steht nur Systemadministratoren offen, weil eine Auflistung die
-Struktur des Servers preisgibt. In der Firmenkonfiguration gibt es sie
-ausschließlich für die relativen Shop-Verzeichnisse, und dort reicht sie nicht
-über das Webseiten-Verzeichnis des jeweiligen Mandanten hinaus.
+Struktur des Servers preisgibt.
 
 ## Was hier nicht hingehört
 

@@ -99,7 +99,16 @@
         "writable": "Yazılabilir",
         "notWritable": "Yazılamaz",
         "readOnly": "Salt okunur",
-        "failed": "Dizin okunamadı"
+        "failed": "Dizin okunamadı",
+        "errors": {
+            "BROWSE_NO_ROOTS": "Seçim için hiçbir dizin açık değil",
+            "BROWSE_PATH_RELATIVE": "Yalnızca mutlak yollar taranabilir",
+            "BROWSE_NOT_READABLE": "Dizin okunamıyor"
+        },
+        "notice": {
+            "missing": "„{pfad}“ mevcut değil — mevcut en yakın üst dizin gösteriliyor.",
+            "outside": "„{pfad}“ izin verilen dizinlerin dışında — ilk giriş noktası gösteriliyor."
+        }
     },
     "SchemaUpdate": {
         "title": "Veritabanı güncellemesi gerekli",
