@@ -13,10 +13,15 @@
 // Aufruf:
 //   php tools/shop-publish.php [--client=<id>] [--db=<name>] [--limit=500]
 //                              [--no-build] [--quiet] [--reconcile-payments]
-//                              [--no-cleanup] [--ids=<nr>,<nr>,...]
+//                              [--no-cleanup] [--ids=<nr>,<nr>,...] [--only-jobs]
 //   php tools/shop-publish.php --list-clients
 //
 // --ids= arbeitet nur diese Aufträge ab statt aller offenen.
+//
+// --only-jobs bearbeitet nur die Webseiten, für die in diesem Lauf Aufträge
+// liefen. Ohne die Option (Cron) kommen auch die übrigen eingeschalteten
+// HugoShops dran: Paket, Kategorieübersicht, täglicher Abgleich mit HugoCMS.
+// „Jetzt ausführen" im Admin-Panel setzt sie.
 //
 // Denselben Läufer startet auch „Jetzt ausführen" im Admin-Panel, dort als
 // eigenen Prozess im Hintergrund (shopPublishStartBackground). Jeder Lauf —
@@ -193,7 +198,8 @@ try {
     // Aufträge, Paket, Kategorieübersicht und Bau stehen in shopPublishRun().
     // Die Sperre dort hält Cron und Panel auseinander, auch über Rechner
     // hinweg — die Sperrdatei oben fängt nur zwei Läufer auf diesem Rechner ab.
-    $bilanz = shopPublishRun($db, $melden, (int)($argumente['limit'] ?? 500), $nurIds, !isset($argumente['no-build']), $beginn);
+    $bilanz = shopPublishRun($db, $melden, (int)($argumente['limit'] ?? 500), $nurIds, !isset($argumente['no-build']), $beginn,
+                            isset($argumente['only-jobs']));
 
     if ($bilanz['gesperrt']) {
         shopPublishWriteState($dateien['status'], ['requested' => null]);

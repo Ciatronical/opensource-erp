@@ -183,6 +183,11 @@ function shopChannelHugoshopRunJob($db, array $auftrag, callable $sagen, callabl
                 }
             }
             shopSiteTally($bilanz, $kanal, 'seiten', $anzahl + $entwuerfe);
+            // „Alle Produkte" gleicht jede Seite mit HugoCMS ab und baut die
+            // Webseite immer neu — auch wenn sich seit dem letzten Lauf nichts
+            // geändert hat. Dort gelöschte oder veränderte Seiten kommen so
+            // zurück, und der Bau samt Ausgabe steht in jedem Fall im Lauf.
+            shopSiteTally($bilanz, $kanal, 'bauen');
             $stand = sprintf('%d Seiten geschrieben, %d fehlgeschlagen', $anzahl, $gescheitert);
             if ($gescheitert > SHOP_MELDUNGEN_JE_AUFTRAG) {
                 $sagen(sprintf('… und %d weitere Artikel, nicht einzeln aufgeführt',

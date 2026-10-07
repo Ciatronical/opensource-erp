@@ -268,6 +268,41 @@
                 {{ t('ShopView.publish.tooLong') }}
             </v-alert>
 
+            <!-- Abbruch und Fehler des letzten Laufs über der Liste — sichtbar,
+                 ohne zu scrollen -->
+            <!-- Die Meldungen eines Laufs öffnet der Status seiner Aufträge.
+                 Ein abgebrochener Lauf hat keine gespeicherte Ausgabe — sein
+                 Grund steht deshalb hier, aus der Ausgabe des Prozesses. -->
+            <v-alert
+                v-if="laufAbgebrochen"
+                type="error"
+                variant="tonal"
+                density="compact"
+                class="mx-4 my-2"
+                closable
+                :close-label="t('ShopView.publish.messagesClose')"
+                @click:close="laufAbgebrochen = false"
+            >
+                <div>{{ t('ShopView.publish.aborted') }}</div>
+                <pre v-if="laufAusgabe.length" class="text-caption mt-1 mb-0 laufausgabe">{{ laufAusgabe.join('\n') }}</pre>
+            </v-alert>
+
+            <!-- Fehler des letzten Laufs im Wortlaut — etwa Artikel ohne
+                 passende Versandart. Bleibt stehen, bis es geschlossen wird. -->
+            <v-alert
+                v-else-if="laufFehler.length"
+                type="error"
+                variant="tonal"
+                density="compact"
+                class="mx-4 my-2"
+                closable
+                :close-label="t('ShopView.publish.messagesClose')"
+                @click:close="laufFehler = []"
+            >
+                <div>{{ t('ShopView.publish.errorsTitle', { count: laufFehler.length }) }}</div>
+                <pre class="text-caption mt-1 mb-0 laufausgabe">{{ laufFehler.join('\n') }}</pre>
+            </v-alert>
+
             <v-card-text v-if="auftraege.length">
                 <div class="d-flex align-center ga-4 mb-2">
                     <v-checkbox-btn
@@ -380,39 +415,6 @@
             <v-card-text v-else class="text-caption text-medium-emphasis">
                 {{ t('ShopView.publish.empty') }}
             </v-card-text>
-
-            <!-- Die Meldungen eines Laufs öffnet der Status seiner Aufträge.
-                 Ein abgebrochener Lauf hat keine gespeicherte Ausgabe — sein
-                 Grund steht deshalb hier, aus der Ausgabe des Prozesses. -->
-            <v-alert
-                v-if="laufAbgebrochen"
-                type="error"
-                variant="tonal"
-                density="compact"
-                class="mx-4 mb-4"
-                closable
-                :close-label="t('ShopView.publish.messagesClose')"
-                @click:close="laufAbgebrochen = false"
-            >
-                <div>{{ t('ShopView.publish.aborted') }}</div>
-                <pre v-if="laufAusgabe.length" class="text-caption mt-1 mb-0 laufausgabe">{{ laufAusgabe.join('\n') }}</pre>
-            </v-alert>
-
-            <!-- Fehler des letzten Laufs im Wortlaut — etwa Artikel ohne
-                 passende Versandart. Bleibt stehen, bis es geschlossen wird. -->
-            <v-alert
-                v-else-if="laufFehler.length"
-                type="error"
-                variant="tonal"
-                density="compact"
-                class="mx-4 mb-4"
-                closable
-                :close-label="t('ShopView.publish.messagesClose')"
-                @click:close="laufFehler = []"
-            >
-                <div>{{ t('ShopView.publish.errorsTitle', { count: laufFehler.length }) }}</div>
-                <pre class="text-caption mt-1 mb-0 laufausgabe">{{ laufFehler.join('\n') }}</pre>
-            </v-alert>
         </v-card>
 
         <!-- Ausgabe des Laufs, in dem ein Auftrag erledigt wurde -->
@@ -446,7 +448,7 @@
                         <template #default="{ item }">
                             <div
                                 class="text-caption laufausgabe"
-                                :class="istFehlerText(item) ? 'text-error font-weight-medium' : 'text-medium-emphasis'"
+                                :class="zeilenKlasse(item)"
                             >{{ item }}</div>
                         </template>
                     </v-virtual-scroll>
@@ -563,6 +565,16 @@ const istOffen = (auftrag) => auftrag.open === true || auftrag.open === 't'
  * Meldungen der Erweiterung nennen sie aber beim Namen.
  */
 const istFehlerText = (zeile) => /fehlgeschlagen|fehler|nicht gebaut|nicht erzeugt/i.test(zeile)
+
+/** Überschrift eines Kanals in der gespeicherten Ausgabe (SHOP_RUN_HEADING im Backend) */
+const istUeberschrift = (zeile) => String(zeile).startsWith('━━ ')
+
+/** Darstellung einer Zeile der Ausgabe: Überschrift fett, Fehler rot, sonst gedämpft */
+function zeilenKlasse(zeile) {
+    // Abstand nach oben: trennt die Kanäle; v-virtual-scroll misst jede Zeile selbst
+    if (istUeberschrift(zeile)) return 'font-weight-bold pt-4'
+    return istFehlerText(zeile) ? 'text-error font-weight-medium' : 'text-medium-emphasis'
+}
 const fehlgeschlagen = (auftrag) => String(auftrag.result || '').startsWith('Fehler')
 
 /**
@@ -948,6 +960,9 @@ async function aufraeumen() {
 
     if (!shop.error.value) {
         toasts.success(t('ShopView.publish.cleaned', { count: ergebnis?.removed ?? 0 }))
+        // Wer aufräumt, hat die Meldungen des letzten Laufs gelesen
+        laufFehler.value = []
+        laufAbgebrochen.value = false
     }
 
     await laden()

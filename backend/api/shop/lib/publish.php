@@ -1031,7 +1031,8 @@ function shopOpenJobs($db, int $limit = 500, ?array $nurIds = null): array {
     // Ausgewählt wird nach Kanal und Auftragsart (shopChannelJobPairs); channel
     // nennt dem Läufer das zuständige Modul.
     return $db->getAll(
-        "SELECT b.id, b.function, b.partnumber, b.param, c.type AS channel, b.channel_id
+        "SELECT b.id, b.function, b.partnumber, b.param, c.type AS channel, b.channel_id,
+                c.name AS channel_name
            FROM batchjob_hugoshop b
            JOIN sales_channel_shop c ON c.id = b.channel_id
           WHERE b.result IS NULL
@@ -1203,26 +1204,33 @@ function shopRemovePage($db, int $kanal, string $dateiname): bool {
  * @param callable|null $melden Fortschritt, bekommt je eine Zeile Text
  * @param int $limit Hoechstzahl Auftraege
  * @param array|null $nurIds nur diese Auftragsnummern, null = alle offenen
+ * @param callable|null $gruppe vor jedem Auftrag mit seiner Zeile gerufen;
+ *                              liefert die Vorsilbe für seine Fehlertexte
+ *                              (shopPublishRun gruppiert damit die Ausgabe je Kanal)
  * @return array jobs, seiten, entfernt, fehler, kit (Änderungen am Webseiten-Paket),
  *               ids (bearbeitete Aufträge), webseiten (je HugoShop mit Aufträgen:
  *               jobs, seiten, entfernt, kit, bauen — siehe shopSiteTally)
  */
-function shopRunJobs($db, ?callable $melden = null, int $limit = 500, ?array $nurIds = null): array {
+function shopRunJobs($db, ?callable $melden = null, int $limit = 500, ?array $nurIds = null, ?callable $gruppe = null): array {
     $sagen = $melden ?? function (string $zeile) {};
+    $vorsilbe = '';
     $bilanz = ['jobs' => 0, 'seiten' => 0, 'entfernt' => 0, 'fehler' => 0, 'kit' => 0,
                'fehler_texte' => [], 'ids' => [], 'webseiten' => []];
 
     // Fehler werden nicht nur gezählt, sondern im Wortlaut gesammelt: das
     // Admin-Panel zeigt sie nach "Jetzt ausführen" an, sonst stünde dort nur
     // eine Zahl. Der Läufer schreibt sie ohnehin auf die Ausgabe.
-    $fehler = function (string $zeile) use ($sagen, &$bilanz) {
+    $fehler = function (string $zeile) use ($sagen, &$bilanz, &$vorsilbe) {
         $bilanz['fehler']++;
-        $bilanz['fehler_texte'][] = $zeile;
+        $bilanz['fehler_texte'][] = $vorsilbe.$zeile;
         $sagen($zeile);
     };
 
     foreach (shopOpenJobs($db, $limit, $nurIds) as $auftrag) {
         $id = (int)$auftrag['id'];
+        if (null !== $gruppe) {
+            $vorsilbe = (string)$gruppe($auftrag);
+        }
         $bilanz['jobs']++;
         $bilanz['ids'][] = $id;
 
@@ -1232,6 +1240,9 @@ function shopRunJobs($db, ?callable $melden = null, int $limit = 500, ?array $nu
             // weiter (V13).
             if ('hugoshop' === $auftrag['channel']) {
                 shopSiteTally($bilanz, (int)$auftrag['channel_id'], 'jobs');
+                // Für das Ergebnis der Webseite (shopSiteJobResults): welche
+                // Aufträge dieses Laufs zu welcher Webseite gehören
+                $bilanz['webseiten_ids'][(int)$auftrag['channel_id']][] = $id;
             }
             shopChannelRunJob($db, $auftrag, $sagen, $fehler, $bilanz);
         } catch (Throwable $e) {
@@ -1590,6 +1601,8 @@ function shopPublishStartBackground($db, array $ids): array {
     $befehl = escapeshellarg($php['pfad']).' '.escapeshellarg($laeufer)
             .' --db='.escapeshellarg($datenbank)
             .($ids ? ' --ids='.escapeshellarg(implode(',', $ids)) : '')
+            // Aus dem Panel: nur die Webseiten der ausgeführten Aufträge
+            .' --only-jobs'
             .' --quiet';
 
     // Vor dem Start vermerken: bis der Läufer die Sperre hat, vergehen einige
@@ -1710,18 +1723,32 @@ function shopPublishStatus($db): array {
  * @param callable|null $beginn wird gerufen, sobald die Sperre genommen ist —
  *                              erst dann gehört der Lauf wirklich diesem Prozess
  *                              (der Läufer legt dort sein Protokoll an)
+ * @param bool $nurBetroffene nur Webseiten mit Aufträgen in diesem Lauf bearbeiten
+ *                            (Lauf aus dem Admin-Panel, --only-jobs)
  * @return array gesperrt, jobs, seiten, entfernt, fehler, fehler_texte, kit, kategorien, bauen, gebaut, bau_code, bau_ausgabe
  */
-function shopPublishRun($db, ?callable $melden = null, int $limit = 500, ?array $nurIds = null, bool $bauen = true, ?callable $beginn = null): array {
+function shopPublishRun($db, ?callable $melden = null, int $limit = 500, ?array $nurIds = null, bool $bauen = true, ?callable $beginn = null, bool $nurBetroffene = false): array {
     // Jede Meldung geht an den Aufrufer und in die Ausgabe des Laufs, die am
-    // Ende bei den erledigten Aufträgen landet (shopSaveRun)
-    $ausgabe = [];
+    // Ende bei den erledigten Aufträgen landet (shopSaveRun). Gespeichert wird
+    // sie je Kanal gruppiert, unter einer Überschrift — der Lauf arbeitet
+    // Aufträge und Webseiten nacheinander ab, Aufträge verschiedener Kanäle
+    // können sich aber abwechseln. Der Aufrufer (Protokoll während des Laufs)
+    // bekommt die Zeilen in ihrer Reihenfolge, mit dem Kanal vorn.
+    $gruppen = [];          // Schlüssel => ['titel' => …, 'zeilen' => […]], in Reihenfolge des Auftretens
+    $aktuell = '';          // '' = ohne Kanal (Sperre, allgemeine Meldungen)
     $laufBeginn = date('Y-m-d H:i:s');
-    $sagen = function (string $zeile) use ($melden, &$ausgabe) {
-        $ausgabe[] = $zeile;
+    $sagen = function (string $zeile) use ($melden, &$gruppen, &$aktuell) {
+        $gruppen[$aktuell] ??= ['titel' => '', 'zeilen' => []];
+        $gruppen[$aktuell]['zeilen'][] = $zeile;
         if (null !== $melden) {
-            $melden($zeile);
+            $titel = $gruppen[$aktuell]['titel'];
+            $melden(('' !== $titel ? '['.$titel.'] ' : '').$zeile);
         }
+    };
+    /** Wechselt die Gruppe; Titel ist der Name des Kanals */
+    $gruppeSetzen = function (int $kanal, string $titel) use (&$gruppen, &$aktuell): void {
+        $aktuell = 'k'.$kanal;
+        $gruppen[$aktuell] ??= ['titel' => $titel, 'zeilen' => []];
     };
     $bilanz = ['gesperrt' => false, 'jobs' => 0, 'seiten' => 0, 'entfernt' => 0, 'fehler' => 0,
                'kit' => 0, 'kategorien' => 0, 'bauen' => false, 'gebaut' => false, 'bau_code' => 0, 'bau_ausgabe' => [],
@@ -1730,9 +1757,11 @@ function shopPublishRun($db, ?callable $melden = null, int $limit = 500, ?array 
     // Fehler werden nicht nur gezählt, sondern im Wortlaut gesammelt: das
     // Admin-Panel zeigt sie nach "Jetzt ausführen" an, sonst stünde dort nur
     // eine Zahl. Der Läufer schreibt sie ohnehin auf die Ausgabe.
-    $fehler = function (string $zeile) use ($sagen, &$bilanz) {
+    // $vorsilbe nennt den Kanal in den Fehlertexten (Meldung über der Liste);
+    // in der Ausgabe steht die Zeile ohne, unter der Überschrift ihres Kanals
+    $fehler = function (string $zeile, string $vorsilbe = '') use ($sagen, &$bilanz) {
         $bilanz['fehler']++;
-        $bilanz['fehler_texte'][] = $zeile;
+        $bilanz['fehler_texte'][] = $vorsilbe.$zeile;
         $sagen($zeile);
     };
 
@@ -1747,7 +1776,12 @@ function shopPublishRun($db, ?callable $melden = null, int $limit = 500, ?array 
     }
 
     try {
-        $bilanz = array_merge($bilanz, shopRunJobs($db, $sagen, $limit, $nurIds));
+        $bilanz = array_merge($bilanz, shopRunJobs($db, $sagen, $limit, $nurIds,
+            function (array $auftrag) use ($gruppeSetzen): string {
+                $name = (string)($auftrag['channel_name'] ?? '') ?: (string)($auftrag['channel'] ?? '');
+                $gruppeSetzen((int)$auftrag['channel_id'], $name);
+                return '['.$name.'] ';
+            }));
 
         // Je HugoShop seine Webseite: Paket, Kategorieübersicht, Bau
         // (dev/shop-mehrere-kanaele.md, Schritt 3). Betroffen ist jeder
@@ -1759,36 +1793,55 @@ function shopPublishRun($db, ?callable $melden = null, int $limit = 500, ?array 
         $kanaele = $db->getAll(
             "SELECT id, name FROM sales_channel_shop WHERE type = 'hugoshop' ORDER BY sortkey NULLS LAST, id"
         );
-        $mehrere = count($kanaele) > 1;
         foreach ($kanaele as $eintrag) {
             $kanal = (int)$eintrag['id'];
             $zahlen = $bilanz['webseiten'][$kanal] ?? null;
-            // Bei mehreren Webseiten steht vor jeder Meldung, welche gemeint ist
-            $vorsilbe = $mehrere ? '['.$eintrag['name'].'] ' : '';
+            // Fehlertexte (Meldung über der Liste) nennen den Kanal; die
+            // Ausgabe steht unter seiner Überschrift
+            $vorsilbe = '['.$eintrag['name'].'] ';
+
+            // Lauf aus dem Admin-Panel: nur die Webseiten, für die Aufträge
+            // liefen. Die Pflege der übrigen (Paket, Übersicht, täglicher
+            // Abgleich mit HugoCMS) bleibt dem Cron.
+            if ($nurBetroffene && null === $zahlen) {
+                continue;
+            }
+            $gruppeSetzen($kanal, (string)$eintrag['name']);
 
             if (null === $zahlen && !shopChannelHugoshopActive($db, $kanal)) {
-                $sagen($vorsilbe.'HugoShop abgeschaltet — Webseite unverändert.');
+                $sagen('HugoShop abgeschaltet — Webseite unverändert.');
                 continue;
             }
 
+            // Fehler und Bau dieser Webseite getrennt erfassen: sie gehören in
+            // das Ergebnis ihrer Aufträge, nicht nur in die Ausgabe
+            $webFehler = [];
+            $gebautVorher = $bilanz['gebaut'];
+            $bilanz['gebaut'] = false;
             try {
                 shopPublishSite(
                     $db, $kanal,
                     $zahlen ?? ['jobs' => 0, 'seiten' => 0, 'entfernt' => 0, 'kit' => 0, 'bauen' => false],
                     $bauen,
-                    fn(string $zeile) => $sagen($vorsilbe.$zeile),
-                    fn(string $zeile) => $fehler($vorsilbe.$zeile),
+                    $sagen,
+                    function (string $zeile) use ($fehler, $vorsilbe, &$webFehler) {
+                        $webFehler[] = $zeile;
+                        $fehler($zeile, $vorsilbe);
+                    },
                     $bilanz
                 );
             } catch (Throwable $e) {
-                $fehler($vorsilbe.'Webseite nicht bearbeitet: '.$e->getMessage());
+                $webFehler[] = 'Webseite nicht bearbeitet: '.$e->getMessage();
+                $fehler('Webseite nicht bearbeitet: '.$e->getMessage(), $vorsilbe);
             }
+            shopSiteJobResults($db, $bilanz['webseiten_ids'][$kanal] ?? [], $webFehler, $bilanz['gebaut']);
+            $bilanz['gebaut'] = $gebautVorher || $bilanz['gebaut'];
         }
     } finally {
         // Vor dem Freigeben der Sperre: die Aufträge stehen erst mit ihrer
         // Ausgabe als erledigt da, wenn der nächste Lauf beginnen kann
         try {
-            shopSaveRun($db, $laufBeginn, $ausgabe, $bilanz['ids'] ?? []);
+            shopSaveRun($db, $laufBeginn, shopRunOutputLines($gruppen), $bilanz['ids'] ?? []);
         } catch (Throwable $e) {
             if (null !== $melden) {
                 $melden('Ausgabe des Laufs nicht gespeichert: '.$e->getMessage());
@@ -1798,6 +1851,76 @@ function shopPublishRun($db, ?callable $melden = null, int $limit = 500, ?array 
     }
 
     return $bilanz;
+}
+
+/** Kennzeichen einer Überschrift in der gespeicherten Ausgabe — die Oberfläche hebt sie hervor */
+const SHOP_RUN_HEADING = '━━ ';
+
+/**
+ * Setzt die nach Kanal gesammelte Ausgabe eines Laufs zusammen
+ *
+ * Erst, was keinem Kanal gehört (etwa die Sperre), dann je Kanal eine
+ * Überschrift und seine Zeilen in der Reihenfolge, in der sie entstanden —
+ * Aufträge und Webseite zusammen. Zwischen den Kanälen eine Leerzeile.
+ *
+ * @param array $gruppen Schlüssel => ['titel' => …, 'zeilen' => […]]
+ * @return array Zeilen
+ */
+function shopRunOutputLines(array $gruppen): array {
+    $zeilen = $gruppen['']['zeilen'] ?? [];
+    unset($gruppen['']);
+    foreach ($gruppen as $gruppe) {
+        if (!$gruppe['zeilen']) {
+            continue;
+        }
+        if ($zeilen) {
+            $zeilen[] = '';
+        }
+        $zeilen[] = SHOP_RUN_HEADING.$gruppe['titel'].' ━━';
+        array_push($zeilen, ...$gruppe['zeilen']);
+    }
+    return $zeilen;
+}
+
+/**
+ * Ergänzt das Ergebnis der Aufträge einer Webseite um deren Veröffentlichung
+ *
+ * Ein Auftrag erledigt zwei Dinge: die Seiten schreiben (sein Ergebnis, etwa
+ * „ok: 3711 Seiten“) und danach — für alle Aufträge der Webseite gemeinsam —
+ * Übertragung und Bau. Scheitert der zweite Teil, stand bisher trotzdem ein
+ * grüner Haken am Auftrag. Jetzt:
+ *
+ *   gescheitert  „Fehler bei der Webseite: <erster Grund> · Seiten: 3711“ —
+ *                der Auftrag gilt als fehlgeschlagen
+ *   gebaut       „ok: 3711 Seiten · Webseite gebaut“
+ *
+ * Aufträge, die schon selbst gescheitert sind, bleiben, wie sie sind.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param array $ids Aufträge dieses Laufs für die Webseite
+ * @param array $fehler Fehlermeldungen der Webseite (Übertragung, Bau)
+ * @param bool $gebaut die Webseite wurde in diesem Lauf gebaut
+ * @return void
+ */
+function shopSiteJobResults($db, array $ids, array $fehler, bool $gebaut): void {
+    $ids = array_values(array_filter(array_map('intval', $ids), fn($id) => $id > 0));
+    if (!$ids || (!$fehler && !$gebaut)) {
+        return;
+    }
+    $db->execute(
+        "UPDATE batchjob_hugoshop
+            SET result = left(CASE WHEN :gescheitert = 1
+                                   THEN 'Fehler bei der Webseite: ' || :grund || ' · Seiten: '
+                                        || regexp_replace(COALESCE(result, ''), '^ok: ', '')
+                                   ELSE result || ' · Webseite gebaut' END, 500)
+          WHERE id = ANY(string_to_array(:ids, ',')::int[])
+            AND COALESCE(result, '') NOT LIKE 'Fehler%'",
+        [
+            ':gescheitert' => $fehler ? 1 : 0,
+            ':grund'       => (string)($fehler[0] ?? ''),
+            ':ids'         => implode(',', $ids),
+        ]
+    );
 }
 
 /**

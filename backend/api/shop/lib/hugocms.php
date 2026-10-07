@@ -258,11 +258,18 @@ function shopHugoCmsStateFile($db, int $kanal): string {
  * es bei einer Abfrage des Baustands — höchstens einen Tag lang, dann wird
  * trotzdem abgeglichen, falls HugoCMS inzwischen etwas verloren hat.
  *
+ * $vollstaendig überspringt diese Abkürzung („Alle Produkte“): HugoCMS
+ * vergleicht dann jede Datei mit dem, was auf seiner Seite liegt, und fordert
+ * alles an, was dort fehlt oder abweicht — auch von Hand gelöschte oder
+ * geänderte Produktseiten. Was dort gleich ist, nimmt HugoCMS nicht noch
+ * einmal an (nur angeforderte Dateien, ShopSync::upload).
+ *
  * @param object $db Company-Datenbankverbindung
  * @param int $kanal HugoShop
+ * @param bool $vollstaendig jede Datei abgleichen, auch ohne Änderung seit dem letzten Mal
  * @return array ok, uebertragen, written, deleted, unchanged, buildPending, uebersprungen, fehler
  */
-function shopHugoCmsSync($db, int $kanal): array {
+function shopHugoCmsSync($db, int $kanal, bool $vollstaendig = false): array {
     $ergebnis = ['ok' => false, 'uebertragen' => false, 'written' => 0, 'deleted' => 0, 'unchanged' => 0,
                  'buildPending' => false, 'uebersprungen' => [], 'fehler' => ''];
 
@@ -280,7 +287,8 @@ function shopHugoCmsSync($db, int $kanal): array {
     $fingerabdruck = hash('sha256', json_encode($liste['dateien']).'|'.shopChannelValue($db, $kanal, 'hugocms_url'));
     $zustand = shopPublishReadState(shopHugoCmsStateFile($db, $kanal));
     $zuletzt = strtotime((string)($zustand['syncedAt'] ?? '')) ?: 0;
-    if (($zustand['fingerprint'] ?? '') === $fingerabdruck && time() - $zuletzt < SHOP_HUGOCMS_RESYNC_SECONDS) {
+    if (!$vollstaendig
+        && ($zustand['fingerprint'] ?? '') === $fingerabdruck && time() - $zuletzt < SHOP_HUGOCMS_RESYNC_SECONDS) {
         $ergebnis['ok'] = true;
         $ergebnis['unchanged'] = count($liste['dateien']);
         return $ergebnis;
@@ -442,12 +450,13 @@ function shopHugoCmsThumbnails($db, int $kanal): array {
  * @param callable $sagen Meldung
  * @param callable $fehler Fehlermeldung (zählt mit)
  * @param bool $bauen nach der Übertragung bauen lassen
- * @param bool $erzwingen auch bauen, wenn HugoCMS nichts Neues hat
- *                        („Shop-Benutzerschnittstelle installieren“)
+ * @param bool $erzwingen jede Datei abgleichen und bauen, auch wenn HugoCMS
+ *                        nichts Neues hat („Alle Produkte“, „Shop-Benutzerschnittstelle
+ *                        installieren“)
  * @return bool gebaut
  */
 function shopHugoCmsPublish($db, int $kanal, callable $sagen, callable $fehler, bool $bauen, bool $erzwingen = false): bool {
-    $abgleich = shopHugoCmsSync($db, $kanal);
+    $abgleich = shopHugoCmsSync($db, $kanal, $erzwingen);
 
     // Nur melden, wenn wirklich übertragen wurde — sonst stünde dieselbe
     // Zeile in jedem Lauf. Die PHP-Einstiegspunkte des Pakets sind der
