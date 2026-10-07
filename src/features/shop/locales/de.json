@@ -213,6 +213,7 @@
             "all": "Alle veröffentlichen",
             "allNow": "Alle sofort veröffentlichen",
             "allNowHint": "Legt den Auftrag „Alle Produkte“ an und führt ihn gleich aus.",
+            "chooseChannels": "Für welche Verkaufskanäle sollen alle Produkte veröffentlicht werden?",
             "installUi": "Shop-Benutzerschnittstelle installieren",
             "installUiHint": "Überträgt das Paket mit den Shop-Widgets in die Webseite und baut sie neu — wie der Läufer im Cron, aber sofort.",
             "open": "{count} offen",
@@ -221,6 +222,11 @@
             "queued": "Auftrag angelegt.",
             "already": "Auftrag ist bereits offen.",
             "run": "Jetzt ausführen",
+            "retry": "Wiederholen",
+            "retryHint": "Gewählte fehlgeschlagene Aufträge erneut ausführen",
+            "reopen": "Wieder öffnen",
+            "reopenHint": "Gewählte fehlgeschlagene Aufträge wieder öffnen — der nächste Lauf des Cron führt sie aus",
+            "reopened": "{count} Aufträge wieder geöffnet. Der nächste Lauf führt sie aus.",
             "selectAll": "Alle auswählen",
             "running": "Ein Lauf ist gerade unterwegs — die Aufträge werden dabei miterledigt.",
             "done": "{jobs} Aufträge erledigt, {pages} Seiten geschrieben, {errors} Fehler.",
@@ -235,7 +241,7 @@
             "deleteConfirm": "{count} Aufträge werden endgültig gelöscht.",
             "deleteHint": "Auch noch nicht ausgeführte Aufträge werden gelöscht; sie sind danach nicht mehr vorgemerkt.",
             "deleted": "{count} Aufträge gelöscht.",
-            "runBlocked": "In der Auswahl steht ein fehlgeschlagener Auftrag. Ausführen lässt sich nur, was noch offen ist.",
+            "runBlocked": "In der Auswahl steht ein fehlgeschlagener Auftrag. Ausführen lässt sich nur, was noch offen ist. Mit „Wiederholen“ lassen sich fehlgeschlagene Aufträge erneut ausführen.",
             "started": "Veröffentlichung gestartet.",
             "inProgress": "Veröffentlichung läuft im Hintergrund — die Seite bleibt bedienbar.",
             "aborted": "Der Lauf wurde unterbrochen, bevor er fertig war.",
@@ -406,7 +412,8 @@
             "CHANNEL_IN_USE": "An diesem Kanal hängen Rechnungen, Widerrufe oder eBay-Bestellungen. Er lässt sich nur abschalten.",
             "CHANNEL_NOT_DELETABLE": "Nur ein abgeschalteter Kanal ohne offene Aufträge lässt sich löschen.",
             "SHIPPING_UNFIT": "Wird nicht veröffentlicht",
-            "SHIPPING_PART_NOT_OFFERED": "Versandartikel werden nicht angeboten"
+            "SHIPPING_PART_NOT_OFFERED": "Versandartikel werden nicht angeboten",
+            "NO_FAILED_JOBS": "Unter den gewählten Aufträgen ist keiner fehlgeschlagen."
         }
     }
 }

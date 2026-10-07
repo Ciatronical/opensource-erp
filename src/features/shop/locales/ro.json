@@ -213,6 +213,7 @@
             "all": "Publică tot",
             "allNow": "Publică tot acum",
             "allNowHint": "Creează sarcina „Toate produsele” și o execută imediat.",
+            "chooseChannels": "Pentru ce canale de vânzare să fie publicate toate produsele?",
             "installUi": "Instalează interfața de utilizator a magazinului",
             "installUiHint": "Transferă pachetul cu widgeturile magazinului pe site și îl reconstruiește — ca rularea programată, dar imediat.",
             "open": "{count} în așteptare",
@@ -221,6 +222,11 @@
             "queued": "Sarcină creată.",
             "already": "Sarcina este deja în așteptare.",
             "run": "Execută acum",
+            "retry": "Repetă",
+            "retryHint": "Rulează din nou sarcinile eșuate selectate",
+            "reopen": "Redeschide",
+            "reopenHint": "Redeschide sarcinile eșuate selectate — următoarea rulare cron le execută",
+            "reopened": "{count} sarcini redeschise. Următoarea rulare le execută.",
             "selectAll": "Selectează tot",
             "running": "O execuție este deja în curs — aceasta va prelua sarcinile.",
             "done": "{jobs} sarcini finalizate, {pages} pagini scrise, {errors} erori.",
@@ -235,7 +241,7 @@
             "deleteConfirm": "{count} sarcini vor fi șterse definitiv.",
             "deleteHint": "Se șterg și sarcinile neexecutate încă; după aceea nu mai sunt programate.",
             "deleted": "{count} sarcini șterse.",
-            "runBlocked": "Selecția conține o sarcină eșuată. Se pot executa doar cele deschise.",
+            "runBlocked": "Selecția conține o sarcină eșuată. Se pot executa doar cele deschise. Cu „Repetă” sarcinile eșuate pot fi rulate din nou.",
             "started": "Publicarea a început.",
             "inProgress": "Publicarea rulează în fundal — pagina rămâne utilizabilă.",
             "aborted": "Execuția a fost întreruptă înainte de a se termina.",
@@ -406,7 +412,8 @@
             "CHANNEL_IN_USE": "De acest canal depind facturi, retrageri sau comenzi eBay. Poate fi doar dezactivat.",
             "CHANNEL_NOT_DELETABLE": "Poate fi șters doar un canal dezactivat, fără sarcini deschise.",
             "SHIPPING_UNFIT": "Nu va fi publicat",
-            "SHIPPING_PART_NOT_OFFERED": "Articolele de livrare nu se oferă"
+            "SHIPPING_PART_NOT_OFFERED": "Articolele de livrare nu se oferă",
+            "NO_FAILED_JOBS": "Niciuna dintre sarcinile selectate nu a eșuat."
         }
     }
 }

@@ -213,6 +213,7 @@
             "all": "Tümünü yayımla",
             "allNow": "Hepsini şimdi yayımla",
             "allNowHint": "“Tüm ürünler” görevini oluşturur ve hemen çalıştırır.",
+            "chooseChannels": "Tüm ürünler hangi satış kanalları için yayımlansın?",
             "installUi": "Mağaza kullanıcı arayüzünü yükle",
             "installUiHint": "Mağaza bileşenlerini içeren paketi web sitesine aktarır ve siteyi yeniden oluşturur — zamanlanmış çalıştırma gibi, ama hemen.",
             "open": "{count} bekliyor",
@@ -221,6 +222,11 @@
             "queued": "Görev oluşturuldu.",
             "already": "Görev zaten bekliyor.",
             "run": "Şimdi çalıştır",
+            "retry": "Yinele",
+            "retryHint": "Seçilen başarısız görevleri yeniden çalıştır",
+            "reopen": "Yeniden aç",
+            "reopenHint": "Seçilen başarısız görevleri yeniden aç — sonraki cron çalışması bunları yürütür",
+            "reopened": "{count} görev yeniden açıldı. Sonraki çalışma bunları yürütecek.",
             "selectAll": "Tümünü seç",
             "running": "Zaten bir çalışma sürüyor — işleri o halledecek.",
             "done": "{jobs} iş tamamlandı, {pages} sayfa yazıldı, {errors} hata.",
@@ -235,7 +241,7 @@
             "deleteConfirm": "{count} görev kalıcı olarak silinecek.",
             "deleteHint": "Henüz çalıştırılmamış görevler de silinir; sonrasında sırada beklemezler.",
             "deleted": "{count} görev silindi.",
-            "runBlocked": "Seçimde başarısız bir görev var. Yalnızca açık görevler çalıştırılabilir.",
+            "runBlocked": "Seçimde başarısız bir görev var. Yalnızca açık görevler çalıştırılabilir. Başarısız görevler „Yinele“ ile yeniden çalıştırılabilir.",
             "started": "Yayımlama başlatıldı.",
             "inProgress": "Yayımlama arka planda çalışıyor — sayfa kullanılmaya devam edebilir.",
             "aborted": "Çalıştırma bitmeden kesildi.",
@@ -406,7 +412,8 @@
             "CHANNEL_IN_USE": "Bu kanala bağlı faturalar, cayma bildirimleri veya eBay siparişleri var. Yalnızca kapatılabilir.",
             "CHANNEL_NOT_DELETABLE": "Yalnızca açık görevi olmayan kapalı bir kanal silinebilir.",
             "SHIPPING_UNFIT": "Yayımlanmayacak",
-            "SHIPPING_PART_NOT_OFFERED": "Kargo ürünleri sunulmaz"
+            "SHIPPING_PART_NOT_OFFERED": "Kargo ürünleri sunulmaz",
+            "NO_FAILED_JOBS": "Seçilen görevlerin hiçbiri başarısız olmadı."
         }
     }
 }

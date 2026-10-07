@@ -213,6 +213,7 @@
             "all": "Publiser alle",
             "allNow": "Publiser alle nå",
             "allNowHint": "Oppretter jobben «Alle produkter» og kjører den med en gang.",
+            "chooseChannels": "For hvilke salgskanaler skal alle produkter publiseres?",
             "installUi": "Installer butikkens brukergrensesnitt",
             "installUiHint": "Overfører pakken med butikkwidgetene til nettstedet og bygger det på nytt — som den planlagte kjøringen, men umiddelbart.",
             "open": "{count} åpne",
@@ -221,6 +222,11 @@
             "queued": "Oppdrag opprettet.",
             "already": "Oppdraget er allerede åpent.",
             "run": "Kjør nå",
+            "retry": "Gjenta",
+            "retryHint": "Kjør de valgte mislykkede oppgavene på nytt",
+            "reopen": "Åpne igjen",
+            "reopenHint": "Åpne de valgte mislykkede oppgavene igjen — neste cron-kjøring utfører dem",
+            "reopened": "{count} oppgaver åpnet igjen. Neste kjøring utfører dem.",
             "selectAll": "Velg alle",
             "running": "En kjøring pågår allerede — den tar oppgavene med.",
             "done": "{jobs} oppgaver utført, {pages} sider skrevet, {errors} feil.",
@@ -235,7 +241,7 @@
             "deleteConfirm": "{count} jobber slettes for godt.",
             "deleteHint": "Jobber som ennå ikke er kjørt, slettes også; de står da ikke lenger i kø.",
             "deleted": "{count} jobber slettet.",
-            "runBlocked": "Utvalget inneholder en feilet jobb. Bare åpne jobber kan kjøres.",
+            "runBlocked": "Utvalget inneholder en feilet jobb. Bare åpne jobber kan kjøres. Med «Gjenta» kan mislykkede oppgaver kjøres på nytt.",
             "started": "Publiseringen er startet.",
             "inProgress": "Publiseringen kjører i bakgrunnen — siden kan fortsatt brukes.",
             "aborted": "Kjøringen ble avbrutt før den var ferdig.",
@@ -406,7 +412,8 @@
             "CHANNEL_IN_USE": "Fakturaer, angrer eller eBay-ordrer viser til denne kanalen. Den kan bare slås av.",
             "CHANNEL_NOT_DELETABLE": "Bare en avslått kanal uten åpne oppdrag kan slettes.",
             "SHIPPING_UNFIT": "Blir ikke publisert",
-            "SHIPPING_PART_NOT_OFFERED": "Fraktvarer tilbys ikke"
+            "SHIPPING_PART_NOT_OFFERED": "Fraktvarer tilbys ikke",
+            "NO_FAILED_JOBS": "Ingen av de valgte oppgavene har mislyktes."
         }
     }
 }

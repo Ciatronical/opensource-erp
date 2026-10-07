@@ -213,6 +213,7 @@
             "all": "Paskelbti viską",
             "allNow": "Skelbti viską dabar",
             "allNowHint": "Sukuria užduotį „Visi produktai“ ir iškart ją įvykdo.",
+            "chooseChannels": "Kuriems pardavimo kanalams paskelbti visus produktus?",
             "installUi": "Įdiegti parduotuvės naudotojo sąsają",
             "installUiHint": "Perkelia paketą su parduotuvės valdikliais į svetainę ir ją perkuria — kaip suplanuotas vykdymas, tik iš karto.",
             "open": "{count} laukia",
@@ -221,6 +222,11 @@
             "queued": "Užduotis sukurta.",
             "already": "Užduotis jau laukia.",
             "run": "Vykdyti dabar",
+            "retry": "Kartoti",
+            "retryHint": "Iš naujo vykdyti pasirinktas nepavykusias užduotis",
+            "reopen": "Atidaryti iš naujo",
+            "reopenHint": "Atidaryti pasirinktas nepavykusias užduotis iš naujo — kitas cron paleidimas jas įvykdys",
+            "reopened": "Iš naujo atidaryta užduočių: {count}. Kitas paleidimas jas įvykdys.",
             "selectAll": "Pažymėti visus",
             "running": "Vykdymas jau vyksta — jis atliks užduotis.",
             "done": "Atlikta užduočių: {jobs}, įrašyta puslapių: {pages}, klaidų: {errors}.",
@@ -235,7 +241,7 @@
             "deleteConfirm": "Bus visam laikui ištrinta užduočių: {count}.",
             "deleteHint": "Ištrinamos ir dar neįvykdytos užduotys; po to jos nebėra eilėje.",
             "deleted": "Ištrinta užduočių: {count}.",
-            "runBlocked": "Pasirinkime yra nepavykusi užduotis. Vykdyti galima tik tai, kas dar neatlikta.",
+            "runBlocked": "Pasirinkime yra nepavykusi užduotis. Vykdyti galima tik tai, kas dar neatlikta. Mygtuku „Kartoti“ nepavykusias užduotis galima vykdyti iš naujo.",
             "started": "Skelbimas pradėtas.",
             "inProgress": "Skelbimas vyksta fone — puslapiu galima naudotis toliau.",
             "aborted": "Vykdymas nutrūko nepasibaigęs.",
@@ -406,7 +412,8 @@
             "CHANNEL_IN_USE": "Su šiuo kanalu susietos sąskaitos, atsisakymai arba eBay užsakymai. Jį galima tik išjungti.",
             "CHANNEL_NOT_DELETABLE": "Ištrinti galima tik išjungtą kanalą be atvirų užduočių.",
             "SHIPPING_UNFIT": "Nebus paskelbta",
-            "SHIPPING_PART_NOT_OFFERED": "Siuntimo prekės nesiūlomos"
+            "SHIPPING_PART_NOT_OFFERED": "Siuntimo prekės nesiūlomos",
+            "NO_FAILED_JOBS": "Nė viena pasirinkta užduotis nenepavyko."
         }
     }
 }

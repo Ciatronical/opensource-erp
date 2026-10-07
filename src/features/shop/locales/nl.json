@@ -213,6 +213,7 @@
             "all": "Alles publiceren",
             "allNow": "Alles nu publiceren",
             "allNowHint": "Maakt de taak ‘Alle producten’ aan en voert die meteen uit.",
+            "chooseChannels": "Voor welke verkoopkanalen moeten alle producten worden gepubliceerd?",
             "installUi": "Gebruikersinterface van de shop installeren",
             "installUiHint": "Zet het pakket met de shopwidgets op de website en bouwt deze opnieuw — zoals de geplande uitvoering, maar direct.",
             "open": "{count} open",
@@ -221,6 +222,11 @@
             "queued": "Opdracht aangemaakt.",
             "already": "Opdracht staat al open.",
             "run": "Nu uitvoeren",
+            "retry": "Opnieuw",
+            "retryHint": "Geselecteerde mislukte taken opnieuw uitvoeren",
+            "reopen": "Heropenen",
+            "reopenHint": "Geselecteerde mislukte taken heropenen — de volgende cron-run voert ze uit",
+            "reopened": "{count} taken heropend. De volgende run voert ze uit.",
             "selectAll": "Alles selecteren",
             "running": "Er loopt al een uitvoering — die handelt de taken af.",
             "done": "{jobs} taken uitgevoerd, {pages} pagina's geschreven, {errors} fouten.",
@@ -235,7 +241,7 @@
             "deleteConfirm": "{count} taken worden definitief verwijderd.",
             "deleteHint": "Ook nog niet uitgevoerde taken worden verwijderd; ze staan daarna niet meer in de wachtrij.",
             "deleted": "{count} taken verwijderd.",
-            "runBlocked": "De selectie bevat een mislukte taak. Alleen openstaande taken kunnen worden uitgevoerd.",
+            "runBlocked": "De selectie bevat een mislukte taak. Alleen openstaande taken kunnen worden uitgevoerd. Met „Opnieuw” kunnen mislukte taken opnieuw worden uitgevoerd.",
             "started": "Publicatie gestart.",
             "inProgress": "De publicatie loopt op de achtergrond — de pagina blijft bruikbaar.",
             "aborted": "De uitvoering is onderbroken voordat die klaar was.",
@@ -406,7 +412,8 @@
             "CHANNEL_IN_USE": "Aan dit kanaal zijn facturen, herroepingen of eBay-bestellingen gekoppeld. Het kan alleen worden uitgeschakeld.",
             "CHANNEL_NOT_DELETABLE": "Alleen een uitgeschakeld kanaal zonder openstaande opdrachten kan worden verwijderd.",
             "SHIPPING_UNFIT": "Wordt niet gepubliceerd",
-            "SHIPPING_PART_NOT_OFFERED": "Verzendartikelen worden niet aangeboden"
+            "SHIPPING_PART_NOT_OFFERED": "Verzendartikelen worden niet aangeboden",
+            "NO_FAILED_JOBS": "Geen van de geselecteerde taken is mislukt."
         }
     }
 }

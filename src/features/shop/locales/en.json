@@ -213,6 +213,7 @@
             "all": "Publish all",
             "allNow": "Publish all now",
             "allNowHint": "Creates the job “All products” and runs it right away.",
+            "chooseChannels": "For which sales channels should all products be published?",
             "installUi": "Install shop user interface",
             "installUiHint": "Transfers the package with the shop widgets to the website and rebuilds it — like the scheduled runner, but right away.",
             "open": "{count} pending",
@@ -221,6 +222,11 @@
             "queued": "Job created.",
             "already": "Job is already pending.",
             "run": "Run now",
+            "retry": "Retry",
+            "retryHint": "Run the selected failed jobs again",
+            "reopen": "Reopen",
+            "reopenHint": "Reopen the selected failed jobs — the next cron run executes them",
+            "reopened": "{count} jobs reopened. The next run will execute them.",
             "selectAll": "Select all",
             "running": "A run is already in progress — it will handle the jobs.",
             "done": "{jobs} jobs done, {pages} pages written, {errors} errors.",
@@ -235,7 +241,7 @@
             "deleteConfirm": "{count} jobs will be deleted permanently.",
             "deleteHint": "Jobs that have not run yet are deleted as well; they are then no longer queued.",
             "deleted": "{count} jobs deleted.",
-            "runBlocked": "The selection contains a failed job. Only pending jobs can be run.",
+            "runBlocked": "The selection contains a failed job. Only pending jobs can be run. Use “Retry” to run failed jobs again.",
             "started": "Publishing started.",
             "inProgress": "Publishing is running in the background — the page stays usable.",
             "aborted": "The run was interrupted before it finished.",
@@ -406,7 +412,8 @@
             "CHANNEL_IN_USE": "Invoices, withdrawals or eBay orders refer to this channel. It can only be switched off.",
             "CHANNEL_NOT_DELETABLE": "Only a switched-off channel without open jobs can be deleted.",
             "SHIPPING_UNFIT": "Will not be published",
-            "SHIPPING_PART_NOT_OFFERED": "Shipping items are not offered"
+            "SHIPPING_PART_NOT_OFFERED": "Shipping items are not offered",
+            "NO_FAILED_JOBS": "None of the selected jobs has failed."
         }
     }
 }

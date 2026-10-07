@@ -213,6 +213,7 @@
             "all": "Opublikuj wszystko",
             "allNow": "Opublikuj wszystko teraz",
             "allNowHint": "Tworzy zadanie „Wszystkie produkty” i od razu je wykonuje.",
+            "chooseChannels": "Dla których kanałów sprzedaży opublikować wszystkie produkty?",
             "installUi": "Zainstaluj interfejs użytkownika sklepu",
             "installUiHint": "Przenosi pakiet z widżetami sklepu na stronę internetową i ją przebudowuje — jak zaplanowane uruchomienie, ale od razu.",
             "open": "{count} otwartych",
@@ -221,6 +222,11 @@
             "queued": "Zadanie utworzone.",
             "already": "Zadanie już czeka.",
             "run": "Uruchom teraz",
+            "retry": "Powtórz",
+            "retryHint": "Uruchom ponownie wybrane nieudane zadania",
+            "reopen": "Otwórz ponownie",
+            "reopenHint": "Otwórz ponownie wybrane nieudane zadania — następne uruchomienie crona je wykona",
+            "reopened": "Ponownie otwarto zadań: {count}. Następne uruchomienie je wykona.",
             "selectAll": "Zaznacz wszystko",
             "running": "Przebieg już trwa — zajmie się zadaniami.",
             "done": "Wykonano zadań: {jobs}, zapisano stron: {pages}, błędów: {errors}.",
@@ -235,7 +241,7 @@
             "deleteConfirm": "Zostanie trwale usuniętych zadań: {count}.",
             "deleteHint": "Usuwane są także zadania jeszcze niewykonane; potem nie są już zaplanowane.",
             "deleted": "Usunięto zadania: {count}.",
-            "runBlocked": "W zaznaczeniu jest nieudane zadanie. Uruchomić można tylko to, co jest otwarte.",
+            "runBlocked": "W zaznaczeniu jest nieudane zadanie. Uruchomić można tylko to, co jest otwarte. Przyciskiem „Powtórz” można ponownie uruchomić nieudane zadania.",
             "started": "Publikowanie rozpoczęte.",
             "inProgress": "Publikowanie działa w tle — ze strony można dalej korzystać.",
             "aborted": "Przebieg został przerwany przed zakończeniem.",
@@ -406,7 +412,8 @@
             "CHANNEL_IN_USE": "Do tego kanału odnoszą się faktury, odstąpienia lub zamówienia eBay. Można go tylko wyłączyć.",
             "CHANNEL_NOT_DELETABLE": "Usunąć można tylko wyłączony kanał bez otwartych zadań.",
             "SHIPPING_UNFIT": "Nie zostanie opublikowane",
-            "SHIPPING_PART_NOT_OFFERED": "Artykuły wysyłki nie są oferowane"
+            "SHIPPING_PART_NOT_OFFERED": "Artykuły wysyłki nie są oferowane",
+            "NO_FAILED_JOBS": "Żadne z wybranych zadań nie zakończyło się błędem."
         }
     }
 }

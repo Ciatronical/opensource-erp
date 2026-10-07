@@ -213,6 +213,7 @@
             "all": "全部发布",
             "allNow": "立即全部发布",
             "allNowHint": "创建“全部商品”任务并立即执行。",
+            "chooseChannels": "要为哪些销售渠道发布所有产品？",
             "installUi": "安装商店用户界面",
             "installUiHint": "将包含商店小部件的软件包传输到网站并重新构建——与计划任务相同，但立即执行。",
             "open": "{count} 个待处理",
@@ -221,6 +222,11 @@
             "queued": "任务已创建。",
             "already": "任务已在队列中。",
             "run": "立即执行",
+            "retry": "重试",
+            "retryHint": "重新执行所选的失败任务",
+            "reopen": "重新打开",
+            "reopenHint": "重新打开所选的失败任务——下一次定时运行将执行它们",
+            "reopened": "已重新打开 {count} 个任务。下一次运行将执行它们。",
             "selectAll": "全选",
             "running": "已有一次执行在进行中，任务会由它处理。",
             "done": "已完成 {jobs} 个任务，写入 {pages} 个页面，{errors} 个错误。",
@@ -235,7 +241,7 @@
             "deleteConfirm": "将永久删除 {count} 个任务。",
             "deleteHint": "尚未执行的任务也会被删除；删除后不再排队。",
             "deleted": "已删除 {count} 个任务。",
-            "runBlocked": "所选内容中有失败的任务。只能运行尚未完成的任务。",
+            "runBlocked": "所选内容中有失败的任务。只能运行尚未完成的任务。 可使用“重试”重新执行失败的任务。",
             "started": "发布已开始。",
             "inProgress": "发布正在后台运行，页面仍可正常使用。",
             "aborted": "运行在完成之前被中断。",
@@ -406,7 +412,8 @@
             "CHANNEL_IN_USE": "此渠道关联有发票、撤回或 eBay 订单，只能关闭。",
             "CHANNEL_NOT_DELETABLE": "只有已关闭且没有未完成任务的渠道才能删除。",
             "SHIPPING_UNFIT": "不会发布",
-            "SHIPPING_PART_NOT_OFFERED": "运费物料不上架"
+            "SHIPPING_PART_NOT_OFFERED": "运费物料不上架",
+            "NO_FAILED_JOBS": "所选任务中没有失败的任务。"
         }
     }
 }

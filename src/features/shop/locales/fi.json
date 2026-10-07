@@ -213,6 +213,7 @@
             "all": "Julkaise kaikki",
             "allNow": "Julkaise kaikki heti",
             "allNowHint": "Luo tehtävän ”Kaikki tuotteet” ja suorittaa sen heti.",
+            "chooseChannels": "Mille myyntikanaville kaikki tuotteet julkaistaan?",
             "installUi": "Asenna kaupan käyttöliittymä",
             "installUiHint": "Siirtää kaupan widgetit sisältävän paketin verkkosivustolle ja rakentaa sen uudelleen — kuten ajastettu ajo, mutta heti.",
             "open": "{count} avoinna",
@@ -221,6 +222,11 @@
             "queued": "Työ luotu.",
             "already": "Työ on jo avoinna.",
             "run": "Suorita nyt",
+            "retry": "Toista",
+            "retryHint": "Suorita valitut epäonnistuneet tehtävät uudelleen",
+            "reopen": "Avaa uudelleen",
+            "reopenHint": "Avaa valitut epäonnistuneet tehtävät uudelleen — seuraava cron-ajo suorittaa ne",
+            "reopened": "{count} tehtävää avattu uudelleen. Seuraava ajo suorittaa ne.",
             "selectAll": "Valitse kaikki",
             "running": "Ajo on jo käynnissä — se hoitaa työt.",
             "done": "{jobs} työtä valmiina, {pages} sivua kirjoitettu, {errors} virhettä.",
@@ -235,7 +241,7 @@
             "deleteConfirm": "{count} tehtävää poistetaan pysyvästi.",
             "deleteHint": "Myös vielä suorittamattomat tehtävät poistetaan; ne eivät sen jälkeen ole jonossa.",
             "deleted": "Poistettiin {count} tehtävää.",
-            "runBlocked": "Valinnassa on epäonnistunut tehtävä. Vain avoimia tehtäviä voi suorittaa.",
+            "runBlocked": "Valinnassa on epäonnistunut tehtävä. Vain avoimia tehtäviä voi suorittaa. Epäonnistuneet tehtävät voi suorittaa uudelleen painikkeella ”Toista”.",
             "started": "Julkaisu käynnistetty.",
             "inProgress": "Julkaisu on käynnissä taustalla — sivua voi käyttää edelleen.",
             "aborted": "Ajo keskeytyi ennen kuin se valmistui.",
@@ -406,7 +412,8 @@
             "CHANNEL_IN_USE": "Tähän kanavaan liittyy laskuja, peruutuksia tai eBay-tilauksia. Sen voi vain kytkeä pois päältä.",
             "CHANNEL_NOT_DELETABLE": "Vain pois päältä kytketyn kanavan, jolla ei ole avoimia tehtäviä, voi poistaa.",
             "SHIPPING_UNFIT": "Ei julkaista",
-            "SHIPPING_PART_NOT_OFFERED": "Toimitustuotteita ei tarjota"
+            "SHIPPING_PART_NOT_OFFERED": "Toimitustuotteita ei tarjota",
+            "NO_FAILED_JOBS": "Mikään valituista tehtävistä ei ole epäonnistunut."
         }
     }
 }

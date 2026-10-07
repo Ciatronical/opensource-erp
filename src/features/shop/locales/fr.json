@@ -213,6 +213,7 @@
             "all": "Tout publier",
             "allNow": "Tout publier maintenant",
             "allNowHint": "Crée la tâche « Tous les produits » et l'exécute immédiatement.",
+            "chooseChannels": "Pour quels canaux de vente tous les produits doivent-ils être publiés ?",
             "installUi": "Installer l’interface utilisateur de la boutique",
             "installUiHint": "Transfère le paquet des widgets de la boutique vers le site web et le reconstruit, comme l’exécution planifiée, mais immédiatement.",
             "open": "{count} en attente",
@@ -221,6 +222,11 @@
             "queued": "Tâche créée.",
             "already": "La tâche est déjà en attente.",
             "run": "Exécuter maintenant",
+            "retry": "Réessayer",
+            "retryHint": "Relancer les tâches échouées sélectionnées",
+            "reopen": "Rouvrir",
+            "reopenHint": "Rouvrir les tâches échouées sélectionnées — la prochaine exécution du cron les traitera",
+            "reopened": "{count} tâches rouvertes. La prochaine exécution les traitera.",
             "selectAll": "Tout sélectionner",
             "running": "Une exécution est déjà en cours : elle prendra les tâches en charge.",
             "done": "{jobs} tâches effectuées, {pages} pages écrites, {errors} erreurs.",
@@ -235,7 +241,7 @@
             "deleteConfirm": "{count} tâches seront supprimées définitivement.",
             "deleteHint": "Les tâches non encore exécutées sont également supprimées ; elles ne sont alors plus en file d'attente.",
             "deleted": "{count} tâches supprimées.",
-            "runBlocked": "La sélection contient une tâche en échec. Seules les tâches en attente peuvent être exécutées.",
+            "runBlocked": "La sélection contient une tâche en échec. Seules les tâches en attente peuvent être exécutées. « Réessayer » relance les tâches échouées.",
             "started": "Publication lancée.",
             "inProgress": "La publication s'exécute en arrière-plan — la page reste utilisable.",
             "aborted": "L'exécution a été interrompue avant la fin.",
@@ -406,7 +412,8 @@
             "CHANNEL_IN_USE": "Des factures, rétractations ou commandes eBay sont liées à ce canal. Il ne peut qu’être désactivé.",
             "CHANNEL_NOT_DELETABLE": "Seul un canal désactivé sans tâches en attente peut être supprimé.",
             "SHIPPING_UNFIT": "Ne sera pas publié",
-            "SHIPPING_PART_NOT_OFFERED": "Les articles de frais de port ne sont pas proposés"
+            "SHIPPING_PART_NOT_OFFERED": "Les articles de frais de port ne sont pas proposés",
+            "NO_FAILED_JOBS": "Aucune des tâches sélectionnées n'a échoué."
         }
     }
 }

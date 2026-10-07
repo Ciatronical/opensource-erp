@@ -224,7 +224,7 @@
                             prepend-icon="mdi-cloud-upload-outline"
                             :loading="veroeffentlicht"
                             :disabled="sofort || laeuft"
-                            @click="alleVeroeffentlichen"
+                            @click="kanaeleWaehlen('queue')"
                         >
                             {{ t('ShopView.publish.all') }}
                         </v-btn>
@@ -237,7 +237,7 @@
                             :loading="sofort"
                             :disabled="veroeffentlicht || laeuft"
                             :title="t('ShopView.publish.allNowHint')"
-                            @click="alleSofortVeroeffentlichen"
+                            @click="kanaeleWaehlen('sofort')"
                         >
                             {{ t('ShopView.publish.allNow') }}
                         </v-btn>
@@ -329,6 +329,31 @@
                         @click="ausgewaehlteAusfuehren"
                     >
                         {{ t('ShopView.publish.run') }}
+                    </v-btn>
+                    <!-- Fehlgeschlagene wieder öffnen und gleich ausführen -->
+                    <v-btn
+                        color="warning"
+                        variant="tonal"
+                        size="small"
+                        prepend-icon="mdi-replay"
+                        :disabled="!gescheiterteAuswahl.length || laeuft"
+                        :loading="wiederholt"
+                        :title="t('ShopView.publish.retryHint')"
+                        @click="ausgewaehlteWiederholen"
+                    >
+                        {{ t('ShopView.publish.retry') }}
+                    </v-btn>
+                    <!-- Nur wieder öffnen: der nächste Lauf des Cron nimmt sie mit -->
+                    <v-btn
+                        variant="text"
+                        size="small"
+                        prepend-icon="mdi-clock-outline"
+                        :disabled="!gescheiterteAuswahl.length || laeuft"
+                        :loading="wiederGeoeffnet"
+                        :title="t('ShopView.publish.reopenHint')"
+                        @click="ausgewaehlteWiederOeffnen"
+                    >
+                        {{ t('ShopView.publish.reopen') }}
                     </v-btn>
                     <v-btn
                         color="error"
@@ -457,6 +482,37 @@
         </v-dialog>
 
         <!-- Rückfrage vor dem Löschen der Auswahl -->
+        <!-- Bei mehreren HugoShops: wofür „Alle veröffentlichen“ gelten soll -->
+        <v-dialog v-model="kanalwahlOffen" max-width="460">
+            <v-card>
+                <v-card-title>{{ kanalwahlArt === 'sofort' ? t('ShopView.publish.allNow') : t('ShopView.publish.all') }}</v-card-title>
+                <v-card-text>
+                    <div class="text-body-2 mb-2">{{ t('ShopView.publish.chooseChannels') }}</div>
+                    <v-checkbox
+                        v-for="kanal in hugoshops"
+                        :key="kanal.channel_id"
+                        v-model="gewaehlteKanaele"
+                        :value="kanal.channel_id"
+                        :label="kanal.name"
+                        density="compact"
+                        hide-details
+                    />
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer />
+                    <v-btn variant="text" @click="kanalwahlOffen = false">{{ t('ShopView.publish.cancel') }}</v-btn>
+                    <v-btn
+                        color="primary"
+                        variant="flat"
+                        :disabled="!gewaehlteKanaele.length"
+                        @click="kanalwahlBestaetigen"
+                    >
+                        {{ kanalwahlArt === 'sofort' ? t('ShopView.publish.allNow') : t('ShopView.publish.all') }}
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
         <v-dialog v-model="loeschenGefragt" max-width="460">
             <v-card>
                 <v-card-title>{{ t('ShopView.publish.delete') }}</v-card-title>
@@ -553,6 +609,8 @@ let abfrageTimer = null
 let abfrageBeginn = 0
 const aufraeumenGefragt = ref(false)
 const loescht = ref(false)
+const wiederholt = ref(false)
+const wiederGeoeffnet = ref(false)
 const loeschenGefragt = ref(false)
 
 /** Wahrheitswerte kommen je nach Treiber als true oder 't' */
@@ -932,6 +990,40 @@ async function laufBeendet(stand) {
  * Gedacht für fehlgeschlagene: Fehler gelesen, Zeile weg. Offene lassen sich
  * ebenso löschen — sie sind danach nicht mehr vorgemerkt.
  */
+/**
+ * Wiederholt die gewählten fehlgeschlagenen Aufträge
+ *
+ * Das Backend öffnet sie wieder und führt genau sie aus; die übrige Auswahl
+ * bleibt unberührt. Danach wird der Lauf beobachtet wie bei „Jetzt ausführen“.
+ */
+async function ausgewaehlteWiederholen() {
+    wiederholt.value = true
+    const antwort = await shop.retryPublishJobs(gescheiterteAuswahl.value)
+    wiederholt.value = false
+    if (shop.error.value) {
+        return
+    }
+    auswahl.value = []
+    gestartet(antwort)
+}
+
+/**
+ * Öffnet die gewählten fehlgeschlagenen Aufträge wieder, ohne sie auszuführen
+ *
+ * Der nächste Lauf des Cron nimmt sie mit; die Liste zeigt sie gleich als offen.
+ */
+async function ausgewaehlteWiederOeffnen() {
+    wiederGeoeffnet.value = true
+    const antwort = await shop.retryPublishJobs(gescheiterteAuswahl.value, false)
+    wiederGeoeffnet.value = false
+    if (shop.error.value) {
+        return
+    }
+    toasts.success(t('ShopView.publish.reopened', { count: antwort?.retried ?? 0 }))
+    auswahl.value = []
+    await laden()
+}
+
 async function ausgewaehlteLoeschen() {
     loescht.value = true
     const ergebnis = await shop.deletePublishJobs(auswahl.value)
@@ -977,10 +1069,39 @@ async function aufraeumen() {
  * ausgeführt. Ist er inzwischen weg, hat ihn ein anderer Lauf (der Cron)
  * übernommen; das wird gemeldet wie bei „Jetzt ausführen".
  */
-async function alleSofortVeroeffentlichen() {
+// ── Kanalwahl für „Alle veröffentlichen“ ──
+
+/** Eingeschaltete HugoShops (aus der Einrichtungsprüfung) */
+const hugoshops = computed(() => (status.value?.counts?.channels || []).filter((k) => k.type === 'hugoshop'))
+const kanalwahlOffen = ref(false)
+/** 'queue' = nur Auftrag anlegen, 'sofort' = anlegen und ausführen */
+const kanalwahlArt = ref('queue')
+const gewaehlteKanaele = ref([])
+
+/**
+ * Bei mehr als einem HugoShop erst fragen, für welche; sonst gleich los
+ *
+ * Vorausgewählt sind alle — wer nur einen will, nimmt die übrigen heraus.
+ */
+function kanaeleWaehlen(art) {
+    if (hugoshops.value.length <= 1) {
+        return art === 'sofort' ? alleSofortVeroeffentlichen() : alleVeroeffentlichen()
+    }
+    kanalwahlArt.value = art
+    gewaehlteKanaele.value = hugoshops.value.map((k) => k.channel_id)
+    kanalwahlOffen.value = true
+}
+
+function kanalwahlBestaetigen() {
+    kanalwahlOffen.value = false
+    const kanaele = [...gewaehlteKanaele.value]
+    return kanalwahlArt.value === 'sofort' ? alleSofortVeroeffentlichen(kanaele) : alleVeroeffentlichen(kanaele)
+}
+
+async function alleSofortVeroeffentlichen(kanaele = []) {
     sofort.value = true
     try {
-        const angelegt = await shop.publishAll()
+        const angelegt = await shop.publishAll(kanaele)
         if (shop.error.value) {
             return
         }
@@ -991,7 +1112,8 @@ async function alleSofortVeroeffentlichen() {
         if (!ids.length) {
             auftraege.value = await shop.fetchPublishJobs() || []
             ids = auftraege.value
-                .filter((auftrag) => istOffen(auftrag) && auftrag.function === 'publish_all' && auftrag.channel === 'hugoshop')
+                .filter((auftrag) => istOffen(auftrag) && auftrag.function === 'publish_all' && auftrag.channel === 'hugoshop'
+                    && (!kanaele.length || kanaele.includes(Number(auftrag.channel_id))))
                 .map((auftrag) => auftrag.id)
         }
 
@@ -1015,9 +1137,9 @@ async function alleSofortVeroeffentlichen() {
  * Legt einen Auftrag an; die Seiten entstehen beim nächsten Lauf des
  * Veröffentlichungs-Skripts.
  */
-async function alleVeroeffentlichen() {
+async function alleVeroeffentlichen(kanaele = []) {
     veroeffentlicht.value = true
-    const ergebnis = await shop.publishAll()
+    const ergebnis = await shop.publishAll(kanaele)
     veroeffentlicht.value = false
 
     if (!shop.error.value) {

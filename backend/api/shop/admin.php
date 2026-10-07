@@ -2042,6 +2042,17 @@ function shopHugoshopsOfRequest($db, array $data): array {
     if ('' !== (string)($data['channel_id'] ?? '')) {
         return [shopHugoshopOfRequest($db, $data)];
     }
+    // Mehrere gewählte (Auswahl in der Shop-Übersicht): nur eingeschaltete
+    // HugoShops darunter, unbekannte fallen weg
+    $gewaehlt = array_values(array_filter(array_map('intval', (array)($data['channel_ids'] ?? [])), fn($id) => $id > 0));
+    if ($gewaehlt) {
+        return array_map('intval', array_column($db->getAll(
+            "SELECT id FROM sales_channel_shop
+              WHERE type = 'hugoshop' AND active AND id = ANY(string_to_array(:ids, ',')::int[])
+              ORDER BY sortkey NULLS LAST, id",
+            [':ids' => implode(',', $gewaehlt)]
+        ) ?: [], 'id'));
+    }
     return array_map('intval', array_column($db->getAll(
         "SELECT id FROM sales_channel_shop WHERE type = 'hugoshop' AND active ORDER BY sortkey NULLS LAST, id"
     ) ?: [], 'id'));
@@ -2132,8 +2143,9 @@ function publishShopPart($data) {
  * Aufrufer, die nur einen erwarten).
  *
  * @param array $data['channel_id'] HugoShop, leer = alle eingeschalteten
+ * @param array $data['channel_ids'] mehrere HugoShops (Auswahl), leer = alle eingeschalteten
  * @return void job_id, job_ids, queued
- * @testdata {}
+ * @testdata {"channel_ids": []}
  */
 function publishShopAll($data) {
     permit(['shop_part_edit', 'edit_shop_config'], false);
@@ -2186,6 +2198,90 @@ function runShopPublishJobs($data) {
     }
 
     resultInfo(true, '', ['started' => true, 'running' => true]);
+}
+
+/**
+ * Wiederholt fehlgeschlagene Aufträge
+ *
+ * Öffnet die gewählten Aufträge wieder (Ergebnis und Lauf geleert, Zeitpunkt
+ * neu) und führt genau sie sofort aus, wie „Jetzt ausführen“. Mit run=false
+ * werden sie nur wieder geöffnet — dann nimmt sie der nächste Lauf des Cron mit. Erledigte oder
+ * offene unter den gewählten bleiben unberührt. Steht derselbe Auftrag schon
+ * offen in der Warteschlange (gleicher Kanal, gleiche Art, gleicher Artikel,
+ * gleicher Parameter), wird statt des alten der offene ausgeführt — sonst
+ * liefe er doppelt.
+ *
+ * Arbeitet gerade ein Lauf, sind die Aufträge wieder offen, und der laufende
+ * oder der nächste Lauf nimmt sie mit.
+ *
+ * @param array $data['ids'] Auftragsnummern
+ * @param bool $data['run'] sofort ausführen (Vorgabe); false = nur wieder öffnen
+ * @return void retried (wieder geöffnet), started, running
+ * @testdata {"ids": [1], "run": true}
+ */
+function retryShopPublishJobs($data) {
+    permit(['shop_part_edit', 'edit_shop_config'], false);
+    $db = DbhCompany::begin();
+
+    $ids = array_values(array_filter(array_map('intval', (array)($data['ids'] ?? [])), fn($id) => $id > 0));
+    if (!$ids) {
+        resultInfo(false, 'VALIDATION_ERROR', null, 'Keine Aufträge gewählt');
+        return;
+    }
+
+    // Eine Anweisung: wieder öffnen, was gescheitert ist und keinen offenen
+    // Zwilling hat; die Zwillinge selbst mit ausführen
+    $zeilen = $db->getAll(
+        "WITH gewaehlt AS (
+             SELECT b.* FROM batchjob_hugoshop b
+              WHERE b.id = ANY(string_to_array(:ids, ',')::int[])
+                AND b.result LIKE 'Fehler%'
+         ), zwilling AS (
+             SELECT g.id AS alt, o.id AS offen
+               FROM gewaehlt g
+               JOIN batchjob_hugoshop o ON o.result IS NULL
+                                       AND o.function = g.function
+                                       AND o.partnumber = g.partnumber
+                                       AND o.param IS NOT DISTINCT FROM g.param
+                                       AND o.channel_id IS NOT DISTINCT FROM g.channel_id
+         ), geoeffnet AS (
+             UPDATE batchjob_hugoshop b
+                SET result = NULL, run_id = NULL, itime = now()
+               FROM gewaehlt g
+              WHERE b.id = g.id
+                AND NOT EXISTS (SELECT 1 FROM zwilling z WHERE z.alt = g.id)
+             RETURNING b.id
+         )
+         SELECT id FROM geoeffnet
+         UNION
+         SELECT offen FROM zwilling",
+        [':ids' => implode(',', $ids)]
+    ) ?: [];
+    $wieder = array_map(fn($z) => (int)$z['id'], $zeilen);
+
+    if (!$wieder) {
+        resultInfo(false, 'NO_FAILED_JOBS', null, 'Unter den gewählten Aufträgen ist keiner fehlgeschlagen');
+        return;
+    }
+
+    // Nur wieder öffnen: der Cron nimmt sie mit
+    if (false === ($data['run'] ?? true) || in_array($data['run'] ?? true, ['0', 0, 'false'], true)) {
+        resultInfo(true, '', ['retried' => count($wieder), 'started' => false, 'running' => false]);
+        return;
+    }
+
+    if (shopPublishStatus($db)['running']) {
+        resultInfo(true, '', ['retried' => count($wieder), 'started' => false, 'running' => true]);
+        return;
+    }
+
+    $start = shopPublishStartBackground($db, $wieder);
+    if ('' !== $start['fehler']) {
+        resultInfo(false, 'SHOP_PUBLISH_START_FAILED', null, $start['fehler']);
+        return;
+    }
+
+    resultInfo(true, '', ['retried' => count($wieder), 'started' => true, 'running' => true]);
 }
 
 /**

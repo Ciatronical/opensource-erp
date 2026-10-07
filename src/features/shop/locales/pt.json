@@ -213,6 +213,7 @@
             "all": "Publicar tudo",
             "allNow": "Publicar tudo agora",
             "allNowHint": "Cria a tarefa «Todos os produtos» e executa-a de imediato.",
+            "chooseChannels": "Para que canais de venda devem ser publicados todos os produtos?",
             "installUi": "Instalar interface do utilizador da loja",
             "installUiHint": "Transfere o pacote com os widgets da loja para o site e reconstrói-o — como a execução agendada, mas imediatamente.",
             "open": "{count} pendentes",
@@ -221,6 +222,11 @@
             "queued": "Tarefa criada.",
             "already": "A tarefa já está pendente.",
             "run": "Executar agora",
+            "retry": "Repetir",
+            "retryHint": "Executar novamente as tarefas falhadas selecionadas",
+            "reopen": "Reabrir",
+            "reopenHint": "Reabrir as tarefas falhadas selecionadas — a próxima execução do cron executa-as",
+            "reopened": "{count} tarefas reabertas. A próxima execução executa-as.",
             "selectAll": "Selecionar tudo",
             "running": "Já há uma execução em curso: ela tratará das tarefas.",
             "done": "{jobs} tarefas concluídas, {pages} páginas escritas, {errors} erros.",
@@ -235,7 +241,7 @@
             "deleteConfirm": "{count} tarefas serão eliminadas definitivamente.",
             "deleteHint": "As tarefas ainda não executadas também são eliminadas; depois já não estão em fila.",
             "deleted": "{count} tarefas eliminadas.",
-            "runBlocked": "A seleção contém uma tarefa falhada. Só é possível executar as pendentes.",
+            "runBlocked": "A seleção contém uma tarefa falhada. Só é possível executar as pendentes. Com «Repetir» é possível executar novamente as tarefas falhadas.",
             "started": "Publicação iniciada.",
             "inProgress": "A publicação decorre em segundo plano — a página continua utilizável.",
             "aborted": "A execução foi interrompida antes de terminar.",
@@ -406,7 +412,8 @@
             "CHANNEL_IN_USE": "Faturas, desistências ou encomendas eBay estão associadas a este canal. Só pode ser desligado.",
             "CHANNEL_NOT_DELETABLE": "Só é possível eliminar um canal desligado sem tarefas pendentes.",
             "SHIPPING_UNFIT": "Não será publicado",
-            "SHIPPING_PART_NOT_OFFERED": "Os artigos de portes não são oferecidos"
+            "SHIPPING_PART_NOT_OFFERED": "Os artigos de portes não são oferecidos",
+            "NO_FAILED_JOBS": "Nenhuma das tarefas selecionadas falhou."
         }
     }
 }

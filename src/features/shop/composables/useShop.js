@@ -124,7 +124,7 @@ export function useShop() {
     const publishPart = (parts_id) => call('publishShopPart', { parts_id })
 
     /** Nimmt alle Artikel des Shops in die Veröffentlichung auf */
-    const publishAll = () => call('publishShopAll')
+    const publishAll = (channel_ids = []) => call('publishShopAll', { channel_ids })
 
     /** Offene und zuletzt erledigte Veröffentlichungs-Aufträge */
     const fetchPublishJobs = () => call('getShopPublishJobs')
@@ -179,6 +179,9 @@ export function useShop() {
      */
     const deletePublishJobs = (ids = []) => call('deleteShopPublishJobs', { ids })
 
+    /** Öffnet fehlgeschlagene Aufträge wieder; run = sofort ausführen, sonst für den Cron */
+    const retryPublishJobs = (ids = [], run = true) => call('retryShopPublishJobs', { ids, run })
+
     return {
         loading,
         error,
@@ -192,6 +195,7 @@ export function useShop() {
         fetchPublishRunOutput,
         cleanupPublishJobs,
         deletePublishJobs,
+        retryPublishJobs,
         fetchPartShopData,
         savePartShopData,
         deletePartShopData,

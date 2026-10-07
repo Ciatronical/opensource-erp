@@ -213,6 +213,7 @@
             "all": "Publicera alla",
             "allNow": "Publicera alla nu",
             "allNowHint": "Skapar jobbet ”Alla produkter” och kör det direkt.",
+            "chooseChannels": "För vilka försäljningskanaler ska alla produkter publiceras?",
             "installUi": "Installera butikens användargränssnitt",
             "installUiHint": "För över paketet med butikswidgetarna till webbplatsen och bygger om den — som den schemalagda körningen, men direkt.",
             "open": "{count} öppna",
@@ -221,6 +222,11 @@
             "queued": "Uppdrag skapat.",
             "already": "Uppdraget är redan öppet.",
             "run": "Kör nu",
+            "retry": "Upprepa",
+            "retryHint": "Kör de valda misslyckade uppgifterna igen",
+            "reopen": "Öppna igen",
+            "reopenHint": "Öppna de valda misslyckade uppgifterna igen — nästa cron-körning utför dem",
+            "reopened": "{count} uppgifter öppnade igen. Nästa körning utför dem.",
             "selectAll": "Markera alla",
             "running": "En körning pågår redan — den tar hand om jobben.",
             "done": "{jobs} jobb klara, {pages} sidor skrivna, {errors} fel.",
@@ -235,7 +241,7 @@
             "deleteConfirm": "{count} jobb tas bort permanent.",
             "deleteHint": "Även jobb som ännu inte körts tas bort; de står sedan inte längre i kö.",
             "deleted": "{count} jobb borttagna.",
-            "runBlocked": "Urvalet innehåller ett misslyckat jobb. Endast öppna jobb kan köras.",
+            "runBlocked": "Urvalet innehåller ett misslyckat jobb. Endast öppna jobb kan köras. Med ”Upprepa” kan misslyckade uppgifter köras igen.",
             "started": "Publiceringen har startat.",
             "inProgress": "Publiceringen körs i bakgrunden — sidan kan fortfarande användas.",
             "aborted": "Körningen avbröts innan den var klar.",
@@ -406,7 +412,8 @@
             "CHANNEL_IN_USE": "Fakturor, ångerrätter eller eBay-beställningar hänvisar till den här kanalen. Den kan bara stängas av.",
             "CHANNEL_NOT_DELETABLE": "Endast en avstängd kanal utan öppna uppdrag kan tas bort.",
             "SHIPPING_UNFIT": "Publiceras inte",
-            "SHIPPING_PART_NOT_OFFERED": "Fraktartiklar erbjuds inte"
+            "SHIPPING_PART_NOT_OFFERED": "Fraktartiklar erbjuds inte",
+            "NO_FAILED_JOBS": "Ingen av de valda uppgifterna har misslyckats."
         }
     }
 }

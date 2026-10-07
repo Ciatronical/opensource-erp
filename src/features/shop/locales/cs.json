@@ -213,6 +213,7 @@
             "all": "Zveřejnit vše",
             "allNow": "Zveřejnit vše hned",
             "allNowHint": "Vytvoří úlohu „Všechny produkty“ a ihned ji provede.",
+            "chooseChannels": "Pro které prodejní kanály se mají zveřejnit všechny produkty?",
             "installUi": "Nainstalovat uživatelské rozhraní obchodu",
             "installUiHint": "Přenese balíček s widgety obchodu na web a znovu jej sestaví — jako plánovaný běh, ale okamžitě.",
             "open": "{count} otevřených",
@@ -221,6 +222,11 @@
             "queued": "Úloha založena.",
             "already": "Úloha už čeká.",
             "run": "Spustit nyní",
+            "retry": "Opakovat",
+            "retryHint": "Znovu spustit vybrané neúspěšné úlohy",
+            "reopen": "Znovu otevřít",
+            "reopenHint": "Znovu otevřít vybrané neúspěšné úlohy — provede je příští běh cronu",
+            "reopened": "Znovu otevřeno úloh: {count}. Příští běh je provede.",
             "selectAll": "Vybrat vše",
             "running": "Běh už probíhá — úlohy vyřídí on.",
             "done": "Hotovo úloh: {jobs}, zapsáno stránek: {pages}, chyb: {errors}.",
@@ -235,7 +241,7 @@
             "deleteConfirm": "Bude trvale smazáno úloh: {count}.",
             "deleteHint": "Smažou se i dosud neprovedené úlohy; poté už nejsou naplánované.",
             "deleted": "Smazáno úloh: {count}.",
-            "runBlocked": "Ve výběru je neúspěšná úloha. Spustit lze jen to, co je dosud otevřené.",
+            "runBlocked": "Ve výběru je neúspěšná úloha. Spustit lze jen to, co je dosud otevřené. Neúspěšné úlohy lze znovu spustit tlačítkem „Opakovat“.",
             "started": "Zveřejňování spuštěno.",
             "inProgress": "Zveřejňování běží na pozadí — stránku lze dál používat.",
             "aborted": "Běh byl přerušen dříve, než skončil.",
@@ -406,7 +412,8 @@
             "CHANNEL_IN_USE": "Na tento kanál odkazují faktury, odstoupení nebo objednávky z eBay. Lze ho pouze vypnout.",
             "CHANNEL_NOT_DELETABLE": "Smazat lze jen vypnutý kanál bez otevřených úloh.",
             "SHIPPING_UNFIT": "Nezveřejní se",
-            "SHIPPING_PART_NOT_OFFERED": "Položky dopravy se nenabízejí"
+            "SHIPPING_PART_NOT_OFFERED": "Položky dopravy se nenabízejí",
+            "NO_FAILED_JOBS": "Žádná z vybraných úloh neselhala."
         }
     }
 }

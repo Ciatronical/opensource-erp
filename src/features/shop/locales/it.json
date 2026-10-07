@@ -213,6 +213,7 @@
             "all": "Pubblica tutto",
             "allNow": "Pubblica tutto ora",
             "allNowHint": "Crea l'attività «Tutti i prodotti» e la esegue subito.",
+            "chooseChannels": "Per quali canali di vendita pubblicare tutti i prodotti?",
             "installUi": "Installa interfaccia utente del negozio",
             "installUiHint": "Trasferisce il pacchetto con i widget del negozio nel sito web e lo ricostruisce, come l’esecuzione pianificata, ma subito.",
             "open": "{count} in attesa",
@@ -221,6 +222,11 @@
             "queued": "Incarico creato.",
             "already": "L'incarico è già in attesa.",
             "run": "Esegui ora",
+            "retry": "Ripeti",
+            "retryHint": "Esegui di nuovo le attività non riuscite selezionate",
+            "reopen": "Riapri",
+            "reopenHint": "Riapri le attività non riuscite selezionate — la prossima esecuzione del cron le eseguirà",
+            "reopened": "{count} attività riaperte. La prossima esecuzione le eseguirà.",
             "selectAll": "Seleziona tutto",
             "running": "Un'esecuzione è già in corso: si occuperà dei lavori.",
             "done": "{jobs} lavori eseguiti, {pages} pagine scritte, {errors} errori.",
@@ -235,7 +241,7 @@
             "deleteConfirm": "{count} attività verranno eliminate definitivamente.",
             "deleteHint": "Vengono eliminate anche le attività non ancora eseguite; dopo non sono più in coda.",
             "deleted": "{count} attività eliminate.",
-            "runBlocked": "La selezione contiene un'attività non riuscita. Si possono eseguire solo quelle aperte.",
+            "runBlocked": "La selezione contiene un'attività non riuscita. Si possono eseguire solo quelle aperte. Con «Ripeti» le attività non riuscite possono essere rieseguite.",
             "started": "Pubblicazione avviata.",
             "inProgress": "La pubblicazione è in corso in background: la pagina resta utilizzabile.",
             "aborted": "L'esecuzione è stata interrotta prima di terminare.",
@@ -406,7 +412,8 @@
             "CHANNEL_IN_USE": "A questo canale sono collegate fatture, recessi od ordini eBay. Può solo essere disattivato.",
             "CHANNEL_NOT_DELETABLE": "Si può eliminare solo un canale disattivato senza attività aperte.",
             "SHIPPING_UNFIT": "Non verrà pubblicato",
-            "SHIPPING_PART_NOT_OFFERED": "Gli articoli di spedizione non vengono offerti"
+            "SHIPPING_PART_NOT_OFFERED": "Gli articoli di spedizione non vengono offerti",
+            "NO_FAILED_JOBS": "Nessuna delle attività selezionate è fallita."
         }
     }
 }

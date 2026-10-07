@@ -213,6 +213,7 @@
             "all": "Publicēt visu",
             "allNow": "Publicēt visu tūlīt",
             "allNowHint": "Izveido uzdevumu “Visi produkti” un uzreiz to izpilda.",
+            "chooseChannels": "Kuriem pārdošanas kanāliem publicēt visus produktus?",
             "installUi": "Instalēt veikala lietotāja saskarni",
             "installUiHint": "Pārnes pakotni ar veikala logrīkiem uz tīmekļa vietni un to pārbūvē — kā plānotā izpilde, tikai uzreiz.",
             "open": "{count} gaida",
@@ -221,6 +222,11 @@
             "queued": "Uzdevums izveidots.",
             "already": "Uzdevums jau gaida.",
             "run": "Izpildīt tagad",
+            "retry": "Atkārtot",
+            "retryHint": "Atkārtoti izpildīt atlasītos neveiksmīgos uzdevumus",
+            "reopen": "Atvērt no jauna",
+            "reopenHint": "Atvērt atlasītos neveiksmīgos uzdevumus no jauna — nākamā cron palaišana tos izpildīs",
+            "reopened": "No jauna atvērti uzdevumi: {count}. Nākamā palaišana tos izpildīs.",
             "selectAll": "Atlasīt visus",
             "running": "Izpilde jau notiek — tā paveiks uzdevumus.",
             "done": "Paveikti uzdevumi: {jobs}, ierakstītas lapas: {pages}, kļūdas: {errors}.",
@@ -235,7 +241,7 @@
             "deleteConfirm": "Tiks neatgriezeniski dzēsti {count} uzdevumi.",
             "deleteHint": "Tiek dzēsti arī vēl neizpildītie uzdevumi; pēc tam tie vairs nav rindā.",
             "deleted": "Dzēsti {count} uzdevumi.",
-            "runBlocked": "Atlasē ir neizdevies uzdevums. Izpildīt var tikai to, kas vēl ir atvērts.",
+            "runBlocked": "Atlasē ir neizdevies uzdevums. Izpildīt var tikai to, kas vēl ir atvērts. Ar “Atkārtot” neveiksmīgos uzdevumus var izpildīt vēlreiz.",
             "started": "Publicēšana sākta.",
             "inProgress": "Publicēšana notiek fonā — lapu var turpināt lietot.",
             "aborted": "Izpilde tika pārtraukta, pirms tā bija pabeigta.",
@@ -406,7 +412,8 @@
             "CHANNEL_IN_USE": "Ar šo kanālu saistīti rēķini, atteikumi vai eBay pasūtījumi. To var tikai izslēgt.",
             "CHANNEL_NOT_DELETABLE": "Dzēst var tikai izslēgtu kanālu bez atvērtiem uzdevumiem.",
             "SHIPPING_UNFIT": "Netiks publicēts",
-            "SHIPPING_PART_NOT_OFFERED": "Piegādes preces netiek piedāvātas"
+            "SHIPPING_PART_NOT_OFFERED": "Piegādes preces netiek piedāvātas",
+            "NO_FAILED_JOBS": "Neviens no atlasītajiem uzdevumiem nav neizdevies."
         }
     }
 }

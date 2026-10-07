@@ -213,6 +213,7 @@
             "all": "Publicar todo",
             "allNow": "Publicar todo ahora",
             "allNowHint": "Crea el trabajo «Todos los productos» y lo ejecuta de inmediato.",
+            "chooseChannels": "¿Para qué canales de venta deben publicarse todos los productos?",
             "installUi": "Instalar interfaz de usuario de la tienda",
             "installUiHint": "Transfiere el paquete con los widgets de la tienda al sitio web y lo reconstruye, como la ejecución programada, pero de inmediato.",
             "open": "{count} pendientes",
@@ -221,6 +222,11 @@
             "queued": "Trabajo creado.",
             "already": "El trabajo ya está pendiente.",
             "run": "Ejecutar ahora",
+            "retry": "Repetir",
+            "retryHint": "Volver a ejecutar las tareas fallidas seleccionadas",
+            "reopen": "Reabrir",
+            "reopenHint": "Reabrir las tareas fallidas seleccionadas: la próxima ejecución del cron las procesará",
+            "reopened": "{count} tareas reabiertas. La próxima ejecución las procesará.",
             "selectAll": "Seleccionar todo",
             "running": "Ya hay una ejecución en curso: se encargará de los trabajos.",
             "done": "{jobs} trabajos realizados, {pages} páginas escritas, {errors} errores.",
@@ -235,7 +241,7 @@
             "deleteConfirm": "Se eliminarán definitivamente {count} trabajos.",
             "deleteHint": "También se eliminan los trabajos que aún no se han ejecutado; después ya no están en cola.",
             "deleted": "{count} trabajos eliminados.",
-            "runBlocked": "La selección contiene un trabajo fallido. Solo se puede ejecutar lo que está pendiente.",
+            "runBlocked": "La selección contiene un trabajo fallido. Solo se puede ejecutar lo que está pendiente. Con «Repetir» se pueden volver a ejecutar las tareas fallidas.",
             "started": "Publicación iniciada.",
             "inProgress": "La publicación se ejecuta en segundo plano: la página sigue utilizable.",
             "aborted": "La ejecución se interrumpió antes de terminar.",
@@ -406,7 +412,8 @@
             "CHANNEL_IN_USE": "Hay facturas, desistimientos o pedidos de eBay vinculados a este canal. Solo se puede desactivar.",
             "CHANNEL_NOT_DELETABLE": "Solo se puede eliminar un canal desactivado sin tareas pendientes.",
             "SHIPPING_UNFIT": "No se publicará",
-            "SHIPPING_PART_NOT_OFFERED": "Los artículos de envío no se ofrecen"
+            "SHIPPING_PART_NOT_OFFERED": "Los artículos de envío no se ofrecen",
+            "NO_FAILED_JOBS": "Ninguna de las tareas seleccionadas ha fallado."
         }
     }
 }
