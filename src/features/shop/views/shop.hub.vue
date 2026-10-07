@@ -143,14 +143,29 @@
 
         <!-- Kennzahlen -->
         <h2 v-if="status" class="text-subtitle-1 font-weight-medium mb-2">{{ t('ShopView.sections.figures') }}</h2>
+        <!-- Je Verkaufskanal eine Karte: angebotene Artikel, bei HugoShops dazu
+             Warenkörbe und Kundenanmeldungen -->
         <v-row v-if="status" class="mb-2">
-            <v-col cols="12" sm="4" v-for="kachel in kennzahlen" :key="kachel.key">
-                <v-card variant="tonal" density="compact">
-                    <v-card-text class="d-flex align-center ga-3">
-                        <v-icon size="32" :icon="kachel.icon" />
-                        <div>
-                            <div class="text-h6">{{ kachel.wert }}</div>
-                            <div class="text-caption">{{ kachel.titel }}</div>
+            <v-col cols="12" sm="6" md="4" v-for="kanal in kennzahlen" :key="kanal.key">
+                <!-- Klick öffnet den Kanal in der Ansicht „Verkaufskanäle“ — nur mit
+                     dem Recht, das sie verlangt -->
+                <v-card
+                    variant="tonal"
+                    density="compact"
+                    class="fill-height"
+                    :link="darfKanaele"
+                    :to="darfKanaele ? { name: 'shop-channels', query: { channel: kanal.channel_id } } : undefined"
+                >
+                    <v-card-item class="pb-0">
+                        <template #prepend>
+                            <v-icon :icon="kanal.icon" />
+                        </template>
+                        <v-card-title class="text-subtitle-1">{{ kanal.name }}</v-card-title>
+                    </v-card-item>
+                    <v-card-text class="d-flex flex-wrap ga-6">
+                        <div v-for="zahl in kanal.zahlen" :key="zahl.key">
+                            <div class="text-h6">{{ zahl.wert }}</div>
+                            <div class="text-caption">{{ zahl.titel }}</div>
                         </div>
                     </v-card-text>
                 </v-card>
@@ -622,37 +637,37 @@ function zeitpunkt(wert) {
  * Feldnamen stehen bereits unter crm_fields (shopPublicKey), weil der
  * Einstellungen-Tab sie braucht. Hier wird nur umgeschrieben.
  *
- * Nicht jeder gemeldete Punkt ist eine Einstellung — 'parts_ext' etwa meint
- * fehlende Artikelangaben. Für solche bleibt der Schlüssel stehen, statt eine
- * leere Zeile zu zeigen.
+ * Nicht jeder gemeldete Punkt ist eine Einstellung — no_parts_offered etwa
+ * meint einen Kanal ohne angebotene Artikel. Solche Punkte stehen unter
+ * ShopView.status.points. Ist ein Schlüssel nirgends übersetzt, bleibt er
+ * stehen, statt eine leere Zeile zu zeigen.
  */
 function feldName(schluessel) {
+    const eigener = `ShopView.status.points.${schluessel}`
+    if (te(eigener)) return t(eigener)
     const key = 'crm_fields.' + schluessel.replace(/_([a-z])/g, (_, z) => z.toUpperCase())
     return te(key) ? t(key) : schluessel
 }
 
+/** Ansicht „Verkaufskanäle“ verlangt edit_shop_config — ohne das Recht kein Klick auf die Kennzahlen */
+const darfKanaele = computed(() => oserp.checkPermission('edit_shop_config'))
+
 const kennzahlen = computed(() => {
     if (!status.value) return []
-    return [
-        {
-            key: 'parts',
-            icon: 'mdi-tag-multiple',
-            wert: status.value.counts.parts_with_shop_data,
-            titel: t('ShopView.status.partsWithShopData'),
-        },
-        {
-            key: 'carts',
-            icon: 'mdi-cart-outline',
-            wert: status.value.counts.carts,
-            titel: t('ShopView.status.carts'),
-        },
-        {
-            key: 'sessions',
-            icon: 'mdi-account-clock-outline',
-            wert: status.value.counts.sessions,
-            titel: t('ShopView.status.sessions'),
-        },
-    ]
+    return (status.value.counts.channels || []).map(kanal => ({
+        key: `kanal-${kanal.channel_id}`,
+        channel_id: kanal.channel_id,
+        name: kanal.name,
+        icon: kanal.type === 'ebay' ? 'mdi-shopping-outline' : 'mdi-storefront-outline',
+        zahlen: [
+            { key: 'parts', wert: kanal.parts, titel: t('ShopView.status.partsOffered') },
+            // Warenkörbe und Kundenanmeldungen gibt es nur im HugoShop
+            ...(kanal.type === 'hugoshop' ? [
+                { key: 'carts', wert: kanal.carts, titel: t('ShopView.status.carts') },
+                { key: 'logins', wert: kanal.logins, titel: t('ShopView.status.logins') },
+            ] : []),
+        ],
+    }))
 })
 
 const ziele = computed(() => [

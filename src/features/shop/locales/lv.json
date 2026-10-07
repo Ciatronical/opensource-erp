@@ -21,12 +21,15 @@
             "shippingMissing": "Nav iestatīts neviens piegādes veids: pasūtījumi tiek apstrādāti kā “Standard” bez piegādes izmaksām.",
             "hintsAll": "Šie dati vēl trūkst un attiecas uz visiem pārdošanas kanāliem:",
             "hintsChannel": "Pārdošanas kanāls “{name}” darbojas, bet ierobežoti — vēl trūkst:",
-            "partsWithShopData": "Preces ar veikala datiem",
+            "partsOffered": "Piedāvātās preces",
             "carts": "Grozi",
-            "sessions": "Sesijas",
+            "logins": "Klientu pieteikšanās",
             "recommendations": "Ieteikumi:",
             "recommendation": {
                 "channel_round_99_net": "Noapaļošana līdz ,99 ir ieslēgta, bet pārdošanas cenas ir saglabātas bez PVN. Ar cenām ar PVN grozs un rēķins vienmēr sakrīt līdz centam."
+            },
+            "points": {
+                "no_parts_offered": "Netiek piedāvāta neviena prece"
             }
         },
         "sections": {

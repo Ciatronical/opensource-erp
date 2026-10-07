@@ -21,12 +21,15 @@
             "shippingMissing": "No shipping method is set up: orders are processed as “Standard” without shipping costs.",
             "hintsAll": "These settings are still missing and affect all sales channels:",
             "hintsChannel": "Sales channel “{name}” is running with limitations — still missing:",
-            "partsWithShopData": "Products with shop data",
+            "partsOffered": "Items offered",
             "carts": "Carts",
-            "sessions": "Sessions",
+            "logins": "Customer logins",
             "recommendations": "Recommendations:",
             "recommendation": {
                 "channel_round_99_net": "Rounding to .99 is enabled, but sales prices are stored net. With gross sales prices, cart and invoice always match to the cent."
+            },
+            "points": {
+                "no_parts_offered": "No item offered"
             }
         },
         "sections": {

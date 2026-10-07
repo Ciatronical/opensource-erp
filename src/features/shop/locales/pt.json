@@ -21,12 +21,15 @@
             "shippingMissing": "Não há nenhum método de envio configurado: as encomendas são processadas como «Standard» sem portes.",
             "hintsAll": "Estes dados ainda faltam e afetam todos os canais de venda:",
             "hintsChannel": "O canal de venda «{name}» funciona, mas com limitações — ainda falta:",
-            "partsWithShopData": "Artigos com dados de loja",
+            "partsOffered": "Artigos oferecidos",
             "carts": "Carrinhos",
-            "sessions": "Sessões",
+            "logins": "Inícios de sessão de clientes",
             "recommendations": "Recomendações:",
             "recommendation": {
                 "channel_round_99_net": "O arredondamento para ,99 está ativado, mas os preços de venda estão guardados em líquido. Com preços de venda brutos, o carrinho e a fatura coincidem sempre ao cêntimo."
+            },
+            "points": {
+                "no_parts_offered": "Nenhum artigo oferecido"
             }
         },
         "sections": {

@@ -21,12 +21,15 @@
             "shippingMissing": "Es ist keine Versandart eingerichtet: Bestellungen laufen als „Standard“ ohne Versandkosten.",
             "hintsAll": "Diese Angaben fehlen noch und betreffen alle Verkaufskanäle:",
             "hintsChannel": "Verkaufskanal „{name}“ läuft, aber eingeschränkt — es fehlt noch:",
-            "partsWithShopData": "Artikel mit Shop-Angaben",
+            "partsOffered": "Angebotene Artikel",
             "carts": "Warenkörbe",
-            "sessions": "Sitzungen",
+            "logins": "Kundenanmeldungen",
             "recommendations": "Empfehlungen:",
             "recommendation": {
                 "channel_round_99_net": "Die Rundung auf ,99 ist eingeschaltet, die Verkaufspreise sind aber netto hinterlegt. Mit Brutto-Verkaufspreisen stimmen Warenkorb und Rechnung immer auf den Cent überein."
+            },
+            "points": {
+                "no_parts_offered": "Kein Artikel angeboten"
             }
         },
         "sections": {

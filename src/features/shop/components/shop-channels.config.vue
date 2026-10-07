@@ -40,9 +40,10 @@
 
         <v-card
             v-for="kanal in kanaele"
+            :id="`kanal-${kanal.channel_id}`"
             :key="kanal.channel_id"
             variant="outlined"
-            class="my-3"
+            class="my-3 kanal-karte"
         >
             <v-card-item>
                 <template #prepend>
@@ -216,7 +217,7 @@
                 </v-row>
 
                 <!-- Einstellungen der Instanz: erst beim Aufklappen geladen -->
-                <v-expansion-panels variant="accordion" class="mt-4">
+                <v-expansion-panels v-model="einstellungenOffen[kanal.channel_id]" variant="accordion" class="mt-4">
                     <v-expansion-panel>
                         <v-expansion-panel-title>
                             <v-icon start size="small">mdi-cog-outline</v-icon>
@@ -305,7 +306,12 @@ const props = defineProps({
     taxIncluded: { type: [Boolean, String, Number], default: null },
     /** Überschrift „Verkaufskanäle" zeigen — in der eigenen Ansicht trägt sie die Seite */
     mitUeberschrift: { type: Boolean, default: true },
+    /** Kanal, der nach dem Laden geöffnet und angesprungen wird (Kennzahlen der Übersicht) */
+    fokus: { type: Number, default: 0 },
 })
+
+/** Aufgeklappte Einstellungen je Kanal (channel_id → 0 = offen) */
+const einstellungenOffen = ref({})
 
 const i18n = useI18n()
 const { t, te } = i18n
@@ -457,7 +463,28 @@ async function laden() {
     // Laden für eine Eingabe
     await nextTick()
     bereit = true
+    kanalOeffnen(props.fokus)
 }
+
+/**
+ * Öffnet die Einstellungen eines Kanals und springt zu seiner Karte
+ *
+ * Gesprungen wird erst, wenn das Aufklappen fertig ist: vorher ist die Seite
+ * unter dem letzten Kanal zu kurz, der Browser hält dann zu früh an, und die
+ * Karte bleibt unten stehen. Den Abstand zur festen Kopfleiste hält
+ * scroll-margin-top (.kanal-karte).
+ */
+async function kanalOeffnen(id) {
+    if (!id || !kanaele.value.some(k => k.channel_id === id)) return
+    einstellungenOffen.value = { ...einstellungenOffen.value, [id]: 0 }
+    await nextTick()
+    setTimeout(() => {
+        document.getElementById(`kanal-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, AUFKLAPPEN_MS)
+}
+
+/** Dauer des Aufklappens bei Vuetify-Panels (Übergang 0,3 s) und etwas Luft */
+const AUFKLAPPEN_MS = 350
 
 async function speichern(kanal) {
     const daten = nutzdaten(kanal)
@@ -586,3 +613,10 @@ onBeforeUnmount(() => {
     })
 })
 </script>
+
+<style scoped>
+/* Abstand zur festen Kopfleiste beim Anspringen eines Kanals (kanalOeffnen) */
+.kanal-karte {
+    scroll-margin-top: 72px;
+}
+</style>

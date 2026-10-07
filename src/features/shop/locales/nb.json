@@ -21,12 +21,15 @@
             "shippingMissing": "Ingen fraktmåte er satt opp: bestillinger behandles som «Standard» uten fraktkostnader.",
             "hintsAll": "Disse opplysningene mangler fortsatt og gjelder alle salgskanaler:",
             "hintsChannel": "Salgskanalen «{name}» kjører, men begrenset — mangler fortsatt:",
-            "partsWithShopData": "Varer med butikkdata",
+            "partsOffered": "Tilbudte varer",
             "carts": "Handlekurver",
-            "sessions": "Økter",
+            "logins": "Kundepålogginger",
             "recommendations": "Anbefalinger:",
             "recommendation": {
                 "channel_round_99_net": "Avrunding til ,99 er slått på, men salgsprisene er lagret netto. Med bruttosalgspriser stemmer handlekurv og faktura alltid på øret."
+            },
+            "points": {
+                "no_parts_offered": "Ingen varer tilbys"
             }
         },
         "sections": {

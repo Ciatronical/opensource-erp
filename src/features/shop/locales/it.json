@@ -21,12 +21,15 @@
             "shippingMissing": "Nessun metodo di spedizione configurato: gli ordini vengono gestiti come «Standard» senza spese di spedizione.",
             "hintsAll": "Questi dati mancano ancora e riguardano tutti i canali di vendita:",
             "hintsChannel": "Il canale di vendita «{name}» funziona, ma con limitazioni — manca ancora:",
-            "partsWithShopData": "Articoli con dati del negozio",
+            "partsOffered": "Articoli offerti",
             "carts": "Carrelli",
-            "sessions": "Sessioni",
+            "logins": "Accessi clienti",
             "recommendations": "Consigli:",
             "recommendation": {
                 "channel_round_99_net": "L'arrotondamento a ,99 è attivo, ma i prezzi di vendita sono salvati al netto. Con prezzi di vendita lordi, carrello e fattura coincidono sempre al centesimo."
+            },
+            "points": {
+                "no_parts_offered": "Nessun articolo offerto"
             }
         },
         "sections": {

@@ -21,12 +21,15 @@
             "shippingMissing": "No hay ningún método de envío configurado: los pedidos se tramitan como «Standard» sin gastos de envío.",
             "hintsAll": "Faltan estos datos, que afectan a todos los canales de venta:",
             "hintsChannel": "El canal de venta «{name}» funciona, pero con limitaciones; todavía falta:",
-            "partsWithShopData": "Artículos con datos de tienda",
+            "partsOffered": "Artículos ofrecidos",
             "carts": "Cestas",
-            "sessions": "Sesiones",
+            "logins": "Inicios de sesión de clientes",
             "recommendations": "Recomendaciones:",
             "recommendation": {
                 "channel_round_99_net": "El redondeo a ,99 está activado, pero los precios de venta están guardados en neto. Con precios de venta brutos, el carrito y la factura siempre coinciden al céntimo."
+            },
+            "points": {
+                "no_parts_offered": "Ningún artículo ofrecido"
             }
         },
         "sections": {

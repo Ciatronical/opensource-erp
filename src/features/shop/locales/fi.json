@@ -21,12 +21,15 @@
             "shippingMissing": "Toimitustapaa ei ole määritetty: tilaukset käsitellään nimellä ”Standard” ilman toimituskuluja.",
             "hintsAll": "Nämä tiedot puuttuvat vielä ja koskevat kaikkia myyntikanavia:",
             "hintsChannel": "Myyntikanava ”{name}” toimii, mutta rajoitetusti — vielä puuttuu:",
-            "partsWithShopData": "Tuotteet, joilla on kauppatiedot",
+            "partsOffered": "Tarjotut tuotteet",
             "carts": "Ostoskorit",
-            "sessions": "Istunnot",
+            "logins": "Asiakkaiden kirjautumiset",
             "recommendations": "Suositukset:",
             "recommendation": {
                 "channel_round_99_net": "Pyöristys ,99:ään on käytössä, mutta myyntihinnat on tallennettu netto. Bruttomyyntihinnoilla ostoskori ja lasku täsmäävät aina sentilleen."
+            },
+            "points": {
+                "no_parts_offered": "Ei tarjottuja tuotteita"
             }
         },
         "sections": {

@@ -21,12 +21,15 @@
             "shippingMissing": "Nie skonfigurowano żadnej metody wysyłki: zamówienia są realizowane jako „Standard” bez kosztów wysyłki.",
             "hintsAll": "Tych danych jeszcze brakuje; dotyczą wszystkich kanałów sprzedaży:",
             "hintsChannel": "Kanał sprzedaży „{name}” działa, ale z ograniczeniami — nadal brakuje:",
-            "partsWithShopData": "Artykuły z danymi sklepu",
+            "partsOffered": "Oferowane artykuły",
             "carts": "Koszyki",
-            "sessions": "Sesje",
+            "logins": "Logowania klientów",
             "recommendations": "Zalecenia:",
             "recommendation": {
                 "channel_round_99_net": "Zaokrąglanie do ,99 jest włączone, ale ceny sprzedaży są zapisane netto. Przy cenach brutto koszyk i faktura zawsze zgadzają się co do grosza."
+            },
+            "points": {
+                "no_parts_offered": "Brak oferowanych artykułów"
             }
         },
         "sections": {

@@ -21,12 +21,15 @@
             "shippingMissing": "Nu este configurată nicio metodă de livrare: comenzile sunt procesate ca „Standard” fără costuri de livrare.",
             "hintsAll": "Aceste date lipsesc încă și privesc toate canalele de vânzare:",
             "hintsChannel": "Canalul de vânzare „{name}” funcționează, dar limitat — încă lipsește:",
-            "partsWithShopData": "Articole cu date de magazin",
+            "partsOffered": "Articole oferite",
             "carts": "Coșuri",
-            "sessions": "Sesiuni",
+            "logins": "Autentificări clienți",
             "recommendations": "Recomandări:",
             "recommendation": {
                 "channel_round_99_net": "Rotunjirea la ,99 este activată, dar prețurile de vânzare sunt salvate net. Cu prețuri de vânzare brute, coșul și factura coincid întotdeauna la ban."
+            },
+            "points": {
+                "no_parts_offered": "Niciun articol oferit"
             }
         },
         "sections": {

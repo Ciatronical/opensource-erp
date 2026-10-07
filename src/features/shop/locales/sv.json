@@ -21,12 +21,15 @@
             "shippingMissing": "Inget fraktsätt är inrättat: beställningar hanteras som ”Standard” utan fraktkostnader.",
             "hintsAll": "Dessa uppgifter saknas fortfarande och gäller alla försäljningskanaler:",
             "hintsChannel": "Försäljningskanalen ”{name}” fungerar, men begränsat — saknas fortfarande:",
-            "partsWithShopData": "Artiklar med butiksuppgifter",
+            "partsOffered": "Erbjudna artiklar",
             "carts": "Varukorgar",
-            "sessions": "Sessioner",
+            "logins": "Kundinloggningar",
             "recommendations": "Rekommendationer:",
             "recommendation": {
                 "channel_round_99_net": "Avrundning till ,99 är påslagen, men försäljningspriserna är sparade netto. Med bruttopriser stämmer varukorg och faktura alltid på öret."
+            },
+            "points": {
+                "no_parts_offered": "Inga artiklar erbjuds"
             }
         },
         "sections": {

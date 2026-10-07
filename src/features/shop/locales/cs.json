@@ -21,12 +21,15 @@
             "shippingMissing": "Není nastaven žádný způsob dopravy: objednávky probíhají jako „Standard“ bez nákladů na dopravu.",
             "hintsAll": "Tyto údaje ještě chybí a týkají se všech prodejních kanálů:",
             "hintsChannel": "Prodejní kanál „{name}“ běží, ale omezeně — ještě chybí:",
-            "partsWithShopData": "Položky s údaji pro obchod",
+            "partsOffered": "Nabízené položky",
             "carts": "Košíky",
-            "sessions": "Relace",
+            "logins": "Přihlášení zákazníků",
             "recommendations": "Doporučení:",
             "recommendation": {
                 "channel_round_99_net": "Zaokrouhlení na ,99 je zapnuté, ale prodejní ceny jsou uloženy bez DPH. S cenami s DPH se košík a faktura vždy shodují na haléř."
+            },
+            "points": {
+                "no_parts_offered": "Žádná nabízená položka"
             }
         },
         "sections": {

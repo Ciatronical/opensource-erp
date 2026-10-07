@@ -21,12 +21,15 @@
             "shippingMissing": "Aucun mode d'expédition n'est configuré : les commandes sont traitées comme « Standard » sans frais de port.",
             "hintsAll": "Ces informations manquent encore et concernent tous les canaux de vente :",
             "hintsChannel": "Le canal de vente « {name} » fonctionne, mais de façon limitée — il manque encore :",
-            "partsWithShopData": "Articles avec données boutique",
+            "partsOffered": "Articles proposés",
             "carts": "Paniers",
-            "sessions": "Sessions",
+            "logins": "Connexions clients",
             "recommendations": "Recommandations :",
             "recommendation": {
                 "channel_round_99_net": "L'arrondi à ,99 est activé, mais les prix de vente sont enregistrés HT. Avec des prix de vente TTC, le panier et la facture concordent toujours au centime près."
+            },
+            "points": {
+                "no_parts_offered": "Aucun article proposé"
             }
         },
         "sections": {

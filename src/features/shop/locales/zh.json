@@ -21,12 +21,15 @@
             "shippingMissing": "尚未设置任何配送方式：订单将按“Standard”处理，不收取运费。",
             "hintsAll": "以下信息仍缺失，影响所有销售渠道：",
             "hintsChannel": "销售渠道“{name}”可运行，但受限——仍缺少：",
-            "partsWithShopData": "含商店信息的商品",
+            "partsOffered": "已上架物料",
             "carts": "购物车",
-            "sessions": "会话",
+            "logins": "客户登录",
             "recommendations": "建议：",
             "recommendation": {
                 "channel_round_99_net": "已启用 ,99 取整，但销售价格以净价保存。使用含税销售价格时，购物车和发票始终精确到分一致。"
+            },
+            "points": {
+                "no_parts_offered": "没有上架任何物料"
             }
         },
         "sections": {

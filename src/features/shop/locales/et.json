@@ -21,12 +21,15 @@
             "shippingMissing": "Ühtegi tarneviisi pole seadistatud: tellimused töödeldakse kui „Standard“ ilma saatmiskuludeta.",
             "hintsAll": "Need andmed puuduvad veel ja puudutavad kõiki müügikanaleid:",
             "hintsChannel": "Müügikanal „{name}“ töötab, kuid piiratult — veel puudub:",
-            "partsWithShopData": "Poeandmetega artiklid",
+            "partsOffered": "Pakutavad artiklid",
             "carts": "Ostukorvid",
-            "sessions": "Seansid",
+            "logins": "Klientide sisselogimised",
             "recommendations": "Soovitused:",
             "recommendation": {
                 "channel_round_99_net": "Ümardamine ,99-ni on sisse lülitatud, kuid müügihinnad on salvestatud netona. Brutohindadega ühtivad ostukorv ja arve alati sendi täpsusega."
+            },
+            "points": {
+                "no_parts_offered": "Ühtegi artiklit ei pakuta"
             }
         },
         "sections": {

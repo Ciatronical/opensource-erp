@@ -21,12 +21,15 @@
             "shippingMissing": "Nenustatytas joks siuntimo būdas: užsakymai vykdomi kaip „Standard“ be siuntimo išlaidų.",
             "hintsAll": "Šių duomenų dar trūksta, ir jie liečia visus pardavimo kanalus:",
             "hintsChannel": "Pardavimo kanalas „{name}“ veikia, bet ribotai — dar trūksta:",
-            "partsWithShopData": "Prekės su parduotuvės duomenimis",
+            "partsOffered": "Siūlomos prekės",
             "carts": "Krepšeliai",
-            "sessions": "Seansai",
+            "logins": "Klientų prisijungimai",
             "recommendations": "Rekomendacijos:",
             "recommendation": {
                 "channel_round_99_net": "Apvalinimas iki ,99 įjungtas, bet pardavimo kainos saugomos be PVM. Su kainomis su PVM krepšelis ir sąskaita visada sutampa iki cento."
+            },
+            "points": {
+                "no_parts_offered": "Nesiūloma jokia prekė"
             }
         },
         "sections": {

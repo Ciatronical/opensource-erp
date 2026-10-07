@@ -33,20 +33,22 @@
             {{ t('ShopView.errors.NO_PERMISSION') }}
         </v-alert>
 
-        <ShopChannelsConfig v-else :mit-ueberschrift="false" />
+        <!-- ?channel=… (Kennzahlen der Übersicht): diesen Kanal öffnen -->
+        <ShopChannelsConfig v-else :mit-ueberschrift="false" :fokus="Number(route.query.channel) || 0" />
     </v-container>
 </template>
 
 <script setup>
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
 import ShopChannelsConfig from '../components/shop-channels.config.vue'
 import { oserpStore } from '@/core/stores/oserp.store.js'
 
 const { t } = useI18n()
 const router = useRouter()
+const route = useRoute()
 const oserp = oserpStore()
 
 /** Ohne das Recht lehnt die Kanal-API ab — die Seite sagt es gleich */

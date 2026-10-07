@@ -39,17 +39,26 @@ function getShopStatus($data) {
             (SELECT COUNT(*) FROM chart WHERE description ILIKE :forderungskonto) > 0 AS forderungskonto,
             (SELECT COUNT(*) FROM tax_zones WHERE description ILIKE :taxzone) > 0 AS taxzone,
             (SELECT COUNT(*) FROM currencies WHERE name ILIKE :currency) > 0 AS currency,
-            (SELECT COUNT(DISTINCT pc.parts_id) FROM parts_channel_shop pc
-               JOIN sales_channel_shop hc ON hc.id = pc.channel_id AND hc.active AND hc.type = 'hugoshop'
-              WHERE pc.active) AS artikel_mit_shopdaten,
+            -- Eingeschaltete Kanäle mit ihren Kennzahlen: angebotene Artikel,
+            -- dazu Warenkörbe und Kundenanmeldungen (nur HugoShops haben welche)
+            (SELECT COALESCE(json_agg(json_build_object(
+                        'id', c.id, 'type', c.type, 'name', c.name,
+                        'parts', (SELECT COUNT(*) FROM parts_channel_shop pc
+                                   WHERE pc.channel_id = c.id AND pc.active),
+                        'carts', (SELECT COUNT(*) FROM carts_hugoshop k WHERE k.channel_id = c.id),
+                        -- Kundenanmeldungen: Sitzungen mit Kundenkonto. Eine Sitzung
+                        -- entsteht für jeden Besucher; Gäste haben kein Konto
+                        'logins', (SELECT COUNT(*) FROM context_hugoshop x
+                                     JOIN customer_ext ce ON ce.customer_id = x.customer_id
+                                    WHERE x.channel_id = c.id AND NOT ce.hugoshop_guest))
+                        ORDER BY c.sortkey NULLS LAST, c.id), '[]')
+               FROM sales_channel_shop c WHERE c.active) AS kanaele,
             EXISTS (SELECT 1 FROM sales_channel_shop WHERE active AND round_99) AS rundung_99,
             EXISTS (SELECT 1 FROM sales_channel_shop WHERE type = 'hugoshop' AND active) AS hugoshop_an,
             EXISTS (SELECT 1 FROM sales_channel_shop WHERE type = 'ebay' AND active) AS ebay_an,
             EXISTS (SELECT 1 FROM bin
                      WHERE id::text = btrim((SELECT value FROM defaults_oserp
-                                              WHERE key = 'shop_stock_bin_id'))) AS lagerplatz,
-            (SELECT COUNT(*) FROM context_hugoshop) AS sitzungen,
-            (SELECT COUNT(*) FROM carts_hugoshop) AS warenkoerbe",
+                                              WHERE key = 'shop_stock_bin_id'))) AS lagerplatz",
         [
             ':kontakt'         => shopConfigValue($db, 'shop_contact_login'),
             ':forderungskonto' => '%'.shopConfigValue($db, 'shop_target_account').'%',
@@ -80,17 +89,12 @@ function getShopStatus($data) {
     if ('' === shopConfigValue($db, 'shop_payment_iban')) {
         $hinweise[] = 'shop_payment_iban';
     }
-    if (0 == (int)$stand['artikel_mit_shopdaten']) {
-        $hinweise[] = 'parts_ext';
-    }
 
     // Je eingeschaltetem Kanal seine Einstellungen (dev/shop-mehrere-kanaele.md).
     // Die Schlüssel bleiben die bisherigen Feldnamen — die Übersicht übersetzt
     // sie und zeigt sie unter dem Namen des Kanals (blocking_channels,
     // hint_channels).
-    $kanaele = $db->getAll(
-        "SELECT id, type, name FROM sales_channel_shop WHERE active ORDER BY sortkey NULLS LAST, id"
-    ) ?: [];
+    $kanaele = json_decode((string)($stand['kanaele'] ?? '[]'), true) ?: [];
     $hugoshops = array_values(array_filter($kanaele, fn($k) => 'hugoshop' === $k['type']));
     $veroeffentlichung = [];
     $programm = null;
@@ -107,7 +111,7 @@ function getShopStatus($data) {
         $id = (int)$kanal['id'];
         $leer = fn(string $key) => '' === shopChannelValue($db, $id, $key);
         $fehlt = $mandantFehlt;
-        $hin = [];
+        $hin = 0 === (int)$kanal['parts'] ? ['no_parts_offered'] : [];
         $probleme = [];
 
         if ($leer('public_key')) {
@@ -185,7 +189,7 @@ function getShopStatus($data) {
     foreach (array_filter($kanaele, fn($k) => 'ebay' === $k['type']) as $kanal) {
         $ebay = function_exists('shopEbayConfig') ? shopEbayConfig($db, (int)$kanal['id']) : [];
         $leer = fn(string $key) => '' === trim((string)($ebay[$key] ?? ''));
-        $hin = [];
+        $hin = 0 === (int)$kanal['parts'] ? ['no_parts_offered'] : [];
         foreach ([
             'ebay_client_id'          => $leer('client_id') || $leer('client_secret') || $leer('refresh_token'),
             'ebay_public_host'        => $leer('public_host'),
@@ -234,10 +238,14 @@ function getShopStatus($data) {
         'hint_channels' => $kanalHinweise,
         'recommendations' => $empfehlungen,
         'publish_problems' => $veroeffentlichung,
+        // Kennzahlen je eingeschaltetem Kanal: angebotene Artikel; Warenkörbe
+        // und Kundenanmeldungen bei HugoShops
         'counts'    => [
-            'parts_with_shop_data' => (int)$stand['artikel_mit_shopdaten'],
-            'sessions'             => (int)$stand['sitzungen'],
-            'carts'                => (int)$stand['warenkoerbe'],
+            'channels' => array_map(fn($k) => [
+                'channel_id' => (int)$k['id'], 'type' => (string)$k['type'],
+                'name' => (string)$k['name'], 'parts' => (int)$k['parts'],
+                'carts' => (int)$k['carts'], 'logins' => (int)$k['logins'],
+            ], $kanaele),
         ],
     ]);
 }

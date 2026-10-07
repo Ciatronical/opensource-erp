@@ -21,12 +21,15 @@
             "shippingMissing": "Hiçbir gönderim yöntemi ayarlanmamış: siparişler kargo ücreti olmadan „Standard“ olarak işlenir.",
             "hintsAll": "Bu bilgiler hâlâ eksik ve tüm satış kanallarını etkiliyor:",
             "hintsChannel": "„{name}“ satış kanalı çalışıyor, ancak kısıtlı — hâlâ eksik:",
-            "partsWithShopData": "Mağaza bilgisi olan ürünler",
+            "partsOffered": "Sunulan ürünler",
             "carts": "Sepetler",
-            "sessions": "Oturumlar",
+            "logins": "Müşteri girişleri",
             "recommendations": "Öneriler:",
             "recommendation": {
                 "channel_round_99_net": "Yuvarlama ,99 etkin, ancak satış fiyatları net olarak kayıtlı. Brüt satış fiyatlarıyla sepet ve fatura her zaman kuruşu kuruşuna eşleşir."
+            },
+            "points": {
+                "no_parts_offered": "Sunulan ürün yok"
             }
         },
         "sections": {

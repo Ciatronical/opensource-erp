@@ -21,12 +21,15 @@
             "shippingMissing": "Er is geen verzendmethode ingesteld: bestellingen worden verwerkt als „Standard” zonder verzendkosten.",
             "hintsAll": "Deze gegevens ontbreken nog en gelden voor alle verkoopkanalen:",
             "hintsChannel": "Verkoopkanaal „{name}” werkt, maar beperkt — er ontbreekt nog:",
-            "partsWithShopData": "Artikelen met winkelgegevens",
+            "partsOffered": "Aangeboden artikelen",
             "carts": "Winkelwagens",
-            "sessions": "Sessies",
+            "logins": "Klantaanmeldingen",
             "recommendations": "Aanbevelingen:",
             "recommendation": {
                 "channel_round_99_net": "Afronden op ,99 is ingeschakeld, maar de verkoopprijzen zijn netto opgeslagen. Met bruto verkoopprijzen komen winkelwagen en factuur altijd op de cent overeen."
+            },
+            "points": {
+                "no_parts_offered": "Geen artikel aangeboden"
             }
         },
         "sections": {
