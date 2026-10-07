@@ -62,8 +62,6 @@ function systemSettingsSchema(): array {
             'debug'                     => ['type' => 'bool'],
             'templates_dir'             => ['type' => 'text', 'const' => 'OSERP_TEMPLATES_DIR_NAME'],
             'backup_dir'                => ['type' => 'path', 'const' => 'BACKUP_BASE_DIR'],
-            'shop_sites_dir'            => ['type' => 'path', 'const' => 'OSERP_SHOP_SITES_DIR'],
-            'shop_publish_command_path' => ['type' => 'path', 'const' => 'OSERP_SHOP_PUBLISH_COMMAND_PATH', 'select' => 'file'],
             'browse_roots'              => ['type' => 'text', 'const' => 'OSERP_BROWSE_ROOTS'],
         ],
         'telephony' => [

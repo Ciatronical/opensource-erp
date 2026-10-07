@@ -55,9 +55,7 @@
                 "timezone": "Tidszon för alla tidsstämplar",
                 "debug": "Utförlig loggning, avstängd i drift",
                 "templates_dir": "Utskrifts- och butiksmallar, relativa sökvägar börjar i backend/",
-                "backup_dir": "Mål för databasens säkerhetskopior",
-                "shop_sites_dir": "Gräns för butikswebbplatsernas kataloger",
-                "shop_publish_command_path": "Katalog med programmet hugo, reserv för butiksinställningen"
+                "backup_dir": "Mål för databasens säkerhetskopior"
             },
             "telephony": {
                 "monitor_dir": "Katalog för samtalsinspelningar"

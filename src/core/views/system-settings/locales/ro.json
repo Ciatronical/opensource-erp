@@ -55,9 +55,7 @@
                 "timezone": "Fusul orar pentru toate marcajele de timp",
                 "debug": "Jurnal detaliat, dezactivat în producție",
                 "templates_dir": "Șabloane de tipărire și magazin, căile relative pornesc din backend/",
-                "backup_dir": "Destinația copiilor de siguranță ale bazei de date",
-                "shop_sites_dir": "Limită pentru directoarele site-urilor magazinului",
-                "shop_publish_command_path": "Directorul cu programul hugo, alternativă pentru setarea magazinului"
+                "backup_dir": "Destinația copiilor de siguranță ale bazei de date"
             },
             "telephony": {
                 "monitor_dir": "Directorul înregistrărilor apelurilor"

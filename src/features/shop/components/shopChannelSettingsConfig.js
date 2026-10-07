@@ -32,23 +32,10 @@ const hugoshop = [
 
     { name: "backend_url", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopBackendUrl", tooltip: "crm_fields.shopBackendUrl_help" },
     { name: "template_set", type: "dynamic-select", source: "shopTemplateSets", itemTitle: "title", itemValue: "name", fieldstyle: "max-width: 60ch", label: "crm_fields.shopTemplateSet", tooltip: "crm_fields.shopTemplateSet_help" },
-    // lokal: OSERP schreibt in die Webseite und baut selbst; HugoCMS: Übertragung
-    // an HugoCMS, Bau dort — dann gelten die Verzeichnisfelder nicht
-    {
-        name: "publish_mode", type: "select", fieldstyle: "max-width: 45ch",
-        items: [
-            { title: "crm_fields.shopPublishModeLocal", value: "local" },
-            { title: "crm_fields.shopPublishModeHugoCms", value: "hugocms" },
-        ],
-        label: "crm_fields.shopPublishMode", tooltip: "crm_fields.shopPublishMode_help"
-    },
-    // Relativ zur Wurzel aller Webseiten (Reiter „Shop"); jeder HugoShop braucht
-    // sein eigenes Verzeichnis
-    { name: "site_dir", type: "input", size: 60, fieldstyle: "max-width: 60ch", validate: "relativePath", browse: "sites", label: "crm_fields.shopSiteDir", tooltip: "crm_fields.shopSiteDir_help" },
-    { name: "content_dir", type: "input", size: 60, fieldstyle: "max-width: 60ch", validate: "relativePath", browse: "site", label: "crm_fields.shopContentDir", tooltip: "crm_fields.shopContentDir_help" },
-    { name: "images_dir", type: "input", size: 60, fieldstyle: "max-width: 60ch", validate: "relativePath", browse: "site", label: "crm_fields.shopImagesDir", tooltip: "crm_fields.shopImagesDir_help" },
-    { name: "thumbnails_dir", type: "input", size: 60, fieldstyle: "max-width: 60ch", validate: "relativePath", browse: "site", label: "crm_fields.shopThumbnailsDir", tooltip: "crm_fields.shopThumbnailsDir_help" },
-    { name: "publish_clean_destination", type: "checkbox", label: "crm_fields.shopPublishCleanDestination", tooltip: "crm_fields.shopPublishCleanDestination_help" },
+    // Veröffentlicht wird immer über HugoCMS (2026-10-07): OSERP schreibt in
+    // die Bereitstellung, überträgt an HugoCMS und lässt dort bauen.
+    // content_dir: Ziel der Produktseiten in der Webseite, relativ
+    { name: "content_dir", type: "input", size: 60, fieldstyle: "max-width: 60ch", validate: "relativePath", label: "crm_fields.shopContentDir", tooltip: "crm_fields.shopContentDir_help" },
     // Seiten bei Preisänderungen automatisch neu schreiben (V22) und was beim
     // Abschalten des HugoShops mit den Seiten geschieht (V16)
     { name: "auto_publish", type: "checkbox", label: "crm_fields.shopAutoPublish", tooltip: "crm_fields.shopAutoPublish_help" },

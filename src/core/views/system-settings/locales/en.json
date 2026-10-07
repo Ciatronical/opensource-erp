@@ -55,9 +55,7 @@
                 "timezone": "Time zone for all timestamps",
                 "debug": "Verbose logging, off in production",
                 "templates_dir": "Print and shop templates, relative paths start at backend/",
-                "backup_dir": "Target of the database backups",
-                "shop_sites_dir": "Limit for the directories of the shop websites",
-                "shop_publish_command_path": "Directory containing the program hugo, fallback for the shop setting"
+                "backup_dir": "Target of the database backups"
             },
             "telephony": {
                 "monitor_dir": "Directory of call recordings"

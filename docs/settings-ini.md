@@ -113,8 +113,6 @@ Die Datenbanken der Mandanten stehen **nicht** hier, sondern in `auth.clients`.
 | `debug` | `false` | Ausführliches Protokoll; im Betrieb aus |
 | `templates_dir` | `templates` | Druck- und Shop-Vorlagen. Relative Pfade gelten ab `backend/`, also `backend/templates` |
 | `backup_dir` | `backups/` im Wurzelverzeichnis | Ziel der Datenbanksicherungen |
-| `shop_sites_dir` | leer | Grenze für die Shop-Webseiten, freiwillig — siehe unten |
-| `shop_publish_command_path` | leer | Verzeichnis, in dem `hugo` liegt — siehe unten |
 | `browse_roots` | leer | Einstiegspunkte der Verzeichnisauswahl — siehe unten |
 
 ### [telephony]
@@ -154,35 +152,12 @@ nicht mehr. Die Übersicht in der Benutzerverwaltung zeigt, über welche Regel
 der angemeldete Benutzer Administrator ist, und listet die Logins aus dieser
 Datei.
 
-## Die beiden Shop-Schlüssel
+## Shop-Erweiterung
 
-Sie fallen aus dem Rahmen, weil das Übrige der Shop-Erweiterung je Mandant in
-der Firmenkonfiguration steht.
-
-**`shop_publish_command_path`** ist das **Verzeichnis**, in dem das Programm
-liegt, das die Webseite baut — weder Dateiname noch Befehlszeile. Der Dateiname
-steht fest: `hugo`. Die Befehlszeile setzt die Erweiterung selbst zusammen:
-maskierter Pfad aus Verzeichnis und Name, bei Bedarf `--cleanDestinationDir`,
-ausgeführt im Verzeichnis der Webseite, Hugo schreibt dann nach `public/`.
-Vor jedem Bau prüft sie beides: absolut, ohne Leerraum, vorhandenes
-Verzeichnis, darin eine vorhandene und ausführbare Datei `hugo`.
-
-Derselbe Schlüssel steht auch in den Shop-Einstellungen des Mandanten, und
-**die gelten zuerst**. Der Eintrag hier ist Rückfall: Er greift nur, wenn die
-Shop-Einstellung leer ist, und erscheint dort als Vorgabe im leeren Feld —
-gespeichert wird er dabei nicht. Ein ungültiger Wert in der Shop-Einstellung
-ist ein Fehler, kein Anlass zum Rückfall. Ohne Eintrag hier und dort schreibt
-die Erweiterung nur Dateien und baut nicht. `--cleanDestinationDir` ist nur in
-den Shop-Einstellungen schaltbar.
-
-```ini
-shop_publish_command_path = "/var/www/hugoshops/dev.hugoshop.dev/hugo"
-```
-
-**`shop_sites_dir`** ist freiwillig und wirkt nur als Grenze. Wo die Webseite
-eines Mandanten liegt, steht in dessen Shop-Einstellungen — jede Firma hat ihre
-eigene. Ist hier ein Verzeichnis eingetragen, muss das eingestellte darunter
-liegen, sonst meldet die Erweiterung `SHOP_SITES_DIR_OUTSIDE_LIMIT`.
+Die Webseiten der Shop-Erweiterung liegen in HugoCMS und werden dort gebaut;
+Adresse und Schlüssel stehen je HugoShop in der Ansicht „Verkaufskanäle“. Die
+früheren Schlüssel `shop_sites_dir` und `shop_publish_command_path` gibt es
+seit 2026-10-07 nicht mehr — stehen sie noch hier, wirken sie nicht.
 
 Alles Weitere zum Shop: `dev/shop-betrieb.md`.
 
@@ -275,7 +250,6 @@ max_log_size = 10485760
 timezone = "Europe/Berlin"
 debug = false
 templates_dir = "templates"
-shop_publish_command_path = ""
 
 [company]
 admin_users = "admin"

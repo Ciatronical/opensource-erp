@@ -150,7 +150,7 @@ function shopChannelHugoshopRunJob($db, array $auftrag, callable $sagen, callabl
                 throw new ApiError($e->getId(), 'Artikel '.$auftrag['partnumber'].': '.$e->getMessage());
             }
             shopSiteTally($bilanz, $kanal, 'seiten');
-            $sagen('Seite geschrieben: '.basename($ergebnis['file']).' (Vorschaubild: '.$ergebnis['thumbnail'].')');
+            $sagen('Seite geschrieben: '.basename($ergebnis['file']));
             shopJobResult($db, $id, 'ok: '.basename($ergebnis['file']));
             break;
 
@@ -270,9 +270,6 @@ function shopChannelHugoshopRunJob($db, array $auftrag, callable $sagen, callabl
             // danach eingetragen wurden.
             if (SHOP_KIT_INSTALL === ($auftrag['param'] ?? null)) {
                 shopSiteTally($bilanz, $kanal, 'bauen');
-                foreach (shopKitSetupHints($db, $kanal) as $hinweis) {
-                    $sagen('Hinweis: '.$hinweis);
-                }
             }
             shopJobResult($db, $id, sprintf('ok: %d kopiert, %d entfernt', $kit['kopiert'], $kit['entfernt']));
             break;

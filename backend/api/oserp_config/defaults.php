@@ -253,13 +253,9 @@ function getDefaults($data) {
 
         // Vorgaben aus der settings.ini fuer Einstellungen, die dort als
         // Rueckfall stehen. Die Oberflaeche zeigt sie im leeren Feld an,
-        // gespeichert werden sie nicht: sie bleiben Rueckfall, solange in der
-        // Firmenkonfiguration nichts eingetragen ist.
+        // gespeichert werden sie nicht. Zur Zeit gibt es keine (die einzige,
+        // shop_publish_command_path, entfiel 2026-10-07).
         $vorgaben = [];
-        $programm = defined('OSERP_SHOP_PUBLISH_COMMAND_PATH') ? trim((string)OSERP_SHOP_PUBLISH_COMMAND_PATH) : '';
-        if ('' !== $programm) {
-            $vorgaben['shop_publish_command_path'] = $programm;
-        }
 
         resultInfo(true, '', ['results' => [
             'defaults' => $defaults,

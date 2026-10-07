@@ -89,10 +89,7 @@ function shopConfigLabel(string $key): string {
         'shop_paypal_live_secret'       => 'PayPal Secret (Echtbetrieb)',
         'shop_base_url'                 => 'Adresse der Shop-Webseite',
         'shop_withdrawal_mail_to'       => 'E-Mail-Adresse für Widerrufe',
-        'shop_sites_dir'                => 'Wurzelverzeichnis der Webseiten',
-        'shop_publish_command_path'     => 'Verzeichnis des Bau-Programms',
         'shop_job_retention_days'       => 'Erledigte Aufträge aufbewahren (Tage)',
-        'shop_publish_mode'             => 'Betriebsart der Veröffentlichung',
         'shop_hugocms_url'              => 'Adresse von HugoCMS',
         'shop_hugocms_key'              => 'Schlüssel für HugoCMS',
     ];

@@ -254,8 +254,6 @@ CREATE OR REPLACE FUNCTION shop_channel_default_settings(p_type text) RETURNS js
             'content_dir',                      'content/de/produkt',
             'downloads_link',                   '/downloads/%s',
             'template_set',                     'standard',
-            'publish_mode',                     'local',
-            'publish_clean_destination',        '1',
             'auto_publish',                     '1',
             'channel_off_pages',                'draft',
             'invoice_mail_subject',             'Ihre Rechnung (%s) vom %s',
@@ -1987,19 +1985,13 @@ UPDATE defaults_oserp z SET value = a.value, mtime = now()
    AND z.key = 'shop_paypal_live_secret' AND COALESCE(z.value, '') = '';
 DELETE FROM defaults_oserp WHERE key IN ('shop_paypal_client_id', 'shop_paypal_secret');
 
--- Veroeffentlichung: Wurzel aller Webseiten. Die Webseiten-Verzeichnisse der
--- HugoShops gelten relativ dazu und duerfen nicht darueber hinausfuehren.
--- Steht in der settings.ini ein shop_sites_dir, muss die eingestellte Wurzel
--- darunter liegen — so kann ein Administrator die Grenze ziehen.
---
--- Gebaut wird mit dem Programm hugo aus dem Verzeichnis
--- shop_publish_command_path. Eingetragen wird nur ein Pfad, keine
--- Befehlszeile: die Argumente setzt OpensourceERP selbst, und der Pfad wird
--- vor jedem Bau geprueft (absolut, ohne Leerraum, ausfuehrbare Datei). Ist der
--- Wert hier leer, gilt ein gleichnamiger Eintrag aus der settings.ini als
--- Rueckfall.
-INSERT INTO defaults_oserp (key, value) VALUES ('shop_sites_dir', '') ON CONFLICT (key) DO NOTHING;
-INSERT INTO defaults_oserp (key, value) VALUES ('shop_publish_command_path', '') ON CONFLICT (key) DO NOTHING;
+-- Veroeffentlichung (2026-10-07): Jeder HugoShop veröffentlicht über HugoCMS —
+-- OSERP schreibt in seine Bereitstellung unter backend/tmp/, überträgt an
+-- HugoCMS und lässt dort bauen. Die Betriebsart „lokal“ (OSERP schreibt in ein
+-- Verzeichnis auf diesem Server und baut selbst mit hugo) gibt es nicht mehr;
+-- mit ihr entfallen die Wurzel aller Webseiten und das Verzeichnis des
+-- Bau-Programms.
+DELETE FROM defaults_oserp WHERE key IN ('shop_sites_dir', 'shop_publish_command_path');
 -- shop_job_retention_days: Der Laeufer loescht erfolgreich erledigte Auftraege
 -- aus batchjob_hugoshop, sobald sie so viele Tage alt sind. 0 schaltet das ab;
 -- fehlgeschlagene Auftraege bleiben immer stehen.
@@ -2134,13 +2126,8 @@ RETURNS TABLE (type text, old_key text, key text, secret boolean)
         ('hugoshop', 'shop_thumbnails_link',                  'thumbnails_link',                  false),
         ('hugoshop', 'shop_downloads_link',                   'downloads_link',                   false),
         -- HugoShop: Veröffentlichung
-        ('hugoshop', 'shop_site_dir',                         'site_dir',                         false),
         ('hugoshop', 'shop_content_dir',                      'content_dir',                      false),
-        ('hugoshop', 'shop_images_dir',                       'images_dir',                       false),
-        ('hugoshop', 'shop_thumbnails_dir',                   'thumbnails_dir',                   false),
         ('hugoshop', 'shop_template_set',                     'template_set',                     false),
-        ('hugoshop', 'shop_publish_mode',                     'publish_mode',                     false),
-        ('hugoshop', 'shop_publish_clean_destination',        'publish_clean_destination',        false),
         ('hugoshop', 'shop_hugocms_url',                      'hugocms_url',                      false),
         ('hugoshop', 'shop_hugocms_key',                      'hugocms_key',                      true),
         ('hugoshop', 'shop_auto_publish',                     'auto_publish',                     false),
@@ -2220,6 +2207,20 @@ DELETE FROM sales_channel_secret_shop s
 DELETE FROM defaults_oserp
  WHERE key IN (SELECT old_key FROM shop_channel_setting_keys())
     OR key IN ('ebay_access_token', 'ebay_access_token_exp', 'ebay_order_last_check');
+
+-- Betriebsart „lokal“ entfallen (2026-10-07): ihre Einstellungen — im Kanal
+-- und, falls noch vorhanden, unter den alten Schlüsseln
+UPDATE sales_channel_shop
+   SET settings = settings - 'site_dir' - 'images_dir' - 'thumbnails_dir'
+                           - 'publish_mode' - 'publish_clean_destination'
+ WHERE type = 'hugoshop'
+   -- ohne den jsonb-Operator ?|: PDO hielte das Fragezeichen für einen Platzhalter
+   AND (settings ->> 'site_dir' IS NOT NULL OR settings ->> 'images_dir' IS NOT NULL
+        OR settings ->> 'thumbnails_dir' IS NOT NULL OR settings ->> 'publish_mode' IS NOT NULL
+        OR settings ->> 'publish_clean_destination' IS NOT NULL);
+DELETE FROM defaults_oserp
+ WHERE key IN ('shop_site_dir', 'shop_images_dir', 'shop_thumbnails_dir',
+               'shop_publish_mode', 'shop_publish_clean_destination');
 
 DROP TRIGGER IF EXISTS trigger_defaults_oserp_shop_channel_sync ON defaults_oserp;
 DROP FUNCTION IF EXISTS defaults_oserp_shop_channel_sync();

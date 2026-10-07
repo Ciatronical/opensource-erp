@@ -55,9 +55,7 @@
                 "timezone": "Tüm zaman damgaları için saat dilimi",
                 "debug": "Ayrıntılı günlük, üretimde kapalı",
                 "templates_dir": "Yazdırma ve mağaza şablonları, göreli yollar backend/ dizininden başlar",
-                "backup_dir": "Veritabanı yedeklerinin hedefi",
-                "shop_sites_dir": "Mağaza web sitelerinin dizinleri için sınır",
-                "shop_publish_command_path": "hugo programının bulunduğu dizin, mağaza ayarı için yedek"
+                "backup_dir": "Veritabanı yedeklerinin hedefi"
             },
             "telephony": {
                 "monitor_dir": "Görüşme kayıtları dizini"

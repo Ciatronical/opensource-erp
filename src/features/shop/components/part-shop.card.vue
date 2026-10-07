@@ -536,27 +536,6 @@
                                     </template>
                                 </v-col>
 
-                                <!-- HugoShop: Bilder eines Marktplatzes übernehmen — nur, wenn
-                                     OSERP die Webseite selbst beschreibt (V17) -->
-                                <v-col
-                                    v-if="kanal.type === 'hugoshop' && partsId && lokaleWebseite(kanal) && bildQuellen(kanal).length"
-                                    cols="12"
-                                    class="py-1"
-                                >
-                                    <v-btn
-                                        v-for="quelle in bildQuellen(kanal)"
-                                        :key="quelle.channel_id"
-                                        size="small"
-                                        variant="text"
-                                        prepend-icon="mdi-image-move"
-                                        :loading="bildLaedt"
-                                        :disabled="!darfBearbeiten"
-                                        @click="bilderUebernehmen(quelle, kanal)"
-                                    >
-                                        {{ t('ShopView.partCard.copyImagesFrom', { kanal: kanalName(quelle) }) }}
-                                    </v-btn>
-                                </v-col>
-
                                 <!-- HugoShop: ohne passende Versandart keine Seite -->
                                 <v-col v-if="kanal.type === 'hugoshop' && kanal.active && kanal.shipping_message" cols="12" class="py-1">
                                     <v-alert type="warning" variant="tonal" density="compact">
@@ -715,7 +694,6 @@ function alsKanal(zeile) {
         channel_id: Number(zeile.channel_id),
         type: String(zeile.type),
         name: String(zeile.name || ''),
-        publish_mode: String(zeile.publish_mode || 'local'),
         products_link: String(zeile.products_link || ''),
         thumbnails_link: String(zeile.thumbnails_link || ''),
         active: zeile.active === true || zeile.active === 't',
@@ -761,12 +739,11 @@ const gesperrt = kanal => kanal.type !== 'hugoshop' && props.partType === 'servi
 // ── Bilder der Marktplätze ──
 
 const bildLaedt = ref(false)
-/** Beschreibt OSERP die Webseite dieses HugoShops selbst? (Betriebsart lokal) */
-const lokaleWebseite = kanal => kanal.publish_mode !== 'hugocms'
 
 /**
- * Kanäle, aus denen sich Bilder übernehmen lassen: die anderen gewählten —
- * nicht von HugoShop zu HugoShop, deren Bildnamen sind ohnehin dieselben (M6)
+ * Kanäle, aus denen ein Marktplatz Bilder übernehmen kann: die anderen
+ * gewählten. In einen HugoShop überträgt OSERP keine Bilder — sie liegen bei
+ * HugoCMS auf dem Webserver.
  */
 const bildQuellen = kanal => aktiveKanaele.value.filter(k => k.channel_id !== kanal.channel_id
     && !(k.type === 'hugoshop' && kanal.type === 'hugoshop')
@@ -845,9 +822,6 @@ async function bilderUebernehmen(von, nach) {
     for (const zeile of antwort.channels || []) {
         const kanal = daten.value.channels.find(k => k.channel_id === Number(zeile.channel_id))
         if (kanal) kanal.images = Array.isArray(lies(zeile.images)) ? lies(zeile.images) : []
-    }
-    if (nach.type === 'hugoshop') {
-        daten.value.images = alsListe(lies(antwort.part?.hugoshop_images))
     }
     toasts.success(t('ShopView.partCard.imagesCopied', { anzahl: ergebnis?.copied ?? 0 }))
 }

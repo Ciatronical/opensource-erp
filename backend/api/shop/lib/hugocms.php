@@ -367,7 +367,7 @@ const SHOP_HUGOCMS_THUMBNAIL_ROUNDS = 500;
 /**
  * Namen der Bilder, zu denen es ein Vorschaubild gibt
  *
- * Wie im lokalen Bau: das erste Bild jedes Artikels im Shop, ohne Verzeichnis.
+ * Das erste Bild jedes Artikels im Shop, ohne Verzeichnis.
  *
  * @param object $db Company-Datenbankverbindung
  * @param int $kanal HugoShop
@@ -442,8 +442,8 @@ function shopHugoCmsThumbnails($db, int $kanal): array {
 }
 
 /**
- * Überträgt an HugoCMS und lässt dort bauen — der Teil des Laufs, der in der
- * Betriebsart HugoCMS an die Stelle des lokalen Baus tritt
+ * Überträgt an HugoCMS und lässt dort bauen — der Teil des Laufs, der die
+ * Webseite eines HugoShops veröffentlicht
  *
  * @param object $db Company-Datenbankverbindung
  * @param int $kanal HugoShop

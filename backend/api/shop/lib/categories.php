@@ -265,7 +265,7 @@ function shopCategoryGroupsFile($db, int $kanal, bool $anlegen = false): string 
 
     $unterordner = dirname($relativ);
 
-    return shopPathUnder(shopSiteDir($db, $kanal, $anlegen), '.' === $unterordner ? '' : $unterordner, $anlegen)
+    return shopPathUnder(shopSiteDir($db, $kanal), '.' === $unterordner ? '' : $unterordner, $anlegen)
          .'/'.basename($relativ);
 }
 

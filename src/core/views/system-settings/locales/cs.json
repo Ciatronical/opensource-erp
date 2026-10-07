@@ -55,9 +55,7 @@
                 "timezone": "Časové pásmo pro všechna časová razítka",
                 "debug": "Podrobný protokol, v provozu vypnuto",
                 "templates_dir": "Tiskové a obchodní šablony, relativní cesty začínají v backend/",
-                "backup_dir": "Cíl záloh databáze",
-                "shop_sites_dir": "Hranice pro adresáře webů obchodu",
-                "shop_publish_command_path": "Adresář s programem hugo, záloha pro nastavení obchodu"
+                "backup_dir": "Cíl záloh databáze"
             },
             "telephony": {
                 "monitor_dir": "Adresář záznamů hovorů"

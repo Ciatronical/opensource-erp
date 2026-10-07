@@ -10,11 +10,9 @@
 // (parts_ext.hugoshop_images, E6).
 //
 // Übernehmen zwischen den Kanälen:
-//   HugoShop  → Marktplatz  Datei aus dem Bildverzeichnis der Webseite
-//                           (Betriebsart lokal) oder über shop_images_link
-//   Marktplatz → HugoShop   nur in der Betriebsart lokal: Datei ins
-//                           Bildverzeichnis der Webseite. In der Betriebsart
-//                           HugoCMS gibt es keinen Weg dorthin (V17).
+//   HugoShop  → Marktplatz  über die Adresse aus images_link
+//   Marktplatz → HugoShop   nicht: die Bilder der Webseite liegen bei HugoCMS
+//                           auf dem Webserver, dorthin gibt es keinen Weg (V17)
 //   Marktplatz → Marktplatz dieselben Dateien, nur neue Zeilen
 //
 // Braucht customer_vendor/filemanager.php (Datenverzeichnis, Größengrenze).
@@ -196,8 +194,8 @@ function shopChannelImageSort($db, int $partsId, int $kanalId, array $ids): void
 /**
  * Lädt ein Bild der Webseite eines HugoShops
  *
- * In der Betriebsart lokal aus dem Bildverzeichnis, sonst über die Adresse
- * aus images_link (relative Muster gelten zur base_url des Kanals).
+ * Über die Adresse aus images_link (relative Muster gelten zur base_url des
+ * Kanals) — die Bilder liegen auf dem Webserver der Webseite.
  *
  * @param object $db Company-Datenbankverbindung
  * @param int $kanal HugoShop, von dessen Webseite das Bild kommt
@@ -208,18 +206,11 @@ function shopChannelImageSort($db, int $partsId, int $kanalId, array $ids): void
 function shopHugoshopImageContent($db, int $kanal, string $name): string {
     $name = basename($name);
 
-    if ('local' === shopPublishMode($db, $kanal) && '' !== shopChannelValue($db, $kanal, 'images_dir')) {
-        $pfad = shopPathUnder(shopSiteDir($db, $kanal), shopChannelValue($db, $kanal, 'images_dir')).'/'.$name;
-        if (is_file($pfad)) {
-            return (string)file_get_contents($pfad);
-        }
-    }
-
     $adresse = shopLink(shopChannelValue($db, $kanal, 'images_link'), $name);
     if (!preg_match('#^https?://#i', $adresse)) {
         $basis = rtrim(shopChannelValue($db, $kanal, 'base_url'), '/');
         if ('' === $basis) {
-            throw new ApiError('SHOP_IMAGE_SOURCE', 'Bild '.$name.': weder Datei noch vollständige Adresse (images_link, base_url)');
+            throw new ApiError('SHOP_IMAGE_SOURCE', 'Bild '.$name.': keine vollständige Adresse (images_link, base_url)');
         }
         $adresse = $basis.'/'.ltrim($adresse, '/');
     }
@@ -249,9 +240,9 @@ function shopHugoshopImageContent($db, int $kanal, string $name): string {
  * angehängt.
  *
  * Die Bildnamen des HugoShops (parts_ext.hugoshop_images) gelten für alle
- * HugoShops (M6), die Dateien liegen aber auf der Webseite des jeweiligen
- * Kanals: gelesen wird von der Webseite der Quelle, geschrieben auf die des
- * Ziels. Zwischen zwei HugoShops wird nichts kopiert.
+ * HugoShops (M6), die Dateien liegen auf der Webseite bei HugoCMS: gelesen
+ * wird von dort (HugoShop → Marktplatz). In einen HugoShop überträgt OSERP
+ * keine Bilder, zwischen zwei HugoShops wird nichts kopiert.
  *
  * @param object $db Company-Datenbankverbindung
  * @param int $partsId Artikel
@@ -280,40 +271,11 @@ function shopChannelImageCopy($db, int $partsId, $von, $nach): int {
 
     $quelle = shopChannelImages($db, $partsId, $von['id']);
 
-    // Marktplatz → HugoShop: nur, wenn OSERP die Webseite selbst beschreibt
+    // Marktplatz → HugoShop: die Bilder der Webseite liegen bei HugoCMS auf
+    // dem Webserver — dorthin überträgt OSERP keine Bilder
     if ('hugoshop' === $nach['type']) {
-        $kanal = $nach['id'];
-        if ('local' !== shopPublishMode($db, $kanal)) {
-            throw new ApiError('SHOP_IMAGE_COPY_UNAVAILABLE',
-                'In der Betriebsart HugoCMS liegen die Bilder der Webseite bei HugoCMS — dorthin kann OSERP nichts übertragen.');
-        }
-        if ('' === shopChannelValue($db, $kanal, 'images_dir')) {
-            throw new ApiError('SHOP_IMAGE_COPY_UNAVAILABLE', 'Das Bildverzeichnis der Webseite ist nicht eingestellt (images_dir).');
-        }
-        $zielDir = shopPathUnder(shopSiteDir($db, $kanal), shopChannelValue($db, $kanal, 'images_dir'), true);
-        $quellDir = shopChannelImageDir($db, $partsId);
-        $namen = [];
-        foreach ($quelle as $bild) {
-            $datei = basename((string)$bild['filename']);
-            if (!is_file($zielDir.'/'.$datei) && !@copy($quellDir.'/'.$datei, $zielDir.'/'.$datei)) {
-                throw new ApiError('SHOP_IMAGE_WRITE', 'Bild '.$datei.' konnte nicht auf die Webseite kopiert werden');
-            }
-            $namen[] = $datei;
-        }
-        // An die Liste anhängen, ohne Doppel, Reihenfolge der Quelle
-        $db->execute(
-            "INSERT INTO parts_ext (parts_id, hugoshop_images)
-             SELECT p.id, to_jsonb(string_to_array(:namen, ',')) FROM parts p WHERE p.id = :parts_id
-             ON CONFLICT (parts_id) DO UPDATE SET hugoshop_images = (
-                 SELECT COALESCE(jsonb_agg(name ORDER BY pos), '[]'::jsonb)
-                   FROM (SELECT DISTINCT ON (name) name, pos
-                           FROM jsonb_array_elements_text(
-                                    COALESCE(parts_ext.hugoshop_images, '[]'::jsonb) || EXCLUDED.hugoshop_images)
-                                WITH ORDINALITY AS e(name, pos)
-                          ORDER BY name, pos) liste)",
-            [':namen' => implode(',', $namen), ':parts_id' => $partsId]
-        );
-        return count($namen);
+        throw new ApiError('SHOP_IMAGE_COPY_UNAVAILABLE',
+            'Die Bilder der Webseite liegen bei HugoCMS — dorthin kann OSERP nichts übertragen.');
     }
 
     // Marktplatz → Marktplatz: dieselben Dateien im selben Ordner

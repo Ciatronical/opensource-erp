@@ -108,7 +108,6 @@ import { computed, h, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { VIcon, VTextField, VTooltip } from 'vuetify/components'
 import PasswordField from '@/core/components/password-field.vue'
-import PathField from '@/core/components/path-field.vue'
 import { oserpStore } from '@/core/stores/oserp.store.js'
 
 const { t, te } = useI18n()
@@ -133,11 +132,6 @@ const props = defineProps({
      * Passwortfeld "hinterlegt", auch wenn nichts gespeichert ist.
      */
     gesetzt: { type: Object, default: () => ({}) },
-    /**
-     * Verkaufskanal, dem die Werte gehören (Kanalkarte); 0 = Einstellungen des
-     * Mandanten. Für die Verzeichnisauswahl: die Webseite eines HugoShops.
-     */
-    kanal: { type: Number, default: 0 },
     /**
      * Vorgaben aus der settings.ini für leere Felder: Schlüssel -> Wert.
      *
@@ -170,17 +164,13 @@ const sichtbar = ref(false)
 /**
  * Welche Komponente ein Feld bekommt
  *
- * Geheimnisse mit Auge, relative Verzeichnisse mit Ordner-Symbol, alles
- * Übrige als Textfeld. Die absoluten Pfade (Webseiten-Wurzel, Hugo-Programm)
- * bleiben ohne Auswahl: Sie zeigen auf das Dateisystem des Servers, und das
- * durchblättern nur Systemadministratoren in den Systemeinstellungen.
+ * Geheimnisse mit Auge, alles Übrige als Textfeld.
  *
  * @param {object} field Felddefinition aus shopDefaultsConfig.js
  * @returns {object} Vue-Komponente
  */
 function feldKomponente(field) {
     if ('password' === field.type) return PasswordField
-    if (field.browse) return PathField
     return VTextField
 }
 
@@ -193,9 +183,6 @@ function feldKomponente(field) {
 function zusatz(field) {
     if ('password' === field.type) {
         return { visible: sichtbar.value, 'onUpdate:visible': (wert) => (sichtbar.value = wert) }
-    }
-    if (field.browse) {
-        return { scope: 'shop', base: field.browse, channelId: props.kanal }
     }
     return {}
 }
@@ -217,17 +204,10 @@ function schluesselErzeugen() {
 /**
  * Prüfregeln aus der Felddefinition
  *
- * absolutePath: nur ein Pfad — beginnt mit /, ohne Leerraum. Ob es das
- * Verzeichnis gibt und ein ausführbares Programm darin liegt, kann nur der
- * Server prüfen; das tut er vor jedem Bau und meldet es in der Shop-Übersicht.
- *
  * relativePath: ohne führenden Schrägstrich — der Pfad gilt unterhalb der
- * Webseite. Dass er dort nicht herausführt, prüft ebenfalls der Server.
+ * Webseite. Dass er dort nicht herausführt, prüft der Server.
  */
 function regeln(field) {
-    if ('absolutePath' === field.validate) {
-        return [(wert) => !wert || /^\/\S*$/.test(wert) || t('crm_fields.shopPathInvalid')]
-    }
     // Relative Verzeichnisse gelten unterhalb der Webseite; ein führender
     // Schrägstrich wäre ein absoluter Pfad und wird abgewiesen.
     if ('relativePath' === field.validate) {

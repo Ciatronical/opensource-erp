@@ -12,9 +12,6 @@
 
     Beispiel — Datei (Logdatei, Programm):
         <PathField v-model="wert" pick="file" :label="…" />
-
-    Beispiel — relatives Verzeichnis unterhalb der Webseite des Mandanten:
-        <PathField v-model="wert" scope="shop" base="site" :label="…" />
 -->
 <template>
     <v-text-field
@@ -49,9 +46,6 @@
 
     <directory-picker-dialog
         v-model="offen"
-        :scope="scope"
-        :base="base"
-        :channel-id="channelId"
         :pick="pick"
         :start="startPfad"
         @select="uebernehmen"
@@ -66,22 +60,7 @@ import DirectoryPickerDialog from './directory-picker.dialog.vue';
 // Attribute gehören an das Textfeld, nicht an die Wurzel
 defineOptions({ inheritAttrs: false });
 
-const props = defineProps({
-    /** 'system' = Pfade der settings.ini, 'shop' = Verzeichnisse der Shop-Einstellungen */
-    scope: {
-        type: String,
-        default: 'system',
-    },
-    /** Nur bei scope 'shop': 'sites' oder 'site' */
-    base: {
-        type: String,
-        default: 'sites',
-    },
-    /** Nur bei base 'site': HugoShop, dessen Webseite gemeint ist; 0 = Standard-HugoShop */
-    channelId: {
-        type: Number,
-        default: 0,
-    },
+defineProps({
     /** 'dir' wählt ein Verzeichnis, 'file' eine Datei */
     pick: {
         type: String,
@@ -98,13 +77,8 @@ const offen = ref(false);
 /** Slots, die unverändert durchgereicht werden — append-inner baut die Komponente selbst */
 const weitereSlots = computed(() => Object.keys(slots).filter(name => name !== 'append-inner'));
 
-/**
- * Wo der Dialog öffnet
- *
- * Im Shop-Bereich steht im Feld ein relativer Pfad, mit dem das Backend nichts
- * anfangen kann — dort beginnt der Dialog an der Wurzel.
- */
-const startPfad = computed(() => (props.scope === 'shop' ? '' : (wert.value || '')));
+/** Wo der Dialog öffnet: beim eingetragenen Pfad, sonst an der ersten Wurzel */
+const startPfad = computed(() => wert.value || '');
 
 /**
  * Übernimmt die Auswahl des Dialogs

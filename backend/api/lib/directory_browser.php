@@ -9,15 +9,11 @@
  * ohnehin keinen absoluten Pfad heraus. Deshalb listet der Server hier selbst
  * auf, und die Oberfläche navigiert darin.
  *
- * Zwei Bereiche:
- *
- *   system  Die Pfade der settings.ini. Nur für Systemadministratoren, weil
- *           die Auflistung die Struktur des Servers preisgibt. Sichtbar ist
- *           nur, was unterhalb einer Wurzel aus browseRootDirs() liegt.
- *   shop    Die relativen Verzeichnisse der Shop-Einstellungen. Einzige
- *           Wurzel ist das Webseiten-Verzeichnis des Mandanten; geliefert
- *           werden zusätzlich die relativen Pfade, denn genau die stehen in
- *           den Feldern.
+ * Für die Pfade der settings.ini. Nur für Systemadministratoren, weil die
+ * Auflistung die Struktur des Servers preisgibt. Sichtbar ist nur, was
+ * unterhalb einer Wurzel aus browseRootDirs() liegt. (Den Bereich für die
+ * Webseiten-Verzeichnisse der Shop-Erweiterung gibt es seit 2026-10-07 nicht
+ * mehr — die Webseiten liegen bei HugoCMS.)
  *
  * Versteckte Verzeichnisse (Punkt am Anfang) blendet die Auflistung aus. Wer
  * eines braucht, tippt den Pfad — die Felder bleiben frei beschreibbar.
@@ -54,7 +50,6 @@ function browseRootDirs(): array {
         // Verzeichnisse der eingetragenen Pfade
         foreach ([
             'OSERP_DEBUG_LOG_FILE', 'OSERP_API_LOG_FILE', 'BACKUP_BASE_DIR',
-            'OSERP_SHOP_SITES_DIR', 'OSERP_SHOP_PUBLISH_COMMAND_PATH',
             'TELEPHONY_MONITOR_DIR',
         ] as $konstante) {
             if (!defined($konstante)) {
@@ -98,34 +93,6 @@ function browseRootDirs(): array {
 
     sort($ergebnis);
     return $ergebnis;
-}
-
-/**
- * Wurzeln des Shop-Bereichs
- *
- * `sites` ist die Wurzel aller Webseiten (Basis von site_dir), `site`
- * das Verzeichnis der Webseite eines HugoShops (Basis der übrigen
- * relativen Einstellungen, dev/shop-mehrere-kanaele.md).
- *
- * @param string $basis 'sites' oder 'site'
- * @param int $kanal HugoShop; 0 = der erste HugoShop
- * @return string Absolutes Verzeichnis
- * @throws ApiError wenn die Shop-Einstellungen nicht stehen
- */
-function browseShopRoot(string $basis, int $kanal = 0): string {
-    // publish.php nutzt shopConfigValue() aus config.php — beide laden, sonst
-    // fehlt die Funktion erst beim Aufruf
-    require_once __DIR__.'/../shop/lib/config.php';
-    require_once __DIR__.'/../shop/lib/publish.php';
-
-    $db = DbhCompany::begin();
-    if ('site' !== $basis) {
-        return shopSitesRoot($db);
-    }
-    if ($kanal <= 0) {
-        $kanal = shopFirstChannelId($db, 'hugoshop');
-    }
-    return shopSiteDir($db, $kanal);
 }
 
 /**
@@ -179,26 +146,15 @@ function browseRelativePath(string $pfad, string $wurzel): string {
 /**
  * Listet die Verzeichnisse (und auf Wunsch Dateien) eines Verzeichnisses
  *
- * @param string $scope 'system' für die Pfade der settings.ini, 'shop' für die relativen Shop-Verzeichnisse
- * @param string $base Nur bei scope 'shop': 'sites' oder 'site'
- * @param int $channel_id Nur bei base 'site': HugoShop, leer = Standard-HugoShop
  * @param string $path Verzeichnis, das gezeigt werden soll; leer für die erste Wurzel
  * @param bool $files true listet auch Dateien auf (für Felder, die eine Datei meinen)
- * @testdata {"scope": "system", "path": "", "files": false}
+ * @testdata {"path": "", "files": false}
  */
 function browseDirectories($data) {
-    $scope = ('shop' === ($data['scope'] ?? 'system')) ? 'shop' : 'system';
-    $basis = ('site' === ($data['base'] ?? 'sites')) ? 'site' : 'sites';
     $mitDateien = !empty($data['files']);
 
-    if ('shop' === $scope) {
-        // Der Shop-Bereich zeigt nur das Webseiten-Verzeichnis des eigenen
-        // Mandanten — dafür genügt, wer die Firmenkonfiguration bearbeiten darf.
-        $wurzeln = [browseShopRoot($basis, (int)($data['channel_id'] ?? 0))];
-    } else {
-        requireSystemAdmin();
-        $wurzeln = browseRootDirs();
-    }
+    requireSystemAdmin();
+    $wurzeln = browseRootDirs();
 
     $aktuell = browseResolvePath((string)($data['path'] ?? ''), $wurzeln);
 
@@ -264,7 +220,6 @@ function browseDirectories($data) {
     });
 
     resultInfo(true, '', [
-        'scope'     => $scope,
         'roots'     => $wurzeln,
         'root'      => $wurzel,
         'path'      => $aktuell,

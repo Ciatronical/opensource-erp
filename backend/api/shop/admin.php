@@ -98,7 +98,6 @@ function getShopStatus($data) {
     $kanaele = json_decode((string)($stand['kanaele'] ?? '[]'), true) ?: [];
     $hugoshops = array_values(array_filter($kanaele, fn($k) => 'hugoshop' === $k['type']));
     $veroeffentlichung = [];
-    $programm = null;
 
     // Bestellungen nimmt jeder HugoShop für sich an: je Kanal, was ihm fehlt —
     // die Angaben des Mandanten (oben) fehlen jedem, der Shop-Schlüssel nur ihm
@@ -132,36 +131,20 @@ function getShopStatus($data) {
             $hin[] = 'shop_paypal_sandbox';
         }
 
-        // Veröffentlichung: Ohne gültiges Programm werden Seiten geschrieben,
-        // aber nicht gebaut; ohne Verzeichnis entsteht überhaupt keine Seite.
-        // Der Feldname allein sagt nicht, was daran fehlt — der Grund kommt mit.
-        if ('hugocms' === shopPublishMode($db, $id)) {
-            // Gebaut wird dort. Hier zählt nur, ob Adresse und Schlüssel
-            // gesetzt sind — ob sie stimmen, prüft der Knopf in der Kanalkarte;
-            // ein Aufruf bei jedem Öffnen der Übersicht wäre zu teuer.
-            $adresse = shopHugoCmsUrl(shopChannelValue($db, $id, 'hugocms_url'));
-            if ('' !== $adresse['fehler']) {
-                $hin[] = 'shop_hugocms_url';
-                $probleme[] = $adresse['fehler'];
-            }
-            if ($leer('hugocms_key')) {
-                $hin[] = 'shop_hugocms_key';
-            }
-        } else {
-            // Das Programm gilt für alle lokal gebauten Webseiten: Mandant
-            $programm ??= shopPublishProgram($db);
-            if ('' === $programm['pfad']) {
-                $hinweise[] = 'shop_publish_command_path';
-                if ('' !== $programm['fehler']) {
-                    $veroeffentlichung[] = $programm['fehler'];
-                }
-            }
-            try {
-                shopSiteDir($db, $id);
-            } catch (Throwable $e) {
-                $hin[] = 'shop_sites_dir';
-                $probleme[] = $e->getMessage();
-            }
+        // Veröffentlichung über HugoCMS: ohne Adresse und Schlüssel entsteht
+        // keine Webseite — das gehört zu dem, was dem Kanal fehlt. Ob beides
+        // stimmt, prüft der Knopf in der Kanalkarte; ein Aufruf bei jedem
+        // Öffnen der Übersicht wäre zu teuer. Der Grund einer ungültigen
+        // Adresse steht bei den Hinweisen des Kanals.
+        $adresse = shopHugoCmsUrl(shopChannelValue($db, $id, 'hugocms_url'));
+        if ('' !== $adresse['fehler']) {
+            $blockierend[] = 'shop_hugocms_url';
+            $fehlt[] = 'shop_hugocms_url';
+            $probleme[] = $adresse['fehler'];
+        }
+        if ($leer('hugocms_key')) {
+            $blockierend[] = 'shop_hugocms_key';
+            $fehlt[] = 'shop_hugocms_key';
         }
 
         if ($fehlt) {
@@ -420,9 +403,6 @@ function getPartShopData($data) {
             -- Reihenfolge wie in der Ansicht „Verkaufskanäle“: umgekehrt
             (SELECT COALESCE(json_agg(k ORDER BY k.sortkey DESC NULLS FIRST, k.channel_id DESC), '[]'::json) FROM (
                 SELECT c.id AS channel_id, c.type, c.name, c.sortkey,
-                       -- Betriebsart der Webseite (HugoShop): Bilder aus einem
-                       -- Marktplatz lassen sich nur lokal übernehmen (V17)
-                       COALESCE(c.settings ->> 'publish_mode', 'local') AS publish_mode,
                        -- Adressmuster des HugoShops: Link zur Produktseite, Vorschaubilder
                        COALESCE(c.settings ->> 'products_link', '') AS products_link,
                        COALESCE(c.settings ->> 'thumbnails_link', '') AS thumbnails_link,
@@ -837,8 +817,8 @@ function sortShopChannelImages($data) {
 /**
  * Übernimmt die Bilder eines Artikels aus einem anderen Kanal (V12, V17)
  *
- * Vom HugoShop in einen Marktplatz immer; aus einem Marktplatz in den
- * HugoShop nur in der Betriebsart lokal.
+ * Vom HugoShop in einen Marktplatz und zwischen Marktplätzen. In einen
+ * HugoShop nicht: seine Bilder liegen bei HugoCMS auf dem Webserver.
  *
  * @param array $data['parts_id'] Artikel
  * @param array $data['from'] Quellkanal: Kennung oder Art
@@ -2293,10 +2273,9 @@ function retryShopPublishJobs($data) {
  *
  * Übernimmt aus dem Panel, was sonst tools/shop-publish.php im Cron erledigt:
  * das Paket des Vorlagensatzes (Widget-Bündel, Shortcodes, Einstiegspunkte,
- * config.json) nach <webseite>/oserp-shop/ spiegeln — in der Betriebsart
- * HugoCMS dorthin übertragen — und die Webseite bauen. Gebaut wird auch, wenn
- * das Paket schon aktuell war (SHOP_KIT_INSTALL). Fehlende Mounts oder
- * params.shopui meldet der Lauf als Hinweis.
+ * config.json) nach oserp-shop/ der Bereitstellung spiegeln, an HugoCMS
+ * übertragen und die Webseite dort bauen lassen. Gebaut wird auch, wenn das
+ * Paket schon aktuell war (SHOP_KIT_INSTALL).
  *
  * Dazu wird ein Auftrag sync_kit angelegt und allein ausgeführt. Ist schon
  * einer offen, wird er dafür übernommen: shop_queue_job legt keinen zweiten

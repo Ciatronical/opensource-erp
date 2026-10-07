@@ -55,9 +55,7 @@
                 "timezone": "Zona horaria para todas las marcas de tiempo",
                 "debug": "Registro detallado, desactivado en producción",
                 "templates_dir": "Plantillas de impresión y tienda, las rutas relativas parten de backend/",
-                "backup_dir": "Destino de las copias de seguridad de la base de datos",
-                "shop_sites_dir": "Límite para los directorios de los sitios web de la tienda",
-                "shop_publish_command_path": "Directorio con el programa hugo, respaldo del ajuste de la tienda"
+                "backup_dir": "Destino de las copias de seguridad de la base de datos"
             },
             "telephony": {
                 "monitor_dir": "Directorio de grabaciones de llamadas"

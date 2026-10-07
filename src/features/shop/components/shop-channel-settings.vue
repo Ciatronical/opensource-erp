@@ -57,7 +57,6 @@
                         :werte="werte"
                         :quellen="quellen"
                         :gesetzt="gesetzt"
-                        :kanal="channelId"
                     />
 
                     <!-- eBay: Verbindungstest, Bestellabruf, Stand dieses Kanals -->
@@ -94,7 +93,6 @@
                 :werte="werte"
                 :quellen="quellen"
                 :gesetzt="gesetzt"
-                :kanal="channelId"
             />
         </template>
     </div>

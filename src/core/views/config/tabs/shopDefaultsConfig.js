@@ -60,22 +60,10 @@ const shopDefaultsConfig = [
 
     { name: "shop_publish", type: "headline", label: "crm_fields.shopPublish" },
 
-    // Wurzel aller Webseiten: die Verzeichnisse der HugoShops gelten relativ
-    // dazu. Trägt ein Administrator sie zusätzlich in die settings.ini ein,
-    // wirkt der Eintrag dort als Riegel: die eingestellte Wurzel muss darunter
-    // liegen.
-    //
-    // Gebaut wird mit dem Programm hugo aus dem Verzeichnis
-    // shop_publish_command_path — nur das Verzeichnis, den Dateinamen und die
-    // Argumente setzt das Backend selbst zusammen und prüft beides vor jedem
-    // Bau. Ein Eintrag in der settings.ini springt ein, wenn das Feld leer
-    // ist, und erscheint dort als Vorgabe.
-    //
-    // shop_job_retention_days: Nach wie vielen Tagen der Läufer erfolgreich
-    // erledigte Aufträge aus der Warteschlange löscht. 0 schaltet das ab;
-    // fehlgeschlagene Aufträge bleiben immer stehen.
-    { name: "shop_sites_dir", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopSitesDir", tooltip: "crm_fields.shopSitesDir_help" },
-    { name: "shop_publish_command_path", type: "input", size: 60, fieldstyle: "max-width: 60ch", validate: "absolutePath", label: "crm_fields.shopPublishCommandPath", tooltip: "crm_fields.shopPublishCommandPath_help" },
+    // Nach wie vielen Tagen der Läufer erfolgreich erledigte Aufträge aus der
+    // Warteschlange löscht. 0 schaltet das ab; fehlgeschlagene Aufträge
+    // bleiben immer stehen. Webseiten-Verzeichnisse und Bau-Programm gibt es
+    // nicht mehr — gebaut wird in HugoCMS (Einstellungen je HugoShop).
     { name: "shop_job_retention_days", type: "input", inputType: "number", size: 10, fieldstyle: "max-width: 15ch", label: "crm_fields.shopJobRetentionDays", tooltip: "crm_fields.shopJobRetentionDays_help" },
     { name: "shop_thumbnail_size", type: "input", inputType: "number", size: 10, fieldstyle: "max-width: 15ch", label: "crm_fields.shopThumbnailSize", tooltip: "crm_fields.shopThumbnailSize_help" },
     // Adresse von OpensourceERP, unter der eBay die Artikelbilder abholt —

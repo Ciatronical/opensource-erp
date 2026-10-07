@@ -8,7 +8,7 @@
     was unterhalb einer freigegebenen Wurzel liegt.
 
     Wird über `path-field.vue` benutzt; direkt eingebunden geht auch:
-        <DirectoryPickerDialog v-model="offen" scope="system" pick="dir" :start="wert" @select="…" />
+        <DirectoryPickerDialog v-model="offen" pick="dir" :start="wert" @select="…" />
 -->
 <template>
     <v-dialog v-model="offen" max-width="760" scrollable>
@@ -136,21 +136,6 @@ import axios from 'axios';
 const { t } = useI18n();
 
 const props = defineProps({
-    /** 'system' = Pfade der settings.ini, 'shop' = Verzeichnisse der Shop-Einstellungen */
-    scope: {
-        type: String,
-        default: 'system',
-    },
-    /** Nur bei scope 'shop': 'sites' (Wurzel aller Webseiten) oder 'site' (Webseite eines HugoShops) */
-    base: {
-        type: String,
-        default: 'sites',
-    },
-    /** Nur bei base 'site': HugoShop, dessen Webseite gemeint ist; 0 = Standard-HugoShop */
-    channelId: {
-        type: Number,
-        default: 0,
-    },
     /** 'dir' wählt ein Verzeichnis, 'file' eine Datei darin */
     pick: {
         type: String,
@@ -197,8 +182,8 @@ const leerMeldung = computed(() => (stand.value.file_count > 0
 /** Die Wurzel, unter der der aktuelle Pfad liegt */
 const aktuelleWurzel = ref('');
 
-/** Was übernommen würde — im Shop-Bereich der relative Pfad */
-const anzeige = computed(() => (props.scope === 'shop' ? auswahlRelativ.value : auswahl.value));
+/** Was übernommen würde */
+const anzeige = computed(() => auswahl.value);
 
 /**
  * Holt den Inhalt eines Verzeichnisses
@@ -211,9 +196,6 @@ async function laden(pfad = '') {
     try {
         const { data } = await axios.post('/api/admin/', {
             action: 'browseDirectories',
-            scope: props.scope,
-            base: props.base,
-            channel_id: props.channelId || undefined,
             path: pfad || '',
             files: props.pick === 'file',
         });

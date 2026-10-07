@@ -133,19 +133,6 @@ function wahrheit(string $name) {
 }
 
 /**
- * Wurzel der Webseiten und Name dieser Webseite
- *
- * Die bridge-config liegt im Verzeichnis der Webseite, und darüber liegt die
- * Wurzel — dort, wo auch die übrigen Instanzen liegen.
- *
- * @return array Wurzel und Name
- */
-function webseitenVerzeichnis(string $bridgeConfig): array {
-    $webseite = realpath(dirname(realpath($bridgeConfig)));
-    return [dirname($webseite), basename($webseite)];
-}
-
-/**
  * Inhaltsordner relativ zur Webseite
  *
  * KIVI_CONTENT_PATH ist ein absoluter Pfad auf dem Server der Bridge, etwa
@@ -166,7 +153,6 @@ function inhaltsordner($pfad, string $bridgeConfig): ?string {
 }
 
 $paypal = paypalPaare($verzeichnis);
-[$sitesDir, $siteDir] = webseitenVerzeichnis($verzeichnis);
 
 $zuordnung = [
     'shop_contact_login'                    => wert('KIVI_SHOP_CONTACT_LOGIN'),
@@ -195,8 +181,6 @@ $zuordnung = [
     'shop_search_weighting'                 => wert('HUGOSHOP_SEARCH_WEIGHTING'),
     'shop_invoice_mail_subject'             => wert('KIVI_INVOICE_MAIL_SUBJECT'),
     'shop_withdrawal_mail_to'               => wert('KIVI_WIDERRUF_MAIL_TO'),
-    'shop_sites_dir'                        => $sitesDir,
-    'shop_site_dir'                         => $siteDir,
     'shop_content_dir'                      => inhaltsordner(wert('KIVI_CONTENT_PATH'), $verzeichnis),
 ];
 
@@ -208,7 +192,7 @@ echo "--   Shop-Schlüssel       — neu vergeben; der Läufer trägt ihn in ose
 echo "--   Adresse von OSERP    — für Proxy und 404-Seite, z.B. https://erp.example/shop/\n";
 echo "--   Vorlagensatz         — eigener Vorlagensatz der Instanz, falls es einen gibt\n";
 echo "--   Erlaubte Herkunft    — nur ohne Proxy nötig\n";
-echo "-- und im Reiter Shop: shop_publish_command_path — Pfad zum Hugo-Programm (leer: Rückfall auf die settings.ini)\n";
+echo "--   HugoCMS          — Adresse und Schlüssel; veröffentlicht wird nur über HugoCMS\n";
 echo "\n";
 
 // Einstellungen der Instanz: Schlüssel im Kanal (ohne Präfix) und ob geheim —
@@ -227,7 +211,6 @@ const INSTANZ = [
     'shop_thumbnails_link'                  => ['thumbnails_link', false],
     'shop_invoice_mail_subject'             => ['invoice_mail_subject', false],
     'shop_withdrawal_mail_to'               => ['withdrawal_mail_to', false],
-    'shop_site_dir'                         => ['site_dir', false],
     'shop_content_dir'                      => ['content_dir', false],
 ];
 

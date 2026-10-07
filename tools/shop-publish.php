@@ -3,12 +3,12 @@
 // tools/shop-publish.php
 //
 // Läufer der Shop-Veröffentlichung: arbeitet die offenen Aufträge aus
-// batchjob_hugoshop ab, schreibt die Inhaltsdateien und baut anschließend die
-// Webseite, wenn in der settings.ini ein Befehl steht.
+// batchjob_hugoshop ab, schreibt die Inhaltsdateien in die Bereitstellung,
+// überträgt sie an HugoCMS und lässt die Webseite dort bauen.
 //
 // Gedacht für einen Cron-Eintrag, etwa alle fünf Minuten. Ohne Cron genügt
 // „Jetzt ausführen" im Admin-Panel, das diesen Läufer startet; dann braucht
-// der Webserver-Benutzer Schreibrechte im Webseiten-Verzeichnis.
+// der Webserver-Benutzer Schreibrechte in backend/tmp/ (Bereitstellung).
 //
 // Aufruf:
 //   php tools/shop-publish.php [--client=<id>] [--db=<name>] [--limit=500]
@@ -155,8 +155,8 @@ try {
 
 // ── Nur ein Lauf je Mandant ──
 //
-// Zwei gleichzeitige Läufe schrieben dieselben Dateien und bauten die Webseite
-// doppelt; der Bau löscht dabei das ausgelieferte Verzeichnis.
+// Zwei gleichzeitige Läufe schrieben dieselben Dateien in die Bereitstellung
+// und übertrügen sie doppelt an HugoCMS.
 
 $sperrVerzeichnis = __DIR__.'/../backend/tmp';
 if (!is_dir($sperrVerzeichnis)) {
@@ -217,10 +217,6 @@ try {
                     $melden(sprintf('%d erledigte Aufträge älter als %d Tage gelöscht', $weg, $tage));
                 }
             }
-        }
-
-        if (0 !== $bilanz['bau_code']) {
-            fwrite(STDERR, "Der Bau der Webseite ist fehlgeschlagen (Rückgabewert ".$bilanz['bau_code'].").\n");
         }
 
         shopPublishWriteState($dateien['status'], [

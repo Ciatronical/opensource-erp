@@ -155,20 +155,10 @@ class OserpConfig {
         // Relativer Name fuer DB-Eintraege (Kivitendo-Stil: 'templates/setname')
         define('OSERP_TEMPLATES_DIR_NAME', $rawTemplatesDir);
 
-        // Shop: Riegel fuer das Verzeichnis der Webseiten. Wo die Webseite
-        // eines Mandanten liegt, steht in dessen Shop-Einstellungen
-        // (shop_sites_dir in defaults_oserp) — jede Firma hat ihre eigene.
-        // Ist hier ein Verzeichnis eingetragen, muss das eingestellte darunter
-        // liegen; ohne Eintrag gilt allein die Einstellung des Mandanten.
-        define('OSERP_SHOP_SITES_DIR', $settings['system']['shop_sites_dir'] ?? '');
-
-        // Shop: Verzeichnis, in dem das Programm hugo liegt — nur das
-        // Verzeichnis, weder Dateiname noch Befehlszeile. Den Namen hängt die
-        // Erweiterung selbst an, ebenso die Argumente (shopPublishCommand);
-        // geprüft wird vor jedem Bau. Es gilt
-        // die Shop-Einstellung des Mandanten; dieser Eintrag springt nur ein,
-        // wenn sie leer ist, und erscheint dort als Vorgabe im leeren Feld.
-        define('OSERP_SHOP_PUBLISH_COMMAND_PATH', $settings['system']['shop_publish_command_path'] ?? '');
+        // shop_sites_dir und shop_publish_command_path gibt es nicht mehr
+        // (2026-10-07): die Webseiten der Shop-Erweiterung liegen bei HugoCMS
+        // und werden dort gebaut. Stehen sie noch in der settings.ini, wirken
+        // sie nicht.
 
         // Verzeichnisauswahl: Einstiegspunkte des Auswahldialogs, durch
         // Komma getrennt. Ohne Eintrag leitet browseRootDirs() sie aus der

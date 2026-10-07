@@ -217,6 +217,26 @@ Kleine Installationen, bei denen ERP und Webseite auf einem Server liegen,
 bauen damit weiter selbst. Hintergrundlauf, Standanzeige und Bau-Programm aus
 der heutigen Veröffentlichung gelten dort unverändert.
 
+**Nachtrag 2026-10-07: Die Betriebsart „lokal“ ist entfallen.** Jeder HugoShop
+veröffentlicht über HugoCMS und braucht dafür Shop-Schlüssel, HugoCMS-Adresse
+und HugoCMS-Schlüssel; fehlt etwas davon, gilt der Kanal als nicht
+einsatzbereit, und seine Aufträge sind ausgesetzt (`shopChannelPublishBlockers`).
+Entfernt wurden:
+
+- Einstellungen `shop_sites_dir`, `shop_publish_command_path` (Mandant und
+  settings.ini) und je Kanal `publish_mode`, `site_dir`, `images_dir`,
+  `thumbnails_dir`, `publish_clean_destination` — der Upstall löscht sie;
+- `shopSitesRoot`, `shopPublishMode`, `shopPublishProgram`,
+  `shopPublishCommand`, `shopThumbnail`, `shopThumbnailFor`,
+  `shopKitSetupHints` und der lokale Bau in `shopPublishSite`;
+  `shopSiteDir` ist jetzt die Bereitstellung;
+- die Übernahme von Marktplatz-Bildern in einen HugoShop;
+- der Bereich „shop“ der Verzeichnisauswahl (`browseDirectories`) und die
+  Ordnerauswahl an den Shop-Feldern.
+
+Eine Hugo-Konfiguration im Webseiten-Verzeichnis prüft OSERP nicht mehr — die
+Webseite liegt in HugoCMS.
+
 ## Änderungen in OSERP
 
 - Einstellung „Betriebsart" je Mandant in `defaults_oserp`, dazu HugoCMS-Adresse

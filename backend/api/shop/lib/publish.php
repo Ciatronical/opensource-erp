@@ -138,91 +138,30 @@ function shopPathUnder(string $wurzel, string $relativ, bool $anlegen = false): 
     return $echt;
 }
 
-/**
- * Wurzel aller Webseiten-Verzeichnisse
- *
- * Je Mandant, denn jede Firma hat ihre eigene Webseite: Einstellung
- * shop_sites_dir, aenderbar in der Firmenkonfiguration unter Shop.
- *
- * Steht in der settings.ini ebenfalls ein shop_sites_dir, wirkt es als Riegel:
- * das eingestellte Verzeichnis muss dann darunter liegen. So kann ein
- * Administrator die Grenze festlegen, ohne dass die Erweiterung ohne
- * settings.ini unbrauchbar waere.
- *
- * @param object $db Company-Datenbankverbindung
- * @return string
- * @throws ApiError SHOP_SITES_DIR_MISSING, SHOP_SITES_DIR_OUTSIDE_LIMIT
- */
-function shopSitesRoot($db): string {
-    // Der leere Fall muss vor realpath() abgefangen werden: realpath('') gibt
-    // das Arbeitsverzeichnis zurueck, und eine nicht gesetzte Einstellung
-    // waere damit stillschweigend das Verzeichnis des Servers.
-    $eingestellt = shopConfigValue($db, 'shop_sites_dir');
-    $echt = '' === $eingestellt ? false : realpath($eingestellt);
-
-    if (false === $echt) {
-        throw new ApiError(
-            'SHOP_SITES_DIR_MISSING',
-            "Die Shop-Einstellung '".shopConfigLabel('shop_sites_dir')."' ist nicht gesetzt oder das Verzeichnis gibt es nicht"
-        );
-    }
-
-    $riegel = defined('OSERP_SHOP_SITES_DIR') ? (string)OSERP_SHOP_SITES_DIR : '';
-    if ('' !== $riegel) {
-        $riegelEcht = realpath($riegel);
-        if (false === $riegelEcht || ($echt !== $riegelEcht && !str_starts_with($echt.'/', $riegelEcht.'/'))) {
-            throw new ApiError(
-                'SHOP_SITES_DIR_OUTSIDE_LIMIT',
-                'Das eingestellte Verzeichnis liegt nicht unterhalb von shop_sites_dir aus der settings.ini: '.$echt
-            );
-        }
-    }
-
-    return $echt;
-}
-
 // ── Webseite eines HugoShops (dev/shop-mehrere-kanaele.md, Schritt 3) ──
 //
-// Jeder HugoShop ist eine eigene Webseite: Verzeichnis, Betriebsart,
-// Vorlagensatz, Adressen und HugoCMS-Zugang stehen in den Einstellungen seines
-// Kanals. Alle Funktionen, die eine Webseite anfassen, bekommen deshalb die
-// Kennung des Kanals ($kanal). Für den ganzen Mandanten gelten nur das
-// Wurzelverzeichnis aller Webseiten (shop_sites_dir), das Bau-Programm und
-// die Größe der Vorschaubilder.
+// Jeder HugoShop ist eine eigene Webseite in HugoCMS: Vorlagensatz, Adressen
+// und HugoCMS-Zugang stehen in den Einstellungen seines Kanals. OSERP schreibt
+// in seine Bereitstellung unter backend/tmp/, überträgt an HugoCMS und lässt
+// dort bauen (hugocms.php). Alle Funktionen, die eine Webseite anfassen,
+// bekommen deshalb die Kennung des Kanals ($kanal). Für den ganzen Mandanten
+// gilt nur die Größe der Vorschaubilder.
+//
+// Die Betriebsart „lokal“ (OSERP schreibt in ein Verzeichnis auf diesem Server
+// und baut selbst) gibt es seit 2026-10-07 nicht mehr.
 
 /**
- * Verzeichnis des Hugo-Projekts eines HugoShops
+ * Verzeichnis der Webseite eines HugoShops — seine Bereitstellung
+ *
+ * Alles, was OSERP erzeugt (Seiten, Paket, Kategorieübersicht), landet hier
+ * und geht von dort an HugoCMS.
  *
  * @param object $db Company-Datenbankverbindung
  * @param int $kanal HugoShop
- * @param bool $anlegen fehlendes Verzeichnis anlegen
  * @return string
  */
-function shopSiteDir($db, int $kanal, bool $anlegen = false): string {
-    // Betriebsart HugoCMS: Die Webseite liegt auf einem anderen Server. Alles,
-    // was OSERP erzeugt, landet zuerst in der Bereitstellung und geht von dort
-    // an HugoCMS — Seiten, Paket und Kategorieübersicht merken davon nichts.
-    if ('hugocms' === shopPublishMode($db, $kanal)) {
-        return shopStagingDir($db, $kanal);
-    }
-    // Leer heißt wie bisher: die Wurzel aller Webseiten selbst. Bei mehreren
-    // HugoShops braucht jeder sein eigenes Verzeichnis darunter.
-    return shopPathUnder(shopSitesRoot($db), shopChannelValue($db, $kanal, 'site_dir'), $anlegen);
-}
-
-/**
- * Betriebsart der Veröffentlichung (dev/shop-hugocms-trennung.md, E8)
- *
- * local: OSERP schreibt in die Webseite und baut selbst — die Webseite liegt
- * auf demselben Server. hugocms: OSERP schreibt in die Bereitstellung,
- * überträgt an HugoCMS und lässt dort bauen.
- *
- * @param object $db Company-Datenbankverbindung
- * @param int $kanal HugoShop
- * @return string local oder hugocms
- */
-function shopPublishMode($db, int $kanal): string {
-    return 'hugocms' === shopChannelValue($db, $kanal, 'publish_mode', 'local') ? 'hugocms' : 'local';
+function shopSiteDir($db, int $kanal): string {
+    return shopStagingDir($db, $kanal);
 }
 
 /**
@@ -282,10 +221,6 @@ function shopStagingDir($db, int $kanal): string {
  *
  *   - Shop-Schlüssel fehlt (ohne ihn nimmt der Shop keine Bestellung an)
  *   - HugoCMS: Adresse ungültig oder Schlüssel fehlt
- *   - lokal: Webseiten-Verzeichnis nicht erreichbar oder ohne Hugo-Konfiguration
- *
- * Ein fehlendes Programm zum Bauen setzt nicht aus — die Seiten entstehen,
- * gebaut wird dann außerhalb; die Übersicht weist darauf hin.
  *
  * @param object $db Company-Datenbankverbindung
  * @param int $kanal HugoShop
@@ -296,32 +231,12 @@ function shopChannelPublishBlockers($db, int $kanal): array {
     if ('' === shopChannelValue($db, $kanal, 'public_key')) {
         $gruende[] = 'Shop-Schlüssel fehlt';
     }
-
-    if ('hugocms' === shopPublishMode($db, $kanal)) {
-        $adresse = shopHugoCmsUrl(shopChannelValue($db, $kanal, 'hugocms_url'));
-        if ('' !== $adresse['fehler']) {
-            $gruende[] = $adresse['fehler'];
-        }
-        if ('' === shopChannelValue($db, $kanal, 'hugocms_key')) {
-            $gruende[] = 'HugoCMS-Schlüssel fehlt';
-        }
-        return $gruende;
+    $adresse = shopHugoCmsUrl(shopChannelValue($db, $kanal, 'hugocms_url'));
+    if ('' !== $adresse['fehler']) {
+        $gruende[] = $adresse['fehler'];
     }
-
-    try {
-        $verzeichnis = shopSiteDir($db, $kanal);
-    } catch (Throwable $e) {
-        $gruende[] = $e->getMessage();
-        return $gruende;
-    }
-    // Hugo findet seine Konfiguration als Datei hugo.* bzw. config.* oder als
-    // Verzeichnis config/ — ohne sie scheitert jeder Bau
-    $konfiguration = array_filter(
-        ['hugo.toml', 'hugo.yaml', 'hugo.yml', 'hugo.json', 'config.toml', 'config.yaml', 'config.yml', 'config.json'],
-        fn($datei) => is_file($verzeichnis.'/'.$datei)
-    );
-    if (!$konfiguration && !is_dir($verzeichnis.'/config')) {
-        $gruende[] = 'Keine Hugo-Konfiguration im Webseiten-Verzeichnis '.$verzeichnis;
+    if ('' === shopChannelValue($db, $kanal, 'hugocms_key')) {
+        $gruende[] = 'HugoCMS-Schlüssel fehlt';
     }
     return $gruende;
 }
@@ -330,7 +245,7 @@ function shopChannelPublishBlockers($db, int $kanal): array {
 function shopContentDir($db, int $kanal, bool $anlegen = false): string {
     // Vorgabe wie im Schema — fehlt die Zeile noch, landeten die Seiten sonst
     // direkt im Verzeichnis der Webseite
-    return shopPathUnder(shopSiteDir($db, $kanal, $anlegen),
+    return shopPathUnder(shopSiteDir($db, $kanal),
                          shopChannelValue($db, $kanal, 'content_dir', 'content/de/produkt'), $anlegen);
 }
 
@@ -573,103 +488,6 @@ function shopNumber($wert, int $stellen = 2): string {
     return number_format((float)$wert, $stellen, '.', '');
 }
 
-// ── Vorschaubilder ──
-
-/**
- * Verkleinert ein Bild auf hoechstens $groesse Pixel an der laengsten Seite
- *
- * Seitenverhaeltnis, Format und Transparenz bleiben; kleinere Bilder werden
- * nicht vergroessert.
- *
- * @param string $quelle Bilddatei
- * @param string $ziel Vorschaubild
- * @param int $groesse Laengste Seite in Pixeln
- * @return bool
- */
-function shopThumbnail(string $quelle, string $ziel, int $groesse): bool {
-    $info = @getimagesize($quelle);
-    if (!$info) {
-        return false;
-    }
-    [$breite, $hoehe, $typ] = $info;
-
-    $laden = [
-        IMAGETYPE_JPEG => 'imagecreatefromjpeg',
-        IMAGETYPE_PNG  => 'imagecreatefrompng',
-        IMAGETYPE_GIF  => 'imagecreatefromgif',
-        IMAGETYPE_WEBP => 'imagecreatefromwebp',
-    ];
-    if (!isset($laden[$typ])) {
-        return false;
-    }
-    $bild = @$laden[$typ]($quelle);
-    if (!$bild) {
-        return false;
-    }
-
-    $faktor = min(1, max(1, $groesse) / max($breite, $hoehe));
-    $neuBreite = max(1, (int)round($breite * $faktor));
-    $neuHoehe  = max(1, (int)round($hoehe * $faktor));
-
-    $vorschau = imagecreatetruecolor($neuBreite, $neuHoehe);
-    imagealphablending($vorschau, false);
-    imagesavealpha($vorschau, true);
-    imagefill($vorschau, 0, 0, imagecolorallocatealpha($vorschau, 0, 0, 0, 127));
-    imagecopyresampled($vorschau, $bild, 0, 0, 0, 0, $neuBreite, $neuHoehe, $breite, $hoehe);
-
-    switch ($typ) {
-        case IMAGETYPE_JPEG: return imagejpeg($vorschau, $ziel, 85);
-        case IMAGETYPE_PNG:  return imagepng($vorschau, $ziel);
-        case IMAGETYPE_GIF:  return imagegif($vorschau, $ziel);
-        default:             return imagewebp($vorschau, $ziel, 85);
-    }
-}
-
-/**
- * Vorschaubild zum ersten Bild eines Artikels
- *
- * Nur wenn beide Verzeichnisse eingestellt sind. Ein Vorschaubild, das neuer
- * ist als seine Quelle, bleibt stehen — ein Vollbau rechnete sonst tausende
- * Bilder neu. Scheitert etwas, bleibt die Seite trotzdem geschrieben.
- *
- * @param object $db Company-Datenbankverbindung
- * @param int $kanal HugoShop
- * @param array $seite Werte aus shopPageData()
- * @return string erzeugt, aktuell, keine Bilder, nicht eingerichtet, Quelle fehlt, Fehler: …
- */
-function shopThumbnailFor($db, int $kanal, array $seite): string {
-    if (!$seite['shop']['images']) {
-        return 'keine Bilder';
-    }
-    // Die Bilder liegen auf dem Webserver bei HugoCMS (E6), nicht hier
-    if ('hugocms' === shopPublishMode($db, $kanal)) {
-        return 'bei HugoCMS';
-    }
-    if ('' === shopChannelValue($db, $kanal, 'images_dir') || '' === shopChannelValue($db, $kanal, 'thumbnails_dir')) {
-        return 'nicht eingerichtet';
-    }
-
-    try {
-        $webseite = shopSiteDir($db, $kanal);
-        $name = basename((string)$seite['shop']['images'][0]);
-
-        $quelle = shopPathUnder($webseite, shopChannelValue($db, $kanal, 'images_dir')).'/'.$name;
-        if (!is_file($quelle)) {
-            return 'Quelle fehlt';
-        }
-
-        $ziel = shopPathUnder($webseite, shopChannelValue($db, $kanal, 'thumbnails_dir'), true).'/'.$name;
-        if (is_file($ziel) && filemtime($ziel) >= filemtime($quelle)) {
-            return 'aktuell';
-        }
-
-        return shopThumbnail($quelle, $ziel, shopConfigInt($db, 'shop_thumbnail_size', 200))
-            ? 'erzeugt' : 'Fehler: Bild nicht lesbar';
-    } catch (ApiError $e) {
-        return 'Fehler: '.$e->getMessage();
-    }
-}
-
 // ── Rendern und Schreiben ──
 
 /**
@@ -742,7 +560,7 @@ function shopRenderPage($db, int $kanal, array $seite, string $ausgabe = 'produc
  * Entwurf wurde (der Lauf muss dann bauen), sonst SHIPPING_UNFIT.
  *
  * @param bool $entwurf als Entwurf schreiben (V16) — ohne Prüfung der Versandart
- * @return array file, bytes, thumbnail
+ * @return array file, bytes
  * @throws ApiError SHOP_WRITE_FAILED, SHIPPING_UNFIT, SHIPPING_UNFIT_DRAFT
  */
 function shopWriteProductPage($db, int $kanal, int $partsId, bool $entwurf = false): array {
@@ -768,15 +586,15 @@ function shopWriteProductPage($db, int $kanal, int $partsId, bool $entwurf = fal
         throw new ApiError('SHIPPING_UNFIT_DRAFT', $versandFehler.' — die bisherige Seite ist jetzt ein Entwurf');
     }
 
-    return ['file' => $datei, 'bytes' => $geschrieben, 'thumbnail' => shopThumbnailFor($db, $kanal, $seite)];
+    return ['file' => $datei, 'bytes' => $geschrieben];
 }
 
 /**
  * Macht aus einer gerenderten Seite einen Entwurf
  *
  * Setzt im Front Matter draft: true. Hugo veröffentlicht Entwürfe nicht —
- * weder der lokale Bau noch HugoCMS bauen mit --buildDrafts. Die Datei bleibt
- * stehen und wird beim Einschalten des HugoShops durch publish_all ersetzt
+ * HugoCMS baut nicht mit --buildDrafts. Die Datei bleibt stehen und wird
+ * beim Einschalten des HugoShops durch publish_all ersetzt
  * (V16).
  *
  * Geändert wird hier statt in der Vorlage: so gilt es für jeden Vorlagensatz,
@@ -811,7 +629,7 @@ function shopPageAsDraft(string $inhalt): string {
 
 /** Verzeichnis des Pakets in der Webseite eines HugoShops */
 function shopKitDir($db, int $kanal, bool $anlegen = false): string {
-    return shopPathUnder(shopSiteDir($db, $kanal, $anlegen), 'oserp-shop', $anlegen);
+    return shopPathUnder(shopSiteDir($db, $kanal), 'oserp-shop', $anlegen);
 }
 
 /**
@@ -820,8 +638,8 @@ function shopKitDir($db, int $kanal, bool $anlegen = false): string {
  * Adresse und Schlüssel für Weiterleiter und 404-Seite. Die Datei liegt
  * außerhalb des Docroots, und Hugo hängt sie nicht ein.
  *
- * JSON statt PHP (dev/shop-hugocms-trennung.md, E9): In der Betriebsart
- * HugoCMS geht das Paket über die HugoCMS-API, und HugoCMS schreibt bewusst
+ * JSON statt PHP (dev/shop-hugocms-trennung.md, E9): Das Paket geht über die
+ * HugoCMS-API, und HugoCMS schreibt bewusst
  * kein PHP. Eine Konfiguration, die sich mit jedem neuen Shop-Schlüssel
  * ändert, muss aber übertragen werden können — anders als die beiden
  * PHP-Einstiegspunkte, die man einmal von Hand ablegt.
@@ -959,66 +777,11 @@ function shopKitChanges(array $kit): int {
 // installieren“: Paket abgleichen und die Webseite in jedem Fall bauen.
 const SHOP_KIT_INSTALL = 'install';
 
-// Mounts, ohne die das Paket in der Webseite nicht ankommt (shop-ui/README.md,
-// „Einbindung“): Einstiegspunkte wie /shop-api/, Shortcodes und Partials,
-// das Widget-Bündel.
-const SHOP_KIT_MOUNTS = ['oserp-shop/static', 'oserp-shop/layouts', 'oserp-shop/assets/shop-ui'];
-
-/**
- * Was an der Einrichtung der Webseite für die Shop-UI noch fehlt
- *
- * Das Paket liegt nach dem Abgleich in oserp-shop/, wirkt aber erst, wenn die
- * Site-Konfiguration es einhängt und params.shopui setzt — sonst baut Hugo
- * fehlerfrei eine Webseite ohne Widgets. Die Konfiguration gehört der
- * Webseite; hier wird nur nachgesehen, nichts geschrieben. Gesucht wird
- * textuell, das genügt für JSON, TOML und YAML gleichermaßen.
- *
- * In der Betriebsart HugoCMS liegt die Webseite nicht auf diesem Rechner —
- * dann gibt es nichts nachzusehen.
- *
- * @param object $db Company-Datenbankverbindung
- * @param int $kanal HugoShop
- * @return array Hinweise im Wortlaut, leer wenn alles da ist
- */
-function shopKitSetupHints($db, int $kanal): array {
-    if ('hugocms' === shopPublishMode($db, $kanal)) {
-        return [];
-    }
-
-    $verzeichnis = shopSiteDir($db, $kanal);
-    $konfiguration = null;
-    foreach (['hugo.json', 'hugo.toml', 'hugo.yaml', 'hugo.yml', 'config.json', 'config.toml', 'config.yaml', 'config.yml'] as $name) {
-        if (is_file($verzeichnis.'/'.$name)) {
-            $konfiguration = $verzeichnis.'/'.$name;
-            break;
-        }
-    }
-    if (null === $konfiguration) {
-        return ['Keine Site-Konfiguration (hugo.* oder config.*) in '.$verzeichnis.' gefunden.'];
-    }
-
-    $inhalt = (string)@file_get_contents($konfiguration);
-    $hinweise = [];
-    $fehlend = array_values(array_filter(SHOP_KIT_MOUNTS, fn($quelle) => !str_contains($inhalt, $quelle)));
-    if ($fehlend) {
-        $hinweise[] = 'In '.basename($konfiguration).' fehlen unter module.mounts: '.implode(', ', $fehlend)
-                     .' — ohne sie kommt das Paket nicht in der Webseite an.';
-    }
-    if (!preg_match('/\bshopui\b/i', $inhalt)) {
-        $hinweise[] = 'In '.basename($konfiguration).' fehlt params.shopui — der Seitenkopf zeigt dann die alten Knöpfe statt der Widgets.';
-    }
-    return $hinweise;
-}
 
 // Höchstzahl Fehlerzeilen, die ein einzelner Auftrag im Wortlaut meldet. Der
 // Zähler läuft weiter, nur der Text wird nicht wiederholt: ein Grund, der alle
 // Artikel trifft, füllte sonst die Meldungsliste mit Tausenden gleicher Zeilen.
 const SHOP_MELDUNGEN_JE_AUFTRAG = 20;
-
-// Name des Programms, das die Webseite baut. Fest kodiert: eingestellt wird
-// nur das Verzeichnis, damit sich über die Firmenkonfiguration kein anderes
-// Programm unterschieben lässt.
-const SHOP_PUBLISH_BINARY = 'hugo';
 
 // ── Auftraege ──
 //
@@ -1413,83 +1176,6 @@ function shopPublishUnlock($db): void {
     }
 }
 
-/**
- * Das Programm, das die Webseite baut
- *
- * Eingestellt wird nur das Verzeichnis (shop_publish_command_path); der Name
- * der Datei steht fest (SHOP_PUBLISH_BINARY) und wird angehängt. So lässt sich
- * über die Einstellung kein anderes Programm unterschieben. Ist die Einstellung
- * des Mandanten leer, springt der gleichnamige Eintrag aus der settings.ini
- * ein — als Rückfall, nicht als Vorrang.
- *
- * Geprüft wird vor jedem Bau: absoluter Pfad, kein Leerraum (der deutete auf
- * angehängte Argumente hin, die gehören nicht hierher), vorhandenes
- * Verzeichnis, darin eine vorhandene und ausführbare Datei.
- *
- * @param object $db Company-Datenbankverbindung
- * @return array pfad (leer, wenn nichts eingestellt oder ungültig), quelle, fehler (leer, wenn in Ordnung)
- */
-function shopPublishProgram($db): array {
-    $ausEinstellung = trim(shopConfigValue($db, 'shop_publish_command_path'));
-    $ausIni = defined('OSERP_SHOP_PUBLISH_COMMAND_PATH') ? trim((string)OSERP_SHOP_PUBLISH_COMMAND_PATH) : '';
-    $verzeichnis = '' !== $ausEinstellung ? $ausEinstellung : $ausIni;
-    $quelle = '' !== $ausEinstellung ? shopConfigLabel('shop_publish_command_path') : 'settings.ini';
-    $ergebnis = ['pfad' => '', 'quelle' => $quelle, 'fehler' => ''];
-
-    if ('' === $verzeichnis) {
-        return $ergebnis;
-    }
-
-    $pfad = rtrim($verzeichnis, '/').'/'.SHOP_PUBLISH_BINARY;
-
-    if ('/' !== $verzeichnis[0]) {
-        $ergebnis['fehler'] = "Kein absoluter Pfad ($quelle): $verzeichnis";
-    } elseif (1 === preg_match('/\s/', $verzeichnis)) {
-        $ergebnis['fehler'] = "Nur das Verzeichnis, ohne Argumente ($quelle): $verzeichnis";
-    } elseif (!is_dir($verzeichnis)) {
-        $ergebnis['fehler'] = is_file($verzeichnis)
-            ? "Nur das Verzeichnis eintragen, nicht das Programm selbst ($quelle): $verzeichnis"
-            : "Verzeichnis nicht gefunden ($quelle): $verzeichnis";
-    } elseif (!is_file($pfad)) {
-        $ergebnis['fehler'] = "Im Verzeichnis liegt kein ".SHOP_PUBLISH_BINARY." ($quelle): $verzeichnis";
-    } elseif (!is_executable($pfad)) {
-        $ergebnis['fehler'] = "Programm nicht ausführbar ($quelle): $pfad";
-    } else {
-        $ergebnis['pfad'] = $pfad;
-    }
-
-    return $ergebnis;
-}
-
-/**
- * Die Befehlszeile, die die Webseite baut
- *
- * Zusammengesetzt aus dem geprüften Programm und festen Argumenten — nichts
- * davon ist frei eingegebener Text, und der Pfad geht maskiert hinein.
- * Ausgeführt wird sie im Verzeichnis der Webseite; Hugo schreibt dann nach
- * public/ darunter.
- *
- * Beide Wege — der Läufer im Cron und "Jetzt ausführen" im Admin-Panel —
- * bauen über shopPublishRun() und damit über diese Funktion.
- *
- * @param object $db Company-Datenbankverbindung
- * @param int $kanal HugoShop
- * @return array befehl (leer, wenn kein Programm eingestellt), fehler (leer, wenn in Ordnung)
- */
-function shopPublishCommand($db, int $kanal): array {
-    $programm = shopPublishProgram($db);
-    if ('' === $programm['pfad']) {
-        return ['befehl' => '', 'fehler' => $programm['fehler']];
-    }
-
-    $befehl = escapeshellarg($programm['pfad']);
-    if (shopChannelBool($db, $kanal, 'publish_clean_destination', true)) {
-        $befehl .= ' --cleanDestinationDir';
-    }
-
-    return ['befehl' => $befehl, 'fehler' => ''];
-}
-
 // ── Lauf im Hintergrund ──
 //
 // "Jetzt ausführen" im Admin-Panel wartet nicht mehr auf den Lauf. Es startet
@@ -1797,7 +1483,7 @@ function shopPublishStatus($db): array {
  *                              (der Läufer legt dort sein Protokoll an)
  * @param bool $nurBetroffene nur Webseiten mit Aufträgen in diesem Lauf bearbeiten
  *                            (Lauf aus dem Admin-Panel, --only-jobs)
- * @return array gesperrt, jobs, seiten, entfernt, fehler, fehler_texte, kit, kategorien, bauen, gebaut, bau_code, bau_ausgabe
+ * @return array gesperrt, jobs, seiten, entfernt, fehler, fehler_texte, kit, kategorien, bauen, gebaut
  */
 function shopPublishRun($db, ?callable $melden = null, int $limit = 500, ?array $nurIds = null, bool $bauen = true, ?callable $beginn = null, bool $nurBetroffene = false): array {
     // Jede Meldung geht an den Aufrufer und in die Ausgabe des Laufs, die am
@@ -1823,7 +1509,7 @@ function shopPublishRun($db, ?callable $melden = null, int $limit = 500, ?array 
         $gruppen[$aktuell] ??= ['titel' => $titel, 'zeilen' => []];
     };
     $bilanz = ['gesperrt' => false, 'jobs' => 0, 'seiten' => 0, 'entfernt' => 0, 'fehler' => 0,
-               'kit' => 0, 'kategorien' => 0, 'bauen' => false, 'gebaut' => false, 'bau_code' => 0, 'bau_ausgabe' => [],
+               'kit' => 0, 'kategorien' => 0, 'bauen' => false, 'gebaut' => false,
                'fehler_texte' => []];
 
     // Fehler werden nicht nur gezählt, sondern im Wortlaut gesammelt: das
@@ -2002,7 +1688,7 @@ function shopSiteJobResults($db, array $ids, array $fehler, bool $gebaut): void 
 
 /**
  * Der Teil eines Laufs, der eine Webseite betrifft: Paket, Kategorieübersicht,
- * Bau bzw. Übertragung an HugoCMS
+ * Übertragung an HugoCMS und Bau dort
  *
  * Gerufen von shopPublishRun() nach den Aufträgen, je betroffenem HugoShop.
  *
@@ -2012,13 +1698,10 @@ function shopSiteJobResults($db, array $ids, array $fehler, bool $gebaut): void 
  * @param bool $bauen Webseite bauen, wenn sich etwas geändert hat
  * @param callable $sagen Fortschritt
  * @param callable $fehler Fehlermeldung, wird gezählt
- * @param array $bilanz Bilanz des Laufs: kit, kategorien, gebaut, bau_code, bau_ausgabe
+ * @param array $bilanz Bilanz des Laufs: kit, kategorien, gebaut
  * @return void
  */
 function shopPublishSite($db, int $kanal, array $zahlen, bool $bauen, callable $sagen, callable $fehler, array &$bilanz): void {
-    $kit = 0;
-    $kategorien = 0;
-
     // Das Paket bei jedem Lauf abgleichen, nicht nur nach neuen Seiten:
     // beim ersten Lauf entsteht oserp-shop/ überhaupt erst, und nach einem
     // Update kommt ein neues Bundle an, ohne dass jemand veröffentlicht.
@@ -2053,7 +1736,6 @@ function shopPublishSite($db, int $kanal, array $zahlen, bool $bauen, callable $
         try {
             $übersicht = shopWriteCategoryGroups($db, $kanal);
             if ($übersicht['changed']) {
-                $kategorien = 1;
                 $bilanz['kategorien'] += 1;
                 $sagen($übersicht['categories'] > 0
                     ? sprintf('Kategorieübersicht geschrieben: %d Kategorien in %d Gruppen', $übersicht['categories'], $übersicht['groups'])
@@ -2064,57 +1746,11 @@ function shopPublishSite($db, int $kanal, array $zahlen, bool $bauen, callable $
         }
     }
 
-    // Betriebsart HugoCMS: übertragen und dort bauen lassen. Übertragen
-    // wird auch ohne Änderung in diesem Lauf — HugoCMS könnte hinterher
-    // sein (neue Webseite, gescheiterter Lauf); was unverändert ist,
-    // erkennt die Übertragung selbst.
-    if ('hugocms' === shopPublishMode($db, $kanal)) {
-        if (shopHugoCmsPublish($db, $kanal, $sagen, $fehler, $bauen, $zahlen['bauen'])) {
-            $bilanz['gebaut'] = true;
-        }
-        return;
-    }
-
-    // bauen: ein Auftrag verlangt den Bau auch ohne Änderung (SHOP_KIT_INSTALL)
-    $geaendert = $zahlen['seiten'] + $zahlen['entfernt'] + $zahlen['kit'] + $kit + $kategorien
-               + ($zahlen['bauen'] ? 1 : 0);
-    if (!$bauen || 0 === $geaendert) {
-        return;
-    }
-
-    // Die Befehlszeile setzt die Erweiterung selbst zusammen: geprüfter
-    // Pfad zum Programm plus feste Argumente (shopPublishCommand).
-    $bau = shopPublishCommand($db, $kanal);
-    if ('' !== $bau['fehler']) {
-        $fehler('Die Webseite wurde nicht gebaut: '.$bau['fehler']);
-        return;
-    }
-    if ('' === $bau['befehl']) {
-        $sagen('Kein Programm zum Bauen eingestellt — es wurden nur Dateien geschrieben.');
-        return;
-    }
-    if (!function_exists('exec')) {
-        $fehler('exec() ist abgeschaltet — die Webseite wurde nicht gebaut.');
-        return;
-    }
-
-    $verzeichnis = shopSiteDir($db, $kanal);
-    $sagen('Baue die Webseite in '.$verzeichnis);
-
-    $ausgabe = [];
-    $code = 0;
-    exec('cd '.escapeshellarg($verzeichnis).' && '.$bau['befehl'].' 2>&1', $ausgabe, $code);
-    foreach ($ausgabe as $zeile) {
-        $sagen('  '.$zeile);
-    }
-
-    $bilanz['bau_ausgabe'] = array_merge($bilanz['bau_ausgabe'], $ausgabe);
-    if (0 === $code) {
+    // An HugoCMS übertragen und dort bauen lassen. Übertragen wird auch ohne
+    // Änderung in diesem Lauf — HugoCMS könnte hinterher sein (neue Webseite,
+    // gescheiterter Lauf); was unverändert ist, erkennt die Übertragung selbst.
+    if (shopHugoCmsPublish($db, $kanal, $sagen, $fehler, $bauen, $zahlen['bauen'])) {
         $bilanz['gebaut'] = true;
-        $sagen('Webseite gebaut.');
-    } else {
-        $bilanz['bau_code'] = $code;
-        $fehler('Der Bau der Webseite ist fehlgeschlagen (Rückgabewert '.$code.').');
     }
 }
 
