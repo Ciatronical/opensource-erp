@@ -1191,7 +1191,12 @@ onBeforeUnmount(beobachtenBeenden)
     cursor: pointer;
 }
 
+/* Ausgabe von Läufer und Hugo in Festbreitenschrift: Hugo gibt seine
+   Zusammenfassung als Tabelle aus Leerzeichen, | und - aus — nur bei gleich
+   breiten Zeichen stehen die Spalten untereinander */
 .laufausgabe {
+    font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, 'Liberation Mono', monospace;
+    font-size: 0.75rem;
     white-space: pre-wrap;
     word-break: break-word;
 }
