@@ -30,7 +30,8 @@
             },
             "points": {
                 "no_parts_offered": "Ei tarjottuja tuotteita"
-            }
+            },
+            "paypalSandbox": "Myyntikanava ”{name}”: PayPal toimii testiympäristössä — oikeat maksut eivät ole vielä mahdollisia."
         },
         "sections": {
             "figures": "Tunnusluvut",

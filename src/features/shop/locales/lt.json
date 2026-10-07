@@ -30,7 +30,8 @@
             },
             "points": {
                 "no_parts_offered": "Nesiūloma jokia prekė"
-            }
+            },
+            "paypalSandbox": "Pardavimo kanalas „{name}“: PayPal veikia bandomojoje aplinkoje — tikri mokėjimai dar negalimi."
         },
         "sections": {
             "figures": "Rodikliai",

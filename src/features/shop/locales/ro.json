@@ -30,7 +30,8 @@
             },
             "points": {
                 "no_parts_offered": "Niciun articol oferit"
-            }
+            },
+            "paypalSandbox": "Canalul de vânzare „{name}”: PayPal rulează în mediul de test — plățile reale nu sunt încă posibile."
         },
         "sections": {
             "figures": "Indicatori",

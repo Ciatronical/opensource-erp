@@ -113,12 +113,18 @@
             density="compact"
             class="mb-4"
         >
-            <div class="text-body-2">{{ t('ShopView.status.hintsChannel', { name: kanal.name }) }}</div>
-            <ul class="mt-1">
-                <li v-for="punkt in kanal.hints" :key="punkt">
-                    {{ feldName(punkt) }}
-                </li>
-            </ul>
+            <template v-if="kanal.hints.length">
+                <div class="text-body-2">{{ t('ShopView.status.hintsChannel', { name: kanal.name }) }}</div>
+                <ul class="mt-1">
+                    <li v-for="punkt in kanal.hints" :key="punkt">
+                        {{ feldName(punkt) }}
+                    </li>
+                </ul>
+            </template>
+            <!-- Kein fehlender Punkt, sondern ein Zustand des Kanals -->
+            <div v-if="kanal.paypal_sandbox" class="text-body-2" :class="{ 'mt-2': kanal.hints.length }">
+                {{ t('ShopView.status.paypalSandbox', { name: kanal.name }) }}
+            </div>
             <div v-if="kanal.publish_problems.length" class="text-caption mt-2">
                 <div v-for="(grund, index) in kanal.publish_problems" :key="index">{{ grund }}</div>
             </div>

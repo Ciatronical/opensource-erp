@@ -30,7 +30,8 @@
             },
             "points": {
                 "no_parts_offered": "Geen artikel aangeboden"
-            }
+            },
+            "paypalSandbox": "Verkoopkanaal „{name}”: PayPal draait in de testomgeving — echte betalingen zijn nog niet mogelijk."
         },
         "sections": {
             "figures": "Kengetallen",

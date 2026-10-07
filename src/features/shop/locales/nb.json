@@ -30,7 +30,8 @@
             },
             "points": {
                 "no_parts_offered": "Ingen varer tilbys"
-            }
+            },
+            "paypalSandbox": "Salgskanal «{name}»: PayPal kjører i testmiljøet — ekte betalinger er ennå ikke mulig."
         },
         "sections": {
             "figures": "Nøkkeltall",

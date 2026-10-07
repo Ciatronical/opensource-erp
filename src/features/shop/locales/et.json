@@ -30,7 +30,8 @@
             },
             "points": {
                 "no_parts_offered": "Ühtegi artiklit ei pakuta"
-            }
+            },
+            "paypalSandbox": "Müügikanal „{name}“: PayPal töötab testkeskkonnas — päris makseid ei saa veel teha."
         },
         "sections": {
             "figures": "Näitajad",

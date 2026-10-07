@@ -30,7 +30,8 @@
             },
             "points": {
                 "no_parts_offered": "No item offered"
-            }
+            },
+            "paypalSandbox": "Sales channel “{name}”: PayPal runs in the test environment — real payments are not possible yet."
         },
         "sections": {
             "figures": "Key figures",

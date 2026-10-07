@@ -30,7 +30,8 @@
             },
             "points": {
                 "no_parts_offered": "没有上架任何物料"
-            }
+            },
+            "paypalSandbox": "销售渠道“{name}”：PayPal 运行在测试环境中 — 尚无法接收真实付款。"
         },
         "sections": {
             "figures": "关键指标",

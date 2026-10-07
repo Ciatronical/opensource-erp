@@ -30,7 +30,8 @@
             },
             "points": {
                 "no_parts_offered": "Žádná nabízená položka"
-            }
+            },
+            "paypalSandbox": "Prodejní kanál „{name}“: PayPal běží v testovacím prostředí — skutečné platby zatím nejsou možné."
         },
         "sections": {
             "figures": "Ukazatele",

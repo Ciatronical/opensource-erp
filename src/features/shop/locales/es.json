@@ -30,7 +30,8 @@
             },
             "points": {
                 "no_parts_offered": "Ningún artículo ofrecido"
-            }
+            },
+            "paypalSandbox": "Canal de venta «{name}»: PayPal funciona en el entorno de pruebas — todavía no es posible recibir pagos reales."
         },
         "sections": {
             "figures": "Indicadores",

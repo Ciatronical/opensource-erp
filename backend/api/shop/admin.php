@@ -127,9 +127,9 @@ function getShopStatus($data) {
         if ($leer('base_url')) {
             $hin[] = 'shop_base_url';
         }
-        if (shopChannelBool($db, $id, 'paypal_sandbox', true)) {
-            $hin[] = 'shop_paypal_sandbox';
-        }
+        // Testumgebung ist kein fehlender Punkt, sondern ein Zustand: eigene
+        // Zeile im Kasten des Kanals statt unter „es fehlt noch“
+        $sandbox = shopChannelBool($db, $id, 'paypal_sandbox', true);
 
         // Veröffentlichung über HugoCMS: ohne Adresse und Schlüssel entsteht
         // keine Webseite — das gehört zu dem, was dem Kanal fehlt. Ob beides
@@ -150,10 +150,11 @@ function getShopStatus($data) {
         if ($fehlt) {
             $kanalFehlt[] = ['channel_id' => $id, 'name' => (string)$kanal['name'], 'missing' => $fehlt];
         }
-        if ($hin || $probleme) {
+        if ($hin || $probleme || $sandbox) {
             $kanalHinweise[] = ['channel_id' => $id, 'name' => (string)$kanal['name'], 'type' => 'hugoshop',
                                 'hints' => array_values(array_unique($hin)),
-                                'publish_problems' => array_values(array_unique($probleme))];
+                                'publish_problems' => array_values(array_unique($probleme)),
+                                'paypal_sandbox' => $sandbox];
         }
     }
 
@@ -189,7 +190,7 @@ function getShopStatus($data) {
         }
         if ($hin) {
             $kanalHinweise[] = ['channel_id' => (int)$kanal['id'], 'name' => (string)$kanal['name'], 'type' => 'ebay',
-                                'hints' => $hin, 'publish_problems' => []];
+                                'hints' => $hin, 'publish_problems' => [], 'paypal_sandbox' => false];
         }
     }
     $blockierend = array_values(array_unique($blockierend));

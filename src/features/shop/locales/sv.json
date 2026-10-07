@@ -30,7 +30,8 @@
             },
             "points": {
                 "no_parts_offered": "Inga artiklar erbjuds"
-            }
+            },
+            "paypalSandbox": "Försäljningskanal ”{name}”: PayPal körs i testmiljön — riktiga betalningar är ännu inte möjliga."
         },
         "sections": {
             "figures": "Nyckeltal",

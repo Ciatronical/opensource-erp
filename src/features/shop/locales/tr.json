@@ -30,7 +30,8 @@
             },
             "points": {
                 "no_parts_offered": "Sunulan ürün yok"
-            }
+            },
+            "paypalSandbox": "Satış kanalı „{name}“: PayPal test ortamında çalışıyor — gerçek ödemeler henüz mümkün değil."
         },
         "sections": {
             "figures": "Göstergeler",

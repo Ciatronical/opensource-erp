@@ -30,7 +30,8 @@
             },
             "points": {
                 "no_parts_offered": "Netiek piedāvāta neviena prece"
-            }
+            },
+            "paypalSandbox": "Pārdošanas kanāls “{name}”: PayPal darbojas testa vidē — īsti maksājumi vēl nav iespējami."
         },
         "sections": {
             "figures": "Rādītāji",
