@@ -188,6 +188,18 @@
             "vehicleNotes": "Fahrzeugnotizen",
             "licensePlate": "Kennzeichen",
             "noVehicle": "Kein Fahrzeug",
+            "quickCar": {
+                "enterToCreate": "Kein Fahrzeug – Enter legt {plate} neu an",
+                "created": "Fahrzeug {plate} angelegt (nur Kennzeichen, Daten später ergänzen)",
+                "existsOtherOwner": "Das Fahrzeug mit dem Kennzeichen {plate} ist schon bei {owner} angelegt. Willst du es wirklich diesem Kunden zuordnen?",
+                "takeOverTitle": "Fahrzeug bereits vorhanden",
+                "takeOverYes": "Ja, diesem Kunden zuordnen",
+                "takeOverNo": "Abbrechen",
+                "takenOver": "Fahrzeug {plate} von {owner} übernommen",
+                "tooLong": "Kennzeichen {plate} ist zu lang (max. 10 Zeichen)",
+                "noCustomer": "Bitte zuerst einen Kunden wählen",
+                "error": "Fahrzeug konnte nicht angelegt werden"
+            },
             "vehicleSection": "Fahrzeug / Auftragsdaten",
             "kmStand": "km-Stand",
             "kmStandRequired": "km-Stand ist Pflichtfeld – bitte vor der Rechnungserstellung eintragen.",

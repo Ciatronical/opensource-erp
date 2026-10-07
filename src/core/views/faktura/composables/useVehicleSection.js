@@ -3,6 +3,7 @@
 import { ref, computed, watch } from 'vue'
 import { formatDateDE } from '@/features/lxcars/utils/validation.js'
 import * as toast from '@/core/utils/toasts.js'
+import * as alerts from '@/core/utils/alerts.js'
 import { oserpStore } from '@/core/stores/oserp.store.js'
 import { getValues } from '@/core/utils/configColors.js'
 
@@ -285,18 +286,94 @@ export function useVehicleSection({ carsStore, fakturaId, fakturaType, t }) {
     // ── Fahrzeug wechseln ──
 
     function onCarChange(carId) {
-        if (!fakturaId.value) return
         selectedCarId.value = carId || null
+        const car = customerCars.value.find(c => c.c_id === carId)
+        // Neu-Modus: noch kein Beleg – Auswahl merken, verknüpft wird in ensureFakturaExists
+        if (!fakturaId.value) {
+            vehicleNotes.value = car?.c_text || ''
+            fhzart.value = car?.fhzart || ''
+            return
+        }
         const linkFn = isInvoice.value
             ? carsStore.linkCarToInvoice
             : carsStore.linkCarToFaktura
         linkFn(fakturaId.value, carId || null)
             .then(() => {
-                const car = customerCars.value.find(c => c.c_id === carId)
                 vehicleNotes.value = car?.c_text || ''
                 fhzart.value = car?.fhzart || ''
             })
             .catch(e => { console.error('Error linking car:', e) })
+    }
+
+    // ── Fahrzeug nur per Kennzeichen anlegen (ohne Fahrzeugschein) ──
+
+    // "b ab 1234" → "B-AB1234": Großschreibung, erstes Leerzeichen wird zum Bindestrich, Rest ohne Leerzeichen
+    function normalizePlate(raw) {
+        let v = String(raw || '').toUpperCase().trim().replace(/\s+/g, ' ')
+        if (!v.includes('-')) v = v.replace(' ', '-')
+        return v.replace(/\s+/g, '')
+    }
+
+    const creatingCar = ref(false)
+
+    // Enter im Kennzeichen-Feld: vorhandenes Fahrzeug des Kunden auswählen, sonst anlegen und verknüpfen
+    async function createCarFromPlate(rawPlate, customerId) {
+        const plate = normalizePlate(rawPlate)
+        if (!plate || creatingCar.value) return
+        if (!customerId) {
+            toast.warning(t('FakturaView.faktura.quickCar.noCustomer'))
+            return
+        }
+
+        const existing = customerCars.value.find(c => normalizePlate(c.c_ln) === plate)
+        if (existing) {
+            onCarChange(existing.c_id)
+            return
+        }
+
+        if (plate.length > 10) {
+            toast.warning(t('FakturaView.faktura.quickCar.tooLong', { plate }))
+            return
+        }
+
+        creatingCar.value = true
+        try {
+            const params = { customerId, plate, fakturaId: fakturaId.value, fakturaType: fakturaType.value }
+            let result = await carsStore.quickCreateCar(params)
+
+            // Kennzeichen gehört einem anderen Kunden: Rückfrage, ob das Fahrzeug übernommen werden soll
+            if (!result.car) {
+                const owner = result.owner_name || '?'
+                const answer = await alerts.question(
+                    t('FakturaView.faktura.quickCar.existsOtherOwner', { plate, owner }),
+                    t('FakturaView.faktura.quickCar.takeOverTitle'),
+                    t('FakturaView.faktura.quickCar.takeOverYes'),
+                    t('FakturaView.faktura.quickCar.takeOverNo')
+                )
+                if (!answer.isConfirmed) return
+                result = await carsStore.quickCreateCar({ ...params, takeOver: true })
+                if (!result.car) return
+            }
+
+            if (!customerCars.value.some(c => c.c_id === result.car.c_id)) {
+                customerCars.value = [...customerCars.value, result.car].sort((a, b) => String(a.c_ln).localeCompare(String(b.c_ln)))
+            }
+            // Backend hat bereits verknüpft – nur lokalen Zustand setzen
+            selectedCarId.value = result.car.c_id
+            vehicleNotes.value = result.car.c_text || ''
+            fhzart.value = result.car.fhzart || ''
+
+            if (result.created) {
+                toast.success(t('FakturaView.faktura.quickCar.created', { plate }))
+            } else if (result.taken_over) {
+                toast.success(t('FakturaView.faktura.quickCar.takenOver', { plate, owner: result.owner_name || '?' }))
+            }
+        } catch (e) {
+            console.error('Error creating car from plate:', e)
+            toast.error(t('FakturaView.faktura.quickCar.error'))
+        } finally {
+            creatingCar.value = false
+        }
     }
 
     // ── Daten laden (wird von onMounted in der Hauptdatei aufgerufen) ──
@@ -415,6 +492,7 @@ export function useVehicleSection({ carsStore, fakturaId, fakturaType, t }) {
         onClearDatetime,
         onOeExtFieldChange,
         onCarChange,
+        createCarFromPlate,
         loadVehicleData,
         preselectCar,
         onCustomerChangeVehicle,

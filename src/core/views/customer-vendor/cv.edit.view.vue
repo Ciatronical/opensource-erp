@@ -340,6 +340,8 @@ import { useRoute, useRouter } from 'vue-router'
 import { oserpStore } from '@/core/stores/oserp.store.js'
 import { useViewHistory } from '@/core/composables/useViewHistory.js'
 import { entityRoute } from '@/core/constants/routes.js'
+import * as alerts from '@/core/utils/alerts.js'
+import * as toasts from '@/core/utils/toasts.js'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
 import MessagesView from '@/core/components/messages/messages.view.vue'
 import BillingTab from './tabs/billing.tab.vue'
@@ -392,7 +394,7 @@ export default {
         const route = useRoute()
         const router = useRouter()
         const displayMessages = ref([])
-        const { saveToHistory } = useViewHistory()
+        const { saveToHistory, removeFromHistory, loadHistory } = useViewHistory()
 
         // Kunde/Lieferant im "Zuletzt besucht"-Verlauf der Schnellsuche merken
         // (beim Öffnen zum Bearbeiten und direkt nach der Neuanlage).
@@ -833,21 +835,38 @@ export default {
 
         const saveAndQuotation = () => saveAndOpen('quotation-new')
 
+        // Löschen: Bestätigung, Backend-Löschung, danach wird der zuvor besuchte
+        // Kunde/Lieferant aus dem Verlauf geöffnet (sonst die Suche). router.replace,
+        // damit "Zurück" nicht wieder beim gelöschten Datensatz landet. Nach dem
+        // Löschen darf der Auto-Save den Datensatz nicht per sendBeacon wieder anlegen.
+        let deleted = false
         const deleteCustomer = async () => {
-            if (confirm(t('CustomerVendorEditView.actions.confirmDelete'))) {
-                try {
-                    await oserpData.deleteCustomer(id.value)
-                } catch (error) {
-                    const msg = {
-                        type: 'error',
-                        title: t('CustomerVendorEditView.messages.deleteError')
-                    }
-                    displayMessages.value.push(msg)
-                    setTimeout(() => {
-                        const idx = displayMessages.value.indexOf(msg)
-                        if (idx !== -1) displayMessages.value.splice(idx, 1)
-                    }, 8000)
-                }
+            const cvId = id.value || savedCvId.value || cvData.value.id
+            if (!cvId) return
+            const isVendor = entitySrc.value === 'V'
+            const result = await alerts.question(
+                t(isVendor ? 'CustomerVendorEditView.actions.confirmDeleteVendor' : 'CustomerVendorEditView.actions.confirmDelete',
+                  { name: cvData.value.name || '' }),
+                '',
+                t('CustomerVendorEditView.actions.delete'),
+                t('CustomerVendorEditView.actions.cancel')
+            )
+            if (!result.isConfirmed) return
+            try {
+                await oserpData.deleteCV(cvId, entitySrc.value)
+                deleted = true
+                hasPendingChanges = false
+                if (saveTimeout) { clearTimeout(saveTimeout); saveTimeout = null }
+                toasts.success(t(isVendor ? 'CustomerVendorEditView.messages.deletedVendor' : 'CustomerVendorEditView.messages.deleted',
+                    { name: cvData.value.name || '' }))
+                removeFromHistory(isVendor ? 'vendor' : 'customer', cvId)
+                const previous = loadHistory().find(h => (h.type === 'customer' || h.type === 'vendor') && h.id)
+                router.replace(previous ? entityRoute(previous.type, previous.id) : { name: 'search' })
+            } catch (error) {
+                await alerts.error(
+                    error.message || t(isVendor ? 'CustomerVendorEditView.messages.deleteErrorVendor' : 'CustomerVendorEditView.messages.deleteError'),
+                    t(isVendor ? 'CustomerVendorEditView.messages.deleteErrorVendor' : 'CustomerVendorEditView.messages.deleteError')
+                )
             }
         }
 
@@ -858,7 +877,7 @@ export default {
         // ── Pending Changes bei Navigation speichern (sendBeacon) ──
         function flushPendingChanges() {
             const cvId = id.value || savedCvId.value || cvData.value.id
-            if (!initialLoaded) return
+            if (deleted || !initialLoaded) return
             if (!hasPendingChanges && !saveTimeout) return
             if (!cvId) return
 
@@ -912,6 +931,8 @@ export default {
                 // create_zugferd_invoices existiert nur in der customer-Tabelle
                 if (entitySrc.value === 'C') {
                     profile.create_zugferd_invoices = -1
+                    // Standard-Stundensatz aus der Mandantenkonfiguration (wie kivitendo)
+                    profile.hourly_rate = Number(oserpData.session?.company_config?.defaults?.customer_hourly_rate) || 0
                     // Businesstyp automatisch setzen wenn nur einer vorhanden
                     if (businessTypes.value.length === 1) {
                         profile.business_id = businessTypes.value[0].value

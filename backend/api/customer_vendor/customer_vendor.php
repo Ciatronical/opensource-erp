@@ -1417,6 +1417,116 @@ function deleteContact($data) {
 }
 
 /**
+ * Löscht einen Kunden oder Lieferanten samt seiner Stammdaten-Anhänge
+ * (Ansprechpartner, Liefer- und Rechnungsadressen, benutzerdefinierte Variablen,
+ * Notizen, Historie, Kundenpreise, Erweiterungsdaten).
+ *
+ * Belege (Rechnungen/Eingangsrechnungen, Angebote/Aufträge, Lieferscheine,
+ * Buchungen) blockieren das Löschen – der Datensatz ist dann auf "ungültig"
+ * zu setzen. Weitere Verknüpfungen (Projekte, Briefe, Zeiterfassung, ...)
+ * werden über die Fremdschlüssel der Datenbank abgefangen.
+ *
+ * @param array $data Array mit 'id' => ID des Kunden/Lieferanten, 'src' => 'C' oder 'V'
+ * @return void Gibt JSON mit Erfolgs-Status aus
+ *
+ * @testdata {"action": "deleteCV", "id": 1121, "src": "C"}
+ */
+function deleteCV($data) {
+    $apiCompanySpace = DbhCompany::begin();
+    $cv_id = (int)($data['id'] ?? 0);
+    if ($cv_id <= 0) {
+        throw new ApiError('MISSING_ID', 'id fehlt oder ist leer');
+    }
+    $isVendor = (($data['src'] ?? 'C') === 'V');
+    $table = $isVendor ? 'vendor' : 'customer';
+    $idCol = $isVendor ? 'vendor_id' : 'customer_id';
+    $label = $isVendor ? 'Lieferant' : 'Kunde';
+
+    // Berechtigung: ohne "alle bearbeiten" nur eigene Datensätze (Betreuer)
+    if (!checkPermissions('customer_vendor_all_edit')) {
+        permit('customer_vendor_edit');
+        $login = DbhAuth::begin()->getLogin();
+        $owned = $apiCompanySpace->getOne(
+            "SELECT cv.id FROM $table cv
+             LEFT JOIN employee emp ON cv.salesman_id = emp.id
+             WHERE cv.id = :cv_id AND emp.login = :login",
+            [':cv_id' => $cv_id, ':login' => $login]
+        );
+        if (!$owned) {
+            throw new ApiError('NO_PERMISSION', "Keine Berechtigung, diesen $label zu löschen.");
+        }
+    }
+
+    // Belege, die das Löschen blockieren – in einer Abfrage gezählt
+    $docTable = $isVendor ? 'ap' : 'ar';
+    $blockers = $apiCompanySpace->getOne(
+        "SELECT json_build_object(
+            'exists',          (SELECT count(*) FROM $table WHERE id = :cv_id),
+            'invoices',        (SELECT count(*) FROM $docTable WHERE $idCol = :cv_id),
+            'orders',          (SELECT count(*) FROM oe WHERE $idCol = :cv_id OR delivery_$idCol = :cv_id),
+            'delivery_orders', (SELECT count(*) FROM delivery_orders WHERE $idCol = :cv_id),
+            'bookings',        (SELECT count(*) FROM accounting_bookings WHERE $idCol = :cv_id)
+        ) AS info",
+        [':cv_id' => $cv_id]
+    );
+    $info = json_decode($blockers['info'] ?? '{}', true);
+    if (empty($info['exists'])) {
+        throw new ApiError('NOT_FOUND', "$label mit ID $cv_id nicht gefunden.");
+    }
+    $used = [];
+    if (!empty($info['invoices']))        $used[] = $info['invoices'] . ' ' . ($isVendor ? 'Eingangsrechnung(en)' : 'Rechnung(en)');
+    if (!empty($info['orders']))          $used[] = $info['orders'] . ' Angebot(e)/Auftrag(e)';
+    if (!empty($info['delivery_orders'])) $used[] = $info['delivery_orders'] . ' Lieferschein(e)';
+    if (!empty($info['bookings']))        $used[] = $info['bookings'] . ' Buchung(en)';
+    if ($used) {
+        throw new ApiError('CV_IN_USE',
+            "$label kann nicht gelöscht werden, es existieren noch Belege: " . implode(', ', $used)
+            . '. Bitte stattdessen als ungültig markieren.');
+    }
+
+    try {
+        $apiCompanySpace->beginTransaction();
+        // Stammdaten-Anhänge (teils ohne Fremdschlüssel, würden sonst verwaisen)
+        $apiCompanySpace->execute("DELETE FROM contacts WHERE cp_cv_id = :cv_id", [':cv_id' => $cv_id]);
+        $apiCompanySpace->execute("DELETE FROM shipto WHERE trans_id = :cv_id AND module = 'CT'", [':cv_id' => $cv_id]);
+        $apiCompanySpace->execute(
+            "DELETE FROM custom_variables WHERE trans_id = :cv_id
+             AND config_id IN (SELECT id FROM custom_variable_configs WHERE module = 'CT')",
+            [':cv_id' => $cv_id]
+        );
+        $apiCompanySpace->execute(
+            "DELETE FROM custom_variables_validity WHERE trans_id = :cv_id
+             AND config_id IN (SELECT id FROM custom_variable_configs WHERE module = 'CT')",
+            [':cv_id' => $cv_id]
+        );
+        $apiCompanySpace->execute("DELETE FROM notes WHERE trans_id = :cv_id AND trans_module = 'CT'", [':cv_id' => $cv_id]);
+        $apiCompanySpace->execute("DELETE FROM history_erp WHERE trans_id = :cv_id", [':cv_id' => $cv_id]);
+        if ($isVendor) {
+            $apiCompanySpace->execute("DELETE FROM vendor_ext WHERE vendor_id = :cv_id", [':cv_id' => $cv_id]);
+        } else {
+            $apiCompanySpace->execute("DELETE FROM additional_billing_addresses WHERE customer_id = :cv_id", [':cv_id' => $cv_id]);
+            $apiCompanySpace->execute("DELETE FROM part_customer_prices WHERE customer_id = :cv_id", [':cv_id' => $cv_id]);
+            $apiCompanySpace->execute("DELETE FROM customer_ext WHERE customer_id = :cv_id", [':cv_id' => $cv_id]);
+        }
+        $apiCompanySpace->execute("DELETE FROM $table WHERE id = :cv_id", [':cv_id' => $cv_id]);
+        $apiCompanySpace->commit();
+    } catch (PDOException $e) {
+        $apiCompanySpace->rollBack();
+        // 23503 = Fremdschlüsselverletzung: noch verknüpfte Daten (Projekte, Briefe, ...)
+        if ($e->getCode() == '23503') {
+            throw new ApiError('CV_IN_USE',
+                "$label kann nicht gelöscht werden, es existieren noch verknüpfte Daten. Bitte stattdessen als ungültig markieren.");
+        }
+        throw $e;
+    } catch (Exception $e) {
+        $apiCompanySpace->rollBack();
+        throw $e;
+    }
+
+    resultInfo(true, "$label gelöscht", ['id' => $cv_id, 'src' => $isVendor ? 'V' : 'C']);
+}
+
+/**
  * Gibt den Dateinamen einer Telefonaufnahme zurück, die mit dem CRM-Telefonie-Interface (crmti) verknüpft ist
  *
  * @param array $data Array mit 'unique_call_id' => Unique Call ID des Anrufs

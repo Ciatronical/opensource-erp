@@ -737,6 +737,11 @@ function deleteSqlQuery($data) {
 /**
  * Sucht nach Faktura-Dokumenten (Rechnungen, Angebote, Aufträge, Bestellungen, Lieferscheine)
  *
+ * Filterlogik liegt in lib/belegsuche.php, damit der Sammeldruck (print/) dieselbe
+ * Treffermenge bekommt. Liefert je Beleg auch die Kontaktdaten des Kunden/Lieferanten
+ * (E-Mail, Telefon, CC/BCC, weitere Nummern) für Versand direkt aus der Trefferliste
+ * sowie Summe und Anzahl aller Treffer.
+ *
  * @param string $data['type'] Dokumenttyp: invoice, purchase_invoice, quotation, order, purchase_order, delivery_order
  * @param array $data['where'] Optionale Filter als Array:
  *   - document_number: ILIKE auf Dokumentnummer
@@ -749,163 +754,20 @@ function deleteSqlQuery($data) {
 function searchDocuments($data) {
     $mandant = DbhCompany::begin();
 
-    $typeConfig = [
-        'invoice' => [
-            'table' => 'ar',
-            'number_field' => 'invnumber',
-            'cv_table' => 'customer',
-            'cv_fk' => 'customer_id',
-            'cv_number_field' => 'customernumber',
-            'status_expr' => 'ar.amount - ar.paid',
-            'faktura_route' => 'invoice',
-            'cv_src' => 'C',
-        ],
-        'purchase_invoice' => [
-            'table' => 'ap',
-            'number_field' => 'invnumber',
-            'cv_table' => 'vendor',
-            'cv_fk' => 'vendor_id',
-            'cv_number_field' => 'vendornumber',
-            'status_expr' => 'ap.amount - ap.paid',
-            'faktura_route' => 'purchase_invoice',
-            'cv_src' => 'V',
-        ],
-        'quotation' => [
-            'table' => 'oe',
-            'number_field' => 'quonumber',
-            'cv_table' => 'customer',
-            'cv_fk' => 'customer_id',
-            'cv_number_field' => 'customernumber',
-            'record_types' => "'sales_quotation'",
-            'status_field' => 'closed',
-            'faktura_route' => 'quotation',
-            'cv_src' => 'C',
-        ],
-        'order' => [
-            'table' => 'oe',
-            'number_field' => 'ordnumber',
-            'cv_table' => 'customer',
-            'cv_fk' => 'customer_id',
-            'cv_number_field' => 'customernumber',
-            'record_types' => "'sales_order', 'sales_order_intake'",
-            'status_field' => 'closed',
-            'faktura_route' => 'order',
-            'cv_src' => 'C',
-        ],
-        'purchase_order' => [
-            'table' => 'oe',
-            'number_field' => 'ordnumber',
-            'cv_table' => 'vendor',
-            'cv_fk' => 'vendor_id',
-            'cv_number_field' => 'vendornumber',
-            'record_types' => "'purchase_order', 'purchase_order_confirmation'",
-            'status_field' => 'closed',
-            'faktura_route' => 'purchase_order',
-            'cv_src' => 'V',
-        ],
-        'delivery_order' => [
-            'table' => 'delivery_orders',
-            'number_field' => 'donumber',
-            'cv_table' => 'customer',
-            'cv_fk' => 'customer_id',
-            'cv_number_field' => 'customernumber',
-            'record_types' => "'sales_delivery_order', 'purchase_delivery_order'",
-            'status_field' => 'closed',
-            'faktura_route' => 'delivery_order',
-            'cv_src' => 'C',
-        ],
-    ];
-
-    $type = $data['type'] ?? null;
-    if (!isset($typeConfig[$type])) {
-        throw new ApiError('API_INVALID_TYPE_FILTER', 'Invalid document type specified');
-    }
-
-    $cfg = $typeConfig[$type];
-    $tbl = $cfg['table'];
-    $where = $data['where'] ?? [];
-
-    $conditions = ["1=1"];
-    $params = [];
-    $paramIndex = 0;
-
-    if (!empty($where) && is_array($where)) {
-        // Dokumentnummer
-        if (!empty($where['document_number'])) {
-            $paramIndex++;
-            $paramName = ":p$paramIndex";
-            $conditions[] = "$tbl.{$cfg['number_field']} ILIKE $paramName";
-            $params[$paramName] = '%' . $where['document_number'] . '%';
-        }
-
-        // Kunden-/Lieferantenname
-        if (!empty($where['cv_name'])) {
-            $paramIndex++;
-            $paramName = ":p$paramIndex";
-            $conditions[] = "cv.name ILIKE $paramName";
-            $params[$paramName] = '%' . $where['cv_name'] . '%';
-        }
-
-        // Datum von/bis
-        if (!empty($where['transdate_from'])) {
-            $paramIndex++;
-            $paramName = ":p$paramIndex";
-            $conditions[] = "$tbl.transdate >= $paramName";
-            $params[$paramName] = $where['transdate_from'];
-        }
-        if (!empty($where['transdate_to'])) {
-            $paramIndex++;
-            $paramName = ":p$paramIndex";
-            $conditions[] = "$tbl.transdate <= $paramName";
-            $params[$paramName] = $where['transdate_to'];
-        }
-
-        // Betrag von/bis
-        if (isset($where['amount_from']) && $where['amount_from'] !== '') {
-            $paramIndex++;
-            $paramName = ":p$paramIndex";
-            $conditions[] = "$tbl.amount >= $paramName";
-            $params[$paramName] = floatval($where['amount_from']);
-        }
-        if (isset($where['amount_to']) && $where['amount_to'] !== '') {
-            $paramIndex++;
-            $paramName = ":p$paramIndex";
-            $conditions[] = "$tbl.amount <= $paramName";
-            $params[$paramName] = floatval($where['amount_to']);
-        }
-
-        // Status (offen/geschlossen)
-        if (!empty($where['status'])) {
-            if (isset($cfg['status_expr'])) {
-                // AR/AP: offen = amount - paid > 0
-                if ($where['status'] === 'open') {
-                    $conditions[] = "({$cfg['status_expr']}) > 0.01";
-                } elseif ($where['status'] === 'closed') {
-                    $conditions[] = "({$cfg['status_expr']}) <= 0.01";
-                }
-            } elseif (isset($cfg['status_field'])) {
-                // OE/delivery_orders: closed = true/false
-                if ($where['status'] === 'open') {
-                    $conditions[] = "$tbl.{$cfg['status_field']} IS NOT TRUE";
-                } elseif ($where['status'] === 'closed') {
-                    $conditions[] = "$tbl.{$cfg['status_field']} IS TRUE";
-                }
-            }
-        }
-    }
-
-    // Record-Type-Filter für oe und delivery_orders
-    $recordTypeFilter = '';
-    if (isset($cfg['record_types'])) {
-        $recordTypeFilter = "AND $tbl.record_type IN ({$cfg['record_types']})";
-    }
-
-    $search = implode(' AND ', $conditions);
+    $type = $data['type'] ?? '';
+    $where = is_array($data['where'] ?? null) ? $data['where'] : [];
+    $suche = belegsucheBedingungen($type, $where);
+    $cfg = $suche['cfg'];
+    $tbl = $suche['tbl'];
+    $params = $suche['params'];
 
     // Betrag-Select: delivery_orders hat kein amount-Feld
     $amountSelect = $tbl === 'delivery_orders'
         ? "NULL::numeric AS amount"
         : "$tbl.amount";
+    $sumSelect = $tbl === 'delivery_orders'
+        ? "NULL::numeric AS sum_amount"
+        : "COALESCE(SUM($tbl.amount), 0) AS sum_amount";
 
     // Status-Select
     if (isset($cfg['status_expr'])) {
@@ -930,13 +792,15 @@ function searchDocuments($data) {
     $sortCol = ($sortKey === 'document_number') ? "$tbl.{$cfg['number_field']}" : (in_array($sortKey, ['cv_name', 'cv_number']) ? "cv.$sortKey" : "$tbl.$sortKey");
     if ($sortKey === 'doc_status') $sortCol = "doc_status";
 
-    // Gesamtanzahl
+    // Kontaktdaten aus der Erweiterungstabelle (customer_ext / vendor_ext)
+    $extTable = $cfg['cv_table'] . '_ext';
+    $extFk = $cfg['cv_fk'];
+
+    // Gesamtanzahl und Summe aller Treffer
     $countQuery = <<<SQL
-        SELECT COUNT(*) AS total
-        FROM $tbl
-        LEFT JOIN {$cfg['cv_table']} AS cv ON cv.id = $tbl.{$cfg['cv_fk']}
-        WHERE $search
-        $recordTypeFilter
+        SELECT COUNT(*) AS total, $sumSelect
+        {$suche['from']}
+        {$suche['where']}
     SQL;
 
     $query = <<<SQL
@@ -947,14 +811,20 @@ function searchDocuments($data) {
             cv.{$cfg['cv_number_field']} AS cv_number,
             cv.id AS cv_id,
             '{$cfg['cv_src']}' AS cv_src,
+            cv.greeting AS cv_greeting,
+            cv.email AS cv_email,
+            cv.cc AS cv_cc,
+            cv.bcc AS cv_bcc,
+            cv.phone AS cv_phone,
+            ext.phone_numbers AS cv_phone_numbers,
+            {$cfg['print_type_expr']} AS print_type,
             $tbl.transdate,
             $amountSelect,
             $statusSelect,
             $tbl.itime
-        FROM $tbl
-        LEFT JOIN {$cfg['cv_table']} AS cv ON cv.id = $tbl.{$cfg['cv_fk']}
-        WHERE $search
-        $recordTypeFilter
+        {$suche['from']}
+        LEFT JOIN $extTable AS ext ON ext.$extFk = cv.id
+        {$suche['where']}
         ORDER BY $sortCol $sortOrder
         LIMIT $limit OFFSET $offset
     SQL;
@@ -962,8 +832,9 @@ function searchDocuments($data) {
     try {
         $countResult = $mandant->getOne($countQuery, $params);
         $total = intval($countResult['total']);
+        $sumAmount = $countResult['sum_amount'] !== null ? floatval($countResult['sum_amount']) : null;
         $results = $mandant->getAll($query, $params);
-        resultInfo(true, '', ['results' => $results, 'total' => $total]);
+        resultInfo(true, '', ['results' => $results, 'total' => $total, 'sum_amount' => $sumAmount]);
     } catch (Exception $e) {
         $errorMessage = $e->getMessage();
         preg_match('/SQLSTATE\[(\w+)\]:\s*(.+)/', $errorMessage, $matches);

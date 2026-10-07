@@ -339,6 +339,146 @@ function checkCarLicense($data) {
 }
 
 /**
+ * Schnellanlage eines Fahrzeugs nur per Kennzeichen (ohne Fahrzeugschein) direkt aus der Faktura
+ *
+ * Prüft, ob das Kennzeichen schon existiert: gehört es dem gleichen Kunden, wird das
+ * vorhandene Fahrzeug zurückgegeben; gehört es einem anderen Kunden, wird nichts angelegt.
+ * Sonst wird ein Fahrzeug nur mit Halter + Kennzeichen angelegt und – wenn eine Faktura-ID
+ * übergeben wurde – sofort mit dem Beleg verknüpft (oe_ext bzw. ar_ext).
+ *
+ * @param int $data['customer_id'] Halter (c_ow)
+ * @param string $data['c_ln'] Kennzeichen
+ * @param int|null $data['faktura_id'] Beleg-ID (optional)
+ * @param string $data['faktura_type'] 'order', 'quotation' oder 'invoice'
+ * @param bool $data['take_over'] true = Fahrzeug eines anderen Halters diesem Kunden zuordnen (nach Rückfrage)
+ * @testdata {"customer_id": 1, "c_ln": "B-QC9999", "faktura_id": 0, "faktura_type": "order", "take_over": false}
+ */
+function quickCreateCar($data) {
+    $db = DbhCompany::begin();
+    $customerId  = intval($data['customer_id'] ?? 0);
+    $plate       = strtoupper(trim($data['c_ln'] ?? ''));
+    $fakturaId   = intval($data['faktura_id'] ?? 0);
+    $fakturaType = $data['faktura_type'] ?? 'order';
+    $takeOver    = !empty($data['take_over']);
+
+    if ($customerId <= 0) {
+        resultInfo(false, 'VALIDATION_ERROR: customer_id ist erforderlich');
+        return;
+    }
+    if ($plate === '') {
+        resultInfo(false, 'VALIDATION_ERROR: c_ln (Kennzeichen) ist erforderlich');
+        return;
+    }
+    if (mb_strlen($plate) > 10) {
+        resultInfo(false, 'VALIDATION_ERROR: Kennzeichen darf höchstens 10 Zeichen haben');
+        return;
+    }
+
+    // Gleiche Spaltenliste wie getCustomerCars, damit das Frontend die Zeile direkt in die Liste übernehmen kann
+    $carColumns = "c.c_id, c.c_ln, c.c_m, c.c_mt, c.c_2, c.c_3, c.c_fin, c.c_ktype, COALESCE(c.c_text, '') AS c_text,
+                   COALESCE(k.fhzart, '') AS fhzart";
+
+    $existing = $db->getOne(
+        "SELECT $carColumns, c.c_ow, COALESCE(cu.name, '') AS owner_name
+         FROM cars_lxcars c
+         LEFT JOIN kba_lxcars k ON k.id = c.kba_id
+         LEFT JOIN customer cu ON cu.id = c.c_ow
+         WHERE UPPER(c.c_ln) = :c_ln
+         LIMIT 1",
+        [':c_ln' => $plate]
+    );
+
+    $oldOwnerId   = $existing ? intval($existing['c_ow']) : 0;
+    $oldOwnerName = $existing ? $existing['owner_name'] : '';
+    $otherOwner   = $existing && $oldOwnerId !== $customerId;
+
+    // Fremder Halter ohne ausdrückliche Übernahme: nichts anlegen, Frontend fragt nach
+    if ($otherOwner && !$takeOver) {
+        resultInfo(true, 'EXISTS_OTHER_OWNER', [
+            'created'    => false,
+            'exists'     => true,
+            'taken_over' => false,
+            'owner_name' => $oldOwnerName,
+            'car'        => null
+        ]);
+        return;
+    }
+
+    $db->beginTransaction();
+    try {
+        if ($existing) {
+            $car = $existing;
+            $created = false;
+            if ($otherOwner) {
+                // Übernahme: Halter wechseln (z.B. Fahrzeug wurde verkauft)
+                $db->execute(
+                    "UPDATE cars_lxcars SET c_ow = :c_ow WHERE c_id = :c_id",
+                    [':c_ow' => $customerId, ':c_id' => intval($car['c_id'])]
+                );
+            }
+        } else {
+            $row = $db->getOne(
+                "INSERT INTO cars_lxcars (c_ow, c_ln) VALUES (:c_ow, :c_ln) RETURNING c_id",
+                [':c_ow' => $customerId, ':c_ln' => $plate]
+            );
+            $car = [
+                'c_id' => intval($row['c_id']), 'c_ln' => $plate, 'c_m' => null, 'c_mt' => null,
+                'c_2' => null, 'c_3' => null, 'c_fin' => null, 'c_ktype' => null, 'c_text' => '', 'fhzart' => ''
+            ];
+            $created = true;
+        }
+        $cId = intval($car['c_id']);
+
+        if ($fakturaId > 0) {
+            if ($fakturaType === 'invoice') {
+                $db->execute(
+                    "INSERT INTO ar_ext (ar_id, c_id) VALUES (:ar_id, :c_id)
+                     ON CONFLICT (ar_id) DO UPDATE SET c_id = :c_id",
+                    [':ar_id' => $fakturaId, ':c_id' => $cId]
+                );
+            } else {
+                $db->execute(
+                    "INSERT INTO oe_ext (oe_id, c_id) VALUES (:oe_id, :c_id)
+                     ON CONFLICT (oe_id) DO UPDATE SET c_id = :c_id",
+                    [':oe_id' => $fakturaId, ':c_id' => $cId]
+                );
+            }
+        }
+
+        $db->commit();
+    } catch (Exception $e) {
+        $db->rollBack();
+        throw new ApiError('API_DATABASE_ERROR', $e->getMessage());
+    }
+
+    if ($created || $otherOwner) {
+        if ($otherOwner) {
+            // Symlink im Ordner des bisherigen Halters entfernen (customers/{alt}/fahrzeuge/{Kennzeichen})
+            $safePlate = preg_replace('/[^a-zA-Z0-9\-]/', '_', $plate);
+            $oldLink = fmDataDir() . '/customers/' . $oldOwnerId . '/fahrzeuge/' . $safePlate;
+            if (is_link($oldLink)) {
+                @unlink($oldLink);
+            }
+        }
+        // Verzeichnisse + Symlinks wie bei saveCar (fahrzeuge/{c_id}, 0_by-plate, Kundenordner)
+        ensureVehiclePaths(['c_id' => $cId, 'c_ln' => $plate, 'c_ow' => $customerId]);
+        $ownerRow = $db->getOne("SELECT name FROM customer WHERE id = :id", [':id' => $customerId]);
+        if ($ownerRow) {
+            ensureCustomerFolder($customerId, 'C', trim($ownerRow['name']));
+        }
+    }
+
+    unset($car['c_ow'], $car['owner_name']);
+    resultInfo(true, $created ? 'CREATED' : ($otherOwner ? 'TAKEN_OVER' : 'LINKED_EXISTING'), [
+        'created'    => $created,
+        'exists'     => !$created,
+        'taken_over' => $otherOwner,
+        'owner_name' => $otherOwner ? $oldOwnerName : '',
+        'car'        => $car
+    ]);
+}
+
+/**
  * Prüft mehrere Kennzeichen auf einmal ob sie bereits vergeben sind
  *
  * @param array $data['plates'] Array von Kennzeichen-Strings

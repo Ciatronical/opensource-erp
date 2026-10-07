@@ -3,6 +3,7 @@
 
 require_once __DIR__.'/../lib/mitarbeiter.php';
 require_once __DIR__.'/../lib/belegablage.php';
+require_once __DIR__.'/../lib/belegsuche.php';
 require_once __DIR__.'/../customer_vendor/filemanager.php';
 require_once __DIR__.'/print.php';
 require_once __DIR__.'/template_engine.php';

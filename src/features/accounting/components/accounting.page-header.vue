@@ -11,10 +11,10 @@
 <template>
     <div class="d-flex align-center flex-wrap ga-3 mb-3">
         <v-btn variant="text" size="small" class="text-none px-2"
-               :aria-label="t('AccountingView.header.back')"
-               @click="router.push({ name: 'accounting-overview' })">
+               :aria-label="backLabel || t('AccountingView.header.back')"
+               @click="router.push(backTo || { name: 'accounting-overview' })">
             <v-icon start>mdi-arrow-left</v-icon>
-            {{ t('AccountingView.header.back') }}
+            {{ backLabel || t('AccountingView.header.back') }}
         </v-btn>
         <v-divider vertical class="my-1" />
         <h1 class="text-h6 mb-0">{{ title }}</h1>
@@ -41,9 +41,14 @@ import CommandPalette from './accounting.command-palette.vue'
 import EasymodeSwitch from './accounting.easymode-switch.vue'
 import ConceptButton from './accounting.concept-button.vue'
 
+// backTo/backLabel: Seiten, die aus einem anderen Modul erreicht werden (etwa
+// die Dublettenprüfung aus der Kundensuche), führen zurück zum Absprungpunkt
+// statt ins Cockpit.
 defineProps({
     title: { type: String, required: true },
-    hideEasymode: { type: Boolean, default: false }
+    hideEasymode: { type: Boolean, default: false },
+    backTo: { type: Object, default: null },
+    backLabel: { type: String, default: '' }
 })
 
 const { t } = useI18n()

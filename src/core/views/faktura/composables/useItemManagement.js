@@ -6,7 +6,7 @@ import * as toasts from '@/core/utils/toasts.js'
 
 export function useItemManagement({
     fakturaItems, fakturaId, fakturaType, faktura,
-    itemsTableRef, calculateItemTotal, calculateTotals, saveAllItems, ensureFakturaExists, flushRouteReplace, oserp, t, router,
+    itemsTableRef, calculateItemTotal, calculateTotals, saveAllItems, ensureFakturaExists, flushRouteReplace, t, router,
     suppressSSEReload
 }) {
 
@@ -275,7 +275,10 @@ export function useItemManagement({
                 qty: item.qty,
                 sellprice: item.sellprice,
                 discount: item.discount,
-                unit: created.unit || item.unit
+                unit: created.unit || item.unit,
+                // Steuersatz/Konten des neuen Artikels — ohne sie liefe die Position
+                // mit Satz 0 in die Summen- und Steuerberechnung
+                buchungsziel: created.buchungsziel ?? null
             })
             calculateItemTotal(originalItem)
             calculateTotals()
@@ -315,12 +318,10 @@ export function useItemManagement({
                 partnumber: item.partnumber || '',
                 sellprice: item.sellprice || 0,
                 unit: item.unit || 'Stck',
-                notes: item.longdescription || ''
+                notes: item.longdescription || '',
+                taxzone_id: faktura.data?.common?.taxzone_id ?? 0,
+                transdate: faktura.data?.common?.transdate || ''
             })
-
-            const buchungsgruppe = oserp.session?.company_config?.buchungsgruppen?.find(
-                bg => bg.id === item.buchungsgruppen_id
-            )
 
             targetItem.parts_id = partResult.parts_id
             targetItem.partnumber = partResult.partnumber
@@ -332,15 +333,10 @@ export function useItemManagement({
             targetItem.discount = 0
             targetItem.buchungsgruppen_id = item.buchungsgruppen_id
             targetItem.part_type = item.part_type
-
-            if (buchungsgruppe) {
-                targetItem.buchungsziel = {
-                    income_chart_id: buchungsgruppe.income_accno_id_0 || null,
-                    tax_id: null,
-                    tax_chart_id: null,
-                    rate: 0
-                }
-            }
+            // Buchungsziel (Erlöskonto, Steuerkonto, Satz) kommt vom Backend für
+            // Steuerzone und Datum des Belegs — ein fest eingetragener Satz 0 hätte
+            // die Umsatzsteuer der Position unterschlagen
+            targetItem.buchungsziel = partResult.buchungsziel ?? null
 
             calculateItemTotal(targetItem)
             calculateTotals()

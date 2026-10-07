@@ -245,7 +245,9 @@
             "delete": "Delete",
             "history": "History",
             "close": "Close",
-            "confirmDelete": "Do you really want to delete this customer?"
+            "confirmDelete": "Really delete customer \"{name}\"? Contacts, addresses and notes will be removed as well.",
+            "confirmDeleteVendor": "Really delete vendor \"{name}\"? Contacts, addresses and notes will be removed as well.",
+            "cancel": "Cancel"
         },
         "messages": {
             "saving": "Saving...",
@@ -255,7 +257,10 @@
             "deleteError": "Error deleting customer.",
             "deleteContactError": "Error deleting contact person",
             "deleteContactErrorTitle": "Error",
-            "autoSaveWarning": "Please fill in {fields} first to save the record."
+            "autoSaveWarning": "Please fill in {fields} first to save the record.",
+            "deleteErrorVendor": "Error deleting vendor.",
+            "deleted": "Customer \"{name}\" deleted.",
+            "deletedVendor": "Vendor \"{name}\" deleted."
         },
         "duplicate": {
             "title": "Possible duplicate",

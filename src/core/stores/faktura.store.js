@@ -411,7 +411,11 @@ export const fakturaStore = defineStore('fakturaStore', () => {
             partnumber: partData.partnumber || '',
             sellprice: partData.sellprice || 0,
             unit: partData.unit || 'Stck',
-            notes: partData.notes || ''
+            notes: partData.notes || '',
+            // Steuerzone und Belegdatum: das Backend liefert dazu das Buchungsziel
+            // (Steuersatz) des neuen Artikels gleich mit
+            taxzone_id: partData.taxzone_id ?? 0,
+            transdate: partData.transdate || ''
         });
 
         if (response.data.success) {

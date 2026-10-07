@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__.'/../lib/belegsuche.php';
 require_once __DIR__.'/customer_vendor.php';
 require_once __DIR__.'/search.php';
 require_once __DIR__.'/vies_validation.php';

@@ -388,6 +388,69 @@ function saveDefaults($data) {
 }
 
 /**
+ * Setzt den Standard-Stundensatz samt Bezugseinheit und überträgt ihn als
+ * Verkaufspreis auf alle gültigen Dienstleistungen mit dieser Einheit.
+ *
+ * Satz:    defaults.customer_hourly_rate (kivitendo-Spalte; kivitendo nutzt sie
+ *          nur als Vorbelegung neuer Kunden)
+ * Einheit: defaults_oserp.hourly_rate_unit — muss eine Dienstleistungs-Einheit
+ *          aus der units-Tabelle sein, sonst wird nichts geändert.
+ *
+ * @param float  $data['rate'] Stundensatz netto
+ * @param string $data['unit'] Dienstleistungs-Einheit (units.name, type = service)
+ * @testdata {"rate": 75, "unit": "Std"}
+ */
+function applyHourlyRateToServices($data) {
+    $rate = (float)str_replace(',', '.', (string)($data['rate'] ?? 0));
+    $unit = trim((string)($data['unit'] ?? ''));
+    if ($rate <= 0) {
+        resultInfo(false, 'INVALID_RATE', 'Stundensatz muss größer als 0 sein');
+        return;
+    }
+    if ($unit === '') {
+        resultInfo(false, 'INVALID_UNIT', 'Einheit fehlt');
+        return;
+    }
+    try {
+        $db = DbhCompany::begin();
+        $row = $db->getOne(
+            "WITH u AS (
+                 SELECT name FROM units WHERE name = :unit AND type = 'service'
+             ),
+             d AS (
+                 UPDATE defaults SET customer_hourly_rate = :rate WHERE EXISTS (SELECT 1 FROM u)
+             ),
+             o AS (
+                 INSERT INTO defaults_oserp (key, value)
+                 SELECT 'hourly_rate_unit', name FROM u
+                 ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, mtime = now()
+             ),
+             p AS (
+                 UPDATE parts SET sellprice = :rate, mtime = now()
+                 WHERE part_type = 'service' AND NOT obsolete AND unit IN (SELECT name FROM u)
+                 RETURNING id
+             )
+             SELECT json_build_object(
+                 'unit_ok', EXISTS (SELECT 1 FROM u),
+                 'rate',    :rate::numeric,
+                 'unit',    :unit::text,
+                 'updated', (SELECT count(*) FROM p)
+             ) AS result",
+            [':rate' => $rate, ':unit' => $unit]
+        );
+        $result = json_decode($row['result'], true);
+        if (empty($result['unit_ok'])) {
+            resultInfo(false, 'INVALID_UNIT', 'Keine Dienstleistungs-Einheit: ' . $unit);
+            return;
+        }
+        unset($result['unit_ok']);
+        resultInfo(true, 'Stundensatz übernommen', $result);
+    } catch (PDOException $e) {
+        resultInfo(false, 'DATABASE_ERROR', $e->getMessage());
+    }
+}
+
+/**
  * Speichert einen einzelnen defaults_oserp-Wert (Upsert)
  *
  * @param string $data['key'] Config-Schlüssel

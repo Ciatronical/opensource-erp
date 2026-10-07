@@ -154,6 +154,36 @@
         <template v-if="isDocumentTab">
             <v-card @keydown.enter.capture="handleDocEnterKey">
                 <v-card-text>
+                    <!-- Zeitraum (Monat) und Drucker -->
+                    <div class="d-flex align-center flex-wrap ga-2 mb-3">
+                        <DocumentPeriodNav v-model="docPeriod" @clear="onPeriodClear" />
+                        <v-spacer />
+                        <v-menu v-if="isPrintableTab && printerList.length > 0">
+                            <template #activator="{ props: menu }">
+                                <v-btn
+                                    v-bind="menu"
+                                    variant="tonal"
+                                    size="small"
+                                    class="text-none"
+                                    prepend-icon="mdi-printer-settings"
+                                >
+                                    {{ selectedPrinter ? selectedPrinter.printer_description : t('SearchView.document_actions.select_printer') }}
+                                </v-btn>
+                            </template>
+                            <v-list density="compact">
+                                <v-list-item
+                                    v-for="printer in printerList"
+                                    :key="printer.id"
+                                    prepend-icon="mdi-printer"
+                                    :active="selectedPrinter?.id === printer.id"
+                                    @click="selectPrinter(printer)"
+                                >
+                                    <v-list-item-title>{{ printer.printer_description }}</v-list-item-title>
+                                </v-list-item>
+                            </v-list>
+                        </v-menu>
+                    </div>
+
                     <DocumentSearchForm
                         v-model="docSearchCriteria"
                         :document-type="activeTab"
@@ -188,10 +218,44 @@
                             @click="loadDocData"
                             :loading="docLoading"
                         ></v-btn>
-                        <v-toolbar-title>{{ t('CustomerVendorSearchView.table.title') }}</v-toolbar-title>
+                        <v-toolbar-title>
+                            {{ docScopeLabel }}
+                            <div class="text-caption text-medium-emphasis">{{ docSummary }}</div>
+                        </v-toolbar-title>
+                        <v-spacer></v-spacer>
+
+                        <!-- Sammelaktionen: Auswahl oder alle Treffer -->
+                        <v-menu v-if="isPrintableTab && docTotal > 0">
+                            <template #activator="{ props: menu }">
+                                <v-btn
+                                    v-bind="menu"
+                                    :color="docSelected.length > 0 ? 'primary' : undefined"
+                                    :variant="docSelected.length > 0 ? 'flat' : 'tonal'"
+                                    class="text-none"
+                                    prepend-icon="mdi-file-document-multiple"
+                                    append-icon="mdi-menu-down"
+                                >
+                                    {{ docSelected.length > 0
+                                        ? t('SearchView.document_table.selected', { count: docSelected.length })
+                                        : t('SearchView.document_table.all_results', { count: docTotal }) }}
+                                </v-btn>
+                            </template>
+                            <v-list density="compact">
+                                <v-list-subheader>{{ docSelected.length > 0 ? t('SearchView.document_table.scope_selection') : docScopeLabel }}</v-list-subheader>
+                                <v-list-item prepend-icon="mdi-printer" :title="t('SearchView.document_actions.print')" @click="docPrint(bulkScope())" />
+                                <v-list-item prepend-icon="mdi-file-pdf-box" :title="t('SearchView.document_actions.pdf')" @click="docDownloadPdf(bulkScope())" />
+                                <v-list-item prepend-icon="mdi-email" :title="t('SearchView.document_actions.email')" @click="docOpenEmail(bulkScope())" />
+                                <v-list-item prepend-icon="mdi-whatsapp" :title="t('SearchView.document_actions.whatsapp')" @click="docOpenWhatsApp(bulkScope())" />
+                                <template v-if="docSelected.length > 0">
+                                    <v-divider />
+                                    <v-list-item prepend-icon="mdi-checkbox-blank-off-outline" :title="t('SearchView.document_table.clear_selection')" @click="docSelected = []" />
+                                </template>
+                            </v-list>
+                        </v-menu>
                     </v-toolbar>
 
                     <v-data-table-server
+                        v-model="docSelected"
                         :headers="docHeaders"
                         :items="docSearchResults"
                         :items-length="docTotal"
@@ -199,13 +263,15 @@
                         :items-per-page-options="[10, 25, 50, 100, { title: t('SearchView.all'), value: -1 }]"
                         :loading="docLoading"
                         :no-data-text="t('SearchView.document_table.text_no_results')"
+                        :show-select="isPrintableTab"
+                        item-value="id"
                         hover
                         class="zebra-table mt-5"
                         @click:row="onDocRowClick"
                         @update:options="onDocOptionsUpdate"
                     >
                         <template #item.transdate="{ item }">
-                            {{ formatDateTime(item.transdate) }}
+                            {{ formatDate(item.transdate) }}
                         </template>
 
                         <template #item.amount="{ item }">
@@ -229,6 +295,42 @@
 
                         <template #item.itime="{ item }">
                             {{ formatDateTime(item.itime) }}
+                        </template>
+
+                        <template #item.actions="{ item }">
+                            <div class="d-flex justify-end doc-row-actions">
+                                <v-btn
+                                    icon="mdi-printer"
+                                    variant="text"
+                                    size="small"
+                                    :title="t('SearchView.document_actions.print')"
+                                    @click.stop="docPrint(rowScope(item))"
+                                />
+                                <v-btn
+                                    icon="mdi-file-pdf-box"
+                                    variant="text"
+                                    size="small"
+                                    color="error"
+                                    :title="t('SearchView.document_actions.pdf')"
+                                    @click.stop="docDownloadPdf(rowScope(item))"
+                                />
+                                <v-btn
+                                    icon="mdi-email"
+                                    variant="text"
+                                    size="small"
+                                    color="info"
+                                    :title="t('SearchView.document_actions.email')"
+                                    @click.stop="docOpenEmail(rowScope(item))"
+                                />
+                                <v-btn
+                                    icon="mdi-whatsapp"
+                                    variant="text"
+                                    size="small"
+                                    color="green-darken-1"
+                                    :title="t('SearchView.document_actions.whatsapp')"
+                                    @click.stop="docOpenWhatsApp(rowScope(item))"
+                                />
+                            </div>
                         </template>
                     </v-data-table-server>
                 </v-card-text>
@@ -417,6 +519,39 @@
         :type-filter="typeFilter"
         @select-query="onSelectQuery"
     />
+
+    <!-- Belegversand aus der Trefferliste -->
+    <SendEmailDialog
+        v-model="emailDialog.visible"
+        :initial-to="emailDialog.to"
+        :initial-cc="emailDialog.cc"
+        :initial-bcc="emailDialog.bcc"
+        :initial-subject="emailDialog.subject"
+        :initial-body="emailDialog.body"
+        :attachment-name="emailDialog.attachmentName"
+        @send="onEmailSend"
+        @cancel="emailDialog.visible = false"
+    />
+
+    <SendWhatsAppDialog
+        v-model="waDialog.visible"
+        :initial-phone="waDialog.phone"
+        :phone-list="waDialog.phoneList"
+        :attachment-name="waDialog.attachmentName"
+        :salutation="waDialog.salutation"
+        :doc-ref="waDialog.docRef"
+        :amount="waDialog.amount"
+        :sending="docBusy === 'whatsapp'"
+        @send="onWhatsAppSend"
+        @cancel="waDialog.visible = false"
+    />
+
+    <v-overlay :model-value="!!docBusy" class="align-center justify-center" persistent>
+        <v-card class="pa-6 text-center" min-width="260">
+            <v-progress-circular indeterminate color="primary" size="48" />
+            <div class="mt-4 text-body-1">{{ docBusyText }}</div>
+        </v-card>
+    </v-overlay>
 </template>
 
 <script setup>
@@ -425,7 +560,7 @@ import { useI18n } from 'vue-i18n';
 import axios from 'axios';
 import * as alerts from '@/core/utils/alerts.js';
 import * as toasts from '@/core/utils/toasts.js';
-import { formatDateTime } from '@/core/utils/dateFormatter.js';
+import { formatDate, formatDateTime } from '@/core/utils/dateFormatter.js';
 import NavbarView from '@/core/components/navbar/navbar.view.vue';
 import BrevoMarketingMailDialog from './dialogs/brevo-marketing-mail.dialog.vue';
 import SqlHelpDialog from './dialogs/sql-help.dialog.vue';
@@ -436,11 +571,14 @@ import CustomerVendorSearchForm from './components/customer-vendor-search-form.c
 import ContactsSearchForm from './components/contacts-search-form.component.vue';
 import SearchResultsTable from './components/search-results-table.component.vue';
 import DocumentSearchForm from './components/document-search-form.component.vue';
+import DocumentPeriodNav from './components/document-period-nav.component.vue';
+import SendEmailDialog from '@/core/views/faktura/dialogs/send.email.dialog.vue';
+import SendWhatsAppDialog from './dialogs/send-whatsapp.dialog.vue';
 import router from '@/core/router/index.js';
 import { oserpStore } from '@/core/stores/oserp.store.js';
 import { useViewHistory } from '@/core/composables/useViewHistory.js';
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const oserp = oserpStore();
 const { fetchCustomerOrVendor } = oserp;
 const { saveToHistory } = useViewHistory();
@@ -500,12 +638,19 @@ const pageTitle = computed(() => {
 // ──────────────────────────────────────────
 const loading = ref(false);
 const selected = ref([]);
-const typeFilter = ref('customer');
+// Kommt man von der Dublettenprüfung zurück, steht der Typ in der URL — so
+// landet man wieder bei den Kunden bzw. Lieferanten, nicht beim Standard.
+const typeFromRoute = router.currentRoute.value.query.type;
+const typeFilter = ref(['customer', 'vendor'].includes(typeFromRoute) ? typeFromRoute : 'customer');
 
 // Dublettenpruefung: fuehrt in die Buchhaltungsansicht des gewaehlten Typs,
 // wo doppelte Stammdaten zusammengefuehrt oder geloescht werden koennen.
+// `from` merkt sich den Absprung, damit "Zurück" dort wieder hierher führt.
 function openDuplicates() {
-    router.push({ name: typeFilter.value === 'vendor' ? 'accounting-vendors' : 'accounting-customers' });
+    router.push({
+        name: typeFilter.value === 'vendor' ? 'accounting-vendors' : 'accounting-customers',
+        query: { from: 'search' }
+    });
 }
 const useSqlQuery = ref(false);
 const showAdditionalCriteriaCV = ref(false);
@@ -809,9 +954,13 @@ watch(activeTab, async (tab) => {
     docSearchCriteria.value = {};
     docSearchResults.value = [];
     docTotal.value = 0;
+    docSumAmount.value = null;
+    docSelected.value = [];
+    docRowsById.clear();
     docCurrentOptions.value = { page: 1, itemsPerPage: docItemsPerPage.value, sortBy: [] };
 
     if (documentTypes.includes(tab)) {
+        applyPeriod();
         await loadDocData();
     } else if (tab === 'vehicle') {
         vehicleSearchCriteria.value = {};
@@ -872,6 +1021,10 @@ const docHeaders = computed(() => {
         { title: t('SearchView.document_table.status'), key: 'doc_status', sortable: true },
         { title: t('SearchView.document_table.created_at'), key: 'itime', sortable: true },
     );
+
+    if (isPrintableTab.value) {
+        headers.push({ title: '', key: 'actions', sortable: false, align: 'end', width: 180 });
+    }
 
     return headers;
 });
@@ -941,6 +1094,8 @@ const loadDocData = async () => {
         } else if (response.data.success) {
             docSearchResults.value = response.data.payload.results ?? [];
             docTotal.value = response.data.payload.total ?? 0;
+            docSumAmount.value = response.data.payload.sum_amount ?? null;
+            for (const row of docSearchResults.value) docRowsById.set(row.id, row);
         } else {
             toasts.error(t('CustomerVendorSearchView.toasts.error_loading_search_results'));
             docSearchResults.value = [];
@@ -970,10 +1125,449 @@ const onDocOptionsUpdate = (options) => {
  */
 const resetDoc = () => {
     docSearchCriteria.value = {};
-    docSearchResults.value = [];
-    docTotal.value = 0;
-    hasSearchedDoc.value = false;
+    docSelected.value = [];
+    const monat = aktuellerMonat();
+    if (docPeriod.value?.year === monat.year && docPeriod.value?.month === monat.month) {
+        applyPeriod();
+        loadDocData();
+    } else {
+        docPeriod.value = monat;
+    }
 };
+
+// ──────────────────────────────────────────
+// Zeitraum (Monat) der Dokument-Suche
+// ──────────────────────────────────────────
+const heute = new Date();
+const aktuellerMonat = () => ({ year: heute.getFullYear(), month: heute.getMonth() + 1 });
+const docPeriod = ref(aktuellerMonat());
+let docPeriodStill = false; // true: Zeitraum wurde wegen Handänderung der Datumsfelder gelöscht, nicht neu laden
+
+/**
+ * Erster und letzter Tag eines Monats als ISO-Datum
+ */
+function periodRange(period) {
+    const mm = String(period.month).padStart(2, '0');
+    const lastDay = new Date(period.year, period.month, 0).getDate();
+    return { from: `${period.year}-${mm}-01`, to: `${period.year}-${mm}-${String(lastDay).padStart(2, '0')}` };
+}
+
+/**
+ * Überträgt den gewählten Monat in die Datumsfelder der Suche
+ */
+function applyPeriod() {
+    const criteria = { ...docSearchCriteria.value };
+    if (docPeriod.value) {
+        const range = periodRange(docPeriod.value);
+        criteria.transdate_from = range.from;
+        criteria.transdate_to = range.to;
+    } else {
+        delete criteria.transdate_from;
+        delete criteria.transdate_to;
+    }
+    docSearchCriteria.value = criteria;
+}
+
+watch(docPeriod, async () => {
+    if (docPeriodStill) {
+        docPeriodStill = false;
+        return;
+    }
+    applyPeriod();
+    docSelected.value = [];
+    docCurrentOptions.value = { ...docCurrentOptions.value, page: 1 };
+    await loadDocData();
+});
+
+/**
+ * "Alle Zeiträume" gewählt, obwohl schon kein Monat aktiv war (Datum von Hand
+ * geändert): Datumsfelder leeren und neu laden
+ */
+async function onPeriodClear() {
+    if (docPeriod.value !== null) return;
+    applyPeriod();
+    docSelected.value = [];
+    await loadDocData();
+}
+
+// Datumsfelder von Hand geändert → Monatsanzeige passt nicht mehr, auf "Alle" stellen
+watch(() => [docSearchCriteria.value.transdate_from, docSearchCriteria.value.transdate_to], ([from, to]) => {
+    if (!docPeriod.value) return;
+    const range = periodRange(docPeriod.value);
+    if (from !== range.from || to !== range.to) {
+        docPeriodStill = true;
+        docPeriod.value = null;
+    }
+});
+
+/**
+ * Lesbarer Zeitraum, z. B. "September 2026" oder "01.09.2026 – 15.09.2026"
+ */
+const docPeriodLabel = computed(() => {
+    if (docPeriod.value) {
+        return new Date(docPeriod.value.year, docPeriod.value.month - 1, 1)
+            .toLocaleDateString(locale.value, { month: 'long', year: 'numeric' });
+    }
+    const from = docSearchCriteria.value.transdate_from;
+    const to = docSearchCriteria.value.transdate_to;
+    if (from || to) return [from ? formatDate(from) : '', to ? formatDate(to) : ''].join(' – ');
+    return t('SearchView.period.all');
+});
+
+/**
+ * Überschrift der Trefferliste: "Rechnungen September 2026"
+ */
+const docScopeLabel = computed(() => `${t(`SearchView.tabs.${activeTab.value}`)} ${docPeriodLabel.value}`);
+
+/**
+ * Anzahl und Summe der Treffer
+ */
+const docSummary = computed(() => {
+    if (docSumAmount.value === null || docSumAmount.value === undefined) {
+        return t('SearchView.document_table.summary_count', { count: docTotal.value }, docTotal.value);
+    }
+    return t('SearchView.document_table.summary', { count: docTotal.value, sum: formatAmount(docSumAmount.value) }, docTotal.value);
+});
+
+// ──────────────────────────────────────────
+// Drucken / PDF / Versand aus der Trefferliste
+// ──────────────────────────────────────────
+const printableTypes = ['invoice', 'quotation', 'order', 'purchase_order', 'delivery_order'];
+const isPrintableTab = computed(() => printableTypes.includes(activeTab.value));
+
+const docSelected = ref([]);          // IDs der markierten Belege
+const docRowsById = new Map();        // geladene Zeilen, damit die Auswahl auch über Seiten hinweg bekannt bleibt
+const docSumAmount = ref(null);
+const docBusy = ref(null);            // 'pdf' | 'print' | 'email' | 'whatsapp'
+const docBusyText = computed(() => docBusy.value ? t(`SearchView.document_actions.busy_${docBusy.value}`) : '');
+
+const printerList = computed(() => (oserp.session.company_config?.printers || []).filter(p => !p.hide_factura));
+const selectedPrinter = ref(null);
+
+onMounted(() => {
+    const savedPrinterId = oserp.getConfigValue('default_printer_id');
+    if (savedPrinterId) {
+        selectedPrinter.value = printerList.value.find(p => String(p.id) === String(savedPrinterId)) || null;
+    }
+    if (!selectedPrinter.value && printerList.value.length === 1) {
+        selectedPrinter.value = printerList.value[0];
+    }
+});
+
+function selectPrinter(printer) {
+    selectedPrinter.value = printer;
+    oserp.setConfigValue('default_printer_id', String(printer.id));
+    toasts.success(t('SearchView.document_actions.printer_selected', { name: printer.printer_description }));
+}
+
+/**
+ * Dateinamen-tauglich machen: unzulässige Zeichen raus, Leerzeichen → Bindestrich
+ */
+const sanitizeFilename = (s) => String(s)
+    .replace(/[\\/:*?"<>|]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+
+const singularLabel = (printType) => t(`SearchView.doc_singular.${printType || activeTab.value}`);
+const pluralLabel = () => t(`SearchView.tabs.${activeTab.value}`);
+
+/**
+ * Ein einzelner Beleg aus der Trefferliste
+ */
+function rowScope(item) {
+    const printType = item.print_type || activeTab.value;
+    const number = item.document_number || item.id;
+    let filename = [sanitizeFilename(singularLabel(printType)), sanitizeFilename(number)].filter(Boolean).join('-');
+    const name = sanitizeFilename(item.cv_name || '');
+    if (name) filename += '--' + name;
+    return {
+        kind: 'single',
+        rows: [item],
+        payload: { documents: [{ id: item.id, fakturaType: printType }] },
+        label: `${singularLabel(printType)} ${number}`,
+        filename: filename + '.pdf'
+    };
+}
+
+/**
+ * Markierte Belege oder — ohne Markierung — alle Treffer des aktuellen Filters
+ */
+function bulkScope() {
+    const plural = pluralLabel();
+    if (docSelected.value.length > 0) {
+        const rows = docSelected.value.map(id => docRowsById.get(id) || { id, print_type: activeTab.value });
+        return {
+            kind: 'selection',
+            rows,
+            payload: { documents: rows.map(r => ({ id: r.id, fakturaType: r.print_type || activeTab.value })) },
+            label: `${plural} ${t('SearchView.document_table.scope_selection')}`,
+            filename: `${sanitizeFilename(plural)}-${sanitizeFilename(t('SearchView.document_table.scope_selection'))}.pdf`
+        };
+    }
+    let suffix;
+    if (docPeriod.value) {
+        suffix = `${docPeriod.value.year}-${String(docPeriod.value.month).padStart(2, '0')}`;
+    } else {
+        const from = docSearchCriteria.value.transdate_from;
+        const to = docSearchCriteria.value.transdate_to;
+        suffix = (from || to) ? [from, to].filter(Boolean).join('_') : sanitizeFilename(t('SearchView.period.all'));
+    }
+    return {
+        kind: 'all',
+        rows: [],
+        payload: { type: activeTab.value, where: currentDocWhere() },
+        label: docScopeLabel.value,
+        filename: `${sanitizeFilename(plural)}-${suffix}.pdf`
+    };
+}
+
+/**
+ * Aktive Filter der Dokument-Suche (gleiches Format wie beim Laden)
+ */
+function currentDocWhere() {
+    const where = {};
+    for (const [key, value] of Object.entries(docSearchCriteria.value)) {
+        if (value === null || value === undefined) continue;
+        if (typeof value === 'string' && value.trim() === '') continue;
+        where[key] = value;
+    }
+    return where;
+}
+
+/**
+ * Sammel-PDF vom Backend holen — als Blob (Download) oder Base64 (Anhang)
+ */
+async function fetchBatchPdf(scope, asBase64 = false) {
+    const body = {
+        action: 'generateBatchPdf',
+        ...scope.payload,
+        printerId: selectedPrinter.value?.id ?? null,
+        filename: scope.filename
+    };
+    if (asBase64) {
+        const response = await axios.post('/api/print/', body);
+        if (!response.data.success) {
+            throw new Error(response.data.text || 'PDF error');
+        }
+        return response.data.payload.pdf;
+    }
+    const response = await axios.post('/api/print/', { ...body, 'content-type': 'application/pdf' }, { responseType: 'blob' });
+    if (response.data.type === 'application/json') {
+        const errData = JSON.parse(await response.data.text());
+        throw new Error(errData.text || 'PDF error');
+    }
+    return response.data;
+}
+
+/**
+ * PDF herunterladen (einzeln, Auswahl oder ganzer Zeitraum)
+ */
+async function docDownloadPdf(scope) {
+    docBusy.value = 'pdf';
+    let blobUrl = null;
+    try {
+        const blob = await fetchBatchPdf(scope);
+        blobUrl = URL.createObjectURL(new Blob([blob], { type: 'application/pdf' }));
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = scope.filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    } catch (e) {
+        console.error('Fehler beim Erstellen der PDF:', e);
+        alerts.error(t('SearchView.document_actions.pdf_error'));
+    } finally {
+        if (blobUrl) setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+        docBusy.value = null;
+    }
+}
+
+/**
+ * Als ein Druckauftrag an den gewählten Drucker senden
+ */
+async function docPrint(scope) {
+    if (!selectedPrinter.value) {
+        alerts.warning(t('SearchView.document_actions.select_printer_first'));
+        return;
+    }
+    docBusy.value = 'print';
+    try {
+        const response = await axios.post('/api/print/', {
+            action: 'printBatchToPrinter',
+            ...scope.payload,
+            printerId: selectedPrinter.value.id
+        });
+        if (response.data.success) {
+            const payload = response.data.payload || {};
+            const failed = (payload.errors || []).length;
+            if (failed > 0) {
+                toasts.warning(t('SearchView.document_actions.printed_partial', { count: payload.count, failed }));
+            } else {
+                toasts.success(t('SearchView.document_actions.printed', { count: payload.count, name: payload.printer }, payload.count));
+            }
+            docSelected.value = [];
+        } else {
+            alerts.error(response.data.text || t('SearchView.document_actions.print_error'));
+        }
+    } catch (e) {
+        console.error('Fehler beim Drucken:', e);
+        alerts.error(t('SearchView.document_actions.print_error'));
+    } finally {
+        docBusy.value = null;
+    }
+}
+
+// ===== E-Mail =====
+const emailDialog = ref({ visible: false, to: '', cc: '', bcc: '', subject: '', body: '', attachmentName: '', scope: null });
+
+const emailSenderFieldMap = {
+    invoice: 'email_sender_invoice',
+    credit_note: 'email_sender_invoice',
+    quotation: 'email_sender_sales_quotation',
+    order: 'email_sender_sales_order',
+    delivery_order: 'email_sender_sales_delivery_order',
+    purchase_order: 'email_sender_purchase_order'
+};
+const emailRecordTypeMap = {
+    invoice: 'invoice',
+    credit_note: 'invoice',
+    quotation: 'sales_quotation',
+    order: 'sales_order',
+    delivery_order: 'sales_delivery_order',
+    purchase_order: 'purchase_order'
+};
+
+/**
+ * E-Mail-Dialog öffnen: Einzelbeleg an den Kunden, Sammel-PDF an den zuletzt genutzten Empfänger
+ */
+function docOpenEmail(scope) {
+    const row = scope.kind === 'single' ? scope.rows[0] : null;
+    const plural = pluralLabel();
+    emailDialog.value = {
+        visible: true,
+        scope,
+        attachmentName: scope.filename,
+        to: row ? (row.cv_email || '') : (oserp.getConfigValue('search_batch_email_to') || ''),
+        cc: row ? (row.cv_cc || '') : '',
+        bcc: row ? (row.cv_bcc || '') : '',
+        subject: row
+            ? t('SearchView.send.email_subject_single', { type: singularLabel(row.print_type), number: row.document_number || row.id })
+            : t('SearchView.send.email_subject_batch', { type: plural, period: docPeriodLabel.value }),
+        body: row
+            ? t('SearchView.send.email_body_single', { type: singularLabel(row.print_type), number: row.document_number || row.id })
+            : t('SearchView.send.email_body_batch', { type: plural, period: docPeriodLabel.value, count: scope.kind === 'selection' ? scope.rows.length : docTotal.value })
+    };
+}
+
+async function onEmailSend(emailData) {
+    const scope = emailDialog.value.scope;
+    docBusy.value = 'email';
+    try {
+        const pdfBase64 = await fetchBatchPdf(scope, true);
+        const defaults = oserp.session.company_config?.defaults || {};
+        const printType = scope.kind === 'single' ? (scope.rows[0].print_type || activeTab.value) : activeTab.value;
+        const splitAddresses = (value) => (value || '').split(/[,;]/)
+            .map(e => ({ email: e.trim(), name: '' }))
+            .filter(e => e.email);
+
+        const response = await axios.post('/api/email/', {
+            action: 'sendEmail',
+            from_name: defaults[emailSenderFieldMap[printType] || ''] || '',
+            to: splitAddresses(emailData.to),
+            cc: splitAddresses(emailData.cc),
+            bcc: splitAddresses(emailData.bcc),
+            subject: emailData.subject,
+            body_text: emailData.body,
+            body_html: '',
+            record_type: scope.kind === 'single' ? (emailRecordTypeMap[printType] || null) : null,
+            attachments: [{
+                filename: scope.filename,
+                content_base64: pdfBase64,
+                content_type: 'application/pdf'
+            }]
+        });
+
+        if (response.data.success) {
+            toasts.success(t('SearchView.document_actions.email_sent'));
+            if (scope.kind !== 'single') oserp.setConfigValue('search_batch_email_to', emailData.to);
+            emailDialog.value.visible = false;
+        } else {
+            alerts.error(response.data.text || t('SearchView.document_actions.email_error'));
+        }
+    } catch (e) {
+        console.error('Fehler beim E-Mail-Versand:', e);
+        alerts.error(t('SearchView.document_actions.email_error'));
+    } finally {
+        docBusy.value = null;
+        emailDialog.value.visible = false;
+    }
+}
+
+// ===== WhatsApp =====
+const waDialog = ref({ visible: false, phone: '', phoneList: [], attachmentName: '', salutation: '', docRef: '', amount: '', scope: null });
+
+/**
+ * WhatsApp-Dialog öffnen: Handynummer des Kunden bzw. zuletzt genutzte Nummer beim Sammelversand
+ */
+function docOpenWhatsApp(scope) {
+    const row = scope.kind === 'single' ? scope.rows[0] : null;
+    let phoneList = [];
+    if (row?.cv_phone_numbers) {
+        try {
+            phoneList = typeof row.cv_phone_numbers === 'string' ? JSON.parse(row.cv_phone_numbers) : row.cv_phone_numbers;
+        } catch {
+            phoneList = [];
+        }
+    }
+    const companyName = oserp.session.company_config?.defaults?.company || '';
+    const amount = row ? row.amount : docSumAmount.value;
+    waDialog.value = {
+        visible: true,
+        scope,
+        phone: row ? (row.cv_phone || '') : (oserp.getConfigValue('search_batch_whatsapp_to') || ''),
+        phoneList: Array.isArray(phoneList) ? phoneList : [],
+        attachmentName: (companyName ? sanitizeFilename(companyName) + '-' : '') + scope.filename,
+        salutation: row ? [row.cv_greeting, row.cv_name].filter(Boolean).join(' ') : '',
+        docRef: row
+            ? t(`SearchView.send.doc_ref.${row.print_type || activeTab.value}`, { number: row.document_number || row.id })
+            : scope.label,
+        amount: amount !== null && amount !== undefined ? formatAmount(amount) : ''
+    };
+}
+
+async function onWhatsAppSend(waData) {
+    const scope = waDialog.value.scope;
+    docBusy.value = 'whatsapp';
+    try {
+        const pdfBase64 = await fetchBatchPdf(scope, true);
+        const row = scope.kind === 'single' ? scope.rows[0] : null;
+        const response = await axios.post('/api/whatsapp/', {
+            action: 'sendWhatsAppDocument',
+            to: waData.phone,
+            customer_id: row && row.cv_src === 'C' ? (row.cv_id || 0) : 0,
+            document_base64: pdfBase64,
+            filename: waDialog.value.attachmentName,
+            template_id: waData.templateId,
+            parameters: waData.parameters
+        });
+        if (response.data.success) {
+            toasts.success(t('SearchView.document_actions.whatsapp_sent'));
+            if (scope.kind !== 'single') oserp.setConfigValue('search_batch_whatsapp_to', waData.phone);
+            waDialog.value.visible = false;
+        } else {
+            alerts.error(response.data.text || t('SearchView.document_actions.whatsapp_error'));
+        }
+    } catch (e) {
+        console.error('Fehler beim WhatsApp-Versand:', e);
+        alerts.error(t('SearchView.document_actions.whatsapp_error'));
+    } finally {
+        docBusy.value = null;
+        waDialog.value.visible = false;
+    }
+}
+
 
 /**
  * Formatiert einen Betrag als EUR-Währung
@@ -1003,6 +1597,7 @@ const docTypeMap = {
 };
 
 const onDocRowClick = async (event, row) => {
+    if (event?.target?.closest?.('.v-selection-control, .doc-row-actions')) return;
     const item = row.item;
 
     // Zur Faktura-Ansicht navigieren

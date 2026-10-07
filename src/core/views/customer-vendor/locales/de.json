@@ -245,7 +245,9 @@
             "delete": "Löschen",
             "history": "Historie",
             "close": "Schließen",
-            "confirmDelete": "Möchten Sie diesen Kunden wirklich löschen?"
+            "confirmDelete": "Kunde „{name}“ wirklich löschen? Ansprechpartner, Adressen und Notizen werden mit entfernt.",
+            "confirmDeleteVendor": "Lieferant „{name}“ wirklich löschen? Ansprechpartner, Adressen und Notizen werden mit entfernt.",
+            "cancel": "Abbrechen"
         },
         "messages": {
             "saving": "Speichert...",
@@ -255,7 +257,10 @@
             "deleteError": "Fehler beim Löschen des Kunden.",
             "deleteContactError": "Fehler beim Löschen des Ansprechpartners",
             "deleteContactErrorTitle": "Fehler",
-            "autoSaveWarning": "Bitte zuerst {fields} ausfüllen, um den Datensatz zu speichern."
+            "autoSaveWarning": "Bitte zuerst {fields} ausfüllen, um den Datensatz zu speichern.",
+            "deleteErrorVendor": "Fehler beim Löschen des Lieferanten.",
+            "deleted": "Kunde „{name}“ gelöscht.",
+            "deletedVendor": "Lieferant „{name}“ gelöscht."
         },
         "duplicate": {
             "title": "Mögliches Duplikat",

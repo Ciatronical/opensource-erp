@@ -264,6 +264,7 @@ import { defineComponent, defineAsyncComponent, ref, computed, watch, onMounted,
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { oserpStore } from '@/core/stores/oserp.store.js'
+import { useHourlyRate } from '@/core/composables/useHourlyRate.js'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
 import axios from 'axios'
 
@@ -505,9 +506,12 @@ export default defineComponent({
             !shopCard.value?.kanalFehlt
         )
 
+        /** Standard-Stundensatz und seine Bezugseinheit aus der Mandantenkonfiguration */
+        const { hourlyRate: defaultHourlyRate, hourlyRateUnit } = useHourlyRate()
+
         /** Bevorzugte Einheit je Typ — nur wenn es sie in units gibt (FK parts_unit_fkey) */
         function defaultUnit(partType) {
-            const wunsch = partType === 'service' ? 'Std' : 'Stck'
+            const wunsch = partType === 'service' ? hourlyRateUnit.value : 'Stck'
             return unitOptions.value.includes(wunsch) ? wunsch : (unitOptions.value[0] || wunsch)
         }
 
@@ -543,10 +547,25 @@ export default defineComponent({
             }
         }
 
-        // Ware und Dienstleistung haben getrennte Nummernkreise
-        watch(() => article.value.part_type, () => {
-            if (isNewMode.value) peekPartnumber()
+        /** Neue Dienstleistung in der Stundensatz-Einheit ohne Preis → Standard-Stundensatz vorbelegen */
+        function prefillHourlyRate() {
+            if (!isNewMode.value) return
+            if (article.value.part_type !== 'service' || article.value.unit !== hourlyRateUnit.value) return
+            if (Number(article.value.sellprice) > 0 || !defaultHourlyRate.value) return
+            article.value.sellprice = defaultHourlyRate.value
+        }
+
+        // Ware und Dienstleistung haben getrennte Nummernkreise und Standard-Einheiten
+        watch(() => article.value.part_type, (neu, alt) => {
+            if (!isNewMode.value) return
+            if (alt !== undefined && article.value.unit === defaultUnit(alt)) {
+                article.value.unit = defaultUnit(neu)
+            }
+            prefillHourlyRate()
+            peekPartnumber()
         })
+
+        watch(() => article.value.unit, prefillHourlyRate)
 
         function createErrorText(code) {
             if (code === 'PARTNUMBER_EXISTS') return t('ArticleEditView.messages.partnumberExists')

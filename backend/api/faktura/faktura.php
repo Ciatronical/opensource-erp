@@ -863,7 +863,9 @@ function replaceFakturaItemArticle($data) {
  * @param float  $data['discount']        Rabatt der Position (Faktor 0-1)
  * @param string $data['part_type']       'part' oder 'service'
  * @param string $data['partnumber']      Gewünschte Artikelnummer (leer -> Nummernkreis)
- * @return void JSON {parts_id, partnumber, unit}
+ * @return void JSON {parts_id, partnumber, unit, buchungsziel} — buchungsziel (Erlöskonto,
+ *              Steuerkonto, tax_id, Satz) für Steuerzone und Datum des Belegs, damit die
+ *              Faktura die Umsatzsteuer der Position sofort richtig rechnet
  * @testdata {"fakturaType": "quotation", "item_id": 1, "description": "Test Artikel", "part_type": "part"}
  */
 function saveFakturaItemAsNewPart($data) {
@@ -881,7 +883,8 @@ function saveFakturaItemAsNewPart($data) {
     permit(getPermissionForFakturaType($fakturaType));
 
     $tableConfig = getFakturaTableConfig($fakturaType);
-    $itemsTable  = $tableConfig['items_table']; // kontrollierter Tabellenname (kein User-Input)
+    $itemsTable  = $tableConfig['items_table']; // kontrollierte Tabellennamen (kein User-Input)
+    $mainTable   = $tableConfig['main_table'];
 
     $partnumber = trim($data['partnumber'] ?? '');
     if ($partnumber !== '') {
@@ -900,9 +903,10 @@ function saveFakturaItemAsNewPart($data) {
 
     $row = $company->getOne(<<<SQL
         WITH src AS (
-            SELECT p.buchungsgruppen_id, p.unit AS part_unit
+            SELECT p.buchungsgruppen_id, p.unit AS part_unit, m.taxzone_id, m.transdate
             FROM {$itemsTable} i
             LEFT JOIN parts p ON p.id = i.parts_id
+            LEFT JOIN {$mainTable} m ON m.id = i.trans_id
             WHERE i.id = :item_id
         ),
         np AS (
@@ -914,7 +918,7 @@ function saveFakturaItemAsNewPart($data) {
                    COALESCE(NULLIF(:unit, ''), src.part_unit, 'Stck'),
                    :notes, FALSE
             FROM src
-            RETURNING id, partnumber, unit
+            RETURNING id, partnumber, unit, buchungsgruppen_id
         ),
         upd AS (
             UPDATE {$itemsTable} i
@@ -929,7 +933,25 @@ function saveFakturaItemAsNewPart($data) {
              WHERE i.id = :item_id2
             RETURNING i.id
         )
-        SELECT np.id AS parts_id, np.partnumber, np.unit FROM np
+        SELECT np.id AS parts_id, np.partnumber, np.unit,
+               -- Buchungsziel wie beim Laden der Positionen: Buchungsgruppe → taxzone_charts
+               -- → Erlöskonto → am Belegdatum gültiger Steuerschlüssel
+               (
+                   SELECT row_to_json(bz)
+                   FROM (
+                       SELECT c2.id AS income_chart_id, tk.tax_id, tx.chart_id AS tax_chart_id, tx.rate
+                       FROM taxzone_charts tc
+                       LEFT JOIN chart c2 ON c2.id = tc.income_accno_id
+                       LEFT JOIN taxkeys tk ON tk.chart_id = c2.id
+                           AND tk.startdate <= COALESCE(src.transdate, current_date)
+                       LEFT JOIN tax tx ON tx.id = tk.tax_id
+                       WHERE tc.buchungsgruppen_id = np.buchungsgruppen_id
+                         AND tc.taxzone_id = COALESCE(src.taxzone_id, 0)
+                       ORDER BY tk.startdate DESC
+                       LIMIT 1
+                   ) AS bz
+               ) AS buchungsziel
+        FROM np, src
     SQL, [
         ':item_id'      => $itemId,
         ':item_id2'     => $itemId,
@@ -951,6 +973,7 @@ function saveFakturaItemAsNewPart($data) {
         return;
     }
 
+    $row['buchungsziel'] = !empty($row['buchungsziel']) ? json_decode($row['buchungsziel'], true) : null;
     resultInfo(true, 'CREATED', $row);
 }
 

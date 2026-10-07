@@ -1,7 +1,6 @@
 <?php
 // backend/api/tasks/index.php
 
-require_once __DIR__.'/../inc.php';
-require_once __DIR__.'/../session.php';
 require_once __DIR__.'/tasks.php';
-require_once __DIR__.'/../api.call.php';
+
+require_once __DIR__.'/../inc.php'; // muss immer unten stehen

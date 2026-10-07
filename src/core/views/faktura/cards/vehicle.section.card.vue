@@ -54,11 +54,12 @@
                     <v-autocomplete
                         ref="carAutocomplete"
                         :model-value="selectedCarId"
+                        v-model:search="carSearch"
                         :items="customerCars"
                         item-value="c_id"
                         item-title="c_ln"
                         :label="t('FakturaView.faktura.licensePlate')"
-                        :no-data-text="t('FakturaView.faktura.noVehicle')"
+                        :no-data-text="carNoDataText"
                         variant="outlined"
                         density="compact"
                         hide-details
@@ -66,6 +67,7 @@
                         clearable
                         prepend-inner-icon="mdi-car"
                         @update:model-value="$emit('car-change', $event)"
+                        @keydown.enter="onCarEnter"
                     />
                 </v-col>
                 <v-col v-if="!isTrailer" :cols="isInvoice ? 6 : 6" :sm="isInvoice ? 3 : 4" :md="isInvoice ? 4 : 2" :lg="isInvoice ? 4 : 2" class="py-1">
@@ -222,7 +224,7 @@
 </template>
 
 <script>
-import { defineComponent, ref, watch } from 'vue'
+import { defineComponent, ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 export default defineComponent({
@@ -247,12 +249,28 @@ export default defineComponent({
         isTrailer: { type: Boolean, default: false }
     },
     emits: [
-        'toggle-intern', 'blur-km-stand', 'car-change',
+        'toggle-intern', 'blur-km-stand', 'car-change', 'car-create',
         'oe-ext-field-change', 'picker-date-select', 'picker-time-select', 'clear-datetime',
         'update:display-km-stand'
     ],
-    setup(props, { expose }) {
+    setup(props, { expose, emit }) {
         const { t } = useI18n()
+
+        // Kennzeichen-Schnellanlage: Enter auf einen unbekannten Suchtext legt das Fahrzeug an
+        const carSearch = ref('')
+        const carNoDataText = computed(() => {
+            const typed = (carSearch.value || '').trim()
+            return typed
+                ? t('FakturaView.faktura.quickCar.enterToCreate', { plate: typed.toUpperCase() })
+                : t('FakturaView.faktura.noVehicle')
+        })
+        function onCarEnter() {
+            const typed = (carSearch.value || '').trim()
+            if (!typed) return
+            // Exakter Treffer in der Liste wird von Vuetify nicht automatisch gewählt – übernimmt das Composable
+            emit('car-create', typed)
+            carSearch.value = ''
+        }
 
         // Lokale Kopien für v-model der Date-Time-Picker-Menus
         const localShowBringetermin = ref(props.showPickerBringetermin)
@@ -267,7 +285,7 @@ export default defineComponent({
         }
         expose({ focusCarSelect })
 
-        return { t, localShowBringetermin, localShowFertigstellung, carAutocomplete }
+        return { t, localShowBringetermin, localShowFertigstellung, carAutocomplete, carSearch, carNoDataText, onCarEnter }
     }
 })
 </script>

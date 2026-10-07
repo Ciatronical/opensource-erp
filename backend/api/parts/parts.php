@@ -481,8 +481,10 @@ function suggestPartType($data) {
  * @param float $data['sellprice'] Verkaufspreis
  * @param string $data['unit'] Einheit
  * @param string $data['notes'] Langbeschreibung
- * @return void Fehler PARTNUMBER_EXISTS, wenn eine vorgegebene Artikelnummer vergeben ist
- * @testdata {"description": "Test Artikel", "part_type": "service", "buchungsgruppen_id": 1, "sellprice": 100, "unit": "Stck"}
+ * @param int $data['taxzone_id'] Steuerzone des Belegs, aus dem heraus angelegt wird (optional, Standard 0)
+ * @param string $data['transdate'] Belegdatum (optional, Standard heute) — bestimmt den gültigen Steuerschlüssel
+ * @return void JSON {parts_id, partnumber, part_type, buchungsziel}; Fehler PARTNUMBER_EXISTS, wenn eine vorgegebene Artikelnummer vergeben ist
+ * @testdata {"description": "Test Artikel", "part_type": "service", "buchungsgruppen_id": 1, "sellprice": 100, "unit": "Stck", "taxzone_id": 0}
  */
 function createPart($data) {
     permit(['part_service_assembly_edit', 'invoice_edit', 'sales_order_edit', 'sales_quotation_edit'], false);
@@ -516,8 +518,39 @@ function createPart($data) {
         ':buchungsgruppen_id' => $buchungsgruppenId,
         ':sellprice'          => floatval($data['sellprice'] ?? 0),
         ':unit'               => trim($data['unit'] ?? 'Stck'),
-        ':notes'              => trim($data['notes'] ?? '')
+        ':notes'              => trim($data['notes'] ?? ''),
+        // Buchungsziel (Erlöskonto, Steuerkonto, tax_id, Satz) gleich mitliefern: die
+        // Faktura rechnet damit die Umsatzsteuer der Position. Ohne diese Angabe stünde
+        // der Artikel in der Position mit Satz 0 und der Beleg wäre zu niedrig besteuert.
+        ':taxzone_id'         => intval($data['taxzone_id'] ?? 0),
+        ':transdate'          => trim($data['transdate'] ?? ''),
+        ':bg_bz'              => $buchungsgruppenId
     ];
+
+    // Gleiche Ableitung wie bei der Artikelsuche (fetchParts) und beim Laden der
+    // Positionen (faktura.php): Buchungsgruppe → taxzone_charts → Erlöskonto → am
+    // Belegdatum gültiger Steuerschlüssel.
+    $buchungszielSql = <<<SQL
+        (
+            SELECT row_to_json(buchungsziel)
+            FROM (
+                SELECT
+                    c2.id AS income_chart_id,
+                    tk.tax_id,
+                    tx.chart_id AS tax_chart_id,
+                    tx.rate
+                FROM buchungsgruppen bg
+                JOIN taxzone_charts tc ON tc.buchungsgruppen_id = bg.id AND tc.taxzone_id = :taxzone_id
+                LEFT JOIN chart c2 ON c2.id = tc.income_accno_id
+                LEFT JOIN taxkeys tk ON tk.chart_id = c2.id
+                    AND tk.startdate <= COALESCE(NULLIF(:transdate, '')::date, current_date)
+                LEFT JOIN tax tx ON tx.id = tk.tax_id
+                WHERE bg.id = :bg_bz
+                ORDER BY tk.startdate DESC
+                LIMIT 1
+            ) AS buchungsziel
+        ) AS buchungsziel
+    SQL;
 
     if (empty($partnumber)) {
         // Artikelnummer automatisch vergeben: nextFreeNumber zählt den defaults-Counter
@@ -526,9 +559,13 @@ function createPart($data) {
         $nextNumber = nextFreeNumber($company, $numberField, 'parts', 'partnumber');
 
         $result = $company->getOne(<<<SQL
-            INSERT INTO parts (partnumber, description, part_type, buchungsgruppen_id, sellprice, unit, notes, obsolete)
-            VALUES (:partnumber, :description, :part_type, :buchungsgruppen_id, :sellprice, :unit, :notes, FALSE)
-            RETURNING id, partnumber
+            WITH np AS (
+                INSERT INTO parts (partnumber, description, part_type, buchungsgruppen_id, sellprice, unit, notes, obsolete)
+                VALUES (:partnumber, :description, :part_type, :buchungsgruppen_id, :sellprice, :unit, :notes, FALSE)
+                RETURNING id, partnumber
+            )
+            SELECT np.id, np.partnumber, {$buchungszielSql}
+            FROM np
         SQL, array_merge($partParams, [':partnumber' => $nextNumber]));
 
         $partsId    = $result['id'];
@@ -539,10 +576,14 @@ function createPart($data) {
         // auf partnumber. Eigener Platzhalter für die Prüfung, weil PDO ohne
         // Emulation keinen Namen zweimal erlaubt.
         $query = <<<SQL
-            INSERT INTO parts (partnumber, description, part_type, buchungsgruppen_id, sellprice, unit, notes, obsolete)
-            SELECT :partnumber, :description, :part_type, :buchungsgruppen_id, :sellprice, :unit, :notes, FALSE
-             WHERE NOT EXISTS (SELECT 1 FROM parts WHERE partnumber = :partnumber_check)
-            RETURNING id
+            WITH np AS (
+                INSERT INTO parts (partnumber, description, part_type, buchungsgruppen_id, sellprice, unit, notes, obsolete)
+                SELECT :partnumber, :description, :part_type, :buchungsgruppen_id, :sellprice, :unit, :notes, FALSE
+                 WHERE NOT EXISTS (SELECT 1 FROM parts WHERE partnumber = :partnumber_check)
+                RETURNING id
+            )
+            SELECT np.id, {$buchungszielSql}
+            FROM np
         SQL;
 
         $result = $company->getOne($query, array_merge($partParams, [
@@ -559,7 +600,8 @@ function createPart($data) {
     resultInfo(true, 'CREATED', [
         'parts_id' => $partsId,
         'partnumber' => $partnumber,
-        'part_type' => $partType
+        'part_type' => $partType,
+        'buchungsziel' => !empty($result['buchungsziel']) ? json_decode($result['buchungsziel'], true) : null
     ]);
 }
 

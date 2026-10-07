@@ -816,6 +816,32 @@ export const oserpStore = defineStore('oserpStore', () => {
     }
 
     /**
+     * Löscht Customer/Vendor (Backend prüft Belege und Rechte)
+     */
+    async function deleteCV(id, src = 'C') {
+        const response = await axios.post('/api/customer_vendor/', {
+            action: 'deleteCV',
+            id: Number(id),
+            src
+        });
+
+        if (!response.data.success) {
+            throw new ApiError('ApiError', response.data.text, response.data.payload || response.data.text);
+        }
+
+        // Gelöschten Datensatz aus Store und "zuletzt geöffnet" entfernen
+        if (Number(customer_vendor.value?.profile?.id) === Number(id)) {
+            customer_vendor.value = false;
+        }
+        if (localStorage.getItem('oserp_last_cv_id') === String(id)) {
+            localStorage.removeItem('oserp_last_cv_id');
+            localStorage.removeItem('oserp_last_cv_src');
+        }
+
+        return response.data;
+    }
+
+    /**
      * Lädt letzten Customer/Vendor — nutzt gespeicherte ID aus localStorage falls vorhanden
      */
     async function fetchLastCustomerOrVendor() {
@@ -943,6 +969,7 @@ export const oserpStore = defineStore('oserpStore', () => {
         // Customer/Vendor
         checkDuplicateCV,
         saveCV,
+        deleteCV,
         fetchLastCustomerOrVendor,
         fetchCustomerOrVendor
     };

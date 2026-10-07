@@ -83,7 +83,8 @@ function customerDeletableCondition($db, $customerRef) {
  *
  * Gegenstück zu getAccountingVendors(): Umsatz und Rechnungszahl kommen aus
  * den Ausgangsrechnungen (ar), das Standardkonto ist das zuletzt bebuchte
- * Erlöskonto des Kunden.
+ * Erlöskonto des Kunden. Die Löschbarkeit kommt mit, damit auch von Hand
+ * ausgewählte Kunden ohne weitere Abfrage zusammengeführt werden können.
  *
  * @param string $data['query']            Suchbegriff (optional)
  * @param int    $data['limit']            Anzahl (Standard: 50)
@@ -109,6 +110,8 @@ function getAccountingCustomers($data) {
         $params[':q5'] = '%' . $query . '%';
     }
 
+    $deletable = customerDeletableCondition($db, 'c.id');
+
     $customers = $db->getAll(<<<SQL
         SELECT c.id, c.name, c.customernumber, c.street, c.zipcode, c.city,
                c.phone, c.email, c.iban, c.bic, c.taxnumber, c.ustid,
@@ -116,7 +119,8 @@ function getAccountingCustomers($data) {
                TO_CHAR(c.itime, 'DD.MM.YYYY') AS created_fmt,
                COALESCE(inv.booking_count, 0) AS booking_count,
                inv.total_amount,
-               acc.accno AS default_account
+               acc.accno AS default_account,
+               ({$deletable}) AS deletable
         FROM customer c
         LEFT JOIN (
             SELECT a.customer_id, COUNT(*) AS booking_count, SUM(a.amount) AS total_amount
@@ -137,15 +141,30 @@ function getAccountingCustomers($data) {
         LIMIT :limit
     SQL, $params);
 
+    // PostgreSQL-Booleans kommen über PDO als 't'/'f' an — beides ist in
+    // JavaScript wahr. Vor der Ausgabe in echte Booleans wandeln.
+    foreach ($customers ?: [] as &$c) {
+        $c['deletable'] = $c['deletable'] === true || $c['deletable'] === 't';
+        $c['obsolete']  = $c['obsolete'] === true || $c['obsolete'] === 't';
+    }
+    unset($c);
+
     resultInfo(true, '', ['customers' => $customers ?: []]);
 }
 
 /**
- * Potenzielle Kunden-Dubletten finden
+ * Potenzielle Kunden-Dubletten finden — als Gruppen, nicht als Paare
  *
- * Anlegedatum, Rechnungszahl und Löschbarkeit beider Seiten kommen mit, damit
- * im Zusammenführen-Dialog entschieden werden kann, welcher Kunde bleibt und
- * ob der andere gelöscht statt nur stillgelegt werden kann.
+ * Die Datenbank liefert Paare. Ist ein Kunde dreimal angelegt, sind das drei
+ * Paare (A-B, A-C, B-C), in denen derselbe Kunde immer wieder auftaucht; der
+ * Anwender müsste dreimal nacheinander zusammenführen. Deshalb werden die
+ * Paare hier zu Gruppen verbunden: alles, was direkt oder über Zwischenglieder
+ * zusammenhängt, ist eine Gruppe und wird in einem Schritt zusammengeführt.
+ *
+ * Jedes Mitglied bringt Kundennummer, Strasse, Ort, Anlegedatum, Rechnungszahl
+ * und Löschbarkeit mit, damit gleichnamige Einträge im Dialog unterscheidbar
+ * sind und entschieden werden kann, welcher bleibt und ob der Rest gelöscht
+ * statt nur stillgelegt werden darf.
  *
  * Die Paare entstehen ueber den Trigramm-Operator `%` statt ueber
  * `similarity(...) > schwellwert`. Inhaltlich ist das dasselbe — `%` ist genau
@@ -184,7 +203,10 @@ function findCustomerDuplicates($data) {
             [':threshold' => (string)$threshold]
         );
 
-        $duplicates = $db->getAll(<<<SQL
+        // Gleiche IBAN: mit und ohne Leerzeichen vergleichen — so wie die Paare
+        // entstehen. Sonst zeigt die Anzeige "69 % Ähnlichkeit", obwohl das
+        // Paar gerade wegen der IBAN gefunden wurde.
+        $pairs = $db->getAll(<<<SQL
             WITH inv AS (
                 SELECT customer_id, COUNT(*) AS booking_count
                 FROM ar
@@ -205,22 +227,25 @@ function findCustomerDuplicates($data) {
                   AND REPLACE(c1.iban, ' ', '') = REPLACE(c2.iban, ' ', '')
             )
             SELECT c1.id AS customer1_id, c1.name AS customer1_name, c1.city AS customer1_city,
+                   c1.customernumber AS customer1_number, c1.street AS customer1_street,
                    TO_CHAR(c1.itime, 'DD.MM.YYYY') AS customer1_created,
                    COALESCE(i1.booking_count, 0) AS customer1_bookings,
                    ({$c1Deletable}) AS customer1_deletable,
                    c2.id AS customer2_id, c2.name AS customer2_name, c2.city AS customer2_city,
+                   c2.customernumber AS customer2_number, c2.street AS customer2_street,
                    TO_CHAR(c2.itime, 'DD.MM.YYYY') AS customer2_created,
                    COALESCE(i2.booking_count, 0) AS customer2_bookings,
                    ({$c2Deletable}) AS customer2_deletable,
                    similarity(c1.name, c2.name) AS name_similarity,
-                   CASE WHEN c1.iban IS NOT NULL AND c1.iban != '' AND c1.iban = c2.iban THEN TRUE ELSE FALSE END AS same_iban
+                   (c1.iban IS NOT NULL AND c1.iban <> ''
+                    AND REPLACE(c1.iban, ' ', '') = REPLACE(c2.iban, ' ', '')) AS same_iban
             FROM paare p
             JOIN customer c1 ON c1.id = p.id1
             JOIN customer c2 ON c2.id = p.id2
             LEFT JOIN inv i1 ON i1.customer_id = c1.id
             LEFT JOIN inv i2 ON i2.customer_id = c2.id
             ORDER BY name_similarity DESC
-            LIMIT 50
+            LIMIT 200
         SQL);
 
         $db->commit();
@@ -229,22 +254,88 @@ function findCustomerDuplicates($data) {
         throw $e;
     }
 
-    // PostgreSQL-Booleans kommen über PDO als 't'/'f' an — beides ist in
-    // JavaScript wahr. Vor der Ausgabe in echte Booleans wandeln.
-    foreach ($duplicates as &$dup) {
-        foreach (['same_iban', 'customer1_deletable', 'customer2_deletable'] as $flag) {
-            $dup[$flag] = $dup[$flag] === true || $dup[$flag] === 't';
-        }
-    }
-    unset($dup);
+    resultInfo(true, '', ['groups' => groupDuplicatePairs($pairs ?: [], 'customer')]);
+}
 
-    resultInfo(true, '', ['duplicates' => $duplicates ?: []]);
+/**
+ * Dubletten-Paare zu Gruppen verbinden
+ *
+ * Union-Find über die Paare: jedes Paar verbindet zwei Einträge, alles was
+ * zusammenhängt landet in einer Gruppe. Die Gruppe trägt die höchste
+ * Namensähnlichkeit ihrer Paare und ob irgendein Paar über die IBAN gefunden
+ * wurde. Sortiert wird nach IBAN-Treffer, dann Ähnlichkeit — die sichersten
+ * Treffer zuerst.
+ *
+ * Die Mitglieder einer Gruppe stehen nach Rechnungszahl absteigend, bei
+ * Gleichstand nach ID aufsteigend: der erste ist damit immer der Vorschlag,
+ * welcher Eintrag bleiben soll (am wenigsten umzuhängen, sonst der älteste).
+ *
+ * @param array  $pairs  Zeilen aus findCustomerDuplicates()
+ * @param string $prefix Spaltenpräfix ('customer')
+ * @return array Gruppen mit members, same_iban, similarity
+ */
+function groupDuplicatePairs(array $pairs, string $prefix) {
+    $parent = [];
+    $find = function ($id) use (&$parent, &$find) {
+        if (!isset($parent[$id])) $parent[$id] = $id;
+        return $parent[$id] === $id ? $id : ($parent[$id] = $find($parent[$id]));
+    };
+
+    $members = [];
+    $pairInfo = [];
+    foreach ($pairs as $row) {
+        foreach ([1, 2] as $n) {
+            $id = intval($row["{$prefix}{$n}_id"]);
+            $members[$id] = [
+                'id'             => $id,
+                'name'           => $row["{$prefix}{$n}_name"],
+                'customernumber' => $row["{$prefix}{$n}_number"],
+                'street'         => $row["{$prefix}{$n}_street"],
+                'city'           => $row["{$prefix}{$n}_city"],
+                'created'        => $row["{$prefix}{$n}_created"],
+                'bookings'       => intval($row["{$prefix}{$n}_bookings"]),
+                'deletable'      => $row["{$prefix}{$n}_deletable"] === true || $row["{$prefix}{$n}_deletable"] === 't'
+            ];
+        }
+        $a = $find(intval($row["{$prefix}1_id"]));
+        $b = $find(intval($row["{$prefix}2_id"]));
+        if ($a !== $b) $parent[$a] = $b;
+        $pairInfo[] = [
+            'ids'        => [intval($row["{$prefix}1_id"]), intval($row["{$prefix}2_id"])],
+            'similarity' => floatval($row['name_similarity']),
+            'same_iban'  => $row['same_iban'] === true || $row['same_iban'] === 't'
+        ];
+    }
+
+    $groups = [];
+    foreach ($members as $id => $member) {
+        $groups[$find($id)]['members'][] = $member;
+    }
+    foreach ($pairInfo as $pair) {
+        $root = $find($pair['ids'][0]);
+        $groups[$root]['similarity'] = max($groups[$root]['similarity'] ?? 0, $pair['similarity']);
+        $groups[$root]['same_iban']  = ($groups[$root]['same_iban'] ?? false) || $pair['same_iban'];
+    }
+
+    $groups = array_values($groups);
+    foreach ($groups as &$group) {
+        usort($group['members'], fn($x, $y) => [$y['bookings'], $x['id']] <=> [$x['bookings'], $y['id']]);
+        $group['same_iban']  = $group['same_iban'] ?? false;
+        $group['similarity'] = $group['similarity'] ?? 0;
+    }
+    unset($group);
+    usort($groups, fn($x, $y) => [$y['same_iban'], $y['similarity']] <=> [$x['same_iban'], $x['similarity']]);
+
+    return $groups;
 }
 
 /**
  * Kunden zusammenführen (Deduplizierung)
  *
- * Zwei Wege, je nachdem ob der aufzulösende Kunde je benutzt wurde:
+ * Ein Kunde bleibt, beliebig viele andere gehen in ihm auf — alles in einer
+ * Transaktion, damit eine Dreiergruppe nicht halb zusammengeführt stehen
+ * bleibt, wenn ein Mitglied scheitert. Für jeden aufzulösenden Kunden gibt es
+ * zwei Wege, je nachdem ob er je benutzt wurde:
  *
  * 1. Nie benutzt (customerDeletableCondition) und `delete_merged` gesetzt:
  *    der Doppeleintrag wird gelöscht. Es gibt keinen Beleg, der ihn braucht,
@@ -255,53 +346,96 @@ function findCustomerDuplicates($data) {
  *    Rechnung verloren, auch wenn beide bebucht waren. Die Buchungssätze
  *    selbst (acc_trans) bleiben unberührt, sie hängen am Beleg.
  *
- * Anrufhistorie und erweiterte Kontaktdaten ziehen in beiden Fällen mit um.
+ * Ansprechpartner, Lieferadressen, Anrufhistorie und erweiterte Kontaktdaten
+ * ziehen in beiden Fällen zum verbleibenden Kunden um.
  *
- * @param int  $data['keep_customer_id']  Kunde der beibehalten wird
- * @param int  $data['merge_customer_id'] Kunde der aufgelöst wird
- * @param bool $data['delete_merged']     Löschen statt stilllegen, sofern unbenutzt
- * @testdata {"keep_customer_id": 1, "merge_customer_id": 2, "delete_merged": true}
+ * @param int   $data['keep_customer_id']   Kunde der beibehalten wird
+ * @param int[] $data['merge_customer_ids'] Kunden die aufgelöst werden
+ * @param int   $data['merge_customer_id']  Einzelner Kunde (Altform)
+ * @param bool  $data['delete_merged']      Löschen statt stilllegen, sofern unbenutzt
+ * @testdata {"keep_customer_id": 1, "merge_customer_ids": [2, 3], "delete_merged": true}
  */
 function mergeCustomers($data) {
     $db = DbhCompany::begin();
 
     $keepId = intval($data['keep_customer_id'] ?? 0);
-    $mergeId = intval($data['merge_customer_id'] ?? 0);
+    $mergeIds = $data['merge_customer_ids'] ?? [];
+    if (!is_array($mergeIds)) $mergeIds = [$mergeIds];
+    if (!empty($data['merge_customer_id'])) $mergeIds[] = $data['merge_customer_id'];
+    $mergeIds = array_values(array_unique(array_filter(array_map('intval', $mergeIds), fn($id) => $id > 0 && $id !== $keepId)));
     $deleteMerged = filter_var($data['delete_merged'] ?? false, FILTER_VALIDATE_BOOLEAN);
 
-    if (!$keepId || !$mergeId || $keepId === $mergeId) {
-        throw new ApiError('VALIDATION_ERROR', 'Zwei unterschiedliche customer_ids erforderlich');
+    if (!$keepId || !$mergeIds) {
+        throw new ApiError('VALIDATION_ERROR', 'Ein verbleibender und mindestens ein aufzulösender Kunde erforderlich');
     }
 
-    $mergeDeletable = customerDeletableCondition($db, 'm.id');
-    $info = $db->getOne(
-        "SELECT k.name AS keep_name, m.name AS merge_name,
-                ({$mergeDeletable}) AS deletable
-         FROM customer k
-         JOIN customer m ON m.id = :merge
-         WHERE k.id = :keep",
-        [':keep' => $keepId, ':merge' => $mergeId]
-    );
-
-    if (!$info) {
+    $keep = $db->getOne("SELECT id, name FROM customer WHERE id = :keep", [':keep' => $keepId]);
+    if (!$keep) {
         throw new ApiError('DATA_NOT_FOUND', 'Kunde nicht gefunden');
     }
 
-    $deletable = $info['deletable'] === true || $info['deletable'] === 't';
+    $mergeDeletable = customerDeletableCondition($db, 'm.id');
+    $totals = ['moved_invoices' => 0, 'moved_orders' => 0, 'moved_delivery_orders' => 0, 'moved_bookings' => 0, 'moved_calls' => 0];
+    $merged = [];
 
-    if ($deleteMerged && $deletable) {
-        deleteDuplicateCustomer($db, $keepId, $mergeId, $info);
-        return;
+    $db->beginTransaction();
+    try {
+        foreach ($mergeIds as $mergeId) {
+            $info = $db->getOne(
+                "SELECT m.name, ({$mergeDeletable}) AS deletable FROM customer m WHERE m.id = :merge",
+                [':merge' => $mergeId]
+            );
+            if (!$info) {
+                throw new ApiError('DATA_NOT_FOUND', "Kunde $mergeId nicht gefunden");
+            }
+            $deletable = $info['deletable'] === true || $info['deletable'] === 't';
+
+            if ($deleteMerged && $deletable) {
+                deleteDuplicateCustomer($db, $keepId, $mergeId);
+                $merged[] = ['id' => $mergeId, 'name' => $info['name'], 'deleted' => true];
+                continue;
+            }
+
+            $counts = obsoleteDuplicateCustomer($db, $keepId, $mergeId);
+            foreach ($totals as $key => $sum) {
+                $totals[$key] = $sum + $counts[$key];
+            }
+            $merged[] = ['id' => $mergeId, 'name' => $info['name'], 'deleted' => false];
+        }
+        $db->commit();
+    } catch (Throwable $e) {
+        $db->rollBack();
+        if ($e instanceof ApiError) throw $e;
+        throw new ApiError('MERGE_ERROR', 'Zusammenführen fehlgeschlagen: ' . $e->getMessage());
     }
 
-    // Alles in einer Anweisung: jede Referenz auf den aufzulösenden Kunden
-    // wird umgehängt und er selbst auf obsolete gesetzt. Ein einziges
-    // Statement heisst eine Transaktion und einen konsistenten Snapshot.
-    //
-    // Die Umhaenge-Zweige entstehen aus customerReferences(), gefiltert auf die
-    // Tabellen dieser Firmen-DB — dieselbe Liste, die auch ueber die
-    // Loeschbarkeit entscheidet. Jeder Zweig bekommt eigene Platzhalter: PDO
-    // spricht mit PostgreSQL echt vorbereitet, da darf kein Name doppelt vorkommen.
+    $allDeleted = !in_array(false, array_column($merged, 'deleted'), true);
+    resultInfo(true, $allDeleted ? 'Doppelte Kunden gelöscht' : 'Kunden zusammengeführt', [
+        'kept_customer'   => $keep['name'],
+        'merged'          => $merged,
+        'merged_customer' => implode(', ', array_column($merged, 'name')),
+        'merged_deleted'  => $allDeleted
+    ] + $totals);
+}
+
+/**
+ * Einen Kunden stilllegen und alles, was an ihm hängt, umhängen
+ *
+ * Interner Helfer von mergeCustomers(), läuft in dessen Transaktion. Alles in
+ * einer Anweisung: jede Referenz auf den aufzulösenden Kunden wird umgehängt
+ * und er selbst auf obsolete gesetzt — ein konsistenter Snapshot.
+ *
+ * Die Umhaenge-Zweige entstehen aus customerReferences(), gefiltert auf die
+ * Tabellen dieser Firmen-DB — dieselbe Liste, die auch ueber die
+ * Loeschbarkeit entscheidet. Jeder Zweig bekommt eigene Platzhalter: PDO
+ * spricht mit PostgreSQL echt vorbereitet, da darf kein Name doppelt vorkommen.
+ *
+ * @param ApiDatabase $db      Offene Company-Verbindung (in Transaktion)
+ * @param int         $keepId  Kunde der bleibt
+ * @param int         $mergeId Kunde der stillgelegt wird
+ * @return array Zähler der umgehängten Belege
+ */
+function obsoleteDuplicateCustomer($db, $keepId, $mergeId) {
     $references = customerReferences();
     $params = [];
     $ctes = [];
@@ -312,9 +446,6 @@ function mergeCustomers($data) {
         $params[$name] = $value;
         return $name;
     };
-
-    $ctes[] = 'keep AS (SELECT id, name FROM customer WHERE id = ' . $bind($keepId) . ')';
-    $ctes[] = 'merged AS (SELECT id, name FROM customer WHERE id = ' . $bind($mergeId) . ')';
 
     // Ein UPDATE je Tabelle, nicht je Spalte: zwei CTEs auf dieselbe Tabelle
     // sehen denselben Snapshot. Steht derselbe Partner in einer Zeile in beiden
@@ -333,9 +464,20 @@ function mergeCustomers($data) {
         $counts[$table] = $cte;
         $ctes[] = "{$cte} AS (
             UPDATE {$table} SET " . implode(', ', $sets) . "
-            WHERE (" . implode(' OR ', $where) . ") AND EXISTS (SELECT 1 FROM keep) RETURNING 1
+            WHERE " . implode(' OR ', $where) . " RETURNING 1
         )";
     }
+
+    // Ansprechpartner und Lieferadressen hängen ohne Fremdschlüssel am Kunden
+    // und wären am stillgelegten Eintrag nicht mehr auffindbar.
+    $ctes[] = "upd_contacts AS (
+        UPDATE contacts SET cp_cv_id = " . $bind($keepId) . "
+        WHERE cp_cv_id = " . $bind($mergeId) . " RETURNING 1
+    )";
+    $ctes[] = "upd_shipto AS (
+        UPDATE shipto SET trans_id = " . $bind($keepId) . "
+        WHERE trans_id = " . $bind($mergeId) . " AND module = 'CT' RETURNING 1
+    )";
 
     // Anrufhistorie: crmti kennt Kunden und Lieferanten in einer Spalte,
     // deshalb muss der Typ mitgeprueft werden — kein Fall fuer die Liste oben.
@@ -344,8 +486,7 @@ function mergeCustomers($data) {
         $callsCte = 'upd_calls';
         $ctes[] = "{$callsCte} AS (
             UPDATE crmti SET crmti_caller_id = " . $bind($keepId) . "
-            WHERE crmti_caller_id = " . $bind($mergeId) . " AND crmti_caller_typ = 'C'
-              AND EXISTS (SELECT 1 FROM keep) RETURNING 1
+            WHERE crmti_caller_id = " . $bind($mergeId) . " AND crmti_caller_typ = 'C' RETURNING 1
         )";
     }
 
@@ -362,92 +503,75 @@ function mergeCustomers($data) {
 
     $ctes[] = "set_obsolete AS (
         UPDATE customer SET obsolete = TRUE, mtime = NOW()
-        WHERE id = " . $bind($mergeId) . " AND EXISTS (SELECT 1 FROM keep) RETURNING 1
+        WHERE id = " . $bind($mergeId) . " RETURNING 1
     )";
 
     // Zaehler nur fuer Zweige, die es in dieser DB wirklich gibt
     $tally = function ($key) use ($counts) {
         return isset($counts[$key]) ? "(SELECT COUNT(*) FROM {$counts[$key]})" : '0';
     };
-
     $movedCalls = $callsCte ? "(SELECT COUNT(*) FROM {$callsCte})" : '0';
 
     $result = $db->getOne(
         'WITH ' . implode(",\n", $ctes) . "
-        SELECT (SELECT name FROM keep)   AS kept_customer,
-               (SELECT name FROM merged) AS merged_customer,
-               " . $tally('ar')                  . " AS moved_invoices,
+        SELECT " . $tally('ar')                  . " AS moved_invoices,
                " . $tally('oe')                  . " AS moved_orders,
                " . $tally('delivery_orders')     . " AS moved_delivery_orders,
                " . $tally('accounting_bookings') . " AS moved_bookings,
-               {$movedCalls} AS moved_calls",
+               {$movedCalls} AS moved_calls,
+               (SELECT COUNT(*) FROM set_obsolete) AS obsoleted",
         $params
     );
 
-    if (empty($result['kept_customer']) || empty($result['merged_customer'])) {
-        throw new ApiError('DATA_NOT_FOUND', 'Kunde nicht gefunden');
+    if (empty($result['obsoleted'])) {
+        throw new ApiError('DATA_NOT_FOUND', "Kunde $mergeId nicht gefunden");
     }
 
-    resultInfo(true, 'Kunden zusammengeführt', [
-        'kept_customer'         => $result['kept_customer'],
-        'merged_customer'       => $result['merged_customer'],
-        'merged_deleted'        => false,
+    return [
         'moved_invoices'        => intval($result['moved_invoices']),
         'moved_orders'          => intval($result['moved_orders']),
         'moved_delivery_orders' => intval($result['moved_delivery_orders']),
         'moved_bookings'        => intval($result['moved_bookings']),
         'moved_calls'           => intval($result['moved_calls'])
-    ]);
+    ];
 }
 
 /**
  * Nie benutzten Doppeleintrag löschen statt stilllegen
  *
- * Interner Helfer von mergeCustomers(). Anrufhistorie und erweiterte
- * Kontaktdaten hängen ohne Fremdschlüssel am Kunden und würden sonst ins
- * Leere zeigen: die Historie zieht um, die Kontaktdaten des Doppels fallen
- * weg. Das abschliessende DELETE prüft die Löschbarkeit erneut, falls
- * zwischenzeitlich doch ein Beleg entstanden ist.
+ * Interner Helfer von mergeCustomers(), läuft in dessen Transaktion.
+ * Ansprechpartner, Lieferadressen, Anrufhistorie hängen ohne Fremdschlüssel
+ * am Kunden: sie ziehen vor dem Löschen zum verbleibenden Kunden um, sonst
+ * räumt der kivitendo-Trigger sie mit ab. Die erweiterten Kontaktdaten des
+ * Doppels fallen weg. Das abschliessende DELETE prüft die Löschbarkeit
+ * erneut, falls zwischenzeitlich doch ein Beleg entstanden ist.
  *
- * @param ApiDatabase $db      Offene Company-Verbindung
+ * @param ApiDatabase $db      Offene Company-Verbindung (in Transaktion)
  * @param int         $keepId  Kunde der bleibt
  * @param int         $mergeId Doppeleintrag der verschwindet
- * @param array       $info    Namen aus mergeCustomers()
  */
-function deleteDuplicateCustomer($db, $keepId, $mergeId, $info) {
-    $db->beginTransaction();
-
-    try {
+function deleteDuplicateCustomer($db, $keepId, $mergeId) {
+    $move = [':keep' => $keepId, ':merge' => $mergeId];
+    $db->execute("UPDATE contacts SET cp_cv_id = :keep WHERE cp_cv_id = :merge", $move);
+    $db->execute("UPDATE shipto SET trans_id = :keep WHERE trans_id = :merge AND module = 'CT'", $move);
+    if (existingTables($db, ['crmti'])) {
         $db->execute(
             "UPDATE crmti SET crmti_caller_id = :keep
              WHERE crmti_caller_id = :merge AND crmti_caller_typ = 'C'",
-            [':keep' => $keepId, ':merge' => $mergeId]
+            $move
         );
-
+    }
+    if (existingTables($db, ['customer_ext'])) {
         $db->execute("DELETE FROM customer_ext WHERE customer_id = :merge", [':merge' => $mergeId]);
-
-        $stillDeletable = customerDeletableCondition($db, 'c.id');
-        $deleted = $db->getOne(
-            "DELETE FROM customer c WHERE c.id = :merge AND ({$stillDeletable}) RETURNING c.id",
-            [':merge' => $mergeId]
-        );
-
-        if (!$deleted) {
-            $db->rollBack();
-            throw new ApiError('CUSTOMER_IN_USE', 'Kunde wird inzwischen verwendet und kann nicht gelöscht werden');
-        }
-
-        $db->commit();
-    } catch (ApiError $e) {
-        throw $e;
-    } catch (\Exception $e) {
-        $db->rollBack();
-        throw new ApiError('MERGE_ERROR', 'Löschen fehlgeschlagen: ' . $e->getMessage());
     }
 
-    resultInfo(true, 'Doppelter Kunde gelöscht', [
-        'kept_customer'   => $info['keep_name'],
-        'merged_customer' => $info['merge_name'],
-        'merged_deleted'  => true
-    ]);
+    $stillDeletable = customerDeletableCondition($db, 'c.id');
+    $deleted = $db->getOne(
+        "DELETE FROM customer c WHERE c.id = :merge AND ({$stillDeletable}) RETURNING c.id",
+        [':merge' => $mergeId]
+    );
+
+    if (!$deleted) {
+        throw new ApiError('CUSTOMER_IN_USE', 'Kunde wird inzwischen verwendet und kann nicht gelöscht werden');
+    }
 }

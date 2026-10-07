@@ -394,14 +394,6 @@ function generatePDF($data) {
 }
 
 /**
- * Rendert ein einzelnes Dokument zu einer PDF-Datei (ohne Cleanup).
- *
- * Hilfsfunktion fuer den Sammeldruck (generateBatchPdf). Gibt die Engine
- * mit zurueck, damit der Aufrufer das Temp-Verzeichnis spaeter aufraeumen kann.
- *
- * @return array|false ['path' => <pdfPath>, 'filename' => <name>, 'engine' => LaTeXTemplateEngine]
- */
-/**
  * Erzeugt den GiroCode/EPC-QR (EPC069-12) fuer eine Rechnung als PNG.
  *
  * Banking-Apps scannen den QR und uebernehmen Empfaenger, IBAN, BIC, Betrag und
@@ -463,7 +455,16 @@ function readTemplateBankData(string $templateDir): ?array {
     return ['iban' => $grab('iban'), 'bic' => $grab('bic'), 'name' => $grab('kontoinhab')];
 }
 
-function renderDocumentPdfFile($db, int $fakturaID, string $fakturaType, ?string $templateSet, bool $lxCars, &$error = null) {
+/**
+ * Rendert ein einzelnes Dokument zu einer PDF-Datei (ohne Cleanup).
+ *
+ * Hilfsfunktion fuer den Sammeldruck (sammelPdfErzeugen). Gibt die Engine
+ * mit zurueck, damit der Aufrufer das Temp-Verzeichnis spaeter aufraeumen kann.
+ *
+ * @param string $templateSuffix template_code des Druckers (Vorlagenvariante), '' = keine
+ * @return array|false ['path' => <pdfPath>, 'filename' => <name>, 'engine' => LaTeXTemplateEngine]
+ */
+function renderDocumentPdfFile($db, int $fakturaID, string $fakturaType, ?string $templateSet, bool $lxCars, &$error = null, string $templateSuffix = '') {
     if (!$templateSet || resolveTemplateDir($templateSet) === false) {
         $templateSet = getTemplateSet($db);
     }
@@ -476,6 +477,15 @@ function renderDocumentPdfFile($db, int $fakturaID, string $fakturaType, ?string
 
     $templateDir = getTemplateDir($templateSet);
     $templateName = detectTemplate($fakturaType, $vars, $lxCars, $templateDir);
+
+    // template_code des Druckers als Datei-Suffix (invoice_test.tex), siehe printToPrinter
+    if ($templateSuffix !== '') {
+        $base = pathinfo($templateName, PATHINFO_FILENAME);
+        $suffixName = $base . '_' . $templateSuffix . '.tex';
+        if (is_file($templateDir . '/' . $suffixName)) {
+            $templateName = $suffixName;
+        }
+    }
 
     $engine = new LaTeXTemplateEngine($templateDir);
     $engine->setVariables($vars['variables']);
@@ -502,49 +512,78 @@ function renderDocumentPdfFile($db, int $fakturaID, string $fakturaType, ?string
 }
 
 /**
- * Erzeugt aus mehreren Belegen EIN zusammengefuehrtes PDF (pdfunite) und gibt es aus.
+ * Loest die Belegliste fuer Sammeldruck/Sammel-PDF auf.
  *
- * Erwartet eine Liste von Belegen mit jeweils id + fakturaType (Verkaufsseite),
- * rendert jeden einzeln und fuegt sie per pdfunite zusammen. Antwort als PDF-Stream
- * (content-type=application/pdf) oder Base64-JSON.
+ * Zwei Wege: entweder eine explizite Liste `documents` [{id, fakturaType}]
+ * (Auswahl in der Trefferliste) oder `type` + `where` wie bei searchDocuments
+ * (z. B. "alle Rechnungen des Monats"). Im zweiten Fall ermittelt eine einzige
+ * Abfrage die IDs samt Druck-Belegart, chronologisch sortiert — so wie der
+ * Steuerberater den Stapel haben will.
  *
- * @param array $data['documents'] Liste von {id, fakturaType}
- * @param string $data['filename'] Optionaler Dateiname fuer die Ausgabe
- * @testdata {"documents":[{"id":1,"fakturaType":"invoice"}],"content-type":"application/pdf"}
+ * @return array Liste von ['id' => int, 'fakturaType' => string]
  */
-function generateBatchPdf($data) {
-    $documents = $data['documents'] ?? [];
-    $isPdfRequest = isset($data['content-type']) && $data['content-type'] === 'application/pdf';
-
-    if (!is_array($documents) || count($documents) === 0) {
-        if ($isPdfRequest) header('Content-Type: application/json');
-        resultInfo(false, 'VALIDATION_ERROR', 'documents required');
-        return;
+function belegeFuerSammeldruck($db, array $data): array {
+    $documents = $data['documents'] ?? null;
+    if (is_array($documents) && count($documents) > 0) {
+        $liste = [];
+        foreach ($documents as $doc) {
+            $id = intval($doc['id'] ?? 0);
+            if (!$id) continue;
+            $liste[] = ['id' => $id, 'fakturaType' => $doc['fakturaType'] ?? 'invoice'];
+        }
+        return $liste;
     }
 
-    $db = DbhCompany::begin();
+    $type = $data['type'] ?? '';
+    if ($type === '') return [];
+    $where = is_array($data['where'] ?? null) ? $data['where'] : [];
+    $suche = belegsucheBedingungen($type, $where);
+    $cfg = $suche['cfg'];
+    $tbl = $suche['tbl'];
+
+    $query = <<<SQL
+        SELECT $tbl.id, {$cfg['print_type_expr']} AS faktura_type
+        {$suche['from']}
+        {$suche['where']}
+        ORDER BY $tbl.transdate, $tbl.{$cfg['number_field']}, $tbl.id
+    SQL;
+
+    $liste = [];
+    foreach ($db->getAll($query, $suche['params']) as $row) {
+        if (empty($row['faktura_type'])) continue; // Belegart ohne Druckvorlage (z. B. Eingangsrechnung)
+        $liste[] = ['id' => intval($row['id']), 'fakturaType' => $row['faktura_type']];
+    }
+    return $liste;
+}
+
+/**
+ * Rendert mehrere Belege und fuegt sie per pdfunite zu EINEM PDF zusammen.
+ *
+ * Jeder Beleg wird einzeln archiviert (Belegablage). Ein einzelner Beleg
+ * braucht kein Merge. Bei vielen Belegen kann das dauern, daher ohne Zeitlimit.
+ *
+ * @param array $documents Liste von ['id', 'fakturaType']
+ * @param string|null $templateSet Vorlagen-Set oder null (defaults.templates)
+ * @param string $templateSuffix template_code des Druckers (Vorlagenvariante)
+ * @return array ['content' => string|null, 'errors' => string[], 'count' => int, 'error_code' => string|null]
+ */
+function sammelPdfErzeugen($db, array $documents, ?string $templateSet, string $templateSuffix, array $data): array {
+    set_time_limit(0);
     $lxCars = isLxCarsEnabled($db);
-    $templateSet = $data['templateSet'] ?? null;
 
     $rendered = [];   // ['path','filename','engine'] je Beleg — fuer Cleanup
     $pdfPaths = [];
     $errors = [];
 
     foreach ($documents as $doc) {
-        $id = intval($doc['id'] ?? 0);
-        $type = $doc['fakturaType'] ?? 'invoice';
-        if (!$id) continue;
-
         $err = null;
-        $res = renderDocumentPdfFile($db, $id, $type, $templateSet, $lxCars, $err);
-        if ($res !== false) {
-            ausgangsrechnungArchivieren($db, $id, $type, (string)@file_get_contents($res['path']),
-                $res['filename'] ?? null, mitarbeiterId($data));
-        }
+        $res = renderDocumentPdfFile($db, $doc['id'], $doc['fakturaType'], $templateSet, $lxCars, $err, $templateSuffix);
         if ($res === false) {
-            $errors[] = "Beleg $id: $err";
+            $errors[] = "Beleg {$doc['id']}: $err";
             continue;
         }
+        ausgangsrechnungArchivieren($db, $doc['id'], $doc['fakturaType'], (string)@file_get_contents($res['path']),
+            $res['filename'] ?? null, mitarbeiterId($data));
         $rendered[] = $res;
         $pdfPaths[] = $res['path'];
     }
@@ -557,9 +596,7 @@ function generateBatchPdf($data) {
 
     if (count($pdfPaths) === 0) {
         $cleanup();
-        if ($isPdfRequest) header('Content-Type: application/json');
-        resultInfo(false, 'PDF_ERROR', 'Keine PDFs erzeugt', implode("\n", $errors));
-        return;
+        return ['content' => null, 'errors' => $errors, 'count' => 0, 'error_code' => 'PDF_ERROR'];
     }
 
     // Zusammenfuehren (ein einzelnes PDF braucht kein Merge)
@@ -576,9 +613,7 @@ function generateBatchPdf($data) {
         if ($rc !== 0 || !file_exists($mergedTemp)) {
             $cleanup();
             if ($mergedTemp && file_exists($mergedTemp)) unlink($mergedTemp);
-            if ($isPdfRequest) header('Content-Type: application/json');
-            resultInfo(false, 'MERGE_ERROR', 'PDF-Zusammenfuehrung fehlgeschlagen', implode("\n", $out));
-            return;
+            return ['content' => null, 'errors' => array_merge($errors, $out), 'count' => 0, 'error_code' => 'MERGE_ERROR'];
         }
         $mergedPath = $mergedTemp;
     }
@@ -589,18 +624,142 @@ function generateBatchPdf($data) {
     $cleanup();
     if ($mergedTemp && file_exists($mergedTemp)) unlink($mergedTemp);
 
+    return ['content' => $pdfContent, 'errors' => $errors, 'count' => count($pdfPaths), 'error_code' => null];
+}
+
+/**
+ * Liest den template_code eines Druckers (Datei-Suffix fuer Vorlagenvarianten).
+ */
+function druckerVorlagenSuffix($db, int $printerId): string {
+    if (!$printerId) return '';
+    $printer = $db->getOne("SELECT template_code FROM printers WHERE id = :id", [':id' => $printerId]);
+    return $printer['template_code'] ?? '';
+}
+
+/**
+ * Erzeugt aus mehreren Belegen EIN zusammengefuehrtes PDF (pdfunite) und gibt es aus.
+ *
+ * Belege entweder als Liste `documents` [{id, fakturaType}] oder per Suchfilter
+ * `type` + `where` (wie searchDocuments, z. B. alle Rechnungen eines Monats).
+ * Antwort als PDF-Stream (content-type=application/pdf) oder Base64-JSON.
+ *
+ * @param array $data['documents'] Liste von {id, fakturaType} (optional)
+ * @param string $data['type'] Belegart der Suche, wenn keine Liste (optional)
+ * @param array $data['where'] Suchfilter wie bei searchDocuments (optional)
+ * @param int $data['printerId'] Optional: Drucker, dessen template_code die Vorlagenvariante bestimmt
+ * @param string $data['filename'] Optionaler Dateiname fuer die Ausgabe
+ * @testdata {"documents":[{"id":1,"fakturaType":"invoice"}],"content-type":"application/pdf"}
+ * @testdata {"type":"invoice","where":{"transdate_from":"2026-09-01","transdate_to":"2026-09-30"}}
+ */
+function generateBatchPdf($data) {
+    $isPdfRequest = isset($data['content-type']) && $data['content-type'] === 'application/pdf';
+    $db = DbhCompany::begin();
+
+    $documents = belegeFuerSammeldruck($db, $data);
+    if (count($documents) === 0) {
+        if ($isPdfRequest) header('Content-Type: application/json');
+        resultInfo(false, 'VALIDATION_ERROR', 'documents required');
+        return;
+    }
+
+    $suffix = druckerVorlagenSuffix($db, intval($data['printerId'] ?? 0));
+    $ergebnis = sammelPdfErzeugen($db, $documents, $data['templateSet'] ?? null, $suffix, $data);
+
+    if ($ergebnis['content'] === null) {
+        if ($isPdfRequest) header('Content-Type: application/json');
+        $text = $ergebnis['error_code'] === 'MERGE_ERROR' ? 'PDF-Zusammenfuehrung fehlgeschlagen' : 'Keine PDFs erzeugt';
+        resultInfo(false, $ergebnis['error_code'], $text, implode("\n", $ergebnis['errors']));
+        return;
+    }
+
     $filename = $data['filename'] ?? 'belege.pdf';
     if ($isPdfRequest) {
-        header('Content-Length: ' . strlen($pdfContent));
+        header('Content-Length: ' . strlen($ergebnis['content']));
         header('Content-Disposition: inline; filename="' . $filename . '"');
-        echo $pdfContent;
+        echo $ergebnis['content'];
     } else {
         resultInfo(true, 'OK', [
-            'pdf' => base64_encode($pdfContent),
+            'pdf' => base64_encode($ergebnis['content']),
             'filename' => $filename,
-            'errors' => $errors,
+            'count' => $ergebnis['count'],
+            'errors' => $ergebnis['errors'],
         ]);
     }
+}
+
+/**
+ * Druckt mehrere Belege als EINEN Druckauftrag (zusammengefuehrtes PDF).
+ *
+ * Belegauswahl wie bei generateBatchPdf (Liste oder Suchfilter). Setzt bei
+ * Auftraegen mit LxCars das gedruckt-Flag fuer alle gedruckten Belege.
+ *
+ * @param array $data['documents'] Liste von {id, fakturaType} (optional)
+ * @param string $data['type'] Belegart der Suche, wenn keine Liste (optional)
+ * @param array $data['where'] Suchfilter wie bei searchDocuments (optional)
+ * @param int $data['printerId'] ID des Druckers aus der printers-Tabelle
+ * @param string $data['templateSet'] Optional: Vorlagen-Set, sonst aus defaults.templates
+ * @testdata {"documents":[{"id":1,"fakturaType":"invoice"}],"printerId":1}
+ */
+function printBatchToPrinter($data) {
+    $printerId = intval($data['printerId'] ?? 0);
+    if (!$printerId) {
+        resultInfo(false, 'VALIDATION_ERROR', 'printerId required');
+        return;
+    }
+
+    $db = DbhCompany::begin();
+
+    $printer = $db->getOne(
+        "SELECT id, printer_description, printer_command, template_code FROM printers WHERE id = :id",
+        [':id' => $printerId]
+    );
+    if (!$printer || empty($printer['printer_command'])) {
+        resultInfo(false, 'PRINTER_ERROR', 'Printer not found or no command configured');
+        return;
+    }
+
+    $documents = belegeFuerSammeldruck($db, $data);
+    if (count($documents) === 0) {
+        resultInfo(false, 'VALIDATION_ERROR', 'documents required');
+        return;
+    }
+
+    $ergebnis = sammelPdfErzeugen($db, $documents, $data['templateSet'] ?? null, $printer['template_code'] ?? '', $data);
+    if ($ergebnis['content'] === null) {
+        resultInfo(false, $ergebnis['error_code'], 'Keine PDFs erzeugt', implode("\n", $ergebnis['errors']));
+        return;
+    }
+
+    $tmpPdf = sys_get_temp_dir() . '/oserp_print_' . uniqid('', true) . '.pdf';
+    file_put_contents($tmpPdf, $ergebnis['content']);
+    $cmd = sprintf('%s %s 2>&1', $printer['printer_command'], escapeshellarg($tmpPdf));
+    exec($cmd, $output, $returnCode);
+    unlink($tmpPdf);
+
+    if ($returnCode !== 0) {
+        resultInfo(false, 'PRINT_ERROR', 'Printer command failed: ' . implode("\n", $output));
+        return;
+    }
+
+    // gedruckt-Flag setzen (nur bei Auftraegen mit LxCars-Schema) — ein Update fuer alle
+    if (isLxCarsEnabled($db)) {
+        $orderIds = [];
+        foreach ($documents as $doc) {
+            if ($doc['fakturaType'] === 'order') $orderIds[] = $doc['id'];
+        }
+        if ($orderIds) {
+            $db->execute(
+                "UPDATE oe_ext SET gedruckt = true WHERE oe_id = ANY(CAST(:ids AS int[]))",
+                [':ids' => '{' . implode(',', $orderIds) . '}']
+            );
+        }
+    }
+
+    resultInfo(true, 'PRINTED', [
+        'printer' => $printer['printer_description'],
+        'count' => $ergebnis['count'],
+        'errors' => $ergebnis['errors'],
+    ]);
 }
 
 /**

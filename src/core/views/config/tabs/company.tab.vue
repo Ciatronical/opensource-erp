@@ -239,6 +239,50 @@
                 />
             </v-col>
 
+            <!-- Stundensatz -->
+            <v-col cols="12">
+                <v-divider class="my-4" />
+                <h3 class="text-h6 mb-1">{{ $t('hourlyRate') }}</h3>
+                <div class="text-caption text-medium-emphasis mb-4">{{ $t('defaultHourlyRate_help') }}</div>
+            </v-col>
+
+            <v-col cols="12" md="3">
+                <v-text-field
+                    v-model="defaults.customer_hourly_rate"
+                    :label="$t('defaultHourlyRate')"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    :suffix="currencyName"
+                    variant="outlined"
+                    density="compact"
+                />
+            </v-col>
+
+            <v-col cols="12" md="3">
+                <v-select
+                    :model-value="hourlyRateUnit"
+                    :items="serviceUnits"
+                    :label="$t('hourlyRateUnit')"
+                    variant="outlined"
+                    density="compact"
+                    @update:model-value="saveHourlyRateUnit"
+                />
+            </v-col>
+
+            <v-col cols="12" md="6" class="d-flex align-start">
+                <v-btn
+                    color="primary"
+                    variant="tonal"
+                    prepend-icon="mdi-cash-sync"
+                    :loading="applyingHourlyRate"
+                    :disabled="!(Number(defaults.customer_hourly_rate) > 0) || !hourlyRateUnit"
+                    @click="applyHourlyRateToServices"
+                >
+                    {{ $t('applyHourlyRateToServices', { unit: hourlyRateUnit }) }}
+                </v-btn>
+            </v-col>
+
             <!-- Gewichtseinheit -->
             <v-col cols="12">
                 <v-divider class="my-4" />
@@ -485,9 +529,11 @@ import axios from 'axios';
 import { oserpStore } from '@/core/stores/oserp.store.js';
 import { fakturaStore } from '@/core/stores/faktura.store.js';
 import { getWeightUnits } from '../composables/useUnits.js';
+import { useHourlyRate } from '@/core/composables/useHourlyRate.js';
 import * as toasts from '@/core/utils/toasts.js';
+import * as alerts from '@/core/utils/alerts.js';
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const store = oserpStore();
 const faktura = fakturaStore();
 
@@ -722,6 +768,61 @@ function deleteLogo() {
         delete store.session.company_config.defaults_oserp['company_logo'];
     }
     axios.post('/api/oserp_config/', { action: 'saveClientDefault', key: 'company_logo', value: '' });
+}
+
+// === Stundensatz ===
+
+const { serviceUnits, hourlyRateUnit, currencyName } = useHourlyRate();
+const applyingHourlyRate = ref(false);
+
+/** Betrag in der Sprache des Benutzers, z. B. 75,00 */
+const formatRate = (rate) => Number(rate).toLocaleString(locale.value, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+/** Bezugseinheit des Stundensatzes sofort speichern (defaults_oserp.hourly_rate_unit) */
+async function saveHourlyRateUnit(unit) {
+    if (!unit) return;
+    if (store.session.company_config?.defaults_oserp) {
+        store.session.company_config.defaults_oserp.hourly_rate_unit = unit;
+    }
+    try {
+        await axios.post('/api/oserp_config/', { action: 'saveClientDefault', key: 'hourly_rate_unit', value: unit });
+    } catch (e) {
+        console.error('Stundensatz-Einheit speichern fehlgeschlagen:', e);
+        toasts.error(t('applyHourlyRateFailed'));
+    }
+}
+
+/**
+ * Speichert Stundensatz und Einheit und setzt den Satz als Verkaufspreis auf
+ * alle gültigen Dienstleistungen mit dieser Einheit (eine Abfrage im Backend).
+ */
+async function applyHourlyRateToServices() {
+    const rate = Number(props.defaults.customer_hourly_rate);
+    const unit = hourlyRateUnit.value;
+    if (!(rate > 0) || !unit) return;
+
+    const answer = await alerts.question(
+        t('applyHourlyRateConfirm', { rate: formatRate(rate), currency: currencyName.value, unit }),
+        t('applyHourlyRateToServices', { unit }),
+        t('applyHourlyRateYes'),
+        t('cancel')
+    );
+    if (!answer.isConfirmed) return;
+
+    applyingHourlyRate.value = true;
+    try {
+        const { data } = await axios.post('/api/oserp_config/', { action: 'applyHourlyRateToServices', rate, unit });
+        if (!data.success) throw new Error(data.text || 'applyHourlyRateToServices failed');
+        if (store.session.company_config?.defaults) {
+            store.session.company_config.defaults.customer_hourly_rate = data.payload.rate;
+        }
+        toasts.success(t('applyHourlyRateDone', { count: data.payload.updated, rate: formatRate(rate), currency: currencyName.value }));
+    } catch (e) {
+        console.error('Stundensatz anwenden fehlgeschlagen:', e);
+        toasts.error(t('applyHourlyRateFailed'));
+    } finally {
+        applyingHourlyRate.value = false;
+    }
 }
 
 // === Drucker-Verwaltung ===

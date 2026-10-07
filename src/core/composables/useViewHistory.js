@@ -63,6 +63,19 @@ export function useViewHistory() {
     }
 
     /**
+     * Entfernt einen Eintrag aus dem Verlauf (z.B. nach dem Löschen des Datensatzes)
+     *
+     * @param {string} type - Entitätstyp (customer, vendor, ...)
+     * @param {number|string} id - ID des Datensatzes
+     */
+    function removeFromHistory(type, id) {
+        const history = loadHistory()
+        const rest = history.filter(h => !(h.type === type && String(h.id) === String(id)))
+        if (rest.length === history.length) return
+        oserp.setConfigValue(HISTORY_CONFIG_KEY, JSON.stringify(rest))
+    }
+
+    /**
      * Löscht den gesamten Verlauf
      */
     function clearHistory() {
@@ -106,6 +119,7 @@ export function useViewHistory() {
     return {
         loadHistory,
         saveToHistory,
+        removeFromHistory,
         clearHistory,
         getHistoryItems
     }

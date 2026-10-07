@@ -62,7 +62,77 @@
             "status_open": "Open",
             "status_closed": "Closed",
             "created_at": "Created At",
-            "text_no_results": "No documents found."
+            "text_no_results": "No documents found.",
+            "summary": "No documents | 1 document · total {sum} | {count} documents · total {sum}",
+            "summary_count": "No documents | 1 document | {count} documents",
+            "selected": "Selection ({count})",
+            "all_results": "All {count} documents",
+            "scope_selection": "Selection",
+            "clear_selection": "Clear selection"
+        },
+        "period": {
+            "all": "All periods",
+            "this_month": "This month",
+            "prev_month": "Previous month",
+            "next_month": "Next month"
+        },
+        "doc_singular": {
+            "invoice": "Invoice",
+            "credit_note": "Credit note",
+            "purchase_invoice": "Purchase invoice",
+            "quotation": "Quotation",
+            "order": "Order",
+            "purchase_order": "Purchase order",
+            "delivery_order": "Delivery order",
+            "purchase_delivery_order": "Supplier delivery order"
+        },
+        "document_actions": {
+            "print": "Print",
+            "pdf": "Download PDF",
+            "email": "Send by e-mail",
+            "whatsapp": "Send via WhatsApp",
+            "select_printer": "Select printer",
+            "printer_selected": "Printer \"{name}\" selected",
+            "select_printer_first": "Please select a printer first",
+            "busy_pdf": "Creating PDF …",
+            "busy_print": "Creating print job …",
+            "busy_email": "Sending e-mail …",
+            "busy_whatsapp": "Sending WhatsApp message …",
+            "printed": "No documents printed | 1 document sent to printer \"{name}\" | {count} documents sent to printer \"{name}\"",
+            "printed_partial": "{count} documents printed, {failed} failed",
+            "print_error": "Error while printing",
+            "pdf_error": "Error while creating the PDF",
+            "email_sent": "E-mail sent successfully",
+            "email_error": "Error while sending the e-mail",
+            "whatsapp_sent": "WhatsApp message sent successfully",
+            "whatsapp_error": "Error while sending the WhatsApp message"
+        },
+        "send": {
+            "whatsapp_title": "Send document via WhatsApp",
+            "phone": "Phone number",
+            "no_phone": "No phone number on file – please enter one",
+            "template": "Template",
+            "no_templates": "No approved WhatsApp templates available",
+            "preview": "Preview",
+            "param_salutation": "Salutation",
+            "param_doc_ref": "Document",
+            "param_amount": "Amount",
+            "param_generic": "Parameter",
+            "cancel": "Cancel",
+            "send": "Send",
+            "email_subject_single": "{type} {number}",
+            "email_subject_batch": "{type} {period}",
+            "email_body_single": "Dear Sir or Madam,\n\nplease find attached {type} no. {number}.\n\nKind regards",
+            "email_body_batch": "Dear Sir or Madam,\n\nplease find attached {count} {type} ({period}) as a combined PDF.\n\nKind regards",
+            "doc_ref": {
+                "invoice": "Your invoice no. {number}",
+                "credit_note": "Your credit note no. {number}",
+                "quotation": "Your quotation no. {number}",
+                "order": "Your order no. {number}",
+                "purchase_order": "Your purchase order no. {number}",
+                "delivery_order": "Your delivery order no. {number}",
+                "purchase_delivery_order": "Your delivery order no. {number}"
+            }
         }
     },
     "CustomerVendorSearchView": {

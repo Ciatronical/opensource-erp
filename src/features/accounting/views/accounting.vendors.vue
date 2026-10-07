@@ -1,7 +1,7 @@
 <template>
     <NavbarView />
     <v-container fluid>
-        <AccountingPageHeader :title="t('AccountingView.vendors.title')" />
+        <AccountingPageHeader :title="t('AccountingView.vendors.title')" :back-to="backTo" :back-label="backLabel" />
 
         <v-row>
             <v-col cols="12">
@@ -199,13 +199,21 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRoute } from 'vue-router'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
 import AccountingPageHeader from '../components/accounting.page-header.vue'
 import { useVendorMatching } from '../composables/useVendorMatching.js'
 import * as alerts from '@/core/utils/alerts.js'
 
 const { t } = useI18n()
+const route = useRoute()
 const { loading, error, vendors, duplicates, fetchVendors, createVendor, updateVendor, mergeVendors, findDuplicates } = useVendorMatching()
+
+// Aus der Lieferantensuche (Stammdaten) kommend führt "Zurück" dorthin, nicht
+// ins Buchhaltungs-Cockpit — und die Dublettensuche läuft gleich los.
+const fromSearch = computed(() => route.query.from === 'search')
+const backTo = computed(() => fromSearch.value ? { name: 'search', query: { type: 'vendor' } } : null)
+const backLabel = computed(() => fromSearch.value ? t('AccountingView.vendors.backToSearch') : '')
 
 const searchQuery = ref('')
 const newVendorDialog = ref(false)
@@ -356,5 +364,6 @@ function formatCurrency(value) {
 
 onMounted(() => {
     fetchVendors()
+    if (fromSearch.value) onFindDuplicates()
 })
 </script>

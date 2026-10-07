@@ -13,7 +13,7 @@ export function useCustomerMatching() {
     const loading = ref(false)
     const error = ref(null)
     const customers = ref([])
-    const duplicates = ref([])
+    const duplicateGroups = ref([])
 
     async function fetchCustomers(query = '', limit = 50) {
         loading.value = true
@@ -36,12 +36,19 @@ export function useCustomerMatching() {
         }
     }
 
-    async function mergeCustomers(keepId, mergeId, deleteMerged = false) {
+    /**
+     * Einer bleibt, beliebig viele gehen in ihm auf — in einer Transaktion
+     *
+     * @param {number}   keepId       Kunde der bleibt
+     * @param {number[]} mergeIds     Kunden die aufgelöst werden
+     * @param {boolean}  deleteMerged Nie benutzte Doppeleinträge löschen statt stilllegen
+     */
+    async function mergeCustomers(keepId, mergeIds, deleteMerged = false) {
         try {
             const response = await axios.post('/api/accounting/', {
                 action: 'mergeCustomers',
                 keep_customer_id: keepId,
-                merge_customer_id: mergeId,
+                merge_customer_ids: mergeIds,
                 delete_merged: deleteMerged
             })
             return response.data
@@ -50,6 +57,7 @@ export function useCustomerMatching() {
         }
     }
 
+    // Liefert Gruppen (alle Einträge, die zusammenhängen), keine Paare
     async function findDuplicates(threshold = 0.4) {
         loading.value = true
         error.value = null
@@ -59,7 +67,7 @@ export function useCustomerMatching() {
                 threshold
             })
             if (response.data.success) {
-                duplicates.value = response.data.payload.duplicates || []
+                duplicateGroups.value = response.data.payload.groups || []
             } else {
                 error.value = response.data.text
             }
@@ -74,7 +82,7 @@ export function useCustomerMatching() {
         loading,
         error,
         customers,
-        duplicates,
+        duplicateGroups,
         fetchCustomers,
         mergeCustomers,
         findDuplicates

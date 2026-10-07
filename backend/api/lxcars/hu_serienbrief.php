@@ -254,7 +254,7 @@ function _buildHuPdf($customerIds, $dateFrom = '', $dateTo = '', &$debug = []) {
         FROM cars_lxcars car
         JOIN customer c ON c.id = car.c_ow
         LEFT JOIN customer_ext cext ON cext.customer_id = c.id
-        LEFT JOIN employee e ON c.employee = e.id
+        LEFT JOIN employee e ON c.salesman_id = e.id
         LEFT JOIN (
             SELECT
                 o.customer_id,

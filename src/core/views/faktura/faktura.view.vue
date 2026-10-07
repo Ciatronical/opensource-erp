@@ -188,6 +188,7 @@
                     @update:display-km-stand="v => vehicle.displayKmStand.value = v"
                     @blur-km-stand="vehicle.onBlurKmStand"
                     @car-change="vehicle.onCarChange"
+                    @car-create="plate => vehicle.createCarFromPlate(plate, faktura.data?.common?.customer_id || faktura.data?.common?.vendor_id)"
                     @oe-ext-field-change="vehicle.onOeExtFieldChange"
                     @picker-date-select="vehicle.onPickerDateSelect"
                     @picker-time-select="vehicle.onPickerTimeSelect"
@@ -1541,7 +1542,7 @@ export default defineComponent({
             calculateItemTotal: accounting.calculateItemTotal,
             calculateTotals: accounting.calculateTotals,
             saveAllItems, ensureFakturaExists, flushRouteReplace,
-            oserp, t, router,
+            t, router,
             suppressSSEReload() { suppressSSEReloadUntil = Date.now() + 2000 }
         })
 
@@ -1591,13 +1592,14 @@ export default defineComponent({
                 faktura.data.common[numberField] = result.docNumber
             }
 
-            // lxcars: Fahrzeug verknüpfen wenn c_id als Query-Parameter übergeben wurde
+            // lxcars: Fahrzeug verknüpfen – aus Query-Parameter c_id oder im Neu-Modus bereits gewählt/angelegt
             const queryCId = route.query.c_id ? parseInt(route.query.c_id) : null
-            if (queryCId && carsStore) {
+            const pendingCId = queryCId || vehicle?.selectedCarId?.value || null
+            if (pendingCId && carsStore) {
                 const linkFn = fakturaType.value === 'invoice'
                     ? carsStore.linkCarToInvoice
                     : carsStore.linkCarToFaktura
-                await linkFn(result.id, queryCId).catch(() => {})
+                await linkFn(result.id, pendingCId).catch(() => {})
                 // Fahrzeugdaten nachladen damit oe_ext-Felder befüllt werden
                 if (vehicle) {
                     const customerId = faktura.data?.common?.customer_id || faktura.data?.common?.vendor_id

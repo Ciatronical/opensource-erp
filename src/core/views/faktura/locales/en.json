@@ -188,6 +188,18 @@
             "vehicleNotes": "Vehicle Notes",
             "licensePlate": "License plate",
             "noVehicle": "No vehicle",
+            "quickCar": {
+                "enterToCreate": "No vehicle – press Enter to create {plate}",
+                "created": "Vehicle {plate} created (license plate only, add details later)",
+                "existsOtherOwner": "The vehicle with license plate {plate} already belongs to {owner}. Do you really want to assign it to this customer?",
+                "takeOverTitle": "Vehicle already exists",
+                "takeOverYes": "Yes, assign to this customer",
+                "takeOverNo": "Cancel",
+                "takenOver": "Vehicle {plate} taken over from {owner}",
+                "tooLong": "License plate {plate} is too long (max. 10 characters)",
+                "noCustomer": "Please select a customer first",
+                "error": "Vehicle could not be created"
+            },
             "vehicleSection": "Vehicle / Order Data",
             "kmStand": "Mileage",
             "kmStandRequired": "Mileage is required – please enter it before creating the invoice.",

@@ -3,6 +3,36 @@
 
 // ===== Gemeinsame Listen =====
 
+/**
+ * Prueft, ob eine Aktion Daten veraendert oder nach aussen wirkt und deshalb
+ * vom automatischen Testlauf ausgeschlossen bleiben muss.
+ *
+ * Die Namensliste in _getDangerousFunctions() reicht nicht: jede neue
+ * Schreibaktion, die dort fehlt, wuerde sonst mit ihren @testdata ausgefuehrt
+ * (so sind u.a. Benutzer in der Auth-DB, ein Schema-Upgrade auf der Produktiv-DB
+ * und WhatsApp-Versand ausgeloest worden). Darum gelten zusaetzlich alle Aktionen
+ * mit schreibendem/sendendem Verb am Namensanfang sowie komplette Ordner, die
+ * systemweit wirken (Auth-DB, Firmen anlegen, Setup, Update), als gefaehrlich.
+ *
+ * @param string $funcName Aktionsname
+ * @param string $folder   API-Ordner
+ * @return bool
+ */
+function _isDangerousAction($funcName, $folder = '') {
+    static $list = null;
+    if ($list === null) $list = array_flip(_getDangerousFunctions());
+    if (isset($list[$funcName])) return true;
+    if (in_array($folder, ['admin', 'company', 'setup', 'update', 'demo'], true)) return true;
+    return (bool)preg_match(
+        '/^(save|create|delete|remove|update|upsert|set|add|insert|write|store|put|post|book|unbook|'
+        . 'send|submit|mail|notify|approve|reject|confirm|cancel|merge|assign|link|unlink|mark|'
+        . 'import|export|install|upgrade|migrate|reset|clear|clean|cleanup|archive|restore|'
+        . 'generate|publish|sync|execute|run|start|stop|restart|pair|toggle|move|rename|'
+        . 'copy|duplicate|sort|convert|transcribe|upload|obsolete|click|play|dial)[A-Z_]/',
+        $funcName
+    );
+}
+
 function _getDangerousFunctions() {
     return [
         'runAllTests', 'discoverRoutes', 'runWorkflowTests',
@@ -61,7 +91,7 @@ function _getHelperFunctions() {
         'getSetupDefaults', 'setupEnc', 'validateSetupData',
         'testDatabaseConnection', 'createSettingsIni',
         'mapScanToCarFields', '_updateMasterAverage',
-        '_getDangerousFunctions', '_getHelperFunctions', '_getCoreFiles',
+        '_getDangerousFunctions', '_isDangerousAction', '_getHelperFunctions', '_getCoreFiles',
         '_scanApiFolders',
     ];
 }
@@ -162,8 +192,6 @@ function _scanApiFolders($filterFolder = null) {
 function runAllTests($data) {
     $filterFolder = $data['folder'] ?? null;
     $filterFunction = $data['function'] ?? null;
-    $dangerousFunctions = _getDangerousFunctions();
-
     $allFunctions = _scanApiFolders($filterFolder);
     $results = [];
     $summary = ['total' => 0, 'passed' => 0, 'failed' => 0, 'skipped' => 0, 'missing' => 0];
@@ -184,7 +212,7 @@ function runAllTests($data) {
             $summary['total']++;
 
             // Gefaehrliche Funktionen ueberspringen
-            if (in_array($funcName, $dangerousFunctions)) {
+            if (_isDangerousAction($funcName, $folder)) {
                 $results[$folder][$funcName] = [
                     'success' => true,
                     'skipped' => true,
@@ -295,7 +323,6 @@ function runAllTests($data) {
  * @testdata {}
  */
 function discoverRoutes($data) {
-    $dangerousFunctions = _getDangerousFunctions();
     $allFunctions = _scanApiFolders();
     $routes = [];
 
@@ -308,7 +335,7 @@ function discoverRoutes($data) {
                 'file' => $info['file'],
                 'has_testdata' => $info['has_testdata'],
                 'testdata' => $info['testdata'],
-                'dangerous' => in_array($funcName, $dangerousFunctions),
+                'dangerous' => _isDangerousAction($funcName, $folder),
             ];
         }
         if (!empty($folderRoutes)) {
@@ -423,6 +450,9 @@ function _testWorkflowOrderToInvoice() {
         }
         $currencyId = intval($defaults['currency_id'] ?? 0);
         $employeeId = $employee ? intval($employee['id']) : null;
+        // Einheit aus der DB (kivitendo-Standard ist 'Stck', nicht 'Stk')
+        $unitRow = $db->getOne("SELECT name FROM units ORDER BY sortkey LIMIT 1", []);
+        $unit = $unitRow['name'] ?? 'Stck';
 
         $steps[] = [
             'name' => 'Stammdaten pruefen',
@@ -455,13 +485,13 @@ function _testWorkflowOrderToInvoice() {
 
         $db->execute(
             "INSERT INTO orderitems (trans_id, parts_id, description, qty, sellprice, unit, position)
-             VALUES (:trans_id, :parts_id, 'Test-Position A', 2, 100.00, 'Stk', 1)",
-            [':trans_id' => $orderId, ':parts_id' => $partsId]
+             VALUES (:trans_id, :parts_id, 'Test-Position A', 2, 100.00, :unit, 1)",
+            [':trans_id' => $orderId, ':parts_id' => $partsId, ':unit' => $unit]
         );
         $db->execute(
             "INSERT INTO orderitems (trans_id, parts_id, description, qty, sellprice, unit, position)
-             VALUES (:trans_id, :parts_id, 'Test-Position B', 1, 250.00, 'Stk', 2)",
-            [':trans_id' => $orderId, ':parts_id' => $partsId]
+             VALUES (:trans_id, :parts_id, 'Test-Position B', 1, 250.00, :unit, 2)",
+            [':trans_id' => $orderId, ':parts_id' => $partsId, ':unit' => $unit]
         );
         $steps[] = ['name' => 'Positionen hinzufuegen', 'success' => true, 'detail' => '2x Test-Position A @ 100.00 + 1x Test-Position B @ 250.00'];
 
@@ -640,9 +670,10 @@ function _testWorkflowCustomerCreateRead() {
 
         $result = $db->getOne(
             "INSERT INTO customer (name, street, zipcode, city, country, contact, phone, email,
-                                   taxzone_id, customernumber)
+                                   taxzone_id, customernumber, currency_id)
              VALUES (:name, 'Teststrasse 1', '12345', 'Teststadt', 'DE', 'Max Test',
-                     '+49 123 456', 'test@example.com', :taxzone_id, :cnumber)
+                     '+49 123 456', 'test@example.com', :taxzone_id, :cnumber,
+                     (SELECT currency_id FROM defaults LIMIT 1))
              RETURNING id",
             [':name' => $testName, ':taxzone_id' => intval($taxzone['id'] ?? 0),
              ':cnumber' => 'TAUTO-' . time()]

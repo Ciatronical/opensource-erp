@@ -383,6 +383,34 @@ export const lxcarsStore = defineStore('lxcarsStore', () => {
         return response.data;
     }
 
+    /**
+     * Schnellanlage eines Fahrzeugs nur per Kennzeichen direkt aus der Faktura.
+     * Prüft Duplikate, legt ggf. an und verknüpft in einem Call mit dem Beleg.
+     *
+     * @param {Object} opts
+     * @param {number} opts.customerId - Halter (c_ow)
+     * @param {string} opts.plate - Kennzeichen
+     * @param {number|null} opts.fakturaId - Beleg-ID (null im Neu-Modus)
+     * @param {string} opts.fakturaType - 'order', 'quotation' oder 'invoice'
+     * @param {boolean} [opts.takeOver] - Fahrzeug eines anderen Halters diesem Kunden zuordnen
+     * @return {Promise<{created: boolean, exists: boolean, taken_over: boolean, owner_name: string, car: Object|null}>}
+     */
+    async function quickCreateCar({ customerId, plate, fakturaId, fakturaType, takeOver = false }) {
+        const response = await axios.post('/api/lxcars/', {
+            action: 'quickCreateCar',
+            customer_id: customerId,
+            c_ln: plate,
+            faktura_id: fakturaId || 0,
+            faktura_type: fakturaType,
+            take_over: takeOver
+        });
+
+        if (!response.data.success) {
+            throw new ApiError('ApiError', response.data.text, 'Error creating car: ' + response.data.text);
+        }
+        return response.data.payload;
+    }
+
     // ===== Arbeitsanweisungen (Instructions) =====
 
     async function loadInstructions(oeId) {
@@ -1337,6 +1365,7 @@ export const lxcarsStore = defineStore('lxcarsStore', () => {
         loadCustomerCars,
         loadCarForOrder,
         linkCarToFaktura,
+        quickCreateCar,
         sendBringeterminWa,
         updateOeExt,
         loadCarForInvoice,

@@ -596,7 +596,8 @@ function findVendorDuplicates($data) {
                    COALESCE(i2.booking_count, 0) AS vendor2_bookings,
                    ({$v2Deletable}) AS vendor2_deletable,
                    similarity(v1.name, v2.name) AS name_similarity,
-                   CASE WHEN v1.iban IS NOT NULL AND v1.iban != '' AND v1.iban = v2.iban THEN TRUE ELSE FALSE END AS same_iban
+                   (v1.iban IS NOT NULL AND v1.iban <> ''
+                    AND REPLACE(v1.iban, ' ', '') = REPLACE(v2.iban, ' ', '')) AS same_iban
             FROM paare p
             JOIN vendor v1 ON v1.id = p.id1
             JOIN vendor v2 ON v2.id = p.id2

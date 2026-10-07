@@ -62,7 +62,77 @@
             "status_open": "Offen",
             "status_closed": "Geschlossen",
             "created_at": "Erstellt am",
-            "text_no_results": "Keine Dokumente gefunden."
+            "text_no_results": "Keine Dokumente gefunden.",
+            "summary": "Kein Beleg | 1 Beleg · Summe {sum} | {count} Belege · Summe {sum}",
+            "summary_count": "Kein Beleg | 1 Beleg | {count} Belege",
+            "selected": "Auswahl ({count})",
+            "all_results": "Alle {count} Belege",
+            "scope_selection": "Auswahl",
+            "clear_selection": "Auswahl aufheben"
+        },
+        "period": {
+            "all": "Alle Zeiträume",
+            "this_month": "Dieser Monat",
+            "prev_month": "Vormonat",
+            "next_month": "Folgemonat"
+        },
+        "doc_singular": {
+            "invoice": "Rechnung",
+            "credit_note": "Gutschrift",
+            "purchase_invoice": "Eingangsrechnung",
+            "quotation": "Angebot",
+            "order": "Auftrag",
+            "purchase_order": "Bestellung",
+            "delivery_order": "Lieferschein",
+            "purchase_delivery_order": "Lieferantenlieferschein"
+        },
+        "document_actions": {
+            "print": "Drucken",
+            "pdf": "PDF herunterladen",
+            "email": "Per E-Mail senden",
+            "whatsapp": "Per WhatsApp senden",
+            "select_printer": "Drucker wählen",
+            "printer_selected": "Drucker \"{name}\" ausgewählt",
+            "select_printer_first": "Bitte zuerst einen Drucker auswählen",
+            "busy_pdf": "PDF wird erstellt …",
+            "busy_print": "Druckauftrag wird erstellt …",
+            "busy_email": "E-Mail wird versendet …",
+            "busy_whatsapp": "WhatsApp-Nachricht wird gesendet …",
+            "printed": "Kein Beleg gedruckt | 1 Beleg an Drucker \"{name}\" gesendet | {count} Belege an Drucker \"{name}\" gesendet",
+            "printed_partial": "{count} Belege gedruckt, {failed} fehlgeschlagen",
+            "print_error": "Fehler beim Drucken",
+            "pdf_error": "Fehler beim Erstellen der PDF",
+            "email_sent": "E-Mail erfolgreich versendet",
+            "email_error": "Fehler beim Versenden der E-Mail",
+            "whatsapp_sent": "WhatsApp-Nachricht erfolgreich gesendet",
+            "whatsapp_error": "Fehler beim Senden der WhatsApp-Nachricht"
+        },
+        "send": {
+            "whatsapp_title": "Dokument per WhatsApp senden",
+            "phone": "Telefonnummer",
+            "no_phone": "Keine Telefonnummer hinterlegt – bitte eingeben",
+            "template": "Vorlage",
+            "no_templates": "Keine genehmigten WhatsApp-Vorlagen vorhanden",
+            "preview": "Vorschau",
+            "param_salutation": "Anrede",
+            "param_doc_ref": "Dokument",
+            "param_amount": "Betrag",
+            "param_generic": "Parameter",
+            "cancel": "Abbrechen",
+            "send": "Senden",
+            "email_subject_single": "{type} {number}",
+            "email_subject_batch": "{type} {period}",
+            "email_body_single": "Sehr geehrte Damen und Herren,\n\nanbei erhalten Sie {type} Nr. {number}.\n\nMit freundlichen Grüßen",
+            "email_body_batch": "Sehr geehrte Damen und Herren,\n\nanbei erhalten Sie {count} {type} ({period}) als Sammel-PDF.\n\nMit freundlichen Grüßen",
+            "doc_ref": {
+                "invoice": "Ihre Rechnung Nr. {number}",
+                "credit_note": "Ihre Gutschrift Nr. {number}",
+                "quotation": "Ihr Angebot Nr. {number}",
+                "order": "Ihr Auftrag Nr. {number}",
+                "purchase_order": "Ihre Bestellung Nr. {number}",
+                "delivery_order": "Ihr Lieferschein Nr. {number}",
+                "purchase_delivery_order": "Ihr Lieferschein Nr. {number}"
+            }
         }
     },
     "CustomerVendorSearchView": {

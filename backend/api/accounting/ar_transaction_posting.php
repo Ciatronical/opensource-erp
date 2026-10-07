@@ -33,7 +33,7 @@ function _ar_resolveTax($db, $rate) {
         SELECT t.id AS tax_id, t.taxkey, t.chart_id AS ust_chart_id, ch.link AS ust_link
         FROM tax t
         JOIN chart ch ON ch.id = t.chart_id
-        WHERE ch.link LIKE 'AR_tax%'
+        WHERE ch.link LIKE 'AR_tax%%'
           AND round(t.rate * 100) = :rp
           %s
         ORDER BY t.taxkey
