@@ -34,9 +34,22 @@
         </div>
 
         <template v-else>
+            <!-- Sprungmarken zu den Unterbereichen (Überschriften der Konfiguration) -->
+            <div class="d-flex flex-wrap ga-2 mt-2">
+                <v-chip
+                    v-for="abschnitt in abschnitte"
+                    :key="abschnitt.name"
+                    size="small"
+                    variant="tonal"
+                    @click="zuAbschnitt(abschnitt.name)"
+                >
+                    {{ t(abschnitt.label) }}
+                </v-chip>
+            </div>
+
             <template v-for="(field, i) in shopConfig" :key="field.name + '-' + i">
-                <!-- Überschrift -->
-                <v-row v-if="field.type === 'headline'" class="mt-6 mb-2">
+                <!-- Überschrift — zugleich Sprungziel -->
+                <v-row v-if="field.type === 'headline'" :id="`shop-abschnitt-${field.name}`" class="mt-6 mb-2 sprungziel">
                     <v-col cols="12">
                         <h3 class="text-h6 text-primary">{{ t(field.label) }}</h3>
                         <v-divider class="mt-2"></v-divider>
@@ -144,7 +157,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, inject, defineAsyncComponent } from 'vue'
+import { ref, computed, watch, nextTick, onMounted, inject, defineAsyncComponent } from 'vue'
 import { useI18n } from 'vue-i18n'
 import axios from 'axios'
 import ShopConfigField from './shop-config-field.component.vue'
@@ -167,10 +180,30 @@ const props = defineProps({
     crmFallbacks: {
         type: Object,
         default: () => ({})
+    },
+    /** Unterbereich aus der Seitenleiste oder der Suche: Name der Überschrift */
+    openPanel: {
+        type: String,
+        default: ''
     }
 })
 
 const shopConfig = ref([])
+
+/** Unterbereiche für die Sprungmarken: die Überschriften der Konfiguration */
+const abschnitte = computed(() => shopConfig.value.filter(f => f.type === 'headline'))
+
+/** Springt zu einem Unterbereich; den Abstand zur Kopfleiste hält .sprungziel */
+function zuAbschnitt(name) {
+    if (!name) return
+    nextTick(() => {
+        document.getElementById(`shop-abschnitt-${name}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    })
+}
+
+// Klick auf einen Unterbereich in der Seitenleiste (wie beim CRM-Tab). Erst
+// wenn die Konfiguration geladen ist — vorher gibt es die Überschrift noch nicht.
+watch(() => props.openPanel, (name) => { if (configLoaded.value) zuAbschnitt(name) })
 const configError = ref(null)
 const configLoaded = ref(false)
 
@@ -225,6 +258,7 @@ async function loadConfigFile() {
         shopConfig.value = config.default || []
         configError.value = null
         configLoaded.value = true
+        zuAbschnitt(props.openPanel)
     } catch (error) {
         console.error('Error loading shopDefaultsConfig.js:', error)
         configError.value = error.message
@@ -280,3 +314,10 @@ defineExpose({
     normalizeShopDefaults
 })
 </script>
+
+<style scoped>
+/* Sprungmarken: Abstand zur festen Kopfleiste */
+.sprungziel {
+    scroll-margin-top: 72px;
+}
+</style>

@@ -179,7 +179,7 @@
                             :crm-secrets="activeTab === 'shop' ? crmSecrets : undefined"
                             :crm-fallbacks="activeTab === 'shop' ? crmFallbacks : undefined"
                             :search-query="searchQuery"
-                            :open-panel="['add', 'crm'].includes(activeTab) ? pendingPanel : undefined"
+                            :open-panel="['add', 'crm', 'shop'].includes(activeTab) ? pendingPanel : undefined"
                             :extensions="activeTab === 'features' ? availableExtensions : undefined"
                             @toggle-extension="onToggleExtension"
                         />
@@ -358,6 +358,7 @@ import { oserpStore } from '@/core/stores/oserp.store.js';
 import axios from 'axios';
 import NavbarView from '@/core/components/navbar/navbar.view.vue';
 import OverviewTab from './tabs/overview.tab.vue';
+import shopDefaultsConfig from './tabs/shopDefaultsConfig.js';
 import * as toasts from '@/core/utils/toasts.js';
 
 // LAZY LOADING: Tabs werden nur bei Bedarf geladen - Performance-Optimierung!
@@ -622,7 +623,14 @@ const tabGroups = computed(() => [
         items: [
             { value: 'features', title: t('features'), icon: 'mdi-star', keywords: ['feature', 'funktion', 'modul', 'branche', 'module', 'e-mail', 'email', 'dms', 'dokumente', 'webdav', 'kamera', 'überwachung', 'datev', 'ustva'] },
             ...(store.isLxCars() ? [{ value: 'lxcars', title: 'LxCars', icon: 'mdi-car', keywords: ['lxcars', 'fahrzeug', 'auto', 'werkstatt', 'kfz', 'reifen'] }] : []),
-            ...(store.isExtensionEnabled('shop') ? [{ value: 'shop', title: 'Shop', icon: 'mdi-storefront', keywords: ['shop', 'webshop', 'onlineshop', 'warenkorb', 'bestellung', 'paypal', 'versand', 'zahlung'] }] : []),
+            ...(store.isExtensionEnabled('shop') ? [{
+                value: 'shop', title: 'Shop', icon: 'mdi-storefront',
+                keywords: ['shop', 'webshop', 'onlineshop', 'warenkorb', 'bestellung', 'paypal', 'versand', 'zahlung'],
+                // Unterbereiche: die Überschriften in shopDefaultsConfig.js — wie beim CRM-Tab
+                subsections: shopDefaultsConfig
+                    .filter((feld) => feld.type === 'headline')
+                    .map((feld) => ({ key: feld.name, title: t(feld.label), panel: feld.name, keywords: [] })),
+            }] : []),
             ...(store.isAnprEnabled() ? [{ value: 'anpr', title: 'ANPR', icon: 'mdi-car-search', keywords: ['anpr', 'kennzeichen', 'kamera', 'nummernschild'] }] : []),
             { value: 'ai_health', title: t('aiHealth.tabTitle'), icon: 'mdi-robot-happy-outline', keywords: ['ki', 'ai', 'whisper', 'llm', 'ollama', 'spracheingabe', 'glossar', 'fachbegriffe', 'gesundheit', 'health', 'cloud', 'api-key', 'positionsvorschläge', 'modell', 'model', 'claude', 'opus', 'sonnet', 'haiku', 'assistent'] },
         ]
