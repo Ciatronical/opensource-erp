@@ -195,7 +195,8 @@
                 "error": "błąd",
                 "pending": "przesyłanie",
                 "none": "jeszcze nie przesłano"
-            }
+            },
+            "sectionPage": "Strona produktu"
         },
         "publish": {
             "title": "Publikowanie",

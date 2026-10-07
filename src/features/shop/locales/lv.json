@@ -195,7 +195,8 @@
                 "error": "kļūda",
                 "pending": "tiek pārsūtīts",
                 "none": "vēl nav pārsūtīts"
-            }
+            },
+            "sectionPage": "Produkta lapa"
         },
         "publish": {
             "title": "Publicēšana",

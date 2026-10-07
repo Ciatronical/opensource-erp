@@ -195,7 +195,8 @@
                 "error": "错误",
                 "pending": "传输中",
                 "none": "尚未传输"
-            }
+            },
+            "sectionPage": "产品页面"
         },
         "publish": {
             "title": "发布",

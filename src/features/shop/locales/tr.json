@@ -195,7 +195,8 @@
                 "error": "hata",
                 "pending": "aktarılıyor",
                 "none": "henüz aktarılmadı"
-            }
+            },
+            "sectionPage": "Ürün sayfası"
         },
         "publish": {
             "title": "Yayımlama",

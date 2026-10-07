@@ -38,6 +38,43 @@
             <v-progress-circular indeterminate size="20" width="2" class="mr-2" />
         </div>
 
+        <!-- Kanal anlegen: eine weitere Instanz einer Art, abgeschaltet — oben, vor
+             den vorhandenen Kanälen -->
+        <v-card v-if="!laedt && !fehler && arten.length" variant="outlined" class="my-3">
+            <v-card-text class="d-flex flex-wrap align-center ga-2">
+                <span class="text-body-2 mr-2">{{ t('ShopView.channelConfig.newChannel') }}</span>
+                <v-select
+                    v-model="neu.type"
+                    :items="artAuswahl"
+                    :label="t('ShopView.channelConfig.newChannelType')"
+                    variant="outlined"
+                    density="compact"
+                    hide-details
+                    style="max-width: 20ch"
+                />
+                <v-text-field
+                    v-model="neu.name"
+                    :label="t('ShopView.channelConfig.name')"
+                    variant="outlined"
+                    density="compact"
+                    hide-details
+                    autocomplete="off"
+                    style="max-width: 40ch"
+                    @keyup.enter="anlegen"
+                />
+                <v-btn
+                    color="primary"
+                    variant="tonal"
+                    prepend-icon="mdi-plus"
+                    :disabled="!neu.type || !neu.name.trim()"
+                    :loading="legtAn"
+                    @click="anlegen"
+                >
+                    {{ t('ShopView.channelConfig.create') }}
+                </v-btn>
+            </v-card-text>
+        </v-card>
+
         <v-card
             v-for="kanal in kanaele"
             :id="`kanal-${kanal.channel_id}`"
@@ -234,42 +271,6 @@
                         </v-expansion-panel-text>
                     </v-expansion-panel>
                 </v-expansion-panels>
-            </v-card-text>
-        </v-card>
-
-        <!-- Kanal anlegen: eine weitere Instanz einer Art, abgeschaltet -->
-        <v-card v-if="!laedt && !fehler && arten.length" variant="outlined" class="my-3">
-            <v-card-text class="d-flex flex-wrap align-center ga-2">
-                <span class="text-body-2 mr-2">{{ t('ShopView.channelConfig.newChannel') }}</span>
-                <v-select
-                    v-model="neu.type"
-                    :items="artAuswahl"
-                    :label="t('ShopView.channelConfig.newChannelType')"
-                    variant="outlined"
-                    density="compact"
-                    hide-details
-                    style="max-width: 20ch"
-                />
-                <v-text-field
-                    v-model="neu.name"
-                    :label="t('ShopView.channelConfig.name')"
-                    variant="outlined"
-                    density="compact"
-                    hide-details
-                    autocomplete="off"
-                    style="max-width: 40ch"
-                    @keyup.enter="anlegen"
-                />
-                <v-btn
-                    color="primary"
-                    variant="tonal"
-                    prepend-icon="mdi-plus"
-                    :disabled="!neu.type || !neu.name.trim()"
-                    :loading="legtAn"
-                    @click="anlegen"
-                >
-                    {{ t('ShopView.channelConfig.create') }}
-                </v-btn>
             </v-card-text>
         </v-card>
 

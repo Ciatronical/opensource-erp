@@ -195,7 +195,8 @@
                 "error": "fejl",
                 "pending": "overføres",
                 "none": "endnu ikke overført"
-            }
+            },
+            "sectionPage": "Produktside"
         },
         "publish": {
             "title": "Offentliggørelse",

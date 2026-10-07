@@ -195,7 +195,8 @@
                 "error": "eroare",
                 "pending": "în transfer",
                 "none": "netransferat încă"
-            }
+            },
+            "sectionPage": "Pagina produsului"
         },
         "publish": {
             "title": "Publicare",

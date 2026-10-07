@@ -195,7 +195,8 @@
                 "error": "feil",
                 "pending": "overføres",
                 "none": "ikke overført ennå"
-            }
+            },
+            "sectionPage": "Produktside"
         },
         "publish": {
             "title": "Publisering",

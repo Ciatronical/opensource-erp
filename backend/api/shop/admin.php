@@ -51,7 +51,8 @@ function getShopStatus($data) {
                         'logins', (SELECT COUNT(*) FROM context_hugoshop x
                                      JOIN customer_ext ce ON ce.customer_id = x.customer_id
                                     WHERE x.channel_id = c.id AND NOT ce.hugoshop_guest))
-                        ORDER BY c.sortkey NULLS LAST, c.id), '[]')
+                        -- Reihenfolge wie in der Ansicht „Verkaufskanäle“: umgekehrt
+                        ORDER BY c.sortkey DESC NULLS FIRST, c.id DESC), '[]')
                FROM sales_channel_shop c WHERE c.active) AS kanaele,
             EXISTS (SELECT 1 FROM sales_channel_shop WHERE active AND round_99) AS rundung_99,
             EXISTS (SELECT 1 FROM sales_channel_shop WHERE type = 'hugoshop' AND active) AS hugoshop_an,
@@ -416,7 +417,8 @@ function getPartShopData($data) {
                                       FROM delivery_terms d),
                  'weightunit', (SELECT weightunit FROM defaults LIMIT 1)
              )) AS shipping,
-            (SELECT COALESCE(json_agg(k ORDER BY k.sortkey NULLS LAST, k.channel_id), '[]'::json) FROM (
+            -- Reihenfolge wie in der Ansicht „Verkaufskanäle“: umgekehrt
+            (SELECT COALESCE(json_agg(k ORDER BY k.sortkey DESC NULLS FIRST, k.channel_id DESC), '[]'::json) FROM (
                 SELECT c.id AS channel_id, c.type, c.name, c.sortkey,
                        -- Betriebsart der Webseite (HugoShop): Bilder aus einem
                        -- Marktplatz lassen sich nur lokal übernehmen (V17)
@@ -1067,7 +1069,7 @@ function getShopShipping($data) {
                      ) ORDER BY z.sortkey, z.description), '[]')
                 FROM shipping_zone_shop z) AS zonen,
              (SELECT COALESCE(json_agg(json_build_object('channel_id', c.id, 'type', c.type, 'name', c.name, 'active', c.active)
-                                       ORDER BY c.sortkey NULLS LAST, c.id), '[]')
+                                       ORDER BY c.sortkey DESC NULLS FIRST, c.id DESC), '[]')
                 FROM sales_channel_shop c) AS kanaele,
              (SELECT COALESCE(json_agg(json_build_object('id', v.id, 'name', v.name, 'vendornumber', v.vendornumber)
                                        ORDER BY v.name), '[]')
@@ -1598,7 +1600,9 @@ function getShopChannels($data) {
                     (SELECT COUNT(*) FROM parts_channel_shop pc
                       WHERE pc.channel_id = c.id AND pc.active) AS parts
                FROM sales_channel_shop c
-              ORDER BY c.sortkey NULLS LAST, c.id"
+              -- Umgekehrt (neueste oben, unter „Kanal anlegen“) — genau die
+              -- Gegenrichtung von „sortkey NULLS LAST, id“ der übrigen Listen
+              ORDER BY c.sortkey DESC NULLS FIRST, c.id DESC"
         ),
         'tax_included' => shopConfigBool($db, 'shop_tax_included'),
         // Arten, von denen sich Kanäle anlegen lassen (channels/channels.php)

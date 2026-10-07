@@ -195,7 +195,8 @@
                 "error": "chyba",
                 "pending": "přenáší se",
                 "none": "dosud nepřeneseno"
-            }
+            },
+            "sectionPage": "Stránka produktu"
         },
         "publish": {
             "title": "Zveřejnění",

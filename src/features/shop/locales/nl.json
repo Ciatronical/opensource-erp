@@ -195,7 +195,8 @@
                 "error": "fout",
                 "pending": "wordt overgedragen",
                 "none": "nog niet overgedragen"
-            }
+            },
+            "sectionPage": "Productpagina"
         },
         "publish": {
             "title": "Publicatie",

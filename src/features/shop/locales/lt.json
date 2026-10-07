@@ -195,7 +195,8 @@
                 "error": "klaida",
                 "pending": "perduodama",
                 "none": "dar neperduota"
-            }
+            },
+            "sectionPage": "Produkto puslapis"
         },
         "publish": {
             "title": "Paskelbimas",

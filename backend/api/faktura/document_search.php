@@ -277,6 +277,7 @@ function getPartsSalesChannels($data) {
         "SELECT c.id AS channel_id, c.type, c.name
            FROM sales_channel_shop c
           WHERE c.active
-          ORDER BY c.sortkey NULLS LAST, c.id"
+          -- Reihenfolge wie in der Ansicht „Verkaufskanäle“: umgekehrt
+          ORDER BY c.sortkey DESC NULLS FIRST, c.id DESC"
     )]);
 }

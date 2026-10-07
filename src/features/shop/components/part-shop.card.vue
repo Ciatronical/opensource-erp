@@ -19,7 +19,7 @@
     sammelt nur, die Maske ruft nach createPart saveFor(neueId) auf.
 -->
 <template>
-    <v-card variant="outlined" elevation="1" class="mt-4">
+    <v-card id="abschnitt-shop" variant="outlined" elevation="1" class="mt-4 sprungziel">
         <v-card-title class="py-2 px-3 bg-grey-lighten-4 d-flex align-center">
             <v-icon class="mr-2" size="small">mdi-storefront</v-icon>
             <span class="text-subtitle-1 font-weight-medium">{{ t('ShopView.partCard.title') }}</span>
@@ -63,7 +63,7 @@
 
             <v-row v-if="daten.listed" dense>
                 <!-- Kategorie -->
-                <v-col cols="12" sm="6" class="py-1">
+                <v-col id="abschnitt-shop-angaben" cols="12" sm="6" class="py-1 sprungziel">
                     <v-text-field
                         v-model="daten.category"
                         :label="t('ShopView.partCard.category')"
@@ -120,7 +120,7 @@
                 </v-col>
 
                 <!-- Bilder: das erste ist das Vorschaubild in Suche, Warenkorb und Rechnung -->
-                <v-col cols="12" class="py-1">
+                <v-col id="abschnitt-shop-bilder" cols="12" class="py-1 sprungziel">
                     <v-combobox
                         v-model="daten.images"
                         :label="t('ShopView.partCard.images')"
@@ -142,7 +142,7 @@
                 </v-col>
 
                 <!-- Technische Daten, Eigenschaften, Downloads -->
-                <v-col cols="12" class="py-1">
+                <v-col id="abschnitt-shop-technik" cols="12" class="py-1 sprungziel">
                     <ShopKeyValueEditor
                         v-model="daten.technical_data"
                         :title="t('ShopView.partCard.technicalData')"
@@ -172,7 +172,7 @@
 
                 <!-- Versand (dev/shop-versand.md, Schritt 5). Das Gewicht steht
                      in den Stammdaten der Artikelmaske (parts.weight) -->
-                <v-col cols="12" class="pt-4 pb-1">
+                <v-col id="abschnitt-shop-versand" cols="12" class="pt-4 pb-1 sprungziel">
                     <div class="text-subtitle-2">{{ t('ShopView.partCard.shipping') }}</div>
                     <div class="text-caption" :class="gewicht === null ? 'text-warning' : 'text-medium-emphasis'">
                         {{ gewicht === null
@@ -247,7 +247,7 @@
                      zu. Aufklappbar nur mit Häkchen. Das Häkchen steht neben der
                      Kopfzeile, nicht darin: die ist ein <button>, und Firefox gibt
                      Klicks auf Felder darin nicht weiter. -->
-                <div class="text-subtitle-2 mt-4 mb-2">{{ t('ShopView.partCard.channels') }}</div>
+                <div id="abschnitt-shop-kanaele" class="text-subtitle-2 mt-4 mb-2 sprungziel">{{ t('ShopView.partCard.channels') }}</div>
                 <v-alert v-if="kanalFehlt" type="warning" variant="tonal" density="compact" class="my-1">
                     {{ t('ShopView.partCard.chooseChannel') }}
                 </v-alert>
@@ -1255,5 +1255,29 @@ async function saveFor(partsId) {
     return true
 }
 
-defineExpose({ saveFor, kanalFehlt })
+/**
+ * Abschnitte der Karte für die Sprungmarken der Artikelmaske — nur, was
+ * gerade zu sehen ist (ohne „Im Shop anbieten“ nur die Karte selbst)
+ */
+const abschnitte = computed(() => [
+    { id: 'abschnitt-shop', titel: t('ShopView.partCard.title'), icon: 'mdi-storefront' },
+    ...(daten.value.listed ? [
+        { id: 'abschnitt-shop-angaben', titel: t('ShopView.partCard.sectionPage'), icon: 'mdi-web' },
+        { id: 'abschnitt-shop-bilder', titel: t('ShopView.partCard.images'), icon: 'mdi-image-multiple-outline' },
+        { id: 'abschnitt-shop-technik', titel: t('ShopView.partCard.technicalData'), icon: 'mdi-format-list-bulleted' },
+        { id: 'abschnitt-shop-versand', titel: t('ShopView.partCard.shipping'), icon: 'mdi-truck-delivery-outline' },
+        ...(daten.value.channels.length
+            ? [{ id: 'abschnitt-shop-kanaele', titel: t('ShopView.partCard.channels'), icon: 'mdi-store-cog' }]
+            : []),
+    ] : []),
+])
+
+defineExpose({ saveFor, kanalFehlt, abschnitte })
 </script>
+
+<style scoped>
+/* Sprungmarken der Artikelmaske: Abstand zur festen Kopfleiste */
+.sprungziel {
+    scroll-margin-top: 72px;
+}
+</style>

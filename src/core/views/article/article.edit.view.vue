@@ -22,6 +22,21 @@
             </v-chip>
         </div>
 
+        <!-- Sprungmarken zu den Abschnitten — mit der Shop-Erweiterung wird die
+             Maske lang (Shop-Angaben, Bilder, technische Daten, Versand, Kanäle) -->
+        <div v-if="shopEnabled && !loading && !error" class="d-flex flex-wrap ga-2 mb-3">
+            <v-chip
+                v-for="abschnitt in abschnitte"
+                :key="abschnitt.id"
+                size="small"
+                variant="tonal"
+                :prepend-icon="abschnitt.icon"
+                @click="zuAbschnitt(abschnitt.id)"
+            >
+                {{ abschnitt.titel }}
+            </v-chip>
+        </div>
+
         <!-- Alerts -->
         <v-alert v-if="loading" type="info" variant="tonal" density="compact" class="mb-3">
             {{ t('ArticleEditView.messages.loading') }}...
@@ -39,7 +54,7 @@
                 <v-col cols="12" lg="8">
 
                     <!-- Stammdaten Card -->
-                    <v-card variant="outlined" elevation="1">
+                    <v-card id="abschnitt-stammdaten" variant="outlined" elevation="1" class="sprungziel">
                         <v-card-title class="py-2 px-3 bg-grey-lighten-4 d-flex align-center">
                             <v-icon class="mr-2" size="small">mdi-card-text-outline</v-icon>
                             <span class="text-subtitle-1 font-weight-medium">{{ t('ArticleEditView.sections.masterData') }}</span>
@@ -468,6 +483,17 @@ export default defineComponent({
         // ── Shop (nur bei aktiver Erweiterung) ──
 
         const shopEnabled = computed(() => oserp.isExtensionEnabled('shop'))
+
+        /** Sprungmarken: Stammdaten, dazu die Abschnitte der Shop-Karte */
+        const abschnitte = computed(() => [
+            { id: 'abschnitt-stammdaten', titel: t('ArticleEditView.sections.masterData'), icon: 'mdi-card-text-outline' },
+            ...(shopCard.value?.abschnitte || []),
+        ])
+
+        /** Springt zu einem Abschnitt; den Abstand zur Kopfleiste hält .sprungziel */
+        function zuAbschnitt(id) {
+            document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }
         const shopCard = ref(null)
 
         // Vorschlag für die Produktseite: Nummer und Beschreibung als Pfad aus
@@ -667,9 +693,18 @@ export default defineComponent({
             weightunit,
             // Shop
             shopEnabled,
+            abschnitte,
+            zuAbschnitt,
             shopCard,
             shopLinkSuggestion
         }
     }
 })
 </script>
+
+<style scoped>
+/* Sprungmarken: Abstand zur festen Kopfleiste */
+.sprungziel {
+    scroll-margin-top: 72px;
+}
+</style>

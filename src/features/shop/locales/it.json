@@ -195,7 +195,8 @@
                 "error": "errore",
                 "pending": "in trasferimento",
                 "none": "non ancora trasferita"
-            }
+            },
+            "sectionPage": "Pagina prodotto"
         },
         "publish": {
             "title": "Pubblicazione",

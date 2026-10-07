@@ -195,7 +195,8 @@
                 "error": "viga",
                 "pending": "edastatakse",
                 "none": "veel edastamata"
-            }
+            },
+            "sectionPage": "Tooteleht"
         },
         "publish": {
             "title": "Avaldamine",

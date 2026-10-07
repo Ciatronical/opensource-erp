@@ -195,7 +195,8 @@
                 "error": "virhe",
                 "pending": "siirretään",
                 "none": "ei vielä siirretty"
-            }
+            },
+            "sectionPage": "Tuotesivu"
         },
         "publish": {
             "title": "Julkaiseminen",
