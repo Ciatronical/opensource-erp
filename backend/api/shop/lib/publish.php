@@ -1044,8 +1044,12 @@ function shopRunJobs($db, ?callable $melden = null, int $limit = 500, ?array $nu
 
     // Je HugoShop einmal: verhindert etwas das Veröffentlichen, bleiben seine
     // Aufträge offen (ausgesetzt) und laufen beim nächsten Lauf nach der
-    // Einrichtung
+    // Einrichtung. Ist der HugoShop zudem abgeschaltet, gibt es nichts mehr
+    // zu veröffentlichen und — ohne Zugang zu HugoCMS — nichts zurückzunehmen:
+    // seine Aufträge gelten dann als erledigt. Sonst blieben die Aufträge
+    // vom Abschalten ewig offen, und der Kanal ließe sich nie löschen.
     $sperren = [];
+    $abgeschaltet = [];
 
     foreach (shopOpenJobs($db, $limit, $nurIds) as $auftrag) {
         $id = (int)$auftrag['id'];
@@ -1056,10 +1060,20 @@ function shopRunJobs($db, ?callable $melden = null, int $limit = 500, ?array $nu
             $kanalId = (int)$auftrag['channel_id'];
             if (!isset($sperren[$kanalId])) {
                 $sperren[$kanalId] = shopChannelPublishBlockers($db, $kanalId);
-                if ($sperren[$kanalId]) {
+                $abgeschaltet[$kanalId] = $sperren[$kanalId] && !shopChannelHugoshopActive($db, $kanalId);
+                if ($abgeschaltet[$kanalId]) {
+                    $sagen('Abgeschaltet und nicht eingerichtet ('.implode('; ', $sperren[$kanalId])
+                        .') — nichts zu veröffentlichen oder zurückzunehmen, die Aufträge gelten als erledigt.');
+                } elseif ($sperren[$kanalId]) {
                     $sagen('Ausgesetzt — die Aufträge bleiben offen, bis die Einrichtung stimmt: '
                         .implode('; ', $sperren[$kanalId]));
                 }
+            }
+            if ($abgeschaltet[$kanalId]) {
+                $bilanz['jobs']++;
+                $bilanz['ids'][] = $id;
+                shopJobResult($db, $id, 'ok: übersprungen — HugoShop abgeschaltet und nicht eingerichtet');
+                continue;
             }
             if ($sperren[$kanalId]) {
                 $bilanz['ausgesetzt'] = ($bilanz['ausgesetzt'] ?? 0) + 1;

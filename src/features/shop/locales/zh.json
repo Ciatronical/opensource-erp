@@ -254,6 +254,7 @@
                 "publish_all": "全部产品",
                 "remove_part": "删除产品页",
                 "remove_all": "删除所有商品页面",
+                "draft_all": "所有产品页面设为草稿",
                 "sync_kit": "同步套件",
                 "reconcile_payments": "对账付款"
             }
@@ -394,7 +395,13 @@
             "cancel": "取消",
             "subtitle": "创建并设置 HugoShop 和 eBay 渠道",
             "movedHint": "销售渠道及其设置（网站、商店密钥、PayPal、eBay 访问）在商店菜单中有单独的视图。",
-            "open": "打开销售渠道"
+            "open": "打开销售渠道",
+            "notDeletable": "无法删除：",
+            "notDeletableOpenJobs": "{anzahl} 个未完成任务 | {anzahl} 个未完成任务",
+            "notDeletableInvoices": "{anzahl} 张发票 | {anzahl} 张发票",
+            "notDeletableWithdrawals": "{anzahl} 项撤销 | {anzahl} 项撤销",
+            "notDeletableEbayOrders": "{anzahl} 个 eBay 订单 | {anzahl} 个 eBay 订单",
+            "notDeletableJobsHint": "下一次运行将完成未完成的任务（商店概览中的“执行未完成”）。有单据时渠道保持停用。"
         },
         "ebayCondition": {
             "NEW": "全新",

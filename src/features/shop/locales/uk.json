@@ -254,6 +254,7 @@
                 "publish_all": "Усі товари",
                 "remove_part": "Видалити сторінку товару",
                 "remove_all": "Видалити всі сторінки товарів",
+                "draft_all": "Усі сторінки товарів як чернетка",
                 "sync_kit": "Синхронізувати пакет",
                 "reconcile_payments": "Звірити платежі"
             }
@@ -394,7 +395,13 @@
             "cancel": "Скасувати",
             "subtitle": "Створення та налаштування HugoShop і каналів eBay",
             "movedHint": "Канали продажу та їхні налаштування (сайт, ключ магазину, PayPal, доступ до eBay) мають окреме подання в меню магазину.",
-            "open": "Відкрити канали продажу"
+            "open": "Відкрити канали продажу",
+            "notDeletable": "Неможливо видалити:",
+            "notDeletableOpenJobs": "{anzahl} відкрите завдання | {anzahl} відкритих завдань",
+            "notDeletableInvoices": "{anzahl} рахунок | {anzahl} рахунків",
+            "notDeletableWithdrawals": "{anzahl} відмова | {anzahl} відмов",
+            "notDeletableEbayOrders": "{anzahl} замовлення eBay | {anzahl} замовлень eBay",
+            "notDeletableJobsHint": "Відкриті завдання виконає наступний запуск («Виконати відкриті» в огляді магазину). З документами канал залишається вимкненим."
         },
         "ebayCondition": {
             "NEW": "Новий",

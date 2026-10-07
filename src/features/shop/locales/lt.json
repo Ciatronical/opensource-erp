@@ -254,6 +254,7 @@
                 "publish_all": "Visi produktai",
                 "remove_part": "Šalinti produkto puslapį",
                 "remove_all": "Pašalinti visus prekių puslapius",
+                "draft_all": "Visi produktų puslapiai kaip juodraščiai",
                 "sync_kit": "Sinchronizuoti paketą",
                 "reconcile_payments": "Suderinti mokėjimus"
             }
@@ -394,7 +395,13 @@
             "cancel": "Atšaukti",
             "subtitle": "Kurti ir nustatyti HugoShop ir eBay kanalus",
             "movedHint": "Pardavimo kanalai ir jų nustatymai (svetainė, parduotuvės raktas, PayPal, eBay prieiga) turi atskirą rodinį parduotuvės meniu.",
-            "open": "Atidaryti pardavimo kanalus"
+            "open": "Atidaryti pardavimo kanalus",
+            "notDeletable": "Negalima ištrinti:",
+            "notDeletableOpenJobs": "{anzahl} atvira užduotis | {anzahl} atviros užduotys",
+            "notDeletableInvoices": "{anzahl} sąskaita | {anzahl} sąskaitos",
+            "notDeletableWithdrawals": "{anzahl} atsisakymas | {anzahl} atsisakymai",
+            "notDeletableEbayOrders": "{anzahl} eBay užsakymas | {anzahl} eBay užsakymai",
+            "notDeletableJobsHint": "Atviras užduotis atliks kitas vykdymas („Vykdyti atviras“ parduotuvės apžvalgoje). Su dokumentais kanalas lieka išjungtas."
         },
         "ebayCondition": {
             "NEW": "Nauja",

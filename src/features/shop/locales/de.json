@@ -254,6 +254,7 @@
                 "publish_all": "Alle Produkte",
                 "remove_part": "Produktseite entfernen",
                 "remove_all": "Alle Produktseiten entfernen",
+                "draft_all": "Alle Produktseiten als Entwurf",
                 "sync_kit": "Paket abgleichen",
                 "reconcile_payments": "Zahlungen abgleichen"
             }
@@ -394,7 +395,13 @@
             "cancel": "Abbrechen",
             "subtitle": "HugoShops und eBay-Kanäle anlegen und einrichten",
             "movedHint": "Die Verkaufskanäle mit ihren Einstellungen (Webseite, Shop-Schlüssel, PayPal, eBay-Zugang) stehen in einer eigenen Ansicht im Shop-Menü.",
-            "open": "Verkaufskanäle öffnen"
+            "open": "Verkaufskanäle öffnen",
+            "notDeletable": "Lässt sich nicht löschen:",
+            "notDeletableOpenJobs": "{anzahl} offener Auftrag | {anzahl} offene Aufträge",
+            "notDeletableInvoices": "{anzahl} Rechnung | {anzahl} Rechnungen",
+            "notDeletableWithdrawals": "{anzahl} Widerruf | {anzahl} Widerrufe",
+            "notDeletableEbayOrders": "{anzahl} eBay-Bestellung | {anzahl} eBay-Bestellungen",
+            "notDeletableJobsHint": "Offene Aufträge erledigt der nächste Lauf („Offene ausführen“ in der Shop-Übersicht). Mit Belegen bleibt der Kanal abgeschaltet stehen."
         },
         "ebayCondition": {
             "NEW": "Neu",

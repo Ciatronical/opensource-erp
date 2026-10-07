@@ -107,6 +107,21 @@
                 </v-card-title>
             </v-card-item>
 
+            <!-- Abgeschaltet, aber nicht löschbar: warum (offene Aufträge, Belege) -->
+            <v-alert
+                v-if="!kanal.active && !kanal.deletable && loeschHindernisse(kanal).length"
+                type="info"
+                variant="tonal"
+                density="compact"
+                class="mx-4 mb-2"
+            >
+                {{ t('ShopView.channelConfig.notDeletable') }}
+                {{ loeschHindernisse(kanal).join(', ') }}
+                <div v-if="kanal.delete_blockers.open_jobs > 0" class="text-caption mt-1">
+                    {{ t('ShopView.channelConfig.notDeletableJobsHint') }}
+                </div>
+            </v-alert>
+
             <v-card-text class="pt-0">
                 <v-row dense>
                     <v-col cols="12" sm="6" md="4" class="py-1">
@@ -254,7 +269,7 @@
                 </v-row>
 
                 <!-- Einstellungen der Instanz: erst beim Aufklappen geladen -->
-                <v-expansion-panels v-model="einstellungenOffen[kanal.channel_id]" variant="accordion" class="mt-4">
+                <v-expansion-panels v-model="einstellungenOffen[kanal.channel_id]" variant="accordion" color="grey-lighten-3" class="mt-4">
                     <v-expansion-panel>
                         <v-expansion-panel-title>
                             <v-icon start size="small">mdi-cog-outline</v-icon>
@@ -409,7 +424,31 @@ function alsKanal(zeile) {
         settings: alsObjekt(zeile.settings),
         secrets_set: alsObjekt(zeile.secrets_set),
         deletable: WAHR.includes(zeile.deletable),
+        // Gezählt, was das Löschen verhindert (getShopChannels)
+        delete_blockers: {
+            open_jobs: Number(alsObjekt(zeile.delete_blockers).open_jobs) || 0,
+            invoices: Number(alsObjekt(zeile.delete_blockers).invoices) || 0,
+            withdrawals: Number(alsObjekt(zeile.delete_blockers).withdrawals) || 0,
+            ebay_orders: Number(alsObjekt(zeile.delete_blockers).ebay_orders) || 0,
+        },
     }
+}
+
+/**
+ * Was das Löschen eines abgeschalteten Kanals verhindert, als Liste lesbarer
+ * Teile — etwa „3 offene Aufträge, 12 Rechnungen“. Belege bleiben für immer,
+ * offene Aufträge erledigt der nächste Lauf.
+ */
+function loeschHindernisse(kanal) {
+    const zahlen = kanal.delete_blockers || {}
+    return [
+        ['open_jobs', 'notDeletableOpenJobs'],
+        ['invoices', 'notDeletableInvoices'],
+        ['withdrawals', 'notDeletableWithdrawals'],
+        ['ebay_orders', 'notDeletableEbayOrders'],
+    ]
+        .filter(([feld]) => zahlen[feld] > 0)
+        .map(([feld, text]) => t(`ShopView.channelConfig.${text}`, { anzahl: zahlen[feld] }, zahlen[feld]))
 }
 
 /** Was gespeichert wird — zum Vergleich, damit Gleiches nicht erneut geht */

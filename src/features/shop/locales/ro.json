@@ -254,6 +254,7 @@
                 "publish_all": "Toate produsele",
                 "remove_part": "Șterge pagina produsului",
                 "remove_all": "Eliminați toate paginile de produs",
+                "draft_all": "Toate paginile de produs ca ciornă",
                 "sync_kit": "Sincronizează pachetul",
                 "reconcile_payments": "Reconciliază plățile"
             }
@@ -394,7 +395,13 @@
             "cancel": "Anulează",
             "subtitle": "Crearea și configurarea HugoShop-urilor și a canalelor eBay",
             "movedHint": "Canalele de vânzare și setările lor (site, cheia magazinului, PayPal, acces eBay) au o vizualizare proprie în meniul Magazin.",
-            "open": "Deschide canalele de vânzare"
+            "open": "Deschide canalele de vânzare",
+            "notDeletable": "Nu poate fi șters:",
+            "notDeletableOpenJobs": "{anzahl} sarcină deschisă | {anzahl} sarcini deschise",
+            "notDeletableInvoices": "{anzahl} factură | {anzahl} facturi",
+            "notDeletableWithdrawals": "{anzahl} retragere | {anzahl} retrageri",
+            "notDeletableEbayOrders": "{anzahl} comandă eBay | {anzahl} comenzi eBay",
+            "notDeletableJobsHint": "Următoarea rulare finalizează sarcinile deschise („Rulează deschise” în prezentarea magazinului). Cu documente, canalul rămâne dezactivat."
         },
         "ebayCondition": {
             "NEW": "Nou",

@@ -254,6 +254,7 @@
                 "publish_all": "All products",
                 "remove_part": "Remove product page",
                 "remove_all": "Remove all product pages",
+                "draft_all": "All product pages as draft",
                 "sync_kit": "Sync package",
                 "reconcile_payments": "Reconcile payments"
             }
@@ -394,7 +395,13 @@
             "cancel": "Cancel",
             "subtitle": "Create and set up HugoShops and eBay channels",
             "movedHint": "The sales channels and their settings (website, shop key, PayPal, eBay access) have their own view in the shop menu.",
-            "open": "Open sales channels"
+            "open": "Open sales channels",
+            "notDeletable": "Cannot be deleted:",
+            "notDeletableOpenJobs": "{anzahl} open job | {anzahl} open jobs",
+            "notDeletableInvoices": "{anzahl} invoice | {anzahl} invoices",
+            "notDeletableWithdrawals": "{anzahl} withdrawal | {anzahl} withdrawals",
+            "notDeletableEbayOrders": "{anzahl} eBay order | {anzahl} eBay orders",
+            "notDeletableJobsHint": "The next run completes open jobs (“Run open” in the shop overview). With documents the channel stays switched off."
         },
         "ebayCondition": {
             "NEW": "New",

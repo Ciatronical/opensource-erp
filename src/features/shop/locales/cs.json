@@ -254,6 +254,7 @@
                 "publish_all": "Všechny produkty",
                 "remove_part": "Odstranit stránku produktu",
                 "remove_all": "Odstranit všechny stránky produktů",
+                "draft_all": "Všechny stránky produktů jako koncept",
                 "sync_kit": "Synchronizovat balíček",
                 "reconcile_payments": "Srovnat platby"
             }
@@ -394,7 +395,13 @@
             "cancel": "Zrušit",
             "subtitle": "Vytvářet a nastavovat HugoShopy a kanály eBay",
             "movedHint": "Prodejní kanály a jejich nastavení (web, klíč obchodu, PayPal, přístup k eBay) mají vlastní zobrazení v nabídce Obchod.",
-            "open": "Otevřít prodejní kanály"
+            "open": "Otevřít prodejní kanály",
+            "notDeletable": "Nelze smazat:",
+            "notDeletableOpenJobs": "{anzahl} otevřená úloha | {anzahl} otevřené úlohy",
+            "notDeletableInvoices": "{anzahl} faktura | {anzahl} faktury",
+            "notDeletableWithdrawals": "{anzahl} odstoupení | {anzahl} odstoupení",
+            "notDeletableEbayOrders": "{anzahl} objednávka eBay | {anzahl} objednávky eBay",
+            "notDeletableJobsHint": "Otevřené úlohy dokončí příští běh („Spustit otevřené“ v přehledu obchodu). S doklady zůstane kanál vypnutý."
         },
         "ebayCondition": {
             "NEW": "Nové",

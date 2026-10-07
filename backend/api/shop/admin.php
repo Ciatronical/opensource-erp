@@ -1574,6 +1574,14 @@ function getShopChannels($data) {
                      AND NOT EXISTS (SELECT 1 FROM ar_link_hugoshop a WHERE a.channel_id = c.id)
                      AND NOT EXISTS (SELECT 1 FROM withdrawals_hugoshop w WHERE w.channel_id = c.id)
                      AND NOT EXISTS (SELECT 1 FROM ebay_orders e WHERE e.channel_id = c.id)) AS deletable,
+                    -- Was das Löschen verhindert, gezählt — für den Hinweis in
+                    -- der Kanalkarte, wenn der Kanal abgeschaltet ist
+                    json_build_object(
+                        'open_jobs',   (SELECT COUNT(*) FROM batchjob_hugoshop b WHERE b.channel_id = c.id AND b.result IS NULL),
+                        'invoices',    (SELECT COUNT(*) FROM ar_link_hugoshop a WHERE a.channel_id = c.id),
+                        'withdrawals', (SELECT COUNT(*) FROM withdrawals_hugoshop w WHERE w.channel_id = c.id),
+                        'ebay_orders', (SELECT COUNT(*) FROM ebay_orders e WHERE e.channel_id = c.id)
+                    ) AS delete_blockers,
                     -- Lieferländer (dev/shop-versand.md, Schritt 7); leer = alle
                     (SELECT COALESCE(json_agg(cc.iso_code ORDER BY cc.iso_code), '[]')
                        FROM sales_channel_country_shop cc WHERE cc.channel_id = c.id) AS countries,
@@ -2466,9 +2474,11 @@ function getShopPublishJobs($data) {
     foreach ($auftraege as &$auftrag) {
         $offen = in_array($auftrag['open'], [true, 't', 1, '1'], true);
         $auftrag['suspended'] = [];
+        // Abgeschaltete HugoShops nicht: deren Aufträge erledigt der nächste
+        // Lauf ohne Zugang als übersprungen (shopRunJobs)
         if ($offen && 'hugoshop' === $auftrag['channel']) {
             $kanal = (int)$auftrag['channel_id'];
-            $sperren[$kanal] ??= shopChannelPublishBlockers($db, $kanal);
+            $sperren[$kanal] ??= shopChannelHugoshopActive($db, $kanal) ? shopChannelPublishBlockers($db, $kanal) : [];
             $auftrag['suspended'] = $sperren[$kanal];
         }
     }

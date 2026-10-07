@@ -254,6 +254,7 @@
                 "publish_all": "Todos os produtos",
                 "remove_part": "Remover página do produto",
                 "remove_all": "Remover todas as páginas de produto",
+                "draft_all": "Todas as páginas de produto como rascunho",
                 "sync_kit": "Sincronizar pacote",
                 "reconcile_payments": "Conciliar pagamentos"
             }
@@ -394,7 +395,13 @@
             "cancel": "Cancelar",
             "subtitle": "Criar e configurar HugoShops e canais eBay",
             "movedHint": "Os canais de venda e as suas definições (site, chave da loja, PayPal, acesso eBay) têm uma vista própria no menu Loja.",
-            "open": "Abrir canais de venda"
+            "open": "Abrir canais de venda",
+            "notDeletable": "Não é possível eliminar:",
+            "notDeletableOpenJobs": "{anzahl} tarefa aberta | {anzahl} tarefas abertas",
+            "notDeletableInvoices": "{anzahl} fatura | {anzahl} faturas",
+            "notDeletableWithdrawals": "{anzahl} rescisão | {anzahl} rescisões",
+            "notDeletableEbayOrders": "{anzahl} encomenda eBay | {anzahl} encomendas eBay",
+            "notDeletableJobsHint": "A próxima execução conclui as tarefas abertas («Executar abertas» na vista geral da loja). Com documentos, o canal fica desativado."
         },
         "ebayCondition": {
             "NEW": "Novo",

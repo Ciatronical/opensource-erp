@@ -254,6 +254,7 @@
                 "publish_all": "Tüm ürünler",
                 "remove_part": "Ürün sayfasını kaldır",
                 "remove_all": "Tüm ürün sayfalarını kaldır",
+                "draft_all": "Tüm ürün sayfaları taslak olarak",
                 "sync_kit": "Paketi eşitle",
                 "reconcile_payments": "Ödemeleri mutabık kıl"
             }
@@ -394,7 +395,13 @@
             "cancel": "İptal",
             "subtitle": "HugoShop ve eBay kanalları oluşturma ve ayarlama",
             "movedHint": "Satış kanalları ve ayarları (web sitesi, mağaza anahtarı, PayPal, eBay erişimi) mağaza menüsünde kendi görünümüne sahiptir.",
-            "open": "Satış kanallarını aç"
+            "open": "Satış kanallarını aç",
+            "notDeletable": "Silinemez:",
+            "notDeletableOpenJobs": "{anzahl} açık görev | {anzahl} açık görev",
+            "notDeletableInvoices": "{anzahl} fatura | {anzahl} fatura",
+            "notDeletableWithdrawals": "{anzahl} cayma | {anzahl} cayma",
+            "notDeletableEbayOrders": "{anzahl} eBay siparişi | {anzahl} eBay siparişi",
+            "notDeletableJobsHint": "Açık görevleri sonraki çalışma tamamlar (mağaza genel bakışında „Açıkları çalıştır“). Belgeler varsa kanal kapalı kalır."
         },
         "ebayCondition": {
             "NEW": "Yeni",

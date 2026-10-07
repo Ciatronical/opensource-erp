@@ -254,6 +254,7 @@
                 "publish_all": "Kaikki tuotteet",
                 "remove_part": "Poista tuotesivu",
                 "remove_all": "Poista kaikki tuotesivut",
+                "draft_all": "Kaikki tuotesivut luonnoksiksi",
                 "sync_kit": "Synkronoi paketti",
                 "reconcile_payments": "Täsmäytä maksut"
             }
@@ -394,7 +395,13 @@
             "cancel": "Peruuta",
             "subtitle": "HugoShopien ja eBay-kanavien luonti ja määritys",
             "movedHint": "Myyntikanavilla ja niiden asetuksilla (verkkosivusto, kauppa-avain, PayPal, eBay-yhteys) on oma näkymä kauppavalikossa.",
-            "open": "Avaa myyntikanavat"
+            "open": "Avaa myyntikanavat",
+            "notDeletable": "Ei voi poistaa:",
+            "notDeletableOpenJobs": "{anzahl} avoin tehtävä | {anzahl} avointa tehtävää",
+            "notDeletableInvoices": "{anzahl} lasku | {anzahl} laskua",
+            "notDeletableWithdrawals": "{anzahl} peruutus | {anzahl} peruutusta",
+            "notDeletableEbayOrders": "{anzahl} eBay-tilaus | {anzahl} eBay-tilausta",
+            "notDeletableJobsHint": "Seuraava ajo suorittaa avoimet tehtävät (”Suorita avoimet” kaupan yleisnäkymässä). Tositteiden kanssa kanava pysyy pois päältä."
         },
         "ebayCondition": {
             "NEW": "Uusi",

@@ -254,6 +254,7 @@
                 "publish_all": "Alle producten",
                 "remove_part": "Productpagina verwijderen",
                 "remove_all": "Alle productpagina's verwijderen",
+                "draft_all": "Alle productpagina’s als concept",
                 "sync_kit": "Pakket synchroniseren",
                 "reconcile_payments": "Betalingen afstemmen"
             }
@@ -394,7 +395,13 @@
             "cancel": "Annuleren",
             "subtitle": "HugoShops en eBay-kanalen aanmaken en inrichten",
             "movedHint": "De verkoopkanalen en hun instellingen (website, winkelsleutel, PayPal, eBay-toegang) hebben een eigen weergave in het winkelmenu.",
-            "open": "Verkoopkanalen openen"
+            "open": "Verkoopkanalen openen",
+            "notDeletable": "Kan niet worden verwijderd:",
+            "notDeletableOpenJobs": "{anzahl} open taak | {anzahl} open taken",
+            "notDeletableInvoices": "{anzahl} factuur | {anzahl} facturen",
+            "notDeletableWithdrawals": "{anzahl} herroeping | {anzahl} herroepingen",
+            "notDeletableEbayOrders": "{anzahl} eBay-bestelling | {anzahl} eBay-bestellingen",
+            "notDeletableJobsHint": "De volgende run voert open taken uit („Open uitvoeren” in het winkeloverzicht). Met documenten blijft het kanaal uitgeschakeld."
         },
         "ebayCondition": {
             "NEW": "Nieuw",

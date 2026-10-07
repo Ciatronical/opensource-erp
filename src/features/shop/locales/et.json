@@ -254,6 +254,7 @@
                 "publish_all": "Kõik tooted",
                 "remove_part": "Eemalda tootelehekülg",
                 "remove_all": "Eemalda kõik tootelehed",
+                "draft_all": "Kõik tootelehed mustandiks",
                 "sync_kit": "Sünkrooni pakett",
                 "reconcile_payments": "Võrdle makseid"
             }
@@ -394,7 +395,13 @@
             "cancel": "Loobu",
             "subtitle": "HugoShopide ja eBay kanalite loomine ja seadistamine",
             "movedHint": "Müügikanalitel ja nende seadetel (veebileht, poe võti, PayPal, eBay ligipääs) on poe menüüs oma vaade.",
-            "open": "Ava müügikanalid"
+            "open": "Ava müügikanalid",
+            "notDeletable": "Ei saa kustutada:",
+            "notDeletableOpenJobs": "{anzahl} avatud töö | {anzahl} avatud tööd",
+            "notDeletableInvoices": "{anzahl} arve | {anzahl} arvet",
+            "notDeletableWithdrawals": "{anzahl} taganemine | {anzahl} taganemist",
+            "notDeletableEbayOrders": "{anzahl} eBay tellimus | {anzahl} eBay tellimust",
+            "notDeletableJobsHint": "Avatud tööd täidab järgmine käivitus („Käivita avatud“ poe ülevaates). Dokumentidega jääb kanal välja lülitatuks."
         },
         "ebayCondition": {
             "NEW": "Uus",

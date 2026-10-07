@@ -254,6 +254,7 @@
                 "publish_all": "Wszystkie produkty",
                 "remove_part": "Usuń stronę produktu",
                 "remove_all": "Usuń wszystkie strony produktów",
+                "draft_all": "Wszystkie strony produktów jako szkic",
                 "sync_kit": "Zsynchronizuj pakiet",
                 "reconcile_payments": "Uzgodnij płatności"
             }
@@ -394,7 +395,13 @@
             "cancel": "Anuluj",
             "subtitle": "Tworzenie i konfiguracja HugoShopów i kanałów eBay",
             "movedHint": "Kanały sprzedaży i ich ustawienia (strona, klucz sklepu, PayPal, dostęp do eBay) mają własny widok w menu Sklep.",
-            "open": "Otwórz kanały sprzedaży"
+            "open": "Otwórz kanały sprzedaży",
+            "notDeletable": "Nie można usunąć:",
+            "notDeletableOpenJobs": "{anzahl} otwarte zadanie | {anzahl} otwartych zadań",
+            "notDeletableInvoices": "{anzahl} faktura | {anzahl} faktur",
+            "notDeletableWithdrawals": "{anzahl} odstąpienie | {anzahl} odstąpień",
+            "notDeletableEbayOrders": "{anzahl} zamówienie eBay | {anzahl} zamówień eBay",
+            "notDeletableJobsHint": "Otwarte zadania wykona następne uruchomienie („Uruchom otwarte” w przeglądzie sklepu). Z dokumentami kanał pozostaje wyłączony."
         },
         "ebayCondition": {
             "NEW": "Nowy",

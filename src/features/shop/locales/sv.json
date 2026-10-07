@@ -254,6 +254,7 @@
                 "publish_all": "Alla produkter",
                 "remove_part": "Ta bort produktsida",
                 "remove_all": "Ta bort alla produktsidor",
+                "draft_all": "Alla produktsidor som utkast",
                 "sync_kit": "Synkronisera paket",
                 "reconcile_payments": "Stäm av betalningar"
             }
@@ -394,7 +395,13 @@
             "cancel": "Avbryt",
             "subtitle": "Skapa och konfigurera HugoShops och eBay-kanaler",
             "movedHint": "Försäljningskanalerna och deras inställningar (webbplats, butiksnyckel, PayPal, eBay-åtkomst) har en egen vy i butiksmenyn.",
-            "open": "Öppna försäljningskanaler"
+            "open": "Öppna försäljningskanaler",
+            "notDeletable": "Kan inte tas bort:",
+            "notDeletableOpenJobs": "{anzahl} öppen uppgift | {anzahl} öppna uppgifter",
+            "notDeletableInvoices": "{anzahl} faktura | {anzahl} fakturor",
+            "notDeletableWithdrawals": "{anzahl} ångring | {anzahl} ångringar",
+            "notDeletableEbayOrders": "{anzahl} eBay-order | {anzahl} eBay-ordrar",
+            "notDeletableJobsHint": "Öppna uppgifter utförs vid nästa körning (”Kör öppna” i butiksöversikten). Med verifikationer förblir kanalen avstängd."
         },
         "ebayCondition": {
             "NEW": "Ny",

@@ -254,6 +254,7 @@
                 "publish_all": "Alle produkter",
                 "remove_part": "Fjern produktside",
                 "remove_all": "Fjern alle produktsider",
+                "draft_all": "Alle produktsider som utkast",
                 "sync_kit": "Synkroniser pakke",
                 "reconcile_payments": "Avstem betalinger"
             }
@@ -394,7 +395,13 @@
             "cancel": "Avbryt",
             "subtitle": "Opprett og sett opp HugoShops og eBay-kanaler",
             "movedHint": "Salgskanalene og innstillingene deres (nettsted, butikknøkkel, PayPal, eBay-tilgang) har en egen visning i butikkmenyen.",
-            "open": "Åpne salgskanaler"
+            "open": "Åpne salgskanaler",
+            "notDeletable": "Kan ikke slettes:",
+            "notDeletableOpenJobs": "{anzahl} åpen oppgave | {anzahl} åpne oppgaver",
+            "notDeletableInvoices": "{anzahl} faktura | {anzahl} fakturaer",
+            "notDeletableWithdrawals": "{anzahl} angring | {anzahl} angringer",
+            "notDeletableEbayOrders": "{anzahl} eBay-ordre | {anzahl} eBay-ordrer",
+            "notDeletableJobsHint": "Åpne oppgaver utføres ved neste kjøring («Kjør åpne» i butikkoversikten). Med bilag forblir kanalen slått av."
         },
         "ebayCondition": {
             "NEW": "Ny",

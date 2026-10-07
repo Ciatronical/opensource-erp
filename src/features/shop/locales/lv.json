@@ -254,6 +254,7 @@
                 "publish_all": "Visi produkti",
                 "remove_part": "Noņemt produkta lapu",
                 "remove_all": "Noņemt visas produktu lapas",
+                "draft_all": "Visas produktu lapas kā melnraksts",
                 "sync_kit": "Sinhronizēt pakotni",
                 "reconcile_payments": "Saskaņot maksājumus"
             }
@@ -394,7 +395,13 @@
             "cancel": "Atcelt",
             "subtitle": "Izveidot un iestatīt HugoShop un eBay kanālus",
             "movedHint": "Pārdošanas kanāliem un to iestatījumiem (tīmekļa vietne, veikala atslēga, PayPal, eBay piekļuve) ir savs skats veikala izvēlnē.",
-            "open": "Atvērt pārdošanas kanālus"
+            "open": "Atvērt pārdošanas kanālus",
+            "notDeletable": "Nevar dzēst:",
+            "notDeletableOpenJobs": "{anzahl} atvērts uzdevums | {anzahl} atvērti uzdevumi",
+            "notDeletableInvoices": "{anzahl} rēķins | {anzahl} rēķini",
+            "notDeletableWithdrawals": "{anzahl} atteikums | {anzahl} atteikumi",
+            "notDeletableEbayOrders": "{anzahl} eBay pasūtījums | {anzahl} eBay pasūtījumi",
+            "notDeletableJobsHint": "Atvērtos uzdevumus izpildīs nākamā palaišana (“Izpildīt atvērtos” veikala pārskatā). Ar dokumentiem kanāls paliek izslēgts."
         },
         "ebayCondition": {
             "NEW": "Jauns",
