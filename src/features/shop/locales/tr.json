@@ -196,7 +196,8 @@
                 "pending": "aktarılıyor",
                 "none": "henüz aktarılmadı"
             },
-            "sectionPage": "Ürün sayfası"
+            "sectionPage": "Ürün sayfası",
+            "editChannel": "Satış kanalı ayarları"
         },
         "publish": {
             "title": "Yayımlama",

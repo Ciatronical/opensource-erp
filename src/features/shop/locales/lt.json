@@ -196,7 +196,8 @@
                 "pending": "perduodama",
                 "none": "dar neperduota"
             },
-            "sectionPage": "Produkto puslapis"
+            "sectionPage": "Produkto puslapis",
+            "editChannel": "Pardavimo kanalo nustatymai"
         },
         "publish": {
             "title": "Paskelbimas",

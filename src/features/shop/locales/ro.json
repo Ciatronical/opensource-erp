@@ -196,7 +196,8 @@
                 "pending": "în transfer",
                 "none": "netransferat încă"
             },
-            "sectionPage": "Pagina produsului"
+            "sectionPage": "Pagina produsului",
+            "editChannel": "Setările canalului de vânzare"
         },
         "publish": {
             "title": "Publicare",

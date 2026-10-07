@@ -196,7 +196,8 @@
                 "pending": "wordt overgedragen",
                 "none": "nog niet overgedragen"
             },
-            "sectionPage": "Productpagina"
+            "sectionPage": "Productpagina",
+            "editChannel": "Instellingen van het verkoopkanaal"
         },
         "publish": {
             "title": "Publicatie",

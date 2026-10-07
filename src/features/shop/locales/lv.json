@@ -196,7 +196,8 @@
                 "pending": "tiek pārsūtīts",
                 "none": "vēl nav pārsūtīts"
             },
-            "sectionPage": "Produkta lapa"
+            "sectionPage": "Produkta lapa",
+            "editChannel": "Pārdošanas kanāla iestatījumi"
         },
         "publish": {
             "title": "Publicēšana",

@@ -196,7 +196,8 @@
                 "pending": "transfiriéndose",
                 "none": "aún no transferido"
             },
-            "sectionPage": "Página del producto"
+            "sectionPage": "Página del producto",
+            "editChannel": "Ajustes del canal de venta"
         },
         "publish": {
             "title": "Publicación",

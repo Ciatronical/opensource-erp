@@ -196,7 +196,8 @@
                 "pending": "överförs",
                 "none": "inte överförd ännu"
             },
-            "sectionPage": "Produktsida"
+            "sectionPage": "Produktsida",
+            "editChannel": "Inställningar för försäljningskanal"
         },
         "publish": {
             "title": "Publicering",

@@ -196,7 +196,8 @@
                 "pending": "wird übertragen",
                 "none": "noch nicht übertragen"
             },
-            "sectionPage": "Produktseite"
+            "sectionPage": "Produktseite",
+            "editChannel": "Einstellungen des Verkaufskanals"
         },
         "publish": {
             "title": "Veröffentlichung",

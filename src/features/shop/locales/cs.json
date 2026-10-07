@@ -196,7 +196,8 @@
                 "pending": "přenáší se",
                 "none": "dosud nepřeneseno"
             },
-            "sectionPage": "Stránka produktu"
+            "sectionPage": "Stránka produktu",
+            "editChannel": "Nastavení prodejního kanálu"
         },
         "publish": {
             "title": "Zveřejnění",

@@ -196,7 +196,8 @@
                 "pending": "overføres",
                 "none": "endnu ikke overført"
             },
-            "sectionPage": "Produktside"
+            "sectionPage": "Produktside",
+            "editChannel": "Indstillinger for salgskanal"
         },
         "publish": {
             "title": "Offentliggørelse",

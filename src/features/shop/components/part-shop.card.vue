@@ -266,6 +266,7 @@
                         :value="kanal.channel_id"
                         elevation="0"
                         class="border"
+                        color="grey-lighten-3"
                     >
                         <div class="d-flex align-center">
                             <v-checkbox-btn
@@ -284,6 +285,21 @@
                                 <span class="font-weight-medium" :class="kanal.active ? '' : 'text-medium-emphasis'">
                                     {{ kanalName(kanal) }}
                                 </span>
+                                <!-- Sprung zu den Einstellungen des Kanals; v-icon statt v-btn,
+                                     weil der Panel-Kopf selbst ein <button> ist. .stop: kein Auf-/Zuklappen -->
+                                <v-icon
+                                    v-if="darfKanaele"
+                                    icon="mdi-pencil"
+                                    size="small"
+                                    role="button"
+                                    tabindex="0"
+                                    class="ml-2 text-medium-emphasis"
+                                    :title="t('ShopView.partCard.editChannel')"
+                                    :aria-label="t('ShopView.partCard.editChannel')"
+                                    @click.stop="kanalEinstellungen(kanal)"
+                                    @keydown.enter.stop.prevent="kanalEinstellungen(kanal)"
+                                    @keydown.space.stop.prevent="kanalEinstellungen(kanal)"
+                                />
                                 <v-spacer />
                                 <span v-if="kanal.active" class="text-body-2 mr-2">
                                     {{ geld(kanalPreis(kanal).brutto) }} {{ t('ShopView.partCard.gross') }}
@@ -573,6 +589,7 @@
 <script setup>
 import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 import { oserpStore } from '@/core/stores/oserp.store.js'
 import { useShop } from '@/features/shop/composables/useShop.js'
 import * as toasts from '@/core/utils/toasts.js'
@@ -603,6 +620,20 @@ const shop = useShop()
 
 const darfBearbeiten = computed(() =>
     oserp.checkPermission('shop_part_edit') || oserp.checkPermission('edit_shop_config'))
+
+/** Ansicht „Verkaufskanäle“ verlangt edit_shop_config — ohne das Recht kein Bearbeiten-Symbol */
+const darfKanaele = computed(() => oserp.checkPermission('edit_shop_config'))
+
+const router = useRouter()
+
+/**
+ * Öffnet die Einstellungen des Kanals in einem neuen Tab — der Artikel
+ * kann ungespeicherte Änderungen haben, die beim Verlassen verloren gingen.
+ */
+function kanalEinstellungen(kanal) {
+    const ziel = router.resolve({ name: 'shop-channels', query: { channel: kanal.channel_id } })
+    window.open(ziel.href, '_blank')
+}
 
 function leer() {
     return {

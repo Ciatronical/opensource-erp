@@ -196,7 +196,8 @@
                 "pending": "being transferred",
                 "none": "not yet transferred"
             },
-            "sectionPage": "Product page"
+            "sectionPage": "Product page",
+            "editChannel": "Sales channel settings"
         },
         "publish": {
             "title": "Publishing",

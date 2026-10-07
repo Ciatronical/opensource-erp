@@ -196,7 +196,8 @@
                 "pending": "siirretään",
                 "none": "ei vielä siirretty"
             },
-            "sectionPage": "Tuotesivu"
+            "sectionPage": "Tuotesivu",
+            "editChannel": "Myyntikanavan asetukset"
         },
         "publish": {
             "title": "Julkaiseminen",

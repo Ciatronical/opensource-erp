@@ -196,7 +196,8 @@
                 "pending": "przesyłanie",
                 "none": "jeszcze nie przesłano"
             },
-            "sectionPage": "Strona produktu"
+            "sectionPage": "Strona produktu",
+            "editChannel": "Ustawienia kanału sprzedaży"
         },
         "publish": {
             "title": "Publikowanie",

@@ -196,7 +196,8 @@
                 "pending": "edastatakse",
                 "none": "veel edastamata"
             },
-            "sectionPage": "Tooteleht"
+            "sectionPage": "Tooteleht",
+            "editChannel": "Müügikanali seaded"
         },
         "publish": {
             "title": "Avaldamine",
