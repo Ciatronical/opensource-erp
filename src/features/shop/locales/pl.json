@@ -218,7 +218,7 @@
             "allNowHint": "Tworzy zadanie „Wszystkie produkty” i od razu je wykonuje.",
             "chooseChannels": "Dla których kanałów sprzedaży opublikować wszystkie produkty?",
             "installUi": "Zainstaluj interfejs użytkownika sklepu",
-            "installUiHint": "Przenosi pakiet z widżetami sklepu na stronę internetową i ją przebudowuje — jak zaplanowane uruchomienie, ale od razu.",
+            "installUiHint": "Przenosi pakiet z widżetami sklepu na stronę i buduje ją ponownie — od razu lub jako zaplanowane zadanie.",
             "open": "{count} otwartych",
             "empty": "Brak zadań.",
             "notExecuted": "niewykonane",
@@ -257,9 +257,13 @@
                 "remove_part": "Usuń stronę produktu",
                 "remove_all": "Usuń wszystkie strony produktów",
                 "draft_all": "Wszystkie strony produktów jako szkic",
-                "sync_kit": "Zsynchronizuj pakiet",
+                "sync_kit": "Zaktualizuj interfejs użytkownika sklepu",
                 "reconcile_payments": "Uzgodnij płatności"
-            }
+            },
+            "installUiAsk": "Zainstalować interfejs użytkownika sklepu od razu czy zaplanować jako zadanie na następne zaplanowane uruchomienie?",
+            "installUiChannels": "Dla których kanałów sprzedaży?",
+            "installUiLater": "Zaplanuj jako zadanie",
+            "installUiNow": "Zainstaluj teraz"
         },
         "channels": {
             "hugoshop": "HugoShop",

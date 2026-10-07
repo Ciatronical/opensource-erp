@@ -218,7 +218,7 @@
             "allNowHint": "Creates the job “All products” and runs it right away.",
             "chooseChannels": "For which sales channels should all products be published?",
             "installUi": "Install shop user interface",
-            "installUiHint": "Transfers the package with the shop widgets to the website and rebuilds it — like the scheduled runner, but right away.",
+            "installUiHint": "Transfers the package with the shop widgets to the website and rebuilds it — now or as a scheduled job.",
             "open": "{count} pending",
             "empty": "No jobs.",
             "notExecuted": "not run",
@@ -257,9 +257,13 @@
                 "remove_part": "Remove product page",
                 "remove_all": "Remove all product pages",
                 "draft_all": "All product pages as draft",
-                "sync_kit": "Sync package",
+                "sync_kit": "Update shop user interface",
                 "reconcile_payments": "Reconcile payments"
-            }
+            },
+            "installUiAsk": "Install the shop user interface now, or schedule it as a job for the next planned run?",
+            "installUiChannels": "For which sales channels?",
+            "installUiLater": "Schedule as job",
+            "installUiNow": "Install now"
         },
         "channels": {
             "hugoshop": "HugoShop",

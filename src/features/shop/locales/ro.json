@@ -218,7 +218,7 @@
             "allNowHint": "Creează sarcina „Toate produsele” și o execută imediat.",
             "chooseChannels": "Pentru ce canale de vânzare să fie publicate toate produsele?",
             "installUi": "Instalează interfața de utilizator a magazinului",
-            "installUiHint": "Transferă pachetul cu widgeturile magazinului pe site și îl reconstruiește — ca rularea programată, dar imediat.",
+            "installUiHint": "Transferă pachetul cu widgeturile magazinului în site și îl reconstruiește — acum sau ca sarcină planificată.",
             "open": "{count} în așteptare",
             "empty": "Nicio sarcină.",
             "notExecuted": "neexecutată",
@@ -257,9 +257,13 @@
                 "remove_part": "Șterge pagina produsului",
                 "remove_all": "Eliminați toate paginile de produs",
                 "draft_all": "Toate paginile de produs ca ciornă",
-                "sync_kit": "Sincronizează pachetul",
+                "sync_kit": "Actualizează interfața de utilizator a magazinului",
                 "reconcile_payments": "Reconciliază plățile"
-            }
+            },
+            "installUiAsk": "Instalați acum interfața de utilizator a magazinului sau o planificați ca sarcină pentru următoarea rulare programată?",
+            "installUiChannels": "Pentru ce canale de vânzare?",
+            "installUiLater": "Planifică ca sarcină",
+            "installUiNow": "Instalează acum"
         },
         "channels": {
             "hugoshop": "HugoShop",

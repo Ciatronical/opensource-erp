@@ -218,7 +218,7 @@
             "allNowHint": "Vytvoří úlohu „Všechny produkty“ a ihned ji provede.",
             "chooseChannels": "Pro které prodejní kanály se mají zveřejnit všechny produkty?",
             "installUi": "Nainstalovat uživatelské rozhraní obchodu",
-            "installUiHint": "Přenese balíček s widgety obchodu na web a znovu jej sestaví — jako plánovaný běh, ale okamžitě.",
+            "installUiHint": "Přenese balíček s widgety obchodu na webové stránky a znovu je sestaví — ihned nebo jako naplánovaná úloha.",
             "open": "{count} otevřených",
             "empty": "Žádné úlohy.",
             "notExecuted": "neprovedeno",
@@ -257,9 +257,13 @@
                 "remove_part": "Odstranit stránku produktu",
                 "remove_all": "Odstranit všechny stránky produktů",
                 "draft_all": "Všechny stránky produktů jako koncept",
-                "sync_kit": "Synchronizovat balíček",
+                "sync_kit": "Aktualizovat uživatelské rozhraní obchodu",
                 "reconcile_payments": "Srovnat platby"
-            }
+            },
+            "installUiAsk": "Má se uživatelské rozhraní obchodu nainstalovat ihned, nebo naplánovat jako úloha pro příští plánovaný běh?",
+            "installUiChannels": "Pro které prodejní kanály?",
+            "installUiLater": "Naplánovat jako úlohu",
+            "installUiNow": "Nainstalovat ihned"
         },
         "channels": {
             "hugoshop": "HugoShop",

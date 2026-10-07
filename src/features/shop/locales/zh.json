@@ -218,7 +218,7 @@
             "allNowHint": "创建“全部商品”任务并立即执行。",
             "chooseChannels": "要为哪些销售渠道发布所有产品？",
             "installUi": "安装商店用户界面",
-            "installUiHint": "将包含商店小部件的软件包传输到网站并重新构建——与计划任务相同，但立即执行。",
+            "installUiHint": "将包含商店小部件的软件包传输到网站并重新构建 — 立即执行或作为计划任务。",
             "open": "{count} 个待处理",
             "empty": "没有任务。",
             "notExecuted": "未执行",
@@ -257,9 +257,13 @@
                 "remove_part": "删除产品页",
                 "remove_all": "删除所有商品页面",
                 "draft_all": "所有产品页面设为草稿",
-                "sync_kit": "同步套件",
+                "sync_kit": "更新商店用户界面",
                 "reconcile_payments": "对账付款"
-            }
+            },
+            "installUiAsk": "立即安装商店用户界面，还是将其作为任务安排到下一次计划运行？",
+            "installUiChannels": "适用于哪些销售渠道？",
+            "installUiLater": "安排为任务",
+            "installUiNow": "立即安装"
         },
         "channels": {
             "hugoshop": "HugoShop",

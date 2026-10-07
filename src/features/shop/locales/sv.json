@@ -218,7 +218,7 @@
             "allNowHint": "Skapar jobbet ”Alla produkter” och kör det direkt.",
             "chooseChannels": "För vilka försäljningskanaler ska alla produkter publiceras?",
             "installUi": "Installera butikens användargränssnitt",
-            "installUiHint": "För över paketet med butikswidgetarna till webbplatsen och bygger om den — som den schemalagda körningen, men direkt.",
+            "installUiHint": "Överför paketet med butikswidgetarna till webbplatsen och bygger om den — nu eller som schemalagd uppgift.",
             "open": "{count} öppna",
             "empty": "Inga uppdrag.",
             "notExecuted": "ej körd",
@@ -257,9 +257,13 @@
                 "remove_part": "Ta bort produktsida",
                 "remove_all": "Ta bort alla produktsidor",
                 "draft_all": "Alla produktsidor som utkast",
-                "sync_kit": "Synkronisera paket",
+                "sync_kit": "Uppdatera butikens användargränssnitt",
                 "reconcile_payments": "Stäm av betalningar"
-            }
+            },
+            "installUiAsk": "Ska butikens användargränssnitt installeras nu eller planeras som uppgift till nästa schemalagda körning?",
+            "installUiChannels": "För vilka försäljningskanaler?",
+            "installUiLater": "Planera som uppgift",
+            "installUiNow": "Installera nu"
         },
         "channels": {
             "hugoshop": "HugoShop",

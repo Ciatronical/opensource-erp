@@ -2289,11 +2289,14 @@ function retryShopPublishJobs($data) {
  * Dazu wird ein Auftrag sync_kit angelegt und allein ausgeführt. Ist schon
  * einer offen, wird er dafür übernommen: shop_queue_job legt keinen zweiten
  * an. Arbeitet gerade ein Lauf, wird nichts gestartet — der Auftrag bleibt
- * offen und wird beim nächsten Lauf erledigt.
+ * offen und wird beim nächsten Lauf erledigt. Mit start = false wird nur der
+ * Auftrag angelegt; der Cron erledigt ihn beim nächsten Lauf.
  *
  * @param array $data['channel_id'] HugoShop, leer = alle eingeschalteten
- * @return void job_id, job_ids, started, running
- * @testdata {}
+ * @param array $data['channel_ids'] Auswahl mehrerer HugoShops (optional)
+ * @param bool $data['start'] sofort ausführen (Vorgabe) oder nur planen
+ * @return void job_id, job_ids, started, running, queued
+ * @testdata {"start": false}
  */
 function installShopUi($data) {
     permit(['edit_shop_config'], false);
@@ -2320,6 +2323,12 @@ function installShopUi($data) {
     }
     if (!$ids) {
         resultInfo(false, 'SHOP_PUBLISH_START_FAILED', null, 'Der Auftrag ließ sich nicht anlegen.');
+        return;
+    }
+
+    // Nur planen: der Auftrag bleibt offen für den nächsten Lauf (Cron)
+    if (false === filter_var($data['start'] ?? true, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE)) {
+        resultInfo(true, '', ['job_id' => $ids[0], 'job_ids' => $ids, 'started' => false, 'running' => false, 'queued' => true]);
         return;
     }
 

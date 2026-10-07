@@ -218,7 +218,7 @@
             "allNowHint": "Crea el trabajo «Todos los productos» y lo ejecuta de inmediato.",
             "chooseChannels": "¿Para qué canales de venta deben publicarse todos los productos?",
             "installUi": "Instalar interfaz de usuario de la tienda",
-            "installUiHint": "Transfiere el paquete con los widgets de la tienda al sitio web y lo reconstruye, como la ejecución programada, pero de inmediato.",
+            "installUiHint": "Transfiere el paquete con los widgets de la tienda al sitio web y lo reconstruye — ahora o como tarea programada.",
             "open": "{count} pendientes",
             "empty": "Sin trabajos.",
             "notExecuted": "sin ejecutar",
@@ -257,9 +257,13 @@
                 "remove_part": "Eliminar página de producto",
                 "remove_all": "Eliminar todas las páginas de producto",
                 "draft_all": "Todas las páginas de producto como borrador",
-                "sync_kit": "Sincronizar paquete",
+                "sync_kit": "Actualizar la interfaz de usuario de la tienda",
                 "reconcile_payments": "Conciliar pagos"
-            }
+            },
+            "installUiAsk": "¿Instalar ahora la interfaz de usuario de la tienda o programarla como tarea para la próxima ejecución planificada?",
+            "installUiChannels": "¿Para qué canales de venta?",
+            "installUiLater": "Programar como tarea",
+            "installUiNow": "Instalar ahora"
         },
         "channels": {
             "hugoshop": "HugoShop",

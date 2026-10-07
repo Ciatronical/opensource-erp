@@ -218,7 +218,7 @@
             "allNowHint": "“Tüm ürünler” görevini oluşturur ve hemen çalıştırır.",
             "chooseChannels": "Tüm ürünler hangi satış kanalları için yayımlansın?",
             "installUi": "Mağaza kullanıcı arayüzünü yükle",
-            "installUiHint": "Mağaza bileşenlerini içeren paketi web sitesine aktarır ve siteyi yeniden oluşturur — zamanlanmış çalıştırma gibi, ama hemen.",
+            "installUiHint": "Mağaza bileşenlerini içeren paketi web sitesine aktarır ve siteyi yeniden oluşturur — hemen veya planlı görev olarak.",
             "open": "{count} bekliyor",
             "empty": "Görev yok.",
             "notExecuted": "çalıştırılmadı",
@@ -257,9 +257,13 @@
                 "remove_part": "Ürün sayfasını kaldır",
                 "remove_all": "Tüm ürün sayfalarını kaldır",
                 "draft_all": "Tüm ürün sayfaları taslak olarak",
-                "sync_kit": "Paketi eşitle",
+                "sync_kit": "Mağaza kullanıcı arayüzünü güncelle",
                 "reconcile_payments": "Ödemeleri mutabık kıl"
-            }
+            },
+            "installUiAsk": "Mağaza kullanıcı arayüzü şimdi mi kurulsun, yoksa bir sonraki planlı çalışma için görev olarak mı planlansın?",
+            "installUiChannels": "Hangi satış kanalları için?",
+            "installUiLater": "Görev olarak planla",
+            "installUiNow": "Şimdi kur"
         },
         "channels": {
             "hugoshop": "HugoShop",

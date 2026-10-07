@@ -218,7 +218,7 @@
             "allNowHint": "Luo tehtävän ”Kaikki tuotteet” ja suorittaa sen heti.",
             "chooseChannels": "Mille myyntikanaville kaikki tuotteet julkaistaan?",
             "installUi": "Asenna kaupan käyttöliittymä",
-            "installUiHint": "Siirtää kaupan widgetit sisältävän paketin verkkosivustolle ja rakentaa sen uudelleen — kuten ajastettu ajo, mutta heti.",
+            "installUiHint": "Siirtää kaupan widgetit sisältävän paketin verkkosivustolle ja rakentaa sen uudelleen — heti tai ajoitettuna tehtävänä.",
             "open": "{count} avoinna",
             "empty": "Ei töitä.",
             "notExecuted": "suorittamatta",
@@ -257,9 +257,13 @@
                 "remove_part": "Poista tuotesivu",
                 "remove_all": "Poista kaikki tuotesivut",
                 "draft_all": "Kaikki tuotesivut luonnoksiksi",
-                "sync_kit": "Synkronoi paketti",
+                "sync_kit": "Päivitä kaupan käyttöliittymä",
                 "reconcile_payments": "Täsmäytä maksut"
-            }
+            },
+            "installUiAsk": "Asennetaanko kaupan käyttöliittymä heti vai ajoitetaanko se tehtäväksi seuraavaan suunniteltuun ajoon?",
+            "installUiChannels": "Mille myyntikanaville?",
+            "installUiLater": "Ajoita tehtäväksi",
+            "installUiNow": "Asenna heti"
         },
         "channels": {
             "hugoshop": "HugoShop",

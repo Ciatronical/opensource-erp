@@ -218,7 +218,7 @@
             "allNowHint": "Crea l'attività «Tutti i prodotti» e la esegue subito.",
             "chooseChannels": "Per quali canali di vendita pubblicare tutti i prodotti?",
             "installUi": "Installa interfaccia utente del negozio",
-            "installUiHint": "Trasferisce il pacchetto con i widget del negozio nel sito web e lo ricostruisce, come l’esecuzione pianificata, ma subito.",
+            "installUiHint": "Trasferisce il pacchetto con i widget del negozio nel sito web e lo ricostruisce — subito o come attività pianificata.",
             "open": "{count} in attesa",
             "empty": "Nessun incarico.",
             "notExecuted": "non eseguita",
@@ -257,9 +257,13 @@
                 "remove_part": "Rimuovi pagina prodotto",
                 "remove_all": "Rimuovi tutte le pagine prodotto",
                 "draft_all": "Tutte le pagine prodotto come bozza",
-                "sync_kit": "Sincronizza pacchetto",
+                "sync_kit": "Aggiorna l’interfaccia utente del negozio",
                 "reconcile_payments": "Riconcilia pagamenti"
-            }
+            },
+            "installUiAsk": "Installare subito l’interfaccia utente del negozio o pianificarla come attività per la prossima esecuzione programmata?",
+            "installUiChannels": "Per quali canali di vendita?",
+            "installUiLater": "Pianifica come attività",
+            "installUiNow": "Installa subito"
         },
         "channels": {
             "hugoshop": "HugoShop",

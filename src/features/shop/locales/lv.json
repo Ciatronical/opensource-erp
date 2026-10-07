@@ -218,7 +218,7 @@
             "allNowHint": "Izveido uzdevumu “Visi produkti” un uzreiz to izpilda.",
             "chooseChannels": "Kuriem pārdošanas kanāliem publicēt visus produktus?",
             "installUi": "Instalēt veikala lietotāja saskarni",
-            "installUiHint": "Pārnes pakotni ar veikala logrīkiem uz tīmekļa vietni un to pārbūvē — kā plānotā izpilde, tikai uzreiz.",
+            "installUiHint": "Pārnes pakotni ar veikala logrīkiem uz tīmekļa vietni un to pārbūvē — tūlīt vai kā plānotu uzdevumu.",
             "open": "{count} gaida",
             "empty": "Uzdevumu nav.",
             "notExecuted": "nav izpildīts",
@@ -257,9 +257,13 @@
                 "remove_part": "Noņemt produkta lapu",
                 "remove_all": "Noņemt visas produktu lapas",
                 "draft_all": "Visas produktu lapas kā melnraksts",
-                "sync_kit": "Sinhronizēt pakotni",
+                "sync_kit": "Atjaunināt veikala lietotāja saskarni",
                 "reconcile_payments": "Saskaņot maksājumus"
-            }
+            },
+            "installUiAsk": "Vai instalēt veikala lietotāja saskarni tūlīt vai ieplānot kā uzdevumu nākamajai plānotajai palaišanai?",
+            "installUiChannels": "Kuriem pārdošanas kanāliem?",
+            "installUiLater": "Ieplānot kā uzdevumu",
+            "installUiNow": "Instalēt tūlīt"
         },
         "channels": {
             "hugoshop": "HugoShop",

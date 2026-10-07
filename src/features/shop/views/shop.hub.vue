@@ -255,7 +255,7 @@
                             :loading="installiert"
                             :disabled="veroeffentlicht || sofort || laeuft"
                             :title="t('ShopView.publish.installUiHint')"
-                            @click="shopUiInstallieren"
+                            @click="installierenFragen"
                         >
                             {{ t('ShopView.publish.installUi') }}
                         </v-btn>
@@ -519,6 +519,50 @@
                         @click="kanalwahlBestaetigen"
                     >
                         {{ kanalwahlArt === 'sofort' ? t('ShopView.publish.allNow') : t('ShopView.publish.all') }}
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
+        <!-- „Shop-Benutzerschnittstelle installieren“: sofort oder als Aufgabe,
+             bei mehreren HugoShops zusätzlich für welche -->
+        <v-dialog v-model="installierenGefragt" max-width="480">
+            <v-card>
+                <v-card-title>{{ t('ShopView.publish.installUi') }}</v-card-title>
+                <v-card-text>
+                    <div class="text-body-2">{{ t('ShopView.publish.installUiAsk') }}</div>
+                    <template v-if="hugoshops.length > 1">
+                        <div class="text-body-2 mt-4 mb-2">{{ t('ShopView.publish.installUiChannels') }}</div>
+                        <v-checkbox
+                            v-for="kanal in hugoshops"
+                            :key="kanal.channel_id"
+                            v-model="installKanaele"
+                            :value="kanal.channel_id"
+                            :label="kanal.name"
+                            density="compact"
+                            hide-details
+                        />
+                    </template>
+                </v-card-text>
+                <v-card-actions>
+                    <v-btn variant="text" @click="installierenGefragt = false">{{ t('ShopView.publish.cancel') }}</v-btn>
+                    <v-spacer />
+                    <v-btn
+                        variant="tonal"
+                        prepend-icon="mdi-calendar-clock"
+                        :disabled="hugoshops.length > 1 && !installKanaele.length"
+                        @click="shopUiInstallieren(false)"
+                    >
+                        {{ t('ShopView.publish.installUiLater') }}
+                    </v-btn>
+                    <v-btn
+                        color="primary"
+                        variant="flat"
+                        prepend-icon="mdi-flash"
+                        :disabled="hugoshops.length > 1 && !installKanaele.length"
+                        @click="shopUiInstallieren(true)"
+                    >
+                        {{ t('ShopView.publish.installUiNow') }}
                     </v-btn>
                 </v-card-actions>
             </v-card>
@@ -891,18 +935,38 @@ async function ausfuehren(ids) {
     gestartet(antwort)
 }
 
+const installierenGefragt = ref(false)
+/** Gewählte HugoShops für die Installation — vorausgewählt sind alle */
+const installKanaele = ref([])
+
+/** Fragt, ob sofort installiert oder nur eine Aufgabe geplant werden soll */
+function installierenFragen() {
+    installKanaele.value = hugoshops.value.map((k) => k.channel_id)
+    installierenGefragt.value = true
+}
+
 /**
  * Installiert die Shop-Benutzerschnittstelle in der Webseite
  *
- * Das Backend legt einen Auftrag „Paket abgleichen“ an, der auch dann baut,
- * wenn das Paket schon aktuell war, und startet ihn sofort. Fehlende Mounts
- * oder params.shopui stehen danach als Hinweis in der Ausgabe des Laufs.
+ * Das Backend legt einen Auftrag „Shop-Benutzerschnittstelle aktualisieren“ (sync_kit) an, der auch dann baut,
+ * wenn das Paket schon aktuell war. Sofort: der Auftrag wird gleich
+ * ausgeführt; fehlende Mounts oder params.shopui stehen danach als Hinweis
+ * in der Ausgabe des Laufs. Später: der Auftrag bleibt offen für den Cron.
+ *
+ * @param {boolean} jetzt sofort ausführen oder nur planen
  */
-async function shopUiInstallieren() {
+async function shopUiInstallieren(jetzt) {
+    installierenGefragt.value = false
     installiert.value = true
     try {
-        const antwort = await shop.installShopUi()
+        const kanaele = hugoshops.value.length > 1 ? [...installKanaele.value] : []
+        const antwort = await shop.installShopUi(kanaele, jetzt)
         if (shop.error.value) {
+            return
+        }
+        if (!jetzt) {
+            toasts.success(t('ShopView.publish.queued'))
+            auftraege.value = await shop.fetchPublishJobs() || []
             return
         }
         // Je eingeschaltetem HugoShop ein Auftrag (dev/shop-mehrere-kanaele.md)

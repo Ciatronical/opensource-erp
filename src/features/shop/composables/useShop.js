@@ -145,7 +145,7 @@ export function useShop() {
      * tut. Kehrt sofort zurück wie runPublishJobs(); `job_id` ist der
      * Auftrag, der dafür läuft.
      */
-    const installShopUi = () => call('installShopUi')
+    const installShopUi = (channel_ids = [], start = true) => call('installShopUi', { channel_ids, start })
 
     /**
      * Stand der Veröffentlichung

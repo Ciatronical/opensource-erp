@@ -218,7 +218,7 @@
             "allNowHint": "Crée la tâche « Tous les produits » et l'exécute immédiatement.",
             "chooseChannels": "Pour quels canaux de vente tous les produits doivent-ils être publiés ?",
             "installUi": "Installer l’interface utilisateur de la boutique",
-            "installUiHint": "Transfère le paquet des widgets de la boutique vers le site web et le reconstruit, comme l’exécution planifiée, mais immédiatement.",
+            "installUiHint": "Transfère le paquet des widgets de la boutique vers le site web et le reconstruit — maintenant ou en tâche planifiée.",
             "open": "{count} en attente",
             "empty": "Aucune tâche.",
             "notExecuted": "non exécutée",
@@ -257,9 +257,13 @@
                 "remove_part": "Supprimer la page produit",
                 "remove_all": "Supprimer toutes les pages produit",
                 "draft_all": "Toutes les pages produit en brouillon",
-                "sync_kit": "Synchroniser le paquet",
+                "sync_kit": "Mettre à jour l’interface utilisateur de la boutique",
                 "reconcile_payments": "Rapprocher les paiements"
-            }
+            },
+            "installUiAsk": "Installer l’interface utilisateur de la boutique maintenant ou la planifier comme tâche pour la prochaine exécution prévue ?",
+            "installUiChannels": "Pour quels canaux de vente ?",
+            "installUiLater": "Planifier comme tâche",
+            "installUiNow": "Installer maintenant"
         },
         "channels": {
             "hugoshop": "HugoShop",

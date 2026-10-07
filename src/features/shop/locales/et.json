@@ -218,7 +218,7 @@
             "allNowHint": "Loob töö „Kõik tooted“ ja käivitab selle kohe.",
             "chooseChannels": "Milliste müügikanalite jaoks tuleb kõik tooted avaldada?",
             "installUi": "Paigalda poe kasutajaliides",
-            "installUiHint": "Kannab poe vidinatega paketi veebilehele ja ehitab selle uuesti — nagu ajastatud käivitus, kuid kohe.",
+            "installUiHint": "Kannab poe vidinate paketi veebilehele ja ehitab selle uuesti — kohe või plaanitud tööna.",
             "open": "{count} ootel",
             "empty": "Ülesandeid pole.",
             "notExecuted": "käivitamata",
@@ -257,9 +257,13 @@
                 "remove_part": "Eemalda tootelehekülg",
                 "remove_all": "Eemalda kõik tootelehed",
                 "draft_all": "Kõik tootelehed mustandiks",
-                "sync_kit": "Sünkrooni pakett",
+                "sync_kit": "Uuenda poe kasutajaliidest",
                 "reconcile_payments": "Võrdle makseid"
-            }
+            },
+            "installUiAsk": "Kas poe kasutajaliides paigaldada kohe või planeerida tööna järgmisele plaanitud käivitusele?",
+            "installUiChannels": "Milliste müügikanalite jaoks?",
+            "installUiLater": "Planeeri tööna",
+            "installUiNow": "Paigalda kohe"
         },
         "channels": {
             "hugoshop": "HugoShop",

@@ -218,7 +218,7 @@
             "allNowHint": "Sukuria užduotį „Visi produktai“ ir iškart ją įvykdo.",
             "chooseChannels": "Kuriems pardavimo kanalams paskelbti visus produktus?",
             "installUi": "Įdiegti parduotuvės naudotojo sąsają",
-            "installUiHint": "Perkelia paketą su parduotuvės valdikliais į svetainę ir ją perkuria — kaip suplanuotas vykdymas, tik iš karto.",
+            "installUiHint": "Perkelia paketą su parduotuvės valdikliais į svetainę ir ją perkuria — dabar arba kaip suplanuotą užduotį.",
             "open": "{count} laukia",
             "empty": "Užduočių nėra.",
             "notExecuted": "neįvykdyta",
@@ -257,9 +257,13 @@
                 "remove_part": "Šalinti produkto puslapį",
                 "remove_all": "Pašalinti visus prekių puslapius",
                 "draft_all": "Visi produktų puslapiai kaip juodraščiai",
-                "sync_kit": "Sinchronizuoti paketą",
+                "sync_kit": "Atnaujinti parduotuvės naudotojo sąsają",
                 "reconcile_payments": "Suderinti mokėjimus"
-            }
+            },
+            "installUiAsk": "Ar įdiegti parduotuvės naudotojo sąsają dabar, ar suplanuoti kaip užduotį kitam planiniam vykdymui?",
+            "installUiChannels": "Kuriems pardavimo kanalams?",
+            "installUiLater": "Suplanuoti kaip užduotį",
+            "installUiNow": "Įdiegti dabar"
         },
         "channels": {
             "hugoshop": "HugoShop",

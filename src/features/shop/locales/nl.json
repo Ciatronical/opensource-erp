@@ -218,7 +218,7 @@
             "allNowHint": "Maakt de taak ‘Alle producten’ aan en voert die meteen uit.",
             "chooseChannels": "Voor welke verkoopkanalen moeten alle producten worden gepubliceerd?",
             "installUi": "Gebruikersinterface van de shop installeren",
-            "installUiHint": "Zet het pakket met de shopwidgets op de website en bouwt deze opnieuw — zoals de geplande uitvoering, maar direct.",
+            "installUiHint": "Zet het pakket met de winkelwidgets op de website en bouwt deze opnieuw — nu of als geplande taak.",
             "open": "{count} open",
             "empty": "Geen opdrachten.",
             "notExecuted": "niet uitgevoerd",
@@ -257,9 +257,13 @@
                 "remove_part": "Productpagina verwijderen",
                 "remove_all": "Alle productpagina's verwijderen",
                 "draft_all": "Alle productpagina’s als concept",
-                "sync_kit": "Pakket synchroniseren",
+                "sync_kit": "Gebruikersinterface van de winkel bijwerken",
                 "reconcile_payments": "Betalingen afstemmen"
-            }
+            },
+            "installUiAsk": "De gebruikersinterface van de winkel nu installeren of als taak plannen voor de volgende geplande run?",
+            "installUiChannels": "Voor welke verkoopkanalen?",
+            "installUiLater": "Als taak plannen",
+            "installUiNow": "Nu installeren"
         },
         "channels": {
             "hugoshop": "HugoShop",

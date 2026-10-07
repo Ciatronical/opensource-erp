@@ -218,7 +218,7 @@
             "allNowHint": "Legt den Auftrag „Alle Produkte“ an und führt ihn gleich aus.",
             "chooseChannels": "Für welche Verkaufskanäle sollen alle Produkte veröffentlicht werden?",
             "installUi": "Shop-Benutzerschnittstelle installieren",
-            "installUiHint": "Überträgt das Paket mit den Shop-Widgets in die Webseite und baut sie neu — wie der Läufer im Cron, aber sofort.",
+            "installUiHint": "Überträgt das Paket mit den Shop-Widgets in die Webseite und baut sie neu — sofort oder als geplante Aufgabe.",
             "open": "{count} offen",
             "empty": "Keine Aufträge.",
             "notExecuted": "nicht ausgeführt",
@@ -257,9 +257,13 @@
                 "remove_part": "Produktseite entfernen",
                 "remove_all": "Alle Produktseiten entfernen",
                 "draft_all": "Alle Produktseiten als Entwurf",
-                "sync_kit": "Paket abgleichen",
+                "sync_kit": "Shop-Benutzerschnittstelle aktualisieren",
                 "reconcile_payments": "Zahlungen abgleichen"
-            }
+            },
+            "installUiAsk": "Soll die Shop-Benutzerschnittstelle sofort installiert oder als Aufgabe für den nächsten geplanten Lauf vorgemerkt werden?",
+            "installUiChannels": "Für welche Verkaufskanäle?",
+            "installUiLater": "Als Aufgabe planen",
+            "installUiNow": "Sofort installieren"
         },
         "channels": {
             "hugoshop": "HugoShop",
