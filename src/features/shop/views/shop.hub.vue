@@ -401,8 +401,9 @@
                             <td style="width: 1%">
                                 <v-icon
                                     size="small"
-                                    :color="istOffen(auftrag) ? 'grey' : (fehlgeschlagen(auftrag) ? 'error' : 'success')"
-                                    :icon="istOffen(auftrag) ? 'mdi-clock-outline' : (fehlgeschlagen(auftrag) ? 'mdi-alert-circle-outline' : 'mdi-check')"
+                                    :color="symbol(auftrag).farbe"
+                                    :icon="symbol(auftrag).icon"
+                                    :title="ausgesetzt(auftrag) ? t('ShopView.publish.suspended') : undefined"
                                 />
                             </td>
                             <td class="text-caption text-no-wrap">{{ zeitpunkt(auftrag.itime) }}</td>
@@ -431,6 +432,10 @@
                                     :title="t('ShopView.publish.outputHint')"
                                     @click.prevent="ausgabeZeigen(auftrag)"
                                 >{{ auftrag.result }}</a>
+                            </td>
+                            <!-- Ausgesetzt: offen, aber dem Kanal fehlt etwas zum Veröffentlichen -->
+                            <td v-else-if="ausgesetzt(auftrag)" class="text-caption text-warning">
+                                {{ t('ShopView.publish.suspended') }}: {{ auftrag.suspended.join('; ') }}
                             </td>
                             <td v-else class="text-caption">{{ auftrag.result || t('ShopView.publish.notExecuted') }}</td>
                         </tr>
@@ -615,6 +620,21 @@ const loeschenGefragt = ref(false)
 
 /** Wahrheitswerte kommen je nach Treiber als true oder 't' */
 const istOffen = (auftrag) => auftrag.open === true || auftrag.open === 't'
+
+/**
+ * Ausgesetzt: offen, aber der Läufer überspringt ihn, bis die Einrichtung
+ * des Kanals stimmt (suspended nennt die Gründe, getShopPublishJobs)
+ */
+const ausgesetzt = (auftrag) => istOffen(auftrag) && (auftrag.suspended?.length ?? 0) > 0
+
+/** Symbol der Zeile: ausgesetzt, offen, fehlgeschlagen, erledigt */
+function symbol(auftrag) {
+    if (ausgesetzt(auftrag)) return { icon: 'mdi-alert', farbe: 'warning' }
+    if (istOffen(auftrag)) return { icon: 'mdi-clock-outline', farbe: 'grey' }
+    return fehlgeschlagen(auftrag)
+        ? { icon: 'mdi-alert-circle-outline', farbe: 'error' }
+        : { icon: 'mdi-check', farbe: 'success' }
+}
 
 /**
  * Fehlerzeile in einer gespeicherten Ausgabe

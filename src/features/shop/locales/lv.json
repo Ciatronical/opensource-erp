@@ -220,6 +220,7 @@
             "open": "{count} gaida",
             "empty": "Uzdevumu nav.",
             "notExecuted": "nav izpildīts",
+            "suspended": "Apturēts",
             "queued": "Uzdevums izveidots.",
             "already": "Uzdevums jau gaida.",
             "run": "Izpildīt tagad",

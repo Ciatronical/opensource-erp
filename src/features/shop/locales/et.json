@@ -220,6 +220,7 @@
             "open": "{count} ootel",
             "empty": "Ülesandeid pole.",
             "notExecuted": "käivitamata",
+            "suspended": "Peatatud",
             "queued": "Ülesanne loodud.",
             "already": "Ülesanne on juba ootel.",
             "run": "Käivita kohe",

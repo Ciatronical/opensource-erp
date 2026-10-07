@@ -220,6 +220,7 @@
             "open": "{count} en attente",
             "empty": "Aucune tâche.",
             "notExecuted": "non exécutée",
+            "suspended": "Suspendu",
             "queued": "Tâche créée.",
             "already": "La tâche est déjà en attente.",
             "run": "Exécuter maintenant",

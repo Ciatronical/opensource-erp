@@ -220,6 +220,7 @@
             "open": "{count} laukia",
             "empty": "Užduočių nėra.",
             "notExecuted": "neįvykdyta",
+            "suspended": "Sustabdyta",
             "queued": "Užduotis sukurta.",
             "already": "Užduotis jau laukia.",
             "run": "Vykdyti dabar",

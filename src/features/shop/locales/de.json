@@ -220,6 +220,7 @@
             "open": "{count} offen",
             "empty": "Keine Aufträge.",
             "notExecuted": "nicht ausgeführt",
+            "suspended": "Ausgesetzt",
             "queued": "Auftrag angelegt.",
             "already": "Auftrag ist bereits offen.",
             "run": "Jetzt ausführen",

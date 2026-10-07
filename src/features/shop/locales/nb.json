@@ -220,6 +220,7 @@
             "open": "{count} åpne",
             "empty": "Ingen oppdrag.",
             "notExecuted": "ikke kjørt",
+            "suspended": "Satt på vent",
             "queued": "Oppdrag opprettet.",
             "already": "Oppdraget er allerede åpent.",
             "run": "Kjør nå",

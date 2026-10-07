@@ -220,6 +220,7 @@
             "open": "{count} in attesa",
             "empty": "Nessun incarico.",
             "notExecuted": "non eseguita",
+            "suspended": "Sospeso",
             "queued": "Incarico creato.",
             "already": "L'incarico è già in attesa.",
             "run": "Esegui ora",

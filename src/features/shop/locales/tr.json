@@ -220,6 +220,7 @@
             "open": "{count} bekliyor",
             "empty": "Görev yok.",
             "notExecuted": "çalıştırılmadı",
+            "suspended": "Askıya alındı",
             "queued": "Görev oluşturuldu.",
             "already": "Görev zaten bekliyor.",
             "run": "Şimdi çalıştır",

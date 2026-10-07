@@ -220,6 +220,7 @@
             "open": "{count} pending",
             "empty": "No jobs.",
             "notExecuted": "not run",
+            "suspended": "Suspended",
             "queued": "Job created.",
             "already": "Job is already pending.",
             "run": "Run now",

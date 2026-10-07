@@ -220,6 +220,7 @@
             "open": "{count} în așteptare",
             "empty": "Nicio sarcină.",
             "notExecuted": "neexecutată",
+            "suspended": "Suspendat",
             "queued": "Sarcină creată.",
             "already": "Sarcina este deja în așteptare.",
             "run": "Execută acum",

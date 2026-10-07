@@ -273,6 +273,59 @@ function shopStagingDir($db, int $kanal): string {
     return realpath($verzeichnis) ?: $verzeichnis;
 }
 
+/**
+ * Was das Veröffentlichen in einem HugoShop verhindert
+ *
+ * Solange etwas davon fehlt, bleiben seine Aufträge offen und gelten als
+ * „ausgesetzt“: der Läufer überspringt sie, statt sie scheitern zu lassen,
+ * und nimmt sie mit, sobald die Einrichtung stimmt.
+ *
+ *   - Shop-Schlüssel fehlt (ohne ihn nimmt der Shop keine Bestellung an)
+ *   - HugoCMS: Adresse ungültig oder Schlüssel fehlt
+ *   - lokal: Webseiten-Verzeichnis nicht erreichbar oder ohne Hugo-Konfiguration
+ *
+ * Ein fehlendes Programm zum Bauen setzt nicht aus — die Seiten entstehen,
+ * gebaut wird dann außerhalb; die Übersicht weist darauf hin.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param int $kanal HugoShop
+ * @return array Gründe als Text, leer = nichts verhindert das Veröffentlichen
+ */
+function shopChannelPublishBlockers($db, int $kanal): array {
+    $gruende = [];
+    if ('' === shopChannelValue($db, $kanal, 'public_key')) {
+        $gruende[] = 'Shop-Schlüssel fehlt';
+    }
+
+    if ('hugocms' === shopPublishMode($db, $kanal)) {
+        $adresse = shopHugoCmsUrl(shopChannelValue($db, $kanal, 'hugocms_url'));
+        if ('' !== $adresse['fehler']) {
+            $gruende[] = $adresse['fehler'];
+        }
+        if ('' === shopChannelValue($db, $kanal, 'hugocms_key')) {
+            $gruende[] = 'HugoCMS-Schlüssel fehlt';
+        }
+        return $gruende;
+    }
+
+    try {
+        $verzeichnis = shopSiteDir($db, $kanal);
+    } catch (Throwable $e) {
+        $gruende[] = $e->getMessage();
+        return $gruende;
+    }
+    // Hugo findet seine Konfiguration als Datei hugo.* bzw. config.* oder als
+    // Verzeichnis config/ — ohne sie scheitert jeder Bau
+    $konfiguration = array_filter(
+        ['hugo.toml', 'hugo.yaml', 'hugo.yml', 'hugo.json', 'config.toml', 'config.yaml', 'config.yml', 'config.json'],
+        fn($datei) => is_file($verzeichnis.'/'.$datei)
+    );
+    if (!$konfiguration && !is_dir($verzeichnis.'/config')) {
+        $gruende[] = 'Keine Hugo-Konfiguration im Webseiten-Verzeichnis '.$verzeichnis;
+    }
+    return $gruende;
+}
+
 /** Zielverzeichnis der Inhaltsdateien eines HugoShops */
 function shopContentDir($db, int $kanal, bool $anlegen = false): string {
     // Vorgabe wie im Schema — fehlt die Zeile noch, landeten die Seiten sonst
@@ -1226,10 +1279,29 @@ function shopRunJobs($db, ?callable $melden = null, int $limit = 500, ?array $nu
         $sagen($zeile);
     };
 
+    // Je HugoShop einmal: verhindert etwas das Veröffentlichen, bleiben seine
+    // Aufträge offen (ausgesetzt) und laufen beim nächsten Lauf nach der
+    // Einrichtung
+    $sperren = [];
+
     foreach (shopOpenJobs($db, $limit, $nurIds) as $auftrag) {
         $id = (int)$auftrag['id'];
         if (null !== $gruppe) {
             $vorsilbe = (string)$gruppe($auftrag);
+        }
+        if ('hugoshop' === $auftrag['channel']) {
+            $kanalId = (int)$auftrag['channel_id'];
+            if (!isset($sperren[$kanalId])) {
+                $sperren[$kanalId] = shopChannelPublishBlockers($db, $kanalId);
+                if ($sperren[$kanalId]) {
+                    $sagen('Ausgesetzt — die Aufträge bleiben offen, bis die Einrichtung stimmt: '
+                        .implode('; ', $sperren[$kanalId]));
+                }
+            }
+            if ($sperren[$kanalId]) {
+                $bilanz['ausgesetzt'] = ($bilanz['ausgesetzt'] ?? 0) + 1;
+                continue;
+            }
         }
         $bilanz['jobs']++;
         $bilanz['ids'][] = $id;
@@ -1804,6 +1876,11 @@ function shopPublishRun($db, ?callable $melden = null, int $limit = 500, ?array 
             // liefen. Die Pflege der übrigen (Paket, Übersicht, täglicher
             // Abgleich mit HugoCMS) bleibt dem Cron.
             if ($nurBetroffene && null === $zahlen) {
+                continue;
+            }
+            // Ausgesetzter HugoShop (shopChannelPublishBlockers): seine Webseite
+            // bleibt unberührt — sonst scheiterte jeder Lauf des Cron an ihr
+            if (null === $zahlen && shopChannelPublishBlockers($db, $kanal)) {
                 continue;
             }
             $gruppeSetzen($kanal, (string)$eintrag['name']);

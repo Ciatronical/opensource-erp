@@ -220,6 +220,7 @@
             "open": "{count} pendientes",
             "empty": "Sin trabajos.",
             "notExecuted": "sin ejecutar",
+            "suspended": "En suspenso",
             "queued": "Trabajo creado.",
             "already": "El trabajo ya está pendiente.",
             "run": "Ejecutar ahora",

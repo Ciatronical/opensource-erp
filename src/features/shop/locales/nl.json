@@ -220,6 +220,7 @@
             "open": "{count} open",
             "empty": "Geen opdrachten.",
             "notExecuted": "niet uitgevoerd",
+            "suspended": "Opgeschort",
             "queued": "Opdracht aangemaakt.",
             "already": "Opdracht staat al open.",
             "run": "Nu uitvoeren",

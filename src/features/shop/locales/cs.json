@@ -220,6 +220,7 @@
             "open": "{count} otevřených",
             "empty": "Žádné úlohy.",
             "notExecuted": "neprovedeno",
+            "suspended": "Pozastaveno",
             "queued": "Úloha založena.",
             "already": "Úloha už čeká.",
             "run": "Spustit nyní",

@@ -220,6 +220,7 @@
             "open": "{count} åbne",
             "empty": "Ingen opgaver.",
             "notExecuted": "ikke kørt",
+            "suspended": "Sat i bero",
             "queued": "Opgave oprettet.",
             "already": "Opgaven er allerede åben.",
             "run": "Kør nu",

@@ -220,6 +220,7 @@
             "open": "{count} 个待处理",
             "empty": "没有任务。",
             "notExecuted": "未执行",
+            "suspended": "已暂停",
             "queued": "任务已创建。",
             "already": "任务已在队列中。",
             "run": "立即执行",

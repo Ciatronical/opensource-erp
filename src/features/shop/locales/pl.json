@@ -220,6 +220,7 @@
             "open": "{count} otwartych",
             "empty": "Brak zadań.",
             "notExecuted": "niewykonane",
+            "suspended": "Wstrzymane",
             "queued": "Zadanie utworzone.",
             "already": "Zadanie już czeka.",
             "run": "Uruchom teraz",

@@ -220,6 +220,7 @@
             "open": "{count} pendentes",
             "empty": "Sem tarefas.",
             "notExecuted": "não executada",
+            "suspended": "Suspenso",
             "queued": "Tarefa criada.",
             "already": "A tarefa já está pendente.",
             "run": "Executar agora",

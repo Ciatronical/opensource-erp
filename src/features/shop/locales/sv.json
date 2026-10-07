@@ -220,6 +220,7 @@
             "open": "{count} öppna",
             "empty": "Inga uppdrag.",
             "notExecuted": "ej körd",
+            "suspended": "Vilande",
             "queued": "Uppdrag skapat.",
             "already": "Uppdraget är redan öppet.",
             "run": "Kör nu",

@@ -220,6 +220,7 @@
             "open": "{count} avoinna",
             "empty": "Ei töitä.",
             "notExecuted": "suorittamatta",
+            "suspended": "Keskeytetty",
             "queued": "Työ luotu.",
             "already": "Työ on jo avoinna.",
             "run": "Suorita nyt",

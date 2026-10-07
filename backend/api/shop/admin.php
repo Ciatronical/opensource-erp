@@ -2441,6 +2441,10 @@ function cleanupShopPublishJobs($data) {
  *
  * Nur Auftragsarten der Kanalmodule (shopChannelJobPairs), mit Kanal.
  *
+ * Offene Aufträge eines HugoShops, dem etwas zum Veröffentlichen fehlt,
+ * tragen in suspended die Gründe (shopChannelPublishBlockers) — der Läufer
+ * setzt sie aus, bis die Einrichtung stimmt.
+ *
  * @return void
  * @testdata {}
  */
@@ -2450,7 +2454,7 @@ function getShopPublishJobs($data) {
 
     // Die Sortierung der Teilabfragen gilt nur für deren Auswahl — die
     // Reihenfolge der Vereinigung muss aussen stehen.
-    resultInfo(true, '', $db->getAll(
+    $auftraege = $db->getAll(
         "WITH eigene AS (
              SELECT b.id, b.itime, b.function, b.partnumber, b.param, b.result, b.run_id,
                     c.type AS channel, b.channel_id, c.name AS channel_name,
@@ -2476,7 +2480,22 @@ function getShopPublishJobs($data) {
         [
             ':paare' => shopChannelJobPairs(),
         ]
-    ));
+    ) ?: [];
+
+    // Ausgesetzt: je HugoShop mit offenen Aufträgen einmal prüfen
+    $sperren = [];
+    foreach ($auftraege as &$auftrag) {
+        $offen = in_array($auftrag['open'], [true, 't', 1, '1'], true);
+        $auftrag['suspended'] = [];
+        if ($offen && 'hugoshop' === $auftrag['channel']) {
+            $kanal = (int)$auftrag['channel_id'];
+            $sperren[$kanal] ??= shopChannelPublishBlockers($db, $kanal);
+            $auftrag['suspended'] = $sperren[$kanal];
+        }
+    }
+    unset($auftrag);
+
+    resultInfo(true, '', $auftraege);
 }
 
 /**
