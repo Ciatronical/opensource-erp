@@ -397,7 +397,8 @@
                 "onlyInvoice": "E-arveid saab luua ainult väljaminevatest arvetest.",
                 "saveFirst": "Palun salvesta arve enne e-arve genereerimist."
             },
-            "kmStandRequired": "Läbisõit on kohustuslik — palun sisestage see enne arve koostamist."
+            "kmStandRequired": "Läbisõit on kohustuslik — palun sisestage see enne arve koostamist.",
+            "deliveryAddressOwn": "Selle dokumendi tarneaadress"
         },
         "workflow": {
             "created": "Dokument erfolgreich erstellt",

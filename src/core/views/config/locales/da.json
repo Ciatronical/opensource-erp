@@ -931,7 +931,14 @@
         "ebayMoved": "eBay er nu en salgskanal i shop-udvidelsen. Indstillingerne findes under fanen Shop under „eBay“, annoncerne i varens shopkort.",
         "ebayNeedsShop": "eBay er slået til, men shop-udvidelsen er ikke. Uden den oprettes ingen annoncer og hentes ingen ordrer — aktivér venligst shop-udvidelsen.",
         "shopStockBinId": "Lagerplads til salg",
-        "shopStockBinId_help": "Varerne bogføres ud fra denne lagerplads, så snart der oprettes en faktura fra HugoShop eller eBay. Beholdningen gælder for alle salgskanaler. Lad stå tomt, hvis der bogføres ud manuelt."
+        "shopStockBinId_help": "Varerne bogføres ud fra denne lagerplads, så snart der oprettes en faktura fra HugoShop eller eBay. Beholdningen gælder for alle salgskanaler. Lad stå tomt, hvis der bogføres ud manuelt.",
+        "shopOrders": "Ordrer",
+        "shopDeliveryStatusShow": "Vis leveringsstatus på fakturasiden i butikken",
+        "shopDeliveryStatusShow_help": "Viser kunden den aktuelle leveringsstatus på ordrens fakturaside. Gælder kun HugoShop-ordrer.",
+        "shopDeliveryStatusMail": "Giv kunder besked pr. e-mail, når leveringsstatus ændres",
+        "shopDeliveryStatusMail_help": "Sender kunden en e-mail, så snart leveringsstatus ændres — straks ved manuel ændring, ved næste kørsel ved en DHL-label. „Åben“ meldes ikke. Gælder kun HugoShop-ordrer.",
+        "shopInvoicePage": "Sti til fakturasiden",
+        "shopInvoicePage_help": "Den side på webstedet, der har fakturasiden (<shop-invoice>), f.eks. /rechnung/. E-mailen om leveringsstatus linker dertil, så også gæster uden konto kan se status. Tom = /rechnung/."
     },
     "add": "Tilfoej",
     "add_fields": {

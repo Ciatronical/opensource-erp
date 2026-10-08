@@ -1,6 +1,9 @@
 <!-- src/features/shop/views/shop.orders.vue -->
 <!--
-    Bestellungen aus dem Shop, mit ihrem Zahlungsstand.
+    Bestellungen aus den Verkaufskanälen (HugoShop und eBay), mit Zahlungsstand,
+    Bestellstatus und Lieferstatus (dev/shop-bestellstatus.md). Beide Status
+    leitet die Datenbank ab (shop_order_state); ein Klick auf den Chip setzt
+    ihn von Hand oder gibt ihn an die Automatik zurück.
 
     Der zweite Reiter zeigt die schwebenden PayPal-Zahlungen. Solange niemand
     hinsieht, bleibt eine schwebende Zahlung offen stehen — das ist der Ort,
@@ -52,6 +55,15 @@
                         />
                     </v-col>
                     <v-col cols="auto">
+                        <v-checkbox
+                            v-model="nurOffeneLieferung"
+                            :label="t('ShopView.orders.onlyOpenDelivery')"
+                            density="compact"
+                            hide-details
+                            @update:model-value="bestellungenLaden"
+                        />
+                    </v-col>
+                    <v-col cols="auto">
                         <v-btn variant="text" size="small" :loading="shop.loading.value" @click="bestellungenLaden">
                             <v-icon start>mdi-refresh</v-icon>
                             {{ t('ShopView.common.reload') }}
@@ -81,10 +93,26 @@
                     <template #item.amount="{ item }">
                         {{ betrag(item.amount) }} {{ item.currency }}
                     </template>
+                    <template #item.channel_name="{ item }">
+                        <span class="text-no-wrap">{{ item.channel_name }}</span>
+                    </template>
                     <template #item.payment_status="{ item }">
-                        <v-chip :color="zahlungFarbe(item.payment_status)" size="small" variant="tonal">
+                        <v-chip v-if="item.ebay_order_id" color="success" size="small" variant="tonal">
+                            {{ t('ShopView.orders.paidViaEbay') }}
+                        </v-chip>
+                        <v-chip v-else :color="zahlungFarbe(item)" size="small" variant="tonal">
                             {{ zahlungText(item) }}
                         </v-chip>
+                    </template>
+                    <!-- Bestell- und Lieferstatus: Klick öffnet die Auswahl; das Chip
+                         hält den Klick an, damit die Zeile nicht die Rechnung öffnet -->
+                    <template v-for="art in statusArten" :key="art.kind" #[art.slot]="{ item }">
+                        <ShopOrderStatusChip
+                            :kind="art.kind"
+                            :item="item"
+                            :loading="speichert === `${item.ar_id}:${art.kind}`"
+                            @set="status => statusSetzen(item, art.kind, status)"
+                        />
                     </template>
                     <template #item.aktionen="{ item }">
                         <v-btn
@@ -167,6 +195,8 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
 import { useShop } from '@/features/shop/composables/useShop.js'
+import * as toasts from '@/core/utils/toasts.js'
+import ShopOrderStatusChip from '@/features/shop/components/shop-order-status.chip.vue'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -174,6 +204,9 @@ const shop = useShop()
 
 const reiter = ref('orders')
 const nurOffene = ref(false)
+const nurOffeneLieferung = ref(false)
+/** Welcher Chip gerade speichert: "<ar_id>:<kind>" */
+const speichert = ref('')
 const bestellungen = ref([])
 const schwebende = ref([])
 const abgleichErgebnis = ref([])
@@ -185,9 +218,18 @@ const spalten = computed(() => [
     { title: t('ShopView.orders.customer'), key: 'customer' },
     { title: t('ShopView.orders.positions'), key: 'positions', align: 'end' },
     { title: t('ShopView.orders.amount'), key: 'amount', align: 'end' },
+    { title: t('ShopView.orders.channel'), key: 'channel_name' },
     { title: t('ShopView.orders.payment'), key: 'payment_status' },
+    { title: t('ShopView.orders.orderStatus'), key: 'order_status' },
+    { title: t('ShopView.orders.deliveryStatus'), key: 'delivery_status' },
     { title: '', key: 'aktionen', sortable: false, align: 'end' },
 ])
+
+/** Die beiden Status-Spalten; Werte und Farben in shopOrderStatus.js */
+const statusArten = [
+    { kind: 'order', slot: 'item.order_status' },
+    { kind: 'delivery', slot: 'item.delivery_status' },
+]
 
 const spaltenSchwebend = computed(() => [
     { title: t('ShopView.orders.invnumber'), key: 'invnumber' },
@@ -216,22 +258,27 @@ function betrag(wert) {
     })
 }
 
-function zahlungFarbe(status) {
-    if (status === 'COMPLETED') return 'success'
-    if (status === 'PENDING') return 'warning'
-    if (status) return 'error'
-    return 'default'
+/**
+ * Zahlungsstand einer Bestellung
+ *
+ * Bezahlt gilt wie für Filter und Bestellstatus (is_paid aus
+ * shop_order_state): PayPal COMPLETED, gebuchte Zahlungen, die den Betrag
+ * decken — etwa eine Überweisung —, oder eBay. Erst wenn das nicht zutrifft,
+ * zählt, was PayPal sonst gemeldet hat.
+ */
+function zahlungStand(zeile) {
+    if (istWahr(zeile.is_paid)) return 'paid'
+    if (zeile.payment_status === 'PENDING') return 'pending'
+    if (zeile.payment_status && zeile.payment_status !== 'COMPLETED') return 'failed'
+    return 'open'
 }
 
-/**
- * Zeilen aus der Zeit vor der Zahlungsstatus-Spalte haben keinen Status; für
- * sie gilt wie früher die Payer-Id.
- */
+function zahlungFarbe(zeile) {
+    return { paid: 'success', pending: 'warning', failed: 'error' }[zahlungStand(zeile)] || 'default'
+}
+
 function zahlungText(zeile) {
-    if (zeile.payment_status === 'COMPLETED') return t('ShopView.payments.paid')
-    if (zeile.payment_status === 'PENDING') return t('ShopView.payments.pending')
-    if (zeile.payment_status) return t('ShopView.payments.failed')
-    return zeile.paypal ? t('ShopView.payments.paid') : t('ShopView.payments.open')
+    return t(`ShopView.payments.${zahlungStand(zeile)}`)
 }
 
 function rechnungOeffnen(zeile) {
@@ -241,7 +288,39 @@ function rechnungOeffnen(zeile) {
 }
 
 async function bestellungenLaden() {
-    bestellungen.value = (await shop.fetchOrders({ open: nurOffene.value }))?.results ?? []
+    bestellungen.value = (await shop.fetchOrders({
+        open: nurOffene.value,
+        open_delivery: nurOffeneLieferung.value,
+    }))?.results ?? []
+}
+
+/**
+ * Setzt einen Status von Hand ('' = zurück an die Automatik)
+ *
+ * Die Antwort bringt den neuen Stand beider Status — der Bestellstatus hängt
+ * vom Lieferstatus ab — und ob eine Mail an den Kunden ging.
+ */
+async function statusSetzen(zeile, kind, status) {
+    speichert.value = `${zeile.ar_id}:${kind}`
+    try {
+        const stand = await shop.setOrderStatus(zeile.ar_id, kind, status)
+        if (shop.error.value || !stand) {
+            return
+        }
+        Object.assign(zeile, {
+            order_status: stand.order_status, order_auto: stand.order_auto, order_manual: stand.order_manual,
+            delivery_status: stand.delivery_status, delivery_auto: stand.delivery_auto, delivery_manual: stand.delivery_manual,
+        })
+        if (stand.mail === 'sent') {
+            toasts.success(t('ShopView.orders.mailSent'))
+        } else if (stand.mail === 'failed') {
+            toasts.warning(t('ShopView.orders.mailFailed'))
+        } else {
+            toasts.success(t('ShopView.orders.statusSaved'))
+        }
+    } finally {
+        speichert.value = ''
+    }
 }
 
 async function schwebendeLaden() {

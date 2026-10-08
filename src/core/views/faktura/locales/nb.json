@@ -397,7 +397,8 @@
                 "onlyInvoice": "E-fakturaer kan bare genereres fra utgående fakturaer.",
                 "saveFirst": "Lagre fakturaen før du genererer en e-faktura."
             },
-            "kmStandRequired": "Kilometerstand er påkrevd — skriv inn før fakturering."
+            "kmStandRequired": "Kilometerstand er påkrevd — skriv inn før fakturering.",
+            "deliveryAddressOwn": "Leveringsadresse for dette bilaget"
         },
         "workflow": {
             "created": "Dokument gjennomfoert erstellt",

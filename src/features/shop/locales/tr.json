@@ -40,7 +40,7 @@
         },
         "orders": {
             "title": "Siparişler",
-            "subtitle": "Mağaza üzerinden ne sipariş edildi",
+            "subtitle": "Satış kanalları üzerinden sipariş edilenler",
             "invnumber": "Fatura",
             "date": "Tarih",
             "customer": "Müşteri",
@@ -50,7 +50,18 @@
             "guest": "Misafir",
             "empty": "Sipariş yok",
             "onlyUnpaid": "Yalnızca ödenmemiş",
-            "openInvoice": "Faturayı aç"
+            "openInvoice": "Faturayı aç",
+            "channel": "Satış kanalı",
+            "orderStatus": "Sipariş durumu",
+            "deliveryStatus": "Teslimat durumu",
+            "onlyOpenDelivery": "Yalnızca açık teslimatlar",
+            "paidViaEbay": "eBay üzerinden ödendi",
+            "statusAuto": "Otomatik ({status})",
+            "statusManual": "Elle ayarlandı — durumu değiştirmek için tıklayın",
+            "statusAutomatic": "Otomatik belirlendi — durumu değiştirmek için tıklayın",
+            "statusSaved": "Durum kaydedildi.",
+            "mailSent": "Durum kaydedildi, müşteri e-postayla bilgilendirildi.",
+            "mailFailed": "Durum kaydedildi, ancak müşteriye e-posta gönderilemedi. Bir sonraki çalışma yeniden deneyecek."
         },
         "payments": {
             "title": "Bekleyen ödemeler",
@@ -428,7 +439,28 @@
             "CHANNEL_NOT_DELETABLE": "Yalnızca açık görevi olmayan kapalı bir kanal silinebilir.",
             "SHIPPING_UNFIT": "Yayımlanmayacak",
             "SHIPPING_PART_NOT_OFFERED": "Kargo ürünleri sunulmaz",
-            "NO_FAILED_JOBS": "Seçilen görevlerin hiçbiri başarısız olmadı."
+            "NO_FAILED_JOBS": "Seçilen görevlerin hiçbiri başarısız olmadı.",
+            "ORDER_STATUS_INVALID": "Böyle bir durum yok.",
+            "ORDER_NOT_FOUND": "Bu fatura için mağaza siparişi yok."
+        },
+        "orderStatus": {
+            "open": "Açık",
+            "processing": "İşleniyor",
+            "completed": "Tamamlandı",
+            "cancelled": "İptal edildi"
+        },
+        "deliveryStatus": {
+            "open": "Açık",
+            "partially_shipped": "Kısmen gönderildi",
+            "shipped": "Gönderildi",
+            "partially_returned": "Kısmen iade",
+            "returned": "İade",
+            "cancelled": "İptal edildi"
+        },
+        "invoiceCard": {
+            "title": "Mağaza siparişi",
+            "notified": "Müşteriye en son bildirilen: {status}, {date}",
+            "ebayHint": "eBay siparişi: alıcıya e-posta gönderilmez, bunu eBay üstlenir."
         }
     }
 }

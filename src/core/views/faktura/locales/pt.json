@@ -397,7 +397,8 @@
                 "onlyInvoice": "As faturas eletrónicas só podem ser geradas a partir de faturas de saída.",
                 "saveFirst": "Guarde a fatura antes de gerar uma fatura eletrónica."
             },
-            "kmStandRequired": "A quilometragem é obrigatória — insira-a antes de criar a fatura."
+            "kmStandRequired": "A quilometragem é obrigatória — insira-a antes de criar a fatura.",
+            "deliveryAddressOwn": "Morada de entrega deste documento"
         },
         "workflow": {
             "created": "Dokument erfolgreich erstellt",

@@ -931,7 +931,14 @@
         "ebayMoved": "eBay è ora un canale di vendita dell'estensione negozio. Le impostazioni sono nella scheda Negozio alla voce «eBay», le inserzioni nella scheda negozio dell'articolo.",
         "ebayNeedsShop": "eBay è attivo, ma l'estensione negozio no. Senza di essa non vengono pubblicate inserzioni né recuperati ordini: attivare l'estensione negozio.",
         "shopStockBinId": "Ubicazione di magazzino per le vendite",
-        "shopStockBinId_help": "La merce viene scaricata da questa ubicazione non appena viene creata una fattura da HugoShop o eBay. La giacenza vale per tutti i canali di vendita. Lasciare vuoto se lo scarico avviene manualmente."
+        "shopStockBinId_help": "La merce viene scaricata da questa ubicazione non appena viene creata una fattura da HugoShop o eBay. La giacenza vale per tutti i canali di vendita. Lasciare vuoto se lo scarico avviene manualmente.",
+        "shopOrders": "Ordini",
+        "shopDeliveryStatusShow": "Mostra lo stato di consegna nella pagina della fattura del negozio",
+        "shopDeliveryStatusShow_help": "Mostra al cliente lo stato di consegna attuale nella pagina della fattura del suo ordine. Solo per ordini HugoShop.",
+        "shopDeliveryStatusMail": "Avvisa il cliente via e-mail quando cambia lo stato di consegna",
+        "shopDeliveryStatusMail_help": "Invia un’e-mail al cliente non appena cambia lo stato di consegna — subito se impostato a mano, alla prossima esecuzione se causato da un’etichetta DHL. «Aperto» non viene comunicato. Solo per ordini HugoShop.",
+        "shopInvoicePage": "Percorso della pagina fattura",
+        "shopInvoicePage_help": "Pagina del sito con la pagina fattura (<shop-invoice>), ad es. /rechnung/. L’e-mail sullo stato di consegna rimanda lì, così anche gli ospiti senza account vedono lo stato. Vuoto = /rechnung/."
     },
     "add": "Aggiungi",
     "add_fields": {

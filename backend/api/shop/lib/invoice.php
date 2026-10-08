@@ -6,7 +6,8 @@
 // der die vorhandenen Bausteine aneinanderreiht:
 //
 //   Versandkosten   cartRead() mit Lieferland -> shop_cart_shipping()
-//   Lieferadresse   shiptoCreate()
+//   Lieferadresse   shiptoCreate(), dann shop_invoice_shipto(): eigene Kopie
+//                   der Rechnung (dev/shop-adressen.md)
 //   ar + invoice    hier, aus den Warenkorbzeilen
 //   acc_trans       postArInvoiceToLedger()   (faktura.php)
 //   Verknuepfung    ar_link_hugoshop
@@ -111,6 +112,16 @@ function createShopInvoice($db, string $uuid, array $lieferadresse = [], ?array 
         );
 
         $arId = (int)$ar['id'];
+
+        // Eigene Lieferadresse der Rechnung (dev/shop-adressen.md): Kopie der
+        // gewählten Adresse, ohne Lieferadresse des Kundenstamms. Ändert oder
+        // löscht der Kunde später eine Adresse in seinem Konto, bleibt die
+        // Rechnung, wie sie ist. Bei Gästen verschwindet die Quelle danach —
+        // sie war nur der Träger der Adresse durch Kasse und PayPal.
+        $db->getOne(
+            "SELECT shop_invoice_shipto(CAST(:ar_id AS integer), CAST(NULLIF(:quelle, 0) AS integer), NULL, true)",
+            [':ar_id' => $arId, ':quelle' => (int)($shiptoId ?? 0)]
+        );
 
         // Die Positionen stehen bereits in der Datenbank — sie muessen nicht
         // durch PHP. Ein Vorgang statt einer Schleife ueber INSERTs.
@@ -293,6 +304,8 @@ function shopInvoicePostToLedger($db, int $arId): void {
 function customerInvoices($db, int $customerId): array {
     $kunde = shopInvoicingData($db, $customerId);
 
+    // Lieferstatus nur für HugoShop-Bestellungen und nur, wenn der Betreiber
+    // ihn zeigen will (shop_delivery_status_show, dev/shop-bestellstatus.md)
     return [
         'name'   => $kunde['name'],
         'orders' => $db->getAll(
@@ -300,12 +313,15 @@ function customerInvoices($db, int $customerId): array {
                     TRUNC(ar.amount, 2) AS amount,
                     (SELECT name FROM currencies WHERE id = ar.currency_id) AS currency,
                     (SELECT COUNT(*) FROM invoice WHERE trans_id = ar.id) AS positions,
-                    al.uuid AS ar_link, al.payment_status
+                    al.uuid AS ar_link, al.payment_status,
+                    CASE WHEN :zeigen AND al.ar_id IS NOT NULL
+                         THEN (SELECT st.delivery_status FROM shop_order_state(ar.id) st)
+                    END AS delivery_status
                FROM ar
                LEFT JOIN ar_link_hugoshop al ON al.ar_id = ar.id
               WHERE ar.customer_id = :customer_id
               ORDER BY ar.id DESC",
-            [':customer_id' => $customerId]
+            [':customer_id' => $customerId, ':zeigen' => shopConfigBool($db, 'shop_delivery_status_show')]
         ),
     ];
 }
@@ -330,12 +346,16 @@ function customerInvoice($db, int $customerId, int $arId): array {
                 (SELECT name FROM currencies WHERE id = ar.currency_id) AS currency,
                 c.name, c.street, c.zipcode, c.city, c.country, c.customernumber,
                 c.email, c.phone,
-                al.uuid AS ar_link, al.payment_status, al.payment_reason
+                al.uuid AS ar_link, al.payment_status, al.payment_reason,
+                CASE WHEN :zeigen AND al.ar_id IS NOT NULL
+                     THEN (SELECT st.delivery_status FROM shop_order_state(ar.id) st)
+                END AS delivery_status
            FROM ar
            JOIN customer c ON c.id = ar.customer_id
            LEFT JOIN ar_link_hugoshop al ON al.ar_id = ar.id
           WHERE ar.id = :ar_id AND ar.customer_id = :customer_id",
-        [':ar_id' => $arId, ':customer_id' => $customerId]
+        [':ar_id' => $arId, ':customer_id' => $customerId,
+         ':zeigen' => shopConfigBool($db, 'shop_delivery_status_show')]
     );
 
     if (!$rechnung) {
@@ -511,6 +531,12 @@ function invoiceSummaryByLink($db, string $arLink, int $kanal): array {
             shopInvoiceDeliveryTerms($db, (int)$zeile['ar_id']),
             fn($position) => '' !== $position['delivery_term']
         )),
+        // Lieferstatus nur, wenn der Betreiber ihn zeigen will
+        // (shop_delivery_status_show, dev/shop-bestellstatus.md)
+        'delivery_status'            => shopConfigBool($db, 'shop_delivery_status_show')
+            ? ($db->getOne("SELECT delivery_status FROM shop_order_state(:ar_id)",
+                           [':ar_id' => (int)$zeile['ar_id']])['delivery_status'] ?? null)
+            : null,
     ];
 }
 

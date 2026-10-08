@@ -176,6 +176,164 @@ function shopSendInvoiceMailOrFail($db, int $arId): bool {
 }
 
 /**
+ * Lieferstatus in der Sprache der Mail
+ *
+ * Die Mailvorlagen sind deutsch (*.de.php); die Oberfläche übersetzt selbst.
+ *
+ * @param string $status Schlüssel aus ar_status_shop / shop_order_state
+ * @return string
+ */
+function shopDeliveryStatusText(string $status): string {
+    return [
+        'open'               => 'Offen',
+        'partially_shipped'  => 'Teilweise versandt',
+        'shipped'            => 'Versandt',
+        'partially_returned' => 'Teilretour',
+        'returned'           => 'Retour',
+        'cancelled'          => 'Abgebrochen',
+    ][$status] ?? $status;
+}
+
+/**
+ * Adresse der Rechnungsseite einer Bestellung, für Links in Mails
+ *
+ * Die Seite mit <shop-invoice> liegt auf der Webseite des HugoShops; ihr Pfad
+ * ist dort frei wählbar und steht deshalb in den Einstellungen des Kanals
+ * (invoice_page, Vorgabe /rechnung/ wie billing-page in <shop-checkout>). Der
+ * Rechnungslink (ar_link_hugoshop.uuid) ersetzt die Anmeldung — so kommen auch
+ * Gäste ohne Kundenkonto wieder auf die Seite.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param int $kanal HugoShop der Bestellung
+ * @param string $arLink Kennung aus ar_link_hugoshop
+ * @return string leer, wenn der Kanal keine Basisadresse hat
+ */
+function shopInvoicePageUrl($db, int $kanal, string $arLink): string {
+    $basis = rtrim(trim(shopChannelValue($db, $kanal, 'base_url')), '/');
+    if ('' === $basis || '' === $arLink) {
+        return '';
+    }
+    $pfad = trim(shopChannelValue($db, $kanal, 'invoice_page'));
+    if ('' === $pfad) {
+        $pfad = '/rechnung/';
+    }
+    // Eine vollständige Adresse gilt, wie sie ist; ein Pfad hängt an der Basis
+    $adresse = preg_match('~^https?://~i', $pfad) ? $pfad : $basis.'/'.ltrim($pfad, '/');
+    return $adresse.(str_contains($adresse, '?') ? '&' : '?').'link='.rawurlencode($arLink);
+}
+
+/**
+ * Meldet dem Kunden einen geänderten Lieferstatus (dev/shop-bestellstatus.md)
+ *
+ * Nur bei eingeschaltetem shop_delivery_status_mail, nur für
+ * HugoShop-Bestellungen (eBay benachrichtigt seine Käufer selbst), nur mit
+ * E-Mail-Adresse und nie für „Offen“. Jeder Status geht nur einmal hinaus:
+ * gemerkt in ar_status_shop.delivery_notified.
+ *
+ * Wirft nicht: der Status ist bereits gespeichert, wenn diese Funktion
+ * gerufen wird. Was schiefging, steht im Protokoll; der Läufer versucht es
+ * innerhalb von zwei Tagen erneut (shopDeliveryStatusMailsPending).
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param int $arId Rechnung der Bestellung
+ * @return string off (abgeschaltet), skipped (nichts zu melden), sent, failed
+ */
+function shopSendDeliveryStatusMail($db, int $arId): string {
+    if (!shopConfigBool($db, 'shop_delivery_status_mail')) {
+        return 'off';
+    }
+
+    $zeile = $db->getOne(
+        "SELECT ar.invnumber, c.name, c.email, al.channel_id, al.uuid,
+                st.delivery_status, s.delivery_notified
+           FROM ar_link_hugoshop al
+           JOIN ar ON ar.id = al.ar_id
+           JOIN customer c ON c.id = ar.customer_id
+           LEFT JOIN ar_status_shop s ON s.ar_id = ar.id
+          CROSS JOIN LATERAL shop_order_state(ar.id) st
+          WHERE al.ar_id = :ar_id
+          ORDER BY al.id
+          LIMIT 1",
+        [':ar_id' => $arId]
+    );
+
+    $status = (string)($zeile['delivery_status'] ?? 'open');
+    if (!$zeile || 'open' === $status || $status === (string)($zeile['delivery_notified'] ?? 'open')
+        || empty($zeile['email'])) {
+        return 'skipped';
+    }
+
+    try {
+        $mailer = shopMailer($db);
+        $mailer['client']->send(
+            $mailer['from'], $mailer['from_name'], [$zeile['email']],
+            sprintf('Ihre Bestellung %s: %s', $zeile['invnumber'], shopDeliveryStatusText($status)),
+            shopMailTemplate('delivery-status.de', [
+                'name'      => $zeile['name'],
+                'invnumber' => $zeile['invnumber'],
+                'status'    => $status,
+                'text'      => shopDeliveryStatusText($status),
+                'link'      => shopInvoicePageUrl($db, (int)$zeile['channel_id'], (string)$zeile['uuid']),
+                'signatur'  => shopChannelValue($db, (int)$zeile['channel_id'], 'base_url'),
+            ])
+        );
+    } catch (Exception $e) {
+        writeLog('[SHOP] Mail zum Lieferstatus von '.$zeile['invnumber'].' nicht versendet: '.$e->getMessage(), true, DLOG_ERR);
+        return 'failed';
+    }
+
+    $db->execute(
+        "INSERT INTO ar_status_shop (ar_id, delivery_notified, delivery_notified_mtime)
+         VALUES (:ar_id, :status, now())
+         ON CONFLICT (ar_id) DO UPDATE SET delivery_notified = EXCLUDED.delivery_notified,
+                                           delivery_notified_mtime = now()",
+        [':ar_id' => $arId, ':status' => $status]
+    );
+    return 'sent';
+}
+
+/**
+ * Verschickt die ausstehenden Mails zum Lieferstatus (Läufer)
+ *
+ * Für Änderungen, die nicht über setShopOrderStatus kommen — vor allem das
+ * DHL-Etikett — und für Mails, die dort scheiterten. Betrachtet werden nur
+ * Bestellungen, deren Etikett, Storno oder Statusänderung höchstens zwei Tage
+ * alt ist: sonst bekämen beim Einschalten des Schalters alle alten
+ * Bestellungen eine Mail.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @return int Zahl der verschickten Mails
+ */
+function shopDeliveryStatusMailsPending($db): int {
+    if (!shopConfigBool($db, 'shop_delivery_status_mail')) {
+        return 0;
+    }
+
+    $etikett = null !== ($db->getOne("SELECT to_regclass('dhl_shipments') AS t")['t'] ?? null)
+        ? "OR EXISTS (SELECT 1 FROM dhl_shipments d
+                       WHERE d.record_type = 'invoice' AND d.record_id = al.ar_id
+                         AND d.created_at > now() - interval '2 days')"
+        : '';
+
+    $verschickt = 0;
+    foreach ($db->getAll(
+        "SELECT DISTINCT al.ar_id
+           FROM ar_link_hugoshop al
+           JOIN ar ON ar.id = al.ar_id
+           LEFT JOIN ar_status_shop s ON s.ar_id = al.ar_id
+          WHERE s.delivery_mtime > now() - interval '2 days'
+             OR (COALESCE(ar.storno, false) AND ar.mtime > now() - interval '2 days')
+             $etikett",
+        []
+    ) ?: [] as $zeile) {
+        if ('sent' === shopSendDeliveryStatusMail($db, (int)$zeile['ar_id'])) {
+            $verschickt++;
+        }
+    }
+    return $verschickt;
+}
+
+/**
  * Verschickt eine Anfrage aus dem Kontaktformular an den Betreiber
  *
  * Absender bleibt die Firmenadresse, der Kunde steht in Antwort-An: sonst

@@ -1222,7 +1222,14 @@
             "vendorIntro": "Rechnungen von {name} automatisch aus dem Lieferanten-Portal holen. Einmal vormachen, danach läuft es täglich mit der Belegsuche.",
             "vendorNone": "Für diesen Lieferanten ist noch kein Portal eingerichtet. Mit „Portal einrichten“ Zugangsdaten hinterlegen und den Ablauf einmal aufzeichnen.",
             "portalNameDefault": "Portal {name}"
-        }
+        },
+        "shopOrders": "Bestellungen",
+        "shopDeliveryStatusShow": "Lieferstatus auf der Rechnungsseite im Shop anzeigen",
+        "shopDeliveryStatusShow_help": "Zeigt dem Kunden auf der Rechnungsseite seiner Bestellung den aktuellen Lieferstatus. Gilt nur für HugoShop-Bestellungen.",
+        "shopDeliveryStatusMail": "Kunden bei Änderung des Lieferstatus per E-Mail benachrichtigen",
+        "shopDeliveryStatusMail_help": "Schickt dem Kunden eine E-Mail, sobald sich der Lieferstatus ändert — von Hand gesetzt sofort, durch ein DHL-Etikett beim nächsten Lauf. „Offen“ wird nicht gemeldet. Gilt nur für HugoShop-Bestellungen.",
+        "shopInvoicePage": "Pfad der Rechnungsseite",
+        "shopInvoicePage_help": "Seite der Webseite mit der Rechnungsseite (<shop-invoice>), etwa /rechnung/. Die Mail zum Lieferstatus verlinkt dorthin, damit auch Gäste ohne Kundenkonto den Stand sehen. Leer = /rechnung/."
     },
     "add": "Hinzufügen",
     "add_fields": {

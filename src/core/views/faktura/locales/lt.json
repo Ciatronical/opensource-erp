@@ -397,7 +397,8 @@
                 "onlyInvoice": "E. sąskaitas faktūras galima generuoti tik iš siunčiamų sąskaitų.",
                 "saveFirst": "Prieš generuojant e. sąskaitą faktūrą, išsaugokite sąskaitą."
             },
-            "kmStandRequired": "Rida yra privaloma — įveskite ją prieš kurdami sąskaitą."
+            "kmStandRequired": "Rida yra privaloma — įveskite ją prieš kurdami sąskaitą.",
+            "deliveryAddressOwn": "Šio dokumento pristatymo adresas"
         },
         "workflow": {
             "created": "Dokument erfolgreich erstellt",

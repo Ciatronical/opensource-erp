@@ -233,6 +233,17 @@
                 />
             </section>
 
+            <!-- Bestell- und Lieferstatus: Komponente der Shop-Erweiterung, nur
+                 geladen, wenn sie aktiv ist; erscheint nur bei Rechnungen aus
+                 einem Verkaufskanal (dev/shop-bestellstatus.md). Die Klasse
+                 faktura-section landet auf der Karte selbst: ohne Shop-Bestellung
+                 rendert sie nichts und hinterlässt keinen leeren Abstand -->
+            <InvoiceShopStatusCard
+                v-if="shopEnabled && fakturaType === 'invoice' && faktura.data && fakturaId"
+                class="faktura-section"
+                :ar-id="fakturaId"
+            />
+
             <!-- Positionen -->
             <section class="faktura-section" v-if="faktura.data" :class="{ 'section-disabled': !hasCustomer }">
                 <faktura-items-table-component
@@ -1117,6 +1128,9 @@ import { openAppWindow, aagWindowOpen, setAagWindowCarId } from '@/core/utils/aa
 import { hasVehicleId, isKbaValid, buildEsiUrl, buildGutmannUrl } from '@/core/utils/diagLinks.js'
 import { parseMonthYear, formatMonthYear } from '@/features/lxcars/utils/validation.js'
 
+// Shop-Erweiterung: Bestell- und Lieferstatus der Rechnung, nur bei aktiver Erweiterung geladen
+const InvoiceShopStatusCard = defineAsyncComponent(() => import('@/features/shop/components/invoice-shop-status.card.vue'))
+
 const specialDialogModules = import.meta.glob('../special/special.dialog.vue')
 const SpecialDialog = specialDialogModules['../special/special.dialog.vue']
     ? defineAsyncComponent(specialDialogModules['../special/special.dialog.vue'])
@@ -1138,6 +1152,7 @@ export default defineComponent({
         SendEmailDialog,
         SilverdatImportDialog,
         PaymentSectionCard,
+        InvoiceShopStatusCard,
         RecurringSectionCard,
         HtmlEditorComponent,
         InstructionsSectionCard,
@@ -1340,6 +1355,8 @@ export default defineComponent({
             const val = oserp.getClientDefaultValue('wall_display_enabled', false)
             return val === true || val === 'true' || val === 't' || val === '1'
         })
+
+        const shopEnabled = computed(() => oserp.isExtensionEnabled('shop'))
 
         const dhlEnabled = computed(() => {
             const val = oserp.getClientDefaultValue('dhl_enabled', false)
@@ -3457,6 +3474,7 @@ export default defineComponent({
             sendWhatsApp,
             // DHL
             dhlEnabled,
+            shopEnabled,
             aagConfigured,
             esiAvailable,
             gutmannAvailable,

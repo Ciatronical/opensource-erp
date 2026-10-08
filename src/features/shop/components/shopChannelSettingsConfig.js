@@ -22,6 +22,9 @@ const hugoshop = [
     { name: "adressen", type: "headline", label: "crm_fields.shopLinks" },
 
     { name: "base_url", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopBaseUrl", tooltip: "crm_fields.shopBaseUrl_help" },
+    // Seite mit <shop-invoice> — Ziel des Links in der Mail zum Lieferstatus
+    // (dev/shop-bestellstatus.md); leer = /rechnung/
+    { name: "invoice_page", type: "input", size: 40, fieldstyle: "max-width: 40ch", label: "crm_fields.shopInvoicePage", tooltip: "crm_fields.shopInvoicePage_help" },
     { name: "products_link", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopProductsLink", tooltip: "crm_fields.shopProductsLink_help" },
     { name: "category_link", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopCategoryLink", tooltip: "crm_fields.shopCategoryLink_help" },
     { name: "thumbnails_link", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopThumbnailsLink", tooltip: "crm_fields.shopThumbnailsLink_help" },

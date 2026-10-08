@@ -40,7 +40,7 @@
         },
         "orders": {
             "title": "Encomendas",
-            "subtitle": "O que foi encomendado através da loja",
+            "subtitle": "O que foi encomendado através dos canais de venda",
             "invnumber": "Fatura",
             "date": "Data",
             "customer": "Cliente",
@@ -50,7 +50,18 @@
             "guest": "Convidado",
             "empty": "Sem encomendas",
             "onlyUnpaid": "Apenas por pagar",
-            "openInvoice": "Abrir fatura"
+            "openInvoice": "Abrir fatura",
+            "channel": "Canal de venda",
+            "orderStatus": "Estado da encomenda",
+            "deliveryStatus": "Estado de entrega",
+            "onlyOpenDelivery": "Apenas entregas em aberto",
+            "paidViaEbay": "Pago através do eBay",
+            "statusAuto": "Automático ({status})",
+            "statusManual": "Definido manualmente — clique para alterar o estado",
+            "statusAutomatic": "Determinado automaticamente — clique para alterar o estado",
+            "statusSaved": "Estado guardado.",
+            "mailSent": "Estado guardado, o cliente foi avisado por e-mail.",
+            "mailFailed": "Estado guardado, mas não foi possível enviar o e-mail ao cliente. A próxima execução tentará novamente."
         },
         "payments": {
             "title": "Pagamentos pendentes",
@@ -428,7 +439,28 @@
             "CHANNEL_NOT_DELETABLE": "Só é possível eliminar um canal desligado sem tarefas pendentes.",
             "SHIPPING_UNFIT": "Não será publicado",
             "SHIPPING_PART_NOT_OFFERED": "Os artigos de portes não são oferecidos",
-            "NO_FAILED_JOBS": "Nenhuma das tarefas selecionadas falhou."
+            "NO_FAILED_JOBS": "Nenhuma das tarefas selecionadas falhou.",
+            "ORDER_STATUS_INVALID": "Este estado não existe.",
+            "ORDER_NOT_FOUND": "Não existe encomenda da loja para esta fatura."
+        },
+        "orderStatus": {
+            "open": "Em aberto",
+            "processing": "Em processamento",
+            "completed": "Concluída",
+            "cancelled": "Cancelada"
+        },
+        "deliveryStatus": {
+            "open": "Em aberto",
+            "partially_shipped": "Enviada parcialmente",
+            "shipped": "Enviada",
+            "partially_returned": "Devolvida parcialmente",
+            "returned": "Devolvida",
+            "cancelled": "Cancelada"
+        },
+        "invoiceCard": {
+            "title": "Encomenda da loja",
+            "notified": "Último aviso ao cliente: {status} em {date}",
+            "ebayHint": "Encomenda eBay: o comprador não recebe e-mail, isso fica a cargo do eBay."
         }
     }
 }

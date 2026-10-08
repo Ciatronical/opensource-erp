@@ -931,7 +931,14 @@
         "ebayMoved": "O eBay é agora um canal de venda da extensão de loja. As definições estão no separador Loja em «eBay», os anúncios no cartão de loja do artigo.",
         "ebayNeedsShop": "O eBay está ativado, mas a extensão de loja não. Sem ela não são publicados anúncios nem obtidas encomendas — ative a extensão de loja.",
         "shopStockBinId": "Localização de armazém para vendas",
-        "shopStockBinId_help": "As mercadorias saem desta localização assim que é criada uma fatura da HugoShop ou do eBay. O stock vale para todos os canais de venda. Deixe vazio se as saídas forem registadas manualmente."
+        "shopStockBinId_help": "As mercadorias saem desta localização assim que é criada uma fatura da HugoShop ou do eBay. O stock vale para todos os canais de venda. Deixe vazio se as saídas forem registadas manualmente.",
+        "shopOrders": "Encomendas",
+        "shopDeliveryStatusShow": "Mostrar o estado de entrega na página da fatura da loja",
+        "shopDeliveryStatusShow_help": "Mostra ao cliente o estado de entrega atual na página da fatura da sua encomenda. Apenas para encomendas HugoShop.",
+        "shopDeliveryStatusMail": "Avisar o cliente por e-mail quando o estado de entrega mudar",
+        "shopDeliveryStatusMail_help": "Envia um e-mail ao cliente assim que o estado de entrega muda — de imediato se definido manualmente, na próxima execução se causado por uma etiqueta DHL. «Aberto» não é comunicado. Apenas para encomendas HugoShop.",
+        "shopInvoicePage": "Caminho da página da fatura",
+        "shopInvoicePage_help": "Página do site com a página da fatura (<shop-invoice>), p. ex. /rechnung/. O e-mail do estado de entrega aponta para lá, para que também convidados sem conta vejam o estado. Vazio = /rechnung/."
     },
     "add": "Adicionar",
     "add_fields": {

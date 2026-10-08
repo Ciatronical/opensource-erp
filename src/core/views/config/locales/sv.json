@@ -931,7 +931,14 @@
         "ebayMoved": "eBay är nu en försäljningskanal i butikstillägget. Inställningarna finns på fliken Butik under ”eBay”, annonserna i artikelns butikskort.",
         "ebayNeedsShop": "eBay är påslaget, men butikstillägget är det inte. Utan det läggs inga annonser upp och inga ordrar hämtas — aktivera butikstillägget.",
         "shopStockBinId": "Lagerplats för försäljning",
-        "shopStockBinId_help": "Varorna bokas ut från den här lagerplatsen så snart en faktura skapas från HugoShop eller eBay. Lagersaldot gäller för alla försäljningskanaler. Lämna tomt om uttag bokas manuellt."
+        "shopStockBinId_help": "Varorna bokas ut från den här lagerplatsen så snart en faktura skapas från HugoShop eller eBay. Lagersaldot gäller för alla försäljningskanaler. Lämna tomt om uttag bokas manuellt.",
+        "shopOrders": "Ordrar",
+        "shopDeliveryStatusShow": "Visa leveransstatus på fakturasidan i butiken",
+        "shopDeliveryStatusShow_help": "Visar kunden aktuell leveransstatus på fakturasidan för ordern. Gäller endast HugoShop-ordrar.",
+        "shopDeliveryStatusMail": "Meddela kunden via e-post när leveransstatus ändras",
+        "shopDeliveryStatusMail_help": "Skickar ett e-postmeddelande till kunden så snart leveransstatus ändras — direkt vid manuell ändring, vid nästa körning vid en DHL-etikett. ”Öppen” meddelas inte. Gäller endast HugoShop-ordrar.",
+        "shopInvoicePage": "Sökväg till fakturasidan",
+        "shopInvoicePage_help": "Sidan på webbplatsen med fakturasidan (<shop-invoice>), t.ex. /rechnung/. E-postmeddelandet om leveransstatus länkar dit, så att även gäster utan konto ser statusen. Tom = /rechnung/."
     },
     "add": "Lagg till",
     "add_fields": {

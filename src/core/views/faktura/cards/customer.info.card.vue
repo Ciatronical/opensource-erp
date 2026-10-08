@@ -62,10 +62,12 @@
                             class="flex-grow-1"
                         >
                             <template #item="{ item, props }">
+                                <!-- document_own: eigene Lieferadresse dieses Belegs (dev/shop-adressen.md) -->
                                 <v-list-item
                                     v-bind="props"
                                     :title="item.shiptoname"
-                                    :subtitle="`${item.shiptostreet || ''} ${item.shiptozipcode || ''} ${item.shiptocity || ''}`"
+                                    :subtitle="`${item.shiptostreet || ''} ${item.shiptozipcode || ''} ${item.shiptocity || ''}`
+                                        + (item.document_own ? ` · ${t('FakturaView.faktura.deliveryAddressOwn')}` : '')"
                                 />
                             </template>
                         </v-autocomplete>

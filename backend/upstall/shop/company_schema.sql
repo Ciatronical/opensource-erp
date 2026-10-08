@@ -1875,6 +1875,256 @@ CREATE INDEX IF NOT EXISTS withdrawals_hugoshop_offen_idx
  WHERE processed IS NULL;
 
 -- ============================================================================
+-- BESTELLSTATUS UND LIEFERSTATUS (dev/shop-bestellstatus.md)
+-- ============================================================================
+
+-- Je Bestellung (Rechnung aus HugoShop oder eBay) der von Hand gesetzte
+-- Bestell- und Lieferstatus. NULL heißt automatisch: dann gilt, was
+-- shop_order_state() aus Storno, DHL-Etikett und Zahlung ableitet. Eine Zeile
+-- entsteht erst, wenn jemand einen Status setzt oder eine Mail verschickt wird.
+CREATE TABLE IF NOT EXISTS ar_status_shop
+(
+    ar_id                   integer NOT NULL,
+    order_status            text,
+    order_mtime             timestamp without time zone,
+    delivery_status         text,
+    delivery_mtime          timestamp without time zone,
+    delivery_notified       text,
+    delivery_notified_mtime timestamp without time zone,
+    CONSTRAINT ar_status_shop_pkey PRIMARY KEY (ar_id),
+    CONSTRAINT ar_status_shop_ar_id_fkey FOREIGN KEY (ar_id)
+        REFERENCES ar (id) ON UPDATE CASCADE ON DELETE CASCADE,
+    CONSTRAINT ar_status_shop_order_status_check
+        CHECK (order_status IN ('open', 'processing', 'completed', 'cancelled')),
+    CONSTRAINT ar_status_shop_delivery_status_check
+        CHECK (delivery_status IN ('open', 'partially_shipped', 'shipped',
+                                   'partially_returned', 'returned', 'cancelled')),
+    CONSTRAINT ar_status_shop_delivery_notified_check
+        CHECK (delivery_notified IN ('open', 'partially_shipped', 'shipped',
+                                     'partially_returned', 'returned', 'cancelled'))
+);
+
+COMMENT ON TABLE  ar_status_shop                   IS 'Shop: Bestell- und Lieferstatus je Rechnung aus einem Verkaufskanal';
+COMMENT ON COLUMN ar_status_shop.order_status      IS 'Von Hand gesetzter Bestellstatus — NULL = automatisch (shop_order_state)';
+COMMENT ON COLUMN ar_status_shop.delivery_status   IS 'Von Hand gesetzter Lieferstatus — NULL = automatisch (shop_order_state)';
+COMMENT ON COLUMN ar_status_shop.delivery_notified IS 'Zuletzt per Mail an den Kunden gemeldeter Lieferstatus';
+
+-- Wirksamer und abgeleiteter Status einer Bestellung
+--
+-- Lieferstatus abgeleitet: storniert → cancelled, DHL-Etikett zur Rechnung
+-- → shipped, sonst open. Bestellstatus abgeleitet aus dem wirksamen
+-- Lieferstatus: storniert oder Lieferung abgebrochen → cancelled, bezahlt
+-- und versandt → completed, Lieferung nicht mehr offen → processing, sonst
+-- open. Von Hand gesetzt hat immer Vorrang.
+--
+-- dhl_shipments und ebay_orders gehören der CRM-Basis und fehlen, wenn sie
+-- älter ist — deshalb über EXECUTE und nur, wenn es sie gibt.
+DROP FUNCTION IF EXISTS shop_order_state(integer);
+CREATE FUNCTION shop_order_state(p_ar_id integer)
+RETURNS TABLE (order_status text, order_auto text, order_manual boolean,
+               delivery_status text, delivery_auto text, delivery_manual boolean,
+               paid boolean)
+LANGUAGE plpgsql STABLE AS $$
+DECLARE
+    v_betrag        numeric;
+    v_gezahlt       numeric;
+    v_storno        boolean;
+    v_bestell_hand  text;
+    v_liefer_hand   text;
+    v_etikett       boolean := false;
+    v_ebay          boolean := false;
+BEGIN
+    SELECT a.amount, COALESCE(a.paid, 0), COALESCE(a.storno, false)
+      INTO v_betrag, v_gezahlt, v_storno
+      FROM ar a WHERE a.id = p_ar_id;
+    IF NOT FOUND THEN
+        RETURN;
+    END IF;
+
+    SELECT s.order_status, s.delivery_status
+      INTO v_bestell_hand, v_liefer_hand
+      FROM ar_status_shop s WHERE s.ar_id = p_ar_id;
+
+    IF to_regclass('dhl_shipments') IS NOT NULL THEN
+        EXECUTE 'SELECT EXISTS (SELECT 1 FROM dhl_shipments
+                                 WHERE record_type = ''invoice'' AND record_id = $1)'
+           INTO v_etikett USING p_ar_id;
+    END IF;
+    IF to_regclass('ebay_orders') IS NOT NULL THEN
+        EXECUTE 'SELECT EXISTS (SELECT 1 FROM ebay_orders WHERE ar_id = $1)'
+           INTO v_ebay USING p_ar_id;
+    END IF;
+
+    -- Bezahlt: eBay kassiert vor dem Import; PayPal meldet COMPLETED (Zeilen
+    -- aus der Zeit vor payment_status: die Payer-Id); sonst die Buchung
+    paid := v_ebay
+         OR (v_betrag > 0 AND v_gezahlt >= v_betrag - 0.005)
+         OR EXISTS (SELECT 1 FROM ar_link_hugoshop l
+                     WHERE l.ar_id = p_ar_id
+                       AND (l.payment_status = 'COMPLETED'
+                            OR (l.payment_status IS NULL AND l.paypal IS NOT NULL)));
+
+    delivery_auto := CASE WHEN v_storno THEN 'cancelled'
+                          WHEN v_etikett THEN 'shipped'
+                          ELSE 'open' END;
+    delivery_manual := v_liefer_hand IS NOT NULL;
+    delivery_status := COALESCE(v_liefer_hand, delivery_auto);
+
+    order_auto := CASE WHEN v_storno OR delivery_status = 'cancelled' THEN 'cancelled'
+                       WHEN paid AND delivery_status = 'shipped' THEN 'completed'
+                       WHEN delivery_status <> 'open' THEN 'processing'
+                       ELSE 'open' END;
+    order_manual := v_bestell_hand IS NOT NULL;
+    order_status := COALESCE(v_bestell_hand, order_auto);
+
+    RETURN NEXT;
+END;
+$$;
+
+COMMENT ON FUNCTION shop_order_state(integer) IS 'Shop: wirksamer und abgeleiteter Bestell- und Lieferstatus einer Rechnung (dev/shop-bestellstatus.md)';
+
+-- ============================================================================
+-- LIEFERADRESSE JE RECHNUNG (dev/shop-adressen.md)
+-- ============================================================================
+
+-- Lieferadressen aus der Zeit der Bridge haben kein Modul (NULL). Faktura und
+-- Kundenverwaltung lesen nur module = 'CT' und zeigen sie deshalb nicht an.
+-- Nachgetragen wird nur, wo trans_id ein Kunde oder Lieferant ist — eine
+-- Zeile ohne solchen Eigentümer bleibt, wie sie ist. Läuft bei jedem
+-- Schema-Update und findet nach dem ersten Mal nichts mehr.
+UPDATE shipto s
+   SET module = 'CT'
+ WHERE s.module IS NULL
+   AND (EXISTS (SELECT 1 FROM customer c WHERE c.id = s.trans_id)
+        OR EXISTS (SELECT 1 FROM vendor v WHERE v.id = s.trans_id));
+
+-- Jede Shop-Rechnung bekommt eine eigene Lieferadresse wie in kivitendo:
+-- eine shipto-Zeile mit module = 'AR' und trans_id = Rechnung. Ändert oder
+-- löscht der Kunde danach eine Adresse in seinem Konto (module 'CT', bei
+-- alten Zeilen aus der Bridge NULL), bleibt die Anschrift der Rechnung stehen.
+--
+-- Quelle in dieser Reihenfolge: p_adresse (eBay), p_quelle (gewählte oder in
+-- der Kasse angelegte Lieferadresse), sonst der Kundenstamm (E1: auch ohne
+-- abweichende Lieferadresse wird die Anschrift festgehalten). Danach zeigt
+-- ar.shipto_id auf die Kopie.
+--
+-- Gäste (E2): die Quelle war nur der Träger der Adresse durch die Kasse und
+-- über PayPal — wiederverwenden kann ein Gast sie nicht. Mit
+-- p_gast_aufraeumen wird sie nach dem Kopieren entfernt, sofern kein anderer
+-- Beleg darauf zeigt.
+DROP FUNCTION IF EXISTS shop_invoice_shipto(integer, integer, jsonb, boolean);
+CREATE FUNCTION shop_invoice_shipto(p_ar_id integer, p_quelle integer DEFAULT NULL,
+                                    p_adresse jsonb DEFAULT NULL,
+                                    p_gast_aufraeumen boolean DEFAULT true)
+RETURNS integer
+LANGUAGE plpgsql AS $$
+DECLARE
+    v_kunde integer;
+    v_neu   integer;
+BEGIN
+    SELECT a.customer_id INTO v_kunde FROM ar a WHERE a.id = p_ar_id;
+    IF NOT FOUND THEN
+        RETURN NULL;
+    END IF;
+
+    IF p_adresse IS NOT NULL THEN
+        INSERT INTO shipto (trans_id, module, shiptoname, shiptostreet, shiptozipcode,
+                            shiptocity, shiptocountry, shiptophone, shiptoemail)
+        VALUES (p_ar_id, 'AR', p_adresse ->> 'name', p_adresse ->> 'street', p_adresse ->> 'zipcode',
+                p_adresse ->> 'city', p_adresse ->> 'country', p_adresse ->> 'phone', p_adresse ->> 'email')
+        RETURNING shipto_id INTO v_neu;
+    ELSIF p_quelle IS NOT NULL THEN
+        INSERT INTO shipto (trans_id, module, shiptoname, shiptodepartment_1, shiptodepartment_2,
+                            shiptocontact, shiptostreet, shiptozipcode, shiptocity, shiptocountry,
+                            shiptophone, shiptofax, shiptoemail)
+        SELECT p_ar_id, 'AR', s.shiptoname, s.shiptodepartment_1, s.shiptodepartment_2,
+               s.shiptocontact, s.shiptostreet, s.shiptozipcode, s.shiptocity, s.shiptocountry,
+               s.shiptophone, s.shiptofax, s.shiptoemail
+          FROM shipto s
+         WHERE s.shipto_id = p_quelle
+        RETURNING shipto_id INTO v_neu;
+    END IF;
+
+    IF v_neu IS NULL THEN
+        INSERT INTO shipto (trans_id, module, shiptoname, shiptodepartment_1, shiptodepartment_2,
+                            shiptocontact, shiptostreet, shiptozipcode, shiptocity, shiptocountry,
+                            shiptophone, shiptofax, shiptoemail)
+        SELECT p_ar_id, 'AR', c.name, c.department_1, c.department_2,
+               c.contact, c.street, c.zipcode, c.city, c.country,
+               c.phone, c.fax, c.email
+          FROM customer c
+         WHERE c.id = v_kunde
+        RETURNING shipto_id INTO v_neu;
+    END IF;
+
+    UPDATE ar SET shipto_id = v_neu WHERE id = p_ar_id;
+
+    IF p_gast_aufraeumen AND p_quelle IS NOT NULL
+       AND EXISTS (SELECT 1 FROM customer_ext ce WHERE ce.customer_id = v_kunde AND ce.hugoshop_guest) THEN
+        UPDATE customer_ext SET hugoshop_shipto_id = NULL
+         WHERE customer_id = v_kunde AND hugoshop_shipto_id = p_quelle;
+        DELETE FROM shipto s
+         WHERE s.shipto_id = p_quelle
+           AND s.trans_id = v_kunde
+           AND COALESCE(s.module, 'CT') = 'CT'
+           AND NOT EXISTS (SELECT 1 FROM ar WHERE ar.shipto_id = p_quelle)
+           AND NOT EXISTS (SELECT 1 FROM oe WHERE oe.shipto_id = p_quelle)
+           AND NOT EXISTS (SELECT 1 FROM delivery_orders d WHERE d.shipto_id = p_quelle);
+    END IF;
+
+    RETURN v_neu;
+END;
+$$;
+
+COMMENT ON FUNCTION shop_invoice_shipto(integer, integer, jsonb, boolean) IS 'Shop: eigene Lieferadresse (shipto, module AR) für eine Rechnung (dev/shop-adressen.md)';
+
+-- Lieferadresse einer eBay-Bestellung aus ihrem Rohdatensatz, in der Form
+-- von p_adresse oben; NULL, wenn die Bestellung keine enthält
+DROP FUNCTION IF EXISTS shop_ebay_ship_to(jsonb);
+CREATE FUNCTION shop_ebay_ship_to(p_roh jsonb)
+RETURNS jsonb
+LANGUAGE sql IMMUTABLE AS $$
+    SELECT CASE WHEN z.ziel IS NULL OR z.ziel = 'null'::jsonb THEN NULL ELSE jsonb_build_object(
+        'name',    z.ziel ->> 'fullName',
+        'street',  btrim(COALESCE(z.ziel -> 'contactAddress' ->> 'addressLine1', '') || ' '
+                      || COALESCE(z.ziel -> 'contactAddress' ->> 'addressLine2', '')),
+        'zipcode', z.ziel -> 'contactAddress' ->> 'postalCode',
+        'city',    z.ziel -> 'contactAddress' ->> 'city',
+        'country', z.ziel -> 'contactAddress' ->> 'countryCode',
+        'phone',   z.ziel -> 'primaryPhone' ->> 'phoneNumber',
+        'email',   z.ziel ->> 'email'
+    ) END
+      FROM (SELECT p_roh -> 'fulfillmentStartInstructions' -> 0 -> 'shippingStep' -> 'shipTo' AS ziel) z
+$$;
+
+-- Bestand einmalig nachziehen (E3): Shop-Rechnungen ohne eigene Lieferadresse
+-- bekommen eine Kopie dessen, worauf sie heute zeigen — sonst des
+-- Kundenstamms, bei eBay der Adresse aus dem Rohdatensatz. Was der Kunde
+-- vorher schon geändert hat, lässt sich nicht zurückholen. Läuft bei jedem
+-- Schema-Update, findet nach dem ersten Mal nichts mehr. Ohne Aufräumen der
+-- Gast-Adressen: der Bestand bleibt, wie er ist.
+SELECT shop_invoice_shipto(a.id, a.shipto_id, NULL, false)
+  FROM ar a
+ WHERE a.id IN (SELECT l.ar_id FROM ar_link_hugoshop l WHERE l.ar_id IS NOT NULL)
+   AND NOT EXISTS (SELECT 1 FROM shipto s
+                    WHERE s.shipto_id = a.shipto_id AND s.module = 'AR' AND s.trans_id = a.id);
+
+DO $$
+BEGIN
+    -- ebay_orders gehört der CRM-Basis und fehlt, wenn sie älter ist
+    IF to_regclass('ebay_orders') IS NOT NULL THEN
+        PERFORM shop_invoice_shipto(a.id, a.shipto_id,
+                                    CASE WHEN a.shipto_id IS NULL THEN shop_ebay_ship_to(e.raw) END,
+                                    false)
+           FROM ebay_orders e
+           JOIN ar a ON a.id = e.ar_id
+          WHERE NOT EXISTS (SELECT 1 FROM shipto s
+                             WHERE s.shipto_id = a.shipto_id AND s.module = 'AR' AND s.trans_id = a.id);
+    END IF;
+END;
+$$;
+
+-- ============================================================================
 -- AUFRAEUMEN
 -- ============================================================================
 --
@@ -1998,6 +2248,10 @@ DELETE FROM defaults_oserp WHERE key IN ('shop_sites_dir', 'shop_publish_command
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_job_retention_days', '30') ON CONFLICT (key) DO NOTHING;
 -- Groesse der Vorschaubilder (laengste Seite in Pixeln), fuer alle HugoShops
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_thumbnail_size', '200') ON CONFLICT (key) DO NOTHING;
+-- Lieferstatus für den Kunden (dev/shop-bestellstatus.md): Anzeige auf der
+-- Rechnungsseite im Shop und Mail bei Änderung, beides per Vorgabe aus
+INSERT INTO defaults_oserp (key, value) VALUES ('shop_delivery_status_show', '0') ON CONFLICT (key) DO NOTHING;
+INSERT INTO defaults_oserp (key, value) VALUES ('shop_delivery_status_mail', '0') ON CONFLICT (key) DO NOTHING;
 -- eBay: Adresse von OpensourceERP, unter der eBay die Artikelbilder abholt
 -- (backend/webhook/part-image.php, https) — fuer alle eBay-Kanaele dieselbe.
 -- Der Laeufer arbeitet ohne Webanfrage und kennt die eigene Adresse sonst nicht.
@@ -2125,6 +2379,10 @@ RETURNS TABLE (type text, old_key text, key text, secret boolean)
         ('hugoshop', 'shop_images_link',                      'images_link',                      false),
         ('hugoshop', 'shop_thumbnails_link',                  'thumbnails_link',                  false),
         ('hugoshop', 'shop_downloads_link',                   'downloads_link',                   false),
+        -- Pfad der Rechnungsseite (<shop-invoice>), für den Link in der Mail
+        -- zum Lieferstatus (dev/shop-bestellstatus.md); leer = /rechnung/.
+        -- Den alten Schlüssel gab es nie, die Abschrift findet nichts.
+        ('hugoshop', 'shop_invoice_page',                     'invoice_page',                     false),
         -- HugoShop: Veröffentlichung
         ('hugoshop', 'shop_content_dir',                      'content_dir',                      false),
         ('hugoshop', 'shop_template_set',                     'template_set',                     false),

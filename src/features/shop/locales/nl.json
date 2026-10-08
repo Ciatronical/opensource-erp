@@ -40,7 +40,7 @@
         },
         "orders": {
             "title": "Bestellingen",
-            "subtitle": "Wat er via de winkel is besteld",
+            "subtitle": "Wat via de verkoopkanalen is besteld",
             "invnumber": "Factuur",
             "date": "Datum",
             "customer": "Klant",
@@ -50,7 +50,18 @@
             "guest": "Gast",
             "empty": "Geen bestellingen",
             "onlyUnpaid": "Alleen onbetaald",
-            "openInvoice": "Factuur openen"
+            "openInvoice": "Factuur openen",
+            "channel": "Verkoopkanaal",
+            "orderStatus": "Bestelstatus",
+            "deliveryStatus": "Leverstatus",
+            "onlyOpenDelivery": "Alleen open leveringen",
+            "paidViaEbay": "Betaald via eBay",
+            "statusAuto": "Automatisch ({status})",
+            "statusManual": "Handmatig ingesteld — klik om de status te wijzigen",
+            "statusAutomatic": "Automatisch bepaald — klik om de status te wijzigen",
+            "statusSaved": "Status opgeslagen.",
+            "mailSent": "Status opgeslagen, de klant is per e-mail geïnformeerd.",
+            "mailFailed": "Status opgeslagen, maar de e-mail aan de klant kon niet worden verzonden. De volgende run probeert het opnieuw."
         },
         "payments": {
             "title": "Openstaande betalingen",
@@ -428,7 +439,28 @@
             "CHANNEL_NOT_DELETABLE": "Alleen een uitgeschakeld kanaal zonder openstaande opdrachten kan worden verwijderd.",
             "SHIPPING_UNFIT": "Wordt niet gepubliceerd",
             "SHIPPING_PART_NOT_OFFERED": "Verzendartikelen worden niet aangeboden",
-            "NO_FAILED_JOBS": "Geen van de geselecteerde taken is mislukt."
+            "NO_FAILED_JOBS": "Geen van de geselecteerde taken is mislukt.",
+            "ORDER_STATUS_INVALID": "Deze status bestaat niet.",
+            "ORDER_NOT_FOUND": "Bij deze factuur hoort geen winkelbestelling."
+        },
+        "orderStatus": {
+            "open": "Open",
+            "processing": "In behandeling",
+            "completed": "Afgerond",
+            "cancelled": "Geannuleerd"
+        },
+        "deliveryStatus": {
+            "open": "Open",
+            "partially_shipped": "Gedeeltelijk verzonden",
+            "shipped": "Verzonden",
+            "partially_returned": "Gedeeltelijk geretourneerd",
+            "returned": "Geretourneerd",
+            "cancelled": "Geannuleerd"
+        },
+        "invoiceCard": {
+            "title": "Winkelbestelling",
+            "notified": "Laatst gemeld aan de klant: {status} op {date}",
+            "ebayHint": "eBay-bestelling: de koper krijgt geen e-mail, dat regelt eBay."
         }
     }
 }

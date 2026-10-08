@@ -4,7 +4,7 @@
 //
 // Bei der Anmeldung und beim Firmenwechsel wird das Update schon selbst
 // ausgeführt. Wer aber angemeldet bleibt, während neue Upstall-Dateien
-// eingespielt werden, bekommt nur Fehler "Spalte/Tabelle fehlt". Scheitert
+// eingespielt werden, bekommt nur Fehler "Spalte/Tabelle/Funktion fehlt". Scheitert
 // eine Anfrage daran, fragt diese Datei das Backend, ob die Prüfsummen
 // abweichen. Wenn ja, bekommt der Benutzer einen Hinweis mit Button und
 // entscheidet selbst, ob das Update läuft — auch dann, wenn es immer wieder
@@ -20,13 +20,14 @@ const { t } = i18n.global
 
 const UPDATE_URL = '/api/update/'
 
-// PG-SQLSTATE: 42703 = undefined column, 42P01 = undefined table
-const SCHEMA_FEHLER = ['SQLSTATE[42703]', 'SQLSTATE[42P01]']
+// PG-SQLSTATE: 42703 = undefined column, 42P01 = undefined table,
+// 42883 = undefined function (neue Datenbankfunktion aus einer Upstall-Datei)
+const SCHEMA_FEHLER = ['SQLSTATE[42703]', 'SQLSTATE[42P01]', 'SQLSTATE[42883]']
 
 let offen = false
 
 /**
- * Scheiterte die Antwort an einer fehlenden Spalte oder Tabelle?
+ * Scheiterte die Antwort an einer fehlenden Spalte, Tabelle oder Funktion?
  *
  * Der Code steht in `text`, der SQL-Fehler je nach Einstieg in `payload`,
  * `debug` oder hinter dem Code in `text`.

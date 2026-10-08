@@ -40,7 +40,7 @@
         },
         "orders": {
             "title": "订单",
-            "subtitle": "通过商店下的订单",
+            "subtitle": "通过销售渠道下的订单",
             "invnumber": "发票",
             "date": "日期",
             "customer": "客户",
@@ -50,7 +50,18 @@
             "guest": "访客",
             "empty": "没有订单",
             "onlyUnpaid": "仅未付款",
-            "openInvoice": "打开发票"
+            "openInvoice": "打开发票",
+            "channel": "销售渠道",
+            "orderStatus": "订单状态",
+            "deliveryStatus": "配送状态",
+            "onlyOpenDelivery": "仅未完成的配送",
+            "paidViaEbay": "已通过 eBay 支付",
+            "statusAuto": "自动（{status}）",
+            "statusManual": "手动设置 — 点击更改状态",
+            "statusAutomatic": "自动确定 — 点击更改状态",
+            "statusSaved": "状态已保存。",
+            "mailSent": "状态已保存，已通过电子邮件通知客户。",
+            "mailFailed": "状态已保存，但无法向客户发送电子邮件。下一次运行将重试。"
         },
         "payments": {
             "title": "待定付款",
@@ -428,7 +439,28 @@
             "CHANNEL_NOT_DELETABLE": "只有已关闭且没有未完成任务的渠道才能删除。",
             "SHIPPING_UNFIT": "不会发布",
             "SHIPPING_PART_NOT_OFFERED": "运费物料不上架",
-            "NO_FAILED_JOBS": "所选任务中没有失败的任务。"
+            "NO_FAILED_JOBS": "所选任务中没有失败的任务。",
+            "ORDER_STATUS_INVALID": "该状态不存在。",
+            "ORDER_NOT_FOUND": "此发票没有对应的商店订单。"
+        },
+        "orderStatus": {
+            "open": "未处理",
+            "processing": "处理中",
+            "completed": "已完成",
+            "cancelled": "已取消"
+        },
+        "deliveryStatus": {
+            "open": "未处理",
+            "partially_shipped": "部分发货",
+            "shipped": "已发货",
+            "partially_returned": "部分退货",
+            "returned": "已退货",
+            "cancelled": "已取消"
+        },
+        "invoiceCard": {
+            "title": "商店订单",
+            "notified": "最近一次通知客户：{status}，{date}",
+            "ebayHint": "eBay 订单：不会通过电子邮件通知买家，由 eBay 负责。"
         }
     }
 }

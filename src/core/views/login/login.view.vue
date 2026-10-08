@@ -151,12 +151,12 @@ export default {
       }
     })
 
-    // Schema-Mismatch: Tabelle/Spalte fehlt in DB -> Update-Skript kann das beheben.
-    // PG-SQLSTATE: 42703 = undefined column, 42P01 = undefined table.
+    // Schema-Mismatch: Tabelle/Spalte/Funktion fehlt in DB -> Update-Skript kann das beheben.
+    // PG-SQLSTATE: 42703 = undefined column, 42P01 = undefined table, 42883 = undefined function.
     const isSchemaMismatchError = (err) => {
       if (err?.code !== 'API_DATABASE_ERROR') return false
       const msg = err?.message || ''
-      return msg.includes('SQLSTATE[42703]') || msg.includes('SQLSTATE[42P01]')
+      return msg.includes('SQLSTATE[42703]') || msg.includes('SQLSTATE[42P01]') || msg.includes('SQLSTATE[42883]')
     }
 
     const login = async (isRetry = false) => {

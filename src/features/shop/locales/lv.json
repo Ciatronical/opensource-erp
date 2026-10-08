@@ -40,7 +40,7 @@
         },
         "orders": {
             "title": "Pasūtījumi",
-            "subtitle": "Kas pasūtīts caur veikalu",
+            "subtitle": "Kas pasūtīts, izmantojot pārdošanas kanālus",
             "invnumber": "Rēķins",
             "date": "Datums",
             "customer": "Klients",
@@ -50,7 +50,18 @@
             "guest": "Viesis",
             "empty": "Nav pasūtījumu",
             "onlyUnpaid": "Tikai neapmaksātie",
-            "openInvoice": "Atvērt rēķinu"
+            "openInvoice": "Atvērt rēķinu",
+            "channel": "Pārdošanas kanāls",
+            "orderStatus": "Pasūtījuma statuss",
+            "deliveryStatus": "Piegādes statuss",
+            "onlyOpenDelivery": "Tikai atvērtās piegādes",
+            "paidViaEbay": "Apmaksāts ar eBay",
+            "statusAuto": "Automātiski ({status})",
+            "statusManual": "Iestatīts manuāli — noklikšķiniet, lai mainītu statusu",
+            "statusAutomatic": "Noteikts automātiski — noklikšķiniet, lai mainītu statusu",
+            "statusSaved": "Statuss saglabāts.",
+            "mailSent": "Statuss saglabāts, klientam paziņots pa e-pastu.",
+            "mailFailed": "Statuss saglabāts, bet e-pastu klientam neizdevās nosūtīt. Nākamā palaišana mēģinās vēlreiz."
         },
         "payments": {
             "title": "Gaidošie maksājumi",
@@ -428,7 +439,28 @@
             "CHANNEL_NOT_DELETABLE": "Dzēst var tikai izslēgtu kanālu bez atvērtiem uzdevumiem.",
             "SHIPPING_UNFIT": "Netiks publicēts",
             "SHIPPING_PART_NOT_OFFERED": "Piegādes preces netiek piedāvātas",
-            "NO_FAILED_JOBS": "Neviens no atlasītajiem uzdevumiem nav neizdevies."
+            "NO_FAILED_JOBS": "Neviens no atlasītajiem uzdevumiem nav neizdevies.",
+            "ORDER_STATUS_INVALID": "Šāda statusa nav.",
+            "ORDER_NOT_FOUND": "Šim rēķinam nav veikala pasūtījuma."
+        },
+        "orderStatus": {
+            "open": "Atvērts",
+            "processing": "Apstrādē",
+            "completed": "Pabeigts",
+            "cancelled": "Atcelts"
+        },
+        "deliveryStatus": {
+            "open": "Atvērts",
+            "partially_shipped": "Daļēji nosūtīts",
+            "shipped": "Nosūtīts",
+            "partially_returned": "Daļēji atgriezts",
+            "returned": "Atgriezts",
+            "cancelled": "Atcelts"
+        },
+        "invoiceCard": {
+            "title": "Veikala pasūtījums",
+            "notified": "Pēdējo reizi paziņots klientam: {status}, {date}",
+            "ebayHint": "eBay pasūtījums: pircējam e-pasts netiek sūtīts, to dara eBay."
         }
     }
 }

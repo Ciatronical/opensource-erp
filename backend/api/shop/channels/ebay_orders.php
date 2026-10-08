@@ -246,6 +246,15 @@ function shopEbayImportOrder($db, int $kanal, array $bestellung, array $cfg): st
             ]);
         }
 
+        // Eigene Lieferadresse der Rechnung aus der Bestellung
+        // (dev/shop-adressen.md) — auch bei bekannten Käufern, deren
+        // Kundenstamm unverändert bleibt; ohne Angabe von eBay der Kundenstamm
+        $db->getOne(
+            "SELECT shop_invoice_shipto(CAST(:ar_id AS integer), NULL,
+                                        shop_ebay_ship_to(CAST(:roh AS jsonb)), false)",
+            [':ar_id' => $arId, ':roh' => json_encode($bestellung, JSON_UNESCAPED_UNICODE)]
+        );
+
         // Rechnungsbetrag = von eBay gezahlter Bruttobetrag
         $db->execute("UPDATE ar SET amount = :betrag WHERE id = :id", [':betrag' => $gesamt, ':id' => $arId]);
 

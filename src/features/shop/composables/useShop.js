@@ -85,6 +85,18 @@ export function useShop() {
     /** Bestellungen des Shops */
     const fetchOrders = (params = {}) => call('getShopOrders', params)
 
+    /**
+     * Bestell- oder Lieferstatus von Hand setzen (dev/shop-bestellstatus.md)
+     *
+     * @param {number} ar_id Rechnung der Bestellung
+     * @param {string} kind 'order' oder 'delivery'
+     * @param {string} status neuer Status, '' = automatisch
+     */
+    const setOrderStatus = (ar_id, kind, status) => call('setShopOrderStatus', { ar_id, kind, status })
+
+    /** Bestell- und Lieferstatus einer Rechnung, null wenn sie keine Shop-Bestellung ist */
+    const fetchOrderStatus = (ar_id) => call('getShopOrderStatus', { ar_id })
+
     /** Rechnungen mit schwebender PayPal-Zahlung */
     const fetchPendingPayments = () => call('getPendingPayments')
 
@@ -205,6 +217,8 @@ export function useShop() {
         copyChannelImages,
         fetchStatus,
         fetchOrders,
+        setOrderStatus,
+        fetchOrderStatus,
         fetchPendingPayments,
         reconcilePayments,
         fetchWithdrawals,

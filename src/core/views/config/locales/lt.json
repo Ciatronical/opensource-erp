@@ -931,7 +931,14 @@
         "ebayMoved": "eBay dabar yra parduotuvės plėtinio pardavimo kanalas. Nustatymai yra skirtuke Parduotuvė, skiltyje „eBay“, skelbimai – prekės parduotuvės kortelėje.",
         "ebayNeedsShop": "eBay įjungtas, bet parduotuvės plėtinys ne. Be jo skelbimai nededami ir užsakymai negaunami – aktyvuokite parduotuvės plėtinį.",
         "shopStockBinId": "Sandėlio vieta pardavimams",
-        "shopStockBinId_help": "Prekės nurašomos iš šios sandėlio vietos, kai tik sukuriama sąskaita iš HugoShop arba eBay. Likutis galioja visiems pardavimo kanalams. Palikite tuščią, jei nurašoma rankiniu būdu."
+        "shopStockBinId_help": "Prekės nurašomos iš šios sandėlio vietos, kai tik sukuriama sąskaita iš HugoShop arba eBay. Likutis galioja visiems pardavimo kanalams. Palikite tuščią, jei nurašoma rankiniu būdu.",
+        "shopOrders": "Užsakymai",
+        "shopDeliveryStatusShow": "Rodyti pristatymo būseną parduotuvės sąskaitos puslapyje",
+        "shopDeliveryStatusShow_help": "Parodo klientui dabartinę pristatymo būseną jo užsakymo sąskaitos puslapyje. Taikoma tik HugoShop užsakymams.",
+        "shopDeliveryStatusMail": "Pranešti klientui el. paštu, kai pasikeičia pristatymo būsena",
+        "shopDeliveryStatusMail_help": "Išsiunčia klientui el. laišką, kai tik pasikeičia pristatymo būsena — nustačius rankiniu būdu iš karto, dėl DHL etiketės per kitą vykdymą. Apie „Atidaryta“ nepranešama. Taikoma tik HugoShop užsakymams.",
+        "shopInvoicePage": "Sąskaitos puslapio kelias",
+        "shopInvoicePage_help": "Svetainės puslapis su sąskaitos puslapiu (<shop-invoice>), pvz., /rechnung/. Laiškas apie pristatymo būseną nukreipia ten, kad būseną matytų ir svečiai be paskyros. Tuščia = /rechnung/."
     },
     "add": "Pridėti",
     "add_fields": {

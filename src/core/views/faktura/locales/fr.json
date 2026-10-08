@@ -397,7 +397,8 @@
                 "onlyInvoice": "Les factures électroniques ne peuvent être générées qu'à partir de factures de vente.",
                 "saveFirst": "Veuillez enregistrer la facture avant de générer une facture électronique."
             },
-            "kmStandRequired": "Le kilométrage est obligatoire — veuillez le saisir avant de créer la facture."
+            "kmStandRequired": "Le kilométrage est obligatoire — veuillez le saisir avant de créer la facture.",
+            "deliveryAddressOwn": "Adresse de livraison de ce document"
         },
         "workflow": {
             "created": "Document cree avec succes",

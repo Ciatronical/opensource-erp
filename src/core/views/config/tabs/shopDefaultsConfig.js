@@ -58,6 +58,14 @@ const shopDefaultsConfig = [
     { name: "shop_payment_iban", type: "input", size: 34, fieldstyle: "max-width: 35ch", label: "crm_fields.shopPaymentIban", tooltip: "crm_fields.shopPaymentIban_help" },
     { name: "shop_payment_bic", type: "input", size: 11, fieldstyle: "max-width: 20ch", label: "crm_fields.shopPaymentBic", tooltip: "crm_fields.shopPaymentBic_help" },
 
+    // Lieferstatus für den Kunden (dev/shop-bestellstatus.md): Anzeige auf der
+    // Rechnungsseite im Shop und Mail bei Änderung — nur HugoShop, Vorgabe aus.
+    // Bestell- und Lieferstatus selbst stehen in der Liste der Bestellungen.
+    { name: "shop_orders", type: "headline", label: "crm_fields.shopOrders" },
+
+    { name: "shop_delivery_status_show", type: "checkbox", label: "crm_fields.shopDeliveryStatusShow", tooltip: "crm_fields.shopDeliveryStatusShow_help" },
+    { name: "shop_delivery_status_mail", type: "checkbox", label: "crm_fields.shopDeliveryStatusMail", tooltip: "crm_fields.shopDeliveryStatusMail_help" },
+
     { name: "shop_publish", type: "headline", label: "crm_fields.shopPublish" },
 
     // Nach wie vielen Tagen der Läufer erfolgreich erledigte Aufträge aus der

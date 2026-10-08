@@ -55,6 +55,9 @@ require_once __DIR__.'/../backend/api/shop/lib/payment.php';
 require_once __DIR__.'/../backend/api/shop/lib/publish.php';
 require_once __DIR__.'/../backend/api/shop/lib/categories.php';
 require_once __DIR__.'/../backend/api/shop/lib/hugocms.php';
+// Mails zum Lieferstatus (dev/shop-bestellstatus.md)
+require_once __DIR__.'/../backend/api/email/smtp.class.php';
+require_once __DIR__.'/../backend/api/shop/lib/mail.php';
 
 set_time_limit(0);
 
@@ -217,6 +220,13 @@ try {
                     $melden(sprintf('%d erledigte Aufträge älter als %d Tage gelöscht', $weg, $tage));
                 }
             }
+        }
+
+        // Lieferstatus, der sich ohne setShopOrderStatus geändert hat (vor
+        // allem DHL-Etikett), oder dessen Mail dort scheiterte
+        $gemeldet = shopDeliveryStatusMailsPending($db);
+        if ($gemeldet > 0) {
+            $melden(sprintf('%d Mails zum Lieferstatus verschickt', $gemeldet));
         }
 
         shopPublishWriteState($dateien['status'], [

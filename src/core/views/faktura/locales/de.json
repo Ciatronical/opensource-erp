@@ -432,7 +432,8 @@
                 "createCustomDescription": "Beschreibung",
                 "createCustomKlassen": "Mögliche Mängelklassen",
                 "createCustomSave": "Anlegen"
-            }
+            },
+            "deliveryAddressOwn": "Lieferadresse dieses Belegs"
         },
         "workflow": {
             "created": "Dokument erfolgreich erstellt",

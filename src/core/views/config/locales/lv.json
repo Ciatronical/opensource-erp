@@ -931,7 +931,14 @@
         "ebayMoved": "eBay tagad ir veikala paplašinājuma pārdošanas kanāls. Iestatījumi ir cilnē Veikals sadaļā “eBay”, sludinājumi preces veikala kartītē.",
         "ebayNeedsShop": "eBay ir ieslēgts, bet veikala paplašinājums nav. Bez tā sludinājumi netiek ievietoti un pasūtījumi netiek ielādēti — lūdzu, aktivizējiet veikala paplašinājumu.",
         "shopStockBinId": "Noliktavas vieta pārdošanai",
-        "shopStockBinId_help": "Preces tiek norakstītas no šīs noliktavas vietas, tiklīdz no HugoShop vai eBay rodas rēķins. Krājums attiecas uz visiem pārdošanas kanāliem. Atstājiet tukšu, ja norakstīšana notiek manuāli."
+        "shopStockBinId_help": "Preces tiek norakstītas no šīs noliktavas vietas, tiklīdz no HugoShop vai eBay rodas rēķins. Krājums attiecas uz visiem pārdošanas kanāliem. Atstājiet tukšu, ja norakstīšana notiek manuāli.",
+        "shopOrders": "Pasūtījumi",
+        "shopDeliveryStatusShow": "Rādīt piegādes statusu veikala rēķina lapā",
+        "shopDeliveryStatusShow_help": "Parāda klientam pašreizējo piegādes statusu viņa pasūtījuma rēķina lapā. Attiecas tikai uz HugoShop pasūtījumiem.",
+        "shopDeliveryStatusMail": "Paziņot klientam pa e-pastu, kad mainās piegādes statuss",
+        "shopDeliveryStatusMail_help": "Nosūta klientam e-pastu, tiklīdz mainās piegādes statuss — iestatot manuāli uzreiz, DHL etiķetes gadījumā nākamajā palaišanā. Par “Atvērts” netiek ziņots. Attiecas tikai uz HugoShop pasūtījumiem.",
+        "shopInvoicePage": "Rēķina lapas ceļš",
+        "shopInvoicePage_help": "Tīmekļa vietnes lapa ar rēķina lapu (<shop-invoice>), piem., /rechnung/. E-pasts par piegādes statusu saitē uz to, lai statusu redzētu arī viesi bez konta. Tukšs = /rechnung/."
     },
     "add": "Pievienot",
     "add_fields": {

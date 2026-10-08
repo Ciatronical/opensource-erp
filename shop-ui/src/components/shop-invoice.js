@@ -146,6 +146,7 @@ export class ShopInvoice extends ShopElement {
       ${this._mailFailed
         ? html`<div class=${this.cls('alertError')} role="alert">${t('invoice.mailFailed')}</div>`
         : html`<p class="lead">${t('invoice.mailTo')} ${summary.email}</p>`}
+      ${this.#renderDeliveryStatus(summary)}
       <p>${t('invoice.downloadHint')}</p>
 
       <form action=${`${this.apiUrl}?action=downloadInvoiceLink`} method="post" part="download">
@@ -156,6 +157,21 @@ export class ShopInvoice extends ShopElement {
 
       ${this.#renderDeliveryTerms(summary)}
       ${this.#renderPayment(summary)} ${this.#renderShipping(summary)}
+    `;
+  }
+
+  /**
+   * Lieferstatus der Bestellung (dev/shop-bestellstatus.md) — das Backend
+   * liefert ihn nur, wenn der Betreiber ihn zeigen will
+   * (shop_delivery_status_show); sonst steht hier nichts.
+   */
+  #renderDeliveryStatus(summary) {
+    const status = summary.delivery_status;
+    if (!status) return nothing;
+    return html`
+      <p class="lead" part="delivery-status">
+        ${t('invoice.deliveryStatus')}: <strong>${t(`invoice.deliveryStatus.${status}`)}</strong>
+      </p>
     `;
   }
 

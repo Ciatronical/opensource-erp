@@ -397,7 +397,8 @@
                 "onlyInvoice": "E-faktury lze generovat pouze z vydaných faktur.",
                 "saveFirst": "Před vygenerováním e-faktury prosím nejprve uložte fakturu."
             },
-            "kmStandRequired": "Stav km je povinný — prosím vyplňte před vystavením faktury."
+            "kmStandRequired": "Stav km je povinný — prosím vyplňte před vystavením faktury.",
+            "deliveryAddressOwn": "Dodací adresa tohoto dokladu"
         },
         "workflow": {
             "created": "Dokument erfolgreich erstellt",

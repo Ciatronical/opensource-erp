@@ -931,7 +931,14 @@
         "ebayMoved": "eBay este acum un canal de vânzare al extensiei magazin. Setările sunt în fila Magazin, la „eBay”, anunțurile în cardul magazinului articolului.",
         "ebayNeedsShop": "eBay este activat, dar extensia magazin nu. Fără ea nu se publică anunțuri și nu se preiau comenzi — activați extensia magazin.",
         "shopStockBinId": "Locație de depozit pentru vânzări",
-        "shopStockBinId_help": "Mărfurile se scot din această locație de îndată ce se creează o factură din HugoShop sau eBay. Stocul este comun tuturor canalelor de vânzare. Lăsați gol dacă ieșirile se înregistrează manual."
+        "shopStockBinId_help": "Mărfurile se scot din această locație de îndată ce se creează o factură din HugoShop sau eBay. Stocul este comun tuturor canalelor de vânzare. Lăsați gol dacă ieșirile se înregistrează manual.",
+        "shopOrders": "Comenzi",
+        "shopDeliveryStatusShow": "Afișează starea livrării pe pagina facturii din magazin",
+        "shopDeliveryStatusShow_help": "Arată clientului starea actuală a livrării pe pagina facturii comenzii sale. Doar pentru comenzile HugoShop.",
+        "shopDeliveryStatusMail": "Anunță clientul prin e-mail când se schimbă starea livrării",
+        "shopDeliveryStatusMail_help": "Trimite clientului un e-mail imediat ce se schimbă starea livrării — imediat la setare manuală, la următoarea rulare dacă provine de la o etichetă DHL. „Deschis” nu se anunță. Doar pentru comenzile HugoShop.",
+        "shopInvoicePage": "Calea paginii facturii",
+        "shopInvoicePage_help": "Pagina site-ului cu pagina facturii (<shop-invoice>), de ex. /rechnung/. E-mailul despre starea livrării trimite acolo, ca și vizitatorii fără cont să vadă starea. Gol = /rechnung/."
     },
     "add": "Adăugare",
     "add_fields": {
