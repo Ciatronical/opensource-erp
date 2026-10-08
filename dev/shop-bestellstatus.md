@@ -77,6 +77,10 @@ Status beider Arten. Abgeleitet wird so:
   Lieferung nicht mehr offen → In Bearbeitung; sonst Offen.
 - Bezahlt: `ar.paid` deckt den Betrag, PayPal meldet `COMPLETED` oder die
   Bestellung kam über eBay (dort wird vor dem Import bezahlt).
+  Dieselbe Regel gilt für die Spalte „Zahlung“ der Liste (`is_paid`), den
+  Filter „Nur unbezahlte“ und „Abgeschlossen“ — eine gebuchte Überweisung
+  zählt überall als bezahlt. Schwebend/gescheitert zeigt die Spalte nur,
+  solange nicht bezahlt.
 
 ### Mail zum Lieferstatus
 

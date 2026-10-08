@@ -100,7 +100,7 @@
                         <v-chip v-if="item.ebay_order_id" color="success" size="small" variant="tonal">
                             {{ t('ShopView.orders.paidViaEbay') }}
                         </v-chip>
-                        <v-chip v-else :color="zahlungFarbe(item.payment_status)" size="small" variant="tonal">
+                        <v-chip v-else :color="zahlungFarbe(item)" size="small" variant="tonal">
                             {{ zahlungText(item) }}
                         </v-chip>
                     </template>
@@ -258,22 +258,27 @@ function betrag(wert) {
     })
 }
 
-function zahlungFarbe(status) {
-    if (status === 'COMPLETED') return 'success'
-    if (status === 'PENDING') return 'warning'
-    if (status) return 'error'
-    return 'default'
+/**
+ * Zahlungsstand einer Bestellung
+ *
+ * Bezahlt gilt wie für Filter und Bestellstatus (is_paid aus
+ * shop_order_state): PayPal COMPLETED, gebuchte Zahlungen, die den Betrag
+ * decken — etwa eine Überweisung —, oder eBay. Erst wenn das nicht zutrifft,
+ * zählt, was PayPal sonst gemeldet hat.
+ */
+function zahlungStand(zeile) {
+    if (istWahr(zeile.is_paid)) return 'paid'
+    if (zeile.payment_status === 'PENDING') return 'pending'
+    if (zeile.payment_status && zeile.payment_status !== 'COMPLETED') return 'failed'
+    return 'open'
 }
 
-/**
- * Zeilen aus der Zeit vor der Zahlungsstatus-Spalte haben keinen Status; für
- * sie gilt wie früher die Payer-Id.
- */
+function zahlungFarbe(zeile) {
+    return { paid: 'success', pending: 'warning', failed: 'error' }[zahlungStand(zeile)] || 'default'
+}
+
 function zahlungText(zeile) {
-    if (zeile.payment_status === 'COMPLETED') return t('ShopView.payments.paid')
-    if (zeile.payment_status === 'PENDING') return t('ShopView.payments.pending')
-    if (zeile.payment_status) return t('ShopView.payments.failed')
-    return zeile.paypal ? t('ShopView.payments.paid') : t('ShopView.payments.open')
+    return t(`ShopView.payments.${zahlungStand(zeile)}`)
 }
 
 function rechnungOeffnen(zeile) {

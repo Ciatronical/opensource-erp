@@ -279,7 +279,10 @@ function getShopOrders($data) {
                 al.payment_status, al.payment_reason, al.payment_mtime,
                 (SELECT COUNT(*) FROM invoice WHERE trans_id = ar.id) AS positions,
                 st.order_status, st.order_auto, st.order_manual,
-                st.delivery_status, st.delivery_auto, st.delivery_manual
+                st.delivery_status, st.delivery_auto, st.delivery_manual,
+                -- bezahlt wie für Filter und Bestellstatus: eBay, gebuchte
+                -- Zahlungen oder PayPal COMPLETED (shop_order_state)
+                st.paid AS is_paid
            FROM bestellung b
            JOIN ar ON ar.id = b.ar_id
            JOIN customer c ON c.id = ar.customer_id
