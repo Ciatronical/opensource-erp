@@ -272,9 +272,18 @@ In dieser Betriebsart **zwei Dateien einmal von Hand** auf den Webserver legen,
 weil HugoCMS kein PHP annimmt: aus `backend/templates-default/shop/standard/kit/static/`
 die `shop-api/index.php` nach `<webseite>/oserp-shop/static/shop-api/index.php`
 und die `not_found.php` nach `<webseite>/oserp-shop/static/not_found.php`. Ihre
-Konfiguration (`oserp-shop/config.json`) kommt über die Übertragung. Nach einem
-OSERP-Update, das eine der beiden ändert, gehören sie erneut kopiert; der Lauf
-erinnert daran, sobald er etwas überträgt.
+Konfiguration (`oserp-shop/config.json`) kommt über die Übertragung. Für die
+404-Seite muss der Webserver auf sie zeigen (nginx: `error_page 404 /not_found.php;`).
+
+Ob beide liegen und aktuell sind, prüft der Lauf nach jeder Übertragung über
+die Webseite (`shopWebsiteManualFilesCheck`, seit 2026-10-08): Beide Dateien
+senden ihre Prüfsumme im Kopf `X-Oserp-Shop-File`, der Lauf vergleicht sie
+mit dem Vorlagensatz. Aufgerufen werden `<Basisadresse>/shop-api/` und eine
+Adresse, die es nicht gibt (für die 404-Seite). Gemeldet wird nur, was nicht
+stimmt: fehlt, veraltet (nach einem OSERP-Update neu kopieren), PHP läuft
+nicht, Weiterleiter ohne `config.json`. Ohne Basisadresse im Kanal oder bei
+nicht erreichbarer Webseite bleibt es beim Hinweis, die Dateien von Hand
+abzulegen.
 
 Wurzelverzeichnis und Programm stehen hier, weil jede Firma ihre eigene
 Webseite hat. Beide sind **absolut**:

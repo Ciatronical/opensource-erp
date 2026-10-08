@@ -200,6 +200,125 @@ const SHOP_HUGOCMS_RESYNC_SECONDS = 86400;
 const SHOP_HUGOCMS_MANUAL_FILES = ['oserp-shop/static/shop-api/index.php', 'oserp-shop/static/not_found.php'];
 
 /**
+ * Ruft eine Adresse der Webseite auf, ohne Umleitungen zu folgen
+ *
+ * @param string $adresse vollständige Adresse
+ * @return array status (0 = nicht erreichbar), kopf (Name klein => Wert), rumpf, fehler
+ */
+function shopWebsiteProbe(string $adresse): array {
+    $kopf = [];
+    $ch = curl_init($adresse);
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_CONNECTTIMEOUT => 5,
+        CURLOPT_TIMEOUT        => 10,
+        CURLOPT_FOLLOWLOCATION => false,
+        CURLOPT_HEADERFUNCTION => function ($ch, string $zeile) use (&$kopf) {
+            $doppelpunkt = strpos($zeile, ':');
+            if (false !== $doppelpunkt) {
+                $kopf[strtolower(trim(substr($zeile, 0, $doppelpunkt)))] = trim(substr($zeile, $doppelpunkt + 1));
+            }
+            return strlen($zeile);
+        },
+    ]);
+    $rumpf = curl_exec($ch);
+    return [
+        'status' => false === $rumpf ? 0 : (int)curl_getinfo($ch, CURLINFO_HTTP_CODE),
+        'kopf'   => $kopf,
+        'rumpf'  => false === $rumpf ? '' : (string)$rumpf,
+        'fehler' => false === $rumpf ? curl_error($ch) : '',
+    ];
+}
+
+/**
+ * Prüft die von Hand abgelegten PHP-Dateien auf der Webseite (E9)
+ *
+ * HugoCMS nimmt kein PHP an; ob Weiterleiter und 404-Seite auf dem Webserver
+ * liegen, weiß der Lauf deshalb nicht aus der Übertragung. Beide Dateien
+ * senden ihre Prüfsumme (X-Oserp-Shop-File); verglichen wird mit der Datei im
+ * Vorlagensatz des Kanals.
+ *
+ * - Weiterleiter: Aufruf von <Basisadresse>/shop-api/
+ * - 404-Seite: Aufruf einer Adresse, die es nicht gibt — prüft zugleich, ob
+ *   der Webserver die 404 an not_found.php gibt
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param int $kanal HugoShop
+ * @return array je Datei: pfad, stand (ok, veraltet, fehlt, kein_php,
+ *               nicht_eingerichtet, ungeprueft), text (leer bei ok)
+ */
+function shopWebsiteManualFilesCheck($db, int $kanal): array {
+    $basis = rtrim(trim(shopChannelValue($db, $kanal, 'base_url')), '/');
+    // Ohne lesbaren Vorlagensatz fehlt der Vergleich — dann zählt nur, ob
+    // die Datei antwortet; den Satz selbst meldet die Übertragung
+    try {
+        $paket = shopKitFiles(shopChannelValue($db, $kanal, 'template_set', 'standard'));
+    } catch (ApiError $e) {
+        $paket = [];
+    }
+    $handablage = 'Von Hand auf den Webserver legen (HugoCMS nimmt kein PHP an): ';
+
+    $ergebnis = [];
+    foreach (SHOP_HUGOCMS_MANUAL_FILES as $pfad) {
+        $quelle = $paket[substr($pfad, strlen('oserp-shop/'))] ?? '';
+        $soll = '' !== $quelle ? (string)sha1_file($quelle) : '';
+        $weiterleiter = str_ends_with($pfad, 'shop-api/index.php');
+
+        if ('' === $basis) {
+            $ergebnis[] = ['pfad' => $pfad, 'stand' => 'ungeprueft',
+                           'text' => 'Nicht geprüft, der Kanal hat keine Basisadresse. '.$handablage.$pfad];
+            continue;
+        }
+
+        $adresse = $weiterleiter
+            ? $basis.'/shop-api/'
+            : $basis.'/oserp-shop-pruefung-'.bin2hex(random_bytes(4));
+        $antwort = shopWebsiteProbe($adresse);
+        $ist = (string)($antwort['kopf']['x-oserp-shop-file'] ?? '');
+        $json = json_decode($antwort['rumpf'], true);
+
+        if (0 === $antwort['status']) {
+            $stand = 'ungeprueft';
+            $text = 'Nicht geprüft, '.$adresse.' ist nicht erreichbar ('.$antwort['fehler'].'). '.$handablage.$pfad;
+        } elseif ('' !== $ist && ($ist === $soll || '' === $soll)) {
+            $stand = 'ok';
+            $text = '';
+            // Weiterleiter liegt richtig, findet aber Adresse oder Schlüssel nicht
+            if ($weiterleiter && str_contains($antwort['rumpf'], 'SHOP_PROXY_NOT_CONFIGURED')) {
+                $stand = 'nicht_eingerichtet';
+                $text = 'Warnung: Der Weiterleiter '.$adresse.' läuft, findet aber oserp-shop/config.json nicht '
+                      .'oder unvollständig — Adresse von OpensourceERP und Shop-Schlüssel im Kanal prüfen.';
+            }
+        } elseif ('' !== $ist) {
+            $stand = 'veraltet';
+            $text = 'Veraltet auf dem Webserver, bitte neu ablegen: '.$pfad.' (aus dem Vorlagensatz, kit/'
+                  .substr($pfad, strlen('oserp-shop/')).')';
+        } elseif (str_starts_with(ltrim($antwort['rumpf']), '<?php')) {
+            $stand = 'kein_php';
+            $text = 'Warnung: '.$adresse.' liefert den Quelltext statt ihn auszuführen — '
+                  .'PHP ist für die Webseite nicht eingerichtet.';
+        } elseif ($weiterleiter && is_array($json) && array_key_exists('success', $json)) {
+            // Antwortet wie der Weiterleiter, aber ohne Prüfsumme: Fassung von
+            // vor dem 2026-10-08
+            $stand = 'veraltet';
+            $text = 'Veraltet auf dem Webserver, bitte neu ablegen: '.$pfad.' (aus dem Vorlagensatz, kit/'
+                  .substr($pfad, strlen('oserp-shop/')).')';
+        } elseif ($weiterleiter) {
+            $stand = 'fehlt';
+            $text = 'Warnung: Der Weiterleiter '.$adresse.' antwortet nicht (HTTP '.$antwort['status'].') — '
+                  .'ohne ihn funktionieren Warenkorb, Kasse und Kundenkonto nicht. '.$handablage.$pfad;
+        } else {
+            $stand = 'fehlt';
+            $text = 'Die 404-Seite mit den Umleitungen antwortet nicht (fehlt, ist veraltet oder der Webserver '
+                  .'gibt die 404 nicht an sie weiter, nginx: error_page 404 /not_found.php). '.$handablage.$pfad;
+        }
+
+        $ergebnis[] = ['pfad' => $pfad, 'stand' => $stand, 'text' => $text];
+    }
+    return $ergebnis;
+}
+
+/**
  * Verzeichnis der Bereitstellung mit Prüfsummen
  *
  * Nur, was HugoCMS annimmt: innerhalb seiner Bereiche und mit erlaubter
@@ -458,17 +577,22 @@ function shopHugoCmsThumbnails($db, int $kanal): array {
 function shopHugoCmsPublish($db, int $kanal, callable $sagen, callable $fehler, bool $bauen, bool $erzwingen = false): bool {
     $abgleich = shopHugoCmsSync($db, $kanal, $erzwingen);
 
-    // Nur melden, wenn wirklich übertragen wurde — sonst stünde dieselbe
-    // Zeile in jedem Lauf. Die PHP-Einstiegspunkte des Pakets sind der
-    // erwartete Fall (E9): HugoCMS nimmt kein PHP an, man legt sie einmal von
-    // Hand ab. Alles andere wäre ein Befund.
+    // Nur prüfen, wenn wirklich übertragen wurde — sonst kostete jeder Lauf
+    // zwei Aufrufe der Webseite. Die PHP-Einstiegspunkte des Pakets sind der
+    // erwartete Fall (E9): HugoCMS nimmt kein PHP an, man legt sie von Hand
+    // ab. Ob das geschehen ist und die Kopie aktuell ist, sagt die Prüfung
+    // über die Webseite; gemeldet wird nur, was nicht stimmt. Alles andere,
+    // was HugoCMS ablehnt, wäre ein Befund.
     if ($abgleich['uebertragen'] && $abgleich['uebersprungen']) {
         $vonHand = array_values(array_filter($abgleich['uebersprungen'],
             fn($pfad) => in_array($pfad, SHOP_HUGOCMS_MANUAL_FILES, true)));
         $sonst = array_values(array_diff($abgleich['uebersprungen'], $vonHand));
         if ($vonHand) {
-            $sagen('Von Hand auf den Webserver legen, falls noch nicht geschehen (HugoCMS nimmt kein PHP an): '
-                .implode(', ', $vonHand));
+            foreach (shopWebsiteManualFilesCheck($db, $kanal) as $pruefung) {
+                if ('' !== $pruefung['text']) {
+                    $sagen($pruefung['text']);
+                }
+            }
         }
         if ($sonst) {
             $sagen(sprintf('%d Dateien nicht an HugoCMS übertragen — dort nicht angenommen: %s',

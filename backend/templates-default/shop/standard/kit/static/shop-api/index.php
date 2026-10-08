@@ -1,11 +1,10 @@
 <?php
 // shop-api/index.php — Proxy der Shop-Webseite zu OpensourceERP
 //
-// Stammt aus dem Vorlagensatz der Shop-Erweiterung (kit/static/). Der Läufer
-// von OpensourceERP (tools/shop-publish.php) überträgt ihn nach
-// <webseite>/oserp-shop/static/, Hugo veröffentlicht ihn nach
-// <webseite>/public/shop-api/index.php. Änderungen hier gehen beim nächsten
-// Lauf verloren — geändert wird im Vorlagensatz.
+// Stammt aus dem Vorlagensatz der Shop-Erweiterung (kit/static/). Hugo
+// veröffentlicht ihn aus <webseite>/oserp-shop/static/shop-api/index.php nach
+// <webseite>/public/shop-api/index.php. Geändert wird im Vorlagensatz, nicht
+// in der Kopie auf dem Webserver.
 //
 // WOFÜR
 // Die Widgets rufen /shop-api/ auf derselben Adresse auf, unter der die Seite
@@ -17,14 +16,20 @@
 // steht — er kostet keinen PHP-Prozess je Anfrage.
 //
 // EINRICHTUNG
-// Adresse und Schlüssel schreibt der Läufer nach
+// HugoCMS nimmt kein PHP an: diese Datei einmal von Hand nach
+// <webseite>/oserp-shop/static/shop-api/index.php legen — und erneut, wenn
+// der Lauf sie als veraltet meldet (dev/shop-hugocms-trennung.md, E9).
+// Adresse und Schlüssel kommen über die Übertragung nach
 // <webseite>/oserp-shop/config.json — außerhalb des Docroots, und Hugo hängt
 // die Datei nicht ein.
 //
-// Betriebsart „lokal": nichts weiter, der Läufer legt auch diese Datei ab.
-// Betriebsart „HugoCMS": HugoCMS nimmt kein PHP an. Diese Datei einmal von
-// Hand nach <webseite>/oserp-shop/static/shop-api/index.php legen; die
-// config.json kommt über die Übertragung (dev/shop-hugocms-trennung.md, E9).
+// PRÜFUNG
+// Jede Antwort trägt X-Oserp-Shop-File mit der Prüfsumme dieser Datei. Der
+// Lauf in OpensourceERP ruft /shop-api/ auf und vergleicht sie mit dem
+// Vorlagensatz (shopWebsiteManualFilesCheck): so erkennt er eine fehlende,
+// veraltete oder nicht ausgeführte Kopie.
+
+header('X-Oserp-Shop-File: '.sha1_file(__FILE__));
 
 $konfiguration = __DIR__.'/../../oserp-shop/config.json';
 $cfg = is_file($konfiguration) ? json_decode((string)file_get_contents($konfiguration), true) : [];

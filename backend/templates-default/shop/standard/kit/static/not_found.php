@@ -9,8 +9,14 @@
 // werden sie über die öffentliche Aktion resolveRedirect — mit Adresse und
 // Schlüssel aus <webseite>/oserp-shop/config.json, wie beim Proxy.
 //
-// Betriebsart „HugoCMS": HugoCMS nimmt kein PHP an — diese Datei einmal von
-// Hand nach <webseite>/oserp-shop/static/not_found.php legen.
+// HugoCMS nimmt kein PHP an: diese Datei einmal von Hand nach
+// <webseite>/oserp-shop/static/not_found.php legen — und erneut, wenn der
+// Lauf sie als veraltet meldet (dev/shop-hugocms-trennung.md, E9).
+//
+// Jede Antwort trägt X-Oserp-Shop-File mit der Prüfsumme dieser Datei. Der
+// Lauf in OpensourceERP ruft eine Adresse auf, die es nicht gibt, und
+// vergleicht sie mit dem Vorlagensatz (shopWebsiteManualFilesCheck) — so
+// prüft er zugleich, ob der Webserver die 404 hierher leitet.
 //
 // Anders als die Bridge leitet die Seite bei 301 und 302 wirklich um: sie
 // sendet einen Location-Kopf, statt das Ziel selbst abzurufen und seinen
@@ -18,6 +24,8 @@
 //
 // Aussehen: liegt im Docroot eine 404.html, wird sie mit den Platzhaltern
 // [!code], [!display], [!link_text] und [!hyperlink] gefüllt.
+
+header('X-Oserp-Shop-File: '.sha1_file(__FILE__));
 
 /**
  * Gibt die Fehlerseite aus
