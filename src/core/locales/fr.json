@@ -20,6 +20,8 @@
         "updateError": "Erreur lors de la mise a jour de la base de donnees. Veuillez reessayer.",
         "updateRunning": "Une mise à jour est déjà en cours. Veuillez vous reconnecter dans un instant.",
         "updateHint": "Le schéma est adapté à la nouvelle version du programme ; une sauvegarde est créée au préalable. Cela peut prendre quelques minutes — veuillez ne pas fermer la fenêtre.",
+        "updateFailedTitle": "Échec de la mise à jour",
+        "updateFailedContinue": "La base de données de l'entreprise n'a pas pu être mise à jour. Vous continuez avec la version précédente ; certaines fonctions peuvent ne pas fonctionner correctement. Veuillez contacter l'administrateur.",
         "privacy": "Politique de confidentialite",
         "dataDeletion": "Suppression des donnees",
         "API_DATABASE_ERROR": "La base de données ne répond pas comme prévu. Veuillez prévenir l'administrateur.",
@@ -49,6 +51,9 @@
     },
     "App": {
         "loading": "Veuillez patienter..."
+    },
+    "Toast": {
+        "close": "Fermer"
     },
     "aiModels": {
         "configTitle": "Modèles des assistants IA",

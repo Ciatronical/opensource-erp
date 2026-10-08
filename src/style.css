@@ -367,54 +367,8 @@ body,
     z-index: 99000 !important;
 }
 
-/* SweetAlert2 Toast Positioning */
-.swal2-toast {
-    margin-top: 55px !important;
-}
-
-/* Muss nach .swal2-container stehen: gleiche Spezifität, der spätere
-   Wert gewinnt — Einblendungen liegen damit über den Dialogen. */
-.swal2-toast-above-overlay {
-    z-index: 100000 !important;
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   Anklickbare Einblendung (z. B. eingehende Chatnachricht)
-   Ein normaler Toast ist zu schmal: der Nachrichtentext quetscht sich
-   neben dem Icon zu einer duennen Spalte. Hier breiter und linksbuendig,
-   damit man die Nachricht in zwei, drei Zeilen wirklich lesen kann.
-   Der blaue Streifen zeigt, dass ein Klick weiterfuehrt.
-   ═══════════════════════════════════════════════════════════════ */
-.swal2-popup.swal2-toast.swal2-toast-clickable {
-    width: 25rem;
-    max-width: calc(100vw - 2rem);
-    padding: 12px 16px;
-    border-left: 4px solid #0277BD;
-}
-
-.swal2-popup.swal2-toast.swal2-toast-clickable .swal2-title {
-    margin: 0 0 3px;
-    font-size: 0.95rem;
-    color: #0277BD;
-    text-align: left;
-}
-
-.swal2-popup.swal2-toast.swal2-toast-clickable .swal2-html-container {
-    margin: 0;
-    font-size: 0.88rem;
-    line-height: 1.4;
-    color: #263238;
-    text-align: left;
-}
-
-.swal2-popup.swal2-toast.swal2-toast-clickable .swal2-icon.swal2-info {
-    border-color: #0277BD;
-    color: #0277BD;
-}
-
-.swal2-popup.swal2-toast.swal2-toast-clickable .swal2-timer-progress-bar {
-    background: #0277BD;
-}
+/* Einblendungen (Toasts) laufen nicht über SweetAlert2, sondern über
+   core/components/toast-stack.vue — Stile dort. */
 
 
 /* Confirm Button - Warmes Rot mit weißer Schrift */

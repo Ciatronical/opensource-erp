@@ -20,6 +20,8 @@
         "updateError": "Feil ved databaseoppdatering. Vennligst proev igjen.",
         "updateRunning": "En oppdatering kjører allerede. Logg inn igjen om et øyeblikk.",
         "updateHint": "Skjemaet tilpasses den nye programversjonen; først opprettes en sikkerhetskopi. Det kan ta noen minutter — ikke lukk vinduet.",
+        "updateFailedTitle": "Oppdatering mislyktes",
+        "updateFailedContinue": "Firmadatabasen kunne ikke oppdateres. Du fortsetter med den tidligere versjonen; enkelte funksjoner virker kanskje ikke riktig. Kontakt administratoren.",
         "privacy": "Personvernerklaering",
         "dataDeletion": "Datasletting",
         "API_DATABASE_ERROR": "Databasen svarer ikke som forventet. Vennligst kontakt administratoren.",
@@ -49,6 +51,9 @@
     },
     "App": {
         "loading": "Vennligst vent..."
+    },
+    "Toast": {
+        "close": "Lukk"
     },
     "aiModels": {
         "configTitle": "Modeller for KI-assistentene",

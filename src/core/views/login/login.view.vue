@@ -111,6 +111,7 @@ export default {
     const updateLoading = ref(false)
     const updateSuccess = ref(false)
     const updateError   = ref('')
+    const updateErrorObj = ref(null)
 
     const clearError = () => {
       errorMessage.value = ''
@@ -181,9 +182,26 @@ export default {
             await login(true)
             return
           }
-          errorMessage.value = updateError.value || t('LoginView.updateError')
-          errorType.value    = 'error'
-          return
+
+          // Ein anderer Lauf ist noch nicht fertig: gleich erneut anmelden, dann
+          // ist die Datenbank meist schon aktuell
+          if (updateErrorObj.value?.code === 'SCHEMA_UPDATE_RUNNING') {
+            errorMessage.value = updateError.value
+            errorType.value    = 'error'
+            return
+          }
+
+          // Die Anmeldung selbst ist gelungen, die Sitzung steht. Wie beim
+          // Firmenwechsel mit dem alten Stand weiterarbeiten statt auf der
+          // Anmeldeseite festzuhängen — jeder neue Versuch startete sonst
+          // dasselbe scheiternde Update. Dialog statt Einblendung, damit der
+          // Hinweis gelesen wird; die Einzelheiten stehen aufklappbar darunter.
+          await alerts.error(
+            t('LoginView.updateFailedContinue'),
+            t('LoginView.updateFailedTitle'),
+            updateErrorObj.value instanceof ApiError ? updateErrorObj.value : false
+          )
+          updateError.value = ''
         }
 
         // redirect ist ein vom Router selbst erzeugter fullPath (Guard), sonst Startseite
@@ -218,6 +236,7 @@ export default {
       updateLoading.value = true
       updateSuccess.value = false
       updateError.value   = ''
+      updateErrorObj.value = null
 
       try {
         await oserp.updateClientSchema(clientCode.value)
@@ -225,6 +244,7 @@ export default {
         return true
       } catch (error) {
         console.error('Fehler beim Update:', error)
+        updateErrorObj.value = error
         updateError.value = error?.code === 'SCHEMA_UPDATE_RUNNING'
           ? t('LoginView.updateRunning')
           : t('LoginView.updateError')

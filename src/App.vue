@@ -9,6 +9,7 @@
       </div>
       <router-view v-else :key="route.path" />
     </v-main>
+    <ToastStack />
   </v-app>
 </template>
 
@@ -17,6 +18,7 @@ import { ref, provide } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useUserPrefs } from '@/core/composables/useUserPrefs.js'
+import ToastStack from '@/core/components/toast-stack.vue'
 
 const { t } = useI18n()
 useUserPrefs()

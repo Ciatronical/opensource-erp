@@ -201,6 +201,7 @@ import { defineComponent, ref, reactive, computed, watch, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import axios from 'axios'
 import Swal from 'sweetalert2'
+import * as toasts from '@/core/utils/toasts.js'
 import HtmlEditorComponent from '@/core/components/html.editor.component.vue'
 
 export default defineComponent({
@@ -366,11 +367,7 @@ export default defineComponent({
             try {
                 const { data } = await axios.post('/api/email/', payload)
                 if (data?.success) {
-                    Swal.fire({
-                        toast: true, icon: 'success', position: 'top-end',
-                        showConfirmButton: false, timer: 3000,
-                        title: t('CarEditView.email.success')
-                    })
+                    toasts.success(t('CarEditView.email.success'), { timer: 3000 })
                     emit('sent')
                     emit('update:modelValue', false)
                 } else {

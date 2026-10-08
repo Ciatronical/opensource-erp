@@ -20,6 +20,8 @@
         "updateError": "Errore nell'aggiornamento del database. Riprovare.",
         "updateRunning": "È già in corso un aggiornamento. Effettuare nuovamente l'accesso tra un istante.",
         "updateHint": "Lo schema viene adattato alla nuova versione del programma; prima viene creata una copia di sicurezza. L'operazione può richiedere alcuni minuti: non chiudere la finestra.",
+        "updateFailedTitle": "Aggiornamento non riuscito",
+        "updateFailedContinue": "Non è stato possibile aggiornare il database dell'azienda. Si continua con la versione precedente; alcune funzioni potrebbero non funzionare correttamente. Contattare l'amministratore.",
         "privacy": "Informativa sulla privacy",
         "dataDeletion": "Cancellazione dei dati",
         "API_DATABASE_ERROR": "Il database non risponde come previsto. Avvisare l'amministratore.",
@@ -49,6 +51,9 @@
     },
     "App": {
         "loading": "Attendere prego..."
+    },
+    "Toast": {
+        "close": "Chiudi"
     },
     "aiModels": {
         "configTitle": "Modelli degli assistenti IA",

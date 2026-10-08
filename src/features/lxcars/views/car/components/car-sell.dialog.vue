@@ -107,6 +107,7 @@ import { ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { lxcarsStore } from '@/features/lxcars/stores/lxcars.store.js'
 import Swal from 'sweetalert2'
+import * as toasts from '@/core/utils/toasts.js'
 import AiModelButton from '@/core/components/ai-model-button.vue'
 
 export default {
@@ -191,11 +192,7 @@ export default {
         async function copyText() {
             try {
                 await navigator.clipboard.writeText(generatedText.value)
-                Swal.fire({
-                    toast: true, icon: 'success', position: 'top-end',
-                    showConfirmButton: false, timer: 2000,
-                    title: t('CarSellDialog.copied')
-                })
+                toasts.success(t('CarSellDialog.copied'), { timer: 2000 })
             } catch {
                 // Fallback: nichts tun
             }

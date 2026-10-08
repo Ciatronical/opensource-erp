@@ -20,6 +20,8 @@
         "updateError": "Błąd podczas aktualizacji bazy danych. Proszę spróbować ponownie.",
         "updateRunning": "Aktualizacja jest już w toku. Zaloguj się ponownie za chwilę.",
         "updateHint": "Schemat jest dostosowywany do nowej wersji programu; najpierw tworzona jest kopia zapasowa. Może to potrwać kilka minut — nie zamykaj okna.",
+        "updateFailedTitle": "Aktualizacja nie powiodła się",
+        "updateFailedContinue": "Nie udało się zaktualizować bazy danych firmy. Pracujesz dalej na dotychczasowej wersji; niektóre funkcje mogą działać nieprawidłowo. Skontaktuj się z administratorem.",
         "privacy": "Polityka prywatności",
         "dataDeletion": "Usuwanie danych",
         "API_DATABASE_ERROR": "Baza danych nie odpowiada zgodnie z oczekiwaniami. Proszę powiadomić administratora.",
@@ -49,6 +51,9 @@
     },
     "App": {
         "loading": "Proszę czekać..."
+    },
+    "Toast": {
+        "close": "Zamknij"
     },
     "aiModels": {
         "configTitle": "Modele asystentów SI",

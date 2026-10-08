@@ -20,6 +20,8 @@
         "updateError": "Klaida atnaujinant duomenų bazę. Bandykite dar kartą.",
         "updateRunning": "Atnaujinimas jau vykdomas. Prisijunkite dar kartą po akimirkos.",
         "updateHint": "Duomenų bazės struktūra pritaikoma naujai programos versijai; pirmiausia sukuriama atsarginė kopija. Tai gali užtrukti kelias minutes — neuždarykite lango.",
+        "updateFailedTitle": "Atnaujinti nepavyko",
+        "updateFailedContinue": "Įmonės duomenų bazės atnaujinti nepavyko. Tęsiate su ankstesne versija; kai kurios funkcijos gali veikti netinkamai. Kreipkitės į administratorių.",
         "privacy": "Privatumo politika",
         "dataDeletion": "Duomenų trynimas",
         "API_DATABASE_ERROR": "Duomenų bazė atsako ne taip, kaip tikėtasi. Praneškite administratoriui.",
@@ -49,6 +51,9 @@
     },
     "App": {
         "loading": "Palaukite..."
+    },
+    "Toast": {
+        "close": "Uždaryti"
     },
     "aiModels": {
         "configTitle": "Dirbtinio intelekto asistentų modeliai",

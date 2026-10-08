@@ -20,6 +20,8 @@
         "updateError": "Veritabanı güncellemesinde hata. Lütfen tekrar deneyin.",
         "updateRunning": "Zaten bir güncelleme çalışıyor. Lütfen birazdan tekrar oturum açın.",
         "updateHint": "Şema yeni program sürümüne uyarlanıyor; önce bir yedek alınır. Bu birkaç dakika sürebilir — lütfen pencereyi kapatmayın.",
+        "updateFailedTitle": "Güncelleme başarısız",
+        "updateFailedContinue": "Şirket veritabanı güncellenemedi. Önceki sürümle devam ediyorsunuz; bazı işlevler düzgün çalışmayabilir. Lütfen yöneticinize başvurun.",
         "privacy": "Gizlilik politikası",
         "dataDeletion": "Veri silme",
         "API_DATABASE_ERROR": "Veritabanı beklendiği gibi yanıt vermiyor. Lütfen yöneticinize haber verin.",
@@ -49,6 +51,9 @@
     },
     "App": {
         "loading": "Lütfen bekleyin..."
+    },
+    "Toast": {
+        "close": "Kapat"
     },
     "aiModels": {
         "configTitle": "Yapay zekâ asistanlarının modelleri",

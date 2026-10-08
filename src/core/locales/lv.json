@@ -20,6 +20,8 @@
         "updateError": "Kļūda datu bāzes atjaunināšanā. Lūdzu mēģiniet vēlreiz.",
         "updateRunning": "Atjaunināšana jau notiek. Lūdzu, piesakieties vēlreiz pēc brīža.",
         "updateHint": "Datubāzes struktūra tiek pielāgota jaunajai programmas versijai; vispirms tiek izveidota rezerves kopija. Tas var aizņemt dažas minūtes — lūdzu, neaizveriet logu.",
+        "updateFailedTitle": "Atjaunināšana neizdevās",
+        "updateFailedContinue": "Uzņēmuma datubāzi neizdevās atjaunināt. Jūs turpināt ar iepriekšējo versiju; dažas funkcijas var nedarboties pareizi. Lūdzu, sazinieties ar administratoru.",
         "privacy": "Privātuma politika",
         "dataDeletion": "Datu dzēšana",
         "API_DATABASE_ERROR": "Datu bāze neatbild, kā gaidīts. Lūdzu informējiet administratoru.",
@@ -49,6 +51,9 @@
     },
     "App": {
         "loading": "Lūdzu uzgaidiet..."
+    },
+    "Toast": {
+        "close": "Aizvērt"
     },
     "aiModels": {
         "configTitle": "Mākslīgā intelekta asistentu modeļi",

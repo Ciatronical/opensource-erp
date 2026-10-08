@@ -20,6 +20,8 @@
         "updateError": "Fejl ved databaseopdatering. Proev venligst igen.",
         "updateRunning": "Der kører allerede en opdatering. Log ind igen om et øjeblik.",
         "updateHint": "Skemaet tilpasses den nye programversion; først oprettes en sikkerhedskopi. Det kan tage et par minutter — luk ikke vinduet.",
+        "updateFailedTitle": "Opdatering mislykkedes",
+        "updateFailedContinue": "Virksomhedsdatabasen kunne ikke opdateres. Du fortsætter med den hidtidige version; enkelte funktioner virker muligvis ikke korrekt. Kontakt venligst administratoren.",
         "privacy": "Privatlivspolitik",
         "dataDeletion": "Datasletning",
         "API_DATABASE_ERROR": "Databasen svarer ikke som forventet. Kontakt venligst administratoren.",
@@ -49,6 +51,9 @@
     },
     "App": {
         "loading": "Vent venligst..."
+    },
+    "Toast": {
+        "close": "Luk"
     },
     "aiModels": {
         "configTitle": "Modeller for AI-assistenterne",

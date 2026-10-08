@@ -20,6 +20,8 @@
         "updateError": "Viga andmebaasi uuendamisel. Palun proovige uuesti.",
         "updateRunning": "Uuendus on juba käimas. Palun logige hetke pärast uuesti sisse.",
         "updateHint": "Skeem kohandatakse uue programmiversiooniga; enne seda tehakse varukoopia. See võib võtta mõne minuti — ärge sulgege akent.",
+        "updateFailedTitle": "Uuendamine ebaõnnestus",
+        "updateFailedContinue": "Ettevõtte andmebaasi ei õnnestunud uuendada. Jätkate senise seisuga; mõned funktsioonid ei pruugi õigesti töötada. Palun võtke ühendust administraatoriga.",
         "privacy": "Privaatsuspoliitika",
         "dataDeletion": "Andmete kustutamine",
         "API_DATABASE_ERROR": "Andmebaas ei vasta ootuspäraselt. Palun teavitage administraatorit.",
@@ -49,6 +51,9 @@
     },
     "App": {
         "loading": "Palun oodake..."
+    },
+    "Toast": {
+        "close": "Sulge"
     },
     "aiModels": {
         "configTitle": "Tehisaru assistentide mudelid",

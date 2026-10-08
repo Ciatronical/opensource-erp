@@ -20,6 +20,8 @@
         "updateError": "数据库更新时出错。请重试。",
         "updateRunning": "更新已在进行中。请稍后重新登录。",
         "updateHint": "正在使数据库结构与新程序版本保持一致；此前会先创建备份。这可能需要几分钟 — 请勿关闭窗口。",
+        "updateFailedTitle": "更新失败",
+        "updateFailedContinue": "无法更新公司数据库。您将继续使用之前的版本；部分功能可能无法正常工作。请联系管理员。",
         "privacy": "隐私政策",
         "dataDeletion": "数据删除",
         "API_DATABASE_ERROR": "数据库的响应不符合预期。请联系管理员。",
@@ -49,6 +51,9 @@
     },
     "App": {
         "loading": "请稍候..."
+    },
+    "Toast": {
+        "close": "关闭"
     },
     "aiModels": {
         "configTitle": "AI 助手的模型",

@@ -413,8 +413,10 @@ function updateDatabaseSchema($sqlFiles, $csvFiles = [], $dryRun = false, $compa
 
             $sqlContent = file_get_contents($sqlFile);
 
-            // Bestimme Datenbanktyp anhand des Dateinamens
-            $isAuthDb = strpos(strtolower($sqlFile), 'auth') !== false;
+            // Bestimme Datenbanktyp anhand des Dateinamens — nur der Name, nicht
+            // der Pfad: ein Installationsverzeichnis wie /var/www/oauth-erp/
+            // schickte sonst jedes company_schema.sql in die Auth-Datenbank
+            $isAuthDb = strpos(strtolower(basename($sqlFile)), 'auth') !== false;
             $db = $isAuthDb ? ($authDb ?? DbhAuth::begin()) : ($companyDb ?? DbhCompany::begin());
             $schema = $isAuthDb ? 'auth' : 'public';
 

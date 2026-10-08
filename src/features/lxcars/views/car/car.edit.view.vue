@@ -1517,7 +1517,7 @@ export default {
                 }
             } catch (err) {
                 console.error('Delete car error:', err)
-                Swal.fire({ toast: true, icon: 'error', position: 'top-end', showConfirmButton: false, timer: 3000, title: t('CarEditView.delete.error') })
+                toasts.error(t('CarEditView.delete.error'), { timer: 3000 })
             } finally {
                 deleting.value = false
             }
@@ -1634,13 +1634,7 @@ export default {
         // Zwischenablage
         let copyClickTimer = null
         function showCopyToast(label, text) {
-            Swal.fire({
-                toast: true, icon: 'info', position: 'top-end',
-                showConfirmButton: false, timer: 1000, timerProgressBar: false,
-                showClass: { popup: 'swal2-show', icon: '' },
-                hideClass: { popup: 'swal2-hide' },
-                title: t('CarEditView.messages.copied', { label, text })
-            })
+            toasts.info(t('CarEditView.messages.copied', { label, text }), { timer: 1000, timerProgressBar: false })
         }
 
         function copyToClipboard(label, text) {
@@ -2292,7 +2286,7 @@ export default {
                 await carsStore.printYellowLabel(car.value.c_ln, printerId)
             } catch (err) {
                 console.error('Yellow label print error:', err)
-                Swal.fire({ toast: true, icon: 'error', position: 'top-end', showConfirmButton: false, timer: 3000, title: t('CarEditView.yellowLabel.error') })
+                toasts.error(t('CarEditView.yellowLabel.error'), { timer: 3000 })
             } finally {
                 yellowLabelPrinting.value = false
             }
@@ -2315,11 +2309,7 @@ export default {
             if (!dim) missing.push(t('CarEditView.tyreLabel.fieldDim'))
             if (!location) missing.push(t('CarEditView.tyreLabel.fieldLocation'))
             if (missing.length) {
-                Swal.fire({
-                    toast: true, icon: 'error', position: 'top-end',
-                    showConfirmButton: false, timer: 3000, timerProgressBar: true,
-                    title: t('CarEditView.tyreLabel.missingFields', { fields: missing.join(', ') })
-                })
+                toasts.error(t('CarEditView.tyreLabel.missingFields', { fields: missing.join(', ') }), { timer: 3000 })
                 return
             }
             const customerName = oserpData.customer_vendor?.profile?.name || ''
@@ -2340,7 +2330,7 @@ export default {
                 }, printerId)
             } catch (err) {
                 console.error('Tyre label print error:', err)
-                Swal.fire({ toast: true, icon: 'error', position: 'top-end', showConfirmButton: false, timer: 3000, title: t('CarEditView.tyreLabel.error') })
+                toasts.error(t('CarEditView.tyreLabel.error'), { timer: 3000 })
             } finally {
                 tyreLabelPrinting.value = null
             }
@@ -2933,22 +2923,6 @@ export default {
 </style>
 
 <style>
-/* Sanftes Fade für Clipboard-Toast */
-.swal2-container .swal2-popup.swal2-toast.swal2-show {
-    animation: swal2-toast-fade-in 0.2s ease-out;
-}
-.swal2-container .swal2-popup.swal2-toast.swal2-hide {
-    animation: swal2-toast-fade-out 0.3s ease-in;
-}
-@keyframes swal2-toast-fade-in {
-    from { opacity: 0; transform: translateY(-8px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-@keyframes swal2-toast-fade-out {
-    from { opacity: 1; transform: translateY(0); }
-    to { opacity: 0; transform: translateY(-8px); }
-}
-
 /* Unscoped: Tooltip rendert via Teleport im Body */
 .crop-tooltip {
     background: white !important;

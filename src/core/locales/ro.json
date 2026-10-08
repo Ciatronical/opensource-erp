@@ -20,6 +20,8 @@
         "updateError": "Eroare la actualizarea bazei de date. Vă rugăm încercați din nou.",
         "updateRunning": "O actualizare este deja în curs. Vă rugăm să vă autentificați din nou într-un moment.",
         "updateHint": "Schema este adaptată la noua versiune a programului; mai întâi se creează o copie de siguranță. Poate dura câteva minute — nu închideți fereastra.",
+        "updateFailedTitle": "Actualizarea a eșuat",
+        "updateFailedContinue": "Baza de date a firmei nu a putut fi actualizată. Continuați cu versiunea anterioară; unele funcții pot să nu funcționeze corect. Vă rugăm să contactați administratorul.",
         "privacy": "Politica de confidențialitate",
         "dataDeletion": "Ștergere date",
         "API_DATABASE_ERROR": "Baza de date nu răspunde conform așteptărilor. Vă rugăm anunțați administratorul.",
@@ -49,6 +51,9 @@
     },
     "App": {
         "loading": "Vă rugăm așteptați..."
+    },
+    "Toast": {
+        "close": "Închide"
     },
     "aiModels": {
         "configTitle": "Modelele asistenților IA",

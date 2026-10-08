@@ -20,6 +20,8 @@
         "updateError": "Fehler beim Datenbank-Update. Bitte versuchen Sie es erneut.",
         "updateRunning": "Es läuft bereits eine Aktualisierung. Bitte melden Sie sich gleich erneut an.",
         "updateHint": "Das Schema wird an die neue Programmversion angepasst, vorher entsteht eine Sicherung. Das kann einige Minuten dauern — bitte das Fenster nicht schließen.",
+        "updateFailedTitle": "Aktualisierung fehlgeschlagen",
+        "updateFailedContinue": "Die Firmendatenbank konnte nicht aktualisiert werden. Sie arbeiten mit dem bisherigen Stand weiter; einzelne Funktionen können fehlerhaft sein. Bitte den Administrator verständigen.",
         "privacy": "Datenschutzerklärung",
         "dataDeletion": "Datenlöschung",
         "API_DATABASE_ERROR": "Die Datenbank antwortet nicht wie erwartet. Bitte den Administrator verständigen.",
@@ -49,6 +51,9 @@
     },
     "App": {
         "loading": "Bitte warten..."
+    },
+    "Toast": {
+        "close": "Schließen"
     },
     "aiModels": {
         "configTitle": "Modelle der KI-Assistenten",
